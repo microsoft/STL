@@ -263,9 +263,19 @@ _Pointer _Refancy(_Pointer _Ptr) noexcept {
 }
 
 // FUNCTION TEMPLATE _Destroy_in_place
+template <class _NoThrowFwdIt, class _NoThrowSentinel>
+/* _CONSTEXPR20_DYNALLOC */ void _Destroy_range(_NoThrowFwdIt _First, const _NoThrowSentinel _Last) noexcept;
+
 template <class _Ty>
-void _Destroy_in_place(_Ty& _Obj) noexcept {
-    _Obj.~_Ty();
+/* _CONSTEXPR20_DYNALLOC */ void _Destroy_in_place(_Ty& _Obj) noexcept {
+#if _HAS_IF_CONSTEXPR
+    if constexpr (is_array_v<_Ty>) {
+        _Destroy_range(_Obj, _Obj + extent_v<_Ty>);
+    } else
+#endif // _HAS_IF_CONSTEXPR
+    {
+        _Obj.~_Ty();
+    }
 }
 
 // FUNCTION TEMPLATE _Const_cast
@@ -948,7 +958,8 @@ void _Pocs(_Alloc& _Left, _Alloc& _Right) noexcept {
 
 // FUNCTION TEMPLATE _Destroy_range WITH ALLOC
 template <class _Alloc>
-void _Destroy_range(_Alloc_ptr_t<_Alloc> _First, const _Alloc_ptr_t<_Alloc> _Last, _Alloc& _Al) noexcept {
+/* _CONSTEXPR20_DYNALLOC */ void _Destroy_range(
+    _Alloc_ptr_t<_Alloc> _First, const _Alloc_ptr_t<_Alloc> _Last, _Alloc& _Al) noexcept {
     // note that this is an optimization for debug mode codegen; in release mode the BE removes all of this
     using _Ty = typename _Alloc::value_type;
     if _CONSTEXPR_IF (!conjunction_v<is_trivially_destructible<_Ty>, _Uses_default_destroy<_Alloc, _Ty*>>) {
@@ -959,8 +970,8 @@ void _Destroy_range(_Alloc_ptr_t<_Alloc> _First, const _Alloc_ptr_t<_Alloc> _Las
 }
 
 // FUNCTION TEMPLATE _Destroy_range
-template <class _NoThrowFwdIt>
-void _Destroy_range(_NoThrowFwdIt _First, const _NoThrowFwdIt _Last) noexcept {
+template <class _NoThrowFwdIt, class _NoThrowSentinel>
+/* _CONSTEXPR20_DYNALLOC */ void _Destroy_range(_NoThrowFwdIt _First, const _NoThrowSentinel _Last) noexcept {
     // note that this is an optimization for debug mode codegen; in release mode the BE removes all of this
     if _CONSTEXPR_IF (!is_trivially_destructible_v<_Iter_value_t<_NoThrowFwdIt>>) {
         for (; _First != _Last; ++_First) {
@@ -1414,24 +1425,25 @@ struct _Uninitialized_backout { // struct to undo partially constructed ranges i
     _NoThrowFwdIt _First;
     _NoThrowFwdIt _Last;
 
-    explicit _Uninitialized_backout(_NoThrowFwdIt _Dest) : _First(_Dest), _Last(_Dest) {}
+    constexpr explicit _Uninitialized_backout(_NoThrowFwdIt _Dest) : _First(_Dest), _Last(_Dest) {}
 
-    _Uninitialized_backout(_NoThrowFwdIt _First_, _NoThrowFwdIt _Last_) : _First(_First_), _Last(_Last_) {}
+    constexpr _Uninitialized_backout(_NoThrowFwdIt _First_, _NoThrowFwdIt _Last_) : _First(_First_), _Last(_Last_) {}
 
     _Uninitialized_backout(const _Uninitialized_backout&) = delete;
     _Uninitialized_backout& operator=(const _Uninitialized_backout&) = delete;
 
-    ~_Uninitialized_backout() {
+    /* _CONSTEXPR20_DYNALLOC */ ~_Uninitialized_backout() {
         _Destroy_range(_First, _Last);
     }
 
     template <class... _Types>
-    void _Emplace_back(_Types&&... _Vals) { // construct a new element at *_Last and increment
+    /* _CONSTEXPR20_DYNALLOC */ void _Emplace_back(_Types&&... _Vals) {
+        // construct a new element at *_Last and increment
         _Construct_in_place(*_Last, _STD forward<_Types>(_Vals)...);
         ++_Last;
     }
 
-    _NoThrowFwdIt _Release() { // suppress any exception handling backout and return _Last
+    /* _CONSTEXPR20_DYNALLOC */ _NoThrowFwdIt _Release() { // suppress any exception handling backout and return _Last
         _First = _Last;
         return _Last;
     }
@@ -1479,6 +1491,81 @@ _NoThrowFwdIt _Uninitialized_move_unchecked(_InIt _First, const _InIt _Last, _No
         _First, _Last, _Dest, bool_constant<_Ptr_move_cat<_InIt, _NoThrowFwdIt>::_Really_trivial>{});
 }
 #endif // _HAS_IF_CONSTEXPR
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // CONCEPT _Convertible_from
+    template <class _To, class _From>
+    concept _Convertible_from = convertible_to<_From, _To>;
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-attributes"
+#endif // __clang__
+
+    // STRUCT TEMPLATE in_out_result
+    template <class _In, class _Out>
+    struct in_out_result {
+        [[no_unique_address]] _In in;
+        [[no_unique_address]] _Out out;
+
+        template <_Convertible_from<const _In&> _IIn, _Convertible_from<const _Out&> _OOut>
+        constexpr operator in_out_result<_IIn, _OOut>() const& {
+            return {in, out};
+        }
+
+        template <_Convertible_from<_In> _IIn, _Convertible_from<_Out> _OOut>
+        constexpr operator in_out_result<_IIn, _OOut>() && {
+            return {_STD move(in), _STD move(out)};
+        }
+    };
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif // __clang__
+
+    // clang-format off
+    // CONCEPT _No_throw_input_iterator
+    template <class _It>
+    concept _No_throw_input_iterator = input_iterator<_It>
+        && is_lvalue_reference_v<iter_reference_t<_It>>
+        && same_as<remove_cvref_t<iter_reference_t<_It>>, iter_value_t<_It>>;
+
+    // CONCEPT _No_throw_sentinel_for
+    template <class _Se, class _It>
+    concept _No_throw_sentinel_for = sentinel_for<_Se, _It>;
+
+    // CONCEPT _No_throw_forward_iterator
+    template <class _It>
+    concept _No_throw_forward_iterator = _No_throw_input_iterator<_It>
+        && forward_iterator<_It>
+        && _No_throw_sentinel_for<_It, _It>;
+    // clang-format on
+
+    // ALIAS TEMPLATE uninitialized_move_result
+    template <class _In, class _Out>
+    using uninitialized_move_result = in_out_result<_In, _Out>;
+
+    // FUNCTION TEMPLATE ranges::_Uninitialized_move_unchecked
+    // clang-format off
+    template <input_iterator _It1, sentinel_for<_It1> _Se1, _No_throw_forward_iterator _It2,
+        _No_throw_sentinel_for<_It2> _Se2>
+        requires constructible_from<iter_value_t<_It2>, iter_rvalue_reference_t<_It1>>
+    _NODISCARD /* _CONSTEXPR20_DYNALLOC */ uninitialized_move_result<_It1, _It2> _Uninitialized_move_unchecked(
+        _It1 _IFirst, const _Se1 _ILast, _It2 _OFirst, const _Se2 _OLast) {
+        // clang-format on
+        _Uninitialized_backout _Backout{_STD move(_OFirst)};
+
+        for (; _IFirst != _ILast && _Backout._Last != _OLast; ++_IFirst) {
+            _Backout._Emplace_back(_RANGES iter_move(_IFirst));
+        }
+
+        _OFirst = _STD move(_Backout._Last);
+        _Backout._Release();
+        return {_STD move(_IFirst), _STD move(_OFirst)};
+    }
+} // namespace ranges
+#endif // __cpp_lib_concepts
 
 // STRUCT TEMPLATE _Uninitialized_backout_al
 template <class _Alloc>

@@ -94,10 +94,6 @@ struct _Optimistic_temporary_buffer { // temporary storage with _alloca-like att
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // CONCEPT _Convertible_from
-    template <class _To, class _From>
-    concept _Convertible_from = convertible_to<_From, _To>;
-
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-attributes"
@@ -134,23 +130,6 @@ namespace ranges {
         template <_Convertible_from<_In1> _IIn1, _Convertible_from<_In2> _IIn2>
         constexpr operator in_in_result<_IIn1, _IIn2>() && {
             return {_STD move(in1), _STD move(in2)};
-        }
-    };
-
-    // STRUCT TEMPLATE in_out_result
-    template <class _In, class _Out>
-    struct in_out_result {
-        [[no_unique_address]] _In in;
-        [[no_unique_address]] _Out out;
-
-        template <_Convertible_from<const _In&> _IIn, _Convertible_from<const _Out&> _OOut>
-        constexpr operator in_out_result<_IIn, _OOut>() const& {
-            return {in, out};
-        }
-
-        template <_Convertible_from<_In> _IIn, _Convertible_from<_Out> _OOut>
-        constexpr operator in_out_result<_IIn, _OOut>() && {
-            return {_STD move(in), _STD move(out)};
         }
     };
 
