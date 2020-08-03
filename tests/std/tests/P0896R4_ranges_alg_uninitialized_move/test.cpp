@@ -99,13 +99,21 @@ struct holder {
     }
 };
 
+template <class R>
+void not_ranges_destroy(R&& r) {
+    for (auto& e : r) {
+        destroy_at(&e);
+    }
+}
+
 struct instantiator {
     static constexpr int expected_output[] = {13, 55, 12345};
     static constexpr int expected_input[]  = {-1, -1, -1};
 
     template <ranges::input_range R, ranges::forward_range W>
     static _CONSTEXPR20_DYNALLOC void call() {
-        using ranges::uninitialized_move, ranges::uninitialized_move_result, ranges::equal, ranges::iterator_t;
+        using ranges::uninitialized_move, ranges::uninitialized_move_result, ranges::equal, ranges::equal_to,
+            ranges::iterator_t;
 
         { // Validate range overload
             int_wrapper input[3] = {13, 55, 12345};
@@ -122,9 +130,9 @@ struct instantiator {
             }
             assert(result.in == wrapped_input.end());
             assert(result.out == wrapped_output.end());
-            assert(equal(wrapped_output, expected_output, ranges::equal_to{}, &int_wrapper::val));
-            assert(equal(input, expected_input, ranges::equal_to{}, &int_wrapper::val));
-            ranges::destroy(wrapped_output);
+            assert(equal(wrapped_output, expected_output, equal_to{}, &int_wrapper::val));
+            assert(equal(input, expected_input, equal_to{}, &int_wrapper::val));
+            not_ranges_destroy(wrapped_output);
             if (!is_constant_evaluated()) {
                 assert(int_wrapper::constructions == 3);
                 assert(int_wrapper::destructions == 3);
@@ -146,9 +154,9 @@ struct instantiator {
             }
             assert(result.in == wrapped_input.end());
             assert(result.out == wrapped_output.end());
-            assert(equal(wrapped_output, expected_output, ranges::equal_to{}, &int_wrapper::val));
-            assert(equal(input, expected_input, ranges::equal_to{}, &int_wrapper::val));
-            ranges::destroy(wrapped_output);
+            assert(equal(wrapped_output, expected_output, equal_to{}, &int_wrapper::val));
+            assert(equal(input, expected_input, equal_to{}, &int_wrapper::val));
+            not_ranges_destroy(wrapped_output);
             if (!is_constant_evaluated()) {
                 assert(int_wrapper::constructions == 3);
                 assert(int_wrapper::destructions == 3);
@@ -162,7 +170,6 @@ struct throwing_test {
 
     template <ranges::input_range R, ranges::forward_range W>
     static void call() {
-        using ranges::uninitialized_move, ranges::uninitialized_move_result, ranges::equal, ranges::iterator_t;
         // Validate only range overload (one is plenty since they are backends)
         int_wrapper input[] = {13, 55, int_wrapper::magic_throwing_val, 12345};
         int_wrapper::clear_counts();
@@ -171,7 +178,7 @@ struct throwing_test {
         W wrapped_output{mem.as_span()};
 
         try {
-            (void) uninitialized_move(wrapped_input, wrapped_output);
+            (void) ranges::uninitialized_move(wrapped_input, wrapped_output);
             assert(false);
         } catch (int i) {
             assert(i == int_wrapper::magic_throwing_val);
@@ -180,7 +187,7 @@ struct throwing_test {
         }
         assert(int_wrapper::constructions == 2);
         assert(int_wrapper::destructions == 2);
-        assert(equal(input, expected_input, ranges::equal_to{}, &int_wrapper::val));
+        assert(ranges::equal(input, expected_input, ranges::equal_to{}, &int_wrapper::val));
     }
 };
 
