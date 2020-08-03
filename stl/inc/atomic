@@ -1157,7 +1157,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
 };
 
 
-#if defined(_M_X64) || defined(_M_ARM64)
+#ifdef _STD_COMPARE_EXCHANGE_128
 template <class _Ty>
 struct _Atomic_storage<_Ty&, 16> { // lock-free using 16-byte intrinsics
     // TRANSITION, ABI: replace '_Ty&' with '_Ty' in parameter of everywhere in this specialization
