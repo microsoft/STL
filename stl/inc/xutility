@@ -5927,16 +5927,20 @@ struct _Float_traits {
     // traits for double and long double:
     using type = unsigned long long;
 
+    static constexpr type _Sign_mask      = 0x8000'0000'0000'0000ULL;
     static constexpr type _Magnitude_mask = 0x7fff'ffff'ffff'ffffULL;
     static constexpr type _Exponent_mask  = 0x7ff0'0000'0000'0000ULL;
+    static constexpr type _Quiet_nan_mask = 0x0008'0000'0000'0000ULL;
 };
 
 template <>
 struct _Float_traits<float> {
     using type = unsigned int;
 
+    static constexpr type _Sign_mask      = 0x8000'0000U;
     static constexpr type _Magnitude_mask = 0x7fff'ffffU;
     static constexpr type _Exponent_mask  = 0x7f80'0000U;
+    static constexpr type _Quiet_nan_mask = 0x0040'0000U;
 };
 
 // FUNCTION TEMPLATE _Float_abs_bits
@@ -5952,10 +5956,24 @@ _NODISCARD _CONSTEXPR_BIT_CAST _Ty _Float_abs(const _Ty _Xx) { // constexpr floa
     return _Bit_cast<_Ty>(_Float_abs_bits(_Xx));
 }
 
+// FUNCTION TEMPLATE _Float_copysign
+template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
+_NODISCARD _CONSTEXPR_BIT_CAST _Ty _Float_copysign(const _Ty _Magnitude, const _Ty _Sign) { // constexpr copysign()
+    const auto _Signbit = _Bit_cast<typename _Float_traits<_Ty>::type>(_Sign) & _Float_traits<_Ty>::_Sign_mask;
+    return _Bit_cast<_Ty>(_Float_abs_bits(_Magnitude) | _Signbit);
+}
+
 // FUNCTION TEMPLATE _Is_nan
 template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR_BIT_CAST bool _Is_nan(const _Ty _Xx) { // constexpr isnan()
     return _Float_abs_bits(_Xx) > _Float_traits<_Ty>::_Exponent_mask;
+}
+
+// FUNCTION TEMPLATE _Is_signaling_nan
+template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
+_NODISCARD _CONSTEXPR_BIT_CAST bool _Is_signaling_nan(const _Ty& _Xx) { // returns true if input is a signaling NaN
+    const auto _Abs_bits = _Float_abs_bits(_Xx);
+    return _Abs_bits > _Float_traits<_Ty>::_Exponent_mask && ((_Abs_bits & _Float_traits<_Ty>::_Quiet_nan_mask) == 0);
 }
 
 // FUNCTION TEMPLATE _Is_finite

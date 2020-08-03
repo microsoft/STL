@@ -40,6 +40,11 @@ struct _C_ldouble_complex {
 #define _RE 0
 #define _IM 1
 
+_EXTERN_C
+_NODISCARD double __stdcall __std_math_log_hypot(double, double) noexcept;
+_NODISCARD float __stdcall __std_math_log_hypotf(float, float) noexcept;
+_END_EXTERN_C
+
 _STD_BEGIN
 using _Dcomplex_value = _CSTD _C_double_complex;
 using _Fcomplex_value = _CSTD _C_float_complex;
@@ -1618,32 +1623,20 @@ _Ty _Fabs(const complex<_Ty>& _Left, int* _Pexp) { // used by sqrt(), return mag
 
 // FUNCTION TEMPLATE log
 template <class _Ty>
+_NODISCARD _Ty _Log_abs(const complex<_Ty>& _Left) noexcept {
+    return static_cast<_Ty>(
+        __std_math_log_hypot(static_cast<double>(_STD real(_Left)), static_cast<double>(_STD imag(_Left))));
+};
+
+_NODISCARD inline float _Log_abs(const complex<float>& _Left) noexcept {
+    return __std_math_log_hypotf(_STD real(_Left), _STD imag(_Left));
+};
+
+template <class _Ty>
 _NODISCARD complex<_Ty> log(const complex<_Ty>& _Left) {
-    _Ty _Theta = _Ctraits<_Ty>::atan2(imag(_Left), real(_Left)); // get phase
-
-    if (_Ctraits<_Ty>::_Isnan(_Theta)) {
-        return complex<_Ty>(_Theta, _Theta); // real or imag is NaN
-    } else { // use 1 1/2 precision to preserve bits
-        constexpr _Ty _Cm = static_cast<_Ty>(22713.0L / 32768.0L);
-        constexpr _Ty _Cl = static_cast<_Ty>(1.4286068203094172321214581765680755e-6L);
-        int _Leftexp;
-        _Ty _Rho = _Fabs(_Left, &_Leftexp); // get magnitude and scale factor
-
-        _Ty _Leftn = static_cast<_Ty>(_Leftexp);
-
-        _Ty _Real;
-        if (_Rho == 0) {
-            _Real = -_Ctraits<_Ty>::_Infv(); // log(0) == -INF
-        } else if (_Ctraits<_Ty>::_Isinf(_Rho)) {
-            _Real = _Rho; // log(INF) == INF
-        } else {
-            _Real = static_cast<_Ty>(_Ctraits<_Ty>::log(_Rho)); // These casts are TRANSITION, DevCom-1093507
-            _Real += static_cast<_Ty>(_Leftn * _Cl);
-            _Real += static_cast<_Ty>(_Leftn * _Cm);
-        }
-
-        return complex<_Ty>(_Real, _Theta);
-    }
+    const _Ty _Log_abs = _STD _Log_abs(_Left); // get logarithm of magnitude
+    const _Ty _Theta   = _Ctraits<_Ty>::atan2(_STD imag(_Left), _STD real(_Left)); // get phase
+    return complex<_Ty>(_Log_abs, _Theta);
 }
 
 // FUNCTION TEMPLATE pow
