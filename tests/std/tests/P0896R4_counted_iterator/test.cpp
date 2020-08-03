@@ -11,6 +11,10 @@ using namespace std;
 struct instantiator {
     template <input_or_output_iterator Iter>
     static constexpr void call() {
+        if constexpr (is_permissive) { // TRANSITION, FIXME (File an issue to investigate this later?)
+            (void) input_iterator<Iter>;
+        }
+
         int input[5] = {1, 2, 3, 4, 5};
         // [counted.iter.const]
         {
