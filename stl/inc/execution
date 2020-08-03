@@ -18,6 +18,7 @@
 #include <mutex>
 #include <numeric>
 #include <queue>
+#include <thread>
 #include <vector>
 #include <xbit_ops.h>
 
@@ -29,11 +30,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _EXTERN_C
-// If on Windows XP, returns 1 (disabling parallelism); otherwise, returns the number of hardware threads available.
-_NODISCARD unsigned int __stdcall __std_parallel_algorithms_hw_threads() noexcept;
-
-// Windows Vista thread pool interface; __std_parallel_algorithms_hw_threads must be called on the current
-// thread before calling any of the below.
 #ifdef _M_CEE
 using __std_TP_WORK              = void;
 using __std_TP_CALLBACK_INSTANCE = void;
@@ -75,42 +71,71 @@ constexpr size_t _Still_active                = static_cast<size_t>(-1);
 
 // EXECUTION POLICIES
 namespace execution {
-    class sequenced_policy { // request for sequential execution with termination
+    class sequenced_policy {
+        // indicates support for only sequential execution, and requests termination on exceptions
     public:
         using _Standard_execution_policy   = int;
         static constexpr bool _Parallelize = false;
+        static constexpr bool _Ivdep       = false;
     };
 
     inline constexpr sequenced_policy seq{/* unspecified */};
 
-    class parallel_policy { // request for parallel execution with termination
+    class parallel_policy {
+        // indicates support by element access functions for parallel execution with parallel forward progress
+        // guarantees, and requests termination on exceptions
     public:
         using _Standard_execution_policy   = int;
         static constexpr bool _Parallelize = true;
+        static constexpr bool _Ivdep       = true;
     };
 
     inline constexpr parallel_policy par{/* unspecified */};
 
     class parallel_unsequenced_policy {
-        // request for parallel execution without thread identity with termination
+        // indicates support by element access functions for parallel execution with weakly parallel forward progress
+        // guarantees, and requests termination on exceptions
+        //
         // (at this time, equivalent to parallel_policy)
     public:
         using _Standard_execution_policy   = int;
         static constexpr bool _Parallelize = true;
+        static constexpr bool _Ivdep       = true;
     };
 
     inline constexpr parallel_unsequenced_policy par_unseq{/* unspecified */};
+
+#if _HAS_CXX20
+    class unsequenced_policy {
+        // indicates support by element access functions for weakly parallel forward progress guarantees, and for
+        // executing interleaved on the same thread, and requests termination on exceptions
+        //
+        // (at this time, equivalent to sequenced_policy except for the for_each family)
+    public:
+        using _Standard_execution_policy   = int;
+        static constexpr bool _Parallelize = false;
+        static constexpr bool _Ivdep       = true;
+    };
+
+    inline constexpr unsequenced_policy unseq{/* unspecified */};
+#endif // _HAS_CXX20
+
 } // namespace execution
 
+// All of the above are execution policies:
 template <>
-struct is_execution_policy<execution::sequenced_policy> : true_type {}; // sequenced_policy is an execution policy
+struct is_execution_policy<execution::sequenced_policy> : true_type {};
 
 template <>
-struct is_execution_policy<execution::parallel_policy> : true_type {}; // parallel_policy is an execution policy
+struct is_execution_policy<execution::parallel_policy> : true_type {};
 
 template <>
-struct is_execution_policy<execution::parallel_unsequenced_policy> : true_type {
-}; // parallel_unsequenced_policy is an execution policy
+struct is_execution_policy<execution::parallel_unsequenced_policy> : true_type {};
+
+#if _HAS_CXX20
+template <>
+struct is_execution_policy<execution::unsequenced_policy> : true_type {};
+#endif // _HAS_CXX20
 
 // STRUCT _Parallelism_resources_exhausted
 struct _Parallelism_resources_exhausted : exception {
@@ -1088,7 +1113,7 @@ struct _Static_partitioned_all_of_family2 { // all_of/any_of/none_of task schedu
 template <bool _Invert, class _FwdIt, class _Pr>
 bool _All_of_family_parallel(_FwdIt _First, const _FwdIt _Last, _Pr _Pred) {
     // test if all elements in [_First, _Last) satisfy _Pred (or !_Pred if _Invert is true) in parallel
-    const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
+    const size_t _Hw_threads = thread::hardware_concurrency();
     if (_Hw_threads > 1) { // parallelize on multiprocessor machines...
         const auto _Count = _STD distance(_First, _Last);
         if (_Count >= 2) { // ... with at least 2 elements
@@ -1199,7 +1224,7 @@ void for_each(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Fn _Func) noexcept /* termi
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
-        const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
+        const size_t _Hw_threads = thread::hardware_concurrency();
         if (_Hw_threads > 1) { // parallelize on multiprocessor machines...
             auto _Count = _STD distance(_UFirst, _ULast);
             if (_Count >= 2) { // ... with at least 2 elements
@@ -1216,6 +1241,8 @@ void for_each(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Fn _Func) noexcept /* termi
             }
         }
 
+        _For_each_ivdep(_UFirst, _ULast, _Pass_fn(_Func));
+    } else if constexpr (remove_reference_t<_ExPo>::_Ivdep) {
         _For_each_ivdep(_UFirst, _ULast, _Pass_fn(_Func));
     } else {
         for (; _UFirst != _ULast; ++_UFirst) {
@@ -1244,7 +1271,7 @@ _FwdIt for_each_n(_ExPo&&, _FwdIt _First, const _Diff _Count_raw, _Fn _Func) noe
     if (0 < _Count) {
         auto _UFirst = _Get_unwrapped_n(_First, _Count);
         if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
-            const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
+            const size_t _Hw_threads = thread::hardware_concurrency();
             if (_Hw_threads > 1 && _Count >= 2) { // parallelize on multiprocessor machines with at least 2 elements
                 _TRY_BEGIN
                 auto _Passed_fn = _Pass_fn(_Func);
@@ -1258,6 +1285,8 @@ _FwdIt for_each_n(_ExPo&&, _FwdIt _First, const _Diff _Count_raw, _Fn _Func) noe
                 _CATCH_END
             }
 
+            _Seek_wrapped(_First, _For_each_n_ivdep(_UFirst, _Count, _Pass_fn(_Func)));
+        } else if constexpr (remove_reference_t<_ExPo>::_Ivdep) {
             _Seek_wrapped(_First, _For_each_n_ivdep(_UFirst, _Count, _Pass_fn(_Func)));
         } else {
             for (; 0 < _Count; --_Count, (void) ++_UFirst) {
@@ -1318,7 +1347,7 @@ template <class _ExPo, class _FwdIt, class _Find_fx>
 _FwdIt _Find_parallel_unchecked(_ExPo&&, const _FwdIt _First, const _FwdIt _Last, const _Find_fx _Fx) {
     // find first matching _Val, potentially in parallel
     if (remove_reference_t<_ExPo>::_Parallelize) {
-        const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
+        const size_t _Hw_threads = thread::hardware_concurrency();
         if (_Hw_threads > 1) {
             const auto _Count = _STD distance(_First, _Last);
             if (_Count >= 2) {
@@ -1533,7 +1562,7 @@ _NODISCARD _FwdIt1 find_end(_ExPo&&, _FwdIt1 _First1, const _FwdIt1 _Last1, cons
     const auto _UFirst2 = _Get_unwrapped(_First2);
     const auto _ULast2  = _Get_unwrapped(_Last2);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
-        const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
+        const size_t _Hw_threads = thread::hardware_concurrency();
         if (_Hw_threads > 1) {
             if constexpr (_Is_bidi_iter_v<_FwdIt1>) {
                 const auto _Partition_start =
@@ -1653,7 +1682,7 @@ _NODISCARD _FwdIt adjacent_find(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pred)
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
-        const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
+        const size_t _Hw_threads = thread::hardware_concurrency();
         if (_Hw_threads > 1) {
             const auto _Count = static_cast<_Iter_diff_t<_FwdIt>>(_STD distance(_UFirst, _ULast) - 1);
             if (_Count >= 2) {
@@ -1714,7 +1743,7 @@ _NODISCARD _Iter_diff_t<_FwdIt> count_if(_ExPo&&, const _FwdIt _First, const _Fw
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
-        const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
+        const size_t _Hw_threads = thread::hardware_concurrency();
         if (_Hw_threads > 1) {
             const auto _Count = _STD distance(_UFirst, _ULast);
             if (_Count >= 2) {
@@ -1878,7 +1907,7 @@ _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
     const auto _UFirst1 = _Get_unwrapped(_First1);
     const auto _ULast1  = _Get_unwrapped(_Last1);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
-        const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
+        const size_t _Hw_threads = thread::hardware_concurrency();
         if (_Hw_threads > 1) {
             const auto _Count   = _STD distance(_UFirst1, _ULast1);
             const auto _UFirst2 = _Get_unwrapped_n(_First2, _Count);
@@ -1923,7 +1952,7 @@ _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
     const auto _UFirst2 = _Get_unwrapped(_First2);
     const auto _ULast2  = _Get_unwrapped(_Last2);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
-        const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
+        const size_t _Hw_threads = thread::hardware_concurrency();
         if (_Hw_threads > 1) {
             const auto _Count = static_cast<_Iter_diff_t<_FwdIt1>>(_Distance_min(_UFirst1, _ULast1, _UFirst2, _ULast2));
             if (_Count >= 2) {
@@ -1998,7 +2027,7 @@ _NODISCARD bool equal(_ExPo&&, const _FwdIt1 _First1, const _FwdIt1 _Last1, cons
     const auto _UFirst1 = _Get_unwrapped(_First1);
     const auto _ULast1  = _Get_unwrapped(_Last1);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
-        const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
+        const size_t _Hw_threads = thread::hardware_concurrency();
         if (_Hw_threads > 1) {
             const auto _Count   = _STD distance(_UFirst1, _ULast1);
             const auto _UFirst2 = _Get_unwrapped_n(_First2, _Count);
@@ -2034,7 +2063,7 @@ _NODISCARD bool equal(_ExPo&&, const _FwdIt1 _First1, const _FwdIt1 _Last1, cons
     const auto _UFirst2 = _Get_unwrapped(_First2);
     const auto _ULast2  = _Get_unwrapped(_Last2);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
-        const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
+        const size_t _Hw_threads = thread::hardware_concurrency();
         if (_Hw_threads > 1) {
             const auto _Count = _Distance_any(_UFirst1, _ULast1, _UFirst2, _ULast2);
             if (_Count >= 2) {
@@ -2124,7 +2153,7 @@ _NODISCARD _FwdItHaystack search(_ExPo&&, const _FwdItHaystack _First1, _FwdItHa
     const auto _ULast1  = _Get_unwrapped(_Last1);
 
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
-        const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
+        const size_t _Hw_threads = thread::hardware_concurrency();
         if (_Hw_threads > 1) {
             _Iter_diff_t<_FwdItHaystack> _Count;
             if constexpr (_Is_random_iter_v<_FwdItHaystack> && _Is_random_iter_v<_FwdItPat>) {
@@ -2255,7 +2284,7 @@ _NODISCARD _FwdIt search_n(_ExPo&&, const _FwdIt _First, _FwdIt _Last, const _Di
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
-        const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
+        const size_t _Hw_threads = thread::hardware_concurrency();
         if (_Hw_threads > 1) {
             const auto _Haystack_count = _STD distance(_UFirst, _ULast);
             if (_Count > _Haystack_count) {
@@ -2282,17 +2311,6 @@ _NODISCARD _FwdIt search_n(_ExPo&&, const _FwdIt _First, _FwdIt _Last, const _Di
 
 // PARALLEL FUNCTION TEMPLATE transform
 template <class _FwdIt1, class _FwdIt2, class _Fn>
-_FwdIt2 _Transform_ivdep(_FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _Fn _Func) {
-    // unary op transform with independent loop bodies
-#pragma loop(ivdep)
-    for (; _First != _Last; ++_First, (void) ++_Dest) {
-        *_Dest = _Func(*_First);
-    }
-
-    return _Dest;
-}
-
-template <class _FwdIt1, class _FwdIt2, class _Fn>
 struct _Static_partitioned_unary_transform2 {
     using _Diff = _Common_diff_t<_FwdIt1, _FwdIt2>;
     _Static_partition_team<_Diff> _Team;
@@ -2311,7 +2329,7 @@ struct _Static_partitioned_unary_transform2 {
         const auto _Key = _Team._Get_next_key();
         if (_Key) {
             const auto _Source = _Source_basis._Get_chunk(_Key);
-            _Transform_ivdep(_Source._First, _Source._Last, _Dest_basis._Get_chunk(_Key)._First, _Func);
+            _STD transform(_Source._First, _Source._Last, _Dest_basis._Get_chunk(_Key)._First, _Func);
             return _Cancellation_status::_Running;
         }
 
@@ -2334,7 +2352,7 @@ _FwdIt2 transform(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _D
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
-        const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
+        const size_t _Hw_threads = thread::hardware_concurrency();
         if (_Hw_threads > 1) { // parallelize on multiprocessor machines...
             const auto _Count = _STD distance(_UFirst, _ULast);
             const auto _UDest = _Get_unwrapped_n(_Dest, _Count);
@@ -2349,12 +2367,12 @@ _FwdIt2 transform(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _D
                 _CATCH_END
             }
 
-            _Seek_wrapped(_Dest, _Transform_ivdep(_UFirst, _ULast, _UDest, _Pass_fn(_Func)));
+            _Seek_wrapped(_Dest, _STD transform(_UFirst, _ULast, _UDest, _Pass_fn(_Func)));
             return _Dest;
         } else {
             _Seek_wrapped(
-                _Dest, _Transform_ivdep(_UFirst, _ULast,
-                           _Get_unwrapped_n(_Dest, _Idl_distance<_FwdIt1>(_UFirst, _ULast)), _Pass_fn(_Func)));
+                _Dest, _STD transform(_UFirst, _ULast, _Get_unwrapped_n(_Dest, _Idl_distance<_FwdIt1>(_UFirst, _ULast)),
+                           _Pass_fn(_Func)));
             return _Dest;
         }
     } else {
@@ -2362,17 +2380,6 @@ _FwdIt2 transform(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _D
                                  _Get_unwrapped_n(_Dest, _Idl_distance<_FwdIt1>(_UFirst, _ULast)), _Pass_fn(_Func)));
         return _Dest;
     }
-}
-
-template <class _FwdIt1, class _FwdIt2, class _FwdIt3, class _Fn>
-_FwdIt3 _Transform_ivdep(_FwdIt1 _First1, const _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt3 _Dest, _Fn _Func) {
-    // binary op transform with independent loop bodies
-#pragma loop(ivdep)
-    for (; _First1 != _Last1; ++_First1, (void) ++_First2, ++_Dest) {
-        *_Dest = _Func(*_First1, *_First2);
-    }
-
-    return _Dest;
 }
 
 template <class _FwdIt1, class _FwdIt2, class _FwdIt3, class _Fn>
@@ -2396,7 +2403,7 @@ struct _Static_partitioned_binary_transform2 {
         const auto _Key = _Team._Get_next_key();
         if (_Key) {
             const auto _Source1 = _Source1_basis._Get_chunk(_Key);
-            _Transform_ivdep(_Source1._First, _Source1._Last, _Source2_basis._Get_chunk(_Key)._First,
+            _STD transform(_Source1._First, _Source1._Last, _Source2_basis._Get_chunk(_Key)._First,
                 _Dest_basis._Get_chunk(_Key)._First, _Func);
             return _Cancellation_status::_Running;
         }
@@ -2425,7 +2432,7 @@ _FwdIt3 transform(_ExPo&&, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _F
     const auto _UFirst1 = _Get_unwrapped(_First1);
     const auto _ULast1  = _Get_unwrapped(_Last1);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
-        const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
+        const size_t _Hw_threads = thread::hardware_concurrency();
         if (_Hw_threads > 1) { // parallelize on multiprocessor machines...
             const auto _Count   = _STD distance(_UFirst1, _ULast1);
             const auto _UFirst2 = _Get_unwrapped_n(_First2, _Count);
@@ -2442,11 +2449,11 @@ _FwdIt3 transform(_ExPo&&, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _F
                 _CATCH_END
             }
 
-            _Seek_wrapped(_Dest, _Transform_ivdep(_UFirst1, _ULast1, _UFirst2, _UDest, _Pass_fn(_Func)));
+            _Seek_wrapped(_Dest, _STD transform(_UFirst1, _ULast1, _UFirst2, _UDest, _Pass_fn(_Func)));
             return _Dest;
         } else {
             const auto _Count = _Idl_distance<_FwdIt1>(_UFirst1, _ULast1);
-            _Seek_wrapped(_Dest, _Transform_ivdep(_UFirst1, _ULast1, _Get_unwrapped_n(_First2, _Count),
+            _Seek_wrapped(_Dest, _STD transform(_UFirst1, _ULast1, _Get_unwrapped_n(_First2, _Count),
                                      _Get_unwrapped_n(_Dest, _Count), _Pass_fn(_Func)));
             return _Dest;
         }
@@ -2605,7 +2612,7 @@ _NODISCARD _FwdIt remove_if(_ExPo&&, _FwdIt _First, const _FwdIt _Last, _Pr _Pre
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
-        const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
+        const size_t _Hw_threads = thread::hardware_concurrency();
         if (_Hw_threads > 1) {
             const auto _Count = _STD distance(_UFirst, _ULast);
             if (_Count >= 2) {
@@ -2747,7 +2754,7 @@ void sort(_ExPo&&, const _RanIt _First, const _RanIt _Last, _Pr _Pred) noexcept 
     const _Iter_diff_t<_RanIt> _Ideal = _ULast - _UFirst;
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
         size_t _Threads;
-        if (_Ideal > _ISORT_MAX && (_Threads = __std_parallel_algorithms_hw_threads()) > 1) {
+        if (_Ideal > _ISORT_MAX && (_Threads = thread::hardware_concurrency()) > 1) {
             // parallelize when input is large enough and we aren't on a uniprocessor machine
             _TRY_BEGIN
             _Sort_operation _Operation(_UFirst, _Pass_fn(_Pred), _Threads, _Ideal); // throws
@@ -3011,7 +3018,7 @@ void stable_sort(_ExPo&&, const _BidIt _First, const _BidIt _Last, _Pr _Pred) no
     size_t _Hw_threads;
     bool _Attempt_parallelism;
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
-        _Hw_threads          = __std_parallel_algorithms_hw_threads();
+        _Hw_threads          = thread::hardware_concurrency();
         _Attempt_parallelism = _Hw_threads > 1;
     } else {
         _Attempt_parallelism = false;
@@ -3092,7 +3099,7 @@ _NODISCARD _FwdIt is_sorted_until(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pre
     const auto _UFirst = _Get_unwrapped(_First);
     const auto _ULast  = _Get_unwrapped(_Last);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
-        const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
+        const size_t _Hw_threads = thread::hardware_concurrency();
         if (_Hw_threads > 1) { // parallelize on multiprocessor machines
             auto _Count = _STD distance(_UFirst, _ULast);
             if (_Count >= 3) { // ... with at least 3 elements
@@ -3247,7 +3254,7 @@ _NODISCARD bool is_partitioned(_ExPo&&, const _FwdIt _First, const _FwdIt _Last,
     const auto _UFirst = _Get_unwrapped(_First);
     const auto _ULast  = _Get_unwrapped(_Last);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
-        const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
+        const size_t _Hw_threads = thread::hardware_concurrency();
         if (_Hw_threads > 1) { // parallelize on multiprocessor machines
             const auto _Count = _STD distance(_UFirst, _ULast);
             if (_Count >= 2) { // ... with at least 2 elements
@@ -3320,7 +3327,7 @@ _NODISCARD _RanIt is_heap_until(_ExPo&&, _RanIt _First, _RanIt _Last, _Pr _Pred)
     const auto _UFirst = _Get_unwrapped(_First);
     const auto _ULast  = _Get_unwrapped(_Last);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
-        const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
+        const size_t _Hw_threads = thread::hardware_concurrency();
         if (_Hw_threads > 1) { // parallelize on multiprocessor machines
             const auto _Count = _ULast - _UFirst;
             if (_Count >= 3) { // ... with at least 3 elements
@@ -3569,7 +3576,7 @@ _FwdIt partition(_ExPo&&, _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept
     const auto _UFirst = _Get_unwrapped(_First);
     const auto _ULast  = _Get_unwrapped(_Last);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
-        const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
+        const size_t _Hw_threads = thread::hardware_concurrency();
         if (_Hw_threads > 1) {
             const auto _Count = _STD distance(_UFirst, _ULast);
             if (_Count >= 2) {
@@ -3590,20 +3597,6 @@ _FwdIt partition(_ExPo&&, _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept
 }
 
 // PARALLEL FUNCTION TEMPLATE set_intersection
-template <class _Ty>
-struct _Storage_for {
-    // uninitialized space to store a _Ty
-    alignas(_Ty) unsigned char _Storage[sizeof(_Ty)];
-
-    _Storage_for()                    = default;
-    _Storage_for(const _Storage_for&) = delete;
-    _Storage_for& operator=(const _Storage_for&) = delete;
-
-    _Ty& _Ref() {
-        return reinterpret_cast<_Ty&>(_Storage);
-    }
-};
-
 inline constexpr unsigned char _Local_available = 1;
 inline constexpr unsigned char _Sum_available   = 2;
 
@@ -3925,7 +3918,7 @@ _FwdIt3 set_intersection(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _Firs
     if constexpr (remove_reference_t<_ExPo>::_Parallelize
                   && _Is_random_iter_v<_FwdIt1> && _Is_random_iter_v<_FwdIt2> && _Is_random_iter_v<_FwdIt3>) {
         // only parallelize if desired, and all of the iterators given are random access
-        const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
+        const size_t _Hw_threads = thread::hardware_concurrency();
         if (_Hw_threads > 1) { // parallelize on multiprocessor machines
             const _Diff _Count1 = _ULast1 - _UFirst1;
             const _Diff _Count2 = _ULast2 - _UFirst2;
@@ -4016,7 +4009,7 @@ _FwdIt3 set_difference(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2
     if constexpr (remove_reference_t<_ExPo>::_Parallelize
                   && _Is_random_iter_v<_FwdIt1> && _Is_random_iter_v<_FwdIt2> && _Is_random_iter_v<_FwdIt3>) {
         // only parallelize if desired, and all of the iterators given are random access
-        const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
+        const size_t _Hw_threads = thread::hardware_concurrency();
         if (_Hw_threads > 1) { // parallelize on multiprocessor machines
             const _Diff _Count = _ULast1 - _UFirst1;
             if (_Count >= 2) { // ... with at least 2 elements in [_First1, _Last1)
@@ -4110,7 +4103,7 @@ _NODISCARD _Ty reduce(_ExPo&&, const _FwdIt _First, const _FwdIt _Last, _Ty _Val
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
-        const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
+        const size_t _Hw_threads = thread::hardware_concurrency();
         if (_Hw_threads > 1) { // parallelize on multiprocessor machines...
             const auto _Count  = _STD distance(_UFirst, _ULast);
             const auto _Chunks = _Get_least2_chunked_work_chunk_count(_Hw_threads, _Count);
@@ -4212,7 +4205,7 @@ _NODISCARD _Ty transform_reduce(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt
     auto _UFirst1      = _Get_unwrapped(_First1);
     const auto _ULast1 = _Get_unwrapped(_Last1);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
-        const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
+        const size_t _Hw_threads = thread::hardware_concurrency();
         if (_Hw_threads > 1) { // parallelize on multiprocessor machines...
             const auto _Count  = _STD distance(_UFirst1, _ULast1);
             auto _UFirst2      = _Get_unwrapped_n(_First2, _Count);
@@ -4307,7 +4300,7 @@ _NODISCARD _Ty transform_reduce(_ExPo&&, const _FwdIt _First, const _FwdIt _Last
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
-        const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
+        const size_t _Hw_threads = thread::hardware_concurrency();
         if (_Hw_threads > 1) { // parallelize on multiprocessor machines...
             const auto _Count  = _STD distance(_UFirst, _ULast);
             const auto _Chunks = _Get_least2_chunked_work_chunk_count(_Hw_threads, _Count);
@@ -4459,7 +4452,7 @@ _FwdIt2 exclusive_scan(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _Last, _FwdI
     const auto _UFirst = _Get_unwrapped(_First);
     const auto _ULast  = _Get_unwrapped(_Last);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
-        const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
+        const size_t _Hw_threads = thread::hardware_concurrency();
         if (_Hw_threads > 1) { // parallelize on multiprocessor machines
             const auto _Count = _STD distance(_UFirst, _ULast);
             const auto _UDest = _Get_unwrapped_n(_Dest, _Count);
@@ -4604,7 +4597,7 @@ _FwdIt2 inclusive_scan(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _B
     const auto _UFirst = _Get_unwrapped(_First);
     const auto _ULast  = _Get_unwrapped(_Last);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
-        const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
+        const size_t _Hw_threads = thread::hardware_concurrency();
         if (_Hw_threads > 1) { // parallelize on multiprocessor machines
             const auto _Count = _STD distance(_First, _Last);
             auto _UDest       = _Get_unwrapped_n(_Dest, _Count);
@@ -4647,7 +4640,7 @@ _FwdIt2 inclusive_scan(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _B
     const auto _UFirst = _Get_unwrapped(_First);
     const auto _ULast  = _Get_unwrapped(_Last);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
-        const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
+        const size_t _Hw_threads = thread::hardware_concurrency();
         if (_Hw_threads > 1) { // parallelize on multiprocessor machines
             const auto _Count = _STD distance(_UFirst, _ULast);
             auto _UDest       = _Get_unwrapped_n(_Dest, _Count);
@@ -4792,7 +4785,7 @@ _FwdIt2 transform_exclusive_scan(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _L
     const auto _UFirst = _Get_unwrapped(_First);
     const auto _ULast  = _Get_unwrapped(_Last);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
-        const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
+        const size_t _Hw_threads = thread::hardware_concurrency();
         if (_Hw_threads > 1) { // parallelize on multiprocessor machines
             const auto _Count = _STD distance(_UFirst, _ULast);
             const auto _UDest = _Get_unwrapped_n(_Dest, _Count);
@@ -4939,7 +4932,7 @@ _FwdIt2 transform_inclusive_scan(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _L
     const auto _UFirst = _Get_unwrapped(_First);
     const auto _ULast  = _Get_unwrapped(_Last);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
-        const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
+        const size_t _Hw_threads = thread::hardware_concurrency();
         if (_Hw_threads > 1) { // parallelize on multiprocessor machines
             const auto _Count = _STD distance(_UFirst, _ULast);
             auto _UDest       = _Get_unwrapped_n(_Dest, _Count);
@@ -4985,7 +4978,7 @@ _FwdIt2 transform_inclusive_scan(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _L
     const auto _UFirst = _Get_unwrapped(_First);
     const auto _ULast  = _Get_unwrapped(_Last);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
-        const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
+        const size_t _Hw_threads = thread::hardware_concurrency();
         if (_Hw_threads > 1) { // parallelize on multiprocessor machines
             const auto _Count = _STD distance(_UFirst, _ULast);
             auto _UDest       = _Get_unwrapped_n(_Dest, _Count);
@@ -5087,7 +5080,7 @@ _FwdIt2 adjacent_difference(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _Last, 
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
-        const size_t _Hw_threads = __std_parallel_algorithms_hw_threads();
+        const size_t _Hw_threads = thread::hardware_concurrency();
         if (_Hw_threads > 1) { // parallelize on multiprocessor machines
             auto _Count       = _STD distance(_UFirst, _ULast);
             const auto _UDest = _Get_unwrapped_n(_Dest, _Count);

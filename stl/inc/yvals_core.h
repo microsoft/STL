@@ -164,7 +164,6 @@
 //     (partially implemented)
 // P0769R2 shift_left(), shift_right()
 // P0811R3 midpoint(), lerp()
-//     (partially implemented, lerp() not yet constexpr)
 // P0879R0 constexpr For Swapping Functions
 // P0887R1 type_identity
 // P0896R4 Ranges
@@ -174,6 +173,7 @@
 //     (partially implemented, missing noop coroutines)
 // P0919R3 Heterogeneous Lookup For Unordered Containers
 // P0966R1 string::reserve() Should Not Shrink
+// P1001R2 execution::unseq
 // P1006R1 constexpr For pointer_traits<T*>::pointer_to()
 // P1023R0 constexpr For std::array Comparisons
 // P1024R3 Enhancing span Usability
@@ -204,6 +204,7 @@
 // P1871R1 disable_sized_sentinel_for
 // P1872R0 span Should Have size_type, Not index_type
 // P1878R1 Constraining Readable Types
+// P1907R2 ranges::ssize
 // P1956R1 <bit> has_single_bit(), bit_ceil(), bit_floor(), bit_width()
 // P1959R0 Removing weak_equality And strong_equality
 // P1964R2 Replacing boolean With boolean-testable
@@ -224,6 +225,10 @@
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
 // This implementation parallelizes several common algorithm calls, but not all.
+//
+// std::execution::unseq has no direct analogue for any optimizer we target as of 2020-07-29,
+// though we will map it to #pragma loop(ivdep) for the for_each algorithms only as these are the only algorithms where
+// the library does not need to introduce inter-loop-body dependencies to accomplish the algorithm's goals.
 //
 // The following algorithms are parallelized.
 // * adjacent_difference
@@ -1091,10 +1096,7 @@
 #if _HAS_STD_BYTE
 #define __cpp_lib_byte 201603L
 #endif // _HAS_STD_BYTE
-#define __cpp_lib_clamp 201603L
-#ifndef _M_CEE
-#define __cpp_lib_execution 201603L
-#endif // _M_CEE
+#define __cpp_lib_clamp                             201603L
 #define __cpp_lib_filesystem                        201703L
 #define __cpp_lib_gcd_lcm                           201606L
 #define __cpp_lib_hardware_interference_size        201703L
@@ -1136,6 +1138,7 @@
 #define __cpp_lib_atomic_float                  201711L
 #define __cpp_lib_atomic_lock_free_type_aliases 201907L
 #define __cpp_lib_atomic_shared_ptr             201711L
+#define __cpp_lib_atomic_wait                   201907L
 #define __cpp_lib_bind_front                    201907L
 #define __cpp_lib_bit_cast                      201806L
 #define __cpp_lib_bitops                        201907L
@@ -1169,6 +1172,7 @@
 #define __cpp_lib_generic_unordered_lookup     201811L
 #define __cpp_lib_int_pow2                     202002L
 #define __cpp_lib_integer_comparison_functions 202002L
+#define __cpp_lib_interpolate                  201902L
 #define __cpp_lib_is_constant_evaluated        201811L
 #define __cpp_lib_is_nothrow_convertible       201806L
 #define __cpp_lib_list_remove_return_type      201806L
@@ -1183,6 +1187,14 @@
 #define __cpp_lib_type_identity                201806L
 #define __cpp_lib_unwrap_ref                   201811L
 #endif // _HAS_CXX20
+
+#ifndef _M_CEE
+#if _HAS_CXX20
+#define __cpp_lib_execution 201902L // P1001R2 execution::unseq
+#elif _HAS_CXX17
+#define __cpp_lib_execution 201603L // P0024R2 Parallel Algorithms
+#endif // language mode
+#endif // _M_CEE
 
 #if _HAS_CXX20
 #define __cpp_lib_array_constexpr 201811L // P1032R1 Miscellaneous constexpr
@@ -1249,6 +1261,21 @@ compiler option, or define _ALLOW_RTCc_IN_STL to acknowledge that you have recei
 #if defined(MRTDLL) && !defined(_M_CEE_PURE)
 #error In yvals_core.h, defined(MRTDLL) implies defined(_M_CEE_PURE); !defined(_M_CEE_PURE) implies !defined(MRTDLL)
 #endif // defined(MRTDLL) && !defined(_M_CEE_PURE)
+
+#define _STL_WIN32_WINNT_WINXP 0x0501 // _WIN32_WINNT_WINXP from sdkddkver.h
+#define _STL_WIN32_WINNT_VISTA 0x0600 // _WIN32_WINNT_VISTA from sdkddkver.h
+#define _STL_WIN32_WINNT_WIN8  0x0602 // _WIN32_WINNT_WIN8 from sdkddkver.h
+
+// Note that the STL DLL builds will set this to XP for ABI compatibility with VS2015 which supported XP.
+#ifndef _STL_WIN32_WINNT
+#if defined(_M_ARM) || defined(_M_ARM64) || defined(_ONECORE) || defined(_CRT_APP)
+// The first ARM or OneCore or App Windows was Windows 8
+#define _STL_WIN32_WINNT _STL_WIN32_WINNT_WIN8
+#else // ^^^ default to Win8 // default to Vista vvv
+// The earliest Windows supported by this implementation is Windows Vista
+#define _STL_WIN32_WINNT _STL_WIN32_WINNT_VISTA
+#endif // ^^^ !defined(_M_ARM) && !defined(_M_ARM64) && !defined(_ONECORE) && !defined(_CRT_APP) ^^^
+#endif // _STL_WIN32_WINNT
 
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _YVALS_CORE_H_

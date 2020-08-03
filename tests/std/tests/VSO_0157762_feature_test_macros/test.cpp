@@ -162,6 +162,20 @@ STATIC_ASSERT(__cpp_lib_atomic_value_initialization == 201911L);
 #endif
 
 #if _HAS_CXX20
+#ifndef __cpp_lib_atomic_wait
+#error __cpp_lib_atomic_wait is not defined
+#elif __cpp_lib_atomic_wait != 201907L
+#error __cpp_lib_atomic_wait is not 201907L
+#else
+STATIC_ASSERT(__cpp_lib_atomic_wait == 201907L);
+#endif
+#else
+#ifdef __cpp_lib_atomic_wait
+#error __cpp_lib_atomic_wait is defined
+#endif
+#endif
+
+#if _HAS_CXX20
 #ifndef __cpp_lib_bind_front
 #error __cpp_lib_bind_front is not defined
 #elif __cpp_lib_bind_front != 201907L
@@ -511,7 +525,15 @@ STATIC_ASSERT(__cpp_lib_erase_if == 202002L);
 STATIC_ASSERT(__cpp_lib_exchange_function == 201304L);
 #endif
 
-#if _HAS_CXX17 && !defined(_M_CEE)
+#if _HAS_CXX20 && !defined(_M_CEE)
+#ifndef __cpp_lib_execution
+#error __cpp_lib_execution is not defined
+#elif __cpp_lib_execution != 201902L
+#error __cpp_lib_execution is not 201902L
+#else
+STATIC_ASSERT(__cpp_lib_execution == 201902L);
+#endif
+#elif _HAS_CXX17 && !defined(_M_CEE)
 #ifndef __cpp_lib_execution
 #error __cpp_lib_execution is not defined
 #elif __cpp_lib_execution != 201603L
@@ -683,6 +705,20 @@ STATIC_ASSERT(__cpp_lib_integer_sequence == 201304L);
 #error __cpp_lib_integral_constant_callable is not 201304L
 #else
 STATIC_ASSERT(__cpp_lib_integral_constant_callable == 201304L);
+#endif
+
+#if _HAS_CXX20
+#ifndef __cpp_lib_interpolate
+#error __cpp_lib_interpolate is not defined
+#elif __cpp_lib_interpolate != 201902L
+#error __cpp_lib_interpolate is not 201902L
+#else
+STATIC_ASSERT(__cpp_lib_interpolate == 201902L);
+#endif
+#else
+#ifdef __cpp_lib_interpolate
+#error __cpp_lib_interpolate is defined
+#endif
 #endif
 
 #ifndef __cpp_lib_invoke

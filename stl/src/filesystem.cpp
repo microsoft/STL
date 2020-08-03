@@ -18,7 +18,6 @@
 #include <xfilesystem_abi.h>
 
 #include <Windows.h>
-
 #include <WinIoCtl.h>
 
 // We have several switches that do not have case statements for every possible enum value.
