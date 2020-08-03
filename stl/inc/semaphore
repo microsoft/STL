@@ -169,14 +169,14 @@ public:
         }
         _STL_VERIFY(_Update == 1, "Update count shall be non-negative and shall not oveflow max()");
         // TRANSITION, GH-1133: should be memory_order_release :-(
-        _Counter.store(1, memory_order_cst_seq);
+        _Counter.store(1, memory_order_seq_cst);
         _Counter.notify_one();
     }
 
     void acquire() noexcept /* strengthened */ {
         for (;;) {
             // TRANSITION, GH-1133: should be memory_order_acquire
-            int8_t _Prev = _Counter.exchange(0, memory_order_cst_seq);
+            int8_t _Prev = _Counter.exchange(0, memory_order_seq_cst);
             if (_Prev == 1) {
                 break;
             }
@@ -187,7 +187,7 @@ public:
 
     [[nodiscard]] bool try_acquire() noexcept {
         // TRANSITION, GH-1133: should be memory_order_acquire
-        int8_t _Prev = _Counter.exchange(0, memory_order_cst_seq);
+        int8_t _Prev = _Counter.exchange(0, memory_order_seq_cst);
         _STL_VERIFY((_Prev & ~1) == 0, "Semaphore counter shall be non-negative and shall not overflow max()");
         return reinterpret_cast<const bool&>(_Prev);
     }
@@ -198,7 +198,7 @@ public:
         auto _Deadline    = __std_atomic_wait_get_deadline(_Rel_time_ms.count());
         for (;;) {
             // TRANSITION, GH-1133: should be memory_order_acquire
-            int8_t _Prev = _Counter.exchange(0, memory_order_cst_seq);
+            int8_t _Prev = _Counter.exchange(0, memory_order_seq_cst);
             if (_Prev == 1) {
                 return true;
             }
@@ -215,7 +215,7 @@ public:
     [[nodiscard]] bool try_acquire_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
         for (;;) {
             // TRANSITION, GH-1133: should be memory_order_acquire
-            int8_t _Prev = _Counter.exchange(0, memory_order_cst_seq);
+            int8_t _Prev = _Counter.exchange(0, memory_order_seq_cst);
             if (_Prev == 1) {
                 return true;
             }
