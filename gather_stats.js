@@ -21,7 +21,7 @@ const { graphql } = require('@octokit/graphql');
 }
 
 async function retrieve_nodes() {
-    let progress = {
+    const progress = {
         multi_bar: new cliProgress.MultiBar(
             {
                 format: '{bar} {percentage}% | ETA: {eta}s | {value}/{total} {name}',
@@ -39,7 +39,7 @@ async function retrieve_nodes() {
             headers: { authorization: `token ${process.env.SECRET_GITHUB_PERSONAL_ACCESS_TOKEN}` },
         });
 
-        let rate_limit = {
+        const rate_limit = {
             spent: null,
             remaining: null,
             limit: null,
@@ -66,7 +66,7 @@ async function retrieve_nodes() {
         let pr_nodes = [];
         let issue_nodes = [];
 
-        let variables = {
+        const variables = {
             query: fs.readFileSync('./query_prs_and_issues.graphql', 'utf8'),
             want_prs: true,
             pr_cursor: null,
@@ -104,21 +104,126 @@ async function retrieve_nodes() {
     }
 }
 
+function warn_if_pagination_needed(outer_nodes, field, message) {
+    if (outer_nodes.length === 0) {
+        return;
+    }
+
+    let max = outer_nodes[0];
+
+    for (const node of outer_nodes) {
+        if (node[field].totalCount > max[field].totalCount) {
+            max = node;
+        }
+    }
+
+    const retrieved = max[field].nodes.length;
+    const total_count = max[field].totalCount;
+
+    if (retrieved < total_count) {
+        console.log(message(retrieved, total_count, max.number));
+    }
+}
+
+function read_trimmed_lines(filename) {
+    // Excludes empty lines and comments beginning with '#'.
+    return fs
+        .readFileSync(filename, 'utf8')
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line.length > 0 && line[0] !== '#');
+}
+
+function warn_about_duplicates(array, message) {
+    const uniques = new Set();
+    const duplicates = new Set();
+
+    for (const elem of array) {
+        if (!uniques.has(elem)) {
+            uniques.add(elem);
+        } else if (!duplicates.has(elem)) {
+            duplicates.add(elem);
+            console.log(message(elem));
+        }
+    }
+}
+
+function read_usernames() {
+    const maintainer_list = read_trimmed_lines('./usernames_maintainers.txt');
+    const contributor_list = read_trimmed_lines('./usernames_contributors.txt');
+
+    warn_about_duplicates(maintainer_list, username => `WARNING: Duplicate maintainer "${username}".`);
+    warn_about_duplicates(contributor_list, username => `WARNING: Duplicate contributor "${username}".`);
+
+    const maintainer_set = new Set(maintainer_list);
+    const contributor_set = new Set(contributor_list);
+
+    warn_about_duplicates(
+        [...maintainer_set, ...contributor_set],
+        username => `WARNING: Maintainer "${username}" is also listed as a contributor.`
+    );
+
+    return {
+        maintainers: maintainer_set,
+        contributors: contributor_set,
+    };
+}
+
 function transform_pr_nodes(pr_nodes) {
-    return pr_nodes.map(node => ({
-        number: node.number,
-        opened: DateTime.fromISO(node.createdAt),
-        closed: DateTime.fromISO(node.closedAt ?? '2100-01-01'),
-    }));
+    warn_if_pagination_needed(
+        pr_nodes,
+        'reviews',
+        (retrieved, total, number) => `WARNING: Retrieved ${retrieved}/${total} reviews for PR #${number}.`
+    );
+
+    const { maintainers, contributors } = read_usernames();
+
+    return pr_nodes.map(pr_node => {
+        const maintainer_reviews = pr_node.reviews.nodes
+            .filter(review_node => {
+                const username = review_node.author.login;
+
+                const is_maintainer = maintainers.has(username);
+
+                if (!is_maintainer && !contributors.has(username)) {
+                    contributors.add(username); // Assume that unknown users are contributors.
+                    console.log(`WARNING: Unknown user "${username}" reviewed PR #${pr_node.number}.`);
+                }
+
+                return is_maintainer;
+            })
+            .map(review_node => DateTime.fromISO(review_node.submittedAt));
+
+        return {
+            number: pr_node.number,
+            opened: DateTime.fromISO(pr_node.createdAt),
+            closed: DateTime.fromISO(pr_node.closedAt ?? '2100-01-01'),
+            merged: DateTime.fromISO(pr_node.mergedAt ?? '2100-01-01'),
+            reviews: maintainer_reviews,
+        };
+    });
+}
+
+function calculate_wait(when, opened, reviews) {
+    let latest_feedback = opened;
+
+    for (const review of reviews) {
+        if (latest_feedback < review && review < when) {
+            latest_feedback = review;
+        }
+    }
+
+    return when.diff(latest_feedback);
 }
 
 function transform_issue_nodes(issue_nodes) {
+    warn_if_pagination_needed(
+        issue_nodes,
+        'labels',
+        (retrieved, total, number) => `WARNING: Retrieved ${retrieved}/${total} labels for issue #${number}.`
+    );
     return issue_nodes.map(node => {
         const labels = node.labels.nodes.map(label => label.name);
-        const total_count = node.labels.totalCount;
-        if (labels.length < total_count) {
-            console.log(`WARNING: Retrieved ${labels.length}/${total_count} labels for issue #${node.number}.`);
-        }
         return {
             number: node.number,
             opened: DateTime.fromISO(node.createdAt),
@@ -153,19 +258,27 @@ function write_daily_table(script_start, all_prs, all_issues) {
         progress_bar.start(Math.ceil(script_start.diff(begin).as('days')), 0);
 
         for (let when = begin; when < script_start; when = when.plus({ days: 1 })) {
+            const one_month_ago = when.minus({ months: 1 });
+            let num_merged = 0;
             let num_pr = 0;
             let num_cxx20 = 0;
             let num_lwg = 0;
             let num_issue = 0;
             let num_bug = 0;
             let combined_pr_age = Duration.fromObject({});
+            let combined_pr_wait = Duration.fromObject({});
 
             for (const pr of all_prs) {
+                if (one_month_ago < pr.merged && pr.merged < when) {
+                    ++num_merged;
+                }
+
                 if (when < pr.opened || pr.closed < when) {
                     // This PR wasn't active; do nothing.
                 } else {
                     ++num_pr;
                     combined_pr_age = combined_pr_age.plus(when.diff(pr.opened));
+                    combined_pr_wait = combined_pr_wait.plus(calculate_wait(when, pr.opened, pr.reviews));
                 }
             }
 
@@ -187,19 +300,24 @@ function write_daily_table(script_start, all_prs, all_issues) {
                 }
             }
 
-            const age_avg_days = num_pr === 0 ? 0 : combined_pr_age.as('days') / num_pr;
-            const age_sum_months = combined_pr_age.as('months');
+            const avg_age = num_pr === 0 ? 0 : combined_pr_age.as('days') / num_pr;
+            const avg_wait = num_pr === 0 ? 0 : combined_pr_wait.as('days') / num_pr;
+            const sum_age = combined_pr_age.as('months');
+            const sum_wait = combined_pr_wait.as('months');
 
             str += '    { ';
             str += [
                 `date: '${when.toISODate()}'`,
+                `merged: ${num_merged}`,
                 `pr: ${num_pr}`,
                 `cxx20: ${num_cxx20}`,
                 `lwg: ${num_lwg}`,
                 `issue: ${num_issue}`,
                 `bug: ${num_bug}`,
-                `age_avg_days: ${Number.parseFloat(age_avg_days).toFixed(2)}`,
-                `age_sum_months: ${Number.parseFloat(age_sum_months).toFixed(2)}`,
+                `avg_age: ${Number.parseFloat(avg_age).toFixed(2)}`,
+                `avg_wait: ${Number.parseFloat(avg_wait).toFixed(2)}`,
+                `sum_age: ${Number.parseFloat(sum_age).toFixed(2)}`,
+                `sum_wait: ${Number.parseFloat(sum_wait).toFixed(2)}`,
                 '},\n',
             ].join(', ');
 
