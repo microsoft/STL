@@ -485,11 +485,7 @@ inline bool __stdcall _Atomic_wait_compare_16_bytes(const void* _Storage, void* 
     const auto _Dest  = reinterpret_cast<long long*>(const_cast<void*>(_Storage));
     const auto _Cmp   = reinterpret_cast<const long long*>(_Comparand);
     long long _Tmp[2] = {_Cmp[0], _Cmp[1]};
-#ifdef _M_X64
     return _STD_COMPARE_EXCHANGE_128(_Dest, _Tmp[1], _Tmp[0], _Tmp) != 0;
-#else // ^^^ _M_X64 / ARM64 vvv
-    return _InterlockedCompareExchange128_nf(_Dest, _Tmp[1], _Tmp[0], _Tmp) != 0;
-#endif // ^^^ ARM64 ^^^
 }
 #endif // _STD_COMPARE_EXCHANGE_128
 #endif // _HAS_CXX20
