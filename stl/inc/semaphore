@@ -53,7 +53,8 @@ public:
             return;
         }
         _STL_VERIFY(_Update > 0 && _Update <= max(), "Update count shall be non-negative and shall not overflow max()");
-        const _Counter_type _Prev = _Counter.fetch_add(static_cast<_Counter_type>(_Update), memory_order_release);
+        // TRANSITION, GH-1133: should be memory_order_release
+        const _Counter_type _Prev = _Counter.fetch_add(static_cast<_Counter_type>(_Update), memory_order_seq_cst);
         _STL_VERIFY(_Prev + _Update > 0, "Semaphore counter shall be non-negative and shall not overflow max()");
 
         if (_Prev == 0) {
@@ -71,8 +72,8 @@ public:
                 _Current = _Counter.load(memory_order_relaxed);
             }
             _STL_VERIFY(_Current > 0, "Semaphore counter shall be non-negative and shall not overflow max()");
-            if (_Counter.compare_exchange_weak(
-                    _Current, _Current - 1, std::memory_order_acquire, std::memory_order_relaxed)) {
+            // TRANSITION, GH-1133: should be memory_order_acquire, memory_order_relaxed
+            if (_Counter.compare_exchange_weak(_Current, _Current - 1, memory_order_seq_cst, memory_order_relaxed)) {
                 break;
             }
         }
@@ -84,8 +85,8 @@ public:
             return false;
         }
         _STL_VERIFY(_Current > 0, "Semaphore counter shall be non-negative and shall not overflow max()");
-        return _Counter.compare_exchange_weak(
-            _Current, _Current - 1, std::memory_order_acquire, std::memory_order_relaxed);
+        // TRANSITION, GH-1133: should be memory_order_acquire, memory_order_relaxed
+        return _Counter.compare_exchange_weak(_Current, _Current - 1, memory_order_seq_cst, memory_order_relaxed);
     }
 
     template <class _Rep, class _Period>
@@ -103,8 +104,8 @@ public:
                 _Current = _Counter.load(memory_order_relaxed);
             }
             _STL_VERIFY(_Current > 0, "Semaphore counter shall be non-negative and shall not overflow max()");
-            if (_Counter.compare_exchange_weak(
-                    _Current, _Current - 1, std::memory_order_acquire, std::memory_order_relaxed)) {
+            // TRANSITION, GH-1133: should be memory_order_acquire, memory_order_relaxed
+            if (_Counter.compare_exchange_weak(_Current, _Current - 1, memory_order_seq_cst, memory_order_relaxed)) {
                 return true;
             }
         }
@@ -132,8 +133,8 @@ public:
                 _Current = _Counter.load(memory_order_relaxed);
             }
             _STL_VERIFY(_Current > 0, "Semaphore counter shall be non-negative and shall not overflow max()");
-            if (_Counter.compare_exchange_weak(
-                    _Current, _Current - 1, std::memory_order_acquire, std::memory_order_relaxed)) {
+            // TRANSITION, GH-1133: should be memory_order_acquire, memory_order_relaxed
+            if (_Counter.compare_exchange_weak(_Current, _Current - 1, memory_order_seq_cst, memory_order_relaxed)) {
                 return true;
             }
         }
@@ -167,24 +168,26 @@ public:
             return;
         }
         _STL_VERIFY(_Update == 1, "Update count shall be non-negative and shall not oveflow max()");
-
-        _Counter.store(1, memory_order_release);
+        // TRANSITION, GH-1133: should be memory_order_release :-(
+        _Counter.store(1, memory_order_cst_seq);
         _Counter.notify_one();
     }
 
     void acquire() noexcept /* strengthened */ {
         for (;;) {
-            int8_t _Prev = _Counter.exchange(0, std::memory_order_acquire);
+            // TRANSITION, GH-1133: should be memory_order_acquire
+            int8_t _Prev = _Counter.exchange(0, memory_order_cst_seq);
             if (_Prev == 1) {
                 break;
             }
             _STL_VERIFY(_Prev == 0, "Semaphore counter shall be non-negative and shall not overflow max()");
-            _Counter.wait(0, std::memory_order_relaxed);
+            _Counter.wait(0, memory_order_relaxed);
         }
     }
 
     [[nodiscard]] bool try_acquire() noexcept {
-        int8_t _Prev = _Counter.exchange(0, std::memory_order_acquire);
+        // TRANSITION, GH-1133: should be memory_order_acquire
+        int8_t _Prev = _Counter.exchange(0, memory_order_cst_seq);
         _STL_VERIFY((_Prev & ~1) == 0, "Semaphore counter shall be non-negative and shall not overflow max()");
         return reinterpret_cast<const bool&>(_Prev);
     }
@@ -194,7 +197,8 @@ public:
         auto _Rel_time_ms = chrono::duration_cast<chrono::duration<unsigned long long, milli>>(_Rel_time);
         auto _Deadline    = __std_atomic_wait_get_deadline(_Rel_time_ms.count());
         for (;;) {
-            int8_t _Prev = _Counter.exchange(0, std::memory_order_acquire);
+            // TRANSITION, GH-1133: should be memory_order_acquire
+            int8_t _Prev = _Counter.exchange(0, memory_order_cst_seq);
             if (_Prev == 1) {
                 return true;
             }
@@ -210,7 +214,8 @@ public:
     template <class _Clock, class _Duration>
     [[nodiscard]] bool try_acquire_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
         for (;;) {
-            int8_t _Prev = _Counter.exchange(0, std::memory_order_acquire);
+            // TRANSITION, GH-1133: should be memory_order_acquire
+            int8_t _Prev = _Counter.exchange(0, memory_order_cst_seq);
             if (_Prev == 1) {
                 return true;
             }

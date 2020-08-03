@@ -41,7 +41,8 @@ public:
 
     void count_down(const ptrdiff_t _Update = 1) {
         _STL_VERIFY(_Update >= 0, "update shall be non-negative");
-        const ptrdiff_t _Current = _Counter.fetch_sub(_Update, memory_order_release) - _Update;
+        // TRANSITION, GH-1133: should be memory_order_release
+        const ptrdiff_t _Current = _Counter.fetch_sub(_Update, memory_order_seq_cst) - _Update;
         if (_Current == 0) {
             _Counter.notify_all();
         } else {
@@ -54,12 +55,14 @@ public:
     }
 
     [[nodiscard]] bool try_wait() const noexcept {
-        return _Counter.load(memory_order_acquire) == 0;
+        // TRANSITION, GH-1133: should be memory_order_acquire
+        return _Counter.load(memory_order_seq_cst) == 0;
     }
 
     void wait() const noexcept /* strengthened */ {
         for (;;) {
-            const ptrdiff_t _Current = _Counter.load(memory_order_acquire);
+            // TRANSITION, GH-1133: should be memory_order_acquire
+            const ptrdiff_t _Current = _Counter.load(memory_order_seq_cst);
             if (_Current == 0) {
                 break;
             } else {
@@ -72,7 +75,8 @@ public:
 
     void arrive_and_wait(const ptrdiff_t _Update = 1) noexcept /* strengthened */ {
         _STL_VERIFY(_Update >= 0, "update shall be non-negative");
-        const ptrdiff_t _Current = _Counter.fetch_sub(_Update, memory_order_acq_rel) - _Update;
+        // TRANSITION, GH-1133: should be memory_order_acq_rel
+        const ptrdiff_t _Current = _Counter.fetch_sub(_Update, memory_order_seq_cst) - _Update;
         if (_Current == 0) {
             _Counter.notify_all();
         } else {
