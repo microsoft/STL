@@ -51,6 +51,16 @@ _STL_DISABLE_CLANG_WARNINGS
 
 // MACRO _STD_COMPARE_EXCHANGE_128
 #if defined(_STD_ATOMIC_ALWAYS_USE_CMPXCHG16B) || defined(_M_ARM64)
+__MACHINEARM64_X64(unsigned char _InterlockedCompareExchange128(
+    __int64 volatile* _Destination, __int64 _ExchangeHigh, __int64 _ExchangeLow, __int64* _ComparandResult))
+__MACHINEARM64(unsigned char _InterlockedCompareExchange128_acq(
+    __int64 volatile* _Destination, __int64 _ExchangeHigh, __int64 _ExchangeLow, __int64* _ComparandResult))
+__MACHINEARM64(unsigned char _InterlockedCompareExchange128_nf(
+    __int64 volatile* _Destination, __int64 _ExchangeHigh, __int64 _ExchangeLow, __int64* _ComparandResult))
+__MACHINEX64(unsigned char _InterlockedCompareExchange128_np(
+    __int64 volatile* _Destination, __int64 _ExchangeHigh, __int64 _ExchangeLow, __int64* _ComparandResult))
+__MACHINEARM64(unsigned char _InterlockedCompareExchange128_rel(
+    __int64 volatile* _Destination, __int64 _ExchangeHigh, __int64 _ExchangeLow, __int64* _ComparandResult))
 #define _STD_COMPARE_EXCHANGE_128 _InterlockedCompareExchange128
 #endif // defined(_STD_ATOMIC_ALWAYS_USE_CMPXCHG16B) || defined(_M_ARM64)
 #if defined(_M_X64) && !defined(_STD_ATOMIC_ALWAYS_USE_CMPXCHG16B)
@@ -485,7 +495,11 @@ inline bool __stdcall _Atomic_wait_compare_16_bytes(const void* _Storage, void* 
     const auto _Dest  = reinterpret_cast<long long*>(const_cast<void*>(_Storage));
     const auto _Cmp   = reinterpret_cast<const long long*>(_Comparand);
     long long _Tmp[2] = {_Cmp[0], _Cmp[1]};
+#ifdef _M_X64
     return _STD_COMPARE_EXCHANGE_128(_Dest, _Tmp[1], _Tmp[0], _Tmp) != 0;
+#else // ^^^ _M_X64 / ARM64 vvv
+    return _InterlockedCompareExchange128_nf(_Dest, _Tmp[1], _Tmp[0], _Tmp) != 0;
+#endif // ^^^ ARM64 ^^^
 }
 #endif // _STD_COMPARE_EXCHANGE_128
 #endif // _HAS_CXX20
