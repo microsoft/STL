@@ -470,14 +470,28 @@ private:
 };
 
 #if _HAS_CXX20
+template <class Spinlock>
 inline bool __stdcall _Atomic_wait_compare_non_lock_free(
     const void* _Storage, void* _Comparand, size_t _Size, void* _Spinlock_raw) noexcept {
-    long& _Spinlock = *static_cast<long*>(_Spinlock_raw);
+    Spinlock& _Spinlock = *static_cast<Spinlock*>(_Spinlock_raw);
     _Atomic_lock_spinlock(_Spinlock);
     const auto _Cmp_result = _CSTD memcmp(_Storage, _Comparand, _Size);
     _Atomic_unlock_spinlock(_Spinlock);
     return _Cmp_result == 0;
 }
+
+#ifdef _STD_COMPARE_EXCHANGE_128
+inline bool __stdcall _Atomic_wait_compare_16_bytes(const void* _Storage, void* _Comparand, size_t, void*) noexcept {
+    const auto _Dest  = reinterpret_cast<long long*>(const_cast<void*>(_Storage));
+    const auto _Cmp   = reinterpret_cast<const long long*>(_Comparand);
+    long long _Tmp[2] = {_Cmp[0], _Cmp[1]};
+#ifdef _M_X64
+    return _STD_COMPARE_EXCHANGE_128(_Dest, _Dest[1], _Dest[0], _Tmp) != 0;
+#else // ^^^ _M_X64 / ARM64 vvv
+    return _InterlockedCompareExchange128_nf(_Dest, _Dest[1], _Dest[0], _Tmp) != 0;
+#endif // ^^^ ARM64 ^^^
+}
+#endif // _STD_COMPARE_EXCHANGE_128
 #endif // _HAS_CXX20
 #endif // TRANSITION, ABI
 
@@ -588,7 +602,7 @@ struct _Atomic_storage {
             } // unlock
 
             __std_atomic_wait_indirect(_Storage_ptr, _Expected_ptr, sizeof(_TVal), &_Spinlock,
-                &_Atomic_wait_compare_non_lock_free, _Atomic_wait_no_timeout);
+                &_Atomic_wait_compare_non_lock_free<decltype(_Spinlock)>, _Atomic_wait_no_timeout);
         }
     }
 
@@ -1274,6 +1288,35 @@ struct _Atomic_storage<_Ty&, 16> { // lock-free using 16-byte intrinsics
     }
 
 #if _HAS_CXX20
+    void wait(_TVal _Expected, memory_order _Order = memory_order_seq_cst) const noexcept {
+        const auto _Storage_ptr  = _STD addressof(_Storage);
+        const auto _Expected_ptr = _STD addressof(_Expected);
+        _Int128 _Expected_bytes  = reinterpret_cast<const _Int128&>(_Expected);
+
+        for (;;) {
+            const _TVal _Observed   = load(_Order);
+            _Int128 _Observed_bytes = reinterpret_cast<const _Int128&>(_Observed);
+            if (_Observed_bytes._Low != _Expected_bytes._Low || _Observed_bytes._High != _Expected_bytes._High) {
+#if _CMPXCHG_MASK_OUT_PADDING_BITS
+                if constexpr (_Might_have_non_value_bits<_TVal>) {
+                    _Storage_for<_TVal> _Mask{_Form_mask};
+                    const _Int128 _Mask_val = reinterpret_cast<_Int128&>(_Mask._Ref());
+
+                    if (((_Expected_bytes._Low ^ _Observed_bytes._Low) & _Mask_val._Low) == 0
+                        && ((_Expected_bytes._High ^ _Observed_bytes._High) & _Mask_val._High) == 0) {
+                        _Expected_bytes = _Observed_bytes;
+                        continue;
+                    }
+                }
+#endif // _CMPXCHG_MASK_OUT_PADDING_BITS
+                return;
+            }
+
+            __std_atomic_wait_indirect(_Storage_ptr, _Expected_ptr, sizeof(_TVal), nullptr,
+                &_Atomic_wait_compare_16_bytes, _Atomic_wait_no_timeout);
+        }
+    }
+
     void notify_one() noexcept {
         __std_atomic_notify_one_indirect(_STD addressof(_Storage));
     }

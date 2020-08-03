@@ -9,8 +9,8 @@
 #include <string.h>
 #include <thread>
 
-template <class UnderlyingType>
-void test_atomic_wait_func(const UnderlyingType old_value, const UnderlyingType new_value,
+template <template <class> class Template, class UnderlyingType>
+void test_atomic_wait_func_impl(UnderlyingType old_value, const UnderlyingType new_value,
     const std::chrono::steady_clock::duration waiting_duration) {
     constexpr int seq_max_size = 10;
     char seq[seq_max_size + 1];
@@ -21,7 +21,7 @@ void test_atomic_wait_func(const UnderlyingType old_value, const UnderlyingType 
         *p = ch;
     };
 
-    std::atomic<UnderlyingType> a{old_value};
+    Template<UnderlyingType> a(old_value);
     a.wait(new_value);
 
     add_seq('1');
@@ -56,9 +56,16 @@ void test_atomic_wait_func(const UnderlyingType old_value, const UnderlyingType 
 }
 
 template <class UnderlyingType>
-void test_notify_all_notifies_all(const UnderlyingType old_value, const UnderlyingType new_value,
+void test_atomic_wait_func(const UnderlyingType old_value, const UnderlyingType new_value,
     const std::chrono::steady_clock::duration waiting_duration) {
-    std::atomic<UnderlyingType> c{old_value};
+    test_atomic_wait_func_impl<std::atomic, UnderlyingType>(old_value, new_value, waiting_duration);
+    test_atomic_wait_func_impl<std::atomic_ref, UnderlyingType>(old_value, new_value, waiting_duration);
+}
+
+template <template <class> class Template, class UnderlyingType>
+void test_notify_all_notifies_all_impl(UnderlyingType old_value, const UnderlyingType new_value,
+    const std::chrono::steady_clock::duration waiting_duration) {
+    Template<UnderlyingType> c(old_value);
     const auto waitFn = [&c, old_value] { c.wait(old_value); };
 
     std::thread w1{waitFn};
@@ -75,7 +82,15 @@ void test_notify_all_notifies_all(const UnderlyingType old_value, const Underlyi
 }
 
 template <class UnderlyingType>
-void test_pad_bits(const std::chrono::steady_clock::duration waiting_duration) {
+void test_notify_all_notifies_all(const UnderlyingType old_value, const UnderlyingType new_value,
+    const std::chrono::steady_clock::duration waiting_duration) {
+    test_notify_all_notifies_all_impl<std::atomic, UnderlyingType>(old_value, new_value, waiting_duration);
+    test_notify_all_notifies_all_impl<std::atomic_ref, UnderlyingType>(old_value, new_value, waiting_duration);
+}
+
+
+template <template <class> class Template, class UnderlyingType>
+void test_pad_bits_impl(const std::chrono::steady_clock::duration waiting_duration) {
     UnderlyingType old_value;
     memset(&old_value, 0x66, sizeof(UnderlyingType));
     old_value.set(1);
@@ -84,7 +99,7 @@ void test_pad_bits(const std::chrono::steady_clock::duration waiting_duration) {
     memset(&same_old_value, 0x99, sizeof(UnderlyingType));
     same_old_value.set(1);
 
-    std::atomic<UnderlyingType> c(old_value);
+    Template<UnderlyingType> c(old_value);
 
     bool trigger      = false;
     const auto waitFn = [&c, same_old_value, &trigger] {
@@ -113,6 +128,12 @@ void test_pad_bits(const std::chrono::steady_clock::duration waiting_duration) {
     assert(trigger);
 
     w1.join();
+}
+
+template <class UnderlyingType>
+void test_pad_bits(const std::chrono::steady_clock::duration waiting_duration) {
+    test_pad_bits_impl<std::atomic, UnderlyingType>(waiting_duration);
+    test_pad_bits_impl<std::atomic_ref, UnderlyingType>(waiting_duration);
 }
 
 struct two_shorts {
