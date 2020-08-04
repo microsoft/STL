@@ -389,7 +389,6 @@ set(SOURCES_SATELLITE_2
 )
 
 set(SOURCES_SATELLITE_ATOMIC_WAIT
-    ${CMAKE_CURRENT_LIST_DIR}/src/atomic_ref.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/atomic_wait.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/parallel_algorithms.cpp
 )
