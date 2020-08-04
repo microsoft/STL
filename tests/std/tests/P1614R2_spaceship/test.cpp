@@ -390,7 +390,7 @@ void ordering_test_cases() {
 
         // TRANSITION: std::char_traits<char> doesn't define comparison_type
         spaceship_test<std::ssub_match, std::weak_ordering>(sm1, sm1_equal, sm2);
-        spaceship_test<std::ssub_match, std::weak_ordering>(sm1, s1, s2);
+        spaceship_test<std::ssub_match, std::string, std::string, std::weak_ordering>(sm1, s1, s2);
         spaceship_test<std::ssub_match, const char*, const char*, std::weak_ordering>(sm1, s1.c_str(), s2.c_str());
         spaceship_test<std::ssub_match, const char, const char, std::weak_ordering>(sm3, 'c', 'm');
 
