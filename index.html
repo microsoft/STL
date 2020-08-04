@@ -26,11 +26,11 @@
             font-weight: bold;
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"
-        integrity="sha256-t9UJPrESBeG2ojKTIcFLPGF7nHi2vEc7f5A2KpH/UBU=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.0.0-beta.13/dist/chart.min.js"
+        integrity="sha256-rBihtMecSw9uWNza7O9RziOpBAhlqIkGneLIuLbQHsY=" crossorigin="anonymous"></script>
     <script
-        src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@1.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"
-        integrity="sha256-OrN9od558nPowCwU4e475a5CCwTfCwSrk7TF7KYUoXk=" crossorigin="anonymous"></script>
+        src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@1.1.0-alpha.3/dist/chartjs-adapter-date-fns.bundle.min.js"
+        integrity="sha256-e/RmSwhc3bLOQa/F0V0yzlODvJXdNSyLpzd6yI93EU8=" crossorigin="anonymous"></script>
     <script src="daily_table.js"></script>
     <script src="weekly_table.js"></script>
     <script src="monthly_table.js"></script>
@@ -184,6 +184,7 @@
                     type: 'bar',
                     data: get_values(monthly_table, 'merge_bar'),
                     label: 'Bars: Calendar Months',
+                    borderColor: '#CCCCCC',
                     borderWidth: 1,
                     yAxisID: 'mergeAxis',
                     hidden: get_hidden('merge_bar'),
@@ -192,11 +193,11 @@
         };
 
         const timeframe_all = {
-            ticks: { min: '2017-06-09' },
+            min: '2017-06-09',
             time: { unit: 'quarter' },
         };
         const timeframe_github = {
-            ticks: { min: '2019-09-20' }, // first Friday after 2019-09-16
+            min: '2019-09-20', // first Friday after 2019-09-16
             time: { unit: 'month' },
         };
         const timeframes = [
@@ -214,7 +215,6 @@
                     borderCapStyle: 'round',
                     borderJoinStyle: 'round',
                     fill: false,
-                    tension: 0,
                 },
                 point: {
                     radius: 0,
@@ -223,7 +223,10 @@
             hover: {
                 mode: 'nearest',
             },
-            tooltips: {
+        };
+
+        const common_plugins = {
+            tooltip: {
                 mode: 'nearest',
                 intersect: false,
             },
@@ -231,16 +234,20 @@
 
         const common_title = {
             display: true,
-            fontSize: 24,
+            font: {
+                size: 24,
+            },
         };
 
-        function make_xAxes(timeframe) {
-            return [{
+        function make_xAxis(timeframe) {
+            return {
                 type: 'time',
-                ticks: {
-                    min: timeframe.ticks.min,
-                    max: daily_table[daily_table.length - 1].date,
+                min: timeframe.min,
+                max: daily_table[daily_table.length - 1].date,
+                gridLines: {
+                    offsetGridLines: false,
                 },
+                offset: false,
                 time: {
                     parser: 'yyyy-MM-dd',
                     tooltipFormat: 'MMM d, yyyy',
@@ -249,120 +256,118 @@
                         quarter: 'MMM yyyy',
                     },
                 },
-            }];
+            };
         }
 
         const status_options = {
             ...common_options,
-            title: {
-                ...common_title,
-                text: 'STL Status Chart',
+            plugins: {
+                ...common_plugins,
+                title: {
+                    ...common_title,
+                    text: 'STL Status Chart',
+                },
             },
             scales: {
-                xAxes: make_xAxes(timeframes[timeframe_idx]),
-                yAxes: [
-                    {
-                        type: 'linear',
-                        display: 'auto',
-                        id: 'largeAxis',
-                        position: 'left',
-                        scaleLabel: {
-                            display: true,
-                            labelString: 'Bugs, Issues, Skipped Libcxx Tests',
-                        },
-                        ticks: {
-                            min: 0,
-                            max: 650,
-                            stepSize: 100,
-                        },
+                x: make_xAxis(timeframes[timeframe_idx]),
+                largeAxis: {
+                    type: 'linear',
+                    display: 'auto',
+                    position: 'left',
+                    title: {
+                        display: true,
+                        text: 'Bugs, Issues, Skipped Libcxx Tests',
                     },
-                    {
-                        type: 'linear',
-                        display: 'auto',
-                        id: 'smallAxis',
-                        position: 'right',
-                        scaleLabel: {
-                            display: true,
-                            labelString: 'Features, LWG Resolutions, Pull Requests',
-                        },
-                        ticks: {
-                            min: 0,
-                            max: 65,
-                            stepSize: 10,
-                        },
+                    min: 0,
+                    max: 650,
+                    ticks: {
+                        stepSize: 100,
                     },
-                ],
+                },
+                smallAxis: {
+                    type: 'linear',
+                    display: 'auto',
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: 'Features, LWG Resolutions, Pull Requests',
+                    },
+                    min: 0,
+                    max: 65,
+                    ticks: {
+                        stepSize: 10,
+                    },
+                },
             },
         };
 
         const age_options = {
             ...common_options,
-            title: {
-                ...common_title,
-                text: 'Pull Request Age',
+            plugins: {
+                ...common_plugins,
+                title: {
+                    ...common_title,
+                    text: 'Pull Request Age',
+                },
             },
             scales: {
-                xAxes: make_xAxes(timeframe_github),
-                yAxes: [
-                    {
-                        type: 'linear',
-                        display: 'auto',
-                        id: 'leftAxis',
-                        position: 'left',
-                        scaleLabel: {
-                            display: true,
-                            labelString: 'Average Age, Average Wait (days)',
-                        },
-                        ticks: {
-                            min: 0,
-                            max: 150,
-                            stepSize: 10,
-                        },
+                x: make_xAxis(timeframe_github),
+                leftAxis: {
+                    type: 'linear',
+                    display: 'auto',
+                    position: 'left',
+                    title: {
+                        display: true,
+                        text: 'Average Age, Average Wait (days)',
                     },
-                    {
-                        type: 'linear',
-                        display: 'auto',
-                        id: 'rightAxis',
-                        position: 'right',
-                        scaleLabel: {
-                            display: true,
-                            labelString: 'Combined Age, Combined Wait (PR-months)',
-                        },
-                        ticks: {
-                            min: 0,
-                            max: 150,
-                            stepSize: 10,
-                        },
+                    min: 0,
+                    max: 150,
+                    ticks: {
+                        stepSize: 10,
                     },
-                ],
+                },
+                rightAxis: {
+                    type: 'linear',
+                    display: 'auto',
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: 'Combined Age, Combined Wait (PR-months)',
+                    },
+                    min: 0,
+                    max: 150,
+                    ticks: {
+                        stepSize: 10,
+                    },
+                },
             },
         };
 
         const merge_options = {
             ...common_options,
-            title: {
-                ...common_title,
-                text: 'Monthly Merged PRs',
+            plugins: {
+                ...common_plugins,
+                title: {
+                    ...common_title,
+                    text: 'Monthly Merged PRs',
+                },
             },
             scales: {
-                xAxes: make_xAxes(timeframe_github),
-                yAxes: [
-                    {
-                        type: 'linear',
-                        display: 'auto',
-                        id: 'mergeAxis',
-                        position: 'right',
-                        scaleLabel: {
-                            display: true,
-                            labelString: 'PRs / month',
-                        },
-                        ticks: {
-                            min: 0,
-                            max: 80,
-                            stepSize: 10,
-                        },
+                x: make_xAxis(timeframe_github),
+                mergeAxis: {
+                    type: 'linear',
+                    display: 'auto',
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: 'PRs / month',
                     },
-                ],
+                    min: 0,
+                    max: 80,
+                    ticks: {
+                        stepSize: 10,
+                    },
+                },
             },
         };
 
@@ -388,10 +393,10 @@
             document.getElementById('toggleTimeframe').addEventListener('click', function () {
                 timeframe_idx = (timeframe_idx + 1) % timeframes.length;
 
-                const xAxis = window.status_chart.options.scales.xAxes[0];
+                const xAxis = window.status_chart.options.scales.x;
                 const new_timeframe = timeframes[timeframe_idx];
 
-                xAxis.ticks.min = new_timeframe.ticks.min;
+                xAxis.min = new_timeframe.min;
                 xAxis.time.unit = new_timeframe.time.unit;
 
                 window.status_chart.update();
