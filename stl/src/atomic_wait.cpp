@@ -384,7 +384,7 @@ _NODISCARD unsigned char __stdcall __std_atomic_compare_exchange_128(_Inout_byte
 }
 
 _NODISCARD bool __stdcall __std_atomic_has_cmpxchg16b() noexcept {
-#if defined(_M_X64) && _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
+#if defined(_M_X64) && _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0
     enum class _Cmpxchg16_support : char {
         _Absent  = false,
         _Present = true,
@@ -400,7 +400,7 @@ _NODISCARD bool __stdcall __std_atomic_has_cmpxchg16b() noexcept {
         _Cached_value.store(_Value, std::memory_order_relaxed);
     }
     return reinterpret_cast<bool&>(_Value);
-#elif defined(_M_X64) && _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 1 || defined(_M_ARM64)
+#elif defined(_M_X64) && _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 || defined(_M_ARM64)
     return true;
 #else
     return false;
