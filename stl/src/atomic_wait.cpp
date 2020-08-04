@@ -189,6 +189,7 @@ namespace {
             _CSTD abort();
         }
     }
+#endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
 
     _NODISCARD unsigned char __std_atomic_compare_exchange_128_fallback(_Inout_bytecount_(16) long long* _Destination,
         _In_ long long _ExchangeHigh, _In_ long long _ExchangeLow,
@@ -207,7 +208,6 @@ namespace {
             return false;
         }
     }
-#endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
 } // unnamed namespace
 
 
