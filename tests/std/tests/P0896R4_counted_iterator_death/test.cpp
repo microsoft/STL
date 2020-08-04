@@ -150,7 +150,7 @@ void test_case_operator_retreat_copy_before_begin() {
 
 void test_case_operator_retreat_copy_after_end() {
     counted_iterator<int*> cit{globalArray, 0};
-    (void) (cit - 1); // cannot seek counted_iterator after end
+    (void) (cit - -1); // cannot seek counted_iterator after end
 }
 
 void test_case_operator_subtract_incompatible_different_data() {
