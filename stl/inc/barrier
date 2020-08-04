@@ -119,9 +119,8 @@ public:
     }
 
     [[nodiscard]] arrival_token arrive(ptrdiff_t _Update = 1) noexcept /* strengthened */ {
-        _STL_VERIFY(_Update >= 0, "update count shall be non-negative");
-
         _Update <<= _Barrier_value_shift;
+        _STL_VERIFY(_Update >= 0, "update count shall be non-negative");
         // TRANSITION, GH-1133: should be memory_order_release
         ptrdiff_t _Current = _Current_phase.fetch_sub(_Update, memory_order_seq_cst) - _Update;
         _STL_VERIFY(_Current >= 0, "phase count shall be non-negative");
