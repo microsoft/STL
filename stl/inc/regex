@@ -594,15 +594,15 @@ bool _Is_word(_Elem _Ch) {
 }
 
 #if _HAS_CXX20
-    template <class _Ty, class = void>
-    struct _Get_comparison_category {
-        using type = weak_ordering;
-    };
+template <class _Ty, class = void>
+struct _Get_comparison_category {
+    using type = weak_ordering;
+};
 
-    template <class _Ty>
-    struct _Get_comparison_category<_Ty, void_t<typename _Ty::comparison_category>> {
-        using type = typename _Ty::comparison_category;
-    };
+template <class _Ty>
+struct _Get_comparison_category<_Ty, void_t<typename _Ty::comparison_category>> {
+    using type = typename _Ty::comparison_category;
+};
 #endif // _HAS_CXX20
 
 // CLASS TEMPLATE sub_match
@@ -767,7 +767,7 @@ _NODISCARD bool operator==(const _Iter_value_t<_BidIt>* _Left, const sub_match<_
 
 #if _HAS_CXX20
 template <class _BidIt>
-_NODISCARD auto operator<=>(const sub_match<_BidIt>& _Left ,const _Iter_value_t<_BidIt>* _Right) {
+_NODISCARD auto operator<=>(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>* _Right) {
     return static_cast<typename sub_match<_BidIt>::_Comparison_category>(_Left.compare(_Right) <=> 0);
 }
 #endif // _HAS_CXX20
@@ -838,7 +838,8 @@ _NODISCARD bool operator==(const _Iter_value_t<_BidIt>& _Left, const sub_match<_
 #if _HAS_CXX20
 template <class _BidIt>
 _NODISCARD auto operator<=>(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>& _Right) {
-    return static_cast<typename sub_match<_BidIt>::_Comparison_category>(_Left._Compare(_STD addressof(_Right), 1) <=> 0);
+    return static_cast<typename sub_match<_BidIt>::_Comparison_category>(
+        _Left._Compare(_STD addressof(_Right), 1) <=> 0);
 }
 #endif // _HAS_CXX20
 
@@ -2484,8 +2485,8 @@ public:
                && _MyVal._At(0) == _Right._MyVal._At(0);
     }
 
-// TRANSITION, VSO-900973
-// Overload resolution prefers implicit conversions over re-writes
+    // TRANSITION, VSO-900973
+    // Overload resolution prefers implicit conversions over re-writes
     _NODISCARD bool operator!=(const regex_iterator& _Right) const {
         return !(*this == _Right);
     }

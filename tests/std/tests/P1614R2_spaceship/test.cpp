@@ -60,26 +60,25 @@ struct SynthOrdered {
 
 struct OrderedChar {
     OrderedChar() = default;
-    OrderedChar(const char c) : c(c) {};
+    OrderedChar(const char c) : c(c){};
 
-    OrderedChar& operator=(const char& other)
-    {
+    OrderedChar& operator=(const char& other) {
         this->c = other;
         return *this;
     }
 
-    operator char() { return c; }
+    operator char() {
+        return c;
+    }
 
     char c;
 };
 
-auto operator<=>(const OrderedChar& left, const OrderedChar& right)
-{
+auto operator<=>(const OrderedChar& left, const OrderedChar& right) {
     return left.c <=> right.c;
 }
 
-auto operator==(const OrderedChar& left, const OrderedChar& right)
-{
+auto operator==(const OrderedChar& left, const OrderedChar& right) {
     return left.c == right.c;
 }
 
@@ -87,8 +86,7 @@ struct WeaklyOrderedChar : public OrderedChar {};
 struct WeaklyOrderdByOmissionChar : public OrderedChar {};
 struct PartiallyOrderedChar : public OrderedChar {};
 
-namespace std
-{
+namespace std {
     template <>
     struct char_traits<OrderedChar> : public std::char_traits<char> {
         using char_type = OrderedChar;
@@ -103,12 +101,14 @@ namespace std
             return 0;
         }
 
-        static bool eq(const char_type l, const char_type r) { return l.c == r.c; }
+        static bool eq(const char_type l, const char_type r) {
+            return l.c == r.c;
+        }
     };
 
     template <>
     struct char_traits<WeaklyOrderedChar> : public std::char_traits<OrderedChar> {
-        using char_type = WeaklyOrderedChar;
+        using char_type           = WeaklyOrderedChar;
         using comparison_category = std::weak_ordering;
     };
 
@@ -119,14 +119,13 @@ namespace std
 
     template <>
     struct char_traits<PartiallyOrderedChar> : public std::char_traits<OrderedChar> {
-        using char_type = PartiallyOrderedChar;
+        using char_type           = PartiallyOrderedChar;
         using comparison_category = std::partial_ordering;
     };
-}
+} // namespace std
 
-template<class SmallType, class EqualType, class LargeType, class ReturnType>
-void spaceship_test(const SmallType& smaller, const EqualType& smaller_equal, const LargeType& larger)
-{
+template <class SmallType, class EqualType, class LargeType, class ReturnType>
+void spaceship_test(const SmallType& smaller, const EqualType& smaller_equal, const LargeType& larger) {
     assert(smaller == smaller_equal);
     assert(smaller != larger);
     assert(smaller < larger);
@@ -140,9 +139,8 @@ void spaceship_test(const SmallType& smaller, const EqualType& smaller_equal, co
     static_assert(std::is_same_v<decltype(smaller <=> larger), ReturnType>);
 }
 
-template<class TestType, class ReturnType>
-void spaceship_test(const TestType& smaller, const TestType& smaller_equal, const TestType& larger)
-{
+template <class TestType, class ReturnType>
+void spaceship_test(const TestType& smaller, const TestType& smaller_equal, const TestType& larger) {
     return spaceship_test<TestType, TestType, TestType, ReturnType>(smaller, smaller_equal, larger);
 }
 
@@ -385,10 +383,10 @@ void ordering_test_cases() {
         std::regex_match(s2, m2, all);
         std::regex_search(s1, m3, each);
 
-        std::ssub_match sm1 = m1[0];
+        std::ssub_match sm1       = m1[0];
         std::ssub_match sm1_equal = m1[0];
-        std::ssub_match sm2 = m2[0];
-        std::ssub_match sm3 = m3[0];
+        std::ssub_match sm2       = m2[0];
+        std::ssub_match sm3       = m3[0];
 
         // TRANSITION: std::char_traits<char> doesn't define comparison_type
         spaceship_test<std::ssub_match, std::weak_ordering>(sm1, sm1_equal, sm2);
@@ -397,8 +395,9 @@ void ordering_test_cases() {
         spaceship_test<std::ssub_match, const char, const char, std::weak_ordering>(sm3, 'c', 'm');
 
         using StronglyOrderedMatch = std::ssub_match;
-        using WeaklyOrderedMatch = std::sub_match<std::basic_string<WeaklyOrderedChar>::const_iterator>;
-        using WeaklyOrderdByOmissionMatch = std::sub_match<std::basic_string<WeaklyOrderdByOmissionChar>::const_iterator>;
+        using WeaklyOrderedMatch   = std::sub_match<std::basic_string<WeaklyOrderedChar>::const_iterator>;
+        using WeaklyOrderdByOmissionMatch =
+            std::sub_match<std::basic_string<WeaklyOrderdByOmissionChar>::const_iterator>;
         using PartiallyOrderedMatch = std::sub_match<std::basic_string<PartiallyOrderedChar>::const_iterator>;
 
         // TRANSITION: std::char_traits<char> doesn't define comparison_type
