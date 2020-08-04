@@ -3175,7 +3175,7 @@ public:
     void store(shared_ptr<_Ty> _Value, const memory_order _Order = memory_order::seq_cst) noexcept {
         _Check_store_memory_order(_Order);
         const auto _Rep = this->_Lock_and_load();
-        const _Ty* _Tmp = _Value._Ptr;
+        _Ty* const _Tmp = _Value._Ptr;
         _Value._Ptr     = this->_Ptr.load(memory_order::relaxed);
         this->_Ptr.store(_Tmp, memory_order::relaxed);
         this->_Store_and_unlock(_Value._Rep);
@@ -3229,7 +3229,7 @@ public:
         _Check_memory_order(_Order);
         auto _Rep = this->_Lock_and_load();
         if (this->_Ptr.load(memory_order::relaxed) == _Expected._Ptr && _Rep == _Expected._Rep) {
-            const _Ty* _Tmp = _Desired._Ptr;
+            _Ty* const _Tmp = _Desired._Ptr;
             _Desired._Ptr   = this->_Ptr.load(memory_order::relaxed);
             this->_Ptr.store(_Tmp, memory_order::relaxed);
             _STD swap(_Rep, _Desired._Rep);
@@ -3255,7 +3255,7 @@ public:
             if (!_Equal) {
                 break;
             }
-            __std_atomic_wait_direct(&this->_Ptr, _Old._Ptr, sizeof(_Old._Ptr), _Atomic_wait_no_timeout);
+            __std_atomic_wait_direct(&this->_Ptr, &_Old._Ptr, sizeof(_Old._Ptr), _Atomic_wait_no_timeout);
         }
     }
 
@@ -3306,7 +3306,7 @@ public:
     void store(weak_ptr<_Ty> _Value, const memory_order _Order = memory_order::seq_cst) noexcept {
         _Check_store_memory_order(_Order);
         const auto _Rep = this->_Lock_and_load();
-        const _Ty* _Tmp = _Value._Ptr;
+        _Ty* const _Tmp = _Value._Ptr;
         _Value._Ptr     = this->_Ptr.load(memory_order::relaxed);
         this->_Ptr.store(_Tmp, memory_order::relaxed);
         this->_Store_and_unlock(_Value._Rep);
@@ -3360,7 +3360,7 @@ public:
         _Check_memory_order(_Order);
         auto _Rep = this->_Lock_and_load();
         if (this->_Ptr.load(memory_order::relaxed) == _Expected._Ptr && _Rep == _Expected._Rep) {
-            const _Ty* _Tmp = _Desired._Ptr;
+            _Ty* const _Tmp = _Desired._Ptr;
             _Desired._Ptr   = this->_Ptr.load(memory_order::relaxed);
             this->_Ptr.store(_Tmp, memory_order::relaxed);
             _STD swap(_Rep, _Desired._Rep);
@@ -3386,7 +3386,7 @@ public:
             if (!_Equal) {
                 break;
             }
-            __std_atomic_wait_direct(&this->_Ptr, _Old._Ptr, sizeof(_Old._Ptr), _Atomic_wait_no_timeout);
+            __std_atomic_wait_direct(&this->_Ptr, &_Old._Ptr, sizeof(_Old._Ptr), _Atomic_wait_no_timeout);
         }
     }
 
