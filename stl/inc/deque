@@ -1291,25 +1291,27 @@ public:
         auto _Off   = static_cast<size_type>(_First - begin());
         auto _Count = static_cast<size_type>(_Last - _First);
 #endif // _ITERATOR_DEBUG_LEVEL == 2
-	if (_Count > 0){
-		if (_Off < static_cast<size_type>(end() - _Last)) { // closer to front
-			_STD move_backward(begin(), _First, _Last); // copy over hole
-			for (; 0 < _Count; --_Count) {
-				pop_front(); // pop copied elements
-			}
-		} else { // closer to back
-			_STD move(_Last, end(), _First); // copy over hole
-			for (; 0 < _Count; --_Count) {
-				pop_back(); // pop copied elements
-			}
-		}
+
+        if (_Count == 0)
+		    return _First;
+        if (_Off < static_cast<size_type>(end() - _Last)) { // closer to front
+            _STD move_backward(begin(), _First, _Last); // copy over hole
+            for (; 0 < _Count; --_Count) {
+                pop_front(); // pop copied elements
+            }
+        } else { // closer to back
+            _STD move(_Last, end(), _First); // copy over hole
+            for (; 0 < _Count; --_Count) {
+                pop_back(); // pop copied elements
+            }
+        }
 
 #if _ITERATOR_DEBUG_LEVEL == 2
-		if (_Moved) {
-			_Orphan_all();
-		}
+        if (_Moved) {
+            _Orphan_all();
+        }
 #endif // _ITERATOR_DEBUG_LEVEL == 2
-	}
+
         return begin() + static_cast<difference_type>(_Off);
     }
 
