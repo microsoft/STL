@@ -90,56 +90,37 @@ struct PartiallyOrderedChar : public OrderedChar {};
 namespace std
 {
     template <>
-    struct char_traits<WeaklyOrderedChar> : public std::char_traits<char> {
+    struct char_traits<OrderedChar> : public std::char_traits<char> {
+        using char_type = OrderedChar;
+
+        static int compare(const char_type* first1, const char_type* first2, size_t count) {
+            for (; 0 < count; --count, ++first1, ++first2) {
+                if (*first1 != *first2) {
+                    return *first1 < *first2 ? -1 : +1;
+                }
+            }
+
+            return 0;
+        }
+
+        static bool eq(const char_type l, const char_type r) { return l.c == r.c; }
+    };
+
+    template <>
+    struct char_traits<WeaklyOrderedChar> : public std::char_traits<OrderedChar> {
         using char_type = WeaklyOrderedChar;
         using comparison_category = std::weak_ordering;
-
-        static int compare(const char_type* first1, const char_type* first2, size_t count) {
-            for (; 0 < count; --count, ++first1, ++first2) {
-                if (*first1 != *first2) {
-                    return *first1 < *first2 ? -1 : +1;
-                }
-            }
-
-            return 0;
-        }
-
-        static bool eq(const char_type l, const char_type r) { return l.c == r.c; }
     };
 
     template <>
-    struct char_traits<WeaklyOrderdByOmissionChar> : public std::char_traits<char> {
+    struct char_traits<WeaklyOrderdByOmissionChar> : public std::char_traits<OrderedChar> {
         using char_type = WeaklyOrderdByOmissionChar;
-
-        static int compare(const char_type* first1, const char_type* first2, size_t count) {
-            for (; 0 < count; --count, ++first1, ++first2) {
-                if (*first1 != *first2) {
-                    return *first1 < *first2 ? -1 : +1;
-                }
-            }
-
-            return 0;
-        }
-
-        static bool eq(const char_type l, const char_type r) { return l.c == r.c; }
     };
 
     template <>
-    struct char_traits<PartiallyOrderedChar> : public std::char_traits<char> {
+    struct char_traits<PartiallyOrderedChar> : public std::char_traits<OrderedChar> {
         using char_type = PartiallyOrderedChar;
         using comparison_category = std::partial_ordering;
-
-        static int compare(const char_type* first1, const char_type* first2, size_t count) {
-            for (; 0 < count; --count, ++first1, ++first2) {
-                if (*first1 != *first2) {
-                    return *first1 < *first2 ? -1 : +1;
-                }
-            }
-
-            return 0;
-        }
-
-        static bool eq(const char_type l, const char_type r) { return l.c == r.c; }
     };
 }
 
@@ -397,17 +378,23 @@ void ordering_test_cases() {
         const std::string s1{"cats"};
         const std::string s2{"meow"};
         const std::regex all(".*");
-        std::smatch m1, m2;
+        const std::regex each(".");
+        std::smatch m1, m2, m3;
 
         std::regex_match(s1, m1, all);
         std::regex_match(s2, m2, all);
+        std::regex_search(s1, m3, each);
 
         std::ssub_match sm1 = m1[0];
         std::ssub_match sm1_equal = m1[0];
         std::ssub_match sm2 = m2[0];
+        std::ssub_match sm3 = m3[0];
 
         // TRANSITION: std::char_traits<char> doesn't define comparison_type
         spaceship_test<std::ssub_match, std::weak_ordering>(sm1, sm1_equal, sm2);
+        spaceship_test<std::ssub_match, std::weak_ordering>(sm1, s1, s2);
+        spaceship_test<std::ssub_match, const char*, const char*, std::weak_ordering>(sm1, s1.c_str(), s2.c_str());
+        spaceship_test<std::ssub_match, const char, const char, std::weak_ordering>(sm3, 'c', 'm');
 
         using StronglyOrderedMatch = std::ssub_match;
         using WeaklyOrderedMatch = std::sub_match<std::basic_string<WeaklyOrderedChar>::const_iterator>;

@@ -1188,12 +1188,12 @@ _NODISCARD bool operator==(const match_results<_BidIt, _Alloc>& _Left, const mat
     }
 }
 
-#if !_HAS_CXX20
+// TRANSITION, VSO-900973
+// Overload resolution prefers implicit conversions over re-writes
 template <class _BidIt, class _Alloc>
 _NODISCARD bool operator!=(const match_results<_BidIt, _Alloc>& _Left, const match_results<_BidIt, _Alloc>& _Right) {
     return !(_Left == _Right);
 }
-#endif // !_HAS_CXX20
 
 // NFA PROPERTIES
 const unsigned int _BRE_MAX_GRP = 9U;
@@ -2484,11 +2484,11 @@ public:
                && _MyVal._At(0) == _Right._MyVal._At(0);
     }
 
-#if !_HAS_CXX20
+// TRANSITION, VSO-900973
+// Overload resolution prefers implicit conversions over re-writes
     _NODISCARD bool operator!=(const regex_iterator& _Right) const {
         return !(*this == _Right);
     }
-#endif // !_HAS_CXX20
 
     _NODISCARD const value_type& operator*() const {
 #if _ITERATOR_DEBUG_LEVEL != 0
