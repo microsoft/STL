@@ -23,7 +23,6 @@ namespace {
 
 extern "C" {
 
-// TRANSITION, ABI
 _NODISCARD unsigned int __stdcall __std_parallel_algorithms_hw_threads() noexcept {
     static int _Cached_hw_concurrency = -1;
     unsigned int _Hw_concurrency      = __iso_volatile_load32(&_Cached_hw_concurrency);
