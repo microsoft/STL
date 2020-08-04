@@ -50,7 +50,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // _INVALID_MEMORY_ORDER
 
 // MACRO _STD_COMPARE_EXCHANGE_128
-#if defined(_STD_ATOMIC_ALWAYS_USE_CMPXCHG16B) // || defined(_M_ARM64), TRANSITION
+#if defined(_STD_ATOMIC_ALWAYS_USE_CMPXCHG16B) || defined(_M_ARM64)
 #define _STD_COMPARE_EXCHANGE_128 _InterlockedCompareExchange128
 #endif // defined(_STD_ATOMIC_ALWAYS_USE_CMPXCHG16B) || defined(_M_ARM64)
 #if defined(_M_X64) && !defined(_STD_ATOMIC_ALWAYS_USE_CMPXCHG16B)
@@ -470,10 +470,10 @@ private:
 };
 
 #if _HAS_CXX20
-template <class Spinlock>
+template <class _Spinlock_t>
 inline bool __stdcall _Atomic_wait_compare_non_lock_free(
     const void* _Storage, void* _Comparand, size_t _Size, void* _Spinlock_raw) noexcept {
-    Spinlock& _Spinlock = *static_cast<Spinlock*>(_Spinlock_raw);
+    _Spinlock_t& _Spinlock = *static_cast<_Spinlock_t*>(_Spinlock_raw);
     _Atomic_lock_spinlock(_Spinlock);
     const auto _Cmp_result = _CSTD memcmp(_Storage, _Comparand, _Size);
     _Atomic_unlock_spinlock(_Spinlock);

@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <intrin.h>
 #include <new>
+#include <processthreadsapi.h>
 #include <synchapi.h>
 #include <xthreads.h>
 
@@ -80,13 +81,7 @@ _NODISCARD bool __stdcall __std_atomic_has_cmpxchg16b() noexcept {
     _Cmpxchg16_support _Value = _Cached_value.load(std::memory_order_relaxed);
 
     if (_Value == _Cmpxchg16_support::_Unknown) {
-        int regs[4];
-        __cpuid(regs, 1); // assume leaf 1 exists
-        if (regs[2] & (1 << 13)) {
-            _Value = _Cmpxchg16_support::_Present;
-        } else {
-            _Value = _Cmpxchg16_support::_Absent;
-        }
+        _Value = IsProcessorFeaturePresent(PF_COMPARE_EXCHANGE128) ? _Cmpxchg16_support::_Present : _Cmpxchg16_support::_Absent;
         _Cached_value.store(_Value, std::memory_order_relaxed);
     }
     return reinterpret_cast<bool&>(_Value);
