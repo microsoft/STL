@@ -570,9 +570,9 @@ public:
         }
     }
 
-    common_iterator& operator=(const common_iterator& _Right) noexcept(
-        is_nothrow_copy_assignable_v<const _Iter&>&& is_nothrow_copy_assignable_v<const _Se&>&&
-            is_nothrow_copy_constructible_v<const _Iter&>&& is_nothrow_copy_constructible_v<const _Se&>) // strengthened
+    common_iterator& operator=(const common_iterator& _Right) noexcept(is_nothrow_copy_assignable_v<const _Iter&>&&
+            is_nothrow_copy_assignable_v<const _Se&>&& is_nothrow_copy_constructible_v<const _Iter&>&&
+                is_nothrow_copy_constructible_v<const _Se&>) /* strengthened */
     {
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Right._Mystate != _State::_Nothing, "common_iterator can only be assigned if it holds a value");
@@ -610,7 +610,7 @@ public:
     common_iterator& operator=(const common_iterator<_Iter2, _Se2>& _Right) noexcept(
         is_nothrow_assignable_v<_Iter, const _Iter2&>&& is_nothrow_assignable_v<_Se, const _Se2&>&&
             is_nothrow_constructible_v<_Iter, const _Iter2&>&&
-                is_nothrow_constructible_v<_Se, const _Se2&>) // strengthened
+                is_nothrow_constructible_v<_Se, const _Se2&>)  /* strengthened */
     // clang-format on
     {
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -642,7 +642,7 @@ public:
         return *this;
     }
 
-    ~common_iterator() noexcept // strengthened
+    ~common_iterator() noexcept /* strengthened */
     {
         if (_Mystate == _State::_Holds_iter) {
             _Myiter.~_Iter();
@@ -660,8 +660,7 @@ public:
     }
 
     // clang-format off
-    _NODISCARD decltype(auto) operator*() const
-        requires _Dereferenceable<const _Iter>
+    _NODISCARD decltype(auto) operator*() const requires _Dereferenceable<const _Iter>
     // clang-format on
     {
 #if _ITERATOR_DEBUG_LEVEL != 0
