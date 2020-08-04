@@ -392,8 +392,10 @@ void _Atomic_wait_direct(
 
 #if 1 // TRANSITION, ABI
 inline void _Atomic_lock_spinlock(long& _Spinlock) noexcept {
-    while (_InterlockedExchange(&_Spinlock, 1)) {
-        _YIELD_PROCESSOR();
+    while (_InterlockedExchange(&_Spinlock, 1) != 0) {
+        while (__iso_volatile_load32(&reinterpret_cast<int&>(_Spinlock)) != 0) {
+            _YIELD_PROCESSOR();
+        }
     }
 }
 
