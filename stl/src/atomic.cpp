@@ -34,7 +34,7 @@ namespace {
         __not_set,
     };
 
-    _Shared_ptr_api_level _Acuire_srw_functions() {
+    _Shared_ptr_api_level _Acquire_srw_functions() {
         static _STD atomic<_Shared_ptr_api_level> _Api_level{_Shared_ptr_api_level::__not_set};
 
         _Shared_ptr_api_level _Current = _Api_level.load(_STD memory_order_acquire);
@@ -65,7 +65,7 @@ _CRTIMP2_PURE void __cdecl _Lock_shared_ptr_spin_lock() { // spin until _Shared_
 #if _STL_WIN32_WINNT >= _STL_WIN32_WINNT_VISTA
     AcquireSRWLockExclusive(_Shared_ptr_lock);
 #else // ^^^ _STL_WIN32_WINNT >= _STL_WIN32_WINNT_VISTA / _STL_WIN32_WINNT < _STL_WIN32_WINNT_VISTA vvv
-    if (_Acuire_srw_functions() == _Shared_ptr_api_level::__has_nothing) {
+    if (_Acquire_srw_functions() == _Shared_ptr_api_level::__has_nothing) {
         while (_interlockedbittestandset(&_Shared_ptr_flag, 0) != 0) { // set bit 0
             while (__iso_volatile_load32(reinterpret_cast<int*>(&_Shared_ptr_flag)) != 0) {
                 YieldProcessor();
@@ -81,7 +81,7 @@ _CRTIMP2_PURE void __cdecl _Unlock_shared_ptr_spin_lock() { // release previousl
 #if _STL_WIN32_WINNT >= _STL_WIN32_WINNT_VISTA
     ReleaseSRWLockExclusive(&_Shared_ptr_lock);
 #else // ^^^ _STL_WIN32_WINNT >= _STL_WIN32_WINNT_VISTA / _STL_WIN32_WINNT < _STL_WIN32_WINNT_VISTA vvv
-    if (_Acuire_srw_functions() == _Shared_ptr_api_level::__has_nothing) {
+    if (_Acquire_srw_functions() == _Shared_ptr_api_level::__has_nothing) {
         _interlockedbittestandreset(&_Shared_ptr_flag, 0); // reset bit 0
     } else {
         _Table._Pfn_ReleaseSRWLockExclusive.load(_STD memory_order_relaxed)(&_Shared_ptr_lock);
