@@ -3267,8 +3267,8 @@ public:
         return false;
     }
 
-    void wait(weak_ptr<_Ty> _Old, memory_order = memory_order_seq_cst) const noexcept {
-        _Wait(_Old._Ptr, memory_order);
+    void wait(weak_ptr<_Ty> _Old, memory_order _Order = memory_order_seq_cst) const noexcept {
+        _Wait(_Old._Ptr, _Order);
     }
 
     using _Base::notify_all;
@@ -3384,8 +3384,8 @@ public:
         return false;
     }
 
-    void wait(weak_ptr<_Ty> _Old, memory_order = memory_order_seq_cst) const noexcept {
-        _Wait(_Old._Ptr, memory_order);
+    void wait(weak_ptr<_Ty> _Old, memory_order _Order = memory_order_seq_cst) const noexcept {
+        _Wait(_Old._Ptr, _Order);
     }
 
     using _Base::notify_all;
