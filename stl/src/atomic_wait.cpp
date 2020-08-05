@@ -350,21 +350,25 @@ __std_atomic_api_level __stdcall __std_atomic_set_api_level(__std_atomic_api_lev
 #endif // !_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
 }
 
+#pragma warning(push)
+#pragma warning(disable : 4324) // structure was padded due to alignment specifier
 _Smtx_t* __stdcall __std_atomic_get_mutex(const void* const _Key) noexcept {
     constexpr size_t _Table_size_power = 8;
     constexpr size_t _Table_size       = 1 << _Table_size_power;
     constexpr size_t _Table_index_mask = _Table_size - 1;
 
     struct alignas(std::hardware_destructive_interference_size) _Table_entry {
-        _Smtx_t _Mutex = 0;
+        _Smtx_t _Mutex;
     };
-    static _Table_entry _Table[_Table_size];
+
+    static _Table_entry _Table[_Table_size]{};
 
     auto _Index = reinterpret_cast<const std::uintptr_t>(_Key);
     _Index ^= _Index >> (_Table_size_power * 2);
     _Index ^= _Index >> _Table_size_power;
     return &_Table[_Index & _Table_index_mask]._Mutex;
 }
+#pragma warning(pop)
 
 _NODISCARD unsigned char __stdcall __std_atomic_compare_exchange_128(_Inout_bytecount_(16) long long* _Destination,
     _In_ long long _ExchangeHigh, _In_ long long _ExchangeLow,
