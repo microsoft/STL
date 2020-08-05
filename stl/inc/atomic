@@ -414,7 +414,7 @@ inline void _Atomic_unlock_spinlock(long& _Spinlock) noexcept {
     __iso_volatile_store32(reinterpret_cast<int*>(&_Spinlock), 0);
     _Memory_barrier(); // TRANSITION, GH-1133
 #else // ^^^ ARM32/ARM64 hardware / x86/x64 hardware vvv
-    _InterlockedExchange(&_Spinlock, 0);
+    _InterlockedExchange(&_Spinlock, 0); // TRANSITION, GH-1133: should use __iso_volatile_store32
 #endif // hardware
 }
 
