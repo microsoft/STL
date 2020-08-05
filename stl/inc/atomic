@@ -50,6 +50,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // _INVALID_MEMORY_ORDER
 
 // MACRO _STD_COMPARE_EXCHANGE_128
+#ifdef _WIN64
 #if _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1
 #define _STD_COMPARE_EXCHANGE_128 _InterlockedCompareExchange128
 #else // ^^^ _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 // _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0 vvv
@@ -64,6 +65,7 @@ extern "C" _NODISCARD unsigned char __stdcall __std_atomic_compare_exchange_128(
 extern "C" _NODISCARD bool __stdcall __std_atomic_has_cmpxchg16b() noexcept;
 #define _STD_COMPARE_EXCHANGE_128 __std_atomic_compare_exchange_128
 #endif // _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1
+#endif // _WIN64
 
 // MACRO _ATOMIC_HAS_DCAS
 // Controls whether atomic::is_always_lock_free triggers for sizeof(void *) or 2 * sizeof(void *)
