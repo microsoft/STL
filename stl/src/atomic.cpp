@@ -29,7 +29,7 @@ namespace {
     _Srw_functions_table _Table;
 
     enum class _Shared_ptr_api_level {
-        __has_nothing ,
+        __has_nothing,
         __has_srwlock,
         __not_set,
     };
