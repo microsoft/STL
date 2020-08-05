@@ -25,14 +25,13 @@ extern "C" {
 
 _NODISCARD unsigned int __stdcall __std_parallel_algorithms_hw_threads() noexcept {
     static int _Cached_hw_concurrency = -1;
-    int _Hw_concurrency      = __iso_volatile_load32(&_Cached_hw_concurrency);
+    int _Hw_concurrency               = __iso_volatile_load32(&_Cached_hw_concurrency);
     if (_Hw_concurrency == -1) {
         _Hw_concurrency = static_cast<int>(_STD thread::hardware_concurrency());
         __iso_volatile_store32(&_Cached_hw_concurrency, _Hw_concurrency);
     }
 
     return static_cast<unsigned int>(_Hw_concurrency);
-
 }
 
 _NODISCARD PTP_WORK __stdcall __std_create_threadpool_work(
