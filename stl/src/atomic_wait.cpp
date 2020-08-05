@@ -356,8 +356,7 @@ _Smtx_t* __stdcall __std_atomic_get_mutex(const void* const _Key) noexcept {
     constexpr size_t _Table_index_mask = _Table_size - 1;
 
     struct alignas(std::hardware_destructive_interference_size) _Table_entry {
-        _Smtx_t _Mutex                                                           = 0;
-        char _Pad[std::hardware_destructive_interference_size - sizeof(_Smtx_t)] = {};
+        _Smtx_t _Mutex = 0;
     };
     static _Table_entry _Table[_Table_size];
 
@@ -370,40 +369,41 @@ _Smtx_t* __stdcall __std_atomic_get_mutex(const void* const _Key) noexcept {
 _NODISCARD unsigned char __stdcall __std_atomic_compare_exchange_128(_Inout_bytecount_(16) long long* _Destination,
     _In_ long long _ExchangeHigh, _In_ long long _ExchangeLow,
     _Inout_bytecount_(16) long long* _ComparandResult) noexcept {
-#if defined(_M_X64) && _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
+#if !defined(_WIN64)
+    return __std_atomic_compare_exchange_128_fallback(_Destination, _ExchangeHigh, _ExchangeLow, _ComparandResult);
+#elif _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1
+    return _InterlockedCompareExchange128(_Destination, _ExchangeHigh, _ExchangeLow, _ComparandResult);
+#else // ^^^ _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 // _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0 vvv
     if (__std_atomic_has_cmpxchg16b()) {
         return _InterlockedCompareExchange128(_Destination, _ExchangeHigh, _ExchangeLow, _ComparandResult);
-    } else {
-        return __std_atomic_compare_exchange_128_fallback(_Destination, _ExchangeHigh, _ExchangeLow, _ComparandResult);
     }
-#elif defined(_M_X64) && _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 1 || defined(_M_ARM64)
-    return _InterlockedCompareExchange128(_Destination, _ExchangeHigh, _ExchangeLow, _ComparandResult);
-#else
+
     return __std_atomic_compare_exchange_128_fallback(_Destination, _ExchangeHigh, _ExchangeLow, _ComparandResult);
-#endif
+#endif // ^^^ _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0
 }
 
 _NODISCARD bool __stdcall __std_atomic_has_cmpxchg16b() noexcept {
-#if defined(_M_X64) && _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0
+#if !defined(_WIN64)
+    return false;
+#elif _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1
+    return true
+#else // ^^^ _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 // _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0 vvv
     enum class _Cmpxchg16_support : char {
         _Absent  = false,
         _Present = true,
         _Unknown,
     };
+
     static std::atomic<_Cmpxchg16_support> _Cached_value{_Cmpxchg16_support::_Unknown};
 
     _Cmpxchg16_support _Value = _Cached_value.load(std::memory_order_relaxed);
-
     if (_Value == _Cmpxchg16_support::_Unknown) {
         _Value = IsProcessorFeaturePresent(PF_COMPARE_EXCHANGE128) ? _Cmpxchg16_support::_Present
                                                                    : _Cmpxchg16_support::_Absent;
         _Cached_value.store(_Value, std::memory_order_relaxed);
     }
+
     return reinterpret_cast<bool&>(_Value);
-#elif defined(_M_X64) && _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 || defined(_M_ARM64)
-    return true;
-#else
-    return false;
-#endif
+#endif // ^^^ _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0
 }
 _END_EXTERN_C
