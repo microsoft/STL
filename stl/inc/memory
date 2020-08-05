@@ -3267,7 +3267,7 @@ public:
         return false;
     }
 
-    void wait(weak_ptr<_Ty> _Old, memory_order _Order = memory_order_seq_cst) const noexcept {
+    void wait(shared_ptr<_Ty> _Old, memory_order _Order = memory_order_seq_cst) const noexcept {
         this->_Wait(_Old._Ptr, _Order);
     }
 
