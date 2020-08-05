@@ -161,5 +161,5 @@ int main() {
     test_semaphore_wait_until<std::counting_semaphore<>>(delay_duration);
     test_semaphore_wait_for<std::binary_semaphore>(delay_duration);
     test_semaphore_wait_until<std::binary_semaphore>(delay_duration);
-#endif
+#endif // CAN_FAIL_ON_TIMING_ASSUMPTION
 }
