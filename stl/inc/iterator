@@ -732,21 +732,16 @@ public:
         using _CIter = common_type_t<_Iter, _Other>;
         using _CDiff = common_type_t<iter_difference_t<_Iter>, iter_difference_t<_Other>>;
 
-        const _CDiff _Diff = static_cast<_CDiff>(_Left._Length) - static_cast<_CDiff>(_Right._Length);
-        if (_Diff == 0) {
-            _STL_VERIFY(static_cast<_CIter>(_Left._Current) == static_cast<_CIter>(_Right._Current),
-                "counted_iterators from different ranges");
-        } else {
-            if constexpr (forward_iterator<_Iter> && forward_iterator<_Other>) {
-                if (_Diff < 0) {
-                    _STL_VERIFY(static_cast<_CIter>(_Left._Current)
-                                    == _RANGES next(static_cast<_CIter>(_Right._Current), -_Diff),
-                        "counted_iterators from different ranges");
-                } else {
-                    _STL_VERIFY(_RANGES next(static_cast<_CIter>(_Left._Current), _Diff)
-                                    == static_cast<_CIter>(_Right._Current),
-                        "counted_iterators from different ranges");
-                }
+        if constexpr (forward_iterator<_Iter> && forward_iterator<_Other>) {
+            const _CDiff _Diff = static_cast<_CDiff>(_Left._Length) - static_cast<_CDiff>(_Right._Length);
+            if (_Diff < 0) {
+                _STL_VERIFY(
+                    static_cast<_CIter>(_Left._Current) == _RANGES next(static_cast<_CIter>(_Right._Current), -_Diff),
+                    "counted_iterators from different ranges");
+            } else {
+                _STL_VERIFY(
+                    _RANGES next(static_cast<_CIter>(_Left._Current), _Diff) == static_cast<_CIter>(_Right._Current),
+                    "counted_iterators from different ranges");
             }
         }
     }

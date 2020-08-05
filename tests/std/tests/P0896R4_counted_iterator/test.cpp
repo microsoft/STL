@@ -178,7 +178,7 @@ struct instantiator {
             { // equality
                 counted_iterator<Iter> iter1{Iter{input}, 2};
                 counted_iterator<Iter> iter2{Iter{input}, 2};
-                counted_iterator<Iter> iter3{Iter{input}, 3};
+                counted_iterator<Iter> iter3{Iter{input + 1}, 1};
                 assert(iter1 == iter2);
                 assert(!(iter1 == iter3));
             }
