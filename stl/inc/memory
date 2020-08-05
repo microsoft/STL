@@ -3116,7 +3116,7 @@ protected:
         : _Ptr(_Px), _Repptr(reinterpret_cast<uintptr_t>(_Ref)) {}
 
     _NODISCARD _Ref_count_base* _Lock_and_load() const noexcept {
-        uintptr_t _Rep = _Repptr.load(memory_order::relaxed);
+        uintptr_t _Rep = _Repptr.load(memory_order_relaxed);
         for (;;) {
             switch (_Rep & _Lock_mask) {
             case _Not_locked: // Can try to lock now
@@ -3136,8 +3136,8 @@ protected:
                 [[fallthrough]];
 
             case _Locked_notify_needed: // "Notify needed" is already set, just wait
-                _Repptr.wait(_Rep, memory_order::relaxed);
-                _Rep = _Repptr.load(memory_order::relaxed);
+                _Repptr.wait(_Rep, memory_order_relaxed);
+                _Rep = _Repptr.load(memory_order_relaxed);
                 break;
 
             default: // Unrecognized bit pattern
@@ -3152,6 +3152,26 @@ protected:
             // As we don't count waiters, every waiter is notified, and then some may re-request notification
             _Repptr.notify_all();
         }
+    }
+
+    void _Wait(_Ty* _Old, memory_order) const noexcept {
+        for (;;) {
+            auto _Rep   = _Lock_and_load();
+            bool _Equal = _Ptr.load(memory_order_relaxed) == _Old._Ptr;
+            _Store_and_unlock(_Rep);
+            if (!_Equal) {
+                break;
+            }
+            __std_atomic_wait_direct(&_Ptr, &_Old, sizeof(_Old), _Atomic_wait_no_timeout);
+        }
+    }
+
+    void notify_one() noexcept {
+        _Ptr.notify_one();
+    }
+
+    void notify_all() noexcept {
+        _Ptr.notify_all();
     }
 
     atomic<_Ty*> _Ptr{nullptr};
@@ -3172,21 +3192,21 @@ public:
         return false;
     }
 
-    void store(shared_ptr<_Ty> _Value, const memory_order _Order = memory_order::seq_cst) noexcept {
+    void store(shared_ptr<_Ty> _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
         _Check_store_memory_order(_Order);
         const auto _Rep = this->_Lock_and_load();
         _Ty* const _Tmp = _Value._Ptr;
-        _Value._Ptr     = this->_Ptr.load(memory_order::relaxed);
-        this->_Ptr.store(_Tmp, memory_order::relaxed);
+        _Value._Ptr     = this->_Ptr.load(memory_order_relaxed);
+        this->_Ptr.store(_Tmp, memory_order_relaxed);
         this->_Store_and_unlock(_Value._Rep);
         _Value._Rep = _Rep;
     }
 
-    _NODISCARD shared_ptr<_Ty> load(const memory_order _Order = memory_order::seq_cst) const noexcept {
+    _NODISCARD shared_ptr<_Ty> load(const memory_order _Order = memory_order_seq_cst) const noexcept {
         _Check_load_memory_order(_Order);
         shared_ptr<_Ty> _Result;
         const auto _Rep = this->_Lock_and_load();
-        _Result._Ptr    = this->_Ptr.load(memory_order::relaxed);
+        _Result._Ptr    = this->_Ptr.load(memory_order_relaxed);
         _Result._Rep    = _Rep;
         _Result._Incref();
         this->_Store_and_unlock(_Rep);
@@ -3197,12 +3217,12 @@ public:
         return load();
     }
 
-    shared_ptr<_Ty> exchange(shared_ptr<_Ty> _Value, const memory_order _Order = memory_order::seq_cst) noexcept {
+    shared_ptr<_Ty> exchange(shared_ptr<_Ty> _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
         _Check_memory_order(_Order);
         shared_ptr<_Ty> _Result;
         _Result._Rep = this->_Lock_and_load();
-        _Result._Ptr = this->_Ptr.load(memory_order::relaxed);
-        this->_Ptr.store(_Value._Ptr, memory_order::relaxed);
+        _Result._Ptr = this->_Ptr.load(memory_order_relaxed);
+        this->_Ptr.store(_Value._Ptr, memory_order_relaxed);
         this->_Store_and_unlock(_Value._Rep);
         _Value._Ptr = nullptr; // ownership of _Value ref has been given to this, silence decrement
         _Value._Rep = nullptr;
@@ -3220,24 +3240,24 @@ public:
     }
 
     bool compare_exchange_weak(shared_ptr<_Ty>& _Expected, shared_ptr<_Ty> _Desired,
-        const memory_order _Order = memory_order::seq_cst) noexcept {
+        const memory_order _Order = memory_order_seq_cst) noexcept {
         return compare_exchange_strong(_Expected, _STD move(_Desired), _Order);
     }
 
     bool compare_exchange_strong(shared_ptr<_Ty>& _Expected, shared_ptr<_Ty> _Desired,
-        const memory_order _Order = memory_order::seq_cst) noexcept {
+        const memory_order _Order = memory_order_seq_cst) noexcept {
         _Check_memory_order(_Order);
         auto _Rep = this->_Lock_and_load();
-        if (this->_Ptr.load(memory_order::relaxed) == _Expected._Ptr && _Rep == _Expected._Rep) {
+        if (this->_Ptr.load(memory_order_relaxed) == _Expected._Ptr && _Rep == _Expected._Rep) {
             _Ty* const _Tmp = _Desired._Ptr;
-            _Desired._Ptr   = this->_Ptr.load(memory_order::relaxed);
-            this->_Ptr.store(_Tmp, memory_order::relaxed);
+            _Desired._Ptr   = this->_Ptr.load(memory_order_relaxed);
+            this->_Ptr.store(_Tmp, memory_order_relaxed);
             _STD swap(_Rep, _Desired._Rep);
             this->_Store_and_unlock(_Rep);
             return true;
         }
         _Ref_count_base* _Expected_rep = _Expected._Rep;
-        _Expected._Ptr                 = this->_Ptr.load(memory_order::relaxed);
+        _Expected._Ptr                 = this->_Ptr.load(memory_order_relaxed);
         _Expected._Rep                 = _Rep;
         _Expected._Incref();
         this->_Store_and_unlock(_Rep);
@@ -3247,26 +3267,12 @@ public:
         return false;
     }
 
-    void wait(shared_ptr<_Ty> _Old, memory_order = memory_order::seq_cst) const noexcept {
-        for (;;) {
-            auto _Rep   = this->_Lock_and_load();
-            bool _Equal = this->_Ptr.load(memory_order::relaxed) == _Old._Ptr;
-            this->_Store_and_unlock(_Rep);
-            if (!_Equal) {
-                break;
-            }
-            __std_atomic_wait_direct(&this->_Ptr, &_Old._Ptr, sizeof(_Old._Ptr), _Atomic_wait_no_timeout);
-        }
+    void wait(weak_ptr<_Ty> _Old, memory_order = memory_order_seq_cst) const noexcept {
+        _Wait(_Old._Ptr, memory_order);
     }
 
-    void notify_one() noexcept {
-        this->_Ptr.notify_one();
-    }
-
-
-    void notify_all() noexcept {
-        this->_Ptr.notify_all();
-    }
+    using _Base::notify_one;
+    using _Base::notify_all;
 
     constexpr atomic() noexcept = default;
 
@@ -3282,7 +3288,7 @@ public:
     }
 
     ~atomic() {
-        const auto _Rep = reinterpret_cast<_Ref_count_base*>(this->_Repptr.load(memory_order::relaxed));
+        const auto _Rep = reinterpret_cast<_Ref_count_base*>(this->_Repptr.load(memory_order_relaxed));
         if (_Rep) {
             _Rep->_Decref();
         }
@@ -3303,21 +3309,21 @@ public:
         return false;
     }
 
-    void store(weak_ptr<_Ty> _Value, const memory_order _Order = memory_order::seq_cst) noexcept {
+    void store(weak_ptr<_Ty> _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
         _Check_store_memory_order(_Order);
         const auto _Rep = this->_Lock_and_load();
         _Ty* const _Tmp = _Value._Ptr;
-        _Value._Ptr     = this->_Ptr.load(memory_order::relaxed);
-        this->_Ptr.store(_Tmp, memory_order::relaxed);
+        _Value._Ptr     = this->_Ptr.load(memory_order_relaxed);
+        this->_Ptr.store(_Tmp, memory_order_relaxed);
         this->_Store_and_unlock(_Value._Rep);
         _Value._Rep = _Rep;
     }
 
-    _NODISCARD weak_ptr<_Ty> load(const memory_order _Order = memory_order::seq_cst) const noexcept {
+    _NODISCARD weak_ptr<_Ty> load(const memory_order _Order = memory_order_seq_cst) const noexcept {
         _Check_load_memory_order(_Order);
         weak_ptr<_Ty> _Result;
         const auto _Rep = this->_Lock_and_load();
-        _Result._Ptr    = this->_Ptr.load(memory_order::relaxed);
+        _Result._Ptr    = this->_Ptr.load(memory_order_relaxed);
         _Result._Rep    = _Rep;
         _Result._Incwref();
         this->_Store_and_unlock(_Rep);
@@ -3328,12 +3334,12 @@ public:
         return load();
     }
 
-    weak_ptr<_Ty> exchange(weak_ptr<_Ty> _Value, const memory_order _Order = memory_order::seq_cst) noexcept {
+    weak_ptr<_Ty> exchange(weak_ptr<_Ty> _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
         _Check_memory_order(_Order);
         weak_ptr<_Ty> _Result;
         _Result._Rep = this->_Lock_and_load();
-        _Result._Ptr = this->_Ptr.load(memory_order::relaxed);
-        this->_Ptr.store(_Value._Ptr, memory_order::relaxed);
+        _Result._Ptr = this->_Ptr.load(memory_order_relaxed);
+        this->_Ptr.store(_Value._Ptr, memory_order_relaxed);
         this->_Store_and_unlock(_Value._Rep);
         _Value._Ptr = nullptr; // ownership of _Value ref has been given to this, silence decrement
         _Value._Rep = nullptr;
@@ -3351,24 +3357,24 @@ public:
     }
 
     bool compare_exchange_weak(
-        weak_ptr<_Ty>& _Expected, weak_ptr<_Ty> _Desired, const memory_order _Order = memory_order::seq_cst) noexcept {
+        weak_ptr<_Ty>& _Expected, weak_ptr<_Ty> _Desired, const memory_order _Order = memory_order_seq_cst) noexcept {
         return compare_exchange_strong(_Expected, _STD move(_Desired), _Order);
     }
 
     bool compare_exchange_strong(
-        weak_ptr<_Ty>& _Expected, weak_ptr<_Ty> _Desired, const memory_order _Order = memory_order::seq_cst) noexcept {
+        weak_ptr<_Ty>& _Expected, weak_ptr<_Ty> _Desired, const memory_order _Order = memory_order_seq_cst) noexcept {
         _Check_memory_order(_Order);
         auto _Rep = this->_Lock_and_load();
-        if (this->_Ptr.load(memory_order::relaxed) == _Expected._Ptr && _Rep == _Expected._Rep) {
+        if (this->_Ptr.load(memory_order_relaxed) == _Expected._Ptr && _Rep == _Expected._Rep) {
             _Ty* const _Tmp = _Desired._Ptr;
-            _Desired._Ptr   = this->_Ptr.load(memory_order::relaxed);
-            this->_Ptr.store(_Tmp, memory_order::relaxed);
+            _Desired._Ptr   = this->_Ptr.load(memory_order_relaxed);
+            this->_Ptr.store(_Tmp, memory_order_relaxed);
             _STD swap(_Rep, _Desired._Rep);
             this->_Store_and_unlock(_Rep);
             return true;
         }
         const auto _Expected_rep = _Expected._Rep;
-        _Expected._Ptr           = this->_Ptr.load(memory_order::relaxed);
+        _Expected._Ptr           = this->_Ptr.load(memory_order_relaxed);
         _Expected._Rep           = _Rep;
         _Expected._Incwref();
         this->_Store_and_unlock(_Rep);
@@ -3378,26 +3384,12 @@ public:
         return false;
     }
 
-    void wait(weak_ptr<_Ty> _Old, memory_order = memory_order::seq_cst) const noexcept {
-        for (;;) {
-            auto _Rep   = this->_Lock_and_load();
-            bool _Equal = this->_Ptr.load(memory_order::relaxed) == _Old._Ptr;
-            this->_Store_and_unlock(_Rep);
-            if (!_Equal) {
-                break;
-            }
-            __std_atomic_wait_direct(&this->_Ptr, &_Old._Ptr, sizeof(_Old._Ptr), _Atomic_wait_no_timeout);
-        }
+    void wait(weak_ptr<_Ty> _Old, memory_order = memory_order_seq_cst) const noexcept {
+        _Wait(_Old._Ptr, memory_order);
     }
 
-    void notify_one() noexcept {
-        this->_Ptr.notify_one();
-    }
-
-
-    void notify_all() noexcept {
-        this->_Ptr.notify_all();
-    }
+    using _Base::notify_all;
+    using _Base::notify_one;
 
     constexpr atomic() noexcept = default;
 
@@ -3413,7 +3405,7 @@ public:
     }
 
     ~atomic() {
-        const auto _Rep = reinterpret_cast<_Ref_count_base*>(this->_Repptr.load(memory_order::relaxed));
+        const auto _Rep = reinterpret_cast<_Ref_count_base*>(this->_Repptr.load(memory_order_relaxed));
         if (_Rep) {
             _Rep->_Decwref();
         }
