@@ -31,55 +31,75 @@ struct instantiator {
     static constexpr P expected[]  = {
         {0, 10}, {0, 11}, {0, 12}, {13, 0}, {14, 0}, {1, 10}, {1, 11}, {10, 2}, {3, 10}, {11, 3}, {12, 3}};
 
+    static constexpr auto counting_compare(size_t& counter) {
+        return [&counter](auto&& x, auto&& y) {
+            ++counter;
+            return ranges::less{}(x, y);
+        };
+    }
+
     template <ranges::input_range R1, ranges::input_range R2, weakly_incrementable O>
     static constexpr void call() {
-        using ranges::merge, ranges::merge_result, ranges::end, ranges::equal, ranges::iterator_t, ranges::less,
-            ranges::size;
+        using ranges::merge, ranges::merge_result, ranges::end, ranges::equal, ranges::iterator_t, ranges::size;
 
         { // Validate range overload
             P output[size(expected)]{};
             R1 range1{elements1};
             R2 range2{elements2};
+            size_t counter = 0;
+
             const same_as<merge_result<iterator_t<R1>, iterator_t<R2>, O>> auto result =
-                merge(range1, range2, O{output}, less{}, get_first, get_second);
+                merge(range1, range2, O{output}, counting_compare(counter), get_first, get_second);
             assert(result.in1 == range1.end());
             assert(result.in2 == range2.end());
             assert(result.out.peek() == end(output));
             assert(equal(output, expected));
+            assert(counter <= size(elements1) + size(elements2) - 1);
         }
         { // Validate iterator overload
             P output[size(expected)]{};
             R1 range1{elements1};
             R2 range2{elements2};
-            const same_as<merge_result<iterator_t<R1>, iterator_t<R2>, O>> auto result = merge(
-                range1.begin(), range1.end(), range2.begin(), range2.end(), O{output}, less{}, get_first, get_second);
+            size_t counter = 0;
+
+            const same_as<merge_result<iterator_t<R1>, iterator_t<R2>, O>> auto result =
+                merge(range1.begin(), range1.end(), range2.begin(), range2.end(), O{output}, counting_compare(counter),
+                    get_first, get_second);
             assert(result.in1 == range1.end());
             assert(result.in2 == range2.end());
             assert(result.out.peek() == end(output));
             assert(equal(output, expected));
+            assert(counter <= size(elements1) + size(elements2) - 1);
         }
 
         { // Validate range overload, empty range1
             P output[size(elements2)]{};
             R1 range1{};
             R2 range2{elements2};
+            size_t counter = 0;
+
             const same_as<merge_result<iterator_t<R1>, iterator_t<R2>, O>> auto result =
-                merge(range1, range2, O{output}, less{}, get_first, get_second);
+                merge(range1, range2, O{output}, counting_compare(counter), get_first, get_second);
             assert(result.in1 == range1.end());
             assert(result.in2 == range2.end());
             assert(result.out.peek() == end(output));
             assert(equal(output, elements2));
+            assert(counter == 0);
         }
         { // Validate iterator overload, empty range2
             P output[size(elements1)]{};
             R1 range1{elements1};
             R2 range2{};
-            const same_as<merge_result<iterator_t<R1>, iterator_t<R2>, O>> auto result = merge(
-                range1.begin(), range1.end(), range2.begin(), range2.end(), O{output}, less{}, get_first, get_second);
+            size_t counter = 0;
+
+            const same_as<merge_result<iterator_t<R1>, iterator_t<R2>, O>> auto result =
+                merge(range1.begin(), range1.end(), range2.begin(), range2.end(), O{output}, counting_compare(counter),
+                    get_first, get_second);
             assert(result.in1 == range1.end());
             assert(result.in2 == range2.end());
             assert(result.out.peek() == end(output));
             assert(equal(output, elements1));
+            assert(counter == 0);
         }
     }
 };

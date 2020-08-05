@@ -6852,7 +6852,7 @@ namespace ranges {
             _Seek_wrapped(_First2, _STD move(_UResult.in2));
             return {_STD move(_First1), _STD move(_First2), _STD move(_UResult.out)};
         }
-        // clang-format on
+
     private:
         template <class _It1, class _Se1, class _It2, class _Se2, class _Out, class _Pr, class _Pj1, class _Pj2>
         _NODISCARD static constexpr merge_result<_It1, _It2, _Out> _Merge_unchecked(_It1 _First1, const _Se1 _Last1,
