@@ -177,7 +177,7 @@ inline void test_atomic_wait() {
 
     test_atomic_wait_func(std::make_shared<int>('a'), std::make_shared<int>('b'), waiting_duration);
     test_atomic_wait_func(
-        std::weak_ptr(std::make_shared<int>('a')), std::weak_ptr(std::make_shared<int>('b')), waiting_duration);
+        std::weak_ptr{std::make_shared<int>('a')}, std::weak_ptr{std::make_shared<int>('b')}, waiting_duration);
 
     test_notify_all_notifies_all<char>(1, 2, waiting_duration);
     test_notify_all_notifies_all<signed char>(1, 2, waiting_duration);
