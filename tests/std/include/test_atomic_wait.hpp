@@ -38,9 +38,11 @@ void test_atomic_wait_func(const UnderlyingType old_value, const UnderlyingType 
         add_seq('4');
         a.store(new_value);
         a.notify_one();
+#ifdef CAN_FAIL_ON_TIMING_ASSUMPTION
         // timing assumption that the main thread evaluates the `wait(old_value)` before this timeout expires
         std::this_thread::sleep_for(waiting_duration);
         add_seq('6');
+#endif // CAN_FAIL_ON_TIMING_ASSUMPTION
     });
 
     a.wait(old_value);
@@ -52,7 +54,12 @@ void test_atomic_wait_func(const UnderlyingType old_value, const UnderlyingType 
     thd.join();
 
     add_seq('\0');
+
+#ifdef CAN_FAIL_ON_TIMING_ASSUMPTION
     assert(strcmp(seq, "123456") == 0);
+#else
+    assert(strcmp(seq, "12345") == 0);
+#endif
 }
 
 template <class UnderlyingType>

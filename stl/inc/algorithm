@@ -4948,7 +4948,7 @@ _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
 #if _HAS_IF_CONSTEXPR && _USE_STD_VECTOR_ALGORITHMS
     using _Elem                         = remove_pointer_t<decltype(_UFirst)>;
     using _DestElem                     = remove_pointer_t<decltype(_UDest)>;
-    constexpr bool _Allow_vectorization = conjunction_v<is_same<remove_const_t<_Elem>, remove_const_t<_DestElem>>,
+    constexpr bool _Allow_vectorization = conjunction_v<is_same<remove_const_t<_Elem>, _DestElem>,
         is_pointer<decltype(_UFirst)>, is_trivially_copyable<_Elem>, negation<is_volatile<_Elem>>>;
     constexpr size_t _Nx                = sizeof(_Elem);
 
@@ -4991,6 +4991,95 @@ _FwdIt reverse_copy(_ExPo&&, _BidIt _First, _BidIt _Last, _FwdIt _Dest) noexcept
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
     return _STD reverse_copy(_First, _Last, _Dest);
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // ALIAS TEMPLATE reverse_copy_result
+    template <class _In, class _Out>
+    using reverse_copy_result = in_out_result<_In, _Out>;
+
+    // VARIABLE ranges::reverse_copy
+    class _Reverse_copy_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <bidirectional_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out>
+            requires indirectly_copyable<_It, _Out>
+        constexpr reverse_copy_result<_It, _Out> operator()(_It _First, _Se _Last, _Out _Result) const {
+            // clang-format on
+            _Adl_verify_range(_First, _Last);
+            auto _UFirst = _Get_unwrapped(_STD move(_First));
+            auto _ULast  = _Get_final_iterator_unwrapped<_It>(_UFirst, _STD move(_Last));
+            _Seek_wrapped(_First, _ULast);
+            _Result = _Reverse_copy_common(_STD move(_UFirst), _STD move(_ULast), _STD move(_Result));
+            return {_STD move(_First), _STD move(_Result)};
+        }
+
+        // clang-format off
+        template <bidirectional_range _Rng, weakly_incrementable _Out>
+            requires indirectly_copyable<iterator_t<_Rng>, _Out>
+        constexpr reverse_copy_result<borrowed_iterator_t<_Rng>, _Out> operator()(_Rng&& _Range, _Out _Result) const {
+            // clang-format on
+            if constexpr (common_range<_Rng>) {
+                _Result = _Reverse_copy_common(_Ubegin(_Range), _Uend(_Range), _STD move(_Result));
+                return {_RANGES end(_Range), _STD move(_Result)};
+            } else {
+                auto _ULast = _Get_final_iterator_unwrapped(_Range);
+                _Result     = _Reverse_copy_common(_Ubegin(_Range), _ULast, _STD move(_Result));
+                return {_Rewrap_iterator(_Range, _STD move(_ULast)), _STD move(_Result)};
+            }
+        }
+
+    private:
+        template <class _It, class _Out>
+        _NODISCARD static constexpr _Out _Reverse_copy_common(const _It _First, _It _Last, _Out _Result) {
+            _STL_INTERNAL_STATIC_ASSERT(bidirectional_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(weakly_incrementable<_Out>);
+            _STL_INTERNAL_STATIC_ASSERT(indirectly_copyable<_It, _Out>);
+
+#if _USE_STD_VECTOR_ALGORITHMS
+            if constexpr (contiguous_iterator<_It> && contiguous_iterator<_Out>) {
+                using _Elem                         = remove_reference_t<iter_reference_t<_It>>;
+                using _DestElem                     = remove_reference_t<iter_reference_t<_Out>>;
+                constexpr bool _Allow_vectorization = conjunction_v<is_same<remove_const_t<_Elem>, _DestElem>,
+                    is_trivially_copyable<_Elem>, negation<is_volatile<_Elem>>>;
+                constexpr size_t _Nx                = sizeof(_Elem);
+
+#pragma warning(suppress : 6326) // Potential comparison of a constant with another constant
+                if constexpr (_Allow_vectorization && _Nx <= 8 && (_Nx & (_Nx - 1)) == 0) {
+                    if (!_STD is_constant_evaluated()) {
+                        _Elem* const _First_addr      = _STD to_address(_First);
+                        _Elem* const _Last_addr       = _STD to_address(_Last);
+                        _DestElem* const _Result_addr = _STD to_address(_Result);
+                        if constexpr (_Nx == 1) {
+                            __std_reverse_copy_trivially_copyable_1(_First_addr, _Last_addr, _Result_addr);
+                        } else if constexpr (_Nx == 2) {
+                            __std_reverse_copy_trivially_copyable_2(_First_addr, _Last_addr, _Result_addr);
+                        } else if constexpr (_Nx == 4) {
+                            __std_reverse_copy_trivially_copyable_4(_First_addr, _Last_addr, _Result_addr);
+                        } else {
+                            __std_reverse_copy_trivially_copyable_8(_First_addr, _Last_addr, _Result_addr);
+                        }
+
+                        _Result += _Last - _First;
+                        return _Result;
+                    }
+                }
+            }
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
+            for (; _First != _Last; ++_Result) {
+                *_Result = *--_Last;
+            }
+
+            return _Result;
+        }
+    };
+
+    inline constexpr _Reverse_copy_fn reverse_copy{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
 #ifdef __cpp_lib_concepts
@@ -7000,6 +7089,90 @@ _FwdIt3 merge(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt3);
     return _STD merge(_First1, _Last1, _First2, _Last2, _Dest);
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // ALIAS TEMPLATE merge_result
+    template <class _In1, class _In2, class _Out>
+    using merge_result = in_in_out_result<_In1, _In2, _Out>;
+
+    // VARIABLE ranges::merge
+    class _Merge_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <input_iterator _It1, sentinel_for<_It1> _Se1, input_iterator _It2, sentinel_for<_It2> _Se2,
+            weakly_incrementable _Out, class _Pr = ranges::less, class _Pj1 = identity, class _Pj2 = identity>
+            requires mergeable<_It1, _It2, _Out, _Pr, _Pj1, _Pj2>
+        constexpr merge_result<_It1, _It2, _Out> operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2,
+            _Out _Result, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            // clang-format on
+            _Adl_verify_range(_First1, _Last1);
+            _Adl_verify_range(_First2, _Last2);
+            auto _UResult = _Merge_unchecked(_Get_unwrapped(_STD move(_First1)), _Get_unwrapped(_STD move(_Last1)),
+                _Get_unwrapped(_STD move(_First2)), _Get_unwrapped(_STD move(_Last2)), _STD move(_Result),
+                _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            _Seek_wrapped(_First1, _STD move(_UResult.in1));
+            _Seek_wrapped(_First2, _STD move(_UResult.in2));
+            return {_STD move(_First1), _STD move(_First2), _STD move(_UResult.out)};
+        }
+
+        // clang-format off
+        template <input_range _Rng1, input_range _Rng2, weakly_incrementable _Out, class _Pr = ranges::less,
+            class _Pj1 = identity, class _Pj2 = identity>
+            requires mergeable<iterator_t<_Rng1>, iterator_t<_Rng2>, _Out, _Pr, _Pj1, _Pj2>
+        constexpr merge_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>, _Out> operator()(
+            _Rng1&& _Range1, _Rng2&& _Range2, _Out _Result, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            // clang-format on
+            auto _First1 = _RANGES begin(_Range1);
+            auto _First2 = _RANGES begin(_Range2);
+            auto _UResult =
+                _Merge_unchecked(_Get_unwrapped(_STD move(_First1)), _Uend(_Range1), _Get_unwrapped(_STD move(_First2)),
+                    _Uend(_Range2), _STD move(_Result), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            _Seek_wrapped(_First1, _STD move(_UResult.in1));
+            _Seek_wrapped(_First2, _STD move(_UResult.in2));
+            return {_STD move(_First1), _STD move(_First2), _STD move(_UResult.out)};
+        }
+
+    private:
+        template <class _It1, class _Se1, class _It2, class _Se2, class _Out, class _Pr, class _Pj1, class _Pj2>
+        _NODISCARD static constexpr merge_result<_It1, _It2, _Out> _Merge_unchecked(_It1 _First1, const _Se1 _Last1,
+            _It2 _First2, const _Se2 _Last2, _Out _Result, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It1>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se1, _It1>);
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It2>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se2, _It2>);
+            _STL_INTERNAL_STATIC_ASSERT(weakly_incrementable<_Out>);
+            _STL_INTERNAL_STATIC_ASSERT(mergeable<_It1, _It2, _Out, _Pr, _Pj1, _Pj2>);
+
+            for (;; ++_Result) {
+                if (_First1 == _Last1) {
+                    auto _Copy_result =
+                        _RANGES _Copy_unchecked(_STD move(_First2), _STD move(_Last2), _STD move(_Result));
+                    return {_STD move(_First1), _STD move(_Copy_result.in), _STD move(_Copy_result.out)};
+                }
+
+                if (_First2 == _Last2) {
+                    auto _Copy_result =
+                        _RANGES _Copy_unchecked(_STD move(_First1), _STD move(_Last1), _STD move(_Result));
+                    return {_STD move(_Copy_result.in), _STD move(_First2), _STD move(_Copy_result.out)};
+                }
+
+                if (_STD invoke(_Pred, _STD invoke(_Proj2, *_First2), _STD invoke(_Proj1, *_First1))) {
+                    *_Result = *_First2;
+                    ++_First2;
+                } else {
+                    *_Result = *_First1;
+                    ++_First1;
+                }
+            }
+        }
+    };
+
+    inline constexpr _Merge_fn merge{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE inplace_merge
@@ -9382,6 +9555,79 @@ _CONSTEXPR20 bool next_permutation(_BidIt _First, _BidIt _Last) {
     return _STD next_permutation(_First, _Last, less<>{});
 }
 
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // ALIAS TEMPLATE next_permutation_result
+    template <class _In>
+    using next_permutation_result = in_found_result<_In>;
+
+    // VARIABLE ranges::next_permutation
+    class _Next_permutation_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <bidirectional_iterator _It, sentinel_for<_It> _Se, class _Pr = ranges::less, class _Pj = identity>
+            requires sortable<_It, _Pr, _Pj>
+        constexpr next_permutation_result<_It> operator()(_It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            // clang-format on
+            _Adl_verify_range(_First, _Last);
+            auto _UFirst = _Get_unwrapped(_STD move(_First));
+            auto _ULast  = _Get_final_iterator_unwrapped<_It>(_UFirst, _STD move(_Last));
+            _Seek_wrapped(_First, _ULast);
+            const bool _Found =
+                _Next_permutation_common(_STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            return {_STD move(_First), _Found};
+        }
+
+        // clang-format off
+        template <bidirectional_range _Rng, class _Pr = ranges::less, class _Pj = identity>
+            requires sortable<iterator_t<_Rng>, _Pr, _Pj>
+        constexpr next_permutation_result<borrowed_iterator_t<_Rng>> operator()(
+            _Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            // clang-format on
+            auto _ULast       = _Get_final_iterator_unwrapped(_Range);
+            const bool _Found = _Next_permutation_common(_Ubegin(_Range), _ULast, _Pass_fn(_Pred), _Pass_fn(_Proj));
+            return {_Rewrap_iterator(_Range, _STD move(_ULast)), _Found};
+        }
+
+    private:
+        template <class _It, class _Pr, class _Pj>
+        _NODISCARD static constexpr bool _Next_permutation_common(_It _First, _It _Last, _Pr _Pred, _Pj _Proj) {
+            _STL_INTERNAL_STATIC_ASSERT(bidirectional_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
+
+            auto _Next = _Last;
+            if (_First == _Last || _First == --_Next) {
+                return false;
+            }
+
+            for (;;) { // find rightmost element smaller than successor
+                auto _Next1 = _Next;
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *--_Next), _STD invoke(_Proj, *_Next1))) {
+                    // swap with rightmost element that's smaller, flip suffix
+                    auto _Mid = _Last;
+                    do {
+                        --_Mid;
+                    } while (!_STD invoke(_Pred, _STD invoke(_Proj, *_Next), _STD invoke(_Proj, *_Mid)));
+
+                    _RANGES iter_swap(_Next, _Mid);
+                    _Reverse_common(_STD move(_Next1), _STD move(_Last));
+                    return true;
+                }
+
+                if (_Next == _First) { // pure descending, flip all
+                    _Reverse_common(_STD move(_First), _STD move(_Last));
+                    return false;
+                }
+            }
+        }
+    };
+
+    inline constexpr _Next_permutation_fn next_permutation{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
+
 // FUNCTION TEMPLATE prev_permutation
 template <class _BidIt, class _Pr>
 _CONSTEXPR20 bool prev_permutation(_BidIt _First, _BidIt _Last, _Pr _Pred) {
@@ -9419,6 +9665,79 @@ _CONSTEXPR20 bool prev_permutation(_BidIt _First, _BidIt _Last) {
     // reverse permute and test for pure descending
     return _STD prev_permutation(_First, _Last, less<>{});
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // ALIAS TEMPLATE prev_permutation_result
+    template <class _In>
+    using prev_permutation_result = in_found_result<_In>;
+
+    // VARIABLE ranges::prev_permutation
+    class _Prev_permutation_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <bidirectional_iterator _It, sentinel_for<_It> _Se, class _Pr = ranges::less, class _Pj = identity>
+            requires sortable<_It, _Pr, _Pj>
+        constexpr prev_permutation_result<_It> operator()(_It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            // clang-format on
+            _Adl_verify_range(_First, _Last);
+            auto _UFirst = _Get_unwrapped(_STD move(_First));
+            auto _ULast  = _Get_final_iterator_unwrapped<_It>(_UFirst, _STD move(_Last));
+            _Seek_wrapped(_First, _ULast);
+            const bool _Found =
+                _Prev_permutation_common(_STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            return {_STD move(_First), _Found};
+        }
+
+        // clang-format off
+        template <bidirectional_range _Rng, class _Pr = ranges::less, class _Pj = identity>
+            requires sortable<iterator_t<_Rng>, _Pr, _Pj>
+        constexpr prev_permutation_result<borrowed_iterator_t<_Rng>> operator()(
+            _Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            // clang-format on
+            auto _ULast       = _Get_final_iterator_unwrapped(_Range);
+            const bool _Found = _Prev_permutation_common(_Ubegin(_Range), _ULast, _Pass_fn(_Pred), _Pass_fn(_Proj));
+            return {_Rewrap_iterator(_Range, _STD move(_ULast)), _Found};
+        }
+
+    private:
+        template <class _It, class _Pr, class _Pj>
+        _NODISCARD static constexpr bool _Prev_permutation_common(_It _First, _It _Last, _Pr _Pred, _Pj _Proj) {
+            _STL_INTERNAL_STATIC_ASSERT(bidirectional_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
+
+            auto _Next = _Last;
+            if (_First == _Last || _First == --_Next) {
+                return false;
+            }
+
+            for (;;) { // find rightmost element not smaller than successor
+                auto _Next1 = _Next;
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_Next1), _STD invoke(_Proj, *--_Next))) {
+                    // swap with rightmost element that's not smaller, flip suffix
+                    auto _Mid = _Last;
+                    do {
+                        --_Mid;
+                    } while (!_STD invoke(_Pred, _STD invoke(_Proj, *_Mid), _STD invoke(_Proj, *_Next)));
+
+                    _RANGES iter_swap(_Next, _Mid);
+                    _Reverse_common(_STD move(_Next1), _STD move(_Last));
+                    return true;
+                }
+
+                if (_Next == _First) { // pure ascending, flip all
+                    _Reverse_common(_STD move(_First), _STD move(_Last));
+                    return false;
+                }
+            }
+        }
+    };
+
+    inline constexpr _Prev_permutation_fn prev_permutation{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATES is_sorted AND is_sorted_until
 template <class _FwdIt, class _Pr>
