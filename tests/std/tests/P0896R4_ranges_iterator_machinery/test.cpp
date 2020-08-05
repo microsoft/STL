@@ -3251,9 +3251,9 @@ namespace move_iterator_test {
 
 namespace counted_iterator_test {
     using std::bidirectional_iterator_tag, std::default_sentinel_t, std::forward_iterator_tag, std::input_iterator_tag,
-        std::counted_iterator, std::random_access_iterator_tag, std::same_as, std::string, std::three_way_comparable,
-        std::three_way_comparable_with, std::prev, std::next, std::begin, std::end, std::default_sentinel,
-        std::iterator_traits;
+        std::iterator_traits, std::counted_iterator, std::random_access_iterator_tag, std::same_as, std::string,
+        std::three_way_comparable, std::three_way_comparable_with;
+
     // Validate the iterator_concept/iterator_category metaprogramming
     STATIC_ASSERT(same_as<iterator_traits<counted_iterator<simple_contiguous_iter<>>>::iterator_category,
         random_access_iterator_tag>);
