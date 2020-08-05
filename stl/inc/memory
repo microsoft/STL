@@ -3157,7 +3157,7 @@ protected:
     void _Wait(_Ty* _Old, memory_order) const noexcept {
         for (;;) {
             auto _Rep   = _Lock_and_load();
-            bool _Equal = _Ptr.load(memory_order_relaxed) == _Old._Ptr;
+            bool _Equal = _Ptr.load(memory_order_relaxed) == _Old;
             _Store_and_unlock(_Rep);
             if (!_Equal) {
                 break;
@@ -3268,7 +3268,7 @@ public:
     }
 
     void wait(weak_ptr<_Ty> _Old, memory_order _Order = memory_order_seq_cst) const noexcept {
-        _Wait(_Old._Ptr, _Order);
+        this->_Wait(_Old._Ptr, _Order);
     }
 
     using _Base::notify_all;
@@ -3385,7 +3385,7 @@ public:
     }
 
     void wait(weak_ptr<_Ty> _Old, memory_order _Order = memory_order_seq_cst) const noexcept {
-        _Wait(_Old._Ptr, _Order);
+        this->_Wait(_Old._Ptr, _Order);
     }
 
     using _Base::notify_all;
