@@ -52,7 +52,7 @@ void test_case_operator_dereference_value_initialized_iterator() {
 
 void test_case_operator_dereference_end_iterator() {
     counted_iterator<int*> cit{globalArray, 0};
-    (void) (*cit); // cannot dereference end counted_iterator
+    (void) (*cit); // cannot dereference end counted_iterator (per proposed resolution of LWG-3472)
 }
 
 void test_case_operator_preincrement_value_initialized_iterator() {
@@ -189,21 +189,21 @@ void test_case_operator_equal_incompatible_value_initialized() {
     (void) (cit == counted_iterator<int*>{}); // cannot compare incompatible counted_iterators for equality
 }
 
-void test_case_operator_less_incompatible_different_data() {
+void test_case_operator_spaceship_incompatible_different_data() {
     counted_iterator<int*> cit1(globalArray, 3);
     counted_iterator<int*> cit2(otherArray, 3);
-    (void) (cit1 < cit2); // cannot compare incompatible counted_iterators
+    (void) (cit1 <=> cit2); // cannot compare incompatible counted_iterators
 }
 
-void test_case_operator_less_incompatible_different_size() {
+void test_case_operator_spaceship_incompatible_different_size() {
     counted_iterator<int*> cit1(globalArray, 3);
     counted_iterator<int*> cit2(globalArray, 4);
-    (void) (cit1 < cit2); // cannot compare incompatible counted_iterators
+    (void) (cit1 <=> cit2); // cannot compare incompatible counted_iterators
 }
 
-void test_case_operator_less_incompatible_value_initialized() {
+void test_case_operator_spaceship_incompatible_value_initialized() {
     counted_iterator<int*> cit{globalArray, 0};
-    (void) (cit < counted_iterator<int*>{}); // cannot compare incompatible counted_iterators
+    (void) (cit <=> counted_iterator<int*>{}); // cannot compare incompatible counted_iterators
 }
 
 int main(int argc, char* argv[]) {
@@ -240,9 +240,9 @@ int main(int argc, char* argv[]) {
         test_case_operator_equal_incompatible_different_data,
         test_case_operator_equal_incompatible_different_size,
         test_case_operator_equal_incompatible_value_initialized,
-        test_case_operator_less_incompatible_different_data,
-        test_case_operator_less_incompatible_different_size,
-        test_case_operator_less_incompatible_value_initialized,
+        test_case_operator_spaceship_incompatible_different_data,
+        test_case_operator_spaceship_incompatible_different_size,
+        test_case_operator_spaceship_incompatible_value_initialized,
     });
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 

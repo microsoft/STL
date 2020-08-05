@@ -727,45 +727,48 @@ public:
         _RANGES iter_swap(_Left._Current, _Right._Current);
     }
 
-#if _ITERATOR_DEBUG_LEVEL != 0
     template <common_with<_Iter> _Other>
     friend constexpr void _Same_sequence(const counted_iterator& _Left, const counted_iterator<_Other>& _Right) {
-        if constexpr (forward_iterator<_Iter> && forward_iterator<_Other>) {
-            using _CIter = common_type_t<_Iter, _Other>;
-            using _CDiff = iter_difference_t<_CIter>;
+        using _CIter = common_type_t<_Iter, _Other>;
+        using _CDiff = common_type_t<iter_difference_t<_Iter>, iter_difference_t<_Other>>;
 
-            const _CDiff _Diff = static_cast<_CDiff>(_Left._Length) - static_cast<_CDiff>(_Right._Length);
-            if (_Diff < 0) {
-                _STL_VERIFY(
-                    static_cast<_CIter>(_Left._Current) == _RANGES next(static_cast<_CIter>(_Right._Current), -_Diff),
-                    "counted_iterators from different ranges");
-            } else {
-                _STL_VERIFY(
-                    _RANGES next(static_cast<_CIter>(_Left._Current), _Diff) == static_cast<_CIter>(_Right._Current),
-                    "counted_iterators from different ranges");
+        const _CDiff _Diff = static_cast<_CDiff>(_Left._Length) - static_cast<_CDiff>(_Right._Length);
+        if (_Diff == 0) {
+            _STL_VERIFY(static_cast<_CIter>(_Left._Current) == static_cast<_CIter>(_Right._Current),
+                "counted_iterators from different ranges");
+        } else {
+            if constexpr (forward_iterator<_Iter> && forward_iterator<_Other>) {
+                if (_Diff < 0) {
+                    _STL_VERIFY(static_cast<_CIter>(_Left._Current)
+                                    == _RANGES next(static_cast<_CIter>(_Right._Current), -_Diff),
+                        "counted_iterators from different ranges");
+                } else {
+                    _STL_VERIFY(_RANGES next(static_cast<_CIter>(_Left._Current), _Diff)
+                                    == static_cast<_CIter>(_Right._Current),
+                        "counted_iterators from different ranges");
+                }
             }
         }
     }
 
     template <common_with<_Iter> _Other>
     friend constexpr void _Verify_range(const counted_iterator& _Left, const counted_iterator<_Other>& _Right) {
-        if constexpr (forward_iterator<_Iter> && forward_iterator<_Other>) {
-            using _CIter = common_type_t<_Iter, _Other>;
-            using _CDiff = iter_difference_t<_CIter>;
+        if constexpr (_Range_verifiable_v<_Iter, _Other>) {
+            _Verify_range(_Left._Current, _Right._Current);
+        }
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _Same_sequence(_Left, _Right);
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+    }
 
-            const _CDiff _Diff = static_cast<_CDiff>(_Left._Length) - static_cast<_CDiff>(_Right._Length);
-            _STL_VERIFY(_Diff > 0, "transposed counted_iterator range");
-            _STL_VERIFY(
-                _RANGES next(static_cast<_CIter>(_Left._Current), _Diff) == static_cast<_CIter>(_Right._Current),
-                "counted_iterators from different ranges");
+    constexpr void _Verify_offset(const iter_difference_t<_Iter> _Off) const {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Off <= _Length, "Offset larger than counted_iterator length");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        if constexpr (_Offset_verifiable_v<_Iter>) {
+            _Current._Verify_offset(_Off);
         }
     }
-
-    constexpr void _Verify_offset(const iter_difference_t<_Iter> _Off) const requires _Offset_verifiable_v<_Iter> {
-        _STL_VERIFY(_Off < _Length, "Offset larger than counted_iterator length");
-        _Current._Verify_offset(_Off);
-    }
-#endif // _ITERATOR_DEBUG_LEVEL != 0
 
     using _Prevent_inheriting_unwrap = counted_iterator;
 
@@ -781,7 +784,7 @@ public:
     static constexpr bool _Unwrap_when_unverified = _Do_unwrap_when_unverified_v<_Iter>;
 
     // clang-format off
-    template <input_or_output_iterator _Other>
+    template <class _Other>
         requires _Wrapped_seekable_v<_Iter, const _Other&>
     constexpr void _Seek_to(const counted_iterator<_Other>& _It) {
         // clang-format on
@@ -790,7 +793,7 @@ public:
     }
 
     // clang-format off
-    template <input_or_output_iterator _Other>
+    template <class _Other>
         requires _Wrapped_seekable_v<_Iter, _Other>
     constexpr void _Seek_to(counted_iterator<_Other>&& _It) {
         // clang-format on
