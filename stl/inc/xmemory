@@ -264,7 +264,7 @@ _Pointer _Refancy(_Pointer _Ptr) noexcept {
 
 // FUNCTION TEMPLATE _Destroy_in_place
 template <class _NoThrowFwdIt, class _NoThrowSentinel>
-/* _CONSTEXPR20_DYNALLOC */ void _Destroy_range(_NoThrowFwdIt _First, const _NoThrowSentinel _Last) noexcept;
+/* _CONSTEXPR20_DYNALLOC */ void _Destroy_range(_NoThrowFwdIt _First, _NoThrowSentinel _Last) noexcept;
 
 template <class _Ty>
 /* _CONSTEXPR20_DYNALLOC */ void _Destroy_in_place(_Ty& _Obj) noexcept {

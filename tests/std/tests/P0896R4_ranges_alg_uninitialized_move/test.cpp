@@ -13,10 +13,6 @@
 
 using namespace std;
 
-#ifndef _CONSTEXPR20_DYNALLOC // TRANSITION, P0784
-#define _CONSTEXPR20_DYNALLOC
-#endif
-
 // Validate that uninitialized_move_result aliases in_out_result
 STATIC_ASSERT(same_as<ranges::uninitialized_move_result<int, double>, ranges::in_out_result<int, double>>);
 
@@ -34,43 +30,35 @@ struct int_wrapper {
     inline static int constructions = 0;
     inline static int destructions  = 0;
 
-    static constexpr void clear_counts() {
-        if (!is_constant_evaluated()) {
-            constructions = destructions = 0;
-        }
+    static void clear_counts() {
+        constructions = 0;
+        destructions  = 0;
     }
 
     static constexpr int magic_throwing_val = 29;
     int val                                 = 10;
 
-    constexpr int_wrapper() {
-        if (!is_constant_evaluated()) {
-            ++constructions;
-        }
+    int_wrapper() {
+        ++constructions;
     }
-    constexpr int_wrapper(int x) : val{x} {
-        if (!is_constant_evaluated()) {
-            ++constructions;
-        }
+    int_wrapper(int x) : val{x} {
+        ++constructions;
     }
-    constexpr int_wrapper(int_wrapper&& that) {
+
+    int_wrapper(int_wrapper&& that) {
         if (that.val == magic_throwing_val) {
             throw magic_throwing_val;
         }
 
         val = exchange(that.val, -1);
-        if (!is_constant_evaluated()) {
-            ++constructions;
-        }
+        ++constructions;
     }
 
-    _CONSTEXPR20_DYNALLOC ~int_wrapper() {
-        if (!is_constant_evaluated()) {
-            ++destructions;
-        }
+    ~int_wrapper() {
+        ++destructions;
     }
 
-    constexpr int_wrapper& operator=(int_wrapper&& that) {
+    int_wrapper& operator=(int_wrapper&& that) {
         if (that.val == magic_throwing_val) {
             throw magic_throwing_val;
         }
@@ -84,18 +72,11 @@ STATIC_ASSERT(movable<int_wrapper> && !copyable<int_wrapper>);
 
 template <class T, size_t N>
 struct holder {
-    T* ptr = allocator<T>{}.allocate(N);
+    STATIC_ASSERT(N < ~size_t{0} / sizeof(T));
+    alignas(T) unsigned char space[N * sizeof(T)];
 
-    holder()              = default;
-    holder(const holder&) = delete;
-    holder& operator=(const holder&) = delete;
-
-    _CONSTEXPR20_DYNALLOC ~holder() {
-        allocator<T>{}.deallocate(ptr, N);
-    }
-
-    constexpr auto as_span() const noexcept {
-        return span<T, N>{ptr, N};
+    auto as_span() {
+        return span<T, N>{reinterpret_cast<T*>(space + 0), N};
     }
 };
 
@@ -111,56 +92,48 @@ struct instantiator {
     static constexpr int expected_input[]  = {-1, -1, -1};
 
     template <ranges::input_range R, ranges::forward_range W>
-    static _CONSTEXPR20_DYNALLOC void call() {
+    static void call() {
         using ranges::uninitialized_move, ranges::uninitialized_move_result, ranges::equal, ranges::equal_to,
             ranges::iterator_t;
 
         { // Validate range overload
             int_wrapper input[3] = {13, 55, 12345};
-            int_wrapper::clear_counts();
             R wrapped_input{input};
             holder<int_wrapper, 3> mem;
             W wrapped_output{mem.as_span()};
 
+            int_wrapper::clear_counts();
             const same_as<uninitialized_move_result<iterator_t<R>, iterator_t<W>>> auto result =
                 uninitialized_move(wrapped_input, wrapped_output);
-            if (!is_constant_evaluated()) {
-                assert(int_wrapper::constructions == 3);
-                assert(int_wrapper::destructions == 0);
-            }
+            assert(int_wrapper::constructions == 3);
+            assert(int_wrapper::destructions == 0);
             assert(result.in == wrapped_input.end());
             assert(result.out == wrapped_output.end());
             assert(equal(wrapped_output, expected_output, equal_to{}, &int_wrapper::val));
             assert(equal(input, expected_input, equal_to{}, &int_wrapper::val));
             not_ranges_destroy(wrapped_output);
-            if (!is_constant_evaluated()) {
-                assert(int_wrapper::constructions == 3);
-                assert(int_wrapper::destructions == 3);
-            }
+            assert(int_wrapper::constructions == 3);
+            assert(int_wrapper::destructions == 3);
         }
 
         { // Validate iterator overload
             int_wrapper input[3] = {13, 55, 12345};
-            int_wrapper::clear_counts();
             R wrapped_input{input};
             holder<int_wrapper, 3> mem;
             W wrapped_output{mem.as_span()};
 
+            int_wrapper::clear_counts();
             const same_as<uninitialized_move_result<iterator_t<R>, iterator_t<W>>> auto result = uninitialized_move(
                 wrapped_input.begin(), wrapped_input.end(), wrapped_output.begin(), wrapped_output.end());
-            if (!is_constant_evaluated()) {
-                assert(int_wrapper::constructions == 3);
-                assert(int_wrapper::destructions == 0);
-            }
+            assert(int_wrapper::constructions == 3);
+            assert(int_wrapper::destructions == 0);
             assert(result.in == wrapped_input.end());
             assert(result.out == wrapped_output.end());
             assert(equal(wrapped_output, expected_output, equal_to{}, &int_wrapper::val));
             assert(equal(input, expected_input, equal_to{}, &int_wrapper::val));
             not_ranges_destroy(wrapped_output);
-            if (!is_constant_evaluated()) {
-                assert(int_wrapper::constructions == 3);
-                assert(int_wrapper::destructions == 3);
-            }
+            assert(int_wrapper::constructions == 3);
+            assert(int_wrapper::destructions == 3);
         }
     }
 };
@@ -170,13 +143,13 @@ struct throwing_test {
 
     template <ranges::input_range R, ranges::forward_range W>
     static void call() {
-        // Validate only range overload (one is plenty since they are backends)
+        // Validate only range overload (one is plenty since they both use the same backend)
         int_wrapper input[] = {13, 55, int_wrapper::magic_throwing_val, 12345};
-        int_wrapper::clear_counts();
         R wrapped_input{input};
         holder<int_wrapper, 4> mem;
         W wrapped_output{mem.as_span()};
 
+        int_wrapper::clear_counts();
         try {
             (void) ranges::uninitialized_move(wrapped_input, wrapped_output);
             assert(false);
@@ -197,22 +170,12 @@ using test_input  = test::range<test::input, int_wrapper, test::Sized::no, test:
 using test_output = test::range<test::fwd, int_wrapper, test::Sized::no, test::CanDifference::no, test::Common::no,
     test::CanCompare::yes, test::ProxyRef::no>;
 
-constexpr void run_tests() {
-    // The algorithm is oblivious to non-required category, size, difference, and requires non-proxy references for the
-    // output range.
-
-    if (!is_constant_evaluated()) { // TRANSITION, P0784
-        instantiator::call<test_input<test::ProxyRef::no>, test_output>();
-        instantiator::call<test_input<test::ProxyRef::yes>, test_output>();
-    }
-
-    if (!is_constant_evaluated()) {
-        throwing_test::call<test_input<test::ProxyRef::no>, test_output>();
-        throwing_test::call<test_input<test::ProxyRef::yes>, test_output>();
-    }
-}
-
 int main() {
-    STATIC_ASSERT((run_tests(), true));
-    run_tests();
+    // The algorithm is oblivious to non-required category, size, difference, and "proxyness" of the input range. It
+    // _is_ sensitive to proxiness in that it requires non-proxy references for the output range.
+
+    instantiator::call<test_input<test::ProxyRef::no>, test_output>();
+    instantiator::call<test_input<test::ProxyRef::yes>, test_output>();
+    throwing_test::call<test_input<test::ProxyRef::no>, test_output>();
+    throwing_test::call<test_input<test::ProxyRef::yes>, test_output>();
 }

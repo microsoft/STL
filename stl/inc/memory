@@ -120,8 +120,7 @@ namespace ranges {
         // clang-format off
         template <input_iterator _It1, sentinel_for<_It1> _Se1, _No_throw_forward_iterator _It2, _No_throw_sentinel_for<_It2> _Se2>
             requires constructible_from<iter_value_t<_It2>, iter_rvalue_reference_t<_It1>>
-        /* _CONSTEXPR20_DYNALLOC */ uninitialized_move_result<_It1, _It2> operator()(
-            _It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2) const {
+        uninitialized_move_result<_It1, _It2> operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2) const {
             // clang-format on
             _Adl_verify_range(_First1, _Last1);
             _Adl_verify_range(_First2, _Last2);
@@ -137,8 +136,8 @@ namespace ranges {
         // clang-format off
         template <input_range _Rng1, _No_throw_forward_range _Rng2>
             requires constructible_from<range_value_t<_Rng2>, range_rvalue_reference_t<_Rng1>>
-        /* _CONSTEXPR20_DYNALLOC */ uninitialized_move_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>>
-            operator()(_Rng1&& _Range1, _Rng2&& _Range2) const {
+        uninitialized_move_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>> operator()(
+            _Rng1&& _Range1, _Rng2&& _Range2) const {
             // clang-format on
             auto _First1  = _RANGES begin(_Range1);
             auto _UResult = _RANGES _Uninitialized_move_unchecked(
