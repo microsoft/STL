@@ -425,13 +425,13 @@ void _Atomic_wait_direct(
 #endif // _HAS_CXX20
 
 #if 1 // TRANSITION, ABI
-inline void _Atomic_lock_spinlock(long& _Spinlock) noexcept {
+inline void _Atomic_lock_acquire(long& _Spinlock) noexcept {
     while (_InterlockedExchange(&_Spinlock, 1)) {
         _YIELD_PROCESSOR();
     }
 }
 
-inline void _Atomic_unlock_spinlock(long& _Spinlock) noexcept {
+inline void _Atomic_lock_release(long& _Spinlock) noexcept {
 #if defined(_M_ARM) || defined(_M_ARM64)
     _Memory_barrier();
     __iso_volatile_store32(reinterpret_cast<int*>(&_Spinlock), 0);
@@ -442,27 +442,27 @@ inline void _Atomic_unlock_spinlock(long& _Spinlock) noexcept {
 }
 
 
-inline void _Atomic_lock_spinlock(_Smtx_t* _Spinlock) noexcept {
+inline void _Atomic_lock_acquire(_Smtx_t* _Spinlock) noexcept {
     _Smtx_lock_exclusive(_Spinlock);
 }
 
-inline void _Atomic_unlock_spinlock(_Smtx_t* _Spinlock) noexcept {
+inline void _Atomic_lock_release(_Smtx_t* _Spinlock) noexcept {
     _Smtx_unlock_exclusive(_Spinlock);
 }
 
 template <class _Spinlock_t>
-class _Spinlock_guard {
+class _Atomic_lock_guard {
 public:
-    explicit _Spinlock_guard(_Spinlock_t& _Spinlock_) noexcept : _Spinlock(_Spinlock_) {
-        _Atomic_lock_spinlock(_Spinlock);
+    explicit _Atomic_lock_guard(_Spinlock_t& _Spinlock_) noexcept : _Spinlock(_Spinlock_) {
+        _Atomic_lock_acquire(_Spinlock);
     }
 
-    ~_Spinlock_guard() {
-        _Atomic_unlock_spinlock(_Spinlock);
+    ~_Atomic_lock_guard() {
+        _Atomic_lock_release(_Spinlock);
     }
 
-    _Spinlock_guard(const _Spinlock_guard&) = delete;
-    _Spinlock_guard& operator=(const _Spinlock_guard&) = delete;
+    _Atomic_lock_guard(const _Atomic_lock_guard&) = delete;
+    _Atomic_lock_guard& operator=(const _Atomic_lock_guard&) = delete;
 
 private:
     _Spinlock_t& _Spinlock;
@@ -473,9 +473,9 @@ template <class _Spinlock_t>
 inline bool __stdcall _Atomic_wait_compare_non_lock_free(
     const void* _Storage, void* _Comparand, size_t _Size, void* _Spinlock_raw) noexcept {
     _Spinlock_t& _Spinlock = *static_cast<_Spinlock_t*>(_Spinlock_raw);
-    _Atomic_lock_spinlock(_Spinlock);
+    _Atomic_lock_acquire(_Spinlock);
     const auto _Cmp_result = _CSTD memcmp(_Storage, _Comparand, _Size);
-    _Atomic_unlock_spinlock(_Spinlock);
+    _Atomic_lock_release(_Spinlock);
     return _Cmp_result == 0;
 }
 
@@ -499,7 +499,8 @@ struct _Atomic_storage {
     // Provides operations common to all specializations of std::atomic, load, store, exchange, and CAS.
     // Locking version used when hardware has no atomic operations for sizeof(_Ty).
 
-    using _TVal = typename _Atomic_storage_types<_Ty>::_TVal;
+    using _TVal  = typename _Atomic_storage_types<_Ty>::_TVal;
+    using _Guard = _Atomic_lock_guard<typename _Atomic_storage_types<_Ty>::_Spinlock>;
 
     _Atomic_storage() = default;
 
@@ -511,27 +512,24 @@ struct _Atomic_storage {
     void store(const _TVal _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
         // store with sequential consistency
         _Check_store_memory_order(_Order);
-        _Lock();
+        _Guard _Lock{_Spinlock};
         _Storage = _Value;
-        _Unlock();
     }
 
     _NODISCARD _TVal load(const memory_order _Order = memory_order_seq_cst) const noexcept {
         // load with sequential consistency
         _Check_load_memory_order(_Order);
-        _Lock();
+        _Guard _Lock{_Spinlock};
         _TVal _Local(_Storage);
-        _Unlock();
         return _Local;
     }
 
     _TVal exchange(const _TVal _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
         // exchange _Value with _Storage with sequential consistency
         _Check_memory_order(_Order);
-        _Lock();
+        _Guard _Lock{_Spinlock};
         _TVal _Result(_Storage);
         _Storage = _Value;
-        _Unlock();
         return _Result;
     }
 
@@ -544,7 +542,7 @@ struct _Atomic_storage {
 #if _CMPXCHG_MASK_OUT_PADDING_BITS
         __builtin_zero_non_value_bits(_Expected_ptr);
 #endif // _CMPXCHG_MASK_OUT_PADDING_BITS
-        _Lock();
+        _Guard _Lock{_Spinlock};
 #if _CMPXCHG_MASK_OUT_PADDING_BITS
         if constexpr (_Might_have_non_value_bits<_TVal>) {
             _Storage_for<_TVal> _Local;
@@ -564,7 +562,6 @@ struct _Atomic_storage {
             _CSTD memcpy(_Expected_ptr, _Storage_ptr, sizeof(_TVal));
         }
 
-        _Unlock();
         return _Result;
     }
 
@@ -574,7 +571,7 @@ struct _Atomic_storage {
         const auto _Expected_ptr = _STD addressof(_Expected);
         for (;;) {
             {
-                _Spinlock_guard _Lock{_Spinlock};
+                _Guard _Lock{_Spinlock};
                 if (_CSTD memcmp(_Storage_ptr, _Expected_ptr, sizeof(_TVal)) != 0) {
                     // contents differed, we might be done, check for padding
 #if _CMPXCHG_MASK_OUT_PADDING_BITS
@@ -615,14 +612,6 @@ struct _Atomic_storage {
 #endif // _HAS_CXX20
 
 #if 1 // TRANSITION, ABI
-    void _Lock() const noexcept { // lock the spinlock
-        _Atomic_lock_spinlock(_Spinlock);
-    }
-
-    void _Unlock() const noexcept { // unlock the spinlock
-        _Atomic_unlock_spinlock(_Spinlock);
-    }
-
 protected:
     void _Init_spinlock_for_ref() noexcept {
         _Spinlock = __std_atomic_get_mutex(_STD addressof(_Storage));
@@ -636,16 +625,8 @@ public:
     _Ty _Storage{};
 
 #else // ^^^ don't break ABI / break ABI vvv
-    void _Lock() const noexcept { // lock the spinlock
-        _Smtx_lock_exclusive(&_Spinlock);
-    }
-
-    void _Unlock() const noexcept { // unlock the spinlock
-        _Smtx_unlock_exclusive(&_Spinlock);
-    }
-
     _Ty _Storage;
-    mutable _Smtx_t _Spinlock = 0;
+    mutable _Smtx_t _Mutex = 0;
 #endif // TRANSITION, ABI
 };
 
