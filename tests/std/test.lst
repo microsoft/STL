@@ -239,7 +239,6 @@ tests\P0769R2_shift_left_shift_right
 tests\P0784R7_library_support_for_more_constexpr_containers
 tests\P0811R3_midpoint_lerp
 tests\P0896R4_P1614R2_comparisons
-tests\P0896R4_ranges_algorithm_machinery
 tests\P0896R4_ranges_alg_adjacent_find
 tests\P0896R4_ranges_alg_all_of
 tests\P0896R4_ranges_alg_any_of
@@ -284,6 +283,7 @@ tests\P0896R4_ranges_alg_replace_copy
 tests\P0896R4_ranges_alg_replace_copy_if
 tests\P0896R4_ranges_alg_replace_if
 tests\P0896R4_ranges_alg_reverse
+tests\P0896R4_ranges_alg_reverse_copy
 tests\P0896R4_ranges_alg_rotate
 tests\P0896R4_ranges_alg_rotate_copy
 tests\P0896R4_ranges_alg_sample
@@ -299,6 +299,7 @@ tests\P0896R4_ranges_alg_transform_binary
 tests\P0896R4_ranges_alg_transform_unary
 tests\P0896R4_ranges_alg_unique
 tests\P0896R4_ranges_alg_unique_copy
+tests\P0896R4_ranges_algorithm_machinery
 tests\P0896R4_ranges_iterator_machinery
 tests\P0896R4_ranges_range_machinery
 tests\P0896R4_ranges_subrange
