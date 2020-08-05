@@ -24,8 +24,8 @@
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
 _STL_DISABLE_CLANG_WARNINGS
-#pragma push_macro("max")
-#undef max
+#pragma push_macro("new")
+#undef new
 
 _STD_BEGIN
 
@@ -49,7 +49,7 @@ public:
         }
     }
 
-    _NODISCARD static constexpr ptrdiff_t max() noexcept {
+    _NODISCARD static constexpr ptrdiff_t (max)() noexcept {
         return (1ULL << (sizeof(ptrdiff_t) * CHAR_BIT - 1)) - 1;
     }
 
@@ -90,7 +90,7 @@ private:
 
 _STD_END
 
-#pragma pop_macro("max")
+#pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)

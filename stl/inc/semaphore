@@ -25,8 +25,8 @@
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
 _STL_DISABLE_CLANG_WARNINGS
-#pragma push_macro("max")
-#undef max
+#pragma push_macro("new")
+#undef new
 
 _STD_BEGIN
 
@@ -44,7 +44,6 @@ _NODISCARD unsigned long _Semaphore_remaining_timeout(const chrono::time_point<_
     }
 
     auto _Rel_time = _Abs_time - _Now;
-    chrono::duration<unsigned long, milli> _Rel_time_ms;
     static constexpr chrono::hours _Ten_days{24 * 10};
     if (_Rel_time >= _Ten_days) {
         return chrono::duration_cast<chrono::duration<unsigned long, milli>>(_Ten_days).count();
@@ -56,14 +55,14 @@ _NODISCARD unsigned long _Semaphore_remaining_timeout(const chrono::time_point<_
 template <ptrdiff_t _Least_max_value = INT_MAX>
 class counting_semaphore {
 public:
-    _NODISCARD static constexpr ptrdiff_t max() noexcept {
+    _NODISCARD static constexpr ptrdiff_t (max)() noexcept {
         return (1ULL << (sizeof(_Counter_type) * CHAR_BIT - 1)) - 1;
     }
 
     constexpr explicit counting_semaphore(const ptrdiff_t _Desired) noexcept /* strengthened */
         : _Counter(static_cast<_Counter_type>(_Desired)) {
         _STL_VERIFY(
-            _Desired >= 0 && _Desired <= max(), "Initial count shall be non-negative and shall not exceed max()");
+            _Desired >= 0 && _Desired <= (max)(), "Initial count shall be non-negative and shall not exceed max()");
     }
 
     counting_semaphore(const counting_semaphore&) = delete;
@@ -73,7 +72,7 @@ public:
         if (_Update == 0) {
             return;
         }
-        _STL_VERIFY(_Update > 0 && _Update <= max(), "Update count shall be non-negative and shall not overflow max()");
+        _STL_VERIFY(_Update > 0 && _Update <= (max)(), "Update count shall be non-negative and shall not overflow max()");
         // TRANSITION, GH-1133: should be memory_order_release
         const _Counter_type _Prev = _Counter.fetch_add(static_cast<_Counter_type>(_Update), memory_order_seq_cst);
         _STL_VERIFY(_Prev + _Update > 0, "Semaphore counter shall be non-negative and shall not overflow max()");
@@ -160,7 +159,7 @@ private:
 template <>
 class counting_semaphore<1> {
 public:
-    _NODISCARD static constexpr ptrdiff_t max() noexcept {
+    _NODISCARD static constexpr ptrdiff_t (max)() noexcept {
         return 1;
     }
 
@@ -248,7 +247,7 @@ using binary_semaphore = counting_semaphore<1>;
 
 _STD_END
 
-#pragma pop_macro("max")
+#pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
