@@ -18,7 +18,6 @@
 #include <mutex>
 #include <numeric>
 #include <queue>
-#include <thread>
 #include <vector>
 #include <xbit_ops.h>
 
