@@ -636,7 +636,7 @@ std/thread/thread.semaphore/version.pass.cpp
 std/thread/thread.semaphore/timed.pass.cpp
 std/thread/thread.semaphore/try_acquire.pass.cpp
 
-# pass labmda without noexcept to barrier
+# pass lambda without noexcept to barrier
 std/thread/thread.barrier/completion.pass.cpp
 std/thread/thread.barrier/max.pass.cpp
 
