@@ -1449,6 +1449,40 @@ struct _Uninitialized_backout { // struct to undo partially constructed ranges i
     }
 };
 
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // CONCEPT _Convertible_from
+    template <class _To, class _From>
+    concept _Convertible_from = convertible_to<_From, _To>;
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-attributes"
+#endif // __clang__
+
+    // STRUCT TEMPLATE in_out_result
+    template <class _In, class _Out>
+    struct in_out_result {
+        [[no_unique_address]] _In in;
+        [[no_unique_address]] _Out out;
+
+        template <_Convertible_from<const _In&> _IIn, _Convertible_from<const _Out&> _OOut>
+        constexpr operator in_out_result<_IIn, _OOut>() const& {
+            return {in, out};
+        }
+
+        template <_Convertible_from<_In> _IIn, _Convertible_from<_Out> _OOut>
+        constexpr operator in_out_result<_IIn, _OOut>() && {
+            return {_STD move(in), _STD move(out)};
+        }
+    };
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif // __clang__
+} // namespace ranges
+#endif // __cpp_lib_concepts
+
 // FUNCTION TEMPLATE _Uninitialized_move_unchecked
 #if _HAS_IF_CONSTEXPR
 template <class _InIt, class _NoThrowFwdIt>
@@ -1491,40 +1525,6 @@ _NoThrowFwdIt _Uninitialized_move_unchecked(_InIt _First, const _InIt _Last, _No
         _First, _Last, _Dest, bool_constant<_Ptr_move_cat<_InIt, _NoThrowFwdIt>::_Really_trivial>{});
 }
 #endif // _HAS_IF_CONSTEXPR
-
-#ifdef __cpp_lib_concepts
-namespace ranges {
-    // CONCEPT _Convertible_from
-    template <class _To, class _From>
-    concept _Convertible_from = convertible_to<_From, _To>;
-
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-attributes"
-#endif // __clang__
-
-    // STRUCT TEMPLATE in_out_result
-    template <class _In, class _Out>
-    struct in_out_result {
-        [[no_unique_address]] _In in;
-        [[no_unique_address]] _Out out;
-
-        template <_Convertible_from<const _In&> _IIn, _Convertible_from<const _Out&> _OOut>
-        constexpr operator in_out_result<_IIn, _OOut>() const& {
-            return {in, out};
-        }
-
-        template <_Convertible_from<_In> _IIn, _Convertible_from<_Out> _OOut>
-        constexpr operator in_out_result<_IIn, _OOut>() && {
-            return {_STD move(in), _STD move(out)};
-        }
-    };
-
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif // __clang__
-} // namespace ranges
-#endif // __cpp_lib_concepts
 
 // STRUCT TEMPLATE _Uninitialized_backout_al
 template <class _Alloc>

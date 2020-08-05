@@ -81,7 +81,7 @@ struct holder {
 };
 
 template <class R>
-void not_ranges_destroy(R&& r) {
+void not_ranges_destroy(R&& r) { // TRANSITION, ranges::destroy
     for (auto& e : r) {
         destroy_at(&e);
     }
