@@ -123,7 +123,7 @@ public:
 
                 auto _Rel_time = _Abs_time - _Now;
                 chrono::duration<unsigned long, milli> _Rel_time_ms;
-                static constexpr auto _Ten_days = chrono::hours(24 * 10);
+                static constexpr chrono::hours _Ten_days{24 * 10};
                 if (_Rel_time >= _Ten_days) {
                     _Rel_time_ms = _Ten_days;
                 } else {
