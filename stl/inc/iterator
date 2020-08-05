@@ -712,7 +712,7 @@ public:
 #if _ITERATOR_DEBUG_LEVEL != 0
         _Same_sequence(_Left, _Right);
 #endif // _ITERATOR_DEBUG_LEVEL != 0
-        return _Right._Length <=> _Left._Length;
+        return _Right.count() <=> _Left._Length;
     }
 
     // [counted.iter.cust]
@@ -733,14 +733,14 @@ public:
         using _CDiff = common_type_t<iter_difference_t<_Iter>, iter_difference_t<_Other>>;
 
         if constexpr (forward_iterator<_Iter> && forward_iterator<_Other>) {
-            const _CDiff _Diff = static_cast<_CDiff>(_Left._Length) - static_cast<_CDiff>(_Right._Length);
+            const _CDiff _Diff = static_cast<_CDiff>(_Left._Length) - static_cast<_CDiff>(_Right.count());
             if (_Diff < 0) {
                 _STL_VERIFY(
-                    static_cast<_CIter>(_Left._Current) == _RANGES next(static_cast<_CIter>(_Right._Current), -_Diff),
+                    static_cast<_CIter>(_Left._Current) == _RANGES next(static_cast<_CIter>(_Right.base()), -_Diff),
                     "counted_iterators from different ranges");
             } else {
                 _STL_VERIFY(
-                    _RANGES next(static_cast<_CIter>(_Left._Current), _Diff) == static_cast<_CIter>(_Right._Current),
+                    _RANGES next(static_cast<_CIter>(_Left._Current), _Diff) == static_cast<_CIter>(_Right.base()),
                     "counted_iterators from different ranges");
             }
         }

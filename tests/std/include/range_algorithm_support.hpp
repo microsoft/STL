@@ -340,6 +340,7 @@ namespace test {
         static constexpr bool at_least = derived_from<Category, T>;
 
         using ReferenceType = conditional_t<to_bool(Proxy), proxy_reference<Category, Element>, Element&>;
+        using const_iterator = iterator<Category, const Element, Diff, Eq, Proxy, Wrapped>;
 
     public:
         // output iterator operations
@@ -351,6 +352,15 @@ namespace test {
         constexpr iterator& operator=(iterator&& that) noexcept {
             ptr_ = exchange(that.ptr_, nullptr);
             return *this;
+        }
+
+        // Duplicated to generically get the const_iterator type via decltype
+        constexpr const_iterator get_const_iterator_type() const noexcept {
+            return const_iterator{ptr_};
+        }
+
+        constexpr operator iterator<Category, const Element, Diff, Eq, Proxy, Wrapped>() const noexcept {
+            return const_iterator{ptr_};
         }
 
         [[nodiscard]] constexpr Element* peek() const noexcept {

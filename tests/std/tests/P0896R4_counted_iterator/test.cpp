@@ -11,8 +11,10 @@ using namespace std;
 struct instantiator {
     template <input_or_output_iterator Iter>
     static constexpr void call() {
+        using ConstIter = typename decltype(declval<Iter>().get_const_iterator_type());
         if constexpr (is_permissive) { // TRANSITION, FIXME (File an issue to investigate this later?)
             (void) input_iterator<Iter>;
+            (void) input_iterator<ConstIter>;
         }
 
         int input[5] = {1, 2, 3, 4, 5};
@@ -23,8 +25,9 @@ struct instantiator {
             [[maybe_unused]] counted_iterator<Iter> constructed(Iter{input}, iter_difference_t<Iter>{2});
             [[maybe_unused]] counted_iterator<Iter> constructedEmpty{Iter{input}, iter_difference_t<Iter>{0}};
 
-            //[[maybe_unused]] counted_iterator<Iter> convertibleConstructed{};
-            //[[maybe_unused]] counted_iterator<Iter> convertibleAssigned{};
+            [[maybe_unused]] counted_iterator<ConstIter> constructedConversion{
+                Iter{input}, iter_difference_t<ConstIter>{2}};
+            [[maybe_unused]] counted_iterator<ConstIter> constructedConvertingAssignment = constructed;
         }
 
         // [counted.iter.access]
@@ -153,7 +156,16 @@ struct instantiator {
                 const same_as<iter_difference_t<Iter>> auto diff2 = iter2 - iter1;
                 assert(diff2 == -1);
             }
-            // TODO different type that satisfies common_with
+            { // difference converting
+                counted_iterator<Iter> iter1{Iter{input + 1}, 2};
+                counted_iterator<ConstIter> iter2{ConstIter{input}, 3};
+
+                const same_as<iter_difference_t<ConstIter>> auto diff1 = iter1 - iter2;
+                assert(diff1 == 1);
+
+                const same_as<iter_difference_t<Iter>> auto diff2 = iter2 - iter1;
+                assert(diff2 == -1);
+            }
             { // difference default sentinel
                 counted_iterator<Iter> iter1{Iter{input}, 2};
 
@@ -189,6 +201,20 @@ struct instantiator {
                 assert(iter1 != iter2);
                 assert(!(iter2 != iter3));
             }
+            { // equality converting
+                counted_iterator<ConstIter> const_iter1{ConstIter{input}, 2};
+                counted_iterator<Iter> iter2{Iter{input}, 2};
+                counted_iterator<Iter> iter3{Iter{input + 1}, 1};
+                assert(const_iter1 == iter2);
+                assert(!(const_iter1 == iter3));
+            }
+            { // inequality converting
+                counted_iterator<Iter> iter1{Iter{input + 1}, 2};
+                counted_iterator<ConstIter> const_iter1{ConstIter{input}, 3};
+                counted_iterator<Iter> iter3{Iter{input}, 3};
+                assert(iter1 != const_iter1);
+                assert(!(const_iter1 != iter3));
+            }
             { // equality default sentinel
                 counted_iterator<Iter> iter1{Iter{input}, 2};
                 counted_iterator<Iter> iter2{Iter{input}, 0};
@@ -205,6 +231,15 @@ struct instantiator {
                 assert(iter2 <=> iter1 == strong_ordering::greater);
                 assert(iter1 <=> iter1 == strong_ordering::equal);
                 assert(iter1 <=> iter1 == strong_ordering::equivalent);
+            }
+            { // spaceship converting
+                counted_iterator<Iter> iter{Iter{input}, 2};
+                counted_iterator<ConstIter> const_iter{ConstIter{input + 2}, 0};
+                const same_as<strong_ordering> auto result = iter <=> const_iter;
+                assert(result == strong_ordering::less);
+                assert(const_iter <=> iter == strong_ordering::greater);
+                assert(iter <=> iter == strong_ordering::equal);
+                assert(iter <=> iter == strong_ordering::equivalent);
             }
         }
     }
