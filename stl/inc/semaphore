@@ -176,7 +176,7 @@ public:
             return;
         }
         _STL_VERIFY(_Update == 1, "Update count shall be non-negative and shall not oveflow max()");
-        // TRANSITION, GH-1133: should be memory_order_release :-(
+        // TRANSITION, GH-1133: should be memory_order_release
         _Counter.store(1, memory_order_seq_cst);
         _Counter.notify_one();
     }
