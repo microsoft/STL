@@ -447,6 +447,7 @@ function(add_stl_dlls D_SUFFIX THIS_CONFIG_DEFINITIONS THIS_CONFIG_COMPILE_OPTIO
 
     add_library(msvcp${D_SUFFIX}_satellite_objects OBJECT ${SATELLITE_DLL_SOURCES})
     target_compile_options(msvcp${D_SUFFIX}_satellite_objects PRIVATE "${THIS_CONFIG_COMPILE_OPTIONS};${GL_FLAG};/EHsc")
+    target_compile_definitions(msvcp${D_SUFFIX}_satellite_objects PRIVATE "_DLL;${THIS_CONFIG_DEFINITIONS}")
 
     # msvcp140_1.dll (the memory_resource satellite)
     add_library(msvcp_1${D_SUFFIX}_objects OBJECT ${SOURCES_SATELLITE_1})
