@@ -61,8 +61,8 @@ public:
 
     constexpr explicit counting_semaphore(const ptrdiff_t _Desired) noexcept /* strengthened */
         : _Counter(static_cast<_Counter_type>(_Desired)) {
-        _STL_VERIFY(
-            _Desired >= 0 && _Desired <= (max)(), "Initial count shall be non-negative and shall not exceed max()");
+        _STL_VERIFY(_Desired >= 0 && _Desired <= (max)(),
+            "Precondition: desired >= 0, and desired <= max() (N4861 [thread.sema.cnt]/5)");
     }
 
     counting_semaphore(const counting_semaphore&) = delete;
@@ -72,11 +72,11 @@ public:
         if (_Update == 0) {
             return;
         }
-        _STL_VERIFY(
-            _Update > 0 && _Update <= (max)(), "Update count shall be non-negative and shall not overflow max()");
+        _STL_VERIFY(_Update > 0 && _Update <= (max)(),
+            "Precondition: update >= 0, and update <= max() - counter (N4861 [thread.sema.cnt]/8)");
         // TRANSITION, GH-1133: should be memory_order_release
         const _Counter_type _Prev = _Counter.fetch_add(static_cast<_Counter_type>(_Update), memory_order_seq_cst);
-        _STL_VERIFY(_Prev + _Update > 0, "Semaphore counter shall be non-negative and shall not overflow max()");
+        _STL_VERIFY(_Prev + _Update > 0, "Precondition: update <= max() - counter (N4861 [thread.sema.cnt]/8)");
 
         if (_Prev == 0) {
             _Counter.notify_all();
@@ -92,7 +92,8 @@ public:
                 __std_atomic_wait_direct(&_Counter, &_Current, sizeof(_Current), _Atomic_wait_no_timeout);
                 _Current = _Counter.load(memory_order_relaxed);
             }
-            _STL_VERIFY(_Current > 0, "Semaphore counter shall be non-negative and shall not overflow max()");
+            _STL_VERIFY(_Current > 0, "Invariant: semaphore counter is non-negative, "
+                                      "possibly caused by preconditions violation (N4861 [thread.sema.cnt]/8)");
             // TRANSITION, GH-1133: should be memory_order_acquire, memory_order_relaxed
             if (_Counter.compare_exchange_weak(_Current, _Current - 1, memory_order_seq_cst, memory_order_relaxed)) {
                 break;
@@ -105,7 +106,8 @@ public:
         if (_Current == 0) {
             return false;
         }
-        _STL_VERIFY(_Current > 0, "Semaphore counter shall be non-negative and shall not overflow max()");
+        _STL_VERIFY(_Current > 0, "Invariant: semaphore counter is non-negative, "
+                                  "possibly caused by preconditions violation (N4861 [thread.sema.cnt]/8)");
         // TRANSITION, GH-1133: should be memory_order_acquire, memory_order_relaxed
         return _Counter.compare_exchange_weak(_Current, _Current - 1, memory_order_seq_cst, memory_order_relaxed);
     }
@@ -123,7 +125,8 @@ public:
                 __std_atomic_wait_direct(&_Counter, &_Current, sizeof(_Current), _Remaining_timeout);
                 _Current = _Counter.load(memory_order_relaxed);
             }
-            _STL_VERIFY(_Current > 0, "Semaphore counter shall be non-negative and shall not overflow max()");
+            _STL_VERIFY(_Current > 0, "Invariant: semaphore counter is non-negative, "
+                                      "possibly caused by preconditions violation (N4861 [thread.sema.cnt]/8)");
             // TRANSITION, GH-1133: should be memory_order_acquire, memory_order_relaxed
             if (_Counter.compare_exchange_weak(_Current, _Current - 1, memory_order_seq_cst, memory_order_relaxed)) {
                 return true;
@@ -143,7 +146,8 @@ public:
                 __std_atomic_wait_direct(&_Counter, &_Current, sizeof(_Current), _Remaining_timeout);
                 _Current = _Counter.load(memory_order_relaxed);
             }
-            _STL_VERIFY(_Current > 0, "Semaphore counter shall be non-negative and shall not overflow max()");
+            _STL_VERIFY(_Current > 0, "Invariant: semaphore counter is non-negative, "
+                                      "possibly caused by preconditions violation (N4861 [thread.sema.cnt]/8)");
             // TRANSITION, GH-1133: should be memory_order_acquire, memory_order_relaxed
             if (_Counter.compare_exchange_weak(_Current, _Current - 1, memory_order_seq_cst, memory_order_relaxed)) {
                 return true;
@@ -166,7 +170,8 @@ public:
 
     constexpr explicit counting_semaphore(const ptrdiff_t _Desired) noexcept /* strengthened */
         : _Counter(static_cast<int8_t>(_Desired)) {
-        _STL_VERIFY((_Desired & ~1) == 0, "Semaphore counter shall be non-negative and shall not overflow max()");
+        _STL_VERIFY((_Desired & ~1) == 0, "Precondition: desired >= 0, and desired <= max() "
+                                          "(N4861 [thread.sema.cnt]/5)");
     }
 
     counting_semaphore(const counting_semaphore&) = delete;
@@ -176,7 +181,8 @@ public:
         if (_Update == 0) {
             return;
         }
-        _STL_VERIFY(_Update == 1, "Update count shall be non-negative and shall not oveflow max()");
+        _STL_VERIFY(_Update == 1, "Precondition: update >= 0, "
+                                  "and update <= max() - counter (N4861 [thread.sema.cnt]/8)");
         // TRANSITION, GH-1133: should be memory_order_release
         _Counter.store(1, memory_order_seq_cst);
         _Counter.notify_one();
@@ -189,7 +195,8 @@ public:
             if (_Prev == 1) {
                 break;
             }
-            _STL_VERIFY(_Prev == 0, "Semaphore counter shall be non-negative and shall not overflow max()");
+            _STL_VERIFY(_Prev == 0, "Invariant: semaphore counter is non-negative and not exceeds max(), "
+                                    "possibly caused by preconditions violation (N4861 [thread.sema.cnt]/8)");
             _Counter.wait(0, memory_order_relaxed);
         }
     }
@@ -197,7 +204,8 @@ public:
     _NODISCARD bool try_acquire() noexcept {
         // TRANSITION, GH-1133: should be memory_order_acquire
         int8_t _Prev = _Counter.exchange(0, memory_order_seq_cst);
-        _STL_VERIFY((_Prev & ~1) == 0, "Semaphore counter shall be non-negative and shall not overflow max()");
+        _STL_VERIFY((_Prev & ~1) == 0, "Invariant: semaphore counter is non-negative and not exceeds max(), "
+                                       "possibly caused by preconditions violation (N4861 [thread.sema.cnt]/8)");
         return reinterpret_cast<const bool&>(_Prev);
     }
 
@@ -210,7 +218,8 @@ public:
             if (_Prev == 1) {
                 return true;
             }
-            _STL_VERIFY(_Prev == 0, "Semaphore counter shall be non-negative and shall not overflow max()");
+            _STL_VERIFY(_Prev == 0, "Invariant: semaphore counter is non-negative and not exceeds max(), "
+                                    "possibly caused by preconditions violation (N4861 [thread.sema.cnt]/8)");
             const auto _Remaining_timeout = __std_atomic_wait_get_remaining_timeout(_Deadline);
             if (_Remaining_timeout == 0) {
                 return false;
@@ -227,7 +236,8 @@ public:
             if (_Prev == 1) {
                 return true;
             }
-            _STL_VERIFY(_Prev == 0, "Semaphore counter shall be non-negative and shall not overflow max()");
+            _STL_VERIFY(_Prev == 0, "Invariant: semaphore counter is non-negative and not exceeds max(), "
+                                    "possibly caused by preconditions violation (N4861 [thread.sema.cnt]/8)");
 
             const unsigned long _Remaining_timeout = _Semaphore_remaining_timeout(_Abs_time);
             if (_Remaining_timeout == 0) {
