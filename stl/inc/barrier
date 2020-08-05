@@ -129,12 +129,14 @@ public:
         _STL_VERIFY((_Arrival._Value & _Barrier_value_mask) == reinterpret_cast<intptr_t>(this),
             "Preconditions: arrival is associated with the phase synchronization point for the current phase "
             "or the immediately preceding phase of the same barrier object (N4861 [thread.barrier.class]/19)");
+        const ptrdiff_t _Arrival_value = _Arrival._Value;
+        _Arrival._Value                = _Barrier_invalid_token;
         for (;;) {
             // TRANSITION, GH-1133: should be memory_order_acquire
             const ptrdiff_t _Current = _Current_phase.load(memory_order_seq_cst);
             _STL_VERIFY(_Current >= 0, "Invariant counter >= 0, possibly caused by preconditions violation "
                                        "(N4861 [thread.barrier.class]/12)");
-            if ((_Current & _Barrier_arrival_token_mask) != (_Arrival._Value & _Barrier_arrival_token_mask)) {
+            if ((_Current & _Barrier_arrival_token_mask) != (_Arrival_value & _Barrier_arrival_token_mask)) {
                 break;
             }
             _Current_phase.wait(_Current, memory_order_relaxed);
