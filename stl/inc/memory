@@ -3271,8 +3271,8 @@ public:
         _Wait(_Old._Ptr, memory_order);
     }
 
-    using _Base::notify_one;
     using _Base::notify_all;
+    using _Base::notify_one;
 
     constexpr atomic() noexcept = default;
 
