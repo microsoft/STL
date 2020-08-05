@@ -63,7 +63,7 @@ _EXTERN_C
 
 _CRTIMP2_PURE void __cdecl _Lock_shared_ptr_spin_lock() { // spin until _Shared_ptr_flag successfully set
 #if _STL_WIN32_WINNT >= _STL_WIN32_WINNT_VISTA
-    AcquireSRWLockExclusive(_Shared_ptr_lock);
+    AcquireSRWLockExclusive(&_Shared_ptr_lock);
 #else // ^^^ _STL_WIN32_WINNT >= _STL_WIN32_WINNT_VISTA / _STL_WIN32_WINNT < _STL_WIN32_WINNT_VISTA vvv
     if (_Acquire_srw_functions() == _Shared_ptr_api_level::__has_nothing) {
         _STD _Atomic_lock_spinlock(_Shared_ptr_flag);
