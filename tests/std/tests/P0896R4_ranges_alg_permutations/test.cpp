@@ -71,7 +71,7 @@ constexpr int perm6[][6] = {{0, 0, 1, 1, 2, 2}, {0, 0, 1, 2, 1, 2}, {0, 0, 1, 2,
     {2, 1, 1, 0, 2, 0}, {2, 1, 1, 2, 0, 0}, {2, 1, 2, 0, 0, 1}, {2, 1, 2, 0, 1, 0}, {2, 1, 2, 1, 0, 0},
     {2, 2, 0, 0, 1, 1}, {2, 2, 0, 1, 0, 1}, {2, 2, 0, 1, 1, 0}, {2, 2, 1, 0, 0, 1}, {2, 2, 1, 0, 1, 0},
     {2, 2, 1, 1, 0, 0}};
-constexpr int perm8[][8] = {{}};
+constexpr int perm8[][8] = {{0, 0, 0, 0, 0, 0, 0, 0}};
 
 struct int_wrapper {
     int val = 10;
@@ -199,7 +199,7 @@ struct empty_range_test {
     template <ranges::bidirectional_range R>
     static constexpr void call() {
         using ranges::next_permutation, ranges::next_permutation_result, ranges::prev_permutation,
-            ranges::prev_permutation_result, ranges::equal, ranges::is_sorted, ranges::iterator_t;
+            ranges::prev_permutation_result, ranges::iterator_t;
 
         { // Validate range overload, next_permutation
             R range{};
