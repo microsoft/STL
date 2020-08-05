@@ -7089,6 +7089,90 @@ _FwdIt3 merge(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt3);
     return _STD merge(_First1, _Last1, _First2, _Last2, _Dest);
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // ALIAS TEMPLATE merge_result
+    template <class _In1, class _In2, class _Out>
+    using merge_result = in_in_out_result<_In1, _In2, _Out>;
+
+    // VARIABLE ranges::merge
+    class _Merge_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <input_iterator _It1, sentinel_for<_It1> _Se1, input_iterator _It2, sentinel_for<_It2> _Se2,
+            weakly_incrementable _Out, class _Pr = ranges::less, class _Pj1 = identity, class _Pj2 = identity>
+            requires mergeable<_It1, _It2, _Out, _Pr, _Pj1, _Pj2>
+        constexpr merge_result<_It1, _It2, _Out> operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2,
+            _Out _Result, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            // clang-format on
+            _Adl_verify_range(_First1, _Last1);
+            _Adl_verify_range(_First2, _Last2);
+            auto _UResult = _Merge_unchecked(_Get_unwrapped(_STD move(_First1)), _Get_unwrapped(_STD move(_Last1)),
+                _Get_unwrapped(_STD move(_First2)), _Get_unwrapped(_STD move(_Last2)), _STD move(_Result),
+                _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            _Seek_wrapped(_First1, _STD move(_UResult.in1));
+            _Seek_wrapped(_First2, _STD move(_UResult.in2));
+            return {_STD move(_First1), _STD move(_First2), _STD move(_UResult.out)};
+        }
+
+        // clang-format off
+        template <input_range _Rng1, input_range _Rng2, weakly_incrementable _Out, class _Pr = ranges::less,
+            class _Pj1 = identity, class _Pj2 = identity>
+            requires mergeable<iterator_t<_Rng1>, iterator_t<_Rng2>, _Out, _Pr, _Pj1, _Pj2>
+        constexpr merge_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>, _Out> operator()(
+            _Rng1&& _Range1, _Rng2&& _Range2, _Out _Result, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            // clang-format on
+            auto _First1 = _RANGES begin(_Range1);
+            auto _First2 = _RANGES begin(_Range2);
+            auto _UResult =
+                _Merge_unchecked(_Get_unwrapped(_STD move(_First1)), _Uend(_Range1), _Get_unwrapped(_STD move(_First2)),
+                    _Uend(_Range2), _STD move(_Result), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            _Seek_wrapped(_First1, _STD move(_UResult.in1));
+            _Seek_wrapped(_First2, _STD move(_UResult.in2));
+            return {_STD move(_First1), _STD move(_First2), _STD move(_UResult.out)};
+        }
+
+    private:
+        template <class _It1, class _Se1, class _It2, class _Se2, class _Out, class _Pr, class _Pj1, class _Pj2>
+        _NODISCARD static constexpr merge_result<_It1, _It2, _Out> _Merge_unchecked(_It1 _First1, const _Se1 _Last1,
+            _It2 _First2, const _Se2 _Last2, _Out _Result, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It1>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se1, _It1>);
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It2>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se2, _It2>);
+            _STL_INTERNAL_STATIC_ASSERT(weakly_incrementable<_Out>);
+            _STL_INTERNAL_STATIC_ASSERT(mergeable<_It1, _It2, _Out, _Pr, _Pj1, _Pj2>);
+
+            for (;; ++_Result) {
+                if (_First1 == _Last1) {
+                    auto _Copy_result =
+                        _RANGES _Copy_unchecked(_STD move(_First2), _STD move(_Last2), _STD move(_Result));
+                    return {_STD move(_First1), _STD move(_Copy_result.in), _STD move(_Copy_result.out)};
+                }
+
+                if (_First2 == _Last2) {
+                    auto _Copy_result =
+                        _RANGES _Copy_unchecked(_STD move(_First1), _STD move(_Last1), _STD move(_Result));
+                    return {_STD move(_Copy_result.in), _STD move(_First2), _STD move(_Copy_result.out)};
+                }
+
+                if (_STD invoke(_Pred, _STD invoke(_Proj2, *_First2), _STD invoke(_Proj1, *_First1))) {
+                    *_Result = *_First2;
+                    ++_First2;
+                } else {
+                    *_Result = *_First1;
+                    ++_First1;
+                }
+            }
+        }
+    };
+
+    inline constexpr _Merge_fn merge{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE inplace_merge

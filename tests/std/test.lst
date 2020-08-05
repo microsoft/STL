@@ -265,6 +265,7 @@ tests\P0896R4_ranges_alg_heap
 tests\P0896R4_ranges_alg_includes
 tests\P0896R4_ranges_alg_is_permutation
 tests\P0896R4_ranges_alg_is_sorted
+tests\P0896R4_ranges_alg_merge
 tests\P0896R4_ranges_alg_minmax
 tests\P0896R4_ranges_alg_mismatch
 tests\P0896R4_ranges_alg_move
