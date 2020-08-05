@@ -151,7 +151,7 @@ int main() {
     static_assert(std::counting_semaphore<5>::max() >= 5, "semaphore should support some number of count downs");
     static_assert(std::binary_semaphore::max() >= 1, "semaphore should support some number of count downs");
 
-    constexpr auto delay_duration = std::chrono::milliseconds(200);
+    constexpr auto delay_duration = 200ms;
 
     test_counting_semaphore_count(delay_duration);
     test_binary_semaphore_count(delay_duration);
@@ -161,5 +161,5 @@ int main() {
     test_semaphore_wait_until<std::counting_semaphore<>>(delay_duration);
     test_semaphore_wait_for<std::binary_semaphore>(delay_duration);
     test_semaphore_wait_until<std::binary_semaphore>(delay_duration);
-#endif
+#endif // CAN_FAIL_ON_TIMING_ASSUMPTION
 }
