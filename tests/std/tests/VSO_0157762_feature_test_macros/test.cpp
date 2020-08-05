@@ -177,15 +177,15 @@ STATIC_ASSERT(__cpp_lib_atomic_wait == 201907L);
 
 #if _HAS_CXX20
 #ifndef __cpp_lib_barrier
-#error __cpp_lib_barrier  is not defined
+#error __cpp_lib_barrier is not defined
 #elif __cpp_lib_barrier != 201907L
-#error __cpp_lib_barrier  is not 201907L
+#error __cpp_lib_barrier is not 201907L
 #else
 STATIC_ASSERT(__cpp_lib_barrier == 201907L);
 #endif
 #else
 #ifdef __cpp_lib_barrier
-#error __cpp_lib_barrier  is defined
+#error __cpp_lib_barrier is defined
 #endif
 #endif
 
@@ -831,15 +831,15 @@ STATIC_ASSERT(__cpp_lib_is_swappable == 201603L);
 
 #if _HAS_CXX20
 #ifndef __cpp_lib_latch
-#error __cpp_lib_latch  is not defined
+#error __cpp_lib_latch is not defined
 #elif __cpp_lib_latch != 201907L
-#error __cpp_lib_latch  is not 201907L
+#error __cpp_lib_latch is not 201907L
 #else
 STATIC_ASSERT(__cpp_lib_latch == 201907L);
 #endif
 #else
 #ifdef __cpp_lib_latch
-#error __cpp_lib_latch  is defined
+#error __cpp_lib_latch is defined
 #endif
 #endif
 
@@ -1113,15 +1113,15 @@ STATIC_ASSERT(__cpp_lib_scoped_lock == 201703L);
 
 #if _HAS_CXX20
 #ifndef __cpp_lib_semaphore
-#error __cpp_lib_semaphore  is not defined
+#error __cpp_lib_semaphore is not defined
 #elif __cpp_lib_semaphore != 201907L
-#error __cpp_lib_semaphore  is not 201907L
+#error __cpp_lib_semaphore is not 201907L
 #else
 STATIC_ASSERT(__cpp_lib_semaphore == 201907L);
 #endif
 #else
 #ifdef __cpp_lib_semaphore
-#error __cpp_lib_semaphore  is defined
+#error __cpp_lib_semaphore is defined
 #endif
 #endif
 
