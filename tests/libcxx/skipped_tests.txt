@@ -629,16 +629,16 @@ thread\thread.threads\thread.thread.class\thread.thread.member\join.pass.cpp
 # *** LIKELY BOGUS TESTS ***
 # "error: _LIBCPP_VERSION not defined"
 thread\thread.barrier\version.pass.cpp
-std/thread/thread.latch/version.pass.cpp
-std/thread/thread.semaphore/version.pass.cpp
+thread\thread.latch\version.pass.cpp
+thread\thread.semaphore\version.pass.cpp
 
 # "error C3861: 'assert': identifier not found"
-std/thread/thread.semaphore/timed.pass.cpp
-std/thread/thread.semaphore/try_acquire.pass.cpp
+thread\thread.semaphore\timed.pass.cpp
+thread\thread.semaphore\try_acquire.pass.cpp
 
 # pass lambda without noexcept to barrier
-std/thread/thread.barrier/completion.pass.cpp
-std/thread/thread.barrier/max.pass.cpp
+thread\thread.barrier\completion.pass.cpp
+thread\thread.barrier\max.pass.cpp
 
 # Test bug/LEWG issue or STL bug. See GH-519 "<cmath>: signbit() misses overloads for integer types".
 depr\depr.c.headers\math_h.pass.cpp
