@@ -172,7 +172,7 @@ using test_output = test::range<test::fwd, int_wrapper, test::Sized::no, test::C
 
 int main() {
     // The algorithm is oblivious to non-required category, size, difference, and "proxyness" of the input range. It
-    // _is_ sensitive to proxiness in that it requires non-proxy references for the output range.
+    // _is_ sensitive to proxyness in that it requires non-proxy references for the output range.
 
     instantiator::call<test_input<test::ProxyRef::no>, test_output>();
     instantiator::call<test_input<test::ProxyRef::yes>, test_output>();
