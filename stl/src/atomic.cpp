@@ -4,6 +4,7 @@
 // implement shared_ptr spin lock
 
 #include <yvals.h>
+
 #include <atomic>
 #include <intrin.h>
 #include <libloaderapi.h>
