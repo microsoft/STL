@@ -7,24 +7,24 @@
 #include <thread>
 
 void test() {
-    std::barrier barrier(2);
+    std::barrier b(2);
 
     std::atomic<int> c{0};
 
     std::thread t1([&] {
         for (int i = 0; i < 5; i++) {
-            auto token = barrier.arrive();
-            barrier.wait(std::move(token));
+            auto token = b.arrive();
+            b.wait(std::move(token));
             c.fetch_add(1, std::memory_order_relaxed);
         }
     });
 
     std::thread t2([&] {
         for (int i = 0; i < 3; i++) {
-            barrier.arrive_and_wait();
+            b.arrive_and_wait();
             c.fetch_add(1, std::memory_order_relaxed);
         }
-        barrier.arrive_and_drop();
+        b.arrive_and_drop();
     });
 
     t1.join();
@@ -112,7 +112,7 @@ void test_functor_types() {
 }
 
 int main() {
-    static_assert(std::barrier<>::max() >= 5, "latch should support some number of arrivals");
+    static_assert(std::barrier<>::max() >= 5, "barrier should support some number of arrivals");
 
     test();
     test_with_functor();

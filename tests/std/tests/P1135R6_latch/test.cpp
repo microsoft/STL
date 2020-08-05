@@ -5,21 +5,19 @@
 #include <latch>
 #include <thread>
 
-using namespace std::chrono_literals;
-
 void test(const bool release_wait) {
-    std::latch latch(5);
+    std::latch l(5);
 
-    std::thread t1([&] { latch.wait(); });
+    std::thread t1([&] { l.wait(); });
 
-    std::thread t2([&] { latch.arrive_and_wait(2); });
+    std::thread t2([&] { l.arrive_and_wait(2); });
 
-    latch.count_down();
+    l.count_down();
 
     if (release_wait) {
-        latch.arrive_and_wait(2);
+        l.arrive_and_wait(2);
     } else {
-        latch.count_down(2);
+        l.count_down(2);
     }
 
     t1.join();
