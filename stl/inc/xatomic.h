@@ -9,7 +9,12 @@
 #include <yvals.h>
 #if _STL_COMPILER_PREPROCESSOR
 
+// TRANSITION, Visual Studio 2019 version 16.8
+#if defined(_MSC_VER) && _MSC_VER > 1927
 #include <intrin0.h>
+#else // ^^^ defined(_MSC_VER) && _MSC_VER > 1927 // !defined(_MSC_VER) || _MSC_VER <= 1927 vvv
+#include <intrin.h>
+#endif // ^^^ !defined(_MSC_VER) || _MSC_VER <= 1927
 #include <type_traits>
 
 #pragma pack(push, _CRT_PACKING)
@@ -31,7 +36,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #ifdef _M_CEE_PURE
 #define _YIELD_PROCESSOR()
 #else //  ^^^ _M_CEE_PURE / !_M_CEE_PURE vvv
-extern "C" __MACHINEX86_X64(void _mm_pause(void))
 #define _YIELD_PROCESSOR() _mm_pause()
 #endif // ^^^ !_M_CEE_PURE ^^^
 
