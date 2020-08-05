@@ -26,6 +26,39 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // clang-format off
+    // CONCEPT _No_throw_input_iterator
+    template <class _It>
+    concept _No_throw_input_iterator = input_iterator<_It>
+        && is_lvalue_reference_v<iter_reference_t<_It>>
+        && same_as<remove_cvref_t<iter_reference_t<_It>>, iter_value_t<_It>>;
+
+    // CONCEPT _No_throw_sentinel_for
+    template <class _Se, class _It>
+    concept _No_throw_sentinel_for = sentinel_for<_Se, _It>;
+
+    // CONCEPT _No_throw_forward_iterator
+    template <class _It>
+    concept _No_throw_forward_iterator = _No_throw_input_iterator<_It>
+        && forward_iterator<_It>
+        && _No_throw_sentinel_for<_It, _It>;
+
+    // CONCEPT _No_throw_input_range
+    template <class _Rng>
+    concept _No_throw_input_range = range<_Rng>
+        && _No_throw_input_iterator<iterator_t<_Rng>>
+        && _No_throw_sentinel_for<sentinel_t<_Rng>, iterator_t<_Rng>>;
+
+    // CONCEPT _No_throw_forward_range
+    template <class _Rng>
+    concept _No_throw_forward_range = _No_throw_input_range<_Rng>
+        && _No_throw_forward_iterator<iterator_t<_Rng>>;
+    // clang-format on
+} // namespace ranges
+#endif // __cpp_lib_concepts
+
 // FUNCTION TEMPLATE uninitialized_copy_n
 #if _HAS_IF_CONSTEXPR
 template <class _InIt, class _Diff, class _NoThrowFwdIt>
@@ -99,18 +132,9 @@ _NoThrowFwdIt uninitialized_move(const _InIt _First, const _InIt _Last, _NoThrow
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // clang-format off
-    // CONCEPT _No_throw_input_range
-    template <class _Rng>
-    concept _No_throw_input_range = range<_Rng>
-        && _No_throw_input_iterator<iterator_t<_Rng>>
-        && _No_throw_sentinel_for<sentinel_t<_Rng>, iterator_t<_Rng>>;
-
-    // CONCEPT _No_throw_forward_range
-    template <class _Rng>
-    concept _No_throw_forward_range = _No_throw_input_range<_Rng>
-        && _No_throw_forward_iterator<iterator_t<_Rng>>;
-    // clang-format on
+    // ALIAS TEMPLATE uninitialized_move_result
+    template <class _In, class _Out>
+    using uninitialized_move_result = in_out_result<_In, _Out>;
 
     // VARIABLE ranges::uninitialized_move
     class _Uninitialized_move_fn : private _Not_quite_object {
@@ -124,9 +148,9 @@ namespace ranges {
             // clang-format on
             _Adl_verify_range(_First1, _Last1);
             _Adl_verify_range(_First2, _Last2);
-            auto _UResult = _RANGES _Uninitialized_move_unchecked(_Get_unwrapped(_STD move(_First1)),
-                _Get_unwrapped(_STD move(_Last1)), _Get_unwrapped(_STD move(_First2)),
-                _Get_unwrapped(_STD move(_Last2)));
+            auto _UResult =
+                _Uninitialized_move_unchecked(_Get_unwrapped(_STD move(_First1)), _Get_unwrapped(_STD move(_Last1)),
+                    _Get_unwrapped(_STD move(_First2)), _Get_unwrapped(_STD move(_Last2)));
 
             _Seek_wrapped(_First1, _STD move(_UResult.in));
             _Seek_wrapped(_First2, _STD move(_UResult.out));
@@ -140,11 +164,32 @@ namespace ranges {
             _Rng1&& _Range1, _Rng2&& _Range2) const {
             // clang-format on
             auto _First1  = _RANGES begin(_Range1);
-            auto _UResult = _RANGES _Uninitialized_move_unchecked(
+            auto _UResult = _Uninitialized_move_unchecked(
                 _Get_unwrapped(_STD move(_First1)), _Uend(_Range1), _Ubegin(_Range2), _Uend(_Range2));
 
             _Seek_wrapped(_First1, _STD move(_UResult.in));
             return {_STD move(_First1), _Rewrap_iterator(_Range2, _STD move(_UResult.out))};
+        }
+
+    private:
+        template <class _It1, class _Se1, class _It2, class _Se2>
+        _NODISCARD static uninitialized_move_result<_It1, _It2> _Uninitialized_move_unchecked(
+            _It1 _IFirst, const _Se1 _ILast, _It2 _OFirst, const _Se2 _OLast) {
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It1>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se1, _It1>);
+            _STL_INTERNAL_STATIC_ASSERT(_No_throw_forward_iterator<_It2>);
+            _STL_INTERNAL_STATIC_ASSERT(_No_throw_sentinel_for<_Se2, _It2>);
+            _STL_INTERNAL_STATIC_ASSERT(constructible_from<iter_value_t<_It2>, iter_rvalue_reference_t<_It1>>);
+
+            _Uninitialized_backout _Backout{_STD move(_OFirst)};
+
+            for (; _IFirst != _ILast && _Backout._Last != _OLast; ++_IFirst) {
+                _Backout._Emplace_back(_RANGES iter_move(_IFirst));
+            }
+
+            _OFirst = _STD move(_Backout._Last);
+            _Backout._Release();
+            return {_STD move(_IFirst), _STD move(_OFirst)};
         }
     };
 

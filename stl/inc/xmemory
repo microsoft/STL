@@ -1523,47 +1523,6 @@ namespace ranges {
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif // __clang__
-
-    // clang-format off
-    // CONCEPT _No_throw_input_iterator
-    template <class _It>
-    concept _No_throw_input_iterator = input_iterator<_It>
-        && is_lvalue_reference_v<iter_reference_t<_It>>
-        && same_as<remove_cvref_t<iter_reference_t<_It>>, iter_value_t<_It>>;
-
-    // CONCEPT _No_throw_sentinel_for
-    template <class _Se, class _It>
-    concept _No_throw_sentinel_for = sentinel_for<_Se, _It>;
-
-    // CONCEPT _No_throw_forward_iterator
-    template <class _It>
-    concept _No_throw_forward_iterator = _No_throw_input_iterator<_It>
-        && forward_iterator<_It>
-        && _No_throw_sentinel_for<_It, _It>;
-    // clang-format on
-
-    // ALIAS TEMPLATE uninitialized_move_result
-    template <class _In, class _Out>
-    using uninitialized_move_result = in_out_result<_In, _Out>;
-
-    // FUNCTION TEMPLATE ranges::_Uninitialized_move_unchecked
-    // clang-format off
-    template <input_iterator _It1, sentinel_for<_It1> _Se1, _No_throw_forward_iterator _It2,
-        _No_throw_sentinel_for<_It2> _Se2>
-        requires constructible_from<iter_value_t<_It2>, iter_rvalue_reference_t<_It1>>
-    _NODISCARD /* _CONSTEXPR20_DYNALLOC */ uninitialized_move_result<_It1, _It2> _Uninitialized_move_unchecked(
-        _It1 _IFirst, const _Se1 _ILast, _It2 _OFirst, const _Se2 _OLast) {
-        // clang-format on
-        _Uninitialized_backout _Backout{_STD move(_OFirst)};
-
-        for (; _IFirst != _ILast && _Backout._Last != _OLast; ++_IFirst) {
-            _Backout._Emplace_back(_RANGES iter_move(_IFirst));
-        }
-
-        _OFirst = _STD move(_Backout._Last);
-        _Backout._Release();
-        return {_STD move(_IFirst), _STD move(_OFirst)};
-    }
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
