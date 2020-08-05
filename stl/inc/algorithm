@@ -1888,6 +1888,58 @@ namespace ranges {
     };
 
     inline constexpr _Move_fn move{_Not_quite_object::_Construct_tag{}};
+
+    // ALIAS TEMPLATE move_backward_result
+    template <class _In, class _Out>
+    using move_backward_result = in_out_result<_In, _Out>;
+
+    // VARIABLE ranges::move_backward
+    // clang-format off
+    // concept-constrained for strict enforcement as it is used by several algorithms
+    template <bidirectional_iterator _It1, bidirectional_iterator _It2>
+        requires indirectly_movable<_It1, _It2>
+    _NODISCARD constexpr _It2 _Move_backward_common(const _It1 _First, _It1 _Last, _It2 _Result) {
+        if constexpr (_Ptr_move_cat<_It1, _It2>::_Trivially_copyable) {
+            if (!_STD is_constant_evaluated()) {
+                return _Copy_backward_memmove(_First, _Last, _Result);
+            }
+        }
+
+        while (_First != _Last) {
+            *--_Result = _RANGES iter_move(--_Last);
+        }
+
+        return _Result;
+    }
+    // clang-format on
+
+    class _Move_backward_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <bidirectional_iterator _It1, sentinel_for<_It1> _Se1, bidirectional_iterator _It2>
+            requires indirectly_movable<_It1, _It2>
+        constexpr move_backward_result<_It1, _It2> operator()(_It1 _First, _Se1 _Last, _It2 _Result) const {
+            _Adl_verify_range(_First, _Last);
+            auto _UFirst = _Get_unwrapped(_STD move(_First));
+            auto _ULast  = _Get_final_iterator_unwrapped<_It1>(_UFirst, _STD move(_Last));
+            _Seek_wrapped(_First, _ULast);
+            _Result = _RANGES _Move_backward_common(_STD move(_UFirst), _STD move(_ULast), _STD move(_Result));
+            return {_STD move(_First), _STD move(_Result)};
+        }
+
+        template <bidirectional_range _Rng, bidirectional_iterator _It>
+            requires indirectly_movable<iterator_t<_Rng>, _It>
+        constexpr move_backward_result<borrowed_iterator_t<_Rng>, _It> operator()(_Rng&& _Range, _It _Result) const {
+            auto _ULast = _Get_final_iterator_unwrapped(_Range);
+            _Result     = _RANGES _Move_backward_common(_Ubegin(_Range), _ULast, _STD move(_Result));
+            return {_Rewrap_iterator(_Range, _STD move(_ULast)), _STD move(_Result)};
+        }
+        // clang-format on
+    };
+
+    inline constexpr _Move_backward_fn move_backward{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
@@ -3350,16 +3402,13 @@ namespace ranges {
             _It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2) const {
             _Adl_verify_range(_First1, _Last1);
             _Adl_verify_range(_First2, _Last2);
-            auto _UFirst1 = _Get_unwrapped(_STD move(_First1));
-            auto _ULast1  = _Get_unwrapped(_STD move(_Last1));
-            auto _UFirst2 = _Get_unwrapped(_STD move(_First2));
-            auto _ULast2  = _Get_unwrapped(_STD move(_Last2));
-            for (; _UFirst1 != _ULast1 && _UFirst2 != _ULast2; ++_UFirst1, (void) ++_UFirst2) {
-                _RANGES iter_swap(_UFirst1, _UFirst2);
-            }
 
-            _Seek_wrapped(_First1, _STD move(_UFirst1));
-            _Seek_wrapped(_First2, _STD move(_UFirst2));
+            auto _UResult =
+                _Swap_ranges_unchecked(_Get_unwrapped(_STD move(_First1)), _Get_unwrapped(_STD move(_Last1)),
+                    _Get_unwrapped(_STD move(_First2)), _Get_unwrapped(_STD move(_Last2)));
+
+            _Seek_wrapped(_First1, _STD move(_UResult.in1));
+            _Seek_wrapped(_First2, _STD move(_UResult.in2));
             return {_STD move(_First1), _STD move(_First2)};
         }
 
@@ -3367,9 +3416,33 @@ namespace ranges {
             requires indirectly_swappable<iterator_t<_Rng1>, iterator_t<_Rng2>>
         constexpr swap_ranges_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>> operator()(
             _Rng1&& _Range1, _Rng2&& _Range2) const {
-            return (*this)(_RANGES begin(_Range1), _RANGES end(_Range1), _RANGES begin(_Range2), _RANGES end(_Range2));
+            auto _First1 = _RANGES begin(_Range1);
+            auto _First2 = _RANGES begin(_Range2);
+
+            auto _UResult = _Swap_ranges_unchecked(
+                _Get_unwrapped(_STD move(_First1)), _Uend(_Range1), _Get_unwrapped(_STD move(_First2)), _Uend(_Range2));
+
+            _Seek_wrapped(_First1, _STD move(_UResult.in1));
+            _Seek_wrapped(_First2, _STD move(_UResult.in2));
+            return {_STD move(_First1), _STD move(_First2)};
         }
         // clang-format on
+    private:
+        template <class _It1, class _Se1, class _It2, class _Se2>
+        _NODISCARD static constexpr swap_ranges_result<_It1, _It2> _Swap_ranges_unchecked(
+            _It1 _First1, const _Se1 _Last1, _It2 _First2, const _Se2 _Last2) {
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It1>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se1, _It1>);
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It2>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se2, _It2>);
+            _STL_INTERNAL_STATIC_ASSERT(indirectly_swappable<_It1, _It2>);
+
+            for (; _First1 != _Last1 && _First2 != _Last2; ++_First1, (void) ++_First2) {
+                _RANGES iter_swap(_First1, _First2);
+            }
+
+            return {_STD move(_First1), _STD move(_First2)};
+        }
     };
 
     inline constexpr _Swap_ranges_fn swap_ranges{_Not_quite_object::_Construct_tag{}};
@@ -4845,7 +4918,7 @@ namespace ranges {
             auto _UFirst = _Get_unwrapped(_STD move(_First));
             auto _ULast  = _Get_final_iterator_unwrapped<_It>(_UFirst, _STD move(_Last));
             _Seek_wrapped(_First, _ULast);
-            _RANGES _Reverse_common(_STD move(_UFirst), _STD move(_ULast));
+            _Reverse_common(_STD move(_UFirst), _STD move(_ULast));
             return _First;
         }
 
@@ -4853,7 +4926,7 @@ namespace ranges {
             requires permutable<iterator_t<_Rng>>
         constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range) const {
             auto _ULast = _Get_final_iterator_unwrapped(_Range);
-            _RANGES _Reverse_common(_Ubegin(_Range), _ULast);
+            _Reverse_common(_Ubegin(_Range), _ULast);
             return _Rewrap_iterator(_Range, _STD move(_ULast));
         }
         // clang-format on
@@ -4875,7 +4948,7 @@ _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
 #if _HAS_IF_CONSTEXPR && _USE_STD_VECTOR_ALGORITHMS
     using _Elem                         = remove_pointer_t<decltype(_UFirst)>;
     using _DestElem                     = remove_pointer_t<decltype(_UDest)>;
-    constexpr bool _Allow_vectorization = conjunction_v<is_same<remove_const_t<_Elem>, remove_const_t<_DestElem>>,
+    constexpr bool _Allow_vectorization = conjunction_v<is_same<remove_const_t<_Elem>, _DestElem>,
         is_pointer<decltype(_UFirst)>, is_trivially_copyable<_Elem>, negation<is_volatile<_Elem>>>;
     constexpr size_t _Nx                = sizeof(_Elem);
 
@@ -4918,7 +4991,209 @@ _FwdIt reverse_copy(_ExPo&&, _BidIt _First, _BidIt _Last, _FwdIt _Dest) noexcept
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
     return _STD reverse_copy(_First, _Last, _Dest);
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // ALIAS TEMPLATE reverse_copy_result
+    template <class _In, class _Out>
+    using reverse_copy_result = in_out_result<_In, _Out>;
+
+    // VARIABLE ranges::reverse_copy
+    class _Reverse_copy_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <bidirectional_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out>
+            requires indirectly_copyable<_It, _Out>
+        constexpr reverse_copy_result<_It, _Out> operator()(_It _First, _Se _Last, _Out _Result) const {
+            // clang-format on
+            _Adl_verify_range(_First, _Last);
+            auto _UFirst = _Get_unwrapped(_STD move(_First));
+            auto _ULast  = _Get_final_iterator_unwrapped<_It>(_UFirst, _STD move(_Last));
+            _Seek_wrapped(_First, _ULast);
+            _Result = _Reverse_copy_common(_STD move(_UFirst), _STD move(_ULast), _STD move(_Result));
+            return {_STD move(_First), _STD move(_Result)};
+        }
+
+        // clang-format off
+        template <bidirectional_range _Rng, weakly_incrementable _Out>
+            requires indirectly_copyable<iterator_t<_Rng>, _Out>
+        constexpr reverse_copy_result<borrowed_iterator_t<_Rng>, _Out> operator()(_Rng&& _Range, _Out _Result) const {
+            // clang-format on
+            if constexpr (common_range<_Rng>) {
+                _Result = _Reverse_copy_common(_Ubegin(_Range), _Uend(_Range), _STD move(_Result));
+                return {_RANGES end(_Range), _STD move(_Result)};
+            } else {
+                auto _ULast = _Get_final_iterator_unwrapped(_Range);
+                _Result     = _Reverse_copy_common(_Ubegin(_Range), _ULast, _STD move(_Result));
+                return {_Rewrap_iterator(_Range, _STD move(_ULast)), _STD move(_Result)};
+            }
+        }
+
+    private:
+        template <class _It, class _Out>
+        _NODISCARD static constexpr _Out _Reverse_copy_common(const _It _First, _It _Last, _Out _Result) {
+            _STL_INTERNAL_STATIC_ASSERT(bidirectional_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(weakly_incrementable<_Out>);
+            _STL_INTERNAL_STATIC_ASSERT(indirectly_copyable<_It, _Out>);
+
+#if _USE_STD_VECTOR_ALGORITHMS
+            if constexpr (contiguous_iterator<_It> && contiguous_iterator<_Out>) {
+                using _Elem                         = remove_reference_t<iter_reference_t<_It>>;
+                using _DestElem                     = remove_reference_t<iter_reference_t<_Out>>;
+                constexpr bool _Allow_vectorization = conjunction_v<is_same<remove_const_t<_Elem>, _DestElem>,
+                    is_trivially_copyable<_Elem>, negation<is_volatile<_Elem>>>;
+                constexpr size_t _Nx                = sizeof(_Elem);
+
+#pragma warning(suppress : 6326) // Potential comparison of a constant with another constant
+                if constexpr (_Allow_vectorization && _Nx <= 8 && (_Nx & (_Nx - 1)) == 0) {
+                    if (!_STD is_constant_evaluated()) {
+                        _Elem* const _First_addr      = _STD to_address(_First);
+                        _Elem* const _Last_addr       = _STD to_address(_Last);
+                        _DestElem* const _Result_addr = _STD to_address(_Result);
+                        if constexpr (_Nx == 1) {
+                            __std_reverse_copy_trivially_copyable_1(_First_addr, _Last_addr, _Result_addr);
+                        } else if constexpr (_Nx == 2) {
+                            __std_reverse_copy_trivially_copyable_2(_First_addr, _Last_addr, _Result_addr);
+                        } else if constexpr (_Nx == 4) {
+                            __std_reverse_copy_trivially_copyable_4(_First_addr, _Last_addr, _Result_addr);
+                        } else {
+                            __std_reverse_copy_trivially_copyable_8(_First_addr, _Last_addr, _Result_addr);
+                        }
+
+                        _Result += _Last - _First;
+                        return _Result;
+                    }
+                }
+            }
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
+            for (; _First != _Last; ++_Result) {
+                *_Result = *--_Last;
+            }
+
+            return _Result;
+        }
+    };
+
+    inline constexpr _Reverse_copy_fn reverse_copy{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::rotate
+    class _Rotate_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <permutable _It, sentinel_for<_It> _Se>
+        constexpr subrange<_It> operator()(_It _First, _It _Mid, _Se _Last) const {
+            _Adl_verify_range(_First, _Mid);
+            _Adl_verify_range(_Mid, _Last);
+            auto _UResult = _Rotate_unchecked(
+                _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Mid)), _Get_unwrapped(_STD move(_Last)));
+
+            return _Rewrap_subrange<subrange<_It>>(_First, _STD move(_UResult));
+        }
+
+        // clang-format off
+        template <forward_range _Rng>
+            requires permutable<iterator_t<_Rng>>
+        constexpr borrowed_subrange_t<_Rng> operator()(_Rng&& _Range, iterator_t<_Rng> _Mid) const {
+            // clang-format on
+            _Adl_verify_range(_RANGES begin(_Range), _Mid);
+            _Adl_verify_range(_Mid, _RANGES end(_Range));
+            auto _UResult = _Rotate_unchecked(_Ubegin(_Range), _Get_unwrapped(_STD move(_Mid)), _Uend(_Range));
+
+            return _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_Mid, _STD move(_UResult));
+        }
+
+    private:
+        template <class _It, class _Se>
+        _NODISCARD static constexpr subrange<_It> _Rotate_unchecked(_It _First, _It _Mid, _Se _Last) {
+            // Exchange the ranges [_First, _Mid) and [_Mid, _Last)
+            // that is, rotates [_First, _Last) left by distance(_First, _Mid) positions
+            _STL_INTERNAL_STATIC_ASSERT(permutable<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+
+            if (_First == _Mid) {
+                auto _Final = _Get_final_iterator_unwrapped<_It>(_Mid, _STD move(_Last));
+                return {_Final, _Final};
+            }
+
+            if (_Mid == _Last) {
+                return {_STD move(_First), _STD move(_Mid)};
+            }
+
+            if constexpr (bidirectional_iterator<_It>) {
+                _Reverse_common(_First, _Mid);
+                auto _Final = _Get_final_iterator_unwrapped<_It>(_Mid, _STD move(_Last));
+                _Reverse_common(_Mid, _Final);
+
+                if constexpr (random_access_iterator<_It>) {
+                    _Reverse_common(_First, _Final);
+                    _First += _Final - _Mid;
+
+                    return {_STD move(_First), _STD move(_Final)};
+                } else {
+                    auto [_Mid_first, _Mid_last] = _Reverse_until_mid_unchecked(_STD move(_First), _Mid, _Final);
+                    _Reverse_common(_Mid_first, _Mid_last);
+
+                    if (_Mid_first == _Mid) {
+                        return {_STD move(_Mid_last), _STD move(_Final)};
+                    } else {
+                        return {_STD move(_Mid_first), _STD move(_Final)};
+                    }
+                }
+            } else {
+                auto _Next = _Mid;
+                do { // rotate the first cycle
+                    _RANGES iter_swap(_First, _Next);
+                    ++_First;
+                    ++_Next;
+                    if (_First == _Mid) {
+                        _Mid = _Next;
+                    }
+                } while (_Next != _Last);
+
+                auto _Begin = _First;
+
+                while (_Mid != _Last) { // rotate subsequent cycles
+                    _Next = _Mid;
+                    do {
+                        _RANGES iter_swap(_First, _Next);
+                        ++_First;
+                        ++_Next;
+                        if (_First == _Mid) {
+                            _Mid = _Next;
+                        }
+                    } while (_Next != _Last);
+                }
+                return {_STD move(_Begin), _STD move(_Mid)};
+            }
+        }
+
+        template <class _It>
+        _NODISCARD static constexpr subrange<_It> _Reverse_until_mid_unchecked(_It _First, const _It _Mid, _It _Last) {
+            // reverse until either _First or _Last hits _Mid
+            _STL_INTERNAL_STATIC_ASSERT(permutable<_It>);
+            _STL_INTERNAL_CHECK(_First != _Mid);
+            _STL_INTERNAL_CHECK(_Mid != _Last);
+
+            do {
+                _RANGES iter_swap(_First, --_Last);
+            } while (++_First != _Mid && _Last != _Mid);
+
+            return {_STD move(_First), _STD move(_Last)};
+        }
+    };
+
+    inline constexpr _Rotate_fn rotate{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE rotate_copy
 template <class _FwdIt, class _OutIt>
@@ -4943,6 +5218,65 @@ _FwdIt2 rotate_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Mid, _FwdIt1 _Last, _FwdIt
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
     return _STD rotate_copy(_First, _Mid, _Last, _Dest);
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // ALIAS TEMPLATE rotate_copy_result
+    template <class _In, class _Out>
+    using rotate_copy_result = in_out_result<_In, _Out>;
+
+    // VARIABLE ranges::rotate_copy
+    class _Rotate_copy_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <forward_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out>
+            requires indirectly_copyable<_It, _Out>
+        constexpr rotate_copy_result<_It, _Out> operator()(_It _First, _It _Mid, _Se _Last, _Out _Result) const {
+            // clang-format on
+            _Adl_verify_range(_First, _Mid);
+            _Adl_verify_range(_Mid, _Last);
+            auto _UResult = _Rotate_copy_unchecked(_Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Mid)),
+                _Get_unwrapped(_STD move(_Last)), _STD move(_Result));
+
+            _Seek_wrapped(_First, _STD move(_UResult.in));
+            return {_STD move(_First), _STD move(_UResult.out)};
+        }
+
+        // clang-format off
+        template <forward_range _Rng, weakly_incrementable _Out>
+            requires indirectly_copyable<iterator_t<_Rng>, _Out>
+        constexpr rotate_copy_result<borrowed_iterator_t<_Rng>, _Out> operator()(
+            _Rng&& _Range, iterator_t<_Rng> _Mid, _Out _Result) const {
+            // clang-format on
+            _Adl_verify_range(_RANGES begin(_Range), _Mid);
+            _Adl_verify_range(_Mid, _RANGES end(_Range));
+            auto _UResult = _Rotate_copy_unchecked(
+                _Ubegin(_Range), _Get_unwrapped(_STD move(_Mid)), _Uend(_Range), _STD move(_Result));
+
+            return {_Rewrap_iterator(_Range, _STD move(_UResult.in)), _STD move(_UResult.out)};
+        }
+
+    private:
+        template <class _It, class _Se, class _Out>
+        _NODISCARD static constexpr rotate_copy_result<_It, _Out> _Rotate_copy_unchecked(
+            _It _First, _It _Mid, _Se _Last, _Out _Result) {
+            // Copy the content of [_Mid, _Last) and [_First, _Mid) to _Result
+            _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(weakly_incrementable<_Out>);
+            _STL_INTERNAL_STATIC_ASSERT(indirectly_copyable<_It, _Out>);
+
+            auto _UResult1 = _RANGES _Copy_unchecked(_Mid, _STD move(_Last), _STD move(_Result));
+            auto _UResult2 = _RANGES _Copy_unchecked(_STD move(_First), _STD move(_Mid), _STD move(_UResult1.out));
+            return {_STD move(_UResult1.in), _STD move(_UResult2.out)};
+        }
+    };
+
+    inline constexpr _Rotate_copy_fn rotate_copy{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE sample
 template <class _PopIt, class _SampleIt, class _Diff, class _RngFn>
@@ -6755,6 +7089,90 @@ _FwdIt3 merge(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt3);
     return _STD merge(_First1, _Last1, _First2, _Last2, _Dest);
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // ALIAS TEMPLATE merge_result
+    template <class _In1, class _In2, class _Out>
+    using merge_result = in_in_out_result<_In1, _In2, _Out>;
+
+    // VARIABLE ranges::merge
+    class _Merge_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <input_iterator _It1, sentinel_for<_It1> _Se1, input_iterator _It2, sentinel_for<_It2> _Se2,
+            weakly_incrementable _Out, class _Pr = ranges::less, class _Pj1 = identity, class _Pj2 = identity>
+            requires mergeable<_It1, _It2, _Out, _Pr, _Pj1, _Pj2>
+        constexpr merge_result<_It1, _It2, _Out> operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2,
+            _Out _Result, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            // clang-format on
+            _Adl_verify_range(_First1, _Last1);
+            _Adl_verify_range(_First2, _Last2);
+            auto _UResult = _Merge_unchecked(_Get_unwrapped(_STD move(_First1)), _Get_unwrapped(_STD move(_Last1)),
+                _Get_unwrapped(_STD move(_First2)), _Get_unwrapped(_STD move(_Last2)), _STD move(_Result),
+                _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            _Seek_wrapped(_First1, _STD move(_UResult.in1));
+            _Seek_wrapped(_First2, _STD move(_UResult.in2));
+            return {_STD move(_First1), _STD move(_First2), _STD move(_UResult.out)};
+        }
+
+        // clang-format off
+        template <input_range _Rng1, input_range _Rng2, weakly_incrementable _Out, class _Pr = ranges::less,
+            class _Pj1 = identity, class _Pj2 = identity>
+            requires mergeable<iterator_t<_Rng1>, iterator_t<_Rng2>, _Out, _Pr, _Pj1, _Pj2>
+        constexpr merge_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>, _Out> operator()(
+            _Rng1&& _Range1, _Rng2&& _Range2, _Out _Result, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            // clang-format on
+            auto _First1 = _RANGES begin(_Range1);
+            auto _First2 = _RANGES begin(_Range2);
+            auto _UResult =
+                _Merge_unchecked(_Get_unwrapped(_STD move(_First1)), _Uend(_Range1), _Get_unwrapped(_STD move(_First2)),
+                    _Uend(_Range2), _STD move(_Result), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            _Seek_wrapped(_First1, _STD move(_UResult.in1));
+            _Seek_wrapped(_First2, _STD move(_UResult.in2));
+            return {_STD move(_First1), _STD move(_First2), _STD move(_UResult.out)};
+        }
+
+    private:
+        template <class _It1, class _Se1, class _It2, class _Se2, class _Out, class _Pr, class _Pj1, class _Pj2>
+        _NODISCARD static constexpr merge_result<_It1, _It2, _Out> _Merge_unchecked(_It1 _First1, const _Se1 _Last1,
+            _It2 _First2, const _Se2 _Last2, _Out _Result, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It1>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se1, _It1>);
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It2>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se2, _It2>);
+            _STL_INTERNAL_STATIC_ASSERT(weakly_incrementable<_Out>);
+            _STL_INTERNAL_STATIC_ASSERT(mergeable<_It1, _It2, _Out, _Pr, _Pj1, _Pj2>);
+
+            for (;; ++_Result) {
+                if (_First1 == _Last1) {
+                    auto _Copy_result =
+                        _RANGES _Copy_unchecked(_STD move(_First2), _STD move(_Last2), _STD move(_Result));
+                    return {_STD move(_First1), _STD move(_Copy_result.in), _STD move(_Copy_result.out)};
+                }
+
+                if (_First2 == _Last2) {
+                    auto _Copy_result =
+                        _RANGES _Copy_unchecked(_STD move(_First1), _STD move(_Last1), _STD move(_Result));
+                    return {_STD move(_Copy_result.in), _STD move(_First2), _STD move(_Copy_result.out)};
+                }
+
+                if (_STD invoke(_Pred, _STD invoke(_Proj2, *_First2), _STD invoke(_Proj1, *_First1))) {
+                    *_Result = *_First2;
+                    ++_First2;
+                } else {
+                    *_Result = *_First1;
+                    ++_First1;
+                }
+            }
+        }
+    };
+
+    inline constexpr _Merge_fn merge{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE inplace_merge
@@ -7023,22 +7441,22 @@ void inplace_merge(_ExPo&&, _BidIt _First, _BidIt _Mid, _BidIt _Last) noexcept /
 
 // FUNCTION TEMPLATE sort
 template <class _BidIt, class _Pr>
-_CONSTEXPR20 _BidIt _Insertion_sort_unchecked(_BidIt _First, const _BidIt _Last, _Pr _Pred) {
+_CONSTEXPR20 _BidIt _Insertion_sort_unchecked(const _BidIt _First, const _BidIt _Last, _Pr _Pred) {
     // insertion sort [_First, _Last)
     if (_First != _Last) {
-        for (_BidIt _Next = _First; ++_Next != _Last;) { // order next element
-            _BidIt _Next1              = _Next;
-            _Iter_value_t<_BidIt> _Val = _STD move(*_Next);
+        for (_BidIt _Mid = _First; ++_Mid != _Last;) { // order next element
+            _BidIt _Hole               = _Mid;
+            _Iter_value_t<_BidIt> _Val = _STD move(*_Mid);
 
             if (_DEBUG_LT_PRED(_Pred, _Val, *_First)) { // found new earliest element, move to front
-                _Move_backward_unchecked(_First, _Next, ++_Next1);
+                _Move_backward_unchecked(_First, _Mid, ++_Hole);
                 *_First = _STD move(_Val);
             } else { // look for insertion point after first
-                for (_BidIt _First1 = _Next1; _DEBUG_LT_PRED(_Pred, _Val, *--_First1); _Next1 = _First1) {
-                    *_Next1 = _STD move(*_First1); // move hole down
+                for (_BidIt _Prev = _Hole; _DEBUG_LT_PRED(_Pred, _Val, *--_Prev); _Hole = _Prev) {
+                    *_Hole = _STD move(*_Prev); // move hole down
                 }
 
-                *_Next1 = _STD move(_Val); // insert element in hole
+                *_Hole = _STD move(_Val); // insert element in hole
             }
         }
     }
@@ -7102,6 +7520,7 @@ _CONSTEXPR20 pair<_RanIt, _RanIt> _Partition_by_median_guess_unchecked(_RanIt _F
     for (;;) { // partition
         for (; _Gfirst < _Last; ++_Gfirst) {
             if (_DEBUG_LT_PRED(_Pred, *_Pfirst, *_Gfirst)) {
+                continue;
             } else if (_Pred(*_Gfirst, *_Pfirst)) {
                 break;
             } else if (_Plast != _Gfirst) {
@@ -7114,6 +7533,7 @@ _CONSTEXPR20 pair<_RanIt, _RanIt> _Partition_by_median_guess_unchecked(_RanIt _F
 
         for (; _First < _Glast; --_Glast) {
             if (_DEBUG_LT_PRED(_Pred, *_Prev_iter(_Glast), *_Pfirst)) {
+                continue;
             } else if (_Pred(*_Pfirst, *_Prev_iter(_Glast))) {
                 break;
             } else if (--_Pfirst != _Prev_iter(_Glast)) {
@@ -7199,6 +7619,156 @@ void sort(_ExPo&& _Exec, const _RanIt _First, const _RanIt _Last) noexcept /* te
     // order [_First, _Last)
     _STD sort(_STD forward<_ExPo>(_Exec), _First, _Last, less{});
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // clang-format off
+    template <bidirectional_iterator _It, class _Pr, class _Pj>
+        requires sortable<_It, _Pr, _Pj>
+    constexpr void _Insertion_sort_common(const _It _First, const _It _Last, _Pr _Pred, _Pj _Proj) {
+        // insertion sort [_First, _Last)
+
+        if (_First == _Last) { // empty range is sorted
+            return;
+        }
+
+        for (auto _Mid = _First; ++_Mid != _Last;) { // order next element
+            iter_value_t<_It> _Val = _RANGES iter_move(_Mid);
+            auto _Hole            = _Mid;
+
+            for (auto _Prev = _Hole;;) {
+                --_Prev;
+                if (!_STD invoke(_Pred, _STD invoke(_Proj, _Val), _STD invoke(_Proj, *_Prev))) {
+                    break;
+                }
+                *_Hole = _RANGES iter_move(_Prev); // move hole down
+                if (--_Hole == _First) {
+                    break;
+                }
+            }
+
+            *_Hole = _STD move(_Val); // insert element in hole
+        }
+    }
+
+    template <random_access_iterator _It, class _Pr, class _Pj>
+        requires sortable<_It, _Pr, _Pj>
+    constexpr void _Med3_unchecked(_It _First, _It _Mid, _It _Last, _Pr _Pred, _Pj _Proj) {
+        // sort median of three elements to middle
+        if (_STD invoke(_Pred, _STD invoke(_Proj, *_Mid), _STD invoke(_Proj, *_First))) {
+            _RANGES iter_swap(_Mid, _First);
+        }
+
+        if (!_STD invoke(_Pred, _STD invoke(_Proj, *_Last), _STD invoke(_Proj, *_Mid))) {
+            return;
+        }
+
+        // swap middle and last, then test first again
+        _RANGES iter_swap(_Last, _Mid);
+
+        if (_STD invoke(_Pred, _STD invoke(_Proj, *_Mid), _STD invoke(_Proj, *_First))) {
+            _RANGES iter_swap(_Mid, _First);
+        }
+    }
+
+    template <random_access_iterator _It, class _Pr, class _Pj>
+        requires sortable<_It, _Pr, _Pj>
+    constexpr void _Guess_median_unchecked(_It _First, _It _Mid, _It _Last, _Pr _Pred, _Pj _Proj) {
+        // sort median element to middle
+        using _Diff        = iter_difference_t<_It>;
+        const _Diff _Count = _Last - _First;
+        if (_Count > 40) { // Tukey's ninther
+            const _Diff _Step     = (_Count + 1) >> 3; // +1 can't overflow because range was made inclusive in caller
+            const _Diff _Two_step = _Step << 1; // note: intentionally discards low-order bit
+            _Med3_unchecked(_First, _First + _Step, _First + _Two_step, _Pred, _Proj);
+            _Med3_unchecked(_Mid - _Step, _Mid, _Mid + _Step, _Pred, _Proj);
+            _Med3_unchecked(_Last - _Two_step, _Last - _Step, _Last, _Pred, _Proj);
+            _Med3_unchecked(_First + _Step, _Mid, _Last - _Step, _Pred, _Proj);
+        } else {
+            _Med3_unchecked(_First, _Mid, _Last, _Pred, _Proj);
+        }
+    }
+
+    template <random_access_iterator _It, class _Pr, class _Pj>
+        requires sortable<_It, _Pr, _Pj>
+    _NODISCARD constexpr subrange<_It> _Partition_by_median_guess_unchecked(
+        _It _First, _It _Last, _Pr _Pred, _Pj _Proj) {
+        // Choose a pivot, partition [_First, _Last) into elements less than pivot, elements equal to pivot, and
+        // elements greater than pivot; return the equal partition as a subrange.
+
+        _It _Mid = _First + ((_Last - _First) >> 1); // shift for codegen
+        _RANGES _Guess_median_unchecked(_First, _Mid, _RANGES prev(_Last), _Pred, _Proj);
+        _It _Pfirst = _Mid;
+        _It _Plast  = _RANGES next(_Pfirst);
+
+        while (_First < _Pfirst
+               && !_STD invoke(_Pred, _STD invoke(_Proj, *_RANGES prev(_Pfirst)), _STD invoke(_Proj, *_Pfirst))
+               && !_STD invoke(_Pred, _STD invoke(_Proj, *_Pfirst), _STD invoke(_Proj, *_RANGES prev(_Pfirst)))) {
+            --_Pfirst;
+        }
+
+        while (_Plast < _Last
+               && !_STD invoke(_Pred, _STD invoke(_Proj, *_Plast), _STD invoke(_Proj, *_Pfirst))
+               && !_STD invoke(_Pred, _STD invoke(_Proj, *_Pfirst), _STD invoke(_Proj, *_Plast))) {
+            ++_Plast;
+        }
+
+        _It _Gfirst = _Plast;
+        _It _Glast  = _Pfirst;
+
+        for (;;) { // partition
+            for (; _Gfirst < _Last; ++_Gfirst) {
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_Pfirst), _STD invoke(_Proj, *_Gfirst))) {
+                    continue;
+                } else if (_STD invoke(_Pred, _STD invoke(_Proj, *_Gfirst), _STD invoke(_Proj, *_Pfirst))) {
+                    break;
+                } else if (_Plast != _Gfirst) {
+                    _RANGES iter_swap(_Plast, _Gfirst);
+                    ++_Plast;
+                } else {
+                    ++_Plast;
+                }
+            }
+
+            for (; _First < _Glast; --_Glast) {
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_RANGES prev(_Glast)), _STD invoke(_Proj, *_Pfirst))) {
+                    continue;
+                } else if (_STD invoke(
+                               _Pred, _STD invoke(_Proj, *_Pfirst), _STD invoke(_Proj, *_RANGES prev(_Glast)))) {
+                    break;
+                } else if (--_Pfirst != _RANGES prev(_Glast)) {
+                    _RANGES iter_swap(_Pfirst, _RANGES prev(_Glast));
+                }
+            }
+
+            if (_Glast == _First && _Gfirst == _Last) {
+                return {_STD move(_Pfirst), _STD move(_Plast)};
+            }
+
+            if (_Glast == _First) { // no room at bottom, rotate pivot upward
+                if (_Plast != _Gfirst) {
+                    _RANGES iter_swap(_Pfirst, _Plast);
+                }
+
+                ++_Plast;
+                _RANGES iter_swap(_Pfirst, _Gfirst);
+                ++_Pfirst;
+                ++_Gfirst;
+            } else if (_Gfirst == _Last) { // no room at top, rotate pivot downward
+                if (--_Glast != --_Pfirst) {
+                    _RANGES iter_swap(_Glast, _Pfirst);
+                }
+
+                _RANGES iter_swap(_Pfirst, --_Plast);
+            } else {
+                _RANGES iter_swap(_Gfirst, --_Glast);
+                ++_Gfirst;
+            }
+        }
+    }
+    // clang-format on
+} // namespace ranges
+#endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE stable_sort
@@ -7520,7 +8090,7 @@ _CONSTEXPR20 void nth_element(_RanIt _First, _RanIt _Nth, _RanIt _Last, _Pr _Pre
         if (_UMid.second <= _UNth) {
             _UFirst = _UMid.second;
         } else if (_UMid.first <= _UNth) {
-            return; // Nth inside fat pivot, done
+            return; // _Nth is in the subrange of elements equal to the pivot; done
         } else {
             _ULast = _UMid.first;
         }
@@ -7548,6 +8118,82 @@ void nth_element(_ExPo&&, _RanIt _First, _RanIt _Nth, _RanIt _Last) noexcept /* 
     // not parallelized at present, parallelism expected to be feasible in a future release
     _STD nth_element(_First, _Nth, _Last);
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::nth_element
+    class _Nth_element_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <random_access_iterator _It, sentinel_for<_It> _Se, class _Pr = ranges::less, class _Pj = identity>
+            requires sortable<_It, _Pr, _Pj>
+        constexpr _It operator()(_It _First, _It _Nth, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Nth);
+            _Adl_verify_range(_Nth, _Last);
+            auto _UNth   = _Get_unwrapped(_Nth);
+            auto _UFinal = _Get_final_iterator_unwrapped<_It>(_UNth, _STD move(_Last));
+            _Seek_wrapped(_Nth, _UFinal);
+
+            _Nth_element_common(_Get_unwrapped(_STD move(_First)), _STD move(_UNth), _STD move(_UFinal),
+                _Pass_fn(_Pred), _Pass_fn(_Proj));
+            return _Nth;
+        }
+
+        template <random_access_range _Rng, class _Pr = ranges::less, class _Pj = identity>
+            requires sortable<iterator_t<_Rng>, _Pr, _Pj>
+        constexpr borrowed_iterator_t<_Rng> operator()(
+            _Rng&& _Range, iterator_t<_Rng> _Nth, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            _Adl_verify_range(_RANGES begin(_Range), _Nth);
+            _Adl_verify_range(_Nth, _RANGES end(_Range));
+            auto _UNth   = _Get_unwrapped(_Nth);
+            auto _UFinal = [&] {
+                if constexpr (common_range<_Rng>) {
+                    return _Uend(_Range);
+                } else if constexpr (sized_range<_Rng>) {
+                    return _RANGES next(_Ubegin(_Range), _RANGES distance(_Range));
+                } else {
+                    return _RANGES next(_UNth, _Uend(_Range));
+                }
+            }();
+            _Seek_wrapped(_Nth, _UFinal);
+
+            _Nth_element_common(
+                _Ubegin(_Range), _STD move(_UNth), _STD move(_UFinal), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            return _Nth;
+        }
+        // clang-format on
+    private:
+        template <class _It, class _Pr, class _Pj>
+        static constexpr void _Nth_element_common(_It _First, _It _Nth, _It _Last, _Pr _Pred, _Pj _Proj) {
+            _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
+
+            if (_Nth == _Last) {
+                return; // nothing to do
+            }
+
+            while (_ISORT_MAX < _Last - _First) { // divide and conquer, ordering partition containing Nth
+                subrange<_It> _Mid = _RANGES _Partition_by_median_guess_unchecked(_First, _Last, _Pred, _Proj);
+
+                if (_Mid.end() <= _Nth) {
+                    _First = _Mid.end();
+                } else if (_Mid.begin() <= _Nth) {
+                    return; // _Nth is in the subrange of elements equal to the pivot; done
+                } else {
+                    _Last = _Mid.begin();
+                }
+            }
+
+            // sort any remainder
+            _RANGES _Insertion_sort_common(_STD move(_First), _STD move(_Last), _STD move(_Pred), _STD move(_Proj));
+        }
+    };
+
+    inline constexpr _Nth_element_fn nth_element{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE includes
@@ -7602,6 +8248,79 @@ _NODISCARD bool includes(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _Firs
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
     return _STD includes(_First1, _Last1, _First2, _Last2);
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::includes
+    class _Includes_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <input_iterator _It1, sentinel_for<_It1> _Se1, input_iterator _It2, sentinel_for<_It2> _Se2,
+            class _Pj1 = identity, class _Pj2 = identity,
+            indirect_strict_weak_order<projected<_It1, _Pj1>, projected<_It2, _Pj2>> _Pr = ranges::less>
+        _NODISCARD constexpr bool operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2, _Pr _Pred = {},
+            _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            _Adl_verify_range(_First1, _Last1);
+            _Adl_verify_range(_First2, _Last2);
+            return _Includes_unchecked(_Get_unwrapped(_STD move(_First1)), _Get_unwrapped(_STD move(_Last1)),
+                _Get_unwrapped(_STD move(_First2)), _Get_unwrapped(_STD move(_Last2)), _Pass_fn(_Pred),
+                _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+        }
+
+        template <input_range _Rng1, input_range _Rng2, class _Pj1 = identity, class _Pj2 = identity,
+            indirect_strict_weak_order<projected<iterator_t<_Rng1>, _Pj1>, projected<iterator_t<_Rng2>, _Pj2>> _Pr =
+                ranges::less>
+        _NODISCARD constexpr bool operator()(
+            _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            return _Includes_unchecked(_Ubegin(_Range1), _Uend(_Range1), _Ubegin(_Range2), _Uend(_Range2),
+                _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+        }
+
+    private:
+        template <class _It1, class _Se1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
+        _NODISCARD static constexpr bool _Includes_unchecked(
+            _It1 _First1, const _Se1 _Last1, _It2 _First2, const _Se2 _Last2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It1>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se1, _It1>);
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It2>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se2, _It2>);
+            _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, projected<_It1, _Pj1>, projected<_It2, _Pj2>>);
+
+            if (_First2 == _Last2) {
+                return true;
+            } else if (_First1 == _Last1) {
+                return false;
+            }
+
+            for (;;) {
+                if (_STD invoke(_Pred, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_First2))) {
+                    ++_First1;
+                    if (_First1 == _Last1) {
+                        return false;
+                    }
+
+                    continue;
+                }
+
+                if (_STD invoke(_Pred, _STD invoke(_Proj2, *_First2), _STD invoke(_Proj1, *_First1))) {
+                    return false;
+                }
+
+                ++_First1;
+                ++_First2;
+                if (_First2 == _Last2) {
+                    return true;
+                } else if (_First1 == _Last1) {
+                    return false;
+                }
+            }
+        }
+    };
+
+    inline constexpr _Includes_fn includes{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE set_union
@@ -7664,6 +8383,84 @@ _FwdIt3 set_union(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Fw
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt3);
     return _STD set_union(_First1, _Last1, _First2, _Last2, _Dest);
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // ALIAS TEMPLATE set_union_result
+    template <class _In1, class _In2, class _Out>
+    using set_union_result = in_in_out_result<_In1, _In2, _Out>;
+
+    // VARIABLE ranges::set_union
+    class _Set_union_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <input_iterator _It1, sentinel_for<_It1> _Se1, input_iterator _It2, sentinel_for<_It2> _Se2,
+            weakly_incrementable _Out, class _Pr = ranges::less, class _Pj1 = identity, class _Pj2 = identity>
+            requires mergeable<_It1, _It2, _Out, _Pr, _Pj1, _Pj2>
+        constexpr set_union_result<_It1, _It2, _Out> operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2,
+            _Out _Result, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            _Adl_verify_range(_First1, _Last1);
+            _Adl_verify_range(_First2, _Last2);
+            auto _UResult = _Set_union_unchecked(_Get_unwrapped(_STD move(_First1)), _Get_unwrapped(_STD move(_Last1)),
+                _Get_unwrapped(_STD move(_First2)), _Get_unwrapped(_STD move(_Last2)),
+                _Get_unwrapped_unverified(_STD move(_Result)), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            _Seek_wrapped(_First1, _STD move(_UResult.in1));
+            _Seek_wrapped(_First2, _STD move(_UResult.in2));
+            _Seek_wrapped(_Result, _STD move(_UResult.out));
+            return {_STD move(_First1), _STD move(_First2), _STD move(_Result)};
+        }
+
+        template <input_range _Rng1, input_range _Rng2, weakly_incrementable _Out, class _Pr = ranges::less,
+            class _Pj1 = identity, class _Pj2 = identity>
+            requires mergeable<iterator_t<_Rng1>, iterator_t<_Rng2>, _Out, _Pr, _Pj1, _Pj2>
+        constexpr set_union_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>, _Out> operator()(
+            _Rng1&& _Range1, _Rng2&& _Range2, _Out _Result, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            auto _First1  = _RANGES begin(_Range1);
+            auto _First2  = _RANGES begin(_Range2);
+            auto _UResult = _Set_union_unchecked(_Get_unwrapped(_STD move(_First1)), _Uend(_Range1),
+                _Get_unwrapped(_STD move(_First2)), _Uend(_Range2), _Get_unwrapped_unverified(_STD move(_Result)),
+                _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            _Seek_wrapped(_First1, _STD move(_UResult.in1));
+            _Seek_wrapped(_First2, _STD move(_UResult.in2));
+            _Seek_wrapped(_Result, _STD move(_UResult.out));
+            return {_STD move(_First1), _STD move(_First2), _STD move(_Result)};
+        }
+        // clang-format on
+    private:
+        template <class _It1, class _Se1, class _It2, class _Se2, class _Out, class _Pr, class _Pj1, class _Pj2>
+        _NODISCARD static constexpr set_union_result<_It1, _It2, _Out> _Set_union_unchecked(_It1 _First1,
+            const _Se1 _Last1, _It2 _First2, const _Se2 _Last2, _Out _Result, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It1>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se1, _It1>);
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It2>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se2, _It2>);
+            _STL_INTERNAL_STATIC_ASSERT(weakly_incrementable<_Out>);
+            _STL_INTERNAL_STATIC_ASSERT(mergeable<_It1, _It2, _Out, _Pr, _Pj1, _Pj2>);
+
+            for (; _First1 != _Last1 && _First2 != _Last2; ++_Result) {
+                if (_STD invoke(_Pred, _STD invoke(_Proj2, *_First2), _STD invoke(_Proj1, *_First1))) {
+                    *_Result = *_First2;
+                    ++_First2;
+                } else {
+                    *_Result = *_First1;
+                    if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_First2))) {
+                        ++_First2;
+                    }
+                    ++_First1;
+                }
+            }
+
+            auto _UResult1 = _RANGES _Copy_unchecked(_STD move(_First1), _STD move(_Last1), _STD move(_Result));
+            auto _UResult2 = _RANGES _Copy_unchecked(_STD move(_First2), _STD move(_Last2), _STD move(_UResult1.out));
+            return {_STD move(_UResult1.in), _STD move(_UResult2.in), _STD move(_UResult2.out)};
+        }
+    };
+
+    inline constexpr _Set_union_fn set_union{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE set_intersection
@@ -7714,6 +8511,91 @@ _FwdIt3 set_intersection(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2
     // AND sets [_First1, _Last1) and [_First2, _Last2)
     return _STD set_intersection(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _Last2, _Dest, less{});
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // ALIAS TEMPLATE set_intersection_result
+    template <class _In1, class _In2, class _Out>
+    using set_intersection_result = in_in_out_result<_In1, _In2, _Out>;
+
+    // VARIABLE ranges::set_intersection
+    class _Set_intersection_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <input_iterator _It1, sentinel_for<_It1> _Se1, input_iterator _It2, sentinel_for<_It2> _Se2,
+            weakly_incrementable _Out, class _Pr = ranges::less, class _Pj1 = identity, class _Pj2 = identity>
+            requires mergeable<_It1, _It2, _Out, _Pr, _Pj1, _Pj2>
+        constexpr set_intersection_result<_It1, _It2, _Out> operator()(_It1 _First1, _Se1 _Last1, _It2 _First2,
+            _Se2 _Last2, _Out _Result, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            _Adl_verify_range(_First1, _Last1);
+            _Adl_verify_range(_First2, _Last2);
+            auto _UResult =
+                _Set_intersection_unchecked(_Get_unwrapped(_STD move(_First1)), _Get_unwrapped(_STD move(_Last1)),
+                    _Get_unwrapped(_STD move(_First2)), _Get_unwrapped(_STD move(_Last2)),
+                    _Get_unwrapped_unverified(_STD move(_Result)), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            _Seek_wrapped(_First1, _STD move(_UResult.in1));
+            _Seek_wrapped(_First2, _STD move(_UResult.in2));
+            _Seek_wrapped(_Result, _STD move(_UResult.out));
+            return {_STD move(_First1), _STD move(_First2), _STD move(_Result)};
+        }
+
+        template <input_range _Rng1, input_range _Rng2, weakly_incrementable _Out, class _Pr = ranges::less,
+            class _Pj1 = identity, class _Pj2 = identity>
+            requires mergeable<iterator_t<_Rng1>, iterator_t<_Rng2>, _Out, _Pr, _Pj1, _Pj2>
+        constexpr set_intersection_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>, _Out> operator()(
+            _Rng1&& _Range1, _Rng2&& _Range2, _Out _Result, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            auto _First1  = _RANGES begin(_Range1);
+            auto _First2  = _RANGES begin(_Range2);
+            auto _UResult = _Set_intersection_unchecked(_Get_unwrapped(_STD move(_First1)), _Uend(_Range1),
+                _Get_unwrapped(_STD move(_First2)), _Uend(_Range2), _Get_unwrapped_unverified(_STD move(_Result)),
+                _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            _Seek_wrapped(_First1, _STD move(_UResult.in1));
+            _Seek_wrapped(_First2, _STD move(_UResult.in2));
+            _Seek_wrapped(_Result, _STD move(_UResult.out));
+            return {_STD move(_First1), _STD move(_First2), _STD move(_Result)};
+        }
+        // clang-format on
+    private:
+        template <class _It1, class _Se1, class _It2, class _Se2, class _Out, class _Pr, class _Pj1, class _Pj2>
+        _NODISCARD static constexpr set_intersection_result<_It1, _It2, _Out> _Set_intersection_unchecked(_It1 _First1,
+            const _Se1 _Last1, _It2 _First2, const _Se2 _Last2, _Out _Result, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It1>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se1, _It1>);
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It2>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se2, _It2>);
+            _STL_INTERNAL_STATIC_ASSERT(weakly_incrementable<_Out>);
+            _STL_INTERNAL_STATIC_ASSERT(mergeable<_It1, _It2, _Out, _Pr, _Pj1, _Pj2>);
+
+            for (;;) {
+                if (_First1 == _Last1) {
+                    _RANGES advance(_First2, _Last2);
+                    break;
+                } else if (_First2 == _Last2) {
+                    _RANGES advance(_First1, _Last1);
+                    break;
+                }
+
+                if (_STD invoke(_Pred, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_First2))) {
+                    ++_First1;
+                } else if (_STD invoke(_Pred, _STD invoke(_Proj2, *_First2), _STD invoke(_Proj1, *_First1))) {
+                    ++_First2;
+                } else {
+                    *_Result = *_First1;
+                    ++_Result;
+                    ++_First1;
+                    ++_First2;
+                }
+            }
+
+            return {_STD move(_First1), _STD move(_First2), _STD move(_Result)};
+        }
+    };
+
+    inline constexpr _Set_intersection_fn set_intersection{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE set_difference
@@ -7765,6 +8647,87 @@ _FwdIt3 set_difference(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _
     // take set [_First2, _Last2) from [_First1, _Last1)
     return _STD set_difference(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _Last2, _Dest, less{});
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // ALIAS TEMPLATE set_difference_result
+    template <class _In, class _Out>
+    using set_difference_result = in_out_result<_In, _Out>;
+
+    // VARIABLE ranges::set_difference
+    class _Set_difference_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <input_iterator _It1, sentinel_for<_It1> _Se1, input_iterator _It2, sentinel_for<_It2> _Se2,
+            weakly_incrementable _Out, class _Pr = ranges::less, class _Pj1 = identity, class _Pj2 = identity>
+            requires mergeable<_It1, _It2, _Out, _Pr, _Pj1, _Pj2>
+        constexpr set_difference_result<_It1, _Out> operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2,
+            _Out _Result, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            _Adl_verify_range(_First1, _Last1);
+            _Adl_verify_range(_First2, _Last2);
+            auto _UResult =
+                _Set_difference_unchecked(_Get_unwrapped(_STD move(_First1)), _Get_unwrapped(_STD move(_Last1)),
+                    _Get_unwrapped(_STD move(_First2)), _Get_unwrapped(_STD move(_Last2)),
+                    _Get_unwrapped_unverified(_STD move(_Result)), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            _Seek_wrapped(_First1, _STD move(_UResult.in));
+            _Seek_wrapped(_Result, _STD move(_UResult.out));
+            return {_STD move(_First1), _STD move(_Result)};
+        }
+
+        template <input_range _Rng1, input_range _Rng2, weakly_incrementable _Out, class _Pr = ranges::less,
+            class _Pj1 = identity, class _Pj2 = identity>
+            requires mergeable<iterator_t<_Rng1>, iterator_t<_Rng2>, _Out, _Pr, _Pj1, _Pj2>
+        constexpr set_difference_result<borrowed_iterator_t<_Rng1>, _Out> operator()(
+            _Rng1&& _Range1, _Rng2&& _Range2, _Out _Result, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            auto _First1  = _RANGES begin(_Range1);
+            auto _UResult = _Set_difference_unchecked(_Get_unwrapped(_STD move(_First1)), _Uend(_Range1),
+                _Ubegin(_Range2), _Uend(_Range2), _Get_unwrapped_unverified(_STD move(_Result)), _Pass_fn(_Pred),
+                _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            _Seek_wrapped(_First1, _STD move(_UResult.in));
+            _Seek_wrapped(_Result, _STD move(_UResult.out));
+            return {_STD move(_First1), _STD move(_Result)};
+        }
+        // clang-format on
+    private:
+        template <class _It1, class _Se1, class _It2, class _Se2, class _Out, class _Pr, class _Pj1, class _Pj2>
+        _NODISCARD static constexpr set_difference_result<_It1, _Out> _Set_difference_unchecked(_It1 _First1,
+            const _Se1 _Last1, _It2 _First2, const _Se2 _Last2, _Out _Result, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It1>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se1, _It1>);
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It2>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se2, _It2>);
+            _STL_INTERNAL_STATIC_ASSERT(weakly_incrementable<_Out>);
+            _STL_INTERNAL_STATIC_ASSERT(mergeable<_It1, _It2, _Out, _Pr, _Pj1, _Pj2>);
+
+            for (;;) {
+                if (_First1 == _Last1) {
+                    return {_STD move(_First1), _STD move(_Result)};
+                }
+
+                if (_First2 == _Last2) {
+                    return _RANGES _Copy_unchecked(_STD move(_First1), _STD move(_Last1), _STD move(_Result));
+                }
+
+                if (_STD invoke(_Pred, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_First2))) {
+                    *_Result = *_First1;
+                    ++_Result;
+                    ++_First1;
+                } else {
+                    if (!_STD invoke(_Pred, _STD invoke(_Proj2, *_First2), _STD invoke(_Proj1, *_First1))) {
+                        ++_First1;
+                    }
+
+                    ++_First2;
+                }
+            }
+        }
+    };
+
+    inline constexpr _Set_difference_fn set_difference{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE set_symmetric_difference
@@ -7830,6 +8793,95 @@ _FwdIt3 set_symmetric_difference(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdI
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt3);
     return _STD set_symmetric_difference(_First1, _Last1, _First2, _Last2, _Dest);
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // ALIAS TEMPLATE set_symmetric_difference_result
+    template <class _In1, class _In2, class _Out>
+    using set_symmetric_difference_result = in_in_out_result<_In1, _In2, _Out>;
+
+    // VARIABLE ranges::set_symmetric_difference
+    class _Set_symmetric_difference_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <input_iterator _It1, sentinel_for<_It1> _Se1, input_iterator _It2, sentinel_for<_It2> _Se2,
+            weakly_incrementable _Out, class _Pr = ranges::less, class _Pj1 = identity, class _Pj2 = identity>
+            requires mergeable<_It1, _It2, _Out, _Pr, _Pj1, _Pj2>
+        constexpr set_symmetric_difference_result<_It1, _It2, _Out> operator()(_It1 _First1, _Se1 _Last1, _It2 _First2,
+            _Se2 _Last2, _Out _Result, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            _Adl_verify_range(_First1, _Last1);
+            _Adl_verify_range(_First2, _Last2);
+            auto _UResult = _Set_symmetric_difference_unchecked(_Get_unwrapped(_STD move(_First1)),
+                _Get_unwrapped(_STD move(_Last1)), _Get_unwrapped(_STD move(_First2)),
+                _Get_unwrapped(_STD move(_Last2)), _Get_unwrapped_unverified(_STD move(_Result)), _Pass_fn(_Pred),
+                _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            _Seek_wrapped(_First1, _STD move(_UResult.in1));
+            _Seek_wrapped(_First2, _STD move(_UResult.in2));
+            _Seek_wrapped(_Result, _STD move(_UResult.out));
+            return {_STD move(_First1), _STD move(_First2), _STD move(_Result)};
+        }
+
+        template <input_range _Rng1, input_range _Rng2, weakly_incrementable _Out, class _Pr = ranges::less,
+            class _Pj1 = identity, class _Pj2 = identity>
+            requires mergeable<iterator_t<_Rng1>, iterator_t<_Rng2>, _Out, _Pr, _Pj1, _Pj2>
+        constexpr set_symmetric_difference_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>, _Out>
+            operator()(_Rng1&& _Range1, _Rng2&& _Range2, _Out _Result, _Pr _Pred = {}, _Pj1 _Proj1 = {},
+                _Pj2 _Proj2 = {}) const {
+            auto _First1  = _RANGES begin(_Range1);
+            auto _First2  = _RANGES begin(_Range2);
+            auto _UResult = _Set_symmetric_difference_unchecked(_Get_unwrapped(_STD move(_First1)), _Uend(_Range1),
+                _Get_unwrapped(_STD move(_First2)), _Uend(_Range2), _Get_unwrapped_unverified(_STD move(_Result)),
+                _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            _Seek_wrapped(_First1, _STD move(_UResult.in1));
+            _Seek_wrapped(_First2, _STD move(_UResult.in2));
+            _Seek_wrapped(_Result, _STD move(_UResult.out));
+            return {_STD move(_First1), _STD move(_First2), _STD move(_Result)};
+        }
+        // clang-format on
+    private:
+        template <class _It1, class _Se1, class _It2, class _Se2, class _Out, class _Pr, class _Pj1, class _Pj2>
+        _NODISCARD static constexpr set_symmetric_difference_result<_It1, _It2, _Out>
+            _Set_symmetric_difference_unchecked(_It1 _First1, const _Se1 _Last1, _It2 _First2, const _Se2 _Last2,
+                _Out _Result, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It1>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se1, _It1>);
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It2>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se2, _It2>);
+            _STL_INTERNAL_STATIC_ASSERT(weakly_incrementable<_Out>);
+            _STL_INTERNAL_STATIC_ASSERT(mergeable<_It1, _It2, _Out, _Pr, _Pj1, _Pj2>);
+
+            for (;;) {
+                if (_First1 == _Last1) {
+                    auto _UResult = _RANGES _Copy_unchecked(_STD move(_First2), _STD move(_Last2), _STD move(_Result));
+                    return {_STD move(_First1), _STD move(_UResult.in), _STD move(_UResult.out)};
+                }
+
+                if (_First2 == _Last2) {
+                    auto _UResult = _RANGES _Copy_unchecked(_STD move(_First1), _STD move(_Last1), _STD move(_Result));
+                    return {_STD move(_UResult.in), _STD move(_First2), _STD move(_UResult.out)};
+                }
+
+                if (_STD invoke(_Pred, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_First2))) {
+                    *_Result = *_First1;
+                    ++_Result;
+                    ++_First1;
+                } else if (_STD invoke(_Pred, _STD invoke(_Proj2, *_First2), _STD invoke(_Proj1, *_First1))) {
+                    *_Result = *_First2;
+                    ++_Result;
+                    ++_First2;
+                } else {
+                    ++_First1;
+                    ++_First2;
+                }
+            }
+        }
+    };
+
+    inline constexpr _Set_symmetric_difference_fn set_symmetric_difference{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE max_element
@@ -8503,6 +9555,79 @@ _CONSTEXPR20 bool next_permutation(_BidIt _First, _BidIt _Last) {
     return _STD next_permutation(_First, _Last, less<>{});
 }
 
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // ALIAS TEMPLATE next_permutation_result
+    template <class _In>
+    using next_permutation_result = in_found_result<_In>;
+
+    // VARIABLE ranges::next_permutation
+    class _Next_permutation_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <bidirectional_iterator _It, sentinel_for<_It> _Se, class _Pr = ranges::less, class _Pj = identity>
+            requires sortable<_It, _Pr, _Pj>
+        constexpr next_permutation_result<_It> operator()(_It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            // clang-format on
+            _Adl_verify_range(_First, _Last);
+            auto _UFirst = _Get_unwrapped(_STD move(_First));
+            auto _ULast  = _Get_final_iterator_unwrapped<_It>(_UFirst, _STD move(_Last));
+            _Seek_wrapped(_First, _ULast);
+            const bool _Found =
+                _Next_permutation_common(_STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            return {_STD move(_First), _Found};
+        }
+
+        // clang-format off
+        template <bidirectional_range _Rng, class _Pr = ranges::less, class _Pj = identity>
+            requires sortable<iterator_t<_Rng>, _Pr, _Pj>
+        constexpr next_permutation_result<borrowed_iterator_t<_Rng>> operator()(
+            _Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            // clang-format on
+            auto _ULast       = _Get_final_iterator_unwrapped(_Range);
+            const bool _Found = _Next_permutation_common(_Ubegin(_Range), _ULast, _Pass_fn(_Pred), _Pass_fn(_Proj));
+            return {_Rewrap_iterator(_Range, _STD move(_ULast)), _Found};
+        }
+
+    private:
+        template <class _It, class _Pr, class _Pj>
+        _NODISCARD static constexpr bool _Next_permutation_common(_It _First, _It _Last, _Pr _Pred, _Pj _Proj) {
+            _STL_INTERNAL_STATIC_ASSERT(bidirectional_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
+
+            auto _Next = _Last;
+            if (_First == _Last || _First == --_Next) {
+                return false;
+            }
+
+            for (;;) { // find rightmost element smaller than successor
+                auto _Next1 = _Next;
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *--_Next), _STD invoke(_Proj, *_Next1))) {
+                    // swap with rightmost element that's smaller, flip suffix
+                    auto _Mid = _Last;
+                    do {
+                        --_Mid;
+                    } while (!_STD invoke(_Pred, _STD invoke(_Proj, *_Next), _STD invoke(_Proj, *_Mid)));
+
+                    _RANGES iter_swap(_Next, _Mid);
+                    _Reverse_common(_STD move(_Next1), _STD move(_Last));
+                    return true;
+                }
+
+                if (_Next == _First) { // pure descending, flip all
+                    _Reverse_common(_STD move(_First), _STD move(_Last));
+                    return false;
+                }
+            }
+        }
+    };
+
+    inline constexpr _Next_permutation_fn next_permutation{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
+
 // FUNCTION TEMPLATE prev_permutation
 template <class _BidIt, class _Pr>
 _CONSTEXPR20 bool prev_permutation(_BidIt _First, _BidIt _Last, _Pr _Pred) {
@@ -8540,6 +9665,79 @@ _CONSTEXPR20 bool prev_permutation(_BidIt _First, _BidIt _Last) {
     // reverse permute and test for pure descending
     return _STD prev_permutation(_First, _Last, less<>{});
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // ALIAS TEMPLATE prev_permutation_result
+    template <class _In>
+    using prev_permutation_result = in_found_result<_In>;
+
+    // VARIABLE ranges::prev_permutation
+    class _Prev_permutation_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <bidirectional_iterator _It, sentinel_for<_It> _Se, class _Pr = ranges::less, class _Pj = identity>
+            requires sortable<_It, _Pr, _Pj>
+        constexpr prev_permutation_result<_It> operator()(_It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            // clang-format on
+            _Adl_verify_range(_First, _Last);
+            auto _UFirst = _Get_unwrapped(_STD move(_First));
+            auto _ULast  = _Get_final_iterator_unwrapped<_It>(_UFirst, _STD move(_Last));
+            _Seek_wrapped(_First, _ULast);
+            const bool _Found =
+                _Prev_permutation_common(_STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            return {_STD move(_First), _Found};
+        }
+
+        // clang-format off
+        template <bidirectional_range _Rng, class _Pr = ranges::less, class _Pj = identity>
+            requires sortable<iterator_t<_Rng>, _Pr, _Pj>
+        constexpr prev_permutation_result<borrowed_iterator_t<_Rng>> operator()(
+            _Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            // clang-format on
+            auto _ULast       = _Get_final_iterator_unwrapped(_Range);
+            const bool _Found = _Prev_permutation_common(_Ubegin(_Range), _ULast, _Pass_fn(_Pred), _Pass_fn(_Proj));
+            return {_Rewrap_iterator(_Range, _STD move(_ULast)), _Found};
+        }
+
+    private:
+        template <class _It, class _Pr, class _Pj>
+        _NODISCARD static constexpr bool _Prev_permutation_common(_It _First, _It _Last, _Pr _Pred, _Pj _Proj) {
+            _STL_INTERNAL_STATIC_ASSERT(bidirectional_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
+
+            auto _Next = _Last;
+            if (_First == _Last || _First == --_Next) {
+                return false;
+            }
+
+            for (;;) { // find rightmost element not smaller than successor
+                auto _Next1 = _Next;
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_Next1), _STD invoke(_Proj, *--_Next))) {
+                    // swap with rightmost element that's not smaller, flip suffix
+                    auto _Mid = _Last;
+                    do {
+                        --_Mid;
+                    } while (!_STD invoke(_Pred, _STD invoke(_Proj, *_Mid), _STD invoke(_Proj, *_Next)));
+
+                    _RANGES iter_swap(_Next, _Mid);
+                    _Reverse_common(_STD move(_Next1), _STD move(_Last));
+                    return true;
+                }
+
+                if (_Next == _First) { // pure ascending, flip all
+                    _Reverse_common(_STD move(_First), _STD move(_Last));
+                    return false;
+                }
+            }
+        }
+    };
+
+    inline constexpr _Prev_permutation_fn prev_permutation{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATES is_sorted AND is_sorted_until
 template <class _FwdIt, class _Pr>

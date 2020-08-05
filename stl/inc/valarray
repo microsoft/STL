@@ -938,9 +938,16 @@ public:
 
     slice_array() = delete;
 
-    slice_array(const slice_array&); // not defined
+    slice_array(const slice_array&) = default;
 
-    slice_array& operator=(const slice_array&); // not defined
+    const slice_array& operator=(const slice_array& _Right) const {
+        size_t _Dst_off = _Start;
+        size_t _Src_off = _Right._Start;
+        for (size_t _Idx = 0; _Idx < _Len; ++_Idx, _Dst_off += _Stride, _Src_off += _Right._Stride) {
+            _Myptr[_Dst_off] = _Right._Myptr[_Src_off];
+        }
+        return *this;
+    }
 
 private:
     friend valarray<_Ty>;
@@ -992,7 +999,7 @@ public:
         return _Ans;
     }
 
-    size_t _Totlen() const {
+    _NODISCARD size_t _Totlen() const {
         if (_Len.size() == 0) {
             return 0;
         }
@@ -1073,15 +1080,23 @@ public:
         _GSLOP(>>= _Right[_Idx]);
     }
 
-    _Ty& _Data(size_t _Idx) const {
+    _NODISCARD _Ty& _Data(size_t _Idx) const {
         return _Myptr[_Idx];
     }
 
     gslice_array() = delete;
 
-    gslice_array(const gslice_array&); // not defined
+    gslice_array(const gslice_array&) = default;
 
-    gslice_array& operator=(const gslice_array&); // not defined
+    const gslice_array& operator=(const gslice_array& _Right) const {
+        _Sizarray _Dst_indexarray(size_t{0}, _Nslice());
+        _Sizarray _Src_indexarray(size_t{0}, _Right._Nslice());
+        const size_t _Size = _Totlen();
+        for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
+            _Myptr[_Off(_Dst_indexarray)] = _Right._Myptr[_Right._Off(_Src_indexarray)];
+        }
+        return *this;
+    }
 
 private:
     friend valarray<_Ty>;
@@ -1155,15 +1170,32 @@ public:
         _MOP(>>= _Right[_Idx]);
     }
 
-    _Ty& _Data(size_t _Idx) const {
+    _NODISCARD _Ty& _Data(size_t _Idx) const {
         return _Myptr[_Idx];
     }
 
-    bool _Mask(size_t _Idx) const {
+    _NODISCARD bool _Mask(size_t _Idx) const {
         return _Mybool[_Idx];
     }
 
-    size_t _Totlen() const {
+    _NODISCARD size_t _Start_off() const {
+        size_t _Off        = 0;
+        const size_t _Size = _Mybool.size();
+        while (_Off < _Size && !_Mybool[_Off]) {
+            ++_Off;
+        }
+        return _Off;
+    }
+
+    _NODISCARD size_t _Next_off(size_t _Off) const {
+        const size_t _Size = _Mybool.size();
+        do {
+            ++_Off;
+        } while (_Off < _Size && !_Mybool[_Off]);
+        return _Off;
+    }
+
+    _NODISCARD size_t _Totlen() const {
         size_t _Count = 0;
         for (size_t _Idx = 0; _Idx < _Mybool.size(); ++_Idx) {
             if (_Mybool[_Idx]) {
@@ -1176,9 +1208,17 @@ public:
 
     mask_array() = delete;
 
-    mask_array(const mask_array&); // not defined
+    mask_array(const mask_array&) = default;
 
-    mask_array& operator=(const mask_array&); // not defined
+    const mask_array& operator=(const mask_array& _Right) const {
+        const size_t _Size = _Mybool.size();
+        size_t _Dst_off    = _Start_off();
+        size_t _Src_off    = _Right._Start_off();
+        for (; _Dst_off < _Size; _Src_off = _Right._Next_off(_Src_off), _Dst_off = _Next_off(_Dst_off)) {
+            _Myptr[_Dst_off] = _Right._Myptr[_Src_off];
+        }
+        return *this;
+    }
 
 private:
     friend valarray<_Ty>;
@@ -1250,23 +1290,29 @@ public:
         _IOP(>>= _Right[_Idx]);
     }
 
-    _Ty& _Data(size_t _Idx) const {
+    _NODISCARD _Ty& _Data(size_t _Idx) const {
         return _Myptr[_Idx];
     }
 
-    size_t _Indir(size_t _Idx) const {
+    _NODISCARD size_t _Indir(size_t _Idx) const {
         return _Myindarr[_Idx];
     }
 
-    size_t _Totlen() const {
+    _NODISCARD size_t _Totlen() const {
         return _Myindarr.size();
     }
 
     indirect_array() = delete;
 
-    indirect_array(const indirect_array&); // not defined
+    indirect_array(const indirect_array&) = default;
 
-    indirect_array& operator=(const indirect_array&); // not defined
+    const indirect_array& operator=(const indirect_array& _Right) const {
+        const size_t _Size = _Totlen();
+        for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
+            _Myptr[_Indir(_Idx)] = _Right._Myptr[_Right._Indir(_Idx)];
+        }
+        return *this;
+    }
 
 private:
     friend valarray<_Ty>;

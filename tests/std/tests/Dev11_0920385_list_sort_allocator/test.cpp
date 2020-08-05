@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// Test DevDiv#920385 "<list>: list::sort shouldn't default-construct allocators".
+// Test DevDiv-920385 "<list>: list::sort shouldn't default-construct allocators".
 
 #define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING
 
@@ -284,7 +284,7 @@ int main() {
     test_allocator_construct_const();
 }
 
-// Also test DevDiv#1119194 "The STL should handle allocators that aren't assignable".
+// Also test DevDiv-1119194 "The STL should handle allocators that aren't assignable".
 
 template <typename T>
 struct NoProp {
@@ -353,7 +353,7 @@ void test_1119194() {
     test_swap_copy_move<basic_string<char, char_traits<char>, AC>>();
 }
 
-// Test DevDiv#1184701 "<memory>: We should handle construct/destroy returning non-void".
+// Test DevDiv-1184701 "<memory>: We should handle construct/destroy returning non-void".
 
 template <typename T>
 struct NonVoid {
