@@ -49,7 +49,7 @@ public:
         }
     }
 
-    _NODISCARD static constexpr ptrdiff_t (max)() noexcept {
+    _NODISCARD static constexpr ptrdiff_t(max)() noexcept {
         return (1ULL << (sizeof(ptrdiff_t) * CHAR_BIT - 1)) - 1;
     }
 

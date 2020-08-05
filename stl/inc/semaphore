@@ -55,7 +55,7 @@ _NODISCARD unsigned long _Semaphore_remaining_timeout(const chrono::time_point<_
 template <ptrdiff_t _Least_max_value = INT_MAX>
 class counting_semaphore {
 public:
-    _NODISCARD static constexpr ptrdiff_t (max)() noexcept {
+    _NODISCARD static constexpr ptrdiff_t(max)() noexcept {
         return (1ULL << (sizeof(_Counter_type) * CHAR_BIT - 1)) - 1;
     }
 
@@ -72,7 +72,8 @@ public:
         if (_Update == 0) {
             return;
         }
-        _STL_VERIFY(_Update > 0 && _Update <= (max)(), "Update count shall be non-negative and shall not overflow max()");
+        _STL_VERIFY(
+            _Update > 0 && _Update <= (max)(), "Update count shall be non-negative and shall not overflow max()");
         // TRANSITION, GH-1133: should be memory_order_release
         const _Counter_type _Prev = _Counter.fetch_add(static_cast<_Counter_type>(_Update), memory_order_seq_cst);
         _STL_VERIFY(_Prev + _Update > 0, "Semaphore counter shall be non-negative and shall not overflow max()");
@@ -111,7 +112,7 @@ public:
 
     template <class _Rep, class _Period>
     _NODISCARD bool try_acquire_for(const chrono::duration<_Rep, _Period>& _Rel_time) {
-        auto _Deadline = _Semaphore_deadline(_Rel_time);
+        auto _Deadline         = _Semaphore_deadline(_Rel_time);
         _Counter_type _Current = _Counter.load(memory_order_relaxed);
         for (;;) {
             while (_Current == 0) {
@@ -159,7 +160,7 @@ private:
 template <>
 class counting_semaphore<1> {
 public:
-    _NODISCARD static constexpr ptrdiff_t (max)() noexcept {
+    _NODISCARD static constexpr ptrdiff_t(max)() noexcept {
         return 1;
     }
 
