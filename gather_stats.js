@@ -181,6 +181,10 @@ function transform_pr_nodes(pr_nodes) {
     return pr_nodes.map(pr_node => {
         const maintainer_reviews = pr_node.reviews.nodes
             .filter(review_node => {
+                if (review_node.author === null) {
+                    return false; // Assume that deleted users were contributors.
+                }
+
                 const username = review_node.author.login;
 
                 const is_maintainer = maintainers.has(username);
