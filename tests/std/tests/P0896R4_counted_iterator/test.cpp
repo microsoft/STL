@@ -11,7 +11,7 @@ using namespace std;
 struct instantiator {
     template <input_or_output_iterator Iter>
     static constexpr void call() {
-        using ConstIter = typename decltype(declval<Iter>().get_const_iterator_type());
+        using ConstIter = decltype(declval<Iter>().get_const_iterator_type());
         if constexpr (is_permissive) { // TRANSITION, FIXME (File an issue to investigate this later?)
             (void) input_iterator<Iter>;
             (void) input_iterator<ConstIter>;
