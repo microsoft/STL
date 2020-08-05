@@ -168,8 +168,6 @@ public:
         _STL_VERIFY((_Desired & ~1) == 0, "Semaphore counter shall be non-negative and shall not overflow max()");
     }
 
-    ~counting_semaphore() = default;
-
     counting_semaphore(const counting_semaphore&) = delete;
     counting_semaphore& operator=(const counting_semaphore&) = delete;
 
