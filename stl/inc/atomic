@@ -390,11 +390,20 @@ void _Atomic_wait_direct(
 }
 #endif // _HAS_CXX20
 
-#if 1 // TRANSITION, ABI
+#if 1 // TRANSITION, ABI, GH-1151
 inline void _Atomic_lock_spinlock(long& _Spinlock) noexcept {
+    int _Current_backoff   = 1;
+    const int _Max_backoff = 64;
+#if (defined(_M_ARM) || defined(_M_ARM64)) && 0 /* TRANSITION, GH-1133 */
+    while (_InterlockedExchange_acq(&_Spinlock, 1) != 0) {
+#else
     while (_InterlockedExchange(&_Spinlock, 1) != 0) {
+#endif
         while (__iso_volatile_load32(&reinterpret_cast<int&>(_Spinlock)) != 0) {
-            _YIELD_PROCESSOR();
+            for (int i = _Current_backoff; i != 0; --i) {
+                _YIELD_PROCESSOR();
+            }
+            _Current_backoff = _Current_backoff < _Max_backoff ? _Current_backoff << 1 : _Max_backoff;
         }
     }
 }
@@ -403,7 +412,7 @@ inline void _Atomic_unlock_spinlock(long& _Spinlock) noexcept {
 #if defined(_M_ARM) || defined(_M_ARM64)
     _Memory_barrier();
     __iso_volatile_store32(reinterpret_cast<int*>(&_Spinlock), 0);
-    _Memory_barrier();
+    _Memory_barrier(); // TRANSITION, GH-1133
 #else // ^^^ ARM32/ARM64 hardware / x86/x64 hardware vvv
     _InterlockedExchange(&_Spinlock, 0);
 #endif // hardware

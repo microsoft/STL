@@ -66,13 +66,10 @@ _CRTIMP2_PURE void __cdecl _Lock_shared_ptr_spin_lock() { // spin until _Shared_
     AcquireSRWLockExclusive(_Shared_ptr_lock);
 #else // ^^^ _STL_WIN32_WINNT >= _STL_WIN32_WINNT_VISTA / _STL_WIN32_WINNT < _STL_WIN32_WINNT_VISTA vvv
     if (_Acquire_srw_functions() == _Shared_ptr_api_level::__has_nothing) {
-        while (_interlockedbittestandset(&_Shared_ptr_flag, 0) != 0) { // set bit 0
-            while (__iso_volatile_load32(reinterpret_cast<int*>(&_Shared_ptr_flag)) != 0) {
-                YieldProcessor();
-            }
-        }
+        _STD _Atomic_lock_spinlock(_Shared_ptr_flag);
     } else {
-        _Table._Pfn_AcquireSRWLockExclusive.load(_STD memory_order_relaxed)(&_Shared_ptr_lock);
+        const auto _AcquireSRWLockExclusive = _Table._Pfn_AcquireSRWLockExclusive.load(_STD memory_order_relaxed);
+        _AcquireSRWLockExclusive(&_Shared_ptr_lock);
     }
 #endif // ^^^ _STL_WIN32_WINNT < _STL_WIN32_WINNT_VISTA ^^^
 }
@@ -81,10 +78,11 @@ _CRTIMP2_PURE void __cdecl _Unlock_shared_ptr_spin_lock() { // release previousl
 #if _STL_WIN32_WINNT >= _STL_WIN32_WINNT_VISTA
     ReleaseSRWLockExclusive(&_Shared_ptr_lock);
 #else // ^^^ _STL_WIN32_WINNT >= _STL_WIN32_WINNT_VISTA / _STL_WIN32_WINNT < _STL_WIN32_WINNT_VISTA vvv
-    if (_Acquire_srw_functions() == _Shared_ptr_api_level::__has_nothing) {
-        _interlockedbittestandreset(&_Shared_ptr_flag, 0); // reset bit 0
+    const auto _ReleaseSRWLockExclusive = _Table._Pfn_ReleaseSRWLockExclusive.load(_STD memory_order_relaxed);
+    if (_ReleaseSRWLockExclusive == nullptr) {
+        _STD _Atomic_unlock_spinlock(_Shared_ptr_flag);
     } else {
-        _Table._Pfn_ReleaseSRWLockExclusive.load(_STD memory_order_relaxed)(&_Shared_ptr_lock);
+        _ReleaseSRWLockExclusive(&_Shared_ptr_lock);
     }
 #endif // ^^^ _STL_WIN32_WINNT < _STL_WIN32_WINNT_VISTA ^^^
 }
