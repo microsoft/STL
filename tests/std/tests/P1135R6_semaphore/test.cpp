@@ -1,9 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <atomic>
 #include <cassert>
 #include <chrono>
+#include <cstddef>
 #include <latch>
+#include <limits>
 #include <semaphore>
 #include <thread>
 
@@ -141,8 +144,6 @@ void test_semaphore_wait_until(const std::chrono::milliseconds delay_duration) {
 
     t.join();
 }
-
-#include <iostream>
 
 int main() {
     constexpr auto max = std::numeric_limits<std::ptrdiff_t>::max();

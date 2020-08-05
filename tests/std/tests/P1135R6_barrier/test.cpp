@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <atomic>
 #include <barrier>
 #include <cassert>
 #include <chrono>
@@ -90,7 +91,7 @@ void test_with_functor() {
     assert(called_times == 5);
 }
 
-void barrier_callaback_function() noexcept {}
+void barrier_callback_function() noexcept {}
 
 void test_functor_types() {
     struct f1 {
@@ -104,7 +105,7 @@ void test_functor_types() {
     std::barrier b1{1, f1{0, 0, 0}};
     b1.arrive_and_wait();
 
-    std::barrier b2{1, barrier_callaback_function};
+    std::barrier b2{1, barrier_callback_function};
     b2.arrive_and_wait();
 
     std::barrier b3{1, []() noexcept {}};
