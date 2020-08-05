@@ -53,7 +53,7 @@ using _Atomic_wait_indirect_equal_callback_t = bool(__stdcall*)(
 #ifdef __cpp_noexcept_function_type
     noexcept
 #endif // __cpp_noexcept_function_type
-;
+    ;
 
 int __stdcall __std_atomic_wait_indirect(const void* _Storage, void* _Comparand, size_t _Size, void* _Param,
     _Atomic_wait_indirect_equal_callback_t _Are_equal, unsigned long _Remaining_timeout) noexcept;
