@@ -16,12 +16,12 @@ void wait_and_expect(std::atomic<int>& v, const int val, const std::chrono::mill
 #ifdef CAN_FAIL_ON_TIMING_ASSUMPTION
     std::this_thread::sleep_for(delay_duration);
     assert(v.load() == val);
-#else
+#else // ^^^ CAN_FAIL_ON_TIMING_ASSUMPTION / !CAN_FAIL_ON_TIMING_ASSUMPTION vvv
     while (v.load() < val) {
         std::this_thread::sleep_for(delay_duration);
     }
     assert(v.load() == val);
-#endif
+#endif // ^^^ !CAN_FAIL_ON_TIMING_ASSUMPTION ^^^
 }
 
 void test_counting_semaphore_count(const std::chrono::milliseconds delay_duration) {

@@ -4,7 +4,6 @@
 #include <atomic>
 #include <barrier>
 #include <cassert>
-#include <chrono>
 #include <thread>
 
 void test() {
