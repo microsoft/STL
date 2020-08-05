@@ -5,6 +5,7 @@
 #include <barrier>
 #include <cassert>
 #include <thread>
+#include <utility>
 
 void test() {
     std::barrier b(2);
@@ -12,7 +13,7 @@ void test() {
     std::atomic<int> c{0};
 
     std::thread t1([&] {
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 5; ++i) {
             auto token = b.arrive();
             b.wait(std::move(token));
             c.fetch_add(1, std::memory_order_relaxed);
@@ -20,7 +21,7 @@ void test() {
     });
 
     std::thread t2([&] {
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 3; ++i) {
             b.arrive_and_wait();
             c.fetch_add(1, std::memory_order_relaxed);
         }
