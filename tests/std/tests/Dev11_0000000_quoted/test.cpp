@@ -169,12 +169,12 @@ int main() {
 
     // Also test VSO-666592 "std::quoted fails to properly extract delimiter"
     {
-        const std::string expectedStrings[] = {
+        const string expectedStrings[] = {
             "spaces"s, "with"s, "some quote"s, "and another quote"s, "then"s, "more"s, "spaces"s};
-        std::istringstream iss13(R"(spaces with "some quote" "and another quote" then more spaces)");
-        std::string out;
+        istringstream iss13(R"(spaces with "some quote" "and another quote" then more spaces)");
+        string out;
         for (const auto& expected : expectedStrings) {
-            iss13 >> std::quoted(out);
+            iss13 >> quoted(out);
             assert(!iss13.fail());
             assert(out == expected);
         }
