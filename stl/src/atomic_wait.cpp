@@ -390,7 +390,7 @@ _NODISCARD bool __stdcall __std_atomic_has_cmpxchg16b() noexcept {
 #if !defined(_WIN64)
     return false;
 #elif _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1
-    return true
+    return true;
 #else // ^^^ _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 // _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0 vvv
     enum class _Cmpxchg16_support : char {
         _Absent  = false,
