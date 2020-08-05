@@ -37,8 +37,8 @@ namespace ranges {
     class ref_view : public view_interface<ref_view<_Rng>> {
         // clang-format on
     private:
-        void _Rvalue_poison(_Rng&);
-        void _Rvalue_poison(_Rng&&) = delete;
+        static constexpr void _Rvalue_poison(_Rng&);
+        static constexpr void _Rvalue_poison(_Rng&&) = delete;
 
     public:
         constexpr ref_view() noexcept = default;
