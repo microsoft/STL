@@ -60,14 +60,14 @@ struct SynthOrdered {
 
 struct OrderedChar {
     OrderedChar() = default;
-    OrderedChar(const char c) : c(c){};
+    OrderedChar(const char c) : c(c) {};
 
     OrderedChar& operator=(const char& other) {
-        this->c = other;
+        c = other;
         return *this;
     }
 
-    operator char() {
+    operator char() const {
         return c;
     }
 
@@ -82,13 +82,13 @@ auto operator==(const OrderedChar& left, const OrderedChar& right) {
     return left.c == right.c;
 }
 
-struct WeaklyOrderedChar : public OrderedChar {};
-struct WeaklyOrderdByOmissionChar : public OrderedChar {};
-struct PartiallyOrderedChar : public OrderedChar {};
+struct WeaklyOrderedChar : OrderedChar {};
+struct WeaklyOrderdByOmissionChar : OrderedChar {};
+struct PartiallyOrderedChar : OrderedChar {};
 
 namespace std {
     template <>
-    struct char_traits<OrderedChar> : public std::char_traits<char> {
+    struct char_traits<OrderedChar> : public char_traits<char> {
         using char_type = OrderedChar;
 
         static int compare(const char_type* first1, const char_type* first2, size_t count) {
@@ -107,27 +107,29 @@ namespace std {
     };
 
     template <>
-    struct char_traits<WeaklyOrderedChar> : public std::char_traits<OrderedChar> {
+    struct char_traits<WeaklyOrderedChar> : public char_traits<OrderedChar> {
         using char_type           = WeaklyOrderedChar;
-        using comparison_category = std::weak_ordering;
+        using comparison_category = weak_ordering;
     };
 
     template <>
-    struct char_traits<WeaklyOrderdByOmissionChar> : public std::char_traits<OrderedChar> {
+    struct char_traits<WeaklyOrderdByOmissionChar> : public char_traits<OrderedChar> {
         using char_type = WeaklyOrderdByOmissionChar;
     };
 
     template <>
-    struct char_traits<PartiallyOrderedChar> : public std::char_traits<OrderedChar> {
+    struct char_traits<PartiallyOrderedChar> : public char_traits<OrderedChar> {
         using char_type           = PartiallyOrderedChar;
-        using comparison_category = std::partial_ordering;
+        using comparison_category = partial_ordering;
     };
 } // namespace std
 
-template <class SmallType, class EqualType, class LargeType, class ReturnType>
+template <class ReturnType, class SmallType, class EqualType, class LargeType>
 void spaceship_test(const SmallType& smaller, const EqualType& smaller_equal, const LargeType& larger) {
     assert(smaller == smaller_equal);
+    assert(smaller_equal == smaller);
     assert(smaller != larger);
+    assert(larger != smaller);
     assert(smaller < larger);
     assert(larger > smaller);
     assert(smaller <= larger);
@@ -137,11 +139,6 @@ void spaceship_test(const SmallType& smaller, const EqualType& smaller_equal, co
     assert((smaller <=> smaller_equal) == 0);
 
     static_assert(std::is_same_v<decltype(smaller <=> larger), ReturnType>);
-}
-
-template <class TestType, class ReturnType>
-void spaceship_test(const TestType& smaller, const TestType& smaller_equal, const TestType& larger) {
-    return spaceship_test<TestType, TestType, TestType, ReturnType>(smaller, smaller_equal, larger);
 }
 
 template <class T>
@@ -154,9 +151,9 @@ void ordered_containers_test(const Container& smaller, const Container& smaller_
     using Elem = typename Container::value_type;
     if constexpr (is_pair<Elem> // TRANSITION, std::pair spaceship not yet implemented
                   || std::is_same_v<Elem, SynthOrdered>) {
-        spaceship_test<Container, std::weak_ordering>(smaller, smaller_equal, larger);
+        spaceship_test<std::weak_ordering>(smaller, smaller_equal, larger);
     } else {
-        spaceship_test<Container, std::strong_ordering>(smaller, smaller_equal, larger);
+        spaceship_test<std::strong_ordering>(smaller, smaller_equal, larger);
     }
 }
 
@@ -377,22 +374,27 @@ void ordering_test_cases() {
         const std::string s2{"meow"};
         const std::regex all(".*");
         const std::regex each(".");
-        std::smatch m1, m2, m3;
+        std::smatch m1, m2, m3, m4;
 
         std::regex_match(s1, m1, all);
         std::regex_match(s2, m2, all);
         std::regex_search(s1, m3, each);
+        std::regex_search(s2, m4, each);
 
         std::ssub_match sm1       = m1[0];
         std::ssub_match sm1_equal = m1[0];
         std::ssub_match sm2       = m2[0];
         std::ssub_match sm3       = m3[0];
+        std::ssub_match sm4       = m4[0];
 
-        // TRANSITION: std::char_traits<char> doesn't define comparison_type
-        spaceship_test<std::ssub_match, std::weak_ordering>(sm1, sm1_equal, sm2);
-        spaceship_test<std::ssub_match, std::string, std::string, std::weak_ordering>(sm1, s1, s2);
-        spaceship_test<std::ssub_match, const char*, const char*, std::weak_ordering>(sm1, s1.c_str(), s2.c_str());
-        spaceship_test<std::ssub_match, const char, const char, std::weak_ordering>(sm3, 'c', 'm');
+        // TRANSITION, std::char_traits<char> doesn't define comparison_type
+        spaceship_test<std::weak_ordering>(sm1, sm1_equal, sm2);
+        spaceship_test<std::weak_ordering>(sm1, s1, s2);
+        spaceship_test<std::weak_ordering>(sm1, s1.c_str(), s2.c_str());
+        spaceship_test<std::weak_ordering>(sm3, 'c', 'm');
+        spaceship_test<std::weak_ordering>(s1, sm1, sm2);
+        spaceship_test<std::weak_ordering>(s1.c_str(), sm1, sm2);
+        spaceship_test<std::weak_ordering>('c', sm3, sm4);
 
         using StronglyOrderedMatch = std::ssub_match;
         using WeaklyOrderedMatch   = std::sub_match<std::basic_string<WeaklyOrderedChar>::const_iterator>;
@@ -400,7 +402,7 @@ void ordering_test_cases() {
             std::sub_match<std::basic_string<WeaklyOrderdByOmissionChar>::const_iterator>;
         using PartiallyOrderedMatch = std::sub_match<std::basic_string<PartiallyOrderedChar>::const_iterator>;
 
-        // TRANSITION: std::char_traits<char> doesn't define comparison_type
+        // TRANSITION, std::char_traits<char> doesn't define comparison_type
         static_assert(std::is_same_v<SpaceshipType<StronglyOrderedMatch>, std::weak_ordering>);
         static_assert(std::is_same_v<SpaceshipType<WeaklyOrderedMatch>, std::weak_ordering>);
         static_assert(std::is_same_v<SpaceshipType<WeaklyOrderdByOmissionMatch>, std::weak_ordering>);
