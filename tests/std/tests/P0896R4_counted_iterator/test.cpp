@@ -162,9 +162,6 @@ struct instantiator {
 
                 const same_as<iter_difference_t<ConstIter>> auto diff1 = iter1 - iter2;
                 assert(diff1 == 1);
-
-                const same_as<iter_difference_t<Iter>> auto diff2 = iter2 - iter1;
-                assert(diff2 == -1);
             }
             { // difference default sentinel
                 counted_iterator<Iter> iter1{Iter{input}, 2};
