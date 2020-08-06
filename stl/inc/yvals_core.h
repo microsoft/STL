@@ -1148,9 +1148,9 @@
 #define __cpp_lib_char8_t 201907L
 #endif // __cpp_char8_t
 
-#if defined(__cpp_concepts) && __cpp_concepts > 201507L
+#if defined(__cpp_concepts) && __cpp_concepts > 201507L && !defined(__EDG__) // TRANSITION, EDG concepts support
 #define __cpp_lib_concepts 201907L
-#endif // defined(__cpp_concepts) && __cpp_concepts > 201507L
+#endif // defined(__cpp_concepts) && __cpp_concepts > 201507L && !defined(__EDG__)
 
 #define __cpp_lib_constexpr_algorithms  201806L
 #define __cpp_lib_constexpr_complex     201711L
