@@ -52,11 +52,11 @@ namespace {
     _NODISCARD _Ty _Logp1(const _Ty _Xval) { // returns log(1 + _Xval)
         static_assert(_STD is_floating_point_v<_Ty>);
 
-        if (_STD _Is_nan(_Xval)) {
-            return _Xval + _Xval; // raise FE_INVALID if necessary
+        if (_STD _Is_nan(_Xval)) { // NaN
+            return _Xval + _Xval; // raise FE_INVALID if _Xval is a signaling NaN
         }
 
-        if (_Xval <= _Ty{-0.5} || _Ty{2.0} <= _Xval) { // naive formula is accurate
+        if (_Xval <= _Ty{-0.5} || _Ty{2.0} <= _Xval) { // naive formula is moderately accurate
             if (_Xval == (_STD numeric_limits<_Ty>::max)()) { // avoid overflow
                 return _STD log(_Xval);
             }
@@ -66,12 +66,12 @@ namespace {
 
         const _Ty _Xabs = _STD _Float_abs(_Xval);
         if (_Xabs < _STD numeric_limits<_Ty>::epsilon()) { // zero or tiny
-            if (_Xabs == _Ty{0.0}) {
+            if (_Xval == _Ty{0.0}) {
                 return _Xval;
             }
 
             // honor rounding mode, raise FE_INEXACT
-            return _Xabs * (_STD _Float_copysign(_Ty{1.0}, _Xval) - _Ty{0.5} * _Xabs);
+            return _Xval - _Ty{0.5} * _Xval * _Xval;
         }
 
         // compute log(1 + _Xval) with fixup for small _Xval
@@ -84,18 +84,21 @@ namespace {
         static_assert(_STD is_floating_point_v<_Ty>);
 
         if (!_STD _Is_finite(_Xval) || !_STD _Is_finite(_Yval)) { // Inf or NaN
+            // raise FE_INVALID and return NaN if at least one of them is a signaling NaN
             if (_STD _Is_signaling_nan(_Xval) || _STD _Is_signaling_nan(_Yval)) {
                 return _Xval + _Yval;
             }
 
-            if (_STD isinf(_Xval)) {
+            // return +Inf if at least one of them is an infinity, even when the other is a quiet NaN
+            if (_STD _Is_inf(_Xval)) {
                 return _STD _Float_abs(_Xval);
             }
 
-            if (_STD isinf(_Yval)) {
+            if (_STD _Is_inf(_Yval)) {
                 return _STD _Float_abs(_Yval);
             }
 
+            // at least one of them is a quiet NaN, and the other is not an infinity
             return _Xval + _Yval;
         }
 
@@ -123,8 +126,8 @@ namespace {
                 return _STD log(_Norm) * _Ty{0.5};
             }
         } else { // use 1 1/2 precision to preserve bits
-            constexpr _Ty _Cm = static_cast<_Ty>(22713.0L / 32768.0L);
-            constexpr _Ty _Cl = static_cast<_Ty>(1.4286068203094172321214581765680755e-6L);
+            constexpr _Ty _Cm = _Ty{22713.0L / 32768.0L};
+            constexpr _Ty _Cl = _Ty{1.4286068203094172321214581765680755e-6L};
 
             const int _Exponent      = _STD ilogb(_Av);
             const _Ty _Av_scaled     = _STD scalbn(_Av, -_Exponent);
@@ -135,7 +138,7 @@ namespace {
             return (_Real_shifted + _Exponent * _Cl) + _Exponent * _Cm;
         }
     }
-} // namespace
+} // unnamed namespace
 
 _EXTERN_C
 _NODISCARD double __stdcall __std_math_log_hypot(const double _Xval, const double _Yval) noexcept {

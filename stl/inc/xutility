@@ -5970,10 +5970,20 @@ _NODISCARD _CONSTEXPR_BIT_CAST bool _Is_nan(const _Ty _Xx) { // constexpr isnan(
 }
 
 // FUNCTION TEMPLATE _Is_signaling_nan
+// TRANSITION, workaround x86 ABI
+// On x86 ABI, floating point by-value arguments and return values are passed in 80-bit x87 registers.
+// When the value is a 32-bit or 64-bit signaling NaN, the conversion to/from 80-bit raises FE_INVALID
+// and turns it into a quiet NaN. This behavior is undesirable if we want to test for signaling NaNs.
 template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR_BIT_CAST bool _Is_signaling_nan(const _Ty& _Xx) { // returns true if input is a signaling NaN
     const auto _Abs_bits = _Float_abs_bits(_Xx);
     return _Abs_bits > _Float_traits<_Ty>::_Exponent_mask && ((_Abs_bits & _Float_traits<_Ty>::_Quiet_nan_mask) == 0);
+}
+
+// FUNCTION TEMPLATE _Is_inf
+template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
+_NODISCARD _CONSTEXPR_BIT_CAST bool _Is_inf(const _Ty _Xx) { // constexpr isinf()
+    return _Float_abs_bits(_Xx) == _Float_traits<_Ty>::_Exponent_mask;
 }
 
 // FUNCTION TEMPLATE _Is_finite

@@ -1587,9 +1587,10 @@ _Ty _Fabs(const complex<_Ty>& _Left, int* _Pexp) { // used by sqrt(), return mag
             _Bv    = _Bv * static_cast<_Ty>(0.0625);
         } else {
             constexpr _Ty _Flt_eps = _Ctraits<_Ty>::_Flt_eps();
-
             // TRANSITION, workaround for non floating point _Ty
-            if (_Flt_eps != 0 && _Av < 2 * _Ctraits<_Ty>::_Flt_norm_min() / _Flt_eps) {
+            constexpr _Ty _Leg_tiny = _Flt_eps == 0 ? _Ty{0} : 2 * _Ctraits<_Ty>::_Flt_norm_min() / _Flt_eps;
+
+            if (_Av < _Leg_tiny) {
                 constexpr int _Exponent = -2 * numeric_limits<_Ty>::digits;
 
                 *_Pexp = _Exponent;
