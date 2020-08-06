@@ -41,6 +41,12 @@ class STLTest(Test):
                 self.requires.append('clr') # TRANSITION, GH-797
             elif flag[1:] == 'BE':
                 self.requires.append('edg') # available for x86, see config.py
+            elif flag[1:] == 'arch:AVX2':
+                self.requires.append('arch_avx2') # available for x86 and x64, see config.py
+            elif flag[1:] == 'arch:IA32':
+                self.requires.append('arch_ia32') # available for x86, see config.py
+            elif flag[1:] == 'arch:VFPv4':
+                self.requires.append('arch_vfpv4') # available for arm, see config.py
 
     def getOutputDir(self):
         return Path(os.path.join(
@@ -135,6 +141,8 @@ class STLTest(Test):
         link_flags.extend(envlst_entry.getEnvVal('PM_LINK', '').split())
 
         if ('clang'.casefold() in os.path.basename(cxx).casefold()):
+            flags.extend(map(lambda x : '/clang:' + x, envlst_entry.getEnvVal('PM_CLANG', '').split()))
+
             target_arch = self.config.target_arch.casefold()
             if (target_arch == 'x64'.casefold()):
                 compile_flags.append('-m64')
