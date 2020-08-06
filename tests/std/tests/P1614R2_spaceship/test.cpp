@@ -60,7 +60,7 @@ struct SynthOrdered {
 
 struct OrderedChar {
     OrderedChar() = default;
-    OrderedChar(const char c) : c(c) {};
+    OrderedChar(const char c) : c(c){};
 
     OrderedChar& operator=(const char& other) {
         c = other;

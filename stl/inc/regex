@@ -787,7 +787,7 @@ _NODISCARD bool operator>=(const sub_match<_BidIt>& _Left, const sub_match<_BidI
 
 // COMPARE sub_match AND NTBS
 template <class _BidIt>
-_NODISCARD bool operator==(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>* _Right)  {
+_NODISCARD bool operator==(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>* _Right) {
     return _Left._Match_equal(_Right);
 }
 
@@ -802,7 +802,7 @@ _NODISCARD auto operator<=>(const sub_match<_BidIt>& _Left, const iter_value_t<_
 // In C++20 mode the only required comparison operators should be == and <=>.
 template <class _BidIt>
 _NODISCARD auto operator<=>(const iter_value_t<_BidIt>* _Left, const sub_match<_BidIt>& _Right) {
-    return static_cast<typename sub_match<_BidIt>::_Comparison_category>(0 <=> (_Right <=>_Left));
+    return static_cast<typename sub_match<_BidIt>::_Comparison_category>(0 <=> (_Right <=> _Left));
 }
 
 template <class _BidIt>
