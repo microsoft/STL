@@ -2375,8 +2375,16 @@ public:
 #endif // _ATOMIC_HAS_DCAS
     }
 
+    void store(const _Ty _Value) const noexcept {
+        const_cast<_Base*>(static_cast<const _Base*>(this))->store(_Value);
+    }
+
+    void store(const _Ty _Value, const memory_order _Order) const noexcept {
+        const_cast<_Base*>(static_cast<const _Base*>(this))->store(_Value, _Order);
+    }
+
     _Ty operator=(const _Ty _Value) const noexcept {
-        this->store(_Value);
+        store(_Value);
         return _Value;
     }
 

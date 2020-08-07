@@ -107,6 +107,30 @@ void test_int_ops() {
     assert(vy.load() == 0x40);
     assert(rx.load() == 0x48);
     assert(ry.load() == 0x48);
+
+    vx.fetch_or(0xF);
+    rx.fetch_or(0xF);
+
+    assert(vx.load() == 0x4F);
+    assert(vy.load() == 0x40);
+    assert(rx.load() == 0x4F);
+    assert(ry.load() == 0x4F);
+
+    vx.fetch_and(0x3C);
+    rx.fetch_and(0x3C);
+
+    assert(vx.load() == 0xC);
+    assert(vy.load() == 0x40);
+    assert(rx.load() == 0xC);
+    assert(ry.load() == 0xC);
+
+    vx.fetch_xor(0x3F);
+    rx.fetch_xor(0x3F);
+
+    assert(vx.load() == 0x33);
+    assert(vy.load() == 0x40);
+    assert(rx.load() == 0x33);
+    assert(ry.load() == 0x33);
 }
 
 
@@ -134,6 +158,14 @@ void test_float_ops() {
     assert(vy.load() == 0x40);
     assert(rx.load() == 0x48);
     assert(ry.load() == 0x48);
+
+    vx.store(0x10);
+    rx.store(0x10);
+
+    assert(vx.load() == 0x10);
+    assert(vy.load() == 0x40);
+    assert(rx.load() == 0x10);
+    assert(ry.load() == 0x10);
 }
 
 template <class Ptr>
@@ -161,6 +193,14 @@ void test_ptr_ops() {
     assert(vy.load() == a);
     assert(rx.load() == a + 0x8);
     assert(ry.load() == a + 0x8);
+
+    vx.store(a + 0x10);
+    rx.store(a + 0x10);
+
+    assert(vx.load() == a + 0x10);
+    assert(vy.load() == a);
+    assert(rx.load() == a + 0x10);
+    assert(ry.load() == a + 0x10);
 }
 
 int main() {
