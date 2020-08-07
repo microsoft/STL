@@ -239,6 +239,25 @@ function transform_issue_nodes(issue_nodes) {
     });
 }
 
+function calculate_sliding_window(when, merged) {
+    // A sliding window of 30 days would be simple, but would result in a noisy line as PRs abruptly leave the window.
+    // To reduce such noise, this function applies smoothing between 20 and 40 days.
+    // (A range of 25 to 35 days would also work; the important thing is for the integral of this function to be 30,
+    // so we can still describe this metric as 'Monthly Merged PRs'.
+
+    const days_ago = when.diff(merged).as('days');
+
+    if (days_ago < 0) {
+        return 0; // PR was merged in the future
+    } else if (days_ago < 20) {
+        return 1; // PR was merged between 0 and 20 days ago
+    } else if (days_ago < 40) {
+        return (40 - days_ago) / 20; // PR was merged between 20 and 40 days ago; decrease weight from 1 to 0
+    } else {
+        return 0; // PR was merged in the ancient past
+    }
+}
+
 function write_daily_table(script_start, all_prs, all_issues) {
     const progress_bar = new cliProgress.SingleBar(
         {
@@ -262,7 +281,6 @@ function write_daily_table(script_start, all_prs, all_issues) {
         progress_bar.start(Math.ceil(script_start.diff(begin).as('days')), 0);
 
         for (let when = begin; when < script_start; when = when.plus({ days: 1 })) {
-            const one_month_ago = when.minus({ months: 1 });
             let num_merged = 0;
             let num_pr = 0;
             let num_cxx20 = 0;
@@ -273,9 +291,7 @@ function write_daily_table(script_start, all_prs, all_issues) {
             let combined_pr_wait = Duration.fromObject({});
 
             for (const pr of all_prs) {
-                if (one_month_ago < pr.merged && pr.merged < when) {
-                    ++num_merged;
-                }
+                num_merged += calculate_sliding_window(when, pr.merged);
 
                 if (when < pr.opened || pr.closed < when) {
                     // This PR wasn't active; do nothing.
@@ -312,7 +328,7 @@ function write_daily_table(script_start, all_prs, all_issues) {
             str += '    { ';
             str += [
                 `date: '${when.toISODate()}'`,
-                `merged: ${num_merged}`,
+                `merged: ${Number.parseFloat(num_merged).toFixed(2)}`,
                 `pr: ${num_pr}`,
                 `cxx20: ${num_cxx20}`,
                 `lwg: ${num_lwg}`,
