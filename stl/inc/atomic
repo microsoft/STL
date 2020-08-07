@@ -71,9 +71,9 @@ extern "C" _NODISCARD bool __stdcall __std_atomic_has_cmpxchg16b() noexcept;
 // Controls whether atomic::is_always_lock_free triggers for sizeof(void *) or 2 * sizeof(void *)
 #if _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 || !defined(_M_X64)
 #define _ATOMIC_HAS_DCAS 1
-#else // ^^ We always have DCAS / We only sometimes have DCAS vvv
+#else // ^^^ We always have DCAS / We only sometimes have DCAS vvv
 #define _ATOMIC_HAS_DCAS 0
-#endif // defined(_STD_ATOMIC_ALWAYS_USE_CMPXCHG16B) || !defined(_M_X64)
+#endif // _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 || !defined(_M_X64)
 
 // MACRO _ATOMIC_CHOOSE_INTRINSIC
 #if defined(_M_IX86) || defined(_M_X64)
@@ -348,7 +348,7 @@ template <class _Ty>
 struct _Atomic_storage_traits<_Ty&> { // properties for how _Ty is stored in an atomic_ref
     static constexpr size_t _Storage_size = sizeof(_Ty);
     static constexpr bool _Uses_padding   = false;
-}
+};
 
 // STRUCT TEMPLATE _Atomic_padded
 template <class _Ty, bool = _Atomic_storage_traits<_Ty>::_Uses_padding>
@@ -472,7 +472,7 @@ private:
 
 #if _HAS_CXX20
 template <class _Spinlock_t>
-inline bool __stdcall _Atomic_wait_compare_non_lock_free(
+bool __stdcall _Atomic_wait_compare_non_lock_free(
     const void* _Storage, void* _Comparand, size_t _Size, void* _Spinlock_raw) noexcept {
     _Spinlock_t& _Spinlock = *static_cast<_Spinlock_t*>(_Spinlock_raw);
     _Atomic_lock_acquire(_Spinlock);
@@ -621,14 +621,14 @@ protected:
 
 private:
     // Spinlock integer for non-lock-free atomic. <xthreads.h> mutex pointer for non-lock-free atomic_ref
-    mutable typename _Atomic_storage_types<_Ty>::_Spinlock _Spinlock = 0;
+    mutable typename _Atomic_storage_types<_Ty>::_Spinlock _Spinlock{};
 
 public:
     _Ty _Storage{};
 
 #else // ^^^ don't break ABI / break ABI vvv
     _Ty _Storage;
-    mutable _Smtx_t _Mutex = 0;
+    mutable _Smtx_t _Mutex{};
 #endif // TRANSITION, ABI
 };
 
