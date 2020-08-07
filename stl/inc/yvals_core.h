@@ -131,6 +131,7 @@
 // Other C++17 deprecation warnings
 
 // _HAS_CXX20 directly controls:
+// P0019R8 atomic_ref
 // P0020R6 atomic<float>, atomic<double>, atomic<long double>
 // P0122R7 <span>
 // P0202R3 constexpr For <algorithm> And exchange()
@@ -182,6 +183,8 @@
 //     (except the std::invoke function which is implemented in C++17)
 // P1085R2 Removing span Comparisons
 // P1115R3 erase()/erase_if() Return size_type
+// P1135R6 The C++ 20 Synchronization Library
+//     (partially implemented)
 // P1207R4 Movability Of Single-Pass Iterators
 //     (partially implemented)
 // P1209R0 erase_if(), erase()
