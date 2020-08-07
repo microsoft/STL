@@ -91,7 +91,12 @@ public:
 template <class _Completion_function>
 class barrier : private _Barrier_completion<_Completion_function> {
 public:
-    static_assert(is_nothrow_invocable_v<_Completion_function>, "Barrier completion function shall not throw");
+    static_assert(
+#ifndef __cpp_noexcept_function_type
+        is_function_v<remove_pointer_t<_Completion_function>> ||
+#endif // __cpp_noexcept_function_type
+            is_nothrow_invocable_v<_Completion_function>,
+        "Barrier completion function shall not throw");
 
     using arrival_token = _Arrival_token<_Completion_function>;
 
