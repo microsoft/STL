@@ -371,27 +371,19 @@ struct _Atomic_padded<_Ty&, false> {
 
 template <class _Ty>
 struct _Atomic_storage_types {
-    using _TVal     = _Ty;
     using _TStorage = _Atomic_padded<_Ty>;
-    using _TConstr  = const _Ty;
     using _Spinlock = long;
-
-    static constexpr bool _Has_volatile = true;
 };
 
 template <class _Ty>
 struct _Atomic_storage_types<_Ty&> {
-    using _TVal     = _Ty;
     using _TStorage = _Ty&;
-    using _TConstr  = _Ty&;
     using _Spinlock = _Smtx_t*; // POINTER TO mutex
-
-    static constexpr bool _Has_volatile = false;
 };
 
 // STRUCT TEMPLATE _Atomic_storage
 #if 1 // TRANSITION, ABI
-template <class _Ty, size_t = sizeof(typename _Atomic_storage_types<_Ty>::_TVal)>
+template <class _Ty, size_t = sizeof(remove_reference_t<_Ty>)>
 #else // ^^^ don't break ABI / break ABI vvv
 template <class _Ty, size_t = _Atomic_storage_traits<_Ty>::_Storage_size>
 #endif // TRANSITION, ABI
@@ -406,7 +398,7 @@ void _Atomic_wait_direct(
         const _Value_type _Observed_bytes = _Atomic_reinterpret_as<_Value_type>(_This->load(_Order));
         if (_Expected_bytes != _Observed_bytes) {
 #if _CMPXCHG_MASK_OUT_PADDING_BITS
-            using _TVal = typename _Atomic_storage_types<_Ty>::_TVal;
+            using _TVal = remove_reference_t<_Ty>;
             if constexpr (_Might_have_non_value_bits<_TVal>) {
                 _Storage_for<_TVal> _Mask{_Form_mask};
                 const _Value_type _Mask_val = _Atomic_reinterpret_as<_Value_type>(_Mask._Ref());
@@ -481,10 +473,10 @@ inline bool __stdcall _Atomic_wait_compare_non_lock_free(
     return _Cmp_result == 0;
 }
 
-#ifdef _STD_COMPARE_EXCHANGE_128
+#ifdef _WIN64
 inline bool __stdcall _Atomic_wait_compare_16_bytes(const void* _Storage, void* _Comparand, size_t, void*) noexcept {
-    const auto _Dest              = reinterpret_cast<long long*>(const_cast<void*>(_Storage));
-    const auto _Cmp               = reinterpret_cast<const long long*>(_Comparand);
+    const auto _Dest              = static_cast<long long*>(const_cast<void*>(_Storage));
+    const auto _Cmp               = static_cast<const long long*>(_Comparand);
     alignas(16) long long _Tmp[2] = {_Cmp[0], _Cmp[1]};
 #ifdef _M_X64
     return _STD_COMPARE_EXCHANGE_128(_Dest, _Tmp[1], _Tmp[0], _Tmp) != 0;
@@ -492,7 +484,7 @@ inline bool __stdcall _Atomic_wait_compare_16_bytes(const void* _Storage, void* 
     return _InterlockedCompareExchange128_nf(_Dest, _Tmp[1], _Tmp[0], _Tmp) != 0;
 #endif // ^^^ ARM64 ^^^
 }
-#endif // _STD_COMPARE_EXCHANGE_128
+#endif // _WIN64
 #endif // _HAS_CXX20
 #endif // TRANSITION, ABI
 
@@ -501,12 +493,12 @@ struct _Atomic_storage {
     // Provides operations common to all specializations of std::atomic, load, store, exchange, and CAS.
     // Locking version used when hardware has no atomic operations for sizeof(_Ty).
 
-    using _TVal  = typename _Atomic_storage_types<_Ty>::_TVal;
+    using _TVal  = remove_reference_t<_Ty>;
     using _Guard = _Atomic_lock_guard<typename _Atomic_storage_types<_Ty>::_Spinlock>;
 
     _Atomic_storage() = default;
 
-    /* implicit */ constexpr _Atomic_storage(typename _Atomic_storage_types<_Ty>::_TConstr _Value) noexcept
+    /* implicit */ constexpr _Atomic_storage(conditional_t<is_reference_v<_Ty>, _Ty&, const _TVal> _Value) noexcept
         : _Storage(_Value) {
         // non-atomically initialize this atomic
     }
@@ -635,11 +627,11 @@ public:
 template <class _Ty>
 struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
 
-    using _TVal = typename _Atomic_storage_types<_Ty>::_TVal;
+    using _TVal = remove_reference_t<_Ty>;
 
     _Atomic_storage() = default;
 
-    /* implicit */ constexpr _Atomic_storage(typename _Atomic_storage_types<_Ty>::_TConstr _Value) noexcept
+    /* implicit */ constexpr _Atomic_storage(conditional_t<is_reference_v<_Ty>, _Ty&, const _TVal> _Value) noexcept
         : _Storage{_Value} {
         // non-atomically initialize this atomic
     }
@@ -756,11 +748,11 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
 template <class _Ty>
 struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
 
-    using _TVal = typename _Atomic_storage_types<_Ty>::_TVal;
+    using _TVal = remove_reference_t<_Ty>;
 
     _Atomic_storage() = default;
 
-    /* implicit */ constexpr _Atomic_storage(typename _Atomic_storage_types<_Ty>::_TConstr _Value) noexcept
+    /* implicit */ constexpr _Atomic_storage(conditional_t<is_reference_v<_Ty>, _Ty&, const _TVal> _Value) noexcept
         : _Storage{_Value} {
         // non-atomically initialize this atomic
     }
@@ -876,11 +868,11 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
 template <class _Ty>
 struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
 
-    using _TVal = typename _Atomic_storage_types<_Ty>::_TVal;
+    using _TVal = remove_reference_t<_Ty>;
 
     _Atomic_storage() = default;
 
-    /* implicit */ constexpr _Atomic_storage(typename _Atomic_storage_types<_Ty>::_TConstr _Value) noexcept
+    /* implicit */ constexpr _Atomic_storage(conditional_t<is_reference_v<_Ty>, _Ty&, const _TVal> _Value) noexcept
         : _Storage{_Value} {
         // non-atomically initialize this atomic
     }
@@ -994,11 +986,11 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
 template <class _Ty>
 struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
 
-    using _TVal = typename _Atomic_storage_types<_Ty>::_TVal;
+    using _TVal = remove_reference_t<_Ty>;
 
     _Atomic_storage() = default;
 
-    /* implicit */ constexpr _Atomic_storage(typename _Atomic_storage_types<_Ty>::_TConstr _Value) noexcept
+    /* implicit */ constexpr _Atomic_storage(conditional_t<is_reference_v<_Ty>, _Ty&, const _TVal> _Value) noexcept
         : _Storage{_Value} {
         // non-atomically initialize this atomic
     }
@@ -1138,17 +1130,16 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
     typename _Atomic_storage_types<_Ty>::_TStorage _Storage;
 };
 
-
-#ifdef _STD_COMPARE_EXCHANGE_128
+#ifdef _WIN64
 template <class _Ty>
 struct _Atomic_storage<_Ty&, 16> { // lock-free using 16-byte intrinsics
     // TRANSITION, ABI: replace '_Ty&' with '_Ty' in parameter of everywhere in this specialization
 
-    using _TVal = typename _Atomic_storage_types<_Ty&>::_TVal;
+    using _TVal = remove_reference_t<_Ty&>;
 
     _Atomic_storage() = default;
 
-    /* implicit */ constexpr _Atomic_storage(typename _Atomic_storage_types<_Ty&>::_TConstr _Value) noexcept
+    /* implicit */ constexpr _Atomic_storage(conditional_t<is_reference_v<_Ty&>, _Ty&, const _TVal> _Value) noexcept
         : _Storage{_Value} {} // non-atomically initialize this atomic
 
     void store(const _TVal _Value) noexcept { // store with sequential consistency
@@ -1282,7 +1273,7 @@ struct _Atomic_storage<_Ty&, 16> { // lock-free using 16-byte intrinsics
 #if _CMPXCHG_MASK_OUT_PADDING_BITS
                 if constexpr (_Might_have_non_value_bits<_TVal>) {
                     _Storage_for<_TVal> _Mask{_Form_mask};
-                    const _Int128 _Mask_val = reinterpret_cast<_Int128&>(_Mask._Ref());
+                    const _Int128 _Mask_val = reinterpret_cast<const _Int128&>(_Mask._Ref());
 
                     if (((_Expected_bytes._Low ^ _Observed_bytes._Low) & _Mask_val._Low) == 0
                         && ((_Expected_bytes._High ^ _Observed_bytes._High) & _Mask_val._High) == 0) {
@@ -1316,7 +1307,7 @@ struct _Atomic_storage<_Ty&, 16> { // lock-free using 16-byte intrinsics
 
     typename _Atomic_storage_types<_Ty&>::_TStorage _Storage;
 };
-#endif // defined(_M_X64) || defined(_M_ARM64)
+#endif // _WIN64
 
 // STRUCT TEMPLATE _Atomic_integral
 template <class _Ty, size_t = sizeof(_Ty)>
@@ -1329,7 +1320,7 @@ struct _Atomic_integral<_Ty, 1> : _Atomic_storage<_Ty> { // atomic integral oper
 
 #ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
     _Atomic_integral() = default;
-    /* implicit */ constexpr _Atomic_integral(typename _Atomic_storage_types<_Ty>::_TConstr _Value) noexcept
+    /* implicit */ constexpr _Atomic_integral(conditional_t<is_reference_v<_Ty>, _Ty&, const _TVal> _Value) noexcept
         : _Base(_Value) {}
 #else // ^^^ workaround / no workaround vvv
     using _Base::_Base;
@@ -1393,7 +1384,7 @@ struct _Atomic_integral<_Ty, 2> : _Atomic_storage<_Ty> { // atomic integral oper
 
 #ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
     _Atomic_integral() = default;
-    /* implicit */ constexpr _Atomic_integral(typename _Atomic_storage_types<_Ty>::_TConstr _Value) noexcept
+    /* implicit */ constexpr _Atomic_integral(conditional_t<is_reference_v<_Ty>, _Ty&, const _TVal> _Value) noexcept
         : _Base(_Value) {}
 #else // ^^^ workaround / no workaround vvv
     using _Base::_Base;
@@ -1457,7 +1448,7 @@ struct _Atomic_integral<_Ty, 4> : _Atomic_storage<_Ty> { // atomic integral oper
 
 #ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
     _Atomic_integral() = default;
-    /* implicit */ constexpr _Atomic_integral(typename _Atomic_storage_types<_Ty>::_TConstr _Value) noexcept
+    /* implicit */ constexpr _Atomic_integral(conditional_t<is_reference_v<_Ty>, _Ty&, const _TVal> _Value) noexcept
         : _Base(_Value) {}
 #else // ^^^ workaround / no workaround vvv
     using _Base::_Base;
@@ -1521,7 +1512,7 @@ struct _Atomic_integral<_Ty, 8> : _Atomic_storage<_Ty> { // atomic integral oper
 
 #ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
     _Atomic_integral() = default;
-    /* implicit */ constexpr _Atomic_integral(typename _Atomic_storage_types<_Ty>::_TConstr _Value) noexcept
+    /* implicit */ constexpr _Atomic_integral(conditional_t<is_reference_v<_Ty>, _Ty&, const _TVal> _Value) noexcept
         : _Base(_Value) {}
 #else // ^^^ workaround / no workaround vvv
     using _Base::_Base;
@@ -1662,8 +1653,7 @@ struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
 
 #ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
     _Atomic_integral_facade() = default;
-    /* implicit */ constexpr _Atomic_integral_facade(typename _Atomic_storage_types<_Ty>::_TConstr _Value) noexcept
-        : _Base(_Value) {}
+    /* implicit */ constexpr _Atomic_integral_facade(const_TVal _Value) noexcept : _Base(_Value) {}
 #else // ^^^ workaround / no workaround vvv
     using _Base::_Base;
 #endif // ^^^ no workaround ^^^
@@ -1675,12 +1665,10 @@ struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
     // are far more common than volatile ones.
     using _Base::fetch_add;
     _TVal fetch_add(const _TVal _Operand) volatile noexcept {
-        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_add(_Operand);
     }
 
     _TVal fetch_add(const _TVal _Operand, const memory_order _Order) volatile noexcept {
-        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_add(_Operand, _Order);
     }
 
@@ -1693,7 +1681,6 @@ struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
     }
 
     _TVal fetch_sub(const _TVal _Operand) volatile noexcept {
-        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return fetch_add(_Negate(_Operand));
     }
 
@@ -1702,62 +1689,51 @@ struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
     }
 
     _TVal fetch_sub(const _TVal _Operand, const memory_order _Order) volatile noexcept {
-        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return fetch_add(_Negate(_Operand), _Order);
     }
 
     using _Base::fetch_and;
     _TVal fetch_and(const _TVal _Operand) volatile noexcept {
-        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_and(_Operand);
     }
 
     _TVal fetch_and(const _TVal _Operand, const memory_order _Order) volatile noexcept {
-        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_and(_Operand, _Order);
     }
 
     using _Base::fetch_or;
     _TVal fetch_or(const _TVal _Operand) volatile noexcept {
-        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_or(_Operand);
     }
 
     _TVal fetch_or(const _TVal _Operand, const memory_order _Order) volatile noexcept {
-        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_or(_Operand, _Order);
     }
 
     using _Base::fetch_xor;
     _TVal fetch_xor(const _TVal _Operand) volatile noexcept {
-        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_xor(_Operand);
     }
 
     _TVal fetch_xor(const _TVal _Operand, const memory_order _Order) volatile noexcept {
-        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_xor(_Operand, _Order);
     }
 
     using _Base::operator++;
     _TVal operator++(int) volatile noexcept {
-        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::operator++(0);
     }
 
     _TVal operator++() volatile noexcept {
-        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::operator++();
     }
 
     using _Base::operator--;
     _TVal operator--(int) volatile noexcept {
-        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::operator--(0);
     }
 
     _TVal operator--() volatile noexcept {
-        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return const_cast<_Atomic_integral_facade*>(this)->_Base::operator--();
     }
 
@@ -1766,7 +1742,6 @@ struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
     }
 
     _TVal operator+=(const _TVal _Operand) volatile noexcept {
-        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return static_cast<_TVal>(const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_add(_Operand) + _Operand);
     }
 
@@ -1775,7 +1750,6 @@ struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
     }
 
     _TVal operator-=(const _TVal _Operand) volatile noexcept {
-        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return static_cast<_TVal>(const_cast<_Atomic_integral_facade*>(this)->fetch_sub(_Operand) - _Operand);
     }
 
@@ -1784,7 +1758,6 @@ struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
     }
 
     _TVal operator&=(const _TVal _Operand) volatile noexcept {
-        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return static_cast<_TVal>(const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_and(_Operand) & _Operand);
     }
 
@@ -1793,7 +1766,6 @@ struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
     }
 
     _TVal operator|=(const _TVal _Operand) volatile noexcept {
-        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return static_cast<_TVal>(const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_or(_Operand) | _Operand);
     }
 
@@ -1802,8 +1774,87 @@ struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
     }
 
     _TVal operator^=(const _TVal _Operand) volatile noexcept {
-        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return static_cast<_TVal>(const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_xor(_Operand) ^ _Operand);
+    }
+};
+
+// STRUCT TEMPLATE _Atomic_integral_facade
+template <class _Ty>
+struct _Atomic_integral_facade<_Ty&> : _Atomic_integral<_Ty&> {
+    // provides operator overloads and other support for atomic integral specializations
+    using _Base = _Atomic_integral<_Ty&>;
+    using typename _Base::_TVal;
+    using difference_type = _TVal;
+
+#ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
+    _Atomic_integral_facade() = default;
+    /* implicit */ constexpr _Atomic_integral_facade(_Ty& _Value) noexcept : _Base(_Value) {}
+#else // ^^^ workaround / no workaround vvv
+    using _Base::_Base;
+#endif // ^^^ no workaround ^^^
+
+    _NODISCARD static _TVal _Negate(const _TVal _Value) noexcept { // returns two's complement negated value of _Value
+        return static_cast<_TVal>(0U - static_cast<make_unsigned_t<_TVal>>(_Value));
+    }
+
+    _TVal fetch_add(const _TVal _Operand) const noexcept {
+        return const_cast<_Base*>(static_cast<const _Base*>(this))->fetch_add(_Operand);
+    }
+
+    _TVal fetch_add(const _TVal _Operand, const memory_order _Order) const noexcept {
+        return const_cast<_Base*>(static_cast<const _Base*>(this))->fetch_add(_Operand, _Order);
+    }
+
+    _TVal fetch_sub(const _TVal _Operand) const noexcept {
+        return fetch_add(_Negate(_Operand));
+    }
+
+    _TVal fetch_sub(const _TVal _Operand, const memory_order _Order) const noexcept {
+        return fetch_add(_Negate(_Operand), _Order);
+    }
+
+    _TVal operator+=(const _TVal _Operand) const noexcept {
+        return static_cast<_TVal>(fetch_add(_Operand) + _Operand);
+    }
+
+    _TVal operator-=(const _TVal _Operand) const noexcept {
+        return static_cast<_TVal>(fetch_sub(_Operand) - _Operand);
+    }
+
+    _TVal fetch_and(const _TVal _Operand) const noexcept {
+        return const_cast<_Base*>(static_cast<const _Base*>(this))->fetch_and(_Operand);
+    }
+
+    _TVal fetch_and(const _TVal _Operand, const memory_order _Order) const noexcept {
+        return const_cast<_Base*>(static_cast<const _Base*>(this))->fetch_and(_Operand, _Order);
+    }
+
+    _TVal fetch_or(const _TVal _Operand) const noexcept {
+        return const_cast<_Base*>(static_cast<const _Base*>(this))->fetch_or(_Operand);
+    }
+
+    _TVal fetch_or(const _TVal _Operand, const memory_order _Order) const noexcept {
+        return const_cast<_Base*>(static_cast<const _Base*>(this))->fetch_or(_Operand, _Order);
+    }
+
+    _TVal fetch_xor(const _TVal _Operand) const noexcept {
+        return const_cast<_Base*>(static_cast<const _Base*>(this))->fetch_xor(_Operand);
+    }
+
+    _TVal fetch_xor(const _TVal _Operand, const memory_order _Order) const noexcept {
+        return const_cast<_Base*>(static_cast<const _Base*>(this))->fetch_xor(_Operand, _Order);
+    }
+
+    _TVal operator&=(const _TVal _Operand) const noexcept {
+        return static_cast<_TVal>(fetch_and(_Operand) & _Operand);
+    }
+
+    _TVal operator|=(const _TVal _Operand) const noexcept {
+        return static_cast<_TVal>(fetch_or(_Operand) | _Operand);
+    }
+
+    _TVal operator^=(const _TVal _Operand) const noexcept {
+        return static_cast<_TVal>(fetch_xor(_Operand) ^ _Operand);
     }
 };
 
@@ -1817,8 +1868,7 @@ struct _Atomic_floating : _Atomic_storage<_Ty> {
 
 #ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
     _Atomic_floating() = default;
-    /* implicit */ constexpr _Atomic_floating(typename _Atomic_storage_types<_Ty>::_TConstr _Value) noexcept
-        : _Base(_Value) {}
+    /* implicit */ constexpr _Atomic_floating(const _TVal _Value) noexcept : _Base(_Value) {}
 #else // ^^^ workaround / no workaround vvv
     using _Base::_Base;
 #endif // ^^^ no workaround ^^^
@@ -1837,7 +1887,6 @@ struct _Atomic_floating : _Atomic_storage<_Ty> {
     // We make the primary functions non-volatile for better debug codegen, as non-volatile atomics
     // are far more common than volatile ones.
     _TVal fetch_add(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) volatile noexcept {
-        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return const_cast<_Atomic_floating*>(this)->fetch_add(_Operand, _Order);
     }
 
@@ -1850,7 +1899,6 @@ struct _Atomic_floating : _Atomic_storage<_Ty> {
     }
 
     _TVal fetch_sub(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) volatile noexcept {
-        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return const_cast<_Atomic_floating*>(this)->fetch_sub(_Operand, _Order);
     }
 
@@ -1859,7 +1907,6 @@ struct _Atomic_floating : _Atomic_storage<_Ty> {
     }
 
     _TVal operator+=(const _TVal _Operand) volatile noexcept {
-        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return const_cast<_Atomic_floating*>(this)->fetch_add(_Operand) + _Operand;
     }
 
@@ -1868,8 +1915,48 @@ struct _Atomic_floating : _Atomic_storage<_Ty> {
     }
 
     _TVal operator-=(const _TVal _Operand) volatile noexcept {
-        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return const_cast<_Atomic_floating*>(this)->fetch_sub(_Operand) - _Operand;
+    }
+};
+
+template <class _Ty>
+struct _Atomic_floating<_Ty&> : _Atomic_storage<_Ty&> {
+    // provides atomic floating-point operations
+    using _Base = _Atomic_storage<_Ty&>;
+    using typename _Base::_TVal;
+    using difference_type = _TVal;
+
+#ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
+    _Atomic_floating() = default;
+    /* implicit */ constexpr _Atomic_floating(_Ty& _Value) noexcept : _Base(_Value) {}
+#else // ^^^ workaround / no workaround vvv
+    using _Base::_Base;
+#endif // ^^^ no workaround ^^^
+
+    _TVal fetch_add(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) const noexcept {
+        _TVal _Temp{this->load(memory_order_relaxed)};
+        while (!const_cast<_Base*>(static_cast<const _Base*>(this))
+                   ->compare_exchange_strong(_Temp, _Temp + _Operand, _Order)) { // keep trying
+        }
+
+        return _Temp;
+    }
+
+    _TVal fetch_sub(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) const noexcept {
+        _TVal _Temp{this->load(memory_order_relaxed)};
+        while (!const_cast<_Base*>(static_cast<const _Base*>(this))
+                    ->compare_exchange_strong(_Temp, _Temp - _Operand, _Order)) { // keep trying
+        }
+
+        return _Temp;
+    }
+
+    _TVal operator+=(const _TVal _Operand) const noexcept {
+        return fetch_add(_Operand) + _Operand;
+    }
+
+    _TVal operator-=(const _TVal _Operand) const noexcept {
+        return fetch_sub(_Operand) - _Operand;
     }
 };
 #endif // _HAS_CXX20
@@ -1883,7 +1970,7 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
 
 #ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
     _Atomic_pointer() = default;
-    /* implicit */ constexpr _Atomic_pointer(typename _Atomic_storage_types<_Ty>::_TConstr _Value) noexcept
+    /* implicit */ constexpr _Atomic_pointer(conditional_t<is_reference_v<_Ty>, _Ty&, const _TVal> _Value) noexcept
         : _Base(_Value) {}
 #else // ^^^ workaround / no workaround vvv
     using _Base::_Base;
@@ -1906,17 +1993,14 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
     // _Deprecate_non_lock_free_volatile is unnecessary here.
 
     _TVal fetch_add(const ptrdiff_t _Diff) volatile noexcept {
-        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return const_cast<_Atomic_pointer*>(this)->fetch_add(_Diff);
     }
 
     _TVal fetch_add(const ptrdiff_t _Diff, const memory_order _Order) volatile noexcept {
-        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return const_cast<_Atomic_pointer*>(this)->fetch_add(_Diff, _Order);
     }
 
     _TVal fetch_sub(const ptrdiff_t _Diff) volatile noexcept {
-        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return fetch_add(static_cast<ptrdiff_t>(0 - static_cast<size_t>(_Diff)));
     }
 
@@ -1925,7 +2009,6 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
     }
 
     _TVal fetch_sub(const ptrdiff_t _Diff, const memory_order _Order) volatile noexcept {
-        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return fetch_add(static_cast<ptrdiff_t>(0 - static_cast<size_t>(_Diff)), _Order);
     }
 
@@ -1934,7 +2017,6 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
     }
 
     _TVal operator++(int) volatile noexcept {
-        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return fetch_add(1);
     }
 
@@ -1943,7 +2025,6 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
     }
 
     _TVal operator++() volatile noexcept {
-        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return fetch_add(1) + 1;
     }
 
@@ -1952,7 +2033,6 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
     }
 
     _TVal operator--(int) volatile noexcept {
-        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return fetch_add(-1);
     }
 
@@ -1961,7 +2041,6 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
     }
 
     _TVal operator--() volatile noexcept {
-        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return fetch_add(-1) - 1;
     }
 
@@ -1970,7 +2049,6 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
     }
 
     _TVal operator+=(const ptrdiff_t _Diff) volatile noexcept {
-        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return fetch_add(_Diff) + _Diff;
     }
 
@@ -1979,7 +2057,6 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
     }
 
     _TVal operator-=(const ptrdiff_t _Diff) volatile noexcept {
-        static_assert(_Atomic_storage_types<_Ty>::_Has_volatile, "no volatile for atomic_ref");
         return fetch_add(static_cast<ptrdiff_t>(0 - static_cast<size_t>(_Diff))) - _Diff;
     }
 
@@ -1987,6 +2064,70 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
         return fetch_add(static_cast<ptrdiff_t>(0 - static_cast<size_t>(_Diff))) - _Diff;
     }
 };
+
+
+// STRUCT TEMPLATE _Atomic_pointer
+template <class _Ty>
+struct _Atomic_pointer<_Ty&> : _Atomic_storage<_Ty&> {
+    using _Base = _Atomic_storage<_Ty&>;
+    using typename _Base::_TVal;
+    using difference_type = ptrdiff_t;
+
+#ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
+    _Atomic_pointer() = default;
+    /* implicit */ constexpr _Atomic_pointer(_Ty& _Value) noexcept : _Base(_Value) {}
+#else // ^^^ workaround / no workaround vvv
+    using _Base::_Base;
+#endif // ^^^ no workaround ^^^
+
+    _TVal fetch_add(const ptrdiff_t _Diff, const memory_order _Order = memory_order_seq_cst) const noexcept {
+        const ptrdiff_t _Shift_bytes =
+            static_cast<ptrdiff_t>(static_cast<size_t>(_Diff) * sizeof(remove_pointer_t<_TVal>));
+        ptrdiff_t _Result;
+#if defined(_M_IX86) || defined(_M_ARM)
+        _ATOMIC_CHOOSE_INTRINSIC(
+            _Order, _Result, _InterlockedExchangeAdd, _Atomic_address_as<long>(this->_Storage), _Shift_bytes);
+#else // ^^^ 32 bits / 64 bits vvv
+        _ATOMIC_CHOOSE_INTRINSIC(
+            _Order, _Result, _InterlockedExchangeAdd64, _Atomic_address_as<long long>(this->_Storage), _Shift_bytes);
+#endif // hardware
+        return reinterpret_cast<_TVal>(_Result);
+    }
+
+    _TVal fetch_sub(const ptrdiff_t _Diff) const noexcept {
+        return fetch_add(static_cast<ptrdiff_t>(0 - static_cast<size_t>(_Diff)));
+    }
+
+    _TVal fetch_sub(const ptrdiff_t _Diff, const memory_order _Order) const noexcept {
+        return fetch_add(static_cast<ptrdiff_t>(0 - static_cast<size_t>(_Diff)), _Order);
+    }
+
+    _TVal operator++(int) const noexcept {
+        return fetch_add(1);
+    }
+
+    _TVal operator++() const noexcept {
+        return fetch_add(1) + 1;
+    }
+
+    _TVal operator--(int) const noexcept {
+        return fetch_add(-1);
+    }
+
+    _TVal operator--() const noexcept {
+        return fetch_add(-1) - 1;
+    }
+
+    _TVal operator+=(const ptrdiff_t _Diff) const noexcept {
+        return fetch_add(_Diff) + _Diff;
+    }
+
+
+    _TVal operator-=(const ptrdiff_t _Diff) const noexcept {
+        return fetch_add(static_cast<ptrdiff_t>(0 - static_cast<size_t>(_Diff))) - _Diff;
+    }
+};
+
 
 // STRUCT TEMPLATE atomic
 #define ATOMIC_VAR_INIT(_Value) \
@@ -2202,18 +2343,15 @@ public:
     static_assert(is_trivially_copyable_v<_Ty> && is_copy_constructible_v<_Ty> && is_move_constructible_v<_Ty>
         && is_copy_assignable_v<_Ty> && is_move_assignable_v<_Ty>,
         "atomic_ref<T> requires T to be trivially copyable, copy constructible, move constructible, copy assignable, "
-
         "and move assignable.");
     // clang-format on
 
     using value_type = _Ty;
 
-    explicit atomic_ref(_Ty& _Value) : _Base(_Value) {
+    explicit atomic_ref(_Ty& _Value) noexcept /* strengthened */ : _Base(_Value) {
         if constexpr (_Is_potentially_lock_free) {
             _Check_alignment(_Value);
-        }
-
-        if constexpr (!_Is_potentially_lock_free) {
+        } else {
             this->_Init_spinlock_for_ref();
         }
     }
@@ -2237,27 +2375,40 @@ public:
 #endif // _ATOMIC_HAS_DCAS
     }
 
-    _Ty operator=(const _Ty _Value) noexcept {
+    _Ty operator=(const _Ty _Value) const noexcept {
         this->store(_Value);
         return _Value;
     }
 
-    using _Base::compare_exchange_strong;
+    _Ty exchange(const _Ty _Value) const noexcept {
+        return const_cast<_Base*>(static_cast<const _Base*>(this))->exchange(_Value);
+    }
+
+    _Ty exchange(const _Ty _Value, const memory_order _Order) const noexcept {
+        return const_cast<_Base*>(static_cast<const _Base*>(this))->exchange(_Value, _Order);
+    }
+
     bool compare_exchange_strong(
-        _Ty& _Expected, const _Ty _Desired, const memory_order _Success, const memory_order _Failure) noexcept {
+        _Ty& _Expected, const _Ty _Desired, const memory_order _Order = memory_order_seq_cst) const noexcept {
+        return const_cast<_Base*>(static_cast<const _Base*>(this))
+            ->compare_exchange_strong(_Expected, _Desired, _Order);
+    }
+
+    bool compare_exchange_strong(
+        _Ty& _Expected, const _Ty _Desired, const memory_order _Success, const memory_order _Failure) const noexcept {
         return this->compare_exchange_strong(_Expected, _Desired, _Combine_cas_memory_orders(_Success, _Failure));
     }
 
-    bool compare_exchange_weak(_Ty& _Expected, const _Ty _Desired) noexcept {
+    bool compare_exchange_weak(_Ty& _Expected, const _Ty _Desired) const noexcept {
         return this->compare_exchange_strong(_Expected, _Desired);
     }
 
-    bool compare_exchange_weak(_Ty& _Expected, const _Ty _Desired, const memory_order _Order) noexcept {
+    bool compare_exchange_weak(_Ty& _Expected, const _Ty _Desired, const memory_order _Order) const noexcept {
         return this->compare_exchange_strong(_Expected, _Desired, _Order);
     }
 
     bool compare_exchange_weak(
-        _Ty& _Expected, const _Ty _Desired, const memory_order _Success, const memory_order _Failure) noexcept {
+        _Ty& _Expected, const _Ty _Desired, const memory_order _Success, const memory_order _Failure) const noexcept {
         return this->compare_exchange_strong(_Expected, _Desired, _Combine_cas_memory_orders(_Success, _Failure));
     }
 
@@ -2266,7 +2417,7 @@ public:
     }
 
 private:
-    void _Check_alignment([[maybe_unused]] const _Ty& _Value) {
+    static void _Check_alignment([[maybe_unused]] const _Ty& _Value) {
         _ATOMIC_REF_CHECK_ALIGNMENT(
             (reinterpret_cast<uintptr_t>(_STD addressof(_Value)) & (required_alignment - 1)) == 0,
             "atomic_ref underlying object is not aligned as required_alignment");

@@ -83,7 +83,85 @@ void test_ops() {
     assert(std::transform_reduce(par, refs.begin(), refs.end(), 0, std::plus{}, load) == 0);
 }
 
-#include <intrin.h>
+template <class Integer>
+void test_int_ops() {
+    Integer v = 0x40;
+
+    std::atomic vx(v);
+    std::atomic vy(v);
+    const std::atomic_ref rx(v);
+    const std::atomic_ref ry(v);
+
+    vx.fetch_add(0x10);
+    rx.fetch_add(0x10);
+
+    assert(vx.load() == 0x50);
+    assert(vy.load() == 0x40);
+    assert(rx.load() == 0x50);
+    assert(ry.load() == 0x50);
+
+    vx.fetch_sub(0x8);
+    rx.fetch_sub(0x8);
+
+    assert(vx.load() == 0x48);
+    assert(vy.load() == 0x40);
+    assert(rx.load() == 0x48);
+    assert(ry.load() == 0x48);
+}
+
+
+template <class Float>
+void test_float_ops() {
+    Float v = 0x40;
+
+    std::atomic vx(v);
+    std::atomic vy(v);
+    const std::atomic_ref rx(v);
+    const std::atomic_ref ry(v);
+
+    vx.fetch_add(0x10);
+    rx.fetch_add(0x10);
+
+    assert(vx.load() == 0x50);
+    assert(vy.load() == 0x40);
+    assert(rx.load() == 0x50);
+    assert(ry.load() == 0x50);
+
+    vx.fetch_sub(0x8);
+    rx.fetch_sub(0x8);
+
+    assert(vx.load() == 0x48);
+    assert(vy.load() == 0x40);
+    assert(rx.load() == 0x48);
+    assert(ry.load() == 0x48);
+}
+
+template <class Ptr>
+void test_ptr_ops() {
+    std::remove_pointer_t<Ptr> a[0x100];
+    Ptr v = a;
+
+    std::atomic vx(v);
+    std::atomic vy(v);
+    const std::atomic_ref rx(v);
+    const std::atomic_ref ry(v);
+
+    vx.fetch_add(0x10);
+    rx.fetch_add(0x10);
+
+    assert(vx.load() == a + 0x10);
+    assert(vy.load() == a);
+    assert(rx.load() == a + 0x10);
+    assert(ry.load() == a + 0x10);
+
+    vx.fetch_sub(0x8);
+    rx.fetch_sub(0x8);
+
+    assert(vx.load() == a + 0x8);
+    assert(vy.load() == a);
+    assert(rx.load() == a + 0x8);
+    assert(ry.load() == a + 0x8);
+}
 
 int main() {
     test_ops<false, char>();
@@ -117,4 +195,22 @@ int main() {
     test_ops<true, long double>();
     test_ops<true, bigint>();
     test_ops<true, int128>();
+
+    test_int_ops<signed char>();
+    test_int_ops<unsigned char>();
+    test_int_ops<short>();
+    test_int_ops<unsigned short>();
+    test_int_ops<int>();
+    test_int_ops<unsigned int>();
+    test_int_ops<long>();
+    test_int_ops<unsigned long>();
+    test_int_ops<long long>();
+    test_int_ops<unsigned long long>();
+
+    test_float_ops<float>();
+    test_float_ops<double>();
+    test_float_ops<long double>();
+
+    test_ptr_ops<char*>();
+    test_ptr_ops<long*>();
 }
