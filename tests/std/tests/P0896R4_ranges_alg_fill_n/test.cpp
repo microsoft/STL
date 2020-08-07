@@ -36,6 +36,13 @@ struct instantiator {
             assert(ranges::equal(output, expected_output));
             assert(result == ranges::begin(output));
         }
+        { // Validate int is properly converted to bool
+            bool output[] = { false, true, false };
+            fill_n(ranges::begin(output), ranges::distance(output), 5);
+            for (bool elem : output) {
+                assert(elem == true);
+            }
+        }
     }
 };
 

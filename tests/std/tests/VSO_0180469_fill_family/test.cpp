@@ -136,4 +136,34 @@ int main() {
 
     test_uninitialized_fill(
         [](count_copies* buff, size_t n, const count_copies& src) { uninitialized_fill_n(buff, n, src); });
+
+    // Validate int is properly converted to bool
+    {
+        bool output[] = {false, true, false};
+        fill(output, output + 3, 5);
+        for (bool elem : output) {
+            assert(elem == true);
+        }
+    }
+    {
+        bool output[] = {false, true, false};
+        fill_n(output, 3, 5);
+        for (bool elem : output) {
+            assert(elem == true);
+        }
+    }
+    {
+        bool output[] = {false, true, false};
+        uninitialized_fill(output, output + 3, 5);
+        for (bool elem : output) {
+            assert(elem == true);
+        }
+    }
+    {
+        bool output[] = {false, true, false};
+        uninitialized_fill_n(output, 3, 5);
+        for (bool elem : output) {
+            assert(elem == true);
+        }
+    }
 }
