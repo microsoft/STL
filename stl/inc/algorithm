@@ -4036,7 +4036,8 @@ namespace ranges {
                     {
                         using _DestTy = _Iter_value_t<decltype(_UFirst)>;
                         // first cast _Value to _DestTy in case _DestTy is bool
-                        _CSTD memset(_UFirst, static_cast<unsigned char>(static_cast<_DestTy>(_Value)), static_cast<size_t>(_Count));
+                        _CSTD memset(_UFirst, static_cast<unsigned char>(static_cast<_DestTy>(_Value)),
+                            static_cast<size_t>(_Count));
                         _UFirst += _Count;
                         _Seek_wrapped(_First, _UFirst); // no need to move since _UFirst is a pointer
                         return _First;

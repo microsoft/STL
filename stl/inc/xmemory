@@ -1758,7 +1758,8 @@ void uninitialized_fill(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last, c
     if constexpr (_Fill_memset_is_safe<_Unwrapped_t<const _NoThrowFwdIt&>, _Tval>) {
         using _DestTy = _Iter_value_t<_Unwrapped_t<const _NoThrowFwdIt&>>;
         // first cast _Val to _DestTy in case _DestTy is bool
-        _CSTD memset(_UFirst, static_cast<unsigned char>(static_cast<_DestTy>(_Val)), static_cast<size_t>(_ULast - _UFirst));
+        _CSTD memset(
+            _UFirst, static_cast<unsigned char>(static_cast<_DestTy>(_Val)), static_cast<size_t>(_ULast - _UFirst));
     } else {
         _Uninitialized_backout<_Unwrapped_t<const _NoThrowFwdIt&>> _Backout{_UFirst};
         while (_Backout._Last != _ULast) {
