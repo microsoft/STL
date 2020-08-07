@@ -2396,28 +2396,31 @@ public:
         return const_cast<_Base*>(static_cast<const _Base*>(this))->exchange(_Value, _Order);
     }
 
-    bool compare_exchange_strong(
-        _Ty& _Expected, const _Ty _Desired, const memory_order _Order = memory_order_seq_cst) const noexcept {
+    bool compare_exchange_strong(_Ty& _Expected, const _Ty _Desired) const noexcept {
+        return const_cast<_Base*>(static_cast<const _Base*>(this))->compare_exchange_strong(_Expected, _Desired);
+    }
+
+    bool compare_exchange_strong(_Ty& _Expected, const _Ty _Desired, const memory_order _Order) const noexcept {
         return const_cast<_Base*>(static_cast<const _Base*>(this))
             ->compare_exchange_strong(_Expected, _Desired, _Order);
     }
 
     bool compare_exchange_strong(
         _Ty& _Expected, const _Ty _Desired, const memory_order _Success, const memory_order _Failure) const noexcept {
-        return this->compare_exchange_strong(_Expected, _Desired, _Combine_cas_memory_orders(_Success, _Failure));
+        return compare_exchange_strong(_Expected, _Desired, _Combine_cas_memory_orders(_Success, _Failure));
     }
 
     bool compare_exchange_weak(_Ty& _Expected, const _Ty _Desired) const noexcept {
-        return this->compare_exchange_strong(_Expected, _Desired);
+        return compare_exchange_strong(_Expected, _Desired);
     }
 
     bool compare_exchange_weak(_Ty& _Expected, const _Ty _Desired, const memory_order _Order) const noexcept {
-        return this->compare_exchange_strong(_Expected, _Desired, _Order);
+        return compare_exchange_strong(_Expected, _Desired, _Order);
     }
 
     bool compare_exchange_weak(
         _Ty& _Expected, const _Ty _Desired, const memory_order _Success, const memory_order _Failure) const noexcept {
-        return this->compare_exchange_strong(_Expected, _Desired, _Combine_cas_memory_orders(_Success, _Failure));
+        return compare_exchange_strong(_Expected, _Desired, _Combine_cas_memory_orders(_Success, _Failure));
     }
 
     operator _Ty() const noexcept {
