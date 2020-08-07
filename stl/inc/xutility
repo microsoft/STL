@@ -4903,14 +4903,13 @@ _FwdIt fill_n(_ExPo&&, _FwdIt _Dest, _Diff _Count_raw, const _Ty& _Val) noexcept
 
 // Integral types are eligible for memcmp in very specific cases.
 // * They must be the same size. (`int == long` is eligible; `int == long long` isn't.)
-// * They can't be bool. (Not even `bool == bool`; we're concerned about representations other than 0 and 1.)
 // * They can't be volatile.
 // * Finally, the usual arithmetic conversions must preserve bit patterns. (This is true for `int == unsigned int`,
 //   but false for `short == unsigned short`.)
 template <class _Elem1, class _Elem2,
     bool = sizeof(_Elem1) == sizeof(_Elem2) //
-           && _Is_nonbool_integral<_Elem1> && !is_volatile_v<_Elem1> //
-           && _Is_nonbool_integral<_Elem2> && !is_volatile_v<_Elem2>>
+           && is_integral_v<_Elem1> && !is_volatile_v<_Elem1> //
+           && is_integral_v<_Elem2> && !is_volatile_v<_Elem2>>
 _INLINE_VAR constexpr bool _Can_memcmp_elements = static_cast<_Elem1>(-1) == static_cast<_Elem2>(-1);
 
 #ifdef __cpp_lib_byte
