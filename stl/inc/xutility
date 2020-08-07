@@ -4913,7 +4913,7 @@ template <class _Elem1, class _Elem2,
 _INLINE_VAR constexpr bool _Can_memcmp_elements = static_cast<_Elem1>(-1) == static_cast<_Elem2>(-1);
 
 template <>
-inline constexpr bool _Can_memcmp_elements<bool, bool, false> = true;
+_INLINE_VAR constexpr bool _Can_memcmp_elements<bool, bool, false> = true;
 
 #ifdef __cpp_lib_byte
 // Allow memcmping std::byte.
