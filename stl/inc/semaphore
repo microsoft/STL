@@ -78,7 +78,14 @@ public:
         const _Counter_type _Prev = _Counter.fetch_add(static_cast<_Counter_type>(_Update), memory_order_seq_cst);
         _STL_VERIFY(_Prev + _Update > 0, "Precondition: update <= max() - counter (N4861 [thread.sema.cnt]/8)");
 
-        if (_Prev == 0) {
+        // Instead of just calling notify_all(), can do either of the optimizations:
+        //  * notify_one() on _Update == 1
+        //  * don't notify on _Counter == 0
+        // But not both. The former is the design choice.
+
+        if (_Update == 1)
+            _Counter.notify_one();
+        } else {
             _Counter.notify_all();
         }
     }
