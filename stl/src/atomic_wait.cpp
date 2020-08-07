@@ -386,28 +386,25 @@ _NODISCARD unsigned char __stdcall __std_atomic_compare_exchange_128(_Inout_byte
 #endif // ^^^ _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0
 }
 
-_NODISCARD bool __stdcall __std_atomic_has_cmpxchg16b() noexcept {
+_NODISCARD char __stdcall __std_atomic_has_cmpxchg16b() noexcept {
 #if !defined(_WIN64)
     return false;
 #elif _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1
     return true;
 #else // ^^^ _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 // _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0 vvv
-    enum class _Cmpxchg16_support : char {
-        _Absent  = false,
-        _Present = true,
-        _Unknown,
-    };
+    static constexpr char _Cmpxchg_Absent  = 0;
+    static constexpr char _Cmpxchg_Present = 1;
+    static constexpr char _Cmpxchg_Unknown = 2;
 
-    static std::atomic<_Cmpxchg16_support> _Cached_value{_Cmpxchg16_support::_Unknown};
+    static std::atomic<char> _Cached_value{_Cmpxchg_Unknown};
 
-    _Cmpxchg16_support _Value = _Cached_value.load(std::memory_order_relaxed);
-    if (_Value == _Cmpxchg16_support::_Unknown) {
-        _Value = IsProcessorFeaturePresent(PF_COMPARE_EXCHANGE128) ? _Cmpxchg16_support::_Present
-                                                                   : _Cmpxchg16_support::_Absent;
+    char _Value = _Cached_value.load(std::memory_order_relaxed);
+    if (_Value == _Cmpxchg_Unknown) {
+        _Value = IsProcessorFeaturePresent(PF_COMPARE_EXCHANGE128) ? _Cmpxchg_Present : _Cmpxchg_Absent;
         _Cached_value.store(_Value, std::memory_order_relaxed);
     }
 
-    return reinterpret_cast<bool&>(_Value);
+    return _Value;
 #endif // ^^^ _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0
 }
 _END_EXTERN_C
