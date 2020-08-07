@@ -793,7 +793,7 @@ _NODISCARD bool operator==(const sub_match<_BidIt>& _Left, const _Iter_value_t<_
 
 #if _HAS_CXX20
 template <class _BidIt>
-_NODISCARD auto operator<=>(const sub_match<_BidIt>& _Left, const iter_value_t<_BidIt>* _Right) {
+_NODISCARD auto operator<=>(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>* _Right) {
     return static_cast<typename sub_match<_BidIt>::_Comparison_category>(_Left.compare(_Right) <=> 0);
 }
 
@@ -801,62 +801,62 @@ _NODISCARD auto operator<=>(const sub_match<_BidIt>& _Left, const iter_value_t<_
 // Overload resolution prefers implicit conversions over re-writes.
 // In C++20 mode the only required comparison operators should be == and <=>.
 template <class _BidIt>
-_NODISCARD auto operator<=>(const iter_value_t<_BidIt>* _Left, const sub_match<_BidIt>& _Right) {
+_NODISCARD auto operator<=>(const _Iter_value_t<_BidIt>* _Left, const sub_match<_BidIt>& _Right) {
     return static_cast<typename sub_match<_BidIt>::_Comparison_category>(0 <=> (_Right <=> _Left));
 }
 
 template <class _BidIt>
-_NODISCARD bool operator==(const iter_value_t<_BidIt>* _Left, const sub_match<_BidIt>& _Right) {
+_NODISCARD bool operator==(const _Iter_value_t<_BidIt>* _Left, const sub_match<_BidIt>& _Right) {
     return _Right._Match_equal(_Left);
 }
 
 template <class _BidIt>
-_NODISCARD bool operator!=(const iter_value_t<_BidIt>* _Left, const sub_match<_BidIt>& _Right) {
+_NODISCARD bool operator!=(const _Iter_value_t<_BidIt>* _Left, const sub_match<_BidIt>& _Right) {
     return !(_Left == _Right);
 }
 
 template <class _BidIt>
-_NODISCARD bool operator<(const iter_value_t<_BidIt>* _Left, const sub_match<_BidIt>& _Right) {
+_NODISCARD bool operator<(const _Iter_value_t<_BidIt>* _Left, const sub_match<_BidIt>& _Right) {
     return (_Left <=> _Right) < 0;
 }
 
 template <class _BidIt>
-_NODISCARD bool operator>(const iter_value_t<_BidIt>* _Left, const sub_match<_BidIt>& _Right) {
+_NODISCARD bool operator>(const _Iter_value_t<_BidIt>* _Left, const sub_match<_BidIt>& _Right) {
     return (_Left <=> _Right) > 0;
 }
 
 template <class _BidIt>
-_NODISCARD bool operator<=(const iter_value_t<_BidIt>* _Left, const sub_match<_BidIt>& _Right) {
+_NODISCARD bool operator<=(const _Iter_value_t<_BidIt>* _Left, const sub_match<_BidIt>& _Right) {
     return (_Left <=> _Right) <= 0;
 }
 
 template <class _BidIt>
-_NODISCARD bool operator>=(const iter_value_t<_BidIt>* _Left, const sub_match<_BidIt>& _Right) {
+_NODISCARD bool operator>=(const _Iter_value_t<_BidIt>* _Left, const sub_match<_BidIt>& _Right) {
     return (_Left <=> _Right) >= 0;
 }
 
 template <class _BidIt>
-_NODISCARD bool operator!=(const sub_match<_BidIt>& _Left, const iter_value_t<_BidIt>* _Right) {
+_NODISCARD bool operator!=(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>* _Right) {
     return !(_Left == _Right);
 }
 
 template <class _BidIt>
-_NODISCARD bool operator<(const sub_match<_BidIt>& _Left, const iter_value_t<_BidIt>* _Right) {
+_NODISCARD bool operator<(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>* _Right) {
     return (_Left <=> _Right) < 0;
 }
 
 template <class _BidIt>
-_NODISCARD bool operator>(const sub_match<_BidIt>& _Left, const iter_value_t<_BidIt>* _Right) {
+_NODISCARD bool operator>(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>* _Right) {
     return (_Left <=> _Right) > 0;
 }
 
 template <class _BidIt>
-_NODISCARD bool operator<=(const sub_match<_BidIt>& _Left, const iter_value_t<_BidIt>* _Right) {
+_NODISCARD bool operator<=(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>* _Right) {
     return (_Left <=> _Right) <= 0;
 }
 
 template <class _BidIt>
-_NODISCARD bool operator>=(const sub_match<_BidIt>& _Left, const iter_value_t<_BidIt>* _Right) {
+_NODISCARD bool operator>=(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>* _Right) {
     return (_Left <=> _Right) >= 0;
 }
 #endif // TRANSTITION, VSO-900973
@@ -925,7 +925,7 @@ _NODISCARD bool operator==(const sub_match<_BidIt>& _Left, const _Iter_value_t<_
 
 #if _HAS_CXX20
 template <class _BidIt>
-_NODISCARD auto operator<=>(const sub_match<_BidIt>& _Left, const iter_value_t<_BidIt>& _Right) {
+_NODISCARD auto operator<=>(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>& _Right) {
     return static_cast<typename sub_match<_BidIt>::_Comparison_category>(
         _Left._Compare(_STD addressof(_Right), 1) <=> 0);
 }
@@ -934,62 +934,62 @@ _NODISCARD auto operator<=>(const sub_match<_BidIt>& _Left, const iter_value_t<_
 // Overload resolution prefers implicit conversions over re-writes.
 // In C++20 mode the only required comparison operators should be == and <=>.
 template <class _BidIt>
-_NODISCARD auto operator<=>(const iter_value_t<_BidIt>& _Left, const sub_match<_BidIt>& _Right) {
+_NODISCARD auto operator<=>(const _Iter_value_t<_BidIt>& _Left, const sub_match<_BidIt>& _Right) {
     return static_cast<typename sub_match<_BidIt>::_Comparison_category>(0 <=> (_Right <=> _Left));
 }
 
 template <class _BidIt>
-_NODISCARD bool operator==(const iter_value_t<_BidIt>& _Left, const sub_match<_BidIt>& _Right) {
+_NODISCARD bool operator==(const _Iter_value_t<_BidIt>& _Left, const sub_match<_BidIt>& _Right) {
     return _Right._Match_equal(_STD addressof(_Left), 1);
 }
 
 template <class _BidIt>
-_NODISCARD bool operator!=(const iter_value_t<_BidIt>& _Left, const sub_match<_BidIt>& _Right) {
+_NODISCARD bool operator!=(const _Iter_value_t<_BidIt>& _Left, const sub_match<_BidIt>& _Right) {
     return !(_Left == _Right);
 }
 
 template <class _BidIt>
-_NODISCARD bool operator<(const iter_value_t<_BidIt>& _Left, const sub_match<_BidIt>& _Right) {
+_NODISCARD bool operator<(const _Iter_value_t<_BidIt>& _Left, const sub_match<_BidIt>& _Right) {
     return (_Left <=> _Right) < 0;
 }
 
 template <class _BidIt>
-_NODISCARD bool operator>(const iter_value_t<_BidIt>& _Left, const sub_match<_BidIt>& _Right) {
+_NODISCARD bool operator>(const _Iter_value_t<_BidIt>& _Left, const sub_match<_BidIt>& _Right) {
     return (_Left <=> _Right) > 0;
 }
 
 template <class _BidIt>
-_NODISCARD bool operator<=(const iter_value_t<_BidIt>& _Left, const sub_match<_BidIt>& _Right) {
+_NODISCARD bool operator<=(const _Iter_value_t<_BidIt>& _Left, const sub_match<_BidIt>& _Right) {
     return (_Left <=> _Right) <= 0;
 }
 
 template <class _BidIt>
-_NODISCARD bool operator>=(const iter_value_t<_BidIt>& _Left, const sub_match<_BidIt>& _Right) {
+_NODISCARD bool operator>=(const _Iter_value_t<_BidIt>& _Left, const sub_match<_BidIt>& _Right) {
     return (_Left <=> _Right) >= 0;
 }
 
 template <class _BidIt>
-_NODISCARD bool operator!=(const sub_match<_BidIt>& _Left, const iter_value_t<_BidIt>& _Right) {
+_NODISCARD bool operator!=(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>& _Right) {
     return !(_Left == _Right);
 }
 
 template <class _BidIt>
-_NODISCARD bool operator<(const sub_match<_BidIt>& _Left, const iter_value_t<_BidIt>& _Right) {
+_NODISCARD bool operator<(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>& _Right) {
     return (_Left <=> _Right) < 0;
 }
 
 template <class _BidIt>
-_NODISCARD bool operator>(const sub_match<_BidIt>& _Left, const iter_value_t<_BidIt>& _Right) {
+_NODISCARD bool operator>(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>& _Right) {
     return (_Left <=> _Right) > 0;
 }
 
 template <class _BidIt>
-_NODISCARD bool operator<=(const sub_match<_BidIt>& _Left, const iter_value_t<_BidIt>& _Right) {
+_NODISCARD bool operator<=(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>& _Right) {
     return (_Left <=> _Right) <= 0;
 }
 
 template <class _BidIt>
-_NODISCARD bool operator>=(const sub_match<_BidIt>& _Left, const iter_value_t<_BidIt>& _Right) {
+_NODISCARD bool operator>=(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>& _Right) {
     return (_Left <=> _Right) >= 0;
 }
 #endif // TRANSITION, VSO-900973
@@ -1060,7 +1060,7 @@ _NODISCARD bool operator==(
 #if _HAS_CXX20
 template <class _BidIt, class _Traits, class _Alloc>
 _NODISCARD auto operator<=>(
-    const sub_match<_BidIt>& _Left, const basic_string<iter_value_t<_BidIt>, _Traits, _Alloc>& _Right) {
+    const sub_match<_BidIt>& _Left, const basic_string<_Iter_value_t<_BidIt>, _Traits, _Alloc>& _Right) {
     return static_cast<typename sub_match<_BidIt>::_Comparison_category>(_Left.compare(_Right) <=> 0);
 }
 
@@ -1069,73 +1069,73 @@ _NODISCARD auto operator<=>(
 // In C++20 mode the only required comparison operators should be == and <=>.
 template <class _BidIt, class _Traits, class _Alloc>
 _NODISCARD auto operator<=>(
-    const basic_string<iter_value_t<_BidIt>, _Traits, _Alloc>& _Left, const sub_match<_BidIt>& _Right) {
+    const basic_string<_Iter_value_t<_BidIt>, _Traits, _Alloc>& _Left, const sub_match<_BidIt>& _Right) {
     return static_cast<typename sub_match<_BidIt>::_Comparison_category>(0 <=> (_Right <=> _Left));
 }
 
 template <class _BidIt, class _Traits, class _Alloc>
 _NODISCARD bool operator!=(
-    const sub_match<_BidIt>& _Left, const basic_string<iter_value_t<_BidIt>, _Traits, _Alloc>& _Right) {
+    const sub_match<_BidIt>& _Left, const basic_string<_Iter_value_t<_BidIt>, _Traits, _Alloc>& _Right) {
     return !(_Left == _Right);
 }
 
 template <class _BidIt, class _Traits, class _Alloc>
 _NODISCARD bool operator<(
-    const sub_match<_BidIt>& _Left, const basic_string<iter_value_t<_BidIt>, _Traits, _Alloc>& _Right) {
+    const sub_match<_BidIt>& _Left, const basic_string<_Iter_value_t<_BidIt>, _Traits, _Alloc>& _Right) {
     return (_Left <=> _Right) < 0;
 }
 
 template <class _BidIt, class _Traits, class _Alloc>
 _NODISCARD bool operator>(
-    const sub_match<_BidIt>& _Left, const basic_string<iter_value_t<_BidIt>, _Traits, _Alloc>& _Right) {
+    const sub_match<_BidIt>& _Left, const basic_string<_Iter_value_t<_BidIt>, _Traits, _Alloc>& _Right) {
     return (_Left <=> _Right) > 0;
 }
 
 template <class _BidIt, class _Traits, class _Alloc>
 _NODISCARD bool operator<=(
-    const sub_match<_BidIt>& _Left, const basic_string<iter_value_t<_BidIt>, _Traits, _Alloc>& _Right) {
+    const sub_match<_BidIt>& _Left, const basic_string<_Iter_value_t<_BidIt>, _Traits, _Alloc>& _Right) {
     return (_Left <=> _Right) <= 0;
 }
 
 template <class _BidIt, class _Traits, class _Alloc>
 _NODISCARD bool operator>=(
-    const sub_match<_BidIt>& _Left, const basic_string<iter_value_t<_BidIt>, _Traits, _Alloc>& _Right) {
+    const sub_match<_BidIt>& _Left, const basic_string<_Iter_value_t<_BidIt>, _Traits, _Alloc>& _Right) {
     return (_Left <=> _Right) >= 0;
 }
 
 template <class _BidIt, class _Traits, class _Alloc>
 _NODISCARD bool operator==(
-    const basic_string<iter_value_t<_BidIt>, _Traits, _Alloc>& _Left, const sub_match<_BidIt>& _Right) {
+    const basic_string<_Iter_value_t<_BidIt>, _Traits, _Alloc>& _Left, const sub_match<_BidIt>& _Right) {
     return _Right._Match_equal(_Left.data(), _Left.size());
 }
 
 template <class _BidIt, class _Traits, class _Alloc>
 _NODISCARD bool operator!=(
-    const basic_string<iter_value_t<_BidIt>, _Traits, _Alloc>& _Left, const sub_match<_BidIt>& _Right) {
+    const basic_string<_Iter_value_t<_BidIt>, _Traits, _Alloc>& _Left, const sub_match<_BidIt>& _Right) {
     return !(_Left == _Right);
 }
 
 template <class _BidIt, class _Traits, class _Alloc>
 _NODISCARD bool operator<(
-    const basic_string<iter_value_t<_BidIt>, _Traits, _Alloc>& _Left, const sub_match<_BidIt>& _Right) {
+    const basic_string<_Iter_value_t<_BidIt>, _Traits, _Alloc>& _Left, const sub_match<_BidIt>& _Right) {
     return (_Left <=> _Right) < 0;
 }
 
 template <class _BidIt, class _Traits, class _Alloc>
 _NODISCARD bool operator>(
-    const basic_string<iter_value_t<_BidIt>, _Traits, _Alloc>& _Left, const sub_match<_BidIt>& _Right) {
+    const basic_string<_Iter_value_t<_BidIt>, _Traits, _Alloc>& _Left, const sub_match<_BidIt>& _Right) {
     return (_Left <=> _Right) > 0;
 }
 
 template <class _BidIt, class _Traits, class _Alloc>
 _NODISCARD bool operator<=(
-    const basic_string<iter_value_t<_BidIt>, _Traits, _Alloc>& _Left, const sub_match<_BidIt>& _Right) {
+    const basic_string<_Iter_value_t<_BidIt>, _Traits, _Alloc>& _Left, const sub_match<_BidIt>& _Right) {
     return (_Left <=> _Right) <= 0;
 }
 
 template <class _BidIt, class _Traits, class _Alloc>
 _NODISCARD bool operator>=(
-    const basic_string<iter_value_t<_BidIt>, _Traits, _Alloc>& _Left, const sub_match<_BidIt>& _Right) {
+    const basic_string<_Iter_value_t<_BidIt>, _Traits, _Alloc>& _Left, const sub_match<_BidIt>& _Right) {
     return (_Left <=> _Right) >= 0;
 }
 #endif // TRANSITION, VSO-900973
