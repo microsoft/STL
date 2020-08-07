@@ -363,7 +363,7 @@ _Smtx_t* __stdcall __std_atomic_get_mutex(const void* const _Key) noexcept {
 
     static _Table_entry _Table[_Table_size]{};
 
-    auto _Index = reinterpret_cast<const std::uintptr_t>(_Key);
+    auto _Index = reinterpret_cast<std::uintptr_t>(_Key);
     _Index ^= _Index >> (_Table_size_power * 2);
     _Index ^= _Index >> _Table_size_power;
     return &_Table[_Index & _Table_index_mask]._Mutex;
