@@ -1000,7 +1000,7 @@ _NODISCARD bool operator==(const _Iter_value_t<_BidIt>& _Left, const sub_match<_
 }
 
 template <class _BidIt>
-_NODISCARD bool operator!=(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>& _Right) {
+_NODISCARD bool operator!=(const _Iter_value_t<_BidIt>& _Left, const sub_match<_BidIt>& _Right) {
     return !(_Left == _Right);
 }
 
