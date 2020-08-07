@@ -80,7 +80,7 @@ public:
 
         // Instead of just calling notify_all(), can do either of the optimizations:
         //  * notify_one() on _Update == 1
-        //  * don't notify on _Counter == 0
+        //  * don't notify on _Counter != 0
         // But not both. The former is the design choice.
 
         if (_Update == 1) {
