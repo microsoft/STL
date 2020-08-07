@@ -83,7 +83,7 @@ public:
         //  * don't notify on _Counter == 0
         // But not both. The former is the design choice.
 
-        if (_Update == 1)
+        if (_Update == 1) {
             _Counter.notify_one();
         } else {
             _Counter.notify_all();
