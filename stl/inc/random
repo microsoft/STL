@@ -2290,7 +2290,7 @@ private:
             _Ty _Res;
             _Ty1 _Yx;
             for (;;) { // generate a tentative value
-                _Yx  = static_cast<_Ty1>(_CSTD tan(_Pi * _NRAND(_Eng, _Ty1)));
+                _Yx = static_cast<_Ty1>(_CSTD tan(_Pi * _NRAND(_Eng, _Ty1)));
                 const _Ty1 _Mx{_Par0._Sqrt * _Yx + _Par0._Mean};
                 if (0.0 <= _Mx) {
                     _Res = static_cast<_Ty>(_Mx);
@@ -2473,7 +2473,7 @@ private:
             for (;;) { // generate and reject
                 _Ty1 _Yx;
                 for (;;) { // generate a tentative value
-                    _Yx  = static_cast<_Ty1>(_CSTD tan(_Pi * _NRAND(_Eng, _Ty1)));
+                    _Yx = static_cast<_Ty1>(_CSTD tan(_Pi * _NRAND(_Eng, _Ty1)));
                     const _Ty1 _Mx{_Par0._Sqrt * _Yx + _Par0._Mean};
                     if (0.0 <= _Mx && _Mx < _Par0._Tx + _Ty{1}) {
                         _Res = static_cast<_Ty>(_Mx);
