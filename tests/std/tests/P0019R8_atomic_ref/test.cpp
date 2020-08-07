@@ -6,13 +6,15 @@
 #include <cstddef>
 #include <cstdint>
 #include <execution>
+#include <functional>
+#include <numeric>
 #include <vector>
 
 struct bigint {
     int value;
     int more_value[10];
 
-    bigint(int value = 0) : value(value) {}
+    bigint(int value_ = 0) : value(value_) {}
 
     operator int() const {
         return value;
@@ -23,7 +25,7 @@ struct int128 {
     long long value;
     long long more_value;
 
-    int128(int value = 0) : value(value), more_value(0) {}
+    int128(int value_ = 0) : value(value_), more_value(0) {}
 
     operator int() const {
         return static_cast<int>(value);
@@ -50,7 +52,7 @@ void test_ops() {
     refs.reserve(total);
     for (std::size_t i = 0; i != repetitions; ++i) {
         for (auto& val : vals) {
-            refs.push_back(std::atomic_ref<ValueType>(val));
+            refs.emplace_back(val);
         }
     }
 

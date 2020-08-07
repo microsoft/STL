@@ -201,11 +201,11 @@ namespace {
             _ComparandResult[1] = _Destination[1];
             _Destination[0]     = _ExchangeLow;
             _Destination[1]     = _ExchangeHigh;
-            return true;
+            return static_cast<unsigned char>(true);
         } else {
             _ComparandResult[0] = _Destination[0];
             _ComparandResult[1] = _Destination[1];
-            return false;
+            return static_cast<unsigned char>(false);
         }
     }
 } // unnamed namespace
