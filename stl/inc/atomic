@@ -1936,7 +1936,7 @@ struct _Atomic_floating<_Ty&> : _Atomic_storage<_Ty&> {
     _TVal fetch_add(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) const noexcept {
         _TVal _Temp{this->load(memory_order_relaxed)};
         while (!const_cast<_Base*>(static_cast<const _Base*>(this))
-                   ->compare_exchange_strong(_Temp, _Temp + _Operand, _Order)) { // keep trying
+                    ->compare_exchange_strong(_Temp, _Temp + _Operand, _Order)) { // keep trying
         }
 
         return _Temp;
