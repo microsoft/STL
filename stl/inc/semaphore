@@ -92,7 +92,9 @@ public:
 
         const ptrdiff_t _Waiting_upper_bound = _Waiting.load(memory_order_seq_cst);
 
-        if (_Waiting_upper_bound > _Update) {
+        if (_Waiting_upper_bound == 0) {
+            // Definitely no one is waiting
+        } else if (_Waiting_upper_bound > _Update) {
             // Wake at most _Update. Though repeated notify_one() is somewhat less efficient than single notify_all(),
             // the amount of OS calls is still the same; the benefit from trying not to wake unnecessary threads
             // is expected to be greater than the loss on extra calls and atomic operations.
