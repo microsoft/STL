@@ -94,16 +94,16 @@ public:
 
         if (_Waiting_upper_bound == 0) {
             // Definitely no one is waiting
-        } else if (_Waiting_upper_bound > _Update) {
+        } else if (_Waiting_upper_bound <= _Update) {
+            // No more waiting threads than update, can wake everyone.
+            _Counter.notify_all();
+        } else {
             // Wake at most _Update. Though repeated notify_one() is somewhat less efficient than single notify_all(),
             // the amount of OS calls is still the same; the benefit from trying not to wake unnecessary threads
             // is expected to be greater than the loss on extra calls and atomic operations.
             for (ptrdiff_t _Thd = _Update; _Thd != 0; --_Thd) {
                 _Counter.notify_one();
             }
-        } else {
-            // No more waiting threads than update, can wake everyone.
-            _Counter.notify_all();
         }
     }
 
