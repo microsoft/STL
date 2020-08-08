@@ -91,6 +91,17 @@ namespace _Float_multi_prec {
     }
 #endif // defined(_M_IX86) || defined(_M_X64)
 
+#if defined(_M_ARM64)
+    _NODISCARD inline double _Sqr_error_arm64_neon(const double _Xval, const double _Prod0) noexcept {
+        const float64x1_t _Mx      = vld1_f64(&_Xval);
+        const float64x1_t _Mprod0  = vld1_f64(&_Prod0);
+        const float64x1_t _Mresult = vfma_f64(vneg_f64(_Mprod0), _Mx, _Mx);
+        double _Result;
+        vst1_f64(&_Result, _Mresult);
+        return _Result;
+    }
+#endif // defined(_M_ARM64)
+
     _NODISCARD inline constexpr _Fmp_t<double, 2> _Sqr_x2(const double _Xval) noexcept {
         const double _Prod0 = _Xval * _Xval;
 
@@ -103,9 +114,13 @@ namespace _Float_multi_prec {
             } else {
                 return {_Prod0, _Sqr_error_fallback(_Xval, _Prod0)};
             }
-#else // ^^^ x86, x64 / arm, arm64 vvv
+#elif defined(_M_ARM64) // ^^^ x86, x64 / arm64 vvv
+            // https://docs.microsoft.com/en-us/cpp/build/arm64-windows-abi-conventions?view=vs-2019#base-requirements
+            // Both floating-point and NEON support are presumed to be present in hardware.
+            return {_Prod0, _Sqr_error_arm64_neon(_Xval, _Prod0)};
+#else // ^^^ arm64 / arm vvv
             return {_Prod0, _Sqr_error_fallback(_Xval, _Prod0)};
-#endif // ^^^ arm, arm64 ^^^
+#endif // ^^^ arm ^^^
         }
     }
 } // namespace _Float_multi_prec
