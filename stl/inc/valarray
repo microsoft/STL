@@ -222,7 +222,7 @@ public:
 
     valarray& operator*=(const _Ty& _Right) {
         const size_t _Size = size();
-        for (size_t _Idx = 0; _Size; ++_Idx) {
+        for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _Myptr[_Idx] *= _Right;
         }
         return *this;
@@ -431,8 +431,9 @@ public:
     }
 
     _NODISCARD _Ty(max)() const {
+        const size_t _Size = size();
         _Ty _Max = _Myptr[0];
-        for (size_t _Idx = 1; _Idx < size(); ++_Idx) {
+        for (size_t _Idx = 1; _Idx < _Size; ++_Idx) {
             if (_Max < _Myptr[_Idx]) {
                 _Max = _Myptr[_Idx];
             }
@@ -446,7 +447,7 @@ public:
         const size_t _Size = size();
         valarray<_Ty> _Ans(_Size);
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-            _Ans[_Idx] = (0 < _Count && size() - _Idx <= static_cast<size_t>(_Count))
+            _Ans[_Idx] = (0 < _Count && _Size - _Idx <= static_cast<size_t>(_Count))
                                  || (_Count < 0 && _Idx < static_cast<size_t>(-_Count))
                              ? _Dflt
                              : _Myptr[_Idx + _Count];
@@ -455,23 +456,23 @@ public:
     }
 
     _NODISCARD valarray cshift(int _Count) const {
-        if (size() != 0) {
+        const size_t _Size = size();
+        if (_Size != 0) {
             if (_Count < 0) { // right shift
-                if (size() < size_t{0} - _Count) {
-                    _Count = static_cast<int>(size() - (size_t{0} - _Count - size()) % size());
+                if (_Size < size_t{0} - _Count) {
+                    _Count = static_cast<int>(_Size - (size_t{0} - _Count - _Size) % _Size);
                 } else {
-                    _Count = static_cast<int>(size() + _Count);
+                    _Count = static_cast<int>(_Size + _Count);
                 }
-            } else if (size() <= static_cast<size_t>(_Count)) {
-                _Count %= size();
+            } else if (_Size <= static_cast<size_t>(_Count)) {
+                _Count %= _Size;
             }
         }
 
-        const size_t _Size = size();
         valarray<_Ty> _Ans(_Size);
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _Ans[_Idx] =
-                size() - _Idx <= static_cast<size_t>(_Count) ? _Myptr[_Idx - size() + _Count] : _Myptr[_Idx + _Count];
+                _Size - _Idx <= static_cast<size_t>(_Count) ? _Myptr[_Idx - _Size + _Count] : _Myptr[_Idx + _Count];
         }
         return _Ans;
     }
@@ -541,8 +542,8 @@ private:
     }
 
     void _Assign(size_t _Newsize, const _Ty* _Ptr) {
-        if (size() == _Newsize) {
-            const size_t _Size = size();
+        const size_t _Size = size();
+        if (_Size == _Newsize) {
             for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
                 _Myptr[_Idx] = _Ptr[_Idx];
             }
@@ -1494,8 +1495,8 @@ public:
 
     size_t _Off(_Sizarray& _Indexarr) const {
         size_t _Idx, _Ans = _Start;
-
-        for (_Idx = 0; _Idx < _Indexarr.size(); ++_Idx) {
+        const size_t _Size = _Indexarr.size();
+        for (_Idx = 0; _Idx < _Size; ++_Idx) {
             _Ans += _Indexarr[_Idx] * _Stride[_Idx]; // compute offset
         }
 
@@ -1511,12 +1512,13 @@ public:
     }
 
     _NODISCARD size_t _Totlen() const {
-        if (_Len.size() == 0) {
+        const size_t _Size = _Len.size();
+        if (_Size == 0) {
             return 0;
         }
 
         size_t _Count = _Len[0];
-        for (size_t _Idx = 1; _Idx < _Len.size(); ++_Idx) {
+        for (size_t _Idx = 1; _Idx < _Size; ++_Idx) {
             _Count *= _Len[_Idx];
         }
 
@@ -1774,7 +1776,8 @@ public:
 
     _NODISCARD size_t _Totlen() const {
         size_t _Count = 0;
-        for (size_t _Idx = 0; _Idx < _Mybool.size(); ++_Idx) {
+        const size_t _Size = _Mybool.size();
+        for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             if (_Mybool[_Idx]) {
                 ++_Count;
             }
