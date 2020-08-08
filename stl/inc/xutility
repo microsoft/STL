@@ -4912,9 +4912,6 @@ template <class _Elem1, class _Elem2,
            && _Is_nonbool_integral<_Elem2> && !is_volatile_v<_Elem2>>
 _INLINE_VAR constexpr bool _Can_memcmp_elements = static_cast<_Elem1>(-1) == static_cast<_Elem2>(-1);
 
-template <bool _False>
-_INLINE_VAR constexpr bool _Can_memcmp_elements<bool, bool, _False> = true;
-
 #ifdef __cpp_lib_byte
 // Allow memcmping std::byte.
 // inline is required here as explicit specializations of variable templates are problematic in C++14.
@@ -4930,7 +4927,7 @@ template <class _Ty1, class _Ty2>
 _INLINE_VAR constexpr bool _Can_memcmp_elements<_Ty1*, _Ty2*, false> = is_same_v<remove_cv_t<_Ty1>, remove_cv_t<_Ty2>>;
 
 template <class _Elem1, class _Elem2>
-_INLINE_VAR constexpr bool _Can_memcmp_elements<_Elem1, _Elem2, false> = false;
+_INLINE_VAR constexpr bool _Can_memcmp_elements<_Elem1, _Elem2, false> = is_same_v<_Elem1, bool> && is_same_v<_Elem2, bool>;
 
 // _Pred_is_consistent_with_memcmp<_Elem1, _Elem2, _Pr> reports whether `_Pr(_Elem1, _Elem2)` returns
 // `_Elem1 == _Elem2` without performing any type conversions that could affect the memcmp optimization.
