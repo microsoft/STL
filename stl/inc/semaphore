@@ -118,6 +118,10 @@ public:
         for (;;) {
             while (_Current == 0) {
                 _Waiting.fetch_add(1, memory_order_seq_cst);
+                _Current = _Counter.load(memory_order_seq_cst);
+                if (_Current != 0) {
+                    break;
+                }
                 __std_atomic_wait_direct(&_Counter, &_Current, sizeof(_Current), _Atomic_wait_no_timeout);
                 _Current = _Counter.load(memory_order_relaxed);
             }
@@ -150,6 +154,10 @@ public:
                     return false;
                 }
                 _Waiting.fetch_add(1, memory_order_seq_cst);
+                _Current = _Counter.load(memory_order_seq_cst);
+                if (_Current != 0) {
+                    break;
+                }
                 __std_atomic_wait_direct(&_Counter, &_Current, sizeof(_Current), _Remaining_timeout);
                 _Current = _Counter.load(memory_order_relaxed);
             }
@@ -171,6 +179,10 @@ public:
                     return false;
                 }
                 _Waiting.fetch_add(1, memory_order_seq_cst);
+                _Current = _Counter.load(memory_order_seq_cst);
+                if (_Current != 0) {
+                    break;
+                }
                 __std_atomic_wait_direct(&_Counter, &_Current, sizeof(_Current), _Remaining_timeout);
                 _Current = _Counter.load(memory_order_relaxed);
             }
