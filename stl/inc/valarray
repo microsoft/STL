@@ -1551,13 +1551,6 @@ private:
     _Ty* _Myptr; // pointer to valarray contents
 };
 
-// MACROS FOR mask_array
-#define _MOP(RHS) /* apply RHS(_Idx) to mask_array */                                  \
-    size_t _Size = _Mybool.size();                                                     \
-    for (size_t _Idx = 0, _Off = _Start_off(); _Off < _Size; _Off = _Next_off(_Off)) { \
-        _Myptr[_Off] RHS, ++_Idx;                                                      \
-    }
-
 // CLASS TEMPLATE mask_array
 template <class _Ty>
 class mask_array { // define a subset of a valarray with an array of mask bits
@@ -1565,51 +1558,87 @@ public:
     using value_type = _Ty;
 
     void operator=(const valarray<_Ty>& _Right) const {
-        _MOP(= _Right[_Idx]);
+        size_t _Size = _Mybool.size();
+        for (size_t _Idx = 0, _Off = _Start_off(); _Off < _Size; _Off = _Next_off(_Off)) {
+            _Myptr[_Off] = _Right[_Idx], ++_Idx;
+        }
     }
 
     void operator=(const _Ty& _Right) const {
-        _MOP(= _Right);
+        size_t _Size = _Mybool.size();
+        for (size_t _Off = _Start_off(); _Off < _Size; _Off = _Next_off(_Off)) {
+            _Myptr[_Off] = _Right;
+        }
     }
 
     void operator*=(const valarray<_Ty>& _Right) const { // multiply masked array by valarray
-        _MOP(*= _Right[_Idx]);
+        size_t _Size = _Mybool.size();
+        for (size_t _Idx = 0, _Off = _Start_off(); _Off < _Size; _Off = _Next_off(_Off)) {
+            _Myptr[_Off] *= _Right[_Idx], ++_Idx;
+        }
     }
 
     void operator/=(const valarray<_Ty>& _Right) const { // divide masked array by valarray
-        _MOP(/= _Right[_Idx]);
+        size_t _Size = _Mybool.size();
+        for (size_t _Idx = 0, _Off = _Start_off(); _Off < _Size; _Off = _Next_off(_Off)) {
+            _Myptr[_Off] /= _Right[_Idx], ++_Idx;
+        }
     }
 
     void operator%=(const valarray<_Ty>& _Right) const { // remainder masked array by valarray
-        _MOP(%= _Right[_Idx]);
+        size_t _Size = _Mybool.size();
+        for (size_t _Idx = 0, _Off = _Start_off(); _Off < _Size; _Off = _Next_off(_Off)) {
+            _Myptr[_Off] %= _Right[_Idx], ++_Idx;
+        }
     }
 
     void operator+=(const valarray<_Ty>& _Right) const { // add valarray to masked array
-        _MOP(+= _Right[_Idx]);
+        size_t _Size = _Mybool.size();
+        for (size_t _Idx = 0, _Off = _Start_off(); _Off < _Size; _Off = _Next_off(_Off)) {
+            _Myptr[_Off] += _Right[_Idx], ++_Idx;
+        }
     }
 
     void operator-=(const valarray<_Ty>& _Right) const { // subtract valarray from masked array
-        _MOP(-= _Right[_Idx]);
+        size_t _Size = _Mybool.size();
+        for (size_t _Idx = 0, _Off = _Start_off(); _Off < _Size; _Off = _Next_off(_Off)) {
+            _Myptr[_Off] -= _Right[_Idx], ++_Idx;
+        }
     }
 
     void operator^=(const valarray<_Ty>& _Right) const { // XOR valarray into masked array
-        _MOP(^= _Right[_Idx]);
+        size_t _Size = _Mybool.size();
+        for (size_t _Idx = 0, _Off = _Start_off(); _Off < _Size; _Off = _Next_off(_Off)) {
+            _Myptr[_Off] ^= _Right[_Idx], ++_Idx;
+        }
     }
 
     void operator&=(const valarray<_Ty>& _Right) const { // OR valarray into masked array
-        _MOP(&= _Right[_Idx]);
+        size_t _Size = _Mybool.size();
+        for (size_t _Idx = 0, _Off = _Start_off(); _Off < _Size; _Off = _Next_off(_Off)) {
+            _Myptr[_Off] &= _Right[_Idx], ++_Idx;
+        }
     }
 
     void operator|=(const valarray<_Ty>& _Right) const { // OR valarray into masked array
-        _MOP(|= _Right[_Idx]);
+        size_t _Size = _Mybool.size();
+        for (size_t _Idx = 0, _Off = _Start_off(); _Off < _Size; _Off = _Next_off(_Off)) {
+            _Myptr[_Off] |= _Right[_Idx], ++_Idx;
+        }
     }
 
     void operator<<=(const valarray<_Ty>& _Right) const { // left shift masked array by valarray
-        _MOP(<<= _Right[_Idx]);
+        size_t _Size = _Mybool.size();
+        for (size_t _Idx = 0, _Off = _Start_off(); _Off < _Size; _Off = _Next_off(_Off)) {
+            _Myptr[_Off] <<= _Right[_Idx], ++_Idx;
+        }
     }
 
     void operator>>=(const valarray<_Ty>& _Right) const { // right shift masked array by valarray
-        _MOP(>>= _Right[_Idx]);
+        size_t _Size = _Mybool.size();
+        for (size_t _Idx = 0, _Off = _Start_off(); _Off < _Size; _Off = _Next_off(_Off)) {
+            _Myptr[_Off] >>= _Right[_Idx], ++_Idx;
+        }
     }
 
     _NODISCARD _Ty& _Data(size_t _Idx) const {
