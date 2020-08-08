@@ -106,6 +106,7 @@ public:
     }
 
     void _Wait(const unsigned long _Remaining_timeout) noexcept {
+        // See the comment in release()
         _Waiting.fetch_add(1, memory_order_seq_cst);
         ptrdiff_t _Current = _Counter.load(memory_order_seq_cst);
         if (_Current == 0) {
