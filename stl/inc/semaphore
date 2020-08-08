@@ -56,11 +56,11 @@ template <ptrdiff_t _Least_max_value = INT_MAX>
 class counting_semaphore {
 public:
     _NODISCARD static constexpr ptrdiff_t(max)() noexcept {
-        return (1ULL << (sizeof(_Counter_type) * CHAR_BIT - 1)) - 1;
+        return (1ULL << (sizeof(ptrdiff_t) * CHAR_BIT - 1)) - 1;
     }
 
     constexpr explicit counting_semaphore(const ptrdiff_t _Desired) noexcept /* strengthened */
-        : _Counter(static_cast<_Counter_type>(_Desired)) {
+        : _Counter(static_cast<ptrdiff_t>(_Desired)) {
         _STL_VERIFY(_Desired >= 0 && _Desired <= (max)(),
             "Precondition: desired >= 0, and desired <= max() (N4861 [thread.sema.cnt]/5)");
     }
@@ -74,68 +74,88 @@ public:
         }
         _STL_VERIFY(_Update > 0 && _Update <= (max)(),
             "Precondition: update >= 0, and update <= max() - counter (N4861 [thread.sema.cnt]/8)");
-        // TRANSITION, GH-1133: should be memory_order_release
-        const _Counter_type _Prev = _Counter.fetch_add(static_cast<_Counter_type>(_Update), memory_order_seq_cst);
+
+        // We need to notify (wake) at least _Update waiting threads.
+        // Errors towards waking more cannot be always avoided, but they are performance issue.
+        // Errors towards waking should be avoided, as they are correctness issue.
+
+        // release thread: Increment semaphore counter, then load waiting counter;
+        // acquire thread: Increment waiting counter, then load semaphore counter;
+        // memory_order_seq_cst for all four operations guarantees than either release thread loads
+        // the incremented value, or acquire thread loads the incremented value, or both, but not none.
+        // memory_order_seq_cst might be suprefulous for some hardware mappings of C++ memory model modes,
+        // but from the point of C++ memory model itself it is needed, weaker orders don't work.
+
+        const ptrdiff_t _Prev = _Counter.fetch_add(static_cast<ptrdiff_t>(_Update), memory_order_seq_cst);
         _STL_VERIFY(_Prev + _Update > 0, "Precondition: update <= max() - counter (N4861 [thread.sema.cnt]/8)");
 
-        // Instead of just calling notify_all(), can do either of the optimizations:
-        //  * notify_one() on _Update == 1
-        //  * don't notify on _Counter != 0
-        // But not both. The former is the design choice.
+        ptrdiff_t _Prev_waiting = _Waiting.load(memory_order_seq_cst);
+        for (;;) {
+            if (_Prev_waiting == 0) {
+                return;
+            }
+            ptrdiff_t _Next_waiting = _Prev_waiting > _Update ? _Prev_waiting - _Update : 0;
+            if (_Waiting.compare_exchange_weak(_Prev_waiting, _Next_waiting, memory_order_seq_cst)) {
+                break;
+            }
+        }
 
-        if (_Update == 1) {
-            _Counter.notify_one();
+        if (_Prev_waiting > _Update) {
+            // Wake at most _Update. Though repeated notify_one is somewhat less efficient than signle notify_all,
+            // the amount of OS calls is still the same; the benefit from trying not to wake unnecessary threads
+            // is expected to be greater than the loss on extra calls and atomic operations.
+            for (ptrdiff_t _Thd = _Update; _Thd != 0; --_Thd) {
+                _Counter.notify_one();
+            }
         } else {
+            // No more waiting threads than update, can wake everyone.
             _Counter.notify_all();
         }
     }
 
     void acquire() noexcept /* strengthened */ {
-        _Counter_type _Current = _Counter.load(memory_order_relaxed);
+        ptrdiff_t _Current = _Counter.load(memory_order_relaxed);
         for (;;) {
             while (_Current == 0) {
-                // Even though atomic wait does not return spuriously, need while loop since load may still load zero
-                // And since have to use loop anyway, use more direct API that wakes spuriosly
+                _Waiting.fetch_add(1, memory_order_seq_cst);
                 __std_atomic_wait_direct(&_Counter, &_Current, sizeof(_Current), _Atomic_wait_no_timeout);
                 _Current = _Counter.load(memory_order_relaxed);
             }
             _STL_VERIFY(_Current > 0, "Invariant: semaphore counter is non-negative, "
                                       "possibly caused by preconditions violation (N4861 [thread.sema.cnt]/8)");
-            // TRANSITION, GH-1133: should be memory_order_acquire, memory_order_relaxed
-            if (_Counter.compare_exchange_weak(_Current, _Current - 1, memory_order_seq_cst, memory_order_relaxed)) {
+            if (_Counter.compare_exchange_weak(_Current, _Current - 1, memory_order_seq_cst)) {
                 break;
             }
         }
     }
 
     _NODISCARD bool try_acquire() noexcept {
-        _Counter_type _Current = _Counter.load(memory_order_relaxed);
+        ptrdiff_t _Current = _Counter.load(memory_order_relaxed);
         if (_Current == 0) {
             return false;
         }
         _STL_VERIFY(_Current > 0, "Invariant: semaphore counter is non-negative, "
                                   "possibly caused by preconditions violation (N4861 [thread.sema.cnt]/8)");
-        // TRANSITION, GH-1133: should be memory_order_acquire, memory_order_relaxed
-        return _Counter.compare_exchange_weak(_Current, _Current - 1, memory_order_seq_cst, memory_order_relaxed);
+        return _Counter.compare_exchange_weak(_Current, _Current - 1, memory_order_seq_cst);
     }
 
     template <class _Rep, class _Period>
     _NODISCARD bool try_acquire_for(const chrono::duration<_Rep, _Period>& _Rel_time) {
         auto _Deadline         = _Semaphore_deadline(_Rel_time);
-        _Counter_type _Current = _Counter.load(memory_order_relaxed);
+        ptrdiff_t _Current = _Counter.load(memory_order_relaxed);
         for (;;) {
             while (_Current == 0) {
                 const auto _Remaining_timeout = __std_atomic_wait_get_remaining_timeout(_Deadline);
                 if (_Remaining_timeout == 0) {
                     return false;
                 }
+                _Waiting.fetch_add(1, memory_order_seq_cst);
                 __std_atomic_wait_direct(&_Counter, &_Current, sizeof(_Current), _Remaining_timeout);
                 _Current = _Counter.load(memory_order_relaxed);
             }
             _STL_VERIFY(_Current > 0, "Invariant: semaphore counter is non-negative, "
                                       "possibly caused by preconditions violation (N4861 [thread.sema.cnt]/8)");
-            // TRANSITION, GH-1133: should be memory_order_acquire, memory_order_relaxed
-            if (_Counter.compare_exchange_weak(_Current, _Current - 1, memory_order_seq_cst, memory_order_relaxed)) {
+            if (_Counter.compare_exchange_weak(_Current, _Current - 1, memory_order_seq_cst)) {
                 return true;
             }
         }
@@ -143,29 +163,28 @@ public:
 
     template <class _Clock, class _Duration>
     _NODISCARD bool try_acquire_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
-        _Counter_type _Current = _Counter.load(memory_order_relaxed);
+        ptrdiff_t _Current = _Counter.load(memory_order_relaxed);
         for (;;) {
             while (_Current == 0) {
                 const unsigned long _Remaining_timeout = _Semaphore_remaining_timeout(_Abs_time);
                 if (_Remaining_timeout == 0) {
                     return false;
                 }
+                _Waiting.fetch_add(1, memory_order_seq_cst);
                 __std_atomic_wait_direct(&_Counter, &_Current, sizeof(_Current), _Remaining_timeout);
                 _Current = _Counter.load(memory_order_relaxed);
             }
             _STL_VERIFY(_Current > 0, "Invariant: semaphore counter is non-negative, "
                                       "possibly caused by preconditions violation (N4861 [thread.sema.cnt]/8)");
-            // TRANSITION, GH-1133: should be memory_order_acquire, memory_order_relaxed
-            if (_Counter.compare_exchange_weak(_Current, _Current - 1, memory_order_seq_cst, memory_order_relaxed)) {
+            if (_Counter.compare_exchange_weak(_Current, _Current - 1, memory_order_seq_cst)) {
                 return true;
             }
         }
     }
 
 private:
-    using _Counter_type = conditional_t<_Least_max_value <= SCHAR_MAX, signed char,
-        conditional_t<_Least_max_value <= SHRT_MAX, short, conditional_t<_Least_max_value <= INT_MAX, int, ptrdiff_t>>>;
-    atomic<_Counter_type> _Counter;
+    atomic<ptrdiff_t> _Counter;
+    atomic<ptrdiff_t> _Waiting;
 };
 
 template <>
