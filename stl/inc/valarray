@@ -410,7 +410,7 @@ public:
 
     _NODISCARD _Ty sum() const {
         const size_t _Size = size();
-        _Ty _Sum = _Myptr[0];
+        _Ty _Sum           = _Myptr[0];
         for (size_t _Idx = 1; _Idx < _Size; ++_Idx) {
             _Sum += _Myptr[_Idx];
         }
@@ -420,7 +420,7 @@ public:
 
     _NODISCARD _Ty(min)() const {
         const size_t _Size = size();
-        _Ty _Min = _Myptr[0];
+        _Ty _Min           = _Myptr[0];
         for (size_t _Idx = 1; _Idx < _Size; ++_Idx) {
             if (_Myptr[_Idx] < _Min) {
                 _Min = _Myptr[_Idx];
@@ -432,7 +432,7 @@ public:
 
     _NODISCARD _Ty(max)() const {
         const size_t _Size = size();
-        _Ty _Max = _Myptr[0];
+        _Ty _Max           = _Myptr[0];
         for (size_t _Idx = 1; _Idx < _Size; ++_Idx) {
             if (_Max < _Myptr[_Idx]) {
                 _Max = _Myptr[_Idx];
@@ -1775,7 +1775,7 @@ public:
     }
 
     _NODISCARD size_t _Totlen() const {
-        size_t _Count = 0;
+        size_t _Count      = 0;
         const size_t _Size = _Mybool.size();
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             if (_Mybool[_Idx]) {
