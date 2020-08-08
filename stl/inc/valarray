@@ -1555,9 +1555,7 @@ private:
 #define _MOP(RHS) /* apply RHS(_Idx) to mask_array */                                  \
     size_t _Size = _Mybool.size();                                                     \
     for (size_t _Idx = 0, _Off = _Start_off(); _Off < _Size; _Off = _Next_off(_Off)) { \
-        if (_Mask(_Off)) {                                                             \
-            _Myptr[_Off] RHS, ++_Idx;                                                  \
-        }                                                                              \
+        _Myptr[_Off] RHS, ++_Idx;                                                      \
     }
 
 // CLASS TEMPLATE mask_array
