@@ -57,20 +57,6 @@ _Ty* _Allocate_for_op_delete(size_t _Count) {
 using _Boolarray = valarray<bool>;
 using _Sizarray  = valarray<size_t>;
 
-// MACROS FOR valarray
-#define _VALOP(TYPE, LENGTH, RHS) /* assign RHS(_Idx) to new valarray */ \
-    valarray<TYPE> _Ans(LENGTH);                                         \
-    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {                  \
-        _Ans[_Idx] = RHS;                                                \
-    }                                                                    \
-    return _Ans
-
-#define _VALGOP(RHS) /* apply RHS(_Idx) to valarray */ \
-    for (size_t _Idx = 0; _Idx < size(); ++_Idx) {     \
-        _Myptr[_Idx] RHS;                              \
-    }                                                  \
-    return *this
-
 // CLASS TEMPLATE valarray
 template <class _Ty>
 class valarray { // store array with various indexing options
@@ -173,7 +159,10 @@ public:
     }
 
     valarray& operator=(const _Ty& _Val) {
-        _VALGOP(= _Val);
+        for (size_t _Idx = 0; _Idx < size(); ++_Idx) {
+            _Myptr[_Idx] = _Val;
+        }
+        return *this;
     }
 
     void resize(size_t _Newsize) { // determine new length, filling with _Ty() elements
@@ -195,99 +184,175 @@ public:
     valarray& operator=(const indirect_array<_Ty>& _Indarr); // defined below
 
     _NODISCARD valarray operator+() const {
-        _VALOP(_Ty, size(), +_Myptr[_Idx]);
+        valarray<_Ty> _Ans(size());
+        for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+            _Ans[_Idx] = +_Myptr[_Idx];
+        }
+        return _Ans;
     }
 
     _NODISCARD valarray operator-() const {
-        _VALOP(_Ty, size(), -_Myptr[_Idx]);
+        valarray<_Ty> _Ans(size());
+        for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+            _Ans[_Idx] = -_Myptr[_Idx];
+        }
+        return _Ans;
     }
 
     _NODISCARD valarray operator~() const {
-        _VALOP(_Ty, size(), ~_Myptr[_Idx]);
+        valarray<_Ty> _Ans(size());
+        for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+            _Ans[_Idx] = ~_Myptr[_Idx];
+        }
+        return _Ans;
     }
 
     _NODISCARD _Boolarray operator!() const {
-        _VALOP(bool, size(), !_Myptr[_Idx]);
+        valarray<bool> _Ans(size());
+        for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+            _Ans[_Idx] = !_Myptr[_Idx];
+        }
+        return _Ans;
     }
 
     valarray& operator*=(const _Ty& _Right) {
-        _VALGOP(*= _Right);
+        for (size_t _Idx = 0; _Idx < size(); ++_Idx) {
+            _Myptr[_Idx] *= _Right;
+        }
+        return *this;
     }
 
     valarray& operator/=(const _Ty& _Right) {
-        _VALGOP(/= _Right);
+        for (size_t _Idx = 0; _Idx < size(); ++_Idx) {
+            _Myptr[_Idx] /= _Right;
+        }
+        return *this;
     }
 
     valarray& operator%=(const _Ty& _Right) {
-        _VALGOP(%= _Right);
+        for (size_t _Idx = 0; _Idx < size(); ++_Idx) {
+            _Myptr[_Idx] %= _Right;
+        }
+        return *this;
     }
 
     valarray& operator+=(const _Ty& _Right) {
-        _VALGOP(+= _Right);
+        for (size_t _Idx = 0; _Idx < size(); ++_Idx) {
+            _Myptr[_Idx] += _Right;
+        }
+        return *this;
     }
 
     valarray& operator-=(const _Ty& _Right) {
-        _VALGOP(-= _Right);
+        for (size_t _Idx = 0; _Idx < size(); ++_Idx) {
+            _Myptr[_Idx] -= _Right;
+        }
+        return *this;
     }
 
     valarray& operator^=(const _Ty& _Right) {
-        _VALGOP(^= _Right);
+        for (size_t _Idx = 0; _Idx < size(); ++_Idx) {
+            _Myptr[_Idx] ^= _Right;
+        }
+        return *this;
     }
 
     valarray& operator&=(const _Ty& _Right) {
-        _VALGOP(&= _Right);
+        for (size_t _Idx = 0; _Idx < size(); ++_Idx) {
+            _Myptr[_Idx] &= _Right;
+        }
+        return *this;
     }
 
     valarray& operator|=(const _Ty& _Right) {
-        _VALGOP(|= _Right);
+        for (size_t _Idx = 0; _Idx < size(); ++_Idx) {
+            _Myptr[_Idx] |= _Right;
+        }
+        return *this;
     }
 
     valarray& operator<<=(const _Ty& _Right) {
-        _VALGOP(<<= _Right);
+        for (size_t _Idx = 0; _Idx < size(); ++_Idx) {
+            _Myptr[_Idx] <<= _Right;
+        }
+        return *this;
     }
 
     valarray& operator>>=(const _Ty& _Right) {
-        _VALGOP(>>= _Right);
+        for (size_t _Idx = 0; _Idx < size(); ++_Idx) {
+            _Myptr[_Idx] >>= _Right;
+        }
+        return *this;
     }
 
     valarray& operator*=(const valarray& _Right) {
-        _VALGOP(*= _Right[_Idx]);
+        for (size_t _Idx = 0; _Idx < size(); ++_Idx) {
+            _Myptr[_Idx] *= _Right[_Idx];
+        }
+        return *this;
     }
 
     valarray& operator/=(const valarray& _Right) {
-        _VALGOP(/= _Right[_Idx]);
+        for (size_t _Idx = 0; _Idx < size(); ++_Idx) {
+            _Myptr[_Idx] /= _Right[_Idx];
+        }
+        return *this;
     }
 
     valarray& operator%=(const valarray& _Right) {
-        _VALGOP(%= _Right[_Idx]);
+        for (size_t _Idx = 0; _Idx < size(); ++_Idx) {
+            _Myptr[_Idx] %= _Right[_Idx];
+        }
+        return *this;
     }
 
     valarray& operator+=(const valarray& _Right) {
-        _VALGOP(+= _Right[_Idx]);
+        for (size_t _Idx = 0; _Idx < size(); ++_Idx) {
+            _Myptr[_Idx] += _Right[_Idx];
+        }
+        return *this;
     }
 
     valarray& operator-=(const valarray& _Right) {
-        _VALGOP(-= _Right[_Idx]);
+        for (size_t _Idx = 0; _Idx < size(); ++_Idx) {
+            _Myptr[_Idx] -= _Right[_Idx];
+        }
+        return *this;
     }
 
     valarray& operator^=(const valarray& _Right) {
-        _VALGOP(^= _Right[_Idx]);
+        for (size_t _Idx = 0; _Idx < size(); ++_Idx) {
+            _Myptr[_Idx] ^= _Right[_Idx];
+        }
+        return *this;
     }
 
     valarray& operator|=(const valarray& _Right) {
-        _VALGOP(|= _Right[_Idx]);
+        for (size_t _Idx = 0; _Idx < size(); ++_Idx) {
+            _Myptr[_Idx] |= _Right[_Idx];
+        }
+        return *this;
     }
 
     valarray& operator&=(const valarray& _Right) {
-        _VALGOP(&= _Right[_Idx]);
+        for (size_t _Idx = 0; _Idx < size(); ++_Idx) {
+            _Myptr[_Idx] &= _Right[_Idx];
+        }
+        return *this;
     }
 
     valarray& operator<<=(const valarray& _Right) {
-        _VALGOP(<<= _Right[_Idx]);
+        for (size_t _Idx = 0; _Idx < size(); ++_Idx) {
+            _Myptr[_Idx] <<= _Right[_Idx];
+        }
+        return *this;
     }
 
     valarray& operator>>=(const valarray& _Right) {
-        _VALGOP(>>= _Right[_Idx]);
+        for (size_t _Idx = 0; _Idx < size(); ++_Idx) {
+            _Myptr[_Idx] >>= _Right[_Idx];
+        }
+        return *this;
     }
 
     _NODISCARD size_t size() const noexcept /* strengthened */ {
@@ -351,11 +416,14 @@ public:
 
     _NODISCARD valarray shift(int _Count) const {
         __PURE_APPDOMAIN_GLOBAL static _Ty _Dflt;
-        _VALOP(_Ty, size(),
-            (0 < _Count && size() - _Idx <= static_cast<size_t>(_Count))
-                    || (_Count < 0 && _Idx < static_cast<size_t>(-_Count))
-                ? _Dflt
-                : _Myptr[_Idx + _Count]);
+        valarray<_Ty> _Ans(size());
+        for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+            _Ans[_Idx] = (0 < _Count && size() - _Idx <= static_cast<size_t>(_Count))
+                                 || (_Count < 0 && _Idx < static_cast<size_t>(-_Count))
+                             ? _Dflt
+                             : _Myptr[_Idx + _Count];
+        }
+        return _Ans;
     }
 
     _NODISCARD valarray cshift(int _Count) const {
@@ -371,17 +439,29 @@ public:
             }
         }
 
-        _VALOP(_Ty, size(),
-            size() - _Idx <= static_cast<size_t>(_Count) ? _Myptr[_Idx - size() + _Count] : _Myptr[_Idx + _Count]);
+        valarray<_Ty> _Ans(size());
+        for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+            _Ans[_Idx] =
+                size() - _Idx <= static_cast<size_t>(_Count) ? _Myptr[_Idx - size() + _Count] : _Myptr[_Idx + _Count];
+        }
+        return _Ans;
     }
 
     _NODISCARD valarray apply(_Ty _Func(_Ty)) const {
-        _VALOP(_Ty, size(), _Func(_Myptr[_Idx]));
+        valarray<_Ty> _Ans(size());
+        for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+            _Ans[_Idx] = _Func(_Myptr[_Idx]);
+        }
+        return _Ans;
     }
 
     _NODISCARD valarray apply(_Ty _Func(const _Ty&)) const {
         // return valarray transformed by _Func, nonmutable argument
-        _VALOP(_Ty, size(), _Func(_Myptr[_Idx]));
+        valarray<_Ty> _Ans(size());
+        for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+            _Ans[_Idx] = _Func(_Myptr[_Idx]);
+        }
+        return _Ans;
     }
 
 private:
@@ -476,373 +556,669 @@ _NODISCARD const _Ty* end(const valarray<_Ty>& _Array) {
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> operator*(const valarray<_Ty>& _Left, const typename valarray<_Ty>::value_type& _Right) {
-    _VALOP(_Ty, _Left.size(), _Left[_Idx] * _Right);
+    valarray<_Ty> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left[_Idx] * _Right;
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> operator*(const typename valarray<_Ty>::value_type& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(_Ty, _Right.size(), _Left * _Right[_Idx]);
+    valarray<_Ty> _Ans(_Right.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left * _Right[_Idx];
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> operator/(const valarray<_Ty>& _Left, const typename valarray<_Ty>::value_type& _Right) {
-    _VALOP(_Ty, _Left.size(), _Left[_Idx] / _Right);
+    valarray<_Ty> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left[_Idx] / _Right;
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> operator/(const typename valarray<_Ty>::value_type& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(_Ty, _Right.size(), _Left / _Right[_Idx]);
+    valarray<_Ty> _Ans(_Right.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left / _Right[_Idx];
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> operator%(const valarray<_Ty>& _Left, const typename valarray<_Ty>::value_type& _Right) {
-    _VALOP(_Ty, _Left.size(), _Left[_Idx] % _Right);
+    valarray<_Ty> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left[_Idx] % _Right;
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> operator%(const typename valarray<_Ty>::value_type& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(_Ty, _Right.size(), _Left % _Right[_Idx]);
+    valarray<_Ty> _Ans(_Right.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left % _Right[_Idx];
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> operator+(const valarray<_Ty>& _Left, const typename valarray<_Ty>::value_type& _Right) {
-    _VALOP(_Ty, _Left.size(), _Left[_Idx] + _Right);
+    valarray<_Ty> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left[_Idx] + _Right;
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> operator+(const typename valarray<_Ty>::value_type& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(_Ty, _Right.size(), _Left + _Right[_Idx]);
+    valarray<_Ty> _Ans(_Right.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left + _Right[_Idx];
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> operator-(const valarray<_Ty>& _Left, const typename valarray<_Ty>::value_type& _Right) {
-    _VALOP(_Ty, _Left.size(), _Left[_Idx] - _Right);
+    valarray<_Ty> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left[_Idx] - _Right;
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> operator-(const typename valarray<_Ty>::value_type& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(_Ty, _Right.size(), _Left - _Right[_Idx]);
+    valarray<_Ty> _Ans(_Right.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left - _Right[_Idx];
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> operator^(const valarray<_Ty>& _Left, const typename valarray<_Ty>::value_type& _Right) {
-    _VALOP(_Ty, _Left.size(), _Left[_Idx] ^ _Right);
+    valarray<_Ty> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left[_Idx] ^ _Right;
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> operator^(const typename valarray<_Ty>::value_type& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(_Ty, _Right.size(), _Left ^ _Right[_Idx]);
+    valarray<_Ty> _Ans(_Right.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left ^ _Right[_Idx];
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> operator&(const valarray<_Ty>& _Left, const typename valarray<_Ty>::value_type& _Right) {
-    _VALOP(_Ty, _Left.size(), _Left[_Idx] & _Right);
+    valarray<_Ty> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left[_Idx] & _Right;
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> operator&(const typename valarray<_Ty>::value_type& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(_Ty, _Right.size(), _Left & _Right[_Idx]);
+    valarray<_Ty> _Ans(_Right.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left & _Right[_Idx];
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> operator|(const valarray<_Ty>& _Left, const typename valarray<_Ty>::value_type& _Right) {
-    _VALOP(_Ty, _Left.size(), _Left[_Idx] | _Right);
+    valarray<_Ty> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left[_Idx] | _Right;
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> operator|(const typename valarray<_Ty>::value_type& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(_Ty, _Right.size(), _Left | _Right[_Idx]);
+    valarray<_Ty> _Ans(_Right.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left | _Right[_Idx];
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> operator<<(const valarray<_Ty>& _Left, const typename valarray<_Ty>::value_type& _Right) {
-    _VALOP(_Ty, _Left.size(), _Left[_Idx] << _Right);
+    valarray<_Ty> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left[_Idx] << _Right;
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> operator<<(const typename valarray<_Ty>::value_type& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(_Ty, _Right.size(), _Left << _Right[_Idx]);
+    valarray<_Ty> _Ans(_Right.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left << _Right[_Idx];
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> operator>>(const valarray<_Ty>& _Left, const typename valarray<_Ty>::value_type& _Right) {
-    _VALOP(_Ty, _Left.size(), _Left[_Idx] >> _Right);
+    valarray<_Ty> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left[_Idx] >> _Right;
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> operator>>(const typename valarray<_Ty>::value_type& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(_Ty, _Right.size(), _Left >> _Right[_Idx]);
+    valarray<_Ty> _Ans(_Right.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left >> _Right[_Idx];
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD _Boolarray operator&&(const valarray<_Ty>& _Left, const typename valarray<_Ty>::value_type& _Right) {
-    _VALOP(bool, _Left.size(), _Left[_Idx] && _Right);
+    valarray<bool> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left[_Idx] && _Right;
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD _Boolarray operator&&(const typename valarray<_Ty>::value_type& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(bool, _Right.size(), _Left&& _Right[_Idx]);
+    valarray<bool> _Ans(_Right.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left && _Right[_Idx];
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD _Boolarray operator||(const valarray<_Ty>& _Left, const typename valarray<_Ty>::value_type& _Right) {
-    _VALOP(bool, _Left.size(), _Left[_Idx] || _Right);
+    valarray<bool> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left[_Idx] || _Right;
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD _Boolarray operator||(const typename valarray<_Ty>::value_type& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(bool, _Right.size(), _Left || _Right[_Idx]);
+    valarray<bool> _Ans(_Right.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left || _Right[_Idx];
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> operator*(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(_Ty, _Left.size(), _Left[_Idx] * _Right[_Idx]);
+    valarray<_Ty> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left[_Idx] * _Right[_Idx];
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> operator/(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(_Ty, _Left.size(), _Left[_Idx] / _Right[_Idx]);
+    valarray<_Ty> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left[_Idx] / _Right[_Idx];
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> operator%(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(_Ty, _Left.size(), _Left[_Idx] % _Right[_Idx]);
+    valarray<_Ty> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left[_Idx] % _Right[_Idx];
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> operator+(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(_Ty, _Left.size(), _Left[_Idx] + _Right[_Idx]);
+    valarray<_Ty> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left[_Idx] + _Right[_Idx];
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> operator-(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(_Ty, _Left.size(), _Left[_Idx] - _Right[_Idx]);
+    valarray<_Ty> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left[_Idx] - _Right[_Idx];
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> operator^(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(_Ty, _Left.size(), _Left[_Idx] ^ _Right[_Idx]);
+    valarray<_Ty> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left[_Idx] ^ _Right[_Idx];
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> operator&(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(_Ty, _Left.size(), _Left[_Idx] & _Right[_Idx]);
+    valarray<_Ty> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left[_Idx] & _Right[_Idx];
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> operator|(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(_Ty, _Left.size(), _Left[_Idx] | _Right[_Idx]);
+    valarray<_Ty> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left[_Idx] | _Right[_Idx];
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> operator<<(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(_Ty, _Left.size(), _Left[_Idx] << _Right[_Idx]);
+    valarray<_Ty> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left[_Idx] << _Right[_Idx];
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> operator>>(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(_Ty, _Left.size(), _Left[_Idx] >> _Right[_Idx]);
+    valarray<_Ty> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left[_Idx] >> _Right[_Idx];
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD _Boolarray operator&&(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(bool, _Left.size(), _Left[_Idx] && _Right[_Idx]);
+    valarray<bool> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left[_Idx] && _Right[_Idx];
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD _Boolarray operator||(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(bool, _Left.size(), _Left[_Idx] || _Right[_Idx]);
+    valarray<bool> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left[_Idx] || _Right[_Idx];
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD _Boolarray operator==(const valarray<_Ty>& _Left, const typename valarray<_Ty>::value_type& _Right) {
-    _VALOP(bool, _Left.size(), _Left[_Idx] == _Right);
+    valarray<bool> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left[_Idx] == _Right;
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD _Boolarray operator==(const typename valarray<_Ty>::value_type& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(bool, _Right.size(), _Left == _Right[_Idx]);
+    valarray<bool> _Ans(_Right.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left == _Right[_Idx];
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD _Boolarray operator==(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(bool, _Left.size(), _Left[_Idx] == _Right[_Idx]);
+    valarray<bool> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left[_Idx] == _Right[_Idx];
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD _Boolarray operator!=(const valarray<_Ty>& _Left, const typename valarray<_Ty>::value_type& _Right) {
-    _VALOP(bool, _Left.size(), _Left[_Idx] != _Right);
+    valarray<bool> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left[_Idx] != _Right;
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD _Boolarray operator!=(const typename valarray<_Ty>::value_type& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(bool, _Right.size(), _Left != _Right[_Idx]);
+    valarray<bool> _Ans(_Right.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left != _Right[_Idx];
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD _Boolarray operator!=(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(bool, _Left.size(), _Left[_Idx] != _Right[_Idx]);
+    valarray<bool> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left[_Idx] != _Right[_Idx];
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD _Boolarray operator<(const valarray<_Ty>& _Left, const typename valarray<_Ty>::value_type& _Right) {
-    _VALOP(bool, _Left.size(), _Left[_Idx] < _Right);
+    valarray<bool> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left[_Idx] < _Right;
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD _Boolarray operator<(const typename valarray<_Ty>::value_type& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(bool, _Right.size(), _Left < _Right[_Idx]);
+    valarray<bool> _Ans(_Right.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left < _Right[_Idx];
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD _Boolarray operator<(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(bool, _Left.size(), _Left[_Idx] < _Right[_Idx]);
+    valarray<bool> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left[_Idx] < _Right[_Idx];
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD _Boolarray operator>(const valarray<_Ty>& _Left, const typename valarray<_Ty>::value_type& _Right) {
-    _VALOP(bool, _Left.size(), _Left[_Idx] > _Right);
+    valarray<bool> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left[_Idx] > _Right;
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD _Boolarray operator>(const typename valarray<_Ty>::value_type& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(bool, _Right.size(), _Left > _Right[_Idx]);
+    valarray<bool> _Ans(_Right.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left > _Right[_Idx];
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD _Boolarray operator>(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(bool, _Left.size(), _Left[_Idx] > _Right[_Idx]);
+    valarray<bool> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left[_Idx] > _Right[_Idx];
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD _Boolarray operator<=(const valarray<_Ty>& _Left, const typename valarray<_Ty>::value_type& _Right) {
-    _VALOP(bool, _Left.size(), _Left[_Idx] <= _Right);
+    valarray<bool> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left[_Idx] <= _Right;
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD _Boolarray operator<=(const typename valarray<_Ty>::value_type& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(bool, _Right.size(), _Left <= _Right[_Idx]);
+    valarray<bool> _Ans(_Right.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left <= _Right[_Idx];
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD _Boolarray operator<=(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(bool, _Left.size(), _Left[_Idx] <= _Right[_Idx]);
+    valarray<bool> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left[_Idx] <= _Right[_Idx];
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD _Boolarray operator>=(const valarray<_Ty>& _Left, const typename valarray<_Ty>::value_type& _Right) {
-    _VALOP(bool, _Left.size(), _Left[_Idx] >= _Right);
+    valarray<bool> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left[_Idx] >= _Right;
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD _Boolarray operator>=(const typename valarray<_Ty>::value_type& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(bool, _Right.size(), _Left >= _Right[_Idx]);
+    valarray<bool> _Ans(_Right.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left >= _Right[_Idx];
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD _Boolarray operator>=(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(bool, _Left.size(), _Left[_Idx] >= _Right[_Idx]);
+    valarray<bool> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = _Left[_Idx] >= _Right[_Idx];
+    }
+    return _Ans;
 }
 
 // [valarray.transcend] Transcendentals
 template <class _Ty>
 _NODISCARD valarray<_Ty> abs(const valarray<_Ty>& _Left) {
-    _VALOP(_Ty, _Left.size(), abs(_Left[_Idx])); // using ADL, N4835 [valarray.transcend]/1
+    valarray<_Ty> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = abs(_Left[_Idx]);// using ADL, N4835 [valarray.transcend]/1
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> acos(const valarray<_Ty>& _Left) {
-    _VALOP(_Ty, _Left.size(), acos(_Left[_Idx])); // using ADL, N4835 [valarray.transcend]/1
+    valarray<_Ty> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = acos(_Left[_Idx]); // using ADL, N4835 [valarray.transcend]/1
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> asin(const valarray<_Ty>& _Left) {
-    _VALOP(_Ty, _Left.size(), asin(_Left[_Idx])); // using ADL, N4835 [valarray.transcend]/1
+    valarray<_Ty> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = asin(_Left[_Idx]); // using ADL, N4835 [valarray.transcend]/1
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> atan(const valarray<_Ty>& _Left) {
-    _VALOP(_Ty, _Left.size(), atan(_Left[_Idx])); // using ADL, N4835 [valarray.transcend]/1
+    valarray<_Ty> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = atan(_Left[_Idx]); // using ADL, N4835 [valarray.transcend]/1
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> atan2(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(_Ty, _Left.size(), atan2(_Left[_Idx], _Right[_Idx])); // using ADL, N4835 [valarray.transcend]/1
+    valarray<_Ty> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = atan2(_Left[_Idx], _Right[_Idx]); // using ADL, N4835 [valarray.transcend]/1
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> atan2(const valarray<_Ty>& _Left, const typename valarray<_Ty>::value_type& _Right) {
-    _VALOP(_Ty, _Left.size(), atan2(_Left[_Idx], _Right)); // using ADL, N4835 [valarray.transcend]/1
+    valarray<_Ty> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = atan2(_Left[_Idx], _Right); // using ADL, N4835 [valarray.transcend]/1
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> atan2(const typename valarray<_Ty>::value_type& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(_Ty, _Right.size(), atan2(_Left, _Right[_Idx])); // using ADL, N4835 [valarray.transcend]/1
+    valarray<_Ty> _Ans(_Right.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = atan2(_Left, _Right[_Idx]); // using ADL, N4835 [valarray.transcend]/1
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> cos(const valarray<_Ty>& _Left) {
-    _VALOP(_Ty, _Left.size(), cos(_Left[_Idx])); // using ADL, N4835 [valarray.transcend]/1
+    valarray<_Ty> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = cos(_Left[_Idx]); // using ADL, N4835 [valarray.transcend]/1
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> cosh(const valarray<_Ty>& _Left) {
-    _VALOP(_Ty, _Left.size(), cosh(_Left[_Idx])); // using ADL, N4835 [valarray.transcend]/1
+    valarray<_Ty> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = cosh(_Left[_Idx]); // using ADL, N4835 [valarray.transcend]/1
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> exp(const valarray<_Ty>& _Left) {
-    _VALOP(_Ty, _Left.size(), exp(_Left[_Idx])); // using ADL, N4835 [valarray.transcend]/1
+    valarray<_Ty> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = exp(_Left[_Idx]); // using ADL, N4835 [valarray.transcend]/1
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> log(const valarray<_Ty>& _Left) {
-    _VALOP(_Ty, _Left.size(), log(_Left[_Idx])); // using ADL, N4835 [valarray.transcend]/1
+    valarray<_Ty> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = log(_Left[_Idx]); // using ADL, N4835 [valarray.transcend]/1
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> log10(const valarray<_Ty>& _Left) {
-    _VALOP(_Ty, _Left.size(), log10(_Left[_Idx])); // using ADL, N4835 [valarray.transcend]/1
+    valarray<_Ty> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = log10(_Left[_Idx]); // using ADL, N4835 [valarray.transcend]/1
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> pow(const valarray<_Ty>& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(_Ty, _Left.size(), pow(_Left[_Idx], _Right[_Idx])); // using ADL, N4835 [valarray.transcend]/1
+    valarray<_Ty> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = pow(_Left[_Idx], _Right[_Idx]); // using ADL, N4835 [valarray.transcend]/1
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> pow(const valarray<_Ty>& _Left, const typename valarray<_Ty>::value_type& _Right) {
-    _VALOP(_Ty, _Left.size(), pow(_Left[_Idx], _Right)); // using ADL, N4835 [valarray.transcend]/1
+    valarray<_Ty> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = pow(_Left[_Idx], _Right); // using ADL, N4835 [valarray.transcend]/1
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> pow(const typename valarray<_Ty>::value_type& _Left, const valarray<_Ty>& _Right) {
-    _VALOP(_Ty, _Right.size(), pow(_Left, _Right[_Idx])); // using ADL, N4835 [valarray.transcend]/1
+    valarray<_Ty> _Ans(_Right.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = pow(_Left, _Right[_Idx]); // using ADL, N4835 [valarray.transcend]/1
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> sin(const valarray<_Ty>& _Left) {
-    _VALOP(_Ty, _Left.size(), sin(_Left[_Idx])); // using ADL, N4835 [valarray.transcend]/1
+    valarray<_Ty> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = sin(_Left[_Idx]); // using ADL, N4835 [valarray.transcend]/1
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> sinh(const valarray<_Ty>& _Left) {
-    _VALOP(_Ty, _Left.size(), sinh(_Left[_Idx])); // using ADL, N4835 [valarray.transcend]/1
+    valarray<_Ty> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = sinh(_Left[_Idx]); // using ADL, N4835 [valarray.transcend]/1
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> sqrt(const valarray<_Ty>& _Left) {
-    _VALOP(_Ty, _Left.size(), sqrt(_Left[_Idx])); // using ADL, N4835 [valarray.transcend]/1
+    valarray<_Ty> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = sqrt(_Left[_Idx]); // using ADL, N4835 [valarray.transcend]/1
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> tan(const valarray<_Ty>& _Left) {
-    _VALOP(_Ty, _Left.size(), tan(_Left[_Idx])); // using ADL, N4835 [valarray.transcend]/1
+    valarray<_Ty> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = tan(_Left[_Idx]); // using ADL, N4835 [valarray.transcend]/1
+    }
+    return _Ans;
 }
 
 template <class _Ty>
 _NODISCARD valarray<_Ty> tanh(const valarray<_Ty>& _Left) {
-    _VALOP(_Ty, _Left.size(), tanh(_Left[_Idx])); // using ADL, N4835 [valarray.transcend]/1
+    valarray<_Ty> _Ans(_Left.size());
+    for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
+        _Ans[_Idx] = tanh(_Left[_Idx]); // using ADL, N4835 [valarray.transcend]/1
+    }
+    return _Ans;
 }
 
 // CLASS slice
@@ -1344,7 +1720,10 @@ valarray<_Ty>& valarray<_Ty>::operator=(const gslice_array<_Ty>& _Gslicearr) {
     _Tidy_deallocate();
     _Grow(_Gslicearr._Totlen());
     _Sizarray _Indexarray(size_t{0}, _Gslicearr._Nslice());
-    _VALGOP(= _Gslicearr._Data(_Gslicearr._Off(_Indexarray)));
+    for (size_t _Idx = 0; _Idx < size(); ++_Idx) {
+        _Myptr[_Idx] = _Gslicearr._Data(_Gslicearr._Off(_Indexarray));
+    }
+    return *this;
 }
 
 template <class _Ty>
@@ -1386,7 +1765,10 @@ template <class _Ty>
 valarray<_Ty>& valarray<_Ty>::operator=(const indirect_array<_Ty>& _Indarr) {
     _Tidy_deallocate();
     _Grow(_Indarr._Totlen());
-    _VALGOP(= _Indarr._Data(_Indarr._Indir(_Idx)));
+    for (size_t _Idx = 0; _Idx < size(); ++_Idx) {
+        _Myptr[_Idx] = _Indarr._Data(_Indarr._Indir(_Idx));
+    }
+    return *this;
 }
 
 template <class _Ty>
