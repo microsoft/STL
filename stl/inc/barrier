@@ -57,11 +57,11 @@ public:
         _Other._Value = _Barrier_invalid_token;
     }
 
-    ptrdiff_t _Value;
-
 private:
     explicit _Arrival_token(ptrdiff_t _Value_) noexcept : _Value(_Value_) {}
     friend barrier<_Completion_function>;
+
+    ptrdiff_t _Value;
 };
 
 // TRANSITION, ABI: simplify this when [[no_unique_address]] is working
