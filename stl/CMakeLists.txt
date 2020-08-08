@@ -240,7 +240,6 @@ endforeach()
 # Objs that exist in both libcpmt[d][01].lib and msvcprt[d].lib.
 set(IMPLIB_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/filesystem.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/float_multi_prec.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/locale0_implib.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/math_algorithms.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/nothrow.cpp
