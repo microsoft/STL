@@ -77,7 +77,7 @@ public:
 
         // We need to notify (wake) at least _Update waiting threads.
         // Errors towards waking more cannot be always avoided, but they are performance issue.
-        // Errors towards waking should be avoided, as they are correctness issue.
+        // Errors towards waking less should be avoided, as they are correctness issue.
 
         // release thread: Increment semaphore counter, then load waiting counter;
         // acquire thread: Increment waiting counter, then load semaphore counter;
@@ -101,7 +101,7 @@ public:
         }
 
         if (_Prev_waiting > _Update) {
-            // Wake at most _Update. Though repeated notify_one is somewhat less efficient than signle notify_all,
+            // Wake at most _Update. Though repeated notify_one is somewhat less efficient than single notify_all,
             // the amount of OS calls is still the same; the benefit from trying not to wake unnecessary threads
             // is expected to be greater than the loss on extra calls and atomic operations.
             for (ptrdiff_t _Thd = _Update; _Thd != 0; --_Thd) {
