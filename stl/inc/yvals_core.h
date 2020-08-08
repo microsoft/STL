@@ -1277,5 +1277,11 @@ compiler option, or define _ALLOW_RTCc_IN_STL to acknowledge that you have recei
 #endif // ^^^ !defined(_M_ARM) && !defined(_M_ARM64) && !defined(_ONECORE) && !defined(_CRT_APP) ^^^
 #endif // _STL_WIN32_WINNT
 
+#ifdef __cpp_noexcept_function_type
+#define _NOEXCEPT_FNPTR noexcept
+#else
+#define _NOEXCEPT_FNPTR
+#endif // __cpp_noexcept_function_type
+
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _YVALS_CORE_H_
