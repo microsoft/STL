@@ -1045,7 +1045,7 @@ template <class _Ty>
 _NODISCARD valarray<_Ty> abs(const valarray<_Ty>& _Left) {
     valarray<_Ty> _Ans(_Left.size());
     for (size_t _Idx = 0; _Idx < _Ans.size(); ++_Idx) {
-        _Ans[_Idx] = abs(_Left[_Idx]);// using ADL, N4835 [valarray.transcend]/1
+        _Ans[_Idx] = abs(_Left[_Idx]); // using ADL, N4835 [valarray.transcend]/1
     }
     return _Ans;
 }
