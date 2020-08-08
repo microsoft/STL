@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <cassert>
 #include <bit>
+#include <cassert>
 
 // Indirectly test countl_zero on old x86/x64 processors by testing private hepler,
 // which is different from the usual branch.
