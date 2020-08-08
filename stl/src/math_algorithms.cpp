@@ -118,7 +118,13 @@ namespace {
             constexpr _Ty _Norm_big   = _Ty{3.0};
 
             const _Ty _Bv_sqr = _Bv * _Bv;
-            const _Ty _Norm   = _Av * _Av + _Bv_sqr;
+
+            if (_Av == _Ty{1.0}) { // correctly return +0 when _Av == 1 and _Bv * _Bv underflows
+                                   // _Norm_minus_one(_Av, _Bv) could return -0 under FE_DOWNWARD rounding mode
+                return _Logp1(_Bv_sqr) * _Ty{0.5};
+            }
+
+            const _Ty _Norm = _Av * _Av + _Bv_sqr;
 
             if (_Norm_small < _Norm && _Norm < _Norm_big) { // avoid catastrophic cancellation
                 return _Logp1(_Norm_minus_one(_Av, _Bv)) * _Ty{0.5};
