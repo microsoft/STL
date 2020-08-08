@@ -1700,13 +1700,6 @@ private:
     _Ty* _Myptr; // pointer to valarray contents
 };
 
-// MACROS FOR indirect_array
-#define _IOP(RHS) /* apply RHS(_Idx) to indirect_array */ \
-    size_t _Size = _Totlen();                             \
-    for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {         \
-        _Myptr[_Indir(_Idx)] RHS;                         \
-    }
-
 // CLASS TEMPLATE indirect_array
 template <class _Ty>
 class indirect_array { // define a subset of a valarray with an array of indexes
@@ -1714,51 +1707,87 @@ public:
     using value_type = _Ty;
 
     void operator=(const valarray<_Ty>& _Right) const {
-        _IOP(= _Right[_Idx]);
+        size_t _Size = _Totlen();
+        for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
+            _Myptr[_Indir(_Idx)] = _Right[_Idx];
+        }
     }
 
     void operator=(const _Ty& _Right) const {
-        _IOP(= _Right);
+        size_t _Size = _Totlen();
+        for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
+            _Myptr[_Indir(_Idx)] = _Right;
+        }
     }
 
     void operator*=(const valarray<_Ty>& _Right) const { // multiply indirect array by valarray
-        _IOP(*= _Right[_Idx]);
+        size_t _Size = _Totlen();
+        for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
+            _Myptr[_Indir(_Idx)] *= _Right[_Idx];
+        }
     }
 
     void operator/=(const valarray<_Ty>& _Right) const { // divide indirect array by valarray
-        _IOP(/= _Right[_Idx]);
+        size_t _Size = _Totlen();
+        for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
+            _Myptr[_Indir(_Idx)] /= _Right[_Idx];
+        }
     }
 
     void operator%=(const valarray<_Ty>& _Right) const { // remainder indirect array by valarray
-        _IOP(%= _Right[_Idx]);
+        size_t _Size = _Totlen();
+        for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
+            _Myptr[_Indir(_Idx)] %= _Right[_Idx];
+        }
     }
 
     void operator+=(const valarray<_Ty>& _Right) const { // add valarray to indirect array
-        _IOP(+= _Right[_Idx]);
+        size_t _Size = _Totlen();
+        for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
+            _Myptr[_Indir(_Idx)] += _Right[_Idx];
+        }
     }
 
     void operator-=(const valarray<_Ty>& _Right) const { // subtract valarray from indirect array
-        _IOP(-= _Right[_Idx]);
+        size_t _Size = _Totlen();
+        for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
+            _Myptr[_Indir(_Idx)] -= _Right[_Idx];
+        }
     }
 
     void operator^=(const valarray<_Ty>& _Right) const { // XOR valarray into indirect array
-        _IOP(^= _Right[_Idx]);
+        size_t _Size = _Totlen();
+        for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
+            _Myptr[_Indir(_Idx)] ^= _Right[_Idx];
+        }
     }
 
     void operator&=(const valarray<_Ty>& _Right) const { // AND valarray into indirect array
-        _IOP(&= _Right[_Idx]);
+        size_t _Size = _Totlen();
+        for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
+            _Myptr[_Indir(_Idx)] &= _Right[_Idx];
+        }
     }
 
     void operator|=(const valarray<_Ty>& _Right) const { // OR valarray into indirect array
-        _IOP(|= _Right[_Idx]);
+        size_t _Size = _Totlen();
+        for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
+            _Myptr[_Indir(_Idx)] |= _Right[_Idx];
+        }
     }
 
     void operator<<=(const valarray<_Ty>& _Right) const { // left shift indirect array by valarray
-        _IOP(<<= _Right[_Idx]);
+        size_t _Size = _Totlen();
+        for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
+            _Myptr[_Indir(_Idx)] <<= _Right[_Idx];
+        }
     }
 
     void operator>>=(const valarray<_Ty>& _Right) const { // right shift indirect array by valarray
-        _IOP(>>= _Right[_Idx]);
+        size_t _Size = _Totlen();
+        for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
+            _Myptr[_Indir(_Idx)] >>= _Right[_Idx];
+        }
     }
 
     _NODISCARD _Ty& _Data(size_t _Idx) const {
