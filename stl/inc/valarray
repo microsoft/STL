@@ -1107,13 +1107,12 @@ private:
 };
 
 // MACROS FOR mask_array
-#define _MOP(RHS) /* apply RHS(_Idx) to mask_array */ \
-    size_t _Off  = 0;                                 \
-    size_t _Size = _Totlen();                         \
-    for (size_t _Idx = 0; _Idx < _Size; ++_Off) {     \
-        if (_Mask(_Off)) {                            \
-            _Myptr[_Off] RHS, ++_Idx;                 \
-        }                                             \
+#define _MOP(RHS) /* apply RHS(_Idx) to mask_array */                                  \
+    size_t _Size = _Mybool.size();                                                     \
+    for (size_t _Idx = 0, _Off = _Start_off(); _Off < _Size; _Off = _Next_off(_Off)) { \
+        if (_Mask(_Off)) {                                                             \
+            _Myptr[_Off] RHS, ++_Idx;                                                  \
+        }                                                                              \
     }
 
 // CLASS TEMPLATE mask_array
