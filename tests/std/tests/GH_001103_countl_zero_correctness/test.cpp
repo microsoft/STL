@@ -32,6 +32,11 @@ int main() {
     assert(_Countl_zero_bsr(static_cast<unsigned short>(0x8003)) == 0);
     assert(_Countl_zero_bsr(static_cast<unsigned short>(0xF008)) == 0);
 
+    assert(_Countl_zero_bsr(static_cast<unsigned>(0x0000'0000)) == 32);
+    assert(_Countl_zero_bsr(static_cast<unsigned>(0x0000'0013)) == 27);
+    assert(_Countl_zero_bsr(static_cast<unsigned>(0x8000'0003)) == 0);
+    assert(_Countl_zero_bsr(static_cast<unsigned>(0xF000'0008)) == 0);
+
     assert(_Countl_zero_bsr(static_cast<unsigned long>(0x0000'0000)) == 32);
     assert(_Countl_zero_bsr(static_cast<unsigned long>(0x0000'0013)) == 27);
     assert(_Countl_zero_bsr(static_cast<unsigned long>(0x8000'0003)) == 0);
