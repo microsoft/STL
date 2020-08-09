@@ -302,6 +302,9 @@ public:
 
     valarray& operator*=(const valarray& _Right) {
         const size_t _Size = size();
+        // The value of an element in the left-hand side of a valarray compound assignment operator does not depend
+        // on the value of another element in that left hand side. (N4861 [valarray.cassign]/2)
+#pragma loop(ivdep)
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _Myptr[_Idx] *= _Right[_Idx];
         }
@@ -310,6 +313,9 @@ public:
 
     valarray& operator/=(const valarray& _Right) {
         const size_t _Size = size();
+        // The value of an element in the left-hand side of a valarray compound assignment operator does not depend
+        // on the value of another element in that left hand side. (N4861 [valarray.cassign]/2)
+#pragma loop(ivdep)
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _Myptr[_Idx] /= _Right[_Idx];
         }
@@ -318,6 +324,9 @@ public:
 
     valarray& operator%=(const valarray& _Right) {
         const size_t _Size = size();
+        // The value of an element in the left-hand side of a valarray compound assignment operator does not depend
+        // on the value of another element in that left hand side. (N4861 [valarray.cassign]/2)
+#pragma loop(ivdep)
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _Myptr[_Idx] %= _Right[_Idx];
         }
@@ -326,6 +335,9 @@ public:
 
     valarray& operator+=(const valarray& _Right) {
         const size_t _Size = size();
+        // The value of an element in the left-hand side of a valarray compound assignment operator does not depend
+        // on the value of another element in that left hand side. (N4861 [valarray.cassign]/2)
+#pragma loop(ivdep)
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _Myptr[_Idx] += _Right[_Idx];
         }
@@ -334,6 +346,9 @@ public:
 
     valarray& operator-=(const valarray& _Right) {
         const size_t _Size = size();
+        // The value of an element in the left-hand side of a valarray compound assignment operator does not depend
+        // on the value of another element in that left hand side. (N4861 [valarray.cassign]/2)
+#pragma loop(ivdep)
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _Myptr[_Idx] -= _Right[_Idx];
         }
@@ -342,6 +357,9 @@ public:
 
     valarray& operator^=(const valarray& _Right) {
         const size_t _Size = size();
+        // The value of an element in the left-hand side of a valarray compound assignment operator does not depend
+        // on the value of another element in that left hand side. (N4861 [valarray.cassign]/2)
+#pragma loop(ivdep)
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _Myptr[_Idx] ^= _Right[_Idx];
         }
@@ -350,6 +368,9 @@ public:
 
     valarray& operator|=(const valarray& _Right) {
         const size_t _Size = size();
+        // The value of an element in the left-hand side of a valarray compound assignment operator does not depend
+        // on the value of another element in that left hand side. (N4861 [valarray.cassign]/2)
+#pragma loop(ivdep)
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _Myptr[_Idx] |= _Right[_Idx];
         }
@@ -358,6 +379,9 @@ public:
 
     valarray& operator&=(const valarray& _Right) {
         const size_t _Size = size();
+        // The value of an element in the left-hand side of a valarray compound assignment operator does not depend
+        // on the value of another element in that left hand side. (N4861 [valarray.cassign]/2)
+#pragma loop(ivdep)
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _Myptr[_Idx] &= _Right[_Idx];
         }
@@ -366,6 +390,9 @@ public:
 
     valarray& operator<<=(const valarray& _Right) {
         const size_t _Size = size();
+        // The value of an element in the left-hand side of a valarray compound assignment operator does not depend
+        // on the value of another element in that left hand side. (N4861 [valarray.cassign]/2)
+#pragma loop(ivdep)
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _Myptr[_Idx] <<= _Right[_Idx];
         }
@@ -374,6 +401,9 @@ public:
 
     valarray& operator>>=(const valarray& _Right) {
         const size_t _Size = size();
+        // The value of an element in the left-hand side of a valarray compound assignment operator does not depend
+        // on the value of another element in that left hand side. (N4861 [valarray.cassign]/2)
+#pragma loop(ivdep)
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _Myptr[_Idx] >>= _Right[_Idx];
         }
@@ -515,6 +545,7 @@ private:
         if (0 < _Newsize) { // worth doing, allocate
             _Myptr = _Allocate_for_op_delete<_Ty>(_Newsize);
             _Tidy_deallocate_guard<valarray> _Guard{this};
+#pragma loop(ivdep)
             for (size_t _Idx = 0; _Idx < _Newsize; ++_Idx, _Ptr += _Inc) {
                 _Construct_in_place(_Myptr[_Idx], *_Ptr);
             }
@@ -1955,6 +1986,9 @@ valarray<_Ty>& valarray<_Ty>::operator=(const gslice_array<_Ty>& _Gslicearr) {
     _Grow(_Gslicearr._Totlen());
     _Sizarray _Indexarray(size_t{0}, _Gslicearr._Nslice());
     const size_t _Size = size();
+    // The value of an element in the left-hand side of a valarray assignment operator does not depend
+    // on the value of another element in that left-hand side (N4861 [valarray.assign]/10)
+#pragma loop(ivdep)
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
         _Myptr[_Idx] = _Gslicearr._Data(_Gslicearr._Off(_Indexarray));
     }
@@ -1978,6 +2012,9 @@ valarray<_Ty>& valarray<_Ty>::operator=(const mask_array<_Ty>& _Maskarr) {
     size_t _Count = 0;
 
     const size_t _Size = size();
+    // The value of an element in the left-hand side of a valarray assignment operator does not depend
+    // on the value of another element in that left-hand side (N4861 [valarray.assign]/10)
+#pragma loop(ivdep)
     for (size_t _Idx = 0; _Idx < _Size; ++_Count) {
         if (_Maskarr._Mask(_Count)) {
             _Myptr[_Idx++] = _Maskarr._Data(_Count);
@@ -2002,6 +2039,9 @@ valarray<_Ty>& valarray<_Ty>::operator=(const indirect_array<_Ty>& _Indarr) {
     _Tidy_deallocate();
     _Grow(_Indarr._Totlen());
     const size_t _Size = size();
+    // The value of an element in the left-hand side of a valarray assignment operator does not depend
+    // on the value of another element in that left-hand side (N4861 [valarray.assign]/10)
+#pragma loop(ivdep)
     for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
         _Myptr[_Idx] = _Indarr._Data(_Indarr._Indir(_Idx));
     }
