@@ -9,7 +9,7 @@
 
 // Since the fallback intrinsic is available on ARM too, don't need to exclude ARM
 
-// Currently need to test not only in C++20 mode,
+// Currently need this test only in C++20 mode,
 // May update to older C++ if the helper is used internally too, for example in <bitset>
 
 using namespace std;
