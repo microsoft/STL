@@ -75,7 +75,7 @@ namespace experimental {
         // Returns a handle to a coroutine that has no observable effects when resumed or destroyed.
         return noop_coroutine_handle{};
     }
-#endif // __EDG__
+#endif // ^^^ !defined(__EDG__) ^^^
 } // namespace experimental
 
 _STD_END
