@@ -33,6 +33,7 @@
         integrity="sha256-OrN9od558nPowCwU4e475a5CCwTfCwSrk7TF7KYUoXk=" crossorigin="anonymous"></script>
     <script src="daily_table.js"></script>
     <script src="weekly_table.js"></script>
+    <script src="monthly_table.js"></script>
     <script>
         function get_values(table, key) {
             return table.filter(row => row[key] !== undefined).map(row => ({ x: row.date, y: row[key] }));
@@ -138,9 +139,16 @@
             datasets: [
                 {
                     data: get_values(daily_table, 'merged'),
-                    label: 'Monthly Merged PRs',
+                    label: 'Line: Sliding Window',
                     borderColor: '#00B050',
                     backgroundColor: '#00B050',
+                    yAxisID: 'mergeAxis',
+                },
+                {
+                    type: 'bar',
+                    data: get_values(monthly_table, 'merge_bar'),
+                    label: 'Bars: Calendar Months',
+                    borderWidth: 1,
                     yAxisID: 'mergeAxis',
                 },
             ],
@@ -194,6 +202,7 @@
                 type: 'time',
                 ticks: {
                     min: timeframe.ticks.min,
+                    max: daily_table[daily_table.length - 1].date,
                 },
                 time: {
                     parser: 'yyyy-MM-dd',
@@ -297,9 +306,6 @@
             title: {
                 ...common_title,
                 text: 'Monthly Merged PRs',
-            },
-            legend: {
-                display: false,
             },
             scales: {
                 xAxes: make_xAxes(timeframe_github),
@@ -458,17 +464,19 @@
     <canvas id="mergeChart"></canvas>
 
     <h1>Explanation</h1>
-    <p>For this line, more is better.</p>
+    <p>For this chart, more is better. It includes merges into any branch
+        and excludes PRs that were closed without being merged, which are rare.</p>
 
     <ul>
-        <li>Right axis:
+        <li>(<span class="currentValue" id="currentValue-merged"></span>)
+            Line: How many PRs have been merged over the past month.
+            This uses a "30 day" sliding window, with some smoothing:
             <ul>
-                <li>(<span class="currentValue" id="currentValue-merged"></span>)
-                    How many PRs have been merged into any branch over the past month.
-                    This uses a sliding window of 30 days, with some smoothing.
-                    It excludes PRs that were closed without being merged, which are rare.</li>
+                <li>PRs merged 0 to 20 days ago are weighted at 100%.</li>
+                <li>PRs merged 20 to 40 days ago are weighted from 100% to 0%.</li>
             </ul>
         </li>
+        <li>Bars: How many PRs were merged in each calendar month.</li>
     </ul>
 
     <hr />

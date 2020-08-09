@@ -258,6 +258,18 @@ function calculate_sliding_window(when, merged) {
     }
 }
 
+function write_generated_file(filename, table_str) {
+    const generated_file_warning_comment = '// Generated file - DO NOT EDIT manually!\n';
+
+    let str = '// Copyright (c) Microsoft Corporation.\n';
+    str += '// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception\n\n';
+    str += generated_file_warning_comment;
+    str += table_str;
+    str += generated_file_warning_comment;
+
+    fs.writeFileSync(filename, str);
+}
+
 function write_daily_table(script_start, all_prs, all_issues) {
     const progress_bar = new cliProgress.SingleBar(
         {
@@ -269,12 +281,7 @@ function write_daily_table(script_start, all_prs, all_issues) {
     );
 
     try {
-        let str = '// Copyright (c) Microsoft Corporation.\n';
-        str += '// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception\n';
-        str += '\n';
-        const generated_file_warning_comment = '// Generated file - DO NOT EDIT manually!\n';
-        str += generated_file_warning_comment;
-        str += 'const daily_table = [\n';
+        let str = 'const daily_table = [\n';
 
         const begin = DateTime.fromISO('2019-09-05' + 'T23:00:00-07');
 
@@ -345,12 +352,41 @@ function write_daily_table(script_start, all_prs, all_issues) {
         }
 
         str += '];\n';
-        str += generated_file_warning_comment;
 
-        fs.writeFileSync('./daily_table.js', str);
+        write_generated_file('./daily_table.js', str);
     } finally {
         progress_bar.stop();
     }
+}
+
+function write_monthly_table(script_start, all_prs) {
+    const monthly_merges = new Map();
+
+    for (const pr of all_prs) {
+        const year_month = pr.merged.toFormat('yyyy-MM');
+        const old_value = monthly_merges.get(year_month) ?? 0;
+        monthly_merges.set(year_month, old_value + 1);
+    }
+
+    let str = 'const monthly_table = [\n';
+
+    // Analyze complete months.
+    const begin = DateTime.fromISO('2019-10-01');
+    for (let when = begin; when < script_start.startOf('month'); when = when.plus({ months: 1 })) {
+        const year_month = when.toFormat('yyyy-MM');
+        const value = monthly_merges.get(year_month) ?? 0;
+
+        str += '    { ';
+        str += [
+            `date: '${year_month}-16'`, // position each bar in the middle of each month
+            `merge_bar: ${value}`,
+            '},\n',
+        ].join(', ');
+    }
+
+    str += '];\n';
+
+    write_generated_file('./monthly_table.js', str);
 }
 
 async function async_main() {
@@ -363,6 +399,7 @@ async function async_main() {
         const all_issues = transform_issue_nodes(issue_nodes);
 
         write_daily_table(script_start, all_prs, all_issues);
+        write_monthly_table(script_start, all_prs);
 
         const script_finish = DateTime.local();
 
