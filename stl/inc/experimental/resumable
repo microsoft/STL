@@ -30,7 +30,7 @@ _STD_BEGIN
 
 namespace experimental {
 
-#if !defined(__EDG__) && _MSC_VER >= 1928
+#ifndef __EDG__
     // STRUCT noop_coroutine_promise
     struct noop_coroutine_promise {};
 
@@ -75,7 +75,7 @@ namespace experimental {
         // Returns a handle to a coroutine that has no observable effects when resumed or destroyed.
         return noop_coroutine_handle{};
     }
-#endif // !defined(__EDG__) && _MSC_VER >= 1928
+#endif // ^^^ !defined(__EDG__) ^^^
 } // namespace experimental
 
 _STD_END
