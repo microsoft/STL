@@ -1029,11 +1029,6 @@ constexpr void test_contiguous() {
 }
 
 template <class Instantiator, class Element1, class Element2>
-constexpr void input_range_output_iterator_permutations() {
-    with_input_ranges<with_output_iterators<Instantiator, Element2>, Element1>::call();
-}
-
-template <class Instantiator, class Element1, class Element2>
 constexpr void test_in_in() {
     with_input_ranges<with_input_ranges<Instantiator, Element2>, Element1>::call();
 }
@@ -1054,6 +1049,11 @@ constexpr void test_bidi_bidi() {
 }
 
 template <class Instantiator, class Element1, class Element2>
+constexpr void input_range_output_iterator_permutations() {
+    with_input_ranges<with_output_iterators<Instantiator, Element2>, Element1>::call();
+}
+
+template <class Instantiator, class Element1, class Element2>
 constexpr void test_in_write() {
     with_input_ranges<with_writable_iterators<Instantiator, Element2>, Element1>::call();
 }
@@ -1061,6 +1061,16 @@ constexpr void test_in_write() {
 template <class Instantiator, class Element1, class Element2>
 constexpr void test_fwd_write() {
     with_forward_ranges<with_writable_iterators<Instantiator, Element2>, Element1>::call();
+}
+
+template <class Instantiator, class Element1, class Element2>
+constexpr void test_bidi_write() {
+    with_bidirectional_ranges<with_writable_iterators<Instantiator, Element2>, Element1>::call();
+}
+
+template <class Instantiator, class Element1, class Element2>
+constexpr void test_contiguous_write() {
+    with_contiguous_ranges<with_writable_iterators<Instantiator, Element2>, Element1>::call();
 }
 
 template <class Instantiator, class Element>

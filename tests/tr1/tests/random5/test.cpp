@@ -424,7 +424,7 @@ static void tdiscrete() {
     CHECK_DOUBLE(dist0.probabilities()[0], 1.0);
     dist0.reset();
 
-    std::vector<double> vec(4, 1.0);
+    STD vector<double> vec(4, 1.0);
 
     dist_t dist1(STD initializer_list<double>(vec.data(), vec.data() + vec.size()));
 
@@ -465,13 +465,13 @@ static void tpiecewise_constant() {
     CHECK_DOUBLE(dist0.probabilities()[0], 1.0);
     dist0.reset();
 
-    std::vector<double> ends;
+    STD vector<double> ends;
     ends.push_back(0.0);
     ends.push_back(1.0);
     ends.push_back(2.0);
     ends.push_back(3.0);
     ends.push_back(4.0);
-    std::vector<double> vec(4, 1.0);
+    STD vector<double> vec(4, 1.0);
     dist_t dist1(ends.begin(), ends.end(), vec.begin());
     CHECK_INT(dist1.densities().size(), 4);
     CHECK_DOUBLE(dist1.densities()[0], 0.25);
@@ -524,13 +524,13 @@ static void tpiecewise_linear() {
     CHECK_DOUBLE(dist0.probabilities()[0], 1.0);
     dist0.reset();
 
-    std::vector<double> ends;
+    STD vector<double> ends;
     ends.push_back(0.0);
     ends.push_back(1.0);
     ends.push_back(2.0);
     ends.push_back(3.0);
     ends.push_back(4.0);
-    std::vector<double> vec(5, 1.0);
+    STD vector<double> vec(5, 1.0);
     dist_t dist1(ends.begin(), ends.end(), vec.begin());
     CHECK_INT(dist1.densities().size(), 5);
     CHECK_INT(dist1.intervals().size(), 5);

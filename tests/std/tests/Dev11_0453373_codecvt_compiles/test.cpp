@@ -11,7 +11,7 @@
 
 int main() {} // COMPILE-ONLY
 
-// Regression test for DevDiv2 #453373 : codecvt_one_one compile errors
+// Regression test for DevDiv-453373 : codecvt_one_one compile errors
 
 // Make sure we can instantiate the types from the problem headers:
 template class stdext::cvt::codecvt_one_one<wchar_t, 0xffffffff, std::little_endian>;

@@ -27,7 +27,7 @@ void assert_no_leaks() {
 void test_484720();
 
 int main() {
-    // DevDiv#452211 "<thread>: init_at_thread_exit_mutex() creates a spurious memory leak"
+    // DevDiv-452211 "<thread>: init_at_thread_exit_mutex() creates a spurious memory leak"
     assert_no_leaks();
 
     {
@@ -54,7 +54,7 @@ int main() {
     assert_no_leaks();
 
     {
-        // DevDiv#485243 "Crash in runtime library (msvcr110.dll)"
+        // DevDiv-485243 "Crash in runtime library (msvcr110.dll)"
         condition_variable cv;
         mutex m;
 
@@ -85,7 +85,7 @@ int main() {
     assert_no_leaks();
 
     {
-        // DevDiv#861298 "std::thread not fully initialized due to _Thr_set_null only setting id (not handle)"
+        // DevDiv-861298 "std::thread not fully initialized due to _Thr_set_null only setting id (not handle)"
 
         // native_handle()'s behavior is unspecified, but CreateThread() and _beginthreadex()
         // return null for failure, so this seems like a reasonable default.
@@ -99,7 +99,7 @@ int main() {
 }
 
 
-// DevDiv#484720 "<condition_variable>: [c++std-lib-32966] Public service announcement concerning
+// DevDiv-484720 "<condition_variable>: [c++std-lib-32966] Public service announcement concerning
 // ~condition_variable_any()"
 
 template <typename T>

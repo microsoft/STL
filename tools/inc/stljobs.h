@@ -501,7 +501,7 @@ public:
     thread_proc_attribute_list& operator=(thread_proc_attribute_list&&) = default;
 
     explicit thread_proc_attribute_list(const unsigned long attributeCount) {
-        size_t size;
+        SIZE_T size;
         if (InitializeProcThreadAttributeList(nullptr, attributeCount, 0, &size)) {
             fputs("First call to InitializeProcThreadAttributeList should not succeed.", stderr);
             abort();
