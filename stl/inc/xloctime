@@ -132,6 +132,9 @@ public:
                 }
 
                 _First = do_get(_First, _Last, _Iosbase, _State, _Pt, _Specifier, _Modifier); // convert a single field
+                if (_State != 0) {
+                    break;
+                }
             }
         }
 

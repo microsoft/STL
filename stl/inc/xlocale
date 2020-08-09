@@ -490,7 +490,7 @@ int __CRTDECL _Getloctxt(_InIt& _First, _InIt& _Last, size_t _Numfields, const _
                        || _Ptr[_Off] == _Elem{}) { // matched all of field, save as possible answer
                 _Str[_Field] = static_cast<char>(_Column < 127 ? _Column : 127); // save skip count if small enough
                 _Ans         = static_cast<int>(_Field); // save answer
-            } else if (_First == _Last || _Ptr[_Off] != *_First) {
+            } else if (_First == _Last || tolower(_Ptr[_Off]) != towlower(*_First)) {
                 _Str[_Field] = static_cast<char>(_Column < 127 ? _Column : 127); // no match, just save skip count
             } else {
                 _Prefix = true; // still a valid prefix
