@@ -15,15 +15,17 @@
 using namespace std;
 
 int main() {
+#ifdef _CHAR_UNSIGNED
+    assert(_Countl_zero_bsr(static_cast<char>(0x00)) == 8);
+    assert(_Countl_zero_bsr(static_cast<char>(0x13)) == 3);
+    assert(_Countl_zero_bsr(static_cast<char>(0x83)) == 0);
+    assert(_Countl_zero_bsr(static_cast<char>(0xF8)) == 0);
+#endif
+
     assert(_Countl_zero_bsr(static_cast<unsigned char>(0x00)) == 8);
     assert(_Countl_zero_bsr(static_cast<unsigned char>(0x13)) == 3);
     assert(_Countl_zero_bsr(static_cast<unsigned char>(0x83)) == 0);
     assert(_Countl_zero_bsr(static_cast<unsigned char>(0xF8)) == 0);
-
-    assert(_Countl_zero_bsr(static_cast<unsigned short>(0x0000)) == 16);
-    assert(_Countl_zero_bsr(static_cast<unsigned short>(0x0013)) == 11);
-    assert(_Countl_zero_bsr(static_cast<unsigned short>(0x8003)) == 0);
-    assert(_Countl_zero_bsr(static_cast<unsigned short>(0xF008)) == 0);
 
     assert(_Countl_zero_bsr(static_cast<unsigned short>(0x0000)) == 16);
     assert(_Countl_zero_bsr(static_cast<unsigned short>(0x0013)) == 11);
