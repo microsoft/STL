@@ -9,13 +9,11 @@
 #include <yvals.h>
 #if _STL_COMPILER_PREPROCESSOR
 
-
+#include <intrin0.h>
+#include <type_traits>
 #if _MSC_FULL_VER < 192829203 // TRANSITION, Visual Studio 2019 to define 128-bit CAS in <intrin0.h>
 #include <intrin.h>
-#else // ^^^ _MSC_FULL_VER < 192829203, TRANSITION / !_MSC_FULL_VER >= 192829203 vvv
-#include <intrin0.h>
-#endif // ^^^ _MSC_FULL_VER >= 192829203 ^^^
-#include <type_traits>
+#endif // ^^^ _MSC_FULL_VER < 192829203, TRANSITION ^^^
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
