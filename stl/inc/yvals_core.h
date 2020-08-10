@@ -47,7 +47,6 @@
 // P0513R0 Poisoning hash
 // P0516R0 Marking shared_future Copying As noexcept
 // P0517R0 Constructing future_error From future_errc
-// P0528R3 Atomic Compare-And-Exchange With Padding Bits
 // P0548R1 Tweaking common_type And duration
 // P0558R1 Resolving atomic<T> Named Base Class Inconsistencies
 // P0599R1 noexcept hash
@@ -149,6 +148,7 @@
 // P0482R6 Library Support For char8_t
 //     (mbrtoc8 and c8rtomb not yet implemented)
 // P0487R1 Fixing operator>>(basic_istream&, CharT*)
+// P0528R3 Atomic Compare-And-Exchange With Padding Bits
 // P0550R2 remove_cvref
 // P0553R4 <bit> Rotating And Counting Functions
 // P0556R3 <bit> Integral Power-Of-2 Operations (renamed by P1956R1)
@@ -184,6 +184,7 @@
 //     (except the std::invoke function which is implemented in C++17)
 // P1085R2 Removing span Comparisons
 // P1115R3 erase()/erase_if() Return size_type
+// P1123R0 Atomic Compare-And-Exchange With Padding Bits For atomic_ref
 // P1135R6 The C++ 20 Synchronization Library
 //     (partially implemented)
 // P1207R4 Movability Of Single-Pass Iterators
@@ -211,6 +212,7 @@
 // P1907R2 ranges::ssize
 // P1956R1 <bit> has_single_bit(), bit_ceil(), bit_floor(), bit_width()
 // P1959R0 Removing weak_equality And strong_equality
+// P1960R0 atomic_ref Cleanup
 // P1964R2 Replacing boolean With boolean-testable
 // P1976R2 Explicit Constructors For Fixed-Extent span From Dynamic-Extent Ranges
 // P2091R0 Fixing Issues With Range Access CPOs

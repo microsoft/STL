@@ -2427,6 +2427,14 @@ public:
         return this->load();
     }
 
+    void notify_one() const noexcept {
+        const_cast<_Base*>(static_cast<const _Base*>(this))->notify_one();
+    }
+
+    void notify_all() const noexcept {
+        const_cast<_Base*>(static_cast<const _Base*>(this))->notify_all();
+    }
+
 private:
     static void _Check_alignment([[maybe_unused]] const _Ty& _Value) {
         _ATOMIC_REF_CHECK_ALIGNMENT(
