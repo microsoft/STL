@@ -2365,7 +2365,7 @@ public:
 #if _ATOMIC_HAS_DCAS
         return is_always_lock_free;
 #else // ^^^ _ATOMIC_HAS_DCAS / !_ATOMIC_HAS_DCAS vvv
-        if constexpr (_Is_always_lock_free) {
+        if constexpr (is_always_lock_free) {
             return true;
         }
         return _std_atomic_has_cmpxchg16b() != 0;
