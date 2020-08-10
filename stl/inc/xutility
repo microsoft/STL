@@ -4751,6 +4751,12 @@ _INLINE_VAR constexpr bool _Fill_memset_is_safe =
 template <class _FwdIt, class _Ty>
 _INLINE_VAR constexpr bool _Fill_memset_is_safe<_FwdIt, _Ty, false> = false;
 
+template <class _DestTy, class _Ty>
+void _Fill_memset(_DestTy* const _Dest, const _Ty& _Val, size_t _Count) {
+    // first cast _Val to _DestTy in case _DestTy is bool
+    _CSTD memset(_Dest, static_cast<unsigned char>(static_cast<_DestTy>(_Val)), _Count);
+}
+
 #if _HAS_IF_CONSTEXPR
 template <class _FwdIt, class _Ty>
 _CONSTEXPR20 void fill(const _FwdIt _First, const _FwdIt _Last, const _Ty& _Val) {
@@ -4766,10 +4772,7 @@ _CONSTEXPR20 void fill(const _FwdIt _First, const _FwdIt _Last, const _Ty& _Val)
             if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
             {
-                using _DestTy = _Iter_value_t<decltype(_UFirst)>;
-                // first cast _Val to _DestTy in case _DestTy is bool
-                _CSTD memset(_UFirst, static_cast<unsigned char>(static_cast<_DestTy>(_Val)),
-                    static_cast<size_t>(_ULast - _UFirst));
+                _Fill_memset(_UFirst, _Val, static_cast<size_t>(_ULast - _UFirst));
                 return;
             }
         }
@@ -4791,9 +4794,7 @@ void _Fill_unchecked1(_FwdIt _First, _FwdIt _Last, const _Ty& _Val, false_type) 
 template <class _FwdIt, class _Ty>
 void _Fill_unchecked1(_FwdIt _First, _FwdIt _Last, const _Ty& _Val, true_type) {
     // copy _Val through [_First, _Last), memset optimization
-    using _DestTy = _Iter_value_t<_FwdIt>;
-    // first cast _Val to _DestTy in case _DestTy is bool
-    _CSTD memset(_First, static_cast<unsigned char>(static_cast<_DestTy>(_Val)), static_cast<size_t>(_Last - _First));
+    _Fill_memset(_First, _Val, static_cast<size_t>(_Last - _First));
 }
 
 template <class _FwdIt, class _Ty>
@@ -4832,10 +4833,7 @@ _CONSTEXPR20 _OutIt fill_n(_OutIt _Dest, const _Diff _Count_raw, const _Ty& _Val
                 if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
                 {
-                    using _DestTy = _Iter_value_t<decltype(_UDest)>;
-                    // first cast _Val to _DestTy in case _DestTy is bool
-                    _CSTD memset(
-                        _UDest, static_cast<unsigned char>(static_cast<_DestTy>(_Val)), static_cast<size_t>(_Count));
+                    _Fill_memset(_UDest, _Val, static_cast<size_t>(_Count));
                     _UDest += _Count;
                     _Seek_wrapped(_Dest, _UDest);
                     return _Dest;
@@ -4866,9 +4864,7 @@ _OutIt _Fill_n_unchecked2(_OutIt _Dest, _Diff _Count, const _Ty& _Val, false_typ
 template <class _OutIt, class _Diff, class _Ty>
 _OutIt _Fill_n_unchecked2(_OutIt _Dest, _Diff _Count, const _Ty& _Val, true_type) {
     // copy _Val _Count times through [_Dest, ...), memset optimization
-    using _DestTy = _Iter_value_t<_OutIt>;
-    // first cast _Val to _DestTy in case _DestTy is bool
-    _CSTD memset(_Dest, static_cast<unsigned char>(static_cast<_DestTy>(_Val)), static_cast<size_t>(_Count));
+    _Fill_memset(_Dest, _Val, static_cast<size_t>(_Count));
     return _Dest + _Count;
 }
 
