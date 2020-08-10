@@ -307,7 +307,7 @@ void test_case_VSO_802346_unordered_set() {
     TestType source;
     source.construct(size_t{}, stateful_allocator<int>(1234));
     const auto oldBuckets = source.get().bucket_count();
-    assert(oldBuckets == std::unordered_set<int>().bucket_count());
+    assert(oldBuckets == unordered_set<int>().bucket_count());
     TestType target;
     target.construct(move(source.get()), stateful_allocator<int>(42));
     assert(target.get().bucket_count() == oldBuckets);

@@ -11,7 +11,7 @@ system. See https://docs.microsoft.com/en-us/azure/virtual-machine-scale-sets/ov
 for more information.
 
 This script assumes you have installed Azure tools into PowerShell by following the instructions
-at https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-3.6.1
+at https://docs.microsoft.com/en-us/powershell/azure/install-az-ps
 or are running from Azure Cloud Shell.
 #>
 
@@ -211,20 +211,20 @@ $denyEverythingElse = New-AzNetworkSecurityRuleConfig `
   -DestinationAddressPrefix * `
   -DestinationPortRange *
 
-$NetworkSecurityGroupName = $ResourceGroupName + 'NetworkSecurity'
+$NetworkSecurityGroupName = $ResourceGroupName + '-NetworkSecurity'
 $NetworkSecurityGroup = New-AzNetworkSecurityGroup `
   -Name $NetworkSecurityGroupName `
   -ResourceGroupName $ResourceGroupName `
   -Location $Location `
   -SecurityRules @($allowHttp, $allowDns, $denyEverythingElse)
 
-$SubnetName = $ResourceGroupName + 'Subnet'
+$SubnetName = $ResourceGroupName + '-Subnet'
 $Subnet = New-AzVirtualNetworkSubnetConfig `
   -Name $SubnetName `
   -AddressPrefix "10.0.0.0/16" `
   -NetworkSecurityGroup $NetworkSecurityGroup
 
-$VirtualNetworkName = $ResourceGroupName + 'Network'
+$VirtualNetworkName = $ResourceGroupName + '-Network'
 $VirtualNetwork = New-AzVirtualNetwork `
   -Name $VirtualNetworkName `
   -ResourceGroupName $ResourceGroupName `
@@ -237,7 +237,7 @@ Write-Progress `
   -Activity 'Creating prototype VM' `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
-$NicName = $ResourceGroupName + 'NIC'
+$NicName = $ResourceGroupName + '-NIC'
 $Nic = New-AzNetworkInterface `
   -Name $NicName `
   -ResourceGroupName $ResourceGroupName `
@@ -272,12 +272,14 @@ Write-Progress `
   -Status 'Running provisioning script provision-image.ps1 in VM' `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
-Invoke-AzVMRunCommand `
+$ProvisionImageResult = Invoke-AzVMRunCommand `
   -ResourceGroupName $ResourceGroupName `
   -VMName $ProtoVMName `
   -CommandId 'RunPowerShellScript' `
   -ScriptPath "$PSScriptRoot\provision-image.ps1" `
   -Parameter @{AdminUserPassword = $AdminPW }
+
+Write-Host "provision-image.ps1 output: $($ProvisionImageResult.value.Message)"
 
 ####################################################################################################
 Write-Progress `
@@ -343,9 +345,9 @@ Write-Progress `
   -Status 'Creating scale set' `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
-$VmssIpConfigName = $ResourceGroupName + 'VmssIpConfig'
+$VmssIpConfigName = $ResourceGroupName + '-VmssIpConfig'
 $VmssIpConfig = New-AzVmssIpConfig -SubnetId $Nic.IpConfigurations[0].Subnet.Id -Primary -Name $VmssIpConfigName
-$VmssName = $ResourceGroupName + 'Vmss'
+$VmssName = $ResourceGroupName + '-Vmss'
 $Vmss = New-AzVmssConfig `
   -Location $Location `
   -SkuCapacity 0 `

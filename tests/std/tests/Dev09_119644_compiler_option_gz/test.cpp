@@ -8,6 +8,6 @@ int main() {
 #else
 int __cdecl main() {
 #endif
-    // Test Dev10#465793 "iostreams: <locale> is incompatible with /Gr and /Gz".
+    // Test Dev10-465793 "iostreams: <locale> is incompatible with /Gr and /Gz".
     std::locale loc("english_US");
 }

@@ -8,10 +8,11 @@ using namespace std;
 
 // COMMON TYPES
 #define FLIT(x)                x
-#define TESTR(fun)             do_random_test<fun##_type>::gen_data(fun##_dist, fun##_vals, fun##_smaller_ok, fun##_larger_ok)
 #define BINSIZE                100
 #define SAMPLESIZE             100000
 #define CHI_SQUARED_FAIL_LIMIT 125.0
+
+#define TESTR(fun) do_random_test<fun##_type>::gen_data(fun##_dist, fun##_vals, fun##_smaller_ok, fun##_larger_ok)
 
 typedef struct One_arg { // argument plus return value
     Float_type arg1;

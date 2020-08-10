@@ -15,10 +15,6 @@
 #include <vector>
 #include <xstring>
 
-#ifdef __cpp_lib_concepts
-#include <concepts>
-#endif // __cpp_lib_concepts
-
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
@@ -51,25 +47,6 @@ _STD_BEGIN
         "invalid template argument for " #_RandType ": N4659 29.6.1.1 [rand.req.genl]/1f requires one of "     \
         "unsigned short, unsigned int, unsigned long, or unsigned long long");                                 \
     _RNG_PROHIBIT_CHAR(_CheckedType)
-
-
-#ifdef __cpp_lib_concepts
-// STRUCT TEMPLATE _Require_constant
-template <auto>
-struct _Require_constant; // not defined; _Require_constant<E> is a valid type if E is a constant expression
-
-// CONCEPT uniform_random_bit_generator
-// clang-format off
-template <class _Ty>
-concept uniform_random_bit_generator = invocable<_Ty&> && unsigned_integral<invoke_result_t<_Ty&>> && requires {
-    { (_Ty::min)() } -> same_as<invoke_result_t<_Ty&>>;
-    { (_Ty::max)() } -> same_as<invoke_result_t<_Ty&>>;
-    typename _Require_constant<(_Ty::min)()>;
-    typename _Require_constant<(_Ty::max)()>;
-    requires (_Ty::min)() < (_Ty::max)();
-};
-// clang-format on
-#endif // __cpp_lib_concepts
 
 // ALIAS TEMPLATE _Enable_if_seed_seq_t
 template <class _Seed_seq, class _Self, class _Engine = _Self>
@@ -4507,7 +4484,7 @@ private:
     result_type _Eval(_Engine& _Eng, const param_type& _Par0) const {
         double _Px           = _NRAND(_Eng, double);
         const auto _First    = _Par0._Pcdf.begin();
-        const auto _Position = _STD lower_bound(_First, _Par0._Pcdf.end(), _Px);
+        const auto _Position = _STD lower_bound(_First, _Prev_iter(_Par0._Pcdf.end()), _Px);
         return static_cast<result_type>(_Position - _First);
     }
 

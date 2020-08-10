@@ -125,6 +125,26 @@ namespace test {
             ptr_ = s.peek();
         }
         // clang-format on
+
+        [[nodiscard]] friend constexpr boolish operator==(sentinel const s, Element* const ptr) noexcept {
+            return {s.ptr_ == ptr};
+        }
+        [[nodiscard]] friend constexpr boolish operator==(Element* const ptr, sentinel const s) noexcept {
+            return {s.ptr_ == ptr};
+        }
+        [[nodiscard]] friend constexpr boolish operator!=(sentinel const s, Element* const ptr) noexcept {
+            return !(s == ptr);
+        }
+        [[nodiscard]] friend constexpr boolish operator!=(Element* const ptr, sentinel const s) noexcept {
+            return !(s == ptr);
+        }
+
+        [[nodiscard]] friend constexpr ptrdiff_t operator-(sentinel const s, Element* const ptr) noexcept {
+            return s.ptr_ - ptr;
+        }
+        [[nodiscard]] friend constexpr ptrdiff_t operator-(Element* const ptr, sentinel const s) noexcept {
+            return ptr - s.ptr_;
+        }
     };
 
     // clang-format off
@@ -188,70 +208,86 @@ namespace test {
         // clang-format on
 
         template <class Cat, class Elem>
-        constexpr boolish operator==(proxy_reference<Cat, Elem> that) const requires CanEq<Element, Elem> {
+        [[nodiscard]] constexpr boolish operator==(proxy_reference<Cat, Elem> that) const
+            requires CanEq<Element, Elem> {
             return {ref_ == that.peek()};
         }
         template <class Cat, class Elem>
-        constexpr boolish operator!=(proxy_reference<Cat, Elem> that) const requires CanNEq<Element, Elem> {
+        [[nodiscard]] constexpr boolish operator!=(proxy_reference<Cat, Elem> that) const
+            requires CanNEq<Element, Elem> {
             return {ref_ != that.peek()};
         }
         template <class Cat, class Elem>
-        constexpr boolish operator<(proxy_reference<Cat, Elem> that) const requires CanLt<Element, Elem> {
+        [[nodiscard]] constexpr boolish operator<(proxy_reference<Cat, Elem> that) const requires CanLt<Element, Elem> {
             return {ref_ < that.peek()};
         }
         template <class Cat, class Elem>
-        constexpr boolish operator>(proxy_reference<Cat, Elem> that) const requires CanGt<Element, Elem> {
+        [[nodiscard]] constexpr boolish operator>(proxy_reference<Cat, Elem> that) const requires CanGt<Element, Elem> {
             return {ref_ > that.peek()};
         }
         template <class Cat, class Elem>
-        constexpr boolish operator<=(proxy_reference<Cat, Elem> that) const requires CanLtE<Element, Elem> {
+        [[nodiscard]] constexpr boolish operator<=(proxy_reference<Cat, Elem> that) const
+            requires CanLtE<Element, Elem> {
             return {ref_ <= that.peek()};
         }
         template <class Cat, class Elem>
-        constexpr boolish operator>=(proxy_reference<Cat, Elem> that) const requires CanGtE<Element, Elem> {
+        [[nodiscard]] constexpr boolish operator>=(proxy_reference<Cat, Elem> that) const
+            requires CanGtE<Element, Elem> {
             return {ref_ >= that.peek()};
         }
 
         // clang-format off
-        friend constexpr boolish operator==(proxy_reference r, Value const& val) requires CanEq<Element, Value> {
+        [[nodiscard]] friend constexpr boolish operator==(proxy_reference r, Value const& val)
+            requires CanEq<Element, Value> {
             return {r.ref_ == val};
         }
-        friend constexpr boolish operator==(Value const& val, proxy_reference r) requires CanEq<Element, Value> {
+        [[nodiscard]] friend constexpr boolish operator==(Value const& val, proxy_reference r)
+            requires CanEq<Element, Value> {
             return {r.ref_ == val};
         }
-        friend constexpr boolish operator!=(proxy_reference r, Value const& val) requires CanNEq<Element, Value> {
+        [[nodiscard]] friend constexpr boolish operator!=(proxy_reference r, Value const& val)
+            requires CanNEq<Element, Value> {
             return {r.ref_ != val};
         }
-        friend constexpr boolish operator!=(Value const& val, proxy_reference r) requires CanNEq<Element, Value> {
+        [[nodiscard]] friend constexpr boolish operator!=(Value const& val, proxy_reference r)
+            requires CanNEq<Element, Value> {
             return {r.ref_ != val};
         }
-        friend constexpr boolish operator<(Value const& val, proxy_reference r) requires CanLt<Value, Element> {
+        [[nodiscard]] friend constexpr boolish operator<(Value const& val, proxy_reference r)
+            requires CanLt<Value, Element> {
             return {val < r.ref_};
         }
-        friend constexpr boolish operator<(proxy_reference r, Value const& val) requires CanLt<Element, Value> {
+        [[nodiscard]] friend constexpr boolish operator<(proxy_reference r, Value const& val)
+            requires CanLt<Element, Value> {
             return {r.ref_ < val};
         }
-        friend constexpr boolish operator>(Value const& val, proxy_reference r) requires CanGt<Value, Element> {
+        [[nodiscard]] friend constexpr boolish operator>(Value const& val, proxy_reference r)
+            requires CanGt<Value, Element> {
             return {val > r.ref_};
         }
-        friend constexpr boolish operator>(proxy_reference r, Value const& val) requires CanGt<Element, Value> {
+        [[nodiscard]] friend constexpr boolish operator>(proxy_reference r, Value const& val)
+            requires CanGt<Element, Value> {
             return {r.ref_ > val};
         }
-        friend constexpr boolish operator<=(Value const& val, proxy_reference r) requires CanLtE<Value, Element> {
+        [[nodiscard]] friend constexpr boolish operator<=(Value const& val, proxy_reference r)
+            requires CanLtE<Value, Element> {
             return {val <= r.ref_};
         }
-        friend constexpr boolish operator<=(proxy_reference r, Value const& val) requires CanLtE<Element, Value> {
+        [[nodiscard]] friend constexpr boolish operator<=(proxy_reference r, Value const& val)
+            requires CanLtE<Element, Value> {
             return {r.ref_ <= val};
         }
-        friend constexpr boolish operator>=(Value const& val, proxy_reference r) requires CanGtE<Value, Element> {
+        [[nodiscard]] friend constexpr boolish operator>=(Value const& val, proxy_reference r)
+            requires CanGtE<Value, Element> {
             return {val >= r.ref_};
         }
-        friend constexpr boolish operator>=(proxy_reference r, Value const& val) requires CanGtE<Element, Value> {
+        [[nodiscard]] friend constexpr boolish operator>=(proxy_reference r, Value const& val)
+            requires CanGtE<Element, Value> {
             return {r.ref_ >= val};
         }
         // clang-format on
 
-        constexpr Element& peek() const noexcept {
+        [[nodiscard]] constexpr Element& peek() const noexcept {
             return ref_;
         }
     };
@@ -466,7 +502,8 @@ namespace test {
         // iterator unwrapping operations:
         using _Prevent_inheriting_unwrap = iterator;
 
-        using unwrap = iterator<Category, Element, Diff, Eq, Proxy, IsWrapped::no>;
+        using unwrap = std::conditional_t<derived_from<Category, contiguous>, Element*,
+            iterator<Category, Element, Diff, Eq, Proxy, IsWrapped::no>>;
 
         [[nodiscard]] constexpr auto _Unwrapped() const& noexcept requires (to_bool(Wrapped) && to_bool(Eq)) {
             return unwrap{ptr_};
@@ -479,11 +516,19 @@ namespace test {
         static constexpr bool _Unwrap_when_unverified = true;
 
         constexpr void _Seek_to(unwrap const& i) noexcept requires (to_bool(Wrapped) && to_bool(Eq)) {
-            ptr_ = i.peek();
+            if constexpr (at_least<contiguous>) {
+                ptr_ = i;
+            } else {
+                ptr_ = i.peek();
+            }
         }
 
         constexpr void _Seek_to(unwrap&& i) noexcept requires (to_bool(Wrapped)) {
-            ptr_ = i.peek();
+            if constexpr (at_least<contiguous>) {
+                ptr_ = i;
+            } else {
+                ptr_ = i.peek();
+            }
         }
     };
     // clang-format on
@@ -570,8 +615,8 @@ namespace test {
             return elements_.data();
         }
 
-        using UI = iterator<Category, Element, Diff, Eq, Proxy, IsWrapped::no>;
-        using US = conditional_t<to_bool(IsCommon), I, sentinel<Element, IsWrapped::no>>;
+        using UI = typename I::unwrap;
+        using US = conditional_t<to_bool(IsCommon), UI, sentinel<Element, IsWrapped::no>>;
 
         [[nodiscard]] constexpr UI _Unchecked_begin() const noexcept {
             if constexpr (!derived_from<Category, fwd>) {
@@ -984,11 +1029,6 @@ constexpr void test_contiguous() {
 }
 
 template <class Instantiator, class Element1, class Element2>
-constexpr void input_range_output_iterator_permutations() {
-    with_input_ranges<with_output_iterators<Instantiator, Element2>, Element1>::call();
-}
-
-template <class Instantiator, class Element1, class Element2>
 constexpr void test_in_in() {
     with_input_ranges<with_input_ranges<Instantiator, Element2>, Element1>::call();
 }
@@ -1004,8 +1044,33 @@ constexpr void test_fwd_fwd() {
 }
 
 template <class Instantiator, class Element1, class Element2>
+constexpr void test_bidi_bidi() {
+    with_bidirectional_ranges<with_bidirectional_ranges<Instantiator, Element2>, Element1>::call();
+}
+
+template <class Instantiator, class Element1, class Element2>
+constexpr void input_range_output_iterator_permutations() {
+    with_input_ranges<with_output_iterators<Instantiator, Element2>, Element1>::call();
+}
+
+template <class Instantiator, class Element1, class Element2>
 constexpr void test_in_write() {
     with_input_ranges<with_writable_iterators<Instantiator, Element2>, Element1>::call();
+}
+
+template <class Instantiator, class Element1, class Element2>
+constexpr void test_fwd_write() {
+    with_forward_ranges<with_writable_iterators<Instantiator, Element2>, Element1>::call();
+}
+
+template <class Instantiator, class Element1, class Element2>
+constexpr void test_bidi_write() {
+    with_bidirectional_ranges<with_writable_iterators<Instantiator, Element2>, Element1>::call();
+}
+
+template <class Instantiator, class Element1, class Element2>
+constexpr void test_contiguous_write() {
+    with_contiguous_ranges<with_writable_iterators<Instantiator, Element2>, Element1>::call();
 }
 
 template <class Instantiator, class Element>
@@ -1016,6 +1081,11 @@ constexpr void test_read() {
 template <class Instantiator, class Element1, class Element2>
 constexpr void test_read_write() {
     with_input_iterators<with_writable_iterators<Instantiator, Element2>, Element1>::call();
+}
+
+template <class Instantiator, class Element1, class Element2, class Element3>
+constexpr void test_in_in_write() {
+    with_input_ranges<with_input_ranges<with_writable_iterators<Instantiator, Element3>, Element2>, Element1>::call();
 }
 
 template <size_t I>
