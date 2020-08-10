@@ -1173,7 +1173,7 @@ namespace iterator_cust_swap_test {
         STATIC_ASSERT(noexcept(ranges::iter_swap(&i0, &i1)));
         return true;
     }
-#ifdef __clang__ // TRANSITION, VSO-938163
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-938163
     STATIC_ASSERT(test());
 #endif // TRANSITION, VSO-938163
 
