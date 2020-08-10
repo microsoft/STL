@@ -60,12 +60,14 @@ struct SynthOrdered {
 
 struct OrderedChar {
     OrderedChar() = default;
-    OrderedChar(const char c) : c(c){};
+    OrderedChar(const char c) : c(c) {}
 
     OrderedChar& operator=(const char& other) {
         c = other;
         return *this;
     }
+
+    auto operator<=>(const OrderedChar&) const = default;
 
     operator char() const {
         return c;
@@ -73,14 +75,6 @@ struct OrderedChar {
 
     char c;
 };
-
-auto operator<=>(const OrderedChar& left, const OrderedChar& right) {
-    return left.c <=> right.c;
-}
-
-auto operator==(const OrderedChar& left, const OrderedChar& right) {
-    return left.c == right.c;
-}
 
 struct WeaklyOrderedChar : OrderedChar {};
 struct WeaklyOrderdByOmissionChar : OrderedChar {};
