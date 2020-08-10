@@ -1278,7 +1278,7 @@ compiler option, or define _ALLOW_RTCc_IN_STL to acknowledge that you have recei
 // Note that the STL DLL builds will set this to XP for ABI compatibility with VS2015 which supported XP.
 #ifndef _STL_WIN32_WINNT
 #if defined(_M_ARM64)
-// The first ARM64 was Windows 10
+// The first ARM64 Windows was Windows 10
 #define _STL_WIN32_WINNT _ST_WIN32_WINNT_WIN10
 #elif defined(_M_ARM) || defined(_ONECORE) || defined(_CRT_APP)
 // The first ARM or OneCore or App Windows was Windows 8
