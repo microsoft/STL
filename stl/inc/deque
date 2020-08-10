@@ -1292,6 +1292,10 @@ public:
         auto _Count = static_cast<size_type>(_Last - _First);
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
+        if (_Count == 0) {
+            return _First;
+        }
+
         if (_Off < static_cast<size_type>(end() - _Last)) { // closer to front
             _STD move_backward(begin(), _First, _Last); // copy over hole
             for (; 0 < _Count; --_Count) {
