@@ -12,7 +12,9 @@
 #pragma message("The contents of <format> are available only with C++20 or later.")
 #else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
 
+#include <iterator>
 #include <locale>
+#include <string>
 #include <string_view>
 #include <variant>
 
@@ -34,17 +36,49 @@ public:
     using char_type      = _CharT;
     using const_iterator = typename basic_string_view<_CharT>::const_iterator;
 
+private:
+    basic_string_view<_CharT> _Format_string;
+    size_t _Num_args;
+    // The standard says this is size_t, however we use ptrdiff_t to save some space
+    // by not having to store the indexing mode. Below is a more detailed explination
+    // of how this works.
+    ptrdiff_t _Next_arg_id = 0;
+
+
 public:
-    constexpr explicit basic_format_parse_context(basic_string_view<_CharT> _Fmt, size_t _Num_args = 0) noexcept;
+    constexpr explicit basic_format_parse_context(basic_string_view<_CharT> _Fmt, size_t _Num_args = 0) noexcept
+        : _Format_string(_Fmt), _Num_args(_Num_args) {}
     basic_format_parse_context(const basic_format_parse_context&) = delete;
     basic_format_parse_context& operator=(const basic_format_parse_context&) = delete;
 
-    constexpr const_iterator begin() const noexcept;
-    constexpr const_iterator end() const noexcept;
-    constexpr void advance_to(const_iterator _It);
+    constexpr const_iterator begin() const noexcept {
+        return _Format_string.begin();
+    }
+    constexpr const_iterator end() const noexcept {
+        return _Format_string.end();
+    }
+    constexpr void advance_to(const_iterator _It) {
+        _Format_string.remove_prefix(it - begin());
+    }
 
-    constexpr size_t next_arg_id();
-    constexpr void check_arg_id(size_t _Id);
+
+    // While the standard presents an exposition only enum value for
+    // the indexing mode (manual, automatic, or unknown) we use _Next_arg_id to indicate it.
+    // _Next_arg_id == 0 means unknown
+    // _Next_arg_id > 0 means automatic
+    // _Next_arg_id == -1 means manual
+    constexpr size_t next_arg_id() {
+        if (_Next_arg_id >= 0) {
+            return next_arg_id++;
+        }
+        throw _STD format_error("Can not switch from manual to automatic indexing");
+    }
+    constexpr void check_arg_id(size_t _Id) {
+        if (_Next_arg_id > 0) {
+            throw _STD format_error("Can not switch from automatic to manual indexing");
+        }
+        _Next_arg_id = -1;
+    }
 };
 
 
@@ -60,13 +94,38 @@ constexpr bool _Is_named_arg_v = false;
 template <class _Ty, class _CharT>
 constexpr bool _Is_named_arg_v<_Named_arg<_CharT, _Ty>> = true;
 
+template <typename _Context>
+struct _Custom_value {
+    const void* _Value;
+    void (*_Format)(const void*, basic_format_parse_context<_Context::char_type>&, _Context&);
+};
+template <typename _Context>
+using _Format_arg_value =
+    _STD variant<monostate, int, unsigned, long long, unsigned long long, bool, _Context::char_type, float, r double,
+        const void*, _STD basic_string_view<_Context::char_type>, _Custom_value<_Context>>;
+
 template <class _Context>
 class basic_format_arg {
-public:
-    class handle;
+private:
+    using _Char_type = typename _Context::char_type;
+    _Format_arg_value _Value;
 
-    basic_format_arg() noexcept;
-    explicit operator bool() const noexcept;
+public:
+    class handle {
+        const void* _Ptr;
+        void (*_Format)(basic_format_parse_context<_Char_type>& _Context, const void*);
+        friend class basic_format_arg<_Context>;
+
+    public:
+        void format(basic_format_parse_context<_Char_type>&, _Context& ctx) {
+            _Format()
+        }
+    };
+
+    basic_format_arg() noexcept = default;
+    explicit operator bool() const noexcept {
+        return !_STD holds_alternative<monostate>(_Value);
+    }
 };
 
 template <class _Context, class... _Args>
@@ -91,26 +150,42 @@ public:
 
 template <class _Out, class _CharT>
 class basic_format_context {
+private:
+    _Out _OutputIt;
+    basic_format_args<basic_format_context> _Args;
+
 public:
     using iterator  = _Out;
     using char_type = _CharT;
     template <class _Ty>
     // using formatter_type = formatter<_Ty, _CharT>;
-    basic_format_arg<basic_format_context> arg(size_t _Id) const;
+    basic_format_arg<basic_format_context> arg(size_t _Id) const {
+        return _Args.get(_Id);
+    }
     _STD locale locale();
 
-    iterator out();
-    void advance_to(iterator _It);
+    iterator out() {
+        return _Out;
+    }
+    void advance_to(iterator _It) {
+        // TODO: IDL support probably required
+        _Out = _It;
+    }
 };
 
-template <typename _Context>
-struct _Custom_value {
-    const void* _Value;
-    void (*_Format)(const void*, basic_format_parse_context<_Context::char_type>&, _Context&);
-};
-template <typename _Context>
-using _Format_arg_value = _STD variant<int, unsigned, long long, unsigned long long, bool, _Context::char_type, float,
-    double, const void*, _STD basic_string_view<_Context::char_type>, _Custom_value<_Context>>;
+
+// alias declerations
+using format_context  = basic_format_context<back_insert_iterator<string>, string::value_type>;
+using wformat_context = basic_format_context<back_insert_iterator<wstring>, wstring::value_type>;
+using format_args     = basic_format_args<format_context>;
+using wformat_args    = basic_format_args<wformat_context>;
+
+// FUNCTION vformat
+string vformat(string_view _Fmt, format_args _Args);
+wstring vformat(wstring_view _Fmt, wformat_args _Args);
+string vformat(const locale& _Loc, string_view _Fmt, format_args _Args);
+wstring vformat(const locale& _Loc, wstring_view _Fmt, wformat_args _Args);
+
 
 _STD_END
 
