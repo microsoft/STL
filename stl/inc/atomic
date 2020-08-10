@@ -1647,7 +1647,7 @@ _CXX20_DEPRECATE_VOLATILE _INLINE_VAR constexpr bool _Deprecate_non_lock_free_vo
 template <class _Ty>
 struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
     // provides operator overloads and other support for atomic integral specializations
-    using _Base = _Atomic_integral<_Ty>;
+    using _Base           = _Atomic_integral<_Ty>;
     using difference_type = _Ty;
 
 #ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
@@ -1781,7 +1781,7 @@ struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
 template <class _Ty>
 struct _Atomic_integral_facade<_Ty&> : _Atomic_integral<_Ty&> {
     // provides operator overloads and other support for atomic integral specializations
-    using _Base = _Atomic_integral<_Ty&>;
+    using _Base           = _Atomic_integral<_Ty&>;
     using difference_type = _Ty;
 
 #ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
@@ -1860,7 +1860,7 @@ struct _Atomic_integral_facade<_Ty&> : _Atomic_integral<_Ty&> {
 template <class _Ty>
 struct _Atomic_floating : _Atomic_storage<_Ty> {
     // provides atomic floating-point operations
-    using _Base = _Atomic_storage<_Ty>;
+    using _Base           = _Atomic_storage<_Ty>;
     using difference_type = _Ty;
 
 #ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
@@ -1919,7 +1919,7 @@ struct _Atomic_floating : _Atomic_storage<_Ty> {
 template <class _Ty>
 struct _Atomic_floating<_Ty&> : _Atomic_storage<_Ty&> {
     // provides atomic floating-point operations
-    using _Base = _Atomic_storage<_Ty&>;
+    using _Base           = _Atomic_storage<_Ty&>;
     using difference_type = _Ty;
 
 #ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
@@ -1960,7 +1960,7 @@ struct _Atomic_floating<_Ty&> : _Atomic_storage<_Ty&> {
 // STRUCT TEMPLATE _Atomic_pointer
 template <class _Ty>
 struct _Atomic_pointer : _Atomic_storage<_Ty> {
-    using _Base = _Atomic_storage<_Ty>;
+    using _Base           = _Atomic_storage<_Ty>;
     using difference_type = ptrdiff_t;
 
 #ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
@@ -2064,7 +2064,7 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
 // STRUCT TEMPLATE _Atomic_pointer
 template <class _Ty>
 struct _Atomic_pointer<_Ty&> : _Atomic_storage<_Ty&> {
-    using _Base = _Atomic_storage<_Ty&>;
+    using _Base           = _Atomic_storage<_Ty&>;
     using difference_type = ptrdiff_t;
 
 #ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
