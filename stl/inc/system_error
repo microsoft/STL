@@ -97,15 +97,16 @@ public:
     }
 #endif // !_HAS_CXX20
 
+// TRANSITION, GH-489
 #ifdef __cpp_lib_concepts
-    _NODISCARD bool operator<(const error_category& _Right) const noexcept {
-        return _Addr < _Right._Addr;
-    }
-
     _NODISCARD strong_ordering operator<=>(const error_category& _Right) const noexcept {
         return compare_three_way()(this, &_Right);
     }
-#endif // __cpp_lib_concepts
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+    _NODISCARD bool operator<(const error_category& _Right) const noexcept {
+        return _Addr < _Right._Addr;
+    }
+#endif // !defined(__cpp_lib_concepts)
 
     error_category(const error_category&) = delete;
     error_category& operator=(const error_category&) = delete;
@@ -182,6 +183,20 @@ public:
         return _System_error_equal(_Left, _Right);
     }
 
+// TRANSITION, GH-489
+#ifdef __cpp_lib_concepts
+    _NODISCARD friend strong_ordering operator<=>(const error_code& _Left, const error_code& _Right) noexcept {
+        if (auto _Result = _Left.category() <=> _Right.category(); _Result != 0) {
+            return _Result;
+        }
+        return _Left.value() <=> _Right.value();
+    }
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+    _NODISCARD friend bool operator<(const error_code& _Left, const error_code& _Right) noexcept {
+        return _Left.category() < _Right.category()
+               || (_Left.category() == _Right.category() && _Left.value() < _Right.value());
+    }
+#endif // !defined(__cpp_lib_concepts)
 #if !_HAS_CXX20
     _NODISCARD friend bool operator==(const error_condition& _Left, const error_code& _Right) noexcept {
         return _System_error_equal(_Right, _Left);
@@ -198,21 +213,7 @@ public:
     _NODISCARD friend bool operator!=(const error_condition& _Left, const error_code& _Right) noexcept {
         return !_System_error_equal(_Right, _Left);
     }
-
-    _NODISCARD friend bool operator<(const error_code& _Left, const error_code& _Right) noexcept {
-        return _Left.category() < _Right.category()
-               || (_Left.category() == _Right.category() && _Left.value() < _Right.value());
-    }
 #endif // !_HAS_CXX20
-
-#ifdef __cpp_lib_concepts
-    _NODISCARD friend strong_ordering operator<=>(const error_code& _Left, const error_code& _Right) noexcept {
-        if (auto _Result = _Left.category() <=> _Right.category(); _Result != 0) {
-            return _Result;
-        }
-        return _Left.value() <=> _Right.value();
-    }
-#endif // __cpp_lib_concepts
 #endif // _STL_OPTIMIZE_SYSTEM_ERROR_OPERATORS
 
 private:
@@ -269,17 +270,7 @@ public:
         return _Left.category() == _Right.category() && _Left.value() == _Right.value();
     }
 
-#if !_HAS_CXX20
-    _NODISCARD friend bool operator!=(const error_condition& _Left, const error_condition& _Right) noexcept {
-        return !(_Left == _Right);
-    }
-
-    _NODISCARD friend bool operator<(const error_condition& _Left, const error_condition& _Right) noexcept {
-        return _Left.category() < _Right.category()
-               || (_Left.category() == _Right.category() && _Left.value() < _Right.value());
-    }
-#endif // !_HAS_CXX20
-
+// TRANSITION, GH-489
 #ifdef __cpp_lib_concepts
     _NODISCARD friend strong_ordering operator<=>(
         const error_condition& _Left, const error_condition& _Right) noexcept {
@@ -288,14 +279,24 @@ public:
         }
         return _Left.value() <=> _Right.value();
     }
-#endif // __cpp_lib_concepts
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+    _NODISCARD friend bool operator<(const error_condition& _Left, const error_condition& _Right) noexcept {
+        return _Left.category() < _Right.category()
+               || (_Left.category() == _Right.category() && _Left.value() < _Right.value());
+    }
+#endif // !defined(__cpp_lib_concepts)
+#if !_HAS_CXX20
+    _NODISCARD friend bool operator!=(const error_condition& _Left, const error_condition& _Right) noexcept {
+        return !(_Left == _Right);
+    }
+#endif // !_HAS_CXX20
 
     // We grant friendship to the operators from error_code here to allow is_error_code_enum_v but not
     // is_error_condition_enum_v enums to be compared directly with error_condition; for example:
     // io_errc::stream == make_error_condition(errc::out_of_memory)
     friend bool operator==(const error_code& _Left, const error_condition& _Right) noexcept;
-    friend bool operator==(const error_condition& _Left, const error_code& _Right) noexcept;
 #if !_HAS_CXX20
+    friend bool operator==(const error_condition& _Left, const error_code& _Right) noexcept;
     friend bool operator!=(const error_code& _Left, const error_condition& _Right) noexcept;
     friend bool operator!=(const error_condition& _Left, const error_code& _Right) noexcept;
 #endif // !_HAS_CXX20
