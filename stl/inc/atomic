@@ -1796,11 +1796,11 @@ struct _Atomic_integral_facade<_Ty&> : _Atomic_integral<_Ty&> {
     }
 
     _Ty fetch_add(const _Ty _Operand) const noexcept {
-        return const_cast<_Base*>(static_cast<const _Base*>(this))->fetch_add(_Operand);
+        return const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_add(_Operand);
     }
 
     _Ty fetch_add(const _Ty _Operand, const memory_order _Order) const noexcept {
-        return const_cast<_Base*>(static_cast<const _Base*>(this))->fetch_add(_Operand, _Order);
+        return const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_add(_Operand, _Order);
     }
 
     _Ty fetch_sub(const _Ty _Operand) const noexcept {
@@ -1820,27 +1820,27 @@ struct _Atomic_integral_facade<_Ty&> : _Atomic_integral<_Ty&> {
     }
 
     _Ty fetch_and(const _Ty _Operand) const noexcept {
-        return const_cast<_Base*>(static_cast<const _Base*>(this))->fetch_and(_Operand);
+        return const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_and(_Operand);
     }
 
     _Ty fetch_and(const _Ty _Operand, const memory_order _Order) const noexcept {
-        return const_cast<_Base*>(static_cast<const _Base*>(this))->fetch_and(_Operand, _Order);
+        return const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_and(_Operand, _Order);
     }
 
     _Ty fetch_or(const _Ty _Operand) const noexcept {
-        return const_cast<_Base*>(static_cast<const _Base*>(this))->fetch_or(_Operand);
+        return const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_or(_Operand);
     }
 
     _Ty fetch_or(const _Ty _Operand, const memory_order _Order) const noexcept {
-        return const_cast<_Base*>(static_cast<const _Base*>(this))->fetch_or(_Operand, _Order);
+        return const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_or(_Operand, _Order);
     }
 
     _Ty fetch_xor(const _Ty _Operand) const noexcept {
-        return const_cast<_Base*>(static_cast<const _Base*>(this))->fetch_xor(_Operand);
+        return const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_xor(_Operand);
     }
 
     _Ty fetch_xor(const _Ty _Operand, const memory_order _Order) const noexcept {
-        return const_cast<_Base*>(static_cast<const _Base*>(this))->fetch_xor(_Operand, _Order);
+        return const_cast<_Atomic_integral_facade*>(this)->_Base::fetch_xor(_Operand, _Order);
     }
 
     _Ty operator&=(const _Ty _Operand) const noexcept {
@@ -1931,8 +1931,8 @@ struct _Atomic_floating<_Ty&> : _Atomic_storage<_Ty&> {
 
     _Ty fetch_add(const _Ty _Operand, const memory_order _Order = memory_order_seq_cst) const noexcept {
         _Ty _Temp{this->load(memory_order_relaxed)};
-        while (!const_cast<_Base*>(static_cast<const _Base*>(this))
-                    ->compare_exchange_strong(_Temp, _Temp + _Operand, _Order)) { // keep trying
+        while (!const_cast<_Atomic_floating*>(this)->_Base::compare_exchange_strong(
+            _Temp, _Temp + _Operand, _Order)) { // keep trying
         }
 
         return _Temp;
@@ -1940,8 +1940,8 @@ struct _Atomic_floating<_Ty&> : _Atomic_storage<_Ty&> {
 
     _Ty fetch_sub(const _Ty _Operand, const memory_order _Order = memory_order_seq_cst) const noexcept {
         _Ty _Temp{this->load(memory_order_relaxed)};
-        while (!const_cast<_Base*>(static_cast<const _Base*>(this))
-                    ->compare_exchange_strong(_Temp, _Temp - _Operand, _Order)) { // keep trying
+        while (!const_cast<_Atomic_floating*>(this)->_Base::compare_exchange_strong(
+            _Temp, _Temp - _Operand, _Order)) { // keep trying
         }
 
         return _Temp;
@@ -2370,11 +2370,11 @@ public:
     }
 
     void store(const _Ty _Value) const noexcept {
-        const_cast<_Base*>(static_cast<const _Base*>(this))->store(_Value);
+        const_cast<atomic_ref*>(this)->_Base::store(_Value);
     }
 
     void store(const _Ty _Value, const memory_order _Order) const noexcept {
-        const_cast<_Base*>(static_cast<const _Base*>(this))->store(_Value, _Order);
+        const_cast<atomic_ref*>(this)->_Base::store(_Value, _Order);
     }
 
     _Ty operator=(const _Ty _Value) const noexcept {
@@ -2383,20 +2383,19 @@ public:
     }
 
     _Ty exchange(const _Ty _Value) const noexcept {
-        return const_cast<_Base*>(static_cast<const _Base*>(this))->exchange(_Value);
+        return const_cast<atomic_ref*>(this)->_Base::exchange(_Value);
     }
 
     _Ty exchange(const _Ty _Value, const memory_order _Order) const noexcept {
-        return const_cast<_Base*>(static_cast<const _Base*>(this))->exchange(_Value, _Order);
+        return const_cast<atomic_ref*>(this)->_Base::exchange(_Value, _Order);
     }
 
     bool compare_exchange_strong(_Ty& _Expected, const _Ty _Desired) const noexcept {
-        return const_cast<_Base*>(static_cast<const _Base*>(this))->compare_exchange_strong(_Expected, _Desired);
+        return const_cast<atomic_ref*>(this)->_Base::compare_exchange_strong(_Expected, _Desired);
     }
 
     bool compare_exchange_strong(_Ty& _Expected, const _Ty _Desired, const memory_order _Order) const noexcept {
-        return const_cast<_Base*>(static_cast<const _Base*>(this))
-            ->compare_exchange_strong(_Expected, _Desired, _Order);
+        return const_cast<atomic_ref*>(this)->_Base::compare_exchange_strong(_Expected, _Desired, _Order);
     }
 
     bool compare_exchange_strong(
@@ -2422,11 +2421,11 @@ public:
     }
 
     void notify_one() const noexcept {
-        const_cast<_Base*>(static_cast<const _Base*>(this))->notify_one();
+        const_cast<atomic_ref*>(this)->_Base::notify_one();
     }
 
     void notify_all() const noexcept {
-        const_cast<_Base*>(static_cast<const _Base*>(this))->notify_all();
+        const_cast<atomic_ref*>(this)->_Base::notify_all();
     }
 
 private:
