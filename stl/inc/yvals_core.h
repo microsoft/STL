@@ -47,6 +47,7 @@
 // P0513R0 Poisoning hash
 // P0516R0 Marking shared_future Copying As noexcept
 // P0517R0 Constructing future_error From future_errc
+// P0528R3 Atomic Compare-And-Exchange With Padding Bits
 // P0548R1 Tweaking common_type And duration
 // P0558R1 Resolving atomic<T> Named Base Class Inconsistencies
 // P0599R1 noexcept hash
