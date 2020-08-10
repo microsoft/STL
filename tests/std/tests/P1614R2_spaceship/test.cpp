@@ -122,10 +122,13 @@ namespace std {
     };
 } // namespace std
 
-struct dummy_diagnostic : std::error_category
-{
-    const char* name() const noexcept { return "dummy"; }
-    std::string message(int) const { return ""; }
+struct dummy_diagnostic : std::error_category {
+    const char* name() const noexcept {
+        return "dummy";
+    }
+    std::string message(int) const {
+        return "";
+    }
 };
 
 template <class ReturnType, class SmallType, class EqualType, class LargeType>
@@ -172,9 +175,8 @@ void unordered_containers_test(
     assert(something != different);
 }
 
-template<class ErrorType>
-void test_diagnostics_type()
-{
+template <class ErrorType>
+void test_diagnostics_type() {
     dummy_diagnostic* c_mem = new dummy_diagnostic[2];
 
     ErrorType e_smaller(0, c_mem[0]);
