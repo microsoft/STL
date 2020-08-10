@@ -11,6 +11,9 @@
 #if !_HAS_CXX17
 #pragma message("The contents of <optional> are available only with C++17 or later.")
 #else // ^^^ !_HAS_CXX17 / _HAS_CXX17 vvv
+#if _HAS_CXX20
+#include <compare>
+#endif // _HAS_CXX20
 #include <exception>
 #include <initializer_list>
 #include <type_traits>
@@ -443,11 +446,26 @@ _NODISCARD constexpr bool operator==(const optional<_Ty1>& _Left, const optional
     return _Left_has_value == _Right.has_value() && (!_Left_has_value || *_Left == *_Right);
 }
 
+#ifdef __cpp_lib_concepts
+template <class _Ty1, class _Ty2>
+_NODISCARD constexpr compare_three_way_result_t<_Ty1, _Ty2>
+operator<=>(const optional<_Ty1>& _Left, const optional<_Ty2>& _Right)
+{
+    if (_Left && _Right)
+    {
+        return *_Left <=> *_Right;
+    }
+
+    return bool(_Left) <=> bool(_Right);
+}
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#if !_HAS_CXX20
 template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool operator!=(const optional<_Ty1>& _Left, const optional<_Ty2>& _Right) {
     const bool _Left_has_value = _Left.has_value();
     return _Left_has_value != _Right.has_value() || (_Left_has_value && *_Left != *_Right);
 }
+#endif // !_HAS_CXX20
 
 template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool operator<(const optional<_Ty1>& _Left, const optional<_Ty2>& _Right) {
@@ -468,12 +486,20 @@ template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool operator>=(const optional<_Ty1>& _Left, const optional<_Ty2>& _Right) {
     return !_Right.has_value() || (_Left.has_value() && *_Left >= *_Right);
 }
+#endif // !defined(__cpp_lib_concepts)
 
 // COMPARISONS WITH nullopt [optional.nullops]
 template <class _Ty>
 _NODISCARD constexpr bool operator==(const optional<_Ty>& _Left, nullopt_t) noexcept {
     return !_Left.has_value();
 }
+
+#if _HAS_CXX20
+template<class _Ty>
+_NODISCARD constexpr strong_ordering operator<=>(const optional<_Ty>& _Left, nullopt_t) noexcept {
+    return bool(_Left) <=> false;
+}
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _Ty>
 _NODISCARD constexpr bool operator==(nullopt_t, const optional<_Ty>& _Right) noexcept {
     return !_Right.has_value();
@@ -523,6 +549,7 @@ template <class _Ty>
 _NODISCARD constexpr bool operator>=(nullopt_t, const optional<_Ty>& _Right) noexcept {
     return !_Right.has_value();
 }
+#endif // !_HAS_CXX20
 
 // COMPARISONS WITH T [optional.comp_with_t]
 template <class _Ty>
@@ -556,6 +583,19 @@ template <class _Ty1, class _Ty2, _Enable_if_comparable_with_equal<_Ty1, _Ty2> =
 _NODISCARD constexpr bool operator==(const optional<_Ty1>& _Left, const _Ty2& _Right) {
     return _Left ? *_Left == _Right : false;
 }
+
+#ifdef __cpp_lib_concepts
+template <class _Ty1, ThreeWayComparableWith<_Ty1> _Ty2>
+constexpr compare_three_way_result_t<_Ty1, _Ty2> operator<=>(const optional<_Ty1>& _Left, const _Ty2& _Right) {
+    if (_Left)
+    {
+        return *_Left <=> _Right;
+    }
+
+    return strong_ordering::less;
+}
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#if !_HAS_CXX20
 template <class _Ty1, class _Ty2, _Enable_if_comparable_with_equal<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator==(const _Ty1& _Left, const optional<_Ty2>& _Right) {
     return _Right ? _Left == *_Right : false;
@@ -569,6 +609,7 @@ template <class _Ty1, class _Ty2, _Enable_if_comparable_with_not_equal<_Ty1, _Ty
 _NODISCARD constexpr bool operator!=(const _Ty1& _Left, const optional<_Ty2>& _Right) {
     return _Right ? _Left != *_Right : true;
 }
+#endif // !_HAS_CXX20
 
 template <class _Ty1, class _Ty2, _Enable_if_comparable_with_less<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator<(const optional<_Ty1>& _Left, const _Ty2& _Right) {
@@ -605,6 +646,7 @@ template <class _Ty1, class _Ty2, _Enable_if_comparable_with_greater_equal<_Ty1,
 _NODISCARD constexpr bool operator>=(const _Ty1& _Left, const optional<_Ty2>& _Right) {
     return _Right ? _Left >= *_Right : true;
 }
+#endif // !defined(__cpp_lib_concepts)
 
 // FUNCTION TEMPLATE swap [optional.specalg]
 template <class _Ty, enable_if_t<is_move_constructible_v<_Ty> && is_swappable_v<_Ty>, int> = 0>
