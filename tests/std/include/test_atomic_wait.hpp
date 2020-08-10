@@ -6,6 +6,7 @@
 #include <assert.h>
 #include <atomic>
 #include <chrono>
+#include <memory>
 #include <string.h>
 #include <thread>
 
@@ -38,9 +39,11 @@ void test_atomic_wait_func_impl(UnderlyingType old_value, const UnderlyingType n
         add_seq('4');
         a.store(new_value);
         a.notify_one();
+#ifdef CAN_FAIL_ON_TIMING_ASSUMPTION
         // timing assumption that the main thread evaluates the `wait(old_value)` before this timeout expires
         std::this_thread::sleep_for(waiting_duration);
         add_seq('6');
+#endif // CAN_FAIL_ON_TIMING_ASSUMPTION
     });
 
     a.wait(old_value);
@@ -52,7 +55,12 @@ void test_atomic_wait_func_impl(UnderlyingType old_value, const UnderlyingType n
     thd.join();
 
     add_seq('\0');
+
+#ifdef CAN_FAIL_ON_TIMING_ASSUMPTION
     assert(strcmp(seq, "123456") == 0);
+#else
+    assert(strcmp(seq, "12345") == 0);
+#endif
 }
 
 template <class UnderlyingType>
@@ -194,6 +202,10 @@ inline void test_atomic_wait() {
     test_atomic_wait_func(two_shorts{1, 1}, two_shorts{1, 2}, waiting_duration);
     test_atomic_wait_func(three_chars{1, 1, 3}, three_chars{1, 2, 3}, waiting_duration);
     test_atomic_wait_func(big_char_like{'a'}, big_char_like{'b'}, waiting_duration);
+
+    test_atomic_wait_func(std::make_shared<int>('a'), std::make_shared<int>('b'), waiting_duration);
+    test_atomic_wait_func(
+        std::weak_ptr{std::make_shared<int>('a')}, std::weak_ptr{std::make_shared<int>('b')}, waiting_duration);
 
     test_notify_all_notifies_all<char>(1, 2, waiting_duration);
     test_notify_all_notifies_all<signed char>(1, 2, waiting_duration);
