@@ -11,7 +11,7 @@
 #include <thread>
 
 template <template <class> class Template, class UnderlyingType>
-void test_atomic_wait_func_impl(UnderlyingType old_value, const UnderlyingType new_value,
+void test_atomic_wait_func_impl(UnderlyingType& old_value, const UnderlyingType new_value,
     const std::chrono::steady_clock::duration waiting_duration) {
     constexpr int seq_max_size = 10;
     char seq[seq_max_size + 1];
@@ -64,14 +64,22 @@ void test_atomic_wait_func_impl(UnderlyingType old_value, const UnderlyingType n
 }
 
 template <class UnderlyingType>
-void test_atomic_wait_func(const UnderlyingType old_value, const UnderlyingType new_value,
+void test_atomic_wait_func(UnderlyingType old_value, const UnderlyingType new_value,
     const std::chrono::steady_clock::duration waiting_duration) {
     test_atomic_wait_func_impl<std::atomic, UnderlyingType>(old_value, new_value, waiting_duration);
-    test_atomic_wait_func_impl<std::atomic_ref, UnderlyingType>(old_value, new_value, waiting_duration);
+    alignas(std::atomic_ref<UnderlyingType>::required_alignment) UnderlyingType old_value_for_ref = old_value;
+    test_atomic_wait_func_impl<std::atomic_ref, UnderlyingType>(old_value_for_ref, new_value, waiting_duration);
 }
 
+template <class UnderlyingType>
+void test_atomic_wait_func_ptr(UnderlyingType old_value, const UnderlyingType new_value,
+    const std::chrono::steady_clock::duration waiting_duration) {
+    test_atomic_wait_func_impl<std::atomic, UnderlyingType>(old_value, new_value, waiting_duration);
+}
+
+
 template <template <class> class Template, class UnderlyingType>
-void test_notify_all_notifies_all_impl(UnderlyingType old_value, const UnderlyingType new_value,
+void test_notify_all_notifies_all_impl(UnderlyingType& old_value, const UnderlyingType new_value,
     const std::chrono::steady_clock::duration waiting_duration) {
     Template<UnderlyingType> c(old_value);
     const auto waitFn = [&c, old_value] { c.wait(old_value); };
@@ -90,16 +98,23 @@ void test_notify_all_notifies_all_impl(UnderlyingType old_value, const Underlyin
 }
 
 template <class UnderlyingType>
-void test_notify_all_notifies_all(const UnderlyingType old_value, const UnderlyingType new_value,
+void test_notify_all_notifies_all(UnderlyingType old_value, const UnderlyingType new_value,
     const std::chrono::steady_clock::duration waiting_duration) {
     test_notify_all_notifies_all_impl<std::atomic, UnderlyingType>(old_value, new_value, waiting_duration);
-    test_notify_all_notifies_all_impl<std::atomic_ref, UnderlyingType>(old_value, new_value, waiting_duration);
+    alignas(std::atomic_ref<UnderlyingType>::required_alignment) UnderlyingType old_value_for_ref = old_value;
+    test_notify_all_notifies_all_impl<std::atomic_ref, UnderlyingType>(old_value_for_ref, new_value, waiting_duration);
+}
+
+template <class UnderlyingType>
+void test_notify_all_notifies_all_ptr(UnderlyingType old_value, const UnderlyingType new_value,
+    const std::chrono::steady_clock::duration waiting_duration) {
+    test_notify_all_notifies_all_impl<std::atomic, UnderlyingType>(old_value, new_value, waiting_duration);
 }
 
 
 template <template <class> class Template, class UnderlyingType>
 void test_pad_bits_impl(const std::chrono::steady_clock::duration waiting_duration) {
-    UnderlyingType old_value;
+    alignas(std::atomic_ref<UnderlyingType>::required_alignment) UnderlyingType old_value;
     memset(&old_value, 0x66, sizeof(UnderlyingType));
     old_value.set(1);
 
@@ -203,8 +218,8 @@ inline void test_atomic_wait() {
     test_atomic_wait_func(three_chars{1, 1, 3}, three_chars{1, 2, 3}, waiting_duration);
     test_atomic_wait_func(big_char_like{'a'}, big_char_like{'b'}, waiting_duration);
 
-    test_atomic_wait_func_impl<std::atomic>(std::make_shared<int>('a'), std::make_shared<int>('a'), waiting_duration);
-    test_atomic_wait_func_impl<std::atomic>(
+    test_atomic_wait_func_ptr(std::make_shared<int>('a'), std::make_shared<int>('a'), waiting_duration);
+    test_atomic_wait_func_ptr(
         std::weak_ptr{std::make_shared<int>('a')}, std::weak_ptr{std::make_shared<int>('a')}, waiting_duration);
 
     test_notify_all_notifies_all<char>(1, 2, waiting_duration);
