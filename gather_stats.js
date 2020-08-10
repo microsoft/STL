@@ -181,6 +181,10 @@ function transform_pr_nodes(pr_nodes) {
     return pr_nodes.map(pr_node => {
         const maintainer_reviews = pr_node.reviews.nodes
             .filter(review_node => {
+                if (review_node.author === null) {
+                    return false; // Assume that deleted users were contributors.
+                }
+
                 const username = review_node.author.login;
 
                 const is_maintainer = maintainers.has(username);
@@ -235,6 +239,37 @@ function transform_issue_nodes(issue_nodes) {
     });
 }
 
+function calculate_sliding_window(when, merged) {
+    // A sliding window of 30 days would be simple, but would result in a noisy line as PRs abruptly leave the window.
+    // To reduce such noise, this function applies smoothing between 20 and 40 days.
+    // (A range of 25 to 35 days would also work; the important thing is for the integral of this function to be 30,
+    // so we can still describe this metric as 'Monthly Merged PRs'.
+
+    const days_ago = when.diff(merged).as('days');
+
+    if (days_ago < 0) {
+        return 0; // PR was merged in the future
+    } else if (days_ago < 20) {
+        return 1; // PR was merged between 0 and 20 days ago
+    } else if (days_ago < 40) {
+        return (40 - days_ago) / 20; // PR was merged between 20 and 40 days ago; decrease weight from 1 to 0
+    } else {
+        return 0; // PR was merged in the ancient past
+    }
+}
+
+function write_generated_file(filename, table_str) {
+    const generated_file_warning_comment = '// Generated file - DO NOT EDIT manually!\n';
+
+    let str = '// Copyright (c) Microsoft Corporation.\n';
+    str += '// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception\n\n';
+    str += generated_file_warning_comment;
+    str += table_str;
+    str += generated_file_warning_comment;
+
+    fs.writeFileSync(filename, str);
+}
+
 function write_daily_table(script_start, all_prs, all_issues) {
     const progress_bar = new cliProgress.SingleBar(
         {
@@ -246,19 +281,13 @@ function write_daily_table(script_start, all_prs, all_issues) {
     );
 
     try {
-        let str = '// Copyright (c) Microsoft Corporation.\n';
-        str += '// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception\n';
-        str += '\n';
-        const generated_file_warning_comment = '// Generated file - DO NOT EDIT manually!\n';
-        str += generated_file_warning_comment;
-        str += 'const daily_table = [\n';
+        let str = 'const daily_table = [\n';
 
         const begin = DateTime.fromISO('2019-09-05' + 'T23:00:00-07');
 
         progress_bar.start(Math.ceil(script_start.diff(begin).as('days')), 0);
 
         for (let when = begin; when < script_start; when = when.plus({ days: 1 })) {
-            const one_month_ago = when.minus({ months: 1 });
             let num_merged = 0;
             let num_pr = 0;
             let num_cxx20 = 0;
@@ -269,9 +298,7 @@ function write_daily_table(script_start, all_prs, all_issues) {
             let combined_pr_wait = Duration.fromObject({});
 
             for (const pr of all_prs) {
-                if (one_month_ago < pr.merged && pr.merged < when) {
-                    ++num_merged;
-                }
+                num_merged += calculate_sliding_window(when, pr.merged);
 
                 if (when < pr.opened || pr.closed < when) {
                     // This PR wasn't active; do nothing.
@@ -308,7 +335,7 @@ function write_daily_table(script_start, all_prs, all_issues) {
             str += '    { ';
             str += [
                 `date: '${when.toISODate()}'`,
-                `merged: ${num_merged}`,
+                `merged: ${Number.parseFloat(num_merged).toFixed(2)}`,
                 `pr: ${num_pr}`,
                 `cxx20: ${num_cxx20}`,
                 `lwg: ${num_lwg}`,
@@ -325,12 +352,41 @@ function write_daily_table(script_start, all_prs, all_issues) {
         }
 
         str += '];\n';
-        str += generated_file_warning_comment;
 
-        fs.writeFileSync('./daily_table.js', str);
+        write_generated_file('./daily_table.js', str);
     } finally {
         progress_bar.stop();
     }
+}
+
+function write_monthly_table(script_start, all_prs) {
+    const monthly_merges = new Map();
+
+    for (const pr of all_prs) {
+        const year_month = pr.merged.toFormat('yyyy-MM');
+        const old_value = monthly_merges.get(year_month) ?? 0;
+        monthly_merges.set(year_month, old_value + 1);
+    }
+
+    let str = 'const monthly_table = [\n';
+
+    // Analyze complete months.
+    const begin = DateTime.fromISO('2019-10-01');
+    for (let when = begin; when < script_start.startOf('month'); when = when.plus({ months: 1 })) {
+        const year_month = when.toFormat('yyyy-MM');
+        const value = monthly_merges.get(year_month) ?? 0;
+
+        str += '    { ';
+        str += [
+            `date: '${year_month}-16'`, // position each bar in the middle of each month
+            `merge_bar: ${value}`,
+            '},\n',
+        ].join(', ');
+    }
+
+    str += '];\n';
+
+    write_generated_file('./monthly_table.js', str);
 }
 
 async function async_main() {
@@ -343,6 +399,7 @@ async function async_main() {
         const all_issues = transform_issue_nodes(issue_nodes);
 
         write_daily_table(script_start, all_prs, all_issues);
+        write_monthly_table(script_start, all_prs);
 
         const script_finish = DateTime.local();
 
