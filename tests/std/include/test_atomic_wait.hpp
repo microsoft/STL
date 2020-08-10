@@ -203,9 +203,9 @@ inline void test_atomic_wait() {
     test_atomic_wait_func(three_chars{1, 1, 3}, three_chars{1, 2, 3}, waiting_duration);
     test_atomic_wait_func(big_char_like{'a'}, big_char_like{'b'}, waiting_duration);
 
-    test_atomic_wait_func(std::make_shared<int>('a'), std::make_shared<int>('b'), waiting_duration);
-    test_atomic_wait_func(
-        std::weak_ptr{std::make_shared<int>('a')}, std::weak_ptr{std::make_shared<int>('b')}, waiting_duration);
+    test_atomic_wait_func_impl<std::atomic>(std::make_shared<int>('a'), std::make_shared<int>('a'), waiting_duration);
+    test_atomic_wait_func_impl<std::atomic>(
+        std::weak_ptr{std::make_shared<int>('a')}, std::weak_ptr{std::make_shared<int>('a')}, waiting_duration);
 
     test_notify_all_notifies_all<char>(1, 2, waiting_duration);
     test_notify_all_notifies_all<signed char>(1, 2, waiting_duration);
