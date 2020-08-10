@@ -2363,9 +2363,9 @@ public:
 
     _NODISCARD bool is_lock_free() const noexcept {
 #if _ATOMIC_HAS_DCAS
-        return sizeof(_Ty) <= 2 * sizeof(void*);
+        return _Is_potentially_lock_free;
 #else // ^^^ _ATOMIC_HAS_DCAS / !_ATOMIC_HAS_DCAS vvv
-        return sizeof(_Ty) <= sizeof(void*) || (sizeof(_Ty) <= 2 * sizeof(void*) && __std_atomic_has_cmpxchg16b());
+        return _Is_potentially_lock_free && (sizeof(_Ty) != 2 * sizeof(void*) || __std_atomic_has_cmpxchg16b());
 #endif // _ATOMIC_HAS_DCAS
     }
 
