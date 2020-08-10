@@ -530,6 +530,11 @@ thread\macro.pass.cpp
 depr\depr.c.headers\tgmath_h.pass.cpp
 
 
+# *** CLANG FEATURES NOT YET IMPLEMENTED ***
+# P0960R3 "Allow initializing aggregates from a parenthesized list of values"
+utilities\tuple\tuple.tuple\tuple.creation\tuple_cat.pass.cpp
+
+
 # *** CLANG ISSUES, NOT YET ANALYZED ***
 # Clang doesn't enable sized deallocation by default. Should we add -fsized-deallocation or do something else?
 language.support\support.dynamic\new.delete\new.delete.array\sized_delete_array_fsizeddeallocation.pass.cpp
