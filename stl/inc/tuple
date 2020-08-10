@@ -232,15 +232,15 @@ public:
         return true;
     }
 
-    constexpr bool _Less(const tuple&) const noexcept {
-        return false;
-    }
-
 #ifdef __cpp_lib_concepts
     constexpr strong_ordering _Three_way_compare(const tuple&) const noexcept {
         return strong_ordering::equal;
     } 
-#endif // __cpp_lib_concepts
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+    constexpr bool _Less(const tuple&) const noexcept {
+        return false;
+    }
+#endif
 };
 
 template <class _This, class... _Rest>
@@ -676,12 +676,6 @@ public:
         return _Myfirst._Val == _Right._Myfirst._Val && _Mybase::_Equals(_Right._Get_rest());
     }
 
-    template <class... _Other>
-    constexpr bool _Less(const tuple<_Other...>& _Right) const {
-        return _Myfirst._Val < _Right._Myfirst._Val
-               || (!(_Right._Myfirst._Val < _Myfirst._Val) && _Mybase::_Less(_Right._Get_rest()));
-    }
-
 #ifdef __cpp_lib_concepts
     template <class _Other_first, class... _Other_rest>
     constexpr common_comparison_category_t<_Synth_three_way_result<_This, _Other_first>,
@@ -693,7 +687,13 @@ public:
         }
         return _Mybase::_Three_way_compare(_Right._Get_rest());
     } 
-#endif // __cpp_lib_concepts
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+    template <class... _Other>
+    constexpr bool _Less(const tuple<_Other...>& _Right) const {
+        return _Myfirst._Val < _Right._Myfirst._Val
+               || (!(_Right._Myfirst._Val < _Myfirst._Val) && _Mybase::_Less(_Right._Get_rest()));
+    }
+#endif
 
     template <size_t _Index, class... _Types>
     friend constexpr tuple_element_t<_Index, tuple<_Types...>>& get(tuple<_Types...>& _Tuple) noexcept;
@@ -754,6 +754,14 @@ _NODISCARD constexpr auto operator<=>(
     return _Left._Three_way_compare(_Right);
 }
 
+#if 1 // TRANSITION, VSO-900973
+// Overload resolution prefers implicit conversions over re-writes.
+// In C++20 mode the only required comparison operators should be == and <=>.
+template <class... _Types1, class... _Types2>
+_NODISCARD constexpr bool operator!=(const tuple<_Types1...>& _Left, const tuple<_Types2...>& _Right) {
+    return !(_Left == _Right);
+}
+
 template <class... _Types1, class... _Types2>
 _NODISCARD constexpr bool operator<(const tuple<_Types1...>& _Left, const tuple<_Types2...>& _Right) {
     return (_Left <=> _Right) < 0;
@@ -773,13 +781,12 @@ template <class... _Types1, class... _Types2>
 _NODISCARD constexpr bool operator<=(const tuple<_Types1...>& _Left, const tuple<_Types2...>& _Right) {
     return (_Left <=> _Right) <= 0;
 }
+#endif // TRANSITION, VSO-900973
 #else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
-#if !_HAS_CXX20
 template <class... _Types1, class... _Types2>
 _NODISCARD constexpr bool operator!=(const tuple<_Types1...>& _Left, const tuple<_Types2...>& _Right) {
     return !(_Left == _Right);
 }
-#endif // !_HAS_CXX20
 
 template <class... _Types1, class... _Types2>
 _NODISCARD constexpr bool operator<(const tuple<_Types1...>& _Left, const tuple<_Types2...>& _Right) {
