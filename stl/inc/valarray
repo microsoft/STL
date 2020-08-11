@@ -445,8 +445,19 @@ public:
     _NODISCARD valarray shift(int _Count) const {
         const size_t _Size = size();
         valarray<_Ty> _Ans(_Size);
-        const size_t _Min = (_Count < 0) ? static_cast<size_t>(-_Count) : 0;
-        const size_t _Max = (_Count > 0) ? _Size - static_cast<size_t>(_Count) : _Size;
+        size_t _Min = 0;
+        size_t _Max = _Size;
+        if (_Count < 0) {
+            const size_t _Skip = static_cast<size_t>(-_Count);
+            _Min += _Skip;
+        } else {
+            const size_t _Skip = static_cast<size_t>(_Count);
+            if (_Skip < _Size) {
+                _Max -= _Skip;
+            } else {
+                _Max = 0;
+            }
+        }
         for (size_t _Idx = _Min; _Idx < _Max; ++_Idx) {
             _Ans[_Idx] = _Myptr[_Idx + _Count];
         }
