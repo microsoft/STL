@@ -52,16 +52,18 @@ _NODISCARD unsigned long _Semaphore_remaining_timeout(const chrono::time_point<_
     }
 }
 
-template <ptrdiff_t _Least_max_value = INT_MAX>
+inline constexpr ptrdiff_t _Semaphore_max = (1ULL << (sizeof(ptrdiff_t) * CHAR_BIT - 1)) - 1;
+
+template <ptrdiff_t _Least_max_value = _Semaphore_max>
 class counting_semaphore {
 public:
     _NODISCARD static constexpr ptrdiff_t(max)() noexcept {
-        return (1ULL << (sizeof(ptrdiff_t) * CHAR_BIT - 1)) - 1;
+        return _Least_max_value;
     }
 
     constexpr explicit counting_semaphore(const ptrdiff_t _Desired) noexcept /* strengthened */
         : _Counter(static_cast<ptrdiff_t>(_Desired)) {
-        _STL_VERIFY(_Desired >= 0 && _Desired <= (max)(),
+        _STL_VERIFY(_Desired >= 0 && _Desired <= _Least_max_value,
             "Precondition: desired >= 0, and desired <= max() (N4861 [thread.sema.cnt]/5)");
     }
 
@@ -72,7 +74,7 @@ public:
         if (_Update == 0) {
             return;
         }
-        _STL_VERIFY(_Update > 0 && _Update <= (max)(),
+        _STL_VERIFY(_Update > 0 && _Update <= _Least_max_value,
             "Precondition: update >= 0, and update <= max() - counter (N4861 [thread.sema.cnt]/8)");
 
         // We need to notify (wake) at least _Update waiting threads.
@@ -88,7 +90,8 @@ public:
         // but from the point of C++ memory model itself it is needed, weaker orders don't work.
 
         const ptrdiff_t _Prev = _Counter.fetch_add(static_cast<ptrdiff_t>(_Update), memory_order_seq_cst);
-        _STL_VERIFY(_Prev + _Update > 0, "Precondition: update <= max() - counter (N4861 [thread.sema.cnt]/8)");
+        _STL_VERIFY(_Prev + _Update > 0 && _Prev + _Update <= _Least_max_value,
+            "Precondition: update <= max() - counter (N4861 [thread.sema.cnt]/8)");
 
         const ptrdiff_t _Waiting_upper_bound = _Waiting.load(memory_order_seq_cst);
 
@@ -124,8 +127,9 @@ public:
                 _Wait(_Atomic_wait_no_timeout);
                 _Current = _Counter.load(memory_order_relaxed);
             }
-            _STL_VERIFY(_Current > 0, "Invariant: semaphore counter is non-negative, "
-                                      "possibly caused by preconditions violation (N4861 [thread.sema.cnt]/8)");
+            _STL_VERIFY(_Current > 0 && _Current <= _Least_max_value,
+                "Invariant: counter >= 0, and counter <= max() "
+                "possibly caused by preconditions violation (N4861 [thread.sema.cnt]/8)");
 
             if (_Counter.compare_exchange_weak(_Current, _Current - 1, memory_order_seq_cst)) {
                 break;
@@ -138,8 +142,9 @@ public:
         if (_Current == 0) {
             return false;
         }
-        _STL_VERIFY(_Current > 0, "Invariant: semaphore counter is non-negative, "
-                                  "possibly caused by preconditions violation (N4861 [thread.sema.cnt]/8)");
+        _STL_VERIFY(_Current > 0 && _Current <= _Least_max_value,
+            "Invariant: counter >= 0, and counter <= max() "
+            "possibly caused by preconditions violation (N4861 [thread.sema.cnt]/8)");
 
         return _Counter.compare_exchange_weak(_Current, _Current - 1, memory_order_seq_cst);
     }
@@ -157,8 +162,9 @@ public:
                 _Wait(_Remaining_timeout);
                 _Current = _Counter.load(memory_order_relaxed);
             }
-            _STL_VERIFY(_Current > 0, "Invariant: semaphore counter is non-negative, "
-                                      "possibly caused by preconditions violation (N4861 [thread.sema.cnt]/8)");
+            _STL_VERIFY(_Current > 0 && _Current <= _Least_max_value,
+                "Invariant: counter >= 0, and counter <= max() "
+                "possibly caused by preconditions violation (N4861 [thread.sema.cnt]/8)");
 
             if (_Counter.compare_exchange_weak(_Current, _Current - 1, memory_order_seq_cst)) {
                 return true;
@@ -178,8 +184,9 @@ public:
                 _Wait(_Remaining_timeout);
                 _Current = _Counter.load(memory_order_relaxed);
             }
-            _STL_VERIFY(_Current > 0, "Invariant: semaphore counter is non-negative, "
-                                      "possibly caused by preconditions violation (N4861 [thread.sema.cnt]/8)");
+            _STL_VERIFY(_Current > 0 && _Current <= _Least_max_value,
+                "Invariant: counter >= 0, and counter <= max() "
+                "possibly caused by preconditions violation (N4861 [thread.sema.cnt]/8)");
 
             if (_Counter.compare_exchange_weak(_Current, _Current - 1, memory_order_seq_cst)) {
                 return true;
