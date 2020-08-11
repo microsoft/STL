@@ -1045,25 +1045,24 @@ namespace special_memory_concepts {
     STATIC_ASSERT(_No_throw_input_iterator<iterator_archetype<iterator_status::input>>);
     STATIC_ASSERT(_No_throw_input_iterator<iterator_archetype<iterator_status::forward>>);
 
-    enum class sentinel_status : int { not_sentinel, good };
+    enum class sentinel_status : int { no, yes };
 
     template <sentinel_status I>
     struct sentinel_archetype {
         // clang-format off
         template <iterator_status S>
-        bool operator==(iterator_archetype<S> const&) const requires (I != sentinel_status::not_sentinel);
+        bool operator==(iterator_archetype<S> const&) const requires (I != sentinel_status::no);
         // clang-format on
     };
     // Verify sentinel_archetype
-    STATIC_ASSERT(
-        !sentinel_for<sentinel_archetype<sentinel_status::not_sentinel>, iterator_archetype<iterator_status::input>>);
-    STATIC_ASSERT(sentinel_for<sentinel_archetype<sentinel_status::good>, iterator_archetype<iterator_status::input>>);
+    STATIC_ASSERT(!sentinel_for<sentinel_archetype<sentinel_status::no>, iterator_archetype<iterator_status::input>>);
+    STATIC_ASSERT(sentinel_for<sentinel_archetype<sentinel_status::yes>, iterator_archetype<iterator_status::input>>);
 
     // Validate _No_throw_sentinel_for
-    STATIC_ASSERT(!_No_throw_sentinel_for<sentinel_archetype<sentinel_status::not_sentinel>,
-                  iterator_archetype<iterator_status::input>>);
     STATIC_ASSERT(
-        _No_throw_sentinel_for<sentinel_archetype<sentinel_status::good>, iterator_archetype<iterator_status::input>>);
+        !_No_throw_sentinel_for<sentinel_archetype<sentinel_status::no>, iterator_archetype<iterator_status::input>>);
+    STATIC_ASSERT(
+        _No_throw_sentinel_for<sentinel_archetype<sentinel_status::yes>, iterator_archetype<iterator_status::input>>);
     STATIC_ASSERT(!_No_throw_sentinel_for<iterator_archetype<iterator_status::input>,
                   iterator_archetype<iterator_status::input>>);
     STATIC_ASSERT(_No_throw_sentinel_for<iterator_archetype<iterator_status::forward>,
@@ -1104,6 +1103,7 @@ namespace special_memory_concepts {
     STATIC_ASSERT(_No_throw_input_range<range_archetype<range_status::input>>);
     STATIC_ASSERT(_No_throw_input_range<range_archetype<range_status::forward>>);
 
+    // Validate _No_throw_forward_range
     STATIC_ASSERT(!_No_throw_forward_range<range_archetype<range_status::not_range>>);
     STATIC_ASSERT(!_No_throw_forward_range<range_archetype<range_status::not_input>>);
     STATIC_ASSERT(!_No_throw_forward_range<range_archetype<range_status::input>>);

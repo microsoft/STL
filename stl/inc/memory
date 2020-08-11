@@ -187,9 +187,7 @@ namespace ranges {
                 _Backout._Emplace_back(_RANGES iter_move(_IFirst));
             }
 
-            _OFirst = _STD move(_Backout._Last);
-            _Backout._Release();
-            return {_STD move(_IFirst), _STD move(_OFirst)};
+            return {_STD move(_IFirst), _Backout._Release()};
         }
     };
 
