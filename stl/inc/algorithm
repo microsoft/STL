@@ -6128,7 +6128,7 @@ _CONSTEXPR20 void _Push_heap_by_index(
         _Hole             = _Idx;
     }
 
-    *(_First + _Hole) = _STD move(_Val); // drop _Val into final hole
+    *(_First + _Hole) = _STD forward<_Ty>(_Val); // drop _Val into final hole
 }
 
 template <class _RanIt, class _Pr>
@@ -6154,16 +6154,17 @@ _CONSTEXPR20 void push_heap(_RanIt _First, _RanIt _Last) {
 #ifdef __cpp_lib_concepts
 namespace ranges {
     // VARIABLE ranges::push_heap
-    template <class _It, class _Pr, class _Pj>
+    // clang-format off
+    template <random_access_iterator _It, class _Ty, class _Pr, class _Pj1, class _Pj2>
+        requires sortable<_It, _Pr, _Pj1> && indirectly_writable<_It, _Ty>
+            && indirect_strict_weak_order<_Pr, projected<_It, _Pj1>, projected<remove_reference_t<_Ty>*, _Pj2>>
     constexpr void _Push_heap_by_index(const _It _First, iter_difference_t<_It> _Hole,
-        const iter_difference_t<_It> _Top, iter_value_t<_It>&& _Val, _Pr _Pred, _Pj _Proj) {
+        const iter_difference_t<_It> _Top, _Ty&& _Val, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+        // clang-format on
         // percolate _Hole to _Top or where _Val belongs
-        _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
-        _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
-
         while (_Top < _Hole) {
             const auto _Idx = static_cast<iter_difference_t<_It>>((_Hole - 1) >> 1); // shift for codegen
-            if (!_STD invoke(_Pred, _STD invoke(_Proj, *(_First + _Idx)), _STD invoke(_Proj, _Val))) {
+            if (!_STD invoke(_Pred, _STD invoke(_Proj1, *(_First + _Idx)), _STD invoke(_Proj2, _Val))) {
                 break;
             }
 
@@ -6172,7 +6173,7 @@ namespace ranges {
             _Hole             = _Idx;
         }
 
-        *(_First + _Hole) = _STD move(_Val); // drop _Val into final hole
+        *(_First + _Hole) = _STD forward<_Ty>(_Val); // drop _Val into final hole
     }
 
     class _Push_heap_fn : private _Not_quite_object {
@@ -6217,7 +6218,8 @@ namespace ranges {
 
             --_Last;
             iter_value_t<_It> _Val = _RANGES iter_move(_Last);
-            _RANGES _Push_heap_by_index(_STD move(_First), _Count - 1, 0, _STD move(_Val), _Pred, _Proj);
+            // NB: if _Proj is a _Ref_fn, this aliases the _Proj1 and _Proj2 parameters of _Push_heap_by_index
+            _RANGES _Push_heap_by_index(_STD move(_First), _Count - 1, 0, _STD move(_Val), _Pred, _Proj, _Proj);
         }
     };
 
@@ -6253,7 +6255,7 @@ _CONSTEXPR20 void _Pop_heap_hole_by_index(
         _Hole             = _Bottom - 1;
     }
 
-    _Push_heap_by_index(_First, _Hole, _Top, _STD move(_Val), _Pred);
+    _Push_heap_by_index(_First, _Hole, _Top, _STD forward<_Ty>(_Val), _Pred);
 }
 
 template <class _RanIt, class _Ty, class _Pr>
@@ -6263,7 +6265,8 @@ _CONSTEXPR20 void _Pop_heap_hole_unchecked(_RanIt _First, _RanIt _Last, _RanIt _
     // precondition: _First != _Dest
     *_Dest      = _STD move(*_First);
     using _Diff = _Iter_diff_t<_RanIt>;
-    _Pop_heap_hole_by_index(_First, static_cast<_Diff>(0), static_cast<_Diff>(_Last - _First), _STD move(_Val), _Pred);
+    _Pop_heap_hole_by_index(
+        _First, static_cast<_Diff>(0), static_cast<_Diff>(_Last - _First), _STD forward<_Ty>(_Val), _Pred);
 }
 
 template <class _RanIt, class _Pr>
@@ -6292,12 +6295,14 @@ _CONSTEXPR20 void pop_heap(_RanIt _First, _RanIt _Last) {
 #ifdef __cpp_lib_concepts
 namespace ranges {
     // VARIABLE ranges::pop_heap
-    template <class _It, class _Pr, class _Pj>
+    // clang-format off
+    template <random_access_iterator _It, class _Ty, class _Pr, class _Pj1, class _Pj2>
+        requires sortable<_It, _Pr, _Pj1> && indirectly_writable<_It, _Ty>
+            && indirect_strict_weak_order<_Pr, projected<_It, _Pj1>, projected<remove_reference_t<_Ty>*, _Pj2>>
     constexpr void _Pop_heap_hole_by_index(_It _First, iter_difference_t<_It> _Hole,
-        const iter_difference_t<_It> _Bottom, iter_value_t<_It>&& _Val, _Pr _Pred, _Pj _Proj) {
+        const iter_difference_t<_It> _Bottom, _Ty&& _Val, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+        // clang-format on
         // percolate _Hole to _Bottom, then push _Val
-        _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
-        _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
         _STL_INTERNAL_CHECK(_Hole >= 0);
         _STL_INTERNAL_CHECK(_Bottom > 0);
 
@@ -6311,7 +6316,7 @@ namespace ranges {
         while (_Idx < _Max_sequence_non_leaf) { // move _Hole down to larger child
             _Idx      = 2 * _Idx + 2;
             auto _Mid = _First + _Idx;
-            if (_STD invoke(_Pred, _STD invoke(_Proj, *_Mid), _STD invoke(_Proj, *_RANGES prev(_Mid)))) {
+            if (_STD invoke(_Pred, _STD invoke(_Proj1, *_Mid), _STD invoke(_Proj1, *_RANGES prev(_Mid)))) {
                 --_Idx;
                 --_Mid;
             }
@@ -6324,36 +6329,39 @@ namespace ranges {
             _Hole             = _Bottom - 1;
         }
 
-        _RANGES _Push_heap_by_index(_STD move(_First), _Hole, _Top, _STD move(_Val), _Pred, _Proj);
+        _RANGES _Push_heap_by_index(_STD move(_First), _Hole, _Top, _STD forward<_Ty>(_Val), _Pred, _Proj1, _Proj2);
     }
 
-    template <class _It, class _Pr, class _Pj>
+    // clang-format off
+    template <random_access_iterator _It, class _Ty, class _Pr, class _Pj1, class _Pj2>
+        requires sortable<_It, _Pr, _Pj1> && indirectly_writable<_It, _Ty>
+            && indirect_strict_weak_order<_Pr, projected<_It, _Pj1>, projected<remove_reference_t<_Ty>*, _Pj2>>
     constexpr void _Pop_heap_hole_unchecked(
-        _It _First, const _It _Last, const _It _Dest, iter_value_t<_It>&& _Val, _Pr _Pred, _Pj _Proj) {
+        _It _First, const _It _Last, const _It _Dest, _Ty&& _Val, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+        // clang-format on
         // pop *_First to *_Dest and reheap
-        _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
-        _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
         _STL_INTERNAL_CHECK(_First != _Last);
         _STL_INTERNAL_CHECK(_First != _Dest);
 
         *_Dest            = _RANGES iter_move(_First);
         const auto _Count = _Last - _First;
-        _RANGES _Pop_heap_hole_by_index(_STD move(_First), 0, _Count, _STD move(_Val), _Pred, _Proj);
+        _RANGES _Pop_heap_hole_by_index(_STD move(_First), 0, _Count, _STD forward<_Ty>(_Val), _Pred, _Proj1, _Proj2);
     }
 
-    template <class _It, class _Pr, class _Pj>
+    // clang-format off
+    template <random_access_iterator _It, class _Pr, class _Pj>
+        requires sortable<_It, _Pr, _Pj>
     constexpr void _Pop_heap_unchecked(_It _First, _It _Last, _Pr _Pred, _Pj _Proj) {
+        // clang-format on
         // pop *_First to *(_Last - 1) and reheap
-        _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
-        _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
-
         if (_Last - _First < 2) {
             return;
         }
 
         --_Last;
         iter_value_t<_It> _Val = _RANGES iter_move(_Last);
-        _RANGES _Pop_heap_hole_unchecked(_STD move(_First), _Last, _Last, _STD move(_Val), _Pred, _Proj);
+        // NB: if _Proj is a _Ref_fn, this aliases the _Proj1 and _Proj2 parameters of _Pop_heap_hole_unchecked
+        _RANGES _Pop_heap_hole_unchecked(_STD move(_First), _Last, _Last, _STD move(_Val), _Pred, _Proj, _Proj);
     }
 
     class _Pop_heap_fn : private _Not_quite_object {
@@ -6419,6 +6427,23 @@ _CONSTEXPR20 void make_heap(_RanIt _First, _RanIt _Last) { // make [_First, _Las
 #ifdef __cpp_lib_concepts
 namespace ranges {
     // VARIABLE ranges::make_heap
+    // clang-format off
+    template <random_access_iterator _It, class _Pr, class _Pj>
+        requires sortable<_It, _Pr, _Pj>
+    constexpr void _Make_heap_common(_It _First, _It _Last, _Pr _Pred, _Pj _Proj) {
+        // make nontrivial [_First, _Last) into a heap with respect to _Pred and _Proj
+        // clang-format on
+        using _Diff         = iter_difference_t<_It>;
+        const _Diff _Bottom = _Last - _First;
+        for (_Diff _Hole = _Bottom >> 1; _Hole > 0;) { // shift for codegen
+            // reheap top half, bottom to top
+            --_Hole;
+            iter_value_t<_It> _Val = _RANGES iter_move(_First + _Hole);
+            // NB: if _Proj is a _Ref_fn, this aliases the _Proj1 and _Proj2 parameters of _Pop_heap_hole_by_index
+            _RANGES _Pop_heap_hole_by_index(_First, _Hole, _Bottom, _STD move(_Val), _Pred, _Proj, _Proj);
+        }
+    }
+
     class _Make_heap_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -6431,7 +6456,7 @@ namespace ranges {
             auto _UFirst = _Get_unwrapped(_STD move(_First));
             auto _ULast  = _Get_final_iterator_unwrapped<_It>(_UFirst, _STD move(_Last));
             _Seek_wrapped(_First, _ULast);
-            _Make_heap_unchecked(_STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            _Make_heap_common(_STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj));
             return _First;
         }
 
@@ -6439,31 +6464,15 @@ namespace ranges {
             requires sortable<iterator_t<_Rng>, _Pr, _Pj>
         constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
             if constexpr (common_range<_Rng>) {
-                _Make_heap_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+                _Make_heap_common(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
                 return _RANGES end(_Range);
             } else {
                 auto _ULast = _Get_final_iterator_unwrapped(_Range);
-                _Make_heap_unchecked(_Ubegin(_Range), _ULast, _Pass_fn(_Pred), _Pass_fn(_Proj));
+                _Make_heap_common(_Ubegin(_Range), _ULast, _Pass_fn(_Pred), _Pass_fn(_Proj));
                 return _Rewrap_iterator(_Range, _STD move(_ULast));
             }
         }
         // clang-format on
-    private:
-        template <class _It, class _Pr, class _Pj>
-        static constexpr void _Make_heap_unchecked(_It _First, _It _Last, _Pr _Pred, _Pj _Proj) {
-            // make nontrivial [_First, _Last) into a heap
-            _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
-            _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
-
-            using _Diff         = iter_difference_t<_It>;
-            const _Diff _Bottom = _Last - _First;
-            for (_Diff _Hole = _Bottom >> 1; _Hole > 0;) { // shift for codegen
-                // reheap top half, bottom to top
-                --_Hole;
-                iter_value_t<_It> _Val = _RANGES iter_move(_First + _Hole);
-                _RANGES _Pop_heap_hole_by_index(_First, _Hole, _Bottom, _STD move(_Val), _Pred, _Proj);
-            }
-        }
     };
 
     inline constexpr _Make_heap_fn make_heap{_Not_quite_object::_Construct_tag{}};
@@ -6652,6 +6661,17 @@ _CONSTEXPR20 void sort_heap(_RanIt _First, _RanIt _Last) { // order heap by repe
 #ifdef __cpp_lib_concepts
 namespace ranges {
     // VARIABLE ranges::sort_heap
+    // clang-format off
+    template <random_access_iterator _It, class _Pr, class _Pj>
+        requires sortable<_It, _Pr, _Pj>
+    constexpr void _Sort_heap_common(const _It _First, _It _Last, _Pr _Pred, _Pj _Proj) {
+        // order heap by repeatedly popping
+        // clang-format on
+        for (; _Last - _First >= 2; --_Last) {
+            _RANGES _Pop_heap_unchecked(_First, _Last, _Pred, _Proj);
+        }
+    }
+
     class _Sort_heap_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -6664,7 +6684,7 @@ namespace ranges {
             auto _UFirst = _Get_unwrapped(_STD move(_First));
             auto _ULast  = _Get_final_iterator_unwrapped<_It>(_UFirst, _STD move(_Last));
             _Seek_wrapped(_First, _ULast);
-            _Sort_heap_unchecked(_STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            _Sort_heap_common(_STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj));
             return _First;
         }
 
@@ -6672,26 +6692,15 @@ namespace ranges {
             requires sortable<iterator_t<_Rng>, _Pr, _Pj>
         constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
             if constexpr (common_range<_Rng>) {
-                _Sort_heap_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+                _Sort_heap_common(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
                 return _RANGES end(_Range);
             } else {
                 auto _ULast = _Get_final_iterator_unwrapped(_Range);
-                _Sort_heap_unchecked(_Ubegin(_Range), _ULast, _Pass_fn(_Pred), _Pass_fn(_Proj));
+                _Sort_heap_common(_Ubegin(_Range), _ULast, _Pass_fn(_Pred), _Pass_fn(_Proj));
                 return _Rewrap_iterator(_Range, _STD move(_ULast));
             }
         }
         // clang-format on
-    private:
-        template <class _It, class _Pr, class _Pj>
-        static constexpr void _Sort_heap_unchecked(const _It _First, _It _Last, _Pr _Pred, _Pj _Proj) {
-            // order heap by repeatedly popping
-            _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
-            _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
-
-            for (; _Last - _First >= 2; --_Last) {
-                _RANGES _Pop_heap_unchecked(_First, _Last, _Pred, _Proj);
-            }
-        }
     };
 
     inline constexpr _Sort_heap_fn sort_heap{_Not_quite_object::_Construct_tag{}};
@@ -8033,8 +8042,8 @@ _CONSTEXPR20 _RanIt partial_sort_copy(_InIt _First1, _InIt _Last1, _RanIt _First
             if (_DEBUG_LT_PRED(_Pred, *_UFirst1, *_UFirst2)) {
                 // replace top with new largest:
                 using _Diff = _Iter_diff_t<_RanIt>;
-                _Pop_heap_hole_by_index(_UFirst2, static_cast<_Diff>(0), static_cast<_Diff>(_UMid2 - _UFirst2),
-                    static_cast<_Iter_value_t<_InIt>>(*_UFirst1), _Pass_fn(_Pred));
+                _Pop_heap_hole_by_index(
+                    _UFirst2, static_cast<_Diff>(0), static_cast<_Diff>(_UMid2 - _UFirst2), *_UFirst1, _Pass_fn(_Pred));
             }
         }
 
@@ -9935,6 +9944,59 @@ namespace ranges {
     };
 
     inline constexpr _Clamp_fn clamp{_Not_quite_object::_Construct_tag{}};
+
+    // VARIABLE ranges::lexicographical_compare
+    class _Lexicographical_compare_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <input_iterator _It1, sentinel_for<_It1> _Se1, input_iterator _It2, sentinel_for<_It2> _Se2,
+            class _Pj1 = identity, class _Pj2 = identity,
+            indirect_strict_weak_order<projected<_It1, _Pj1>, projected<_It2, _Pj2>> _Pr = ranges::less>
+        _NODISCARD constexpr bool operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2, _Pr _Pred = {},
+            _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            _Adl_verify_range(_First1, _Last1);
+            _Adl_verify_range(_First2, _Last2);
+
+            return _Lexicographical_compare_unchecked(_Get_unwrapped(_STD move(_First1)),
+                _Get_unwrapped(_STD move(_Last1)), _Get_unwrapped(_STD move(_First2)),
+                _Get_unwrapped(_STD move(_Last2)), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+        }
+
+        template <input_range _Rng1, input_range _Rng2, class _Pj1 = identity, class _Pj2 = identity,
+            indirect_strict_weak_order<projected<iterator_t<_Rng1>, _Pj1>, projected<iterator_t<_Rng2>, _Pj2>> _Pr =
+                ranges::less>
+        _NODISCARD constexpr bool operator()(
+            _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            return _Lexicographical_compare_unchecked(_Ubegin(_Range1), _Uend(_Range1), _Ubegin(_Range2),
+                _Uend(_Range2), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+        }
+
+    private:
+        template <class _It1, class _Se1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
+        _NODISCARD static constexpr bool _Lexicographical_compare_unchecked(
+            _It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It1>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se1, _It1>);
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It2>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se2, _It2>);
+            _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, projected<_It1, _Pj1>, projected<_It2, _Pj2>>);
+
+            for (;; ++_First1, (void) ++_First2) {
+                if (_First2 == _Last2) {
+                    return false;
+                } else if (_First1 == _Last1) {
+                    return true;
+                } else if (_STD invoke(_Pred, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_First2))) {
+                    return true;
+                } else if (_STD invoke(_Pred, _STD invoke(_Proj2, *_First2), _STD invoke(_Proj1, *_First1))) {
+                    return false;
+                }
+            }
+        }
+    };
+
+    inline constexpr _Lexicographical_compare_fn lexicographical_compare{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
