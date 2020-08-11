@@ -4752,7 +4752,7 @@ template <class _FwdIt, class _Ty>
 _INLINE_VAR constexpr bool _Fill_memset_is_safe<_FwdIt, _Ty, false> = false;
 
 template <class _DestTy, class _Ty>
-void _Fill_memset(_DestTy* const _Dest, const _Ty& _Val, size_t _Count) {
+void _Fill_memset(_DestTy* const _Dest, const _Ty _Val, const size_t _Count) {
     // first cast _Val to _DestTy in case _DestTy is bool
     _CSTD memset(_Dest, static_cast<unsigned char>(static_cast<_DestTy>(_Val)), _Count);
 }
