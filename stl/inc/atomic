@@ -1652,7 +1652,7 @@ struct _Atomic_integral_facade : _Atomic_integral<_Ty> {
 
 #ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
     _Atomic_integral_facade() = default;
-    /* implicit */ constexpr _Atomic_integral_facade(const_TVal _Value) noexcept : _Base(_Value) {}
+    /* implicit */ constexpr _Atomic_integral_facade(const _TVal _Value) noexcept : _Base(_Value) {}
 #else // ^^^ workaround / no workaround vvv
     using _Base::_Base;
 #endif // ^^^ no workaround ^^^
