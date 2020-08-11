@@ -443,14 +443,15 @@ public:
     }
 
     _NODISCARD valarray shift(int _Count) const {
-        __PURE_APPDOMAIN_GLOBAL static _Ty _Dflt;
         const size_t _Size = size();
         valarray<_Ty> _Ans(_Size);
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
-            _Ans[_Idx] = (0 < _Count && _Size - _Idx <= static_cast<size_t>(_Count))
-                                 || (_Count < 0 && _Idx < static_cast<size_t>(-_Count))
-                             ? _Dflt
-                             : _Myptr[_Idx + _Count];
+            if ((0 < _Count && _Size - _Idx <= static_cast<size_t>(_Count))
+                || (_Count < 0 && _Idx < static_cast<size_t>(-_Count))) {
+                _Construct_in_place(_Ans[_Idx]);
+            } else {
+                _Ans[_Idx] = _Myptr[_Idx + _Count];
+            }
         }
         return _Ans;
     }
