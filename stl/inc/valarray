@@ -448,7 +448,7 @@ public:
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             if ((0 < _Count && _Size - _Idx <= static_cast<size_t>(_Count))
                 || (_Count < 0 && _Idx < static_cast<size_t>(-_Count))) {
-                _Construct_in_place(_Ans[_Idx]);
+                // skip
             } else {
                 _Ans[_Idx] = _Myptr[_Idx + _Count];
             }
