@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+// Yo dawg, I herd you like tests so we put tests in your tests so you can test while you test.
+
 #include <concepts>
 #include <ranges>
 
@@ -50,6 +52,9 @@ constexpr bool iter_test() {
         }
         STATIC_ASSERT(same_as<_Unwrapped_t<S>, sentinel<Element, IsWrapped::no>>);
     }
+
+    STATIC_ASSERT(convertible_to<I, typename I::Consterator>);
+    STATIC_ASSERT(!to_bool(Eq) || convertible_to<const I&, typename I::Consterator>);
 
     return true;
 }

@@ -340,9 +340,9 @@ namespace test {
         static constexpr bool at_least = derived_from<Category, T>;
 
         using ReferenceType = conditional_t<to_bool(Proxy), proxy_reference<Category, Element>, Element&>;
-        using const_iterator = iterator<Category, const Element, Diff, Eq, Proxy, Wrapped>;
-
     public:
+        using Consterator = iterator<Category, const Element, Diff, Eq, Proxy, Wrapped>;
+
         // output iterator operations
         iterator() = default;
 
@@ -354,13 +354,8 @@ namespace test {
             return *this;
         }
 
-        // Duplicated to generically get the const_iterator type via decltype
-        constexpr const_iterator get_const_iterator_type() const noexcept {
-            return const_iterator{ptr_};
-        }
-
-        constexpr operator iterator<Category, const Element, Diff, Eq, Proxy, Wrapped>() const noexcept {
-            return const_iterator{ptr_};
+        constexpr operator iterator<Category, const Element, Diff, Eq, Proxy, Wrapped>() && noexcept {
+            return Consterator{exchange(ptr_, nullptr)};
         }
 
         [[nodiscard]] constexpr Element* peek() const noexcept {
@@ -437,6 +432,12 @@ namespace test {
         // sentinel operations (implied by forward iterator):
         iterator(iterator const&) requires (to_bool(Eq)) = default;
         iterator& operator=(iterator const&) requires (to_bool(Eq)) = default;
+
+        constexpr operator iterator<Category, const Element, Diff, Eq, Proxy, Wrapped>() const& noexcept
+            requires (to_bool(Eq)) {
+            return Consterator{ptr_};
+        }
+
         [[nodiscard]] constexpr boolish operator==(iterator const& that) const noexcept requires (to_bool(Eq)) {
             return {ptr_ == that.ptr_};
         }

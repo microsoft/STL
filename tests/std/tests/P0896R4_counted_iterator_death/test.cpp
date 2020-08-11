@@ -16,8 +16,6 @@ int otherArray[5]{10, 20, 30, 40, 50};
 vector<int> checkedArray{10, 20, 30, 40, 50};
 using vit = vector<int>::iterator;
 
-static_assert(input_iterator<vit>); // TRANSITION, FIXME (File an issue to investigate this later?)
-
 struct simple_input_iter {
     using value_type      = int;
     using difference_type = ptrdiff_t;

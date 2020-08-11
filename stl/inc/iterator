@@ -530,13 +530,13 @@ public:
     }
 
     // clang-format off
-    template <class  _Other>
+    template <class _Other>
         requires convertible_to<const _Other&, _Iter>
     constexpr counted_iterator(const counted_iterator<_Other>& _Right) noexcept(
         is_nothrow_constructible_v<_Iter, const _Other&>) // strengthened
         : _Current(_Right._Current), _Length(_Right._Length) {}
 
-    template <class  _Other>
+    template <class _Other>
         requires assignable_from<_Iter&, const _Other&>
     constexpr counted_iterator& operator=(const counted_iterator<_Other>& _Right) noexcept(
         is_nothrow_assignable_v<_Iter&, const _Other&>) /* strengthened */ {
@@ -729,10 +729,13 @@ public:
 
     template <common_with<_Iter> _Other>
     friend constexpr void _Same_sequence(const counted_iterator& _Left, const counted_iterator<_Other>& _Right) {
-        using _CIter = common_type_t<_Iter, _Other>;
-        using _CDiff = common_type_t<iter_difference_t<_Iter>, iter_difference_t<_Other>>;
-
+        // Per N4861 [counted.iterator]/2, two counted_iterators x and y refer to elements of the same sequence iff
+        // next(x.base(), x.count()) and next(y.base(), y.count()) "refer to the same element." Iterator equality is a
+        // fair proxy for this condition.
         if constexpr (forward_iterator<_Iter> && forward_iterator<_Other>) {
+            using _CIter = common_type_t<_Iter, _Other>;
+            using _CDiff = common_type_t<iter_difference_t<_Iter>, iter_difference_t<_Other>>;
+
             const _CDiff _Diff = static_cast<_CDiff>(_Left._Length) - static_cast<_CDiff>(_Right.count());
             if (_Diff < 0) {
                 _STL_VERIFY(
