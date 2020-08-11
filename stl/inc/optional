@@ -446,26 +446,11 @@ _NODISCARD constexpr bool operator==(const optional<_Ty1>& _Left, const optional
     return _Left_has_value == _Right.has_value() && (!_Left_has_value || *_Left == *_Right);
 }
 
-#ifdef __cpp_lib_concepts
-template <class _Ty1, class _Ty2>
-_NODISCARD constexpr compare_three_way_result_t<_Ty1, _Ty2>
-operator<=>(const optional<_Ty1>& _Left, const optional<_Ty2>& _Right)
-{
-    if (_Left && _Right)
-    {
-        return *_Left <=> *_Right;
-    }
-
-    return bool(_Left) <=> bool(_Right);
-}
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
-#if !_HAS_CXX20
 template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool operator!=(const optional<_Ty1>& _Left, const optional<_Ty2>& _Right) {
     const bool _Left_has_value = _Left.has_value();
     return _Left_has_value != _Right.has_value() || (_Left_has_value && *_Left != *_Right);
 }
-#endif // !_HAS_CXX20
 
 template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool operator<(const optional<_Ty1>& _Left, const optional<_Ty2>& _Right) {
@@ -486,7 +471,20 @@ template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool operator>=(const optional<_Ty1>& _Left, const optional<_Ty2>& _Right) {
     return !_Right.has_value() || (_Left.has_value() && *_Left >= *_Right);
 }
-#endif // !defined(__cpp_lib_concepts)
+
+#ifdef __cpp_lib_concepts
+template <class _Ty1, three_way_comparable_with<_Ty1> _Ty2>
+_NODISCARD constexpr compare_three_way_result_t<_Ty1, _Ty2>
+operator<=>(const optional<_Ty1>& _Left, const optional<_Ty2>& _Right)
+{
+    if (_Left && _Right)
+    {
+        return *_Left <=> *_Right;
+    }
+
+    return bool(_Left) <=> bool(_Right);
+}
+#endif // __cpp_lib_concepts
 
 // COMPARISONS WITH nullopt [optional.nullops]
 template <class _Ty>
@@ -584,18 +582,6 @@ _NODISCARD constexpr bool operator==(const optional<_Ty1>& _Left, const _Ty2& _R
     return _Left ? *_Left == _Right : false;
 }
 
-#ifdef __cpp_lib_concepts
-template <class _Ty1, ThreeWayComparableWith<_Ty1> _Ty2>
-constexpr compare_three_way_result_t<_Ty1, _Ty2> operator<=>(const optional<_Ty1>& _Left, const _Ty2& _Right) {
-    if (_Left)
-    {
-        return *_Left <=> _Right;
-    }
-
-    return strong_ordering::less;
-}
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
-#if !_HAS_CXX20
 template <class _Ty1, class _Ty2, _Enable_if_comparable_with_equal<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator==(const _Ty1& _Left, const optional<_Ty2>& _Right) {
     return _Right ? _Left == *_Right : false;
@@ -609,7 +595,6 @@ template <class _Ty1, class _Ty2, _Enable_if_comparable_with_not_equal<_Ty1, _Ty
 _NODISCARD constexpr bool operator!=(const _Ty1& _Left, const optional<_Ty2>& _Right) {
     return _Right ? _Left != *_Right : true;
 }
-#endif // !_HAS_CXX20
 
 template <class _Ty1, class _Ty2, _Enable_if_comparable_with_less<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator<(const optional<_Ty1>& _Left, const _Ty2& _Right) {
@@ -646,7 +631,18 @@ template <class _Ty1, class _Ty2, _Enable_if_comparable_with_greater_equal<_Ty1,
 _NODISCARD constexpr bool operator>=(const _Ty1& _Left, const optional<_Ty2>& _Right) {
     return _Right ? _Left >= *_Right : true;
 }
-#endif // !defined(__cpp_lib_concepts)
+
+#ifdef __cpp_lib_concepts
+template <class _Ty1, three_way_comparable_with<_Ty1> _Ty2>
+constexpr compare_three_way_result_t<_Ty1, _Ty2> operator<=>(const optional<_Ty1>& _Left, const _Ty2& _Right) {
+    if (_Left)
+    {
+        return *_Left <=> _Right;
+    }
+
+    return strong_ordering::less;
+}
+#endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE swap [optional.specalg]
 template <class _Ty, enable_if_t<is_move_constructible_v<_Ty> && is_swappable_v<_Ty>, int> = 0>

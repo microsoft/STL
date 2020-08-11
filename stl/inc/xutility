@@ -1124,33 +1124,6 @@ using _Iter_value_t = iter_value_t<_Iter>;
 template <class _Iter>
 using _Iter_diff_t = iter_difference_t<_Iter>;
 
-// STRUCT SYNTH_THREE_WAY
-struct _Synth_three_way {
-    // clang-format off
-    template <class _Ty1, class _Ty2>
-    _NODISCARD constexpr auto operator()(const _Ty1& _Left, const _Ty2& _Right) const requires requires {
-        { _Left < _Right } -> _Boolean_testable;
-        { _Right < _Left } -> _Boolean_testable;
-    }
-    // clang-format on
-    {
-        if constexpr (three_way_comparable_with<_Ty1, _Ty2>) {
-            return _Left <=> _Right;
-        } else {
-            if (_Left < _Right) {
-                return weak_ordering::less;
-            } else if (_Right < _Left) {
-                return weak_ordering::greater;
-            } else {
-                return weak_ordering::equivalent;
-            }
-        }
-    }
-};
-
-// ALIAS TEMPLATE _Synth_three_way_result
-template <class _Ty1, class _Ty2 = _Ty1>
-using _Synth_three_way_result = decltype(_Synth_three_way{}(_STD declval<_Ty1&>(), _STD declval<_Ty2&>()));
 #else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
 // STRUCT TEMPLATE iterator_traits
 template <class, class = void>

@@ -9,7 +9,7 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 #if __cpp_lib_concepts
-#include compare
+#include <compare>
 #endif
 #include <new>
 #include <type_traits>
@@ -774,7 +774,7 @@ _NODISCARD constexpr bool operator>=(const tuple<_Types1...>& _Left, const tuple
 
 template <class... _Types1, class... _Types2>
 _NODISCARD constexpr bool operator>(const tuple<_Types1...>& _Left, const tuple<_Types2...>& _Right) {
-    return (_Left <=> Right) > 0;
+    return (_Left <=> _Right) > 0;
 }
 
 template <class... _Types1, class... _Types2>
