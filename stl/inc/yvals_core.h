@@ -500,8 +500,8 @@
 #error STL1000: Unexpected compiler version, expected Clang 10.0.0 or newer.
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
-#if _MSC_VER < 1927 // Coarse-grained, not inspecting _MSC_FULL_VER
-#error STL1001: Unexpected compiler version, expected MSVC 19.27 or newer.
+#if _MSC_VER < 1928 // Coarse-grained, not inspecting _MSC_FULL_VER
+#error STL1001: Unexpected compiler version, expected MSVC 19.28 or newer.
 #endif // ^^^ old MSVC ^^^
 #else // vvv other compilers vvv
 // not attempting to detect other compilers
@@ -1148,9 +1148,9 @@
 #define __cpp_lib_char8_t 201907L
 #endif // __cpp_char8_t
 
-#if defined(__cpp_concepts) && __cpp_concepts > 201507L
+#ifndef __EDG__ // TRANSITION, EDG concepts support
 #define __cpp_lib_concepts 201907L
-#endif // defined(__cpp_concepts) && __cpp_concepts > 201507L
+#endif // __EDG__
 
 #define __cpp_lib_constexpr_algorithms  201806L
 #define __cpp_lib_constexpr_complex     201711L
@@ -1162,7 +1162,7 @@
 #define __cpp_lib_constexpr_tuple       201811L
 #define __cpp_lib_constexpr_utility     201811L
 
-#ifdef __cpp_impl_coroutine // TRANSITION, VS 2019 16.8 Preview 1
+#ifdef __cpp_impl_coroutine // TRANSITION, VS 2019 16.8 Preview 3
 #define __cpp_lib_coroutine 197000L
 #endif // __cpp_impl_coroutine
 

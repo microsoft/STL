@@ -43,7 +43,7 @@ namespace {
         /* MAGIC */ static _Immortalizer_impl<_Ty> _Static;
         return reinterpret_cast<_Ty&>(_Static._Storage);
     }
-#elif _MSC_VER > 1927 && !defined(_M_CEE) // _M_CEE test is TRANSITION, VSO-1153256
+#elif !defined(_M_CEE) // _M_CEE test is TRANSITION, VSO-1153256
     template <class _Ty>
     struct _Constexpr_excptptr_immortalize_impl {
         union {
