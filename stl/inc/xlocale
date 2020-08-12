@@ -461,6 +461,252 @@ const _Facet& __CRTDECL use_facet(const locale& _Loc) { // get facet reference f
     _END_LOCK()
 } // end of use_facet body
 
+// STRUCT ctype_base
+struct _CRTIMP2_PURE_IMPORT ctype_base : locale::facet { // base for ctype
+    enum { // constants for character classifications
+        alnum  = _DI | _LO | _UP | _XA,
+        alpha  = _LO | _UP | _XA,
+        cntrl  = _BB,
+        digit  = _DI,
+        graph  = _DI | _LO | _PU | _UP | _XA,
+        lower  = _LO,
+        print  = _DI | _LO | _PU | _SP | _UP | _XA | _XD,
+        punct  = _PU,
+        space  = _CN | _SP | _XS,
+        upper  = _UP,
+        xdigit = _XD,
+        blank  = _CN | _SP | _XS | _XB
+    };
+    using mask = short; // to match <ctype.h>
+
+    __CLR_OR_THIS_CALL ctype_base(size_t _Refs = 0) : locale::facet(_Refs) {}
+
+    __CLR_OR_THIS_CALL ~ctype_base() noexcept {}
+};
+
+
+// CLASS TEMPLATE ctype
+template <class _Elem>
+class ctype : public ctype_base { // facet for classifying elements, converting cases
+public:
+    // ctype<char>, ctype<wchar_t>, and ctype<unsigned short> are explicitly specialized below.
+    static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Always_false<_Elem>, _FACET_SPECIALIZATION_MESSAGE);
+
+    using char_type = _Elem;
+
+    bool __CLR_OR_THIS_CALL is(mask _Maskval, _Elem _Ch) const { // test if element fits any mask classifications
+        return do_is(_Maskval, _Ch);
+    }
+
+    const _Elem* __CLR_OR_THIS_CALL is(const _Elem* _First, const _Elem* _Last,
+        mask* _Dest) const { // get mask sequence for elements in [_First, _Last)
+        return do_is(_First, _Last, _Dest);
+    }
+
+    const _Elem* __CLR_OR_THIS_CALL scan_is(mask _Maskval, const _Elem* _First,
+        const _Elem* _Last) const { // find first in [_First, _Last) that fits mask classification
+        return do_scan_is(_Maskval, _First, _Last);
+    }
+
+    const _Elem* __CLR_OR_THIS_CALL scan_not(mask _Maskval, const _Elem* _First,
+        const _Elem* _Last) const { // find first in [_First, _Last) not fitting mask classification
+        return do_scan_not(_Maskval, _First, _Last);
+    }
+
+    _Elem __CLR_OR_THIS_CALL tolower(_Elem _Ch) const { // convert element to lower case
+        return do_tolower(_Ch);
+    }
+
+    const _Elem* __CLR_OR_THIS_CALL tolower(
+        _Elem* _First, const _Elem* _Last) const { // convert [_First, _Last) in place to lower case
+        return do_tolower(_First, _Last);
+    }
+
+    _Elem __CLR_OR_THIS_CALL toupper(_Elem _Ch) const { // convert element to upper case
+        return do_toupper(_Ch);
+    }
+
+    const _Elem* __CLR_OR_THIS_CALL toupper(
+        _Elem* _First, const _Elem* _Last) const { // convert [_First, _Last) in place to upper case
+        return do_toupper(_First, _Last);
+    }
+
+    _Elem __CLR_OR_THIS_CALL widen(char _Byte) const { // widen char
+        return do_widen(_Byte);
+    }
+
+    const char* __CLR_OR_THIS_CALL widen(const char* _First, const char* _Last,
+        _Elem* _Dest) const { // widen chars in [_First, _Last)
+        return do_widen(_First, _Last, _Dest);
+    }
+
+    char __CLR_OR_THIS_CALL narrow(_Elem _Ch, char _Dflt = '\0') const { // narrow element to char
+        return do_narrow(_Ch, _Dflt);
+    }
+
+    const _Elem* __CLR_OR_THIS_CALL narrow(const _Elem* _First, const _Elem* _Last, char _Dflt,
+        char* _Dest) const { // narrow elements in [_First, _Last) to chars
+        return do_narrow(_First, _Last, _Dflt, _Dest);
+    }
+
+    __PURE_APPDOMAIN_GLOBAL static locale::id id;
+
+    explicit __CLR_OR_THIS_CALL ctype(size_t _Refs = 0) : ctype_base(_Refs) {
+        _BEGIN_LOCINFO(_Lobj)
+        _Init(_Lobj);
+        _END_LOCINFO()
+    }
+
+    __CLR_OR_THIS_CALL ctype(const _Locinfo& _Lobj, size_t _Refs = 0) : ctype_base(_Refs) {
+        _Init(_Lobj);
+    }
+
+    static size_t __CLRCALL_OR_CDECL _Getcat(const locale::facet** _Ppf = nullptr, const locale* _Ploc = nullptr) {
+        if (_Ppf && !*_Ppf) {
+            *_Ppf = new ctype<_Elem>(_Locinfo(_Ploc->c_str()));
+        }
+
+        return _X_CTYPE;
+    }
+
+protected:
+    virtual __CLR_OR_THIS_CALL ~ctype() noexcept {
+        if (_Ctype._Delfl) {
+            _CSTD free(const_cast<short*>(_Ctype._Table));
+        }
+
+        _CSTD free(_Ctype._LocaleName);
+    }
+
+    void __CLR_OR_THIS_CALL _Init(const _Locinfo& _Lobj) { // initialize from _Lobj
+        _Ctype = _Lobj._Getctype();
+        _Cvt   = _Lobj._Getcvt();
+    }
+
+    virtual bool __CLR_OR_THIS_CALL do_is(
+        mask _Maskval, _Elem _Ch) const { // test if element fits any mask classifications
+        return (_Ctype._Table[static_cast<unsigned char>(narrow(_Ch))] & _Maskval) != 0;
+    }
+
+    virtual const _Elem* __CLR_OR_THIS_CALL do_is(const _Elem* _First, const _Elem* _Last,
+        mask* _Dest) const { // get mask sequence for elements in [_First, _Last)
+        _Adl_verify_range(_First, _Last);
+        for (; _First != _Last; ++_First, ++_Dest) {
+            *_Dest = _Ctype._Table[static_cast<unsigned char>(narrow(*_First))];
+        }
+
+        return _First;
+    }
+
+    virtual const _Elem* __CLR_OR_THIS_CALL do_scan_is(mask _Maskval, const _Elem* _First,
+        const _Elem* _Last) const { // find first in [_First, _Last) that fits mask classification
+        _Adl_verify_range(_First, _Last);
+        while (_First != _Last && !is(_Maskval, *_First)) {
+            ++_First;
+        }
+
+        return _First;
+    }
+
+    virtual const _Elem* __CLR_OR_THIS_CALL do_scan_not(mask _Maskval, const _Elem* _First,
+        const _Elem* _Last) const { // find first in [_First, _Last) not fitting mask classification
+        _Adl_verify_range(_First, _Last);
+        while (_First != _Last && is(_Maskval, *_First)) {
+            ++_First;
+        }
+
+        return _First;
+    }
+
+    virtual _Elem __CLR_OR_THIS_CALL do_tolower(_Elem _Ch) const { // convert element to lower case
+        unsigned char _Byte = static_cast<unsigned char>(narrow(_Ch, '\0'));
+        if (_Byte == '\0') {
+            return _Ch;
+        }
+
+        return widen(static_cast<char>(_Tolower(_Byte, &_Ctype)));
+    }
+
+    virtual const _Elem* __CLR_OR_THIS_CALL do_tolower(_Elem* _First,
+        const _Elem* _Last) const { // convert [_First, _Last) in place to lower case
+        _Adl_verify_range(_First, _Last);
+        for (; _First != _Last; ++_First) { // convert *_First to lower case
+            unsigned char _Byte = static_cast<unsigned char>(narrow(*_First, '\0'));
+            if (_Byte != '\0') {
+                *_First = (widen(static_cast<char>(_Tolower(_Byte, &_Ctype))));
+            }
+        }
+        return _First;
+    }
+
+    virtual _Elem __CLR_OR_THIS_CALL do_toupper(_Elem _Ch) const { // convert element to upper case
+        unsigned char _Byte = static_cast<unsigned char>(narrow(_Ch, '\0'));
+        if (_Byte == '\0') {
+            return _Ch;
+        }
+
+        return widen(static_cast<char>(_Toupper(_Byte, &_Ctype)));
+    }
+
+    virtual const _Elem* __CLR_OR_THIS_CALL do_toupper(_Elem* _First,
+        const _Elem* _Last) const { // convert [_First, _Last) in place to upper case
+        _Adl_verify_range(_First, _Last);
+        for (; _First != _Last; ++_First) { // convert *_First to upper case
+            unsigned char _Byte = static_cast<unsigned char>(narrow(*_First, '\0'));
+            if (_Byte != '\0') {
+                *_First = (widen(static_cast<char>(_Toupper(_Byte, &_Ctype))));
+            }
+        }
+
+        return _First;
+    }
+
+    virtual _Elem __CLR_OR_THIS_CALL do_widen(char _Byte) const { // widen char
+        return _Maklocchr(_Byte, static_cast<_Elem*>(nullptr), _Cvt);
+    }
+
+    virtual const char* __CLR_OR_THIS_CALL do_widen(
+        const char* _First, const char* _Last, _Elem* _Dest) const { // widen chars in [_First, _Last)
+        _Adl_verify_range(_First, _Last);
+        for (; _First != _Last; ++_First, ++_Dest) {
+            *_Dest = _Maklocchr(*_First, static_cast<_Elem*>(nullptr), _Cvt);
+        }
+
+        return _First;
+    }
+
+    char __CLR_OR_THIS_CALL _Donarrow(_Elem _Ch, char _Dflt) const { // narrow element to char
+        char _Byte;
+        if (_Ch == _Elem{}) {
+            return '\0';
+        }
+
+        if ((_Byte = _Maklocbyte(_Ch, _Cvt)) == '\0') {
+            return _Dflt;
+        }
+
+        return _Byte;
+    }
+
+    virtual char __CLR_OR_THIS_CALL do_narrow(_Elem _Ch, char _Dflt) const { // narrow element to char
+        return _Donarrow(_Ch, _Dflt);
+    }
+
+    virtual const _Elem* __CLR_OR_THIS_CALL do_narrow(const _Elem* _First, const _Elem* _Last, char _Dflt,
+        char* _Dest) const { // narrow elements in [_First, _Last) to chars
+        _Adl_verify_range(_First, _Last);
+        for (; _First != _Last; ++_First, ++_Dest) {
+            *_Dest = _Donarrow(*_First, _Dflt);
+        }
+
+        return _First;
+    }
+
+private:
+    _Locinfo::_Ctypevec _Ctype; // locale info passed to _Tolower, etc.
+    _Locinfo::_Cvtvec _Cvt; // conversion information
+};
+
 // FUNCTION TEMPLATE _Getloctxt
 template <class _Elem, class _InIt>
 int __CRTDECL _Getloctxt(_InIt& _First, _InIt& _Last, size_t _Numfields, const _Elem* _Ptr) {
@@ -472,7 +718,7 @@ int __CRTDECL _Getloctxt(_InIt& _First, _InIt& _Last, size_t _Numfields, const _
     }
 
     string _Str(_Numfields, '\0'); // one column counter for each field
-    const ctype<_Elem>& _CType = use_facet<ctype<_Elem>>(locale());
+    const _STD ctype<_Elem>& _CType = _STD use_facet<_STD ctype<_Elem>>(_STD locale());
 
     int _Ans = -2; // no candidates so far
     for (size_t _Column = 1;; ++_Column, (void) ++_First, _Ans = -1) { // test each element against all viable fields
@@ -491,7 +737,7 @@ int __CRTDECL _Getloctxt(_InIt& _First, _InIt& _Last, size_t _Numfields, const _
                        || _Ptr[_Off] == _Elem{}) { // matched all of field, save as possible answer
                 _Str[_Field] = static_cast<char>(_Column < 127 ? _Column : 127); // save skip count if small enough
                 _Ans         = static_cast<int>(_Field); // save answer
-            } else if (_First == _Last || _CType.tolower(_Ptr[_Off]) != _CType.tolower(*_First)) {
+            } else if (_First == _Last || _CType.tolower(_Ptr[_Off]) != _CType.tolower(static_cast<_Elem>(*_First))) {
                 _Str[_Field] = static_cast<char>(_Column < 127 ? _Column : 127); // no match, just save skip count
             } else {
                 _Prefix = true; // still a valid prefix
@@ -2387,251 +2633,6 @@ public:
 
 protected:
     virtual __CLR_OR_THIS_CALL ~codecvt_byname() noexcept {}
-};
-
-// STRUCT ctype_base
-struct _CRTIMP2_PURE_IMPORT ctype_base : locale::facet { // base for ctype
-    enum { // constants for character classifications
-        alnum  = _DI | _LO | _UP | _XA,
-        alpha  = _LO | _UP | _XA,
-        cntrl  = _BB,
-        digit  = _DI,
-        graph  = _DI | _LO | _PU | _UP | _XA,
-        lower  = _LO,
-        print  = _DI | _LO | _PU | _SP | _UP | _XA | _XD,
-        punct  = _PU,
-        space  = _CN | _SP | _XS,
-        upper  = _UP,
-        xdigit = _XD,
-        blank  = _CN | _SP | _XS | _XB
-    };
-    using mask = short; // to match <ctype.h>
-
-    __CLR_OR_THIS_CALL ctype_base(size_t _Refs = 0) : locale::facet(_Refs) {}
-
-    __CLR_OR_THIS_CALL ~ctype_base() noexcept {}
-};
-
-// CLASS TEMPLATE ctype
-template <class _Elem>
-class ctype : public ctype_base { // facet for classifying elements, converting cases
-public:
-    // ctype<char>, ctype<wchar_t>, and ctype<unsigned short> are explicitly specialized below.
-    static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Always_false<_Elem>, _FACET_SPECIALIZATION_MESSAGE);
-
-    using char_type = _Elem;
-
-    bool __CLR_OR_THIS_CALL is(mask _Maskval, _Elem _Ch) const { // test if element fits any mask classifications
-        return do_is(_Maskval, _Ch);
-    }
-
-    const _Elem* __CLR_OR_THIS_CALL is(const _Elem* _First, const _Elem* _Last,
-        mask* _Dest) const { // get mask sequence for elements in [_First, _Last)
-        return do_is(_First, _Last, _Dest);
-    }
-
-    const _Elem* __CLR_OR_THIS_CALL scan_is(mask _Maskval, const _Elem* _First,
-        const _Elem* _Last) const { // find first in [_First, _Last) that fits mask classification
-        return do_scan_is(_Maskval, _First, _Last);
-    }
-
-    const _Elem* __CLR_OR_THIS_CALL scan_not(mask _Maskval, const _Elem* _First,
-        const _Elem* _Last) const { // find first in [_First, _Last) not fitting mask classification
-        return do_scan_not(_Maskval, _First, _Last);
-    }
-
-    _Elem __CLR_OR_THIS_CALL tolower(_Elem _Ch) const { // convert element to lower case
-        return do_tolower(_Ch);
-    }
-
-    const _Elem* __CLR_OR_THIS_CALL tolower(
-        _Elem* _First, const _Elem* _Last) const { // convert [_First, _Last) in place to lower case
-        return do_tolower(_First, _Last);
-    }
-
-    _Elem __CLR_OR_THIS_CALL toupper(_Elem _Ch) const { // convert element to upper case
-        return do_toupper(_Ch);
-    }
-
-    const _Elem* __CLR_OR_THIS_CALL toupper(
-        _Elem* _First, const _Elem* _Last) const { // convert [_First, _Last) in place to upper case
-        return do_toupper(_First, _Last);
-    }
-
-    _Elem __CLR_OR_THIS_CALL widen(char _Byte) const { // widen char
-        return do_widen(_Byte);
-    }
-
-    const char* __CLR_OR_THIS_CALL widen(const char* _First, const char* _Last,
-        _Elem* _Dest) const { // widen chars in [_First, _Last)
-        return do_widen(_First, _Last, _Dest);
-    }
-
-    char __CLR_OR_THIS_CALL narrow(_Elem _Ch, char _Dflt = '\0') const { // narrow element to char
-        return do_narrow(_Ch, _Dflt);
-    }
-
-    const _Elem* __CLR_OR_THIS_CALL narrow(const _Elem* _First, const _Elem* _Last, char _Dflt,
-        char* _Dest) const { // narrow elements in [_First, _Last) to chars
-        return do_narrow(_First, _Last, _Dflt, _Dest);
-    }
-
-    __PURE_APPDOMAIN_GLOBAL static locale::id id;
-
-    explicit __CLR_OR_THIS_CALL ctype(size_t _Refs = 0) : ctype_base(_Refs) {
-        _BEGIN_LOCINFO(_Lobj)
-        _Init(_Lobj);
-        _END_LOCINFO()
-    }
-
-    __CLR_OR_THIS_CALL ctype(const _Locinfo& _Lobj, size_t _Refs = 0) : ctype_base(_Refs) {
-        _Init(_Lobj);
-    }
-
-    static size_t __CLRCALL_OR_CDECL _Getcat(const locale::facet** _Ppf = nullptr, const locale* _Ploc = nullptr) {
-        if (_Ppf && !*_Ppf) {
-            *_Ppf = new ctype<_Elem>(_Locinfo(_Ploc->c_str()));
-        }
-
-        return _X_CTYPE;
-    }
-
-protected:
-    virtual __CLR_OR_THIS_CALL ~ctype() noexcept {
-        if (_Ctype._Delfl) {
-            _CSTD free(const_cast<short*>(_Ctype._Table));
-        }
-
-        _CSTD free(_Ctype._LocaleName);
-    }
-
-    void __CLR_OR_THIS_CALL _Init(const _Locinfo& _Lobj) { // initialize from _Lobj
-        _Ctype = _Lobj._Getctype();
-        _Cvt   = _Lobj._Getcvt();
-    }
-
-    virtual bool __CLR_OR_THIS_CALL do_is(
-        mask _Maskval, _Elem _Ch) const { // test if element fits any mask classifications
-        return (_Ctype._Table[static_cast<unsigned char>(narrow(_Ch))] & _Maskval) != 0;
-    }
-
-    virtual const _Elem* __CLR_OR_THIS_CALL do_is(const _Elem* _First, const _Elem* _Last,
-        mask* _Dest) const { // get mask sequence for elements in [_First, _Last)
-        _Adl_verify_range(_First, _Last);
-        for (; _First != _Last; ++_First, ++_Dest) {
-            *_Dest = _Ctype._Table[static_cast<unsigned char>(narrow(*_First))];
-        }
-
-        return _First;
-    }
-
-    virtual const _Elem* __CLR_OR_THIS_CALL do_scan_is(mask _Maskval, const _Elem* _First,
-        const _Elem* _Last) const { // find first in [_First, _Last) that fits mask classification
-        _Adl_verify_range(_First, _Last);
-        while (_First != _Last && !is(_Maskval, *_First)) {
-            ++_First;
-        }
-
-        return _First;
-    }
-
-    virtual const _Elem* __CLR_OR_THIS_CALL do_scan_not(mask _Maskval, const _Elem* _First,
-        const _Elem* _Last) const { // find first in [_First, _Last) not fitting mask classification
-        _Adl_verify_range(_First, _Last);
-        while (_First != _Last && is(_Maskval, *_First)) {
-            ++_First;
-        }
-
-        return _First;
-    }
-
-    virtual _Elem __CLR_OR_THIS_CALL do_tolower(_Elem _Ch) const { // convert element to lower case
-        unsigned char _Byte = static_cast<unsigned char>(narrow(_Ch, '\0'));
-        if (_Byte == '\0') {
-            return _Ch;
-        }
-
-        return widen(static_cast<char>(_Tolower(_Byte, &_Ctype)));
-    }
-
-    virtual const _Elem* __CLR_OR_THIS_CALL do_tolower(_Elem* _First,
-        const _Elem* _Last) const { // convert [_First, _Last) in place to lower case
-        _Adl_verify_range(_First, _Last);
-        for (; _First != _Last; ++_First) { // convert *_First to lower case
-            unsigned char _Byte = static_cast<unsigned char>(narrow(*_First, '\0'));
-            if (_Byte != '\0') {
-                *_First = (widen(static_cast<char>(_Tolower(_Byte, &_Ctype))));
-            }
-        }
-        return _First;
-    }
-
-    virtual _Elem __CLR_OR_THIS_CALL do_toupper(_Elem _Ch) const { // convert element to upper case
-        unsigned char _Byte = static_cast<unsigned char>(narrow(_Ch, '\0'));
-        if (_Byte == '\0') {
-            return _Ch;
-        }
-
-        return widen(static_cast<char>(_Toupper(_Byte, &_Ctype)));
-    }
-
-    virtual const _Elem* __CLR_OR_THIS_CALL do_toupper(_Elem* _First,
-        const _Elem* _Last) const { // convert [_First, _Last) in place to upper case
-        _Adl_verify_range(_First, _Last);
-        for (; _First != _Last; ++_First) { // convert *_First to upper case
-            unsigned char _Byte = static_cast<unsigned char>(narrow(*_First, '\0'));
-            if (_Byte != '\0') {
-                *_First = (widen(static_cast<char>(_Toupper(_Byte, &_Ctype))));
-            }
-        }
-
-        return _First;
-    }
-
-    virtual _Elem __CLR_OR_THIS_CALL do_widen(char _Byte) const { // widen char
-        return _Maklocchr(_Byte, static_cast<_Elem*>(nullptr), _Cvt);
-    }
-
-    virtual const char* __CLR_OR_THIS_CALL do_widen(
-        const char* _First, const char* _Last, _Elem* _Dest) const { // widen chars in [_First, _Last)
-        _Adl_verify_range(_First, _Last);
-        for (; _First != _Last; ++_First, ++_Dest) {
-            *_Dest = _Maklocchr(*_First, static_cast<_Elem*>(nullptr), _Cvt);
-        }
-
-        return _First;
-    }
-
-    char __CLR_OR_THIS_CALL _Donarrow(_Elem _Ch, char _Dflt) const { // narrow element to char
-        char _Byte;
-        if (_Ch == _Elem{}) {
-            return '\0';
-        }
-
-        if ((_Byte = _Maklocbyte(_Ch, _Cvt)) == '\0') {
-            return _Dflt;
-        }
-
-        return _Byte;
-    }
-
-    virtual char __CLR_OR_THIS_CALL do_narrow(_Elem _Ch, char _Dflt) const { // narrow element to char
-        return _Donarrow(_Ch, _Dflt);
-    }
-
-    virtual const _Elem* __CLR_OR_THIS_CALL do_narrow(const _Elem* _First, const _Elem* _Last, char _Dflt,
-        char* _Dest) const { // narrow elements in [_First, _Last) to chars
-        _Adl_verify_range(_First, _Last);
-        for (; _First != _Last; ++_First, ++_Dest) {
-            *_Dest = _Donarrow(*_First, _Dflt);
-        }
-
-        return _First;
-    }
-
-private:
-    _Locinfo::_Ctypevec _Ctype; // locale info passed to _Tolower, etc.
-    _Locinfo::_Cvtvec _Cvt; // conversion information
 };
 
 // STATIC ctype::id OBJECT
