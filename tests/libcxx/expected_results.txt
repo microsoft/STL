@@ -775,6 +775,15 @@ std/iterators/predef.iterators/insert.iterators/insert.iterator/types.pass.cpp F
 std/numerics/complex.number/cmplx.over/conj.pass.cpp:0 FAIL
 std/numerics/complex.number/cmplx.over/proj.pass.cpp:0 FAIL
 
+# Assertion failed: std::abs(skew - x_skew) < 0.01
+# Random number generation test with too strict pass criteria (test8 failure probability ~= 0.04)
+std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.pconst/eval.pass.cpp FAIL
+
+# Assertion failed: std::abs(f(u[i], a, m, bk, c) - double(i)/N) < .001
+# Random number generation test with too strict pass criteria (test6 failure probability > 0.2)
+std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/eval_param.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/eval.pass.cpp FAIL
+
 # Assertion failed: (std::lerp(T(2.3), T(2.3), inf) == T(2.3))
 # Asserts `(std::lerp(T(2.3), T(2.3), inf) == T(2.3))` and `std::isnan(std::lerp(T( 0), T( 0), inf))`
 # They shouldn't behave differently. Both of them should probably return NaN.
@@ -817,22 +826,6 @@ std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.gamma/min.pass.cpp FAIL
 std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.poisson/eval_param.pass.cpp FAIL
 std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.poisson/eval.pass.cpp FAIL
 std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.weibull/max.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.pconst/ctor_init_func.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.pconst/ctor_iterator.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.pconst/eval.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.pconst/param_ctor_init_func.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.pconst/param_ctor_iterator.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/ctor_default.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/ctor_func.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/ctor_init_func.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/ctor_iterator.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/ctor_param.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/eval_param.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/eval.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/param_ctor_default.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/param_ctor_func.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/param_ctor_init_func.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/param_ctor_iterator.pass.cpp FAIL
 std/numerics/rand/rand.dis/rand.dist.uni/rand.dist.uni.real/param_ctor.pass.cpp FAIL
 
 # Not yet analyzed, likely STL bugs. Various assertions.
