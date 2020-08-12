@@ -461,6 +461,159 @@ const _Facet& __CRTDECL use_facet(const locale& _Loc) { // get facet reference f
     _END_LOCK()
 } // end of use_facet body
 
+// FUNCTION TEMPLATE _Maklocbyte
+template <class _Elem>
+char __CRTDECL _Maklocbyte(_Elem _Char, const _Locinfo::_Cvtvec&) {
+    // convert _Elem to char using _Cvtvec
+    return static_cast<char>(static_cast<unsigned char>(_Char));
+}
+
+template <>
+inline char __CRTDECL _Maklocbyte(wchar_t _Char, const _Locinfo::_Cvtvec& _Cvt) {
+    // convert wchar_t to char using _Cvtvec
+    char _Byte       = '\0';
+    mbstate_t _Mbst1 = {};
+    _Wcrtomb(&_Byte, _Char, &_Mbst1, &_Cvt);
+    return _Byte;
+}
+
+#ifdef _NATIVE_WCHAR_T_DEFINED
+template <>
+inline char __CRTDECL _Maklocbyte(unsigned short _Char, const _Locinfo::_Cvtvec& _Cvt) {
+    // convert unsigned short to char using _Cvtvec
+    char _Byte       = '\0';
+    mbstate_t _Mbst1 = {};
+    _Wcrtomb(&_Byte, static_cast<wchar_t>(_Char), &_Mbst1, &_Cvt);
+    return _Byte;
+}
+#endif // _NATIVE_WCHAR_T_DEFINED
+
+// FUNCTION TEMPLATE _Maklocchr
+template <class _Elem>
+_Elem __CRTDECL _Maklocchr(char _Byte, _Elem*, const _Locinfo::_Cvtvec&) {
+    // convert char to _Elem using _Cvtvec
+    return static_cast<_Elem>(static_cast<unsigned char>(_Byte));
+}
+
+template <>
+inline wchar_t __CRTDECL _Maklocchr(char _Byte, wchar_t*, const _Locinfo::_Cvtvec& _Cvt) {
+    // convert char to wchar_t using _Cvtvec
+    wchar_t _Wc      = L'\0';
+    mbstate_t _Mbst1 = {};
+    _Mbrtowc(&_Wc, &_Byte, 1, &_Mbst1, &_Cvt);
+    return _Wc;
+}
+
+#ifdef _NATIVE_WCHAR_T_DEFINED
+template <>
+inline unsigned short __CRTDECL _Maklocchr(char _Byte, unsigned short*, const _Locinfo::_Cvtvec& _Cvt) {
+    // convert char to unsigned short using _Cvtvec
+    unsigned short _Wc = 0;
+    mbstate_t _Mbst1   = {};
+    _Mbrtowc(reinterpret_cast<wchar_t*>(&_Wc), &_Byte, 1, &_Mbst1, &_Cvt);
+    return _Wc;
+}
+#endif // _NATIVE_WCHAR_T_DEFINED
+
+// FUNCTION TEMPLATE _Maklocstr
+template <class _Elem>
+_Elem* __CRTDECL _Maklocstr(const char* _Ptr, _Elem*, const _Locinfo::_Cvtvec&) {
+    // convert C string to _Elem sequence using _Cvtvec
+    size_t _Count = _CSTD strlen(_Ptr) + 1;
+
+    _Elem* _Ptrdest = static_cast<_Elem*>(_calloc_dbg(_Count, sizeof(_Elem), _CRT_BLOCK, __FILE__, __LINE__));
+
+    if (!_Ptrdest) {
+        _Xbad_alloc();
+    }
+
+    for (_Elem* _Ptrnext = _Ptrdest; 0 < _Count; --_Count, ++_Ptrnext, ++_Ptr) {
+        *_Ptrnext = static_cast<_Elem>(static_cast<unsigned char>(*_Ptr));
+    }
+
+    return _Ptrdest;
+}
+
+template <>
+inline wchar_t* __CRTDECL _Maklocstr(const char* _Ptr, wchar_t*, const _Locinfo::_Cvtvec& _Cvt) {
+    // convert C string to wchar_t sequence using _Cvtvec
+    size_t _Count;
+    size_t _Count1;
+    size_t _Wchars;
+    const char* _Ptr1;
+    int _Bytes;
+    wchar_t _Wc;
+    mbstate_t _Mbst1 = {};
+
+    _Count1 = _CSTD strlen(_Ptr) + 1;
+    for (_Count = _Count1, _Wchars = 0, _Ptr1 = _Ptr; 0 < _Count; _Count -= _Bytes, _Ptr1 += _Bytes, ++_Wchars) {
+        if ((_Bytes = _Mbrtowc(&_Wc, _Ptr1, _Count, &_Mbst1, &_Cvt)) <= 0) {
+            break;
+        }
+    }
+
+    ++_Wchars; // count terminating nul
+
+    wchar_t* _Ptrdest = static_cast<wchar_t*>(_calloc_dbg(_Wchars, sizeof(wchar_t), _CRT_BLOCK, __FILE__, __LINE__));
+
+    if (!_Ptrdest) {
+        _Xbad_alloc();
+    }
+
+    wchar_t* _Ptrnext = _Ptrdest;
+    mbstate_t _Mbst2  = {};
+
+    for (; 0 < _Wchars; _Count -= _Bytes, _Ptr += _Bytes, --_Wchars, ++_Ptrnext) {
+        if ((_Bytes = _Mbrtowc(_Ptrnext, _Ptr, _Count1, &_Mbst2, &_Cvt)) <= 0) {
+            break;
+        }
+    }
+
+    *_Ptrnext = L'\0';
+
+    return _Ptrdest;
+}
+
+#ifdef _NATIVE_WCHAR_T_DEFINED
+template <>
+inline unsigned short* __CRTDECL _Maklocstr(const char* _Ptr, unsigned short*, const _Locinfo::_Cvtvec& _Cvt) {
+    // convert C string to unsigned short sequence using _Cvtvec
+    size_t _Count;
+    size_t _Count1;
+    size_t _Wchars;
+    const char* _Ptr1;
+    int _Bytes;
+    unsigned short _Wc;
+    mbstate_t _Mbst1 = {};
+
+    _Count1 = _CSTD strlen(_Ptr) + 1;
+    for (_Count = _Count1, _Wchars = 0, _Ptr1 = _Ptr; 0 < _Count; _Count -= _Bytes, _Ptr1 += _Bytes, ++_Wchars) {
+        if ((_Bytes = _Mbrtowc(reinterpret_cast<wchar_t*>(&_Wc), _Ptr1, _Count, &_Mbst1, &_Cvt)) <= 0) {
+            break;
+        }
+    }
+
+    ++_Wchars; // count terminating nul
+
+    wchar_t* _Ptrdest = static_cast<wchar_t*>(_calloc_dbg(_Wchars, sizeof(wchar_t), _CRT_BLOCK, __FILE__, __LINE__));
+
+    if (!_Ptrdest) {
+        _Xbad_alloc();
+    }
+
+    wchar_t* _Ptrnext = _Ptrdest;
+    mbstate_t _Mbst2  = {};
+    for (; 0 < _Wchars; _Count -= _Bytes, _Ptr += _Bytes, --_Wchars, ++_Ptrnext) {
+        if ((_Bytes = _Mbrtowc(_Ptrnext, _Ptr, _Count1, &_Mbst2, &_Cvt)) <= 0) {
+            break;
+        }
+    }
+
+    *_Ptrnext = L'\0';
+    return reinterpret_cast<unsigned short*>(_Ptrdest);
+}
+#endif // _NATIVE_WCHAR_T_DEFINED
+
 // STRUCT ctype_base
 struct _CRTIMP2_PURE_IMPORT ctype_base : locale::facet { // base for ctype
     enum { // constants for character classifications
@@ -483,7 +636,6 @@ struct _CRTIMP2_PURE_IMPORT ctype_base : locale::facet { // base for ctype
 
     __CLR_OR_THIS_CALL ~ctype_base() noexcept {}
 };
-
 
 // CLASS TEMPLATE ctype
 template <class _Elem>
@@ -750,159 +902,6 @@ int __CRTDECL _Getloctxt(_InIt& _First, _InIt& _Last, size_t _Numfields, const _
     }
     return _Ans; // return field number or negative value on failure
 }
-
-// FUNCTION TEMPLATE _Maklocbyte
-template <class _Elem>
-char __CRTDECL _Maklocbyte(_Elem _Char, const _Locinfo::_Cvtvec&) {
-    // convert _Elem to char using _Cvtvec
-    return static_cast<char>(static_cast<unsigned char>(_Char));
-}
-
-template <>
-inline char __CRTDECL _Maklocbyte(wchar_t _Char, const _Locinfo::_Cvtvec& _Cvt) {
-    // convert wchar_t to char using _Cvtvec
-    char _Byte       = '\0';
-    mbstate_t _Mbst1 = {};
-    _Wcrtomb(&_Byte, _Char, &_Mbst1, &_Cvt);
-    return _Byte;
-}
-
-#ifdef _NATIVE_WCHAR_T_DEFINED
-template <>
-inline char __CRTDECL _Maklocbyte(unsigned short _Char, const _Locinfo::_Cvtvec& _Cvt) {
-    // convert unsigned short to char using _Cvtvec
-    char _Byte       = '\0';
-    mbstate_t _Mbst1 = {};
-    _Wcrtomb(&_Byte, static_cast<wchar_t>(_Char), &_Mbst1, &_Cvt);
-    return _Byte;
-}
-#endif // _NATIVE_WCHAR_T_DEFINED
-
-// FUNCTION TEMPLATE _Maklocchr
-template <class _Elem>
-_Elem __CRTDECL _Maklocchr(char _Byte, _Elem*, const _Locinfo::_Cvtvec&) {
-    // convert char to _Elem using _Cvtvec
-    return static_cast<_Elem>(static_cast<unsigned char>(_Byte));
-}
-
-template <>
-inline wchar_t __CRTDECL _Maklocchr(char _Byte, wchar_t*, const _Locinfo::_Cvtvec& _Cvt) {
-    // convert char to wchar_t using _Cvtvec
-    wchar_t _Wc      = L'\0';
-    mbstate_t _Mbst1 = {};
-    _Mbrtowc(&_Wc, &_Byte, 1, &_Mbst1, &_Cvt);
-    return _Wc;
-}
-
-#ifdef _NATIVE_WCHAR_T_DEFINED
-template <>
-inline unsigned short __CRTDECL _Maklocchr(char _Byte, unsigned short*, const _Locinfo::_Cvtvec& _Cvt) {
-    // convert char to unsigned short using _Cvtvec
-    unsigned short _Wc = 0;
-    mbstate_t _Mbst1   = {};
-    _Mbrtowc(reinterpret_cast<wchar_t*>(&_Wc), &_Byte, 1, &_Mbst1, &_Cvt);
-    return _Wc;
-}
-#endif // _NATIVE_WCHAR_T_DEFINED
-
-// FUNCTION TEMPLATE _Maklocstr
-template <class _Elem>
-_Elem* __CRTDECL _Maklocstr(const char* _Ptr, _Elem*, const _Locinfo::_Cvtvec&) {
-    // convert C string to _Elem sequence using _Cvtvec
-    size_t _Count = _CSTD strlen(_Ptr) + 1;
-
-    _Elem* _Ptrdest = static_cast<_Elem*>(_calloc_dbg(_Count, sizeof(_Elem), _CRT_BLOCK, __FILE__, __LINE__));
-
-    if (!_Ptrdest) {
-        _Xbad_alloc();
-    }
-
-    for (_Elem* _Ptrnext = _Ptrdest; 0 < _Count; --_Count, ++_Ptrnext, ++_Ptr) {
-        *_Ptrnext = static_cast<_Elem>(static_cast<unsigned char>(*_Ptr));
-    }
-
-    return _Ptrdest;
-}
-
-template <>
-inline wchar_t* __CRTDECL _Maklocstr(const char* _Ptr, wchar_t*, const _Locinfo::_Cvtvec& _Cvt) {
-    // convert C string to wchar_t sequence using _Cvtvec
-    size_t _Count;
-    size_t _Count1;
-    size_t _Wchars;
-    const char* _Ptr1;
-    int _Bytes;
-    wchar_t _Wc;
-    mbstate_t _Mbst1 = {};
-
-    _Count1 = _CSTD strlen(_Ptr) + 1;
-    for (_Count = _Count1, _Wchars = 0, _Ptr1 = _Ptr; 0 < _Count; _Count -= _Bytes, _Ptr1 += _Bytes, ++_Wchars) {
-        if ((_Bytes = _Mbrtowc(&_Wc, _Ptr1, _Count, &_Mbst1, &_Cvt)) <= 0) {
-            break;
-        }
-    }
-
-    ++_Wchars; // count terminating nul
-
-    wchar_t* _Ptrdest = static_cast<wchar_t*>(_calloc_dbg(_Wchars, sizeof(wchar_t), _CRT_BLOCK, __FILE__, __LINE__));
-
-    if (!_Ptrdest) {
-        _Xbad_alloc();
-    }
-
-    wchar_t* _Ptrnext = _Ptrdest;
-    mbstate_t _Mbst2  = {};
-
-    for (; 0 < _Wchars; _Count -= _Bytes, _Ptr += _Bytes, --_Wchars, ++_Ptrnext) {
-        if ((_Bytes = _Mbrtowc(_Ptrnext, _Ptr, _Count1, &_Mbst2, &_Cvt)) <= 0) {
-            break;
-        }
-    }
-
-    *_Ptrnext = L'\0';
-
-    return _Ptrdest;
-}
-
-#ifdef _NATIVE_WCHAR_T_DEFINED
-template <>
-inline unsigned short* __CRTDECL _Maklocstr(const char* _Ptr, unsigned short*, const _Locinfo::_Cvtvec& _Cvt) {
-    // convert C string to unsigned short sequence using _Cvtvec
-    size_t _Count;
-    size_t _Count1;
-    size_t _Wchars;
-    const char* _Ptr1;
-    int _Bytes;
-    unsigned short _Wc;
-    mbstate_t _Mbst1 = {};
-
-    _Count1 = _CSTD strlen(_Ptr) + 1;
-    for (_Count = _Count1, _Wchars = 0, _Ptr1 = _Ptr; 0 < _Count; _Count -= _Bytes, _Ptr1 += _Bytes, ++_Wchars) {
-        if ((_Bytes = _Mbrtowc(reinterpret_cast<wchar_t*>(&_Wc), _Ptr1, _Count, &_Mbst1, &_Cvt)) <= 0) {
-            break;
-        }
-    }
-
-    ++_Wchars; // count terminating nul
-
-    wchar_t* _Ptrdest = static_cast<wchar_t*>(_calloc_dbg(_Wchars, sizeof(wchar_t), _CRT_BLOCK, __FILE__, __LINE__));
-
-    if (!_Ptrdest) {
-        _Xbad_alloc();
-    }
-
-    wchar_t* _Ptrnext = _Ptrdest;
-    mbstate_t _Mbst2  = {};
-    for (; 0 < _Wchars; _Count -= _Bytes, _Ptr += _Bytes, --_Wchars, ++_Ptrnext) {
-        if ((_Bytes = _Mbrtowc(_Ptrnext, _Ptr, _Count1, &_Mbst2, &_Cvt)) <= 0) {
-            break;
-        }
-    }
-
-    *_Ptrnext = L'\0';
-    return reinterpret_cast<unsigned short*>(_Ptrdest);
-}
-#endif // _NATIVE_WCHAR_T_DEFINED
 
 // STRUCT codecvt_base
 class _CRTIMP2_PURE_IMPORT codecvt_base : public locale::facet { // base class for codecvt
