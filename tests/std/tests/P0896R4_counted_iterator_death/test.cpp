@@ -39,7 +39,7 @@ struct simple_input_iter {
 };
 
 void test_case_construction_negative_length() {
-    counted_iterator<int*> cit{globalArray, -1}; // counted_iterator requires positive length n
+    counted_iterator<int*> cit{globalArray, -1}; // counted_iterator requires non-negative length n
     (void) cit;
 }
 

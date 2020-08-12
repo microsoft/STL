@@ -4,6 +4,8 @@
 #include <cassert>
 #include <concepts>
 #include <iterator>
+#include <memory>
+#include <type_traits>
 
 #include <range_algorithm_support.hpp>
 using namespace std;

@@ -513,7 +513,7 @@ private:
 };
 
 #ifdef __cpp_lib_concepts
-// CLASS counted_iterator
+// CLASS TEMPLATE counted_iterator
 template <input_or_output_iterator _Iter>
 class counted_iterator {
 public:
@@ -525,7 +525,7 @@ public:
         is_nothrow_move_constructible_v<_Iter>) // strengthened
         : _Current(_STD move(_Right)), _Length(_Diff) {
 #if _ITERATOR_DEBUG_LEVEL != 0
-        _STL_VERIFY(_Diff >= 0, "counted_iterator requires positive length n");
+        _STL_VERIFY(_Diff >= 0, "counted_iterator requires non-negative length n");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
     }
 
@@ -650,7 +650,7 @@ public:
     constexpr counted_iterator& operator+=(
         const iter_difference_t<_Iter> _Diff) requires random_access_iterator<_Iter> {
 #if _ITERATOR_DEBUG_LEVEL != 0
-        _STL_VERIFY(_Diff <= _Length, "counted_iterator increment beyond end of range");
+        _STL_VERIFY(_Diff <= _Length, "counted_iterator seek beyond end of range");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         _Current += _Diff;
         _Length -= _Diff;

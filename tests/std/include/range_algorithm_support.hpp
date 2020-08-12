@@ -354,7 +354,7 @@ namespace test {
             return *this;
         }
 
-        constexpr operator iterator<Category, const Element, Diff, Eq, Proxy, Wrapped>() && noexcept {
+        constexpr operator Consterator() && noexcept {
             return Consterator{exchange(ptr_, nullptr)};
         }
 
@@ -432,7 +432,7 @@ namespace test {
         iterator(iterator const&) requires (to_bool(Eq)) = default;
         iterator& operator=(iterator const&) requires (to_bool(Eq)) = default;
 
-        constexpr operator iterator<Category, const Element, Diff, Eq, Proxy, Wrapped>() const& noexcept
+        constexpr operator Consterator() const& noexcept
             requires (to_bool(Eq)) {
             return Consterator{ptr_};
         }
