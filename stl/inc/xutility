@@ -4744,9 +4744,9 @@ struct _Is_character_or_byte_or_bool<bool> : true_type {};
 
 // _Fill_memset_is_safe determines if _FwdIt and _Ty are eligible for memset optimization in fill
 template <class _FwdIt, class _Ty, bool = is_pointer_v<_FwdIt>>
-_INLINE_VAR constexpr bool _Fill_memset_is_safe =
-    conjunction_v<is_scalar<_Ty>, _Is_character_or_byte_or_bool<_Unwrap_enum_t<_Iter_value_t<_FwdIt>>>,
-        is_assignable<_Iter_ref_t<_FwdIt>, const _Ty&>>;
+_INLINE_VAR constexpr bool _Fill_memset_is_safe = conjunction_v<is_scalar<_Ty>,
+    _Is_character_or_byte_or_bool<_Unwrap_enum_t<remove_reference_t<_Iter_ref_t<_FwdIt>>>>,
+    is_assignable<_Iter_ref_t<_FwdIt>, const _Ty&>>;
 
 template <class _FwdIt, class _Ty>
 _INLINE_VAR constexpr bool _Fill_memset_is_safe<_FwdIt, _Ty, false> = false;
