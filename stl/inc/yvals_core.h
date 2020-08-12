@@ -185,7 +185,7 @@
 // P1085R2 Removing span Comparisons
 // P1115R3 erase()/erase_if() Return size_type
 // P1123R0 Atomic Compare-And-Exchange With Padding Bits For atomic_ref
-// P1135R6 The C++ 20 Synchronization Library
+// P1135R6 The C++20 Synchronization Library
 //     (partially implemented)
 // P1207R4 Movability Of Single-Pass Iterators
 //     (partially implemented)
