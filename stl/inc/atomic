@@ -1965,7 +1965,7 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
 
 #ifdef __cplusplus_winrt // TRANSITION, VSO-1083296
     _Atomic_pointer() = default;
-    /* implicit */ constexpr _Atomic_pointer(conditional_t<is_reference_v<_Ty>, _Ty, const _Ty> _Value) noexcept
+    /* implicit */ constexpr _Atomic_pointer(const _Ty _Value) noexcept
         : _Base(_Value) {}
 #else // ^^^ workaround / no workaround vvv
     using _Base::_Base;
