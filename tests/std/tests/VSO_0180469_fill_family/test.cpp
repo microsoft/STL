@@ -20,7 +20,7 @@ using namespace std;
 // This thing is a workaround for C4309 "truncation of constant value"
 template <typename T, typename U>
 T cast(U i) {
-    return static_cast<T>(i);
+    return static_cast<remove_volatile_t<T>>(i);
 }
 
 // Tests that `fillCall`(buffer, value, startIndex, endIndex) fills [startIndex, endIndex) with `value`
@@ -130,6 +130,8 @@ int main() {
     test_fill<int, int>();
     test_fill<int, char>();
     test_fill<char, int>();
+
+    test_fill<volatile char, volatile char>();
 
     test_uninitialized_fill(
         [](count_copies* buff, size_t n, const count_copies& src) { uninitialized_fill(buff, buff + n, src); });
