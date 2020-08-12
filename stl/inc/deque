@@ -1064,7 +1064,7 @@ public:
         _STL_VERIFY(!empty(), "back() called on empty deque");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
-        return *(_Prev_iter(_Unchecked_end()));
+        return *_Prev_iter(_Unchecked_end());
     }
 
     _NODISCARD const_reference back() const noexcept /* strengthened */ {
@@ -1072,7 +1072,7 @@ public:
         _STL_VERIFY(!empty(), "back() called on empty deque");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
-        return *(_Prev_iter(_Unchecked_end()));
+        return *_Prev_iter(_Unchecked_end());
     }
 
     void push_front(const _Ty& _Val) {
