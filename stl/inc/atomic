@@ -1133,7 +1133,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
 #ifdef _WIN64
 template <class _Ty>
 struct _Atomic_storage<_Ty&, 16> { // lock-free using 16-byte intrinsics
-    // TRANSITION, ABI: replace '_TVal&' with '_Ty' in the parameter of this specialization
+    // TRANSITION, ABI: replace '_Ty&' with '_Ty' in this specialization
     using _TVal = remove_reference_t<_Ty&>;
 
     _Atomic_storage() = default;
