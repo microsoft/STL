@@ -296,7 +296,6 @@ Add-MpPreference -ExclusionProcess clang-cl.exe
 Add-MpPreference -ExclusionProcess cl.exe
 Add-MpPreference -ExclusionProcess link.exe
 Add-MpPreference -ExclusionProcess python.exe
-Add-MpPreference -ExclusionProcess test.exe
 
 InstallPython $PythonUrl
 InstallVisualStudio -Workloads $Workloads -BootstrapperUrl $VisualStudioBootstrapperUrl

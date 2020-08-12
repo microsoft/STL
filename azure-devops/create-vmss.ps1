@@ -17,7 +17,7 @@ or are running from Azure Cloud Shell.
 
 $Location = 'westus2'
 $Prefix = 'StlBuild-' + (Get-Date -Format 'yyyy-MM-dd')
-$VMSize = 'Standard_F16s_v2'
+$VMSize = 'Standard_D16as_v4'
 $ProtoVMName = 'PROTOTYPE'
 $LiveVMPrefix = 'BUILD'
 $WindowsServerSku = '2019-Datacenter'
