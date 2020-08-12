@@ -392,9 +392,9 @@ _NODISCARD char __stdcall __std_atomic_has_cmpxchg16b() noexcept {
 #elif _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1
     return true;
 #else // ^^^ _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 // _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0 vvv
-    static constexpr char _Cmpxchg_Absent  = 0;
-    static constexpr char _Cmpxchg_Present = 1;
-    static constexpr char _Cmpxchg_Unknown = 2;
+    constexpr char _Cmpxchg_Absent  = 0;
+    constexpr char _Cmpxchg_Present = 1;
+    constexpr char _Cmpxchg_Unknown = 2;
 
     static std::atomic<char> _Cached_value{_Cmpxchg_Unknown};
 
