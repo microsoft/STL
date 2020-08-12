@@ -1131,15 +1131,14 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
 };
 
 #ifdef _WIN64
-template <class _TVal>
-struct _Atomic_storage<_TVal&, 16> { // lock-free using 16-byte intrinsics
+template <class _Ty>
+struct _Atomic_storage<_Ty&, 16> { // lock-free using 16-byte intrinsics
     // TRANSITION, ABI: replace '_TVal&' with '_Ty' in the parameter of this specialization
-    // using _TVal = remove_reference_t<_Ty&>;
-    using _Ty = _TVal&;
+     using _TVal = remove_reference_t<_Ty&>;
 
     _Atomic_storage() = default;
 
-    /* implicit */ constexpr _Atomic_storage(conditional_t<is_reference_v<_Ty>, _Ty, const _TVal> _Value) noexcept
+    /* implicit */ constexpr _Atomic_storage(conditional_t<is_reference_v<_Ty&>, _Ty&, const _TVal> _Value) noexcept
         : _Storage{_Value} {} // non-atomically initialize this atomic
 
     void store(const _TVal _Value) noexcept { // store with sequential consistency
@@ -1305,7 +1304,7 @@ struct _Atomic_storage<_TVal&, 16> { // lock-free using 16-byte intrinsics
         long long _High;
     };
 
-    typename _Atomic_storage_types<_Ty>::_TStorage _Storage;
+    typename _Atomic_storage_types<_Ty&>::_TStorage _Storage;
 };
 #endif // _WIN64
 
