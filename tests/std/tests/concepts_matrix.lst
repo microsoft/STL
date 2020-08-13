@@ -5,7 +5,7 @@ RUNALL_INCLUDE .\prefix.lst
 RUNALL_CROSSLIST
 PM_CL="/w14640 /Zc:threadSafeInit- /EHsc /std:c++latest"
 RUNALL_CROSSLIST
-PM_CL="/MD /D_ITERATOR_DEBUG_LEVEL=0"
+PM_CL="/MD /D_ITERATOR_DEBUG_LEVEL=0 /Zc:noexceptTypes-"
 PM_CL="/MD /D_ITERATOR_DEBUG_LEVEL=1"
 PM_CL="/MD /D_ITERATOR_DEBUG_LEVEL=0 /Zc:char8_t- /Zc:preprocessor"
 PM_CL="/MDd /D_ITERATOR_DEBUG_LEVEL=0 /permissive- /Zc:wchar_t-"
