@@ -5,13 +5,13 @@ if (NOT DEFINED CMAKE_TOOLCHAIN_FILE AND EXISTS "${CMAKE_CURRENT_LIST_DIR}/vcpkg
     set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_LIST_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake")
 endif()
 
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.17)
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 project(msvc_standard_libraries LANGUAGES CXX)
 
 find_package(Boost REQUIRED)
 
-set(VCLIBS_MIN_BOOST_VERSION 1.70.0)
+set(VCLIBS_MIN_BOOST_VERSION 1.73.0)
 if("${Boost_VERSION}" VERSION_LESS "${VCLIBS_MIN_BOOST_VERSION}")
     message(FATAL_ERROR "Detected Boost version is too old (older than ${VCLIBS_MIN_BOOST_VERSION}).")
 endif()

@@ -140,6 +140,20 @@ STATIC_ASSERT(__cpp_lib_atomic_lock_free_type_aliases == 201907L);
 #endif
 
 #if _HAS_CXX20
+#ifndef __cpp_lib_atomic_ref
+#error __cpp_lib_atomic_ref is not defined
+#elif __cpp_lib_atomic_ref != 201806L
+#error __cpp_lib_atomic_ref is not 201806L
+#else
+STATIC_ASSERT(__cpp_lib_atomic_ref == 201806L);
+#endif
+#else
+#ifdef __cpp_lib_atomic_ref
+#error __cpp_lib_atomic_ref is defined
+#endif
+#endif
+
+#if _HAS_CXX20
 #ifndef __cpp_lib_atomic_shared_ptr
 #error __cpp_lib_atomic_shared_ptr is not defined
 #elif __cpp_lib_atomic_shared_ptr != 201711L
@@ -327,7 +341,7 @@ STATIC_ASSERT(__cpp_lib_clamp == 201603L);
 STATIC_ASSERT(__cpp_lib_complex_udls == 201309L);
 #endif
 
-#if _HAS_CXX20 && defined(__cpp_concepts)
+#if _HAS_CXX20 && !defined(__EDG__) // TRANSITION, EDG concepts support
 #ifndef __cpp_lib_concepts
 #error __cpp_lib_concepts is not defined
 #elif __cpp_lib_concepts != 201907L
