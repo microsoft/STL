@@ -9,7 +9,6 @@
 #include <yvals.h>
 #if _STL_COMPILER_PREPROCESSOR
 
-
 #include <intrin0.h>
 #if 1 // TRANSITION, Visual Studio 2019 to include _mm_pause in <intrin0.h>
 #include <intrin.h>
@@ -40,7 +39,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #else //  ^^^ _M_CEE_PURE / !_M_CEE_PURE vvv
 #define _YIELD_PROCESSOR() _mm_pause()
 #endif // ^^^ !_M_CEE_PURE ^^^
-
 
 #elif defined(_M_ARM) || defined(_M_ARM64)
 #define _INTRIN_RELAXED(x) _CONCAT(x, _nf)
