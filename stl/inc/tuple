@@ -235,7 +235,7 @@ public:
 #ifdef __cpp_lib_concepts
     constexpr strong_ordering _Three_way_compare(const tuple&) const noexcept {
         return strong_ordering::equal;
-    } 
+    }
 #else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
     constexpr bool _Less(const tuple&) const noexcept {
         return false;
@@ -679,14 +679,13 @@ public:
 #ifdef __cpp_lib_concepts
     template <class _Other_first, class... _Other_rest>
     constexpr common_comparison_category_t<_Synth_three_way_result<_This, _Other_first>,
-        decltype(declval<const tuple<_Rest>>()._Three_way_compare(declval<const tuple<_Other_rest>>()))>
-    _Three_way_compare(const tuple<_Other_first, _Other_rest...>& _Right) const {
-        if (auto _Result = _Synth_three_way()(_Myfirst._Val, _Right._Myfirst._Val); _Result != 0)
-        {
+        decltype(declval<const tuple<_Rest...>>()._Three_way_compare(declval<const tuple<_Other_rest...>>()))>
+        _Three_way_compare(const tuple<_Other_first, _Other_rest...>& _Right) const {
+        if (auto _Result = _Synth_three_way()(_Myfirst._Val, _Right._Myfirst._Val); _Result != 0) {
             return _Result;
         }
         return _Mybase::_Three_way_compare(_Right._Get_rest());
-    } 
+    }
 #else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
     template <class... _Other>
     constexpr bool _Less(const tuple<_Other...>& _Right) const {
@@ -748,8 +747,7 @@ _NODISCARD constexpr bool operator==(const tuple<_Types1...>& _Left, const tuple
 
 #ifdef __cpp_lib_concepts
 template <class... _Types1, class... _Types2>
-_NODISCARD constexpr auto operator<=>(
-    const tuple<_Types1...>& _Left, const tuple<_Types2...>& _Right) {
+_NODISCARD constexpr auto operator<=>(const tuple<_Types1...>& _Left, const tuple<_Types2...>& _Right) {
     static_assert(sizeof...(_Types1) == sizeof...(_Types2), "cannot compare tuples of different sizes");
     return _Left._Three_way_compare(_Right);
 }
