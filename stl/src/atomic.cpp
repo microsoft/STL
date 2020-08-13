@@ -66,7 +66,7 @@ _CRTIMP2_PURE void __cdecl _Lock_shared_ptr_spin_lock() { // spin until _Shared_
     AcquireSRWLockExclusive(&_Shared_ptr_lock);
 #else // ^^^ _STL_WIN32_WINNT >= _STL_WIN32_WINNT_VISTA / _STL_WIN32_WINNT < _STL_WIN32_WINNT_VISTA vvv
     if (_Acquire_srw_functions() == _Shared_ptr_api_level::__has_nothing) {
-        _STD _Atomic_lock_spinlock(_Shared_ptr_flag);
+        _STD _Atomic_lock_acquire(_Shared_ptr_flag);
     } else {
         const auto _AcquireSRWLockExclusive = _Table._Pfn_AcquireSRWLockExclusive.load(_STD memory_order_relaxed);
         _AcquireSRWLockExclusive(&_Shared_ptr_lock);
@@ -80,7 +80,7 @@ _CRTIMP2_PURE void __cdecl _Unlock_shared_ptr_spin_lock() { // release previousl
 #else // ^^^ _STL_WIN32_WINNT >= _STL_WIN32_WINNT_VISTA / _STL_WIN32_WINNT < _STL_WIN32_WINNT_VISTA vvv
     const auto _ReleaseSRWLockExclusive = _Table._Pfn_ReleaseSRWLockExclusive.load(_STD memory_order_relaxed);
     if (_ReleaseSRWLockExclusive == nullptr) {
-        _STD _Atomic_unlock_spinlock(_Shared_ptr_flag);
+        _STD _Atomic_lock_release(_Shared_ptr_flag);
     } else {
         _ReleaseSRWLockExclusive(&_Shared_ptr_lock);
     }
