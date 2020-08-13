@@ -12,6 +12,7 @@
 #pragma message("The contents of <format> are available only with C++20 or later.")
 #else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
 
+#include <cassert>
 #include <iterator>
 #include <locale>
 #include <string>
@@ -29,6 +30,58 @@ _STD_BEGIN
 
 
 class format_error : public std::runtime_error {};
+
+enum class _Align { _None, _Left, _Right, _Center };
+
+
+template <class _CharT>
+constexpr const _CharT* _Parse_align(const _CharT* _Begin, const _CharT* _End) {
+    // done with parsing, or reached the end of a replacement field.
+    if (_Begin == _End || *_Begin == '}') {
+        return _Begin;
+    }
+
+    // align and fill
+    auto _Align    = _Align::_None;
+    auto _Align_pt = _Begin + 1;
+    if (_Align_pt == _End) {
+        _Align_pt = _Begin;
+    }
+    if (_Begin == _End) {
+        _Begin--;
+    }
+    for (;;) {
+        switch (static_cast<char>(*_Align_pt)) {
+        case '<':
+            _Align = _Align::_Left;
+            break;
+        case '>':
+            _Align = _Align::_Right;
+            break;
+        case '^':
+            _Align = _Align::_Center;
+            break;
+        }
+        if (_Align != _Align::_None) {
+            if (_Align_pt != _Begin) {
+                if (*_Begin == '{') {
+                    throw format_error("invalid fill character '{'");
+                }
+                // ON FILL FUNCTION CALLED HERE
+                _Begin = _Align_pt + 1;
+            } else {
+                ++_Begin;
+            }
+            // ON ALIGN FUNCTION CALLED HERE
+            break;
+        } else if (_Align_pt == _Begin) {
+            break;
+        }
+        _Align_pt = _Begin;
+    }
+    return _Begin;
+}
+
 
 template <class _CharT>
 class basic_format_parse_context {
@@ -153,6 +206,7 @@ class basic_format_context {
 private:
     _Out _OutputIt;
     basic_format_args<basic_format_context> _Args;
+    _STD locale _Loc;
 
 public:
     using iterator  = _Out;
@@ -162,7 +216,9 @@ public:
     basic_format_arg<basic_format_context> arg(size_t _Id) const {
         return _Args.get(_Id);
     }
-    _STD locale locale();
+    _STD locale locale() {
+        return _Loc;
+    }
 
     iterator out() {
         return _Out;
