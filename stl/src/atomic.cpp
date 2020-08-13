@@ -6,7 +6,6 @@
 #include <yvals.h>
 
 #include <atomic>
-#include <intrin.h>
 #include <libloaderapi.h>
 #include <synchapi.h>
 
