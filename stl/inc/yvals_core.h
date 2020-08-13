@@ -204,6 +204,7 @@
 // P1690R1 Refining Heterogeneous Lookup For Unordered Containers
 // P1716R3 Range Comparison Algorithms Are Over-Constrained
 // P1754R1 Rename Concepts To standard_case
+// P1865R1 Adding max() To latch And barrier
 // P1870R1 Rename forwarding-range To borrowed_range (Was safe_range before LWG-3379)
 // P1871R1 disable_sized_sentinel_for
 // P1872R0 span Should Have size_type, Not index_type
