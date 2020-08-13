@@ -110,17 +110,19 @@ struct instantiator {
                     assert(addressof(*iter) == input + 1);
                 }
             }
+
             if constexpr (forward_iterator<Iter>) { // post increment
                 counted_iterator<Iter> iter{Iter{input}, 2};
-                auto ref   = iter;
-                auto iter2 = iter++;
-                assert(iter2 == ref);
+                auto ref_iter = iter;
+                auto iter2    = iter++;
+                assert(iter2 == ref_iter);
                 assert(iter.count() == 1);
                 assert(*iter == 2);
                 if constexpr (is_reference_v<iter_reference_t<Iter>>) {
                     assert(addressof(*iter) == input + 1);
                 }
             }
+
             if constexpr (bidirectional_iterator<Iter>) {
                 {
                     // pre decrement
@@ -134,9 +136,9 @@ struct instantiator {
                 }
                 { // post decrement
                     counted_iterator<Iter> iter{Iter{begin(input) + 2}, 3};
-                    auto ref   = iter;
-                    auto iter2 = iter--;
-                    assert(iter2 == ref);
+                    auto ref_iter = iter;
+                    auto iter2    = iter--;
+                    assert(iter2 == ref_iter);
                     assert(iter.count() == 4);
                     assert(*iter == 2);
                     if constexpr (is_reference_v<iter_reference_t<Iter>>) {
@@ -144,39 +146,44 @@ struct instantiator {
                     }
                 }
             }
+
             if constexpr (random_access_iterator<Iter>) {
-                { // increment by n
+                { // increment by n lhs
                     counted_iterator<Iter> iter{Iter{input}, 5};
-                    auto ref = iter + 3;
+                    auto ref_iter = iter + 3;
                     assert(iter.count() == 5);
                     assert(*iter == 1);
-                    assert(iter.count() == ref.count() + 3);
-                    assert(iter.base().peek() == prev(ref.base().peek(), 3));
+                    assert(iter.count() == ref_iter.count() + 3);
+                    assert(iter.base().peek() == prev(ref_iter.base().peek(), 3));
                 }
-                { // post increment by n
+                { // increment by n rhs
                     counted_iterator<Iter> iter{Iter{input}, 5};
-                    auto ref = 3 + iter;
+                    auto ref_iter = 3 + iter;
                     assert(iter.count() == 5);
                     assert(*iter == 1);
-                    assert(iter.count() == ref.count() + 3);
-                    assert(iter.base().peek() == prev(ref.base().peek(), 3));
+                    assert(iter.count() == ref_iter.count() + 3);
+                    assert(iter.base().peek() == prev(ref_iter.base().peek(), 3));
+                }
+                { // increment value_initialized by 0
+                    counted_iterator<Iter> iter;
+                    (void) 0 + iter;
                 }
                 { // increment assign
                     counted_iterator<Iter> iter{Iter{input}, 5};
-                    auto ref = iter;
+                    auto ref_iter = iter;
                     assert(addressof(iter += 3) == addressof(iter));
                     assert(iter.count() == 2);
                     assert(*iter == 4);
-                    assert(iter.count() == ref.count() - 3);
-                    assert(iter.base().peek() == next(ref.base().peek(), 3));
+                    assert(iter.count() == ref_iter.count() - 3);
+                    assert(iter.base().peek() == next(ref_iter.base().peek(), 3));
                 }
                 { // decrement by n
                     counted_iterator<Iter> iter{Iter{begin(input) + 2}, 3};
-                    auto ref = iter - 2;
+                    auto ref_iter = iter - 2;
                     assert(iter.count() == 3);
                     assert(*iter == 3);
-                    assert(iter.count() == ref.count() - 2);
-                    assert(iter.base().peek() == next(ref.base().peek(), 2));
+                    assert(iter.count() == ref_iter.count() - 2);
+                    assert(iter.base().peek() == next(ref_iter.base().peek(), 2));
                 }
             }
             { // difference
@@ -189,8 +196,13 @@ struct instantiator {
                 const same_as<iter_difference_t<Iter>> auto diff2 = iter2 - iter1;
                 assert(diff2 == -1);
             }
+            { // difference value initialized
+                const same_as<iter_difference_t<Iter>> auto diff1 = counted_iterator<Iter>{} - counted_iterator<Iter>{};
+                assert(diff1 == 0);
+            }
             STATIC_ASSERT(CountedCompare<Iter, ConstIter> == common_with<Iter, ConstIter>);
             STATIC_ASSERT(CountedCompare<ConstIter, Iter> == common_with<Iter, ConstIter>);
+
             if constexpr (common_with<Iter, ConstIter>) { // cross-type difference
                 counted_iterator<Iter> iter1{Iter{input + 1}, 2};
                 counted_iterator<ConstIter> iter2{ConstIter{input}, 3};
@@ -201,6 +213,7 @@ struct instantiator {
                 const same_as<iter_difference_t<ConstIter>> auto diff2 = iter2 - iter1;
                 assert(diff2 == -1);
             }
+
             { // difference default sentinel
                 counted_iterator<Iter> iter1{Iter{input}, 2};
 
@@ -210,14 +223,15 @@ struct instantiator {
                 const same_as<iter_difference_t<Iter>> auto diff2 = default_sentinel - iter1;
                 assert(diff2 == 2);
             }
+
             if constexpr (random_access_iterator<Iter>) { // decrement assign
                 counted_iterator<Iter> iter{Iter{end(input)}, 0};
-                auto ref = iter;
+                auto ref_iter = iter;
                 assert(addressof(iter -= 3) == addressof(iter));
                 assert(iter.count() == 3);
                 assert(*iter == 3);
-                assert(iter.count() == ref.count() + 3);
-                assert(iter.base().peek() == prev(ref.base().peek(), 3));
+                assert(iter.count() == ref_iter.count() + 3);
+                assert(iter.base().peek() == prev(ref_iter.base().peek(), 3));
             }
         }
         // [counted.iter.cmp]
@@ -252,6 +266,10 @@ struct instantiator {
                 assert(iter2 <=> iter1 == strong_ordering::greater);
                 assert(iter1 <=> iter1 == strong_ordering::equal);
                 assert(iter1 <=> iter1 == strong_ordering::equivalent);
+            }
+            { // spaceship value initialized
+                assert(counted_iterator<Iter>{} <=> counted_iterator<Iter>{} == strong_ordering::equal);
+                assert(counted_iterator<Iter>{} <=> counted_iterator<Iter>{} == strong_ordering::equivalent);
             }
             if constexpr (common_with<Iter, ConstIter>) {
                 { // equality converting

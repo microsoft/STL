@@ -5,6 +5,7 @@
 
 #include <cassert>
 #include <concepts>
+#include <cstddef>
 #include <iterator>
 #include <vector>
 
@@ -22,16 +23,16 @@ struct simple_input_iter {
 
     value_type operator*() const {
         return *_ptr;
-    };
+    }
     simple_input_iter& operator++() {
         ++_ptr;
         return *this;
-    };
+    }
     simple_input_iter operator++(int) {
         simple_input_iter _tmp = *this;
         ++_ptr;
         return _tmp;
-    };
+    }
 
     bool operator==(simple_input_iter const&) const = default;
 
@@ -73,22 +74,22 @@ void test_case_operator_preincrement_after_end_input_iterator() {
     ++cit; // cannot increment counted_iterator past end
 }
 
-void test_case_operator_increment_value_initialized_iterator() {
+void test_case_operator_postincrement_value_initialized_iterator() {
     counted_iterator<int*> cit{};
     cit++; // cannot increment value-initialized counted_iterator
 }
 
-void test_case_operator_increment_value_initialized_input_iterator() {
+void test_case_operator_postincrement_value_initialized_input_iterator() {
     counted_iterator<simple_input_iter> cit{};
     cit++; // cannot increment value-initialized counted_iterator
 }
 
-void test_case_operator_increment_after_end() {
+void test_case_operator_postincrement_after_end() {
     counted_iterator<int*> cit{globalArray, 0};
     cit++; // cannot increment counted_iterator past end
 }
 
-void test_case_operator_increment_after_end_input_iterator() {
+void test_case_operator_postincrement_after_end_input_iterator() {
     counted_iterator<simple_input_iter> cit{simple_input_iter{globalArray}, 0};
     cit++; // cannot increment value-initialized counted_iterator
 }
@@ -216,10 +217,10 @@ int main(int argc, char* argv[]) {
         test_case_operator_preincrement_value_initialized_input_iterator,
         test_case_operator_preincrement_after_end,
         test_case_operator_preincrement_after_end_input_iterator,
-        test_case_operator_increment_value_initialized_iterator,
-        test_case_operator_increment_value_initialized_input_iterator,
-        test_case_operator_increment_after_end,
-        test_case_operator_increment_after_end_input_iterator,
+        test_case_operator_postincrement_value_initialized_iterator,
+        test_case_operator_postincrement_value_initialized_input_iterator,
+        test_case_operator_postincrement_after_end,
+        test_case_operator_postincrement_after_end_input_iterator,
         test_case_operator_predecrement_before_begin,
         test_case_operator_decrement_before_begin,
         test_case_operator_advance_value_initialized_iterator,

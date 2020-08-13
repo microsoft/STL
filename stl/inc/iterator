@@ -641,10 +641,7 @@ public:
 
     _NODISCARD friend constexpr counted_iterator operator+(
         const iter_difference_t<_Iter> _Diff, const counted_iterator& _Right) requires random_access_iterator<_Iter> {
-#if _ITERATOR_DEBUG_LEVEL != 0
-        _STL_VERIFY(_Diff <= _Right.count(), "counted_iterator seek beyond end of range");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
-        return _Right + _Diff;
+        return counted_iterator{_Right.base() + _Diff, static_cast<iter_difference_t<_Iter>>(_Right.count() - _Diff)};
     }
 
     constexpr counted_iterator& operator+=(
@@ -728,7 +725,8 @@ public:
     }
 
     template <common_with<_Iter> _Other>
-    friend constexpr void _Same_sequence(const counted_iterator& _Left, const counted_iterator<_Other>& _Right) {
+    friend constexpr void _Same_sequence(
+        const counted_iterator& _Left, const counted_iterator<_Other>& _Right) noexcept {
         // Per N4861 [counted.iterator]/2, two counted_iterators x and y refer to elements of the same sequence iff
         // next(x.base(), x.count()) and next(y.base(), y.count()) "refer to the same element." Iterator equality is a
         // fair proxy for this condition.
