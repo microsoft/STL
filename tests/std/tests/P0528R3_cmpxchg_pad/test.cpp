@@ -170,11 +170,8 @@ struct X20 {
 };
 
 
-template <class X, std::size_t S>
-void test() {
-    static_assert(sizeof(X) == S, "Unexpected size");
-    static_assert(
-        !std::has_unique_object_representations_v<X>, "Type without padding is not useful for testing P0528.");
+template <class X>
+void test_atomic() {
     X x1;
     X x2;
     X x3;
@@ -219,9 +216,8 @@ void test() {
     assert(v.load().check(6));
 }
 
-
 template <class X>
-void test0() {
+void test_atomic_0() {
     X x1;
     X x2;
     X x3;
@@ -233,8 +229,84 @@ void test0() {
     v.store(x1);
     X x;
     std::memcpy(std::addressof(x), std::addressof(x3), sizeof(x));
+    assert(v.compare_exchange_strong(x1, x2));
+}
 
-    assert(v.compare_exchange_strong(x, x2));
+template <class X>
+void test_atomic_ref() {
+    X x1;
+    X x2;
+    X x3;
+    X x4;
+    std::memset(std::addressof(x1), 0xaa, sizeof(x1));
+    std::memset(std::addressof(x2), 0x55, sizeof(x2));
+    std::memset(std::addressof(x3), 0x55, sizeof(x3));
+    std::memset(std::addressof(x4), 0x55, sizeof(x4));
+    x1.set(5);
+    x2.set(5);
+    x3.set(6);
+    x4.set(7);
+
+    alignas(std::atomic_ref<X>::required_alignment) X v = x1;
+    X x;
+    std::memcpy(std::addressof(x), std::addressof(x3), sizeof(x));
+    assert(!std::atomic_ref<X>(v).compare_exchange_strong(x, x4));
+    assert(std::atomic_ref<X>(v).load().check(5));
+
+    std::atomic_ref<X>(v).store(x1);
+    for (int retry = 0; retry != 10; ++retry) {
+        X xw;
+        std::memcpy(std::addressof(xw), std::addressof(x3), sizeof(x));
+        assert(!std::atomic_ref<X>(v).compare_exchange_weak(xw, x4));
+        assert(std::atomic_ref<X>(v).load().check(5));
+    }
+
+    std::atomic_ref<X>(v).store(x1);
+    std::memcpy(std::addressof(x), std::addressof(x2), sizeof(x));
+    assert(std::atomic_ref<X>(v).compare_exchange_strong(x, x3));
+    assert(std::atomic_ref<X>(v).load().check(6));
+
+    std::atomic_ref<X>(v).store(x1);
+    for (;;) {
+        X xw;
+        std::memcpy(std::addressof(xw), std::addressof(x2), sizeof(x));
+        if (std::atomic_ref<X>(v).compare_exchange_weak(xw, x3)) {
+            break;
+        }
+    }
+    assert(std::atomic_ref<X>(v).load().check(6));
+}
+
+template <class X>
+void test_atomic_ref_0() {
+    X x1;
+    X x2;
+    X x3;
+    std::memset(std::addressof(x1), 0xaa, sizeof(x1));
+    std::memset(std::addressof(x2), 0x55, sizeof(x2));
+    std::memset(std::addressof(x3), 0x55, sizeof(x3));
+
+    alignas(std::atomic_ref<X>::required_alignment) X v = x1;
+    X x;
+    std::memcpy(std::addressof(x), std::addressof(x3), sizeof(x));
+    assert(std::atomic_ref<X>(v).compare_exchange_strong(x1, x2));
+}
+
+template <class X, std::size_t S>
+void test() {
+    static_assert(sizeof(X) == S, "Unexpected size");
+    static_assert(
+        !std::has_unique_object_representations_v<X>, "Type without padding is not useful for testing P0528.");
+    test_atomic<X>();
+    test_atomic_ref<X>();
+}
+
+template <class X>
+void test0() {
+    static_assert(
+        !std::has_unique_object_representations_v<X>, "Type without padding is not useful for testing P0528.");
+    test_atomic_0<X>();
+    test_atomic_ref_0<X>();
 }
 
 int main() {

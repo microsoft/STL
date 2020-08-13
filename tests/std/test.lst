@@ -167,6 +167,7 @@ tests\GH_001017_discrete_distribution_out_of_range
 tests\GH_001086_partial_sort_copy
 tests\LWG2597_complex_branch_cut
 tests\LWG3018_shared_ptr_function
+tests\P0019R8_atomic_ref
 tests\P0024R2_parallel_algorithms_adjacent_difference
 tests\P0024R2_parallel_algorithms_adjacent_find
 tests\P0024R2_parallel_algorithms_all_of
