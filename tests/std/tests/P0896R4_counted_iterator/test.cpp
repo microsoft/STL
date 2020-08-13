@@ -166,7 +166,8 @@ struct instantiator {
                 }
                 { // increment value_initialized by 0
                     counted_iterator<Iter> iter;
-                    (void) 0 + iter;
+                    auto ref_iter = 0 + iter;
+                    (void) ref_iter;
                 }
                 { // increment assign
                     counted_iterator<Iter> iter{Iter{input}, 5};
