@@ -12,6 +12,6 @@ const monthly_table = [
     { date: '2020-04-16', merge_bar: 47, },
     { date: '2020-05-16', merge_bar: 43, },
     { date: '2020-06-16', merge_bar: 29, },
-    { date: '2020-07-16', merge_bar: 65, },
+    { date: '2020-07-16', merge_bar: 62, },
 ];
 // Generated file - DO NOT EDIT manually!
