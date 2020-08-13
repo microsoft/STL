@@ -215,7 +215,7 @@ public:
     counting_semaphore(const counting_semaphore&) = delete;
     counting_semaphore& operator=(const counting_semaphore&) = delete;
 
-    void release(const ptrdiff_t _Update = 1) {
+    void release(const ptrdiff_t _Update = 1) noexcept /* strengthened */ {
         if (_Update == 0) {
             return;
         }
