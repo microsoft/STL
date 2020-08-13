@@ -80,7 +80,7 @@ public:
     constexpr explicit barrier(
         const ptrdiff_t _Expected, _Completion_function _Fn = _Completion_function()) noexcept /* strengthened */
         : _Val(_One_then_variadic_args_t{}, _STD move(_Fn), _Expected << _Barrier_value_shift) {
-        _STL_VERIFY(_Expected >= 0 && _Expected <= _Barrier_max,
+        _STL_VERIFY(_Val._Myval2._Current.load(memory_order_relaxed) >= 0,
             "Precondition: expected >= 0 and expected <= max() (N4861 [thread.barrier.class]/9)");
     }
 
@@ -111,14 +111,14 @@ public:
         _STL_VERIFY((_Arrival._Value & _Barrier_value_mask) == reinterpret_cast<intptr_t>(this),
             "Preconditions: arrival is associated with the phase synchronization point for the current phase "
             "or the immediately preceding phase of the same barrier object (N4861 [thread.barrier.class]/19)");
-        const ptrdiff_t _Arrival_value = _Arrival._Value;
+        const ptrdiff_t _Arrival_value = _Arrival._Value & _Barrier_arrival_token_mask;
         _Arrival._Value                = _Barrier_invalid_token;
         for (;;) {
             // TRANSITION, GH-1133: should be memory_order_acquire
             const ptrdiff_t _Current = _Val._Myval2._Current.load(memory_order_seq_cst);
             _STL_VERIFY(_Current >= 0, "Invariant counter >= 0, possibly caused by preconditions violation "
                                        "(N4861 [thread.barrier.class]/12)");
-            if ((_Current & _Barrier_arrival_token_mask) != (_Arrival_value & _Barrier_arrival_token_mask)) {
+            if ((_Current & _Barrier_arrival_token_mask) != _Arrival_value) {
                 break;
             }
             _Val._Myval2._Current.wait(_Current, memory_order_relaxed);
