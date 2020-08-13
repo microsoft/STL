@@ -131,6 +131,7 @@
 // Other C++17 deprecation warnings
 
 // _HAS_CXX20 directly controls:
+// P0019R8 atomic_ref
 // P0020R6 atomic<float>, atomic<double>, atomic<long double>
 // P0122R7 <span>
 // P0202R3 constexpr For <algorithm> And exchange()
@@ -147,6 +148,7 @@
 // P0482R6 Library Support For char8_t
 //     (mbrtoc8 and c8rtomb not yet implemented)
 // P0487R1 Fixing operator>>(basic_istream&, CharT*)
+// P0528R3 Atomic Compare-And-Exchange With Padding Bits
 // P0550R2 remove_cvref
 // P0553R4 <bit> Rotating And Counting Functions
 // P0556R3 <bit> Integral Power-Of-2 Operations (renamed by P1956R1)
@@ -182,6 +184,9 @@
 //     (except the std::invoke function which is implemented in C++17)
 // P1085R2 Removing span Comparisons
 // P1115R3 erase()/erase_if() Return size_type
+// P1123R0 Atomic Compare-And-Exchange With Padding Bits For atomic_ref
+// P1135R6 The C++20 Synchronization Library
+//     (partially implemented)
 // P1207R4 Movability Of Single-Pass Iterators
 //     (partially implemented)
 // P1209R0 erase_if(), erase()
@@ -207,6 +212,7 @@
 // P1907R2 ranges::ssize
 // P1956R1 <bit> has_single_bit(), bit_ceil(), bit_floor(), bit_width()
 // P1959R0 Removing weak_equality And strong_equality
+// P1960R0 atomic_ref Cleanup
 // P1964R2 Replacing boolean With boolean-testable
 // P1976R2 Explicit Constructors For Fixed-Extent span From Dynamic-Extent Ranges
 // P2091R0 Fixing Issues With Range Access CPOs
@@ -490,7 +496,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 142
-#define _MSVC_STL_UPDATE  202007L
+#define _MSVC_STL_UPDATE  202008L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #ifdef __EDG__
@@ -500,8 +506,8 @@
 #error STL1000: Unexpected compiler version, expected Clang 10.0.0 or newer.
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
-#if _MSC_VER < 1927 // Coarse-grained, not inspecting _MSC_FULL_VER
-#error STL1001: Unexpected compiler version, expected MSVC 19.27 or newer.
+#if _MSC_VER < 1928 // Coarse-grained, not inspecting _MSC_FULL_VER
+#error STL1001: Unexpected compiler version, expected MSVC 19.28 or newer.
 #endif // ^^^ old MSVC ^^^
 #else // vvv other compilers vvv
 // not attempting to detect other compilers
@@ -1137,6 +1143,7 @@
 #define __cpp_lib_atomic_flag_test              201907L
 #define __cpp_lib_atomic_float                  201711L
 #define __cpp_lib_atomic_lock_free_type_aliases 201907L
+#define __cpp_lib_atomic_ref                    201806L
 #define __cpp_lib_atomic_shared_ptr             201711L
 #define __cpp_lib_atomic_wait                   201907L
 #define __cpp_lib_bind_front                    201907L
@@ -1148,9 +1155,9 @@
 #define __cpp_lib_char8_t 201907L
 #endif // __cpp_char8_t
 
-#if defined(__cpp_concepts) && __cpp_concepts > 201507L
+#ifndef __EDG__ // TRANSITION, EDG concepts support
 #define __cpp_lib_concepts 201907L
-#endif // defined(__cpp_concepts) && __cpp_concepts > 201507L
+#endif // __EDG__
 
 #define __cpp_lib_constexpr_algorithms  201806L
 #define __cpp_lib_constexpr_complex     201711L
@@ -1162,7 +1169,7 @@
 #define __cpp_lib_constexpr_tuple       201811L
 #define __cpp_lib_constexpr_utility     201811L
 
-#ifdef __cpp_impl_coroutine // TRANSITION, VS 2019 16.8 Preview 1
+#ifdef __cpp_impl_coroutine // TRANSITION, VS 2019 16.8 Preview 3
 #define __cpp_lib_coroutine 197000L
 #endif // __cpp_impl_coroutine
 
@@ -1262,13 +1269,18 @@ compiler option, or define _ALLOW_RTCc_IN_STL to acknowledge that you have recei
 #error In yvals_core.h, defined(MRTDLL) implies defined(_M_CEE_PURE); !defined(_M_CEE_PURE) implies !defined(MRTDLL)
 #endif // defined(MRTDLL) && !defined(_M_CEE_PURE)
 
-#define _STL_WIN32_WINNT_WINXP 0x0501 // _WIN32_WINNT_WINXP from sdkddkver.h
-#define _STL_WIN32_WINNT_VISTA 0x0600 // _WIN32_WINNT_VISTA from sdkddkver.h
-#define _STL_WIN32_WINNT_WIN8  0x0602 // _WIN32_WINNT_WIN8 from sdkddkver.h
+#define _STL_WIN32_WINNT_WINXP   0x0501 // _WIN32_WINNT_WINXP from sdkddkver.h
+#define _STL_WIN32_WINNT_VISTA   0x0600 // _WIN32_WINNT_VISTA from sdkddkver.h
+#define _STL_WIN32_WINNT_WIN8    0x0602 // _WIN32_WINNT_WIN8 from sdkddkver.h
+#define _STL_WIN32_WINNT_WINBLUE 0x0603 // _WIN32_WINNT_WINBLUE from sdkddkver.h
+#define _STL_WIN32_WINNT_WIN10   0x0A00 // _WIN32_WINNT_WIN10 from sdkddkver.h
 
 // Note that the STL DLL builds will set this to XP for ABI compatibility with VS2015 which supported XP.
 #ifndef _STL_WIN32_WINNT
-#if defined(_M_ARM) || defined(_M_ARM64) || defined(_ONECORE) || defined(_CRT_APP)
+#if defined(_M_ARM64)
+// The first ARM64 Windows was Windows 10
+#define _STL_WIN32_WINNT _STL_WIN32_WINNT_WIN10
+#elif defined(_M_ARM) || defined(_ONECORE) || defined(_CRT_APP)
 // The first ARM or OneCore or App Windows was Windows 8
 #define _STL_WIN32_WINNT _STL_WIN32_WINNT_WIN8
 #else // ^^^ default to Win8 // default to Vista vvv

@@ -26,6 +26,39 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // clang-format off
+    // CONCEPT _No_throw_input_iterator
+    template <class _It>
+    concept _No_throw_input_iterator = input_iterator<_It>
+        && is_lvalue_reference_v<iter_reference_t<_It>>
+        && same_as<remove_cvref_t<iter_reference_t<_It>>, iter_value_t<_It>>;
+
+    // CONCEPT _No_throw_sentinel_for
+    template <class _Se, class _It>
+    concept _No_throw_sentinel_for = sentinel_for<_Se, _It>;
+
+    // CONCEPT _No_throw_forward_iterator
+    template <class _It>
+    concept _No_throw_forward_iterator = _No_throw_input_iterator<_It>
+        && forward_iterator<_It>
+        && _No_throw_sentinel_for<_It, _It>;
+
+    // CONCEPT _No_throw_input_range
+    template <class _Rng>
+    concept _No_throw_input_range = range<_Rng>
+        && _No_throw_input_iterator<iterator_t<_Rng>>
+        && _No_throw_sentinel_for<sentinel_t<_Rng>, iterator_t<_Rng>>;
+
+    // CONCEPT _No_throw_forward_range
+    template <class _Rng>
+    concept _No_throw_forward_range = _No_throw_input_range<_Rng>
+        && _No_throw_forward_iterator<iterator_t<_Rng>>;
+    // clang-format on
+} // namespace ranges
+#endif // __cpp_lib_concepts
+
 // FUNCTION TEMPLATE uninitialized_copy_n
 #if _HAS_IF_CONSTEXPR
 template <class _InIt, class _Diff, class _NoThrowFwdIt>
@@ -96,6 +129,71 @@ _NoThrowFwdIt uninitialized_move(const _InIt _First, const _InIt _Last, _NoThrow
     _Seek_wrapped(_Dest, _Uninitialized_move_unchecked(_UFirst, _ULast, _UDest));
     return _Dest;
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // ALIAS TEMPLATE uninitialized_move_result
+    template <class _In, class _Out>
+    using uninitialized_move_result = in_out_result<_In, _Out>;
+
+    // VARIABLE ranges::uninitialized_move
+    class _Uninitialized_move_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <input_iterator _It1, sentinel_for<_It1> _Se1, _No_throw_forward_iterator _It2, _No_throw_sentinel_for<_It2> _Se2>
+            requires constructible_from<iter_value_t<_It2>, iter_rvalue_reference_t<_It1>>
+        uninitialized_move_result<_It1, _It2> operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2) const {
+            // clang-format on
+            _Adl_verify_range(_First1, _Last1);
+            _Adl_verify_range(_First2, _Last2);
+            auto _UResult =
+                _Uninitialized_move_unchecked(_Get_unwrapped(_STD move(_First1)), _Get_unwrapped(_STD move(_Last1)),
+                    _Get_unwrapped(_STD move(_First2)), _Get_unwrapped(_STD move(_Last2)));
+
+            _Seek_wrapped(_First1, _STD move(_UResult.in));
+            _Seek_wrapped(_First2, _STD move(_UResult.out));
+            return {_STD move(_First1), _STD move(_First2)};
+        }
+
+        // clang-format off
+        template <input_range _Rng1, _No_throw_forward_range _Rng2>
+            requires constructible_from<range_value_t<_Rng2>, range_rvalue_reference_t<_Rng1>>
+        uninitialized_move_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>> operator()(
+            _Rng1&& _Range1, _Rng2&& _Range2) const {
+            // clang-format on
+            auto _First1  = _RANGES begin(_Range1);
+            auto _UResult = _Uninitialized_move_unchecked(
+                _Get_unwrapped(_STD move(_First1)), _Uend(_Range1), _Ubegin(_Range2), _Uend(_Range2));
+
+            _Seek_wrapped(_First1, _STD move(_UResult.in));
+            return {_STD move(_First1), _Rewrap_iterator(_Range2, _STD move(_UResult.out))};
+        }
+
+    private:
+        template <class _It1, class _Se1, class _It2, class _Se2>
+        _NODISCARD static uninitialized_move_result<_It1, _It2> _Uninitialized_move_unchecked(
+            _It1 _IFirst, const _Se1 _ILast, _It2 _OFirst, const _Se2 _OLast) {
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It1>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se1, _It1>);
+            _STL_INTERNAL_STATIC_ASSERT(_No_throw_forward_iterator<_It2>);
+            _STL_INTERNAL_STATIC_ASSERT(_No_throw_sentinel_for<_Se2, _It2>);
+            _STL_INTERNAL_STATIC_ASSERT(constructible_from<iter_value_t<_It2>, iter_rvalue_reference_t<_It1>>);
+
+            _Uninitialized_backout _Backout{_STD move(_OFirst)};
+
+            for (; _IFirst != _ILast && _Backout._Last != _OLast; ++_IFirst) {
+                _Backout._Emplace_back(_RANGES iter_move(_IFirst));
+            }
+
+            return {_STD move(_IFirst), _Backout._Release()};
+        }
+    };
+
+    inline constexpr _Uninitialized_move_fn uninitialized_move{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE uninitialized_move_n
 template <class _InIt, class _Diff, class _NoThrowFwdIt>
@@ -3116,7 +3214,7 @@ protected:
         : _Ptr(_Px), _Repptr(reinterpret_cast<uintptr_t>(_Ref)) {}
 
     _NODISCARD _Ref_count_base* _Lock_and_load() const noexcept {
-        uintptr_t _Rep = _Repptr.load(memory_order::relaxed);
+        uintptr_t _Rep = _Repptr.load(memory_order_relaxed);
         for (;;) {
             switch (_Rep & _Lock_mask) {
             case _Not_locked: // Can try to lock now
@@ -3136,8 +3234,8 @@ protected:
                 [[fallthrough]];
 
             case _Locked_notify_needed: // "Notify needed" is already set, just wait
-                _Repptr.wait(_Rep, memory_order::relaxed);
-                _Rep = _Repptr.load(memory_order::relaxed);
+                _Repptr.wait(_Rep, memory_order_relaxed);
+                _Rep = _Repptr.load(memory_order_relaxed);
                 break;
 
             default: // Unrecognized bit pattern
@@ -3154,7 +3252,27 @@ protected:
         }
     }
 
-    _Ty* _Ptr = nullptr;
+    void _Wait(_Ty* _Old, memory_order) const noexcept {
+        for (;;) {
+            auto _Rep   = _Lock_and_load();
+            bool _Equal = _Ptr.load(memory_order_relaxed) == _Old;
+            _Store_and_unlock(_Rep);
+            if (!_Equal) {
+                break;
+            }
+            __std_atomic_wait_direct(&_Ptr, &_Old, sizeof(_Old), _Atomic_wait_no_timeout);
+        }
+    }
+
+    void notify_one() noexcept {
+        _Ptr.notify_one();
+    }
+
+    void notify_all() noexcept {
+        _Ptr.notify_all();
+    }
+
+    atomic<_Ty*> _Ptr{nullptr};
     mutable atomic<uintptr_t> _Repptr{0};
 };
 
@@ -3172,19 +3290,21 @@ public:
         return false;
     }
 
-    void store(shared_ptr<_Ty> _Value, const memory_order _Order = memory_order::seq_cst) noexcept {
+    void store(shared_ptr<_Ty> _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
         _Check_store_memory_order(_Order);
         const auto _Rep = this->_Lock_and_load();
-        _STD swap(this->_Ptr, _Value._Ptr);
+        _Ty* const _Tmp = _Value._Ptr;
+        _Value._Ptr     = this->_Ptr.load(memory_order_relaxed);
+        this->_Ptr.store(_Tmp, memory_order_relaxed);
         this->_Store_and_unlock(_Value._Rep);
         _Value._Rep = _Rep;
     }
 
-    _NODISCARD shared_ptr<_Ty> load(const memory_order _Order = memory_order::seq_cst) const noexcept {
+    _NODISCARD shared_ptr<_Ty> load(const memory_order _Order = memory_order_seq_cst) const noexcept {
         _Check_load_memory_order(_Order);
         shared_ptr<_Ty> _Result;
         const auto _Rep = this->_Lock_and_load();
-        _Result._Ptr    = this->_Ptr;
+        _Result._Ptr    = this->_Ptr.load(memory_order_relaxed);
         _Result._Rep    = _Rep;
         _Result._Incref();
         this->_Store_and_unlock(_Rep);
@@ -3195,12 +3315,12 @@ public:
         return load();
     }
 
-    shared_ptr<_Ty> exchange(shared_ptr<_Ty> _Value, const memory_order _Order = memory_order::seq_cst) noexcept {
+    shared_ptr<_Ty> exchange(shared_ptr<_Ty> _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
         _Check_memory_order(_Order);
         shared_ptr<_Ty> _Result;
         _Result._Rep = this->_Lock_and_load();
-        _Result._Ptr = this->_Ptr;
-        this->_Ptr   = _Value._Ptr;
+        _Result._Ptr = this->_Ptr.load(memory_order_relaxed);
+        this->_Ptr.store(_Value._Ptr, memory_order_relaxed);
         this->_Store_and_unlock(_Value._Rep);
         _Value._Ptr = nullptr; // ownership of _Value ref has been given to this, silence decrement
         _Value._Rep = nullptr;
@@ -3218,22 +3338,24 @@ public:
     }
 
     bool compare_exchange_weak(shared_ptr<_Ty>& _Expected, shared_ptr<_Ty> _Desired,
-        const memory_order _Order = memory_order::seq_cst) noexcept {
+        const memory_order _Order = memory_order_seq_cst) noexcept {
         return compare_exchange_strong(_Expected, _STD move(_Desired), _Order);
     }
 
     bool compare_exchange_strong(shared_ptr<_Ty>& _Expected, shared_ptr<_Ty> _Desired,
-        const memory_order _Order = memory_order::seq_cst) noexcept {
+        const memory_order _Order = memory_order_seq_cst) noexcept {
         _Check_memory_order(_Order);
         auto _Rep = this->_Lock_and_load();
-        if (this->_Ptr == _Expected._Ptr && _Rep == _Expected._Rep) {
-            _STD swap(this->_Ptr, _Desired._Ptr);
+        if (this->_Ptr.load(memory_order_relaxed) == _Expected._Ptr && _Rep == _Expected._Rep) {
+            _Ty* const _Tmp = _Desired._Ptr;
+            _Desired._Ptr   = this->_Ptr.load(memory_order_relaxed);
+            this->_Ptr.store(_Tmp, memory_order_relaxed);
             _STD swap(_Rep, _Desired._Rep);
             this->_Store_and_unlock(_Rep);
             return true;
         }
         _Ref_count_base* _Expected_rep = _Expected._Rep;
-        _Expected._Ptr                 = this->_Ptr;
+        _Expected._Ptr                 = this->_Ptr.load(memory_order_relaxed);
         _Expected._Rep                 = _Rep;
         _Expected._Incref();
         this->_Store_and_unlock(_Rep);
@@ -3242,6 +3364,13 @@ public:
         }
         return false;
     }
+
+    void wait(shared_ptr<_Ty> _Old, memory_order _Order = memory_order_seq_cst) const noexcept {
+        this->_Wait(_Old._Ptr, _Order);
+    }
+
+    using _Base::notify_all;
+    using _Base::notify_one;
 
     constexpr atomic() noexcept = default;
 
@@ -3257,7 +3386,7 @@ public:
     }
 
     ~atomic() {
-        const auto _Rep = reinterpret_cast<_Ref_count_base*>(this->_Repptr.load(memory_order::relaxed));
+        const auto _Rep = reinterpret_cast<_Ref_count_base*>(this->_Repptr.load(memory_order_relaxed));
         if (_Rep) {
             _Rep->_Decref();
         }
@@ -3278,19 +3407,21 @@ public:
         return false;
     }
 
-    void store(weak_ptr<_Ty> _Value, const memory_order _Order = memory_order::seq_cst) noexcept {
+    void store(weak_ptr<_Ty> _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
         _Check_store_memory_order(_Order);
         const auto _Rep = this->_Lock_and_load();
-        _STD swap(this->_Ptr, _Value._Ptr);
+        _Ty* const _Tmp = _Value._Ptr;
+        _Value._Ptr     = this->_Ptr.load(memory_order_relaxed);
+        this->_Ptr.store(_Tmp, memory_order_relaxed);
         this->_Store_and_unlock(_Value._Rep);
         _Value._Rep = _Rep;
     }
 
-    _NODISCARD weak_ptr<_Ty> load(const memory_order _Order = memory_order::seq_cst) const noexcept {
+    _NODISCARD weak_ptr<_Ty> load(const memory_order _Order = memory_order_seq_cst) const noexcept {
         _Check_load_memory_order(_Order);
         weak_ptr<_Ty> _Result;
         const auto _Rep = this->_Lock_and_load();
-        _Result._Ptr    = this->_Ptr;
+        _Result._Ptr    = this->_Ptr.load(memory_order_relaxed);
         _Result._Rep    = _Rep;
         _Result._Incwref();
         this->_Store_and_unlock(_Rep);
@@ -3301,12 +3432,12 @@ public:
         return load();
     }
 
-    weak_ptr<_Ty> exchange(weak_ptr<_Ty> _Value, const memory_order _Order = memory_order::seq_cst) noexcept {
+    weak_ptr<_Ty> exchange(weak_ptr<_Ty> _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
         _Check_memory_order(_Order);
         weak_ptr<_Ty> _Result;
         _Result._Rep = this->_Lock_and_load();
-        _Result._Ptr = this->_Ptr;
-        this->_Ptr   = _Value._Ptr;
+        _Result._Ptr = this->_Ptr.load(memory_order_relaxed);
+        this->_Ptr.store(_Value._Ptr, memory_order_relaxed);
         this->_Store_and_unlock(_Value._Rep);
         _Value._Ptr = nullptr; // ownership of _Value ref has been given to this, silence decrement
         _Value._Rep = nullptr;
@@ -3324,22 +3455,24 @@ public:
     }
 
     bool compare_exchange_weak(
-        weak_ptr<_Ty>& _Expected, weak_ptr<_Ty> _Desired, const memory_order _Order = memory_order::seq_cst) noexcept {
+        weak_ptr<_Ty>& _Expected, weak_ptr<_Ty> _Desired, const memory_order _Order = memory_order_seq_cst) noexcept {
         return compare_exchange_strong(_Expected, _STD move(_Desired), _Order);
     }
 
     bool compare_exchange_strong(
-        weak_ptr<_Ty>& _Expected, weak_ptr<_Ty> _Desired, const memory_order _Order = memory_order::seq_cst) noexcept {
+        weak_ptr<_Ty>& _Expected, weak_ptr<_Ty> _Desired, const memory_order _Order = memory_order_seq_cst) noexcept {
         _Check_memory_order(_Order);
         auto _Rep = this->_Lock_and_load();
-        if (this->_Ptr == _Expected._Ptr && _Rep == _Expected._Rep) {
-            _STD swap(this->_Ptr, _Desired._Ptr);
+        if (this->_Ptr.load(memory_order_relaxed) == _Expected._Ptr && _Rep == _Expected._Rep) {
+            _Ty* const _Tmp = _Desired._Ptr;
+            _Desired._Ptr   = this->_Ptr.load(memory_order_relaxed);
+            this->_Ptr.store(_Tmp, memory_order_relaxed);
             _STD swap(_Rep, _Desired._Rep);
             this->_Store_and_unlock(_Rep);
             return true;
         }
         const auto _Expected_rep = _Expected._Rep;
-        _Expected._Ptr           = this->_Ptr;
+        _Expected._Ptr           = this->_Ptr.load(memory_order_relaxed);
         _Expected._Rep           = _Rep;
         _Expected._Incwref();
         this->_Store_and_unlock(_Rep);
@@ -3348,6 +3481,13 @@ public:
         }
         return false;
     }
+
+    void wait(weak_ptr<_Ty> _Old, memory_order _Order = memory_order_seq_cst) const noexcept {
+        this->_Wait(_Old._Ptr, _Order);
+    }
+
+    using _Base::notify_all;
+    using _Base::notify_one;
 
     constexpr atomic() noexcept = default;
 
@@ -3363,7 +3503,7 @@ public:
     }
 
     ~atomic() {
-        const auto _Rep = reinterpret_cast<_Ref_count_base*>(this->_Repptr.load(memory_order::relaxed));
+        const auto _Rep = reinterpret_cast<_Ref_count_base*>(this->_Repptr.load(memory_order_relaxed));
         if (_Rep) {
             _Rep->_Decwref();
         }

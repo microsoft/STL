@@ -415,8 +415,7 @@ namespace test {
             ++ptr_;
         }
 
-        [[nodiscard]] constexpr friend std::remove_cv_t<Element> iter_move(iterator const& i)
-            requires at_least<input> && std::constructible_from<std::remove_cv_t<Element>, Element> {
+        [[nodiscard]] constexpr friend Element&& iter_move(iterator const& i) requires at_least<input> {
             return std::move(*i.ptr_);
         }
 
@@ -1061,6 +1060,16 @@ constexpr void test_in_write() {
 template <class Instantiator, class Element1, class Element2>
 constexpr void test_fwd_write() {
     with_forward_ranges<with_writable_iterators<Instantiator, Element2>, Element1>::call();
+}
+
+template <class Instantiator, class Element1, class Element2>
+constexpr void test_bidi_write() {
+    with_bidirectional_ranges<with_writable_iterators<Instantiator, Element2>, Element1>::call();
+}
+
+template <class Instantiator, class Element1, class Element2>
+constexpr void test_contiguous_write() {
+    with_contiguous_ranges<with_writable_iterators<Instantiator, Element2>, Element1>::call();
 }
 
 template <class Instantiator, class Element>
