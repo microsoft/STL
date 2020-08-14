@@ -8,7 +8,7 @@ RUNALL_CROSSLIST
 PM_CL="/EHsc /MD /D_ITERATOR_DEBUG_LEVEL=0 /std:c++14"
 PM_CL="/EHsc /MD /D_ITERATOR_DEBUG_LEVEL=0 /std:c++14 /D_HAS_IF_CONSTEXPR=0"
 PM_CL="/EHsc /MD /D_ITERATOR_DEBUG_LEVEL=0 /std:c++17"
-PM_CL="/EHsc /MD /D_ITERATOR_DEBUG_LEVEL=1 /std:c++latest /permissive-"
+PM_CL="/EHsc /MD /D_ITERATOR_DEBUG_LEVEL=1 /std:c++latest /permissive- /Zc:noexceptTypes-"
 # TRANSITION, GH-854
 PM_CL="/EHsc /MD /D_ITERATOR_DEBUG_LEVEL=0 /std:c++latest /permissive- /Zc:char8_t- /Zc:preprocessor /wd5105"
 PM_CL="/EHsc /MDd /D_ITERATOR_DEBUG_LEVEL=0 /std:c++latest /permissive- /Zc:wchar_t-"
