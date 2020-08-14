@@ -144,5 +144,6 @@ extern "C" int __cdecl __crtCompareStringA(LPCWSTR LocaleName, DWORD dwCmpFlags,
         return 0;
     }
 
-    return __crtCompareStringEx(LocaleName, dwCmpFlags, wbuffer1.get(), buff_size1, wbuffer2.get(), buff_size2);
+    return CompareStringEx(
+        LocaleName, dwCmpFlags, wbuffer1.get(), buff_size1, wbuffer2.get(), buff_size2, nullptr, nullptr, 0);
 }

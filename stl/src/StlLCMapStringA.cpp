@@ -70,7 +70,7 @@ extern "C" int __cdecl __crtLCMapStringA(LPCWSTR LocaleName, DWORD dwMapFlags, L
     }
 
     // get size required for string mapping
-    int retval = __crtLCMapStringEx(LocaleName, dwMapFlags, inwbuffer.get(), inbuff_size, nullptr, 0);
+    int retval = LCMapStringEx(LocaleName, dwMapFlags, inwbuffer.get(), inbuff_size, nullptr, 0, nullptr, nullptr, 0);
     if (0 == retval) {
         return 0;
     }
@@ -84,8 +84,8 @@ extern "C" int __cdecl __crtLCMapStringA(LPCWSTR LocaleName, DWORD dwMapFlags, L
 
             // do string mapping
             if (0
-                == __crtLCMapStringEx(LocaleName, dwMapFlags, inwbuffer.get(), inbuff_size,
-                    reinterpret_cast<LPWSTR>(lpDestStr), cchDest)) {
+                == LCMapStringEx(LocaleName, dwMapFlags, inwbuffer.get(), inbuff_size,
+                    reinterpret_cast<LPWSTR>(lpDestStr), cchDest, nullptr, nullptr, 0)) {
                 return retval;
             }
         }
@@ -101,8 +101,8 @@ extern "C" int __cdecl __crtLCMapStringA(LPCWSTR LocaleName, DWORD dwMapFlags, L
 
         // do string mapping
         if (0
-            == __crtLCMapStringEx(
-                LocaleName, dwMapFlags, inwbuffer.get(), inbuff_size, outwbuffer.get(), outbuff_size)) {
+            == LCMapStringEx(LocaleName, dwMapFlags, inwbuffer.get(), inbuff_size, outwbuffer.get(), outbuff_size,
+                nullptr, nullptr, 0)) {
             return retval;
         }
 
