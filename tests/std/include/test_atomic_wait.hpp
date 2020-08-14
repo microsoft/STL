@@ -154,7 +154,7 @@ void test_pad_bits_impl(const std::chrono::steady_clock::duration waiting_durati
 #else // ^^^ CAN_FAIL_ON_TIMING_ASSUMPTION / !CAN_FAIL_ON_TIMING_ASSUMPTION vvv
     w1.join();
     assert(trigger);
-#endif // ^^^ CAN_FAIL_ON_TIMING_ASSUMPTION ^^^
+#endif // ^^^ !CAN_FAIL_ON_TIMING_ASSUMPTION ^^^
 }
 
 template <class UnderlyingType>
