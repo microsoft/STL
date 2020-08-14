@@ -33,7 +33,7 @@ tm helper_locale(const wchar_t* const s, const wchar_t* const fmt, const char* _
     tm t{};
 
     wstringstream wss(s);
-	wss.imbue(locale(_loc));
+    wss.imbue(locale(_loc));
     wss >> get_time(&t, fmt);
 
     assert(static_cast<bool>(wss));
@@ -118,9 +118,9 @@ int main() {
     assert(read_hour("12 am") == 0);
 
     assert(read_hour("1 AM") == 1);
-    assert(read_hour("1 am") == 1);	
-	assert(read_hour("1 aM") == 1);    
-	assert(read_hour("1 Am") == 1);
+    assert(read_hour("1 am") == 1);
+    assert(read_hour("1 aM") == 1);
+    assert(read_hour("1 Am") == 1);
 
     assert(read_hour("2 AM") == 2);
     assert(read_hour("2 am") == 2);
@@ -133,8 +133,8 @@ int main() {
 
     assert(read_hour("1 PM") == 13);
     assert(read_hour("1 pm") == 13);
-	assert(read_hour("1 Pm") == 13);    
-	assert(read_hour("1 pM") == 13);
+    assert(read_hour("1 Pm") == 13);
+    assert(read_hour("1 pM") == 13);
 
     assert(read_hour("2 PM") == 14);
     assert(read_hour("2 pm") == 14);
@@ -152,9 +152,9 @@ int main() {
 
     test_640278();
     test_990695();
-	test_locale_russian();
-	test_locale_german();
-	test_locale_chines();
+    test_locale_russian();
+    test_locale_german();
+    test_locale_chines();
 }
 
 typedef istreambuf_iterator<char> Iter;
@@ -250,8 +250,8 @@ void test_990695() {
             assert(t.tm_mday == 31);
             assert(t.tm_year == 114);
         }
-		
-		{
+
+        {
             istringstream iss("sep 31 2014");
             ios_base::iostate err = Bit;
             tm t{};
@@ -262,8 +262,8 @@ void test_990695() {
             assert(t.tm_mday == 31);
             assert(t.tm_year == 114);
         }
-		
-		{
+
+        {
             istringstream iss("aUG 14 2020");
             ios_base::iostate err = Bit;
             tm t{};
@@ -274,8 +274,8 @@ void test_990695() {
             assert(t.tm_mday == 14);
             assert(t.tm_year == 120);
         }
-		
-		{
+
+        {
             istringstream iss("feBRuArY 02 1991");
             ios_base::iostate err = Bit;
             tm t{};
@@ -286,8 +286,8 @@ void test_990695() {
             assert(t.tm_mday == 2);
             assert(t.tm_year == 91);
         }
-		
-		{
+
+        {
             istringstream iss("19 SKIP_THIS sEpTemBER SKIP_THIS 2005");
             ios_base::iostate err = Bit;
             tm t{};
@@ -298,8 +298,8 @@ void test_990695() {
             assert(t.tm_mday == 19);
             assert(t.tm_year == 105);
         }
-		
-		{
+
+        {
             istringstream iss("2011-D-18");
             ios_base::iostate err = Bit;
             tm t{};
@@ -308,125 +308,124 @@ void test_990695() {
                 .get(Iter(iss.rdbuf()), Iter(), iss, err, &t, fmt.c_str(), fmt.c_str() + fmt.size());
             assert(err == ios_base::failbit);
         }
-		
-		{
-			std::tm t = {};
-			std::istringstream ss("2018-M-18");
-			ss >> std::get_time(&t, "%Y-%b-%d");
-			assert(ss.fail());
+
+        {
+            std::tm t = {};
+            std::istringstream ss("2018-M-18");
+            ss >> std::get_time(&t, "%Y-%b-%d");
+            assert(ss.fail());
         }
     }
 }
 
-void test_locale_russian(){
-	assert(read_date_locale(L"2020-Январь-05", "ru_RU.UTF-8") == make_tuple(5, /*NOTE DIFFERENCE:*/ 0, 120));	
-	assert(read_date_locale(L"2020-янв-05", "ru_RU.UTF-8") == make_tuple(5, /*NOTE DIFFERENCE:*/ 0, 120));	
-	assert(read_date_locale(L"2020-янВАрЬ-05", "ru_RU.UTF-8") == make_tuple(5, /*NOTE DIFFERENCE:*/ 0, 120));	
-	
-	assert(read_date_locale(L"2020-Февраль-15", "ru_RU.UTF-8") == make_tuple(15, /*NOTE DIFFERENCE:*/ 1, 120));	
-	assert(read_date_locale(L"2020-фев-15", "ru_RU.UTF-8") == make_tuple(15, /*NOTE DIFFERENCE:*/ 1, 120));	
-	assert(read_date_locale(L"2020-феВрАль-15", "ru_RU.UTF-8") == make_tuple(15, /*NOTE DIFFERENCE:*/ 1, 120));	
-	
-	assert(read_date_locale(L"2020-Март-25", "ru_RU.UTF-8") == make_tuple(25, /*NOTE DIFFERENCE:*/ 2, 120));	
-	assert(read_date_locale(L"2020-мар-25", "ru_RU.UTF-8") == make_tuple(25, /*NOTE DIFFERENCE:*/ 2, 120));	
-	assert(read_date_locale(L"2020-МаРт-25", "ru_RU.UTF-8") == make_tuple(25, /*NOTE DIFFERENCE:*/ 2, 120));	
-	
-	assert(read_date_locale(L"2020-Апрель-05", "ru_RU.UTF-8") == make_tuple(5, /*NOTE DIFFERENCE:*/ 3, 120));	
-	assert(read_date_locale(L"2020-апр-05", "ru_RU.UTF-8") == make_tuple(5, /*NOTE DIFFERENCE:*/ 3, 120));	
-	assert(read_date_locale(L"2020-АпРЕль-05", "ru_RU.UTF-8") == make_tuple(5, /*NOTE DIFFERENCE:*/ 3, 120));	
-	
-	assert(read_date_locale(L"2020-Май-15", "ru_RU.UTF-8") == make_tuple(15, /*NOTE DIFFERENCE:*/ 4, 120));		
-	assert(read_date_locale(L"2020-мАЙ-15", "ru_RU.UTF-8") == make_tuple(15, /*NOTE DIFFERENCE:*/ 4, 120));	
-	
-	assert(read_date_locale(L"2020-Июнь-25", "ru_RU.UTF-8") == make_tuple(25, /*NOTE DIFFERENCE:*/ 5, 120));	
-	assert(read_date_locale(L"2020-июн-25", "ru_RU.UTF-8") == make_tuple(25, /*NOTE DIFFERENCE:*/ 5, 120));	
-	assert(read_date_locale(L"2020-ИюНЬ-25", "ru_RU.UTF-8") == make_tuple(25, /*NOTE DIFFERENCE:*/ 5, 120));	
-	
-	assert(read_date_locale(L"2020-Июль-12", "ru_RU.UTF-8") == make_tuple(12, /*NOTE DIFFERENCE:*/ 6, 120));	
-	assert(read_date_locale(L"2020-июл-12", "ru_RU.UTF-8") == make_tuple(12, /*NOTE DIFFERENCE:*/ 6, 120));	
-	assert(read_date_locale(L"2020-ИюЛь-12", "ru_RU.UTF-8") == make_tuple(12, /*NOTE DIFFERENCE:*/ 6, 120));	
-	
-	assert(read_date_locale(L"2020-Август-02", "ru_RU.UTF-8") == make_tuple(2, /*NOTE DIFFERENCE:*/ 7, 120));	
-	assert(read_date_locale(L"2020-авг-02", "ru_RU.UTF-8") == make_tuple(2, /*NOTE DIFFERENCE:*/ 7, 120));	
-	assert(read_date_locale(L"2020-АвгУСт-02", "ru_RU.UTF-8") == make_tuple(2, /*NOTE DIFFERENCE:*/ 7, 120));	
-	
-	assert(read_date_locale(L"2020-Сентябрь-21", "ru_RU.UTF-8") == make_tuple(21, /*NOTE DIFFERENCE:*/ 8, 120));	
-	assert(read_date_locale(L"2020-сен-21", "ru_RU.UTF-8") == make_tuple(21, /*NOTE DIFFERENCE:*/ 8, 120));	
-	assert(read_date_locale(L"2020-СентяБрь-21", "ru_RU.UTF-8") == make_tuple(21, /*NOTE DIFFERENCE:*/ 8, 120));	
-	
-	assert(read_date_locale(L"2020-Октябрь-01", "ru_RU.UTF-8") == make_tuple(1, /*NOTE DIFFERENCE:*/ 9, 120));
-	assert(read_date_locale(L"2020-окт-01", "ru_RU.UTF-8") == make_tuple(1, /*NOTE DIFFERENCE:*/ 9, 120));	
-	assert(read_date_locale(L"2020-ОктяБрь-01", "ru_RU.UTF-8") == make_tuple(1, /*NOTE DIFFERENCE:*/ 9, 120));	
-	
-	assert(read_date_locale(L"2020-Ноябрь-09", "ru_RU.UTF-8") == make_tuple(9, /*NOTE DIFFERENCE:*/ 10, 120));	
-	assert(read_date_locale(L"2020-ноя-09", "ru_RU.UTF-8") == make_tuple(9, /*NOTE DIFFERENCE:*/ 10, 120));	
-	assert(read_date_locale(L"2020-НояБрь-09", "ru_RU.UTF-8") == make_tuple(9, /*NOTE DIFFERENCE:*/ 10, 120));	
-	
-	assert(read_date_locale(L"2020-Декабрь-31", "ru_RU.UTF-8") == make_tuple(31, /*NOTE DIFFERENCE:*/ 11, 120));	
-	assert(read_date_locale(L"2020-дек-31", "ru_RU.UTF-8") == make_tuple(31, /*NOTE DIFFERENCE:*/ 11, 120));	
-	assert(read_date_locale(L"2020-ДекаБрь-31", "ru_RU.UTF-8") == make_tuple(31, /*NOTE DIFFERENCE:*/ 11, 120));		
+void test_locale_russian() {
+    assert(read_date_locale(L"2020-Январь-05", "ru_RU.UTF-8") == make_tuple(5, /*NOTE DIFFERENCE:*/ 0, 120));
+    assert(read_date_locale(L"2020-янв-05", "ru_RU.UTF-8") == make_tuple(5, /*NOTE DIFFERENCE:*/ 0, 120));
+    assert(read_date_locale(L"2020-янВАрЬ-05", "ru_RU.UTF-8") == make_tuple(5, /*NOTE DIFFERENCE:*/ 0, 120));
+
+    assert(read_date_locale(L"2020-Февраль-15", "ru_RU.UTF-8") == make_tuple(15, /*NOTE DIFFERENCE:*/ 1, 120));
+    assert(read_date_locale(L"2020-фев-15", "ru_RU.UTF-8") == make_tuple(15, /*NOTE DIFFERENCE:*/ 1, 120));
+    assert(read_date_locale(L"2020-феВрАль-15", "ru_RU.UTF-8") == make_tuple(15, /*NOTE DIFFERENCE:*/ 1, 120));
+
+    assert(read_date_locale(L"2020-Март-25", "ru_RU.UTF-8") == make_tuple(25, /*NOTE DIFFERENCE:*/ 2, 120));
+    assert(read_date_locale(L"2020-мар-25", "ru_RU.UTF-8") == make_tuple(25, /*NOTE DIFFERENCE:*/ 2, 120));
+    assert(read_date_locale(L"2020-МаРт-25", "ru_RU.UTF-8") == make_tuple(25, /*NOTE DIFFERENCE:*/ 2, 120));
+
+    assert(read_date_locale(L"2020-Апрель-05", "ru_RU.UTF-8") == make_tuple(5, /*NOTE DIFFERENCE:*/ 3, 120));
+    assert(read_date_locale(L"2020-апр-05", "ru_RU.UTF-8") == make_tuple(5, /*NOTE DIFFERENCE:*/ 3, 120));
+    assert(read_date_locale(L"2020-АпРЕль-05", "ru_RU.UTF-8") == make_tuple(5, /*NOTE DIFFERENCE:*/ 3, 120));
+
+    assert(read_date_locale(L"2020-Май-15", "ru_RU.UTF-8") == make_tuple(15, /*NOTE DIFFERENCE:*/ 4, 120));
+    assert(read_date_locale(L"2020-мАЙ-15", "ru_RU.UTF-8") == make_tuple(15, /*NOTE DIFFERENCE:*/ 4, 120));
+
+    assert(read_date_locale(L"2020-Июнь-25", "ru_RU.UTF-8") == make_tuple(25, /*NOTE DIFFERENCE:*/ 5, 120));
+    assert(read_date_locale(L"2020-июн-25", "ru_RU.UTF-8") == make_tuple(25, /*NOTE DIFFERENCE:*/ 5, 120));
+    assert(read_date_locale(L"2020-ИюНЬ-25", "ru_RU.UTF-8") == make_tuple(25, /*NOTE DIFFERENCE:*/ 5, 120));
+
+    assert(read_date_locale(L"2020-Июль-12", "ru_RU.UTF-8") == make_tuple(12, /*NOTE DIFFERENCE:*/ 6, 120));
+    assert(read_date_locale(L"2020-июл-12", "ru_RU.UTF-8") == make_tuple(12, /*NOTE DIFFERENCE:*/ 6, 120));
+    assert(read_date_locale(L"2020-ИюЛь-12", "ru_RU.UTF-8") == make_tuple(12, /*NOTE DIFFERENCE:*/ 6, 120));
+
+    assert(read_date_locale(L"2020-Август-02", "ru_RU.UTF-8") == make_tuple(2, /*NOTE DIFFERENCE:*/ 7, 120));
+    assert(read_date_locale(L"2020-авг-02", "ru_RU.UTF-8") == make_tuple(2, /*NOTE DIFFERENCE:*/ 7, 120));
+    assert(read_date_locale(L"2020-АвгУСт-02", "ru_RU.UTF-8") == make_tuple(2, /*NOTE DIFFERENCE:*/ 7, 120));
+
+    assert(read_date_locale(L"2020-Сентябрь-21", "ru_RU.UTF-8") == make_tuple(21, /*NOTE DIFFERENCE:*/ 8, 120));
+    assert(read_date_locale(L"2020-сен-21", "ru_RU.UTF-8") == make_tuple(21, /*NOTE DIFFERENCE:*/ 8, 120));
+    assert(read_date_locale(L"2020-СентяБрь-21", "ru_RU.UTF-8") == make_tuple(21, /*NOTE DIFFERENCE:*/ 8, 120));
+
+    assert(read_date_locale(L"2020-Октябрь-01", "ru_RU.UTF-8") == make_tuple(1, /*NOTE DIFFERENCE:*/ 9, 120));
+    assert(read_date_locale(L"2020-окт-01", "ru_RU.UTF-8") == make_tuple(1, /*NOTE DIFFERENCE:*/ 9, 120));
+    assert(read_date_locale(L"2020-ОктяБрь-01", "ru_RU.UTF-8") == make_tuple(1, /*NOTE DIFFERENCE:*/ 9, 120));
+
+    assert(read_date_locale(L"2020-Ноябрь-09", "ru_RU.UTF-8") == make_tuple(9, /*NOTE DIFFERENCE:*/ 10, 120));
+    assert(read_date_locale(L"2020-ноя-09", "ru_RU.UTF-8") == make_tuple(9, /*NOTE DIFFERENCE:*/ 10, 120));
+    assert(read_date_locale(L"2020-НояБрь-09", "ru_RU.UTF-8") == make_tuple(9, /*NOTE DIFFERENCE:*/ 10, 120));
+
+    assert(read_date_locale(L"2020-Декабрь-31", "ru_RU.UTF-8") == make_tuple(31, /*NOTE DIFFERENCE:*/ 11, 120));
+    assert(read_date_locale(L"2020-дек-31", "ru_RU.UTF-8") == make_tuple(31, /*NOTE DIFFERENCE:*/ 11, 120));
+    assert(read_date_locale(L"2020-ДекаБрь-31", "ru_RU.UTF-8") == make_tuple(31, /*NOTE DIFFERENCE:*/ 11, 120));
 }
 
-void test_locale_german(){
-	assert(read_date_locale(L"2020-Januar-05", "de_DE.utf-8") == make_tuple(5, /*NOTE DIFFERENCE:*/ 0, 120));	
-	assert(read_date_locale(L"2020-Jan-05", "de_DE.utf-8") == make_tuple(5, /*NOTE DIFFERENCE:*/ 0, 120));	
-	assert(read_date_locale(L"2020-JanUAr-05", "de_DE.utf-8") == make_tuple(5, /*NOTE DIFFERENCE:*/ 0, 120));		
-	
-	assert(read_date_locale(L"2020-Februar-15", "de_DE.utf-8") == make_tuple(15, /*NOTE DIFFERENCE:*/ 1, 120));	
-	assert(read_date_locale(L"2020-Feb-15", "de_DE.utf-8") == make_tuple(15, /*NOTE DIFFERENCE:*/ 1, 120));	
-	assert(read_date_locale(L"2020-FebrUar-15", "de_DE.utf-8") == make_tuple(15, /*NOTE DIFFERENCE:*/ 1, 120));	
-	
-	assert(read_date_locale(L"2020-März-25", "de_DE.utf-8") == make_tuple(25, /*NOTE DIFFERENCE:*/ 2, 120));	
-	assert(read_date_locale(L"2020-mäRZ-25", "de_DE.utf-8") == make_tuple(25, /*NOTE DIFFERENCE:*/ 2, 120));		
-	
-	assert(read_date_locale(L"2020-April-05", "de_DE.utf-8") == make_tuple(5, /*NOTE DIFFERENCE:*/ 3, 120));	
-	assert(read_date_locale(L"2020-Apr-05", "de_DE.utf-8") == make_tuple(5, /*NOTE DIFFERENCE:*/ 3, 120));	
-	assert(read_date_locale(L"2020-apRiL-05", "de_DE.utf-8") == make_tuple(5, /*NOTE DIFFERENCE:*/ 3, 120));	
-	
-	assert(read_date_locale(L"2020-Mai-15", "de_DE.utf-8") == make_tuple(15, /*NOTE DIFFERENCE:*/ 4, 120));		
-	assert(read_date_locale(L"2020-mAi-15", "de_DE.utf-8") == make_tuple(15, /*NOTE DIFFERENCE:*/ 4, 120));	
-	
-	assert(read_date_locale(L"2020-Juni-25", "de_DE.utf-8") == make_tuple(25, /*NOTE DIFFERENCE:*/ 5, 120));	
-	assert(read_date_locale(L"2020-jUNi-25", "de_DE.utf-8") == make_tuple(25, /*NOTE DIFFERENCE:*/ 5, 120));	
-	assert(read_date_locale(L"2020-jUNi-25", "de_DE.utf-8") == make_tuple(25, /*NOTE DIFFERENCE:*/ 5, 120));	
-	
-	assert(read_date_locale(L"2020-Juli-12", "de_DE.utf-8") == make_tuple(12, /*NOTE DIFFERENCE:*/ 6, 120));	
-	assert(read_date_locale(L"2020-JuLi-12", "de_DE.utf-8") == make_tuple(12, /*NOTE DIFFERENCE:*/ 6, 120));	
-	assert(read_date_locale(L"2020-jUli-12", "de_DE.utf-8") == make_tuple(12, /*NOTE DIFFERENCE:*/ 6, 120));	
-	
-	assert(read_date_locale(L"2020-August-02", "de_DE.utf-8") == make_tuple(2, /*NOTE DIFFERENCE:*/ 7, 120));	
-	assert(read_date_locale(L"2020-Aug-02", "de_DE.utf-8") == make_tuple(2, /*NOTE DIFFERENCE:*/ 7, 120));	
-	assert(read_date_locale(L"2020-auGuSt-02", "de_DE.utf-8") == make_tuple(2, /*NOTE DIFFERENCE:*/ 7, 120));	
-	
-	assert(read_date_locale(L"2020-September-21", "de_DE.utf-8") == make_tuple(21, /*NOTE DIFFERENCE:*/ 8, 120));	
-	assert(read_date_locale(L"2020-Sep-21", "de_DE.utf-8") == make_tuple(21, /*NOTE DIFFERENCE:*/ 8, 120));	
-	assert(read_date_locale(L"2020-sEpTeMber-21", "de_DE.utf-8") == make_tuple(21, /*NOTE DIFFERENCE:*/ 8, 120));	
-	
-	assert(read_date_locale(L"2020-Oktober-01", "de_DE.utf-8") == make_tuple(1, /*NOTE DIFFERENCE:*/ 9, 120));
-	assert(read_date_locale(L"2020-Okt-01", "de_DE.utf-8") == make_tuple(1, /*NOTE DIFFERENCE:*/ 9, 120));	
-	assert(read_date_locale(L"2020-oKtoBeR-01", "de_DE.utf-8") == make_tuple(1, /*NOTE DIFFERENCE:*/ 9, 120));	
-	
-	assert(read_date_locale(L"2020-November-09", "de_DE.utf-8") == make_tuple(9, /*NOTE DIFFERENCE:*/ 10, 120));	
-	assert(read_date_locale(L"2020-Nov-09", "de_DE.utf-8") == make_tuple(9, /*NOTE DIFFERENCE:*/ 10, 120));	
-	assert(read_date_locale(L"2020-noVemBeR-09", "de_DE.utf-8") == make_tuple(9, /*NOTE DIFFERENCE:*/ 10, 120));	
-	
-	assert(read_date_locale(L"2020-Dezember-31", "de_DE.utf-8") == make_tuple(31, /*NOTE DIFFERENCE:*/ 11, 120));	
-	assert(read_date_locale(L"2020-Dez-31", "de_DE.utf-8") == make_tuple(31, /*NOTE DIFFERENCE:*/ 11, 120));	
-	assert(read_date_locale(L"2020-deZeMbEr-31", "de_DE.utf-8") == make_tuple(31, /*NOTE DIFFERENCE:*/ 11, 120));			
+void test_locale_german() {
+    assert(read_date_locale(L"2020-Januar-05", "de_DE.utf-8") == make_tuple(5, /*NOTE DIFFERENCE:*/ 0, 120));
+    assert(read_date_locale(L"2020-Jan-05", "de_DE.utf-8") == make_tuple(5, /*NOTE DIFFERENCE:*/ 0, 120));
+    assert(read_date_locale(L"2020-JanUAr-05", "de_DE.utf-8") == make_tuple(5, /*NOTE DIFFERENCE:*/ 0, 120));
+
+    assert(read_date_locale(L"2020-Februar-15", "de_DE.utf-8") == make_tuple(15, /*NOTE DIFFERENCE:*/ 1, 120));
+    assert(read_date_locale(L"2020-Feb-15", "de_DE.utf-8") == make_tuple(15, /*NOTE DIFFERENCE:*/ 1, 120));
+    assert(read_date_locale(L"2020-FebrUar-15", "de_DE.utf-8") == make_tuple(15, /*NOTE DIFFERENCE:*/ 1, 120));
+
+    assert(read_date_locale(L"2020-März-25", "de_DE.utf-8") == make_tuple(25, /*NOTE DIFFERENCE:*/ 2, 120));
+    assert(read_date_locale(L"2020-mäRZ-25", "de_DE.utf-8") == make_tuple(25, /*NOTE DIFFERENCE:*/ 2, 120));
+
+    assert(read_date_locale(L"2020-April-05", "de_DE.utf-8") == make_tuple(5, /*NOTE DIFFERENCE:*/ 3, 120));
+    assert(read_date_locale(L"2020-Apr-05", "de_DE.utf-8") == make_tuple(5, /*NOTE DIFFERENCE:*/ 3, 120));
+    assert(read_date_locale(L"2020-apRiL-05", "de_DE.utf-8") == make_tuple(5, /*NOTE DIFFERENCE:*/ 3, 120));
+
+    assert(read_date_locale(L"2020-Mai-15", "de_DE.utf-8") == make_tuple(15, /*NOTE DIFFERENCE:*/ 4, 120));
+    assert(read_date_locale(L"2020-mAi-15", "de_DE.utf-8") == make_tuple(15, /*NOTE DIFFERENCE:*/ 4, 120));
+
+    assert(read_date_locale(L"2020-Juni-25", "de_DE.utf-8") == make_tuple(25, /*NOTE DIFFERENCE:*/ 5, 120));
+    assert(read_date_locale(L"2020-jUNi-25", "de_DE.utf-8") == make_tuple(25, /*NOTE DIFFERENCE:*/ 5, 120));
+    assert(read_date_locale(L"2020-jUNi-25", "de_DE.utf-8") == make_tuple(25, /*NOTE DIFFERENCE:*/ 5, 120));
+
+    assert(read_date_locale(L"2020-Juli-12", "de_DE.utf-8") == make_tuple(12, /*NOTE DIFFERENCE:*/ 6, 120));
+    assert(read_date_locale(L"2020-JuLi-12", "de_DE.utf-8") == make_tuple(12, /*NOTE DIFFERENCE:*/ 6, 120));
+    assert(read_date_locale(L"2020-jUli-12", "de_DE.utf-8") == make_tuple(12, /*NOTE DIFFERENCE:*/ 6, 120));
+
+    assert(read_date_locale(L"2020-August-02", "de_DE.utf-8") == make_tuple(2, /*NOTE DIFFERENCE:*/ 7, 120));
+    assert(read_date_locale(L"2020-Aug-02", "de_DE.utf-8") == make_tuple(2, /*NOTE DIFFERENCE:*/ 7, 120));
+    assert(read_date_locale(L"2020-auGuSt-02", "de_DE.utf-8") == make_tuple(2, /*NOTE DIFFERENCE:*/ 7, 120));
+
+    assert(read_date_locale(L"2020-September-21", "de_DE.utf-8") == make_tuple(21, /*NOTE DIFFERENCE:*/ 8, 120));
+    assert(read_date_locale(L"2020-Sep-21", "de_DE.utf-8") == make_tuple(21, /*NOTE DIFFERENCE:*/ 8, 120));
+    assert(read_date_locale(L"2020-sEpTeMber-21", "de_DE.utf-8") == make_tuple(21, /*NOTE DIFFERENCE:*/ 8, 120));
+
+    assert(read_date_locale(L"2020-Oktober-01", "de_DE.utf-8") == make_tuple(1, /*NOTE DIFFERENCE:*/ 9, 120));
+    assert(read_date_locale(L"2020-Okt-01", "de_DE.utf-8") == make_tuple(1, /*NOTE DIFFERENCE:*/ 9, 120));
+    assert(read_date_locale(L"2020-oKtoBeR-01", "de_DE.utf-8") == make_tuple(1, /*NOTE DIFFERENCE:*/ 9, 120));
+
+    assert(read_date_locale(L"2020-November-09", "de_DE.utf-8") == make_tuple(9, /*NOTE DIFFERENCE:*/ 10, 120));
+    assert(read_date_locale(L"2020-Nov-09", "de_DE.utf-8") == make_tuple(9, /*NOTE DIFFERENCE:*/ 10, 120));
+    assert(read_date_locale(L"2020-noVemBeR-09", "de_DE.utf-8") == make_tuple(9, /*NOTE DIFFERENCE:*/ 10, 120));
+
+    assert(read_date_locale(L"2020-Dezember-31", "de_DE.utf-8") == make_tuple(31, /*NOTE DIFFERENCE:*/ 11, 120));
+    assert(read_date_locale(L"2020-Dez-31", "de_DE.utf-8") == make_tuple(31, /*NOTE DIFFERENCE:*/ 11, 120));
+    assert(read_date_locale(L"2020-deZeMbEr-31", "de_DE.utf-8") == make_tuple(31, /*NOTE DIFFERENCE:*/ 11, 120));
 }
 
-void test_locale_chines(){
-	assert(read_date_locale(L"2020-一月-05", "chinese") == make_tuple(5, /*NOTE DIFFERENCE:*/ 0, 120));	
-	assert(read_date_locale(L"2020-二月-15", "chinese") == make_tuple(15, /*NOTE DIFFERENCE:*/ 1, 120));		
-	assert(read_date_locale(L"2020-三月-25", "chinese") == make_tuple(25, /*NOTE DIFFERENCE:*/ 2, 120));			
-	assert(read_date_locale(L"2020-四月-05", "chinese") == make_tuple(5, /*NOTE DIFFERENCE:*/ 3, 120));			
-	assert(read_date_locale(L"2020-五月-15", "chinese") == make_tuple(15, /*NOTE DIFFERENCE:*/ 4, 120));				
-	assert(read_date_locale(L"2020-六月-25", "chinese") == make_tuple(25, /*NOTE DIFFERENCE:*/ 5, 120));		
-	assert(read_date_locale(L"2020-七月-12", "chinese") == make_tuple(12, /*NOTE DIFFERENCE:*/ 6, 120));		
-	assert(read_date_locale(L"2020-八月-02", "chinese") == make_tuple(2, /*NOTE DIFFERENCE:*/ 7, 120));			
-	assert(read_date_locale(L"2020-九月-21", "chinese") == make_tuple(21, /*NOTE DIFFERENCE:*/ 8, 120));		
-	assert(read_date_locale(L"2020-十月-01", "chinese") == make_tuple(1, /*NOTE DIFFERENCE:*/ 9, 120));	
-	assert(read_date_locale(L"2020-十一月-09", "chinese") == make_tuple(9, /*NOTE DIFFERENCE:*/ 10, 120));		
-	assert(read_date_locale(L"2020-十二月-31", "chinese") == make_tuple(31, /*NOTE DIFFERENCE:*/ 11, 120));	
+void test_locale_chines() {
+    assert(read_date_locale(L"2020-一月-05", "chinese") == make_tuple(5, /*NOTE DIFFERENCE:*/ 0, 120));
+    assert(read_date_locale(L"2020-二月-15", "chinese") == make_tuple(15, /*NOTE DIFFERENCE:*/ 1, 120));
+    assert(read_date_locale(L"2020-三月-25", "chinese") == make_tuple(25, /*NOTE DIFFERENCE:*/ 2, 120));
+    assert(read_date_locale(L"2020-四月-05", "chinese") == make_tuple(5, /*NOTE DIFFERENCE:*/ 3, 120));
+    assert(read_date_locale(L"2020-五月-15", "chinese") == make_tuple(15, /*NOTE DIFFERENCE:*/ 4, 120));
+    assert(read_date_locale(L"2020-六月-25", "chinese") == make_tuple(25, /*NOTE DIFFERENCE:*/ 5, 120));
+    assert(read_date_locale(L"2020-七月-12", "chinese") == make_tuple(12, /*NOTE DIFFERENCE:*/ 6, 120));
+    assert(read_date_locale(L"2020-八月-02", "chinese") == make_tuple(2, /*NOTE DIFFERENCE:*/ 7, 120));
+    assert(read_date_locale(L"2020-九月-21", "chinese") == make_tuple(21, /*NOTE DIFFERENCE:*/ 8, 120));
+    assert(read_date_locale(L"2020-十月-01", "chinese") == make_tuple(1, /*NOTE DIFFERENCE:*/ 9, 120));
+    assert(read_date_locale(L"2020-十一月-09", "chinese") == make_tuple(9, /*NOTE DIFFERENCE:*/ 10, 120));
+    assert(read_date_locale(L"2020-十二月-31", "chinese") == make_tuple(31, /*NOTE DIFFERENCE:*/ 11, 120));
 }
-
