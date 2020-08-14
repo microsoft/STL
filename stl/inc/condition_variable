@@ -149,7 +149,7 @@ private:
 public:
     template <class _Lock, class _Predicate>
     bool wait(_Lock& _Lck, stop_token _Stoken, _Predicate _Pred) {
-        stop_callback<_Cv_any_notify_all> _Cb{_STD move(_Stoken), this};
+        stop_callback<_Cv_any_notify_all> _Cb{_Stoken, this};
         while (!_Stoken.stop_requested()) {
             if (_Pred()) {
                 return true;
@@ -164,7 +164,7 @@ public:
     template <class _Lock, class _Clock, class _Duration, class _Predicate>
     bool wait_until(
         _Lock& _Lck, stop_token _Stoken, const chrono::time_point<_Clock, _Duration>& _Abs_time, _Predicate _Pred) {
-        stop_callback<_Cv_any_notify_all> _Cb{_STD move(_Stoken), this};
+        stop_callback<_Cv_any_notify_all> _Cb{_Stoken, this};
         while (!_Stoken.stop_requested()) {
             if (_Pred()) {
                 return true;
