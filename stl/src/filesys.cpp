@@ -409,7 +409,7 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Symlink(const wchar_t* _Fname1, const wchar
     (void) _Fname2;
     return errno = EDOM; // symlinks not supported
 #else // _CRT_APP
-    return __crtCreateSymbolicLinkW(_Fname2, _Fname1, 0) != 0 ? 0 : GetLastError();
+    return CreateSymbolicLinkW(_Fname2, _Fname1, 0) != 0 ? 0 : GetLastError();
 #endif // _CRT_APP
 }
 

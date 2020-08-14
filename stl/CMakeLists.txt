@@ -298,7 +298,6 @@ set(SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/wcin.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/wclog.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/wcout.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/winapinls.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/winapisupp.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/wiostrea.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/wlocale.cpp

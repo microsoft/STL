@@ -34,7 +34,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
             $(CrtRoot)\github\stl\src\StlCompareStringW.cpp;
             $(CrtRoot)\github\stl\src\StlLCMapStringA.cpp;
             $(CrtRoot)\github\stl\src\StlLCMapStringW.cpp;
-            $(CrtRoot)\github\stl\src\winapinls.cpp;
             $(CrtRoot)\github\stl\src\_tolower.cpp;
             $(CrtRoot)\github\stl\src\_toupper.cpp;
             $(CrtRoot)\github\stl\src\atomic.cpp;

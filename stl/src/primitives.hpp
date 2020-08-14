@@ -47,7 +47,7 @@ namespace Concurrency {
         class stl_critical_section_vista final : public stl_critical_section_interface {
         public:
             stl_critical_section_vista() {
-                __crtInitializeCriticalSectionEx(&_M_critical_section, 4000, 0);
+                InitializeCriticalSectionEx(&_M_critical_section, 4000, 0);
             }
 
             stl_critical_section_vista(const stl_critical_section_vista&) = delete;
@@ -86,7 +86,7 @@ namespace Concurrency {
         class stl_condition_variable_vista final : public stl_condition_variable_interface {
         public:
             stl_condition_variable_vista() {
-                __crtInitializeConditionVariable(&m_condition_variable);
+                InitializeConditionVariable(&m_condition_variable);
             }
 
             ~stl_condition_variable_vista()                                   = delete;
@@ -102,17 +102,17 @@ namespace Concurrency {
             }
 
             virtual bool wait_for(stl_critical_section_interface* lock, unsigned int timeout) override {
-                return __crtSleepConditionVariableCS(&m_condition_variable,
+                return SleepConditionVariableCS(&m_condition_variable,
                            static_cast<stl_critical_section_vista*>(lock)->native_handle(), timeout)
                        != 0;
             }
 
             virtual void notify_one() override {
-                __crtWakeConditionVariable(&m_condition_variable);
+                WakeConditionVariable(&m_condition_variable);
             }
 
             virtual void notify_all() override {
-                __crtWakeAllConditionVariable(&m_condition_variable);
+                WakeAllConditionVariable(&m_condition_variable);
             }
 
         private:
@@ -122,7 +122,7 @@ namespace Concurrency {
         class stl_critical_section_win7 final : public stl_critical_section_interface {
         public:
             stl_critical_section_win7() {
-                __crtInitializeSRWLock(&m_srw_lock);
+                InitializeSRWLock(&m_srw_lock);
             }
 
             ~stl_critical_section_win7()                                = delete;
@@ -132,7 +132,7 @@ namespace Concurrency {
             virtual void destroy() override {}
 
             virtual void lock() override {
-                __crtAcquireSRWLockExclusive(&m_srw_lock);
+                AcquireSRWLockExclusive(&m_srw_lock);
             }
 
             virtual bool try_lock() override {
@@ -145,7 +145,7 @@ namespace Concurrency {
             }
 
             virtual void unlock() override {
-                __crtReleaseSRWLockExclusive(&m_srw_lock);
+                ReleaseSRWLockExclusive(&m_srw_lock);
             }
 
             PSRWLOCK native_handle() {
@@ -159,7 +159,7 @@ namespace Concurrency {
         class stl_condition_variable_win7 final : public stl_condition_variable_interface {
         public:
             stl_condition_variable_win7() {
-                __crtInitializeConditionVariable(&m_condition_variable);
+                InitializeConditionVariable(&m_condition_variable);
             }
 
             ~stl_condition_variable_win7()                                  = delete;
@@ -175,17 +175,17 @@ namespace Concurrency {
             }
 
             virtual bool wait_for(stl_critical_section_interface* lock, unsigned int timeout) override {
-                return __crtSleepConditionVariableSRW(&m_condition_variable,
+                return SleepConditionVariableSRW(&m_condition_variable,
                            static_cast<stl_critical_section_win7*>(lock)->native_handle(), timeout, 0)
                        != 0;
             }
 
             virtual void notify_one() override {
-                __crtWakeConditionVariable(&m_condition_variable);
+                WakeConditionVariable(&m_condition_variable);
             }
 
             virtual void notify_all() override {
-                __crtWakeAllConditionVariable(&m_condition_variable);
+                WakeAllConditionVariable(&m_condition_variable);
             }
 
         private:
@@ -275,17 +275,6 @@ namespace Concurrency {
 #endif
         }
 
-        inline bool are_vista_sync_apis_available() {
-#if _STL_WIN32_WINNT >= _WIN32_WINNT_VISTA
-            return true;
-#else
-            // InitializeConditionVariable ONLY available on Windows Vista+
-            DYNAMICGETCACHEDFUNCTION(
-                PFNINITIALIZECONDITIONVARIABLE, InitializeConditionVariable, pfInitializeConditionVariable);
-            return pfInitializeConditionVariable != nullptr;
-#endif
-        }
-
         inline void create_stl_critical_section(stl_critical_section_interface* p) {
 #ifdef _CRT_WINDOWS
             new (p) stl_critical_section_win7;
@@ -299,18 +288,17 @@ namespace Concurrency {
                 }
                 // fall through
             case __stl_sync_api_modes_enum::vista:
-                if (are_vista_sync_apis_available()) {
-                    new (p) stl_critical_section_vista;
-                    return;
-                }
-                // fall through
+                new (p) stl_critical_section_vista;
+                return;
+
             case __stl_sync_api_modes_enum::concrt:
             default:
 #ifdef _STL_CONCRT_SUPPORT
                 new (p) stl_critical_section_concrt;
                 return;
 #else
-                std::terminate();
+                new (p) stl_critical_section_vista;
+                return;
 #endif // _STL_CONCRT_SUPPORT
             }
 #endif // _CRT_WINDOWS
@@ -329,18 +317,17 @@ namespace Concurrency {
                 }
                 // fall through
             case __stl_sync_api_modes_enum::vista:
-                if (are_vista_sync_apis_available()) {
-                    new (p) stl_condition_variable_vista;
-                    return;
-                }
-                // fall through
+                new (p) stl_condition_variable_vista;
+                return;
+
             case __stl_sync_api_modes_enum::concrt:
             default:
 #ifdef _STL_CONCRT_SUPPORT
                 new (p) stl_condition_variable_concrt;
                 return;
 #else
-                std::terminate();
+                new (p) stl_condition_variable_vista;
+                return;
 #endif // _STL_CONCRT_SUPPORT
             }
 #endif // _CRT_WINDOWS
