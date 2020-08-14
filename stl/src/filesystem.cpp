@@ -132,7 +132,6 @@ namespace {
         }
 
         return __std_win_error{GetLastError()};
-        ;
     }
 } // unnamed namespace
 

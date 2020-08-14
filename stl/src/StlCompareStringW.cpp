@@ -42,5 +42,5 @@ extern "C" int __cdecl __crtCompareStringW(
         return (cchCount1 - cchCount2 == 0) ? 2 : (cchCount1 - cchCount2 < 0) ? 1 : 3;
     }
 
-    return __crtCompareStringEx(LocaleName, dwCmpFlags, lpString1, cchCount1, lpString2, cchCount2);
+    return CompareStringEx(LocaleName, dwCmpFlags, lpString1, cchCount1, lpString2, cchCount2, nullptr, nullptr, 0);
 }

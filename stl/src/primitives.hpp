@@ -290,7 +290,6 @@ namespace Concurrency {
             case __stl_sync_api_modes_enum::vista:
                 new (p) stl_critical_section_vista;
                 return;
-
             case __stl_sync_api_modes_enum::concrt:
             default:
 #ifdef _STL_CONCRT_SUPPORT
@@ -319,7 +318,6 @@ namespace Concurrency {
             case __stl_sync_api_modes_enum::vista:
                 new (p) stl_condition_variable_vista;
                 return;
-
             case __stl_sync_api_modes_enum::concrt:
             default:
 #ifdef _STL_CONCRT_SUPPORT
