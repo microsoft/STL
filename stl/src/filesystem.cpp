@@ -131,7 +131,8 @@ namespace {
             return __std_win_error::_Success;
         }
 
-        return __std_win_error{GetLastError()};;
+        return __std_win_error{GetLastError()};
+        ;
     }
 } // unnamed namespace
 
@@ -378,8 +379,7 @@ __std_win_error __stdcall __std_fs_get_file_id(__std_fs_file_id* const _Id, cons
 
     static_assert(sizeof(FILE_ID_INFO) == sizeof(__std_fs_file_id));
     static_assert(alignof(FILE_ID_INFO) == alignof(__std_fs_file_id));
-    if (GetFileInformationByHandleEx(
-            _Handle._Get(), FileIdInfo, reinterpret_cast<FILE_ID_INFO*>(_Id), sizeof(*_Id))
+    if (GetFileInformationByHandleEx(_Handle._Get(), FileIdInfo, reinterpret_cast<FILE_ID_INFO*>(_Id), sizeof(*_Id))
         != 0) { // if we could get FILE_ID_INFO, use that as the source of truth
         return __std_win_error::_Success;
     }
@@ -486,7 +486,7 @@ __std_win_error __stdcall __std_fs_get_file_id(__std_fs_file_id* const _Id, cons
 [[nodiscard]] __std_fs_remove_result __stdcall __std_fs_remove(const wchar_t* const _Target) noexcept {
     // remove _Target without caring whether _Target is a file or directory
     __std_win_error _Last_error;
- 
+
     constexpr auto _Flags = __std_fs_file_flags::_Backup_semantics | __std_fs_file_flags::_Open_reparse_point;
     const _STD _Fs_file _Handle(_Target, __std_access_rights::_Delete, _Flags, &_Last_error);
     if (_Last_error != __std_win_error::_Success) {
@@ -805,7 +805,7 @@ struct alignas(long long) _Aligned_file_attrs {
         return _Last_error;
     }
 
-        constexpr auto _Basic_info_data = __std_fs_stats_flags::_Attributes | __std_fs_stats_flags::_Last_write_time;
+    constexpr auto _Basic_info_data = __std_fs_stats_flags::_Attributes | __std_fs_stats_flags::_Last_write_time;
     constexpr auto _Attribute_tag_info_data = __std_fs_stats_flags::_Attributes | __std_fs_stats_flags::_Reparse_tag;
     constexpr auto _Standard_info_data      = __std_fs_stats_flags::_File_size | __std_fs_stats_flags::_Link_count;
 
