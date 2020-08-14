@@ -128,57 +128,83 @@ extern "C" BOOL __cdecl __crtIsPackagedApp() {
 
 #endif // !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
 
-#if _STL_WIN32_WINNT <= _WIN32_WINNT_VISTA
+
+#if _STL_WIN32_WINNT < _WIN32_WINNT_WS03
+
+extern "C" DWORD __cdecl __crtFlsAlloc(PFLS_CALLBACK_FUNCTION const lpCallback) {
+    return FlsAlloc(lpCallback);
+}
+
+extern "C" BOOL __cdecl __crtFlsFree(DWORD const dwFlsIndex) {
+    return FlsFree(dwFlsIndex);
+}
+
+extern "C" PVOID __cdecl __crtFlsGetValue(DWORD const dwFlsIndex) {
+    return FlsGetValue(dwFlsIndex);
+}
+
+extern "C" BOOL __cdecl __crtFlsSetValue(DWORD const dwFlsIndex, PVOID const lpFlsData) {
+    return FlsSetValue(dwFlsIndex, lpFlsData);
+}
+
+#endif // _STL_WIN32_WINNT < _WIN32_WINNT_WS03
+
+
+#if _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
+
+extern "C" ULONGLONG __cdecl __crtGetTickCount64() {
+    return GetTickCount64();
+}
 
 extern "C" BOOL __cdecl __crtInitializeCriticalSectionEx(
-    __out LPCRITICAL_SECTION lpCriticalSection, __in DWORD dwSpinCount, __in DWORD Flags) {
+    LPCRITICAL_SECTION const lpCriticalSection, DWORD const dwSpinCount, DWORD const Flags) {
     return InitializeCriticalSectionEx(lpCriticalSection, dwSpinCount, Flags);
 }
 
 extern "C" BOOL __cdecl __crtInitOnceExecuteOnce(
-    _Inout_ PINIT_ONCE InitOnce, _In_ PINIT_ONCE_FN InitFn, _Inout_opt_ PVOID Parameter, _Out_opt_ LPVOID* Context) {
+    PINIT_ONCE const InitOnce, PINIT_ONCE_FN const InitFn, PVOID const Parameter, LPVOID* const Context) {
     return InitOnceExecuteOnce(InitOnce, InitFn, Parameter, Context);
 }
 
-extern "C" HANDLE __cdecl __crtCreateEventExW(__in_opt LPSECURITY_ATTRIBUTES lpEventAttributes, __in_opt LPCWSTR lpName,
-    __reserved DWORD dwFlags, __in DWORD dwDesiredAccess) {
+extern "C" HANDLE __cdecl __crtCreateEventExW(LPSECURITY_ATTRIBUTES const lpEventAttributes, LPCWSTR const lpName,
+    DWORD const dwFlags, DWORD const dwDesiredAccess) {
     return CreateEventExW(lpEventAttributes, lpName, dwFlags, dwDesiredAccess);
 }
 
-extern "C" HANDLE __cdecl __crtCreateSemaphoreExW(__in_opt LPSECURITY_ATTRIBUTES lpSemaphoreAttributes,
-    __in LONG lInitialCount, __in LONG lMaximumCount, __in_opt LPCWSTR lpName, __reserved DWORD dwFlags,
-    __in DWORD dwDesiredAccess) {
+extern "C" HANDLE __cdecl __crtCreateSemaphoreExW(LPSECURITY_ATTRIBUTES const lpSemaphoreAttributes,
+    LONG const lInitialCount, LONG const lMaximumCount, LPCWSTR const lpName, DWORD const dwFlags,
+    DWORD const dwDesiredAccess) {
     return CreateSemaphoreExW(lpSemaphoreAttributes, lInitialCount, lMaximumCount, lpName, dwFlags, dwDesiredAccess);
 }
 
 extern "C" PTP_TIMER __cdecl __crtCreateThreadpoolTimer(
-    __in PTP_TIMER_CALLBACK pfnti, __inout_opt PVOID pv, __in_opt PTP_CALLBACK_ENVIRON pcbe) {
+    PTP_TIMER_CALLBACK const pfnti, PVOID const pv, PTP_CALLBACK_ENVIRON const pcbe) {
     return CreateThreadpoolTimer(pfnti, pv, pcbe);
 }
 
 extern "C" VOID __cdecl __crtSetThreadpoolTimer(
-    __inout PTP_TIMER pti, __in_opt PFILETIME pftDueTime, __in DWORD msPeriod, __in_opt DWORD msWindowLength) {
+    PTP_TIMER const pti, PFILETIME const pftDueTime, DWORD const msPeriod, DWORD const msWindowLength) {
     SetThreadpoolTimer(pti, pftDueTime, msPeriod, msWindowLength);
 }
 
-extern "C" VOID __cdecl __crtWaitForThreadpoolTimerCallbacks(__inout PTP_TIMER pti, __in BOOL fCancelPendingCallbacks) {
+extern "C" VOID __cdecl __crtWaitForThreadpoolTimerCallbacks(PTP_TIMER const pti, BOOL const fCancelPendingCallbacks) {
     WaitForThreadpoolTimerCallbacks(pti, fCancelPendingCallbacks);
 }
 
-extern "C" VOID __cdecl __crtCloseThreadpoolTimer(__inout PTP_TIMER pti) {
+extern "C" VOID __cdecl __crtCloseThreadpoolTimer(PTP_TIMER const pti) {
     CloseThreadpoolTimer(pti);
 }
 
 extern "C" PTP_WAIT __cdecl __crtCreateThreadpoolWait(
-    __in PTP_WAIT_CALLBACK pfnwa, __inout_opt PVOID pv, __in_opt PTP_CALLBACK_ENVIRON pcbe) {
+    PTP_WAIT_CALLBACK const pfnwa, PVOID const pv, PTP_CALLBACK_ENVIRON const pcbe) {
     return CreateThreadpoolWait(pfnwa, pv, pcbe);
 }
 
-extern "C" VOID __cdecl __crtSetThreadpoolWait(__inout PTP_WAIT pwa, __in_opt HANDLE h, __in_opt PFILETIME pftTimeout) {
+extern "C" VOID __cdecl __crtSetThreadpoolWait(PTP_WAIT const pwa, HANDLE const h, PFILETIME const pftTimeout) {
     SetThreadpoolWait(pwa, h, pftTimeout);
 }
 
-extern "C" VOID __cdecl __crtCloseThreadpoolWait(__inout PTP_WAIT pwa) {
+extern "C" VOID __cdecl __crtCloseThreadpoolWait(PTP_WAIT const pwa) {
     CloseThreadpoolWait(pwa);
 }
 
@@ -186,7 +212,7 @@ extern "C" VOID __cdecl __crtFlushProcessWriteBuffers() {
     FlushProcessWriteBuffers();
 }
 
-extern "C" VOID __cdecl __crtFreeLibraryWhenCallbackReturns(__inout PTP_CALLBACK_INSTANCE pci, __in HMODULE mod) {
+extern "C" VOID __cdecl __crtFreeLibraryWhenCallbackReturns(PTP_CALLBACK_INSTANCE const pci, HMODULE const mod) {
     FreeLibraryWhenCallbackReturns(pci, mod);
 }
 
@@ -195,42 +221,74 @@ extern "C" DWORD __cdecl __crtGetCurrentProcessorNumber() {
 }
 
 extern "C" BOOLEAN __cdecl __crtCreateSymbolicLinkW(
-    __in LPCWSTR lpSymlinkFileName, __in LPCWSTR lpTargetFileName, __in DWORD dwFlags) {
+    LPCWSTR const lpSymlinkFileName, LPCWSTR const lpTargetFileName, DWORD const dwFlags) {
     return CreateSymbolicLinkW(lpSymlinkFileName, lpTargetFileName, dwFlags);
 }
 
-extern "C" BOOL __cdecl __crtGetFileInformationByHandleEx(_In_ HANDLE hFile,
-    _In_ FILE_INFO_BY_HANDLE_CLASS FileInformationClass, _Out_ LPVOID lpFileInformation, _In_ DWORD dwBufferSize) {
+extern "C" BOOL __cdecl __crtGetFileInformationByHandleEx(HANDLE const hFile,
+    FILE_INFO_BY_HANDLE_CLASS const FileInformationClass, LPVOID const lpFileInformation, DWORD const dwBufferSize) {
     return GetFileInformationByHandleEx(hFile, FileInformationClass, lpFileInformation, dwBufferSize);
 }
 
-extern "C" BOOL __cdecl __crtSetFileInformationByHandle(_In_ HANDLE hFile,
-    _In_ FILE_INFO_BY_HANDLE_CLASS FileInformationClass, _In_ LPVOID lpFileInformation, _In_ DWORD dwBufferSize) {
+extern "C" BOOL __cdecl __crtSetFileInformationByHandle(HANDLE const hFile,
+    FILE_INFO_BY_HANDLE_CLASS const FileInformationClass, LPVOID const lpFileInformation, DWORD const dwBufferSize) {
     return SetFileInformationByHandle(hFile, FileInformationClass, lpFileInformation, dwBufferSize);
 }
 
-extern "C" ULONGLONG __cdecl __crtGetTickCount64() {
-    return GetTickCount64();
+extern "C" VOID __cdecl __crtInitializeConditionVariable(PCONDITION_VARIABLE const pCond) {
+    InitializeConditionVariable(pCond);
 }
 
-extern "C" int __cdecl __crtCompareStringEx(_In_opt_ LPCWSTR lpLocaleName, _In_ DWORD dwCmpFlags,
-    _In_NLS_string_(cchCount1) LPCWCH lpString1, _In_ int cchCount1, _In_NLS_string_(cchCount2) LPCWCH lpString2,
-    _In_ int cchCount2) {
-    return CompareStringEx(lpLocaleName, dwCmpFlags, lpString1, cchCount1, lpString2, cchCount2, nullptr, nullptr, 0);
+extern "C" VOID __cdecl __crtWakeConditionVariable(PCONDITION_VARIABLE const pCond) {
+    WakeConditionVariable(pCond);
 }
 
-extern "C" int __cdecl __crtLCMapStringEx(_In_opt_ LPCWSTR lpLocaleName, _In_ DWORD dwMapFlags,
-    _In_reads_(cchSrc) LPCWSTR lpSrcStr, _In_ int cchSrc, _Out_writes_opt_(cchDest) LPWSTR lpDestStr,
-    _In_ int cchDest) {
-    return LCMapStringEx(lpLocaleName, dwMapFlags, lpSrcStr, cchSrc, lpDestStr, cchDest, nullptr, nullptr, 0);
+extern "C" VOID __cdecl __crtWakeAllConditionVariable(PCONDITION_VARIABLE const pCond) {
+    WakeAllConditionVariable(pCond);
 }
 
-extern "C" int __cdecl __crtGetLocaleInfoEx(
-    _In_opt_ LPCWSTR lpLocaleName, _In_ LCTYPE LCType, _Out_opt_ LPWSTR lpLCData, _In_ int cchData) {
-    return GetLocaleInfoEx(lpLocaleName, LCType, lpLCData, cchData);
+extern "C" BOOL __cdecl __crtSleepConditionVariableCS(
+    PCONDITION_VARIABLE const pCond, PCRITICAL_SECTION const pLock, DWORD const dwMs) {
+    return SleepConditionVariableCS(pCond, pLock, dwMs);
 }
 
-#endif // _STL_WIN32_WINNT <= _WIN32_WINNT_VISTA
+extern "C" VOID __cdecl __crtInitializeSRWLock(PSRWLOCK const pLock) {
+    InitializeSRWLock(pLock);
+}
+
+extern "C" VOID __cdecl __crtAcquireSRWLockExclusive(PSRWLOCK const pLock) {
+    AcquireSRWLockExclusive(pLock);
+}
+
+extern "C" VOID __cdecl __crtReleaseSRWLockExclusive(PSRWLOCK const pLock) {
+    ReleaseSRWLockExclusive(pLock);
+}
+
+extern "C" BOOL __cdecl __crtSleepConditionVariableSRW(
+    PCONDITION_VARIABLE const pCond, PSRWLOCK const pLock, DWORD const dwMs, ULONG const flags) {
+    return SleepConditionVariableSRW(pCond, pLock, dwMs, flags);
+}
+
+extern "C" PTP_WORK __cdecl __crtCreateThreadpoolWork(
+    PTP_WORK_CALLBACK const pfnwk, PVOID const pv, PTP_CALLBACK_ENVIRON const pcbe) {
+    return CreateThreadpoolWork(pfnwk, pv, pcbe);
+}
+
+extern "C" VOID __cdecl __crtSubmitThreadpoolWork(PTP_WORK const pwk) {
+    return SubmitThreadpoolWork(pwk);
+}
+
+extern "C" VOID __cdecl __crtCloseThreadpoolWork(PTP_WORK const pwk) {
+    return CloseThreadpoolWork(pwk);
+}
+
+#else // _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
+extern "C" BOOL __cdecl __crtQueueUserWorkItem(LPTHREAD_START_ROUTINE, PVOID, ULONG) {
+    // This function doesn't have an implementation as it is only used on Windows XP
+    return 0;
+}
+#endif // _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
+
 
 #if _STL_WIN32_WINNT < _WIN32_WINNT_WIN7
 

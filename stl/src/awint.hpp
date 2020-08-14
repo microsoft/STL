@@ -16,7 +16,19 @@ _CRT_BEGIN_C_HEADER
 _CRTIMP2 BOOL __cdecl __crtIsPackagedApp();
 #endif // !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
 
-#if _STL_WIN32_WINNT <= _WIN32_WINNT_VISTA
+#if _STL_WIN32_WINNT < _WIN32_WINNT_WS03
+
+DWORD __cdecl __crtFlsAlloc(__in PFLS_CALLBACK_FUNCTION lpCallback);
+
+BOOL __cdecl __crtFlsFree(__in DWORD dwFlsIndex);
+
+PVOID __cdecl __crtFlsGetValue(__in DWORD dwFlsIndex);
+
+BOOL __cdecl __crtFlsSetValue(__in DWORD dwFlsIndex, __in_opt PVOID lpFlsData);
+
+#endif // _STL_WIN32_WINNT < _WIN32_WINNT_WS03
+
+#if _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
 
 _CRTIMP2 BOOL __cdecl __crtInitializeCriticalSectionEx(
     __out LPCRITICAL_SECTION lpCriticalSection, __in DWORD dwSpinCount, __in DWORD Flags);
@@ -65,6 +77,29 @@ _CRTIMP2 BOOL __cdecl __crtSetFileInformationByHandle(_In_ HANDLE hFile,
 
 _CRTIMP2 ULONGLONG __cdecl __crtGetTickCount64();
 
+VOID __cdecl __crtInitializeConditionVariable(__out PCONDITION_VARIABLE);
+
+VOID __cdecl __crtWakeConditionVariable(__inout PCONDITION_VARIABLE);
+
+VOID __cdecl __crtWakeAllConditionVariable(__inout PCONDITION_VARIABLE);
+
+BOOL __cdecl __crtSleepConditionVariableCS(__inout PCONDITION_VARIABLE, __inout PCRITICAL_SECTION, __in DWORD);
+
+VOID __cdecl __crtInitializeSRWLock(__out PSRWLOCK);
+
+VOID __cdecl __crtAcquireSRWLockExclusive(__inout PSRWLOCK);
+
+VOID __cdecl __crtReleaseSRWLockExclusive(__inout PSRWLOCK);
+
+BOOL __cdecl __crtSleepConditionVariableSRW(__inout PCONDITION_VARIABLE, __inout PSRWLOCK, __in DWORD, __in ULONG);
+
+PTP_WORK __cdecl __crtCreateThreadpoolWork(
+    __in PTP_WORK_CALLBACK pfnwk, __inout_opt PVOID pv, __in_opt PTP_CALLBACK_ENVIRON pcbe);
+
+VOID __cdecl __crtSubmitThreadpoolWork(__inout PTP_WORK pwk);
+
+VOID __cdecl __crtCloseThreadpoolWork(__inout PTP_WORK pwk);
+
 _CRTIMP2 int __cdecl __crtCompareStringEx(_In_opt_ LPCWSTR lpLocaleName, _In_ DWORD dwCmpFlags,
     _In_NLS_string_(cchCount1) LPCWCH lpString1, _In_ int cchCount1, _In_NLS_string_(cchCount2) LPCWCH lpString2,
     _In_ int cchCount2);
@@ -75,8 +110,7 @@ _CRTIMP2 int __cdecl __crtLCMapStringEx(_In_opt_ LPCWSTR lpLocaleName, _In_ DWOR
 _CRTIMP2 int __cdecl __crtGetLocaleInfoEx(
     _In_opt_ LPCWSTR lpLocaleName, _In_ LCTYPE LCType, _Out_opt_ LPWSTR lpLCData, _In_ int cchData);
 
-#endif // _STL_WIN32_WINNT <= _WIN32_WINNT_VISTA
-
+#endif // _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
 
 #if _STL_WIN32_WINNT >= _WIN32_WINNT_WIN7
 
@@ -98,6 +132,16 @@ BOOLEAN __cdecl __crtTryAcquireSRWLockExclusive(__inout PSRWLOCK);
 _CRTIMP2 void __cdecl __crtGetSystemTimePreciseAsFileTime(_Out_ LPFILETIME lpSystemTimeAsFileTime);
 
 #endif // _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8
+
+#if _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
+
+#define __crtQueueUserWorkItem(function, context, flags) QueueUserWorkItem(function, context, flags)
+
+#else // _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
+
+BOOL __cdecl __crtQueueUserWorkItem(__in LPTHREAD_START_ROUTINE function, __in_opt PVOID context, __in ULONG flags);
+
+#endif // _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
 
 // This enum should not change, even though some functions are no longer imported dynamically
 enum wrapKERNEL32Functions {
