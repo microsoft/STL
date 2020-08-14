@@ -148,7 +148,7 @@ private:
 
 public:
     template <class _Lock, class _Predicate>
-    bool wait_until(_Lock& _Lck, stop_token _Stoken, _Predicate _Pred) {
+    bool wait(_Lock& _Lck, stop_token _Stoken, _Predicate _Pred) {
         stop_callback<_Cv_any_notify_all> _Cb{_STD move(_Stoken), this};
         while (!_Stoken.stop_requested()) {
             if (_Pred()) {

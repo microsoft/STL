@@ -146,7 +146,7 @@ int main() {
             mutex m;
             condition_variable_any cv;
             unique_lock lck{m};
-            assert(cv.wait_until(lck, move(token), [] { return false; }) == false);
+            assert(cv.wait(lck, move(token), [] { return false; }) == false);
         });
     }
 
@@ -176,8 +176,8 @@ int main() {
         bool b = false;
         jthread worker([&](stop_token token) {
             unique_lock lck{m};
-            assert(cv.wait_until(lck, move(token), [] { return true; }) == true);
-            assert(cv.wait_until(lck, move(token), [&] { return b; }) == true);
+            assert(cv.wait(lck, move(token), [] { return true; }) == true);
+            assert(cv.wait(lck, move(token), [&] { return b; }) == true);
         });
 
         {
