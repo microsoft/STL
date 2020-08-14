@@ -268,7 +268,7 @@ struct instantiator {
                 assert(iter1 <=> iter1 == strong_ordering::equal);
                 assert(iter1 <=> iter1 == strong_ordering::equivalent);
             }
-            { // spaceship value initialized
+            { // spaceship value-initialized
                 assert(counted_iterator<Iter>{} <=> counted_iterator<Iter>{} == strong_ordering::equal);
                 assert(counted_iterator<Iter>{} <=> counted_iterator<Iter>{} == strong_ordering::equivalent);
             }
