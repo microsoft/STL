@@ -235,6 +235,9 @@ tests\P0595R2_is_constant_evaluated
 tests\P0607R0_inline_variables
 tests\P0616R0_using_move_in_numeric
 tests\P0631R8_numbers_math_constants
+tests\P0660R10_jthread_and_cv_any
+tests\P0660R10_stop_token
+tests\P0660R10_stop_token_death
 tests\P0674R1_make_shared_for_arrays
 tests\P0718R2_atomic_smart_ptrs
 tests\P0758R1_is_nothrow_convertible

@@ -13,6 +13,9 @@
 #include <process.h>
 #include <tuple>
 #include <xthreads.h>
+#if _HAS_CXX20
+#include <stop_token>
+#endif // _HAS_CXX20
 
 #ifdef _M_CEE_PURE
 #error <thread> is not supported when compiling with /clr:pure.
@@ -26,6 +29,10 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
+#if _HAS_CXX20
+class jthread;
+#endif // _HAS_CXX20
+
 class thread { // class for observing and managing threads
 public:
     class id;
@@ -35,6 +42,8 @@ public:
     thread() noexcept : _Thr{} {}
 
 private:
+    friend jthread;
+
     template <class _Tuple, size_t... _Indices>
     static unsigned int __stdcall _Invoke(void* _RawVals) noexcept /* terminates */ {
         // adapt invoke of user's callable object to _beginthreadex's thread procedure
@@ -50,9 +59,8 @@ private:
         return &_Invoke<_Tuple, _Indices...>;
     }
 
-public:
-    template <class _Fn, class... _Args, enable_if_t<!is_same_v<_Remove_cvref_t<_Fn>, thread>, int> = 0>
-    explicit thread(_Fn&& _Fx, _Args&&... _Ax) {
+    template <class _Fn, class... _Args>
+    void _Start(_Fn&& _Fx, _Args&&... _Ax) {
         using _Tuple                 = tuple<decay_t<_Fn>, decay_t<_Args>...>;
         auto _Decay_copied           = _STD make_unique<_Tuple>(_STD forward<_Fn>(_Fx), _STD forward<_Args>(_Ax)...);
         constexpr auto _Invoker_proc = _Get_invoke<_Tuple>(make_index_sequence<1 + sizeof...(_Args)>{});
@@ -71,6 +79,12 @@ public:
             _Thr._Id = 0;
             _Throw_Cpp_error(_RESOURCE_UNAVAILABLE_TRY_AGAIN);
         }
+    }
+
+public:
+    template <class _Fn, class... _Args, enable_if_t<!is_same_v<_Remove_cvref_t<_Fn>, thread>, int> = 0>
+    explicit thread(_Fn&& _Fx, _Args&&... _Ax) {
+        _Start(_STD forward<_Fn>(_Fx), _STD forward<_Args>(_Ax)...);
     }
 
     ~thread() noexcept {
@@ -240,6 +254,93 @@ struct hash<thread::id> {
         return _Hash_representation(_Keyval._Id);
     }
 };
+
+#if _HAS_CXX20
+class jthread {
+public:
+    using id                 = thread::id;
+    using native_handle_type = thread::native_handle_type;
+
+    jthread() noexcept : _Impl{}, _Ssource{nostopstate} {}
+
+    template <class _Fn, class... _Args, enable_if_t<!is_same_v<_Remove_cvref_t<_Fn>, jthread>, int> = 0>
+    explicit jthread(_Fn&& _Fx, _Args&&... _Ax) {
+        if constexpr (is_invocable_v<decay_t<_Fn>, stop_token, decay_t<_Args>...>) {
+            _Impl._Start(_STD forward<_Fn>(_Fx), _Ssource.get_token(), _STD forward<_Args>(_Ax)...);
+        } else {
+            _Impl._Start(_STD forward<_Fn>(_Fx), _STD forward<_Args>(_Ax)...);
+        }
+    }
+
+    ~jthread() {
+        _Try_cancel_and_join();
+    }
+
+    jthread(const jthread&)            = delete;
+    jthread(jthread&& _Other) noexcept = default;
+    jthread& operator=(const jthread&) = delete;
+
+    jthread& operator=(jthread&& _Other) noexcept {
+        // note: the standard specifically disallows making self-move-assignment a no-op here
+        _Try_cancel_and_join();
+        _Impl    = _STD move(_Other._Impl);
+        _Ssource = _STD move(_Other._Ssource);
+        return *this;
+    }
+
+    void swap(jthread& _Other) noexcept {
+        _Impl.swap(_Other._Impl);
+        _Ssource.swap(_Other._Ssource);
+    }
+
+    [[nodiscard]] bool joinable() const noexcept {
+        return _Impl.joinable();
+    }
+
+    void join() {
+        _Impl.join();
+    }
+
+    void detach() {
+        _Impl.detach();
+    }
+
+    id get_id() const noexcept {
+        return _Impl.get_id();
+    }
+
+    [[nodiscard]] stop_source get_stop_source() noexcept {
+        return _Ssource;
+    }
+
+    [[nodiscard]] stop_token get_stop_token() const noexcept {
+        return _Ssource.get_token();
+    }
+
+    bool request_stop() noexcept {
+        return _Ssource.request_stop();
+    }
+
+    friend void swap(jthread& _Lhs, jthread& _Rhs) noexcept {
+        _Lhs.swap(_Rhs);
+    }
+
+    [[nodiscard]] static unsigned int hardware_concurrency() noexcept {
+        return thread::hardware_concurrency();
+    }
+
+private:
+    void _Try_cancel_and_join() noexcept {
+        if (_Impl.joinable()) {
+            _Ssource.request_stop();
+            _Impl.join();
+        }
+    }
+
+    thread _Impl;
+    stop_source _Ssource;
+};
+#endif // _HAS_CXX20
 _STD_END
 
 #pragma pop_macro("new")

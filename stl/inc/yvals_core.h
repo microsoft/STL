@@ -159,6 +159,7 @@
 // P0646R1 list/forward_list remove()/remove_if()/unique() Return size_type
 // P0653R2 to_address()
 // P0655R1 visit<R>()
+// P0661R10 <stop_token> and jthread
 // P0674R1 make_shared() For Arrays
 // P0718R2 atomic<shared_ptr<T>>, atomic<weak_ptr<T>>
 // P0758R1 is_nothrow_convertible
@@ -1185,6 +1186,7 @@
 #define __cpp_lib_interpolate                  201902L
 #define __cpp_lib_is_constant_evaluated        201811L
 #define __cpp_lib_is_nothrow_convertible       201806L
+#define __cpp_lib_jthread                      201911L
 #define __cpp_lib_list_remove_return_type      201806L
 #define __cpp_lib_math_constants               201907L
 #define __cpp_lib_remove_cvref                 201711L

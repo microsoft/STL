@@ -12,6 +12,9 @@
 #include <memory>
 #include <mutex>
 #include <xthreads.h>
+#if _HAS_CXX20
+#include <stop_token>
+#endif // _HAS_CXX20
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -127,6 +130,58 @@ public:
         }
         return true;
     }
+
+#if _HAS_CXX20
+private:
+    struct _Cv_any_notify_all {
+        condition_variable_any* _This;
+
+        _Cv_any_notify_all(condition_variable_any* _This_) : _This{_This_} {}
+
+        _Cv_any_notify_all(const _Cv_any_notify_all&) = delete;
+        _Cv_any_notify_all& operator=(const _Cv_any_notify_all&) = delete;
+
+        void operator()() const noexcept {
+            _This->notify_all();
+        }
+    };
+
+public:
+    template <class _Lock, class _Predicate>
+    bool wait_until(_Lock& _Lck, stop_token _Stoken, _Predicate _Pred) {
+        stop_callback<_Cv_any_notify_all> _Cb{_STD move(_Stoken), this};
+        while (!_Stoken.stop_requested()) {
+            if (_Pred()) {
+                return true;
+            }
+
+            wait(_Lck);
+        }
+
+        return _Pred();
+    }
+
+    template <class _Lock, class _Clock, class _Duration, class _Predicate>
+    bool wait_until(
+        _Lock& _Lck, stop_token _Stoken, const chrono::time_point<_Clock, _Duration>& _Abs_time, _Predicate _Pred) {
+        stop_callback<_Cv_any_notify_all> _Cb{_STD move(_Stoken), this};
+        while (!_Stoken.stop_requested()) {
+            if (_Pred()) {
+                return true;
+            }
+
+            if (wait_until(_Lck, _Abs_time) == cv_status::timeout) {
+                return _Pred();
+            }
+        }
+        return _Pred();
+    }
+
+    template <class _Lock, class _Rep, class _Period, class _Predicate>
+    bool wait_for(_Lock& _Lck, stop_token _Stoken, const chrono::duration<_Rep, _Period>& _Rel_time, _Predicate _Pred) {
+        return wait_until(_Lck, _STD move(_Stoken), chrono::steady_clock::now() + _Rel_time, _STD move(_Pred));
+    }
+#endif // _HAS_CXX20
 
 private:
     shared_ptr<mutex> _Myptr;

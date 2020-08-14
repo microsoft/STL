@@ -3199,65 +3199,17 @@ _CXX20_DEPRECATE_OLD_SHARED_PTR_ATOMIC_SUPPORT bool atomic_compare_exchange_stro
 template <class _Ty>
 class alignas(2 * sizeof(void*)) _Atomic_ptr_base {
     // overalignment is to allow potential future use of cmpxchg16b
-
-    static_assert(alignof(_Ref_count_base) >= (1 << 2), "Two bits don't fit as low bits");
-
-    static constexpr uintptr_t _Lock_mask                = 3;
-    static constexpr uintptr_t _Not_locked               = 0;
-    static constexpr uintptr_t _Locked_notify_not_needed = 1;
-    static constexpr uintptr_t _Locked_notify_needed     = 2;
-    static constexpr uintptr_t _Ptr_value_mask           = ~_Lock_mask;
-
 protected:
     constexpr _Atomic_ptr_base() noexcept = default;
 
     _Atomic_ptr_base(_Ty* const _Px, _Ref_count_base* const _Ref) noexcept
         : _Ptr(_Px), _Repptr(reinterpret_cast<uintptr_t>(_Ref)) {}
 
-    _NODISCARD _Ref_count_base* _Lock_and_load() const noexcept {
-        uintptr_t _Rep = _Repptr.load(memory_order_relaxed);
-        for (;;) {
-            switch (_Rep & _Lock_mask) {
-            case _Not_locked: // Can try to lock now
-                if (_Repptr.compare_exchange_weak(_Rep, _Rep | _Locked_notify_not_needed)) {
-                    return reinterpret_cast<_Ref_count_base*>(_Rep);
-                }
-                _YIELD_PROCESSOR();
-                break;
-
-            case _Locked_notify_not_needed: // Try to set "notify needed" and wait
-                if (!_Repptr.compare_exchange_weak(_Rep, (_Rep & _Ptr_value_mask) | _Locked_notify_needed)) {
-                    // Failed to put notify needed flag on, try again
-                    _YIELD_PROCESSOR();
-                    break;
-                }
-                _Rep = (_Rep & _Ptr_value_mask) | _Locked_notify_needed;
-                [[fallthrough]];
-
-            case _Locked_notify_needed: // "Notify needed" is already set, just wait
-                _Repptr.wait(_Rep, memory_order_relaxed);
-                _Rep = _Repptr.load(memory_order_relaxed);
-                break;
-
-            default: // Unrecognized bit pattern
-                _CSTD abort();
-            }
-        }
-    }
-
-    void _Store_and_unlock(_Ref_count_base* const _Value) const noexcept {
-        uintptr_t _Rep = _Repptr.exchange(reinterpret_cast<uintptr_t>(_Value));
-        if ((_Rep & _Lock_mask) == _Locked_notify_needed) {
-            // As we don't count waiters, every waiter is notified, and then some may re-request notification
-            _Repptr.notify_all();
-        }
-    }
-
     void _Wait(_Ty* _Old, memory_order) const noexcept {
         for (;;) {
-            auto _Rep   = _Lock_and_load();
+            auto _Rep   = _Repptr._Lock_and_load();
             bool _Equal = _Ptr.load(memory_order_relaxed) == _Old;
-            _Store_and_unlock(_Rep);
+            _Repptr._Store_and_unlock(_Rep);
             if (!_Equal) {
                 break;
             }
@@ -3274,7 +3226,7 @@ protected:
     }
 
     atomic<_Ty*> _Ptr{nullptr};
-    mutable atomic<uintptr_t> _Repptr{0};
+    mutable _Locked_pointer<_Ref_count_base> _Repptr;
 };
 
 template <class _Ty>
@@ -3293,22 +3245,22 @@ public:
 
     void store(shared_ptr<_Ty> _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
         _Check_store_memory_order(_Order);
-        const auto _Rep = this->_Lock_and_load();
+        const auto _Rep = this->_Repptr._Lock_and_load();
         _Ty* const _Tmp = _Value._Ptr;
         _Value._Ptr     = this->_Ptr.load(memory_order_relaxed);
         this->_Ptr.store(_Tmp, memory_order_relaxed);
-        this->_Store_and_unlock(_Value._Rep);
+        this->_Repptr._Store_and_unlock(_Value._Rep);
         _Value._Rep = _Rep;
     }
 
     _NODISCARD shared_ptr<_Ty> load(const memory_order _Order = memory_order_seq_cst) const noexcept {
         _Check_load_memory_order(_Order);
         shared_ptr<_Ty> _Result;
-        const auto _Rep = this->_Lock_and_load();
+        const auto _Rep = this->_Repptr._Lock_and_load();
         _Result._Ptr    = this->_Ptr.load(memory_order_relaxed);
         _Result._Rep    = _Rep;
         _Result._Incref();
-        this->_Store_and_unlock(_Rep);
+        this->_Repptr._Store_and_unlock(_Rep);
         return _Result;
     }
 
@@ -3319,10 +3271,10 @@ public:
     shared_ptr<_Ty> exchange(shared_ptr<_Ty> _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
         _Check_memory_order(_Order);
         shared_ptr<_Ty> _Result;
-        _Result._Rep = this->_Lock_and_load();
+        _Result._Rep = this->_Repptr._Lock_and_load();
         _Result._Ptr = this->_Ptr.load(memory_order_relaxed);
         this->_Ptr.store(_Value._Ptr, memory_order_relaxed);
-        this->_Store_and_unlock(_Value._Rep);
+        this->_Repptr._Store_and_unlock(_Value._Rep);
         _Value._Ptr = nullptr; // ownership of _Value ref has been given to this, silence decrement
         _Value._Rep = nullptr;
         return _Result;
@@ -3346,20 +3298,20 @@ public:
     bool compare_exchange_strong(shared_ptr<_Ty>& _Expected, shared_ptr<_Ty> _Desired,
         const memory_order _Order = memory_order_seq_cst) noexcept {
         _Check_memory_order(_Order);
-        auto _Rep = this->_Lock_and_load();
+        auto _Rep = this->_Repptr._Lock_and_load();
         if (this->_Ptr.load(memory_order_relaxed) == _Expected._Ptr && _Rep == _Expected._Rep) {
             _Ty* const _Tmp = _Desired._Ptr;
             _Desired._Ptr   = this->_Ptr.load(memory_order_relaxed);
             this->_Ptr.store(_Tmp, memory_order_relaxed);
             _STD swap(_Rep, _Desired._Rep);
-            this->_Store_and_unlock(_Rep);
+            this->_Repptr._Store_and_unlock(_Rep);
             return true;
         }
         _Ref_count_base* _Expected_rep = _Expected._Rep;
         _Expected._Ptr                 = this->_Ptr.load(memory_order_relaxed);
         _Expected._Rep                 = _Rep;
         _Expected._Incref();
-        this->_Store_and_unlock(_Rep);
+        this->_Repptr._Store_and_unlock(_Rep);
         if (_Expected_rep) {
             _Expected_rep->_Decref();
         }
@@ -3410,22 +3362,22 @@ public:
 
     void store(weak_ptr<_Ty> _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
         _Check_store_memory_order(_Order);
-        const auto _Rep = this->_Lock_and_load();
+        const auto _Rep = this->_Repptr._Lock_and_load();
         _Ty* const _Tmp = _Value._Ptr;
         _Value._Ptr     = this->_Ptr.load(memory_order_relaxed);
         this->_Ptr.store(_Tmp, memory_order_relaxed);
-        this->_Store_and_unlock(_Value._Rep);
+        this->_Repptr._Store_and_unlock(_Value._Rep);
         _Value._Rep = _Rep;
     }
 
     _NODISCARD weak_ptr<_Ty> load(const memory_order _Order = memory_order_seq_cst) const noexcept {
         _Check_load_memory_order(_Order);
         weak_ptr<_Ty> _Result;
-        const auto _Rep = this->_Lock_and_load();
+        const auto _Rep = this->_Repptr._Lock_and_load();
         _Result._Ptr    = this->_Ptr.load(memory_order_relaxed);
         _Result._Rep    = _Rep;
         _Result._Incwref();
-        this->_Store_and_unlock(_Rep);
+        this->_Repptr._Store_and_unlock(_Rep);
         return _Result;
     }
 
@@ -3436,10 +3388,10 @@ public:
     weak_ptr<_Ty> exchange(weak_ptr<_Ty> _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
         _Check_memory_order(_Order);
         weak_ptr<_Ty> _Result;
-        _Result._Rep = this->_Lock_and_load();
+        _Result._Rep = this->_Repptr._Lock_and_load();
         _Result._Ptr = this->_Ptr.load(memory_order_relaxed);
         this->_Ptr.store(_Value._Ptr, memory_order_relaxed);
-        this->_Store_and_unlock(_Value._Rep);
+        this->_Repptr._Store_and_unlock(_Value._Rep);
         _Value._Ptr = nullptr; // ownership of _Value ref has been given to this, silence decrement
         _Value._Rep = nullptr;
         return _Result;
@@ -3463,20 +3415,20 @@ public:
     bool compare_exchange_strong(
         weak_ptr<_Ty>& _Expected, weak_ptr<_Ty> _Desired, const memory_order _Order = memory_order_seq_cst) noexcept {
         _Check_memory_order(_Order);
-        auto _Rep = this->_Lock_and_load();
+        auto _Rep = this->_Repptr._Lock_and_load();
         if (this->_Ptr.load(memory_order_relaxed) == _Expected._Ptr && _Rep == _Expected._Rep) {
             _Ty* const _Tmp = _Desired._Ptr;
             _Desired._Ptr   = this->_Ptr.load(memory_order_relaxed);
             this->_Ptr.store(_Tmp, memory_order_relaxed);
             _STD swap(_Rep, _Desired._Rep);
-            this->_Store_and_unlock(_Rep);
+            this->_Repptr._Store_and_unlock(_Rep);
             return true;
         }
         const auto _Expected_rep = _Expected._Rep;
         _Expected._Ptr           = this->_Ptr.load(memory_order_relaxed);
         _Expected._Rep           = _Rep;
         _Expected._Incwref();
-        this->_Store_and_unlock(_Rep);
+        this->_Repptr._Store_and_unlock(_Rep);
         if (_Expected_rep) {
             _Expected_rep->_Decwref();
         }
