@@ -1624,7 +1624,7 @@ _Ty _Fabs(const complex<_Ty>& _Left, int* _Pexp) { // used by sqrt(), return mag
 
 // FUNCTION TEMPLATE log
 template <class _Ty>
-_NODISCARD _Ty _Log_abs(const complex<_Ty>& _Left) noexcept {
+_NODISCARD _Ty _Log_abs(const complex<_Ty>& _Left) noexcept { // for double, long double, and non floating point types
     return static_cast<_Ty>(
         __std_math_log_hypot(static_cast<double>(_STD real(_Left)), static_cast<double>(_STD imag(_Left))));
 };
@@ -1635,9 +1635,9 @@ _NODISCARD inline float _Log_abs(const complex<float>& _Left) noexcept {
 
 template <class _Ty>
 _NODISCARD complex<_Ty> log(const complex<_Ty>& _Left) {
-    const _Ty _Log_abs = _STD _Log_abs(_Left); // get logarithm of magnitude
-    const _Ty _Theta   = _Ctraits<_Ty>::atan2(_STD imag(_Left), _STD real(_Left)); // get phase
-    return complex<_Ty>(_Log_abs, _Theta);
+    const _Ty _Log_abs_v = _STD _Log_abs(_Left); // get logarithm of magnitude
+    const _Ty _Theta     = _Ctraits<_Ty>::atan2(_STD imag(_Left), _STD real(_Left)); // get phase
+    return complex<_Ty>(_Log_abs_v, _Theta);
 }
 
 // FUNCTION TEMPLATE pow
