@@ -147,7 +147,6 @@ void test_pad_bits_impl(const std::chrono::steady_clock::duration waiting_durati
     c.store(new_value);
     c.notify_one();
 
-
 #ifdef CAN_FAIL_ON_TIMING_ASSUMPTION
     std::this_thread::sleep_for(waiting_duration);
     assert(trigger);
