@@ -641,7 +641,7 @@ public:
 
     _NODISCARD friend constexpr counted_iterator operator+(
         const iter_difference_t<_Iter> _Diff, const counted_iterator& _Right) requires random_access_iterator<_Iter> {
-        return counted_iterator{_Right.base() + _Diff, static_cast<iter_difference_t<_Iter>>(_Right.count() - _Diff)};
+        return counted_iterator{_Right._Current + _Diff, static_cast<iter_difference_t<_Iter>>(_Right._Length - _Diff)};
     }
 
     constexpr counted_iterator& operator+=(

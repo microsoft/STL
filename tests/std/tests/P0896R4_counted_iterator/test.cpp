@@ -164,7 +164,7 @@ struct instantiator {
                     assert(iter.count() == ref_iter.count() + 3);
                     assert(iter.base().peek() == prev(ref_iter.base().peek(), 3));
                 }
-                { // increment value_initialized by 0
+                { // increment value-initialized by 0
                     counted_iterator<Iter> iter;
                     auto ref_iter = 0 + iter;
                     assert(iter == ref_iter);
@@ -197,7 +197,7 @@ struct instantiator {
                 const same_as<iter_difference_t<Iter>> auto diff2 = iter2 - iter1;
                 assert(diff2 == -1);
             }
-            { // difference value initialized
+            { // difference value-initialized
                 const same_as<iter_difference_t<Iter>> auto diff1 = counted_iterator<Iter>{} - counted_iterator<Iter>{};
                 assert(diff1 == 0);
             }
