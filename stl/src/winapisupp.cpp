@@ -130,102 +130,102 @@ extern "C" BOOL __cdecl __crtIsPackagedApp() {
 
 #if _STL_WIN32_WINNT <= _WIN32_WINNT_VISTA
 
-_CRTIMP2 BOOL __cdecl __crtInitializeCriticalSectionEx(
+extern "C" BOOL __cdecl __crtInitializeCriticalSectionEx(
     __out LPCRITICAL_SECTION lpCriticalSection, __in DWORD dwSpinCount, __in DWORD Flags) {
     return InitializeCriticalSectionEx(lpCriticalSection, dwSpinCount, Flags);
 }
 
-_CRTIMP2 BOOL __cdecl __crtInitOnceExecuteOnce(
+extern "C" BOOL __cdecl __crtInitOnceExecuteOnce(
     _Inout_ PINIT_ONCE InitOnce, _In_ PINIT_ONCE_FN InitFn, _Inout_opt_ PVOID Parameter, _Out_opt_ LPVOID* Context) {
     return InitOnceExecuteOnce(InitOnce, InitFn, Parameter, Context);
 }
 
-_CRTIMP2 HANDLE __cdecl __crtCreateEventExW(__in_opt LPSECURITY_ATTRIBUTES lpEventAttributes, __in_opt LPCWSTR lpName,
+extern "C" HANDLE __cdecl __crtCreateEventExW(__in_opt LPSECURITY_ATTRIBUTES lpEventAttributes, __in_opt LPCWSTR lpName,
     __reserved DWORD dwFlags, __in DWORD dwDesiredAccess) {
     return CreateEventExW(lpEventAttributes, lpName, dwFlags, dwDesiredAccess);
 }
 
-_CRTIMP2 HANDLE __cdecl __crtCreateSemaphoreExW(__in_opt LPSECURITY_ATTRIBUTES lpSemaphoreAttributes,
+extern "C" HANDLE __cdecl __crtCreateSemaphoreExW(__in_opt LPSECURITY_ATTRIBUTES lpSemaphoreAttributes,
     __in LONG lInitialCount, __in LONG lMaximumCount, __in_opt LPCWSTR lpName, __reserved DWORD dwFlags,
     __in DWORD dwDesiredAccess) {
     return CreateSemaphoreExW(lpSemaphoreAttributes, lInitialCount, lMaximumCount, lpName, dwFlags, dwDesiredAccess);
 }
 
-_CRTIMP2 PTP_TIMER __cdecl __crtCreateThreadpoolTimer(
+extern "C" PTP_TIMER __cdecl __crtCreateThreadpoolTimer(
     __in PTP_TIMER_CALLBACK pfnti, __inout_opt PVOID pv, __in_opt PTP_CALLBACK_ENVIRON pcbe) {
     return CreateThreadpoolTimer(pfnti, pv, pcbe);
 }
 
-_CRTIMP2 VOID __cdecl __crtSetThreadpoolTimer(
+extern "C" VOID __cdecl __crtSetThreadpoolTimer(
     __inout PTP_TIMER pti, __in_opt PFILETIME pftDueTime, __in DWORD msPeriod, __in_opt DWORD msWindowLength) {
     SetThreadpoolTimer(pti, pftDueTime, msPeriod, msWindowLength);
 }
 
-_CRTIMP2 VOID __cdecl __crtWaitForThreadpoolTimerCallbacks(__inout PTP_TIMER pti, __in BOOL fCancelPendingCallbacks) {
+extern "C" VOID __cdecl __crtWaitForThreadpoolTimerCallbacks(__inout PTP_TIMER pti, __in BOOL fCancelPendingCallbacks) {
     WaitForThreadpoolTimerCallbacks(pti, fCancelPendingCallbacks);
 }
 
-_CRTIMP2 VOID __cdecl __crtCloseThreadpoolTimer(__inout PTP_TIMER pti) {
+extern "C" VOID __cdecl __crtCloseThreadpoolTimer(__inout PTP_TIMER pti) {
     CloseThreadpoolTimer(pti);
 }
 
-_CRTIMP2 PTP_WAIT __cdecl __crtCreateThreadpoolWait(
+extern "C" PTP_WAIT __cdecl __crtCreateThreadpoolWait(
     __in PTP_WAIT_CALLBACK pfnwa, __inout_opt PVOID pv, __in_opt PTP_CALLBACK_ENVIRON pcbe) {
     return CreateThreadpoolWait(pfnwa, pv, pcbe);
 }
 
-_CRTIMP2 VOID __cdecl __crtSetThreadpoolWait(__inout PTP_WAIT pwa, __in_opt HANDLE h, __in_opt PFILETIME pftTimeout) {
+extern "C" VOID __cdecl __crtSetThreadpoolWait(__inout PTP_WAIT pwa, __in_opt HANDLE h, __in_opt PFILETIME pftTimeout) {
     SetThreadpoolWait(pwa, h, pftTimeout);
 }
 
-_CRTIMP2 VOID __cdecl __crtCloseThreadpoolWait(__inout PTP_WAIT pwa) {
+extern "C" VOID __cdecl __crtCloseThreadpoolWait(__inout PTP_WAIT pwa) {
     CloseThreadpoolWait(pwa);
 }
 
-_CRTIMP2 VOID __cdecl __crtFlushProcessWriteBuffers() {
+extern "C" VOID __cdecl __crtFlushProcessWriteBuffers() {
     FlushProcessWriteBuffers();
 }
 
-_CRTIMP2 VOID __cdecl __crtFreeLibraryWhenCallbackReturns(__inout PTP_CALLBACK_INSTANCE pci, __in HMODULE mod) {
+extern "C" VOID __cdecl __crtFreeLibraryWhenCallbackReturns(__inout PTP_CALLBACK_INSTANCE pci, __in HMODULE mod) {
     FreeLibraryWhenCallbackReturns(pci, mod);
 }
 
-_CRTIMP2 DWORD __cdecl __crtGetCurrentProcessorNumber() {
+extern "C" DWORD __cdecl __crtGetCurrentProcessorNumber() {
     return GetCurrentProcessorNumber();
 }
 
-_CRTIMP2 BOOLEAN __cdecl __crtCreateSymbolicLinkW(
+extern "C" BOOLEAN __cdecl __crtCreateSymbolicLinkW(
     __in LPCWSTR lpSymlinkFileName, __in LPCWSTR lpTargetFileName, __in DWORD dwFlags) {
     return CreateSymbolicLinkW(lpSymlinkFileName, lpTargetFileName, dwFlags);
 }
 
-_CRTIMP2 BOOL __cdecl __crtGetFileInformationByHandleEx(_In_ HANDLE hFile,
+extern "C" BOOL __cdecl __crtGetFileInformationByHandleEx(_In_ HANDLE hFile,
     _In_ FILE_INFO_BY_HANDLE_CLASS FileInformationClass, _Out_ LPVOID lpFileInformation, _In_ DWORD dwBufferSize) {
     return GetFileInformationByHandleEx(hFile, FileInformationClass, lpFileInformation, dwBufferSize);
 }
 
-_CRTIMP2 BOOL __cdecl __crtSetFileInformationByHandle(_In_ HANDLE hFile,
+extern "C" BOOL __cdecl __crtSetFileInformationByHandle(_In_ HANDLE hFile,
     _In_ FILE_INFO_BY_HANDLE_CLASS FileInformationClass, _In_ LPVOID lpFileInformation, _In_ DWORD dwBufferSize) {
     return SetFileInformationByHandle(hFile, FileInformationClass, lpFileInformation, dwBufferSize);
 }
 
-_CRTIMP2 ULONGLONG __cdecl __crtGetTickCount64() {
+extern "C" ULONGLONG __cdecl __crtGetTickCount64() {
     return GetTickCount64();
 }
 
-_CRTIMP2 int __cdecl __crtCompareStringEx(_In_opt_ LPCWSTR lpLocaleName, _In_ DWORD dwCmpFlags,
+extern "C" int __cdecl __crtCompareStringEx(_In_opt_ LPCWSTR lpLocaleName, _In_ DWORD dwCmpFlags,
     _In_NLS_string_(cchCount1) LPCWCH lpString1, _In_ int cchCount1, _In_NLS_string_(cchCount2) LPCWCH lpString2,
     _In_ int cchCount2) {
     return CompareStringEx(lpLocaleName, dwCmpFlags, lpString1, cchCount1, lpString2, cchCount2, nullptr, nullptr, 0);
 }
 
-_CRTIMP2 int __cdecl __crtLCMapStringEx(_In_opt_ LPCWSTR lpLocaleName, _In_ DWORD dwMapFlags,
+extern "C" int __cdecl __crtLCMapStringEx(_In_opt_ LPCWSTR lpLocaleName, _In_ DWORD dwMapFlags,
     _In_reads_(cchSrc) LPCWSTR lpSrcStr, _In_ int cchSrc, _Out_writes_opt_(cchDest) LPWSTR lpDestStr,
     _In_ int cchDest) {
     return LCMapStringEx(lpLocaleName, dwMapFlags, lpSrcStr, cchSrc, lpDestStr, cchDest, nullptr, nullptr, 0);
 }
 
-_CRTIMP2 int __cdecl __crtGetLocaleInfoEx(
+extern "C" int __cdecl __crtGetLocaleInfoEx(
     _In_opt_ LPCWSTR lpLocaleName, _In_ LCTYPE LCType, _Out_opt_ LPWSTR lpLCData, _In_ int cchData) {
     return GetLocaleInfoEx(lpLocaleName, LCType, lpLCData, cchData);
 }
