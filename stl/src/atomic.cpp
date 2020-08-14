@@ -4,6 +4,7 @@
 // implement shared_ptr spin lock
 
 #include <yvals.h>
+
 #include <synchapi.h>
 
 namespace {
