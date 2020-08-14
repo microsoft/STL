@@ -332,8 +332,11 @@ inline void _Stop_callback_base::_Detach() noexcept {
         // we are still in the list, so the callback is not being request_stop'd, and there is at least one other
         // callback still registered
         const auto _Local_next = _Next;
-        _Next->_Prev           = _Local_prev;
-        _Prev->_Next           = _Local_next;
+        if (_Local_next != nullptr) {
+            _Next->_Prev = _Local_prev;
+        }
+
+        _Prev->_Next = _Local_next;
         _Token._State->_Callbacks._Store_and_unlock(_Head);
         return;
     }
