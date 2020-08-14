@@ -14,11 +14,11 @@ namespace {
 
 _EXTERN_C
 
-_CRTIMP2_PURE void __cdecl _Lock_shared_ptr_spin_lock() { // spin until _Shared_ptr_flag successfully set
+_CRTIMP2_PURE void __cdecl _Lock_shared_ptr_spin_lock() {
     AcquireSRWLockExclusive(&_Shared_ptr_lock);
 }
 
-_CRTIMP2_PURE void __cdecl _Unlock_shared_ptr_spin_lock() { // release previously obtained lock
+_CRTIMP2_PURE void __cdecl _Unlock_shared_ptr_spin_lock() {
     ReleaseSRWLockExclusive(&_Shared_ptr_lock);
 }
 
