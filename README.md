@@ -140,7 +140,7 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 The STL uses boost-math headers to provide P0226R1 Mathematical Special Functions. We recommend using [vcpkg][] to
 acquire this dependency.
 
-1. Install Visual Studio 2019 16.7 Preview 3 or later.
+1. Install Visual Studio 2019 16.8 Preview 1 or later.
 2. Invoke `git clone https://github.com/microsoft/vcpkg`
 3. Invoke `cd vcpkg`
 4. Invoke `.\bootstrap-vcpkg.bat`
@@ -159,7 +159,10 @@ acquire this dependency.
 These instructions assume you're targeting `x64-windows`; you can change this constant below to target other
 architectures.
 
-1. Install [CMake][] 3.16.5 or later, [Ninja][] 1.10.0 or later, and Visual Studio 2019 16.7 Preview 3 or later.
+1. Install Visual Studio 2019 16.8 Preview 1 or later.
+    * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
+    This will ensure that you're using supported versions of CMake and Ninja.
+    * Otherwise, install [CMake][] 3.17 or later, and [Ninja][] 1.8.2 or later.
 2. Open an "x64 Native Tools Command Prompt for VS 2019".
 3. Change directories to a location where you'd like a clone of this STL repository.
 4. Invoke `git clone https://github.com/microsoft/STL`
@@ -222,8 +225,10 @@ C:\Users\bion\Desktop>dumpbin /IMPORTS .\example.exe | findstr msvcp
 1. Follow either [How To Build With A Native Tools Command Prompt][] or [How To Build With The Visual Studio IDE][].
 2. Invoke `git submodule update --init llvm-project` at the root of the STL source tree.
 3. Acquire [Python][] 3.8 or newer and have it on the `PATH` (or run it directly using its absolute or relative path).
-4. Have LLVM's `bin` directory on the `PATH`. Simply using [LLVM's installer][] and choosing to add LLVM to your `PATH`
-during installation is the easiest way to get LLVM's `bin` directory on your `PATH`.
+4. Have LLVM's `bin` directory on the `PATH` (so `clang-cl.exe` is available).
+    * We recommend selecting "C++ Clang tools for Windows" in the VS Installer. This will automatically add LLVM to the
+    `PATH` of the x86 and x64 Native Tools Command Prompts, and will ensure that you're using a supported version.
+    * Otherwise, use [LLVM's installer][] and choose to add LLVM to your `PATH` during installation.
 5. Follow the instructions below.
 
 ## Running All The Tests

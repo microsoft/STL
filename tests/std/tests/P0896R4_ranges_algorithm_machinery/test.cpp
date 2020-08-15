@@ -6,6 +6,7 @@
 #include <concepts>
 #include <cstddef>
 #include <iterator>
+#include <memory>
 #include <ranges>
 #include <type_traits>
 #include <utility>
@@ -983,3 +984,128 @@ namespace gh_1089 {
         }
     }
 } // namespace gh_1089
+
+namespace special_memory_concepts {
+    // Validate the concepts from [special.mem.concepts] used to constrain the specialized memory algorithms
+    // NB: Non-portable tests of internal machinery
+    using ranges::_No_throw_input_iterator, ranges::_No_throw_sentinel_for, ranges::_No_throw_input_range,
+        ranges::_No_throw_forward_iterator, ranges::_No_throw_forward_range;
+    using std::forward_iterator, std::input_iterator, std::sentinel_for;
+
+    enum class iterator_status : int { not_input, not_lvalue_reference, different_reference_and_value, input, forward };
+
+    template <iterator_status I>
+    struct iterator_archetype {
+        using iterator_concept = std::conditional_t<I == iterator_status::not_input, std::output_iterator_tag,
+            std::conditional_t<I == iterator_status::forward, std::forward_iterator_tag, std::input_iterator_tag>>;
+        using difference_type  = int;
+        using value_type       = std::conditional_t<I == iterator_status::different_reference_and_value, long, int>;
+
+        // clang-format off
+        int operator*() const requires (I == iterator_status::not_lvalue_reference);
+        int& operator*() const requires (I != iterator_status::not_lvalue_reference);
+
+        iterator_archetype& operator++();
+        void operator++(int) requires (I != iterator_status::forward);
+        iterator_archetype operator++(int) requires (I == iterator_status::forward);
+
+        bool operator==(std::default_sentinel_t) const;
+        bool operator==(iterator_archetype const&) const requires (I == iterator_status::forward);
+        // clang-format on
+    };
+    // Verify iterator_archetype
+    STATIC_ASSERT(!input_iterator<iterator_archetype<iterator_status::not_input>>);
+    STATIC_ASSERT(input_iterator<iterator_archetype<iterator_status::not_lvalue_reference>>);
+    STATIC_ASSERT(input_iterator<iterator_archetype<iterator_status::different_reference_and_value>>);
+    STATIC_ASSERT(input_iterator<iterator_archetype<iterator_status::input>>);
+    STATIC_ASSERT(!forward_iterator<iterator_archetype<iterator_status::input>>);
+    STATIC_ASSERT(forward_iterator<iterator_archetype<iterator_status::forward>>);
+
+    template <class I>
+    inline constexpr bool has_lvalue_reference = std::is_lvalue_reference_v<std::iter_reference_t<I>>;
+    STATIC_ASSERT(has_lvalue_reference<iterator_archetype<iterator_status::not_input>>);
+    STATIC_ASSERT(!has_lvalue_reference<iterator_archetype<iterator_status::not_lvalue_reference>>);
+    STATIC_ASSERT(has_lvalue_reference<iterator_archetype<iterator_status::different_reference_and_value>>);
+    STATIC_ASSERT(has_lvalue_reference<iterator_archetype<iterator_status::input>>);
+    STATIC_ASSERT(has_lvalue_reference<iterator_archetype<iterator_status::forward>>);
+
+    template <class I>
+    inline constexpr bool same_reference_value =
+        std::same_as<std::remove_cvref_t<std::iter_reference_t<I>>, std::iter_value_t<I>>;
+    STATIC_ASSERT(same_reference_value<iterator_archetype<iterator_status::not_input>>);
+    STATIC_ASSERT(same_reference_value<iterator_archetype<iterator_status::not_lvalue_reference>>);
+    STATIC_ASSERT(!same_reference_value<iterator_archetype<iterator_status::different_reference_and_value>>);
+    STATIC_ASSERT(same_reference_value<iterator_archetype<iterator_status::input>>);
+    STATIC_ASSERT(same_reference_value<iterator_archetype<iterator_status::forward>>);
+
+    // Validate _No_throw_input_iterator
+    STATIC_ASSERT(!_No_throw_input_iterator<iterator_archetype<iterator_status::not_input>>);
+    STATIC_ASSERT(!_No_throw_input_iterator<iterator_archetype<iterator_status::not_lvalue_reference>>);
+    STATIC_ASSERT(!_No_throw_input_iterator<iterator_archetype<iterator_status::different_reference_and_value>>);
+    STATIC_ASSERT(_No_throw_input_iterator<iterator_archetype<iterator_status::input>>);
+    STATIC_ASSERT(_No_throw_input_iterator<iterator_archetype<iterator_status::forward>>);
+
+    enum class sentinel_status : int { no, yes };
+
+    template <sentinel_status I>
+    struct sentinel_archetype {
+        // clang-format off
+        template <iterator_status S>
+        bool operator==(iterator_archetype<S> const&) const requires (I != sentinel_status::no);
+        // clang-format on
+    };
+    // Verify sentinel_archetype
+    STATIC_ASSERT(!sentinel_for<sentinel_archetype<sentinel_status::no>, iterator_archetype<iterator_status::input>>);
+    STATIC_ASSERT(sentinel_for<sentinel_archetype<sentinel_status::yes>, iterator_archetype<iterator_status::input>>);
+
+    // Validate _No_throw_sentinel_for
+    STATIC_ASSERT(
+        !_No_throw_sentinel_for<sentinel_archetype<sentinel_status::no>, iterator_archetype<iterator_status::input>>);
+    STATIC_ASSERT(
+        _No_throw_sentinel_for<sentinel_archetype<sentinel_status::yes>, iterator_archetype<iterator_status::input>>);
+    STATIC_ASSERT(!_No_throw_sentinel_for<iterator_archetype<iterator_status::input>,
+                  iterator_archetype<iterator_status::input>>);
+    STATIC_ASSERT(_No_throw_sentinel_for<iterator_archetype<iterator_status::forward>,
+        iterator_archetype<iterator_status::forward>>);
+
+    // Validate _No_throw_forward_iterator
+    STATIC_ASSERT(!_No_throw_forward_iterator<iterator_archetype<iterator_status::not_input>>);
+    STATIC_ASSERT(!_No_throw_forward_iterator<iterator_archetype<iterator_status::not_lvalue_reference>>);
+    STATIC_ASSERT(!_No_throw_forward_iterator<iterator_archetype<iterator_status::different_reference_and_value>>);
+    STATIC_ASSERT(!_No_throw_forward_iterator<iterator_archetype<iterator_status::input>>);
+    STATIC_ASSERT(_No_throw_forward_iterator<iterator_archetype<iterator_status::forward>>);
+
+    enum class range_status : int { not_range, not_input, input, forward };
+
+    template <range_status I>
+    struct range_archetype {
+        using It = std::conditional_t<I == range_status::not_range, void,
+            std::conditional_t<I == range_status::not_input, iterator_archetype<iterator_status::not_input>,
+                std::conditional_t<I == range_status::forward, iterator_archetype<iterator_status::forward>,
+                    iterator_archetype<iterator_status::input>>>>;
+        using Se = std::conditional_t<I == range_status::not_range, void,
+            std::conditional_t<I == range_status::forward, iterator_archetype<iterator_status::forward>,
+                std::default_sentinel_t>>;
+
+        It begin() const;
+        Se end() const;
+    };
+    // Verify range_archetype
+    STATIC_ASSERT(!ranges::range<range_archetype<range_status::not_range>>);
+    STATIC_ASSERT(ranges::range<range_archetype<range_status::not_input>>);
+    STATIC_ASSERT(ranges::range<range_archetype<range_status::input>>);
+    STATIC_ASSERT(ranges::range<range_archetype<range_status::forward>>);
+
+    // Validate _No_throw_input_range; note that the distinction betweeen range<R> and
+    // no-throw-sentinel-for<sentinel_t<R>, iterator_t<R>> is purely semantic, so we can't test them separately.
+    STATIC_ASSERT(!_No_throw_input_range<range_archetype<range_status::not_range>>);
+    STATIC_ASSERT(!_No_throw_input_range<range_archetype<range_status::not_input>>);
+    STATIC_ASSERT(_No_throw_input_range<range_archetype<range_status::input>>);
+    STATIC_ASSERT(_No_throw_input_range<range_archetype<range_status::forward>>);
+
+    // Validate _No_throw_forward_range
+    STATIC_ASSERT(!_No_throw_forward_range<range_archetype<range_status::not_range>>);
+    STATIC_ASSERT(!_No_throw_forward_range<range_archetype<range_status::not_input>>);
+    STATIC_ASSERT(!_No_throw_forward_range<range_archetype<range_status::input>>);
+    STATIC_ASSERT(_No_throw_forward_range<range_archetype<range_status::forward>>);
+} // namespace special_memory_concepts
