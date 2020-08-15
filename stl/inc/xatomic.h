@@ -10,9 +10,9 @@
 #if _STL_COMPILER_PREPROCESSOR
 
 #include <intrin0.h>
-#if 1 // TRANSITION, Visual Studio 2019 to include _mm_pause in <intrin0.h>
+#if 1 // TRANSITION, GH-1197
 #include <intrin.h>
-#endif // TRANSITION, Visual Studio 2019 to include _mm_pause in <intrin0.h>
+#endif // TRANSITION, GH-1197
 #include <type_traits>
 #if defined(_WIN64) && (_MSC_FULL_VER < 192829203) // TRANSITION
 #include <intrin.h> // Visual Studio 2019 to define 128-bit CAS in <intrin0.h>
