@@ -434,7 +434,7 @@ inline void _Atomic_lock_acquire(long& _Spinlock) noexcept {
         }
     }
 #elif defined(_M_ARM) || defined(_M_ARM64)
-    while (/* TRANSITION, GH-1133, _InterlockedExchange_acq*/ _InterlockedExchange(&_Spinlock, 1) != 0) {
+    while (_InterlockedExchange(&_Spinlock, 1) != 0) { /* TRANSITION, GH-1133: _InterlockedExchange_acq
         while (__iso_volatile_load32(&reinterpret_cast<int&>(_Spinlock)) != 0) {
             __yield();
         }
@@ -446,7 +446,7 @@ inline void _Atomic_lock_acquire(long& _Spinlock) noexcept {
 
 inline void _Atomic_lock_release(long& _Spinlock) noexcept {
 #if defined(_M_IX86) || defined(_M_X64)
-    _InterlockedExchange(&_Spinlock, 0); // TRANSITION, GH-1133: should use __iso_volatile_store32
+    _InterlockedExchange(&_Spinlock, 0); // TRANSITION, GH-1133: __iso_volatile_store32
 #elif defined(_M_ARM) || defined(_M_ARM64)
     _Memory_barrier();
     __iso_volatile_store32(reinterpret_cast<int*>(&_Spinlock), 0);
