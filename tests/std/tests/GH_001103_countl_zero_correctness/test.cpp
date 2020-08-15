@@ -14,7 +14,7 @@ using namespace std;
 
 int main() {
     // This test is applicatble only to x86 and x64 platforms
-#if defined(_MIX86) || defined(_M_X64)
+#if defined(_M_IX86) || defined(_M_X64)
     assert(_Countl_zero_bsr(static_cast<unsigned char>(0x00)) == 8);
     assert(_Countl_zero_bsr(static_cast<unsigned char>(0x13)) == 3);
     assert(_Countl_zero_bsr(static_cast<unsigned char>(0x83)) == 0);
