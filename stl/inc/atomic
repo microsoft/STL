@@ -427,14 +427,14 @@ inline void _Atomic_lock_acquire(long& _Spinlock) noexcept {
     const int _Max_backoff = 64;
     while (_InterlockedExchange(&_Spinlock, 1) != 0) {
         while (__iso_volatile_load32(&reinterpret_cast<int&>(_Spinlock)) != 0) {
-            for (int i = _Current_backoff; i != 0; --i) {
+            for (int _Count_down = _Current_backoff; _Count_down != 0; --_Count_down) {
                 _mm_pause();
             }
             _Current_backoff = _Current_backoff < _Max_backoff ? _Current_backoff << 1 : _Max_backoff;
         }
     }
 #elif defined(_M_ARM) || defined(_M_ARM64)
-    while (_InterlockedExchange(&_Spinlock, 1) != 0) { /* TRANSITION, GH-1133: _InterlockedExchange_acq
+    while (_InterlockedExchange(&_Spinlock, 1) != 0) { // TRANSITION, GH-1133: _InterlockedExchange_acq
         while (__iso_volatile_load32(&reinterpret_cast<int&>(_Spinlock)) != 0) {
             __yield();
         }
@@ -446,11 +446,11 @@ inline void _Atomic_lock_acquire(long& _Spinlock) noexcept {
 
 inline void _Atomic_lock_release(long& _Spinlock) noexcept {
 #if defined(_M_IX86) || defined(_M_X64)
-    _InterlockedExchange(&_Spinlock, 0); // TRANSITION, GH-1133: __iso_volatile_store32
+    _InterlockedExchange(&_Spinlock, 0); // TRANSITION, GH-1133: same  as ARM
 #elif defined(_M_ARM) || defined(_M_ARM64)
     _Memory_barrier();
     __iso_volatile_store32(reinterpret_cast<int*>(&_Spinlock), 0);
-    _Memory_barrier(); // TRANSITION, GH-1133
+    _Memory_barrier(); // TRANSITION, GH-1133: remove
 #else // ^^^ defined(_M_ARM) || defined(_M_ARM64) ^^^
 #error Unsupported hardware
 #endif
