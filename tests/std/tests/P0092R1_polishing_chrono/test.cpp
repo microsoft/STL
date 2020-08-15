@@ -202,13 +202,13 @@ int overloaded(duration<int, exa>) {
 }
 
 int main() {
-    // DevDiv#453376 "std::chrono::duration_cast lacks double support"
+    // DevDiv-453376 "std::chrono::duration_cast lacks double support"
     duration<double> d(17.29);
 
     assert(duration_cast<duration<long long>>(d).count() == 17);
 
 
-    // DevDiv#742944 "non conforming return value for std::chrono::duration::operator%()"
+    // DevDiv-742944 "non conforming return value for std::chrono::duration::operator%()"
     assert((milliseconds(1050) % seconds(1)).count() == 50);
 
     assert((milliseconds(1729) / 10).count() == 172);
@@ -217,7 +217,7 @@ int main() {
     assert((minutes(4) % milliseconds(1729)).count() == 1398);
 
 
-    // DevDiv#1134356 "[STL]Test failed with std::chrono::milliseconds"
+    // DevDiv-1134356 "[STL]Test failed with std::chrono::milliseconds"
     // LWG-2094 "duration conversion overflow shouldn't participate in overload resolution"
     assert(overloaded(40ms) == 11);
     assert(overloaded(50s) == 22);

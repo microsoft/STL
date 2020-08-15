@@ -4,4 +4,4 @@
 # This is for tests that take a long time to execute, so run only one configuration.
 RUNALL_INCLUDE .\prefix.lst
 RUNALL_CROSSLIST
-PM_CL="/EHsc /MT /O2 /GL /std:c++latest /analyze /w14640 /Zc:threadSafeInit-"
+PM_CL="/EHsc /MT /O2 /GL /std:c++latest /permissive- /analyze /w14640 /Zc:threadSafeInit-"

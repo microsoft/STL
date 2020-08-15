@@ -50,10 +50,14 @@ Function Get-TempFilePath {
   return Join-Path $tempPath $tempName
 }
 
-if (-not [string]::IsNullOrEmpty($AdminUserPassword)) {
-  Write-Host "AdminUser password supplied; switching to AdminUser"
+$TranscriptPath = 'C:\provision-image-transcript.txt'
+
+if ([string]::IsNullOrEmpty($AdminUserPassword)) {
+  Start-Transcript -Path $TranscriptPath
+} else {
+  Write-Host 'AdminUser password supplied; switching to AdminUser.'
   $PsExecPath = Get-TempFilePath -Extension 'exe'
-  Write-Host "Downloading psexec to $PsExecPath"
+  Write-Host "Downloading psexec to: $PsExecPath"
   & curl.exe -L -o $PsExecPath -s -S https://live.sysinternals.com/PsExec64.exe
   $PsExecArgs = @(
     '-u',
@@ -69,9 +73,11 @@ if (-not [string]::IsNullOrEmpty($AdminUserPassword)) {
     $PSCommandPath
   )
 
-  Write-Host "Executing $PsExecPath " + @PsExecArgs
+  Write-Host "Executing: $PsExecPath $PsExecArgs"
 
   $proc = Start-Process -FilePath $PsExecPath -ArgumentList $PsExecArgs -Wait -PassThru
+  Write-Host 'Reading transcript...'
+  Get-Content -Path $TranscriptPath
   Write-Host 'Cleaning up...'
   Remove-Item $PsExecPath
   exit $proc.ExitCode
@@ -79,20 +85,19 @@ if (-not [string]::IsNullOrEmpty($AdminUserPassword)) {
 
 $Workloads = @(
   'Microsoft.VisualStudio.Component.VC.CLI.Support',
+  'Microsoft.VisualStudio.Component.VC.CMake.Project',
   'Microsoft.VisualStudio.Component.VC.CoreIde',
-  'Microsoft.VisualStudio.Component.VC.Tools.x86.x64',
-  'Microsoft.VisualStudio.Component.VC.Tools.ARM64',
+  'Microsoft.VisualStudio.Component.VC.Llvm.Clang',
   'Microsoft.VisualStudio.Component.VC.Tools.ARM',
-  'Microsoft.VisualStudio.Component.Windows10SDK.18362'
+  'Microsoft.VisualStudio.Component.VC.Tools.ARM64',
+  'Microsoft.VisualStudio.Component.VC.Tools.x86.x64',
+  'Microsoft.VisualStudio.Component.Windows10SDK.19041'
 )
 
 $ReleaseInPath = 'Preview'
 $Sku = 'Enterprise'
 $VisualStudioBootstrapperUrl = 'https://aka.ms/vs/16/pre/vs_enterprise.exe'
-$CMakeUrl = 'https://github.com/Kitware/CMake/releases/download/v3.16.5/cmake-3.16.5-win64-x64.msi'
-$LlvmUrl = 'https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.0/LLVM-10.0.0-win64.exe'
-$NinjaUrl = 'https://github.com/ninja-build/ninja/releases/download/v1.10.0/ninja-win.zip'
-$PythonUrl = 'https://www.python.org/ftp/python/3.8.2/python-3.8.2-amd64.exe'
+$PythonUrl = 'https://www.python.org/ftp/python/3.8.5/python-3.8.5-amd64.exe'
 
 $CudaUrl = 'https://developer.download.nvidia.com/compute/cuda/10.1/Prod/local_installers/cuda_10.1.243_426.00_win10.exe'
 $CudaFeatures = 'nvcc_10.1 cuobjdump_10.1 nvprune_10.1 cupti_10.1 gpu_library_advisor_10.1 memcheck_10.1 ' + `
@@ -162,7 +167,7 @@ Function InstallVisualStudio {
     Write-Host 'Downloading Visual Studio...'
     [string]$bootstrapperExe = Get-TempFilePath -Extension 'exe'
     curl.exe -L -o $bootstrapperExe -s -S $BootstrapperUrl
-    Write-Host "Installing Visual Studio..."
+    Write-Host 'Installing Visual Studio...'
     $args = @('/c', $bootstrapperExe, '--quiet', '--norestart', '--wait', '--nocache')
     foreach ($workload in $Workloads) {
       $args += '--add'
@@ -184,103 +189,6 @@ Function InstallVisualStudio {
   }
   catch {
     Write-Error "Failed to install Visual Studio! $($_.Exception.Message)"
-  }
-}
-
-<#
-.SYNOPSIS
-Install an .msi file.
-
-.DESCRIPTION
-InstallMSI takes a URL where an .msi lives, and installs that .msi to the system.
-
-.PARAMETER Name
-The name of the thing to install.
-
-.PARAMETER Url
-The URL at which the .msi lives.
-#>
-Function InstallMSI {
-  Param(
-    [String]$Name,
-    [String]$Url
-  )
-
-  try {
-    Write-Host "Downloading $Name..."
-    [string]$msiPath = Get-TempFilePath -Extension 'msi'
-    curl.exe -L -o $msiPath -s -S $Url
-    Write-Host "Installing $Name..."
-    $args = @('/i', $msiPath, '/norestart', '/quiet', '/qn')
-    $proc = Start-Process -FilePath 'msiexec.exe' -ArgumentList $args -Wait -PassThru
-    PrintMsiExitCodeMessage $proc.ExitCode
-  }
-  catch {
-    Write-Error "Failed to install $Name! $($_.Exception.Message)"
-  }
-}
-
-<#
-.SYNOPSIS
-Unpacks a zip file to $Dir.
-
-.DESCRIPTION
-InstallZip takes a URL of a zip file, and unpacks the zip file to the directory
-$Dir.
-
-.PARAMETER Name
-The name of the tool being installed.
-
-.PARAMETER Url
-The URL of the zip file to unpack.
-
-.PARAMETER Dir
-The directory to unpack the zip file to.
-#>
-Function InstallZip {
-  Param(
-    [String]$Name,
-    [String]$Url,
-    [String]$Dir
-  )
-
-  try {
-    Write-Host "Downloading $Name..."
-    [string]$zipPath = Get-TempFilePath -Extension 'zip'
-    curl.exe -L -o $zipPath -s -S $Url
-    Write-Host "Installing $Name..."
-    Expand-Archive -Path $zipPath -DestinationPath $Dir -Force
-  }
-  catch {
-    Write-Error "Failed to install $Name! $($_.Exception.Message)"
-  }
-}
-
-<#
-.SYNOPSIS
-Installs LLVM.
-
-.DESCRIPTION
-InstallLLVM installs LLVM from the supplied URL.
-
-.PARAMETER Url
-The URL of the LLVM installer.
-#>
-Function InstallLLVM {
-  Param(
-    [String]$Url
-  )
-
-  try {
-    Write-Host 'Downloading LLVM...'
-    [string]$installerPath = Get-TempFilePath -Extension 'exe'
-    curl.exe -L -o $installerPath -s -S $Url
-    Write-Host 'Installing LLVM...'
-    $proc = Start-Process -FilePath $installerPath -ArgumentList @('/S') -NoNewWindow -Wait -PassThru
-    PrintMsiExitCodeMessage $proc.ExitCode
-  }
-  catch {
-    Write-Error "Failed to install LLVM! $($_.Exception.Message)"
   }
 }
 
@@ -369,16 +277,16 @@ Function PipInstall {
   )
 
   try {
-    Write-Host 'Installing or upgrading $Package...'
+    Write-Host "Installing or upgrading $Package..."
     python.exe -m pip install --upgrade $Package
-    Write-Host 'Done installing or upgrading $Package'
+    Write-Host "Done installing or upgrading $Package."
   }
   catch {
-    Write-Error "Failed to install or upgrade $Package"
+    Write-Error "Failed to install or upgrade $Package."
   }
 }
 
-Write-Host "AdminUser password not supplied; assuming already running as AdminUser"
+Write-Host 'AdminUser password not supplied; assuming already running as AdminUser.'
 
 Write-Host 'Configuring AntiVirus exclusions...'
 Add-MpPreference -ExclusionPath C:\agent
@@ -389,19 +297,26 @@ Add-MpPreference -ExclusionProcess cl.exe
 Add-MpPreference -ExclusionProcess link.exe
 Add-MpPreference -ExclusionProcess python.exe
 
-InstallMSI 'CMake' $CMakeUrl
-InstallZip 'Ninja' $NinjaUrl 'C:\Program Files\CMake\bin'
-InstallLLVM $LlvmUrl
 InstallPython $PythonUrl
 InstallVisualStudio -Workloads $Workloads -BootstrapperUrl $VisualStudioBootstrapperUrl
 InstallCuda -Url $CudaUrl -Features $CudaFeatures
 
 Write-Host 'Updating PATH...'
+
+# Step 1: Read the system path, which was just updated by installing Python.
 $environmentKey = Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name Path
-$Env:PATH="$($environmentKey.Path);C:\Program Files\CMake\bin;C:\Program Files\LLVM\bin"
+
+# Step 2: Update the local path (for this running script), so PipInstall can run python.exe.
+# Additional directories can be added here (e.g. if we extracted a zip file
+# or installed something that didn't update the system path).
+$Env:PATH="$($environmentKey.Path)"
+
+# Step 3: Update the system path, permanently recording any additional directories that were added in the previous step.
 Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' `
   -Name Path `
   -Value "$Env:PATH"
+
+Write-Host 'Finished updating PATH!'
 
 PipInstall pip
 PipInstall psutil

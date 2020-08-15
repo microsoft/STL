@@ -68,7 +68,7 @@ int main() {
 #else // ^^^ test all permutations of range properties / test only interesting permutations vvv
 template <class Category, class Element, test::ProxyRef IsProxyRef>
 using test_range = test::range<Category, Element, test::Sized::no, test::CanDifference::no, test::Common::no,
-    test::CanCompare{derived_from<Category, std::forward_iterator_tag>}, IsProxyRef>;
+    test::CanCompare{derived_from<Category, forward_iterator_tag>}, IsProxyRef>;
 
 constexpr void run_tests() {
     using namespace test;

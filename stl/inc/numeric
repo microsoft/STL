@@ -615,15 +615,15 @@ template <class _Ty, enable_if_t<is_arithmetic_v<_Ty> && !is_same_v<remove_cv_t<
 _NODISCARD constexpr _Ty midpoint(const _Ty _Val1, const _Ty _Val2) noexcept {
     if constexpr (is_floating_point_v<_Ty>) {
         if (_STD is_constant_evaluated()) {
-            if (_STD _Is_nan(_Val1)) {
+            if (_Is_nan(_Val1)) {
                 return _Val1;
             }
 
-            if (_STD _Is_nan(_Val2)) {
+            if (_Is_nan(_Val2)) {
                 return _Val2;
             }
         } else {
-            if (_STD _Is_nan(_Val1) || _STD _Is_nan(_Val2)) {
+            if (_Is_nan(_Val1) || _Is_nan(_Val2)) {
                 // raise FE_INVALID if at least one of _Val1 and _Val2 is signaling NaN
                 return _Val1 + _Val2;
             }
