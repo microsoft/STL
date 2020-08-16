@@ -446,7 +446,7 @@ inline void _Atomic_lock_acquire(long& _Spinlock) noexcept {
 
 inline void _Atomic_lock_release(long& _Spinlock) noexcept {
 #if defined(_M_IX86) || defined(_M_X64)
-    _InterlockedExchange(&_Spinlock, 0); // TRANSITION, GH-1133: same  as ARM
+    _InterlockedExchange(&_Spinlock, 0); // TRANSITION, GH-1133: same as ARM
 #elif defined(_M_ARM) || defined(_M_ARM64)
     _Memory_barrier();
     __iso_volatile_store32(reinterpret_cast<int*>(&_Spinlock), 0);
