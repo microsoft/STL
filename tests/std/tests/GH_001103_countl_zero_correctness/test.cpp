@@ -39,5 +39,5 @@ int main() {
     assert(_Countl_zero_bsr(static_cast<unsigned long long>(0x0000'0000'0000'0013)) == 59);
     assert(_Countl_zero_bsr(static_cast<unsigned long long>(0x8000'0000'0000'0003)) == 0);
     assert(_Countl_zero_bsr(static_cast<unsigned long long>(0xF000'0000'0000'0008)) == 0);
-#endif // ^^^ defined(_MIX86) || defined(_M_X64) ^^^
+#endif // ^^^ defined(_M_IX86) || defined(_M_X64) ^^^
 }
