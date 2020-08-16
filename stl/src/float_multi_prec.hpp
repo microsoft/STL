@@ -30,11 +30,21 @@ namespace _Float_multi_prec {
     template <class _Ty>
     struct _Fmp_t<_Ty, 2> {
         static_assert(_STD is_floating_point_v<_Ty>);
-        _Ty _Val0;
-        _Ty _Val1;
+        _Ty _Val0; // most significant numeric_limis<_Ty>::precision bits
+        _Ty _Val1; // least significant numeric_limis<_Ty>::precision bits
     };
 
     // addition
+
+    // 1x precision + 1x precision -> 2x precision
+    // the result is exact when:
+    // 1) the result doesn't overflow
+    // 2) either underflow is gradual, or no internal underflow occurs
+    // 3) intermediate precision is either the same as _Ty, or greater than twice the precision of _Ty
+    // 4) parameters and local variables do not retain extra intermediate precision
+    // 5) rounding mode is rounding to nearest
+    // violation of condition 3 or 5 could lead to relative error on the order of epsilon^2
+    // violation of other conditions could lead to worse results
     template <class _Ty>
     _NODISCARD constexpr _Fmp_t<_Ty, 2> _Add_x2(const _Ty _Xval, const _Ty _Yval) noexcept {
         const _Ty _Sum0 = _Xval + _Yval;
@@ -45,7 +55,17 @@ namespace _Float_multi_prec {
         return {_Sum0, _Xerr + _Yerr};
     }
 
+    // 1x precision + 1x precision -> 2x precision
     // requires: exponent(_Xval) + countr_zero(significand(_Xval)) >= exponent(_Yval) || _Xval == 0
+    // the result is exact when:
+    // 0) the requirement above is satisfied
+    // 1) no internal overflow occurs
+    // 2) either underflow is gradual, or no internal underflow occurs
+    // 3) intermediate precision is either the same as _Ty, or greater than twice the precision of _Ty
+    // 4) parameters and local variables do not retain extra intermediate precision
+    // 5) rounding mode is rounding to nearest
+    // violation of condition 3 or 5 could lead to relative error on the order of epsilon^2
+    // violation of other conditions could lead to worse results
     template <class _Ty>
     _NODISCARD constexpr _Fmp_t<_Ty, 2> _Add_small_x2(const _Ty _Xval, const _Ty _Yval) noexcept {
         const _Ty _Sum0 = _Xval + _Yval;
@@ -54,6 +74,7 @@ namespace _Float_multi_prec {
         return {_Sum0, _Yerr};
     }
 
+    // 1x precision + 2x precision -> 2x precision
     // requires: exponent(_Xval) + countr_zero(significand(_Xval)) >= exponent(_Yval._Val0) || _Xval == 0
     template <class _Ty>
     _NODISCARD constexpr _Fmp_t<_Ty, 2> _Add_small_x2(const _Ty _Xval, const _Fmp_t<_Ty, 2>& _Yval) noexcept {
@@ -61,6 +82,7 @@ namespace _Float_multi_prec {
         return _Add_small_x2(_Sum0._Val0, _Sum0._Val1 + _Yval._Val1);
     }
 
+    // 2x precision + 2x precision -> 1x precision
     template <class _Ty>
     _NODISCARD constexpr _Ty _Add_x1(const _Fmp_t<_Ty, 2>& _Xval, const _Fmp_t<_Ty, 2>& _Yval) noexcept {
         const _Fmp_t<_Ty, 2> _Sum00 = _Add_x2(_Xval._Val0, _Yval._Val0);
@@ -68,12 +90,19 @@ namespace _Float_multi_prec {
     }
 
     // multiplication
+
+    // round to 26 significant bits, ties to zero
     _NODISCARD inline constexpr double _High_half(const double _Val) {
         const auto _Bits           = _STD _Bit_cast<unsigned long long>(_Val);
         const auto _High_half_bits = (_Bits + 0x3ff'ffffULL) & 0xffff'ffff'f800'0000ULL;
         return _STD _Bit_cast<double>(_High_half_bits);
     }
 
+    // _Xval * _Xval - _Prod0
+    // the result is exact when:
+    // 1) _Prod0 is _Xval^2 faithfully rounded
+    // 2) no internal overflow or underflow occurs
+    // violation of condition 1 could lead to relative error on the order of epsilon
     _NODISCARD inline constexpr double _Sqr_error_fallback(const double _Xval, const double _Prod0) noexcept {
         const double _Xhigh = _High_half(_Xval);
         const double _Xlow  = _Xval - _Xhigh;
@@ -102,6 +131,8 @@ namespace _Float_multi_prec {
     }
 #endif // defined(_M_ARM64)
 
+    // square(1x precision) -> 2x precision
+    // the result is exact when no internal overflow or underflow occurs
     _NODISCARD inline constexpr _Fmp_t<double, 2> _Sqr_x2(const double _Xval) noexcept {
         const double _Prod0 = _Xval * _Xval;
 
