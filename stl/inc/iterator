@@ -553,6 +553,19 @@ public:
         }
     }
 
+    constexpr common_iterator(common_iterator&& _Right) noexcept(
+        is_nothrow_move_constructible_v<const _Iter&>&& is_nothrow_move_constructible_v<const _Se&>) // strengthened
+        : _Mydummy{}, _Mystate{_Right._Mystate} {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Mystate != _State::_Nothing, "common_iterator can only be assigned if it holds a value");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        if (_Mystate == _State::_Holds_iter) {
+            _Construct_in_place(_Myiter, _STD move(_Right._Myiter));
+        } else if (_Mystate == _State::_Holds_sentinel) {
+            _Construct_in_place(_Mysentinel, _STD move(_Right._Mysentinel));
+        }
+    }
+
     // clang-format off
     template <class _Iter2, class _Se2>
         requires convertible_to<const _Iter2&, _Iter> && convertible_to<const _Se2&, _Se>
@@ -598,6 +611,39 @@ public:
                 _Mystate = _State::_Nothing;
             }
             _Construct_in_place(_Mysentinel, _Right._Mysentinel);
+            _Mystate = _State::_Holds_sentinel;
+        }
+        return *this;
+    }
+
+    common_iterator& operator=(common_iterator&& _Right) noexcept(is_nothrow_move_assignable_v<const _Iter&>&&
+            is_nothrow_move_assignable_v<const _Se&>&& is_nothrow_move_constructible_v<const _Iter&>&&
+                is_nothrow_move_constructible_v<const _Se&>) /* strengthened */
+    {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Right._Mystate != _State::_Nothing, "common_iterator can only be assigned if it holds a value");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        if (_Mystate == _State::_Holds_iter && _Right._Mystate == _State::_Holds_iter) {
+            _Myiter = _STD move(_Right._Myiter);
+        } else if (_Mystate == _State::_Holds_sentinel && _Right._Mystate == _State::_Holds_sentinel) {
+            _Mysentinel = _STD move(_Right._Mysentinel);
+        } else if (_Right._Mystate == _State::_Holds_iter) {
+            if (_Mystate == _State::_Holds_sentinel) {
+                _Mysentinel.~_Se();
+            }
+            if constexpr (!is_nothrow_move_constructible_v<const _Iter&>) {
+                _Mystate = _State::_Nothing;
+            }
+            _Construct_in_place(_Myiter, _STD move(_Right._Myiter));
+            _Mystate = _State::_Holds_iter;
+        } else if (_Right._Mystate == _State::_Holds_sentinel) {
+            if (_Mystate == _State::_Holds_iter) {
+                _Myiter.~_Iter();
+            }
+            if constexpr (!is_nothrow_move_constructible_v<const _Se&>) {
+                _Mystate = _State::_Nothing;
+            }
+            _Construct_in_place(_Mysentinel, _STD move(_Right._Mysentinel));
             _Mystate = _State::_Holds_sentinel;
         }
         return *this;
