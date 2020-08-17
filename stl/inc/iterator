@@ -531,8 +531,8 @@ class common_iterator {
     };
 
 public:
-    constexpr common_iterator() noexcept(is_nothrow_constructible_v<_Iter>)
-        : _Myiter{}, _Mystate{_State::_Holds_iter} {};
+#pragma warning(suppress : 4582) // 'common_iterator::_Mysentinel': constructor is not implicitly called
+    constexpr common_iterator() = default;
 
     constexpr common_iterator(_Iter _Right) noexcept(is_nothrow_move_constructible_v<_Iter>) // strengthened
         : _Myiter{_STD move(_Right)}, _Mystate{_State::_Holds_iter} {}
@@ -845,11 +845,11 @@ private:
     enum class _State : unsigned char { _Nothing, _Holds_iter, _Holds_sentinel };
 
     union {
-        _Iter _Myiter;
+        _Iter _Myiter{};
         _Se _Mysentinel;
         _Nontrivial_dummy_type _Mydummy;
     };
-    _State _Mystate;
+    _State _Mystate{_State::_Holds_iter};
 };
 
 template <class _Iter, class _Se>
