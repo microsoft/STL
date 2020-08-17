@@ -124,6 +124,8 @@ STATIC_ASSERT(test_cpo(ranges::empty));
 STATIC_ASSERT(test_cpo(ranges::data));
 STATIC_ASSERT(test_cpo(ranges::cdata));
 
+STATIC_ASSERT(test_cpo(ranges::views::single));
+
 void test_cpo_ambiguity() {
     using namespace std::ranges;
 
