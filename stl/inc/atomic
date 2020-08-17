@@ -421,8 +421,9 @@ void _Atomic_wait_direct(
 #if 1 // TRANSITION, ABI, GH-1151
 inline void _Atomic_lock_acquire(long& _Spinlock) noexcept {
 #if defined(_M_IX86) || defined(_M_X64)
-    // Algorithm from Intel(R) 64 and IA-32 Architectures Optimization Reference Manual, September 2019
-    // Example 2-4. Contended Locks with Increasing Back-off Example - Improved Version, page 2-21
+    // Algorithm from Intel(R) 64 and IA-32 Architectures Optimization Reference Manual, May 2020
+    // Example 2-4. Contended Locks with Increasing Back-off Example - Improved Version, page 2-22
+
     int _Current_backoff   = 1;
     const int _Max_backoff = 64;
     while (_InterlockedExchange(&_Spinlock, 1) != 0) {
