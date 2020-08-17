@@ -159,11 +159,11 @@ namespace ranges {
         }
 
         _NODISCARD constexpr _Ty& operator*() noexcept {
-            _STL_INTERNAL_CHECK(*this);
+            _STL_INTERNAL_CHECK(_Engaged);
             return _Val;
         }
         _NODISCARD constexpr const _Ty& operator*() const noexcept {
-            _STL_INTERNAL_CHECK(*this);
+            _STL_INTERNAL_CHECK(_Engaged);
             return _Val;
         }
 
