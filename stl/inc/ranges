@@ -362,7 +362,7 @@ namespace ranges {
         // clang-format off
         template <class... _Types>
             requires constructible_from<_Ty, _Types...>
-        constexpr single_view(in_place_t, _Types&&... _Args) noexcept(
+        constexpr explicit single_view(in_place_t, _Types&&... _Args) noexcept( // explicit per LWG-3428
             is_nothrow_constructible_v<_Ty, _Types...>) // strengthened
             // clang-format on
             : _Val{in_place, _STD forward<_Types>(_Args)...} {}
