@@ -522,12 +522,12 @@ public:
 
     template <class... _Types>
     constexpr explicit _Variantish(in_place_type_t<_It>, _Types&&... _Args) noexcept(
-        is_nothrow_move_constructible_v<_It>)
+        is_nothrow_constructible_v<_It, _Types...>)
         : _Iterator(_STD forward<_Types>(_Args)...), _Contains{_State::_Holds_iter} {}
 
     template <class... _Types>
     constexpr explicit _Variantish(in_place_type_t<_Se>, _Types&&... _Args) noexcept(
-        is_nothrow_move_constructible_v<_Se>)
+        is_nothrow_constructible_v<_Se, _Types...>)
         : _Sentinel(_STD forward<_Types>(_Args)...), _Contains{_State::_Holds_sentinel} {}
 
     // clang-format off
@@ -554,7 +554,8 @@ public:
         && is_trivially_copy_constructible_v<_Se> = default;
     // clang-format on
 
-    _Variantish(const _Variantish& _That) : _Contains{_That._Contains} {
+    _Variantish(const _Variantish& _That) noexcept(noexcept(
+        is_nothrow_copy_constructible_v<_It>&& is_nothrow_copy_constructible_v<_Se>) : _Contains{_That._Contains} {
         switch (_Contains) {
         case _State::_Holds_iter:
             _Construct_in_place(_Iterator, _That._Iterator);
@@ -585,17 +586,25 @@ public:
         }
     }
 
-    ~_Variantish() requires is_trivially_destructible_v<_It>&& is_trivially_destructible_v<_Se> = default;
+    // clang-format off
+    ~_Variantish() requires is_trivially_destructible_v<_It> && is_trivially_destructible_v<_Se> = default;
+    // clang-format on
     ~_Variantish() {
         _Clear();
     }
 
-    _Variantish&
-        operator=(const _Variantish&) requires is_trivially_destructible_v<_It>&& is_trivially_destructible_v<_Se>&& is_trivially_copy_constructible_v<
-            _It>&& is_trivially_copy_constructible_v<_Se>&& is_trivially_copy_assignable_v<_It>&& is_trivially_copy_assignable_v<_Se> =
-            default;
+    // clang-format off
+    _Variantish& operator=(const _Variantish&) requires is_trivially_destructible_v<_It>
+        && is_trivially_destructible_v<_Se>
+        && is_trivially_copy_constructible_v<_It>
+        && is_trivially_copy_constructible_v<_Se>
+        && is_trivially_copy_assignable_v<_It>
+        && is_trivially_copy_assignable_v<_Se> = default;
+    // clang-format on
 
-    _Variantish& operator=(const _Variantish& _That) {
+    _Variantish& operator=(const _Variantish& _That) noexcept(
+        is_nothrow_copy_constructible_v<_It>&& is_nothrow_copy_constructible_v<_Se>&&
+            is_nothrow_copy_assignable_v<_It>&& is_nothrow_copy_assignable_v<_Se>) {
         if (_Contains == _That._Contains) {
             switch (_Contains) {
             case _State::_Holds_iter:
@@ -639,7 +648,9 @@ public:
         && is_trivially_move_assignable_v<_Se> = default;
     // clang-format on
 
-    _Variantish& operator=(_Variantish&& _That) {
+    _Variantish& operator=(_Variantish&& _That) noexcept(
+        is_nothrow_move_constructible_v<_It>&& is_nothrow_move_constructible_v<_Se>&&
+            is_nothrow_move_assignable_v<_It>&& is_nothrow_move_assignable_v<_Se>) {
         if (_Contains == _That._Contains) {
             switch (_Contains) {
             case _State::_Holds_iter:
