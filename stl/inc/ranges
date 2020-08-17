@@ -62,14 +62,14 @@ namespace ranges {
 
         _Semiregular_box(const _Semiregular_box&) requires is_trivially_copy_constructible_v<_Ty> = default;
         _Semiregular_box(const _Semiregular_box& _That) : _Engaged{_That._Engaged} {
-            if (_Engaged) {
+            if (_That._Engaged) {
                 _Construct_in_place(_Val, _That._Val);
             }
         }
 
         _Semiregular_box(_Semiregular_box&&) requires is_trivially_move_constructible_v<_Ty> = default;
         _Semiregular_box(_Semiregular_box&& _That) : _Engaged{_That._Engaged} {
-            if (_Engaged) {
+            if (_That._Engaged) {
                 _Construct_in_place(_Val, _STD move(_That._Val));
             }
         }
@@ -158,11 +158,11 @@ namespace ranges {
             return _Engaged;
         }
 
-        constexpr _Ty& operator*() noexcept {
+        _NODISCARD constexpr _Ty& operator*() noexcept {
             _STL_INTERNAL_CHECK(*this);
             return _Val;
         }
-        constexpr const _Ty& operator*() const noexcept {
+        _NODISCARD constexpr const _Ty& operator*() const noexcept {
             _STL_INTERNAL_CHECK(*this);
             return _Val;
         }
@@ -212,10 +212,10 @@ namespace ranges {
             return true;
         }
 
-        constexpr _Ty& operator*() noexcept {
+        _NODISCARD constexpr _Ty& operator*() noexcept {
             return _Val;
         }
-        constexpr const _Ty& operator*() const noexcept {
+        _NODISCARD constexpr const _Ty& operator*() const noexcept {
             return _Val;
         }
 
@@ -300,10 +300,10 @@ namespace ranges {
             return true;
         }
 
-        constexpr _Ty& operator*() noexcept {
+        _NODISCARD constexpr _Ty& operator*() noexcept {
             return _Val;
         }
-        constexpr const _Ty& operator*() const noexcept {
+        _NODISCARD constexpr const _Ty& operator*() const noexcept {
             return _Val;
         }
 
@@ -319,23 +319,23 @@ namespace ranges {
     class empty_view : public view_interface<empty_view<_Ty>> {
         // clang-format on
     public:
-        static constexpr _Ty* begin() noexcept {
+        _NODISCARD static constexpr _Ty* begin() noexcept {
             return nullptr;
         }
 
-        static constexpr _Ty* end() noexcept {
+        _NODISCARD static constexpr _Ty* end() noexcept {
             return nullptr;
         }
 
-        static constexpr _Ty* data() noexcept {
+        _NODISCARD static constexpr _Ty* data() noexcept {
             return nullptr;
         }
 
-        static constexpr size_t size() noexcept {
+        _NODISCARD static constexpr size_t size() noexcept {
             return 0;
         }
 
-        static constexpr bool empty() noexcept {
+        _NODISCARD static constexpr bool empty() noexcept {
             return true;
         }
     };
