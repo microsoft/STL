@@ -8,10 +8,9 @@
 #include <range_algorithm_support.hpp>
 using namespace std;
 
-#pragma warning(disable : 4582) // 'common_iterator::_Mysentinel': constructor is not implicitly called
+// FIXME #pragma warning(disable : 4582) // 'common_iterator::_Mysentinel': constructor is not implicitly called
 
 struct instantiator {
-
     template <input_or_output_iterator Iter>
     static constexpr void call() {
         if constexpr (copyable<Iter>) {

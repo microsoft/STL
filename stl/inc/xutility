@@ -2354,6 +2354,10 @@ _NODISCARD _Ty _Fake_decay_copy(_Ty) noexcept;
 // (2) is well-formed if and only if E is implicitly convertible to T and T is destructible, and
 // (3) is non-throwing if and only if both conversion from decltype((E)) to T and destruction of T are non-throwing.
 
+// CONCEPT _Not_same_as
+template <class _Ty1, class _Ty2>
+concept _Not_same_as = !same_as<remove_cvref_t<_Ty1>, remove_cvref_t<_Ty2>>;
+
 namespace ranges {
     // VARIABLE TEMPLATE _Has_complete_elements
     template <class>
@@ -3420,10 +3424,6 @@ namespace ranges {
 
         using is_transparent = int;
     };
-
-    // CONCEPT _Not_same_as
-    template <class _Ty1, class _Ty2>
-    concept _Not_same_as = !same_as<remove_cvref_t<_Ty1>, remove_cvref_t<_Ty2>>;
 
     // CONCEPT ranges::common_range
     // clang-format off
