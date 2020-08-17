@@ -3266,6 +3266,81 @@ namespace move_iterator_test {
     STATIC_ASSERT(test());
 } // namespace move_iterator_test
 
+namespace counted_iterator_test {
+    using std::bidirectional_iterator_tag, std::default_sentinel_t, std::forward_iterator_tag, std::input_iterator_tag,
+        std::iterator_traits, std::counted_iterator, std::random_access_iterator_tag, std::same_as, std::string,
+        std::three_way_comparable, std::three_way_comparable_with;
+
+    // Validate the iterator_concept/iterator_category metaprogramming
+    STATIC_ASSERT(same_as<iterator_traits<counted_iterator<simple_contiguous_iter<>>>::iterator_category,
+        random_access_iterator_tag>);
+    STATIC_ASSERT(same_as<iterator_traits<counted_iterator<simple_random_iter<>>>::iterator_category,
+        random_access_iterator_tag>);
+    STATIC_ASSERT(
+        same_as<iterator_traits<counted_iterator<simple_bidi_iter<>>>::iterator_category, bidirectional_iterator_tag>);
+    STATIC_ASSERT(
+        same_as<iterator_traits<counted_iterator<simple_forward_iter<>>>::iterator_category, forward_iterator_tag>);
+    STATIC_ASSERT(same_as<iterator_traits<counted_iterator<simple_input_iter>>::iterator_category, input_iterator_tag>);
+
+    // Validate that postincrement returns counted_iterator<simple_input_iter> for single-pass adaptees
+    STATIC_ASSERT(same_as<decltype(counted_iterator<simple_input_iter> {} ++), counted_iterator<simple_input_iter>>);
+    STATIC_ASSERT(
+        same_as<decltype(counted_iterator<simple_forward_iter<>> {} ++), counted_iterator<simple_forward_iter<>>>);
+
+    // Validate comparison constraints
+    STATIC_ASSERT(has_eq<counted_iterator<simple_input_iter>>);
+    STATIC_ASSERT(has_neq<counted_iterator<simple_input_iter>>);
+    STATIC_ASSERT(has_less<counted_iterator<simple_input_iter>>);
+    STATIC_ASSERT(has_greater<counted_iterator<simple_input_iter>>);
+    STATIC_ASSERT(has_less_eq<counted_iterator<simple_input_iter>>);
+    STATIC_ASSERT(has_greater_eq<counted_iterator<simple_input_iter>>);
+    STATIC_ASSERT(three_way_comparable<counted_iterator<simple_input_iter>>);
+
+    STATIC_ASSERT(has_eq<counted_iterator<simple_forward_iter<>>>);
+    STATIC_ASSERT(has_neq<counted_iterator<simple_forward_iter<>>>);
+    STATIC_ASSERT(has_less<counted_iterator<simple_forward_iter<>>>);
+    STATIC_ASSERT(has_greater<counted_iterator<simple_forward_iter<>>>);
+    STATIC_ASSERT(has_less_eq<counted_iterator<simple_forward_iter<>>>);
+    STATIC_ASSERT(has_greater_eq<counted_iterator<simple_forward_iter<>>>);
+    STATIC_ASSERT(three_way_comparable<counted_iterator<simple_forward_iter<>>>);
+
+    STATIC_ASSERT(has_eq<counted_iterator<simple_random_iter<>>>);
+    STATIC_ASSERT(has_neq<counted_iterator<simple_random_iter<>>>);
+    STATIC_ASSERT(has_less<counted_iterator<simple_random_iter<>>>);
+    STATIC_ASSERT(has_greater<counted_iterator<simple_random_iter<>>>);
+    STATIC_ASSERT(has_less_eq<counted_iterator<simple_random_iter<>>>);
+    STATIC_ASSERT(has_greater_eq<counted_iterator<simple_random_iter<>>>);
+    STATIC_ASSERT(three_way_comparable<counted_iterator<simple_random_iter<>>, std::strong_ordering>);
+
+    STATIC_ASSERT(has_eq<counted_iterator<int*>, counted_iterator<int const*>>);
+    STATIC_ASSERT(has_neq<counted_iterator<int*>, counted_iterator<int const*>>);
+    STATIC_ASSERT(has_less<counted_iterator<int*>, counted_iterator<int const*>>);
+    STATIC_ASSERT(has_greater<counted_iterator<int*>, counted_iterator<int const*>>);
+    STATIC_ASSERT(has_less_eq<counted_iterator<int*>, counted_iterator<int const*>>);
+    STATIC_ASSERT(has_greater_eq<counted_iterator<int*>, counted_iterator<int const*>>);
+    STATIC_ASSERT(
+        three_way_comparable_with<counted_iterator<int*>, counted_iterator<int const*>, std::strong_ordering>);
+
+    STATIC_ASSERT(!has_eq<counted_iterator<int*>, counted_iterator<string*>>);
+    STATIC_ASSERT(!has_neq<counted_iterator<int*>, counted_iterator<string*>>);
+    STATIC_ASSERT(!has_less<counted_iterator<int*>, counted_iterator<string*>>);
+    STATIC_ASSERT(!has_greater<counted_iterator<int*>, counted_iterator<string*>>);
+    STATIC_ASSERT(!has_less_eq<counted_iterator<int*>, counted_iterator<string*>>);
+    STATIC_ASSERT(!has_greater_eq<counted_iterator<int*>, counted_iterator<string*>>);
+    STATIC_ASSERT(!three_way_comparable_with<counted_iterator<int*>, counted_iterator<string*>>);
+
+    // Validate default_sentinel_t comparisons and difference
+    STATIC_ASSERT(has_eq<counted_iterator<simple_input_iter>, default_sentinel_t>);
+    STATIC_ASSERT(has_neq<counted_iterator<simple_input_iter>, default_sentinel_t>);
+    STATIC_ASSERT(!has_less<counted_iterator<simple_input_iter>, default_sentinel_t>);
+    STATIC_ASSERT(!has_greater<counted_iterator<simple_input_iter>, default_sentinel_t>);
+    STATIC_ASSERT(!has_less_eq<counted_iterator<simple_input_iter>, default_sentinel_t>);
+    STATIC_ASSERT(!has_greater_eq<counted_iterator<simple_input_iter>, default_sentinel_t>);
+    STATIC_ASSERT(!three_way_comparable_with<counted_iterator<simple_input_iter>, default_sentinel_t>);
+    STATIC_ASSERT(has_difference<counted_iterator<simple_input_iter>, default_sentinel_t>);
+    STATIC_ASSERT(has_difference<default_sentinel_t, counted_iterator<simple_input_iter>>);
+} // namespace counted_iterator_test
+
 namespace lwg3420 {
     // Validate that we can ask for the iterator_traits of a type with no operator* for which checking copyability
     // results in constraint recursion.
