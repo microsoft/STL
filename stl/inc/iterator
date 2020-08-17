@@ -554,8 +554,9 @@ public:
         && is_trivially_copy_constructible_v<_Se> = default;
     // clang-format on
 
-    _Variantish(const _Variantish& _That) noexcept(noexcept(
-        is_nothrow_copy_constructible_v<_It>&& is_nothrow_copy_constructible_v<_Se>) : _Contains{_That._Contains} {
+    _Variantish(const _Variantish& _That) noexcept(
+        noexcept(is_nothrow_copy_constructible_v<_It>&& is_nothrow_copy_constructible_v<_Se>))
+        : _Contains{_That._Contains} {
         switch (_Contains) {
         case _State::_Holds_iter:
             _Construct_in_place(_Iterator, _That._Iterator);
