@@ -12,7 +12,7 @@
 #pragma message("The contents of <ranges> are available only with C++20 concepts support.")
 #else // ^^^ !defined(__cpp_lib_concepts) / defined(__cpp_lib_concepts) vvv
 #include <iterator>
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-1174090
+#if 1 // TRANSITION, VSO-1174090
 #include <optional>
 #endif // TRANSITION, VSO-1174090
 
@@ -39,7 +39,7 @@ namespace ranges {
     concept _Copy_constructible_object = copy_constructible<_Ty> && is_object_v<_Ty>;
     // clang-format on
 
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1174090
+#if 0 // TRANSITION, VSO-1174090
     template <_Copy_constructible_object _Ty>
     class _Semiregular_box {
     public:
@@ -222,7 +222,7 @@ namespace ranges {
     private:
         /* [[no_unique_address]] */ _Ty _Val = _Ty();
     };
-#else // ^^^ no workaround / workaround vvv // FIXME: these are ABI incompatible
+#else // ^^^ no workaround / workaround vvv
     template <class _Ty>
     class _Semiregular_box_copy : public optional<_Ty> {
     public:
