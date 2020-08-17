@@ -7,6 +7,7 @@
 #ifndef _RANDOM_
 #define _RANDOM_
 #include <yvals_core.h>
+
 #include <xbit_ops.h>
 #if _STL_COMPILER_PREPROCESSOR
 #include <algorithm>
@@ -2034,25 +2035,23 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
 
 template <class _Flt, class _Ty>
 _NODISCARD inline _Flt _Trunc_to_float(_Ty _Val) {
-    constexpr auto _Ty_digits = numeric_limits<_Ty>::digits;
+    constexpr auto _Ty_digits  = numeric_limits<_Ty>::digits;
     constexpr auto _Flt_digits = numeric_limits<_Flt>::digits;
     // workaround for lack of constexpr-if to avoid negative shift warning
-    constexpr auto _Abs_diff_digits = (_Ty_digits > _Flt_digits)
-        ? _Ty_digits - _Flt_digits : _Flt_digits - _Ty_digits;
+    constexpr auto _Abs_diff_digits = (_Ty_digits > _Flt_digits) ? _Ty_digits - _Flt_digits : _Flt_digits - _Ty_digits;
 
-    if _CONSTEXPR_IF (_Ty_digits <= _Flt_digits){
-        _Flt _Result =
-            _Val < numeric_limits<_Ty>::max() 
-            ? static_cast<_Flt>(_Val + _Ty{1}) 
-            : _STD exp2(static_cast<_Flt>(_STD numeric_limits<_Ty>::digits));
+    if _CONSTEXPR_IF (_Ty_digits <= _Flt_digits) {
+        _Flt _Result = _Val < numeric_limits<_Ty>::max()
+                           ? static_cast<_Flt>(_Val + _Ty{1})
+                           : _STD exp2(static_cast<_Flt>(_STD numeric_limits<_Ty>::digits));
         return _STD nextafter(_Result, _Flt{0.0});
     } else {
 #pragma warning(push)
 #pragma warning(disable : 4146) // unary minus of unsigned
-        constexpr auto _Mask = _Ty(-1) << _Abs_diff_digits;
-        const auto _Log = _Floor_of_log_2(_Val);
+        constexpr auto _Mask     = _Ty(-1) << _Abs_diff_digits;
+        const auto _Log          = _Floor_of_log_2(_Val);
         const auto _Shifted_mask = _Mask >> (_Ty_digits - 1 - _Log);
-        const auto _Ceil_ulp = _Shifted_mask & -_Shifted_mask;
+        const auto _Ceil_ulp     = _Shifted_mask & -_Shifted_mask;
         _Val &= _Shifted_mask;
         if (_Ceil_ulp > _Ty{1}) {
             return static_cast<_Flt>(_Val);
@@ -2164,10 +2163,10 @@ private:
     result_type _Eval(_Engine& _Eng, const param_type& _Par0) const {
         using _Uty = make_unsigned_t<_Ty>;
         constexpr auto _Ty_max{numeric_limits<_Ty>::max()};
-        const auto _Ty1_max{_Trunc_to_float<_Ty1,_Uty>(static_cast<_Uty>(_Ty_max))};
+        const auto _Ty1_max{_Trunc_to_float<_Ty1, _Uty>(static_cast<_Uty>(_Ty_max))};
 
         _Ty1 _Val;
-        do{
+        do {
             _Val = _CSTD log(_NRAND(_Eng, _Ty1)) / _Par0._Log_1_p;
         } while (_Val > _Ty1_max);
         return static_cast<_Ty>(_Val);
