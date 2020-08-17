@@ -41,10 +41,9 @@ public:
     using _Callback_fn = void(__cdecl*)(_Stop_callback_base*) _NOEXCEPT_FNPTR;
 
     explicit _Stop_callback_base(const _Callback_fn _Fn_) noexcept : _Fn{_Fn_} {}
+
     _Stop_callback_base(const _Stop_callback_base&) = delete;
-    _Stop_callback_base(_Stop_callback_base&&)      = delete;
     _Stop_callback_base& operator=(const _Stop_callback_base&) = delete;
-    _Stop_callback_base& operator=(_Stop_callback_base&&) = delete;
 
     // if _Token is _Stop_requested, calls the callback;
     // otherwise, inserts *this into the callback list if stop is possible
@@ -74,15 +73,15 @@ struct _Stop_state {
     atomic<const _Stop_callback_base*> _Current_callback = nullptr;
     _Thrd_id_t _Stopping_thread                          = 0;
 
-    [[nodiscard]] bool _Stop_requested() const noexcept {
+    _NODISCARD bool _Stop_requested() const noexcept {
         return (_Stop_sources.load() & uint32_t{1}) != 0;
     }
 
-    [[nodiscard]] bool _Stop_possible() const noexcept {
+    _NODISCARD bool _Stop_possible() const noexcept {
         return _Stop_sources.load() != 0;
     }
 
-    [[nodiscard]] bool _Request_stop() noexcept {
+    _NODISCARD bool _Request_stop() noexcept {
         // Attempts to request stop and call callbacks, returns whether request was successful
         if ((_Stop_sources.fetch_or(uint32_t{1}) & uint32_t{1}) != 0) {
             // another thread already requested
@@ -93,7 +92,7 @@ struct _Stop_state {
         for (;;) {
             auto _Head = _Callbacks._Lock_and_load();
             _Current_callback.store(_Head, memory_order_relaxed);
-            _Current_callback.notify_one();
+            _Current_callback.notify_all();
             if (_Head == nullptr) {
                 _Callbacks._Store_and_unlock(nullptr);
                 return true;
@@ -152,19 +151,17 @@ public:
         _STD swap(_State, _Other._State);
     }
 
-    [[nodiscard]] bool stop_requested() const noexcept {
+    _NODISCARD bool stop_requested() const noexcept {
         const auto _Local = _State;
         return _Local != nullptr && _Local->_Stop_requested();
     }
 
-    [[nodiscard]] bool stop_possible() const noexcept {
+    _NODISCARD bool stop_possible() const noexcept {
         const auto _Local = _State;
         return _Local != nullptr && _Local->_Stop_possible();
     }
 
-    [[nodiscard]] friend bool operator==(const stop_token& _Lhs, const stop_token& _Rhs) noexcept {
-        return _Lhs._State == _Rhs._State;
-    }
+    _NODISCARD friend bool operator==(const stop_token& _Lhs, const stop_token& _Rhs) noexcept = default;
 
     friend void swap(stop_token& _Lhs, stop_token& _Rhs) noexcept {
         _STD swap(_Lhs._State, _Rhs._State);
@@ -201,7 +198,7 @@ public:
     ~stop_source() {
         const auto _Local = _State;
         if (_Local != nullptr) {
-            if ((_Local->_Stop_sources.fetch_sub(2, memory_order_relaxed) >> 1) == 1) {
+            if ((_Local->_Stop_sources.fetch_sub(2, memory_order_acq_rel) >> 1) == 1) {
                 if (_Local->_Stop_tokens.fetch_sub(1, memory_order_acq_rel) == 1) {
                     delete _Local;
                 }
@@ -213,7 +210,7 @@ public:
         _STD swap(_State, _Other._State);
     }
 
-    [[nodiscard]] stop_token get_token() const noexcept {
+    _NODISCARD stop_token get_token() const noexcept {
         const auto _Local = _State;
         if (_Local != nullptr) {
             _Local->_Stop_tokens.fetch_add(1, memory_order_relaxed);
@@ -222,12 +219,12 @@ public:
         return stop_token{_Local};
     }
 
-    [[nodiscard]] bool stop_requested() const noexcept {
+    _NODISCARD bool stop_requested() const noexcept {
         const auto _Local = _State;
         return _Local != nullptr && _Local->_Stop_requested();
     }
 
-    [[nodiscard]] bool stop_possible() const noexcept {
+    _NODISCARD bool stop_possible() const noexcept {
         return _State != nullptr;
     }
 
@@ -236,9 +233,7 @@ public:
         return _Local && _Local->_Request_stop();
     }
 
-    [[nodiscard]] friend bool operator==(const stop_source& _Lhs, const stop_source& _Rhs) noexcept {
-        return _Lhs._State == _Rhs._State;
-    }
+    _NODISCARD friend bool operator==(const stop_source& _Lhs, const stop_source& _Rhs) noexcept = default;
 
     friend void swap(stop_source& _Lhs, stop_source& _Rhs) noexcept {
         _STD swap(_Lhs._State, _Rhs._State);
@@ -251,7 +246,7 @@ private:
 template <bool _Transfer_ownership>
 void _Stop_callback_base::_Do_attach(
     conditional_t<_Transfer_ownership, _Stop_state*&, _Stop_state* const> _State_raw) noexcept {
-    auto _State = _State_raw; // avoid an indirection in all of the below
+    const auto _State = _State_raw; // avoid an indirection in all of the below
     if (_State == nullptr) {
         return;
     }
@@ -344,7 +339,7 @@ inline void _Stop_callback_base::_Detach() noexcept {
     // we aren't in the callback list even though we were added to it, so the stop requesting thread is attempting to
     // call the callback
     _STL_INTERNAL_CHECK((_Token._State->_Stop_sources.load() & uint32_t{1}) != 0);
-    if (_Token._State->_Current_callback.load(memory_order_relaxed) != this
+    if (_Token._State->_Current_callback.load(memory_order_acquire) != this
         || _Token._State->_Stopping_thread == _Thrd_id()) {
         // the callback is done or the dtor is being recursively reentered, do not block
         _Token._State->_Callbacks._Store_and_unlock(_Head);
@@ -353,7 +348,7 @@ inline void _Stop_callback_base::_Detach() noexcept {
 
     // the callback is being executed by another thread, block until it is complete
     _Token._State->_Callbacks._Store_and_unlock(_Head);
-    _Token._State->_Current_callback.wait(this, memory_order_relaxed);
+    _Token._State->_Current_callback.wait(this, memory_order_acquire);
 }
 
 template <class _Callback>
@@ -361,17 +356,17 @@ class stop_callback : public _Stop_callback_base {
 public:
     using callback_type = _Callback;
 
-    template <class _Cb_init_ty, enable_if_t<is_constructible_v<_Callback, _Cb_init_ty>, int> = 0>
-    explicit stop_callback(const stop_token& _Token, _Cb_init_ty&& _Cb_) noexcept(
-        is_nothrow_constructible_v<_Callback, _Cb_init_ty>)
-        : _Stop_callback_base{_Invoke_by_stop}, _Cb(_STD forward<_Cb_init_ty>(_Cb_)) {
+    template <class _CbInitTy, enable_if_t<is_constructible_v<_Callback, _CbInitTy>, int> = 0>
+    explicit stop_callback(const stop_token& _Token, _CbInitTy&& _Cb_) noexcept(
+        is_nothrow_constructible_v<_Callback, _CbInitTy>)
+        : _Stop_callback_base{_Invoke_by_stop}, _Cb(_STD forward<_CbInitTy>(_Cb_)) {
         _Attach(_Token);
     }
 
-    template <class _Cb_init_ty, enable_if_t<is_constructible_v<_Callback, _Cb_init_ty>, int> = 0>
-    explicit stop_callback(stop_token&& _Token, _Cb_init_ty&& _Cb_) noexcept(
-        is_nothrow_constructible_v<_Callback, _Cb_init_ty>)
-        : _Stop_callback_base{_Invoke_by_stop}, _Cb(_STD forward<_Cb_init_ty>(_Cb_)) {
+    template <class _CbInitTy, enable_if_t<is_constructible_v<_Callback, _CbInitTy>, int> = 0>
+    explicit stop_callback(stop_token&& _Token, _CbInitTy&& _Cb_) noexcept(
+        is_nothrow_constructible_v<_Callback, _CbInitTy>)
+        : _Stop_callback_base{_Invoke_by_stop}, _Cb(_STD forward<_CbInitTy>(_Cb_)) {
         _Attach(_STD move(_Token));
     }
 
@@ -380,7 +375,7 @@ public:
     }
 
 private:
-    static void __cdecl _Invoke_by_stop(_Stop_callback_base* const _This) noexcept // enforces termination
+    static void __cdecl _Invoke_by_stop(_Stop_callback_base* const _This) noexcept // terminates
     {
         _STD forward<_Callback>(static_cast<stop_callback*>(_This)->_Cb)();
     }

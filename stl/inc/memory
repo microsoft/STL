@@ -3202,8 +3202,7 @@ class alignas(2 * sizeof(void*)) _Atomic_ptr_base {
 protected:
     constexpr _Atomic_ptr_base() noexcept = default;
 
-    _Atomic_ptr_base(_Ty* const _Px, _Ref_count_base* const _Ref) noexcept
-        : _Ptr(_Px), _Repptr(reinterpret_cast<uintptr_t>(_Ref)) {}
+    _Atomic_ptr_base(_Ty* const _Px, _Ref_count_base* const _Ref) noexcept : _Ptr(_Px), _Repptr(_Ref) {}
 
     void _Wait(_Ty* _Old, memory_order) const noexcept {
         for (;;) {
