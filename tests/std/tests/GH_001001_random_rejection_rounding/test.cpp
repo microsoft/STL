@@ -30,9 +30,9 @@ void Test_GH1001() {
     const double p1{1000.0 * p * std::pow(1.0 - p, static_cast<double>(N - 1))};
     const double mean{p * N};
 
-    assert(mean_x / mean - 1.0 < 0.002);
-    assert(p0_x / p0 - 1.0 < 0.002);
-    assert(p1_x / p1 - 1.0 < 0.002);
+    assert(std::abs(mean_x / mean - 1.0) < 0.01);
+    assert(std::abs(p0_x / p0 - 1.0) < 0.01);
+    assert(std::abs(p1_x / p1 - 1.0) < 0.01);
 }
 
 int main() {

@@ -2027,37 +2027,33 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
-// FUNCTION TEMPLATE _Trunc_to_float
+// FUNCTION TEMPLATE _Float_upper_bound
 
-// - Returns largest _Flt s.t. static_cast<_Ty>(_Result) <= _Val
-// - First truncate to largest _Flt <= _Val, then add ceil(ulp)-ulp. If
-//   ulp > 1, this is a nop, so skip the expensive nextafter call.
+// Returns smallest _Flt s.t. static_cast<_Ty>(_Result) > _Val. First
+// truncate to largest _Flt <= _Val, then add ceil(ulp)
 
-template <class _Flt, class _Ty>
-_NODISCARD inline _Flt _Trunc_to_float(_Ty _Val) {
+template <class _Flt, class _Ty, typename = enable_if_t<is_unsigned_v<_Ty> && is_floating_point_v<_Flt>>>
+_NODISCARD inline _Flt _Float_upper_bound(_Ty _Val) {
     constexpr auto _Ty_digits  = numeric_limits<_Ty>::digits;
     constexpr auto _Flt_digits = numeric_limits<_Flt>::digits;
-    // workaround for lack of constexpr-if to avoid negative shift warning
-    constexpr auto _Abs_diff_digits = (_Ty_digits > _Flt_digits) ? _Ty_digits - _Flt_digits : _Flt_digits - _Ty_digits;
 
     if _CONSTEXPR_IF (_Ty_digits <= _Flt_digits) {
-        _Flt _Result = _Val < numeric_limits<_Ty>::max()
-                           ? static_cast<_Flt>(_Val + _Ty{1})
-                           : _STD exp2(static_cast<_Flt>(_STD numeric_limits<_Ty>::digits));
-        return _STD nextafter(_Result, _Flt{0.0});
+        return static_cast<_Flt>(_Val) + _Flt{1};
     } else {
 #pragma warning(push)
 #pragma warning(disable : 4146) // unary minus of unsigned
-        constexpr auto _Mask     = _Ty(-1) << _Abs_diff_digits;
-        const auto _Log          = _Floor_of_log_2(_Val);
-        const auto _Shifted_mask = _Mask >> (_Ty_digits - 1 - _Log);
-        const auto _Ceil_ulp     = _Shifted_mask & -_Shifted_mask;
+        constexpr auto _Mask_shift = (_Ty_digits > _Flt_digits) ? _Ty_digits - _Flt_digits : 0;
+        constexpr auto _Mask       = _Ty(-1) << _Mask_shift;
+        const auto _Log            = _Floor_of_log_2(_Val);
+        const auto _Shifted_mask   = _Mask >> (_Ty_digits - 1 - _Log);
+        const auto _Ceil_ulp       = _Shifted_mask & -_Shifted_mask;
         _Val &= _Shifted_mask;
-        if (_Ceil_ulp > _Ty{1}) {
-            return static_cast<_Flt>(_Val);
+        if (_Val == _Mask) {
+            // integer add would overflow
+            constexpr auto _Big_ulp = static_cast<_Flt>(_Mask & -_Mask);
+            return static_cast<_Flt>(_Val) + _Big_ulp;
         } else {
-            const auto _Result = static_cast<_Flt>(_Val + _Ceil_ulp);
-            return _STD nextafter(_Result, _Flt{0.0});
+            return static_cast<_Flt>(_Val + _Ceil_ulp);
         }
 #pragma warning(pop)
     }
@@ -2162,13 +2158,13 @@ private:
     template <class _Engine>
     result_type _Eval(_Engine& _Eng, const param_type& _Par0) const {
         using _Uty = make_unsigned_t<_Ty>;
-        constexpr auto _Ty_max{numeric_limits<_Ty>::max()};
-        const auto _Ty1_max{_Trunc_to_float<_Ty1, _Uty>(static_cast<_Uty>(_Ty_max))};
+        constexpr auto _Ty_max{(numeric_limits<_Ty>::max)()};
+        const auto _Ty1_max{_Float_upper_bound<_Ty1, _Uty>(static_cast<_Uty>(_Ty_max))};
 
         _Ty1 _Val;
         do {
             _Val = _CSTD log(_NRAND(_Eng, _Ty1)) / _Par0._Log_1_p;
-        } while (_Val > _Ty1_max);
+        } while (_Val >= _Ty1_max);
         return static_cast<_Ty>(_Val);
     }
 
@@ -2334,15 +2330,15 @@ private:
 
         for (;;) { // generate and reject
             using _Uty = make_unsigned_t<_Ty>;
-            constexpr auto _Ty_max{numeric_limits<_Ty>::max()};
-            const auto _Ty1_max{_Trunc_to_float<_Ty1, _Uty>(static_cast<_Uty>(_Ty_max))};
+            constexpr auto _Ty_max{(numeric_limits<_Ty>::max)()};
+            const auto _Ty1_max{_Float_upper_bound<_Ty1, _Uty>(static_cast<_Uty>(_Ty_max))};
 
             _Ty _Res;
             _Ty1 _Yx;
             for (;;) { // generate a tentative value
                 _Yx = static_cast<_Ty1>(_CSTD tan(_Pi * _NRAND(_Eng, _Ty1)));
                 const _Ty1 _Mx{_Par0._Sqrt * _Yx + _Par0._Mean};
-                if (0.0 <= _Mx && _Mx <= _Ty1_max) {
+                if (0.0 <= _Mx && _Mx < _Ty1_max) {
                     _Res = static_cast<_Ty>(_Mx);
                     break;
                 }
@@ -2521,14 +2517,14 @@ private:
             _Res = _Par0._Small(_Eng);
         } else { // no shortcuts
             using _Uty = make_unsigned_t<_Ty>;
-            const auto _Ty1_Tx{_Trunc_to_float<_Ty1, _Uty>(static_cast<_Uty>(_Par0._Tx))};
+            const auto _Ty1_Tx{_Float_upper_bound<_Ty1, _Uty>(static_cast<_Uty>(_Par0._Tx))};
 
             for (;;) { // generate and reject
                 _Ty1 _Yx;
                 for (;;) { // generate a tentative value
                     _Yx = static_cast<_Ty1>(_CSTD tan(_Pi * _NRAND(_Eng, _Ty1)));
                     const _Ty1 _Mx{_Par0._Sqrt * _Yx + _Par0._Mean};
-                    if (0.0 <= _Mx && _Mx <= _Ty1_Tx) {
+                    if (0.0 <= _Mx && _Mx < _Ty1_Tx) {
                         _Res = static_cast<_Ty>(_Mx);
                         break;
                     }
