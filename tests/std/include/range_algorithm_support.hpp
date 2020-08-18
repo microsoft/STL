@@ -424,7 +424,8 @@ namespace test {
             return std::move(*i.ptr_);
         }
 
-        constexpr friend void iter_swap(iterator const& x, iterator const& y) requires at_least<input> {
+        constexpr friend void iter_swap(
+            iterator const& x, iterator const& y) requires at_least<input> && std::swappable<Element> {
             ranges::iter_swap(x.ptr_, y.ptr_);
         }
 
