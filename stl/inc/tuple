@@ -240,7 +240,7 @@ public:
     constexpr bool _Less(const tuple&) const noexcept {
         return false;
     }
-#endif
+#endif // !defined(__cpp_lib_concepts)
 };
 
 template <class _This, class... _Rest>
@@ -692,7 +692,7 @@ public:
         return _Myfirst._Val < _Right._Myfirst._Val
                || (!(_Right._Myfirst._Val < _Myfirst._Val) && _Mybase::_Less(_Right._Get_rest()));
     }
-#endif
+#endif // !defined(__cpp_lib_concepts)
 
     template <size_t _Index, class... _Types>
     friend constexpr tuple_element_t<_Index, tuple<_Types...>>& get(tuple<_Types...>& _Tuple) noexcept;
