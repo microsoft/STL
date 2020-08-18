@@ -17,7 +17,7 @@
 #ifndef _M_CEE_PURE
 #include <atomic>
 #include <compare>
-#endif
+#endif // _M_CEE_PURE
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -100,7 +100,7 @@ public:
 // TRANSITION, GH-489
 #ifdef __cpp_lib_concepts
     _NODISCARD strong_ordering operator<=>(const error_category& _Right) const noexcept {
-        return compare_three_way()(this, &_Right);
+        return compare_three_way{}(_Addr, _Right._Addr);
     }
 #else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
     _NODISCARD bool operator<(const error_category& _Right) const noexcept {
@@ -186,7 +186,7 @@ public:
 // TRANSITION, GH-489
 #ifdef __cpp_lib_concepts
     _NODISCARD friend strong_ordering operator<=>(const error_code& _Left, const error_code& _Right) noexcept {
-        if (auto _Result = _Left.category() <=> _Right.category(); _Result != 0) {
+        if (const auto _Result = _Left.category() <=> _Right.category(); _Result != 0) {
             return _Result;
         }
         return _Left.value() <=> _Right.value();
@@ -274,7 +274,7 @@ public:
 #ifdef __cpp_lib_concepts
     _NODISCARD friend strong_ordering operator<=>(
         const error_condition& _Left, const error_condition& _Right) noexcept {
-        if (auto _Result = _Left.category() <=> _Right.category(); _Result != 0) {
+        if (const auto _Result = _Left.category() <=> _Right.category(); _Result != 0) {
             return _Result;
         }
         return _Left.value() <=> _Right.value();
