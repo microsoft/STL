@@ -86,7 +86,7 @@ public:
 
         // memory_order_seq_cst for all four operations guarantees that either release thread loads
         // the incremented value, or acquire thread loads the incremented value, or both, but not none.
-        // memory_order_seq_cst might be suprefulous for some hardware mappings of C++ memory model,
+        // memory_order_seq_cst might be superfluous for some hardware mappings of C++ memory model,
         // but from the point of C++ memory model itself it is needed, weaker orders don't work.
 
         const ptrdiff_t _Prev = _Counter.fetch_add(static_cast<ptrdiff_t>(_Update), memory_order_seq_cst);
