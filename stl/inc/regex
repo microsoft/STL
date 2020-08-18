@@ -730,7 +730,7 @@ _NODISCARD auto operator<=>(const sub_match<_BidIt>& _Left, const sub_match<_Bid
     return static_cast<typename sub_match<_BidIt>::_Comparison_category>(_Left.compare(_Right) <=> 0);
 }
 
-#ifdef _MSC_VER // TRANSITION, VSO-900973
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-900973
 // The compiler incorrectly performs overload resolution by preferring implicit conversions over rewrites.
 // In C++20 mode the only required comparison operators should be == and <=>.
 template <class _BidIt>
@@ -797,7 +797,7 @@ _NODISCARD auto operator<=>(const sub_match<_BidIt>& _Left, const _Iter_value_t<
     return static_cast<typename sub_match<_BidIt>::_Comparison_category>(_Left.compare(_Right) <=> 0);
 }
 
-#ifdef _MSC_VER // TRANSITION, VSO-900973
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-900973
 // The compiler incorrectly performs overload resolution by preferring implicit conversions over rewrites.
 // In C++20 mode the only required comparison operators should be == and <=>.
 template <class _BidIt>
@@ -930,7 +930,7 @@ _NODISCARD auto operator<=>(const sub_match<_BidIt>& _Left, const _Iter_value_t<
         _Left._Compare(_STD addressof(_Right), 1) <=> 0);
 }
 
-#ifdef _MSC_VER // TRANSITION, VSO-900973
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-900973
 // The compiler incorrectly performs overload resolution by preferring implicit conversions over rewrites.
 // In C++20 mode the only required comparison operators should be == and <=>.
 template <class _BidIt>
@@ -1064,7 +1064,7 @@ _NODISCARD auto operator<=>(
     return static_cast<typename sub_match<_BidIt>::_Comparison_category>(_Left.compare(_Right) <=> 0);
 }
 
-#ifdef _MSC_VER // TRANSITION, VSO-900973
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-900973
 // The compiler incorrectly performs overload resolution by preferring implicit conversions over rewrites.
 // In C++20 mode the only required comparison operators should be == and <=>.
 template <class _BidIt, class _Traits, class _Alloc>
