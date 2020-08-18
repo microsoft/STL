@@ -1294,9 +1294,11 @@ _NODISCARD errc _Assemble_floating_point_value(const uint64_t _Initial_mantissa,
 
             // We detect this case here and re-adjust the mantissa and exponent appropriately, to form a normal number:
             if (_Mantissa > _Traits::_Denormal_mantissa_mask) {
-                // We add one to the _Denormal_mantissa_shift to account for the hidden mantissa bit
-                // (we subtracted one to account for this bit when we computed the _Denormal_mantissa_shift above).
-                _Exponent = _Initial_exponent - (_Denormal_mantissa_shift + 1) - _Normal_mantissa_shift;
+                // The mantissa is already in the correct position for a normal value. (The carried over bit when we
+                // added 1 to round the mantissa is in the correct position for the hidden bit.)
+                // _Denormal_mantissa_shift is the actual number of bits by which we have shifted the mantissa into its
+                // final position.
+                _Exponent = _Initial_exponent - _Denormal_mantissa_shift;
             }
         } else {
             _Mantissa <<= _Denormal_mantissa_shift;
