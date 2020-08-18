@@ -251,6 +251,65 @@ void test_main() { // test basic workings of ostream definitions
     outs << STD fixed << 1.0;
     CHECK_WSTR(outs.str().c_str(), L"1.000000");
 
+    outs.precision(3);
+
+    outs.str(L"");
+    outs << STD defaultfloat << 1.5L;
+    CHECK_WSTR(outs.str().c_str(), L"1.5");
+
+    outs.str(L"");
+    outs << STD fixed << 1.0L;
+    CHECK_WSTR(outs.str().c_str(), L"1.000");
+
+    outs.str(L"");
+    outs << STD scientific << 2.0L;
+    CHECK_WSTR(outs.str().c_str(), L"2.000e+00");
+
+    outs.str(L"");
+    outs << STD hexfloat << 2.0L;
+    CHECK_WSTR(outs.str().c_str(), L"0x1.0000000000000p+1");
+
+    outs.precision(0);
+
+    outs.str(L"");
+    outs << STD defaultfloat << 1.5L;
+    CHECK_WSTR(outs.str().c_str(), L"2");
+
+    outs.str(L"");
+    outs << STD fixed << 1.0L;
+    CHECK_WSTR(outs.str().c_str(), L"1");
+
+    outs.str(L"");
+    outs << STD scientific << 2.0L;
+    CHECK_WSTR(outs.str().c_str(), L"2e+00");
+
+    outs.str(L"");
+    outs << STD hexfloat << 2.0L;
+    CHECK_WSTR(outs.str().c_str(), L"0x1.0000000000000p+1");
+
+    outs.precision(-1);
+
+    outs.str(L"");
+    outs << STD defaultfloat << 1.5L;
+    CHECK_WSTR(outs.str().c_str(), L"1.5");
+
+    outs.str(L"");
+    outs << STD fixed << 1.0L;
+    CHECK_WSTR(outs.str().c_str(), L"1.000000");
+
+    outs.str(L"");
+    outs << STD scientific << 2.0L;
+    CHECK_WSTR(outs.str().c_str(), L"2.000000e+00");
+
+    outs.str(L"");
+    outs << STD hexfloat << 2.0L;
+    CHECK_WSTR(outs.str().c_str(), L"0x1.0000000000000p+1");
+
+    outs.precision(-49);
+    outs.str(L"");
+    outs << STD fixed << 1.0L;
+    CHECK_WSTR(outs.str().c_str(), L"1.000000");
+
     // test Boolx inserter
     const Boolx no(0), yes(1);
     outs.str(L"");
