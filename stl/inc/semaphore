@@ -84,7 +84,7 @@ public:
         // release thread: Increment semaphore counter, then load waiting counter;
         // acquire thread: Increment waiting counter, then load semaphore counter;
 
-        // memory_order_seq_cst for all four operations guarantees than either release thread loads
+        // memory_order_seq_cst for all four operations guarantees that either release thread loads
         // the incremented value, or acquire thread loads the incremented value, or both, but not none.
         // memory_order_seq_cst might be suprefulous for some hardware mappings of C++ memory model,
         // but from the point of C++ memory model itself it is needed, weaker orders don't work.
