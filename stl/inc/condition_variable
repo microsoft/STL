@@ -218,7 +218,9 @@ public:
             _Guard.unlock();
 
             if (_Res == _Thrd_timedout) {
-                break;
+                if (!_Clamped) {
+                    break;
+                }
             } else if (_Res != _Thrd_success) {
                 _Throw_C_error(_Res);
             }
