@@ -549,10 +549,12 @@ public:
         }
     }
 
+#if 0 // TRANSITION, VSO-1174090
     // clang-format off
     _Variantish(const _Variantish&) requires is_trivially_copy_constructible_v<_It>
         && is_trivially_copy_constructible_v<_Se> = default;
     // clang-format on
+#endif // TRANSITION, VSO-1174090
 
     _Variantish(const _Variantish& _That) noexcept(
         noexcept(is_nothrow_copy_constructible_v<_It>&& is_nothrow_copy_constructible_v<_Se>))
@@ -569,10 +571,12 @@ public:
         }
     }
 
+#if 0 // TRANSITION, VSO-1174090
     // clang-format off
     _Variantish(_Variantish&&) requires is_trivially_move_constructible_v<_It>
         && is_trivially_move_constructible_v<_Se> = default;
     // clang-format on
+#endif // TRANSITION, VSO-1174090
 
     _Variantish(_Variantish&& _That) : _Contains{_That._Contains} {
         switch (_Contains) {
@@ -587,13 +591,16 @@ public:
         }
     }
 
+#if 0 // TRANSITION, VSO-1174090
     // clang-format off
     ~_Variantish() requires is_trivially_destructible_v<_It> && is_trivially_destructible_v<_Se> = default;
     // clang-format on
+#endif // TRANSITION, VSO-1174090
     ~_Variantish() {
         _Clear();
     }
 
+#if 0 // TRANSITION, VSO-1174090
     // clang-format off
     _Variantish& operator=(const _Variantish&) requires is_trivially_destructible_v<_It>
         && is_trivially_destructible_v<_Se>
@@ -602,6 +609,7 @@ public:
         && is_trivially_copy_assignable_v<_It>
         && is_trivially_copy_assignable_v<_Se> = default;
     // clang-format on
+#endif // TRANSITION, VSO-1174090
 
     _Variantish& operator=(const _Variantish& _That) noexcept(
         is_nothrow_copy_constructible_v<_It>&& is_nothrow_copy_constructible_v<_Se>&&
@@ -640,6 +648,7 @@ public:
         return *this;
     }
 
+#if 0 // TRANSITION, VSO-1174090
     // clang-format off
     _Variantish& operator=(_Variantish&&) requires is_trivially_destructible_v<_It>
         && is_trivially_destructible_v<_Se>
@@ -648,6 +657,7 @@ public:
         && is_trivially_move_assignable_v<_It>
         && is_trivially_move_assignable_v<_Se> = default;
     // clang-format on
+#endif // TRANSITION, VSO-1174090
 
     _Variantish& operator=(_Variantish&& _That) noexcept(
         is_nothrow_move_constructible_v<_It>&& is_nothrow_move_constructible_v<_Se>&&
