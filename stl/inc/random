@@ -8,13 +8,13 @@
 #define _RANDOM_
 #include <yvals_core.h>
 
-#include <xbit_ops.h>
 #if _STL_COMPILER_PREPROCESSOR
 #include <algorithm>
 #include <cmath>
 #include <iosfwd>
 #include <stdint.h>
 #include <vector>
+#include <xbit_ops.h>
 #include <xstring>
 
 #pragma pack(push, _CRT_PACKING)
@@ -2036,6 +2036,7 @@ template <class _Flt, class _Ty, typename = enable_if_t<is_unsigned_v<_Ty> && is
 _NODISCARD inline _Flt _Float_upper_bound(_Ty _Val) {
     constexpr auto _Ty_digits  = numeric_limits<_Ty>::digits;
     constexpr auto _Flt_digits = numeric_limits<_Flt>::digits;
+    using _Ty_32or64           = conditional_t<_Ty_digits <= 32, uint32_t, uint64_t>;
 
     if _CONSTEXPR_IF (_Ty_digits <= _Flt_digits) {
         return static_cast<_Flt>(_Val) + _Flt{1};
@@ -2044,8 +2045,8 @@ _NODISCARD inline _Flt _Float_upper_bound(_Ty _Val) {
 #pragma warning(disable : 4146) // unary minus of unsigned
         constexpr auto _Mask_shift = (_Ty_digits > _Flt_digits) ? _Ty_digits - _Flt_digits : 0;
         constexpr auto _Mask       = _Ty(-1) << _Mask_shift;
-        const auto _Log            = _Floor_of_log_2(_Val);
-        const auto _Shifted_mask   = _Mask >> (_Ty_digits - 1 - _Log);
+        const auto _Log_plus1      = _Bit_scan_reverse(static_cast<_Ty_32or64>(_Val | _Ty{1}));
+        const auto _Shifted_mask   = _Mask >> (_Ty_digits - _Log_plus1);
         const auto _Ceil_ulp       = _Shifted_mask & -_Shifted_mask;
         _Val &= _Shifted_mask;
         if (_Val == _Mask) {
