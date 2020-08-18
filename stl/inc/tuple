@@ -752,7 +752,7 @@ _NODISCARD constexpr auto operator<=>(const tuple<_Types1...>& _Left, const tupl
     return _Left._Three_way_compare(_Right);
 }
 
-#if 1 // TRANSITION, VSO-900973
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-900973
 // Overload resolution prefers implicit conversions over re-writes.
 // In C++20 mode the only required comparison operators should be == and <=>.
 template <class... _Types1, class... _Types2>
