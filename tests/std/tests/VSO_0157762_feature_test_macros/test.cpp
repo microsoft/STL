@@ -481,6 +481,25 @@ STATIC_ASSERT(__cpp_lib_constexpr_utility == 201811L);
 #endif
 #endif
 
+#if _HAS_CXX20 && defined(__cpp_impl_coroutine) // TRANSITION, Clang and EDG coroutine support
+#if __cpp_impl_coroutine >= 201902L
+#define ExpectedCppLibCoroutine 201902L
+#else
+#define ExpectedCppLibCoroutine 197000L // TRANSITION, VS 2019 16.8 Preview 4
+#endif
+#ifndef __cpp_lib_coroutine
+#error __cpp_lib_coroutine is not defined
+#elif __cpp_lib_coroutine != ExpectedCppLibCoroutine
+#error __cpp_lib_coroutine is not ExpectedCppLibCoroutine
+#else
+STATIC_ASSERT(__cpp_lib_coroutine == ExpectedCppLibCoroutine);
+#endif
+#else
+#ifdef __cpp_lib_coroutine
+#error __cpp_lib_coroutine is defined
+#endif
+#endif
+
 #if _HAS_CXX20
 #ifndef __cpp_lib_destroying_delete
 #error __cpp_lib_destroying_delete is not defined
