@@ -474,11 +474,9 @@ _NODISCARD constexpr bool operator>=(const optional<_Ty1>& _Left, const optional
 
 #ifdef __cpp_lib_concepts
 template <class _Ty1, three_way_comparable_with<_Ty1> _Ty2>
-_NODISCARD constexpr compare_three_way_result_t<_Ty1, _Ty2>
-operator<=>(const optional<_Ty1>& _Left, const optional<_Ty2>& _Right)
-{
-    if (_Left && _Right)
-    {
+_NODISCARD constexpr compare_three_way_result_t<_Ty1, _Ty2> operator<=>(
+    const optional<_Ty1>& _Left, const optional<_Ty2>& _Right) {
+    if (_Left && _Right) {
         return *_Left <=> *_Right;
     }
 
@@ -493,7 +491,7 @@ _NODISCARD constexpr bool operator==(const optional<_Ty>& _Left, nullopt_t) noex
 }
 
 #if _HAS_CXX20
-template<class _Ty>
+template <class _Ty>
 _NODISCARD constexpr strong_ordering operator<=>(const optional<_Ty>& _Left, nullopt_t) noexcept {
     return bool(_Left) <=> false;
 }
@@ -634,10 +632,10 @@ _NODISCARD constexpr bool operator>=(const _Ty1& _Left, const optional<_Ty2>& _R
 
 #ifdef __cpp_lib_concepts
 template <class _Ty1, class _Ty2>
-requires (!_Is_specialization_v<_Ty2, optional>) && three_way_comparable_with<_Ty1, _Ty2>
-constexpr compare_three_way_result_t<_Ty1, _Ty2> operator<=>(const optional<_Ty1>& _Left, const _Ty2& _Right) {
-    if (_Left)
-    {
+    requires(!_Is_specialization_v<_Ty2, optional>)
+    && three_way_comparable_with<_Ty1, _Ty2> constexpr compare_three_way_result_t<_Ty1, _Ty2> operator<=>(
+        const optional<_Ty1>& _Left, const _Ty2& _Right) {
+    if (_Left) {
         return *_Left <=> _Right;
     }
 
