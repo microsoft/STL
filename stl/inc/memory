@@ -3338,7 +3338,7 @@ public:
     }
 
     ~atomic() {
-        const auto _Rep = this->_Repptr._Load_relaxed();
+        const auto _Rep = this->_Repptr._Unsafe_load_relaxed();
         if (_Rep) {
             _Rep->_Decref();
         }
@@ -3455,7 +3455,7 @@ public:
     }
 
     ~atomic() {
-        const auto _Rep = this->_Repptr._Load_relaxed();
+        const auto _Rep = reinterpret_cast<_Ref_count_base*>(this->_Repptr.load(memory_order_relaxed));
         if (_Rep) {
             _Rep->_Decwref();
         }

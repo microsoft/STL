@@ -3031,6 +3031,10 @@ public:
         }
     }
 
+    _Ty* _Unsafe_load_relaxed() const noexcept {
+        return reinterpret_cast<_Ty*>(_Storage.load(memory_order_relaxed));
+    }
+
 private:
     atomic<uintptr_t> _Storage;
 };
