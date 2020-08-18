@@ -6,7 +6,7 @@ RUNALL_CROSSLIST
 PM_CL="/EHsc /MD /D_ITERATOR_DEBUG_LEVEL=0 /std:c++14 /w14640 /Zc:threadSafeInit-"
 PM_CL="/EHsc /MD /D_ITERATOR_DEBUG_LEVEL=0 /std:c++14 /D_HAS_IF_CONSTEXPR=0 /w14640 /Zc:threadSafeInit-"
 PM_CL="/EHsc /MD /D_ITERATOR_DEBUG_LEVEL=0 /std:c++17 /w14640 /Zc:threadSafeInit-"
-PM_CL="/EHsc /MD /D_ITERATOR_DEBUG_LEVEL=1 /std:c++latest /permissive- /w14640 /Zc:threadSafeInit-"
+PM_CL="/EHsc /MD /D_ITERATOR_DEBUG_LEVEL=1 /std:c++latest /permissive- /w14640 /Zc:threadSafeInit- /Zc:noexceptTypes-"
 PM_CL="/EHsc /MD /D_ITERATOR_DEBUG_LEVEL=0 /std:c++latest /permissive- /Zc:char8_t- /w14640 /Zc:threadSafeInit- /Zc:preprocessor"
 PM_CL="/EHsc /MDd /D_ITERATOR_DEBUG_LEVEL=0 /std:c++latest /permissive- /Zc:wchar_t- /w14640 /Zc:threadSafeInit-"
 PM_CL="/EHsc /MDd /D_ITERATOR_DEBUG_LEVEL=1 /std:c++latest /permissive- /w14640 /Zc:threadSafeInit-"
