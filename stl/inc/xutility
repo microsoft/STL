@@ -126,16 +126,6 @@ void _Construct_in_place(_Ty& _Obj, _Types&&... _Args) noexcept(is_nothrow_const
         _Ty(_STD forward<_Types>(_Args)...);
 }
 
-#if _HAS_CXX17
-// STRUCT _Nontrivial_dummy_type
-struct _Nontrivial_dummy_type {
-    constexpr _Nontrivial_dummy_type() noexcept {
-        // This default constructor is user-provided to avoid zero-initialization when objects are value-initialized.
-    }
-};
-_STL_INTERNAL_STATIC_ASSERT(!is_trivially_default_constructible_v<_Nontrivial_dummy_type>);
-#endif // _HAS_CXX17
-
 // STRUCT TEMPLATE pointer_traits
 template <class _Ty>
 struct pointer_traits {
