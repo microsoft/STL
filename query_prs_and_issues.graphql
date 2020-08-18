@@ -11,6 +11,12 @@ query prs_and_issues($want_prs: Boolean!, $pr_cursor: String, $want_issues: Bool
                 createdAt
                 closedAt
                 mergedAt
+                labels(first: 5) {
+                    totalCount
+                    nodes {
+                        name
+                    }
+                }
                 reviews(first: 12, states: CHANGES_REQUESTED) {
                     totalCount
                     nodes {

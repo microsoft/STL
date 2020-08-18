@@ -172,40 +172,50 @@ function read_usernames() {
 function transform_pr_nodes(pr_nodes) {
     warn_if_pagination_needed(
         pr_nodes,
+        'labels',
+        (retrieved, total, number) => `WARNING: Retrieved ${retrieved}/${total} labels for PR #${number}.`
+    );
+    warn_if_pagination_needed(
+        pr_nodes,
         'reviews',
         (retrieved, total, number) => `WARNING: Retrieved ${retrieved}/${total} reviews for PR #${number}.`
     );
 
     const { maintainers, contributors } = read_usernames();
 
-    return pr_nodes.map(pr_node => {
-        const maintainer_reviews = pr_node.reviews.nodes
-            .filter(review_node => {
-                if (review_node.author === null) {
-                    return false; // Assume that deleted users were contributors.
-                }
+    return pr_nodes
+        .filter(pr_node => {
+            const labels = pr_node.labels.nodes.map(label => label.name);
+            return !labels.includes('uncharted');
+        })
+        .map(pr_node => {
+            const maintainer_reviews = pr_node.reviews.nodes
+                .filter(review_node => {
+                    if (review_node.author === null) {
+                        return false; // Assume that deleted users were contributors.
+                    }
 
-                const username = review_node.author.login;
+                    const username = review_node.author.login;
 
-                const is_maintainer = maintainers.has(username);
+                    const is_maintainer = maintainers.has(username);
 
-                if (!is_maintainer && !contributors.has(username)) {
-                    contributors.add(username); // Assume that unknown users are contributors.
-                    console.log(`WARNING: Unknown user "${username}" reviewed PR #${pr_node.number}.`);
-                }
+                    if (!is_maintainer && !contributors.has(username)) {
+                        contributors.add(username); // Assume that unknown users are contributors.
+                        console.log(`WARNING: Unknown user "${username}" reviewed PR #${pr_node.number}.`);
+                    }
 
-                return is_maintainer;
-            })
-            .map(review_node => DateTime.fromISO(review_node.submittedAt));
+                    return is_maintainer;
+                })
+                .map(review_node => DateTime.fromISO(review_node.submittedAt));
 
-        return {
-            number: pr_node.number,
-            opened: DateTime.fromISO(pr_node.createdAt),
-            closed: DateTime.fromISO(pr_node.closedAt ?? '2100-01-01'),
-            merged: DateTime.fromISO(pr_node.mergedAt ?? '2100-01-01'),
-            reviews: maintainer_reviews,
-        };
-    });
+            return {
+                number: pr_node.number,
+                opened: DateTime.fromISO(pr_node.createdAt),
+                closed: DateTime.fromISO(pr_node.closedAt ?? '2100-01-01'),
+                merged: DateTime.fromISO(pr_node.mergedAt ?? '2100-01-01'),
+                reviews: maintainer_reviews,
+            };
+        });
 }
 
 function calculate_wait(when, opened, reviews) {
