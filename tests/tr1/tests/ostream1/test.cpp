@@ -213,8 +213,49 @@ void test_main() { // test basic workings of ostream definitions
         outs << STD hexfloat << 2.0;
         STD string ans  = outs.str();
         const char* buf = ans.c_str();
-        CHECK_STR(buf, "0x1.000p+1");
+        CHECK_STR(buf, "0x1.0000000000000p+1");
     }
+
+    outs.precision(0);
+
+    outs.str("");
+    outs << STD defaultfloat << 1.5;
+    CHECK_STR(outs.str().c_str(), "2");
+
+    outs.str("");
+    outs << STD fixed << 1.0;
+    CHECK_STR(outs.str().c_str(), "1");
+
+    outs.str("");
+    outs << STD scientific << 2.0;
+    CHECK_STR(outs.str().c_str(), "2e+00");
+
+    outs.str("");
+    outs << STD hexfloat << 2.0;
+    CHECK_STR(outs.str().c_str(), "0x1.0000000000000p+1");
+
+    outs.precision(-1);
+
+    outs.str("");
+    outs << STD defaultfloat << 1.5;
+    CHECK_STR(outs.str().c_str(), "1.5");
+
+    outs.str("");
+    outs << STD fixed << 1.0;
+    CHECK_STR(outs.str().c_str(), "1.000000");
+
+    outs.str("");
+    outs << STD scientific << 2.0;
+    CHECK_STR(outs.str().c_str(), "2.000000e+00");
+
+    outs.str("");
+    outs << STD hexfloat << 2.0;
+    CHECK_STR(outs.str().c_str(), "0x1.0000000000000p+1");
+
+    outs.precision(-49);
+    outs.str("");
+    outs << STD fixed << 1.0;
+    CHECK_STR(outs.str().c_str(), "1.000000");
 
     // test Boolx inserter
     const Boolx no(0), yes(1);
