@@ -31,6 +31,10 @@ _STD_BEGIN
 
 class latch {
 public:
+    _NODISCARD static constexpr ptrdiff_t(max)() noexcept {
+        return (1ULL << (sizeof(ptrdiff_t) * CHAR_BIT - 1)) - 1;
+    }
+
     constexpr explicit latch(const ptrdiff_t _Expected) noexcept /* strengthened */ : _Counter{_Expected} {
         _STL_VERIFY(_Expected >= 0, "Precondition: expected >= 0 (N4861 [thread.latch.class]/4)");
     }
@@ -47,10 +51,6 @@ public:
         } else {
             _STL_VERIFY(_Current >= 0, "Precondition: update <= counter (N4861 [thread.latch.class]/7)");
         }
-    }
-
-    _NODISCARD static constexpr ptrdiff_t(max)() noexcept {
-        return (1ULL << (sizeof(ptrdiff_t) * CHAR_BIT - 1)) - 1;
     }
 
     _NODISCARD bool try_wait() const noexcept {
