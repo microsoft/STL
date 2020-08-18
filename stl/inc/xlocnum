@@ -1165,6 +1165,11 @@ struct _Hex_float_precision<long double> {
 // FUNCTION TEMPLATE _Float_put_desired_precision
 template <class _Ty>
 int _Float_put_desired_precision(const streamsize _Precision, const ios_base::fmtflags _Float_flags) {
+    const bool _Is_hex = _Float_flags == (ios_base::fixed | ios_base::scientific);
+    if (_Is_hex) {
+        return _Hex_float_precision<_Ty>::value;
+    }
+
     if (_Precision > 0) {
         return static_cast<int>(_Precision);
     } else if (_Precision == 0) {
@@ -1175,13 +1180,8 @@ int _Float_put_desired_precision(const streamsize _Precision, const ios_base::fm
             return 0;
         }
     } else {
-        const bool _Is_hex = _Float_flags == (ios_base::fixed | ios_base::scientific);
-        if (_Is_hex) {
-            return _Hex_float_precision<_Ty>::value;
-        } else {
-            constexpr int _Default_precision = 6;
-            return _Default_precision;
-        }
+        constexpr int _Default_precision = 6;
+        return _Default_precision;
     }
 }
 
