@@ -135,7 +135,7 @@ struct dummy_diagnostic : std::error_category {
 };
 
 template <class ReturnType, class SmallType, class EqualType, class LargeType>
-void spaceship_test(const SmallType& smaller, const EqualType& smaller_equal, const LargeType& larger) {
+constexpr bool spaceship_test(const SmallType& smaller, const EqualType& smaller_equal, const LargeType& larger) {
     assert(smaller == smaller_equal);
     assert(smaller_equal == smaller);
     assert(smaller != larger);
@@ -153,6 +153,8 @@ void spaceship_test(const SmallType& smaller, const EqualType& smaller_equal, co
     assert((smaller <=> smaller_equal) == 0);
 
     static_assert(std::is_same_v<decltype(smaller <=> larger), ReturnType>);
+
+    return true;
 }
 
 // TRANSITION, <=> is unimplemented for string.
@@ -235,17 +237,12 @@ void tuple_like_test() {
         constexpr TupleLike<int, int> t1_equal{1, 1};
         constexpr TupleLike<int, int> t2{2, 1};
 
-        static_assert(t1 == t1_equal);
-        static_assert(t1_equal == t1);
-        static_assert(t1 != t2);
-        static_assert(t2 != t1);
-        static_assert(t1 < t2);
-        static_assert(t2 > t1);
-        static_assert(t1 <= t2);
-        static_assert(t2 >= t1);
-        static_assert((t1 <=> t2) < 0);
-        static_assert((t2 <=> t1) > 0);
-        static_assert((t1 <=> t1_equal) == 0);
+        static_assert(spaceship_test<std::strong_ordering>(t1, t1_equal, t2));
+    }
+    {
+        TupleLike<int, int> t1{1, 1};
+        TupleLike<int, int> t1_equal{1, 1};
+        TupleLike<int, int> t2{2, 1};
 
         spaceship_test<std::strong_ordering>(t1, t1_equal, t2);
     }
@@ -254,55 +251,19 @@ void tuple_like_test() {
         constexpr TupleLike<int, double> t1_equal{1, 1.0};
         constexpr TupleLike<int, double> t2{2, 1.0};
 
-        static_assert(t1 == t1_equal);
-        static_assert(t1_equal == t1);
-        static_assert(t1 != t2);
-        static_assert(t2 != t1);
-        static_assert(t1 < t2);
-        static_assert(t2 > t1);
-        static_assert(t1 <= t2);
-        static_assert(t2 >= t1);
-        static_assert((t1 <=> t2) < 0);
-        static_assert((t2 <=> t1) > 0);
-        static_assert((t1 <=> t1_equal) == 0);
+        static_assert(spaceship_test<std::partial_ordering>(t1, t1_equal, t2));
+    }
+    {
+        TupleLike<int, double> t1{1, 1.0};
+        TupleLike<int, double> t1_equal{1, 1.0};
+        TupleLike<int, double> t2{2, 1.0};
 
         spaceship_test<std::partial_ordering>(t1, t1_equal, t2);
     }
 }
 
-template <class SmallType, class EqualType, class LargeType>
-void optional_test(const SmallType& small, const EqualType& equal, const LargeType& large) {
-    using ReturnType = std::compare_three_way_result_t<SmallType, LargeType>;
-
-    {
-        std::optional<SmallType> o1{small};
-        std::optional<EqualType> o1_equal{equal};
-        std::optional<LargeType> o2{large};
-
-        spaceship_test<ReturnType>(o1, o1_equal, o2);
-    }
-    {
-        std::optional<SmallType> o1(std::nullopt);
-        std::optional<EqualType> o1_equal(std::nullopt);
-        std::optional<LargeType> o2{large};
-
-        spaceship_test<ReturnType>(o1, o1_equal, o2);
-    }
-    {
-        std::optional<SmallType> o1{small};
-
-        spaceship_test<ReturnType>(o1, equal, large);
-    }
-    {
-        std::optional<SmallType> o1(std::nullopt);
-        std::optional<LargeType> o2(large);
-
-        spaceship_test<std::strong_ordering>(std::nullopt, o1, o2);
-    }
-}
-
 template <auto SmallVal, decltype(SmallVal) EqualVal, decltype(EqualVal) LargeVal>
-constexpr void constexpr_optional_test() {
+void optional_test() {
     using ReturnType = std::compare_three_way_result_t<decltype(SmallVal), decltype(LargeVal)>;
 
     {
@@ -310,73 +271,50 @@ constexpr void constexpr_optional_test() {
         constexpr std::optional o1_equal(EqualVal);
         constexpr std::optional o2(LargeVal);
 
-        static_assert(o1 == o1_equal);
-        static_assert(o1_equal == o1);
-        static_assert(o1 != o2);
-        static_assert(o2 != o1);
-        static_assert(o1 < o2);
-        static_assert(o2 > o1);
-        static_assert(o1 <= o2);
-        static_assert(o2 >= o1);
-        static_assert((o1 <=> o2) < 0);
-        static_assert((o2 <=> o1) > 0);
-        static_assert((o1 <=> o1_equal) == 0);
+        static_assert(spaceship_test<ReturnType>(o1, o1_equal, o2));
+    }
+    {
+        std::optional o1(SmallVal);
+        std::optional o1_equal(EqualVal);
+        std::optional o2(LargeVal);
 
-        static_assert(std::is_same_v<decltype(o1 <=> o2), ReturnType>);
+        spaceship_test<ReturnType>(o1, o1_equal, o2);
     }
     {
         constexpr std::optional<decltype(SmallVal)> o1(std::nullopt);
         constexpr std::optional<decltype(EqualVal)> o1_equal(std::nullopt);
         constexpr std::optional o2(LargeVal);
 
-        static_assert(o1 == o1_equal);
-        static_assert(o1_equal == o1);
-        static_assert(o1 != o2);
-        static_assert(o2 != o1);
-        static_assert(o1 < o2);
-        static_assert(o2 > o1);
-        static_assert(o1 <= o2);
-        static_assert(o2 >= o1);
-        static_assert((o1 <=> o2) < 0);
-        static_assert((o2 <=> o1) > 0);
-        static_assert((o1 <=> o1_equal) == 0);
+        static_assert(spaceship_test<ReturnType>(o1, o1_equal, o2));
+    }
+    {
+        std::optional<decltype(SmallVal)> o1(std::nullopt);
+        std::optional<decltype(EqualVal)> o1_equal(std::nullopt);
+        std::optional o2(LargeVal);
 
-        static_assert(std::is_same_v<decltype(o1 <=> o2), ReturnType>);
+        spaceship_test<ReturnType>(o1, o1_equal, o2);
     }
     {
         constexpr std::optional o1(SmallVal);
 
-        static_assert(o1 == EqualVal);
-        static_assert(EqualVal == o1);
-        static_assert(o1 != LargeVal);
-        static_assert(LargeVal != o1);
-        static_assert(o1 < LargeVal);
-        static_assert(LargeVal > o1);
-        static_assert(o1 <= LargeVal);
-        static_assert(LargeVal >= o1);
-        static_assert((o1 <=> LargeVal) < 0);
-        static_assert((LargeVal <=> o1) > 0);
-        static_assert((o1 <=> EqualVal) == 0);
+        static_assert(spaceship_test<ReturnType>(o1, EqualVal, LargeVal));
+    }
+    {
+        std::optional o1(SmallVal);
 
-        static_assert(std::is_same_v<decltype(o1 <=> LargeVal), ReturnType>);
+        spaceship_test<ReturnType>(o1, EqualVal, LargeVal);
     }
     {
         constexpr std::optional<decltype(SmallVal)> o1(std::nullopt);
         constexpr std::optional o2(LargeVal);
 
-        static_assert(o1 == std::nullopt);
-        static_assert(std::nullopt == o1);
-        static_assert(o1 != o2);
-        static_assert(o2 != o1);
-        static_assert(o1 < o2);
-        static_assert(o2 > o1);
-        static_assert(o1 <= o2);
-        static_assert(o2 >= o1);
-        static_assert((o1 <=> o2) < 0);
-        static_assert((o2 <=> o1) > 0);
-        static_assert((o1 <=> std::nullopt) == 0);
+        static_assert(spaceship_test<ReturnType>(o1, std::nullopt, o2));
+    }
+    {
+        std::optional<decltype(SmallVal)> o1(std::nullopt);
+        std::optional o2(LargeVal);
 
-        static_assert(std::is_same_v<decltype(o1 <=> o2), ReturnType>);
+        spaceship_test<ReturnType>(o1, std::nullopt, o2);
     }
 }
 
@@ -657,12 +595,11 @@ void ordering_test_cases() {
         spaceship_test<std::strong_ordering>(c_mem[0], c_mem[0], c_mem[1]);
     }
     { // optional
-        // TRANSITION, VSO-1130458
-        // Test cross-type overloads
-        constexpr_optional_test<0, 0, 1>();
-        constexpr_optional_test<0.0, 0.0, 1.0>();
-        optional_test(0, 0, 1);
-        optional_test(0.0, 0.0, 1.0);
+        optional_test<0, 0, 1>();
+
+#if defined(__cpp_nontype_template_args) && __cpp_non_type_template_args >= 201911
+        optional_test<0.0, 0.0, 1.0>();
+#endif
 
         static_assert(
             std::is_same_v<std::compare_three_way_result_t<std::optional<WeaklyOrdered>, std::optional<WeaklyOrdered>>,
@@ -680,17 +617,12 @@ void ordering_test_cases() {
             constexpr std::tuple<double, double> t1_equal{1.0, 1.0};
             constexpr std::tuple<int, double> t2{2, 1.0};
 
-            static_assert(t1 == t1_equal);
-            static_assert(t1_equal == t1);
-            static_assert(t1 != t2);
-            static_assert(t2 != t1);
-            static_assert(t1 < t2);
-            static_assert(t2 > t1);
-            static_assert(t1 <= t2);
-            static_assert(t2 >= t1);
-            static_assert((t1 <=> t2) < 0);
-            static_assert((t2 <=> t1) > 0);
-            static_assert((t1 <=> t1_equal) == 0);
+            static_assert(spaceship_test<std::partial_ordering>(t1, t1_equal, t2));
+        }
+        {
+            std::tuple<int, double> t1{1, 1.0};
+            std::tuple<double, double> t1_equal{1.0, 1.0};
+            std::tuple<int, double> t2{2, 1.0};
 
             spaceship_test<std::partial_ordering>(t1, t1_equal, t2);
         }
@@ -699,17 +631,12 @@ void ordering_test_cases() {
             constexpr std::tuple<int, double> t1_equal{1, 1.0};
             constexpr std::tuple<double, double> t2{2.0, 1.0};
 
-            static_assert(t1 == t1_equal);
-            static_assert(t1_equal == t1);
-            static_assert(t1 != t2);
-            static_assert(t2 != t1);
-            static_assert(t1 < t2);
-            static_assert(t2 > t1);
-            static_assert(t1 <= t2);
-            static_assert(t2 >= t1);
-            static_assert((t1 <=> t2) < 0);
-            static_assert((t2 <=> t1) > 0);
-            static_assert((t1 <=> t1_equal) == 0);
+            static_assert(spaceship_test<std::partial_ordering>(t1, t1_equal, t2));
+        }
+        {
+            std::tuple<int, double> t1{1, 1.0};
+            std::tuple<int, double> t1_equal{1, 1.0};
+            std::tuple<double, double> t2{2.0, 1.0};
 
             spaceship_test<std::partial_ordering>(t1, t1_equal, t2);
         }
@@ -761,8 +688,8 @@ void test_element_ordering() {
 int main() {
     ordering_test_cases();
 
-    // test_element_ordering<PartiallyOrdered, std::partial_ordering>();
-    // test_element_ordering<WeaklyOrdered, std::weak_ordering>();
-    // test_element_ordering<StronglyOrdered, std::strong_ordering>();
-    // test_element_ordering<SynthOrdered, std::weak_ordering>();
+    test_element_ordering<PartiallyOrdered, std::partial_ordering>();
+    test_element_ordering<WeaklyOrdered, std::weak_ordering>();
+    test_element_ordering<StronglyOrdered, std::strong_ordering>();
+    test_element_ordering<SynthOrdered, std::weak_ordering>();
 }
