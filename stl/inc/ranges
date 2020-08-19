@@ -44,7 +44,7 @@ namespace ranges {
     class _Semiregular_box {
     public:
         constexpr _Semiregular_box() noexcept : _Dummy{}, _Engaged{false} {}
-        constexpr _Semiregular_box() noexcept(is_nothrow_default_constructible_v<_Ty>) requires constructible_from<_Ty>
+        constexpr _Semiregular_box() noexcept(is_nothrow_default_constructible_v<_Ty>) requires default_initializable<_Ty>
             : _Val(), _Engaged{true} {}
 
         template <class... _Types>
@@ -177,7 +177,7 @@ namespace ranges {
 
     // clang-format off
     template <_Copy_constructible_object _Ty>
-        requires constructible_from<_Ty>
+        requires default_initializable<_Ty>
             && (copyable<_Ty>
                 || (is_nothrow_copy_constructible_v<_Ty>
                     && (movable<_Ty> || is_nothrow_move_constructible_v<_Ty>)))
@@ -274,7 +274,8 @@ namespace ranges {
     class _Semiregular_box : public _Choose_semiregular_box_move<_Ty> {
     public:
         constexpr _Semiregular_box() noexcept {}
-        constexpr _Semiregular_box() noexcept(is_nothrow_default_constructible_v<_Ty>) requires constructible_from<_Ty>
+        constexpr _Semiregular_box() noexcept(
+            is_nothrow_default_constructible_v<_Ty>) requires default_initializable<_Ty>
             : _Choose_semiregular_box_move<_Ty>{in_place} {}
 
         template <class... _Types>
@@ -285,7 +286,7 @@ namespace ranges {
 
     // clang-format off
     template <_Copy_constructible_object _Ty>
-        requires constructible_from<_Ty> && copyable<_Ty>
+        requires default_initializable<_Ty> && copyable<_Ty>
     class _Semiregular_box<_Ty> {
         // clang-format on
     public:
