@@ -1205,38 +1205,6 @@ _NODISCARD bool operator>=(
     const sub_match<_BidIt>& _Left, const basic_string<_Iter_value_t<_BidIt>, _Traits, _Alloc>& _Right) {
     return !(_Left < _Right);
 }
-
-
-template <class _BidIt, class _Traits, class _Alloc>
-_NODISCARD bool operator!=(
-    const sub_match<_BidIt>& _Left, const basic_string<_Iter_value_t<_BidIt>, _Traits, _Alloc>& _Right) {
-    return !(_Left == _Right);
-}
-
-template <class _BidIt, class _Traits, class _Alloc>
-_NODISCARD bool operator<(
-    const sub_match<_BidIt>& _Left, const basic_string<_Iter_value_t<_BidIt>, _Traits, _Alloc>& _Right) {
-    return _Left._Less(_Right.data(), _Right.size());
-}
-
-template <class _BidIt, class _Traits, class _Alloc>
-_NODISCARD bool operator>(
-    const sub_match<_BidIt>& _Left, const basic_string<_Iter_value_t<_BidIt>, _Traits, _Alloc>& _Right) {
-    return _Right < _Left;
-}
-
-template <class _BidIt, class _Traits, class _Alloc>
-_NODISCARD bool operator<=(
-    const sub_match<_BidIt>& _Left, const basic_string<_Iter_value_t<_BidIt>, _Traits, _Alloc>& _Right) {
-    return !(_Right < _Left);
-}
-
-template <class _BidIt, class _Traits, class _Alloc>
-_NODISCARD bool operator>=(
-    const sub_match<_BidIt>& _Left, const basic_string<_Iter_value_t<_BidIt>, _Traits, _Alloc>& _Right) {
-    return !(_Left < _Right);
-}
-
 #endif // !_HAS_CXX20
 
 // INSERT sub_match IN STREAM
