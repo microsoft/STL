@@ -146,7 +146,7 @@ acquire this dependency.
     * Otherwise, install [CMake][] 3.17 or later, and [Ninja][] 1.8.2 or later.
 2. Open Visual Studio, and choose the "Clone or check out code" option. Enter the URL of this repository,
    `https://github.com/microsoft/STL`.
-3. Open a terminal in the IDE with ````ctrl + ` ```` by default or press on "view" in the top bar then "Terminal".
+3. Open a terminal in the IDE with ````ctrl + ` ```` (by default) or press on "View" in the top bar, and then "Terminal".
 4. Invoke `git submodule update --init vcpkg` in the terminal.
 5. Invoke `.\vcpkg\bootstrap-vcpkg.bat` in the terminal.
 6. Assuming you are targeting x86 and x64, invoke
