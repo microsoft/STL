@@ -326,20 +326,19 @@ _NODISCARD inline bool operator==(const error_condition& _Left, const error_cond
 
 // TRANSITION, GH-489
 #ifdef __cpp_lib_concepts
-    _NODISCARD inline strong_ordering operator<=>(const error_code& _Left, const error_code& _Right) noexcept {
-        if (const auto _Result = _Left.category() <=> _Right.category(); _Result != 0) {
-            return _Result;
-        }
-        return _Left.value() <=> _Right.value();
+_NODISCARD inline strong_ordering operator<=>(const error_code& _Left, const error_code& _Right) noexcept {
+    if (const auto _Result = _Left.category() <=> _Right.category(); _Result != 0) {
+        return _Result;
     }
+    return _Left.value() <=> _Right.value();
+}
 
-    _NODISCARD inline strong_ordering operator<=>(
-        const error_condition& _Left, const error_condition& _Right) noexcept {
-        if (const auto _Result = _Left.category() <=> _Right.category(); _Result != 0) {
-            return _Result;
-        }
-        return _Left.value() <=> _Right.value();
+_NODISCARD inline strong_ordering operator<=>(const error_condition& _Left, const error_condition& _Right) noexcept {
+    if (const auto _Result = _Left.category() <=> _Right.category(); _Result != 0) {
+        return _Result;
     }
+    return _Left.value() <=> _Right.value();
+}
 #else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
 _NODISCARD inline bool operator<(const error_code& _Left, const error_code& _Right) noexcept {
     return _Left.category() < _Right.category()
