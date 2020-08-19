@@ -8,7 +8,7 @@
 #define _TUPLE_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
-#if __cpp_lib_concepts
+#ifdef __cpp_lib_concepts
 #include <compare>
 #endif
 #include <new>
