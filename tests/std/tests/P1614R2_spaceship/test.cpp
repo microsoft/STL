@@ -123,10 +123,10 @@ namespace std {
 } // namespace std
 
 struct dummy_diagnostic : std::error_category {
-    const char* name() const noexcept {
+    const char* name() const noexcept override {
         return "dummy";
     }
-    std::string message(int) const {
+    std::string message(int) const override {
         return "";
     }
 };
@@ -176,16 +176,33 @@ void unordered_containers_test(
 }
 
 template <class ErrorType>
-void test_diagnostics_type() {
-    dummy_diagnostic* c_mem = new dummy_diagnostic[2];
+void diagnostics_test() {
+    dummy_diagnostic c_mem[2];
+    {
+        ErrorType e_smaller(0, c_mem[0]);
+        ErrorType e_equal(0, c_mem[0]);
+        ErrorType e_larger(1, c_mem[1]);
 
-    ErrorType e_smaller(0, c_mem[0]);
-    ErrorType e_equal(0, c_mem[0]);
-    ErrorType e_larger(1, c_mem[1]);
+        spaceship_test<std::strong_ordering>(e_smaller, e_equal, e_larger);
+    }
+    {
+        ErrorType e_smaller(0, c_mem[0]);
+        ErrorType e_larger(0, c_mem[1]);
 
-    spaceship_test<std::strong_ordering>(e_smaller, e_equal, e_larger);
+        assert(e_smaller < e_larger);
+        assert(!(e_larger < e_smaller));
+        assert((e_smaller <=> e_larger) < 0);
+        assert((e_larger <=> e_smaller) > 0);
+    }
+    {
+        ErrorType e_smaller(0, c_mem[0]);
+        ErrorType e_larger(1, c_mem[0]);
 
-    delete[] c_mem;
+        assert(e_smaller < e_larger);
+        assert(!(e_larger < e_smaller));
+        assert((e_smaller <=> e_larger) < 0);
+        assert((e_larger <=> e_smaller) > 0);
+    }
 }
 
 void ordering_test_cases() {
@@ -436,10 +453,10 @@ void ordering_test_cases() {
         static_assert(std::is_same_v<SpaceshipType<PartiallyOrderedMatch>, std::partial_ordering>);
     }
     { // Diagnostics Library
-        test_diagnostics_type<std::error_code>();
-        test_diagnostics_type<std::error_condition>();
+        diagnostics_test<std::error_code>();
+        diagnostics_test<std::error_condition>();
 
-        dummy_diagnostic* c_mem = new dummy_diagnostic[2];
+        dummy_diagnostic c_mem[2];
         {
             std::error_code e1(0, c_mem[0]);
             std::error_condition e2(0, c_mem[0]);
@@ -463,7 +480,6 @@ void ordering_test_cases() {
         }
 
         spaceship_test<std::strong_ordering>(c_mem[0], c_mem[0], c_mem[1]);
-        delete[] c_mem;
     }
 }
 

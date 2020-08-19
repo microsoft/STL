@@ -320,12 +320,41 @@ _NODISCARD inline bool operator==(const error_code& _Left, const error_condition
     return _Left.category().equivalent(_Left.value(), _Right) || _Right.category().equivalent(_Left, _Right.value());
 }
 
-_NODISCARD inline bool operator==(const error_condition& _Left, const error_code& _Right) noexcept {
-    return _Right.category().equivalent(_Right.value(), _Left) || _Left.category().equivalent(_Right, _Left.value());
-}
-
 _NODISCARD inline bool operator==(const error_condition& _Left, const error_condition& _Right) noexcept {
     return _Left.category() == _Right.category() && _Left.value() == _Right.value();
+}
+
+// TRANSITION, GH-489
+#ifdef __cpp_lib_concepts
+    _NODISCARD inline strong_ordering operator<=>(const error_code& _Left, const error_code& _Right) noexcept {
+        if (const auto _Result = _Left.category() <=> _Right.category(); _Result != 0) {
+            return _Result;
+        }
+        return _Left.value() <=> _Right.value();
+    }
+
+    _NODISCARD inline strong_ordering operator<=>(
+        const error_condition& _Left, const error_condition& _Right) noexcept {
+        if (const auto _Result = _Left.category() <=> _Right.category(); _Result != 0) {
+            return _Result;
+        }
+        return _Left.value() <=> _Right.value();
+    }
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+_NODISCARD inline bool operator<(const error_code& _Left, const error_code& _Right) noexcept {
+    return _Left.category() < _Right.category()
+           || (_Left.category() == _Right.category() && _Left.value() < _Right.value());
+}
+
+_NODISCARD inline bool operator<(const error_condition& _Left, const error_condition& _Right) noexcept {
+    return _Left.category() < _Right.category()
+           || (_Left.category() == _Right.category() && _Left.value() < _Right.value());
+}
+#endif // !defined(__cpp_lib_concepts)
+
+#if !_HAS_CXX20
+_NODISCARD inline bool operator==(const error_condition& _Left, const error_code& _Right) noexcept {
+    return _Right.category().equivalent(_Right.value(), _Left) || _Left.category().equivalent(_Right, _Left.value());
 }
 
 _NODISCARD inline bool operator!=(const error_code& _Left, const error_code& _Right) noexcept {
@@ -343,16 +372,7 @@ _NODISCARD inline bool operator!=(const error_condition& _Left, const error_code
 _NODISCARD inline bool operator!=(const error_condition& _Left, const error_condition& _Right) noexcept {
     return !(_Left == _Right);
 }
-
-_NODISCARD inline bool operator<(const error_code& _Left, const error_code& _Right) noexcept {
-    return _Left.category() < _Right.category()
-           || (_Left.category() == _Right.category() && _Left.value() < _Right.value());
-}
-
-_NODISCARD inline bool operator<(const error_condition& _Left, const error_condition& _Right) noexcept {
-    return _Left.category() < _Right.category()
-           || (_Left.category() == _Right.category() && _Left.value() < _Right.value());
-}
+#endif // !_HAS_CXX20
 #endif // _STL_OPTIMIZE_SYSTEM_ERROR_OPERATORS
 
 // VIRTUALS FOR error_category
