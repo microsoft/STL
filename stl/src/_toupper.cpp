@@ -5,11 +5,12 @@
 
 #include <yvals.h>
 
-#include "awint.h"
 #include <ctype.h>
 #include <locale.h>
 #include <stddef.h>
 #include <xlocinfo.h>
+
+#include "awint.hpp"
 
 // remove macro definitions of _toupper() and toupper()
 #undef _toupper
@@ -48,7 +49,7 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Toupper(int c, const _Ctypevec* ploc)
     }
 
     if (locale_name == nullptr) {
-        if ((c >= 'a') && (c <= 'z')) {
+        if (c >= 'a' && c <= 'z') {
             c = c - ('a' - 'A');
         }
 
@@ -71,11 +72,11 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Toupper(int c, const _Ctypevec* ploc)
     // convert int c to multibyte string
     if (ploc == nullptr ? _cpp_isleadbyte((c >> 8) & 0xff) : (ploc->_Table[(c >> 8) & 0xff] & _LEADBYTE) != 0) {
         inbuffer[0] = (c >> 8 & 0xff);
-        inbuffer[1] = (unsigned char) c;
+        inbuffer[1] = static_cast<unsigned char>(c);
         inbuffer[2] = 0;
         size        = 2;
     } else {
-        inbuffer[0] = (unsigned char) c;
+        inbuffer[0] = static_cast<unsigned char>(c);
         inbuffer[1] = 0;
         size        = 1;
     }
@@ -90,9 +91,9 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Toupper(int c, const _Ctypevec* ploc)
 
     // construct integer return value
     if (size == 1) {
-        return (int) outbuffer[0];
+        return static_cast<int>(outbuffer[0]);
     } else {
-        return (int) outbuffer[1] | ((int) outbuffer[0] << 8);
+        return static_cast<int>(outbuffer[1]) | (static_cast<int>(outbuffer[0]) << 8);
     }
 }
 

@@ -156,7 +156,7 @@ void example() {
     STATIC_ASSERT(!is_trivial_v<int&&>);
 
 
-    // DevDiv#517460 "is_*_constructible type traits are broken for reference types"
+    // DevDiv-517460 "is_*_constructible type traits are broken for reference types"
     STATIC_ASSERT(is_copy_constructible_v<int&>);
     STATIC_ASSERT(is_copy_constructible_v<const int&>);
     STATIC_ASSERT(is_move_constructible_v<int&>);

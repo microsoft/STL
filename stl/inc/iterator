@@ -511,6 +511,311 @@ private:
     bool _Failed; // true if any stores have failed
     streambuf_type* _Strbuf; // the wrapped stream buffer
 };
+
+#ifdef __cpp_lib_concepts
+// CLASS TEMPLATE counted_iterator
+template <input_or_output_iterator _Iter>
+class counted_iterator {
+public:
+    using iterator_type = _Iter;
+
+    // [counted.iter.const]
+    constexpr counted_iterator() = default;
+    constexpr counted_iterator(_Iter _Right, const iter_difference_t<_Iter> _Diff) noexcept(
+        is_nothrow_move_constructible_v<_Iter>) // strengthened
+        : _Current(_STD move(_Right)), _Length(_Diff) {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Diff >= 0, "counted_iterator requires non-negative length n");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+    }
+
+    // clang-format off
+    template <class _Other>
+        requires convertible_to<const _Other&, _Iter>
+    constexpr counted_iterator(const counted_iterator<_Other>& _Right) noexcept(
+        is_nothrow_constructible_v<_Iter, const _Other&>) // strengthened
+        : _Current(_Right._Current), _Length(_Right._Length) {}
+
+    template <class _Other>
+        requires assignable_from<_Iter&, const _Other&>
+    constexpr counted_iterator& operator=(const counted_iterator<_Other>& _Right) noexcept(
+        is_nothrow_assignable_v<_Iter&, const _Other&>) /* strengthened */ {
+        // clang-format on
+        _Current = _Right._Current;
+        _Length  = _Right._Length;
+        return *this;
+    }
+
+    // [counted.iter.access]
+    _NODISCARD constexpr _Iter base() const& noexcept(is_nothrow_copy_constructible_v<_Iter>) /* strengthened */
+        requires copy_constructible<_Iter> {
+        return _Current;
+    }
+
+    _NODISCARD constexpr _Iter base() && noexcept(is_nothrow_move_constructible_v<_Iter>) /* strengthened */ {
+        return _STD move(_Current);
+    }
+
+    _NODISCARD constexpr iter_difference_t<_Iter> count() const noexcept {
+        return _Length;
+    }
+
+    // [counted.iter.elem]
+    _NODISCARD constexpr decltype(auto) operator*() noexcept(noexcept(*_Current)) /* strengthened */ {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        // Per proposed resolution of LWG-3472
+        _STL_VERIFY(_Length > 0, "counted_iterator dereference beyond end of range");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        return *_Current;
+    }
+
+    _NODISCARD constexpr decltype(auto) operator*() const noexcept(noexcept(*_Current)) /* strengthened */
+        requires _Dereferenceable<const _Iter> {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        // Per proposed resolution of LWG-3472
+        _STL_VERIFY(_Length > 0, "counted_iterator dereference beyond end of range");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        return *_Current;
+    }
+
+    _NODISCARD constexpr decltype(auto) operator[](const iter_difference_t<_Iter> _Diff) const
+        requires random_access_iterator<_Iter> {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Diff < _Length, "counted_iterator index out of range");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        return _Current[_Diff];
+    }
+
+    // [counted.iter.nav]
+    constexpr counted_iterator& operator++() {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Length > 0, "counted_iterator increment beyond end of range");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        ++_Current;
+        --_Length;
+        return *this;
+    }
+
+    constexpr decltype(auto) operator++(int) {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Length > 0, "counted_iterator increment beyond end of range");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        --_Length;
+        _TRY_BEGIN
+        return _Current++;
+
+        _CATCH_ALL
+        ++_Length;
+
+        _RERAISE;
+        _CATCH_END
+    }
+
+    constexpr counted_iterator operator++(int) requires forward_iterator<_Iter> {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Length > 0, "counted_iterator increment beyond end of range");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        counted_iterator _Tmp = *this;
+        ++_Current;
+        --_Length;
+        return _Tmp;
+    }
+
+    constexpr counted_iterator& operator--() requires bidirectional_iterator<_Iter> {
+        --_Current;
+        ++_Length;
+        return *this;
+    }
+
+    constexpr counted_iterator operator--(int) requires bidirectional_iterator<_Iter> {
+        counted_iterator _Tmp = *this;
+        --_Current;
+        ++_Length;
+        return _Tmp;
+    }
+
+    _NODISCARD constexpr counted_iterator operator+(const iter_difference_t<_Iter> _Diff) const
+        requires random_access_iterator<_Iter> {
+        return counted_iterator{_Current + _Diff, static_cast<iter_difference_t<_Iter>>(_Length - _Diff)};
+    }
+
+    _NODISCARD friend constexpr counted_iterator operator+(
+        const iter_difference_t<_Iter> _Diff, const counted_iterator& _Right) requires random_access_iterator<_Iter> {
+        return counted_iterator{_Right._Current + _Diff, static_cast<iter_difference_t<_Iter>>(_Right._Length - _Diff)};
+    }
+
+    constexpr counted_iterator& operator+=(
+        const iter_difference_t<_Iter> _Diff) requires random_access_iterator<_Iter> {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Diff <= _Length, "counted_iterator seek beyond end of range");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        _Current += _Diff;
+        _Length -= _Diff;
+        return *this;
+    }
+
+    _NODISCARD constexpr counted_iterator operator-(const iter_difference_t<_Iter> _Diff) const
+        requires random_access_iterator<_Iter> {
+        return counted_iterator{_Current - _Diff, static_cast<iter_difference_t<_Iter>>(_Length + _Diff)};
+    }
+
+    template <common_with<_Iter> _Other>
+    _NODISCARD friend constexpr iter_difference_t<_Other> operator-(
+        const counted_iterator& _Left, const counted_iterator<_Other>& _Right) noexcept /* strengthened */ {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _Same_sequence(_Left, _Right);
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        return _Right.count() - _Left._Length;
+    }
+
+    _NODISCARD friend constexpr iter_difference_t<_Iter> operator-(
+        const counted_iterator& _Left, default_sentinel_t) noexcept /* strengthened */ {
+        return -_Left._Length;
+    }
+
+    _NODISCARD friend constexpr iter_difference_t<_Iter> operator-(
+        default_sentinel_t, const counted_iterator& _Right) noexcept /* strengthened */ {
+        return _Right._Length;
+    }
+
+    constexpr counted_iterator& operator-=(
+        const iter_difference_t<_Iter> _Diff) requires random_access_iterator<_Iter> {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(-_Diff <= _Length, "counted_iterator decrement beyond end of range");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        _Current -= _Diff;
+        _Length += _Diff;
+        return *this;
+    }
+
+    // [counted.iter.cmp]
+    template <common_with<_Iter> _Other>
+    _NODISCARD friend constexpr bool operator==(
+        const counted_iterator& _Left, const counted_iterator<_Other>& _Right) noexcept /* strengthened */ {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _Same_sequence(_Left, _Right);
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        return _Left._Length == _Right.count();
+    }
+
+    _NODISCARD friend constexpr bool operator==(const counted_iterator& _Left, default_sentinel_t) noexcept
+    /* strengthened */ {
+        return _Left._Length == 0;
+    }
+
+    template <common_with<_Iter> _Other>
+    _NODISCARD friend constexpr strong_ordering operator<=>(
+        const counted_iterator& _Left, const counted_iterator<_Other>& _Right) noexcept /* strengthened */ {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _Same_sequence(_Left, _Right);
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        return _Right.count() <=> _Left._Length;
+    }
+
+    // [counted.iter.cust]
+    _NODISCARD friend constexpr iter_rvalue_reference_t<_Iter> iter_move(const counted_iterator& _Right) noexcept(
+        noexcept(_RANGES iter_move(_Right._Current))) requires input_iterator<_Iter> {
+        return _RANGES iter_move(_Right._Current);
+    }
+
+    template <indirectly_swappable<_Iter> _Other>
+    friend constexpr void iter_swap(const counted_iterator& _Left, const counted_iterator<_Other>& _Right) noexcept(
+        noexcept(_RANGES iter_swap(_Left._Current, _Right._Current))) {
+        _RANGES iter_swap(_Left._Current, _Right._Current);
+    }
+
+    template <common_with<_Iter> _Other>
+    friend constexpr void _Same_sequence(
+        const counted_iterator& _Left, const counted_iterator<_Other>& _Right) noexcept {
+        // Per N4861 [counted.iterator]/2, two counted_iterators x and y refer to elements of the same sequence iff
+        // next(x.base(), x.count()) and next(y.base(), y.count()) "refer to the same element." Iterator equality is a
+        // fair proxy for this condition.
+        if constexpr (forward_iterator<_Iter> && forward_iterator<_Other>) {
+            using _CIter = common_type_t<_Iter, _Other>;
+            using _CDiff = common_type_t<iter_difference_t<_Iter>, iter_difference_t<_Other>>;
+
+            const _CDiff _Diff = static_cast<_CDiff>(_Left._Length) - static_cast<_CDiff>(_Right.count());
+            if (_Diff < 0) {
+                _STL_VERIFY(
+                    static_cast<_CIter>(_Left._Current) == _RANGES next(static_cast<_CIter>(_Right.base()), -_Diff),
+                    "counted_iterators from different ranges");
+            } else {
+                _STL_VERIFY(
+                    _RANGES next(static_cast<_CIter>(_Left._Current), _Diff) == static_cast<_CIter>(_Right.base()),
+                    "counted_iterators from different ranges");
+            }
+        }
+    }
+
+    template <common_with<_Iter> _Other>
+    friend constexpr void _Verify_range(const counted_iterator& _Left, const counted_iterator<_Other>& _Right) {
+        if constexpr (_Range_verifiable_v<_Iter, _Other>) {
+            _Verify_range(_Left._Current, _Right._Current);
+        }
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _Same_sequence(_Left, _Right);
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+    }
+
+    constexpr void _Verify_offset(const iter_difference_t<_Iter> _Off) const {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Off <= _Length, "Offset larger than counted_iterator length");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        if constexpr (_Offset_verifiable_v<_Iter>) {
+            _Current._Verify_offset(_Off);
+        }
+    }
+
+    using _Prevent_inheriting_unwrap = counted_iterator;
+
+    _NODISCARD constexpr counted_iterator<_Unwrapped_t<const _Iter&>>
+        _Unwrapped() const& requires _Unwrappable_v<const _Iter&> {
+        return static_cast<counted_iterator<_Unwrapped_t<const _Iter&>>>(_Current._Unwrapped());
+    }
+
+    _NODISCARD constexpr counted_iterator<_Unwrapped_t<_Iter>> _Unwrapped() && requires _Unwrappable_v<const _Iter&> {
+        return static_cast<counted_iterator<_Unwrapped_t<_Iter>>>(_STD move(_Current)._Unwrapped());
+    }
+
+    static constexpr bool _Unwrap_when_unverified = _Do_unwrap_when_unverified_v<_Iter>;
+
+    // clang-format off
+    template <class _Other>
+        requires _Wrapped_seekable_v<_Iter, const _Other&>
+    constexpr void _Seek_to(const counted_iterator<_Other>& _It) {
+        // clang-format on
+        _Current._Seek_to(_It._Current);
+        _Length = _It._Length;
+    }
+
+    // clang-format off
+    template <class _Other>
+        requires _Wrapped_seekable_v<_Iter, _Other>
+    constexpr void _Seek_to(counted_iterator<_Other>&& _It) {
+        // clang-format on
+        _Current._Seek_to(_STD move(_It)._Current);
+        _Length = _It._Length;
+    }
+
+private:
+    template <input_or_output_iterator>
+    friend class counted_iterator;
+
+    _Iter _Current{};
+    iter_difference_t<_Iter> _Length = 0;
+};
+
+template <class _Iter>
+struct incrementable_traits<counted_iterator<_Iter>> {
+    using difference_type = iter_difference_t<_Iter>;
+};
+
+template <input_iterator _Iter>
+struct iterator_traits<counted_iterator<_Iter>> : iterator_traits<_Iter> {
+    using pointer = void;
+};
+#endif // __cpp_lib_concepts
+
 _STD_END
 
 _STDEXT_BEGIN
@@ -582,8 +887,8 @@ public:
         }
 
         if (_Off < 0) {
-#pragma warning(suppress : 4146) // unary minus operator applied to unsigned type, result still unsigned
-            _STL_VERIFY(_Myindex >= -static_cast<size_t>(_Off), "cannot seek checked_array_iterator before begin");
+            _STL_VERIFY(
+                _Myindex >= size_t{0} - static_cast<size_t>(_Off), "cannot seek checked_array_iterator before begin");
         }
 
         if (_Off > 0) {
@@ -619,9 +924,8 @@ public:
         }
 
         if (_Off < 0) {
-#pragma warning(suppress : 4146) // unary minus operator applied to unsigned type, result still unsigned
-            _STL_VERIFY(
-                _Mysize - _Myindex >= -static_cast<size_t>(_Off), "cannot seek checked_array_iterator after end");
+            _STL_VERIFY(_Mysize - _Myindex >= size_t{0} - static_cast<size_t>(_Off),
+                "cannot seek checked_array_iterator after end");
         }
 
         _Myindex -= _Off;
@@ -681,9 +985,8 @@ public:
 
     constexpr void _Verify_offset(const difference_type _Off) const noexcept {
         if (_Off < 0) {
-#pragma warning(suppress : 4146) // unary minus operator applied to unsigned type, result still unsigned
-            _STL_VERIFY(
-                _Myindex >= -static_cast<size_t>(_Off), "cannot seek checked_array_iterator iterator before begin");
+            _STL_VERIFY(_Myindex >= size_t{0} - static_cast<size_t>(_Off),
+                "cannot seek checked_array_iterator iterator before begin");
         }
 
         if (_Off > 0) {

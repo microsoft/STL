@@ -3,19 +3,20 @@
 
 // Derived from: qa/VC/LibsWin/devcrt/tests/C/Dev14_845312_accurate_fp_parsing
 
-// Basic regression test for DevDiv2 #845312: Floating point conversion accuracy
+// Basic regression test for DevDiv-845312: Floating point conversion accuracy
 // improvements. This test verifies scanf-printf round-tripping of a set of
 // diverse floating point values (both single and double precision).
 
 #include <assert.h>
 #include <float.h>
-#include <floating_point_test_cases.hpp>
 #include <iomanip>
 #include <ios>
 #include <math.h>
 #include <sstream>
 #include <stdint.h>
 #include <stdio.h>
+
+#include <floating_point_test_cases.hpp>
 
 template <typename FloatingType>
 static FloatingType parse_as(char const*);

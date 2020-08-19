@@ -5,7 +5,7 @@
 // Prevent clang-format from reordering <AppModel.h> before <Windows.h>
 #include <Windows.h>
 #include <AppModel.h>
-#include "awint.h"
+#include "awint.hpp"
 #include <internal_shared.h>
 #include <stdlib.h>
 // clang-format on
@@ -17,35 +17,16 @@
 #include <intrin.h>
 #include <stdint.h>
 
-#if defined(_CRT_WINDOWS) || defined(UNDOCKED_WINDOWS_UCRT)
-// __crtTerminateProcess() - Terminates the current process.
-//
-// Purpose:
-//        Terminates the current process.
-//        This function is not needed for ARM and Windows 8, which call __fastfail() instead.
-// Entry:
-//        The exit code to be used by the process and threads terminated
-#if !defined _CRT_APP && (defined _M_IX86 || defined _M_X64)
-
-extern "C" void __cdecl __crtTerminateProcess(UINT const uExitCode) {
-    // Terminate the current process - the return code is currently unusable in
-    // the CRT, so we ignore it.
-    TerminateProcess(GetCurrentProcess(), uExitCode);
-}
-
-#endif // !defined _CRT_APP && (defined _M_IX86 || defined _M_X64)
-
-#else // defined(_CRT_WINDOWS) || defined(UNDOCKED_WINDOWS_UCRT)
-
+#if !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
 // GetCurrentPackageId retrieves the current package id, if the app is deployed via a package.
-typedef BOOL(WINAPI* PFNGETCURRENTPACKAGEID)(UINT32*, BYTE*);
+using PFNGETCURRENTPACKAGEID = BOOL(WINAPI*)(UINT32*, BYTE*);
 
 #if !defined _CRT_APP
 #if defined _ONECORE
 
 namespace {
     struct HMODULETraits {
-        typedef HMODULE Type;
+        using Type = HMODULE;
 
         static bool Close(Type const h) noexcept {
             return ::FreeLibrary(h) != FALSE;
@@ -56,7 +37,7 @@ namespace {
         }
     };
 
-    typedef Microsoft::WRL::Wrappers::HandleT<HMODULETraits> HMODULEHandle;
+    using HMODULEHandle = Microsoft::WRL::Wrappers::HandleT<HMODULETraits>;
 } // unnamed namespace
 
 extern "C" int __crt_IsPackagedAppHelper() {
@@ -145,7 +126,7 @@ extern "C" BOOL __cdecl __crtIsPackagedApp() {
 #endif
 }
 
-#endif // defined(_CRT_WINDOWS) || defined(UNDOCKED_WINDOWS_UCRT)
+#endif // !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
 
 
 #if _STL_WIN32_WINNT < _WIN32_WINNT_WS03
@@ -434,51 +415,51 @@ extern "C" VOID __cdecl __crtInitializeConditionVariable(PCONDITION_VARIABLE con
     DYNAMICGETCACHEDFUNCTION(
         PFNINITIALIZECONDITIONVARIABLE, InitializeConditionVariable, pfInitializeConditionVariable);
     pfInitializeConditionVariable(pCond);
-    // Don't have fallbacks because the only caller (in primitives.h) will check the existence before calling
+    // Don't have fallbacks because the only caller (in primitives.hpp) will check the existence before calling
 }
 
 extern "C" VOID __cdecl __crtWakeConditionVariable(PCONDITION_VARIABLE const pCond) {
     DYNAMICGETCACHEDFUNCTION(PFNWAKECONDITIONVARIABLE, WakeConditionVariable, pfWakeConditionVariable);
     pfWakeConditionVariable(pCond);
-    // Don't have fallbacks because the only caller (in primitives.h) will check the existence before calling
+    // Don't have fallbacks because the only caller (in primitives.hpp) will check the existence before calling
 }
 
 extern "C" VOID __cdecl __crtWakeAllConditionVariable(PCONDITION_VARIABLE const pCond) {
     DYNAMICGETCACHEDFUNCTION(PFNWAKEALLCONDITIONVARIABLE, WakeAllConditionVariable, pfWakeAllConditionVariable);
     pfWakeAllConditionVariable(pCond);
-    // Don't have fallbacks because the only caller (in primitives.h) will check the existence before calling
+    // Don't have fallbacks because the only caller (in primitives.hpp) will check the existence before calling
 }
 
 extern "C" BOOL __cdecl __crtSleepConditionVariableCS(
     PCONDITION_VARIABLE const pCond, PCRITICAL_SECTION const pLock, DWORD const dwMs) {
     DYNAMICGETCACHEDFUNCTION(PFNSLEEPCONDITIONVARIABLECS, SleepConditionVariableCS, pfSleepConditionVariableCS);
     return pfSleepConditionVariableCS(pCond, pLock, dwMs);
-    // Don't have fallbacks because the only caller (in primitives.h) will check the existence before calling
+    // Don't have fallbacks because the only caller (in primitives.hpp) will check the existence before calling
 }
 
 extern "C" VOID __cdecl __crtInitializeSRWLock(PSRWLOCK const pLock) {
     DYNAMICGETCACHEDFUNCTION(PFNINITIALIZESRWLOCK, InitializeSRWLock, pfInitializeSRWLock);
     pfInitializeSRWLock(pLock);
-    // Don't have fallbacks because the only caller (in primitives.h) will check the existence before calling
+    // Don't have fallbacks because the only caller (in primitives.hpp) will check the existence before calling
 }
 
 extern "C" VOID __cdecl __crtAcquireSRWLockExclusive(PSRWLOCK const pLock) {
     DYNAMICGETCACHEDFUNCTION(PFNACQUIRESRWLOCKEXCLUSIVE, AcquireSRWLockExclusive, pfAcquireSRWLockExclusive);
     pfAcquireSRWLockExclusive(pLock);
-    // Don't have fallbacks because the only caller (in primitives.h) will check the existence before calling
+    // Don't have fallbacks because the only caller (in primitives.hpp) will check the existence before calling
 }
 
 extern "C" VOID __cdecl __crtReleaseSRWLockExclusive(PSRWLOCK const pLock) {
     DYNAMICGETCACHEDFUNCTION(PFNRELEASESRWLOCKEXCLUSIVE, ReleaseSRWLockExclusive, pfReleaseSRWLockExclusive);
     pfReleaseSRWLockExclusive(pLock);
-    // Don't have fallbacks because the only caller (in primitives.h) will check the existence before calling
+    // Don't have fallbacks because the only caller (in primitives.hpp) will check the existence before calling
 }
 
 extern "C" BOOL __cdecl __crtSleepConditionVariableSRW(
     PCONDITION_VARIABLE const pCond, PSRWLOCK const pLock, DWORD const dwMs, ULONG const flags) {
     DYNAMICGETCACHEDFUNCTION(PFNSLEEPCONDITIONVARIABLESRW, SleepConditionVariableSRW, pfSleepConditionVariableSRW);
     return pfSleepConditionVariableSRW(pCond, pLock, dwMs, flags);
-    // Don't have fallbacks because the only caller (in primitives.h) will check the existence before calling
+    // Don't have fallbacks because the only caller (in primitives.hpp) will check the existence before calling
 }
 
 extern "C" PTP_WORK __cdecl __crtCreateThreadpoolWork(
@@ -513,7 +494,7 @@ extern "C" BOOL __cdecl __crtQueueUserWorkItem(LPTHREAD_START_ROUTINE, PVOID, UL
 extern "C" BOOLEAN __cdecl __crtTryAcquireSRWLockExclusive(PSRWLOCK const pLock) {
     DYNAMICGETCACHEDFUNCTION(PFNTRYACQUIRESRWLOCKEXCLUSIVE, TryAcquireSRWLockExclusive, pfTryAcquireSRWLockExclusive);
     return pfTryAcquireSRWLockExclusive(pLock);
-    // Don't have fallbacks because the only caller (in primitives.h) will check the existence before calling
+    // Don't have fallbacks because the only caller (in primitives.hpp) will check the existence before calling
 }
 
 #endif // _STL_WIN32_WINNT < _WIN32_WINNT_WIN7

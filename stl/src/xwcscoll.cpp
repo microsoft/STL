@@ -3,12 +3,13 @@
 
 // Compare two wchar_t strings using the locale LC_COLLATE information.
 
-#include "awint.h"
 #include <errno.h>
 #include <locale.h>
 #include <stdlib.h>
 #include <string.h>
 #include <xlocinfo.h> // for _Collvec, _Wcscoll
+
+#include "awint.hpp"
 
 _EXTERN_C_UNLESS_PURE
 

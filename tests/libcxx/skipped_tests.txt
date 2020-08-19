@@ -49,6 +49,7 @@ containers\unord\unord.map\unord.map.modifiers\insert_and_emplace_allocator_requ
 containers\unord\unord.set\insert_and_emplace_allocator_requirements.pass.cpp
 
 # libc++ doesn't yet implement P1423R3, so it expects an old value for `__cpp_lib_char8_t`
+language.support\support.limits\support.limits.general\atomic.version.pass.cpp
 language.support\support.limits\support.limits.general\filesystem.version.pass.cpp
 language.support\support.limits\support.limits.general\istream.version.pass.cpp
 language.support\support.limits\support.limits.general\limits.version.pass.cpp
@@ -62,6 +63,8 @@ numerics\bit\bit.pow.two\floor2.pass.cpp
 numerics\bit\bit.pow.two\ispow2.pass.cpp
 numerics\bit\bit.pow.two\log2p1.pass.cpp
 
+# test emits warning C4310: cast truncates constant value
+numerics\bit\bitops.rot\rotl.pass.cpp
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
 # Tracked by VSO-593630 "<filesystem> Enable libcxx filesystem tests"
@@ -250,9 +253,6 @@ utilities\memory\default.allocator\allocator.members\allocate.verify.cpp
 
 
 # *** MISSING STL FEATURES ***
-# C++20 P0019R8 "atomic_ref"
-language.support\support.limits\support.limits.general\atomic.version.pass.cpp
-
 # C++20 P0355R7 "<chrono> Calendars And Time Zones"
 utilities\time\days.pass.cpp
 utilities\time\months.pass.cpp
@@ -454,15 +454,6 @@ utilities\time\time.hms\time.hms.members\subseconds.pass.cpp
 utilities\time\time.hms\time.hms.members\to_duration.pass.cpp
 utilities\time\time.hms\time.hms.members\width.pass.cpp
 
-# C++20 P0553R4 "<bit> Rotating And Counting Functions"
-numerics\bit\bitops.count\countl_one.pass.cpp
-numerics\bit\bitops.count\countl_zero.pass.cpp
-numerics\bit\bitops.count\countr_one.pass.cpp
-numerics\bit\bitops.count\countr_zero.pass.cpp
-numerics\bit\bitops.count\popcount.pass.cpp
-numerics\bit\bitops.rot\rotl.pass.cpp
-numerics\bit\bitops.rot\rotr.pass.cpp
-
 # C++20 P0608R3 "Improving variant's Converting Constructor/Assignment"
 utilities\variant\variant.variant\variant.assign\conv.pass.cpp
 utilities\variant\variant.variant\variant.assign\T.pass.cpp
@@ -472,10 +463,6 @@ utilities\variant\variant.variant\variant.ctor\T.pass.cpp
 # C++20 P0768R1 "Library Support for the Spaceship (Comparison) Operator"
 language.support\support.limits\support.limits.general\compare.version.pass.cpp
 
-# C++20 P0811R2 "midpoint(), lerp()"
-language.support\support.limits\support.limits.general\numeric.version.pass.cpp
-numerics\c.math\c.math.lerp\c.math.lerp.pass.cpp
-
 # C++20 P0896R4 "<ranges>"
 language.support\support.limits\support.limits.general\algorithm.version.pass.cpp
 language.support\support.limits\support.limits.general\functional.version.pass.cpp
@@ -483,7 +470,6 @@ language.support\support.limits\support.limits.general\iterator.version.pass.cpp
 language.support\support.limits\support.limits.general\memory.version.pass.cpp
 
 # C++20 P1135R6 "The C++20 Synchronization Library"
-atomics\atomics.types.operations\atomics.types.operations.wait\atomic_wait.pass.cpp
 thread\thread.barrier\arrive.pass.cpp
 thread\thread.barrier\arrive_and_drop.pass.cpp
 thread\thread.barrier\arrive_and_wait.pass.cpp
@@ -505,9 +491,7 @@ thread\thread.semaphore\version.pass.cpp
 
 
 # *** MISSING COMPILER FEATURES ***
-# C++20 P0722R3 "Efficient sized delete for variable sized classes" // TRANSITION, VS2019 16.7p1
-language.support\support.dynamic\destroying_delete_t_declaration.pass.cpp
-language.support\support.dynamic\destroying_delete_t.pass.cpp
+# Nothing here! :-)
 
 
 # *** MISSING LWG ISSUE RESOLUTIONS ***
@@ -540,8 +524,13 @@ containers\views\span.cons\ptr_ptr.pass.cpp
 # LLVM-33230 "Clang on Windows should define __STDCPP_THREADS__ to be 1"
 thread\macro.pass.cpp
 
-# Clang's tgmath.h interferes with the UCRT's tgmath.h
+# LLVM-46207 Clang's tgmath.h interferes with the UCRT's tgmath.h
 depr\depr.c.headers\tgmath_h.pass.cpp
+
+
+# *** CLANG FEATURES NOT YET IMPLEMENTED ***
+# P0960R3 "Allow initializing aggregates from a parenthesized list of values"
+utilities\tuple\tuple.tuple\tuple.creation\tuple_cat.pass.cpp
 
 
 # *** CLANG ISSUES, NOT YET ANALYZED ***
@@ -574,20 +563,16 @@ re\re.traits\transform.pass.cpp
 # STL bug: Incorrect return types.
 numerics\complex.number\cmplx.over\pow.pass.cpp
 
-# STL bug: Missing <valarray> assignment operators.
-numerics\numarray\template.mask.array\mask.array.assign\mask_array.pass.cpp
-numerics\numarray\template.slice.array\slice.arr.assign\slice_array.pass.cpp
-
 # STL bug: We allow fill() and swap() for array<const T, 0>.
 containers\sequences\array\array.fill\fill.fail.cpp
 containers\sequences\array\array.swap\swap.fail.cpp
 
 # STL bug: VSO-207715 We reject array<NoDefault, 0>.
-containers\sequences\array\array.cons\default.pass.cpp
 containers\sequences\array\array.cons\implicit_copy.pass.cpp
+containers\sequences\array\array.cons\initialization.pass.cpp
 containers\sequences\array\array.data\data_const.pass.cpp
 containers\sequences\array\array.data\data.pass.cpp
-containers\sequences\array\begin.pass.cpp
+containers\sequences\array\iterators.pass.cpp
 
 # STL bug: string_view doesn't enforce "non-array trivial standard-layout", related to LWG-3034.
 strings\string.view\char.bad.fail.cpp
@@ -788,6 +773,20 @@ iterators\predef.iterators\insert.iterators\insert.iterator\types.pass.cpp
 numerics\complex.number\cmplx.over\conj.pass.cpp
 numerics\complex.number\cmplx.over\proj.pass.cpp
 
+# Assertion failed: std::abs(skew - x_skew) < 0.01
+# Random number generation test with too strict pass criteria (test8 failure probability ~= 0.04)
+numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.pconst\eval.pass.cpp
+
+# Assertion failed: std::abs(f(u[i], a, m, bk, c) - double(i)/N) < .001
+# Random number generation test with too strict pass criteria (test6 failure probability > 0.2)
+numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\eval_param.pass.cpp
+numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\eval.pass.cpp
+
+# Assertion failed: (std::lerp(T(2.3), T(2.3), inf) == T(2.3))
+# Asserts `(std::lerp(T(2.3), T(2.3), inf) == T(2.3))` and `std::isnan(std::lerp(T( 0), T( 0), inf))`
+# They shouldn't behave differently. Both of them should probably return NaN.
+numerics\c.math\c.math.lerp\c.math.lerp.pass.cpp
+
 
 # *** LIKELY STL BUGS ***
 # Not yet analyzed, likely STL bugs. Assertions and other runtime failures.
@@ -825,22 +824,6 @@ numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.gamma\min.pass.cpp
 numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.poisson\eval_param.pass.cpp
 numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.poisson\eval.pass.cpp
 numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.weibull\max.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.pconst\ctor_init_func.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.pconst\ctor_iterator.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.pconst\eval.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.pconst\param_ctor_init_func.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.pconst\param_ctor_iterator.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\ctor_default.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\ctor_func.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\ctor_init_func.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\ctor_iterator.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\ctor_param.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\eval_param.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\eval.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\param_ctor_default.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\param_ctor_func.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\param_ctor_init_func.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\param_ctor_iterator.pass.cpp
 numerics\rand\rand.dis\rand.dist.uni\rand.dist.uni.real\param_ctor.pass.cpp
 
 # Not yet analyzed, likely STL bugs. Various assertions.
@@ -884,11 +867,9 @@ numerics\complex.number\complex.transcendentals\pow_complex_scalar.pass.cpp
 numerics\complex.number\complex.transcendentals\pow_scalar_complex.pass.cpp
 numerics\complex.number\complex.transcendentals\sin.pass.cpp
 numerics\complex.number\complex.transcendentals\sinh.pass.cpp
-numerics\complex.number\complex.transcendentals\sqrt.pass.cpp
 numerics\complex.number\complex.transcendentals\tanh.pass.cpp
 numerics\complex.number\complex.value.ops\norm.pass.cpp
 numerics\complex.number\complex.value.ops\polar.pass.cpp
-numerics\complex.number\complex.value.ops\proj.pass.cpp
 
 # Not yet analyzed, likely STL bugs. Many various assertions.
 localization\locale.categories\category.ctype\facet.ctype.special\facet.ctype.char.statics\classic_table.pass.cpp

@@ -6,8 +6,9 @@
 #include <algorithm>
 #include <span>
 #include <stddef.h>
-#include <test_death.hpp>
 #include <vector>
+
+#include <test_death.hpp>
 using namespace std;
 
 int globalArray[5]{10, 20, 30, 40, 50};

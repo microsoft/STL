@@ -49,6 +49,7 @@ std/containers/unord/unord.map/unord.map.modifiers/insert_and_emplace_allocator_
 std/containers/unord/unord.set/insert_and_emplace_allocator_requirements.pass.cpp FAIL
 
 # libc++ doesn't yet implement P1423R3, so it expects an old value for `__cpp_lib_char8_t`
+std/language.support/support.limits/support.limits.general/atomic.version.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/filesystem.version.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/istream.version.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/limits.version.pass.cpp FAIL
@@ -62,6 +63,8 @@ std/numerics/bit/bit.pow.two/floor2.pass.cpp FAIL
 std/numerics/bit/bit.pow.two/ispow2.pass.cpp FAIL
 std/numerics/bit/bit.pow.two/log2p1.pass.cpp FAIL
 
+# test emits warning C4310: cast truncates constant value
+std/numerics/bit/bitops.rot/rotl.pass.cpp:0 FAIL
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
 # Tracked by VSO-593630 "<filesystem> Enable libcxx filesystem tests"
@@ -250,9 +253,6 @@ std/utilities/memory/default.allocator/allocator.members/allocate.verify.cpp SKI
 
 
 # *** MISSING STL FEATURES ***
-# C++20 P0019R8 "atomic_ref"
-std/language.support/support.limits/support.limits.general/atomic.version.pass.cpp FAIL
-
 # C++20 P0355R7 "<chrono> Calendars And Time Zones"
 std/utilities/time/days.pass.cpp FAIL
 std/utilities/time/months.pass.cpp FAIL
@@ -454,15 +454,6 @@ std/utilities/time/time.hms/time.hms.members/subseconds.pass.cpp FAIL
 std/utilities/time/time.hms/time.hms.members/to_duration.pass.cpp FAIL
 std/utilities/time/time.hms/time.hms.members/width.pass.cpp FAIL
 
-# C++20 P0553R4 "<bit> Rotating And Counting Functions"
-std/numerics/bit/bitops.count/countl_one.pass.cpp:0 FAIL
-std/numerics/bit/bitops.count/countl_zero.pass.cpp:0 FAIL
-std/numerics/bit/bitops.count/countr_one.pass.cpp:0 FAIL
-std/numerics/bit/bitops.count/countr_zero.pass.cpp:0 FAIL
-std/numerics/bit/bitops.count/popcount.pass.cpp:0 FAIL
-std/numerics/bit/bitops.rot/rotl.pass.cpp:0 FAIL
-std/numerics/bit/bitops.rot/rotr.pass.cpp:0 FAIL
-
 # C++20 P0608R3 "Improving variant's Converting Constructor/Assignment"
 std/utilities/variant/variant.variant/variant.assign/conv.pass.cpp FAIL
 std/utilities/variant/variant.variant/variant.assign/T.pass.cpp FAIL
@@ -472,10 +463,6 @@ std/utilities/variant/variant.variant/variant.ctor/T.pass.cpp FAIL
 # C++20 P0768R1 "Library Support for the Spaceship (Comparison) Operator"
 std/language.support/support.limits/support.limits.general/compare.version.pass.cpp FAIL
 
-# C++20 P0811R2 "midpoint(), lerp()"
-std/language.support/support.limits/support.limits.general/numeric.version.pass.cpp FAIL
-std/numerics/c.math/c.math.lerp/c.math.lerp.pass.cpp FAIL
-
 # C++20 P0896R4 "<ranges>"
 std/language.support/support.limits/support.limits.general/algorithm.version.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/functional.version.pass.cpp FAIL
@@ -483,7 +470,6 @@ std/language.support/support.limits/support.limits.general/iterator.version.pass
 std/language.support/support.limits/support.limits.general/memory.version.pass.cpp FAIL
 
 # C++20 P1135R6 "The C++20 Synchronization Library"
-std/atomics/atomics.types.operations/atomics.types.operations.wait/atomic_wait.pass.cpp FAIL
 std/thread/thread.barrier/arrive.pass.cpp FAIL
 std/thread/thread.barrier/arrive_and_drop.pass.cpp FAIL
 std/thread/thread.barrier/arrive_and_wait.pass.cpp FAIL
@@ -505,9 +491,7 @@ std/thread/thread.semaphore/version.pass.cpp FAIL
 
 
 # *** MISSING COMPILER FEATURES ***
-# C++20 P0722R3 "Efficient sized delete for variable sized classes" // TRANSITION, VS2019 16.7p1
-std/language.support/support.dynamic/destroying_delete_t_declaration.pass.cpp:0 SKIPPED
-std/language.support/support.dynamic/destroying_delete_t.pass.cpp:0 SKIPPED
+# Nothing here! :-)
 
 
 # *** MISSING LWG ISSUE RESOLUTIONS ***
@@ -540,8 +524,13 @@ std/containers/views/span.cons/ptr_ptr.pass.cpp:0 FAIL
 # LLVM-33230 "Clang on Windows should define __STDCPP_THREADS__ to be 1"
 std/thread/macro.pass.cpp:1 FAIL
 
-# Clang's tgmath.h interferes with the UCRT's tgmath.h
+# LLVM-46207 Clang's tgmath.h interferes with the UCRT's tgmath.h
 std/depr/depr.c.headers/tgmath_h.pass.cpp:1 FAIL
+
+
+# *** CLANG FEATURES NOT YET IMPLEMENTED ***
+# P0960R3 "Allow initializing aggregates from a parenthesized list of values"
+std/utilities/tuple/tuple.tuple/tuple.creation/tuple_cat.pass.cpp SKIPPED # TRANSITION, VS 2019 16.8 p3
 
 
 # *** CLANG ISSUES, NOT YET ANALYZED ***
@@ -574,20 +563,16 @@ std/re/re.traits/transform.pass.cpp FAIL
 # STL bug: Incorrect return types.
 std/numerics/complex.number/cmplx.over/pow.pass.cpp FAIL
 
-# STL bug: Missing <valarray> assignment operators.
-std/numerics/numarray/template.mask.array/mask.array.assign/mask_array.pass.cpp FAIL
-std/numerics/numarray/template.slice.array/slice.arr.assign/slice_array.pass.cpp FAIL
-
 # STL bug: We allow fill() and swap() for array<const T, 0>.
 std/containers/sequences/array/array.fill/fill.fail.cpp FAIL
 std/containers/sequences/array/array.swap/swap.fail.cpp FAIL
 
 # STL bug: VSO-207715 We reject array<NoDefault, 0>.
-std/containers/sequences/array/array.cons/default.pass.cpp FAIL
 std/containers/sequences/array/array.cons/implicit_copy.pass.cpp FAIL
+std/containers/sequences/array/array.cons/initialization.pass.cpp FAIL
 std/containers/sequences/array/array.data/data_const.pass.cpp FAIL
 std/containers/sequences/array/array.data/data.pass.cpp FAIL
-std/containers/sequences/array/begin.pass.cpp FAIL
+std/containers/sequences/array/iterators.pass.cpp FAIL
 
 # STL bug: string_view doesn't enforce "non-array trivial standard-layout", related to LWG-3034.
 std/strings/string.view/char.bad.fail.cpp:0 FAIL
@@ -788,6 +773,20 @@ std/iterators/predef.iterators/insert.iterators/insert.iterator/types.pass.cpp F
 std/numerics/complex.number/cmplx.over/conj.pass.cpp:0 FAIL
 std/numerics/complex.number/cmplx.over/proj.pass.cpp:0 FAIL
 
+# Assertion failed: std::abs(skew - x_skew) < 0.01
+# Random number generation test with too strict pass criteria (test8 failure probability ~= 0.04)
+std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.pconst/eval.pass.cpp FAIL
+
+# Assertion failed: std::abs(f(u[i], a, m, bk, c) - double(i)/N) < .001
+# Random number generation test with too strict pass criteria (test6 failure probability > 0.2)
+std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/eval_param.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/eval.pass.cpp FAIL
+
+# Assertion failed: (std::lerp(T(2.3), T(2.3), inf) == T(2.3))
+# Asserts `(std::lerp(T(2.3), T(2.3), inf) == T(2.3))` and `std::isnan(std::lerp(T( 0), T( 0), inf))`
+# They shouldn't behave differently. Both of them should probably return NaN.
+std/numerics/c.math/c.math.lerp/c.math.lerp.pass.cpp FAIL
+
 
 # *** LIKELY STL BUGS ***
 # Not yet analyzed, likely STL bugs. Assertions and other runtime failures.
@@ -825,22 +824,6 @@ std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.gamma/min.pass.cpp FAIL
 std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.poisson/eval_param.pass.cpp FAIL
 std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.poisson/eval.pass.cpp FAIL
 std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.weibull/max.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.pconst/ctor_init_func.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.pconst/ctor_iterator.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.pconst/eval.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.pconst/param_ctor_init_func.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.pconst/param_ctor_iterator.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/ctor_default.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/ctor_func.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/ctor_init_func.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/ctor_iterator.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/ctor_param.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/eval_param.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/eval.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/param_ctor_default.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/param_ctor_func.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/param_ctor_init_func.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/param_ctor_iterator.pass.cpp FAIL
 std/numerics/rand/rand.dis/rand.dist.uni/rand.dist.uni.real/param_ctor.pass.cpp FAIL
 
 # Not yet analyzed, likely STL bugs. Various assertions.
@@ -884,11 +867,9 @@ std/numerics/complex.number/complex.transcendentals/pow_complex_scalar.pass.cpp 
 std/numerics/complex.number/complex.transcendentals/pow_scalar_complex.pass.cpp FAIL
 std/numerics/complex.number/complex.transcendentals/sin.pass.cpp FAIL
 std/numerics/complex.number/complex.transcendentals/sinh.pass.cpp FAIL
-std/numerics/complex.number/complex.transcendentals/sqrt.pass.cpp FAIL
 std/numerics/complex.number/complex.transcendentals/tanh.pass.cpp FAIL
 std/numerics/complex.number/complex.value.ops/norm.pass.cpp FAIL
 std/numerics/complex.number/complex.value.ops/polar.pass.cpp FAIL
-std/numerics/complex.number/complex.value.ops/proj.pass.cpp FAIL
 
 # Not yet analyzed, likely STL bugs. Many various assertions.
 std/localization/locale.categories/category.ctype/facet.ctype.special/facet.ctype.char.statics/classic_table.pass.cpp FAIL

@@ -193,8 +193,7 @@ private:
         }
 
         if (_Off < 0) {
-#pragma warning(suppress : 4146) // unary minus operator applied to unsigned type, result still unsigned
-            _STL_VERIFY(_Idx >= -static_cast<size_t>(_Off), "cannot seek array iterator before begin");
+            _STL_VERIFY(_Idx >= size_t{0} - static_cast<size_t>(_Off), "cannot seek array iterator before begin");
         }
 
         if (_Off > 0) {
@@ -204,7 +203,7 @@ private:
 
     _CONSTEXPR17 _Array_const_iterator& operator+=(const ptrdiff_t _Off) noexcept {
         _Verify_offset(_Off);
-        _Idx += _Off;
+        _Idx += static_cast<size_t>(_Off);
         return *this;
     }
 

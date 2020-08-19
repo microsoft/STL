@@ -8,8 +8,9 @@
 #include <forward_list>
 #include <iterator>
 #include <list>
-#include <parallel_algorithms_utilities.hpp>
 #include <vector>
+
+#include <parallel_algorithms_utilities.hpp>
 
 using namespace std;
 using namespace std::execution;
@@ -47,26 +48,40 @@ const auto call_only_once = [](atomic<bool>& b) { assert(!b.exchange(true)); };
 const auto atomic_identity = [](atomic<bool>& b) { return b.load(); };
 
 template <template <class...> class Container>
-void test_case_for_each_parallel(const size_t testSize) {
-    Container<atomic<bool>> c(testSize);
-    for_each(par, c.begin(), c.end(), call_only_once);
-    assert(all_of(c.begin(), c.end(), atomic_identity));
-}
+struct test_case_for_each_parallel {
+    template <typename ExecutionPolicy>
+    void operator()(const size_t testSize, const ExecutionPolicy& exec) {
+        Container<atomic<bool>> c(testSize);
+        for_each(exec, c.begin(), c.end(), call_only_once);
+        assert(all_of(c.begin(), c.end(), atomic_identity));
+    }
+};
 
 template <template <class...> class Container>
-void test_case_for_each_n_parallel(const size_t testSize) {
-    Container<atomic<bool>> c(testSize);
-    auto result = for_each_n(par, c.begin(), testSize, call_only_once);
-    assert(result == c.end());
-    assert(all_of(c.begin(), c.end(), atomic_identity));
-}
+struct test_case_for_each_n_parallel {
+    template <typename ExecutionPolicy>
+    void operator()(const size_t testSize, const ExecutionPolicy& exec) {
+        Container<atomic<bool>> c(testSize);
+        auto result = for_each_n(exec, c.begin(), testSize, call_only_once);
+        assert(result == c.end());
+        assert(all_of(c.begin(), c.end(), atomic_identity));
+    }
+};
 
 int main() {
     test_case_for_each_n();
-    parallel_test_case(test_case_for_each_parallel<forward_list>);
-    parallel_test_case(test_case_for_each_parallel<list>);
-    parallel_test_case(test_case_for_each_parallel<vector>);
-    parallel_test_case(test_case_for_each_n_parallel<forward_list>);
-    parallel_test_case(test_case_for_each_n_parallel<list>);
-    parallel_test_case(test_case_for_each_n_parallel<vector>);
+    parallel_test_case(test_case_for_each_parallel<forward_list>{}, par);
+    parallel_test_case(test_case_for_each_parallel<list>{}, par);
+    parallel_test_case(test_case_for_each_parallel<vector>{}, par);
+    parallel_test_case(test_case_for_each_n_parallel<forward_list>{}, par);
+    parallel_test_case(test_case_for_each_n_parallel<list>{}, par);
+    parallel_test_case(test_case_for_each_n_parallel<vector>{}, par);
+#if _HAS_CXX20
+    parallel_test_case(test_case_for_each_parallel<forward_list>{}, unseq);
+    parallel_test_case(test_case_for_each_parallel<list>{}, unseq);
+    parallel_test_case(test_case_for_each_parallel<vector>{}, unseq);
+    parallel_test_case(test_case_for_each_n_parallel<forward_list>{}, unseq);
+    parallel_test_case(test_case_for_each_n_parallel<list>{}, unseq);
+    parallel_test_case(test_case_for_each_n_parallel<vector>{}, unseq);
+#endif // _HAS_CXX20
 }

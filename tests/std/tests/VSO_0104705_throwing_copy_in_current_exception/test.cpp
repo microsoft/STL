@@ -72,7 +72,7 @@ int main() {
     assert(BasicLifetimeTracker::allAlive == 0);
 
     {
-        std::exception_ptr ptr;
+        exception_ptr ptr;
         try {
             throw EvilException<0>(); // copy 1
         } catch (...) {

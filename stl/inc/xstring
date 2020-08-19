@@ -336,7 +336,7 @@ template <>
 struct char_traits<unsigned short> : _WChar_traits<unsigned short> {};
 #endif // _NATIVE_WCHAR_T_DEFINED
 
-#if defined(__cpp_char8_t) && defined(_MSC_VER) && !defined(__EDG__) && !defined(__clang__)
+#if defined(__cpp_char8_t) && !defined(__EDG__) && !defined(__clang__)
 #define _HAS_U8_INTRINSICS 1
 #else // ^^^ Use intrinsics for char8_t / don't use said intrinsics vvv
 #define _HAS_U8_INTRINSICS 0
@@ -1033,8 +1033,8 @@ public:
         }
 
         if (_Off < 0) {
-#pragma warning(suppress : 4146) // unary minus operator applied to unsigned type, result still unsigned
-            _STL_VERIFY(_Myoff >= -static_cast<size_t>(_Off), "cannot seek string_view iterator before begin");
+            _STL_VERIFY(
+                _Myoff >= size_t{0} - static_cast<size_t>(_Off), "cannot seek string_view iterator before begin");
         }
 
         if (_Off > 0) {
@@ -1073,8 +1073,8 @@ public:
         }
 
         if (_Off < 0) {
-#pragma warning(suppress : 4146) // unary minus operator applied to unsigned type, result still unsigned
-            _STL_VERIFY(_Mysize - _Myoff >= -static_cast<size_t>(_Off), "cannot seek string_view iterator after end");
+            _STL_VERIFY(_Mysize - _Myoff >= size_t{0} - static_cast<size_t>(_Off),
+                "cannot seek string_view iterator after end");
         }
 
         _Myoff -= _Off;
@@ -1903,7 +1903,6 @@ public:
         const auto _Rawptr  = _Unfancy(_Ptr);
 
         if (_Off < 0) {
-#pragma warning(suppress : 4146) // unary minus operator applied to unsigned type, result still unsigned
             _STL_VERIFY(_Contptr - _Rawptr <= _Off, "cannot seek string iterator before begin");
         }
 
@@ -2437,7 +2436,7 @@ public:
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
         _Tidy_init();
         _Adl_verify_range(_First, _Last);
-        _Construct(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Iter_cat_t<_Iter>());
+        _Construct(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Iter_cat_t<_Iter>{});
         _Proxy._Release();
     }
 

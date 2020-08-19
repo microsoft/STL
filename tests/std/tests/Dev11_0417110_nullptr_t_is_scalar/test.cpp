@@ -6,7 +6,7 @@
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
 // Regression test for:
-// DevDiv2 #417110:  is_scalar<nullptr_t> should be true
+// DevDiv-417110:  is_scalar<nullptr_t> should be true
 
 int main() {
 

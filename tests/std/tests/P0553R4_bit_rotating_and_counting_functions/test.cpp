@@ -6,7 +6,6 @@
 
 using namespace std;
 
-#ifdef __cpp_lib_bitops // TRANSITION, VSO-1020212
 template <typename T>
 constexpr bool test_countl_zero() {
     constexpr int digits = numeric_limits<T>::digits;
@@ -105,6 +104,25 @@ constexpr bool test_rotr() {
     return true;
 }
 
+// Tests functions for 64-bit operands that have either high or low halves as zero.
+// These may be split into two operations on 32-bit platforms and we need to check
+// if we handle the == zero or == ones case correctly.
+constexpr bool test_64bit_split_ops() {
+    constexpr unsigned long long zero_one = 0x0000'0000'FFFF'FFFF;
+    constexpr unsigned long long one_zero = 0xFFFF'FFFF'0000'0000;
+    assert(popcount(zero_one) == 32);
+    assert(popcount(one_zero) == 32);
+    assert(countr_zero(zero_one) == 0);
+    assert(countr_zero(one_zero) == 32);
+    assert(countl_zero(zero_one) == 32);
+    assert(countl_zero(one_zero) == 0);
+    assert(countr_one(zero_one) == 32);
+    assert(countr_one(one_zero) == 0);
+    assert(countl_one(zero_one) == 0);
+    assert(countl_one(one_zero) == 32);
+    return true;
+}
+
 template <typename T>
 constexpr bool test_popcount_specialcases() {
     constexpr int digits = numeric_limits<T>::digits;
@@ -153,17 +171,16 @@ void test_all() {
     test_rotl<T>();
     static_assert(test_rotr<T>());
     test_rotr<T>();
+    static_assert(test_64bit_split_ops());
+    test_64bit_split_ops();
     static_assert(test_popcount_specialcases<T>());
     test_popcount_specialcases<T>();
 }
-#endif // __cpp_lib_bitops
 
 int main() {
-#ifdef __cpp_lib_bitops // TRANSITION, VSO-1020212
     test_all<unsigned char>();
     test_all<unsigned short>();
     test_all<unsigned int>();
     test_all<unsigned long>();
     test_all<unsigned long long>();
-#endif // __cpp_lib_bitops
 }

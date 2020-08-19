@@ -7,11 +7,12 @@
 #include <functional>
 #include <iterator>
 #include <numeric>
-#include <parallel_algorithms_utilities.hpp>
 #include <random>
 #include <string>
 #include <string_view>
 #include <vector>
+
+#include <parallel_algorithms_utilities.hpp>
 
 using namespace std;
 using namespace std::execution;

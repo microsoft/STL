@@ -3,13 +3,13 @@
 
 // _FDunscale function -- IEEE 754 version
 
-#include "xmath.h"
+#include "xmath.hpp"
 
 _EXTERN_C_UNLESS_PURE
 
 short _FDunscale(short* pex, float* px) { // separate *px to 1/2 <= |frac| < 1 and 2^*pex
-    _Fval* ps   = (_Fval*) (char*) px;
-    short xchar = (ps->_Sh[_F0] & _FMASK) >> _FOFF;
+    const auto ps = reinterpret_cast<_Fval*>(px);
+    short xchar   = (ps->_Sh[_F0] & _FMASK) >> _FOFF;
 
     if (xchar == _FMAX) { // NaN or INF
         *pex = 0;
