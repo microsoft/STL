@@ -146,12 +146,10 @@ acquire this dependency.
     * Otherwise, install [CMake][] 3.17 or later, and [Ninja][] 1.8.2 or later.
 2. Open Visual Studio, and choose the "Clone or check out code" option. Enter the URL of this repository,
    `https://github.com/microsoft/STL`.
-3. Open a terminal in the IDE with ````ctrl + ` ```` (by default) or press on "View" in the top bar, and then "Terminal".
+3. Open a terminal in the IDE with `` Ctrl + ` `` (by default) or press on "View" in the top bar, and then "Terminal".
 4. Invoke `git submodule update --init vcpkg` in the terminal.
 5. Invoke `.\vcpkg\bootstrap-vcpkg.bat` in the terminal.
-6. Assuming you are targeting x86 and x64, invoke
-   `.\vcpkg\vcpkg.exe install boost-math:x86-windows boost-math:x64-windows` to install the boost-math dependency.
-   Add `boost-math:arm-windows boost-math:arm64-windows` to this to target ARM and ARM64.
+6. Invoke `.\vcpkg\vcpkg.exe install boost-math:x86-windows boost-math:x64-windows` to install the boost-math dependency.
 7. Choose the architecture you wish to build in the IDE, and build as you would any other project. All necessary CMake
    settings are set by `CMakeSettings.json`.
 
