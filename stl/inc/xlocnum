@@ -1336,7 +1336,7 @@ protected:
         const bool _Is_hex          = _Float_flags == (ios_base::fixed | ios_base::scientific);
         const streamsize _Precision = _Is_hex ? -1 : _Iosbase.precision(); // precision setting
         const int _Desired_precision =
-            _Float_put_desired_precision<long double>(_Precision, _Float_flags); // desired precision
+            _Float_put_desired_precision<double>(_Precision, _Float_flags); // desired precision
         size_t _Bufsize = static_cast<size_t>(_Desired_precision);
         if (_Is_fixed && 1e10 < _CSTD fabs(_Val)) { // f or F format
             int _Ptwo;
