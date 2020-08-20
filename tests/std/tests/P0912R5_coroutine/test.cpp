@@ -5,7 +5,7 @@ using namespace std;
 
 struct Task {
     struct Promise {
-        int result;
+        int result{-1000};
         coroutine_handle<> previous;
 
         Task get_return_object() {
@@ -25,8 +25,8 @@ struct Task {
                 void await_resume() noexcept {}
 
                 coroutine_handle<> await_suspend(coroutine_handle<Promise> h) {
-                    if (auto& p = h.promise().previous; p) {
-                        return p; // resume awaiting coroutine
+                    if (auto& pre = h.promise().previous; pre) {
+                        return pre; // resume awaiting coroutine
                     }
 
                     // If there is no previous coroutine to resume, we've reached the outermost coroutine.
@@ -94,6 +94,10 @@ int main() {
     assert(!h.done());
 
     h();
+
+    assert(h == t.coro);
+    assert(h);
+    assert(h.done());
 
     const int val = t.coro.promise().result;
 
