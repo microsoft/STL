@@ -25,7 +25,7 @@ struct Task {
                 void await_resume() noexcept {}
 
                 coroutine_handle<> await_suspend(coroutine_handle<Promise> h) {
-                    // If there is no previous coroutine to resume we've reached the outermost coroutine.
+                    // If there is no previous coroutine to resume, we've reached the outermost coroutine.
                     // Return a noop coroutine to allow control to return back to the caller.
                     if (!h.promise().previous) {
                         return noop_coroutine();
@@ -59,7 +59,7 @@ struct Task {
 
     auto await_suspend(coroutine_handle<> enclosing) {
         coro.promise().previous = enclosing;
-        return coro; // resume ourselves.
+        return coro; // resume ourselves
     }
 
     Task(Task&& rhs) noexcept : coro(rhs.coro) {
