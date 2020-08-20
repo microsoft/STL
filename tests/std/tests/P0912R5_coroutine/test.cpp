@@ -3,6 +3,8 @@
 #include <exception>
 using namespace std;
 
+int g_tasks_destroyed{0};
+
 struct Task {
     struct Promise {
         int result{-1000};
@@ -69,6 +71,8 @@ struct Task {
     Task(Promise& p) : coro(coroutine_handle<Promise>::from_promise(p)) {}
 
     ~Task() {
+        ++g_tasks_destroyed;
+
         if (coro) {
             coro.destroy();
         }
@@ -86,20 +90,28 @@ Task triangular_number(const int n) {
 }
 
 int main() {
-    Task t               = triangular_number(10);
-    coroutine_handle<> h = t.coro;
+    assert(g_tasks_destroyed == 0);
 
-    assert(h == t.coro);
-    assert(h);
-    assert(!h.done());
+    {
+        Task t               = triangular_number(10);
+        coroutine_handle<> h = t.coro;
 
-    h();
+        assert(h == t.coro);
+        assert(h);
+        assert(!h.done());
 
-    assert(h == t.coro);
-    assert(h);
-    assert(h.done());
+        h();
 
-    const int val = t.coro.promise().result;
+        assert(h == t.coro);
+        assert(h);
+        assert(h.done());
 
-    assert(val == 55);
+        assert(g_tasks_destroyed == 10); // triangular_number() called for [0, 9]
+
+        const int val = t.coro.promise().result;
+
+        assert(val == 55);
+    }
+
+    assert(g_tasks_destroyed == 11); // triangular_number() called for [0, 10]
 }
