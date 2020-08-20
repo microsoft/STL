@@ -66,8 +66,6 @@ struct Task {
         rhs.coro = nullptr;
     }
 
-    Task(Task const&) = delete;
-
     Task(Promise& p) : coro(coroutine_handle<Promise>::from_promise(p)) {}
 
     ~Task() {
