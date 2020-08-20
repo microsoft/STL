@@ -93,7 +93,7 @@ namespace ranges {
                     _Construct_in_place(_Val, _That._Val);
                     _Engaged = true;
                 } else {
-                    ; // nothing to do
+                    // nothing to do
                 }
             }
 
@@ -101,14 +101,16 @@ namespace ranges {
         }
 
         _Semiregular_box& operator=(const _Semiregular_box& _That) noexcept(is_nothrow_copy_constructible_v<_Ty>) {
-            if (_Engaged) {
-                _Val.~_Ty();
-                _Engaged = false;
-            }
+            if (_STD addressof(_That) != this) {
+                if (_Engaged) {
+                    _Val.~_Ty();
+                    _Engaged = false;
+                }
 
-            if (_That._Engaged) {
-                _Construct_in_place(_Val, _That._Val);
-                _Engaged = true;
+                if (_That._Engaged) {
+                    _Construct_in_place(_Val, _That._Val);
+                    _Engaged = true;
+                }
             }
 
             return *this;
@@ -133,7 +135,7 @@ namespace ranges {
                     _Construct_in_place(_Val, _STD move(_That._Val));
                     _Engaged = true;
                 } else {
-                    ; // nothing to do
+                    // nothing to do
                 }
             }
 
@@ -197,14 +199,20 @@ namespace ranges {
         _Semiregular_box& operator=(_Semiregular_box&&) requires movable<_Ty> = default;
 
         _Semiregular_box& operator=(const _Semiregular_box& _That) noexcept {
-            _Val.~_Ty();
-            _Construct_in_place(_Val, _That._Val);
+            if (_STD addressof(_That) != this) {
+                _Val.~_Ty();
+                _Construct_in_place(_Val, _That._Val);
+            }
+
             return *this;
         }
 
         _Semiregular_box& operator=(_Semiregular_box&& _That) noexcept {
-            _Val.~_Ty();
-            _Construct_in_place(_Val, _STD move(_That._Val));
+            if (_STD addressof(_That) != this) {
+                _Val.~_Ty();
+                _Construct_in_place(_Val, _STD move(_That._Val));
+            }
+
             return *this;
         }
 
@@ -235,10 +243,13 @@ namespace ranges {
 
         _Semiregular_box_copy& operator=(const _Semiregular_box_copy& _That) noexcept(
             is_nothrow_copy_constructible_v<_Ty>) {
-            optional<_Ty>::reset();
-            if (_That) {
-                optional<_Ty>::emplace(*_That);
+            if (_STD addressof(_That) != this) {
+                optional<_Ty>::reset();
+                if (_That) {
+                    optional<_Ty>::emplace(*_That);
+                }
             }
+
             return *this;
         }
     };
@@ -258,10 +269,13 @@ namespace ranges {
         _Semiregular_box_move& operator=(const _Semiregular_box_move&) = default;
 
         _Semiregular_box_move& operator=(_Semiregular_box_move&& _That) noexcept(is_nothrow_move_constructible_v<_Ty>) {
-            optional<_Ty>::reset();
-            if (_That) {
-                optional<_Ty>::emplace(_STD move(*_That));
+            if (_STD addressof(_That) != this) {
+                optional<_Ty>::reset();
+                if (_That) {
+                    optional<_Ty>::emplace(_STD move(*_That));
+                }
             }
+
             return *this;
         }
     };
