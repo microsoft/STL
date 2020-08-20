@@ -77,16 +77,16 @@ struct Task {
     coroutine_handle<Promise> coro;
 };
 
-Task f(const int n) {
+Task triangular_number(const int n) {
     if (n == 0) {
         co_return 0;
     }
 
-    co_return 1 + co_await f(n - 1);
+    co_return n + co_await triangular_number(n - 1);
 }
 
 int main() {
-    Task t               = f(10);
+    Task t               = triangular_number(10);
     coroutine_handle<> h = t.coro;
 
     assert(h == t.coro);
@@ -97,5 +97,5 @@ int main() {
 
     const int val = t.coro.promise().result;
 
-    assert(val == 10);
+    assert(val == 55);
 }
