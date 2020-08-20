@@ -25,13 +25,13 @@ struct Task {
                 void await_resume() noexcept {}
 
                 coroutine_handle<> await_suspend(coroutine_handle<Promise> h) {
-                    // If there is no previous coroutine to resume, we've reached the outermost coroutine.
-                    // Return a noop coroutine to allow control to return back to the caller.
-                    if (!h.promise().previous) {
-                        return noop_coroutine();
+                    if (auto& p = h.promise().previous; p) {
+                        return p; // resume awaiting coroutine
                     }
 
-                    return h.promise().previous; // resume awaiting coroutine
+                    // If there is no previous coroutine to resume, we've reached the outermost coroutine.
+                    // Return a noop coroutine to allow control to return back to the caller.
+                    return noop_coroutine();
                 }
             };
 
