@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <coroutine>
 #include <exception>
 using namespace std;
@@ -90,19 +91,13 @@ int main() {
     Task t               = f(10);
     coroutine_handle<> h = t.coro;
 
-    if (h != t.coro) {
-        return 1;
-    }
-
-    if (!h || h.done()) {
-        return 1;
-    }
+    assert(h == t.coro);
+    assert(h);
+    assert(!h.done());
 
     h();
 
     int val = t.coro.promise().result;
 
-    if (val != 10) {
-        return 1;
-    }
+    assert(val == 10);
 }
