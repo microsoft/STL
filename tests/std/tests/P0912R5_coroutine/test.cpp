@@ -77,7 +77,7 @@ struct Task {
     coroutine_handle<Promise> coro;
 };
 
-Task f(int n) {
+Task f(const int n) {
     if (n == 0) {
         co_return 0;
     }
@@ -95,7 +95,7 @@ int main() {
 
     h();
 
-    int val = t.coro.promise().result;
+    const int val = t.coro.promise().result;
 
     assert(val == 10);
 }
