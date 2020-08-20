@@ -1,16 +1,17 @@
 #include <coroutine>
 #include <exception>
+using namespace std;
 
 struct Task {
     struct Promise {
         int result;
-        std::coroutine_handle<> previous;
+        coroutine_handle<> previous;
 
         Task get_return_object() {
             return {*this};
         }
 
-        std::suspend_always initial_suspend() {
+        suspend_always initial_suspend() {
             return {};
         }
 
@@ -22,11 +23,11 @@ struct Task {
 
                 void await_resume() noexcept {}
 
-                std::coroutine_handle<> await_suspend(std::coroutine_handle<Promise> h) {
+                coroutine_handle<> await_suspend(coroutine_handle<Promise> h) {
                     // If there is no previous coroutine to resume we've reached the outermost coroutine.
                     // Return a noop coroutine to allow control to return back to the caller.
                     if (!h.promise().previous) {
-                        return std::noop_coroutine();
+                        return noop_coroutine();
                     }
 
                     return h.promise().previous; // resume awaiting coroutine
@@ -41,7 +42,7 @@ struct Task {
         }
 
         void unhandled_exception() noexcept {
-            std::terminate();
+            terminate();
         }
     };
 
@@ -55,7 +56,7 @@ struct Task {
         return coro.promise().result;
     }
 
-    auto await_suspend(std::coroutine_handle<> enclosing) {
+    auto await_suspend(coroutine_handle<> enclosing) {
         coro.promise().previous = enclosing;
         return coro; // resume ourselves.
     }
@@ -66,7 +67,7 @@ struct Task {
 
     Task(Task const&) = delete;
 
-    Task(Promise& p) : coro(std::coroutine_handle<Promise>::from_promise(p)) {}
+    Task(Promise& p) : coro(coroutine_handle<Promise>::from_promise(p)) {}
 
     ~Task() {
         if (coro) {
@@ -74,7 +75,7 @@ struct Task {
         }
     }
 
-    std::coroutine_handle<Promise> coro;
+    coroutine_handle<Promise> coro;
 };
 
 Task f(int n) {
@@ -86,8 +87,8 @@ Task f(int n) {
 }
 
 int main() {
-    Task t                    = f(10);
-    std::coroutine_handle<> h = t.coro;
+    Task t               = f(10);
+    coroutine_handle<> h = t.coro;
 
     if (h != t.coro) {
         return 1;
