@@ -30,6 +30,191 @@ namespace ranges {
     concept viewable_range = range<_Rng>
         && (borrowed_range<_Rng> || view<remove_cvref_t<_Rng>>);
 
+    template <class _Rng>
+    concept _Simple_view = view<_Rng> && range<const _Rng>
+        && same_as<iterator_t<_Rng>, iterator_t<const _Rng>>
+        && same_as<sentinel_t<_Rng>, sentinel_t<const _Rng>>;
+
+    namespace _Pipe {
+        template <class>
+        struct _Base;
+
+        template <class, class>
+        struct _Pipeline;
+
+        // clang-format off
+        template <class _Left, class _Right>
+        concept _Can_pipe = requires(_Left&& __l, _Right&& __r) {
+            static_cast<_Right&&>(__r)(static_cast<_Left&&>(__l));
+        };
+
+        template <class _Left, class _Right>
+        concept _Can_compose = constructible_from<remove_cvref_t<_Left>, _Left>
+            && constructible_from<remove_cvref_t<_Right>, _Right>;
+        // clang-format on
+
+        template <class _Derived>
+        struct _Base {
+            // clang-format off
+            template <class _Other>
+                requires _Can_compose<_Derived&&, _Other&&>
+            friend constexpr auto operator|(_Base&& __l, _Base<_Other>&& __r) noexcept(noexcept(
+                _Pipeline{static_cast<_Derived&&>(__l), static_cast<_Other&&>(__r)})) {
+                // clang-format on
+                _STL_INTERNAL_STATIC_ASSERT(derived_from<_Derived, _Base<_Derived>>);
+                _STL_INTERNAL_STATIC_ASSERT(derived_from<_Other, _Base<_Other>>);
+                return _Pipeline{static_cast<_Derived&&>(__l), static_cast<_Other&&>(__r)};
+            }
+
+            // clang-format off
+            template <class _Other>
+                requires _Can_compose<_Derived&&, const _Other&>
+            friend constexpr auto operator|(_Base&& __l, const _Base<_Other>& __r) noexcept(noexcept(
+                _Pipeline{static_cast<_Derived&&>(__l), static_cast<const _Other&>(__r)})) {
+                // clang-format on
+                _STL_INTERNAL_STATIC_ASSERT(derived_from<_Derived, _Base<_Derived>>);
+                _STL_INTERNAL_STATIC_ASSERT(derived_from<_Other, _Base<_Other>>);
+                return _Pipeline{static_cast<_Derived&&>(__l), static_cast<const _Other&>(__r)};
+            }
+
+            // clang-format off
+            template <class _Other>
+                requires _Can_compose<const _Derived&, _Other&&>
+            friend constexpr auto operator|(const _Base& __l, _Base<_Other>&& __r) noexcept(noexcept(
+                _Pipeline{static_cast<const _Derived&>(__l), static_cast<_Other&&>(__r)})) {
+                // clang-format on
+                _STL_INTERNAL_STATIC_ASSERT(derived_from<_Derived, _Base<_Derived>>);
+                _STL_INTERNAL_STATIC_ASSERT(derived_from<_Other, _Base<_Other>>);
+                return _Pipeline{static_cast<const _Derived&>(__l), static_cast<_Other&&>(__r)};
+            }
+
+            // clang-format off
+            template <class _Other>
+                requires _Can_compose<const _Derived&, const _Other&>
+            friend constexpr auto operator|(const _Base& __l, const _Base<_Other>& __r) noexcept(noexcept(
+                _Pipeline{static_cast<const _Derived&>(__l), static_cast<const _Other&>(__r)})) {
+                // clang-format on
+                _STL_INTERNAL_STATIC_ASSERT(derived_from<_Derived, _Base<_Derived>>);
+                _STL_INTERNAL_STATIC_ASSERT(derived_from<_Other, _Base<_Other>>);
+                return _Pipeline{static_cast<const _Derived&>(__l), static_cast<const _Other&>(__r)};
+            }
+
+            template <_Can_pipe<const _Derived&> _Left>
+            friend constexpr auto operator|(_Left&& __l, const _Base& __r) noexcept(
+                noexcept(static_cast<const _Derived&>(__r)(static_cast<_Left&&>(__l)))) {
+                return static_cast<const _Derived&>(__r)(static_cast<_Left&&>(__l));
+            }
+
+            template <_Can_pipe<_Derived> _Left>
+            friend constexpr auto operator|(_Left&& __l, _Base&& __r) noexcept(
+                noexcept(static_cast<const _Derived&>(__r)(static_cast<_Left&&>(__l)))) {
+                return static_cast<_Derived&&>(__r)(static_cast<_Left&&>(__l));
+            }
+        };
+
+        template <class _Left, class _Right>
+        struct _Pipeline : _Base<_Pipeline<_Left, _Right>> {
+            /* [[no_unique_address]] */ _Left __l;
+            /* [[no_unique_address]] */ _Right __r;
+
+            template <class _Ty1, class _Ty2>
+            constexpr explicit _Pipeline(_Ty1&& _Val1, _Ty2&& _Val2) noexcept(
+                is_nothrow_convertible_v<_Ty1, _Left>&& is_nothrow_convertible_v<_Ty2, _Right>)
+                : __l(static_cast<_Ty1&&>(_Val1)), __r(static_cast<_Ty2&&>(_Val2)) {}
+
+            template <class _Ty>
+            _NODISCARD constexpr auto operator()(_Ty&& _Val) noexcept(
+                noexcept(__r(__l(static_cast<_Ty&&>(_Val))))) requires requires {
+                __r(__l(static_cast<_Ty&&>(_Val)));
+            }
+            { return __r(__l(static_cast<_Ty&&>(_Val))); }
+
+            template <class _Ty>
+            _NODISCARD constexpr auto operator()(_Ty&& _Val) const
+                noexcept(noexcept(__r(__l(static_cast<_Ty&&>(_Val))))) requires requires {
+                __r(__l(static_cast<_Ty&&>(_Val)));
+            }
+            { return __r(__l(static_cast<_Ty&&>(_Val))); }
+        };
+
+        template <class _Ty1, class _Ty2>
+        _Pipeline(_Ty1, _Ty2) -> _Pipeline<_Ty1, _Ty2>;
+    } // namespace _Pipe
+
+    template <range _Rng, class _Derived>
+    class _Cached_position {
+        static_assert(_Always_false<_Rng>, "A range must be at least forward for position caching to be worthwhile.");
+    };
+
+    template <forward_range _Rng, class _Derived>
+    class _Cached_position<_Rng, _Derived> : public view_interface<_Derived> {
+    private:
+        using _It = iterator_t<_Rng>;
+
+        /* [[no_unique_address]] */ _It _Pos{};
+        bool _Cached = false;
+
+    protected:
+        _Cached_position()  = default;
+        ~_Cached_position() = default;
+
+        // a copied iterator doesn't point into a copied range, so cache values must not propagate via copy
+        constexpr _Cached_position(const _Cached_position&) noexcept(is_nothrow_default_constructible_v<_It>) {}
+        constexpr _Cached_position& operator=(const _Cached_position&) noexcept(
+            is_nothrow_default_constructible_v<_It>) {
+            _Pos    = _It{};
+            _Cached = false;
+            return *this;
+        }
+
+        _NODISCARD constexpr bool _Has_cache() const noexcept { // Is there a cached position?
+            return _Cached;
+        }
+
+        _NODISCARD constexpr _It _Get_cache(_Rng&) const noexcept(is_nothrow_copy_constructible_v<_It>) {
+            _STL_INTERNAL_CHECK(_Cached);
+            return _Pos;
+        }
+
+        _NODISCARD constexpr void _Set_cache(_Rng&, _It _Iter) noexcept(is_nothrow_move_assignable_v<_It>) {
+            _Pos    = _STD move(_Iter);
+            _Cached = true;
+        }
+    };
+
+    template <random_access_range _Rng, class _Derived>
+    class _Cached_position<_Rng, _Derived> : public view_interface<_Derived> {
+    private:
+        using _It = iterator_t<_Rng>;
+
+        range_difference_t<_Rng> _Off = -1;
+
+    protected:
+        _Cached_position()  = default;
+        ~_Cached_position() = default;
+
+        // Offsets are oblivious to copying, so cache values _do_ propagate via copying.
+        _Cached_position(const _Cached_position&) = default;
+        _Cached_position& operator=(const _Cached_position&) = default;
+
+        _NODISCARD constexpr bool _Has_cache() const noexcept { // Is there a cached position?
+            return _Off >= range_difference_t<_Rng>{0};
+        }
+
+        _NODISCARD constexpr _It _Get_cache(_Rng& _Range) const noexcept(noexcept(_RANGES begin(_Range) + _Off)) {
+            _STL_INTERNAL_CHECK(_Has_cache());
+            return _RANGES begin(_Range) + _Off;
+        }
+
+        _NODISCARD constexpr void _Set_cache(_Rng& _Range, const _It& _Iter) noexcept(
+            noexcept(_Off = _Iter - _RANGES begin(_Range))) {
+            _Off = _Iter - _RANGES begin(_Range);
+        }
+    };
+
+    template <bool _Enable, class _Rng, class _Derived>
+    using _Cached_position_t = conditional_t<_Enable, _Cached_position<_Rng, _Derived>, view_interface<_Derived>>;
+
     // CLASS TEMPLATE ranges::ref_view
     // clang-format off
     template <range _Rng>
@@ -88,7 +273,212 @@ namespace ranges {
 
     template <class _Rng>
     inline constexpr bool enable_borrowed_range<ref_view<_Rng>> = true;
+
+    namespace views {
+        // VARIABLE views::all
+        template <class _Rng>
+        concept _Can_ref_view = requires(_Rng&& __r) {
+            ref_view{static_cast<_Rng&&>(__r)};
+        };
+
+        template <class _Rng>
+        concept _Can_subrange = requires(_Rng&& __r) {
+            subrange{static_cast<_Rng&&>(__r)};
+        };
+
+        class _All_fn : public _Pipe::_Base<_All_fn> {
+        private:
+            enum class _St { _None, _View, _Ref, _Subrange };
+
+            template <class _Rng>
+            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+                if constexpr (view<remove_cvref_t<_Rng>>) {
+                    if constexpr (constructible_from<remove_cvref_t<_Rng>, _Rng>) {
+                        return {_St::_View, is_nothrow_constructible_v<remove_cvref_t<_Rng>, _Rng>};
+                    }
+                } else if constexpr (_Can_ref_view<_Rng>) {
+                    return {_St::_Ref, noexcept(ref_view{_STD declval<_Rng>()})};
+                } else if constexpr (_Can_subrange<_Rng>) {
+                    return {_St::_Subrange, noexcept(subrange{_STD declval<_Rng>()})};
+                }
+
+                return {_St::_None};
+            }
+
+            template <class _Rng>
+            static constexpr _Choice_t<_St> _Choice = _Choose<_Rng>();
+
+        public:
+            // clang-format off
+            template <viewable_range _Rng>
+                requires (_Choice<_Rng>._Strategy != _St::_None)
+            _NODISCARD constexpr auto operator()(_Rng&& _Range) const noexcept(_Choice<_Rng>._No_throw) {
+                // clang-format on
+                if constexpr (_Choice<_Rng>._Strategy == _St::_View) {
+                    return static_cast<_Rng&&>(_Range);
+                } else if constexpr (_Choice<_Rng>._Strategy == _St::_Ref) {
+                    return ref_view{static_cast<_Rng&&>(_Range)};
+                } else if constexpr (_Choice<_Rng>._Strategy == _St::_Subrange) {
+                    return subrange{static_cast<_Rng&&>(_Range)};
+                } else {
+                    static_assert(_Always_false<_Rng>, "Should be unreachable");
+                }
+            }
+        };
+
+        inline constexpr _All_fn all;
+
+        // ALIAS TEMPLATE views::all_t
+        template <viewable_range _Rng>
+        using all_t = decltype(all(_STD declval<_Rng>()));
+    } // namespace views
+
+    // CLASS TEMPLATE ranges::reverse_view
+    // clang-format off
+    template <view _Vw>
+        requires bidirectional_range<_Vw>
+    class reverse_view : public _Cached_position_t<!common_range<_Vw>, _Vw, reverse_view<_Vw>> {
+        // clang-format on
+    private:
+        /* [[no_unique_address]] */ _Vw _Base{};
+
+        template <class _Rng>
+        using _Rev_iter = reverse_iterator<iterator_t<_Rng>>;
+
+    public:
+        reverse_view() = default;
+        constexpr explicit reverse_view(_Vw _Base_) noexcept(is_nothrow_move_constructible_v<_Vw>) // strengthened
+            : _Base(_STD move(_Base_)) {}
+
+        _NODISCARD constexpr _Vw base() const& noexcept(
+            is_nothrow_copy_constructible_v<_Vw>) /* strengthened */ requires copy_constructible<_Vw> {
+            return _Base;
+        }
+        _NODISCARD constexpr _Vw base() && noexcept(is_nothrow_move_constructible_v<_Vw>) /* strengthened */ {
+            return _STD move(_Base);
+        }
+
+        _NODISCARD constexpr _Rev_iter<_Vw> begin() {
+            if constexpr (common_range<_Vw>) {
+                return _Rev_iter<_Vw>{_RANGES end(_Base)};
+            } else {
+                if (this->_Has_cache()) {
+                    return _Rev_iter<_Vw>{this->_Get_cache(_Base)};
+                }
+
+                iterator_t<_Vw> _First;
+                if constexpr (sized_range<_Vw>) {
+                    _First = _RANGES next(_RANGES begin(_Base), _RANGES distance(_Base));
+                } else {
+                    _First = _RANGES next(_RANGES begin(_Base), _RANGES end(_Base));
+                }
+                this->_Set_cache(_Base, _First);
+                return _Rev_iter<_Vw>{_STD move(_First)};
+            }
+        }
+
+        _NODISCARD constexpr auto begin() const noexcept(
+            noexcept(_Rev_iter<const _Vw>{_RANGES end(_Base)})) /* strengthened */ requires common_range<const _Vw> {
+            return _Rev_iter<const _Vw>{_RANGES end(_Base)};
+        }
+
+        _NODISCARD constexpr _Rev_iter<_Vw> end() noexcept(
+            noexcept(_Rev_iter<_Vw>{_RANGES begin(_Base)})) /* strengthened */ {
+            return _Rev_iter<_Vw>{_RANGES begin(_Base)};
+        }
+        _NODISCARD constexpr auto end() const noexcept(
+            noexcept(_Rev_iter<const _Vw>{_RANGES begin(_Base)})) /* strengthened */ requires common_range<const _Vw> {
+            return _Rev_iter<const _Vw>{_RANGES begin(_Base)};
+        }
+
+        _NODISCARD constexpr auto size() noexcept(
+            noexcept(_RANGES size(_Base))) /* strengthened */ requires sized_range<_Vw> {
+            return _RANGES size(_Base);
+        }
+        _NODISCARD constexpr auto size() const
+            noexcept(noexcept(_RANGES size(_Base))) /* strengthened */ requires sized_range<const _Vw> {
+            return _RANGES size(_Base);
+        }
+    };
+
+    template <class _Rng>
+    reverse_view(_Rng &&) -> reverse_view<views::all_t<_Rng>>;
+
+    namespace views {
+        // VARIABLE views::reverse
+        template <class _Rng>
+        concept _Can_extract_base = requires(_Rng&& __r) {
+            static_cast<_Rng&&>(__r).base();
+        };
+
+        template <class _Rng>
+        concept _Can_reverse = requires(_Rng&& __r) {
+            reverse_view{static_cast<_Rng&&>(__r)};
+        };
+
+        class _Reverse_fn : public _Pipe::_Base<_Reverse_fn> {
+        private:
+            enum class _St { _None, _Base, _Subrange_unsized, _Subrange_sized, _Reverse };
+
+            template <class>
+            static constexpr auto _Reversed_subrange = -1;
+            template <class _It, subrange_kind _Ki>
+            static constexpr auto
+                _Reversed_subrange<subrange<reverse_iterator<_It>, reverse_iterator<_It>, _Ki>> = static_cast<int>(_Ki);
+
+            template <class _Rng>
+            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+                if constexpr (bidirectional_range<_Rng>) {
+                    if constexpr (_Is_specialization_v<_Rng, reverse_view>) {
+                        if constexpr (_Can_extract_base<_Rng>) {
+                            return {_St::_Base, noexcept(_STD declval<_Rng>().base())};
+                        }
+                    } else if constexpr (_Reversed_subrange<remove_cvref_t<_Rng>> == 0) {
+                        using _It = decltype(_STD declval<_Rng&>().begin().base());
+                        return {_St::_Subrange_unsized,
+                            noexcept(subrange<_It, _It, subrange_kind::unsized>{
+                                _STD declval<_Rng&>().end().base(), _STD declval<_Rng&>().begin().base()})};
+                    } else if constexpr (_Reversed_subrange<remove_cvref_t<_Rng>> == 1) {
+                        using _It = decltype(_STD declval<_Rng&>().begin().base());
+                        return {_St::_Subrange_sized,
+                            noexcept(subrange<_It, _It, subrange_kind::sized>{_STD declval<_Rng&>().end().base(),
+                                _STD declval<_Rng&>().begin().base(), _STD declval<_Rng&>().size()})};
+                    } else if constexpr (_Can_reverse<_Rng>) {
+                        return {_St::_Reverse, noexcept(reverse_view{_STD declval<_Rng>()})};
+                    }
+                }
+
+                return {_St::_None};
+            }
+
+            template <class _Rng>
+            static constexpr _Choice_t<_St> _Choice = _Choose<_Rng>();
+
+        public:
+            // clang-format off
+            template <viewable_range _Rng>
+                requires (_Choice<_Rng>._Strategy != _St::_None)
+            _NODISCARD constexpr auto operator()(_Rng&& _Range) const noexcept(_Choice<_Rng>._No_throw) {
+                // clang-format on
+                if constexpr (_Choice<_Rng>._Strategy == _St::_Base) {
+                    return static_cast<_Rng&&>(_Range).base();
+                } else if constexpr (_Choice<_Rng>._Strategy == _St::_Subrange_unsized) {
+                    return subrange{_Range.end().base(), _Range.begin().base()};
+                } else if constexpr (_Choice<_Rng>._Strategy == _St::_Subrange_sized) {
+                    return subrange{_Range.end().base(), _Range.begin().base(), _Range.size()};
+                } else if constexpr (_Choice<_Rng>._Strategy == _St::_Reverse) {
+                    return reverse_view{static_cast<_Rng&&>(_Range)};
+                } else {
+                    static_assert(_Always_false<_Rng>, "Should be unreachable");
+                }
+            }
+        };
+
+        inline constexpr _Reverse_fn reverse;
+    } // namespace views
 } // namespace ranges
+
+namespace views = ranges::views;
 
 _STD_END
 

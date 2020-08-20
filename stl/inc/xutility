@@ -645,7 +645,7 @@ struct iterator_traits<_Ty*> {
 };
 // clang-format on
 
-// CUSTOMIZATION POINT OBJECT iter_move
+// CUSTOMIZATION POINT OBJECT ranges::iter_move
 namespace ranges {
     // STRUCT TEMPLATE _Choice_t
     template <class _Ty>
@@ -707,9 +707,10 @@ namespace ranges {
         // clang-format on
     } // namespace _Iter_move
 
-    inline namespace _Cpos {
+    namespace _Cpos {
         inline constexpr _Iter_move::_Cpo iter_move;
     }
+    using namespace _Cpos;
 } // namespace ranges
 
 // iter_swap defined below since it depends on indirectly_movable_storable
@@ -1017,7 +1018,7 @@ concept indirectly_copyable_storable = indirectly_copyable<_In, _Out>
     && assignable_from<iter_value_t<_In>&, iter_reference_t<_In>>;
 // clang-format on
 
-// CUSTOMIZATION POINT OBJECT iter_swap
+// CUSTOMIZATION POINT OBJECT ranges::iter_swap
 namespace ranges {
     namespace _Iter_swap {
         template <class _Ty1, class _Ty2>
@@ -1091,9 +1092,10 @@ namespace ranges {
         };
     } // namespace _Iter_swap
 
-    inline namespace _Cpos {
+    namespace _Cpos {
         inline constexpr _Iter_swap::_Cpo iter_swap;
     }
+    using namespace _Cpos;
 } // namespace ranges
 
 // clang-format off
@@ -2408,9 +2410,10 @@ namespace ranges {
         };
     } // namespace _Begin
 
-    inline namespace _Cpos {
+    namespace _Cpos {
         inline constexpr _Begin::_Cpo begin;
     }
+    using namespace _Cpos;
 
     // ALIAS TEMPLATE ranges::iterator_t
     template <class _Ty>
@@ -2468,9 +2471,10 @@ namespace ranges {
         };
     } // namespace _Unchecked_begin
 
-    inline namespace _Cpos {
+    namespace _Cpos {
         inline constexpr _Unchecked_begin::_Cpo _Ubegin;
     }
+    using namespace _Cpos;
 
     // CUSTOMIZATION POINT OBJECT ranges::end
     namespace _End {
@@ -2542,9 +2546,10 @@ namespace ranges {
         };
     } // namespace _End
 
-    inline namespace _Cpos {
+    namespace _Cpos {
         inline constexpr _End::_Cpo end;
     }
+    using namespace _Cpos;
 
     // CUSTOMIZATION POINT OBJECT ranges::_Uend
     namespace _Unchecked_end {
@@ -2599,9 +2604,10 @@ namespace ranges {
         };
     } // namespace _Unchecked_end
 
-    inline namespace _Cpos {
+    namespace _Cpos {
         inline constexpr _Unchecked_end::_Cpo _Uend;
     }
+    using namespace _Cpos;
 
     // CONCEPT ranges::range
     template <class _Rng>
@@ -2648,9 +2654,10 @@ namespace ranges {
         // clang-format on
     };
 
-    inline namespace _Cpos {
+    namespace _Cpos {
         inline constexpr _Cbegin_fn cbegin;
     }
+    using namespace _Cpos;
 
     // CUSTOMIZATION POINT OBJECT ranges::cend
     struct _Cend_fn {
@@ -2664,9 +2671,10 @@ namespace ranges {
         // clang-format on
     };
 
-    inline namespace _Cpos {
+    namespace _Cpos {
         inline constexpr _Cend_fn cend;
     }
+    using namespace _Cpos;
 
     // CUSTOMIZATION POINT OBJECT ranges::rbegin
     namespace _Rbegin {
@@ -2733,9 +2741,10 @@ namespace ranges {
         };
     } // namespace _Rbegin
 
-    inline namespace _Cpos {
+    namespace _Cpos {
         inline constexpr _Rbegin::_Cpo rbegin;
     }
+    using namespace _Cpos;
 
     // CUSTOMIZATION POINT OBJECT ranges::rend
     namespace _Rend {
@@ -2803,9 +2812,10 @@ namespace ranges {
         };
     } // namespace _Rend
 
-    inline namespace _Cpos {
+    namespace _Cpos {
         inline constexpr _Rend::_Cpo rend;
     }
+    using namespace _Cpos;
 
     // CUSTOMIZATION POINT OBJECT ranges::crbegin
     struct _Crbegin_fn {
@@ -2819,9 +2829,10 @@ namespace ranges {
         // clang-format on
     };
 
-    inline namespace _Cpos {
+    namespace _Cpos {
         inline constexpr _Crbegin_fn crbegin;
     }
+    using namespace _Cpos;
 
     // CUSTOMIZATION POINT OBJECT ranges::crend
     struct _Crend_fn {
@@ -2835,9 +2846,10 @@ namespace ranges {
         // clang-format on
     };
 
-    inline namespace _Cpos {
+    namespace _Cpos {
         inline constexpr _Crend_fn crend;
     }
+    using namespace _Cpos;
 
     // VARIABLE TEMPLATE ranges::disable_sized_range
     template <class>
@@ -2921,9 +2933,10 @@ namespace ranges {
         };
     } // namespace _Size
 
-    inline namespace _Cpos {
+    namespace _Cpos {
         inline constexpr _Size::_Cpo size;
     }
+    using namespace _Cpos;
 
     // CUSTOMIZATION POINT OBJECT ranges::empty
     namespace _Empty {
@@ -2989,9 +3002,10 @@ namespace ranges {
         };
     } // namespace _Empty
 
-    inline namespace _Cpos {
+    namespace _Cpos {
         inline constexpr _Empty::_Cpo empty;
     }
+    using namespace _Cpos;
 
     // CUSTOMIZATION POINT OBJECT ranges::data
     namespace _Data {
@@ -3046,9 +3060,10 @@ namespace ranges {
         };
     } // namespace _Data
 
-    inline namespace _Cpos {
+    namespace _Cpos {
         inline constexpr _Data::_Cpo data;
     }
+    using namespace _Cpos;
 
     // CUSTOMIZATION POINT OBJECT ranges::cdata
     struct _Cdata_fn {
@@ -3062,9 +3077,10 @@ namespace ranges {
         // clang-format on
     };
 
-    inline namespace _Cpos {
+    namespace _Cpos {
         inline constexpr _Cdata_fn cdata;
     }
+    using namespace _Cpos;
 
     // clang-format off
     // CONCEPT ranges::sized_range
@@ -3289,9 +3305,10 @@ namespace ranges {
         // clang-format on
     };
 
-    inline namespace _Cpos {
+    namespace _Cpos {
         inline constexpr _Ssize_fn ssize;
     }
+    using namespace _Cpos;
 
     // VARIABLE ranges::next
     class _Next_fn : private _Not_quite_object {
@@ -3584,7 +3601,8 @@ namespace ranges {
             auto& _Self = _Cast();
 #if _CONTAINER_DEBUG_LEVEL > 0
             if constexpr (sized_range<_Derived>) {
-                _STL_VERIFY(_Idx < _RANGES size(_Self), "index out of range for view_interface");
+                using _Ty = _Make_unsigned_like_t<range_difference_t<_Rng>>;
+                _STL_VERIFY(static_cast<_Ty>(_Idx) < static_cast<_Ty>(_RANGES size(_Self)), "index out of range for view_interface");
             }
 #endif // _CONTAINER_DEBUG_LEVEL > 0
             return _RANGES begin(_Self)[_Idx];
@@ -3595,7 +3613,8 @@ namespace ranges {
             auto& _Self = _Cast();
 #if _CONTAINER_DEBUG_LEVEL > 0
             if constexpr (sized_range<_Derived>) {
-                _STL_VERIFY(_Idx < _RANGES size(_Self), "index out of range for view_interface");
+                using _Ty = _Make_unsigned_like_t<range_difference_t<_Rng>>;
+                _STL_VERIFY(static_cast<_Ty>(_Idx) < static_cast<_Ty>(_RANGES size(_Self)), "index out of range for view_interface");
             }
 #endif // _CONTAINER_DEBUG_LEVEL > 0
             return _RANGES begin(_Self)[_Idx];
