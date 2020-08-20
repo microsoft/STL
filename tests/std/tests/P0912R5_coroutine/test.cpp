@@ -4,7 +4,7 @@
 struct Task {
     struct Promise {
         int result;
-        std::coroutine_handle<> prev;
+        std::coroutine_handle<> previous;
 
         Task get_return_object() {
             return {*this};
@@ -25,11 +25,11 @@ struct Task {
                 std::coroutine_handle<> await_suspend(std::coroutine_handle<Promise> h) {
                     // If there is no previous coroutine to resume we've reached the outermost coroutine.
                     // Return a noop coroutine to allow control to return back to the caller.
-                    if (!h.promise().prev) {
+                    if (!h.promise().previous) {
                         return std::noop_coroutine();
                     }
 
-                    return h.promise().prev; // resume awaiting coroutine
+                    return h.promise().previous; // resume awaiting coroutine
                 }
             };
 
@@ -56,7 +56,7 @@ struct Task {
     }
 
     auto await_suspend(std::coroutine_handle<> enclosing) {
-        coro.promise().prev = enclosing;
+        coro.promise().previous = enclosing;
         return coro; // resume ourselves.
     }
 
