@@ -1,12 +1,12 @@
 #include <coroutine>
 #include <exception>
 
-struct task {
-    struct promise_type {
+struct Task {
+    struct Promise {
         int result;
         std::coroutine_handle<> prev;
 
-        task get_return_object() {
+        Task get_return_object() {
             return {*this};
         }
 
@@ -22,7 +22,7 @@ struct task {
 
                 void await_resume() noexcept {}
 
-                std::coroutine_handle<> await_suspend(std::coroutine_handle<promise_type> h) {
+                std::coroutine_handle<> await_suspend(std::coroutine_handle<Promise> h) {
                     // If there is no previous coroutine to resume we've reached the outermost coroutine.
                     // Return a noop coroutine to allow control to return back to the caller.
                     if (!h.promise().prev) {
@@ -45,6 +45,8 @@ struct task {
         }
     };
 
+    using promise_type = Promise;
+
     bool await_ready() const noexcept {
         return false;
     }
@@ -58,24 +60,24 @@ struct task {
         return coro; // resume ourselves.
     }
 
-    task(task&& rhs) noexcept : coro(rhs.coro) {
+    Task(Task&& rhs) noexcept : coro(rhs.coro) {
         rhs.coro = nullptr;
     }
 
-    task(task const&) = delete;
+    Task(Task const&) = delete;
 
-    task(promise_type& p) : coro(std::coroutine_handle<promise_type>::from_promise(p)) {}
+    Task(Promise& p) : coro(std::coroutine_handle<Promise>::from_promise(p)) {}
 
-    ~task() {
+    ~Task() {
         if (coro) {
             coro.destroy();
         }
     }
 
-    std::coroutine_handle<promise_type> coro;
+    std::coroutine_handle<Promise> coro;
 };
 
-task f(int n) {
+Task f(int n) {
     if (n == 0) {
         co_return 0;
     }
@@ -84,7 +86,7 @@ task f(int n) {
 }
 
 int main() {
-    task t                    = f(10);
+    Task t                    = f(10);
     std::coroutine_handle<> h = t.coro;
 
     if (h != t.coro) {
