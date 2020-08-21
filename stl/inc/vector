@@ -1617,7 +1617,7 @@ private:
         const size_type _Oldcapacity = capacity();
 
         if (_Oldcapacity > max_size() - _Oldcapacity / 2) {
-            return _Newsize; // geometric growth would overflow
+            return max_size(); // geometric growth would overflow
         }
 
         const size_type _Geometric = _Oldcapacity + _Oldcapacity / 2;
