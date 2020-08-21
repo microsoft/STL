@@ -336,12 +336,12 @@ struct emplace_argument {
     private: def_ctor    name() { }                                                                             \
     private: copy_ctor   name(name const&) { }                                                                  \
     private: move_ctor   name(name&&) { }                                                                       \
-    private: emp_ctor    name(emp_argument&&) { }                                                               \
-    private: emp_ctor    name(emp_argument&&, emp_argument&&) { }                                               \
-    private: emp_ctor    name(emp_argument&&, emp_argument&&, emp_argument&&) { }                               \
+    private: emp_ctor    name(emplace_argument&&) { }                                                           \
+    private: emp_ctor    name(emplace_argument&&, emplace_argument&&) { }                                       \
+    private: emp_ctor    name(emplace_argument&&, emplace_argument&&, emplace_argument&&) { }                   \
     private: copy_assign name& operator=(name const&) { return *this; }                                         \
     private: move_assign name& operator=(name&&) noexcept { return *this; }                                     \
-    private: emp_assign  name& operator=(emp_argument&&) { return *this; }                                      \
+    private: emp_assign  name& operator=(emplace_argument&&) { return *this; }                                  \
     }
 
 #define YES public:
