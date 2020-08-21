@@ -1225,20 +1225,59 @@ _NODISCARD inline bool _Should_round_up(
 // The caller must pass true for _Has_zero_tail if all discarded bits were zeroes.
 _NODISCARD inline uint64_t _Right_shift_with_rounding(
     const uint64_t _Value, const uint32_t _Shift, const bool _Has_zero_tail) noexcept {
-    // If we'd need to shift further than it is possible to shift, the answer is always zero:
     if (_Shift >= 64) {
-        return 0;
+        if (_Shift == 64) {
+            const uint64_t _Round_bit = _Value >> 63;
+            const auto _Has_tail_bits = static_cast<uint64_t>(!_Has_zero_tail);
+            return _Round_bit & _Has_tail_bits;
+        } else {
+            // If we'd need to shift 65 or more bits, the answer is less than 0.5 and is always rounded to zero:
+            return 0;
+        }
     }
 
-    const uint64_t _Extra_bits_mask = (1ULL << (_Shift - 1)) - 1;
-    const uint64_t _Round_bit_mask  = (1ULL << (_Shift - 1));
-    const uint64_t _Lsb_bit_mask    = 1ULL << _Shift;
+    // Reference implementation with suboptimal codegen:
+    // const uint64_t _Extra_bits_mask = (1ULL << (_Shift - 1)) - 1;
+    // const uint64_t _Round_bit_mask  = (1ULL << (_Shift - 1));
+    // const uint64_t _Lsb_bit_mask    = 1ULL << _Shift;
 
-    const bool _Lsb_bit   = (_Value & _Lsb_bit_mask) != 0;
-    const bool _Round_bit = (_Value & _Round_bit_mask) != 0;
-    const bool _Tail_bits = !_Has_zero_tail || (_Value & _Extra_bits_mask) != 0;
+    // const bool _Lsb_bit   = (_Value & _Lsb_bit_mask) != 0;
+    // const bool _Round_bit = (_Value & _Round_bit_mask) != 0;
+    // const bool _Tail_bits = !_Has_zero_tail || (_Value & _Extra_bits_mask) != 0;
 
-    return (_Value >> _Shift) + _Should_round_up(_Lsb_bit, _Round_bit, _Tail_bits);
+    // return (_Value >> _Shift) + _Should_round_up(_Lsb_bit, _Round_bit, _Tail_bits);
+
+    // Example for optimized implementation: Let _Shift be 8.
+    // Bit index: ...[8]76543210
+    //    _Value: ...[L]RTTTTTTT
+    // By focusing on the bit at index _Shift, we can avoid unnecessary branching and shifting.
+
+    // Bit index: ...[8]76543210
+    //  _Lsb_bit: ...[L]RTTTTTTT
+    const uint64_t _Lsb_bit = _Value;
+
+    //  Bit index: ...9[8]76543210
+    // _Round_bit: ...L[R]TTTTTTT0
+    const uint64_t _Round_bit = _Value << 1;
+
+    // We can detect (without branching) whether any of the trailing bits are set.
+    // Due to _Should_round below, this computation will be used if and only if R is 1, so we can assume that here.
+    //      Bit index: ...9[8]76543210
+    //     _Round_bit: ...L[1]TTTTTTT0
+    // _Has_tail_bits: ....[H]........
+
+    // If all of the trailing bits T are 0, and _Has_tail_bits is true,
+    // then `_Round_bit - static_cast<uint64_t>(_Has_zero_tail)` will produce 0 for H (due to R being 1).
+    // If any of the trailing bits T are 1, or _Has_tail_bits is false,
+    // then `_Round_bit - static_cast<uint64_t>(_Has_zero_tail)` will produce 1 for H (due to R being 1).
+    const uint64_t _Has_tail_bits = _Round_bit - static_cast<uint64_t>(_Has_zero_tail);
+
+    // Finally, we can use _Should_round_up() logic with bitwise-AND and bitwise-OR,
+    // selecting just the bit at index _Shift.
+    const uint64_t _Should_round = ((_Round_bit & (_Has_tail_bits | _Lsb_bit)) >> _Shift) & uint64_t{1};
+
+    // This rounding technique is dedicated to the memory of Peppermint. =^..^=
+    return (_Value >> _Shift) + _Should_round;
 }
 
 // Converts the floating-point value [sign] (mantissa / 2^(precision-1)) * 2^exponent into the correct form for
