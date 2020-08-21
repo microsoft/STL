@@ -1241,11 +1241,53 @@ _NODISCARD inline uint64_t _Right_shift_with_rounding(
     return (_Value >> _Shift) + _Should_round_up(_Lsb_bit, _Round_bit, _Tail_bits);
 }
 
-// Converts the floating-point value [sign] 0.mantissa * 2^exponent into the correct form for _FloatingType and
-// stores the result into the _Result object. The caller must ensure that the mantissa and exponent are correctly
-// computed such that either [1] the most significant bit of the mantissa is in the correct position for the
-// _FloatingType, or [2] the exponent has been correctly adjusted to account for the shift of the mantissa that
-// will be required.
+// Converts the floating-point value [sign] (mantissa / 2^(precision-1)) * 2^exponent into the correct form for
+// _FloatingType and stores the result into the _Result object.
+// The caller must ensure that the mantissa and exponent are correctly computed such that either:
+// [1] min_exponent <= exponent <= max_exponent && 2^(precision-1) <= mantissa <= 2^precision, or
+// [2] exponent == min_exponent && 0 < mantissa <= 2^(precision-1).
+// (The caller should round the mantissa before calling this function. The caller doesn't need to renormalize the
+// mantissa when the mantissa carries over to a higher bit after rounding up.)
+
+// This function correctly handles overflow and stores an infinity in the _Result object.
+// (The result overflows if and only if exponent == max_exponent && mantissa == 2^precision)
+template <class _FloatingType>
+void _Assemble_floating_point_value_no_shift(const bool _Is_negative, const int32_t _Exponent,
+    const typename _Floating_type_traits<_FloatingType>::_Uint_type _Mantissa, _FloatingType& _Result) noexcept {
+    // The following code assembles floating point values based on an alternative interpretation of the IEEE 754 binary
+    // floating point format. It is valid for all of the following cases:
+    // [1] normal value,
+    // [2] normal value, needs renormalization and exponent increment after rounding up the mantissa,
+    // [3] normal value, overflows after rounding up the mantissa,
+    // [4] subnormal value,
+    // [5] subnormal value, becomes a normal value after rounding up the mantissa.
+
+    // Examples for float:
+    // | Case |     Input     | Exponent |  Exponent  |  Exponent  |  Rounded  | Result Bits |     Result      |
+    // |      |               |          | + Bias - 1 |  Component |  Mantissa |             |                 |
+    // | ---- | ------------- | -------- | ---------- | ---------- | --------- | ----------- | --------------- |
+    // | [1]  | 1.000000p+0   |     +0   |    126     | 0x3f000000 |  0x800000 | 0x3f800000  | 0x1.000000p+0   |
+    // | [2]  | 1.ffffffp+0   |     +0   |    126     | 0x3f000000 | 0x1000000 | 0x40000000  | 0x1.000000p+1   |
+    // | [3]  | 1.ffffffp+127 |   +127   |    253     | 0x7e800000 | 0x1000000 | 0x7f800000  |     inf         |
+    // | [4]  | 0.fffffep-126 |   -126   |      0     | 0x00000000 |  0x7fffff | 0x007fffff  | 0x0.fffffep-126 |
+    // | [5]  | 0.ffffffp-126 |   -126   |      0     | 0x00000000 |  0x800000 | 0x00800000  | 0x1.000000p-126 |
+    using _Floating_traits = _Floating_type_traits<_FloatingType>;
+    using _Uint_type       = typename _Floating_traits::_Uint_type;
+
+    _Uint_type _Sign_component = _Is_negative;
+    _Sign_component <<= _Floating_traits::_Sign_shift;
+
+    _Uint_type _Exponent_component = static_cast<uint32_t>(_Exponent + (_Floating_traits::_Exponent_bias - 1));
+    _Exponent_component <<= _Floating_traits::_Exponent_shift;
+
+    _Result = _Bit_cast<_FloatingType>(_Sign_component | (_Exponent_component + _Mantissa));
+}
+
+// Converts the floating-point value [sign] (mantissa / 2^(precision-1)) * 2^exponent into the correct form for
+// _FloatingType and stores the result into the _Result object. The caller must ensure that the mantissa and exponent
+// are correctly computed such that either [1] the most significant bit of the mantissa is in the correct position for
+// the _FloatingType, or [2] the exponent has been correctly adjusted to account for the shift of the mantissa that will
+// be required.
 
 // This function correctly handles range errors and stores a zero or infinity in the _Result object
 // on underflow and overflow errors, respectively. This function correctly forms denormal numbers when required.
@@ -1254,23 +1296,6 @@ _NODISCARD inline uint64_t _Right_shift_with_rounding(
 // rounded to the available precision. Thus, if possible, the caller should provide a mantissa with at least one
 // more bit of precision than is required, to ensure that the mantissa is correctly rounded.
 // (The caller should not round the mantissa before calling this function.)
-template <class _FloatingType>
-_NODISCARD errc _Assemble_floating_point_value_t(const bool _Is_negative, const int32_t _Exponent,
-    const typename _Floating_type_traits<_FloatingType>::_Uint_type _Mantissa, _FloatingType& _Result) noexcept {
-    using _Floating_traits = _Floating_type_traits<_FloatingType>;
-    using _Uint_type       = typename _Floating_traits::_Uint_type;
-
-    _Uint_type _Sign_component = _Is_negative;
-    _Sign_component <<= _Floating_traits::_Sign_shift;
-
-    _Uint_type _Exponent_component = static_cast<uint32_t>(_Exponent + _Floating_traits::_Exponent_bias);
-    _Exponent_component <<= _Floating_traits::_Exponent_shift;
-
-    _Result = _Bit_cast<_FloatingType>(_Sign_component | _Exponent_component | _Mantissa);
-
-    return errc{};
-}
-
 template <class _FloatingType>
 _NODISCARD errc _Assemble_floating_point_value(const uint64_t _Initial_mantissa, const int32_t _Initial_exponent,
     const bool _Is_negative, const bool _Has_zero_tail, _FloatingType& _Result) noexcept {
@@ -1283,36 +1308,36 @@ _NODISCARD errc _Assemble_floating_point_value(const uint64_t _Initial_mantissa,
     const int32_t _Normal_mantissa_shift  = static_cast<int32_t>(_Traits::_Mantissa_bits - _Initial_mantissa_bits);
     const int32_t _Normal_exponent        = _Initial_exponent - _Normal_mantissa_shift;
 
-    uint64_t _Mantissa = _Initial_mantissa;
-    int32_t _Exponent  = _Normal_exponent;
-
     if (_Normal_exponent > _Traits::_Maximum_binary_exponent) {
         // The exponent is too large to be represented by the floating-point type; report the overflow condition:
         _Assemble_floating_point_infinity(_Is_negative, _Result);
         return errc::result_out_of_range; // Overflow example: "1e+1000"
     }
 
+    uint64_t _Mantissa = _Initial_mantissa;
+    int32_t _Exponent  = _Normal_exponent;
+    errc _Error_code{};
+
     if (_Normal_exponent < _Traits::_Minimum_binary_exponent) {
         // The exponent is too small to be represented by the floating-point type as a normal value, but it may be
-        // representable as a denormal value. Compute the number of bits by which we need to shift the mantissa
-        // in order to form a denormal number. (The subtraction of an extra 1 is to account for the hidden bit of
-        // the mantissa that is not available for use when representing a denormal.)
-        const int32_t _Denormal_mantissa_shift =
-            _Normal_mantissa_shift + _Normal_exponent + _Traits::_Exponent_bias - 1;
+        // representable as a denormal value.
 
-        // Denormal values have an exponent of zero, so the debiased exponent is the negation of the exponent bias:
-        _Exponent = -_Traits::_Exponent_bias;
+        // The exponent of subnormal values (as defined by the mathematical model of floating point numbers, not the
+        // exponent field in the bit representation) is equal to the minimum exponent of normal values.
+        _Exponent = _Traits::_Minimum_binary_exponent;
+
+        // Compute the number of bits by which we need to shift the mantissa in order to form a denormal number.
+        const int32_t _Denormal_mantissa_shift = _Initial_exponent - _Exponent;
 
         if (_Denormal_mantissa_shift < 0) {
-            // Use two steps for right shifts: for a shift of N bits, we first shift by N-1 bits,
-            // then shift the last bit and use its value to round the mantissa.
             _Mantissa =
                 _Right_shift_with_rounding(_Mantissa, static_cast<uint32_t>(-_Denormal_mantissa_shift), _Has_zero_tail);
 
-            // If the mantissa is now zero, we have underflowed:
+            // TRANSITION, existing:
+            // from_chars and strto[f|d|ld] reports underflow only when the result is zero after rounding to the
+            // floating point format. This behavior is different from IEEE 754 underflow exception.
             if (_Mantissa == 0) {
-                _Assemble_floating_point_zero(_Is_negative, _Result);
-                return errc::result_out_of_range; // Underflow example: "1e-1000"
+                _Error_code = errc::result_out_of_range; // Underflow example: "1e-1000"
             }
 
             // When we round the mantissa, the result may be so large that the number becomes a normal value.
@@ -1325,49 +1350,36 @@ _NODISCARD errc _Assemble_floating_point_value(const uint64_t _Initial_mantissa,
             // 0x00800000 is 24 bits, which is more than the 23 bits available in the mantissa.
             // Thus, we have rounded our denormal number into a normal number.
 
-            // We detect this case here and re-adjust the mantissa and exponent appropriately, to form a normal number:
-            if (_Mantissa > _Traits::_Denormal_mantissa_mask) {
-                // The mantissa is already in the correct position for a normal value. (The carried over bit when we
-                // added 1 to round the mantissa is in the correct position for the hidden bit.)
-                // _Denormal_mantissa_shift is the actual number of bits by which we have shifted the mantissa into its
-                // final position.
-                _Exponent = _Initial_exponent - _Denormal_mantissa_shift;
-            }
+            // We detect this case here and re-adjust the mantissa and exponent appropriately, to form a normal number.
+            // This is handled by _Assemble_floating_point_value_no_shift.
         } else {
             _Mantissa <<= _Denormal_mantissa_shift;
         }
     } else {
         if (_Normal_mantissa_shift < 0) {
-            // Use two steps for right shifts: for a shift of N bits, we first shift by N-1 bits,
-            // then shift the last bit and use its value to round the mantissa.
             _Mantissa =
                 _Right_shift_with_rounding(_Mantissa, static_cast<uint32_t>(-_Normal_mantissa_shift), _Has_zero_tail);
 
             // When we round the mantissa, it may produce a result that is too large. In this case,
             // we divide the mantissa by two and increment the exponent (this does not change the value).
-            if (_Mantissa > _Traits::_Normal_mantissa_mask) {
-                _Mantissa >>= 1;
-                ++_Exponent;
+            // This is handled by _Assemble_floating_point_value_no_shift.
 
-                // The increment of the exponent may have generated a value too large to be represented.
-                // In this case, report the overflow:
-                if (_Exponent > _Traits::_Maximum_binary_exponent) {
-                    _Assemble_floating_point_infinity(_Is_negative, _Result);
-                    return errc::result_out_of_range; // Overflow example: "1.ffffffp+127" for float
-                                                      // Overflow example: "1.fffffffffffff8p+1023" for double
-                }
+            // The increment of the exponent may have generated a value too large to be represented.
+            // In this case, report the overflow:
+            if (_Mantissa > _Traits::_Normal_mantissa_mask && _Exponent == _Traits::_Maximum_binary_exponent) {
+                _Error_code = errc::result_out_of_range; // Overflow example: "1.ffffffp+127" for float
+                                                         // Overflow example: "1.fffffffffffff8p+1023" for double
             }
-        } else if (_Normal_mantissa_shift > 0) {
+        } else {
             _Mantissa <<= _Normal_mantissa_shift;
         }
     }
 
-    // Unset the hidden bit in the mantissa and assemble the floating-point value from the computed components:
-    _Mantissa &= _Traits::_Denormal_mantissa_mask;
-
     using _Uint_type = typename _Traits::_Uint_type;
 
-    return _Assemble_floating_point_value_t(_Is_negative, _Exponent, static_cast<_Uint_type>(_Mantissa), _Result);
+    _Assemble_floating_point_value_no_shift(_Is_negative, _Exponent, static_cast<_Uint_type>(_Mantissa), _Result);
+
+    return _Error_code;
 }
 
 // This function is part of the fast track for integer floating-point strings. It takes an integer and a sign and
