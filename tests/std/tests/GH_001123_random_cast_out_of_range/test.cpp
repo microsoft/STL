@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
 #include <cassert>
 #include <cmath>
 #include <cstdint>
@@ -9,14 +12,15 @@ using lim = std::numeric_limits<T>;
 
 template <class T>
 void CheckUpperBound(T i, float fmax) {
-    const float x{std::_Float_upper_bound<float, T>(i)};
+    const float x{std::_Float_upper_bound<float>(i)};
     const float y{std::nextafter(x, 0.0f)}; // lower bound, <= i
 
     assert(y < fmax);
     assert(static_cast<T>(y) <= i);
     assert(x <= fmax);
-    if (x < fmax)
+    if (x < fmax) {
         assert(static_cast<T>(x) > i);
+    }
 }
 
 template <class T>
@@ -30,8 +34,9 @@ void TestUpperBoundExhaustive() {
 
 template <class T>
 constexpr T FillLsb(int n) {
-    if (n <= 0)
+    if (n <= 0) {
         return 0;
+    }
     T x{T{1} << (n - 1)};
     return (x - 1) ^ x;
 }

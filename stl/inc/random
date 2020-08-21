@@ -2029,11 +2029,12 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
 
 // FUNCTION TEMPLATE _Float_upper_bound
 
-// Returns smallest _Flt s.t. static_cast<_Ty>(_Result) > _Val. First
-// truncate to largest _Flt <= _Val, then add ceil(ulp)
+// Returns smallest _Flt such that static_cast<_Ty>(_Result) > _Val.
+// First truncate to largest _Flt <= _Val, then add ceil(ulp).
 
-template <class _Flt, class _Ty, typename = enable_if_t<is_unsigned_v<_Ty> && is_floating_point_v<_Flt>>>
-_NODISCARD inline _Flt _Float_upper_bound(_Ty _Val) {
+template <class _Flt, class _Ty>
+_NODISCARD _Flt _Float_upper_bound(_Ty _Val) {
+    static_assert(is_unsigned_v<_Ty> && is_floating_point_v<_Flt>, "invalid template argument for _Float_upper_bound");
     constexpr auto _Ty_digits  = numeric_limits<_Ty>::digits;
     constexpr auto _Flt_digits = numeric_limits<_Flt>::digits;
     using _Ty_32or64           = conditional_t<_Ty_digits <= 32, uint32_t, uint64_t>;
@@ -2160,7 +2161,7 @@ private:
     result_type _Eval(_Engine& _Eng, const param_type& _Par0) const {
         using _Uty = make_unsigned_t<_Ty>;
         constexpr auto _Ty_max{(numeric_limits<_Ty>::max)()};
-        const auto _Ty1_max{_Float_upper_bound<_Ty1, _Uty>(static_cast<_Uty>(_Ty_max))};
+        const auto _Ty1_max{_Float_upper_bound<_Ty1>(static_cast<_Uty>(_Ty_max))};
 
         _Ty1 _Val;
         do {
