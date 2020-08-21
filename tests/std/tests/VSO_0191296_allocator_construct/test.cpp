@@ -224,13 +224,13 @@ struct emplace_argument {
     private: def_ctor    name(alloc_key) { }                                                                         \
     private: copy_ctor   name(alloc_key, name const&) { }                                                            \
     private: move_ctor   name(alloc_key, name&&) { }                                                                 \
-    private: emp_ctor    name(alloc_key, emp_argument&&) { }                                                         \
-    private: emp_ctor    name(alloc_key, emp_argument&&, emp_argument&&) { }                                         \
-    private: emp_ctor    name(alloc_key, emp_argument&&, emp_argument&&, emp_argument&&) { }                         \
+    private: emp_ctor    name(alloc_key, emplace_argument&&) { }                                                     \
+    private: emp_ctor    name(alloc_key, emplace_argument&&, emplace_argument&&) { }                                 \
+    private: emp_ctor    name(alloc_key, emplace_argument&&, emplace_argument&&, emplace_argument&&) { }             \
     private: swappable   friend void swap(name&, name&) {}                                                           \
     private: copy_assign name& operator=(name const&) { return *this; }                                              \
     private: move_assign name& operator=(name&&) { return *this; }                                                   \
-    private: emp_assign  name& operator=(emp_argument&&) { return *this; }                                           \
+    private: emp_assign  name& operator=(emplace_argument&&) { return *this; }                                       \
     private:             name() {}                                                                                   \
     private:             name(const name&) {}                                                                        \
     }
