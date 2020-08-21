@@ -55,11 +55,13 @@ namespace experimental {
                 return {};
             }
 
-#ifdef _CPPUNWIND
             void unhandled_exception() noexcept {
+#ifdef _CPPUNWIND
                 _Eptr = _STD current_exception();
-            }
+#else // ^^^ _CPPUNWIND / !_CPPUNWIND vvv
+                abort();
 #endif // _CPPUNWIND
+            }
 
             void _Rethrow_if_exception() {
 #ifdef _CPPUNWIND
