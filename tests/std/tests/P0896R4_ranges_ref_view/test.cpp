@@ -4,88 +4,126 @@
 #include <algorithm>
 #include <cassert>
 #include <concepts>
+#include <memory>
 #include <ranges>
 #include <span>
+#include <utility>
 
 #include <range_algorithm_support.hpp>
 using namespace std;
 
 // clang-format off
-template<class Range>
-concept can_empty = requires (Range&& range) { ranges::empty(range); };
+template <class Range>
+concept can_empty = requires(Range& r) { ranges::empty(r); };
+template <class Range>
+concept can_data = requires(Range& r) { ranges::data(r); };
+template <class Range>
+concept can_size = requires(Range& r) { ranges::size(r); };
 // clang-format on
 
 struct instantiator {
-
-    template <class Read>
+    template <ranges::range R>
     static constexpr void call() {
-        using ranges::ref_view, ranges::iterator_t, ranges::sentinel_t, ranges::equal, ranges::begin, ranges::end;
+        using ranges::ref_view, ranges::begin, ranges::end, ranges::forward_range;
         int input[3] = {0, 1, 2};
 
         { // traits
-            STATIC_ASSERT(ranges::input_range<Read> || ranges::output_range<Read, const int&>);
-            STATIC_ASSERT(ranges::enable_borrowed_range<ref_view<Read>>);
+            STATIC_ASSERT(ranges::input_range<R> || ranges::output_range<R, const int&>);
+            STATIC_ASSERT(ranges::enable_borrowed_range<ref_view<R>>);
         }
 
-        { // constructors
-            STATIC_ASSERT(!constructible_from<ref_view<Read>, Read>);
+        { // constructors and assignment operators
+            STATIC_ASSERT(!constructible_from<ref_view<R>, R>);
 
-            [[maybe_unused]] ref_view<Read> default_constructed{};
-            STATIC_ASSERT(is_nothrow_default_constructible_v<ref_view<Read>>);
+            ref_view<R> default_constructed{};
+            STATIC_ASSERT(is_nothrow_default_constructible_v<ref_view<R>>);
 
-            Read wrapped_input{input};
-            [[maybe_unused]] ref_view<Read> same_range{wrapped_input};
+            R wrapped_input{input};
+            ref_view<R> same_range{wrapped_input};
+            STATIC_ASSERT(is_nothrow_constructible_v<ref_view<R>, R&>);
+
+            auto copy_constructed = same_range;
+            if constexpr (forward_range<R>) {
+                assert(copy_constructed.begin().peek() == begin(input));
+            }
+            assert(copy_constructed.end().peek() == end(input));
+
+            default_constructed = copy_constructed;
+            if constexpr (forward_range<R>) {
+                assert(default_constructed.begin().peek() == begin(input));
+            }
+            assert(default_constructed.end().peek() == end(input));
+
+            [[maybe_unused]] auto move_constructed = std::move(default_constructed);
+            if constexpr (forward_range<R>) {
+                assert(move_constructed.begin().peek() == begin(input));
+            }
+            assert(move_constructed.end().peek() == end(input));
+
+            same_range = std::move(copy_constructed);
+            if constexpr (forward_range<R>) {
+                assert(same_range.begin().peek() == begin(input));
+            }
+            assert(same_range.end().peek() == end(input));
         }
 
         { // access
-            Read wrapped_input{input};
-            ref_view<Read> test_view{wrapped_input};
-            auto& base_range = test_view.base();
-            STATIC_ASSERT(same_as<decltype(base_range), Read&>);
+            R wrapped_input{input};
+            ref_view<R> test_view{wrapped_input};
+            same_as<R> auto& base_range = as_const(test_view).base();
             assert(addressof(base_range) == addressof(wrapped_input));
 
-            STATIC_ASSERT(noexcept(test_view.base()));
+            STATIC_ASSERT(noexcept(as_const(test_view).base()));
         }
 
         { // iterators
-            Read wrapped_input{input};
-            ref_view<Read> test_view{wrapped_input};
-            const same_as<iterator_t<Read>> auto first = test_view.begin();
+            R wrapped_input{input};
+            ref_view<R> test_view{wrapped_input};
+            const same_as<ranges::iterator_t<R>> auto first = as_const(test_view).begin();
             assert(first.peek() == input);
+            STATIC_ASSERT(noexcept(as_const(test_view).begin()) == noexcept(wrapped_input.begin()));
 
-            const same_as<sentinel_t<Read>> auto last = test_view.end();
+            const same_as<ranges::sentinel_t<R>> auto last = as_const(test_view).end();
             assert(last.peek() == end(input));
+            STATIC_ASSERT(noexcept(as_const(test_view).end()) == noexcept(wrapped_input.end()));
         }
 
         { // state
-            if constexpr (ranges::sized_range<Read>) {
-                Read wrapped_input{input};
-                ref_view<Read> test_view{wrapped_input};
+            STATIC_ASSERT(can_size<ref_view<R>> == ranges::sized_range<R>);
+            if constexpr (ranges::sized_range<R>) {
+                R wrapped_input{input};
+                ref_view<R> test_view{wrapped_input};
 
-                const same_as<ranges::range_size_t<Read>> auto ref_size = test_view.size();
+                const same_as<ranges::range_size_t<R>> auto ref_size = as_const(test_view).size();
                 assert(ref_size == size(wrapped_input));
-            } else {
-                STATIC_ASSERT(!ranges::_Size::_Has_member<ref_view<Read>, remove_cvref_t<ref_view<Read>>>);
+
+                STATIC_ASSERT(noexcept(as_const(test_view).size()) == noexcept(wrapped_input.size()));
             }
 
-            if constexpr (ranges::contiguous_range<Read>) {
-                Read wrapped_input{input};
-                ref_view<Read> test_view{wrapped_input};
+            STATIC_ASSERT(can_data<ref_view<R>> == ranges::contiguous_range<R>);
+            if constexpr (ranges::contiguous_range<R>) {
+                R wrapped_input{input};
+                ref_view<R> test_view{wrapped_input};
 
-                const same_as<int*> auto ref_data = test_view.data();
+                const same_as<int*> auto ref_data = as_const(test_view).data();
                 assert(ref_data == input);
-            } else {
-                STATIC_ASSERT(!ranges::_Data::_Has_member<ref_view<Read>>);
+
+                STATIC_ASSERT(noexcept(as_const(test_view).data()) == noexcept(wrapped_input.data()));
             }
 
-            if constexpr (can_empty<Read>) {
-                Read wrapped_input{input};
-                ref_view<Read> test_view{wrapped_input};
+            STATIC_ASSERT(can_empty<ref_view<R>> == can_empty<R>);
+            if constexpr (can_empty<R>) {
+                R wrapped_input{input};
+                ref_view<R> test_view{wrapped_input};
 
-                const same_as<bool> auto ref_empty = test_view.empty();
+                const same_as<bool> auto ref_empty = as_const(test_view).empty();
                 assert(!ref_empty);
-            } else {
-                STATIC_ASSERT(!ranges::_Empty::_Has_member<ref_view<Read>>);
+
+                STATIC_ASSERT(noexcept(as_const(test_view).empty()) == noexcept(ranges::empty(wrapped_input)));
+
+                R empty_range{};
+                ref_view<R> empty_view{empty_range};
+                assert(empty_view.empty());
             }
         }
 
