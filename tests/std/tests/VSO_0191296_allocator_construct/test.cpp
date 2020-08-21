@@ -1430,7 +1430,7 @@ DEFINE_TEST(test_specific_unordered_associative_constructors,
 
         copy_constructible_hash<erasable> const hf((key()));
         copy_constructible_compare<erasable> const eq((key()));
-        using T = typename Traits::template bind_value<erasable>::type
+        using T = typename Traits::template bind_value<erasable>::type;
         (container_type(0, hf, eq, construct_applying_allocator<T>()));
         container_type a(0, hf, eq, construct_applying_allocator<T>());
 }

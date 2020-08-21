@@ -113,9 +113,10 @@ void scan_file(const filesystem::path& filepath, const TabPolicy tab_policy, vec
                 if (columns > max_line_length) {
                     ++overlength_lines;
                 }
-                columns = ~size_t{0};
+                columns = 0;
+            } else {
+                ++columns;
             }
-            ++columns;
             previous3 = exchange(previous2, exchange(prev, ch));
         }
     }
