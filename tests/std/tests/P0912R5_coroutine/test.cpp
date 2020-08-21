@@ -17,7 +17,7 @@ struct Task {
         coroutine_handle<> previous;
 
         Task get_return_object() {
-            return {*this};
+            return Task{*this};
         }
 
         suspend_always initial_suspend() {
@@ -32,7 +32,7 @@ struct Task {
 
                 void await_resume() noexcept {}
 
-                coroutine_handle<> await_suspend(coroutine_handle<Promise> h) {
+                coroutine_handle<> await_suspend(coroutine_handle<Promise> h) noexcept {
                     if (auto& pre = h.promise().previous; pre) {
                         return pre; // resume awaiting coroutine
                     }
@@ -74,7 +74,7 @@ struct Task {
         rhs.coro = nullptr;
     }
 
-    Task(Promise& p) : coro(coroutine_handle<Promise>::from_promise(p)) {}
+    explicit Task(Promise& p) : coro(coroutine_handle<Promise>::from_promise(p)) {}
 
     ~Task() {
         ++g_tasks_destroyed;
