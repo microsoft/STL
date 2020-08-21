@@ -12,7 +12,6 @@
 #include <complex>
 #include <iostream>
 #include <limits>
-#include <thread>
 
 using namespace std;
 
@@ -51,12 +50,14 @@ constexpr array<T, 3> GenerateValues() {
 
 int main() {
     constexpr auto fValues{GenerateValues<float>()};
-    for (auto x : fValues)
+    for (const auto& x : fValues) {
         Test<float>(x);
+    }
 
     constexpr auto dValues{GenerateValues<double>()};
-    for (auto x : dValues)
+    for (const auto& x : dValues) {
         Test<double>(x);
+    }
 
     return 0;
 }
