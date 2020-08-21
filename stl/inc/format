@@ -13,6 +13,8 @@
 #else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
 
 #include <cassert>
+#include <concepts>
+#include <exception>
 #include <iterator>
 #include <locale>
 #include <string>
@@ -29,13 +31,22 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 
 
-class format_error : public std::runtime_error {};
+class format_error : public _STD runtime_error {
+    using _STD runtime_error::runtime_error;
+};
 
 enum class _Align { _None, _Left, _Right, _Center };
 
+// clang-format off
+template <typename _Ty, typename _CharT>
+concept _Parse_callbacks = requires(_Ty _At, _STD basic_string_view<_CharT> _Sv, _Align _Aln) {
+    { _At._On_align(_Aln) } -> same_as<void>;
+    { _At._On_fill(_Sv) } -> same_as<void>;
+};
+//clang-format on
 
-template <class _CharT>
-constexpr const _CharT* _Parse_align(const _CharT* _Begin, const _CharT* _End) {
+template <class _CharT, typename _Callbacks_type> requires _Parse_callbacks<_Callbacks_type, _CharT>
+constexpr const _CharT* _Parse_align(const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
     // done with parsing, or reached the end of a replacement field.
     if (_Begin == _End || *_Begin == '}') {
         return _Begin;
@@ -67,12 +78,12 @@ constexpr const _CharT* _Parse_align(const _CharT* _Begin, const _CharT* _End) {
                 if (*_Begin == '{') {
                     throw format_error("invalid fill character '{'");
                 }
-                // ON FILL FUNCTION CALLED HERE
+                _Callbacks._On_fill({_Begin, static_cast<size_t>(_Align_pt - _Begin)});
                 _Begin = _Align_pt + 1;
             } else {
                 ++_Begin;
             }
-            // ON ALIGN FUNCTION CALLED HERE
+            _Callbacks._On_align(_Align);
             break;
         } else if (_Align_pt == _Begin) {
             break;
@@ -111,7 +122,7 @@ public:
         return _Format_string.end();
     }
     constexpr void advance_to(const_iterator _It) {
-        _Format_string.remove_prefix(it - begin());
+        _Format_string.remove_prefix(_It - begin());
     }
 
 
@@ -122,11 +133,12 @@ public:
     // _Next_arg_id == -1 means manual
     constexpr size_t next_arg_id() {
         if (_Next_arg_id >= 0) {
-            return next_arg_id++;
+            return _Next_arg_id++;
         }
         throw _STD format_error("Can not switch from manual to automatic indexing");
     }
     constexpr void check_arg_id(size_t _Id) {
+        (void)_Id;
         if (_Next_arg_id > 0) {
             throw _STD format_error("Can not switch from automatic to manual indexing");
         }
@@ -150,28 +162,29 @@ constexpr bool _Is_named_arg_v<_Named_arg<_CharT, _Ty>> = true;
 template <typename _Context>
 struct _Custom_value {
     const void* _Value;
-    void (*_Format)(const void*, basic_format_parse_context<_Context::char_type>&, _Context&);
+    void (*_Format)(const void*, basic_format_parse_context<typename _Context::char_type>&, _Context&);
 };
 template <typename _Context>
 using _Format_arg_value =
-    _STD variant<monostate, int, unsigned, long long, unsigned long long, bool, _Context::char_type, float, r double,
-        const void*, _STD basic_string_view<_Context::char_type>, _Custom_value<_Context>>;
+    _STD variant<monostate, int, unsigned, long long, unsigned long long, bool, typename _Context::char_type, float, double,
+        const void*, _STD basic_string_view<typename _Context::char_type>, _Custom_value<_Context>>;
 
 template <class _Context>
 class basic_format_arg {
 private:
     using _Char_type = typename _Context::char_type;
-    _Format_arg_value _Value;
+    _Format_arg_value<_Context> _Value;
 
 public:
     class handle {
         const void* _Ptr;
-        void (*_Format)(basic_format_parse_context<_Char_type>& _Context, const void*);
+        void (*_Format)(basic_format_parse_context<_Char_type>& _Parse_ctx, _Context _Format_ctx,
+                        const void*);
         friend class basic_format_arg<_Context>;
 
     public:
-        void format(basic_format_parse_context<_Char_type>&, _Context& ctx) {
-            _Format()
+        void format(basic_format_parse_context<_Char_type>& _Parse_ctx, _Context& _Format_ctx) {
+            _Format(_Parse_ctx, _Format_ctx, _Ptr);
         }
     };
 
@@ -221,11 +234,11 @@ public:
     }
 
     iterator out() {
-        return _Out;
+        return _OutputIt;
     }
     void advance_to(iterator _It) {
         // TODO: IDL support probably required
-        _Out = _It;
+        _OutputIt = _It;
     }
 };
 
