@@ -1373,8 +1373,8 @@ _NODISCARD errc _Assemble_floating_point_value(const uint64_t _Initial_mantissa,
                 _Right_shift_with_rounding(_Mantissa, static_cast<uint32_t>(-_Denormal_mantissa_shift), _Has_zero_tail);
 
             // TRANSITION, existing:
-            // from_chars and strto[f|d|ld] reports underflow only when the result is zero after rounding to the
-            // floating point format. This behavior is different from IEEE 754 underflow exception.
+            // from_chars in MSVC STL and strto[f|d|ld] in UCRT reports underflow only when the result is zero after
+            // rounding to the floating point format. This behavior is different from IEEE 754 underflow exception.
             if (_Mantissa == 0) {
                 _Error_code = errc::result_out_of_range; // Underflow example: "1e-1000"
             }
