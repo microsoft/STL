@@ -93,7 +93,7 @@ protected:
 };
 
 template <class _Promise>
-struct coroutine_handle : coroutine_handle<> {
+struct coroutine_handle : private coroutine_handle<> {
     using coroutine_handle<>::coroutine_handle;
 
     _NODISCARD static coroutine_handle from_promise(_Promise& _Prom) noexcept { // strengthened
@@ -109,11 +109,23 @@ struct coroutine_handle : coroutine_handle<> {
         return *this;
     }
 
+    using coroutine_handle<>::address;
     _NODISCARD static constexpr coroutine_handle from_address(void* const _Addr) noexcept { // strengthened
         coroutine_handle _Result;
         _Result._Ptr = _Addr;
         return _Result;
     }
+
+    constexpr operator coroutine_handle<>() const noexcept {
+        return static_cast<const coroutine_handle<>&>(*this);
+    }
+
+    using coroutine_handle<>::explicit operator bool;
+    using coroutine_handle<>::done;
+
+    using coroutine_handle<>::operator();
+    using coroutine_handle<>::resume;
+    using coroutine_handle<>::destroy;
 
     _NODISCARD _Promise& promise() const noexcept { // strengthened
         return *reinterpret_cast<_Promise*>(__builtin_coro_promise(_Ptr, 0, false));
@@ -145,8 +157,12 @@ struct noop_coroutine_promise {};
 
 // STRUCT coroutine_handle<noop_coroutine_promise>
 template <>
-struct coroutine_handle<noop_coroutine_promise> : coroutine_handle<> {
+struct coroutine_handle<noop_coroutine_promise> : private coroutine_handle<> {
     friend coroutine_handle noop_coroutine() noexcept;
+
+    constexpr operator coroutine_handle<>() const noexcept {
+        return static_cast<const coroutine_handle<>&>(*this);
+    }
 
     constexpr explicit operator bool() const noexcept {
         return true;
@@ -159,11 +175,9 @@ struct coroutine_handle<noop_coroutine_promise> : coroutine_handle<> {
     constexpr void resume() const noexcept {}
     constexpr void destroy() const noexcept {}
 
-    using _Promise = noop_coroutine_promise;
-
-    _NODISCARD _Promise& promise() const noexcept {
+    _NODISCARD noop_coroutine_promise& promise() const noexcept {
         // Returns a reference to the associated promise
-        return *reinterpret_cast<_Promise*>(__builtin_coro_promise(_Ptr, 0, false));
+        return *reinterpret_cast<noop_coroutine_promise*>(__builtin_coro_promise(_Ptr, 0, false));
     }
 
 private:
