@@ -319,6 +319,7 @@ tests\P0896R4_ranges_test_machinery
 tests\P0896R4_ranges_to_address
 tests\P0898R3_concepts
 tests\P0898R3_identity
+tests\P0912R5_coroutine
 tests\P0919R3_heterogeneous_unordered_lookup
 tests\P0966R1_string_reserve_should_not_shrink
 tests\P1023R0_constexpr_for_array_comparisons
