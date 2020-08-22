@@ -1704,7 +1704,7 @@ public:
 
     void operator%=(const valarray<_Ty>& _Right) const { // remainder masked array by valarray
         const size_t _Size = _Mybool.size();
-        for (size_t _Idx = 0, _Off = _Start_off(); _Off < _Size; _Off = _Next_off(_Off, ++_Idx) {
+        for (size_t _Idx = 0, _Off = _Start_off(); _Off < _Size; _Off = _Next_off(_Off), ++_Idx) {
             _Myptr[_Off] %= _Right[_Idx];
         }
     }
