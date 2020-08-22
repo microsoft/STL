@@ -1266,9 +1266,9 @@ _NODISCARD inline uint64_t _Right_shift_with_rounding(
     //     _Round_bit: ...L[1]TTTTTTT0
     // _Has_tail_bits: ....[H]........
 
-    // If all of the trailing bits T are 0, and _Has_tail_bits is true,
+    // If all of the trailing bits T are 0, and _Has_zero_tail is true,
     // then `_Round_bit - static_cast<uint64_t>(_Has_zero_tail)` will produce 0 for H (due to R being 1).
-    // If any of the trailing bits T are 1, or _Has_tail_bits is false,
+    // If any of the trailing bits T are 1, or _Has_zero_tail is false,
     // then `_Round_bit - static_cast<uint64_t>(_Has_zero_tail)` will produce 1 for H (due to R being 1).
     const uint64_t _Has_tail_bits = _Round_bit - static_cast<uint64_t>(_Has_zero_tail);
 
@@ -1414,6 +1414,7 @@ _NODISCARD errc _Assemble_floating_point_value(const uint64_t _Initial_mantissa,
         }
     }
 
+    // Assemble the floating-point value from the computed components:
     using _Uint_type = typename _Traits::_Uint_type;
 
     _Assemble_floating_point_value_no_shift(_Is_negative, _Exponent, static_cast<_Uint_type>(_Mantissa), _Result);
