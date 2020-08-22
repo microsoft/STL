@@ -7,29 +7,34 @@
 #include <limits>
 #include <random>
 
+#pragma warning(disable : 4984) // if constexpr is a C++17 language extension
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wc++17-extensions"
+#endif // __clang__
+
 template <class T>
 using lim = std::numeric_limits<T>;
 
-template <class T>
-void CheckUpperBound(T i, float fmax) {
-    const float x{std::_Float_upper_bound<float>(i)};
-    const float y{std::nextafter(x, 0.0f)}; // lower bound, <= i
+template <class IntType, class FltType>
+void CheckUpperBound(IntType i, FltType fmax) {
+    const auto x{std::_Float_upper_bound<FltType>(i)};
+    const auto y{std::nextafter(x, FltType{0})}; // lower bound, <= i
 
     assert(y < fmax);
-    assert(static_cast<T>(y) <= i);
+    assert(static_cast<IntType>(y) <= i);
     assert(x <= fmax);
     if (x < fmax) {
-        assert(static_cast<T>(x) > i);
+        assert(static_cast<IntType>(x) > i);
     }
 }
 
-template <class T>
+template <class IntType, class FltType>
 void TestUpperBoundExhaustive() {
-    const float fmax{exp2(static_cast<float>(lim<T>::digits))};
-    T i{0};
+    const auto fmax{exp2(static_cast<FltType>(lim<IntType>::digits))};
+    IntType i{0};
     do {
         CheckUpperBound(i, fmax);
-    } while (++i != T{0});
+    } while (++i != IntType{0});
 }
 
 template <class T>
@@ -41,34 +46,41 @@ constexpr T FillLsb(int n) {
     return (x - 1) ^ x;
 }
 
-template <class T>
+template <class IntType, class FltType>
 void TestUpperBoundSelective() {
-    const float fmax{exp2(static_cast<float>(lim<T>::digits))};
-    CheckUpperBound(T{0}, fmax);
-    CheckUpperBound(T{1}, fmax);
-    CheckUpperBound(lim<T>::max(), fmax);
+    const auto fmax{exp2(static_cast<FltType>(lim<IntType>::digits))};
+    CheckUpperBound(IntType{0}, fmax);
+    CheckUpperBound(IntType{1}, fmax);
+    CheckUpperBound(lim<IntType>::max(), fmax);
 
-    // crossover from ulp < 1 to ulp = 1
-    constexpr T a{FillLsb<T>(lim<float>::digits - 1)};
-    CheckUpperBound(a - 1, fmax);
-    CheckUpperBound(a, fmax);
+    constexpr int diff{lim<IntType>::digits - lim<FltType>::digits};
+    if constexpr (diff > 0) {
+        // crossover from ulp < 1 to ulp = 1
+        constexpr auto a{FillLsb<IntType>(lim<FltType>::digits - 1)};
+        CheckUpperBound(a - 1, fmax);
+        CheckUpperBound(a, fmax);
 
-    // crossover from ulp = 1 to ulp > 1
-    constexpr T b{FillLsb<T>(lim<float>::digits)};
-    CheckUpperBound(b, fmax);
-    CheckUpperBound(b + 1, fmax);
-    CheckUpperBound(b + 2, fmax);
+        // crossover from ulp = 1 to ulp > 1
+        constexpr auto b{FillLsb<IntType>(lim<FltType>::digits)};
+        CheckUpperBound(b, fmax);
+        CheckUpperBound(b + 1, fmax);
+        CheckUpperBound(b + 2, fmax);
 
-    // saturation at the largest representable T
-    constexpr int diff{lim<T>::digits - lim<float>::digits};
-    constexpr T c{FillLsb<T>(lim<float>::digits) << diff};
-    CheckUpperBound(c - 1, fmax);
-    CheckUpperBound(c, fmax);
-    CheckUpperBound(c + 1, fmax);
+        // saturation at the largest representable IntType
+        constexpr auto c{FillLsb<IntType>(lim<FltType>::digits) << diff};
+        CheckUpperBound(c - 1, fmax);
+        CheckUpperBound(c, fmax);
+        CheckUpperBound(c + 1, fmax);
+    }
 }
 
 int main() {
-    TestUpperBoundExhaustive<std::uint8_t>();
-    TestUpperBoundExhaustive<std::uint16_t>();
-    TestUpperBoundSelective<std::uint32_t>();
+    TestUpperBoundExhaustive<std::uint8_t, float>();
+    TestUpperBoundExhaustive<std::uint16_t, float>();
+    TestUpperBoundSelective<std::uint32_t, float>();
+
+    TestUpperBoundExhaustive<unsigned short int, double>();
+    TestUpperBoundSelective<unsigned int, double>();
+    TestUpperBoundSelective<unsigned long int, double>();
+    TestUpperBoundSelective<unsigned long long int, double>();
 }

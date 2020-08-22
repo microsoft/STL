@@ -2034,7 +2034,8 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
 
 template <class _Flt, class _Ty>
 _NODISCARD _Flt _Float_upper_bound(_Ty _Val) {
-    static_assert(is_unsigned_v<_Ty> && is_floating_point_v<_Flt>, "invalid template argument for _Float_upper_bound");
+    static_assert(is_unsigned_v<_Ty> && is_integral_v<_Ty> && is_floating_point_v<_Flt>,
+        "invalid template argument for _Float_upper_bound");
     constexpr auto _Ty_digits  = numeric_limits<_Ty>::digits;
     constexpr auto _Flt_digits = numeric_limits<_Flt>::digits;
     using _Ty_32or64           = conditional_t<_Ty_digits <= 32, uint32_t, uint64_t>;
@@ -2043,12 +2044,11 @@ _NODISCARD _Flt _Float_upper_bound(_Ty _Val) {
         return static_cast<_Flt>(_Val) + _Flt{1};
     } else {
 #pragma warning(push)
-#pragma warning(disable : 4146) // unary minus of unsigned
-        constexpr auto _Mask_shift = (_Ty_digits > _Flt_digits) ? _Ty_digits - _Flt_digits : 0;
-        constexpr auto _Mask       = _Ty(-1) << _Mask_shift;
-        const auto _Log_plus1      = _Bit_scan_reverse(static_cast<_Ty_32or64>(_Val | _Ty{1}));
-        const auto _Shifted_mask   = _Mask >> (_Ty_digits - _Log_plus1);
-        const auto _Ceil_ulp       = _Shifted_mask & -_Shifted_mask;
+#pragma warning(disable : 4146 4293) // unary minus of unsigned, negative shift
+        constexpr auto _Mask     = _Ty(-1) << (_Ty_digits - _Flt_digits);
+        const auto _Log_plus1    = _Bit_scan_reverse(static_cast<_Ty_32or64>(_Val | _Ty{1}));
+        const auto _Shifted_mask = _Mask >> (_Ty_digits - _Log_plus1);
+        const auto _Ceil_ulp     = _Shifted_mask & -_Shifted_mask;
         _Val &= _Shifted_mask;
         if (_Val == _Mask) {
             // integer add would overflow
