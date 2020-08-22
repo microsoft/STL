@@ -4,6 +4,7 @@
 #include <cassert>
 #include <concepts>
 #include <iterator>
+#include <list>
 #include <memory>
 #include <type_traits>
 
@@ -304,4 +305,13 @@ struct instantiator {
 int main() {
     STATIC_ASSERT((with_writable_iterators<instantiator, int>::call(), true));
     with_writable_iterators<instantiator, int>::call();
+
+    { // Validate unwrapping
+        list<int> lst{0, 1, 2};
+        counted_iterator ci{lst.begin(), 2};
+        same_as<counted_iterator<_Unwrapped_t<list<int>::iterator>>> auto uci = _Get_unwrapped(ci);
+        ++uci;
+        _Seek_wrapped(ci, uci);
+        assert((ci == counted_iterator{ranges::next(lst.begin()), 1}));
+    }
 }
