@@ -142,7 +142,8 @@ namespace ranges {
         using _Not_quite_object::_Not_quite_object;
 
         // clang-format off
-        template <input_iterator _It1, sentinel_for<_It1> _Se1, _No_throw_forward_iterator _It2, _No_throw_sentinel_for<_It2> _Se2>
+        template <input_iterator _It1, sentinel_for<_It1> _Se1, _No_throw_forward_iterator _It2,
+            _No_throw_sentinel_for<_It2> _Se2>
             requires constructible_from<iter_value_t<_It2>, iter_rvalue_reference_t<_It1>>
         uninitialized_move_result<_It1, _It2> operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2) const {
             // clang-format on

@@ -1771,8 +1771,10 @@ int run_test()
 #if 0 // TRANSITION, P0608
   static_assert(std::is_assignable<std::variant<char>, int>::value == VariantAllowsNarrowingConversions, "");
 
-  static_assert(std::is_assignable<std::variant<std::string, float>, int>::value == VariantAllowsNarrowingConversions, "");
-  static_assert(std::is_assignable<std::variant<std::string, double>, int>::value == VariantAllowsNarrowingConversions, "");
+  static_assert(std::is_assignable<std::variant<std::string, float>, int>::value
+    == VariantAllowsNarrowingConversions, "");
+  static_assert(std::is_assignable<std::variant<std::string, double>, int>::value
+    == VariantAllowsNarrowingConversions, "");
   static_assert(!std::is_assignable<std::variant<std::string, bool>, int>::value, "");
 
   static_assert(!std::is_assignable<std::variant<int, bool>, decltype("meow")>::value, "");
@@ -3267,8 +3269,10 @@ int run_test()
 #if 0 // TRANSITION, P0608
   static_assert(std::is_constructible<std::variant<char>, int>::value == VariantAllowsNarrowingConversions, "");
 
-  static_assert(std::is_constructible<std::variant<std::string, float>, int>::value == VariantAllowsNarrowingConversions, "");
-  static_assert(std::is_constructible<std::variant<std::string, double>, int>::value == VariantAllowsNarrowingConversions, "");
+  static_assert(std::is_constructible<std::variant<std::string, float>, int>::value
+    == VariantAllowsNarrowingConversions, "");
+  static_assert(std::is_constructible<std::variant<std::string, double>, int>::value
+    == VariantAllowsNarrowingConversions, "");
   static_assert(!std::is_constructible<std::variant<std::string, bool>, int>::value, "");
 
   static_assert(!std::is_constructible<std::variant<int, bool>, decltype("meow")>::value, "");
