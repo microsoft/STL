@@ -74,15 +74,6 @@ tuple<int, int, int> read_date(const char* const s) {
 tuple<int, int, int> read_date_locale(const wchar_t* const s, const char* _loc) {
     const auto t = helper_locale(s, L"%Y-%b-%d", _loc);
 
-    // %x The date, using the locale's date format.
-    // "%d / %m / %y"
-    // %d The day of the month [01,31]; leading zeros are permitted but not required.
-    // %m The month number [01,12]; leading zeros are permitted but not required.
-    // %y The year within century. When a century is not otherwise specified,
-    //    values in the range [69,99] shall refer to years 1969 to 1999 inclusive, and
-    //    values in the range [00,68] shall refer to years 2000 to 2068 inclusive;
-    //    leading zeros shall be permitted but shall not be required.
-
     // int tm_mday; // day of the month - [1, 31]
     // int tm_mon;  // months since January - [0, 11]
     // int tm_year; // years since 1900
@@ -312,11 +303,11 @@ void test_990695() {
 
         {
             // This case should fail
-            istringstream ss("2018-M-18");
+            istringstream iss("2018-M-18");
             tm t = {};
             const string fmt("%Y-%b-%d");
-            ss >> get_time(&t, fmt.c_str());
-            assert(ss.fail());
+            iss >> get_time(&t, fmt.c_str());
+            assert(iss.fail());
         }
     }
 }
@@ -489,50 +480,50 @@ void test_locale_chinese() {
     // Chinese letters don't have distinct upper and lower cases
 
     // January in Chinese (expanded and abbreviated)
-    assert(read_date_locale(L"2020-\x4e00\x6708-05", "chinese") == make_tuple(5, 0, 120));
-    assert(read_date_locale(L"2020-\x0031\x6708-05", "chinese") == make_tuple(5, 0, 120));
+    assert(read_date_locale(L"2020-\x4e00\x6708-05", "zh-CN.utf-8") == make_tuple(5, 0, 120));
+    assert(read_date_locale(L"2020-\x0031\x6708-05", "zh-CN.utf-8") == make_tuple(5, 0, 120));
 
     // February in Chinese (expanded and abbreviated)
-    assert(read_date_locale(L"2020-\x4e8c\x6708-15", "chinese") == make_tuple(15, 1, 120));
-    assert(read_date_locale(L"2020-\x0032\x6708-15", "chinese") == make_tuple(15, 1, 120));
+    assert(read_date_locale(L"2020-\x4e8c\x6708-15", "zh-CN.utf-8") == make_tuple(15, 1, 120));
+    assert(read_date_locale(L"2020-\x0032\x6708-15", "zh-CN.utf-8") == make_tuple(15, 1, 120));
 
     // March in Chinese (expanded and abbreviated)
-    assert(read_date_locale(L"2020-\x4e09\x6708-25", "chinese") == make_tuple(25, 2, 120));
-    assert(read_date_locale(L"2020-\x0033\x6708-25", "chinese") == make_tuple(25, 2, 120));
+    assert(read_date_locale(L"2020-\x4e09\x6708-25", "zh-CN.utf-8") == make_tuple(25, 2, 120));
+    assert(read_date_locale(L"2020-\x0033\x6708-25", "zh-CN.utf-8") == make_tuple(25, 2, 120));
 
     // April in Chinese (expanded and abbreviated)
-    assert(read_date_locale(L"2020-\x56db\x6708-05", "chinese") == make_tuple(5, 3, 120));
-    assert(read_date_locale(L"2020-\x0034\x6708-05", "chinese") == make_tuple(5, 3, 120));
+    assert(read_date_locale(L"2020-\x56db\x6708-05", "zh-CN.utf-8") == make_tuple(5, 3, 120));
+    assert(read_date_locale(L"2020-\x0034\x6708-05", "zh-CN.utf-8") == make_tuple(5, 3, 120));
 
     // May in Chinese (expanded and abbreviated)
-    assert(read_date_locale(L"2020-\x4e94\x6708-15", "chinese") == make_tuple(15, 4, 120));
-    assert(read_date_locale(L"2020-\x0035\x6708-15", "chinese") == make_tuple(15, 4, 120));
+    assert(read_date_locale(L"2020-\x4e94\x6708-15", "zh-CN.utf-8") == make_tuple(15, 4, 120));
+    assert(read_date_locale(L"2020-\x0035\x6708-15", "zh-CN.utf-8") == make_tuple(15, 4, 120));
 
     // June in Chinese (expanded and abbreviated)
-    assert(read_date_locale(L"2020-\x516d\x6708-25", "chinese") == make_tuple(25, 5, 120));
-    assert(read_date_locale(L"2020-\x0036\x6708-25", "chinese") == make_tuple(25, 5, 120));
+    assert(read_date_locale(L"2020-\x516d\x6708-25", "zh-CN.utf-8") == make_tuple(25, 5, 120));
+    assert(read_date_locale(L"2020-\x0036\x6708-25", "zh-CN.utf-8") == make_tuple(25, 5, 120));
 
     // July in Chinese (expanded and abbreviated)
-    assert(read_date_locale(L"2020-\x4e03\x6708-12", "chinese") == make_tuple(12, 6, 120));
-    assert(read_date_locale(L"2020-\x0037\x6708-12", "chinese") == make_tuple(12, 6, 120));
+    assert(read_date_locale(L"2020-\x4e03\x6708-12", "zh-CN.utf-8") == make_tuple(12, 6, 120));
+    assert(read_date_locale(L"2020-\x0037\x6708-12", "zh-CN.utf-8") == make_tuple(12, 6, 120));
 
     // August in Chinese (expanded and abbreviated)
-    assert(read_date_locale(L"2020-\x516b\x6708-02", "chinese") == make_tuple(2, 7, 120));
-    assert(read_date_locale(L"2020-\x0038\x6708-02", "chinese") == make_tuple(2, 7, 120));
+    assert(read_date_locale(L"2020-\x516b\x6708-02", "zh-CN.utf-8") == make_tuple(2, 7, 120));
+    assert(read_date_locale(L"2020-\x0038\x6708-02", "zh-CN.utf-8") == make_tuple(2, 7, 120));
 
     // September in Chinese (expanded and abbreviated)
-    assert(read_date_locale(L"2020-\x4e5d\x6708-21", "chinese") == make_tuple(21, 8, 120));
-    assert(read_date_locale(L"2020-\x0039\x6708-21", "chinese") == make_tuple(21, 8, 120));
+    assert(read_date_locale(L"2020-\x4e5d\x6708-21", "zh-CN.utf-8") == make_tuple(21, 8, 120));
+    assert(read_date_locale(L"2020-\x0039\x6708-21", "zh-CN.utf-8") == make_tuple(21, 8, 120));
 
     // October in Chinese (expanded and abbreviated)
-    assert(read_date_locale(L"2020-\x5341\x6708-01", "chinese") == make_tuple(1, 9, 120));
-    assert(read_date_locale(L"2020-\x0031\x0030\x6708-01", "chinese") == make_tuple(1, 9, 120));
+    assert(read_date_locale(L"2020-\x5341\x6708-01", "zh-CN.utf-8") == make_tuple(1, 9, 120));
+    assert(read_date_locale(L"2020-\x0031\x0030\x6708-01", "zh-CN.utf-8") == make_tuple(1, 9, 120));
 
     // November in Chinese (expanded and abbreviated)
-    assert(read_date_locale(L"2020-\x5341\x4e00\x6708-09", "chinese") == make_tuple(9, 10, 120));
-    assert(read_date_locale(L"2020-\x0031\x0031\x6708-09", "chinese") == make_tuple(9, 10, 120));
+    assert(read_date_locale(L"2020-\x5341\x4e00\x6708-09", "zh-CN.utf-8") == make_tuple(9, 10, 120));
+    assert(read_date_locale(L"2020-\x0031\x0031\x6708-09", "zh-CN.utf-8") == make_tuple(9, 10, 120));
 
     // December in Chinese (expanded and abbreviated)
-    assert(read_date_locale(L"2020-\x5341\x4e8c\x6708-31", "chinese") == make_tuple(31, 11, 120));
-    assert(read_date_locale(L"2020-\x0031\x0032\x6708-31", "chinese") == make_tuple(31, 11, 120));
+    assert(read_date_locale(L"2020-\x5341\x4e8c\x6708-31", "zh-CN.utf-8") == make_tuple(31, 11, 120));
+    assert(read_date_locale(L"2020-\x0031\x0032\x6708-31", "zh-CN.utf-8") == make_tuple(31, 11, 120));
 }

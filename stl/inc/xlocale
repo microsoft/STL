@@ -870,7 +870,7 @@ int __CRTDECL _Getloctxt(_InIt& _First, _InIt& _Last, size_t _Numfields, const _
     }
 
     string _Str(_Numfields, '\0'); // one column counter for each field
-    const _STD ctype<_Elem>& _CType = _STD use_facet<_STD ctype<_Elem>>(_STD locale());
+    const ctype<_Elem>& _CType = _STD use_facet<ctype<_Elem>>(locale{});
 
     int _Ans = -2; // no candidates so far
     for (size_t _Column = 1;; ++_Column, (void) ++_First, _Ans = -1) { // test each element against all viable fields
