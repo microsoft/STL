@@ -312,6 +312,7 @@ tests\P0896R4_ranges_alg_unique_copy
 tests\P0896R4_ranges_algorithm_machinery
 tests\P0896R4_ranges_iterator_machinery
 tests\P0896R4_ranges_range_machinery
+tests\P0896R4_ranges_ref_view
 tests\P0896R4_ranges_subrange
 tests\P0896R4_ranges_test_machinery
 tests\P0896R4_ranges_to_address
