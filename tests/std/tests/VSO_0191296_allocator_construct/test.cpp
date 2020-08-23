@@ -217,44 +217,45 @@ struct emplace_argument {
 
 // clang-format off
 
-#define DEFINE_TYPE(name, default_ctor, copy_ctor, move_ctor, emplace_ctor, swappable, copy_assign, move_assign, emplace_assign) \
-    class name {                                                                                                                 \
-    public:                 name(key) { }                                                                                        \
-    public:                 ~name() { }                                                                                          \
-    private: default_ctor   name(alloc_key) { }                                                                                  \
-    private: copy_ctor      name(alloc_key, name const&) { }                                                                     \
-    private: move_ctor      name(alloc_key, name&&) { }                                                                          \
-    private: emplace_ctor   name(alloc_key, emplace_argument&&) { }                                                              \
-    private: emplace_ctor   name(alloc_key, emplace_argument&&, emplace_argument&&) { }                                          \
-    private: emplace_ctor   name(alloc_key, emplace_argument&&, emplace_argument&&, emplace_argument&&) { }                      \
-    private: swappable      friend void swap(name&, name&) {}                                                                    \
-    private: copy_assign    name& operator=(name const&) { return *this; }                                                       \
-    private: move_assign    name& operator=(name&&) { return *this; }                                                            \
-    private: emplace_assign name& operator=(emplace_argument&&) { return *this; }                                                \
-    private: name() {}                                                                                                           \
-    private: name(const name&) {}                                                                                                \
+#define DEFINE_TYPE(name, def_ctor, copy_ctor, move_ctor, emp_ctor, swappable, copy_assign, move_assign, emp_assign) \
+    class name {                                                                                                     \
+    public:              name(key) { }                                                                               \
+    public:              ~name() { }                                                                                 \
+    private: def_ctor    name(alloc_key) { }                                                                         \
+    private: copy_ctor   name(alloc_key, name const&) { }                                                            \
+    private: move_ctor   name(alloc_key, name&&) { }                                                                 \
+    private: emp_ctor    name(alloc_key, emplace_argument&&) { }                                                     \
+    private: emp_ctor    name(alloc_key, emplace_argument&&, emplace_argument&&) { }                                 \
+    private: emp_ctor    name(alloc_key, emplace_argument&&, emplace_argument&&, emplace_argument&&) { }             \
+    private: swappable   friend void swap(name&, name&) {}                                                           \
+    private: copy_assign name& operator=(name const&) { return *this; }                                              \
+    private: move_assign name& operator=(name&&) { return *this; }                                                   \
+    private: emp_assign  name& operator=(emplace_argument&&) { return *this; }                                       \
+    private:             name() {}                                                                                   \
+    private:             name(const name&) {}                                                                        \
     }
 
 #define YES public:
 
-//                                 default ctor  copy ctor     move ctor     emplace ctor   swappable   copy assign   move assign   emplace assign
-DEFINE_TYPE(erasable             ,             ,             ,             ,             ,             ,             ,             ,             );
-DEFINE_TYPE(default_constructible, YES         ,             ,             ,             ,             ,             ,             ,             );
-DEFINE_TYPE(copy_insertable      ,             , YES         , YES         ,             ,             ,             ,             ,             );
-DEFINE_TYPE(move_insertable      ,             ,             , YES         ,             ,             ,             ,             ,             );
-DEFINE_TYPE(emplace_constructible,             ,             ,             , YES         ,             ,             ,             ,             );
-DEFINE_TYPE(copy_assignable      ,             ,             ,             ,             , YES         , YES         , YES         ,             );
-DEFINE_TYPE(move_assignable      ,             ,             ,             ,             , YES         ,             , YES         ,             );
-DEFINE_TYPE(equality_comparable  ,             ,             ,             ,             ,             ,             ,             ,             );
-DEFINE_TYPE(less_comparable      ,             ,             ,             ,             ,             ,             ,             ,             );
-DEFINE_TYPE(ca_ci                ,             , YES         , YES         ,             , YES         , YES         , YES         ,             );
-DEFINE_TYPE(ci_ma                ,             , YES         , YES         ,             , YES         ,             , YES         ,             );
-DEFINE_TYPE(dc_mi                , YES         ,             , YES         ,             ,             ,             ,             ,             );
-DEFINE_TYPE(ec_ma_mi             ,             ,             , YES         , YES         , YES         ,             , YES         ,             );
-DEFINE_TYPE(ec_mi                ,             ,             , YES         , YES         ,             ,             ,             ,             );
-DEFINE_TYPE(ma_mi                ,             ,             , YES         ,             , YES         ,             , YES         ,             );
-DEFINE_TYPE(ec_ea                ,             ,             ,             , YES         ,             ,             ,             , YES         );
-DEFINE_TYPE(ec_ea_mi             ,             ,             , YES         , YES         ,             ,             ,             , YES         );
+//                                 default   copy   move   emplace                copy     move    emplace
+//                                  ctor     ctor   ctor    ctor     swappable   assign   assign   assign
+DEFINE_TYPE(erasable             ,         ,      ,      ,         ,           ,        ,        ,             );
+DEFINE_TYPE(default_constructible, YES     ,      ,      ,         ,           ,        ,        ,             );
+DEFINE_TYPE(copy_insertable      ,         , YES  , YES  ,         ,           ,        ,        ,             );
+DEFINE_TYPE(move_insertable      ,         ,      , YES  ,         ,           ,        ,        ,             );
+DEFINE_TYPE(emplace_constructible,         ,      ,      , YES     ,           ,        ,        ,             );
+DEFINE_TYPE(copy_assignable      ,         ,      ,      ,         , YES       , YES    , YES    ,             );
+DEFINE_TYPE(move_assignable      ,         ,      ,      ,         , YES       ,        , YES    ,             );
+DEFINE_TYPE(equality_comparable  ,         ,      ,      ,         ,           ,        ,        ,             );
+DEFINE_TYPE(less_comparable      ,         ,      ,      ,         ,           ,        ,        ,             );
+DEFINE_TYPE(ca_ci                ,         , YES  , YES  ,         , YES       , YES    , YES    ,             );
+DEFINE_TYPE(ci_ma                ,         , YES  , YES  ,         , YES       ,        , YES    ,             );
+DEFINE_TYPE(dc_mi                , YES     ,      , YES  ,         ,           ,        ,        ,             );
+DEFINE_TYPE(ec_ma_mi             ,         ,      , YES  , YES     , YES       ,        , YES    ,             );
+DEFINE_TYPE(ec_mi                ,         ,      , YES  , YES     ,           ,        ,        ,             );
+DEFINE_TYPE(ma_mi                ,         ,      , YES  ,         , YES       ,        , YES    ,             );
+DEFINE_TYPE(ec_ea                ,         ,      ,      , YES     ,           ,        ,        , YES         );
+DEFINE_TYPE(ec_ea_mi             ,         ,      , YES  , YES     ,           ,        ,        , YES         );
 
 #undef YES
 
@@ -1429,8 +1430,9 @@ DEFINE_TEST(test_specific_unordered_associative_constructors,
 
         copy_constructible_hash<erasable> const hf((key()));
         copy_constructible_compare<erasable> const eq((key()));
-        (container_type(0, hf, eq, construct_applying_allocator<typename Traits::template bind_value<erasable>::type>()));
-        container_type a(0, hf, eq, construct_applying_allocator<typename Traits::template bind_value<erasable>::type>());
+        using T = typename Traits::template bind_value<erasable>::type;
+        (container_type(0, hf, eq, construct_applying_allocator<T>()));
+        container_type a(0, hf, eq, construct_applying_allocator<T>());
 }
 
 // X(i, j, n, hf, eq, allocator)

@@ -141,18 +141,17 @@ The STL uses boost-math headers to provide P0226R1 Mathematical Special Function
 acquire this dependency.
 
 1. Install Visual Studio 2019 16.8 Preview 1 or later.
-2. Invoke `git clone https://github.com/microsoft/vcpkg`
-3. Invoke `cd vcpkg`
-4. Invoke `.\bootstrap-vcpkg.bat`
-5. Assuming you are targeting x86 and x64, invoke `.\vcpkg.exe install boost-math:x86-windows boost-math:x64-windows`
-   to install the boost-math dependency. Add `boost-math:arm-windows boost-math:arm64-windows` to this to target ARM
-   and ARM64.
-6. Run `.\vcpkg.exe integrate install` which tells Visual Studio which vcpkg instance you wish to use. If you have never
-   done this before, you may be prompted to elevate.
-7. Open Visual Studio, and choose the "Clone or check out code" option. Enter the URL to this
-   repository, typically `https://github.com/microsoft/STL`
-8. Choose the architecture you wish to build in the IDE, and build as you would any other project. All necessary CMake
-   settings are set by `CMakeSettings.json` and `vcpkg integrate`
+    * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
+    This will ensure that you're using supported versions of CMake and Ninja.
+    * Otherwise, install [CMake][] 3.17 or later, and [Ninja][] 1.8.2 or later.
+2. Open Visual Studio, and choose the "Clone or check out code" option. Enter the URL of this repository,
+   `https://github.com/microsoft/STL`.
+3. Open a terminal in the IDE with `` Ctrl + ` `` (by default) or press on "View" in the top bar, and then "Terminal".
+4. Invoke `git submodule update --init vcpkg` in the terminal.
+5. Invoke `.\vcpkg\bootstrap-vcpkg.bat` in the terminal.
+6. Invoke `.\vcpkg\vcpkg.exe install boost-math:x86-windows boost-math:x64-windows` to install the boost-math dependency.
+7. Choose the architecture you wish to build in the IDE, and build as you would any other project. All necessary CMake
+   settings are set by `CMakeSettings.json`.
 
 # How To Build With A Native Tools Command Prompt
 
