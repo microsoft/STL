@@ -9,15 +9,13 @@
 #define D16TO7 FLIT(268435456.0) // 16^7
 #define D10TO9 FLIT(1e9) // 10^9
 
-#if FBITS <= 24
+#if FBITS == 24
 #define NLONG 1 // 7 * NLONG == max hexadecimal digits
-
-#elif FBITS <= 64
+#elif FBITS == 53
 #define NLONG 3
-
-#else // NLONG
-#define NLONG 5
-#endif // NLONG
+#else // FBITS
+#error Unexpected value for FBITS
+#endif // FBITS
 
 // FTYPE _Stodx(const CTYPE *s, CTYPE **endptr, long pten, int *perr)
 { // convert string to FTYPE, with checking
