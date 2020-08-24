@@ -107,7 +107,7 @@ void test_dev10_505773_regex_should_accept_empty_alternations() {
 }
 
 void test_dev11_821930_literal_dollar_replacement_characters() {
-    // Also test DevDiv#821930 "<regex>: match_results formatting: _Format_default increment error [libs-conformance]"
+    // Also test DevDiv-821930 "<regex>: match_results formatting: _Format_default increment error [libs-conformance]"
 
     // N3797 28.5.2 [re.matchflag]:
     // Element: format_default

@@ -58,7 +58,7 @@ inline constexpr bool _Any_is_small = alignof(_Ty) <= alignof(max_align_t)
 enum class _Any_representation : uintptr_t { _Trivial, _Big, _Small };
 
 struct _Any_big_RTTI { // Hand-rolled vtable for types that must be heap allocated in an any
-    using _Destroy_fn = void __CLRCALL_PURE_OR_CDECL(void*) noexcept;
+    using _Destroy_fn = void __CLRCALL_PURE_OR_CDECL(void*) _NOEXCEPT_FNPTR;
     using _Copy_fn    = void* __CLRCALL_PURE_OR_CDECL(const void*);
 
     template <class _Ty>
@@ -76,9 +76,9 @@ struct _Any_big_RTTI { // Hand-rolled vtable for types that must be heap allocat
 };
 
 struct _Any_small_RTTI { // Hand-rolled vtable for nontrivial types that can be stored internally in an any
-    using _Destroy_fn = void __CLRCALL_PURE_OR_CDECL(void*) noexcept;
+    using _Destroy_fn = void __CLRCALL_PURE_OR_CDECL(void*) _NOEXCEPT_FNPTR;
     using _Copy_fn    = void __CLRCALL_PURE_OR_CDECL(void*, const void*);
-    using _Move_fn    = void __CLRCALL_PURE_OR_CDECL(void*, void*) noexcept;
+    using _Move_fn    = void __CLRCALL_PURE_OR_CDECL(void*, void*) _NOEXCEPT_FNPTR;
 
     template <class _Ty>
     static void __CLRCALL_PURE_OR_CDECL _Destroy_impl(void* const _Target) noexcept {

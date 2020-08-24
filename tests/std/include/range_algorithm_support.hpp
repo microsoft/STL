@@ -340,8 +340,9 @@ namespace test {
         static constexpr bool at_least = derived_from<Category, T>;
 
         using ReferenceType = conditional_t<to_bool(Proxy), proxy_reference<Category, Element>, Element&>;
-
     public:
+        using Consterator = iterator<Category, const Element, Diff, Eq, Proxy, Wrapped>;
+
         // output iterator operations
         iterator() = default;
 
@@ -351,6 +352,10 @@ namespace test {
         constexpr iterator& operator=(iterator&& that) noexcept {
             ptr_ = exchange(that.ptr_, nullptr);
             return *this;
+        }
+
+        constexpr operator Consterator() && noexcept {
+            return Consterator{exchange(ptr_, nullptr)};
         }
 
         [[nodiscard]] constexpr Element* peek() const noexcept {
@@ -415,8 +420,7 @@ namespace test {
             ++ptr_;
         }
 
-        [[nodiscard]] constexpr friend std::remove_cv_t<Element> iter_move(iterator const& i)
-            requires at_least<input> && std::constructible_from<std::remove_cv_t<Element>, Element> {
+        [[nodiscard]] constexpr friend Element&& iter_move(iterator const& i) requires at_least<input> {
             return std::move(*i.ptr_);
         }
 
@@ -427,6 +431,12 @@ namespace test {
         // sentinel operations (implied by forward iterator):
         iterator(iterator const&) requires (to_bool(Eq)) = default;
         iterator& operator=(iterator const&) requires (to_bool(Eq)) = default;
+
+        constexpr operator Consterator() const& noexcept
+            requires (to_bool(Eq)) {
+            return Consterator{ptr_};
+        }
+
         [[nodiscard]] constexpr boolish operator==(iterator const& that) const noexcept requires (to_bool(Eq)) {
             return {ptr_ == that.ptr_};
         }
@@ -1029,11 +1039,6 @@ constexpr void test_contiguous() {
 }
 
 template <class Instantiator, class Element1, class Element2>
-constexpr void input_range_output_iterator_permutations() {
-    with_input_ranges<with_output_iterators<Instantiator, Element2>, Element1>::call();
-}
-
-template <class Instantiator, class Element1, class Element2>
 constexpr void test_in_in() {
     with_input_ranges<with_input_ranges<Instantiator, Element2>, Element1>::call();
 }
@@ -1054,6 +1059,11 @@ constexpr void test_bidi_bidi() {
 }
 
 template <class Instantiator, class Element1, class Element2>
+constexpr void input_range_output_iterator_permutations() {
+    with_input_ranges<with_output_iterators<Instantiator, Element2>, Element1>::call();
+}
+
+template <class Instantiator, class Element1, class Element2>
 constexpr void test_in_write() {
     with_input_ranges<with_writable_iterators<Instantiator, Element2>, Element1>::call();
 }
@@ -1061,6 +1071,16 @@ constexpr void test_in_write() {
 template <class Instantiator, class Element1, class Element2>
 constexpr void test_fwd_write() {
     with_forward_ranges<with_writable_iterators<Instantiator, Element2>, Element1>::call();
+}
+
+template <class Instantiator, class Element1, class Element2>
+constexpr void test_bidi_write() {
+    with_bidirectional_ranges<with_writable_iterators<Instantiator, Element2>, Element1>::call();
+}
+
+template <class Instantiator, class Element1, class Element2>
+constexpr void test_contiguous_write() {
+    with_contiguous_ranges<with_writable_iterators<Instantiator, Element2>, Element1>::call();
 }
 
 template <class Instantiator, class Element>

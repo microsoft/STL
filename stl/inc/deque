@@ -836,10 +836,10 @@ public:
 
         if (_Off <= _Mysize() / 2) { // closer to front, push to front then rotate
             emplace_front(_STD forward<_Valty>(_Val)...);
-            _STD rotate(begin(), begin() + 1, begin() + static_cast<difference_type>(1 + _Off));
+            _STD rotate(begin(), _Next_iter(begin()), begin() + static_cast<difference_type>(1 + _Off));
         } else { // closer to back, push to back then rotate
             emplace_back(_STD forward<_Valty>(_Val)...);
-            _STD rotate(begin() + static_cast<difference_type>(_Off), end() - 1, end());
+            _STD rotate(begin() + static_cast<difference_type>(_Off), _Prev_iter(end()), end());
         }
         return begin() + static_cast<difference_type>(_Off);
     }
@@ -1064,7 +1064,7 @@ public:
         _STL_VERIFY(!empty(), "back() called on empty deque");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
-        return *(_Unchecked_end() - 1);
+        return *_Prev_iter(_Unchecked_end());
     }
 
     _NODISCARD const_reference back() const noexcept /* strengthened */ {
@@ -1072,7 +1072,7 @@ public:
         _STL_VERIFY(!empty(), "back() called on empty deque");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
-        return *(_Unchecked_end() - 1);
+        return *_Prev_iter(_Unchecked_end());
     }
 
     void push_front(const _Ty& _Val) {
@@ -1197,10 +1197,10 @@ public:
 
         if (_Off <= _Mysize() / 2) { // closer to front, push to front then copy
             push_front(_Val);
-            _STD rotate(begin(), begin() + 1, begin() + static_cast<difference_type>(1 + _Off));
+            _STD rotate(begin(), _Next_iter(begin()), begin() + static_cast<difference_type>(1 + _Off));
         } else { // closer to back, push to back then copy
             push_back(_Val);
-            _STD rotate(begin() + static_cast<difference_type>(_Off), end() - 1, end());
+            _STD rotate(begin() + static_cast<difference_type>(_Off), _Prev_iter(end()), end());
         }
 
         return begin() + static_cast<difference_type>(_Off);
@@ -1291,6 +1291,10 @@ public:
         auto _Off   = static_cast<size_type>(_First - begin());
         auto _Count = static_cast<size_type>(_Last - _First);
 #endif // _ITERATOR_DEBUG_LEVEL == 2
+
+        if (_Count == 0) {
+            return _First;
+        }
 
         if (_Off < static_cast<size_type>(end() - _Last)) { // closer to front
             _STD move_backward(begin(), _First, _Last); // copy over hole

@@ -49,6 +49,7 @@ std/containers/unord/unord.map/unord.map.modifiers/insert_and_emplace_allocator_
 std/containers/unord/unord.set/insert_and_emplace_allocator_requirements.pass.cpp FAIL
 
 # libc++ doesn't yet implement P1423R3, so it expects an old value for `__cpp_lib_char8_t`
+std/language.support/support.limits/support.limits.general/atomic.version.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/filesystem.version.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/istream.version.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/limits.version.pass.cpp FAIL
@@ -252,9 +253,6 @@ std/utilities/memory/default.allocator/allocator.members/allocate.verify.cpp SKI
 
 
 # *** MISSING STL FEATURES ***
-# C++20 P0019R8 "atomic_ref"
-std/language.support/support.limits/support.limits.general/atomic.version.pass.cpp FAIL
-
 # C++20 P0355R7 "<chrono> Calendars And Time Zones"
 std/utilities/time/days.pass.cpp FAIL
 std/utilities/time/months.pass.cpp FAIL
@@ -465,10 +463,6 @@ std/utilities/variant/variant.variant/variant.ctor/T.pass.cpp FAIL
 # C++20 P0768R1 "Library Support for the Spaceship (Comparison) Operator"
 std/language.support/support.limits/support.limits.general/compare.version.pass.cpp FAIL
 
-# C++20 P0811R2 "midpoint(), lerp()"
-std/language.support/support.limits/support.limits.general/numeric.version.pass.cpp FAIL
-std/numerics/c.math/c.math.lerp/c.math.lerp.pass.cpp FAIL
-
 # C++20 P0896R4 "<ranges>"
 std/language.support/support.limits/support.limits.general/algorithm.version.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/functional.version.pass.cpp FAIL
@@ -476,7 +470,6 @@ std/language.support/support.limits/support.limits.general/iterator.version.pass
 std/language.support/support.limits/support.limits.general/memory.version.pass.cpp FAIL
 
 # C++20 P1135R6 "The C++20 Synchronization Library"
-std/atomics/atomics.types.operations/atomics.types.operations.wait/atomic_wait.pass.cpp FAIL
 std/thread/thread.barrier/arrive.pass.cpp FAIL
 std/thread/thread.barrier/arrive_and_drop.pass.cpp FAIL
 std/thread/thread.barrier/arrive_and_wait.pass.cpp FAIL
@@ -535,6 +528,11 @@ std/thread/macro.pass.cpp:1 FAIL
 std/depr/depr.c.headers/tgmath_h.pass.cpp:1 FAIL
 
 
+# *** CLANG FEATURES NOT YET IMPLEMENTED ***
+# P0960R3 "Allow initializing aggregates from a parenthesized list of values"
+std/utilities/tuple/tuple.tuple/tuple.creation/tuple_cat.pass.cpp SKIPPED # TRANSITION, VS 2019 16.8 p3
+
+
 # *** CLANG ISSUES, NOT YET ANALYZED ***
 # Clang doesn't enable sized deallocation by default. Should we add -fsized-deallocation or do something else?
 std/language.support/support.dynamic/new.delete/new.delete.array/sized_delete_array_fsizeddeallocation.pass.cpp:1 FAIL
@@ -564,10 +562,6 @@ std/re/re.traits/transform.pass.cpp FAIL
 
 # STL bug: Incorrect return types.
 std/numerics/complex.number/cmplx.over/pow.pass.cpp FAIL
-
-# STL bug: Missing <valarray> assignment operators.
-std/numerics/numarray/template.mask.array/mask.array.assign/mask_array.pass.cpp FAIL
-std/numerics/numarray/template.slice.array/slice.arr.assign/slice_array.pass.cpp FAIL
 
 # STL bug: We allow fill() and swap() for array<const T, 0>.
 std/containers/sequences/array/array.fill/fill.fail.cpp FAIL
@@ -779,6 +773,20 @@ std/iterators/predef.iterators/insert.iterators/insert.iterator/types.pass.cpp F
 std/numerics/complex.number/cmplx.over/conj.pass.cpp:0 FAIL
 std/numerics/complex.number/cmplx.over/proj.pass.cpp:0 FAIL
 
+# Assertion failed: std::abs(skew - x_skew) < 0.01
+# Random number generation test with too strict pass criteria (test8 failure probability ~= 0.04)
+std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.pconst/eval.pass.cpp FAIL
+
+# Assertion failed: std::abs(f(u[i], a, m, bk, c) - double(i)/N) < .001
+# Random number generation test with too strict pass criteria (test6 failure probability > 0.2)
+std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/eval_param.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/eval.pass.cpp FAIL
+
+# Assertion failed: (std::lerp(T(2.3), T(2.3), inf) == T(2.3))
+# Asserts `(std::lerp(T(2.3), T(2.3), inf) == T(2.3))` and `std::isnan(std::lerp(T( 0), T( 0), inf))`
+# They shouldn't behave differently. Both of them should probably return NaN.
+std/numerics/c.math/c.math.lerp/c.math.lerp.pass.cpp FAIL
+
 
 # *** LIKELY STL BUGS ***
 # Not yet analyzed, likely STL bugs. Assertions and other runtime failures.
@@ -816,22 +824,6 @@ std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.gamma/min.pass.cpp FAIL
 std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.poisson/eval_param.pass.cpp FAIL
 std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.poisson/eval.pass.cpp FAIL
 std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.weibull/max.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.pconst/ctor_init_func.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.pconst/ctor_iterator.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.pconst/eval.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.pconst/param_ctor_init_func.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.pconst/param_ctor_iterator.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/ctor_default.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/ctor_func.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/ctor_init_func.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/ctor_iterator.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/ctor_param.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/eval_param.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/eval.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/param_ctor_default.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/param_ctor_func.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/param_ctor_init_func.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/param_ctor_iterator.pass.cpp FAIL
 std/numerics/rand/rand.dis/rand.dist.uni/rand.dist.uni.real/param_ctor.pass.cpp FAIL
 
 # Not yet analyzed, likely STL bugs. Various assertions.

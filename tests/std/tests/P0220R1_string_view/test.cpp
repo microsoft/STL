@@ -936,16 +936,16 @@ constexpr bool test_case_operators() {
 }
 
 void test_case_inserter() {
-    std::ostringstream oss;
+    ostringstream oss;
     string_view sv("text");
     oss << sv;
     assert(oss.str() == "text");
 }
 
 void test_case_hashing() {
-    std::string str("hungry EVIL zombies");
-    std::string_view strView(str);
-    assert(std::hash<std::string>{}(str) == std::hash<std::string_view>{}(strView));
+    string str("hungry EVIL zombies");
+    string_view strView(str);
+    assert(hash<string>{}(str) == hash<string_view>{}(strView));
 }
 
 void test_case_string_integration() {
