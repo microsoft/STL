@@ -29,6 +29,65 @@ namespace ranges {
     template <class _Rng>
     concept viewable_range = range<_Rng>
         && (borrowed_range<_Rng> || view<remove_cvref_t<_Rng>>);
+
+    // CLASS TEMPLATE ranges::ref_view
+    // clang-format off
+    template <range _Rng>
+        requires is_object_v<_Rng>
+    class ref_view : public view_interface<ref_view<_Rng>> {
+        // clang-format on
+    private:
+        _Rng* _Range = nullptr;
+
+        static void _Rvalue_poison(_Rng&);
+        static void _Rvalue_poison(_Rng&&) = delete;
+
+    public:
+        constexpr ref_view() noexcept = default;
+
+        // clang-format off
+        template <_Not_same_as<ref_view> _OtherRng>
+        constexpr ref_view(_OtherRng&& _Other) noexcept(
+            noexcept(static_cast<_Rng&>(_STD forward<_OtherRng>(_Other)))) // strengthened
+            requires convertible_to<_OtherRng, _Rng&> && requires {
+                _Rvalue_poison(static_cast<_OtherRng&&>(_Other));
+            } : _Range{_STD addressof(static_cast<_Rng&>(_STD forward<_OtherRng>(_Other)))} {}
+        // clang-format on
+
+        _NODISCARD constexpr _Rng& base() const noexcept /* strengthened */ {
+            return *_Range;
+        }
+
+        _NODISCARD constexpr iterator_t<_Rng> begin() const
+            noexcept(noexcept(_RANGES begin(*_Range))) /* strengthened */ {
+            return _RANGES begin(*_Range);
+        }
+
+        _NODISCARD constexpr sentinel_t<_Rng> end() const noexcept(noexcept(_RANGES end(*_Range))) /* strengthened */ {
+            return _RANGES end(*_Range);
+        }
+
+        _NODISCARD constexpr bool empty() const noexcept(noexcept(_RANGES empty(*_Range))) /* strengthened */
+            requires _Can_empty<_Rng> {
+            return _RANGES empty(*_Range);
+        }
+
+        _NODISCARD constexpr auto size() const noexcept(noexcept(_RANGES size(*_Range))) /* strengthened */
+            requires sized_range<_Rng> {
+            return _RANGES size(*_Range);
+        }
+
+        _NODISCARD constexpr auto data() const noexcept(noexcept(_RANGES data(*_Range))) /* strengthened */
+            requires contiguous_range<_Rng> {
+            return _RANGES data(*_Range);
+        }
+    };
+
+    template <class _Rng>
+    ref_view(_Rng&) -> ref_view<_Rng>;
+
+    template <class _Rng>
+    inline constexpr bool enable_borrowed_range<ref_view<_Rng>> = true;
 } // namespace ranges
 
 _STD_END

@@ -76,11 +76,11 @@ struct coroutine_handle<void> {
         return __builtin_coro_done(_Ptr);
     }
 
-    void operator()() const noexcept { // strengthened
+    void operator()() const {
         __builtin_coro_resume(_Ptr);
     }
 
-    void resume() const noexcept { // strengthened
+    void resume() const {
         __builtin_coro_resume(_Ptr);
     }
 
