@@ -35,7 +35,8 @@
 
     if ((code &= ~FL_NEG) == FL_DEC) { // parse decimal format
         const int nlo = CNAME(Stoflt)(s0, s, endptr, lo, NLONG);
-        FTYPE xpx[ACSIZE], xpf[ACSIZE];
+        FTYPE xpx[ACSIZE];
+        FTYPE xpf[ACSIZE];
         int i;
 
         FNAME(Xp_setw)(xpf, ACSIZE, D10TO9);
@@ -56,7 +57,8 @@
         x = FNAME(Dtento)(xpx, pten, perr);
     } else if (code == FL_HEX) { // parse hexadecimal format
         const int nlo = CNAME(Stoxflt)(s0, s, endptr, lo, NLONG);
-        FTYPE xpx[ACSIZE], xpf[ACSIZE];
+        FTYPE xpx[ACSIZE];
+        FTYPE xpf[ACSIZE];
         int i;
 
         FNAME(Xp_setw)(xpf, ACSIZE, D16TO7);
