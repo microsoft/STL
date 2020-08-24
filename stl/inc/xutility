@@ -3602,7 +3602,8 @@ namespace ranges {
 #if _CONTAINER_DEBUG_LEVEL > 0
             if constexpr (sized_range<_Derived>) {
                 using _Ty = _Make_unsigned_like_t<range_difference_t<_Rng>>;
-                _STL_VERIFY(static_cast<_Ty>(_Idx) < static_cast<_Ty>(_RANGES size(_Self)), "index out of range for view_interface");
+                _STL_VERIFY(static_cast<_Ty>(_Idx) < static_cast<_Ty>(_RANGES size(_Self)),
+                    "index out of range for view_interface");
             }
 #endif // _CONTAINER_DEBUG_LEVEL > 0
             return _RANGES begin(_Self)[_Idx];
@@ -3614,7 +3615,8 @@ namespace ranges {
 #if _CONTAINER_DEBUG_LEVEL > 0
             if constexpr (sized_range<_Derived>) {
                 using _Ty = _Make_unsigned_like_t<range_difference_t<_Rng>>;
-                _STL_VERIFY(static_cast<_Ty>(_Idx) < static_cast<_Ty>(_RANGES size(_Self)), "index out of range for view_interface");
+                _STL_VERIFY(static_cast<_Ty>(_Idx) < static_cast<_Ty>(_RANGES size(_Self)),
+                    "index out of range for view_interface");
             }
 #endif // _CONTAINER_DEBUG_LEVEL > 0
             return _RANGES begin(_Self)[_Idx];
