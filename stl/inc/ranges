@@ -43,7 +43,8 @@ namespace ranges {
     class _Semiregular_box {
     public:
         constexpr _Semiregular_box() noexcept : _Dummy{}, _Engaged{false} {}
-        constexpr _Semiregular_box() noexcept(is_nothrow_default_constructible_v<_Ty>) requires default_initializable<_Ty>
+        constexpr _Semiregular_box() noexcept(
+            is_nothrow_default_constructible_v<_Ty>) requires default_initializable<_Ty>
             : _Val(), _Engaged{true} {}
 
         template <class... _Types>
