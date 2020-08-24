@@ -64,7 +64,7 @@ namespace experimental {
 #else // ^^^ _CPPUNWIND / !_CPPUNWIND vvv
                 abort();
 #endif // _CPPUNWIND
-#else // ^^^ workaround / no workaround
+#else // ^^^ workaround / no workaround vvv
                 throw;
 #endif // TRANSITION, VSO-1172852
             }
@@ -130,7 +130,7 @@ namespace experimental {
                 if (_Coro.done()) {
 #if 1 // TRANSITION, VSO-1172852
                     _STD exchange(_Coro, {}).promise()._Rethrow_if_exception();
-#else // ^^^ workaround / no workaround
+#else // ^^^ workaround / no workaround vvv
                     _Coro = nullptr;
 #endif // TRANSITION, VSO-1172852
                 }
