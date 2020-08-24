@@ -2004,7 +2004,7 @@ public:
 
 template <class _Mystr>
 _NODISCARD _String_const_iterator<_Mystr> operator+(
-    typename _String_const_iterator<_Mystr>::difference_type _Off, _String_const_iterator<_Mystr> _Next) {
+    typename _String_const_iterator<_Mystr>::difference_type _Off, _String_const_iterator<_Mystr> _Next) noexcept {
     return _Next += _Off;
 }
 
@@ -3283,7 +3283,7 @@ private:
     }
 
 public:
-    basic_string& erase(const size_type _Off, size_type _Count) { // erase elements [_Off, _Off + _Count)
+    basic_string& erase(const size_type _Off, const size_type _Count) { // erase elements [_Off, _Off + _Count)
         _Mypair._Myval2._Check_offset(_Off);
         return _Erase_noexcept(_Off, _Count);
     }

@@ -248,7 +248,7 @@ public:
         return _Tree_unchecked_const_iterator<_Mytree>(this->_Ptr, static_cast<const _Mytree*>(this->_Getcont()));
     }
 
-    void _Seek_to(const _Tree_unchecked_const_iterator<_Mytree> _It) {
+    void _Seek_to(const _Tree_unchecked_const_iterator<_Mytree> _It) noexcept {
         this->_Ptr = _It._Ptr;
     }
 };
