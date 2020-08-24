@@ -43,7 +43,7 @@ public:
         this->_Adopt(_Pvector);
     }
 
-    _NODISCARD reference operator*() const {
+    _NODISCARD reference operator*() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
         const auto _Mycont = static_cast<const _Myvec*>(this->_Getcont());
         _STL_VERIFY(_Ptr, "can't dereference value-initialized vector iterator");
@@ -54,7 +54,7 @@ public:
         return *_Ptr;
     }
 
-    _NODISCARD pointer operator->() const {
+    _NODISCARD pointer operator->() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
         const auto _Mycont = static_cast<const _Myvec*>(this->_Getcont());
         _STL_VERIFY(_Ptr, "can't dereference value-initialized vector iterator");
@@ -65,7 +65,7 @@ public:
         return _Ptr;
     }
 
-    _Vector_const_iterator& operator++() {
+    _Vector_const_iterator& operator++() noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
         const auto _Mycont = static_cast<const _Myvec*>(this->_Getcont());
         _STL_VERIFY(_Ptr, "can't increment value-initialized vector iterator");
@@ -76,13 +76,13 @@ public:
         return *this;
     }
 
-    _Vector_const_iterator operator++(int) {
+    _Vector_const_iterator operator++(int) noexcept {
         _Vector_const_iterator _Tmp = *this;
         ++*this;
         return _Tmp;
     }
 
-    _Vector_const_iterator& operator--() {
+    _Vector_const_iterator& operator--() noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
         const auto _Mycont = static_cast<const _Myvec*>(this->_Getcont());
         _STL_VERIFY(_Ptr, "can't decrement value-initialized vector iterator");
@@ -93,13 +93,13 @@ public:
         return *this;
     }
 
-    _Vector_const_iterator operator--(int) {
+    _Vector_const_iterator operator--(int) noexcept {
         _Vector_const_iterator _Tmp = *this;
         --*this;
         return _Tmp;
     }
 
-    void _Verify_offset(const difference_type _Off) const {
+    void _Verify_offset(const difference_type _Off) const noexcept {
 #if _ITERATOR_DEBUG_LEVEL == 0
         (void) _Off;
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^ // vvv _ITERATOR_DEBUG_LEVEL != 0 vvv
@@ -115,62 +115,62 @@ public:
 #endif // _ITERATOR_DEBUG_LEVEL == 0
     }
 
-    _Vector_const_iterator& operator+=(const difference_type _Off) {
+    _Vector_const_iterator& operator+=(const difference_type _Off) noexcept {
         _Verify_offset(_Off);
         _Ptr += _Off;
         return *this;
     }
 
-    _NODISCARD _Vector_const_iterator operator+(const difference_type _Off) const {
+    _NODISCARD _Vector_const_iterator operator+(const difference_type _Off) const noexcept {
         _Vector_const_iterator _Tmp = *this;
         return _Tmp += _Off;
     }
 
-    _Vector_const_iterator& operator-=(const difference_type _Off) {
+    _Vector_const_iterator& operator-=(const difference_type _Off) noexcept {
         return *this += -_Off;
     }
 
-    _NODISCARD _Vector_const_iterator operator-(const difference_type _Off) const {
+    _NODISCARD _Vector_const_iterator operator-(const difference_type _Off) const noexcept {
         _Vector_const_iterator _Tmp = *this;
         return _Tmp -= _Off;
     }
 
-    _NODISCARD difference_type operator-(const _Vector_const_iterator& _Right) const {
+    _NODISCARD difference_type operator-(const _Vector_const_iterator& _Right) const noexcept {
         _Compat(_Right);
         return _Ptr - _Right._Ptr;
     }
 
-    _NODISCARD reference operator[](const difference_type _Off) const {
+    _NODISCARD reference operator[](const difference_type _Off) const noexcept {
         return *(*this + _Off);
     }
 
-    _NODISCARD bool operator==(const _Vector_const_iterator& _Right) const {
+    _NODISCARD bool operator==(const _Vector_const_iterator& _Right) const noexcept {
         _Compat(_Right);
         return _Ptr == _Right._Ptr;
     }
 
-    _NODISCARD bool operator!=(const _Vector_const_iterator& _Right) const {
+    _NODISCARD bool operator!=(const _Vector_const_iterator& _Right) const noexcept {
         return !(*this == _Right);
     }
 
-    _NODISCARD bool operator<(const _Vector_const_iterator& _Right) const {
+    _NODISCARD bool operator<(const _Vector_const_iterator& _Right) const noexcept {
         _Compat(_Right);
         return _Ptr < _Right._Ptr;
     }
 
-    _NODISCARD bool operator>(const _Vector_const_iterator& _Right) const {
+    _NODISCARD bool operator>(const _Vector_const_iterator& _Right) const noexcept {
         return _Right < *this;
     }
 
-    _NODISCARD bool operator<=(const _Vector_const_iterator& _Right) const {
+    _NODISCARD bool operator<=(const _Vector_const_iterator& _Right) const noexcept {
         return !(_Right < *this);
     }
 
-    _NODISCARD bool operator>=(const _Vector_const_iterator& _Right) const {
+    _NODISCARD bool operator>=(const _Vector_const_iterator& _Right) const noexcept {
         return !(*this < _Right);
     }
 
-    void _Compat(const _Vector_const_iterator& _Right) const { // test for compatible iterator pair
+    void _Compat(const _Vector_const_iterator& _Right) const noexcept { // test for compatible iterator pair
 #if _ITERATOR_DEBUG_LEVEL == 0
         (void) _Right;
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^ // vvv _ITERATOR_DEBUG_LEVEL != 0 vvv
@@ -179,7 +179,7 @@ public:
     }
 
 #if _ITERATOR_DEBUG_LEVEL != 0
-    friend void _Verify_range(const _Vector_const_iterator& _First, const _Vector_const_iterator& _Last) {
+    friend void _Verify_range(const _Vector_const_iterator& _First, const _Vector_const_iterator& _Last) noexcept {
         _STL_VERIFY(_First._Getcont() == _Last._Getcont(), "vector iterators in range are from different containers");
         _STL_VERIFY(_First._Ptr <= _Last._Ptr, "vector iterator range transposed");
     }
@@ -187,11 +187,11 @@ public:
 
     using _Prevent_inheriting_unwrap = _Vector_const_iterator;
 
-    _NODISCARD const value_type* _Unwrapped() const {
+    _NODISCARD const value_type* _Unwrapped() const noexcept {
         return _Unfancy(_Ptr);
     }
 
-    void _Seek_to(const value_type* _It) {
+    void _Seek_to(const value_type* _It) noexcept {
         _Ptr = _Refancy<_Tptr>(const_cast<value_type*>(_It));
     }
 
@@ -200,7 +200,7 @@ public:
 
 template <class _Myvec>
 _NODISCARD _Vector_const_iterator<_Myvec> operator+(
-    typename _Vector_const_iterator<_Myvec>::difference_type _Off, _Vector_const_iterator<_Myvec> _Next) {
+    typename _Vector_const_iterator<_Myvec>::difference_type _Off, _Vector_const_iterator<_Myvec> _Next) noexcept {
     return _Next += _Off;
 }
 
@@ -248,72 +248,72 @@ public:
 
     using _Mybase::_Mybase;
 
-    _NODISCARD reference operator*() const {
+    _NODISCARD reference operator*() const noexcept {
         return const_cast<reference>(_Mybase::operator*());
     }
 
-    _NODISCARD pointer operator->() const {
+    _NODISCARD pointer operator->() const noexcept {
         return _Const_cast(_Mybase::operator->());
     }
 
-    _Vector_iterator& operator++() {
+    _Vector_iterator& operator++() noexcept {
         _Mybase::operator++();
         return *this;
     }
 
-    _Vector_iterator operator++(int) {
+    _Vector_iterator operator++(int) noexcept {
         _Vector_iterator _Tmp = *this;
         _Mybase::operator++();
         return _Tmp;
     }
 
-    _Vector_iterator& operator--() {
+    _Vector_iterator& operator--() noexcept {
         _Mybase::operator--();
         return *this;
     }
 
-    _Vector_iterator operator--(int) {
+    _Vector_iterator operator--(int) noexcept {
         _Vector_iterator _Tmp = *this;
         _Mybase::operator--();
         return _Tmp;
     }
 
-    _Vector_iterator& operator+=(const difference_type _Off) {
+    _Vector_iterator& operator+=(const difference_type _Off) noexcept {
         _Mybase::operator+=(_Off);
         return *this;
     }
 
-    _NODISCARD _Vector_iterator operator+(const difference_type _Off) const {
+    _NODISCARD _Vector_iterator operator+(const difference_type _Off) const noexcept {
         _Vector_iterator _Tmp = *this;
         return _Tmp += _Off;
     }
 
-    _Vector_iterator& operator-=(const difference_type _Off) {
+    _Vector_iterator& operator-=(const difference_type _Off) noexcept {
         _Mybase::operator-=(_Off);
         return *this;
     }
 
     using _Mybase::operator-;
 
-    _NODISCARD _Vector_iterator operator-(const difference_type _Off) const {
+    _NODISCARD _Vector_iterator operator-(const difference_type _Off) const noexcept {
         _Vector_iterator _Tmp = *this;
         return _Tmp -= _Off;
     }
 
-    _NODISCARD reference operator[](const difference_type _Off) const {
+    _NODISCARD reference operator[](const difference_type _Off) const noexcept {
         return const_cast<reference>(_Mybase::operator[](_Off));
     }
 
     using _Prevent_inheriting_unwrap = _Vector_iterator;
 
-    _NODISCARD value_type* _Unwrapped() const {
+    _NODISCARD value_type* _Unwrapped() const noexcept {
         return _Unfancy(this->_Ptr);
     }
 };
 
 template <class _Myvec>
 _NODISCARD _Vector_iterator<_Myvec> operator+(
-    typename _Vector_iterator<_Myvec>::difference_type _Off, _Vector_iterator<_Myvec> _Next) {
+    typename _Vector_iterator<_Myvec>::difference_type _Off, _Vector_iterator<_Myvec> _Next) noexcept {
     return _Next += _Off;
 }
 
@@ -399,12 +399,12 @@ public:
 
 // FUNCTION TEMPLATE _Unfancy_maybe_null
 template <class _Ptrty>
-auto _Unfancy_maybe_null(_Ptrty _Ptr) { // converts from a (potentially null) fancy pointer to a plain pointer
+auto _Unfancy_maybe_null(_Ptrty _Ptr) noexcept { // converts from a (potentially null) fancy pointer to a plain pointer
     return _Ptr ? _STD addressof(*_Ptr) : nullptr;
 }
 
 template <class _Ty>
-_Ty* _Unfancy_maybe_null(_Ty* _Ptr) { // do nothing for plain pointers
+_Ty* _Unfancy_maybe_null(_Ty* _Ptr) noexcept { // do nothing for plain pointers
     return _Ptr;
 }
 
@@ -1818,14 +1818,14 @@ public:
         this->_Adopt(_Mypvbool);
     }
 
-    void _Advance(_Size_type _Off) {
+    void _Advance(_Size_type _Off) noexcept {
         _Myoff += _Off;
         _Myptr += _Myoff / _VBITS;
         _Myoff %= _VBITS;
     }
 
 #if _ITERATOR_DEBUG_LEVEL != 0
-    _Difference_type _Total_off(const _Mycont* _Cont) const {
+    _Difference_type _Total_off(const _Mycont* _Cont) const noexcept {
         return static_cast<_Difference_type>(_VBITS * (_Myptr - _Cont->_Myvec.data()) + _Myoff);
     }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -1872,7 +1872,7 @@ public:
         return (*_Getptr() & _Mask()) != 0;
     }
 
-    const _Vbase* _Getptr() const {
+    const _Vbase* _Getptr() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
         const auto _Cont = static_cast<const _Mycont*>(this->_Getcont());
         _STL_VERIFY(_Cont, "cannot dereference value-initialized vector<bool> iterator");
@@ -1890,7 +1890,7 @@ public:
     }
 
 protected:
-    _Vbase _Mask() const {
+    _Vbase _Mask() const noexcept {
         return static_cast<_Vbase>(1) << this->_Myoff;
     }
 };
@@ -1918,7 +1918,7 @@ public:
 
     _Vb_const_iterator(const _Vbase* _Ptr, const _Container_base* _Mypvbool) noexcept : _Mybase(_Ptr, 0, _Mypvbool) {}
 
-    _NODISCARD const_reference operator*() const {
+    _NODISCARD const_reference operator*() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
         const auto _Cont = static_cast<const _Mycont*>(this->_Getcont());
         _STL_VERIFY(_Cont, "cannot dereference value-initialized vector<bool> iterator");
@@ -1929,29 +1929,29 @@ public:
         return _Reft(*this);
     }
 
-    _Vb_const_iterator& operator++() {
+    _Vb_const_iterator& operator++() noexcept {
         _Inc();
         return *this;
     }
 
-    _Vb_const_iterator operator++(int) {
+    _Vb_const_iterator operator++(int) noexcept {
         _Vb_const_iterator _Tmp = *this;
         _Inc();
         return _Tmp;
     }
 
-    _Vb_const_iterator& operator--() {
+    _Vb_const_iterator& operator--() noexcept {
         _Dec();
         return *this;
     }
 
-    _Vb_const_iterator operator--(int) {
+    _Vb_const_iterator operator--(int) noexcept {
         _Vb_const_iterator _Tmp = *this;
         _Dec();
         return _Tmp;
     }
 
-    _Vb_const_iterator& operator+=(const difference_type _Off) {
+    _Vb_const_iterator& operator+=(const difference_type _Off) noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
         if (_Off != 0) {
             const auto _Cont = static_cast<const _Mycont*>(this->_Getcont());
@@ -1978,57 +1978,57 @@ public:
         return *this;
     }
 
-    _NODISCARD _Vb_const_iterator operator+(const difference_type _Off) const {
+    _NODISCARD _Vb_const_iterator operator+(const difference_type _Off) const noexcept {
         _Vb_const_iterator _Tmp = *this;
         return _Tmp += _Off;
     }
 
-    _Vb_const_iterator& operator-=(const difference_type _Off) {
+    _Vb_const_iterator& operator-=(const difference_type _Off) noexcept {
         return *this += -_Off;
     }
 
-    _NODISCARD _Vb_const_iterator operator-(const difference_type _Off) const {
+    _NODISCARD _Vb_const_iterator operator-(const difference_type _Off) const noexcept {
         _Vb_const_iterator _Tmp = *this;
         return _Tmp -= _Off;
     }
 
-    _NODISCARD difference_type operator-(const _Vb_const_iterator& _Right) const {
+    _NODISCARD difference_type operator-(const _Vb_const_iterator& _Right) const noexcept {
         _Compat(_Right);
         return static_cast<difference_type>(_VBITS * (this->_Myptr - _Right._Myptr))
                + static_cast<difference_type>(this->_Myoff) - static_cast<difference_type>(_Right._Myoff);
     }
 
-    _NODISCARD const_reference operator[](const difference_type _Off) const {
+    _NODISCARD const_reference operator[](const difference_type _Off) const noexcept {
         return *(*this + _Off);
     }
 
-    _NODISCARD bool operator==(const _Vb_const_iterator& _Right) const {
+    _NODISCARD bool operator==(const _Vb_const_iterator& _Right) const noexcept {
         _Compat(_Right);
         return this->_Myptr == _Right._Myptr && this->_Myoff == _Right._Myoff;
     }
 
-    _NODISCARD bool operator!=(const _Vb_const_iterator& _Right) const {
+    _NODISCARD bool operator!=(const _Vb_const_iterator& _Right) const noexcept {
         return !(*this == _Right);
     }
 
-    _NODISCARD bool operator<(const _Vb_const_iterator& _Right) const {
+    _NODISCARD bool operator<(const _Vb_const_iterator& _Right) const noexcept {
         _Compat(_Right);
         return this->_Myptr < _Right._Myptr || (this->_Myptr == _Right._Myptr && this->_Myoff < _Right._Myoff);
     }
 
-    _NODISCARD bool operator>(const _Vb_const_iterator& _Right) const {
+    _NODISCARD bool operator>(const _Vb_const_iterator& _Right) const noexcept {
         return _Right < *this;
     }
 
-    _NODISCARD bool operator<=(const _Vb_const_iterator& _Right) const {
+    _NODISCARD bool operator<=(const _Vb_const_iterator& _Right) const noexcept {
         return !(_Right < *this);
     }
 
-    _NODISCARD bool operator>=(const _Vb_const_iterator& _Right) const {
+    _NODISCARD bool operator>=(const _Vb_const_iterator& _Right) const noexcept {
         return !(*this < _Right);
     }
 
-    void _Compat(const _Vb_const_iterator& _Right) const { // test for compatible iterator pair
+    void _Compat(const _Vb_const_iterator& _Right) const noexcept { // test for compatible iterator pair
 #if _ITERATOR_DEBUG_LEVEL == 0
         (void) _Right;
 #else // _ITERATOR_DEBUG_LEVEL == 0
@@ -2039,13 +2039,13 @@ public:
 #if _ITERATOR_DEBUG_LEVEL != 0
     using _Prevent_inheriting_unwrap = _Vb_const_iterator;
 
-    friend void _Verify_range(const _Vb_const_iterator& _First, const _Vb_const_iterator& _Last) {
+    friend void _Verify_range(const _Vb_const_iterator& _First, const _Vb_const_iterator& _Last) noexcept {
         // note _Compat check inside <=
         _STL_VERIFY(_First <= _Last, "vector<bool> iterator range transposed");
     }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
-    void _Dec() { // decrement bit position
+    void _Dec() noexcept { // decrement bit position
 #if _ITERATOR_DEBUG_LEVEL != 0
         const auto _Cont = static_cast<const _Mycont*>(this->_Getcont());
         _STL_VERIFY(_Cont, "cannot decrement value-initialized vector<bool> iterator");
@@ -2060,7 +2060,7 @@ public:
         }
     }
 
-    void _Inc() { // increment bit position
+    void _Inc() noexcept { // increment bit position
 #if _ITERATOR_DEBUG_LEVEL != 0
         const auto _Cont = static_cast<const _Mycont*>(this->_Getcont());
         _STL_VERIFY(_Cont, "cannot increment value-initialized vector<bool> iterator");
@@ -2079,7 +2079,8 @@ public:
 
 template <class _Alvbase_wrapped>
 _NODISCARD _Vb_const_iterator<_Alvbase_wrapped> operator+(
-    typename _Vb_const_iterator<_Alvbase_wrapped>::difference_type _Off, _Vb_const_iterator<_Alvbase_wrapped> _Right) {
+    typename _Vb_const_iterator<_Alvbase_wrapped>::difference_type _Off,
+    _Vb_const_iterator<_Alvbase_wrapped> _Right) noexcept {
     return _Right += _Off;
 }
 
@@ -2102,7 +2103,7 @@ public:
 
     using _Mybase::_Mybase;
 
-    _NODISCARD reference operator*() const {
+    _NODISCARD reference operator*() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
         const auto _Cont = static_cast<const _Mycont*>(this->_Getcont());
         _STL_VERIFY(_Cont, "cannot dereference value-initialized vector<bool> iterator");
@@ -2113,51 +2114,51 @@ public:
         return _Reft(*this);
     }
 
-    _Vb_iterator& operator++() {
+    _Vb_iterator& operator++() noexcept {
         _Mybase::operator++();
         return *this;
     }
 
-    _Vb_iterator operator++(int) {
+    _Vb_iterator operator++(int) noexcept {
         _Vb_iterator _Tmp = *this;
         _Mybase::operator++();
         return _Tmp;
     }
 
-    _Vb_iterator& operator--() {
+    _Vb_iterator& operator--() noexcept {
         _Mybase::operator--();
         return *this;
     }
 
-    _Vb_iterator operator--(int) {
+    _Vb_iterator operator--(int) noexcept {
         _Vb_iterator _Tmp = *this;
         _Mybase::operator--();
         return _Tmp;
     }
 
-    _Vb_iterator& operator+=(const difference_type _Off) {
+    _Vb_iterator& operator+=(const difference_type _Off) noexcept {
         _Mybase::operator+=(_Off);
         return *this;
     }
 
-    _NODISCARD _Vb_iterator operator+(const difference_type _Off) const {
+    _NODISCARD _Vb_iterator operator+(const difference_type _Off) const noexcept {
         _Vb_iterator _Tmp = *this;
         return _Tmp += _Off;
     }
 
-    _Vb_iterator& operator-=(const difference_type _Off) {
+    _Vb_iterator& operator-=(const difference_type _Off) noexcept {
         _Mybase::operator-=(_Off);
         return *this;
     }
 
     using _Mybase::operator-;
 
-    _NODISCARD _Vb_iterator operator-(const difference_type _Off) const {
+    _NODISCARD _Vb_iterator operator-(const difference_type _Off) const noexcept {
         _Vb_iterator _Tmp = *this;
         return _Tmp -= _Off;
     }
 
-    _NODISCARD reference operator[](const difference_type _Off) const {
+    _NODISCARD reference operator[](const difference_type _Off) const noexcept {
         return *(*this + _Off);
     }
 
@@ -2166,7 +2167,7 @@ public:
 
 template <class _Alvbase_wrapped>
 _NODISCARD _Vb_iterator<_Alvbase_wrapped> operator+(
-    typename _Vb_iterator<_Alvbase_wrapped>::difference_type _Off, _Vb_iterator<_Alvbase_wrapped> _Right) {
+    typename _Vb_iterator<_Alvbase_wrapped>::difference_type _Off, _Vb_iterator<_Alvbase_wrapped> _Right) noexcept {
     return _Right += _Off;
 }
 
@@ -2238,7 +2239,7 @@ public:
         return _Myvec._Getal();
     }
 
-    static size_type _Nw(size_type _Count) {
+    static size_type _Nw(size_type _Count) noexcept {
         return (_Count + _VBITS - 1) / _VBITS;
     }
 
