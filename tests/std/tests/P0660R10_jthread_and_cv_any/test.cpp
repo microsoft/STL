@@ -234,9 +234,10 @@ int main() {
             condition_variable_any cv;
             unique_lock lck{m};
             auto started_at = chrono::steady_clock::now();
-            assert(cv.wait_for(lck, never_stopped.get_token(), 100ms, [] { return false; }) == false);
+            auto until      = started_at + 100ms;
+            assert(cv.wait_until(lck, never_stopped.get_token(), until, [] { return false; }) == false);
             // not a timing assumption: the wait_for must wait at least that long
-            assert(started_at + 100ms <= chrono::steady_clock::now());
+            assert(until <= chrono::steady_clock::now());
         });
     }
 
