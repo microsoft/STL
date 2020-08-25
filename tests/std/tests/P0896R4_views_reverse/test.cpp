@@ -55,8 +55,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // ... with const lvalue argument
-    static_assert(CanViewReverse<const remove_cvref_t<Rng>&> == (!is_view || copyable<R>) );
-    if constexpr (is_view && copyable<R>) {
+    static_assert(CanViewReverse<const remove_reference_t<Rng>&> == (!is_view || copyable<V>) );
+    if constexpr (is_view && copyable<V>) {
         constexpr bool is_noexcept = is_nothrow_copy_constructible_v<V>;
 
         static_assert(same_as<decltype(views::reverse(as_const(rng))), R>);
@@ -71,8 +71,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         static_assert(same_as<decltype(as_const(rng) | pipeline), R>);
         static_assert(noexcept(as_const(rng) | pipeline) == is_noexcept);
     } else if constexpr (!is_view) {
-        using RC                   = reverse_view<views::all_t<const remove_cvref_t<Rng>&>>;
-        constexpr bool is_noexcept = is_nothrow_constructible_v<RC, const remove_cvref_t<Rng>&>;
+        using RC                   = reverse_view<views::all_t<const remove_reference_t<Rng>&>>;
+        constexpr bool is_noexcept = is_nothrow_constructible_v<RC, const remove_reference_t<Rng>&>;
 
         static_assert(same_as<decltype(views::reverse(as_const(rng))), RC>);
         static_assert(noexcept(views::reverse(as_const(rng))) == is_noexcept);
@@ -88,7 +88,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // ... with rvalue argument
-    static_assert(CanViewReverse<remove_cvref_t<Rng>> == is_view || enable_borrowed_range<remove_cvref_t<Rng>>);
+    static_assert(CanViewReverse<remove_reference_t<Rng>> == is_view || enable_borrowed_range<remove_cvref_t<Rng>>);
     if constexpr (is_view) {
         constexpr bool is_noexcept = is_nothrow_move_constructible_v<V>;
         static_assert(same_as<decltype(views::reverse(move(rng))), R>);
@@ -121,9 +121,9 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // ... with const rvalue argument
-    static_assert(CanViewReverse<const remove_cvref_t<Rng>> == (is_view && copyable<R>)
+    static_assert(CanViewReverse<const remove_reference_t<Rng>> == (is_view && copyable<V>)
                   || (!is_view && enable_borrowed_range<remove_cvref_t<Rng>>) );
-    if constexpr (is_view && copyable<R>) {
+    if constexpr (is_view && copyable<V>) {
         constexpr bool is_noexcept = is_nothrow_copy_constructible_v<V>;
 
         static_assert(same_as<decltype(views::reverse(move(as_const(rng)))), R>);
@@ -144,6 +144,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 
         static_assert(same_as<decltype(views::reverse(move(as_const(rng)))), RS>);
         static_assert(noexcept(views::reverse(move(as_const(rng)))) == is_noexcept);
+
         static_assert(same_as<decltype(move(as_const(rng)) | views::reverse), RS>);
         static_assert(noexcept(move(as_const(rng)) | views::reverse) == is_noexcept);
 
@@ -154,7 +155,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         static_assert(noexcept(move(as_const(rng)) | pipeline) == is_noexcept);
     }
 
-    // Validate reverse_view deduction guide
+    // Validate deduction guide
 #if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1159442
     (void) 42;
 #endif // TRANSITION, DevCom-1159442
@@ -248,8 +249,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // Validate view_interface::data
-    static_assert(!CanMemberData<R>);
-    static_assert(!CanMemberData<const R>);
+    static_assert(!CanData<R>);
+    static_assert(!CanData<const R>);
 
     if (!is_empty) {
         // Validate view_interface::operator[]
@@ -293,8 +294,6 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     (void) 42;
 #endif // TRANSITION, DevCom-1159442
     same_as<V> auto b2 = move(r).base();
-    static_assert(same_as<decltype(b2), V>);
-    static_assert(noexcept(move(r).base()));
     static_assert(noexcept(move(r).base()) == is_nothrow_move_constructible_v<V>);
     if (!is_empty) {
         assert(*b2.begin() == *prev(end(expected)));
