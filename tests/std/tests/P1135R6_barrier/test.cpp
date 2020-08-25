@@ -66,22 +66,22 @@ void test_with_functor() {
         std::atomic<int>* c;
     } f = {&called_times, &c};
 
-    std::barrier barrier(2, f);
+    std::barrier b(2, f);
 
     std::thread t1([&] {
         for (int i = 0; i < 5; i++) {
-            auto token = barrier.arrive();
-            barrier.wait(std::move(token));
+            auto token = b.arrive();
+            b.wait(std::move(token));
             c.fetch_add(1, std::memory_order_relaxed);
         }
     });
 
     std::thread t2([&] {
         for (int i = 0; i < 3; i++) {
-            barrier.arrive_and_wait();
+            b.arrive_and_wait();
             c.fetch_add(1, std::memory_order_relaxed);
         }
-        barrier.arrive_and_drop();
+        b.arrive_and_drop();
     });
 
     t1.join();
@@ -89,6 +89,27 @@ void test_with_functor() {
 
     assert(c.load(std::memory_order_relaxed) == 8);
     assert(called_times.load(std::memory_order_relaxed) == 5);
+}
+
+
+void test_token() {
+    std::atomic<int> called_times{0};
+
+    auto f = [&]() noexcept { called_times.fetch_add(1, std::memory_order_relaxed); };
+
+    std::barrier b(2, f);
+    auto t1 = b.arrive();
+    auto t2 = std::move(t1);
+
+    assert(called_times.load(std::memory_order_relaxed) == 0);
+    auto t3 = b.arrive();
+    auto t4 = std::move(t3);
+
+    assert(called_times.load(std::memory_order_relaxed) == 1);
+    b.wait(std::move(t4));
+    assert(called_times.load(std::memory_order_relaxed) == 1);
+    b.wait(std::move(t2));
+    assert(called_times.load(std::memory_order_relaxed) == 1);
 }
 
 void barrier_callback_function() noexcept {}
@@ -117,5 +138,6 @@ int main() {
 
     test();
     test_with_functor();
+    test_token();
     test_functor_types();
 }
