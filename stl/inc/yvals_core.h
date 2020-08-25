@@ -172,7 +172,6 @@
 //     (partially implemented)
 // P0898R3 Standard Library Concepts
 // P0912R5 Library Support For Coroutines
-//     (partially implemented, missing noop coroutines)
 // P0919R3 Heterogeneous Lookup For Unordered Containers
 // P0966R1 string::reserve() Should Not Shrink
 // P1001R2 execution::unseq
@@ -1170,8 +1169,12 @@
 #define __cpp_lib_constexpr_tuple       201811L
 #define __cpp_lib_constexpr_utility     201811L
 
-#ifdef __cpp_impl_coroutine // TRANSITION, VS 2019 16.8 Preview 3
-#define __cpp_lib_coroutine 197000L
+#ifdef __cpp_impl_coroutine // TRANSITION, Clang and EDG coroutine support
+#if __cpp_impl_coroutine >= 201902L
+#define __cpp_lib_coroutine 201902L
+#else // ^^^ __cpp_impl_coroutine >= 201902L ^^^ / vvv __cpp_impl_coroutine < 201902L vvv
+#define __cpp_lib_coroutine 197000L // TRANSITION, VS 2019 16.8 Preview 4
+#endif // ^^^ __cpp_impl_coroutine < 201902L ^^^
 #endif // __cpp_impl_coroutine
 
 #define __cpp_lib_destroying_delete            201806L
@@ -1291,6 +1294,12 @@ compiler option, or define _ALLOW_RTCc_IN_STL to acknowledge that you have recei
 #define _STL_WIN32_WINNT _STL_WIN32_WINNT_VISTA
 #endif // ^^^ !defined(_M_ARM) && !defined(_M_ARM64) && !defined(_ONECORE) && !defined(_CRT_APP) ^^^
 #endif // _STL_WIN32_WINNT
+
+#ifdef __cpp_noexcept_function_type
+#define _NOEXCEPT_FNPTR noexcept
+#else
+#define _NOEXCEPT_FNPTR
+#endif // __cpp_noexcept_function_type
 
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _YVALS_CORE_H_

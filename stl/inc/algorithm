@@ -5118,7 +5118,9 @@ namespace ranges {
 
                     return {_STD move(_First), _STD move(_Final)};
                 } else {
-                    auto [_Mid_first, _Mid_last] = _Reverse_until_mid_unchecked(_STD move(_First), _Mid, _Final);
+                    const auto _Result = _Reverse_until_mid_unchecked(_STD move(_First), _Mid, _Final);
+                    auto _Mid_first    = _Result.begin();
+                    auto _Mid_last     = _Result.end();
                     _Reverse_common(_Mid_first, _Mid_last);
 
                     if (_Mid_first == _Mid) {
