@@ -97,7 +97,7 @@ constexpr bool test_one(Rng&& rng) {
         static_assert(noexcept(move(rng) | pipeline) == is_noexcept);
     } else if constexpr (ranges::enable_borrowed_range<Rng>) {
         using S                    = decltype(ranges::subrange{declval<Rng>()});
-        constexpr bool is_noexcept = noexcept(noexcept(S{declval<Rng>()}));
+        constexpr bool is_noexcept = noexcept(S{declval<Rng>()});
 
         static_assert(same_as<views::all_t<remove_cvref_t<Rng>>, S>);
         static_assert(same_as<decltype(views::all(move(rng))), S>);
@@ -133,7 +133,7 @@ constexpr bool test_one(Rng&& rng) {
         static_assert(noexcept(move(as_const(rng)) | pipeline) == is_noexcept);
     } else if constexpr (!is_view && ranges::enable_borrowed_range<const remove_cvref_t<Rng>>) {
         using S                    = decltype(ranges::subrange{declval<const remove_cvref_t<Rng>>()});
-        constexpr bool is_noexcept = noexcept(noexcept(S{declval<const remove_cvref_t<Rng>>()}));
+        constexpr bool is_noexcept = noexcept(S{declval<const remove_cvref_t<Rng>>()});
 
         static_assert(same_as<views::all_t<const remove_cvref_t<Rng>>, S>);
         static_assert(same_as<decltype(views::all(move(as_const(rng)))), S>);

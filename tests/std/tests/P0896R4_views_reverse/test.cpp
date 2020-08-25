@@ -105,7 +105,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     } else if constexpr (enable_borrowed_range<Rng>) {
         using S                    = decltype(ranges::subrange{declval<Rng>()});
         using RS                   = reverse_view<S>;
-        constexpr bool is_noexcept = noexcept(noexcept(S{declval<Rng>()}));
+        constexpr bool is_noexcept = noexcept(S{declval<Rng>()});
 
         static_assert(same_as<decltype(views::reverse(move(rng))), RS>);
         static_assert(noexcept(views::reverse(move(rng))) == is_noexcept);
@@ -140,7 +140,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     } else if constexpr (!is_view && enable_borrowed_range<const remove_cvref_t<Rng>>) {
         using S                    = decltype(ranges::subrange{declval<const remove_cvref_t<Rng>>()});
         using RS                   = reverse_view<S>;
-        constexpr bool is_noexcept = noexcept(noexcept(S{declval<const remove_cvref_t<Rng>>()}));
+        constexpr bool is_noexcept = noexcept(S{declval<const remove_cvref_t<Rng>>()});
 
         static_assert(same_as<decltype(views::reverse(move(as_const(rng)))), RS>);
         static_assert(noexcept(views::reverse(move(as_const(rng)))) == is_noexcept);
