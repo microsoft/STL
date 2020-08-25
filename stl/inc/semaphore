@@ -131,6 +131,7 @@ public:
                 "Invariant: counter >= 0, and counter <= max() "
                 "possibly caused by preconditions violation (N4861 [thread.sema.cnt]/8)");
 
+            // "happens after release" ordering is provided by this CAS, so loads and waits can be relaxed
             if (_Counter.compare_exchange_weak(_Current, _Current - 1)) {
                 return;
             }
@@ -166,6 +167,7 @@ public:
                 "Invariant: counter >= 0, and counter <= max() "
                 "possibly caused by preconditions violation (N4861 [thread.sema.cnt]/8)");
 
+            // "happens after release" ordering is provided by this CAS, so loads and waits can be relaxed
             if (_Counter.compare_exchange_weak(_Current, _Current - 1)) {
                 return true;
             }
@@ -188,6 +190,7 @@ public:
                 "Invariant: counter >= 0, and counter <= max() "
                 "possibly caused by preconditions violation (N4861 [thread.sema.cnt]/8)");
 
+            // "happens after release" ordering is provided by this CAS, so loads and waits can be relaxed
             if (_Counter.compare_exchange_weak(_Current, _Current - 1)) {
                 return true;
             }
@@ -228,6 +231,7 @@ public:
 
     void acquire() noexcept /* strengthened */ {
         for (;;) {
+            // "happens after release" ordering is provided by this exchange, so loads and waits can be relaxed
             // TRANSITION, GH-1133: should be memory_order_acquire
             unsigned char _Prev = _Counter.exchange(0);
             if (_Prev == 1) {
@@ -251,6 +255,7 @@ public:
     _NODISCARD bool try_acquire_for(const chrono::duration<_Rep, _Period>& _Rel_time) {
         auto _Deadline = _Semaphore_deadline(_Rel_time);
         for (;;) {
+            // "happens after release" ordering is provided by this exchange, so loads and waits can be relaxed
             // TRANSITION, GH-1133: should be memory_order_acquire
             unsigned char _Prev = _Counter.exchange(0);
             if (_Prev == 1) {
@@ -269,6 +274,7 @@ public:
     template <class _Clock, class _Duration>
     _NODISCARD bool try_acquire_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
         for (;;) {
+            // "happens after release" ordering is provided by this exchange, so loads and waits can be relaxed
             // TRANSITION, GH-1133: should be memory_order_acquire
             unsigned char _Prev = _Counter.exchange(0);
             if (_Prev == 1) {
