@@ -1267,58 +1267,109 @@ struct get_nth_fn {
 inline constexpr get_nth_fn<0> get_first;
 inline constexpr get_nth_fn<1> get_second;
 
-template <class Rng>
-concept CanSize = requires(Rng& r) {
-    ranges::size(r);
+template <class R>
+concept CanBegin = requires(R&& r) {
+    ranges::begin(std::forward<R>(r));
 };
-template <class Rng>
-concept CanMemberSize = requires(Rng& r) {
-    r.size();
-};
-
-template <class Rng>
-concept CanMemberData = requires(Rng& r) {
-    r.data();
+template <class R>
+concept CanMemberBegin = requires(R&& r) {
+    std::forward<R>(r).begin();
 };
 
-template <class Rng>
-concept CanBegin = requires(Rng& r) {
-    ranges::begin(r);
+template <class R>
+concept CanEnd = requires(R&& r) {
+    ranges::end(std::forward<R>(r));
 };
-template <class Rng>
-concept CanMemberBegin = requires(Rng& r) {
-    r.begin();
+template <class R>
+concept CanMemberEnd = requires(R&& r) {
+    std::forward<R>(r).end();
 };
 
-template <class Rng>
-concept CanEnd = requires(Rng& r) {
-    ranges::end(r);
+template <class R>
+concept CanCBegin = requires(R&& r) {
+    ranges::cbegin(std::forward<R>(r));
 };
-template <class Rng>
-concept CanMemberEnd = requires(Rng& r) {
-    r.end();
+template <class R>
+concept CanCEnd = requires(R&& r) {
+    ranges::cend(std::forward<R>(r));
+};
+
+template <class R>
+concept CanRBegin = requires(R&& r) {
+    ranges::rbegin(std::forward<R>(r));
+};
+template <class R>
+concept CanREnd = requires(R&& r) {
+    ranges::rend(std::forward<R>(r));
+};
+
+template <class R>
+concept CanCRBegin = requires(R&& r) {
+    ranges::crbegin(std::forward<R>(r));
+};
+template <class R>
+concept CanCREnd = requires(R&& r) {
+    ranges::crend(std::forward<R>(r));
+};
+
+template <class R>
+concept CanEmpty = requires(R&& r) {
+    ranges::empty(std::forward<R>(r));
+};
+
+template <class R>
+concept CanSize = requires(R&& r) {
+    ranges::size(std::forward<R>(r));
+};
+template <class R>
+concept CanMemberSize = requires(R&& r) {
+    std::forward<R>(r).size();
+};
+
+template <class R>
+concept CanSSize = requires(R&& r) {
+    ranges::ssize(std::forward<R>(r));
+};
+
+template <class R>
+concept CanData = requires(R&& r) {
+    ranges::data(std::forward<R>(r));
+};
+template <class R>
+concept CanMemberData = requires(R&& r) {
+    std::forward<R>(r).data();
+};
+
+template <class R>
+concept CanCData = requires(R&& r) {
+    ranges::cdata(std::forward<R>(r));
 };
 
 template <class T>
 concept CanMemberBase = requires(T&& t) {
-    static_cast<T&&>(t).base();
+    std::forward<T>(t).base();
 };
 
-template <class Rng>
-concept CanMemberEmpty = requires(Rng& r) {
-    r.empty();
+template <class R>
+concept CanMemberEmpty = requires(R&& r) {
+    std::forward<R>(r).empty();
 };
 
-template <class Rng>
-concept CanMemberFront = requires(Rng& r) {
-    r.front();
+template <class R>
+concept CanMemberFront = requires(R&& r) {
+    std::forward<R>(r).front();
 };
-template <class Rng>
-concept CanMemberBack = requires(Rng& r) {
-    r.back();
+template <class R>
+concept CanMemberBack = requires(R&& r) {
+    std::forward<R>(r).back();
 };
 
-template <class Rng>
-concept CanIndex = requires(Rng& r, const ranges::range_difference_t<Rng> i) {
-    r[i];
+template <class R>
+concept CanIndex = requires(R&& r, const ranges::range_difference_t<R> i) {
+    std::forward<R>(r)[i];
+};
+
+template <class R>
+concept CanBool = requires(R&& r) {
+    std::forward<R>(r) ? true : false;
 };
