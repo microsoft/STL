@@ -7,8 +7,9 @@
 #include <deque>
 #include <stddef.h>
 #include <string>
-#include <test_death.hpp>
 #include <vector>
+
+#include <test_death.hpp>
 
 using namespace std;
 

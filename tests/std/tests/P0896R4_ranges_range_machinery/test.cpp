@@ -26,15 +26,10 @@
 #include <valarray>
 #include <vector>
 
-#define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
-
-namespace ranges = std::ranges;
+#include <range_algorithm_support.hpp>
 
 // Note that many tests herein assume:
 STATIC_ASSERT(std::same_as<std::make_unsigned_t<std::ptrdiff_t>, std::size_t>);
-
-template <class>
-constexpr bool always_false = false;
 
 template <class T>
 concept Decayed = std::same_as<std::decay_t<T>, T>;
@@ -65,6 +60,9 @@ concept CanEmpty = requires(R&& r) { ranges::empty(std::forward<R>(r)); };
 
 template <class R>
 concept CanSize = requires(R&& r) { ranges::size(std::forward<R>(r)); };
+
+template <class R>
+concept CanSSize = requires(R&& r) { ranges::ssize(std::forward<R>(r)); };
 
 template <class R>
 concept CanSizeType = requires { typename ranges::range_size_t<R>; };
@@ -121,6 +119,7 @@ STATIC_ASSERT(test_cpo(ranges::rend));
 STATIC_ASSERT(test_cpo(ranges::crbegin));
 STATIC_ASSERT(test_cpo(ranges::crend));
 STATIC_ASSERT(test_cpo(ranges::size));
+STATIC_ASSERT(test_cpo(ranges::ssize));
 STATIC_ASSERT(test_cpo(ranges::empty));
 STATIC_ASSERT(test_cpo(ranges::data));
 STATIC_ASSERT(test_cpo(ranges::cdata));
@@ -141,6 +140,7 @@ void test_cpo_ambiguity() {
     (void) crbegin(vri);
     (void) crend(vri);
     (void) size(vri);
+    (void) ssize(vri);
     (void) empty(vri);
     (void) data(vri);
     (void) cdata(vri);
@@ -320,15 +320,19 @@ constexpr bool test_empty() {
 
 template <class Range, class Size = invalid_type>
 constexpr bool test_size() {
-    // Validate ranges::size and ranges::sized_range
+    // Validate ranges::size, ranges::sized_range, and ranges::ssize
     STATIC_ASSERT(!is_valid<Size> || std::integral<Size>);
 
     STATIC_ASSERT(CanSize<Range> == is_valid<Size>);
+    STATIC_ASSERT(CanSSize<Range> == is_valid<Size>);
     STATIC_ASSERT(CanSizeType<Range> == is_valid<Size>);
     STATIC_ASSERT(ranges::sized_range<Range> == is_valid<Size>);
     if constexpr (is_valid<Size>) {
         STATIC_ASSERT(std::same_as<decltype(ranges::size(std::declval<Range>())), Size>);
         STATIC_ASSERT(std::same_as<ranges::range_size_t<Range>, Size>);
+
+        using SignedSize = std::common_type_t<std::ptrdiff_t, std::make_signed_t<Size>>;
+        STATIC_ASSERT(std::same_as<decltype(ranges::ssize(std::declval<Range>())), SignedSize>);
 
         STATIC_ASSERT(CanEmpty<Range>);
     }
@@ -1294,91 +1298,93 @@ constexpr bool test_array_ish() { // An actual runtime test!
 }
 
 namespace nothrow_testing {
+    // clang-format off
     template <unsigned int I, bool NoThrow>
     struct range {
         int elements_[3];
 
         // begin/end are members for I == 0, and non-members otherwise
-        int* begin() noexcept(NoThrow) requires(I == 0) {
+        int* begin() noexcept(NoThrow) requires (I == 0) {
             return elements_;
         }
-        int* end() noexcept(NoThrow) requires(I == 0) {
+        int* end() noexcept(NoThrow) requires (I == 0) {
             return elements_ + 3;
         }
-        int const* begin() const noexcept(NoThrow) requires(I == 0) {
+        int const* begin() const noexcept(NoThrow) requires (I == 0) {
             return elements_;
         }
-        int const* end() const noexcept(NoThrow) requires(I == 0) {
+        int const* end() const noexcept(NoThrow) requires (I == 0) {
             return elements_ + 3;
         }
 
         // rbegin/rend are members for I == 0, not provided for I == 1, and non-members otherwise
         // (Not providing operations allows us to test the library-provided fallback behavior)
-        int* rbegin() noexcept(NoThrow) requires(I == 0) {
+        int* rbegin() noexcept(NoThrow) requires (I == 0) {
             return elements_;
         }
-        int* rend() noexcept(NoThrow) requires(I == 0) {
+        int* rend() noexcept(NoThrow) requires (I == 0) {
             return elements_ + 3;
         }
-        int const* rbegin() const noexcept(NoThrow) requires(I == 0) {
+        int const* rbegin() const noexcept(NoThrow) requires (I == 0) {
             return elements_;
         }
-        int const* rend() const noexcept(NoThrow) requires(I == 0) {
+        int const* rend() const noexcept(NoThrow) requires (I == 0) {
             return elements_ + 3;
         }
 
         // empty is not provided when I == 1
-        bool empty() const noexcept(NoThrow) requires(I != 1) {
+        bool empty() const noexcept(NoThrow) requires (I != 1) {
             return false;
         }
 
         // data is not provided when I == 2
-        int* data() noexcept(NoThrow) requires(I != 2) {
+        int* data() noexcept(NoThrow) requires (I != 2) {
             return elements_;
         }
-        int const* data() const noexcept(NoThrow) requires(I != 2) {
+        int const* data() const noexcept(NoThrow) requires (I != 2) {
             return elements_;
         }
 
         // size is not provided when I == 3
-        std::size_t size() const noexcept(NoThrow) requires(I != 3) {
+        std::size_t size() const noexcept(NoThrow) requires (I != 3) {
             return 3;
         }
     };
 
     template <unsigned int I, bool NoThrow>
-    int* begin(range<I, NoThrow>& a) noexcept(NoThrow) requires(I != 0) {
+    int* begin(range<I, NoThrow>& a) noexcept(NoThrow) requires (I != 0) {
         return a.elements_;
     }
     template <unsigned int I, bool NoThrow>
-    int* end(range<I, NoThrow>& a) noexcept(NoThrow) requires(I != 0) {
+    int* end(range<I, NoThrow>& a) noexcept(NoThrow) requires (I != 0) {
         return a.elements_ + 3;
     }
     template <unsigned int I, bool NoThrow>
-    int const* begin(range<I, NoThrow> const& a) noexcept(NoThrow) requires(I != 0) {
+    int const* begin(range<I, NoThrow> const& a) noexcept(NoThrow) requires (I != 0) {
         return a.elements_;
     }
     template <unsigned int I, bool NoThrow>
-    int const* end(range<I, NoThrow> const& a) noexcept(NoThrow) requires(I != 0) {
+    int const* end(range<I, NoThrow> const& a) noexcept(NoThrow) requires (I != 0) {
         return a.elements_ + 3;
     }
 
     template <unsigned int I, bool NoThrow>
-    int* rbegin(range<I, NoThrow>& a) noexcept(NoThrow) requires(I > 2) {
+    int* rbegin(range<I, NoThrow>& a) noexcept(NoThrow) requires (I > 2) {
         return a.elements_;
     }
     template <unsigned int I, bool NoThrow>
-    int* rend(range<I, NoThrow>& a) noexcept(NoThrow) requires(I > 2) {
+    int* rend(range<I, NoThrow>& a) noexcept(NoThrow) requires (I > 2) {
         return a.elements_ + 3;
     }
     template <unsigned int I, bool NoThrow>
-    int const* rbegin(range<I, NoThrow> const& a) noexcept(NoThrow) requires(I > 2) {
+    int const* rbegin(range<I, NoThrow> const& a) noexcept(NoThrow) requires (I > 2) {
         return a.elements_;
     }
     template <unsigned int I, bool NoThrow>
-    int const* rend(range<I, NoThrow> const& a) noexcept(NoThrow) requires(I > 2) {
+    int const* rend(range<I, NoThrow> const& a) noexcept(NoThrow) requires (I > 2) {
         return a.elements_ + 3;
     }
+    // clang-format on
 
     template <class T, bool Nothrow>
     constexpr bool test() {
@@ -1615,6 +1621,9 @@ namespace exhaustive_size_and_view_test {
         STATIC_ASSERT(ranges::sized_range<Rng> == is_valid<Size>);
         if constexpr (is_valid<Size>) {
             STATIC_ASSERT(std::same_as<decltype(ranges::size(std::declval<Rng>())), Size>);
+
+            using SignedSize = std::common_type_t<std::ptrdiff_t, std::make_signed_t<Size>>;
+            STATIC_ASSERT(std::same_as<decltype(ranges::ssize(std::declval<Rng>())), SignedSize>);
         }
 
         STATIC_ASSERT(ranges::view<Rng> == IsView);
@@ -1838,6 +1847,57 @@ namespace poison_pill_test {
     STATIC_ASSERT(!CanSize<some_type const&>);
 } // namespace poison_pill_test
 
+namespace unwrapped_begin_end {
+    // Validate the iterator-unwrapping range access CPOs ranges::_Ubegin and ranges::_Uend
+    using test::CanCompare, test::CanDifference, test::Common, test::ProxyRef, test::Sized, test::IsWrapped;
+
+    template <IsWrapped Wrapped>
+    struct range {
+        using I =
+            test::iterator<std::forward_iterator_tag, int, CanDifference::no, CanCompare::yes, ProxyRef::yes, Wrapped>;
+        using S = test::sentinel<int, Wrapped>;
+
+        I begin() const;
+        S end() const;
+    };
+
+    struct with_unchecked : range<IsWrapped::yes> {
+        bool begin_called_ = false;
+        bool end_called_   = false;
+
+        [[nodiscard]] constexpr range<IsWrapped::no>::I _Unchecked_begin() {
+            begin_called_ = true;
+            return {};
+        }
+        [[nodiscard]] constexpr range<IsWrapped::no>::S _Unchecked_end() {
+            end_called_ = true;
+            return {};
+        }
+    };
+
+    constexpr bool test() {
+        using std::same_as, ranges::_Ubegin, ranges::_Uend;
+
+        range<IsWrapped::no> not_wrapped;
+        STATIC_ASSERT(same_as<decltype(_Ubegin(not_wrapped)), range<IsWrapped::no>::I>);
+        STATIC_ASSERT(same_as<decltype(_Uend(not_wrapped)), range<IsWrapped::no>::S>);
+
+        range<IsWrapped::yes> wrapped;
+        STATIC_ASSERT(same_as<decltype(_Ubegin(wrapped)), range<IsWrapped::no>::I>);
+        STATIC_ASSERT(same_as<decltype(_Uend(wrapped)), range<IsWrapped::no>::S>);
+
+        with_unchecked uncheckable;
+        STATIC_ASSERT(same_as<decltype(_Ubegin(uncheckable)), range<IsWrapped::no>::I>);
+        STATIC_ASSERT(same_as<decltype(_Uend(uncheckable)), range<IsWrapped::no>::S>);
+        (void) _Ubegin(uncheckable);
+        assert(uncheckable.begin_called_);
+        (void) _Uend(uncheckable);
+        assert(uncheckable.end_called_);
+
+        return true;
+    }
+} // namespace unwrapped_begin_end
+
 int main() {
     // Validate conditional constexpr
 #ifdef __clang__ // TRANSITION, VSO-977008
@@ -1854,4 +1914,7 @@ int main() {
 
     STATIC_ASSERT(complicated_algorithm_test());
     complicated_algorithm_test();
+
+    STATIC_ASSERT(unwrapped_begin_end::test());
+    unwrapped_begin_end::test();
 }

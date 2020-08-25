@@ -305,13 +305,15 @@ struct destructible_archetype<0> {
 };
 inline constexpr std::size_t destructible_archetype_max = 1;
 
-#define SEMIREGULAR_OPS(prefix)                                                \
-    prefix##_archetype() requires(I != 1);                                     \
-    prefix##_archetype(prefix##_archetype const&) requires(I != 2);            \
-    prefix##_archetype(prefix##_archetype&&) requires(I == 3) = delete;        \
-                                                                               \
-    prefix##_archetype& operator=(prefix##_archetype const&) requires(I != 4); \
-    prefix##_archetype& operator=(prefix##_archetype&&) requires(I == 5) = delete
+// clang-format off
+#define SEMIREGULAR_OPS(prefix)                                                 \
+    prefix##_archetype() requires (I != 1);                                     \
+    prefix##_archetype(prefix##_archetype const&) requires (I != 2);            \
+    prefix##_archetype(prefix##_archetype&&) requires (I == 3) = delete;        \
+                                                                                \
+    prefix##_archetype& operator=(prefix##_archetype const&) requires (I != 4); \
+    prefix##_archetype& operator=(prefix##_archetype&&) requires (I == 5) = delete
+// clang-format on
 
 template <std::size_t I>
 struct semiregular_archetype : destructible_archetype<I> {
@@ -337,22 +339,26 @@ struct weakly_incrementable_archetype_dt<8> {
 
 template <std::size_t I, class Derived, class Post = void>
 struct increment_ops {
-    void operator++() requires(I == 9);
-    Derived operator++() requires(I == 10);
-    Derived& operator++() requires(I < 9 || I >= 11);
-    Post operator++(int) requires(I != 11);
+    // clang-format off
+    void operator++() requires (I == 9);
+    Derived operator++() requires (I == 10);
+    Derived& operator++() requires (I < 9 || I >= 11);
+    Post operator++(int) requires (I != 11);
+    // clang-format on
 };
 
 template <std::size_t I>
 struct weakly_incrementable_archetype : destructible_archetype<I>,
                                         weakly_incrementable_archetype_dt<I>,
                                         increment_ops<I, weakly_incrementable_archetype<I>, void> {
-    weakly_incrementable_archetype() requires(I != 1) {}
-    weakly_incrementable_archetype(weakly_incrementable_archetype const&)                      = delete;
-    weakly_incrementable_archetype(weakly_incrementable_archetype&&) requires(I < 2 || I >= 4) = default;
+    // clang-format off
+    weakly_incrementable_archetype() requires (I != 1) {}
+    weakly_incrementable_archetype(weakly_incrementable_archetype const&)                       = delete;
+    weakly_incrementable_archetype(weakly_incrementable_archetype&&) requires (I < 2 || I >= 4) = default;
 
     weakly_incrementable_archetype& operator=(weakly_incrementable_archetype const&) = delete;
-    weakly_incrementable_archetype& operator=(weakly_incrementable_archetype&&) requires(I < 4 || I >= 6) = default;
+    weakly_incrementable_archetype& operator=(weakly_incrementable_archetype&&) requires (I < 4 || I >= 6) = default;
+    // clang-format on
 };
 
 inline constexpr std::size_t weakly_incrementable_archetype_max = 12;
@@ -363,9 +369,11 @@ struct incrementable_archetype : weakly_incrementable_archetype<I>,
     SEMIREGULAR_OPS(incrementable);
     using increment_ops<I, incrementable_archetype<I>, incrementable_archetype<I>>::operator++;
 
-    bool operator==(incrementable_archetype const&) const requires(I != weakly_incrementable_archetype_max);
+    // clang-format off
+    bool operator==(incrementable_archetype const&) const requires (I != weakly_incrementable_archetype_max);
     bool operator!=(incrementable_archetype const&) const
-        requires(I == weakly_incrementable_archetype_max + 1) = delete;
+        requires (I == weakly_incrementable_archetype_max + 1) = delete;
+    // clang-format on
 };
 
 inline constexpr std::size_t incrementable_archetype_max = 14;
@@ -374,11 +382,13 @@ template <std::size_t I>
 struct iterator_archetype : weakly_incrementable_archetype<I> {
     SEMIREGULAR_OPS(iterator);
 
-    iterator_archetype& operator++() requires(I > 10);
-    void operator++(int) requires(I != 11);
+    // clang-format off
+    iterator_archetype& operator++() requires (I > 10);
+    void operator++(int) requires (I != 11);
 
-    void operator*() requires(I == 12);
-    int operator*() requires(I != 12);
+    void operator*() requires (I == 12);
+    int operator*() requires (I != 12);
+    // clang-format on
 };
 
 inline constexpr std::size_t iterator_archetype_max = 13;
@@ -432,12 +442,14 @@ struct output_iterator_archetype : iterator_archetype<I>,
     SEMIREGULAR_OPS(output_iterator);
     using increment_ops<I, output_iterator_archetype<I>, output_iterator_archetype<I>&>::operator++;
 
+    // clang-format off
     // dereference ops from iterator_archetype
-    void operator*() requires(I == 12);
-    output_iterator_archetype& operator*() requires(I != 12);
+    void operator*() requires (I == 12);
+    output_iterator_archetype& operator*() requires (I != 12);
 
     // indirectly_writable requirements
-    void operator=(int) requires(I != 13);
+    void operator=(int) requires (I != 13);
+    // clang-format on
 };
 
 inline constexpr std::size_t output_iterator_archetype_max = 14;
@@ -470,9 +482,11 @@ struct input_iterator_archetype : iterator_archetype<I>,
     SEMIREGULAR_OPS(input_iterator);
     using increment_ops<I, input_iterator_archetype<I>, void>::operator++;
 
+    // clang-format off
     // dereference ops from iterator_archetype
-    void operator*() const requires(I == 12);
-    int& operator*() const requires(I != 12);
+    void operator*() const requires (I == 12);
+    int& operator*() const requires (I != 12);
+    // clang-format on
 };
 
 inline constexpr std::size_t input_iterator_archetype_max = 17;
@@ -483,18 +497,22 @@ struct forward_iterator_archetype : input_iterator_archetype<I>,
     SEMIREGULAR_OPS(forward_iterator);
     using increment_ops<I, forward_iterator_archetype<I>, forward_iterator_archetype<I>>::operator++;
 
-    bool operator==(forward_iterator_archetype const&) const requires(I != input_iterator_archetype_max);
-    bool operator!=(forward_iterator_archetype const&) const requires(I == input_iterator_archetype_max + 1) = delete;
+    // clang-format off
+    bool operator==(forward_iterator_archetype const&) const requires (I != input_iterator_archetype_max);
+    bool operator!=(forward_iterator_archetype const&) const requires (I == input_iterator_archetype_max + 1) = delete;
+    // clang-format on
 };
 
 inline constexpr std::size_t forward_iterator_archetype_max = 19;
 
 template <std::size_t I, class Derived>
 struct decrement_ops {
-    void operator--() requires(I == 19);
-    Derived operator--() requires(I == 20);
-    Derived& operator--() requires(I < 19 || I >= 21);
-    Derived operator--(int) requires(I != 21);
+    // clang-format off
+    void operator--() requires (I == 19);
+    Derived operator--() requires (I == 20);
+    Derived& operator--() requires (I < 19 || I >= 21);
+    Derived operator--(int) requires (I != 21);
+    // clang-format on
 };
 
 template <std::size_t I>
@@ -515,20 +533,22 @@ struct random_iterator_archetype : bidi_iterator_archetype<I>,
     using increment_ops<I, random_iterator_archetype<I>, random_iterator_archetype<I>>::operator++;
     using decrement_ops<I, random_iterator_archetype<I>>::operator--;
 
-    std::strong_ordering operator<=>(random_iterator_archetype const&) const requires(I != 22);
+    // clang-format off
+    std::strong_ordering operator<=>(random_iterator_archetype const&) const requires (I != 22);
 
-    int operator-(random_iterator_archetype const&) const requires(I != 6 && I != 23);
+    int operator-(random_iterator_archetype const&) const requires (I != 6 && I != 23);
 
-    random_iterator_archetype& operator+=(int) requires(I != 24);
-    random_iterator_archetype operator+(int) const requires(I != 25);
-    friend random_iterator_archetype operator+(int, random_iterator_archetype const&) requires(I != 26) {}
+    random_iterator_archetype& operator+=(int) requires (I != 24);
+    random_iterator_archetype operator+(int) const requires (I != 25);
+    friend random_iterator_archetype operator+(int, random_iterator_archetype const&) requires (I != 26) {}
 
-    random_iterator_archetype& operator-=(int) requires(I != 27);
-    random_iterator_archetype operator-(int) const requires(I != 28);
+    random_iterator_archetype& operator-=(int) requires (I != 27);
+    random_iterator_archetype operator-(int) const requires (I != 28);
 
-    void operator[](int) const requires(I == 29);
-    int operator[](int) const requires(I == 30);
-    int& operator[](int) const requires(I < 29 || I >= 31);
+    void operator[](int) const requires (I == 29);
+    int operator[](int) const requires (I == 30);
+    int& operator[](int) const requires (I < 29 || I >= 31);
+    // clang-format on
 };
 
 inline constexpr std::size_t random_iterator_archetype_max = 31;
@@ -561,14 +581,16 @@ struct contig_iterator_archetype : increment_ops<I, contig_iterator_archetype<I>
     using increment_ops<I, contig_iterator_archetype<I>, contig_iterator_archetype<I>>::operator++;
     using decrement_ops<I, contig_iterator_archetype<I>>::operator--;
 
-    int operator-(contig_iterator_archetype const&) const requires(I != 6 && I != 23);
+    // clang-format off
+    int operator-(contig_iterator_archetype const&) const requires (I != 6 && I != 23);
 
-    contig_iterator_archetype& operator+=(int) requires(I != 24);
-    contig_iterator_archetype operator+(int) const requires(I != 25);
-    friend contig_iterator_archetype operator+(int, contig_iterator_archetype const&) requires(I != 26) {}
+    contig_iterator_archetype& operator+=(int) requires (I != 24);
+    contig_iterator_archetype operator+(int) const requires (I != 25);
+    friend contig_iterator_archetype operator+(int, contig_iterator_archetype const&) requires (I != 26) {}
 
-    contig_iterator_archetype& operator-=(int) requires(I != 27);
-    contig_iterator_archetype operator-(int) const requires(I != 28);
+    contig_iterator_archetype& operator-=(int) requires (I != 27);
+    contig_iterator_archetype operator-(int) const requires (I != 28);
+    // clang-format on
 };
 
 template <std::size_t I>
@@ -796,7 +818,7 @@ namespace iterator_traits_test {
     };
 
     // clang-format off
-    template<class T>
+    template <class T>
     concept has_empty_traits = !(requires { typename iterator_traits<T>::iterator_concept; }
         || requires { typename iterator_traits<T>::iterator_category; }
         || requires { typename iterator_traits<T>::value_type; }
@@ -1151,7 +1173,7 @@ namespace iterator_cust_swap_test {
         STATIC_ASSERT(noexcept(ranges::iter_swap(&i0, &i1)));
         return true;
     }
-#ifdef __clang__ // TRANSITION, VSO-938163
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-938163
     STATIC_ASSERT(test());
 #endif // TRANSITION, VSO-938163
 
@@ -1245,11 +1267,28 @@ namespace iterator_cust_swap_test {
         // clang-format on
 
         constexpr bool test() {
-            int i0 = 42, i1 = 13;
-            S s0{i0}, s1{i1};
-            ranges::iter_swap(s0, s1);
-            assert(i0 == 13);
-            assert(i1 == 42);
+            {
+                int i0 = 42;
+                int i1 = 13;
+                S s0{i0};
+                S s1{i1};
+                ranges::iter_swap(s0, s1);
+                assert(i0 == 13);
+                assert(i1 == 42);
+            }
+
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-938163
+            if (!std::is_constant_evaluated())
+#endif // TRANSITION, VSO-938163
+            {
+                // Validate iter_swap bullet 3 to defend against regression of GH-1067 "ranges::iter_swap is broken"
+                int i  = 42;
+                long l = 13;
+                ranges::iter_swap(&i, &l);
+                assert(i == 13);
+                assert(l == 42);
+            }
+
             return true;
         }
         STATIC_ASSERT(test());
@@ -1700,7 +1739,7 @@ namespace unreachable_sentinel_test {
     STATIC_ASSERT(std::is_nothrow_move_assignable_v<unreachable_sentinel_t>);
 
     // clang-format off
-    template<class T>
+    template <class T>
     concept Comparable = requires(T const& t) {
         { t == unreachable_sentinel } -> std::same_as<bool>;
         { t != unreachable_sentinel } -> std::same_as<bool>;
@@ -1873,11 +1912,13 @@ namespace iter_ops {
             return *this;
         }
 
-        constexpr trace_iterator& operator=(default_sentinel_t) requires(Assign == assign::yes) {
+        // clang-format off
+        constexpr trace_iterator& operator=(default_sentinel_t) requires (Assign == assign::yes) {
             ++trace_->assignments_;
             pos_ = sentinel_position;
             return *this;
         }
+        // clang-format on
 
         int operator*() const;
 
@@ -3224,6 +3265,81 @@ namespace move_iterator_test {
     }
     STATIC_ASSERT(test());
 } // namespace move_iterator_test
+
+namespace counted_iterator_test {
+    using std::bidirectional_iterator_tag, std::default_sentinel_t, std::forward_iterator_tag, std::input_iterator_tag,
+        std::iterator_traits, std::counted_iterator, std::random_access_iterator_tag, std::same_as, std::string,
+        std::three_way_comparable, std::three_way_comparable_with;
+
+    // Validate the iterator_concept/iterator_category metaprogramming
+    STATIC_ASSERT(same_as<iterator_traits<counted_iterator<simple_contiguous_iter<>>>::iterator_category,
+        random_access_iterator_tag>);
+    STATIC_ASSERT(same_as<iterator_traits<counted_iterator<simple_random_iter<>>>::iterator_category,
+        random_access_iterator_tag>);
+    STATIC_ASSERT(
+        same_as<iterator_traits<counted_iterator<simple_bidi_iter<>>>::iterator_category, bidirectional_iterator_tag>);
+    STATIC_ASSERT(
+        same_as<iterator_traits<counted_iterator<simple_forward_iter<>>>::iterator_category, forward_iterator_tag>);
+    STATIC_ASSERT(same_as<iterator_traits<counted_iterator<simple_input_iter>>::iterator_category, input_iterator_tag>);
+
+    // Validate that postincrement returns counted_iterator<simple_input_iter> for single-pass adaptees
+    STATIC_ASSERT(same_as<decltype(counted_iterator<simple_input_iter> {} ++), counted_iterator<simple_input_iter>>);
+    STATIC_ASSERT(
+        same_as<decltype(counted_iterator<simple_forward_iter<>> {} ++), counted_iterator<simple_forward_iter<>>>);
+
+    // Validate comparison constraints
+    STATIC_ASSERT(has_eq<counted_iterator<simple_input_iter>>);
+    STATIC_ASSERT(has_neq<counted_iterator<simple_input_iter>>);
+    STATIC_ASSERT(has_less<counted_iterator<simple_input_iter>>);
+    STATIC_ASSERT(has_greater<counted_iterator<simple_input_iter>>);
+    STATIC_ASSERT(has_less_eq<counted_iterator<simple_input_iter>>);
+    STATIC_ASSERT(has_greater_eq<counted_iterator<simple_input_iter>>);
+    STATIC_ASSERT(three_way_comparable<counted_iterator<simple_input_iter>>);
+
+    STATIC_ASSERT(has_eq<counted_iterator<simple_forward_iter<>>>);
+    STATIC_ASSERT(has_neq<counted_iterator<simple_forward_iter<>>>);
+    STATIC_ASSERT(has_less<counted_iterator<simple_forward_iter<>>>);
+    STATIC_ASSERT(has_greater<counted_iterator<simple_forward_iter<>>>);
+    STATIC_ASSERT(has_less_eq<counted_iterator<simple_forward_iter<>>>);
+    STATIC_ASSERT(has_greater_eq<counted_iterator<simple_forward_iter<>>>);
+    STATIC_ASSERT(three_way_comparable<counted_iterator<simple_forward_iter<>>>);
+
+    STATIC_ASSERT(has_eq<counted_iterator<simple_random_iter<>>>);
+    STATIC_ASSERT(has_neq<counted_iterator<simple_random_iter<>>>);
+    STATIC_ASSERT(has_less<counted_iterator<simple_random_iter<>>>);
+    STATIC_ASSERT(has_greater<counted_iterator<simple_random_iter<>>>);
+    STATIC_ASSERT(has_less_eq<counted_iterator<simple_random_iter<>>>);
+    STATIC_ASSERT(has_greater_eq<counted_iterator<simple_random_iter<>>>);
+    STATIC_ASSERT(three_way_comparable<counted_iterator<simple_random_iter<>>, std::strong_ordering>);
+
+    STATIC_ASSERT(has_eq<counted_iterator<int*>, counted_iterator<int const*>>);
+    STATIC_ASSERT(has_neq<counted_iterator<int*>, counted_iterator<int const*>>);
+    STATIC_ASSERT(has_less<counted_iterator<int*>, counted_iterator<int const*>>);
+    STATIC_ASSERT(has_greater<counted_iterator<int*>, counted_iterator<int const*>>);
+    STATIC_ASSERT(has_less_eq<counted_iterator<int*>, counted_iterator<int const*>>);
+    STATIC_ASSERT(has_greater_eq<counted_iterator<int*>, counted_iterator<int const*>>);
+    STATIC_ASSERT(
+        three_way_comparable_with<counted_iterator<int*>, counted_iterator<int const*>, std::strong_ordering>);
+
+    STATIC_ASSERT(!has_eq<counted_iterator<int*>, counted_iterator<string*>>);
+    STATIC_ASSERT(!has_neq<counted_iterator<int*>, counted_iterator<string*>>);
+    STATIC_ASSERT(!has_less<counted_iterator<int*>, counted_iterator<string*>>);
+    STATIC_ASSERT(!has_greater<counted_iterator<int*>, counted_iterator<string*>>);
+    STATIC_ASSERT(!has_less_eq<counted_iterator<int*>, counted_iterator<string*>>);
+    STATIC_ASSERT(!has_greater_eq<counted_iterator<int*>, counted_iterator<string*>>);
+    STATIC_ASSERT(!three_way_comparable_with<counted_iterator<int*>, counted_iterator<string*>>);
+
+    // Validate default_sentinel_t comparisons and difference
+    STATIC_ASSERT(has_eq<counted_iterator<simple_input_iter>, default_sentinel_t>);
+    STATIC_ASSERT(has_neq<counted_iterator<simple_input_iter>, default_sentinel_t>);
+    STATIC_ASSERT(!has_less<counted_iterator<simple_input_iter>, default_sentinel_t>);
+    STATIC_ASSERT(!has_greater<counted_iterator<simple_input_iter>, default_sentinel_t>);
+    STATIC_ASSERT(!has_less_eq<counted_iterator<simple_input_iter>, default_sentinel_t>);
+    STATIC_ASSERT(!has_greater_eq<counted_iterator<simple_input_iter>, default_sentinel_t>);
+    STATIC_ASSERT(!three_way_comparable_with<counted_iterator<simple_input_iter>, default_sentinel_t>);
+    STATIC_ASSERT(has_difference<counted_iterator<simple_input_iter>, default_sentinel_t>);
+    STATIC_ASSERT(has_difference<default_sentinel_t, counted_iterator<simple_input_iter>>);
+} // namespace counted_iterator_test
 
 namespace lwg3420 {
     // Validate that we can ask for the iterator_traits of a type with no operator* for which checking copyability

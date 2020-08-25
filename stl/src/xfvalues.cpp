@@ -9,7 +9,7 @@
 #endif
 #endif
 
-#include "xmath.h"
+#include "xmath.hpp"
 // macros
 #define NBITS (16 + _FOFF)
 
@@ -28,6 +28,6 @@ extern /* const */ _Dconst _FNan    = {INIT((_FMAX << _FOFF) | (1 << (_FOFF - 1)
 extern /* const */ _Dconst _FSnan   = {INIT2(_FMAX << _FOFF, 1)};
 extern const _Dconst _FRteps        = {INIT((_FBIAS - NBITS / 2) << _FOFF)};
 
-extern const float _FXbig = (NBITS + 1) * 347L / 1000;
+extern const float _FXbig = (NBITS + 2) * 0.347f;
 
 _END_EXTERN_C_UNLESS_PURE

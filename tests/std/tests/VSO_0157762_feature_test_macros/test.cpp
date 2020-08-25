@@ -56,10 +56,10 @@ STATIC_ASSERT(__cpp_lib_apply == 201603L);
 #if _HAS_CXX20
 #ifndef __cpp_lib_array_constexpr
 #error __cpp_lib_array_constexpr is not defined
-#elif __cpp_lib_array_constexpr != 201806L
-#error __cpp_lib_array_constexpr is not 201806L
+#elif __cpp_lib_array_constexpr != 201811L
+#error __cpp_lib_array_constexpr is not 201811L
 #else
-STATIC_ASSERT(__cpp_lib_array_constexpr == 201806L);
+STATIC_ASSERT(__cpp_lib_array_constexpr == 201811L);
 #endif
 #elif _HAS_CXX17
 #ifndef __cpp_lib_array_constexpr
@@ -140,6 +140,20 @@ STATIC_ASSERT(__cpp_lib_atomic_lock_free_type_aliases == 201907L);
 #endif
 
 #if _HAS_CXX20
+#ifndef __cpp_lib_atomic_ref
+#error __cpp_lib_atomic_ref is not defined
+#elif __cpp_lib_atomic_ref != 201806L
+#error __cpp_lib_atomic_ref is not 201806L
+#else
+STATIC_ASSERT(__cpp_lib_atomic_ref == 201806L);
+#endif
+#else
+#ifdef __cpp_lib_atomic_ref
+#error __cpp_lib_atomic_ref is defined
+#endif
+#endif
+
+#if _HAS_CXX20
 #ifndef __cpp_lib_atomic_shared_ptr
 #error __cpp_lib_atomic_shared_ptr is not defined
 #elif __cpp_lib_atomic_shared_ptr != 201711L
@@ -159,6 +173,20 @@ STATIC_ASSERT(__cpp_lib_atomic_shared_ptr == 201711L);
 #error __cpp_lib_atomic_value_initialization is not 201911L
 #else
 STATIC_ASSERT(__cpp_lib_atomic_value_initialization == 201911L);
+#endif
+
+#if _HAS_CXX20
+#ifndef __cpp_lib_atomic_wait
+#error __cpp_lib_atomic_wait is not defined
+#elif __cpp_lib_atomic_wait != 201907L
+#error __cpp_lib_atomic_wait is not 201907L
+#else
+STATIC_ASSERT(__cpp_lib_atomic_wait == 201907L);
+#endif
+#else
+#ifdef __cpp_lib_atomic_wait
+#error __cpp_lib_atomic_wait is defined
+#endif
 #endif
 
 #if _HAS_CXX20
@@ -189,7 +217,7 @@ STATIC_ASSERT(__cpp_lib_bit_cast == 201806L);
 #endif
 #endif
 
-#if _HAS_CXX20 && defined(__clang__) // TRANSITION, VSO-1020212
+#if _HAS_CXX20
 #ifndef __cpp_lib_bitops
 #error __cpp_lib_bitops is not defined
 #elif __cpp_lib_bitops != 201907L
@@ -313,7 +341,7 @@ STATIC_ASSERT(__cpp_lib_clamp == 201603L);
 STATIC_ASSERT(__cpp_lib_complex_udls == 201309L);
 #endif
 
-#if _HAS_CXX20 && defined(__cpp_concepts)
+#if _HAS_CXX20 && !defined(__EDG__) // TRANSITION, EDG concepts support
 #ifndef __cpp_lib_concepts
 #error __cpp_lib_concepts is not defined
 #elif __cpp_lib_concepts != 201907L
@@ -356,6 +384,34 @@ STATIC_ASSERT(__cpp_lib_constexpr_complex == 201711L);
 #endif
 
 #if _HAS_CXX20
+#ifndef __cpp_lib_constexpr_functional
+#error __cpp_lib_constexpr_functional is not defined
+#elif __cpp_lib_constexpr_functional != 201907L
+#error __cpp_lib_constexpr_functional is not 201907L
+#else
+STATIC_ASSERT(__cpp_lib_constexpr_functional == 201907L);
+#endif
+#else
+#ifdef __cpp_lib_constexpr_functional
+#error __cpp_lib_constexpr_functional is defined
+#endif
+#endif
+
+#if _HAS_CXX20
+#ifndef __cpp_lib_constexpr_iterator
+#error __cpp_lib_constexpr_iterator is not defined
+#elif __cpp_lib_constexpr_iterator != 201811L
+#error __cpp_lib_constexpr_iterator is not 201811L
+#else
+STATIC_ASSERT(__cpp_lib_constexpr_iterator == 201811L);
+#endif
+#else
+#ifdef __cpp_lib_constexpr_iterator
+#error __cpp_lib_constexpr_iterator is defined
+#endif
+#endif
+
+#if _HAS_CXX20
 #ifndef __cpp_lib_constexpr_memory
 #error __cpp_lib_constexpr_memory is not defined
 #elif __cpp_lib_constexpr_memory != 201811L
@@ -383,7 +439,68 @@ STATIC_ASSERT(__cpp_lib_constexpr_numeric == 201911L);
 #endif
 #endif
 
-#if _HAS_CXX20 && defined(__cpp_impl_destroying_delete) // TRANSITION, EDG and VS 2019 16.7p1
+#if _HAS_CXX20
+#ifndef __cpp_lib_constexpr_string_view
+#error __cpp_lib_constexpr_string_view is not defined
+#elif __cpp_lib_constexpr_string_view != 201811L
+#error __cpp_lib_constexpr_string_view is not 201811L
+#else
+STATIC_ASSERT(__cpp_lib_constexpr_string_view == 201811L);
+#endif
+#else
+#ifdef __cpp_lib_constexpr_string_view
+#error __cpp_lib_constexpr_string_view is defined
+#endif
+#endif
+
+#if _HAS_CXX20
+#ifndef __cpp_lib_constexpr_tuple
+#error __cpp_lib_constexpr_tuple is not defined
+#elif __cpp_lib_constexpr_tuple != 201811L
+#error __cpp_lib_constexpr_tuple is not 201811L
+#else
+STATIC_ASSERT(__cpp_lib_constexpr_tuple == 201811L);
+#endif
+#else
+#ifdef __cpp_lib_constexpr_tuple
+#error __cpp_lib_constexpr_tuple is defined
+#endif
+#endif
+
+#if _HAS_CXX20
+#ifndef __cpp_lib_constexpr_utility
+#error __cpp_lib_constexpr_utility is not defined
+#elif __cpp_lib_constexpr_utility != 201811L
+#error __cpp_lib_constexpr_utility is not 201811L
+#else
+STATIC_ASSERT(__cpp_lib_constexpr_utility == 201811L);
+#endif
+#else
+#ifdef __cpp_lib_constexpr_utility
+#error __cpp_lib_constexpr_utility is defined
+#endif
+#endif
+
+#if _HAS_CXX20 && defined(__cpp_impl_coroutine) // TRANSITION, Clang and EDG coroutine support
+#if __cpp_impl_coroutine >= 201902L
+#define ExpectedCppLibCoroutine 201902L
+#else
+#define ExpectedCppLibCoroutine 197000L // TRANSITION, VS 2019 16.8 Preview 4
+#endif
+#ifndef __cpp_lib_coroutine
+#error __cpp_lib_coroutine is not defined
+#elif __cpp_lib_coroutine != ExpectedCppLibCoroutine
+#error __cpp_lib_coroutine is not ExpectedCppLibCoroutine
+#else
+STATIC_ASSERT(__cpp_lib_coroutine == ExpectedCppLibCoroutine);
+#endif
+#else
+#ifdef __cpp_lib_coroutine
+#error __cpp_lib_coroutine is defined
+#endif
+#endif
+
+#if _HAS_CXX20
 #ifndef __cpp_lib_destroying_delete
 #error __cpp_lib_destroying_delete is not defined
 #elif __cpp_lib_destroying_delete != 201806L
@@ -441,7 +558,15 @@ STATIC_ASSERT(__cpp_lib_erase_if == 202002L);
 STATIC_ASSERT(__cpp_lib_exchange_function == 201304L);
 #endif
 
-#if _HAS_CXX17 && !defined(_M_CEE)
+#if _HAS_CXX20 && !defined(_M_CEE)
+#ifndef __cpp_lib_execution
+#error __cpp_lib_execution is not defined
+#elif __cpp_lib_execution != 201902L
+#error __cpp_lib_execution is not 201902L
+#else
+STATIC_ASSERT(__cpp_lib_execution == 201902L);
+#endif
+#elif _HAS_CXX17 && !defined(_M_CEE)
 #ifndef __cpp_lib_execution
 #error __cpp_lib_execution is not defined
 #elif __cpp_lib_execution != 201603L
@@ -571,7 +696,7 @@ STATIC_ASSERT(__cpp_lib_hypot == 201603L);
 STATIC_ASSERT(__cpp_lib_incomplete_container_elements == 201505L);
 #endif
 
-#if _HAS_CXX20 && defined(__clang__) // TRANSITION, VSO-1020212
+#if _HAS_CXX20
 #ifndef __cpp_lib_int_pow2
 #error __cpp_lib_int_pow2 is not defined
 #elif __cpp_lib_int_pow2 != 202002L
@@ -613,6 +738,20 @@ STATIC_ASSERT(__cpp_lib_integer_sequence == 201304L);
 #error __cpp_lib_integral_constant_callable is not 201304L
 #else
 STATIC_ASSERT(__cpp_lib_integral_constant_callable == 201304L);
+#endif
+
+#if _HAS_CXX20
+#ifndef __cpp_lib_interpolate
+#error __cpp_lib_interpolate is not defined
+#elif __cpp_lib_interpolate != 201902L
+#error __cpp_lib_interpolate is not 201902L
+#else
+STATIC_ASSERT(__cpp_lib_interpolate == 201902L);
+#endif
+#else
+#ifdef __cpp_lib_interpolate
+#error __cpp_lib_interpolate is defined
+#endif
 #endif
 
 #ifndef __cpp_lib_invoke

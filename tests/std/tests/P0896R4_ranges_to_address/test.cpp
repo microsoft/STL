@@ -4,9 +4,10 @@
 #include <assert.h>
 #include <memory>
 #include <string>
-#include <test_death.hpp>
 #include <type_traits>
 #include <vector>
+
+#include <test_death.hpp>
 
 template <class, template <class...> class>
 inline constexpr bool is_specialization = false;

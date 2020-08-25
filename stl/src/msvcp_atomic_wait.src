@@ -1,0 +1,28 @@
+; Copyright (c) Microsoft Corporation.
+; SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+; atomic wait satellite DLL definition
+
+LIBRARY LIBRARYNAME
+
+EXPORTS
+    __std_atomic_compare_exchange_128
+    __std_atomic_get_mutex
+    __std_atomic_has_cmpxchg16b
+    __std_atomic_notify_all_direct
+    __std_atomic_notify_all_indirect
+    __std_atomic_notify_one_direct
+    __std_atomic_notify_one_indirect
+    __std_atomic_set_api_level
+    __std_atomic_wait_direct
+    __std_atomic_wait_get_deadline
+    __std_atomic_wait_get_remaining_timeout
+    __std_atomic_wait_indirect
+    __std_bulk_submit_threadpool_work
+    __std_close_threadpool_work
+    __std_create_threadpool_work
+    __std_execution_wait_on_uchar
+    __std_execution_wake_by_address_all
+    __std_parallel_algorithms_hw_threads
+    __std_submit_threadpool_work
+    __std_wait_for_threadpool_work_callbacks

@@ -170,7 +170,7 @@ int main() {
     }
 
     {
-        // Also test DevDiv#1210471 "std::rethrow_exception is not [[noreturn]]".
+        // Also test DevDiv-1210471 "std::rethrow_exception is not [[noreturn]]".
 
         auto lambda = []() -> double { rethrow_exception(make_exception_ptr(1729)); };
 

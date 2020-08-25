@@ -2668,7 +2668,7 @@ public:
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     iterator insert(const_iterator _Where, _Iter _First, _Iter _Last) {
         difference_type _Off = _Where - begin();
-        _Insert(_Where, _First, _Last, _Iter_cat_t<_Iter>());
+        _Insert(_Where, _First, _Last, _Iter_cat_t<_Iter>{});
         return begin() + _Off;
     }
 
@@ -2882,6 +2882,65 @@ namespace pmr {
     using vector = _STD vector<_Ty, polymorphic_allocator<_Ty>>;
 } // namespace pmr
 #endif // _HAS_CXX17
+
+#if _HAS_IF_CONSTEXPR
+// VARIABLE TEMPLATE _Is_vb_iterator
+template <class _Alloc, bool _RequiresMutable>
+_INLINE_VAR constexpr bool _Is_vb_iterator<_Vb_iterator<_Alloc>, _RequiresMutable> = true;
+
+template <class _Alloc>
+_INLINE_VAR constexpr bool _Is_vb_iterator<_Vb_const_iterator<_Alloc>, false> = true;
+
+template <class _FwdIt, class _Ty>
+_CONSTEXPR20 void _Fill_vbool(_FwdIt _First, _FwdIt _Last, const _Ty& _Val) {
+    // Set [_First, _Last) to _Val
+    if (_First == _Last) {
+        return;
+    }
+
+    _Vbase* _VbFirst      = const_cast<_Vbase*>(_First._Myptr);
+    _Vbase* const _VbLast = const_cast<_Vbase*>(_Last._Myptr);
+
+    const auto _FirstSourceMask = static_cast<_Vbase>(-1) << _First._Myoff;
+    const auto _FirstDestMask   = ~_FirstSourceMask;
+    const auto _FillVal         = static_cast<_Vbase>(_Val ? -1 : 0);
+
+    if (_VbFirst == _VbLast) {
+        // We already excluded _First == _Last, so here _Last._Myoff > 0 and the shift is safe
+        const auto _LastSourceMask = static_cast<_Vbase>(-1) >> (_VBITS - _Last._Myoff);
+        const auto _LastDestMask   = ~_LastSourceMask;
+        const auto _SourceMask     = _FirstSourceMask & _LastSourceMask;
+        const auto _DestMask       = _FirstDestMask | _LastDestMask;
+        *_VbFirst                  = (*_VbFirst & _DestMask) | (_FillVal & _SourceMask);
+        return;
+    }
+
+    *_VbFirst = (*_VbFirst & _FirstDestMask) | (_FillVal & _FirstSourceMask);
+    ++_VbFirst;
+
+#ifdef __cpp_lib_is_constant_evaluated
+    if (_STD is_constant_evaluated()) {
+        for (; _VbFirst != _VbLast; ++_VbFirst) {
+            *_VbFirst = _FillVal;
+        }
+    } else
+#endif // __cpp_lib_is_constant_evaluated
+    {
+        const auto _VbFirst_ch = reinterpret_cast<const char*>(_VbFirst);
+        const auto _VbLast_ch  = reinterpret_cast<const char*>(_VbLast);
+        const auto _Count_ch   = static_cast<size_t>(_VbLast_ch - _VbFirst_ch);
+        const auto _ValChar    = static_cast<unsigned char>(_Val ? -1 : 0);
+        _CSTD memset(_VbFirst, _ValChar, _Count_ch);
+        _VbFirst = _VbLast;
+    }
+
+    if (_Last._Myoff != 0) {
+        const auto _LastSourceMask = static_cast<_Vbase>(-1) >> (_VBITS - _Last._Myoff);
+        const auto _LastDestMask   = ~_LastSourceMask;
+        *_VbFirst                  = (*_VbFirst & _LastDestMask) | (_FillVal & _LastSourceMask);
+    }
+}
+#endif // _HAS_IF_CONSTEXPR
 _STD_END
 
 #pragma pop_macro("new")

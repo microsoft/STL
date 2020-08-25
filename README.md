@@ -140,38 +140,37 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 The STL uses boost-math headers to provide P0226R1 Mathematical Special Functions. We recommend using [vcpkg][] to
 acquire this dependency.
 
-1. Install Visual Studio 2019 16.6 Preview 2 or later.
-2. Invoke `git clone https://github.com/microsoft/vcpkg`
-3. Invoke `cd vcpkg`
-4. Invoke `.\bootstrap-vcpkg.bat`
-5. Assuming you are targeting x86 and x64, invoke `.\vcpkg.exe install boost-math:x86-windows boost-math:x64-windows`
-   to install the boost-math dependency. Add `boost-math:arm-windows boost-math:arm64-windows` to this to target ARM
-   and ARM64.
-6. Run `.\vcpkg.exe integrate install` which tells Visual Studio which vcpkg instance you wish to use. If you have never
-   done this before, you may be prompted to elevate.
-7. Open Visual Studio, and choose the "Clone or check out code" option. Enter the URL to this
-   repository, typically `https://github.com/microsoft/STL`
-8. Choose the architecture you wish to build in the IDE, and build as you would any other project. All necessary CMake
-   settings are set by `CMakeSettings.json` and `vcpkg integrate`
+1. Install Visual Studio 2019 16.8 Preview 1 or later.
+    * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
+    This will ensure that you're using supported versions of CMake and Ninja.
+    * Otherwise, install [CMake][] 3.17 or later, and [Ninja][] 1.8.2 or later.
+2. Open Visual Studio, and choose the "Clone or check out code" option. Enter the URL of this repository,
+   `https://github.com/microsoft/STL`.
+3. Open a terminal in the IDE with `` Ctrl + ` `` (by default) or press on "View" in the top bar, and then "Terminal".
+4. Invoke `git submodule update --init vcpkg` in the terminal.
+5. Invoke `.\vcpkg\bootstrap-vcpkg.bat` in the terminal.
+6. Invoke `.\vcpkg\vcpkg.exe install boost-math:x86-windows boost-math:x64-windows` to install the boost-math dependency.
+7. Choose the architecture you wish to build in the IDE, and build as you would any other project. All necessary CMake
+   settings are set by `CMakeSettings.json`.
 
 # How To Build With A Native Tools Command Prompt
 
 These instructions assume you're targeting `x64-windows`; you can change this constant below to target other
 architectures.
 
-1. Install [CMake][] 3.16.5 or later, [Ninja][] 1.10.0 or later, and Visual Studio 2019 16.6 Preview 2 or later.
-2. Invoke `git clone https://github.com/microsoft/vcpkg`
-3. Invoke `cd vcpkg`
-4. Invoke `.\bootstrap-vcpkg.bat`
-5. Invoke `.\vcpkg.exe install boost-math:x64-windows` to install the boost-math dependency.
-6. Open an "x64 Native Tools Command Prompt for VS 2019".
-7. Change directories to a location where you'd like a clone of this STL repository.
-8. Invoke `git clone https://github.com/microsoft/STL`
-9. Invoke `cd STL`
-10. Invoke `cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE={where your vcpkg clone is located}\scripts\buildsystems\vcpkg.cmake
--S . -B {wherever you want binaries}` to configure the project. For example, `cmake -G Ninja
--DCMAKE_TOOLCHAIN_FILE=C:\Dev\vcpkg\scripts\buildsystems\vcpkg.cmake -S . -B out\build\x64`
-11. Invoke `ninja -C {wherever you want binaries}` to build the project. For example, `ninja -C out\build\x64`
+1. Install Visual Studio 2019 16.8 Preview 1 or later.
+    * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
+    This will ensure that you're using supported versions of CMake and Ninja.
+    * Otherwise, install [CMake][] 3.17 or later, and [Ninja][] 1.8.2 or later.
+2. Open an "x64 Native Tools Command Prompt for VS 2019".
+3. Change directories to a location where you'd like a clone of this STL repository.
+4. Invoke `git clone https://github.com/microsoft/STL`
+5. Invoke `cd STL`
+6. Invoke `git submodule update --init vcpkg`
+7. Invoke `.\vcpkg\bootstrap-vcpkg.bat`
+8. Invoke `.\vcpkg\vcpkg.exe install boost-math:x86-windows boost-math:x64-windows` to install the boost-math dependency.
+9. Invoke `cmake -G Ninja -S . -B {wherever you want binaries}` to configure the project. For example, `cmake -G Ninja -S . -B out\build\x64`
+10. Invoke `ninja -C {wherever you want binaries}` to build the project. For example, `ninja -C out\build\x64`
 
 # How To Consume
 
@@ -225,8 +224,10 @@ C:\Users\bion\Desktop>dumpbin /IMPORTS .\example.exe | findstr msvcp
 1. Follow either [How To Build With A Native Tools Command Prompt][] or [How To Build With The Visual Studio IDE][].
 2. Invoke `git submodule update --init llvm-project` at the root of the STL source tree.
 3. Acquire [Python][] 3.8 or newer and have it on the `PATH` (or run it directly using its absolute or relative path).
-4. Have LLVM's `bin` directory on the `PATH`. Simply using [LLVM's installer][] and choosing to add LLVM to your `PATH`
-during installation is the easiest way to get LLVM's `bin` directory on your `PATH`.
+4. Have LLVM's `bin` directory on the `PATH` (so `clang-cl.exe` is available).
+    * We recommend selecting "C++ Clang tools for Windows" in the VS Installer. This will automatically add LLVM to the
+    `PATH` of the x86 and x64 Native Tools Command Prompts, and will ensure that you're using a supported version.
+    * Otherwise, use [LLVM's installer][] and choose to add LLVM to your `PATH` during installation.
 5. Follow the instructions below.
 
 ## Running All The Tests

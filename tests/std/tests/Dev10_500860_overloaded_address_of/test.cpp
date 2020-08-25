@@ -282,7 +282,7 @@ constexpr bool can_addressof = false;
 template <typename T>
 constexpr bool can_addressof<T, void_t<decltype(addressof(declval<T>()))>> = true;
 
-void test_LWG_2598() {
+void test_LWG_2598() { // COMPILE-ONLY
     STATIC_ASSERT(can_addressof<int&>);
     STATIC_ASSERT(can_addressof<const int&>);
     STATIC_ASSERT(can_addressof<volatile int&>);
@@ -291,4 +291,21 @@ void test_LWG_2598() {
     STATIC_ASSERT(!can_addressof<const int>);
     STATIC_ASSERT(!can_addressof<volatile int>);
     STATIC_ASSERT(!can_addressof<const volatile int>);
+}
+
+// Also test DevCom-1134328, in which `deque<S*>::_Unchecked_iterator{} - 1` finds
+// operator-(const S&, int) by argument-dependent lookup causing overload resolution
+// to fail due to ambiguity when compiling 64-bit.
+struct S {
+    S() = default;
+
+    template <typename T>
+    S(T&&);
+};
+
+S operator-(const S&, int);
+
+void test_DevCom_1134328() { // COMPILE-ONLY
+    deque<S*> d{nullptr};
+    (void) d.back();
 }

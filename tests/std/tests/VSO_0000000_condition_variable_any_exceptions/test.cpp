@@ -9,9 +9,10 @@
 #include <mutex>
 #include <stdio.h>
 #include <stdlib.h>
-#include <test_death.hpp>
 #include <thread>
 #include <utility>
+
+#include <test_death.hpp>
 
 using namespace std;
 using namespace std::chrono;

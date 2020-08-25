@@ -9,7 +9,7 @@
 #endif
 #endif
 
-#include "xmath.h"
+#include "xmath.hpp"
 
 // macros
 #define NBITS (48 + _DOFF)
@@ -28,4 +28,4 @@ extern /* const */ _Dconst _Nan     = {INIT((_DMAX << _DOFF) | (1 << (_DOFF - 1)
 extern /* const */ _Dconst _Snan    = {INIT2(_DMAX << _DOFF, 1)};
 extern const _Dconst _Rteps         = {INIT((_DBIAS - NBITS / 2) << _DOFF)};
 
-extern const double _Xbig = (NBITS + 1) * 347L / 1000;
+extern const double _Xbig = (NBITS + 2) * 0.347;

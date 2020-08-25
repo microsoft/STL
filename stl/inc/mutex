@@ -64,7 +64,7 @@ public:
     }
 
     void unlock() {
-        _Check_C_return(_Mtx_unlock(_Mymtx()));
+        _Mtx_unlock(_Mymtx());
     }
 
     using native_handle_type = void*;
@@ -351,7 +351,6 @@ _NODISCARD int try_lock(_Lock0& _Lk0, _Lock1& _Lk1, _LockN&... _LkN) { // try to
     return _Try_lock1(_Lk0, _Lk1, _LkN...);
 }
 
-
 // FUNCTION TEMPLATE lock
 template <class... _LockN>
 int _Lock_attempt(const int _Hard_lock, _LockN&... _LkN) {
@@ -419,7 +418,6 @@ template <class _Lock0, class _Lock1, class... _LockN>
 void lock(_Lock0& _Lk0, _Lock1& _Lk1, _LockN&... _LkN) { // lock multiple locks, without deadlock
     _Lock_nonmember1(_Lk0, _Lk1, _LkN...);
 }
-
 
 // CLASS TEMPLATE lock_guard
 template <class _Mutex>
@@ -589,16 +587,16 @@ public:
     condition_variable& operator=(const condition_variable&) = delete;
 
     void notify_one() noexcept { // wake up one waiter
-        _Check_C_return(_Cnd_signal(_Mycnd()));
+        _Cnd_signal(_Mycnd());
     }
 
     void notify_all() noexcept { // wake up all waiters
-        _Check_C_return(_Cnd_broadcast(_Mycnd()));
+        _Cnd_broadcast(_Mycnd());
     }
 
     void wait(unique_lock<mutex>& _Lck) { // wait for signal
         // Nothing to do to comply with LWG-2135 because std::mutex lock/unlock are nothrow
-        _Check_C_return(_Cnd_wait(_Mycnd(), _Lck.mutex()->_Mymtx()));
+        _Cnd_wait(_Mycnd(), _Lck.mutex()->_Mymtx());
     }
 
     template <class _Predicate>

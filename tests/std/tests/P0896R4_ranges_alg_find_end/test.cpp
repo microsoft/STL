@@ -6,8 +6,9 @@
 #include <cassert>
 #include <concepts>
 #include <ranges>
+#include <span>
 #include <utility>
-//
+
 #include <range_algorithm_support.hpp>
 
 constexpr void smoke_test() {
@@ -58,6 +59,16 @@ constexpr void smoke_test() {
         assert(result.begin() == pairs.end());
         assert(result.end() == pairs.end());
     }
+
+    {
+        // Validate the memcmp optimization
+        const int haystack[] = {1, 2, 3, 1, 2, 3, 1, 2, 3};
+        const int needle[]   = {1, 2, 3};
+        const auto result    = find_end(haystack, std::span<const int>{needle});
+        STATIC_ASSERT(same_as<decltype(result), const subrange<const int*>>);
+        assert(result.begin() == haystack + 6);
+        assert(result.end() == haystack + 9);
+    }
 }
 
 int main() {
@@ -65,6 +76,7 @@ int main() {
     smoke_test();
 }
 
+#ifndef _PREFAST_ // TRANSITION, GH-1030
 struct instantiator {
     template <class Fwd1, class Fwd2>
     static void call(Fwd1&& fwd1 = {}, Fwd2&& fwd2 = {}) {
@@ -95,4 +107,5 @@ struct instantiator {
     }
 };
 
-template void test_fwd_fwd<instantiator>();
+template void test_fwd_fwd<instantiator, const int, const int>();
+#endif // TRANSITION, GH-1030

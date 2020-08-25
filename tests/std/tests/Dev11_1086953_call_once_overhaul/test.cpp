@@ -111,7 +111,7 @@ void run_tests() {
         VERIFY(i2 == 5);
     }
 
-    // Test DevDiv#1086953 "Throwing exception from std::call_once does not allow other threads to enter".
+    // Test DevDiv-1086953 "Throwing exception from std::call_once does not allow other threads to enter".
     // EH, single-threaded.
     {
         once_flag flag;
@@ -149,7 +149,7 @@ void run_tests() {
         }
     }
 
-    // Test DevDiv#1086953 "Throwing exception from std::call_once does not allow other threads to enter".
+    // Test DevDiv-1086953 "Throwing exception from std::call_once does not allow other threads to enter".
     // EH, multi-threaded.
     {
         long ready = 0;
@@ -188,7 +188,7 @@ void run_tests() {
         VERIFY(i == 3);
     }
 
-    // Test DevDiv#1092852 "concurrent std::call_once calls seem to be blocking somewhere on a shared variable".
+    // Test DevDiv-1092852 "concurrent std::call_once calls seem to be blocking somewhere on a shared variable".
     // Also test stateful callable objects.
     {
         long atom = 0;

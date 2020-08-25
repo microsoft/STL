@@ -110,7 +110,7 @@
 // P0739R0 Improving Class Template Argument Deduction For The STL
 // P0858R0 Constexpr Iterator Requirements
 // P1065R2 constexpr INVOKE
-//   (the std::invoke function only; other components like bind and reference_wrapper will be C++20 only)
+//     (the std::invoke function only; other components like bind and reference_wrapper are C++20 only)
 
 // _HAS_CXX17 indirectly controls:
 // N4190 Removing auto_ptr, random_shuffle(), And Old <functional> Stuff
@@ -131,6 +131,7 @@
 // Other C++17 deprecation warnings
 
 // _HAS_CXX20 directly controls:
+// P0019R8 atomic_ref
 // P0020R6 atomic<float>, atomic<double>, atomic<long double>
 // P0122R7 <span>
 // P0202R3 constexpr For <algorithm> And exchange()
@@ -149,6 +150,7 @@
 // P0482R6 Library Support For char8_t
 //     (mbrtoc8 and c8rtomb not yet implemented)
 // P0487R1 Fixing operator>>(basic_istream&, CharT*)
+// P0528R3 Atomic Compare-And-Exchange With Padding Bits
 // P0550R2 remove_cvref
 // P0553R4 <bit> Rotating And Counting Functions
 // P0556R3 <bit> Integral Power-Of-2 Operations (renamed by P1956R1)
@@ -166,19 +168,26 @@
 //     (partially implemented)
 // P0769R2 shift_left(), shift_right()
 // P0811R3 midpoint(), lerp()
-//     (partially implemented, lerp() not yet constexpr)
 // P0879R0 constexpr For Swapping Functions
 // P0887R1 type_identity
 // P0896R4 Ranges
 //     (partially implemented)
 // P0898R3 Standard Library Concepts
+// P0912R5 Library Support For Coroutines
 // P0919R3 Heterogeneous Lookup For Unordered Containers
 // P0966R1 string::reserve() Should Not Shrink
+// P1001R2 execution::unseq
 // P1006R1 constexpr For pointer_traits<T*>::pointer_to()
 // P1023R0 constexpr For std::array Comparisons
 // P1024R3 Enhancing span Usability
+// P1032R1 Miscellaneous constexpr
+// P1065R2 constexpr INVOKE
+//     (except the std::invoke function which is implemented in C++17)
 // P1085R2 Removing span Comparisons
 // P1115R3 erase()/erase_if() Return size_type
+// P1123R0 Atomic Compare-And-Exchange With Padding Bits For atomic_ref
+// P1135R6 The C++20 Synchronization Library
+//     (partially implemented)
 // P1207R4 Movability Of Single-Pass Iterators
 //     (partially implemented)
 // P1209R0 erase_if(), erase()
@@ -201,8 +210,10 @@
 // P1871R1 disable_sized_sentinel_for
 // P1872R0 span Should Have size_type, Not index_type
 // P1878R1 Constraining Readable Types
+// P1907R2 ranges::ssize
 // P1956R1 <bit> has_single_bit(), bit_ceil(), bit_floor(), bit_width()
 // P1959R0 Removing weak_equality And strong_equality
+// P1960R0 atomic_ref Cleanup
 // P1964R2 Replacing boolean With boolean-testable
 // P1976R2 Explicit Constructors For Fixed-Extent span From Dynamic-Extent Ranges
 // P2091R0 Fixing Issues With Range Access CPOs
@@ -221,6 +232,10 @@
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
 // This implementation parallelizes several common algorithm calls, but not all.
+//
+// std::execution::unseq has no direct analogue for any optimizer we target as of 2020-07-29,
+// though we will map it to #pragma loop(ivdep) for the for_each algorithms only as these are the only algorithms where
+// the library does not need to introduce inter-loop-body dependencies to accomplish the algorithm's goals.
 //
 // The following algorithms are parallelized.
 // * adjacent_difference
@@ -343,7 +358,7 @@
 #define _MSVC_KNOWN_SEMANTICS
 #endif
 
-// Controls whether the STL uses "if constexpr" internally
+// Controls whether the STL uses "if constexpr" internally in C++14 mode
 #ifndef _HAS_IF_CONSTEXPR
 #ifdef __CUDACC__
 #define _HAS_IF_CONSTEXPR 0
@@ -393,12 +408,8 @@
 // warning C4412: function signature contains type 'meow'; C++ objects are unsafe to pass between pure code
 //                and mixed or native. (/Wall)
 // warning C4455: literal suffix identifiers that do not start with an underscore are reserved
-// warning C4472: 'meow' is a native enum: add an access specifier (private/public)
-//                to declare a managed enum (/Wall)
 // warning C4494: Ignoring __declspec(allocator) because the function return type is not a pointer or reference
 // warning C4514: unreferenced inline function has been removed (/Wall)
-// warning C4571: Informational: catch(...) semantics changed since Visual C++ 7.1;
-//                structured exceptions (SEH) are no longer caught (/Wall)
 // warning C4574: 'MACRO' is defined to be '0': did you mean to use '#if MACRO'? (/Wall)
 // warning C4582: 'union': constructor is not implicitly called (/Wall)
 // warning C4583: 'union': destructor is not implicitly called (/Wall)
@@ -422,9 +433,9 @@
 #ifndef _STL_DISABLED_WARNINGS
 // clang-format off
 #define _STL_DISABLED_WARNINGS                        \
-    4180 4412 4455 4472 4494 4514 4571 4574 4582 4583 \
-    4587 4588 4619 4623 4625 4626 4643 4648 4702 4793 \
-    4820 4988 5026 5027 5045 6294                     \
+    4180 4412 4455 4494 4514 4574 4582 4583 4587 4588 \
+    4619 4623 4625 4626 4643 4648 4702 4793 4820 4988 \
+    5026 5027 5045 6294                               \
     _STL_DISABLED_WARNING_C4577                       \
     _STL_DISABLED_WARNING_C4984                       \
     _STL_DISABLED_WARNING_C5053                       \
@@ -486,7 +497,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 142
-#define _MSVC_STL_UPDATE  202005L
+#define _MSVC_STL_UPDATE  202008L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #ifdef __EDG__
@@ -496,8 +507,8 @@
 #error STL1000: Unexpected compiler version, expected Clang 10.0.0 or newer.
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
-#if _MSC_VER < 1926 // Coarse-grained, not inspecting _MSC_FULL_VER
-#error STL1001: Unexpected compiler version, expected MSVC 19.26 or newer.
+#if _MSC_VER < 1928 // Coarse-grained, not inspecting _MSC_FULL_VER
+#error STL1001: Unexpected compiler version, expected MSVC 19.28 or newer.
 #endif // ^^^ old MSVC ^^^
 #else // vvv other compilers vvv
 // not attempting to detect other compilers
@@ -1092,10 +1103,7 @@
 #if _HAS_STD_BYTE
 #define __cpp_lib_byte 201603L
 #endif // _HAS_STD_BYTE
-#define __cpp_lib_clamp 201603L
-#ifndef _M_CEE
-#define __cpp_lib_execution 201603L
-#endif // _M_CEE
+#define __cpp_lib_clamp                             201603L
 #define __cpp_lib_filesystem                        201703L
 #define __cpp_lib_gcd_lcm                           201606L
 #define __cpp_lib_hardware_interference_size        201703L
@@ -1136,43 +1144,47 @@
 #define __cpp_lib_atomic_flag_test              201907L
 #define __cpp_lib_atomic_float                  201711L
 #define __cpp_lib_atomic_lock_free_type_aliases 201907L
+#define __cpp_lib_atomic_ref                    201806L
 #define __cpp_lib_atomic_shared_ptr             201711L
+#define __cpp_lib_atomic_wait                   201907L
 #define __cpp_lib_bind_front                    201907L
 #define __cpp_lib_bit_cast                      201806L
-
-#ifdef __clang__ // TRANSITION, VSO-1020212
-// a future MSVC update will embed CPU feature detection into <bit> intrinsics
-#define __cpp_lib_bitops 201907L
-#endif // __clang__
-
-#define __cpp_lib_bounded_array_traits 201902L
+#define __cpp_lib_bitops                        201907L
+#define __cpp_lib_bounded_array_traits          201902L
 
 #ifdef __cpp_char8_t
 #define __cpp_lib_char8_t 201907L
 #endif // __cpp_char8_t
 
-#if defined(__cpp_concepts) && __cpp_concepts > 201507L
+#ifndef __EDG__ // TRANSITION, EDG concepts support
 #define __cpp_lib_concepts 201907L
-#endif // defined(__cpp_concepts) && __cpp_concepts > 201507L
+#endif // __EDG__
 
-#define __cpp_lib_constexpr_algorithms 201806L
-#define __cpp_lib_constexpr_complex    201711L
-#define __cpp_lib_constexpr_memory     201811L
-#define __cpp_lib_constexpr_numeric    201911L
+#define __cpp_lib_constexpr_algorithms  201806L
+#define __cpp_lib_constexpr_complex     201711L
+#define __cpp_lib_constexpr_functional  201907L
+#define __cpp_lib_constexpr_iterator    201811L
+#define __cpp_lib_constexpr_memory      201811L
+#define __cpp_lib_constexpr_numeric     201911L
+#define __cpp_lib_constexpr_string_view 201811L
+#define __cpp_lib_constexpr_tuple       201811L
+#define __cpp_lib_constexpr_utility     201811L
 
-#ifdef __cpp_impl_destroying_delete
-#define __cpp_lib_destroying_delete 201806L
-#endif // __cpp_impl_destroying_delete
+#ifdef __cpp_impl_coroutine // TRANSITION, Clang and EDG coroutine support
+#if __cpp_impl_coroutine >= 201902L
+#define __cpp_lib_coroutine 201902L
+#else // ^^^ __cpp_impl_coroutine >= 201902L ^^^ / vvv __cpp_impl_coroutine < 201902L vvv
+#define __cpp_lib_coroutine 197000L // TRANSITION, VS 2019 16.8 Preview 4
+#endif // ^^^ __cpp_impl_coroutine < 201902L ^^^
+#endif // __cpp_impl_coroutine
 
-#define __cpp_lib_endian                   201907L
-#define __cpp_lib_erase_if                 202002L
-#define __cpp_lib_generic_unordered_lookup 201811L
-
-#ifdef __cpp_lib_bitops // TRANSITION, VSO-1020212
-#define __cpp_lib_int_pow2 202002L
-#endif
-
+#define __cpp_lib_destroying_delete            201806L
+#define __cpp_lib_endian                       201907L
+#define __cpp_lib_erase_if                     202002L
+#define __cpp_lib_generic_unordered_lookup     201811L
+#define __cpp_lib_int_pow2                     202002L
 #define __cpp_lib_integer_comparison_functions 202002L
+#define __cpp_lib_interpolate                  201902L
 #define __cpp_lib_is_constant_evaluated        201811L
 #define __cpp_lib_is_nothrow_convertible       201806L
 #define __cpp_lib_list_remove_return_type      201806L
@@ -1188,8 +1200,16 @@
 #define __cpp_lib_unwrap_ref                   201811L
 #endif // _HAS_CXX20
 
+#ifndef _M_CEE
 #if _HAS_CXX20
-#define __cpp_lib_array_constexpr 201806L // P1023R0 constexpr For std::array Comparisons
+#define __cpp_lib_execution 201902L // P1001R2 execution::unseq
+#elif _HAS_CXX17
+#define __cpp_lib_execution 201603L // P0024R2 Parallel Algorithms
+#endif // language mode
+#endif // _M_CEE
+
+#if _HAS_CXX20
+#define __cpp_lib_array_constexpr 201811L // P1032R1 Miscellaneous constexpr
 #elif _HAS_CXX17 // ^^^ _HAS_CXX20 / _HAS_CXX17 vvv
 #define __cpp_lib_array_constexpr 201803L
 #endif // _HAS_CXX17
@@ -1253,6 +1273,32 @@ compiler option, or define _ALLOW_RTCc_IN_STL to acknowledge that you have recei
 #if defined(MRTDLL) && !defined(_M_CEE_PURE)
 #error In yvals_core.h, defined(MRTDLL) implies defined(_M_CEE_PURE); !defined(_M_CEE_PURE) implies !defined(MRTDLL)
 #endif // defined(MRTDLL) && !defined(_M_CEE_PURE)
+
+#define _STL_WIN32_WINNT_WINXP   0x0501 // _WIN32_WINNT_WINXP from sdkddkver.h
+#define _STL_WIN32_WINNT_VISTA   0x0600 // _WIN32_WINNT_VISTA from sdkddkver.h
+#define _STL_WIN32_WINNT_WIN8    0x0602 // _WIN32_WINNT_WIN8 from sdkddkver.h
+#define _STL_WIN32_WINNT_WINBLUE 0x0603 // _WIN32_WINNT_WINBLUE from sdkddkver.h
+#define _STL_WIN32_WINNT_WIN10   0x0A00 // _WIN32_WINNT_WIN10 from sdkddkver.h
+
+// Note that the STL DLL builds will set this to XP for ABI compatibility with VS2015 which supported XP.
+#ifndef _STL_WIN32_WINNT
+#if defined(_M_ARM64)
+// The first ARM64 Windows was Windows 10
+#define _STL_WIN32_WINNT _STL_WIN32_WINNT_WIN10
+#elif defined(_M_ARM) || defined(_ONECORE) || defined(_CRT_APP)
+// The first ARM or OneCore or App Windows was Windows 8
+#define _STL_WIN32_WINNT _STL_WIN32_WINNT_WIN8
+#else // ^^^ default to Win8 // default to Vista vvv
+// The earliest Windows supported by this implementation is Windows Vista
+#define _STL_WIN32_WINNT _STL_WIN32_WINNT_VISTA
+#endif // ^^^ !defined(_M_ARM) && !defined(_M_ARM64) && !defined(_ONECORE) && !defined(_CRT_APP) ^^^
+#endif // _STL_WIN32_WINNT
+
+#ifdef __cpp_noexcept_function_type
+#define _NOEXCEPT_FNPTR noexcept
+#else
+#define _NOEXCEPT_FNPTR
+#endif // __cpp_noexcept_function_type
 
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _YVALS_CORE_H_

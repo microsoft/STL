@@ -28,7 +28,8 @@
 #include <crtdbg.h>
 #include <sstream>
 #include <stdlib.h>
-#include <test_windows.h>
+
+#include <test_windows.hpp>
 
 int main() {
     // Track CRT blocks

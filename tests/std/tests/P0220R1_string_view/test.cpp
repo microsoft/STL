@@ -2,12 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <assert.h>
-#include <constexpr_char_traits.hpp>
 #include <sstream>
 #include <stdexcept>
 #include <stdlib.h>
 #include <string>
 #include <string_view>
+
+#include <constexpr_char_traits.hpp>
 
 using namespace std;
 
@@ -935,16 +936,16 @@ constexpr bool test_case_operators() {
 }
 
 void test_case_inserter() {
-    std::ostringstream oss;
+    ostringstream oss;
     string_view sv("text");
     oss << sv;
     assert(oss.str() == "text");
 }
 
 void test_case_hashing() {
-    std::string str("hungry EVIL zombies");
-    std::string_view strView(str);
-    assert(std::hash<std::string>{}(str) == std::hash<std::string_view>{}(strView));
+    string str("hungry EVIL zombies");
+    string_view strView(str);
+    assert(hash<string>{}(str) == hash<string_view>{}(strView));
 }
 
 void test_case_string_integration() {
@@ -1034,11 +1035,11 @@ static_assert(test_case_iterators<char, constexpr_char_traits>());
 static_assert(test_case_prefix<char, constexpr_char_traits>());
 static_assert(test_case_suffix<char, constexpr_char_traits>());
 static_assert(test_case_swap<char, constexpr_char_traits>());
-static_assert(test_case_copy<constexpr_char_traits>());
-static_assert(test_case_Copy_s<constexpr_char_traits>());
 static_assert(test_case_substr<constexpr_char_traits>());
 static_assert(test_case_compare<char, constexpr_char_traits>());
 #if _HAS_CXX20
+static_assert(test_case_copy<constexpr_char_traits>());
+static_assert(test_case_Copy_s<constexpr_char_traits>());
 static_assert(test_case_starts_with_ends_with<char, constexpr_char_traits, false>());
 #endif // _HAS_CXX20
 static_assert(test_case_operators<char, constexpr_char_traits>());
