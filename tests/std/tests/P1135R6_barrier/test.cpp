@@ -36,11 +36,11 @@ void test() {
 
 void test_with_functor() {
     std::atomic<int> c{0};
-    int called_times = 0;
+    std::atomic<int> called_times{0};
 
     struct Functor {
         void operator()() noexcept {
-            switch (++(*called_times)) {
+            switch (called_times->fetch_add(1, std::memory_order_relaxed) + 1) {
             case 1:
                 assert(c->load(std::memory_order_relaxed) == 0);
                 break;
@@ -62,7 +62,7 @@ void test_with_functor() {
             }
         }
 
-        int* called_times;
+        std::atomic<int>* called_times;
         std::atomic<int>* c;
     } f = {&called_times, &c};
 
@@ -88,7 +88,7 @@ void test_with_functor() {
     t2.join();
 
     assert(c.load(std::memory_order_relaxed) == 8);
-    assert(called_times == 5);
+    assert(called_times.load(std::memory_order_relaxed) == 5);
 }
 
 void barrier_callback_function() noexcept {}

@@ -63,7 +63,7 @@ public:
             // TRANSITION, GH-1133: should be memory_order_acquire
             const ptrdiff_t _Current = _Counter.load(memory_order_seq_cst);
             if (_Current == 0) {
-                break;
+                return;
             } else {
                 _STL_VERIFY(_Current > 0, "Invariant counter >= 0, possibly caused by preconditions violation "
                                           "(N4861 [thread.latch.class]/7)");

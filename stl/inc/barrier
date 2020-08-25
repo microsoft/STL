@@ -104,6 +104,8 @@ public:
             // atomic_thread_fence(memory_order_acquire);
             _Completion(_Current);
         }
+        // Embedding this into token to provide additional correcntess check that the token is from the same barrier and
+        // wasn't used. All bits of this fit, as barrier should be aligned to at least size of atomic counter
         return arrival_token{(_Current & _Barrier_arrival_token_mask) | reinterpret_cast<intptr_t>(this)};
     }
 
@@ -173,6 +175,9 @@ private:
 
     struct _Counter_t {
         constexpr explicit _Counter_t(ptrdiff_t _Initial) : _Current(_Initial), _Total(_Initial) {}
+        // wait(arrival_token&&) accepts a token from the current phase or the immediately preceeding phase; this means
+        // we can track which phase is the current phase using 1 bit which alternates between each phase. For this
+        // purpose we use the low order bit of _Current.
         atomic<ptrdiff_t> _Current;
         atomic<ptrdiff_t> _Total;
     };
