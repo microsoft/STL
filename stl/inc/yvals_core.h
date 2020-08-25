@@ -159,7 +159,7 @@
 // P0646R1 list/forward_list remove()/remove_if()/unique() Return size_type
 // P0653R2 to_address()
 // P0655R1 visit<R>()
-// P0661R10 <stop_token> and jthread
+// P0661R10 <stop_token> And jthread
 // P0674R1 make_shared() For Arrays
 // P0718R2 atomic<shared_ptr<T>>, atomic<weak_ptr<T>>
 // P0758R1 is_nothrow_convertible

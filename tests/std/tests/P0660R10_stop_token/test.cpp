@@ -56,7 +56,7 @@ struct cb_destroying_functor {
 
 int main() noexcept {
     reset_new_counters(0);
-    { // all the following must not allocate and work with a nostopstate source; in rough synopsis order
+    { // all the following must not allocate, and must work with a nostopstate source; in rough synopsis order
         stop_token token;
         stop_token token_copy{token};
         stop_token token_moved{move(token)};
@@ -333,7 +333,7 @@ int main() noexcept {
         // block_destroy makes it more likely that the timing assumption above is correct because the timer doesn't
         // start until we know the worker thread is actively running trying to request_stop
         atomic<bool> block_destroy{false};
-        std::thread worker{[&] {
+        thread worker{[&] {
             // run the callbacks in the worker thread
             block_request_stop.wait(false);
             block_destroy.store(true);

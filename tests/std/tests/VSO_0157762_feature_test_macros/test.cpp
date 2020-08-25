@@ -826,20 +826,6 @@ STATIC_ASSERT(__cpp_lib_is_nothrow_convertible == 201806L);
 #endif
 #endif
 
-#if _HAS_CXX20
-#ifndef __cpp_lib_jthread
-#error __cpp_lib_jthread is not defined
-#elif __cpp_lib_jthread != 201911L
-#error __cpp_lib_jthread is not 201911L
-#else
-STATIC_ASSERT(__cpp_lib_jthread == 201911L);
-#endif
-#else
-#ifdef __cpp_lib_jthread
-#error __cpp_lib_jthread is defined
-#endif
-#endif
-
 #ifndef __cpp_lib_is_null_pointer
 #error __cpp_lib_is_null_pointer is not defined
 #elif __cpp_lib_is_null_pointer != 201309L
@@ -859,6 +845,20 @@ STATIC_ASSERT(__cpp_lib_is_swappable == 201603L);
 #else
 #ifdef __cpp_lib_is_swappable
 #error __cpp_lib_is_swappable is defined
+#endif
+#endif
+
+#if _HAS_CXX20
+#ifndef __cpp_lib_jthread
+#error __cpp_lib_jthread is not defined
+#elif __cpp_lib_jthread != 201911L
+#error __cpp_lib_jthread is not 201911L
+#else
+STATIC_ASSERT(__cpp_lib_jthread == 201911L);
+#endif
+#else
+#ifdef __cpp_lib_jthread
+#error __cpp_lib_jthread is defined
 #endif
 #endif
 
