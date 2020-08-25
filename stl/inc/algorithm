@@ -281,7 +281,7 @@ namespace ranges {
             return _Uend(_Range);
         } else if constexpr (sized_range<_Rng>) {
             const auto _Dist = _RANGES distance(_Range);
-            if constexpr (sized_sentinel_for<iterator_t<_Rng>, iterator_t<_Rng>>) {
+            if constexpr (sized_sentinel_for<_Unwrapped_t<iterator_t<_Rng>>, _Unwrapped_t<iterator_t<_Rng>>>) {
                 return _RANGES next(_Mid, _Dist - (_Mid - _Ubegin(_Range)));
             } else {
                 return _RANGES next(_Ubegin(_Range), _Dist);
@@ -8132,6 +8132,7 @@ namespace ranges {
             // clang-format on
             _Adl_verify_range(_RANGES begin(_Range), _Mid);
             _Adl_verify_range(_Mid, _RANGES end(_Range));
+
             if constexpr (common_range<_Rng>) {
                 _Partial_sort_common(
                     _Ubegin(_Range), _Get_unwrapped(_STD move(_Mid)), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
@@ -8148,7 +8149,7 @@ namespace ranges {
 
     private:
         template <class _It, class _Pr, class _Pj>
-        static constexpr void _Partial_sort_common(_It _First, _It _Mid, _It _Last, _Pr _Pred, _Pj _Proj) {
+        static constexpr void _Partial_sort_common(_It _First, _It _Mid, const _It _Last, _Pr _Pred, _Pj _Proj) {
             _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
 
@@ -8254,9 +8255,11 @@ namespace ranges {
             // clang-format on
             _Adl_verify_range(_First1, _Last1);
             _Adl_verify_range(_First2, _Last2);
+
             auto _UResult = _Partial_sort_copy_unchecked(_Get_unwrapped(_STD move(_First1)),
                 _Get_unwrapped(_STD move(_Last1)), _Get_unwrapped(_STD move(_First2)),
                 _Get_unwrapped(_STD move(_Last2)), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+
             _Seek_wrapped(_First1, _STD move(_UResult.in));
             _Seek_wrapped(_First2, _STD move(_UResult.out));
             return {_STD move(_First1), _STD move(_First2)};
@@ -8275,6 +8278,7 @@ namespace ranges {
             auto _First   = _RANGES begin(_Range1);
             auto _UResult = _Partial_sort_copy_unchecked(_Get_unwrapped(_STD move(_First)), _Uend(_Range1),
                 _Ubegin(_Range2), _Uend(_Range2), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+
             _Seek_wrapped(_First, _STD move(_UResult.in));
             return {_STD move(_First), _Rewrap_iterator(_Range2, _STD move(_UResult.out))};
         }
@@ -8282,7 +8286,7 @@ namespace ranges {
     private:
         template <class _It1, class _Se1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
         _NODISCARD static constexpr partial_sort_copy_result<_It1, _It2> _Partial_sort_copy_unchecked(
-            _It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            _It1 _First1, _Se1 _Last1, _It2 _First2, const _Se2 _Last2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
             _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It1>);
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se1, _It1>);
             _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It2>);
