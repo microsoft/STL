@@ -48,7 +48,7 @@ void* operator new(size_t size, const std::nothrow_t&) noexcept {
     return malloc(size);
 }
 
-void* operator new(size_t size, std::align_val_t, const std::nothrow_t&) noexcept {
+void* operator new(size_t, std::align_val_t, const std::nothrow_t&) noexcept {
     abort();
 }
 
@@ -60,11 +60,7 @@ void operator delete(void* ptr, std::size_t) noexcept {
     ::operator delete(ptr, std::nothrow);
 }
 
-void operator delete(void* ptr, std::align_val_t) noexcept {
-    abort();
-}
-
-void operator delete(void*, const std::nothrow_t&) noexcept {
+void operator delete(void*, std::align_val_t) noexcept {
     abort();
 }
 
@@ -76,7 +72,7 @@ void operator delete(void* ptr, const std::nothrow_t&) noexcept {
     }
 }
 
-void operator delete(void*, std::align_val_t, const std::nothrow_t&) {
+void operator delete(void*, std::align_val_t, const std::nothrow_t&) noexcept {
     abort();
 }
 
@@ -104,11 +100,11 @@ void operator delete[](void* ptr, std::size_t size) noexcept {
     ::operator delete(ptr, size);
 }
 
-void operator delete[](void* ptr, std::align_val_t) noexcept {
+void operator delete[](void*, std::align_val_t) noexcept {
     abort();
 }
 
-void operator delete[](void* ptr, std::size_t, std::align_val_t) noexcept {
+void operator delete[](void*, std::size_t, std::align_val_t) noexcept {
     abort();
 }
 
