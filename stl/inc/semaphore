@@ -131,14 +131,14 @@ public:
                 "Invariant: counter >= 0, and counter <= max() "
                 "possibly caused by preconditions violation (N4861 [thread.sema.cnt]/8)");
 
-            if (_Counter.compare_exchange_weak(_Current, _Current - 1, memory_order_seq_cst)) {
+            if (_Counter.compare_exchange_weak(_Current, _Current - 1)) {
                 return;
             }
         }
     }
 
     _NODISCARD bool try_acquire() noexcept {
-        ptrdiff_t _Current = _Counter.load(memory_order_relaxed);
+        ptrdiff_t _Current = _Counter.load();
         if (_Current == 0) {
             return false;
         }
@@ -146,7 +146,7 @@ public:
             "Invariant: counter >= 0, and counter <= max() "
             "possibly caused by preconditions violation (N4861 [thread.sema.cnt]/8)");
 
-        return _Counter.compare_exchange_weak(_Current, _Current - 1, memory_order_seq_cst);
+        return _Counter.compare_exchange_weak(_Current, _Current - 1);
     }
 
     template <class _Rep, class _Period>
@@ -166,7 +166,7 @@ public:
                 "Invariant: counter >= 0, and counter <= max() "
                 "possibly caused by preconditions violation (N4861 [thread.sema.cnt]/8)");
 
-            if (_Counter.compare_exchange_weak(_Current, _Current - 1, memory_order_seq_cst)) {
+            if (_Counter.compare_exchange_weak(_Current, _Current - 1)) {
                 return true;
             }
         }
@@ -188,7 +188,7 @@ public:
                 "Invariant: counter >= 0, and counter <= max() "
                 "possibly caused by preconditions violation (N4861 [thread.sema.cnt]/8)");
 
-            if (_Counter.compare_exchange_weak(_Current, _Current - 1, memory_order_seq_cst)) {
+            if (_Counter.compare_exchange_weak(_Current, _Current - 1)) {
                 return true;
             }
         }
@@ -222,14 +222,14 @@ public:
         _STL_VERIFY(_Update == 1, "Precondition: update >= 0, "
                                   "and update <= max() - counter (N4861 [thread.sema.cnt]/8)");
         // TRANSITION, GH-1133: should be memory_order_release
-        _Counter.store(1, memory_order_seq_cst);
+        _Counter.store(1);
         _Counter.notify_one();
     }
 
     void acquire() noexcept /* strengthened */ {
         for (;;) {
             // TRANSITION, GH-1133: should be memory_order_acquire
-            unsigned char _Prev = _Counter.exchange(0, memory_order_seq_cst);
+            unsigned char _Prev = _Counter.exchange(0);
             if (_Prev == 1) {
                 break;
             }
@@ -241,7 +241,7 @@ public:
 
     _NODISCARD bool try_acquire() noexcept {
         // TRANSITION, GH-1133: should be memory_order_acquire
-        unsigned char _Prev = _Counter.exchange(0, memory_order_seq_cst);
+        unsigned char _Prev = _Counter.exchange(0);
         _STL_VERIFY((_Prev & ~1) == 0, "Invariant: semaphore counter is non-negative and not exceeds max(), "
                                        "possibly caused by preconditions violation (N4861 [thread.sema.cnt]/8)");
         return reinterpret_cast<const bool&>(_Prev);
@@ -252,7 +252,7 @@ public:
         auto _Deadline = _Semaphore_deadline(_Rel_time);
         for (;;) {
             // TRANSITION, GH-1133: should be memory_order_acquire
-            unsigned char _Prev = _Counter.exchange(0, memory_order_seq_cst);
+            unsigned char _Prev = _Counter.exchange(0);
             if (_Prev == 1) {
                 return true;
             }
@@ -270,7 +270,7 @@ public:
     _NODISCARD bool try_acquire_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
         for (;;) {
             // TRANSITION, GH-1133: should be memory_order_acquire
-            unsigned char _Prev = _Counter.exchange(0, memory_order_seq_cst);
+            unsigned char _Prev = _Counter.exchange(0);
             if (_Prev == 1) {
                 return true;
             }
