@@ -31,6 +31,10 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 
     using V = views::all_t<Rng>;
     using R = reverse_view<V>;
+    static_assert(ranges::view<R>);
+    static_assert(ranges::bidirectional_range<R>);
+    static_assert(random_access_range<R> == random_access_range<Rng>);
+    static_assert(!ranges::contiguous_range<R>);
 
     // Validate range adapter object
     // ...with lvalue argument
