@@ -42,7 +42,9 @@ public:
     thread() noexcept : _Thr{} {}
 
 private:
+#if _HAS_CXX20
     friend jthread;
+#endif // _HAS_CXX20
 
     template <class _Tuple, size_t... _Indices>
     static unsigned int __stdcall _Invoke(void* _RawVals) noexcept /* terminates */ {

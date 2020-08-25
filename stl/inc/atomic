@@ -3019,6 +3019,10 @@ public:
         }
     }
 
+    _NODISCARD _Ty* _Load_relaxed() noexcept {
+        return reinterpret_cast<_Ty*>(_Storage.load(memory_order_relaxed));
+    }
+
     void _Store_and_unlock(_Ty* const _Value) noexcept {
         const auto _Rep = _Storage.exchange(reinterpret_cast<uintptr_t>(_Value));
         if ((_Rep & _Lock_mask) == _Locked_notify_needed) {
