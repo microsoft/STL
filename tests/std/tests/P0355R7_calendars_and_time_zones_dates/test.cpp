@@ -8,6 +8,9 @@
 using namespace std;
 using namespace std::chrono;
 
+constexpr int y_min = -32767;
+constexpr int y_max = 32767;
+
 constexpr void day_test() {
     day d{0u};
     assert(static_cast<unsigned>(d) == 0u);
@@ -95,8 +98,6 @@ constexpr void year_test() {
     assert(+y == 1y);
     assert(-y == -1y);
 
-    constexpr int y_min = -32767;
-    constexpr int y_max = 32767;
     assert(year::min() == year{y_min});
     assert(year::max() == year{y_max});
 
@@ -239,6 +240,21 @@ constexpr void month_weekday_test() {
     assert(mwd1.weekday_indexed().index() == 2);
 
     assert(January / Monday[2] == January / Monday[2]);
+
+    if (!is_constant_evaluated()) {
+        for (auto m = 0u; m <= 255u; ++m) {
+            for (auto wd = 0u; wd <= 255u; ++wd) {
+                for (auto wdi = 0u; wdi <= 6u; ++wdi) {
+                    const auto mwd = month{m} / weekday{wd}[wdi];
+                    if (m >= 1 && m <= 12 && wd <= 7 && wdi >= 1 && wdi <= 5) {
+                        assert(mwd.ok());
+                    } else {
+                        assert(!mwd.ok());
+                    }
+                }
+            }
+        }
+    }
 }
 
 constexpr void month_weekday_last_test() {
@@ -284,6 +300,19 @@ constexpr void year_month_test() {
     assert(years{2} + ym == 2022y / January);
 
     assert(ym - years{2} == 2018y / January);
+
+    if (!is_constant_evaluated()) {
+        for (int y = y_min; y <= y_max; y++) {
+            for (auto m = 0u; m <= 255u; ++m) {
+                const auto ym2 = year{y} / month{m};
+                if (m >= 1 && m <= 12) {
+                    assert(ym2.ok());
+                } else {
+                    assert(!ym2.ok());
+                }
+            }
+        }
+    }
 }
 
 constexpr void year_month_day_test() {
@@ -354,6 +383,23 @@ constexpr void year_month_day_test() {
     assert(years{2} + 2020y / January / 1d == 2022y / January / 1d);
 
     assert(2020y / January / 1d - years{2} == 2018y / January / 1d);
+
+    if (!is_constant_evaluated()) {
+        for (int iy = y_min; iy <= y_max; ++iy) {
+            for (auto um = 0u; um <= 255u; ++um) {
+                for (auto ud = 0u; ud <= 32u; ++ud) {
+                    const year y{iy};
+                    const month m{um};
+                    const day d{ud};
+                    if (y.ok() && m.ok() && d >= 1d && d <= (y / m / last).day()) {
+                        assert(((y / m / d).ok()));
+                    } else {
+                        assert((!(y / m / d).ok()));
+                    }
+                }
+            }
+        }
+    }
 }
 
 constexpr void year_month_day_last_test() {
@@ -394,6 +440,20 @@ constexpr void year_month_day_last_test() {
     assert(years{2} + ymdl == 2022y / February / last);
 
     assert(ymdl - years{2} == 2018y / February / last);
+
+    if (!is_constant_evaluated()) {
+        for (int iy = y_min; iy <= y_max; ++iy) {
+            for (auto m = 0u; m <= 255u; ++m) {
+                const year y{iy};
+                const auto mdl = month{m} / last;
+                if (y.ok() && mdl.ok()) {
+                    assert((y / mdl).ok());
+                } else {
+                    assert((!(y / mdl).ok()));
+                }
+            }
+        }
+    }
 }
 
 constexpr void year_month_weekday_test() {
@@ -501,65 +561,7 @@ constexpr bool test() {
     return true;
 }
 
-void ok_test() {
-    // month_weekday
-    for (auto m = 0u; m <= 255u; ++m) {
-        for (auto wd = 0u; wd <= 255u; ++wd) {
-            for (auto wdi = 0u; wdi <= 6u; ++wdi) {
-                const auto mwd = month{m} / weekday{wd}[wdi];
-                if (m >= 1 && m <= 12 && wd <= 7 && wdi >= 1 && wdi <= 5) {
-                    assert(mwd.ok());
-                } else {
-                    assert(!mwd.ok());
-                }
-            }
-        }
-    }
-    // year_month
-    constexpr int y_min = static_cast<int>(year::min());
-    constexpr int y_max = static_cast<int>(year::max());
-
-    for (int y = y_min; y <= y_max; y++) {
-        for (auto m = 0u; m <= 255u; ++m) {
-            const auto ym = year{y} / month{m};
-            if (m >= 1 && m <= 12) {
-                assert(ym.ok());
-            } else {
-                assert(!ym.ok());
-            }
-        }
-    }
-    // year_month_day
-    for (int iy = y_min; iy <= y_max; ++iy) {
-        for (auto um = 0u; um <= 255u; ++um) {
-            for (auto ud = 0u; ud <= 32u; ++ud) {
-                const year y{iy};
-                const month m{um};
-                const day d{ud};
-                if (y.ok() && m.ok() && d >= 1d && d <= (y / m / last).day()) {
-                    assert(((y / m / d).ok()));
-                } else {
-                    assert((!(y / m / d).ok()));
-                }
-            }
-        }
-    }
-    // year_month_day_last
-    for (int iy = y_min; iy <= y_max; ++iy) {
-        for (auto m = 0u; m <= 255u; ++m) {
-            const year y{iy};
-            const auto mdl = month{m} / last;
-            if (y.ok() && mdl.ok()) {
-                assert((y / mdl).ok());
-            } else {
-                assert((!(y / mdl).ok()));
-            }
-        }
-    }
-}
-
 int main() {
     test();
-    ok_test(); // tests fail to compile in constexpr
     static_assert(test());
 }
