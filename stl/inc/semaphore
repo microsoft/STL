@@ -43,13 +43,14 @@ _NODISCARD unsigned long _Semaphore_remaining_timeout(const chrono::time_point<_
         return 0;
     }
 
-    auto _Rel_time = _Abs_time - _Now;
-    static constexpr chrono::hours _Ten_days{24 * 10};
+    auto _Rel_time = chrono::ceil<chrono::milliseconds>(_Abs_time - _Now);
+    static constexpr chrono::milliseconds _Ten_days{chrono::hours{24 * 10}};
+    static_assert(_Ten_days.count() < ULONG_MAX, "Bad sizing assumption");
     if (_Rel_time >= _Ten_days) {
-        return chrono::duration_cast<chrono::duration<unsigned long, milli>>(_Ten_days).count();
-    } else {
-        return chrono::duration_cast<chrono::duration<unsigned long, milli>>(_Rel_time).count();
+        return static_cast<unsigned long>(_Ten_days.count());
     }
+
+    return static_cast<unsigned long>(_Rel_time.count());
 }
 
 inline constexpr ptrdiff_t _Semaphore_max = (1ULL << (sizeof(ptrdiff_t) * CHAR_BIT - 1)) - 1;
