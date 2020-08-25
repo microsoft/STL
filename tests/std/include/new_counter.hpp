@@ -1,8 +1,5 @@
-#ifdef _STD_TEST_NEW_COUNTER
-#error new_counter.hpp defines non-inline functions and thus must be used only once.
-#else // ^^^ _STD_TEST_NEW_COUNTER // !_STD_TEST_NEW_COUNTER vvv
-#define _STD_TEST_NEW_COUNTER
-#endif // ^^^ !_STD_TEST_NEW_COUNTER
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <assert.h>
 #include <new>
@@ -34,19 +31,41 @@ void* operator new(size_t size) {
     return p;
 }
 
+void* operator new(std::size_t, std::align_val_t) {
+    abort();
+}
+
 void* operator new(size_t size, const std::nothrow_t&) noexcept {
     if (std_testing::g_total_news == std_testing::g_maximum_news) {
         return nullptr;
     }
+
     if (size == 0) {
         ++size;
     }
+
     ++std_testing::g_total_news;
     return malloc(size);
 }
 
+void* operator new(size_t size, std::align_val_t, const std::nothrow_t&) noexcept {
+    abort();
+}
+
 void operator delete(void* ptr) noexcept {
     ::operator delete(ptr, std::nothrow);
+}
+
+void operator delete(void* ptr, std::size_t) noexcept {
+    ::operator delete(ptr, std::nothrow);
+}
+
+void operator delete(void* ptr, std::align_val_t) noexcept {
+    abort();
+}
+
+void operator delete(void*, const std::nothrow_t&) noexcept {
+    abort();
 }
 
 void operator delete(void* ptr, const std::nothrow_t&) noexcept {
@@ -57,20 +76,48 @@ void operator delete(void* ptr, const std::nothrow_t&) noexcept {
     }
 }
 
+void operator delete(void*, std::align_val_t, const std::nothrow_t&) {
+    abort();
+}
+
 void* operator new[](size_t size) {
     return ::operator new(size);
+}
+
+void* operator new[](std::size_t, std::align_val_t) {
+    abort();
 }
 
 void* operator new[](size_t size, const std::nothrow_t&) noexcept {
     return ::operator new(size, std::nothrow);
 }
 
+void* operator new[](std::size_t, std::align_val_t, const std::nothrow_t&) noexcept {
+    abort();
+}
+
 void operator delete[](void* ptr) noexcept {
     ::operator delete(ptr);
 }
 
+void operator delete[](void* ptr, std::size_t size) noexcept {
+    ::operator delete(ptr, size);
+}
+
+void operator delete[](void* ptr, std::align_val_t) noexcept {
+    abort();
+}
+
+void operator delete[](void* ptr, std::size_t, std::align_val_t) noexcept {
+    abort();
+}
+
 void operator delete[](void* ptr, const std::nothrow_t&) noexcept {
     ::operator delete(ptr, std::nothrow);
+}
+
+void operator delete[](void*, std::align_val_t, const std::nothrow_t&) noexcept {
+    abort();
 }
 
 #pragma warning(pop)
