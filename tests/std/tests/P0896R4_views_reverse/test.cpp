@@ -14,9 +14,6 @@
 #include <range_algorithm_support.hpp>
 using namespace std;
 
-template <class... Args>
-inline constexpr bool std::ranges::enable_view<test::range<Args...>> = true;
-
 template <class Rng>
 concept CanViewReverse = requires(Rng&& r) {
     views::reverse(static_cast<Rng&&>(r));

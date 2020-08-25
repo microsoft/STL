@@ -580,6 +580,8 @@ namespace test {
         template <class Element, Copyability Copy>
         class range_base {
         public:
+            static_assert(Copy == Copyability::immobile);
+
             range_base() = default;
             constexpr explicit range_base(span<Element> elements) noexcept : elements_{elements} {}
 
@@ -619,7 +621,9 @@ namespace test {
             }
 
             span<Element> elements_;
-            mutable bool moved_from_ = false;
+
+        private:
+            bool moved_from_ = false;
         };
 
         template <class Element>
@@ -651,7 +655,9 @@ namespace test {
             }
 
             span<Element> elements_;
-            mutable bool moved_from_ = false;
+
+        private:
+            bool moved_from_ = false;
         };
     } // namespace detail
 
