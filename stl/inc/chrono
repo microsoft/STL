@@ -53,7 +53,7 @@ namespace chrono {
         }
     };
 
-#ifdef _HAS_CXX20
+#if _HAS_CXX20
     template <class _Clock>
     concept _Is_Clock = requires {
         typename _Clock::rep;
