@@ -5984,6 +5984,15 @@ template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR_BIT_CAST bool _Is_finite(const _Ty _Xx) { // constexpr isfinite()
     return _Float_abs_bits(_Xx) < _Float_traits<_Ty>::_Exponent_mask;
 }
+
+// STRUCT _Nontrivial_dummy_type
+struct _Nontrivial_dummy_type {
+    constexpr _Nontrivial_dummy_type() noexcept {
+        // This default constructor is user-provided to avoid zero-initialization when objects are value-initialized.
+    }
+};
+_STL_INTERNAL_STATIC_ASSERT(!is_trivially_default_constructible_v<_Nontrivial_dummy_type>);
+
 _STD_END
 #undef _CONSTEXPR_BIT_CAST
 #pragma pop_macro("new")
