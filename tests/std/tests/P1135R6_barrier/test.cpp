@@ -69,7 +69,7 @@ void test_with_functor() {
     std::barrier b(2, f);
 
     std::thread t1([&] {
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 5; ++i) {
             auto token = b.arrive();
             b.wait(std::move(token));
             c.fetch_add(1, std::memory_order_relaxed);
