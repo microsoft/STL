@@ -57,7 +57,7 @@ concept _Parse_arg_id_callbacks = requires(_Ty _At) {
 //clang-format on
 
 template<typename _CharT>
-constexpr _CharT* _Parse_nonnegative_integer(const _CharT* _Begin, const _CharT* _End, int& _Integer) {
+const _CharT* _Parse_nonnegative_integer(const _CharT* _Begin, const _CharT* _End, int& _Integer) {
     auto [_Ptr, _Ec] = _STD from_chars(_Begin, _End, _Integer, 10);
     if(_Ec != _STD errc{}) {
         throw _STD format_error("Invalid integer");
@@ -70,16 +70,16 @@ constexpr _CharT* _Parse_nonnegative_integer(const _CharT* _Begin, const _CharT*
 
 
 
-template<typename _CharT, typename _Callbacks_type> requires _Parse_spec_callbacks<_Callbacks_type, _CharT>
-constexpr _CharT* _Parse_arg_id(const _CharT* _Begin, const _CharT* _End_, _Callbacks_type&& _Callbacks) {
+template<typename _CharT, typename _Callbacks_type> requires _Parse_arg_id_callbacks<_Callbacks_type, _CharT>
+constexpr const _CharT* _Parse_arg_id(const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
     assert(_Begin != _End);
     _CharT _Ch = *_Begin;
     // No id provided, format string is using automatic indexing.
-    if(_Ch == '}' || c == ':') {
+    if(_Ch == '}' || _Ch == ':') {
         _Callbacks._On_auto_id();
         return _Begin;
     }
-    if(_Ch >= '0' && c <= '9') {
+    if(_Ch >= '0' && _Ch <= '9') {
         int _Index = 0;
         // arg_id is not allowed to have any leading zeros, but is allowed to be
         // equal to zero (but not '00'). So if _Ch is zero we skip the parsing, leave
@@ -104,7 +104,7 @@ constexpr _CharT* _Parse_arg_id(const _CharT* _Begin, const _CharT* _End_, _Call
 }
 
 template <class _CharT, typename _Callbacks_type> requires _Parse_spec_callbacks<_Callbacks_type, _CharT>
-constexpr _CharT* _Parse_align(const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
+constexpr const _CharT* _Parse_align(const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
     // done with parsing, or reached the end of a replacement field.
     if (_Begin == _End || *_Begin == '}') {
         return _Begin;
