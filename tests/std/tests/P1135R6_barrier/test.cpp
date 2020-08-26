@@ -77,7 +77,7 @@ void test_with_functor() {
     });
 
     std::thread t2([&] {
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 3; ++i) {
             b.arrive_and_wait();
             c.fetch_add(1, std::memory_order_relaxed);
         }
