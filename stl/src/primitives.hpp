@@ -16,8 +16,11 @@
 #include "awint.hpp"
 
 #ifdef _STL_CONCRT_SUPPORT
+#pragma warning(push)
+#pragma warning(disable : 6297 6385 6386 6504 28204)
 #include <concrt.h>
 #include <concrtinternal.h>
+#pragma warning(pop)
 #endif
 
 enum class __stl_sync_api_modes_enum { normal, win7, vista, concrt };

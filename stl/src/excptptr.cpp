@@ -43,7 +43,7 @@ namespace {
         /* MAGIC */ static _Immortalizer_impl<_Ty> _Static;
         return reinterpret_cast<_Ty&>(_Static._Storage);
     }
-#elif _MSC_VER > 1927 && !defined(_M_CEE) // _M_CEE test is TRANSITION, VSO-1153256
+#elif !defined(_M_CEE) // _M_CEE test is TRANSITION, VSO-1153256
     template <class _Ty>
     struct _Constexpr_excptptr_immortalize_impl {
         union {
@@ -108,7 +108,8 @@ namespace {
 
 #if _EH_RELATIVE_TYPEINFO
         void* _ThrowImageBase =
-            RtlPcToFileHeader(const_cast<void*>(static_cast<const void*>(_PThrow)), &_ThrowImageBase);
+            _PThrow ? RtlPcToFileHeader(const_cast<void*>(static_cast<const void*>(_PThrow)), &_ThrowImageBase)
+                    : nullptr;
         _Record.ExceptionInformation[3] = reinterpret_cast<ULONG_PTR>(_ThrowImageBase); // params.pThrowImageBase
 #endif // _EH_RELATIVE_TYPEINFO
 
@@ -340,7 +341,8 @@ namespace {
 
         const auto _ExceptionObjectSize = static_cast<size_t>(_PType->sizeOrOffset);
         const auto _AllocSize           = sizeof(_ExceptionPtr_normal) + _ExceptionObjectSize;
-        auto _RxRaw                     = malloc(_AllocSize);
+        _Analysis_assume_(_AllocSize >= sizeof(_ExceptionPtr_normal));
+        auto _RxRaw = malloc(_AllocSize);
         if (!_RxRaw) {
             _Dest = _ExceptionPtr_static<bad_alloc>::_Get();
             return;
@@ -422,33 +424,34 @@ namespace {
     }
 } // unnamed namespace
 
-_CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrCreate(void* _Ptr) noexcept {
+_CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrCreate(_Out_ void* _Ptr) noexcept {
     ::new (_Ptr) shared_ptr<const _EXCEPTION_RECORD>();
 }
 
-_CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrDestroy(void* _Ptr) noexcept {
+_CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrDestroy(_Inout_ void* _Ptr) noexcept {
     static_cast<shared_ptr<const _EXCEPTION_RECORD>*>(_Ptr)->~shared_ptr<const _EXCEPTION_RECORD>();
 }
 
-_CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrCopy(void* _Dest, const void* _Src) noexcept {
+_CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrCopy(_Out_ void* _Dest, _In_ const void* _Src) noexcept {
     ::new (_Dest) shared_ptr<const _EXCEPTION_RECORD>(*static_cast<const shared_ptr<const _EXCEPTION_RECORD>*>(_Src));
 }
 
-_CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrAssign(void* _Dest, const void* _Src) noexcept {
+_CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrAssign(_Inout_ void* _Dest, _In_ const void* _Src) noexcept {
     *static_cast<shared_ptr<const _EXCEPTION_RECORD>*>(_Dest) =
         *static_cast<const shared_ptr<const _EXCEPTION_RECORD>*>(_Src);
 }
 
-_CRTIMP2_PURE bool __CLRCALL_PURE_OR_CDECL __ExceptionPtrCompare(const void* _Lhs, const void* _Rhs) noexcept {
+_CRTIMP2_PURE bool __CLRCALL_PURE_OR_CDECL __ExceptionPtrCompare(
+    _In_ const void* _Lhs, _In_ const void* _Rhs) noexcept {
     return *static_cast<const shared_ptr<const _EXCEPTION_RECORD>*>(_Lhs)
            == *static_cast<const shared_ptr<const _EXCEPTION_RECORD>*>(_Rhs);
 }
 
-_CRTIMP2_PURE bool __CLRCALL_PURE_OR_CDECL __ExceptionPtrToBool(const void* _Ptr) noexcept {
+_CRTIMP2_PURE bool __CLRCALL_PURE_OR_CDECL __ExceptionPtrToBool(_In_ const void* _Ptr) noexcept {
     return static_cast<bool>(*static_cast<const shared_ptr<const _EXCEPTION_RECORD>*>(_Ptr));
 }
 
-_CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrSwap(void* _Lhs, void* _Rhs) noexcept {
+_CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrSwap(_Inout_ void* _Lhs, _Inout_ void* _Rhs) noexcept {
     static_cast<shared_ptr<const _EXCEPTION_RECORD>*>(_Lhs)->swap(
         *static_cast<shared_ptr<const _EXCEPTION_RECORD>*>(_Rhs));
 }
@@ -470,7 +473,7 @@ _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrCurrentException(void* 
     }
 }
 
-[[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrRethrow(const void* _PtrRaw) {
+[[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrRethrow(_In_ const void* _PtrRaw) {
     const shared_ptr<const _EXCEPTION_RECORD>* _Ptr = static_cast<const shared_ptr<const _EXCEPTION_RECORD>*>(_PtrRaw);
     // throwing a bad_exception if they give us a nullptr exception_ptr
     if (!*_Ptr) {
@@ -512,6 +515,8 @@ _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrCurrentException(void* 
 
         // Alloc memory on stack for exception object. This might cause a stack overflow SEH exception, or another C++
         // exception when copying the C++ exception object. In that case, we just let that become the thrown exception.
+
+#pragma warning(suppress : 6255) //  _alloca indicates failure by raising a stack overflow exception
         void* _PExceptionBuffer = alloca(_PType->sizeOrOffset);
         _CopyExceptionObject(_PExceptionBuffer, _CppRecord.params.pExceptionObject, _PType
 #if _EH_RELATIVE_TYPEINFO
@@ -531,7 +536,7 @@ _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrCurrentException(void* 
 }
 
 _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrCopyException(
-    void* _Ptr, const void* _PExceptRaw, const void* _PThrowRaw) noexcept {
+    _Inout_ void* _Ptr, _In_ const void* _PExceptRaw, _In_ const void* _PThrowRaw) noexcept {
     _EXCEPTION_RECORD _Record;
     _PopulateCppExceptionRecord(_Record, _PExceptRaw, static_cast<ThrowInfo*>(_PThrowRaw));
     _Assign_cpp_exception_ptr_from_record(
