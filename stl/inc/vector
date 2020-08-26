@@ -1615,9 +1615,10 @@ private:
     size_type _Calculate_growth(const size_type _Newsize) const {
         // given _Oldcapacity and _Newsize, calculate geometric growth
         const size_type _Oldcapacity = capacity();
+        const auto _Max              = max_size();
 
-        if (_Oldcapacity > max_size() - _Oldcapacity / 2) {
-            return _Newsize; // geometric growth would overflow
+        if (_Oldcapacity > _Max - _Oldcapacity / 2) {
+            return _Max; // geometric growth would overflow
         }
 
         const size_type _Geometric = _Oldcapacity + _Oldcapacity / 2;
