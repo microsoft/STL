@@ -1455,8 +1455,7 @@ namespace chrono {
     class year_month_weekday {
     public:
         year_month_weekday() = default;
-        constexpr year_month_weekday(
-            const year& _Y, const month& _M, const weekday_indexed& _Wdi) noexcept
+        constexpr year_month_weekday(const year& _Y, const month& _M, const weekday_indexed& _Wdi) noexcept
             : _Year{_Y}, _Month{_M}, _Weekday_index{_Wdi} {}
         constexpr year_month_weekday(const sys_days& _Sys_days) noexcept
             : year_month_weekday{_Ymwd_from_days(_Sys_days.time_since_epoch())} {}
@@ -1516,7 +1515,7 @@ namespace chrono {
         _NODISCARD static constexpr year_month_weekday _Ymwd_from_days(days _Dp) noexcept {
             const year_month_day _Ymd = sys_days{_Dp};
             const weekday _Wd         = sys_days{_Dp};
-            const auto _Idx                   = ((static_cast<unsigned>(_Ymd.day()) - 1) / 7) + 1;
+            const auto _Idx           = ((static_cast<unsigned>(_Ymd.day()) - 1) / 7) + 1;
             return {_Ymd.year(), _Ymd.month(), _Wd[_Idx]};
         }
     };
@@ -1568,8 +1567,7 @@ namespace chrono {
 
     class year_month_weekday_last {
     public:
-        constexpr year_month_weekday_last(
-            const year& _Y, const month& _M, const weekday_last& _Wdl) noexcept
+        constexpr year_month_weekday_last(const year& _Y, const month& _M, const weekday_last& _Wdl) noexcept
             : _Year{_Y}, _Month{_M}, _Weekday_last{_Wdl} {}
 
         constexpr year_month_weekday_last& operator+=(const months& _Months) noexcept;
