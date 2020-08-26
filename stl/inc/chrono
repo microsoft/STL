@@ -979,7 +979,7 @@ namespace chrono {
         }
 
     private:
-        weekday _Weekday;
+        chrono::weekday _Weekday;
         unsigned char _Index;
     };
 
@@ -999,7 +999,7 @@ namespace chrono {
         }
 
     private:
-        weekday _Weekday;
+        chrono::weekday _Weekday;
     };
 
     constexpr bool operator==(const weekday_last& _Left, const weekday_last& _Right) noexcept {
@@ -1043,8 +1043,8 @@ namespace chrono {
         }
 
     private:
-        month _Month;
-        day _Day;
+        chrono::month _Month;
+        chrono::day _Day;
     };
 
     constexpr bool operator==(const month_day& _Left, const month_day& _Right) noexcept {
@@ -1071,7 +1071,7 @@ namespace chrono {
         }
 
     private:
-        month _Month;
+        chrono::month _Month;
     };
 
     constexpr bool operator==(const month_day_last& _Left, const month_day_last& _Right) noexcept {
@@ -1098,8 +1098,8 @@ namespace chrono {
         }
 
     private:
-        month _Month;
-        weekday_indexed _Weekday_index;
+        chrono::month _Month;
+        chrono::weekday_indexed _Weekday_index;
     };
 
     constexpr bool operator==(const month_weekday& _Left, const month_weekday& _Right) noexcept {
@@ -1122,8 +1122,8 @@ namespace chrono {
         }
 
     private:
-        month _Month;
-        weekday_last _Weekday_last;
+        chrono::month _Month;
+        chrono::weekday_last _Weekday_last;
     };
 
     constexpr bool operator==(const month_weekday_last& _Left, const month_weekday_last& _Right) noexcept {
@@ -1152,8 +1152,8 @@ namespace chrono {
         }
 
     private:
-        year _Year;
-        month _Month;
+        chrono::year _Year;
+        chrono::month _Month;
     };
 
     constexpr bool operator==(const year_month& _Left, const year_month& _Right) noexcept {
@@ -1261,13 +1261,13 @@ namespace chrono {
                 return false;
             }
 
-            return _Day >= day{1} && _Day <= _Last_day(_Year, _Month);
+            return _Day >= chrono::day{1} && _Day <= _Last_day(_Year, _Month);
         }
 
     private:
-        year _Year;
-        month _Month;
-        day _Day;
+        chrono::year _Year;
+        chrono::month _Month;
+        chrono::day _Day;
         // courtesy of Howard Hinnant
         // https://howardhinnant.github.io/date_algorithms.html#civil_from_days
         _NODISCARD static constexpr year_month_day _Civil_from_days(int _Tp) noexcept {
@@ -1282,14 +1282,14 @@ namespace chrono {
             const unsigned _Mp  = (5 * _Doy + 2) / 153;
             const unsigned _Da  = _Doy - (153 * _Mp + 2) / 5 + 1;
             const unsigned _Mo  = _Mp + (_Mp < 10 ? 3 : static_cast<unsigned>(-9));
-            return year_month_day(year{_Ye + (_Mo <= 2)}, month{_Mo}, day{_Da});
+            return year_month_day(chrono::year{_Ye + (_Mo <= 2)}, chrono::month{_Mo}, chrono::day{_Da});
         }
         // courtesy of Howard Hinnant
         // https://howardhinnant.github.io/date_algorithms.html#days_from_civil
         _NODISCARD constexpr days _Days_from_civil() const noexcept {
             static_assert(numeric_limits<unsigned>::digits >= 18);
             static_assert(numeric_limits<int>::digits >= 20);
-            const int _Ye       = static_cast<int>(_Year) - (_Month <= month{2});
+            const int _Ye       = static_cast<int>(_Year) - (_Month <= chrono::month{2});
             const unsigned _Mo  = static_cast<unsigned>(_Month);
             const int _Era      = (_Ye >= 0 ? _Ye : _Ye - 399) / 400;
             const unsigned _Yoe = static_cast<unsigned>(_Ye - _Era * 400);
@@ -1386,15 +1386,15 @@ namespace chrono {
             return sys_days{year_month_day{year(), month(), day()}};
         }
         _NODISCARD constexpr explicit operator local_days() const noexcept {
-            return _STD local_days{static_cast<sys_days>(*this).time_since_epoch()};
+            return local_days{static_cast<sys_days>(*this).time_since_epoch()};
         }
         _NODISCARD constexpr bool ok() const noexcept {
             return _Year.ok() && _Month_day_last.ok();
         }
 
     private:
-        year _Year;
-        month_day_last _Month_day_last;
+        chrono::year _Year;
+        chrono::month_day_last _Month_day_last;
     };
 
     constexpr bool operator==(const year_month_day_last& _Left, const year_month_day_last& _Right) noexcept {
@@ -1485,7 +1485,7 @@ namespace chrono {
 
         _NODISCARD constexpr operator sys_days() const noexcept {
             const sys_days _First = year_month_day{_Year, _Month, day{1}};
-            const days _Diff      = weekday() - weekday{_First};
+            const days _Diff      = weekday() - chrono::weekday{_First};
             const days _Days      = _Diff + days{(static_cast<int>(index()) - 1) * 7};
             return _First + _Days;
         }
@@ -1502,20 +1502,20 @@ namespace chrono {
             }
 
             const sys_days _First = year_month_day{_Year, _Month, day{1}};
-            const days _Diff      = weekday() - weekday{_First};
+            const days _Diff      = weekday() - chrono::weekday{_First};
             const days _Last      = _Diff + days{29};
             return static_cast<unsigned>(_Last.count()) <= static_cast<unsigned>(_Last_day(_Year, _Month));
         }
 
     private:
-        year _Year;
-        month _Month;
-        weekday_indexed _Weekday_index;
+        chrono::year _Year;
+        chrono::month _Month;
+        chrono::weekday_indexed _Weekday_index;
 
         _NODISCARD static constexpr year_month_weekday _Ymwd_from_days(days _Dp) noexcept {
-            const year_month_day _Ymd = sys_days{_Dp};
-            const weekday _Wd         = sys_days{_Dp};
-            const auto _Idx           = ((static_cast<unsigned>(_Ymd.day()) - 1) / 7) + 1;
+            const chrono::year_month_day _Ymd = sys_days{_Dp};
+            const chrono::weekday _Wd         = sys_days{_Dp};
+            const auto _Idx                   = ((static_cast<unsigned>(_Ymd.day()) - 1) / 7) + 1;
             return {_Ymd.year(), _Ymd.month(), _Wd[_Idx]};
         }
     };
@@ -1591,7 +1591,7 @@ namespace chrono {
 
         _NODISCARD constexpr operator sys_days() const noexcept {
             const sys_days _Last = year_month_day_last{_Year, month_day_last{_Month}};
-            const auto _Diff     = weekday{_Last} - weekday();
+            const auto _Diff     = chrono::weekday{_Last} - weekday();
             return _Last - _Diff;
         }
         _NODISCARD constexpr explicit operator local_days() const noexcept {
@@ -1602,9 +1602,9 @@ namespace chrono {
         }
 
     private:
-        year _Year;
-        month _Month;
-        weekday_last _Weekday_last;
+        chrono::year _Year;
+        chrono::month _Month;
+        chrono::weekday_last _Weekday_last;
     };
 
     constexpr bool operator==(const year_month_weekday_last& _Left, const year_month_weekday_last& _Right) noexcept {
@@ -1881,11 +1881,11 @@ inline namespace literals {
             return chrono::duration<double, nano>(_Val);
         }
 #if _HAS_CXX20
-        _NODISCARD constexpr day operator"" d(unsigned long long _Day) noexcept /* strengthened */ {
-            return day{static_cast<unsigned>(_Day)};
+        _NODISCARD constexpr chrono::day operator"" d(unsigned long long _Day) noexcept /* strengthened */ {
+            return chrono::day{static_cast<unsigned>(_Day)};
         }
-        _NODISCARD constexpr year operator"" y(unsigned long long _Year) noexcept /* strengthened */ {
-            return year{static_cast<int>(_Year)};
+        _NODISCARD constexpr chrono::year operator"" y(unsigned long long _Year) noexcept /* strengthened */ {
+            return chrono::year{static_cast<int>(_Year)};
         }
 #endif // _HAS_CXX20
     } // namespace chrono_literals
