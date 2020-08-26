@@ -217,11 +217,11 @@ public:
             const int _Res      = _Cnd_timedwait(_Mycnd(), _Myptr->_Mymtx(), &_Tgt);
             _Guard.unlock();
 
-            if (_Res == _Thrd_timedout) {
-                if (!_Clamped) {
-                    break;
-                }
-            } else if (_Res != _Thrd_success) {
+            switch (_Res) {
+            case _Thrd_timedout:
+            case _Thrd_success:
+                break;
+            default:
                 _Throw_C_error(_Res);
             }
         } // relock
