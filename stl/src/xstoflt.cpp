@@ -15,8 +15,9 @@ constexpr int _Base   = 10; // decimal
 constexpr int _Ndig   = 9; // decimal digits per long word
 constexpr int _Maxsig = 5 * _Ndig; // maximum significant digits to keep
 
-int _Stoflt(const char* s0, const char* s, char** endptr, long lo[],
-    int maxsig) { // convert string to array of long plus exponent
+_In_range_(0, maxsig) int _Stoflt(
+    const char* s0, const char* s, char** endptr, _Out_writes_(maxsig) long lo[], _In_range_(1, 4) int maxsig) {
+    // convert string to array of long plus exponent
     char buf[_Maxsig + 1]; // worst case, with room for rounding digit
     int nsig   = 0; // number of significant digits seen
     int seen   = 0; // any valid field characters seen
