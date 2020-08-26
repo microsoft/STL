@@ -53,6 +53,7 @@ namespace chrono {
         }
     };
 
+#ifdef _HAS_CXX20
     template <class _Clock>
     concept _Is_Clock = requires {
         typename _Clock::rep;
@@ -67,6 +68,7 @@ namespace chrono {
     struct is_clock : bool_constant<_Is_Clock<_Clock>> {};
     template <class _Clock>
     inline constexpr bool is_clock_v = _Is_Clock<_Clock>;
+#endif // HAS_CXX20
 
     // CLASS TEMPLATE duration
     template <class _Rep, class _Period = ratio<1>>
