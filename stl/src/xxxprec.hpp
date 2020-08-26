@@ -6,6 +6,10 @@
 #include <string.h>
 
 #include "xmath.hpp"
+
+#pragma warning(push)
+#pragma warning(disable : _STL_DISABLED_WARNINGS)
+
 #if !defined(MRTDLL)
 _EXTERN_C
 #endif // defined(MRTDLL)
@@ -425,3 +429,5 @@ FTYPE* FNAME(Xp_sqrtx)(FTYPE* p, int n, FTYPE* ptemp4) {
 #if !defined(MRTDLL)
 _END_EXTERN_C
 #endif // !defined(MRTDLL)
+
+#pragma warning(pop)
