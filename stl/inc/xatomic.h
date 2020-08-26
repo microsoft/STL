@@ -11,7 +11,7 @@
 
 #include <intrin0.h>
 #include <type_traits>
-#if defined(_WIN64) && (_MSC_FULL_VER <= 192829203) // TRANSITION
+#if defined(_WIN64) && (_MSC_FULL_VER <= 192829213) // TRANSITION
 #include <intrin.h> // Visual Studio 2019 to define 128-bit CAS in <intrin0.h>
 #endif // defined(_WIN64) && (_MSC_FULL_VER < 192829203), TRANSITION
 
