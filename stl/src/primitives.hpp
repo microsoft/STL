@@ -193,6 +193,8 @@ namespace Concurrency {
         };
 
 #ifdef _STL_CONCRT_SUPPORT
+        // Not created anymore, but used to determine size.
+        // Can substitute actual size (for all possible ABIs), and remove concrt dependency
         class stl_critical_section_concrt final : public stl_critical_section_interface {
         public:
             stl_critical_section_concrt()                                   = default;
@@ -229,6 +231,8 @@ namespace Concurrency {
             critical_section m_critical_section;
         };
 
+        // Not created anymore, but used to determine size.
+        // Can substitute actual size (for all possible ABIs), and remove concrt dependency
         class stl_condition_variable_concrt final : public stl_condition_variable_interface {
         public:
             stl_condition_variable_concrt()                                     = default;
@@ -290,15 +294,8 @@ namespace Concurrency {
             case __stl_sync_api_modes_enum::vista:
                 new (p) stl_critical_section_vista;
                 return;
-            case __stl_sync_api_modes_enum::concrt:
             default:
-#ifdef _STL_CONCRT_SUPPORT
-                new (p) stl_critical_section_concrt;
-                return;
-#else
-                new (p) stl_critical_section_vista;
-                return;
-#endif // _STL_CONCRT_SUPPORT
+                abort();
             }
 #endif // _CRT_WINDOWS
         }
@@ -318,15 +315,8 @@ namespace Concurrency {
             case __stl_sync_api_modes_enum::vista:
                 new (p) stl_condition_variable_vista;
                 return;
-            case __stl_sync_api_modes_enum::concrt:
             default:
-#ifdef _STL_CONCRT_SUPPORT
-                new (p) stl_condition_variable_concrt;
-                return;
-#else
-                new (p) stl_condition_variable_vista;
-                return;
-#endif // _STL_CONCRT_SUPPORT
+                abort();
             }
 #endif // _CRT_WINDOWS
         }
