@@ -213,8 +213,8 @@ public:
             // TRANSITION, ABI: The standard says that we should use a steady clock,
             // but unfortunately our ABI speaks struct xtime, which is relative to the system clock.
             _CSTD xtime _Tgt;
-            const bool _Clamped = _To_xtime_10_day_clamped(_Tgt, _Rel_time);
-            const int _Res      = _Cnd_timedwait(_Mycnd(), _Myptr->_Mymtx(), &_Tgt);
+            _To_xtime_10_day_clamped(_Tgt, _Rel_time);
+            const int _Res = _Cnd_timedwait(_Mycnd(), _Myptr->_Mymtx(), &_Tgt);
             _Guard.unlock();
 
             switch (_Res) {

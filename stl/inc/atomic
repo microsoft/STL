@@ -2983,7 +2983,7 @@ public:
 
 public:
     constexpr _Locked_pointer() noexcept : _Storage{} {}
-    constexpr _Locked_pointer(_Ty* _Ptr) noexcept : _Storage{reinterpret_cast<uintptr_t>(_Ptr)} {}
+    _Locked_pointer(_Ty* _Ptr) noexcept : _Storage{reinterpret_cast<uintptr_t>(_Ptr)} {}
 
     _Locked_pointer(const _Locked_pointer&) = delete;
     _Locked_pointer& operator=(const _Locked_pointer&) = delete;
@@ -3017,10 +3017,6 @@ public:
                 _CSTD abort();
             }
         }
-    }
-
-    _NODISCARD _Ty* _Load_relaxed() noexcept {
-        return reinterpret_cast<_Ty*>(_Storage.load(memory_order_relaxed));
     }
 
     void _Store_and_unlock(_Ty* const _Value) noexcept {
