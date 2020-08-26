@@ -167,9 +167,13 @@ void scan_file(const filesystem::path& filepath, const TabPolicy tab_policy, vec
         static constexpr array checked_extensions{
             // line length should be capped in files with these extensions:
             L""sv,
+            L".cmd"sv,
             L".cpp"sv,
             L".h"sv,
             L".hpp"sv,
+            L".md"sv,
+            L".ps1"sv,
+            L".py"sv,
             L".yml"sv,
         };
         static_assert(is_sorted(checked_extensions.begin(), checked_extensions.end()));

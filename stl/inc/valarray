@@ -1503,7 +1503,8 @@ public:
     }
 
     size_t _Off(_Sizarray& _Indexarr) const {
-        size_t _Idx, _Ans = _Start;
+        size_t _Idx;
+        size_t _Ans        = _Start;
         const size_t _Size = _Indexarr.size();
         for (_Idx = 0; _Idx < _Size; ++_Idx) {
             _Ans += _Indexarr[_Idx] * _Stride[_Idx]; // compute offset
