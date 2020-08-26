@@ -317,6 +317,8 @@ tests\P0896R4_ranges_ref_view
 tests\P0896R4_ranges_subrange
 tests\P0896R4_ranges_test_machinery
 tests\P0896R4_ranges_to_address
+tests\P0896R4_views_empty
+tests\P0896R4_views_single
 tests\P0898R3_concepts
 tests\P0898R3_identity
 tests\P0912R5_coroutine
