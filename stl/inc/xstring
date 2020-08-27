@@ -1831,7 +1831,7 @@ public:
         this->_Adopt(_Pstring);
     }
 
-    _NODISCARD reference operator*() const {
+    _NODISCARD reference operator*() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL >= 1
         _STL_VERIFY(_Ptr, "cannot dereference value-initialized string iterator");
         const auto _Mycont = static_cast<const _Mystr*>(this->_Getcont());
@@ -1847,11 +1847,11 @@ public:
         return *_Ptr;
     }
 
-    _NODISCARD pointer operator->() const {
+    _NODISCARD pointer operator->() const noexcept {
         return pointer_traits<pointer>::pointer_to(**this);
     }
 
-    _String_const_iterator& operator++() {
+    _String_const_iterator& operator++() noexcept {
 #if _ITERATOR_DEBUG_LEVEL >= 1
         _STL_VERIFY(_Ptr, "cannot increment value-initialized string iterator");
         const auto _Mycont = static_cast<const _Mystr*>(this->_Getcont());
@@ -1864,13 +1864,13 @@ public:
         return *this;
     }
 
-    _String_const_iterator operator++(int) {
+    _String_const_iterator operator++(int) noexcept {
         _String_const_iterator _Tmp = *this;
         ++*this;
         return _Tmp;
     }
 
-    _String_const_iterator& operator--() {
+    _String_const_iterator& operator--() noexcept {
 #if _ITERATOR_DEBUG_LEVEL >= 1
         _STL_VERIFY(_Ptr, "cannot decrement value-initialized string iterator");
         const auto _Mycont = static_cast<const _Mystr*>(this->_Getcont());
@@ -1883,7 +1883,7 @@ public:
         return *this;
     }
 
-    _String_const_iterator operator--(int) {
+    _String_const_iterator operator--(int) noexcept {
         _String_const_iterator _Tmp = *this;
         --*this;
         return _Tmp;
@@ -1916,7 +1916,7 @@ public:
 #endif // _ITERATOR_DEBUG_LEVEL >= 1
     }
 
-    _String_const_iterator& operator+=(const difference_type _Off) {
+    _String_const_iterator& operator+=(const difference_type _Off) noexcept {
 #if _ITERATOR_DEBUG_LEVEL >= 1
         _Verify_offset(_Off);
 #endif // _ITERATOR_DEBUG_LEVEL >= 1
@@ -1924,56 +1924,56 @@ public:
         return *this;
     }
 
-    _NODISCARD _String_const_iterator operator+(const difference_type _Off) const {
+    _NODISCARD _String_const_iterator operator+(const difference_type _Off) const noexcept {
         _String_const_iterator _Tmp = *this;
         return _Tmp += _Off;
     }
 
-    _String_const_iterator& operator-=(const difference_type _Off) {
+    _String_const_iterator& operator-=(const difference_type _Off) noexcept {
         return *this += -_Off;
     }
 
-    _NODISCARD _String_const_iterator operator-(const difference_type _Off) const {
+    _NODISCARD _String_const_iterator operator-(const difference_type _Off) const noexcept {
         _String_const_iterator _Tmp = *this;
         return _Tmp -= _Off;
     }
 
-    _NODISCARD difference_type operator-(const _String_const_iterator& _Right) const {
+    _NODISCARD difference_type operator-(const _String_const_iterator& _Right) const noexcept {
         _Compat(_Right);
         return _Ptr - _Right._Ptr;
     }
 
-    _NODISCARD reference operator[](const difference_type _Off) const {
+    _NODISCARD reference operator[](const difference_type _Off) const noexcept {
         return *(*this + _Off);
     }
 
-    _NODISCARD bool operator==(const _String_const_iterator& _Right) const {
+    _NODISCARD bool operator==(const _String_const_iterator& _Right) const noexcept {
         _Compat(_Right);
         return _Ptr == _Right._Ptr;
     }
 
-    _NODISCARD bool operator!=(const _String_const_iterator& _Right) const {
+    _NODISCARD bool operator!=(const _String_const_iterator& _Right) const noexcept {
         return !(*this == _Right);
     }
 
-    _NODISCARD bool operator<(const _String_const_iterator& _Right) const {
+    _NODISCARD bool operator<(const _String_const_iterator& _Right) const noexcept {
         _Compat(_Right);
         return _Ptr < _Right._Ptr;
     }
 
-    _NODISCARD bool operator>(const _String_const_iterator& _Right) const {
+    _NODISCARD bool operator>(const _String_const_iterator& _Right) const noexcept {
         return _Right < *this;
     }
 
-    _NODISCARD bool operator<=(const _String_const_iterator& _Right) const {
+    _NODISCARD bool operator<=(const _String_const_iterator& _Right) const noexcept {
         return !(_Right < *this);
     }
 
-    _NODISCARD bool operator>=(const _String_const_iterator& _Right) const {
+    _NODISCARD bool operator>=(const _String_const_iterator& _Right) const noexcept {
         return !(*this < _Right);
     }
 
-    void _Compat(const _String_const_iterator& _Right) const { // test for compatible iterator pair
+    void _Compat(const _String_const_iterator& _Right) const noexcept { // test for compatible iterator pair
 #if _ITERATOR_DEBUG_LEVEL >= 1
         _STL_VERIFY(this->_Getcont() == _Right._Getcont(), "string iterators incompatible (e.g."
                                                            " point to different string instances)");
@@ -1983,7 +1983,7 @@ public:
     }
 
 #if _ITERATOR_DEBUG_LEVEL >= 1
-    friend void _Verify_range(const _String_const_iterator& _First, const _String_const_iterator& _Last) {
+    friend void _Verify_range(const _String_const_iterator& _First, const _String_const_iterator& _Last) noexcept {
         _STL_VERIFY(_First._Getcont() == _Last._Getcont(), "string iterators in range are from different containers");
         _STL_VERIFY(_First._Ptr <= _Last._Ptr, "string iterator range transposed");
     }
@@ -1991,11 +1991,11 @@ public:
 
     using _Prevent_inheriting_unwrap = _String_const_iterator;
 
-    _NODISCARD const value_type* _Unwrapped() const {
+    _NODISCARD const value_type* _Unwrapped() const noexcept {
         return _Unfancy(_Ptr);
     }
 
-    void _Seek_to(const value_type* _It) {
+    void _Seek_to(const value_type* _It) noexcept {
         _Ptr = _Refancy<pointer>(const_cast<value_type*>(_It));
     }
 
@@ -2004,7 +2004,7 @@ public:
 
 template <class _Mystr>
 _NODISCARD _String_const_iterator<_Mystr> operator+(
-    typename _String_const_iterator<_Mystr>::difference_type _Off, _String_const_iterator<_Mystr> _Next) {
+    typename _String_const_iterator<_Mystr>::difference_type _Off, _String_const_iterator<_Mystr> _Next) noexcept {
     return _Next += _Off;
 }
 
@@ -2056,72 +2056,72 @@ public:
 
     using _Mybase::_Mybase;
 
-    _NODISCARD reference operator*() const {
+    _NODISCARD reference operator*() const noexcept {
         return const_cast<reference>(_Mybase::operator*());
     }
 
-    _NODISCARD pointer operator->() const {
+    _NODISCARD pointer operator->() const noexcept {
         return pointer_traits<pointer>::pointer_to(**this);
     }
 
-    _String_iterator& operator++() {
+    _String_iterator& operator++() noexcept {
         _Mybase::operator++();
         return *this;
     }
 
-    _String_iterator operator++(int) {
+    _String_iterator operator++(int) noexcept {
         _String_iterator _Tmp = *this;
         _Mybase::operator++();
         return _Tmp;
     }
 
-    _String_iterator& operator--() {
+    _String_iterator& operator--() noexcept {
         _Mybase::operator--();
         return *this;
     }
 
-    _String_iterator operator--(int) {
+    _String_iterator operator--(int) noexcept {
         _String_iterator _Tmp = *this;
         _Mybase::operator--();
         return _Tmp;
     }
 
-    _String_iterator& operator+=(const difference_type _Off) {
+    _String_iterator& operator+=(const difference_type _Off) noexcept {
         _Mybase::operator+=(_Off);
         return *this;
     }
 
-    _NODISCARD _String_iterator operator+(const difference_type _Off) const {
+    _NODISCARD _String_iterator operator+(const difference_type _Off) const noexcept {
         _String_iterator _Tmp = *this;
         return _Tmp += _Off;
     }
 
-    _String_iterator& operator-=(const difference_type _Off) {
+    _String_iterator& operator-=(const difference_type _Off) noexcept {
         _Mybase::operator-=(_Off);
         return *this;
     }
 
     using _Mybase::operator-;
 
-    _NODISCARD _String_iterator operator-(const difference_type _Off) const {
+    _NODISCARD _String_iterator operator-(const difference_type _Off) const noexcept {
         _String_iterator _Tmp = *this;
         return _Tmp -= _Off;
     }
 
-    _NODISCARD reference operator[](const difference_type _Off) const {
+    _NODISCARD reference operator[](const difference_type _Off) const noexcept {
         return const_cast<reference>(_Mybase::operator[](_Off));
     }
 
     using _Prevent_inheriting_unwrap = _String_iterator;
 
-    _NODISCARD value_type* _Unwrapped() const {
+    _NODISCARD value_type* _Unwrapped() const noexcept {
         return const_cast<value_type*>(_Unfancy(this->_Ptr));
     }
 };
 
 template <class _Mystr>
 _NODISCARD _String_iterator<_Mystr> operator+(
-    typename _String_iterator<_Mystr>::difference_type _Off, _String_iterator<_Mystr> _Next) {
+    typename _String_iterator<_Mystr>::difference_type _Off, _String_iterator<_Mystr> _Next) noexcept {
     return _Next += _Off;
 }
 
@@ -2179,7 +2179,7 @@ public:
     using reference       = value_type&;
     using const_reference = const value_type&;
 
-    _String_val() : _Bx(), _Mysize(0), _Myres(0) {}
+    _String_val() noexcept : _Bx(), _Mysize(0), _Myres(0) {}
 
     // length of internal buffer, [1, 16]:
     static constexpr size_type _BUF_SIZE = 16 / sizeof(value_type) < 1 ? 1 : 16 / sizeof(value_type);
@@ -2233,7 +2233,7 @@ public:
     }
 
     union _Bxty { // storage for small buffer or pointer to larger one
-        _Bxty() {} // user-provided, for fancy pointers
+        _Bxty() noexcept {} // user-provided, for fancy pointers
 
         ~_Bxty() noexcept {} // user-provided, for fancy pointers
 
@@ -3270,8 +3270,8 @@ public:
         return *this;
     }
 
-    basic_string& erase(const size_type _Off, size_type _Count) { // erase elements [_Off, _Off + _Count)
-        _Mypair._Myval2._Check_offset(_Off);
+private:
+    basic_string& _Erase_noexcept(const size_type _Off, size_type _Count) noexcept {
         _Count                    = _Mypair._Myval2._Clamp_suffix_size(_Off, _Count);
         const size_type _Old_size = _Mypair._Myval2._Mysize;
         _Elem* const _My_ptr      = _Mypair._Myval2._Myptr();
@@ -3282,12 +3282,18 @@ public:
         return *this;
     }
 
+public:
+    basic_string& erase(const size_type _Off, const size_type _Count) { // erase elements [_Off, _Off + _Count)
+        _Mypair._Myval2._Check_offset(_Off);
+        return _Erase_noexcept(_Off, _Count);
+    }
+
     iterator erase(const const_iterator _Where) noexcept /* strengthened */ {
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Where._Getcont() == _STD addressof(_Mypair._Myval2), "string iterator incompatible");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         const auto _Off = static_cast<size_type>(_Unfancy(_Where._Ptr) - _Mypair._Myval2._Myptr());
-        erase(_Off, 1);
+        _Erase_noexcept(_Off, 1);
         return begin() + static_cast<difference_type>(_Off);
     }
 
@@ -3297,7 +3303,7 @@ public:
         _STL_VERIFY(_First._Getcont() == _STD addressof(_Mypair._Myval2), "string iterators incompatible");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         const auto _Off = static_cast<size_type>(_Unfancy(_First._Ptr) - _Mypair._Myval2._Myptr());
-        erase(_Off, static_cast<size_type>(_Last._Ptr - _First._Ptr));
+        _Erase_noexcept(_Off, static_cast<size_type>(_Last._Ptr - _First._Ptr));
         return begin() + static_cast<difference_type>(_Off);
     }
 

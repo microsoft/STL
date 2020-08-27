@@ -131,6 +131,7 @@
 // Other C++17 deprecation warnings
 
 // _HAS_CXX20 directly controls:
+// P0019R8 atomic_ref
 // P0020R6 atomic<float>, atomic<double>, atomic<long double>
 // P0122R7 <span>
 // P0202R3 constexpr For <algorithm> And exchange()
@@ -147,6 +148,7 @@
 // P0482R6 Library Support For char8_t
 //     (mbrtoc8 and c8rtomb not yet implemented)
 // P0487R1 Fixing operator>>(basic_istream&, CharT*)
+// P0528R3 Atomic Compare-And-Exchange With Padding Bits
 // P0550R2 remove_cvref
 // P0553R4 <bit> Rotating And Counting Functions
 // P0556R3 <bit> Integral Power-Of-2 Operations (renamed by P1956R1)
@@ -170,7 +172,6 @@
 //     (partially implemented)
 // P0898R3 Standard Library Concepts
 // P0912R5 Library Support For Coroutines
-//     (partially implemented, missing noop coroutines)
 // P0919R3 Heterogeneous Lookup For Unordered Containers
 // P0966R1 string::reserve() Should Not Shrink
 // P1001R2 execution::unseq
@@ -182,6 +183,9 @@
 //     (except the std::invoke function which is implemented in C++17)
 // P1085R2 Removing span Comparisons
 // P1115R3 erase()/erase_if() Return size_type
+// P1123R0 Atomic Compare-And-Exchange With Padding Bits For atomic_ref
+// P1135R6 The C++20 Synchronization Library
+//     (partially implemented)
 // P1207R4 Movability Of Single-Pass Iterators
 //     (partially implemented)
 // P1209R0 erase_if(), erase()
@@ -207,6 +211,7 @@
 // P1907R2 ranges::ssize
 // P1956R1 <bit> has_single_bit(), bit_ceil(), bit_floor(), bit_width()
 // P1959R0 Removing weak_equality And strong_equality
+// P1960R0 atomic_ref Cleanup
 // P1964R2 Replacing boolean With boolean-testable
 // P1976R2 Explicit Constructors For Fixed-Extent span From Dynamic-Extent Ranges
 // P2091R0 Fixing Issues With Range Access CPOs
@@ -1137,6 +1142,7 @@
 #define __cpp_lib_atomic_flag_test              201907L
 #define __cpp_lib_atomic_float                  201711L
 #define __cpp_lib_atomic_lock_free_type_aliases 201907L
+#define __cpp_lib_atomic_ref                    201806L
 #define __cpp_lib_atomic_shared_ptr             201711L
 #define __cpp_lib_atomic_wait                   201907L
 #define __cpp_lib_bind_front                    201907L
@@ -1162,8 +1168,12 @@
 #define __cpp_lib_constexpr_tuple       201811L
 #define __cpp_lib_constexpr_utility     201811L
 
-#ifdef __cpp_impl_coroutine // TRANSITION, VS 2019 16.8 Preview 3
-#define __cpp_lib_coroutine 197000L
+#ifdef __cpp_impl_coroutine // TRANSITION, Clang and EDG coroutine support
+#if __cpp_impl_coroutine >= 201902L
+#define __cpp_lib_coroutine 201902L
+#else // ^^^ __cpp_impl_coroutine >= 201902L ^^^ / vvv __cpp_impl_coroutine < 201902L vvv
+#define __cpp_lib_coroutine 197000L // TRANSITION, VS 2019 16.8 Preview 4
+#endif // ^^^ __cpp_impl_coroutine < 201902L ^^^
 #endif // __cpp_impl_coroutine
 
 #define __cpp_lib_destroying_delete            201806L
@@ -1262,13 +1272,18 @@ compiler option, or define _ALLOW_RTCc_IN_STL to acknowledge that you have recei
 #error In yvals_core.h, defined(MRTDLL) implies defined(_M_CEE_PURE); !defined(_M_CEE_PURE) implies !defined(MRTDLL)
 #endif // defined(MRTDLL) && !defined(_M_CEE_PURE)
 
-#define _STL_WIN32_WINNT_WINXP 0x0501 // _WIN32_WINNT_WINXP from sdkddkver.h
-#define _STL_WIN32_WINNT_VISTA 0x0600 // _WIN32_WINNT_VISTA from sdkddkver.h
-#define _STL_WIN32_WINNT_WIN8  0x0602 // _WIN32_WINNT_WIN8 from sdkddkver.h
+#define _STL_WIN32_WINNT_WINXP   0x0501 // _WIN32_WINNT_WINXP from sdkddkver.h
+#define _STL_WIN32_WINNT_VISTA   0x0600 // _WIN32_WINNT_VISTA from sdkddkver.h
+#define _STL_WIN32_WINNT_WIN8    0x0602 // _WIN32_WINNT_WIN8 from sdkddkver.h
+#define _STL_WIN32_WINNT_WINBLUE 0x0603 // _WIN32_WINNT_WINBLUE from sdkddkver.h
+#define _STL_WIN32_WINNT_WIN10   0x0A00 // _WIN32_WINNT_WIN10 from sdkddkver.h
 
 // Note that the STL DLL builds will set this to XP for ABI compatibility with VS2015 which supported XP.
 #ifndef _STL_WIN32_WINNT
-#if defined(_M_ARM) || defined(_M_ARM64) || defined(_ONECORE) || defined(_CRT_APP)
+#if defined(_M_ARM64)
+// The first ARM64 Windows was Windows 10
+#define _STL_WIN32_WINNT _STL_WIN32_WINNT_WIN10
+#elif defined(_M_ARM) || defined(_ONECORE) || defined(_CRT_APP)
 // The first ARM or OneCore or App Windows was Windows 8
 #define _STL_WIN32_WINNT _STL_WIN32_WINNT_WIN8
 #else // ^^^ default to Win8 // default to Vista vvv
@@ -1276,6 +1291,12 @@ compiler option, or define _ALLOW_RTCc_IN_STL to acknowledge that you have recei
 #define _STL_WIN32_WINNT _STL_WIN32_WINNT_VISTA
 #endif // ^^^ !defined(_M_ARM) && !defined(_M_ARM64) && !defined(_ONECORE) && !defined(_CRT_APP) ^^^
 #endif // _STL_WIN32_WINNT
+
+#ifdef __cpp_noexcept_function_type
+#define _NOEXCEPT_FNPTR noexcept
+#else
+#define _NOEXCEPT_FNPTR
+#endif // __cpp_noexcept_function_type
 
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _YVALS_CORE_H_

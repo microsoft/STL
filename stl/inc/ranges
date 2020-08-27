@@ -12,6 +12,9 @@
 #pragma message("The contents of <ranges> are available only with C++20 concepts support.")
 #else // ^^^ !defined(__cpp_lib_concepts) / defined(__cpp_lib_concepts) vvv
 #include <iterator>
+#if 1 // TRANSITION, VSO-1174090
+#include <optional>
+#endif // TRANSITION, VSO-1174090
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -22,14 +25,470 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 namespace ranges {
-    // Much machinery defined in <xutility>
+    // MUCH machinery defined in <xutility>
 
     // clang-format off
     // CONCEPT ranges::viewable_range
     template <class _Rng>
     concept viewable_range = range<_Rng>
         && (borrowed_range<_Rng> || view<remove_cvref_t<_Rng>>);
+
+    template <class _Ty>
+    concept _Copy_constructible_object = copy_constructible<_Ty> && is_object_v<_Ty>;
+    // clang-format on
+
+    // CLASS TEMPLATE ranges::_Semiregular_box
+#if 0 // TRANSITION, VSO-1174090
+    template <_Copy_constructible_object _Ty>
+    class _Semiregular_box {
+    public:
+        constexpr _Semiregular_box() noexcept : _Dummy{}, _Engaged{false} {}
+        constexpr _Semiregular_box() noexcept(
+            is_nothrow_default_constructible_v<_Ty>) requires default_initializable<_Ty>
+            : _Val(), _Engaged{true} {}
+
+        template <class... _Types>
+        constexpr _Semiregular_box(in_place_t, _Types&&... _Args) noexcept(
+            is_nothrow_constructible_v<_Ty, _Types...>) // strengthened
+            : _Val(_STD forward<_Types>(_Args)...), _Engaged{true} {}
+
+        ~_Semiregular_box() requires is_trivially_destructible_v<_Ty> = default;
+
+        ~_Semiregular_box() {
+            if (_Engaged) {
+                _Val.~_Ty();
+            }
+        }
+
+        _Semiregular_box(const _Semiregular_box&) requires is_trivially_copy_constructible_v<_Ty> = default;
+        _Semiregular_box(const _Semiregular_box& _That) : _Engaged{_That._Engaged} {
+            if (_That._Engaged) {
+                _Construct_in_place(_Val, _That._Val);
+            }
+        }
+
+        _Semiregular_box(_Semiregular_box&&) requires is_trivially_move_constructible_v<_Ty> = default;
+        _Semiregular_box(_Semiregular_box&& _That) : _Engaged{_That._Engaged} {
+            if (_That._Engaged) {
+                _Construct_in_place(_Val, _STD move(_That._Val));
+            }
+        }
+
+        // clang-format off
+        _Semiregular_box& operator=(const _Semiregular_box&) noexcept
+            requires copyable<_Ty> && is_trivially_copy_assignable_v<_Ty> = default;
+        // clang-format on
+
+        _Semiregular_box& operator=(const _Semiregular_box& _That) noexcept(is_nothrow_copy_constructible_v<_Ty>&&
+                is_nothrow_copy_assignable_v<_Ty>) /* strengthened */ requires copyable<_Ty> {
+            if (_Engaged) {
+                if (_That._Engaged) {
+                    _Val = _That._Val;
+                } else {
+                    _Val.~_Ty();
+                    _Engaged = false;
+                }
+            } else {
+                if (_That._Engaged) {
+                    _Construct_in_place(_Val, _That._Val);
+                    _Engaged = true;
+                } else {
+                    // nothing to do
+                }
+            }
+
+            return *this;
+        }
+
+        _Semiregular_box& operator=(const _Semiregular_box& _That) noexcept(is_nothrow_copy_constructible_v<_Ty>) {
+            if (_STD addressof(_That) != this) {
+                if (_Engaged) {
+                    _Val.~_Ty();
+                    _Engaged = false;
+                }
+
+                if (_That._Engaged) {
+                    _Construct_in_place(_Val, _That._Val);
+                    _Engaged = true;
+                }
+            }
+
+            return *this;
+        }
+
+        // clang-format off
+        _Semiregular_box& operator=(_Semiregular_box&&) noexcept
+            requires movable<_Ty> && is_trivially_move_assignable_v<_Ty> = default;
+        // clang-format on
+
+        _Semiregular_box& operator=(_Semiregular_box&& _That) noexcept(is_nothrow_move_constructible_v<_Ty>&&
+                is_nothrow_move_assignable_v<_Ty>) /* strengthened */ requires movable<_Ty> {
+            if (_Engaged) {
+                if (_That._Engaged) {
+                    _Val = _STD move(_That._Val);
+                } else {
+                    _Val.~_Ty();
+                    _Engaged = false;
+                }
+            } else {
+                if (_That._Engaged) {
+                    _Construct_in_place(_Val, _STD move(_That._Val));
+                    _Engaged = true;
+                } else {
+                    // nothing to do
+                }
+            }
+
+            return *this;
+        }
+
+        _Semiregular_box& operator=(_Semiregular_box&& _That) noexcept(is_nothrow_move_constructible_v<_Ty>) {
+            if (_Engaged) {
+                _Val.~_Ty();
+                _Engaged = false;
+            }
+
+            if (_That._Engaged) {
+                _Construct_in_place(_Val, _STD move(_That._Val));
+                _Engaged = true;
+            }
+
+            return *this;
+        }
+
+        constexpr explicit operator bool() const noexcept {
+            return _Engaged;
+        }
+
+        _NODISCARD constexpr _Ty& operator*() noexcept {
+            _STL_INTERNAL_CHECK(_Engaged);
+            return _Val;
+        }
+        _NODISCARD constexpr const _Ty& operator*() const noexcept {
+            _STL_INTERNAL_CHECK(_Engaged);
+            return _Val;
+        }
+
+    private:
+        union {
+            _Nontrivial_dummy_type _Dummy;
+            _Ty _Val;
+        };
+        bool _Engaged;
+    };
+
+    // clang-format off
+    template <_Copy_constructible_object _Ty>
+        requires default_initializable<_Ty>
+            && (copyable<_Ty>
+                || (is_nothrow_copy_constructible_v<_Ty>
+                    && (movable<_Ty> || is_nothrow_move_constructible_v<_Ty>)))
+    class _Semiregular_box<_Ty> {
+        // clang-format on
+    public:
+        _Semiregular_box() = default;
+
+        template <class... _Types>
+        constexpr _Semiregular_box(in_place_t, _Types&&... _Args) noexcept(
+            is_nothrow_constructible_v<_Ty, _Types...>) // strengthened
+            : _Val(_STD forward<_Types>(_Args)...) {}
+
+        _Semiregular_box(const _Semiregular_box&) = default;
+        _Semiregular_box(_Semiregular_box&&)      = default;
+        _Semiregular_box& operator=(const _Semiregular_box&) requires copyable<_Ty> = default;
+        _Semiregular_box& operator=(_Semiregular_box&&) requires movable<_Ty> = default;
+
+        _Semiregular_box& operator=(const _Semiregular_box& _That) noexcept {
+            if (_STD addressof(_That) != this) {
+                _Val.~_Ty();
+                _Construct_in_place(_Val, _That._Val);
+            }
+
+            return *this;
+        }
+
+        _Semiregular_box& operator=(_Semiregular_box&& _That) noexcept {
+            if (_STD addressof(_That) != this) {
+                _Val.~_Ty();
+                _Construct_in_place(_Val, _STD move(_That._Val));
+            }
+
+            return *this;
+        }
+
+        constexpr explicit operator bool() const noexcept {
+            return true;
+        }
+
+        _NODISCARD constexpr _Ty& operator*() noexcept {
+            return _Val;
+        }
+        _NODISCARD constexpr const _Ty& operator*() const noexcept {
+            return _Val;
+        }
+
+    private:
+        /* [[no_unique_address]] */ _Ty _Val = _Ty();
+    };
+#else // ^^^ no workaround / workaround vvv
+    template <class _Ty>
+    class _Semiregular_box_copy : public optional<_Ty> {
+    public:
+        using optional<_Ty>::optional;
+
+        _Semiregular_box_copy()                             = default;
+        _Semiregular_box_copy(const _Semiregular_box_copy&) = default;
+        _Semiregular_box_copy(_Semiregular_box_copy&&)      = default;
+        _Semiregular_box_copy& operator=(_Semiregular_box_copy&&) = default;
+
+        _Semiregular_box_copy& operator=(const _Semiregular_box_copy& _That) noexcept(
+            is_nothrow_copy_constructible_v<_Ty>) {
+            if (_STD addressof(_That) != this) {
+                optional<_Ty>::reset();
+                if (_That) {
+                    optional<_Ty>::emplace(*_That);
+                }
+            }
+
+            return *this;
+        }
+    };
+
+    template <class _Ty>
+    using _Choose_semiregular_box_copy =
+        conditional_t<assignable_from<_Ty&, const _Ty&>, optional<_Ty>, _Semiregular_box_copy<_Ty>>;
+
+    template <class _Ty>
+    class _Semiregular_box_move : public _Choose_semiregular_box_copy<_Ty> {
+    public:
+        using _Choose_semiregular_box_copy<_Ty>::_Choose_semiregular_box_copy;
+
+        _Semiregular_box_move()                             = default;
+        _Semiregular_box_move(const _Semiregular_box_move&) = default;
+        _Semiregular_box_move(_Semiregular_box_move&&)      = default;
+        _Semiregular_box_move& operator=(const _Semiregular_box_move&) = default;
+
+        _Semiregular_box_move& operator=(_Semiregular_box_move&& _That) noexcept(is_nothrow_move_constructible_v<_Ty>) {
+            if (_STD addressof(_That) != this) {
+                optional<_Ty>::reset();
+                if (_That) {
+                    optional<_Ty>::emplace(_STD move(*_That));
+                }
+            }
+
+            return *this;
+        }
+    };
+
+    template <class _Ty>
+    using _Choose_semiregular_box_move =
+        conditional_t<assignable_from<_Ty&, _Ty>, _Choose_semiregular_box_copy<_Ty>, _Semiregular_box_move<_Ty>>;
+
+    template <_Copy_constructible_object _Ty>
+    class _Semiregular_box : public _Choose_semiregular_box_move<_Ty> {
+    public:
+        constexpr _Semiregular_box() noexcept {}
+        constexpr _Semiregular_box() noexcept(
+            is_nothrow_default_constructible_v<_Ty>) requires default_initializable<_Ty>
+            : _Choose_semiregular_box_move<_Ty>{in_place} {}
+
+        template <class... _Types>
+        constexpr _Semiregular_box(in_place_t, _Types&&... _Args) noexcept(
+            is_nothrow_constructible_v<_Ty, _Types...>) // strengthened
+            : _Choose_semiregular_box_move<_Ty>{in_place, _STD forward<_Types>(_Args)...} {}
+    };
+
+    // clang-format off
+    template <_Copy_constructible_object _Ty>
+        requires default_initializable<_Ty> && copyable<_Ty>
+    class _Semiregular_box<_Ty> {
+        // clang-format on
+    public:
+        _Semiregular_box() = default;
+
+        template <class... _Types>
+        constexpr _Semiregular_box(in_place_t, _Types&&... _Args) noexcept(
+            is_nothrow_constructible_v<_Ty, _Types...>) // strengthened
+            : _Val(_STD forward<_Types>(_Args)...) {}
+
+        constexpr explicit operator bool() const noexcept {
+            return true;
+        }
+
+        _NODISCARD constexpr _Ty& operator*() noexcept {
+            return _Val;
+        }
+        _NODISCARD constexpr const _Ty& operator*() const noexcept {
+            return _Val;
+        }
+
+    private:
+        /* [[no_unique_address]] */ _Ty _Val = _Ty();
+    };
+#endif // TRANSITION, VSO-1174090
+
+    // CLASS TEMPLATE ranges::empty_view
+    // clang-format off
+    template <class _Ty>
+        requires is_object_v<_Ty>
+    class empty_view : public view_interface<empty_view<_Ty>> {
+        // clang-format on
+    public:
+        _NODISCARD static constexpr _Ty* begin() noexcept {
+            return nullptr;
+        }
+
+        _NODISCARD static constexpr _Ty* end() noexcept {
+            return nullptr;
+        }
+
+        _NODISCARD static constexpr _Ty* data() noexcept {
+            return nullptr;
+        }
+
+        _NODISCARD static constexpr size_t size() noexcept {
+            return 0;
+        }
+
+        _NODISCARD static constexpr bool empty() noexcept {
+            return true;
+        }
+    };
+
+    namespace views {
+        // VARIABLE TEMPLATE views::empty
+        template <class _Ty>
+        inline constexpr empty_view<_Ty> empty;
+    } // namespace views
+
+    // CLASS TEMPLATE ranges::single_view
+    // clang-format off
+    template <copy_constructible _Ty>
+        requires is_object_v<_Ty>
+    class single_view : public view_interface<single_view<_Ty>> {
+        // clang-format on
+    public:
+        single_view() = default;
+        constexpr explicit single_view(const _Ty& _Val_) noexcept(is_nothrow_copy_constructible_v<_Ty>) // strengthened
+            : _Val{in_place, _Val_} {}
+        constexpr explicit single_view(_Ty&& _Val_) noexcept(is_nothrow_move_constructible_v<_Ty>) // strengthened
+            : _Val{in_place, _STD move(_Val_)} {}
+
+        // clang-format off
+        template <class... _Types>
+            requires constructible_from<_Ty, _Types...>
+        constexpr explicit single_view(in_place_t, _Types&&... _Args) noexcept( // explicit per LWG-3428
+            is_nothrow_constructible_v<_Ty, _Types...>) // strengthened
+            // clang-format on
+            : _Val{in_place, _STD forward<_Types>(_Args)...} {}
+
+        _NODISCARD constexpr _Ty* begin() noexcept {
+            return data();
+        }
+        _NODISCARD constexpr const _Ty* begin() const noexcept {
+            return data();
+        }
+
+        _NODISCARD constexpr _Ty* end() noexcept {
+            return data() + 1;
+        }
+        _NODISCARD constexpr const _Ty* end() const noexcept {
+            return data() + 1;
+        }
+
+        _NODISCARD static constexpr size_t size() noexcept {
+            return 1;
+        }
+
+        _NODISCARD constexpr _Ty* data() noexcept {
+            return _STD addressof(*_Val);
+        }
+        _NODISCARD constexpr const _Ty* data() const noexcept {
+            return _STD addressof(*_Val);
+        }
+
+    private:
+        /* [[no_unique_address]] */ _Semiregular_box<_Ty> _Val{};
+    };
+
+    namespace views {
+        // VARIABLE views::single
+        struct _Single_fn {
+            // clang-format off
+            template <class _Ty>
+            _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(
+                noexcept(single_view{static_cast<_Ty&&>(_Val)})) requires requires {
+                single_view{static_cast<_Ty&&>(_Val)};
+            } {
+                return single_view{static_cast<_Ty&&>(_Val)};
+            }
+            // clang-format on
+        };
+
+        inline constexpr _Single_fn single;
+    } // namespace views
+
+    // CLASS TEMPLATE ranges::ref_view
+    // clang-format off
+    template <range _Rng>
+        requires is_object_v<_Rng>
+    class ref_view : public view_interface<ref_view<_Rng>> {
+        // clang-format on
+    private:
+        _Rng* _Range = nullptr;
+
+        static void _Rvalue_poison(_Rng&);
+        static void _Rvalue_poison(_Rng&&) = delete;
+
+    public:
+        constexpr ref_view() noexcept = default;
+
+        // clang-format off
+        template <_Not_same_as<ref_view> _OtherRng>
+        constexpr ref_view(_OtherRng&& _Other) noexcept(
+            noexcept(static_cast<_Rng&>(_STD forward<_OtherRng>(_Other)))) // strengthened
+            requires convertible_to<_OtherRng, _Rng&> && requires {
+                _Rvalue_poison(static_cast<_OtherRng&&>(_Other));
+            } : _Range{_STD addressof(static_cast<_Rng&>(_STD forward<_OtherRng>(_Other)))} {}
+        // clang-format on
+
+        _NODISCARD constexpr _Rng& base() const noexcept /* strengthened */ {
+            return *_Range;
+        }
+
+        _NODISCARD constexpr iterator_t<_Rng> begin() const
+            noexcept(noexcept(_RANGES begin(*_Range))) /* strengthened */ {
+            return _RANGES begin(*_Range);
+        }
+
+        _NODISCARD constexpr sentinel_t<_Rng> end() const noexcept(noexcept(_RANGES end(*_Range))) /* strengthened */ {
+            return _RANGES end(*_Range);
+        }
+
+        _NODISCARD constexpr bool empty() const noexcept(noexcept(_RANGES empty(*_Range))) /* strengthened */
+            requires _Can_empty<_Rng> {
+            return _RANGES empty(*_Range);
+        }
+
+        _NODISCARD constexpr auto size() const noexcept(noexcept(_RANGES size(*_Range))) /* strengthened */
+            requires sized_range<_Rng> {
+            return _RANGES size(*_Range);
+        }
+
+        _NODISCARD constexpr auto data() const noexcept(noexcept(_RANGES data(*_Range))) /* strengthened */
+            requires contiguous_range<_Rng> {
+            return _RANGES data(*_Range);
+        }
+    };
+
+    template <class _Rng>
+    ref_view(_Rng&) -> ref_view<_Rng>;
+
+    template <class _Rng>
+    inline constexpr bool enable_borrowed_range<ref_view<_Rng>> = true;
 } // namespace ranges
+
+namespace views = ranges::views;
 
 _STD_END
 

@@ -140,6 +140,20 @@ STATIC_ASSERT(__cpp_lib_atomic_lock_free_type_aliases == 201907L);
 #endif
 
 #if _HAS_CXX20
+#ifndef __cpp_lib_atomic_ref
+#error __cpp_lib_atomic_ref is not defined
+#elif __cpp_lib_atomic_ref != 201806L
+#error __cpp_lib_atomic_ref is not 201806L
+#else
+STATIC_ASSERT(__cpp_lib_atomic_ref == 201806L);
+#endif
+#else
+#ifdef __cpp_lib_atomic_ref
+#error __cpp_lib_atomic_ref is defined
+#endif
+#endif
+
+#if _HAS_CXX20
 #ifndef __cpp_lib_atomic_shared_ptr
 #error __cpp_lib_atomic_shared_ptr is not defined
 #elif __cpp_lib_atomic_shared_ptr != 201711L
@@ -464,6 +478,25 @@ STATIC_ASSERT(__cpp_lib_constexpr_utility == 201811L);
 #else
 #ifdef __cpp_lib_constexpr_utility
 #error __cpp_lib_constexpr_utility is defined
+#endif
+#endif
+
+#if _HAS_CXX20 && defined(__cpp_impl_coroutine) // TRANSITION, Clang and EDG coroutine support
+#if __cpp_impl_coroutine >= 201902L
+#define ExpectedCppLibCoroutine 201902L
+#else
+#define ExpectedCppLibCoroutine 197000L // TRANSITION, VS 2019 16.8 Preview 4
+#endif
+#ifndef __cpp_lib_coroutine
+#error __cpp_lib_coroutine is not defined
+#elif __cpp_lib_coroutine != ExpectedCppLibCoroutine
+#error __cpp_lib_coroutine is not ExpectedCppLibCoroutine
+#else
+STATIC_ASSERT(__cpp_lib_coroutine == ExpectedCppLibCoroutine);
+#endif
+#else
+#ifdef __cpp_lib_coroutine
+#error __cpp_lib_coroutine is defined
 #endif
 #endif
 

@@ -41,7 +41,8 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL __Wcrtomb_lk(char* s, wchar_t wchar, m
     return _Wcrtomb(s, wchar, pst, ploc);
 }
 
-_CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Wcrtomb(char* s, wchar_t wchar, mbstate_t* pst, const _Cvtvec* ploc) {
+_CRTIMP2_PURE _Success_(return != -1) int __CLRCALL_PURE_OR_CDECL
+    _Wcrtomb(_Out_ char* s, wchar_t wchar, mbstate_t* pst, const _Cvtvec* ploc) {
     _CRT_UNUSED(pst);
     if (ploc->_Isclocale) {
         if (wchar > 255) { // validate high byte

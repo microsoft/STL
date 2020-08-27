@@ -512,19 +512,27 @@ STATIC_ASSERT(is_invocable_v<PMD, X*>);
 STATIC_ASSERT(is_nothrow_invocable_v<PMD, X*>);
 
 // Test noexcept function types.
-using FP_noexcept  = int (*)(int) noexcept;
-using FR_noexcept  = int (&)(int) noexcept;
-using PMF_noexcept = int (X::*)(int) noexcept;
+#ifdef __cpp_noexcept_function_type
+using FP_noexcept                                 = int (*)(int) noexcept;
+using FR_noexcept                                 = int (&)(int) noexcept;
+using PMF_noexcept                                = int (X::*)(int) noexcept;
+inline constexpr bool noexcept_in_the_type_system = true;
+#else // ^^^ __cpp_noexcept_function_type // !__cpp_noexcept_function_type vvv
+using FP_noexcept                                 = int (*)(int);
+using FR_noexcept                                 = int (&)(int);
+using PMF_noexcept                                = int (X::*)(int);
+inline constexpr bool noexcept_in_the_type_system = false;
+#endif // __cpp_noexcept_function_type
 
 STATIC_ASSERT(is_invocable_v<FP, int>);
 STATIC_ASSERT(!is_nothrow_invocable_v<FP, int>);
 STATIC_ASSERT(is_invocable_v<FP_noexcept, int>);
-STATIC_ASSERT(is_nothrow_invocable_v<FP_noexcept, int>);
+STATIC_ASSERT(is_nothrow_invocable_v<FP_noexcept, int> == noexcept_in_the_type_system);
 
 STATIC_ASSERT(is_invocable_v<FR, int>);
 STATIC_ASSERT(!is_nothrow_invocable_v<FR, int>);
 STATIC_ASSERT(is_invocable_v<FR_noexcept, int>);
-STATIC_ASSERT(is_nothrow_invocable_v<FR_noexcept, int>);
+STATIC_ASSERT(is_nothrow_invocable_v<FR_noexcept, int> == noexcept_in_the_type_system);
 
 STATIC_ASSERT(is_invocable_v<PMF, X, int>);
 STATIC_ASSERT(!is_nothrow_invocable_v<PMF, X, int>);
@@ -533,11 +541,11 @@ STATIC_ASSERT(!is_nothrow_invocable_v<PMF, reference_wrapper<X>, int>);
 STATIC_ASSERT(is_invocable_v<PMF, X*, int>);
 STATIC_ASSERT(!is_nothrow_invocable_v<PMF, X*, int>);
 STATIC_ASSERT(is_invocable_v<PMF_noexcept, X, int>);
-STATIC_ASSERT(is_nothrow_invocable_v<PMF_noexcept, X, int>);
+STATIC_ASSERT(is_nothrow_invocable_v<PMF_noexcept, X, int> == noexcept_in_the_type_system);
 STATIC_ASSERT(is_invocable_v<PMF_noexcept, reference_wrapper<X>, int>);
-STATIC_ASSERT(is_nothrow_invocable_v<PMF_noexcept, reference_wrapper<X>, int>);
+STATIC_ASSERT(is_nothrow_invocable_v<PMF_noexcept, reference_wrapper<X>, int> == noexcept_in_the_type_system);
 STATIC_ASSERT(is_invocable_v<PMF_noexcept, X*, int>);
-STATIC_ASSERT(is_nothrow_invocable_v<PMF_noexcept, X*, int>);
+STATIC_ASSERT(is_nothrow_invocable_v<PMF_noexcept, X*, int> == noexcept_in_the_type_system);
 
 struct Conv_noexcept1 {
     operator FP() noexcept;
@@ -558,7 +566,7 @@ STATIC_ASSERT(!is_nothrow_invocable_v<Conv_noexcept1, int>);
 STATIC_ASSERT(is_invocable_v<Conv_noexcept2, int>);
 STATIC_ASSERT(!is_nothrow_invocable_v<Conv_noexcept2, int>);
 STATIC_ASSERT(is_invocable_v<Conv_noexcept3, int>);
-STATIC_ASSERT(is_nothrow_invocable_v<Conv_noexcept3, int>);
+STATIC_ASSERT(is_nothrow_invocable_v<Conv_noexcept3, int> == noexcept_in_the_type_system);
 
 // Test argument conversions.
 struct Okay_noexcept {
@@ -568,7 +576,7 @@ struct Okay_noexcept {
 STATIC_ASSERT(is_invocable_v<FP_noexcept, Okay>);
 STATIC_ASSERT(!is_nothrow_invocable_v<FP_noexcept, Okay>);
 STATIC_ASSERT(is_invocable_v<FP_noexcept, Okay_noexcept>);
-STATIC_ASSERT(is_nothrow_invocable_v<FP_noexcept, Okay_noexcept>);
+STATIC_ASSERT(is_nothrow_invocable_v<FP_noexcept, Okay_noexcept> == noexcept_in_the_type_system);
 
 // When the return type is non-void, does the invocation throw?
 STATIC_ASSERT(is_invocable_r_v<long, Kitty, int>);
