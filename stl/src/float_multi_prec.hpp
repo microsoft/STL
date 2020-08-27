@@ -91,7 +91,7 @@ namespace _Float_multi_prec {
 
     // multiplication
 
-    // round to 26 significant bits, ties to zero
+    // round to 26 significant bits, ties toward zero
     _NODISCARD inline constexpr double _High_half(const double _Val) {
         const auto _Bits           = _STD _Bit_cast<unsigned long long>(_Val);
         const auto _High_half_bits = (_Bits + 0x3ff'ffffULL) & 0xffff'ffff'f800'0000ULL;
