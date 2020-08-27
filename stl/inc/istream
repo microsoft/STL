@@ -876,9 +876,7 @@ template <class _Istr, class _Ty>
 struct _Can_stream_in<_Istr, _Ty, void_t<decltype(_STD declval<_Istr&>() >> _STD declval<_Ty>())>> : true_type {};
 
 template <class _Istr, class _Ty,
-    enable_if_t<conjunction_v< // avoid infinite recursion
-                    negation<is_lvalue_reference<_Istr>>, is_base_of<ios_base, _Istr>, _Can_stream_in<_Istr, _Ty>>,
-        int> = 0>
+    enable_if_t<conjunction_v<is_convertible<_Istr*, ios_base*>, _Can_stream_in<_Istr, _Ty>>, int> = 0>
 _Istr&& operator>>(_Istr&& _Is, _Ty&& _Val) { // extract from rvalue stream
     _Is >> _STD forward<_Ty>(_Val);
     return _STD move(_Is);

@@ -28,13 +28,13 @@ _CRTIMP2 BOOL __cdecl __crtIsPackagedApp();
 
 #else // _STL_WIN32_WINNT >= _WIN32_WINNT_WS03
 
-DWORD __cdecl __crtFlsAlloc(__in PFLS_CALLBACK_FUNCTION lpCallback);
+DWORD __cdecl __crtFlsAlloc(_In_opt_ PFLS_CALLBACK_FUNCTION lpCallback);
 
-BOOL __cdecl __crtFlsFree(__in DWORD dwFlsIndex);
+BOOL __cdecl __crtFlsFree(_In_ DWORD dwFlsIndex);
 
-PVOID __cdecl __crtFlsGetValue(__in DWORD dwFlsIndex);
+PVOID __cdecl __crtFlsGetValue(_In_ DWORD dwFlsIndex);
 
-BOOL __cdecl __crtFlsSetValue(__in DWORD dwFlsIndex, __in_opt PVOID lpFlsData);
+BOOL __cdecl __crtFlsSetValue(_In_ DWORD dwFlsIndex, _In_opt_ PVOID lpFlsData);
 
 #endif // _STL_WIN32_WINNT >= _WIN32_WINNT_WS03
 
@@ -120,74 +120,77 @@ BOOL __cdecl __crtFlsSetValue(__in DWORD dwFlsIndex, __in_opt PVOID lpFlsData);
 #else // _STL_WIN32_WINNT >= _WIN32_WINNT_VISTA
 
 _CRTIMP2 BOOL __cdecl __crtInitializeCriticalSectionEx(
-    __out LPCRITICAL_SECTION lpCriticalSection, __in DWORD dwSpinCount, __in DWORD Flags);
+    _Out_ LPCRITICAL_SECTION lpCriticalSection, _In_ DWORD dwSpinCount, _In_ DWORD Flags);
 
+// N.B. Context is not used
 _CRTIMP2 BOOL __cdecl __crtInitOnceExecuteOnce(
-    _Inout_ PINIT_ONCE InitOnce, _In_ PINIT_ONCE_FN InitFn, _Inout_opt_ PVOID Parameter, _Out_opt_ LPVOID* Context);
+    _Inout_ PINIT_ONCE InitOnce, _In_ PINIT_ONCE_FN InitFn, _Inout_opt_ PVOID Parameter, LPVOID* Context);
 
-_CRTIMP2 HANDLE __cdecl __crtCreateEventExW(__in_opt LPSECURITY_ATTRIBUTES lpEventAttributes, __in_opt LPCWSTR lpName,
-    __reserved DWORD dwFlags, __in DWORD dwDesiredAccess);
+_CRTIMP2 HANDLE __cdecl __crtCreateEventExW(_In_opt_ LPSECURITY_ATTRIBUTES lpEventAttributes, _In_opt_ LPCWSTR lpName,
+    _In_ DWORD dwFlags, _In_ DWORD dwDesiredAccess);
 
-_CRTIMP2 HANDLE __cdecl __crtCreateSemaphoreExW(__in_opt LPSECURITY_ATTRIBUTES lpSemaphoreAttributes,
-    __in LONG lInitialCount, __in LONG lMaximumCount, __in_opt LPCWSTR lpName, __reserved DWORD dwFlags,
-    __in DWORD dwDesiredAccess);
+_CRTIMP2 HANDLE __cdecl __crtCreateSemaphoreExW(_In_opt_ LPSECURITY_ATTRIBUTES lpSemaphoreAttributes,
+    _In_ LONG lInitialCount, _In_ LONG lMaximumCount, _In_opt_ LPCWSTR lpName, _Reserved_ DWORD dwFlags,
+    _In_ DWORD dwDesiredAccess);
 
 _CRTIMP2 PTP_TIMER __cdecl __crtCreateThreadpoolTimer(
-    __in PTP_TIMER_CALLBACK pfnti, __inout_opt PVOID pv, __in_opt PTP_CALLBACK_ENVIRON pcbe);
+    _In_ PTP_TIMER_CALLBACK pfnti, _Inout_opt_ PVOID pv, _In_opt_ PTP_CALLBACK_ENVIRON pcbe);
 
 _CRTIMP2 VOID __cdecl __crtSetThreadpoolTimer(
-    __inout PTP_TIMER pti, __in_opt PFILETIME pftDueTime, __in DWORD msPeriod, __in_opt DWORD msWindowLength);
+    _Inout_ PTP_TIMER pti, _In_opt_ PFILETIME pftDueTime, _In_ DWORD msPeriod, _In_opt_ DWORD msWindowLength);
 
-_CRTIMP2 VOID __cdecl __crtWaitForThreadpoolTimerCallbacks(__inout PTP_TIMER pti, __in BOOL fCancelPendingCallbacks);
+_CRTIMP2 VOID __cdecl __crtWaitForThreadpoolTimerCallbacks(_Inout_ PTP_TIMER pti, _In_ BOOL fCancelPendingCallbacks);
 
-_CRTIMP2 VOID __cdecl __crtCloseThreadpoolTimer(__inout PTP_TIMER pti);
+_CRTIMP2 VOID __cdecl __crtCloseThreadpoolTimer(_Inout_ PTP_TIMER pti);
 
 _CRTIMP2 PTP_WAIT __cdecl __crtCreateThreadpoolWait(
-    __in PTP_WAIT_CALLBACK pfnwa, __inout_opt PVOID pv, __in_opt PTP_CALLBACK_ENVIRON pcbe);
+    _In_ PTP_WAIT_CALLBACK pfnwa, _Inout_opt_ PVOID pv, _In_opt_ PTP_CALLBACK_ENVIRON pcbe);
 
-_CRTIMP2 VOID __cdecl __crtSetThreadpoolWait(__inout PTP_WAIT pwa, __in_opt HANDLE h, __in_opt PFILETIME pftTimeout);
+_CRTIMP2 VOID __cdecl __crtSetThreadpoolWait(_Inout_ PTP_WAIT pwa, _In_opt_ HANDLE h, _In_opt_ PFILETIME pftTimeout);
 
-_CRTIMP2 VOID __cdecl __crtCloseThreadpoolWait(__inout PTP_WAIT pwa);
+_CRTIMP2 VOID __cdecl __crtCloseThreadpoolWait(_Inout_ PTP_WAIT pwa);
 
 _CRTIMP2 VOID __cdecl __crtFlushProcessWriteBuffers();
 
-_CRTIMP2 VOID __cdecl __crtFreeLibraryWhenCallbackReturns(__inout PTP_CALLBACK_INSTANCE pci, __in HMODULE mod);
+_CRTIMP2 VOID __cdecl __crtFreeLibraryWhenCallbackReturns(_Inout_ PTP_CALLBACK_INSTANCE pci, _In_ HMODULE mod);
 
 _CRTIMP2 DWORD __cdecl __crtGetCurrentProcessorNumber();
 
 _CRTIMP2 BOOLEAN __cdecl __crtCreateSymbolicLinkW(
-    __in LPCWSTR lpSymlinkFileName, __in LPCWSTR lpTargetFileName, __in DWORD dwFlags);
+    _In_ LPCWSTR lpSymlinkFileName, _In_ LPCWSTR lpTargetFileName, _In_ DWORD dwFlags);
 
-_CRTIMP2 BOOL __cdecl __crtGetFileInformationByHandleEx(_In_ HANDLE hFile,
-    _In_ FILE_INFO_BY_HANDLE_CLASS FileInformationClass, _Out_ LPVOID lpFileInformation, _In_ DWORD dwBufferSize);
+_CRTIMP2 _Success_(return ) BOOL
+    __cdecl __crtGetFileInformationByHandleEx(_In_ HANDLE hFile, _In_ FILE_INFO_BY_HANDLE_CLASS FileInformationClass,
+        _Out_writes_bytes_(dwBufferSize) LPVOID lpFileInformation, _In_ DWORD dwBufferSize);
 
 _CRTIMP2 BOOL __cdecl __crtSetFileInformationByHandle(_In_ HANDLE hFile,
-    _In_ FILE_INFO_BY_HANDLE_CLASS FileInformationClass, _In_ LPVOID lpFileInformation, _In_ DWORD dwBufferSize);
+    _In_ FILE_INFO_BY_HANDLE_CLASS FileInformationClass, _In_reads_bytes_(dwBufferSize) LPVOID lpFileInformation,
+    _In_ DWORD dwBufferSize);
 
 _CRTIMP2 ULONGLONG __cdecl __crtGetTickCount64();
 
-VOID __cdecl __crtInitializeConditionVariable(__out PCONDITION_VARIABLE);
+VOID __cdecl __crtInitializeConditionVariable(_Out_ PCONDITION_VARIABLE);
 
-VOID __cdecl __crtWakeConditionVariable(__inout PCONDITION_VARIABLE);
+VOID __cdecl __crtWakeConditionVariable(_Inout_ PCONDITION_VARIABLE);
 
-VOID __cdecl __crtWakeAllConditionVariable(__inout PCONDITION_VARIABLE);
+VOID __cdecl __crtWakeAllConditionVariable(_Inout_ PCONDITION_VARIABLE);
 
-BOOL __cdecl __crtSleepConditionVariableCS(__inout PCONDITION_VARIABLE, __inout PCRITICAL_SECTION, __in DWORD);
+BOOL __cdecl __crtSleepConditionVariableCS(_Inout_ PCONDITION_VARIABLE, _Inout_ PCRITICAL_SECTION, _In_ DWORD);
 
-VOID __cdecl __crtInitializeSRWLock(__out PSRWLOCK);
+VOID __cdecl __crtInitializeSRWLock(_Out_ PSRWLOCK);
 
-VOID __cdecl __crtAcquireSRWLockExclusive(__inout PSRWLOCK);
+VOID __cdecl __crtAcquireSRWLockExclusive(_Inout_ PSRWLOCK);
 
-VOID __cdecl __crtReleaseSRWLockExclusive(__inout PSRWLOCK);
+VOID __cdecl __crtReleaseSRWLockExclusive(_Inout_ PSRWLOCK);
 
-BOOL __cdecl __crtSleepConditionVariableSRW(__inout PCONDITION_VARIABLE, __inout PSRWLOCK, __in DWORD, __in ULONG);
+BOOL __cdecl __crtSleepConditionVariableSRW(_Inout_ PCONDITION_VARIABLE, _Inout_ PSRWLOCK, _In_ DWORD, _In_ ULONG);
 
 PTP_WORK __cdecl __crtCreateThreadpoolWork(
-    __in PTP_WORK_CALLBACK pfnwk, __inout_opt PVOID pv, __in_opt PTP_CALLBACK_ENVIRON pcbe);
+    _In_ PTP_WORK_CALLBACK pfnwk, _Inout_opt_ PVOID pv, _In_opt_ PTP_CALLBACK_ENVIRON pcbe);
 
-VOID __cdecl __crtSubmitThreadpoolWork(__inout PTP_WORK pwk);
+VOID __cdecl __crtSubmitThreadpoolWork(_Inout_ PTP_WORK pwk);
 
-VOID __cdecl __crtCloseThreadpoolWork(__inout PTP_WORK pwk);
+VOID __cdecl __crtCloseThreadpoolWork(_Inout_ PTP_WORK pwk);
 
 _CRTIMP2 int __cdecl __crtCompareStringEx(_In_opt_ LPCWSTR lpLocaleName, _In_ DWORD dwCmpFlags,
     _In_NLS_string_(cchCount1) LPCWCH lpString1, _In_ int cchCount1, _In_NLS_string_(cchCount2) LPCWCH lpString2,
@@ -197,7 +200,7 @@ _CRTIMP2 int __cdecl __crtLCMapStringEx(_In_opt_ LPCWSTR lpLocaleName, _In_ DWOR
     _In_reads_(cchSrc) LPCWSTR lpSrcStr, _In_ int cchSrc, _Out_writes_opt_(cchDest) LPWSTR lpDestStr, _In_ int cchDest);
 
 _CRTIMP2 int __cdecl __crtGetLocaleInfoEx(
-    _In_opt_ LPCWSTR lpLocaleName, _In_ LCTYPE LCType, _Out_opt_ LPWSTR lpLCData, _In_ int cchData);
+    _In_opt_ LPCWSTR lpLocaleName, _In_ LCTYPE LCType, _Out_writes_opt_(cchData) LPWSTR lpLCData, _In_ int cchData);
 
 #endif // _STL_WIN32_WINNT >= _WIN32_WINNT_VISTA
 
@@ -207,7 +210,7 @@ _CRTIMP2 int __cdecl __crtGetLocaleInfoEx(
 
 #else // _STL_WIN32_WINNT >= _WIN32_WINNT_WIN7
 
-BOOLEAN __cdecl __crtTryAcquireSRWLockExclusive(__inout PSRWLOCK);
+BOOLEAN __cdecl __crtTryAcquireSRWLockExclusive(_Inout_ PSRWLOCK);
 
 #endif // _STL_WIN32_WINNT >= _WIN32_WINNT_WIN7
 
@@ -228,7 +231,7 @@ _CRTIMP2 void __cdecl __crtGetSystemTimePreciseAsFileTime(_Out_ LPFILETIME lpSys
 
 #else // _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
 
-BOOL __cdecl __crtQueueUserWorkItem(__in LPTHREAD_START_ROUTINE function, __in_opt PVOID context, __in ULONG flags);
+BOOL __cdecl __crtQueueUserWorkItem(_In_ LPTHREAD_START_ROUTINE function, _In_opt_ PVOID context, _In_ ULONG flags);
 
 #endif // _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
 
@@ -342,20 +345,20 @@ using PFNLCMAPSTRINGEX   = int(WINAPI*)(LPCWSTR, DWORD, LPCWSTR, int, LPWSTR, in
     DYNAMICGETCACHEDFUNCTION(function_pointer_type, function_name, variable_name);      \
     if (variable_name != nullptr)
 
-_CRTIMP2 int __cdecl __crtCompareStringA(_In_ LPCWSTR _LocaleName, _In_ DWORD _DwCmpFlags,
+_CRTIMP2 int __cdecl __crtCompareStringA(_In_z_ LPCWSTR _LocaleName, _In_ DWORD _DwCmpFlags,
     _In_reads_(_CchCount1) LPCSTR _LpString1, _In_ int _CchCount1, _In_reads_(_CchCount2) LPCSTR _LpString2,
     _In_ int _CchCount2, _In_ int _CodePage);
 
-_CRTIMP2 int __cdecl __crtCompareStringW(_In_ LPCWSTR _LocaleName, _In_ DWORD _DwCmpFlags,
+_CRTIMP2 int __cdecl __crtCompareStringW(_In_z_ LPCWSTR _LocaleName, _In_ DWORD _DwCmpFlags,
     _In_reads_(_CchCount1) LPCWSTR _LpString1, _In_ int _CchCount1, _In_reads_(_CchCount2) LPCWSTR _LpString2,
     _In_ int _CchCount2);
 
-_CRTIMP2 int __cdecl __crtLCMapStringA(_In_ LPCWSTR _LocaleName, _In_ DWORD _DwMapFlag,
-    _In_reads_(_CchSrc) LPCSTR _LpSrcStr, _In_ int _CchSrc, _Out_writes_opt_(_CchDest) LPSTR _LpDestStr,
+_CRTIMP2 int __cdecl __crtLCMapStringA(_In_opt_z_ LPCWSTR _LocaleName, _In_ DWORD _DwMapFlag,
+    _In_reads_(_CchSrc) LPCSTR _LpSrcStr, _In_ int _CchSrc, _Out_writes_opt_(_CchDest) char* _LpDestStr,
     _In_ int _CchDest, _In_ int _CodePage, _In_ BOOL _BError);
 
-_CRTIMP2 int __cdecl __crtLCMapStringW(_In_ LPCWSTR _LocaleName, _In_ DWORD _DWMapFlag,
-    _In_reads_(_CchSrc) LPCWSTR _LpSrcStr, _In_ int _CchSrc, _Out_writes_opt_(_CchDest) LPWSTR _LpDestStr,
+_CRTIMP2 int __cdecl __crtLCMapStringW(_In_opt_z_ LPCWSTR _LocaleName, _In_ DWORD _DWMapFlag,
+    _In_reads_(_CchSrc) LPCWSTR _LpSrcStr, _In_ int _CchSrc, _Out_writes_opt_(_CchDest) wchar_t* _LpDestStr,
     _In_ int _CchDest);
 
 _CRT_END_C_HEADER

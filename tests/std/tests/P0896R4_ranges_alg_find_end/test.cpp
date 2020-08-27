@@ -76,6 +76,7 @@ int main() {
     smoke_test();
 }
 
+#ifndef _PREFAST_ // TRANSITION, GH-1030
 struct instantiator {
     template <class Fwd1, class Fwd2>
     static void call(Fwd1&& fwd1 = {}, Fwd2&& fwd2 = {}) {
@@ -107,3 +108,4 @@ struct instantiator {
 };
 
 template void test_fwd_fwd<instantiator, const int, const int>();
+#endif // TRANSITION, GH-1030

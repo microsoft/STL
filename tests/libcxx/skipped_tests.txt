@@ -506,9 +506,6 @@ thread\futures\futures.task\futures.task.members\make_ready_at_thread_exit.pass.
 
 
 # *** C1XX COMPILER BUGS ***
-# Compiler bug: VSO-106654 "error C2580 "multiple versions of a defaulted special member functions are not allowed" is bogus and ungrammatical"
-utilities\tuple\tuple.tuple\tuple.cnstr\test_lazy_sfinae.pass.cpp
-
 # Compiler bug: DevCom-409222 "Constructing rvalue reference from non-reference-related lvalue reference"
 utilities\meta\meta.unary\meta.unary.prop\is_constructible.pass.cpp
 
