@@ -115,7 +115,7 @@ public:
     }
 
     static bool _Signbit(_Ty _Left) {
-        return _CSTD signbit(static_cast<double>(_Left));
+        return (_STD signbit)(static_cast<double>(_Left));
     }
 
     static _Ty _Sinh(_Ty _Left, _Ty _Right) { // return sinh(_Left) * _Right
