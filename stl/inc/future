@@ -292,7 +292,7 @@ public:
             _Rethrow_future_exception(_Exception);
         }
 
-        return _Result;
+        return *_Result;
     }
 
     void _Set_value(const _Ty& _Val, bool _At_thread_exit) { // store a result
@@ -306,7 +306,7 @@ public:
             _Throw_future_error(make_error_code(future_errc::promise_already_satisfied));
         }
 
-        _Result = _Val;
+        _Result = make_unique<_Ty>(_Val);
         _Do_notify(_Lock, _At_thread_exit);
     }
 
@@ -321,7 +321,7 @@ public:
             _Throw_future_error(make_error_code(future_errc::promise_already_satisfied));
         }
 
-        _Result = _STD forward<_Ty>(_Val);
+        _Result = make_unique<_Ty>(_STD forward<_Ty>(_Val));
         _Do_notify(_Lock, _At_thread_exit);
     }
 
@@ -393,7 +393,7 @@ protected:
     }
 
 public:
-    _Ty _Result;
+    unique_ptr<_Ty> _Result;
     exception_ptr _Exception;
     mutex _Mtx;
     condition_variable _Cond;
