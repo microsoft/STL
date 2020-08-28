@@ -531,10 +531,10 @@ public:
         : _Sentinel(_STD forward<_Types>(_Args)...), _Contains{_State::_Holds_sentinel} {}
 
     // clang-format off
-    template <class _It2, class _Se2>
-        requires _Not_same_as<_Variantish<_It2, _Se2>, _Variantish>
-    explicit _Variantish(const _Variantish<_It2, _Se2>& _That) noexcept(
-        is_nothrow_convertible_v<const _It2&, _It>&& is_nothrow_convertible_v<const _Se2&, _Se>)
+    template <class _OIter, class _OSe>
+        requires _Not_same_as<_Variantish<_OIter, _OSe>, _Variantish>
+    explicit _Variantish(const _Variantish<_OIter, _OSe>& _That) noexcept(
+        is_nothrow_convertible_v<const _OIter&, _It>&& is_nothrow_convertible_v<const _OSe&, _Se>)
         : _Contains{_That._Contains} {
         // clang-format on
         switch (_That._Contains) {
@@ -696,10 +696,10 @@ public:
     }
 
     // clang-format off
-    template <class _It2, class _Se2>
-        requires _Not_same_as<_Variantish<_It2, _Se2>, _Variantish>
-    _Variantish& operator=(const _Variantish<_It2, _Se2>& _That) noexcept(
-        is_nothrow_convertible_v<const _It2&, _It>&& is_nothrow_convertible_v<const _Se2&, _Se>) {
+    template <class _OIter, class _OSe>
+        requires _Not_same_as<_Variantish<_OIter, _OSe>, _Variantish>
+    _Variantish& operator=(const _Variantish<_OIter, _OSe>& _That) noexcept(
+        is_nothrow_convertible_v<const _OIter&, _It>&& is_nothrow_convertible_v<const _OSe&, _Se>) {
         // clang-format on
         if (_Contains == _That._Contains) {
             switch (_Contains) {
@@ -791,7 +791,7 @@ class common_iterator {
         iter_value_t<_Iter> _Keep;
 
     public:
-        _Proxy(iter_reference_t<_Iter>&& _Right) : _Keep(_STD move(_Right)) {}
+        explicit _Proxy(iter_reference_t<_Iter>&& _Right) : _Keep(_STD move(_Right)) {}
 
         const iter_value_t<_Iter>* operator->() const {
             return _STD addressof(_Keep);
@@ -808,19 +808,19 @@ public:
         : _Val{in_place_type<_Se>, _STD move(_Right)} {}
 
     // clang-format off
-    template <class _Iter2, class _Se2>
-        requires convertible_to<const _Iter2&, _Iter> && convertible_to<const _Se2&, _Se>
-    constexpr common_iterator(const common_iterator<_Iter2, _Se2>& _Right) noexcept(
-        is_nothrow_constructible_v<_Iter, const _Iter2&>&& is_nothrow_constructible_v<_Se, const _Se2&>) // strengthened
+    template <class _OIter, class _OSe>
+        requires convertible_to<const _OIter&, _Iter> && convertible_to<const _OSe&, _Se>
+    constexpr common_iterator(const common_iterator<_OIter, _OSe>& _Right) noexcept(
+        is_nothrow_constructible_v<_Iter, const _OIter&>&& is_nothrow_constructible_v<_Se, const _OSe&>) // strengthened
         : _Val{_Right._Val} {}
 
-    template <class _Iter2, class _Se2>
-        requires convertible_to<const _Iter2&, _Iter> && convertible_to<const _Se2&, _Se>
-              && assignable_from<_Iter&, const _Iter2&> && assignable_from<_Se&, const _Se2&>
-    common_iterator& operator=(const common_iterator<_Iter2, _Se2>& _Right) noexcept(
-        is_nothrow_assignable_v<_Iter, const _Iter2&>&& is_nothrow_assignable_v<_Se, const _Se2&>&&
-            is_nothrow_constructible_v<_Iter, const _Iter2&>&&
-                is_nothrow_constructible_v<_Se, const _Se2&>) /* strengthened */ {
+    template <class _OIter, class _OSe>
+        requires convertible_to<const _OIter&, _Iter> && convertible_to<const _OSe&, _Se>
+              && assignable_from<_Iter&, const _OIter&> && assignable_from<_Se&, const _OSe&>
+    common_iterator& operator=(const common_iterator<_OIter, _OSe>& _Right) noexcept(
+        is_nothrow_assignable_v<_Iter, const _OIter&>&& is_nothrow_assignable_v<_Se, const _OSe&>&&
+            is_nothrow_constructible_v<_Iter, const _OIter&>&&
+                is_nothrow_constructible_v<_Se, const _OSe&>) /* strengthened */ {
         // clang-format on
         _Val = _Right._Val;
         return *this;
@@ -886,30 +886,9 @@ public:
     }
 
     // clang-format off
-    template <class _Iter2, sentinel_for<_Iter> _Se2>
-        requires sentinel_for<_Se, _Iter2>
-    _NODISCARD friend bool operator==(const common_iterator& _Left, const common_iterator<_Iter2, _Se2>& _Right) {
-        // clang-format on
-#if _ITERATOR_DEBUG_LEVEL != 0
-        _STL_VERIFY(_Left._Val._Contains != _Vty::_State::_Nothing && _Right._Val._Contains != _Vty::_State::_Nothing,
-            "common_iterators can only be compared if both hold a value");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
-
-        if (_Left._Val._Contains == _Right._Val._Contains) {
-            return true;
-        }
-
-        if (_Left._Val._Contains == _Vty::_State::_Holds_iter) {
-            return _Left._Val._Iterator == _Right._Val._Sentinel;
-        } else {
-            return _Left._Val._Sentinel == _Right._Val._Iterator;
-        }
-    }
-
-    // clang-format off
-    template <class _Iter2, sentinel_for<_Iter> _Se2>
-        requires sentinel_for<_Se, _Iter2> && equality_comparable_with<_Iter, _Iter2>
-    _NODISCARD friend bool operator==(const common_iterator& _Left, const common_iterator<_Iter2, _Se2>& _Right) {
+    template <class _OIter, sentinel_for<_Iter> _OSe>
+        requires sentinel_for<_Se, _OIter>
+    _NODISCARD friend bool operator==(const common_iterator& _Left, const common_iterator<_OIter, _OSe>& _Right) {
         // clang-format on
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Left._Val._Contains != _Vty::_State::_Nothing && _Right._Val._Contains != _Vty::_State::_Nothing,
@@ -918,7 +897,11 @@ public:
 
         if (_Left._Val._Contains == _Vty::_State::_Holds_iter) {
             if (_Right._Val._Contains == _Vty::_State::_Holds_iter) {
-                return _Left._Val._Iterator == _Right._Val._Iterator;
+                if constexpr (equality_comparable_with<_Iter, _OIter>) {
+                    return _Left._Val._Iterator == _Right._Val._Iterator;
+                } else {
+                    return true;
+                }
             } else {
                 return _Left._Val._Iterator == _Right._Val._Sentinel;
             }
@@ -932,10 +915,10 @@ public:
     }
 
     // clang-format off
-    template <sized_sentinel_for<_Iter> _Iter2, sized_sentinel_for<_Iter> _Se2>
-        requires sized_sentinel_for<_Se, _Iter2>
-    _NODISCARD friend iter_difference_t<_Iter2> operator-(
-        const common_iterator& _Left, const common_iterator<_Iter2, _Se2>& _Right) {
+    template <sized_sentinel_for<_Iter> _OIter, sized_sentinel_for<_Iter> _OSe>
+        requires sized_sentinel_for<_Se, _OIter>
+    _NODISCARD friend iter_difference_t<_OIter> operator-(
+        const common_iterator& _Left, const common_iterator<_OIter, _OSe>& _Right) {
         // clang-format on
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Left._Val._Contains != _Vty::_State::_Nothing && _Right._Val._Contains != _Vty::_State::_Nothing,
@@ -966,8 +949,8 @@ public:
         return _RANGES iter_move(_Right._Val._Iterator);
     }
 
-    template <indirectly_swappable<_Iter> _Iter2, class _Se2>
-    friend void iter_swap(const common_iterator& _Left, const common_iterator<_Iter2, _Se2>& _Right) noexcept(
+    template <indirectly_swappable<_Iter> _OIter, class _OSe>
+    friend void iter_swap(const common_iterator& _Left, const common_iterator<_OIter, _OSe>& _Right) noexcept(
         noexcept(_RANGES iter_swap(_Left._Val._Iterator, _Right._Val._Iterator))) {
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(

@@ -8,41 +8,61 @@
 #include <range_algorithm_support.hpp>
 using namespace std;
 
+// clang-format off
+template <class Iter>
+concept CanDifference = requires(Iter it) {
+    { it - it };
+};
+template <class Iter>
+concept CanArrow = requires(Iter it) {
+    { it.operator->() };
+};
+// clang-format on
+
 struct instantiator {
     template <input_or_output_iterator Iter>
     static constexpr void call() {
         if constexpr (copyable<Iter>) {
-            using Sen    = test::sentinel<iter_value_t<Iter>>;
-            using Cit    = common_iterator<Iter, Sen>;
-            int input[3] = {1, 2, 3};
+            using ConstIter = typename Iter::Consterator;
+            using Sen       = test::sentinel<iter_value_t<Iter>>;
+            using OSen      = test::sentinel<const iter_value_t<Iter>>;
+            using Cit       = common_iterator<Iter, Sen>;
+            int input[3]    = {1, 2, 3};
 
             // [common.iter.types]
-            using iconcept = typename iterator_traits<Cit>::iterator_concept;
-            if constexpr (forward_iterator<Iter>) {
-                STATIC_ASSERT(same_as<iconcept, forward_iterator_tag>);
-            } else {
-                STATIC_ASSERT(same_as<typename iterator_traits<Cit>::iterator_concept, input_iterator_tag>);
-            }
+            {
+                using iconcept = typename iterator_traits<Cit>::iterator_concept;
+                if constexpr (forward_iterator<Iter>) {
+                    STATIC_ASSERT(same_as<iconcept, forward_iterator_tag>);
+                } else {
+                    STATIC_ASSERT(same_as<typename iterator_traits<Cit>::iterator_concept, input_iterator_tag>);
+                }
 
-            using icat = typename iterator_traits<Cit>::iterator_category;
-            if constexpr (derived_from<icat, forward_iterator_tag>) {
-                STATIC_ASSERT(same_as<icat, forward_iterator_tag>);
-            } else {
-                STATIC_ASSERT(same_as<icat, input_iterator_tag>);
-            }
+                using icat = typename iterator_traits<Cit>::iterator_category;
+                if constexpr (derived_from<icat, forward_iterator_tag>) {
+                    STATIC_ASSERT(same_as<icat, forward_iterator_tag>);
+                } else {
+                    STATIC_ASSERT(same_as<icat, input_iterator_tag>);
+                }
 
-            using ipointer = typename iterator_traits<Cit>::pointer;
-            if constexpr (_Has_op_arrow<Iter>) {
-                STATIC_ASSERT(same_as<ipointer, decltype(declval<const Iter&>().operator->())>);
-            } else {
-                STATIC_ASSERT(same_as<ipointer, void>);
+                using ipointer = typename iterator_traits<Cit>::pointer;
+                if constexpr (_Has_op_arrow<Iter>) {
+                    STATIC_ASSERT(same_as<ipointer, decltype(declval<const Iter&>().operator->())>);
+                } else {
+                    STATIC_ASSERT(same_as<ipointer, void>);
+                }
             }
 
             { // [counted.iter.const]
-                [[maybe_unused]] Cit defaultConstructed{};
+                Cit defaultConstructed{};
+                Cit iterConstructed{Iter{input}};
+                Cit sentinelConstructed(Sen{});
+                defaultConstructed = iterConstructed;
 
-                [[maybe_unused]] Cit iterConstructed{Iter{input}};
-                [[maybe_unused]] Cit sentinelConstructed(Sen{});
+                if constexpr (sentinel_for<OSen, ConstIter>) {
+                    using OCit = common_iterator<ConstIter, OSen>;
+                    OCit test{};
+                }
             }
 
             { // [counted.iter.access]
@@ -74,14 +94,30 @@ struct instantiator {
                 // Compare sentinel / sentinel
                 assert(Cit{Sen{input}} == Cit{Sen{input}});
                 assert(Cit{Sen{input}} == Cit{Sen{input + 1}});
+
+                if constexpr (CanDifference<Iter>) {
+                    // Difference iterator / iterator
+                    const same_as<iter_difference_t<Iter>> auto diff_it_it = Cit{Iter{input}} - Cit{Iter{input + 1}};
+                    assert(diff_it_it == -1);
+
+                    // Difference iterator / sentinel
+                    const same_as<iter_difference_t<Iter>> auto diff_it_sen = Cit{Iter{input + 1}} - Cit{Sen{input}};
+                    const same_as<iter_difference_t<Iter>> auto diff_sen_it = Cit{Sen{input}} - Cit{Iter{input + 1}};
+                    assert(diff_it_sen == 1);
+                    assert(diff_sen_it == 1);
+
+                    // Difference sentinel / sentinel
+                    const same_as<iter_difference_t<Iter>> auto diff_sen_sen = Cit{Sen{input}} - Cit{Sen{input + 1}};
+                    assert(diff_sen_sen == 0);
+                }
             }
 
             { // [common.iter.cust]
                 if constexpr (input_iterator<Iter>) { // iter_move
                     Cit iter1{Iter{input}};
 
-                    const auto iter2 = ranges::iter_move(iter1);
-                    assert(iter2 == 1);
+                    const same_as<iter_value_t<Iter>> auto element1 = ranges::iter_move(iter1);
+                    assert(element1 == 1);
                 }
                 if constexpr (indirectly_swappable<Iter>) { // iter_swap
                     Cit iter1{Iter{input}};

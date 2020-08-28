@@ -28,7 +28,7 @@ struct simple_input_iter {
         return *this;
     }
 
-    bool operator==(simple_input_iter const&) const = default;
+    bool operator==(const simple_input_iter&) const = default;
     bool operator==(const default_sentinel_t&) const {
         return true;
     }
@@ -58,7 +58,7 @@ void test_case_operator_preincrement() {
     ++cit; // cannot pre increment common_iterator that holds a sentinel
 }
 
-void test_case_operator_increment() {
+void test_case_operator_postincrement() {
     CIT cit{default_sentinel};
     cit++; // cannot increment common_iterator that holds a sentinel
 }
@@ -89,7 +89,7 @@ int main(int argc, char* argv[]) {
         test_case_operator_dereference_const,
         test_case_operator_arrow,
         test_case_operator_preincrement,
-        test_case_operator_increment,
+        test_case_operator_postincrement,
         test_case_iter_move,
         test_case_iter_swap_sentinel_left,
         test_case_iter_swap_sentinel_right,
