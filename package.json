@@ -23,7 +23,7 @@
     "@octokit/graphql": "^4.5.4",
     "cli-progress": "^3.8.2",
     "dotenv": "^8.2.0",
-    "luxon": "^1.24.1"
+    "luxon": "^1.25.0"
   },
   "prettier": {
     "arrowParens": "avoid",
