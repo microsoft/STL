@@ -514,21 +514,23 @@ private:
 
 #ifdef __cpp_lib_concepts
 // CLASS TEMPLATE common_iterator
+enum class _Variantish_state : unsigned char { _Nothing, _Holds_iter, _Holds_sentinel };
+
 template <input_or_output_iterator _It, sentinel_for<_It> _Se>
 class _Variantish {
 public:
     constexpr _Variantish() noexcept(is_nothrow_default_constructible_v<_It>)
-        : _Iterator{}, _Contains{_State::_Holds_iter} {}
+        : _Iterator{}, _Contains{_Variantish_state::_Holds_iter} {}
 
     template <class... _Types>
     constexpr explicit _Variantish(in_place_type_t<_It>, _Types&&... _Args) noexcept(
         is_nothrow_constructible_v<_It, _Types...>)
-        : _Iterator(_STD forward<_Types>(_Args)...), _Contains{_State::_Holds_iter} {}
+        : _Iterator(_STD forward<_Types>(_Args)...), _Contains{_Variantish_state::_Holds_iter} {}
 
     template <class... _Types>
     constexpr explicit _Variantish(in_place_type_t<_Se>, _Types&&... _Args) noexcept(
         is_nothrow_constructible_v<_Se, _Types...>)
-        : _Sentinel(_STD forward<_Types>(_Args)...), _Contains{_State::_Holds_sentinel} {}
+        : _Sentinel(_STD forward<_Types>(_Args)...), _Contains{_Variantish_state::_Holds_sentinel} {}
 
     // clang-format off
     template <class _OIter, class _OSe>
@@ -538,13 +540,13 @@ public:
         : _Contains{_That._Contains} {
         // clang-format on
         switch (_That._Contains) {
-        case _State::_Holds_iter:
+        case _Variantish_state::_Holds_iter:
             _Construct_in_place(_Iterator, _That._Iterator);
             break;
-        case _State::_Holds_sentinel:
+        case _Variantish_state::_Holds_sentinel:
             _Construct_in_place(_Sentinel, _That._Sentinel);
             break;
-        case _State::_Nothing:
+        case _Variantish_state::_Nothing:
             break;
         }
     }
@@ -560,13 +562,13 @@ public:
         noexcept(is_nothrow_copy_constructible_v<_It>&& is_nothrow_copy_constructible_v<_Se>))
         : _Contains{_That._Contains} {
         switch (_Contains) {
-        case _State::_Holds_iter:
+        case _Variantish_state::_Holds_iter:
             _Construct_in_place(_Iterator, _That._Iterator);
             break;
-        case _State::_Holds_sentinel:
+        case _Variantish_state::_Holds_sentinel:
             _Construct_in_place(_Sentinel, _That._Sentinel);
             break;
-        case _State::_Nothing:
+        case _Variantish_state::_Nothing:
             break;
         }
     }
@@ -580,13 +582,13 @@ public:
 
     _Variantish(_Variantish&& _That) : _Contains{_That._Contains} {
         switch (_Contains) {
-        case _State::_Holds_iter:
+        case _Variantish_state::_Holds_iter:
             _Construct_in_place(_Iterator, _STD move(_That._Iterator));
             break;
-        case _State::_Holds_sentinel:
+        case _Variantish_state::_Holds_sentinel:
             _Construct_in_place(_Sentinel, _STD move(_That._Sentinel));
             break;
-        case _State::_Nothing:
+        case _Variantish_state::_Nothing:
             break;
         }
     }
@@ -616,13 +618,13 @@ public:
             is_nothrow_copy_assignable_v<_It>&& is_nothrow_copy_assignable_v<_Se>) {
         if (_Contains == _That._Contains) {
             switch (_Contains) {
-            case _State::_Holds_iter:
+            case _Variantish_state::_Holds_iter:
                 _Iterator = _That._Iterator;
                 break;
-            case _State::_Holds_sentinel:
+            case _Variantish_state::_Holds_sentinel:
                 _Sentinel = _That._Sentinel;
                 break;
-            case _State::_Nothing:
+            case _Variantish_state::_Nothing:
                 break;
             }
 
@@ -630,16 +632,16 @@ public:
         }
 
         _Clear();
-        _Contains = _State::_Nothing;
+        _Contains = _Variantish_state::_Nothing;
 
         switch (_That._Contains) {
-        case _State::_Holds_iter:
+        case _Variantish_state::_Holds_iter:
             _Construct_in_place(_Iterator, _That._Iterator);
             break;
-        case _State::_Holds_sentinel:
+        case _Variantish_state::_Holds_sentinel:
             _Construct_in_place(_Sentinel, _That._Sentinel);
             break;
-        case _State::_Nothing:
+        case _Variantish_state::_Nothing:
             break;
         }
 
@@ -664,13 +666,13 @@ public:
             is_nothrow_move_assignable_v<_It>&& is_nothrow_move_assignable_v<_Se>) {
         if (_Contains == _That._Contains) {
             switch (_Contains) {
-            case _State::_Holds_iter:
+            case _Variantish_state::_Holds_iter:
                 _Iterator = _STD move(_That._Iterator);
                 break;
-            case _State::_Holds_sentinel:
+            case _Variantish_state::_Holds_sentinel:
                 _Sentinel = _STD move(_That._Sentinel);
                 break;
-            case _State::_Nothing:
+            case _Variantish_state::_Nothing:
                 break;
             }
 
@@ -678,16 +680,16 @@ public:
         }
 
         _Clear();
-        _Contains = _State::_Nothing;
+        _Contains = _Variantish_state::_Nothing;
 
         switch (_That._Contains) {
-        case _State::_Holds_iter:
+        case _Variantish_state::_Holds_iter:
             _Construct_in_place(_Iterator, _STD move(_That._Iterator));
             break;
-        case _State::_Holds_sentinel:
+        case _Variantish_state::_Holds_sentinel:
             _Construct_in_place(_Sentinel, _STD move(_That._Sentinel));
             break;
-        case _State::_Nothing:
+        case _Variantish_state::_Nothing:
             break;
         }
         _Contains = _That._Contains;
@@ -703,13 +705,13 @@ public:
         // clang-format on
         if (_Contains == _That._Contains) {
             switch (_Contains) {
-            case _State::_Holds_iter:
+            case _Variantish_state::_Holds_iter:
                 _Iterator = _That._Iterator;
                 break;
-            case _State::_Holds_sentinel:
+            case _Variantish_state::_Holds_sentinel:
                 _Sentinel = _That._Sentinel;
                 break;
-            case _State::_Nothing:
+            case _Variantish_state::_Nothing:
                 break;
             }
 
@@ -717,16 +719,16 @@ public:
         }
 
         _Clear();
-        _Contains = _State::_Nothing;
+        _Contains = _Variantish_state::_Nothing;
 
         switch (_That._Contains) {
-        case _State::_Holds_iter:
+        case _Variantish_state::_Holds_iter:
             _Construct_in_place(_Iterator, _That._Iterator);
             break;
-        case _State::_Holds_sentinel:
+        case _Variantish_state::_Holds_sentinel:
             _Construct_in_place(_Sentinel, _That._Sentinel);
             break;
-        case _State::_Nothing:
+        case _Variantish_state::_Nothing:
             break;
         }
 
@@ -741,13 +743,13 @@ public:
         // clang-format on
         if (_Left._Contains == _Right._Contains) {
             switch (_Left._Contains) {
-            case _State::_Holds_iter:
+            case _Variantish_state::_Holds_iter:
                 _RANGES swap(_Left._Iterator, _Right._Iterator);
                 break;
-            case _State::_Holds_sentinel:
+            case _Variantish_state::_Holds_sentinel:
                 _RANGES swap(_Left._Sentinel, _Right._Sentinel);
                 break;
-            case _State::_Nothing:
+            case _Variantish_state::_Nothing:
                 break;
             }
 
@@ -761,13 +763,13 @@ public:
 
     void _Clear() noexcept {
         switch (_Contains) {
-        case _State::_Holds_iter:
+        case _Variantish_state::_Holds_iter:
             _Iterator.~_It();
             break;
-        case _State::_Holds_sentinel:
+        case _Variantish_state::_Holds_sentinel:
             _Sentinel.~_Se();
             break;
-        case _State::_Nothing:
+        case _Variantish_state::_Nothing:
             break;
         }
     }
@@ -777,9 +779,8 @@ public:
         _Se _Sentinel;
     };
 
-    enum class _State : unsigned char { _Nothing, _Holds_iter, _Holds_sentinel };
 
-    _State _Contains;
+    _Variantish_state _Contains;
 };
 
 // clang-format off
@@ -812,7 +813,7 @@ public:
         requires convertible_to<const _OIter&, _Iter> && convertible_to<const _OSe&, _Se>
     constexpr common_iterator(const common_iterator<_OIter, _OSe>& _Right) noexcept(
         is_nothrow_constructible_v<_Iter, const _OIter&>&& is_nothrow_constructible_v<_Se, const _OSe&>) // strengthened
-        : _Val{_Right._Val} {}
+        : _Val{_Vty{_Right._Val}} {}
 
     template <class _OIter, class _OSe>
         requires convertible_to<const _OIter&, _Iter> && convertible_to<const _OSe&, _Se>
@@ -828,7 +829,7 @@ public:
 
     _NODISCARD decltype(auto) operator*() {
 #if _ITERATOR_DEBUG_LEVEL != 0
-        _STL_VERIFY(_Val._Contains == _Vty::_State::_Holds_iter,
+        _STL_VERIFY(_Val._Contains == _Variantish_state::_Holds_iter,
             "common_iterator can only be dereferenced if it holds an iterator");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         return *_Val._Iterator;
@@ -836,7 +837,7 @@ public:
 
     _NODISCARD decltype(auto) operator*() const requires _Dereferenceable<const _Iter> {
 #if _ITERATOR_DEBUG_LEVEL != 0
-        _STL_VERIFY(_Val._Contains == _Vty::_State::_Holds_iter,
+        _STL_VERIFY(_Val._Contains == _Variantish_state::_Holds_iter,
             "common_iterator can only be dereferenced if it holds an iterator");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         return *_Val._Iterator;
@@ -849,7 +850,7 @@ public:
                 || constructible_from<iter_value_t<_Iter>, iter_reference_t<_Iter>>) {
         // clang-format on
 #if _ITERATOR_DEBUG_LEVEL != 0
-        _STL_VERIFY(_Val._Contains == _Vty::_State::_Holds_iter,
+        _STL_VERIFY(_Val._Contains == _Variantish_state::_Holds_iter,
             "common_iterator can only be dereferenced if it holds an iterator");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         if constexpr (is_pointer_v<_Iter> || _Has_op_arrow<_Iter>) {
@@ -864,7 +865,7 @@ public:
 
     common_iterator& operator++() {
 #if _ITERATOR_DEBUG_LEVEL != 0
-        _STL_VERIFY(_Val._Contains == _Vty::_State::_Holds_iter,
+        _STL_VERIFY(_Val._Contains == _Variantish_state::_Holds_iter,
             "common_iterator can only be incremented if it holds an iterator");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         ++_Val._Iterator;
@@ -873,7 +874,7 @@ public:
 
     decltype(auto) operator++(int) {
 #if _ITERATOR_DEBUG_LEVEL != 0
-        _STL_VERIFY(_Val._Contains == _Vty::_State::_Holds_iter,
+        _STL_VERIFY(_Val._Contains == _Variantish_state::_Holds_iter,
             "common_iterator can only be incremented if it holds an iterator");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         if constexpr (forward_iterator<_Iter>) {
@@ -891,12 +892,13 @@ public:
     _NODISCARD friend bool operator==(const common_iterator& _Left, const common_iterator<_OIter, _OSe>& _Right) {
         // clang-format on
 #if _ITERATOR_DEBUG_LEVEL != 0
-        _STL_VERIFY(_Left._Val._Contains != _Vty::_State::_Nothing && _Right._Val._Contains != _Vty::_State::_Nothing,
+        _STL_VERIFY(
+            _Left._Val._Contains != _Variantish_state::_Nothing && _Right._Val._Contains != _Variantish_state::_Nothing,
             "common_iterators can only be compared if both hold a value");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
-        if (_Left._Val._Contains == _Vty::_State::_Holds_iter) {
-            if (_Right._Val._Contains == _Vty::_State::_Holds_iter) {
+        if (_Left._Val._Contains == _Variantish_state::_Holds_iter) {
+            if (_Right._Val._Contains == _Variantish_state::_Holds_iter) {
                 if constexpr (equality_comparable_with<_Iter, _OIter>) {
                     return _Left._Val._Iterator == _Right._Val._Iterator;
                 } else {
@@ -906,7 +908,7 @@ public:
                 return _Left._Val._Iterator == _Right._Val._Sentinel;
             }
         } else {
-            if (_Right._Val._Contains == _Vty::_State::_Holds_iter) {
+            if (_Right._Val._Contains == _Variantish_state::_Holds_iter) {
                 return _Left._Val._Sentinel == _Right._Val._Iterator;
             } else {
                 return true;
@@ -921,18 +923,19 @@ public:
         const common_iterator& _Left, const common_iterator<_OIter, _OSe>& _Right) {
         // clang-format on
 #if _ITERATOR_DEBUG_LEVEL != 0
-        _STL_VERIFY(_Left._Val._Contains != _Vty::_State::_Nothing && _Right._Val._Contains != _Vty::_State::_Nothing,
+        _STL_VERIFY(
+            _Left._Val._Contains != _Variantish_state::_Nothing && _Right._Val._Contains != _Variantish_state::_Nothing,
             "Cannot take difference of valueless common_iterators");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
-        if (_Left._Val._Contains == _Vty::_State::_Holds_iter) {
-            if (_Right._Val._Contains == _Vty::_State::_Holds_iter) {
+        if (_Left._Val._Contains == _Variantish_state::_Holds_iter) {
+            if (_Right._Val._Contains == _Variantish_state::_Holds_iter) {
                 return _Left._Val._Iterator - _Right._Val._Iterator;
             } else {
                 return _Left._Val._Iterator - _Right._Val._Sentinel;
             }
         } else {
-            if (_Right._Val._Contains == _Vty::_State::_Holds_iter) {
+            if (_Right._Val._Contains == _Variantish_state::_Holds_iter) {
                 return _Left._Val._Sentinel - _Right._Val._Iterator;
             } else {
                 return 0;
@@ -943,7 +946,7 @@ public:
     _NODISCARD friend iter_rvalue_reference_t<_Iter> iter_move(const common_iterator& _Right) noexcept(
         noexcept(_RANGES iter_move(_Right._Val._Iterator))) requires input_iterator<_Iter> {
 #if _ITERATOR_DEBUG_LEVEL != 0
-        _STL_VERIFY(_Right._Val._Contains == _Vty::_State::_Holds_iter,
+        _STL_VERIFY(_Right._Val._Contains == _Variantish_state::_Holds_iter,
             "Can only iter_move from common_iterator if it holds an iterator");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         return _RANGES iter_move(_Right._Val._Iterator);
@@ -953,14 +956,20 @@ public:
     friend void iter_swap(const common_iterator& _Left, const common_iterator<_OIter, _OSe>& _Right) noexcept(
         noexcept(_RANGES iter_swap(_Left._Val._Iterator, _Right._Val._Iterator))) {
 #if _ITERATOR_DEBUG_LEVEL != 0
-        _STL_VERIFY(
-            _Left._Val._Contains == _Vty::_State::_Holds_iter && _Right._Val._Contains == _Vty::_State::_Holds_iter,
+        _STL_VERIFY(_Left._Val._Contains == _Variantish_state::_Holds_iter
+                        && _Right._Val._Contains == _Variantish_state::_Holds_iter,
             "Can only iter_swap common_iterators if both hold an iterator");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         return _RANGES iter_swap(_Left._Val._Iterator, _Right._Val._Iterator);
     }
 
 private:
+    // clang-format off
+    template <input_or_output_iterator _OIter, sentinel_for<_OIter> _OSe>
+    requires (!same_as<_OIter, _OSe> && copyable<_OIter>)
+    friend class common_iterator;
+    // clang-format on
+
     using _Vty = _Variantish<_Iter, _Se>;
     _Vty _Val;
 };

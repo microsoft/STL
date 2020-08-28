@@ -27,6 +27,7 @@ struct instantiator {
             using Sen       = test::sentinel<iter_value_t<Iter>>;
             using OSen      = test::sentinel<const iter_value_t<Iter>>;
             using Cit       = common_iterator<Iter, Sen>;
+            using OCit      = common_iterator<ConstIter, OSen>;
             int input[3]    = {1, 2, 3};
 
             // [common.iter.types]
@@ -53,19 +54,20 @@ struct instantiator {
                 }
             }
 
-            { // [counted.iter.const]
+            { // [common.iter.const]
                 Cit defaultConstructed{};
                 Cit iterConstructed{Iter{input}};
                 Cit sentinelConstructed(Sen{});
                 defaultConstructed = iterConstructed;
 
-                if constexpr (sentinel_for<OSen, ConstIter>) {
-                    using OCit = common_iterator<ConstIter, OSen>;
-                    OCit test{};
-                }
+                OCit conversionConstructed{defaultConstructed};
+                conversionConstructed = iterConstructed;
+
+                OCit conversionConstructedSentinel{sentinelConstructed};
+                conversionConstructed = iterConstructed;
             }
 
-            { // [counted.iter.access]
+            { // [common.iter.access]
                 Cit iter{Iter{input}};
                 assert(*iter == 1);
 
@@ -73,7 +75,7 @@ struct instantiator {
                 assert(*constIter == 1);
             }
 
-            { // [counted.iter.nav]
+            { // [common.iter.nav]
                 Cit iter{Iter{input}};
                 ++iter;
                 assert(*iter == 2);
@@ -82,7 +84,7 @@ struct instantiator {
                 assert(*iter == 3);
             }
 
-            { // [counted.iter.cmp]
+            { // [common.iter.cmp]
                 // Compare iterator / iterator
                 assert(Cit{Iter{input}} == Cit{Iter{input}});
                 assert(Cit{Iter{input}} != Cit{Iter{input + 1}});
@@ -104,11 +106,27 @@ struct instantiator {
                     const same_as<iter_difference_t<Iter>> auto diff_it_sen = Cit{Iter{input + 1}} - Cit{Sen{input}};
                     const same_as<iter_difference_t<Iter>> auto diff_sen_it = Cit{Sen{input}} - Cit{Iter{input + 1}};
                     assert(diff_it_sen == 1);
-                    assert(diff_sen_it == 1);
+                    assert(diff_sen_it == -1);
 
                     // Difference sentinel / sentinel
                     const same_as<iter_difference_t<Iter>> auto diff_sen_sen = Cit{Sen{input}} - Cit{Sen{input + 1}};
                     assert(diff_sen_sen == 0);
+
+                    // Difference iterator / other iterator
+                    const same_as<iter_difference_t<Iter>> auto diff_it_oit = Cit{Iter{input}} - OCit{Iter{input + 1}};
+                    assert(diff_it_oit == -1);
+
+                    // Difference iterator / other sentinel
+                    const same_as<iter_difference_t<Iter>> auto diff_it_osen = Cit{Iter{input + 1}} - OCit{OSen{input}};
+                    assert(diff_it_osen == 1);
+
+                    // Difference other iterator / sentinel
+                    const same_as<iter_difference_t<Iter>> auto diff_sen_oit = Cit{Sen{input}} - OCit{Iter{input + 1}};
+                    assert(diff_sen_oit == -1);
+
+                    // Difference sentinel / other sentinel
+                    const same_as<iter_difference_t<Iter>> auto diff_sen_osen = Cit{Sen{input}} - OCit{OSen{input + 1}};
+                    assert(diff_sen_osen == 0);
                 }
             }
 
