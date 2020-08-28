@@ -822,44 +822,34 @@ concept sized_sentinel_for = sentinel_for<_Se, _It>
 // clang-format on
 
 // ALIAS TEMPLATE _Iter_concept
-template <class _It, bool _NotSpec = _Is_from_primary<iterator_traits<_It>>>
-struct _Iter_concept_impl {};
-
-// clang-format off
-template <class _It>
-    requires _Has_member_iterator_concept<iterator_traits<_It>>
-struct _Iter_concept_impl<_It, false> {
-    using type = typename iterator_traits<_It>::iterator_concept;
+template <bool _Iterator_category_present>
+struct _Iter_concept_impl2 {
+    template <class _It, class _Traits>
+    using _Apply = typename _Traits::iterator_category;
+};
+template <>
+struct _Iter_concept_impl2<false> {
+    // clang-format off
+    template <class _It, class _Traits>
+        requires _Is_from_primary<iterator_traits<_It>>
+    using _Apply = random_access_iterator_tag;
+    // clang-format on
 };
 
-template <class _It>
-    requires (!_Has_member_iterator_concept<iterator_traits<_It>>
-        && _Has_member_iterator_category<iterator_traits<_It>>)
-struct _Iter_concept_impl<_It, false> {
-    using type = typename iterator_traits<_It>::iterator_category;
+template <bool _Iterator_concept_present>
+struct _Iter_concept_impl1 {
+    template <class _It, class _Traits>
+    using _Apply = typename _Traits::iterator_concept;
 };
-// clang-format on
-
-template <class _It>
-struct _Iter_concept_impl<_It, true> {
-    using type = random_access_iterator_tag;
+template <>
+struct _Iter_concept_impl1<false> {
+    template <class _It, class _Traits>
+    using _Apply = typename _Iter_concept_impl2<_Has_member_iterator_category<_Traits>>::template _Apply<_It, _Traits>;
 };
 
-template <_Has_member_iterator_concept _It>
-struct _Iter_concept_impl<_It, true> {
-    using type = typename _It::iterator_concept;
-};
-
-// clang-format off
-template <class _It>
-    requires(!_Has_member_iterator_concept<_It> && _Has_member_iterator_category<_It>)
-struct _Iter_concept_impl<_It, true> {
-    using type = typename _It::iterator_category;
-};
-// clang-format on
-
-template <class _It>
-using _Iter_concept = typename _Iter_concept_impl<_It>::type;
+template <class _It, class _Traits = conditional_t<_Is_from_primary<iterator_traits<_It>>, _It, iterator_traits<_It>>>
+using _Iter_concept =
+    typename _Iter_concept_impl1<_Has_member_iterator_concept<_Traits>>::template _Apply<_It, _Traits>;
 
 // clang-format off
 // CONCEPT input_iterator
@@ -4097,14 +4087,24 @@ public:
         return _Left._Current - _Right._Get_last();
     }
 
-    _NODISCARD friend constexpr reference iter_move(const move_iterator& _It) noexcept(
-        noexcept(_RANGES iter_move(_It._Current))) {
+    _NODISCARD friend constexpr reference iter_move(const move_iterator& _It)
+#ifdef __EDG__ // TRANSITION, VSO-1132105
+        noexcept(noexcept(_RANGES iter_move(_STD declval<const _Iter&>())))
+#else // ^^^ workaround / no workaround vvv
+        noexcept(noexcept(_RANGES iter_move(_It._Current)))
+#endif // TRANSITION, VSO-1132105
+    {
         return _RANGES iter_move(_It._Current);
     }
 
     template <indirectly_swappable<_Iter> _Iter2>
-    friend constexpr void iter_swap(const move_iterator& _Left, const move_iterator<_Iter2>& _Right) noexcept(
-        noexcept(_RANGES iter_swap(_Left._Current, _Right.base()))) {
+    friend constexpr void iter_swap(const move_iterator& _Left, const move_iterator<_Iter2>& _Right)
+#ifdef __EDG__ // TRANSITION, VSO-1132105
+        noexcept(noexcept(_RANGES iter_swap(_STD declval<const _Iter&>(), _STD declval<const _Iter2&>())))
+#else // ^^^ workaround / no workaround vvv
+        noexcept(noexcept(_RANGES iter_swap(_Left._Current, _Right.base())))
+#endif // TRANSITION, VSO-1132105
+    {
         _RANGES iter_swap(_Left._Current, _Right.base());
     }
 #endif // __cpp_lib_concepts
@@ -5970,6 +5970,15 @@ template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR_BIT_CAST bool _Is_finite(const _Ty _Xx) { // constexpr isfinite()
     return _Float_abs_bits(_Xx) < _Float_traits<_Ty>::_Exponent_mask;
 }
+
+// STRUCT _Nontrivial_dummy_type
+struct _Nontrivial_dummy_type {
+    constexpr _Nontrivial_dummy_type() noexcept {
+        // This default constructor is user-provided to avoid zero-initialization when objects are value-initialized.
+    }
+};
+_STL_INTERNAL_STATIC_ASSERT(!is_trivially_default_constructible_v<_Nontrivial_dummy_type>);
+
 _STD_END
 #undef _CONSTEXPR_BIT_CAST
 #pragma pop_macro("new")

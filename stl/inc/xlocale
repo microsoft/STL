@@ -461,49 +461,6 @@ const _Facet& __CRTDECL use_facet(const locale& _Loc) { // get facet reference f
     _END_LOCK()
 } // end of use_facet body
 
-// FUNCTION TEMPLATE _Getloctxt
-template <class _Elem, class _InIt>
-int __CRTDECL _Getloctxt(_InIt& _First, _InIt& _Last, size_t _Numfields, const _Elem* _Ptr) {
-    // find field at _Ptr that matches longest in [_First, _Last)
-    for (size_t _Off = 0; _Ptr[_Off] != _Elem{}; ++_Off) {
-        if (_Ptr[_Off] == _Ptr[0]) {
-            ++_Numfields; // add fields with leading mark to initial count
-        }
-    }
-
-    string _Str(_Numfields, '\0'); // one column counter for each field
-
-    int _Ans = -2; // no candidates so far
-    for (size_t _Column = 1;; ++_Column, (void) ++_First, _Ans = -1) { // test each element against all viable fields
-        bool _Prefix  = false; // seen at least one valid prefix
-        size_t _Off   = 0; // offset into fields
-        size_t _Field = 0; // current field number
-
-        for (; _Field < _Numfields; ++_Field) { // test element at _Column in field _Field
-            while (_Ptr[_Off] != _Elem{} && _Ptr[_Off] != _Ptr[0]) { // find beginning of field
-                ++_Off;
-            }
-
-            if (_Str[_Field] != '\0') {
-                _Off += _Str[_Field]; // skip tested columns in field
-            } else if (_Ptr[_Off += _Column] == _Ptr[0]
-                       || _Ptr[_Off] == _Elem{}) { // matched all of field, save as possible answer
-                _Str[_Field] = static_cast<char>(_Column < 127 ? _Column : 127); // save skip count if small enough
-                _Ans         = static_cast<int>(_Field); // save answer
-            } else if (_First == _Last || _Ptr[_Off] != *_First) {
-                _Str[_Field] = static_cast<char>(_Column < 127 ? _Column : 127); // no match, just save skip count
-            } else {
-                _Prefix = true; // still a valid prefix
-            }
-        }
-
-        if (!_Prefix || _First == _Last) {
-            break; // no pending prefixes or no input, give up
-        }
-    }
-    return _Ans; // return field number or negative value on failure
-}
-
 // FUNCTION TEMPLATE _Maklocbyte
 template <class _Elem>
 char __CRTDECL _Maklocbyte(_Elem _Char, const _Locinfo::_Cvtvec&) {
@@ -3262,6 +3219,50 @@ public:
 protected:
     virtual __CLR_OR_THIS_CALL ~ctype_byname() noexcept {}
 };
+
+// FUNCTION TEMPLATE _Getloctxt
+template <class _Elem, class _InIt>
+int __CRTDECL _Getloctxt(_InIt& _First, _InIt& _Last, size_t _Numfields, const _Elem* _Ptr) {
+    // find field at _Ptr that matches longest in [_First, _Last)
+    for (size_t _Off = 0; _Ptr[_Off] != _Elem{}; ++_Off) {
+        if (_Ptr[_Off] == _Ptr[0]) {
+            ++_Numfields; // add fields with leading mark to initial count
+        }
+    }
+
+    string _Str(_Numfields, '\0'); // one column counter for each field
+    const ctype<_Elem>& _CType = _STD use_facet<ctype<_Elem>>(locale{});
+
+    int _Ans = -2; // no candidates so far
+    for (size_t _Column = 1;; ++_Column, (void) ++_First, _Ans = -1) { // test each element against all viable fields
+        bool _Prefix  = false; // seen at least one valid prefix
+        size_t _Off   = 0; // offset into fields
+        size_t _Field = 0; // current field number
+
+        for (; _Field < _Numfields; ++_Field) { // test element at _Column in field _Field
+            while (_Ptr[_Off] != _Elem{} && _Ptr[_Off] != _Ptr[0]) { // find beginning of field
+                ++_Off;
+            }
+
+            if (_Str[_Field] != '\0') {
+                _Off += _Str[_Field]; // skip tested columns in field
+            } else if (_Ptr[_Off += _Column] == _Ptr[0]
+                       || _Ptr[_Off] == _Elem{}) { // matched all of field, save as possible answer
+                _Str[_Field] = static_cast<char>(_Column < 127 ? _Column : 127); // save skip count if small enough
+                _Ans         = static_cast<int>(_Field); // save answer
+            } else if (_First == _Last || _CType.tolower(_Ptr[_Off]) != _CType.tolower(static_cast<_Elem>(*_First))) {
+                _Str[_Field] = static_cast<char>(_Column < 127 ? _Column : 127); // no match, just save skip count
+            } else {
+                _Prefix = true; // still a valid prefix
+            }
+        }
+
+        if (!_Prefix || _First == _Last) {
+            break; // no pending prefixes or no input, give up
+        }
+    }
+    return _Ans; // return field number or negative value on failure
+}
 
 #if defined(_DLL_CPPLIB)
 #if !defined(_CRTBLD) || defined(__FORCE_INSTANCE)

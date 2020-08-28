@@ -106,10 +106,9 @@
 #endif // _M_CEE
 
 #include <experimental/filesystem>
-#ifdef _RESUMABLE_FUNCTIONS_SUPPORTED
-#include <experimental/resumable>
-#endif // _RESUMABLE_FUNCTIONS_SUPPORTED
+
 #include <instantiate_containers_iterators_common.hpp>
+
 
 using namespace std;
 
@@ -529,10 +528,6 @@ void future_test_impl(Future& f) {
 
     (void) f.wait_for(seconds(3));
     (void) f.wait_until(system_clock::now());
-
-#ifdef _RESUMABLE_FUNCTIONS_SUPPORTED
-    // sizeof(experimental::coroutine_traits<Future>); // TODO: reenable when shared_future is awaitable
-#endif // _RESUMABLE_FUNCTIONS_SUPPORTED
 }
 
 void future_test() {
@@ -574,13 +569,6 @@ void future_test() {
 
     (void) async([]() {});
     (void) async(launch::async, []() {});
-
-#ifdef _RESUMABLE_FUNCTIONS_SUPPORTED
-    using namespace experimental;
-
-    (void) sizeof(coroutine_traits<future<int>, int>);
-    (void) sizeof(operator co_await(f));
-#endif // _RESUMABLE_FUNCTIONS_SUPPORTED
 
     TRAIT_V(uses_allocator, promise<int>, allocator<double>);
 
