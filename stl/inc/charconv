@@ -1225,11 +1225,18 @@ _NODISCARD inline bool _Should_round_up(
 // The caller must pass true for _Has_zero_tail if all discarded bits were zeroes.
 _NODISCARD inline uint64_t _Right_shift_with_rounding(
     const uint64_t _Value, const uint32_t _Shift, const bool _Has_zero_tail) noexcept {
-    if (_Shift >= 64) {
-        if (_Shift == 64) {
-            const uint64_t _Round_bit = _Value >> 63;
-            const auto _Has_tail_bits = static_cast<uint64_t>(!_Has_zero_tail);
-            return _Round_bit & _Has_tail_bits;
+    constexpr int _Total_number_of_bits = 64;
+    if (_Shift >= _Total_number_of_bits) {
+        if (_Shift == _Total_number_of_bits) {
+            constexpr uint64_t _Extra_bits_mask = (1ULL << (_Total_number_of_bits - 1)) - 1;
+            constexpr uint64_t _Round_bit_mask  = (1ULL << (_Total_number_of_bits - 1));
+
+            const bool _Round_bit = (_Value & _Round_bit_mask) != 0;
+            const bool _Tail_bits = !_Has_zero_tail || (_Value & _Extra_bits_mask) != 0;
+
+            // We round up the answer to 1 if the answer is greater than 0.5. Otherwise, we round down the answer to 0
+            // if either [1] the answer is less than 0.5 or [2] the answer is exactly 0.5.
+            return static_cast<uint64_t>(_Round_bit & _Tail_bits);
         } else {
             // If we'd need to shift 65 or more bits, the answer is less than 0.5 and is always rounded to zero:
             return 0;
