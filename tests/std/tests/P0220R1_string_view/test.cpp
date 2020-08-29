@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string>
 #include <string_view>
+#include <vector>
 
 #include <constexpr_char_traits.hpp>
 
@@ -299,6 +300,25 @@ constexpr bool test_case_buffer_constructor() {
     assert(sv.at(1) == 'o');
     assert(sv.front() == 'n');
     assert(sv.back() == 'l');
+
+    return true;
+}
+
+constexpr bool test_case_contiguous_constructor() {
+#ifdef __cpp_lib_ranges
+    const vector<char> expectedData{'n', 'o', ' ', 'n', 'u', 'l', 'l'};
+    // Also tests the corresponding deduction guide:
+    basic_string_view sv(expectedData.begin(), expectedData.end());
+    static_assert(is_same_v<decltype(sv), string_view>);
+    assert(sv.data() == expectedData.data());
+    assert(sv.size() == 7);
+    assert(sv.length() == 7);
+    assert(!sv.empty());
+    assert(sv[1] == 'o');
+    assert(sv.at(1) == 'o');
+    assert(sv.front() == 'n');
+    assert(sv.back() == 'l');
+#endif // __cpp_lib_ranges
 
     return true;
 }
@@ -1072,6 +1092,7 @@ int main() {
     test_case_default_constructor();
     test_case_ntcts_constructor();
     test_case_buffer_constructor();
+    test_case_contiguous_constructor();
     test_case_iterators<char, char_traits<char>>();
     test_case_iterators<wchar_t, char_traits<wchar_t>>();
     test_case_prefix<char, char_traits<char>>();
