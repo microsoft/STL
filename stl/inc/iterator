@@ -516,9 +516,15 @@ private:
 // CLASS TEMPLATE common_iterator
 enum class _Variantish_state : unsigned char { _Nothing, _Holds_iter, _Holds_sentinel };
 
+struct _Common_iterator_construct_tag {
+    explicit _Common_iterator_construct_tag() = default;
+};
+
 template <input_or_output_iterator _It, sentinel_for<_It> _Se>
 class _Variantish {
 public:
+    constexpr explicit _Variantish(_Common_iterator_construct_tag) noexcept : _Contains{_Variantish_state::_Nothing} {}
+
     constexpr _Variantish() noexcept(is_nothrow_default_constructible_v<_It>)
         : _Iterator{}, _Contains{_Variantish_state::_Holds_iter} {}
 
@@ -807,6 +813,8 @@ public:
 
     constexpr common_iterator(_Se _Right) noexcept(is_nothrow_move_constructible_v<_Se>) // strengthened
         : _Val{in_place_type<_Se>, _STD move(_Right)} {}
+
+    constexpr explicit common_iterator(_Common_iterator_construct_tag _Tag) noexcept : _Val{_Tag} {}
 
     // clang-format off
     template <class _OIter, class _OSe>

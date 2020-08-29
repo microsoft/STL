@@ -33,51 +33,126 @@ struct simple_input_iter {
         return true;
     }
 
+    difference_type operator-(const simple_input_iter&) const {
+        return 42;
+    }
+    friend difference_type operator-(const simple_input_iter&, const default_sentinel_t&) {
+        return 42;
+    }
+    friend difference_type operator-(const default_sentinel_t&, const simple_input_iter&) {
+        return 42;
+    }
+
     friend void iter_swap(const simple_input_iter&, const simple_input_iter&) {}
 };
 
 using CIT = common_iterator<simple_input_iter, default_sentinel_t>;
 
-void test_case_operator_dereference() {
+void test_case_operator_dereference_sentinel() {
     CIT cit{default_sentinel};
-    (void) (*cit); // cannot dereference common_iterator that holds a sentinel
+    (void) (*cit); // common_iterator can only be dereferenced if it holds an iterator
 }
 
-void test_case_operator_dereference_const() {
+void test_case_operator_dereference_valueless() {
+    CIT cit{_Common_iterator_construct_tag{}};
+    (void) (*cit); // common_iterator can only be dereferenced if it holds an iterator
+}
+
+void test_case_operator_dereference_const_sentinel() {
     const CIT cit{default_sentinel};
-    (void) (*cit); // cannot dereference common_iterator that holds a sentinel
+    (void) (*cit); // common_iterator can only be dereferenced if it holds an iterator
 }
 
-void test_case_operator_arrow() {
+void test_case_operator_dereference_const_valueless() {
+    const CIT cit{_Common_iterator_construct_tag{}};
+    (void) (*cit); // common_iterator can only be dereferenced if it holds an iterator
+}
+
+void test_case_operator_arrow_sentinel() {
     CIT cit{default_sentinel};
-    (void) (cit.operator->()); // cannot dereference common_iterator that holds a sentinel
+    (void) (cit.operator->()); // common_iterator can only be dereferenced if it holds an iterator
+}
+void test_case_operator_arrow_valueless() {
+    CIT cit{_Common_iterator_construct_tag{}};
+    (void) (cit.operator->()); // common_iterator can only be dereferenced if it holds an iterator
 }
 
-void test_case_operator_preincrement() {
+void test_case_operator_preincrement_sentinel() {
     CIT cit{default_sentinel};
-    ++cit; // cannot pre increment common_iterator that holds a sentinel
+    ++cit; // common_iterator can only be preincremented if it holds an iterator
 }
 
-void test_case_operator_postincrement() {
+void test_case_operator_preincrement_valueless() {
+    CIT cit{_Common_iterator_construct_tag{}};
+    ++cit; // common_iterator can only be preincremented if it holds an iterator
+}
+
+void test_case_operator_postincrement_sentinel() {
     CIT cit{default_sentinel};
-    cit++; // cannot increment common_iterator that holds a sentinel
+    cit++; // common_iterator can only be postreincremented if it holds an iterator
 }
 
-void test_case_iter_move() {
+void test_case_operator_postincrement_valueless() {
+    CIT cit{_Common_iterator_construct_tag{}};
+    cit++; // common_iterator can only be postincremented if it holds an iterator
+}
+
+void test_case_equality_left_valueless() {
+    CIT cit1{_Common_iterator_construct_tag{}};
+    CIT cit2{};
+    (void) (cit1 == cit2); // common_iterator can only be compared if it holds a value
+}
+
+void test_case_equality_right_valueless() {
+    CIT cit1{};
+    CIT cit2{_Common_iterator_construct_tag{}};
+    (void) (cit1 == cit2); // common_iterator can only be compared if it holds a value
+}
+
+void test_case_difference_left_valueless() {
+    CIT cit1{_Common_iterator_construct_tag{}};
+    CIT cit2{};
+    (void) (cit1 - cit2); // common_iterator can only be subtracted if it holds a value
+}
+
+void test_case_difference_right_valueless() {
+    CIT cit1{};
+    CIT cit2{_Common_iterator_construct_tag{}};
+    (void) (cit1 - cit2); // common_iterator can only be subtracted if it holds a value
+}
+
+void test_case_iter_move_sentinel() {
     CIT cit{default_sentinel};
-    (void) ranges::iter_move(cit); // cannot iter_move common_iterator that holds a sentinel
+    (void) ranges::iter_move(cit); // common_iterator can only be iter_moved if it holds an interator
 }
 
-void test_case_iter_swap_sentinel_left() {
+void test_case_iter_move_valueless() {
+    CIT cit{_Common_iterator_construct_tag{}};
+    (void) ranges::iter_move(cit); // common_iterator can only be iter_moved if it holds an interator
+}
+
+void test_case_iter_swap_sentinel_left_sentinel() {
     CIT cit1{default_sentinel};
     CIT cit2{};
-    (void) ranges::iter_swap(cit1, cit2); // cannot iter_swap common_iterators that hold a sentinel
+    (void) ranges::iter_swap(cit1, cit2); // common_iterator can only be iter_swapped if it holds an interator
 }
 
-void test_case_iter_swap_sentinel_right() {
+void test_case_iter_swap_sentinel_left_valueless() {
+    CIT cit1{_Common_iterator_construct_tag{}};
+    CIT cit2{};
+    (void) ranges::iter_swap(cit1, cit2); // common_iterator can only be iter_swapped if it holds an interator
+}
+
+void test_case_iter_swap_sentinel_right_sentinel() {
     CIT cit1{};
     CIT cit2{default_sentinel};
-    (void) ranges::iter_swap(cit1, cit2); // cannot iter_swap common_iterators that hold a sentinel
+    (void) ranges::iter_swap(cit1, cit2); // common_iterator can only be iter_swapped if it holds an interator
+}
+
+void test_case_iter_swap_sentinel_right_valueless() {
+    CIT cit1{};
+    CIT cit2{_Common_iterator_construct_tag{}};
+    (void) ranges::iter_swap(cit1, cit2); // common_iterator can only be iter_swapped if it holds an interator
 }
 
 int main(int argc, char* argv[]) {
@@ -85,14 +160,26 @@ int main(int argc, char* argv[]) {
 
 #if _ITERATOR_DEBUG_LEVEL != 0
     exec.add_death_tests({
-        test_case_operator_dereference,
-        test_case_operator_dereference_const,
-        test_case_operator_arrow,
-        test_case_operator_preincrement,
-        test_case_operator_postincrement,
-        test_case_iter_move,
-        test_case_iter_swap_sentinel_left,
-        test_case_iter_swap_sentinel_right,
+        test_case_operator_dereference_sentinel,
+        test_case_operator_dereference_valueless,
+        test_case_operator_dereference_const_sentinel,
+        test_case_operator_dereference_const_valueless,
+        test_case_operator_arrow_sentinel,
+        test_case_operator_arrow_valueless,
+        test_case_operator_preincrement_sentinel,
+        test_case_operator_preincrement_valueless,
+        test_case_operator_postincrement_sentinel,
+        test_case_operator_postincrement_valueless,
+        test_case_equality_left_valueless,
+        test_case_equality_right_valueless,
+        test_case_difference_left_valueless,
+        test_case_difference_right_valueless,
+        test_case_iter_move_sentinel,
+        test_case_iter_move_valueless,
+        test_case_iter_swap_sentinel_left_sentinel,
+        test_case_iter_swap_sentinel_left_valueless,
+        test_case_iter_swap_sentinel_right_sentinel,
+        test_case_iter_swap_sentinel_right_valueless,
     });
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
