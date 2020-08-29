@@ -1300,8 +1300,8 @@ _NODISCARD inline uint64_t _Right_shift_with_rounding(
 template <class _FloatingType>
 void _Assemble_floating_point_value_no_shift(const bool _Is_negative, const int32_t _Exponent,
     const typename _Floating_type_traits<_FloatingType>::_Uint_type _Mantissa, _FloatingType& _Result) noexcept {
-    // The following code assembles floating point values based on an alternative interpretation of the IEEE 754 binary
-    // floating point format. It is valid for all of the following cases:
+    // The following code assembles floating-point values based on an alternative interpretation of the IEEE 754 binary
+    // floating-point format. It is valid for all of the following cases:
     // [1] normal value,
     // [2] normal value, needs renormalization and exponent increment after rounding up the mantissa,
     // [3] normal value, overflows after rounding up the mantissa,
@@ -1368,7 +1368,7 @@ _NODISCARD errc _Assemble_floating_point_value(const uint64_t _Initial_mantissa,
         // The exponent is too small to be represented by the floating-point type as a normal value, but it may be
         // representable as a denormal value.
 
-        // The exponent of subnormal values (as defined by the mathematical model of floating point numbers, not the
+        // The exponent of subnormal values (as defined by the mathematical model of floating-point numbers, not the
         // exponent field in the bit representation) is equal to the minimum exponent of normal values.
         _Exponent = _Traits::_Minimum_binary_exponent;
 
@@ -1381,7 +1381,7 @@ _NODISCARD errc _Assemble_floating_point_value(const uint64_t _Initial_mantissa,
 
             // TRANSITION, existing:
             // from_chars in MSVC STL and strto[f|d|ld] in UCRT reports underflow only when the result is zero after
-            // rounding to the floating point format. This behavior is different from IEEE 754 underflow exception.
+            // rounding to the floating-point format. This behavior is different from IEEE 754 underflow exception.
             if (_Mantissa == 0) {
                 _Error_code = errc::result_out_of_range; // Underflow example: "1e-1000"
             }
