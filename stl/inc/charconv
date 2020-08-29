@@ -1225,7 +1225,7 @@ _NODISCARD inline bool _Should_round_up(
 // The caller must pass true for _Has_zero_tail if all discarded bits were zeroes.
 _NODISCARD inline uint64_t _Right_shift_with_rounding(
     const uint64_t _Value, const uint32_t _Shift, const bool _Has_zero_tail) noexcept {
-    constexpr int _Total_number_of_bits = 64;
+    constexpr uint32_t _Total_number_of_bits = 64;
     if (_Shift >= _Total_number_of_bits) {
         if (_Shift == _Total_number_of_bits) {
             constexpr uint64_t _Extra_bits_mask = (1ULL << (_Total_number_of_bits - 1)) - 1;
