@@ -43,12 +43,6 @@ namespace ranges {
     // clang-format on
 
     namespace _Pipe {
-        template <class>
-        struct _Base;
-
-        template <class, class>
-        struct _Pipeline;
-
         // clang-format off
         template <class _Left, class _Right>
         concept _Can_pipe = requires(_Left&& __l, _Right&& __r) {
@@ -60,62 +54,65 @@ namespace ranges {
             && constructible_from<remove_cvref_t<_Right>, _Right>;
         // clang-format on
 
+        template <class, class>
+        struct _Pipeline;
+
         template <class _Derived>
         struct _Base {
             // clang-format off
             template <class _Other>
-                requires _Can_compose<_Derived&&, _Other&&>
-            friend constexpr auto operator|(_Base&& __l, _Base<_Other>&& __r) noexcept(noexcept(
-                _Pipeline{static_cast<_Derived&&>(__l), static_cast<_Other&&>(__r)})) {
+                requires _Can_compose<_Derived, _Other>
+            constexpr auto operator|(_Base<_Other>&& __r) && noexcept(
+                noexcept(_Pipeline{static_cast<_Derived&&>(*this), static_cast<_Other&&>(__r)})) {
                 // clang-format on
                 _STL_INTERNAL_STATIC_ASSERT(derived_from<_Derived, _Base<_Derived>>);
                 _STL_INTERNAL_STATIC_ASSERT(derived_from<_Other, _Base<_Other>>);
-                return _Pipeline{static_cast<_Derived&&>(__l), static_cast<_Other&&>(__r)};
+                return _Pipeline{static_cast<_Derived&&>(*this), static_cast<_Other&&>(__r)};
             }
 
             // clang-format off
             template <class _Other>
-                requires _Can_compose<_Derived&&, const _Other&>
-            friend constexpr auto operator|(_Base&& __l, const _Base<_Other>& __r) noexcept(noexcept(
-                _Pipeline{static_cast<_Derived&&>(__l), static_cast<const _Other&>(__r)})) {
+                requires _Can_compose<_Derived, const _Other&>
+            constexpr auto operator|(const _Base<_Other>& __r) && noexcept(noexcept(
+                _Pipeline{static_cast<_Derived&&>(*this), static_cast<const _Other&>(__r)})) {
                 // clang-format on
                 _STL_INTERNAL_STATIC_ASSERT(derived_from<_Derived, _Base<_Derived>>);
                 _STL_INTERNAL_STATIC_ASSERT(derived_from<_Other, _Base<_Other>>);
-                return _Pipeline{static_cast<_Derived&&>(__l), static_cast<const _Other&>(__r)};
+                return _Pipeline{static_cast<_Derived&&>(*this), static_cast<const _Other&>(__r)};
             }
 
             // clang-format off
             template <class _Other>
-                requires _Can_compose<const _Derived&, _Other&&>
-            friend constexpr auto operator|(const _Base& __l, _Base<_Other>&& __r) noexcept(noexcept(
-                _Pipeline{static_cast<const _Derived&>(__l), static_cast<_Other&&>(__r)})) {
+                requires _Can_compose<const _Derived&, _Other>
+            constexpr auto operator|(_Base<_Other>&& __r) const& noexcept(
+                noexcept(_Pipeline{static_cast<const _Derived&>(*this), static_cast<_Other&&>(__r)})) {
                 // clang-format on
                 _STL_INTERNAL_STATIC_ASSERT(derived_from<_Derived, _Base<_Derived>>);
                 _STL_INTERNAL_STATIC_ASSERT(derived_from<_Other, _Base<_Other>>);
-                return _Pipeline{static_cast<const _Derived&>(__l), static_cast<_Other&&>(__r)};
+                return _Pipeline{static_cast<const _Derived&>(*this), static_cast<_Other&&>(__r)};
             }
 
             // clang-format off
             template <class _Other>
                 requires _Can_compose<const _Derived&, const _Other&>
-            friend constexpr auto operator|(const _Base& __l, const _Base<_Other>& __r) noexcept(noexcept(
-                _Pipeline{static_cast<const _Derived&>(__l), static_cast<const _Other&>(__r)})) {
+            constexpr auto operator|(const _Base<_Other>& __r) const& noexcept(noexcept(
+                _Pipeline{static_cast<const _Derived&>(*this), static_cast<const _Other&>(__r)})) {
                 // clang-format on
                 _STL_INTERNAL_STATIC_ASSERT(derived_from<_Derived, _Base<_Derived>>);
                 _STL_INTERNAL_STATIC_ASSERT(derived_from<_Other, _Base<_Other>>);
-                return _Pipeline{static_cast<const _Derived&>(__l), static_cast<const _Other&>(__r)};
+                return _Pipeline{static_cast<const _Derived&>(*this), static_cast<const _Other&>(__r)};
             }
 
             template <_Can_pipe<const _Derived&> _Left>
             friend constexpr auto operator|(_Left&& __l, const _Base& __r) noexcept(
-                noexcept(static_cast<const _Derived&>(__r)(static_cast<_Left&&>(__l)))) {
-                return static_cast<const _Derived&>(__r)(static_cast<_Left&&>(__l));
+                noexcept(static_cast<const _Derived&>(__r)(_STD forward<_Left>(__l)))) {
+                return static_cast<const _Derived&>(__r)(_STD forward<_Left>(__l));
             }
 
             template <_Can_pipe<_Derived> _Left>
             friend constexpr auto operator|(_Left&& __l, _Base&& __r) noexcept(
-                noexcept(static_cast<_Derived&&>(__r)(static_cast<_Left&&>(__l)))) {
-                return static_cast<_Derived&&>(__r)(static_cast<_Left&&>(__l));
+                noexcept(static_cast<_Derived&&>(__r)(_STD forward<_Left>(__l)))) {
+                return static_cast<_Derived&&>(__r)(_STD forward<_Left>(__l));
             }
         };
 
@@ -127,21 +124,21 @@ namespace ranges {
             template <class _Ty1, class _Ty2>
             constexpr explicit _Pipeline(_Ty1&& _Val1, _Ty2&& _Val2) noexcept(
                 is_nothrow_convertible_v<_Ty1, _Left>&& is_nothrow_convertible_v<_Ty2, _Right>)
-                : __l(static_cast<_Ty1&&>(_Val1)), __r(static_cast<_Ty2&&>(_Val2)) {}
+                : __l(_STD forward<_Ty1>(_Val1)), __r(_STD forward<_Ty2>(_Val2)) {}
 
             template <class _Ty>
             _NODISCARD constexpr auto operator()(_Ty&& _Val) noexcept(
-                noexcept(__r(__l(static_cast<_Ty&&>(_Val))))) requires requires {
+                noexcept(__r(__l(_STD forward<_Ty>(_Val))))) requires requires {
                 __r(__l(static_cast<_Ty&&>(_Val)));
             }
-            { return __r(__l(static_cast<_Ty&&>(_Val))); }
+            { return __r(__l(_STD forward<_Ty>(_Val))); }
 
             template <class _Ty>
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const
-                noexcept(noexcept(__r(__l(static_cast<_Ty&&>(_Val))))) requires requires {
+                noexcept(noexcept(__r(__l(_STD forward<_Ty>(_Val))))) requires requires {
                 __r(__l(static_cast<_Ty&&>(_Val)));
             }
-            { return __r(__l(static_cast<_Ty&&>(_Val))); }
+            { return __r(__l(_STD forward<_Ty>(_Val))); }
         };
 
         template <class _Ty1, class _Ty2>
@@ -149,7 +146,7 @@ namespace ranges {
     } // namespace _Pipe
 
     template <range _Rng, class _Derived>
-    class _Cached_position {
+    class _Cached_position : public view_interface<_Derived> {
         static_assert(_Always_false<_Rng>, "A range must be at least forward for position caching to be worthwhile.");
     };
 
@@ -602,10 +599,10 @@ namespace ranges {
             // clang-format off
             template <class _Ty>
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(
-                noexcept(single_view{static_cast<_Ty&&>(_Val)})) requires requires {
+                noexcept(single_view{_STD forward<_Ty>(_Val)})) requires requires {
                 single_view{static_cast<_Ty&&>(_Val)};
             } {
-                return single_view{static_cast<_Ty&&>(_Val)};
+                return single_view{_STD forward<_Ty>(_Val)};
             }
             // clang-format on
         };
@@ -713,11 +710,11 @@ namespace ranges {
             _NODISCARD constexpr auto operator()(_Rng&& _Range) const noexcept(_Choice<_Rng>._No_throw) {
                 // clang-format on
                 if constexpr (_Choice<_Rng>._Strategy == _St::_View) {
-                    return static_cast<_Rng&&>(_Range);
+                    return _STD forward<_Rng>(_Range);
                 } else if constexpr (_Choice<_Rng>._Strategy == _St::_Ref) {
-                    return ref_view{static_cast<_Rng&&>(_Range)};
+                    return ref_view{_STD forward<_Rng>(_Range)};
                 } else if constexpr (_Choice<_Rng>._Strategy == _St::_Subrange) {
-                    return subrange{static_cast<_Rng&&>(_Range)};
+                    return subrange{_STD forward<_Rng>(_Range)};
                 } else {
                     static_assert(_Always_false<_Rng>, "Should be unreachable");
                 }
@@ -860,13 +857,13 @@ namespace ranges {
             _NODISCARD constexpr auto operator()(_Rng&& _Range) const noexcept(_Choice<_Rng>._No_throw) {
                 // clang-format on
                 if constexpr (_Choice<_Rng>._Strategy == _St::_Base) {
-                    return static_cast<_Rng&&>(_Range).base();
+                    return _STD forward<_Rng>(_Range).base();
                 } else if constexpr (_Choice<_Rng>._Strategy == _St::_Subrange_unsized) {
                     return subrange{_Range.end().base(), _Range.begin().base()};
                 } else if constexpr (_Choice<_Rng>._Strategy == _St::_Subrange_sized) {
                     return subrange{_Range.end().base(), _Range.begin().base(), _Range.size()};
                 } else if constexpr (_Choice<_Rng>._Strategy == _St::_Reverse) {
-                    return reverse_view{static_cast<_Rng&&>(_Range)};
+                    return reverse_view{_STD forward<_Rng>(_Range)};
                 } else {
                     static_assert(_Always_false<_Rng>, "Should be unreachable");
                 }
