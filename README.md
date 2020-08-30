@@ -3,7 +3,7 @@
 This is the official repository for Microsoft's implementation of the C++ Standard Library (also known as the STL),
 which ships as part of the MSVC toolset and the Visual Studio IDE.
 
-* Our [Changelog][] tracks which updates to this repository appear in each VS release.
+* Our [Changelog][] tracks which update to this repository appear in each VS release.
 * Our [Status Chart][] displays our overall progress over time.
 * Join our [Discord server][].
 
@@ -347,7 +347,7 @@ The `PASS` and `FAIL` result codes are self-explanatory. We want our tests to `P
 
 The `XPASS` and `XFAIL` result codes are less obvious. `XPASS` is actually a failure result and indicates that we
 expected a test to fail but it passed. `XFAIL` is a successful result and indicates that we expected the test to fail
-and it did. Typically an `XPASS` result means that the `expected_results.txt` file for the testsuite needs to be
+and it did. Typically, an `XPASS` result means that the `expected_results.txt` file for the testsuite needs to be
 modified. If the `XPASS` result is a test legitimately passing, the usual course of action would be to remove a `FAIL`
 entry from the `expected_results.txt`. However, some tests from `libcxx` mark themselves as `XFAIL` (meaning they
 expect to fail) for features they have added tests for but have yet to implement in `libcxx`. If the STL implements
@@ -424,3 +424,4 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [opencode@microsoft.com]: mailto:opencode@microsoft.com
 [redistributables]: https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads
 [vcpkg]: https://github.com/microsoft/vcpkg
+
