@@ -172,6 +172,31 @@ struct instantiator {
     }
 };
 
+bool test_operator_arrow() {
+    P input[3] = {{0, 1}, {0, 2}, {0, 3}};
+
+    using pointerTest = common_iterator<P*, void*>;
+    pointerTest pointerIter{input};
+
+    assert(*pointerIter == P(0, 1));
+    assert(pointerIter->first == 0);
+    assert(pointerIter->second == 1);
+    static_assert(is_same_v<remove_cvref_t<decltype(pointerIter.operator->())>, P*>);
+    static_assert(!is_same_v<decltype(pointerIter.operator->()), P*>);
+
+    using countedTest = common_iterator<counted_iterator<P*>, default_sentinel_t>;
+    countedTest countedIter{counted_iterator{input, 3}};
+
+    assert(*countedIter == P(0, 1));
+    assert(countedIter->first == 0);
+    assert(countedIter->second == 1);
+    static_assert(is_same_v<decltype(countedIter.operator->()), P*>);
+
+    return true;
+}
+
 int main() {
     with_writable_iterators<instantiator, P>::call();
+
+    test_operator_arrow();
 }
