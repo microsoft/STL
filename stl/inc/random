@@ -2936,7 +2936,7 @@ private:
                 _Vx1 = 2 * _NRAND(_Eng, _Ty) - 1;
                 _Vx2 = 2 * _NRAND(_Eng, _Ty) - 1;
                 _Sx  = _Vx1 * _Vx1 + _Vx2 * _Vx2;
-                if (_Sx < 1) {
+                if (_Sx < 1 && _Sx != 0) {
                     break;
                 }
             }
@@ -3864,7 +3864,7 @@ public:
                 _Px1 = _CSTD pow(_Px1, _Ty{1} / _Ax);
                 _Px2 = _CSTD pow(_Px2, _Ty{1} / _Bx);
                 _Wx  = _Px1 + _Px2;
-                if (_Wx <= _Ty{1}) {
+                if (_Wx <= _Ty{1} && _Wx != _Ty{0}) {
                     break;
                 }
             }
@@ -3872,11 +3872,21 @@ public:
         } else { // use gamma distributions instead
             _Ty _Px1;
             _Ty _Px2;
+            _Ty _PSum;
             gamma_distribution<_Ty> _Dist1(_Ax, 1);
             gamma_distribution<_Ty> _Dist2(_Bx, 1);
-            _Px1 = _Dist1(_Eng);
-            _Px2 = _Dist2(_Eng);
-            return _Px1 / (_Px1 + _Px2);
+
+            for (;;) { // reject pairs whose sum is zero
+                _Px1  = _Dist1(_Eng);
+                _Px2  = _Dist2(_Eng);
+                _PSum = _Px1 + _Px2;
+
+                if (_PSum != _Ty{0}) {
+                    break;
+                }
+            }
+
+            return _Px1 / _PSum;
         }
     }
 
@@ -4001,12 +4011,18 @@ private:
         _Ty _Px;
         _Ty _Vx1;
         _Ty _Vx2;
+        const _Ty _Vx3{1};
         _Vx1 = static_cast<_Ty>(_Par0._Mx) * static_cast<_Ty>(0.5);
         _Vx2 = static_cast<_Ty>(_Par0._Nx) * static_cast<_Ty>(0.5);
         _Beta_distribution<_Ty> _Dist(_Vx1, _Vx2);
-        _Px = _Dist(_Eng);
+        for (;;) { // reject bad values
+            _Px = _Dist(_Eng);
+            if (_Px != _Vx3) {
+                break;
+            }
+        }
 
-        return (_Vx2 / _Vx1) * (_Px / (_Ty{1} - _Px));
+        return (_Vx2 / _Vx1) * (_Px / (_Vx3 - _Px));
     }
 
     param_type _Par;
@@ -4137,7 +4153,7 @@ private:
             _Vx2 = _Dist(_Eng);
             _Rs  = _Vx1 * _Vx1 + _Vx2 * _Vx2;
 
-            if (_Rs < _Ty{1}) {
+            if (_Rs < _Ty{1} && _Rs != _Ty{0}) {
                 break;
             }
         }
