@@ -4,9 +4,11 @@
 #include <cassert>
 #include <concepts>
 #include <iterator>
+#include <utility>
 
 #include <range_algorithm_support.hpp>
 using namespace std;
+using P = pair<int, int>;
 
 // clang-format off
 template <class Iter>
@@ -17,6 +19,8 @@ template <class Iter>
 concept CanArrow = requires(Iter it) {
     { it.operator->() };
 };
+template <class Iter>
+concept HasProxy = !is_reference_v<iter_reference_t<Iter>>;
 // clang-format on
 
 struct instantiator {
@@ -28,7 +32,7 @@ struct instantiator {
             using OSen      = test::sentinel<const iter_value_t<Iter>>;
             using Cit       = common_iterator<Iter, Sen>;
             using OCit      = common_iterator<ConstIter, OSen>;
-            int input[3]    = {1, 2, 3};
+            P input[3]      = {{0, 1}, {0, 2}, {0, 3}};
 
             // [common.iter.types]
             {
@@ -69,19 +73,37 @@ struct instantiator {
 
             { // [common.iter.access]
                 Cit iter{Iter{input}};
-                assert(*iter == 1);
+                assert(*iter == P(0, 1));
+                assert(iter->first == 0);
+                assert(iter->second == 1);
+                if constexpr (HasProxy<Iter>) {
+                    // We return a proxy class here
+                    static_assert(is_class_v<decltype(iter.operator->())>);
+                } else {
+                    // Either a pointer or the wrapped iterator
+                    static_assert(!is_class_v<decltype(iter.operator->())>);
+                }
 
                 const Cit constIter{Iter{input}};
-                assert(*constIter == 1);
+                assert(*constIter == P(0, 1));
+                assert(constIter->first == 0);
+                assert(constIter->second == 1);
+                if constexpr (HasProxy<Iter>) {
+                    // We return a proxy class here
+                    static_assert(is_class_v<decltype(constIter.operator->())>);
+                } else {
+                    // Either a pointer or the wrapped iterator
+                    static_assert(!is_class_v<decltype(constIter.operator->())>);
+                }
             }
 
             { // [common.iter.nav]
                 Cit iter{Iter{input}};
                 ++iter;
-                assert(*iter == 2);
+                assert(*iter == P(0, 2));
 
-                assert(*iter++ == 2);
-                assert(*iter == 3);
+                assert(*iter++ == P(0, 2));
+                assert(*iter == P(0, 3));
             }
 
             { // [common.iter.cmp]
@@ -135,15 +157,15 @@ struct instantiator {
                     Cit iter1{Iter{input}};
 
                     const same_as<iter_value_t<Iter>> auto element1 = ranges::iter_move(iter1);
-                    assert(element1 == 1);
+                    assert(element1 == P(0, 1));
                 }
                 if constexpr (indirectly_swappable<Iter>) { // iter_swap
                     Cit iter1{Iter{input}};
                     Cit iter2{Iter{input + 1}};
 
                     ranges::iter_swap(iter1, iter2);
-                    assert(*iter1 == 2);
-                    assert(*iter2 == 1);
+                    assert(*iter1 == P(0, 2));
+                    assert(*iter2 == P(0, 1));
                 }
             }
         }
@@ -151,5 +173,5 @@ struct instantiator {
 };
 
 int main() {
-    with_writable_iterators<instantiator, int>::call();
+    with_writable_iterators<instantiator, P>::call();
 }
