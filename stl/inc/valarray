@@ -385,10 +385,18 @@ public:
     }
 
     _NODISCARD const _Ty& operator[](size_t _Off) const noexcept /* strengthened */ {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Off < _Mysize, "valarray subscript out of range");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+
         return _Myptr[_Off];
     }
 
     _NODISCARD _Ty& operator[](size_t _Off) noexcept /* strengthened */ {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Off < _Mysize, "valarray subscript out of range");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+
         return _Myptr[_Off];
     }
 
