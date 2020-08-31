@@ -4335,6 +4335,28 @@ _OutIt _Copy_memmove(move_iterator<_InIt> _First, move_iterator<_InIt> _Last, _O
     return _Copy_memmove(_First.base(), _Last.base(), _Dest);
 }
 
+template <class _InIt, class _OutIt>
+_OutIt _Copy_memmove_common(_InIt _IFirst, _InIt _ILast, _OutIt _OFirst, _OutIt _OLast) {
+    const char* const _IFirst_ch = const_cast<const char*>(reinterpret_cast<const volatile char*>(_IFirst));
+    const char* const _ILast_ch  = const_cast<const char*>(reinterpret_cast<const volatile char*>(_ILast));
+    char* const _OFirst_ch       = const_cast<char*>(reinterpret_cast<volatile char*>(_OFirst));
+    const char* const _OLast_ch  = const_cast<const char*>(reinterpret_cast<const volatile char*>(_OLast));
+    const auto _Count            = static_cast<size_t>(min(_ILast_ch - _IFirst_ch, _OLast_ch - _OFirst_ch));
+    _CSTD memmove(_OFirst_ch, _IFirst_ch, _Count);
+    return reinterpret_cast<_OutIt>(_OFirst_ch + _Count);
+}
+
+template <class _InIt, class _OutIt>
+_OutIt _Copy_memcpy_common(_InIt _IFirst, _InIt _ILast, _OutIt _OFirst, _OutIt _OLast) {
+    const char* const _IFirst_ch = const_cast<const char*>(reinterpret_cast<const volatile char*>(_IFirst));
+    const char* const _ILast_ch  = const_cast<const char*>(reinterpret_cast<const volatile char*>(_ILast));
+    char* const _OFirst_ch       = const_cast<char*>(reinterpret_cast<volatile char*>(_OFirst));
+    const char* const _OLast_ch  = const_cast<const char*>(reinterpret_cast<const volatile char*>(_OLast));
+    const auto _Count            = static_cast<size_t>(min(_ILast_ch - _IFirst_ch, _OLast_ch - _OFirst_ch));
+    _CSTD memcpy(_OFirst_ch, _IFirst_ch, _Count);
+    return reinterpret_cast<_OutIt>(_OFirst_ch + _Count);
+}
+
 #if _HAS_IF_CONSTEXPR
 // VARIABLE TEMPLATE _Is_vb_iterator
 template <class _It, bool _RequiresMutable = false>
