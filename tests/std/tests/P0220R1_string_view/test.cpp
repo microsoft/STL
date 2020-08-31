@@ -308,8 +308,7 @@ constexpr bool test_case_contiguous_constructor() {
 #ifdef __cpp_lib_ranges
     const vector<char> expectedData{'n', 'o', ' ', 'n', 'u', 'l', 'l'};
     // Also tests the corresponding deduction guide:
-    basic_string_view sv(expectedData.begin(), expectedData.end());
-    static_assert(is_same_v<decltype(sv), string_view>);
+    same_as<string_view> auto sv = basic_string_view(expectedData.begin(), expectedData.end());
     assert(sv.data() == expectedData.data());
     assert(sv.size() == 7);
     assert(sv.length() == 7);
