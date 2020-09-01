@@ -277,6 +277,7 @@ namespace ranges {
     template <forward_range _Rng>
     _NODISCARD constexpr auto _Get_final_iterator_unwrapped(_Rng& _Range, const _Unwrapped_t<iterator_t<_Rng>>& _Mid) {
         // find the (unwrapped) iterator in _Range which equals _Uend(_Range) [possibly O(N)]
+        // Pre: [ranges::begin(_Range), _Mid) and [_Mid, ranges::end(_Range)) denote ranges
         if constexpr (common_range<_Rng>) {
             return _Uend(_Range);
         } else if constexpr (sized_range<_Rng>) {
@@ -8307,12 +8308,12 @@ namespace ranges {
                 ++_First1;
                 ++_Mid2;
             } while (_First1 != _Last1 && _Mid2 != _Last2);
-            _Make_heap_common(_First2, _Mid2, _Pred, _Proj2); // Make a heap
 
+            _Make_heap_common(_First2, _Mid2, _Pred, _Proj2); // Make a heap
             for (; _First1 != _Last1; ++_First1) { // Scan the remaining elements...
                 // ... for values less than the largest in the heap ...
                 if (_STD invoke(_Pred, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_First2))) {
-                    // replace and re-heap
+                    // ... to replace the largest, after which we restore the heap invariants.
                     using _Diff = iter_difference_t<_It2>;
                     _RANGES _Pop_heap_hole_by_index(_First2, static_cast<_Diff>(0), static_cast<_Diff>(_Mid2 - _First2),
                         *_First1, _Pred, _Proj2, _Proj1);
