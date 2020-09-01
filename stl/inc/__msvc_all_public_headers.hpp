@@ -52,6 +52,7 @@
 #include <deque>
 #include <exception>
 #include <filesystem>
+#include <format>
 #include <forward_list>
 #include <fstream>
 #include <functional>
