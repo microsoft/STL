@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <array>
 #include <assert.h>
 #include <sstream>
 #include <stdexcept>
 #include <stdlib.h>
 #include <string>
 #include <string_view>
-#include <vector>
 
 #include <constexpr_char_traits.hpp>
 
@@ -305,8 +305,8 @@ constexpr bool test_case_buffer_constructor() {
 }
 
 constexpr bool test_case_contiguous_constructor() {
-#ifdef __cpp_lib_ranges
-    const vector<char> expectedData{'n', 'o', ' ', 'n', 'u', 'l', 'l'};
+#ifdef __cpp_lib_concepts
+    const array expectedData{'n', 'o', ' ', 'n', 'u', 'l', 'l'};
     // Also tests the corresponding deduction guide:
     same_as<string_view> auto sv = basic_string_view(expectedData.begin(), expectedData.end());
     assert(sv.data() == expectedData.data());
@@ -317,7 +317,7 @@ constexpr bool test_case_contiguous_constructor() {
     assert(sv.at(1) == 'o');
     assert(sv.front() == 'n');
     assert(sv.back() == 'l');
-#endif // __cpp_lib_ranges
+#endif // __cpp_lib_concepts
 
     return true;
 }
@@ -1047,6 +1047,7 @@ static_assert(c_string_view{"abcd"} == "abcd");
 static_assert(test_case_default_constructor());
 static_assert(test_case_ntcts_constructor<constexpr_char_traits>());
 static_assert(test_case_buffer_constructor());
+static_assert(test_case_contiguous_constructor());
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-284079 "C1XX's C++14 constexpr emits bogus warnings C4146,
                                            // C4308, C4307 for basic_string_view::iterator"
 static_assert(test_case_iterators<char, constexpr_char_traits>());
