@@ -32,7 +32,7 @@ namespace ranges {
 
     // clang-format off
     // CONCEPT ranges::viewable_range
-    template <class _Rng> // Per P/R of LWG-3481
+    template <class _Rng> // Per proposed resolution of LWG-3481
     concept viewable_range = range<_Rng>
         && ((view<remove_cvref_t<_Rng>> && constructible_from<remove_cvref_t<_Rng>, _Rng>)
             || (!view<remove_cvref_t<_Rng>> && borrowed_range<_Rng>));
