@@ -1048,7 +1048,7 @@ public:
     constexpr _String_view_iterator& operator+=(const difference_type _Off) noexcept {
 #if _ITERATOR_DEBUG_LEVEL >= 1
         _Verify_offset(_Off);
-        _Myoff += _Off;
+        _Myoff += static_cast<size_t>(_Off);
 #else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ // vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
         _Myptr += _Off;
 #endif // _ITERATOR_DEBUG_LEVEL
@@ -1077,7 +1077,7 @@ public:
                 "cannot seek string_view iterator after end");
         }
 
-        _Myoff -= _Off;
+        _Myoff -= static_cast<size_t>(_Off);
 #else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ // vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
         _Myptr -= _Off;
 #endif // _ITERATOR_DEBUG_LEVEL
