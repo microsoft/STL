@@ -52,8 +52,8 @@ static HANDLE _FilesysOpenFile(const wchar_t* _Fname, DWORD _Desired_access, DWO
     return CreateFile2(_Fname, _Desired_access, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, OPEN_EXISTING,
         &_Create_file_parameters);
 #else // _CRT_APP
-    return CreateFileW(
-        _Fname, _Desired_access, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING, _Flags, nullptr);
+    return CreateFileW(_Fname, _Desired_access, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
+        OPEN_EXISTING, _Flags, nullptr);
 #endif // _CRT_APP
 }
 
