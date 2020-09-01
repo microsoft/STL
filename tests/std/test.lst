@@ -317,7 +317,9 @@ tests\P0896R4_ranges_ref_view
 tests\P0896R4_ranges_subrange
 tests\P0896R4_ranges_test_machinery
 tests\P0896R4_ranges_to_address
+tests\P0896R4_views_all
 tests\P0896R4_views_empty
+tests\P0896R4_views_reverse
 tests\P0896R4_views_single
 tests\P0898R3_concepts
 tests\P0898R3_identity
@@ -329,6 +331,9 @@ tests\P1032R1_miscellaneous_constexpr
 tests\P1135R6_atomic_flag_test
 tests\P1135R6_atomic_wait
 tests\P1135R6_atomic_wait_vista
+tests\P1135R6_barrier
+tests\P1135R6_latch
+tests\P1135R6_semaphore
 tests\P1165R1_consistently_propagating_stateful_allocators
 tests\P1423R3_char8_t_remediation
 tests\P1645R1_constexpr_numeric
