@@ -131,7 +131,7 @@ int main() {
     test_fill<int, char>();
     test_fill<char, int>();
 
-    test_fill<volatile char, char>();
+    test_fill<volatile char, char>(); // Test GH-1183
 
     test_uninitialized_fill(
         [](count_copies* buff, size_t n, const count_copies& src) { uninitialized_fill(buff, buff + n, src); });
@@ -143,28 +143,28 @@ int main() {
     {
         bool output[] = {false, true, false};
         fill(output, output + 3, 5);
-        for (bool elem : output) {
+        for (const bool &elem : output) {
             assert(elem == true);
         }
     }
     {
         bool output[] = {false, true, false};
         fill_n(output, 3, 5);
-        for (bool elem : output) {
+        for (const bool &elem : output) {
             assert(elem == true);
         }
     }
     {
         bool output[] = {false, true, false};
         uninitialized_fill(output, output + 3, 5);
-        for (bool elem : output) {
+        for (const bool &elem : output) {
             assert(elem == true);
         }
     }
     {
         bool output[] = {false, true, false};
         uninitialized_fill_n(output, 3, 5);
-        for (bool elem : output) {
+        for (const bool &elem : output) {
             assert(elem == true);
         }
     }

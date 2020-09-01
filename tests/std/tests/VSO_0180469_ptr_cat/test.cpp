@@ -272,10 +272,12 @@ void test_case_Equal_memcmp_is_safe_comparator() {
         STATIC_ASSERT(_Equal_memcmp_is_safe<typename vector<Elem1>::iterator, typename vector<Elem2>::const_iterator,
                           Pr> == Expected);
     }
+
     if constexpr (!is_same_v<Elem2, bool>) {
         STATIC_ASSERT(_Equal_memcmp_is_safe<typename array<Elem1, 1>::const_iterator,
                           typename vector<Elem2>::const_iterator, Pr> == Expected);
     }
+
     if constexpr (!is_same_v<Elem1, bool>) {
         STATIC_ASSERT(_Equal_memcmp_is_safe<typename vector<Elem1>::iterator, typename array<Elem2, 1>::iterator,
                           Pr> == Expected);

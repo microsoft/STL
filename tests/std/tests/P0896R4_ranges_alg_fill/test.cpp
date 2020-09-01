@@ -34,7 +34,7 @@ struct instantiator {
         { // Validate int is properly converted to bool
             bool output[] = {false, true, false};
             fill(ranges::begin(output), ranges::end(output), 5);
-            for (bool elem : output) {
+            for (const bool &elem : output) {
                 assert(elem == true);
             }
         }
