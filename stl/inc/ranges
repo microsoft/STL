@@ -765,8 +765,8 @@ namespace ranges {
                 : _Last(_STD move(_Last_)) {}
 
             // clang-format off
-            constexpr _Sentinel(_Sentinel<!_Const, _Wrapped> _That)
-                noexcept(is_nothrow_constructible_v<_Base_sentinel, _Maybe_wrapped<_Wrapped, sentinel_t<_Vw>>>) // strengthened
+            constexpr _Sentinel(_Sentinel<!_Const, _Wrapped> _That) noexcept(
+                is_nothrow_constructible_v<_Base_sentinel, _Maybe_wrapped<_Wrapped, sentinel_t<_Vw>>>) // strengthened
                 requires _Const && convertible_to<_Maybe_wrapped<_Wrapped, sentinel_t<_Vw>>, _Base_sentinel>
                 : _Last(_STD move(_That._Last)) {}
             // clang-format on
@@ -783,7 +783,8 @@ namespace ranges {
             using _Prevent_inheriting_unwrap = _Sentinel;
 
             // clang-format off
-            _NODISCARD constexpr auto _Unwrapped() const& requires _Wrapped && _Unwrappable_v<const iterator_t<_Base_Ty>&> {
+            _NODISCARD constexpr auto _Unwrapped() const&
+                requires _Wrapped && _Unwrappable_v<const iterator_t<_Base_Ty>&> {
                 // clang-format on
                 return _Sentinel<_Const, false>{_Get_unwrapped(_Last)};
             }
