@@ -362,5 +362,8 @@ const daily_table = [
     { date: '2020-08-26', merged: 76.11, pr: 26, cxx20: 24, lwg: 1, issue: 287, bug: 92, avg_age: 67.77, avg_wait: 49.50, sum_age: 58.74, sum_wait: 42.90, },
     { date: '2020-08-27', merged: 75.86, pr: 26, cxx20: 24, lwg: 1, issue: 288, bug: 92, avg_age: 68.77, avg_wait: 50.43, sum_age: 59.60, sum_wait: 43.71, },
     { date: '2020-08-28', merged: 73.61, pr: 28, cxx20: 24, lwg: 1, issue: 290, bug: 92, avg_age: 64.83, avg_wait: 47.53, sum_age: 60.51, sum_wait: 44.37, },
+    { date: '2020-08-29', merged: 71.34, pr: 29, cxx20: 24, lwg: 1, issue: 290, bug: 92, avg_age: 63.58, avg_wait: 46.85, sum_age: 61.46, sum_wait: 45.29, },
+    { date: '2020-08-30', merged: 69.02, pr: 30, cxx20: 24, lwg: 1, issue: 290, bug: 92, avg_age: 62.45, avg_wait: 46.27, sum_age: 62.45, sum_wait: 46.27, },
+    { date: '2020-08-31', merged: 68.61, pr: 29, cxx20: 23, lwg: 1, issue: 290, bug: 92, avg_age: 63.83, avg_wait: 46.74, sum_age: 61.70, sum_wait: 45.18, },
 ];
 // Generated file - DO NOT EDIT manually!
