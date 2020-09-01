@@ -158,7 +158,7 @@ struct pair { // store a pair of values
 #if _HAS_CONDITIONAL_EXPLICIT
     template <class _Uty1 = _Ty1, class _Uty2 = _Ty2,
         enable_if_t<conjunction_v<is_copy_constructible<_Uty1>, is_copy_constructible<_Uty2>>, int> = 0>
-    constexpr explicit(!is_convertible_v<const _Uty1&, _Uty1> || !is_convertible_v<const _Uty2&, _Uty2>)
+    constexpr explicit(!conjunction_v<is_convertible<const _Uty1&, _Uty1>, is_convertible<const _Uty2&, _Uty2>>)
         pair(const _Ty1& _Val1, const _Ty2& _Val2) noexcept(
             is_nothrow_copy_constructible_v<_Uty1>&& is_nothrow_copy_constructible_v<_Uty2>) // strengthened
         : first(_Val1), second(_Val2) {}
@@ -184,7 +184,7 @@ struct pair { // store a pair of values
 #if _HAS_CONDITIONAL_EXPLICIT
     template <class _Other1, class _Other2,
         enable_if_t<conjunction_v<is_constructible<_Ty1, _Other1>, is_constructible<_Ty2, _Other2>>, int> = 0>
-    constexpr explicit(!is_convertible_v<_Other1, _Ty1> || !is_convertible_v<_Other2, _Ty2>)
+    constexpr explicit(!conjunction_v<is_convertible<_Other1, _Ty1>, is_convertible<_Other2, _Ty2>>)
         pair(_Other1&& _Val1, _Other2&& _Val2) noexcept(
             is_nothrow_constructible_v<_Ty1, _Other1>&& is_nothrow_constructible_v<_Ty2, _Other2>) // strengthened
         : first(_STD forward<_Other1>(_Val1)), second(_STD forward<_Other2>(_Val2)) {}
