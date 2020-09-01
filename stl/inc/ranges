@@ -897,10 +897,6 @@ namespace ranges {
             }
 
         private:
-            _NODISCARD constexpr bool _Equal(const _Iterator& _It) const {
-                return _It._Current == _Last;
-            }
-
             /* [[no_unique_address]] */ sentinel_t<_Vw> _Last{};
         };
 
