@@ -143,28 +143,28 @@ int main() {
     {
         bool output[] = {false, true, false};
         fill(output, output + 3, 5);
-        for (const bool &elem : output) {
+        for (const bool& elem : output) {
             assert(elem == true);
         }
     }
     {
         bool output[] = {false, true, false};
         fill_n(output, 3, 5);
-        for (const bool &elem : output) {
+        for (const bool& elem : output) {
             assert(elem == true);
         }
     }
     {
         bool output[] = {false, true, false};
         uninitialized_fill(output, output + 3, 5);
-        for (const bool &elem : output) {
+        for (const bool& elem : output) {
             assert(elem == true);
         }
     }
     {
         bool output[] = {false, true, false};
         uninitialized_fill_n(output, 3, 5);
-        for (const bool &elem : output) {
+        for (const bool& elem : output) {
             assert(elem == true);
         }
     }
