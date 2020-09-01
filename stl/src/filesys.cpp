@@ -53,7 +53,7 @@ static HANDLE _FilesysOpenFile(const wchar_t* _Fname, DWORD _Desired_access, DWO
         &_Create_file_parameters);
 #else // _CRT_APP
     return CreateFileW(
-        _Fname, _Desired_access, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, 0, OPEN_EXISTING, _Flags, 0);
+        _Fname, _Desired_access, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING, _Flags, nullptr);
 #endif // _CRT_APP
 }
 
@@ -174,7 +174,7 @@ _FS_DLL wchar_t* __CLRCALL_PURE_OR_CDECL _Temp_get(wchar_t (&_Dest)[_MAX_FILESYS
 
 _FS_DLL int __CLRCALL_PURE_OR_CDECL _Make_dir(const wchar_t* _Fname, const wchar_t*) {
     // make a new directory (ignore attributes)
-    int _Ans = CreateDirectoryW(_Fname, 0);
+    int _Ans = CreateDirectoryW(_Fname, nullptr);
 
     if (_Ans != 0) {
         return 1;
@@ -195,7 +195,7 @@ _FS_DLL file_type __CLRCALL_PURE_OR_CDECL _Stat(const wchar_t* _Fname, perms* _P
 
     if (GetFileAttributesExW(_Fname, GetFileExInfoStandard, &_Data)) {
         // get file type and return permissions
-        if (_Pmode != 0) {
+        if (_Pmode != nullptr) {
             constexpr perms _Write_perms    = perms::owner_write | perms::group_write | perms::others_write;
             constexpr perms _Readonly_perms = perms::all & ~_Write_perms;
 
@@ -398,7 +398,7 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Link(const wchar_t* _Fname1, const wchar_t*
     (void) _Fname2;
     return errno = EDOM; // hardlinks not supported
 #else // _CRT_APP
-    return CreateHardLinkW(_Fname2, _Fname1, 0) != 0 ? 0 : GetLastError();
+    return CreateHardLinkW(_Fname2, _Fname1, nullptr) != 0 ? 0 : GetLastError();
 #endif // _CRT_APP
 }
 
@@ -426,7 +426,7 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Resize(const wchar_t* _Fname, uintmax_t _Ne
     if (_Handle != INVALID_HANDLE_VALUE) { // set file pointer to new size and trim
         LARGE_INTEGER _Large;
         _Large.QuadPart = _Newsize;
-        _Ok             = SetFilePointerEx(_Handle, _Large, 0, FILE_BEGIN) != 0 && SetEndOfFile(_Handle) != 0;
+        _Ok             = SetFilePointerEx(_Handle, _Large, nullptr, FILE_BEGIN) != 0 && SetEndOfFile(_Handle) != 0;
         CloseHandle(_Handle);
     }
     return _Ok ? 0 : GetLastError();
