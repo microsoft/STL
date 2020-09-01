@@ -8,6 +8,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/any
     ${CMAKE_CURRENT_LIST_DIR}/inc/array
     ${CMAKE_CURRENT_LIST_DIR}/inc/atomic
+    ${CMAKE_CURRENT_LIST_DIR}/inc/barrier
     ${CMAKE_CURRENT_LIST_DIR}/inc/bit
     ${CMAKE_CURRENT_LIST_DIR}/inc/bitset
     ${CMAKE_CURRENT_LIST_DIR}/inc/cassert
@@ -153,6 +154,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/iso646.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/istream
     ${CMAKE_CURRENT_LIST_DIR}/inc/iterator
+    ${CMAKE_CURRENT_LIST_DIR}/inc/latch
     ${CMAKE_CURRENT_LIST_DIR}/inc/limits
     ${CMAKE_CURRENT_LIST_DIR}/inc/list
     ${CMAKE_CURRENT_LIST_DIR}/inc/locale
@@ -171,6 +173,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/ratio
     ${CMAKE_CURRENT_LIST_DIR}/inc/regex
     ${CMAKE_CURRENT_LIST_DIR}/inc/scoped_allocator
+    ${CMAKE_CURRENT_LIST_DIR}/inc/semaphore
     ${CMAKE_CURRENT_LIST_DIR}/inc/set
     ${CMAKE_CURRENT_LIST_DIR}/inc/shared_mutex
     ${CMAKE_CURRENT_LIST_DIR}/inc/span

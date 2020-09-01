@@ -185,7 +185,6 @@
 // P1115R3 erase()/erase_if() Return size_type
 // P1123R0 Atomic Compare-And-Exchange With Padding Bits For atomic_ref
 // P1135R6 The C++20 Synchronization Library
-//     (partially implemented)
 // P1207R4 Movability Of Single-Pass Iterators
 //     (partially implemented)
 // P1209R0 erase_if(), erase()
@@ -204,6 +203,7 @@
 // P1690R1 Refining Heterogeneous Lookup For Unordered Containers
 // P1716R3 Range Comparison Algorithms Are Over-Constrained
 // P1754R1 Rename Concepts To standard_case
+// P1865R1 Adding max() To latch And barrier
 // P1870R1 Rename forwarding-range To borrowed_range (Was safe_range before LWG-3379)
 // P1871R1 disable_sized_sentinel_for
 // P1872R0 span Should Have size_type, Not index_type
@@ -1145,6 +1145,7 @@
 #define __cpp_lib_atomic_ref                    201806L
 #define __cpp_lib_atomic_shared_ptr             201711L
 #define __cpp_lib_atomic_wait                   201907L
+#define __cpp_lib_barrier                       201907L
 #define __cpp_lib_bind_front                    201907L
 #define __cpp_lib_bit_cast                      201806L
 #define __cpp_lib_bitops                        201907L
@@ -1185,9 +1186,11 @@
 #define __cpp_lib_interpolate                  201902L
 #define __cpp_lib_is_constant_evaluated        201811L
 #define __cpp_lib_is_nothrow_convertible       201806L
+#define __cpp_lib_latch                        201907L
 #define __cpp_lib_list_remove_return_type      201806L
 #define __cpp_lib_math_constants               201907L
 #define __cpp_lib_remove_cvref                 201711L
+#define __cpp_lib_semaphore                    201907L
 #define __cpp_lib_shift                        201806L
 #define __cpp_lib_span                         202002L
 #define __cpp_lib_ssize                        201902L

@@ -329,6 +329,9 @@ tests\P1032R1_miscellaneous_constexpr
 tests\P1135R6_atomic_flag_test
 tests\P1135R6_atomic_wait
 tests\P1135R6_atomic_wait_vista
+tests\P1135R6_barrier
+tests\P1135R6_latch
+tests\P1135R6_semaphore
 tests\P1165R1_consistently_propagating_stateful_allocators
 tests\P1423R3_char8_t_remediation
 tests\P1645R1_constexpr_numeric
