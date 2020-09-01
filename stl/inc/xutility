@@ -5773,6 +5773,52 @@ _NODISCARD _CONSTEXPR20 _InIt find_if(_InIt _First, const _InIt _Last, _Pr _Pred
     return _First;
 }
 
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::find_if
+    // concept-constrained for strict enforcement as it is used by several algorithms
+    template <input_iterator _It, sentinel_for<_It> _Se, class _Pj, indirect_unary_predicate<projected<_It, _Pj>> _Pr>
+    _NODISCARD constexpr _It _Find_if_unchecked(_It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
+        for (; _First != _Last; ++_First) {
+            if (_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
+                break;
+            }
+        }
+
+        return _First;
+    }
+
+    class _Find_if_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <input_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
+            indirect_unary_predicate<projected<_It, _Pj>> _Pr>
+        _NODISCARD constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Last);
+            auto _UResult = _RANGES _Find_if_unchecked(
+                _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _Pass_fn(_Pred), _Pass_fn(_Proj));
+
+            _Seek_wrapped(_First, _STD move(_UResult));
+            return _First;
+        }
+
+        template <input_range _Rng, class _Pj = identity,
+            indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
+        _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
+            auto _First   = _RANGES begin(_Range);
+            auto _UResult = _RANGES _Find_if_unchecked(
+                _Get_unwrapped(_STD move(_First)), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+
+            _Seek_wrapped(_First, _STD move(_UResult));
+            return _First;
+        }
+    };
+
+    inline constexpr _Find_if_fn find_if{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
+
 // FUNCTION TEMPLATE lower_bound
 template <class _FwdIt, class _Ty, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt lower_bound(_FwdIt _First, const _FwdIt _Last, const _Ty& _Val, _Pr _Pred) {

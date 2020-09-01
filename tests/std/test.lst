@@ -319,6 +319,8 @@ tests\P0896R4_ranges_test_machinery
 tests\P0896R4_ranges_to_address
 tests\P0896R4_views_all
 tests\P0896R4_views_empty
+tests\P0896R4_views_filter
+tests\P0896R4_views_filter_death
 tests\P0896R4_views_reverse
 tests\P0896R4_views_single
 tests\P0898R3_concepts
