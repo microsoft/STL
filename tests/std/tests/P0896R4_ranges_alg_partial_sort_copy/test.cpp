@@ -3,9 +3,11 @@
 
 #include <algorithm>
 #include <cassert>
+#include <charconv>
 #include <concepts>
 #include <ranges>
 #include <span>
+#include <string>
 #include <utility>
 
 #include <range_algorithm_support.hpp>
@@ -136,8 +138,34 @@ constexpr void run_tests() {
     with_random_ranges<instantiator2, P>::call<source_random>();
 }
 
+struct weird_pair : public pair<string, string> {
+    using pair<string, string>::pair;
+
+    weird_pair& operator=(const P& p) {
+        first  = to_string(p.second);
+        second = to_string(p.first);
+        return *this;
+    }
+};
+
 int main() {
     STATIC_ASSERT((run_tests(), true));
     run_tests();
+
+    {
+        constexpr auto proj = [](const weird_pair& s) {
+            int i = 0;
+            from_chars(s.second.data(), s.second.data() + s.second.size(), i);
+            return i;
+        };
+        const weird_pair expected_result[] = {{"16", "0"}, {"12", "1"}, {"17", "2"}};
+        weird_pair actual[ranges::size(expected_result)];
+
+        auto result = ranges::partial_sort_copy(source, actual, ranges::less{}, get_first, proj);
+        assert(result.in == ranges::end(source));
+        assert(result.out == ranges::end(actual));
+
+        assert(ranges::equal(actual, expected_result));
+    }
 }
 #endif // TEST_EVERYTHING
