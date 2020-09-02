@@ -565,7 +565,7 @@ namespace ranges {
                     _Backout._Emplace_back(_Val);
                 }
 
-                _Seek_wrapped(_First, _STD move(_Backout._Release()));
+                _Seek_wrapped(_First, _Backout._Release());
             }
             return _First;
         }
@@ -768,7 +768,7 @@ namespace ranges {
                     ::new (_Voidify_iter(_Backout._Last)) _Ty;
                 }
 
-                _Seek_wrapped(_First, _STD move(_Backout._Release()));
+                _Seek_wrapped(_First, _Backout._Release());
             }
             return _First;
         }
@@ -913,7 +913,7 @@ namespace ranges {
                     _Backout._Emplace_back();
                 }
 
-                _Seek_wrapped(_First, _STD move(_Backout._Release()));
+                _Seek_wrapped(_First, _Backout._Release());
             }
             return _First;
         }
