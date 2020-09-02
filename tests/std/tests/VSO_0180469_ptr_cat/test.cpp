@@ -388,9 +388,13 @@ void equal_safe_test_cases() {
     test_case_Equal_memcmp_is_safe<sizeof(int) == sizeof(long), unsigned long, unsigned int>();
     test_case_Equal_memcmp_is_safe<true, long long, unsigned long long>();
     test_case_Equal_memcmp_is_safe<true, unsigned long long, long long>();
-    // memcmp is not safe between bool and other integral types
-    test_case_Equal_memcmp_is_safe<false, bool, char>();
-    test_case_Equal_memcmp_is_safe<false, char, bool>();
+#pragma warning(push)
+#pragma warning(disable : 4806) // no value of type '_Elem1' promoted to type '_Elem2' can equal the given constant
+    // memcmp is safe between bool and other integral types with the same size because we don't care about
+    // representations other than 0 and 1
+    test_case_Equal_memcmp_is_safe<true, bool, char>();
+    test_case_Equal_memcmp_is_safe<true, char, bool>();
+#pragma warning(pop)
     // No enums
     test_case_Equal_memcmp_is_safe<false, bool_enum, bool>();
     test_case_Equal_memcmp_is_safe<false, bool, bool_enum>();
