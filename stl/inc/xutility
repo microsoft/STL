@@ -516,7 +516,7 @@ struct _Iter_traits_pointer<_Itraits_pointer_strategy::_Use_decltype> {
 };
 
 template <class _Ty>
-concept _Has_op_arrow = requires(_Ty&& __t) {
+concept _Has_member_arrow = requires(_Ty&& __t) {
     static_cast<_Ty&&>(__t).operator->();
 };
 
@@ -620,7 +620,7 @@ struct _Iterator_traits_base<_It> {
     using value_type        = typename indirectly_readable_traits<_It>::value_type;
     using pointer           = typename _Iter_traits_pointer<(
         _Has_member_pointer<_It> ? _Itraits_pointer_strategy::_Use_member
-                                 : _Has_op_arrow<_It&> ? _Itraits_pointer_strategy::_Use_decltype
+                                 : _Has_member_arrow<_It&> ? _Itraits_pointer_strategy::_Use_decltype
                                                        : _Itraits_pointer_strategy::_Use_void)>::template _Apply<_It>;
     using reference         = typename _Iter_traits_reference<_Has_member_reference<_It>>::template _Apply<_It>;
 };

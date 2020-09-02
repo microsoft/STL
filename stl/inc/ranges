@@ -29,7 +29,7 @@ namespace ranges {
 
     // clang-format off
     // CONCEPT ranges::viewable_range
-    template <class _Rng> // Per P/R of LWG-3481
+    template <class _Rng> // Per proposed resolution of LWG-3481
     concept viewable_range = range<_Rng>
         && ((view<remove_cvref_t<_Rng>> && constructible_from<remove_cvref_t<_Rng>, _Rng>)
             || (!view<remove_cvref_t<_Rng>> && borrowed_range<_Rng>));
@@ -44,8 +44,7 @@ namespace ranges {
 
     template <class _It>
     concept _Has_arrow = input_iterator<_It>
-        && (is_pointer_v<_It>
-            || requires(_It _Iter) { _Iter.operator->(); });
+        && (is_pointer_v<_It> || _Has_member_arrow<_It&>);
     // clang-format on
 
     namespace _Pipe {
@@ -744,17 +743,17 @@ namespace ranges {
         /* [[no_unique_address]] */ _Vw _Range{};
         /* [[no_unique_address]] */ _Semiregular_box<_Pr> _Pred{};
 
-        template <class Traits> // TRANSITION, LWG-3289
+        template <class _Traits> // TRANSITION, LWG-3289
         struct _Iterator_base {};
         // clang-format off
-        template <class Traits>
-            requires _Has_member_iterator_category<Traits>
-        struct _Iterator_base<Traits> {
+        template <class _Traits>
+            requires _Has_member_iterator_category<_Traits>
+        struct _Iterator_base<_Traits> {
             // clang-format on
             using iterator_category =
-                conditional_t<derived_from<typename Traits::iterator_category, bidirectional_iterator_tag>,
+                conditional_t<derived_from<typename _Traits::iterator_category, bidirectional_iterator_tag>,
                     bidirectional_iterator_tag,
-                    conditional_t<derived_from<typename Traits::iterator_category, forward_iterator_tag>,
+                    conditional_t<derived_from<typename _Traits::iterator_category, forward_iterator_tag>,
                         forward_iterator_tag, input_iterator_tag>>;
         };
 
@@ -768,7 +767,11 @@ namespace ranges {
             _Iterator() = default;
             constexpr _Iterator(filter_view& _Parent_, iterator_t<_Vw> _Current_) noexcept(
                 is_nothrow_move_constructible_v<iterator_t<_Vw>>) // strengthened
-                : _Current(_STD move(_Current_)), _Parent{_STD addressof(_Parent_)} {}
+                : _Current(_STD move(_Current_)), _Parent{_STD addressof(_Parent_)} {
+#if _ITERATOR_DEBUG_LEVEL != 0
+                _Adl_verify_range(_Current, _RANGES end(_Parent_._Range)); // FIXME: test coverage
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+            }
 
             _NODISCARD constexpr iterator_t<_Vw> base() const& noexcept(is_nothrow_copy_constructible_v<
                 iterator_t<_Vw>>) /* strengthened */ requires copyable<iterator_t<_Vw>> {
@@ -884,7 +887,8 @@ namespace ranges {
         public:
             _Sentinel() = default;
             constexpr explicit _Sentinel(filter_view& _Parent) noexcept(
-                noexcept(_RANGES end(_Parent._Range))) // strengthened
+                noexcept(_RANGES end(_Parent._Range))
+                && is_nothrow_move_constructible_v<sentinel_t<_Vw>>) // strengthened
                 : _Last(_RANGES end(_Parent._Range)) {}
 
             _NODISCARD constexpr sentinel_t<_Vw> base() const

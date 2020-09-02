@@ -213,7 +213,6 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             [[maybe_unused]] same_as<ranges::sentinel_t<F>> auto s = r.end();
         }
 
-
         if constexpr (bidirectional_range<V> && common_range<V> && copyable<V>) {
             auto r2 = r;
             assert(*prev(r2.end()) == *prev(end(expected)));

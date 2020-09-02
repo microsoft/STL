@@ -6,6 +6,7 @@
 #include <cassert>
 #include <cstddef>
 #include <ranges>
+#include <vector>
 
 #include <test_death.hpp>
 using namespace std;
@@ -23,6 +24,15 @@ void test_view_predicate() {
 void test_view_begin() {
     FV r;
     (void) r.begin(); // N4861 [range.filter.view]/3 forbids calling begin on a filter_view that holds no predicate
+}
+
+void test_constructor_wrong_range() {
+    vector<int> vec0{0, 1, 2, 3};
+    vector<int> vec1{4, 5, 6, 7};
+    auto r0            = views::filter(vec0, lambda);
+    using R            = decltype(r0);
+    same_as<R> auto r1 = views::filter(vec1, lambda);
+    ranges::iterator_t<R> i{r0, r1.begin().base()}; //  vector iterators in range are from different containers
 }
 
 void test_operator_star_value_initialized_iterator() {
@@ -72,13 +82,13 @@ void test_operator_postincrement_after_end() {
 void test_operator_predecrement_before_begin() {
     FV r{some_ints, lambda};
     ranges::iterator_t<FV> i = r.begin();
-    --i; // cannot increment filter_view iterator before begin
+    --i; // cannot decrement filter_view iterator before begin
 }
 
 void test_operator_postdecrement_before_begin() {
     FV r{some_ints, lambda};
     ranges::iterator_t<FV> i = r.begin();
-    i--; // cannot increment filter_view iterator before begin
+    i--; // cannot decrement filter_view iterator before begin
 }
 
 void test_operator_equal_incompatible_different() {
@@ -128,6 +138,7 @@ int main(int argc, char* argv[]) {
         test_view_predicate,
         test_view_begin,
 
+        test_constructor_wrong_range,
         test_operator_star_value_initialized_iterator,
         test_operator_star_end_iterator,
         test_operator_arrow_value_initialized_iterator,
