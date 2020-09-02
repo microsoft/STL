@@ -999,7 +999,7 @@ namespace ranges {
         }
 
         // clang-format off
-        _NODISCARD constexpr auto begin() // Constraints per P/R of LWG issue unnumbered as of 2020-08-31
+        _NODISCARD constexpr auto begin() // constraints per proposed resolution of LWG-3482
             requires (!(_Simple_view<_Vw> && random_access_range<const _Vw> && sized_range<const _Vw>)) {
             // clang-format on
             if constexpr (sized_range<_Vw> && random_access_range<_Vw>) {
@@ -1045,7 +1045,7 @@ namespace ranges {
         }
 
         // clang-format off
-        _NODISCARD constexpr auto begin() const // Constraints per P/R of LWG issue unnumbered as of 2020-08-31
+        _NODISCARD constexpr auto begin() const // constraints per proposed resolution of LWG-3482
             requires random_access_range<const _Vw> && sized_range<const _Vw> {
             // clang-format on
             const auto _Offset = (_STD min)(_RANGES distance(_Range), _Count);
