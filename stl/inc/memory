@@ -626,6 +626,11 @@ _NoThrowFwdIt destroy_n(_NoThrowFwdIt _First, const _Diff _Count_raw) {
 }
 
 // FUNCTION TEMPLATE uninitialized_default_construct
+template <class _Iter>
+void* _Voidify_iter(_Iter _It) noexcept {
+    return const_cast<void*>(static_cast<const volatile void*>(_STD addressof(*_It)));
+}
+
 template <class _NoThrowFwdIt>
 void uninitialized_default_construct(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last) {
     // default-initialize all elements in [_First, _Last)
@@ -635,7 +640,7 @@ void uninitialized_default_construct(const _NoThrowFwdIt _First, const _NoThrowF
         _Uninitialized_backout _Backout{_Get_unwrapped(_First)};
 
         for (const auto _ULast = _Get_unwrapped(_Last); _Backout._Last != _ULast; ++_Backout._Last) {
-            ::new (static_cast<void*>(_Unfancy(_Backout._Last))) _Ty;
+            ::new (_Voidify_iter(_Backout._Last)) _Ty;
         }
 
         _Backout._Release();
@@ -685,14 +690,14 @@ namespace ranges {
                 return _OFirst;
             } else if constexpr (is_nothrow_default_constructible_v<_Ty>) {
                 for (; _OFirst != _OLast; ++_OFirst) {
-                    ::new (static_cast<void*>(_Unfancy(_OFirst))) _Ty;
+                    ::new (_Voidify_iter(_OFirst)) _Ty;
                 }
                 return _OFirst;
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
                 for (; _Backout._Last != _OLast; ++_Backout._Last) {
-                    ::new (static_cast<void*>(_Unfancy(_Backout._Last))) _Ty;
+                    ::new (_Voidify_iter(_Backout._Last)) _Ty;
                 }
 
                 return _Backout._Release();
@@ -721,7 +726,7 @@ _NoThrowFwdIt uninitialized_default_construct_n(_NoThrowFwdIt _First, const _Dif
         _Uninitialized_backout _Backout{_Get_unwrapped_n(_First, _Count)};
 
         for (; _Count > 0; ++_Backout._Last, (void) --_Count) {
-            ::new (static_cast<void*>(_Unfancy(_Backout._Last))) _Ty;
+            ::new (_Voidify_iter(_Backout._Last)) _Ty;
         }
 
         _Seek_wrapped(_First, _Backout._Release());
@@ -752,7 +757,7 @@ namespace ranges {
                 auto _UFirst = _Get_unwrapped_n(_STD move(_First));
 
                 for (; _Count > 0; --_Count, (void) ++_UFirst) {
-                    ::new (static_cast<void*>(_Unfancy(_UFirst))) _Ty;
+                    ::new (_Voidify_iter(_UFirst)) _Ty;
                 }
 
                 _Seek_wrapped(_First, _STD move(_UFirst));
@@ -760,7 +765,7 @@ namespace ranges {
                 _Uninitialized_backout _Backout{_Get_unwrapped_n(_STD move(_First), _Count)};
 
                 for (; _Count > 0; --_Count, (void) ++_Backout._Last) {
-                    ::new (static_cast<void*>(_Unfancy(_Backout._Last))) _Ty;
+                    ::new (_Voidify_iter(_Backout._Last)) _Ty;
                 }
 
                 _Seek_wrapped(_First, _STD move(_Backout._Release()));
@@ -839,7 +844,7 @@ namespace ranges {
                 return _OFinal;
             } else if constexpr (is_nothrow_default_constructible_v<_Ty>) {
                 for (; _OFirst != _OLast; ++_OFirst) {
-                    ::new (static_cast<void*>(_Unfancy(_OFirst))) _Ty{};
+                    ::new (_Voidify_iter(_OFirst)) _Ty{};
                 }
 
                 return _OFirst;
@@ -897,7 +902,7 @@ namespace ranges {
                 _Seek_wrapped(_First, _UFirst + _Count);
             } else if constexpr (is_nothrow_default_constructible_v<_Ty>) {
                 for (; _Count > 0; --_Count, (void) ++_UFirst) {
-                    ::new (static_cast<void*>(_Unfancy(_UFirst))) _Ty{};
+                    ::new (_Voidify_iter(_UFirst)) _Ty{};
                 }
 
                 _Seek_wrapped(_First, _STD move(_UFirst));
@@ -2873,7 +2878,7 @@ _NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared
     _Alblock _Rebound(_Al);
     _Alloc_construct_ptr _Constructor{_Rebound};
     _Constructor._Allocate();
-    ::new (static_cast<void*>(_Unfancy(_Constructor._Ptr))) _Refc(_Al);
+    ::new (_Voidify_iter(_Constructor._Ptr)) _Refc(_Al);
     shared_ptr<_Ty> _Ret;
     const auto _Ptr = static_cast<remove_extent_t<_Ty>*>(_Constructor._Ptr->_Storage._Value);
     _Ret._Set_ptr_rep_and_enable_shared(_Ptr, _Unfancy(_Constructor._Release()));
@@ -2889,7 +2894,7 @@ _NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared
     _Alblock _Rebound(_Al);
     _Alloc_construct_ptr _Constructor{_Rebound};
     _Constructor._Allocate();
-    ::new (static_cast<void*>(_Unfancy(_Constructor._Ptr))) _Refc(_Al, _Val);
+    ::new (_Voidify_iter(_Constructor._Ptr)) _Refc(_Al, _Val);
     shared_ptr<_Ty> _Ret;
     const auto _Ptr = static_cast<remove_extent_t<_Ty>*>(_Constructor._Ptr->_Storage._Value);
     _Ret._Set_ptr_rep_and_enable_shared(_Ptr, _Unfancy(_Constructor._Release()));
