@@ -8,11 +8,10 @@
 #define _FORMAT_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
-#if !_HAS_CXX20
-#pragma message("The contents of <format> are available only with C++20 or later.")
-#else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
+#ifndef __cpp_lib_concepts
+#pragma message("The contents of <format> are available only with C++20 concepts support.")
+#else // ^^^ !defined(__cpp_lib_concepts) / defined(__cpp_lib_concepts) vvv
 
-#include <cassert>
 #include <charconv>
 #include <concepts>
 #include <exception>
@@ -32,7 +31,7 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 
 
-class format_error : public _STD runtime_error {
+class format_error : public runtime_error {
     using _STD runtime_error::runtime_error;
 };
 
@@ -41,51 +40,50 @@ enum class _Align { _None, _Left, _Right, _Center };
 struct _Auto_id_tag {};
 
 // clang-format off
-template <typename _Ty, typename _CharT>
-concept _Parse_spec_callbacks = requires(_Ty _At, _STD basic_string_view<_CharT> _Sv, _Align _Aln) {
+template <class _Ty, class _CharT>
+concept _Parse_spec_callbacks = requires(_Ty _At, basic_string_view<_CharT> _Sv, _Align _Aln) {
     { _At._On_align(_Aln) } -> same_as<void>;
     { _At._On_fill(_Sv) } -> same_as<void>;
     { _At._On_width(_STD declval<int>()) } -> same_as<void>;
     { _At._On_dynamic_width(_STD declval<int>()) } -> same_as<void>;
     { _At._On_dynamic_width( _STD declval<_Auto_id_tag>()) } -> same_as<void>;
 };
-template<typename _Ty, typename _CharT>
+template <class _Ty, class _CharT>
 concept _Parse_arg_id_callbacks = requires(_Ty _At) {
     { _At._On_auto_id() } -> same_as<void>;
     { _At._On_manual_id(_STD declval<int>()) } -> same_as<void>;
 };
-//clang-format on
+// clang-format on
 
-template<typename _CharT>
+template <class _CharT>
 const _CharT* _Parse_nonnegative_integer(const _CharT* _Begin, const _CharT* _End, int& _Integer) {
     auto [_Ptr, _Ec] = _STD from_chars(_Begin, _End, _Integer, 10);
-    if(_Ec != _STD errc{}) {
+    if (_Ec != _STD errc{}) {
         throw _STD format_error("Invalid integer");
     }
-    if(_Integer < 0) {
+    if (_Integer < 0) {
         throw _STD format_error("Nonnegative integer is nonnonnegative");
     }
     return _Ptr;
 }
 
-
-
-template<typename _CharT, typename _Callbacks_type> requires _Parse_arg_id_callbacks<_Callbacks_type, _CharT>
-constexpr const _CharT* _Parse_arg_id(const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
-    assert(_Begin != _End);
+template <class _CharT, class _Callbacks_type>
+requires _Parse_arg_id_callbacks<_Callbacks_type, _CharT> constexpr const _CharT* _Parse_arg_id(
+    const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
+    _STL_INTERNAL_CHECK(_Begin != _End);
     _CharT _Ch = *_Begin;
     // No id provided, format string is using automatic indexing.
-    if(_Ch == '}' || _Ch == ':') {
+    if (_Ch == '}' || _Ch == ':') {
         _Callbacks._On_auto_id();
         return _Begin;
     }
-    if(_Ch >= '0' && _Ch <= '9') {
+    if (_Ch >= '0' && _Ch <= '9') {
         int _Index = 0;
         // arg_id is not allowed to have any leading zeros, but is allowed to be
         // equal to zero (but not '00'). So if _Ch is zero we skip the parsing, leave
         // _Index set to zero and let the validity checks below ensure that the arg_id
         // wasn't something like "00", or "023".
-        if( _Ch != '0') {
+        if (_Ch != '0') {
             _Begin = _Parse_nonnegative_integer(_Begin, _End, _Index);
         } else {
             ++_Begin;
@@ -103,8 +101,9 @@ constexpr const _CharT* _Parse_arg_id(const _CharT* _Begin, const _CharT* _End, 
     throw _STD format_error("Invalid format string.");
 }
 
-template <class _CharT, typename _Callbacks_type> requires _Parse_spec_callbacks<_Callbacks_type, _CharT>
-constexpr const _CharT* _Parse_align(const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
+template <class _CharT, class _Callbacks_type>
+requires _Parse_spec_callbacks<_Callbacks_type, _CharT> constexpr const _CharT* _Parse_align(
+    const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
     // done with parsing, or reached the end of a replacement field.
     if (_Begin == _End || *_Begin == '}') {
         return _Begin;
@@ -153,12 +152,11 @@ constexpr const _CharT* _Parse_align(const _CharT* _Begin, const _CharT* _End, _
 
 // Adapts a type modeling _Parse_spec_callbacks to model _Parse_arg_id_callbacks.
 // Used in _Parse width so that _Parse_arg_id can be used to parse dynamic widths.
-template<typename _CharT, typename _Callbacks_type> requires _Parse_spec_callbacks<_Callbacks_type, _CharT>
-struct _Width_adapter {
+template <class _CharT, class _Callbacks_type>
+requires _Parse_spec_callbacks<_Callbacks_type, _CharT> struct _Width_adapter {
     _Callbacks_type& _Callbacks;
 
-    explicit constexpr _Width_adapter(_Callbacks_type& _Handler)
-        : _Callbacks(_Handler) {}
+    explicit constexpr _Width_adapter(_Callbacks_type& _Handler) : _Callbacks(_Handler) {}
 
     constexpr void _On_auto_id() {
         _Callbacks._On_dynamic_width(_Auto_id_tag{});
@@ -168,25 +166,25 @@ struct _Width_adapter {
     }
 };
 
-template<typename _CharT, typename _Callbacks_type> requires _Parse_spec_callbacks<_Callbacks_type, _CharT>
-constexpr const _CharT* _Parse_width(const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
-    assert(_Begin != _End);
-    if('0' <= *_Begin && *_Begin <= '9') {
+template <class _CharT, class _Callbacks_type>
+requires _Parse_spec_callbacks<_Callbacks_type, _CharT> constexpr const _CharT* _Parse_width(
+    const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
+    _STL_INTERNAL_CHECK(_Begin != _End);
+    if ('0' <= *_Begin && *_Begin <= '9') {
         int _Value = 0;
-        _Begin = _Parse_nonnegative_integer(_Begin, _End, _Value);
+        _Begin     = _Parse_nonnegative_integer(_Begin, _End, _Value);
         _Callbacks._On_width(_Value);
     } else if (*_Begin == '{') {
         ++_Begin;
-        if(_Begin != _End) {
+        if (_Begin != _End) {
             _Begin = _Parse_arg_id(_Begin, _End, _Width_adapter(_Callbacks));
         }
-        if(_Begin == _End || *_Begin != '}') {
+        if (_Begin == _End || *_Begin != '}') {
             throw _STD format_error("Invalid format string");
         }
         ++_Begin;
     }
     return _Begin;
-
 }
 
 template <class _CharT>
@@ -233,7 +231,7 @@ public:
         throw _STD format_error("Can not switch from manual to automatic indexing");
     }
     constexpr void check_arg_id(size_t _Id) {
-        (void)_Id;
+        (void) _Id;
         if (_Next_arg_id > 0) {
             throw _STD format_error("Can not switch from automatic to manual indexing");
         }
@@ -254,15 +252,15 @@ constexpr bool _Is_named_arg_v = false;
 template <class _Ty, class _CharT>
 constexpr bool _Is_named_arg_v<_Named_arg<_CharT, _Ty>> = true;
 
-template <typename _Context>
+template <class _Context>
 struct _Custom_value {
     const void* _Value;
     void (*_Format)(const void*, basic_format_parse_context<typename _Context::char_type>&, _Context&);
 };
-template <typename _Context>
+template <class _Context>
 using _Format_arg_value =
-    _STD variant<monostate, int, unsigned, long long, unsigned long long, bool, typename _Context::char_type, float, double,
-        const void*, _STD basic_string_view<typename _Context::char_type>, _Custom_value<_Context>>;
+    _STD variant<monostate, int, unsigned, long long, unsigned long long, bool, typename _Context::char_type, float,
+        double, const void*, _STD basic_string_view<typename _Context::char_type>, _Custom_value<_Context>>;
 
 template <class _Context>
 class basic_format_arg {
@@ -273,8 +271,7 @@ private:
 public:
     class handle {
         const void* _Ptr;
-        void (*_Format)(basic_format_parse_context<_Char_type>& _Parse_ctx, _Context _Format_ctx,
-                        const void*);
+        void (*_Format)(basic_format_parse_context<_Char_type>& _Parse_ctx, _Context _Format_ctx, const void*);
         friend class basic_format_arg<_Context>;
 
     public:
