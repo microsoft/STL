@@ -126,7 +126,11 @@ _NODISCARD constexpr bool operator==(const coroutine_handle<> _Left, const corou
 
 _NODISCARD constexpr strong_ordering operator<=>(
     const coroutine_handle<> _Left, const coroutine_handle<> _Right) noexcept {
-    return compare_three_way()(_Left.address(), _Right.address());
+#ifdef __cpp_lib_concepts
+    return compare_three_way{}(_Left.address(), _Right.address());
+#else // ^^^ no workaround / workaround vvv
+    return _Left.address() <=> _Right.address();
+#endif // __cpp_lib_concepts
 }
 
 template <class _Promise>
