@@ -445,17 +445,10 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(constructible_from<iter_value_t<_It>, const _Ty&>);
 
             if constexpr (_Fill_memset_is_safe<_It, _Ty>) {
-                if constexpr (is_same_v<_Se, _It>) {
-                    _CSTD memset(_OFirst, static_cast<unsigned char>(_Val), static_cast<size_t>(_OLast - _OFirst));
-                    return _OLast;
-                } else if constexpr (sized_sentinel_for<_Se, _It>) {
-                    _CSTD memset(_OFirst, static_cast<unsigned char>(_Val), static_cast<size_t>(_OLast - _OFirst));
-                    return _OFirst + (_OLast - _OFirst);
-                } else {
-                    const _It _OFinal = _RANGES next(_OFirst, _STD move(_OLast));
-                    _CSTD memset(_OFirst, static_cast<unsigned char>(_Val), static_cast<size_t>(_OFinal - _OFirst));
-                    return _OFinal;
-                }
+                const auto _OFinal = _RANGES next(_OFirst, _STD move(_OLast));
+                const auto _Diff   = static_cast<size_t>(_OFinal - _OFirst);
+                _CSTD memset(_OFirst, static_cast<unsigned char>(_Val), _Diff);
+                return _OFinal;
             } else if constexpr (is_nothrow_constructible_v<iter_value_t<_It>, const _Ty&>) {
                 for (; _OFirst != _OLast; ++_OFirst) {
                     _Construct_in_place(*_OFirst, _Val);
@@ -558,7 +551,7 @@ namespace ranges {
 
             auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
             if constexpr (_Fill_memset_is_safe<_It, _Ty>) {
-                _CSTD memset(_STD move(_UFirst), static_cast<unsigned char>(_Val), _Count);
+                _CSTD memset(_UFirst, static_cast<unsigned char>(_Val), _Count);
                 _Seek_wrapped(_First, _UFirst + _Count);
             } else if constexpr (is_nothrow_constructible_v<iter_value_t<_It>, const _Ty&>) {
                 for (; _Count > 0; --_Count, (void) ++_UFirst) {
@@ -803,32 +796,6 @@ void uninitialized_value_construct(const _NoThrowFwdIt _First, const _NoThrowFwd
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // clang-format off
-    template <_No_throw_forward_iterator _It, _No_throw_sentinel_for<_It> _Se>
-            requires default_initializable<iter_value_t<_It>>
-    _It _Zero_range(const _It _First, const _Se _Last) {
-        // clang-format on
-        // fill [_First, _Last) with zeroes
-        if constexpr (is_same_v<_Se, _It>) {
-            char* const _First_ch = reinterpret_cast<char*>(_First);
-            char* const _Last_ch  = reinterpret_cast<char*>(_Last);
-            _CSTD memset(_First_ch, 0, static_cast<size_t>(_Last_ch - _First_ch));
-            return _Last;
-        } else if constexpr (sized_sentinel_for<_Se, _It>) {
-            const _It _Final      = _RANGES next(_First, _Last - _First);
-            char* const _First_ch = reinterpret_cast<char*>(_First);
-            char* const _Final_ch = reinterpret_cast<char*>(_Final);
-            _CSTD memset(_First_ch, 0, static_cast<size_t>(_Final_ch - _First_ch));
-            return _Final;
-        } else {
-            const _It _Final      = _RANGES next(_First, _STD move(_Last));
-            char* const _First_ch = reinterpret_cast<char*>(_First);
-            char* const _Final_ch = reinterpret_cast<char*>(_Final);
-            _CSTD memset(_First_ch, 0, static_cast<size_t>(_Final_ch - _First_ch));
-            return _Final;
-        }
-    }
-
     // VARIABLE ranges::uninitialized_value_construct
     class _Uninitialized_value_construct_fn : private _Not_quite_object {
     public:
@@ -866,7 +833,10 @@ namespace ranges {
 
             using _Ty = remove_reference_t<iter_reference_t<_It>>;
             if constexpr (_Use_memset_value_construct_v<_It>) {
-                return _RANGES _Zero_range(_OFirst, _OLast);
+                const auto _OFinal = _RANGES next(_OFirst, _STD move(_OLast));
+                const auto _Diff   = static_cast<size_t>(_OFinal - _OFirst);
+                _CSTD memset(_OFirst, 0, _Diff);
+                return _OFinal;
             } else if constexpr (is_nothrow_default_constructible_v<_Ty>) {
                 for (; _OFirst != _OLast; ++_OFirst) {
                     ::new (static_cast<void*>(_Unfancy(_OFirst))) _Ty{};
@@ -923,7 +893,8 @@ namespace ranges {
 
             auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
             if constexpr (_Use_memset_value_construct_v<_It>) {
-                _Seek_wrapped(_First, _RANGES _Zero_range(_UFirst, _UFirst + _Count));
+                _CSTD memset(_UFirst, 0, static_cast<size_t>(_Count));
+                _Seek_wrapped(_First, _UFirst + _Count);
             } else if constexpr (is_nothrow_default_constructible_v<_Ty>) {
                 for (; _Count > 0; --_Count, (void) ++_UFirst) {
                     ::new (static_cast<void*>(_Unfancy(_UFirst))) _Ty{};
