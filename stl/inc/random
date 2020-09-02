@@ -2929,6 +2929,8 @@ private:
             _Res   = _Xx2;
             _Valid = false;
         } else { // generate two values, store one, return one
+            const _Ty _MinSx{static_cast<_Ty>(7.8159598771420286e-306)};
+            const _Ty _MaxSx{static_cast<_Ty>(1)};
             _Ty _Vx1;
             _Ty _Vx2;
             _Ty _Sx;
@@ -2936,7 +2938,8 @@ private:
                 _Vx1 = 2 * _NRAND(_Eng, _Ty) - 1;
                 _Vx2 = 2 * _NRAND(_Eng, _Ty) - 1;
                 _Sx  = _Vx1 * _Vx1 + _Vx2 * _Vx2;
-                if (_Sx < 1 && _Sx != 0) {
+                if (_MinSx < _Sx && _Sx < _MaxSx) {
+                    // Good _Sx value! It will not cause overflow nor generating NaN/Inf on the next calculations.
                     break;
                 }
             }
