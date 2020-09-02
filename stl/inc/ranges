@@ -961,16 +961,9 @@ namespace ranges {
         class _Filter_fn {
         private:
             template <class _Pr>
-            class _Partial : public _Pipe::_Base<_Partial<_Pr>> {
-            private:
+            struct _Partial : _Pipe::_Base<_Partial<_Pr>> {
                 /* [[no_unique_address]] */ _Semiregular_box<_Pr> _Pred;
 
-                friend _Filter_fn;
-
-                constexpr explicit _Partial(_Pr&& _Pred_) noexcept(is_nothrow_move_constructible_v<_Pr>)
-                    : _Pred{in_place, _STD move(_Pred_)} {}
-
-            public:
                 template <viewable_range _Rng>
                 _NODISCARD constexpr auto operator()(_Rng&& _Range) const
                     noexcept(noexcept(filter_view{_STD forward<_Rng>(_Range), _STD move(*_Pred)})) requires requires {
@@ -996,7 +989,7 @@ namespace ranges {
             template <_Copy_constructible_object _Pr>
             _NODISCARD constexpr auto operator()(_Pr _Pred) const noexcept(is_nothrow_move_constructible_v<_Pr>) {
                 // clang-format on
-                return _Partial<_Pr>{_STD move(_Pred)};
+                return _Partial<_Pr>{._Pred = {in_place, _STD move(_Pred)}};
             }
         };
 
