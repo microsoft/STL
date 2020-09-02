@@ -462,15 +462,15 @@ void __stdcall __std_fs_directory_iterator_close(_In_ const __std_fs_dir_handle 
         // We test equivalent() not by directly doing what equivalent() does, but by opening the handles
         // in exclusive mode, so a subsequent open will fail with ERROR_SHARING_VIOLATION.
         {
-            const _STD _Fs_file _Source_handle(
-                __vcp_CreateFile(_Source, FILE_READ_ATTRIBUTES | FILE_READ_DATA, 0, nullptr, OPEN_EXISTING, 0, nullptr));
+            const _STD _Fs_file _Source_handle(__vcp_CreateFile(
+                _Source, FILE_READ_ATTRIBUTES | FILE_READ_DATA, 0, nullptr, OPEN_EXISTING, 0, nullptr));
             __std_win_error _Last_error = _Translate_CreateFile_last_error(_Source_handle._Get());
             if (_Last_error != __std_win_error::_Success) {
                 return {false, _Last_error};
             }
 
-            const _STD _Fs_file _Target_handle(
-                __vcp_CreateFile(_Target, FILE_READ_ATTRIBUTES | FILE_WRITE_DATA, 0, nullptr, OPEN_EXISTING, 0, nullptr));
+            const _STD _Fs_file _Target_handle(__vcp_CreateFile(
+                _Target, FILE_READ_ATTRIBUTES | FILE_WRITE_DATA, 0, nullptr, OPEN_EXISTING, 0, nullptr));
             _Last_error = _Translate_CreateFile_last_error(_Target_handle._Get());
             if (_Last_error != __std_win_error::_Success) {
                 // Also handles the equivalent(from, to) error case
