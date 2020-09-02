@@ -109,6 +109,11 @@ namespace ranges {
 
             if constexpr (is_same_v<_Se, _It> && _Ptr_copy_cat<_It, _Out>::_Really_trivial) {
                 return _Copy_memcpy_common(_IFirst, _ILast, _OFirst, _OLast);
+            } else if constexpr (is_nothrow_constructible_v<iter_value_t<_Out>, iter_reference_t<_It>>) {
+                for (; _IFirst != _ILast && _OFirst != _OLast; ++_IFirst, (void) ++_OFirst) {
+                    _Construct_in_place(*_OFirst, *_IFirst);
+                }
+                return {_STD move(_IFirst), _STD move(_OFirst)};
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
@@ -214,6 +219,10 @@ namespace ranges {
             const auto _OLast = _Get_unwrapped(_STD move(_Last2));
             if constexpr (_Ptr_copy_cat<_It, _Out>::_Really_trivial) {
                 _OFirst = _Copy_memcpy_common(_IFirst, _IFirst + _Count, _OFirst, _OLast);
+            } else if constexpr (is_nothrow_constructible_v<iter_value_t<_Out>, iter_reference_t<_It>>) {
+                for (; _Count > 0 && _OFirst != _OLast; --_Count, (void) ++_IFirst, ++_OFirst) {
+                    _Construct_in_place(*_OFirst, *_IFirst);
+                }
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
@@ -301,6 +310,11 @@ namespace ranges {
 
             if constexpr (is_same_v<_Se, _It> && _Ptr_copy_cat<_It, _Out>::_Really_trivial) {
                 return _Copy_memmove_common(_IFirst, _ILast, _OFirst, _OLast);
+            } else if constexpr (is_nothrow_constructible_v<iter_value_t<_Out>, iter_rvalue_reference_t<_It>>) {
+                for (; _IFirst != _ILast && _OFirst != _OLast; ++_IFirst, (void) ++_OFirst) {
+                    _Construct_in_place(*_OFirst, _RANGES iter_move(_IFirst));
+                }
+                return {_STD move(_IFirst), _STD move(_OFirst)};
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
@@ -375,10 +389,14 @@ namespace ranges {
             const auto _OLast = _Get_unwrapped(_STD move(_Last2));
             if constexpr (_Ptr_move_cat<_It, _Out>::_Really_trivial) {
                 _OFirst = _Copy_memmove_common(_IFirst, _IFirst + _Count, _OFirst, _OLast);
+            } else if constexpr (is_nothrow_constructible_v<iter_value_t<_Out>, iter_rvalue_reference_t<_It>>) {
+                for (; _Count > 0 && _OFirst != _OLast; ++_IFirst, (void) ++_OFirst) {
+                    _Construct_in_place(*_OFirst, _RANGES iter_move(_IFirst));
+                }
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
-                for (; _Count > 0; --_Count, (void) ++_IFirst) {
+                for (; _Count > 0 && _Backout._Last != _OLast; --_Count, (void) ++_IFirst) {
                     _Backout._Emplace_back(_RANGES iter_move(_IFirst));
                 }
 
@@ -438,6 +456,11 @@ namespace ranges {
                     _CSTD memset(_OFirst, static_cast<unsigned char>(_Val), static_cast<size_t>(_OFinal - _OFirst));
                     return _OFinal;
                 }
+            } else if constexpr (is_nothrow_constructible_v<iter_value_t<_It>, const _Ty&>) {
+                for (; _OFirst != _OLast; ++_OFirst) {
+                    _Construct_in_place(*_OFirst, _Val);
+                }
+                return _OFirst;
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
@@ -537,6 +560,11 @@ namespace ranges {
             if constexpr (_Fill_memset_is_safe<_It, _Ty>) {
                 _CSTD memset(_STD move(_UFirst), static_cast<unsigned char>(_Val), _Count);
                 _Seek_wrapped(_First, _UFirst + _Count);
+            } else if constexpr (is_nothrow_constructible_v<iter_value_t<_It>, const _Ty&>) {
+                for (; _Count > 0; --_Count, (void) ++_UFirst) {
+                    _Construct_in_place(*_UFirst, _Val);
+                }
+                _Seek_wrapped(_First, _STD move(_UFirst));
             } else {
                 _Uninitialized_backout _Backout{_STD move(_UFirst)};
 
@@ -662,6 +690,11 @@ namespace ranges {
             if constexpr (is_trivially_default_constructible_v<_Ty>) {
                 _RANGES advance(_OFirst, _OLast);
                 return _OFirst;
+            } else if constexpr (is_nothrow_default_constructible_v<_Ty>) {
+                for (; _OFirst != _OLast; ++_OFirst) {
+                    ::new (static_cast<void*>(_Unfancy(_OFirst))) _Ty;
+                }
+                return _OFirst;
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
@@ -715,13 +748,21 @@ namespace ranges {
             requires default_initializable<iter_value_t<_It>>
         _It operator()(_It _First, iter_difference_t<_It> _Count) const {
             // clang-format on
-            using _Ty = remove_reference_t<iter_reference_t<_It>>;
             if (_Count <= 0) {
                 return _First;
             }
 
+            using _Ty = remove_reference_t<iter_reference_t<_It>>;
             if constexpr (is_trivially_default_constructible_v<_Ty>) {
                 _RANGES advance(_First, _Count);
+            } else if constexpr (is_nothrow_default_constructible_v<_Ty>) {
+                auto _UFirst = _Get_unwrapped_n(_STD move(_First));
+
+                for (; _Count > 0; --_Count, (void) ++_UFirst) {
+                    ::new (static_cast<void*>(_Unfancy(_UFirst))) _Ty;
+                }
+
+                _Seek_wrapped(_First, _STD move(_UFirst));
             } else {
                 _Uninitialized_backout _Backout{_Get_unwrapped_n(_STD move(_First), _Count)};
 
@@ -826,6 +867,12 @@ namespace ranges {
             using _Ty = remove_reference_t<iter_reference_t<_It>>;
             if constexpr (_Use_memset_value_construct_v<_It>) {
                 return _RANGES _Zero_range(_OFirst, _OLast);
+            } else if constexpr (is_nothrow_default_constructible_v<_Ty>) {
+                for (; _OFirst != _OLast; ++_OFirst) {
+                    ::new (static_cast<void*>(_Unfancy(_OFirst))) _Ty{};
+                }
+
+                return _OFirst;
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
@@ -877,6 +924,12 @@ namespace ranges {
             auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
             if constexpr (_Use_memset_value_construct_v<_It>) {
                 _Seek_wrapped(_First, _RANGES _Zero_range(_UFirst, _UFirst + _Count));
+            } else if constexpr (is_nothrow_default_constructible_v<_Ty>) {
+                for (; _Count > 0; --_Count, (void) ++_UFirst) {
+                    ::new (static_cast<void*>(_Unfancy(_UFirst))) _Ty{};
+                }
+
+                _Seek_wrapped(_First, _STD move(_UFirst));
             } else {
                 _Uninitialized_backout _Backout{_STD move(_UFirst)};
 
