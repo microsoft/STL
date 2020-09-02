@@ -3,7 +3,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <charconv>
 #include <concepts>
 #include <ranges>
 #include <span>
@@ -46,7 +45,7 @@ struct instantiator1 {
             constexpr int sizes[] = {0, int{size(source) / 2}, int{size(source)}, int{2 * size(source)}};
 
             { // Validate range overload
-                for (const int i : sizes) {
+                for (const int& i : sizes) {
                     In range1{source};
                     Out range2{span{output}.first(static_cast<size_t>(i))};
                     const same_as<partial_sort_copy_result<iterator_t<In>, iterator_t<Out>>> auto result =
@@ -84,7 +83,7 @@ struct instantiator2 {
             constexpr int sizes[] = {0, int{size(source) / 2}, int{size(source)}, int{2 * size(source)}};
 
             { // Validate iterator overload
-                for (const int i : sizes) {
+                for (const int& i : sizes) {
                     In range1{source};
                     Out range2{span{output}.first(static_cast<size_t>(i))};
                     const same_as<partial_sort_copy_result<iterator_t<In>, iterator_t<Out>>> auto result =
@@ -119,8 +118,8 @@ int main() {
 constexpr void run_tests() {
     using namespace test;
     using test::iterator, test::range;
-    // The algorithm uses advance(i, s) in the input range, so it's minorly sensitive to that range's commonality and/or
-    // difference capability. We therefore test three kinds of source ranges:
+    // The algorithm uses advance(i, s) in the input range, so it's slightly sensitive to that range's commonality
+    // and/or difference capability. We therefore test three kinds of source ranges:
     using source_input = range<input, const P, Sized::no, CanDifference::no, Common::no, CanCompare::no, ProxyRef::yes>;
     using source_forward =
         range<fwd, const P, Sized::no, CanDifference::no, Common::yes, CanCompare::yes, ProxyRef::yes>;
@@ -138,7 +137,7 @@ constexpr void run_tests() {
     with_random_ranges<instantiator2, P>::call<source_random>();
 }
 
-struct weird_pair : public pair<string, string> {
+struct weird_pair : pair<string, string> {
     using pair<string, string>::pair;
 
     weird_pair& operator=(const P& p) {
@@ -153,11 +152,7 @@ int main() {
     run_tests();
 
     {
-        constexpr auto proj = [](const weird_pair& s) {
-            int i = 0;
-            from_chars(s.second.data(), s.second.data() + s.second.size(), i);
-            return i;
-        };
+        constexpr auto proj                = [](const weird_pair& s) { return stoi(s.second); };
         const weird_pair expected_result[] = {{"16", "0"}, {"12", "1"}, {"17", "2"}};
         weird_pair actual[ranges::size(expected_result)];
 
