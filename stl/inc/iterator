@@ -812,7 +812,7 @@ struct iterator_traits<counted_iterator<_Iter>> : iterator_traits<_Iter> {
 };
 
 template <contiguous_iterator _Iter>
-struct pointer_traits<counted_iterator<_Iter>> { // TODO: address LWG-3408 and include this
+struct pointer_traits<counted_iterator<_Iter>> { // TRANSITION, address LWG-3408 and include this
     using pointer         = counted_iterator<_Iter>;
     using element_type    = remove_reference_t<iter_reference_t<_Iter>>;
     using difference_type = iter_difference_t<_Iter>;

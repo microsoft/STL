@@ -14,7 +14,7 @@
 #include <range_algorithm_support.hpp>
 using namespace std;
 
-#pragma warning(disable : 6011) // "Dereferencing NULL pointer '%s'
+#pragma warning(disable : 6011) // Dereferencing NULL pointer '%s'
 
 // Test a silly precomposed range adaptor pipeline
 constexpr auto pipeline = views::take(7) | views::take(6) | views::take(5) | views::take(4);
@@ -399,7 +399,7 @@ constexpr void instantiation_test() {
 #ifdef TEST_EVERYTHING
     test_in<instantiator, const int>();
 #else // ^^^ test all input range permutations / test only "interesting" permutations vvv
-    // The view is sensitive to category, size, and commonality, but oblivious to differencing, and proxyness.
+    // The view is sensitive to category, size, and commonality, but oblivious to differencing and proxyness.
     using test::Common, test::Sized;
 
     instantiator::call<test_range<input_iterator_tag, Sized::no, Common::no>>();
@@ -468,9 +468,13 @@ constexpr void output_range_test() {
             test::CanCompare::no, test::ProxyRef::yes, test::CanView::yes, test::Copyability::move_only>;
         int some_writable_ints[] = {0, 1, 2, 3};
         STATIC_ASSERT(same_as<decltype(views::take(R{some_writable_ints}, 99999)), ranges::take_view<R>>);
+
         // How do I implement "Fill up to n elements in {output range} with {value}"?
         ranges::fill(R{some_writable_ints} | views::take(99999), 42);
         assert(ranges::equal(some_writable_ints, initializer_list<int>{42, 42, 42, 42}));
+
+        ranges::fill(R{some_writable_ints} | views::take(3), 13);
+        assert(ranges::equal(some_writable_ints, initializer_list<int>{13, 13, 13, 42}));
     }
 }
 
