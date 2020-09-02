@@ -796,9 +796,7 @@ namespace ranges {
 
             static constexpr bool _Unwrap_when_unverified = _Do_unwrap_when_unverified_v<iterator_t<_Base_Ty>>;
 
-            // clang-format off
             constexpr void _Seek_to(const _Sentinel<_Const, false>& _That) requires _Wrapped {
-                // clang-format on
                 _Seek_wrapped(_Last, _That._Last);
             }
             constexpr void _Seek_to(_Sentinel<_Const, false>&& _That) requires _Wrapped {
