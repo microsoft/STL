@@ -769,7 +769,7 @@ namespace ranges {
                 is_nothrow_move_constructible_v<iterator_t<_Vw>>) // strengthened
                 : _Current(_STD move(_Current_)), _Parent{_STD addressof(_Parent_)} {
 #if _ITERATOR_DEBUG_LEVEL != 0
-                _Adl_verify_range(_Current, _RANGES end(_Parent_._Range)); // FIXME: test coverage
+                _Adl_verify_range(_Current, _RANGES end(_Parent_._Range));
 #endif // _ITERATOR_DEBUG_LEVEL != 0
             }
 
