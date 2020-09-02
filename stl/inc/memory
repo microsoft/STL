@@ -754,7 +754,7 @@ namespace ranges {
             if constexpr (is_trivially_default_constructible_v<_Ty>) {
                 _RANGES advance(_First, _Count);
             } else if constexpr (is_nothrow_default_constructible_v<_Ty>) {
-                auto _UFirst = _Get_unwrapped_n(_STD move(_First));
+                auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
 
                 for (; _Count > 0; --_Count, (void) ++_UFirst) {
                     ::new (_Voidify_iter(_UFirst)) _Ty;
