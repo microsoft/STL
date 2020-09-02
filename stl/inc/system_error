@@ -16,8 +16,11 @@
 #include <xerrc.h>
 #ifndef _M_CEE_PURE
 #include <atomic>
-#include <compare>
 #endif // _M_CEE_PURE
+
+#if _HAS_CXX20
+#include <compare>
+#endif // _HAS_CXX20
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
