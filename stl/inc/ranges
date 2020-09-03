@@ -1042,8 +1042,10 @@ namespace ranges {
                 : _Last(_STD move(_Last_)) {}
 
             // clang-format off
-            constexpr _Sentinel(_Sentinel<!_Const> _Se) noexcept(is_nothrow_constructible_v<sentinel_t<_Base>, sentinel_t<_Vw>>) // strengthened
-                requires _Const && convertible_to<sentinel_t<_Vw>, sentinel_t<_Base>> : _Last(_STD move(_Se._Last)) {}
+            constexpr _Sentinel(_Sentinel<!_Const> _Se)
+                noexcept(is_nothrow_constructible_v<sentinel_t<_Base>, sentinel_t<_Vw>>) // strengthened
+                requires _Const && convertible_to<sentinel_t<_Vw>, sentinel_t<_Base>>
+                : _Last(_STD move(_Se._Last)) {}
             // clang-format on
 
             _NODISCARD constexpr sentinel_t<_Base> base() const
