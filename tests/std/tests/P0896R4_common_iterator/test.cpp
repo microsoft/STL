@@ -15,10 +15,7 @@ template <class Iter>
 concept CanDifference = requires(Iter it) {
     { it - it };
 };
-template <class Iter>
-concept CanArrow = requires(Iter it) {
-    { it.operator->() };
-};
+
 template <class Iter>
 concept HasProxy = !is_reference_v<iter_reference_t<Iter>>;
 // clang-format on
@@ -62,7 +59,8 @@ struct instantiator {
                 Cit defaultConstructed{};
                 Cit iterConstructed{Iter{input}};
                 Cit sentinelConstructed(Sen{});
-                defaultConstructed = iterConstructed;
+                Cit copyConstructed{defaultConstructed};
+                copyConstructed = iterConstructed;
 
                 OCit conversionConstructed{defaultConstructed};
                 conversionConstructed = iterConstructed;
@@ -125,10 +123,10 @@ struct instantiator {
                     assert(diff_it_it == -1);
 
                     // Difference iterator / sentinel
-                    const same_as<iter_difference_t<Iter>> auto diff_it_sen = Cit{Iter{input + 1}} - Cit{Sen{input}};
-                    const same_as<iter_difference_t<Iter>> auto diff_sen_it = Cit{Sen{input}} - Cit{Iter{input + 1}};
-                    assert(diff_it_sen == 1);
-                    assert(diff_sen_it == -1);
+                    const same_as<iter_difference_t<Iter>> auto diff_it_sen = Cit{Iter{input}} - Cit{Sen{input + 1}};
+                    const same_as<iter_difference_t<Iter>> auto diff_sen_it = Cit{Sen{input + 1}} - Cit{Iter{input}};
+                    assert(diff_it_sen == -1);
+                    assert(diff_sen_it == 1);
 
                     // Difference sentinel / sentinel
                     const same_as<iter_difference_t<Iter>> auto diff_sen_sen = Cit{Sen{input}} - Cit{Sen{input + 1}};
@@ -139,12 +137,12 @@ struct instantiator {
                     assert(diff_it_oit == -1);
 
                     // Difference iterator / other sentinel
-                    const same_as<iter_difference_t<Iter>> auto diff_it_osen = Cit{Iter{input + 1}} - OCit{OSen{input}};
-                    assert(diff_it_osen == 1);
+                    const same_as<iter_difference_t<Iter>> auto diff_it_osen = Cit{Iter{input}} - OCit{OSen{input + 1}};
+                    assert(diff_it_osen == -1);
 
                     // Difference other iterator / sentinel
-                    const same_as<iter_difference_t<Iter>> auto diff_sen_oit = Cit{Sen{input}} - OCit{Iter{input + 1}};
-                    assert(diff_sen_oit == -1);
+                    const same_as<iter_difference_t<Iter>> auto diff_sen_oit = Cit{Sen{input + 1}} - OCit{Iter{input}};
+                    assert(diff_sen_oit == 1);
 
                     // Difference sentinel / other sentinel
                     const same_as<iter_difference_t<Iter>> auto diff_sen_osen = Cit{Sen{input}} - OCit{OSen{input + 1}};
@@ -181,8 +179,7 @@ bool test_operator_arrow() {
     assert(*pointerIter == P(0, 1));
     assert(pointerIter->first == 0);
     assert(pointerIter->second == 1);
-    static_assert(is_same_v<remove_cvref_t<decltype(pointerIter.operator->())>, P*>);
-    static_assert(!is_same_v<decltype(pointerIter.operator->()), P*>);
+    static_assert(is_same_v<decltype(pointerIter.operator->()), P* const&>);
 
     using countedTest = common_iterator<counted_iterator<P*>, default_sentinel_t>;
     countedTest countedIter{counted_iterator{input, 3}};

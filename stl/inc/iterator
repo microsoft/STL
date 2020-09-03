@@ -821,7 +821,7 @@ public:
         requires convertible_to<const _OIter&, _Iter> && convertible_to<const _OSe&, _Se>
     constexpr common_iterator(const common_iterator<_OIter, _OSe>& _Right) noexcept(
         is_nothrow_constructible_v<_Iter, const _OIter&>&& is_nothrow_constructible_v<_Se, const _OSe&>) // strengthened
-        : _Val{_Vty{_Right._Val}} {}
+        : _Val{_Right._Val} {}
 
     template <class _OIter, class _OSe>
         requires convertible_to<const _OIter&, _Iter> && convertible_to<const _OSe&, _Se>
@@ -955,7 +955,7 @@ public:
         noexcept(_RANGES iter_move(_Right._Val._Iterator))) requires input_iterator<_Iter> {
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Right._Val._Contains == _Variantish_state::_Holds_iter,
-            "Can only iter_move from common_iterator if it holds an iterator");
+            "can only iter_move from common_iterator if it holds an iterator");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         return _RANGES iter_move(_Right._Val._Iterator);
     }
@@ -966,7 +966,7 @@ public:
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Left._Val._Contains == _Variantish_state::_Holds_iter
                         && _Right._Val._Contains == _Variantish_state::_Holds_iter,
-            "Can only iter_swap common_iterators if both hold an iterator");
+            "can only iter_swap common_iterators if both hold iterators");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         return _RANGES iter_swap(_Left._Val._Iterator, _Right._Val._Iterator);
     }
@@ -974,7 +974,7 @@ public:
 private:
     // clang-format off
     template <input_or_output_iterator _OIter, sentinel_for<_OIter> _OSe>
-    requires (!same_as<_OIter, _OSe> && copyable<_OIter>)
+        requires (!same_as<_OIter, _OSe> && copyable<_OIter>)
     friend class common_iterator;
     // clang-format on
 
