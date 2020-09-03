@@ -781,6 +781,9 @@ namespace ranges {
                 : _Current(_STD move(_Current_)), _Parent{_STD addressof(_Parent_)} {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _Adl_verify_range(_Current, _RANGES end(_Parent_._Range));
+                if constexpr (forward_range<_Vw>) {
+                    _Adl_verify_range(_RANGES begin(_Parent_._Range), _Current);
+                }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
             }
 
