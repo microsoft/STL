@@ -758,6 +758,17 @@ namespace ranges {
         };
 
         class _Iterator : public _Iterator_base<iterator_traits<iterator_t<_Vw>>> {
+        private:
+            /* [[no_unique_address]] */ iterator_t<_Vw> _Current{};
+            filter_view* _Parent{};
+
+#if _ITERATOR_DEBUG_LEVEL != 0
+            constexpr void _Check_dereference() const noexcept {
+                _STL_VERIFY(_Parent != nullptr, "cannot dereference value-initialized filter_view iterator");
+                _STL_VERIFY(_Current != _RANGES end(_Parent->_Range), "cannot dereference end filter_view iterator");
+            }
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+
         public:
             using iterator_concept = conditional_t<bidirectional_range<_Vw>, bidirectional_iterator_tag,
                 conditional_t<forward_range<_Vw>, forward_iterator_tag, input_iterator_tag>>;
@@ -870,20 +881,12 @@ namespace ranges {
             _NODISCARD constexpr bool _Equal(const sentinel_t<_Vw>& _Last) const {
                 return _Current == _Last;
             }
-
-        private:
-#if _ITERATOR_DEBUG_LEVEL != 0
-            constexpr void _Check_dereference() const noexcept {
-                _STL_VERIFY(_Parent != nullptr, "cannot dereference value-initialized filter_view iterator");
-                _STL_VERIFY(_Current != _RANGES end(_Parent->_Range), "cannot dereference end filter_view iterator");
-            }
-#endif // _ITERATOR_DEBUG_LEVEL != 0
-
-            /* [[no_unique_address]] */ iterator_t<_Vw> _Current{};
-            filter_view* _Parent{};
         };
 
         class _Sentinel {
+        private:
+            /* [[no_unique_address]] */ sentinel_t<_Vw> _Last{};
+
         public:
             _Sentinel() = default;
             constexpr explicit _Sentinel(filter_view& _Parent) noexcept(
@@ -899,9 +902,6 @@ namespace ranges {
             _NODISCARD friend constexpr bool operator==(const _Iterator& _It, const _Sentinel& _Se) {
                 return _It._Equal(_Se._Last);
             }
-
-        private:
-            /* [[no_unique_address]] */ sentinel_t<_Vw> _Last{};
         };
 
     public:
