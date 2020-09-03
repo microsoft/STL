@@ -32,7 +32,7 @@ void test_constructor_wrong_range() {
     auto r0            = views::filter(vec0, lambda);
     using R            = decltype(r0);
     same_as<R> auto r1 = views::filter(vec1, lambda);
-    ranges::iterator_t<R> i{r0, r1.begin().base()}; //  vector iterators in range are from different containers
+    ranges::iterator_t<R> i{r0, r1.begin().base()}; // vector iterators in range are from different containers
 }
 
 void test_operator_star_value_initialized_iterator() {
