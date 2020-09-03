@@ -14,12 +14,13 @@
 using namespace std;
 
 // Test a silly precomposed range adaptor pipeline
-constexpr auto add1 = [](const auto& x) { return x + 1; };
-using Fun           = remove_const_t<decltype(add1)>;
+constexpr auto add8 = [](const auto& x) noexcept { return x + 8; };
+
+using Fun = remove_const_t<decltype(add8)>;
 STATIC_ASSERT(is_nothrow_copy_constructible_v<Fun>&& is_nothrow_move_constructible_v<Fun>);
 
 constexpr auto pipeline =
-    views::transform(add1) | views::transform(add1) | views::transform(add1) | views::transform(add1);
+    views::transform(add8) | views::transform(add8) | views::transform(add8) | views::transform(add8);
 
 template <class Rng, class V = views::all_t<Rng>>
 using pipeline_t =
@@ -28,7 +29,7 @@ using pipeline_t =
 
 template <class Rng>
 concept CanViewTransform = requires(Rng&& r) {
-    views::transform(static_cast<Rng&&>(r), add1);
+    views::transform(static_cast<Rng&&>(r), add8);
 };
 
 template <ranges::input_range Rng, ranges::random_access_range Expected>
@@ -49,15 +50,15 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     STATIC_ASSERT(!contiguous_range<TV>);
 
     // Validate range adaptor object and range adaptor closure
-    constexpr auto transform_incr = views::transform(add1);
+    constexpr auto transform_incr = views::transform(add8);
 
     // ... with lvalue argument
     STATIC_ASSERT(CanViewTransform<Rng&> == (!is_view || copyable<V>) );
     if constexpr (CanViewTransform<Rng&>) { // Validate lvalue
         constexpr bool is_noexcept = !is_view || is_nothrow_copy_constructible_v<V>;
 
-        STATIC_ASSERT(same_as<decltype(views::transform(rng, add1)), TV>);
-        STATIC_ASSERT(noexcept(views::transform(rng, add1)) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(views::transform(rng, add8)), TV>);
+        STATIC_ASSERT(noexcept(views::transform(rng, add8)) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(rng | transform_incr), TV>);
         STATIC_ASSERT(noexcept(rng | transform_incr) == is_noexcept);
@@ -71,8 +72,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     if constexpr (is_view && copyable<V>) {
         constexpr bool is_noexcept = is_nothrow_copy_constructible_v<V>;
 
-        STATIC_ASSERT(same_as<decltype(views::transform(as_const(rng), add1)), TV>);
-        STATIC_ASSERT(noexcept(views::transform(as_const(rng), add1)) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(views::transform(as_const(rng), add8)), TV>);
+        STATIC_ASSERT(noexcept(views::transform(as_const(rng), add8)) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(as_const(rng) | transform_incr), TV>);
         STATIC_ASSERT(noexcept(as_const(rng) | transform_incr) == is_noexcept);
@@ -81,10 +82,10 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         STATIC_ASSERT(noexcept(as_const(rng) | pipeline) == is_noexcept);
     } else if constexpr (!is_view) {
         using RC                   = transform_view<views::all_t<const remove_reference_t<Rng>&>, Fun>;
-        constexpr bool is_noexcept = is_nothrow_constructible_v<RC, const remove_reference_t<Rng>&, decltype((add1))>;
+        constexpr bool is_noexcept = is_nothrow_constructible_v<RC, const remove_reference_t<Rng>&, decltype((add8))>;
 
-        STATIC_ASSERT(same_as<decltype(views::transform(as_const(rng), add1)), RC>);
-        STATIC_ASSERT(noexcept(views::transform(as_const(rng), add1)) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(views::transform(as_const(rng), add8)), RC>);
+        STATIC_ASSERT(noexcept(views::transform(as_const(rng), add8)) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(as_const(rng) | transform_incr), RC>);
         STATIC_ASSERT(noexcept(as_const(rng) | transform_incr) == is_noexcept);
@@ -97,8 +98,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     STATIC_ASSERT(CanViewTransform<remove_reference_t<Rng>> == is_view || enable_borrowed_range<remove_cvref_t<Rng>>);
     if constexpr (is_view) {
         constexpr bool is_noexcept = is_nothrow_move_constructible_v<V>;
-        STATIC_ASSERT(same_as<decltype(views::transform(move(rng), add1)), TV>);
-        STATIC_ASSERT(noexcept(views::transform(move(rng), add1)) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(views::transform(move(rng), add8)), TV>);
+        STATIC_ASSERT(noexcept(views::transform(move(rng), add8)) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(rng) | transform_incr), TV>);
         STATIC_ASSERT(noexcept(move(rng) | transform_incr) == is_noexcept);
@@ -110,8 +111,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         using RS                   = transform_view<S, Fun>;
         constexpr bool is_noexcept = noexcept(S{declval<remove_reference_t<Rng>>()});
 
-        STATIC_ASSERT(same_as<decltype(views::transform(move(rng), add1)), RS>);
-        STATIC_ASSERT(noexcept(views::transform(move(rng), add1)) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(views::transform(move(rng), add8)), RS>);
+        STATIC_ASSERT(noexcept(views::transform(move(rng), add8)) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(rng) | transform_incr), RS>);
         STATIC_ASSERT(noexcept(move(rng) | transform_incr) == is_noexcept);
@@ -126,8 +127,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     if constexpr (is_view && copyable<V>) {
         constexpr bool is_noexcept = is_nothrow_copy_constructible_v<V>;
 
-        STATIC_ASSERT(same_as<decltype(views::transform(move(as_const(rng)), add1)), TV>);
-        STATIC_ASSERT(noexcept(views::transform(as_const(rng), add1)) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(views::transform(move(as_const(rng)), add8)), TV>);
+        STATIC_ASSERT(noexcept(views::transform(as_const(rng), add8)) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | transform_incr), TV>);
         STATIC_ASSERT(noexcept(as_const(rng) | transform_incr) == is_noexcept);
@@ -139,8 +140,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         using RS                   = transform_view<S, Fun>;
         constexpr bool is_noexcept = noexcept(S{declval<const remove_reference_t<Rng>>()});
 
-        STATIC_ASSERT(same_as<decltype(views::transform(move(as_const(rng)), add1)), RS>);
-        STATIC_ASSERT(noexcept(views::transform(move(as_const(rng)), add1)) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(views::transform(move(as_const(rng)), add8)), RS>);
+        STATIC_ASSERT(noexcept(views::transform(move(as_const(rng)), add8)) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | transform_incr), RS>);
         STATIC_ASSERT(noexcept(move(as_const(rng)) | transform_incr) == is_noexcept);
@@ -155,7 +156,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 #if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1159442
     (void) 42;
 #endif // TRANSITION, DevCom-1159442
-    same_as<TV> auto r = transform_view{forward<Rng>(rng), add1};
+    same_as<TV> auto r = transform_view{forward<Rng>(rng), add8};
     using R            = decltype(r);
     STATIC_ASSERT(ranges::view<R>);
     STATIC_ASSERT(input_range<R>);
@@ -238,12 +239,14 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     STATIC_ASSERT(CanEnd<const R&> == (range<const V> && const_invocable));
     if (!is_empty) {
         same_as<sentinel_t<R>> auto i = r.end();
+        static_assert(is_same_v<sentinel_t<R>, iterator_t<R>> == common_range<V>);
         if constexpr (bidirectional_range<R> && common_range<R>) {
             assert(*prev(i) == *prev(end(expected)));
         }
 
         if constexpr (CanEnd<const R&>) {
             same_as<sentinel_t<const R>> auto i2 = as_const(r).end();
+            static_assert(is_same_v<sentinel_t<const R>, iterator_t<const R>> == common_range<const V>);
             if constexpr (bidirectional_range<const R> && common_range<const R>) {
                 assert(*prev(i2) == *prev(end(expected)));
             }
@@ -323,7 +326,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 }
 
 static constexpr int some_ints[]        = {0, 1, 2, 3, 4, 5, 6, 7};
-static constexpr int transformed_ints[] = {1, 2, 3, 4, 5, 6, 7, 8};
+static constexpr int transformed_ints[] = {8, 9, 10, 11, 12, 13, 14, 15};
 
 struct instantiator {
     template <ranges::input_range R>
@@ -375,63 +378,325 @@ using move_only_view = test::range<Category, const int, IsSized,
     test::CanCompare{derived_from<Category, forward_iterator_tag>},
     test::ProxyRef{!derived_from<Category, contiguous_iterator_tag>}, test::CanView::yes, test::Copyability::move_only>;
 
+constexpr void move_only_view_tests() {
+    using test::Common, test::Sized;
+
+    test_one(move_only_view<input_iterator_tag, Sized::no, Common::no>{some_ints}, transformed_ints);
+    test_one(move_only_view<input_iterator_tag, Sized::yes, Common::no>{some_ints}, transformed_ints);
+
+    test_one(move_only_view<forward_iterator_tag, Sized::no, Common::no>{some_ints}, transformed_ints);
+    test_one(move_only_view<forward_iterator_tag, Sized::no, Common::yes>{some_ints}, transformed_ints);
+    test_one(move_only_view<forward_iterator_tag, Sized::yes, Common::no>{some_ints}, transformed_ints);
+    test_one(move_only_view<forward_iterator_tag, Sized::yes, Common::yes>{some_ints}, transformed_ints);
+
+    test_one(move_only_view<bidirectional_iterator_tag, Sized::no, Common::no>{some_ints}, transformed_ints);
+    test_one(move_only_view<bidirectional_iterator_tag, Sized::no, Common::yes>{some_ints}, transformed_ints);
+    test_one(move_only_view<bidirectional_iterator_tag, Sized::yes, Common::no>{some_ints}, transformed_ints);
+    test_one(move_only_view<bidirectional_iterator_tag, Sized::yes, Common::yes>{some_ints}, transformed_ints);
+
+    test_one(move_only_view<random_access_iterator_tag, Sized::no, Common::no>{some_ints}, transformed_ints);
+    test_one(move_only_view<random_access_iterator_tag, Sized::no, Common::yes>{some_ints}, transformed_ints);
+    test_one(move_only_view<random_access_iterator_tag, Sized::yes, Common::no>{some_ints}, transformed_ints);
+    test_one(move_only_view<random_access_iterator_tag, Sized::yes, Common::yes>{some_ints}, transformed_ints);
+}
+
+struct iterator_instantiator {
+    template <input_iterator Iter>
+    static constexpr void call() {
+        // Pre: Iter is a specialization of test::iterator whose element type is const int
+        int mutable_ints[]   = {0, 1, 2, 3, 4, 5, 6, 7};
+        const auto make_view = [&] {
+            return views::transform(
+                ranges::subrange{Iter{mutable_ints}, test::sentinel<int>{ranges::end(mutable_ints)}}, add8);
+        };
+        using R = decltype(make_view());
+        using I = ranges::iterator_t<R>;
+        using S = ranges::sentinel_t<R>;
+
+        // Validate nested types
+        STATIC_ASSERT(is_same_v<typename I::iterator_concept,
+            conditional_t<random_access_iterator<Iter>, random_access_iterator_tag,
+                conditional_t<bidirectional_iterator<Iter>, bidirectional_iterator_tag,
+                    conditional_t<forward_iterator<Iter>, forward_iterator_tag, input_iterator_tag>>>>);
+
+        using C = typename iterator_traits<Iter>::iterator_category;
+        STATIC_ASSERT(is_same_v<typename I::iterator_category,
+            conditional_t<is_lvalue_reference_v<invoke_result_t<decltype((add8)), iter_reference_t<Iter>>>,
+                conditional_t<derived_from<C, contiguous_iterator_tag>, random_access_iterator_tag, C>,
+                input_iterator_tag>>);
+
+        { // Validate iterator special member functions and base
+            I defaultConstructed{};
+            assert(std::move(defaultConstructed).base().peek() == nullptr);
+            STATIC_ASSERT(is_nothrow_default_constructible_v<I>);
+
+            auto r0 = make_view();
+            I valueConstructed{r0, Iter{mutable_ints}};
+            STATIC_ASSERT(is_nothrow_constructible_v<I, R&, Iter>);
+
+            if constexpr (copyable<Iter>) {
+                I copyConstructed{valueConstructed};
+                assert(copyConstructed == valueConstructed);
+                STATIC_ASSERT(is_nothrow_copy_constructible_v<I>);
+
+                defaultConstructed = copyConstructed;
+                assert(defaultConstructed == valueConstructed);
+                STATIC_ASSERT(is_nothrow_copy_assignable_v<I>);
+            }
+            assert(std::move(valueConstructed).base().peek() == mutable_ints);
+
+            if constexpr (forward_iterator<Iter>) {
+                auto r1      = make_view();
+                const auto i = r1.begin();
+                using CI     = ranges::iterator_t<const R>;
+                CI conversionConstructed{i};
+                assert(conversionConstructed.base().peek() == mutable_ints);
+                STATIC_ASSERT(is_nothrow_constructible_v<CI, const I&>);
+            }
+        }
+
+        { // Validate sentinel constructors and base
+            S defaultConstructed{};
+            assert(defaultConstructed.base().peek() == nullptr);
+            STATIC_ASSERT(is_nothrow_default_constructible_v<S>);
+
+            const test::sentinel<int> s{mutable_ints + 2};
+            S valueConstructed{s};
+            assert(valueConstructed.base().peek() == s.peek());
+            STATIC_ASSERT(is_nothrow_constructible_v<S, const test::sentinel<int>&>);
+
+            S copyConstructed{valueConstructed};
+            assert(copyConstructed.base().peek() == valueConstructed.base().peek());
+            STATIC_ASSERT(is_nothrow_copy_constructible_v<S>);
+
+            defaultConstructed = copyConstructed;
+            assert(defaultConstructed.base().peek() == valueConstructed.base().peek());
+            STATIC_ASSERT(is_nothrow_copy_assignable_v<S>);
+
+            if constexpr (forward_iterator<Iter> && indirectly_swappable<Iter>) {
+                auto r       = make_view();
+                using CS     = ranges::sentinel_t<const R>;
+                const S last = r.end();
+                CS conversionConstructed{last};
+                assert(conversionConstructed.base().peek() == ranges::end(mutable_ints));
+                STATIC_ASSERT(is_nothrow_constructible_v<CS, const S&>);
+            }
+        }
+
+        { // Validate dereference ops
+            auto r0 = make_view();
+            auto i0 = r0.begin();
+            assert(*i0 == add8(mutable_ints[0]));
+            STATIC_ASSERT(noexcept(*i0));
+
+            assert(ranges::iter_move(i0) == add8(mutable_ints[0])); // NB: moving from int leaves it unchanged
+            STATIC_ASSERT(noexcept(ranges::iter_move(i0)));
+
+            if constexpr (forward_iterator<Iter>) {
+                auto i1 = ranges::next(i0);
+                ranges::iter_swap(i0, i1);
+                assert(mutable_ints[0] == 1);
+                assert(mutable_ints[1] == 0);
+                ranges::iter_swap(i1, i0);
+                assert(mutable_ints[0] == 0);
+                assert(mutable_ints[1] == 1);
+                STATIC_ASSERT(noexcept(ranges::iter_swap(i0, i1)));
+            }
+        }
+
+        { // Validate increments
+            auto r0 = make_view();
+            auto i0 = r0.begin();
+            assert(&++i0 == &i0);
+            assert(std::move(i0).base().peek() == mutable_ints + 1);
+            STATIC_ASSERT(noexcept(++i0));
+
+            auto r1 = make_view();
+            auto i1 = r1.begin();
+            if constexpr (forward_iterator<Iter>) {
+                assert(i1++ == r1.begin());
+            } else {
+                i1++;
+            }
+            assert(std::move(i1).base().peek() == mutable_ints + 1);
+            STATIC_ASSERT(noexcept(i0++));
+        }
+
+        if constexpr (bidirectional_iterator<Iter>) { // Validate decrements
+            auto r            = make_view();
+            const auto second = ranges::next(r.begin());
+            auto i            = second;
+            assert(&--i == &i);
+            assert(i.base().peek() == mutable_ints);
+            STATIC_ASSERT(noexcept(--i));
+
+            i = second;
+            assert(i-- == second);
+            assert(i.base().peek() == mutable_ints);
+            STATIC_ASSERT(noexcept(i--));
+        }
+
+        if constexpr (random_access_iterator<Iter>) { // Validate seek operations and []
+            auto r = make_view();
+            auto i = r.begin();
+            assert((i + 2).base().peek() == mutable_ints + 2);
+            STATIC_ASSERT(noexcept(i + 2));
+
+            assert((2 + i).base().peek() == mutable_ints + 2);
+            STATIC_ASSERT(noexcept(2 + i));
+
+            assert(&(i += 5) == &i);
+            assert(i.base().peek() == mutable_ints + 5);
+            STATIC_ASSERT(noexcept(i += 5));
+
+            assert((i - 2).base().peek() == mutable_ints + 3);
+            STATIC_ASSERT(noexcept(i - 2));
+
+            assert(&(i -= 3) == &i);
+            assert(i.base().peek() == mutable_ints + 2);
+            STATIC_ASSERT(noexcept(i -= 3));
+
+            assert(i[4] == add8(mutable_ints[6]));
+            STATIC_ASSERT(noexcept(i[4]));
+        }
+
+        if constexpr (equality_comparable<Iter>) {
+            // Validate == and !=
+            auto r           = make_view();
+            const auto first = r.begin();
+            const auto last  = r.end();
+
+            assert(first == first);
+            assert(I{} == I{});
+            STATIC_ASSERT(noexcept(first == first));
+
+            assert(!(first == last));
+            STATIC_ASSERT(noexcept(first == last));
+            assert(!(last == first));
+            STATIC_ASSERT(noexcept(last == first));
+
+            assert(!(first != first));
+            assert(!(I{} != I{}));
+            STATIC_ASSERT(noexcept(first != first));
+
+            if constexpr (forward_iterator<Iter>) {
+                const auto final = ranges::next(first, last);
+                assert(!(first == final));
+                assert(first != final);
+
+                assert(last == final);
+                assert(final == last);
+
+                assert(!(last != final));
+                assert(!(final != last));
+
+                if constexpr (sized_sentinel_for<Iter, Iter>) { // Validate difference
+                    assert(first - first == 0);
+                    assert(final - first == ranges::ssize(mutable_ints));
+                    assert(first - final == -ranges::ssize(mutable_ints));
+                    assert(I{} - I{} == 0);
+                    STATIC_ASSERT(noexcept(first - first));
+                }
+
+                if constexpr (sized_sentinel_for<test::sentinel<int>, Iter>) {
+                    assert(last - first == ranges::ssize(mutable_ints));
+                    assert(first - last == -ranges::ssize(mutable_ints));
+                    STATIC_ASSERT(noexcept(last - first));
+                    STATIC_ASSERT(noexcept(first - last));
+                }
+
+                if constexpr (random_access_iterator<Iter>) { // Validate relational operators
+                    assert(!(first < first));
+                    assert(first < final);
+                    assert(!(final < first));
+                    assert(!(I{} < I{}));
+                    STATIC_ASSERT(noexcept(first < final));
+
+                    assert(!(first > first));
+                    assert(!(first > final));
+                    assert(final > first);
+                    assert(!(I{} > I{}));
+                    STATIC_ASSERT(noexcept(first > final));
+
+                    assert(first <= first);
+                    assert(first <= final);
+                    assert(!(final <= first));
+                    assert(I{} <= I{});
+                    STATIC_ASSERT(noexcept(first <= final));
+
+                    assert(first >= first);
+                    assert(!(first >= final));
+                    assert(final >= first);
+                    assert(I{} >= I{});
+                    STATIC_ASSERT(noexcept(first >= final));
+
+                    if constexpr (three_way_comparable<Iter>) { // Validate spaceship
+                        assert((first <=> first) == strong_ordering::equal);
+                        assert((first <=> final) == strong_ordering::less);
+                        assert((final <=> first) == strong_ordering::greater);
+                        assert((I{} <=> I{}) == strong_ordering::equal);
+                        STATIC_ASSERT(noexcept(first <=> final));
+                    }
+                }
+            }
+        }
+    }
+};
+
+template <class Category, test::CanDifference Diff>
+using test_iterator =
+    test::iterator<Category, int, Diff, test::CanCompare{derived_from<Category, forward_iterator_tag>},
+        test::ProxyRef{!derived_from<Category, contiguous_iterator_tag>}>;
+
+constexpr void iterator_instantiation_test() {
+    using test::CanDifference;
+
+    iterator_instantiator::call<test_iterator<input_iterator_tag, CanDifference::no>>();
+
+    iterator_instantiator::call<test_iterator<forward_iterator_tag, CanDifference::no>>();
+    iterator_instantiator::call<test_iterator<forward_iterator_tag, CanDifference::yes>>();
+
+    iterator_instantiator::call<test_iterator<bidirectional_iterator_tag, CanDifference::no>>();
+    iterator_instantiator::call<test_iterator<bidirectional_iterator_tag, CanDifference::yes>>();
+
+    iterator_instantiator::call<test_iterator<random_access_iterator_tag, CanDifference::yes>>();
+    iterator_instantiator::call<test_iterator<contiguous_iterator_tag, CanDifference::yes>>();
+}
+
 int main() {
-    // Validate views
-    { // ... copyable
+    { // Validate copyable views
         constexpr span<const int> s{some_ints};
         STATIC_ASSERT(test_one(s, transformed_ints));
         test_one(s, transformed_ints);
     }
-    { // ... move-only
-        test_one(move_only_view<input_iterator_tag, test::Sized::no, test::Common::no>{some_ints}, transformed_ints);
-        test_one(move_only_view<input_iterator_tag, test::Sized::yes, test::Common::no>{some_ints}, transformed_ints);
 
-        test_one(move_only_view<forward_iterator_tag, test::Sized::no, test::Common::no>{some_ints}, transformed_ints);
-        test_one(move_only_view<forward_iterator_tag, test::Sized::no, test::Common::yes>{some_ints}, transformed_ints);
-        test_one(move_only_view<forward_iterator_tag, test::Sized::yes, test::Common::no>{some_ints}, transformed_ints);
-        test_one(
-            move_only_view<forward_iterator_tag, test::Sized::yes, test::Common::yes>{some_ints}, transformed_ints);
+    // Validate move-only views
+    STATIC_ASSERT((move_only_view_tests(), true));
+    move_only_view_tests();
 
-        test_one(
-            move_only_view<bidirectional_iterator_tag, test::Sized::no, test::Common::no>{some_ints}, transformed_ints);
-        test_one(move_only_view<bidirectional_iterator_tag, test::Sized::no, test::Common::yes>{some_ints},
-            transformed_ints);
-        test_one(move_only_view<bidirectional_iterator_tag, test::Sized::yes, test::Common::no>{some_ints},
-            transformed_ints);
-        test_one(move_only_view<bidirectional_iterator_tag, test::Sized::yes, test::Common::yes>{some_ints},
-            transformed_ints);
-
-        test_one(
-            move_only_view<random_access_iterator_tag, test::Sized::no, test::Common::no>{some_ints}, transformed_ints);
-        test_one(move_only_view<random_access_iterator_tag, test::Sized::no, test::Common::yes>{some_ints},
-            transformed_ints);
-        test_one(move_only_view<random_access_iterator_tag, test::Sized::yes, test::Common::no>{some_ints},
-            transformed_ints);
-        test_one(move_only_view<random_access_iterator_tag, test::Sized::yes, test::Common::yes>{some_ints},
-            transformed_ints);
-    }
-
-    // Validate non-views
-    {
+    { // Validate non-views
         STATIC_ASSERT(test_one(some_ints, transformed_ints));
         test_one(some_ints, transformed_ints);
-    }
-    {
-        vector vec(ranges::begin(some_ints), ranges::end(some_ints));
-        test_one(vec, transformed_ints);
-    }
-    {
-        forward_list lst(ranges::begin(some_ints), ranges::end(some_ints));
-        test_one(lst, transformed_ints);
+
+        {
+            vector vec(ranges::begin(some_ints), ranges::end(some_ints));
+            test_one(vec, transformed_ints);
+        }
+        {
+            forward_list lst(ranges::begin(some_ints), ranges::end(some_ints));
+            test_one(lst, transformed_ints);
+        }
+
+        STATIC_ASSERT((instantiation_test(), true));
+        instantiation_test();
     }
 
-    // Validate a non-view borrowed range
-    {
+    { // Validate a non-view borrowed range
         constexpr span s{some_ints};
         STATIC_ASSERT(test_one(s, transformed_ints));
         test_one(s, transformed_ints);
     }
 
-    STATIC_ASSERT((instantiation_test(), true));
-    instantiation_test();
+    STATIC_ASSERT((iterator_instantiation_test(), true));
+    iterator_instantiation_test();
 }

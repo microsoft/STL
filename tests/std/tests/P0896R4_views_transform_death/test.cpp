@@ -6,6 +6,7 @@
 #include <cassert>
 #include <cstddef>
 #include <ranges>
+#include <vector>
 
 #include <test_death.hpp>
 using namespace std;
@@ -14,6 +15,15 @@ static int some_ints[] = {0, 1, 2, 3};
 
 [[maybe_unused]] constexpr auto lambda = [x = 42](int) { return x == 42; };
 using TV                               = decltype(ranges::transform_view{some_ints, lambda});
+
+void test_constructor_wrong_range() {
+    vector<int> vec0{0, 1, 2, 3};
+    vector<int> vec1{4, 5, 6, 7};
+    auto r0            = views::transform(vec0, lambda);
+    using R            = decltype(r0);
+    same_as<R> auto r1 = views::transform(vec1, lambda);
+    ranges::iterator_t<R> i{r0, r1.begin().base()}; // vector iterators in range are from different containers
+}
 
 void test_operator_star_value_initialized_iterator() {
     ranges::iterator_t<TV> i{};
@@ -297,11 +307,38 @@ void test_iter_swap_value_initialized_iterator_right() {
     (void) ranges::iter_swap(i0, i1); // cannot dereference value-initialized transform_view iterator
 }
 
+void test_sentinel_compare_value_initialized() {
+    auto r = ranges::subrange{counted_iterator{some_ints, ranges::distance(some_ints)}, default_sentinel}
+             | views::transform(lambda);
+    using R = decltype(r);
+    static_assert(!ranges::common_range<R>);
+    (void) (ranges::iterator_t<R>{} == r.end());
+}
+
+void test_sentinel_difference_value_initialized() {
+    auto r = ranges::subrange{counted_iterator{some_ints, ranges::distance(some_ints)}, default_sentinel}
+             | views::transform(lambda);
+    using R = decltype(r);
+    static_assert(!ranges::common_range<R>);
+    static_assert(sized_sentinel_for<ranges::sentinel_t<R>, ranges::iterator_t<R>>);
+    (void) (ranges::iterator_t<R>{} - r.end());
+}
+
+void test_flipped_sentinel_difference_value_initialized() {
+    auto r = ranges::subrange{counted_iterator{some_ints, ranges::distance(some_ints)}, default_sentinel}
+             | views::transform(lambda);
+    using R = decltype(r);
+    static_assert(!ranges::common_range<R>);
+    static_assert(sized_sentinel_for<ranges::sentinel_t<R>, ranges::iterator_t<R>>);
+    (void) (r.end() - ranges::iterator_t<R>{});
+}
+
 int main(int argc, char* argv[]) {
     std_testing::death_test_executive exec([] {});
 
 #if _ITERATOR_DEBUG_LEVEL != 0
     exec.add_death_tests({
+        test_constructor_wrong_range,
         test_operator_star_value_initialized_iterator,
         test_operator_star_end_iterator,
         test_operator_preincrement_value_initialized_iterator,
@@ -348,6 +385,9 @@ int main(int argc, char* argv[]) {
         test_iter_swap_value_initialized_iterators,
         test_iter_swap_value_initialized_iterator_left,
         test_iter_swap_value_initialized_iterator_right,
+        test_sentinel_compare_value_initialized,
+        test_sentinel_difference_value_initialized,
+        test_flipped_sentinel_difference_value_initialized,
     });
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
