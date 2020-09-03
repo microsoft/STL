@@ -20,6 +20,7 @@
 #include <set>
 #include <stack>
 #include <string>
+#include <system_error>
 #include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
@@ -121,6 +122,15 @@ namespace std {
     };
 } // namespace std
 
+struct dummy_diagnostic : std::error_category {
+    const char* name() const noexcept override {
+        return "dummy";
+    }
+    std::string message(int) const override {
+        return "";
+    }
+};
+
 template <class ReturnType, class SmallType, class EqualType, class LargeType>
 void spaceship_test(const SmallType& smaller, const EqualType& smaller_equal, const LargeType& larger) {
     assert(smaller == smaller_equal);
@@ -163,6 +173,36 @@ void unordered_containers_test(
     const Container& something, const Container& something_equal, const Container& different) {
     assert(something == something_equal);
     assert(something != different);
+}
+
+template <class ErrorType>
+void diagnostics_test() {
+    dummy_diagnostic c_mem[2];
+    {
+        ErrorType e_smaller(0, c_mem[0]);
+        ErrorType e_equal(0, c_mem[0]);
+        ErrorType e_larger(1, c_mem[1]);
+
+        spaceship_test<std::strong_ordering>(e_smaller, e_equal, e_larger);
+    }
+    {
+        ErrorType e_smaller(0, c_mem[0]);
+        ErrorType e_larger(0, c_mem[1]);
+
+        assert(e_smaller < e_larger);
+        assert(!(e_larger < e_smaller));
+        assert((e_smaller <=> e_larger) < 0);
+        assert((e_larger <=> e_smaller) > 0);
+    }
+    {
+        ErrorType e_smaller(0, c_mem[0]);
+        ErrorType e_larger(1, c_mem[0]);
+
+        assert(e_smaller < e_larger);
+        assert(!(e_larger < e_smaller));
+        assert((e_smaller <=> e_larger) < 0);
+        assert((e_larger <=> e_smaller) > 0);
+    }
 }
 
 void ordering_test_cases() {
@@ -411,6 +451,35 @@ void ordering_test_cases() {
         static_assert(std::is_same_v<SpaceshipType<WeaklyOrderedMatch>, std::weak_ordering>);
         static_assert(std::is_same_v<SpaceshipType<WeaklyOrderdByOmissionMatch>, std::weak_ordering>);
         static_assert(std::is_same_v<SpaceshipType<PartiallyOrderedMatch>, std::partial_ordering>);
+    }
+    { // Diagnostics Library
+        diagnostics_test<std::error_code>();
+        diagnostics_test<std::error_condition>();
+
+        dummy_diagnostic c_mem[2];
+        {
+            std::error_code e1(0, c_mem[0]);
+            std::error_condition e2(0, c_mem[0]);
+
+            assert(e1 == e2);
+            assert(e2 == e1);
+        }
+        {
+            std::error_code e1(0, c_mem[0]);
+            std::error_condition e2(0, c_mem[1]);
+
+            assert(e1 != e2);
+            assert(e2 != e1);
+        }
+        {
+            std::error_code e1(1, c_mem[0]);
+            std::error_condition e2(0, c_mem[0]);
+
+            assert(e1 != e2);
+            assert(e2 != e1);
+        }
+
+        spaceship_test<std::strong_ordering>(c_mem[0], c_mem[0], c_mem[1]);
     }
 }
 
