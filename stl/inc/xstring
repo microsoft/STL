@@ -1209,6 +1209,10 @@ public:
         "Bad char_traits for basic_string_view; "
         "N4659 24.4.2 [string.view.template]/1 \"the type traits::char_type shall name the same type as charT.\"");
 
+    static_assert(!is_array_v<_Elem> && is_trivial_v<_Elem> && is_standard_layout_v<_Elem>,
+        "The character type of basic_string_view must be a non-array trivial standard-layout type. See N4861 "
+        "[strings.general]/1.");
+
     using traits_type            = _Traits;
     using value_type             = _Elem;
     using pointer                = _Elem*;
@@ -2277,6 +2281,10 @@ private:
     static_assert(is_same_v<_Elem, typename _Traits::char_type>,
         "N4659 24.3.2.1 [string.require]/3 requires that the supplied "
         "char_traits character type match the string's character type.");
+
+    static_assert(!is_array_v<_Elem> && is_trivial_v<_Elem> && is_standard_layout_v<_Elem>,
+        "The character type of basic_string must be a non-array trivial standard-layout type. See N4861 "
+        "[strings.general]/1.");
 
 public:
     using traits_type    = _Traits;

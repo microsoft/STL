@@ -551,9 +551,6 @@ std/containers/sequences/array/array.data/data_const.pass.cpp FAIL
 std/containers/sequences/array/array.data/data.pass.cpp FAIL
 std/containers/sequences/array/iterators.pass.cpp FAIL
 
-# STL bug: string_view doesn't enforce "non-array trivial standard-layout", related to LWG-3034.
-std/strings/string.view/char.bad.fail.cpp:0 FAIL
-
 # Predicate count assertions - IDL2 is slightly bending the Standard's rules here.
 std/algorithms/alg.sorting/alg.heap.operations/make.heap/make_heap_comp.pass.cpp FAIL
 std/algorithms/alg.sorting/alg.merge/inplace_merge_comp.pass.cpp FAIL
