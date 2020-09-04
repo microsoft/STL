@@ -634,7 +634,7 @@ void* _Voidify_iter(_Iter _It) noexcept {
 template <class _NoThrowFwdIt>
 void uninitialized_default_construct(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last) {
     // default-initialize all elements in [_First, _Last)
-    using _Ty = remove_reference_t<iter_reference_t<_NoThrowFwdIt>>;
+    using _Ty = remove_reference_t<_Iter_ref_t<_NoThrowFwdIt>>;
     _Adl_verify_range(_First, _Last);
     if constexpr (!is_trivially_default_constructible_v<_Ty>) {
         _Uninitialized_backout _Backout{_Get_unwrapped(_First)};
