@@ -4,6 +4,7 @@
 #include <cassert>
 #include <concepts>
 #include <iterator>
+#include <type_traits>
 #include <utility>
 
 #include <range_algorithm_support.hpp>
@@ -157,6 +158,7 @@ struct instantiator {
                     const same_as<iter_value_t<Iter>> auto element1 = ranges::iter_move(iter1);
                     assert(element1 == P(0, 1));
                 }
+
                 if constexpr (indirectly_swappable<Iter>) { // iter_swap
                     Cit iter1{Iter{input}};
                     Cit iter2{Iter{input + 1}};

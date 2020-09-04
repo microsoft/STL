@@ -541,8 +541,8 @@ public:
     // clang-format off
     template <class _OIter, class _OSe>
         requires _Not_same_as<_Variantish<_OIter, _OSe>, _Variantish>
-    explicit _Variantish(const _Variantish<_OIter, _OSe>& _That) noexcept(
-        is_nothrow_convertible_v<const _OIter&, _It>&& is_nothrow_convertible_v<const _OSe&, _Se>)
+    _Variantish(const _Variantish<_OIter, _OSe>& _That) noexcept(
+        is_nothrow_constructible_v<_It, const _OIter&> && is_nothrow_constructible_v<_Se, const _OSe&>)
         : _Contains{_That._Contains} {
         // clang-format on
         switch (_That._Contains) {
@@ -586,7 +586,9 @@ public:
     // clang-format on
 #endif // TRANSITION, VSO-1174090
 
-    _Variantish(_Variantish&& _That) : _Contains{_That._Contains} {
+    _Variantish(_Variantish&& _That) noexcept(
+        is_nothrow_move_constructible_v<_It>&& is_nothrow_move_constructible_v<_Se>)
+        : _Contains{_That._Contains} {
         switch (_Contains) {
         case _Variantish_state::_Holds_iter:
             _Construct_in_place(_Iterator, _STD move(_That._Iterator));
@@ -605,7 +607,7 @@ public:
     // clang-format on
 #endif // TRANSITION, VSO-1174090
     ~_Variantish() {
-        _Clear();
+        _Raw_clear();
     }
 
 #if 0 // TRANSITION, VSO-1174090
@@ -638,7 +640,6 @@ public:
         }
 
         _Clear();
-        _Contains = _Variantish_state::_Nothing;
 
         switch (_That._Contains) {
         case _Variantish_state::_Holds_iter:
@@ -686,7 +687,6 @@ public:
         }
 
         _Clear();
-        _Contains = _Variantish_state::_Nothing;
 
         switch (_That._Contains) {
         case _Variantish_state::_Holds_iter:
@@ -698,6 +698,7 @@ public:
         case _Variantish_state::_Nothing:
             break;
         }
+
         _Contains = _That._Contains;
 
         return *this;
@@ -707,7 +708,8 @@ public:
     template <class _OIter, class _OSe>
         requires _Not_same_as<_Variantish<_OIter, _OSe>, _Variantish>
     _Variantish& operator=(const _Variantish<_OIter, _OSe>& _That) noexcept(
-        is_nothrow_convertible_v<const _OIter&, _It>&& is_nothrow_convertible_v<const _OSe&, _Se>) {
+        is_nothrow_constructible_v<_It, const _OIter&> && is_nothrow_constructible_v<_Se, const _OSe&>
+            && is_nothrow_assignable_v<_It&, const _OIter&> && is_nothrow_assignable_v<_Se&, const _OSe&>) {
         // clang-format on
         if (_Contains == _That._Contains) {
             switch (_Contains) {
@@ -725,7 +727,6 @@ public:
         }
 
         _Clear();
-        _Contains = _Variantish_state::_Nothing;
 
         switch (_That._Contains) {
         case _Variantish_state::_Holds_iter:
@@ -744,7 +745,9 @@ public:
     }
 
     // clang-format off
-    constexpr friend void swap(_Variantish& _Left, _Variantish& _Right)
+    constexpr friend void swap(_Variantish& _Left, _Variantish& _Right) noexcept(
+        is_nothrow_move_constructible_v<_It> && is_nothrow_move_constructible_v<_Se>
+            && is_nothrow_swappable_v<_It> && is_nothrow_swappable_v<_Se>)
         requires (!_Is_trivially_swappable_v<_It> || !_Is_trivially_swappable_v<_Se>) {
         // clang-format on
         if (_Left._Contains == _Right._Contains) {
@@ -767,7 +770,7 @@ public:
         _Right    = _STD move(_Tmp);
     }
 
-    void _Clear() noexcept {
+    void _Raw_clear() noexcept {
         switch (_Contains) {
         case _Variantish_state::_Holds_iter:
             _Iterator.~_It();
@@ -780,11 +783,15 @@ public:
         }
     }
 
+    void _Clear() noexcept {
+        _Raw_clear();
+        _Contains = _Variantish_state::_Nothing;
+    }
+
     union {
         _It _Iterator;
         _Se _Sentinel;
     };
-
 
     _Variantish_state _Contains;
 };
@@ -794,13 +801,17 @@ template <input_or_output_iterator _Iter, sentinel_for<_Iter> _Se>
     requires (!same_as<_Iter, _Se> && copyable<_Iter>)
 class common_iterator {
     // clang-format on
+private:
     class _Proxy {
+    private:
         iter_value_t<_Iter> _Keep;
 
     public:
-        explicit _Proxy(iter_reference_t<_Iter>&& _Right) : _Keep(_STD move(_Right)) {}
+        explicit _Proxy(iter_reference_t<_Iter>&& _Right) noexcept(
+            is_nothrow_move_constructible_v<iter_value_t<_Iter>>) // strengthened
+            : _Keep(_STD move(_Right)) {}
 
-        const iter_value_t<_Iter>* operator->() const {
+        _NODISCARD const iter_value_t<_Iter>* operator->() const noexcept /* strengthened */ {
             return _STD addressof(_Keep);
         }
     };
@@ -825,11 +836,11 @@ public:
 
     template <class _OIter, class _OSe>
         requires convertible_to<const _OIter&, _Iter> && convertible_to<const _OSe&, _Se>
-              && assignable_from<_Iter&, const _OIter&> && assignable_from<_Se&, const _OSe&>
+            && assignable_from<_Iter&, const _OIter&> && assignable_from<_Se&, const _OSe&>
     common_iterator& operator=(const common_iterator<_OIter, _OSe>& _Right) noexcept(
-        is_nothrow_assignable_v<_Iter, const _OIter&>&& is_nothrow_assignable_v<_Se, const _OSe&>&&
-            is_nothrow_constructible_v<_Iter, const _OIter&>&&
-                is_nothrow_constructible_v<_Se, const _OSe&>) /* strengthened */ {
+        is_nothrow_constructible_v<_Iter, const _OIter&> && is_nothrow_constructible_v<_Se, const _OSe&>
+            && is_nothrow_assignable_v<_Iter&, const _OIter&>
+            && is_nothrow_assignable_v<_Se&, const _OSe&>) /* strengthened */ {
         // clang-format on
         _Val = _Right._Val;
         return *this;
@@ -862,7 +873,7 @@ public:
             "common_iterator can only be dereferenced if it holds an iterator");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         if constexpr (is_pointer_v<_Iter> || _Has_op_arrow<_Iter>) {
-            return (_Val._Iterator);
+            return (_Val._Iterator); // NB: () are necessary for decltype(auto)
         } else if constexpr (is_reference_v<iter_reference_t<_Iter>>) {
             auto&& _Tmp = *_Val._Iterator;
             return _STD addressof(_Tmp);
@@ -978,8 +989,7 @@ private:
     friend class common_iterator;
     // clang-format on
 
-    using _Vty = _Variantish<_Iter, _Se>;
-    _Vty _Val;
+    _Variantish<_Iter, _Se> _Val;
 };
 
 template <class _Iter, class _Se>
