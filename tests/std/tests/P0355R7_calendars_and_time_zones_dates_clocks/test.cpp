@@ -6,7 +6,7 @@
 
 using namespace std::chrono;
 
-struct _Not_a_clock {
+struct not_a_clock {
     bool rep();
     static char period;
     int duration();
@@ -15,7 +15,7 @@ struct _Not_a_clock {
     static int now;
 };
 
-struct _Real_fake_clock {
+struct real_fake_clock {
     using rep        = bool;
     using period     = char;
     using duration   = float;
@@ -26,7 +26,7 @@ struct _Real_fake_clock {
 
 static_assert(is_clock<steady_clock>::value, "steady_clock is not a clock");
 static_assert(is_clock_v<steady_clock>, "steady_clock is not a clock");
-static_assert(is_clock_v<_Real_fake_clock>, "_Real_fake_clock is not a clock");
-static_assert(!is_clock_v<_Not_a_clock>, "_Not_a_clock is a clock");
+static_assert(is_clock_v<_Real_fake_clock>, "real_fake_clock is not a clock");
+static_assert(!is_clock_v<_Not_a_clock>, "not_a_clock is a clock");
 
 int main() {}

@@ -1519,9 +1519,11 @@ namespace chrono {
                 return true;
             }
 
-            const sys_days _First = year_month_day{_Year, _Month, day{1}};
-            const days _Diff      = weekday() - chrono::weekday{_First};
-            const days _Last      = _Diff + days{29};
+            // As index() == 5 is not always valid
+            // Determine the date of the first weekday and check if + days{28} is <= last day of the month
+            const sys_days _First_of_month = year_month_day{_Year, _Month, day{1}};
+            const days _First_weekday      = weekday() - chrono::weekday{_First_of_month} + days{1};
+            const days _Last               = _First_weekday + days{28};
             return static_cast<unsigned>(_Last.count()) <= static_cast<unsigned>(_Last_day(_Year, _Month));
         }
 
