@@ -4760,23 +4760,30 @@ struct _Is_character<char8_t> : true_type {}; // UTF-8 code units are sort-of ch
 #endif // __cpp_char8_t
 
 template <class _Ty>
-struct _Is_character_or_byte : _Is_character<_Ty>::type {};
+struct _Is_character_or_byte_or_bool : _Is_character<_Ty>::type {};
 
 #ifdef __cpp_lib_byte
 template <>
-struct _Is_character_or_byte<byte> : true_type {};
+struct _Is_character_or_byte_or_bool<byte> : true_type {};
 #endif // __cpp_lib_byte
+
+template <>
+struct _Is_character_or_byte_or_bool<bool> : true_type {};
 
 // _Fill_memset_is_safe determines if _FwdIt and _Ty are eligible for memset optimization in fill
 template <class _FwdIt, class _Ty, bool = is_pointer_v<_FwdIt>>
-_INLINE_VAR constexpr bool _Fill_memset_is_safe = conjunction_v<
-    disjunction<conjunction<_Is_character_or_byte<_Unwrap_enum_t<_Ty>>,
-                    _Is_character_or_byte<_Unwrap_enum_t<_Iter_value_t<_FwdIt>>>>,
-        conjunction<is_same<bool, _Unwrap_enum_t<_Ty>>, is_same<bool, _Unwrap_enum_t<_Iter_value_t<_FwdIt>>>>>,
+_INLINE_VAR constexpr bool _Fill_memset_is_safe = conjunction_v<is_scalar<_Ty>,
+    _Is_character_or_byte_or_bool<_Unwrap_enum_t<remove_reference_t<_Iter_ref_t<_FwdIt>>>>,
     is_assignable<_Iter_ref_t<_FwdIt>, const _Ty&>>;
 
 template <class _FwdIt, class _Ty>
 _INLINE_VAR constexpr bool _Fill_memset_is_safe<_FwdIt, _Ty, false> = false;
+
+template <class _DestTy, class _Ty>
+void _Fill_memset(_DestTy* const _Dest, const _Ty _Val, const size_t _Count) {
+    _DestTy _Dest_val = _Val; // implicitly convert (a cast would suppress warnings); also handles _DestTy being bool
+    _CSTD memset(_Dest, static_cast<unsigned char>(_Dest_val), _Count);
+}
 
 #if _HAS_IF_CONSTEXPR
 template <class _FwdIt, class _Ty>
@@ -4793,7 +4800,7 @@ _CONSTEXPR20 void fill(const _FwdIt _First, const _FwdIt _Last, const _Ty& _Val)
             if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
             {
-                _CSTD memset(_UFirst, static_cast<unsigned char>(_Val), static_cast<size_t>(_ULast - _UFirst));
+                _Fill_memset(_UFirst, _Val, static_cast<size_t>(_ULast - _UFirst));
                 return;
             }
         }
@@ -4815,7 +4822,7 @@ void _Fill_unchecked1(_FwdIt _First, _FwdIt _Last, const _Ty& _Val, false_type) 
 template <class _FwdIt, class _Ty>
 void _Fill_unchecked1(_FwdIt _First, _FwdIt _Last, const _Ty& _Val, true_type) {
     // copy _Val through [_First, _Last), memset optimization
-    _CSTD memset(_First, static_cast<unsigned char>(_Val), static_cast<size_t>(_Last - _First));
+    _Fill_memset(_First, _Val, static_cast<size_t>(_Last - _First));
 }
 
 template <class _FwdIt, class _Ty>
@@ -4854,7 +4861,7 @@ _CONSTEXPR20 _OutIt fill_n(_OutIt _Dest, const _Diff _Count_raw, const _Ty& _Val
                 if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
                 {
-                    _CSTD memset(_UDest, static_cast<unsigned char>(_Val), static_cast<size_t>(_Count));
+                    _Fill_memset(_UDest, _Val, static_cast<size_t>(_Count));
                     _UDest += _Count;
                     _Seek_wrapped(_Dest, _UDest);
                     return _Dest;
@@ -4885,7 +4892,7 @@ _OutIt _Fill_n_unchecked2(_OutIt _Dest, _Diff _Count, const _Ty& _Val, false_typ
 template <class _OutIt, class _Diff, class _Ty>
 _OutIt _Fill_n_unchecked2(_OutIt _Dest, _Diff _Count, const _Ty& _Val, true_type) {
     // copy _Val _Count times through [_Dest, ...), memset optimization
-    _CSTD memset(_Dest, static_cast<unsigned char>(_Val), static_cast<size_t>(_Count));
+    _Fill_memset(_Dest, _Val, static_cast<size_t>(_Count));
     return _Dest + _Count;
 }
 
@@ -4920,15 +4927,18 @@ _FwdIt fill_n(_ExPo&&, _FwdIt _Dest, _Diff _Count_raw, const _Ty& _Val) noexcept
 
 // Integral types are eligible for memcmp in very specific cases.
 // * They must be the same size. (`int == long` is eligible; `int == long long` isn't.)
-// * They can't be bool. (Not even `bool == bool`; we're concerned about representations other than 0 and 1.)
 // * They can't be volatile.
 // * Finally, the usual arithmetic conversions must preserve bit patterns. (This is true for `int == unsigned int`,
 //   but false for `short == unsigned short`.)
+#pragma warning(push)
+#pragma warning(disable : 4806) // no value of type 'bool' promoted to type 'char' can equal the given constant
 template <class _Elem1, class _Elem2,
     bool = sizeof(_Elem1) == sizeof(_Elem2) //
-           && _Is_nonbool_integral<_Elem1> && !is_volatile_v<_Elem1> //
-           && _Is_nonbool_integral<_Elem2> && !is_volatile_v<_Elem2>>
-_INLINE_VAR constexpr bool _Can_memcmp_elements = static_cast<_Elem1>(-1) == static_cast<_Elem2>(-1);
+           && is_integral_v<_Elem1> && !is_volatile_v<_Elem1> //
+           && is_integral_v<_Elem2> && !is_volatile_v<_Elem2>>
+_INLINE_VAR constexpr bool _Can_memcmp_elements =
+    is_same_v<_Elem1, bool> || is_same_v<_Elem2, bool> || static_cast<_Elem1>(-1) == static_cast<_Elem2>(-1);
+#pragma warning(pop)
 
 #ifdef __cpp_lib_byte
 // Allow memcmping std::byte.
