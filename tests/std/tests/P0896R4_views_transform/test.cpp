@@ -540,20 +540,28 @@ struct iterator_instantiator {
             auto r = make_view();
             auto i = r.begin();
             assert((i + 2).base().peek() == mutable_ints + 2);
+            assert((I{} + 0) == I{});
             STATIC_ASSERT(noexcept(i + 2));
 
             assert((2 + i).base().peek() == mutable_ints + 2);
+            assert((0 + I{}).base().peek() == nullptr);
             STATIC_ASSERT(noexcept(2 + i));
 
+            auto vi = I{};
             assert(&(i += 5) == &i);
             assert(i.base().peek() == mutable_ints + 5);
+            assert(&(vi += 0) == &vi);
+            assert(vi.base().peek() == nullptr);
             STATIC_ASSERT(noexcept(i += 5));
 
             assert((i - 2).base().peek() == mutable_ints + 3);
+            assert((I{} - 0).base().peek() == nullptr);
             STATIC_ASSERT(noexcept(i - 2));
 
             assert(&(i -= 3) == &i);
             assert(i.base().peek() == mutable_ints + 2);
+            assert(&(vi -= 0) == &vi);
+            assert(vi.base().peek() == nullptr);
             STATIC_ASSERT(noexcept(i -= 3));
 
             assert(i[4] == add8(mutable_ints[6]));
