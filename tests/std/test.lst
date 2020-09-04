@@ -281,6 +281,8 @@ tests\P0896R4_ranges_alg_move
 tests\P0896R4_ranges_alg_move_backward
 tests\P0896R4_ranges_alg_none_of
 tests\P0896R4_ranges_alg_nth_element
+tests\P0896R4_ranges_alg_partial_sort
+tests\P0896R4_ranges_alg_partial_sort_copy
 tests\P0896R4_ranges_alg_partition
 tests\P0896R4_ranges_alg_partition_copy
 tests\P0896R4_ranges_alg_partition_point
