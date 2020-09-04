@@ -2049,6 +2049,119 @@ namespace ranges {
 
         inline constexpr _Reverse_fn reverse;
     } // namespace views
+
+    // CLASS TEMPLATE ranges::common_view
+    // clang-format off
+    template <view _Vw>
+        requires (!common_range<_Vw> && copyable<iterator_t<_Vw>>)
+    class common_view : public view_interface<common_view<_Vw>> {
+        // clang-format on
+    private:
+        /* [[no_unique_address]] */ _Vw _Base{};
+
+    public:
+        common_view() = default;
+        constexpr explicit common_view(_Vw _Base_) noexcept(is_nothrow_move_constructible_v<_Vw>) // strengthened
+            : _Base(_STD move(_Base_)) {}
+        // converting constructor template omitted per LWG-3405
+
+        _NODISCARD constexpr _Vw base() const& noexcept(
+            is_nothrow_copy_constructible_v<_Vw>) /* strengthened */ requires copy_constructible<_Vw> {
+            return _Base;
+        }
+        _NODISCARD constexpr _Vw base() && noexcept(is_nothrow_move_constructible_v<_Vw>) /* strengthened */ {
+            return _STD move(_Base);
+        }
+
+        _NODISCARD constexpr auto begin() noexcept(
+            noexcept(_RANGES begin(_Base)) && is_nothrow_move_constructible_v<iterator_t<_Vw>>) {
+            if constexpr (random_access_range<_Vw> && sized_range<_Vw>) {
+                return _RANGES begin(_Base);
+            } else {
+                return common_iterator<iterator_t<_Vw>, sentinel_t<_Vw>>{_RANGES begin(_Base)};
+            }
+        }
+
+        _NODISCARD constexpr auto begin() const
+            noexcept(noexcept(_RANGES begin(_Base))
+                     && is_nothrow_move_constructible_v<iterator_t<const _Vw>>) requires range<const _Vw> {
+            if constexpr (random_access_range<const _Vw> && sized_range<const _Vw>) {
+                return _RANGES begin(_Base);
+            } else {
+                return common_iterator<iterator_t<const _Vw>, sentinel_t<const _Vw>>{_RANGES begin(_Base)};
+            }
+        }
+
+        _NODISCARD constexpr auto end() noexcept(
+            noexcept(_RANGES end(_Base)) && is_nothrow_move_constructible_v<iterator_t<_Vw>>) {
+            if constexpr (random_access_range<_Vw> && sized_range<_Vw>) {
+                return _RANGES begin(_Base) + _RANGES size(_Base);
+            } else {
+                return common_iterator<iterator_t<_Vw>, sentinel_t<_Vw>>{_RANGES end(_Base)};
+            }
+        }
+
+        _NODISCARD constexpr auto end() const
+            noexcept(noexcept(_RANGES end(_Base))
+                     && is_nothrow_move_constructible_v<iterator_t<const _Vw>>) requires range<const _Vw> {
+            if constexpr (random_access_range<const _Vw> && sized_range<const _Vw>) {
+                return _RANGES begin(_Base) + _RANGES size(_Base);
+            } else {
+                return common_iterator<iterator_t<const _Vw>, sentinel_t<const _Vw>>{_RANGES end(_Base)};
+            }
+        }
+
+        _NODISCARD constexpr auto size() noexcept(
+            noexcept(_RANGES size(_Base))) /* strengthened */ requires sized_range<_Vw> {
+            return _RANGES size(_Base);
+        }
+        _NODISCARD constexpr auto size() const
+            noexcept(noexcept(_RANGES size(_Base))) /* strengthened */ requires sized_range<const _Vw> {
+            return _RANGES size(_Base);
+        }
+    };
+
+    template <class _Rng>
+    common_view(_Rng &&) -> common_view<views::all_t<_Rng>>;
+
+    namespace views {
+        // VARIABLE views::common
+        class _Common_fn : public _Pipe::_Base<_Common_fn> {
+        private:
+            enum class _St { _None, _All, _Common };
+
+            template <class _Rng>
+            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+                if constexpr (common_range<_Rng>) {
+                    return {_St::_All, noexcept(views::all{_STD declval<_Rng>()})};
+                } else if constexpr (!common_range<_Rng> && copyable<iterator_t<_Rng>>) {
+                    return {_St::_Common, noexcept(common_view{_STD declval<_Rng>()})};
+                }
+
+                return {_St::_None};
+            }
+
+            template <class _Rng>
+            static constexpr _Choice_t<_St> _Choice = _Choose<_Rng>();
+
+        public:
+            // clang-format off
+            template <viewable_range _Rng>
+                requires (_Choice<_Rng>._Strategy != _St::_None)
+            _NODISCARD constexpr auto operator()(_Rng&& _Range) const noexcept(_Choice<_Rng>._No_throw) {
+                // clang-format on
+                if constexpr (_Choice<_Rng>._Strategy == _St::_All) {
+                    return views::all(_STD forward<_Rng>(_Range));
+                } else if constexpr (_Choice<_Rng>._Strategy == _St::_Common) {
+                    return common_view{_STD forward<_Rng>(_Range)};
+                } else {
+                    static_assert(_Always_false<_Rng>, "Should be unreachable");
+                }
+            }
+        };
+
+        inline constexpr _Common_fn common;
+    } // namespace views
 } // namespace ranges
 
 namespace views = ranges::views;
