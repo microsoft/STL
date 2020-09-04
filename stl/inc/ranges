@@ -736,10 +736,16 @@ namespace ranges {
     } // namespace views
 
     // CLASS TEMPLATE ranges::transform_view
-    template <class _Rng, class _Fn> // TRANSITION, LLVM-47414
-    concept _Meow = range<const _Rng>&& regular_invocable<const _Fn&, range_reference_t<const _Rng>>;
-
     // clang-format off
+    template <class _Rng, class _Fn> // TRANSITION, LLVM-47414
+    concept _Can_const_transform = range<const _Rng> && regular_invocable<const _Fn&, range_reference_t<const _Rng>>;
+
+#if _ITERATOR_DEBUG_LEVEL == 0
+#define _NOEXCEPT_IDL0(...) noexcept(__VA_ARGS__)
+#else
+#define _NOEXCEPT_IDL0(...)
+#endif // _ITERATOR_DEBUG_LEVEL == 0
+
     template <input_range _Vw, copy_constructible _Fn>
         requires view<_Vw> && is_object_v<_Fn>
             && regular_invocable<_Fn&, range_reference_t<_Vw>>
@@ -782,7 +788,7 @@ namespace ranges {
             _Parent_t* _Parent{};
 
 #if _ITERATOR_DEBUG_LEVEL != 0
-            constexpr void _Check_dereference() const noexcept /* terminates */ {
+            constexpr void _Check_dereference() const {
                 _STL_VERIFY(_Parent != nullptr, "cannot dereference value-initialized transform_view iterator");
                 _STL_VERIFY(_Current != _RANGES end(_Parent->_Range), "cannot dereference end transform_view iterator");
             }
@@ -831,7 +837,7 @@ namespace ranges {
             }
 
             _NODISCARD constexpr decltype(auto) operator*() const
-                noexcept(noexcept(_STD invoke(*_Parent->_Fun, *_Current))) /* strengthened */ {
+                _NOEXCEPT_IDL0(noexcept(_STD invoke(*_Parent->_Fun, *_Current))) /* strengthened */ {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _Check_dereference();
                 _STL_VERIFY(
@@ -882,8 +888,7 @@ namespace ranges {
                 return _Tmp;
             }
 
-            constexpr void _Verify_offset(const difference_type _Off) const noexcept /* terminates */
-                requires random_access_range<_Base> {
+            constexpr void _Verify_offset(const difference_type _Off) const requires random_access_range<_Base> {
 #if _ITERATOR_DEBUG_LEVEL == 0
                 (void) _Off;
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 / _ITERATOR_DEBUG_LEVEL != 0 vvv
@@ -912,16 +917,16 @@ namespace ranges {
 #endif // _ITERATOR_DEBUG_LEVEL == 0
             }
 
-            constexpr _Iterator& operator+=(const difference_type _Off) noexcept(
-                noexcept(_Current += _Off)) /* strengthened */ requires random_access_range<_Base> {
+            constexpr _Iterator& operator+=(const difference_type _Off)
+                _NOEXCEPT_IDL0(noexcept(_Current += _Off)) /* strengthened */ requires random_access_range<_Base> {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _Verify_offset(_Off);
 #endif // _ITERATOR_DEBUG_LEVEL != 0
                 _Current += _Off;
                 return *this;
             }
-            constexpr _Iterator& operator-=(const difference_type _Off) noexcept(
-                noexcept(_Current -= _Off)) /* strengthened */ requires random_access_range<_Base> {
+            constexpr _Iterator& operator-=(const difference_type _Off)
+                _NOEXCEPT_IDL0(noexcept(_Current -= _Off)) /* strengthened */ requires random_access_range<_Base> {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _Verify_offset(-_Off);
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -930,7 +935,7 @@ namespace ranges {
             }
 
             _NODISCARD constexpr decltype(auto) operator[](const difference_type _Idx) const
-                noexcept(noexcept(_STD invoke(*_Parent->_Fun, _Current[_Idx]))) /* strengthened */
+                _NOEXCEPT_IDL0(noexcept(_STD invoke(*_Parent->_Fun, _Current[_Idx]))) /* strengthened */
                 requires random_access_range<_Base> {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _Verify_offset(_Idx);
@@ -979,16 +984,16 @@ namespace ranges {
                 return _Left._Current <=> _Right._Current;
             }
 
-            _NODISCARD friend constexpr _Iterator operator+(_Iterator _It, difference_type _Off) noexcept(
-                noexcept(_It._Current += _Off)) /* strengthened */ requires random_access_range<_Base> {
+            _NODISCARD friend constexpr _Iterator operator+(_Iterator _It, difference_type _Off)
+                _NOEXCEPT_IDL0(noexcept(_It._Current += _Off)) /* strengthened */ requires random_access_range<_Base> {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _It._Verify_offset(_Off);
 #endif // _ITERATOR_DEBUG_LEVEL != 0
                 _It._Current += _Off;
                 return _It;
             }
-            _NODISCARD friend constexpr _Iterator operator+(difference_type _Off, _Iterator _It) noexcept(
-                noexcept(_It._Current += _Off)) /* strengthened */ requires random_access_range<_Base> {
+            _NODISCARD friend constexpr _Iterator operator+(difference_type _Off, _Iterator _It)
+                _NOEXCEPT_IDL0(noexcept(_It._Current += _Off)) /* strengthened */ requires random_access_range<_Base> {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _It._Verify_offset(_Off);
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -996,8 +1001,8 @@ namespace ranges {
                 return _It;
             }
 
-            _NODISCARD friend constexpr _Iterator operator-(_Iterator _It, difference_type _Off) noexcept(
-                noexcept(_It._Current -= _Off)) /* strengthened */ requires random_access_range<_Base> {
+            _NODISCARD friend constexpr _Iterator operator-(_Iterator _It, difference_type _Off)
+                _NOEXCEPT_IDL0(noexcept(_It._Current -= _Off)) /* strengthened */ requires random_access_range<_Base> {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _It._Verify_offset(-_Off);
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -1023,7 +1028,7 @@ namespace ranges {
                 }
             }
 
-            friend constexpr void iter_swap(const _Iterator& _Left, const _Iterator& _Right) noexcept(noexcept(
+            friend constexpr void iter_swap(const _Iterator& _Left, const _Iterator& _Right) _NOEXCEPT_IDL0(noexcept(
                 ranges::iter_swap(_Left._Current, _Right._Current))) requires indirectly_swappable<iterator_t<_Base>> {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _Left._Check_dereference();
@@ -1122,7 +1127,7 @@ namespace ranges {
         _NODISCARD constexpr _Iterator<true> begin() const noexcept(noexcept(
             _RANGES begin(_Range)) && is_nothrow_move_constructible_v<iterator_t<_Vw>>) /* strengthened */
 #ifdef __clang__ // TRANSITION, LLVM-47414
-            requires _Meow<_Vw, _Fn>
+            requires _Can_const_transform<_Vw, _Fn>
 #else // ^^^ workaround / no workaround vvv
             requires range<const _Vw> && regular_invocable<const _Fn&, range_reference_t<const _Vw>>
 #endif // TRANSITION, LLVM-47414
@@ -1146,7 +1151,7 @@ namespace ranges {
         _NODISCARD constexpr auto end() const noexcept(noexcept(
             _RANGES end(_Range)) && is_nothrow_move_constructible_v<decltype(_RANGES end(_Range))>) /* strengthened */
 #ifdef __clang__ // TRANSITION, LLVM-47414
-            requires _Meow<_Vw, _Fn>
+            requires _Can_const_transform<_Vw, _Fn>
 #else // ^^^ workaround / no workaround vvv
             requires range<const _Vw> && regular_invocable<const _Fn&, range_reference_t<const _Vw>>
 #endif // TRANSITION, LLVM-47414
@@ -1168,6 +1173,8 @@ namespace ranges {
             return _RANGES size(_Range);
         }
     };
+
+#undef _NOEXCEPT_IDL0
 
     template <class _Rng, class _Fn>
     transform_view(_Rng&&, _Fn) -> transform_view<views::all_t<_Rng>, _Fn>;

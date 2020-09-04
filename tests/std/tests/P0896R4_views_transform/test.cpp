@@ -13,6 +13,12 @@
 #include <range_algorithm_support.hpp>
 using namespace std;
 
+#if _ITERATOR_DEBUG_LEVEL == 0
+#define NOEXCEPT_IDL0(...) noexcept(__VA_ARGS__)
+#else
+#define NOEXCEPT_IDL0(...) true
+#endif // _ITERATOR_DEBUG_LEVEL == 0
+
 // Test a silly precomposed range adaptor pipeline
 constexpr auto add8 = [](const auto& x) noexcept { return x + 8; };
 
@@ -487,10 +493,10 @@ struct iterator_instantiator {
             auto r0 = make_view();
             auto i0 = r0.begin();
             assert(*i0 == add8(mutable_ints[0]));
-            STATIC_ASSERT(noexcept(*i0));
+            STATIC_ASSERT(NOEXCEPT_IDL0(*i0));
 
             assert(ranges::iter_move(i0) == add8(mutable_ints[0])); // NB: moving from int leaves it unchanged
-            STATIC_ASSERT(noexcept(ranges::iter_move(i0)));
+            STATIC_ASSERT(NOEXCEPT_IDL0(ranges::iter_move(i0)));
 
             if constexpr (forward_iterator<Iter>) {
                 auto i1 = ranges::next(i0);
@@ -500,7 +506,7 @@ struct iterator_instantiator {
                 ranges::iter_swap(i1, i0);
                 assert(mutable_ints[0] == 0);
                 assert(mutable_ints[1] == 1);
-                STATIC_ASSERT(noexcept(ranges::iter_swap(i0, i1)));
+                STATIC_ASSERT(NOEXCEPT_IDL0(ranges::iter_swap(i0, i1)));
             }
         }
 
@@ -541,31 +547,31 @@ struct iterator_instantiator {
             auto i = r.begin();
             assert((i + 2).base().peek() == mutable_ints + 2);
             assert((I{} + 0) == I{});
-            STATIC_ASSERT(noexcept(i + 2));
+            STATIC_ASSERT(NOEXCEPT_IDL0(i + 2));
 
             assert((2 + i).base().peek() == mutable_ints + 2);
             assert((0 + I{}).base().peek() == nullptr);
-            STATIC_ASSERT(noexcept(2 + i));
+            STATIC_ASSERT(NOEXCEPT_IDL0(2 + i));
 
             auto vi = I{};
             assert(&(i += 5) == &i);
             assert(i.base().peek() == mutable_ints + 5);
             assert(&(vi += 0) == &vi);
             assert(vi.base().peek() == nullptr);
-            STATIC_ASSERT(noexcept(i += 5));
+            STATIC_ASSERT(NOEXCEPT_IDL0(i += 5));
 
             assert((i - 2).base().peek() == mutable_ints + 3);
             assert((I{} - 0).base().peek() == nullptr);
-            STATIC_ASSERT(noexcept(i - 2));
+            STATIC_ASSERT(NOEXCEPT_IDL0(i - 2));
 
             assert(&(i -= 3) == &i);
             assert(i.base().peek() == mutable_ints + 2);
             assert(&(vi -= 0) == &vi);
             assert(vi.base().peek() == nullptr);
-            STATIC_ASSERT(noexcept(i -= 3));
+            STATIC_ASSERT(NOEXCEPT_IDL0(i -= 3));
 
             assert(i[4] == add8(mutable_ints[6]));
-            STATIC_ASSERT(noexcept(i[4]));
+            STATIC_ASSERT(NOEXCEPT_IDL0(i[4]));
         }
 
         if constexpr (equality_comparable<Iter>) {
