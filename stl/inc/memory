@@ -616,7 +616,7 @@ _NoThrowFwdIt destroy_n(_NoThrowFwdIt _First, const _Diff _Count_raw) {
     if constexpr (is_trivially_destructible_v<_Iter_value_t<_NoThrowFwdIt>>) {
         _STD advance(_UFirst, _Count);
     } else {
-        for (; _Count > 0; --_Count, (void) _UFirst) {
+        for (; _Count > 0; --_Count, (void) ++_UFirst) {
             _Destroy_in_place(*_UFirst);
         }
     }
