@@ -110,7 +110,16 @@ namespace test {
 
         using _Prevent_inheriting_unwrap = sentinel;
 
-        using unwrap = sentinel<Element, IsWrapped::no>;
+        using unwrap    = sentinel<Element, IsWrapped::no>;
+        using Constinel = sentinel<const Element, Wrapped>;
+
+        constexpr operator Constinel() && noexcept {
+            return Constinel{exchange(ptr_, nullptr)};
+        }
+
+        constexpr operator Constinel() const& noexcept {
+            return Constinel{ptr_};
+        }
 
         // clang-format off
         [[nodiscard]] constexpr auto _Unwrapped() const noexcept requires (to_bool(Wrapped)) {
@@ -441,7 +450,8 @@ namespace test {
             return std::move(*i.ptr_);
         }
 
-        constexpr friend void iter_swap(iterator const& x, iterator const& y) requires at_least<input> {
+        constexpr friend void iter_swap(
+            iterator const& x, iterator const& y) requires at_least<input> && std::swappable<Element> {
             ranges::iter_swap(x.ptr_, y.ptr_);
         }
 
@@ -1227,6 +1237,11 @@ constexpr void test_in_in() {
 template <class Instantiator, class Element1, class Element2>
 constexpr void test_in_fwd() {
     with_input_ranges<with_forward_ranges<Instantiator, Element2>, Element1>::call();
+}
+
+template <class Instantiator, class Element1, class Element2>
+constexpr void test_in_random() {
+    with_input_ranges<with_random_ranges<Instantiator, Element2>, Element1>::call();
 }
 
 template <class Instantiator, class Element1, class Element2>
