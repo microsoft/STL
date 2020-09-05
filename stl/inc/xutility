@@ -4787,10 +4787,26 @@ _INLINE_VAR constexpr bool _Fill_memset_is_safe = conjunction_v<is_scalar<_Ty>,
 template <class _FwdIt, class _Ty>
 _INLINE_VAR constexpr bool _Fill_memset_is_safe<_FwdIt, _Ty, false> = false;
 
+template <class _FwdIt, class _Ty>
+_INLINE_VAR constexpr bool _Fill_zero_memset_is_safe =
+    conjunction_v<is_pointer<_FwdIt>, is_scalar<_Ty>, is_scalar<_Iter_value_t<_FwdIt>>,
+        negation<is_volatile<remove_reference_t<_Iter_ref_t<_FwdIt>>>>, is_assignable<_Iter_ref_t<_FwdIt>, const _Ty&>>;
+
 template <class _DestTy, class _Ty>
 void _Fill_memset(_DestTy* const _Dest, const _Ty _Val, const size_t _Count) {
     _DestTy _Dest_val = _Val; // implicitly convert (a cast would suppress warnings); also handles _DestTy being bool
     _CSTD memset(_Dest, static_cast<unsigned char>(_Dest_val), _Count);
+}
+
+template <class _DestTy>
+void _Fill_zero_memset(_DestTy* const _Dest, const size_t _Count) {
+    _CSTD memset(_Dest, 0, _Count * sizeof(_DestTy));
+}
+
+template <class _Ty>
+bool _Is_scalar_zero(const _Ty& _Val) {
+    // checks if scalar type has all bits set to zero, avoids using user defined operator== for enums
+    return static_cast<_Unwrap_enum_t<_Ty>>(_Val) == static_cast<_Unwrap_enum_t<_Ty>>(0);
 }
 
 #if _HAS_IF_CONSTEXPR
@@ -4803,13 +4819,18 @@ _CONSTEXPR20 void fill(const _FwdIt _First, const _FwdIt _Last, const _Ty& _Val)
     } else {
         auto _UFirst      = _Get_unwrapped(_First);
         const auto _ULast = _Get_unwrapped(_Last);
-        if constexpr (_Fill_memset_is_safe<decltype(_UFirst), _Ty>) {
 #ifdef __cpp_lib_is_constant_evaluated
-            if (!_STD is_constant_evaluated())
+        if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
-            {
+        {
+            if constexpr (_Fill_memset_is_safe<decltype(_UFirst), _Ty>) {
                 _Fill_memset(_UFirst, _Val, static_cast<size_t>(_ULast - _UFirst));
                 return;
+            } else if constexpr (_Fill_zero_memset_is_safe<decltype(_UFirst), _Ty>) {
+                if (_Is_scalar_zero(_Val)) {
+                    _Fill_zero_memset(_UFirst, static_cast<size_t>(_ULast - _UFirst));
+                    return;
+                }
             }
         }
 
@@ -4864,15 +4885,22 @@ _CONSTEXPR20 _OutIt fill_n(_OutIt _Dest, const _Diff _Count_raw, const _Ty& _Val
             return _Last;
         } else {
             auto _UDest = _Get_unwrapped_n(_Dest, _Count);
-            if constexpr (_Fill_memset_is_safe<decltype(_UDest), _Ty>) {
 #ifdef __cpp_lib_is_constant_evaluated
-                if (!_STD is_constant_evaluated())
+            if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
-                {
+            {
+                if constexpr (_Fill_memset_is_safe<decltype(_UDest), _Ty>) {
                     _Fill_memset(_UDest, _Val, static_cast<size_t>(_Count));
                     _UDest += _Count;
                     _Seek_wrapped(_Dest, _UDest);
                     return _Dest;
+                } else if constexpr (_Fill_zero_memset_is_safe<decltype(_UDest), _Ty>) {
+                    if (_Is_scalar_zero(_Val)) {
+                        _Fill_zero_memset(_UDest, static_cast<size_t>(_Count));
+                        _UDest += _Count;
+                        _Seek_wrapped(_Dest, _UDest);
+                        return _Dest;
+                    }
                 }
             }
 
