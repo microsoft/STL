@@ -45,7 +45,7 @@ concept reconstructible = ranges::random_access_range<V>
     && ranges::sized_range<V>
     && (is_empty_view<V>
         || is_dynamic_span<V>
-     // || is_string_view<V> // TRANSITION, P1391R4
+        || is_string_view<V>
      // || is_iota_view<V> // TRANSITION, iota_view
         || is_subrange<V>);
 // clang-format on
@@ -492,9 +492,8 @@ int main() {
         STATIC_ASSERT(test_one(views::empty<int>, span<const int, 0>{}));
         test_one(views::empty<int>, span<const int, 0>{});
 
-        // TRANSITION, P1391R4
-        // STATIC_ASSERT(test_one(basic_string_view{some_ints}, only_four_ints));
-        // test_one(basic_string_view{some_ints}, only_four_ints);
+        STATIC_ASSERT(test_one(basic_string_view{ranges::begin(some_ints), ranges::end(some_ints)}, only_four_ints));
+        test_one(basic_string_view{ranges::begin(some_ints), ranges::end(some_ints)}, only_four_ints);
 
         // TRANSITION, iota_view
         // STATIC_ASSERT(test_one(ranges::iota_view{0, 8}, only_four_ints));
