@@ -5,7 +5,15 @@
 
 #define __FORCE_INSTANCE
 
+#include <ios>
+#include <istream>
+#include <locale>
+#include <ostream>
+#include <streambuf>
 #include <xlocale>
+#include <xlocmes>
+#include <xlocmon>
+#include <xlocnum>
 #include <xloctime>
 
 _STD_BEGIN
