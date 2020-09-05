@@ -12,6 +12,9 @@
 #pragma message("The contents of <ranges> are available only with C++20 concepts support.")
 #else // ^^^ !defined(__cpp_lib_concepts) / defined(__cpp_lib_concepts) vvv
 #include <iterator>
+#include <span>
+#include <string_view>
+
 #if 1 // TRANSITION, VSO-1174090
 #include <optional>
 #endif // TRANSITION, VSO-1174090
@@ -46,6 +49,12 @@ namespace ranges {
     concept _Has_arrow = input_iterator<_It>
         && (is_pointer_v<_It> || _Has_member_arrow<_It&>);
     // clang-format on
+
+    template <bool _IsConst, class _Ty>
+    using _Maybe_const = conditional_t<_IsConst, const _Ty, _Ty>;
+
+    template <bool _IsWrapped, class _Ty>
+    using _Maybe_wrapped = conditional_t<_IsWrapped, _Ty, _Unwrapped_t<_Ty>>;
 
     namespace _Pipe {
         // clang-format off
@@ -997,6 +1006,420 @@ namespace ranges {
         };
 
         inline constexpr _Filter_fn filter;
+    } // namespace views
+
+    // CLASS TEMPLATE ranges::take_view
+    template <view _Vw>
+    class take_view : public view_interface<take_view<_Vw>> {
+    private:
+        /* [[no_unique_address]] */ _Vw _Range{};
+        range_difference_t<_Vw> _Count = 0;
+
+        template <bool _Const, bool _Wrapped = true>
+        class _Sentinel {
+        private:
+            template <bool, bool>
+            friend class _Sentinel;
+
+            using _Base_Ty       = _Maybe_const<_Const, _Vw>;
+            using _Base_sentinel = _Maybe_wrapped<_Wrapped, sentinel_t<_Base_Ty>>;
+            using _Counted_Iter  = counted_iterator<_Maybe_wrapped<_Wrapped, iterator_t<_Base_Ty>>>;
+
+            _Base_sentinel _Last{};
+
+        public:
+            _Sentinel() = default;
+
+            constexpr explicit _Sentinel(_Base_sentinel _Last_) noexcept(
+                is_nothrow_move_constructible_v<_Base_sentinel>) // strengthened
+                : _Last(_STD move(_Last_)) {}
+
+            // clang-format off
+            constexpr _Sentinel(_Sentinel<!_Const, _Wrapped> _That) noexcept(
+                is_nothrow_constructible_v<_Base_sentinel, _Maybe_wrapped<_Wrapped, sentinel_t<_Vw>>>) // strengthened
+                requires _Const && convertible_to<_Maybe_wrapped<_Wrapped, sentinel_t<_Vw>>, _Base_sentinel>
+                : _Last(_STD move(_That._Last)) {}
+            // clang-format on
+
+            _NODISCARD constexpr _Base_sentinel base() const
+                noexcept(is_nothrow_copy_constructible_v<_Base_sentinel>) /* strengthened */ {
+                return _Last;
+            }
+
+            _NODISCARD friend constexpr bool operator==(const _Counted_Iter& _Left, const _Sentinel& _Right) {
+                return _Left.count() == 0 || _Left.base() == _Right._Last;
+            }
+
+            using _Prevent_inheriting_unwrap = _Sentinel;
+
+            // clang-format off
+            _NODISCARD constexpr auto _Unwrapped() const&
+                requires _Wrapped && _Unwrappable_v<const iterator_t<_Base_Ty>&> {
+                // clang-format on
+                return _Sentinel<_Const, false>{_Get_unwrapped(_Last)};
+            }
+            // clang-format off
+            _NODISCARD constexpr auto _Unwrapped() && requires _Wrapped && _Unwrappable_v<iterator_t<_Base_Ty>> {
+                // clang-format on
+                return _Sentinel<_Const, false>{_Get_unwrapped(_STD move(_Last))};
+            }
+
+            static constexpr bool _Unwrap_when_unverified = _Do_unwrap_when_unverified_v<iterator_t<_Base_Ty>>;
+
+            constexpr void _Seek_to(const _Sentinel<_Const, false>& _That) requires _Wrapped {
+                _Seek_wrapped(_Last, _That._Last);
+            }
+            constexpr void _Seek_to(_Sentinel<_Const, false>&& _That) requires _Wrapped {
+                _Seek_wrapped(_Last, _STD move(_That._Last));
+            }
+        };
+
+    public:
+        take_view() = default;
+
+        constexpr take_view(_Vw _Range_, const range_difference_t<_Vw> _Count_) noexcept(
+            is_nothrow_move_constructible_v<_Vw>) // strengthened
+            : _Range(_STD move(_Range_)), _Count{_Count_} {}
+
+        _NODISCARD constexpr _Vw base() const& noexcept(
+            is_nothrow_copy_constructible_v<_Vw>) /* strengthened */ requires copy_constructible<_Vw> {
+            return _Range;
+        }
+        _NODISCARD constexpr _Vw base() && noexcept(is_nothrow_move_constructible_v<_Vw>) /* strengthened */ {
+            return _STD move(_Range);
+        }
+
+        // clang-format off
+        _NODISCARD constexpr auto begin() requires (!_Simple_view<_Vw>) {
+            // clang-format on
+            if constexpr (sized_range<_Vw>) {
+                if constexpr (random_access_range<_Vw>) {
+                    return _RANGES begin(_Range);
+                } else {
+                    const auto _Size = size();
+                    return counted_iterator{_RANGES begin(_Range), _Size};
+                }
+            } else {
+                return counted_iterator{_RANGES begin(_Range), _Count};
+            }
+        }
+
+        _NODISCARD constexpr auto begin() const requires range<const _Vw> {
+            if constexpr (sized_range<const _Vw>) {
+                if constexpr (random_access_range<const _Vw>) {
+                    return _RANGES begin(_Range);
+                } else {
+                    const auto _Size = size();
+                    return counted_iterator{_RANGES begin(_Range), _Size};
+                }
+            } else {
+                return counted_iterator{_RANGES begin(_Range), _Count};
+            }
+        }
+
+        // clang-format off
+        _NODISCARD constexpr auto end() requires (!_Simple_view<_Vw>) {
+            // clang-format on
+            if constexpr (sized_range<_Vw>) {
+                if constexpr (random_access_range<_Vw>) {
+                    return _RANGES begin(_Range) + static_cast<range_difference_t<_Vw>>(size());
+                } else {
+                    return default_sentinel;
+                }
+            } else {
+                return _Sentinel<false>{_RANGES end(_Range)};
+            }
+        }
+
+        _NODISCARD constexpr auto end() const requires range<const _Vw> {
+            if constexpr (sized_range<const _Vw>) {
+                if constexpr (random_access_range<const _Vw>) {
+                    return _RANGES begin(_Range) + static_cast<range_difference_t<_Vw>>(size());
+                } else {
+                    return default_sentinel;
+                }
+            } else {
+                return _Sentinel<true>{_RANGES end(_Range)};
+            }
+        }
+
+        _NODISCARD constexpr auto size() requires sized_range<_Vw> {
+            const auto _Length = _RANGES size(_Range);
+            return (_STD min)(_Length, static_cast<decltype(_Length)>(_Count));
+        }
+
+        _NODISCARD constexpr auto size() const requires sized_range<const _Vw> {
+            const auto _Length = _RANGES size(_Range);
+            return (_STD min)(_Length, static_cast<decltype(_Length)>(_Count));
+        }
+    };
+
+    template <class _Rng> // Per P/R of LWG-3447
+    take_view(_Rng&&, range_difference_t<_Rng>)->take_view<views::all_t<_Rng>>;
+
+    namespace views {
+        // VARIABLE views::take
+        template <class>
+        static constexpr bool _Is_dynamic_span = false;
+        template <class _Elem>
+        static constexpr bool _Is_dynamic_span<span<_Elem, dynamic_extent>> = true;
+
+        template <class>
+        static constexpr bool _Is_subrange = false;
+        template <class _It, class _Se, subrange_kind _Ki>
+        static constexpr bool _Is_subrange<subrange<_It, _Se, _Ki>> = true;
+
+        template <class _Rng>
+        concept _Reconstructible_range = random_access_range<_Rng> && sized_range<_Rng>
+            && (_Is_dynamic_span<remove_cvref_t<_Rng>>
+                // || _Is_specialization_v<remove_cvref_t<_Rng>, basic_string_view> // TRANSITION, P1391R4
+                // || _Is_specialization_v<remove_cvref_t<_Rng>, iota_view> // TRANSITION, iota_view
+                || _Is_subrange<remove_cvref_t<_Rng>>);
+
+        class _Take_fn {
+        private:
+            enum class _St { _Empty, _Preserve, _Take_view };
+
+            template <class _Rng>
+            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+                using _Ty = remove_cvref_t<_Rng>;
+
+                if constexpr (_Is_specialization_v<_Ty, empty_view>) {
+                    return {_St::_Empty, true};
+                } else if constexpr (_Reconstructible_range<_Rng>) {
+                    return {_St::_Preserve,
+                        noexcept(_Ty{_RANGES begin(_STD declval<_Rng&>()),
+                            _RANGES begin(_STD declval<_Rng&>()) + _RANGES distance(_STD declval<_Rng&>())})};
+                } else {
+                    return {_St::_Take_view, noexcept(take_view{_STD declval<_Rng>(), range_difference_t<_Rng>{0}})};
+                }
+            }
+
+            template <class _Rng>
+            static constexpr _Choice_t<_St> _Choice = _Choose<_Rng>();
+
+            template <_Integer_like _Ty>
+            struct _Partial : _Pipe::_Base<_Partial<_Ty>> {
+                _Ty _Length;
+
+                // clang-format off
+                template <viewable_range _Rng>
+                    requires convertible_to<_Ty&, range_difference_t<_Rng>>
+                _NODISCARD constexpr auto operator()(_Rng&& _Range) const
+                    noexcept(noexcept(_Take_fn{}(_STD forward<_Rng>(_Range), _Length))) {
+                    // clang-format on
+                    _STL_INTERNAL_STATIC_ASSERT(is_aggregate_v<_Partial>);
+                    return _Take_fn{}(_STD forward<_Rng>(_Range), _Length);
+                }
+            };
+
+        public:
+            // clang-format off
+            template <viewable_range _Rng>
+            _NODISCARD constexpr auto operator()(_Rng&& _Range, range_difference_t<_Rng> _Count) const noexcept(
+                _Choice<_Rng>._No_throw) {
+                // clang-format on
+                if constexpr (_Choice<_Rng>._Strategy == _St::_Empty) {
+                    // it's an empty_view: return another empty view
+                    return remove_cvref_t<_Rng>{};
+                } else if constexpr (_Choice<_Rng>._Strategy == _St::_Preserve) {
+                    // it's a "reconstructible range"; return the same kind of range with a restricted extent
+                    _Count            = (_STD min)(_RANGES distance(_Range), _Count);
+                    const auto _First = _RANGES begin(_Range);
+                    return remove_cvref_t<_Rng>{_First, _First + _Count};
+                } else if constexpr (_Choice<_Rng>._Strategy == _St::_Take_view) {
+                    return take_view{_STD forward<_Rng>(_Range), _Count};
+                }
+            }
+
+            template <_Integer_like _Ty>
+            _NODISCARD constexpr auto operator()(_Ty _Length) const noexcept {
+                return _Partial<_Ty>{._Length = _Length};
+            }
+        };
+
+        inline constexpr _Take_fn take;
+    } // namespace views
+
+    // CLASS TEMPLATE ranges::drop_view
+    template <view _Vw>
+    class drop_view : public _Cached_position_t<forward_range<_Vw> && !(random_access_range<_Vw> && sized_range<_Vw>),
+                          _Vw, drop_view<_Vw>> {
+    private:
+        /* [[no_unique_address]] */ _Vw _Range{};
+        range_difference_t<_Vw> _Count = 0;
+
+    public:
+        drop_view() = default;
+
+        constexpr drop_view(_Vw _Range_, const range_difference_t<_Vw> _Count_) noexcept(
+            is_nothrow_move_constructible_v<_Vw>) // strengthened
+            : _Range(_STD move(_Range_)), _Count{_Count_} {
+#if _CONTAINER_DEBUG_LEVEL > 0
+            _STL_VERIFY(_Count_ >= 0, "Numer of elements to drop must be non-negative (N4861 [range.drop.view]/1");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+        }
+
+        _NODISCARD constexpr _Vw base() const& noexcept(
+            is_nothrow_copy_constructible_v<_Vw>) /* strengthened */ requires copy_constructible<_Vw> {
+            return _Range;
+        }
+        _NODISCARD constexpr _Vw base() && noexcept(is_nothrow_move_constructible_v<_Vw>) /* strengthened */ {
+            return _STD move(_Range);
+        }
+
+        // clang-format off
+        _NODISCARD constexpr auto begin() // constraints per proposed resolution of LWG-3482
+            requires (!(_Simple_view<_Vw> && random_access_range<const _Vw> && sized_range<const _Vw>)) {
+            // clang-format on
+            if constexpr (sized_range<_Vw> && random_access_range<_Vw>) {
+                const auto _Offset = (_STD min)(_RANGES distance(_Range), _Count);
+                return _RANGES begin(_Range) + _Offset;
+            } else {
+                if constexpr (forward_range<_Vw>) {
+                    if (this->_Has_cache()) {
+                        return this->_Get_cache(_Range);
+                    }
+                }
+
+                iterator_t<_Vw> _Result;
+                if constexpr (sized_range<_Vw>) {
+                    auto _Offset = _RANGES distance(_Range);
+                    if constexpr (bidirectional_range<_Vw> && common_range<_Vw>) {
+                        if (_Count >= _Offset / 2) {
+                            _Result = _RANGES end(_Range);
+                            while (_Offset > _Count) {
+                                --_Offset;
+                                --_Result;
+                            }
+
+                            this->_Set_cache(_Range, _Result);
+                            return _Result;
+                        }
+                    }
+
+                    if (_Offset > _Count) {
+                        _Offset = _Count;
+                    }
+
+                    _Result = _RANGES next(_RANGES begin(_Range), _Offset);
+                } else {
+                    _Result = _RANGES next(_RANGES begin(_Range), _Count, _RANGES end(_Range));
+                }
+
+                if constexpr (forward_range<_Vw>) {
+                    this->_Set_cache(_Range, _Result);
+                }
+                return _Result;
+            }
+        }
+
+        // clang-format off
+        _NODISCARD constexpr auto begin() const // constraints per proposed resolution of LWG-3482
+            requires random_access_range<const _Vw> && sized_range<const _Vw> {
+            // clang-format on
+            const auto _Offset = (_STD min)(_RANGES distance(_Range), _Count);
+            return _RANGES begin(_Range) + _Offset;
+        }
+
+        // clang-format off
+        _NODISCARD constexpr auto end() requires (!_Simple_view<_Vw>) {
+            // clang-format on
+            return _RANGES end(_Range);
+        }
+
+        _NODISCARD constexpr auto end() const requires range<const _Vw> {
+            return _RANGES end(_Range);
+        }
+
+        _NODISCARD constexpr auto size() requires sized_range<_Vw> {
+            const auto _Size          = _RANGES size(_Range);
+            const auto _Count_as_size = static_cast<range_size_t<_Vw>>(_Count);
+            if (_Size < _Count_as_size) {
+                return range_size_t<_Vw>{0};
+            } else {
+                return static_cast<range_size_t<_Vw>>(_Size - _Count_as_size);
+            }
+        }
+
+        _NODISCARD constexpr auto size() const requires sized_range<const _Vw> {
+            const auto _Size          = _RANGES size(_Range);
+            const auto _Count_as_size = static_cast<range_size_t<_Vw>>(_Count);
+            if (_Size < _Count_as_size) {
+                return range_size_t<_Vw>{0};
+            } else {
+                return static_cast<range_size_t<_Vw>>(_Size - _Count_as_size);
+            }
+        }
+    };
+
+    template <class _Rng>
+    drop_view(_Rng&&, range_difference_t<_Rng>) -> drop_view<views::all_t<_Rng>>;
+
+    namespace views {
+        // VARIABLE views::drop
+        class _Drop_fn {
+        private:
+            enum class _St { _Empty, _Preserve, _Drop_view };
+
+            template <class _Rng>
+            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+                using _Ty = remove_cvref_t<_Rng>;
+
+                if constexpr (_Is_specialization_v<_Ty, empty_view>) {
+                    return {_St::_Empty, true};
+                } else if constexpr (_Reconstructible_range<_Rng>) {
+                    return {_St::_Preserve,
+                        noexcept(_Ty{_RANGES begin(_STD declval<_Rng&>()) + _RANGES distance(_STD declval<_Rng&>()),
+                            _RANGES end(_STD declval<_Rng&>())})};
+                } else {
+                    return {_St::_Drop_view, noexcept(drop_view{_STD declval<_Rng>(), range_difference_t<_Rng>{0}})};
+                }
+            }
+
+            template <class _Rng>
+            static constexpr _Choice_t<_St> _Choice = _Choose<_Rng>();
+
+            template <_Integer_like _Ty>
+            struct _Partial : _Pipe::_Base<_Partial<_Ty>> {
+                _Ty _Length;
+
+                // clang-format off
+                template <viewable_range _Rng>
+                    requires convertible_to<_Ty&, range_difference_t<_Rng>>
+                _NODISCARD constexpr auto operator()(_Rng&& _Range) const
+                    noexcept(noexcept(_Drop_fn{}(_STD forward<_Rng>(_Range), _Length))) {
+                    // clang-format on
+                    _STL_INTERNAL_STATIC_ASSERT(is_aggregate_v<_Partial>);
+                    return _Drop_fn{}(_STD forward<_Rng>(_Range), _Length);
+                }
+            };
+
+        public:
+            // clang-format off
+            template <viewable_range _Rng>
+            _NODISCARD constexpr auto operator()(_Rng&& _Range, range_difference_t<_Rng> _Count) const noexcept(
+                _Choice<_Rng>._No_throw) {
+                // clang-format on
+                if constexpr (_Choice<_Rng>._Strategy == _St::_Empty) {
+                    // it's an empty_view: return another empty view
+                    return remove_cvref_t<_Rng>{};
+                } else if constexpr (_Choice<_Rng>._Strategy == _St::_Preserve) {
+                    // it's a "reconstructible range"; return the same kind of range with a restricted extent
+                    _Count = (_STD min)(_RANGES distance(_Range), _Count);
+                    return remove_cvref_t<_Rng>{_RANGES begin(_Range) + _Count, _RANGES end(_Range)};
+                } else if constexpr (_Choice<_Rng>._Strategy == _St::_Drop_view) {
+                    return drop_view{_STD forward<_Rng>(_Range), _Count};
+                }
+            }
+
+            template <_Integer_like _Ty>
+            _NODISCARD constexpr auto operator()(_Ty _Length) const noexcept {
+                return _Partial<_Ty>{._Length = _Length};
+            }
+        };
+
+        inline constexpr _Drop_fn drop;
     } // namespace views
 
     // CLASS TEMPLATE ranges::reverse_view

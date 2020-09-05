@@ -3257,7 +3257,8 @@ namespace ranges {
         using _Not_quite_object::_Not_quite_object;
 
         template <input_or_output_iterator _It, sentinel_for<_It> _Se>
-        _NODISCARD constexpr iter_difference_t<_It> operator()(_It _First, _Se _Last) const {
+        _NODISCARD constexpr iter_difference_t<_It> operator()(_It _First, _Se _Last) const
+            noexcept(_Nothrow_distance<_It, _Se>) /* strengthened */ {
             if constexpr (sized_sentinel_for<_Se, _It>) {
                 return _Last - _First;
             } else {
@@ -3267,7 +3268,8 @@ namespace ranges {
         }
 
         template <range _Rng>
-        _NODISCARD constexpr range_difference_t<_Rng> operator()(_Rng&& _Range) const {
+        _NODISCARD constexpr range_difference_t<_Rng> operator()(_Rng&& _Range) const
+            noexcept(_Nothrow_size<_Rng>) /* strengthened */ {
             if constexpr (sized_range<_Rng>) {
                 return static_cast<range_difference_t<_Rng>>(_RANGES size(_Range));
             } else {
@@ -3277,7 +3279,8 @@ namespace ranges {
 
     private:
         template <class _It, class _Se>
-        _NODISCARD static constexpr iter_difference_t<_It> _Distance_unchecked(_It _First, const _Se _Last) {
+        _NODISCARD static constexpr iter_difference_t<_It> _Distance_unchecked(_It _First, const _Se _Last) noexcept(
+            _Nothrow_distance<_It, _Se>) {
             _STL_INTERNAL_STATIC_ASSERT(input_or_output_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
 
@@ -3288,6 +3291,18 @@ namespace ranges {
 
             return _Count;
         }
+
+        template <class _It, class _Se>
+        static constexpr bool _Nothrow_distance = noexcept(
+            noexcept(++_STD declval<_Unwrapped_t<_It>&>() != _STD declval<const _Unwrapped_t<_Se>&>()));
+        template <class _It, sized_sentinel_for<_It> _Se>
+        static constexpr bool _Nothrow_distance<_It, _Se> = noexcept(
+            noexcept(_STD declval<_Se&>() - _STD declval<_It&>()));
+
+        template <class _Rng>
+        static constexpr bool _Nothrow_size = _Nothrow_distance<iterator_t<_Rng>, sentinel_t<_Rng>>;
+        template <sized_range _Rng>
+        static constexpr bool _Nothrow_size<_Rng> = noexcept(_RANGES size(_STD declval<_Rng&>()));
     };
 
     inline constexpr _Distance_fn distance{_Not_quite_object::_Construct_tag{}};
@@ -3991,10 +4006,10 @@ public:
     // clang-format on
 
 #ifdef __cpp_lib_concepts
-    _NODISCARD constexpr const iterator_type& base() const& { // Per LWG-3391
+    _NODISCARD constexpr const iterator_type& base() const& noexcept /* strengthened */ { // Per LWG-3391
         return _Current;
     }
-    _NODISCARD constexpr iterator_type base() && {
+    _NODISCARD constexpr iterator_type base() && noexcept(is_nothrow_move_constructible_v<_Iter>) /* strengthened */ {
         return _STD move(_Current);
     }
 #else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
