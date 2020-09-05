@@ -340,6 +340,22 @@ namespace test {
         static constexpr bool at_least = derived_from<Category, T>;
 
         using ReferenceType = conditional_t<to_bool(Proxy), proxy_reference<Category, Element>, Element&>;
+
+        struct post_increment_proxy {
+            Element* ptr_;
+
+            const post_increment_proxy& operator*() const noexcept {
+                return *this;
+            }
+
+            template <class T>
+                requires std::indirectly_writable<Element*, T>
+            const post_increment_proxy& operator=(T&& t) const noexcept {
+                *ptr_ = std::forward<T>(t);
+                return *this;
+            }
+        };
+
     public:
         using Consterator = iterator<Category, const Element, Diff, Eq, Proxy, Wrapped>;
 
@@ -385,10 +401,11 @@ namespace test {
             ++ptr_;
             return *this;
         }
-        constexpr iterator operator++(int) & noexcept {
-            auto tmp = *this;
+
+        constexpr post_increment_proxy operator++(int) & noexcept requires std::is_same_v<Category, output> {
+            post_increment_proxy result{ptr_};
             ++ptr_;
-            return tmp;
+            return result;
         }
 
         auto operator--() & {
@@ -427,6 +444,13 @@ namespace test {
         constexpr friend void iter_swap(iterator const& x, iterator const& y)
             noexcept(std::is_nothrow_swappable_v<Element>) requires at_least<input> && std::swappable<Element> {
             ranges::swap(*x.ptr_, *y.ptr_);
+        }
+
+        // forward iterator operations:
+        constexpr iterator operator++(int) & noexcept requires at_least<fwd> {
+            auto tmp = *this;
+            ++ptr_;
+            return tmp;
         }
 
         // sentinel operations (implied by forward iterator):
@@ -1211,6 +1235,11 @@ constexpr void test_in_in() {
 template <class Instantiator, class Element1, class Element2>
 constexpr void test_in_fwd() {
     with_input_ranges<with_forward_ranges<Instantiator, Element2>, Element1>::call();
+}
+
+template <class Instantiator, class Element1, class Element2>
+constexpr void test_in_random() {
+    with_input_ranges<with_random_ranges<Instantiator, Element2>, Element1>::call();
 }
 
 template <class Instantiator, class Element1, class Element2>

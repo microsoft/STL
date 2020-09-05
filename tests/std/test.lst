@@ -279,6 +279,8 @@ tests\P0896R4_ranges_alg_move
 tests\P0896R4_ranges_alg_move_backward
 tests\P0896R4_ranges_alg_none_of
 tests\P0896R4_ranges_alg_nth_element
+tests\P0896R4_ranges_alg_partial_sort
+tests\P0896R4_ranges_alg_partial_sort_copy
 tests\P0896R4_ranges_alg_partition
 tests\P0896R4_ranges_alg_partition_copy
 tests\P0896R4_ranges_alg_partition_point
@@ -318,9 +320,13 @@ tests\P0896R4_ranges_subrange
 tests\P0896R4_ranges_test_machinery
 tests\P0896R4_ranges_to_address
 tests\P0896R4_views_all
+tests\P0896R4_views_drop
 tests\P0896R4_views_empty
+tests\P0896R4_views_filter
+tests\P0896R4_views_filter_death
 tests\P0896R4_views_reverse
 tests\P0896R4_views_single
+tests\P0896R4_views_take
 tests\P0896R4_views_transform
 tests\P0896R4_views_transform_death
 tests\P0898R3_concepts

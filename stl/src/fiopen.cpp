@@ -11,14 +11,14 @@ _STD_BEGIN
 
 FILE* _Xfsopen(_In_z_ const char* filename, _In_ int mode, _In_ int prot) {
     static const char* const mods[] = {// fopen mode strings corresponding to valid[i]
-        "r", "w", "w", "a", "rb", "wb", "wb", "ab", "r+", "w+", "a+", "r+b", "w+b", "a+b", 0};
+        "r", "w", "w", "a", "rb", "wb", "wb", "ab", "r+", "w+", "a+", "r+b", "w+b", "a+b", nullptr};
 
     return _fsopen(filename, mods[mode], prot);
 }
 
 FILE* _Xfsopen(_In_z_ const wchar_t* filename, _In_ int mode, _In_ int prot) {
     static const wchar_t* const mods[] = {// fopen mode strings corresponding to valid[i]
-        L"r", L"w", L"w", L"a", L"rb", L"wb", L"wb", L"ab", L"r+", L"w+", L"a+", L"r+b", L"w+b", L"a+b", 0};
+        L"r", L"w", L"w", L"a", L"rb", L"wb", L"wb", L"ab", L"r+", L"w+", L"a+", L"r+b", L"w+b", L"a+b", nullptr};
 
     return _wfsopen(filename, mods[mode], prot);
 }

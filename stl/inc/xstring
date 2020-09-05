@@ -1240,6 +1240,15 @@ public:
 #endif // _CONTAINER_DEBUG_LEVEL > 0
     }
 
+#ifdef __cpp_lib_concepts
+    // clang-format off
+    template <contiguous_iterator _It, sized_sentinel_for<_It> _Se>
+        requires (is_same_v<iter_value_t<_It>, _Elem> && !is_convertible_v<_Se, size_type>)
+    constexpr basic_string_view(_It _First, _Se _Last) noexcept // strengthened
+        : _Mydata(_STD to_address(_First)), _Mysize(static_cast<size_type>(_Last - _First)) {}
+    // clang-format on
+#endif // __cpp_lib_concepts
+
     _NODISCARD constexpr const_iterator begin() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL >= 1
         return const_iterator(_Mydata, _Mysize, 0);
@@ -1628,6 +1637,9 @@ private:
 };
 
 #ifdef __cpp_lib_concepts
+template <contiguous_iterator _It, sized_sentinel_for<_It> _Se>
+basic_string_view(_It, _Se) -> basic_string_view<iter_value_t<_It>>;
+
 namespace ranges {
     template <class _Elem, class _Traits>
     inline constexpr bool enable_view<basic_string_view<_Elem, _Traits>> = true;
