@@ -4788,9 +4788,9 @@ template <class _FwdIt, class _Ty>
 _INLINE_VAR constexpr bool _Fill_memset_is_safe<_FwdIt, _Ty, false> = false;
 
 template <class _FwdIt, class _Ty>
-_INLINE_VAR constexpr bool _Fill_zero_memset_is_safe =
-    conjunction_v<is_pointer<_FwdIt>, is_scalar<_Ty>, is_scalar<_Iter_value_t<_FwdIt>>,
-        negation<is_volatile<remove_reference_t<_Iter_ref_t<_FwdIt>>>>, is_assignable<_Iter_ref_t<_FwdIt>, const _Ty&>>;
+_INLINE_VAR constexpr bool _Fill_zero_memset_is_safe = conjunction_v<is_pointer<_FwdIt>, is_scalar<_Ty>,
+    is_scalar<_Iter_value_t<_FwdIt>>, negation<is_member_pointer<_Iter_value_t<_FwdIt>>>,
+    negation<is_volatile<remove_reference_t<_Iter_ref_t<_FwdIt>>>>, is_assignable<_Iter_ref_t<_FwdIt>, const _Ty&>>;
 
 template <class _DestTy, class _Ty>
 void _Fill_memset(_DestTy* const _Dest, const _Ty _Val, const size_t _Count) {
