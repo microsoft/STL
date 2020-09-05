@@ -327,6 +327,8 @@ tests\P0896R4_views_filter_death
 tests\P0896R4_views_reverse
 tests\P0896R4_views_single
 tests\P0896R4_views_take
+tests\P0896R4_views_transform
+tests\P0896R4_views_transform_death
 tests\P0898R3_concepts
 tests\P0898R3_identity
 tests\P0912R5_coroutine

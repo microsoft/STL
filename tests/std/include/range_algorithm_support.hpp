@@ -415,7 +415,7 @@ namespace test {
             STATIC_ASSERT(always_false<Category>);
         }
 
-        friend void iter_swap(iterator const&, iterator const&) {
+        friend void iter_swap(iterator const&, iterator const&) requires std::is_same_v<Category, output> {
             STATIC_ASSERT(always_false<Category>);
         }
 
@@ -441,8 +441,9 @@ namespace test {
             return std::move(*i.ptr_);
         }
 
-        constexpr friend void iter_swap(iterator const& x, iterator const& y) requires at_least<input> {
-            ranges::iter_swap(x.ptr_, y.ptr_);
+        constexpr friend void iter_swap(iterator const& x, iterator const& y)
+            noexcept(std::is_nothrow_swappable_v<Element>) requires at_least<input> && std::swappable<Element> {
+            ranges::swap(*x.ptr_, *y.ptr_);
         }
 
         // forward iterator operations:
@@ -492,9 +493,14 @@ namespace test {
         [[nodiscard]] constexpr boolish operator>=(iterator const& that) const noexcept requires at_least<random> {
             return !(*this < that);
         }
+        [[nodiscard]] constexpr auto operator<=>(iterator const& that) const noexcept requires at_least<random> {
+            return ptr_ <=> that.ptr_;
+        }
+
         [[nodiscard]] constexpr ReferenceType operator[](ptrdiff_t const n) const& noexcept requires at_least<random> {
             return ReferenceType{ptr_[n]};
         }
+
         constexpr iterator& operator+=(ptrdiff_t const n) & noexcept requires at_least<random> {
             ptr_ += n;
             return *this;
@@ -503,6 +509,7 @@ namespace test {
             ptr_ -= n;
             return *this;
         }
+
         [[nodiscard]] constexpr iterator operator+(ptrdiff_t const n) const noexcept requires at_least<random> {
             return iterator{ptr_ + n};
         }
@@ -510,6 +517,7 @@ namespace test {
             requires at_least<random> {
             return i + n;
         }
+
         [[nodiscard]] constexpr iterator operator-(ptrdiff_t const n) const noexcept requires at_least<random> {
             return iterator{ptr_ - n};
         }
