@@ -5,10 +5,10 @@
 
 #include <yvals.h>
 
-#include <ctype.h>
-#include <errno.h>
-#include <limits.h>
-#include <stdlib.h>
+#include <cctype>
+#include <cerrno>
+#include <climits>
+#include <cstdlib>
 
 #include "xmath.hpp"
 

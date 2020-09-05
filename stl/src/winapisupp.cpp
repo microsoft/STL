@@ -4,18 +4,16 @@
 // clang-format off
 // Prevent clang-format from reordering <AppModel.h> before <Windows.h>
 #include <Windows.h>
-#include <AppModel.h>
 #include "awint.hpp"
 #include <internal_shared.h>
-#include <stdlib.h>
+#include <cstdlib>
 // clang-format on
 
 #pragma warning(push)
 #pragma warning(disable : 4265) // non-virtual destructor in base class
 #include <wrl/wrappers/corewrappers.h>
 #pragma warning(pop)
-#include <intrin.h>
-#include <stdint.h>
+#include <cstdint>
 
 #if !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
 // GetCurrentPackageId retrieves the current package id, if the app is deployed via a package.

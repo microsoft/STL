@@ -9,7 +9,6 @@
 #include <crtdefs.h>
 #include <exception>
 #include <new>
-#include <stdlib.h>
 
 #include <Windows.h>
 

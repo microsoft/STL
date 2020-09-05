@@ -3,9 +3,7 @@
 
 #ifndef _XMATH
 #define _XMATH
-#include <errno.h>
-#include <math.h>
-#include <stddef.h>
+#include <cmath>
 #include <ymath.h>
 
 // FLOAT PROPERTIES

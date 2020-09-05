@@ -11,7 +11,6 @@
 #include <direct.h>
 #include <experimental/filesystem>
 #include <io.h>
-#include <string.h>
 
 #include <Windows.h>
 

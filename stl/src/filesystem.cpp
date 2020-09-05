@@ -9,16 +9,15 @@
 // Do not include or define anything else here.
 // In particular, basic_string must not be included here.
 
+#include <clocale>
 #include <corecrt_terminate.h>
+#include <cstdlib>
+#include <cstring>
 #include <internal_shared.h>
-#include <limits.h>
-#include <locale.h>
-#include <stdlib.h>
-#include <string.h>
 #include <xfilesystem_abi.h>
 
 #include <Windows.h>
-#include <WinIoCtl.h>
+#include <winioctl.h>
 
 // We have several switches that do not have case statements for every possible enum value.
 // Hence, disabling this warning.

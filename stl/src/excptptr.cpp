@@ -18,9 +18,7 @@
 #include <malloc.h>
 #include <memory>
 #include <new>
-#include <stddef.h>
 #include <stdexcept>
-#include <string.h>
 #include <trnsctrl.h>
 #include <xcall_once.h>
 

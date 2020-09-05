@@ -5,7 +5,7 @@
 
 #include <yvals.h>
 
-#include <errno.h>
+#include <cerrno>
 #include <ymath.h>
 
 _EXTERN_C_UNLESS_PURE

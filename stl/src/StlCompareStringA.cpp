@@ -3,7 +3,6 @@
 
 #include <crtdbg.h>
 #include <internal_shared.h>
-#include <string.h>
 
 #include <Windows.h>
 

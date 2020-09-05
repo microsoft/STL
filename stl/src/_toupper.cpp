@@ -5,9 +5,9 @@
 
 #include <yvals.h>
 
-#include <ctype.h>
-#include <locale.h>
-#include <stddef.h>
+#include <cctype>
+#include <clocale>
+#include <cstddef>
 #include <xlocinfo.h>
 
 #include "awint.hpp"

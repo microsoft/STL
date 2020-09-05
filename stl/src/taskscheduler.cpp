@@ -4,7 +4,6 @@
 #include <condition_variable>
 #include <mutex>
 #include <ppltaskscheduler.h>
-#include <stddef.h>
 
 #include <Windows.h>
 

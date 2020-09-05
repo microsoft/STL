@@ -1,9 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <internal_shared.h>
-#include <locale.h>
-
 #include "awint.hpp"
 
 // int __cdecl __crtLCMapStringW - Get type information about a wide string.
