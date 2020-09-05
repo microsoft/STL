@@ -233,12 +233,12 @@ _NoThrowFwdIt uninitialized_fill_n(_NoThrowFwdIt _First, const _Diff _Count_raw,
     if (0 < _Count) {
         auto _UFirst = _Get_unwrapped_n(_First, _Count);
         if constexpr (_Fill_memset_is_safe<_Unwrapped_n_t<const _NoThrowFwdIt&>, _Tval>) {
-            _Fill_memset(_UFirst, _Val, _Count);
+            _Fill_memset(_UFirst, _Val, static_cast<size_t>(_Count));
             _UFirst += _Count;
         } else {
             if constexpr (_Fill_zero_memset_is_safe<decltype(_UFirst), _Tval>) {
                 if (_Is_scalar_zero(_Val)) {
-                    _Fill_zero_memset(_UFirst, _Count);
+                    _Fill_zero_memset(_UFirst, static_cast<size_t>(_Count));
                     _UFirst += _Count;
                     _Seek_wrapped(_First, _UFirst);
                     return _First;
