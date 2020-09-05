@@ -227,34 +227,38 @@ private:
 
 // CLASS TEMPLATE istream_iterator
 template <class _Ty, class _Elem = char, class _Traits = char_traits<_Elem>, class _Diff = ptrdiff_t>
-class istream_iterator { // wrap _Ty extracts from input stream as input iterator
+class istream_iterator {
 public:
     using iterator_category = input_iterator_tag;
     using value_type        = _Ty;
     using difference_type   = _Diff;
     using pointer           = const _Ty*;
     using reference         = const _Ty&;
-
-    using char_type    = _Elem;
-    using traits_type  = _Traits;
-    using istream_type = basic_istream<_Elem, _Traits>;
+    using char_type         = _Elem;
+    using traits_type       = _Traits;
+    using istream_type      = basic_istream<_Elem, _Traits>;
 
     static_assert(conjunction_v<is_default_constructible<_Ty>, is_copy_constructible<_Ty>, is_copy_assignable<_Ty>>,
         "istream_iterator<T> requires T to be default constructible, copy constructible, and copy assignable. "
         "(N4835 [istream.iterator]/2)");
 
-    constexpr istream_iterator() {}
+    constexpr istream_iterator() noexcept(is_nothrow_default_constructible_v<_Ty>) /* strengthened */ {}
+
+#ifdef __cpp_lib_concepts
+    constexpr istream_iterator(default_sentinel_t) noexcept(is_nothrow_default_constructible_v<_Ty>) // strengthened
+    {}
+#endif // __cpp_lib_concepts
 
     istream_iterator(istream_type& _Istr) : _Myistr(_STD addressof(_Istr)) {
         _Getval();
     }
 
-    _NODISCARD const _Ty& operator*() const {
+    _NODISCARD const _Ty& operator*() const noexcept /* strengthened */ {
         _STL_ASSERT(_Myistr, "The stored stream pointer in_stream must be non-null");
         return _Myval;
     }
 
-    _NODISCARD const _Ty* operator->() const {
+    _NODISCARD const _Ty* operator->() const noexcept /* strengthened */ {
         _STL_ASSERT(_Myistr, "The stored stream pointer in_stream must be non-null");
         return _STD addressof(_Myval);
     }
@@ -270,9 +274,15 @@ public:
         return _Tmp;
     }
 
-    bool _Equal(const istream_iterator& _Right) const {
+    _NODISCARD bool _Equal(const istream_iterator& _Right) const noexcept {
         return _Myistr == _Right._Myistr;
     }
+
+#ifdef __cpp_lib_concepts
+    _NODISCARD friend bool operator==(const istream_iterator& _Left, default_sentinel_t) noexcept /* strengthened */ {
+        return !_Left._Myistr;
+    }
+#endif // __cpp_lib_concepts
 
 private:
     void _Getval() { // get a _Ty value if possible
@@ -288,31 +298,37 @@ private:
 
 template <class _Ty, class _Elem, class _Traits, class _Diff>
 _NODISCARD bool operator==(const istream_iterator<_Ty, _Elem, _Traits, _Diff>& _Left,
-    const istream_iterator<_Ty, _Elem, _Traits, _Diff>& _Right) {
+    const istream_iterator<_Ty, _Elem, _Traits, _Diff>& _Right) noexcept /* strengthened */ {
     return _Left._Equal(_Right);
 }
 
 template <class _Ty, class _Elem, class _Traits, class _Diff>
 _NODISCARD bool operator!=(const istream_iterator<_Ty, _Elem, _Traits, _Diff>& _Left,
-    const istream_iterator<_Ty, _Elem, _Traits, _Diff>& _Right) {
+    const istream_iterator<_Ty, _Elem, _Traits, _Diff>& _Right) noexcept /* strengthened */ {
     return !(_Left == _Right);
 }
 
 // CLASS TEMPLATE ostream_iterator
 template <class _Ty, class _Elem = char, class _Traits = char_traits<_Elem>>
-class ostream_iterator { // wrap _Ty inserts to output stream as output iterator
+class ostream_iterator {
 public:
     using iterator_category = output_iterator_tag;
     using value_type        = void;
-    using difference_type   = void;
-    using pointer           = void;
-    using reference         = void;
-
+#ifdef __cpp_lib_concepts
+    using difference_type = ptrdiff_t;
+#else
+    using difference_type = void;
+#endif // __cpp_lib_concepts
+    using pointer      = void;
+    using reference    = void;
     using char_type    = _Elem;
     using traits_type  = _Traits;
     using ostream_type = basic_ostream<_Elem, _Traits>;
 
-    ostream_iterator(ostream_type& _Ostr, const _Elem* const _Delim = nullptr)
+#ifdef __cpp_lib_concepts
+    constexpr ostream_iterator() noexcept = default;
+#endif // __cpp_lib_concepts
+    ostream_iterator(ostream_type& _Ostr, const _Elem* const _Delim = nullptr) noexcept /* strengthened */
         : _Mydelim(_Delim), _Myostr(_STD addressof(_Ostr)) {}
 
     ostream_iterator& operator=(const _Ty& _Val) { // insert value into output stream, followed by delimiter
@@ -324,21 +340,21 @@ public:
         return *this;
     }
 
-    _NODISCARD ostream_iterator& operator*() { // pretend to return designated value
+    _NODISCARD ostream_iterator& operator*() noexcept /* strengthened */ {
         return *this;
     }
 
-    ostream_iterator& operator++() { // pretend to preincrement
+    ostream_iterator& operator++() noexcept /* strengthened */ {
         return *this;
     }
 
-    ostream_iterator& operator++(int) { // pretend to postincrement
+    ostream_iterator& operator++(int) noexcept /* strengthened */ {
         return *this;
     }
 
-protected:
-    const _Elem* _Mydelim; // pointer to delimiter string (NB: not freed)
-    ostream_type* _Myostr; // pointer to output stream
+private:
+    const _Elem* _Mydelim = nullptr; // pointer to delimiter string (NB: not freed)
+    ostream_type* _Myostr = nullptr; // pointer to output stream
 };
 
 // CLASS TEMPLATE istreambuf_iterator
@@ -350,30 +366,33 @@ public:
     using difference_type   = typename _Traits::off_type;
     using pointer           = const _Elem*;
     using reference         = _Elem;
-
-    using char_type      = _Elem;
-    using traits_type    = _Traits;
-    using streambuf_type = basic_streambuf<_Elem, _Traits>;
-    using istream_type   = basic_istream<_Elem, _Traits>;
-
-    using int_type = typename traits_type::int_type;
+    using char_type         = _Elem;
+    using traits_type       = _Traits;
+    using int_type          = typename traits_type::int_type;
+    using streambuf_type    = basic_streambuf<_Elem, _Traits>;
+    using istream_type      = basic_istream<_Elem, _Traits>;
 
     constexpr istreambuf_iterator() noexcept : _Strbuf(nullptr), _Got(true), _Val() {}
-
-    istreambuf_iterator(streambuf_type* _Sb) noexcept : _Strbuf(_Sb), _Got(!_Sb), _Val() {}
+#ifdef __cpp_lib_concepts
+    constexpr istreambuf_iterator(default_sentinel_t) noexcept : _Strbuf(nullptr), _Got(true), _Val() {}
+#endif // __cpp_lib_concepts
 
     istreambuf_iterator(istream_type& _Istr) noexcept : _Strbuf(_Istr.rdbuf()), _Got(!_Strbuf), _Val() {}
+
+    istreambuf_iterator(streambuf_type* _Sb) noexcept : _Strbuf(_Sb), _Got(!_Sb), _Val() {}
 
 private:
     class _Istreambuf_proxy {
     public:
-        _NODISCARD _Elem operator*() const {
+        _NODISCARD _Elem operator*() const noexcept(is_nothrow_copy_constructible_v<_Elem>) /* strengthened */ {
             return _Keep;
         }
 
     private:
         friend istreambuf_iterator;
-        _Istreambuf_proxy(streambuf_type* _Strbuf_, _Elem _Keep_) : _Strbuf(_Strbuf_), _Keep(_Keep_) {}
+        _Istreambuf_proxy(streambuf_type* _Strbuf_, _Elem _Keep_) noexcept(
+            is_nothrow_copy_constructible_v<_Elem>) // strengthened
+            : _Strbuf(_Strbuf_), _Keep(_Keep_) {}
 
         streambuf_type* _Strbuf;
         _Elem _Keep;
@@ -425,6 +444,16 @@ public:
         return (!_Strbuf && !_Right._Strbuf) || (_Strbuf && _Right._Strbuf);
     }
 
+#ifdef __cpp_lib_concepts
+    _NODISCARD friend bool operator==(const istreambuf_iterator& _Left, default_sentinel_t) {
+        if (!_Left._Got) {
+            _Left._Peek();
+        }
+
+        return !_Left._Strbuf;
+    }
+#endif // __cpp_lib_concepts
+
 private:
     void _Inc() { // skip to next input element
         if (!_Strbuf || traits_type::eq_int_type(traits_type::eof(), _Strbuf->sbumpc())) {
@@ -470,18 +499,25 @@ class ostreambuf_iterator { // wrap stream buffer as output iterator
 public:
     using iterator_category = output_iterator_tag;
     using value_type        = void;
-    using difference_type   = void;
-    using pointer           = void;
-    using reference         = void;
-
+#ifdef __cpp_lib_concepts
+    using difference_type = ptrdiff_t;
+#else
+    using difference_type = void;
+#endif // __cpp_lib_concepts
+    using pointer        = void;
+    using reference      = void;
     using char_type      = _Elem;
     using traits_type    = _Traits;
     using streambuf_type = basic_streambuf<_Elem, _Traits>;
     using ostream_type   = basic_ostream<_Elem, _Traits>;
 
-    ostreambuf_iterator(streambuf_type* _Sb) noexcept : _Failed(false), _Strbuf(_Sb) {}
+#ifdef __cpp_lib_concepts
+    constexpr ostreambuf_iterator() noexcept = default;
+#endif // __cpp_lib_concepts
 
-    ostreambuf_iterator(ostream_type& _Ostr) noexcept : _Failed(false), _Strbuf(_Ostr.rdbuf()) {}
+    ostreambuf_iterator(streambuf_type* _Sb) noexcept : _Strbuf(_Sb) {}
+
+    ostreambuf_iterator(ostream_type& _Ostr) noexcept : _Strbuf(_Ostr.rdbuf()) {}
 
     ostreambuf_iterator& operator=(_Elem _Right) { // store element and increment
         if (!_Strbuf || traits_type::eq_int_type(_Traits::eof(), _Strbuf->sputc(_Right))) {
@@ -491,15 +527,15 @@ public:
         return *this;
     }
 
-    _NODISCARD ostreambuf_iterator& operator*() { // pretend to get designated element
+    _NODISCARD ostreambuf_iterator& operator*() noexcept /* strengthened */ {
         return *this;
     }
 
-    ostreambuf_iterator& operator++() { // pretend to preincrement
+    ostreambuf_iterator& operator++() noexcept /* strengthened */ {
         return *this;
     }
 
-    ostreambuf_iterator& operator++(int) { // pretend to postincrement
+    ostreambuf_iterator& operator++(int) noexcept /* strengthened */ {
         return *this;
     }
 
@@ -508,8 +544,8 @@ public:
     }
 
 private:
-    bool _Failed; // true if any stores have failed
-    streambuf_type* _Strbuf; // the wrapped stream buffer
+    bool _Failed            = false; // true if any stores have failed
+    streambuf_type* _Strbuf = nullptr;
 };
 
 #ifdef __cpp_lib_concepts
