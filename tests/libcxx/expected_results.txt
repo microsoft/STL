@@ -534,9 +534,6 @@ std/numerics/complex.number/complex.special/float_long_double_implicit.compile.f
 # STL bug: regex_traits::transform() isn't following the Standard.
 std/re/re.traits/transform.pass.cpp FAIL
 
-# STL bug: Incorrect return types.
-std/numerics/complex.number/cmplx.over/pow.pass.cpp FAIL
-
 # STL bug: We allow fill() and swap() for array<const T, 0>.
 std/containers/sequences/array/array.fill/fill.fail.cpp FAIL
 std/containers/sequences/array/array.swap/swap.fail.cpp FAIL
@@ -755,6 +752,7 @@ std/iterators/predef.iterators/insert.iterators/insert.iterator/types.pass.cpp F
 
 # Tests emit warning C4244: 'argument': conversion from 'T' to 'const std::complex<double>::_Ty', possible loss of data
 std/numerics/complex.number/cmplx.over/conj.pass.cpp:0 FAIL
+std/numerics/complex.number/cmplx.over/pow.pass.cpp:0 FAIL
 std/numerics/complex.number/cmplx.over/proj.pass.cpp:0 FAIL
 
 # Assertion failed: std::abs(skew - x_skew) < 0.01
