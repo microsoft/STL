@@ -277,19 +277,6 @@ utilities\time\time.clock\time.clock.file\consistency.pass.cpp
 utilities\time\time.clock\time.clock.file\file_time.pass.cpp
 utilities\time\time.clock\time.clock.file\now.pass.cpp
 utilities\time\time.clock\time.clock.file\rep_signed.pass.cpp
-utilities\time\time.hms\time.12\is_am.pass.cpp
-utilities\time\time.hms\time.12\is_pm.pass.cpp
-utilities\time\time.hms\time.12\make12.pass.cpp
-utilities\time\time.hms\time.12\make24.pass.cpp
-utilities\time\time.hms\time.hms.members\hours.pass.cpp
-utilities\time\time.hms\time.hms.members\is_negative.pass.cpp
-utilities\time\time.hms\time.hms.members\minutes.pass.cpp
-utilities\time\time.hms\time.hms.members\precision.pass.cpp
-utilities\time\time.hms\time.hms.members\precision_type.pass.cpp
-utilities\time\time.hms\time.hms.members\seconds.pass.cpp
-utilities\time\time.hms\time.hms.members\subseconds.pass.cpp
-utilities\time\time.hms\time.hms.members\to_duration.pass.cpp
-utilities\time\time.hms\time.hms.members\width.pass.cpp
 
 # C++20 P0608R3 "Improving variant's Converting Constructor/Assignment"
 utilities\variant\variant.variant\variant.assign\conv.pass.cpp

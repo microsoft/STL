@@ -275,19 +275,6 @@ std/utilities/time/time.clock/time.clock.file/consistency.pass.cpp FAIL
 std/utilities/time/time.clock/time.clock.file/file_time.pass.cpp FAIL
 std/utilities/time/time.clock/time.clock.file/now.pass.cpp FAIL
 std/utilities/time/time.clock/time.clock.file/rep_signed.pass.cpp FAIL
-std/utilities/time/time.hms/time.12/is_am.pass.cpp FAIL
-std/utilities/time/time.hms/time.12/is_pm.pass.cpp FAIL
-std/utilities/time/time.hms/time.12/make12.pass.cpp FAIL
-std/utilities/time/time.hms/time.12/make24.pass.cpp FAIL
-std/utilities/time/time.hms/time.hms.members/hours.pass.cpp FAIL
-std/utilities/time/time.hms/time.hms.members/is_negative.pass.cpp FAIL
-std/utilities/time/time.hms/time.hms.members/minutes.pass.cpp FAIL
-std/utilities/time/time.hms/time.hms.members/precision.pass.cpp FAIL
-std/utilities/time/time.hms/time.hms.members/precision_type.pass.cpp FAIL
-std/utilities/time/time.hms/time.hms.members/seconds.pass.cpp FAIL
-std/utilities/time/time.hms/time.hms.members/subseconds.pass.cpp FAIL
-std/utilities/time/time.hms/time.hms.members/to_duration.pass.cpp FAIL
-std/utilities/time/time.hms/time.hms.members/width.pass.cpp FAIL
 
 # C++20 P0608R3 "Improving variant's Converting Constructor/Assignment"
 std/utilities/variant/variant.variant/variant.assign/conv.pass.cpp FAIL

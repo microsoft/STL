@@ -1817,6 +1817,94 @@ namespace chrono {
     inline constexpr month October{10};
     inline constexpr month November{11};
     inline constexpr month December{12};
+
+    constexpr unsigned _Width(intmax_t _Num, const intmax_t _Den) {
+        _STL_ASSERT(_Den > 0, "Denominator can't be less than 1.");
+        unsigned _Result = 0;
+        // doing everything in for > using a while loop
+        for (; _Num % _Den != 0 && _Result < 19; _Num = _Num % _Den * 10, ++_Result) {
+        }
+        return _Result == 19 ? 6 : _Result;
+    }
+
+    constexpr intmax_t _Pow10(const int _Exp) {
+        if (_Exp == 0) {
+            return 1;
+        }
+        return 10 * _Pow10(_Exp - 1);
+    }
+
+    template <class _Duration>
+    requires _Is_duration_v<_Duration> class hh_mm_ss {
+    public:
+        static constexpr unsigned fractional_width = _Width(_Duration::period::num, _Duration::period::den);
+        using precision =
+            duration<common_type_t<typename _Duration::rep, seconds::rep>, ratio<1, _Pow10(fractional_width)>>;
+
+        constexpr hh_mm_ss() noexcept : hh_mm_ss{_Duration::zero()} {}
+        // clang-format off
+        constexpr explicit hh_mm_ss(_Duration _Dur)
+            : _Is_neg{_Dur < _Duration::zero()}, 
+              _Hours{duration_cast<chrono::hours>(_STD chrono::abs(_Dur))},
+              _Mins{duration_cast<chrono::minutes>(_STD chrono::abs(_Dur) - hours())}, 
+              _Secs{duration_cast<chrono::seconds>(_STD chrono::abs(_Dur) - hours() - minutes())} {
+            // clang-format on
+            if constexpr (treat_as_floating_point_v<typename precision::rep>) {
+                _Sub_secs = _STD chrono::abs(_Dur) - hours() - minutes() - seconds();
+            } else {
+                _Sub_secs = duration_cast<precision>(_STD chrono::abs(_Dur) - hours() - minutes() - seconds());
+            }
+        }
+
+        _NODISCARD constexpr bool is_negative() const noexcept {
+            return _Is_neg;
+        }
+        _NODISCARD constexpr hours hours() const noexcept {
+            return _Hours;
+        }
+        _NODISCARD constexpr minutes minutes() const noexcept {
+            return _Mins;
+        }
+        _NODISCARD constexpr seconds seconds() const noexcept {
+            return _Secs;
+        }
+        _NODISCARD constexpr precision subseconds() const noexcept {
+            return _Sub_secs;
+        }
+
+        _NODISCARD constexpr explicit operator precision() const noexcept {
+            return to_duration();
+        }
+        _NODISCARD constexpr precision to_duration() const noexcept {
+            const auto _Dur = _Hours + _Mins + _Secs + _Sub_secs;
+            return _Is_neg ? -_Dur : _Dur;
+        }
+
+    private:
+        bool _Is_neg;
+        chrono::hours _Hours;
+        chrono::minutes _Mins;
+        chrono::seconds _Secs;
+        precision _Sub_secs;
+    };
+
+    _NODISCARD constexpr bool is_am(const hours& _Hours) noexcept {
+        return _Hours >= hours{0} && _Hours <= hours{11};
+    }
+    _NODISCARD constexpr bool is_pm(const hours& _Hours) noexcept {
+        return _Hours >= hours{12} && _Hours <= hours{23};
+    }
+
+    _NODISCARD constexpr hours make12(const hours& _Hours) noexcept {
+        return _Hours == hours{12} || _Hours == hours{0} ? hours{12} : _Hours % 12;
+    }
+    _NODISCARD constexpr hours make24(const hours& _Hours, bool _Is_pm) noexcept {
+        if (_Is_pm) {
+            return _Hours == hours{12} ? _Hours : _Hours + hours{12};
+        }
+        return _Hours == hours{12} ? hours{0} : _Hours;
+    }
+
 #endif // _HAS_CXX20
 } // namespace chrono
 
