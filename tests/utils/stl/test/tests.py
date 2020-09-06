@@ -141,8 +141,6 @@ class STLTest(Test):
         link_flags.extend(envlst_entry.getEnvVal('PM_LINK', '').split())
 
         if ('clang'.casefold() in os.path.basename(cxx).casefold()):
-            flags.extend(map(lambda x : '/clang:' + x, envlst_entry.getEnvVal('PM_CLANG', '').split()))
-
             target_arch = self.config.target_arch.casefold()
             if (target_arch == 'x64'.casefold()):
                 compile_flags.append('-m64')
