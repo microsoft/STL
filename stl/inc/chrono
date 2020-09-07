@@ -1904,7 +1904,6 @@ namespace chrono {
         }
         return _Hours == hours{12} ? hours{0} : _Hours;
     }
-
 #endif // _HAS_CXX20
 } // namespace chrono
 

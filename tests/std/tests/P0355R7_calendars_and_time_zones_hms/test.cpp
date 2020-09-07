@@ -60,6 +60,7 @@ constexpr void fractional_width() {
     static_assert(width<756, 625>() == 4);
     static_assert(width<3780, 625>() == 3);
 }
+
 constexpr void is_negative() {
     assert(hh_mm_ss<days>(days{-1}).is_negative());
     assert(!hh_mm_ss<days>(days{1}).is_negative());
@@ -81,7 +82,6 @@ constexpr void is_negative() {
 
     assert(hh_mm_ss<nanoseconds>(-1ns).is_negative());
     assert(!hh_mm_ss<nanoseconds>(1ns).is_negative());
-
 }
 
 constexpr auto ones = 1h + 1min + 1s + 1ms;
@@ -89,7 +89,7 @@ constexpr auto ones = 1h + 1min + 1s + 1ms;
 constexpr void hour() {
     assert(hh_mm_ss(days{1}).hours() == 24h);
     assert(hh_mm_ss(ones).hours() == 1h);
-    assert(hh_mm_ss(-ones).hours() == 1h);    
+    assert(hh_mm_ss(-ones).hours() == 1h);
     assert(hh_mm_ss(59min).hours() == 0h);
 }
 
