@@ -2929,21 +2929,35 @@ private:
             _Res   = _Xx2;
             _Valid = false;
         } else { // generate two values, store one, return one
-            const _Ty _MinSx{static_cast<_Ty>(7.8159598771420286e-306)};
-            const _Ty _MaxSx{static_cast<_Ty>(1)};
             _Ty _Vx1;
             _Ty _Vx2;
             _Ty _Sx;
-            for (;;) { // reject bad values
+            for (;;) { // reject bad values to avoid generating NaN/Inf on the next calculations
                 _Vx1 = 2 * _NRAND(_Eng, _Ty) - 1;
                 _Vx2 = 2 * _NRAND(_Eng, _Ty) - 1;
                 _Sx  = _Vx1 * _Vx1 + _Vx2 * _Vx2;
-                if (_MinSx < _Sx && _Sx < _MaxSx) {
-                    // Good _Sx value! It will not cause overflow nor generating NaN/Inf on the next calculations.
+                if (_Sx < _Ty{1} && _Sx != _Ty{0}) {
+                    // good values!
                     break;
                 }
             }
-            const auto _Fx = static_cast<_Ty>(_CSTD sqrt(-2.0 * _CSTD log(_Sx) / _Sx));
+
+            _Ty _LogSx;
+            if (_Sx > 1.0e-4) {
+                _LogSx = _STD log(_Sx);
+            } else {
+                // Bad _Sx value! It will cause overflow on log calculation
+                // generating a new value based on scaling method.
+                const _Ty _ln2{static_cast<_Ty>(0.69314718055994530941723212145818)};
+                const _Ty _Maxabs{_STD max(_STD abs(_Vx1), _STD abs(_Vx2))};
+                const int expMax{_STD ilogb(_Maxabs)};
+                _Vx1   = _STD scalbn(_Vx1, -expMax);
+                _Vx2   = _STD scalbn(_Vx2, -expMax);
+                _Sx    = _Vx1 * _Vx1 + _Vx2 * _Vx2;
+                _LogSx = _STD log(_Sx) + static_cast<_Ty>(expMax) * (_ln2 * 2);
+            }
+
+            const auto _Fx = static_cast<_Ty>(_STD sqrt(static_cast<_Ty>(-2) * _LogSx / _Sx));
             if (_Keep) { // save second value for next call
                 _Xx2   = _Fx * _Vx2;
                 _Valid = true;
