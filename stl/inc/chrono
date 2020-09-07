@@ -1844,9 +1844,9 @@ namespace chrono {
         constexpr hh_mm_ss() noexcept : hh_mm_ss{_Duration::zero()} {}
         // clang-format off
         constexpr explicit hh_mm_ss(_Duration _Dur)
-            : _Is_neg{_Dur < _Duration::zero()}, 
+            : _Is_neg{_Dur < _Duration::zero()},
               _Hours{duration_cast<chrono::hours>(_STD chrono::abs(_Dur))},
-              _Mins{duration_cast<chrono::minutes>(_STD chrono::abs(_Dur) - hours())}, 
+              _Mins{duration_cast<chrono::minutes>(_STD chrono::abs(_Dur) - hours())},
               _Secs{duration_cast<chrono::seconds>(_STD chrono::abs(_Dur) - hours() - minutes())} {
             // clang-format on
             if constexpr (treat_as_floating_point_v<typename precision::rep>) {
