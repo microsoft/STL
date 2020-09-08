@@ -132,6 +132,11 @@ public:
                 }
 
                 _First = do_get(_First, _Last, _Iosbase, _State, _Pt, _Specifier, _Modifier); // convert a single field
+
+                if (_State != ios_base::goodbit) {
+                    // Failed to convert the field. Do not proceed to the next fields. Return with failed _State.
+                    break;
+                }
             }
         }
 
@@ -534,7 +539,8 @@ protected:
 private:
     ios_base::iostate __CLRCALL_OR_CDECL _Getint(_InIt& _First, _InIt& _Last, int _Lo, int _Hi, int& _Val,
         const _Ctype& _Ctype_fac) const { // get integer in range [_Lo, _Hi] from [_First, _Last)
-        char _Ac[_MAX_INT_DIG], *_Ep;
+        char _Ac[_MAX_INT_DIG];
+        char* _Ep;
         char* _Ptr = _Ac;
         char _Ch;
 

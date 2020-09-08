@@ -16,8 +16,11 @@
 #include <xerrc.h>
 #ifndef _M_CEE_PURE
 #include <atomic>
-#include <compare>
 #endif // _M_CEE_PURE
+
+#if _HAS_CXX20
+#include <compare>
+#endif // _HAS_CXX20
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -567,8 +570,6 @@ public:
     }
 };
 
-//
-// TRANSITION, VSO-1043450
 // _Immortalize_memcpy_image is used to provide a nonstandard guarantee.
 // Specifically, we want the error category objects returned from things like std::system_category() to always
 //   be available, even during DLL unload (otherwise, <system_error> would be a huge regression vs. legacy error codes).
@@ -611,7 +612,35 @@ _NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
     static constexpr _Ty _Static;
     return _Static;
 }
-#else // choose immortalize strategy
+#elif defined(__clang__)
+template <class _Ty>
+_NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
+    [[clang::require_constant_initialization]] static _Ty _Static;
+    return _Static;
+}
+#elif !defined(_M_CEE) // TRANSITION, VSO-1153256
+template <class _Ty>
+struct _Constexpr_immortalize_impl {
+    union {
+        _Ty _Storage;
+    };
+
+    constexpr _Constexpr_immortalize_impl() noexcept : _Storage{} {}
+
+    _Constexpr_immortalize_impl(const _Constexpr_immortalize_impl&) = delete;
+    _Constexpr_immortalize_impl& operator=(const _Constexpr_immortalize_impl&) = delete;
+
+    [[msvc::noop_dtor]] ~_Constexpr_immortalize_impl() {
+        // do nothing, allowing _Ty to be used during shutdown
+    }
+};
+
+template <class _Ty>
+_NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
+    static _Constexpr_immortalize_impl<_Ty> _Static;
+    return _Static._Storage;
+}
+#else // ^^^ no workaround / workaround vvv
 template <class _Ty>
 _NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
     // return reference to a memcpy'd default-initialized _Ty

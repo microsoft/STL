@@ -51,91 +51,91 @@ public:
     _Deque_unchecked_const_iterator(_Size_type _Off, const _Container_base12* _Pdeque) noexcept
         : _Mycont(static_cast<const _Mydeque*>(_Pdeque)), _Myoff(_Off) {}
 
-    _NODISCARD reference operator*() const {
+    _NODISCARD reference operator*() const noexcept {
         _Size_type _Block = _Mycont->_Getblock(_Myoff);
         _Size_type _Off   = _Myoff % _DEQUESIZ;
         return _Mycont->_Map[_Block][_Off];
     }
 
-    _NODISCARD pointer operator->() const {
+    _NODISCARD pointer operator->() const noexcept {
         return pointer_traits<pointer>::pointer_to(**this);
     }
 
-    _Deque_unchecked_const_iterator& operator++() {
+    _Deque_unchecked_const_iterator& operator++() noexcept {
         ++_Myoff;
         return *this;
     }
 
-    _Deque_unchecked_const_iterator operator++(int) {
+    _Deque_unchecked_const_iterator operator++(int) noexcept {
         _Deque_unchecked_const_iterator _Tmp = *this;
         ++_Myoff;
         return _Tmp;
     }
 
-    _Deque_unchecked_const_iterator& operator--() {
+    _Deque_unchecked_const_iterator& operator--() noexcept {
         --_Myoff;
         return *this;
     }
 
-    _Deque_unchecked_const_iterator operator--(int) {
+    _Deque_unchecked_const_iterator operator--(int) noexcept {
         _Deque_unchecked_const_iterator _Tmp = *this;
         --_Myoff;
         return _Tmp;
     }
 
-    _Deque_unchecked_const_iterator& operator+=(const difference_type _Off) {
+    _Deque_unchecked_const_iterator& operator+=(const difference_type _Off) noexcept {
         _Myoff += _Off;
         return *this;
     }
 
-    _NODISCARD _Deque_unchecked_const_iterator operator+(const difference_type _Off) const {
+    _NODISCARD _Deque_unchecked_const_iterator operator+(const difference_type _Off) const noexcept {
         _Deque_unchecked_const_iterator _Tmp = *this;
         return _Tmp += _Off;
     }
 
-    _Deque_unchecked_const_iterator& operator-=(const difference_type _Off) {
+    _Deque_unchecked_const_iterator& operator-=(const difference_type _Off) noexcept {
         _Myoff -= _Off;
         return *this;
     }
 
-    _NODISCARD _Deque_unchecked_const_iterator operator-(const difference_type _Off) const {
+    _NODISCARD _Deque_unchecked_const_iterator operator-(const difference_type _Off) const noexcept {
         _Deque_unchecked_const_iterator _Tmp = *this;
         return _Tmp -= _Off;
     }
 
-    _NODISCARD difference_type operator-(const _Deque_unchecked_const_iterator& _Right) const {
+    _NODISCARD difference_type operator-(const _Deque_unchecked_const_iterator& _Right) const noexcept {
         return static_cast<difference_type>(_Myoff - _Right._Myoff);
     }
 
-    _NODISCARD reference operator[](const difference_type _Off) const {
+    _NODISCARD reference operator[](const difference_type _Off) const noexcept {
         return *(*this + _Off);
     }
 
-    _NODISCARD bool operator==(const _Deque_unchecked_const_iterator& _Right) const {
+    _NODISCARD bool operator==(const _Deque_unchecked_const_iterator& _Right) const noexcept {
         return _Myoff == _Right._Myoff;
     }
 
-    _NODISCARD bool operator!=(const _Deque_unchecked_const_iterator& _Right) const {
+    _NODISCARD bool operator!=(const _Deque_unchecked_const_iterator& _Right) const noexcept {
         return !(*this == _Right);
     }
 
-    _NODISCARD bool operator<(const _Deque_unchecked_const_iterator& _Right) const {
+    _NODISCARD bool operator<(const _Deque_unchecked_const_iterator& _Right) const noexcept {
         return _Myoff < _Right._Myoff;
     }
 
-    _NODISCARD bool operator>(const _Deque_unchecked_const_iterator& _Right) const {
+    _NODISCARD bool operator>(const _Deque_unchecked_const_iterator& _Right) const noexcept {
         return _Right < *this;
     }
 
-    _NODISCARD bool operator<=(const _Deque_unchecked_const_iterator& _Right) const {
+    _NODISCARD bool operator<=(const _Deque_unchecked_const_iterator& _Right) const noexcept {
         return !(_Right < *this);
     }
 
-    _NODISCARD bool operator>=(const _Deque_unchecked_const_iterator& _Right) const {
+    _NODISCARD bool operator>=(const _Deque_unchecked_const_iterator& _Right) const noexcept {
         return !(*this < _Right);
     }
 
-    const _Container_base12* _Getcont() const { // get container pointer
+    const _Container_base12* _Getcont() const noexcept { // get container pointer
         return _Mycont;
     }
 
@@ -146,7 +146,7 @@ public:
 template <class _Mydeque>
 _NODISCARD _Deque_unchecked_const_iterator<_Mydeque> operator+(
     typename _Deque_unchecked_const_iterator<_Mydeque>::difference_type _Off,
-    _Deque_unchecked_const_iterator<_Mydeque> _Next) {
+    _Deque_unchecked_const_iterator<_Mydeque> _Next) noexcept {
     return _Next += _Off;
 }
 
@@ -167,68 +167,69 @@ public:
 
     using _Mybase::_Mybase;
 
-    _NODISCARD reference operator*() const {
+    _NODISCARD reference operator*() const noexcept {
         return const_cast<reference>(_Mybase::operator*());
     }
 
-    _NODISCARD pointer operator->() const {
+    _NODISCARD pointer operator->() const noexcept {
         return pointer_traits<pointer>::pointer_to(**this);
     }
 
-    _Deque_unchecked_iterator& operator++() {
+    _Deque_unchecked_iterator& operator++() noexcept {
         _Mybase::operator++();
         return *this;
     }
 
-    _Deque_unchecked_iterator operator++(int) {
+    _Deque_unchecked_iterator operator++(int) noexcept {
         _Deque_unchecked_iterator _Tmp = *this;
         _Mybase::operator++();
         return _Tmp;
     }
 
-    _Deque_unchecked_iterator& operator--() {
+    _Deque_unchecked_iterator& operator--() noexcept {
         _Mybase::operator--();
         return *this;
     }
 
-    _Deque_unchecked_iterator operator--(int) {
+    _Deque_unchecked_iterator operator--(int) noexcept {
         _Deque_unchecked_iterator _Tmp = *this;
         _Mybase::operator--();
         return _Tmp;
     }
 
-    _Deque_unchecked_iterator& operator+=(const difference_type _Off) {
+    _Deque_unchecked_iterator& operator+=(const difference_type _Off) noexcept {
         _Mybase::operator+=(_Off);
         return *this;
     }
 
-    _NODISCARD _Deque_unchecked_iterator operator+(const difference_type _Off) const {
+    _NODISCARD _Deque_unchecked_iterator operator+(const difference_type _Off) const noexcept {
         _Deque_unchecked_iterator _Tmp = *this;
         return _Tmp += _Off;
     }
 
-    _Deque_unchecked_iterator& operator-=(const difference_type _Off) {
+    _Deque_unchecked_iterator& operator-=(const difference_type _Off) noexcept {
         _Mybase::operator-=(_Off);
         return *this;
     }
 
-    _NODISCARD _Deque_unchecked_iterator operator-(const difference_type _Off) const {
+    _NODISCARD _Deque_unchecked_iterator operator-(const difference_type _Off) const noexcept {
         _Deque_unchecked_iterator _Tmp = *this;
         return _Tmp -= _Off;
     }
 
-    _NODISCARD difference_type operator-(const _Mybase& _Right) const {
+    _NODISCARD difference_type operator-(const _Mybase& _Right) const noexcept {
         return _Mybase::operator-(_Right);
     }
 
-    _NODISCARD reference operator[](const difference_type _Off) const {
+    _NODISCARD reference operator[](const difference_type _Off) const noexcept {
         return const_cast<reference>(_Mybase::operator[](_Off));
     }
 };
 
 template <class _Mydeque>
 _NODISCARD _Deque_unchecked_iterator<_Mydeque> operator+(
-    typename _Deque_unchecked_iterator<_Mydeque>::difference_type _Off, _Deque_unchecked_iterator<_Mydeque> _Next) {
+    typename _Deque_unchecked_iterator<_Mydeque>::difference_type _Off,
+    _Deque_unchecked_iterator<_Mydeque> _Next) noexcept {
     return _Next += _Off;
 }
 
@@ -256,7 +257,7 @@ public:
         _Setcont(static_cast<const _Mydeque*>(_Pdeque));
     }
 
-    _NODISCARD reference operator*() const {
+    _NODISCARD reference operator*() const noexcept {
         const auto _Mycont = static_cast<const _Mydeque*>(this->_Getcont());
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Mycont, "cannot dereference value-initialized deque iterator");
@@ -269,11 +270,11 @@ public:
         return _Mycont->_Map[_Block][_Off];
     }
 
-    _NODISCARD pointer operator->() const {
+    _NODISCARD pointer operator->() const noexcept {
         return pointer_traits<pointer>::pointer_to(**this);
     }
 
-    _Deque_const_iterator& operator++() {
+    _Deque_const_iterator& operator++() noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
         const auto _Mycont = static_cast<const _Mydeque*>(this->_Getcont());
         _STL_VERIFY(_Mycont, "cannot increment value-initialized deque iterator");
@@ -284,13 +285,13 @@ public:
         return *this;
     }
 
-    _Deque_const_iterator operator++(int) {
+    _Deque_const_iterator operator++(int) noexcept {
         _Deque_const_iterator _Tmp = *this;
         ++*this;
         return _Tmp;
     }
 
-    _Deque_const_iterator& operator--() {
+    _Deque_const_iterator& operator--() noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
         const auto _Mycont = static_cast<const _Mydeque*>(this->_Getcont());
         _STL_VERIFY(_Mycont, "cannot decrement value-initialized deque iterator");
@@ -301,13 +302,13 @@ public:
         return *this;
     }
 
-    _Deque_const_iterator operator--(int) {
+    _Deque_const_iterator operator--(int) noexcept {
         _Deque_const_iterator _Tmp = *this;
         --*this;
         return _Tmp;
     }
 
-    _Deque_const_iterator& operator+=(const difference_type _Off) {
+    _Deque_const_iterator& operator+=(const difference_type _Off) noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
         if (_Off != 0) {
             const auto _Mycont = static_cast<const _Mydeque*>(this->_Getcont());
@@ -322,56 +323,56 @@ public:
         return *this;
     }
 
-    _NODISCARD _Deque_const_iterator operator+(const difference_type _Off) const {
+    _NODISCARD _Deque_const_iterator operator+(const difference_type _Off) const noexcept {
         _Deque_const_iterator _Tmp = *this;
         return _Tmp += _Off;
     }
 
-    _Deque_const_iterator& operator-=(const difference_type _Off) {
+    _Deque_const_iterator& operator-=(const difference_type _Off) noexcept {
         return *this += -_Off;
     }
 
-    _NODISCARD _Deque_const_iterator operator-(const difference_type _Off) const {
+    _NODISCARD _Deque_const_iterator operator-(const difference_type _Off) const noexcept {
         _Deque_const_iterator _Tmp = *this;
         return _Tmp -= _Off;
     }
 
-    _NODISCARD difference_type operator-(const _Deque_const_iterator& _Right) const {
+    _NODISCARD difference_type operator-(const _Deque_const_iterator& _Right) const noexcept {
         _Compat(_Right);
         return static_cast<difference_type>(this->_Myoff - _Right._Myoff);
     }
 
-    _NODISCARD reference operator[](const difference_type _Off) const {
+    _NODISCARD reference operator[](const difference_type _Off) const noexcept {
         return *(*this + _Off);
     }
 
-    _NODISCARD bool operator==(const _Deque_const_iterator& _Right) const {
+    _NODISCARD bool operator==(const _Deque_const_iterator& _Right) const noexcept {
         _Compat(_Right);
         return this->_Myoff == _Right._Myoff;
     }
 
-    _NODISCARD bool operator!=(const _Deque_const_iterator& _Right) const {
+    _NODISCARD bool operator!=(const _Deque_const_iterator& _Right) const noexcept {
         return !(*this == _Right);
     }
 
-    _NODISCARD bool operator<(const _Deque_const_iterator& _Right) const {
+    _NODISCARD bool operator<(const _Deque_const_iterator& _Right) const noexcept {
         _Compat(_Right);
         return this->_Myoff < _Right._Myoff;
     }
 
-    _NODISCARD bool operator>(const _Deque_const_iterator& _Right) const {
+    _NODISCARD bool operator>(const _Deque_const_iterator& _Right) const noexcept {
         return _Right < *this;
     }
 
-    _NODISCARD bool operator<=(const _Deque_const_iterator& _Right) const {
+    _NODISCARD bool operator<=(const _Deque_const_iterator& _Right) const noexcept {
         return !(_Right < *this);
     }
 
-    _NODISCARD bool operator>=(const _Deque_const_iterator& _Right) const {
+    _NODISCARD bool operator>=(const _Deque_const_iterator& _Right) const noexcept {
         return !(*this < _Right);
     }
 
-    void _Compat(const _Deque_const_iterator& _Right) const { // test for compatible iterator pair
+    void _Compat(const _Deque_const_iterator& _Right) const noexcept { // test for compatible iterator pair
 #if _ITERATOR_DEBUG_LEVEL == 0
         (void) _Right;
 #else // _ITERATOR_DEBUG_LEVEL == 0
@@ -379,13 +380,13 @@ public:
 #endif // _ITERATOR_DEBUG_LEVEL == 0
     }
 
-    void _Setcont(const _Mydeque* _Pdeque) { // set container pointer
+    void _Setcont(const _Mydeque* _Pdeque) noexcept { // set container pointer
         this->_Adopt(_Pdeque);
     }
 
     using _Prevent_inheriting_unwrap = _Deque_const_iterator;
 
-    _NODISCARD _Deque_unchecked_const_iterator<_Mydeque> _Unwrapped() const {
+    _NODISCARD _Deque_unchecked_const_iterator<_Mydeque> _Unwrapped() const noexcept {
         return {this->_Myoff, this->_Getcont()};
     }
 
@@ -404,13 +405,13 @@ public:
     }
 
 #if _ITERATOR_DEBUG_LEVEL != 0
-    friend void _Verify_range(const _Deque_const_iterator& _First, const _Deque_const_iterator& _Last) {
+    friend void _Verify_range(const _Deque_const_iterator& _First, const _Deque_const_iterator& _Last) noexcept {
         // note _Compat check inside operator<=
         _STL_VERIFY(_First <= _Last, "deque iterators transposed");
     }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
-    void _Seek_to(const _Deque_unchecked_const_iterator<_Mydeque>& _UIt) {
+    void _Seek_to(const _Deque_unchecked_const_iterator<_Mydeque>& _UIt) noexcept {
         _Myoff = _UIt._Myoff;
     }
 
@@ -419,7 +420,7 @@ public:
 
 template <class _Mydeque>
 _NODISCARD _Deque_const_iterator<_Mydeque> operator+(
-    typename _Deque_const_iterator<_Mydeque>::difference_type _Off, _Deque_const_iterator<_Mydeque> _Next) {
+    typename _Deque_const_iterator<_Mydeque>::difference_type _Off, _Deque_const_iterator<_Mydeque> _Next) noexcept {
     return _Next += _Off;
 }
 
@@ -441,72 +442,72 @@ public:
 
     using _Mybase::_Mybase;
 
-    _NODISCARD reference operator*() const {
+    _NODISCARD reference operator*() const noexcept {
         return const_cast<reference>(_Mybase::operator*());
     }
 
-    _NODISCARD pointer operator->() const {
+    _NODISCARD pointer operator->() const noexcept {
         return pointer_traits<pointer>::pointer_to(**this);
     }
 
-    _Deque_iterator& operator++() {
+    _Deque_iterator& operator++() noexcept {
         _Mybase::operator++();
         return *this;
     }
 
-    _Deque_iterator operator++(int) {
+    _Deque_iterator operator++(int) noexcept {
         _Deque_iterator _Tmp = *this;
         _Mybase::operator++();
         return _Tmp;
     }
 
-    _Deque_iterator& operator--() {
+    _Deque_iterator& operator--() noexcept {
         _Mybase::operator--();
         return *this;
     }
 
-    _Deque_iterator operator--(int) {
+    _Deque_iterator operator--(int) noexcept {
         _Deque_iterator _Tmp = *this;
         _Mybase::operator--();
         return _Tmp;
     }
 
-    _Deque_iterator& operator+=(const difference_type _Off) {
+    _Deque_iterator& operator+=(const difference_type _Off) noexcept {
         _Mybase::operator+=(_Off);
         return *this;
     }
 
-    _NODISCARD _Deque_iterator operator+(const difference_type _Off) const {
+    _NODISCARD _Deque_iterator operator+(const difference_type _Off) const noexcept {
         _Deque_iterator _Tmp = *this;
         return _Tmp += _Off;
     }
 
-    _Deque_iterator& operator-=(const difference_type _Off) {
+    _Deque_iterator& operator-=(const difference_type _Off) noexcept {
         _Mybase::operator-=(_Off);
         return *this;
     }
 
     using _Mybase::operator-;
 
-    _NODISCARD _Deque_iterator operator-(const difference_type _Off) const {
+    _NODISCARD _Deque_iterator operator-(const difference_type _Off) const noexcept {
         _Deque_iterator _Tmp = *this;
         return _Tmp -= _Off;
     }
 
-    _NODISCARD reference operator[](const difference_type _Off) const {
+    _NODISCARD reference operator[](const difference_type _Off) const noexcept {
         return const_cast<reference>(_Mybase::operator[](_Off));
     }
 
     using _Prevent_inheriting_unwrap = _Deque_iterator;
 
-    _NODISCARD _Deque_unchecked_iterator<_Mydeque> _Unwrapped() const {
+    _NODISCARD _Deque_unchecked_iterator<_Mydeque> _Unwrapped() const noexcept {
         return {this->_Myoff, this->_Getcont()};
     }
 };
 
 template <class _Mydeque>
 _NODISCARD _Deque_iterator<_Mydeque> operator+(
-    typename _Deque_iterator<_Mydeque>::difference_type _Off, _Deque_iterator<_Mydeque> _Next) {
+    typename _Deque_iterator<_Mydeque>::difference_type _Off, _Deque_iterator<_Mydeque> _Next) noexcept {
     return _Next += _Off;
 }
 
@@ -836,10 +837,10 @@ public:
 
         if (_Off <= _Mysize() / 2) { // closer to front, push to front then rotate
             emplace_front(_STD forward<_Valty>(_Val)...);
-            _STD rotate(begin(), begin() + 1, begin() + static_cast<difference_type>(1 + _Off));
+            _STD rotate(begin(), _Next_iter(begin()), begin() + static_cast<difference_type>(1 + _Off));
         } else { // closer to back, push to back then rotate
             emplace_back(_STD forward<_Valty>(_Val)...);
-            _STD rotate(begin() + static_cast<difference_type>(_Off), end() - 1, end());
+            _STD rotate(begin() + static_cast<difference_type>(_Off), _Prev_iter(end()), end());
         }
         return begin() + static_cast<difference_type>(_Off);
     }
@@ -1064,7 +1065,7 @@ public:
         _STL_VERIFY(!empty(), "back() called on empty deque");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
-        return *(_Unchecked_end() - 1);
+        return *_Prev_iter(_Unchecked_end());
     }
 
     _NODISCARD const_reference back() const noexcept /* strengthened */ {
@@ -1072,7 +1073,7 @@ public:
         _STL_VERIFY(!empty(), "back() called on empty deque");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
-        return *(_Unchecked_end() - 1);
+        return *_Prev_iter(_Unchecked_end());
     }
 
     void push_front(const _Ty& _Val) {
@@ -1197,10 +1198,10 @@ public:
 
         if (_Off <= _Mysize() / 2) { // closer to front, push to front then copy
             push_front(_Val);
-            _STD rotate(begin(), begin() + 1, begin() + static_cast<difference_type>(1 + _Off));
+            _STD rotate(begin(), _Next_iter(begin()), begin() + static_cast<difference_type>(1 + _Off));
         } else { // closer to back, push to back then copy
             push_back(_Val);
-            _STD rotate(begin() + static_cast<difference_type>(_Off), end() - 1, end());
+            _STD rotate(begin() + static_cast<difference_type>(_Off), _Prev_iter(end()), end());
         }
 
         return begin() + static_cast<difference_type>(_Off);
@@ -1291,6 +1292,10 @@ public:
         auto _Off   = static_cast<size_type>(_First - begin());
         auto _Count = static_cast<size_type>(_Last - _First);
 #endif // _ITERATOR_DEBUG_LEVEL == 2
+
+        if (_Count == 0) {
+            return _First;
+        }
 
         if (_Off < static_cast<size_type>(end() - _Last)) { // closer to front
             _STD move_backward(begin(), _First, _Last); // copy over hole

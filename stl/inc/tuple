@@ -118,7 +118,7 @@ _INLINE_VAR constexpr bool _Tuple_nothrow_assignable_v =
     _Tuple_nothrow_assignable_v0<tuple_size_v<_Dest> == sizeof...(_Srcs), _Dest, _Srcs...>;
 
 // STRUCT TEMPLATE _Tuple_convert_copy_val
-// Constrain tuple's converting copy constructor (LWG-2549)
+// Constrain tuple's copy converting constructor (LWG-2549)
 template <class _Myself, class... _Other>
 struct _Tuple_convert_copy_val : true_type {};
 
@@ -128,7 +128,7 @@ struct _Tuple_convert_copy_val<tuple<_This>, _Uty>
           is_convertible<const tuple<_Uty>&, _This>>> {};
 
 // STRUCT TEMPLATE _Tuple_convert_move_val
-// Constrain tuple's converting move constructor (LWG-2549)
+// Constrain tuple's move converting constructor (LWG-2549)
 template <class _Myself, class... _Other>
 struct _Tuple_convert_move_val : true_type {};
 

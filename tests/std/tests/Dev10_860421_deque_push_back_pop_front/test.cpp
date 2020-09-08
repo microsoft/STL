@@ -35,7 +35,7 @@ int main() {
     test_391805();
 }
 
-// Also test Dev10#391805 "STL: Prefast error in deque".
+// Also test Dev10-391805 "STL: Prefast error in deque".
 
 void test_391805() {
     deque<int> d;

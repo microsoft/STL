@@ -79,7 +79,7 @@ concept integral = is_integral_v<_Ty>;
 
 // CONCEPT signed_integral
 template <class _Ty>
-concept signed_integral = integral<_Ty> && _Ty(-1) < _Ty(0);
+concept signed_integral = integral<_Ty> && static_cast<_Ty>(-1) < static_cast<_Ty>(0);
 
 // CONCEPT unsigned_integral
 template <class _Ty>

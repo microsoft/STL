@@ -15,10 +15,6 @@
 #include <vector>
 #include <xstring>
 
-#ifdef __cpp_lib_concepts
-#include <concepts>
-#endif // __cpp_lib_concepts
-
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
@@ -51,25 +47,6 @@ _STD_BEGIN
         "invalid template argument for " #_RandType ": N4659 29.6.1.1 [rand.req.genl]/1f requires one of "     \
         "unsigned short, unsigned int, unsigned long, or unsigned long long");                                 \
     _RNG_PROHIBIT_CHAR(_CheckedType)
-
-
-#ifdef __cpp_lib_concepts
-// STRUCT TEMPLATE _Require_constant
-template <auto>
-struct _Require_constant; // not defined; _Require_constant<E> is a valid type if E is a constant expression
-
-// CONCEPT uniform_random_bit_generator
-// clang-format off
-template <class _Ty>
-concept uniform_random_bit_generator = invocable<_Ty&> && unsigned_integral<invoke_result_t<_Ty&>> && requires {
-    { (_Ty::min)() } -> same_as<invoke_result_t<_Ty&>>;
-    { (_Ty::max)() } -> same_as<invoke_result_t<_Ty&>>;
-    typename _Require_constant<(_Ty::min)()>;
-    typename _Require_constant<(_Ty::max)()>;
-    requires (_Ty::min)() < (_Ty::max)();
-};
-// clang-format on
-#endif // __cpp_lib_concepts
 
 // ALIAS TEMPLATE _Enable_if_seed_seq_t
 template <class _Seed_seq, class _Self, class _Engine = _Self>
@@ -4507,7 +4484,7 @@ private:
     result_type _Eval(_Engine& _Eng, const param_type& _Par0) const {
         double _Px           = _NRAND(_Eng, double);
         const auto _First    = _Par0._Pcdf.begin();
-        const auto _Position = _STD lower_bound(_First, _Par0._Pcdf.end(), _Px);
+        const auto _Position = _STD lower_bound(_First, _Prev_iter(_Par0._Pcdf.end()), _Px);
         return static_cast<result_type>(_Position - _First);
     }
 
@@ -4551,10 +4528,7 @@ public:
     struct param_type : _Mypbase { // parameter package
         using distribution_type = piecewise_constant_distribution;
 
-        param_type() {
-            _Bvec.push_back(0);
-            _Bvec.push_back(1);
-        }
+        param_type() : _Bvec{0, 1} {}
 
         template <class _InIt1, class _InIt2>
         param_type(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2) : _Mypbase(_Noinit), _Bvec(_First1, _Last1) {
@@ -4562,6 +4536,8 @@ public:
                 for (size_t _Idx = 0; _Idx < _Bvec.size() - 1; ++_Idx) {
                     this->_Pvec.push_back(static_cast<double>(*_First2++));
                 }
+            } else { // default construct
+                _Bvec = {0, 1};
             }
 
             _Init();
@@ -4571,18 +4547,12 @@ public:
         param_type(initializer_list<_Ty> _Ilist, _Fn _Func) : _Mypbase(_Noinit) {
             if (2 <= _Ilist.size()) {
                 _Bvec.assign(_Ilist);
+
+                for (size_t _Idx = 0; _Idx < _Bvec.size() - 1; ++_Idx) {
+                    this->_Pvec.push_back(_Func(_Ty{0.5} * (_Bvec[_Idx] + _Bvec[_Idx + 1])));
+                }
             } else { // default construct
-                _Bvec.push_back(0);
-                _Bvec.push_back(1);
-            }
-
-            _Ty _Low      = _Bvec.front();
-            _Ty _Range    = _Bvec.back() - _Low;
-            size_t _Count = _Bvec.size() - 1;
-
-            _Range /= static_cast<_Ty>(_Count);
-            for (size_t _Idx = 0; _Idx < _Count; ++_Idx) {
-                _Pvec.push_back(_Func(_Low + _Idx * _Range));
+                _Bvec = {0, 1};
             }
 
             _Init();
@@ -4749,11 +4719,12 @@ public:
     using result_type = _Ty;
 
     struct param_type : _Mypbase { // parameter package
+        // TRANSITION, ABI: stores probability densities (N + 1 elements) in _Mybase::_Pvec
+        // this breaks invariants of discrete_distribution<size_t>::param_type
         using distribution_type = piecewise_linear_distribution;
 
-        param_type() {
-            _Bvec.push_back(0);
-            _Bvec.push_back(1);
+        param_type() : _Bvec{0, 1} {
+            this->_Pvec.push_back(1.0);
         }
 
         template <class _InIt1, class _InIt2>
@@ -4762,6 +4733,8 @@ public:
                 for (size_t _Idx = 0; _Idx < _Bvec.size(); ++_Idx) {
                     this->_Pvec.push_back(static_cast<double>(*_First2++));
                 }
+            } else { // default construct
+                _Bvec = {0, 1};
             }
 
             _Init();
@@ -4771,18 +4744,12 @@ public:
         param_type(initializer_list<_Ty> _Ilist, _Fn _Func) : _Mypbase(_Noinit) {
             if (2 <= _Ilist.size()) {
                 _Bvec.assign(_Ilist);
+
+                for (const auto& _Bval : _Bvec) {
+                    this->_Pvec.push_back(_Func(_Bval));
+                }
             } else { // default construct
-                _Bvec.push_back(0);
-                _Bvec.push_back(1);
-            }
-
-            _Ty _Low      = _Bvec.front();
-            _Ty _Range    = _Bvec.back() - _Low;
-            size_t _Count = _Bvec.size();
-
-            _Range /= static_cast<_Ty>(_Count);
-            for (size_t _Idx = 0; _Idx < _Count; ++_Idx) {
-                this->_Pvec.push_back(_Func(_Low + _Idx * _Range));
+                _Bvec = {0, 1};
             }
 
             _Init();
@@ -4792,12 +4759,12 @@ public:
         param_type(size_t _Count, _Ty _Low, _Ty _High, _Fn _Func) : _Mypbase(_Noinit) {
             _Ty _Range = _High - _Low;
             _STL_ASSERT(_Ty{0} < _Range, "invalid range for piecewise_linear_distribution");
-            if (_Count < 2) {
-                _Count = 2;
+            if (_Count < 1) {
+                _Count = 1;
             }
 
             _Range /= static_cast<double>(_Count);
-            for (size_t _Idx = 0; _Idx < _Count; ++_Idx) { // compute _Bvec and _Pvec
+            for (size_t _Idx = 0; _Idx <= _Count; ++_Idx) { // compute _Bvec and _Pvec
                 _Ty _Bval = _Low + _Idx * _Range;
                 _Bvec.push_back(_Bval);
                 this->_Pvec.push_back(_Func(_Bval));
@@ -4822,20 +4789,27 @@ public:
             return _Ans;
         }
 
+        _NODISCARD double _Piece_probability(const size_t _Idx) const {
+            return 0.5 * (this->_Pvec[_Idx] + this->_Pvec[_Idx + 1])
+                   * static_cast<double>(_Bvec[_Idx + 1] - _Bvec[_Idx]);
+        }
+
         void _Init(bool _Renorm = true) { // initialize
             size_t _Size = this->_Pvec.size();
             size_t _Idx;
 
             if (_Renorm) {
-                if (this->_Pvec.empty()) {
-                    this->_Pvec.push_back(1.0); // make empty vector degenerate
+                if (this->_Pvec.empty()) { // make empty vector degenerate
+                    this->_Pvec = {1.0, 1.0};
                 } else { // normalize probabilities
                     double _Sum = 0;
 
+                    _STL_ASSERT(0.0 <= this->_Pvec[0], "invalid probability for "
+                                                       "piecewise_linear_distribution");
                     for (_Idx = 1; _Idx < _Size; ++_Idx) { // sum all probabilities
                         _STL_ASSERT(0.0 <= this->_Pvec[_Idx], "invalid probability for "
                                                               "piecewise_linear_distribution");
-                        _Sum += 0.5 * (this->_Pvec[_Idx - 1] + this->_Pvec[_Idx]);
+                        _Sum += _Piece_probability(_Idx - 1);
                     }
 
                     _STL_ASSERT(0.0 < _Sum, "invalid probability vector for "
@@ -4848,9 +4822,9 @@ public:
                 }
             }
 
-            this->_Pcdf.assign(1, 0.5 * (this->_Pvec[0] + this->_Pvec[1]));
+            this->_Pcdf.assign(1, _Piece_probability(0));
             for (_Idx = 2; _Idx < _Size; ++_Idx) {
-                this->_Pcdf.push_back(0.5 * (this->_Pvec[_Idx - 1] + this->_Pvec[_Idx]) + this->_Pcdf[_Idx - 2]);
+                this->_Pcdf.push_back(_Piece_probability(_Idx - 1) + this->_Pcdf[_Idx - 2]);
             }
         }
 
@@ -4917,14 +4891,14 @@ public:
             _In(_Istr, _Val);
             _Par0._Pvec.push_back(_Val);
         }
-        _Par0._Init(false); // don't renormalize, just compute CDF
 
-        _Par._Bvec.clear();
-        for (size_t _Idx = _Par._Pvec.size(); 0 < _Idx; --_Idx) { // get a value and add to intervals vector
+        _Par0._Bvec.clear();
+        for (size_t _Idx = _Par0._Pvec.size(); 0 < _Idx; --_Idx) { // get a value and add to intervals vector
             double _Val;
             _In(_Istr, _Val);
-            _Par._Bvec.push_back(_Val);
+            _Par0._Bvec.push_back(_Val);
         }
+        _Par0._Init(false); // don't renormalize, just compute CDF
         return _Istr;
     }
 

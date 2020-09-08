@@ -340,8 +340,9 @@ namespace test {
         static constexpr bool at_least = derived_from<Category, T>;
 
         using ReferenceType = conditional_t<to_bool(Proxy), proxy_reference<Category, Element>, Element&>;
-
     public:
+        using Consterator = iterator<Category, const Element, Diff, Eq, Proxy, Wrapped>;
+
         // output iterator operations
         iterator() = default;
 
@@ -351,6 +352,10 @@ namespace test {
         constexpr iterator& operator=(iterator&& that) noexcept {
             ptr_ = exchange(that.ptr_, nullptr);
             return *this;
+        }
+
+        constexpr operator Consterator() && noexcept {
+            return Consterator{exchange(ptr_, nullptr)};
         }
 
         [[nodiscard]] constexpr Element* peek() const noexcept {
@@ -415,8 +420,7 @@ namespace test {
             ++ptr_;
         }
 
-        [[nodiscard]] constexpr friend std::remove_cv_t<Element> iter_move(iterator const& i)
-            requires at_least<input> && std::constructible_from<std::remove_cv_t<Element>, Element> {
+        [[nodiscard]] constexpr friend Element&& iter_move(iterator const& i) requires at_least<input> {
             return std::move(*i.ptr_);
         }
 
@@ -427,6 +431,12 @@ namespace test {
         // sentinel operations (implied by forward iterator):
         iterator(iterator const&) requires (to_bool(Eq)) = default;
         iterator& operator=(iterator const&) requires (to_bool(Eq)) = default;
+
+        constexpr operator Consterator() const& noexcept
+            requires (to_bool(Eq)) {
+            return Consterator{ptr_};
+        }
+
         [[nodiscard]] constexpr boolish operator==(iterator const& that) const noexcept requires (to_bool(Eq)) {
             return {ptr_ == that.ptr_};
         }
@@ -959,6 +969,56 @@ struct with_output_ranges {
 };
 
 template <class Continuation, class Element>
+struct with_input_or_output_ranges {
+    template <class... Args>
+    static constexpr void call() {
+        using namespace test;
+        using test::range;
+
+        // For all ranges, IsCommon implies Eq.
+        // For single-pass ranges, Eq is uninteresting without IsCommon (there's only one valid iterator
+        // value at a time, and no reason to compare it with itself for equality).
+        Continuation::template call<Args...,
+            range<input, Element, Sized::no, CanDifference::no, Common::no, CanCompare::no, ProxyRef::no>>();
+        Continuation::template call<Args...,
+            range<input, Element, Sized::no, CanDifference::no, Common::no, CanCompare::no, ProxyRef::yes>>();
+        Continuation::template call<Args...,
+            range<input, Element, Sized::no, CanDifference::no, Common::yes, CanCompare::yes, ProxyRef::no>>();
+        Continuation::template call<Args...,
+            range<input, Element, Sized::no, CanDifference::no, Common::yes, CanCompare::yes, ProxyRef::yes>>();
+
+        Continuation::template call<Args...,
+            range<input, Element, Sized::no, CanDifference::yes, Common::no, CanCompare::no, ProxyRef::no>>();
+        Continuation::template call<Args...,
+            range<input, Element, Sized::no, CanDifference::yes, Common::no, CanCompare::no, ProxyRef::yes>>();
+        Continuation::template call<Args...,
+            range<input, Element, Sized::no, CanDifference::yes, Common::yes, CanCompare::yes, ProxyRef::no>>();
+        Continuation::template call<Args...,
+            range<input, Element, Sized::no, CanDifference::yes, Common::yes, CanCompare::yes, ProxyRef::yes>>();
+
+        Continuation::template call<Args...,
+            range<input, Element, Sized::yes, CanDifference::no, Common::no, CanCompare::no, ProxyRef::no>>();
+        Continuation::template call<Args...,
+            range<input, Element, Sized::yes, CanDifference::no, Common::no, CanCompare::no, ProxyRef::yes>>();
+        Continuation::template call<Args...,
+            range<input, Element, Sized::yes, CanDifference::no, Common::yes, CanCompare::yes, ProxyRef::no>>();
+        Continuation::template call<Args...,
+            range<input, Element, Sized::yes, CanDifference::no, Common::yes, CanCompare::yes, ProxyRef::yes>>();
+
+        Continuation::template call<Args...,
+            range<input, Element, Sized::yes, CanDifference::yes, Common::no, CanCompare::no, ProxyRef::no>>();
+        Continuation::template call<Args...,
+            range<input, Element, Sized::yes, CanDifference::yes, Common::no, CanCompare::no, ProxyRef::yes>>();
+        Continuation::template call<Args...,
+            range<input, Element, Sized::yes, CanDifference::yes, Common::yes, CanCompare::yes, ProxyRef::no>>();
+        Continuation::template call<Args...,
+            range<input, Element, Sized::yes, CanDifference::yes, Common::yes, CanCompare::yes, ProxyRef::yes>>();
+
+        with_output_ranges<Continuation, Element>::template call<Args...>();
+    }
+};
+
+template <class Continuation, class Element>
 struct with_input_iterators {
     template <class... Args>
     static constexpr void call() {
@@ -1009,6 +1069,11 @@ constexpr void test_in() {
 }
 
 template <class Instantiator, class Element>
+constexpr void test_inout() {
+    with_input_or_output_ranges<Instantiator, Element>::call();
+}
+
+template <class Instantiator, class Element>
 constexpr void test_fwd() {
     with_forward_ranges<Instantiator, Element>::call();
 }
@@ -1026,11 +1091,6 @@ constexpr void test_random() {
 template <class Instantiator, class Element>
 constexpr void test_contiguous() {
     with_contiguous_ranges<Instantiator, Element>::call();
-}
-
-template <class Instantiator, class Element1, class Element2>
-constexpr void input_range_output_iterator_permutations() {
-    with_input_ranges<with_output_iterators<Instantiator, Element2>, Element1>::call();
 }
 
 template <class Instantiator, class Element1, class Element2>
@@ -1054,6 +1114,11 @@ constexpr void test_bidi_bidi() {
 }
 
 template <class Instantiator, class Element1, class Element2>
+constexpr void input_range_output_iterator_permutations() {
+    with_input_ranges<with_output_iterators<Instantiator, Element2>, Element1>::call();
+}
+
+template <class Instantiator, class Element1, class Element2>
 constexpr void test_in_write() {
     with_input_ranges<with_writable_iterators<Instantiator, Element2>, Element1>::call();
 }
@@ -1061,6 +1126,16 @@ constexpr void test_in_write() {
 template <class Instantiator, class Element1, class Element2>
 constexpr void test_fwd_write() {
     with_forward_ranges<with_writable_iterators<Instantiator, Element2>, Element1>::call();
+}
+
+template <class Instantiator, class Element1, class Element2>
+constexpr void test_bidi_write() {
+    with_bidirectional_ranges<with_writable_iterators<Instantiator, Element2>, Element1>::call();
+}
+
+template <class Instantiator, class Element1, class Element2>
+constexpr void test_contiguous_write() {
+    with_contiguous_ranges<with_writable_iterators<Instantiator, Element2>, Element1>::call();
 }
 
 template <class Instantiator, class Element>
