@@ -212,18 +212,18 @@ protected:
         ios_base::iostate& _State, tm* _Pt) const { // get time of day from [_First, _Last) into _Pt
         const _Ctype& _Ctype_fac = _STD use_facet<_Ctype>(_Iosbase.getloc());
 
-        _State |= _Getint(_First, _Last, 0, 23, _Pt->tm_hour, _Ctype_fac);
+        _State |= _Getint(_First, _Last, 0, 23, _Pt->tm_hour, _Ctype_fac, 2);
 
         if (_State != ios_base::goodbit || _Ctype_fac.narrow(*_First) != ':') {
             _State |= ios_base::failbit; // hour field is bad
         } else {
-            _State |= _Getint(++_First, _Last, 0, 59, _Pt->tm_min, _Ctype_fac);
+            _State |= _Getint(++_First, _Last, 0, 59, _Pt->tm_min, _Ctype_fac, 2);
         }
 
         if (_State != ios_base::goodbit || _Ctype_fac.narrow(*_First) != ':') {
             _State |= ios_base::failbit; // min field is bad
         } else {
-            _State |= _Getint(++_First, _Last, 0, 59, _Pt->tm_sec, _Ctype_fac);
+            _State |= _Getint(++_First, _Last, 0, 59, _Pt->tm_sec, _Ctype_fac, 2);
         }
 
         return _First;
@@ -243,10 +243,10 @@ protected:
                 _First  = get_monthname(_First, _Last, _Iosbase, _State, _Pt);
                 _Dorder = mdy;
             } else if (_Dorder == mdy) { // get month number
-                _State |= _Getint(_First, _Last, 1, 12, _Pt->tm_mon, _Ctype_fac);
+                _State |= _Getint(_First, _Last, 1, 12, _Pt->tm_mon, _Ctype_fac, 2);
                 --_Pt->tm_mon;
             } else if (_Dorder == dmy) {
-                _State |= _Getint(_First, _Last, 1, 31, _Pt->tm_mday, _Ctype_fac);
+                _State |= _Getint(_First, _Last, 1, 31, _Pt->tm_mday, _Ctype_fac, 2);
             } else { // ymd or ydm
                 _First = get_year(_First, _Last, _Iosbase, _State, _Pt);
             }
@@ -278,10 +278,10 @@ protected:
                     }
                 }
             } else if (_Dorder == dmy || _Dorder == ymd) { // get month number
-                _State |= _Getint(_First, _Last, 1, 12, _Pt->tm_mon, _Ctype_fac);
+                _State |= _Getint(_First, _Last, 1, 12, _Pt->tm_mon, _Ctype_fac, 2);
                 --_Pt->tm_mon;
             } else {
-                _State |= _Getint(_First, _Last, 1, 31, _Pt->tm_mday, _Ctype_fac);
+                _State |= _Getint(_First, _Last, 1, 31, _Pt->tm_mday, _Ctype_fac, 2);
             }
         }
 
@@ -309,10 +309,10 @@ protected:
                 _First = get_monthname(_First, _Last, _Iosbase, _State, _Pt);
             }
         } else if (_Dorder == ydm) { // get month number
-            _State |= _Getint(_First, _Last, 1, 12, _Pt->tm_mon, _Ctype_fac);
+            _State |= _Getint(_First, _Last, 1, 12, _Pt->tm_mon, _Ctype_fac, 2);
             --_Pt->tm_mon;
         } else if (_Dorder == ymd) {
-            _State |= _Getint(_First, _Last, 1, 31, _Pt->tm_mday, _Ctype_fac);
+            _State |= _Getint(_First, _Last, 1, 31, _Pt->tm_mday, _Ctype_fac, 2);
         } else { // mdy or dmy
             _First = get_year(_First, _Last, _Iosbase, _State, _Pt);
         }
@@ -354,7 +354,7 @@ protected:
         const _Ctype& _Ctype_fac = _STD use_facet<_Ctype>(_Iosbase.getloc());
 
         int _Ans               = 0;
-        ios_base::iostate _Res = _Getint(_First, _Last, 0, 9999, _Ans, _Ctype_fac);
+        ios_base::iostate _Res = _Getint(_First, _Last, 0, 9999, _Ans, _Ctype_fac, 4);
 
         _State |= _Res; // pass on eofbit and failbit
         if (!(_Res & ios_base::failbit)) {
@@ -394,7 +394,7 @@ protected:
             break;
 
         case 'C':
-            _State |= _Getint(_First, _Last, 0, 99, _Ans, _Ctype_fac);
+            _State |= _Getint(_First, _Last, 0, 99, _Ans, _Ctype_fac, 2);
             if (!(_State & ios_base::failbit)) {
                 _Pt->tm_year = _Ans * 100 - 1900; // convert to century
             }
@@ -403,7 +403,7 @@ protected:
 
         case 'd':
         case 'e':
-            _State |= _Getint(_First, _Last, 1, 31, _Pt->tm_mday, _Ctype_fac);
+            _State |= _Getint(_First, _Last, 1, 31, _Pt->tm_mday, _Ctype_fac, 2);
             break;
 
         case 'D':
@@ -411,11 +411,11 @@ protected:
             break;
 
         case 'H':
-            _State |= _Getint(_First, _Last, 0, 23, _Pt->tm_hour, _Ctype_fac);
+            _State |= _Getint(_First, _Last, 0, 23, _Pt->tm_hour, _Ctype_fac, 2);
             break;
 
         case 'I':
-            _State |= _Getint(_First, _Last, 1, 12, _Ans, _Ctype_fac);
+            _State |= _Getint(_First, _Last, 1, 12, _Ans, _Ctype_fac, 2);
             if (!(_State & ios_base::failbit)) {
                 _Pt->tm_hour = _Ans == 12 ? 0 : _Ans;
             }
@@ -423,11 +423,11 @@ protected:
             break;
 
         case 'j':
-            _State |= _Getint(_First, _Last, 1, 366, _Pt->tm_yday, _Ctype_fac);
+            _State |= _Getint(_First, _Last, 1, 366, _Pt->tm_yday, _Ctype_fac, 3);
             break;
 
         case 'm':
-            _State |= _Getint(_First, _Last, 1, 12, _Ans, _Ctype_fac);
+            _State |= _Getint(_First, _Last, 1, 12, _Ans, _Ctype_fac, 2);
             if (!(_State & ios_base::failbit)) {
                 _Pt->tm_mon = _Ans - 1;
             }
@@ -435,7 +435,7 @@ protected:
             break;
 
         case 'M':
-            _State |= _Getint(_First, _Last, 0, 59, _Pt->tm_min, _Ctype_fac);
+            _State |= _Getint(_First, _Last, 0, 59, _Pt->tm_min, _Ctype_fac, 2);
             break;
 
         case 'n':
@@ -462,7 +462,7 @@ protected:
             break;
 
         case 'S':
-            _State |= _Getint(_First, _Last, 0, 60, _Pt->tm_sec, _Ctype_fac);
+            _State |= _Getint(_First, _Last, 0, 60, _Pt->tm_sec, _Ctype_fac, 2);
             break;
 
         case 'T':
@@ -471,15 +471,15 @@ protected:
             break;
 
         case 'U':
-            _State |= _Getint(_First, _Last, 0, 53, _Pt->tm_yday, _Ctype_fac);
+            _State |= _Getint(_First, _Last, 0, 53, _Pt->tm_yday, _Ctype_fac, 2);
             break;
 
         case 'w':
-            _State |= _Getint(_First, _Last, 0, 6, _Pt->tm_wday, _Ctype_fac);
+            _State |= _Getint(_First, _Last, 0, 6, _Pt->tm_wday, _Ctype_fac, 1);
             break;
 
         case 'W':
-            _State |= _Getint(_First, _Last, 0, 53, _Pt->tm_yday, _Ctype_fac);
+            _State |= _Getint(_First, _Last, 0, 53, _Pt->tm_yday, _Ctype_fac, 2);
             break;
 
         case 'x':
@@ -487,7 +487,7 @@ protected:
             break;
 
         case 'y':
-            _State |= _Getint(_First, _Last, 0, 99, _Ans, _Ctype_fac);
+            _State |= _Getint(_First, _Last, 0, 99, _Ans, _Ctype_fac, 2);
             if (!(_State & ios_base::failbit)) {
                 _Pt->tm_year = _Ans < 69 ? _Ans + 100 : _Ans;
             }
@@ -538,7 +538,8 @@ protected:
 
 private:
     ios_base::iostate __CLRCALL_OR_CDECL _Getint(_InIt& _First, _InIt& _Last, int _Lo, int _Hi, int& _Val,
-        const _Ctype& _Ctype_fac) const { // get integer in range [_Lo, _Hi] from [_First, _Last)
+        const _Ctype& _Ctype_fac,
+        const int _MaxLen = -1) const { // get integer in range [_Lo, _Hi] from [_First, _Last)
         char _Ac[_MAX_INT_DIG];
         char* _Ep;
         char* _Ptr = _Ac;
@@ -554,26 +555,27 @@ private:
             }
         }
 
-        bool _Seendigit = false;
+        int _Seendigit = 0;
 
         for (; _First != _Last && _Ctype_fac.narrow(*_First) == '0'; ++_First) { // strip leading zeros
-            _Seendigit = true;
+            ++_Seendigit;
         }
 
-        if (_Seendigit) {
-            *_Ptr++ = '0'; // replace one or more with single zero
+        if (_Seendigit > 0) {
+            *_Ptr++    = '0'; // replace one or more with single zero
+            _Seendigit = 1;
         }
 
-        for (char* const _Pe = &_Ac[_MAX_INT_DIG - 1];
-             _First != _Last && '0' <= (_Ch = _Ctype_fac.narrow(*_First)) && _Ch <= '9';
-             _Seendigit = true, (void) ++_First) { // copy digits
+        for (char* const _Pe = &_Ac[_MAX_INT_DIG - 1]; _First != _Last && '0' <= (_Ch = _Ctype_fac.narrow(*_First))
+                                                       && _Ch <= '9' && (_MaxLen == -1 || _Seendigit < _MaxLen);
+             ++_Seendigit, (void) ++_First) { // copy digits
             *_Ptr = _Ch;
             if (_Ptr < _Pe) {
                 ++_Ptr; // drop trailing digits if already too large
             }
         }
 
-        if (!_Seendigit) {
+        if (_Seendigit == 0) {
             _Ptr = _Ac;
         }
 
