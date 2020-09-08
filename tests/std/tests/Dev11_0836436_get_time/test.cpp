@@ -243,6 +243,66 @@ void test_990695() {
         }
 
         {
+            istringstream iss("20200609");
+            ios_base::iostate err = Bit;
+            tm t{};
+            const string fmt("%Y%m%d");
+            use_facet<time_get<char>>(iss.getloc())
+                .get(Iter(iss.rdbuf()), Iter(), iss, err, &t, fmt.c_str(), fmt.c_str() + fmt.size());
+            assert(t.tm_mon == 5);
+            assert(t.tm_mday == 9);
+            assert(t.tm_year == 120);
+        }
+
+        {
+            istringstream iss("20201213");
+            ios_base::iostate err = Bit;
+            tm t{};
+            const string fmt("%Y%m%d");
+            use_facet<time_get<char>>(iss.getloc())
+                .get(Iter(iss.rdbuf()), Iter(), iss, err, &t, fmt.c_str(), fmt.c_str() + fmt.size());
+            assert(t.tm_mon == 11);
+            assert(t.tm_mday == 13);
+            assert(t.tm_year == 120);
+        }
+
+        {
+            istringstream iss("2020112");
+            ios_base::iostate err = Bit;
+            tm t{};
+            const string fmt("%Y%m%d");
+            use_facet<time_get<char>>(iss.getloc())
+                .get(Iter(iss.rdbuf()), Iter(), iss, err, &t, fmt.c_str(), fmt.c_str() + fmt.size());
+            assert(t.tm_mon == 10);
+            assert(t.tm_mday == 2);
+            assert(t.tm_year == 120);
+        }
+
+        {
+            istringstream iss("2020061125");
+            ios_base::iostate err = Bit;
+            tm t{};
+            const string fmt("%Y%m%d");
+            use_facet<time_get<char>>(iss.getloc())
+                .get(Iter(iss.rdbuf()), Iter(), iss, err, &t, fmt.c_str(), fmt.c_str() + fmt.size());
+            assert(t.tm_mon == 5);
+            assert(t.tm_mday == 11);
+            assert(t.tm_year == 120);
+        }
+
+        {
+            istringstream iss("2020120625119");
+            ios_base::iostate err = Bit;
+            tm t{};
+            const string fmt("%Y12%m25%d");
+            use_facet<time_get<char>>(iss.getloc())
+                .get(Iter(iss.rdbuf()), Iter(), iss, err, &t, fmt.c_str(), fmt.c_str() + fmt.size());
+            assert(t.tm_mon == 5);
+            assert(t.tm_mday == 11);
+            assert(t.tm_year == 120);
+        }
+
+        {
             istringstream iss("sep 31 2014");
             ios_base::iostate err = Bit;
             tm t{};
@@ -288,6 +348,50 @@ void test_990695() {
             assert(t.tm_mon == 8);
             assert(t.tm_mday == 19);
             assert(t.tm_year == 105);
+        }
+
+        {
+            istringstream iss("20200609");
+            tm t = {};
+            const string fmt("%Y%m%d");
+            iss >> get_time(&t, fmt.c_str());
+            assert(!iss.fail());
+            assert(t.tm_mon == 5);
+            assert(t.tm_mday == 9);
+            assert(t.tm_year == 120);
+        }
+
+        {
+            istringstream iss("2020112");
+            tm t = {};
+            const string fmt("%Y%m%d");
+            iss >> get_time(&t, fmt.c_str());
+            assert(!iss.fail());
+            assert(t.tm_mon == 10);
+            assert(t.tm_mday == 2);
+            assert(t.tm_year == 120);
+        }
+
+        {
+            istringstream iss("2020061125");
+            tm t = {};
+            const string fmt("%Y%m%d");
+            iss >> get_time(&t, fmt.c_str());
+            assert(!iss.fail());
+            assert(t.tm_mon == 5);
+            assert(t.tm_mday == 11);
+            assert(t.tm_year == 120);
+        }
+
+        {
+            istringstream iss("2020124");
+            tm t = {};
+            const string fmt("%Y%d%m");
+            iss >> get_time(&t, fmt.c_str());
+            assert(!iss.fail());
+            assert(t.tm_mon == 3);
+            assert(t.tm_mday == 12);
+            assert(t.tm_year == 120);
         }
 
         {
