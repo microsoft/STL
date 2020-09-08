@@ -68,13 +68,13 @@ const _CharT* _Parse_nonnegative_integer(const _CharT* _Begin, const _CharT* _En
 }
 
 template <class _CharT, _Parse_arg_id_callbacks<_CharT> _Callbacks_type>
-constexpr const _CharT* _Parse_arg_id(const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
+constexpr void _Parse_arg_id(_STD basic_string_view<_CharT> _View, _Callbacks_type&& _Callbacks) {
     _STL_INTERNAL_CHECK(_Begin != _End);
-    _CharT _Ch = *_Begin;
+    _CharT _Ch = _View.front();
     // No id provided, format string is using automatic indexing.
     if (_Ch == '}' || _Ch == ':') {
         _Callbacks._On_auto_id();
-        return _Begin;
+        return;
     }
     if (_Ch >= '0' && _Ch <= '9') {
         int _Index = 0;
@@ -83,18 +83,19 @@ constexpr const _CharT* _Parse_arg_id(const _CharT* _Begin, const _CharT* _End, 
         // _Index set to zero and let the validity checks below ensure that the arg_id
         // wasn't something like "00", or "023".
         if (_Ch != '0') {
-            _Begin = _Parse_nonnegative_integer(_Begin, _End, _Index);
+            auto _New_Begin = _Parse_nonnegative_integer(_View.begin(), _View.end(), _Index);
+            _View.remove_prefix(_New_Begin - _View.begin());
         } else {
-            ++_Begin;
+            _View.remove_prefix(1);
         }
         // The format string shouldn't end right after the index number.
         // The only things permitted after the index are the end of the replacement field ('}')
         // or the beginning of the format spec (':').
-        if (_Begin == _End || (*_Begin != '}' && *_Begin != ':')) {
+        if (_View.empty() || (_View.front() != '}' && _View.front() != ':')) {
             throw _STD format_error("invalid format string");
         }
         _Callbacks._On_manual_id(_Index);
-        return _Begin;
+        return;
     }
     // This is where we would parse named arg ids if std::format were to support them.
     throw _STD format_error("Invalid format string.");
@@ -175,7 +176,7 @@ requires _Parse_spec_callbacks<_Callbacks_type, _CharT> constexpr const _CharT* 
     } else if (*_Begin == '{') {
         ++_Begin;
         if (_Begin != _End) {
-            _Begin = _Parse_arg_id(_Begin, _End, _Width_adapter(_Callbacks));
+            _Begin = _Parse_arg_id(_STD basic_string_view<_CharT>(_Begin, _End - _Begin), _Width_adapter(_Callbacks));
         }
         if (_Begin == _End || *_Begin != '}') {
             throw _STD format_error("Invalid format string");

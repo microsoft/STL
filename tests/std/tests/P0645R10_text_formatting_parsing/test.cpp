@@ -65,26 +65,26 @@ bool test_parse_arg_id() {
 
     const char* end = nullptr;
 
-    end = _Parse_arg_id(s0.data(), s0.data() + s0.size(), testing_arg_id_callbacks{});
+    end = _Parse_arg_id(s0, testing_arg_id_callbacks{});
     assert(end == &s0[0]);
-    end = _Parse_arg_id(s1.data(), s1.data() + s1.size(), testing_arg_id_callbacks{});
+    end = _Parse_arg_id(s1, testing_arg_id_callbacks{});
     assert(end == &s1[0]);
-    end = _Parse_arg_id(s2.data(), s2.data() + s2.size(), testing_arg_id_callbacks{});
+    end = _Parse_arg_id(s2, testing_arg_id_callbacks{});
     assert(end == &s2[0]);
-    end = _Parse_arg_id(s3.data(), s3.data() + s3.size(), testing_arg_id_callbacks{});
+    end = _Parse_arg_id(s3, testing_arg_id_callbacks{});
     assert(end == &s3[1]);
-    end = _Parse_arg_id(s4.data(), s4.data() + s4.size(), testing_arg_id_callbacks{});
+    end = _Parse_arg_id(s4, testing_arg_id_callbacks{});
     assert(end == &s4[1]);
-    end = _Parse_arg_id(s5.data(), s5.data() + s5.size(), testing_arg_id_callbacks{});
+    end = _Parse_arg_id(s5, testing_arg_id_callbacks{});
     assert(end == &s5[1]);
     try {
-        _Parse_arg_id(i0.data(), i0.data() + i0.size(), testing_arg_id_callbacks{});
+        _Parse_arg_id(i0, testing_arg_id_callbacks{});
         assert(false);
     } catch (const format_error&) {
         assert(true);
     }
     try {
-        _Parse_arg_id(i1.data(), i1.data() + i1.size(), testing_arg_id_callbacks{});
+        _Parse_arg_id(i1, testing_arg_id_callbacks{});
         assert(false);
     } catch (const format_error&) {
         assert(true);
