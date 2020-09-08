@@ -32,7 +32,7 @@ _STD_BEGIN
 
 
 class format_error : public runtime_error {
-    using _STD runtime_error::runtime_error;
+    using runtime_error::runtime_error;
 };
 
 enum class _Align { _None, _Left, _Right, _Center };
@@ -67,9 +67,8 @@ const _CharT* _Parse_nonnegative_integer(const _CharT* _Begin, const _CharT* _En
     return _Ptr;
 }
 
-template <class _CharT, class _Callbacks_type>
-requires _Parse_arg_id_callbacks<_Callbacks_type, _CharT> constexpr const _CharT* _Parse_arg_id(
-    const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
+template <class _CharT, _Parse_arg_id_callbacks<_CharT> _Callbacks_type>
+constexpr const _CharT* _Parse_arg_id(const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
     _STL_INTERNAL_CHECK(_Begin != _End);
     _CharT _Ch = *_Begin;
     // No id provided, format string is using automatic indexing.
@@ -101,9 +100,8 @@ requires _Parse_arg_id_callbacks<_Callbacks_type, _CharT> constexpr const _CharT
     throw _STD format_error("Invalid format string.");
 }
 
-template <class _CharT, class _Callbacks_type>
-requires _Parse_spec_callbacks<_Callbacks_type, _CharT> constexpr const _CharT* _Parse_align(
-    const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
+template <class _CharT, _Parse_spec_callbacks<_CharT> _Callbacks_type>
+constexpr const _CharT* _Parse_align(const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
     // done with parsing, or reached the end of a replacement field.
     if (_Begin == _End || *_Begin == '}') {
         return _Begin;
@@ -151,7 +149,7 @@ requires _Parse_spec_callbacks<_Callbacks_type, _CharT> constexpr const _CharT* 
 }
 
 // Adapts a type modeling _Parse_spec_callbacks to model _Parse_arg_id_callbacks.
-// Used in _Parse width so that _Parse_arg_id can be used to parse dynamic widths.
+// Used in _Parse_width so that _Parse_arg_id can be used to parse dynamic widths.
 template <class _CharT, class _Callbacks_type>
 requires _Parse_spec_callbacks<_Callbacks_type, _CharT> struct _Width_adapter {
     _Callbacks_type& _Callbacks;

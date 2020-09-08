@@ -48,7 +48,9 @@ constexpr bool test_parse_align() {
            == s4.data() + s4.size());
     return true;
 }
-
+bool test_parse_width() {
+    return true;
+}
 bool test_parse_arg_id() {
     // note that parse arg id starts with the arg id itself, not the { beginning of the
     // format spec
