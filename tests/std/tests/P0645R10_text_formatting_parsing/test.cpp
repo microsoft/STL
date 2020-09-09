@@ -97,7 +97,7 @@ constexpr bool test_parse_align() {
 }
 
 template <typename CharT>
-bool test_parse_width() {
+constexpr bool test_parse_width() {
     auto parse_width_fn = _Parse_width<CharT, testing_callbacks<CharT>>;
     using view_typ      = basic_string_view<CharT>;
 
@@ -119,8 +119,9 @@ bool test_parse_width() {
 
 
 template <typename CharT>
-bool test_parse_arg_id() {
-    using view_typ = basic_string_view<CharT>;
+constexpr bool test_parse_arg_id() {
+    auto parse_arg_id_fn = _Parse_arg_id<CharT, testing_arg_id_callbacks>;
+    using view_typ       = basic_string_view<CharT>;
     // note that parse arg id starts with the arg id itself, not the { beginning of the
     // format spec
     auto s0 = view_typ(TYPED_LITERAL(CharT, "}"));
@@ -132,32 +133,20 @@ bool test_parse_arg_id() {
     auto i0 = view_typ(TYPED_LITERAL(CharT, "01}"));
     auto i1 = view_typ(TYPED_LITERAL(CharT, "0"));
 
-    const CharT* end = nullptr;
+    test_parse_helper(parse_arg_id_fn, s0, false, 0);
+    test_parse_helper(parse_arg_id_fn, s1, false, 0);
+    test_parse_helper(parse_arg_id_fn, s2, false, 0);
+    test_parse_helper(parse_arg_id_fn, s3, false, 1);
+    test_parse_helper(parse_arg_id_fn, s4, false, 1);
+    test_parse_helper(parse_arg_id_fn, s5, false, 1);
 
-    end = _Parse_arg_id(s0.data(), s0.data() + s0.size(), testing_arg_id_callbacks{});
-    assert(end == &s0[0]);
-    end = _Parse_arg_id(s1.data(), s1.data() + s1.size(), testing_arg_id_callbacks{});
-    assert(end == &s1[0]);
-    end = _Parse_arg_id(s2.data(), s2.data() + s2.size(), testing_arg_id_callbacks{});
-    assert(end == &s2[0]);
-    end = _Parse_arg_id(s3.data(), s3.data() + s3.size(), testing_arg_id_callbacks{});
-    assert(end == &s3[1]);
-    end = _Parse_arg_id(s4.data(), s4.data() + s4.size(), testing_arg_id_callbacks{});
-    assert(end == &s4[1]);
-    end = _Parse_arg_id(s5.data(), s5.data() + s5.size(), testing_arg_id_callbacks{});
-    assert(end == &s5[1]);
-    try {
-        _Parse_arg_id(i0.data(), i0.data() + i0.size(), testing_arg_id_callbacks{});
-        assert(false);
-    } catch (const format_error&) {
-        assert(true);
+    // can't test the expected exceptions in a constexpr
+    // context
+    if (!is_constant_evaluated()) {
+        test_parse_helper(parse_arg_id_fn, i0, true);
+        test_parse_helper(parse_arg_id_fn, i1, true);
     }
-    try {
-        _Parse_arg_id(i1.data(), i1.data() + i1.size(), testing_arg_id_callbacks{});
-        assert(false);
-    } catch (const format_error&) {
-        assert(true);
-    }
+
     return true;
 }
 
@@ -168,7 +157,11 @@ int main() {
     static_assert(test_parse_align<wchar_t>());
     test_parse_arg_id<char>();
     test_parse_arg_id<wchar_t>();
+    static_assert(test_parse_arg_id<char>());
+    static_assert(test_parse_arg_id<wchar_t>());
     test_parse_width<char>();
     test_parse_width<wchar_t>();
+    static_assert(test_parse_width<char>());
+    static_assert(test_parse_width<wchar_t>());
     return 0;
 }
