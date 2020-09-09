@@ -2954,7 +2954,7 @@ private:
                 _Vx1   = _STD scalbn(_Vx1, -_ExpMax);
                 _Vx2   = _STD scalbn(_Vx2, -_ExpMax);
                 _Sx    = _Vx1 * _Vx1 + _Vx2 * _Vx2;
-                _LogSx = _STD log(_Sx) + _Ty{_ExpMax} * (_Ln2 * 2);
+                _LogSx = _STD log(_Sx) + static_cast<_Ty>(_ExpMax) * (_Ln2 * 2);
             }
 
             const auto _Fx = _Ty{_STD sqrt(_Ty{-2} * _LogSx / _Sx)};
