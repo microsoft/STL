@@ -4170,13 +4170,13 @@ private:
             _Vx2 = _Dist(_Eng);
             _Rs  = _Vx1 * _Vx1 + _Vx2 * _Vx2;
 
-            if (_Rs < _Ty{1} && _Rs != _Ty{0}) {
+            // very small _Rs will overflow on pow(_Rx0, -_Ty{4} / _Par0._Nx)
+            if (_Rs < _Ty{1} && _Rs > _Ty{1e-12}) {
                 break;
             }
         }
-        _Rx0 = _CSTD sqrt(_Rs);
-
-        return _Vx1 * _CSTD sqrt(_Par0._Nx * (_CSTD pow(_Rx0, -_Ty{4} / _Par0._Nx) - _Ty{1}) / _Rs);
+        _Rx0 = _STD sqrt(_Rs);
+        return _Vx1 * _STD sqrt(_Par0._Nx * (_STD pow(_Rx0, -_Ty{4} / _Par0._Nx) - _Ty{1}) / _Rs);
     }
 
     param_type _Par;
