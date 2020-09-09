@@ -2946,7 +2946,8 @@ private:
             if (_Sx > 1.0e-4) {
                 _LogSx = _STD log(_Sx);
             } else {
-                // Bad _Sx value! It will cause overflow on log calculation
+                // Bad _Sx value! Very small values will overflow log(_Sx)/_Sx
+
                 // generating a new value based on scaling method.
                 const _Ty _ln2{static_cast<_Ty>(0.69314718055994530941723212145818)};
                 const _Ty _Maxabs{_STD max(_STD abs(_Vx1), _STD abs(_Vx2))};
