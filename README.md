@@ -4,7 +4,7 @@ This branch generates the STL's [Status Chart][].
 
 # Getting Started: Repo
 
-1. Install [Node.js][] 14.9.0 or newer.
+1. Install [Node.js][] 14.10.0 or newer.
     + You can accept all of the installer's default options.
 2. Open a new Command Prompt.
     + You can run `node --version` to verify that Node.js was successfully installed.
@@ -14,7 +14,8 @@ This branch generates the STL's [Status Chart][].
     + `--config push.default=upstream` sets a repository-local option, which will prevent `git push` from failing with
     "fatal: The upstream branch of your current branch does not match the name of your current branch."
 5. `cd chart`
-6. set the environment variable `GH_USER` to your GitHub username: `set GH_USER=octocat` (Replace `octocat` with your GitHub username)
+6. Set the environment variable `GH_USER` to your GitHub username: `set GH_USER=octocat` (Replace `octocat` with your
+    GitHub username.)
     + This is just to simplify the following instructions.
 7. `git remote add --fetch %GH_USER% https://github.com/%GH_USER%/STL.git`
     + This will add your fork as a remote, and then fetch from it.
