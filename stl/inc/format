@@ -55,16 +55,27 @@ concept _Parse_arg_id_callbacks = requires(_Ty _At) {
 };
 // clang-format on
 
+// we need to implement this outselves because from_chars does not work with wide characters
 template <class _CharT>
-const _CharT* _Parse_nonnegative_integer(const _CharT* _Begin, const _CharT* _End, int& _Integer) {
-    auto [_Ptr, _Ec] = _STD from_chars(_Begin, _End, _Integer, 10);
-    if (_Ec != _STD errc{}) {
-        throw _STD format_error("Invalid integer");
+constexpr const _CharT* _Parse_nonnegative_integer(const _CharT* _Begin, const _CharT* _End, int& _Integer) {
+    _STL_INTERNAL_CHECK(_Begin != _End && '0' <= *_Begin && *_Begin <= '9');
+    unsigned int _Value             = 0;
+    constexpr unsigned int _Max_int = static_cast<unsigned int>((numeric_limits<int>::max)());
+    constexpr unsigned int _Big_int = _Max_int / 10;
+
+    do {
+        if (_Value > _Big_int) {
+            _Value = _Max_int + 1;
+            break;
+        }
+        _Value = _Value * 10 + static_cast<unsigned int>(*_Begin - '0');
+        ++_Begin;
+    } while (_Begin != _End && '0' <= *_Begin && *_Begin <= '9');
+    if (_Value > _Max_int) {
+        throw format_error("Number is too big");
     }
-    if (_Integer < 0) {
-        throw _STD format_error("Nonnegative integer is nonnonnegative");
-    }
-    return _Ptr;
+    _Integer = static_cast<int>(_Value);
+    return _Begin;
 }
 
 template <class _CharT, _Parse_arg_id_callbacks<_CharT> _Callbacks_type>
@@ -164,9 +175,8 @@ requires _Parse_spec_callbacks<_Callbacks_type, _CharT> struct _Width_adapter {
     }
 };
 
-template <class _CharT, class _Callbacks_type>
-requires _Parse_spec_callbacks<_Callbacks_type, _CharT> constexpr const _CharT* _Parse_width(
-    const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
+template <class _CharT, _Parse_spec_callbacks<_CharT> _Callbacks_type>
+constexpr const _CharT* _Parse_width(const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
     _STL_INTERNAL_CHECK(_Begin != _End);
     if ('1' <= *_Begin && *_Begin <= '9') {
         int _Value = 0;

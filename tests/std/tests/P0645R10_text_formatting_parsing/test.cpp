@@ -2,12 +2,33 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <assert.h>
+#include <concepts>
 #include <format>
 #include <stdio.h>
 #include <string_view>
 
 using namespace std;
 using namespace std::string_view_literals;
+
+// copied from the string_view tests
+template <typename CharT>
+struct choose_literal; // not defined
+
+template <>
+struct choose_literal<char> {
+    static constexpr const char* choose(const char* s, const wchar_t*) {
+        return s;
+    }
+};
+
+template <>
+struct choose_literal<wchar_t> {
+    static constexpr const wchar_t* choose(const char*, const wchar_t* s) {
+        return s;
+    }
+};
+
+#define TYPED_LITERAL(CharT, Literal) (choose_literal<CharT>::choose(Literal, L##Literal))
 
 template <typename _CharT>
 struct testing_callbacks {
@@ -40,61 +61,78 @@ struct testing_arg_id_callbacks {
     constexpr void _On_manual_id(int) {}
 };
 
-
-constexpr bool test_parse_align() {
-    auto s0 = ""sv;
-    auto s2 = "*<"sv;
-    auto s3 = "*>"sv;
-    auto s4 = "*^"sv;
-    _Parse_align(s0.data(), s0.data() + s0.size(), testing_callbacks{_Align::_None, ""sv});
-    _Parse_align(s2.data(), s2.data() + s2.size(), testing_callbacks{_Align::_Left, "*"sv});
-    _Parse_align(s3.data(), s3.data() + s3.size(), testing_callbacks{_Align::_Right, "*"sv});
-    assert(_Parse_align(s4.data(), s4.data() + s4.size(), testing_callbacks{_Align::_Center, "*"sv})
-           == s4.data() + s4.size());
-    return true;
-}
-
-template <typename CharT>
-void test_parse_width_helper(basic_string_view<CharT> view, bool err_expected = false, int width = -1,
-    int dynamic_width_id = -1, bool dynamic_width_auto = false) {
+template <typename CharT, typename callback_type>
+constexpr void test_parse_helper(const CharT* (*func)(const CharT*, const CharT*, callback_type&&),
+    basic_string_view<CharT> view, bool err_expected = false,
+    typename basic_string_view<CharT>::size_type expected_end_position = basic_string_view<CharT>::npos,
+    callback_type&& callbacks                                          = {}) {
     try {
-        _Parse_width(view.data(), view.data() + view.size(),
-            testing_callbacks<CharT>{.expected_width = width,
-                .expected_dynamic_width              = dynamic_width_id,
-                .expected_auto_dynamic_width         = dynamic_width_auto});
+        auto end = func(view.data(), view.data() + view.size(), move(callbacks));
+        if (expected_end_position != basic_string_view<CharT>::npos) {
+            assert(end == view.data() + expected_end_position);
+        }
         assert(!err_expected);
     } catch (const format_error&) {
         assert(err_expected);
     }
 }
 
-bool test_parse_width() {
-    auto s0 = "1"sv;
-    auto s1 = "{1}"sv;
-    auto s2 = "{0}"sv;
-    auto i0 = "0"sv;
-    auto i1 = "01"sv;
-    test_parse_width_helper(s0, false, 1);
-    test_parse_width_helper(s1, false, -1, 1);
-    test_parse_width_helper(s2, false, -1, 0);
-    test_parse_width_helper(i0, false);
-    test_parse_width_helper(i1, false);
+
+template <typename CharT>
+constexpr bool test_parse_align() {
+    auto parse_align_fn = _Parse_align<CharT, testing_callbacks<CharT>>;
+    using view_typ      = basic_string_view<CharT>;
+
+    auto s0 = view_typ(TYPED_LITERAL(CharT, ""));
+    auto s2 = view_typ(TYPED_LITERAL(CharT, "*<"));
+    auto s3 = view_typ(TYPED_LITERAL(CharT, "*>"));
+    auto s4 = view_typ(TYPED_LITERAL(CharT, "*^"));
+
+    test_parse_helper(parse_align_fn, s0, false, view_typ::npos, {_Align::_None, view_typ(TYPED_LITERAL(CharT, ""))});
+    test_parse_helper(parse_align_fn, s2, false, view_typ::npos, {_Align::_Left, view_typ(TYPED_LITERAL(CharT, "*"))});
+    test_parse_helper(parse_align_fn, s3, false, view_typ::npos, {_Align::_Right, view_typ(TYPED_LITERAL(CharT, "*"))});
+    test_parse_helper(
+        parse_align_fn, s4, false, view_typ::npos, {_Align::_Center, view_typ(TYPED_LITERAL(CharT, "*"))});
     return true;
 }
 
+template <typename CharT>
+bool test_parse_width() {
+    auto parse_width_fn = _Parse_width<CharT, testing_callbacks<CharT>>;
+    using view_typ      = basic_string_view<CharT>;
+
+    auto s0 = view_typ(TYPED_LITERAL(CharT, "1"));
+    auto s1 = view_typ(TYPED_LITERAL(CharT, "{1}"));
+    auto s2 = view_typ(TYPED_LITERAL(CharT, "{0}"));
+    auto s3 = view_typ(TYPED_LITERAL(CharT, "{}"));
+    auto i0 = view_typ(TYPED_LITERAL(CharT, "0"));
+    auto i1 = view_typ(TYPED_LITERAL(CharT, "01"));
+
+    test_parse_helper(parse_width_fn, s0, false, view_typ::npos, {.expected_width = 1});
+    test_parse_helper(parse_width_fn, s1, false, view_typ::npos, {.expected_dynamic_width = 1});
+    test_parse_helper(parse_width_fn, s2, false, view_typ::npos, {.expected_dynamic_width = 0});
+    test_parse_helper(parse_width_fn, s3, false, view_typ::npos, {.expected_auto_dynamic_width = true});
+    test_parse_helper(parse_width_fn, i0, false, false);
+    test_parse_helper(parse_width_fn, i1, false, false);
+    return true;
+}
+
+
+template <typename CharT>
 bool test_parse_arg_id() {
+    using view_typ = basic_string_view<CharT>;
     // note that parse arg id starts with the arg id itself, not the { beginning of the
     // format spec
-    auto s0 = "}"sv;
-    auto s1 = ":"sv;
-    auto s2 = ":}"sv;
-    auto s3 = "0:}"sv;
-    auto s4 = "0:"sv;
-    auto s5 = "1}"sv;
-    auto i0 = "01}"sv;
-    auto i1 = "0"sv;
+    auto s0 = view_typ(TYPED_LITERAL(CharT, "}"));
+    auto s1 = view_typ(TYPED_LITERAL(CharT, ":"));
+    auto s2 = view_typ(TYPED_LITERAL(CharT, ":}"));
+    auto s3 = view_typ(TYPED_LITERAL(CharT, "0:}"));
+    auto s4 = view_typ(TYPED_LITERAL(CharT, "0:"));
+    auto s5 = view_typ(TYPED_LITERAL(CharT, "1}"));
+    auto i0 = view_typ(TYPED_LITERAL(CharT, "01}"));
+    auto i1 = view_typ(TYPED_LITERAL(CharT, "0"));
 
-    const char* end = nullptr;
+    const CharT* end = nullptr;
 
     end = _Parse_arg_id(s0.data(), s0.data() + s0.size(), testing_arg_id_callbacks{});
     assert(end == &s0[0]);
@@ -124,9 +162,13 @@ bool test_parse_arg_id() {
 }
 
 int main() {
-    test_parse_align();
-    static_assert(test_parse_align());
-    test_parse_arg_id();
-    test_parse_width();
+    test_parse_align<char>();
+    test_parse_align<wchar_t>();
+    static_assert(test_parse_align<char>());
+    static_assert(test_parse_align<wchar_t>());
+    test_parse_arg_id<char>();
+    test_parse_arg_id<wchar_t>();
+    test_parse_width<char>();
+    test_parse_width<wchar_t>();
     return 0;
 }
