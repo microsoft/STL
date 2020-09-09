@@ -2937,7 +2937,6 @@ private:
                 _Vx2 = 2 * _NRAND(_Eng, _Ty) - 1;
                 _Sx  = _Vx1 * _Vx1 + _Vx2 * _Vx2;
                 if (_Sx < _Ty{1} && _Vx1 != _Ty{0} && _Vx2 != _Ty{0}) {
-
                     // good values!
                     break;
                 }
@@ -2948,17 +2947,14 @@ private:
                 _LogSx = _STD log(_Sx);
             } else {
                 // Bad _Sx value! Very small values will overflow log(_Sx)/_Sx
-
                 // generating a new value based on scaling method.
                 const _Ty _Ln2{static_cast<_Ty>(0.69314718055994530941723212145818)};
-
                 const _Ty _Maxabs{(_STD max)(_STD abs(_Vx1), _STD abs(_Vx2))};
-
-                const int expMax{_STD ilogb(_Maxabs)};
-                _Vx1   = _STD scalbn(_Vx1, -expMax);
-                _Vx2   = _STD scalbn(_Vx2, -expMax);
+                const int _ExpMax{_STD ilogb(_Maxabs)};
+                _Vx1   = _STD scalbn(_Vx1, -_ExpMax);
+                _Vx2   = _STD scalbn(_Vx2, -_ExpMax);
                 _Sx    = _Vx1 * _Vx1 + _Vx2 * _Vx2;
-                _LogSx = _STD log(_Sx) + static_cast<_Ty>(expMax) * (_ln2 * 2);
+                _LogSx = _STD log(_Sx) + static_cast<_Ty>(_ExpMax) * (_Ln2 * 2);
             }
 
             const auto _Fx = static_cast<_Ty>(_STD sqrt(static_cast<_Ty>(-2) * _LogSx / _Sx));
