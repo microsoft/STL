@@ -605,6 +605,40 @@ STATIC_ASSERT(is_nothrow_invocable_r_v<Puppy, Kitty, int>);
 STATIC_ASSERT(is_invocable_r_v<Zebra, Kitty, int>);
 STATIC_ASSERT(!is_nothrow_invocable_r_v<Zebra, Kitty, int>);
 
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1026729
+// Defend against regression of VSO-963790, in which is_invocable_r mis-handles non-movable return types
+struct NonMovable {
+    NonMovable(NonMovable&&)      = delete;
+    NonMovable(const NonMovable&) = delete;
+};
+
+template <bool Nothrow>
+NonMovable getNonMovable() noexcept(Nothrow);
+
+STATIC_ASSERT(is_invocable_r_v<NonMovable, decltype(&getNonMovable<false>)>);
+STATIC_ASSERT(is_invocable_r_v<NonMovable, decltype(&getNonMovable<true>)>);
+STATIC_ASSERT(!is_nothrow_invocable_r_v<NonMovable, decltype(&getNonMovable<false>)>);
+STATIC_ASSERT(is_nothrow_invocable_r_v<NonMovable, decltype(&getNonMovable<true>)>);
+STATIC_ASSERT(!is_nothrow_invocable_r_v<NonMovable, decltype(&getNonMovable<false>)>);
+STATIC_ASSERT(is_nothrow_invocable_r_v<NonMovable, decltype(&getNonMovable<true>)>);
+
+template <bool Nothrow>
+struct ConvertsToNonMovable {
+    operator NonMovable() const noexcept(Nothrow);
+};
+
+template <bool Nothrow, bool NothrowReturn>
+ConvertsToNonMovable<NothrowReturn> getConvertsToNonMovable() noexcept(Nothrow);
+
+STATIC_ASSERT(is_invocable_r_v<NonMovable, decltype(&getConvertsToNonMovable<false, false>)>);
+STATIC_ASSERT(is_invocable_r_v<NonMovable, decltype(&getConvertsToNonMovable<false, true>)>);
+STATIC_ASSERT(is_invocable_r_v<NonMovable, decltype(&getConvertsToNonMovable<true, false>)>);
+STATIC_ASSERT(is_invocable_r_v<NonMovable, decltype(&getConvertsToNonMovable<true, true>)>);
+STATIC_ASSERT(!is_nothrow_invocable_r_v<NonMovable, decltype(&getConvertsToNonMovable<false, false>)>);
+STATIC_ASSERT(!is_nothrow_invocable_r_v<NonMovable, decltype(&getConvertsToNonMovable<false, true>)>);
+STATIC_ASSERT(!is_nothrow_invocable_r_v<NonMovable, decltype(&getConvertsToNonMovable<true, false>)>);
+STATIC_ASSERT(is_nothrow_invocable_r_v<NonMovable, decltype(&getConvertsToNonMovable<true, true>)>);
+#endif // TRANSITION, VSO-1026729
 #endif // _HAS_CXX17
 
 
