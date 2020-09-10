@@ -30,7 +30,6 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 
-
 class format_error : public runtime_error {
     using runtime_error::runtime_error;
 };
@@ -245,7 +244,6 @@ public:
     }
 };
 
-
 // TODO: test coverage
 template <class _Context>
 class basic_format_arg {
@@ -289,7 +287,6 @@ class _Format_arg_store {
     using _Value_type = basic_format_arg<_Context>;
 };
 
-
 // TODO: test coverage
 template <class _Context>
 class basic_format_args {
@@ -300,7 +297,6 @@ public:
 
     basic_format_arg<_Context> get(size_t _Index) const noexcept;
 };
-
 
 // TODO: test coverage
 template <class _Out, class _CharT>
@@ -331,7 +327,6 @@ public:
     }
 };
 
-
 // alias declerations
 using format_context  = basic_format_context<back_insert_iterator<string>, string::value_type>;
 using wformat_context = basic_format_context<back_insert_iterator<wstring>, wstring::value_type>;
@@ -343,7 +338,6 @@ string vformat(string_view _Fmt, format_args _Args);
 wstring vformat(wstring_view _Fmt, wformat_args _Args);
 string vformat(const locale& _Loc, string_view _Fmt, format_args _Args);
 wstring vformat(const locale& _Loc, wstring_view _Fmt, wformat_args _Args);
-
 
 _STD_END
 
