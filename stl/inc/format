@@ -158,8 +158,8 @@ constexpr const _CharT* _Parse_align(const _CharT* _Begin, const _CharT* _End, _
 
 // Adapts a type modeling _Parse_spec_callbacks to model _Parse_arg_id_callbacks.
 // Used in _Parse_width so that _Parse_arg_id can be used to parse dynamic widths.
-template <class _CharT, class _Callbacks_type>
-requires _Parse_spec_callbacks<_Callbacks_type, _CharT> struct _Width_adapter {
+template <class _CharT, _Parse_spec_callbacks<_CharT> _Callbacks_type>
+struct _Width_adapter {
     _Callbacks_type& _Callbacks;
 
     explicit constexpr _Width_adapter(_Callbacks_type& _Handler) : _Callbacks(_Handler) {}
