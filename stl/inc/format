@@ -124,9 +124,6 @@ constexpr const _CharT* _Parse_align(const _CharT* _Begin, const _CharT* _End, _
     if (_Align_pt == _End) {
         _Align_pt = _Begin;
     }
-    if (_Begin == _End) {
-        _Begin--;
-    }
     for (;;) {
         switch (static_cast<char>(*_Align_pt)) {
         case '<':
@@ -286,9 +283,7 @@ public:
 // TODO: test coverage
 template <class _Context, class... _Args>
 class _Format_arg_store {
-    static constexpr size_t _Num_args       = sizeof...(_Args);
-    static constexpr size_t _Num_named_args = (... + _Is_named_arg_v<_Args>);
-
+    static constexpr size_t _Num_args = sizeof...(_Args);
     // TODO: no arg packing yet
 
     using _Value_type = basic_format_arg<_Context>;
