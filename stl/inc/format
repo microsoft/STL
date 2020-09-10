@@ -195,6 +195,7 @@ constexpr const _CharT* _Parse_width(const _CharT* _Begin, const _CharT* _End, _
     return _Begin;
 }
 
+// TODO: test coverage
 template <class _CharT>
 class basic_format_parse_context {
 public:
@@ -248,33 +249,21 @@ public:
 };
 
 
-template <class _CharT, class _Ty>
-struct _Named_arg {
-    const _CharT* _Name;
-    const _Ty& _Val;
-};
-
-template <class>
-constexpr bool _Is_named_arg_v = false;
-
-template <class _Ty, class _CharT>
-constexpr bool _Is_named_arg_v<_Named_arg<_CharT, _Ty>> = true;
-
-template <class _Context>
-struct _Custom_value {
-    const void* _Value;
-    void (*_Format)(const void*, basic_format_parse_context<typename _Context::char_type>&, _Context&);
-};
-template <class _Context>
-using _Format_arg_value =
-    _STD variant<monostate, int, unsigned, long long, unsigned long long, bool, typename _Context::char_type, float,
-        double, const void*, _STD basic_string_view<typename _Context::char_type>, _Custom_value<_Context>>;
-
+// TODO: test coverage
 template <class _Context>
 class basic_format_arg {
+public:
+    class handle;
+
 private:
     using _Char_type = typename _Context::char_type;
-    _Format_arg_value<_Context> _Value;
+
+    using _Format_arg_value = _STD variant<monostate, int, unsigned, long long, unsigned long long, bool,
+        typename _Context::char_type, float, double, long double, const void*, const typename _Context::char_type,
+        _STD basic_string_view<typename _Context::char_type>, handle>;
+
+
+    _Format_arg_value _Value;
 
 public:
     class handle {
@@ -294,6 +283,7 @@ public:
     }
 };
 
+// TODO: test coverage
 template <class _Context, class... _Args>
 class _Format_arg_store {
     static constexpr size_t _Num_args       = sizeof...(_Args);
@@ -304,6 +294,8 @@ class _Format_arg_store {
     using _Value_type = basic_format_arg<_Context>;
 };
 
+
+// TODO: test coverage
 template <class _Context>
 class basic_format_args {
 public:
@@ -314,6 +306,8 @@ public:
     basic_format_arg<_Context> get(size_t _Index) const noexcept;
 };
 
+
+// TODO: test coverage
 template <class _Out, class _CharT>
 class basic_format_context {
 private:
