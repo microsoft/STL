@@ -39,11 +39,11 @@ namespace Concurrency {
                 // that as a failure to call.
                 (void) _Flags;
                 (void) _Addr;
-                return 0;
+                return nullptr;
 #else // ^^^ defined(_CRT_APP) ^^^ // vvv !defined(_CRT_APP) vvv
                 HMODULE _Result;
                 if (::GetModuleHandleExW(_Flags, _Addr, &_Result) == 0) {
-                    return 0;
+                    return nullptr;
                 }
 
                 return _Result;
@@ -57,7 +57,7 @@ namespace Concurrency {
                 return _STL_host_status::_Dll;
 #else // ^^^ CRTDLL2 ^^^ // vvv !CRTDLL2 vvv
                 HANDLE _HExe = _Call_get_module_handle_ex(GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, nullptr);
-                if (_HExe == 0) {
+                if (_HExe == nullptr) {
                     return _STL_host_status::_Unknown;
                 } else if (_HExe == reinterpret_cast<HMODULE>(&__ImageBase)) {
                     return _STL_host_status::_Exe;
@@ -124,7 +124,7 @@ namespace Concurrency {
                         GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
                         reinterpret_cast<LPCWSTR>(_Chore->_M_callback));
 
-                    if (_Callback_dll != 0) {
+                    if (_Callback_dll != nullptr) {
                         FreeLibraryWhenCallbackReturns(_Pci, _Callback_dll);
                     }
                 }

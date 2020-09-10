@@ -282,13 +282,15 @@ FTYPE* FNAME(Xp_mulh)(FTYPE* p, int n, FTYPE x0) { // multiply by a half-precisi
 
 FTYPE* FNAME(Xp_setn)(FTYPE* p, int n, long x) { // load a long integer
 
-#if 27 <= FBITS
+#if FBITS == 53
     FNAME(Xp_setw)(p, n, static_cast<FTYPE>(x));
-#else // 27 <= FBITS
+#elif FBITS == 24
     FNAME(Xp_setw)(p, n, static_cast<FTYPE>(x / 10000));
     FNAME(Xp_mulh)(p, n, static_cast<FTYPE>(10000));
     FNAME(Xp_addh)(p, n, static_cast<FTYPE>(x % 10000));
-#endif // 27 <= FBITS
+#else // FBITS
+#error Unexpected value for FBITS
+#endif // FBITS
 
     return p;
 }

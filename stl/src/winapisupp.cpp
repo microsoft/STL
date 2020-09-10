@@ -331,7 +331,7 @@ extern "C" void __cdecl __crtGetSystemTimePreciseAsFileTime(_Out_ LPFILETIME lpS
 
 #else // defined _ONECORE
 
-extern "C" PVOID __KERNEL32Functions[eMaxKernel32Function] = {0};
+extern "C" PVOID __KERNEL32Functions[eMaxKernel32Function] = {nullptr};
 
 static int __cdecl initialize_pointers() {
     HINSTANCE hKernel32 = GetModuleHandleW(L"kernel32.dll");

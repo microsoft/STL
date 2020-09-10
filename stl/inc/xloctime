@@ -539,7 +539,8 @@ protected:
 private:
     ios_base::iostate __CLRCALL_OR_CDECL _Getint(_InIt& _First, _InIt& _Last, int _Lo, int _Hi, int& _Val,
         const _Ctype& _Ctype_fac) const { // get integer in range [_Lo, _Hi] from [_First, _Last)
-        char _Ac[_MAX_INT_DIG], *_Ep;
+        char _Ac[_MAX_INT_DIG];
+        char* _Ep;
         char* _Ptr = _Ac;
         char _Ch;
 

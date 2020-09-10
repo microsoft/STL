@@ -148,7 +148,7 @@ _EXTERN_C
     _In_ const __std_fs_file_flags _Flags) noexcept { // calls CreateFile2 or CreateFileW
     const HANDLE _Result = __vcp_CreateFile(_File_name, static_cast<unsigned long>(_Desired_access),
         FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING,
-        static_cast<unsigned long>(_Flags), 0);
+        static_cast<unsigned long>(_Flags), nullptr);
     *_Handle             = static_cast<__std_fs_file_handle>(reinterpret_cast<intptr_t>(_Result));
     return _Translate_CreateFile_last_error(_Result);
 }
@@ -324,15 +324,15 @@ void __stdcall __std_fs_directory_iterator_close(_In_ const __std_fs_dir_handle 
         // We test equivalent() not by directly doing what equivalent() does, but by opening the handles
         // in exclusive mode, so a subsequent open will fail with ERROR_SHARING_VIOLATION.
         {
-            const _STD _Fs_file _Source_handle(
-                __vcp_CreateFile(_Source, FILE_READ_ATTRIBUTES | FILE_READ_DATA, 0, nullptr, OPEN_EXISTING, 0, 0));
+            const _STD _Fs_file _Source_handle(__vcp_CreateFile(
+                _Source, FILE_READ_ATTRIBUTES | FILE_READ_DATA, 0, nullptr, OPEN_EXISTING, 0, nullptr));
             __std_win_error _Last_error = _Translate_CreateFile_last_error(_Source_handle._Get());
             if (_Last_error != __std_win_error::_Success) {
                 return {false, _Last_error};
             }
 
-            const _STD _Fs_file _Target_handle(
-                __vcp_CreateFile(_Target, FILE_READ_ATTRIBUTES | FILE_WRITE_DATA, 0, nullptr, OPEN_EXISTING, 0, 0));
+            const _STD _Fs_file _Target_handle(__vcp_CreateFile(
+                _Target, FILE_READ_ATTRIBUTES | FILE_WRITE_DATA, 0, nullptr, OPEN_EXISTING, 0, nullptr));
             _Last_error = _Translate_CreateFile_last_error(_Target_handle._Get());
             if (_Last_error != __std_win_error::_Success) {
                 // Also handles the equivalent(from, to) error case
@@ -605,7 +605,7 @@ _Success_(return == __std_win_error::_Success) __std_win_error
 
     LARGE_INTEGER _Large;
     _Large.QuadPart = _New_size;
-    if (SetFilePointerEx(_Handle._Get(), _Large, 0, FILE_BEGIN) == 0 || SetEndOfFile(_Handle._Get()) == 0) {
+    if (SetFilePointerEx(_Handle._Get(), _Large, nullptr, FILE_BEGIN) == 0 || SetEndOfFile(_Handle._Get()) == 0) {
         return __std_win_error{GetLastError()};
     }
 

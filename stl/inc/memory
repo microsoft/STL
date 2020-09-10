@@ -233,7 +233,7 @@ _NoThrowFwdIt uninitialized_fill_n(_NoThrowFwdIt _First, const _Diff _Count_raw,
     if (0 < _Count) {
         auto _UFirst = _Get_unwrapped_n(_First, _Count);
         if constexpr (_Fill_memset_is_safe<_Unwrapped_n_t<const _NoThrowFwdIt&>, _Tval>) {
-            _CSTD memset(_UFirst, static_cast<unsigned char>(_Val), _Count);
+            _Fill_memset(_UFirst, _Val, _Count);
             _UFirst += _Count;
         } else {
             _Uninitialized_backout<_Unwrapped_n_t<const _NoThrowFwdIt&>> _Backout{_UFirst};
@@ -266,7 +266,7 @@ template <class _NoThrowFwdIt, class _Diff, class _Tval>
 _NoThrowFwdIt _Uninitialized_fill_n_unchecked1(
     const _NoThrowFwdIt _First, const _Diff _Count, const _Tval& _Val, true_type) {
     // copy _Count copies of _Val to raw _First, memset optimization
-    _CSTD memset(_First, static_cast<unsigned char>(_Val), _Count);
+    _Fill_memset(_First, _Val, _Count);
     return _First + _Count;
 }
 
@@ -1752,7 +1752,7 @@ void _Uninitialized_fill_multidimensional_n(_Ty* const _Out, const size_t _Size,
         }
         _Guard._Target = nullptr;
     } else if constexpr (_Fill_memset_is_safe<_Ty*, _Ty>) {
-        _CSTD memset(_Out, static_cast<unsigned char>(_Val), _Size);
+        _Fill_memset(_Out, _Val, _Size);
     } else {
         _Uninitialized_rev_destroying_backout _Backout{_Out};
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
@@ -2075,7 +2075,7 @@ void _Uninitialized_fill_multidimensional_n_al(_Ty* const _Out, const size_t _Si
         }
         _Guard._Target = nullptr;
     } else if constexpr (_Fill_memset_is_safe<_Ty*, _Ty> && _Uses_default_construct<_Alloc, _Ty*, const _Ty&>::value) {
-        _CSTD memset(_Out, static_cast<unsigned char>(_Val), _Size);
+        _Fill_memset(_Out, _Val, _Size);
     } else {
         _Uninitialized_rev_destroying_backout_al _Backout{_Out, _Al};
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
