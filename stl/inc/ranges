@@ -76,8 +76,13 @@ namespace ranges {
             // clang-format off
             template <class _Other>
                 requires _Can_compose<_Derived, _Other>
-            constexpr auto operator|(_Base<_Other>&& __r) && noexcept(
-                noexcept(_Pipeline{static_cast<_Derived&&>(*this), static_cast<_Other&&>(__r)})) {
+            constexpr auto operator|(_Base<_Other>&& __r) &&
+#ifdef __EDG__ // TRANSITION, VSO-1132105
+                noexcept(noexcept(_Pipeline{_STD declval<_Derived>(), _STD declval<_Other>()}))
+#else // ^^^ workaround / no workaround vvv
+                noexcept(noexcept(_Pipeline{static_cast<_Derived&&>(*this), static_cast<_Other&&>(__r)}))
+#endif // TRANSITION, VSO-1132105
+            {
                 // clang-format on
                 _STL_INTERNAL_STATIC_ASSERT(derived_from<_Derived, _Base<_Derived>>);
                 _STL_INTERNAL_STATIC_ASSERT(derived_from<_Other, _Base<_Other>>);
@@ -87,8 +92,13 @@ namespace ranges {
             // clang-format off
             template <class _Other>
                 requires _Can_compose<_Derived, const _Other&>
-            constexpr auto operator|(const _Base<_Other>& __r) && noexcept(noexcept(
-                _Pipeline{static_cast<_Derived&&>(*this), static_cast<const _Other&>(__r)})) {
+            constexpr auto operator|(const _Base<_Other>& __r) &&
+#ifdef __EDG__ // TRANSITION, VSO-1132105
+                noexcept(noexcept(_Pipeline{_STD declval<_Derived>(), _STD declval<const _Other&>()}))
+#else // ^^^ workaround / no workaround vvv
+                noexcept(noexcept(_Pipeline{static_cast<_Derived&&>(*this), static_cast<const _Other&>(__r)}))
+#endif // TRANSITION, VSO-1132105
+            {
                 // clang-format on
                 _STL_INTERNAL_STATIC_ASSERT(derived_from<_Derived, _Base<_Derived>>);
                 _STL_INTERNAL_STATIC_ASSERT(derived_from<_Other, _Base<_Other>>);
@@ -98,8 +108,13 @@ namespace ranges {
             // clang-format off
             template <class _Other>
                 requires _Can_compose<const _Derived&, _Other>
-            constexpr auto operator|(_Base<_Other>&& __r) const& noexcept(
-                noexcept(_Pipeline{static_cast<const _Derived&>(*this), static_cast<_Other&&>(__r)})) {
+            constexpr auto operator|(_Base<_Other>&& __r) const&
+#ifdef __EDG__ // TRANSITION, VSO-1132105
+                noexcept(noexcept(_Pipeline{_STD declval<const _Derived&>(), _STD declval<_Other>()}))
+#else // ^^^ workaround / no workaround vvv
+                noexcept(noexcept(_Pipeline{static_cast<const _Derived&>(*this), static_cast<_Other&&>(__r)}))
+#endif // TRANSITION, VSO-1132105
+            {
                 // clang-format on
                 _STL_INTERNAL_STATIC_ASSERT(derived_from<_Derived, _Base<_Derived>>);
                 _STL_INTERNAL_STATIC_ASSERT(derived_from<_Other, _Base<_Other>>);
@@ -109,8 +124,13 @@ namespace ranges {
             // clang-format off
             template <class _Other>
                 requires _Can_compose<const _Derived&, const _Other&>
-            constexpr auto operator|(const _Base<_Other>& __r) const& noexcept(noexcept(
-                _Pipeline{static_cast<const _Derived&>(*this), static_cast<const _Other&>(__r)})) {
+            constexpr auto operator|(const _Base<_Other>& __r) const&
+#ifdef __EDG__ // TRANSITION, VSO-1132105
+                noexcept(noexcept(_Pipeline{_STD declval<const _Derived&>(), _STD declval<const _Other&>()}))
+#else // ^^^ workaround / no workaround vvv
+                noexcept(noexcept(_Pipeline{static_cast<const _Derived&>(*this), static_cast<const _Other&>(__r)}))
+#endif // TRANSITION, VSO-1132105
+            {
                 // clang-format on
                 _STL_INTERNAL_STATIC_ASSERT(derived_from<_Derived, _Base<_Derived>>);
                 _STL_INTERNAL_STATIC_ASSERT(derived_from<_Other, _Base<_Other>>);
@@ -118,14 +138,24 @@ namespace ranges {
             }
 
             template <_Can_pipe<const _Derived&> _Left>
-            friend constexpr auto operator|(_Left&& __l, const _Base& __r) noexcept(
-                noexcept(static_cast<const _Derived&>(__r)(_STD forward<_Left>(__l)))) {
+            friend constexpr auto operator|(_Left&& __l, const _Base& __r)
+#ifdef __EDG__ // TRANSITION, VSO-1132105
+                noexcept(noexcept(_STD declval<const _Derived&>()(_STD declval<_Left>())))
+#else // ^^^ workaround / no workaround vvv
+                noexcept(noexcept(static_cast<const _Derived&>(__r)(_STD forward<_Left>(__l))))
+#endif // TRANSITION, VSO-1132105
+            {
                 return static_cast<const _Derived&>(__r)(_STD forward<_Left>(__l));
             }
 
             template <_Can_pipe<_Derived> _Left>
-            friend constexpr auto operator|(_Left&& __l, _Base&& __r) noexcept(
-                noexcept(static_cast<_Derived&&>(__r)(_STD forward<_Left>(__l)))) {
+            friend constexpr auto operator|(_Left&& __l, _Base&& __r)
+#ifdef __EDG__ // TRANSITION, VSO-1132105
+                noexcept(noexcept(_STD declval<_Derived>()(_STD declval<_Left>())))
+#else // ^^^ workaround / no workaround vvv
+                noexcept(noexcept(static_cast<_Derived&&>(__r)(_STD forward<_Left>(__l))))
+#endif // TRANSITION, VSO-1132105
+            {
                 return static_cast<_Derived&&>(__r)(_STD forward<_Left>(__l));
             }
         };
@@ -432,9 +462,9 @@ namespace ranges {
     public:
         using optional<_Ty>::optional;
 
-        _Semiregular_box_copy()                             = default;
+        _Semiregular_box_copy() = default;
         _Semiregular_box_copy(const _Semiregular_box_copy&) = default;
-        _Semiregular_box_copy(_Semiregular_box_copy&&)      = default;
+        _Semiregular_box_copy(_Semiregular_box_copy&&) = default;
         _Semiregular_box_copy& operator=(_Semiregular_box_copy&&) = default;
 
         _Semiregular_box_copy& operator=(const _Semiregular_box_copy& _That) noexcept(
@@ -459,9 +489,9 @@ namespace ranges {
     public:
         using _Choose_semiregular_box_copy<_Ty>::_Choose_semiregular_box_copy;
 
-        _Semiregular_box_move()                             = default;
+        _Semiregular_box_move() = default;
         _Semiregular_box_move(const _Semiregular_box_move&) = default;
-        _Semiregular_box_move(_Semiregular_box_move&&)      = default;
+        _Semiregular_box_move(_Semiregular_box_move&&) = default;
         _Semiregular_box_move& operator=(const _Semiregular_box_move&) = default;
 
         _Semiregular_box_move& operator=(_Semiregular_box_move&& _That) noexcept(is_nothrow_move_constructible_v<_Ty>) {
