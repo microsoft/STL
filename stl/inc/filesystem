@@ -3751,7 +3751,8 @@ namespace filesystem {
     // FUNCTION create_directories
     inline bool create_directories(const path& _Path, error_code& _Ec) {
         if (_Path.empty()) {
-            _Throw_fs_error("create_directories", _Make_ec(__std_win_error::_Invalid_parameter), _Path);
+            _Ec = _Make_ec(__std_win_error::_Path_not_found);
+            return false;
         }
 
         _Ec.clear(); // for exception safety
