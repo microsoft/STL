@@ -373,5 +373,15 @@ const daily_table = [
     { date: '2020-09-06', merged: 65.09, pr: 26, cxx20: 23, lwg: 1, issue: 297, bug: 95, avg_age: 72.63, avg_wait: 52.91, sum_age: 62.95, sum_wait: 45.85, },
     { date: '2020-09-07', merged: 62.62, pr: 27, cxx20: 23, lwg: 1, issue: 298, bug: 96, avg_age: 70.91, avg_wait: 51.91, sum_age: 63.82, sum_wait: 46.72, },
     { date: '2020-09-08', merged: 60.31, pr: 28, cxx20: 23, lwg: 1, issue: 298, bug: 96, avg_age: 69.35, avg_wait: 51.04, sum_age: 64.73, sum_wait: 47.63, },
+    { date: '2020-09-09', merged: 58.96, pr: 29, cxx20: 23, lwg: 1, issue: 299, bug: 97, avg_age: 67.67, avg_wait: 49.39, sum_age: 65.41, sum_wait: 47.74, },
+    { date: '2020-09-10', merged: 57.67, pr: 31, cxx20: 23, lwg: 1, issue: 299, bug: 97, avg_age: 64.26, avg_wait: 47.16, sum_age: 66.40, sum_wait: 48.73, },
+    { date: '2020-09-11', merged: 55.37, pr: 31, cxx20: 23, lwg: 1, issue: 300, bug: 98, avg_age: 65.26, avg_wait: 48.16, sum_age: 67.43, sum_wait: 49.77, },
+    { date: '2020-09-12', merged: 53.12, pr: 31, cxx20: 23, lwg: 1, issue: 301, bug: 98, avg_age: 66.26, avg_wait: 49.16, sum_age: 68.47, sum_wait: 50.80, },
+    { date: '2020-09-13', merged: 50.97, pr: 31, cxx20: 23, lwg: 1, issue: 301, bug: 98, avg_age: 67.26, avg_wait: 50.16, sum_age: 69.50, sum_wait: 51.83, },
+    { date: '2020-09-14', merged: 49.08, pr: 32, cxx20: 23, lwg: 1, issue: 301, bug: 98, avg_age: 66.13, avg_wait: 49.56, sum_age: 70.54, sum_wait: 52.87, },
+    { date: '2020-09-15', merged: 49.70, pr: 32, cxx20: 23, lwg: 1, issue: 302, bug: 100, avg_age: 66.46, avg_wait: 49.89, sum_age: 70.89, sum_wait: 53.22, },
+    { date: '2020-09-16', merged: 47.25, pr: 33, cxx20: 23, lwg: 1, issue: 303, bug: 101, avg_age: 65.43, avg_wait: 49.33, sum_age: 71.98, sum_wait: 54.26, },
+    { date: '2020-09-17', merged: 44.70, pr: 36, cxx20: 23, lwg: 1, issue: 303, bug: 101, avg_age: 60.95, avg_wait: 44.17, sum_age: 73.15, sum_wait: 53.00, },
+    { date: '2020-09-18', merged: 42.24, pr: 38, cxx20: 23, lwg: 1, issue: 303, bug: 101, avg_age: 58.71, avg_wait: 42.08, sum_age: 74.36, sum_wait: 53.30, },
 ];
 // Generated file - DO NOT EDIT manually!
