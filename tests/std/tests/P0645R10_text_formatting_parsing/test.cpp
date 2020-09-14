@@ -87,11 +87,18 @@ constexpr bool test_parse_align() {
     auto s3 = view_typ(TYPED_LITERAL(CharT, "*>"));
     auto s4 = view_typ(TYPED_LITERAL(CharT, "*^"));
 
+
     test_parse_helper(parse_align_fn, s0, false, view_typ::npos, {_Align::_None, view_typ(TYPED_LITERAL(CharT, ""))});
     test_parse_helper(parse_align_fn, s2, false, view_typ::npos, {_Align::_Left, view_typ(TYPED_LITERAL(CharT, "*"))});
     test_parse_helper(parse_align_fn, s3, false, view_typ::npos, {_Align::_Right, view_typ(TYPED_LITERAL(CharT, "*"))});
     test_parse_helper(
         parse_align_fn, s4, false, view_typ::npos, {_Align::_Center, view_typ(TYPED_LITERAL(CharT, "*"))});
+    if constexpr (same_as<CharT, wchar_t>) {
+        auto s5 = L"*\x343E"sv;
+        test_parse_helper(parse_align_fn, s5, false, view_typ::npos, {_Align::_None, L"*"sv});
+    }
+
+
     return true;
 }
 

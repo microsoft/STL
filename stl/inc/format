@@ -124,14 +124,14 @@ constexpr const _CharT* _Parse_align(const _CharT* _Begin, const _CharT* _End, _
         _Align_pt = _Begin;
     }
     for (;;) {
-        switch (static_cast<char>(*_Align_pt)) {
-        case '<':
+        switch (*_Align_pt) {
+        case L'<':
             _Parsed_align = _Align::_Left;
             break;
-        case '>':
+        case L'>':
             _Parsed_align = _Align::_Right;
             break;
-        case '^':
+        case L'^':
             _Parsed_align = _Align::_Center;
             break;
         }
@@ -307,7 +307,7 @@ public:
 
 // clang-format off
 template <class _Out, class _CharT>
-    requires output_iterator<_Out, _CHarT>
+    requires output_iterator<_Out, _CharT>
 class basic_format_context {
     // clang-format on
 private:
