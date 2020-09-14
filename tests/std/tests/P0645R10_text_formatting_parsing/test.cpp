@@ -8,7 +8,6 @@
 #include <string_view>
 
 using namespace std;
-using namespace std::string_view_literals;
 
 // copied from the string_view tests
 template <typename CharT>

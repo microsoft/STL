@@ -101,7 +101,7 @@ constexpr const _CharT* _Parse_arg_id(const _CharT* _Begin, const _CharT* _End, 
         // The only things permitted after the index are the end of the replacement field ('}')
         // or the beginning of the format spec (':').
         if (_Begin == _End || (*_Begin != '}' && *_Begin != ':')) {
-            throw _STD format_error("invalid format string");
+            throw _STD format_error("Invalid format string.");
         }
         _Callbacks._On_manual_id(_Index);
         return _Begin;
@@ -118,24 +118,24 @@ constexpr const _CharT* _Parse_align(const _CharT* _Begin, const _CharT* _End, _
     }
 
     // align and fill
-    auto _Align    = _Align::_None;
-    auto _Align_pt = _Begin + 1;
+    auto _Parsed_align = _Align::_None;
+    auto _Align_pt     = _Begin + 1;
     if (_Align_pt == _End) {
         _Align_pt = _Begin;
     }
     for (;;) {
         switch (static_cast<char>(*_Align_pt)) {
         case '<':
-            _Align = _Align::_Left;
+            _Parsed_align = _Align::_Left;
             break;
         case '>':
-            _Align = _Align::_Right;
+            _Parsed_align = _Align::_Right;
             break;
         case '^':
-            _Align = _Align::_Center;
+            _Parsed_align = _Align::_Center;
             break;
         }
-        if (_Align != _Align::_None) {
+        if (_Parsed_align != _Align::_None) {
             if (_Align_pt != _Begin) {
                 if (*_Begin == '{') {
                     throw format_error("invalid fill character '{'");
@@ -145,7 +145,7 @@ constexpr const _CharT* _Parse_align(const _CharT* _Begin, const _CharT* _End, _
             } else {
                 ++_Begin;
             }
-            _Callbacks._On_align(_Align);
+            _Callbacks._On_align(_Parsed_align);
             break;
         } else if (_Align_pt == _Begin) {
             break;
@@ -184,7 +184,7 @@ constexpr const _CharT* _Parse_width(const _CharT* _Begin, const _CharT* _End, _
             _Begin = _Parse_arg_id(_Begin, _End, _Width_adapter<_CharT, _Callbacks_type>(_Callbacks));
         }
         if (_Begin == _End || *_Begin != '}') {
-            throw _STD format_error("Invalid format string");
+            throw _STD format_error("Invalid format string.");
         }
         ++_Begin;
     }
@@ -192,6 +192,10 @@ constexpr const _CharT* _Parse_width(const _CharT* _Begin, const _CharT* _End, _
 }
 
 // TODO: test coverage
+
+template <class _Ty, class _CharT = char>
+struct formatter;
+
 template <class _CharT>
 class basic_format_parse_context {
 public:
@@ -208,15 +212,15 @@ private:
 
 
 public:
-    constexpr explicit basic_format_parse_context(basic_string_view<_CharT> _Fmt, size_t _Num_args = 0) noexcept
-        : _Format_string(_Fmt), _Num_args(_Num_args) {}
+    constexpr explicit basic_format_parse_context(basic_string_view<_CharT> _Fmt, size_t _Num_args_ = 0) noexcept
+        : _Format_string(_Fmt), _Num_args(_Num_args_) {}
     basic_format_parse_context(const basic_format_parse_context&) = delete;
     basic_format_parse_context& operator=(const basic_format_parse_context&) = delete;
 
-    constexpr const_iterator begin() const noexcept {
+    _NODISCARD constexpr const_iterator begin() const noexcept {
         return _Format_string.begin();
     }
-    constexpr const_iterator end() const noexcept {
+    _NODISCARD constexpr const_iterator end() const noexcept {
         return _Format_string.end();
     }
     constexpr void advance_to(const_iterator _It) {
@@ -262,9 +266,10 @@ private:
 
 public:
     class handle {
+    private:
         const void* _Ptr;
         void (*_Format)(basic_format_parse_context<_Char_type>& _Parse_ctx, _Context _Format_ctx, const void*);
-        friend class basic_format_arg<_Context>;
+        friend basic_format_arg;
 
     public:
         void format(basic_format_parse_context<_Char_type>& _Parse_ctx, _Context& _Format_ctx) {
@@ -299,8 +304,12 @@ public:
 };
 
 // TODO: test coverage
+
+// clang-format off
 template <class _Out, class _CharT>
+    requires output_iterator<_Out, _CHarT>
 class basic_format_context {
+    // clang-format on
 private:
     _Out _OutputIt;
     basic_format_args<basic_format_context> _Args;
@@ -309,8 +318,10 @@ private:
 public:
     using iterator  = _Out;
     using char_type = _CharT;
+
     template <class _Ty>
-    // using formatter_type = formatter<_Ty, _CharT>;
+    using formatter_type = formatter<_Ty, _CharT>;
+
     basic_format_arg<basic_format_context> arg(size_t _Id) const {
         return _Args.get(_Id);
     }
@@ -327,7 +338,6 @@ public:
     }
 };
 
-// alias declerations
 using format_context  = basic_format_context<back_insert_iterator<string>, string::value_type>;
 using wformat_context = basic_format_context<back_insert_iterator<wstring>, wstring::value_type>;
 using format_args     = basic_format_args<format_context>;
