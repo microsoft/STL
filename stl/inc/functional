@@ -1557,24 +1557,17 @@ constexpr auto _Call_front_binder(index_sequence<_Ix...>, _Cv_FD&& _Obj, _Cv_tup
 template <class _Fx, class... _Types>
 class _Front_binder { // wrap bound callable object and arguments
 private:
-    static_assert(is_constructible_v<decay_t<_Fx>, _Fx>,
-        "std::bind_front() requires the decayed callable to be constructible from an undecayed callable");
-    static_assert(is_move_constructible_v<decay_t<_Fx>>,
-        "std::bind_front() requires the decayed callable to be move constructible");
-    static_assert(conjunction_v<is_constructible<decay_t<_Types>, _Types>...>,
-        "std::bind_front() requires the decayed bound arguments to be constructible from undecayed bound arguments");
-    static_assert(conjunction_v<is_move_constructible<decay_t<_Types>>...>,
-        "std::bind_front() requires the decayed bound arguments to be move constructible");
+    using _Seq = index_sequence_for<_Types...>;
 
-    using _Seq    = index_sequence_for<_Types...>;
-    using _First  = decay_t<_Fx>;
-    using _Second = tuple<decay_t<_Types>...>;
+    _Compressed_pair<_Fx, tuple<_Types...>> _Mypair;
 
-    _Compressed_pair<_First, _Second> _Mypair;
+    _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Fx, decay_t<_Fx>>);
+    _STL_INTERNAL_STATIC_ASSERT((is_same_v<_Types, decay_t<_Types>> && ...));
 
 public:
-    constexpr explicit _Front_binder(_Fx&& _Func, _Types&&... _Args)
-        : _Mypair(_One_then_variadic_args_t{}, _STD forward<_Fx>(_Func), _STD forward<_Types>(_Args)...) {}
+    template <class _Fx_Init, class... _Types_Init>
+    constexpr explicit _Front_binder(_Fx_Init&& _Func, _Types_Init&&... _Args)
+        : _Mypair(_One_then_variadic_args_t{}, _STD forward<_Fx_Init>(_Func), _STD forward<_Types_Init>(_Args)...) {}
 
     template <class... _Unbound>
     constexpr auto operator()(_Unbound&&... _Unbargs) & noexcept(noexcept(
@@ -1614,7 +1607,16 @@ public:
 // FUNCTION TEMPLATE bind_front
 template <class _Fx, class... _Types>
 _NODISCARD constexpr auto bind_front(_Fx&& _Func, _Types&&... _Args) {
-    return _Front_binder<_Fx, _Types...>(_STD forward<_Fx>(_Func), _STD forward<_Types>(_Args)...);
+    static_assert(is_constructible_v<decay_t<_Fx>, _Fx>,
+        "std::bind_front requires the decayed callable to be constructible from an undecayed callable");
+    static_assert(is_move_constructible_v<decay_t<_Fx>>,
+        "std::bind_front requires the decayed callable to be move constructible");
+    static_assert(conjunction_v<is_constructible<decay_t<_Types>, _Types>...>,
+        "std::bind_front requires the decayed bound arguments to be constructible from undecayed bound arguments");
+    static_assert(conjunction_v<is_move_constructible<decay_t<_Types>>...>,
+        "std::bind_front requires the decayed bound arguments to be move constructible");
+
+    return _Front_binder<decay_t<_Fx>, decay_t<_Types>...>(_STD forward<_Fx>(_Func), _STD forward<_Types>(_Args)...);
 }
 #endif // _HAS_CXX20
 

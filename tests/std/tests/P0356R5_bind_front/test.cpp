@@ -164,4 +164,65 @@ int main() {
     auto bound7 = move(bound6);
     assert(*move(bound6)() == -9000);
     assert(*move(bound7)() == 1234);
+
+    // Also test GH-1292 "bind_front violates [func.require]p8" in which the return type of bind_front inadvertently
+    // depends on the value category and/or cv-qualification if its arguments.
+    {
+        struct S {
+            int i = 42;
+        };
+        S s;
+        auto lambda               = [](S x) { return x.i; };
+        auto returns_lambda       = [=] { return lambda; };
+        auto returns_const_lambda = [=]() -> const decltype(lambda) { return lambda; };
+        auto returns_const_S      = []() -> const S { return {}; };
+
+        using T = decltype(bind_front(lambda, s));
+        static_assert(is_same_v<decltype(bind_front(lambda, std::move(s))), T>);
+        static_assert(is_same_v<decltype(bind_front(lambda, S{})), T>);
+
+        static_assert(is_same_v<decltype(bind_front(std::move(lambda), s)), T>);
+        static_assert(is_same_v<decltype(bind_front(std::move(lambda), std::move(s))), T>);
+        static_assert(is_same_v<decltype(bind_front(std::move(lambda), S{})), T>);
+
+        static_assert(is_same_v<decltype(bind_front(returns_lambda(), s)), T>);
+        static_assert(is_same_v<decltype(bind_front(returns_lambda(), std::move(s))), T>);
+        static_assert(is_same_v<decltype(bind_front(returns_lambda(), S{})), T>);
+
+        static_assert(is_same_v<decltype(bind_front(lambda, as_const(s))), T>);
+        static_assert(is_same_v<decltype(bind_front(lambda, std::move(as_const(s)))), T>);
+        static_assert(is_same_v<decltype(bind_front(lambda, returns_const_S())), T>);
+
+        static_assert(is_same_v<decltype(bind_front(std::move(lambda), as_const(s))), T>);
+        static_assert(is_same_v<decltype(bind_front(std::move(lambda), std::move(as_const(s)))), T>);
+        static_assert(is_same_v<decltype(bind_front(std::move(lambda), returns_const_S())), T>);
+
+        static_assert(is_same_v<decltype(bind_front(returns_lambda(), as_const(s))), T>);
+        static_assert(is_same_v<decltype(bind_front(returns_lambda(), std::move(as_const(s)))), T>);
+        static_assert(is_same_v<decltype(bind_front(returns_lambda(), returns_const_S())), T>);
+
+        static_assert(is_same_v<decltype(bind_front(as_const(lambda), s)), T>);
+        static_assert(is_same_v<decltype(bind_front(as_const(lambda), std::move(s))), T>);
+        static_assert(is_same_v<decltype(bind_front(as_const(lambda), S{})), T>);
+
+        static_assert(is_same_v<decltype(bind_front(std::move(as_const(lambda)), s)), T>);
+        static_assert(is_same_v<decltype(bind_front(std::move(as_const(lambda)), std::move(s))), T>);
+        static_assert(is_same_v<decltype(bind_front(std::move(as_const(lambda)), S{})), T>);
+
+        static_assert(is_same_v<decltype(bind_front(returns_const_lambda(), s)), T>);
+        static_assert(is_same_v<decltype(bind_front(returns_const_lambda(), std::move(s))), T>);
+        static_assert(is_same_v<decltype(bind_front(returns_const_lambda(), S{})), T>);
+
+        static_assert(is_same_v<decltype(bind_front(as_const(lambda), as_const(s))), T>);
+        static_assert(is_same_v<decltype(bind_front(as_const(lambda), std::move(as_const(s)))), T>);
+        static_assert(is_same_v<decltype(bind_front(as_const(lambda), returns_const_S())), T>);
+
+        static_assert(is_same_v<decltype(bind_front(std::move(as_const(lambda)), as_const(s))), T>);
+        static_assert(is_same_v<decltype(bind_front(std::move(as_const(lambda)), std::move(as_const(s)))), T>);
+        static_assert(is_same_v<decltype(bind_front(std::move(as_const(lambda)), returns_const_S())), T>);
+
+        static_assert(is_same_v<decltype(bind_front(returns_const_lambda(), as_const(s))), T>);
+        static_assert(is_same_v<decltype(bind_front(returns_const_lambda(), std::move(as_const(s)))), T>);
+        static_assert(is_same_v<decltype(bind_front(returns_const_lambda(), returns_const_S())), T>);
+    }
 }
