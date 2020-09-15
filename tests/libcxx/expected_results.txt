@@ -507,7 +507,7 @@ std/depr/depr.c.headers/tgmath_h.pass.cpp:1 FAIL
 
 # *** CLANG FEATURES NOT YET IMPLEMENTED ***
 # P0960R3 "Allow initializing aggregates from a parenthesized list of values"
-std/utilities/tuple/tuple.tuple/tuple.creation/tuple_cat.pass.cpp SKIPPED # TRANSITION, VS 2019 16.8 p3
+std/utilities/tuple/tuple.tuple/tuple.creation/tuple_cat.pass.cpp:0 FAIL
 
 
 # *** CLANG ISSUES, NOT YET ANALYZED ***
