@@ -489,9 +489,6 @@ std/thread/futures/futures.task/futures.task.members/make_ready_at_thread_exit.p
 # Compiler bug: DevCom-409222 "Constructing rvalue reference from non-reference-related lvalue reference"
 std/utilities/meta/meta.unary/meta.unary.prop/is_constructible.pass.cpp:0 FAIL
 
-# Compiler bug: VSO-1035737 "constexpr pointers-by-reference"
-std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.index/difference_type.pass.cpp:0 FAIL
-
 # Compiler bug: DevCom-876860 "conditional operator errors" blocks readable<volatile int*>.
 std/containers/views/span.cons/ptr_len.pass.cpp:0 FAIL
 std/containers/views/span.cons/ptr_ptr.pass.cpp:0 FAIL
