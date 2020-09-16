@@ -1655,7 +1655,7 @@ namespace ranges {
         template <class _Rng>
         concept _Reconstructible_range = random_access_range<_Rng> && sized_range<_Rng>
             && (_Is_dynamic_span<remove_cvref_t<_Rng>>
-                // || _Is_specialization_v<remove_cvref_t<_Rng>, basic_string_view> // TRANSITION, P1391R4
+                || _Is_specialization_v<remove_cvref_t<_Rng>, basic_string_view>
                 // || _Is_specialization_v<remove_cvref_t<_Rng>, iota_view> // TRANSITION, iota_view
                 || _Is_subrange<remove_cvref_t<_Rng>>);
 

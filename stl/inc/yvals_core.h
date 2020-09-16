@@ -193,6 +193,7 @@
 //     (partially implemented)
 // P1248R1 Fixing Relations
 // P1357R1 is_bounded_array, is_unbounded_array
+// P1391R4 Range Constructor For string_view
 // P1394R4 Range Constructor For span
 // P1423R3 char8_t Backward Compatibility Remediation
 // P1456R1 Move-Only Views
@@ -202,6 +203,8 @@
 // P1651R0 bind_front() Should Not Unwrap reference_wrapper
 // P1690R1 Refining Heterogeneous Lookup For Unordered Containers
 // P1716R3 Range Comparison Algorithms Are Over-Constrained
+// P1739R4 Avoiding Template Bloat For Ranges
+//     (partially implemented)
 // P1754R1 Rename Concepts To standard_case
 // P1865R1 Adding max() To latch And barrier
 // P1870R1 Rename forwarding-range To borrowed_range (Was safe_range before LWG-3379)
@@ -495,7 +498,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 142
-#define _MSVC_STL_UPDATE  202008L
+#define _MSVC_STL_UPDATE  202009L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #ifdef __EDG__
