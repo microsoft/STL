@@ -538,7 +538,7 @@ std/re/re.traits/transform.pass.cpp FAIL
 # GH-1260 Incorrect return types.
 std/numerics/complex.number/cmplx.over/pow.pass.cpp FAIL
 
-# GH-942 We allow fill() and swap() for array<const T, 0>.
+# GH-1295 <array>: array<const T, 0> allows fill() and swap()
 std/containers/sequences/array/array.fill/fill.fail.cpp FAIL
 std/containers/sequences/array/array.swap/swap.fail.cpp FAIL
 
