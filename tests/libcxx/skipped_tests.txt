@@ -469,26 +469,6 @@ language.support\support.limits\support.limits.general\functional.version.pass.c
 language.support\support.limits\support.limits.general\iterator.version.pass.cpp
 language.support\support.limits\support.limits.general\memory.version.pass.cpp
 
-# C++20 P1135R6 "The C++20 Synchronization Library"
-thread\thread.barrier\arrive.pass.cpp
-thread\thread.barrier\arrive_and_drop.pass.cpp
-thread\thread.barrier\arrive_and_wait.pass.cpp
-thread\thread.barrier\completion.pass.cpp
-thread\thread.barrier\max.pass.cpp
-thread\thread.barrier\version.pass.cpp
-thread\thread.latch\arrive_and_wait.pass.cpp
-thread\thread.latch\count_down.pass.cpp
-thread\thread.latch\max.pass.cpp
-thread\thread.latch\try_wait.pass.cpp
-thread\thread.latch\version.pass.cpp
-thread\thread.semaphore\acquire.pass.cpp
-thread\thread.semaphore\binary.pass.cpp
-thread\thread.semaphore\max.pass.cpp
-thread\thread.semaphore\release.pass.cpp
-thread\thread.semaphore\timed.pass.cpp
-thread\thread.semaphore\try_acquire.pass.cpp
-thread\thread.semaphore\version.pass.cpp
-
 
 # *** MISSING COMPILER FEATURES ***
 # Nothing here! :-)
@@ -508,9 +488,6 @@ thread\futures\futures.task\futures.task.members\make_ready_at_thread_exit.pass.
 # *** C1XX COMPILER BUGS ***
 # Compiler bug: DevCom-409222 "Constructing rvalue reference from non-reference-related lvalue reference"
 utilities\meta\meta.unary\meta.unary.prop\is_constructible.pass.cpp
-
-# Compiler bug: VSO-1035737 "constexpr pointers-by-reference"
-iterators\predef.iterators\move.iterators\move.iter.ops\move.iter.op.index\difference_type.pass.cpp
 
 # Compiler bug: DevCom-876860 "conditional operator errors" blocks readable<volatile int*>.
 containers\views\span.cons\ptr_len.pass.cpp
@@ -570,9 +547,6 @@ containers\sequences\array\array.cons\initialization.pass.cpp
 containers\sequences\array\array.data\data_const.pass.cpp
 containers\sequences\array\array.data\data.pass.cpp
 containers\sequences\array\iterators.pass.cpp
-
-# STL bug: string_view doesn't enforce "non-array trivial standard-layout", related to LWG-3034.
-strings\string.view\char.bad.fail.cpp
 
 # Predicate count assertions - IDL2 is slightly bending the Standard's rules here.
 algorithms\alg.sorting\alg.heap.operations\make.heap\make_heap_comp.pass.cpp
@@ -647,6 +621,19 @@ thread\thread.threads\thread.thread.class\thread.thread.member\join.pass.cpp
 
 
 # *** LIKELY BOGUS TESTS ***
+# "error: _LIBCPP_VERSION not defined"
+thread\thread.barrier\version.pass.cpp
+thread\thread.latch\version.pass.cpp
+thread\thread.semaphore\version.pass.cpp
+
+# "error C3861: 'assert': identifier not found"
+thread\thread.semaphore\timed.pass.cpp
+thread\thread.semaphore\try_acquire.pass.cpp
+
+# pass lambda without noexcept to barrier
+thread\thread.barrier\completion.pass.cpp
+thread\thread.barrier\max.pass.cpp
+
 # Test bug/LEWG issue or STL bug. See GH-519 "<cmath>: signbit() misses overloads for integer types".
 depr\depr.c.headers\math_h.pass.cpp
 numerics\c.math\cmath.pass.cpp

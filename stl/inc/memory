@@ -482,7 +482,7 @@ _NoThrowFwdIt uninitialized_fill_n(_NoThrowFwdIt _First, const _Diff _Count_raw,
 
     auto _UFirst = _Get_unwrapped_n(_First, _Count);
     if constexpr (_Fill_memset_is_safe<_Unwrapped_n_t<const _NoThrowFwdIt&>, _Tval>) {
-        _CSTD memset(_UFirst, static_cast<unsigned char>(_Val), _Count);
+        _Fill_memset(_UFirst, _Val, static_cast<size_t>(_Count));
         _UFirst += _Count;
     } else {
         _Uninitialized_backout<_Unwrapped_n_t<const _NoThrowFwdIt&>> _Backout{_UFirst};
@@ -514,7 +514,7 @@ template <class _NoThrowFwdIt, class _Diff, class _Tval>
 _NoThrowFwdIt _Uninitialized_fill_n_unchecked1(
     const _NoThrowFwdIt _First, const _Diff _Count, const _Tval& _Val, true_type) {
     // copy _Count copies of _Val to raw _First, memset optimization
-    _CSTD memset(_First, static_cast<unsigned char>(_Val), _Count);
+    _Fill_memset(_First, _Val, _Count);
     return _First + _Count;
 }
 
@@ -551,7 +551,7 @@ namespace ranges {
 
             auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
             if constexpr (_Fill_memset_is_safe<_It, _Ty>) {
-                _CSTD memset(_UFirst, static_cast<unsigned char>(_Val), _Count);
+                _Fill_memset(_UFirst, _Val, static_cast<size_t>(_Count));
                 _Seek_wrapped(_First, _UFirst + _Count);
             } else if constexpr (is_nothrow_constructible_v<iter_value_t<_It>, const _Ty&>) {
                 for (; _Count > 0; --_Count, (void) ++_UFirst) {
@@ -839,8 +839,8 @@ namespace ranges {
             using _Ty = remove_reference_t<iter_reference_t<_It>>;
             if constexpr (_Use_memset_value_construct_v<_It>) {
                 const auto _OFinal = _RANGES next(_OFirst, _STD move(_OLast));
-                const auto _Diff   = static_cast<size_t>(_OFinal - _OFirst);
-                _CSTD memset(_OFirst, 0, _Diff);
+                const auto _Count  = static_cast<size_t>(_OFinal - _OFirst);
+                _CSTD memset(_OFirst, 0, _Count);
                 return _OFinal;
             } else if constexpr (is_nothrow_default_constructible_v<_Ty>) {
                 for (; _OFirst != _OLast; ++_OFirst) {
@@ -2270,7 +2270,7 @@ void _Uninitialized_fill_multidimensional_n(_Ty* const _Out, const size_t _Size,
         }
         _Guard._Target = nullptr;
     } else if constexpr (_Fill_memset_is_safe<_Ty*, _Ty>) {
-        _CSTD memset(_Out, static_cast<unsigned char>(_Val), _Size);
+        _Fill_memset(_Out, _Val, _Size);
     } else {
         _Uninitialized_rev_destroying_backout _Backout{_Out};
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
@@ -2593,7 +2593,7 @@ void _Uninitialized_fill_multidimensional_n_al(_Ty* const _Out, const size_t _Si
         }
         _Guard._Target = nullptr;
     } else if constexpr (_Fill_memset_is_safe<_Ty*, _Ty> && _Uses_default_construct<_Alloc, _Ty*, const _Ty&>::value) {
-        _CSTD memset(_Out, static_cast<unsigned char>(_Val), _Size);
+        _Fill_memset(_Out, _Val, _Size);
     } else {
         _Uninitialized_rev_destroying_backout_al _Backout{_Out, _Al};
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {

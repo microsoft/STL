@@ -257,23 +257,33 @@ void test_case_Equal_memcmp_is_safe_comparator() {
 
 #ifdef __cpp_lib_concepts
     // contiguous iterators should not change the answer
-    STATIC_ASSERT(
-        _Equal_memcmp_is_safe<typename vector<Elem1>::iterator, typename vector<Elem2>::iterator, Pr> == Expected);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<typename vector<Elem1>::const_iterator, typename vector<Elem2>::const_iterator,
-                      Pr> == Expected);
+    if constexpr (!is_same_v<Elem1, bool> && !is_same_v<Elem2, bool>) { // vector<bool>::iterator is not contiguous
+        STATIC_ASSERT(
+            _Equal_memcmp_is_safe<typename vector<Elem1>::iterator, typename vector<Elem2>::iterator, Pr> == Expected);
+        STATIC_ASSERT(_Equal_memcmp_is_safe<typename vector<Elem1>::const_iterator,
+                          typename vector<Elem2>::const_iterator, Pr> == Expected);
+    }
     STATIC_ASSERT(
         _Equal_memcmp_is_safe<typename array<Elem1, 1>::iterator, typename array<Elem2, 1>::iterator, Pr> == Expected);
     STATIC_ASSERT(_Equal_memcmp_is_safe<typename array<Elem1, 1>::const_iterator,
                       typename array<Elem2, 1>::const_iterator, Pr> == Expected);
     // Mixing contiguous iterators should not change the answer
-    STATIC_ASSERT(_Equal_memcmp_is_safe<typename vector<Elem1>::iterator, typename vector<Elem2>::const_iterator,
-                      Pr> == Expected);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<typename array<Elem1, 1>::const_iterator,
-                      typename vector<Elem2>::const_iterator, Pr> == Expected);
-    STATIC_ASSERT(
-        _Equal_memcmp_is_safe<typename vector<Elem1>::iterator, typename array<Elem2, 1>::iterator, Pr> == Expected);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<typename vector<Elem1>::iterator, typename array<Elem2, 1>::const_iterator,
-                      Pr> == Expected);
+    if constexpr (!is_same_v<Elem1, bool> && !is_same_v<Elem2, bool>) {
+        STATIC_ASSERT(_Equal_memcmp_is_safe<typename vector<Elem1>::iterator, typename vector<Elem2>::const_iterator,
+                          Pr> == Expected);
+    }
+
+    if constexpr (!is_same_v<Elem2, bool>) {
+        STATIC_ASSERT(_Equal_memcmp_is_safe<typename array<Elem1, 1>::const_iterator,
+                          typename vector<Elem2>::const_iterator, Pr> == Expected);
+    }
+
+    if constexpr (!is_same_v<Elem1, bool>) {
+        STATIC_ASSERT(_Equal_memcmp_is_safe<typename vector<Elem1>::iterator, typename array<Elem2, 1>::iterator,
+                          Pr> == Expected);
+        STATIC_ASSERT(_Equal_memcmp_is_safe<typename vector<Elem1>::iterator, typename array<Elem2, 1>::const_iterator,
+                          Pr> == Expected);
+    }
     // span iterators are contiguous
     STATIC_ASSERT(
         _Equal_memcmp_is_safe<typename span<Elem1>::iterator, typename span<Elem2>::iterator, Pr> == Expected);
@@ -335,7 +345,8 @@ void test_case_Equal_memcmp_is_safe() {
 }
 
 void equal_safe_test_cases() {
-    // memcmp is safe for non-bool integral types
+    // memcmp is safe for integral types
+    test_case_Equal_memcmp_is_safe<true, bool, bool>();
     test_case_Equal_memcmp_is_safe<true, char, char>();
     test_case_Equal_memcmp_is_safe<true, signed char, signed char>();
     test_case_Equal_memcmp_is_safe<true, unsigned char, unsigned char>();
@@ -377,10 +388,10 @@ void equal_safe_test_cases() {
     test_case_Equal_memcmp_is_safe<sizeof(int) == sizeof(long), unsigned long, unsigned int>();
     test_case_Equal_memcmp_is_safe<true, long long, unsigned long long>();
     test_case_Equal_memcmp_is_safe<true, unsigned long long, long long>();
-    // memcmp is not safe for bool types
-    test_case_Equal_memcmp_is_safe<false, bool, bool>();
-    test_case_Equal_memcmp_is_safe<false, bool, char>();
-    test_case_Equal_memcmp_is_safe<false, char, bool>();
+    // memcmp is safe between bool and other integral types with the same size because we don't care about
+    // representations other than 0 and 1
+    test_case_Equal_memcmp_is_safe<true, bool, char>();
+    test_case_Equal_memcmp_is_safe<true, char, bool>();
     // No enums
     test_case_Equal_memcmp_is_safe<false, bool_enum, bool>();
     test_case_Equal_memcmp_is_safe<false, bool, bool_enum>();

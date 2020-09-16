@@ -242,6 +242,8 @@ tests\P0768R1_spaceship_operator
 tests\P0769R2_shift_left_shift_right
 tests\P0784R7_library_support_for_more_constexpr_containers
 tests\P0811R3_midpoint_lerp
+tests\P0896R4_common_iterator
+tests\P0896R4_common_iterator_death
 tests\P0896R4_counted_iterator
 tests\P0896R4_counted_iterator_death
 tests\P0896R4_P1614R2_comparisons
@@ -279,6 +281,8 @@ tests\P0896R4_ranges_alg_move
 tests\P0896R4_ranges_alg_move_backward
 tests\P0896R4_ranges_alg_none_of
 tests\P0896R4_ranges_alg_nth_element
+tests\P0896R4_ranges_alg_partial_sort
+tests\P0896R4_ranges_alg_partial_sort_copy
 tests\P0896R4_ranges_alg_partition
 tests\P0896R4_ranges_alg_partition_copy
 tests\P0896R4_ranges_alg_partition_point
@@ -326,8 +330,16 @@ tests\P0896R4_ranges_ref_view
 tests\P0896R4_ranges_subrange
 tests\P0896R4_ranges_test_machinery
 tests\P0896R4_ranges_to_address
+tests\P0896R4_views_all
+tests\P0896R4_views_drop
 tests\P0896R4_views_empty
+tests\P0896R4_views_filter
+tests\P0896R4_views_filter_death
+tests\P0896R4_views_reverse
 tests\P0896R4_views_single
+tests\P0896R4_views_take
+tests\P0896R4_views_transform
+tests\P0896R4_views_transform_death
 tests\P0898R3_concepts
 tests\P0898R3_identity
 tests\P0912R5_coroutine
@@ -338,6 +350,9 @@ tests\P1032R1_miscellaneous_constexpr
 tests\P1135R6_atomic_flag_test
 tests\P1135R6_atomic_wait
 tests\P1135R6_atomic_wait_vista
+tests\P1135R6_barrier
+tests\P1135R6_latch
+tests\P1135R6_semaphore
 tests\P1165R1_consistently_propagating_stateful_allocators
 tests\P1423R3_char8_t_remediation
 tests\P1645R1_constexpr_numeric
