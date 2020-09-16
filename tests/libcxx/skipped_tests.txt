@@ -527,7 +527,7 @@ localization\locale.categories\category.monetary\locale.moneypunct\money_base.pa
 input.output\file.streams\fstreams\filebuf.virtuals\overflow.pass.cpp
 input.output\file.streams\fstreams\filebuf.virtuals\underflow.pass.cpp
 
-# GH-1256 Our inheritance implementation is allowing this to compile when it shouldn't.
+# STL bug: Our inheritance implementation is allowing this to compile when it shouldn't.
 numerics\complex.number\complex.special\double_long_double_implicit.compile.fail.cpp
 numerics\complex.number\complex.special\float_double_implicit.compile.fail.cpp
 numerics\complex.number\complex.special\float_long_double_implicit.compile.fail.cpp
