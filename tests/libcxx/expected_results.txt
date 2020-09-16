@@ -520,10 +520,10 @@ std/language.support/support.limits/limits/numeric.limits.members/traps.pass.cpp
 
 
 # *** STL BUGS ***
-# GH-1112 VSO-121977 "<locale>: the enum value of std::money_base is not correct[libcxx]"
+# GH-1112 "<locale>: the enum value of std::money_base is not correct[libcxx]"
 std/localization/locale.categories/category.monetary/locale.moneypunct/money_base.pass.cpp FAIL
 
-# GH-1113 VSO-595631 <fstream> basic_filebuf doesn't comply with setbuf(0,0) requirement in the standard
+# GH-1113 <fstream> basic_filebuf doesn't comply with setbuf(0,0) requirement in the standard
 std/input.output/file.streams/fstreams/filebuf.virtuals/overflow.pass.cpp FAIL
 std/input.output/file.streams/fstreams/filebuf.virtuals/underflow.pass.cpp FAIL
 
@@ -542,7 +542,7 @@ std/numerics/complex.number/cmplx.over/pow.pass.cpp FAIL
 std/containers/sequences/array/array.fill/fill.fail.cpp FAIL
 std/containers/sequences/array/array.swap/swap.fail.cpp FAIL
 
-# GH-942 VSO-207715 We reject array<NoDefault, 0>.
+# GH-942 We reject array<NoDefault, 0>.
 std/containers/sequences/array/array.cons/implicit_copy.pass.cpp FAIL
 std/containers/sequences/array/array.cons/initialization.pass.cpp FAIL
 std/containers/sequences/array/array.data/data_const.pass.cpp FAIL
