@@ -1048,7 +1048,7 @@ public:
     constexpr _String_view_iterator& operator+=(const difference_type _Off) noexcept {
 #if _ITERATOR_DEBUG_LEVEL >= 1
         _Verify_offset(_Off);
-        _Myoff += _Off;
+        _Myoff += static_cast<size_t>(_Off);
 #else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ // vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
         _Myptr += _Off;
 #endif // _ITERATOR_DEBUG_LEVEL
@@ -1077,7 +1077,7 @@ public:
                 "cannot seek string_view iterator after end");
         }
 
-        _Myoff -= _Off;
+        _Myoff -= static_cast<size_t>(_Off);
 #else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ // vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
         _Myptr -= _Off;
 #endif // _ITERATOR_DEBUG_LEVEL
@@ -1209,6 +1209,10 @@ public:
         "Bad char_traits for basic_string_view; "
         "N4659 24.4.2 [string.view.template]/1 \"the type traits::char_type shall name the same type as charT.\"");
 
+    static_assert(!is_array_v<_Elem> && is_trivial_v<_Elem> && is_standard_layout_v<_Elem>,
+        "The character type of basic_string_view must be a non-array trivial standard-layout type. See N4861 "
+        "[strings.general]/1.");
+
     using traits_type            = _Traits;
     using value_type             = _Elem;
     using pointer                = _Elem*;
@@ -1239,6 +1243,15 @@ public:
         _STL_VERIFY(_Count == 0 || _Cts, "non-zero size null string_view");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
     }
+
+#ifdef __cpp_lib_concepts
+    // clang-format off
+    template <contiguous_iterator _It, sized_sentinel_for<_It> _Se>
+        requires (is_same_v<iter_value_t<_It>, _Elem> && !is_convertible_v<_Se, size_type>)
+    constexpr basic_string_view(_It _First, _Se _Last) noexcept // strengthened
+        : _Mydata(_STD to_address(_First)), _Mysize(static_cast<size_type>(_Last - _First)) {}
+    // clang-format on
+#endif // __cpp_lib_concepts
 
     _NODISCARD constexpr const_iterator begin() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL >= 1
@@ -1628,6 +1641,9 @@ private:
 };
 
 #ifdef __cpp_lib_concepts
+template <contiguous_iterator _It, sized_sentinel_for<_It> _Se>
+basic_string_view(_It, _Se) -> basic_string_view<iter_value_t<_It>>;
+
 namespace ranges {
     template <class _Elem, class _Traits>
     inline constexpr bool enable_view<basic_string_view<_Elem, _Traits>> = true;
@@ -2277,6 +2293,10 @@ private:
     static_assert(is_same_v<_Elem, typename _Traits::char_type>,
         "N4659 24.3.2.1 [string.require]/3 requires that the supplied "
         "char_traits character type match the string's character type.");
+
+    static_assert(!is_array_v<_Elem> && is_trivial_v<_Elem> && is_standard_layout_v<_Elem>,
+        "The character type of basic_string must be a non-array trivial standard-layout type. See N4861 "
+        "[strings.general]/1.");
 
 public:
     using traits_type    = _Traits;
