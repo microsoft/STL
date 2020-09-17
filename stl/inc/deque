@@ -786,10 +786,7 @@ private:
 
 public:
     void push_front(_Ty&& _Val) {
-        _Orphan_all();
-        _PUSH_FRONT_BEGIN;
-        _Alty_traits::construct(_Getal(), _Unfancy(_Map()[_Block] + _Newoff % _DEQUESIZ), _STD move(_Val));
-        _PUSH_FRONT_END;
+        emplace_front(_STD move(_Val));
     }
 
     void push_back(_Ty&& _Val) {
@@ -817,10 +814,7 @@ public:
     template <class... _Valty>
     decltype(auto) emplace_back(_Valty&&... _Val) {
         _Orphan_all();
-        _PUSH_BACK_BEGIN;
-        _Alty_traits::construct(
-            _Getal(), _Unfancy(_Map()[_Block] + _Newoff % _DEQUESIZ), _STD forward<_Valty>(_Val)...);
-        _PUSH_BACK_END;
+        _Emplace_back_internal(_STD forward<_Valty>(_Val)...);
 
 #if _HAS_CXX17
         return back();
@@ -1077,10 +1071,7 @@ public:
     }
 
     void push_front(const _Ty& _Val) {
-        _Orphan_all();
-        _PUSH_FRONT_BEGIN;
-        _Alty_traits::construct(_Getal(), _Unfancy(_Map()[_Block] + _Newoff % _DEQUESIZ), _Val);
-        _PUSH_FRONT_END;
+        emplace_front(_Val);
     }
 
     void pop_front() noexcept /* strengthened */ {
