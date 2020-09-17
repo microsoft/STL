@@ -133,6 +133,14 @@ void test_int_ops() {
     assert(vy.load() == 0x40);
     assert(rx.load() == 0x33);
     assert(ry.load() == 0x33);
+
+    vx--;
+    rx--;
+
+    assert(vx.load() == 0x32);
+    assert(vy.load() == 0x40);
+    assert(rx.load() == 0x32);
+    assert(ry.load() == 0x32);
 }
 
 
