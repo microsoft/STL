@@ -318,7 +318,7 @@ public:
     using difference_type = ptrdiff_t;
 #else
     using difference_type = void;
-#endif // __cpp_lib_concepts
+#endif
     using pointer      = void;
     using reference    = void;
     using char_type    = _Elem;
@@ -328,6 +328,7 @@ public:
 #ifdef __cpp_lib_concepts
     constexpr ostream_iterator() noexcept = default;
 #endif // __cpp_lib_concepts
+
     ostream_iterator(ostream_type& _Ostr, const _Elem* const _Delim = nullptr) noexcept /* strengthened */
         : _Mydelim(_Delim), _Myostr(_STD addressof(_Ostr)) {}
 
@@ -359,7 +360,7 @@ private:
 
 // CLASS TEMPLATE istreambuf_iterator
 template <class _Elem, class _Traits>
-class istreambuf_iterator { // wrap stream buffer as input iterator
+class istreambuf_iterator {
 public:
     using iterator_category = input_iterator_tag;
     using value_type        = _Elem;
@@ -495,7 +496,7 @@ _NODISCARD bool operator!=(
 
 // CLASS TEMPLATE ostreambuf_iterator
 template <class _Elem, class _Traits>
-class ostreambuf_iterator { // wrap stream buffer as output iterator
+class ostreambuf_iterator {
 public:
     using iterator_category = output_iterator_tag;
     using value_type        = void;
@@ -503,7 +504,7 @@ public:
     using difference_type = ptrdiff_t;
 #else
     using difference_type = void;
-#endif // __cpp_lib_concepts
+#endif
     using pointer        = void;
     using reference      = void;
     using char_type      = _Elem;
