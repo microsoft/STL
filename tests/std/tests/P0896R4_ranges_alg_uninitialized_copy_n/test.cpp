@@ -49,8 +49,7 @@ struct int_wrapper {
     }
 
     int_wrapper& operator=(const int_wrapper&) {
-        // Shall never be used as we construct in place
-        throw magic_throwing_val + 1;
+        abort();
     }
 
     auto operator<=>(const int_wrapper&) const = default;
@@ -82,25 +81,23 @@ struct instantiator {
         using ranges::uninitialized_copy_n, ranges::uninitialized_copy_n_result, ranges::equal, ranges::equal_to,
             ranges::iterator_t;
 
-        { // Validate iterator overload
-            int_wrapper input[3] = {13, 55, 12345};
-            Read wrapped_input{input};
-            holder<int_wrapper, 3> mem;
-            Write wrapped_output{mem.as_span()};
+        int_wrapper input[3] = {13, 55, 12345};
+        Read wrapped_input{input};
+        holder<int_wrapper, 3> mem;
+        Write wrapped_output{mem.as_span()};
 
-            int_wrapper::clear_counts();
-            const same_as<uninitialized_copy_n_result<iterator_t<Read>, iterator_t<Write>>> auto result =
-                uninitialized_copy_n(wrapped_input.begin(), 3, wrapped_output.begin(), wrapped_output.end());
-            assert(int_wrapper::constructions == 3);
-            assert(int_wrapper::destructions == 0);
-            assert(result.in == wrapped_input.end());
-            assert(result.out == wrapped_output.end());
-            assert(equal(wrapped_output, expected_output, equal_to{}, &int_wrapper::val));
-            assert(equal(input, expected_input, equal_to{}, &int_wrapper::val));
-            not_ranges_destroy(wrapped_output);
-            assert(int_wrapper::constructions == 3);
-            assert(int_wrapper::destructions == 3);
-        }
+        int_wrapper::clear_counts();
+        const same_as<uninitialized_copy_n_result<iterator_t<Read>, iterator_t<Write>>> auto result =
+            uninitialized_copy_n(wrapped_input.begin(), 3, wrapped_output.begin(), wrapped_output.end());
+        assert(int_wrapper::constructions == 3);
+        assert(int_wrapper::destructions == 0);
+        assert(result.in == wrapped_input.end());
+        assert(result.out == wrapped_output.end());
+        assert(equal(wrapped_output, expected_output, equal_to{}, &int_wrapper::val));
+        assert(equal(input, expected_input, equal_to{}, &int_wrapper::val));
+        not_ranges_destroy(wrapped_output);
+        assert(int_wrapper::constructions == 3);
+        assert(int_wrapper::destructions == 3);
     }
 };
 

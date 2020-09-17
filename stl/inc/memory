@@ -803,7 +803,6 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(_No_throw_sentinel_for<_Se, _It>);
             _STL_INTERNAL_STATIC_ASSERT(default_initializable<iter_value_t<_It>>);
 
-            using _Ty = remove_reference_t<iter_reference_t<_It>>;
             if constexpr (_Use_memset_value_construct_v<_It>) {
                 const auto _OFinal = _RANGES next(_OFirst, _STD move(_OLast));
                 const auto _Count  = static_cast<size_t>(_OFinal - _OFirst);
@@ -851,8 +850,6 @@ namespace ranges {
             requires default_initializable<iter_value_t<_It>>
         _It operator()(_It _First, iter_difference_t<_It> _Count) const {
             // clang-format on
-
-            using _Ty = remove_reference_t<iter_reference_t<_It>>;
             if (_Count <= 0) {
                 return _First;
             }

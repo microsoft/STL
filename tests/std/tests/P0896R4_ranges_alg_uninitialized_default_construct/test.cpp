@@ -14,6 +14,7 @@
 using namespace std;
 
 // Validate dangling story
+STATIC_ASSERT(same_as<decltype(ranges::uninitialized_default_construct(borrowed<true>{})), int*>);
 STATIC_ASSERT(same_as<decltype(ranges::uninitialized_default_construct(borrowed<false>{})), ranges::dangling>);
 
 struct int_wrapper {
