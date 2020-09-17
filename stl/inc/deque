@@ -675,34 +675,6 @@ private:
         _Guard._Target = nullptr;
     }
 
-#define _PUSH_FRONT_BEGIN                                                                 \
-    if (_Myoff() % _DEQUESIZ == 0 && _Mapsize() <= (_Mysize() + _DEQUESIZ) / _DEQUESIZ) { \
-        _Growmap(1);                                                                      \
-    }                                                                                     \
-    _Myoff() &= _Mapsize() * _DEQUESIZ - 1;                                               \
-    size_type _Newoff = _Myoff() != 0 ? _Myoff() : _Mapsize() * _DEQUESIZ;                \
-    size_type _Block  = _Getblock(--_Newoff);                                             \
-    if (_Map()[_Block] == nullptr) {                                                      \
-        _Map()[_Block] = _Getal().allocate(_DEQUESIZ);                                    \
-    }
-
-#define _PUSH_FRONT_END \
-    _Myoff() = _Newoff; \
-    ++_Mysize()
-
-#define _PUSH_BACK_BEGIN                                                                                \
-    if ((_Myoff() + _Mysize()) % _DEQUESIZ == 0 && _Mapsize() <= (_Mysize() + _DEQUESIZ) / _DEQUESIZ) { \
-        _Growmap(1);                                                                                    \
-    }                                                                                                   \
-    _Myoff() &= _Mapsize() * _DEQUESIZ - 1;                                                             \
-    size_type _Newoff = _Myoff() + _Mysize();                                                           \
-    size_type _Block  = _Getblock(_Newoff);                                                             \
-    if (_Map()[_Block] == nullptr) {                                                                    \
-        _Map()[_Block] = _Getal().allocate(_DEQUESIZ);                                                  \
-    }
-
-#define _PUSH_BACK_END ++_Mysize()
-
 public:
     deque(deque&& _Right) : _Mypair(_One_then_variadic_args_t{}, _STD move(_Right._Getal())) {
         _Get_data()._Alloc_proxy(static_cast<_Alproxy_ty>(_Getal()));
@@ -801,10 +773,22 @@ public:
     template <class... _Valty>
     decltype(auto) emplace_front(_Valty&&... _Val) {
         _Orphan_all();
-        _PUSH_FRONT_BEGIN;
+
+        if (_Myoff() % _DEQUESIZ == 0 && _Mapsize() <= (_Mysize() + _DEQUESIZ) / _DEQUESIZ) {
+            _Growmap(1);
+        }
+        _Myoff() &= _Mapsize() * _DEQUESIZ - 1;
+        size_type _Newoff = _Myoff() != 0 ? _Myoff() : _Mapsize() * _DEQUESIZ;
+        size_type _Block  = _Getblock(--_Newoff);
+        if (_Map()[_Block] == nullptr) {
+            _Map()[_Block] = _Getal().allocate(_DEQUESIZ);
+        }
+
         _Alty_traits::construct(
             _Getal(), _Unfancy(_Map()[_Block] + _Newoff % _DEQUESIZ), _STD forward<_Valty>(_Val)...);
-        _PUSH_FRONT_END;
+
+        _Myoff() = _Newoff;
+        ++_Mysize();
 
 #if _HAS_CXX17
         return front();
@@ -1103,9 +1087,19 @@ public:
 private:
     template <class... _Tys>
     void _Emplace_back_internal(_Tys&&... _Vals) {
-        _PUSH_BACK_BEGIN;
+        if ((_Myoff() + _Mysize()) % _DEQUESIZ == 0 && _Mapsize() <= (_Mysize() + _DEQUESIZ) / _DEQUESIZ) {
+            _Growmap(1);
+        }
+        _Myoff() &= _Mapsize() * _DEQUESIZ - 1;
+        size_type _Newoff = _Myoff() + _Mysize();
+        size_type _Block  = _Getblock(_Newoff);
+        if (_Map()[_Block] == nullptr) {
+            _Map()[_Block] = _Getal().allocate(_DEQUESIZ);
+        }
+
         _Alty_traits::construct(_Getal(), _Unfancy(_Map()[_Block] + _Newoff % _DEQUESIZ), _STD forward<_Tys>(_Vals)...);
-        _PUSH_BACK_END;
+
+        ++_Mysize();
     }
 
 public:
