@@ -4384,7 +4384,7 @@ _OutIt _Copy_memmove_common(_InIt _IFirst, _InIt _ILast, _OutIt _OFirst, _OutIt 
     const char* const _ILast_ch  = const_cast<const char*>(reinterpret_cast<const volatile char*>(_ILast));
     char* const _OFirst_ch       = const_cast<char*>(reinterpret_cast<volatile char*>(_OFirst));
     const char* const _OLast_ch  = const_cast<const char*>(reinterpret_cast<const volatile char*>(_OLast));
-    const auto _Count            = static_cast<size_t>(_STD min(_ILast_ch - _IFirst_ch, _OLast_ch - _OFirst_ch));
+    const auto _Count            = static_cast<size_t>((_STD min)(_ILast_ch - _IFirst_ch, _OLast_ch - _OFirst_ch));
     _CSTD memmove(_OFirst_ch, _IFirst_ch, _Count);
     return reinterpret_cast<_OutIt>(_OFirst_ch + _Count);
 }
@@ -4395,7 +4395,7 @@ _OutIt _Copy_memcpy_common(_InIt _IFirst, _InIt _ILast, _OutIt _OFirst, _OutIt _
     const char* const _ILast_ch  = const_cast<const char*>(reinterpret_cast<const volatile char*>(_ILast));
     char* const _OFirst_ch       = const_cast<char*>(reinterpret_cast<volatile char*>(_OFirst));
     const char* const _OLast_ch  = const_cast<const char*>(reinterpret_cast<const volatile char*>(_OLast));
-    const auto _Count            = static_cast<size_t>(_STD min(_ILast_ch - _IFirst_ch, _OLast_ch - _OFirst_ch));
+    const auto _Count            = static_cast<size_t>((_STD min)(_ILast_ch - _IFirst_ch, _OLast_ch - _OFirst_ch));
     _CSTD memcpy(_OFirst_ch, _IFirst_ch, _Count);
     return reinterpret_cast<_OutIt>(_OFirst_ch + _Count);
 }
