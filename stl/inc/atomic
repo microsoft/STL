@@ -1810,6 +1810,22 @@ struct _Atomic_integral_facade<_Ty&> : _Atomic_integral<_Ty&> {
         return fetch_add(_Negate(_Operand), _Order);
     }
 
+    _Ty operator++(int) const noexcept {
+        return const_cast<_Atomic_integral_facade*>(this)->_Base::operator++(0);
+    }
+
+    _Ty operator++() const noexcept {
+        return const_cast<_Atomic_integral_facade*>(this)->_Base::operator++();
+    }
+
+    _Ty operator--(int) const noexcept {
+        return const_cast<_Atomic_integral_facade*>(this)->_Base::operator--(0);
+    }
+
+    _Ty operator--() const noexcept {
+        return const_cast<_Atomic_integral_facade*>(this)->_Base::operator--();
+    }
+
     _Ty operator+=(const _Ty _Operand) const noexcept {
         return static_cast<_Ty>(fetch_add(_Operand) + _Operand);
     }
