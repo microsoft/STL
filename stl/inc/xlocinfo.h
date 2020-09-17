@@ -23,17 +23,6 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _EXTERN_C_UNLESS_PURE
 
-// CTYPE CODE BITS
-#define _XA 0x100 // extra alphabetic
-#define _BB _CONTROL // BEL, BS, etc.
-#define _CN _SPACE // CR, FF, HT, NL, VT
-#define _DI _DIGIT // '0'-'9'
-#define _LO _LOWER // 'a'-'z'
-#define _PU _PUNCT // punctuation
-#define _SP _BLANK // space
-#define _UP _UPPER // 'A'-'Z'
-#define _XD _HEX // '0'-'9', 'A'-'F', 'a'-'f'
-
 // SUPPLEMENTAL LOCALE MACROS AND DECLARATIONS
 #define _X_ALL      LC_ALL
 #define _X_COLLATE  LC_COLLATE
