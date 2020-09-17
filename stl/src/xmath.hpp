@@ -8,6 +8,19 @@
 #include <stddef.h>
 #include <ymath.h>
 
+// MACROS FOR _Dtest RETURN (0 => ZERO)
+#define _DENORM  (-2) // C9X only
+#define _FINITE  (-1)
+#define _INFCODE 1
+#define _NANCODE 2
+
+// MACROS FOR _Feraise ARGUMENT
+#define _FE_DIVBYZERO 0x04
+#define _FE_INEXACT   0x20
+#define _FE_INVALID   0x01
+#define _FE_OVERFLOW  0x08
+#define _FE_UNDERFLOW 0x10
+
 // FLOAT PROPERTIES
 #define _D0 3 // little-endian, small long doubles
 #define _D1 2

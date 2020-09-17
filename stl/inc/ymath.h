@@ -17,19 +17,6 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _EXTERN_C_UNLESS_PURE
 
-// MACROS FOR _Dtest RETURN (0 => ZERO)
-#define _DENORM  (-2) // C9X only
-#define _FINITE  (-1)
-#define _INFCODE 1
-#define _NANCODE 2
-
-// MACROS FOR _Feraise ARGUMENT
-#define _FE_DIVBYZERO 0x04
-#define _FE_INEXACT   0x20
-#define _FE_INVALID   0x01
-#define _FE_OVERFLOW  0x08
-#define _FE_UNDERFLOW 0x10
-
 void __CLRCALL_PURE_OR_CDECL _Feraise(int);
 
 union _Dconst { // pun float types as integer array
