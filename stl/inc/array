@@ -617,9 +617,13 @@ public:
     _DEPRECATE_TR1_NAMESPACE void assign(const _Ty&) {}
 #endif // _HAS_TR1_NAMESPACE
 
-    _CONSTEXPR20 void fill(const _Ty&) {}
+    _CONSTEXPR20 void fill(const _Ty&) {
+        static_assert(!is_const_v<_Ty>, "cannot fill zero-sized array of type <const T>");
+    }
 
-    _CONSTEXPR20 void swap(array&) noexcept {}
+    _CONSTEXPR20 void swap(array&) noexcept {
+        static_assert(!is_const_v<_Ty>, "cannot swap zero-sized array of type <const T>");
+    }
 
     _NODISCARD _CONSTEXPR17 iterator begin() noexcept {
         return iterator{};
