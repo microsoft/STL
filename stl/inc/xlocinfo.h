@@ -24,9 +24,7 @@ _STL_DISABLE_CLANG_WARNINGS
 _EXTERN_C_UNLESS_PURE
 
 // CTYPE CODE BITS
-#define _XB 0x000 // extra blank
 #define _XA 0x100 // extra alphabetic
-#define _XS 0x000 // extra space
 #define _BB _CONTROL // BEL, BS, etc.
 #define _CN _SPACE // CR, FF, HT, NL, VT
 #define _DI _DIGIT // '0'-'9'

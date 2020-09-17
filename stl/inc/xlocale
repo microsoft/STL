@@ -2356,10 +2356,10 @@ struct _CRTIMP2_PURE_IMPORT ctype_base : locale::facet { // base for ctype
         lower  = _LO,
         print  = _DI | _LO | _PU | _SP | _UP | _XA | _XD,
         punct  = _PU,
-        space  = _CN | _SP | _XS,
+        space  = _CN | _SP,
         upper  = _UP,
         xdigit = _XD,
-        blank  = _CN | _SP | _XS | _XB
+        blank  = _CN | _SP
     };
     using mask = short; // to match <ctype.h>
 
