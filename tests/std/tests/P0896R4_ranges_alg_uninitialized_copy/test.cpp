@@ -64,7 +64,7 @@ struct int_wrapper {
         ++destructions;
     }
 
-    int_wrapper& operator=(const int_wrapper& that) {
+    int_wrapper& operator=(const int_wrapper&) {
         // Shall never be used as we construct in place
         throw magic_throwing_val;
     }
