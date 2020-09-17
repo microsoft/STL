@@ -26,7 +26,6 @@ STATIC_ASSERT(same_as<decltype(ranges::uninitialized_copy(borrowed<true>{}, borr
 STATIC_ASSERT(same_as<decltype(ranges::uninitialized_copy(borrowed<true>{}, borrowed<true>{})),
     ranges::uninitialized_copy_result<int*, int*>>);
 
-
 enum class CanThrowAtCopyConstruction : bool { no, yes };
 
 template <CanThrowAtCopyConstruction CanThrow>
@@ -66,7 +65,7 @@ struct int_wrapper {
 
     int_wrapper& operator=(const int_wrapper&) {
         // Shall never be used as we construct in place
-        throw magic_throwing_val;
+        throw magic_throwing_val + 1;
     }
 
     auto operator<=>(const int_wrapper&) const = default;
