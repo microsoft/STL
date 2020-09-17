@@ -98,7 +98,7 @@ struct instantiator {
         assert(equal(input, expected_input, equal_to{}, &int_wrapper::val));
         not_ranges_destroy(wrapped_output);
         assert(int_wrapper::constructions == 3);
-        assert(int_wrapper::destructions  == 3);
+        assert(int_wrapper::destructions == 3);
     }
 };
 
