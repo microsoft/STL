@@ -1566,7 +1566,7 @@ private:
 
 public:
     template <class _FxInit, class... _TypesInit,
-        enable_if_t<sizeof...(_TypesInit) != 0 || !is_same_v<_Remove_cvref_t<_FxInit>, _Front_binder>, int> = 0>
+        enable_if_t<sizeof...(_TypesInit) != 0 || !is_same_v<remove_cvref_t<_FxInit>, _Front_binder>, int> = 0>
     constexpr explicit _Front_binder(_FxInit&& _Func, _TypesInit&&... _Args)
         : _Mypair(_One_then_variadic_args_t{}, _STD forward<_FxInit>(_Func), _STD forward<_TypesInit>(_Args)...) {}
 
