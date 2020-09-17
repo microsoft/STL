@@ -1565,9 +1565,10 @@ private:
     _STL_INTERNAL_STATIC_ASSERT((is_same_v<_Types, decay_t<_Types>> && ...));
 
 public:
-    template <class _Fx_Init, class... _Types_Init>
-    constexpr explicit _Front_binder(_Fx_Init&& _Func, _Types_Init&&... _Args)
-        : _Mypair(_One_then_variadic_args_t{}, _STD forward<_Fx_Init>(_Func), _STD forward<_Types_Init>(_Args)...) {}
+    template <class _FxInit, class... _TypesInit,
+        enable_if_t<sizeof...(_TypesInit) != 0 || !is_same_v<_Remove_cvref_t<_FxInit>, _Front_binder>, int> = 0>
+    constexpr explicit _Front_binder(_FxInit&& _Func, _TypesInit&&... _Args)
+        : _Mypair(_One_then_variadic_args_t{}, _STD forward<_FxInit>(_Func), _STD forward<_TypesInit>(_Args)...) {}
 
     template <class... _Unbound>
     constexpr auto operator()(_Unbound&&... _Unbargs) & noexcept(noexcept(
