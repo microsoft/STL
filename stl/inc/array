@@ -621,6 +621,7 @@ public:
         static_assert(!is_const_v<_Ty>, "cannot fill zero-sized array of type <const T>");
     }
 
+    template<class _OTy = _Ty, enable_if_t<is_const_v<_OTy>, int> = 0>
     _CONSTEXPR20 void swap(array&) noexcept {
         static_assert(!is_const_v<_Ty>, "cannot swap zero-sized array of type <const T>");
     }
