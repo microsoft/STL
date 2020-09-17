@@ -1365,7 +1365,7 @@ struct _Atomic_integral<_Ty, 1> : _Atomic_storage<_Ty> { // atomic integral oper
     }
 
     _TVal operator--(int) noexcept {
-        return static_cast<_Ty>(_InterlockedExchangeAdd8(_Atomic_address_as<char>(this->_Storage), -1));
+        return static_cast<_TVal>(_InterlockedExchangeAdd8(_Atomic_address_as<char>(this->_Storage), -1));
     }
 
     _TVal operator--() noexcept {
