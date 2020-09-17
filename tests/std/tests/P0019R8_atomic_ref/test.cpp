@@ -94,40 +94,40 @@ void test_int_ops() {
     const std::atomic_ref rx(v);
     const std::atomic_ref ry(v);
 
-    vx.fetch_add(0x10);
-    rx.fetch_add(0x10);
+    assert(vx.fetch_add(0x10) == 0x40);
+    assert(rx.fetch_add(0x10) == 0x40);
 
     assert(vx.load() == 0x50);
     assert(vy.load() == 0x40);
     assert(rx.load() == 0x50);
     assert(ry.load() == 0x50);
 
-    vx.fetch_sub(0x8);
-    rx.fetch_sub(0x8);
+    assert(vx.fetch_sub(0x8) == 0x50);
+    assert(rx.fetch_sub(0x8) == 0x50);
 
     assert(vx.load() == 0x48);
     assert(vy.load() == 0x40);
     assert(rx.load() == 0x48);
     assert(ry.load() == 0x48);
 
-    vx.fetch_or(0xF);
-    rx.fetch_or(0xF);
+    assert(vx.fetch_or(0xF) == 0x48);
+    assert(rx.fetch_or(0xF) == 0x48);
 
     assert(vx.load() == 0x4F);
     assert(vy.load() == 0x40);
     assert(rx.load() == 0x4F);
     assert(ry.load() == 0x4F);
 
-    vx.fetch_and(0x3C);
-    rx.fetch_and(0x3C);
+    assert(vx.fetch_and(0x3C) == 0x4F);
+    assert(rx.fetch_and(0x3C) == 0x4F);
 
     assert(vx.load() == 0xC);
     assert(vy.load() == 0x40);
     assert(rx.load() == 0xC);
     assert(ry.load() == 0xC);
 
-    vx.fetch_xor(0x3F);
-    rx.fetch_xor(0x3F);
+    assert(vx.fetch_xor(0x3F) == 0xC);
+    assert(rx.fetch_xor(0x3F) == 0xC);
 
     assert(vx.load() == 0x33);
     assert(vy.load() == 0x40);
