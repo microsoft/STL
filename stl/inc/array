@@ -617,11 +617,14 @@ public:
     _DEPRECATE_TR1_NAMESPACE void assign(const _Ty&) {}
 #endif // _HAS_TR1_NAMESPACE
 
-    template <class _OTy = _Ty, enable_if_t<!is_const_v<_OTy>, int> = 0>
-    _CONSTEXPR20 void fill(const _Ty&) {}
+    _CONSTEXPR20 void fill(const _Ty&) {
+        static_assert(is_copy_assignable_v<_Ty>, "cannot fill zero-sized array of non-copy-assignable type");
+    }
 
-    template <class _OTy = _Ty, enable_if_t<!is_const_v<_OTy>, int> = 0>
-    _CONSTEXPR20 void swap(array&) noexcept {}
+    _CONSTEXPR20 void swap(array&) noexcept {
+        static_assert(
+            !is_const_v<_Ty> || _Is_swappable<_Ty>::value, "cannot swap zero-sized array of non-swappable type");
+    }
 
     _NODISCARD _CONSTEXPR17 iterator begin() noexcept {
         return iterator{};
