@@ -1679,11 +1679,8 @@ struct _Invocable_r_zero_nonvoid<void_t<decltype(_Implicitly_convert_to<_Rx>(_ST
     _Callable> : true_type {};
 
 template <class _Rx, class _Callable>
-struct _Is_nothrow_invocable_r_zero_impl
+struct _Is_nothrow_invocable_r_zero_nonvoid
     : bool_constant<noexcept(_Implicitly_convert_to<_Rx>(_STD declval<_Callable>()()))> {};
-
-template <class _Callable>
-struct _Is_nothrow_invocable_r_zero_impl<void, _Callable> : bool_constant<noexcept(_STD declval<_Callable>()())> {};
 
 template <class _Callable>
 struct _Invoke_traits_zero<void_t<_Decltype_invoke_zero<_Callable>>, _Callable> {
@@ -1694,8 +1691,8 @@ struct _Invoke_traits_zero<void_t<_Decltype_invoke_zero<_Callable>>, _Callable> 
     template <class _Rx>
     using _Is_invocable_r = bool_constant<disjunction_v<is_void<_Rx>, _Invocable_r_zero_nonvoid<void, _Rx, _Callable>>>;
     template <class _Rx>
-    using _Is_nothrow_invocable_r =
-        bool_constant<conjunction_v<_Is_invocable_r<_Rx>, _Is_nothrow_invocable_r_zero_impl<_Rx, _Callable>>>;
+    using _Is_nothrow_invocable_r = bool_constant<conjunction_v<_Is_invocable_r<_Rx>,
+        conditional_t<is_void_v<_Rx>, _Is_nothrow_invocable, _Is_nothrow_invocable_r_zero_nonvoid<_Rx, _Callable>>>>;
 };
 
 template <class _Void, class... _Types>
@@ -1722,14 +1719,9 @@ struct _Invocable_r_nonzero_nonvoid<void_t<decltype(_Implicitly_convert_to<_Rx>(
     _Rx, _Callable, _Ty1, _Types2...> : true_type {};
 
 template <class _Rx, class _Callable, class _Ty1, class... _Types2>
-struct _Is_nothrow_invocable_r_nonzero_impl
+struct _Is_nothrow_invocable_r_nonzero_nonvoid
     : bool_constant<noexcept(_Implicitly_convert_to<_Rx>(_Invoker1<_Callable, _Ty1>::_Call(
           _STD declval<_Callable>(), _STD declval<_Ty1>(), _STD declval<_Types2>()...)))> {};
-
-template <class _Callable, class _Ty1, class... _Types2>
-struct _Is_nothrow_invocable_r_nonzero_impl<void, _Callable, _Ty1, _Types2...>
-    : bool_constant<noexcept(_Invoker1<_Callable, _Ty1>::_Call(
-          _STD declval<_Callable>(), _STD declval<_Ty1>(), _STD declval<_Types2>()...))> {};
 
 template <class _Callable, class _Ty1, class... _Types2>
 struct _Invoke_traits_nonzero<void_t<_Decltype_invoke_nonzero<_Callable, _Ty1, _Types2...>>, _Callable, _Ty1,
@@ -1740,10 +1732,12 @@ struct _Invoke_traits_nonzero<void_t<_Decltype_invoke_nonzero<_Callable, _Ty1, _
     using _Is_nothrow_invocable = bool_constant<noexcept(_Invoker1<_Callable, _Ty1>::_Call(
         _STD declval<_Callable>(), _STD declval<_Ty1>(), _STD declval<_Types2>()...))>;
     template <class _Rx>
-    using _Is_invocable_r = _Invocable_r_nonzero_nonvoid<void, _Rx, _Callable, _Ty1, _Types2...>;
+    using _Is_invocable_r = bool_constant<
+        disjunction_v<is_void<_Rx>, _Invocable_r_nonzero_nonvoid<void, _Rx, _Callable, _Ty1, _Types2...>>>;
     template <class _Rx>
-    using _Is_nothrow_invocable_r = bool_constant<
-        conjunction_v<_Is_invocable_r<_Rx>, _Is_nothrow_invocable_r_nonzero_impl<_Rx, _Callable, _Ty1, _Types2...>>>;
+    using _Is_nothrow_invocable_r = bool_constant<conjunction_v<_Is_invocable_r<_Rx>,
+        conditional_t<is_void_v<_Rx>, _Is_nothrow_invocable,
+            _Is_nothrow_invocable_r_nonzero_nonvoid<_Rx, _Callable, _Ty1, _Types2...>>>>;
 };
 
 template <class _Callable, class... _Args>
