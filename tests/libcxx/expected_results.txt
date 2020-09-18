@@ -469,26 +469,6 @@ std/language.support/support.limits/support.limits.general/functional.version.pa
 std/language.support/support.limits/support.limits.general/iterator.version.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/memory.version.pass.cpp FAIL
 
-# C++20 P1135R6 "The C++20 Synchronization Library"
-std/thread/thread.barrier/arrive.pass.cpp FAIL
-std/thread/thread.barrier/arrive_and_drop.pass.cpp FAIL
-std/thread/thread.barrier/arrive_and_wait.pass.cpp FAIL
-std/thread/thread.barrier/completion.pass.cpp FAIL
-std/thread/thread.barrier/max.pass.cpp FAIL
-std/thread/thread.barrier/version.pass.cpp FAIL
-std/thread/thread.latch/arrive_and_wait.pass.cpp FAIL
-std/thread/thread.latch/count_down.pass.cpp FAIL
-std/thread/thread.latch/max.pass.cpp FAIL
-std/thread/thread.latch/try_wait.pass.cpp FAIL
-std/thread/thread.latch/version.pass.cpp FAIL
-std/thread/thread.semaphore/acquire.pass.cpp FAIL
-std/thread/thread.semaphore/binary.pass.cpp FAIL
-std/thread/thread.semaphore/max.pass.cpp FAIL
-std/thread/thread.semaphore/release.pass.cpp FAIL
-std/thread/thread.semaphore/timed.pass.cpp FAIL
-std/thread/thread.semaphore/try_acquire.pass.cpp FAIL
-std/thread/thread.semaphore/version.pass.cpp FAIL
-
 
 # *** MISSING COMPILER FEATURES ***
 # Nothing here! :-)
@@ -506,14 +486,8 @@ std/thread/futures/futures.task/futures.task.members/make_ready_at_thread_exit.p
 
 
 # *** C1XX COMPILER BUGS ***
-# Compiler bug: VSO-106654 "error C2580 "multiple versions of a defaulted special member functions are not allowed" is bogus and ungrammatical"
-std/utilities/tuple/tuple.tuple/tuple.cnstr/test_lazy_sfinae.pass.cpp:0 FAIL
-
 # Compiler bug: DevCom-409222 "Constructing rvalue reference from non-reference-related lvalue reference"
 std/utilities/meta/meta.unary/meta.unary.prop/is_constructible.pass.cpp:0 FAIL
-
-# Compiler bug: VSO-1035737 "constexpr pointers-by-reference"
-std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.index/difference_type.pass.cpp:0 FAIL
 
 # Compiler bug: DevCom-876860 "conditional operator errors" blocks readable<volatile int*>.
 std/containers/views/span.cons/ptr_len.pass.cpp:0 FAIL
@@ -573,9 +547,6 @@ std/containers/sequences/array/array.cons/initialization.pass.cpp FAIL
 std/containers/sequences/array/array.data/data_const.pass.cpp FAIL
 std/containers/sequences/array/array.data/data.pass.cpp FAIL
 std/containers/sequences/array/iterators.pass.cpp FAIL
-
-# STL bug: string_view doesn't enforce "non-array trivial standard-layout", related to LWG-3034.
-std/strings/string.view/char.bad.fail.cpp:0 FAIL
 
 # Predicate count assertions - IDL2 is slightly bending the Standard's rules here.
 std/algorithms/alg.sorting/alg.heap.operations/make.heap/make_heap_comp.pass.cpp FAIL
@@ -650,6 +621,19 @@ std/thread/thread.threads/thread.thread.class/thread.thread.member/join.pass.cpp
 
 
 # *** LIKELY BOGUS TESTS ***
+# "error: _LIBCPP_VERSION not defined"
+std/thread/thread.barrier/version.pass.cpp FAIL
+std/thread/thread.latch/version.pass.cpp FAIL
+std/thread/thread.semaphore/version.pass.cpp FAIL
+
+# "error C3861: 'assert': identifier not found"
+std/thread/thread.semaphore/timed.pass.cpp FAIL
+std/thread/thread.semaphore/try_acquire.pass.cpp FAIL
+
+# pass lambda without noexcept to barrier
+std/thread/thread.barrier/completion.pass.cpp FAIL
+std/thread/thread.barrier/max.pass.cpp FAIL
+
 # Test bug/LEWG issue or STL bug. See GH-519 "<cmath>: signbit() misses overloads for integer types".
 std/depr/depr.c.headers/math_h.pass.cpp FAIL
 std/numerics/c.math/cmath.pass.cpp FAIL

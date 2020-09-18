@@ -9,19 +9,19 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
-#if !defined(__cpp_coroutines) && !defined(__cpp_impl_coroutine)
-#error <experimental/generator> requires /std:c++latest or /await compiler options
-#endif // !defined(__cpp_coroutines) && !defined(__cpp_impl_coroutine)
-
 #ifdef _CPPUNWIND
 #include <exception>
 #endif
 #include <memory>
-#ifdef __cpp_coroutines
-#include <experimental/resumable>
-#else // __cpp_coroutines
+
+#if defined(__cpp_impl_coroutine)
 #include <coroutine>
-#endif // __cpp_coroutines
+#elif defined(__cpp_coroutines)
+#include <experimental/resumable>
+#else // ^^^ legacy coroutines / no coroutine support vvv
+#error <experimental/generator> requires /std:c++latest or /await compiler options
+#endif // ^^^ no coroutine support ^^^
+
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -38,10 +38,11 @@ namespace experimental {
     struct generator {
         struct promise_type {
             _Ty const* _CurrentValue;
+#if 1 // TRANSITION, VSO-1172852
 #ifdef _CPPUNWIND
-            // TRANSITION, VSO-967814
             exception_ptr _Eptr;
 #endif // _CPPUNWIND
+#endif // TRANSITION, VSO-1172852
 
             auto get_return_object() {
                 return generator{*this};
@@ -55,12 +56,21 @@ namespace experimental {
                 return {};
             }
 
-#ifdef _CPPUNWIND
+#if defined(_CPPUNWIND) || defined(__cpp_impl_coroutine)
             void unhandled_exception() noexcept {
+#if 1 // TRANSITION, VSO-1172852
+#ifdef _CPPUNWIND
                 _Eptr = _STD current_exception();
-            }
+#else // ^^^ _CPPUNWIND / !_CPPUNWIND vvv
+                abort();
 #endif // _CPPUNWIND
+#else // ^^^ workaround / no workaround vvv
+                throw;
+#endif // TRANSITION, VSO-1172852
+            }
+#endif // defined(_CPPUNWIND) || defined(__cpp_impl_coroutine)
 
+#if 1 // TRANSITION, VSO-1172852
             void _Rethrow_if_exception() {
 #ifdef _CPPUNWIND
                 if (_Eptr) {
@@ -68,6 +78,7 @@ namespace experimental {
                 }
 #endif // _CPPUNWIND
             }
+#endif // TRANSITION, VSO-1172852
 
             auto yield_value(_Ty const& _Value) {
                 _CurrentValue = _STD addressof(_Value);
@@ -117,7 +128,11 @@ namespace experimental {
             iterator& operator++() {
                 _Coro.resume();
                 if (_Coro.done()) {
+#if 1 // TRANSITION, VSO-1172852
                     _STD exchange(_Coro, {}).promise()._Rethrow_if_exception();
+#else // ^^^ workaround / no workaround vvv
+                    _Coro = nullptr;
+#endif // TRANSITION, VSO-1172852
                 }
 
                 return *this;
@@ -150,7 +165,9 @@ namespace experimental {
             if (_Coro) {
                 _Coro.resume();
                 if (_Coro.done()) {
+#if 1 // TRANSITION, VSO-1172852
                     _Coro.promise()._Rethrow_if_exception();
+#endif // TRANSITION, VSO-1172852
                     return {nullptr};
                 }
             }
@@ -164,10 +181,8 @@ namespace experimental {
 
         explicit generator(promise_type& _Prom) : _Coro(coroutine_handle<promise_type>::from_promise(_Prom)) {}
 
-        generator() = default;
-
+        generator()                 = default;
         generator(generator const&) = delete;
-
         generator& operator=(generator const&) = delete;
 
         generator(generator&& _Right) : _Coro(_Right._Coro) {

@@ -52,8 +52,9 @@ _EXTERN_C_UNLESS_PURE
 //
 // Exceptions:
 //     Non-standard: if OM/API error, return INT_MAX.
-_CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Strxfrm(
-    char* string1, char* end1, const char* string2, const char* end2, const _Collvec* ploc) {
+_CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Strxfrm(_Out_writes_(end1 - string1)
+                                                          _Post_readable_size_(return ) char* string1,
+    _In_z_ char* end1, const char* string2, const char* end2, const _Collvec* ploc) {
     size_t n1     = end1 - string1;
     size_t n2     = end2 - string2;
     size_t retval = static_cast<size_t>(-1); // NON-ANSI: default if OM or API error

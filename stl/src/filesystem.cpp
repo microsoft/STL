@@ -260,18 +260,18 @@ namespace {
 
 _EXTERN_C
 
-[[nodiscard]] __std_ulong_and_error __stdcall __std_fs_get_full_path_name(
-    const wchar_t* _Source, unsigned long _Target_size, wchar_t* _Target) noexcept { // calls GetFullPathNameW
+[[nodiscard]] __std_ulong_and_error __stdcall __std_fs_get_full_path_name(_In_z_ const wchar_t* _Source,
+    _In_ unsigned long _Target_size, _Out_writes_z_(_Target_size) wchar_t* _Target) noexcept { // calls GetFullPathNameW
     const auto _Result = GetFullPathNameW(_Source, _Target_size, _Target, nullptr);
     return {_Result, _Result == 0 ? __std_win_error{GetLastError()} : __std_win_error::_Success};
 }
 
-[[nodiscard]] __std_win_error __stdcall __std_fs_open_handle(__std_fs_file_handle* const _Handle,
-    const wchar_t* const _File_name, const __std_access_rights _Desired_access,
-    const __std_fs_file_flags _Flags) noexcept { // calls CreateFile2 or CreateFileW
+[[nodiscard]] __std_win_error __stdcall __std_fs_open_handle(_Out_ __std_fs_file_handle* const _Handle,
+    _In_z_ const wchar_t* const _File_name, _In_ const __std_access_rights _Desired_access,
+    _In_ const __std_fs_file_flags _Flags) noexcept { // calls CreateFile2 or CreateFileW
     const HANDLE _Result = __vcp_CreateFile(_File_name, static_cast<unsigned long>(_Desired_access),
         FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING,
-        static_cast<unsigned long>(_Flags), 0);
+        static_cast<unsigned long>(_Flags), nullptr);
     *_Handle             = static_cast<__std_fs_file_handle>(reinterpret_cast<intptr_t>(_Result));
     return _Translate_CreateFile_last_error(_Result);
 }
@@ -282,9 +282,10 @@ void __stdcall __std_fs_close_handle(const __std_fs_file_handle _Handle) noexcep
     }
 }
 
-[[nodiscard]] __std_win_error __stdcall __std_fs_get_file_attributes_by_handle(const __std_fs_file_handle _Handle,
-    unsigned long* const
-        _File_attributes) noexcept { // read the attributes from _Handle and store it in _File_attributes
+[[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error
+    __stdcall __std_fs_get_file_attributes_by_handle(
+        _In_ const __std_fs_file_handle _Handle, _Out_ unsigned long* const _File_attributes) noexcept {
+    // read the attributes from _Handle and store it in _File_attributes
     __std_win_error _Last_error;
     const HANDLE _As_plain_handle = reinterpret_cast<HANDLE>(_Handle);
 
@@ -311,9 +312,10 @@ void __stdcall __std_fs_close_handle(const __std_fs_file_handle _Handle) noexcep
     return _Last_error;
 }
 
-[[nodiscard]] __std_ulong_and_error __stdcall __std_fs_get_final_path_name_by_handle(const __std_fs_file_handle _Handle,
-    wchar_t* const _Target, const unsigned long _Target_size,
-    const __std_fs_volume_name_kind _Flags) noexcept { // calls GetFinalPathNameByHandleW
+[[nodiscard]] __std_ulong_and_error __stdcall __std_fs_get_final_path_name_by_handle(
+    _In_ const __std_fs_file_handle _Handle, _Out_writes_z_(_Target_size) wchar_t* const _Target,
+    _In_ const unsigned long _Target_size,
+    _In_ const __std_fs_volume_name_kind _Flags) noexcept { // calls GetFinalPathNameByHandleW
     const auto _Result = __vcrt_GetFinalPathNameByHandleW(
         reinterpret_cast<HANDLE>(_Handle), _Target, _Target_size, static_cast<unsigned long>(_Flags));
     return {_Result, _Result == 0 ? __std_win_error{GetLastError()} : __std_win_error::_Success};
@@ -322,8 +324,8 @@ void __stdcall __std_fs_close_handle(const __std_fs_file_handle _Handle) noexcep
 static_assert(sizeof(WIN32_FIND_DATAW) == sizeof(__std_fs_find_data));
 static_assert(alignof(WIN32_FIND_DATAW) == alignof(__std_fs_find_data));
 
-[[nodiscard]] __std_win_error __stdcall __std_fs_directory_iterator_open(
-    const wchar_t* const _Path_spec, __std_fs_dir_handle* const _Handle, __std_fs_find_data* const _Results) noexcept {
+[[nodiscard]] __std_win_error __stdcall __std_fs_directory_iterator_open(_In_z_ const wchar_t* const _Path_spec,
+    _Inout_ __std_fs_dir_handle* const _Handle, _Out_ __std_fs_find_data* const _Results) noexcept {
     __std_fs_directory_iterator_close(*_Handle);
     *_Handle = __std_fs_dir_handle{reinterpret_cast<intptr_t>(
         FindFirstFileExW(_Path_spec, FindExInfoBasic, _Results, FindExSearchNameMatch, nullptr, 0))};
@@ -349,14 +351,14 @@ static_assert(alignof(WIN32_FIND_DATAW) == alignof(__std_fs_find_data));
     return __std_win_error{GetLastError()};
 }
 
-void __stdcall __std_fs_directory_iterator_close(const __std_fs_dir_handle _Handle) noexcept {
+void __stdcall __std_fs_directory_iterator_close(_In_ const __std_fs_dir_handle _Handle) noexcept {
     if (_Handle != __std_fs_dir_handle::_Invalid && !FindClose(reinterpret_cast<HANDLE>(_Handle))) {
         terminate();
     }
 }
 
 [[nodiscard]] __std_win_error __stdcall __std_fs_directory_iterator_advance(
-    const __std_fs_dir_handle _Handle, __std_fs_find_data* const _Results) noexcept {
+    _In_ const __std_fs_dir_handle _Handle, _Out_ __std_fs_find_data* const _Results) noexcept {
     if (FindNextFileW(reinterpret_cast<HANDLE>(_Handle), reinterpret_cast<WIN32_FIND_DATAW*>(_Results))) {
         return __std_win_error::_Success;
     }
@@ -378,15 +380,17 @@ void __stdcall __std_fs_directory_iterator_close(const __std_fs_dir_handle _Hand
     return __std_code_page{CP_ACP};
 }
 
-[[nodiscard]] __std_fs_convert_result __stdcall __std_fs_convert_narrow_to_wide(const __std_code_page _Code_page,
-    const char* const _Input_str, const int _Input_len, wchar_t* const _Output_str, const int _Output_len) noexcept {
+[[nodiscard]] __std_fs_convert_result __stdcall __std_fs_convert_narrow_to_wide(_In_ const __std_code_page _Code_page,
+    _In_reads_(_Input_len) const char* const _Input_str, _In_ const int _Input_len,
+    _Out_writes_opt_(_Output_len) wchar_t* const _Output_str, _In_ const int _Output_len) noexcept {
     const int _Len = MultiByteToWideChar(
         static_cast<unsigned int>(_Code_page), MB_ERR_INVALID_CHARS, _Input_str, _Input_len, _Output_str, _Output_len);
     return {_Len, _Len == 0 ? __std_win_error{GetLastError()} : __std_win_error::_Success};
 }
 
-[[nodiscard]] __std_fs_convert_result __stdcall __std_fs_convert_wide_to_narrow(const __std_code_page _Code_page,
-    const wchar_t* const _Input_str, const int _Input_len, char* const _Output_str, const int _Output_len) noexcept {
+[[nodiscard]] __std_fs_convert_result __stdcall __std_fs_convert_wide_to_narrow(_In_ const __std_code_page _Code_page,
+    _In_reads_(_Input_len) const wchar_t* const _Input_str, _In_ const int _Input_len,
+    _Out_writes_opt_(_Output_len) char* const _Output_str, _In_ const int _Output_len) noexcept {
     __std_fs_convert_result _Result;
 
     if (_Code_page == __std_code_page{CP_UTF8} || _Code_page == __std_code_page{54936}) {
@@ -421,8 +425,9 @@ void __stdcall __std_fs_directory_iterator_close(const __std_fs_dir_handle _Hand
 }
 
 [[nodiscard]] __std_fs_convert_result __stdcall __std_fs_convert_wide_to_narrow_replace_chars(
-    const __std_code_page _Code_page, const wchar_t* const _Input_str, const int _Input_len, char* const _Output_str,
-    const int _Output_len) noexcept {
+    _In_ const __std_code_page _Code_page, _In_reads_(_Input_len) const wchar_t* const _Input_str,
+    _In_ const int _Input_len, _Out_writes_opt_(_Output_len) char* const _Output_str,
+    _In_ const int _Output_len) noexcept {
     __std_fs_convert_result _Result;
 
     _Result._Len = WideCharToMultiByte(static_cast<unsigned int>(_Code_page), WC_NO_BEST_FIT_CHARS, _Input_str,
@@ -441,8 +446,8 @@ void __stdcall __std_fs_directory_iterator_close(const __std_fs_dir_handle _Hand
     return _Result;
 }
 
-[[nodiscard]] __std_fs_copy_file_result __stdcall __std_fs_copy_file(const wchar_t* const _Source,
-    const wchar_t* const _Target, __std_fs_copy_options _Options) noexcept { // copy _Source to _Target
+[[nodiscard]] __std_fs_copy_file_result __stdcall __std_fs_copy_file(_In_z_ const wchar_t* const _Source,
+    _In_z_ const wchar_t* const _Target, _In_ __std_fs_copy_options _Options) noexcept { // copy _Source to _Target
     _Options &= __std_fs_copy_options::_Existing_mask;
     if (_Options != __std_fs_copy_options::_Overwrite_existing) {
         const __std_fs_copy_file_result _First_try_result =
@@ -457,15 +462,15 @@ void __stdcall __std_fs_directory_iterator_close(const __std_fs_dir_handle _Hand
         // We test equivalent() not by directly doing what equivalent() does, but by opening the handles
         // in exclusive mode, so a subsequent open will fail with ERROR_SHARING_VIOLATION.
         {
-            const _STD _Fs_file _Source_handle(
-                __vcp_CreateFile(_Source, FILE_READ_ATTRIBUTES | FILE_READ_DATA, 0, nullptr, OPEN_EXISTING, 0, 0));
+            const _STD _Fs_file _Source_handle(__vcp_CreateFile(
+                _Source, FILE_READ_ATTRIBUTES | FILE_READ_DATA, 0, nullptr, OPEN_EXISTING, 0, nullptr));
             __std_win_error _Last_error = _Translate_CreateFile_last_error(_Source_handle._Get());
             if (_Last_error != __std_win_error::_Success) {
                 return {false, _Last_error};
             }
 
-            const _STD _Fs_file _Target_handle(
-                __vcp_CreateFile(_Target, FILE_READ_ATTRIBUTES | FILE_WRITE_DATA, 0, nullptr, OPEN_EXISTING, 0, 0));
+            const _STD _Fs_file _Target_handle(__vcp_CreateFile(
+                _Target, FILE_READ_ATTRIBUTES | FILE_WRITE_DATA, 0, nullptr, OPEN_EXISTING, 0, nullptr));
             _Last_error = _Translate_CreateFile_last_error(_Target_handle._Get());
             if (_Last_error != __std_win_error::_Success) {
                 // Also handles the equivalent(from, to) error case
@@ -506,7 +511,8 @@ void __stdcall __std_fs_directory_iterator_close(const __std_fs_dir_handle _Hand
     return __vcp_Copyfile(_Source, _Target, /* _Fail_if_exists = */ false);
 }
 
-__std_win_error __stdcall __std_fs_get_file_id(__std_fs_file_id* const _Id, const wchar_t* const _Path) noexcept {
+_Success_(return == __std_win_error::_Success) __std_win_error
+    __stdcall __std_fs_get_file_id(_Out_ __std_fs_file_id* const _Id, _In_z_ const wchar_t* const _Path) noexcept {
     __std_win_error _Last_error;
     const _STD _Fs_file _Handle(
         _Path, __std_access_rights::_File_read_attributes, __std_fs_file_flags::_Backup_semantics, &_Last_error);
@@ -518,7 +524,8 @@ __std_win_error __stdcall __std_fs_get_file_id(__std_fs_file_id* const _Id, cons
     static_assert(alignof(FILE_ID_INFO) == alignof(__std_fs_file_id));
     if (__vcrt_GetFileInformationByHandleEx(
             _Handle._Get(), FileIdInfo, reinterpret_cast<FILE_ID_INFO*>(_Id), sizeof(*_Id))
-        != 0) { // if we could get FILE_ID_INFO, use that as the source of truth
+        != 0) {
+        // if we could get FILE_ID_INFO, use that as the source of truth
         return __std_win_error::_Success;
     }
 
@@ -548,12 +555,12 @@ __std_win_error __stdcall __std_fs_get_file_id(__std_fs_file_id* const _Id, cons
 }
 
 [[nodiscard]] __std_win_error __stdcall __std_fs_create_directory_symbolic_link(
-    const wchar_t* const _Symlink_file_name, const wchar_t* const _Target_file_name) noexcept {
+    _In_z_ const wchar_t* const _Symlink_file_name, _In_z_ const wchar_t* const _Target_file_name) noexcept {
     return _Create_symlink(_Symlink_file_name, _Target_file_name, SYMBOLIC_LINK_FLAG_DIRECTORY);
 }
 
 [[nodiscard]] __std_win_error __stdcall __std_fs_create_hard_link(
-    const wchar_t* const _File_name, const wchar_t* const _Existing_file_name) noexcept {
+    _In_z_ const wchar_t* const _File_name, _In_z_ const wchar_t* const _Existing_file_name) noexcept {
 #if defined(_CRT_APP)
     (void) _File_name;
     (void) _Existing_file_name;
@@ -568,12 +575,12 @@ __std_win_error __stdcall __std_fs_get_file_id(__std_fs_file_id* const _Id, cons
 }
 
 [[nodiscard]] __std_win_error __stdcall __std_fs_create_symbolic_link(
-    const wchar_t* const _Symlink_file_name, const wchar_t* const _Target_file_name) noexcept {
+    _In_z_ const wchar_t* const _Symlink_file_name, _In_z_ const wchar_t* const _Target_file_name) noexcept {
     return _Create_symlink(_Symlink_file_name, _Target_file_name, 0);
 }
 
-[[nodiscard]] __std_win_error __stdcall __std_fs_read_reparse_data_buffer(
-    const __std_fs_file_handle _Handle, void* const _Buffer, const unsigned long _Buffer_size) noexcept {
+[[nodiscard]] __std_win_error __stdcall __std_fs_read_reparse_data_buffer(_In_ const __std_fs_file_handle _Handle,
+    _Out_writes_bytes_(_Buffer_size) void* const _Buffer, _In_ const unsigned long _Buffer_size) noexcept {
     unsigned long _Bytes_returned;
     // If DeviceIoControl fails, it returns 0 and _Bytes_returned is 0.
     if (0
@@ -585,8 +592,9 @@ __std_win_error __stdcall __std_fs_get_file_id(__std_fs_file_id* const _Id, cons
     return __std_win_error::_Success;
 }
 
-[[nodiscard]] __std_win_error __stdcall __std_fs_read_name_from_reparse_data_buffer(
-    __std_fs_reparse_data_buffer* const _Buffer, wchar_t** const _Offset, unsigned short* const _Length) noexcept {
+[[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error
+    __stdcall __std_fs_read_name_from_reparse_data_buffer(_In_ __std_fs_reparse_data_buffer* const _Buffer,
+        _Out_ wchar_t** const _Offset, _Out_ unsigned short* const _Length) noexcept {
     if (_Buffer->_Reparse_tag == IO_REPARSE_TAG_SYMLINK) {
         auto& _Symlink_buffer             = _Buffer->_Symbolic_link_reparse_buffer;
         const unsigned short _Temp_length = _Symlink_buffer._Print_name_length / sizeof(wchar_t);
@@ -606,7 +614,7 @@ __std_win_error __stdcall __std_fs_get_file_id(__std_fs_file_id* const _Id, cons
 }
 
 [[nodiscard]] __std_win_error __stdcall __std_fs_set_last_write_time(
-    const long long _Last_write_filetime, const wchar_t* const _Path) noexcept {
+    _In_ const long long _Last_write_filetime, _In_z_ const wchar_t* const _Path) noexcept {
     __std_win_error _Last_error;
     const _STD _Fs_file _Handle(
         _Path, __std_access_rights::_File_write_attributes, __std_fs_file_flags::_Backup_semantics, &_Last_error);
@@ -621,7 +629,7 @@ __std_win_error __stdcall __std_fs_get_file_id(__std_fs_file_id* const _Id, cons
     return __std_win_error{GetLastError()};
 }
 
-[[nodiscard]] __std_fs_remove_result __stdcall __std_fs_remove(const wchar_t* const _Target) noexcept {
+[[nodiscard]] __std_fs_remove_result __stdcall __std_fs_remove(_In_z_ const wchar_t* const _Target) noexcept {
     // remove _Target without caring whether _Target is a file or directory
     __std_win_error _Last_error;
 #if _STL_ALWAYS_HAS_SetFileInformationByHandle
@@ -695,7 +703,7 @@ __std_win_error __stdcall __std_fs_get_file_id(__std_fs_file_id* const _Id, cons
 }
 
 [[nodiscard]] __std_win_error __stdcall __std_fs_change_permissions(
-    const wchar_t* const _Path, const bool _Follow_symlinks, const bool _Readonly) noexcept {
+    _In_z_ const wchar_t* const _Path, _In_ const bool _Follow_symlinks, _In_ const bool _Readonly) noexcept {
     const DWORD _Old_attributes = GetFileAttributesW(_Path);
     if (_Old_attributes == INVALID_FILE_ATTRIBUTES) {
         return __std_win_error{GetLastError()};
@@ -741,7 +749,7 @@ __std_win_error __stdcall __std_fs_get_file_id(__std_fs_file_id* const _Id, cons
 }
 
 [[nodiscard]] __std_win_error __stdcall __std_fs_rename(
-    const wchar_t* const _Source, const wchar_t* const _Target) noexcept {
+    _In_z_ const wchar_t* const _Source, _In_z_ const wchar_t* const _Target) noexcept {
     if (MoveFileExW(_Source, _Target, MOVEFILE_COPY_ALLOWED | MOVEFILE_REPLACE_EXISTING)) {
         return __std_win_error::_Success;
     }
@@ -750,7 +758,7 @@ __std_win_error __stdcall __std_fs_get_file_id(__std_fs_file_id* const _Id, cons
 }
 
 [[nodiscard]] __std_win_error __stdcall __std_fs_resize_file(
-    const wchar_t* const _Target, const uintmax_t _New_size) noexcept {
+    _In_z_ const wchar_t* const _Target, const uintmax_t _New_size) noexcept {
     __std_win_error _Err;
     const _STD _Fs_file _Handle(_Target, __std_access_rights::_File_generic_write, __std_fs_file_flags::_None, &_Err);
     if (_Err != __std_win_error::_Success) {
@@ -759,15 +767,16 @@ __std_win_error __stdcall __std_fs_get_file_id(__std_fs_file_id* const _Id, cons
 
     LARGE_INTEGER _Large;
     _Large.QuadPart = _New_size;
-    if (SetFilePointerEx(_Handle._Get(), _Large, 0, FILE_BEGIN) == 0 || SetEndOfFile(_Handle._Get()) == 0) {
+    if (SetFilePointerEx(_Handle._Get(), _Large, nullptr, FILE_BEGIN) == 0 || SetEndOfFile(_Handle._Get()) == 0) {
         return __std_win_error{GetLastError()};
     }
 
     return __std_win_error::_Success;
 }
 
-[[nodiscard]] __std_win_error __stdcall __std_fs_space(const wchar_t* const _Target, uintmax_t* const _Available,
-    uintmax_t* const _Total_bytes, uintmax_t* const _Free_bytes) noexcept {
+[[nodiscard]] __std_win_error __stdcall __std_fs_space(_In_z_ const wchar_t* const _Target,
+    _Out_ uintmax_t* const _Available, _Out_ uintmax_t* const _Total_bytes,
+    _Out_ uintmax_t* const _Free_bytes) noexcept {
     // get capacity information for the volume on which the file _Target resides
     static_assert(sizeof(uintmax_t) == sizeof(ULARGE_INTEGER) && alignof(uintmax_t) == alignof(ULARGE_INTEGER),
         "Size and alignment must match for reinterpret_cast<PULARGE_INTEGER>");
@@ -843,7 +852,8 @@ __std_win_error __stdcall __std_fs_get_file_id(__std_fs_file_id* const _Id, cons
     return __std_win_error{GetLastError()};
 }
 
-[[nodiscard]] __std_ulong_and_error __stdcall __std_fs_get_temp_path(wchar_t* const _Target) noexcept {
+[[nodiscard]] _Success_(return._Error == __std_win_error::_Success) __std_ulong_and_error
+    __stdcall __std_fs_get_temp_path(_Out_writes_z_(__std_fs_temp_path_max) wchar_t* const _Target) noexcept {
     // calls GetTempPathW
     // If getting the path failed, returns 0 size; otherwise, returns the size of the
     // expected directory. If the path could be resolved to an existing directory,
@@ -901,8 +911,9 @@ struct alignas(long long) _Aligned_file_attrs {
     }
 };
 
-[[nodiscard]] __std_win_error __stdcall __std_fs_get_stats(const wchar_t* const _Path, __std_fs_stats* const _Stats,
-    __std_fs_stats_flags _Flags, const __std_fs_file_attr _Symlink_attribute_hint) noexcept {
+[[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error
+    __stdcall __std_fs_get_stats(_In_z_ const wchar_t* const _Path, __std_fs_stats* const _Stats,
+        _In_ __std_fs_stats_flags _Flags, _In_ const __std_fs_file_attr _Symlink_attribute_hint) noexcept {
     static_assert((offsetof(_Aligned_file_attrs, _Data._Last_write_time) % 8) == 0, "_Last_write_time not aligned");
     static_assert(sizeof(_File_attr_data) == sizeof(WIN32_FILE_ATTRIBUTE_DATA));
     static_assert(alignof(_File_attr_data) == alignof(WIN32_FILE_ATTRIBUTE_DATA));
@@ -1054,7 +1065,7 @@ struct alignas(long long) _Aligned_file_attrs {
 }
 
 [[nodiscard]] __std_fs_create_directory_result __stdcall __std_fs_create_directory(
-    const wchar_t* const _New_directory) noexcept {
+    _In_z_ const wchar_t* const _New_directory) noexcept {
     if (CreateDirectoryW(_New_directory, nullptr)) {
         return {true, __std_win_error::_Success};
     }
@@ -1075,7 +1086,7 @@ struct alignas(long long) _Aligned_file_attrs {
 
 // TRANSITION, ABI: __std_fs_create_directory_template() is preserved for binary compatibility
 [[nodiscard]] __std_fs_create_directory_result __stdcall __std_fs_create_directory_template(
-    const wchar_t* const _Template_directory, const wchar_t* const _New_directory) noexcept {
+    _In_z_ const wchar_t* const _Template_directory, _In_z_ const wchar_t* const _New_directory) noexcept {
 #if defined(_CRT_APP)
     (void) _Template_directory;
     return __std_fs_create_directory(_New_directory);
@@ -1093,8 +1104,9 @@ struct alignas(long long) _Aligned_file_attrs {
 #endif // defined(_CRT_APP)
 }
 
-[[nodiscard]] __std_ulong_and_error __stdcall __std_fs_get_current_path(
-    const unsigned long _Target_size, wchar_t* const _Target) noexcept {
+[[nodiscard]] _Success_(return._Error == __std_win_error::_Success) __std_ulong_and_error
+    __stdcall __std_fs_get_current_path(
+        _In_ const unsigned long _Target_size, _Out_writes_z_(_Target_size) wchar_t* const _Target) noexcept {
     // If getting the path failed, GetCurrentDirectoryW returns 0; otherwise, returns the size of the expected
     // directory.
     const auto _Size = GetCurrentDirectoryW(_Target_size, _Target);
@@ -1105,7 +1117,7 @@ struct alignas(long long) _Aligned_file_attrs {
     return {_Size, __std_win_error::_Success};
 }
 
-[[nodiscard]] __std_win_error __stdcall __std_fs_set_current_path(const wchar_t* const _Target) noexcept {
+[[nodiscard]] __std_win_error __stdcall __std_fs_set_current_path(_In_z_ const wchar_t* const _Target) noexcept {
     // If setting the path failed, SetCurrentDirectoryW returns 0; otherwise returns non-zero.
     const auto _Succeeded = SetCurrentDirectoryW(_Target);
     if (_Succeeded == 0) {

@@ -65,6 +65,7 @@ jobs:
         cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=$(vcpkgLocation)\scripts\buildsystems\vcpkg.cmake ^
         -DVCPKG_TARGET_TRIPLET=${{ parameters.targetPlatform }}-windows -DCMAKE_CXX_COMPILER=cl ^
         -DCMAKE_BUILD_TYPE=Release -DLIT_FLAGS=$(litFlags) ^
+        -DCMAKE_CXX_FLAGS=/analyze ^
         -S $(Build.SourcesDirectory) -B $(buildOutputLocation)
         cmake --build $(buildOutputLocation)
       displayName: 'Build the STL'
