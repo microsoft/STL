@@ -19,14 +19,16 @@ using namespace std;
 #if _HAS_CXX17
 template <typename Void, typename Callable, typename... Args>
 struct HasInvokeResultT : false_type {
-
     STATIC_ASSERT(!is_invocable_v<Callable, Args...>);
+    STATIC_ASSERT(!is_nothrow_invocable_v<Callable, Args...>);
+    STATIC_ASSERT(!is_invocable_r_v<void, Callable, Args...>);
+    STATIC_ASSERT(!is_nothrow_invocable_r_v<void, Callable, Args...>);
 };
 
 template <typename Callable, typename... Args>
 struct HasInvokeResultT<void_t<invoke_result_t<Callable, Args...>>, Callable, Args...> : true_type {
-
     STATIC_ASSERT(is_invocable_v<Callable, Args...>);
+    STATIC_ASSERT(is_invocable_r_v<void, Callable, Args...>);
 };
 
 template <typename A>
@@ -584,6 +586,12 @@ STATIC_ASSERT(is_nothrow_invocable_r_v<long, Kitty, int>);
 STATIC_ASSERT(is_invocable_r_v<long, Kitty, int, int>);
 STATIC_ASSERT(!is_nothrow_invocable_r_v<long, Kitty, int, int>);
 
+// When the return type is void, does the invocation throw?
+STATIC_ASSERT(is_invocable_r_v<void, Kitty, int>);
+STATIC_ASSERT(is_nothrow_invocable_r_v<void, Kitty, int>);
+STATIC_ASSERT(is_invocable_r_v<void, Kitty, int, int>);
+STATIC_ASSERT(!is_nothrow_invocable_r_v<void, Kitty, int, int>);
+
 struct Puppy {
     explicit Puppy(int);
     Puppy(long) noexcept;
@@ -606,7 +614,7 @@ STATIC_ASSERT(is_invocable_r_v<Zebra, Kitty, int>);
 STATIC_ASSERT(!is_nothrow_invocable_r_v<Zebra, Kitty, int>);
 
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1026729
-// Defend against regression of VSO-963790, in which is_invocable_r mis-handles non-movable return types
+// Defend against regression of VSO-963790, in which is_invocable_r mishandles non-movable return types
 struct NonMovable {
     NonMovable(NonMovable&&)      = delete;
     NonMovable(const NonMovable&) = delete;
