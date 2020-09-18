@@ -22,20 +22,13 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// DEQUE PARAMETERS
-#define _DEQUESIZ                               \
-    (sizeof(value_type) <= 1                    \
-            ? 16                                \
-            : sizeof(value_type) <= 2           \
-                  ? 8                           \
-                  : sizeof(value_type) <= 4 ? 4 \
-                                            : sizeof(value_type) <= 8 ? 2 : 1) // elements per block (a power of 2)
-
 // CLASS TEMPLATE _Deque_unchecked_const_iterator
 template <class _Mydeque>
 class _Deque_unchecked_const_iterator {
 private:
     using _Size_type = typename _Mydeque::size_type;
+
+    static constexpr int _DEQUESIZ = _Mydeque::_DEQUESIZ;
 
 public:
     using iterator_category = random_access_iterator_tag;
@@ -237,6 +230,8 @@ template <class _Mydeque>
 class _Deque_const_iterator : public _Iterator_base12 {
 private:
     using _Size_type = typename _Mydeque::size_type;
+
+    static constexpr int _DEQUESIZ = _Mydeque::_DEQUESIZ;
 
 public:
     using iterator_category = random_access_iterator_tag;
@@ -540,6 +535,13 @@ public:
     using const_reference = const value_type&;
     using _Mapptr         = typename _Val_types::_Mapptr;
 
+private:
+    static constexpr size_t _Bytes = sizeof(value_type);
+
+public:
+    static constexpr int _DEQUESIZ =
+        _Bytes <= 1 ? 16 : _Bytes <= 2 ? 8 : _Bytes <= 4 ? 4 : _Bytes <= 8 ? 2 : 1; // elements per block (a power of 2)
+
     _Deque_val() noexcept : _Map(), _Mapsize(0), _Myoff(0), _Mysize(0) {}
 
     size_type _Getblock(size_type _Off) const noexcept {
@@ -574,6 +576,7 @@ private:
             typename _Alty_traits::pointer, typename _Alty_traits::const_pointer, _Ty&, const _Ty&, _Mapptr>>>;
 
     static constexpr int _Minimum_map_size = 8;
+    static constexpr int _DEQUESIZ         = _Scary_val::_DEQUESIZ;
 
 public:
     using allocator_type  = _Alloc;
