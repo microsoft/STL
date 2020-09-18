@@ -23,7 +23,6 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 // DEQUE PARAMETERS
-#define _DEQUEMAPSIZ 8 // minimum map size, at least 1
 #define _DEQUESIZ                               \
     (sizeof(value_type) <= 1                    \
             ? 16                                \
@@ -574,6 +573,8 @@ private:
         _Deque_iter_types<_Ty, typename _Alty_traits::size_type, typename _Alty_traits::difference_type,
             typename _Alty_traits::pointer, typename _Alty_traits::const_pointer, _Ty&, const _Ty&, _Mapptr>>>;
 
+    static constexpr int _Minimum_map_size = 8;
+
 public:
     using allocator_type  = _Alloc;
     using value_type      = _Ty;
@@ -944,8 +945,8 @@ public:
         size_type _Oldcapacity = _DEQUESIZ * _Mapsize();
         size_type _Newcapacity = _Oldcapacity / 2;
 
-        if (_Newcapacity < _DEQUESIZ * _DEQUEMAPSIZ) {
-            _Newcapacity = _DEQUESIZ * _DEQUEMAPSIZ;
+        if (_Newcapacity < _DEQUESIZ * _Minimum_map_size) {
+            _Newcapacity = _DEQUESIZ * _Minimum_map_size;
         }
 
         if ((empty() && 0 < _Mapsize())
@@ -1416,11 +1417,11 @@ private:
     }
 
     void _Growmap(size_type _Count) { // grow map by at least _Count pointers, _Mapsize() a power of 2
-        static_assert(1 < _DEQUEMAPSIZ, "The _Xlen() test should always be performed.");
+        static_assert(1 < _Minimum_map_size, "The _Xlen() test should always be performed.");
 
         _Alpty _Almap(_Getal());
         size_type _Newsize = 0 < _Mapsize() ? _Mapsize() : 1;
-        while (_Newsize - _Mapsize() < _Count || _Newsize < _DEQUEMAPSIZ) {
+        while (_Newsize - _Mapsize() < _Count || _Newsize < _Minimum_map_size) {
             // scale _Newsize to 2^N >= _Mapsize() + _Count
             if (max_size() / _DEQUESIZ - _Newsize < _Newsize) {
                 _Xlen(); // result too long
