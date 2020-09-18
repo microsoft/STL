@@ -2112,7 +2112,7 @@ namespace filesystem {
     // ALIAS file_time_type
     struct _File_time_clock { // Implementation of trivial-clock
         using rep        = long long;
-        using period     = ratio_multiply<ratio<_XTIME_NSECS_PER_TICK, 1>, nano>;
+        using period     = chrono::system_clock::period;
         using duration   = chrono::duration<rep, period>;
         using time_point = chrono::time_point<_File_time_clock>;
 

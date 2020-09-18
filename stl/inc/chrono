@@ -577,7 +577,7 @@ namespace chrono {
     struct system_clock { // wraps GetSystemTimePreciseAsFileTime/GetSystemTimeAsFileTime
         using rep = long long;
 
-        using period = ratio_multiply<ratio<_XTIME_NSECS_PER_TICK, 1>, nano>;
+        using period = ratio_multiply<ratio<100>, nano>;
 
         using duration                  = chrono::duration<rep, period>;
         using time_point                = chrono::time_point<system_clock>;
@@ -588,11 +588,11 @@ namespace chrono {
         }
 
         _NODISCARD static __time64_t to_time_t(const time_point& _Time) noexcept { // convert to __time64_t
-            return static_cast<__time64_t>(_Time.time_since_epoch().count() / _XTIME_TICKS_PER_TIME_T);
+            return duration_cast<seconds>(_Time.time_since_epoch()).count();
         }
 
         _NODISCARD static time_point from_time_t(__time64_t _Tm) noexcept { // convert from __time64_t
-            return time_point(duration(_Tm * _XTIME_TICKS_PER_TIME_T));
+            return time_point{seconds{_Tm}};
         }
     };
 
