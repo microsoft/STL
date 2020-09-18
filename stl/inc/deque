@@ -944,8 +944,9 @@ public:
         size_type _Oldcapacity = _DEQUESIZ * _Mapsize();
         size_type _Newcapacity = _Oldcapacity / 2;
 
-        if (_Newcapacity < _DEQUESIZ * _DEQUEMAPSIZ)
+        if (_Newcapacity < _DEQUESIZ * _DEQUEMAPSIZ) {
             _Newcapacity = _DEQUESIZ * _DEQUEMAPSIZ;
+        }
 
         if ((empty() && 0 < _Mapsize())
             || (!empty() && size() <= _Newcapacity && _Newcapacity < _Oldcapacity)) { // worth shrinking, do it
@@ -993,8 +994,10 @@ public:
     }
 
     _NODISCARD const_reference at(size_type _Pos) const {
-        if (_Mysize() <= _Pos)
+        if (_Mysize() <= _Pos) {
             _Xran();
+        }
+
         return *(begin() + static_cast<difference_type>(_Pos));
     }
 
