@@ -3,6 +3,7 @@
 
 #include <assert.h>
 #include <new>
+#include <stddef.h>
 #include <stdlib.h>
 
 #pragma once
@@ -25,13 +26,13 @@ namespace std_testing {
 void* operator new(size_t size) {
     void* const p = ::operator new(size, std::nothrow);
     if (p == nullptr) {
-        throw std::bad_alloc();
+        throw std::bad_alloc{};
     }
 
     return p;
 }
 
-void* operator new(std::size_t, std::align_val_t) {
+void* operator new(size_t, std::align_val_t) {
     abort();
 }
 
@@ -56,7 +57,7 @@ void operator delete(void* ptr) noexcept {
     ::operator delete(ptr, std::nothrow);
 }
 
-void operator delete(void* ptr, std::size_t) noexcept {
+void operator delete(void* ptr, size_t) noexcept {
     ::operator delete(ptr, std::nothrow);
 }
 
@@ -80,7 +81,7 @@ void* operator new[](size_t size) {
     return ::operator new(size);
 }
 
-void* operator new[](std::size_t, std::align_val_t) {
+void* operator new[](size_t, std::align_val_t) {
     abort();
 }
 
@@ -88,7 +89,7 @@ void* operator new[](size_t size, const std::nothrow_t&) noexcept {
     return ::operator new(size, std::nothrow);
 }
 
-void* operator new[](std::size_t, std::align_val_t, const std::nothrow_t&) noexcept {
+void* operator new[](size_t, std::align_val_t, const std::nothrow_t&) noexcept {
     abort();
 }
 
@@ -96,7 +97,7 @@ void operator delete[](void* ptr) noexcept {
     ::operator delete(ptr);
 }
 
-void operator delete[](void* ptr, std::size_t size) noexcept {
+void operator delete[](void* ptr, size_t size) noexcept {
     ::operator delete(ptr, size);
 }
 
@@ -104,7 +105,7 @@ void operator delete[](void*, std::align_val_t) noexcept {
     abort();
 }
 
-void operator delete[](void*, std::size_t, std::align_val_t) noexcept {
+void operator delete[](void*, size_t, std::align_val_t) noexcept {
     abort();
 }
 

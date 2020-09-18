@@ -37,14 +37,16 @@ class stop_token;
 class _Stop_callback_base {
     friend _Stop_state;
 
-public:
+private:
     using _Callback_fn = void(__cdecl*)(_Stop_callback_base*) _NOEXCEPT_FNPTR;
 
+public:
     explicit _Stop_callback_base(const _Callback_fn _Fn_) noexcept : _Fn{_Fn_} {}
 
     _Stop_callback_base(const _Stop_callback_base&) = delete;
     _Stop_callback_base& operator=(const _Stop_callback_base&) = delete;
 
+protected:
     // if _Token is _Stop_requested, calls the callback;
     // otherwise, inserts *this into the callback list if stop is possible
     inline void _Attach(const stop_token& _Token) noexcept;
@@ -383,8 +385,8 @@ private:
     _Callback _Cb;
 };
 
-template <class Callback>
-stop_callback(stop_token, Callback) -> stop_callback<Callback>;
+template <class _Callback>
+stop_callback(stop_token, _Callback) -> stop_callback<_Callback>;
 
 _STD_END
 #pragma pop_macro("new")

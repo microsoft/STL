@@ -2981,9 +2981,8 @@ public:
     static constexpr uintptr_t _Locked_notify_needed     = 2;
     static constexpr uintptr_t _Ptr_value_mask           = ~_Lock_mask;
 
-public:
     constexpr _Locked_pointer() noexcept : _Storage{} {}
-    _Locked_pointer(_Ty* _Ptr) noexcept : _Storage{reinterpret_cast<uintptr_t>(_Ptr)} {}
+    explicit _Locked_pointer(_Ty* const _Ptr) noexcept : _Storage{reinterpret_cast<uintptr_t>(_Ptr)} {}
 
     _Locked_pointer(const _Locked_pointer&) = delete;
     _Locked_pointer& operator=(const _Locked_pointer&) = delete;
@@ -3001,7 +3000,7 @@ public:
 
             case _Locked_notify_not_needed: // Try to set "notify needed" and wait
                 if (!_Storage.compare_exchange_weak(_Rep, (_Rep & _Ptr_value_mask) | _Locked_notify_needed)) {
-                    // Failed to put notify needed flag on, try again
+                    // Failed to set notify needed flag, try again
                     _YIELD_PROCESSOR();
                     break;
                 }
@@ -3027,7 +3026,7 @@ public:
         }
     }
 
-    _Ty* _Unsafe_load_relaxed() const noexcept {
+    _NODISCARD _Ty* _Unsafe_load_relaxed() const noexcept {
         return reinterpret_cast<_Ty*>(_Storage.load(memory_order_relaxed));
     }
 

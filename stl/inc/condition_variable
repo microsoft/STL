@@ -30,7 +30,7 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 template <class _Lock>
 struct _Unlock_guard {
-    _Unlock_guard(_Lock& _Mtx_) : _Mtx(_Mtx_) {
+    explicit _Unlock_guard(_Lock& _Mtx_) : _Mtx(_Mtx_) {
         _Mtx.unlock();
     }
 
@@ -82,9 +82,9 @@ public:
     } // relock _Lck
 
     template <class _Lock, class _Predicate>
-    void wait(_Lock& _Lck, _Predicate _Pred) noexcept(noexcept(!_Pred())) /* strengthened */ {
+    void wait(_Lock& _Lck, _Predicate _Pred) noexcept(noexcept(static_cast<bool>(_Pred()))) /* strengthened */ {
         // wait for signal and check predicate
-        while (!_Pred()) {
+        while (!static_cast<bool>(_Pred())) {
             wait(_Lck);
         }
     }
@@ -154,7 +154,7 @@ private:
     struct _Cv_any_notify_all {
         condition_variable_any* _This;
 
-        _Cv_any_notify_all(condition_variable_any* _This_) : _This{_This_} {}
+        explicit _Cv_any_notify_all(condition_variable_any* _This_) : _This{_This_} {}
 
         _Cv_any_notify_all(const _Cv_any_notify_all&) = delete;
         _Cv_any_notify_all& operator=(const _Cv_any_notify_all&) = delete;
@@ -166,7 +166,8 @@ private:
 
 public:
     template <class _Lock, class _Predicate>
-    bool wait(_Lock& _Lck, stop_token _Stoken, _Predicate _Pred) noexcept(noexcept(!_Pred())) /* strengthened */ {
+    bool wait(_Lock& _Lck, stop_token _Stoken, _Predicate _Pred) noexcept(
+        noexcept(static_cast<bool>(_Pred()))) /* strengthened */ {
         // TRANSITION, ABI: Due to the unsynchronized delivery of notify_all by _Stoken,
         // this implementation cannot tolerate *this destruction while an interruptible wait
         // is outstanding. A future ABI should store both the internal CV and internal mutex

@@ -278,12 +278,15 @@ public:
         _Try_cancel_and_join();
     }
 
-    jthread(const jthread&)            = delete;
-    jthread(jthread&& _Other) noexcept = default;
+    jthread(const jthread&)     = delete;
+    jthread(jthread&&) noexcept = default;
     jthread& operator=(const jthread&) = delete;
 
     jthread& operator=(jthread&& _Other) noexcept {
         // note: the standard specifically disallows making self-move-assignment a no-op here
+        // N4861 [thread.jthread.cons]/13
+        // Effects: If joinable() is true, calls request_stop() and then join(). Assigns the state
+        // of x to *this and sets x to a default constructed state.
         _Try_cancel_and_join();
         _Impl    = _STD move(_Other._Impl);
         _Ssource = _STD move(_Other._Ssource);

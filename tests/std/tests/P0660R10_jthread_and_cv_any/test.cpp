@@ -91,7 +91,7 @@ int main() {
         assert(!worker_b.joinable());
     }
 
-    { // self move assign, currently specified to try to cancel and join
+    { // self move assign, as of N4861 specified to try to cancel and join [thread.jthread.cons]/13
         jthread worker{[] {}};
         auto source = worker.get_stop_source();
         worker      = move(worker);
@@ -151,13 +151,13 @@ int main() {
         });
     }
 
+    constexpr auto infinity = chrono::steady_clock::time_point::max();
     { // ditto without the cancellation this would deadlock
         jthread worker([](stop_token token) {
             mutex m;
             condition_variable_any cv;
             unique_lock lck{m};
-            assert(cv.wait_until(lck, move(token), chrono::steady_clock::time_point::max(), [] { return false; })
-                   == false);
+            assert(cv.wait_until(lck, move(token), infinity, [] { return false; }) == false);
         });
     }
 
@@ -166,7 +166,7 @@ int main() {
             mutex m;
             condition_variable_any cv;
             unique_lock lck{m};
-            assert(cv.wait_for(lck, move(token), chrono::steady_clock::duration::max(), [] { return false; }) == false);
+            assert(cv.wait_for(lck, move(token), infinity, [] { return false; }) == false);
         });
     }
 
@@ -195,9 +195,8 @@ int main() {
         bool b = false;
         jthread worker([&](stop_token token) {
             unique_lock lck{m};
-            assert(
-                cv.wait_until(lck, move(token), chrono::steady_clock::time_point::max(), [] { return true; }) == true);
-            assert(cv.wait_until(lck, move(token), chrono::steady_clock::time_point::max(), [&] { return b; }) == true);
+            assert(cv.wait_until(lck, move(token), infinity, [] { return true; }) == true);
+            assert(cv.wait_until(lck, move(token), infinity, [&] { return b; }) == true);
         });
 
         {
@@ -214,8 +213,8 @@ int main() {
         bool b = false;
         jthread worker([&](stop_token token) {
             unique_lock lck{m};
-            assert(cv.wait_for(lck, move(token), chrono::steady_clock::duration::max(), [] { return true; }) == true);
-            assert(cv.wait_for(lck, move(token), chrono::steady_clock::duration::max(), [&] { return b; }) == true);
+            assert(cv.wait_for(lck, move(token), infinity, [] { return true; }) == true);
+            assert(cv.wait_for(lck, move(token), infinity, [&] { return b; }) == true);
         });
 
         {
