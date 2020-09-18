@@ -599,7 +599,7 @@ _NoThrowFwdIt destroy_n(_NoThrowFwdIt _First, const _Diff _Count_raw) {
 
 // FUNCTION TEMPLATE uninitialized_default_construct
 template <class _Iter>
-void* _Voidify_iter(_Iter _It) noexcept {
+_NODISCARD void* _Voidify_iter(_Iter _It) noexcept {
     return const_cast<void*>(static_cast<const volatile void*>(_STD addressof(*_It)));
 }
 
