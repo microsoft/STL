@@ -299,8 +299,8 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(_No_throw_sentinel_for<_OSe, _Out>);
             _STL_INTERNAL_STATIC_ASSERT(constructible_from<iter_value_t<_Out>, iter_rvalue_reference_t<_It>>);
 
-            if constexpr (is_same_v<_Se, _It> && _Ptr_copy_cat<_It, _Out>::_Really_trivial) {
-                return _Copy_memmove_common(_IFirst, _ILast, _OFirst, _OLast);
+            if constexpr (is_same_v<_Se, _It> && _Ptr_move_cat<_It, _Out>::_Really_trivial) {
+                return _Copy_memcpy_common(_IFirst, _ILast, _OFirst, _OLast);
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
@@ -374,7 +374,7 @@ namespace ranges {
             auto _OFirst      = _Get_unwrapped(_STD move(_First2));
             const auto _OLast = _Get_unwrapped(_STD move(_Last2));
             if constexpr (_Ptr_move_cat<_It, _Out>::_Really_trivial) {
-                _OFirst = _Copy_memmove_common(_IFirst, _IFirst + _Count, _OFirst, _OLast);
+                _OFirst = _Copy_memcpy_common(_IFirst, _IFirst + _Count, _OFirst, _OLast);
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 

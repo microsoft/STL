@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cassert>
 #include <concepts>
+#include <cstdlib>
 #include <memory>
 #include <ranges>
 #include <span>
@@ -132,8 +133,8 @@ using test_output = test::range<test::fwd, int_wrapper, test::Sized::no, test::C
     test::CanCompare::yes, test::ProxyRef::no>;
 
 int main() {
-    // The algorithm is oblivious to non-required category, size, difference. It _is_ sensitive to proxyness in that it
-    // requires non-proxy references for the input range.
+    // The algorithm is oblivious to non-required category, size, difference, and "proxyness" of the input range. It
+    // _is_ sensitive to proxyness in that it requires non-proxy references for the output range.
 
     instantiator::call<test_input<test::ProxyRef::no>, test_output>();
     instantiator::call<test_input<test::ProxyRef::yes>, test_output>();

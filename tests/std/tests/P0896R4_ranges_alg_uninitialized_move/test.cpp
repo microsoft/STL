@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cassert>
 #include <concepts>
+#include <cstdlib>
 #include <memory>
 #include <ranges>
 #include <span>
