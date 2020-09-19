@@ -429,7 +429,7 @@ namespace ranges {
             if constexpr (_Fill_memset_is_safe<_It, _Ty>) {
                 const auto _OFinal = _RANGES next(_OFirst, _STD move(_OLast));
                 const auto _Diff   = static_cast<size_t>(_OFinal - _OFirst);
-                _CSTD memset(_OFirst, static_cast<unsigned char>(_Val), _Diff);
+                _Fill_memset(_OFirst, _Val, _Diff);
                 return _OFinal;
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
