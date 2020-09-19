@@ -275,6 +275,9 @@ std/utilities/time/time.clock/time.clock.file/consistency.pass.cpp FAIL
 std/utilities/time/time.clock/time.clock.file/file_time.pass.cpp FAIL
 std/utilities/time/time.clock/time.clock.file/now.pass.cpp FAIL
 std/utilities/time/time.clock/time.clock.file/rep_signed.pass.cpp FAIL
+# conversion from '__int64' to 'long', possible loss of data
+std/utilities/time/time.hms/time.hms.members/seconds.pass.cpp:0 FAIL
+std/utilities/time/time.hms/time.hms.members/subseconds.pass.cpp:0 FAIL
 
 # C++20 P0608R3 "Improving variant's Converting Constructor/Assignment"
 std/utilities/variant/variant.variant/variant.assign/conv.pass.cpp FAIL

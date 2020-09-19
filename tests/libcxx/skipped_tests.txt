@@ -277,6 +277,8 @@ utilities\time\time.clock\time.clock.file\consistency.pass.cpp
 utilities\time\time.clock\time.clock.file\file_time.pass.cpp
 utilities\time\time.clock\time.clock.file\now.pass.cpp
 utilities\time\time.clock\time.clock.file\rep_signed.pass.cpp
+utilities\time\time.hms\time.hms.members\seconds.pass.cpp
+utilities\time\time.hms\time.hms.members\subseconds.pass.cpp
 
 # C++20 P0608R3 "Improving variant's Converting Constructor/Assignment"
 utilities\variant\variant.variant\variant.assign\conv.pass.cpp
