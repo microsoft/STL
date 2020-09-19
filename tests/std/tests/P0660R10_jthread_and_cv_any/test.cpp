@@ -151,7 +151,9 @@ int main() {
         });
     }
 
-    constexpr auto infinity = chrono::steady_clock::time_point::max();
+    static constexpr auto forever  = chrono::steady_clock::duration::max();
+    static constexpr auto infinity = chrono::steady_clock::time_point::max();
+
     { // ditto without the cancellation this would deadlock
         jthread worker([](stop_token token) {
             mutex m;
@@ -166,7 +168,7 @@ int main() {
             mutex m;
             condition_variable_any cv;
             unique_lock lck{m};
-            assert(cv.wait_for(lck, move(token), infinity, [] { return false; }) == false);
+            assert(cv.wait_for(lck, move(token), forever, [] { return false; }) == false);
         });
     }
 
@@ -213,8 +215,8 @@ int main() {
         bool b = false;
         jthread worker([&](stop_token token) {
             unique_lock lck{m};
-            assert(cv.wait_for(lck, move(token), infinity, [] { return true; }) == true);
-            assert(cv.wait_for(lck, move(token), infinity, [&] { return b; }) == true);
+            assert(cv.wait_for(lck, move(token), forever, [] { return true; }) == true);
+            assert(cv.wait_for(lck, move(token), forever, [&] { return b; }) == true);
         });
 
         {
