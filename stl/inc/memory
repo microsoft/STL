@@ -3082,19 +3082,16 @@ inline void* align(size_t _Bound, size_t _Size, void*& _Ptr, size_t& _Space) noe
 #if _HAS_CXX20
 template <size_t _Nx, class _Ty>
 _NODISCARD constexpr _Ty* assume_aligned(_Ty* _Ptr) noexcept /* strengthened */ {
-#if 1 // TRANSITION, DevCom-1190972
+#ifndef __clang__ // TRANSITION, DevCom-1190972
     if (_STD is_constant_evaluated()) {
         return _Ptr;
     }
-    (void) __builtin_assume_aligned(_Ptr, _Nx);
+#endif // ^^^ workaround ^^^
 
-    return _Ptr;
-#else
     // this enforces the requirement that _Nx be a power of two
     (void) __builtin_assume_aligned(_Ptr, _Nx);
 
     return _Ptr;
-#endif // TRANSITION, DevCom-1190972
 }
 #endif // _HAS_CXX20
 
