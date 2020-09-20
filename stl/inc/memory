@@ -3081,7 +3081,7 @@ inline void* align(size_t _Bound, size_t _Size, void*& _Ptr, size_t& _Space) noe
 
 #if _HAS_CXX20
 template <size_t _Nx, class _Ty>
-_NODISCARD constexpr _Ty* assume_aligned(_Ty* _Ptr) noexcept /* strengthened */ {
+_NODISCARD constexpr _Ty* assume_aligned(_Ty* const _Ptr) noexcept /* strengthened */ {
 #ifndef __clang__ // TRANSITION, DevCom-1190972
     if (_STD is_constant_evaluated()) {
         return _Ptr;
