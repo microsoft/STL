@@ -59,6 +59,8 @@ struct allocation_guard {
     }
 };
 
+bool construct_destroy_exact = false;
+
 template <class T>
 struct tracked_allocator {
     using value_type = T;
@@ -78,6 +80,26 @@ struct tracked_allocator {
         assert(allocation_allowed);
         std::allocator<T>{}.deallocate(ptr, n);
         --allocation_count;
+    }
+
+    template <class U, class... Args>
+    void construct(U* ptr, Args&&... args) {
+        if constexpr (!std::is_same_v<U, value_type>) {
+            assert(!construct_destroy_exact);
+            printf("construct\n");
+        }
+        std::allocator<T> alloc;
+        std::allocator_traits<std::allocator<T>>::construct(alloc, ptr, std::forward<Args>(args)...);
+    }
+
+    template <class U>
+    void destroy(U* ptr) {
+        if constexpr (!std::is_same_v<U, value_type>) {
+            assert(!construct_destroy_exact);
+            printf("destroy\n");
+        }
+        std::allocator<T> alloc;
+        std::allocator_traits<std::allocator<T>>::destroy(alloc, ptr);
     }
 
     template <class U>
@@ -131,9 +153,11 @@ void test_node_handle(NodeHandle& nh1, NodeHandle& nh2, Validator1 v1, Validator
     // Nothrow/constexpr default construction
     static_assert(std::is_nothrow_default_constructible_v<NodeHandle>);
     CHECK_EMPTY(NodeHandle{});
-#ifdef __clang__
+#if defined(__cpp_constinit)
+    { static constinit NodeHandle static_handle{}; }
+#elif defined(__clang__)
     { [[clang::require_constant_initialization]] static NodeHandle static_handle{}; }
-#endif // __clang__
+#endif // ^^^ __clang__ ^^^
 
     // No copies!
     static_assert(!std::is_copy_constructible_v<NodeHandle>);
@@ -634,6 +658,143 @@ void test_unordered_set() {
     test_merge<Set, std::unordered_multiset>();
 }
 
+void test_gh1309() {
+    // Guard against regression of GH-1309, in which node handles were incorrectly destroying the user value with a node
+    // allocator rather than a value_type allocator as the Standard requires.
+
+    {
+        using A  = tracked_allocator<std::pair<int const, char>>;
+        using M  = std::map<int, char, std::less<>, A>;
+        using NH = decltype(std::declval<M&>().extract(42));
+        allocation_guard guard{true};
+        NH nh1;
+        NH nh2;
+        {
+            M m{{0, 'x'}, {1, 'y'}};
+            nh1 = m.extract(0);
+            nh2 = m.extract(1);
+        }
+        construct_destroy_exact = true;
+        nh1                     = std::move(nh2);
+    }
+    construct_destroy_exact = false;
+
+    {
+        using A  = tracked_allocator<std::pair<int const, char>>;
+        using M  = std::multimap<int, char, std::less<>, A>;
+        using NH = decltype(std::declval<M&>().extract(42));
+        allocation_guard guard{true};
+        NH nh1;
+        NH nh2;
+        {
+            M m{{0, 'x'}, {0, 'y'}};
+            nh1 = m.extract(0);
+            nh2 = m.extract(0);
+        }
+        construct_destroy_exact = true;
+        nh1                     = std::move(nh2);
+    }
+    construct_destroy_exact = false;
+
+    {
+        using S  = std::set<int, std::less<>, tracked_allocator<int>>;
+        using NH = decltype(std::declval<S&>().extract(42));
+        allocation_guard guard{true};
+        NH nh1;
+        NH nh2;
+        {
+            S s{{0, 1}};
+            nh1 = s.extract(0);
+            nh2 = s.extract(s.begin());
+        }
+        construct_destroy_exact = true;
+        nh1                     = std::move(nh2);
+    }
+    construct_destroy_exact = false;
+
+    {
+        using S  = std::multiset<int, std::less<>, tracked_allocator<int>>;
+        using NH = decltype(std::declval<S&>().extract(42));
+        allocation_guard guard{true};
+        NH nh1;
+        NH nh2;
+        {
+            S s{{0, 0}};
+            nh1 = s.extract(0);
+            nh2 = s.extract(s.begin());
+        }
+        construct_destroy_exact = true;
+        nh1                     = std::move(nh2);
+    }
+    construct_destroy_exact = false;
+
+    {
+        using A  = tracked_allocator<std::pair<int const, char>>;
+        using M  = std::unordered_map<int, char, std::hash<int>, std::equal_to<>, A>;
+        using NH = decltype(std::declval<M&>().extract(42));
+        allocation_guard guard{true};
+        NH nh1;
+        NH nh2;
+        {
+            M m{{0, 'x'}, {1, 'y'}};
+            nh1 = m.extract(0);
+            nh2 = m.extract(m.begin());
+        }
+        construct_destroy_exact = true;
+        nh1                     = std::move(nh2);
+    }
+    construct_destroy_exact = false;
+
+    {
+        using A  = tracked_allocator<std::pair<int const, char>>;
+        using M  = std::unordered_multimap<int, char, std::hash<int>, std::equal_to<>, A>;
+        using NH = decltype(std::declval<M&>().extract(42));
+        allocation_guard guard{true};
+        NH nh1;
+        NH nh2;
+        {
+            M m{{0, 'x'}, {0, 'y'}};
+            nh1 = m.extract(0);
+            nh2 = m.extract(m.begin());
+        }
+        construct_destroy_exact = true;
+        nh1                     = std::move(nh2);
+    }
+    construct_destroy_exact = false;
+
+    {
+        using S  = std::unordered_set<int, std::hash<int>, std::equal_to<>, tracked_allocator<int>>;
+        using NH = decltype(std::declval<S&>().extract(42));
+        allocation_guard guard{true};
+        NH nh1;
+        NH nh2;
+        {
+            S s{{0, 1}};
+            nh1 = s.extract(0);
+            nh2 = s.extract(s.begin());
+        }
+        construct_destroy_exact = true;
+        nh1                     = std::move(nh2);
+    }
+    construct_destroy_exact = false;
+
+    {
+        using S  = std::unordered_multiset<int, std::hash<int>, std::equal_to<>, tracked_allocator<int>>;
+        using NH = decltype(std::declval<S&>().extract(42));
+        allocation_guard guard{true};
+        NH nh1;
+        NH nh2;
+        {
+            S s{{0, 0}};
+            nh1 = s.extract(0);
+            nh2 = s.extract(s.begin());
+        }
+        construct_destroy_exact = true;
+        nh1                     = std::move(nh2);
+    }
+    construct_destroy_exact = false;
+}
+
 int main() {
     test_map<std::map>();
     test_map<std::multimap>();
@@ -646,4 +807,6 @@ int main() {
 
     test_unordered_set<std::unordered_set>();
     test_unordered_set<std::unordered_multiset>();
+
+    test_gh1309();
 }
