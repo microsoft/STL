@@ -20,7 +20,7 @@
   },
   "homepage": "https://github.com/microsoft/STL/tree/gh-pages#readme",
   "dependencies": {
-    "@octokit/graphql": "^4.5.4",
+    "@octokit/graphql": "^4.5.6",
     "cli-progress": "^3.8.2",
     "dotenv": "^8.2.0",
     "luxon": "^1.25.0"
