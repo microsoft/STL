@@ -45,7 +45,7 @@ concept _Parse_spec_callbacks = requires(_Ty _At, basic_string_view<_CharT> _Sv,
     { _At._On_fill(_Sv) } -> same_as<void>;
     { _At._On_width(_STD declval<int>()) } -> same_as<void>;
     { _At._On_dynamic_width(_STD declval<int>()) } -> same_as<void>;
-    { _At._On_dynamic_width( _STD declval<_Auto_id_tag>()) } -> same_as<void>;
+    { _At._On_dynamic_width(_STD declval<_Auto_id_tag>()) } -> same_as<void>;
 };
 template <class _Ty, class _CharT>
 concept _Parse_arg_id_callbacks = requires(_Ty _At) {
