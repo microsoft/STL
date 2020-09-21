@@ -82,8 +82,8 @@ private:
     void _Clear() noexcept { // destroy any contained node and return to the empty state
         if (_Ptr != nullptr) {
             _Alloc& _Al = _Getal();
-            _Alnode _Node_alloc{_Al};
             _Alty_traits::destroy(_Al, _STD addressof(_Ptr->_Myval));
+            _Alnode _Node_alloc{_Al};
             _Node::_Freenode0(_Node_alloc, _Ptr);
             _Destroy_in_place(_Al);
             _Ptr = nullptr;
@@ -132,8 +132,8 @@ public:
         }
 
         _Alloc& _Al = _Getal();
-        _Alnode _Node_alloc{_Al};
         _Alty_traits::destroy(_Al, _STD addressof(_Ptr->_Myval));
+        _Alnode _Node_alloc{_Al};
         _Alnode_traits::deallocate(_Node_alloc, _Ptr, 1);
 
         _Alloc& _That_al = _That._Getal();
