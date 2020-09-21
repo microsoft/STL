@@ -5,7 +5,6 @@
 #include <format>
 #include <string_view>
 
-
 // TODO: fill in tests
 
 int main() {

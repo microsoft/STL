@@ -54,7 +54,7 @@ concept _Parse_arg_id_callbacks = requires(_Ty _At) {
 };
 // clang-format on
 
-// we need to implement this outselves because from_chars does not work with wide characters
+// we need to implement this ourselves because from_chars does not work with wide characters
 template <class _CharT>
 constexpr const _CharT* _Parse_nonnegative_integer(const _CharT* _Begin, const _CharT* _End, int& _Integer) {
     _STL_INTERNAL_CHECK(_Begin != _End && '0' <= *_Begin && *_Begin <= '9');
@@ -101,13 +101,13 @@ constexpr const _CharT* _Parse_arg_id(const _CharT* _Begin, const _CharT* _End, 
         // The only things permitted after the index are the end of the replacement field ('}')
         // or the beginning of the format spec (':').
         if (_Begin == _End || (*_Begin != '}' && *_Begin != ':')) {
-            throw _STD format_error("Invalid format string.");
+            throw format_error("Invalid format string.");
         }
         _Callbacks._On_manual_id(_Index);
         return _Begin;
     }
     // This is where we would parse named arg ids if std::format were to support them.
-    throw _STD format_error("Invalid format string.");
+    throw format_error("Invalid format string.");
 }
 
 template <class _CharT, _Parse_spec_callbacks<_CharT> _Callbacks_type>
@@ -184,7 +184,7 @@ constexpr const _CharT* _Parse_width(const _CharT* _Begin, const _CharT* _End, _
             _Begin = _Parse_arg_id(_Begin, _End, _Width_adapter<_CharT, _Callbacks_type>(_Callbacks));
         }
         if (_Begin == _End || *_Begin != '}') {
-            throw _STD format_error("Invalid format string.");
+            throw format_error("Invalid format string.");
         }
         ++_Begin;
     }
@@ -210,7 +210,6 @@ private:
     // of how this works.
     ptrdiff_t _Next_arg_id = 0;
 
-
 public:
     constexpr explicit basic_format_parse_context(basic_string_view<_CharT> _Fmt, size_t _Num_args_ = 0) noexcept
         : _Format_string(_Fmt), _Num_args(_Num_args_) {}
@@ -227,7 +226,6 @@ public:
         _Format_string.remove_prefix(_It - begin());
     }
 
-
     // While the standard presents an exposition only enum value for
     // the indexing mode (manual, automatic, or unknown) we use _Next_arg_id to indicate it.
     // _Next_arg_id == 0 means unknown
@@ -237,12 +235,12 @@ public:
         if (_Next_arg_id >= 0) {
             return _Next_arg_id++;
         }
-        throw _STD format_error("Can not switch from manual to automatic indexing");
+        throw format_error("Can not switch from manual to automatic indexing");
     }
     constexpr void check_arg_id(size_t _Id) {
         (void) _Id;
         if (_Next_arg_id > 0) {
-            throw _STD format_error("Can not switch from automatic to manual indexing");
+            throw format_error("Can not switch from automatic to manual indexing");
         }
         _Next_arg_id = -1;
     }
@@ -257,10 +255,9 @@ public:
 private:
     using _Char_type = typename _Context::char_type;
 
-    using _Format_arg_value = _STD variant<monostate, int, unsigned, long long, unsigned long long, bool,
+    using _Format_arg_value = variant<monostate, int, unsigned, long long, unsigned long long, bool,
         typename _Context::char_type, float, double, long double, const void*, const typename _Context::char_type,
-        _STD basic_string_view<typename _Context::char_type>, handle>;
-
+        basic_string_view<typename _Context::char_type>, handle>;
 
     _Format_arg_value _Value;
 
@@ -304,7 +301,6 @@ public:
 };
 
 // TODO: test coverage
-
 // clang-format off
 template <class _Out, class _CharT>
     requires output_iterator<_Out, _CharT>
@@ -313,7 +309,7 @@ class basic_format_context {
 private:
     _Out _OutputIt;
     basic_format_args<basic_format_context> _Args;
-    _STD locale _Loc;
+    locale _Loc;
 
 public:
     using iterator  = _Out;
@@ -325,7 +321,7 @@ public:
     basic_format_arg<basic_format_context> arg(size_t _Id) const {
         return _Args.get(_Id);
     }
-    _STD locale locale() {
+    locale locale() {
         return _Loc;
     }
 
@@ -356,6 +352,6 @@ _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
 
-#endif // _HAS_CXX20
+#endif // __cpp_lib_concepts
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _FORMAT_

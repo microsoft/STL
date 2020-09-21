@@ -76,7 +76,6 @@ constexpr void test_parse_helper(const CharT* (*func)(const CharT*, const CharT*
     }
 }
 
-
 template <typename CharT>
 constexpr bool test_parse_align() {
     auto parse_align_fn = _Parse_align<CharT, testing_callbacks<CharT>>;
@@ -87,7 +86,6 @@ constexpr bool test_parse_align() {
     auto s3 = view_typ(TYPED_LITERAL(CharT, "*>"));
     auto s4 = view_typ(TYPED_LITERAL(CharT, "*^"));
 
-
     test_parse_helper(parse_align_fn, s0, false, view_typ::npos, {_Align::_None, view_typ(TYPED_LITERAL(CharT, ""))});
     test_parse_helper(parse_align_fn, s2, false, view_typ::npos, {_Align::_Left, view_typ(TYPED_LITERAL(CharT, "*"))});
     test_parse_helper(parse_align_fn, s3, false, view_typ::npos, {_Align::_Right, view_typ(TYPED_LITERAL(CharT, "*"))});
@@ -97,7 +95,6 @@ constexpr bool test_parse_align() {
         auto s5 = L"*\x343E"sv;
         test_parse_helper(parse_align_fn, s5, false, view_typ::npos, {_Align::_None, L"*"sv});
     }
-
 
     return true;
 }
@@ -122,7 +119,6 @@ constexpr bool test_parse_width() {
     test_parse_helper(parse_width_fn, i1, false, false);
     return true;
 }
-
 
 template <typename CharT>
 constexpr bool test_parse_arg_id() {
