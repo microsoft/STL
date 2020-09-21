@@ -191,11 +191,10 @@ constexpr const _CharT* _Parse_width(const _CharT* _Begin, const _CharT* _End, _
     return _Begin;
 }
 
-// TODO: test coverage
-
 template <class _Ty, class _CharT = char>
 struct formatter;
 
+// TODO: test coverage
 template <class _CharT>
 class basic_format_parse_context {
 public:
