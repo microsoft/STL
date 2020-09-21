@@ -520,10 +520,10 @@ language.support\support.limits\limits\numeric.limits.members\traps.pass.cpp
 
 
 # *** STL BUGS ***
-# GH-1112 "<locale>: the enum value of std::money_base is not correct[libcxx]"
+# GH-1112 <locale>: the enum value of std::money_base is not correct
 localization\locale.categories\category.monetary\locale.moneypunct\money_base.pass.cpp
 
-# GH-1113 <fstream> basic_filebuf doesn't comply with setbuf(0,0) requirement in the standard
+# GH-1113 <fstream>: basic_filebuf doesn't comply with setbuf(0,0) requirement in the standard
 input.output\file.streams\fstreams\filebuf.virtuals\overflow.pass.cpp
 input.output\file.streams\fstreams\filebuf.virtuals\underflow.pass.cpp
 
@@ -532,37 +532,38 @@ numerics\complex.number\complex.special\double_long_double_implicit.compile.fail
 numerics\complex.number\complex.special\float_double_implicit.compile.fail.cpp
 numerics\complex.number\complex.special\float_long_double_implicit.compile.fail.cpp
 
-# GH-1004 regex_traits::transform() isn't following the Standard.
+# GH-1004 <regex>: Error C2664 in std::regex_traits::transform
 re\re.traits\transform.pass.cpp
 
-# GH-1260 Incorrect return types.
+# GH-1260 <complex>: pow, incorrect type conversion
 numerics\complex.number\cmplx.over\pow.pass.cpp
 
 # GH-1295 <array>: array<const T, 0> allows fill() and swap()
 containers\sequences\array\array.fill\fill.fail.cpp
 containers\sequences\array\array.swap\swap.fail.cpp
 
-# GH-942 We reject array<NoDefault, 0>.
+# GH-942 <array>: std::array<T,0> doesn't compile - when type is not default constructible
 containers\sequences\array\array.cons\implicit_copy.pass.cpp
 containers\sequences\array\array.cons\initialization.pass.cpp
 containers\sequences\array\array.data\data_const.pass.cpp
 containers\sequences\array\array.data\data.pass.cpp
 containers\sequences\array\iterators.pass.cpp
 
-# GH-1006 Predicate count assertions - IDL2 is slightly bending the Standard's rules here.
+# GH-1006 <algorithm>: debug checks for predicates are observable
 algorithms\alg.sorting\alg.heap.operations\make.heap\make_heap_comp.pass.cpp
 algorithms\alg.sorting\alg.merge\inplace_merge_comp.pass.cpp
 algorithms\alg.sorting\alg.min.max\minmax_init_list_comp.pass.cpp
 
-# GH-1259 We don't match strtod / strtof when doing field extraction for hexfloats, or special cases like inf
+# GH-1259 <locale>: wrong field extraction for hexfloats, or special cases like inf
 localization\locale.categories\category.numeric\locale.num.get\facet.num.get.members\get_double.pass.cpp
 localization\locale.categories\category.numeric\locale.num.get\facet.num.get.members\get_float.pass.cpp
 localization\locale.categories\category.numeric\locale.num.get\facet.num.get.members\get_long_double.pass.cpp
 
-# GH-1277 We don't match numpunct groups correctly in do_get
+# GH-1277 <xlocnum>: We don't match numpunct groups correctly in do_get
 localization\locale.categories\category.numeric\locale.num.get\facet.num.get.members\get_long.pass.cpp
 
-# GH-1275 We don't have the locale names libcxx wants specialized in platform_support.hpp
+# GH-1275 <locale>: missing some locale names
+# We don't have the locale names libcxx wants specialized in platform_support.hpp
 # More bugs may be uncovered when the locale names are present.
 # move.pass.cpp can crash.
 input.output\iostreams.base\ios\basic.ios.members\move.pass.cpp
@@ -594,13 +595,13 @@ localization\locale.categories\category.time\locale.time.put.byname\put1.pass.cp
 localization\locale.categories\facet.numpunct\locale.numpunct.byname\grouping.pass.cpp
 localization\locale.categories\facet.numpunct\locale.numpunct.byname\thousands_sep.pass.cpp
 
-# GH-1264 Our wbuffer_convert does not implement seek. [depr.conversions.buffer] is completely underspecified.
+# GH-1264 <locale>: wbuffer_convert does not implement seek
 localization\locales\locale.convenience\conversions\conversions.buffer\seekoff.pass.cpp
 
-# GH-1116 error_category's default ctor isn't constexpr. (Should be fixed in vNext.)
+# GH-1116 <system_error>: error_category's default ctor isn't constexpr.
 diagnostics\syserr\syserr.errcat\syserr.errcat.nonvirtuals\default_ctor.pass.cpp
 
-# GH-1190 future incorrectly uses copy assignment instead of copy construction in set_value. (Should be fixed in vNext.)
+# GH-1190 <future>: incorrectly used copy assignment instead of copy construction in set_value
 thread\futures\futures.promise\set_value_const.pass.cpp
 
 # GH-757 <xstring>: Too many enabled hash specializations
