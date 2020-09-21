@@ -2133,7 +2133,7 @@ namespace ranges {
             template <class _Rng>
             _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
                 if constexpr (common_range<_Rng>) {
-                    return {_St::_All, noexcept(views::all{_STD declval<_Rng>()})};
+                    return {_St::_All, noexcept(views::all(_STD declval<_Rng>()))};
                 } else if constexpr (!common_range<_Rng> && copyable<iterator_t<_Rng>>) {
                     return {_St::_Common, noexcept(common_view{_STD declval<_Rng>()})};
                 }
