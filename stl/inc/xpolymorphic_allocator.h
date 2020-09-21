@@ -194,7 +194,7 @@ namespace pmr {
     template <class _Ty = byte>
 #else
     template <class _Ty>
-#endif  // _HAS_CXX20
+#endif // _HAS_CXX20
     class polymorphic_allocator {
     public:
         template <class>
@@ -244,8 +244,7 @@ namespace pmr {
             return _Resource->allocate(_Bytes, _Align);
         }
 
-        void deallocate_bytes(void* const _Ptr,
-            const size_t _Bytes, const size_t _Align = alignof(max_align_t)) {
+        void deallocate_bytes(void* const _Ptr, const size_t _Bytes, const size_t _Align = alignof(max_align_t)) {
             _Resource->deallocate(_Ptr, _Bytes, _Align);
         }
 
@@ -277,7 +276,7 @@ namespace pmr {
             destroy_at(_Ptr);
             this->deallocate_object(_Ptr);
         }
-            
+
 #endif // _HAS_CXX20
 
         _NODISCARD polymorphic_allocator select_on_container_copy_construction() const noexcept /* strengthened */ {
