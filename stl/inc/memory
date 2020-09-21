@@ -3085,6 +3085,7 @@ _NODISCARD constexpr _Ty* assume_aligned(_Ty* const _Ptr) noexcept /* strengthen
     if (_STD is_constant_evaluated()) {
         return _Ptr;
     } else {
+        // this enforces the requirement that _Nx be a power of two
         return static_cast<_Ty*>(__builtin_assume_aligned(_Ptr, _Nx));
     }
 }
