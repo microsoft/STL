@@ -218,6 +218,7 @@ tests\P0220R1_sample
 tests\P0220R1_searchers
 tests\P0220R1_string_view
 tests\P0325R4_to_array
+tests\P0339R6_polymorphic_allocator
 tests\P0356R5_bind_front
 tests\P0357R3_supporting_incomplete_types_in_reference_wrapper
 tests\P0414R2_shared_ptr_for_arrays

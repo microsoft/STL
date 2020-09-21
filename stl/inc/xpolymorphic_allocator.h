@@ -13,6 +13,10 @@
 #include <utility>
 #include <xmemory>
 
+#if _HAS_CXX20
+#include <memory>
+#endif // _HAS_CXX20
+
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
@@ -186,7 +190,11 @@ namespace pmr {
     }
 
     // CLASS TEMPLATE polymorphic_allocator
+#if _HAS_CXX20
+    template <class _Ty = byte>
+#else
     template <class _Ty>
+#endif  // _HAS_CXX20
     class polymorphic_allocator {
     public:
         template <class>
@@ -228,6 +236,49 @@ namespace pmr {
             allocator<char> _Al{};
             _Uses_allocator_construct(_Ptr, _Al, *this, _STD forward<_Types>(_Args)...);
         }
+
+#if _HAS_CXX20
+
+        _NODISCARD __declspec(allocator) void* allocate_bytes(
+            const size_t _Bytes, const size_t _Align = alignof(max_align_t)) {
+            return _Resource->allocate(_Bytes, _Align);
+        }
+
+        void deallocate_bytes(void* const _Ptr,
+            const size_t _Bytes, const size_t _Align = alignof(max_align_t)) {
+            _Resource->deallocate(_Ptr, _Bytes, _Align);
+        }
+
+        template <class _Uty>
+        _NODISCARD __declspec(allocator) _Uty* allocate_object(_CRT_GUARDOVERFLOW const size_t _Count = 1) {
+            void* const _Vp = this->allocate_bytes(_Get_size_of_n<sizeof(_Uty)>(_Count), alignof(_Uty));
+            return static_cast<_Uty*>(_Vp);
+        }
+
+        template <class _Uty>
+        void deallocate_object(_Uty* const _Ptr, const size_t _Count = 1) {
+            this->deallocate_bytes(_Ptr, _Count * sizeof(_Uty), alignof(_Uty));
+        }
+
+        template <class _Uty, class... _Types>
+        _NODISCARD __declspec(allocator) _Uty* new_object(_Types&&... _Args) {
+            _Uty* _Ptr = this->allocate_object<_Uty>();
+            try {
+                this->construct(_Ptr, forward<_Types>(_Args)...);
+            } catch (...) {
+                this->deallocate_object(_Ptr);
+                throw;
+            }
+            return _Ptr;
+        }
+
+        template <class _Uty>
+        void delete_object(_Uty* const _Ptr) {
+            destroy_at(_Ptr);
+            this->deallocate_object(_Ptr);
+        }
+            
+#endif // _HAS_CXX20
 
         _NODISCARD polymorphic_allocator select_on_container_copy_construction() const noexcept /* strengthened */ {
             // don't propagate on copy
