@@ -78,7 +78,7 @@ _NODISCARD constexpr _Ty(min)(initializer_list<_Ty>); // implemented in <algorit
 // FUNCTION TEMPLATE iter_swap (from <algorithm>)
 template <class _FwdIt1, class _FwdIt2>
 _CONSTEXPR20 void iter_swap(_FwdIt1 _Left, _FwdIt2 _Right) { // swap *_Left and *_Right
-    swap(*_Left, *_Right);
+    _STD swap(*_Left, *_Right);
 }
 
 // FUNCTION TEMPLATE swap
