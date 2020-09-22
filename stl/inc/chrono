@@ -575,10 +575,8 @@ namespace chrono {
 
     // CLOCKS
     struct system_clock { // wraps GetSystemTimePreciseAsFileTime/GetSystemTimeAsFileTime
-        using rep = long long;
-
-        using period = ratio_multiply<ratio<100>, nano>;
-
+        using rep                       = long long;
+        using period                    = ratio<1, 10'000'000>; // 100 nanoseconds
         using duration                  = chrono::duration<rep, period>;
         using time_point                = chrono::time_point<system_clock>;
         static constexpr bool is_steady = false;
