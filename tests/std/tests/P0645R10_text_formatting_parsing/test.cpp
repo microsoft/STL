@@ -29,17 +29,17 @@ struct choose_literal<wchar_t> {
 
 #define TYPED_LITERAL(CharT, Literal) (choose_literal<CharT>::choose(Literal, L##Literal))
 
-template <typename _CharT>
+template <typename CharT>
 struct testing_callbacks {
     _Align expected_alignment = _Align::_None;
-    basic_string_view<_CharT> expected_fill;
+    basic_string_view<CharT> expected_fill;
     int expected_width               = -1;
     int expected_dynamic_width       = -1;
     bool expected_auto_dynamic_width = false;
     constexpr void _On_align(_Align _Aln) {
         assert(_Aln == expected_alignment);
     }
-    constexpr void _On_fill(basic_string_view<_CharT> _Sv) {
+    constexpr void _On_fill(basic_string_view<CharT> _Sv) {
         assert(_Sv == expected_fill);
     }
     constexpr void _On_width(int width) {
@@ -52,8 +52,8 @@ struct testing_callbacks {
         assert(expected_auto_dynamic_width);
     }
 };
-template <typename _CharT>
-testing_callbacks(_Align, basic_string_view<_CharT>) -> testing_callbacks<_CharT>;
+template <typename CharT>
+testing_callbacks(_Align, basic_string_view<CharT>) -> testing_callbacks<CharT>;
 
 struct testing_arg_id_callbacks {
     constexpr void _On_auto_id() {}
