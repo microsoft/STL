@@ -36,11 +36,11 @@ struct testing_callbacks {
     int expected_width               = -1;
     int expected_dynamic_width       = -1;
     bool expected_auto_dynamic_width = false;
-    constexpr void _On_align(_Align _Aln) {
-        assert(_Aln == expected_alignment);
+    constexpr void _On_align(_Align aln) {
+        assert(aln == expected_alignment);
     }
-    constexpr void _On_fill(basic_string_view<CharT> _Sv) {
-        assert(_Sv == expected_fill);
+    constexpr void _On_fill(basic_string_view<CharT> str_view) {
+        assert(str_view == expected_fill);
     }
     constexpr void _On_width(int width) {
         assert(width == expected_width);

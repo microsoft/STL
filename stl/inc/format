@@ -125,13 +125,13 @@ constexpr const _CharT* _Parse_align(const _CharT* _Begin, const _CharT* _End, _
     }
     for (;;) {
         switch (*_Align_pt) {
-        case L'<':
+        case '<':
             _Parsed_align = _Align::_Left;
             break;
-        case L'>':
+        case '>':
             _Parsed_align = _Align::_Right;
             break;
-        case L'^':
+        case '^':
             _Parsed_align = _Align::_Center;
             break;
         }
