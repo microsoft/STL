@@ -1,0 +1,357 @@
+// format standard header
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#pragma once
+#ifndef _FORMAT_
+#define _FORMAT_
+#include <yvals_core.h>
+#if _STL_COMPILER_PREPROCESSOR
+#ifndef __cpp_lib_concepts
+#pragma message("The contents of <format> are available only with C++20 concepts support.")
+#else // ^^^ !defined(__cpp_lib_concepts) / defined(__cpp_lib_concepts) vvv
+
+#include <charconv>
+#include <concepts>
+#include <exception>
+#include <iterator>
+#include <locale>
+#include <string>
+#include <string_view>
+#include <variant>
+
+#pragma pack(push, _CRT_PACKING)
+#pragma warning(push, _STL_WARNING_LEVEL)
+#pragma warning(disable : _STL_DISABLED_WARNINGS)
+_STL_DISABLE_CLANG_WARNINGS
+#pragma push_macro("new")
+#undef new
+
+_STD_BEGIN
+
+class format_error : public runtime_error {
+    using runtime_error::runtime_error;
+};
+
+enum class _Align { _None, _Left, _Right, _Center };
+
+struct _Auto_id_tag {};
+
+// clang-format off
+template <class _Ty, class _CharT>
+concept _Parse_spec_callbacks = requires(_Ty _At, basic_string_view<_CharT> _Sv, _Align _Aln) {
+    { _At._On_align(_Aln) } -> same_as<void>;
+    { _At._On_fill(_Sv) } -> same_as<void>;
+    { _At._On_width(_STD declval<int>()) } -> same_as<void>;
+    { _At._On_dynamic_width(_STD declval<int>()) } -> same_as<void>;
+    { _At._On_dynamic_width(_STD declval<_Auto_id_tag>()) } -> same_as<void>;
+};
+template <class _Ty, class _CharT>
+concept _Parse_arg_id_callbacks = requires(_Ty _At) {
+    { _At._On_auto_id() } -> same_as<void>;
+    { _At._On_manual_id(_STD declval<int>()) } -> same_as<void>;
+};
+// clang-format on
+
+// we need to implement this ourselves because from_chars does not work with wide characters
+template <class _CharT>
+constexpr const _CharT* _Parse_nonnegative_integer(const _CharT* _Begin, const _CharT* _End, int& _Integer) {
+    _STL_INTERNAL_CHECK(_Begin != _End && '0' <= *_Begin && *_Begin <= '9');
+    unsigned int _Value             = 0;
+    constexpr unsigned int _Max_int = static_cast<unsigned int>((numeric_limits<int>::max)());
+    constexpr unsigned int _Big_int = _Max_int / 10;
+
+    do {
+        if (_Value > _Big_int) {
+            _Value = _Max_int + 1;
+            break;
+        }
+        _Value = _Value * 10 + static_cast<unsigned int>(*_Begin - '0');
+        ++_Begin;
+    } while (_Begin != _End && '0' <= *_Begin && *_Begin <= '9');
+    if (_Value > _Max_int) {
+        throw format_error("Number is too big");
+    }
+    _Integer = static_cast<int>(_Value);
+    return _Begin;
+}
+
+template <class _CharT, _Parse_arg_id_callbacks<_CharT> _Callbacks_type>
+constexpr const _CharT* _Parse_arg_id(const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
+    _STL_INTERNAL_CHECK(_Begin != _End);
+    _CharT _Ch = *_Begin;
+    // No id provided, format string is using automatic indexing.
+    if (_Ch == '}' || _Ch == ':') {
+        _Callbacks._On_auto_id();
+        return _Begin;
+    }
+    if (_Ch >= '0' && _Ch <= '9') {
+        int _Index = 0;
+        // arg_id is not allowed to have any leading zeros, but is allowed to be
+        // equal to zero (but not '00'). So if _Ch is zero we skip the parsing, leave
+        // _Index set to zero and let the validity checks below ensure that the arg_id
+        // wasn't something like "00", or "023".
+        if (_Ch != '0') {
+            _Begin = _Parse_nonnegative_integer(_Begin, _End, _Index);
+        } else {
+            ++_Begin;
+        }
+        // The format string shouldn't end right after the index number.
+        // The only things permitted after the index are the end of the replacement field ('}')
+        // or the beginning of the format spec (':').
+        if (_Begin == _End || (*_Begin != '}' && *_Begin != ':')) {
+            throw format_error("Invalid format string.");
+        }
+        _Callbacks._On_manual_id(_Index);
+        return _Begin;
+    }
+    // This is where we would parse named arg ids if std::format were to support them.
+    throw format_error("Invalid format string.");
+}
+
+template <class _CharT, _Parse_spec_callbacks<_CharT> _Callbacks_type>
+constexpr const _CharT* _Parse_align(const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
+    // done with parsing, or reached the end of a replacement field.
+    if (_Begin == _End || *_Begin == '}') {
+        return _Begin;
+    }
+
+    // align and fill
+    auto _Parsed_align = _Align::_None;
+    auto _Align_pt     = _Begin + 1;
+    if (_Align_pt == _End) {
+        _Align_pt = _Begin;
+    }
+    for (;;) {
+        switch (*_Align_pt) {
+        case '<':
+            _Parsed_align = _Align::_Left;
+            break;
+        case '>':
+            _Parsed_align = _Align::_Right;
+            break;
+        case '^':
+            _Parsed_align = _Align::_Center;
+            break;
+        }
+        if (_Parsed_align != _Align::_None) {
+            if (_Align_pt != _Begin) {
+                if (*_Begin == '{') {
+                    throw format_error("invalid fill character '{'");
+                }
+                _Callbacks._On_fill({_Begin, static_cast<size_t>(_Align_pt - _Begin)});
+                _Begin = _Align_pt + 1;
+            } else {
+                ++_Begin;
+            }
+            _Callbacks._On_align(_Parsed_align);
+            break;
+        } else if (_Align_pt == _Begin) {
+            break;
+        }
+        _Align_pt = _Begin;
+    }
+    return _Begin;
+}
+
+// Adapts a type modeling _Parse_spec_callbacks to model _Parse_arg_id_callbacks.
+// Used in _Parse_width so that _Parse_arg_id can be used to parse dynamic widths.
+template <class _CharT, _Parse_spec_callbacks<_CharT> _Callbacks_type>
+struct _Width_adapter {
+    _Callbacks_type& _Callbacks;
+
+    explicit constexpr _Width_adapter(_Callbacks_type& _Handler) : _Callbacks(_Handler) {}
+
+    constexpr void _On_auto_id() {
+        _Callbacks._On_dynamic_width(_Auto_id_tag{});
+    }
+    constexpr void _On_manual_id(int _Id) {
+        _Callbacks._On_dynamic_width(_Id);
+    }
+};
+
+template <class _CharT, _Parse_spec_callbacks<_CharT> _Callbacks_type>
+constexpr const _CharT* _Parse_width(const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
+    _STL_INTERNAL_CHECK(_Begin != _End);
+    if ('1' <= *_Begin && *_Begin <= '9') {
+        int _Value = 0;
+        _Begin     = _Parse_nonnegative_integer(_Begin, _End, _Value);
+        _Callbacks._On_width(_Value);
+    } else if (*_Begin == '{') {
+        ++_Begin;
+        if (_Begin != _End) {
+            _Begin = _Parse_arg_id(_Begin, _End, _Width_adapter<_CharT, _Callbacks_type>(_Callbacks));
+        }
+        if (_Begin == _End || *_Begin != '}') {
+            throw format_error("Invalid format string.");
+        }
+        ++_Begin;
+    }
+    return _Begin;
+}
+
+template <class _Ty, class _CharT = char>
+struct formatter;
+
+// TODO: test coverage
+template <class _CharT>
+class basic_format_parse_context {
+public:
+    using char_type      = _CharT;
+    using const_iterator = typename basic_string_view<_CharT>::const_iterator;
+    using iterator       = const_iterator;
+
+private:
+    basic_string_view<_CharT> _Format_string;
+    size_t _Num_args;
+    // The standard says this is size_t, however we use ptrdiff_t to save some space
+    // by not having to store the indexing mode. Below is a more detailed explanation
+    // of how this works.
+    ptrdiff_t _Next_arg_id = 0;
+
+public:
+    constexpr explicit basic_format_parse_context(basic_string_view<_CharT> _Fmt, size_t _Num_args_ = 0) noexcept
+        : _Format_string(_Fmt), _Num_args(_Num_args_) {}
+    basic_format_parse_context(const basic_format_parse_context&) = delete;
+    basic_format_parse_context& operator=(const basic_format_parse_context&) = delete;
+
+    _NODISCARD constexpr const_iterator begin() const noexcept {
+        return _Format_string.begin();
+    }
+    _NODISCARD constexpr const_iterator end() const noexcept {
+        return _Format_string.end();
+    }
+    constexpr void advance_to(const_iterator _It) {
+        _Format_string.remove_prefix(_It - begin());
+    }
+
+    // While the standard presents an exposition only enum value for
+    // the indexing mode (manual, automatic, or unknown) we use _Next_arg_id to indicate it.
+    // _Next_arg_id == 0 means unknown
+    // _Next_arg_id > 0 means automatic
+    // _Next_arg_id == -1 means manual
+    constexpr size_t next_arg_id() {
+        if (_Next_arg_id >= 0) {
+            return _Next_arg_id++;
+        }
+        throw format_error("Can not switch from manual to automatic indexing");
+    }
+    constexpr void check_arg_id(size_t _Id) {
+        (void) _Id;
+        if (_Next_arg_id > 0) {
+            throw format_error("Can not switch from automatic to manual indexing");
+        }
+        _Next_arg_id = -1;
+    }
+};
+
+// TODO: test coverage
+template <class _Context>
+class basic_format_arg {
+public:
+    class handle;
+
+private:
+    using _Char_type = typename _Context::char_type;
+
+    using _Format_arg_value = variant<monostate, int, unsigned, long long, unsigned long long, bool,
+        typename _Context::char_type, float, double, long double, const void*, const typename _Context::char_type,
+        basic_string_view<typename _Context::char_type>, handle>;
+
+    _Format_arg_value _Value;
+
+public:
+    class handle {
+    private:
+        const void* _Ptr;
+        void (*_Format)(basic_format_parse_context<_Char_type>& _Parse_ctx, _Context _Format_ctx, const void*);
+        friend basic_format_arg;
+
+    public:
+        void format(basic_format_parse_context<_Char_type>& _Parse_ctx, _Context& _Format_ctx) {
+            _Format(_Parse_ctx, _Format_ctx, _Ptr);
+        }
+    };
+
+    basic_format_arg() noexcept = default;
+    explicit operator bool() const noexcept {
+        return !_STD holds_alternative<monostate>(_Value);
+    }
+};
+
+// TODO: test coverage
+template <class _Context, class... _Args>
+class _Format_arg_store {
+    static constexpr size_t _Num_args = sizeof...(_Args);
+    // TODO: no arg packing yet
+
+    using _Value_type = basic_format_arg<_Context>;
+};
+
+// TODO: test coverage
+template <class _Context>
+class basic_format_args {
+public:
+    basic_format_args() noexcept;
+    template <class... _Args>
+    basic_format_args(const _Format_arg_store<_Context, _Args...>& store) noexcept;
+
+    basic_format_arg<_Context> get(size_t _Index) const noexcept;
+};
+
+// TODO: test coverage
+// clang-format off
+template <class _Out, class _CharT>
+    requires output_iterator<_Out, _CharT>
+class basic_format_context {
+    // clang-format on
+private:
+    _Out _OutputIt;
+    basic_format_args<basic_format_context> _Args;
+    locale _Loc;
+
+public:
+    using iterator  = _Out;
+    using char_type = _CharT;
+
+    template <class _Ty>
+    using formatter_type = formatter<_Ty, _CharT>;
+
+    basic_format_arg<basic_format_context> arg(size_t _Id) const {
+        return _Args.get(_Id);
+    }
+    locale locale() {
+        return _Loc;
+    }
+
+    iterator out() {
+        return _OutputIt;
+    }
+    void advance_to(iterator _It) {
+        // TODO: IDL support probably required
+        _OutputIt = _It;
+    }
+};
+
+using format_context  = basic_format_context<back_insert_iterator<string>, string::value_type>;
+using wformat_context = basic_format_context<back_insert_iterator<wstring>, wstring::value_type>;
+using format_args     = basic_format_args<format_context>;
+using wformat_args    = basic_format_args<wformat_context>;
+
+// FUNCTION vformat
+string vformat(string_view _Fmt, format_args _Args);
+wstring vformat(wstring_view _Fmt, wformat_args _Args);
+string vformat(const locale& _Loc, string_view _Fmt, format_args _Args);
+wstring vformat(const locale& _Loc, wstring_view _Fmt, wformat_args _Args);
+
+_STD_END
+
+#pragma pop_macro("new")
+_STL_RESTORE_CLANG_WARNINGS
+#pragma warning(pop)
+#pragma pack(pop)
+
+#endif // __cpp_lib_concepts
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _FORMAT_
