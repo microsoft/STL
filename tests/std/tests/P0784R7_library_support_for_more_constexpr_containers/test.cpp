@@ -9,6 +9,9 @@
 #include <type_traits>
 #include <utility>
 
+#pragma warning(disable : 4582) // '%s': constructor is not implicitly called
+#pragma warning(disable : 4583) // '%s': destructor is not implicitly called
+
 using namespace std;
 
 #ifdef __cpp_lib_concepts
