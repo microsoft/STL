@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <cassert>
-#include <memory_resource>
-#include <memory>
-#include <numeric>
 #include <cstddef>
+#include <memory>
+#include <memory_resource>
+#include <numeric>
 
 using std::pmr::polymorphic_allocator;
 
@@ -103,6 +103,6 @@ void new_object_test() {
 int main() {
     allocate_bytes_test();
     allocate_object_test();
-    //allocate_object_overflow_test();
+    allocate_object_overflow_test();
     new_object_test();
 }
