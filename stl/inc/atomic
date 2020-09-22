@@ -2970,6 +2970,69 @@ inline void atomic_flag_notify_all(volatile atomic_flag* const _Flag) noexcept {
 inline void atomic_flag_notify_all(atomic_flag* const _Flag) noexcept {
     return _Flag->notify_all();
 }
+
+template <class _Ty>
+class _Locked_pointer {
+public:
+    static_assert(alignof(_Ty) >= (1 << 2), "2 low order bits are needed by _Locked_pointer");
+    static constexpr uintptr_t _Lock_mask                = 3;
+    static constexpr uintptr_t _Not_locked               = 0;
+    static constexpr uintptr_t _Locked_notify_not_needed = 1;
+    static constexpr uintptr_t _Locked_notify_needed     = 2;
+    static constexpr uintptr_t _Ptr_value_mask           = ~_Lock_mask;
+
+    constexpr _Locked_pointer() noexcept : _Storage{} {}
+    explicit _Locked_pointer(_Ty* const _Ptr) noexcept : _Storage{reinterpret_cast<uintptr_t>(_Ptr)} {}
+
+    _Locked_pointer(const _Locked_pointer&) = delete;
+    _Locked_pointer& operator=(const _Locked_pointer&) = delete;
+
+    _NODISCARD _Ty* _Lock_and_load() noexcept {
+        uintptr_t _Rep = _Storage.load(memory_order_relaxed);
+        for (;;) {
+            switch (_Rep & _Lock_mask) {
+            case _Not_locked: // Can try to lock now
+                if (_Storage.compare_exchange_weak(_Rep, _Rep | _Locked_notify_not_needed)) {
+                    return reinterpret_cast<_Ty*>(_Rep);
+                }
+                _YIELD_PROCESSOR();
+                break;
+
+            case _Locked_notify_not_needed: // Try to set "notify needed" and wait
+                if (!_Storage.compare_exchange_weak(_Rep, (_Rep & _Ptr_value_mask) | _Locked_notify_needed)) {
+                    // Failed to set notify needed flag, try again
+                    _YIELD_PROCESSOR();
+                    break;
+                }
+                _Rep = (_Rep & _Ptr_value_mask) | _Locked_notify_needed;
+                [[fallthrough]];
+
+            case _Locked_notify_needed: // "Notify needed" is already set, just wait
+                _Storage.wait(_Rep, memory_order_relaxed);
+                _Rep = _Storage.load(memory_order_relaxed);
+                break;
+
+            default: // Unrecognized bit pattern
+                _CSTD abort();
+            }
+        }
+    }
+
+    void _Store_and_unlock(_Ty* const _Value) noexcept {
+        const auto _Rep = _Storage.exchange(reinterpret_cast<uintptr_t>(_Value));
+        if ((_Rep & _Lock_mask) == _Locked_notify_needed) {
+            // As we don't count waiters, every waiter is notified, and then some may re-request notification
+            _Storage.notify_all();
+        }
+    }
+
+    _NODISCARD _Ty* _Unsafe_load_relaxed() const noexcept {
+        return reinterpret_cast<_Ty*>(_Storage.load(memory_order_relaxed));
+    }
+
+private:
+    atomic<uintptr_t> _Storage;
+};
 #endif // _HAS_CXX20
 
 _STD_END
