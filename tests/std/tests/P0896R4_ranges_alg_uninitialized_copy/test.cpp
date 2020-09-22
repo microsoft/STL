@@ -14,18 +14,18 @@
 
 using namespace std;
 
-// Validate that uninitialized_move_result aliases in_out_result
-STATIC_ASSERT(same_as<ranges::uninitialized_move_result<int, double>, ranges::in_out_result<int, double>>);
+// Validate that uninitialized_copy_result aliases in_out_result
+STATIC_ASSERT(same_as<ranges::uninitialized_copy_result<int, double>, ranges::in_out_result<int, double>>);
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::uninitialized_move(borrowed<false>{}, borrowed<false>{})),
-    ranges::uninitialized_move_result<ranges::dangling, ranges::dangling>>);
-STATIC_ASSERT(same_as<decltype(ranges::uninitialized_move(borrowed<false>{}, borrowed<true>{})),
-    ranges::uninitialized_move_result<ranges::dangling, int*>>);
-STATIC_ASSERT(same_as<decltype(ranges::uninitialized_move(borrowed<true>{}, borrowed<false>{})),
-    ranges::uninitialized_move_result<int*, ranges::dangling>>);
-STATIC_ASSERT(same_as<decltype(ranges::uninitialized_move(borrowed<true>{}, borrowed<true>{})),
-    ranges::uninitialized_move_result<int*, int*>>);
+STATIC_ASSERT(same_as<decltype(ranges::uninitialized_copy(borrowed<false>{}, borrowed<false>{})),
+    ranges::uninitialized_copy_result<ranges::dangling, ranges::dangling>>);
+STATIC_ASSERT(same_as<decltype(ranges::uninitialized_copy(borrowed<false>{}, borrowed<true>{})),
+    ranges::uninitialized_copy_result<ranges::dangling, int*>>);
+STATIC_ASSERT(same_as<decltype(ranges::uninitialized_copy(borrowed<true>{}, borrowed<false>{})),
+    ranges::uninitialized_copy_result<int*, ranges::dangling>>);
+STATIC_ASSERT(same_as<decltype(ranges::uninitialized_copy(borrowed<true>{}, borrowed<true>{})),
+    ranges::uninitialized_copy_result<int*, int*>>);
 
 struct int_wrapper {
     inline static int constructions = 0;
@@ -46,12 +46,12 @@ struct int_wrapper {
         ++constructions;
     }
 
-    int_wrapper(int_wrapper&& that) {
+    int_wrapper(const int_wrapper& that) {
         if (that.val == magic_throwing_val) {
             throw magic_throwing_val;
         }
 
-        val = exchange(that.val, -1);
+        val = that.val;
         ++constructions;
     }
 
@@ -59,13 +59,12 @@ struct int_wrapper {
         ++destructions;
     }
 
-    int_wrapper& operator=(int_wrapper&&) {
+    int_wrapper& operator=(const int_wrapper&) {
         abort();
     }
 
     auto operator<=>(const int_wrapper&) const = default;
 };
-STATIC_ASSERT(movable<int_wrapper> && !copyable<int_wrapper>);
 
 template <class T, size_t N>
 struct holder {
@@ -77,14 +76,21 @@ struct holder {
     }
 };
 
+template <class R>
+void not_ranges_destroy(R&& r) { // TRANSITION, ranges::destroy
+    for (auto& e : r) {
+        destroy_at(&e);
+    }
+}
+
 struct instantiator {
     static constexpr int expected_output[] = {13, 55, 12345};
-    static constexpr int expected_input[]  = {-1, -1, -1};
+    static constexpr int expected_input[]  = {13, 55, 12345};
 
     template <ranges::input_range R, ranges::forward_range W>
     static void call() {
-        using ranges::uninitialized_move, ranges::uninitialized_move_result, ranges::destroy, ranges::equal,
-            ranges::equal_to, ranges::iterator_t;
+        using ranges::uninitialized_copy, ranges::uninitialized_copy_result, ranges::equal, ranges::equal_to,
+            ranges::iterator_t;
 
         { // Validate range overload
             int_wrapper input[3] = {13, 55, 12345};
@@ -93,15 +99,15 @@ struct instantiator {
             W wrapped_output{mem.as_span()};
 
             int_wrapper::clear_counts();
-            const same_as<uninitialized_move_result<iterator_t<R>, iterator_t<W>>> auto result =
-                uninitialized_move(wrapped_input, wrapped_output);
+            const same_as<uninitialized_copy_result<iterator_t<R>, iterator_t<W>>> auto result =
+                uninitialized_copy(wrapped_input, wrapped_output);
             assert(int_wrapper::constructions == 3);
             assert(int_wrapper::destructions == 0);
             assert(result.in == wrapped_input.end());
             assert(result.out == wrapped_output.end());
             assert(equal(wrapped_output, expected_output, equal_to{}, &int_wrapper::val));
             assert(equal(input, expected_input, equal_to{}, &int_wrapper::val));
-            destroy(wrapped_output);
+            not_ranges_destroy(wrapped_output);
             assert(int_wrapper::constructions == 3);
             assert(int_wrapper::destructions == 3);
         }
@@ -113,7 +119,7 @@ struct instantiator {
             W wrapped_output{mem.as_span()};
 
             int_wrapper::clear_counts();
-            const same_as<uninitialized_move_result<iterator_t<R>, iterator_t<W>>> auto result = uninitialized_move(
+            const same_as<uninitialized_copy_result<iterator_t<R>, iterator_t<W>>> auto result = uninitialized_copy(
                 wrapped_input.begin(), wrapped_input.end(), wrapped_output.begin(), wrapped_output.end());
             assert(int_wrapper::constructions == 3);
             assert(int_wrapper::destructions == 0);
@@ -121,7 +127,7 @@ struct instantiator {
             assert(result.out == wrapped_output.end());
             assert(equal(wrapped_output, expected_output, equal_to{}, &int_wrapper::val));
             assert(equal(input, expected_input, equal_to{}, &int_wrapper::val));
-            destroy(wrapped_output);
+            not_ranges_destroy(wrapped_output);
             assert(int_wrapper::constructions == 3);
             assert(int_wrapper::destructions == 3);
         }
@@ -129,7 +135,7 @@ struct instantiator {
 };
 
 struct throwing_test {
-    static constexpr int expected_input[] = {-1, -1, int_wrapper::magic_throwing_val, 12345};
+    static constexpr int expected_input[] = {13, 55, int_wrapper::magic_throwing_val, 12345};
 
     template <ranges::input_range R, ranges::forward_range W>
     static void call() {
@@ -141,7 +147,7 @@ struct throwing_test {
 
         int_wrapper::clear_counts();
         try {
-            (void) ranges::uninitialized_move(wrapped_input, wrapped_output);
+            (void) ranges::uninitialized_copy(wrapped_input, wrapped_output);
             assert(false);
         } catch (int i) {
             assert(i == int_wrapper::magic_throwing_val);
