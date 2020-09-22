@@ -190,11 +190,11 @@ namespace pmr {
     }
 
     // CLASS TEMPLATE polymorphic_allocator
-#if _HAS_CXX20
+#if _HAS_CXX20 && defined(__cpp_lib_byte)
     template <class _Ty = byte>
 #else
     template <class _Ty>
-#endif // _HAS_CXX20
+#endif // _HAS_CXX20 && defined(__cpp_lib_byte)
     class polymorphic_allocator {
     public:
         template <class>
