@@ -92,6 +92,10 @@ constexpr bool test_parse_align() {
     test_parse_helper(
         parse_align_fn, s3, false, view_typ::npos, {_Align::_Center, view_typ(TYPED_LITERAL(CharT, "*"))});
     if constexpr (same_as<CharT, wchar_t>) {
+        // This is a CJK character where the least significant byte is the same as ascii '>',
+        // libfmt and initial drafts of <format> narrowed characters when parsing alignments, causing
+        // \x343E (which is from CJK unified ideographs extension A) and similar characters to parse as
+        // an alignment specifier.
         auto s4 = L"*\x343E"sv;
         test_parse_helper(parse_align_fn, s4, false, view_typ::npos, {_Align::_None, L"*"sv});
     }
