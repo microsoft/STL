@@ -137,7 +137,7 @@
 // P0202R3 constexpr For <algorithm> And exchange()
 // P0318R1 unwrap_reference, unwrap_ref_decay
 // P0325R4 to_array()
-// P0339R6 polymorphic_allocator<> as a vocabulary type
+// P0339R6 polymorphic_allocator<>
 // P0356R5 bind_front()
 // P0357R3 Supporting Incomplete Types In reference_wrapper
 // P0415R1 constexpr For <complex> (Again)
