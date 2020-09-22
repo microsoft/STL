@@ -951,8 +951,7 @@ void _Pocs(_Alloc& _Left, _Alloc& _Right) noexcept {
 
 // FUNCTION TEMPLATE _Destroy_range WITH ALLOC
 template <class _Alloc>
-/* _CONSTEXPR20_DYNALLOC */ void _Destroy_range(
-    _Alloc_ptr_t<_Alloc> _First, const _Alloc_ptr_t<_Alloc> _Last, _Alloc& _Al) noexcept {
+void _Destroy_range(_Alloc_ptr_t<_Alloc> _First, const _Alloc_ptr_t<_Alloc> _Last, _Alloc& _Al) noexcept {
     // note that this is an optimization for debug mode codegen; in release mode the BE removes all of this
     using _Ty = typename _Alloc::value_type;
     if _CONSTEXPR_IF (!conjunction_v<is_trivially_destructible<_Ty>, _Uses_default_destroy<_Alloc, _Ty*>>) {
@@ -1425,18 +1424,18 @@ struct _Uninitialized_backout { // struct to undo partially constructed ranges i
     _Uninitialized_backout(const _Uninitialized_backout&) = delete;
     _Uninitialized_backout& operator=(const _Uninitialized_backout&) = delete;
 
-    /* _CONSTEXPR20_DYNALLOC */ ~_Uninitialized_backout() {
+    ~_Uninitialized_backout() {
         _Destroy_range(_First, _Last);
     }
 
     template <class... _Types>
-    /* _CONSTEXPR20_DYNALLOC */ void _Emplace_back(_Types&&... _Vals) {
+    void _Emplace_back(_Types&&... _Vals) {
         // construct a new element at *_Last and increment
         _Construct_in_place(*_Last, _STD forward<_Types>(_Vals)...);
         ++_Last;
     }
 
-    /* _CONSTEXPR20_DYNALLOC */ _NoThrowFwdIt _Release() { // suppress any exception handling backout and return _Last
+    _NoThrowFwdIt _Release() { // suppress any exception handling backout and return _Last
         _First = _Last;
         return _Last;
     }
