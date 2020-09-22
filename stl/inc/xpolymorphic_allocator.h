@@ -244,7 +244,8 @@ namespace pmr {
             return _Resource->allocate(_Bytes, _Align);
         }
 
-        void deallocate_bytes(void* const _Ptr, const size_t _Bytes, const size_t _Align = alignof(max_align_t)) {
+        void deallocate_bytes(void* const _Ptr, const size_t _Bytes,
+            const size_t _Align = alignof(max_align_t)) noexcept /* strengthened */ {
             _Resource->deallocate(_Ptr, _Bytes, _Align);
         }
 
@@ -255,7 +256,7 @@ namespace pmr {
         }
 
         template <class _Uty>
-        void deallocate_object(_Uty* const _Ptr, const size_t _Count = 1) {
+        void deallocate_object(_Uty* const _Ptr, const size_t _Count = 1) noexcept /* strengthened */ {
             this->deallocate_bytes(_Ptr, _Count * sizeof(_Uty), alignof(_Uty));
         }
 
@@ -272,7 +273,7 @@ namespace pmr {
         }
 
         template <class _Uty>
-        void delete_object(_Uty* const _Ptr) {
+        void delete_object(_Uty* const _Ptr) noexcept /* strengthened */ {
             _STD destroy_at(_Ptr);
             this->deallocate_object(_Ptr);
         }
