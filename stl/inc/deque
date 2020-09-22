@@ -28,7 +28,7 @@ class _Deque_unchecked_const_iterator {
 private:
     using _Size_type = typename _Mydeque::size_type;
 
-    static constexpr int _DEQUESIZ = _Mydeque::_DEQUESIZ;
+    static constexpr int _Block_size = _Mydeque::_Block_size;
 
 public:
     using iterator_category = random_access_iterator_tag;
@@ -45,7 +45,7 @@ public:
 
     _NODISCARD reference operator*() const noexcept {
         _Size_type _Block = _Mycont->_Getblock(_Myoff);
-        _Size_type _Off   = _Myoff % _DEQUESIZ;
+        _Size_type _Off   = _Myoff % _Block_size;
         return _Mycont->_Map[_Block][_Off];
     }
 
@@ -231,7 +231,7 @@ class _Deque_const_iterator : public _Iterator_base12 {
 private:
     using _Size_type = typename _Mydeque::size_type;
 
-    static constexpr int _DEQUESIZ = _Mydeque::_DEQUESIZ;
+    static constexpr int _Block_size = _Mydeque::_Block_size;
 
 public:
     using iterator_category = random_access_iterator_tag;
@@ -242,7 +242,7 @@ public:
     using reference       = const value_type&;
 
     using _Mydeque_t = _Mydeque; // helper for expression evaluator
-    enum { _EEN_DS = _DEQUESIZ }; // helper for expression evaluator
+    enum { _EEN_DS = _Block_size }; // helper for expression evaluator
     _Deque_const_iterator() noexcept : _Myoff(0) {
         _Setcont(nullptr);
     }
@@ -260,7 +260,7 @@ public:
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
         _Size_type _Block = _Mycont->_Getblock(_Myoff);
-        _Size_type _Off   = _Myoff % _DEQUESIZ;
+        _Size_type _Off   = _Myoff % _Block_size;
         return _Mycont->_Map[_Block][_Off];
     }
 
@@ -539,14 +539,14 @@ private:
     static constexpr size_t _Bytes = sizeof(value_type);
 
 public:
-    static constexpr int _DEQUESIZ =
+    static constexpr int _Block_size =
         _Bytes <= 1 ? 16 : _Bytes <= 2 ? 8 : _Bytes <= 4 ? 4 : _Bytes <= 8 ? 2 : 1; // elements per block (a power of 2)
 
     _Deque_val() noexcept : _Map(), _Mapsize(0), _Myoff(0), _Mysize(0) {}
 
     size_type _Getblock(size_type _Off) const noexcept {
-        // NB: _Mapsize and _DEQUESIZ are guaranteed to be powers of 2
-        return (_Off / _DEQUESIZ) & (_Mapsize - 1);
+        // NB: _Mapsize and _Block_size are guaranteed to be powers of 2
+        return (_Off / _Block_size) & (_Mapsize - 1);
     }
 
     _Mapptr _Map; // pointer to array of pointers to blocks
@@ -576,7 +576,7 @@ private:
             typename _Alty_traits::pointer, typename _Alty_traits::const_pointer, _Ty&, const _Ty&, _Mapptr>>>;
 
     static constexpr int _Minimum_map_size = 8;
-    static constexpr int _DEQUESIZ         = _Scary_val::_DEQUESIZ;
+    static constexpr int _Block_size       = _Scary_val::_Block_size;
 
 public:
     using allocator_type  = _Alloc;
@@ -595,7 +595,7 @@ public:
 
     using reverse_iterator       = _STD reverse_iterator<iterator>;
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
-    enum { _EEN_DS = _DEQUESIZ }; // helper for expression evaluator
+    enum { _EEN_DS = _Block_size }; // helper for expression evaluator
 
     deque() : _Mypair(_Zero_then_variadic_args_t{}) {
         _Get_data()._Alloc_proxy(static_cast<_Alproxy_ty>(_Getal()));
@@ -778,18 +778,18 @@ public:
     decltype(auto) emplace_front(_Valty&&... _Val) {
         _Orphan_all();
 
-        if (_Myoff() % _DEQUESIZ == 0 && _Mapsize() <= (_Mysize() + _DEQUESIZ) / _DEQUESIZ) {
+        if (_Myoff() % _Block_size == 0 && _Mapsize() <= (_Mysize() + _Block_size) / _Block_size) {
             _Growmap(1);
         }
-        _Myoff() &= _Mapsize() * _DEQUESIZ - 1;
-        size_type _Newoff = _Myoff() != 0 ? _Myoff() : _Mapsize() * _DEQUESIZ;
+        _Myoff() &= _Mapsize() * _Block_size - 1;
+        size_type _Newoff = _Myoff() != 0 ? _Myoff() : _Mapsize() * _Block_size;
         size_type _Block  = _Getblock(--_Newoff);
         if (_Map()[_Block] == nullptr) {
-            _Map()[_Block] = _Getal().allocate(_DEQUESIZ);
+            _Map()[_Block] = _Getal().allocate(_Block_size);
         }
 
         _Alty_traits::construct(
-            _Getal(), _Unfancy(_Map()[_Block] + _Newoff % _DEQUESIZ), _STD forward<_Valty>(_Val)...);
+            _Getal(), _Unfancy(_Map()[_Block] + _Newoff % _Block_size), _STD forward<_Valty>(_Val)...);
 
         _Myoff() = _Newoff;
         ++_Mysize();
@@ -945,11 +945,11 @@ public:
     }
 
     void shrink_to_fit() {
-        size_type _Oldcapacity = _DEQUESIZ * _Mapsize();
+        size_type _Oldcapacity = _Block_size * _Mapsize();
         size_type _Newcapacity = _Oldcapacity / 2;
 
-        if (_Newcapacity < _DEQUESIZ * _Minimum_map_size) {
-            _Newcapacity = _DEQUESIZ * _Minimum_map_size;
+        if (_Newcapacity < _Block_size * _Minimum_map_size) {
+            _Newcapacity = _Block_size * _Minimum_map_size;
         }
 
         if ((empty() && 0 < _Mapsize())
@@ -1072,7 +1072,7 @@ public:
         } else { // something to erase, do it
             _Orphan_off(_Myoff());
             size_type _Block = _Getblock(_Myoff());
-            _Alty_traits::destroy(_Getal(), _Unfancy(_Map()[_Block] + _Myoff() % _DEQUESIZ));
+            _Alty_traits::destroy(_Getal(), _Unfancy(_Map()[_Block] + _Myoff() % _Block_size));
             if (--_Mysize() == 0) {
                 _Myoff() = 0;
             } else {
@@ -1082,7 +1082,7 @@ public:
 
 #else // _ITERATOR_DEBUG_LEVEL == 2
         size_type _Block = _Getblock(_Myoff());
-        _Alty_traits::destroy(_Getal(), _Unfancy(_Map()[_Block] + _Myoff() % _DEQUESIZ));
+        _Alty_traits::destroy(_Getal(), _Unfancy(_Map()[_Block] + _Myoff() % _Block_size));
         if (--_Mysize() == 0) {
             _Myoff() = 0;
         } else {
@@ -1094,17 +1094,18 @@ public:
 private:
     template <class... _Tys>
     void _Emplace_back_internal(_Tys&&... _Vals) {
-        if ((_Myoff() + _Mysize()) % _DEQUESIZ == 0 && _Mapsize() <= (_Mysize() + _DEQUESIZ) / _DEQUESIZ) {
+        if ((_Myoff() + _Mysize()) % _Block_size == 0 && _Mapsize() <= (_Mysize() + _Block_size) / _Block_size) {
             _Growmap(1);
         }
-        _Myoff() &= _Mapsize() * _DEQUESIZ - 1;
+        _Myoff() &= _Mapsize() * _Block_size - 1;
         size_type _Newoff = _Myoff() + _Mysize();
         size_type _Block  = _Getblock(_Newoff);
         if (_Map()[_Block] == nullptr) {
-            _Map()[_Block] = _Getal().allocate(_DEQUESIZ);
+            _Map()[_Block] = _Getal().allocate(_Block_size);
         }
 
-        _Alty_traits::construct(_Getal(), _Unfancy(_Map()[_Block] + _Newoff % _DEQUESIZ), _STD forward<_Tys>(_Vals)...);
+        _Alty_traits::construct(
+            _Getal(), _Unfancy(_Map()[_Block] + _Newoff % _Block_size), _STD forward<_Tys>(_Vals)...);
 
         ++_Mysize();
     }
@@ -1123,7 +1124,7 @@ public:
             size_type _Newoff = _Myoff() + _Mysize() - 1;
             _Orphan_off(_Newoff);
             size_type _Block = _Getblock(_Newoff);
-            _Alty_traits::destroy(_Getal(), _Unfancy(_Map()[_Block] + _Newoff % _DEQUESIZ));
+            _Alty_traits::destroy(_Getal(), _Unfancy(_Map()[_Block] + _Newoff % _Block_size));
             if (--_Mysize() == 0) {
                 _Myoff() = 0;
             }
@@ -1132,7 +1133,7 @@ public:
 #else // _ITERATOR_DEBUG_LEVEL == 2
         size_type _Newoff = _Myoff() + _Mysize() - 1;
         size_type _Block  = _Getblock(_Newoff);
-        _Alty_traits::destroy(_Getal(), _Unfancy(_Map()[_Block] + _Newoff % _DEQUESIZ));
+        _Alty_traits::destroy(_Getal(), _Unfancy(_Map()[_Block] + _Newoff % _Block_size));
         if (--_Mysize() == 0) {
             _Myoff() = 0;
         }
@@ -1426,7 +1427,7 @@ private:
         size_type _Newsize = 0 < _Mapsize() ? _Mapsize() : 1;
         while (_Newsize - _Mapsize() < _Count || _Newsize < _Minimum_map_size) {
             // scale _Newsize to 2^N >= _Mapsize() + _Count
-            if (max_size() / _DEQUESIZ - _Newsize < _Newsize) {
+            if (max_size() / _Block_size - _Newsize < _Newsize) {
                 _Xlen(); // result too long
             }
 
@@ -1434,7 +1435,7 @@ private:
         }
         _Count = _Newsize - _Mapsize();
 
-        size_type _Myboff = _Myoff() / _DEQUESIZ;
+        size_type _Myboff = _Myoff() / _Block_size;
         _Mapptr _Newmap   = _Almap.allocate(_Mapsize() + _Count);
         _Mapptr _Myptr    = _Newmap + _Myboff;
 
@@ -1468,7 +1469,7 @@ private:
 
         for (size_type _Block = _Mapsize(); 0 < _Block;) { // free storage for a block and destroy pointer
             if (_Map()[--_Block]) { // free block and destroy its pointer
-                _Getal().deallocate(_Map()[_Block], _DEQUESIZ);
+                _Getal().deallocate(_Map()[_Block], _Block_size);
                 _Destroy_in_place(_Map()[_Block]);
             }
         }
