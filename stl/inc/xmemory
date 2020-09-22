@@ -257,10 +257,10 @@ _Pointer _Refancy(_Pointer _Ptr) noexcept {
 
 // FUNCTION TEMPLATE _Destroy_in_place
 template <class _NoThrowFwdIt, class _NoThrowSentinel>
-/* _CONSTEXPR20_DYNALLOC */ void _Destroy_range(_NoThrowFwdIt _First, _NoThrowSentinel _Last) noexcept;
+_CONSTEXPR20_DYNALLOC void _Destroy_range(_NoThrowFwdIt _First, _NoThrowSentinel _Last) noexcept;
 
 template <class _Ty>
-/* _CONSTEXPR20_DYNALLOC */ void _Destroy_in_place(_Ty& _Obj) noexcept {
+_CONSTEXPR20_DYNALLOC void _Destroy_in_place(_Ty& _Obj) noexcept {
 #if _HAS_IF_CONSTEXPR
     if constexpr (is_array_v<_Ty>) {
         _Destroy_range(_Obj, _Obj + extent_v<_Ty>);
@@ -964,7 +964,7 @@ template <class _Alloc>
 
 // FUNCTION TEMPLATE _Destroy_range
 template <class _NoThrowFwdIt, class _NoThrowSentinel>
-/* _CONSTEXPR20_DYNALLOC */ void _Destroy_range(_NoThrowFwdIt _First, const _NoThrowSentinel _Last) noexcept {
+_CONSTEXPR20_DYNALLOC void _Destroy_range(_NoThrowFwdIt _First, const _NoThrowSentinel _Last) noexcept {
     // note that this is an optimization for debug mode codegen; in release mode the BE removes all of this
     if _CONSTEXPR_IF (!is_trivially_destructible_v<_Iter_value_t<_NoThrowFwdIt>>) {
         for (; _First != _Last; ++_First) {

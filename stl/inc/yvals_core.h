@@ -541,6 +541,13 @@
 #define _CONSTEXPR20 inline
 #endif // ^^^ inline (not constexpr) in C++17 and earlier ^^^
 
+// Functions that became constexpr in C++20 via P0784R7
+#if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc)
+#define _CONSTEXPR20_DYNALLOC constexpr
+#else
+#define _CONSTEXPR20_DYNALLOC inline
+#endif
+
 // P0607R0 Inline Variables For The STL
 #if _HAS_CXX17
 #define _INLINE_VAR inline

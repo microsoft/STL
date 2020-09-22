@@ -284,26 +284,86 @@ _NoThrowFwdIt uninitialized_fill_n(_NoThrowFwdIt _First, const _Diff _Count_raw,
 }
 #endif // _HAS_IF_CONSTEXPR
 
+// FUNCTION TEMPLATE construct_at
 #if _HAS_CXX20
 template <class _Ty, class... _Types>
-auto construct_at(_Ty* const _Location, _Types&&... _Args) noexcept(noexcept(::new (const_cast<void*>(
-    static_cast<const volatile void*>(_Location))) _Ty(_STD forward<_Types>(_Args)...))) // strengthened
+_CONSTEXPR20_DYNALLOC auto construct_at(_Ty* const _Location, _Types&&... _Args) noexcept(
+    noexcept(::new (const_cast<void*>(static_cast<const volatile void*>(_Location)))
+            _Ty(_STD forward<_Types>(_Args)...))) // strengthened
     -> decltype(
         ::new (const_cast<void*>(static_cast<const volatile void*>(_Location))) _Ty(_STD forward<_Types>(_Args)...)) {
     return ::new (const_cast<void*>(static_cast<const volatile void*>(_Location))) _Ty(_STD forward<_Types>(_Args)...);
 }
 
+#ifdef __cpp_lib_concepts
 namespace ranges {
-    using _STD construct_at;
+    // VARIABLE ranges::construct_at
+    class _Construct_at_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <class _Ty, class... _Types>
+        _CONSTEXPR20_DYNALLOC _Ty* operator()(_Ty* _Location, _Types&&... _Args) const
+            noexcept(noexcept(::new (const_cast<void*>(static_cast<const volatile void*>(_Location)))
+                    _Ty(_STD forward<_Types>(_Args)...))) // strengthened
+            requires requires {
+                ::new (const_cast<void*>(static_cast<const volatile void*>(_Location)))
+                    _Ty(_STD forward<_Types>(_Args)...);
+            } {
+            // clang-format on
+            return ::new (const_cast<void*>(static_cast<const volatile void*>(_Location)))
+                _Ty(_STD forward<_Types>(_Args)...);
+        }
+    };
+
+    inline constexpr _Construct_at_fn construct_at{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
+#endif // __cpp_lib_concepts
 #endif // _HAS_CXX20
 
 #if _HAS_CXX17
 // FUNCTION TEMPLATE destroy_at
 template <class _Ty>
-void destroy_at(_Ty* const _Location) noexcept /* strengthened */ {
-    _Location->~_Ty();
+_CONSTEXPR20_DYNALLOC void destroy_at(_Ty* const _Location) noexcept /* strengthened */ {
+#if _HAS_CXX20
+    if constexpr (is_array_v<_Ty>) {
+        _Destroy_range(_STD begin(*_Location), _STD end(*_Location));
+    } else
+#endif // _HAS_CXX20
+    {
+        _Location->~_Ty();
+    }
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::destroy_at
+    // clang-format off
+    template <_No_throw_input_iterator _It, _No_throw_sentinel_for<_It> _Se>
+        requires destructible<iter_value_t<_It>>
+    _NODISCARD _CONSTEXPR20_DYNALLOC _It _Destroy_unchecked(_It _First, _Se _Last) noexcept;
+    // clang-format on
+
+    class _Destroy_at_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <destructible _Ty>
+        _CONSTEXPR20_DYNALLOC void operator()(_Ty* const _Location) const noexcept {
+            // clang-format on
+            if constexpr (is_array_v<_Ty>) {
+                (void) _RANGES _Destroy_unchecked(_RANGES begin(*_Location), _RANGES end(*_Location));
+            } else {
+                _Location->~_Ty();
+            }
+        }
+    };
+
+    inline constexpr _Destroy_at_fn destroy_at{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE destroy
 template <class _NoThrowFwdIt>
@@ -311,6 +371,51 @@ void destroy(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last) { // destroy
     _Adl_verify_range(_First, _Last);
     _Destroy_range(_Get_unwrapped(_First), _Get_unwrapped(_Last));
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::destroy
+    // clang-format off
+    template <_No_throw_input_iterator _It, _No_throw_sentinel_for<_It> _Se>
+        requires destructible<iter_value_t<_It>>
+    _NODISCARD _CONSTEXPR20_DYNALLOC _It _Destroy_unchecked(_It _First, const _Se _Last) noexcept {
+        // clang-format on
+        for (; _First != _Last; ++_First) {
+            _RANGES destroy_at(_STD addressof(*_First));
+        }
+
+        return _First;
+    }
+
+    class _Destroy_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <_No_throw_input_iterator _It, _No_throw_sentinel_for<_It> _Se>
+            requires destructible<iter_value_t<_It>>
+        /* _CONSTEXPR20_DYNALLOC */ _It operator()(_It _First, _Se _Last) const noexcept {
+            // clang-format on
+            _Adl_verify_range(_First, _Last);
+            _Seek_wrapped(_First,
+                _RANGES _Destroy_unchecked(_Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last))));
+            return _First;
+        }
+
+        // clang-format off
+        template <_No_throw_input_range _Rng>
+            requires destructible<range_value_t<_Rng>>
+        /* _CONSTEXPR20_DYNALLOC */ borrowed_iterator_t<_Rng> operator()(_Rng&& _Range) const noexcept {
+            // clang-format on
+            auto _First = _RANGES begin(_Range);
+            _Seek_wrapped(_First, _RANGES _Destroy_unchecked(_Get_unwrapped(_STD move(_First)), _Uend(_Range)));
+            return _First;
+        }
+    };
+
+    inline constexpr _Destroy_fn destroy{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE destroy_n
 template <class _NoThrowFwdIt, class _Diff>
@@ -334,6 +439,36 @@ _NoThrowFwdIt destroy_n(_NoThrowFwdIt _First, const _Diff _Count_raw) {
 
     return _First;
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::destroy_n
+    class _Destroy_n_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <_No_throw_input_iterator _It>
+            requires destructible<iter_value_t<_It>>
+        /* _CONSTEXPR20_DYNALLOC */ _It operator()(_It _First, const iter_difference_t<_It> _Count) const noexcept {
+            // clang-format on
+            if (_Count <= 0) {
+                return _First;
+            }
+
+            auto _UFirst = _Get_unwrapped_n(_STD move(_First));
+            for (; _Count-- > 0; ++_UFirst) {
+                _RANGES destroy_at(_STD addressof(*_UFirst));
+            }
+
+            _Seek_wrapped(_First, _STD move(_UFirst));
+            return _First;
+        }
+    };
+
+    inline constexpr _Destroy_n_fn destroy_n{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE uninitialized_default_construct
 template <class _NoThrowFwdIt>
