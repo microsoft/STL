@@ -263,7 +263,7 @@ namespace pmr {
         _NODISCARD __declspec(allocator) _Uty* new_object(_Types&&... _Args) {
             _Uty* _Ptr = this->allocate_object<_Uty>();
             try {
-                this->construct(_Ptr, forward<_Types>(_Args)...);
+                this->construct(_Ptr, _STD forward<_Types>(_Args)...);
             } catch (...) {
                 this->deallocate_object(_Ptr);
                 throw;
