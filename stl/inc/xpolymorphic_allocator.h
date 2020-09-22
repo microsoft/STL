@@ -273,7 +273,7 @@ namespace pmr {
 
         template <class _Uty>
         void delete_object(_Uty* const _Ptr) {
-            destroy_at(_Ptr);
+            _STD destroy_at(_Ptr);
             this->deallocate_object(_Ptr);
         }
 
