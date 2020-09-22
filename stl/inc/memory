@@ -304,13 +304,12 @@ namespace ranges {
 
         // clang-format off
         template <class _Ty, class... _Types>
+            requires requires(void* _Void_ptr, _Types&&... _Args) {
+                ::new (_Void_ptr) _Ty(static_cast<_Types&&>(_Args)...);
+            }
         _CONSTEXPR20_DYNALLOC _Ty* operator()(_Ty* _Location, _Types&&... _Args) const
             noexcept(noexcept(::new (const_cast<void*>(static_cast<const volatile void*>(_Location)))
-                    _Ty(_STD forward<_Types>(_Args)...))) // strengthened
-            requires requires {
-                ::new (const_cast<void*>(static_cast<const volatile void*>(_Location)))
-                    _Ty(_STD forward<_Types>(_Args)...);
-            } {
+                    _Ty(_STD forward<_Types>(_Args)...))) /* strengthened */ {
             // clang-format on
             return ::new (const_cast<void*>(static_cast<const volatile void*>(_Location)))
                 _Ty(_STD forward<_Types>(_Args)...);
@@ -349,10 +348,8 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
         template <destructible _Ty>
         _CONSTEXPR20_DYNALLOC void operator()(_Ty* const _Location) const noexcept {
-            // clang-format on
             if constexpr (is_array_v<_Ty>) {
                 (void) _RANGES _Destroy_unchecked(_RANGES begin(*_Location), _RANGES end(*_Location));
             } else {
@@ -456,9 +453,15 @@ namespace ranges {
                 return _First;
             }
 
-            auto _UFirst = _Get_unwrapped_n(_STD move(_First));
-            for (; _Count-- > 0; ++_UFirst) {
-                _RANGES destroy_at(_STD addressof(*_UFirst));
+            auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
+            if constexpr (is_trivially_destructible_v<iter_value_t<_It>>) {
+                _RANGES advance(_UFirst, _Count);
+            } else {
+                do {
+                    _RANGES destroy_at(_STD addressof(*_UFirst));
+                    ++_UFirst;
+                    --_Count;
+                } while (_Count > 0);
             }
 
             _Seek_wrapped(_First, _STD move(_UFirst));
