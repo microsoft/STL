@@ -3,9 +3,11 @@
 
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
+#include <limits>
 #include <memory>
 #include <memory_resource>
-#include <numeric>
+#include <new>
 
 using std::pmr::polymorphic_allocator;
 
