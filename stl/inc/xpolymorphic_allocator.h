@@ -263,12 +263,12 @@ namespace pmr {
         template <class _Uty, class... _Types>
         _NODISCARD __declspec(allocator) _Uty* new_object(_Types&&... _Args) {
             _Uty* _Ptr = this->allocate_object<_Uty>();
-            try {
-                this->construct(_Ptr, _STD forward<_Types>(_Args)...);
-            } catch (...) {
-                this->deallocate_object(_Ptr);
-                throw;
-            }
+            _TRY_BEGIN
+            this->construct(_Ptr, _STD forward<_Types>(_Args)...);
+            _CATCH_ALL
+            this->deallocate_object(_Ptr);
+            _RERAISE;
+            _CATCH_END
             return _Ptr;
         }
 
