@@ -35,7 +35,7 @@ void allocate_bytes_test() {
     alloc.deallocate_bytes(vp, sizeof(int) * N, alignof(int));
 
     void* vp2 = alloc.allocate_bytes(sizeof(int));
-    assert(reinterpret_cast<std::intptr_t>(vp2) % alignof(std::max_align_t) == 0);
+    assert(reinterpret_cast<std::uintptr_t>(vp2) % alignof(std::max_align_t) == 0);
     alloc.deallocate_bytes(vp2, sizeof(int));
 }
 
