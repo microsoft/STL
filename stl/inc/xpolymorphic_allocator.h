@@ -276,7 +276,6 @@ namespace pmr {
             _STD destroy_at(_Ptr);
             this->deallocate_object(_Ptr);
         }
-
 #endif // _HAS_CXX20
 
         _NODISCARD polymorphic_allocator select_on_container_copy_construction() const noexcept /* strengthened */ {
