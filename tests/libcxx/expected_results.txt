@@ -66,6 +66,7 @@ std/numerics/bit/bit.pow.two/log2p1.pass.cpp FAIL
 # test emits warning C4310: cast truncates constant value
 std/numerics/bit/bitops.rot/rotl.pass.cpp:0 FAIL
 
+
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
 # Tracked by VSO-593630 "<filesystem> Enable libcxx filesystem tests"
 # rapid-cxx-test.hpp uses pragma system_header
@@ -486,13 +487,10 @@ std/thread/futures/futures.task/futures.task.members/make_ready_at_thread_exit.p
 
 
 # *** C1XX COMPILER BUGS ***
-# Compiler bug: DevCom-409222 "Constructing rvalue reference from non-reference-related lvalue reference"
+# DevCom-409222 "Constructing rvalue reference from non-reference-related lvalue reference"
 std/utilities/meta/meta.unary/meta.unary.prop/is_constructible.pass.cpp:0 FAIL
 
-# Compiler bug: VSO-1035737 "constexpr pointers-by-reference"
-std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.index/difference_type.pass.cpp:0 FAIL
-
-# Compiler bug: DevCom-876860 "conditional operator errors" blocks readable<volatile int*>.
+# DevCom-876860 "conditional operator errors" blocks readable<volatile int*>.
 std/containers/views/span.cons/ptr_len.pass.cpp:0 FAIL
 std/containers/views/span.cons/ptr_ptr.pass.cpp:0 FAIL
 
@@ -522,44 +520,45 @@ std/language.support/support.limits/limits/numeric.limits.members/traps.pass.cpp
 
 
 # *** STL BUGS ***
-# STL bug: VSO-121977 "<locale>: the enum value of std::money_base is not correct[libcxx]"
+# GH-1112 <locale>: the enum value of std::money_base is not correct
 std/localization/locale.categories/category.monetary/locale.moneypunct/money_base.pass.cpp FAIL
 
-# STL Bug: VSO-595631 <fstream> basic_filebuf doesn't comply with setbuf(0,0) requirement in the standard
+# GH-1113 <fstream>: basic_filebuf doesn't comply with setbuf(0,0) requirement in the standard
 std/input.output/file.streams/fstreams/filebuf.virtuals/overflow.pass.cpp FAIL
 std/input.output/file.streams/fstreams/filebuf.virtuals/underflow.pass.cpp FAIL
 
-# STL bug: regex_traits::transform() isn't following the Standard.
+# GH-1004 <regex>: Error C2664 in std::regex_traits::transform
 std/re/re.traits/transform.pass.cpp FAIL
 
-# STL bug: Incorrect return types.
+# GH-1260 <complex>: pow, incorrect type conversion
 std/numerics/complex.number/cmplx.over/pow.pass.cpp FAIL
 
-# STL bug: We allow fill() and swap() for array<const T, 0>.
+# GH-1295 <array>: array<const T, 0> allows fill() and swap()
 std/containers/sequences/array/array.fill/fill.fail.cpp FAIL
 std/containers/sequences/array/array.swap/swap.fail.cpp FAIL
 
-# STL bug: VSO-207715 We reject array<NoDefault, 0>.
+# GH-942 <array>: std::array<T,0> doesn't compile - when type is not default constructible
 std/containers/sequences/array/array.cons/implicit_copy.pass.cpp FAIL
 std/containers/sequences/array/array.cons/initialization.pass.cpp FAIL
 std/containers/sequences/array/array.data/data_const.pass.cpp FAIL
 std/containers/sequences/array/array.data/data.pass.cpp FAIL
 std/containers/sequences/array/iterators.pass.cpp FAIL
 
-# Predicate count assertions - IDL2 is slightly bending the Standard's rules here.
+# GH-1006 <algorithm>: debug checks for predicates are observable
 std/algorithms/alg.sorting/alg.heap.operations/make.heap/make_heap_comp.pass.cpp FAIL
 std/algorithms/alg.sorting/alg.merge/inplace_merge_comp.pass.cpp FAIL
 std/algorithms/alg.sorting/alg.min.max/minmax_init_list_comp.pass.cpp FAIL
 
-# STL bug: We don't match strtod / strtof when doing field extraction for hexfloats, or special cases like inf
+# GH-1259 <locale>: wrong field extraction for hexfloats, or special cases like inf
 std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_double.pass.cpp FAIL
 std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_float.pass.cpp FAIL
 std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_long_double.pass.cpp FAIL
 
-# STL bug: We don't match numpunct groups correctly in do_get
+# GH-1277 <xlocnum>: We don't match numpunct groups correctly in do_get
 std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_long.pass.cpp FAIL
 
-# STL test bug: We don't have the locale names libcxx wants specialized in platform_support.hpp
+# GH-1275 <locale>: missing some locale names
+# We don't have the locale names libcxx wants specialized in platform_support.hpp
 # More bugs may be uncovered when the locale names are present.
 # move.pass.cpp can crash.
 std/input.output/iostreams.base/ios/basic.ios.members/move.pass.cpp SKIPPED
@@ -591,21 +590,25 @@ std/localization/locale.categories/category.time/locale.time.put.byname/put1.pas
 std/localization/locale.categories/facet.numpunct/locale.numpunct.byname/grouping.pass.cpp FAIL
 std/localization/locale.categories/facet.numpunct/locale.numpunct.byname/thousands_sep.pass.cpp FAIL
 
-# STL Bug? Our wbuffer_convert does not implement seek. [depr.conversions.buffer] is completely underspecified.
+# GH-1264 <locale>: wbuffer_convert does not implement seek
 std/localization/locales/locale.convenience/conversions/conversions.buffer/seekoff.pass.cpp FAIL
 
-# STL Bug: error_category's default ctor isn't constexpr. (Should be fixed in vNext.)
+# GH-1116 <system_error>: error_category's default ctor isn't constexpr.
 std/diagnostics/syserr/syserr.errcat/syserr.errcat.nonvirtuals/default_ctor.pass.cpp:1 FAIL
 
-# STL Bug: future incorrectly uses copy assignment instead of copy construction in set_value. (Should be fixed in vNext.)
+# GH-1190 <future>: incorrectly used copy assignment instead of copy construction in set_value
 std/thread/futures/futures.promise/set_value_const.pass.cpp FAIL
 
-# STL bug: GH-757 <xstring>: Too many enabled hash specializations
+# GH-757 <xstring>: Too many enabled hash specializations
 std/strings/basic.string.hash/char_type_hash.fail.cpp FAIL
 std/strings/string.view/string.view.hash/char_type.hash.fail.cpp FAIL
 
-# STL bug: GH-784 <type_traits>: aligned_storage has incorrect alignment defaults
+# GH-784 <type_traits>: aligned_storage has incorrect alignment defaults
 std/utilities/meta/meta.trans/meta.trans.other/aligned_storage.pass.cpp FAIL
+
+# GH-519 <cmath>: signbit() misses overloads for integer types
+std/depr/depr.c.headers/math_h.pass.cpp FAIL
+std/numerics/c.math/cmath.pass.cpp FAIL
 
 
 # *** CRT BUGS ***
@@ -631,10 +634,6 @@ std/thread/thread.semaphore/try_acquire.pass.cpp FAIL
 # pass lambda without noexcept to barrier
 std/thread/thread.barrier/completion.pass.cpp FAIL
 std/thread/thread.barrier/max.pass.cpp FAIL
-
-# Test bug/LEWG issue or STL bug. See GH-519 "<cmath>: signbit() misses overloads for integer types".
-std/depr/depr.c.headers/math_h.pass.cpp FAIL
-std/numerics/c.math/cmath.pass.cpp FAIL
 
 # Test bug after LWG-2899 "is_(nothrow_)move_constructible and tuple, optional and unique_ptr" was accepted.
 std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.asgn/move_convert.pass.cpp FAIL

@@ -863,6 +863,20 @@ STATIC_ASSERT(__cpp_lib_is_swappable == 201603L);
 #endif
 
 #if _HAS_CXX20
+#ifndef __cpp_lib_jthread
+#error __cpp_lib_jthread is not defined
+#elif __cpp_lib_jthread != 201911L
+#error __cpp_lib_jthread is not 201911L
+#else
+STATIC_ASSERT(__cpp_lib_jthread == 201911L);
+#endif
+#else
+#ifdef __cpp_lib_jthread
+#error __cpp_lib_jthread is defined
+#endif
+#endif
+
+#if _HAS_CXX20
 #ifndef __cpp_lib_latch
 #error __cpp_lib_latch is not defined
 #elif __cpp_lib_latch != 201907L
