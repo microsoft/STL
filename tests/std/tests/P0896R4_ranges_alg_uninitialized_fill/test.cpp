@@ -100,7 +100,7 @@ struct instantiator {
             assert(int_wrapper::constructions == 3);
             assert(int_wrapper::destructions == 3);
         }
-        
+
         { // Validate int is properly converted to bool
             bool output[] = {false, true, false};
             uninitialized_fill(output, 5);
