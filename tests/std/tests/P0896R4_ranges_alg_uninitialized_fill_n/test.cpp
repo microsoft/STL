@@ -66,18 +66,37 @@ struct instantiator {
     static void call() {
         using ranges::uninitialized_fill_n, ranges::equal, ranges::equal_to, ranges::iterator_t;
 
-        holder<int_wrapper, 3> mem;
-        Write wrapped_input{mem.as_span()};
+        {
+            holder<int_wrapper, 3> mem;
+            Write wrapped_input{mem.as_span()};
 
-        int_wrapper::clear_counts();
-        const same_as<iterator_t<Write>> auto result = uninitialized_fill_n(wrapped_input.begin(), 3, 42);
-        assert(int_wrapper::constructions == 3);
-        assert(int_wrapper::destructions == 0);
-        assert(result == wrapped_input.end());
-        assert(equal(wrapped_input, expected, equal_to{}, &int_wrapper::val));
-        not_ranges_destroy(wrapped_input);
-        assert(int_wrapper::constructions == 3);
-        assert(int_wrapper::destructions == 3);
+            int_wrapper::clear_counts();
+            const same_as<iterator_t<Write>> auto result = uninitialized_fill_n(wrapped_input.begin(), 3, 42);
+            assert(int_wrapper::constructions == 3);
+            assert(int_wrapper::destructions == 0);
+            assert(result == wrapped_input.end());
+            assert(equal(wrapped_input, expected, equal_to{}, &int_wrapper::val));
+            not_ranges_destroy(wrapped_input);
+            assert(int_wrapper::constructions == 3);
+            assert(int_wrapper::destructions == 3);
+        }
+
+        { // Validate int is properly converted to bool
+            bool output[] = {false, true, false};
+            uninitialized_fill_n(ranges::begin(output), ranges::distance(output), 5);
+            for (const bool& elem : output) {
+                assert(elem == true);
+            }
+        }
+
+        { // Validate zero-ing
+            int output[] = {13, 42, 1367};
+            auto result  = uninitialized_fill_n(ranges::begin(output), ranges::distance(output), 0);
+            for (const auto& elem : output) {
+                assert(elem == 0);
+            }
+            assert(result == ranges::end(output));
+        }
     }
 };
 

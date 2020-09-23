@@ -428,10 +428,17 @@ namespace ranges {
 
             if constexpr (_Fill_memset_is_safe<_It, _Ty>) {
                 const auto _OFinal = _RANGES next(_OFirst, _STD move(_OLast));
-                const auto _Diff   = static_cast<size_t>(_OFinal - _OFirst);
-                _Fill_memset(_OFirst, _Val, _Diff);
+                _Fill_memset(_OFirst, _Val, static_cast<size_t>(_OFinal - _OFirst));
                 return _OFinal;
             } else {
+                if constexpr (_Fill_zero_memset_is_safe<_It, _Ty>) {
+                    if (_Is_scalar_zero(_Val)) {
+                        const auto _OFinal = _RANGES next(_OFirst, _STD move(_OLast));
+                        _Fill_zero_memset(_OFirst, static_cast<size_t>(_OFinal - _OFirst));
+                        return _OFinal;
+                    }
+                }
+
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
                 while (_Backout._Last != _OLast) {
@@ -465,8 +472,7 @@ _NoThrowFwdIt uninitialized_fill_n(_NoThrowFwdIt _First, const _Diff _Count_raw,
         if constexpr (_Fill_zero_memset_is_safe<decltype(_UFirst), _Tval>) {
             if (_Is_scalar_zero(_Val)) {
                 _Fill_zero_memset(_UFirst, static_cast<size_t>(_Count));
-                _UFirst += _Count;
-                _Seek_wrapped(_First, _UFirst);
+                _Seek_wrapped(_First, _UFirst + _Count);
                 return _First;
             }
         }
@@ -536,10 +542,18 @@ namespace ranges {
             }
 
             auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
-            if constexpr (_Fill_memset_is_safe<_It, _Ty>) {
+            if constexpr (_Fill_memset_is_safe<decltype(_UFirst), _Ty>) {
                 _Fill_memset(_UFirst, _Val, static_cast<size_t>(_Count));
                 _Seek_wrapped(_First, _UFirst + _Count);
             } else {
+                if constexpr (_Fill_zero_memset_is_safe<decltype(_UFirst), _Ty>) {
+                    if (_Is_scalar_zero(_Val)) {
+                        _Fill_zero_memset(_UFirst, static_cast<size_t>(_Count));
+                        _Seek_wrapped(_First, _UFirst + _Count);
+                        return _First;
+                    }
+                }
+
                 _Uninitialized_backout _Backout{_STD move(_UFirst)};
 
                 for (; _Count > 0; --_Count) {

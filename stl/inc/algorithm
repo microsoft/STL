@@ -3945,15 +3945,13 @@ namespace ranges {
                 if constexpr (_Fill_memset_is_safe<decltype(_UFirst), _Ty>) {
                     const auto _Distance = static_cast<size_t>(_ULast - _UFirst);
                     _Fill_memset(_UFirst, _Value, _Distance);
-                    _UFirst += _Distance;
-                    _Seek_wrapped(_First, _UFirst);
+                    _Seek_wrapped(_First, _UFirst + _Distance);
                     return _First;
                 } else if constexpr (_Fill_zero_memset_is_safe<decltype(_UFirst), _Ty>) {
                     if (_Is_scalar_zero(_Value)) {
                         const auto _Distance = static_cast<size_t>(_ULast - _UFirst);
                         _Fill_zero_memset(_UFirst, _Distance);
-                        _UFirst += _Distance;
-                        _Seek_wrapped(_First, _UFirst);
+                        _Seek_wrapped(_First, _UFirst + _Distance);
                         return _First;
                     }
                 }
@@ -3992,14 +3990,12 @@ namespace ranges {
                 {
                     if constexpr (_Fill_memset_is_safe<decltype(_UFirst), _Ty>) {
                         _Fill_memset(_UFirst, _Value, static_cast<size_t>(_Count));
-                        _UFirst += _Count;
-                        _Seek_wrapped(_First, _UFirst); // no need to move since _UFirst is a pointer
+                        _Seek_wrapped(_First, _UFirst + _Count); // no need to move since _UFirst is a pointer
                         return _First;
                     } else if constexpr (_Fill_zero_memset_is_safe<decltype(_UFirst), _Ty>) {
                         if (_Is_scalar_zero(_Value)) {
                             _Fill_zero_memset(_UFirst, static_cast<size_t>(_Count));
-                            _UFirst += _Count;
-                            _Seek_wrapped(_First, _UFirst); // no need to move since _UFirst is a pointer
+                            _Seek_wrapped(_First, _UFirst + _Count); // no need to move since _UFirst is a pointer
                             return _First;
                         }
                     }

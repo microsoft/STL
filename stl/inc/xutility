@@ -4912,14 +4912,12 @@ _CONSTEXPR20 _OutIt fill_n(_OutIt _Dest, const _Diff _Count_raw, const _Ty& _Val
             {
                 if constexpr (_Fill_memset_is_safe<decltype(_UDest), _Ty>) {
                     _Fill_memset(_UDest, _Val, static_cast<size_t>(_Count));
-                    _UDest += _Count;
-                    _Seek_wrapped(_Dest, _UDest);
+                    _Seek_wrapped(_Dest, _UDest + _Count);
                     return _Dest;
                 } else if constexpr (_Fill_zero_memset_is_safe<decltype(_UDest), _Ty>) {
                     if (_Is_scalar_zero(_Val)) {
                         _Fill_zero_memset(_UDest, static_cast<size_t>(_Count));
-                        _UDest += _Count;
-                        _Seek_wrapped(_Dest, _UDest);
+                        _Seek_wrapped(_Dest, _UDest + _Count);
                         return _Dest;
                     }
                 }
