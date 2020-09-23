@@ -230,13 +230,6 @@ namespace pmr {
             _Resource->deallocate(_Ptr, _Count * sizeof(_Ty), alignof(_Ty));
         }
 
-        template <class _Uty, class... _Types>
-        void construct(_Uty* const _Ptr, _Types&&... _Args) {
-            // propagate allocator *this if uses_allocator_v<_Uty, polymorphic_allocator>
-            allocator<char> _Al{};
-            _Uses_allocator_construct(_Ptr, _Al, *this, _STD forward<_Types>(_Args)...);
-        }
-
 #if _HAS_CXX20
         _NODISCARD __declspec(allocator) void* allocate_bytes(
             const size_t _Bytes, const size_t _Align = alignof(max_align_t)) {
@@ -277,6 +270,13 @@ namespace pmr {
             deallocate_object(_Ptr);
         }
 #endif // _HAS_CXX20
+
+        template <class _Uty, class... _Types>
+        void construct(_Uty* const _Ptr, _Types&&... _Args) {
+            // propagate allocator *this if uses_allocator_v<_Uty, polymorphic_allocator>
+            allocator<char> _Al{};
+            _Uses_allocator_construct(_Ptr, _Al, *this, _STD forward<_Types>(_Args)...);
+        }
 
         _NODISCARD polymorphic_allocator select_on_container_copy_construction() const noexcept /* strengthened */ {
             // don't propagate on copy
