@@ -527,11 +527,6 @@ std/localization/locale.categories/category.monetary/locale.moneypunct/money_bas
 std/input.output/file.streams/fstreams/filebuf.virtuals/overflow.pass.cpp FAIL
 std/input.output/file.streams/fstreams/filebuf.virtuals/underflow.pass.cpp FAIL
 
-# STL bug: Our inheritance implementation is allowing this to compile when it shouldn't.
-std/numerics/complex.number/complex.special/double_long_double_implicit.compile.fail.cpp FAIL
-std/numerics/complex.number/complex.special/float_double_implicit.compile.fail.cpp FAIL
-std/numerics/complex.number/complex.special/float_long_double_implicit.compile.fail.cpp FAIL
-
 # GH-1004 <regex>: Error C2664 in std::regex_traits::transform
 std/re/re.traits/transform.pass.cpp FAIL
 
