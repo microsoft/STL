@@ -13,10 +13,6 @@
 #include <utility>
 #include <xmemory>
 
-#if _HAS_CXX20
-#include <memory>
-#endif // _HAS_CXX20
-
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)

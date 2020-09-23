@@ -28,9 +28,7 @@ void allocate_bytes_test() {
         assert(arr[i] == i);
     }
 
-    for (int i = 0; i < N; ++i) {
-        std::destroy_at(arr + i);
-    }
+    std::destroy(arr, arr + N);
 
     alloc.deallocate_bytes(vp, sizeof(int) * N, alignof(int));
 
@@ -54,9 +52,7 @@ void allocate_object_test() {
         assert(arr[i] == i);
     }
 
-    for (int i = 0; i < N; ++i) {
-        std::destroy_at(arr + i);
-    }
+    std::destroy(arr, arr + N);
 
     alloc.deallocate_object(arr, N);
 
