@@ -238,7 +238,6 @@ namespace pmr {
         }
 
 #if _HAS_CXX20
-
         _NODISCARD __declspec(allocator) void* allocate_bytes(
             const size_t _Bytes, const size_t _Align = alignof(max_align_t)) {
             return _Resource->allocate(_Bytes, _Align);
