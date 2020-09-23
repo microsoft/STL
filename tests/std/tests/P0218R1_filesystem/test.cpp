@@ -3570,7 +3570,6 @@ void test_temp_directory_path() {
 void test_create_directory() {
     const test_temp_directory tempDir("create_directory"sv);
     const path p = tempDir.directoryPath / L"__std.c++17.filesystem.create_directory"sv;
-    const path emptyPath{};
 
     // test happy
     {
@@ -3606,17 +3605,6 @@ void test_create_directory() {
             EXPECT(bad(ec));
 
             EXPECT(throws_filesystem_error([&] { create_directory(nonexistent); }, "create_directory", nonexistent));
-        }
-    }
-
-    // test empty path
-    {
-        try {
-            // create_directory should throw for empty paths
-            create_directories(emptyPath);
-            assert(false);
-        } catch (const filesystem_error&) {
-            assert(true);
         }
     }
 
@@ -3680,6 +3668,11 @@ void test_create_dirs_and_remove_all() {
     remove_all(badPath); // we ignore invalid paths as in remove
     remove_all(badPath, ec);
     EXPECT(good(ec));
+
+    // test GH-1283 create_directories() should throw for empty paths
+    EXPECT(throws_filesystem_error([] { create_directories(path{}); }, "create_directories", path{}));
+    EXPECT(create_directories(path{}, ec) == false);
+    EXPECT(bad(ec));
 
     // test that normalization isn't done first
     auto dots = r / L"a/../b/../c"sv;
