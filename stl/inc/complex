@@ -694,17 +694,6 @@ public:
     constexpr complex(const _Ty& _Realval = 0, const _Ty& _Imagval = 0)
         : _Complex_base<float, _Fcomplex_value>(_Realval, _Imagval) {}
 
-    constexpr complex(const _Fcomplex_value& _Right)
-        : _Complex_base<float, _Fcomplex_value>(_Right._Val[_RE], _Right._Val[_IM]) {}
-
-    constexpr complex(const _Dcomplex_value& _Right)
-        : _Complex_base<float, _Fcomplex_value>(
-            static_cast<float>(_Right._Val[_RE]), static_cast<float>(_Right._Val[_IM])) {}
-
-    constexpr complex(const _Lcomplex_value& _Right)
-        : _Complex_base<float, _Fcomplex_value>(
-            static_cast<float>(_Right._Val[_RE]), static_cast<float>(_Right._Val[_IM])) {}
-
     _CONSTEXPR20 complex& operator=(const _Ty& _Right) {
         _Val[_RE] = _Right;
         _Val[_IM] = 0;
@@ -797,13 +786,6 @@ public:
     constexpr complex(const _Ty& _Realval = 0, const _Ty& _Imagval = 0)
         : _Complex_base<double, _Dcomplex_value>(_Realval, _Imagval) {}
 
-    constexpr complex(const _Dcomplex_value& _Right)
-        : _Complex_base<double, _Dcomplex_value>(_Right._Val[_RE], _Right._Val[_IM]) {}
-
-    constexpr complex(const _Lcomplex_value& _Right)
-        : _Complex_base<double, _Dcomplex_value>(
-            static_cast<double>(_Right._Val[_RE]), static_cast<double>(_Right._Val[_IM])) {}
-
     _CONSTEXPR20 complex& operator=(const _Ty& _Right) {
         _Val[_RE] = _Right;
         _Val[_IM] = 0;
@@ -895,9 +877,6 @@ public:
 
     constexpr complex(const _Ty& _Realval = 0, const _Ty& _Imagval = 0)
         : _Complex_base<long double, _Lcomplex_value>(_Realval, _Imagval) {}
-
-    constexpr complex(const _Lcomplex_value& _Right)
-        : _Complex_base<long double, _Lcomplex_value>(_Right._Val[_RE], _Right._Val[_IM]) {}
 
     _CONSTEXPR20 complex& operator=(const _Ty& _Right) {
         _Val[_RE] = _Right;
