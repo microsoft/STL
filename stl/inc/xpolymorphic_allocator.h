@@ -250,22 +250,22 @@ namespace pmr {
 
         template <class _Uty>
         _NODISCARD __declspec(allocator) _Uty* allocate_object(_CRT_GUARDOVERFLOW const size_t _Count = 1) {
-            void* const _Vp = this->allocate_bytes(_Get_size_of_n<sizeof(_Uty)>(_Count), alignof(_Uty));
+            void* const _Vp = allocate_bytes(_Get_size_of_n<sizeof(_Uty)>(_Count), alignof(_Uty));
             return static_cast<_Uty*>(_Vp);
         }
 
         template <class _Uty>
         void deallocate_object(_Uty* const _Ptr, const size_t _Count = 1) noexcept /* strengthened */ {
-            this->deallocate_bytes(_Ptr, _Count * sizeof(_Uty), alignof(_Uty));
+            deallocate_bytes(_Ptr, _Count * sizeof(_Uty), alignof(_Uty));
         }
 
         template <class _Uty, class... _Types>
         _NODISCARD __declspec(allocator) _Uty* new_object(_Types&&... _Args) {
-            _Uty* _Ptr = this->allocate_object<_Uty>();
+            _Uty* _Ptr = allocate_object<_Uty>();
             _TRY_BEGIN
-            this->construct(_Ptr, _STD forward<_Types>(_Args)...);
+            construct(_Ptr, _STD forward<_Types>(_Args)...);
             _CATCH_ALL
-            this->deallocate_object(_Ptr);
+            deallocate_object(_Ptr);
             _RERAISE;
             _CATCH_END
             return _Ptr;
@@ -274,7 +274,7 @@ namespace pmr {
         template <class _Uty>
         void delete_object(_Uty* const _Ptr) noexcept /* strengthened */ {
             _STD destroy_at(_Ptr);
-            this->deallocate_object(_Ptr);
+            deallocate_object(_Ptr);
         }
 #endif // _HAS_CXX20
 
