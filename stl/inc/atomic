@@ -1365,7 +1365,7 @@ struct _Atomic_integral<_Ty, 1> : _Atomic_storage<_Ty> { // atomic integral oper
     }
 
     _TVal operator--(int) noexcept {
-        return static_cast<_Ty>(_InterlockedExchangeAdd8(_Atomic_address_as<char>(this->_Storage), -1));
+        return static_cast<_TVal>(_InterlockedExchangeAdd8(_Atomic_address_as<char>(this->_Storage), -1));
     }
 
     _TVal operator--() noexcept {
@@ -1808,6 +1808,22 @@ struct _Atomic_integral_facade<_Ty&> : _Atomic_integral<_Ty&> {
 
     _Ty fetch_sub(const _Ty _Operand, const memory_order _Order) const noexcept {
         return fetch_add(_Negate(_Operand), _Order);
+    }
+
+    _Ty operator++(int) const noexcept {
+        return const_cast<_Atomic_integral_facade*>(this)->_Base::operator++(0);
+    }
+
+    _Ty operator++() const noexcept {
+        return const_cast<_Atomic_integral_facade*>(this)->_Base::operator++();
+    }
+
+    _Ty operator--(int) const noexcept {
+        return const_cast<_Atomic_integral_facade*>(this)->_Base::operator--(0);
+    }
+
+    _Ty operator--() const noexcept {
+        return const_cast<_Atomic_integral_facade*>(this)->_Base::operator--();
     }
 
     _Ty operator+=(const _Ty _Operand) const noexcept {
