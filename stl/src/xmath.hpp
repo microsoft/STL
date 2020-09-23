@@ -3,6 +3,7 @@
 
 #ifndef _XMATH
 #define _XMATH
+#include <cerrno>
 #include <cmath>
 #include <ymath.h>
 

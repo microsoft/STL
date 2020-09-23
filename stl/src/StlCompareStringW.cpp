@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <cstring> // for wcsnlen
+
 #include <Windows.h>
 
 #include "awint.hpp"

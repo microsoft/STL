@@ -6,6 +6,7 @@
 #include <cerrno>
 #include <clocale>
 #include <cstdlib>
+#include <cstring> // for wmemcmp
 #include <xlocinfo.h> // for _Collvec, _Wcscoll
 
 #include "awint.hpp"

@@ -4,6 +4,7 @@
 // clang-format off
 // Prevent clang-format from reordering <AppModel.h> before <Windows.h>
 #include <Windows.h>
+#include <AppModel.h>   // for APPMODEL_ERROR_NO_PACKAGE
 #include "awint.hpp"
 #include <internal_shared.h>
 #include <cstdlib>
@@ -13,6 +14,7 @@
 #pragma warning(disable : 4265) // non-virtual destructor in base class
 #include <wrl/wrappers/corewrappers.h>
 #pragma warning(pop)
+#include <intrin.h> // for _InterlockedCompareExchangePointer
 #include <cstdint>
 
 #if !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)

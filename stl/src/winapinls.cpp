@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cstdlib> // for _countof
 #include <string_view>
 
 namespace {
