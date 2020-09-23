@@ -84,6 +84,20 @@ STATIC_ASSERT(__cpp_lib_as_const == 201510L);
 #endif
 
 #if _HAS_CXX20
+#ifndef __cpp_lib_assume_aligned
+#error __cpp_lib_assume_aligned is not defined
+#elif __cpp_lib_assume_aligned != 201811L
+#error __cpp_lib_assume_aligned is not 201811L
+#else
+STATIC_ASSERT(__cpp_lib_assume_aligned == 201811L);
+#endif
+#else
+#ifdef __cpp_lib_assume_aligned
+#error __cpp_lib_assume_aligned is defined
+#endif
+#endif
+
+#if _HAS_CXX20
 #ifndef __cpp_lib_atomic_flag_test
 #error __cpp_lib_atomic_flag_test is not defined
 #elif __cpp_lib_atomic_flag_test != 201907L

@@ -177,6 +177,7 @@
 // P0966R1 string::reserve() Should Not Shrink
 // P1001R2 execution::unseq
 // P1006R1 constexpr For pointer_traits<T*>::pointer_to()
+// P1007R3 assume_aligned()
 // P1023R0 constexpr For std::array Comparisons
 // P1024R3 Enhancing span Usability
 // P1032R1 Miscellaneous constexpr
@@ -1150,6 +1151,7 @@
 #define __cpp_lib_atomic_value_initialization 201911L
 
 #if _HAS_CXX20
+#define __cpp_lib_assume_aligned                201811L
 #define __cpp_lib_atomic_flag_test              201907L
 #define __cpp_lib_atomic_float                  201711L
 #define __cpp_lib_atomic_lock_free_type_aliases 201907L
