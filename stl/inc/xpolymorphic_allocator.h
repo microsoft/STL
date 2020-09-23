@@ -266,7 +266,7 @@ namespace pmr {
 
         template <class _Uty>
         void delete_object(_Uty* const _Ptr) noexcept /* strengthened */ {
-            _STD destroy_at(_Ptr);
+            _Destroy_in_place(*_Ptr);
             deallocate_object(_Ptr);
         }
 #endif // _HAS_CXX20
