@@ -254,7 +254,7 @@ namespace pmr {
 
         template <class _Uty, class... _Types>
         _NODISCARD __declspec(allocator) _Uty* new_object(_Types&&... _Args) {
-            _Uty* _Ptr = allocate_object<_Uty>();
+            _Uty* const _Ptr = allocate_object<_Uty>();
             _TRY_BEGIN
             construct(_Ptr, _STD forward<_Types>(_Args)...);
             _CATCH_ALL
