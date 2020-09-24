@@ -127,7 +127,7 @@ void _Construct_in_place(_Ty& _Obj, _Types&&... _Args) noexcept(is_nothrow_const
 }
 
 // FUNCTION TEMPLATE _Construct_in_place_for_overwrite
-template <class _Ty, class... _Types>
+template <class _Ty>
 void _Construct_in_place_for_overwrite(_Ty& _Obj) noexcept(is_nothrow_default_constructible_v<_Ty>) {
     ::new (const_cast<void*>(static_cast<const volatile void*>(_STD addressof(_Obj)))) _Ty;
 }
