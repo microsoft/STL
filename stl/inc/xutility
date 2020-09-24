@@ -4827,6 +4827,7 @@ void _Fill_zero_memset(_DestTy* const _Dest, const size_t _Count) {
 template <class _Ty>
 bool _Is_scalar_zero(const _Ty& _Val) {
     // checks if scalar type has all bits set to zero, avoids using user defined operator== for enums
+    _STL_INTERNAL_STATIC_ASSERT(is_scalar_v<_Ty>);
     return static_cast<_Unwrap_enum_t<_Ty>>(_Val) == static_cast<_Unwrap_enum_t<_Ty>>(0);
 }
 
