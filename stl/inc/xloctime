@@ -539,7 +539,7 @@ protected:
 private:
     ios_base::iostate __CLRCALL_OR_CDECL _Getint(_InIt& _First, _InIt& _Last, int _Lo, int _Hi, int& _Val,
         const _Ctype& _Ctype_fac) const { // get integer in range [_Lo, _Hi] from [_First, _Last)
-        const int _NHiDigits =
+        const int _Hi_digits =
             (_Hi <= 9 ? 1
                       : _Hi <= 99 ? 2
                                   : _Hi <= 999 ? 3 : _Hi <= 9999 ? 4 : static_cast<int>(_STD log10(_STD abs(_Hi))) + 1);
@@ -558,27 +558,26 @@ private:
             }
         }
 
-        int _NSeendigit = 0;
+        int _Digits_seen = 0;
 
         for (; _First != _Last && _Ctype_fac.narrow(*_First) == '0'; ++_First) { // strip leading zeros
-            ++_NSeendigit;
+            ++_Digits_seen;
         }
 
-        if (_NSeendigit > 0) {
-            *_Ptr++     = '0'; // replace one or more with single zero
-            _NSeendigit = 1;
+        if (_Digits_seen > 0) {
+            *_Ptr++ = '0'; // replace one or more with single zero
         }
 
         for (char* const _Pe = &_Ac[_MAX_INT_DIG - 1];
-             _First != _Last && '0' <= (_Ch = _Ctype_fac.narrow(*_First)) && _Ch <= '9' && _NSeendigit < _NHiDigits;
-             ++_NSeendigit, (void) ++_First) { // copy digits
+             _First != _Last && '0' <= (_Ch = _Ctype_fac.narrow(*_First)) && _Ch <= '9' && _Digits_seen < _Hi_digits;
+             ++_Digits_seen, (void) ++_First) { // copy digits
             *_Ptr = _Ch;
             if (_Ptr < _Pe) {
                 ++_Ptr; // drop trailing digits if already too large
             }
         }
 
-        if (_NSeendigit == 0) {
+        if (_Digits_seen == 0) {
             _Ptr = _Ac;
         }
 
