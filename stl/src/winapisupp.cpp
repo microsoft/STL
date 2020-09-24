@@ -279,11 +279,11 @@ extern "C" PTP_WORK __cdecl __crtCreateThreadpoolWork(
 }
 
 extern "C" VOID __cdecl __crtSubmitThreadpoolWork(_Inout_ PTP_WORK const pwk) {
-    return SubmitThreadpoolWork(pwk);
+    SubmitThreadpoolWork(pwk);
 }
 
 extern "C" VOID __cdecl __crtCloseThreadpoolWork(_Inout_ PTP_WORK const pwk) {
-    return CloseThreadpoolWork(pwk);
+    CloseThreadpoolWork(pwk);
 }
 
 #else // _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
