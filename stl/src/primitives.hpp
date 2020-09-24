@@ -196,8 +196,6 @@ namespace Concurrency {
         };
 
 #ifdef _STL_CONCRT_SUPPORT
-        // Not created anymore, but used to determine size.
-        // Can substitute actual size (for all possible ABIs), and remove concrt dependency
         class stl_critical_section_concrt final : public stl_critical_section_interface {
         public:
             stl_critical_section_concrt()                                   = default;
@@ -234,8 +232,6 @@ namespace Concurrency {
             critical_section m_critical_section;
         };
 
-        // Not created anymore, but used to determine size.
-        // Can substitute actual size (for all possible ABIs), and remove concrt dependency
         class stl_condition_variable_concrt final : public stl_condition_variable_interface {
         public:
             stl_condition_variable_concrt()                                     = default;
@@ -330,6 +326,22 @@ namespace Concurrency {
         const size_t stl_critical_section_max_alignment   = alignof(stl_critical_section_win7);
         const size_t stl_condition_variable_max_alignment = alignof(stl_condition_variable_win7);
 #elif defined _STL_CONCRT_SUPPORT
+
+// TRANSITION: stl_critical_section_concrt and stl_condition_variable_concrt are now unused,
+// except to determine these size/alignment values. After verifying that these static_asserts succeed,
+// we can substitute these values below, and remove the class definitions.
+#ifdef _WIN64
+        static_assert(sizeof(stl_critical_section_concrt) == 64);
+        static_assert(sizeof(stl_condition_variable_concrt) == 72);
+        static_assert(alignof(stl_critical_section_concrt) == 8);
+        static_assert(alignof(stl_condition_variable_concrt) == 8);
+#else // ^^^ 64-bit / 32-bit vvv
+        static_assert(sizeof(stl_critical_section_concrt) == 36);
+        static_assert(sizeof(stl_condition_variable_concrt) == 40);
+        static_assert(alignof(stl_critical_section_concrt) == 4);
+        static_assert(alignof(stl_condition_variable_concrt) == 4);
+#endif // ^^^ 32-bit ^^^
+
         const size_t stl_critical_section_max_size =
             __max(__max(sizeof(stl_critical_section_concrt), sizeof(stl_critical_section_vista)),
                 sizeof(stl_critical_section_win7));
