@@ -2380,7 +2380,6 @@ void _Uninitialized_value_construct_multidimensional_n(_Ty* const _Out, const si
 
 template <class _Ty>
 void _Uninitialized_default_construct_multidimensional_n(_Ty* const _Out, const size_t _Size) {
-    using _Item = remove_all_extents_t<_Ty>;
     if constexpr (!is_trivially_default_constructible_v<_Ty>) {
         if constexpr (is_array_v<_Ty>) {
             _Reverse_destroy_multidimensional_n_guard<_Ty> _Guard{_Out, 0};
