@@ -11,9 +11,7 @@
 
 using namespace std;
 
-int allocationCount = 0;
-int canCreate       = 10; // Counter to force an exception when constructing a
-                    // sufficiently large ReportAddress array
+size_t allocationCount = 0;
 
 struct ReportAddress;
 vector<ReportAddress*> ascendingAddressBuffer;
@@ -61,7 +59,6 @@ void* operator new(size_t size, align_val_t align, const nothrow_t&) noexcept {
     return result;
 }
 
-// Helper struct to check if type T is default initable without arguments.
 template <typename T, typename = void>
 struct unique_is_for_overwritable : false_type {};
 
@@ -82,6 +79,8 @@ struct alignas(32) HighlyAligned {
     uint64_t c;
     uint64_t d;
 };
+
+size_t canCreate = 10; // Counter to force an exception when constructing a sufficiently large ReportAddress array
 
 struct ReportAddress {
     ReportAddress() {
@@ -117,7 +116,7 @@ void assert_descending_destruct() {
 
 void assert_uninitialized(void* p, size_t size) {
     unsigned char* chPtr = reinterpret_cast<unsigned char*>(p);
-    for (unsigned int offset = 0; offset < size; ++offset) {
+    for (size_t offset = 0; offset < size; ++offset) {
         assert(*(chPtr + offset) == 0xEE);
     }
 }
@@ -130,7 +129,7 @@ void assert_shared_use_get(const shared_ptr<T>& sp) {
 
 template <class T, class... Args>
 shared_ptr<T> make_shared_for_overwrite_assert(Args&&... vals) {
-    int count        = allocationCount;
+    size_t count     = allocationCount;
     shared_ptr<T> sp = make_shared_for_overwrite<T>(forward<Args>(vals)...);
     assert_shared_use_get(sp);
     assert(count + 1 == allocationCount);
@@ -164,8 +163,8 @@ void test_make_unique_for_overwrite() {
     assert(p2->value == 106);
 
     auto p3 = make_unique_for_overwrite<DefaultInitializableInt[][89]>(2u);
-    for (int i = 0; i < 2; ++i) {
-        for (int j = 0; j < 89; ++j) {
+    for (size_t i = 0; i < 2; ++i) {
+        for (size_t j = 0; j < 89; ++j) {
             assert(p3[i][j].value == 106);
         }
     }
@@ -188,8 +187,8 @@ void test_make_shared_for_overwrite() {
     assert_uninitialized(addressof(p3[0]), sizeof(int) * 100u);
 
     auto p4 = make_shared_for_overwrite_assert<DefaultInitializableInt[2][8]>();
-    for (int i = 0; i < 2; ++i) {
-        for (int j = 0; j < 8; ++j) {
+    for (size_t i = 0; i < 2; ++i) {
+        for (size_t j = 0; j < 8; ++j) {
             assert(p4[i][j].value == 106);
         }
     }
@@ -199,14 +198,14 @@ void test_make_shared_for_overwrite() {
     assert_uninitialized(addressof(p5[0]), sizeof(HighlyAligned) * 10u);
 
     auto p6 = make_shared_for_overwrite_assert<DefaultInitializableInt[]>(100u);
-    for (int i = 0; i < 100; ++i) {
+    for (size_t i = 0; i < 100; ++i) {
         assert(p6[i].value == 106);
     }
 
     auto p7 = make_shared_for_overwrite_assert<DefaultInitializableInt[][8][9]>(2u);
-    for (int i = 0; i < 2; ++i) {
-        for (int j = 0; j < 8; ++j) {
-            for (int k = 0; k < 9; ++k) {
+    for (size_t i = 0; i < 2; ++i) {
+        for (size_t j = 0; j < 8; ++j) {
+            for (size_t k = 0; k < 9; ++k) {
                 assert(p7[i][j][k].value == 106);
             }
         }
@@ -240,7 +239,7 @@ void test_make_shared_for_overwrite() {
 
 template <class T, class... Args>
 shared_ptr<T> allocate_shared_for_overwrite_assert(Args&&... vals) {
-    int aCount       = allocationCount;
+    size_t aCount    = allocationCount;
     shared_ptr<T> sp = allocate_shared_for_overwrite<T>(forward<Args>(vals)...);
     assert_shared_use_get(sp);
     assert(aCount + 1 == allocationCount);
@@ -279,8 +278,8 @@ void test_allocate_shared_for_overwrite() {
     assert_uninitialized(addressof(p3[0]), sizeof(int) * 100u);
 
     auto p4 = allocate_shared_for_overwrite_assert<DefaultInitializableInt[2][8]>(a1);
-    for (int i = 0; i < 2; ++i) {
-        for (int j = 0; j < 8; ++j) {
+    for (size_t i = 0; i < 2; ++i) {
+        for (size_t j = 0; j < 8; ++j) {
             assert(p4[i][j].value == 106);
         }
     }
@@ -290,14 +289,14 @@ void test_allocate_shared_for_overwrite() {
     assert_uninitialized(addressof(p5[0]), sizeof(HighlyAligned) * 10u);
 
     auto p6 = allocate_shared_for_overwrite_assert<DefaultInitializableInt[]>(a1, 100u);
-    for (int i = 0; i < 100; ++i) {
+    for (size_t i = 0; i < 100; ++i) {
         assert(p6[i].value == 106);
     }
 
     auto p7 = allocate_shared_for_overwrite_assert<DefaultInitializableInt[][8][9]>(a1, 2u);
-    for (int i = 0; i < 2; ++i) {
-        for (int j = 0; j < 8; ++j) {
-            for (int k = 0; k < 9; ++k) {
+    for (size_t i = 0; i < 2; ++i) {
+        for (size_t j = 0; j < 8; ++j) {
+            for (size_t k = 0; k < 9; ++k) {
                 assert(p7[i][j][k].value == 106);
             }
         }
