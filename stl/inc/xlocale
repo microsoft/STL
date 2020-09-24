@@ -2611,6 +2611,9 @@ public:
     using char_type = _Elem;
 
     bool __CLR_OR_THIS_CALL is(mask _Maskval, _Elem _Ch) const { // test if element fits any mask classifications
+        if (_Maskval == blank) {
+            return _isblank_l(_Ch, _get_current_locale()) != 0;
+        }
         return (_Ctype._Table[static_cast<unsigned char>(_Ch)] & _Maskval) != 0;
     }
 
