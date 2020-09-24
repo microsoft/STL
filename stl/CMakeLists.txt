@@ -180,6 +180,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/sstream
     ${CMAKE_CURRENT_LIST_DIR}/inc/stack
     ${CMAKE_CURRENT_LIST_DIR}/inc/stdexcept
+    ${CMAKE_CURRENT_LIST_DIR}/inc/stop_token
     ${CMAKE_CURRENT_LIST_DIR}/inc/streambuf
     ${CMAKE_CURRENT_LIST_DIR}/inc/string
     ${CMAKE_CURRENT_LIST_DIR}/inc/string_view
