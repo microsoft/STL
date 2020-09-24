@@ -130,18 +130,22 @@ extern "C" BOOL __cdecl __crtIsPackagedApp() {
 
 #if _STL_WIN32_WINNT < _WIN32_WINNT_WS03
 
+// TRANSITION, ABI: preserved for binary compatibility
 extern "C" DWORD __cdecl __crtFlsAlloc(_In_opt_ PFLS_CALLBACK_FUNCTION const lpCallback) {
     return FlsAlloc(lpCallback);
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 extern "C" BOOL __cdecl __crtFlsFree(_In_ DWORD const dwFlsIndex) {
     return FlsFree(dwFlsIndex);
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 extern "C" PVOID __cdecl __crtFlsGetValue(_In_ DWORD const dwFlsIndex) {
     return FlsGetValue(dwFlsIndex);
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 extern "C" BOOL __cdecl __crtFlsSetValue(_In_ DWORD const dwFlsIndex, _In_opt_ PVOID const lpFlsData) {
     return FlsSetValue(dwFlsIndex, lpFlsData);
 }
@@ -151,142 +155,172 @@ extern "C" BOOL __cdecl __crtFlsSetValue(_In_ DWORD const dwFlsIndex, _In_opt_ P
 
 #if _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
 
+// TRANSITION, ABI: preserved for binary compatibility
 extern "C" _CRTIMP2 ULONGLONG __cdecl __crtGetTickCount64() {
     return GetTickCount64();
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 extern "C" _CRTIMP2 BOOL __cdecl __crtInitializeCriticalSectionEx(
     _Out_ LPCRITICAL_SECTION const lpCriticalSection, _In_ DWORD const dwSpinCount, _In_ DWORD const Flags) {
     return InitializeCriticalSectionEx(lpCriticalSection, dwSpinCount, Flags);
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 extern "C" _CRTIMP2 BOOL __cdecl __crtInitOnceExecuteOnce(_Inout_ PINIT_ONCE const InitOnce,
     _In_ PINIT_ONCE_FN const InitFn, _Inout_opt_ PVOID const Parameter, LPVOID* const Context) {
     return InitOnceExecuteOnce(InitOnce, InitFn, Parameter, Context);
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 extern "C" _CRTIMP2 HANDLE __cdecl __crtCreateEventExW(_In_opt_ LPSECURITY_ATTRIBUTES const lpEventAttributes,
     _In_opt_ LPCWSTR const lpName, _In_ DWORD const dwFlags, _In_ DWORD const dwDesiredAccess) {
     return CreateEventExW(lpEventAttributes, lpName, dwFlags, dwDesiredAccess);
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 extern "C" _CRTIMP2 HANDLE __cdecl __crtCreateSemaphoreExW(_In_opt_ LPSECURITY_ATTRIBUTES const lpSemaphoreAttributes,
     _In_ LONG const lInitialCount, _In_ LONG const lMaximumCount, _In_opt_ LPCWSTR const lpName,
     _Reserved_ DWORD const dwFlags, _In_ DWORD const dwDesiredAccess) {
     return CreateSemaphoreExW(lpSemaphoreAttributes, lInitialCount, lMaximumCount, lpName, dwFlags, dwDesiredAccess);
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 extern "C" _CRTIMP2 PTP_TIMER __cdecl __crtCreateThreadpoolTimer(
     _In_ PTP_TIMER_CALLBACK const pfnti, _Inout_opt_ PVOID const pv, _In_opt_ PTP_CALLBACK_ENVIRON const pcbe) {
     return CreateThreadpoolTimer(pfnti, pv, pcbe);
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 extern "C" _CRTIMP2 VOID __cdecl __crtSetThreadpoolTimer(_Inout_ PTP_TIMER const pti,
     _In_opt_ PFILETIME const pftDueTime, _In_ DWORD const msPeriod, _In_opt_ DWORD const msWindowLength) {
     SetThreadpoolTimer(pti, pftDueTime, msPeriod, msWindowLength);
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 extern "C" _CRTIMP2 VOID __cdecl __crtWaitForThreadpoolTimerCallbacks(
     _Inout_ PTP_TIMER const pti, _In_ BOOL const fCancelPendingCallbacks) {
     WaitForThreadpoolTimerCallbacks(pti, fCancelPendingCallbacks);
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 extern "C" _CRTIMP2 VOID __cdecl __crtCloseThreadpoolTimer(_Inout_ PTP_TIMER const pti) {
     CloseThreadpoolTimer(pti);
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 extern "C" _CRTIMP2 PTP_WAIT __cdecl __crtCreateThreadpoolWait(
     _In_ PTP_WAIT_CALLBACK const pfnwa, _Inout_opt_ PVOID const pv, _In_opt_ PTP_CALLBACK_ENVIRON const pcbe) {
     return CreateThreadpoolWait(pfnwa, pv, pcbe);
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 extern "C" _CRTIMP2 VOID __cdecl __crtSetThreadpoolWait(
     _Inout_ PTP_WAIT const pwa, _In_opt_ HANDLE const h, _In_opt_ PFILETIME const pftTimeout) {
     SetThreadpoolWait(pwa, h, pftTimeout);
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 extern "C" _CRTIMP2 VOID __cdecl __crtCloseThreadpoolWait(_Inout_ PTP_WAIT const pwa) {
     CloseThreadpoolWait(pwa);
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 extern "C" _CRTIMP2 VOID __cdecl __crtFlushProcessWriteBuffers() {
     FlushProcessWriteBuffers();
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 extern "C" _CRTIMP2 VOID __cdecl __crtFreeLibraryWhenCallbackReturns(
     _Inout_ PTP_CALLBACK_INSTANCE const pci, _In_ HMODULE const mod) {
     FreeLibraryWhenCallbackReturns(pci, mod);
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 extern "C" _CRTIMP2 DWORD __cdecl __crtGetCurrentProcessorNumber() {
     return GetCurrentProcessorNumber();
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 extern "C" _CRTIMP2 BOOLEAN __cdecl __crtCreateSymbolicLinkW(
     _In_ LPCWSTR const lpSymlinkFileName, _In_ LPCWSTR const lpTargetFileName, _In_ DWORD const dwFlags) {
     return CreateSymbolicLinkW(lpSymlinkFileName, lpTargetFileName, dwFlags);
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 extern "C" _CRTIMP2 _Success_(return ) BOOL __cdecl __crtGetFileInformationByHandleEx(_In_ HANDLE const hFile,
     _In_ FILE_INFO_BY_HANDLE_CLASS const FileInformationClass,
     _Out_writes_bytes_(dwBufferSize) LPVOID const lpFileInformation, _In_ DWORD const dwBufferSize) {
     return GetFileInformationByHandleEx(hFile, FileInformationClass, lpFileInformation, dwBufferSize);
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 extern "C" _CRTIMP2 BOOL __cdecl __crtSetFileInformationByHandle(_In_ HANDLE const hFile,
     _In_ FILE_INFO_BY_HANDLE_CLASS const FileInformationClass,
     _In_reads_bytes_(dwBufferSize) LPVOID const lpFileInformation, _In_ DWORD const dwBufferSize) {
     return SetFileInformationByHandle(hFile, FileInformationClass, lpFileInformation, dwBufferSize);
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 extern "C" VOID __cdecl __crtInitializeConditionVariable(_Out_ PCONDITION_VARIABLE const pCond) {
     InitializeConditionVariable(pCond);
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 extern "C" VOID __cdecl __crtWakeConditionVariable(_Inout_ PCONDITION_VARIABLE const pCond) {
     WakeConditionVariable(pCond);
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 extern "C" VOID __cdecl __crtWakeAllConditionVariable(_Inout_ PCONDITION_VARIABLE const pCond) {
     WakeAllConditionVariable(pCond);
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 extern "C" BOOL __cdecl __crtSleepConditionVariableCS(
     _Inout_ PCONDITION_VARIABLE const pCond, _Inout_ PCRITICAL_SECTION const pLock, _In_ DWORD const dwMs) {
     return SleepConditionVariableCS(pCond, pLock, dwMs);
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 extern "C" VOID __cdecl __crtInitializeSRWLock(_Out_ PSRWLOCK const pLock) {
     InitializeSRWLock(pLock);
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 extern "C" VOID __cdecl __crtAcquireSRWLockExclusive(_Inout_ PSRWLOCK const pLock) {
     AcquireSRWLockExclusive(pLock);
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 extern "C" VOID __cdecl __crtReleaseSRWLockExclusive(_Inout_ PSRWLOCK const pLock) {
     ReleaseSRWLockExclusive(pLock);
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 extern "C" BOOL __cdecl __crtSleepConditionVariableSRW(_Inout_ PCONDITION_VARIABLE const pCond,
     _Inout_ PSRWLOCK const pLock, _In_ DWORD const dwMs, _In_ ULONG const flags) {
     return SleepConditionVariableSRW(pCond, pLock, dwMs, flags);
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 extern "C" PTP_WORK __cdecl __crtCreateThreadpoolWork(
     _In_ PTP_WORK_CALLBACK const pfnwk, _Inout_opt_ PVOID const pv, _In_opt_ PTP_CALLBACK_ENVIRON const pcbe) {
     return CreateThreadpoolWork(pfnwk, pv, pcbe);
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 extern "C" VOID __cdecl __crtSubmitThreadpoolWork(_Inout_ PTP_WORK const pwk) {
     SubmitThreadpoolWork(pwk);
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 extern "C" VOID __cdecl __crtCloseThreadpoolWork(_Inout_ PTP_WORK const pwk) {
     CloseThreadpoolWork(pwk);
 }
 
 #else // _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
+// TRANSITION, ABI: preserved for binary compatibility
 extern "C" BOOL __cdecl __crtQueueUserWorkItem(_In_ LPTHREAD_START_ROUTINE, _In_opt_ PVOID, _In_ ULONG) {
     // This function doesn't have an implementation as it is only used on Windows XP
     return 0;
