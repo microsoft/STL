@@ -2957,14 +2957,14 @@ _NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(con
 template <class _Ty>
 _NODISCARD enable_if_t<!is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared_for_overwrite() {
     shared_ptr<_Ty> _Ret;
-    if constexpr (!is_array_v<_Ty>) {
-        // make a shared_ptr to non-array object
-        const auto _Rx = new _Ref_count_obj2<_Ty>(_For_overwrite_tag{});
-        _Ret._Set_ptr_rep_and_enable_shared(_STD addressof(_Rx->_Storage._Value), _Rx);
-    } else {
+    if constexpr (is_array_v<_Ty>) {
         // make a shared_ptr to a bounded array
         const auto _Rx = new _Ref_count_bounded_array<_Ty>(_For_overwrite_tag{});
         _Ret._Set_ptr_rep_and_enable_shared(_Rx->_Storage._Value, _Rx);
+    } else {
+        // make a shared_ptr to non-array object
+        const auto _Rx = new _Ref_count_obj2<_Ty>(_For_overwrite_tag{});
+        _Ret._Set_ptr_rep_and_enable_shared(_STD addressof(_Rx->_Storage._Value), _Rx);
     }
     return _Ret;
 }
@@ -3099,17 +3099,7 @@ _NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared
 template <class _Ty, class _Alloc>
 _NODISCARD enable_if_t<!is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared_for_overwrite(const _Alloc& _Al) {
     shared_ptr<_Ty> _Ret;
-    if constexpr (!is_array_v<_Ty>) {
-        // make a shared_ptr to non-array object
-        using _Refoa   = _Ref_count_obj_alloc3<remove_cv_t<_Ty>, _Alloc>;
-        using _Alblock = _Rebind_alloc_t<_Alloc, _Refoa>;
-        _Alblock _Rebound(_Al);
-        _Alloc_construct_ptr<_Alblock> _Constructor{_Rebound};
-        _Constructor._Allocate();
-        _Construct_in_place(*_Constructor._Ptr, _Al, _For_overwrite_tag{});
-        const auto _Ptr = reinterpret_cast<_Ty*>(_STD addressof(_Constructor._Ptr->_Storage._Value));
-        _Ret._Set_ptr_rep_and_enable_shared(_Ptr, _Unfancy(_Constructor._Release()));
-    } else {
+    if constexpr (is_array_v<_Ty>) {
         // make a shared_ptr to a bounded array
         using _Refc    = _Ref_count_bounded_array_alloc<remove_cv_t<_Ty>, _Alloc>;
         using _Alblock = _Rebind_alloc_t<_Alloc, _Refc>;
@@ -3118,6 +3108,16 @@ _NODISCARD enable_if_t<!is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_sha
         _Constructor._Allocate();
         ::new (static_cast<void*>(_Unfancy(_Constructor._Ptr))) _Refc(_Al, _For_overwrite_tag{});
         const auto _Ptr = static_cast<remove_extent_t<_Ty>*>(_Constructor._Ptr->_Storage._Value);
+        _Ret._Set_ptr_rep_and_enable_shared(_Ptr, _Unfancy(_Constructor._Release()));
+    } else {
+        // make a shared_ptr to non-array object
+        using _Refoa   = _Ref_count_obj_alloc3<remove_cv_t<_Ty>, _Alloc>;
+        using _Alblock = _Rebind_alloc_t<_Alloc, _Refoa>;
+        _Alblock _Rebound(_Al);
+        _Alloc_construct_ptr<_Alblock> _Constructor{_Rebound};
+        _Constructor._Allocate();
+        _Construct_in_place(*_Constructor._Ptr, _Al, _For_overwrite_tag{});
+        const auto _Ptr = reinterpret_cast<_Ty*>(_STD addressof(_Constructor._Ptr->_Storage._Value));
         _Ret._Set_ptr_rep_and_enable_shared(_Ptr, _Unfancy(_Constructor._Release()));
     }
 

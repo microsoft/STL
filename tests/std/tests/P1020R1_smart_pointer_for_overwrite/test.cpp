@@ -17,6 +17,8 @@ struct ReportAddress;
 vector<ReportAddress*> ascendingAddressBuffer;
 vector<ReportAddress*> descendingAddressBuffer;
 
+#pragma warning(disable : 28251) // Inconsistent annotation for 'new'
+
 // According to N4849, the default behavior of operator new[](size) is to return
 // operator new(size), so only the latter needs to be replaced.
 void* operator new(size_t size) {
