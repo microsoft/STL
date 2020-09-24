@@ -163,8 +163,8 @@ void test_make_unique_for_overwrite() {
     assert(p2->value == 106);
 
     auto p3 = make_unique_for_overwrite<DefaultInitializableInt[][89]>(2u);
-    for (size_t i = 0; i < 2; ++i) {
-        for (size_t j = 0; j < 89; ++j) {
+    for (ptrdiff_t i = 0; i < 2; ++i) {
+        for (ptrdiff_t j = 0; j < 89; ++j) {
             assert(p3[i][j].value == 106);
         }
     }
@@ -187,8 +187,8 @@ void test_make_shared_for_overwrite() {
     assert_uninitialized(addressof(p3[0]), sizeof(int) * 100u);
 
     auto p4 = make_shared_for_overwrite_assert<DefaultInitializableInt[2][8]>();
-    for (size_t i = 0; i < 2; ++i) {
-        for (size_t j = 0; j < 8; ++j) {
+    for (ptrdiff_t i = 0; i < 2; ++i) {
+        for (ptrdiff_t j = 0; j < 8; ++j) {
             assert(p4[i][j].value == 106);
         }
     }
@@ -198,14 +198,14 @@ void test_make_shared_for_overwrite() {
     assert_uninitialized(addressof(p5[0]), sizeof(HighlyAligned) * 10u);
 
     auto p6 = make_shared_for_overwrite_assert<DefaultInitializableInt[]>(100u);
-    for (size_t i = 0; i < 100; ++i) {
+    for (ptrdiff_t i = 0; i < 100; ++i) {
         assert(p6[i].value == 106);
     }
 
     auto p7 = make_shared_for_overwrite_assert<DefaultInitializableInt[][8][9]>(2u);
-    for (size_t i = 0; i < 2; ++i) {
-        for (size_t j = 0; j < 8; ++j) {
-            for (size_t k = 0; k < 9; ++k) {
+    for (ptrdiff_t i = 0; i < 2; ++i) {
+        for (ptrdiff_t j = 0; j < 8; ++j) {
+            for (ptrdiff_t k = 0; k < 9; ++k) {
                 assert(p7[i][j][k].value == 106);
             }
         }
@@ -278,8 +278,8 @@ void test_allocate_shared_for_overwrite() {
     assert_uninitialized(addressof(p3[0]), sizeof(int) * 100u);
 
     auto p4 = allocate_shared_for_overwrite_assert<DefaultInitializableInt[2][8]>(a1);
-    for (size_t i = 0; i < 2; ++i) {
-        for (size_t j = 0; j < 8; ++j) {
+    for (ptrdiff_t i = 0; i < 2; ++i) {
+        for (ptrdiff_t j = 0; j < 8; ++j) {
             assert(p4[i][j].value == 106);
         }
     }
@@ -289,14 +289,14 @@ void test_allocate_shared_for_overwrite() {
     assert_uninitialized(addressof(p5[0]), sizeof(HighlyAligned) * 10u);
 
     auto p6 = allocate_shared_for_overwrite_assert<DefaultInitializableInt[]>(a1, 100u);
-    for (size_t i = 0; i < 100; ++i) {
+    for (ptrdiff_t i = 0; i < 100; ++i) {
         assert(p6[i].value == 106);
     }
 
     auto p7 = allocate_shared_for_overwrite_assert<DefaultInitializableInt[][8][9]>(a1, 2u);
-    for (size_t i = 0; i < 2; ++i) {
-        for (size_t j = 0; j < 8; ++j) {
-            for (size_t k = 0; k < 9; ++k) {
+    for (ptrdiff_t i = 0; i < 2; ++i) {
+        for (ptrdiff_t j = 0; j < 8; ++j) {
+            for (ptrdiff_t k = 0; k < 9; ++k) {
                 assert(p7[i][j][k].value == 106);
             }
         }
