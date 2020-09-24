@@ -163,8 +163,8 @@ void test_make_unique_for_overwrite() {
     assert(p2->value == 106);
 
     auto p3 = make_unique_for_overwrite<DefaultInitializableInt[][89]>(2u);
-    for (ptrdiff_t i = 0; i < 2; ++i) {
-        for (ptrdiff_t j = 0; j < 89; ++j) {
+    for (size_t i = 0; i < 2; ++i) {
+        for (size_t j = 0; j < 89; ++j) {
             assert(p3[i][j].value == 106);
         }
     }
