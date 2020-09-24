@@ -395,6 +395,24 @@ void test_990695() {
         }
 
         {
+            istringstream iss("202000000000000923");
+            tm t = {};
+            const string fmt("%Y%m%d");
+            iss >> get_time(&t, fmt.c_str());
+            assert(iss.fail());
+        }
+
+        {
+            istringstream iss("202000000000000923");
+            ios_base::iostate err = Bit;
+            tm t{};
+            const string fmt("%Y%m%d");
+            use_facet<time_get<char>>(iss.getloc())
+                .get(Iter(iss.rdbuf()), Iter(), iss, err, &t, fmt.c_str(), fmt.c_str() + fmt.size());
+            assert(err == ios_base::failbit);
+        }
+
+        {
             // This case should fail
             istringstream iss("2011-D-18");
             ios_base::iostate err = Bit;
