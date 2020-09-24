@@ -244,7 +244,15 @@ extern "C" _CRTIMP2 DWORD __cdecl __crtGetCurrentProcessorNumber() {
 // TRANSITION, ABI: preserved for binary compatibility
 extern "C" _CRTIMP2 BOOLEAN __cdecl __crtCreateSymbolicLinkW(
     _In_ LPCWSTR const lpSymlinkFileName, _In_ LPCWSTR const lpTargetFileName, _In_ DWORD const dwFlags) {
+#ifdef _CRT_APP
+    (void) lpSymlinkFileName;
+    (void) lpTargetFileName;
+    (void) dwFlags;
+    SetLastError(ERROR_NOT_SUPPORTED);
+    return 0;
+#else // _CRT_APP
     return CreateSymbolicLinkW(lpSymlinkFileName, lpTargetFileName, dwFlags);
+#endif // _CRT_APP
 }
 
 // TRANSITION, ABI: preserved for binary compatibility
