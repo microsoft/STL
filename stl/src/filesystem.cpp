@@ -30,18 +30,15 @@ static_assert(__std_code_page::_Utf8 == __std_code_page{CP_UTF8});
 namespace {
 
     // MACRO __vcrt_CreateSymbolicLinkW
-#if defined(_CRT_APP)
+#ifdef _CRT_APP
     BOOLEAN __stdcall _Not_supported_CreateSymbolicLinkW(const wchar_t*, const wchar_t*, DWORD) {
         SetLastError(ERROR_NOT_SUPPORTED);
         return 0;
     }
-#endif // defined(_CRT_APP)
-
-#if defined(_CRT_APP)
 #define __vcrt_CreateSymbolicLinkW _Not_supported_CreateSymbolicLinkW
-#else // !defined(_CRT_APP)
+#else // ^^^ _CRT_APP ^^^ // vvv !_CRT_APP vvv
 #define __vcrt_CreateSymbolicLinkW CreateSymbolicLinkW
-#endif // platform detection for CreateSymbolicLinkW
+#endif // _CRT_APP
 
     // FUNCTION / MACRO __vcp_CreateFile
 #ifdef _CRT_APP
