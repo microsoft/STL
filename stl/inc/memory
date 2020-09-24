@@ -2969,7 +2969,6 @@ _NODISCARD enable_if_t<!is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared_
     return _Ret;
 }
 
-
 template <class _Ty>
 _NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared_for_overwrite(size_t _Count) {
     // make a shared_ptr to an unbounded array
