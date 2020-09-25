@@ -1818,6 +1818,9 @@ namespace chrono {
     inline constexpr month November{11};
     inline constexpr month December{12};
 
+    // Returns the number of fractional digits of _Num / _Den.
+    // Example: _Width(1, 8) would return 3 for 0.125.
+    // If it can't be represented 6 is returned.
     constexpr unsigned _Width(intmax_t _Num, const intmax_t _Den) {
         _STL_ASSERT(_Den > 0, "Denominator can't be less than 1.");
         unsigned _Result = 0;
@@ -1828,10 +1831,11 @@ namespace chrono {
     }
 
     constexpr intmax_t _Pow10(const int _Exp) {
-        if (_Exp == 0) {
-            return 1;
+        intmax_t _Result = 1;
+        for (int _Ix = 0; _Ix < _Exp; ++_Ix) {
+            _Result *= 10;
         }
-        return 10 * _Pow10(_Exp - 1);
+        return _Result;
     }
 
     template <class _Duration>
