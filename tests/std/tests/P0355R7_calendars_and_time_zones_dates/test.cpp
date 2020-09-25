@@ -241,7 +241,13 @@ constexpr void month_weekday_test() {
 
     assert(January / Monday[2] == January / Monday[2]);
 
-    if (!is_constant_evaluated()) {
+    if (is_constant_evaluated()) {
+        static_assert((January / Monday[1]).ok());
+        static_assert((January / Monday[5]).ok());
+        static_assert(!(January / Monday[6]).ok());
+        static_assert(!(January / Monday[0]).ok());
+        static_assert(!(month{0} / Monday[1]).ok());
+    } else {
         for (auto m = 0u; m <= 255u; ++m) {
             for (auto wd = 0u; wd <= 255u; ++wd) {
                 for (auto wdi = 0u; wdi <= 6u; ++wdi) {
@@ -301,7 +307,10 @@ constexpr void year_month_test() {
 
     assert(ym - years{2} == 2018y / January);
 
-    if (!is_constant_evaluated()) {
+    if (is_constant_evaluated()) {
+        static_assert((2020y / 01).ok());
+        static_assert(!(2020y / 13).ok());
+    } else {
         for (int y = y_min; y <= y_max; y++) {
             for (auto m = 0u; m <= 255u; ++m) {
                 const auto ym2 = year{y} / month{m};
@@ -384,7 +393,22 @@ constexpr void year_month_day_test() {
 
     assert(2020y / January / 1d - years{2} == 2018y / January / 1d);
 
-    if (!is_constant_evaluated()) {
+    if (is_constant_evaluated()) {
+        static_assert(!(-32768y / 01 / 01).ok());
+        static_assert(!(32768y / 01 / 01).ok());
+        static_assert((2020y / 01 / 01).ok());
+
+        static_assert(!(2020y / 00 / 01).ok());
+        static_assert(!(2020y / 13 / 01).ok());
+        static_assert((2020y / 05 / 01).ok());
+
+        static_assert(!(2020y / 02 / 30).ok());
+        static_assert(!(2019y / 02 / 29).ok());
+        static_assert(!(2020y / 01 / 00).ok());
+        static_assert(!(2020y / 01 / 32).ok());
+        static_assert((2020y / 02 / 29).ok());
+        static_assert((2020y / 07 / 31).ok());        
+    } else {
         for (int iy = y_min; iy <= y_max; ++iy) {
             for (auto um = 0u; um <= 255u; ++um) {
                 for (auto ud = 0u; ud <= 32u; ++ud) {
@@ -441,7 +465,10 @@ constexpr void year_month_day_last_test() {
 
     assert(ymdl - years{2} == 2018y / February / last);
 
-    if (!is_constant_evaluated()) {
+    if (is_constant_evaluated()) {
+        static_assert((2020y / 01 / last).ok());
+        static_assert(!(2020y / 13 / last).ok());
+    } else {
         for (int iy = y_min; iy <= y_max; ++iy) {
             for (auto m = 0u; m <= 255u; ++m) {
                 const year y{iy};
