@@ -407,7 +407,7 @@ constexpr void year_month_day_test() {
         static_assert(!(2020y / 01 / 00).ok());
         static_assert(!(2020y / 01 / 32).ok());
         static_assert((2020y / 02 / 29).ok());
-        static_assert((2020y / 07 / 31).ok());        
+        static_assert((2020y / 07 / 31).ok());
     } else {
         for (int iy = y_min; iy <= y_max; ++iy) {
             for (auto um = 0u; um <= 255u; ++um) {
