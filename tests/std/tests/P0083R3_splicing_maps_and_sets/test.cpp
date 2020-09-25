@@ -502,7 +502,7 @@ void test_set() {
     {
         using S = Set<int, std::less<>, tracked_allocator<int>>;
         allocation_guard guard{true};
-        S s{{0, 1}};
+        S s{0, 1};
         allocation_allowed = false;
 
         auto nh1 = test_extract(s, 42, 0);
@@ -611,7 +611,7 @@ void test_unordered_set() {
     {
         using S = Set<int, std::hash<int>, std::equal_to<>, tracked_allocator<int>>;
         allocation_guard guard{true};
-        S s{{0, 1}};
+        S s{0, 1};
         allocation_allowed = false;
 
         auto nh1 = test_extract(s, 42, 0);
@@ -662,11 +662,12 @@ void test_gh1309() {
     // Guard against regression of GH-1309, in which node handles were incorrectly destroying the user value with a node
     // allocator rather than a value_type allocator as the Standard requires.
 
+    allocation_guard guard{true};
+
     {
         using A  = tracked_allocator<std::pair<int const, char>>;
         using M  = std::map<int, char, std::less<>, A>;
-        using NH = decltype(std::declval<M&>().extract(42));
-        allocation_guard guard{true};
+        using NH = M::node_type;
         NH nh1;
         NH nh2;
         {
@@ -682,8 +683,7 @@ void test_gh1309() {
     {
         using A  = tracked_allocator<std::pair<int const, char>>;
         using M  = std::multimap<int, char, std::less<>, A>;
-        using NH = decltype(std::declval<M&>().extract(42));
-        allocation_guard guard{true};
+        using NH = M::node_type;
         NH nh1;
         NH nh2;
         {
@@ -698,12 +698,11 @@ void test_gh1309() {
 
     {
         using S  = std::set<int, std::less<>, tracked_allocator<int>>;
-        using NH = decltype(std::declval<S&>().extract(42));
-        allocation_guard guard{true};
+        using NH = S::node_type;
         NH nh1;
         NH nh2;
         {
-            S s{{0, 1}};
+            S s{0, 1};
             nh1 = s.extract(0);
             nh2 = s.extract(s.begin());
         }
@@ -714,12 +713,11 @@ void test_gh1309() {
 
     {
         using S  = std::multiset<int, std::less<>, tracked_allocator<int>>;
-        using NH = decltype(std::declval<S&>().extract(42));
-        allocation_guard guard{true};
+        using NH = S::node_type;
         NH nh1;
         NH nh2;
         {
-            S s{{0, 0}};
+            S s{0, 0};
             nh1 = s.extract(0);
             nh2 = s.extract(s.begin());
         }
@@ -731,8 +729,7 @@ void test_gh1309() {
     {
         using A  = tracked_allocator<std::pair<int const, char>>;
         using M  = std::unordered_map<int, char, std::hash<int>, std::equal_to<>, A>;
-        using NH = decltype(std::declval<M&>().extract(42));
-        allocation_guard guard{true};
+        using NH = M::node_type;
         NH nh1;
         NH nh2;
         {
@@ -748,8 +745,7 @@ void test_gh1309() {
     {
         using A  = tracked_allocator<std::pair<int const, char>>;
         using M  = std::unordered_multimap<int, char, std::hash<int>, std::equal_to<>, A>;
-        using NH = decltype(std::declval<M&>().extract(42));
-        allocation_guard guard{true};
+        using NH = M::node_type;
         NH nh1;
         NH nh2;
         {
@@ -764,12 +760,11 @@ void test_gh1309() {
 
     {
         using S  = std::unordered_set<int, std::hash<int>, std::equal_to<>, tracked_allocator<int>>;
-        using NH = decltype(std::declval<S&>().extract(42));
-        allocation_guard guard{true};
+        using NH = S::node_type;
         NH nh1;
         NH nh2;
         {
-            S s{{0, 1}};
+            S s{0, 1};
             nh1 = s.extract(0);
             nh2 = s.extract(s.begin());
         }
@@ -780,12 +775,11 @@ void test_gh1309() {
 
     {
         using S  = std::unordered_multiset<int, std::hash<int>, std::equal_to<>, tracked_allocator<int>>;
-        using NH = decltype(std::declval<S&>().extract(42));
-        allocation_guard guard{true};
+        using NH = S::node_type;
         NH nh1;
         NH nh2;
         {
-            S s{{0, 0}};
+            S s{0, 0};
             nh1 = s.extract(0);
             nh2 = s.extract(s.begin());
         }
