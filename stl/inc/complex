@@ -223,13 +223,21 @@ public:
     }
 
     static bool _Isinf(_Ty _Left) { // test for infinity
+#if defined(__INTEL_COMPILER) && defined(__LONG_DOUBLE_SIZE__) && __LONG_DOUBLE_SIZE__ == 80
+        return _CSTD _LDtest(&_Left) == _INFCODE;
+#else // ^^^ 80-bit long double (not supported by MSVC in general, see GH-1316) / 64-bit long double vvv
         const auto _Uint = _Bit_cast<uint64_t>(_Left);
         return (_Uint & 0x7fffffffffffffffU) == 0x7ff0000000000000U;
+#endif // ^^^ 64-bit long double ^^^
     }
 
     static _CONSTEXPR20 bool _Isnan(_Ty _Left) {
+#if defined(__INTEL_COMPILER) && defined(__LONG_DOUBLE_SIZE__) && __LONG_DOUBLE_SIZE__ == 80
+        return _CSTD _LDtest(&_Left) == _NANCODE;
+#else // ^^^ 80-bit long double (not supported by MSVC in general, see GH-1316) / 64-bit long double vvv
         const auto _Uint = _Bit_cast<uint64_t>(_Left);
         return (_Uint & 0x7fffffffffffffffU) > 0x7ff0000000000000U;
+#endif // ^^^ 64-bit long double ^^^
     }
 
     static constexpr _Ty _Nanv() { // return NaN
