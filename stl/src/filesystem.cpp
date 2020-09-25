@@ -29,127 +29,16 @@ static_assert(__std_code_page::_Utf8 == __std_code_page{CP_UTF8});
 
 namespace {
 
-#if !defined(_CRT_APP)
-    template <class _Fn_ptr>
-    [[nodiscard]] _Fn_ptr __stdcall _Runtime_dynamic_link(volatile _STD _Identity_t<_Fn_ptr>* const _Cache,
-        const wchar_t* const _Module, const char* const _Fn_name, const _Fn_ptr _Fallback) noexcept {
-        auto _Result = __crt_interlocked_read_pointer(_Cache);
-        if (_Result) {
-            return _Result;
-        }
-
-        const HMODULE _HMod = GetModuleHandleW(_Module);
-        if (_HMod) {
-            _Result = reinterpret_cast<_Fn_ptr>(GetProcAddress(_HMod, _Fn_name));
-        }
-
-        if (!_Result) {
-            _Result = _Fallback;
-        }
-
-        __crt_interlocked_exchange_pointer(_Cache, _Result);
-        return _Result;
-    }
-#endif // !defined(_CRT_APP)
-
-    // MACRO __vcrt_GetFinalPathNameByHandleW
-#if _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
-    using _GetFinalPathNameByHandleW_t = decltype(&GetFinalPathNameByHandleW);
-    _GetFinalPathNameByHandleW_t GetFinalPathNameByHandleW_p{};
-
-    unsigned long __stdcall _Not_supported_GetFinalPathNameByHandleW(HANDLE, wchar_t*, unsigned long, unsigned long) {
-        SetLastError(ERROR_NOT_SUPPORTED);
-        return 0;
-    }
-
-#define __vcrt_GetFinalPathNameByHandleW                                                               \
-    (_Runtime_dynamic_link(&GetFinalPathNameByHandleW_p, L"kernel32.dll", "GetFinalPathNameByHandleW", \
-        &_Not_supported_GetFinalPathNameByHandleW))
-#else // ^^^ _STL_WIN32_WINNT < _WIN32_WINNT_VISTA ^^^ // vvv _STL_WIN32_WINNT >= _WIN32_WINNT_VISTA vvv
-#define __vcrt_GetFinalPathNameByHandleW GetFinalPathNameByHandleW
-#endif // _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
-
-    // MACRO __vcrt_GetFileInformationByHandleEx
-#if _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
-    using _GetFileInformationByHandleEx_t = decltype(&GetFileInformationByHandleEx);
-    _GetFileInformationByHandleEx_t _GetFileInformationByHandleEx_p{};
-
-    BOOL __stdcall _Not_supported_GetFileInformationByHandleEx(
-        HANDLE, FILE_INFO_BY_HANDLE_CLASS, void*, unsigned long) {
-        SetLastError(ERROR_NOT_SUPPORTED);
-        return 0;
-    }
-
-#define __vcrt_GetFileInformationByHandleEx                                                                   \
-    (_Runtime_dynamic_link(&_GetFileInformationByHandleEx_p, L"kernel32.dll", "GetFileInformationByHandleEx", \
-        &_Not_supported_GetFileInformationByHandleEx))
-
-    struct _GetFileInfoByHandleEx {
-        const _GetFileInformationByHandleEx_t _Fn = __vcrt_GetFileInformationByHandleEx;
-
-        [[nodiscard]] bool _Supported() const noexcept {
-            return _Fn != _Not_supported_GetFileInformationByHandleEx;
-        }
-
-        [[nodiscard]] auto operator()(const HANDLE _Handle, const FILE_INFO_BY_HANDLE_CLASS _Class, void* const _Info,
-            const unsigned long _Size) const noexcept {
-            return _Fn(_Handle, _Class, _Info, _Size);
-        }
-    };
-#else // ^^^ _STL_WIN32_WINNT < _WIN32_WINNT_VISTA ^^^ // vvv _STL_WIN32_WINNT >= _WIN32_WINNT_VISTA vvv
-#define __vcrt_GetFileInformationByHandleEx GetFileInformationByHandleEx
-
-    struct _GetFileInfoByHandleEx {
-        [[nodiscard]] bool _Supported() const noexcept {
-            return true;
-        }
-
-        [[nodiscard]] auto operator()(const HANDLE _Handle, const FILE_INFO_BY_HANDLE_CLASS _Class, void* const _Info,
-            const unsigned long _Size) const noexcept {
-            return GetFileInformationByHandleEx(_Handle, _Class, _Info, _Size);
-        }
-    };
-#endif // _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
-
-    // MACRO __vcrt_SetFileInformationByHandle
-#if _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
-    using _SetFileInformationByHandle_t = decltype(&SetFileInformationByHandle);
-    _SetFileInformationByHandle_t _SetFileInformationByHandle_p{};
-
-    BOOL __stdcall _Not_supported_SetFileInformationByHandle(HANDLE, FILE_INFO_BY_HANDLE_CLASS, void*, unsigned long) {
-        SetLastError(ERROR_NOT_SUPPORTED);
-        return 0;
-    }
-
-#define __vcrt_SetFileInformationByHandle                                                                 \
-    (_Runtime_dynamic_link(&_SetFileInformationByHandle_p, L"kernel32.dll", "SetFileInformationByHandle", \
-        &_Not_supported_SetFileInformationByHandle))
-#define _STL_ALWAYS_HAS_SetFileInformationByHandle 0
-#else // ^^^ _STL_WIN32_WINNT < _WIN32_WINNT_VISTA ^^^ // vvv _STL_WIN32_WINNT >= _WIN32_WINNT_VISTA vvv
-#define __vcrt_SetFileInformationByHandle          SetFileInformationByHandle
-#define _STL_ALWAYS_HAS_SetFileInformationByHandle 1
-#endif // _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
-
     // MACRO __vcrt_CreateSymbolicLinkW
-#if defined(_CRT_APP) || _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
+#ifdef _CRT_APP
     BOOLEAN __stdcall _Not_supported_CreateSymbolicLinkW(const wchar_t*, const wchar_t*, DWORD) {
         SetLastError(ERROR_NOT_SUPPORTED);
         return 0;
     }
-#endif // defined(_CRT_APP) || _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
-
-#if defined(_CRT_APP)
 #define __vcrt_CreateSymbolicLinkW _Not_supported_CreateSymbolicLinkW
-#elif _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
-    using _CreateSymbolicLinkW_t = decltype(&CreateSymbolicLinkW);
-    _CreateSymbolicLinkW_t _CreateSymbolicLinkW_p{};
-
-#define __vcrt_CreateSymbolicLinkW \
-    (_Runtime_dynamic_link(        \
-        &_CreateSymbolicLinkW_p, L"kernel32.dll", "CreateSymbolicLinkW", &_Not_supported_CreateSymbolicLinkW))
-#else // !defined(_CRT_APP) && _STL_WIN32_WINNT >= _WIN32_WINNT_VISTA
+#else // ^^^ _CRT_APP ^^^ // vvv !_CRT_APP vvv
 #define __vcrt_CreateSymbolicLinkW CreateSymbolicLinkW
-#endif // platform detection for CreateSymbolicLinkW
+#endif // _CRT_APP
 
     // FUNCTION / MACRO __vcp_CreateFile
 #ifdef _CRT_APP
@@ -233,28 +122,13 @@ namespace {
     [[nodiscard]] __std_win_error __stdcall _Get_last_write_time_by_handle(
         const HANDLE _Handle, long long* const _Last_write_filetime) {
         // read the last write time from _Handle and store it in _Last_write_filetime
-        __std_win_error _Last_error;
         FILE_BASIC_INFO _Ex_info;
-        if (__vcrt_GetFileInformationByHandleEx(_Handle, FileBasicInfo, &_Ex_info, sizeof(_Ex_info)) != 0) {
+        if (GetFileInformationByHandleEx(_Handle, FileBasicInfo, &_Ex_info, sizeof(_Ex_info)) != 0) {
             _CSTD memcpy(_Last_write_filetime, &_Ex_info.LastWriteTime, sizeof(*_Last_write_filetime));
             return __std_win_error::_Success;
         }
 
-        _Last_error = __std_win_error{GetLastError()};
-#if _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
-        // note: "maybe Windows XP" test also excludes _CRT_APP
-        if (_Last_error == __std_win_error::_Not_supported) {
-            BY_HANDLE_FILE_INFORMATION _Legacy_info;
-            if (GetFileInformationByHandle(_Handle, &_Legacy_info) != 0) {
-                _CSTD memcpy(_Last_write_filetime, &_Legacy_info.ftLastWriteTime, sizeof(*_Last_write_filetime));
-                return __std_win_error::_Success;
-            }
-
-            _Last_error = __std_win_error{GetLastError()};
-        }
-#endif // _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
-
-        return _Last_error;
+        return __std_win_error{GetLastError()};
     }
 } // unnamed namespace
 
@@ -286,37 +160,22 @@ void __stdcall __std_fs_close_handle(const __std_fs_file_handle _Handle) noexcep
     __stdcall __std_fs_get_file_attributes_by_handle(
         _In_ const __std_fs_file_handle _Handle, _Out_ unsigned long* const _File_attributes) noexcept {
     // read the attributes from _Handle and store it in _File_attributes
-    __std_win_error _Last_error;
     const HANDLE _As_plain_handle = reinterpret_cast<HANDLE>(_Handle);
 
     FILE_BASIC_INFO _Ex_info;
-    if (__vcrt_GetFileInformationByHandleEx(_As_plain_handle, FileBasicInfo, &_Ex_info, sizeof(_Ex_info)) != 0) {
+    if (GetFileInformationByHandleEx(_As_plain_handle, FileBasicInfo, &_Ex_info, sizeof(_Ex_info)) != 0) {
         *_File_attributes = _Ex_info.FileAttributes;
         return __std_win_error::_Success;
     }
 
-    _Last_error = __std_win_error{GetLastError()};
-#if _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
-    // note: "maybe Windows XP" test also excludes _CRT_APP
-    if (_Last_error == __std_win_error::_Not_supported) {
-        BY_HANDLE_FILE_INFORMATION _Legacy_info;
-        if (GetFileInformationByHandle(_As_plain_handle, &_Legacy_info) != 0) {
-            *_File_attributes = _Legacy_info.dwFileAttributes;
-            return __std_win_error::_Success;
-        }
-
-        _Last_error = __std_win_error{GetLastError()};
-    }
-#endif // _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
-
-    return _Last_error;
+    return __std_win_error{GetLastError()};
 }
 
 [[nodiscard]] __std_ulong_and_error __stdcall __std_fs_get_final_path_name_by_handle(
     _In_ const __std_fs_file_handle _Handle, _Out_writes_z_(_Target_size) wchar_t* const _Target,
     _In_ const unsigned long _Target_size,
     _In_ const __std_fs_volume_name_kind _Flags) noexcept { // calls GetFinalPathNameByHandleW
-    const auto _Result = __vcrt_GetFinalPathNameByHandleW(
+    const auto _Result = GetFinalPathNameByHandleW(
         reinterpret_cast<HANDLE>(_Handle), _Target, _Target_size, static_cast<unsigned long>(_Flags));
     return {_Result, _Result == 0 ? __std_win_error{GetLastError()} : __std_win_error::_Success};
 }
@@ -522,8 +381,7 @@ _Success_(return == __std_win_error::_Success) __std_win_error
 
     static_assert(sizeof(FILE_ID_INFO) == sizeof(__std_fs_file_id));
     static_assert(alignof(FILE_ID_INFO) == alignof(__std_fs_file_id));
-    if (__vcrt_GetFileInformationByHandleEx(
-            _Handle._Get(), FileIdInfo, reinterpret_cast<FILE_ID_INFO*>(_Id), sizeof(*_Id))
+    if (GetFileInformationByHandleEx(_Handle._Get(), FileIdInfo, reinterpret_cast<FILE_ID_INFO*>(_Id), sizeof(*_Id))
         != 0) {
         // if we could get FILE_ID_INFO, use that as the source of truth
         return __std_win_error::_Success;
@@ -632,29 +490,6 @@ _Success_(return == __std_win_error::_Success) __std_win_error
 [[nodiscard]] __std_fs_remove_result __stdcall __std_fs_remove(_In_z_ const wchar_t* const _Target) noexcept {
     // remove _Target without caring whether _Target is a file or directory
     __std_win_error _Last_error;
-#if _STL_ALWAYS_HAS_SetFileInformationByHandle
-#define _SetFileInformationByHandle SetFileInformationByHandle
-#else // ^^^ _STL_ALWAYS_HAS_SetFileInformationByHandle ^^^ // vvv !_STL_ALWAYS_HAS_SetFileInformationByHandle vvv
-    const auto _SetFileInformationByHandle = __vcrt_SetFileInformationByHandle;
-    if (_SetFileInformationByHandle == _Not_supported_SetFileInformationByHandle) { // Windows XP
-        if (RemoveDirectoryW(_Target)) {
-            // try RemoveDirectoryW first because it gives a specific error code for "the input was a file";
-            // DeleteFileW on a directory input returns ERROR_ACCESS_DENIED
-            return {true, __std_win_error::_Success};
-        }
-
-        _Last_error = __std_win_error{GetLastError()};
-        if (_Last_error == __std_win_error::_Directory_name_is_invalid) { // input may have been a file
-            if (DeleteFileW(_Target)) {
-                return {true, __std_win_error::_Success};
-            }
-
-            _Last_error = __std_win_error{GetLastError()};
-        }
-
-        return {false, _Translate_not_found_to_success(__std_win_error{GetLastError()})};
-    }
-#endif // _STL_ALWAYS_HAS_SetFileInformationByHandle
 
     constexpr auto _Flags = __std_fs_file_flags::_Backup_semantics | __std_fs_file_flags::_Open_reparse_point;
     const _STD _Fs_file _Handle(_Target, __std_access_rights::_Delete, _Flags, &_Last_error);
@@ -678,7 +513,7 @@ _Success_(return == __std_win_error::_Success) __std_win_error
     // FileDispositionInfoEx isn't documented in MSDN at the time of this writing, but is present
     // in minwinbase.h as of at least 10.0.16299.0
     constexpr auto _FileDispositionInfoExClass = static_cast<FILE_INFO_BY_HANDLE_CLASS>(21);
-    if (_SetFileInformationByHandle(_Handle._Get(), _FileDispositionInfoExClass, &_Info_ex, sizeof(_Info_ex))) {
+    if (SetFileInformationByHandle(_Handle._Get(), _FileDispositionInfoExClass, &_Info_ex, sizeof(_Info_ex))) {
         return {true, __std_win_error::_Success};
     }
 
@@ -693,7 +528,7 @@ _Success_(return == __std_win_error::_Success) __std_win_error
     }
 
     FILE_DISPOSITION_INFO _Info{/* .Delete= */ TRUE};
-    if (_SetFileInformationByHandle(_Handle._Get(), FileDispositionInfo, &_Info, sizeof(_Info))) {
+    if (SetFileInformationByHandle(_Handle._Get(), FileDispositionInfo, &_Info, sizeof(_Info))) {
         return {true, __std_win_error::_Success};
     }
 
@@ -721,7 +556,7 @@ _Success_(return == __std_win_error::_Success) __std_win_error
         }
 
         FILE_BASIC_INFO _Basic_info;
-        if (!__vcrt_GetFileInformationByHandleEx(_Handle._Get(), FileBasicInfo, &_Basic_info, sizeof(_Basic_info))) {
+        if (!GetFileInformationByHandleEx(_Handle._Get(), FileBasicInfo, &_Basic_info, sizeof(_Basic_info))) {
             return __std_win_error{GetLastError()};
         }
 
@@ -730,7 +565,7 @@ _Success_(return == __std_win_error::_Success) __std_win_error
         }
 
         _Basic_info.FileAttributes ^= FILE_ATTRIBUTE_READONLY;
-        if (__vcrt_SetFileInformationByHandle(_Handle._Get(), FileBasicInfo, &_Basic_info, sizeof(_Basic_info))) {
+        if (SetFileInformationByHandle(_Handle._Get(), FileBasicInfo, &_Basic_info, sizeof(_Basic_info))) {
             return __std_win_error::_Success;
         }
 
@@ -816,7 +651,7 @@ _Success_(return == __std_win_error::_Success) __std_win_error
                 return __std_win_error::_Not_enough_memory;
             }
 
-            _Actual_length = __vcrt_GetFinalPathNameByHandleW(_Handle._Get(), _Buf.get() + _Dos_to_nt_prefix_count,
+            _Actual_length = GetFinalPathNameByHandleW(_Handle._Get(), _Buf.get() + _Dos_to_nt_prefix_count,
                 _Buf_count - _Dos_to_nt_prefix_count, FILE_NAME_NORMALIZED | VOLUME_NAME_NT);
             if (_Actual_length == 0) {
                 return __std_win_error{GetLastError()};
@@ -977,83 +812,43 @@ struct alignas(long long) _Aligned_file_attrs {
         return _Last_error;
     }
 
-    _GetFileInfoByHandleEx _Get_info_fn;
-    if (_Get_info_fn._Supported()) {
-        constexpr auto _Basic_info_data = __std_fs_stats_flags::_Attributes | __std_fs_stats_flags::_Last_write_time;
-        constexpr auto _Attribute_tag_info_data =
-            __std_fs_stats_flags::_Attributes | __std_fs_stats_flags::_Reparse_tag;
-        constexpr auto _Standard_info_data = __std_fs_stats_flags::_File_size | __std_fs_stats_flags::_Link_count;
+    constexpr auto _Basic_info_data = __std_fs_stats_flags::_Attributes | __std_fs_stats_flags::_Last_write_time;
+    constexpr auto _Attribute_tag_info_data = __std_fs_stats_flags::_Attributes | __std_fs_stats_flags::_Reparse_tag;
+    constexpr auto _Standard_info_data      = __std_fs_stats_flags::_File_size | __std_fs_stats_flags::_Link_count;
 
-        if (_Flags != _Attribute_tag_info_data && _Bitmask_includes(_Flags, _Basic_info_data)) {
-            // we have data FileBasicInfo can fill in, that FileAttributeTagInfo wouldn't exactly fill in
-            FILE_BASIC_INFO _Info;
-            if (!_Get_info_fn(_Handle._Get(), FileBasicInfo, &_Info, sizeof(_Info))) {
-                return __std_win_error{GetLastError()};
-            }
-
-            _Stats->_Attributes      = __std_fs_file_attr{_Info.FileAttributes};
-            _Stats->_Last_write_time = _Info.LastWriteTime.QuadPart;
-            _Flags &= ~_Basic_info_data;
+    if (_Flags != _Attribute_tag_info_data && _Bitmask_includes(_Flags, _Basic_info_data)) {
+        // we have data FileBasicInfo can fill in, that FileAttributeTagInfo wouldn't exactly fill in
+        FILE_BASIC_INFO _Info;
+        if (!GetFileInformationByHandleEx(_Handle._Get(), FileBasicInfo, &_Info, sizeof(_Info))) {
+            return __std_win_error{GetLastError()};
         }
 
-        if (_Bitmask_includes(_Flags, _Attribute_tag_info_data)) {
-            FILE_ATTRIBUTE_TAG_INFO _Info;
-            if (!_Get_info_fn(_Handle._Get(), FileAttributeTagInfo, &_Info, sizeof(_Info))) {
-                return __std_win_error{GetLastError()};
-            }
+        _Stats->_Attributes      = __std_fs_file_attr{_Info.FileAttributes};
+        _Stats->_Last_write_time = _Info.LastWriteTime.QuadPart;
+        _Flags &= ~_Basic_info_data;
+    }
 
-            _Stats->_Attributes        = __std_fs_file_attr{_Info.FileAttributes};
-            _Stats->_Reparse_point_tag = __std_fs_reparse_tag{_Info.ReparseTag};
-            _Flags &= ~_Attribute_tag_info_data;
+    if (_Bitmask_includes(_Flags, _Attribute_tag_info_data)) {
+        FILE_ATTRIBUTE_TAG_INFO _Info;
+        if (!GetFileInformationByHandleEx(_Handle._Get(), FileAttributeTagInfo, &_Info, sizeof(_Info))) {
+            return __std_win_error{GetLastError()};
         }
 
-        if (_Bitmask_includes(_Flags, _Standard_info_data)) {
-            FILE_STANDARD_INFO _Info;
-            if (!_Get_info_fn(_Handle._Get(), FileStandardInfo, &_Info, sizeof(_Info))) {
-                return __std_win_error{GetLastError()};
-            }
-
-            _Stats->_File_size  = _Info.EndOfFile.QuadPart;
-            _Stats->_Link_count = _Info.NumberOfLinks;
-            _Flags &= ~_Standard_info_data;
-        }
+        _Stats->_Attributes        = __std_fs_file_attr{_Info.FileAttributes};
+        _Stats->_Reparse_point_tag = __std_fs_reparse_tag{_Info.ReparseTag};
+        _Flags &= ~_Attribute_tag_info_data;
     }
 
-#if _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
-    if (_Flags == __std_fs_stats_flags::_None) { // no more data to get, report success
-        return __std_win_error::_Success;
-    }
-
-    BY_HANDLE_FILE_INFORMATION _Legacy_info;
-    if (!GetFileInformationByHandle(_Handle._Get(), &_Legacy_info)) {
-        return __std_win_error{GetLastError()};
-    }
-
-    _Stats->_Attributes = __std_fs_file_attr{_Legacy_info.dwFileAttributes};
-    _CSTD memcpy(&_Stats->_Last_write_time, &_Legacy_info.ftLastWriteTime, sizeof(_Stats->_Last_write_time));
-    _Stats->_File_size =
-        (static_cast<unsigned long long>(_Legacy_info.nFileIndexHigh) << 32) + _Legacy_info.nFileIndexLow;
-    _Stats->_Link_count = _Legacy_info.nNumberOfLinks;
-    _Flags &= ~(__std_fs_stats_flags::_Attributes | __std_fs_stats_flags::_Last_write_time
-                | __std_fs_stats_flags::_File_size | __std_fs_stats_flags::_Link_count);
-
-    if (_Bitmask_includes(_Flags, __std_fs_stats_flags::_Reparse_tag)) {
-        if (_Bitmask_includes(_Stats->_Attributes, __std_fs_file_attr::_Reparse_point)) {
-            WIN32_FIND_DATAW _Data;
-            const auto _Dir = FindFirstFileExW(_Path, FindExInfoStandard, &_Data, FindExSearchNameMatch, nullptr, 0);
-            if (_Dir == INVALID_HANDLE_VALUE) {
-                return __std_win_error{GetLastError()};
-            }
-
-            FindClose(_Dir);
-            _Stats->_Reparse_point_tag = __std_fs_reparse_tag{_Data.dwReserved0};
-        } else {
-            _Stats->_Reparse_point_tag = __std_fs_reparse_tag::_None;
+    if (_Bitmask_includes(_Flags, _Standard_info_data)) {
+        FILE_STANDARD_INFO _Info;
+        if (!GetFileInformationByHandleEx(_Handle._Get(), FileStandardInfo, &_Info, sizeof(_Info))) {
+            return __std_win_error{GetLastError()};
         }
 
-        _Flags &= ~__std_fs_stats_flags::_Reparse_tag;
+        _Stats->_File_size  = _Info.EndOfFile.QuadPart;
+        _Stats->_Link_count = _Info.NumberOfLinks;
+        _Flags &= ~_Standard_info_data;
     }
-#endif // _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
 
     if (_Flags == __std_fs_stats_flags::_None) { // no more data to get, report success
         return __std_win_error::_Success;

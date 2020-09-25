@@ -22,7 +22,7 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Execute_once(
         return static_cast<BOOL>(_Callback(_InitOnce, _Parameter, nullptr));
     };
 
-    return __crtInitOnceExecuteOnce(
+    return InitOnceExecuteOnce(
         reinterpret_cast<PINIT_ONCE>(&_Flag._Opaque), _Xfg_trampoline, _Pv, reinterpret_cast<PVOID*>(_Callback));
 }
 
