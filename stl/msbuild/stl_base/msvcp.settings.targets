@@ -10,8 +10,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
         <DependsOnVCStartupLib>$(MsvcpFlavor)</DependsOnVCStartupLib>
         <DependsOnConcRT Condition="'$(MsvcpFlavor)' == 'kernel32'">true</DependsOnConcRT>
-        <DependsOnDelayImpLib Condition="'$(DependsOnConcRT)' == 'true'">true</DependsOnDelayImpLib>
-
 
         <TargetAppFamily Condition="'$(MsvcpFlavor)' == 'app'">true</TargetAppFamily>
         <TargetCoreSystem Condition="'$(MsvcpFlavor)' == 'onecore'">true</TargetCoreSystem>
@@ -49,7 +47,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <LinkAdditionalOptions Condition="'$(BLD_REL_NO_DBINFO)' != '1'">-debugtype:cv,fixup $(LinkAdditionalOptions)</LinkAdditionalOptions>
         <LinkAdditionalOptions Condition="$(DebugBuild) != 'true'">-opt:ref,icf=3 $(LinkAdditionalOptions)</LinkAdditionalOptions>
         <LinkAdditionalOptions Condition="$(DebugBuild) == 'true'">-opt:ref,noicf $(LinkAdditionalOptions)</LinkAdditionalOptions>
-        <LinkAdditionalOptions Condition="'$(DependsOnConcRT)' == 'true'">/delayload:concrt$(VCToolsProdVerSuffix)$(BuildSuffix)$(MsvcpFlavorSuffix).dll $(LinkAdditionalOptions)</LinkAdditionalOptions>
         <LinkAdditionalOptions>-nodefaultlib:libcpmt$(BuildSuffix).lib $(LinkAdditionalOptions)</LinkAdditionalOptions>
         <LinkAdditionalOptions>-nodefaultlib:$(LibOutputFile) $(LinkAdditionalOptions)</LinkAdditionalOptions>
 
@@ -73,14 +70,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <TargetLib Include="$(CrtLibPath)\msvcrt$(BuildSuffix)$(ClrLibSuffix).lib"/>
         <TargetLib Include="$(CrtLibPath)\vcruntime$(BuildSuffix)$(ClrLibSuffix).lib"/>
         <TargetLib Include="$(UniversalCRTLib)"/>
-    </ItemGroup>
-
-    <ItemGroup Condition="'$(DependsOnConcRT)' == 'true'">
-        <ProjectReference Condition="'$(CanSkipProjectReferenceForTargetLib)' != 'true' and ('$(CrtBuildModel)'=='md' or '$(CrtBuildModel)'=='xmd')" Include="$(VCToolsRootPath)\crt\concrt\build\$(CrtBuildModel)\concrt_$(MsvcpFlavor)\concrt.nativeproj"/>
-        <ProjectReference Condition="'$(CanSkipProjectReferenceForTargetLib)' != 'true' and ('$(CrtBuildModel)'!='md' and '$(CrtBuildModel)'!='xmd')" Include="$(VCToolsRootPath)\crt\concrt\build\$(CrtBuildModel)\libconcrt_$(MsvcpFlavor)\concrt.nativeproj"/>
-        <ProjectReference Include="$(VCToolsRootPath)\delayimp\delayimp.nativeproj" />
-        <TargetLib Include="$(CrtLibPath)\concrt$(BuildSuffix)$(ClrLibSuffix).lib"/>
-        <TargetLib Include="$(CrtLibPath)\delayimp.lib"/>
     </ItemGroup>
 
     <!-- Copy the output dll and pdb to various destinations -->
