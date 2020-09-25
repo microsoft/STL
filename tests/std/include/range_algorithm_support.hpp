@@ -110,7 +110,16 @@ namespace test {
 
         using _Prevent_inheriting_unwrap = sentinel;
 
-        using unwrap = sentinel<Element, IsWrapped::no>;
+        using unwrap    = sentinel<Element, IsWrapped::no>;
+        using Constinel = sentinel<const Element, Wrapped>;
+
+        constexpr operator Constinel() && noexcept {
+            return Constinel{exchange(ptr_, nullptr)};
+        }
+
+        constexpr operator Constinel() const& noexcept {
+            return Constinel{ptr_};
+        }
 
         // clang-format off
         [[nodiscard]] constexpr auto _Unwrapped() const noexcept requires (to_bool(Wrapped)) {
@@ -340,6 +349,22 @@ namespace test {
         static constexpr bool at_least = derived_from<Category, T>;
 
         using ReferenceType = conditional_t<to_bool(Proxy), proxy_reference<Category, Element>, Element&>;
+
+        struct post_increment_proxy {
+            Element* ptr_;
+
+            const post_increment_proxy& operator*() const noexcept {
+                return *this;
+            }
+
+            template <class T>
+                requires std::indirectly_writable<Element*, T>
+            const post_increment_proxy& operator=(T&& t) const noexcept {
+                *ptr_ = std::forward<T>(t);
+                return *this;
+            }
+        };
+
     public:
         using Consterator = iterator<Category, const Element, Diff, Eq, Proxy, Wrapped>;
 
@@ -385,10 +410,11 @@ namespace test {
             ++ptr_;
             return *this;
         }
-        constexpr iterator operator++(int) & noexcept {
-            auto tmp = *this;
+
+        constexpr post_increment_proxy operator++(int) & noexcept requires std::is_same_v<Category, output> {
+            post_increment_proxy result{ptr_};
             ++ptr_;
-            return tmp;
+            return result;
         }
 
         auto operator--() & {
@@ -398,7 +424,7 @@ namespace test {
             STATIC_ASSERT(always_false<Category>);
         }
 
-        friend void iter_swap(iterator const&, iterator const&) {
+        friend void iter_swap(iterator const&, iterator const&) requires std::is_same_v<Category, output> {
             STATIC_ASSERT(always_false<Category>);
         }
 
@@ -424,8 +450,16 @@ namespace test {
             return std::move(*i.ptr_);
         }
 
-        constexpr friend void iter_swap(iterator const& x, iterator const& y) requires at_least<input> {
-            ranges::iter_swap(x.ptr_, y.ptr_);
+        constexpr friend void iter_swap(iterator const& x, iterator const& y)
+            noexcept(std::is_nothrow_swappable_v<Element>) requires at_least<input> && std::swappable<Element> {
+            ranges::swap(*x.ptr_, *y.ptr_);
+        }
+
+        // forward iterator operations:
+        constexpr iterator operator++(int) & noexcept requires at_least<fwd> {
+            auto tmp = *this;
+            ++ptr_;
+            return tmp;
         }
 
         // sentinel operations (implied by forward iterator):
@@ -468,9 +502,14 @@ namespace test {
         [[nodiscard]] constexpr boolish operator>=(iterator const& that) const noexcept requires at_least<random> {
             return !(*this < that);
         }
+        [[nodiscard]] constexpr auto operator<=>(iterator const& that) const noexcept requires at_least<random> {
+            return ptr_ <=> that.ptr_;
+        }
+
         [[nodiscard]] constexpr ReferenceType operator[](ptrdiff_t const n) const& noexcept requires at_least<random> {
             return ReferenceType{ptr_[n]};
         }
+
         constexpr iterator& operator+=(ptrdiff_t const n) & noexcept requires at_least<random> {
             ptr_ += n;
             return *this;
@@ -479,6 +518,7 @@ namespace test {
             ptr_ -= n;
             return *this;
         }
+
         [[nodiscard]] constexpr iterator operator+(ptrdiff_t const n) const noexcept requires at_least<random> {
             return iterator{ptr_ + n};
         }
@@ -486,6 +526,7 @@ namespace test {
             requires at_least<random> {
             return i + n;
         }
+
         [[nodiscard]] constexpr iterator operator-(ptrdiff_t const n) const noexcept requires at_least<random> {
             return iterator{ptr_ - n};
         }
