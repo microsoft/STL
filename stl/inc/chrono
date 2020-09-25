@@ -1822,9 +1822,9 @@ namespace chrono {
     inline constexpr month December{12};
 
     // Returns the number of fractional digits of _Num / _Den.
-    // Example: _Width(1, 8) would return 3 for 0.125.
+    // Example: _Fractional_width(1, 8) would return 3 for 0.125.
     // If it can't be represented 6 is returned.
-    constexpr unsigned _Width(intmax_t _Num, const intmax_t _Den) {
+    constexpr unsigned _Fractional_width(intmax_t _Num, const intmax_t _Den) {
         _STL_ASSERT(_Den > 0, "Denominator can't be less than 1.");
         unsigned _Result = 0;
         // doing everything in for > using a while loop
@@ -1844,7 +1844,7 @@ namespace chrono {
     template <class _Duration>
     requires _Is_duration_v<_Duration> class hh_mm_ss {
     public:
-        static constexpr unsigned fractional_width = _Width(_Duration::period::num, _Duration::period::den);
+        static constexpr unsigned fractional_width = _Fractional_width(_Duration::period::num, _Duration::period::den);
         using precision =
             duration<common_type_t<typename _Duration::rep, seconds::rep>, ratio<1, _Pow10(fractional_width)>>;
 
