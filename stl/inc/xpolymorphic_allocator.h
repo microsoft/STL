@@ -140,7 +140,7 @@ namespace pmr {
     // CLASS memory_resource
     class __declspec(novtable) memory_resource {
     public:
-        virtual ~memory_resource() noexcept {}
+        virtual ~memory_resource() noexcept = default;
 
         _NODISCARD __declspec(allocator) void* allocate(_CRT_GUARDOVERFLOW const size_t _Bytes,
             const size_t _Align = alignof(max_align_t)) { // allocate _Bytes bytes of memory with alignment _Align
