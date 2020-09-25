@@ -1239,6 +1239,7 @@ compiler option, or define _ALLOW_RTCc_IN_STL to acknowledge that you have recei
 #define _STD_BEGIN namespace std {
 #define _STD_END   }
 #define _STD       ::std::
+#define _CHRONO    ::std::chrono::
 #define _RANGES    ::std::ranges::
 
 // We use the stdext (standard extension) namespace to contain extensions that are not part of the current standard

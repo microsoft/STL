@@ -109,7 +109,7 @@ namespace chrono {
                 int> = 0>
         constexpr duration(const duration<_Rep2, _Period2>& _Dur) noexcept(
             is_arithmetic_v<_Rep>&& is_arithmetic_v<_Rep2>) // strengthened
-            : _MyRep(chrono::duration_cast<duration>(_Dur).count()) {}
+            : _MyRep(_CHRONO duration_cast<duration>(_Dur).count()) {}
 
         _NODISCARD constexpr _Rep count() const noexcept(is_arithmetic_v<_Rep>) /* strengthened */ {
             return _MyRep;
@@ -262,16 +262,16 @@ struct _Lcm : integral_constant<intmax_t, (_Ax / _Gcd<_Ax, _Bx>::value) * _Bx> {
 
 // STRUCT TEMPLATE common_type SPECIALIZATIONS
 template <class _Rep1, class _Period1, class _Rep2, class _Period2>
-struct common_type<chrono::duration<_Rep1, _Period1>,
-    chrono::duration<_Rep2, _Period2>> { // common type of two durations
-    using type = chrono::duration<common_type_t<_Rep1, _Rep2>,
+struct common_type<_CHRONO duration<_Rep1, _Period1>,
+    _CHRONO duration<_Rep2, _Period2>> { // common type of two durations
+    using type = _CHRONO duration<common_type_t<_Rep1, _Rep2>,
         ratio<_Gcd<_Period1::num, _Period2::num>::value, _Lcm<_Period1::den, _Period2::den>::value>>;
 };
 
 template <class _Clock, class _Duration1, class _Duration2>
-struct common_type<chrono::time_point<_Clock, _Duration1>,
-    chrono::time_point<_Clock, _Duration2>> { // common type of two time points
-    using type = chrono::time_point<_Clock, common_type_t<_Duration1, _Duration2>>;
+struct common_type<_CHRONO time_point<_Clock, _Duration1>,
+    _CHRONO time_point<_Clock, _Duration2>> { // common type of two time points
+    using type = _CHRONO time_point<_Clock, common_type_t<_Duration1, _Duration2>>;
 };
 
 namespace chrono {
@@ -442,7 +442,7 @@ namespace chrono {
         is_arithmetic_v<_Rep>&& is_arithmetic_v<typename _To::rep>) /* strengthened */ {
         // convert duration to another duration; round towards negative infinity
         // i.e. the greatest integral result such that the result <= _Dur
-        const _To _Casted{chrono::duration_cast<_To>(_Dur)};
+        const _To _Casted{_CHRONO duration_cast<_To>(_Dur)};
         if (_Casted > _Dur) {
             return _To{_Casted.count() - static_cast<typename _To::rep>(1)};
         }
@@ -456,7 +456,7 @@ namespace chrono {
         is_arithmetic_v<_Rep>&& is_arithmetic_v<typename _To::rep>) /* strengthened */ {
         // convert duration to another duration; round towards positive infinity
         // i.e. the least integral result such that _Dur <= the result
-        const _To _Casted{chrono::duration_cast<_To>(_Dur)};
+        const _To _Casted{_CHRONO duration_cast<_To>(_Dur)};
         if (_Casted < _Dur) {
             return _To{_Casted.count() + static_cast<typename _To::rep>(1)};
         }
@@ -476,7 +476,7 @@ namespace chrono {
     _NODISCARD constexpr _To round(const duration<_Rep, _Period>& _Dur) noexcept(
         is_arithmetic_v<_Rep>&& is_arithmetic_v<typename _To::rep>) /* strengthened */ {
         // convert duration to another duration, round to nearest, ties to even
-        const _To _Floored{chrono::floor<_To>(_Dur)};
+        const _To _Floored{_CHRONO floor<_To>(_Dur)};
         const _To _Ceiled{_Floored + _To{1}};
         const auto _Floor_adjustment = _Dur - _Floored;
         const auto _Ceil_adjustment  = _Ceiled - _Dur;
@@ -589,7 +589,7 @@ namespace chrono {
     _NODISCARD constexpr time_point<_Clock, _To> time_point_cast(const time_point<_Clock, _Duration>& _Time) noexcept(
         is_arithmetic_v<typename _Duration::rep>&& is_arithmetic_v<typename _To::rep>) /* strengthened */ {
         // change the duration type of a time_point; truncate
-        return time_point<_Clock, _To>(chrono::duration_cast<_To>(_Time.time_since_epoch()));
+        return time_point<_Clock, _To>(_CHRONO duration_cast<_To>(_Time.time_since_epoch()));
     }
 
     // FUNCTION TEMPLATE floor (for time_point instances)
@@ -597,7 +597,7 @@ namespace chrono {
     _NODISCARD constexpr time_point<_Clock, _To> floor(const time_point<_Clock, _Duration>& _Time) noexcept(
         is_arithmetic_v<typename _Duration::rep>&& is_arithmetic_v<typename _To::rep>) /* strengthened */ {
         // change the duration type of a time_point; round towards negative infinity
-        return time_point<_Clock, _To>(chrono::floor<_To>(_Time.time_since_epoch()));
+        return time_point<_Clock, _To>(_CHRONO floor<_To>(_Time.time_since_epoch()));
     }
 
     // FUNCTION TEMPLATE ceil (for time_point instances)
@@ -605,7 +605,7 @@ namespace chrono {
     _NODISCARD constexpr time_point<_Clock, _To> ceil(const time_point<_Clock, _Duration>& _Time) noexcept(
         is_arithmetic_v<typename _Duration::rep>&& is_arithmetic_v<typename _To::rep>) /* strengthened */ {
         // change the duration type of a time_point; round towards positive infinity
-        return time_point<_Clock, _To>(chrono::ceil<_To>(_Time.time_since_epoch()));
+        return time_point<_Clock, _To>(_CHRONO ceil<_To>(_Time.time_since_epoch()));
     }
 
     // FUNCTION TEMPLATE round (for time_point instances)
@@ -614,7 +614,7 @@ namespace chrono {
     _NODISCARD constexpr time_point<_Clock, _To> round(const time_point<_Clock, _Duration>& _Time) noexcept(
         is_arithmetic_v<typename _Duration::rep>&& is_arithmetic_v<typename _To::rep>) /* strengthened */ {
         // change the duration type of a time_point; round to nearest, ties to even
-        return time_point<_Clock, _To>(chrono::round<_To>(_Time.time_since_epoch()));
+        return time_point<_Clock, _To>(_CHRONO round<_To>(_Time.time_since_epoch()));
     }
 
     // CLOCKS
@@ -623,8 +623,8 @@ namespace chrono {
 
         using period = ratio_multiply<ratio<_XTIME_NSECS_PER_TICK, 1>, nano>;
 
-        using duration                  = chrono::duration<rep, period>;
-        using time_point                = chrono::time_point<system_clock>;
+        using duration                  = _CHRONO duration<rep, period>;
+        using time_point                = _CHRONO time_point<system_clock>;
         static constexpr bool is_steady = false;
 
         _NODISCARD static time_point now() noexcept { // get current time
@@ -652,7 +652,7 @@ namespace chrono {
         using rep                       = long long;
         using period                    = nano;
         using duration                  = nanoseconds;
-        using time_point                = chrono::time_point<steady_clock>;
+        using time_point                = _CHRONO time_point<steady_clock>;
         static constexpr bool is_steady = true;
 
         _NODISCARD static time_point now() noexcept { // get current time
@@ -996,7 +996,7 @@ namespace chrono {
         }
 
     private:
-        chrono::weekday _Weekday;
+        _CHRONO weekday _Weekday;
         unsigned char _Index;
     };
 
@@ -1016,7 +1016,7 @@ namespace chrono {
         }
 
     private:
-        chrono::weekday _Weekday;
+        _CHRONO weekday _Weekday;
     };
 
     constexpr bool operator==(const weekday_last& _Left, const weekday_last& _Right) noexcept {
@@ -1060,8 +1060,8 @@ namespace chrono {
         }
 
     private:
-        chrono::month _Month;
-        chrono::day _Day;
+        _CHRONO month _Month;
+        _CHRONO day _Day;
     };
 
     constexpr bool operator==(const month_day& _Left, const month_day& _Right) noexcept {
@@ -1088,7 +1088,7 @@ namespace chrono {
         }
 
     private:
-        chrono::month _Month;
+        _CHRONO month _Month;
     };
 
     constexpr bool operator==(const month_day_last& _Left, const month_day_last& _Right) noexcept {
@@ -1115,8 +1115,8 @@ namespace chrono {
         }
 
     private:
-        chrono::month _Month;
-        chrono::weekday_indexed _Weekday_index;
+        _CHRONO month _Month;
+        _CHRONO weekday_indexed _Weekday_index;
     };
 
     constexpr bool operator==(const month_weekday& _Left, const month_weekday& _Right) noexcept {
@@ -1139,8 +1139,8 @@ namespace chrono {
         }
 
     private:
-        chrono::month _Month;
-        chrono::weekday_last _Weekday_last;
+        _CHRONO month _Month;
+        _CHRONO weekday_last _Weekday_last;
     };
 
     constexpr bool operator==(const month_weekday_last& _Left, const month_weekday_last& _Right) noexcept {
@@ -1169,8 +1169,8 @@ namespace chrono {
         }
 
     private:
-        chrono::year _Year;
-        chrono::month _Month;
+        _CHRONO year _Year;
+        _CHRONO month _Month;
     };
 
     constexpr bool operator==(const year_month& _Left, const year_month& _Right) noexcept {
@@ -1278,13 +1278,13 @@ namespace chrono {
                 return false;
             }
 
-            return _Day >= chrono::day{1} && _Day <= _Last_day(_Year, _Month);
+            return _Day >= _CHRONO day{1} && _Day <= _Last_day(_Year, _Month);
         }
 
     private:
-        chrono::year _Year;
-        chrono::month _Month;
-        chrono::day _Day;
+        _CHRONO year _Year;
+        _CHRONO month _Month;
+        _CHRONO day _Day;
 
         // courtesy of Howard Hinnant
         // https://howardhinnant.github.io/date_algorithms.html#civil_from_days
@@ -1302,14 +1302,14 @@ namespace chrono {
             const unsigned _Mp    = (5 * _Day_of_year + 2) / 153; // // [0, 11]
             const unsigned _Day   = _Day_of_year - (153 * _Mp + 2) / 5 + 1; // // [1, 31]
             const unsigned _Month = _Mp + (_Mp < 10 ? 3 : static_cast<unsigned>(-9)); // [1, 12]
-            return year_month_day(chrono::year{_Year + (_Month <= 2)}, chrono::month{_Month}, chrono::day{_Day});
+            return year_month_day(_CHRONO year{_Year + (_Month <= 2)}, _CHRONO month{_Month}, _CHRONO day{_Day});
         }
         // courtesy of Howard Hinnant
         // https://howardhinnant.github.io/date_algorithms.html#days_from_civil
         _NODISCARD constexpr days _Days_from_civil() const noexcept {
             static_assert(numeric_limits<unsigned>::digits >= 18);
             static_assert(numeric_limits<int>::digits >= 20);
-            const int _Ye               = static_cast<int>(_Year) - (_Month <= chrono::month{2});
+            const int _Ye               = static_cast<int>(_Year) - (_Month <= _CHRONO month{2});
             const unsigned _Mo          = static_cast<unsigned>(_Month);
             const int _Era              = (_Ye >= 0 ? _Ye : _Ye - 399) / 400;
             const unsigned _Year_of_era = static_cast<unsigned>(_Ye - _Era * 400); // [0, 399]
@@ -1414,8 +1414,8 @@ namespace chrono {
         }
 
     private:
-        chrono::year _Year;
-        chrono::month_day_last _Month_day_last;
+        _CHRONO year _Year;
+        _CHRONO month_day_last _Month_day_last;
     };
 
     constexpr bool operator==(const year_month_day_last& _Left, const year_month_day_last& _Right) noexcept {
@@ -1506,7 +1506,7 @@ namespace chrono {
 
         _NODISCARD constexpr operator sys_days() const noexcept {
             const sys_days _First = year_month_day{_Year, _Month, day{1}};
-            const days _Diff      = weekday() - chrono::weekday{_First};
+            const days _Diff      = weekday() - _CHRONO weekday{_First};
             const days _Days      = _Diff + days{(static_cast<int>(index()) - 1) * 7};
             return _First + _Days;
         }
@@ -1525,19 +1525,19 @@ namespace chrono {
             // As index() == 5 is not always valid
             // Determine the date of the first weekday and check if + days{28} is <= last day of the month
             const sys_days _First_of_month = year_month_day{_Year, _Month, day{1}};
-            const days _First_weekday      = weekday() - chrono::weekday{_First_of_month} + days{1};
+            const days _First_weekday      = weekday() - _CHRONO weekday{_First_of_month} + days{1};
             const days _Last               = _First_weekday + days{28};
             return static_cast<unsigned>(_Last.count()) <= static_cast<unsigned>(_Last_day(_Year, _Month));
         }
 
     private:
-        chrono::year _Year;
-        chrono::month _Month;
-        chrono::weekday_indexed _Weekday_index;
+        _CHRONO year _Year;
+        _CHRONO month _Month;
+        _CHRONO weekday_indexed _Weekday_index;
 
         _NODISCARD static constexpr year_month_weekday _Ymwd_from_days(days _Dp) noexcept {
-            const chrono::year_month_day _Ymd = sys_days{_Dp};
-            const chrono::weekday _Wd         = sys_days{_Dp};
+            const _CHRONO year_month_day _Ymd = sys_days{_Dp};
+            const _CHRONO weekday _Wd         = sys_days{_Dp};
             const auto _Idx                   = ((static_cast<unsigned>(_Ymd.day()) - 1) / 7) + 1;
             return {_Ymd.year(), _Ymd.month(), _Wd[_Idx]};
         }
@@ -1614,7 +1614,7 @@ namespace chrono {
 
         _NODISCARD constexpr operator sys_days() const noexcept {
             const sys_days _Last = year_month_day_last{_Year, month_day_last{_Month}};
-            const auto _Diff     = chrono::weekday{_Last} - weekday();
+            const auto _Diff     = _CHRONO weekday{_Last} - weekday();
             return _Last - _Diff;
         }
         _NODISCARD constexpr explicit operator local_days() const noexcept {
@@ -1625,9 +1625,9 @@ namespace chrono {
         }
 
     private:
-        chrono::year _Year;
-        chrono::month _Month;
-        chrono::weekday_last _Weekday_last;
+        _CHRONO year _Year;
+        _CHRONO month _Month;
+        _CHRONO weekday_last _Weekday_last;
     };
 
     constexpr bool operator==(const year_month_weekday_last& _Left, const year_month_weekday_last& _Right) noexcept {
@@ -1852,14 +1852,14 @@ namespace chrono {
         // clang-format off
         constexpr explicit hh_mm_ss(_Duration _Dur)
             : _Is_neg{_Dur < _Duration::zero()},
-              _Hours{chrono::duration_cast<chrono::hours>(chrono::abs(_Dur))},
-              _Mins{chrono::duration_cast<chrono::minutes>(chrono::abs(_Dur) - hours())},
-              _Secs{chrono::duration_cast<chrono::seconds>(chrono::abs(_Dur) - hours() - minutes())} {
+              _Hours{_CHRONO duration_cast<_CHRONO hours>(_CHRONO abs(_Dur))},
+              _Mins{_CHRONO duration_cast<_CHRONO minutes>(_CHRONO abs(_Dur) - hours())},
+              _Secs{_CHRONO duration_cast<_CHRONO seconds>(_CHRONO abs(_Dur) - hours() - minutes())} {
             // clang-format on
             if constexpr (treat_as_floating_point_v<typename precision::rep>) {
-                _Sub_secs = chrono::abs(_Dur) - hours() - minutes() - seconds();
+                _Sub_secs = _CHRONO abs(_Dur) - hours() - minutes() - seconds();
             } else {
-                _Sub_secs = chrono::duration_cast<precision>(chrono::abs(_Dur) - hours() - minutes() - seconds());
+                _Sub_secs = _CHRONO duration_cast<precision>(_CHRONO abs(_Dur) - hours() - minutes() - seconds());
             }
         }
 
@@ -1889,9 +1889,9 @@ namespace chrono {
 
     private:
         bool _Is_neg;
-        chrono::hours _Hours;
-        chrono::minutes _Mins;
-        chrono::seconds _Secs;
+        _CHRONO hours _Hours;
+        _CHRONO minutes _Mins;
+        _CHRONO seconds _Secs;
         precision _Sub_secs;
     };
 
@@ -1916,23 +1916,23 @@ namespace chrono {
 
 // HELPERS
 template <class _Rep, class _Period>
-_NODISCARD bool _To_xtime_10_day_clamped(_CSTD xtime& _Xt, const chrono::duration<_Rep, _Period>& _Rel_time) noexcept(
+_NODISCARD bool _To_xtime_10_day_clamped(_CSTD xtime& _Xt, const _CHRONO duration<_Rep, _Period>& _Rel_time) noexcept(
     is_arithmetic_v<_Rep>) {
     // Convert duration to xtime, maximum 10 days from now, returns whether clamping occurred.
     // If clamped, timeouts will be transformed into spurious non-timeout wakes, due to ABI restrictions where
     // the other side of the DLL boundary overflows int32_t milliseconds.
     // Every function calling this one is TRANSITION, ABI
-    constexpr chrono::nanoseconds _Ten_days{chrono::hours{24} * 10};
-    constexpr chrono::duration<double> _Ten_days_d{_Ten_days};
-    chrono::nanoseconds _Tx0 = chrono::system_clock::now().time_since_epoch();
+    constexpr _CHRONO nanoseconds _Ten_days{_CHRONO hours{24} * 10};
+    constexpr _CHRONO duration<double> _Ten_days_d{_Ten_days};
+    _CHRONO nanoseconds _Tx0 = _CHRONO system_clock::now().time_since_epoch();
     const bool _Clamped      = _Ten_days_d < _Rel_time;
     if (_Clamped) {
         _Tx0 += _Ten_days;
     } else {
-        _Tx0 += chrono::duration_cast<chrono::nanoseconds>(_Rel_time);
+        _Tx0 += _CHRONO duration_cast<_CHRONO nanoseconds>(_Rel_time);
     }
 
-    const auto _Whole_seconds = chrono::duration_cast<chrono::seconds>(_Tx0);
+    const auto _Whole_seconds = _CHRONO duration_cast<_CHRONO seconds>(_Tx0);
     _Xt.sec                   = _Whole_seconds.count();
     _Tx0 -= _Whole_seconds;
     _Xt.nsec = static_cast<long>(_Tx0.count());
@@ -1942,64 +1942,64 @@ _NODISCARD bool _To_xtime_10_day_clamped(_CSTD xtime& _Xt, const chrono::duratio
 // duration LITERALS
 inline namespace literals {
     inline namespace chrono_literals {
-        _NODISCARD constexpr chrono::hours operator"" h(unsigned long long _Val) noexcept /* strengthened */ {
-            return chrono::hours(_Val);
+        _NODISCARD constexpr _CHRONO hours operator"" h(unsigned long long _Val) noexcept /* strengthened */ {
+            return _CHRONO hours(_Val);
         }
 
-        _NODISCARD constexpr chrono::duration<double, ratio<3600>> operator"" h(long double _Val) noexcept
+        _NODISCARD constexpr _CHRONO duration<double, ratio<3600>> operator"" h(long double _Val) noexcept
         /* strengthened */ {
-            return chrono::duration<double, ratio<3600>>(_Val);
+            return _CHRONO duration<double, ratio<3600>>(_Val);
         }
 
-        _NODISCARD constexpr chrono::minutes(operator"" min)(unsigned long long _Val) noexcept /* strengthened */ {
-            return chrono::minutes(_Val);
+        _NODISCARD constexpr _CHRONO minutes(operator"" min)(unsigned long long _Val) noexcept /* strengthened */ {
+            return _CHRONO minutes(_Val);
         }
 
-        _NODISCARD constexpr chrono::duration<double, ratio<60>>(operator"" min)(long double _Val) noexcept
+        _NODISCARD constexpr _CHRONO duration<double, ratio<60>>(operator"" min)(long double _Val) noexcept
         /* strengthened */ {
-            return chrono::duration<double, ratio<60>>(_Val);
+            return _CHRONO duration<double, ratio<60>>(_Val);
         }
 
-        _NODISCARD constexpr chrono::seconds operator"" s(unsigned long long _Val) noexcept /* strengthened */ {
-            return chrono::seconds(_Val);
+        _NODISCARD constexpr _CHRONO seconds operator"" s(unsigned long long _Val) noexcept /* strengthened */ {
+            return _CHRONO seconds(_Val);
         }
 
-        _NODISCARD constexpr chrono::duration<double> operator"" s(long double _Val) noexcept /* strengthened */ {
-            return chrono::duration<double>(_Val);
+        _NODISCARD constexpr _CHRONO duration<double> operator"" s(long double _Val) noexcept /* strengthened */ {
+            return _CHRONO duration<double>(_Val);
         }
 
-        _NODISCARD constexpr chrono::milliseconds operator"" ms(unsigned long long _Val) noexcept /* strengthened */ {
-            return chrono::milliseconds(_Val);
+        _NODISCARD constexpr _CHRONO milliseconds operator"" ms(unsigned long long _Val) noexcept /* strengthened */ {
+            return _CHRONO milliseconds(_Val);
         }
 
-        _NODISCARD constexpr chrono::duration<double, milli> operator"" ms(long double _Val) noexcept
+        _NODISCARD constexpr _CHRONO duration<double, milli> operator"" ms(long double _Val) noexcept
         /* strengthened */ {
-            return chrono::duration<double, milli>(_Val);
+            return _CHRONO duration<double, milli>(_Val);
         }
 
-        _NODISCARD constexpr chrono::microseconds operator"" us(unsigned long long _Val) noexcept /* strengthened */ {
-            return chrono::microseconds(_Val);
+        _NODISCARD constexpr _CHRONO microseconds operator"" us(unsigned long long _Val) noexcept /* strengthened */ {
+            return _CHRONO microseconds(_Val);
         }
 
-        _NODISCARD constexpr chrono::duration<double, micro> operator"" us(long double _Val) noexcept
+        _NODISCARD constexpr _CHRONO duration<double, micro> operator"" us(long double _Val) noexcept
         /* strengthened */ {
-            return chrono::duration<double, micro>(_Val);
+            return _CHRONO duration<double, micro>(_Val);
         }
 
-        _NODISCARD constexpr chrono::nanoseconds operator"" ns(unsigned long long _Val) noexcept /* strengthened */ {
-            return chrono::nanoseconds(_Val);
+        _NODISCARD constexpr _CHRONO nanoseconds operator"" ns(unsigned long long _Val) noexcept /* strengthened */ {
+            return _CHRONO nanoseconds(_Val);
         }
 
-        _NODISCARD constexpr chrono::duration<double, nano> operator"" ns(long double _Val) noexcept
+        _NODISCARD constexpr _CHRONO duration<double, nano> operator"" ns(long double _Val) noexcept
         /* strengthened */ {
-            return chrono::duration<double, nano>(_Val);
+            return _CHRONO duration<double, nano>(_Val);
         }
 #if _HAS_CXX20
-        _NODISCARD constexpr chrono::day operator"" d(unsigned long long _Day) noexcept {
-            return chrono::day{static_cast<unsigned>(_Day)};
+        _NODISCARD constexpr _CHRONO day operator"" d(unsigned long long _Day) noexcept {
+            return _CHRONO day{static_cast<unsigned>(_Day)};
         }
-        _NODISCARD constexpr chrono::year operator"" y(unsigned long long _Year) noexcept {
-            return chrono::year{static_cast<int>(_Year)};
+        _NODISCARD constexpr _CHRONO year operator"" y(unsigned long long _Year) noexcept {
+            return _CHRONO year{static_cast<int>(_Year)};
         }
 #endif // _HAS_CXX20
     } // namespace chrono_literals
