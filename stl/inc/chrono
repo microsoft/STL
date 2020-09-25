@@ -1291,30 +1291,33 @@ namespace chrono {
         _NODISCARD static constexpr year_month_day _Civil_from_days(int _Tp) noexcept {
             static_assert(numeric_limits<unsigned>::digits >= 18);
             static_assert(numeric_limits<int>::digits >= 20);
-            const int _Zx       = _Tp + 719468;
-            const int _Era      = (_Zx >= 0 ? _Zx : _Zx - 146096) / 146097;
-            const unsigned _Doe = static_cast<unsigned>(_Zx - _Era * 146097);
-            const unsigned _Yoe = (_Doe - _Doe / 1460 + _Doe / 36524 - _Doe / 146096) / 365;
-            const int _Ye       = static_cast<int>(_Yoe) + _Era * 400;
-            const unsigned _Doy = _Doe - (365 * _Yoe + _Yoe / 4 - _Yoe / 100);
-            const unsigned _Mp  = (5 * _Doy + 2) / 153;
-            const unsigned _Da  = _Doy - (153 * _Mp + 2) / 5 + 1;
-            const unsigned _Mo  = _Mp + (_Mp < 10 ? 3 : static_cast<unsigned>(-9));
-            return year_month_day(chrono::year{_Ye + (_Mo <= 2)}, chrono::month{_Mo}, chrono::day{_Da});
+            const int _Zx              = _Tp + 719468; // Shift epoch to 0000-03-01
+            const int _Era             = (_Zx >= 0 ? _Zx : _Zx - 146096) / 146097;
+            const unsigned _Day_of_era = static_cast<unsigned>(_Zx - _Era * 146097); // // [0, 146096]
+            const unsigned _Year_of_era =
+                (_Day_of_era - _Day_of_era / 1460 + _Day_of_era / 36524 - _Day_of_era / 146096) / 365; // [0, 399]
+            const int _Year = static_cast<int>(_Year_of_era) + _Era * 400; // Where March is the first month
+            const unsigned _Day_of_year =
+                _Day_of_era - (365 * _Year_of_era + _Year_of_era / 4 - _Year_of_era / 100); // // [0, 365]
+            const unsigned _Mp    = (5 * _Day_of_year + 2) / 153; // // [0, 11]
+            const unsigned _Day   = _Day_of_year - (153 * _Mp + 2) / 5 + 1; // // [1, 31]
+            const unsigned _Month = _Mp + (_Mp < 10 ? 3 : static_cast<unsigned>(-9)); // [1, 12]
+            return year_month_day(chrono::year{_Year + (_Month <= 2)}, chrono::month{_Month}, chrono::day{_Day});
         }
         // courtesy of Howard Hinnant
         // https://howardhinnant.github.io/date_algorithms.html#days_from_civil
         _NODISCARD constexpr days _Days_from_civil() const noexcept {
             static_assert(numeric_limits<unsigned>::digits >= 18);
             static_assert(numeric_limits<int>::digits >= 20);
-            const int _Ye       = static_cast<int>(_Year) - (_Month <= chrono::month{2});
-            const unsigned _Mo  = static_cast<unsigned>(_Month);
-            const int _Era      = (_Ye >= 0 ? _Ye : _Ye - 399) / 400;
-            const unsigned _Yoe = static_cast<unsigned>(_Ye - _Era * 400);
-            const unsigned _Doy =
-                (153 * (_Mo + (_Mo > 2 ? static_cast<unsigned>(-3) : 9)) + 2) / 5 + static_cast<unsigned>(_Day) - 1;
-            const unsigned _Doe = _Yoe * 365 + _Yoe / 4 - _Yoe / 100 + _Doy;
-            return days{_Era * 146097 + static_cast<int>(_Doe) - 719468};
+            const int _Ye               = static_cast<int>(_Year) - (_Month <= chrono::month{2});
+            const unsigned _Mo          = static_cast<unsigned>(_Month);
+            const int _Era              = (_Ye >= 0 ? _Ye : _Ye - 399) / 400;
+            const unsigned _Year_of_era = static_cast<unsigned>(_Ye - _Era * 400); // [0, 399]
+            const unsigned _Day_of_year = (153 * (_Mo + (_Mo > 2 ? static_cast<unsigned>(-3) : 9)) + 2) / 5
+                                          + static_cast<unsigned>(_Day) - 1; // [0, 365]
+            const unsigned _Day_of_era =
+                _Year_of_era * 365 + _Year_of_era / 4 - _Year_of_era / 100 + _Day_of_year; // [0, 146096]
+            return days{_Era * 146097 + static_cast<int>(_Day_of_era) - 719468};
         }
     };
 
