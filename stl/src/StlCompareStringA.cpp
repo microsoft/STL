@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <crtdbg.h>
+#include <cstring> // for __strncnt
 #include <internal_shared.h>
-#include <string.h>
 
 #include <Windows.h>
 

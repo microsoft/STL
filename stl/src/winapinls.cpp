@@ -6,8 +6,8 @@
 #if _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
 
 #include <algorithm>
-#include <ctype.h>
-#include <stdlib.h>
+#include <cctype>
+#include <cstdlib> // for _countof
 #include <string_view>
 
 namespace {

@@ -5,7 +5,7 @@
 
 #include <yvals.h> // include first, for native shared
 
-#include <stdlib.h>
+#include <cstdlib>
 
 #include "xmath.hpp"
 #include "xxcctype.hpp"

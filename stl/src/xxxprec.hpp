@@ -3,7 +3,7 @@
 
 // common extended precision functionality
 
-#include <string.h>
+#include <cstring>
 
 #include "xmath.hpp"
 

@@ -7,9 +7,9 @@
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
 
 #include <crtdefs.h>
+#include <cstdlib> // for __max
 #include <exception>
 #include <new>
-#include <stdlib.h>
 
 #include <Windows.h>
 

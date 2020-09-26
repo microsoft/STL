@@ -3,11 +3,11 @@
 
 // thread functions
 
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <process.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <xthreads.h>
 
 #include <Windows.h>

@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <condition_variable>
+#include <cstddef> // for size_t
 #include <mutex>
 #include <ppltaskscheduler.h>
-#include <stddef.h>
 
 #include <Windows.h>
 
