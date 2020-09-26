@@ -32,7 +32,7 @@ template <class Rng, class Expected>
 constexpr bool test_one(Rng&& rng, Expected&& expected) {
     using ranges::common_view, ranges::bidirectional_range, ranges::common_range, ranges::contiguous_range,
         ranges::enable_borrowed_range, ranges::forward_range, ranges::input_range, ranges::iterator_t, ranges::prev,
-        ranges::random_access_range, ranges::range, ranges::range_reference_t, ranges::sized_range,
+        ranges::random_access_range, ranges::range, ranges::range_reference_t, ranges::size, ranges::sized_range,
         ranges::range_size_t;
 
     constexpr bool is_view   = ranges::view<remove_cvref_t<Rng>>;
@@ -245,13 +245,13 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             static_assert(CanMemberSize<R> == sized_range<Rng>);
             if constexpr (sized_range<Rng>) {
                 assert(r.size() == static_cast<range_size_t<R>>(size(expected)));
-                // static_assert(noexcept(r.size()) == noexcept(size(rng)));
+                static_assert(noexcept(r.size()) == noexcept(size(rng)));
             }
 
             static_assert(CanMemberSize<const R> == sized_range<const Rng>);
             if constexpr (sized_range<const Rng>) {
                 assert(as_const(r).size() == static_cast<range_size_t<R>>(size(expected)));
-                // static_assert(noexcept(r.size()) == noexcept(size(as_const(rng))));
+                static_assert(noexcept(as_const(r).size()) == noexcept(size(as_const(rng))));
             }
 
             // Validate view_interface::empty and operator bool
