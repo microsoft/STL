@@ -298,11 +298,13 @@ public:
     }
 
     bool isctype(_Elem _Ch, char_class_type _Fx) const {
-        if (_Fx != static_cast<char_class_type>(-1)) {
-            return _Getctype()->is(_Fx, _Ch);
-        } else {
+        if (_Fx == static_cast<char_class_type>(_Ch_blank)) {
+            return _Getctype()->is(_SP, _Ch) || _Getctype()->is(_CN, _Ch);
+        } else if (_Fx == static_cast<char_class_type>(-1)) {
             return _Ch == '_' // assumes L'_' == '_'
                    || _Getctype()->is(_Ch_alnum, _Ch);
+        } else {
+            return _Getctype()->is(_Fx, _Ch);
         }
     }
 
