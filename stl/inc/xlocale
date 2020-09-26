@@ -298,8 +298,8 @@ private:
                 _Bad = true;
             } else { // name okay, build the locale
                 _Locimp::_Makeloc(_Lobj, _Cat, _Ptr, nullptr);
-                _Ptr->_Catmask = _Cat;
-                _Ptr->_Name    = _Str.c_str();
+                //_Ptr->_Catmask = _Cat;                        //_Makeloc already sets them
+                //_Ptr->_Name    = _Str.c_str();        
             }
             _END_LOCINFO()
             _Guard._Target = nullptr;
@@ -1375,7 +1375,7 @@ private:
     _Codecvt_mode _Mode; // default: _Consume_header
 };
 
-#if defined(__cpp_char8_t) && !defined(_M_CEE_PURE)
+// Give me your power!
 template <class _From, class _To>
 struct _Codecvt_guard {
     const _From* const& _First1;
@@ -1395,6 +1395,7 @@ struct _Codecvt_guard {
     }
 };
 
+#if defined(__cpp_char8_t) && !defined(_M_CEE_PURE)
 // CLASS codecvt<char16_t, char8_t, mbstate_t>
 template <>
 class codecvt<char16_t, char8_t, mbstate_t> : public codecvt_base {
@@ -1981,41 +1982,139 @@ protected:
         _Cvt = _Lobj._Getcvt();
     }
 
-    virtual result __CLR_OR_THIS_CALL do_in(mbstate_t&, const char* _First1, const char* _Last1, const char*& _Mid1,
-        wchar_t* _First2, wchar_t* _Last2, wchar_t*& _Mid2) const {
+    // VERITY 
+    virtual result __CLR_OR_THIS_CALL do_in(
+        mbstate_t&, 
+        const char* _First1, 
+        const char* _Last1, 
+        const char*& _Mid1,
+        wchar_t* _First2, 
+        wchar_t* _Last2, 
+        wchar_t*& _Mid2) const 
+    {
         // convert bytes [_First1, _Last1) to [_First2, _Last2)
         mbstate_t _Mystate{};
         _Adl_verify_range(_First1, _Last1);
         _Adl_verify_range(_First2, _Last2);
         _Mid1 = _First1;
         _Mid2 = _First2;
-        for (;;) {
-            if (_Mid1 == _Last1) {
-                return ok;
-            }
 
-            if (_Mid2 == _Last2) {
-                return partial;
-            }
+        // Handle 0 length string
+        if (_Mid1 == _Last1) return ok;
 
-            int _Bytes = _Mbrtowc(_Mid2, _Mid1, static_cast<size_t>(_Last1 - _Mid1), &_Mystate, &_Cvt);
-            switch (_Bytes) {
-            case -2: // partial conversion
-                return partial;
+        // "C" -> Unicode direct translation
+        if (_Cvt._Isclocale) 
+        {
+            while (true) 
+            {
+                if (_Mid2 == _Last2) return partial;
 
-            case -1: // failed conversion
-                return error;
+                *_Mid2++ = static_cast<unsigned char>(*_Mid1++);
 
-            case 0: // converted NULL character, TRANSITION, VSO-654347
-                _Bytes = 1;
-                // [[fallthrough]];
-
-            default: // converted some other character
-                _Mid1 += _Bytes;
-                ++_Mid2;
-                break;
+                if (!(*_Mid2)||_Mid1 == _Last1) return ok;     
             }
         }
+
+        // Else
+        if (_Cvt._Mbcurmax == 4) 
+        {
+            // UTF-8 copied from C++20 :D
+            _ASSERTE(_Cvt._Page == 65001);
+            _Codecvt_guard<char, wchar_t> _Guard{_First1, _Mid1, _First2, _Mid2};
+            for (; _First1 != _Last1; ++_First1, ++_First2) {
+                if (_First2 == _Last2)
+                    return partial;
+
+                uint8_t _Lead_byte = static_cast<uint8_t>(*_First1);
+                if (_Lead_byte < 0b1000'0000u) { // single-byte sequence
+                    *_First2 = static_cast<wchar_t>(_Lead_byte);
+                    continue;
+                }
+
+                uint32_t _Trailing_count = 1;
+                if (_Lead_byte < 0b1110'0000u) {
+                    if (_Lead_byte < 0b1100'0000u) { // out-of-sequence trailing byte
+                        return error;
+                    }
+
+                    // lead byte of 2-byte sequence
+                    _Lead_byte &= 0b0001'1111u;
+                } else if (_Lead_byte < 0b1111'0000u) { // lead byte of 3-byte sequence
+                    _Lead_byte &= 0b0000'1111u;
+                    _Trailing_count = 2;
+                } else if (_Lead_byte < 0b1111'1000u) { // lead byte of 4-byte sequence
+                    if (_Last2 - _First2 < 2) { // not enough output for a surrogate pair
+                        return partial;
+                    }
+
+                    _Lead_byte &= 0b0000'0111u;
+                    _Trailing_count = 3;
+                } else { // Invalid UTF-8 code unit
+                    return error;
+                }
+
+                if (_Last1 - _First1 < _Trailing_count + 1) { // not enough input
+                    return partial;
+                }
+
+                const char* _Peek = _First1;
+                uint32_t _Code_point = _Lead_byte;
+                do {
+                    const uint8_t _By = static_cast<uint8_t>(*++_Peek);
+                    if ((_By & 0b1100'0000u) != 0b1000'0000u) { // out-of-sequence lead byte
+                        return error;
+                    }
+
+                    _Code_point = (_Code_point << 6) | (_By & 0b11'1111u);
+                } while (--_Trailing_count != 0);
+
+                if (_Code_point < 0x10000u) {
+                    if (_Code_point >= 0xd800u && _Code_point < 0xe000u) { // invalid code point (surrogate)
+                        return error;
+                    }
+                    // Output single code unit
+                    *_First2 = static_cast<wchar_t>(_Code_point);
+                } else if (_Code_point >= 0x110000u) { // Invalid code point (out of range)
+                    return error;
+                } else {
+                    // Output surrogate pair
+                    _Code_point -= 0x10000u;
+                    // High surrogate: 0xd800 | <upper ten bits>
+                    *_First2 = static_cast<wchar_t>(0xd800u | (_Code_point >> 10));
+                    // Low surrogate: 0xdc00 | <lower ten bits>
+                    *++_First2 = static_cast<wchar_t>(0xdc00u | (_Code_point & 0b11'1111'1111u));
+                }
+
+                _First1 = _Peek;
+            }
+
+            return ok;
+        } 
+        else
+            for (;;) 
+            {
+                if (_Mid1 == _Last1) return ok;
+                if (_Mid2 == _Last2) return partial;
+
+                int _Bytes = _Mbrtowc(_Mid2, _Mid1, static_cast<size_t>(_Last1 - _Mid1), &_Mystate, &_Cvt);
+
+                switch (_Bytes) {
+                case -2: // partial conversion
+                    return partial;
+
+                case -1: // failed conversion
+                    return error;
+
+                case 0: // converted NULL character, TRANSITION, VSO-654347
+                    _Bytes = 1;
+                    // [[fallthrough]];
+
+                default: // converted some other character
+                    _Mid1 += _Bytes;
+                    ++_Mid2;
+                    break;
+                }
+            }
     }
 
     virtual result __CLR_OR_THIS_CALL do_out(mbstate_t& _State, const wchar_t* _First1, const wchar_t* _Last1,
@@ -2181,42 +2280,139 @@ protected:
         _Cvt = _Lobj._Getcvt();
     }
 
-    virtual result __CLR_OR_THIS_CALL do_in(mbstate_t&, const char* _First1, const char* _Last1, const char*& _Mid1,
-        unsigned short* _First2, unsigned short* _Last2, unsigned short*& _Mid2) const {
+    //VERITY
+    virtual result __CLR_OR_THIS_CALL do_in(
+        mbstate_t&, 
+        const char* _First1, 
+        const char* _Last1, 
+        const char*& _Mid1,
+        unsigned short* _First2, 
+        unsigned short* _Last2, 
+        unsigned short*& _Mid2) const 
+    {
         // convert bytes [_First1, _Last1) to [_First2, _Last2)
         mbstate_t _Mystate{};
         _Adl_verify_range(_First1, _Last1);
         _Adl_verify_range(_First2, _Last2);
         _Mid1 = _First1;
         _Mid2 = _First2;
-        for (;;) {
-            if (_Mid1 == _Last1) {
-                return ok;
-            }
 
-            if (_Mid2 == _Last2) {
-                return partial;
-            }
+        // Handle 0 length string
+        if (_Mid1 == _Last1) return ok;
 
-            int _Bytes = _Mbrtowc(
-                reinterpret_cast<wchar_t*>(_Mid2), _Mid1, static_cast<size_t>(_Last1 - _Mid1), &_Mystate, &_Cvt);
-            switch (_Bytes) {
-            case -2: // partial conversion
-                return partial;
+        // "C" -> Unicode direct translation
+        if (_Cvt._Isclocale) 
+        {
+            while (true) 
+            {
+                if (_Mid2 == _Last2) return partial;
 
-            case -1: // failed conversion
-                return error;
+                *_Mid2++ = static_cast<unsigned char>(*_Mid1++);
 
-            case 0: // converted NULL character, TRANSITION, VSO-654347
-                _Bytes = 1;
-                // [[fallthrough]];
-
-            default: // converted some other character
-                _Mid1 += _Bytes;
-                ++_Mid2;
-                break;
+                if (!(*_Mid2)||_Mid1 == _Last1) return ok;     
             }
         }
+
+        // Else
+        if (_Cvt._Mbcurmax == 4) 
+        {
+            // UTF-8 copied from c++20 :D
+            _ASSERTE(_Cvt._Page == 65001);
+            _Codecvt_guard<char, unsigned short> _Guard{_First1, _Mid1, _First2, _Mid2};
+            for (; _First1 != _Last1; ++_First1, ++_First2) {
+                if (_First2 == _Last2)
+                    return partial;
+
+                uint8_t _Lead_byte = static_cast<uint8_t>(*_First1);
+                if (_Lead_byte < 0b1000'0000u) { // single-byte sequence
+                    *_First2 = static_cast<unsigned short>(_Lead_byte);
+                    continue;
+                }
+
+                uint32_t _Trailing_count = 1;
+                if (_Lead_byte < 0b1110'0000u) {
+                    if (_Lead_byte < 0b1100'0000u) { // out-of-sequence trailing byte
+                        return error;
+                    }
+
+                    // lead byte of 2-byte sequence
+                    _Lead_byte &= 0b0001'1111u;
+                } else if (_Lead_byte < 0b1111'0000u) { // lead byte of 3-byte sequence
+                    _Lead_byte &= 0b0000'1111u;
+                    _Trailing_count = 2;
+                } else if (_Lead_byte < 0b1111'1000u) { // lead byte of 4-byte sequence
+                    if (_Last2 - _First2 < 2) { // not enough output for a surrogate pair
+                        return partial;
+                    }
+
+                    _Lead_byte &= 0b0000'0111u;
+                    _Trailing_count = 3;
+                } else { // Invalid UTF-8 code unit
+                    return error;
+                }
+
+                if (_Last1 - _First1 < _Trailing_count + 1) { // not enough input
+                    return partial;
+                }
+
+                const char* _Peek = _First1;
+                uint32_t _Code_point = _Lead_byte;
+                do {
+                    const uint8_t _By = static_cast<uint8_t>(*++_Peek);
+                    if ((_By & 0b1100'0000u) != 0b1000'0000u) { // out-of-sequence lead byte
+                        return error;
+                    }
+
+                    _Code_point = (_Code_point << 6) | (_By & 0b11'1111u);
+                } while (--_Trailing_count != 0);
+
+                if (_Code_point < 0x10000u) {
+                    if (_Code_point >= 0xd800u && _Code_point < 0xe000u) { // invalid code point (surrogate)
+                        return error;
+                    }
+                    // Output single code unit
+                    *_First2 = static_cast<unsigned short>(_Code_point);
+                } else if (_Code_point >= 0x110000u) { // Invalid code point (out of range)
+                    return error;
+                } else {
+                    // Output surrogate pair
+                    _Code_point -= 0x10000u;
+                    // High surrogate: 0xd800 | <upper ten bits>
+                    *_First2 = static_cast<unsigned short>(0xd800u | (_Code_point >> 10));
+                    // Low surrogate: 0xdc00 | <lower ten bits>
+                    *++_First2 = static_cast<unsigned short>(0xdc00u | (_Code_point & 0b11'1111'1111u));
+                }
+
+                _First1 = _Peek;
+            }
+
+            return ok;
+        } 
+        else
+            for (;;) 
+            {
+                if (_Mid1 == _Last1) return ok;
+                if (_Mid2 == _Last2) return partial;
+
+                int _Bytes = _Mbrtowc(reinterpret_cast<wchar_t*>(_Mid2), _Mid1, static_cast<size_t>(_Last1 - _Mid1), &_Mystate, &_Cvt);
+
+                switch (_Bytes) {
+                case -2: // partial conversion
+                    return partial;
+
+                case -1: // failed conversion
+                    return error;
+
+                case 0: // converted NULL character, TRANSITION, VSO-654347
+                    _Bytes = 1;
+                    // [[fallthrough]];
+
+                default: // converted some other character
+                    _Mid1 += _Bytes;
+                    ++_Mid2;
+                    break;
+                }
+            }
     }
 
     virtual result __CLR_OR_THIS_CALL do_out(mbstate_t& _State, const unsigned short* _First1,
@@ -2322,6 +2518,9 @@ private:
     _Locinfo::_Cvtvec _Cvt; // locale info passed to _Mbrtowc, _Wcrtomb
 };
 #endif // _NATIVE_WCHAR_T_DEFINED
+
+
+
 
 // CLASS TEMPLATE codecvt_byname
 template <class _Elem, class _Byte, class _Statype>
