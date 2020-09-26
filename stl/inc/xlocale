@@ -1375,7 +1375,6 @@ private:
     _Codecvt_mode _Mode; // default: _Consume_header
 };
 
-#if defined(__cpp_char8_t) && !defined(_M_CEE_PURE)
 template <class _From, class _To>
 struct _Codecvt_guard {
     const _From* const& _First1;
