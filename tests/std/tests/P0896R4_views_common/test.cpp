@@ -235,125 +235,127 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 #if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1159442
     (void) 42;
 #endif // TRANSITION, DevCom-1159442
-    if constexpr (!is_common) {
-        using R           = common_view<V>;
-        same_as<R> auto r = common_view{forward<Rng>(rng)};
-        // assert(ranges::equal(r, expected));
+    if (!is_constant_evaluated()) {
+        if constexpr (!is_common) {
+            using R           = common_view<V>;
+            same_as<R> auto r = common_view{forward<Rng>(rng)};
+            assert(ranges::equal(r, expected));
 
-        // Validate common_view::size
-        static_assert(CanMemberSize<R> == sized_range<Rng>);
-        if constexpr (sized_range<Rng>) {
-            assert(r.size() == static_cast<range_size_t<R>>(size(expected)));
-            // static_assert(noexcept(r.size()) == noexcept(size(rng)));
-        }
-
-        static_assert(CanMemberSize<const R> == sized_range<const Rng>);
-        if constexpr (sized_range<const Rng>) {
-            assert(as_const(r).size() == static_cast<range_size_t<R>>(size(expected)));
-            // static_assert(noexcept(r.size()) == noexcept(size(as_const(rng))));
-        }
-
-        // Validate view_interface::empty and operator bool
-        const bool is_empty = ranges::empty(expected);
-        if (!is_constant_evaluated()) {
-            if constexpr (CanMemberEmpty<R>) {
-                assert(r.empty() == is_empty);
-                assert(static_cast<bool>(r) == !is_empty);
-            }
-            if constexpr (CanMemberEmpty<const R>) {
-                assert(as_const(r).empty() == is_empty);
-                assert(static_cast<bool>(as_const(r)) == !is_empty);
-            }
-        }
-
-        // Validate common_view::begin
-        STATIC_ASSERT(CanMemberBegin<R>);
-        STATIC_ASSERT(CanBegin<const R&> == range<const V>);
-        {
-            const same_as<iterator_t<R>> auto i = r.begin();
-            if (!is_empty) {
-                assert(*i == *begin(expected));
+            // Validate common_view::size
+            static_assert(CanMemberSize<R> == sized_range<Rng>);
+            if constexpr (sized_range<Rng>) {
+                assert(r.size() == static_cast<range_size_t<R>>(size(expected)));
+                // static_assert(noexcept(r.size()) == noexcept(size(rng)));
             }
 
-            if constexpr (copyable<V>) {
-                auto r2                              = r;
-                const same_as<iterator_t<R>> auto i2 = r2.begin();
+            static_assert(CanMemberSize<const R> == sized_range<const Rng>);
+            if constexpr (sized_range<const Rng>) {
+                assert(as_const(r).size() == static_cast<range_size_t<R>>(size(expected)));
+                // static_assert(noexcept(r.size()) == noexcept(size(as_const(rng))));
+            }
+
+            // Validate view_interface::empty and operator bool
+            const bool is_empty = ranges::empty(expected);
+            if (!is_constant_evaluated()) {
+                if constexpr (CanMemberEmpty<R>) {
+                    assert(r.empty() == is_empty);
+                    assert(static_cast<bool>(r) == !is_empty);
+                }
+                if constexpr (CanMemberEmpty<const R>) {
+                    assert(as_const(r).empty() == is_empty);
+                    assert(static_cast<bool>(as_const(r)) == !is_empty);
+                }
+            }
+
+            // Validate common_view::begin
+            STATIC_ASSERT(CanMemberBegin<R>);
+            STATIC_ASSERT(CanBegin<const R&> == range<const V>);
+            {
+                const same_as<iterator_t<R>> auto i = r.begin();
                 if (!is_empty) {
-                    assert(*i2 == *i);
+                    assert(*i == *begin(expected));
+                }
+
+                if constexpr (copyable<V>) {
+                    auto r2                              = r;
+                    const same_as<iterator_t<R>> auto i2 = r2.begin();
+                    if (!is_empty) {
+                        assert(*i2 == *i);
+                    }
+                }
+
+                if constexpr (CanBegin<const R&>) {
+                    const same_as<iterator_t<const R>> auto i3 = as_const(r).begin();
+                    if (!is_empty) {
+                        assert(*i3 == *i);
+                    }
                 }
             }
-
-            if constexpr (CanBegin<const R&>) {
-                const same_as<iterator_t<const R>> auto i3 = as_const(r).begin();
-                if (!is_empty) {
-                    assert(*i3 == *i);
-                }
-            }
-        }
-        // Validate common_view::end
-        STATIC_ASSERT(CanMemberEnd<R>);
-        STATIC_ASSERT(CanEnd<const R&> == range<const V>);
-        if (!is_empty) {
-            same_as<iterator_t<R>> auto i = r.end();
-            if constexpr (bidirectional_range<R>) {
-                assert(*prev(i) == *prev(end(expected)));
-            }
-
-            if constexpr (CanEnd<const R&>) {
-                same_as<iterator_t<const R>> auto i2 = as_const(r).end();
-                if constexpr (bidirectional_range<const R>) {
-                    assert(*prev(i2) == *prev(end(expected)));
-                }
-            }
-        }
-
-        // Validate view_interface::data
-        static_assert(!CanData<R>);
-        static_assert(!CanData<const R>);
-
-        if (!is_empty) {
-            // Validate view_interface::operator[]
-            if constexpr (CanIndex<R>) {
-                assert(r[0] == *begin(expected));
-            }
-            if constexpr (CanIndex<const R>) {
-                assert(as_const(r)[0] == *begin(expected));
-            }
-
-            // Validate view_interface::front and back
-            if constexpr (CanMemberFront<R>) {
-                assert(r.front() == *begin(expected));
-            }
-            if constexpr (CanMemberFront<const R>) {
-                assert(as_const(r).front() == *begin(expected));
-            }
-
-            if constexpr (CanMemberBack<R>) {
-                assert(r.back() == *prev(end(expected)));
-            }
-            if constexpr (CanMemberBack<const R>) {
-                assert(as_const(r).back() == *prev(end(expected)));
-            }
-        }
-
-        // Validate common_view::base() const&
-        static_assert(CanMemberBase<const R&> == copy_constructible<V>);
-        if constexpr (copy_constructible<V>) {
-            same_as<V> auto b1 = as_const(r).base();
-            static_assert(noexcept(as_const(r).base()) == is_nothrow_copy_constructible_v<V>);
+            // Validate common_view::end
+            STATIC_ASSERT(CanMemberEnd<R>);
+            STATIC_ASSERT(CanEnd<const R&> == range<const V>);
             if (!is_empty) {
-                assert(*b1.begin() == *begin(expected));
-            }
-        }
+                same_as<iterator_t<R>> auto i = r.end();
+                if constexpr (bidirectional_range<R>) {
+                    assert(*prev(i) == *prev(end(expected)));
+                }
 
-        // Validate common_view::base() && (NB: do this last since it leaves r moved-from)
+                if constexpr (CanEnd<const R&>) {
+                    same_as<iterator_t<const R>> auto i2 = as_const(r).end();
+                    if constexpr (bidirectional_range<const R>) {
+                        assert(*prev(i2) == *prev(end(expected)));
+                    }
+                }
+            }
+
+            // Validate view_interface::data
+            static_assert(!CanData<R>);
+            static_assert(!CanData<const R>);
+
+            if (!is_empty) {
+                // Validate view_interface::operator[]
+                if constexpr (CanIndex<R>) {
+                    assert(r[0] == *begin(expected));
+                }
+                if constexpr (CanIndex<const R>) {
+                    assert(as_const(r)[0] == *begin(expected));
+                }
+
+                // Validate view_interface::front and back
+                if constexpr (CanMemberFront<R>) {
+                    assert(r.front() == *begin(expected));
+                }
+                if constexpr (CanMemberFront<const R>) {
+                    assert(as_const(r).front() == *begin(expected));
+                }
+
+                if constexpr (CanMemberBack<R>) {
+                    assert(r.back() == *prev(end(expected)));
+                }
+                if constexpr (CanMemberBack<const R>) {
+                    assert(as_const(r).back() == *prev(end(expected)));
+                }
+            }
+
+            // Validate common_view::base() const&
+            static_assert(CanMemberBase<const R&> == copy_constructible<V>);
+            if constexpr (copy_constructible<V>) {
+                same_as<V> auto b1 = as_const(r).base();
+                static_assert(noexcept(as_const(r).base()) == is_nothrow_copy_constructible_v<V>);
+                if (!is_empty) {
+                    assert(*b1.begin() == *begin(expected));
+                }
+            }
+
+            // Validate common_view::base() && (NB: do this last since it leaves r moved-from)
 #if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1159442
-        (void) 42;
+            (void) 42;
 #endif // TRANSITION, DevCom-1159442
-        same_as<V> auto b2 = move(r).base();
-        static_assert(noexcept(move(r).base()) == is_nothrow_move_constructible_v<V>);
-        if (!is_empty) {
-            assert(*b2.begin() == *begin(expected));
+            same_as<V> auto b2 = move(r).base();
+            static_assert(noexcept(move(r).base()) == is_nothrow_move_constructible_v<V>);
+            if (!is_empty) {
+                assert(*b2.begin() == *begin(expected));
+            }
         }
     }
     return true;
