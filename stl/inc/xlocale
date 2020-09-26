@@ -1982,16 +1982,9 @@ protected:
         _Cvt = _Lobj._Getcvt();
     }
 
-    // VERITY 
-    virtual result __CLR_OR_THIS_CALL do_in(
-        mbstate_t&, 
-        const char* _First1, 
-        const char* _Last1, 
-        const char*& _Mid1,
-        wchar_t* _First2, 
-        wchar_t* _Last2, 
-        wchar_t*& _Mid2) const 
-    {
+    // VERITY
+    virtual result __CLR_OR_THIS_CALL do_in(mbstate_t&, const char* _First1, const char* _Last1, const char*& _Mid1,
+        wchar_t* _First2, wchar_t* _Last2, wchar_t*& _Mid2) const {
         // convert bytes [_First1, _Last1) to [_First2, _Last2)
         mbstate_t _Mystate{};
         _Adl_verify_range(_First1, _Last1);
@@ -2012,19 +2005,19 @@ protected:
             case -2: // partial conversion
                 return partial;
 
-                case -1: // failed conversion
-                    return error;
+            case -1: // failed conversion
+                return error;
 
-                case 0: // converted NULL character, TRANSITION, VSO-654347
-                    _Bytes = 1;
-                    // [[fallthrough]];
+            case 0: // converted NULL character, TRANSITION, VSO-654347
+                _Bytes = 1;
+                // [[fallthrough]];
 
-                default: // converted some other character
-                    _Mid1 += _Bytes;
-                    ++_Mid2;
-                    break;
-                }
+            default: // converted some other character
+                _Mid1 += _Bytes;
+                ++_Mid2;
+                break;
             }
+        }
     }
 
     virtual result __CLR_OR_THIS_CALL do_out(mbstate_t& _State, const wchar_t* _First1, const wchar_t* _Last1,
@@ -2213,19 +2206,19 @@ protected:
             case -2: // partial conversion
                 return partial;
 
-                case -1: // failed conversion
-                    return error;
+            case -1: // failed conversion
+                return error;
 
-                case 0: // converted NULL character, TRANSITION, VSO-654347
-                    _Bytes = 1;
-                    // [[fallthrough]];
+            case 0: // converted NULL character, TRANSITION, VSO-654347
+                _Bytes = 1;
+                // [[fallthrough]];
 
-                default: // converted some other character
-                    _Mid1 += _Bytes;
-                    ++_Mid2;
-                    break;
-                }
+            default: // converted some other character
+                _Mid1 += _Bytes;
+                ++_Mid2;
+                break;
             }
+        }
     }
 
     virtual result __CLR_OR_THIS_CALL do_out(mbstate_t& _State, const unsigned short* _First1,
