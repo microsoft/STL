@@ -298,8 +298,6 @@ private:
                 _Bad = true;
             } else { // name okay, build the locale
                 _Locimp::_Makeloc(_Lobj, _Cat, _Ptr, nullptr);
-                //_Ptr->_Catmask = _Cat;                        //_Makeloc already sets them
-                //_Ptr->_Name    = _Str.c_str();
             }
             _END_LOCINFO()
             _Guard._Target = nullptr;
