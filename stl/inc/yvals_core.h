@@ -137,6 +137,7 @@
 // P0202R3 constexpr For <algorithm> And exchange()
 // P0318R1 unwrap_reference, unwrap_ref_decay
 // P0325R4 to_array()
+// P0339R6 polymorphic_allocator<>
 // P0356R5 bind_front()
 // P0357R3 Supporting Incomplete Types In reference_wrapper
 // P0415R1 constexpr For <complex> (Again)
@@ -1203,6 +1204,7 @@
 #define __cpp_lib_latch                        201907L
 #define __cpp_lib_list_remove_return_type      201806L
 #define __cpp_lib_math_constants               201907L
+#define __cpp_lib_polymorphic_allocator        201902L
 #define __cpp_lib_remove_cvref                 201711L
 #define __cpp_lib_semaphore                    201907L
 #define __cpp_lib_shift                        201806L

@@ -3,11 +3,11 @@
 
 // Transform a wide-character string using the locale information as set by LC_COLLATE.
 
+#include <climits>
+#include <clocale>
+#include <cstdlib>
+#include <cstring>
 #include <internal_shared.h>
-#include <limits.h>
-#include <locale.h>
-#include <stdlib.h>
-#include <string.h>
 #include <xlocinfo.h> // for _Collvec, _Wcsxfrm
 
 #include "awint.hpp"

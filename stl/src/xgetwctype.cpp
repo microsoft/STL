@@ -5,7 +5,7 @@
 
 #include <yvals.h>
 
-#include <wchar.h>
+#include <cwchar>
 #include <xlocinfo.h>
 
 #include "awint.hpp"

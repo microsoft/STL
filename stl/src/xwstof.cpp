@@ -3,7 +3,7 @@
 
 // _WStof function
 
-#include <wchar.h>
+#include <cwchar>
 
 #include "xmath.hpp"
 #include "xxfftype.hpp"
