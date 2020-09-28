@@ -3,10 +3,10 @@
 
 // _Stoxflt function
 
-#include <ctype.h>
-#include <locale.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cctype>
+#include <clocale>
+#include <cstdlib>
+#include <cstring>
 
 #include "xmath.hpp"
 
@@ -16,8 +16,9 @@ constexpr int _Base   = 16; // hexadecimal
 constexpr int _Ndig   = 7; // hexadecimal digits per long element
 constexpr int _Maxsig = 5 * _Ndig; // maximum significant digits to keep
 
-int _Stoxflt(const char* s0, const char* s, char** endptr, long lo[],
-    int maxsig) { // convert string to array of long plus exponent
+_In_range_(0, maxsig) int _Stoxflt(
+    const char* s0, const char* s, char** endptr, _Out_writes_(maxsig) long lo[], _In_range_(1, 4) int maxsig) {
+    // convert string to array of long plus exponent
     char buf[_Maxsig + 1]; // worst case, with room for rounding digit
     int nsig = 0; // number of significant digits seen
     int seen = 0; // any valid field characters seen
@@ -41,7 +42,7 @@ int _Stoxflt(const char* s0, const char* s, char** endptr, long lo[],
         seen = 1;
     }
 
-    while ((pd = static_cast<const char*>(memchr(&digits[0], *s, 22))) != 0) {
+    while ((pd = static_cast<const char*>(memchr(&digits[0], *s, 22))) != nullptr) {
         if (nsig <= maxsig) {
             buf[nsig++] = vals[pd - digits]; // accumulate a digit
         } else {
@@ -62,7 +63,7 @@ int _Stoxflt(const char* s0, const char* s, char** endptr, long lo[],
         }
     }
 
-    for (; (pd = static_cast<const char*>(memchr(&digits[0], *s, 22))) != 0; ++s, seen = 1) {
+    for (; (pd = static_cast<const char*>(memchr(&digits[0], *s, 22))) != nullptr; ++s, seen = 1) {
         if (nsig <= maxsig) { // accumulate a fraction digit
             buf[nsig++] = vals[pd - digits];
             --lo[0];

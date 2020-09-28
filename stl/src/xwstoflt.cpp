@@ -3,9 +3,9 @@
 
 // _WStoflt function
 
-#include <locale.h>
-#include <wchar.h>
-#include <wctype.h>
+#include <clocale>
+#include <cwchar>
+#include <cwctype>
 
 #include "xmath.hpp"
 
@@ -15,8 +15,9 @@ constexpr int _Base   = 10; // decimal
 constexpr int _Ndig   = 9; // decimal digits per long element
 constexpr int _Maxsig = 5 * _Ndig; // maximum significant digits to keep
 
-int _WStoflt(const wchar_t* s0, const wchar_t* s, wchar_t** endptr, long lo[],
-    int maxsig) { // convert wide string to array of long plus exponent
+_In_range_(0, maxsig) int _WStoflt(const wchar_t* s0, const wchar_t* s, wchar_t** endptr,
+    _Out_writes_(maxsig) long lo[], _In_range_(1, 4) int maxsig) {
+    // convert wide string to array of long plus exponent
     char buf[_Maxsig + 1]; // worst case, with room for rounding digit
     int nsig = 0; // number of significant digits seen
     int seen = 0; // any valid field characters seen

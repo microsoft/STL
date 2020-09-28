@@ -131,11 +131,13 @@
 // Other C++17 deprecation warnings
 
 // _HAS_CXX20 directly controls:
+// P0019R8 atomic_ref
 // P0020R6 atomic<float>, atomic<double>, atomic<long double>
 // P0122R7 <span>
 // P0202R3 constexpr For <algorithm> And exchange()
 // P0318R1 unwrap_reference, unwrap_ref_decay
 // P0325R4 to_array()
+// P0339R6 polymorphic_allocator<>
 // P0356R5 bind_front()
 // P0357R3 Supporting Incomplete Types In reference_wrapper
 // P0415R1 constexpr For <complex> (Again)
@@ -147,6 +149,7 @@
 // P0482R6 Library Support For char8_t
 //     (mbrtoc8 and c8rtomb not yet implemented)
 // P0487R1 Fixing operator>>(basic_istream&, CharT*)
+// P0528R3 Atomic Compare-And-Exchange With Padding Bits
 // P0550R2 remove_cvref
 // P0553R4 <bit> Rotating And Counting Functions
 // P0556R3 <bit> Integral Power-Of-2 Operations (renamed by P1956R1)
@@ -157,6 +160,7 @@
 // P0646R1 list/forward_list remove()/remove_if()/unique() Return size_type
 // P0653R2 to_address()
 // P0655R1 visit<R>()
+// P0660R10 <stop_token> And jthread
 // P0674R1 make_shared() For Arrays
 // P0718R2 atomic<shared_ptr<T>>, atomic<weak_ptr<T>>
 // P0758R1 is_nothrow_convertible
@@ -170,11 +174,11 @@
 //     (partially implemented)
 // P0898R3 Standard Library Concepts
 // P0912R5 Library Support For Coroutines
-//     (partially implemented, missing noop coroutines)
 // P0919R3 Heterogeneous Lookup For Unordered Containers
 // P0966R1 string::reserve() Should Not Shrink
 // P1001R2 execution::unseq
 // P1006R1 constexpr For pointer_traits<T*>::pointer_to()
+// P1007R3 assume_aligned()
 // P1023R0 constexpr For std::array Comparisons
 // P1024R3 Enhancing span Usability
 // P1032R1 Miscellaneous constexpr
@@ -182,6 +186,8 @@
 //     (except the std::invoke function which is implemented in C++17)
 // P1085R2 Removing span Comparisons
 // P1115R3 erase()/erase_if() Return size_type
+// P1123R0 Atomic Compare-And-Exchange With Padding Bits For atomic_ref
+// P1135R6 The C++20 Synchronization Library
 // P1207R4 Movability Of Single-Pass Iterators
 //     (partially implemented)
 // P1209R0 erase_if(), erase()
@@ -190,6 +196,7 @@
 //     (partially implemented)
 // P1248R1 Fixing Relations
 // P1357R1 is_bounded_array, is_unbounded_array
+// P1391R4 Range Constructor For string_view
 // P1394R4 Range Constructor For span
 // P1423R3 char8_t Backward Compatibility Remediation
 // P1456R1 Move-Only Views
@@ -199,7 +206,10 @@
 // P1651R0 bind_front() Should Not Unwrap reference_wrapper
 // P1690R1 Refining Heterogeneous Lookup For Unordered Containers
 // P1716R3 Range Comparison Algorithms Are Over-Constrained
+// P1739R4 Avoiding Template Bloat For Ranges
+//     (partially implemented)
 // P1754R1 Rename Concepts To standard_case
+// P1865R1 Adding max() To latch And barrier
 // P1870R1 Rename forwarding-range To borrowed_range (Was safe_range before LWG-3379)
 // P1871R1 disable_sized_sentinel_for
 // P1872R0 span Should Have size_type, Not index_type
@@ -207,6 +217,7 @@
 // P1907R2 ranges::ssize
 // P1956R1 <bit> has_single_bit(), bit_ceil(), bit_floor(), bit_width()
 // P1959R0 Removing weak_equality And strong_equality
+// P1960R0 atomic_ref Cleanup
 // P1964R2 Replacing boolean With boolean-testable
 // P1976R2 Explicit Constructors For Fixed-Extent span From Dynamic-Extent Ranges
 // P2091R0 Fixing Issues With Range Access CPOs
@@ -490,7 +501,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 142
-#define _MSVC_STL_UPDATE  202007L
+#define _MSVC_STL_UPDATE  202009L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #ifdef __EDG__
@@ -500,8 +511,8 @@
 #error STL1000: Unexpected compiler version, expected Clang 10.0.0 or newer.
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
-#if _MSC_VER < 1927 // Coarse-grained, not inspecting _MSC_FULL_VER
-#error STL1001: Unexpected compiler version, expected MSVC 19.27 or newer.
+#if _MSC_VER < 1928 // Coarse-grained, not inspecting _MSC_FULL_VER
+#error STL1001: Unexpected compiler version, expected MSVC 19.28 or newer.
 #endif // ^^^ old MSVC ^^^
 #else // vvv other compilers vvv
 // not attempting to detect other compilers
@@ -532,6 +543,13 @@
 #else // ^^^ constexpr in C++20 and later / inline (not constexpr) in C++17 and earlier vvv
 #define _CONSTEXPR20 inline
 #endif // ^^^ inline (not constexpr) in C++17 and earlier ^^^
+
+// Functions that became constexpr in C++20 via P0784R7
+#if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc)
+#define _CONSTEXPR20_DYNALLOC constexpr
+#else
+#define _CONSTEXPR20_DYNALLOC inline
+#endif
 
 // P0607R0 Inline Variables For The STL
 #if _HAS_CXX17
@@ -1134,11 +1152,14 @@
 #define __cpp_lib_atomic_value_initialization 201911L
 
 #if _HAS_CXX20
+#define __cpp_lib_assume_aligned                201811L
 #define __cpp_lib_atomic_flag_test              201907L
 #define __cpp_lib_atomic_float                  201711L
 #define __cpp_lib_atomic_lock_free_type_aliases 201907L
+#define __cpp_lib_atomic_ref                    201806L
 #define __cpp_lib_atomic_shared_ptr             201711L
 #define __cpp_lib_atomic_wait                   201907L
+#define __cpp_lib_barrier                       201907L
 #define __cpp_lib_bind_front                    201907L
 #define __cpp_lib_bit_cast                      201806L
 #define __cpp_lib_bitops                        201907L
@@ -1148,9 +1169,9 @@
 #define __cpp_lib_char8_t 201907L
 #endif // __cpp_char8_t
 
-#if defined(__cpp_concepts) && __cpp_concepts > 201507L
+#if !defined(__EDG__) || defined(__INTELLISENSE__) // TRANSITION, EDG concepts support
 #define __cpp_lib_concepts 201907L
-#endif // defined(__cpp_concepts) && __cpp_concepts > 201507L
+#endif // !defined(__EDG__) || defined(__INTELLISENSE__)
 
 #define __cpp_lib_constexpr_algorithms  201806L
 #define __cpp_lib_constexpr_complex     201711L
@@ -1162,8 +1183,12 @@
 #define __cpp_lib_constexpr_tuple       201811L
 #define __cpp_lib_constexpr_utility     201811L
 
-#ifdef __cpp_impl_coroutine // TRANSITION, VS 2019 16.8 Preview 1
-#define __cpp_lib_coroutine 197000L
+#ifdef __cpp_impl_coroutine // TRANSITION, Clang and EDG coroutine support
+#if __cpp_impl_coroutine >= 201902L
+#define __cpp_lib_coroutine 201902L
+#else // ^^^ __cpp_impl_coroutine >= 201902L ^^^ / vvv __cpp_impl_coroutine < 201902L vvv
+#define __cpp_lib_coroutine 197000L // TRANSITION, VS 2019 16.8 Preview 4
+#endif // ^^^ __cpp_impl_coroutine < 201902L ^^^
 #endif // __cpp_impl_coroutine
 
 #define __cpp_lib_destroying_delete            201806L
@@ -1175,9 +1200,13 @@
 #define __cpp_lib_interpolate                  201902L
 #define __cpp_lib_is_constant_evaluated        201811L
 #define __cpp_lib_is_nothrow_convertible       201806L
+#define __cpp_lib_jthread                      201911L
+#define __cpp_lib_latch                        201907L
 #define __cpp_lib_list_remove_return_type      201806L
 #define __cpp_lib_math_constants               201907L
+#define __cpp_lib_polymorphic_allocator        201902L
 #define __cpp_lib_remove_cvref                 201711L
+#define __cpp_lib_semaphore                    201907L
 #define __cpp_lib_shift                        201806L
 #define __cpp_lib_span                         202002L
 #define __cpp_lib_ssize                        201902L
@@ -1262,13 +1291,18 @@ compiler option, or define _ALLOW_RTCc_IN_STL to acknowledge that you have recei
 #error In yvals_core.h, defined(MRTDLL) implies defined(_M_CEE_PURE); !defined(_M_CEE_PURE) implies !defined(MRTDLL)
 #endif // defined(MRTDLL) && !defined(_M_CEE_PURE)
 
-#define _STL_WIN32_WINNT_WINXP 0x0501 // _WIN32_WINNT_WINXP from sdkddkver.h
-#define _STL_WIN32_WINNT_VISTA 0x0600 // _WIN32_WINNT_VISTA from sdkddkver.h
-#define _STL_WIN32_WINNT_WIN8  0x0602 // _WIN32_WINNT_WIN8 from sdkddkver.h
+#define _STL_WIN32_WINNT_WINXP   0x0501 // _WIN32_WINNT_WINXP from sdkddkver.h
+#define _STL_WIN32_WINNT_VISTA   0x0600 // _WIN32_WINNT_VISTA from sdkddkver.h
+#define _STL_WIN32_WINNT_WIN8    0x0602 // _WIN32_WINNT_WIN8 from sdkddkver.h
+#define _STL_WIN32_WINNT_WINBLUE 0x0603 // _WIN32_WINNT_WINBLUE from sdkddkver.h
+#define _STL_WIN32_WINNT_WIN10   0x0A00 // _WIN32_WINNT_WIN10 from sdkddkver.h
 
 // Note that the STL DLL builds will set this to XP for ABI compatibility with VS2015 which supported XP.
 #ifndef _STL_WIN32_WINNT
-#if defined(_M_ARM) || defined(_M_ARM64) || defined(_ONECORE) || defined(_CRT_APP)
+#if defined(_M_ARM64)
+// The first ARM64 Windows was Windows 10
+#define _STL_WIN32_WINNT _STL_WIN32_WINNT_WIN10
+#elif defined(_M_ARM) || defined(_ONECORE) || defined(_CRT_APP)
 // The first ARM or OneCore or App Windows was Windows 8
 #define _STL_WIN32_WINNT _STL_WIN32_WINNT_WIN8
 #else // ^^^ default to Win8 // default to Vista vvv
@@ -1276,6 +1310,12 @@ compiler option, or define _ALLOW_RTCc_IN_STL to acknowledge that you have recei
 #define _STL_WIN32_WINNT _STL_WIN32_WINNT_VISTA
 #endif // ^^^ !defined(_M_ARM) && !defined(_M_ARM64) && !defined(_ONECORE) && !defined(_CRT_APP) ^^^
 #endif // _STL_WIN32_WINNT
+
+#ifdef __cpp_noexcept_function_type
+#define _NOEXCEPT_FNPTR noexcept
+#else
+#define _NOEXCEPT_FNPTR
+#endif // __cpp_noexcept_function_type
 
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _YVALS_CORE_H_

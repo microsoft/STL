@@ -260,9 +260,7 @@ STATIC_ASSERT(test_compare_three_way<int, int, strong_ordering>());
 STATIC_ASSERT(test_compare_three_way<int, long, strong_ordering>());
 STATIC_ASSERT(test_compare_three_way<float, float, partial_ordering>());
 STATIC_ASSERT(test_compare_three_way<float, double, partial_ordering>());
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1044530
 STATIC_ASSERT(test_compare_three_way<long, double, partial_ordering>());
-#endif // TRANSITION, DevCom-1044530
 STATIC_ASSERT(test_compare_three_way<bool, int, void>());
 
 STATIC_ASSERT(test_compare_three_way<some_enum, some_enum, strong_ordering>());
@@ -433,9 +431,9 @@ constexpr void ordering_test_cases() {
 
     derived const some_deriveds[2] = {};
     test_strongly_ordered(&some_deriveds[0], &some_deriveds[1]);
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-938163
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-1168721
     if (!std::is_constant_evaluated())
-#endif // TRANSITION, VSO-938163
+#endif // TRANSITION, VSO-1168721
     {
         test_strongly_ordered(static_cast<base const*>(&some_deriveds[0]), &some_deriveds[1]);
         test_strongly_ordered(&some_deriveds[0], static_cast<base const*>(&some_deriveds[1]));

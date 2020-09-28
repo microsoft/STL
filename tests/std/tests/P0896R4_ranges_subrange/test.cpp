@@ -14,7 +14,7 @@
 #include <utility>
 #include <vector>
 
-#include "range_algorithm_support.hpp"
+#include <range_algorithm_support.hpp>
 
 #define ASSERT(...) assert((__VA_ARGS__))
 
@@ -62,35 +62,6 @@ namespace test_view_interface {
     STATIC_ASSERT(test_template_id<int()>());
     STATIC_ASSERT(test_template_id<empty>());
 
-    template <class T>
-    concept CanEmpty = requires(T& t) {
-        ranges::empty(t);
-    };
-    template <class T>
-    concept CanBool = requires(T& t) {
-        static_cast<bool>(t);
-    };
-    template <class T>
-    concept CanData = requires(T& t) {
-        ranges::data(t);
-    };
-    template <class T>
-    concept CanSize = requires(T& t) {
-        ranges::size(t);
-    };
-    template <class T>
-    concept CanFront = requires(T& t) {
-        t.front();
-    };
-    template <class T>
-    concept CanBack = requires(T& t) {
-        t.back();
-    };
-    template <class T>
-    concept CanIndex = requires(T& t) {
-        t[42];
-    };
-
     using test::CanCompare, test::CanDifference, test::Common, test::ProxyRef, test::to_bool;
     enum class ConstRange : bool { no, yes };
 
@@ -113,20 +84,20 @@ namespace test_view_interface {
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(!ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
-        STATIC_ASSERT(!CanEmpty<V>);
-        STATIC_ASSERT(!CanEmpty<V const>);
-        STATIC_ASSERT(!CanBool<V>);
-        STATIC_ASSERT(!CanBool<V const>);
-        STATIC_ASSERT(!CanData<V>);
-        STATIC_ASSERT(!CanData<V const>);
-        STATIC_ASSERT(!CanSize<V>);
-        STATIC_ASSERT(!CanSize<V const>);
-        STATIC_ASSERT(!CanFront<V>);
-        STATIC_ASSERT(!CanFront<V const>);
-        STATIC_ASSERT(!CanBack<V>);
-        STATIC_ASSERT(!CanBack<V const>);
-        STATIC_ASSERT(!CanIndex<V>);
-        STATIC_ASSERT(!CanIndex<V const>);
+        STATIC_ASSERT(!CanEmpty<V&>);
+        STATIC_ASSERT(!CanEmpty<V const&>);
+        STATIC_ASSERT(!CanBool<V&>);
+        STATIC_ASSERT(!CanBool<V const&>);
+        STATIC_ASSERT(!CanData<V&>);
+        STATIC_ASSERT(!CanData<V const&>);
+        STATIC_ASSERT(!CanSize<V&>);
+        STATIC_ASSERT(!CanSize<V const&>);
+        STATIC_ASSERT(!CanMemberFront<V&>);
+        STATIC_ASSERT(!CanMemberFront<V const&>);
+        STATIC_ASSERT(!CanMemberBack<V&>);
+        STATIC_ASSERT(!CanMemberBack<V const&>);
+        STATIC_ASSERT(!CanIndex<V&>);
+        STATIC_ASSERT(!CanIndex<V const&>);
     } // namespace output_unsized_onlymutable
 
     namespace output_unsized_allowconst {
@@ -134,20 +105,20 @@ namespace test_view_interface {
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
-        STATIC_ASSERT(!CanEmpty<V>);
-        STATIC_ASSERT(!CanEmpty<V const>);
-        STATIC_ASSERT(!CanBool<V>);
-        STATIC_ASSERT(!CanBool<V const>);
-        STATIC_ASSERT(!CanData<V>);
-        STATIC_ASSERT(!CanData<V const>);
-        STATIC_ASSERT(!CanSize<V>);
-        STATIC_ASSERT(!CanSize<V const>);
-        STATIC_ASSERT(!CanFront<V>);
-        STATIC_ASSERT(!CanFront<V const>);
-        STATIC_ASSERT(!CanBack<V>);
-        STATIC_ASSERT(!CanBack<V const>);
-        STATIC_ASSERT(!CanIndex<V>);
-        STATIC_ASSERT(!CanIndex<V const>);
+        STATIC_ASSERT(!CanEmpty<V&>);
+        STATIC_ASSERT(!CanEmpty<V const&>);
+        STATIC_ASSERT(!CanBool<V&>);
+        STATIC_ASSERT(!CanBool<V const&>);
+        STATIC_ASSERT(!CanData<V&>);
+        STATIC_ASSERT(!CanData<V const&>);
+        STATIC_ASSERT(!CanSize<V&>);
+        STATIC_ASSERT(!CanSize<V const&>);
+        STATIC_ASSERT(!CanMemberFront<V&>);
+        STATIC_ASSERT(!CanMemberFront<V const&>);
+        STATIC_ASSERT(!CanMemberBack<V&>);
+        STATIC_ASSERT(!CanMemberBack<V const&>);
+        STATIC_ASSERT(!CanIndex<V&>);
+        STATIC_ASSERT(!CanIndex<V const&>);
     } // namespace output_unsized_allowconst
 
     namespace output_sized_onlymutable {
@@ -155,20 +126,20 @@ namespace test_view_interface {
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(!ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
-        STATIC_ASSERT(!CanEmpty<V>);
-        STATIC_ASSERT(!CanEmpty<V const>);
-        STATIC_ASSERT(!CanBool<V>);
-        STATIC_ASSERT(!CanBool<V const>);
-        STATIC_ASSERT(!CanData<V>);
-        STATIC_ASSERT(!CanData<V const>);
-        STATIC_ASSERT(!CanSize<V>);
-        STATIC_ASSERT(!CanSize<V const>);
-        STATIC_ASSERT(!CanFront<V>);
-        STATIC_ASSERT(!CanFront<V const>);
-        STATIC_ASSERT(!CanBack<V>);
-        STATIC_ASSERT(!CanBack<V const>);
-        STATIC_ASSERT(!CanIndex<V>);
-        STATIC_ASSERT(!CanIndex<V const>);
+        STATIC_ASSERT(!CanEmpty<V&>);
+        STATIC_ASSERT(!CanEmpty<V const&>);
+        STATIC_ASSERT(!CanBool<V&>);
+        STATIC_ASSERT(!CanBool<V const&>);
+        STATIC_ASSERT(!CanData<V&>);
+        STATIC_ASSERT(!CanData<V const&>);
+        STATIC_ASSERT(!CanSize<V&>);
+        STATIC_ASSERT(!CanSize<V const&>);
+        STATIC_ASSERT(!CanMemberFront<V&>);
+        STATIC_ASSERT(!CanMemberFront<V const&>);
+        STATIC_ASSERT(!CanMemberBack<V&>);
+        STATIC_ASSERT(!CanMemberBack<V const&>);
+        STATIC_ASSERT(!CanIndex<V&>);
+        STATIC_ASSERT(!CanIndex<V const&>);
     } // namespace output_sized_onlymutable
 
     namespace output_sized_allowconst {
@@ -176,20 +147,20 @@ namespace test_view_interface {
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
-        STATIC_ASSERT(!CanEmpty<V>);
-        STATIC_ASSERT(!CanEmpty<V const>);
-        STATIC_ASSERT(!CanBool<V>);
-        STATIC_ASSERT(!CanBool<V const>);
-        STATIC_ASSERT(!CanData<V>);
-        STATIC_ASSERT(!CanData<V const>);
-        STATIC_ASSERT(!CanSize<V>);
-        STATIC_ASSERT(!CanSize<V const>);
-        STATIC_ASSERT(!CanFront<V>);
-        STATIC_ASSERT(!CanFront<V const>);
-        STATIC_ASSERT(!CanBack<V>);
-        STATIC_ASSERT(!CanBack<V const>);
-        STATIC_ASSERT(!CanIndex<V>);
-        STATIC_ASSERT(!CanIndex<V const>);
+        STATIC_ASSERT(!CanEmpty<V&>);
+        STATIC_ASSERT(!CanEmpty<V const&>);
+        STATIC_ASSERT(!CanBool<V&>);
+        STATIC_ASSERT(!CanBool<V const&>);
+        STATIC_ASSERT(!CanData<V&>);
+        STATIC_ASSERT(!CanData<V const&>);
+        STATIC_ASSERT(!CanSize<V&>);
+        STATIC_ASSERT(!CanSize<V const&>);
+        STATIC_ASSERT(!CanMemberFront<V&>);
+        STATIC_ASSERT(!CanMemberFront<V const&>);
+        STATIC_ASSERT(!CanMemberBack<V&>);
+        STATIC_ASSERT(!CanMemberBack<V const&>);
+        STATIC_ASSERT(!CanIndex<V&>);
+        STATIC_ASSERT(!CanIndex<V const&>);
     } // namespace output_sized_allowconst
 
     namespace input_unsized_onlymutable {
@@ -197,20 +168,20 @@ namespace test_view_interface {
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(!ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
-        STATIC_ASSERT(!CanEmpty<V>);
-        STATIC_ASSERT(!CanEmpty<V const>);
-        STATIC_ASSERT(!CanBool<V>);
-        STATIC_ASSERT(!CanBool<V const>);
-        STATIC_ASSERT(!CanData<V>);
-        STATIC_ASSERT(!CanData<V const>);
-        STATIC_ASSERT(!CanSize<V>);
-        STATIC_ASSERT(!CanSize<V const>);
-        STATIC_ASSERT(!CanFront<V>);
-        STATIC_ASSERT(!CanFront<V const>);
-        STATIC_ASSERT(!CanBack<V>);
-        STATIC_ASSERT(!CanBack<V const>);
-        STATIC_ASSERT(!CanIndex<V>);
-        STATIC_ASSERT(!CanIndex<V const>);
+        STATIC_ASSERT(!CanEmpty<V&>);
+        STATIC_ASSERT(!CanEmpty<V const&>);
+        STATIC_ASSERT(!CanBool<V&>);
+        STATIC_ASSERT(!CanBool<V const&>);
+        STATIC_ASSERT(!CanData<V&>);
+        STATIC_ASSERT(!CanData<V const&>);
+        STATIC_ASSERT(!CanSize<V&>);
+        STATIC_ASSERT(!CanSize<V const&>);
+        STATIC_ASSERT(!CanMemberFront<V&>);
+        STATIC_ASSERT(!CanMemberFront<V const&>);
+        STATIC_ASSERT(!CanMemberBack<V&>);
+        STATIC_ASSERT(!CanMemberBack<V const&>);
+        STATIC_ASSERT(!CanIndex<V&>);
+        STATIC_ASSERT(!CanIndex<V const&>);
     } // namespace input_unsized_onlymutable
 
     namespace input_unsized_allowconst {
@@ -218,20 +189,20 @@ namespace test_view_interface {
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
-        STATIC_ASSERT(!CanEmpty<V>);
-        STATIC_ASSERT(!CanEmpty<V const>);
-        STATIC_ASSERT(!CanBool<V>);
-        STATIC_ASSERT(!CanBool<V const>);
-        STATIC_ASSERT(!CanData<V>);
-        STATIC_ASSERT(!CanData<V const>);
-        STATIC_ASSERT(!CanSize<V>);
-        STATIC_ASSERT(!CanSize<V const>);
-        STATIC_ASSERT(!CanFront<V>);
-        STATIC_ASSERT(!CanFront<V const>);
-        STATIC_ASSERT(!CanBack<V>);
-        STATIC_ASSERT(!CanBack<V const>);
-        STATIC_ASSERT(!CanIndex<V>);
-        STATIC_ASSERT(!CanIndex<V const>);
+        STATIC_ASSERT(!CanEmpty<V&>);
+        STATIC_ASSERT(!CanEmpty<V const&>);
+        STATIC_ASSERT(!CanBool<V&>);
+        STATIC_ASSERT(!CanBool<V const&>);
+        STATIC_ASSERT(!CanData<V&>);
+        STATIC_ASSERT(!CanData<V const&>);
+        STATIC_ASSERT(!CanSize<V&>);
+        STATIC_ASSERT(!CanSize<V const&>);
+        STATIC_ASSERT(!CanMemberFront<V&>);
+        STATIC_ASSERT(!CanMemberFront<V const&>);
+        STATIC_ASSERT(!CanMemberBack<V&>);
+        STATIC_ASSERT(!CanMemberBack<V const&>);
+        STATIC_ASSERT(!CanIndex<V&>);
+        STATIC_ASSERT(!CanIndex<V const&>);
     } // namespace input_unsized_allowconst
 
     namespace input_sized_onlymutable {
@@ -239,20 +210,20 @@ namespace test_view_interface {
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(!ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
-        STATIC_ASSERT(!CanEmpty<V>);
-        STATIC_ASSERT(!CanEmpty<V const>);
-        STATIC_ASSERT(!CanBool<V>);
-        STATIC_ASSERT(!CanBool<V const>);
-        STATIC_ASSERT(!CanData<V>);
-        STATIC_ASSERT(!CanData<V const>);
-        STATIC_ASSERT(!CanSize<V>);
-        STATIC_ASSERT(!CanSize<V const>);
-        STATIC_ASSERT(!CanFront<V>);
-        STATIC_ASSERT(!CanFront<V const>);
-        STATIC_ASSERT(!CanBack<V>);
-        STATIC_ASSERT(!CanBack<V const>);
-        STATIC_ASSERT(!CanIndex<V>);
-        STATIC_ASSERT(!CanIndex<V const>);
+        STATIC_ASSERT(!CanEmpty<V&>);
+        STATIC_ASSERT(!CanEmpty<V const&>);
+        STATIC_ASSERT(!CanBool<V&>);
+        STATIC_ASSERT(!CanBool<V const&>);
+        STATIC_ASSERT(!CanData<V&>);
+        STATIC_ASSERT(!CanData<V const&>);
+        STATIC_ASSERT(!CanSize<V&>);
+        STATIC_ASSERT(!CanSize<V const&>);
+        STATIC_ASSERT(!CanMemberFront<V&>);
+        STATIC_ASSERT(!CanMemberFront<V const&>);
+        STATIC_ASSERT(!CanMemberBack<V&>);
+        STATIC_ASSERT(!CanMemberBack<V const&>);
+        STATIC_ASSERT(!CanIndex<V&>);
+        STATIC_ASSERT(!CanIndex<V const&>);
     } // namespace input_sized_onlymutable
 
     namespace input_sized_allowconst {
@@ -260,20 +231,20 @@ namespace test_view_interface {
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
-        STATIC_ASSERT(!CanEmpty<V>);
-        STATIC_ASSERT(!CanEmpty<V const>);
-        STATIC_ASSERT(!CanBool<V>);
-        STATIC_ASSERT(!CanBool<V const>);
-        STATIC_ASSERT(!CanData<V>);
-        STATIC_ASSERT(!CanData<V const>);
-        STATIC_ASSERT(!CanSize<V>);
-        STATIC_ASSERT(!CanSize<V const>);
-        STATIC_ASSERT(!CanFront<V>);
-        STATIC_ASSERT(!CanFront<V const>);
-        STATIC_ASSERT(!CanBack<V>);
-        STATIC_ASSERT(!CanBack<V const>);
-        STATIC_ASSERT(!CanIndex<V>);
-        STATIC_ASSERT(!CanIndex<V const>);
+        STATIC_ASSERT(!CanEmpty<V&>);
+        STATIC_ASSERT(!CanEmpty<V const&>);
+        STATIC_ASSERT(!CanBool<V&>);
+        STATIC_ASSERT(!CanBool<V const&>);
+        STATIC_ASSERT(!CanData<V&>);
+        STATIC_ASSERT(!CanData<V const&>);
+        STATIC_ASSERT(!CanSize<V&>);
+        STATIC_ASSERT(!CanSize<V const&>);
+        STATIC_ASSERT(!CanMemberFront<V&>);
+        STATIC_ASSERT(!CanMemberFront<V const&>);
+        STATIC_ASSERT(!CanMemberBack<V&>);
+        STATIC_ASSERT(!CanMemberBack<V const&>);
+        STATIC_ASSERT(!CanIndex<V&>);
+        STATIC_ASSERT(!CanIndex<V const&>);
     } // namespace input_sized_allowconst
 
     namespace forward_uncommon_unsized_onlymutable {
@@ -281,20 +252,20 @@ namespace test_view_interface {
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(!ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
-        STATIC_ASSERT(CanEmpty<V>);
-        STATIC_ASSERT(!CanEmpty<V const>);
-        STATIC_ASSERT(CanBool<V>);
-        STATIC_ASSERT(!CanBool<V const>);
-        STATIC_ASSERT(!CanData<V>);
-        STATIC_ASSERT(!CanData<V const>);
-        STATIC_ASSERT(!CanSize<V>);
-        STATIC_ASSERT(!CanSize<V const>);
-        STATIC_ASSERT(CanFront<V>);
-        STATIC_ASSERT(!CanFront<V const>);
-        STATIC_ASSERT(!CanBack<V>);
-        STATIC_ASSERT(!CanBack<V const>);
-        STATIC_ASSERT(!CanIndex<V>);
-        STATIC_ASSERT(!CanIndex<V const>);
+        STATIC_ASSERT(CanEmpty<V&>);
+        STATIC_ASSERT(!CanEmpty<V const&>);
+        STATIC_ASSERT(CanBool<V&>);
+        STATIC_ASSERT(!CanBool<V const&>);
+        STATIC_ASSERT(!CanData<V&>);
+        STATIC_ASSERT(!CanData<V const&>);
+        STATIC_ASSERT(!CanSize<V&>);
+        STATIC_ASSERT(!CanSize<V const&>);
+        STATIC_ASSERT(CanMemberFront<V&>);
+        STATIC_ASSERT(!CanMemberFront<V const&>);
+        STATIC_ASSERT(!CanMemberBack<V&>);
+        STATIC_ASSERT(!CanMemberBack<V const&>);
+        STATIC_ASSERT(!CanIndex<V&>);
+        STATIC_ASSERT(!CanIndex<V const&>);
     } // namespace forward_uncommon_unsized_onlymutable
 
     namespace forward_uncommon_unsized_allowconst {
@@ -302,20 +273,20 @@ namespace test_view_interface {
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
-        STATIC_ASSERT(CanEmpty<V>);
-        STATIC_ASSERT(CanEmpty<V const>);
-        STATIC_ASSERT(CanBool<V>);
-        STATIC_ASSERT(CanBool<V const>);
-        STATIC_ASSERT(!CanData<V>);
-        STATIC_ASSERT(!CanData<V const>);
-        STATIC_ASSERT(!CanSize<V>);
-        STATIC_ASSERT(!CanSize<V const>);
-        STATIC_ASSERT(CanFront<V>);
-        STATIC_ASSERT(CanFront<V const>);
-        STATIC_ASSERT(!CanBack<V>);
-        STATIC_ASSERT(!CanBack<V const>);
-        STATIC_ASSERT(!CanIndex<V>);
-        STATIC_ASSERT(!CanIndex<V const>);
+        STATIC_ASSERT(CanEmpty<V&>);
+        STATIC_ASSERT(CanEmpty<V const&>);
+        STATIC_ASSERT(CanBool<V&>);
+        STATIC_ASSERT(CanBool<V const&>);
+        STATIC_ASSERT(!CanData<V&>);
+        STATIC_ASSERT(!CanData<V const&>);
+        STATIC_ASSERT(!CanSize<V&>);
+        STATIC_ASSERT(!CanSize<V const&>);
+        STATIC_ASSERT(CanMemberFront<V&>);
+        STATIC_ASSERT(CanMemberFront<V const&>);
+        STATIC_ASSERT(!CanMemberBack<V&>);
+        STATIC_ASSERT(!CanMemberBack<V const&>);
+        STATIC_ASSERT(!CanIndex<V&>);
+        STATIC_ASSERT(!CanIndex<V const&>);
     } // namespace forward_uncommon_unsized_allowconst
 
     namespace forward_uncommon_sized_onlymutable {
@@ -323,20 +294,20 @@ namespace test_view_interface {
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(!ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
-        STATIC_ASSERT(CanEmpty<V>);
-        STATIC_ASSERT(!CanEmpty<V const>);
-        STATIC_ASSERT(CanBool<V>);
-        STATIC_ASSERT(!CanBool<V const>);
-        STATIC_ASSERT(!CanData<V>);
-        STATIC_ASSERT(!CanData<V const>);
-        STATIC_ASSERT(CanSize<V>);
-        STATIC_ASSERT(!CanSize<V const>);
-        STATIC_ASSERT(CanFront<V>);
-        STATIC_ASSERT(!CanFront<V const>);
-        STATIC_ASSERT(!CanBack<V>);
-        STATIC_ASSERT(!CanBack<V const>);
-        STATIC_ASSERT(!CanIndex<V>);
-        STATIC_ASSERT(!CanIndex<V const>);
+        STATIC_ASSERT(CanEmpty<V&>);
+        STATIC_ASSERT(!CanEmpty<V const&>);
+        STATIC_ASSERT(CanBool<V&>);
+        STATIC_ASSERT(!CanBool<V const&>);
+        STATIC_ASSERT(!CanData<V&>);
+        STATIC_ASSERT(!CanData<V const&>);
+        STATIC_ASSERT(CanSize<V&>);
+        STATIC_ASSERT(!CanSize<V const&>);
+        STATIC_ASSERT(CanMemberFront<V&>);
+        STATIC_ASSERT(!CanMemberFront<V const&>);
+        STATIC_ASSERT(!CanMemberBack<V&>);
+        STATIC_ASSERT(!CanMemberBack<V const&>);
+        STATIC_ASSERT(!CanIndex<V&>);
+        STATIC_ASSERT(!CanIndex<V const&>);
     } // namespace forward_uncommon_sized_onlymutable
 
     namespace forward_uncommon_sized_allowconst {
@@ -344,20 +315,20 @@ namespace test_view_interface {
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
-        STATIC_ASSERT(CanEmpty<V>);
-        STATIC_ASSERT(CanEmpty<V const>);
-        STATIC_ASSERT(CanBool<V>);
-        STATIC_ASSERT(CanBool<V const>);
-        STATIC_ASSERT(!CanData<V>);
-        STATIC_ASSERT(!CanData<V const>);
-        STATIC_ASSERT(CanSize<V>);
-        STATIC_ASSERT(CanSize<V const>);
-        STATIC_ASSERT(CanFront<V>);
-        STATIC_ASSERT(CanFront<V const>);
-        STATIC_ASSERT(!CanBack<V>);
-        STATIC_ASSERT(!CanBack<V const>);
-        STATIC_ASSERT(!CanIndex<V>);
-        STATIC_ASSERT(!CanIndex<V const>);
+        STATIC_ASSERT(CanEmpty<V&>);
+        STATIC_ASSERT(CanEmpty<V const&>);
+        STATIC_ASSERT(CanBool<V&>);
+        STATIC_ASSERT(CanBool<V const&>);
+        STATIC_ASSERT(!CanData<V&>);
+        STATIC_ASSERT(!CanData<V const&>);
+        STATIC_ASSERT(CanSize<V&>);
+        STATIC_ASSERT(CanSize<V const&>);
+        STATIC_ASSERT(CanMemberFront<V&>);
+        STATIC_ASSERT(CanMemberFront<V const&>);
+        STATIC_ASSERT(!CanMemberBack<V&>);
+        STATIC_ASSERT(!CanMemberBack<V const&>);
+        STATIC_ASSERT(!CanIndex<V&>);
+        STATIC_ASSERT(!CanIndex<V const&>);
     } // namespace forward_uncommon_sized_allowconst
 
     namespace forward_common_unsized_onlymutable {
@@ -365,20 +336,20 @@ namespace test_view_interface {
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(!ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
-        STATIC_ASSERT(CanEmpty<V>);
-        STATIC_ASSERT(!CanEmpty<V const>);
-        STATIC_ASSERT(CanBool<V>);
-        STATIC_ASSERT(!CanBool<V const>);
-        STATIC_ASSERT(!CanData<V>);
-        STATIC_ASSERT(!CanData<V const>);
-        STATIC_ASSERT(!CanSize<V>);
-        STATIC_ASSERT(!CanSize<V const>);
-        STATIC_ASSERT(CanFront<V>);
-        STATIC_ASSERT(!CanFront<V const>);
-        STATIC_ASSERT(!CanBack<V>);
-        STATIC_ASSERT(!CanBack<V const>);
-        STATIC_ASSERT(!CanIndex<V>);
-        STATIC_ASSERT(!CanIndex<V const>);
+        STATIC_ASSERT(CanEmpty<V&>);
+        STATIC_ASSERT(!CanEmpty<V const&>);
+        STATIC_ASSERT(CanBool<V&>);
+        STATIC_ASSERT(!CanBool<V const&>);
+        STATIC_ASSERT(!CanData<V&>);
+        STATIC_ASSERT(!CanData<V const&>);
+        STATIC_ASSERT(!CanSize<V&>);
+        STATIC_ASSERT(!CanSize<V const&>);
+        STATIC_ASSERT(CanMemberFront<V&>);
+        STATIC_ASSERT(!CanMemberFront<V const&>);
+        STATIC_ASSERT(!CanMemberBack<V&>);
+        STATIC_ASSERT(!CanMemberBack<V const&>);
+        STATIC_ASSERT(!CanIndex<V&>);
+        STATIC_ASSERT(!CanIndex<V const&>);
     } // namespace forward_common_unsized_onlymutable
 
     namespace forward_common_unsized_allowconst {
@@ -386,20 +357,20 @@ namespace test_view_interface {
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
-        STATIC_ASSERT(CanEmpty<V>);
-        STATIC_ASSERT(CanEmpty<V const>);
-        STATIC_ASSERT(CanBool<V>);
-        STATIC_ASSERT(CanBool<V const>);
-        STATIC_ASSERT(!CanData<V>);
-        STATIC_ASSERT(!CanData<V const>);
-        STATIC_ASSERT(!CanSize<V>);
-        STATIC_ASSERT(!CanSize<V const>);
-        STATIC_ASSERT(CanFront<V>);
-        STATIC_ASSERT(CanFront<V const>);
-        STATIC_ASSERT(!CanBack<V>);
-        STATIC_ASSERT(!CanBack<V const>);
-        STATIC_ASSERT(!CanIndex<V>);
-        STATIC_ASSERT(!CanIndex<V const>);
+        STATIC_ASSERT(CanEmpty<V&>);
+        STATIC_ASSERT(CanEmpty<V const&>);
+        STATIC_ASSERT(CanBool<V&>);
+        STATIC_ASSERT(CanBool<V const&>);
+        STATIC_ASSERT(!CanData<V&>);
+        STATIC_ASSERT(!CanData<V const&>);
+        STATIC_ASSERT(!CanSize<V&>);
+        STATIC_ASSERT(!CanSize<V const&>);
+        STATIC_ASSERT(CanMemberFront<V&>);
+        STATIC_ASSERT(CanMemberFront<V const&>);
+        STATIC_ASSERT(!CanMemberBack<V&>);
+        STATIC_ASSERT(!CanMemberBack<V const&>);
+        STATIC_ASSERT(!CanIndex<V&>);
+        STATIC_ASSERT(!CanIndex<V const&>);
     } // namespace forward_common_unsized_allowconst
 
     namespace forward_common_sized_onlymutable {
@@ -407,20 +378,20 @@ namespace test_view_interface {
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(!ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
-        STATIC_ASSERT(CanEmpty<V>);
-        STATIC_ASSERT(!CanEmpty<V const>);
-        STATIC_ASSERT(CanBool<V>);
-        STATIC_ASSERT(!CanBool<V const>);
-        STATIC_ASSERT(!CanData<V>);
-        STATIC_ASSERT(!CanData<V const>);
-        STATIC_ASSERT(CanSize<V>);
-        STATIC_ASSERT(!CanSize<V const>);
-        STATIC_ASSERT(CanFront<V>);
-        STATIC_ASSERT(!CanFront<V const>);
-        STATIC_ASSERT(!CanBack<V>);
-        STATIC_ASSERT(!CanBack<V const>);
-        STATIC_ASSERT(!CanIndex<V>);
-        STATIC_ASSERT(!CanIndex<V const>);
+        STATIC_ASSERT(CanEmpty<V&>);
+        STATIC_ASSERT(!CanEmpty<V const&>);
+        STATIC_ASSERT(CanBool<V&>);
+        STATIC_ASSERT(!CanBool<V const&>);
+        STATIC_ASSERT(!CanData<V&>);
+        STATIC_ASSERT(!CanData<V const&>);
+        STATIC_ASSERT(CanSize<V&>);
+        STATIC_ASSERT(!CanSize<V const&>);
+        STATIC_ASSERT(CanMemberFront<V&>);
+        STATIC_ASSERT(!CanMemberFront<V const&>);
+        STATIC_ASSERT(!CanMemberBack<V&>);
+        STATIC_ASSERT(!CanMemberBack<V const&>);
+        STATIC_ASSERT(!CanIndex<V&>);
+        STATIC_ASSERT(!CanIndex<V const&>);
     } // namespace forward_common_sized_onlymutable
 
     namespace forward_common_sized_allowconst {
@@ -428,20 +399,20 @@ namespace test_view_interface {
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
-        STATIC_ASSERT(CanEmpty<V>);
-        STATIC_ASSERT(CanEmpty<V const>);
-        STATIC_ASSERT(CanBool<V>);
-        STATIC_ASSERT(CanBool<V const>);
-        STATIC_ASSERT(!CanData<V>);
-        STATIC_ASSERT(!CanData<V const>);
-        STATIC_ASSERT(CanSize<V>);
-        STATIC_ASSERT(CanSize<V const>);
-        STATIC_ASSERT(CanFront<V>);
-        STATIC_ASSERT(CanFront<V const>);
-        STATIC_ASSERT(!CanBack<V>);
-        STATIC_ASSERT(!CanBack<V const>);
-        STATIC_ASSERT(!CanIndex<V>);
-        STATIC_ASSERT(!CanIndex<V const>);
+        STATIC_ASSERT(CanEmpty<V&>);
+        STATIC_ASSERT(CanEmpty<V const&>);
+        STATIC_ASSERT(CanBool<V&>);
+        STATIC_ASSERT(CanBool<V const&>);
+        STATIC_ASSERT(!CanData<V&>);
+        STATIC_ASSERT(!CanData<V const&>);
+        STATIC_ASSERT(CanSize<V&>);
+        STATIC_ASSERT(CanSize<V const&>);
+        STATIC_ASSERT(CanMemberFront<V&>);
+        STATIC_ASSERT(CanMemberFront<V const&>);
+        STATIC_ASSERT(!CanMemberBack<V&>);
+        STATIC_ASSERT(!CanMemberBack<V const&>);
+        STATIC_ASSERT(!CanIndex<V&>);
+        STATIC_ASSERT(!CanIndex<V const&>);
     } // namespace forward_common_sized_allowconst
 
     namespace bidi_uncommon_unsized_onlymutable {
@@ -449,20 +420,20 @@ namespace test_view_interface {
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(!ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
-        STATIC_ASSERT(CanEmpty<V>);
-        STATIC_ASSERT(!CanEmpty<V const>);
-        STATIC_ASSERT(CanBool<V>);
-        STATIC_ASSERT(!CanBool<V const>);
-        STATIC_ASSERT(!CanData<V>);
-        STATIC_ASSERT(!CanData<V const>);
-        STATIC_ASSERT(!CanSize<V>);
-        STATIC_ASSERT(!CanSize<V const>);
-        STATIC_ASSERT(CanFront<V>);
-        STATIC_ASSERT(!CanFront<V const>);
-        STATIC_ASSERT(!CanBack<V>);
-        STATIC_ASSERT(!CanBack<V const>);
-        STATIC_ASSERT(!CanIndex<V>);
-        STATIC_ASSERT(!CanIndex<V const>);
+        STATIC_ASSERT(CanEmpty<V&>);
+        STATIC_ASSERT(!CanEmpty<V const&>);
+        STATIC_ASSERT(CanBool<V&>);
+        STATIC_ASSERT(!CanBool<V const&>);
+        STATIC_ASSERT(!CanData<V&>);
+        STATIC_ASSERT(!CanData<V const&>);
+        STATIC_ASSERT(!CanSize<V&>);
+        STATIC_ASSERT(!CanSize<V const&>);
+        STATIC_ASSERT(CanMemberFront<V&>);
+        STATIC_ASSERT(!CanMemberFront<V const&>);
+        STATIC_ASSERT(!CanMemberBack<V&>);
+        STATIC_ASSERT(!CanMemberBack<V const&>);
+        STATIC_ASSERT(!CanIndex<V&>);
+        STATIC_ASSERT(!CanIndex<V const&>);
     } // namespace bidi_uncommon_unsized_onlymutable
 
     namespace bidi_uncommon_unsized_allowconst {
@@ -470,20 +441,20 @@ namespace test_view_interface {
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
-        STATIC_ASSERT(CanEmpty<V>);
-        STATIC_ASSERT(CanEmpty<V const>);
-        STATIC_ASSERT(CanBool<V>);
-        STATIC_ASSERT(CanBool<V const>);
-        STATIC_ASSERT(!CanData<V>);
-        STATIC_ASSERT(!CanData<V const>);
-        STATIC_ASSERT(!CanSize<V>);
-        STATIC_ASSERT(!CanSize<V const>);
-        STATIC_ASSERT(CanFront<V>);
-        STATIC_ASSERT(CanFront<V const>);
-        STATIC_ASSERT(!CanBack<V>);
-        STATIC_ASSERT(!CanBack<V const>);
-        STATIC_ASSERT(!CanIndex<V>);
-        STATIC_ASSERT(!CanIndex<V const>);
+        STATIC_ASSERT(CanEmpty<V&>);
+        STATIC_ASSERT(CanEmpty<V const&>);
+        STATIC_ASSERT(CanBool<V&>);
+        STATIC_ASSERT(CanBool<V const&>);
+        STATIC_ASSERT(!CanData<V&>);
+        STATIC_ASSERT(!CanData<V const&>);
+        STATIC_ASSERT(!CanSize<V&>);
+        STATIC_ASSERT(!CanSize<V const&>);
+        STATIC_ASSERT(CanMemberFront<V&>);
+        STATIC_ASSERT(CanMemberFront<V const&>);
+        STATIC_ASSERT(!CanMemberBack<V&>);
+        STATIC_ASSERT(!CanMemberBack<V const&>);
+        STATIC_ASSERT(!CanIndex<V&>);
+        STATIC_ASSERT(!CanIndex<V const&>);
     } // namespace bidi_uncommon_unsized_allowconst
 
     namespace bidi_uncommon_sized_onlymutable {
@@ -491,20 +462,20 @@ namespace test_view_interface {
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(!ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
-        STATIC_ASSERT(CanEmpty<V>);
-        STATIC_ASSERT(!CanEmpty<V const>);
-        STATIC_ASSERT(CanBool<V>);
-        STATIC_ASSERT(!CanBool<V const>);
-        STATIC_ASSERT(!CanData<V>);
-        STATIC_ASSERT(!CanData<V const>);
-        STATIC_ASSERT(CanSize<V>);
-        STATIC_ASSERT(!CanSize<V const>);
-        STATIC_ASSERT(CanFront<V>);
-        STATIC_ASSERT(!CanFront<V const>);
-        STATIC_ASSERT(!CanBack<V>);
-        STATIC_ASSERT(!CanBack<V const>);
-        STATIC_ASSERT(!CanIndex<V>);
-        STATIC_ASSERT(!CanIndex<V const>);
+        STATIC_ASSERT(CanEmpty<V&>);
+        STATIC_ASSERT(!CanEmpty<V const&>);
+        STATIC_ASSERT(CanBool<V&>);
+        STATIC_ASSERT(!CanBool<V const&>);
+        STATIC_ASSERT(!CanData<V&>);
+        STATIC_ASSERT(!CanData<V const&>);
+        STATIC_ASSERT(CanSize<V&>);
+        STATIC_ASSERT(!CanSize<V const&>);
+        STATIC_ASSERT(CanMemberFront<V&>);
+        STATIC_ASSERT(!CanMemberFront<V const&>);
+        STATIC_ASSERT(!CanMemberBack<V&>);
+        STATIC_ASSERT(!CanMemberBack<V const&>);
+        STATIC_ASSERT(!CanIndex<V&>);
+        STATIC_ASSERT(!CanIndex<V const&>);
     } // namespace bidi_uncommon_sized_onlymutable
 
     namespace bidi_uncommon_sized_allowconst {
@@ -512,20 +483,20 @@ namespace test_view_interface {
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
-        STATIC_ASSERT(CanEmpty<V>);
-        STATIC_ASSERT(CanEmpty<V const>);
-        STATIC_ASSERT(CanBool<V>);
-        STATIC_ASSERT(CanBool<V const>);
-        STATIC_ASSERT(!CanData<V>);
-        STATIC_ASSERT(!CanData<V const>);
-        STATIC_ASSERT(CanSize<V>);
-        STATIC_ASSERT(CanSize<V const>);
-        STATIC_ASSERT(CanFront<V>);
-        STATIC_ASSERT(CanFront<V const>);
-        STATIC_ASSERT(!CanBack<V>);
-        STATIC_ASSERT(!CanBack<V const>);
-        STATIC_ASSERT(!CanIndex<V>);
-        STATIC_ASSERT(!CanIndex<V const>);
+        STATIC_ASSERT(CanEmpty<V&>);
+        STATIC_ASSERT(CanEmpty<V const&>);
+        STATIC_ASSERT(CanBool<V&>);
+        STATIC_ASSERT(CanBool<V const&>);
+        STATIC_ASSERT(!CanData<V&>);
+        STATIC_ASSERT(!CanData<V const&>);
+        STATIC_ASSERT(CanSize<V&>);
+        STATIC_ASSERT(CanSize<V const&>);
+        STATIC_ASSERT(CanMemberFront<V&>);
+        STATIC_ASSERT(CanMemberFront<V const&>);
+        STATIC_ASSERT(!CanMemberBack<V&>);
+        STATIC_ASSERT(!CanMemberBack<V const&>);
+        STATIC_ASSERT(!CanIndex<V&>);
+        STATIC_ASSERT(!CanIndex<V const&>);
     } // namespace bidi_uncommon_sized_allowconst
 
     namespace bidi_common_unsized_onlymutable {
@@ -533,20 +504,20 @@ namespace test_view_interface {
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(!ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
-        STATIC_ASSERT(CanEmpty<V>);
-        STATIC_ASSERT(!CanEmpty<V const>);
-        STATIC_ASSERT(CanBool<V>);
-        STATIC_ASSERT(!CanBool<V const>);
-        STATIC_ASSERT(!CanData<V>);
-        STATIC_ASSERT(!CanData<V const>);
-        STATIC_ASSERT(!CanSize<V>);
-        STATIC_ASSERT(!CanSize<V const>);
-        STATIC_ASSERT(CanFront<V>);
-        STATIC_ASSERT(!CanFront<V const>);
-        STATIC_ASSERT(CanBack<V>);
-        STATIC_ASSERT(!CanBack<V const>);
-        STATIC_ASSERT(!CanIndex<V>);
-        STATIC_ASSERT(!CanIndex<V const>);
+        STATIC_ASSERT(CanEmpty<V&>);
+        STATIC_ASSERT(!CanEmpty<V const&>);
+        STATIC_ASSERT(CanBool<V&>);
+        STATIC_ASSERT(!CanBool<V const&>);
+        STATIC_ASSERT(!CanData<V&>);
+        STATIC_ASSERT(!CanData<V const&>);
+        STATIC_ASSERT(!CanSize<V&>);
+        STATIC_ASSERT(!CanSize<V const&>);
+        STATIC_ASSERT(CanMemberFront<V&>);
+        STATIC_ASSERT(!CanMemberFront<V const&>);
+        STATIC_ASSERT(CanMemberBack<V&>);
+        STATIC_ASSERT(!CanMemberBack<V const&>);
+        STATIC_ASSERT(!CanIndex<V&>);
+        STATIC_ASSERT(!CanIndex<V const&>);
     } // namespace bidi_common_unsized_onlymutable
 
     namespace bidi_common_unsized_allowconst {
@@ -554,20 +525,20 @@ namespace test_view_interface {
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
-        STATIC_ASSERT(CanEmpty<V>);
-        STATIC_ASSERT(CanEmpty<V const>);
-        STATIC_ASSERT(CanBool<V>);
-        STATIC_ASSERT(CanBool<V const>);
-        STATIC_ASSERT(!CanData<V>);
-        STATIC_ASSERT(!CanData<V const>);
-        STATIC_ASSERT(!CanSize<V>);
-        STATIC_ASSERT(!CanSize<V const>);
-        STATIC_ASSERT(CanFront<V>);
-        STATIC_ASSERT(CanFront<V const>);
-        STATIC_ASSERT(CanBack<V>);
-        STATIC_ASSERT(CanBack<V const>);
-        STATIC_ASSERT(!CanIndex<V>);
-        STATIC_ASSERT(!CanIndex<V const>);
+        STATIC_ASSERT(CanEmpty<V&>);
+        STATIC_ASSERT(CanEmpty<V const&>);
+        STATIC_ASSERT(CanBool<V&>);
+        STATIC_ASSERT(CanBool<V const&>);
+        STATIC_ASSERT(!CanData<V&>);
+        STATIC_ASSERT(!CanData<V const&>);
+        STATIC_ASSERT(!CanSize<V&>);
+        STATIC_ASSERT(!CanSize<V const&>);
+        STATIC_ASSERT(CanMemberFront<V&>);
+        STATIC_ASSERT(CanMemberFront<V const&>);
+        STATIC_ASSERT(CanMemberBack<V&>);
+        STATIC_ASSERT(CanMemberBack<V const&>);
+        STATIC_ASSERT(!CanIndex<V&>);
+        STATIC_ASSERT(!CanIndex<V const&>);
     } // namespace bidi_common_unsized_allowconst
 
     namespace bidi_common_sized_onlymutable {
@@ -575,20 +546,20 @@ namespace test_view_interface {
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(!ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
-        STATIC_ASSERT(CanEmpty<V>);
-        STATIC_ASSERT(!CanEmpty<V const>);
-        STATIC_ASSERT(CanBool<V>);
-        STATIC_ASSERT(!CanBool<V const>);
-        STATIC_ASSERT(!CanData<V>);
-        STATIC_ASSERT(!CanData<V const>);
-        STATIC_ASSERT(CanSize<V>);
-        STATIC_ASSERT(!CanSize<V const>);
-        STATIC_ASSERT(CanFront<V>);
-        STATIC_ASSERT(!CanFront<V const>);
-        STATIC_ASSERT(CanBack<V>);
-        STATIC_ASSERT(!CanBack<V const>);
-        STATIC_ASSERT(!CanIndex<V>);
-        STATIC_ASSERT(!CanIndex<V const>);
+        STATIC_ASSERT(CanEmpty<V&>);
+        STATIC_ASSERT(!CanEmpty<V const&>);
+        STATIC_ASSERT(CanBool<V&>);
+        STATIC_ASSERT(!CanBool<V const&>);
+        STATIC_ASSERT(!CanData<V&>);
+        STATIC_ASSERT(!CanData<V const&>);
+        STATIC_ASSERT(CanSize<V&>);
+        STATIC_ASSERT(!CanSize<V const&>);
+        STATIC_ASSERT(CanMemberFront<V&>);
+        STATIC_ASSERT(!CanMemberFront<V const&>);
+        STATIC_ASSERT(CanMemberBack<V&>);
+        STATIC_ASSERT(!CanMemberBack<V const&>);
+        STATIC_ASSERT(!CanIndex<V&>);
+        STATIC_ASSERT(!CanIndex<V const&>);
     } // namespace bidi_common_sized_onlymutable
 
     namespace bidi_common_sized_allowconst {
@@ -596,20 +567,20 @@ namespace test_view_interface {
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
-        STATIC_ASSERT(CanEmpty<V>);
-        STATIC_ASSERT(CanEmpty<V const>);
-        STATIC_ASSERT(CanBool<V>);
-        STATIC_ASSERT(CanBool<V const>);
-        STATIC_ASSERT(!CanData<V>);
-        STATIC_ASSERT(!CanData<V const>);
-        STATIC_ASSERT(CanSize<V>);
-        STATIC_ASSERT(CanSize<V const>);
-        STATIC_ASSERT(CanFront<V>);
-        STATIC_ASSERT(CanFront<V const>);
-        STATIC_ASSERT(CanBack<V>);
-        STATIC_ASSERT(CanBack<V const>);
-        STATIC_ASSERT(!CanIndex<V>);
-        STATIC_ASSERT(!CanIndex<V const>);
+        STATIC_ASSERT(CanEmpty<V&>);
+        STATIC_ASSERT(CanEmpty<V const&>);
+        STATIC_ASSERT(CanBool<V&>);
+        STATIC_ASSERT(CanBool<V const&>);
+        STATIC_ASSERT(!CanData<V&>);
+        STATIC_ASSERT(!CanData<V const&>);
+        STATIC_ASSERT(CanSize<V&>);
+        STATIC_ASSERT(CanSize<V const&>);
+        STATIC_ASSERT(CanMemberFront<V&>);
+        STATIC_ASSERT(CanMemberFront<V const&>);
+        STATIC_ASSERT(CanMemberBack<V&>);
+        STATIC_ASSERT(CanMemberBack<V const&>);
+        STATIC_ASSERT(!CanIndex<V&>);
+        STATIC_ASSERT(!CanIndex<V const&>);
     } // namespace bidi_common_sized_allowconst
 
     namespace random_uncommon_sized_onlymutable {
@@ -617,20 +588,20 @@ namespace test_view_interface {
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(!ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
-        STATIC_ASSERT(CanEmpty<V>);
-        STATIC_ASSERT(!CanEmpty<V const>);
-        STATIC_ASSERT(CanBool<V>);
-        STATIC_ASSERT(!CanBool<V const>);
-        STATIC_ASSERT(!CanData<V>);
-        STATIC_ASSERT(!CanData<V const>);
-        STATIC_ASSERT(CanSize<V>);
-        STATIC_ASSERT(!CanSize<V const>);
-        STATIC_ASSERT(CanFront<V>);
-        STATIC_ASSERT(!CanFront<V const>);
-        STATIC_ASSERT(!CanBack<V>);
-        STATIC_ASSERT(!CanBack<V const>);
-        STATIC_ASSERT(CanIndex<V>);
-        STATIC_ASSERT(!CanIndex<V const>);
+        STATIC_ASSERT(CanEmpty<V&>);
+        STATIC_ASSERT(!CanEmpty<V const&>);
+        STATIC_ASSERT(CanBool<V&>);
+        STATIC_ASSERT(!CanBool<V const&>);
+        STATIC_ASSERT(!CanData<V&>);
+        STATIC_ASSERT(!CanData<V const&>);
+        STATIC_ASSERT(CanSize<V&>);
+        STATIC_ASSERT(!CanSize<V const&>);
+        STATIC_ASSERT(CanMemberFront<V&>);
+        STATIC_ASSERT(!CanMemberFront<V const&>);
+        STATIC_ASSERT(!CanMemberBack<V&>);
+        STATIC_ASSERT(!CanMemberBack<V const&>);
+        STATIC_ASSERT(CanIndex<V&>);
+        STATIC_ASSERT(!CanIndex<V const&>);
     } // namespace random_uncommon_sized_onlymutable
 
     namespace random_uncommon_sized_allowconst {
@@ -638,20 +609,20 @@ namespace test_view_interface {
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
-        STATIC_ASSERT(CanEmpty<V>);
-        STATIC_ASSERT(CanEmpty<V const>);
-        STATIC_ASSERT(CanBool<V>);
-        STATIC_ASSERT(CanBool<V const>);
-        STATIC_ASSERT(!CanData<V>);
-        STATIC_ASSERT(!CanData<V const>);
-        STATIC_ASSERT(CanSize<V>);
-        STATIC_ASSERT(CanSize<V const>);
-        STATIC_ASSERT(CanFront<V>);
-        STATIC_ASSERT(CanFront<V const>);
-        STATIC_ASSERT(!CanBack<V>);
-        STATIC_ASSERT(!CanBack<V const>);
-        STATIC_ASSERT(CanIndex<V>);
-        STATIC_ASSERT(CanIndex<V const>);
+        STATIC_ASSERT(CanEmpty<V&>);
+        STATIC_ASSERT(CanEmpty<V const&>);
+        STATIC_ASSERT(CanBool<V&>);
+        STATIC_ASSERT(CanBool<V const&>);
+        STATIC_ASSERT(!CanData<V&>);
+        STATIC_ASSERT(!CanData<V const&>);
+        STATIC_ASSERT(CanSize<V&>);
+        STATIC_ASSERT(CanSize<V const&>);
+        STATIC_ASSERT(CanMemberFront<V&>);
+        STATIC_ASSERT(CanMemberFront<V const&>);
+        STATIC_ASSERT(!CanMemberBack<V&>);
+        STATIC_ASSERT(!CanMemberBack<V const&>);
+        STATIC_ASSERT(CanIndex<V&>);
+        STATIC_ASSERT(CanIndex<V const&>);
     } // namespace random_uncommon_sized_allowconst
 
     namespace random_common_sized_onlymutable {
@@ -659,20 +630,20 @@ namespace test_view_interface {
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(!ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
-        STATIC_ASSERT(CanEmpty<V>);
-        STATIC_ASSERT(!CanEmpty<V const>);
-        STATIC_ASSERT(CanBool<V>);
-        STATIC_ASSERT(!CanBool<V const>);
-        STATIC_ASSERT(!CanData<V>);
-        STATIC_ASSERT(!CanData<V const>);
-        STATIC_ASSERT(CanSize<V>);
-        STATIC_ASSERT(!CanSize<V const>);
-        STATIC_ASSERT(CanFront<V>);
-        STATIC_ASSERT(!CanFront<V const>);
-        STATIC_ASSERT(CanBack<V>);
-        STATIC_ASSERT(!CanBack<V const>);
-        STATIC_ASSERT(CanIndex<V>);
-        STATIC_ASSERT(!CanIndex<V const>);
+        STATIC_ASSERT(CanEmpty<V&>);
+        STATIC_ASSERT(!CanEmpty<V const&>);
+        STATIC_ASSERT(CanBool<V&>);
+        STATIC_ASSERT(!CanBool<V const&>);
+        STATIC_ASSERT(!CanData<V&>);
+        STATIC_ASSERT(!CanData<V const&>);
+        STATIC_ASSERT(CanSize<V&>);
+        STATIC_ASSERT(!CanSize<V const&>);
+        STATIC_ASSERT(CanMemberFront<V&>);
+        STATIC_ASSERT(!CanMemberFront<V const&>);
+        STATIC_ASSERT(CanMemberBack<V&>);
+        STATIC_ASSERT(!CanMemberBack<V const&>);
+        STATIC_ASSERT(CanIndex<V&>);
+        STATIC_ASSERT(!CanIndex<V const&>);
     } // namespace random_common_sized_onlymutable
 
     namespace random_common_sized_allowconst {
@@ -680,20 +651,20 @@ namespace test_view_interface {
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
-        STATIC_ASSERT(CanEmpty<V>);
-        STATIC_ASSERT(CanEmpty<V const>);
-        STATIC_ASSERT(CanBool<V>);
-        STATIC_ASSERT(CanBool<V const>);
-        STATIC_ASSERT(!CanData<V>);
-        STATIC_ASSERT(!CanData<V const>);
-        STATIC_ASSERT(CanSize<V>);
-        STATIC_ASSERT(CanSize<V const>);
-        STATIC_ASSERT(CanFront<V>);
-        STATIC_ASSERT(CanFront<V const>);
-        STATIC_ASSERT(CanBack<V>);
-        STATIC_ASSERT(CanBack<V const>);
-        STATIC_ASSERT(CanIndex<V>);
-        STATIC_ASSERT(CanIndex<V const>);
+        STATIC_ASSERT(CanEmpty<V&>);
+        STATIC_ASSERT(CanEmpty<V const&>);
+        STATIC_ASSERT(CanBool<V&>);
+        STATIC_ASSERT(CanBool<V const&>);
+        STATIC_ASSERT(!CanData<V&>);
+        STATIC_ASSERT(!CanData<V const&>);
+        STATIC_ASSERT(CanSize<V&>);
+        STATIC_ASSERT(CanSize<V const&>);
+        STATIC_ASSERT(CanMemberFront<V&>);
+        STATIC_ASSERT(CanMemberFront<V const&>);
+        STATIC_ASSERT(CanMemberBack<V&>);
+        STATIC_ASSERT(CanMemberBack<V const&>);
+        STATIC_ASSERT(CanIndex<V&>);
+        STATIC_ASSERT(CanIndex<V const&>);
     } // namespace random_common_sized_allowconst
 
     namespace contiguous_uncommon_sized_onlymutable {
@@ -701,20 +672,20 @@ namespace test_view_interface {
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(!ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
-        STATIC_ASSERT(CanEmpty<V>);
-        STATIC_ASSERT(!CanEmpty<V const>);
-        STATIC_ASSERT(CanBool<V>);
-        STATIC_ASSERT(!CanBool<V const>);
-        STATIC_ASSERT(CanData<V>);
-        STATIC_ASSERT(!CanData<V const>);
-        STATIC_ASSERT(CanSize<V>);
-        STATIC_ASSERT(!CanSize<V const>);
-        STATIC_ASSERT(CanFront<V>);
-        STATIC_ASSERT(!CanFront<V const>);
-        STATIC_ASSERT(!CanBack<V>);
-        STATIC_ASSERT(!CanBack<V const>);
-        STATIC_ASSERT(CanIndex<V>);
-        STATIC_ASSERT(!CanIndex<V const>);
+        STATIC_ASSERT(CanEmpty<V&>);
+        STATIC_ASSERT(!CanEmpty<V const&>);
+        STATIC_ASSERT(CanBool<V&>);
+        STATIC_ASSERT(!CanBool<V const&>);
+        STATIC_ASSERT(CanData<V&>);
+        STATIC_ASSERT(!CanData<V const&>);
+        STATIC_ASSERT(CanSize<V&>);
+        STATIC_ASSERT(!CanSize<V const&>);
+        STATIC_ASSERT(CanMemberFront<V&>);
+        STATIC_ASSERT(!CanMemberFront<V const&>);
+        STATIC_ASSERT(!CanMemberBack<V&>);
+        STATIC_ASSERT(!CanMemberBack<V const&>);
+        STATIC_ASSERT(CanIndex<V&>);
+        STATIC_ASSERT(!CanIndex<V const&>);
     } // namespace contiguous_uncommon_sized_onlymutable
 
     namespace contiguous_uncommon_sized_allowconst {
@@ -722,20 +693,20 @@ namespace test_view_interface {
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
-        STATIC_ASSERT(CanEmpty<V>);
-        STATIC_ASSERT(CanEmpty<V const>);
-        STATIC_ASSERT(CanBool<V>);
-        STATIC_ASSERT(CanBool<V const>);
-        STATIC_ASSERT(CanData<V>);
-        STATIC_ASSERT(CanData<V const>);
-        STATIC_ASSERT(CanSize<V>);
-        STATIC_ASSERT(CanSize<V const>);
-        STATIC_ASSERT(CanFront<V>);
-        STATIC_ASSERT(CanFront<V const>);
-        STATIC_ASSERT(!CanBack<V>);
-        STATIC_ASSERT(!CanBack<V const>);
-        STATIC_ASSERT(CanIndex<V>);
-        STATIC_ASSERT(CanIndex<V const>);
+        STATIC_ASSERT(CanEmpty<V&>);
+        STATIC_ASSERT(CanEmpty<V const&>);
+        STATIC_ASSERT(CanBool<V&>);
+        STATIC_ASSERT(CanBool<V const&>);
+        STATIC_ASSERT(CanData<V&>);
+        STATIC_ASSERT(CanData<V const&>);
+        STATIC_ASSERT(CanSize<V&>);
+        STATIC_ASSERT(CanSize<V const&>);
+        STATIC_ASSERT(CanMemberFront<V&>);
+        STATIC_ASSERT(CanMemberFront<V const&>);
+        STATIC_ASSERT(!CanMemberBack<V&>);
+        STATIC_ASSERT(!CanMemberBack<V const&>);
+        STATIC_ASSERT(CanIndex<V&>);
+        STATIC_ASSERT(CanIndex<V const&>);
     } // namespace contiguous_uncommon_sized_allowconst
 
     namespace contiguous_common_sized_onlymutable {
@@ -743,20 +714,20 @@ namespace test_view_interface {
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(!ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
-        STATIC_ASSERT(CanEmpty<V>);
-        STATIC_ASSERT(!CanEmpty<V const>);
-        STATIC_ASSERT(CanBool<V>);
-        STATIC_ASSERT(!CanBool<V const>);
-        STATIC_ASSERT(CanData<V>);
-        STATIC_ASSERT(!CanData<V const>);
-        STATIC_ASSERT(CanSize<V>);
-        STATIC_ASSERT(!CanSize<V const>);
-        STATIC_ASSERT(CanFront<V>);
-        STATIC_ASSERT(!CanFront<V const>);
-        STATIC_ASSERT(CanBack<V>);
-        STATIC_ASSERT(!CanBack<V const>);
-        STATIC_ASSERT(CanIndex<V>);
-        STATIC_ASSERT(!CanIndex<V const>);
+        STATIC_ASSERT(CanEmpty<V&>);
+        STATIC_ASSERT(!CanEmpty<V const&>);
+        STATIC_ASSERT(CanBool<V&>);
+        STATIC_ASSERT(!CanBool<V const&>);
+        STATIC_ASSERT(CanData<V&>);
+        STATIC_ASSERT(!CanData<V const&>);
+        STATIC_ASSERT(CanSize<V&>);
+        STATIC_ASSERT(!CanSize<V const&>);
+        STATIC_ASSERT(CanMemberFront<V&>);
+        STATIC_ASSERT(!CanMemberFront<V const&>);
+        STATIC_ASSERT(CanMemberBack<V&>);
+        STATIC_ASSERT(!CanMemberBack<V const&>);
+        STATIC_ASSERT(CanIndex<V&>);
+        STATIC_ASSERT(!CanIndex<V const&>);
     } // namespace contiguous_common_sized_onlymutable
 
     namespace contiguous_common_sized_allowconst {
@@ -764,20 +735,20 @@ namespace test_view_interface {
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
-        STATIC_ASSERT(CanEmpty<V>);
-        STATIC_ASSERT(CanEmpty<V const>);
-        STATIC_ASSERT(CanBool<V>);
-        STATIC_ASSERT(CanBool<V const>);
-        STATIC_ASSERT(CanData<V>);
-        STATIC_ASSERT(CanData<V const>);
-        STATIC_ASSERT(CanSize<V>);
-        STATIC_ASSERT(CanSize<V const>);
-        STATIC_ASSERT(CanFront<V>);
-        STATIC_ASSERT(CanFront<V const>);
-        STATIC_ASSERT(CanBack<V>);
-        STATIC_ASSERT(CanBack<V const>);
-        STATIC_ASSERT(CanIndex<V>);
-        STATIC_ASSERT(CanIndex<V const>);
+        STATIC_ASSERT(CanEmpty<V&>);
+        STATIC_ASSERT(CanEmpty<V const&>);
+        STATIC_ASSERT(CanBool<V&>);
+        STATIC_ASSERT(CanBool<V const&>);
+        STATIC_ASSERT(CanData<V&>);
+        STATIC_ASSERT(CanData<V const&>);
+        STATIC_ASSERT(CanSize<V&>);
+        STATIC_ASSERT(CanSize<V const&>);
+        STATIC_ASSERT(CanMemberFront<V&>);
+        STATIC_ASSERT(CanMemberFront<V const&>);
+        STATIC_ASSERT(CanMemberBack<V&>);
+        STATIC_ASSERT(CanMemberBack<V const&>);
+        STATIC_ASSERT(CanIndex<V&>);
+        STATIC_ASSERT(CanIndex<V const&>);
     } // namespace contiguous_common_sized_allowconst
 } // namespace test_view_interface
 

@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <condition_variable>
+#include <cstddef> // for size_t
 #include <mutex>
 #include <ppltaskscheduler.h>
-#include <stddef.h>
 
 #include <Windows.h>
 
@@ -20,15 +20,6 @@ extern "C" IMAGE_DOS_HEADER __ImageBase;
 namespace Concurrency {
     namespace details {
         namespace {
-            bool _Is_vista_threadpool_supported() {
-#if _STL_WIN32_WINNT >= _WIN32_WINNT_VISTA
-                return true;
-#else // ^^^ _STL_WIN32_WINNT >= _WIN32_WINNT_VISTA ^^^ // vvv _STL_WIN32_WINNT < _WIN32_WINNT_VISTA vvv
-                DYNAMICGETCACHEDFUNCTION(PFNCREATETHREADPOOLWORK, CreateThreadpoolWork, pfCreateThreadpoolWork);
-                return pfCreateThreadpoolWork != nullptr;
-#endif // _STL_WIN32_WINNT >= _WIN32_WINNT_VISTA
-            }
-
             // When the CRT and STL are statically linked into an EXE, their uninitialization will take place
             // inside of the call to exit(), before ExitProcess() is called.  This means that their
             // uninitialization occurs before other threads in the process are terminated.  We block the exit
@@ -48,11 +39,11 @@ namespace Concurrency {
                 // that as a failure to call.
                 (void) _Flags;
                 (void) _Addr;
-                return 0;
+                return nullptr;
 #else // ^^^ defined(_CRT_APP) ^^^ // vvv !defined(_CRT_APP) vvv
                 HMODULE _Result;
                 if (::GetModuleHandleExW(_Flags, _Addr, &_Result) == 0) {
-                    return 0;
+                    return nullptr;
                 }
 
                 return _Result;
@@ -66,7 +57,7 @@ namespace Concurrency {
                 return _STL_host_status::_Dll;
 #else // ^^^ CRTDLL2 ^^^ // vvv !CRTDLL2 vvv
                 HANDLE _HExe = _Call_get_module_handle_ex(GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, nullptr);
-                if (_HExe == 0) {
+                if (_HExe == nullptr) {
                     return _STL_host_status::_Unknown;
                 } else if (_HExe == reinterpret_cast<HMODULE>(&__ImageBase)) {
                     return _STL_host_status::_Exe;
@@ -133,37 +124,24 @@ namespace Concurrency {
                         GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
                         reinterpret_cast<LPCWSTR>(_Chore->_M_callback));
 
-                    if (_Callback_dll != 0) {
-                        __crtFreeLibraryWhenCallbackReturns(_Pci, _Callback_dll);
+                    if (_Callback_dll != nullptr) {
+                        FreeLibraryWhenCallbackReturns(_Pci, _Callback_dll);
                     }
                 }
 
                 _Chore->_M_callback(_Chore->_M_data);
                 _Decrement_outstanding();
             }
-
-            DWORD __stdcall _Task_scheduler_callback_xp(LPVOID _Args) noexcept {
-                _Increment_outstanding();
-                const auto _Chore = static_cast<_Threadpool_chore*>(_Args);
-                _Chore->_M_callback(_Chore->_M_data);
-                _Decrement_outstanding();
-                return 0;
-            }
         } // namespace
 
         _CRTIMP2 void __cdecl _Release_chore(_Threadpool_chore* _Chore) {
             if (_Chore->_M_work != nullptr) {
-                // Windows XP threadpool doesn't need to release chore
-                if (_Is_vista_threadpool_supported()) {
-                    __crtCloseThreadpoolWork(static_cast<PTP_WORK>(_Chore->_M_work));
-                }
+                CloseThreadpoolWork(static_cast<PTP_WORK>(_Chore->_M_work));
                 _Chore->_M_work = nullptr;
             }
         }
 
         _CRTIMP2 int __cdecl _Reschedule_chore(const _Threadpool_chore* _Chore) {
-            // reschedule supports only Windows Vista and above
-            _ASSERT(_Is_vista_threadpool_supported());
             _ASSERT(_Chore->_M_work);
 
             // Adds a reference to the DLL with the code to execute on async; the callback will
@@ -173,7 +151,7 @@ namespace Concurrency {
                     GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, reinterpret_cast<LPCWSTR>(_Chore->_M_callback));
             }
 
-            __crtSubmitThreadpoolWork(static_cast<PTP_WORK>(_Chore->_M_work));
+            SubmitThreadpoolWork(static_cast<PTP_WORK>(_Chore->_M_work));
             return 0;
         }
 
@@ -181,30 +159,12 @@ namespace Concurrency {
             _ASSERT(_Chore->_M_work == nullptr);
             _ASSERT(_Chore->_M_callback != nullptr);
 
-            if (_Is_vista_threadpool_supported()) {
-                _Chore->_M_work = __crtCreateThreadpoolWork(_Task_scheduler_callback, _Chore, nullptr);
+            _Chore->_M_work = CreateThreadpoolWork(_Task_scheduler_callback, _Chore, nullptr);
 
-                if (_Chore->_M_work) {
-                    return _Reschedule_chore(_Chore);
-                } else {
-                    return static_cast<int>(GetLastError()); // LastError won't be 0 when it's in error state
-                }
+            if (_Chore->_M_work) {
+                return _Reschedule_chore(_Chore);
             } else {
-                // Windows XP doesn't support FreeLibraryWhenCallbackReturns,
-                // so we prevent the callback DLL from ever unloading
-                if (_Get_STL_host_status() != _STL_host_status::_Exe) {
-                    (void) _Call_get_module_handle_ex(
-                        GET_MODULE_HANDLE_EX_FLAG_PIN | GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
-                        reinterpret_cast<LPCWSTR>(_Chore->_M_callback));
-                }
-
-                _Chore->_M_work = _Chore; // give a dummy non-null worker
-                if (__crtQueueUserWorkItem(_Task_scheduler_callback_xp, _Chore, WT_EXECUTEDEFAULT) == 0) {
-                    _Chore->_M_work = nullptr;
-                    return static_cast<int>(GetLastError()); // LastError won't be 0 when it's in error state
-                } else {
-                    return 0;
-                }
+                return static_cast<int>(GetLastError()); // LastError won't be 0 when it's in error state
             }
         }
     } // namespace details

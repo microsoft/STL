@@ -3,13 +3,11 @@
 
 // Convert wide character to multibyte character, with locale.
 
-#include <errno.h>
-#include <limits.h> // for MB_LEN_MAX
-#include <locale.h>
+#include <cerrno>
+#include <climits> // for MB_LEN_MAX
+#include <clocale>
+#include <cstdlib>
 #include <mbctype.h>
-#include <stdio.h> // for EOF
-#include <stdlib.h>
-#include <string.h> // for memcpy
 #include <xlocinfo.h> // for _Cvtvec, _Wcrtomb
 
 #include <Windows.h>
@@ -41,7 +39,8 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL __Wcrtomb_lk(char* s, wchar_t wchar, m
     return _Wcrtomb(s, wchar, pst, ploc);
 }
 
-_CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Wcrtomb(char* s, wchar_t wchar, mbstate_t* pst, const _Cvtvec* ploc) {
+_CRTIMP2_PURE _Success_(return != -1) int __CLRCALL_PURE_OR_CDECL
+    _Wcrtomb(_Out_ char* s, wchar_t wchar, mbstate_t* pst, const _Cvtvec* ploc) {
     _CRT_UNUSED(pst);
     if (ploc->_Isclocale) {
         if (wchar > 255) { // validate high byte

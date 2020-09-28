@@ -1,9 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <crtdbg.h>
-#include <internal_shared.h>
-#include <string.h>
+#include <cstring> // for wcsnlen
 
 #include <Windows.h>
 
@@ -26,8 +24,9 @@
 //            2 - if lpString1 == lpString2
 //            3 - if lpString1 >  lpString2
 //   Failure: 0
-extern "C" int __cdecl __crtCompareStringW(
-    LPCWSTR LocaleName, DWORD dwCmpFlags, LPCWSTR lpString1, int cchCount1, LPCWSTR lpString2, int cchCount2) {
+extern "C" int __cdecl __crtCompareStringW(_In_z_ LPCWSTR LocaleName, _In_ DWORD dwCmpFlags,
+    _In_reads_(cchCount1) LPCWSTR lpString1, _In_ int cchCount1, _In_reads_(cchCount2) LPCWSTR lpString2,
+    _In_ int cchCount2) {
     // CompareString will compare past null terminator. Must find null terminator if in string before cchCountn wide
     // characters.
     if (cchCount1 > 0) {
@@ -42,5 +41,5 @@ extern "C" int __cdecl __crtCompareStringW(
         return (cchCount1 - cchCount2 == 0) ? 2 : (cchCount1 - cchCount2 < 0) ? 1 : 3;
     }
 
-    return __crtCompareStringEx(LocaleName, dwCmpFlags, lpString1, cchCount1, lpString2, cchCount2);
+    return CompareStringEx(LocaleName, dwCmpFlags, lpString1, cchCount1, lpString2, cchCount2, nullptr, nullptr, 0);
 }

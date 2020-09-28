@@ -19,14 +19,16 @@ using namespace std;
 #if _HAS_CXX17
 template <typename Void, typename Callable, typename... Args>
 struct HasInvokeResultT : false_type {
-
     STATIC_ASSERT(!is_invocable_v<Callable, Args...>);
+    STATIC_ASSERT(!is_nothrow_invocable_v<Callable, Args...>);
+    STATIC_ASSERT(!is_invocable_r_v<void, Callable, Args...>);
+    STATIC_ASSERT(!is_nothrow_invocable_r_v<void, Callable, Args...>);
 };
 
 template <typename Callable, typename... Args>
 struct HasInvokeResultT<void_t<invoke_result_t<Callable, Args...>>, Callable, Args...> : true_type {
-
     STATIC_ASSERT(is_invocable_v<Callable, Args...>);
+    STATIC_ASSERT(is_invocable_r_v<void, Callable, Args...>);
 };
 
 template <typename A>
@@ -512,19 +514,27 @@ STATIC_ASSERT(is_invocable_v<PMD, X*>);
 STATIC_ASSERT(is_nothrow_invocable_v<PMD, X*>);
 
 // Test noexcept function types.
-using FP_noexcept  = int (*)(int) noexcept;
-using FR_noexcept  = int (&)(int) noexcept;
-using PMF_noexcept = int (X::*)(int) noexcept;
+#ifdef __cpp_noexcept_function_type
+using FP_noexcept                                 = int (*)(int) noexcept;
+using FR_noexcept                                 = int (&)(int) noexcept;
+using PMF_noexcept                                = int (X::*)(int) noexcept;
+inline constexpr bool noexcept_in_the_type_system = true;
+#else // ^^^ __cpp_noexcept_function_type // !__cpp_noexcept_function_type vvv
+using FP_noexcept                                 = int (*)(int);
+using FR_noexcept                                 = int (&)(int);
+using PMF_noexcept                                = int (X::*)(int);
+inline constexpr bool noexcept_in_the_type_system = false;
+#endif // __cpp_noexcept_function_type
 
 STATIC_ASSERT(is_invocable_v<FP, int>);
 STATIC_ASSERT(!is_nothrow_invocable_v<FP, int>);
 STATIC_ASSERT(is_invocable_v<FP_noexcept, int>);
-STATIC_ASSERT(is_nothrow_invocable_v<FP_noexcept, int>);
+STATIC_ASSERT(is_nothrow_invocable_v<FP_noexcept, int> == noexcept_in_the_type_system);
 
 STATIC_ASSERT(is_invocable_v<FR, int>);
 STATIC_ASSERT(!is_nothrow_invocable_v<FR, int>);
 STATIC_ASSERT(is_invocable_v<FR_noexcept, int>);
-STATIC_ASSERT(is_nothrow_invocable_v<FR_noexcept, int>);
+STATIC_ASSERT(is_nothrow_invocable_v<FR_noexcept, int> == noexcept_in_the_type_system);
 
 STATIC_ASSERT(is_invocable_v<PMF, X, int>);
 STATIC_ASSERT(!is_nothrow_invocable_v<PMF, X, int>);
@@ -533,11 +543,11 @@ STATIC_ASSERT(!is_nothrow_invocable_v<PMF, reference_wrapper<X>, int>);
 STATIC_ASSERT(is_invocable_v<PMF, X*, int>);
 STATIC_ASSERT(!is_nothrow_invocable_v<PMF, X*, int>);
 STATIC_ASSERT(is_invocable_v<PMF_noexcept, X, int>);
-STATIC_ASSERT(is_nothrow_invocable_v<PMF_noexcept, X, int>);
+STATIC_ASSERT(is_nothrow_invocable_v<PMF_noexcept, X, int> == noexcept_in_the_type_system);
 STATIC_ASSERT(is_invocable_v<PMF_noexcept, reference_wrapper<X>, int>);
-STATIC_ASSERT(is_nothrow_invocable_v<PMF_noexcept, reference_wrapper<X>, int>);
+STATIC_ASSERT(is_nothrow_invocable_v<PMF_noexcept, reference_wrapper<X>, int> == noexcept_in_the_type_system);
 STATIC_ASSERT(is_invocable_v<PMF_noexcept, X*, int>);
-STATIC_ASSERT(is_nothrow_invocable_v<PMF_noexcept, X*, int>);
+STATIC_ASSERT(is_nothrow_invocable_v<PMF_noexcept, X*, int> == noexcept_in_the_type_system);
 
 struct Conv_noexcept1 {
     operator FP() noexcept;
@@ -558,7 +568,7 @@ STATIC_ASSERT(!is_nothrow_invocable_v<Conv_noexcept1, int>);
 STATIC_ASSERT(is_invocable_v<Conv_noexcept2, int>);
 STATIC_ASSERT(!is_nothrow_invocable_v<Conv_noexcept2, int>);
 STATIC_ASSERT(is_invocable_v<Conv_noexcept3, int>);
-STATIC_ASSERT(is_nothrow_invocable_v<Conv_noexcept3, int>);
+STATIC_ASSERT(is_nothrow_invocable_v<Conv_noexcept3, int> == noexcept_in_the_type_system);
 
 // Test argument conversions.
 struct Okay_noexcept {
@@ -568,13 +578,19 @@ struct Okay_noexcept {
 STATIC_ASSERT(is_invocable_v<FP_noexcept, Okay>);
 STATIC_ASSERT(!is_nothrow_invocable_v<FP_noexcept, Okay>);
 STATIC_ASSERT(is_invocable_v<FP_noexcept, Okay_noexcept>);
-STATIC_ASSERT(is_nothrow_invocable_v<FP_noexcept, Okay_noexcept>);
+STATIC_ASSERT(is_nothrow_invocable_v<FP_noexcept, Okay_noexcept> == noexcept_in_the_type_system);
 
 // When the return type is non-void, does the invocation throw?
 STATIC_ASSERT(is_invocable_r_v<long, Kitty, int>);
 STATIC_ASSERT(is_nothrow_invocable_r_v<long, Kitty, int>);
 STATIC_ASSERT(is_invocable_r_v<long, Kitty, int, int>);
 STATIC_ASSERT(!is_nothrow_invocable_r_v<long, Kitty, int, int>);
+
+// When the return type is void, does the invocation throw?
+STATIC_ASSERT(is_invocable_r_v<void, Kitty, int>);
+STATIC_ASSERT(is_nothrow_invocable_r_v<void, Kitty, int>);
+STATIC_ASSERT(is_invocable_r_v<void, Kitty, int, int>);
+STATIC_ASSERT(!is_nothrow_invocable_r_v<void, Kitty, int, int>);
 
 struct Puppy {
     explicit Puppy(int);
@@ -597,6 +613,38 @@ STATIC_ASSERT(is_nothrow_invocable_r_v<Puppy, Kitty, int>);
 STATIC_ASSERT(is_invocable_r_v<Zebra, Kitty, int>);
 STATIC_ASSERT(!is_nothrow_invocable_r_v<Zebra, Kitty, int>);
 
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1026729
+// Defend against regression of VSO-963790, in which is_invocable_r mishandles non-movable return types
+struct NonMovable {
+    NonMovable(NonMovable&&)      = delete;
+    NonMovable(const NonMovable&) = delete;
+};
+
+template <bool Nothrow>
+NonMovable getNonMovable() noexcept(Nothrow);
+
+STATIC_ASSERT(is_invocable_r_v<NonMovable, decltype(&getNonMovable<false>)>);
+STATIC_ASSERT(is_invocable_r_v<NonMovable, decltype(&getNonMovable<true>)>);
+STATIC_ASSERT(!is_nothrow_invocable_r_v<NonMovable, decltype(&getNonMovable<false>)>);
+STATIC_ASSERT(is_nothrow_invocable_r_v<NonMovable, decltype(&getNonMovable<true>)>);
+
+template <bool Nothrow>
+struct ConvertsToNonMovable {
+    operator NonMovable() const noexcept(Nothrow);
+};
+
+template <bool Nothrow, bool NothrowReturn>
+ConvertsToNonMovable<NothrowReturn> getConvertsToNonMovable() noexcept(Nothrow);
+
+STATIC_ASSERT(is_invocable_r_v<NonMovable, decltype(&getConvertsToNonMovable<false, false>)>);
+STATIC_ASSERT(is_invocable_r_v<NonMovable, decltype(&getConvertsToNonMovable<false, true>)>);
+STATIC_ASSERT(is_invocable_r_v<NonMovable, decltype(&getConvertsToNonMovable<true, false>)>);
+STATIC_ASSERT(is_invocable_r_v<NonMovable, decltype(&getConvertsToNonMovable<true, true>)>);
+STATIC_ASSERT(!is_nothrow_invocable_r_v<NonMovable, decltype(&getConvertsToNonMovable<false, false>)>);
+STATIC_ASSERT(!is_nothrow_invocable_r_v<NonMovable, decltype(&getConvertsToNonMovable<false, true>)>);
+STATIC_ASSERT(!is_nothrow_invocable_r_v<NonMovable, decltype(&getConvertsToNonMovable<true, false>)>);
+STATIC_ASSERT(is_nothrow_invocable_r_v<NonMovable, decltype(&getConvertsToNonMovable<true, true>)>);
+#endif // TRANSITION, VSO-1026729
 #endif // _HAS_CXX17
 
 

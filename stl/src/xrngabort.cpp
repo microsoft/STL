@@ -5,8 +5,8 @@
 
 #include <yvals.h>
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 
 // clang-format off
 _STD_BEGIN

@@ -119,6 +119,13 @@ struct _Get_rebind_alias<_Ty, _Other, void_t<typename _Ty::template rebind<_Othe
     using type = typename _Ty::template rebind<_Other>;
 };
 
+// FUNCTION TEMPLATE _Construct_in_place
+template <class _Ty, class... _Types>
+void _Construct_in_place(_Ty& _Obj, _Types&&... _Args) noexcept(is_nothrow_constructible_v<_Ty, _Types...>) {
+    ::new (const_cast<void*>(static_cast<const volatile void*>(_STD addressof(_Obj))))
+        _Ty(_STD forward<_Types>(_Args)...);
+}
+
 // STRUCT TEMPLATE pointer_traits
 template <class _Ty>
 struct pointer_traits {
@@ -516,7 +523,7 @@ struct _Iter_traits_pointer<_Itraits_pointer_strategy::_Use_decltype> {
 };
 
 template <class _Ty>
-concept _Has_op_arrow = requires(_Ty&& __t) {
+concept _Has_member_arrow = requires(_Ty&& __t) {
     static_cast<_Ty&&>(__t).operator->();
 };
 
@@ -620,7 +627,7 @@ struct _Iterator_traits_base<_It> {
     using value_type        = typename indirectly_readable_traits<_It>::value_type;
     using pointer           = typename _Iter_traits_pointer<(
         _Has_member_pointer<_It> ? _Itraits_pointer_strategy::_Use_member
-                                 : _Has_op_arrow<_It&> ? _Itraits_pointer_strategy::_Use_decltype
+                                 : _Has_member_arrow<_It&> ? _Itraits_pointer_strategy::_Use_decltype
                                                        : _Itraits_pointer_strategy::_Use_void)>::template _Apply<_It>;
     using reference         = typename _Iter_traits_reference<_Has_member_reference<_It>>::template _Apply<_It>;
 };
@@ -645,7 +652,7 @@ struct iterator_traits<_Ty*> {
 };
 // clang-format on
 
-// CUSTOMIZATION POINT OBJECT iter_move
+// CUSTOMIZATION POINT OBJECT ranges::iter_move
 namespace ranges {
     // STRUCT TEMPLATE _Choice_t
     template <class _Ty>
@@ -707,9 +714,10 @@ namespace ranges {
         // clang-format on
     } // namespace _Iter_move
 
-    inline namespace _Cpos {
+    namespace _Cpos {
         inline constexpr _Iter_move::_Cpo iter_move;
     }
+    using namespace _Cpos;
 } // namespace ranges
 
 // iter_swap defined below since it depends on indirectly_movable_storable
@@ -815,44 +823,34 @@ concept sized_sentinel_for = sentinel_for<_Se, _It>
 // clang-format on
 
 // ALIAS TEMPLATE _Iter_concept
-template <class _It, bool _NotSpec = _Is_from_primary<iterator_traits<_It>>>
-struct _Iter_concept_impl {};
-
-// clang-format off
-template <class _It>
-    requires _Has_member_iterator_concept<iterator_traits<_It>>
-struct _Iter_concept_impl<_It, false> {
-    using type = typename iterator_traits<_It>::iterator_concept;
+template <bool _Iterator_category_present>
+struct _Iter_concept_impl2 {
+    template <class _It, class _Traits>
+    using _Apply = typename _Traits::iterator_category;
+};
+template <>
+struct _Iter_concept_impl2<false> {
+    // clang-format off
+    template <class _It, class _Traits>
+        requires _Is_from_primary<iterator_traits<_It>>
+    using _Apply = random_access_iterator_tag;
+    // clang-format on
 };
 
-template <class _It>
-    requires (!_Has_member_iterator_concept<iterator_traits<_It>>
-        && _Has_member_iterator_category<iterator_traits<_It>>)
-struct _Iter_concept_impl<_It, false> {
-    using type = typename iterator_traits<_It>::iterator_category;
+template <bool _Iterator_concept_present>
+struct _Iter_concept_impl1 {
+    template <class _It, class _Traits>
+    using _Apply = typename _Traits::iterator_concept;
 };
-// clang-format on
-
-template <class _It>
-struct _Iter_concept_impl<_It, true> {
-    using type = random_access_iterator_tag;
+template <>
+struct _Iter_concept_impl1<false> {
+    template <class _It, class _Traits>
+    using _Apply = typename _Iter_concept_impl2<_Has_member_iterator_category<_Traits>>::template _Apply<_It, _Traits>;
 };
 
-template <_Has_member_iterator_concept _It>
-struct _Iter_concept_impl<_It, true> {
-    using type = typename _It::iterator_concept;
-};
-
-// clang-format off
-template <class _It>
-    requires(!_Has_member_iterator_concept<_It> && _Has_member_iterator_category<_It>)
-struct _Iter_concept_impl<_It, true> {
-    using type = typename _It::iterator_category;
-};
-// clang-format on
-
-template <class _It>
-using _Iter_concept = typename _Iter_concept_impl<_It>::type;
+template <class _It, class _Traits = conditional_t<_Is_from_primary<iterator_traits<_It>>, _It, iterator_traits<_It>>>
+using _Iter_concept =
+    typename _Iter_concept_impl1<_Has_member_iterator_concept<_Traits>>::template _Apply<_It, _Traits>;
 
 // clang-format off
 // CONCEPT input_iterator
@@ -1027,7 +1025,7 @@ concept indirectly_copyable_storable = indirectly_copyable<_In, _Out>
     && assignable_from<iter_value_t<_In>&, iter_reference_t<_In>>;
 // clang-format on
 
-// CUSTOMIZATION POINT OBJECT iter_swap
+// CUSTOMIZATION POINT OBJECT ranges::iter_swap
 namespace ranges {
     namespace _Iter_swap {
         template <class _Ty1, class _Ty2>
@@ -1101,9 +1099,10 @@ namespace ranges {
         };
     } // namespace _Iter_swap
 
-    inline namespace _Cpos {
+    namespace _Cpos {
         inline constexpr _Iter_swap::_Cpo iter_swap;
     }
+    using namespace _Cpos;
 } // namespace ranges
 
 // clang-format off
@@ -2337,6 +2336,10 @@ _NODISCARD _Ty _Fake_decay_copy(_Ty) noexcept;
 // (2) is well-formed if and only if E is implicitly convertible to T and T is destructible, and
 // (3) is non-throwing if and only if both conversion from decltype((E)) to T and destruction of T are non-throwing.
 
+// CONCEPT _Not_same_as
+template <class _Ty1, class _Ty2>
+concept _Not_same_as = !same_as<remove_cvref_t<_Ty1>, remove_cvref_t<_Ty2>>;
+
 namespace ranges {
     // VARIABLE TEMPLATE _Has_complete_elements
     template <class>
@@ -2418,9 +2421,10 @@ namespace ranges {
         };
     } // namespace _Begin
 
-    inline namespace _Cpos {
+    namespace _Cpos {
         inline constexpr _Begin::_Cpo begin;
     }
+    using namespace _Cpos;
 
     // ALIAS TEMPLATE ranges::iterator_t
     template <class _Ty>
@@ -2478,9 +2482,10 @@ namespace ranges {
         };
     } // namespace _Unchecked_begin
 
-    inline namespace _Cpos {
+    namespace _Cpos {
         inline constexpr _Unchecked_begin::_Cpo _Ubegin;
     }
+    using namespace _Cpos;
 
     // CUSTOMIZATION POINT OBJECT ranges::end
     namespace _End {
@@ -2552,9 +2557,10 @@ namespace ranges {
         };
     } // namespace _End
 
-    inline namespace _Cpos {
+    namespace _Cpos {
         inline constexpr _End::_Cpo end;
     }
+    using namespace _Cpos;
 
     // CUSTOMIZATION POINT OBJECT ranges::_Uend
     namespace _Unchecked_end {
@@ -2609,9 +2615,10 @@ namespace ranges {
         };
     } // namespace _Unchecked_end
 
-    inline namespace _Cpos {
+    namespace _Cpos {
         inline constexpr _Unchecked_end::_Cpo _Uend;
     }
+    using namespace _Cpos;
 
     // CONCEPT ranges::range
     template <class _Rng>
@@ -2658,9 +2665,10 @@ namespace ranges {
         // clang-format on
     };
 
-    inline namespace _Cpos {
+    namespace _Cpos {
         inline constexpr _Cbegin_fn cbegin;
     }
+    using namespace _Cpos;
 
     // CUSTOMIZATION POINT OBJECT ranges::cend
     struct _Cend_fn {
@@ -2674,9 +2682,10 @@ namespace ranges {
         // clang-format on
     };
 
-    inline namespace _Cpos {
+    namespace _Cpos {
         inline constexpr _Cend_fn cend;
     }
+    using namespace _Cpos;
 
     // CUSTOMIZATION POINT OBJECT ranges::rbegin
     namespace _Rbegin {
@@ -2743,9 +2752,10 @@ namespace ranges {
         };
     } // namespace _Rbegin
 
-    inline namespace _Cpos {
+    namespace _Cpos {
         inline constexpr _Rbegin::_Cpo rbegin;
     }
+    using namespace _Cpos;
 
     // CUSTOMIZATION POINT OBJECT ranges::rend
     namespace _Rend {
@@ -2813,9 +2823,10 @@ namespace ranges {
         };
     } // namespace _Rend
 
-    inline namespace _Cpos {
+    namespace _Cpos {
         inline constexpr _Rend::_Cpo rend;
     }
+    using namespace _Cpos;
 
     // CUSTOMIZATION POINT OBJECT ranges::crbegin
     struct _Crbegin_fn {
@@ -2829,9 +2840,10 @@ namespace ranges {
         // clang-format on
     };
 
-    inline namespace _Cpos {
+    namespace _Cpos {
         inline constexpr _Crbegin_fn crbegin;
     }
+    using namespace _Cpos;
 
     // CUSTOMIZATION POINT OBJECT ranges::crend
     struct _Crend_fn {
@@ -2845,9 +2857,10 @@ namespace ranges {
         // clang-format on
     };
 
-    inline namespace _Cpos {
+    namespace _Cpos {
         inline constexpr _Crend_fn crend;
     }
+    using namespace _Cpos;
 
     // VARIABLE TEMPLATE ranges::disable_sized_range
     template <class>
@@ -2931,9 +2944,10 @@ namespace ranges {
         };
     } // namespace _Size
 
-    inline namespace _Cpos {
+    namespace _Cpos {
         inline constexpr _Size::_Cpo size;
     }
+    using namespace _Cpos;
 
     // CUSTOMIZATION POINT OBJECT ranges::empty
     namespace _Empty {
@@ -2999,9 +3013,10 @@ namespace ranges {
         };
     } // namespace _Empty
 
-    inline namespace _Cpos {
+    namespace _Cpos {
         inline constexpr _Empty::_Cpo empty;
     }
+    using namespace _Cpos;
 
     // CUSTOMIZATION POINT OBJECT ranges::data
     namespace _Data {
@@ -3056,9 +3071,10 @@ namespace ranges {
         };
     } // namespace _Data
 
-    inline namespace _Cpos {
+    namespace _Cpos {
         inline constexpr _Data::_Cpo data;
     }
+    using namespace _Cpos;
 
     // CUSTOMIZATION POINT OBJECT ranges::cdata
     struct _Cdata_fn {
@@ -3072,9 +3088,10 @@ namespace ranges {
         // clang-format on
     };
 
-    inline namespace _Cpos {
+    namespace _Cpos {
         inline constexpr _Cdata_fn cdata;
     }
+    using namespace _Cpos;
 
     // clang-format off
     // CONCEPT ranges::sized_range
@@ -3251,7 +3268,8 @@ namespace ranges {
         using _Not_quite_object::_Not_quite_object;
 
         template <input_or_output_iterator _It, sentinel_for<_It> _Se>
-        _NODISCARD constexpr iter_difference_t<_It> operator()(_It _First, _Se _Last) const {
+        _NODISCARD constexpr iter_difference_t<_It> operator()(_It _First, _Se _Last) const
+            noexcept(_Nothrow_distance<_It, _Se>) /* strengthened */ {
             if constexpr (sized_sentinel_for<_Se, _It>) {
                 return _Last - _First;
             } else {
@@ -3261,7 +3279,8 @@ namespace ranges {
         }
 
         template <range _Rng>
-        _NODISCARD constexpr range_difference_t<_Rng> operator()(_Rng&& _Range) const {
+        _NODISCARD constexpr range_difference_t<_Rng> operator()(_Rng&& _Range) const
+            noexcept(_Nothrow_size<_Rng>) /* strengthened */ {
             if constexpr (sized_range<_Rng>) {
                 return static_cast<range_difference_t<_Rng>>(_RANGES size(_Range));
             } else {
@@ -3271,7 +3290,8 @@ namespace ranges {
 
     private:
         template <class _It, class _Se>
-        _NODISCARD static constexpr iter_difference_t<_It> _Distance_unchecked(_It _First, const _Se _Last) {
+        _NODISCARD static constexpr iter_difference_t<_It> _Distance_unchecked(_It _First, const _Se _Last) noexcept(
+            _Nothrow_distance<_It, _Se>) {
             _STL_INTERNAL_STATIC_ASSERT(input_or_output_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
 
@@ -3282,6 +3302,18 @@ namespace ranges {
 
             return _Count;
         }
+
+        template <class _It, class _Se>
+        static constexpr bool _Nothrow_distance = noexcept(
+            noexcept(++_STD declval<_Unwrapped_t<_It>&>() != _STD declval<const _Unwrapped_t<_Se>&>()));
+        template <class _It, sized_sentinel_for<_It> _Se>
+        static constexpr bool _Nothrow_distance<_It, _Se> = noexcept(
+            noexcept(_STD declval<_Se&>() - _STD declval<_It&>()));
+
+        template <class _Rng>
+        static constexpr bool _Nothrow_size = _Nothrow_distance<iterator_t<_Rng>, sentinel_t<_Rng>>;
+        template <sized_range _Rng>
+        static constexpr bool _Nothrow_size<_Rng> = noexcept(_RANGES size(_STD declval<_Rng&>()));
     };
 
     inline constexpr _Distance_fn distance{_Not_quite_object::_Construct_tag{}};
@@ -3299,9 +3331,10 @@ namespace ranges {
         // clang-format on
     };
 
-    inline namespace _Cpos {
+    namespace _Cpos {
         inline constexpr _Ssize_fn ssize;
     }
+    using namespace _Cpos;
 
     // VARIABLE ranges::next
     class _Next_fn : private _Not_quite_object {
@@ -3403,10 +3436,6 @@ namespace ranges {
 
         using is_transparent = int;
     };
-
-    // CONCEPT _Not_same_as
-    template <class _Ty1, class _Ty2>
-    concept _Not_same_as = !same_as<remove_cvref_t<_Ty1>, remove_cvref_t<_Ty2>>;
 
     // CONCEPT ranges::common_range
     // clang-format off
@@ -3594,7 +3623,9 @@ namespace ranges {
             auto& _Self = _Cast();
 #if _CONTAINER_DEBUG_LEVEL > 0
             if constexpr (sized_range<_Derived>) {
-                _STL_VERIFY(_Idx < _RANGES size(_Self), "index out of range for view_interface");
+                using _U_diff = _Make_unsigned_like_t<range_difference_t<_Rng>>;
+                _STL_VERIFY(static_cast<_U_diff>(_Idx) < static_cast<_U_diff>(_RANGES size(_Self)),
+                    "index out of range for view_interface");
             }
 #endif // _CONTAINER_DEBUG_LEVEL > 0
             return _RANGES begin(_Self)[_Idx];
@@ -3605,7 +3636,9 @@ namespace ranges {
             auto& _Self = _Cast();
 #if _CONTAINER_DEBUG_LEVEL > 0
             if constexpr (sized_range<_Derived>) {
-                _STL_VERIFY(_Idx < _RANGES size(_Self), "index out of range for view_interface");
+                using _U_diff = _Make_unsigned_like_t<range_difference_t<_Rng>>;
+                _STL_VERIFY(static_cast<_U_diff>(_Idx) < static_cast<_U_diff>(_RANGES size(_Self)),
+                    "index out of range for view_interface");
             }
 #endif // _CONTAINER_DEBUG_LEVEL > 0
             return _RANGES begin(_Self)[_Idx];
@@ -3980,10 +4013,10 @@ public:
     // clang-format on
 
 #ifdef __cpp_lib_concepts
-    _NODISCARD constexpr const iterator_type& base() const& { // Per LWG-3391
+    _NODISCARD constexpr const iterator_type& base() const& noexcept /* strengthened */ { // Per LWG-3391
         return _Current;
     }
-    _NODISCARD constexpr iterator_type base() && {
+    _NODISCARD constexpr iterator_type base() && noexcept(is_nothrow_move_constructible_v<_Iter>) /* strengthened */ {
         return _STD move(_Current);
     }
 #else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
@@ -4090,14 +4123,24 @@ public:
         return _Left._Current - _Right._Get_last();
     }
 
-    _NODISCARD friend constexpr reference iter_move(const move_iterator& _It) noexcept(
-        noexcept(_RANGES iter_move(_It._Current))) {
+    _NODISCARD friend constexpr reference iter_move(const move_iterator& _It)
+#ifdef __EDG__ // TRANSITION, VSO-1132105
+        noexcept(noexcept(_RANGES iter_move(_STD declval<const _Iter&>())))
+#else // ^^^ workaround / no workaround vvv
+        noexcept(noexcept(_RANGES iter_move(_It._Current)))
+#endif // TRANSITION, VSO-1132105
+    {
         return _RANGES iter_move(_It._Current);
     }
 
     template <indirectly_swappable<_Iter> _Iter2>
-    friend constexpr void iter_swap(const move_iterator& _Left, const move_iterator<_Iter2>& _Right) noexcept(
-        noexcept(_RANGES iter_swap(_Left._Current, _Right.base()))) {
+    friend constexpr void iter_swap(const move_iterator& _Left, const move_iterator<_Iter2>& _Right)
+#ifdef __EDG__ // TRANSITION, VSO-1132105
+        noexcept(noexcept(_RANGES iter_swap(_STD declval<const _Iter&>(), _STD declval<const _Iter2&>())))
+#else // ^^^ workaround / no workaround vvv
+        noexcept(noexcept(_RANGES iter_swap(_Left._Current, _Right.base())))
+#endif // TRANSITION, VSO-1132105
+    {
         _RANGES iter_swap(_Left._Current, _Right.base());
     }
 #endif // __cpp_lib_concepts
@@ -4375,6 +4418,17 @@ _OutIt _Copy_memmove(_InIt _First, _InIt _Last, _OutIt _Dest) {
 template <class _InIt, class _OutIt>
 _OutIt _Copy_memmove(move_iterator<_InIt> _First, move_iterator<_InIt> _Last, _OutIt _Dest) {
     return _Copy_memmove(_First.base(), _Last.base(), _Dest);
+}
+
+template <class _InIt, class _OutIt>
+_OutIt _Copy_memcpy_common(_InIt _IFirst, _InIt _ILast, _OutIt _OFirst, _OutIt _OLast) noexcept {
+    const auto _IFirst_ch = const_cast<const char*>(reinterpret_cast<const volatile char*>(_IFirst));
+    const auto _ILast_ch  = const_cast<const char*>(reinterpret_cast<const volatile char*>(_ILast));
+    const auto _OFirst_ch = const_cast<char*>(reinterpret_cast<volatile char*>(_OFirst));
+    const auto _OLast_ch  = const_cast<const char*>(reinterpret_cast<const volatile char*>(_OLast));
+    const auto _Count     = static_cast<size_t>((_STD min)(_ILast_ch - _IFirst_ch, _OLast_ch - _OFirst_ch));
+    _CSTD memcpy(_OFirst_ch, _IFirst_ch, _Count);
+    return reinterpret_cast<_OutIt>(_OFirst_ch + _Count);
 }
 
 #if _HAS_IF_CONSTEXPR
@@ -4772,23 +4826,30 @@ struct _Is_character<char8_t> : true_type {}; // UTF-8 code units are sort-of ch
 #endif // __cpp_char8_t
 
 template <class _Ty>
-struct _Is_character_or_byte : _Is_character<_Ty>::type {};
+struct _Is_character_or_byte_or_bool : _Is_character<_Ty>::type {};
 
 #ifdef __cpp_lib_byte
 template <>
-struct _Is_character_or_byte<byte> : true_type {};
+struct _Is_character_or_byte_or_bool<byte> : true_type {};
 #endif // __cpp_lib_byte
+
+template <>
+struct _Is_character_or_byte_or_bool<bool> : true_type {};
 
 // _Fill_memset_is_safe determines if _FwdIt and _Ty are eligible for memset optimization in fill
 template <class _FwdIt, class _Ty, bool = is_pointer_v<_FwdIt>>
-_INLINE_VAR constexpr bool _Fill_memset_is_safe = conjunction_v<
-    disjunction<conjunction<_Is_character_or_byte<_Unwrap_enum_t<_Ty>>,
-                    _Is_character_or_byte<_Unwrap_enum_t<_Iter_value_t<_FwdIt>>>>,
-        conjunction<is_same<bool, _Unwrap_enum_t<_Ty>>, is_same<bool, _Unwrap_enum_t<_Iter_value_t<_FwdIt>>>>>,
+_INLINE_VAR constexpr bool _Fill_memset_is_safe = conjunction_v<is_scalar<_Ty>,
+    _Is_character_or_byte_or_bool<_Unwrap_enum_t<remove_reference_t<_Iter_ref_t<_FwdIt>>>>,
     is_assignable<_Iter_ref_t<_FwdIt>, const _Ty&>>;
 
 template <class _FwdIt, class _Ty>
 _INLINE_VAR constexpr bool _Fill_memset_is_safe<_FwdIt, _Ty, false> = false;
+
+template <class _DestTy, class _Ty>
+void _Fill_memset(_DestTy* const _Dest, const _Ty _Val, const size_t _Count) {
+    _DestTy _Dest_val = _Val; // implicitly convert (a cast would suppress warnings); also handles _DestTy being bool
+    _CSTD memset(_Dest, static_cast<unsigned char>(_Dest_val), _Count);
+}
 
 #if _HAS_IF_CONSTEXPR
 template <class _FwdIt, class _Ty>
@@ -4805,7 +4866,7 @@ _CONSTEXPR20 void fill(const _FwdIt _First, const _FwdIt _Last, const _Ty& _Val)
             if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
             {
-                _CSTD memset(_UFirst, static_cast<unsigned char>(_Val), static_cast<size_t>(_ULast - _UFirst));
+                _Fill_memset(_UFirst, _Val, static_cast<size_t>(_ULast - _UFirst));
                 return;
             }
         }
@@ -4827,7 +4888,7 @@ void _Fill_unchecked1(_FwdIt _First, _FwdIt _Last, const _Ty& _Val, false_type) 
 template <class _FwdIt, class _Ty>
 void _Fill_unchecked1(_FwdIt _First, _FwdIt _Last, const _Ty& _Val, true_type) {
     // copy _Val through [_First, _Last), memset optimization
-    _CSTD memset(_First, static_cast<unsigned char>(_Val), static_cast<size_t>(_Last - _First));
+    _Fill_memset(_First, _Val, static_cast<size_t>(_Last - _First));
 }
 
 template <class _FwdIt, class _Ty>
@@ -4866,7 +4927,7 @@ _CONSTEXPR20 _OutIt fill_n(_OutIt _Dest, const _Diff _Count_raw, const _Ty& _Val
                 if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
                 {
-                    _CSTD memset(_UDest, static_cast<unsigned char>(_Val), static_cast<size_t>(_Count));
+                    _Fill_memset(_UDest, _Val, static_cast<size_t>(_Count));
                     _UDest += _Count;
                     _Seek_wrapped(_Dest, _UDest);
                     return _Dest;
@@ -4897,7 +4958,7 @@ _OutIt _Fill_n_unchecked2(_OutIt _Dest, _Diff _Count, const _Ty& _Val, false_typ
 template <class _OutIt, class _Diff, class _Ty>
 _OutIt _Fill_n_unchecked2(_OutIt _Dest, _Diff _Count, const _Ty& _Val, true_type) {
     // copy _Val _Count times through [_Dest, ...), memset optimization
-    _CSTD memset(_Dest, static_cast<unsigned char>(_Val), static_cast<size_t>(_Count));
+    _Fill_memset(_Dest, _Val, static_cast<size_t>(_Count));
     return _Dest + _Count;
 }
 
@@ -4932,15 +4993,18 @@ _FwdIt fill_n(_ExPo&&, _FwdIt _Dest, _Diff _Count_raw, const _Ty& _Val) noexcept
 
 // Integral types are eligible for memcmp in very specific cases.
 // * They must be the same size. (`int == long` is eligible; `int == long long` isn't.)
-// * They can't be bool. (Not even `bool == bool`; we're concerned about representations other than 0 and 1.)
 // * They can't be volatile.
 // * Finally, the usual arithmetic conversions must preserve bit patterns. (This is true for `int == unsigned int`,
 //   but false for `short == unsigned short`.)
+#pragma warning(push)
+#pragma warning(disable : 4806) // no value of type 'bool' promoted to type 'char' can equal the given constant
 template <class _Elem1, class _Elem2,
     bool = sizeof(_Elem1) == sizeof(_Elem2) //
-           && _Is_nonbool_integral<_Elem1> && !is_volatile_v<_Elem1> //
-           && _Is_nonbool_integral<_Elem2> && !is_volatile_v<_Elem2>>
-_INLINE_VAR constexpr bool _Can_memcmp_elements = static_cast<_Elem1>(-1) == static_cast<_Elem2>(-1);
+           && is_integral_v<_Elem1> && !is_volatile_v<_Elem1> //
+           && is_integral_v<_Elem2> && !is_volatile_v<_Elem2>>
+_INLINE_VAR constexpr bool _Can_memcmp_elements =
+    is_same_v<_Elem1, bool> || is_same_v<_Elem2, bool> || static_cast<_Elem1>(-1) == static_cast<_Elem2>(-1);
+#pragma warning(pop)
 
 #ifdef __cpp_lib_byte
 // Allow memcmping std::byte.
@@ -5778,6 +5842,52 @@ _NODISCARD _CONSTEXPR20 _InIt find_if(_InIt _First, const _InIt _Last, _Pr _Pred
     return _First;
 }
 
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::find_if
+    // concept-constrained for strict enforcement as it is used by several algorithms
+    template <input_iterator _It, sentinel_for<_It> _Se, class _Pj, indirect_unary_predicate<projected<_It, _Pj>> _Pr>
+    _NODISCARD constexpr _It _Find_if_unchecked(_It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
+        for (; _First != _Last; ++_First) {
+            if (_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
+                break;
+            }
+        }
+
+        return _First;
+    }
+
+    class _Find_if_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <input_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
+            indirect_unary_predicate<projected<_It, _Pj>> _Pr>
+        _NODISCARD constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Last);
+            auto _UResult = _RANGES _Find_if_unchecked(
+                _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _Pass_fn(_Pred), _Pass_fn(_Proj));
+
+            _Seek_wrapped(_First, _STD move(_UResult));
+            return _First;
+        }
+
+        template <input_range _Rng, class _Pj = identity,
+            indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
+        _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
+            auto _First   = _RANGES begin(_Range);
+            auto _UResult = _RANGES _Find_if_unchecked(
+                _Get_unwrapped(_STD move(_First)), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+
+            _Seek_wrapped(_First, _STD move(_UResult));
+            return _First;
+        }
+    };
+
+    inline constexpr _Find_if_fn find_if{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
+
 // FUNCTION TEMPLATE lower_bound
 template <class _FwdIt, class _Ty, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt lower_bound(_FwdIt _First, const _FwdIt _Last, const _Ty& _Val, _Pr _Pred) {
@@ -5989,6 +6099,15 @@ template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR_BIT_CAST bool _Is_finite(const _Ty _Xx) { // constexpr isfinite()
     return _Float_abs_bits(_Xx) < _Float_traits<_Ty>::_Exponent_mask;
 }
+
+// STRUCT _Nontrivial_dummy_type
+struct _Nontrivial_dummy_type {
+    constexpr _Nontrivial_dummy_type() noexcept {
+        // This default constructor is user-provided to avoid zero-initialization when objects are value-initialized.
+    }
+};
+_STL_INTERNAL_STATIC_ASSERT(!is_trivially_default_constructible_v<_Nontrivial_dummy_type>);
+
 _STD_END
 #undef _CONSTEXPR_BIT_CAST
 #pragma pop_macro("new")

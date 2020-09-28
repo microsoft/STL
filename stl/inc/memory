@@ -26,29 +26,130 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // clang-format off
+    // CONCEPT _No_throw_input_iterator
+    template <class _It>
+    concept _No_throw_input_iterator = input_iterator<_It>
+        && is_lvalue_reference_v<iter_reference_t<_It>>
+        && same_as<remove_cvref_t<iter_reference_t<_It>>, iter_value_t<_It>>;
+
+    // CONCEPT _No_throw_sentinel_for
+    template <class _Se, class _It>
+    concept _No_throw_sentinel_for = sentinel_for<_Se, _It>;
+
+    // CONCEPT _No_throw_forward_iterator
+    template <class _It>
+    concept _No_throw_forward_iterator = _No_throw_input_iterator<_It>
+        && forward_iterator<_It>
+        && _No_throw_sentinel_for<_It, _It>;
+
+    // CONCEPT _No_throw_input_range
+    template <class _Rng>
+    concept _No_throw_input_range = range<_Rng>
+        && _No_throw_input_iterator<iterator_t<_Rng>>
+        && _No_throw_sentinel_for<sentinel_t<_Rng>, iterator_t<_Rng>>;
+
+    // CONCEPT _No_throw_forward_range
+    template <class _Rng>
+    concept _No_throw_forward_range = _No_throw_input_range<_Rng>
+        && _No_throw_forward_iterator<iterator_t<_Rng>>;
+    // clang-format on
+
+    // ALIAS TEMPLATE uninitialized_copy_result
+    template <class _In, class _Out>
+    using uninitialized_copy_result = in_out_result<_In, _Out>;
+
+    // VARIABLE ranges::uninitialized_copy
+    class _Uninitialized_copy_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <input_iterator _It, sentinel_for<_It> _Se, _No_throw_forward_iterator _Out,
+            _No_throw_sentinel_for<_Out> _OSe>
+            requires constructible_from<iter_value_t<_Out>, iter_reference_t<_It>>
+        uninitialized_copy_result<_It, _Out> operator()(_It _First1, _Se _Last1, _Out _First2, _OSe _Last2) const {
+            // clang-format on
+            _Adl_verify_range(_First1, _Last1);
+            _Adl_verify_range(_First2, _Last2);
+            auto _UResult =
+                _Uninitialized_copy_unchecked(_Get_unwrapped(_STD move(_First1)), _Get_unwrapped(_STD move(_Last1)),
+                    _Get_unwrapped(_STD move(_First2)), _Get_unwrapped(_STD move(_Last2)));
+
+            _Seek_wrapped(_First1, _STD move(_UResult.in));
+            _Seek_wrapped(_First2, _STD move(_UResult.out));
+            return {_STD move(_First1), _STD move(_First2)};
+        }
+
+        // clang-format off
+        template <input_range _Rng1, _No_throw_forward_range _Rng2>
+            requires constructible_from<range_value_t<_Rng2>, range_reference_t<_Rng1>>
+        uninitialized_copy_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>> operator()(
+            _Rng1&& _Range1, _Rng2&& _Range2) const {
+            // clang-format on
+            auto _First1  = _RANGES begin(_Range1);
+            auto _UResult = _Uninitialized_copy_unchecked(
+                _Get_unwrapped(_STD move(_First1)), _Uend(_Range1), _Ubegin(_Range2), _Uend(_Range2));
+
+            _Seek_wrapped(_First1, _STD move(_UResult.in));
+            return {_STD move(_First1), _Rewrap_iterator(_Range2, _STD move(_UResult.out))};
+        }
+
+    private:
+        template <class _It, class _Se, class _Out, class _OSe>
+        _NODISCARD static uninitialized_copy_result<_It, _Out> _Uninitialized_copy_unchecked(
+            _It _IFirst, const _Se _ILast, _Out _OFirst, const _OSe _OLast) {
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(_No_throw_forward_iterator<_Out>);
+            _STL_INTERNAL_STATIC_ASSERT(_No_throw_sentinel_for<_OSe, _Out>);
+            _STL_INTERNAL_STATIC_ASSERT(constructible_from<iter_value_t<_Out>, iter_reference_t<_It>>);
+
+            if constexpr (is_same_v<_Se, _It> && _Can_memcpy_uninitialized<_It, _Out>) {
+                return _Copy_memcpy_common(_IFirst, _ILast, _OFirst, _OLast);
+            } else {
+                _Uninitialized_backout _Backout{_STD move(_OFirst)};
+
+                for (; _IFirst != _ILast && _Backout._Last != _OLast; ++_IFirst) {
+                    _Backout._Emplace_back(*_IFirst);
+                }
+
+                return {_STD move(_IFirst), _Backout._Release()};
+            }
+        }
+    };
+
+    inline constexpr _Uninitialized_copy_fn uninitialized_copy{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
+
 // FUNCTION TEMPLATE uninitialized_copy_n
 #if _HAS_IF_CONSTEXPR
 template <class _InIt, class _Diff, class _NoThrowFwdIt>
 _NoThrowFwdIt uninitialized_copy_n(const _InIt _First, const _Diff _Count_raw, _NoThrowFwdIt _Dest) {
     // copy [_First, _First + _Count) to [_Dest, ...)
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
-    if (0 < _Count) {
-        auto _UFirst = _Get_unwrapped_n(_First, _Count);
-        auto _UDest  = _Get_unwrapped_n(_Dest, _Count);
-        if constexpr (_Can_memcpy_uninitialized<decltype(_UFirst), decltype(_UDest)>) {
-            _UDest = _Copy_memmove(_UFirst, _UFirst + _Count, _UDest);
-        } else {
-            _Uninitialized_backout<decltype(_UDest)> _Backout{_UDest};
-            for (; 0 < _Count; --_Count, (void) ++_UFirst) {
-                _Backout._Emplace_back(*_UFirst);
-            }
-
-            _UDest = _Backout._Release();
-        }
-
-        _Seek_wrapped(_Dest, _UDest);
+    if (_Count <= 0) {
+        return _Dest;
     }
 
+    auto _UFirst = _Get_unwrapped_n(_First, _Count);
+    auto _UDest  = _Get_unwrapped_n(_Dest, _Count);
+    if constexpr (_Can_memcpy_uninitialized<decltype(_UFirst), decltype(_UDest)>) {
+        _UDest = _Copy_memmove(_UFirst, _UFirst + _Count, _UDest);
+    } else {
+        _Uninitialized_backout<decltype(_UDest)> _Backout{_UDest};
+
+        for (; _Count > 0; --_Count, (void) ++_UFirst) {
+            _Backout._Emplace_back(*_UFirst);
+        }
+
+        _UDest = _Backout._Release();
+    }
+
+    _Seek_wrapped(_Dest, _UDest);
     return _Dest;
 }
 #else // ^^^ _HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
@@ -56,7 +157,8 @@ template <class _InIt, class _Diff, class _NoThrowFwdIt>
 _NoThrowFwdIt _Uninitialized_copy_n_unchecked2(_InIt _First, _Diff _Count, const _NoThrowFwdIt _Dest,
     false_type) { // copy [_First, _First + _Count) to [_Dest, ...), no special optimization
     _Uninitialized_backout<_NoThrowFwdIt> _Backout{_Dest};
-    for (; 0 < _Count; --_Count, (void) ++_First) {
+
+    for (; _Count > 0; --_Count, (void) ++_First) {
         _Backout._Emplace_back(*_First);
     }
 
@@ -73,16 +175,64 @@ template <class _InIt, class _Diff, class _NoThrowFwdIt>
 _NoThrowFwdIt uninitialized_copy_n(const _InIt _First, const _Diff _Count_raw, _NoThrowFwdIt _Dest) {
     // copy [_First, _First + _Count) to [_Dest, ...)]
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
-    if (0 < _Count) {
-        auto _UFirst = _Get_unwrapped_n(_First, _Count);
-        auto _UDest  = _Get_unwrapped_n(_Dest, _Count);
-        _Seek_wrapped(_Dest, _Uninitialized_copy_n_unchecked2(_UFirst, _Count, _UDest,
-                                 bool_constant<_Can_memcpy_uninitialized<decltype(_UFirst), decltype(_UDest)>>{}));
+    if (_Count <= 0) {
+        return _Dest;
     }
 
+    auto _UFirst = _Get_unwrapped_n(_First, _Count);
+    auto _UDest  = _Get_unwrapped_n(_Dest, _Count);
+    _Seek_wrapped(_Dest, _Uninitialized_copy_n_unchecked2(_UFirst, _Count, _UDest,
+                             bool_constant<_Can_memcpy_uninitialized<decltype(_UFirst), decltype(_UDest)>>{}));
     return _Dest;
 }
 #endif // _HAS_IF_CONSTEXPR
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // ALIAS TEMPLATE uninitialized_copy_n_result
+    template <class _In, class _Out>
+    using uninitialized_copy_n_result = in_out_result<_In, _Out>;
+
+    // VARIABLE ranges::uninitialized_copy_n
+    class _Uninitialized_copy_n_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <input_iterator _It, _No_throw_forward_iterator _Out, _No_throw_sentinel_for<_Out> _OSe>
+            requires constructible_from<iter_value_t<_Out>, iter_reference_t<_It>>
+        uninitialized_copy_n_result<_It, _Out> operator()(
+            _It _First1, iter_difference_t<_It> _Count, _Out _First2, _OSe _Last2) const {
+            // clang-format on
+            if (_Count <= 0) {
+                return {_STD move(_First1), _STD move(_First2)};
+            }
+
+            _Adl_verify_range(_First2, _Last2);
+            auto _IFirst      = _Get_unwrapped_n(_STD move(_First1), _Count);
+            auto _OFirst      = _Get_unwrapped(_STD move(_First2));
+            const auto _OLast = _Get_unwrapped(_STD move(_Last2));
+            if constexpr (_Can_memcpy_uninitialized<_It, _Out>) {
+                _OFirst = _Copy_memcpy_common(_IFirst, _IFirst + _Count, _OFirst, _OLast);
+            } else {
+                _Uninitialized_backout _Backout{_STD move(_OFirst)};
+
+                for (; _Count > 0 && _OFirst != _OLast; --_Count, (void) ++_IFirst) {
+                    _Backout._Emplace_back(*_IFirst);
+                }
+
+                _OFirst = _Backout._Release();
+            }
+
+            _Seek_wrapped(_First1, _IFirst);
+            _Seek_wrapped(_First2, _OFirst);
+            return {_STD move(_First1), _STD move(_First2)};
+        }
+    };
+
+    inline constexpr _Uninitialized_copy_n_fn uninitialized_copy_n{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 
 #if _HAS_CXX17
 // FUNCTION TEMPLATE uninitialized_move
@@ -97,33 +247,205 @@ _NoThrowFwdIt uninitialized_move(const _InIt _First, const _InIt _Last, _NoThrow
     return _Dest;
 }
 
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // ALIAS TEMPLATE uninitialized_move_result
+    template <class _In, class _Out>
+    using uninitialized_move_result = in_out_result<_In, _Out>;
+
+    // VARIABLE ranges::uninitialized_move
+    class _Uninitialized_move_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <input_iterator _It, sentinel_for<_It> _Se, _No_throw_forward_iterator _Out,
+            _No_throw_sentinel_for<_Out> _OSe>
+            requires constructible_from<iter_value_t<_Out>, iter_rvalue_reference_t<_It>>
+        uninitialized_move_result<_It, _Out> operator()(_It _First1, _Se _Last1, _Out _First2, _OSe _Last2) const {
+            // clang-format on
+            _Adl_verify_range(_First1, _Last1);
+            _Adl_verify_range(_First2, _Last2);
+            auto _UResult =
+                _Uninitialized_move_unchecked(_Get_unwrapped(_STD move(_First1)), _Get_unwrapped(_STD move(_Last1)),
+                    _Get_unwrapped(_STD move(_First2)), _Get_unwrapped(_STD move(_Last2)));
+
+            _Seek_wrapped(_First1, _STD move(_UResult.in));
+            _Seek_wrapped(_First2, _STD move(_UResult.out));
+            return {_STD move(_First1), _STD move(_First2)};
+        }
+
+        // clang-format off
+        template <input_range _Rng1, _No_throw_forward_range _Rng2>
+            requires constructible_from<range_value_t<_Rng2>, range_rvalue_reference_t<_Rng1>>
+        uninitialized_move_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>> operator()(
+            _Rng1&& _Range1, _Rng2&& _Range2) const {
+            // clang-format on
+            auto _First1  = _RANGES begin(_Range1);
+            auto _UResult = _Uninitialized_move_unchecked(
+                _Get_unwrapped(_STD move(_First1)), _Uend(_Range1), _Ubegin(_Range2), _Uend(_Range2));
+
+            _Seek_wrapped(_First1, _STD move(_UResult.in));
+            return {_STD move(_First1), _Rewrap_iterator(_Range2, _STD move(_UResult.out))};
+        }
+
+    private:
+        template <class _It, class _Se, class _Out, class _OSe>
+        _NODISCARD static uninitialized_move_result<_It, _Out> _Uninitialized_move_unchecked(
+            _It _IFirst, const _Se _ILast, _Out _OFirst, const _OSe _OLast) {
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(_No_throw_forward_iterator<_Out>);
+            _STL_INTERNAL_STATIC_ASSERT(_No_throw_sentinel_for<_OSe, _Out>);
+            _STL_INTERNAL_STATIC_ASSERT(constructible_from<iter_value_t<_Out>, iter_rvalue_reference_t<_It>>);
+
+            if constexpr (is_same_v<_Se, _It> && _Can_memmove_uninitialized<_It, _Out>) {
+                return _Copy_memcpy_common(_IFirst, _ILast, _OFirst, _OLast);
+            } else {
+                _Uninitialized_backout _Backout{_STD move(_OFirst)};
+
+                for (; _IFirst != _ILast && _Backout._Last != _OLast; ++_IFirst) {
+                    _Backout._Emplace_back(_RANGES iter_move(_IFirst));
+                }
+
+                return {_STD move(_IFirst), _Backout._Release()};
+            }
+        }
+    };
+
+    inline constexpr _Uninitialized_move_fn uninitialized_move{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
+
 // FUNCTION TEMPLATE uninitialized_move_n
 template <class _InIt, class _Diff, class _NoThrowFwdIt>
 pair<_InIt, _NoThrowFwdIt> uninitialized_move_n(_InIt _First, const _Diff _Count_raw, _NoThrowFwdIt _Dest) {
     // move [_First, _First + _Count) to [_Dest, ...)
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
-    if (0 < _Count) {
-        auto _UFirst = _Get_unwrapped_n(_First, _Count);
-        auto _UDest  = _Get_unwrapped_n(_Dest, _Count);
-        if constexpr (_Can_memmove_uninitialized<decltype(_UFirst), decltype(_UDest)>) {
-            _UDest = _Copy_memmove(_UFirst, _UFirst + _Count, _UDest);
-            _UFirst += _Count;
-        } else {
-            _Uninitialized_backout<decltype(_UDest)> _Backout{_UDest};
-            for (; 0 < _Count; --_Count, (void) ++_UFirst) {
-                _Backout._Emplace_back(_STD move(*_UFirst));
-            }
-
-            _UDest = _Backout._Release();
-        }
-
-        _Seek_wrapped(_Dest, _UDest);
-        _Seek_wrapped(_First, _UFirst);
+    if (_Count <= 0) {
+        return {_First, _Dest};
     }
 
+    auto _UFirst = _Get_unwrapped_n(_First, _Count);
+    auto _UDest  = _Get_unwrapped_n(_Dest, _Count);
+    if constexpr (_Can_memmove_uninitialized<decltype(_UFirst), decltype(_UDest)>) {
+        _UDest = _Copy_memmove(_UFirst, _UFirst + _Count, _UDest);
+        _UFirst += _Count;
+    } else {
+        _Uninitialized_backout<decltype(_UDest)> _Backout{_UDest};
+
+        for (; _Count > 0; --_Count, (void) ++_UFirst) {
+            _Backout._Emplace_back(_STD move(*_UFirst));
+        }
+
+        _UDest = _Backout._Release();
+    }
+
+    _Seek_wrapped(_Dest, _UDest);
+    _Seek_wrapped(_First, _UFirst);
     return {_First, _Dest};
 }
 #endif // _HAS_CXX17
+
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // ALIAS TEMPLATE uninitialized_move_n_result
+    template <class _In, class _Out>
+    using uninitialized_move_n_result = in_out_result<_In, _Out>;
+
+    // VARIABLE ranges::uninitialized_move_n
+    class _Uninitialized_move_n_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <input_iterator _It, _No_throw_forward_iterator _Out, _No_throw_sentinel_for<_Out> _OSe>
+            requires constructible_from<iter_value_t<_Out>, iter_rvalue_reference_t<_It>>
+        uninitialized_move_n_result<_It, _Out> operator()(
+            _It _First1, iter_difference_t<_It> _Count, _Out _First2, _OSe _Last2) const {
+            // clang-format on
+            if (_Count <= 0) {
+                return {_STD move(_First1), _STD move(_First2)};
+            }
+
+            _Adl_verify_range(_First2, _Last2);
+            auto _IFirst      = _Get_unwrapped_n(_STD move(_First1), _Count);
+            auto _OFirst      = _Get_unwrapped(_STD move(_First2));
+            const auto _OLast = _Get_unwrapped(_STD move(_Last2));
+            if constexpr (_Can_memmove_uninitialized<_It, _Out>) {
+                _OFirst = _Copy_memcpy_common(_IFirst, _IFirst + _Count, _OFirst, _OLast);
+            } else {
+                _Uninitialized_backout _Backout{_STD move(_OFirst)};
+
+                for (; _Count > 0 && _Backout._Last != _OLast; --_Count, (void) ++_IFirst) {
+                    _Backout._Emplace_back(_RANGES iter_move(_IFirst));
+                }
+
+                _OFirst = _Backout._Release();
+            }
+
+            _Seek_wrapped(_First1, _IFirst);
+            _Seek_wrapped(_First2, _OFirst);
+            return {_STD move(_First1), _STD move(_First2)};
+        }
+    };
+
+    inline constexpr _Uninitialized_move_n_fn uninitialized_move_n{_Not_quite_object::_Construct_tag{}};
+
+    // VARIABLE ranges::uninitialized_fill
+    class _Uninitialized_fill_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <_No_throw_forward_iterator _It, _No_throw_sentinel_for<_It> _Se, class _Ty>
+            requires constructible_from<iter_value_t<_It>, const _Ty&>
+        _It operator()(_It _First, _Se _Last, const _Ty& _Val) const {
+            // clang-format on
+            _Adl_verify_range(_First, _Last);
+            auto _UResult = _Uninitialized_fill_unchecked(
+                _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _Val);
+
+            _Seek_wrapped(_First, _STD move(_UResult));
+            return _First;
+        }
+
+        // clang-format off
+        template <_No_throw_forward_range _Rng, class _Ty>
+            requires constructible_from<range_value_t<_Rng>, const _Ty&>
+        borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, const _Ty& _Val) const {
+            // clang-format on
+            return _Rewrap_iterator(_Range, _Uninitialized_fill_unchecked(_Ubegin(_Range), _Uend(_Range), _Val));
+        }
+
+    private:
+        template <class _It, class _Se, class _Ty>
+        _NODISCARD static _It _Uninitialized_fill_unchecked(_It _OFirst, const _Se _OLast, const _Ty& _Val) {
+            _STL_INTERNAL_STATIC_ASSERT(_No_throw_forward_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(_No_throw_sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(constructible_from<iter_value_t<_It>, const _Ty&>);
+
+            if constexpr (_Fill_memset_is_safe<_It, _Ty>) {
+                const auto _OFinal = _RANGES next(_OFirst, _STD move(_OLast));
+                const auto _Diff   = static_cast<size_t>(_OFinal - _OFirst);
+                _Fill_memset(_OFirst, _Val, _Diff);
+                return _OFinal;
+            } else {
+                _Uninitialized_backout _Backout{_STD move(_OFirst)};
+
+                while (_Backout._Last != _OLast) {
+                    _Backout._Emplace_back(_Val);
+                }
+
+                return _Backout._Release();
+            }
+        }
+    };
+
+    inline constexpr _Uninitialized_fill_fn uninitialized_fill{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE uninitialized_fill_n
 #if _HAS_IF_CONSTEXPR
@@ -131,23 +453,25 @@ template <class _NoThrowFwdIt, class _Diff, class _Tval>
 _NoThrowFwdIt uninitialized_fill_n(_NoThrowFwdIt _First, const _Diff _Count_raw, const _Tval& _Val) {
     // copy _Count copies of _Val to raw _First
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
-    if (0 < _Count) {
-        auto _UFirst = _Get_unwrapped_n(_First, _Count);
-        if constexpr (_Fill_memset_is_safe<_Unwrapped_n_t<const _NoThrowFwdIt&>, _Tval>) {
-            _CSTD memset(_UFirst, static_cast<unsigned char>(_Val), _Count);
-            _UFirst += _Count;
-        } else {
-            _Uninitialized_backout<_Unwrapped_n_t<const _NoThrowFwdIt&>> _Backout{_UFirst};
-            for (; 0 < _Count; --_Count) {
-                _Backout._Emplace_back(_Val);
-            }
-
-            _UFirst = _Backout._Release();
-        }
-
-        _Seek_wrapped(_First, _UFirst);
+    if (_Count <= 0) {
+        return _First;
     }
 
+    auto _UFirst = _Get_unwrapped_n(_First, _Count);
+    if constexpr (_Fill_memset_is_safe<_Unwrapped_n_t<const _NoThrowFwdIt&>, _Tval>) {
+        _Fill_memset(_UFirst, _Val, static_cast<size_t>(_Count));
+        _UFirst += _Count;
+    } else {
+        _Uninitialized_backout<_Unwrapped_n_t<const _NoThrowFwdIt&>> _Backout{_UFirst};
+
+        for (; _Count > 0; --_Count) {
+            _Backout._Emplace_back(_Val);
+        }
+
+        _UFirst = _Backout._Release();
+    }
+
+    _Seek_wrapped(_First, _UFirst);
     return _First;
 }
 #else // ^^^ _HAS_IF_CONSTEXPR // !_HAS_IF_CONSTEXPR vvv
@@ -156,7 +480,7 @@ _NoThrowFwdIt _Uninitialized_fill_n_unchecked1(
     const _NoThrowFwdIt _First, _Diff _Count, const _Tval& _Val, false_type) {
     // copy _Count copies of _Val to raw _First, no special optimization
     _Uninitialized_backout<_NoThrowFwdIt> _Backout{_First};
-    for (; 0 < _Count; --_Count) {
+    for (; _Count > 0; --_Count) {
         _Backout._Emplace_back(_Val);
     }
 
@@ -167,7 +491,7 @@ template <class _NoThrowFwdIt, class _Diff, class _Tval>
 _NoThrowFwdIt _Uninitialized_fill_n_unchecked1(
     const _NoThrowFwdIt _First, const _Diff _Count, const _Tval& _Val, true_type) {
     // copy _Count copies of _Val to raw _First, memset optimization
-    _CSTD memset(_First, static_cast<unsigned char>(_Val), _Count);
+    _Fill_memset(_First, _Val, _Count);
     return _First + _Count;
 }
 
@@ -175,36 +499,131 @@ template <class _NoThrowFwdIt, class _Diff, class _Tval>
 _NoThrowFwdIt uninitialized_fill_n(_NoThrowFwdIt _First, const _Diff _Count_raw, const _Tval& _Val) {
     // copy _Count copies of _Val to raw _First
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
-    if (0 < _Count) {
-        auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
-        _Seek_wrapped(_First, _Uninitialized_fill_n_unchecked1(_STD move(_UFirst), _Count, _Val,
-                                  bool_constant<_Fill_memset_is_safe<_Unwrapped_t<_NoThrowFwdIt>, _Tval>>{}));
+    if (_Count <= 0) {
+        return _First;
     }
 
+    auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
+    _Seek_wrapped(_First, _Uninitialized_fill_n_unchecked1(_STD move(_UFirst), _Count, _Val,
+                              bool_constant<_Fill_memset_is_safe<_Unwrapped_t<_NoThrowFwdIt>, _Tval>>{}));
     return _First;
 }
 #endif // _HAS_IF_CONSTEXPR
 
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::uninitialized_fill_n
+    class _Uninitialized_fill_n_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <_No_throw_forward_iterator _It, class _Ty>
+            requires constructible_from<iter_value_t<_It>, const _Ty&>
+        _It operator()(_It _First, iter_difference_t<_It> _Count, const _Ty& _Val) const {
+            // clang-format on
+            if (_Count <= 0) {
+                return _First;
+            }
+
+            auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
+            if constexpr (_Fill_memset_is_safe<_It, _Ty>) {
+                _Fill_memset(_UFirst, _Val, static_cast<size_t>(_Count));
+                _Seek_wrapped(_First, _UFirst + _Count);
+            } else {
+                _Uninitialized_backout _Backout{_STD move(_UFirst)};
+
+                for (; _Count > 0; --_Count) {
+                    _Backout._Emplace_back(_Val);
+                }
+
+                _Seek_wrapped(_First, _Backout._Release());
+            }
+            return _First;
+        }
+    };
+
+    inline constexpr _Uninitialized_fill_n_fn uninitialized_fill_n{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
+
+// FUNCTION TEMPLATE construct_at
 #if _HAS_CXX20
 template <class _Ty, class... _Types>
-auto construct_at(_Ty* const _Location, _Types&&... _Args) noexcept(noexcept(::new (const_cast<void*>(
-    static_cast<const volatile void*>(_Location))) _Ty(_STD forward<_Types>(_Args)...))) // strengthened
+_CONSTEXPR20_DYNALLOC auto construct_at(_Ty* const _Location, _Types&&... _Args) noexcept(
+    noexcept(::new (const_cast<void*>(static_cast<const volatile void*>(_Location)))
+            _Ty(_STD forward<_Types>(_Args)...))) // strengthened
     -> decltype(
         ::new (const_cast<void*>(static_cast<const volatile void*>(_Location))) _Ty(_STD forward<_Types>(_Args)...)) {
     return ::new (const_cast<void*>(static_cast<const volatile void*>(_Location))) _Ty(_STD forward<_Types>(_Args)...);
 }
 
+#ifdef __cpp_lib_concepts
 namespace ranges {
-    using _STD construct_at;
+    // VARIABLE ranges::construct_at
+    class _Construct_at_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <class _Ty, class... _Types>
+            requires requires(void* _Void_ptr, _Types&&... _Args) {
+                ::new (_Void_ptr) _Ty(static_cast<_Types&&>(_Args)...);
+            }
+        _CONSTEXPR20_DYNALLOC _Ty* operator()(_Ty* _Location, _Types&&... _Args) const
+            noexcept(noexcept(::new (const_cast<void*>(static_cast<const volatile void*>(_Location)))
+                    _Ty(_STD forward<_Types>(_Args)...))) /* strengthened */ {
+            // clang-format on
+            return ::new (const_cast<void*>(static_cast<const volatile void*>(_Location)))
+                _Ty(_STD forward<_Types>(_Args)...);
+        }
+    };
+
+    inline constexpr _Construct_at_fn construct_at{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
+#endif // __cpp_lib_concepts
 #endif // _HAS_CXX20
 
 #if _HAS_CXX17
 // FUNCTION TEMPLATE destroy_at
 template <class _Ty>
-void destroy_at(_Ty* const _Location) noexcept /* strengthened */ {
-    _Location->~_Ty();
+_CONSTEXPR20_DYNALLOC void destroy_at(_Ty* const _Location) noexcept /* strengthened */ {
+#if _HAS_CXX20
+    if constexpr (is_array_v<_Ty>) {
+        _Destroy_range(_STD begin(*_Location), _STD end(*_Location));
+    } else
+#endif // _HAS_CXX20
+    {
+        _Location->~_Ty();
+    }
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::destroy_at
+    // clang-format off
+    template <_No_throw_input_iterator _It, _No_throw_sentinel_for<_It> _Se>
+        requires destructible<iter_value_t<_It>>
+    _NODISCARD _CONSTEXPR20_DYNALLOC _It _Destroy_unchecked(_It _First, _Se _Last) noexcept;
+    // clang-format on
+
+    class _Destroy_at_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <destructible _Ty>
+        _CONSTEXPR20_DYNALLOC void operator()(_Ty* const _Location) const noexcept {
+            if constexpr (is_array_v<_Ty>) {
+                (void) _RANGES _Destroy_unchecked(_RANGES begin(*_Location), _RANGES end(*_Location));
+            } else {
+                _Location->~_Ty();
+            }
+        }
+    };
+
+    inline constexpr _Destroy_at_fn destroy_at{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE destroy
 template <class _NoThrowFwdIt>
@@ -213,45 +632,188 @@ void destroy(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last) { // destroy
     _Destroy_range(_Get_unwrapped(_First), _Get_unwrapped(_Last));
 }
 
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::destroy
+    // clang-format off
+    template <_No_throw_input_iterator _It, _No_throw_sentinel_for<_It> _Se>
+        requires destructible<iter_value_t<_It>>
+    _NODISCARD _CONSTEXPR20_DYNALLOC _It _Destroy_unchecked(_It _First, const _Se _Last) noexcept {
+        // clang-format on
+        for (; _First != _Last; ++_First) {
+            _RANGES destroy_at(_STD addressof(*_First));
+        }
+
+        return _First;
+    }
+
+    class _Destroy_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <_No_throw_input_iterator _It, _No_throw_sentinel_for<_It> _Se>
+            requires destructible<iter_value_t<_It>>
+        /* _CONSTEXPR20_DYNALLOC */ _It operator()(_It _First, _Se _Last) const noexcept {
+            // clang-format on
+            _Adl_verify_range(_First, _Last);
+            _Seek_wrapped(_First,
+                _RANGES _Destroy_unchecked(_Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last))));
+            return _First;
+        }
+
+        // clang-format off
+        template <_No_throw_input_range _Rng>
+            requires destructible<range_value_t<_Rng>>
+        /* _CONSTEXPR20_DYNALLOC */ borrowed_iterator_t<_Rng> operator()(_Rng&& _Range) const noexcept {
+            // clang-format on
+            auto _First = _RANGES begin(_Range);
+            _Seek_wrapped(_First, _RANGES _Destroy_unchecked(_Get_unwrapped(_STD move(_First)), _Uend(_Range)));
+            return _First;
+        }
+    };
+
+    inline constexpr _Destroy_fn destroy{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
+
 // FUNCTION TEMPLATE destroy_n
 template <class _NoThrowFwdIt, class _Diff>
 _NoThrowFwdIt destroy_n(_NoThrowFwdIt _First, const _Diff _Count_raw) {
     // destroy all elements in [_First, _First + _Count)
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
-    if (0 < _Count) {
-        auto _UFirst = _Get_unwrapped_n(_First, _Count);
-        if constexpr (is_trivially_destructible_v<_Iter_value_t<_NoThrowFwdIt>>) {
-            _STD advance(_UFirst, _Count);
-        } else {
-            do {
-                _Destroy_in_place(*_UFirst);
-                ++_UFirst;
-                --_Count;
-            } while (0 < _Count);
-        }
-
-        _Seek_wrapped(_First, _UFirst);
+    if (_Count <= 0) {
+        return _First;
     }
 
+    auto _UFirst = _Get_unwrapped_n(_First, _Count);
+    if constexpr (is_trivially_destructible_v<_Iter_value_t<_NoThrowFwdIt>>) {
+        _STD advance(_UFirst, _Count);
+    } else {
+        for (; _Count > 0; --_Count, (void) ++_UFirst) {
+            _Destroy_in_place(*_UFirst);
+        }
+    }
+
+    _Seek_wrapped(_First, _UFirst);
     return _First;
 }
 
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::destroy_n
+    class _Destroy_n_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <_No_throw_input_iterator _It>
+            requires destructible<iter_value_t<_It>>
+        /* _CONSTEXPR20_DYNALLOC */ _It operator()(_It _First, const iter_difference_t<_It> _Count) const noexcept {
+            // clang-format on
+            if (_Count <= 0) {
+                return _First;
+            }
+
+            auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
+            if constexpr (is_trivially_destructible_v<iter_value_t<_It>>) {
+                _RANGES advance(_UFirst, _Count);
+            } else {
+                do {
+                    _RANGES destroy_at(_STD addressof(*_UFirst));
+                    ++_UFirst;
+                    --_Count;
+                } while (_Count > 0);
+            }
+
+            _Seek_wrapped(_First, _STD move(_UFirst));
+            return _First;
+        }
+    };
+
+    inline constexpr _Destroy_n_fn destroy_n{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
+
 // FUNCTION TEMPLATE uninitialized_default_construct
+template <class _Iter>
+_NODISCARD void* _Voidify_iter(_Iter _It) noexcept {
+    return const_cast<void*>(static_cast<const volatile void*>(_STD addressof(*_It)));
+}
+
 template <class _NoThrowFwdIt>
 void uninitialized_default_construct(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last) {
     // default-initialize all elements in [_First, _Last)
-    using _Ty = _Iter_value_t<_NoThrowFwdIt>;
+    using _Ty = remove_reference_t<_Iter_ref_t<_NoThrowFwdIt>>;
     _Adl_verify_range(_First, _Last);
     if constexpr (!is_trivially_default_constructible_v<_Ty>) {
-        const auto _ULast = _Get_unwrapped(_Last);
         _Uninitialized_backout _Backout{_Get_unwrapped(_First)};
-        for (; _Backout._Last != _ULast; ++_Backout._Last) {
-            ::new (static_cast<void*>(_Unfancy(_Backout._Last))) _Ty;
+
+        for (const auto _ULast = _Get_unwrapped(_Last); _Backout._Last != _ULast; ++_Backout._Last) {
+            ::new (_Voidify_iter(_Backout._Last)) _Ty;
         }
 
         _Backout._Release();
     }
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::uninitialized_default_construct
+    class _Uninitialized_default_construct_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <_No_throw_forward_iterator _It, _No_throw_sentinel_for<_It> _Se>
+            requires default_initializable<iter_value_t<_It>>
+        _It operator()(_It _First, _Se _Last) const {
+            // clang-format on
+            _Adl_verify_range(_First, _Last);
+            auto _UResult = _Uninitialized_default_construct_unchecked(
+                _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)));
+
+            _Seek_wrapped(_First, _STD move(_UResult));
+            return _First;
+        }
+
+        // clang-format off
+        template <_No_throw_forward_range _Rng>
+            requires default_initializable<range_value_t<_Rng>>
+        borrowed_iterator_t<_Rng> operator()(_Rng&& _Range) const {
+            // clang-format on
+            auto _UResult = _Uninitialized_default_construct_unchecked(_Ubegin(_Range), _Uend(_Range));
+
+            return _Rewrap_iterator(_Range, _STD move(_UResult));
+        }
+
+    private:
+        template <class _It, class _Se>
+        _NODISCARD static _It _Uninitialized_default_construct_unchecked(_It _OFirst, const _Se _OLast) {
+            _STL_INTERNAL_STATIC_ASSERT(_No_throw_forward_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(_No_throw_sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(default_initializable<iter_value_t<_It>>);
+
+            using _Ty = remove_reference_t<iter_reference_t<_It>>;
+            if constexpr (is_trivially_default_constructible_v<_Ty>) {
+                _RANGES advance(_OFirst, _OLast);
+                return _OFirst;
+            } else {
+                _Uninitialized_backout _Backout{_STD move(_OFirst)};
+
+                for (; _Backout._Last != _OLast; ++_Backout._Last) {
+                    ::new (_Voidify_iter(_Backout._Last)) _Ty;
+                }
+
+                return _Backout._Release();
+            }
+        }
+    };
+
+    inline constexpr _Uninitialized_default_construct_fn uninitialized_default_construct{
+        _Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE uninitialized_default_construct_n
 template <class _NoThrowFwdIt, class _Diff>
@@ -259,21 +821,68 @@ _NoThrowFwdIt uninitialized_default_construct_n(_NoThrowFwdIt _First, const _Dif
     // default-initialize all elements in [_First, _First + _Count_raw)
     using _Ty                      = _Iter_value_t<_NoThrowFwdIt>;
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
-    if (0 < _Count) {
-        if constexpr (is_trivially_default_constructible_v<_Ty>) {
-            _STD advance(_First, _Count);
-        } else {
-            _Uninitialized_backout _Backout{_Get_unwrapped_n(_First, _Count)};
-            for (; 0 < _Count; ++_Backout._Last, (void) --_Count) {
-                ::new (static_cast<void*>(_Unfancy(_Backout._Last))) _Ty;
-            }
-
-            _Seek_wrapped(_First, _Backout._Release());
-        }
+    if (_Count <= 0) {
+        return _First;
     }
 
+    if constexpr (is_trivially_default_constructible_v<_Ty>) {
+        _STD advance(_First, _Count);
+    } else {
+        _Uninitialized_backout _Backout{_Get_unwrapped_n(_First, _Count)};
+
+        for (; _Count > 0; ++_Backout._Last, (void) --_Count) {
+            ::new (_Voidify_iter(_Backout._Last)) _Ty;
+        }
+
+        _Seek_wrapped(_First, _Backout._Release());
+    }
     return _First;
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::uninitialized_default_construct_n
+    class _Uninitialized_default_construct_n_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <_No_throw_forward_iterator _It>
+            requires default_initializable<iter_value_t<_It>>
+        _It operator()(_It _First, iter_difference_t<_It> _Count) const {
+            // clang-format on
+            if (_Count <= 0) {
+                return _First;
+            }
+
+            using _Ty = remove_reference_t<iter_reference_t<_It>>;
+            if constexpr (is_trivially_default_constructible_v<_Ty>) {
+                _RANGES advance(_First, _Count);
+            } else if constexpr (is_nothrow_default_constructible_v<_Ty>) {
+                auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
+
+                for (; _Count > 0; --_Count, (void) ++_UFirst) {
+                    ::new (_Voidify_iter(_UFirst)) _Ty;
+                }
+
+                _Seek_wrapped(_First, _STD move(_UFirst));
+            } else {
+                _Uninitialized_backout _Backout{_Get_unwrapped_n(_STD move(_First), _Count)};
+
+                for (; _Count > 0; --_Count, (void) ++_Backout._Last) {
+                    ::new (_Voidify_iter(_Backout._Last)) _Ty;
+                }
+
+                _Seek_wrapped(_First, _Backout._Release());
+            }
+            return _First;
+        }
+    };
+
+    inline constexpr _Uninitialized_default_construct_n_fn uninitialized_default_construct_n{
+        _Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE uninitialized_value_construct
 template <class _NoThrowFwdIt>
@@ -286,6 +895,7 @@ void uninitialized_value_construct(const _NoThrowFwdIt _First, const _NoThrowFwd
         _Zero_range(_UFirst, _ULast);
     } else {
         _Uninitialized_backout _Backout{_UFirst};
+
         while (_Backout._Last != _ULast) {
             _Backout._Emplace_back();
         }
@@ -294,18 +904,115 @@ void uninitialized_value_construct(const _NoThrowFwdIt _First, const _NoThrowFwd
     }
 }
 
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::uninitialized_value_construct
+    class _Uninitialized_value_construct_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <_No_throw_forward_iterator _It, _No_throw_sentinel_for<_It> _Se>
+            requires default_initializable<iter_value_t<_It>>
+        _It operator()(_It _First, _Se _Last) const {
+            // clang-format on
+            _Adl_verify_range(_First, _Last);
+            auto _UResult = _Uninitialized_value_construct_unchecked(
+                _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)));
+
+            _Seek_wrapped(_First, _STD move(_UResult));
+            return _First;
+        }
+
+        // clang-format off
+        template <_No_throw_forward_range _Rng>
+            requires default_initializable<range_value_t<_Rng>>
+        borrowed_iterator_t<_Rng> operator()(_Rng&& _Range) const {
+            // clang-format on
+            auto _UResult = _Uninitialized_value_construct_unchecked(_Ubegin(_Range), _Uend(_Range));
+
+            return _Rewrap_iterator(_Range, _STD move(_UResult));
+        }
+
+    private:
+        template <class _It, class _Se>
+        _NODISCARD static _It _Uninitialized_value_construct_unchecked(_It _OFirst, const _Se _OLast) {
+            _STL_INTERNAL_STATIC_ASSERT(_No_throw_forward_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(_No_throw_sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(default_initializable<iter_value_t<_It>>);
+
+            if constexpr (_Use_memset_value_construct_v<_It>) {
+                const auto _OFinal = _RANGES next(_OFirst, _STD move(_OLast));
+                const auto _Count  = static_cast<size_t>(_OFinal - _OFirst);
+                _CSTD memset(_OFirst, 0, _Count);
+                return _OFinal;
+            } else {
+                _Uninitialized_backout _Backout{_STD move(_OFirst)};
+
+                while (_Backout._Last != _OLast) {
+                    _Backout._Emplace_back();
+                }
+
+                return _Backout._Release();
+            }
+        }
+    };
+
+    inline constexpr _Uninitialized_value_construct_fn uninitialized_value_construct{
+        _Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
+
 // FUNCTION TEMPLATE uninitialized_value_construct_n
 template <class _NoThrowFwdIt, class _Diff>
 _NoThrowFwdIt uninitialized_value_construct_n(_NoThrowFwdIt _First, const _Diff _Count_raw) {
     // value-initialize all elements in [_First, _First + _Count_raw)
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
-    if (0 < _Count) {
-        _Seek_wrapped(_First, _Uninitialized_value_construct_n_unchecked1(_Get_unwrapped_n(_First, _Count), _Count));
+    if (_Count <= 0) {
+        return _First;
     }
 
+    _Seek_wrapped(_First, _Uninitialized_value_construct_n_unchecked1(_Get_unwrapped_n(_First, _Count), _Count));
     return _First;
 }
 
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::uninitialized_value_construct_n
+    class _Uninitialized_value_construct_n_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <_No_throw_forward_iterator _It>
+            requires default_initializable<iter_value_t<_It>>
+        _It operator()(_It _First, iter_difference_t<_It> _Count) const {
+            // clang-format on
+            if (_Count <= 0) {
+                return _First;
+            }
+
+            auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
+            if constexpr (_Use_memset_value_construct_v<_It>) {
+                _CSTD memset(_UFirst, 0, static_cast<size_t>(_Count));
+                _Seek_wrapped(_First, _UFirst + _Count);
+            } else {
+                _Uninitialized_backout _Backout{_STD move(_UFirst)};
+
+                for (; _Count > 0; --_Count) {
+                    _Backout._Emplace_back();
+                }
+
+                _Seek_wrapped(_First, _Backout._Release());
+            }
+            return _First;
+        }
+    };
+
+    inline constexpr _Uninitialized_value_construct_n_fn uninitialized_value_construct_n{
+        _Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
 
@@ -1653,7 +2360,7 @@ void _Uninitialized_fill_multidimensional_n(_Ty* const _Out, const size_t _Size,
         }
         _Guard._Target = nullptr;
     } else if constexpr (_Fill_memset_is_safe<_Ty*, _Ty>) {
-        _CSTD memset(_Out, static_cast<unsigned char>(_Val), _Size);
+        _Fill_memset(_Out, _Val, _Size);
     } else {
         _Uninitialized_rev_destroying_backout _Backout{_Out};
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
@@ -1976,7 +2683,7 @@ void _Uninitialized_fill_multidimensional_n_al(_Ty* const _Out, const size_t _Si
         }
         _Guard._Target = nullptr;
     } else if constexpr (_Fill_memset_is_safe<_Ty*, _Ty> && _Uses_default_construct<_Alloc, _Ty*, const _Ty&>::value) {
-        _CSTD memset(_Out, static_cast<unsigned char>(_Val), _Size);
+        _Fill_memset(_Out, _Val, _Size);
     } else {
         _Uninitialized_rev_destroying_backout_al _Backout{_Out, _Al};
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
@@ -2261,7 +2968,7 @@ _NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared
     _Alblock _Rebound(_Al);
     _Alloc_construct_ptr _Constructor{_Rebound};
     _Constructor._Allocate();
-    ::new (static_cast<void*>(_Unfancy(_Constructor._Ptr))) _Refc(_Al);
+    ::new (_Voidify_iter(_Constructor._Ptr)) _Refc(_Al);
     shared_ptr<_Ty> _Ret;
     const auto _Ptr = static_cast<remove_extent_t<_Ty>*>(_Constructor._Ptr->_Storage._Value);
     _Ret._Set_ptr_rep_and_enable_shared(_Ptr, _Unfancy(_Constructor._Release()));
@@ -2277,7 +2984,7 @@ _NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared
     _Alblock _Rebound(_Al);
     _Alloc_construct_ptr _Constructor{_Rebound};
     _Constructor._Allocate();
-    ::new (static_cast<void*>(_Unfancy(_Constructor._Ptr))) _Refc(_Al, _Val);
+    ::new (_Voidify_iter(_Constructor._Ptr)) _Refc(_Al, _Val);
     shared_ptr<_Ty> _Ret;
     const auto _Ptr = static_cast<remove_extent_t<_Ty>*>(_Constructor._Ptr->_Storage._Value);
     _Ret._Set_ptr_rep_and_enable_shared(_Ptr, _Unfancy(_Constructor._Release()));
@@ -2980,15 +3687,17 @@ inline void* align(size_t _Bound, size_t _Size, void*& _Ptr, size_t& _Space) noe
     return _Ptr;
 }
 
-#if _HAS_CXX20 && 0
+#if _HAS_CXX20
 template <size_t _Nx, class _Ty>
-_NODISCARD constexpr _Ty* assume_aligned(_Ty* _Ptr) noexcept /* strengthened */ {
-    // this enforces the requirement that _Nx be a power of two
-    __builtin_assume_aligned(_Ptr, _Nx);
-
-    return _Ptr;
+_NODISCARD constexpr _Ty* assume_aligned(_Ty* const _Ptr) noexcept /* strengthened */ {
+    if (_STD is_constant_evaluated()) {
+        return _Ptr;
+    } else {
+        // this enforces the requirement that _Nx be a power of two
+        return static_cast<_Ty*>(__builtin_assume_aligned(_Ptr, _Nx));
+    }
 }
-#endif // _HAS_CXX20 && 0
+#endif // _HAS_CXX20
 
 // SPIN LOCKS
 _EXTERN_C
@@ -3100,62 +3809,33 @@ _CXX20_DEPRECATE_OLD_SHARED_PTR_ATOMIC_SUPPORT bool atomic_compare_exchange_stro
 template <class _Ty>
 class alignas(2 * sizeof(void*)) _Atomic_ptr_base {
     // overalignment is to allow potential future use of cmpxchg16b
-
-    static_assert(alignof(_Ref_count_base) >= (1 << 2), "Two bits don't fit as low bits");
-
-    static constexpr uintptr_t _Lock_mask                = 3;
-    static constexpr uintptr_t _Not_locked               = 0;
-    static constexpr uintptr_t _Locked_notify_not_needed = 1;
-    static constexpr uintptr_t _Locked_notify_needed     = 2;
-    static constexpr uintptr_t _Ptr_value_mask           = ~_Lock_mask;
-
 protected:
     constexpr _Atomic_ptr_base() noexcept = default;
 
-    _Atomic_ptr_base(_Ty* const _Px, _Ref_count_base* const _Ref) noexcept
-        : _Ptr(_Px), _Repptr(reinterpret_cast<uintptr_t>(_Ref)) {}
+    _Atomic_ptr_base(_Ty* const _Px, _Ref_count_base* const _Ref) noexcept : _Ptr(_Px), _Repptr(_Ref) {}
 
-    _NODISCARD _Ref_count_base* _Lock_and_load() const noexcept {
-        uintptr_t _Rep = _Repptr.load(memory_order::relaxed);
+    void _Wait(_Ty* _Old, memory_order) const noexcept {
         for (;;) {
-            switch (_Rep & _Lock_mask) {
-            case _Not_locked: // Can try to lock now
-                if (_Repptr.compare_exchange_weak(_Rep, _Rep | _Locked_notify_not_needed)) {
-                    return reinterpret_cast<_Ref_count_base*>(_Rep);
-                }
-                _YIELD_PROCESSOR();
+            auto _Rep   = _Repptr._Lock_and_load();
+            bool _Equal = _Ptr.load(memory_order_relaxed) == _Old;
+            _Repptr._Store_and_unlock(_Rep);
+            if (!_Equal) {
                 break;
-
-            case _Locked_notify_not_needed: // Try to set "notify needed" and wait
-                if (!_Repptr.compare_exchange_weak(_Rep, (_Rep & _Ptr_value_mask) | _Locked_notify_needed)) {
-                    // Failed to put notify needed flag on, try again
-                    _YIELD_PROCESSOR();
-                    break;
-                }
-                _Rep = (_Rep & _Ptr_value_mask) | _Locked_notify_needed;
-                [[fallthrough]];
-
-            case _Locked_notify_needed: // "Notify needed" is already set, just wait
-                _Repptr.wait(_Rep, memory_order::relaxed);
-                _Rep = _Repptr.load(memory_order::relaxed);
-                break;
-
-            default: // Unrecognized bit pattern
-                _CSTD abort();
             }
+            __std_atomic_wait_direct(&_Ptr, &_Old, sizeof(_Old), _Atomic_wait_no_timeout);
         }
     }
 
-    void _Store_and_unlock(_Ref_count_base* const _Value) const noexcept {
-        uintptr_t _Rep = _Repptr.exchange(reinterpret_cast<uintptr_t>(_Value));
-        if ((_Rep & _Lock_mask) == _Locked_notify_needed) {
-            // As we don't count waiters, every waiter is notified, and then some may re-request notification
-            _Repptr.notify_all();
-        }
+    void notify_one() noexcept {
+        _Ptr.notify_one();
     }
 
-    _Ty* _Ptr = nullptr;
-    mutable atomic<uintptr_t> _Repptr{0};
+    void notify_all() noexcept {
+        _Ptr.notify_all();
+    }
+
+    atomic<_Ty*> _Ptr{nullptr};
+    mutable _Locked_pointer<_Ref_count_base> _Repptr;
 };
 
 template <class _Ty>
@@ -3172,22 +3852,24 @@ public:
         return false;
     }
 
-    void store(shared_ptr<_Ty> _Value, const memory_order _Order = memory_order::seq_cst) noexcept {
+    void store(shared_ptr<_Ty> _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
         _Check_store_memory_order(_Order);
-        const auto _Rep = this->_Lock_and_load();
-        _STD swap(this->_Ptr, _Value._Ptr);
-        this->_Store_and_unlock(_Value._Rep);
+        const auto _Rep = this->_Repptr._Lock_and_load();
+        _Ty* const _Tmp = _Value._Ptr;
+        _Value._Ptr     = this->_Ptr.load(memory_order_relaxed);
+        this->_Ptr.store(_Tmp, memory_order_relaxed);
+        this->_Repptr._Store_and_unlock(_Value._Rep);
         _Value._Rep = _Rep;
     }
 
-    _NODISCARD shared_ptr<_Ty> load(const memory_order _Order = memory_order::seq_cst) const noexcept {
+    _NODISCARD shared_ptr<_Ty> load(const memory_order _Order = memory_order_seq_cst) const noexcept {
         _Check_load_memory_order(_Order);
         shared_ptr<_Ty> _Result;
-        const auto _Rep = this->_Lock_and_load();
-        _Result._Ptr    = this->_Ptr;
+        const auto _Rep = this->_Repptr._Lock_and_load();
+        _Result._Ptr    = this->_Ptr.load(memory_order_relaxed);
         _Result._Rep    = _Rep;
         _Result._Incref();
-        this->_Store_and_unlock(_Rep);
+        this->_Repptr._Store_and_unlock(_Rep);
         return _Result;
     }
 
@@ -3195,13 +3877,13 @@ public:
         return load();
     }
 
-    shared_ptr<_Ty> exchange(shared_ptr<_Ty> _Value, const memory_order _Order = memory_order::seq_cst) noexcept {
+    shared_ptr<_Ty> exchange(shared_ptr<_Ty> _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
         _Check_memory_order(_Order);
         shared_ptr<_Ty> _Result;
-        _Result._Rep = this->_Lock_and_load();
-        _Result._Ptr = this->_Ptr;
-        this->_Ptr   = _Value._Ptr;
-        this->_Store_and_unlock(_Value._Rep);
+        _Result._Rep = this->_Repptr._Lock_and_load();
+        _Result._Ptr = this->_Ptr.load(memory_order_relaxed);
+        this->_Ptr.store(_Value._Ptr, memory_order_relaxed);
+        this->_Repptr._Store_and_unlock(_Value._Rep);
         _Value._Ptr = nullptr; // ownership of _Value ref has been given to this, silence decrement
         _Value._Rep = nullptr;
         return _Result;
@@ -3218,30 +3900,39 @@ public:
     }
 
     bool compare_exchange_weak(shared_ptr<_Ty>& _Expected, shared_ptr<_Ty> _Desired,
-        const memory_order _Order = memory_order::seq_cst) noexcept {
+        const memory_order _Order = memory_order_seq_cst) noexcept {
         return compare_exchange_strong(_Expected, _STD move(_Desired), _Order);
     }
 
     bool compare_exchange_strong(shared_ptr<_Ty>& _Expected, shared_ptr<_Ty> _Desired,
-        const memory_order _Order = memory_order::seq_cst) noexcept {
+        const memory_order _Order = memory_order_seq_cst) noexcept {
         _Check_memory_order(_Order);
-        auto _Rep = this->_Lock_and_load();
-        if (this->_Ptr == _Expected._Ptr && _Rep == _Expected._Rep) {
-            _STD swap(this->_Ptr, _Desired._Ptr);
+        auto _Rep = this->_Repptr._Lock_and_load();
+        if (this->_Ptr.load(memory_order_relaxed) == _Expected._Ptr && _Rep == _Expected._Rep) {
+            _Ty* const _Tmp = _Desired._Ptr;
+            _Desired._Ptr   = this->_Ptr.load(memory_order_relaxed);
+            this->_Ptr.store(_Tmp, memory_order_relaxed);
             _STD swap(_Rep, _Desired._Rep);
-            this->_Store_and_unlock(_Rep);
+            this->_Repptr._Store_and_unlock(_Rep);
             return true;
         }
         _Ref_count_base* _Expected_rep = _Expected._Rep;
-        _Expected._Ptr                 = this->_Ptr;
+        _Expected._Ptr                 = this->_Ptr.load(memory_order_relaxed);
         _Expected._Rep                 = _Rep;
         _Expected._Incref();
-        this->_Store_and_unlock(_Rep);
+        this->_Repptr._Store_and_unlock(_Rep);
         if (_Expected_rep) {
             _Expected_rep->_Decref();
         }
         return false;
     }
+
+    void wait(shared_ptr<_Ty> _Old, memory_order _Order = memory_order_seq_cst) const noexcept {
+        this->_Wait(_Old._Ptr, _Order);
+    }
+
+    using _Base::notify_all;
+    using _Base::notify_one;
 
     constexpr atomic() noexcept = default;
 
@@ -3257,7 +3948,7 @@ public:
     }
 
     ~atomic() {
-        const auto _Rep = reinterpret_cast<_Ref_count_base*>(this->_Repptr.load(memory_order::relaxed));
+        const auto _Rep = this->_Repptr._Unsafe_load_relaxed();
         if (_Rep) {
             _Rep->_Decref();
         }
@@ -3278,22 +3969,24 @@ public:
         return false;
     }
 
-    void store(weak_ptr<_Ty> _Value, const memory_order _Order = memory_order::seq_cst) noexcept {
+    void store(weak_ptr<_Ty> _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
         _Check_store_memory_order(_Order);
-        const auto _Rep = this->_Lock_and_load();
-        _STD swap(this->_Ptr, _Value._Ptr);
-        this->_Store_and_unlock(_Value._Rep);
+        const auto _Rep = this->_Repptr._Lock_and_load();
+        _Ty* const _Tmp = _Value._Ptr;
+        _Value._Ptr     = this->_Ptr.load(memory_order_relaxed);
+        this->_Ptr.store(_Tmp, memory_order_relaxed);
+        this->_Repptr._Store_and_unlock(_Value._Rep);
         _Value._Rep = _Rep;
     }
 
-    _NODISCARD weak_ptr<_Ty> load(const memory_order _Order = memory_order::seq_cst) const noexcept {
+    _NODISCARD weak_ptr<_Ty> load(const memory_order _Order = memory_order_seq_cst) const noexcept {
         _Check_load_memory_order(_Order);
         weak_ptr<_Ty> _Result;
-        const auto _Rep = this->_Lock_and_load();
-        _Result._Ptr    = this->_Ptr;
+        const auto _Rep = this->_Repptr._Lock_and_load();
+        _Result._Ptr    = this->_Ptr.load(memory_order_relaxed);
         _Result._Rep    = _Rep;
         _Result._Incwref();
-        this->_Store_and_unlock(_Rep);
+        this->_Repptr._Store_and_unlock(_Rep);
         return _Result;
     }
 
@@ -3301,13 +3994,13 @@ public:
         return load();
     }
 
-    weak_ptr<_Ty> exchange(weak_ptr<_Ty> _Value, const memory_order _Order = memory_order::seq_cst) noexcept {
+    weak_ptr<_Ty> exchange(weak_ptr<_Ty> _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
         _Check_memory_order(_Order);
         weak_ptr<_Ty> _Result;
-        _Result._Rep = this->_Lock_and_load();
-        _Result._Ptr = this->_Ptr;
-        this->_Ptr   = _Value._Ptr;
-        this->_Store_and_unlock(_Value._Rep);
+        _Result._Rep = this->_Repptr._Lock_and_load();
+        _Result._Ptr = this->_Ptr.load(memory_order_relaxed);
+        this->_Ptr.store(_Value._Ptr, memory_order_relaxed);
+        this->_Repptr._Store_and_unlock(_Value._Rep);
         _Value._Ptr = nullptr; // ownership of _Value ref has been given to this, silence decrement
         _Value._Rep = nullptr;
         return _Result;
@@ -3324,30 +4017,39 @@ public:
     }
 
     bool compare_exchange_weak(
-        weak_ptr<_Ty>& _Expected, weak_ptr<_Ty> _Desired, const memory_order _Order = memory_order::seq_cst) noexcept {
+        weak_ptr<_Ty>& _Expected, weak_ptr<_Ty> _Desired, const memory_order _Order = memory_order_seq_cst) noexcept {
         return compare_exchange_strong(_Expected, _STD move(_Desired), _Order);
     }
 
     bool compare_exchange_strong(
-        weak_ptr<_Ty>& _Expected, weak_ptr<_Ty> _Desired, const memory_order _Order = memory_order::seq_cst) noexcept {
+        weak_ptr<_Ty>& _Expected, weak_ptr<_Ty> _Desired, const memory_order _Order = memory_order_seq_cst) noexcept {
         _Check_memory_order(_Order);
-        auto _Rep = this->_Lock_and_load();
-        if (this->_Ptr == _Expected._Ptr && _Rep == _Expected._Rep) {
-            _STD swap(this->_Ptr, _Desired._Ptr);
+        auto _Rep = this->_Repptr._Lock_and_load();
+        if (this->_Ptr.load(memory_order_relaxed) == _Expected._Ptr && _Rep == _Expected._Rep) {
+            _Ty* const _Tmp = _Desired._Ptr;
+            _Desired._Ptr   = this->_Ptr.load(memory_order_relaxed);
+            this->_Ptr.store(_Tmp, memory_order_relaxed);
             _STD swap(_Rep, _Desired._Rep);
-            this->_Store_and_unlock(_Rep);
+            this->_Repptr._Store_and_unlock(_Rep);
             return true;
         }
         const auto _Expected_rep = _Expected._Rep;
-        _Expected._Ptr           = this->_Ptr;
+        _Expected._Ptr           = this->_Ptr.load(memory_order_relaxed);
         _Expected._Rep           = _Rep;
         _Expected._Incwref();
-        this->_Store_and_unlock(_Rep);
+        this->_Repptr._Store_and_unlock(_Rep);
         if (_Expected_rep) {
             _Expected_rep->_Decwref();
         }
         return false;
     }
+
+    void wait(weak_ptr<_Ty> _Old, memory_order _Order = memory_order_seq_cst) const noexcept {
+        this->_Wait(_Old._Ptr, _Order);
+    }
+
+    using _Base::notify_all;
+    using _Base::notify_one;
 
     constexpr atomic() noexcept = default;
 
@@ -3363,7 +4065,7 @@ public:
     }
 
     ~atomic() {
-        const auto _Rep = reinterpret_cast<_Ref_count_base*>(this->_Repptr.load(memory_order::relaxed));
+        const auto _Rep = this->_Repptr._Unsafe_load_relaxed();
         if (_Rep) {
             _Rep->_Decwref();
         }

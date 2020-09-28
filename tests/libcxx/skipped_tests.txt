@@ -49,6 +49,7 @@ containers\unord\unord.map\unord.map.modifiers\insert_and_emplace_allocator_requ
 containers\unord\unord.set\insert_and_emplace_allocator_requirements.pass.cpp
 
 # libc++ doesn't yet implement P1423R3, so it expects an old value for `__cpp_lib_char8_t`
+language.support\support.limits\support.limits.general\atomic.version.pass.cpp
 language.support\support.limits\support.limits.general\filesystem.version.pass.cpp
 language.support\support.limits\support.limits.general\istream.version.pass.cpp
 language.support\support.limits\support.limits.general\limits.version.pass.cpp
@@ -64,6 +65,7 @@ numerics\bit\bit.pow.two\log2p1.pass.cpp
 
 # test emits warning C4310: cast truncates constant value
 numerics\bit\bitops.rot\rotl.pass.cpp
+
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
 # Tracked by VSO-593630 "<filesystem> Enable libcxx filesystem tests"
@@ -252,9 +254,6 @@ utilities\memory\default.allocator\allocator.members\allocate.verify.cpp
 
 
 # *** MISSING STL FEATURES ***
-# C++20 P0019R8 "atomic_ref"
-language.support\support.limits\support.limits.general\atomic.version.pass.cpp
-
 # C++20 P0355R7 "<chrono> Calendars And Time Zones"
 utilities\time\days.pass.cpp
 utilities\time\months.pass.cpp
@@ -471,26 +470,6 @@ language.support\support.limits\support.limits.general\functional.version.pass.c
 language.support\support.limits\support.limits.general\iterator.version.pass.cpp
 language.support\support.limits\support.limits.general\memory.version.pass.cpp
 
-# C++20 P1135R6 "The C++20 Synchronization Library"
-thread\thread.barrier\arrive.pass.cpp
-thread\thread.barrier\arrive_and_drop.pass.cpp
-thread\thread.barrier\arrive_and_wait.pass.cpp
-thread\thread.barrier\completion.pass.cpp
-thread\thread.barrier\max.pass.cpp
-thread\thread.barrier\version.pass.cpp
-thread\thread.latch\arrive_and_wait.pass.cpp
-thread\thread.latch\count_down.pass.cpp
-thread\thread.latch\max.pass.cpp
-thread\thread.latch\try_wait.pass.cpp
-thread\thread.latch\version.pass.cpp
-thread\thread.semaphore\acquire.pass.cpp
-thread\thread.semaphore\binary.pass.cpp
-thread\thread.semaphore\max.pass.cpp
-thread\thread.semaphore\release.pass.cpp
-thread\thread.semaphore\timed.pass.cpp
-thread\thread.semaphore\try_acquire.pass.cpp
-thread\thread.semaphore\version.pass.cpp
-
 
 # *** MISSING COMPILER FEATURES ***
 # Nothing here! :-)
@@ -508,16 +487,10 @@ thread\futures\futures.task\futures.task.members\make_ready_at_thread_exit.pass.
 
 
 # *** C1XX COMPILER BUGS ***
-# Compiler bug: VSO-106654 "error C2580 "multiple versions of a defaulted special member functions are not allowed" is bogus and ungrammatical"
-utilities\tuple\tuple.tuple\tuple.cnstr\test_lazy_sfinae.pass.cpp
-
-# Compiler bug: DevCom-409222 "Constructing rvalue reference from non-reference-related lvalue reference"
+# DevCom-409222 "Constructing rvalue reference from non-reference-related lvalue reference"
 utilities\meta\meta.unary\meta.unary.prop\is_constructible.pass.cpp
 
-# Compiler bug: VSO-1035737 "constexpr pointers-by-reference"
-iterators\predef.iterators\move.iterators\move.iter.ops\move.iter.op.index\difference_type.pass.cpp
-
-# Compiler bug: DevCom-876860 "conditional operator errors" blocks readable<volatile int*>.
+# DevCom-876860 "conditional operator errors" blocks readable<volatile int*>.
 containers\views\span.cons\ptr_len.pass.cpp
 containers\views\span.cons\ptr_ptr.pass.cpp
 
@@ -528,6 +501,11 @@ thread\macro.pass.cpp
 
 # LLVM-46207 Clang's tgmath.h interferes with the UCRT's tgmath.h
 depr\depr.c.headers\tgmath_h.pass.cpp
+
+
+# *** CLANG FEATURES NOT YET IMPLEMENTED ***
+# P0960R3 "Allow initializing aggregates from a parenthesized list of values"
+utilities\tuple\tuple.tuple\tuple.creation\tuple_cat.pass.cpp
 
 
 # *** CLANG ISSUES, NOT YET ANALYZED ***
@@ -542,52 +520,45 @@ language.support\support.limits\limits\numeric.limits.members\traps.pass.cpp
 
 
 # *** STL BUGS ***
-# STL bug: VSO-121977 "<locale>: the enum value of std::money_base is not correct[libcxx]"
+# GH-1112 <locale>: the enum value of std::money_base is not correct
 localization\locale.categories\category.monetary\locale.moneypunct\money_base.pass.cpp
 
-# STL Bug: VSO-595631 <fstream> basic_filebuf doesn't comply with setbuf(0,0) requirement in the standard
+# GH-1113 <fstream>: basic_filebuf doesn't comply with setbuf(0,0) requirement in the standard
 input.output\file.streams\fstreams\filebuf.virtuals\overflow.pass.cpp
 input.output\file.streams\fstreams\filebuf.virtuals\underflow.pass.cpp
 
-# STL bug: Our inheritance implementation is allowing this to compile when it shouldn't.
-numerics\complex.number\complex.special\double_long_double_implicit.compile.fail.cpp
-numerics\complex.number\complex.special\float_double_implicit.compile.fail.cpp
-numerics\complex.number\complex.special\float_long_double_implicit.compile.fail.cpp
-
-# STL bug: regex_traits::transform() isn't following the Standard.
+# GH-1004 <regex>: Error C2664 in std::regex_traits::transform
 re\re.traits\transform.pass.cpp
 
-# STL bug: Incorrect return types.
+# GH-1260 <complex>: pow, incorrect type conversion
 numerics\complex.number\cmplx.over\pow.pass.cpp
 
-# STL bug: We allow fill() and swap() for array<const T, 0>.
+# GH-1295 <array>: array<const T, 0> allows fill() and swap()
 containers\sequences\array\array.fill\fill.fail.cpp
 containers\sequences\array\array.swap\swap.fail.cpp
 
-# STL bug: VSO-207715 We reject array<NoDefault, 0>.
+# GH-942 <array>: std::array<T,0> doesn't compile - when type is not default constructible
 containers\sequences\array\array.cons\implicit_copy.pass.cpp
 containers\sequences\array\array.cons\initialization.pass.cpp
 containers\sequences\array\array.data\data_const.pass.cpp
 containers\sequences\array\array.data\data.pass.cpp
 containers\sequences\array\iterators.pass.cpp
 
-# STL bug: string_view doesn't enforce "non-array trivial standard-layout", related to LWG-3034.
-strings\string.view\char.bad.fail.cpp
-
-# Predicate count assertions - IDL2 is slightly bending the Standard's rules here.
+# GH-1006 <algorithm>: debug checks for predicates are observable
 algorithms\alg.sorting\alg.heap.operations\make.heap\make_heap_comp.pass.cpp
 algorithms\alg.sorting\alg.merge\inplace_merge_comp.pass.cpp
 algorithms\alg.sorting\alg.min.max\minmax_init_list_comp.pass.cpp
 
-# STL bug: We don't match strtod / strtof when doing field extraction for hexfloats, or special cases like inf
+# GH-1259 <locale>: wrong field extraction for hexfloats, or special cases like inf
 localization\locale.categories\category.numeric\locale.num.get\facet.num.get.members\get_double.pass.cpp
 localization\locale.categories\category.numeric\locale.num.get\facet.num.get.members\get_float.pass.cpp
 localization\locale.categories\category.numeric\locale.num.get\facet.num.get.members\get_long_double.pass.cpp
 
-# STL bug: We don't match numpunct groups correctly in do_get
+# GH-1277 <xlocnum>: We don't match numpunct groups correctly in do_get
 localization\locale.categories\category.numeric\locale.num.get\facet.num.get.members\get_long.pass.cpp
 
-# STL test bug: We don't have the locale names libcxx wants specialized in platform_support.hpp
+# GH-1275 <locale>: missing some locale names
+# We don't have the locale names libcxx wants specialized in platform_support.hpp
 # More bugs may be uncovered when the locale names are present.
 # move.pass.cpp can crash.
 input.output\iostreams.base\ios\basic.ios.members\move.pass.cpp
@@ -619,21 +590,25 @@ localization\locale.categories\category.time\locale.time.put.byname\put1.pass.cp
 localization\locale.categories\facet.numpunct\locale.numpunct.byname\grouping.pass.cpp
 localization\locale.categories\facet.numpunct\locale.numpunct.byname\thousands_sep.pass.cpp
 
-# STL Bug? Our wbuffer_convert does not implement seek. [depr.conversions.buffer] is completely underspecified.
+# GH-1264 <locale>: wbuffer_convert does not implement seek
 localization\locales\locale.convenience\conversions\conversions.buffer\seekoff.pass.cpp
 
-# STL Bug: error_category's default ctor isn't constexpr. (Should be fixed in vNext.)
+# GH-1116 <system_error>: error_category's default ctor isn't constexpr.
 diagnostics\syserr\syserr.errcat\syserr.errcat.nonvirtuals\default_ctor.pass.cpp
 
-# STL Bug: future incorrectly uses copy assignment instead of copy construction in set_value. (Should be fixed in vNext.)
+# GH-1190 <future>: incorrectly used copy assignment instead of copy construction in set_value
 thread\futures\futures.promise\set_value_const.pass.cpp
 
-# STL bug: GH-757 <xstring>: Too many enabled hash specializations
+# GH-757 <xstring>: Too many enabled hash specializations
 strings\basic.string.hash\char_type_hash.fail.cpp
 strings\string.view\string.view.hash\char_type.hash.fail.cpp
 
-# STL bug: GH-784 <type_traits>: aligned_storage has incorrect alignment defaults
+# GH-784 <type_traits>: aligned_storage has incorrect alignment defaults
 utilities\meta\meta.trans\meta.trans.other\aligned_storage.pass.cpp
+
+# GH-519 <cmath>: signbit() misses overloads for integer types
+depr\depr.c.headers\math_h.pass.cpp
+numerics\c.math\cmath.pass.cpp
 
 
 # *** CRT BUGS ***
@@ -647,9 +622,18 @@ thread\thread.threads\thread.thread.class\thread.thread.member\join.pass.cpp
 
 
 # *** LIKELY BOGUS TESTS ***
-# Test bug/LEWG issue or STL bug. See GH-519 "<cmath>: signbit() misses overloads for integer types".
-depr\depr.c.headers\math_h.pass.cpp
-numerics\c.math\cmath.pass.cpp
+# "error: _LIBCPP_VERSION not defined"
+thread\thread.barrier\version.pass.cpp
+thread\thread.latch\version.pass.cpp
+thread\thread.semaphore\version.pass.cpp
+
+# "error C3861: 'assert': identifier not found"
+thread\thread.semaphore\timed.pass.cpp
+thread\thread.semaphore\try_acquire.pass.cpp
+
+# pass lambda without noexcept to barrier
+thread\thread.barrier\completion.pass.cpp
+thread\thread.barrier\max.pass.cpp
 
 # Test bug after LWG-2899 "is_(nothrow_)move_constructible and tuple, optional and unique_ptr" was accepted.
 utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.asgn\move_convert.pass.cpp
@@ -770,6 +754,15 @@ iterators\predef.iterators\insert.iterators\insert.iterator\types.pass.cpp
 numerics\complex.number\cmplx.over\conj.pass.cpp
 numerics\complex.number\cmplx.over\proj.pass.cpp
 
+# Assertion failed: std::abs(skew - x_skew) < 0.01
+# Random number generation test with too strict pass criteria (test8 failure probability ~= 0.04)
+numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.pconst\eval.pass.cpp
+
+# Assertion failed: std::abs(f(u[i], a, m, bk, c) - double(i)/N) < .001
+# Random number generation test with too strict pass criteria (test6 failure probability > 0.2)
+numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\eval_param.pass.cpp
+numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\eval.pass.cpp
+
 # Assertion failed: (std::lerp(T(2.3), T(2.3), inf) == T(2.3))
 # Asserts `(std::lerp(T(2.3), T(2.3), inf) == T(2.3))` and `std::isnan(std::lerp(T( 0), T( 0), inf))`
 # They shouldn't behave differently. Both of them should probably return NaN.
@@ -812,22 +805,6 @@ numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.gamma\min.pass.cpp
 numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.poisson\eval_param.pass.cpp
 numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.poisson\eval.pass.cpp
 numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.weibull\max.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.pconst\ctor_init_func.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.pconst\ctor_iterator.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.pconst\eval.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.pconst\param_ctor_init_func.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.pconst\param_ctor_iterator.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\ctor_default.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\ctor_func.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\ctor_init_func.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\ctor_iterator.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\ctor_param.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\eval_param.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\eval.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\param_ctor_default.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\param_ctor_func.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\param_ctor_init_func.pass.cpp
-numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\param_ctor_iterator.pass.cpp
 numerics\rand\rand.dis\rand.dist.uni\rand.dist.uni.real\param_ctor.pass.cpp
 
 # Not yet analyzed, likely STL bugs. Various assertions.

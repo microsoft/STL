@@ -73,8 +73,8 @@ _STD_END
 
 #if !STDCPP_IMPLIB || defined(_M_CEE_PURE)
 
+#include <cstdlib>
 #include <locale>
-#include <stdlib.h>
 
 _EXTERN_C
 
