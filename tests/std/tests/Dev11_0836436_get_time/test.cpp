@@ -310,7 +310,6 @@ void test_990695() {
             assert(iss.fail());
         }
 
-
         {
             // GH-1071 should not fail when format is longer than the stream
             istringstream iss("2020");
