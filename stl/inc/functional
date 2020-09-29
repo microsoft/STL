@@ -747,20 +747,11 @@ struct _Invoker_ret { // selected for _Rx being cv void
 
 template <class _Rx>
 struct _Invoker_ret<_Rx, false> { // selected for all _Rx other than cv void and _Unforced
-#ifdef __EDG__ // TRANSITION, VSO-1132186
-    template <class _Fx, class... _Valtys,
-        template <class> class _Is_nothrow = _Select_invoke_traits<_Fx, _Valtys...>::template _Is_nothrow_invocable_r>
-    static _CONSTEXPR20 _Rx _Call(_Fx&& _Func, _Valtys&&... _Vals) noexcept(_Is_nothrow<_Rx>::value) {
-        // INVOKE, implicitly converted to _Rx
-        return _STD invoke(static_cast<_Fx&&>(_Func), static_cast<_Valtys&&>(_Vals)...);
-    }
-#else // ^^^ workaround / no workaround vvv
     template <class _Fx, class... _Valtys>
     static _CONSTEXPR20 _Rx _Call(_Fx&& _Func, _Valtys&&... _Vals) noexcept(_Select_invoke_traits<_Fx,
         _Valtys...>::template _Is_nothrow_invocable_r<_Rx>::value) { // INVOKE, implicitly converted to _Rx
         return _STD invoke(static_cast<_Fx&&>(_Func), static_cast<_Valtys&&>(_Vals)...);
     }
-#endif // TRANSITION, VSO-1132186
 };
 
 template <>
@@ -1472,24 +1463,6 @@ public:
     _Call_binder(_Invoker_ret<_Ret>{}, _Seq{}, _Mypair._Get_first(), _Mypair._Myval2, \
         _STD forward_as_tuple(_STD forward<_Unbound>(_Unbargs)...))
 
-#ifdef __EDG__ // TRANSITION, VSO-1132105
-    template <class... _Unbound>
-    _CONSTEXPR20 auto operator()(_Unbound&&... _Unbargs) noexcept(noexcept(_Call_binder(_Invoker_ret<_Ret>{}, _Seq{},
-        _STD declval<_First&>(), _STD declval<_Second&>(), _STD forward_as_tuple(_STD forward<_Unbound>(_Unbargs)...))))
-        -> decltype(_Call_binder(_Invoker_ret<_Ret>{}, _Seq{}, _STD declval<_First&>(), _STD declval<_Second&>(),
-            _STD forward_as_tuple(_STD forward<_Unbound>(_Unbargs)...))) {
-        return _CALL_BINDER;
-    }
-
-    template <class... _Unbound>
-    _CONSTEXPR20 auto operator()(_Unbound&&... _Unbargs) const
-        noexcept(noexcept(_Call_binder(_Invoker_ret<_Ret>{}, _Seq{}, _STD declval<const _First&>(),
-            _STD declval<const _Second&>(), _STD forward_as_tuple(_STD forward<_Unbound>(_Unbargs)...))))
-            -> decltype(_Call_binder(_Invoker_ret<_Ret>{}, _Seq{}, _STD declval<const _First&>(),
-                _STD declval<const _Second&>(), _STD forward_as_tuple(_STD forward<_Unbound>(_Unbargs)...))) {
-        return _CALL_BINDER;
-    }
-#else // ^^^ workaround / no workaround vvv
     template <class... _Unbound>
     _CONSTEXPR20 auto operator()(_Unbound&&... _Unbargs) noexcept(noexcept(_CALL_BINDER)) -> decltype(_CALL_BINDER) {
         return _CALL_BINDER;
@@ -1500,7 +1473,6 @@ public:
         -> decltype(_CALL_BINDER) {
         return _CALL_BINDER;
     }
-#endif // TRANSITION, VSO-1132105
 
 #undef _CALL_BINDER
 };

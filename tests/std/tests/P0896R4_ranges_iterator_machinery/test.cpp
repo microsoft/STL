@@ -1173,9 +1173,7 @@ namespace iterator_cust_swap_test {
         STATIC_ASSERT(noexcept(ranges::iter_swap(&i0, &i1)));
         return true;
     }
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-938163
     STATIC_ASSERT(test());
-#endif // TRANSITION, VSO-938163
 
     template <int>
     struct swap_proxy_ref {
@@ -1277,9 +1275,6 @@ namespace iterator_cust_swap_test {
                 assert(i1 == 42);
             }
 
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-938163
-            if (!std::is_constant_evaluated())
-#endif // TRANSITION, VSO-938163
             {
                 // Validate iter_swap bullet 3 to defend against regression of GH-1067 "ranges::iter_swap is broken"
                 int i  = 42;

@@ -474,21 +474,11 @@ concept _Cpp17_input_iterator = _Cpp17_iterator<_It>
         requires signed_integral<typename incrementable_traits<_It>::difference_type>;
     };
 
-#if 1 // TRANSITION, VSO-1002863
-template <class _Ty>
-using _Member_iterator_category = typename _Ty::iterator_category;
-#endif // TRANSITION, VSO-1002863
-
 template <class _It>
     requires (!_Has_iter_types<_It> && _Cpp17_iterator<_It> && !_Cpp17_input_iterator<_It>
         // Implements the proposed resolution of LWG-3283:
-#if 1 // TRANSITION, VSO-1002863
-        && (!requires { typename _It::iterator_category; }
-            || derived_from<_Member_iterator_category<_It>, output_iterator_tag>))
-#else // ^^^ workaround / no workaround vvv
         && (!requires { typename _It::iterator_category; }
             || derived_from<typename _It::iterator_category, output_iterator_tag>))
-#endif // TRANSITION, VSO-1002863
 struct _Iterator_traits_base<_It> {
     using iterator_category = output_iterator_tag;
     using difference_type =
@@ -1494,20 +1484,20 @@ _INLINE_VAR constexpr bool
 template <class _Iter, class _UIter>
 constexpr void _Seek_wrapped(_Iter& _It, _UIter&& _UIt) {
     if constexpr (_Wrapped_seekable_v<_Iter, _UIter>) {
-        _It._Seek_to(static_cast<_UIter&&>(_UIt));
+        _It._Seek_to(_STD forward<_UIter>(_UIt));
     } else {
-        _It = static_cast<_UIter&&>(_UIt);
+        _It = _STD forward<_UIter>(_UIt);
     }
 }
 #else // ^^^ _HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
 template <class _Iter, class _UIter, enable_if_t<_Wrapped_seekable_v<_Iter, _UIter>, int> = 0>
 constexpr void _Seek_wrapped(_Iter& _It, _UIter&& _UIt) {
-    _It._Seek_to(static_cast<_UIter&&>(_UIt));
+    _It._Seek_to(_STD forward<_UIter>(_UIt));
 }
 
 template <class _Iter, class _UIter, enable_if_t<!_Wrapped_seekable_v<_Iter, _UIter>, int> = 0>
 constexpr void _Seek_wrapped(_Iter& _It, _UIter&& _UIt) {
-    _It = static_cast<_UIter&&>(_UIt);
+    _It = _STD forward<_UIter>(_UIt);
 }
 
 template <class _Ty>
