@@ -76,13 +76,8 @@ namespace ranges {
             // clang-format off
             template <class _Other>
                 requires _Can_compose<_Derived, _Other>
-            constexpr auto operator|(_Base<_Other>&& __r) &&
-#ifdef __EDG__ // TRANSITION, VSO-1132105
-                noexcept(noexcept(_Pipeline{_STD declval<_Derived>(), _STD declval<_Other>()}))
-#else // ^^^ workaround / no workaround vvv
-                noexcept(noexcept(_Pipeline{static_cast<_Derived&&>(*this), static_cast<_Other&&>(__r)}))
-#endif // TRANSITION, VSO-1132105
-            {
+            constexpr auto operator|(_Base<_Other>&& __r) && noexcept(
+                noexcept(_Pipeline{static_cast<_Derived&&>(*this), static_cast<_Other&&>(__r)})) {
                 // clang-format on
                 _STL_INTERNAL_STATIC_ASSERT(derived_from<_Derived, _Base<_Derived>>);
                 _STL_INTERNAL_STATIC_ASSERT(derived_from<_Other, _Base<_Other>>);
@@ -92,13 +87,8 @@ namespace ranges {
             // clang-format off
             template <class _Other>
                 requires _Can_compose<_Derived, const _Other&>
-            constexpr auto operator|(const _Base<_Other>& __r) &&
-#ifdef __EDG__ // TRANSITION, VSO-1132105
-                noexcept(noexcept(_Pipeline{_STD declval<_Derived>(), _STD declval<const _Other&>()}))
-#else // ^^^ workaround / no workaround vvv
-                noexcept(noexcept(_Pipeline{static_cast<_Derived&&>(*this), static_cast<const _Other&>(__r)}))
-#endif // TRANSITION, VSO-1132105
-            {
+            constexpr auto operator|(const _Base<_Other>& __r) && noexcept(
+                noexcept(_Pipeline{static_cast<_Derived&&>(*this), static_cast<const _Other&>(__r)})) {
                 // clang-format on
                 _STL_INTERNAL_STATIC_ASSERT(derived_from<_Derived, _Base<_Derived>>);
                 _STL_INTERNAL_STATIC_ASSERT(derived_from<_Other, _Base<_Other>>);
@@ -108,13 +98,8 @@ namespace ranges {
             // clang-format off
             template <class _Other>
                 requires _Can_compose<const _Derived&, _Other>
-            constexpr auto operator|(_Base<_Other>&& __r) const&
-#ifdef __EDG__ // TRANSITION, VSO-1132105
-                noexcept(noexcept(_Pipeline{_STD declval<const _Derived&>(), _STD declval<_Other>()}))
-#else // ^^^ workaround / no workaround vvv
-                noexcept(noexcept(_Pipeline{static_cast<const _Derived&>(*this), static_cast<_Other&&>(__r)}))
-#endif // TRANSITION, VSO-1132105
-            {
+            constexpr auto operator|(_Base<_Other>&& __r) const& noexcept(
+                noexcept(_Pipeline{static_cast<const _Derived&>(*this), static_cast<_Other&&>(__r)})) {
                 // clang-format on
                 _STL_INTERNAL_STATIC_ASSERT(derived_from<_Derived, _Base<_Derived>>);
                 _STL_INTERNAL_STATIC_ASSERT(derived_from<_Other, _Base<_Other>>);
@@ -124,13 +109,8 @@ namespace ranges {
             // clang-format off
             template <class _Other>
                 requires _Can_compose<const _Derived&, const _Other&>
-            constexpr auto operator|(const _Base<_Other>& __r) const&
-#ifdef __EDG__ // TRANSITION, VSO-1132105
-                noexcept(noexcept(_Pipeline{_STD declval<const _Derived&>(), _STD declval<const _Other&>()}))
-#else // ^^^ workaround / no workaround vvv
-                noexcept(noexcept(_Pipeline{static_cast<const _Derived&>(*this), static_cast<const _Other&>(__r)}))
-#endif // TRANSITION, VSO-1132105
-            {
+            constexpr auto operator|(const _Base<_Other>& __r) const& noexcept(
+                noexcept(_Pipeline{static_cast<const _Derived&>(*this), static_cast<const _Other&>(__r)})) {
                 // clang-format on
                 _STL_INTERNAL_STATIC_ASSERT(derived_from<_Derived, _Base<_Derived>>);
                 _STL_INTERNAL_STATIC_ASSERT(derived_from<_Other, _Base<_Other>>);
@@ -139,22 +119,22 @@ namespace ranges {
 
             template <_Can_pipe<const _Derived&> _Left>
             friend constexpr auto operator|(_Left&& __l, const _Base& __r)
-#ifdef __EDG__ // TRANSITION, VSO-1132105
-                noexcept(noexcept(_STD declval<const _Derived&>()(_STD declval<_Left>())))
+#ifdef __EDG__ // TRANSITION, VSO-1222776
+                noexcept(noexcept(_STD declval<const _Derived&>()(_STD forward<_Left>(__l))))
 #else // ^^^ workaround / no workaround vvv
                 noexcept(noexcept(static_cast<const _Derived&>(__r)(_STD forward<_Left>(__l))))
-#endif // TRANSITION, VSO-1132105
+#endif // TRANSITION, VSO-1222776
             {
                 return static_cast<const _Derived&>(__r)(_STD forward<_Left>(__l));
             }
 
             template <_Can_pipe<_Derived> _Left>
             friend constexpr auto operator|(_Left&& __l, _Base&& __r)
-#ifdef __EDG__ // TRANSITION, VSO-1132105
-                noexcept(noexcept(_STD declval<_Derived>()(_STD declval<_Left>())))
+#ifdef __EDG__ // TRANSITION, VSO-1222776
+                noexcept(noexcept(_STD declval<_Derived>()(_STD forward<_Left>(__l))))
 #else // ^^^ workaround / no workaround vvv
                 noexcept(noexcept(static_cast<_Derived&&>(__r)(_STD forward<_Left>(__l))))
-#endif // TRANSITION, VSO-1132105
+#endif // TRANSITION, VSO-1222776
             {
                 return static_cast<_Derived&&>(__r)(_STD forward<_Left>(__l));
             }
