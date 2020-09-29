@@ -14,6 +14,7 @@
 #include <memory>
 #include <stdio.h>
 #include <stdlib.h>
+#include <vector>
 
 using namespace std;
 
@@ -166,6 +167,14 @@ int main() {
         uninitialized_fill_n(output, 3, 5);
         for (const bool& elem : output) {
             assert(elem == true);
+        }
+    }
+
+    // Test (indirectly) _Uninitialized_fill_n with zero
+    {
+        vector<void*> vec(43, nullptr);
+        for (void* p : vec) {
+            assert(p == nullptr);
         }
     }
 }
