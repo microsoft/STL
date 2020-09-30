@@ -53,17 +53,17 @@ public:
         _Init_string_inplace(_STD move(_Str), _Getstate(_Mode));
     }
 
-    template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
+    template <_Allocator _Alloc2>
     basic_stringbuf(const basic_string<_Elem, _Traits, _Alloc2>& _Str, ios_base::openmode _Mode, const _Alloc& _Al_)
         : _Al(_Al_) {
         _Init(_Str.c_str(), _Str.size(), _Getstate(_Mode));
     }
 
-    template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
+    template <_Allocator _Alloc2>
     basic_stringbuf(const basic_string<_Elem, _Traits, _Alloc2>& _Str, const _Alloc& _Al_)
         : basic_stringbuf(_Str, ios_base::in | ios_base::out, _Al_) {}
 
-    template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
+    template <_Allocator _Alloc2>
     explicit basic_stringbuf(
         const basic_string<_Elem, _Traits, _Alloc2>& _Str, ios_base::openmode _Mode = ios_base::in | ios_base::out)
         : basic_stringbuf(_Str, _Mode, _Alloc()) {}
@@ -166,7 +166,7 @@ public:
     }
 
 #if _HAS_CXX20
-    template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
+    template <_Allocator _Alloc2>
     _NODISCARD basic_string<_Elem, _Traits, _Alloc2> str(const _Alloc2& _Al) const {
         return basic_string<_Elem, _Traits, _Alloc2>{view(), _Al};
     }
@@ -197,7 +197,7 @@ public:
         return _Mystr_view{_View._Ptr, _View._Size};
     }
 
-    template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
+    template <_Allocator _Alloc2>
     void str(const basic_string<_Elem, _Traits, _Alloc2>& _Newstr) {
         _Tidy();
         _Init(_Newstr.c_str(), _Newstr.size(), _Mystate);
@@ -568,15 +568,15 @@ public:
     explicit basic_istringstream(_Mystr&& _Str, ios_base::openmode _Mode = ios_base::in)
         : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_STD move(_Str), _Mode | ios_base::in) {}
 
-    template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
+    template <_Allocator _Alloc2>
     basic_istringstream(const basic_string<_Elem, _Traits, _Alloc2>& _Str, const _Alloc& _Al)
         : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Str, _Al) {}
 
-    template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
+    template <_Allocator _Alloc2>
     basic_istringstream(const basic_string<_Elem, _Traits, _Alloc2>& _Str, ios_base::openmode _Mode, const _Alloc& _Al)
         : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Str, _Mode | ios_base::in, _Al) {}
 
-    template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
+    template <_Allocator _Alloc2>
     basic_istringstream(const basic_string<_Elem, _Traits, _Alloc2>& _Str, ios_base::openmode _Mode = ios_base::in)
         : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Str, _Mode | ios_base::in) {}
 #endif // _HAS_CXX20
@@ -627,7 +627,7 @@ public:
     }
 
 #if _HAS_CXX20
-    template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
+    template <_Allocator _Alloc2>
     _NODISCARD basic_string<_Elem, _Traits, _Alloc2> str(const _Alloc2& _Al) const {
         return _Stringbuffer.str(_Al);
     }
@@ -640,7 +640,7 @@ public:
         return _Stringbuffer.view();
     }
 
-    template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
+    template <_Allocator _Alloc2>
     void str(const basic_string<_Elem, _Traits, _Alloc2>& _Newstr) {
         _Stringbuffer.str(_Newstr);
     }
@@ -687,15 +687,15 @@ public:
     explicit basic_ostringstream(_Mystr&& _Str, ios_base::openmode _Mode = ios_base::out)
         : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_STD move(_Str), _Mode | ios_base::out) {}
 
-    template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
+    template <_Allocator _Alloc2>
     basic_ostringstream(const basic_string<_Elem, _Traits, _Alloc2>& _Str, const _Alloc& _Al)
         : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Str, _Al) {}
 
-    template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
+    template <_Allocator _Alloc2>
     basic_ostringstream(const basic_string<_Elem, _Traits, _Alloc2>& _Str, ios_base::openmode _Mode, const _Alloc& _Al)
         : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Str, _Mode | ios_base::out, _Al) {}
 
-    template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
+    template <_Allocator _Alloc2>
     basic_ostringstream(const basic_string<_Elem, _Traits, _Alloc2>& _Str, ios_base::openmode _Mode = ios_base::out)
         : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Str, _Mode | ios_base::out) {}
 #endif // _HAS_CXX20
@@ -746,7 +746,7 @@ public:
     }
 
 #if _HAS_CXX20
-    template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
+    template <_Allocator _Alloc2>
     _NODISCARD basic_string<_Elem, _Traits, _Alloc2> str(const _Alloc2& _Al) const {
         return _Stringbuffer.str(_Al);
     }
@@ -759,7 +759,7 @@ public:
         return _Stringbuffer.view();
     }
 
-    template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
+    template <_Allocator _Alloc2>
     void str(const basic_string<_Elem, _Traits, _Alloc2>& _Newstr) {
         _Stringbuffer.str(_Newstr);
     }
@@ -812,15 +812,15 @@ public:
     explicit basic_stringstream(_Mystr&& _Str, ios_base::openmode _Mode = ios_base::in | ios_base::out)
         : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_STD move(_Str), _Mode) {}
 
-    template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
+    template <_Allocator _Alloc2>
     basic_stringstream(const basic_string<_Elem, _Traits, _Alloc2>& _Str, const _Alloc& _Al)
         : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Str, _Al) {}
 
-    template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
+    template <_Allocator _Alloc2>
     basic_stringstream(const basic_string<_Elem, _Traits, _Alloc2>& _Str, ios_base::openmode _Mode, const _Alloc& _Al)
         : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Str, _Mode, _Al) {}
 
-    template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
+    template <_Allocator _Alloc2>
     basic_stringstream(
         const basic_string<_Elem, _Traits, _Alloc2>& _Str, ios_base::openmode _Mode = ios_base::in | ios_base::out)
         : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Str, _Mode) {}
@@ -872,7 +872,7 @@ public:
     }
 
 #if _HAS_CXX20
-    template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
+    template <_Allocator _Alloc2>
     _NODISCARD basic_string<_Elem, _Traits, _Alloc2> str(const _Alloc2& _Al) const {
         return _Stringbuffer.str(_Al);
     }
@@ -885,7 +885,7 @@ public:
         return _Stringbuffer.view();
     }
 
-    template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
+    template <_Allocator _Alloc2>
     void str(const basic_string<_Elem, _Traits, _Alloc2>& _Newstr) {
         _Stringbuffer.str(_Newstr);
     }

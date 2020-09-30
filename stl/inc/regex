@@ -935,7 +935,7 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, 
 }
 
 // FORWARD DECLARATIONS
-template <class _BidIt, class _Allocator = allocator<sub_match<_BidIt>>>
+template <class _BidIt, class _Alloc = allocator<sub_match<_BidIt>>>
 class match_results;
 
 template <class _BidIt, class _Alloc, class _InIt, class _OutIt>

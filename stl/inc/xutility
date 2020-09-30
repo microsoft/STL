@@ -1502,6 +1502,11 @@ using _Enable_if_execution_policy_t = typename remove_reference_t<_ExPo>::_Stand
 
 #endif // _HAS_CXX17
 
+#if _HAS_CXX20
+template <class _Ty>
+concept _Allocator = _Is_allocator<_Ty>::value;
+#endif // _HAS_CXX20
+
 // FUNCTION TEMPLATE _Idl_distance
 #if _HAS_IF_CONSTEXPR
 template <class _Checked, class _Iter>
