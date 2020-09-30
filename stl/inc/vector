@@ -372,7 +372,10 @@ public:
     using reference       = value_type&;
     using const_reference = const value_type&;
 
-    _Vector_val() noexcept : _Myfirst(), _Mylast(), _Myend() {}
+    _Vector_val() noexcept : _Myfirst{}, _Mylast{}, _Myend{} {}
+
+    _Vector_val(pointer _First, pointer _Last, pointer _End) noexcept
+        : _Myfirst{_First}, _Mylast{_Last}, _Myend{_End} {}
 
     void _Swap_val(_Vector_val& _Right) noexcept {
         this->_Swap_proxy_and_iterators(_Right);
@@ -578,9 +581,15 @@ private:
     }
 
 public:
-    vector(vector&& _Right) noexcept : _Mypair(_One_then_variadic_args_t{}, _STD move(_Right._Getal())) {
+    vector(vector&& _Right) noexcept
+        : _Mypair(_One_then_variadic_args_t{}, _STD move(_Right._Getal()), _Right._Mypair._Myval2._Myfirst,
+            _Right._Mypair._Myval2._Mylast, _Right._Mypair._Myval2._Myend) {
         _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
-        _Move_construct(_Right, true_type{});
+        _Mypair._Myval2._Swap_proxy_and_iterators(_Right._Mypair._Myval2);
+
+        _Right._Mypair._Myval2._Myfirst = pointer();
+        _Right._Mypair._Myval2._Mylast  = pointer();
+        _Right._Mypair._Myval2._Myend   = pointer();
     }
 
     vector(vector&& _Right, const _Alloc& _Al) noexcept(_Alty_traits::is_always_equal::value) // strengthened
