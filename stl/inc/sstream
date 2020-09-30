@@ -146,9 +146,10 @@ public:
         return _Result;
     }
 
-    _NODISCARD _Mystr str() const
 #if _HAS_CXX20
-        &
+    _NODISCARD _Mystr str() const&
+#else
+    _NODISCARD _Mystd str() const
 #endif // _HAS_CXX20
     {
         _Mystr _Result(_Al);
@@ -612,9 +613,10 @@ public:
         return const_cast<_Mysb*>(_STD addressof(_Stringbuffer));
     }
 
-    _NODISCARD _Mystr str() const
 #if _HAS_CXX20
-        &
+    _NODISCARD _Mystr str() const&
+#else
+    _NODISCARD _Mystr str() const
 #endif // _HAS_CXX20
     {
         return _Stringbuffer.str();
@@ -730,9 +732,10 @@ public:
         return const_cast<_Mysb*>(_STD addressof(_Stringbuffer));
     }
 
-    _NODISCARD _Mystr str() const
 #if _HAS_CXX20
-        &
+    _NODISCARD _Mystr str() const&
+#else
+    _NODISCARD _Mystr str() const
 #endif // _HAS_CXX20
     {
         return _Stringbuffer.str();
@@ -855,9 +858,10 @@ public:
         return const_cast<_Mysb*>(_STD addressof(_Stringbuffer));
     }
 
-    _NODISCARD _Mystr str() const
 #if _HAS_CXX20
-        &
+    _NODISCARD _Mystr str() const&
+#else
+    _NODISCARD _Mystr str() const
 #endif // _HAS_CXX20
     {
         return _Stringbuffer.str();
