@@ -30,6 +30,7 @@ struct test_rvalue {
         // Move out the buffer, the underlying buffer should be empty.
         buffer = move(stream).str();
         if (buffer == string_view{large_string}) {
+            // stream doesn't actually have space for a null-terminator
             assert(buffer.capacity() == res);
         } else {
             assert(buffer.capacity() == res + 1);
