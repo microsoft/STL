@@ -149,7 +149,7 @@ public:
 #if _HAS_CXX20
     _NODISCARD _Mystr str() const&
 #else
-    _NODISCARD _Mystd str() const
+    _NODISCARD _Mystr str() const
 #endif // _HAS_CXX20
     {
         _Mystr _Result(_Al);
