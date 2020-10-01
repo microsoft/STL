@@ -46,6 +46,11 @@ concept _Parse_spec_callbacks = requires(_Ty _At, basic_string_view<_CharT> _Sv,
     { _At._On_width(_STD declval<int>()) } -> same_as<void>;
     { _At._On_dynamic_width(_STD declval<int>()) } -> same_as<void>;
     { _At._On_dynamic_width(_STD declval<_Auto_id_tag>()) } -> same_as<void>;
+    { _At._On_precision(_STD declval<int>()) } -> same_as<void>;
+    { _At._On_dynamic_precision(_STD declval<int>()) } -> same_as<void>;
+    { _At._On_dynamic_precision(_STD declval<_Auto_id_tag>()) } -> same_as<void>;
+
+    /* { _At._On_type(_STD declval<_CharT>()) } -> same_as<void>; */
 };
 template <class _Ty, class _CharT>
 concept _Parse_arg_id_callbacks = requires(_Ty _At) {
@@ -171,6 +176,22 @@ struct _Width_adapter {
     }
 };
 
+// Adapts a type modeling _Parse_spec_callbacks to module _Parse_arg_id_callbacks.
+// Used in _Parse_precision so that _Parse_arg_id can be used to parse dynamic precisions.
+template <class _CharT, _Parse_spec_callbacks<_CharT> _Callbacks_type>
+struct _Precision_adapter {
+    _Callbacks_type& _Callbacks;
+
+    explicit constexpr _Precision_adapter(_Callbacks_type& _Handler) : _Callbacks(_Handler) {}
+
+    constexpr void _On_auto_id() {
+        _Callbacks._On_dynamic_precision(_Auto_id_tag{});
+    }
+    constexpr void _On_manual_id(int _Id) {
+        _Callbacks._On_dynamic_precision(_Id);
+    }
+};
+
 template <class _CharT, _Parse_spec_callbacks<_CharT> _Callbacks_type>
 constexpr const _CharT* _Parse_width(const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
     _STL_INTERNAL_CHECK(_Begin != _End);
@@ -187,6 +208,31 @@ constexpr const _CharT* _Parse_width(const _CharT* _Begin, const _CharT* _End, _
             throw format_error("Invalid format string.");
         }
         ++_Begin;
+    }
+    return _Begin;
+}
+
+template <class _CharT, _Parse_spec_callbacks<_CharT> _Callbacks_type>
+constexpr const _CharT* _Parse_precision(const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
+    ++_Begin;
+    _CharT _Ch = '\0';
+    if (_Begin != _End) {
+        _Ch = *_Begin;
+    }
+    if ('0' <= _Ch && _Ch <= '9') {
+        int _Precision = 0;
+        _Begin         = _Parse_nonnegative_integer(_Begin, _End, _Precision);
+        _Callbacks._On_precision(_Precision);
+    } else if (_Ch == '{') {
+        ++_Begin;
+        if (_Begin != _End) {
+            _Begin = _Parse_arg_id(_Begin, _End, _Precision_adapter<_CharT, _Callbacks_type>(_Callbacks));
+        }
+        if (_Begin == _End || *_Begin != '}') {
+            throw format_error("Invalid format string.");
+        }
+    } else {
+        throw format_error("missing precision specifier");
     }
     return _Begin;
 }

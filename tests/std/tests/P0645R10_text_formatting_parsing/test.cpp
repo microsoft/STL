@@ -33,9 +33,12 @@ template <typename CharT>
 struct testing_callbacks {
     _Align expected_alignment = _Align::_None;
     basic_string_view<CharT> expected_fill;
-    int expected_width               = -1;
-    int expected_dynamic_width       = -1;
-    bool expected_auto_dynamic_width = false;
+    int expected_width                   = -1;
+    int expected_dynamic_width           = -1;
+    bool expected_auto_dynamic_width     = false;
+    int expected_precision               = -1;
+    int expected_dynamic_precision       = -1;
+    bool expected_auto_dynamic_precision = false;
     constexpr void _On_align(_Align aln) {
         assert(aln == expected_alignment);
     }
@@ -50,6 +53,15 @@ struct testing_callbacks {
     }
     constexpr void _On_dynamic_width(_Auto_id_tag) {
         assert(expected_auto_dynamic_width);
+    }
+    constexpr void _On_precision(int pre) {
+        assert(pre == expected_precision);
+    }
+    constexpr void _On_dynamic_precision(int id) {
+        assert(id == expected_dynamic_precision);
+    }
+    constexpr void _On_dynamic_precision(_Auto_id_tag) {
+        assert(expected_dynamic_width);
     }
 };
 template <typename CharT>
@@ -156,6 +168,33 @@ constexpr bool test_parse_arg_id() {
     return true;
 }
 
+template <typename CharT>
+constexpr bool test_parse_precision() {
+    auto parse_pre_fn = _Parse_precision<CharT, testing_callbacks<CharT>>;
+    using view_typ    = basic_string_view<CharT>;
+
+    auto s0 = view_typ(TYPED_LITERAL(CharT, ".0"));
+    auto s1 = view_typ(TYPED_LITERAL(CharT, ".1"));
+    auto s2 = view_typ(TYPED_LITERAL(CharT, ".12"));
+    auto s3 = view_typ(TYPED_LITERAL(CharT, ".{1}"));
+    auto s4 = view_typ(TYPED_LITERAL(CharT, ".{}"));
+
+    auto i0 = view_typ(TYPED_LITERAL(CharT, ".{ }"));
+
+    test_parse_helper(parse_pre_fn, s0, false, view_typ::npos, {.expected_precision = 0});
+    test_parse_helper(parse_pre_fn, s1, false, view_typ::npos, {.expected_precision = 1});
+    test_parse_helper(parse_pre_fn, s2, false, view_typ::npos, {.expected_precision = 12});
+    test_parse_helper(parse_pre_fn, s3, false, view_typ::npos, {.expected_dynamic_precision = 1});
+    test_parse_helper(parse_pre_fn, s4, false, view_typ::npos, {.expected_auto_dynamic_precision = true});
+
+    if (!is_constant_evaluated()) {
+        test_parse_helper(parse_pre_fn, i0, true);
+    }
+
+
+    return true;
+}
+
 int main() {
     test_parse_align<char>();
     test_parse_align<wchar_t>();
@@ -169,5 +208,7 @@ int main() {
     test_parse_width<wchar_t>();
     static_assert(test_parse_width<char>());
     static_assert(test_parse_width<wchar_t>());
+    test_parse_precision<char>();
+    test_parse_precision<wchar_t>();
     return 0;
 }
