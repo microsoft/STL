@@ -297,9 +297,7 @@ private:
             if (_Badname(_Lobj)) {
                 _Bad = true;
             } else { // name okay, build the locale
-                _Locimp::_Makeloc(_Lobj, _Cat, _Ptr, nullptr);
-                //_Ptr->_Catmask = _Cat;                        //_Makeloc already sets them
-                //_Ptr->_Name    = _Str.c_str();        
+                _Locimp::_Makeloc(_Lobj, _Cat, _Ptr, nullptr);     
             }
             _END_LOCINFO()
             _Guard._Target = nullptr;
@@ -1982,7 +1980,6 @@ protected:
         _Cvt = _Lobj._Getcvt();
     }
 
-    // VERITY 
     virtual result __CLR_OR_THIS_CALL do_in(
         mbstate_t&, 
         const char* _First1, 
@@ -2280,7 +2277,6 @@ protected:
         _Cvt = _Lobj._Getcvt();
     }
 
-    //VERITY
     virtual result __CLR_OR_THIS_CALL do_in(
         mbstate_t&, 
         const char* _First1, 
