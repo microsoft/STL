@@ -21,7 +21,24 @@ weak_ptr<int> wptr1   = sptr1;
 atomic<shared_ptr<int>> atomic_sptr;
 atomic<weak_ptr<int>> atomic_wptr;
 
-[[nodiscard]] bool weak_ptr_equal(const weak_ptr<int>& left, const weak_ptr<int>& right) {
+shared_ptr<int[]> sarrptr0 = make_shared<int[]>(0);
+shared_ptr<int[]> sarrptr1 = make_shared<int[]>(1);
+weak_ptr<int[]> warrptr0   = sarrptr0;
+weak_ptr<int[]> warrptr1   = sarrptr1;
+
+atomic<shared_ptr<int[]>> atomic_sarrptr;
+atomic<weak_ptr<int[]>> atomic_warrptr;
+
+shared_ptr<int[2]> sarrnptr0 = make_shared<int[2]>();
+shared_ptr<int[2]> sarrnptr1 = make_shared<int[2]>();
+weak_ptr<int[2]> warrnptr0   = sarrnptr0;
+weak_ptr<int[2]> warrnptr1   = sarrnptr1;
+
+atomic<shared_ptr<int[2]>> atomic_sarrnptr;
+atomic<weak_ptr<int[2]>> atomic_warrnptr;
+
+template <typename T>
+[[nodiscard]] bool weak_ptr_equal(const weak_ptr<T>& left, const weak_ptr<T>& right) {
     return !(left.owner_before(right) || right.owner_before(left));
 }
 
@@ -183,6 +200,326 @@ void test_weak_ptr_compare_exchange_strong() {
     }
 }
 
+// Repeat test for unbounded array type.
+
+void test_shared_ptr_arr_load_store() {
+    shared_ptr<int[]> sp0 = sarrptr0;
+    shared_ptr<int[]> sp1 = sarrptr1;
+    for (uintmax_t i = 0; i < iterations; ++i) {
+        atomic_sarrptr         = sp0;
+        shared_ptr<int[]> temp = atomic_sarrptr;
+        assert(temp == sp0 || temp == sp1);
+        this_thread::yield();
+
+        atomic_sarrptr.store(sp1);
+        temp = atomic_sarrptr.load();
+        assert(temp == sp0 || temp == sp1);
+        this_thread::yield();
+
+        atomic_sarrptr.store(sp0, memory_order::seq_cst);
+        temp = atomic_sarrptr.load(memory_order::seq_cst);
+        assert(temp == sp0 || temp == sp1);
+        this_thread::yield();
+    }
+}
+
+void test_shared_ptr_arr_exchange() {
+    shared_ptr<int[]> sp0 = sarrptr0;
+    shared_ptr<int[]> sp1 = sarrptr1;
+    for (uintmax_t i = 0; i < iterations; ++i) {
+        shared_ptr<int[]> temp = atomic_sarrptr.exchange(sp0);
+        assert(temp == sp0 || temp == sp1);
+        this_thread::yield();
+
+        temp = atomic_sarrptr.exchange(sp1, memory_order::seq_cst);
+        assert(temp == sp0 || temp == sp1);
+        this_thread::yield();
+    }
+}
+
+void test_shared_ptr_arr_compare_exchange_weak() {
+    shared_ptr<int[]> sp0 = sarrptr0;
+    shared_ptr<int[]> sp1 = sarrptr1;
+    for (uintmax_t i = 0; i < iterations; ++i) {
+        shared_ptr<int[]> local = sp0;
+        if (atomic_sarrptr.compare_exchange_weak(local, sp1)) {
+            assert(local == sp0);
+        } else {
+            assert(local == sp1);
+        }
+        this_thread::yield();
+
+        local = sp1;
+        if (atomic_sarrptr.compare_exchange_weak(local, sp0, memory_order::seq_cst, memory_order::seq_cst)) {
+            assert(local == sp1);
+        } else {
+            assert(local == sp0);
+        }
+        this_thread::yield();
+    }
+}
+
+void test_shared_ptr_arr_compare_exchange_strong() {
+    shared_ptr<int[]> sp0 = sarrptr0;
+    shared_ptr<int[]> sp1 = sarrptr1;
+    for (uintmax_t i = 0; i < iterations; ++i) {
+        shared_ptr<int[]> local = sp0;
+        if (atomic_sarrptr.compare_exchange_strong(local, sp1)) {
+            assert(local == sp0);
+        } else {
+            assert(local == sp1);
+        }
+        this_thread::yield();
+
+        local = sp1;
+        if (atomic_sarrptr.compare_exchange_strong(local, sp0, memory_order::seq_cst, memory_order::seq_cst)) {
+            assert(local == sp1);
+        } else {
+            assert(local == sp0);
+        }
+        this_thread::yield();
+    }
+}
+
+void test_weak_ptr_arr_load_store() {
+    weak_ptr<int[]> wp0 = warrptr0;
+    weak_ptr<int[]> wp1 = warrptr1;
+    for (uintmax_t i = 0; i < iterations; ++i) {
+        atomic_warrptr       = wp0;
+        weak_ptr<int[]> temp = atomic_warrptr;
+        assert(weak_ptr_equal(temp, wp0) || weak_ptr_equal(temp, wp1));
+        this_thread::yield();
+
+        atomic_warrptr.store(wp1);
+        temp = atomic_warrptr.load();
+        assert(weak_ptr_equal(temp, wp0) || weak_ptr_equal(temp, wp1));
+        this_thread::yield();
+
+        atomic_warrptr.store(wp0, memory_order::seq_cst);
+        temp = atomic_warrptr.load(memory_order::seq_cst);
+        assert(weak_ptr_equal(temp, wp0) || weak_ptr_equal(temp, wp1));
+        this_thread::yield();
+    }
+}
+
+void test_weak_ptr_arr_exchange() {
+    weak_ptr<int[]> wp0 = warrptr0;
+    weak_ptr<int[]> wp1 = warrptr1;
+    for (uintmax_t i = 0; i < iterations; ++i) {
+        weak_ptr<int[]> temp = atomic_warrptr.exchange(wp0);
+        assert(weak_ptr_equal(temp, wp0) || weak_ptr_equal(temp, wp1));
+        this_thread::yield();
+
+        temp = atomic_warrptr.exchange(wp1, memory_order::seq_cst);
+        assert(weak_ptr_equal(temp, wp0) || weak_ptr_equal(temp, wp1));
+        this_thread::yield();
+    }
+}
+
+void test_weak_ptr_arr_compare_exchange_weak() {
+    weak_ptr<int[]> wp0 = warrptr0;
+    weak_ptr<int[]> wp1 = warrptr1;
+    for (uintmax_t i = 0; i < iterations; ++i) {
+        weak_ptr<int[]> local = wp0;
+        if (atomic_warrptr.compare_exchange_weak(local, wp1)) {
+            assert(weak_ptr_equal(local, wp0));
+        } else {
+            assert(weak_ptr_equal(local, wp1));
+        }
+        this_thread::yield();
+
+        local = wp1;
+        if (atomic_warrptr.compare_exchange_weak(local, wp0, memory_order::seq_cst, memory_order::seq_cst)) {
+            assert(weak_ptr_equal(local, wp1));
+        } else {
+            assert(weak_ptr_equal(local, wp0));
+        }
+        this_thread::yield();
+    }
+}
+
+void test_weak_ptr_arr_compare_exchange_strong() {
+    weak_ptr<int[]> wp0 = warrptr0;
+    weak_ptr<int[]> wp1 = warrptr1;
+    for (uintmax_t i = 0; i < iterations; ++i) {
+        weak_ptr<int[]> local = wp0;
+        if (atomic_warrptr.compare_exchange_strong(local, wp1)) {
+            assert(weak_ptr_equal(local, wp0));
+        } else {
+            assert(weak_ptr_equal(local, wp1));
+        }
+        this_thread::yield();
+
+        local = wp1;
+        if (atomic_warrptr.compare_exchange_strong(local, wp0, memory_order::seq_cst, memory_order::seq_cst)) {
+            assert(weak_ptr_equal(local, wp1));
+        } else {
+            assert(weak_ptr_equal(local, wp0));
+        }
+        this_thread::yield();
+    }
+}
+
+// Repeat test for bounded array type.
+
+void test_shared_ptr_arrn_load_store() {
+    shared_ptr<int[2]> sp0 = sarrnptr0;
+    shared_ptr<int[2]> sp1 = sarrnptr1;
+    for (uintmax_t i = 0; i < iterations; ++i) {
+        atomic_sarrnptr         = sp0;
+        shared_ptr<int[2]> temp = atomic_sarrnptr;
+        assert(temp == sp0 || temp == sp1);
+        this_thread::yield();
+
+        atomic_sarrnptr.store(sp1);
+        temp = atomic_sarrnptr.load();
+        assert(temp == sp0 || temp == sp1);
+        this_thread::yield();
+
+        atomic_sarrnptr.store(sp0, memory_order::seq_cst);
+        temp = atomic_sarrnptr.load(memory_order::seq_cst);
+        assert(temp == sp0 || temp == sp1);
+        this_thread::yield();
+    }
+}
+
+void test_shared_ptr_arrn_exchange() {
+    shared_ptr<int[2]> sp0 = sarrnptr0;
+    shared_ptr<int[2]> sp1 = sarrnptr1;
+    for (uintmax_t i = 0; i < iterations; ++i) {
+        shared_ptr<int[2]> temp = atomic_sarrnptr.exchange(sp0);
+        assert(temp == sp0 || temp == sp1);
+        this_thread::yield();
+
+        temp = atomic_sarrnptr.exchange(sp1, memory_order::seq_cst);
+        assert(temp == sp0 || temp == sp1);
+        this_thread::yield();
+    }
+}
+
+void test_shared_ptr_arrn_compare_exchange_weak() {
+    shared_ptr<int[2]> sp0 = sarrnptr0;
+    shared_ptr<int[2]> sp1 = sarrnptr1;
+    for (uintmax_t i = 0; i < iterations; ++i) {
+        shared_ptr<int[2]> local = sp0;
+        if (atomic_sarrnptr.compare_exchange_weak(local, sp1)) {
+            assert(local == sp0);
+        } else {
+            assert(local == sp1);
+        }
+        this_thread::yield();
+
+        local = sp1;
+        if (atomic_sarrnptr.compare_exchange_weak(local, sp0, memory_order::seq_cst, memory_order::seq_cst)) {
+            assert(local == sp1);
+        } else {
+            assert(local == sp0);
+        }
+        this_thread::yield();
+    }
+}
+
+void test_shared_ptr_arrn_compare_exchange_strong() {
+    shared_ptr<int[2]> sp0 = sarrnptr0;
+    shared_ptr<int[2]> sp1 = sarrnptr1;
+    for (uintmax_t i = 0; i < iterations; ++i) {
+        shared_ptr<int[2]> local = sp0;
+        if (atomic_sarrnptr.compare_exchange_strong(local, sp1)) {
+            assert(local == sp0);
+        } else {
+            assert(local == sp1);
+        }
+        this_thread::yield();
+
+        local = sp1;
+        if (atomic_sarrnptr.compare_exchange_strong(local, sp0, memory_order::seq_cst, memory_order::seq_cst)) {
+            assert(local == sp1);
+        } else {
+            assert(local == sp0);
+        }
+        this_thread::yield();
+    }
+}
+
+void test_weak_ptr_arrn_load_store() {
+    weak_ptr<int[2]> wp0 = warrnptr0;
+    weak_ptr<int[2]> wp1 = warrnptr1;
+    for (uintmax_t i = 0; i < iterations; ++i) {
+        atomic_warrnptr       = wp0;
+        weak_ptr<int[2]> temp = atomic_warrnptr;
+        assert(weak_ptr_equal(temp, wp0) || weak_ptr_equal(temp, wp1));
+        this_thread::yield();
+
+        atomic_warrnptr.store(wp1);
+        temp = atomic_warrnptr.load();
+        assert(weak_ptr_equal(temp, wp0) || weak_ptr_equal(temp, wp1));
+        this_thread::yield();
+
+        atomic_warrnptr.store(wp0, memory_order::seq_cst);
+        temp = atomic_warrnptr.load(memory_order::seq_cst);
+        assert(weak_ptr_equal(temp, wp0) || weak_ptr_equal(temp, wp1));
+        this_thread::yield();
+    }
+}
+
+void test_weak_ptr_arrn_exchange() {
+    weak_ptr<int[2]> wp0 = warrnptr0;
+    weak_ptr<int[2]> wp1 = warrnptr1;
+    for (uintmax_t i = 0; i < iterations; ++i) {
+        weak_ptr<int[2]> temp = atomic_warrnptr.exchange(wp0);
+        assert(weak_ptr_equal(temp, wp0) || weak_ptr_equal(temp, wp1));
+        this_thread::yield();
+
+        temp = atomic_warrnptr.exchange(wp1, memory_order::seq_cst);
+        assert(weak_ptr_equal(temp, wp0) || weak_ptr_equal(temp, wp1));
+        this_thread::yield();
+    }
+}
+
+void test_weak_ptr_arrn_compare_exchange_weak() {
+    weak_ptr<int[2]> wp0 = warrnptr0;
+    weak_ptr<int[2]> wp1 = warrnptr1;
+    for (uintmax_t i = 0; i < iterations; ++i) {
+        weak_ptr<int[2]> local = wp0;
+        if (atomic_warrnptr.compare_exchange_weak(local, wp1)) {
+            assert(weak_ptr_equal(local, wp0));
+        } else {
+            assert(weak_ptr_equal(local, wp1));
+        }
+        this_thread::yield();
+
+        local = wp1;
+        if (atomic_warrnptr.compare_exchange_weak(local, wp0, memory_order::seq_cst, memory_order::seq_cst)) {
+            assert(weak_ptr_equal(local, wp1));
+        } else {
+            assert(weak_ptr_equal(local, wp0));
+        }
+        this_thread::yield();
+    }
+}
+
+void test_weak_ptr_arrn_compare_exchange_strong() {
+    weak_ptr<int[2]> wp0 = warrnptr0;
+    weak_ptr<int[2]> wp1 = warrnptr1;
+    for (uintmax_t i = 0; i < iterations; ++i) {
+        weak_ptr<int[2]> local = wp0;
+        if (atomic_warrnptr.compare_exchange_strong(local, wp1)) {
+            assert(weak_ptr_equal(local, wp0));
+        } else {
+            assert(weak_ptr_equal(local, wp1));
+        }
+        this_thread::yield();
+
+        local = wp1;
+        if (atomic_warrnptr.compare_exchange_strong(local, wp0, memory_order::seq_cst, memory_order::seq_cst)) {
+            assert(weak_ptr_equal(local, wp1));
+        } else {
+            assert(weak_ptr_equal(local, wp0));
+        }
+        this_thread::yield();
+    }
+}
+
 void run_test(void (*fp)()) {
     thread thr0(fp);
     thread thr1(fp);
@@ -239,6 +576,26 @@ int main() {
     run_test(test_weak_ptr_compare_exchange_strong);
     ensure_nonmember_calls_compile<atomic<shared_ptr<int>>>();
     ensure_nonmember_calls_compile<atomic<weak_ptr<int>>>();
+    run_test(test_shared_ptr_arr_load_store);
+    run_test(test_shared_ptr_arr_exchange);
+    run_test(test_shared_ptr_arr_compare_exchange_weak);
+    run_test(test_shared_ptr_arr_compare_exchange_strong);
+    run_test(test_weak_ptr_arr_load_store);
+    run_test(test_weak_ptr_arr_exchange);
+    run_test(test_weak_ptr_arr_compare_exchange_weak);
+    run_test(test_weak_ptr_arr_compare_exchange_strong);
+    ensure_nonmember_calls_compile<atomic<shared_ptr<int[]>>>();
+    ensure_nonmember_calls_compile<atomic<weak_ptr<int[]>>>();
+    run_test(test_shared_ptr_arrn_load_store);
+    run_test(test_shared_ptr_arrn_exchange);
+    run_test(test_shared_ptr_arrn_compare_exchange_weak);
+    run_test(test_shared_ptr_arrn_compare_exchange_strong);
+    run_test(test_weak_ptr_arrn_load_store);
+    run_test(test_weak_ptr_arrn_exchange);
+    run_test(test_weak_ptr_arrn_compare_exchange_weak);
+    run_test(test_weak_ptr_arrn_compare_exchange_strong);
+    ensure_nonmember_calls_compile<atomic<shared_ptr<int[2]>>>();
+    ensure_nonmember_calls_compile<atomic<weak_ptr<int[2]>>>();
 
 #ifdef _DEBUG
     sptr0 = {};
@@ -247,6 +604,20 @@ int main() {
     wptr1 = {};
     atomic_sptr.store({});
     atomic_wptr.store({});
+
+    sarrptr0 = {};
+    sarrptr1 = {};
+    warrptr0 = {};
+    warrptr1 = {};
+    atomic_sarrptr.store({});
+    atomic_warrptr.store({});
+
+    sarrnptr0 = {};
+    sarrnptr1 = {};
+    warrnptr0 = {};
+    warrnptr1 = {};
+    atomic_sarrnptr.store({});
+    atomic_warrnptr.store({});
     assert(!_CrtDumpMemoryLeaks());
 #endif // _DEBUG
 }
