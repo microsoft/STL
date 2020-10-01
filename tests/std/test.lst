@@ -339,6 +339,8 @@ tests\P0896R4_views_drop
 tests\P0896R4_views_empty
 tests\P0896R4_views_filter
 tests\P0896R4_views_filter_death
+tests\P0896R4_views_istream
+tests\P0896R4_views_istream_death
 tests\P0896R4_views_reverse
 tests\P0896R4_views_single
 tests\P0896R4_views_take

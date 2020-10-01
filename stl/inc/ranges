@@ -11,6 +11,7 @@
 #ifndef __cpp_lib_concepts
 #pragma message("The contents of <ranges> are available only with C++20 concepts support.")
 #else // ^^^ !defined(__cpp_lib_concepts) / defined(__cpp_lib_concepts) vvv
+#include <iosfwd>
 #include <iterator>
 #include <span>
 #include <string_view>
@@ -623,6 +624,89 @@ namespace ranges {
 
         inline constexpr _Single_fn single;
     } // namespace views
+
+    // CLASS TEMPLATE ranges::istream_view
+    template <class _Ty, class _Elem, class _Traits>
+    concept _Stream_extractable = requires(basic_istream<_Elem, _Traits>& __is, _Ty& __t) {
+        __is >> __t;
+    };
+
+    // clang-format off
+    template <movable _Ty, class _Elem, class _Traits = char_traits<_Elem>>
+        requires default_initializable<_Ty> && _Stream_extractable<_Ty, _Elem, _Traits>
+    class basic_istream_view : public view_interface<basic_istream_view<_Ty, _Elem, _Traits>> {
+        // clang-format on
+    private:
+        class _Iterator {
+        private:
+            basic_istream_view* _Parent = nullptr;
+
+        public:
+            using iterator_concept = input_iterator_tag;
+            using difference_type  = ptrdiff_t;
+            using value_type       = _Ty;
+
+            _Iterator() = default;
+            constexpr explicit _Iterator(basic_istream_view& _Parent_) noexcept : _Parent{_STD addressof(_Parent_)} {}
+
+            _Iterator(const _Iterator&) = delete;
+            _Iterator(_Iterator&&)      = default;
+
+            _Iterator& operator=(const _Iterator&) = delete;
+            _Iterator& operator=(_Iterator&&) = default;
+
+            _Iterator& operator++() {
+#if _ITERATOR_DEBUG_LEVEL != 0
+                _STL_VERIFY(*this != default_sentinel, "cannot increment istream_view iterator at end of stream");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+                *_Parent->_Stream >> _Parent->_Val;
+                return *this;
+            }
+
+            void operator++(int) {
+                ++*this;
+            }
+
+            _Ty& operator*() const {
+#if _ITERATOR_DEBUG_LEVEL != 0
+                _STL_VERIFY(*this != default_sentinel, "cannot dereference istream_view iterator at end of stream");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+                return _Parent->_Val;
+            }
+
+            friend bool operator==(const _Iterator& _Left, default_sentinel_t) {
+                return _Left._Parent == nullptr || _Left._Parent->_Stream_at_end();
+            }
+        };
+
+        basic_istream<_Elem, _Traits>* _Stream = nullptr;
+        _Ty _Val                               = _Ty{};
+
+    public:
+        basic_istream_view() = default;
+        constexpr explicit basic_istream_view(basic_istream<_Elem, _Traits>& _Stream_) noexcept // strengthened
+            : _Stream{_STD addressof(_Stream_)} {}
+
+        constexpr auto begin() {
+            if (_Stream) {
+                *_Stream >> _Val;
+            }
+            return _Iterator{*this};
+        }
+
+        constexpr default_sentinel_t end() const noexcept {
+            return default_sentinel;
+        }
+
+        constexpr bool _Stream_at_end() const noexcept {
+            return _Stream == nullptr || !*_Stream;
+        }
+    };
+
+    template <class _Ty, class _Elem, class _Traits>
+    basic_istream_view<_Ty, _Elem, _Traits> istream_view(basic_istream<_Elem, _Traits>& _Stream) {
+        return basic_istream_view<_Ty, _Elem, _Traits>{_Stream};
+    }
 
     // CLASS TEMPLATE ranges::ref_view
     // clang-format off
