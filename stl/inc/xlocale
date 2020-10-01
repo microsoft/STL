@@ -2021,7 +2021,7 @@ protected:
                     continue;
                 }
 
-                uint32_t _Trailing_count = 1;
+                int32_t _Trailing_count = 1;
                 if (_Lead_byte < 0b1110'0000u) {
                     if (_Lead_byte < 0b1100'0000u) { // out-of-sequence trailing byte
                         return error;
@@ -2311,7 +2311,7 @@ protected:
                     continue;
                 }
 
-                uint32_t _Trailing_count = 1;
+                int32_t _Trailing_count = 1;
                 if (_Lead_byte < 0b1110'0000u) {
                     if (_Lead_byte < 0b1100'0000u) { // out-of-sequence trailing byte
                         return error;
