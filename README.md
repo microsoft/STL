@@ -14,7 +14,7 @@ which ships as part of the MSVC toolset and the Visual Studio IDE.
 If you're a programmer who just wants to use the STL, you **don't** need this repo. Simply install the Visual Studio IDE
 and select the "Desktop development with C++" workload.
 
-If you want to participate in the STL's development, welcome! You can report issues, comment on pull requests, and learn
+If you want to participate in the STL's development, Welcome! You can report issues, comment on pull requests, and learn
 about what we're working on. You can also submit pull requests to fix bugs or add features (see below).
 
 Finally, you can take our code and use it in other apps and libraries (according to the terms of our license, like
