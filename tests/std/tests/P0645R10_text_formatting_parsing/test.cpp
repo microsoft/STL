@@ -202,11 +202,6 @@ constexpr bool test_parse_precision() {
 
 int main() {
     test_parse_align<char>();
-    test_parse_align<wchar_t>();
-    static_assert(test_parse_align<char>());
-    static_assert(test_parse_align<wchar_t>());
-    test_parse_arg_id<char>();
-    test_parse_arg_id<wchar_t>();
     static_assert(test_parse_arg_id<char>());
     static_assert(test_parse_arg_id<wchar_t>());
     test_parse_width<char>();
