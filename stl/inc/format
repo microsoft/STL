@@ -220,7 +220,6 @@ constexpr const _CharT* _Parse_precision(const _CharT* _Begin, const _CharT* _En
     if (_Begin != _End) {
         _Ch = *_Begin;
     }
-
     if ('0' <= _Ch && _Ch <= '9') {
         int _Precision = 0;
         _Begin         = _Parse_nonnegative_integer(_Begin, _End, _Precision);
