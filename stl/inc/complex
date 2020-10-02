@@ -1856,29 +1856,6 @@ _NODISCARD complex<_Common_float_type_t<_Ty1, _Ty2>> pow(const complex<_Ty1>& _L
     return _STD pow(_Type(_Left), _Type(static_cast<_Promoted>(_Right)));
 }
 
-template <class _Ty1, class _Ty2, enable_if_t<is_integral_v<_Ty1> && is_integral_v<_Ty2>, int> = 0>
-_NODISCARD complex<_Ty1> pow(const complex<_Ty1>& _Left, _Ty2 _Right) {
-    // raise Gaussian integer to an integer power
-    using _Type = complex<_Ty1>;
-
-    _Type _Ans = _Type(1, 0);
-
-    if (_Right < 0) {
-        _Ans = _Type(0, 0); // ignore 1/_Type(0, 0) error
-    } else if (0 < _Right) { // raise to a positive power
-        for (_Type _Factor = _Left;; _Factor *= _Factor) { // fold in _Left^(2^N))
-            if ((_Right & 1) != 0) {
-                _Ans *= _Factor;
-            }
-
-            if ((_Right >>= 1) == 0) {
-                break;
-            }
-        }
-    }
-    return _Ans;
-}
-
 template <class _Ty1, class _Ty2, enable_if_t<is_arithmetic_v<_Ty1>, int> = 0>
 _NODISCARD complex<_Common_float_type_t<_Ty1, _Ty2>> pow(const _Ty1& _Left, const complex<_Ty2>& _Right) {
     using _Promoted = _Common_float_type_t<_Ty1, _Ty2>;
