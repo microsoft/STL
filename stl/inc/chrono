@@ -1821,9 +1821,9 @@ namespace chrono {
     inline constexpr month November{11};
     inline constexpr month December{12};
 
-    // Returns the number of fractional digits of _Num / _Den.
-    // Example: _Fractional_width(1, 8) would return 3 for 0.125.
+    // Returns the number of fractional digits of _Num / _Den in the range [0, 18].
     // If it can't be represented 6 is returned.
+    // Example: _Fractional_width(1, 8) would return 3 for 0.125.
     constexpr unsigned _Fractional_width(intmax_t _Num, const intmax_t _Den) {
         _STL_ASSERT(_Den > 0, "Denominator can't be less than 1.");
         unsigned _Result = 0;
