@@ -422,7 +422,8 @@ private:
             _Ppunct_fac = _STD addressof(_STD use_facet<_Mypunct0>(_Iosbase.getloc())); // local
         }
 
-        bool _Bad = false, _Neg = false;
+        bool _Bad = false;
+        bool _Neg = false;
         string_type _Sign;
         const money_base::pattern _Pattern = _Ppunct_fac->neg_format();
         string _Val;

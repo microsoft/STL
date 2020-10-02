@@ -1,8 +1,11 @@
 # Microsoft's C++ Standard Library
 
 This is the official repository for Microsoft's implementation of the C++ Standard Library (also known as the STL),
-which ships as part of the MSVC toolset and the Visual Studio IDE. Our [Changelog][] tracks which updates to this
-repository appear in each VS release.
+which ships as part of the MSVC toolset and the Visual Studio IDE.
+
+* Our [Changelog][] tracks which updates to this repository appear in each VS release.
+* Our [Status Chart][] displays our overall progress over time.
+* Join our [Discord server][].
 
 [![Build Status](https://dev.azure.com/vclibs/STL/_apis/build/status/microsoft.STL?branchName=master)][Pipelines]
 
@@ -140,37 +143,46 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 The STL uses boost-math headers to provide P0226R1 Mathematical Special Functions. We recommend using [vcpkg][] to
 acquire this dependency.
 
-1. Install Visual Studio 2019 16.8 Preview 1 or later.
+1. Install Visual Studio 2019 16.8 Preview 3 or later.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
     * Otherwise, install [CMake][] 3.17 or later, and [Ninja][] 1.8.2 or later.
 2. Open Visual Studio, and choose the "Clone or check out code" option. Enter the URL of this repository,
    `https://github.com/microsoft/STL`.
 3. Open a terminal in the IDE with `` Ctrl + ` `` (by default) or press on "View" in the top bar, and then "Terminal".
-4. Invoke `git submodule update --init vcpkg` in the terminal.
-5. Invoke `.\vcpkg\bootstrap-vcpkg.bat` in the terminal.
-6. Invoke `.\vcpkg\vcpkg.exe install boost-math:x86-windows boost-math:x64-windows` to install the boost-math dependency.
+4. In the terminal, invoke `git submodule update --init vcpkg`
+5. In the terminal, invoke `.\vcpkg\bootstrap-vcpkg.bat`
+6. In the terminal, invoke `.\vcpkg\vcpkg.exe install boost-math:x86-windows boost-math:x64-windows`
 7. Choose the architecture you wish to build in the IDE, and build as you would any other project. All necessary CMake
    settings are set by `CMakeSettings.json`.
 
 # How To Build With A Native Tools Command Prompt
 
-These instructions assume you're targeting `x64-windows`; you can change this constant below to target other
-architectures.
-
-1. Install Visual Studio 2019 16.8 Preview 1 or later.
+1. Install Visual Studio 2019 16.8 Preview 3 or later.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
     * Otherwise, install [CMake][] 3.17 or later, and [Ninja][] 1.8.2 or later.
-2. Open an "x64 Native Tools Command Prompt for VS 2019".
+2. Open a command prompt.
 3. Change directories to a location where you'd like a clone of this STL repository.
-4. Invoke `git clone https://github.com/microsoft/STL`
-5. Invoke `cd STL`
-6. Invoke `git submodule update --init vcpkg`
-7. Invoke `.\vcpkg\bootstrap-vcpkg.bat`
-8. Invoke `.\vcpkg\vcpkg.exe install boost-math:x86-windows boost-math:x64-windows` to install the boost-math dependency.
-9. Invoke `cmake -G Ninja -S . -B {wherever you want binaries}` to configure the project. For example, `cmake -G Ninja -S . -B out\build\x64`
-10. Invoke `ninja -C {wherever you want binaries}` to build the project. For example, `ninja -C out\build\x64`
+4. `git clone https://github.com/microsoft/STL`
+5. `cd STL`
+6. `git submodule update --init vcpkg`
+7. `.\vcpkg\bootstrap-vcpkg.bat`
+8. `.\vcpkg\vcpkg.exe install boost-math:x86-windows boost-math:x64-windows`
+
+To build the x86 target:
+
+1. Open an "x86 Native Tools Command Prompt for VS 2019".
+2. Change directories to the previously cloned `STL` directory.
+3. `cmake -G Ninja -S . -B out\build\x86`
+4. `ninja -C out\build\x86`
+
+To build the x64 target:
+
+1. Open an "x64 Native Tools Command Prompt for VS 2019".
+2. Change directories to the previously cloned `STL` directory.
+3. `cmake -G Ninja -S . -B out\build\x64`
+4. `ninja -C out\build\x64`
 
 # How To Consume
 
@@ -196,26 +208,26 @@ for DLL dependencies according to directories in the `PATH` environment variable
 "x64 Native Tools Command Prompt for VS 2019":
 
 ```
-C:\Users\bion\Desktop>set INCLUDE=C:\Dev\STL\out\build\x64\out\inc;%INCLUDE%
+C:\Users\username\Desktop>set INCLUDE=C:\Dev\STL\out\build\x64\out\inc;%INCLUDE%
 
-C:\Users\bion\Desktop>set LIB=C:\Dev\STL\out\build\x64\out\lib\amd64;%LIB%
+C:\Users\username\Desktop>set LIB=C:\Dev\STL\out\build\x64\out\lib\amd64;%LIB%
 
-C:\Users\bion\Desktop>set PATH=C:\Dev\STL\out\build\x64\out\bin\amd64;%PATH%
+C:\Users\username\Desktop>set PATH=C:\Dev\STL\out\build\x64\out\bin\amd64;%PATH%
 
-C:\Users\bion\Desktop>type example.cpp
+C:\Users\username\Desktop>type example.cpp
 #include <iostream>
 
 int main() {
     std::cout << "Hello STL OSS world!\n";
 }
 
-C:\Users\bion\Desktop>cl /nologo /EHsc /W4 /WX /MDd /std:c++latest .\example.cpp
+C:\Users\username\Desktop>cl /nologo /EHsc /W4 /WX /MDd /std:c++latest .\example.cpp
 example.cpp
 
-C:\Users\bion\Desktop>.\example.exe
+C:\Users\username\Desktop>.\example.exe
 Hello STL OSS world!
 
-C:\Users\bion\Desktop>dumpbin /IMPORTS .\example.exe | findstr msvcp
+C:\Users\username\Desktop>dumpbin /IMPORTS .\example.exe | findstr msvcp
     msvcp140d_oss.dll
 ```
 
@@ -244,29 +256,20 @@ under a category in libcxx, or running a single test in `std` and `tr1`.
 
 ## Examples
 
-```
-:: This command will run all of the testsuites with verbose output.
+These examples assume that your current directory is `C:\Dev\STL\out\build\x64`.
 
-C:\STL\out\build\x64>ctest -V
-
-:: This command will also run all of the testsuites.
-
-C:\STL\out\build\x64>python tests\utils\stl-lit\stl-lit.py ..\..\..\llvm-project\libcxx\test ..\..\..\tests\std ..\..\..\tests\tr1
-
-:: This command will run all of the std testsuite.
-
-C:\STL\out\build\x64>python tests\utils\stl-lit\stl-lit.py ..\..\..\tests\std
-
-:: If you want to run a subset of a testsuite you need to point it to the right place in the sources. The following
-:: will run the single test found under VSO_0000000_any_calling_conventions.
-
-C:\STL\out\build\x64>python tests\utils\stl-lit\stl-lit.py ..\..\..\tests\std\tests\VSO_0000000_any_calling_conventions
-
-:: You can invoke stl-lit with any arbitrary subdirectory of a testsuite. In libcxx this allows you to have finer
-:: control over what category of tests you would like to run. The following will run all the libcxx map tests.
-
-C:\STL\out\build\x64>python tests\utils\stl-lit\stl-lit.py ..\..\..\llvm-project\libcxx\test\std\containers\associative\map
-```
+* This command will run all of the testsuites with verbose output.
+  + `ctest -V`
+* This command will also run all of the testsuites.
+  + `python tests\utils\stl-lit\stl-lit.py ..\..\..\llvm-project\libcxx\test ..\..\..\tests\std ..\..\..\tests\tr1`
+* This command will run all of the std testsuite.
+  + `python tests\utils\stl-lit\stl-lit.py ..\..\..\tests\std`
+* If you want to run a subset of a testsuite, you need to point it to the right place in the sources. The following
+will run the single test found under VSO_0000000_any_calling_conventions.
+  + `python tests\utils\stl-lit\stl-lit.py ..\..\..\tests\std\tests\VSO_0000000_any_calling_conventions`
+* You can invoke `stl-lit` with any arbitrary subdirectory of a testsuite. In libcxx this allows you to have finer
+control over what category of tests you would like to run. The following will run all the libcxx map tests.
+  + `python tests\utils\stl-lit\stl-lit.py ..\..\..\llvm-project\libcxx\test\std\containers\associative\map`
 
 ## Interpreting The Results Of Tests
 
@@ -395,6 +398,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [Code of Conduct FAQ]: https://opensource.microsoft.com/codeofconduct/faq/
 [Compiler Explorer]: https://godbolt.org
 [Developer Community]: https://developercommunity.visualstudio.com/spaces/62/index.html
+[Discord server]: https://discord.gg/XWanNww
 [How To Build With A Native Tools Command Prompt]: #how-to-build-with-a-native-tools-command-prompt
 [How To Build With The Visual Studio IDE]: #how-to-build-with-the-visual-studio-ide
 [LICENSE.txt]: LICENSE.txt
@@ -408,6 +412,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [Pipelines]: https://dev.azure.com/vclibs/STL/_build/latest?definitionId=2&branchName=master
 [Python]: https://www.python.org/downloads/windows/
 [Roadmap]: https://github.com/microsoft/STL/wiki/Roadmap
+[Status Chart]: https://microsoft.github.io/STL/
 [Wandbox]: https://wandbox.org
 [bug tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Abug
 [cxx20 tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Acxx20

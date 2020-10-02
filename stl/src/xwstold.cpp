@@ -3,7 +3,7 @@
 
 // _WStold function
 
-#include <wchar.h>
+#include <cwchar>
 
 #include "xmath.hpp"
 #include "xxlftype.hpp"

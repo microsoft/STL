@@ -15,6 +15,8 @@ at https://docs.microsoft.com/en-us/powershell/azure/install-az-ps
 or are running from Azure Cloud Shell.
 #>
 
+$ErrorActionPreference = 'Stop'
+
 $Location = 'westus2'
 $Prefix = 'StlBuild-' + (Get-Date -Format 'yyyy-MM-dd')
 $VMSize = 'Standard_D16as_v4'
