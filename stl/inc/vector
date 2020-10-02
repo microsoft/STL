@@ -390,9 +390,9 @@ public:
         _Mylast  = _Right._Mylast;
         _Myend   = _Right._Myend;
 
-        _Right._Myfirst = pointer();
-        _Right._Mylast  = pointer();
-        _Right._Myend   = pointer();
+        _Right._Myfirst = nullptr;
+        _Right._Mylast  = nullptr;
+        _Right._Myend   = nullptr;
     }
 
     pointer _Myfirst; // pointer to beginning of array
@@ -587,9 +587,9 @@ public:
         _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
         _Mypair._Myval2._Swap_proxy_and_iterators(_Right._Mypair._Myval2);
 
-        _Right._Mypair._Myval2._Myfirst = pointer();
-        _Right._Mypair._Myval2._Mylast  = pointer();
-        _Right._Mypair._Myval2._Myend   = pointer();
+        _Right._Mypair._Myval2._Myfirst = nullptr;
+        _Right._Mypair._Myval2._Mylast  = nullptr;
+        _Right._Mypair._Myval2._Myend   = nullptr;
     }
 
     vector(vector&& _Right, const _Alloc& _Al) noexcept(_Alty_traits::is_always_equal::value) // strengthened
@@ -1301,9 +1301,9 @@ private:
             _Destroy(_Myfirst, _Mylast);
             _Getal().deallocate(_Myfirst, static_cast<size_type>(_Myend - _Myfirst));
 
-            _Myfirst = pointer();
-            _Mylast  = pointer();
-            _Myend   = pointer();
+            _Myfirst = nullptr;
+            _Mylast  = nullptr;
+            _Myend   = nullptr;
         }
 
         _Buy_raw(_Newcapacity);
@@ -1704,9 +1704,9 @@ private:
             _Destroy(_Myfirst, _Mylast);
             _Getal().deallocate(_Myfirst, static_cast<size_type>(_Myend - _Myfirst));
 
-            _Myfirst = pointer();
-            _Mylast  = pointer();
-            _Myend   = pointer();
+            _Myfirst = nullptr;
+            _Mylast  = nullptr;
+            _Myend   = nullptr;
         }
     }
 
