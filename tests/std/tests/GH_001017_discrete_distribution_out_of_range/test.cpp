@@ -16,6 +16,7 @@ void Test_for_NaN_Inf(Distribution&& distribution) {
 
 template <class T>
 void Test_distributions() {
+    // Additionally test GH-1174 "<random>: Some random number distributions could return NaN"
     Test_for_NaN_Inf(std::normal_distribution<T>{});
     Test_for_NaN_Inf(std::lognormal_distribution<T>{});
     Test_for_NaN_Inf(std::fisher_f_distribution<T>{});

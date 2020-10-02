@@ -2943,11 +2943,11 @@ private:
             }
 
             _Ty _LogSx;
-            if (_Sx > 1.0e-4) {
+            if (_Sx > _Ty{1e-4}) {
                 _LogSx = _STD log(_Sx);
             } else {
-                // Bad _Sx value! Very small values will overflow log(_Sx)/_Sx
-                // generating a new value based on scaling method.
+                // Bad _Sx value! Very small values will overflow log(_Sx) / _Sx.
+                // Generate a new value based on scaling method.
                 const _Ty _Ln2{_Ty{0.69314718055994530941723212145818}};
                 const _Ty _Maxabs{(_STD max)(_STD abs(_Vx1), _STD abs(_Vx2))};
                 const int _ExpMax{_STD ilogb(_Maxabs)};
