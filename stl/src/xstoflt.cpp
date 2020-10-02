@@ -3,9 +3,9 @@
 
 // _Stoflt function
 
-#include <ctype.h>
-#include <locale.h>
-#include <stdlib.h>
+#include <cctype>
+#include <clocale>
+#include <cstdlib>
 
 #include "xmath.hpp"
 

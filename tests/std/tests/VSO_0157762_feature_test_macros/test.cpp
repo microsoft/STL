@@ -84,6 +84,20 @@ STATIC_ASSERT(__cpp_lib_as_const == 201510L);
 #endif
 
 #if _HAS_CXX20
+#ifndef __cpp_lib_assume_aligned
+#error __cpp_lib_assume_aligned is not defined
+#elif __cpp_lib_assume_aligned != 201811L
+#error __cpp_lib_assume_aligned is not 201811L
+#else
+STATIC_ASSERT(__cpp_lib_assume_aligned == 201811L);
+#endif
+#else
+#ifdef __cpp_lib_assume_aligned
+#error __cpp_lib_assume_aligned is defined
+#endif
+#endif
+
+#if _HAS_CXX20
 #ifndef __cpp_lib_atomic_flag_test
 #error __cpp_lib_atomic_flag_test is not defined
 #elif __cpp_lib_atomic_flag_test != 201907L
@@ -186,6 +200,20 @@ STATIC_ASSERT(__cpp_lib_atomic_wait == 201907L);
 #else
 #ifdef __cpp_lib_atomic_wait
 #error __cpp_lib_atomic_wait is defined
+#endif
+#endif
+
+#if _HAS_CXX20
+#ifndef __cpp_lib_barrier
+#error __cpp_lib_barrier is not defined
+#elif __cpp_lib_barrier != 201907L
+#error __cpp_lib_barrier is not 201907L
+#else
+STATIC_ASSERT(__cpp_lib_barrier == 201907L);
+#endif
+#else
+#ifdef __cpp_lib_barrier
+#error __cpp_lib_barrier is defined
 #endif
 #endif
 
@@ -848,6 +876,34 @@ STATIC_ASSERT(__cpp_lib_is_swappable == 201603L);
 #endif
 #endif
 
+#if _HAS_CXX20
+#ifndef __cpp_lib_jthread
+#error __cpp_lib_jthread is not defined
+#elif __cpp_lib_jthread != 201911L
+#error __cpp_lib_jthread is not 201911L
+#else
+STATIC_ASSERT(__cpp_lib_jthread == 201911L);
+#endif
+#else
+#ifdef __cpp_lib_jthread
+#error __cpp_lib_jthread is defined
+#endif
+#endif
+
+#if _HAS_CXX20
+#ifndef __cpp_lib_latch
+#error __cpp_lib_latch is not defined
+#elif __cpp_lib_latch != 201907L
+#error __cpp_lib_latch is not 201907L
+#else
+STATIC_ASSERT(__cpp_lib_latch == 201907L);
+#endif
+#else
+#ifdef __cpp_lib_latch
+#error __cpp_lib_latch is defined
+#endif
+#endif
+
 #if _HAS_CXX17
 #ifndef __cpp_lib_launder
 #error __cpp_lib_launder is not defined
@@ -1036,6 +1092,20 @@ STATIC_ASSERT(__cpp_lib_parallel_algorithm == 201603L);
 #endif
 #endif
 
+#if _HAS_CXX20
+#ifndef __cpp_lib_polymorphic_allocator
+#error __cpp_lib_polymorphic_allocator is not defined
+#elif __cpp_lib_polymorphic_allocator != 201902L
+#error __cpp_lib_polymorphic_allocator is not 201902L
+#else
+STATIC_ASSERT(__cpp_lib_polymorphic_allocator == 201902L);
+#endif
+#else
+#ifdef __cpp_lib_polymorphic_allocator
+#error __cpp_lib_polymorphic_allocator is defined
+#endif
+#endif
+
 #ifndef __cpp_lib_quoted_string_io
 #error __cpp_lib_quoted_string_io is not defined
 #elif __cpp_lib_quoted_string_io != 201304L
@@ -1113,6 +1183,20 @@ STATIC_ASSERT(__cpp_lib_scoped_lock == 201703L);
 #else
 #ifdef __cpp_lib_scoped_lock
 #error __cpp_lib_scoped_lock is defined
+#endif
+#endif
+
+#if _HAS_CXX20
+#ifndef __cpp_lib_semaphore
+#error __cpp_lib_semaphore is not defined
+#elif __cpp_lib_semaphore != 201907L
+#error __cpp_lib_semaphore is not 201907L
+#else
+STATIC_ASSERT(__cpp_lib_semaphore == 201907L);
+#endif
+#else
+#ifdef __cpp_lib_semaphore
+#error __cpp_lib_semaphore is defined
 #endif
 #endif
 

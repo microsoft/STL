@@ -1091,8 +1091,7 @@ struct _Static_partitioned_all_of_family2 { // all_of/any_of/none_of task schedu
         if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
-        // Once _Key is obtained, the amount of work should not be discarded; see GH-818.
-        // GH-818: https://github.com/microsoft/STL/issues/818
+        // Once _Key is obtained, the amount of work should not be discarded (see GH-818).
 
         const auto _Range = _Basis._Get_chunk(_Key);
         for (auto _First = _Range._First; _First != _Range._Last; ++_First) {
@@ -1326,7 +1325,7 @@ struct _Static_partitioned_find2 {
         if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
-        // Once _Key is obtained, the amount of work should not be discarded; see GH-818.
+        // Once _Key is obtained, the amount of work should not be discarded (see GH-818).
 
         const auto _Range     = _Basis._Get_chunk(_Key);
         const auto _This_find = _Fx(_Range._First, _Range._Last);
@@ -1531,7 +1530,7 @@ struct _Static_partitioned_find_end_backward2 {
         if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
-        // Once _Key is obtained, the amount of work should not be discarded; see GH-818.
+        // Once _Key is obtained, the amount of work should not be discarded (see GH-818).
 
         const auto _Chunk_number = _Key._Chunk_number;
         const auto _Range        = _Basis._Get_chunk(_Key);
@@ -1652,7 +1651,7 @@ struct _Static_partitioned_adjacent_find2 {
         if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
-        // Once _Key is obtained, the amount of work should not be discarded; see GH-818.
+        // Once _Key is obtained, the amount of work should not be discarded (see GH-818).
 
         const auto _Chunk_number = _Key._Chunk_number;
         const auto _Range        = _Basis._Get_chunk(_Key);
@@ -1868,7 +1867,7 @@ struct _Static_partitioned_mismatch2 {
         if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
-        // Once _Key is obtained, the amount of work should not be discarded; see GH-818.
+        // Once _Key is obtained, the amount of work should not be discarded (see GH-818).
 
         const auto _Chunk_number = _Key._Chunk_number;
         const auto _Range1       = _Basis1._Get_chunk(_Key);
@@ -2000,7 +1999,7 @@ struct _Static_partitioned_equal2 {
         if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
-        // Once _Key is obtained, the amount of work should not be discarded; see GH-818.
+        // Once _Key is obtained, the amount of work should not be discarded (see GH-818).
 
         const auto _Range1       = _Basis1._Get_chunk(_Key);
         const auto _Range2_first = _Basis2._Get_chunk(_Key)._First;
@@ -2119,7 +2118,7 @@ struct _Static_partitioned_search2 {
         if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
-        // Once _Key is obtained, the amount of work should not be discarded; see GH-818.
+        // Once _Key is obtained, the amount of work should not be discarded (see GH-818).
 
         const auto _Range = _Basis._Get_chunk(_Key);
         for (auto _Candidate = _Range._First; _Candidate != _Range._Last; ++_Candidate) {
@@ -2238,7 +2237,7 @@ struct _Static_partitioned_search_n2 {
         if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
-        // Once _Key is obtained, the amount of work should not be discarded; see GH-818.
+        // Once _Key is obtained, the amount of work should not be discarded (see GH-818).
 
         const auto _Range = _Basis._Get_chunk(_Key);
 
@@ -3069,7 +3068,7 @@ struct _Static_partitioned_is_sorted_until {
         if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
-        // Once _Key is obtained, the amount of work should not be discarded; see GH-818.
+        // Once _Key is obtained, the amount of work should not be discarded (see GH-818).
 
         auto _Range = _Basis._Get_chunk(_Key);
         auto _Next  = _Range._First;
@@ -3184,7 +3183,7 @@ struct _Static_partitioned_is_partitioned {
         if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
-        // Once _Key is obtained, the amount of work should not be discarded; see GH-818.
+        // Once _Key is obtained, the amount of work should not be discarded (see GH-818).
 
         // looking at chunks from either end, moving in towards the middle
         auto _Target_chunk_number = _Key._Chunk_number >> 1;
@@ -3297,7 +3296,7 @@ struct _Static_partitioned_is_heap_until {
         if (!_Key) {
             return _Cancellation_status::_Canceled;
         }
-        // Once _Key is obtained, the amount of work should not be discarded; see GH-818.
+        // Once _Key is obtained, the amount of work should not be discarded (see GH-818).
 
         const auto _Chunk_range_size = _Key._Size;
         const auto _Chunk_offset     = _Key._Start_at;

@@ -3669,6 +3669,11 @@ void test_create_dirs_and_remove_all() {
     remove_all(badPath, ec);
     EXPECT(good(ec));
 
+    // test GH-1283 create_directories() should throw for empty paths
+    EXPECT(throws_filesystem_error([] { create_directories(path{}); }, "create_directories", path{}));
+    EXPECT(create_directories(path{}, ec) == false);
+    EXPECT(bad(ec));
+
     // test that normalization isn't done first
     auto dots = r / L"a/../b/../c"sv;
     EXPECT(create_directories(dots));

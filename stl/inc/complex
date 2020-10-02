@@ -223,13 +223,21 @@ public:
     }
 
     static bool _Isinf(_Ty _Left) { // test for infinity
+#if defined(__INTEL_COMPILER) && defined(__LONG_DOUBLE_SIZE__) && __LONG_DOUBLE_SIZE__ == 80
+        return _CSTD _LDtest(&_Left) == _INFCODE;
+#else // ^^^ 80-bit long double (not supported by MSVC in general, see GH-1316) / 64-bit long double vvv
         const auto _Uint = _Bit_cast<uint64_t>(_Left);
         return (_Uint & 0x7fffffffffffffffU) == 0x7ff0000000000000U;
+#endif // ^^^ 64-bit long double ^^^
     }
 
     static _CONSTEXPR20 bool _Isnan(_Ty _Left) {
+#if defined(__INTEL_COMPILER) && defined(__LONG_DOUBLE_SIZE__) && __LONG_DOUBLE_SIZE__ == 80
+        return _CSTD _LDtest(&_Left) == _NANCODE;
+#else // ^^^ 80-bit long double (not supported by MSVC in general, see GH-1316) / 64-bit long double vvv
         const auto _Uint = _Bit_cast<uint64_t>(_Left);
         return (_Uint & 0x7fffffffffffffffU) > 0x7ff0000000000000U;
+#endif // ^^^ 64-bit long double ^^^
     }
 
     static constexpr _Ty _Nanv() { // return NaN
@@ -694,17 +702,6 @@ public:
     constexpr complex(const _Ty& _Realval = 0, const _Ty& _Imagval = 0)
         : _Complex_base<float, _Fcomplex_value>(_Realval, _Imagval) {}
 
-    constexpr complex(const _Fcomplex_value& _Right)
-        : _Complex_base<float, _Fcomplex_value>(_Right._Val[_RE], _Right._Val[_IM]) {}
-
-    constexpr complex(const _Dcomplex_value& _Right)
-        : _Complex_base<float, _Fcomplex_value>(
-            static_cast<float>(_Right._Val[_RE]), static_cast<float>(_Right._Val[_IM])) {}
-
-    constexpr complex(const _Lcomplex_value& _Right)
-        : _Complex_base<float, _Fcomplex_value>(
-            static_cast<float>(_Right._Val[_RE]), static_cast<float>(_Right._Val[_IM])) {}
-
     _CONSTEXPR20 complex& operator=(const _Ty& _Right) {
         _Val[_RE] = _Right;
         _Val[_IM] = 0;
@@ -797,13 +794,6 @@ public:
     constexpr complex(const _Ty& _Realval = 0, const _Ty& _Imagval = 0)
         : _Complex_base<double, _Dcomplex_value>(_Realval, _Imagval) {}
 
-    constexpr complex(const _Dcomplex_value& _Right)
-        : _Complex_base<double, _Dcomplex_value>(_Right._Val[_RE], _Right._Val[_IM]) {}
-
-    constexpr complex(const _Lcomplex_value& _Right)
-        : _Complex_base<double, _Dcomplex_value>(
-            static_cast<double>(_Right._Val[_RE]), static_cast<double>(_Right._Val[_IM])) {}
-
     _CONSTEXPR20 complex& operator=(const _Ty& _Right) {
         _Val[_RE] = _Right;
         _Val[_IM] = 0;
@@ -895,9 +885,6 @@ public:
 
     constexpr complex(const _Ty& _Realval = 0, const _Ty& _Imagval = 0)
         : _Complex_base<long double, _Lcomplex_value>(_Realval, _Imagval) {}
-
-    constexpr complex(const _Lcomplex_value& _Right)
-        : _Complex_base<long double, _Lcomplex_value>(_Right._Val[_RE], _Right._Val[_IM]) {}
 
     _CONSTEXPR20 complex& operator=(const _Ty& _Right) {
         _Val[_RE] = _Right;
