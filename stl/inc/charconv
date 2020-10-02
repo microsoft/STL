@@ -1236,7 +1236,7 @@ _NODISCARD inline uint64_t _Right_shift_with_rounding(
 
             // We round up the answer to 1 if the answer is greater than 0.5. Otherwise, we round down the answer to 0
             // if either [1] the answer is less than 0.5 or [2] the answer is exactly 0.5.
-            return static_cast<uint64_t>(_Round_bit & _Tail_bits);
+            return static_cast<uint64_t>(_Round_bit && _Tail_bits);
         } else {
             // If we'd need to shift 65 or more bits, the answer is less than 0.5 and is always rounded to zero:
             return 0;
