@@ -1903,13 +1903,20 @@ namespace chrono {
     }
 
     _NODISCARD constexpr hours make12(const hours& _Hours) noexcept {
-        return _Hours == hours{12} || _Hours == hours{0} ? hours{12} : _Hours % 12;
+        const auto _H_count{_Hours.count()};
+        auto _Ret{_H_count == 0 ? 12 : _H_count};
+        if (_Ret > 12) {
+            _Ret -= 12;
+        }
+        return hours{_Ret};
     }
     _NODISCARD constexpr hours make24(const hours& _Hours, bool _Is_pm) noexcept {
+        const auto _H_count{_Hours.count()};
+        auto _Ret{_H_count == 12 ? 0 : _H_count};
         if (_Is_pm) {
-            return _Hours == hours{12} ? _Hours : _Hours + hours{12};
+            _Ret += 12;
         }
-        return _Hours == hours{12} ? hours{0} : _Hours;
+        return hours{_Ret};
     }
 #endif // _HAS_CXX20
 } // namespace chrono
