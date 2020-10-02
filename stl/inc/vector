@@ -372,10 +372,10 @@ public:
     using reference       = value_type&;
     using const_reference = const value_type&;
 
-    _Vector_val() noexcept : _Myfirst{}, _Mylast{}, _Myend{} {}
+    _Vector_val() noexcept : _Myfirst(), _Mylast(), _Myend() {}
 
     _Vector_val(pointer _First, pointer _Last, pointer _End) noexcept
-        : _Myfirst{_First}, _Mylast{_Last}, _Myend{_End} {}
+        : _Myfirst(_First), _Mylast(_Last), _Myend(_End) {}
 
     void _Swap_val(_Vector_val& _Right) noexcept {
         this->_Swap_proxy_and_iterators(_Right);
