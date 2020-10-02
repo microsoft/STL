@@ -12,6 +12,10 @@
 #include <cstdlib>
 #include <xtr1common>
 
+#ifndef __clang__
+#include <intrin0.h>
+#endif // !__clang__
+
 #if _HAS_CXX20
 #include <xutility>
 #endif // _HAS_CXX20
@@ -56,11 +60,19 @@ _NODISCARD _Check_return_ inline float cbrt(_In_ float _Xx) noexcept /* strength
 }
 
 _NODISCARD _Check_return_ inline float ceil(_In_ float _Xx) noexcept /* strengthened */ {
+#ifdef __clang__
     return _CSTD ceilf(_Xx);
+#else // ^^^ __clang__ / !__clang__ vvv
+    return __ceilf(_Xx);
+#endif // __clang__
 }
 
 _NODISCARD _Check_return_ inline float copysign(_In_ float _Number, _In_ float _Sign) noexcept /* strengthened */ {
+#ifdef __clang__
     return _CSTD copysignf(_Number, _Sign);
+#else // ^^^ __clang__ / !__clang__ vvv
+    return __copysignf(_Number, _Sign);
+#endif // __clang__
 }
 
 _NODISCARD _Check_return_ inline float cos(_In_ float _Xx) noexcept /* strengthened */ {
@@ -100,7 +112,11 @@ _NODISCARD _Check_return_ inline float fdim(_In_ float _Xx, _In_ float _Yx) noex
 }
 
 _NODISCARD _Check_return_ inline float floor(_In_ float _Xx) noexcept /* strengthened */ {
+#ifdef __clang__
     return _CSTD floorf(_Xx);
+#else // ^^^ __clang__ / !__clang__ vvv
+    return __floorf(_Xx);
+#endif // __clang__
 }
 
 _NODISCARD _Check_return_ inline float fma(_In_ float _Xx, _In_ float _Yx, _In_ float _Zx) noexcept /* strengthened */ {
@@ -208,7 +224,11 @@ _NODISCARD _Check_return_ inline float rint(_In_ float _Xx) noexcept /* strength
 }
 
 _NODISCARD _Check_return_ inline float round(_In_ float _Xx) noexcept /* strengthened */ {
+#ifdef __clang__
     return _CSTD roundf(_Xx);
+#else // ^^^ __clang__ / !__clang__ vvv
+    return __roundf(_Xx);
+#endif // __clang__
 }
 
 _NODISCARD _Check_return_ inline float scalbln(_In_ float _Xx, _In_ long _Yx) noexcept /* strengthened */ {
@@ -244,7 +264,11 @@ _NODISCARD _Check_return_ inline float tgamma(_In_ float _Xx) noexcept /* streng
 }
 
 _NODISCARD _Check_return_ inline float trunc(_In_ float _Xx) noexcept /* strengthened */ {
+#ifdef __clang__
     return _CSTD truncf(_Xx);
+#else // ^^^ __clang__ / !__clang__ vvv
+    return __truncf(_Xx);
+#endif // __clang__
 }
 
 _NODISCARD _Check_return_ inline long double acos(_In_ long double _Xx) noexcept /* strengthened */ {
@@ -281,12 +305,20 @@ _NODISCARD _Check_return_ inline long double cbrt(_In_ long double _Xx) noexcept
 }
 
 _NODISCARD _Check_return_ inline long double ceil(_In_ long double _Xx) noexcept /* strengthened */ {
+#ifdef __clang__
     return _CSTD ceill(_Xx);
+#else // ^^^ __clang__ / !__clang__ vvv
+    return __ceil(static_cast<double>(_Xx));
+#endif // __clang__
 }
 
 _NODISCARD _Check_return_ inline long double copysign(_In_ long double _Number, _In_ long double _Sign) noexcept
 /* strengthened */ {
+#ifdef __clang__
     return _CSTD copysignl(_Number, _Sign);
+#else // ^^^ __clang__ / !__clang__ vvv
+    return __copysign(static_cast<double>(_Number), static_cast<double>(_Sign));
+#endif // __clang__
 }
 
 _NODISCARD _Check_return_ inline long double cos(_In_ long double _Xx) noexcept /* strengthened */ {
@@ -327,7 +359,11 @@ _NODISCARD _Check_return_ inline long double fdim(_In_ long double _Xx, _In_ lon
 }
 
 _NODISCARD _Check_return_ inline long double floor(_In_ long double _Xx) noexcept /* strengthened */ {
+#ifdef __clang__
     return _CSTD floorl(_Xx);
+#else // ^^^ __clang__ / !__clang__ vvv
+    return __floor(static_cast<double>(_Xx));
+#endif // __clang__
 }
 
 _NODISCARD _Check_return_ inline long double fma(
@@ -444,7 +480,11 @@ _NODISCARD _Check_return_ inline long double rint(_In_ long double _Xx) noexcept
 }
 
 _NODISCARD _Check_return_ inline long double round(_In_ long double _Xx) noexcept /* strengthened */ {
+#ifdef __clang__
     return _CSTD roundl(_Xx);
+#else // ^^^ __clang__ / !__clang__ vvv
+    return __round(static_cast<double>(_Xx));
+#endif // __clang__
 }
 
 _NODISCARD _Check_return_ inline long double scalbln(_In_ long double _Xx, _In_ long _Yx) noexcept /* strengthened */ {
@@ -480,7 +520,11 @@ _NODISCARD _Check_return_ inline long double tgamma(_In_ long double _Xx) noexce
 }
 
 _NODISCARD _Check_return_ inline long double trunc(_In_ long double _Xx) noexcept /* strengthened */ {
+#ifdef __clang__
     return _CSTD truncl(_Xx);
+#else // ^^^ __clang__ / !__clang__ vvv
+    return __trunc(static_cast<double>(_Xx));
+#endif // __clang__
 }
 
 
