@@ -79,8 +79,8 @@ int main() {
     TestUpperBoundExhaustive<std::uint16_t, float>();
     TestUpperBoundSelective<std::uint32_t, float>();
 
-    TestUpperBoundExhaustive<unsigned short int, double>();
+    TestUpperBoundExhaustive<unsigned short, double>();
     TestUpperBoundSelective<unsigned int, double>();
-    TestUpperBoundSelective<unsigned long int, double>();
-    TestUpperBoundSelective<unsigned long long int, double>();
+    TestUpperBoundSelective<unsigned long, double>();
+    TestUpperBoundSelective<unsigned long long, double>();
 }
