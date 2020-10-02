@@ -1,0 +1,17 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+jobs:
+- job : ${{ parameters.name }}
+  displayName: ${{ parameters.displayName }}
+  dependsOn: Build_Support_Tools
+  timeoutInMinutes: ${{ parameters.timeout }}
+  steps:
+    - download: current
+      artifact: ${{ parameters.toolName }}
+    - task: BatchScript@1
+      displayName: ${{ parameters.displayName }}
+      inputs:
+        filename: ${{ parameters.script }}
+        failOnStandardError: true
+        arguments: '$(Pipeline.Workspace)/${{ parameters.toolName }}/${{ parameters.toolName }}.exe'
