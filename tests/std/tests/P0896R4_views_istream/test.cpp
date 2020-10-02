@@ -29,7 +29,7 @@ struct streamable {
 };
 
 template <class T>
-constexpr bool test_one_type() {
+bool test_one_type() {
     using ranges::basic_istream_view;
 
     // validate type properties
