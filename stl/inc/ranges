@@ -657,7 +657,12 @@ namespace ranges {
 
             _Iterator& operator++() {
 #if _ITERATOR_DEBUG_LEVEL != 0
-                _STL_VERIFY(*this != default_sentinel, "cannot increment istream_view iterator at end of stream");
+                _STL_VERIFY(_Parent != nullptr,
+                    "cannot increment default initialized istream_view iterator"); // Per LWG-XXXX
+                _STL_VERIFY(
+                    _Parent->_Stream != nullptr, "cannot increment istream_view iterator with uninitialized stream");
+                _STL_VERIFY(!_Parent->_Stream_at_end(),
+                    "cannot increment istream_view iterator at end of stream"); // Per LWG-XXXX
 #endif // _ITERATOR_DEBUG_LEVEL != 0
                 *_Parent->_Stream >> _Parent->_Val;
                 return *this;
@@ -667,14 +672,19 @@ namespace ranges {
                 ++*this;
             }
 
-            _Ty& operator*() const {
+            _NODISCARD _Ty& operator*() const noexcept /* strengthened */ {
 #if _ITERATOR_DEBUG_LEVEL != 0
-                _STL_VERIFY(*this != default_sentinel, "cannot dereference istream_view iterator at end of stream");
+                _STL_VERIFY(_Parent != nullptr,
+                    "cannot dereference default initialized istream_view iterator"); // Per LWG-XXXX
+                _STL_VERIFY(
+                    _Parent->_Stream != nullptr, "cannot dereference istream_view iterator with uninitialized stream");
+                _STL_VERIFY(!_Parent->_Stream_at_end(),
+                    "cannot dereference istream_view iterator at end of stream"); // Per LWG-XXXX
 #endif // _ITERATOR_DEBUG_LEVEL != 0
                 return _Parent->_Val;
             }
 
-            friend bool operator==(const _Iterator& _Left, default_sentinel_t) {
+            _NODISCARD friend bool operator==(const _Iterator& _Left, default_sentinel_t) noexcept /* strengthened */ {
                 return _Left._Parent == nullptr || _Left._Parent->_Stream_at_end();
             }
         };
@@ -684,27 +694,28 @@ namespace ranges {
 
     public:
         basic_istream_view() = default;
-        constexpr explicit basic_istream_view(basic_istream<_Elem, _Traits>& _Stream_) noexcept // strengthened
+        constexpr explicit basic_istream_view(basic_istream<_Elem, _Traits>& _Stream_) noexcept(
+            is_nothrow_default_constructible_v<_Ty>) // strengthened
             : _Stream{_STD addressof(_Stream_)} {}
 
-        constexpr auto begin() {
+        _NODISCARD constexpr auto begin() {
             if (_Stream) {
                 *_Stream >> _Val;
             }
             return _Iterator{*this};
         }
 
-        constexpr default_sentinel_t end() const noexcept {
+        _NODISCARD constexpr default_sentinel_t end() const noexcept {
             return default_sentinel;
         }
 
-        constexpr bool _Stream_at_end() const noexcept {
+        _NODISCARD constexpr bool _Stream_at_end() const noexcept {
             return _Stream == nullptr || !*_Stream;
         }
     };
 
     template <class _Ty, class _Elem, class _Traits>
-    basic_istream_view<_Ty, _Elem, _Traits> istream_view(basic_istream<_Elem, _Traits>& _Stream) {
+    _NODISCARD basic_istream_view<_Ty, _Elem, _Traits> istream_view(basic_istream<_Elem, _Traits>& _Stream) {
         return basic_istream_view<_Ty, _Elem, _Traits>{_Stream};
     }
 

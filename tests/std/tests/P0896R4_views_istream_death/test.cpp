@@ -13,28 +13,28 @@ using namespace std;
 
 using iview = ranges::basic_istream_view<int, char>;
 
-void test_predecrement_default_initialized() {
-    decltype(std::declval<iview>().begin()) it;
+void test_preincrement_default_initialized() {
+    ranges::iterator_t<iview> it;
     (void) ++it;
 }
 
-void test_postdecrement_default_initialized() {
-    decltype(std::declval<iview>().begin()) it;
+void test_postincrement_default_initialized() {
+    ranges::iterator_t<iview> it;
     (void) it++;
 }
 
 void test_dereference_default_initialized() {
-    decltype(std::declval<iview>().begin()) it;
+    ranges::iterator_t<iview> it;
     (void) *it;
 }
 
-void test_predecrement_no_stream() {
+void test_preincrement_no_stream() {
     iview v;
     auto it = v.begin();
     (void) ++it;
 }
 
-void test_postdecrement_no_stream() {
+void test_postincrement_no_stream() {
     iview v;
     auto it = v.begin();
     (void) it++;
@@ -46,15 +46,14 @@ void test_dereference_no_stream() {
     (void) *it;
 }
 
-
-void test_predecrement_end_of_stream() {
+void test_preincrement_end_of_stream() {
     istringstream stream;
     iview view{stream};
     auto it = view.begin();
     (void) ++it;
 }
 
-void test_postdecrement_end_of_stream() {
+void test_postincrement_end_of_stream() {
     istringstream stream;
     iview view{stream};
     auto it = view.begin();
@@ -73,14 +72,14 @@ int main(int argc, char* argv[]) {
 
 #if _ITERATOR_DEBUG_LEVEL != 0
     exec.add_death_tests({
-        test_predecrement_default_initialized,
-        test_postdecrement_default_initialized,
+        test_preincrement_default_initialized,
+        test_postincrement_default_initialized,
         test_dereference_default_initialized,
-        test_predecrement_no_stream,
-        test_postdecrement_no_stream,
+        test_preincrement_no_stream,
+        test_postincrement_no_stream,
         test_dereference_no_stream,
-        test_predecrement_end_of_stream,
-        test_postdecrement_end_of_stream,
+        test_preincrement_end_of_stream,
+        test_postincrement_end_of_stream,
         test_dereference_end_of_stream,
     });
 #endif // _ITERATOR_DEBUG_LEVEL != 0

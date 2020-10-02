@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <istream>
 #include <ranges>
 #include <sstream>
 
@@ -11,8 +12,7 @@
 
 using namespace std;
 
-static constexpr int expected_empty[]  = {-1, -1, -1, -1, -1};
-static constexpr int expected_copied[] = {0, 1, 2, 3, -1};
+constexpr int expected_empty[] = {-1, -1, -1, -1, -1};
 
 struct streamable {
     streamable() = default;
@@ -29,7 +29,7 @@ struct streamable {
 };
 
 template <class T>
-bool test_one_type() {
+constexpr bool test_one_type() {
     using ranges::basic_istream_view;
 
     // validate type properties
@@ -42,17 +42,21 @@ bool test_one_type() {
     static_assert(!ranges::common_range<R>);
 
     // validate constructor
-    auto nonempty_stream                = istringstream{"0"};
-    auto empty_intstream                = istringstream{};
-    same_as<R> auto default_constructed = ranges::basic_istream_view<T, char>{};
-    same_as<R> auto empty_constructed   = ranges::basic_istream_view<T, char>{empty_intstream};
-    same_as<R> auto value_constructed   = ranges::basic_istream_view<T, char>{nonempty_stream};
+    auto nonempty_stream                  = istringstream{"0"};
+    auto empty_intstream                  = istringstream{};
+    same_as<R> auto default_constructed   = basic_istream_view<T, char>{};
+    same_as<R> auto empty_constructed     = basic_istream_view<T, char>{empty_intstream};
+    same_as<R> auto non_empty_constructed = basic_istream_view<T, char>{nonempty_stream};
 
     // validate member begin
-    // NOTE: This moves the stream one element int front
+    // NOTE: begin() consumes the first token
     assert(default_constructed.begin() == default_sentinel);
     assert(empty_constructed.begin() == default_sentinel);
-    assert(value_constructed.begin() != default_sentinel);
+    assert(non_empty_constructed.begin() != default_sentinel);
+
+    // validate default constructed istream::iterator
+    const auto default_constructed_it = ranges::iterator_t<R>();
+    assert(default_constructed_it == default_sentinel);
 
     // validate member end
     static_assert(same_as<decltype(default_constructed.end()), default_sentinel_t>);
@@ -75,10 +79,16 @@ bool test_one_type() {
     ranges::copy(empty_constructed, input_empty);
     assert(ranges::equal(input_empty, expected_empty));
 
-    auto intstream  = istringstream{"0 1  2   3"};
-    T input_value[] = {-1, -1, -1, -1, -1};
-    ranges::copy(ranges::basic_istream_view<T, char>{intstream}, input_value);
-    assert(ranges::equal(input_value, expected_copied));
+    const T expected[] = {0, 1, 2, 3, -1};
+    auto intstream     = istringstream{"0 1  2   3"};
+    T input_value[]    = {-1, -1, -1, -1, -1};
+    ranges::copy(basic_istream_view<T, char>{intstream}, input_value);
+    assert(ranges::equal(input_value, expected));
+
+    auto intstream_view  = istringstream{"0 1  2   3"};
+    T input_value_view[] = {-1, -1, -1, -1, -1};
+    ranges::copy(ranges::istream_view<T, char>(intstream_view), input_value_view);
+    assert(ranges::equal(input_value_view, expected));
 
     return true;
 }
