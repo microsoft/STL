@@ -582,14 +582,12 @@ private:
 
 public:
     vector(vector&& _Right) noexcept
-        : _Mypair(_One_then_variadic_args_t{}, _STD move(_Right._Getal()), _Right._Mypair._Myval2._Myfirst,
-            _Right._Mypair._Myval2._Mylast, _Right._Mypair._Myval2._Myend) {
+        : _Mypair(_One_then_variadic_args_t{}, _STD move(_Right._Getal()),
+            _STD exchange(_Right._Mypair._Myval2._Myfirst, nullptr),
+            _STD exchange(_Right._Mypair._Myval2._Mylast, nullptr),
+            _STD exchange(_Right._Mypair._Myval2._Myend, nullptr)) {
         _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
         _Mypair._Myval2._Swap_proxy_and_iterators(_Right._Mypair._Myval2);
-
-        _Right._Mypair._Myval2._Myfirst = nullptr;
-        _Right._Mypair._Myval2._Mylast  = nullptr;
-        _Right._Mypair._Myval2._Myend   = nullptr;
     }
 
     vector(vector&& _Right, const _Alloc& _Al) noexcept(_Alty_traits::is_always_equal::value) // strengthened
