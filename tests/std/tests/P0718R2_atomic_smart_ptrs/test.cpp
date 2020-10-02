@@ -201,7 +201,6 @@ void test_weak_ptr_compare_exchange_strong() {
 }
 
 // Repeat test for unbounded array type.
-
 void test_shared_ptr_arr_load_store() {
     shared_ptr<int[]> sp0 = sarrptr0;
     shared_ptr<int[]> sp1 = sarrptr1;
@@ -361,7 +360,6 @@ void test_weak_ptr_arr_compare_exchange_strong() {
 }
 
 // Repeat test for bounded array type.
-
 void test_shared_ptr_arrn_load_store() {
     shared_ptr<int[2]> sp0 = sarrnptr0;
     shared_ptr<int[2]> sp1 = sarrnptr1;
