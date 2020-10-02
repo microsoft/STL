@@ -557,6 +557,25 @@ void ensure_nonmember_calls_compile() {
     }
 }
 
+template <class AtomicType>
+void ensure_member_calls_compile() {
+    AtomicType instance;
+    const AtomicType constInstance;
+    auto loaded = instance.load();
+    loaded      = constInstance.load();
+    loaded      = instance;
+    loaded      = constInstance;
+    instance.store(loaded);
+    loaded = instance.exchange(instance);
+    loaded = instance.exchange(constInstance);
+    if (instance.compare_exchange_weak(loaded, constInstance)) {
+        // intentionally empty
+    }
+    if (instance.compare_exchange_strong(loaded, constInstance)) {
+        // intentionally empty
+    }
+}
+
 int main() {
     // These values for is_always_lock_free are not required by the standard, but they are true for our implementation.
     static_assert(atomic<shared_ptr<int>>::is_always_lock_free == false);
@@ -594,6 +613,14 @@ int main() {
     run_test(test_weak_ptr_arrn_compare_exchange_strong);
     ensure_nonmember_calls_compile<atomic<shared_ptr<int[2]>>>();
     ensure_nonmember_calls_compile<atomic<weak_ptr<int[2]>>>();
+    ensure_nonmember_calls_compile<atomic<shared_ptr<int[][2]>>>();
+    ensure_nonmember_calls_compile<atomic<weak_ptr<int[][2]>>>();
+    ensure_nonmember_calls_compile<atomic<shared_ptr<int[2][2]>>>();
+    ensure_nonmember_calls_compile<atomic<weak_ptr<int[2][2]>>>();
+    ensure_member_calls_compile<atomic<shared_ptr<int[][2]>>>();
+    ensure_member_calls_compile<atomic<weak_ptr<int[][2]>>>();
+    ensure_member_calls_compile<atomic<shared_ptr<int[2][2]>>>();
+    ensure_member_calls_compile<atomic<weak_ptr<int[2][2]>>>();
 
 #ifdef _DEBUG
     sptr0 = {};
