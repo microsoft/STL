@@ -15,6 +15,7 @@
 #include <float.h>
 #include <intrin0.h>
 #include <string.h>
+#include <xbit_ops.h>
 #include <xcharconv.h>
 #include <xcharconv_ryu.h>
 #include <xutility>
@@ -448,40 +449,6 @@ _NODISCARD inline _Big_integer_flt _Make_big_integer_flt_power_of_two(const uint
     _Xval._Mydata[_Element_index] = 1u << _Bit_index;
     _Xval._Myused                 = _Element_index + 1;
     return _Xval;
-}
-
-_NODISCARD inline uint32_t _Bit_scan_reverse(const uint32_t _Value) noexcept {
-    unsigned long _Index; // Intentionally uninitialized for better codegen
-
-    if (_BitScanReverse(&_Index, _Value)) {
-        return _Index + 1;
-    }
-
-    return 0;
-}
-
-_NODISCARD inline uint32_t _Bit_scan_reverse(const uint64_t _Value) noexcept {
-    unsigned long _Index; // Intentionally uninitialized for better codegen
-
-#ifdef _WIN64
-    if (_BitScanReverse64(&_Index, _Value)) {
-        return _Index + 1;
-    }
-#else // ^^^ 64-bit ^^^ / vvv 32-bit vvv
-    uint32_t _Ui32 = static_cast<uint32_t>(_Value >> 32);
-
-    if (_BitScanReverse(&_Index, _Ui32)) {
-        return _Index + 1 + 32;
-    }
-
-    _Ui32 = static_cast<uint32_t>(_Value);
-
-    if (_BitScanReverse(&_Index, _Ui32)) {
-        return _Index + 1;
-    }
-#endif // ^^^ 32-bit ^^^
-
-    return 0;
 }
 
 _NODISCARD inline uint32_t _Bit_scan_reverse(const _Big_integer_flt& _Xval) noexcept {
