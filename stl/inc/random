@@ -2045,8 +2045,13 @@ _NODISCARD _Flt _Float_upper_bound(_Ty _Val) {
     } else {
 #pragma warning(push)
 #pragma warning(disable : 4146 4293) // unary minus of unsigned, negative shift
-        constexpr auto _Mask     = static_cast<_Ty>(-1) << (_Ty_digits - _Flt_digits);
-        const auto _Log_plus1    = _Bit_scan_reverse(static_cast<_Ty_32or64>(_Val | _Ty{1}));
+        constexpr auto _Mask = static_cast<_Ty>(-1) << (_Ty_digits - _Flt_digits);
+#ifdef _M_CEE_PURE
+        constexpr auto _Ty_32or64_digits = numeric_limits<_Ty_32or64>::digits;
+        const auto _Log_plus1 = _Ty_32or64_digits - _Countl_zero_fallback(static_cast<_Ty_32or64>(_Val | _Ty{1}));
+#else // _M_CEE_PURE
+        const auto _Log_plus1 = _Bit_scan_reverse(static_cast<_Ty_32or64>(_Val | _Ty{1}));
+#endif // _M_CEE_PURE
         const auto _Shifted_mask = _Mask >> (_Ty_digits - _Log_plus1);
         const auto _Ceil_ulp     = _Shifted_mask & -_Shifted_mask;
         _Val &= _Shifted_mask;
