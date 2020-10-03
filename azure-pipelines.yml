@@ -11,12 +11,12 @@ pool: 'StlBuild-2020-09-14'
 stages:
   - stage: Code_Format
     displayName: 'Code Format'
-    variables:
-      buildOutputLocation: 'D:\tools'
     jobs:
       - job: Build_Support_Tools
         displayName: 'Build Support Tools'
         timeoutInMinutes: 30
+        variables:
+          buildOutputLocation: 'D:\tools'
         steps:
           - script: |
               if exist "$(tmpDir)" (
