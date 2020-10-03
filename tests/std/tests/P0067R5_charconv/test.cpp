@@ -1059,6 +1059,24 @@ void all_floating_tests(mt19937_64& mt64) {
     }
 }
 
+void test_right_shift_64_bits_with_rounding() {
+    // Directly test _Right_shift_with_rounding for the case of _Shift == 64 && _Value >= 2^63.
+    // We were unable to actually exercise this codepath with the public interface of from_chars,
+    // but were equally unable to prove that it can never ever be executed.
+    assert(_Right_shift_with_rounding(0x0000'0000'0000'0000ULL, 64, true) == 0);
+    assert(_Right_shift_with_rounding(0x0000'0000'0000'0000ULL, 64, false) == 0);
+    assert(_Right_shift_with_rounding(0x0000'0000'0000'0001ULL, 64, true) == 0);
+    assert(_Right_shift_with_rounding(0x0000'0000'0000'0001ULL, 64, false) == 0);
+    assert(_Right_shift_with_rounding(0x7fff'ffff'ffff'ffffULL, 64, true) == 0);
+    assert(_Right_shift_with_rounding(0x7fff'ffff'ffff'ffffULL, 64, false) == 0);
+    assert(_Right_shift_with_rounding(0x8000'0000'0000'0000ULL, 64, true) == 0);
+    assert(_Right_shift_with_rounding(0x8000'0000'0000'0000ULL, 64, false) == 1);
+    assert(_Right_shift_with_rounding(0x8000'0000'0000'0001ULL, 64, true) == 1);
+    assert(_Right_shift_with_rounding(0x8000'0000'0000'0001ULL, 64, false) == 1);
+    assert(_Right_shift_with_rounding(0xffff'ffff'ffff'ffffULL, 64, true) == 1);
+    assert(_Right_shift_with_rounding(0xffff'ffff'ffff'ffffULL, 64, false) == 1);
+}
+
 int main(int argc, char** argv) {
     const auto start = chrono::steady_clock::now();
 
@@ -1069,6 +1087,8 @@ int main(int argc, char** argv) {
     all_integer_tests();
 
     all_floating_tests(mt64);
+
+    test_right_shift_64_bits_with_rounding();
 
     const auto finish  = chrono::steady_clock::now();
     const long long ms = chrono::duration_cast<chrono::milliseconds>(finish - start).count();

@@ -4114,22 +4114,22 @@ public:
     }
 
     _NODISCARD friend constexpr reference iter_move(const move_iterator& _It)
-#ifdef __EDG__ // TRANSITION, VSO-1132105
+#ifdef __EDG__ // TRANSITION, VSO-1222776
         noexcept(noexcept(_RANGES iter_move(_STD declval<const _Iter&>())))
 #else // ^^^ workaround / no workaround vvv
         noexcept(noexcept(_RANGES iter_move(_It._Current)))
-#endif // TRANSITION, VSO-1132105
+#endif // TRANSITION, VSO-1222776
     {
         return _RANGES iter_move(_It._Current);
     }
 
     template <indirectly_swappable<_Iter> _Iter2>
     friend constexpr void iter_swap(const move_iterator& _Left, const move_iterator<_Iter2>& _Right)
-#ifdef __EDG__ // TRANSITION, VSO-1132105
+#ifdef __EDG__ // TRANSITION, VSO-1222776
         noexcept(noexcept(_RANGES iter_swap(_STD declval<const _Iter&>(), _STD declval<const _Iter2&>())))
 #else // ^^^ workaround / no workaround vvv
         noexcept(noexcept(_RANGES iter_swap(_Left._Current, _Right.base())))
-#endif // TRANSITION, VSO-1132105
+#endif // TRANSITION, VSO-1222776
     {
         _RANGES iter_swap(_Left._Current, _Right.base());
     }
