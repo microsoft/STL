@@ -21,7 +21,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 #ifndef _C_COMPLEX_T
-#define _C_COMPLEX_T
+#define _C_COMPLEX_T // Also defined by UCRT <complex.h>
 
 struct _C_double_complex {
     double _Val[2];

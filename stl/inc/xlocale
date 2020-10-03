@@ -2345,6 +2345,17 @@ protected:
     virtual __CLR_OR_THIS_CALL ~codecvt_byname() noexcept {}
 };
 
+// CTYPE CODE BITS
+#define _XA 0x100 // extra alphabetic
+#define _BB _CONTROL // BEL, BS, etc.
+#define _CN _SPACE // CR, FF, HT, NL, VT
+#define _DI _DIGIT // '0'-'9'
+#define _LO _LOWER // 'a'-'z'
+#define _PU _PUNCT // punctuation
+#define _SP _BLANK // space
+#define _UP _UPPER // 'A'-'Z'
+#define _XD _HEX // '0'-'9', 'A'-'F', 'a'-'f'
+
 // STRUCT ctype_base
 struct _CRTIMP2_PURE_IMPORT ctype_base : locale::facet { // base for ctype
     enum { // constants for character classifications
@@ -2356,10 +2367,10 @@ struct _CRTIMP2_PURE_IMPORT ctype_base : locale::facet { // base for ctype
         lower  = _LO,
         print  = _DI | _LO | _PU | _SP | _UP | _XA | _XD,
         punct  = _PU,
-        space  = _CN | _SP | _XS,
+        space  = _CN | _SP,
         upper  = _UP,
         xdigit = _XD,
-        blank  = _CN | _SP | _XS | _XB
+        blank  = _CN | _SP
     };
     using mask = short; // to match <ctype.h>
 
@@ -2367,6 +2378,16 @@ struct _CRTIMP2_PURE_IMPORT ctype_base : locale::facet { // base for ctype
 
     __CLR_OR_THIS_CALL ~ctype_base() noexcept {}
 };
+
+#undef _XA
+#undef _BB
+#undef _CN
+#undef _DI
+#undef _LO
+#undef _PU
+#undef _SP
+#undef _UP
+#undef _XD
 
 // CLASS TEMPLATE ctype
 template <class _Elem>
