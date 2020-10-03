@@ -530,9 +530,6 @@ input.output\file.streams\fstreams\filebuf.virtuals\underflow.pass.cpp
 # GH-1004 <regex>: Error C2664 in std::regex_traits::transform
 re\re.traits\transform.pass.cpp
 
-# GH-1260 <complex>: pow, incorrect type conversion
-numerics\complex.number\cmplx.over\pow.pass.cpp
-
 # GH-1295 <array>: array<const T, 0> allows fill() and swap()
 containers\sequences\array\array.fill\fill.fail.cpp
 containers\sequences\array\array.swap\swap.fail.cpp
@@ -752,6 +749,7 @@ iterators\predef.iterators\insert.iterators\insert.iterator\types.pass.cpp
 
 # Tests emit warning C4244: 'argument': conversion from 'T' to 'const std::complex<double>::_Ty', possible loss of data
 numerics\complex.number\cmplx.over\conj.pass.cpp
+numerics\complex.number\cmplx.over\pow.pass.cpp
 numerics\complex.number\cmplx.over\proj.pass.cpp
 
 # Assertion failed: std::abs(skew - x_skew) < 0.01
