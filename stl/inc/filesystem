@@ -2160,7 +2160,7 @@ namespace filesystem {
         void assign(const filesystem::path& _Path_arg, error_code& _Ec) {
             _Ec.clear(); // for exception safety
             _Path.assign(_Path_arg);
-            (void) _Refresh(_Cached_data, _Path);
+            refresh(_Ec);
         }
 
         void replace_filename(const filesystem::path& _Path_arg) {
@@ -2171,7 +2171,7 @@ namespace filesystem {
         void replace_filename(const filesystem::path& _Path_arg, error_code& _Ec) {
             _Ec.clear(); // for exception safety
             _Path.replace_filename(_Path_arg);
-            (void) _Refresh(_Cached_data, _Path);
+            refresh(_Ec);
         }
 
         void refresh() {
@@ -2202,7 +2202,7 @@ namespace filesystem {
             return _Path;
         }
 
-        operator const filesystem::path &() const noexcept {
+        operator const filesystem::path&() const noexcept {
             return _Path;
         }
 

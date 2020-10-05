@@ -1214,10 +1214,10 @@ void test_directory_entry() {
     for (auto&& nonexistent : nonexistentPaths) {
         cachingEntry.assign(nonexistent); // no fail
         cachingEntry.assign(nonexistent, ec);
-        EXPECT(good(ec));
+        EXPECT(bad(ec));
         cachingEntry.replace_filename(L"Exist2"sv); // no fail
         cachingEntry.replace_filename(L"Exist2"sv, ec);
-        EXPECT(good(ec));
+        EXPECT(bad(ec));
     }
 
     remove(changingPath, ec);
