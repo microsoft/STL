@@ -17,7 +17,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     </ItemGroup>
 
     <ItemGroup Condition="'$(BuildExePhase)' == '1' and ('$(SpectreBuildMode)' == '' or '$(SpectreBuildDebug)' == 'true')">
-        <ProjectFile Include="msvcp_codecvt_ids_netfx\msvcp_codecvt_ids.nativeproj" Condition="'$(BuildArchitecture)' != 'chpe'" />
+        <ProjectFile Include="msvcp_codecvt_ids_netfx\msvcp_codecvt_ids.nativeproj" Condition="'$(BuildArchitecture)' != 'chpe' and '$(BuildArchitecture)' != 'arm64ec'" />
     </ItemGroup>
 
     <Import Project="$(_NTDRIVE)$(_NTROOT)\tools\Microsoft.DevDiv.Traversal.targets" />

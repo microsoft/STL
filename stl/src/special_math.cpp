@@ -19,6 +19,16 @@
 #define BOOST_MATH_DOMAIN_ERROR_POLICY   errno_on_error
 #define BOOST_MATH_OVERFLOW_ERROR_POLICY ignore_error
 
+// Avoid SSE intrins in EC
+#if defined(_M_ARM64EC)
+// need to include intrinsics to ensure that
+// x64 defs in intrin0 are not lost
+#include <intrin.h>
+#undef _M_AMD64
+#undef _M_X64
+#define _M_ARM64
+#endif // defined(_M_ARM64EC)
+
 // Using headers from Boost.Math
 #include <boost/math/special_functions/bessel.hpp>
 #include <boost/math/special_functions/beta.hpp>
@@ -33,6 +43,13 @@
 #include <boost/math/special_functions/zeta.hpp>
 #include <boost/math/tools/config.hpp>
 #include <boost/math/tools/precision.hpp>
+
+#if defined(_M_ARM64EC)
+#undef _M_ARM64
+#define _M_AMD64
+#define _M_X64
+#endif // defined(_M_ARM64EC)
+
 
 #pragma warning(pop)
 
