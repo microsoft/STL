@@ -1,0 +1,141 @@
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#include <algorithm>
+#include <assert.h>
+#include <memory>
+
+#pragma warning(disable : 4582) // '%s': constructor is not implicitly called
+#pragma warning(disable : 4583) // '%s': destructor is not implicitly called
+
+using namespace std;
+
+struct int_wrapper_copy {
+    constexpr int_wrapper_copy() = default;
+    constexpr int_wrapper_copy(const int v) : _val(v){};
+
+    constexpr int_wrapper_copy(const int_wrapper_copy& other) : _val(other._val) {}
+    constexpr int_wrapper_copy& operator=(const int_wrapper_copy& other) {
+        _val = other._val;
+        return *this;
+    }
+
+    constexpr int_wrapper_copy(int_wrapper_copy&&) = delete;
+    constexpr int_wrapper_copy& operator=(int_wrapper_copy&&) = delete;
+
+    constexpr bool operator==(const int_wrapper_copy&) const = default;
+
+    int _val = 0;
+};
+
+struct int_wrapper_move {
+    constexpr int_wrapper_move() = default;
+    constexpr int_wrapper_move(const int v) : _val(v){};
+
+    constexpr int_wrapper_move(const int_wrapper_move&) = delete;
+    constexpr int_wrapper_move& operator=(const int_wrapper_move&) = delete;
+
+    constexpr int_wrapper_move(int_wrapper_move&& other) : _val(exchange(other._val, -1)) {}
+    constexpr int_wrapper_move& operator=(int_wrapper_move&& other) {
+        _val = exchange(other._val, -1);
+        return *this;
+    }
+
+    constexpr bool operator==(const int_wrapper_move&) const = default;
+
+    int _val = 0;
+};
+
+static constexpr int_wrapper_copy expected_copy[]       = {1, 2, 3, 4};
+static constexpr int_wrapper_move expected_move[]       = {1, 2, 3, 4};
+static constexpr int_wrapper_move expected_after_move[] = {-1, -1, -1, -1};
+
+constexpr bool test() {
+    { // _Copy_unchecked
+        int_wrapper_copy input[]   = {1, 2, 3, 4};
+        int_wrapper_copy output[4] = {5, 6, 7, 8};
+
+        const same_as<int_wrapper_copy*> auto result = _Copy_unchecked(begin(input), end(input), begin(output));
+        assert(result == end(output));
+        assert(equal(begin(expected_copy), end(expected_copy), begin(output), end(output)));
+    }
+
+    { // _Copy_backward_unchecked
+        int_wrapper_copy input[]   = {1, 2, 3, 4};
+        int_wrapper_copy output[4] = {5, 6, 7, 8};
+
+        const same_as<int_wrapper_copy*> auto result = _Copy_backward_unchecked(begin(input), end(input), end(output));
+        assert(result == begin(output));
+        assert(equal(begin(expected_copy), end(expected_copy), begin(output), end(output)));
+    }
+
+#if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc)
+    { // _Uninitialized_copy_unchecked
+        int_wrapper_copy input[] = {1, 2, 3, 4};
+        int_wrapper_copy output[4];
+
+        const same_as<int_wrapper_copy*> auto result =
+            _Uninitialized_copy_unchecked(begin(input), end(input), begin(output));
+        assert(result == end(output));
+        assert(equal(begin(expected_copy), end(expected_copy), begin(output), end(output)));
+    }
+#endif // _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc)
+
+    { // _Move_unchecked
+        int_wrapper_move input[]   = {1, 2, 3, 4};
+        int_wrapper_move output[4] = {5, 6, 7, 8};
+
+        const same_as<int_wrapper_move*> auto result = _Move_unchecked(begin(input), end(input), begin(output));
+        assert(result == end(output));
+        assert(equal(begin(expected_move), end(expected_move), begin(output), end(output)));
+        if (is_constant_evaluated()) {
+            assert(equal(begin(input), end(input), begin(expected_after_move), end(expected_after_move)));
+        }
+    }
+
+    { // _Move_backward_unchecked
+        int_wrapper_move input[]   = {1, 2, 3, 4};
+        int_wrapper_move output[4] = {5, 6, 7, 8};
+
+        const same_as<int_wrapper_move*> auto result = _Move_backward_unchecked(begin(input), end(input), end(output));
+        assert(result == begin(output));
+        assert(equal(begin(expected_move), end(expected_move), begin(output), end(output)));
+        if (is_constant_evaluated()) {
+            assert(equal(begin(input), end(input), begin(expected_after_move), end(expected_after_move)));
+        }
+    }
+
+    { // _Move_backward_common
+        int_wrapper_move input[]   = {1, 2, 3, 4};
+        int_wrapper_move output[4] = {5, 6, 7, 8};
+
+        const same_as<int_wrapper_move*> auto result =
+            ranges::_Move_backward_common(begin(input), end(input), end(output));
+        assert(result == begin(output));
+        assert(equal(begin(expected_move), end(expected_move), begin(output), end(output)));
+        if (is_constant_evaluated()) {
+            assert(equal(begin(input), end(input), begin(expected_after_move), end(expected_after_move)));
+        }
+    }
+
+#if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc)
+    { // _Uninitialized_move_unchecked
+        int_wrapper_move input[] = {1, 2, 3, 4};
+        int_wrapper_move output[4];
+
+        const same_as<int_wrapper_move*> auto result =
+            _Uninitialized_move_unchecked(begin(input), end(input), begin(output));
+        assert(result == end(output));
+        assert(equal(begin(expected_move), end(expected_move), begin(output), end(output)));
+        if (is_constant_evaluated()) {
+            assert(equal(begin(input), end(input), begin(expected_after_move), end(expected_after_move)));
+        }
+    }
+#endif // _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc)
+    return true;
+}
+
+int main() {
+    test();
+    static_assert(test());
+}

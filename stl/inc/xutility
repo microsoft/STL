@@ -119,11 +119,28 @@ struct _Get_rebind_alias<_Ty, _Other, void_t<typename _Ty::template rebind<_Othe
     using type = typename _Ty::template rebind<_Other>;
 };
 
+// FUNCTION TEMPLATE construct_at
+#if _HAS_CXX20
+template <class _Ty, class... _Types>
+_CONSTEXPR20_DYNALLOC auto construct_at(_Ty* const _Location, _Types&&... _Args) noexcept(
+    noexcept(::new (const_cast<void*>(static_cast<const volatile void*>(_Location)))
+            _Ty(_STD forward<_Types>(_Args)...))) // strengthened
+    -> decltype(
+        ::new (const_cast<void*>(static_cast<const volatile void*>(_Location))) _Ty(_STD forward<_Types>(_Args)...)) {
+    return ::new (const_cast<void*>(static_cast<const volatile void*>(_Location))) _Ty(_STD forward<_Types>(_Args)...);
+}
+#endif // _HAS_CXX20
+
 // FUNCTION TEMPLATE _Construct_in_place
 template <class _Ty, class... _Types>
-void _Construct_in_place(_Ty& _Obj, _Types&&... _Args) noexcept(is_nothrow_constructible_v<_Ty, _Types...>) {
+_CONSTEXPR20_DYNALLOC void _Construct_in_place(_Ty& _Obj, _Types&&... _Args) noexcept(
+    is_nothrow_constructible_v<_Ty, _Types...>) {
+#if _HAS_CXX20
+    _STD construct_at(_STD addressof(_Obj), _STD forward<_Types>(_Args)...);
+#else // ^^^_HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
     ::new (const_cast<void*>(static_cast<const volatile void*>(_STD addressof(_Obj))))
         _Ty(_STD forward<_Types>(_Args)...);
+#endif // !_HAS_CXX20
 }
 
 // STRUCT TEMPLATE pointer_traits

@@ -1424,18 +1424,18 @@ struct _Uninitialized_backout { // struct to undo partially constructed ranges i
     _Uninitialized_backout(const _Uninitialized_backout&) = delete;
     _Uninitialized_backout& operator=(const _Uninitialized_backout&) = delete;
 
-    ~_Uninitialized_backout() {
+    _CONSTEXPR20_DYNALLOC ~_Uninitialized_backout() {
         _Destroy_range(_First, _Last);
     }
 
     template <class... _Types>
-    void _Emplace_back(_Types&&... _Vals) {
+    _CONSTEXPR20_DYNALLOC void _Emplace_back(_Types&&... _Vals) {
         // construct a new element at *_Last and increment
         _Construct_in_place(*_Last, _STD forward<_Types>(_Vals)...);
         ++_Last;
     }
 
-    _NoThrowFwdIt _Release() { // suppress any exception handling backout and return _Last
+    constexpr _NoThrowFwdIt _Release() { // suppress any exception handling backout and return _Last
         _First = _Last;
         return _Last;
     }
@@ -1478,18 +1478,23 @@ namespace ranges {
 // FUNCTION TEMPLATE _Uninitialized_move_unchecked
 #if _HAS_IF_CONSTEXPR
 template <class _InIt, class _NoThrowFwdIt>
-_NoThrowFwdIt _Uninitialized_move_unchecked(_InIt _First, const _InIt _Last, _NoThrowFwdIt _Dest) {
+_CONSTEXPR20_DYNALLOC _NoThrowFwdIt _Uninitialized_move_unchecked(
+    _InIt _First, const _InIt _Last, _NoThrowFwdIt _Dest) {
     // move [_First, _Last) to raw [_Dest, ...)
     if constexpr (_Memmove_in_uninitialized_move_is_safe<_InIt, _NoThrowFwdIt>) {
-        return _Memmove_forward(_First, _Last, _Dest);
-    } else {
-        _Uninitialized_backout<_NoThrowFwdIt> _Backout{_Dest};
-        for (; _First != _Last; ++_First) {
-            _Backout._Emplace_back(_STD move(*_First));
+#ifdef __cpp_lib_is_constant_evaluated
+        if (!_STD is_constant_evaluated())
+#endif // __cpp_lib_is_constant_evaluated
+        {
+            return _Memmove_forward(_First, _Last, _Dest);
         }
-
-        return _Backout._Release();
     }
+    _Uninitialized_backout<_NoThrowFwdIt> _Backout{_Dest};
+    for (; _First != _Last; ++_First) {
+        _Backout._Emplace_back(_STD move(*_First));
+    }
+
+    return _Backout._Release();
 }
 #else // ^^^ _HAS_IF_CONSTEXPR ^^^ // vvv !_HAS_IF_CONSTEXPR vvv
 template <class _InIt, class _NoThrowFwdIt>
@@ -1618,24 +1623,35 @@ _Alloc_ptr_t<_Alloc> _Uninitialized_copy(
 // FUNCTION TEMPLATE uninitialized_copy
 #if _HAS_IF_CONSTEXPR
 template <class _InIt, class _NoThrowFwdIt>
+_CONSTEXPR20_DYNALLOC _NoThrowFwdIt _Uninitialized_copy_unchecked(
+    _InIt _First, const _InIt _Last, _NoThrowFwdIt _Dest) {
+    // copy [_First, _Last) to raw [_Dest, ...)
+    if constexpr (_Memmove_in_uninitialized_copy_is_safe<_InIt, _NoThrowFwdIt>) {
+#ifdef __cpp_lib_is_constant_evaluated
+        if (!_STD is_constant_evaluated())
+#endif // __cpp_lib_is_constant_evaluated
+        {
+            return _Memmove_forward(_First, _Last, _Dest);
+        }
+    }
+    _Uninitialized_backout<_NoThrowFwdIt> _Backout{_Dest};
+    for (; _First != _Last; ++_First) {
+        _Backout._Emplace_back(*_First);
+    }
+
+    _Dest = _Backout._Release();
+
+    return _Dest;
+}
+
+template <class _InIt, class _NoThrowFwdIt>
 _NoThrowFwdIt uninitialized_copy(const _InIt _First, const _InIt _Last, _NoThrowFwdIt _Dest) {
     // copy [_First, _Last) to raw [_Dest, ...)
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
     auto _UDest       = _Get_unwrapped_n(_Dest, _Idl_distance<_InIt>(_UFirst, _ULast));
-    if constexpr (_Memmove_in_uninitialized_copy_is_safe<decltype(_UFirst), decltype(_UDest)>) {
-        _UDest = _Memmove_forward(_UFirst, _ULast, _UDest);
-    } else {
-        _Uninitialized_backout<decltype(_UDest)> _Backout{_UDest};
-        for (; _UFirst != _ULast; ++_UFirst) {
-            _Backout._Emplace_back(*_UFirst);
-        }
-
-        _UDest = _Backout._Release();
-    }
-
-    _Seek_wrapped(_Dest, _UDest);
+    _Seek_wrapped(_Dest, _Uninitialized_copy_unchecked(_UFirst, _ULast, _UDest));
     return _Dest;
 }
 #else // ^^^ _HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
