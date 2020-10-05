@@ -994,12 +994,10 @@ void test_directory_entry() {
         EXPECT(!nonexistentEntry.exists());
 
         directory_entry nonexistentEntryEc(nonexistent, ec);
-        EXPECT(nonexistentEntryEc.path() == nonexistent);
+        EXPECT(nonexistentEntryEc.path() == path());
         // Test VSO-892890 "std::filesystem::directory_entry constructor initializes wrong state"
         EXPECT(!nonexistentEntryEc.exists());
-        EXPECT(good(ec));
-
-        EXPECT(throws_filesystem_error([&] { nonexistentEntryEc.refresh(); }, "directory_entry::refresh", nonexistent));
+        EXPECT(bad(ec));
     }
 
     directory_entry goodEntry(filePath, ec);

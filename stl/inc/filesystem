@@ -2139,7 +2139,10 @@ namespace filesystem {
 
         directory_entry(const filesystem::path& _Path_arg, error_code& _Ec) : _Cached_data{}, _Path(_Path_arg) {
             _Ec.clear();
-            (void) _Refresh(_Cached_data, _Path);
+            refresh(_Ec);
+            if (_Ec) {
+                _Path.clear();
+            }
         }
 
         ~directory_entry() = default;
