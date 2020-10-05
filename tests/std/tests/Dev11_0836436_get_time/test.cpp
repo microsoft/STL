@@ -309,6 +309,46 @@ void test_990695() {
             iss >> get_time(&t, fmt.c_str());
             assert(iss.fail());
         }
+
+        {
+            // GH-1071 should not fail when format is longer than the stream
+            istringstream iss("2020");
+            ios_base::iostate err = Bit;
+            tm t{};
+            const string fmt("%Y%m%d");
+            use_facet<time_get<char>>(iss.getloc())
+                .get(Iter(iss.rdbuf()), Iter(), iss, err, &t, fmt.c_str(), fmt.c_str() + fmt.size());
+            assert(err == ios_base::eofbit);
+            assert(t.tm_mon == 0);
+            assert(t.tm_mday == 0);
+            assert(t.tm_year == 120);
+        }
+
+        {
+            // GH-1071 should not fail when format is longer than the stream
+            istringstream iss("2020-sep");
+            tm t = {};
+            const string fmt("%Y-%b-%d");
+            iss >> get_time(&t, fmt.c_str());
+            assert(!iss.fail());
+            assert(iss.eof());
+            assert(t.tm_mon == 8);
+            assert(t.tm_mday == 0);
+            assert(t.tm_year == 120);
+        }
+
+        {
+            // GH-1071 should not fail when format is longer than the stream
+            istringstream iss("Current time is 3:8");
+            tm t = {};
+            const string fmt("Current time is %H:%M:%S");
+            iss >> get_time(&t, fmt.c_str());
+            assert(!iss.fail());
+            assert(iss.eof());
+            assert(t.tm_hour == 3);
+            assert(t.tm_min == 8);
+            assert(t.tm_sec == 0);
+        }
     }
 }
 
