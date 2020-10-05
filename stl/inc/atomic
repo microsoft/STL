@@ -31,7 +31,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 #define _Compiler_barrier() _STL_DISABLE_DEPRECATED_WARNING _ReadWriteBarrier() _STL_RESTORE_DEPRECATED_WARNING
 
-#if defined(_M_ARM) || defined(_M_ARM64)
+#if defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
 #define _Memory_barrier()             __dmb(0xB) // inner shared data memory barrier
 #define _Compiler_or_memory_barrier() _Memory_barrier()
 #elif defined(_M_IX86) || defined(_M_X64)
@@ -69,18 +69,18 @@ extern "C" _NODISCARD char __stdcall __std_atomic_has_cmpxchg16b() noexcept;
 
 // MACRO _ATOMIC_HAS_DCAS
 // Controls whether atomic::is_always_lock_free triggers for sizeof(void *) or 2 * sizeof(void *)
-#if _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 || !defined(_M_X64)
+#if _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 || !defined(_M_X64) || defined(_M_ARM64EC)
 #define _ATOMIC_HAS_DCAS 1
 #else // ^^^ We always have DCAS / We only sometimes have DCAS vvv
 #define _ATOMIC_HAS_DCAS 0
-#endif // _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 || !defined(_M_X64)
+#endif // _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 || !defined(_M_X64) || defined(_M_ARM64EC)
 
 // MACRO _ATOMIC_CHOOSE_INTRINSIC
-#if defined(_M_IX86) || defined(_M_X64)
+#if defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
 #define _ATOMIC_CHOOSE_INTRINSIC(_Order, _Result, _Intrinsic, ...) \
     _Check_memory_order(_Order);                                   \
     _Result = _Intrinsic(__VA_ARGS__)
-#elif defined(_M_ARM) || defined(_M_ARM64)
+#elif defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
 #define _ATOMIC_CHOOSE_INTRINSIC(_Order, _Result, _Intrinsic, ...) \
     switch (_Order) {                                              \
     case memory_order_relaxed:                                     \
@@ -335,7 +335,7 @@ struct _Atomic_storage_traits { // properties for how _Ty is stored in an atomic
                          : sizeof(_Ty) == 2 ? 2
                                             : sizeof(_Ty) <= 4 ? 4
                                                                : sizeof(_Ty) <= 8 ? 8
-#if defined(_M_X64) || defined(_M_ARM64)
+#if defined(_M_X64) || defined(_M_ARM64) || defined(_M_ARM64EC)
                                                                                   : sizeof(_Ty) <= 16 ? 16
 #endif // 64 bits
                                                                                                       : sizeof(_Ty);
@@ -639,7 +639,7 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
     void store(const _TVal _Value) noexcept { // store with sequential consistency
         const auto _Mem      = _Atomic_address_as<char>(_Storage);
         const char _As_bytes = _Atomic_reinterpret_as<char>(_Value);
-#if defined(_M_ARM) || defined(_M_ARM64)
+#if defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
         _Memory_barrier();
         __iso_volatile_store8(_Mem, _As_bytes);
         _Memory_barrier();
@@ -760,7 +760,7 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
     void store(const _TVal _Value) noexcept { // store with sequential consistency
         const auto _Mem       = _Atomic_address_as<short>(_Storage);
         const short _As_bytes = _Atomic_reinterpret_as<short>(_Value);
-#if defined(_M_ARM) || defined(_M_ARM64)
+#if defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
         _Memory_barrier();
         __iso_volatile_store16(_Mem, _As_bytes);
         _Memory_barrier();
@@ -878,7 +878,7 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
     }
 
     void store(const _TVal _Value) noexcept { // store with sequential consistency
-#if defined(_M_ARM) || defined(_M_ARM64)
+#if defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
         _Memory_barrier();
         __iso_volatile_store32(_Atomic_address_as<int>(_Storage), _Atomic_reinterpret_as<int>(_Value));
         _Memory_barrier();
@@ -1158,7 +1158,7 @@ struct _Atomic_storage<_Ty&, 16> { // lock-free using 16-byte intrinsics
     }
 
     _NODISCARD _TVal load(const memory_order _Order) const noexcept { // load with given memory order
-#ifdef _M_ARM64
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
         long long* const _Storage_ptr = const_cast<long long*>(_Atomic_address_as<const long long>(_Storage));
         _Int128 _Result{}; // atomic CAS 0 with 0
         switch (_Order) {
@@ -1218,7 +1218,7 @@ struct _Atomic_storage<_Ty&, 16> { // lock-free using 16-byte intrinsics
             _Int128 _Mask_val{};
             _CSTD memcpy(&_Mask_val, _Mask._Ptr(), sizeof(_TVal));
             for (;;) {
-#ifdef _M_ARM64
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
                 _ATOMIC_CHOOSE_INTRINSIC(_Order, _Result, _InterlockedCompareExchange128,
                     _Atomic_address_as<long long>(_Storage), _Desired_bytes._High, _Desired_bytes._Low,
                     &_Expected_temp._Low);
@@ -1244,7 +1244,7 @@ struct _Atomic_storage<_Ty&, 16> { // lock-free using 16-byte intrinsics
             }
         }
 #endif // _CMPXCHG_MASK_OUT_PADDING_BITS
-#ifdef _M_ARM64
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
         _ATOMIC_CHOOSE_INTRINSIC(_Order, _Result, _InterlockedCompareExchange128,
             _Atomic_address_as<long long>(_Storage), _Desired_bytes._High, _Desired_bytes._Low, &_Expected_temp._Low);
 #else // ^^^ _M_ARM64 / _M_X64 vvv
