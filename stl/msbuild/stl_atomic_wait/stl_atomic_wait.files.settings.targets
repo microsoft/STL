@@ -31,7 +31,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <ImportLib Include="$(ECObjs);" />
         <Link Include="$(ECObjs);"/>
         <Link Condition="'$(CrtBuildModelIsDll)' == 'true'" Include="
-        $(IntermediateOutputDirectoryEC)\dllmain_satellite.obj; 
+        $(IntermediateOutputDirectoryEC)\dllmain_satellite.obj;
         "/>
     </ItemGroup>
 </Project>

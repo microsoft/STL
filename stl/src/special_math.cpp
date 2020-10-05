@@ -19,10 +19,9 @@
 #define BOOST_MATH_DOMAIN_ERROR_POLICY   errno_on_error
 #define BOOST_MATH_OVERFLOW_ERROR_POLICY ignore_error
 
-// Avoid SSE intrins in EC
+// Avoid SSE intrinsics in EC
 #if defined(_M_ARM64EC)
-// need to include intrinsics to ensure that
-// x64 defs in intrin0 are not lost
+// need to include intrinsics to ensure that x64 definitions in intrin0.h are not lost
 #include <intrin.h>
 #undef _M_AMD64
 #undef _M_X64

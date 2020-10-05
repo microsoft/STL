@@ -13,4 +13,4 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
     <Import Project="$(MSBuildThisFileDirectory)..\..\msvcp_2.settings.targets"/>
 
-    </Project>
+</Project>
