@@ -18,7 +18,7 @@ struct streamable {
     streamable() = default;
     streamable(const int input) : _val(input) {}
 
-    friend basic_istream<char>& operator>>(basic_istream<char>& is, streamable& right) noexcept {
+    friend istream& operator>>(istream& is, streamable& right) noexcept {
         is >> right._val;
         return is;
     }
