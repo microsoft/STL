@@ -89,7 +89,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
     <Import Project="$(MSBuildThisFileDirectory)\stl.files.settings.targets"/>
 
-    <!-- Note: semicolons must be included after ".obj"; otherwise msbuild doesn't build it -->
+    <!-- Note: semicolons must be included after ".obj"; otherwise msbuild doesn't build it. -->
     <PropertyGroup>
         <ECImportLibObjs>
             $(IntermediateOutputDirectoryEC)\_tolower.obj;
@@ -213,7 +213,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
             $(IntermediateOutputDirectoryEC)\xthrow.obj;
             $(IntermediateOutputDirectoryEC)\winapisupp.obj;
             $(IntermediateOutputDirectoryEC)\dllmain.obj;
-            $(IntermediateOutputDirectoryEC)\instances.obj
+            $(IntermediateOutputDirectoryEC)\instances.obj;
        </ECImportLibObjs>
         <!-- OBJs that need to get added to msvcprt[d].lib and msvcprt_base[d].lib. -->
         <!-- They get added to both through msvcprt_base.exp -->
@@ -223,16 +223,16 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
             $(IntermediateOutputDirectoryEC)\nothrow.obj;
             $(IntermediateOutputDirectoryEC)\parallel_algorithms.obj;
             $(IntermediateOutputDirectoryEC)\sharedmutex.obj;
-            $(IntermediateOutputDirectoryEC)\vector_algorithms.obj
+            $(IntermediateOutputDirectoryEC)\vector_algorithms.obj;
         </ECLibObjs>
     </PropertyGroup>
 
     <!-- OBJs for msvcprt_base.lib -->
     <ItemGroup Condition="'$(Arm64X)' == 'true'">
         <!-- Add EC symbols to import lib -->
-        <ImportLib Include="$(ECImportLibObjs);" />
+        <ImportLib Include="$(ECImportLibObjs)" />
         <!-- Add these EC OBJs to import lib -->
-        <ImportLib Include="$(ECLibObjs);">
+        <ImportLib Include="$(ECLibObjs)">
             <IncludeInLink>false</IncludeInLink>
             <IncludeInImportLib>true</IncludeInImportLib>
         </ImportLib>
