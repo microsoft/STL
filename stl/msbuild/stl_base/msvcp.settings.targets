@@ -230,9 +230,9 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     <!-- OBJs for msvcprt_base.lib -->
     <ItemGroup Condition="'$(Arm64X)' == 'true'">
         <!-- Add EC symbols to import lib -->
-        <ImportLib Include="$(ECImportLibObjs);" />
+        <ImportLib Include="$(ECImportLibObjs)" />
         <!-- Add these EC OBJs to import lib -->
-        <ImportLib Include="$(ECLibObjs);">
+        <ImportLib Include="$(ECLibObjs)">
             <IncludeInLink>false</IncludeInLink>
             <IncludeInImportLib>true</IncludeInImportLib>
         </ImportLib>
