@@ -12,9 +12,9 @@ stages:
   - stage: Code_Format
     displayName: 'Code Format'
     jobs:
-      - job: Build_Support_Tools
-        displayName: 'Build Support Tools'
-        timeoutInMinutes: 30
+      - job: Code_Format_Validation
+        timeoutInMinutes: 90
+        displayName: 'Validation'
         variables:
           buildOutputLocation: 'D:\tools'
         steps:
@@ -38,24 +38,24 @@ stages:
               cmake --build $(buildOutputLocation)
             displayName: 'Build Support Tools'
             env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
-          - publish: '$(buildOutputLocation)/parallelize/parallelize.exe'
-            artifact: parallelize
-          - publish: '$(buildOutputLocation)/validate/validate.exe'
-            artifact: validate
-      - template: azure-devops/run-tool.yml
-        parameters:
-          name: Enforce_Clang_Format
-          displayName: 'Enforce clang-format'
-          timeout: 60
-          toolName: parallelize
-          script: azure-devops/enforce-clang-format.cmd
-      - template: azure-devops/run-tool.yml
-        parameters:
-          name: Validate_Files
-          displayName: 'Validate Files'
-          timeout: 2
-          toolName: validate
-          script: azure-devops/validate-files.cmd
+          - task: BatchScript@1
+            displayName: 'Enforce clang-format'
+            timeoutInMinutes: 60
+            condition: succeededOrFailed()
+            inputs:
+              filename: 'azure-devops/enforce-clang-format.cmd'
+              failOnStandardError: true
+              arguments: '$(buildOutputLocation)/parallelize/parallelize.exe'
+            env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
+          - task: BatchScript@1
+            displayName: 'Validate Files'
+            timeoutInMinutes: 2
+            condition: succeededOrFailed()
+            inputs:
+              filename: 'azure-devops/validate-files.cmd'
+              failOnStandardError: true
+              arguments: '$(buildOutputLocation)/validate/validate.exe'
+            env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
   - stage: Build_And_Test
     displayName: 'Build and Test'
     jobs:
