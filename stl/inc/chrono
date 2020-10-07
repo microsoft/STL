@@ -619,8 +619,8 @@ namespace chrono {
 
     using high_resolution_clock = steady_clock;
 
+#ifdef _HAS_CXX20
     // [time.duration.io]
-
     class _Units_suffix_helper {
     public:
         template <class _CharT, class _Period>
@@ -711,6 +711,7 @@ namespace chrono {
 
         return _Os << _Sstr.str();
     }
+#endif // _HAS_CXX20
 } // namespace chrono
 
 // HELPERS
