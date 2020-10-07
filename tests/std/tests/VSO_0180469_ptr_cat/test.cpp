@@ -31,13 +31,13 @@ void assert_same() {
 
 template <int Expected, class Source, class Dest>
 struct test_ptr_cat_helper {
-    static constexpr bool CopyReallyTrivial     = _Can_memcpy_uninitialized<Source, Dest>;
-    static constexpr bool CopyTriviallyCopyable = _Can_memcpy<Source, Dest>;
+    static constexpr bool CopyReallyTrivial     = _Can_memmove_in_uninitialized_copy<Source, Dest>;
+    static constexpr bool CopyTriviallyCopyable = _Can_memmove_in_copy<Source, Dest>;
     STATIC_ASSERT(Expected == CopyReallyTrivial + CopyTriviallyCopyable);
     STATIC_ASSERT(!CopyReallyTrivial || CopyTriviallyCopyable);
 
-    static constexpr bool MoveReallyTrivial     = _Can_memmove_uninitialized<Source, Dest>;
-    static constexpr bool MoveTriviallyCopyable = _Can_memmove<Source, Dest>;
+    static constexpr bool MoveReallyTrivial     = _Can_memmove_in_uninitialized_move<Source, Dest>;
+    static constexpr bool MoveTriviallyCopyable = _Can_memmove_in_move<Source, Dest>;
     STATIC_ASSERT(Expected == MoveReallyTrivial + MoveTriviallyCopyable);
     STATIC_ASSERT(!MoveReallyTrivial || MoveTriviallyCopyable);
 };

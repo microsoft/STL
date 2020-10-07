@@ -107,7 +107,7 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(_No_throw_sentinel_for<_OSe, _Out>);
             _STL_INTERNAL_STATIC_ASSERT(constructible_from<iter_value_t<_Out>, iter_reference_t<_It>>);
 
-            if constexpr (is_same_v<_Se, _It> && _Can_memcpy_uninitialized<_It, _Out>) {
+            if constexpr (is_same_v<_Se, _It> && _Can_memmove_in_uninitialized_copy<_It, _Out>) {
                 return _Copy_memcpy_common(_IFirst, _ILast, _OFirst, _OLast);
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
@@ -137,7 +137,7 @@ _NoThrowFwdIt uninitialized_copy_n(const _InIt _First, const _Diff _Count_raw, _
 
     auto _UFirst = _Get_unwrapped_n(_First, _Count);
     auto _UDest  = _Get_unwrapped_n(_Dest, _Count);
-    if constexpr (_Can_memcpy_uninitialized<decltype(_UFirst), decltype(_UDest)>) {
+    if constexpr (_Can_memmove_in_uninitialized_copy<decltype(_UFirst), decltype(_UDest)>) {
         _UDest = _Copy_memmove(_UFirst, _UFirst + _Count, _UDest);
     } else {
         _Uninitialized_backout<decltype(_UDest)> _Backout{_UDest};
@@ -182,7 +182,7 @@ _NoThrowFwdIt uninitialized_copy_n(const _InIt _First, const _Diff _Count_raw, _
     auto _UFirst = _Get_unwrapped_n(_First, _Count);
     auto _UDest  = _Get_unwrapped_n(_Dest, _Count);
     _Seek_wrapped(_Dest, _Uninitialized_copy_n_unchecked2(_UFirst, _Count, _UDest,
-                             bool_constant<_Can_memcpy_uninitialized<decltype(_UFirst), decltype(_UDest)>>{}));
+                             bool_constant<_Can_memmove_in_uninitialized_copy<decltype(_UFirst), decltype(_UDest)>>{}));
     return _Dest;
 }
 #endif // _HAS_IF_CONSTEXPR
@@ -212,7 +212,7 @@ namespace ranges {
             auto _IFirst      = _Get_unwrapped_n(_STD move(_First1), _Count);
             auto _OFirst      = _Get_unwrapped(_STD move(_First2));
             const auto _OLast = _Get_unwrapped(_STD move(_Last2));
-            if constexpr (_Can_memcpy_uninitialized<_It, _Out>) {
+            if constexpr (_Can_memmove_in_uninitialized_copy<_It, _Out>) {
                 _OFirst = _Copy_memcpy_common(_IFirst, _IFirst + _Count, _OFirst, _OLast);
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
@@ -299,7 +299,7 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(_No_throw_sentinel_for<_OSe, _Out>);
             _STL_INTERNAL_STATIC_ASSERT(constructible_from<iter_value_t<_Out>, iter_rvalue_reference_t<_It>>);
 
-            if constexpr (is_same_v<_Se, _It> && _Can_memmove_uninitialized<_It, _Out>) {
+            if constexpr (is_same_v<_Se, _It> && _Can_memmove_in_uninitialized_move<_It, _Out>) {
                 return _Copy_memcpy_common(_IFirst, _ILast, _OFirst, _OLast);
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
@@ -328,7 +328,7 @@ pair<_InIt, _NoThrowFwdIt> uninitialized_move_n(_InIt _First, const _Diff _Count
 
     auto _UFirst = _Get_unwrapped_n(_First, _Count);
     auto _UDest  = _Get_unwrapped_n(_Dest, _Count);
-    if constexpr (_Can_memmove_uninitialized<decltype(_UFirst), decltype(_UDest)>) {
+    if constexpr (_Can_memmove_in_uninitialized_move<decltype(_UFirst), decltype(_UDest)>) {
         _UDest = _Copy_memmove(_UFirst, _UFirst + _Count, _UDest);
         _UFirst += _Count;
     } else {
@@ -373,7 +373,7 @@ namespace ranges {
             auto _IFirst      = _Get_unwrapped_n(_STD move(_First1), _Count);
             auto _OFirst      = _Get_unwrapped(_STD move(_First2));
             const auto _OLast = _Get_unwrapped(_STD move(_Last2));
-            if constexpr (_Can_memmove_uninitialized<_It, _Out>) {
+            if constexpr (_Can_memmove_in_uninitialized_move<_It, _Out>) {
                 _OFirst = _Copy_memcpy_common(_IFirst, _IFirst + _Count, _OFirst, _OLast);
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};

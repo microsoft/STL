@@ -1850,7 +1850,7 @@ namespace ranges {
     template <bidirectional_iterator _It1, bidirectional_iterator _It2>
         requires indirectly_movable<_It1, _It2>
     _NODISCARD constexpr _It2 _Move_backward_common(const _It1 _First, _It1 _Last, _It2 _Result) {
-        if constexpr (_Can_memmove<_It1, _It2>) {
+        if constexpr (_Can_memmove_in_move<_It1, _It2>) {
             if (!_STD is_constant_evaluated()) {
                 return _Copy_backward_memmove(_First, _Last, _Result);
             }

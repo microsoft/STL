@@ -4392,17 +4392,17 @@ _INLINE_VAR constexpr bool _Can_memop<move_iterator<_IterSource>, _IterDest, _Ca
     _Can_memop<_IterSource, _IterDest, _Cat>;
 
 template <class _IterSource, class _IterDest>
-_INLINE_VAR constexpr bool _Can_memcpy = _Can_memop<remove_const_t<_IterSource>, _IterDest, _Memop_cat::_Copy>;
+_INLINE_VAR constexpr bool _Can_memmove_in_copy = _Can_memop<remove_const_t<_IterSource>, _IterDest, _Memop_cat::_Copy>;
 
 template <class _IterSource, class _IterDest>
-_INLINE_VAR constexpr bool _Can_memcpy_uninitialized =
+_INLINE_VAR constexpr bool _Can_memmove_in_uninitialized_copy =
     _Can_memop<remove_const_t<_IterSource>, _IterDest, _Memop_cat::_Copy_uninitialized>;
 
 template <class _IterSource, class _IterDest>
-_INLINE_VAR constexpr bool _Can_memmove = _Can_memop<remove_const_t<_IterSource>, _IterDest, _Memop_cat::_Move>;
+_INLINE_VAR constexpr bool _Can_memmove_in_move = _Can_memop<remove_const_t<_IterSource>, _IterDest, _Memop_cat::_Move>;
 
 template <class _IterSource, class _IterDest>
-_INLINE_VAR constexpr bool _Can_memmove_uninitialized =
+_INLINE_VAR constexpr bool _Can_memmove_in_uninitialized_move =
     _Can_memop<remove_const_t<_IterSource>, _IterDest, _Memop_cat::_Move_uninitialized>;
 
 template <class _InIt, class _OutIt>
@@ -4440,7 +4440,7 @@ template <class _InIt, class _OutIt>
 _CONSTEXPR20 _OutIt _Copy_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest) {
     // copy [_First, _Last) to [_Dest, ...)
     // note: _Copy_unchecked has callers other than the copy family
-    if constexpr (_Can_memcpy<_InIt, _OutIt>) {
+    if constexpr (_Can_memmove_in_copy<_InIt, _OutIt>) {
 #ifdef __cpp_lib_is_constant_evaluated
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
@@ -4476,7 +4476,7 @@ template <class _InIt, class _OutIt>
 _OutIt _Copy_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest) {
     // copy [_First, _Last) to [_Dest, ...)
     // note: _Copy_unchecked has callers other than the copy family
-    return _Copy_unchecked1(_First, _Last, _Dest, bool_constant<_Can_memcpy<_InIt, _OutIt>>{});
+    return _Copy_unchecked1(_First, _Last, _Dest, bool_constant<_Can_memmove_in_copy<_InIt, _OutIt>>{});
 }
 #endif // _HAS_IF_CONSTEXPR
 
@@ -4510,7 +4510,7 @@ _CONSTEXPR20 _OutIt copy_n(_InIt _First, _Diff _Count_raw, _OutIt _Dest) {
     if (0 < _Count) {
         auto _UFirst = _Get_unwrapped_n(_First, _Count);
         auto _UDest  = _Get_unwrapped_n(_Dest, _Count);
-        if constexpr (_Can_memcpy<decltype(_UFirst), decltype(_UDest)>) {
+        if constexpr (_Can_memmove_in_copy<decltype(_UFirst), decltype(_UDest)>) {
 #ifdef __cpp_lib_is_constant_evaluated
             if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
@@ -4571,7 +4571,7 @@ _OutIt copy_n(_InIt _First, _Diff _Count_raw, _OutIt _Dest) { // copy [_First, _
         auto _UFirst = _Get_unwrapped_n(_First, _Count);
         auto _UDest = _Get_unwrapped_n(_Dest, _Count);
         _Seek_wrapped(_Dest, _Copy_n_unchecked4(_UFirst, _Count, _UDest,
-                                 bool_constant<_Can_memcpy<decltype(_UFirst), decltype(_UDest)>>{}));
+                                 bool_constant<_Can_memmove_in_copy<decltype(_UFirst), decltype(_UDest)>>{}));
     }
 
     return _Dest;
@@ -4609,7 +4609,7 @@ _BidIt2 _Copy_backward_memmove(move_iterator<_BidIt1> _First, move_iterator<_Bid
 template <class _BidIt1, class _BidIt2>
 _NODISCARD _CONSTEXPR20 _BidIt2 _Copy_backward_unchecked(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) {
     // copy [_First, _Last) backwards to [..., _Dest)
-    if constexpr (_Can_memcpy<_BidIt1, _BidIt2>) {
+    if constexpr (_Can_memmove_in_copy<_BidIt1, _BidIt2>) {
 #ifdef __cpp_lib_is_constant_evaluated
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
@@ -4659,7 +4659,7 @@ _BidIt2 copy_backward(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) { // copy [_
     const auto _ULast = _Get_unwrapped(_Last);
     auto _UDest = _Get_unwrapped_n(_Dest, -_Idl_distance<_BidIt1>(_UFirst, _ULast));
     _Seek_wrapped(_Dest, _Copy_backward_unchecked(_UFirst, _ULast, _UDest,
-                             bool_constant<_Can_memcpy<decltype(_UFirst), decltype(_UDest)>>{}));
+                             bool_constant<_Can_memmove_in_copy<decltype(_UFirst), decltype(_UDest)>>{}));
     return _Dest;
 }
 #endif // _HAS_IF_CONSTEXPR
@@ -4679,7 +4679,7 @@ template <class _InIt, class _OutIt>
 _CONSTEXPR20 _OutIt _Move_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest) {
     // move [_First, _Last) to [_Dest, ...)
     // note: _Move_unchecked has callers other than the move family
-    if constexpr (_Can_memmove<_InIt, _OutIt>) {
+    if constexpr (_Can_memmove_in_move<_InIt, _OutIt>) {
 #ifdef __cpp_lib_is_constant_evaluated
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
@@ -4715,7 +4715,7 @@ template <class _InIt, class _OutIt>
 _OutIt _Move_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest) {
     // move [_First, _Last) to [_Dest, ...), choose optimization
     // note: _Move_unchecked has callers other than the move family
-    return _Move_unchecked1(_First, _Last, _Dest, bool_constant<_Can_memmove<_InIt, _OutIt>>{});
+    return _Move_unchecked1(_First, _Last, _Dest, bool_constant<_Can_memmove_in_move<_InIt, _OutIt>>{});
 }
 #endif // _HAS_IF_CONSTEXPR
 
@@ -4747,7 +4747,7 @@ template <class _BidIt1, class _BidIt2>
 _CONSTEXPR20 _BidIt2 _Move_backward_unchecked(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) {
     // move [_First, _Last) backwards to [..., _Dest)
     // note: _Move_backward_unchecked has callers other than the move_backward family
-    if constexpr (_Can_memmove<_BidIt1, _BidIt2>) {
+    if constexpr (_Can_memmove_in_move<_BidIt1, _BidIt2>) {
 #ifdef __cpp_lib_is_constant_evaluated
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
@@ -4783,7 +4783,7 @@ template <class _BidIt1, class _BidIt2>
 _BidIt2 _Move_backward_unchecked(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) {
     // move [_First, _Last) backwards to [..., _Dest), choose optimization
     // note: _Move_backward_unchecked has callers other than the move_backward family
-    return _Move_backward_unchecked1(_First, _Last, _Dest, bool_constant<_Can_memmove<_BidIt1, _BidIt2>>{});
+    return _Move_backward_unchecked1(_First, _Last, _Dest, bool_constant<_Can_memmove_in_move<_BidIt1, _BidIt2>>{});
 }
 #endif // _HAS_IF_CONSTEXPR
 
