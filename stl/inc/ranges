@@ -15,6 +15,9 @@
 #include <span>
 #include <string_view>
 
+#if 1 // TRANSITION, VSO-1225825
+#include <optional>
+#endif // TRANSITION, VSO-1225825
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -241,6 +244,7 @@ namespace ranges {
     using _Cached_position_t = conditional_t<_Enable, _Cached_position<_Rng, _Derived>, view_interface<_Derived>>;
 
     // CLASS TEMPLATE ranges::_Semiregular_box
+#if 0 // TRANSITION, VSO-1225825
     template <_Copy_constructible_object _Ty>
     class _Semiregular_box {
     public:
@@ -432,6 +436,102 @@ namespace ranges {
     private:
         /* [[no_unique_address]] */ _Ty _Val = _Ty();
     };
+#else // ^^^ no workaround / workaround vvv
+    template <class _Ty>
+    class _Semiregular_box_copy : public optional<_Ty> {
+    public:
+        using optional<_Ty>::optional;
+
+        _Semiregular_box_copy() = default;
+        _Semiregular_box_copy(const _Semiregular_box_copy&) = default;
+        _Semiregular_box_copy(_Semiregular_box_copy&&) = default;
+        _Semiregular_box_copy& operator=(_Semiregular_box_copy&&) = default;
+
+        _Semiregular_box_copy& operator=(const _Semiregular_box_copy& _That) noexcept(
+            is_nothrow_copy_constructible_v<_Ty>) {
+            if (_STD addressof(_That) != this) {
+                optional<_Ty>::reset();
+                if (_That) {
+                    optional<_Ty>::emplace(*_That);
+                }
+            }
+
+            return *this;
+        }
+    };
+
+    template <class _Ty>
+    using _Choose_semiregular_box_copy =
+        conditional_t<assignable_from<_Ty&, const _Ty&>, optional<_Ty>, _Semiregular_box_copy<_Ty>>;
+
+    template <class _Ty>
+    class _Semiregular_box_move : public _Choose_semiregular_box_copy<_Ty> {
+    public:
+        using _Choose_semiregular_box_copy<_Ty>::_Choose_semiregular_box_copy;
+
+        _Semiregular_box_move() = default;
+        _Semiregular_box_move(const _Semiregular_box_move&) = default;
+        _Semiregular_box_move(_Semiregular_box_move&&) = default;
+        _Semiregular_box_move& operator=(const _Semiregular_box_move&) = default;
+
+        _Semiregular_box_move& operator=(_Semiregular_box_move&& _That) noexcept(is_nothrow_move_constructible_v<_Ty>) {
+            if (_STD addressof(_That) != this) {
+                optional<_Ty>::reset();
+                if (_That) {
+                    optional<_Ty>::emplace(_STD move(*_That));
+                }
+            }
+
+            return *this;
+        }
+    };
+
+    template <class _Ty>
+    using _Choose_semiregular_box_move =
+        conditional_t<assignable_from<_Ty&, _Ty>, _Choose_semiregular_box_copy<_Ty>, _Semiregular_box_move<_Ty>>;
+
+    template <_Copy_constructible_object _Ty>
+    class _Semiregular_box : public _Choose_semiregular_box_move<_Ty> {
+    public:
+        constexpr _Semiregular_box() noexcept {}
+        constexpr _Semiregular_box() noexcept(
+            is_nothrow_default_constructible_v<_Ty>) requires default_initializable<_Ty>
+            : _Choose_semiregular_box_move<_Ty>{in_place} {}
+
+        template <class... _Types>
+        constexpr _Semiregular_box(in_place_t, _Types&&... _Args) noexcept(
+            is_nothrow_constructible_v<_Ty, _Types...>) // strengthened
+            : _Choose_semiregular_box_move<_Ty>{in_place, _STD forward<_Types>(_Args)...} {}
+    };
+
+    // clang-format off
+    template <_Copy_constructible_object _Ty>
+        requires default_initializable<_Ty> && copyable<_Ty>
+    class _Semiregular_box<_Ty> {
+        // clang-format on
+    public:
+        _Semiregular_box() = default;
+
+        template <class... _Types>
+        constexpr _Semiregular_box(in_place_t, _Types&&... _Args) noexcept(
+            is_nothrow_constructible_v<_Ty, _Types...>) // strengthened
+            : _Val(_STD forward<_Types>(_Args)...) {}
+
+        constexpr explicit operator bool() const noexcept {
+            return true;
+        }
+
+        _NODISCARD constexpr _Ty& operator*() noexcept {
+            return _Val;
+        }
+        _NODISCARD constexpr const _Ty& operator*() const noexcept {
+            return _Val;
+        }
+
+    private:
+        /* [[no_unique_address]] */ _Ty _Val = _Ty();
+    };
+#endif // TRANSITION, VSO-1225825
 
     // CLASS TEMPLATE ranges::empty_view
     // clang-format off
