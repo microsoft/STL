@@ -4392,17 +4392,19 @@ _INLINE_VAR constexpr bool _Can_memop<move_iterator<_IterSource>, _IterDest, _Ca
     _Can_memop<_IterSource, _IterDest, _Cat>;
 
 template <class _IterSource, class _IterDest>
-_INLINE_VAR constexpr bool _Can_memmove_in_copy = _Can_memop<remove_const_t<_IterSource>, _IterDest, _Memop_cat::_Copy>;
+_INLINE_VAR constexpr bool _Memmove_in_copy_is_safe =
+    _Can_memop<remove_const_t<_IterSource>, _IterDest, _Memop_cat::_Copy>;
 
 template <class _IterSource, class _IterDest>
-_INLINE_VAR constexpr bool _Can_memmove_in_uninitialized_copy =
+_INLINE_VAR constexpr bool _Memmove_in_uninitialized_copy_is_safe =
     _Can_memop<remove_const_t<_IterSource>, _IterDest, _Memop_cat::_Copy_uninitialized>;
 
 template <class _IterSource, class _IterDest>
-_INLINE_VAR constexpr bool _Can_memmove_in_move = _Can_memop<remove_const_t<_IterSource>, _IterDest, _Memop_cat::_Move>;
+_INLINE_VAR constexpr bool _Memmove_in_move_is_safe =
+    _Can_memop<remove_const_t<_IterSource>, _IterDest, _Memop_cat::_Move>;
 
 template <class _IterSource, class _IterDest>
-_INLINE_VAR constexpr bool _Can_memmove_in_uninitialized_move =
+_INLINE_VAR constexpr bool _Memmove_in_uninitialized_move_is_safe =
     _Can_memop<remove_const_t<_IterSource>, _IterDest, _Memop_cat::_Move_uninitialized>;
 
 template <class _InIt, class _OutIt>
@@ -4440,7 +4442,7 @@ template <class _InIt, class _OutIt>
 _CONSTEXPR20 _OutIt _Copy_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest) {
     // copy [_First, _Last) to [_Dest, ...)
     // note: _Copy_unchecked has callers other than the copy family
-    if constexpr (_Can_memmove_in_copy<_InIt, _OutIt>) {
+    if constexpr (_Memmove_in_copy_is_safe<_InIt, _OutIt>) {
 #ifdef __cpp_lib_is_constant_evaluated
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
@@ -4476,7 +4478,7 @@ template <class _InIt, class _OutIt>
 _OutIt _Copy_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest) {
     // copy [_First, _Last) to [_Dest, ...)
     // note: _Copy_unchecked has callers other than the copy family
-    return _Copy_unchecked1(_First, _Last, _Dest, bool_constant<_Can_memmove_in_copy<_InIt, _OutIt>>{});
+    return _Copy_unchecked1(_First, _Last, _Dest, bool_constant<_Memmove_in_copy_is_safe<_InIt, _OutIt>>{});
 }
 #endif // _HAS_IF_CONSTEXPR
 
@@ -4510,7 +4512,7 @@ _CONSTEXPR20 _OutIt copy_n(_InIt _First, _Diff _Count_raw, _OutIt _Dest) {
     if (0 < _Count) {
         auto _UFirst = _Get_unwrapped_n(_First, _Count);
         auto _UDest  = _Get_unwrapped_n(_Dest, _Count);
-        if constexpr (_Can_memmove_in_copy<decltype(_UFirst), decltype(_UDest)>) {
+        if constexpr (_Memmove_in_copy_is_safe<decltype(_UFirst), decltype(_UDest)>) {
 #ifdef __cpp_lib_is_constant_evaluated
             if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
@@ -4571,7 +4573,7 @@ _OutIt copy_n(_InIt _First, _Diff _Count_raw, _OutIt _Dest) { // copy [_First, _
         auto _UFirst = _Get_unwrapped_n(_First, _Count);
         auto _UDest = _Get_unwrapped_n(_Dest, _Count);
         _Seek_wrapped(_Dest, _Copy_n_unchecked4(_UFirst, _Count, _UDest,
-                                 bool_constant<_Can_memmove_in_copy<decltype(_UFirst), decltype(_UDest)>>{}));
+                                 bool_constant<_Memmove_in_copy_is_safe<decltype(_UFirst), decltype(_UDest)>>{}));
     }
 
     return _Dest;
@@ -4609,7 +4611,7 @@ _BidIt2 _Copy_backward_memmove(move_iterator<_BidIt1> _First, move_iterator<_Bid
 template <class _BidIt1, class _BidIt2>
 _NODISCARD _CONSTEXPR20 _BidIt2 _Copy_backward_unchecked(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) {
     // copy [_First, _Last) backwards to [..., _Dest)
-    if constexpr (_Can_memmove_in_copy<_BidIt1, _BidIt2>) {
+    if constexpr (_Memmove_in_copy_is_safe<_BidIt1, _BidIt2>) {
 #ifdef __cpp_lib_is_constant_evaluated
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
@@ -4659,7 +4661,7 @@ _BidIt2 copy_backward(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) { // copy [_
     const auto _ULast = _Get_unwrapped(_Last);
     auto _UDest = _Get_unwrapped_n(_Dest, -_Idl_distance<_BidIt1>(_UFirst, _ULast));
     _Seek_wrapped(_Dest, _Copy_backward_unchecked(_UFirst, _ULast, _UDest,
-                             bool_constant<_Can_memmove_in_copy<decltype(_UFirst), decltype(_UDest)>>{}));
+                             bool_constant<_Memmove_in_copy_is_safe<decltype(_UFirst), decltype(_UDest)>>{}));
     return _Dest;
 }
 #endif // _HAS_IF_CONSTEXPR
@@ -4679,7 +4681,7 @@ template <class _InIt, class _OutIt>
 _CONSTEXPR20 _OutIt _Move_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest) {
     // move [_First, _Last) to [_Dest, ...)
     // note: _Move_unchecked has callers other than the move family
-    if constexpr (_Can_memmove_in_move<_InIt, _OutIt>) {
+    if constexpr (_Memmove_in_move_is_safe<_InIt, _OutIt>) {
 #ifdef __cpp_lib_is_constant_evaluated
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
@@ -4715,7 +4717,7 @@ template <class _InIt, class _OutIt>
 _OutIt _Move_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest) {
     // move [_First, _Last) to [_Dest, ...), choose optimization
     // note: _Move_unchecked has callers other than the move family
-    return _Move_unchecked1(_First, _Last, _Dest, bool_constant<_Can_memmove_in_move<_InIt, _OutIt>>{});
+    return _Move_unchecked1(_First, _Last, _Dest, bool_constant<_Memmove_in_move_is_safe<_InIt, _OutIt>>{});
 }
 #endif // _HAS_IF_CONSTEXPR
 
@@ -4747,7 +4749,7 @@ template <class _BidIt1, class _BidIt2>
 _CONSTEXPR20 _BidIt2 _Move_backward_unchecked(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) {
     // move [_First, _Last) backwards to [..., _Dest)
     // note: _Move_backward_unchecked has callers other than the move_backward family
-    if constexpr (_Can_memmove_in_move<_BidIt1, _BidIt2>) {
+    if constexpr (_Memmove_in_move_is_safe<_BidIt1, _BidIt2>) {
 #ifdef __cpp_lib_is_constant_evaluated
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
@@ -4783,7 +4785,7 @@ template <class _BidIt1, class _BidIt2>
 _BidIt2 _Move_backward_unchecked(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) {
     // move [_First, _Last) backwards to [..., _Dest), choose optimization
     // note: _Move_backward_unchecked has callers other than the move_backward family
-    return _Move_backward_unchecked1(_First, _Last, _Dest, bool_constant<_Can_memmove_in_move<_BidIt1, _BidIt2>>{});
+    return _Move_backward_unchecked1(_First, _Last, _Dest, bool_constant<_Memmove_in_move_is_safe<_BidIt1, _BidIt2>>{});
 }
 #endif // _HAS_IF_CONSTEXPR
 
@@ -4836,14 +4838,14 @@ struct _Is_character_or_byte_or_bool<byte> : true_type {};
 template <>
 struct _Is_character_or_byte_or_bool<bool> : true_type {};
 
-// _Can_memset_in_fill determines if _FwdIt and _Ty are eligible for memset optimization in fill
+// _Memset_in_fill_is_safe determines if _FwdIt and _Ty are eligible for memset optimization in fill
 template <class _FwdIt, class _Ty, bool = is_pointer_v<_FwdIt>>
-_INLINE_VAR constexpr bool _Can_memset_in_fill = conjunction_v<is_scalar<_Ty>,
+_INLINE_VAR constexpr bool _Memset_in_fill_is_safe = conjunction_v<is_scalar<_Ty>,
     _Is_character_or_byte_or_bool<_Unwrap_enum_t<remove_reference_t<_Iter_ref_t<_FwdIt>>>>,
     is_assignable<_Iter_ref_t<_FwdIt>, const _Ty&>>;
 
 template <class _FwdIt, class _Ty>
-_INLINE_VAR constexpr bool _Can_memset_in_fill<_FwdIt, _Ty, false> = false;
+_INLINE_VAR constexpr bool _Memset_in_fill_is_safe<_FwdIt, _Ty, false> = false;
 
 template <class _DestTy, class _Ty>
 void _Fill_memset(_DestTy* const _Dest, const _Ty _Val, const size_t _Count) {
@@ -4861,7 +4863,7 @@ _CONSTEXPR20 void fill(const _FwdIt _First, const _FwdIt _Last, const _Ty& _Val)
     } else {
         auto _UFirst      = _Get_unwrapped(_First);
         const auto _ULast = _Get_unwrapped(_Last);
-        if constexpr (_Can_memset_in_fill<decltype(_UFirst), _Ty>) {
+        if constexpr (_Memset_in_fill_is_safe<decltype(_UFirst), _Ty>) {
 #ifdef __cpp_lib_is_constant_evaluated
             if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
@@ -4895,7 +4897,7 @@ template <class _FwdIt, class _Ty>
 void fill(_FwdIt _First, _FwdIt _Last, const _Ty& _Val) { // copy _Val through [_First, _Last)
     _Adl_verify_range(_First, _Last);
     _Fill_unchecked1(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Val,
-        bool_constant<_Can_memset_in_fill<_Unwrapped_t<const _FwdIt&>, _Ty>>{});
+        bool_constant<_Memset_in_fill_is_safe<_Unwrapped_t<const _FwdIt&>, _Ty>>{});
 }
 #endif // _HAS_IF_CONSTEXPR
 
@@ -4922,7 +4924,7 @@ _CONSTEXPR20 _OutIt fill_n(_OutIt _Dest, const _Diff _Count_raw, const _Ty& _Val
             return _Last;
         } else {
             auto _UDest = _Get_unwrapped_n(_Dest, _Count);
-            if constexpr (_Can_memset_in_fill<decltype(_UDest), _Ty>) {
+            if constexpr (_Memset_in_fill_is_safe<decltype(_UDest), _Ty>) {
 #ifdef __cpp_lib_is_constant_evaluated
                 if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
@@ -4969,7 +4971,7 @@ _OutIt fill_n(_OutIt _Dest, const _Diff _Count_raw, const _Ty& _Val) {
     if (0 < _Count) {
         auto _UDest = _Get_unwrapped_n(_Dest, _Count);
         _Seek_wrapped(_Dest,
-            _Fill_n_unchecked2(_UDest, _Count, _Val, bool_constant<_Can_memset_in_fill<decltype(_UDest), _Ty>>{}));
+            _Fill_n_unchecked2(_UDest, _Count, _Val, bool_constant<_Memset_in_fill_is_safe<decltype(_UDest), _Ty>>{}));
     }
 
     return _Dest;
@@ -5052,7 +5054,7 @@ template <class _Elem1, class _Elem2, class _Pr>
 _INLINE_VAR constexpr bool _Can_memcmp_elements_with_pred = _Can_memcmp_elements<_Elem1, _Elem2> //
     && _Pred_is_consistent_with_memcmp<_Elem1, _Elem2, _Pr>;
 
-// _Can_memcmp_in_equal<_Iter1, _Iter2, _Pr> reports whether we can activate the memcmp optimization
+// _Memcmp_in_equal_is_safe<_Iter1, _Iter2, _Pr> reports whether we can activate the memcmp optimization
 // for arbitrary iterators and predicates.
 // It ignores top-level constness on the iterators and on the elements.
 template <class _Iter1, class _Iter2, class _Pr>
@@ -5061,7 +5063,7 @@ _INLINE_VAR constexpr bool _Equal_memcmp_is_safe_helper = _Iterators_are_contigu
         remove_const_t<remove_reference_t<_Iter_ref_t<_Iter2>>>, _Pr>;
 
 template <class _Iter1, class _Iter2, class _Pr>
-_INLINE_VAR constexpr bool _Can_memcmp_in_equal =
+_INLINE_VAR constexpr bool _Memcmp_in_equal_is_safe =
     _Equal_memcmp_is_safe_helper<remove_const_t<_Iter1>, remove_const_t<_Iter2>, _Pr>;
 
 #if _HAS_IF_CONSTEXPR
@@ -5072,7 +5074,7 @@ _NODISCARD _CONSTEXPR20 bool equal(const _InIt1 _First1, const _InIt1 _Last1, co
     auto _UFirst1      = _Get_unwrapped(_First1);
     const auto _ULast1 = _Get_unwrapped(_Last1);
     auto _UFirst2      = _Get_unwrapped_n(_First2, _Idl_distance<_InIt1>(_UFirst1, _ULast1));
-    if constexpr (_Can_memcmp_in_equal<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
+    if constexpr (_Memcmp_in_equal_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
 #ifdef __cpp_lib_is_constant_evaluated
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
@@ -5093,7 +5095,7 @@ _NODISCARD _CONSTEXPR20 bool equal(const _InIt1 _First1, const _InIt1 _Last1, co
     return true;
 }
 #else // ^^^ _HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
-template <class _InIt1, class _InIt2, class _Pr, enable_if_t<!_Can_memcmp_in_equal<_InIt1, _InIt2, _Pr>, int> = 0>
+template <class _InIt1, class _InIt2, class _Pr, enable_if_t<!_Memcmp_in_equal_is_safe<_InIt1, _InIt2, _Pr>, int> = 0>
 bool _Equal_unchecked(_InIt1 _First1, const _InIt1 _Last1, _InIt2 _First2, _Pr _Pred) {
     // compare [_First1, _Last1) to [_First2, ...), no special optimization
     for (; _First1 != _Last1; ++_First1, (void) ++_First2) {
@@ -5105,7 +5107,7 @@ bool _Equal_unchecked(_InIt1 _First1, const _InIt1 _Last1, _InIt2 _First2, _Pr _
     return true;
 }
 
-template <class _InIt1, class _InIt2, class _Pr, enable_if_t<_Can_memcmp_in_equal<_InIt1, _InIt2, _Pr>, int> = 0>
+template <class _InIt1, class _InIt2, class _Pr, enable_if_t<_Memcmp_in_equal_is_safe<_InIt1, _InIt2, _Pr>, int> = 0>
 bool _Equal_unchecked(const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2, _Pr) {
     // compare [_First1, _Last1) to [_First2, ...), memcmp optimization
     const auto _First1_ch = reinterpret_cast<const char*>(_First1);

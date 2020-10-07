@@ -107,7 +107,7 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(_No_throw_sentinel_for<_OSe, _Out>);
             _STL_INTERNAL_STATIC_ASSERT(constructible_from<iter_value_t<_Out>, iter_reference_t<_It>>);
 
-            if constexpr (is_same_v<_Se, _It> && _Can_memmove_in_uninitialized_copy<_It, _Out>) {
+            if constexpr (is_same_v<_Se, _It> && _Memmove_in_uninitialized_copy_is_safe<_It, _Out>) {
                 return _Copy_memcpy_common(_IFirst, _ILast, _OFirst, _OLast);
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
@@ -137,7 +137,7 @@ _NoThrowFwdIt uninitialized_copy_n(const _InIt _First, const _Diff _Count_raw, _
 
     auto _UFirst = _Get_unwrapped_n(_First, _Count);
     auto _UDest  = _Get_unwrapped_n(_Dest, _Count);
-    if constexpr (_Can_memmove_in_uninitialized_copy<decltype(_UFirst), decltype(_UDest)>) {
+    if constexpr (_Memmove_in_uninitialized_copy_is_safe<decltype(_UFirst), decltype(_UDest)>) {
         _UDest = _Copy_memmove(_UFirst, _UFirst + _Count, _UDest);
     } else {
         _Uninitialized_backout<decltype(_UDest)> _Backout{_UDest};
@@ -181,8 +181,9 @@ _NoThrowFwdIt uninitialized_copy_n(const _InIt _First, const _Diff _Count_raw, _
 
     auto _UFirst = _Get_unwrapped_n(_First, _Count);
     auto _UDest  = _Get_unwrapped_n(_Dest, _Count);
-    _Seek_wrapped(_Dest, _Uninitialized_copy_n_unchecked2(_UFirst, _Count, _UDest,
-                             bool_constant<_Can_memmove_in_uninitialized_copy<decltype(_UFirst), decltype(_UDest)>>{}));
+    _Seek_wrapped(
+        _Dest, _Uninitialized_copy_n_unchecked2(_UFirst, _Count, _UDest,
+                   bool_constant<_Memmove_in_uninitialized_copy_is_safe<decltype(_UFirst), decltype(_UDest)>>{}));
     return _Dest;
 }
 #endif // _HAS_IF_CONSTEXPR
@@ -212,7 +213,7 @@ namespace ranges {
             auto _IFirst      = _Get_unwrapped_n(_STD move(_First1), _Count);
             auto _OFirst      = _Get_unwrapped(_STD move(_First2));
             const auto _OLast = _Get_unwrapped(_STD move(_Last2));
-            if constexpr (_Can_memmove_in_uninitialized_copy<_It, _Out>) {
+            if constexpr (_Memmove_in_uninitialized_copy_is_safe<_It, _Out>) {
                 _OFirst = _Copy_memcpy_common(_IFirst, _IFirst + _Count, _OFirst, _OLast);
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
@@ -299,7 +300,7 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(_No_throw_sentinel_for<_OSe, _Out>);
             _STL_INTERNAL_STATIC_ASSERT(constructible_from<iter_value_t<_Out>, iter_rvalue_reference_t<_It>>);
 
-            if constexpr (is_same_v<_Se, _It> && _Can_memmove_in_uninitialized_move<_It, _Out>) {
+            if constexpr (is_same_v<_Se, _It> && _Memmove_in_uninitialized_move_is_safe<_It, _Out>) {
                 return _Copy_memcpy_common(_IFirst, _ILast, _OFirst, _OLast);
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
@@ -328,7 +329,7 @@ pair<_InIt, _NoThrowFwdIt> uninitialized_move_n(_InIt _First, const _Diff _Count
 
     auto _UFirst = _Get_unwrapped_n(_First, _Count);
     auto _UDest  = _Get_unwrapped_n(_Dest, _Count);
-    if constexpr (_Can_memmove_in_uninitialized_move<decltype(_UFirst), decltype(_UDest)>) {
+    if constexpr (_Memmove_in_uninitialized_move_is_safe<decltype(_UFirst), decltype(_UDest)>) {
         _UDest = _Copy_memmove(_UFirst, _UFirst + _Count, _UDest);
         _UFirst += _Count;
     } else {
@@ -373,7 +374,7 @@ namespace ranges {
             auto _IFirst      = _Get_unwrapped_n(_STD move(_First1), _Count);
             auto _OFirst      = _Get_unwrapped(_STD move(_First2));
             const auto _OLast = _Get_unwrapped(_STD move(_Last2));
-            if constexpr (_Can_memmove_in_uninitialized_move<_It, _Out>) {
+            if constexpr (_Memmove_in_uninitialized_move_is_safe<_It, _Out>) {
                 _OFirst = _Copy_memcpy_common(_IFirst, _IFirst + _Count, _OFirst, _OLast);
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
@@ -426,7 +427,7 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(_No_throw_sentinel_for<_Se, _It>);
             _STL_INTERNAL_STATIC_ASSERT(constructible_from<iter_value_t<_It>, const _Ty&>);
 
-            if constexpr (_Can_memset_in_fill<_It, _Ty>) {
+            if constexpr (_Memset_in_fill_is_safe<_It, _Ty>) {
                 const auto _OFinal = _RANGES next(_OFirst, _STD move(_OLast));
                 const auto _Diff   = static_cast<size_t>(_OFinal - _OFirst);
                 _Fill_memset(_OFirst, _Val, _Diff);
@@ -458,7 +459,7 @@ _NoThrowFwdIt uninitialized_fill_n(_NoThrowFwdIt _First, const _Diff _Count_raw,
     }
 
     auto _UFirst = _Get_unwrapped_n(_First, _Count);
-    if constexpr (_Can_memset_in_fill<_Unwrapped_n_t<const _NoThrowFwdIt&>, _Tval>) {
+    if constexpr (_Memset_in_fill_is_safe<_Unwrapped_n_t<const _NoThrowFwdIt&>, _Tval>) {
         _Fill_memset(_UFirst, _Val, static_cast<size_t>(_Count));
         _UFirst += _Count;
     } else {
@@ -505,7 +506,7 @@ _NoThrowFwdIt uninitialized_fill_n(_NoThrowFwdIt _First, const _Diff _Count_raw,
 
     auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
     _Seek_wrapped(_First, _Uninitialized_fill_n_unchecked1(_STD move(_UFirst), _Count, _Val,
-                              bool_constant<_Can_memset_in_fill<_Unwrapped_t<_NoThrowFwdIt>, _Tval>>{}));
+                              bool_constant<_Memset_in_fill_is_safe<_Unwrapped_t<_NoThrowFwdIt>, _Tval>>{}));
     return _First;
 }
 #endif // _HAS_IF_CONSTEXPR
@@ -527,7 +528,7 @@ namespace ranges {
             }
 
             auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
-            if constexpr (_Can_memset_in_fill<_It, _Ty>) {
+            if constexpr (_Memset_in_fill_is_safe<_It, _Ty>) {
                 _Fill_memset(_UFirst, _Val, static_cast<size_t>(_Count));
                 _Seek_wrapped(_First, _UFirst + _Count);
             } else {
@@ -2359,7 +2360,7 @@ void _Uninitialized_fill_multidimensional_n(_Ty* const _Out, const size_t _Size,
             _Uninitialized_copy_multidimensional(_Val, _Out[_Idx]); // intentionally copy, not fill
         }
         _Guard._Target = nullptr;
-    } else if constexpr (_Can_memset_in_fill<_Ty*, _Ty>) {
+    } else if constexpr (_Memset_in_fill_is_safe<_Ty*, _Ty>) {
         _Fill_memset(_Out, _Val, _Size);
     } else {
         _Uninitialized_rev_destroying_backout _Backout{_Out};
@@ -2682,7 +2683,8 @@ void _Uninitialized_fill_multidimensional_n_al(_Ty* const _Out, const size_t _Si
             _Uninitialized_copy_multidimensional_al(_Val, _Out[_Idx], _Al); // intentionally copy, not fill
         }
         _Guard._Target = nullptr;
-    } else if constexpr (_Can_memset_in_fill<_Ty*, _Ty> && _Uses_default_construct<_Alloc, _Ty*, const _Ty&>::value) {
+    } else if constexpr (_Memset_in_fill_is_safe<_Ty*,
+                             _Ty> && _Uses_default_construct<_Alloc, _Ty*, const _Ty&>::value) {
         _Fill_memset(_Out, _Val, _Size);
     } else {
         _Uninitialized_rev_destroying_backout_al _Backout{_Out, _Al};

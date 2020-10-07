@@ -1480,7 +1480,7 @@ namespace ranges {
 template <class _InIt, class _NoThrowFwdIt>
 _NoThrowFwdIt _Uninitialized_move_unchecked(_InIt _First, const _InIt _Last, _NoThrowFwdIt _Dest) {
     // move [_First, _Last) to raw [_Dest, ...)
-    if constexpr (_Can_memmove_in_uninitialized_move<_InIt, _NoThrowFwdIt>) {
+    if constexpr (_Memmove_in_uninitialized_move_is_safe<_InIt, _NoThrowFwdIt>) {
         return _Copy_memmove(_First, _Last, _Dest);
     } else {
         _Uninitialized_backout<_NoThrowFwdIt> _Backout{_Dest};
@@ -1514,7 +1514,7 @@ template <class _InIt, class _NoThrowFwdIt>
 _NoThrowFwdIt _Uninitialized_move_unchecked(_InIt _First, const _InIt _Last, _NoThrowFwdIt _Dest) {
     // move [_First, _Last) to raw [_Dest, ...), choose optimization
     return _Uninitialized_move_unchecked1(
-        _First, _Last, _Dest, bool_constant<_Can_memmove_in_uninitialized_move<_InIt, _NoThrowFwdIt>>{});
+        _First, _Last, _Dest, bool_constant<_Memmove_in_uninitialized_move_is_safe<_InIt, _NoThrowFwdIt>>{});
 }
 #endif // _HAS_IF_CONSTEXPR
 
@@ -1562,7 +1562,7 @@ _Alloc_ptr_t<_Alloc> _Uninitialized_copy(
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
 
-    if constexpr (conjunction_v<bool_constant<_Can_memmove_in_uninitialized_copy<decltype(_UFirst), _Ptrval>>,
+    if constexpr (conjunction_v<bool_constant<_Memmove_in_uninitialized_copy_is_safe<decltype(_UFirst), _Ptrval>>,
                       _Uses_default_construct<_Alloc, _Ptrval, decltype(*_UFirst)>>) {
         _Copy_memmove(_UFirst, _ULast, _Unfancy(_Dest));
         _Dest += _ULast - _UFirst;
@@ -1610,7 +1610,7 @@ _Alloc_ptr_t<_Alloc> _Uninitialized_copy(
 
     using _Ptrval = typename _Alloc::value_type*;
     return _Uninitialized_copy_al_unchecked(_UFirst, _ULast, _Dest, _Al,
-        bool_constant<conjunction_v<bool_constant<_Can_memmove_in_uninitialized_copy<decltype(_UFirst), _Ptrval>>,
+        bool_constant<conjunction_v<bool_constant<_Memmove_in_uninitialized_copy_is_safe<decltype(_UFirst), _Ptrval>>,
             _Uses_default_construct<_Alloc, _Ptrval, decltype(*_UFirst)>>>{});
 }
 #endif // _HAS_IF_CONSTEXPR
@@ -1624,7 +1624,7 @@ _NoThrowFwdIt uninitialized_copy(const _InIt _First, const _InIt _Last, _NoThrow
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
     auto _UDest       = _Get_unwrapped_n(_Dest, _Idl_distance<_InIt>(_UFirst, _ULast));
-    if constexpr (_Can_memmove_in_uninitialized_copy<decltype(_UFirst), decltype(_UDest)>) {
+    if constexpr (_Memmove_in_uninitialized_copy_is_safe<decltype(_UFirst), decltype(_UDest)>) {
         _UDest = _Copy_memmove(_UFirst, _ULast, _UDest);
     } else {
         _Uninitialized_backout<decltype(_UDest)> _Backout{_UDest};
@@ -1664,8 +1664,9 @@ _NoThrowFwdIt uninitialized_copy(const _InIt _First, const _InIt _Last, _NoThrow
     auto _UFirst = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
     auto _UDest = _Get_unwrapped_n(_Dest, _Idl_distance<_InIt>(_UFirst, _ULast));
-    _Seek_wrapped(_Dest, _Uninitialized_copy_unchecked(_UFirst, _ULast, _UDest,
-                             bool_constant<_Can_memmove_in_uninitialized_copy<decltype(_UFirst), decltype(_UDest)>>{}));
+    _Seek_wrapped(
+        _Dest, _Uninitialized_copy_unchecked(_UFirst, _ULast, _UDest,
+                   bool_constant<_Memmove_in_uninitialized_copy_is_safe<decltype(_UFirst), decltype(_UDest)>>{}));
     return _Dest;
 }
 #endif // _HAS_IF_CONSTEXPR
@@ -1680,7 +1681,7 @@ _Alloc_ptr_t<_Alloc> _Uninitialized_move(
     using _Ptrval     = typename _Alloc::value_type*;
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
-    if constexpr (conjunction_v<bool_constant<_Can_memmove_in_uninitialized_move<decltype(_UFirst), _Ptrval>>,
+    if constexpr (conjunction_v<bool_constant<_Memmove_in_uninitialized_move_is_safe<decltype(_UFirst), _Ptrval>>,
                       _Uses_default_construct<_Alloc, _Ptrval, decltype(_STD move(*_UFirst))>>) {
         _Copy_memmove(_UFirst, _ULast, _Unfancy(_Dest));
         return _Dest + (_ULast - _UFirst);
@@ -1729,7 +1730,7 @@ _Alloc_ptr_t<_Alloc> _Uninitialized_move(
     using _Ptrval = typename _Alloc::value_type*;
     _Seek_wrapped(_Dest,
         _Uninitialized_move_al_unchecked(_UFirst, _ULast, _UDest, _Al,
-            bool_constant < _Can_memmove_in_uninitialized_move<decltype(_UFirst),
+            bool_constant < _Memmove_in_uninitialized_move_is_safe<decltype(_UFirst),
                     _Ptrval> && _Uses_default_construct<_Alloc, _Ptrval, decltype(_STD move(*_UFirst))>::value > {}));
     return _Dest;
 }
@@ -1742,7 +1743,7 @@ _Alloc_ptr_t<_Alloc> _Uninitialized_fill_n(
     _Alloc_ptr_t<_Alloc> _First, _Alloc_size_t<_Alloc> _Count, const typename _Alloc::value_type& _Val, _Alloc& _Al) {
     // copy _Count copies of _Val to raw _First, using _Al
     using _Ty = typename _Alloc::value_type;
-    if constexpr (_Can_memset_in_fill<_Ty*, _Ty> && _Uses_default_construct<_Alloc, _Ty*, _Ty>::value) {
+    if constexpr (_Memset_in_fill_is_safe<_Ty*, _Ty> && _Uses_default_construct<_Alloc, _Ty*, _Ty>::value) {
         _Fill_memset(_Unfancy(_First), _Val, static_cast<size_t>(_Count));
         return _First + _Count;
     } else {
@@ -1781,7 +1782,7 @@ _Alloc_ptr_t<_Alloc> _Uninitialized_fill_n(_Alloc_ptr_t<_Alloc> _First, const _A
     // copy _Count copies of _Val to raw _First, using _Al
     using _Ty = typename _Alloc::value_type;
     return _Uninit_alloc_fill_n1(_First, _Count, _Val, _Al,
-        bool_constant < _Can_memset_in_fill<_Ty*, _Ty> && _Uses_default_construct<_Alloc, _Ty*, _Ty>::value > {});
+        bool_constant < _Memset_in_fill_is_safe<_Ty*, _Ty> && _Uses_default_construct<_Alloc, _Ty*, _Ty>::value > {});
 }
 #endif // _HAS_IF_CONSTEXPR
 
@@ -1793,7 +1794,7 @@ void uninitialized_fill(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last, c
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
-    if constexpr (_Can_memset_in_fill<_Unwrapped_t<const _NoThrowFwdIt&>, _Tval>) {
+    if constexpr (_Memset_in_fill_is_safe<_Unwrapped_t<const _NoThrowFwdIt&>, _Tval>) {
         _Fill_memset(_UFirst, _Val, static_cast<size_t>(_ULast - _UFirst));
     } else {
         _Uninitialized_backout<_Unwrapped_t<const _NoThrowFwdIt&>> _Backout{_UFirst};
@@ -1830,7 +1831,7 @@ void uninitialized_fill(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last, c
     _Adl_verify_range(_First, _Last);
     const auto _UFirst = _Get_unwrapped(_First);
     _Uninitialized_fill_unchecked(_UFirst, _Get_unwrapped(_Last), _Val,
-        bool_constant<_Can_memset_in_fill<_Unwrapped_t<const _NoThrowFwdIt&>, _Tval>>{});
+        bool_constant<_Memset_in_fill_is_safe<_Unwrapped_t<const _NoThrowFwdIt&>, _Tval>>{});
 }
 #endif // _HAS_IF_CONSTEXPR
 

@@ -636,7 +636,7 @@ private:
 
             const auto _Oldcapacity = static_cast<size_type>(_My_data._Myend - _Myfirst);
 #if _HAS_IF_CONSTEXPR
-            if constexpr (conjunction_v<bool_constant<_Can_memmove_in_copy<_Ty*, _Ty*>>,
+            if constexpr (conjunction_v<bool_constant<_Memmove_in_copy_is_safe<_Ty*, _Ty*>>,
                               _Uses_default_construct<_Alty, _Ty*, _Ty>, _Uses_default_destroy<_Alty, _Ty*>>) {
                 if (_Newsize > _Oldcapacity) {
                     _Clear_and_reserve_geometric(_Newsize);
@@ -1108,7 +1108,7 @@ private:
         _My_data._Orphan_all();
 
 #if _HAS_IF_CONSTEXPR
-        if constexpr (conjunction_v<bool_constant<_Can_memmove_in_copy<_Iter, _Ty*>>,
+        if constexpr (conjunction_v<bool_constant<_Memmove_in_copy_is_safe<_Iter, _Ty*>>,
                           _Uses_default_construct<_Alty, _Ty*, decltype(*_First)>,
                           _Uses_default_destroy<_Alty, _Ty*>>) {
             const auto _Oldcapacity = static_cast<size_type>(_Myend - _Myfirst);
