@@ -10,9 +10,7 @@
 #pragma warning(push)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
 
-#if !defined(MRTDLL)
 _EXTERN_C
-#endif // defined(MRTDLL)
 
 #define BIG_EXP   (2 * FMAXEXP) // very large, as exponents go
 #define BITS_WORD (FBITS / 2) // all words same for now
@@ -428,8 +426,7 @@ FTYPE* FNAME(Xp_sqrtx)(FTYPE* p, int n, FTYPE* ptemp4) {
 
     return p;
 }
-#if !defined(MRTDLL)
+
 _END_EXTERN_C
-#endif // !defined(MRTDLL)
 
 #pragma warning(pop)

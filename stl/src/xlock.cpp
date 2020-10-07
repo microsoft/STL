@@ -20,8 +20,6 @@ constexpr int _Max_lock = 8; // must be power of two
 static _Rmtx mtx[_Max_lock];
 static long init = -1;
 
-#if !defined(MRTDLL)
-
 __thiscall _Init_locks::_Init_locks() noexcept { // initialize locks
     if (InterlockedIncrement(&init) == 0) {
         for (auto& elem : mtx) {
@@ -37,8 +35,6 @@ __thiscall _Init_locks::~_Init_locks() noexcept { // clean up locks
         }
     }
 }
-
-#endif
 
 void __cdecl _Init_locks::_Init_locks_ctor(_Init_locks*) noexcept { // initialize locks
     if (InterlockedIncrement(&init) == 0) {
@@ -57,8 +53,6 @@ void __cdecl _Init_locks::_Init_locks_dtor(_Init_locks*) noexcept { // clean up 
 }
 
 static _Init_locks initlocks;
-
-#if !defined(MRTDLL)
 
 __thiscall _Lockit::_Lockit() noexcept : _Locktype(0) { // lock default mutex
     if (_Locktype == _LOCK_LOCALE) {
@@ -83,8 +77,6 @@ __thiscall _Lockit::~_Lockit() noexcept { // unlock the mutex
         _Mtxunlock(&mtx[_Locktype]);
     }
 }
-
-#endif
 
 void __cdecl _Lockit::_Lockit_ctor(_Lockit*) noexcept { // lock default mutex
     _Mtxlock(&mtx[0]);

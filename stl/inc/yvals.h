@@ -19,17 +19,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-#if defined(MRTDLL) && defined(_CRTBLD)
-// process-global is the default for code built with /clr or /clr:oldSyntax.
-// appdomain-global is the default for code built with /clr:pure.
-// Code in MSVCM is built with /clr, but is used by user code built with /clr:pure
-// so it must conform to the expectations of /clr:pure clients.
-// Use __PURE_APPDOMAIN_GLOBAL when a global needs to be appdomain-global for pure
-// clients and process-global for mixed clients.
-#define __PURE_APPDOMAIN_GLOBAL __declspec(appdomain)
-#else
 #define __PURE_APPDOMAIN_GLOBAL
-#endif
 
 // CURRENT DLL NAMES
 #ifndef _CRT_MSVCP_CURRENT
@@ -300,11 +290,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // _CRTIMP2_PURE_IMPORT_UNLESS_CODECVT_ID_SATELLITE
 
 #ifndef _CRTDATA2_IMPORT
-#if defined(MRTDLL) && defined(_CRTBLD)
-#define _CRTDATA2_IMPORT
-#else
 #define _CRTDATA2_IMPORT _CRTIMP2_IMPORT
-#endif
 #endif // _CRTDATA2_IMPORT
 
 // INTEGER PROPERTIES

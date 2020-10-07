@@ -5,9 +5,7 @@
 
 #include "xmath.hpp"
 
-#if !defined(MRTDLL)
 _EXTERN_C
-#endif // defined(MRTDLL)
 
 // macros
 #define ACSIZE 4 // size of extended-precision accumulators
@@ -87,6 +85,5 @@ FTYPE FNAME(Dtento)(FTYPE* xpx, long n, int* perr) { // compute *px * 10**n
     }
     return x;
 }
-#if !defined(MRTDLL)
+
 _END_EXTERN_C
-#endif // !defined(MRTDLL)

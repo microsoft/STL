@@ -98,12 +98,4 @@ _CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Wcsxfrm(_Out_writes_(end1 - string
     return size;
 }
 
-#ifdef MRTDLL
-_CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Wcsxfrm(unsigned short* string1, unsigned short* end1,
-    const unsigned short* string2, const unsigned short* end2, const _Collvec* ploc) {
-    return _Wcsxfrm(reinterpret_cast<wchar_t*>(string1), reinterpret_cast<wchar_t*>(end1),
-        reinterpret_cast<const wchar_t*>(string2), reinterpret_cast<const wchar_t*>(end2), ploc);
-}
-#endif // MRTDLL
-
 _END_EXTERN_C_UNLESS_PURE

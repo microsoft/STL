@@ -7,10 +7,6 @@
 #undef CRTDLL2
 #endif
 
-#ifdef MRTDLL
-#undef MRTDLL
-#endif
-
 #include <new>
 _STD_BEGIN
 

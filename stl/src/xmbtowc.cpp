@@ -152,10 +152,4 @@ _MRTIMP2 _Success_(return >= 0) int __cdecl _Mbrtowc(
     }
 }
 
-#ifdef MRTDLL
-_MRTIMP2 int __cdecl _Mbrtowc(unsigned short* pwc, const char* s, size_t n, mbstate_t* pst, const _Cvtvec* ploc) {
-    return _Mbrtowc(reinterpret_cast<wchar_t*>(pwc), s, n, pst, ploc);
-}
-#endif // MRTDLL
-
 _END_EXTERN_C_UNLESS_PURE

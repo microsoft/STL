@@ -26,10 +26,4 @@ _CRTIMP2_PURE wchar_t __CLRCALL_PURE_OR_CDECL _Towupper(
     return _Res;
 }
 
-#ifdef MRTDLL
-_CRTIMP2_PURE unsigned short __CLRCALL_PURE_OR_CDECL _Towupper(unsigned short _Ch, const _Ctypevec* _Ctype) {
-    return _Towupper(static_cast<wchar_t>(_Ch), _Ctype);
-}
-#endif
-
 _END_EXTERN_C_UNLESS_PURE

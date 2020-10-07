@@ -69,12 +69,6 @@ _CRTIMP2_PURE _Success_(return != -1) int __CLRCALL_PURE_OR_CDECL
     }
 }
 
-#ifdef MRTDLL
-_CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Wcrtomb(char* s, unsigned short wchar, mbstate_t* pst, const _Cvtvec* ploc) {
-    return _Wcrtomb(s, static_cast<wchar_t>(wchar), pst, ploc);
-}
-#endif // MRTDLL
-
 _CRTIMP2_PURE _Cvtvec __CLRCALL_PURE_OR_CDECL _Getcvt() { // get conversion info for current locale
     _Cvtvec _Cvt = {0};
 

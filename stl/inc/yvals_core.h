@@ -1283,14 +1283,6 @@ compiler option, or define _ALLOW_RTCc_IN_STL to acknowledge that you have recei
 #define _END_EXTERN_C_UNLESS_PURE _END_EXTERN_C
 #endif // _M_CEE_PURE
 
-#if defined(MRTDLL) && !defined(_CRTBLD)
-#error In yvals_core.h, defined(MRTDLL) implies defined(_CRTBLD); !defined(_CRTBLD) implies !defined(MRTDLL)
-#endif // defined(MRTDLL) && !defined(_CRTBLD)
-
-#if defined(MRTDLL) && !defined(_M_CEE_PURE)
-#error In yvals_core.h, defined(MRTDLL) implies defined(_M_CEE_PURE); !defined(_M_CEE_PURE) implies !defined(MRTDLL)
-#endif // defined(MRTDLL) && !defined(_M_CEE_PURE)
-
 #define _STL_WIN32_WINNT_WINXP   0x0501 // _WIN32_WINNT_WINXP from sdkddkver.h
 #define _STL_WIN32_WINNT_VISTA   0x0600 // _WIN32_WINNT_VISTA from sdkddkver.h
 #define _STL_WIN32_WINNT_WIN8    0x0602 // _WIN32_WINNT_WIN8 from sdkddkver.h

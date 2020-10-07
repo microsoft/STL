@@ -270,7 +270,6 @@ public:
 
     locale() noexcept : _Ptr(_Init(true)) {}
 
-#if !defined(MRTDLL) || !defined(_CRTBLD)
     locale(const locale& _Loc, const locale& _Other, category _Cat) : _Ptr(_Locimp::_New_Locimp(*_Loc._Ptr)) {
         // construct a locale by copying named facets
         if (_Cat != none) { // worth adding, do it
@@ -345,7 +344,6 @@ public:
         // construct a locale by copying, replacing named facets
         _Construct(_Str, _Cat);
     }
-#endif // !MRTDLL || !_CRTBLD
 
     ~locale() noexcept {
         if (_Ptr) {

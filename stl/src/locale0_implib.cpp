@@ -6,10 +6,6 @@
 #undef CRTDLL2
 #endif
 
-#ifdef MRTDLL
-#undef MRTDLL
-#endif
-
 #define STDCPP_IMPLIB 1
 
 // When building for msvcmrt.lib, inject a dependency to the msvcp DLL.

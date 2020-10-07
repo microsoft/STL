@@ -3,12 +3,6 @@
 
 // values used by math functions -- IEEE 754 long version
 
-#if defined(_M_CEE_PURE)
-#if defined(MRTDLL)
-#undef MRTDLL
-#endif
-#endif
-
 #include "xmath.hpp"
 // macros -- 64-bit
 #define NBITS (48 + _DOFF)

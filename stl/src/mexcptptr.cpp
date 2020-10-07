@@ -6,10 +6,6 @@
 #undef CRTDLL
 #endif
 
-#ifdef MRTDLL
-#undef MRTDLL
-#endif
-
 #ifndef _DLL
 #define _DLL
 #endif

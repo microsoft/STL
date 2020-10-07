@@ -6,11 +6,9 @@
 #include <fstream>
 #include <iostream>
 
-#ifndef MRTDLL
 #pragma warning(disable : 4074)
 #pragma init_seg(compiler)
 static std::_Init_locks initlocks;
-#endif // MRTDLL
 
 _STD_BEGIN
 // OBJECT DECLARATIONS
