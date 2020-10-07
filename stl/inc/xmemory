@@ -1742,7 +1742,7 @@ _Alloc_ptr_t<_Alloc> _Uninitialized_fill_n(
     _Alloc_ptr_t<_Alloc> _First, _Alloc_size_t<_Alloc> _Count, const typename _Alloc::value_type& _Val, _Alloc& _Al) {
     // copy _Count copies of _Val to raw _First, using _Al
     using _Ty = typename _Alloc::value_type;
-    if constexpr (_Fill_memset_is_safe<_Ty*, _Ty> && _Uses_default_construct<_Alloc, _Ty*, _Ty>::value) {
+    if constexpr (_Can_memset_in_fill<_Ty*, _Ty> && _Uses_default_construct<_Alloc, _Ty*, _Ty>::value) {
         _Fill_memset(_Unfancy(_First), _Val, static_cast<size_t>(_Count));
         return _First + _Count;
     } else {
@@ -1781,7 +1781,7 @@ _Alloc_ptr_t<_Alloc> _Uninitialized_fill_n(_Alloc_ptr_t<_Alloc> _First, const _A
     // copy _Count copies of _Val to raw _First, using _Al
     using _Ty = typename _Alloc::value_type;
     return _Uninit_alloc_fill_n1(_First, _Count, _Val, _Al,
-        bool_constant < _Fill_memset_is_safe<_Ty*, _Ty> && _Uses_default_construct<_Alloc, _Ty*, _Ty>::value > {});
+        bool_constant < _Can_memset_in_fill<_Ty*, _Ty> && _Uses_default_construct<_Alloc, _Ty*, _Ty>::value > {});
 }
 #endif // _HAS_IF_CONSTEXPR
 
@@ -1793,7 +1793,7 @@ void uninitialized_fill(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last, c
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
-    if constexpr (_Fill_memset_is_safe<_Unwrapped_t<const _NoThrowFwdIt&>, _Tval>) {
+    if constexpr (_Can_memset_in_fill<_Unwrapped_t<const _NoThrowFwdIt&>, _Tval>) {
         _Fill_memset(_UFirst, _Val, static_cast<size_t>(_ULast - _UFirst));
     } else {
         _Uninitialized_backout<_Unwrapped_t<const _NoThrowFwdIt&>> _Backout{_UFirst};
@@ -1830,7 +1830,7 @@ void uninitialized_fill(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last, c
     _Adl_verify_range(_First, _Last);
     const auto _UFirst = _Get_unwrapped(_First);
     _Uninitialized_fill_unchecked(_UFirst, _Get_unwrapped(_Last), _Val,
-        bool_constant<_Fill_memset_is_safe<_Unwrapped_t<const _NoThrowFwdIt&>, _Tval>>{});
+        bool_constant<_Can_memset_in_fill<_Unwrapped_t<const _NoThrowFwdIt&>, _Tval>>{});
 }
 #endif // _HAS_IF_CONSTEXPR
 
