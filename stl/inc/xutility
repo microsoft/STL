@@ -1204,6 +1204,16 @@ _NODISCARD _CONSTEXPR17 _BidIt prev(_BidIt _First, _Iter_diff_t<_BidIt> _Off = 1
     return _First;
 }
 
+template <class _Iter>
+_NODISCARD constexpr _Iter _Operator_arrow(true_type, _Iter _Target) {
+    return _Target;
+}
+
+template <class _Iter>
+_NODISCARD constexpr decltype(auto) _Operator_arrow(false_type, _Iter& _Target) {
+    return _Target.operator->();
+}
+
 template <class _BidIt>
 class reverse_iterator {
 public:
@@ -1264,10 +1274,11 @@ public:
 
 #ifdef __cpp_lib_concepts
     // clang-format off
-    _NODISCARD constexpr pointer operator->() const noexcept(is_nothrow_copy_constructible_v<_BidIt>
-        && noexcept(--(_STD declval<_BidIt&>())) && noexcept(_Implicitly_convert_to<pointer>(
-            _Operator_arrow(_STD declval<_BidIt&>(), is_pointer<_BidIt>())))) /* strengthened */
-        requires (is_pointer_v<_BidIt> || requires(const _BidIt __i) { __i.operator->(); }) {
+    _NODISCARD constexpr pointer operator->() const noexcept(is_nothrow_copy_constructible_v<_BidIt>&& noexcept(
+        --(_STD declval<_BidIt&>())) && noexcept(_Implicitly_convert_to<pointer>(_Operator_arrow(is_pointer<_BidIt>{},
+        _STD declval<_BidIt&>())))) /* strengthened */
+        requires (is_pointer_v<_BidIt> || requires(const _BidIt __i) { __i.operator->(); })
+    {
         _BidIt _Tmp = current;
         --_Tmp;
         if constexpr (is_pointer_v<_BidIt>) {
@@ -1278,10 +1289,9 @@ public:
     }
     // clang-format on
 #else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
-    _NODISCARD _CONSTEXPR17 pointer operator->() const
-        noexcept(is_nothrow_copy_constructible_v<_BidIt>&& noexcept(--(_STD declval<_BidIt&>())) && noexcept(
-            _Implicitly_convert_to<pointer>(
-                _Operator_arrow(_STD declval<_BidIt&>(), is_pointer<_BidIt>())))) /* strengthened */ {
+    _NODISCARD _CONSTEXPR17 pointer operator->() const noexcept(is_nothrow_copy_constructible_v<_BidIt>&& noexcept(
+        --(_STD declval<_BidIt&>())) && noexcept(_Implicitly_convert_to<pointer>(_Operator_arrow(is_pointer<_BidIt>{},
+        _STD declval<_BidIt&>())))) /* strengthened */ {
         _BidIt _Tmp = current;
         --_Tmp;
         if constexpr (is_pointer_v<_BidIt>) {
