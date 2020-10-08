@@ -454,7 +454,7 @@ public:
 
     static void __CLRCALL_PURE_OR_CDECL _Addstd(ios_base*); // add standard stream
 
-    size_t _Stdstr; // if > 0 index of standard stream to suppress destruction
+    size_t _Stdstr{0}; // if > 0 index of standard stream to suppress destruction
 
 protected:
     __CLR_OR_THIS_CALL ios_base() {}
