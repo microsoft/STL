@@ -3494,14 +3494,24 @@ public:
 #endif // __cpp_lib_concepts
 
     template <class _Iter2, enable_if_t<_Range_verifiable_v<_Iter, _Iter2>, int> = 0>
-    friend constexpr void _Verify_range(const move_iterator& _First, const move_iterator<_Iter2>& _Last) noexcept(
-        noexcept(_Verify_range(_First._Current, _Last.base()))) {
+    friend constexpr void _Verify_range(const move_iterator& _First, const move_iterator<_Iter2>& _Last)
+#ifdef __EDG__ // TRANSITION, VSO-1222776
+        noexcept(noexcept(_Verify_range(_STD declval<const _Iter&>(), _STD declval<const _Iter2&>())))
+#else // ^^^ workaround / no workaround vvv
+        noexcept(noexcept(_Verify_range(_First._Current, _Last.base())))
+#endif // TRANSITION, VSO-1222776
+    {
         _Verify_range(_First._Current, _Last.base());
     }
 #ifdef __cpp_lib_concepts
     template <sentinel_for<_Iter> _Sent, enable_if_t<_Range_verifiable_v<_Iter, _Sent>, int> = 0>
-    friend constexpr void _Verify_range(const move_iterator& _First, const move_sentinel<_Sent>& _Last) noexcept(
-        noexcept(_Verify_range(_First._Current, _Last._Get_last()))) {
+    friend constexpr void _Verify_range(const move_iterator& _First, const move_sentinel<_Sent>& _Last)
+#ifdef __EDG__ // TRANSITION, VSO-1222776
+        noexcept(noexcept(_Verify_range(_STD declval<const _Iter&>(), _STD declval<const _Sent&>())))
+#else // ^^^ workaround / no workaround vvv
+        noexcept(noexcept(_Verify_range(_First._Current, _Last._Get_last())))
+#endif // TRANSITION, VSO-1222776
+    {
         _Verify_range(_First._Current, _Last._Get_last());
     }
 #endif // __cpp_lib_concepts
