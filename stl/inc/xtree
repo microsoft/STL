@@ -908,7 +908,11 @@ public:
         : _Mypair(
             _One_then_variadic_args_t{}, _Right.key_comp(), _One_then_variadic_args_t{}, _STD move(_Right._Getal())) {
         _Alloc_sentinel_and_proxy();
-        _Swap_val(_Right);
+        const auto _Scary = _Get_scary();
+        auto _Right_scary = _Right._Get_scary();
+        _Scary->_Swap_proxy_and_iterators(*_Right_scary);
+        _Swap_adl(_Scary->_Myhead, _Right_scary->_Myhead);
+        _STD swap(_Scary->_Mysize, _Right_scary->_Mysize);
     }
 
 private:
