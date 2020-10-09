@@ -547,9 +547,9 @@ private:
     fmtflags _Fmtfl; // format flags
     streamsize _Prec; // field precision
     streamsize _Wide; // field width
-    _Iosarray* _Arr; // pointer to first node of long/pointer array
-    _Fnarray* _Calls; // pointer to first node of call list
-    locale* _Ploc; // pointer to locale
+    _Iosarray* _Arr{nullptr}; // pointer to first node of long/pointer array
+    _Fnarray* _Calls{nullptr}; // pointer to first node of call list
+    locale* _Ploc{nullptr}; // pointer to locale
 
     __PURE_APPDOMAIN_GLOBAL static int _Index;
     __PURE_APPDOMAIN_GLOBAL static bool _Sync;
