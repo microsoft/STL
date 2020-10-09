@@ -6,7 +6,6 @@
 #error This file must be built with /clr:pure.
 #endif
 
-#include <fstream>
 #include <iostream>
 
 #pragma warning(disable : 4074)

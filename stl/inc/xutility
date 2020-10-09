@@ -21,7 +21,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID)
+#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID) && !defined(_M_ARM64EC)
 #define _USE_STD_VECTOR_ALGORITHMS 1
 #else
 #define _USE_STD_VECTOR_ALGORITHMS 0
@@ -474,21 +474,11 @@ concept _Cpp17_input_iterator = _Cpp17_iterator<_It>
         requires signed_integral<typename incrementable_traits<_It>::difference_type>;
     };
 
-#if 1 // TRANSITION, VSO-1002863
-template <class _Ty>
-using _Member_iterator_category = typename _Ty::iterator_category;
-#endif // TRANSITION, VSO-1002863
-
 template <class _It>
     requires (!_Has_iter_types<_It> && _Cpp17_iterator<_It> && !_Cpp17_input_iterator<_It>
         // Implements the proposed resolution of LWG-3283:
-#if 1 // TRANSITION, VSO-1002863
-        && (!requires { typename _It::iterator_category; }
-            || derived_from<_Member_iterator_category<_It>, output_iterator_tag>))
-#else // ^^^ workaround / no workaround vvv
         && (!requires { typename _It::iterator_category; }
             || derived_from<typename _It::iterator_category, output_iterator_tag>))
-#endif // TRANSITION, VSO-1002863
 struct _Iterator_traits_base<_It> {
     using iterator_category = output_iterator_tag;
     using difference_type =
@@ -1494,20 +1484,20 @@ _INLINE_VAR constexpr bool
 template <class _Iter, class _UIter>
 constexpr void _Seek_wrapped(_Iter& _It, _UIter&& _UIt) {
     if constexpr (_Wrapped_seekable_v<_Iter, _UIter>) {
-        _It._Seek_to(static_cast<_UIter&&>(_UIt));
+        _It._Seek_to(_STD forward<_UIter>(_UIt));
     } else {
-        _It = static_cast<_UIter&&>(_UIt);
+        _It = _STD forward<_UIter>(_UIt);
     }
 }
 #else // ^^^ _HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
 template <class _Iter, class _UIter, enable_if_t<_Wrapped_seekable_v<_Iter, _UIter>, int> = 0>
 constexpr void _Seek_wrapped(_Iter& _It, _UIter&& _UIt) {
-    _It._Seek_to(static_cast<_UIter&&>(_UIt));
+    _It._Seek_to(_STD forward<_UIter>(_UIt));
 }
 
 template <class _Iter, class _UIter, enable_if_t<!_Wrapped_seekable_v<_Iter, _UIter>, int> = 0>
 constexpr void _Seek_wrapped(_Iter& _It, _UIter&& _UIt) {
-    _It = static_cast<_UIter&&>(_UIt);
+    _It = _STD forward<_UIter>(_UIt);
 }
 
 template <class _Ty>
@@ -4124,22 +4114,22 @@ public:
     }
 
     _NODISCARD friend constexpr reference iter_move(const move_iterator& _It)
-#ifdef __EDG__ // TRANSITION, VSO-1132105
+#ifdef __EDG__ // TRANSITION, VSO-1222776
         noexcept(noexcept(_RANGES iter_move(_STD declval<const _Iter&>())))
 #else // ^^^ workaround / no workaround vvv
         noexcept(noexcept(_RANGES iter_move(_It._Current)))
-#endif // TRANSITION, VSO-1132105
+#endif // TRANSITION, VSO-1222776
     {
         return _RANGES iter_move(_It._Current);
     }
 
     template <indirectly_swappable<_Iter> _Iter2>
     friend constexpr void iter_swap(const move_iterator& _Left, const move_iterator<_Iter2>& _Right)
-#ifdef __EDG__ // TRANSITION, VSO-1132105
+#ifdef __EDG__ // TRANSITION, VSO-1222776
         noexcept(noexcept(_RANGES iter_swap(_STD declval<const _Iter&>(), _STD declval<const _Iter2&>())))
 #else // ^^^ workaround / no workaround vvv
         noexcept(noexcept(_RANGES iter_swap(_Left._Current, _Right.base())))
-#endif // TRANSITION, VSO-1132105
+#endif // TRANSITION, VSO-1222776
     {
         _RANGES iter_swap(_Left._Current, _Right.base());
     }
@@ -4376,6 +4366,17 @@ _OutIt _Copy_memmove(_InIt _First, _InIt _Last, _OutIt _Dest) {
 template <class _InIt, class _OutIt>
 _OutIt _Copy_memmove(move_iterator<_InIt> _First, move_iterator<_InIt> _Last, _OutIt _Dest) {
     return _Copy_memmove(_First.base(), _Last.base(), _Dest);
+}
+
+template <class _InIt, class _OutIt>
+_OutIt _Copy_memcpy_common(_InIt _IFirst, _InIt _ILast, _OutIt _OFirst, _OutIt _OLast) noexcept {
+    const auto _IFirst_ch = const_cast<const char*>(reinterpret_cast<const volatile char*>(_IFirst));
+    const auto _ILast_ch  = const_cast<const char*>(reinterpret_cast<const volatile char*>(_ILast));
+    const auto _OFirst_ch = const_cast<char*>(reinterpret_cast<volatile char*>(_OFirst));
+    const auto _OLast_ch  = const_cast<const char*>(reinterpret_cast<const volatile char*>(_OLast));
+    const auto _Count     = static_cast<size_t>((_STD min)(_ILast_ch - _IFirst_ch, _OLast_ch - _OFirst_ch));
+    _CSTD memcpy(_OFirst_ch, _IFirst_ch, _Count);
+    return reinterpret_cast<_OutIt>(_OFirst_ch + _Count);
 }
 
 #if _HAS_IF_CONSTEXPR

@@ -162,11 +162,13 @@ tests\GH_000685_condition_variable_any
 tests\GH_000690_overaligned_function
 tests\GH_000890_pow_template
 tests\GH_000940_missing_valarray_copy
+tests\GH_001001_random_rejection_rounding
 tests\GH_001010_filesystem_error_encoding
 tests\GH_001017_discrete_distribution_out_of_range
 tests\GH_001059_hyperbolic_truncation
 tests\GH_001086_partial_sort_copy
 tests\GH_001103_countl_zero_correctness
+tests\GH_001123_random_cast_out_of_range
 tests\LWG2597_complex_branch_cut
 tests\LWG3018_shared_ptr_function
 tests\P0019R8_atomic_ref
@@ -218,6 +220,7 @@ tests\P0220R1_sample
 tests\P0220R1_searchers
 tests\P0220R1_string_view
 tests\P0325R4_to_array
+tests\P0339R6_polymorphic_allocator
 tests\P0356R5_bind_front
 tests\P0357R3_supporting_incomplete_types_in_reference_wrapper
 tests\P0414R2_shared_ptr_for_arrays
@@ -237,6 +240,9 @@ tests\P0616R0_using_move_in_numeric
 tests\P0631R8_numbers_math_constants
 tests\P0645R10_text_formatting_parse_contexts
 tests\P0645R10_text_formatting_parsing
+tests\P0660R10_jthread_and_cv_any
+tests\P0660R10_stop_token
+tests\P0660R10_stop_token_death
 tests\P0674R1_make_shared_for_arrays
 tests\P0718R2_atomic_smart_ptrs
 tests\P0758R1_is_nothrow_convertible
@@ -313,7 +319,16 @@ tests\P0896R4_ranges_alg_sort
 tests\P0896R4_ranges_alg_swap_ranges
 tests\P0896R4_ranges_alg_transform_binary
 tests\P0896R4_ranges_alg_transform_unary
+tests\P0896R4_ranges_alg_uninitialized_copy
+tests\P0896R4_ranges_alg_uninitialized_copy_n
+tests\P0896R4_ranges_alg_uninitialized_default_construct
+tests\P0896R4_ranges_alg_uninitialized_default_construct_n
+tests\P0896R4_ranges_alg_uninitialized_fill
+tests\P0896R4_ranges_alg_uninitialized_fill_n
 tests\P0896R4_ranges_alg_uninitialized_move
+tests\P0896R4_ranges_alg_uninitialized_move_n
+tests\P0896R4_ranges_alg_uninitialized_value_construct
+tests\P0896R4_ranges_alg_uninitialized_value_construct_n
 tests\P0896R4_ranges_alg_unique
 tests\P0896R4_ranges_alg_unique_copy
 tests\P0896R4_ranges_algorithm_machinery
@@ -323,6 +338,7 @@ tests\P0896R4_ranges_ref_view
 tests\P0896R4_ranges_subrange
 tests\P0896R4_ranges_test_machinery
 tests\P0896R4_ranges_to_address
+tests\P0896R4_stream_iterators
 tests\P0896R4_views_all
 tests\P0896R4_views_drop
 tests\P0896R4_views_empty
@@ -338,6 +354,7 @@ tests\P0898R3_identity
 tests\P0912R5_coroutine
 tests\P0919R3_heterogeneous_unordered_lookup
 tests\P0966R1_string_reserve_should_not_shrink
+tests\P1007R3_assume_aligned
 tests\P1023R0_constexpr_for_array_comparisons
 tests\P1032R1_miscellaneous_constexpr
 tests\P1135R6_atomic_flag_test

@@ -80,21 +80,21 @@ private:
     aligned_union_t<0, _Alloc> _Alloc_storage; // Invariant: contains a live _Alloc iff _Ptr != nullptr
 
     void _Clear() noexcept { // destroy any contained node and return to the empty state
-        if (_Ptr) {
+        if (_Ptr != nullptr) {
             _Alloc& _Al = _Getal();
+            _Alty_traits::destroy(_Al, _STD addressof(_Ptr->_Myval));
             _Alnode _Node_alloc{_Al};
-            _Alnode_traits::destroy(_Node_alloc, _STD addressof(_Ptr->_Myval));
             _Node::_Freenode0(_Node_alloc, _Ptr);
             _Destroy_in_place(_Al);
             _Ptr = nullptr;
         }
     }
 
-    _Node_handle(const _Nodeptr _My_ptr, const _Alloc& _My_alloc) noexcept
-        : _Ptr{_My_ptr} { // Initialize a _Node_handle that holds the specified node
-                          // pre: _My_ptr != nullptr
-                          // pre: _Alloc can release _Ptr
-        _Construct_in_place(_Getal(), _My_alloc);
+    _Node_handle(const _Nodeptr _Ptr_, const _Alloc& _Al) noexcept
+        : _Ptr{_Ptr_} { // Initialize a _Node_handle that holds the specified node
+                        // pre: _Alloc can release _Ptr
+        _STL_INTERNAL_CHECK(_Ptr_ != nullptr);
+        _Construct_in_place(_Getal(), _Al);
     }
 
 public:
@@ -105,7 +105,7 @@ public:
     }
 
     _Node_handle(_Node_handle&& _That) noexcept : _Ptr{_That._Ptr} { // steal node and allocator (if any) from _That
-        if (_Ptr) {
+        if (_Ptr != nullptr) {
             _That._Ptr       = nullptr;
             _Alloc& _That_al = _That._Getal();
             _Construct_in_place(_Getal(), _STD move(_That_al));
@@ -115,8 +115,8 @@ public:
 
     _Node_handle& operator=(_Node_handle&& _That) noexcept /* strengthened */ {
         // steal state from _That
-        if (!_Ptr) {
-            if (_That._Ptr) {
+        if (_Ptr == nullptr) {
+            if (_That._Ptr != nullptr) {
                 _Alloc& _That_al = _That._Getal();
                 _Construct_in_place(_Getal(), _STD move(_That_al));
                 _Destroy_in_place(_That_al);
@@ -126,14 +126,14 @@ public:
             return *this;
         }
 
-        if (!_That._Ptr || this == _STD addressof(_That)) {
+        if (_That._Ptr == nullptr || this == _STD addressof(_That)) {
             _Clear();
             return *this;
         }
 
         _Alloc& _Al = _Getal();
+        _Alty_traits::destroy(_Al, _STD addressof(_Ptr->_Myval));
         _Alnode _Node_alloc{_Al};
-        _Alnode_traits::destroy(_Node_alloc, _STD addressof(_Ptr->_Myval));
         _Alnode_traits::deallocate(_Node_alloc, _Ptr, 1);
 
         _Alloc& _That_al = _That._Getal();
@@ -148,15 +148,16 @@ public:
         return _Ptr;
     }
 
-    _Alloc& _Getal() noexcept { // pre: !empty()
+    _Alloc& _Getal() noexcept {
         return reinterpret_cast<_Alloc&>(_Alloc_storage);
     }
-    const _Alloc& _Getal() const noexcept { // pre: !empty()
+    const _Alloc& _Getal() const noexcept {
+        _STL_INTERNAL_CHECK(!empty());
         return reinterpret_cast<const _Alloc&>(_Alloc_storage);
     }
 
     _NODISCARD allocator_type get_allocator() const noexcept /* strengthened */ {
-        // pre: !empty()
+        _STL_INTERNAL_CHECK(!empty());
         return _Getal();
     }
 
@@ -169,14 +170,14 @@ public:
     }
 
     _Nodeptr _Release() noexcept { // extract the node from *this
-                                   // pre: !empty()
+        _STL_INTERNAL_CHECK(!empty());
         _Destroy_in_place(_Getal());
         return _STD exchange(_Ptr, nullptr);
     }
 
     void swap(_Node_handle& _That) noexcept /* strengthened */ {
-        if (_Ptr) {
-            if (_That._Ptr) {
+        if (_Ptr != nullptr) {
+            if (_That._Ptr != nullptr) {
                 _Pocs(_Getal(), _That._Getal());
             } else {
                 _Alloc& _Al = _Getal();
@@ -184,7 +185,7 @@ public:
                 _Destroy_in_place(_Al);
             }
         } else {
-            if (!_That._Ptr) {
+            if (_That._Ptr == nullptr) {
                 return;
             }
 
@@ -200,8 +201,8 @@ public:
 
     static _Node_handle _Make(const _Nodeptr _Ptr, const allocator_type& _Al) {
         // initialize a _Node_handle that holds _Ptr and _Al
-        // pre: _Ptr != nullptr
         // pre: _Al can release _Ptr
+        _STL_INTERNAL_CHECK(_Ptr != nullptr);
         return _Node_handle{_Ptr, _Al};
     }
 };

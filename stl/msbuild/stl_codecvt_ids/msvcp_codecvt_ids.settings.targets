@@ -50,6 +50,11 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <LinkRelease>true</LinkRelease>
     </PropertyGroup>
 
+    <PropertyGroup Condition="'$(Arm64X)' == 'true' and '$(TargetNetFx)' != 'true'">
+        <DllDef>$(IntermediateOutputDirectoryEC)\$(DllDefName).def</DllDef>
+        <DllDefArm64Native>$(IntermediateOutputDirectory)\$(DllDefName).def</DllDefArm64Native>
+    </PropertyGroup>
+
     <ItemGroup>
         <CppPreprocess Include="$(MSBuildThisFileDirectory)\msvcprt_codecvt_ids.src">
             <Defines>LIBRARYNAME=$(OutputName.ToUpper());$(DllCppDefines)</Defines>
@@ -68,6 +73,11 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <TargetLib Include="$(CrtLibPath)\msvcrt$(BuildSuffix)$(ClrLibSuffix).lib"/>
         <TargetLib Include="$(CrtLibPath)\vcruntime$(BuildSuffix)$(ClrLibSuffix).lib"/>
         <TargetLib Include="$(UniversalCRTLib)"/>
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(Arm64X)' == 'true' and '$(TargetNetFx)' != 'true'">
+        <ImportLib Include="$(IntermediateOutputDirectoryEC)\ulocale.obj" />
+        <Link Include="$(IntermediateOutputDirectoryEC)\ulocale.obj" />
     </ItemGroup>
 
     <!-- Copy the output dll and pdb to various destinations -->

@@ -312,4 +312,13 @@ inline constexpr DoublePrecisionToCharsTestCase double_scientific_precision_to_c
     {0x1.88e2d605edc3dp+345, chars_format::scientific, 2, "1.10e+104"},
     {0x1.88e2d605edc3dp+345, chars_format::scientific, 1, "1.1e+104"},
     {0x1.88e2d605edc3dp+345, chars_format::scientific, 0, "1e+104"},
+
+    // More cases that the UCRT had trouble with (e.g. DevCom-1093399).
+    {0x1.8p+62, chars_format::scientific, 16, "6.9175290276410819e+18"},
+    {0x1.0a2742p+17, chars_format::scientific, 5, "1.36271e+05"},
+    {0x1.f8b0f962cdffbp+205, chars_format::scientific, 13, "1.0137595739223e+62"},
+    {0x1.f8b0f962cdffbp+205, chars_format::scientific, 16, "1.0137595739222531e+62"},
+    {0x1.f8b0f962cdffbp+205, chars_format::scientific, 50, "1.01375957392225305727423222620636224221808910954041e+62"},
+    {0x1.f8b0f962cdffbp+205, chars_format::scientific, 54,
+        "1.013759573922253057274232226206362242218089109540405973e+62"},
 };

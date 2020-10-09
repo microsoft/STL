@@ -3,14 +3,13 @@
 
 // _Stoul function
 
-#include <ctype.h>
-#include <errno.h>
-#include <limits.h>
-#include <stddef.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cctype>
+#include <cerrno>
+#include <climits>
+#include <cstddef>
+#include <cstdlib>
+#include <cstring>
 
-#include "xmath.hpp"
 
 _EXTERN_C_UNLESS_PURE
 

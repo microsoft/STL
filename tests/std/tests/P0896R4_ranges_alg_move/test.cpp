@@ -37,36 +37,30 @@ struct instantiator {
 
     template <ranges::input_range Read, indirectly_writable<ranges::range_rvalue_reference_t<Read>> Write>
     static constexpr void call() {
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-938163
-#pragma warning(suppress : 4127) // conditional expression is constant
-        if (!ranges::contiguous_range<Read> || !is_constant_evaluated())
-#endif // TRANSITION, VSO-938163
+        using ranges::move, ranges::move_result, ranges::equal, ranges::iterator_t;
         {
-            using ranges::move, ranges::move_result, ranges::equal, ranges::iterator_t;
-            {
-                int_wrapper input[3]  = {13, 55, 12345};
-                int_wrapper output[3] = {-2, -2, -2};
-                Read wrapped_input{input};
+            int_wrapper input[3]  = {13, 55, 12345};
+            int_wrapper output[3] = {-2, -2, -2};
+            Read wrapped_input{input};
 
-                auto result = move(wrapped_input, Write{output});
-                STATIC_ASSERT(same_as<decltype(result), move_result<iterator_t<Read>, Write>>);
-                assert(result.in == wrapped_input.end());
-                assert(result.out.peek() == output + 3);
-                assert(equal(output, expected_output));
-                assert(equal(input, expected_input));
-            }
-            {
-                int_wrapper input[3]  = {13, 55, 12345};
-                int_wrapper output[3] = {-2, -2, -2};
-                Read wrapped_input{input};
+            auto result = move(wrapped_input, Write{output});
+            STATIC_ASSERT(same_as<decltype(result), move_result<iterator_t<Read>, Write>>);
+            assert(result.in == wrapped_input.end());
+            assert(result.out.peek() == output + 3);
+            assert(equal(output, expected_output));
+            assert(equal(input, expected_input));
+        }
+        {
+            int_wrapper input[3]  = {13, 55, 12345};
+            int_wrapper output[3] = {-2, -2, -2};
+            Read wrapped_input{input};
 
-                auto result = move(wrapped_input.begin(), wrapped_input.end(), Write{output});
-                STATIC_ASSERT(same_as<decltype(result), move_result<iterator_t<Read>, Write>>);
-                assert(result.in == wrapped_input.end());
-                assert(result.out.peek() == output + 3);
-                assert(equal(output, expected_output));
-                assert(equal(input, expected_input));
-            }
+            auto result = move(wrapped_input.begin(), wrapped_input.end(), Write{output});
+            STATIC_ASSERT(same_as<decltype(result), move_result<iterator_t<Read>, Write>>);
+            assert(result.in == wrapped_input.end());
+            assert(result.out.peek() == output + 3);
+            assert(equal(output, expected_output));
+            assert(equal(input, expected_input));
         }
     }
 };
