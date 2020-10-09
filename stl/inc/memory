@@ -3616,7 +3616,7 @@ _NODISCARD unique_ptr<_Ty> make_unique_for_overwrite(size_t _Size) { // make a u
 
 template <class _Ty, class... _Types, enable_if_t<extent_v<_Ty> != 0, int> = 0>
 void make_unique_for_overwrite(_Types&&...) = delete;
-#endif
+#endif // _HAS_CXX20
 
 template <class _Ty, class _Dx, enable_if_t<_Is_swappable<_Dx>::value, int> = 0>
 void swap(unique_ptr<_Ty, _Dx>& _Left, unique_ptr<_Ty, _Dx>& _Right) noexcept {

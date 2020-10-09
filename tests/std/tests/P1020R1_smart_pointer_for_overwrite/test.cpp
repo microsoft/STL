@@ -156,10 +156,10 @@ void test_make_unique_for_overwrite() {
     static_assert(!unique_is_for_overwritable_v<int[100]>);
 
     auto p0 = make_unique_for_overwrite<int>();
-    assert_uninitialized(addressof(*p0), sizeof(int));
+    assert_uninitialized(p0.get(), sizeof(int));
 
     auto p1 = make_unique_for_overwrite<int[]>(100u);
-    assert_uninitialized(addressof(p1[0]), sizeof(int) * 100u);
+    assert_uninitialized(p1.get(), sizeof(int) * 100u);
 
     auto p2 = make_unique_for_overwrite<DefaultInitializableInt>();
     assert(p2->value == 106);
