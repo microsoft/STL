@@ -3581,7 +3581,7 @@ _NODISCARD unique_ptr<_Ty> make_unique(_Types&&... _Args) { // make a unique_ptr
     return unique_ptr<_Ty>(new _Ty(_STD forward<_Types>(_Args)...));
 }
 
-template <class _Ty, enable_if_t<is_unbounded_array_v<_Ty>, int> = 0>
+template <class _Ty, enable_if_t<is_array_v<_Ty> && extent_v<_Ty> == 0, int> = 0>
 _NODISCARD unique_ptr<_Ty> make_unique(const size_t _Size) { // make a unique_ptr
     using _Elem = remove_extent_t<_Ty>;
     return unique_ptr<_Ty>(new _Elem[_Size]());
