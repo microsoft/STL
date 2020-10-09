@@ -3033,7 +3033,8 @@ struct _Allocate_n_ptr {
 };
 
 template <class _Ty, class _Alloc, class... _ArgTypes>
-_NODISCARD shared_ptr<_Ty> _Allocate_shared_unbounded_array(const _Alloc& _Al, const size_t _Count, const _ArgTypes&... _Args) {
+_NODISCARD shared_ptr<_Ty> _Allocate_shared_unbounded_array(
+    const _Alloc& _Al, const size_t _Count, const _ArgTypes&... _Args) {
     // make a shared_ptr to an unbounded array
     static_assert(is_unbounded_array_v<_Ty>);
     using _Refc             = _Ref_count_unbounded_array_alloc<remove_cv_t<_Ty>, _Alloc>;

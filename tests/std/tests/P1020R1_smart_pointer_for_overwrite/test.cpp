@@ -17,7 +17,7 @@ using namespace std;
 
 constexpr int uninitializedValue = 0xEE;
 constexpr int defaultValue       = 106;
-size_t allocationCount = 0;
+size_t allocationCount           = 0;
 
 struct ReportAddress;
 vector<ReportAddress*> ascendingAddressBuffer;
@@ -137,7 +137,7 @@ void assert_shared_use_get(const shared_ptr<T>& sp) {
 
 template <class T, class... Args>
 shared_ptr<T> make_shared_for_overwrite_assert(Args&&... vals) {
-    size_t aCount = allocationCount;
+    size_t aCount    = allocationCount;
     shared_ptr<T> sp = make_shared_for_overwrite<T>(forward<Args>(vals)...);
     assert_shared_use_get(sp);
     assert(aCount + 1 == allocationCount);
