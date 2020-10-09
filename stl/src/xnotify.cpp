@@ -3,8 +3,7 @@
 
 // thread exit notification functions
 
-#include <stdlib.h>
-#include <string.h>
+#include <cstdlib>
 #include <xthreads.h>
 
 #include <Windows.h>

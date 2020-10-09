@@ -17,4 +17,21 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
             <BuildAs>nativecpp</BuildAs>
         </BuildFiles>
     </ItemGroup>
+
+    <!-- Specifying EC compilation objs for the cpp files from above -->
+    <PropertyGroup>
+        <ECObjs>
+            $(IntermediateOutputDirectoryEC)\atomic_wait.obj;
+            $(IntermediateOutputDirectoryEC)\parallel_algorithms.obj;
+        </ECObjs>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(Arm64X)' == 'true' and '$(TargetNetFx)' != 'true'">
+        <!-- Add EC symbols to import lib -->
+        <ImportLib Include="$(ECObjs)" />
+        <Link Include="$(ECObjs)"/>
+        <Link Condition="'$(CrtBuildModelIsDll)' == 'true'" Include="
+        $(IntermediateOutputDirectoryEC)\dllmain_satellite.obj;
+        "/>
+    </ItemGroup>
 </Project>

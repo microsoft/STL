@@ -375,10 +375,6 @@ _STD_END
 #define _MEMBER_CALL_CV_REF_NOEXCEPT(FUNC) _MEMBER_CALL_CV_REF(FUNC, )
 #endif // __cpp_noexcept_function_type
 
-#define _CLASS_DEFINE_CONST(CLASS) \
-    CLASS(_EMPTY_ARGUMENT)         \
-    CLASS(const)
-
 #ifdef __cpp_noexcept_function_type
 #define _CLASS_DEFINE_CV_REF_NOEXCEPT(CLASS) \
     CLASS(_EMPTY_ARGUMENT)                   \

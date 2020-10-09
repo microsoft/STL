@@ -11,6 +11,8 @@
 #endif // _VCRT_ALLOW_INTERNALS
 
 #include <Unknwn.h>
+#include <cstdlib> // for abort
+#include <cstring> // for memcpy
 #include <eh.h>
 #include <ehdata.h>
 #include <exception>
@@ -18,9 +20,7 @@
 #include <malloc.h>
 #include <memory>
 #include <new>
-#include <stddef.h>
 #include <stdexcept>
-#include <string.h>
 #include <trnsctrl.h>
 #include <xcall_once.h>
 

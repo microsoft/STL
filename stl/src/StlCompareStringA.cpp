@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <crtdbg.h>
+#include <cstring> // for __strncnt
 #include <internal_shared.h>
-#include <string.h>
 
 #include <Windows.h>
 
@@ -146,5 +146,6 @@ extern "C" int __cdecl __crtCompareStringA(_In_z_ LPCWSTR LocaleName, _In_ DWORD
         return 0;
     }
 
-    return __crtCompareStringEx(LocaleName, dwCmpFlags, wbuffer1.get(), buff_size1, wbuffer2.get(), buff_size2);
+    return CompareStringEx(
+        LocaleName, dwCmpFlags, wbuffer1.get(), buff_size1, wbuffer2.get(), buff_size2, nullptr, nullptr, 0);
 }

@@ -728,7 +728,7 @@ using _Synth_three_way_result = decltype(_Synth_three_way{}(_STD declval<_Ty1&>(
 
 // FUNCTION TEMPLATE in_range
 template <class _Ty>
-_NODISCARD constexpr _Ty _Min_limit() noexcept { // same as (numeric_limits<_Ty>::min)(), less throughput cost
+_NODISCARD _CONSTEVAL _Ty _Min_limit() noexcept { // same as (numeric_limits<_Ty>::min)(), less throughput cost
     static_assert(_Is_standard_integer<_Ty>); // doesn't attempt to handle all types
     if constexpr (is_signed_v<_Ty>) {
         constexpr auto _Unsigned_max = static_cast<make_unsigned_t<_Ty>>(-1);
@@ -739,7 +739,7 @@ _NODISCARD constexpr _Ty _Min_limit() noexcept { // same as (numeric_limits<_Ty>
 }
 
 template <class _Ty>
-_NODISCARD constexpr _Ty _Max_limit() noexcept { // same as (numeric_limits<_Ty>::max)(), less throughput cost
+_NODISCARD _CONSTEVAL _Ty _Max_limit() noexcept { // same as (numeric_limits<_Ty>::max)(), less throughput cost
     static_assert(_Is_standard_integer<_Ty>); // doesn't attempt to handle all types
     if constexpr (is_signed_v<_Ty>) {
         constexpr auto _Unsigned_max = static_cast<make_unsigned_t<_Ty>>(-1);
