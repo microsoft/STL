@@ -742,10 +742,12 @@ std/language.support/cmp/cmp.weakord/weakord.pass.cpp FAIL
 # error C4576: a parenthesized type followed by an initializer list is a non-standard explicit type conversion syntax
 std/containers/sequences/array/array.creation/to_array.pass.cpp:0 FAIL
 
-# Tests that need to learn that insert iterators have non-void difference type in C++20
+# Tests that need to learn that iterators have non-void difference types in C++20
 std/iterators/predef.iterators/insert.iterators/back.insert.iterator/types.pass.cpp FAIL
 std/iterators/predef.iterators/insert.iterators/front.insert.iterator/types.pass.cpp FAIL
 std/iterators/predef.iterators/insert.iterators/insert.iterator/types.pass.cpp FAIL
+std/iterators/stream.iterators/ostream.iterator/types.pass.cpp FAIL
+std/iterators/stream.iterators/ostreambuf.iterator/types.pass.cpp FAIL
 
 # Tests emit warning C4244: 'argument': conversion from 'T' to 'const std::complex<double>::_Ty', possible loss of data
 std/numerics/complex.number/cmplx.over/conj.pass.cpp:0 FAIL
