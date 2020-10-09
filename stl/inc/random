@@ -7,12 +7,14 @@
 #ifndef _RANDOM_
 #define _RANDOM_
 #include <yvals_core.h>
+
 #if _STL_COMPILER_PREPROCESSOR
 #include <algorithm>
 #include <cmath>
 #include <iosfwd>
 #include <stdint.h>
 #include <vector>
+#include <xbit_ops.h>
 #include <xstring>
 
 #pragma pack(push, _CRT_PACKING)
@@ -2025,6 +2027,45 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
+// FUNCTION TEMPLATE _Float_upper_bound
+
+// Returns smallest _Flt such that static_cast<_Ty>(_Result) > _Val.
+// First truncate to largest _Flt <= _Val, then add ceil(ulp).
+
+template <class _Flt, class _Ty>
+_NODISCARD _Flt _Float_upper_bound(_Ty _Val) {
+    static_assert(is_unsigned_v<_Ty> && is_integral_v<_Ty> && is_floating_point_v<_Flt>,
+        "invalid template argument for _Float_upper_bound");
+    constexpr auto _Ty_digits  = numeric_limits<_Ty>::digits;
+    constexpr auto _Flt_digits = numeric_limits<_Flt>::digits;
+    using _Ty_32or64           = conditional_t<_Ty_digits <= 32, uint32_t, uint64_t>;
+
+    if _CONSTEXPR_IF (_Ty_digits <= _Flt_digits) {
+        return static_cast<_Flt>(_Val) + _Flt{1};
+    } else {
+#pragma warning(push)
+#pragma warning(disable : 4146 4293) // unary minus of unsigned, negative shift
+        constexpr auto _Mask = static_cast<_Ty>(-1) << (_Ty_digits - _Flt_digits);
+#ifdef _M_CEE_PURE
+        constexpr auto _Ty_32or64_digits = numeric_limits<_Ty_32or64>::digits;
+        const auto _Log_plus1 = _Ty_32or64_digits - _Countl_zero_fallback(static_cast<_Ty_32or64>(_Val | _Ty{1}));
+#else // _M_CEE_PURE
+        const auto _Log_plus1 = _Bit_scan_reverse(static_cast<_Ty_32or64>(_Val | _Ty{1}));
+#endif // _M_CEE_PURE
+        const auto _Shifted_mask = _Mask >> (_Ty_digits - _Log_plus1);
+        const auto _Ceil_ulp     = _Shifted_mask & -_Shifted_mask;
+        _Val &= _Shifted_mask;
+        if (_Val == _Mask) {
+            // integer add would overflow
+            constexpr auto _Big_ulp = static_cast<_Flt>(_Mask & -_Mask);
+            return static_cast<_Flt>(_Val) + _Big_ulp;
+        } else {
+            return static_cast<_Flt>(_Val + _Ceil_ulp);
+        }
+#pragma warning(pop)
+    }
+}
+
 // CLASS TEMPLATE geometric_distribution
 template <class _Ty = int>
 class geometric_distribution { // geometric distribution
@@ -2123,7 +2164,15 @@ public:
 private:
     template <class _Engine>
     result_type _Eval(_Engine& _Eng, const param_type& _Par0) const {
-        return static_cast<_Ty>(_CSTD log(_NRAND(_Eng, _Ty1)) / _Par0._Log_1_p);
+        using _Uty = make_unsigned_t<_Ty>;
+        constexpr auto _Ty_max{(numeric_limits<_Ty>::max)()};
+        const auto _Ty1_max{_Float_upper_bound<_Ty1>(static_cast<_Uty>(_Ty_max))};
+
+        _Ty1 _Val;
+        do {
+            _Val = _CSTD log(_NRAND(_Eng, _Ty1)) / _Par0._Log_1_p;
+        } while (_Val >= _Ty1_max);
+        return static_cast<_Ty>(_Val);
     }
 
     param_type _Par;
@@ -2287,12 +2336,17 @@ private:
         }
 
         for (;;) { // generate and reject
+            using _Uty = make_unsigned_t<_Ty>;
+            constexpr auto _Ty_max{(numeric_limits<_Ty>::max)()};
+            const auto _Ty1_max{_Float_upper_bound<_Ty1>(static_cast<_Uty>(_Ty_max))};
+
             _Ty _Res;
             _Ty1 _Yx;
             for (;;) { // generate a tentative value
-                _Yx  = static_cast<_Ty1>(_CSTD tan(_Pi * _NRAND(_Eng, _Ty1)));
-                _Res = static_cast<_Ty>(_Par0._Sqrt * _Yx + _Par0._Mean);
-                if (_Ty{0} <= _Res) {
+                _Yx = static_cast<_Ty1>(_CSTD tan(_Pi * _NRAND(_Eng, _Ty1)));
+                const _Ty1 _Mx{_Par0._Sqrt * _Yx + _Par0._Mean};
+                if (0.0 <= _Mx && _Mx < _Ty1_max) {
+                    _Res = static_cast<_Ty>(_Mx);
                     break;
                 }
             }
@@ -2469,12 +2523,16 @@ private:
             // events are rare, use Poisson distribution
             _Res = _Par0._Small(_Eng);
         } else { // no shortcuts
+            using _Uty = make_unsigned_t<_Ty>;
+            const auto _Ty1_Tx{_Float_upper_bound<_Ty1>(static_cast<_Uty>(_Par0._Tx))};
+
             for (;;) { // generate and reject
                 _Ty1 _Yx;
                 for (;;) { // generate a tentative value
-                    _Yx  = static_cast<_Ty1>(_CSTD tan(_Pi * _NRAND(_Eng, _Ty1)));
-                    _Res = static_cast<_Ty>(_Par0._Sqrt * _Yx + _Par0._Mean);
-                    if (_Ty{0} <= _Res && _Res <= _Par0._Tx) {
+                    _Yx = static_cast<_Ty1>(_CSTD tan(_Pi * _NRAND(_Eng, _Ty1)));
+                    const _Ty1 _Mx{_Par0._Sqrt * _Yx + _Par0._Mean};
+                    if (0.0 <= _Mx && _Mx < _Ty1_Tx) {
+                        _Res = static_cast<_Ty>(_Mx);
                         break;
                     }
                 }
@@ -2932,15 +2990,32 @@ private:
             _Ty _Vx1;
             _Ty _Vx2;
             _Ty _Sx;
-            for (;;) { // reject bad values
+            for (;;) { // reject bad values to avoid generating NaN/Inf on the next calculations
                 _Vx1 = 2 * _NRAND(_Eng, _Ty) - 1;
                 _Vx2 = 2 * _NRAND(_Eng, _Ty) - 1;
                 _Sx  = _Vx1 * _Vx1 + _Vx2 * _Vx2;
-                if (_Sx < 1) {
+                if (_Sx < _Ty{1} && _Vx1 != _Ty{0} && _Vx2 != _Ty{0}) {
+                    // good values!
                     break;
                 }
             }
-            const auto _Fx = static_cast<_Ty>(_CSTD sqrt(-2.0 * _CSTD log(_Sx) / _Sx));
+
+            _Ty _LogSx;
+            if (_Sx > _Ty{1e-4}) {
+                _LogSx = _STD log(_Sx);
+            } else {
+                // Bad _Sx value! Very small values will overflow log(_Sx) / _Sx.
+                // Generate a new value based on scaling method.
+                const _Ty _Ln2{_Ty{0.69314718055994530941723212145818}};
+                const _Ty _Maxabs{(_STD max)(_STD abs(_Vx1), _STD abs(_Vx2))};
+                const int _ExpMax{_STD ilogb(_Maxabs)};
+                _Vx1   = _STD scalbn(_Vx1, -_ExpMax);
+                _Vx2   = _STD scalbn(_Vx2, -_ExpMax);
+                _Sx    = _Vx1 * _Vx1 + _Vx2 * _Vx2;
+                _LogSx = _STD log(_Sx) + static_cast<_Ty>(_ExpMax) * (_Ln2 * 2);
+            }
+
+            const auto _Fx = _Ty{_STD sqrt(_Ty{-2} * _LogSx / _Sx)};
             if (_Keep) { // save second value for next call
                 _Xx2   = _Fx * _Vx2;
                 _Valid = true;
@@ -3122,7 +3197,7 @@ private:
             return _Par0._Beta * _Par0._Exp(_Eng);
         }
 
-        if ((_Count = static_cast<int>(_Par0._Alpha)) == _Par0._Alpha && _Count < 20) {
+        if (_Par0._Alpha < 20.0 && (_Count = static_cast<int>(_Par0._Alpha)) == _Par0._Alpha) {
             // _Alpha is small integer, compute directly
             _Yx = _NRAND(_Eng, _Ty);
             while (--_Count) { // adjust result
@@ -3864,7 +3939,7 @@ public:
                 _Px1 = _CSTD pow(_Px1, _Ty{1} / _Ax);
                 _Px2 = _CSTD pow(_Px2, _Ty{1} / _Bx);
                 _Wx  = _Px1 + _Px2;
-                if (_Wx <= _Ty{1}) {
+                if (_Wx <= _Ty{1} && _Wx != _Ty{0}) {
                     break;
                 }
             }
@@ -3872,11 +3947,21 @@ public:
         } else { // use gamma distributions instead
             _Ty _Px1;
             _Ty _Px2;
+            _Ty _PSum;
             gamma_distribution<_Ty> _Dist1(_Ax, 1);
             gamma_distribution<_Ty> _Dist2(_Bx, 1);
-            _Px1 = _Dist1(_Eng);
-            _Px2 = _Dist2(_Eng);
-            return _Px1 / (_Px1 + _Px2);
+
+            for (;;) { // reject pairs whose sum is zero
+                _Px1  = _Dist1(_Eng);
+                _Px2  = _Dist2(_Eng);
+                _PSum = _Px1 + _Px2;
+
+                if (_PSum != _Ty{0}) {
+                    break;
+                }
+            }
+
+            return _Px1 / _PSum;
         }
     }
 
@@ -4001,12 +4086,18 @@ private:
         _Ty _Px;
         _Ty _Vx1;
         _Ty _Vx2;
+        const _Ty _Vx3{1};
         _Vx1 = static_cast<_Ty>(_Par0._Mx) * static_cast<_Ty>(0.5);
         _Vx2 = static_cast<_Ty>(_Par0._Nx) * static_cast<_Ty>(0.5);
         _Beta_distribution<_Ty> _Dist(_Vx1, _Vx2);
-        _Px = _Dist(_Eng);
+        for (;;) { // reject bad values
+            _Px = _Dist(_Eng);
+            if (_Px != _Vx3) {
+                break;
+            }
+        }
 
-        return (_Vx2 / _Vx1) * (_Px / (_Ty{1} - _Px));
+        return (_Vx2 / _Vx1) * (_Px / (_Vx3 - _Px));
     }
 
     param_type _Par;
@@ -4137,13 +4228,13 @@ private:
             _Vx2 = _Dist(_Eng);
             _Rs  = _Vx1 * _Vx1 + _Vx2 * _Vx2;
 
-            if (_Rs < _Ty{1}) {
+            // very small _Rs will overflow on pow(_Rx0, -_Ty{4} / _Par0._Nx)
+            if (_Rs < _Ty{1} && _Rs > _Ty{1e-12}) {
                 break;
             }
         }
-        _Rx0 = _CSTD sqrt(_Rs);
-
-        return _Vx1 * _CSTD sqrt(_Par0._Nx * (_CSTD pow(_Rx0, -_Ty{4} / _Par0._Nx) - _Ty{1}) / _Rs);
+        _Rx0 = _STD sqrt(_Rs);
+        return _Vx1 * _STD sqrt(_Par0._Nx * (_STD pow(_Rx0, -_Ty{4} / _Par0._Nx) - _Ty{1}) / _Rs);
     }
 
     param_type _Par;

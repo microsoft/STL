@@ -9,6 +9,7 @@
 #include <yvals.h>
 #if _STL_COMPILER_PREPROCESSOR
 
+#include <cstdint>
 #include <intrin0.h>
 
 #pragma pack(push, _CRT_PACKING)
@@ -49,6 +50,40 @@ _NODISCARD inline unsigned long _Floor_of_log_2(size_t _Value) noexcept { // ret
 _NODISCARD inline unsigned long _Ceiling_of_log_2(const size_t _Value) noexcept { // returns ceil(log_2(_Value))
                                                                                   // pre: _Value > 1
     return 1 + _Floor_of_log_2(_Value - 1);
+}
+
+_NODISCARD inline uint32_t _Bit_scan_reverse(const uint32_t _Value) noexcept {
+    unsigned long _Index; // Intentionally uninitialized for better codegen
+
+    if (_BitScanReverse(&_Index, _Value)) {
+        return _Index + 1;
+    }
+
+    return 0;
+}
+
+_NODISCARD inline uint32_t _Bit_scan_reverse(const uint64_t _Value) noexcept {
+    unsigned long _Index; // Intentionally uninitialized for better codegen
+
+#ifdef _WIN64
+    if (_BitScanReverse64(&_Index, _Value)) {
+        return _Index + 1;
+    }
+#else // ^^^ 64-bit ^^^ / vvv 32-bit vvv
+    uint32_t _Ui32 = static_cast<uint32_t>(_Value >> 32);
+
+    if (_BitScanReverse(&_Index, _Ui32)) {
+        return _Index + 1 + 32;
+    }
+
+    _Ui32 = static_cast<uint32_t>(_Value);
+
+    if (_BitScanReverse(&_Index, _Ui32)) {
+        return _Index + 1;
+    }
+#endif // ^^^ 32-bit ^^^
+
+    return 0;
 }
 
 _STD_END

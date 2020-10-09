@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cassert>
 #include <concepts>
+#include <cstdlib>
 #include <memory>
 #include <ranges>
 #include <span>
@@ -58,12 +59,8 @@ struct int_wrapper {
         ++destructions;
     }
 
-    int_wrapper& operator=(int_wrapper&& that) {
-        if (that.val == magic_throwing_val) {
-            throw magic_throwing_val;
-        }
-        val = exchange(that.val, -1);
-        return *this;
+    int_wrapper& operator=(int_wrapper&&) {
+        abort();
     }
 
     auto operator<=>(const int_wrapper&) const = default;
@@ -80,21 +77,14 @@ struct holder {
     }
 };
 
-template <class R>
-void not_ranges_destroy(R&& r) { // TRANSITION, ranges::destroy
-    for (auto& e : r) {
-        destroy_at(&e);
-    }
-}
-
 struct instantiator {
     static constexpr int expected_output[] = {13, 55, 12345};
     static constexpr int expected_input[]  = {-1, -1, -1};
 
     template <ranges::input_range R, ranges::forward_range W>
     static void call() {
-        using ranges::uninitialized_move, ranges::uninitialized_move_result, ranges::equal, ranges::equal_to,
-            ranges::iterator_t;
+        using ranges::uninitialized_move, ranges::uninitialized_move_result, ranges::destroy, ranges::equal,
+            ranges::equal_to, ranges::iterator_t;
 
         { // Validate range overload
             int_wrapper input[3] = {13, 55, 12345};
@@ -111,7 +101,7 @@ struct instantiator {
             assert(result.out == wrapped_output.end());
             assert(equal(wrapped_output, expected_output, equal_to{}, &int_wrapper::val));
             assert(equal(input, expected_input, equal_to{}, &int_wrapper::val));
-            not_ranges_destroy(wrapped_output);
+            destroy(wrapped_output);
             assert(int_wrapper::constructions == 3);
             assert(int_wrapper::destructions == 3);
         }
@@ -131,7 +121,7 @@ struct instantiator {
             assert(result.out == wrapped_output.end());
             assert(equal(wrapped_output, expected_output, equal_to{}, &int_wrapper::val));
             assert(equal(input, expected_input, equal_to{}, &int_wrapper::val));
-            not_ranges_destroy(wrapped_output);
+            destroy(wrapped_output);
             assert(int_wrapper::constructions == 3);
             assert(int_wrapper::destructions == 3);
         }

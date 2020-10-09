@@ -3,14 +3,11 @@
 
 // Convert multibyte char to wide char.
 
+#include <cctype>
+#include <cerrno>
+#include <climits> // for INT_MAX
 #include <crtdbg.h>
-#include <ctype.h>
-#include <errno.h>
 #include <internal_shared.h>
-#include <limits.h> // for INT_MAX
-#include <locale.h>
-#include <stdio.h> // for EOF
-#include <stdlib.h>
 #include <xlocinfo.h> // for _Cvtvec, _Mbrtowc
 
 _EXTERN_C_UNLESS_PURE

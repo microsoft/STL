@@ -137,6 +137,7 @@
 // P0202R3 constexpr For <algorithm> And exchange()
 // P0318R1 unwrap_reference, unwrap_ref_decay
 // P0325R4 to_array()
+// P0339R6 polymorphic_allocator<>
 // P0356R5 bind_front()
 // P0357R3 Supporting Incomplete Types In reference_wrapper
 // P0415R1 constexpr For <complex> (Again)
@@ -159,6 +160,7 @@
 // P0646R1 list/forward_list remove()/remove_if()/unique() Return size_type
 // P0653R2 to_address()
 // P0655R1 visit<R>()
+// P0660R10 <stop_token> And jthread
 // P0674R1 make_shared() For Arrays
 // P0718R2 atomic<shared_ptr<T>>, atomic<weak_ptr<T>>
 // P0758R1 is_nothrow_convertible
@@ -176,6 +178,7 @@
 // P0966R1 string::reserve() Should Not Shrink
 // P1001R2 execution::unseq
 // P1006R1 constexpr For pointer_traits<T*>::pointer_to()
+// P1007R3 assume_aligned()
 // P1023R0 constexpr For std::array Comparisons
 // P1024R3 Enhancing span Usability
 // P1032R1 Miscellaneous constexpr
@@ -498,7 +501,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 142
-#define _MSVC_STL_UPDATE  202009L
+#define _MSVC_STL_UPDATE  202010L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #ifdef __EDG__
@@ -540,6 +543,13 @@
 #else // ^^^ constexpr in C++20 and later / inline (not constexpr) in C++17 and earlier vvv
 #define _CONSTEXPR20 inline
 #endif // ^^^ inline (not constexpr) in C++17 and earlier ^^^
+
+// Functions that became constexpr in C++20 via P0784R7
+#if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc)
+#define _CONSTEXPR20_DYNALLOC constexpr
+#else
+#define _CONSTEXPR20_DYNALLOC inline
+#endif
 
 // P0607R0 Inline Variables For The STL
 #if _HAS_CXX17
@@ -1142,6 +1152,7 @@
 #define __cpp_lib_atomic_value_initialization 201911L
 
 #if _HAS_CXX20
+#define __cpp_lib_assume_aligned                201811L
 #define __cpp_lib_atomic_flag_test              201907L
 #define __cpp_lib_atomic_float                  201711L
 #define __cpp_lib_atomic_lock_free_type_aliases 201907L
@@ -1189,9 +1200,11 @@
 #define __cpp_lib_interpolate                  201902L
 #define __cpp_lib_is_constant_evaluated        201811L
 #define __cpp_lib_is_nothrow_convertible       201806L
+#define __cpp_lib_jthread                      201911L
 #define __cpp_lib_latch                        201907L
 #define __cpp_lib_list_remove_return_type      201806L
 #define __cpp_lib_math_constants               201907L
+#define __cpp_lib_polymorphic_allocator        201902L
 #define __cpp_lib_remove_cvref                 201711L
 #define __cpp_lib_semaphore                    201907L
 #define __cpp_lib_shift                        201806L

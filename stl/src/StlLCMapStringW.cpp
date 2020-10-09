@@ -1,8 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <internal_shared.h>
-#include <locale.h>
+#include <cstring> // for wcsnlen
 
 #include "awint.hpp"
 
@@ -47,5 +46,6 @@ extern "C" int __cdecl __crtLCMapStringW(_In_opt_z_ LPCWSTR const locale_name, _
         }
     }
 
-    return __crtLCMapStringEx(locale_name, map_flags, source, source_count, destination, destination_count);
+    return LCMapStringEx(
+        locale_name, map_flags, source, source_count, destination, destination_count, nullptr, nullptr, 0);
 }
