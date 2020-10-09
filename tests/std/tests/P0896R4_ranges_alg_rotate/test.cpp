@@ -45,8 +45,6 @@ struct instantiator {
 };
 
 int main() {
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-938163
     STATIC_ASSERT((test_fwd<instantiator, P>(), true));
-#endif // TRANSITION, VSO-938163
     test_fwd<instantiator, P>();
 }

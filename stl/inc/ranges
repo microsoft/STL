@@ -15,9 +15,9 @@
 #include <span>
 #include <string_view>
 
-#if 1 // TRANSITION, VSO-1174090
+#if 1 // TRANSITION, VSO-1225825
 #include <optional>
-#endif // TRANSITION, VSO-1174090
+#endif // TRANSITION, VSO-1225825
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -244,7 +244,7 @@ namespace ranges {
     using _Cached_position_t = conditional_t<_Enable, _Cached_position<_Rng, _Derived>, view_interface<_Derived>>;
 
     // CLASS TEMPLATE ranges::_Semiregular_box
-#if 0 // TRANSITION, VSO-1174090
+#if 0 // TRANSITION, VSO-1225825
     template <_Copy_constructible_object _Ty>
     class _Semiregular_box {
     public:
@@ -531,7 +531,7 @@ namespace ranges {
     private:
         /* [[no_unique_address]] */ _Ty _Val = _Ty();
     };
-#endif // TRANSITION, VSO-1174090
+#endif // TRANSITION, VSO-1225825
 
     // CLASS TEMPLATE ranges::empty_view
     // clang-format off

@@ -236,26 +236,21 @@ struct empty_range_test {
 };
 
 int main() {
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-938163
     STATIC_ASSERT((test_bidi<empty_range_test, int_wrapper>(), true));
+    test_bidi<empty_range_test, int_wrapper>();
 
     STATIC_ASSERT((test_bidi<next_perm_instantiator<perm1>, int_wrapper>(), true));
     STATIC_ASSERT((test_bidi<next_perm_instantiator<perm4>, int_wrapper>(), true));
     STATIC_ASSERT((test_bidi<next_perm_instantiator<perm8>, int_wrapper>(), true));
-
-    STATIC_ASSERT((test_bidi<prev_perm_instantiator<perm1>, int_wrapper>(), true));
-    STATIC_ASSERT((test_bidi<prev_perm_instantiator<perm4>, int_wrapper>(), true));
-    STATIC_ASSERT((test_bidi<prev_perm_instantiator<perm8>, int_wrapper>(), true));
-#endif // TRANSITION, VSO-938163
-
-    test_bidi<empty_range_test, int_wrapper>();
-
     test_bidi<next_perm_instantiator<perm1>, int_wrapper>();
     test_bidi<next_perm_instantiator<perm4>, int_wrapper>();
     test_bidi<next_perm_instantiator<perm5>, int_wrapper>();
     test_bidi<next_perm_instantiator<perm6>, int_wrapper>();
     test_bidi<next_perm_instantiator<perm8>, int_wrapper>();
 
+    STATIC_ASSERT((test_bidi<prev_perm_instantiator<perm1>, int_wrapper>(), true));
+    STATIC_ASSERT((test_bidi<prev_perm_instantiator<perm4>, int_wrapper>(), true));
+    STATIC_ASSERT((test_bidi<prev_perm_instantiator<perm8>, int_wrapper>(), true));
     test_bidi<prev_perm_instantiator<perm1>, int_wrapper>();
     test_bidi<prev_perm_instantiator<perm4>, int_wrapper>();
     test_bidi<prev_perm_instantiator<perm5>, int_wrapper>();
