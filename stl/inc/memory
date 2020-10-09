@@ -1950,11 +1950,11 @@ private:
     friend enable_if_t<is_unbounded_array_v<_Ty0>, shared_ptr<_Ty0>> allocate_shared_for_overwrite(
         const _Alloc& _Al_arg, size_t _Count);
 
-    template <class _Ty, class... _ArgTypes>
-    friend shared_ptr<_Ty> _Make_shared_unbounded_array(const size_t _Count, const _ArgTypes&... _Args);
+    template <class _Ty0, class... _ArgTypes>
+    friend shared_ptr<_Ty0> _Make_shared_unbounded_array(const size_t _Count, const _ArgTypes&... _Args);
 
-    template <class _Ty, class _Alloc, class... _ArgTypes>
-    friend shared_ptr<_Ty> _Allocate_shared_unbounded_array(
+    template <class _Ty0, class _Alloc, class... _ArgTypes>
+    friend shared_ptr<_Ty0> _Allocate_shared_unbounded_array(
         const _Alloc& _Al, const size_t _Count, const _ArgTypes&... _Args);
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     template <class _Ty0, class... _Types>
@@ -2199,7 +2199,7 @@ public:
 #if _HAS_CXX20
         if constexpr (sizeof...(_Types) == 1 && (is_same_v<_For_overwrite_tag, remove_cvref_t<_Types>> && ...)) {
             _Construct_in_place_for_overwrite(_Storage._Value);
-            (void) (_Args, ...);
+           ((void)_Args, ...);
         } else
 #endif // _HAS_CXX20
         {
@@ -2619,7 +2619,7 @@ public:
 #if _HAS_CXX20
         if constexpr (sizeof...(_Types) == 1 && (is_same_v<_For_overwrite_tag, remove_cvref_t<_Types>> && ...)) {
             _Construct_in_place_for_overwrite(_Storage._Value);
-            (void) (_Args, ...);
+            ((void)_Args, ...);
         } else
 #endif // _HAS_CXX20
         {
