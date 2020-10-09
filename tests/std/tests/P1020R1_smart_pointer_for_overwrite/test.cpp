@@ -2,15 +2,21 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <assert.h>
+#include <cstdint>
 #include <cstdlib>
+#include <cstring>
 #include <memory>
 #include <new>
 #include <stdexcept>
+#include <string_view>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 using namespace std;
 
+constexpr int uninitializedValue = 0xEE;
+constexpr int defaultValue       = 106;
 size_t allocationCount = 0;
 
 struct ReportAddress;
@@ -35,7 +41,7 @@ void* operator new(size_t size, const nothrow_t&) noexcept {
     void* const result = malloc(size == 0 ? 1 : size);
     ++allocationCount;
     if (result) {
-        memset(result, 0xEE, size);
+        memset(result, uninitializedValue, size);
     }
 
     return result;
@@ -55,7 +61,7 @@ void* operator new(size_t size, align_val_t align, const nothrow_t&) noexcept {
     void* const result = ::_aligned_malloc(size, static_cast<size_t>(align));
     ++allocationCount;
     if (result) {
-        memset(result, 0xEE, size);
+        memset(result, uninitializedValue, size);
     }
 
     return result;
@@ -72,7 +78,7 @@ constexpr bool unique_is_for_overwritable_v = unique_is_for_overwritable<T>::val
 
 struct DefaultInitializableInt {
     int value;
-    DefaultInitializableInt() : value(106) {}
+    DefaultInitializableInt() : value(defaultValue) {}
 };
 
 struct alignas(32) HighlyAligned {
@@ -119,7 +125,7 @@ void assert_descending_destruct() {
 void assert_uninitialized(void* p, size_t size) {
     unsigned char* chPtr = reinterpret_cast<unsigned char*>(p);
     for (size_t offset = 0; offset < size; ++offset) {
-        assert(*(chPtr + offset) == 0xEE);
+        assert(chPtr[offset] == uninitializedValue);
     }
 }
 
@@ -131,15 +137,15 @@ void assert_shared_use_get(const shared_ptr<T>& sp) {
 
 template <class T, class... Args>
 shared_ptr<T> make_shared_for_overwrite_assert(Args&&... vals) {
-    size_t count     = allocationCount;
+    size_t aCount = allocationCount;
     shared_ptr<T> sp = make_shared_for_overwrite<T>(forward<Args>(vals)...);
     assert_shared_use_get(sp);
-    assert(count + 1 == allocationCount);
+    assert(aCount + 1 == allocationCount);
     return sp;
 }
 
 template <class T, class... Args>
-void test_make_init_destruct_order(Args&&... vals) {
+void test_make_shared_init_destruct_order(Args&&... vals) {
     try {
         shared_ptr<T> sp = make_shared_for_overwrite<T>(forward<Args>(vals)...);
         assert_shared_use_get(sp);
@@ -162,12 +168,12 @@ void test_make_unique_for_overwrite() {
     assert_uninitialized(p1.get(), sizeof(int) * 100u);
 
     auto p2 = make_unique_for_overwrite<DefaultInitializableInt>();
-    assert(p2->value == 106);
+    assert(p2->value == defaultValue);
 
     auto p3 = make_unique_for_overwrite<DefaultInitializableInt[][89]>(2u);
     for (size_t i = 0; i < 2; ++i) {
         for (size_t j = 0; j < 89; ++j) {
-            assert(p3[i][j].value == 106);
+            assert(p3[i][j].value == defaultValue);
         }
     }
 
@@ -179,7 +185,7 @@ void test_make_shared_for_overwrite() {
     assert_uninitialized(addressof(*p0), sizeof(int));
 
     auto p1 = make_shared_for_overwrite_assert<DefaultInitializableInt>();
-    assert(p1->value == 106);
+    assert(p1->value == defaultValue);
 
     auto p2 = make_shared_for_overwrite_assert<HighlyAligned>();
     assert(reinterpret_cast<uintptr_t>(p2.get()) % alignof(HighlyAligned) == 0);
@@ -191,7 +197,7 @@ void test_make_shared_for_overwrite() {
     auto p4 = make_shared_for_overwrite_assert<DefaultInitializableInt[2][8]>();
     for (ptrdiff_t i = 0; i < 2; ++i) {
         for (ptrdiff_t j = 0; j < 8; ++j) {
-            assert(p4[i][j].value == 106);
+            assert(p4[i][j].value == defaultValue);
         }
     }
 
@@ -201,14 +207,14 @@ void test_make_shared_for_overwrite() {
 
     auto p6 = make_shared_for_overwrite_assert<DefaultInitializableInt[]>(100u);
     for (ptrdiff_t i = 0; i < 100; ++i) {
-        assert(p6[i].value == 106);
+        assert(p6[i].value == defaultValue);
     }
 
     auto p7 = make_shared_for_overwrite_assert<DefaultInitializableInt[][8][9]>(2u);
     for (ptrdiff_t i = 0; i < 2; ++i) {
         for (ptrdiff_t j = 0; j < 8; ++j) {
             for (ptrdiff_t k = 0; k < 9; ++k) {
-                assert(p7[i][j][k].value == 106);
+                assert(p7[i][j][k].value == defaultValue);
             }
         }
     }
@@ -222,21 +228,21 @@ void test_make_shared_for_overwrite() {
     assert(reinterpret_cast<uintptr_t>(p10.get()) % alignof(HighlyAligned) == 0);
     assert_uninitialized(addressof(p10[0]), sizeof(HighlyAligned) * 10u);
 
-    test_make_init_destruct_order<ReportAddress[5]>(); // success one dimensional
+    test_make_shared_init_destruct_order<ReportAddress[5]>(); // success one dimensional
 
-    test_make_init_destruct_order<ReportAddress[20]>(); // failure one dimensional
+    test_make_shared_init_destruct_order<ReportAddress[20]>(); // failure one dimensional
 
-    test_make_init_destruct_order<ReportAddress[2][2][2]>(); // success multidimensional
+    test_make_shared_init_destruct_order<ReportAddress[2][2][2]>(); // success multidimensional
 
-    test_make_init_destruct_order<ReportAddress[3][3][3]>(); // failure multidimensional
+    test_make_shared_init_destruct_order<ReportAddress[3][3][3]>(); // failure multidimensional
 
-    test_make_init_destruct_order<ReportAddress[]>(5u); // success one dimensional
+    test_make_shared_init_destruct_order<ReportAddress[]>(5u); // success one dimensional
 
-    test_make_init_destruct_order<ReportAddress[]>(20u); // failure one dimensional
+    test_make_shared_init_destruct_order<ReportAddress[]>(20u); // failure one dimensional
 
-    test_make_init_destruct_order<ReportAddress[][2][2]>(2u); // success multidimensional
+    test_make_shared_init_destruct_order<ReportAddress[][2][2]>(2u); // success multidimensional
 
-    test_make_init_destruct_order<ReportAddress[][3][3]>(3u); // failure multidimensional
+    test_make_shared_init_destruct_order<ReportAddress[][3][3]>(3u); // failure multidimensional
 }
 
 template <class T, class... Args>
@@ -249,7 +255,7 @@ shared_ptr<T> allocate_shared_for_overwrite_assert(Args&&... vals) {
 }
 
 template <class T, class... Args>
-void test_allocate_init_destruct_order(Args&&... vals) {
+void test_allocate_shared_init_destruct_order(Args&&... vals) {
     allocator<remove_all_extents_t<T>> a{};
 
     try {
@@ -270,10 +276,11 @@ void test_allocate_shared_for_overwrite() {
 
     allocator<DefaultInitializableInt> a1{};
     auto p1 = allocate_shared_for_overwrite_assert<DefaultInitializableInt>(a1);
-    assert(p1->value == 106);
+    assert(p1->value == defaultValue);
 
     allocator<HighlyAligned> a2{};
     auto p2 = allocate_shared_for_overwrite_assert<HighlyAligned>(a2);
+    assert(reinterpret_cast<uintptr_t>(p2.get()) % alignof(HighlyAligned) == 0);
     assert_uninitialized(addressof(*p2), sizeof(HighlyAligned));
 
     auto p3 = allocate_shared_for_overwrite_assert<int[100]>(a0);
@@ -282,7 +289,7 @@ void test_allocate_shared_for_overwrite() {
     auto p4 = allocate_shared_for_overwrite_assert<DefaultInitializableInt[2][8]>(a1);
     for (ptrdiff_t i = 0; i < 2; ++i) {
         for (ptrdiff_t j = 0; j < 8; ++j) {
-            assert(p4[i][j].value == 106);
+            assert(p4[i][j].value == defaultValue);
         }
     }
 
@@ -292,14 +299,14 @@ void test_allocate_shared_for_overwrite() {
 
     auto p6 = allocate_shared_for_overwrite_assert<DefaultInitializableInt[]>(a1, 100u);
     for (ptrdiff_t i = 0; i < 100; ++i) {
-        assert(p6[i].value == 106);
+        assert(p6[i].value == defaultValue);
     }
 
     auto p7 = allocate_shared_for_overwrite_assert<DefaultInitializableInt[][8][9]>(a1, 2u);
     for (ptrdiff_t i = 0; i < 2; ++i) {
         for (ptrdiff_t j = 0; j < 8; ++j) {
             for (ptrdiff_t k = 0; k < 9; ++k) {
-                assert(p7[i][j][k].value == 106);
+                assert(p7[i][j][k].value == defaultValue);
             }
         }
     }
@@ -313,21 +320,21 @@ void test_allocate_shared_for_overwrite() {
     assert(reinterpret_cast<uintptr_t>(p10.get()) % alignof(HighlyAligned) == 0);
     assert_uninitialized(addressof(p10[0]), sizeof(HighlyAligned) * 10u);
 
-    test_allocate_init_destruct_order<ReportAddress[5]>(); // success one dimensional
+    test_allocate_shared_init_destruct_order<ReportAddress[5]>(); // success one dimensional
 
-    test_allocate_init_destruct_order<ReportAddress[20]>(); // failure one dimensional
+    test_allocate_shared_init_destruct_order<ReportAddress[20]>(); // failure one dimensional
 
-    test_allocate_init_destruct_order<ReportAddress[2][2][2]>(); // success multidimensional
+    test_allocate_shared_init_destruct_order<ReportAddress[2][2][2]>(); // success multidimensional
 
-    test_allocate_init_destruct_order<ReportAddress[3][3][3]>(); // failure multidimensional
+    test_allocate_shared_init_destruct_order<ReportAddress[3][3][3]>(); // failure multidimensional
 
-    test_allocate_init_destruct_order<ReportAddress[]>(5u); // success one dimensional
+    test_allocate_shared_init_destruct_order<ReportAddress[]>(5u); // success one dimensional
 
-    test_allocate_init_destruct_order<ReportAddress[]>(20u); // failure one dimensional
+    test_allocate_shared_init_destruct_order<ReportAddress[]>(20u); // failure one dimensional
 
-    test_allocate_init_destruct_order<ReportAddress[][2][2]>(2u); // success multidimensional
+    test_allocate_shared_init_destruct_order<ReportAddress[][2][2]>(2u); // success multidimensional
 
-    test_allocate_init_destruct_order<ReportAddress[][3][3]>(3u); // failure multidimensional
+    test_allocate_shared_init_destruct_order<ReportAddress[][3][3]>(3u); // failure multidimensional
 }
 
 int main() {
