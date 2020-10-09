@@ -2199,7 +2199,7 @@ public:
 #if _HAS_CXX20
         if constexpr (sizeof...(_Types) == 1 && (is_same_v<_For_overwrite_tag, remove_cvref_t<_Types>> && ...)) {
             _Construct_in_place_for_overwrite(_Storage._Value);
-           ((void)_Args, ...);
+            ((void) _Args, ...);
         } else
 #endif // _HAS_CXX20
         {
@@ -2619,7 +2619,7 @@ public:
 #if _HAS_CXX20
         if constexpr (sizeof...(_Types) == 1 && (is_same_v<_For_overwrite_tag, remove_cvref_t<_Types>> && ...)) {
             _Construct_in_place_for_overwrite(_Storage._Value);
-            ((void)_Args, ...);
+            ((void) _Args, ...);
         } else
 #endif // _HAS_CXX20
         {
