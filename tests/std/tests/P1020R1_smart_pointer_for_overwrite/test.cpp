@@ -16,7 +16,7 @@
 using namespace std;
 
 constexpr int uninitializedValue = 0xEE;
-constexpr int defaultValue       = 106;
+constexpr int initializedValue   = 106;
 size_t allocationCount           = 0;
 
 struct ReportAddress;
@@ -78,7 +78,7 @@ constexpr bool unique_is_for_overwritable_v = unique_is_for_overwritable<T>::val
 
 struct DefaultInitializableInt {
     int value;
-    DefaultInitializableInt() : value(defaultValue) {}
+    DefaultInitializableInt() : value(initializedValue) {}
 };
 
 struct alignas(32) HighlyAligned {
@@ -168,12 +168,12 @@ void test_make_unique_for_overwrite() {
     assert_uninitialized(p1.get(), sizeof(int) * 100u);
 
     auto p2 = make_unique_for_overwrite<DefaultInitializableInt>();
-    assert(p2->value == defaultValue);
+    assert(p2->value == initializedValue);
 
     auto p3 = make_unique_for_overwrite<DefaultInitializableInt[][89]>(2u);
     for (size_t i = 0; i < 2; ++i) {
         for (size_t j = 0; j < 89; ++j) {
-            assert(p3[i][j].value == defaultValue);
+            assert(p3[i][j].value == initializedValue);
         }
     }
 
@@ -185,7 +185,7 @@ void test_make_shared_for_overwrite() {
     assert_uninitialized(addressof(*p0), sizeof(int));
 
     auto p1 = make_shared_for_overwrite_assert<DefaultInitializableInt>();
-    assert(p1->value == defaultValue);
+    assert(p1->value == initializedValue);
 
     auto p2 = make_shared_for_overwrite_assert<HighlyAligned>();
     assert(reinterpret_cast<uintptr_t>(p2.get()) % alignof(HighlyAligned) == 0);
@@ -197,7 +197,7 @@ void test_make_shared_for_overwrite() {
     auto p4 = make_shared_for_overwrite_assert<DefaultInitializableInt[2][8]>();
     for (ptrdiff_t i = 0; i < 2; ++i) {
         for (ptrdiff_t j = 0; j < 8; ++j) {
-            assert(p4[i][j].value == defaultValue);
+            assert(p4[i][j].value == initializedValue);
         }
     }
 
@@ -207,14 +207,14 @@ void test_make_shared_for_overwrite() {
 
     auto p6 = make_shared_for_overwrite_assert<DefaultInitializableInt[]>(100u);
     for (ptrdiff_t i = 0; i < 100; ++i) {
-        assert(p6[i].value == defaultValue);
+        assert(p6[i].value == initializedValue);
     }
 
     auto p7 = make_shared_for_overwrite_assert<DefaultInitializableInt[][8][9]>(2u);
     for (ptrdiff_t i = 0; i < 2; ++i) {
         for (ptrdiff_t j = 0; j < 8; ++j) {
             for (ptrdiff_t k = 0; k < 9; ++k) {
-                assert(p7[i][j][k].value == defaultValue);
+                assert(p7[i][j][k].value == initializedValue);
             }
         }
     }
@@ -276,7 +276,7 @@ void test_allocate_shared_for_overwrite() {
 
     allocator<DefaultInitializableInt> a1{};
     auto p1 = allocate_shared_for_overwrite_assert<DefaultInitializableInt>(a1);
-    assert(p1->value == defaultValue);
+    assert(p1->value == initializedValue);
 
     allocator<HighlyAligned> a2{};
     auto p2 = allocate_shared_for_overwrite_assert<HighlyAligned>(a2);
@@ -289,7 +289,7 @@ void test_allocate_shared_for_overwrite() {
     auto p4 = allocate_shared_for_overwrite_assert<DefaultInitializableInt[2][8]>(a1);
     for (ptrdiff_t i = 0; i < 2; ++i) {
         for (ptrdiff_t j = 0; j < 8; ++j) {
-            assert(p4[i][j].value == defaultValue);
+            assert(p4[i][j].value == initializedValue);
         }
     }
 
@@ -299,14 +299,14 @@ void test_allocate_shared_for_overwrite() {
 
     auto p6 = allocate_shared_for_overwrite_assert<DefaultInitializableInt[]>(a1, 100u);
     for (ptrdiff_t i = 0; i < 100; ++i) {
-        assert(p6[i].value == defaultValue);
+        assert(p6[i].value == initializedValue);
     }
 
     auto p7 = allocate_shared_for_overwrite_assert<DefaultInitializableInt[][8][9]>(a1, 2u);
     for (ptrdiff_t i = 0; i < 2; ++i) {
         for (ptrdiff_t j = 0; j < 8; ++j) {
             for (ptrdiff_t k = 0; k < 9; ++k) {
-                assert(p7[i][j][k].value == defaultValue);
+                assert(p7[i][j][k].value == initializedValue);
             }
         }
     }
