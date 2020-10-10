@@ -1714,6 +1714,10 @@ DEFINE_TEST(test_ordered_associative_default_constructor_with_comparer,
         copy_constructible_compare<erasable> const c((key()));
         (container_type(c));
         container_type a(c);
+
+        // GH-1037 containers should be move constuctible with a non-assignable comparator
+        container_type b{std::move(a)};
+        container_type d = std::move(b);
 }
 
 // X() and X a;
@@ -1724,6 +1728,10 @@ DEFINE_TEST(test_ordered_associative_default_constructor_with_comparer,
 
     (container_type());
     container_type a;
+
+    // GH-1037 containers should be move assignable with a non-assignable comparator
+    container_type b;
+    b = std::move(a);
 }
 });
 
