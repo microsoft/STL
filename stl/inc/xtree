@@ -938,7 +938,12 @@ public:
         }
 
         _Alloc_sentinel_and_proxy();
-        _Swap_val(_Right);
+
+        const auto _Scary = _Get_scary();
+        auto _Right_scary = _Right._Get_scary();
+        _Scary->_Swap_proxy_and_iterators(*_Right_scary);
+        _Swap_adl(_Scary->_Myhead, _Right_scary->_Myhead);
+        _STD swap(_Scary->_Mysize, _Right_scary->_Mysize);
     }
 
 private:
@@ -946,7 +951,11 @@ private:
         clear();
         _Getcomp() = _Right._Getcomp();
         _Pocma(_Getal(), _Right._Getal());
-        _Swap_val(_Right);
+        const auto _Scary = _Get_scary();
+        auto _Right_scary = _Right._Get_scary();
+        _Scary->_Swap_proxy_and_iterators(*_Right_scary);
+        _Swap_adl(_Scary->_Myhead, _Right_scary->_Myhead);
+        _STD swap(_Scary->_Mysize, _Right_scary->_Mysize);
     }
 
     void _Move_assign(_Tree& _Right, _Propagate_allocators) {
