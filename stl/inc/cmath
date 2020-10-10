@@ -605,13 +605,20 @@ _STD _Common_float_type_t<_Ty1, _Ty2> remquo(_Ty1 _Left, _Ty2 _Right, int* _Pquo
 #endif // _HAS_IF_CONSTEXPR
 }
 
-#define _GENERIC_MATH1R(FUN, RET)                                            \
+#define _GENERIC_MATH1_BASE(NAME, RET, FUN)                                  \
     template <class _Ty, _STD enable_if_t<_STD is_integral_v<_Ty>, int> = 0> \
-    _NODISCARD RET FUN(_Ty _Left) noexcept /* strengthened */ {              \
-        return _CSTD FUN(static_cast<double>(_Left));                        \
+    _NODISCARD RET NAME(_Ty _Left) noexcept /* strengthened */ {             \
+        return FUN(static_cast<double>(_Left));                              \
     }
 
-#define _GENERIC_MATH1(FUN) _GENERIC_MATH1R(FUN, double)
+#define _GENERIC_MATH1R(FUN, RET) _GENERIC_MATH1_BASE(FUN, RET, _CSTD FUN)
+#define _GENERIC_MATH1(FUN)       _GENERIC_MATH1R(FUN, double)
+
+#ifdef __clang__
+#define _GENERIC_MATH1I(FUN, INTRIN) _GENERIC_MATH1R(FUN, double)
+#else // ^^^ __clang__ / !__clang__ vvv
+#define _GENERIC_MATH1I(FUN, INTRIN) _GENERIC_MATH1_BASE(FUN, double, INTRIN)
+#endif // __clang__
 
 #define _GENERIC_MATH1X(FUN, ARG2)                                             \
     template <class _Ty, _STD enable_if_t<_STD is_integral_v<_Ty>, int> = 0>   \
@@ -619,13 +626,21 @@ _STD _Common_float_type_t<_Ty1, _Ty2> remquo(_Ty1 _Left, _Ty2 _Right, int* _Pquo
         return _CSTD FUN(static_cast<double>(_Left), _Arg2);                   \
     }
 
-#define _GENERIC_MATH2(FUN)                                                                                     \
-    template <class _Ty1, class _Ty2,                                                                           \
-        _STD enable_if_t<_STD is_arithmetic_v<_Ty1> && _STD is_arithmetic_v<_Ty2>, int> = 0>                    \
-    _NODISCARD _STD _Common_float_type_t<_Ty1, _Ty2> FUN(_Ty1 _Left, _Ty2 _Right) noexcept /* strengthened */ { \
-        using _Common = _STD _Common_float_type_t<_Ty1, _Ty2>;                                                  \
-        return _CSTD FUN(static_cast<_Common>(_Left), static_cast<_Common>(_Right));                            \
+#define _GENERIC_MATH2_BASE(NAME, FUN)                                                                           \
+    template <class _Ty1, class _Ty2,                                                                            \
+        _STD enable_if_t<_STD is_arithmetic_v<_Ty1> && _STD is_arithmetic_v<_Ty2>, int> = 0>                     \
+    _NODISCARD _STD _Common_float_type_t<_Ty1, _Ty2> NAME(_Ty1 _Left, _Ty2 _Right) noexcept /* strengthened */ { \
+        using _Common = _STD _Common_float_type_t<_Ty1, _Ty2>;                                                   \
+        return FUN(static_cast<_Common>(_Left), static_cast<_Common>(_Right));                                   \
     }
+
+#define _GENERIC_MATH2(FUN) _GENERIC_MATH2_BASE(FUN, _CSTD FUN)
+
+#ifdef __clang__
+#define _GENERIC_MATH2I(FUN, INTRIN) _GENERIC_MATH2(FUN)
+#else // ^^^ __clang__ / !__clang__ vvv
+#define _GENERIC_MATH2I(FUN, INTRIN) _GENERIC_MATH2_BASE(FUN, INTRIN)
+#endif // __clang__
 
 // The following order matches N4820 26.8.1 [cmath.syn].
 _GENERIC_MATH1(acos)
@@ -666,20 +681,20 @@ _GENERIC_MATH1(erf)
 _GENERIC_MATH1(erfc)
 _GENERIC_MATH1(lgamma)
 _GENERIC_MATH1(tgamma)
-_GENERIC_MATH1(ceil)
-_GENERIC_MATH1(floor)
+_GENERIC_MATH1I(ceil, __ceil)
+_GENERIC_MATH1I(floor, __floor)
 _GENERIC_MATH1(nearbyint)
 _GENERIC_MATH1(rint)
 _GENERIC_MATH1R(lrint, long)
 _GENERIC_MATH1R(llrint, long long)
-_GENERIC_MATH1(round)
+_GENERIC_MATH1I(round, __round)
 _GENERIC_MATH1R(lround, long)
 _GENERIC_MATH1R(llround, long long)
-_GENERIC_MATH1(trunc)
+_GENERIC_MATH1I(trunc, __trunc)
 _GENERIC_MATH2(fmod)
 _GENERIC_MATH2(remainder)
 // remquo() is hand-crafted
-_GENERIC_MATH2(copysign)
+_GENERIC_MATH2I(copysign, __copysign)
 // nan(const char*) is exempt
 _GENERIC_MATH2(nextafter)
 _GENERIC_MATH1X(nexttoward, long double)
