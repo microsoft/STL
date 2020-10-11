@@ -986,8 +986,7 @@ private:
             _Move_assign(_Right, _Equal_allocators{});
         } else {
             clear();
-            _Destroy_in_place(_Getcomp());
-            _Construct_in_place(_Getcomp(), std::move(_Right._Getcomp()));
+            _Getcomp() = _Right._Getcomp();
             _Copy(_Right, _Move_tag{});
         }
     }
