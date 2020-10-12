@@ -215,5 +215,7 @@ int main() {
     static_assert(test_parse_width<wchar_t>());
     test_parse_precision<char>();
     test_parse_precision<wchar_t>();
+    static_assert(test_parse_precision<char>());
+    static_assert(test_parse_precision<wchar_t>());
     return 0;
 }
