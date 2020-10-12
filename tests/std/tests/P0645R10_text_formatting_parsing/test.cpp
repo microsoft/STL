@@ -191,7 +191,6 @@ constexpr bool test_parse_precision() {
         test_parse_helper(parse_pre_fn, i0, true);
     }
 
-
     return true;
 }
 

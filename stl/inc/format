@@ -91,6 +91,7 @@ constexpr const _CharT* _Parse_arg_id(const _CharT* _Begin, const _CharT* _End, 
         _Callbacks._On_auto_id();
         return _Begin;
     }
+
     if (_Ch >= '0' && _Ch <= '9') {
         int _Index = 0;
         // arg_id is not allowed to have any leading zeros, but is allowed to be
@@ -166,7 +167,7 @@ template <class _CharT, _Parse_spec_callbacks<_CharT> _Callbacks_type>
 struct _Width_adapter {
     _Callbacks_type& _Callbacks;
 
-    explicit constexpr _Width_adapter(_Callbacks_type& _Handler) : _Callbacks(_Handler) {}
+    constexpr explicit _Width_adapter(_Callbacks_type& _Handler) : _Callbacks(_Handler) {}
 
     constexpr void _On_auto_id() {
         _Callbacks._On_dynamic_width(_Auto_id_tag{});
@@ -176,13 +177,13 @@ struct _Width_adapter {
     }
 };
 
-// Adapts a type modeling _Parse_spec_callbacks to module _Parse_arg_id_callbacks.
+// Adapts a type modeling _Parse_spec_callbacks to model _Parse_arg_id_callbacks.
 // Used in _Parse_precision so that _Parse_arg_id can be used to parse dynamic precisions.
 template <class _CharT, _Parse_spec_callbacks<_CharT> _Callbacks_type>
 struct _Precision_adapter {
     _Callbacks_type& _Callbacks;
 
-    explicit constexpr _Precision_adapter(_Callbacks_type& _Handler) : _Callbacks(_Handler) {}
+    constexpr explicit _Precision_adapter(_Callbacks_type& _Handler) : _Callbacks(_Handler) {}
 
     constexpr void _On_auto_id() {
         _Callbacks._On_dynamic_precision(_Auto_id_tag{});
@@ -219,6 +220,7 @@ constexpr const _CharT* _Parse_precision(const _CharT* _Begin, const _CharT* _En
     if (_Begin != _End) {
         _Ch = *_Begin;
     }
+
     if ('0' <= _Ch && _Ch <= '9') {
         int _Precision = 0;
         _Begin         = _Parse_nonnegative_integer(_Begin, _End, _Precision);
@@ -232,7 +234,7 @@ constexpr const _CharT* _Parse_precision(const _CharT* _Begin, const _CharT* _En
             throw format_error("Invalid format string.");
         }
     } else {
-        throw format_error("missing precision specifier");
+        throw format_error("Missing precision specifier.");
     }
     return _Begin;
 }
