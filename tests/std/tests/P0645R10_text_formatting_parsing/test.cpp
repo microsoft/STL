@@ -80,6 +80,18 @@ struct testing_callbacks {
     constexpr void _On_type(CharT type) {
         assert(type == expected_type);
     }
+    constexpr void _On_sign(_Sign sgn) {
+        assert(sgn = expected_sign);
+    }
+    constexpr void _On_hash() {
+        assert(expected_hash);
+    }
+    constexpr void _On_zero() {
+        assert(expected_zero);
+    }
+    constexpr void _On_type(CharT type) {
+        assert(type = expected_type);
+    }
 };
 template <typename CharT>
 testing_callbacks(_Align, basic_string_view<CharT>) -> testing_callbacks<CharT>;
