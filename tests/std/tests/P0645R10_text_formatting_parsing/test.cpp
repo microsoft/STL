@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <concepts>
 #include <format>
+#include <optional>
 #include <stdio.h>
 #include <string_view>
 
@@ -32,6 +33,7 @@ struct choose_literal<wchar_t> {
 template <typename CharT>
 struct testing_callbacks {
     _Align expected_alignment = _Align::_None;
+    _Sign expected_sign       = _Sign::_None;
     basic_string_view<CharT> expected_fill;
     int expected_width                   = -1;
     int expected_dynamic_width           = -1;
@@ -39,6 +41,9 @@ struct testing_callbacks {
     int expected_precision               = -1;
     int expected_dynamic_precision       = -1;
     bool expected_auto_dynamic_precision = false;
+    bool expected_hash                   = false;
+    bool expected_zero                   = false;
+    char expected_type                   = '\0';
     constexpr void _On_align(_Align aln) {
         assert(aln == expected_alignment);
     }
@@ -62,6 +67,18 @@ struct testing_callbacks {
     }
     constexpr void _On_dynamic_precision(_Auto_id_tag) {
         assert(expected_auto_dynamic_precision);
+    }
+    constexpr void _On_sign(_Sign sgn) {
+        assert(sgn = expected_sign);
+    }
+    constexpr void _On_hash() {
+        assert(expected_hash);
+    }
+    constexpr void _On_zero() {
+        assert(expected_zero);
+    }
+    constexpr void _On_type(CharT type) {
+        assert(type = expected_type);
     }
 };
 template <typename CharT>
