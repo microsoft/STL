@@ -46,6 +46,13 @@ void test_dereference_no_stream() {
     (void) *it;
 }
 
+void test_compare_no_stream() {
+    iview v;
+    auto it = v.begin();
+    auto se = v.end();
+    (void) (it == se);
+}
+
 void test_preincrement_end_of_stream() {
     istringstream stream;
     iview view{stream};
@@ -78,6 +85,7 @@ int main(int argc, char* argv[]) {
         test_preincrement_no_stream,
         test_postincrement_no_stream,
         test_dereference_no_stream,
+        test_compare_no_stream,
         test_preincrement_end_of_stream,
         test_postincrement_end_of_stream,
         test_dereference_end_of_stream,

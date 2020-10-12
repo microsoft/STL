@@ -657,12 +657,11 @@ namespace ranges {
 
             _Iterator& operator++() {
 #if _ITERATOR_DEBUG_LEVEL != 0
-                _STL_VERIFY(_Parent != nullptr,
-                    "cannot increment default initialized istream_view iterator"); // Per LWG-XXXX
+                // Per LWG-3489
+                _STL_VERIFY(_Parent != nullptr, "cannot increment default initialized istream_view iterator");
                 _STL_VERIFY(
                     _Parent->_Stream != nullptr, "cannot increment istream_view iterator with uninitialized stream");
-                _STL_VERIFY(!_Parent->_Stream_at_end(),
-                    "cannot increment istream_view iterator at end of stream"); // Per LWG-XXXX
+                _STL_VERIFY(!_Parent->_Stream_at_end(), "cannot increment istream_view iterator at end of stream");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
                 *_Parent->_Stream >> _Parent->_Val;
                 return *this;
@@ -674,12 +673,11 @@ namespace ranges {
 
             _NODISCARD _Ty& operator*() const noexcept /* strengthened */ {
 #if _ITERATOR_DEBUG_LEVEL != 0
-                _STL_VERIFY(_Parent != nullptr,
-                    "cannot dereference default initialized istream_view iterator"); // Per LWG-XXXX
+                // Per LWG-3489
+                _STL_VERIFY(_Parent != nullptr, "cannot dereference default initialized istream_view iterator");
                 _STL_VERIFY(
                     _Parent->_Stream != nullptr, "cannot dereference istream_view iterator with uninitialized stream");
-                _STL_VERIFY(!_Parent->_Stream_at_end(),
-                    "cannot dereference istream_view iterator at end of stream"); // Per LWG-XXXX
+                _STL_VERIFY(!_Parent->_Stream_at_end(), "cannot dereference istream_view iterator at end of stream");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
                 return _Parent->_Val;
             }
@@ -710,12 +708,13 @@ namespace ranges {
         }
 
         _NODISCARD constexpr bool _Stream_at_end() const noexcept {
-            return _Stream == nullptr || !*_Stream;
+            return !*_Stream;
         }
     };
 
     template <class _Ty, class _Elem, class _Traits>
-    _NODISCARD basic_istream_view<_Ty, _Elem, _Traits> istream_view(basic_istream<_Elem, _Traits>& _Stream) {
+    _NODISCARD basic_istream_view<_Ty, _Elem, _Traits> istream_view(basic_istream<_Elem, _Traits>& _Stream) noexcept(
+        is_nothrow_default_constructible_v<_Ty>) /* strengthened */ {
         return basic_istream_view<_Ty, _Elem, _Traits>{_Stream};
     }
 

@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
-#include <istream>
+#include <iostream>
 #include <ranges>
 #include <sstream>
 
@@ -13,6 +13,7 @@
 using namespace std;
 
 constexpr int expected_empty[] = {-1, -1, -1, -1, -1};
+constexpr int expected[]       = {0, 1, 2, 3, -1};
 
 struct streamable {
     streamable() = default;
@@ -29,7 +30,7 @@ struct streamable {
 };
 
 template <class T>
-bool test_one_type() {
+void test_one_type() {
     using ranges::basic_istream_view;
 
     // validate type properties
@@ -41,22 +42,28 @@ bool test_one_type() {
     static_assert(!ranges::sized_range<R>);
     static_assert(!ranges::common_range<R>);
 
-    // validate constructor
-    auto nonempty_stream                  = istringstream{"0"};
-    auto empty_intstream                  = istringstream{};
-    same_as<R> auto default_constructed   = basic_istream_view<T, char>{};
-    same_as<R> auto empty_constructed     = basic_istream_view<T, char>{empty_intstream};
-    same_as<R> auto non_empty_constructed = basic_istream_view<T, char>{nonempty_stream};
+    // validate constructors
+    istringstream nonempty_stream{"0"};
+    istringstream empty_intstream{};
+    R default_constructed{};
+    R empty_constructed{empty_intstream};
+    R non_empty_constructed{nonempty_stream};
+
+    static_assert(is_nothrow_constructible_v<R> == is_nothrow_default_constructible_v<T>);
+    static_assert(is_nothrow_constructible_v<R, istream&> == is_nothrow_default_constructible_v<T>);
 
     // validate member begin
     // NOTE: begin() consumes the first token
-    assert(default_constructed.begin() == default_sentinel);
+    (void) default_constructed.begin(); // default-constructed basic_istream_view doesn't model range.
     assert(empty_constructed.begin() == default_sentinel);
     assert(non_empty_constructed.begin() != default_sentinel);
 
     // validate default constructed istream::iterator
-    const auto default_constructed_it = ranges::iterator_t<R>();
-    assert(default_constructed_it == default_sentinel);
+    {
+        const ranges::iterator_t<R> default_constructed_it;
+        assert(default_constructed_it == default_sentinel);
+        static_assert(noexcept(default_constructed_it == default_sentinel));
+    }
 
     // validate member end
     static_assert(same_as<decltype(default_constructed.end()), default_sentinel_t>);
@@ -70,25 +77,36 @@ bool test_one_type() {
     static_assert(!CanMemberFront<R>);
     static_assert(!CanMemberBack<R>);
 
-    // Some basic test
-    T input_default[] = {-1, -1, -1, -1, -1};
-    ranges::copy(default_constructed, input_default);
-    assert(ranges::equal(input_default, expected_empty));
-
+    // Some basic tests
     T input_empty[] = {-1, -1, -1, -1, -1};
     ranges::copy(empty_constructed, input_empty);
     assert(ranges::equal(input_empty, expected_empty));
 
-    const T expected[] = {0, 1, 2, 3, -1};
-    auto intstream     = istringstream{"0 1  2   3"};
-    T input_value[]    = {-1, -1, -1, -1, -1};
+    istringstream intstream{"0 1 2 3"};
+    T input_value[] = {-1, -1, -1, -1, -1};
     ranges::copy(basic_istream_view<T, char>{intstream}, input_value);
     assert(ranges::equal(input_value, expected));
 
-    auto intstream_view  = istringstream{"0 1  2   3"};
+    istringstream intstream_view{"0 1 2 3"};
     T input_value_view[] = {-1, -1, -1, -1, -1};
-    ranges::copy(ranges::istream_view<T, char>(intstream_view), input_value_view);
+    ranges::copy(ranges::istream_view<T>(intstream_view), input_value_view);
+    static_assert(noexcept(ranges::istream_view<T>(intstream_view)));
     assert(ranges::equal(input_value_view, expected));
+}
+
+istringstream some_stream{"42"};
+constexpr bool test_constexpr() {
+    // Default constructor is constexpr
+    ranges::basic_istream_view<int, char> empty{};
+
+    // begin is constexpr??!?
+    (void) empty.begin();
+
+    // stream constructor is constexpr
+    ranges::basic_istream_view<int, char> meow{some_stream};
+
+    // end is constexpr
+    (void) meow.end();
 
     return true;
 }
@@ -96,4 +114,6 @@ bool test_one_type() {
 int main() {
     test_one_type<int>();
     test_one_type<streamable>();
+
+    static_assert(test_constexpr());
 }
