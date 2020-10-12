@@ -642,7 +642,7 @@ private:
                     _Clear_and_reserve_geometric(_Newsize);
                 }
 
-                _Mylast = _Refancy<pointer>(_Copy_memmove(_Unfancy(_First), _Unfancy(_Last), _Unfancy(_Myfirst)));
+                _Mylast = _Refancy<pointer>(_Memmove_forward(_Unfancy(_First), _Unfancy(_Last), _Unfancy(_Myfirst)));
             } else
 #endif // _HAS_IF_CONSTEXPR
             {
@@ -1116,7 +1116,7 @@ private:
                 _Clear_and_reserve_geometric(_Newsize);
             }
 
-            _Mylast = _Refancy<pointer>(_Copy_memmove(_First, _Last, _Unfancy(_Myfirst)));
+            _Mylast = _Refancy<pointer>(_Memmove_forward(_First, _Last, _Unfancy(_Myfirst)));
         } else
 #endif // _HAS_IF_CONSTEXPR
         {

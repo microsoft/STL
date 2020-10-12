@@ -1852,7 +1852,7 @@ namespace ranges {
     _NODISCARD constexpr _It2 _Move_backward_common(const _It1 _First, _It1 _Last, _It2 _Result) {
         if constexpr (_Memmove_in_move_is_safe<_It1, _It2>) {
             if (!_STD is_constant_evaluated()) {
-                return _Copy_backward_memmove(_First, _Last, _Result);
+                return _Memmove_backward(_First, _Last, _Result);
             }
         }
 

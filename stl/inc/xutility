@@ -4408,7 +4408,7 @@ _INLINE_VAR constexpr bool _Memmove_in_uninitialized_move_is_safe =
     _Can_memop<remove_const_t<_IterSource>, _IterDest, _Memop_cat::_Move_uninitialized>;
 
 template <class _InIt, class _OutIt>
-_OutIt _Copy_memmove(_InIt _First, _InIt _Last, _OutIt _Dest) {
+_OutIt _Memmove_forward(_InIt _First, _InIt _Last, _OutIt _Dest) {
     const char* const _First_ch = const_cast<const char*>(reinterpret_cast<const volatile char*>(_First));
     const char* const _Last_ch  = const_cast<const char*>(reinterpret_cast<const volatile char*>(_Last));
     char* const _Dest_ch        = const_cast<char*>(reinterpret_cast<volatile char*>(_Dest));
@@ -4418,18 +4418,18 @@ _OutIt _Copy_memmove(_InIt _First, _InIt _Last, _OutIt _Dest) {
 }
 
 template <class _InIt, class _OutIt>
-_OutIt _Copy_memmove(move_iterator<_InIt> _First, move_iterator<_InIt> _Last, _OutIt _Dest) {
-    return _Copy_memmove(_First.base(), _Last.base(), _Dest);
+_OutIt _Memmove_forward(move_iterator<_InIt> _First, move_iterator<_InIt> _Last, _OutIt _Dest) {
+    return _Memmove_forward(_First.base(), _Last.base(), _Dest);
 }
 
 template <class _InIt, class _OutIt>
-_OutIt _Copy_memcpy_common(_InIt _IFirst, _InIt _ILast, _OutIt _OFirst, _OutIt _OLast) noexcept {
+_OutIt _Memmove_forward_common(_InIt _IFirst, _InIt _ILast, _OutIt _OFirst, _OutIt _OLast) noexcept {
     const auto _IFirst_ch = const_cast<const char*>(reinterpret_cast<const volatile char*>(_IFirst));
     const auto _ILast_ch  = const_cast<const char*>(reinterpret_cast<const volatile char*>(_ILast));
     const auto _OFirst_ch = const_cast<char*>(reinterpret_cast<volatile char*>(_OFirst));
     const auto _OLast_ch  = const_cast<const char*>(reinterpret_cast<const volatile char*>(_OLast));
     const auto _Count     = static_cast<size_t>((_STD min)(_ILast_ch - _IFirst_ch, _OLast_ch - _OFirst_ch));
-    _CSTD memcpy(_OFirst_ch, _IFirst_ch, _Count);
+    _CSTD memmove(_OFirst_ch, _IFirst_ch, _Count);
     return reinterpret_cast<_OutIt>(_OFirst_ch + _Count);
 }
 
@@ -4447,7 +4447,7 @@ _CONSTEXPR20 _OutIt _Copy_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest) {
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
         {
-            return _Copy_memmove(_First, _Last, _Dest);
+            return _Memmove_forward(_First, _Last, _Dest);
         }
     }
 
@@ -4471,7 +4471,7 @@ _OutIt _Copy_unchecked1(_InIt _First, _InIt _Last, _OutIt _Dest, false_type) {
 template <class _InIt, class _OutIt>
 _OutIt _Copy_unchecked1(_InIt _First, _InIt _Last, _OutIt _Dest, true_type) {
     // copy [_First, _Last) to [_Dest, ...), pointers to trivially copyable
-    return _Copy_memmove(_First, _Last, _Dest);
+    return _Memmove_forward(_First, _Last, _Dest);
 }
 
 template <class _InIt, class _OutIt>
@@ -4517,7 +4517,7 @@ _CONSTEXPR20 _OutIt copy_n(_InIt _First, _Diff _Count_raw, _OutIt _Dest) {
             if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
             {
-                _UDest = _Copy_memmove(_UFirst, _UFirst + _Count, _UDest);
+                _UDest = _Memmove_forward(_UFirst, _UFirst + _Count, _UDest);
                 _Seek_wrapped(_Dest, _UDest);
                 return _Dest;
             }
@@ -4563,7 +4563,7 @@ template <class _InIt, class _Diff, class _OutIt>
 _OutIt _Copy_n_unchecked4(_InIt _First, _Diff _Count, _OutIt _Dest, true_type) {
     // copy [_First, _First + _Count) to [_Dest, ...), memmove optimization
     // pre: 0 < _Count
-    return _Copy_memmove(_First, _First + _Count, _Dest);
+    return _Memmove_forward(_First, _First + _Count, _Dest);
 }
 
 template <class _InIt, class _Diff, class _OutIt>
@@ -4593,7 +4593,7 @@ _FwdIt2 copy_n(_ExPo&&, _FwdIt1 _First, _Diff _Count_raw, _FwdIt2 _Dest) noexcep
 
 // FUNCTION TEMPLATE copy_backward
 template <class _BidIt1, class _BidIt2>
-_BidIt2 _Copy_backward_memmove(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) {
+_BidIt2 _Memmove_backward(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) {
     // implement copy_backward-like function as memmove
     const char* const _First_ch = const_cast<const char*>(reinterpret_cast<const volatile char*>(_First));
     const char* const _Last_ch  = const_cast<const char*>(reinterpret_cast<const volatile char*>(_Last));
@@ -4603,8 +4603,8 @@ _BidIt2 _Copy_backward_memmove(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) {
 }
 
 template <class _BidIt1, class _BidIt2>
-_BidIt2 _Copy_backward_memmove(move_iterator<_BidIt1> _First, move_iterator<_BidIt1> _Last, _BidIt2 _Dest) {
-    return _Copy_backward_memmove(_First.base(), _Last.base(), _Dest);
+_BidIt2 _Memmove_backward(move_iterator<_BidIt1> _First, move_iterator<_BidIt1> _Last, _BidIt2 _Dest) {
+    return _Memmove_backward(_First.base(), _Last.base(), _Dest);
 }
 
 #if _HAS_IF_CONSTEXPR
@@ -4616,7 +4616,7 @@ _NODISCARD _CONSTEXPR20 _BidIt2 _Copy_backward_unchecked(_BidIt1 _First, _BidIt1
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
         {
-            return _Copy_backward_memmove(_First, _Last, _Dest);
+            return _Memmove_backward(_First, _Last, _Dest);
         }
     }
 
@@ -4651,7 +4651,7 @@ _BidIt2 _Copy_backward_unchecked(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest, f
 template <class _BidIt1, class _BidIt2>
 _BidIt2 _Copy_backward_unchecked(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest, true_type) {
     // copy [_First, _Last) backwards to [..., _Dest), memmove optimization
-    return _Copy_backward_memmove(_First, _Last, _Dest);
+    return _Memmove_backward(_First, _Last, _Dest);
 }
 
 template <class _BidIt1, class _BidIt2>
@@ -4686,7 +4686,7 @@ _CONSTEXPR20 _OutIt _Move_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest) {
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
         {
-            return _Copy_memmove(_First, _Last, _Dest);
+            return _Memmove_forward(_First, _Last, _Dest);
         }
     }
 
@@ -4710,7 +4710,7 @@ _OutIt _Move_unchecked1(_InIt _First, _InIt _Last, _OutIt _Dest, false_type) {
 template <class _InIt, class _OutIt>
 _OutIt _Move_unchecked1(_InIt _First, _InIt _Last, _OutIt _Dest, true_type) {
     // move [_First, _Last) to [_Dest, ...), memmove optimization
-    return _Copy_memmove(_First, _Last, _Dest);
+    return _Memmove_forward(_First, _Last, _Dest);
 }
 
 template <class _InIt, class _OutIt>
@@ -4754,7 +4754,7 @@ _CONSTEXPR20 _BidIt2 _Move_backward_unchecked(_BidIt1 _First, _BidIt1 _Last, _Bi
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
         {
-            return _Copy_backward_memmove(_First, _Last, _Dest);
+            return _Memmove_backward(_First, _Last, _Dest);
         }
     }
 
@@ -4778,7 +4778,7 @@ _BidIt2 _Move_backward_unchecked1(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest, 
 template <class _BidIt1, class _BidIt2>
 _BidIt2 _Move_backward_unchecked1(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest, true_type) {
     // move [_First, _Last) backwards to [..., _Dest), memmove optimization
-    return _Copy_backward_memmove(_First, _Last, _Dest);
+    return _Memmove_backward(_First, _Last, _Dest);
 }
 
 template <class _BidIt1, class _BidIt2>

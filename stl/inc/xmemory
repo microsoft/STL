@@ -1481,7 +1481,7 @@ template <class _InIt, class _NoThrowFwdIt>
 _NoThrowFwdIt _Uninitialized_move_unchecked(_InIt _First, const _InIt _Last, _NoThrowFwdIt _Dest) {
     // move [_First, _Last) to raw [_Dest, ...)
     if constexpr (_Memmove_in_uninitialized_move_is_safe<_InIt, _NoThrowFwdIt>) {
-        return _Copy_memmove(_First, _Last, _Dest);
+        return _Memmove_forward(_First, _Last, _Dest);
     } else {
         _Uninitialized_backout<_NoThrowFwdIt> _Backout{_Dest};
         for (; _First != _Last; ++_First) {
@@ -1507,7 +1507,7 @@ template <class _InIt, class _NoThrowFwdIt>
 _NoThrowFwdIt _Uninitialized_move_unchecked1(
     const _InIt _First, const _InIt _Last, const _NoThrowFwdIt _Dest, true_type) {
     // move [_First, _Last) to raw [_Dest, ...), memmove optimization
-    return _Copy_memmove(_First, _Last, _Dest);
+    return _Memmove_forward(_First, _Last, _Dest);
 }
 
 template <class _InIt, class _NoThrowFwdIt>
@@ -1564,7 +1564,7 @@ _Alloc_ptr_t<_Alloc> _Uninitialized_copy(
 
     if constexpr (conjunction_v<bool_constant<_Memmove_in_uninitialized_copy_is_safe<decltype(_UFirst), _Ptrval>>,
                       _Uses_default_construct<_Alloc, _Ptrval, decltype(*_UFirst)>>) {
-        _Copy_memmove(_UFirst, _ULast, _Unfancy(_Dest));
+        _Memmove_forward(_UFirst, _ULast, _Unfancy(_Dest));
         _Dest += _ULast - _UFirst;
     } else {
         _Uninitialized_backout_al<_Alloc> _Backout{_Dest, _Al};
@@ -1594,7 +1594,7 @@ template <class _InIt, class _Alloc>
 _Alloc_ptr_t<_Alloc> _Uninitialized_copy_al_unchecked(
     const _InIt _First, const _InIt _Last, const _Alloc_ptr_t<_Alloc> _Dest, _Alloc&, true_type) {
     // copy [_First, _Last) to raw _Dest, using default _Alloc construct, memmove optimization
-    return _Copy_memmove(_First, _Last, _Unfancy(_Dest));
+    return _Memmove_forward(_First, _Last, _Unfancy(_Dest));
 }
 
 template <class _InIt, class _Alloc>
@@ -1625,7 +1625,7 @@ _NoThrowFwdIt uninitialized_copy(const _InIt _First, const _InIt _Last, _NoThrow
     const auto _ULast = _Get_unwrapped(_Last);
     auto _UDest       = _Get_unwrapped_n(_Dest, _Idl_distance<_InIt>(_UFirst, _ULast));
     if constexpr (_Memmove_in_uninitialized_copy_is_safe<decltype(_UFirst), decltype(_UDest)>) {
-        _UDest = _Copy_memmove(_UFirst, _ULast, _UDest);
+        _UDest = _Memmove_forward(_UFirst, _ULast, _UDest);
     } else {
         _Uninitialized_backout<decltype(_UDest)> _Backout{_UDest};
         for (; _UFirst != _ULast; ++_UFirst) {
@@ -1654,7 +1654,7 @@ template <class _InIt, class _NoThrowFwdIt>
 _NoThrowFwdIt _Uninitialized_copy_unchecked(
     const _InIt _First, const _InIt _Last, const _NoThrowFwdIt _Dest, true_type) {
     // copy [_First, _Last) to raw [_Dest, ...), memmove optimization
-    return _Copy_memmove(_First, _Last, _Dest);
+    return _Memmove_forward(_First, _Last, _Dest);
 }
 
 template <class _InIt, class _NoThrowFwdIt>
@@ -1683,7 +1683,7 @@ _Alloc_ptr_t<_Alloc> _Uninitialized_move(
     const auto _ULast = _Get_unwrapped(_Last);
     if constexpr (conjunction_v<bool_constant<_Memmove_in_uninitialized_move_is_safe<decltype(_UFirst), _Ptrval>>,
                       _Uses_default_construct<_Alloc, _Ptrval, decltype(_STD move(*_UFirst))>>) {
-        _Copy_memmove(_UFirst, _ULast, _Unfancy(_Dest));
+        _Memmove_forward(_UFirst, _ULast, _Unfancy(_Dest));
         return _Dest + (_ULast - _UFirst);
     } else {
         _Uninitialized_backout_al<_Alloc> _Backout{_Dest, _Al};
@@ -1711,7 +1711,7 @@ template <class _InIt, class _Alloc>
 _Alloc_ptr_t<_Alloc> _Uninitialized_move_al_unchecked(
     const _InIt _First, const _InIt _Last, _Alloc_ptr_t<_Alloc> _Dest, _Alloc&, true_type) {
     // move [_First, _Last) to raw _Dest, using default _Alloc construct, memmove optimization
-    _Copy_memmove(_First, _Last, _Unfancy(_Dest));
+    _Memmove_forward(_First, _Last, _Unfancy(_Dest));
     return _Dest + (_Last - _First);
 }
 

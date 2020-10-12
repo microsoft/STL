@@ -108,7 +108,7 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(constructible_from<iter_value_t<_Out>, iter_reference_t<_It>>);
 
             if constexpr (is_same_v<_Se, _It> && _Memmove_in_uninitialized_copy_is_safe<_It, _Out>) {
-                return _Copy_memcpy_common(_IFirst, _ILast, _OFirst, _OLast);
+                return _Memmove_forward_common(_IFirst, _ILast, _OFirst, _OLast);
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
@@ -138,7 +138,7 @@ _NoThrowFwdIt uninitialized_copy_n(const _InIt _First, const _Diff _Count_raw, _
     auto _UFirst = _Get_unwrapped_n(_First, _Count);
     auto _UDest  = _Get_unwrapped_n(_Dest, _Count);
     if constexpr (_Memmove_in_uninitialized_copy_is_safe<decltype(_UFirst), decltype(_UDest)>) {
-        _UDest = _Copy_memmove(_UFirst, _UFirst + _Count, _UDest);
+        _UDest = _Memmove_forward(_UFirst, _UFirst + _Count, _UDest);
     } else {
         _Uninitialized_backout<decltype(_UDest)> _Backout{_UDest};
 
@@ -168,7 +168,7 @@ _NoThrowFwdIt _Uninitialized_copy_n_unchecked2(_InIt _First, _Diff _Count, const
 template <class _InIt, class _Diff, class _NoThrowFwdIt>
 _NoThrowFwdIt _Uninitialized_copy_n_unchecked2(const _InIt _First, const _Diff _Count, const _NoThrowFwdIt _Dest,
     true_type) { // copy [_First, _First + _Count) to [_Dest, ...), memmove optimization
-    return _Copy_memmove(_First, _First + _Count, _Dest);
+    return _Memmove_forward(_First, _First + _Count, _Dest);
 }
 
 template <class _InIt, class _Diff, class _NoThrowFwdIt>
@@ -214,7 +214,7 @@ namespace ranges {
             auto _OFirst      = _Get_unwrapped(_STD move(_First2));
             const auto _OLast = _Get_unwrapped(_STD move(_Last2));
             if constexpr (_Memmove_in_uninitialized_copy_is_safe<_It, _Out>) {
-                _OFirst = _Copy_memcpy_common(_IFirst, _IFirst + _Count, _OFirst, _OLast);
+                _OFirst = _Memmove_forward_common(_IFirst, _IFirst + _Count, _OFirst, _OLast);
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
@@ -301,7 +301,7 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(constructible_from<iter_value_t<_Out>, iter_rvalue_reference_t<_It>>);
 
             if constexpr (is_same_v<_Se, _It> && _Memmove_in_uninitialized_move_is_safe<_It, _Out>) {
-                return _Copy_memcpy_common(_IFirst, _ILast, _OFirst, _OLast);
+                return _Memmove_forward_common(_IFirst, _ILast, _OFirst, _OLast);
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
@@ -330,7 +330,7 @@ pair<_InIt, _NoThrowFwdIt> uninitialized_move_n(_InIt _First, const _Diff _Count
     auto _UFirst = _Get_unwrapped_n(_First, _Count);
     auto _UDest  = _Get_unwrapped_n(_Dest, _Count);
     if constexpr (_Memmove_in_uninitialized_move_is_safe<decltype(_UFirst), decltype(_UDest)>) {
-        _UDest = _Copy_memmove(_UFirst, _UFirst + _Count, _UDest);
+        _UDest = _Memmove_forward(_UFirst, _UFirst + _Count, _UDest);
         _UFirst += _Count;
     } else {
         _Uninitialized_backout<decltype(_UDest)> _Backout{_UDest};
@@ -375,7 +375,7 @@ namespace ranges {
             auto _OFirst      = _Get_unwrapped(_STD move(_First2));
             const auto _OLast = _Get_unwrapped(_STD move(_Last2));
             if constexpr (_Memmove_in_uninitialized_move_is_safe<_It, _Out>) {
-                _OFirst = _Copy_memcpy_common(_IFirst, _IFirst + _Count, _OFirst, _OLast);
+                _OFirst = _Memmove_forward_common(_IFirst, _IFirst + _Count, _OFirst, _OLast);
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
@@ -2316,7 +2316,7 @@ struct _Reverse_destroy_multidimensional_n_guard {
 template <class _Ty, size_t _Size>
 void _Uninitialized_copy_multidimensional(const _Ty (&_In)[_Size], _Ty (&_Out)[_Size]) {
     if constexpr (is_trivial_v<_Ty>) {
-        _Copy_memmove(_In, _In + _Size, _Out);
+        _Memmove_forward(_In, _In + _Size, _Out);
     } else if constexpr (is_array_v<_Ty>) {
         _Reverse_destroy_multidimensional_n_guard<_Ty> _Guard{_Out, 0};
         for (size_t& _Idx = _Guard._Index; _Idx < _Size; ++_Idx) {
@@ -2639,7 +2639,7 @@ template <class _Ty, size_t _Size, class _Alloc>
 void _Uninitialized_copy_multidimensional_al(const _Ty (&_In)[_Size], _Ty (&_Out)[_Size], _Alloc& _Al) {
     using _Item = remove_all_extents_t<_Ty>;
     if constexpr (conjunction_v<is_trivial<_Ty>, _Uses_default_construct<_Alloc, _Item*, const _Item&>>) {
-        _Copy_memmove(_In, _In + _Size, _Out);
+        _Memmove_forward(_In, _In + _Size, _Out);
     } else if constexpr (is_array_v<_Ty>) {
         _Reverse_destroy_multidimensional_n_al_guard<_Ty, _Alloc> _Guard{_Out, 0, _Al};
         for (size_t& _Idx = _Guard._Index; _Idx < _Size; ++_Idx) {
