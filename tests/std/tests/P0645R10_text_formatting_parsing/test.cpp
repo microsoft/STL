@@ -180,6 +180,9 @@ constexpr bool test_parse_precision() {
     auto s4 = view_typ(TYPED_LITERAL(CharT, ".{}"));
 
     auto i0 = view_typ(TYPED_LITERAL(CharT, ".{ }"));
+    auto i1 = view_typ(TYPED_LITERAL(CharT, "."));
+    auto i2 = view_typ(TYPED_LITERAL(CharT, ".{    |"));
+    auto i3 = view_typ(TYPED_LITERAL(CharT, ".{"));
 
     test_parse_helper(parse_pre_fn, s0, false, view_typ::npos, {.expected_precision = 0});
     test_parse_helper(parse_pre_fn, s1, false, view_typ::npos, {.expected_precision = 1});
@@ -189,6 +192,9 @@ constexpr bool test_parse_precision() {
 
     if (!is_constant_evaluated()) {
         test_parse_helper(parse_pre_fn, i0, true);
+        test_parse_helper(parse_pre_fn, i1, true);
+        test_parse_helper(parse_pre_fn, i2, true);
+        test_parse_helper(parse_pre_fn, i3, true);
     }
 
     return true;
