@@ -81,7 +81,7 @@ struct testing_callbacks {
         assert(type == expected_type);
     }
     constexpr void _On_sign(_Sign sgn) {
-        assert(sgn = expected_sign);
+        assert(sgn == expected_sign);
     }
     constexpr void _On_hash() {
         assert(expected_hash);
@@ -90,7 +90,7 @@ struct testing_callbacks {
         assert(expected_zero);
     }
     constexpr void _On_type(CharT type) {
-        assert(type = expected_type);
+        assert(type == expected_type);
     }
 };
 template <typename CharT>
