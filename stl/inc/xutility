@@ -121,7 +121,7 @@ struct _Get_rebind_alias<_Ty, _Other, void_t<typename _Ty::template rebind<_Othe
 
 // FUNCTION TEMPLATE _Voidify_iter
 template <class _Iter>
-_NODISCARD void* _Voidify_iter(_Iter _It) noexcept {
+_NODISCARD _CONSTEXPR20_DYNALLOC void* _Voidify_iter(_Iter _It) noexcept {
 #if _HAS_IF_CONSTEXPR
     if constexpr (is_pointer_v<_Iter>) {
         return const_cast<void*>(static_cast<const volatile void*>(_It));
@@ -3886,7 +3886,7 @@ namespace ranges {
     subrange(_It, _Se, _Make_unsigned_like_t<iter_difference_t<_It>>) -> subrange<_It, _Se, subrange_kind::sized>;
 
     template <borrowed_range _Rng>
-    subrange(_Rng &&) -> subrange<iterator_t<_Rng>, sentinel_t<_Rng>,
+    subrange(_Rng&&) -> subrange<iterator_t<_Rng>, sentinel_t<_Rng>,
         (sized_range<_Rng> || sized_sentinel_for<sentinel_t<_Rng>, iterator_t<_Rng>>) ? subrange_kind::sized
                                                                                       : subrange_kind::unsized>;
 
