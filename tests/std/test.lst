@@ -253,6 +253,8 @@ tests\P0896R4_common_iterator
 tests\P0896R4_common_iterator_death
 tests\P0896R4_counted_iterator
 tests\P0896R4_counted_iterator_death
+tests\P0896R4_istream_view
+tests\P0896R4_istream_view_death
 tests\P0896R4_P1614R2_comparisons
 tests\P0896R4_ranges_alg_adjacent_find
 tests\P0896R4_ranges_alg_all_of
@@ -343,8 +345,6 @@ tests\P0896R4_views_drop
 tests\P0896R4_views_empty
 tests\P0896R4_views_filter
 tests\P0896R4_views_filter_death
-tests\P0896R4_istream_view
-tests\P0896R4_istream_view_death
 tests\P0896R4_views_reverse
 tests\P0896R4_views_single
 tests\P0896R4_views_take
