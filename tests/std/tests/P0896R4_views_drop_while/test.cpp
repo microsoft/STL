@@ -26,7 +26,7 @@ using pipeline_t = ranges::drop_while_view<
     ranges::drop_while_view<ranges::drop_while_view<ranges::drop_while_view<V, Pred>, Pred>, Pred>, Pred>;
 
 template <class Rng>
-concept CanViewdrop_while = requires(Rng&& r) {
+concept CanViewDrop_while = requires(Rng&& r) {
     views::drop_while(static_cast<Rng&&>(r), is_less_than_three);
 };
 
@@ -51,8 +51,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     constexpr auto drop_while_even = views::drop_while(is_less_than_three);
 
     // ... with lvalue argument
-    STATIC_ASSERT(CanViewdrop_while<Rng&> == (!is_view || copyable<V>) );
-    if constexpr (CanViewdrop_while<Rng&>) { // Validate lvalue
+    STATIC_ASSERT(CanViewDrop_while<Rng&> == (!is_view || copyable<V>) );
+    if constexpr (CanViewDrop_while<Rng&>) { // Validate lvalue
         constexpr bool is_noexcept = !is_view || is_nothrow_copy_constructible_v<V>;
 
         STATIC_ASSERT(same_as<decltype(views::drop_while(rng, is_less_than_three)), R>);
@@ -66,7 +66,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // ... with const lvalue argument
-    STATIC_ASSERT(CanViewdrop_while<const remove_reference_t<Rng>&> == (!is_view || copyable<V>) );
+    STATIC_ASSERT(CanViewDrop_while<const remove_reference_t<Rng>&> == (!is_view || copyable<V>) );
     if constexpr (is_view && copyable<V>) {
         constexpr bool is_noexcept = is_nothrow_copy_constructible_v<V>;
 
@@ -94,7 +94,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // ... with rvalue argument
-    STATIC_ASSERT(CanViewdrop_while<remove_reference_t<Rng>> == is_view || enable_borrowed_range<remove_cvref_t<Rng>>);
+    STATIC_ASSERT(CanViewDrop_while<remove_reference_t<Rng>> == is_view || enable_borrowed_range<remove_cvref_t<Rng>>);
     if constexpr (is_view) {
         constexpr bool is_noexcept = is_nothrow_move_constructible_v<V>;
         STATIC_ASSERT(same_as<decltype(views::drop_while(move(rng), is_less_than_three)), R>);
@@ -121,7 +121,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // ... with const rvalue argument
-    STATIC_ASSERT(CanViewdrop_while<const remove_reference_t<Rng>> == (is_view && copyable<V>)
+    STATIC_ASSERT(CanViewDrop_while<const remove_reference_t<Rng>> == (is_view && copyable<V>)
                   || (!is_view && enable_borrowed_range<remove_cvref_t<Rng>>) );
     if constexpr (is_view && copyable<V>) {
         constexpr bool is_noexcept = is_nothrow_copy_constructible_v<V>;
@@ -168,7 +168,6 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     const bool is_empty = ranges::empty(expected);
-
 
     // Validate view_interface::empty and operator bool
     STATIC_ASSERT(CanMemberEmpty<R> == forward_range<Rng>);
