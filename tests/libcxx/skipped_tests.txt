@@ -258,7 +258,7 @@ utilities\memory\default.allocator\allocator.members\allocate.verify.cpp
 utilities\time\time.cal\time.cal.day\time.cal.day.nonmembers\streaming.pass.cpp
 utilities\time\time.cal\time.cal.md\time.cal.md.nonmembers\streaming.pass.cpp
 utilities\time\time.cal\time.cal.mdlast\streaming.pass.cpp
-# --month{14} should be 1 not 13 as the test expects
+# --month{14} should be 1, not 13 as the test expects
 utilities\time\time.cal\time.cal.month\time.cal.month.members\decrement.pass.cpp
 utilities\time\time.cal\time.cal.month\time.cal.month.nonmembers\streaming.pass.cpp
 # test is broken due to month_weekday not being default constructible

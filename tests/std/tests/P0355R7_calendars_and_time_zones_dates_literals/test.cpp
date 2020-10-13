@@ -78,8 +78,8 @@ TYPE_ASSERT(month_weekday, Monday[1] / 1)
 
 TYPE_ASSERT(month_weekday_last, January / Monday[last])
 TYPE_ASSERT(month_weekday_last, 1 / Monday[last])
-TYPE_ASSERT(month_weekday_last, Monday[last] / 1)
 TYPE_ASSERT(month_weekday_last, Monday[last] / January)
+TYPE_ASSERT(month_weekday_last, Monday[last] / 1)
 
 TYPE_ASSERT(year_month_day, 2020y / January / 1d)
 TYPE_ASSERT(year_month_day, 2020y / January / 1)
@@ -121,7 +121,6 @@ TYPE_ASSERT(year_month_weekday_last, Monday[last] / 1 / 2020y)
 TYPE_ASSERT(year_month_weekday_last, Monday[last] / 1 / 2020)
 TYPE_ASSERT(year_month_weekday_last, Monday[last] / January / 2020)
 TYPE_ASSERT(year_month_weekday_last, Monday[last] / January / 2020y)
-
 
 #define VALUE_ASSERT(VALUE, EXPECTED) static_assert(VALUE == EXPECTED, "chrono::" #VALUE " is not " #EXPECTED);
 VALUE_ASSERT(month{1}, January)

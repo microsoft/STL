@@ -29,4 +29,4 @@ static_assert(is_clock_v<steady_clock>, "steady_clock is not a clock");
 static_assert(is_clock_v<real_fake_clock>, "real_fake_clock is not a clock");
 static_assert(!is_clock_v<not_a_clock>, "not_a_clock is a clock");
 
-int main() {}
+int main() {} // COMPILE-ONLY

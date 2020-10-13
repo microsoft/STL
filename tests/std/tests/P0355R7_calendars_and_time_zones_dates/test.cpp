@@ -43,7 +43,6 @@ constexpr void day_test() {
 }
 
 constexpr void month_test() {
-
     month m{1u};
     assert(static_cast<unsigned>(m) == 1u);
     assert(m == January);
@@ -74,7 +73,6 @@ constexpr void month_test() {
     assert(February + months{11} == January);
     assert(months{11} + February == January);
     assert(February - months{2} == December);
-
     assert(January - February == months{11});
 }
 
@@ -299,7 +297,6 @@ constexpr void year_month_test() {
     assert(months{2} + ym == 2020y / March);
 
     assert(ym - months{2} == 2019y / November);
-
     assert(ym - 2019y / January == months{12});
 
     assert(ym + years{2} == 2022y / January);

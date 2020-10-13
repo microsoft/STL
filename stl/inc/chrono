@@ -764,7 +764,7 @@ namespace chrono {
             return *this;
         }
         constexpr month operator--(int) noexcept {
-            month _Temp{*this};
+            const month _Temp{*this};
             --(*this);
             return _Temp;
         }
@@ -910,7 +910,8 @@ namespace chrono {
             return *this += days{1};
         }
         constexpr weekday operator++(int) noexcept {
-            weekday _Temp{*this};
+            const weekday _Temp{*this};
+
             ++(*this);
             return _Temp;
         }
@@ -1034,7 +1035,7 @@ namespace chrono {
     class month_day {
     public:
         month_day() = default;
-        constexpr month_day(const month& _M, const day& _D) noexcept : _Month{_M}, _Day{_D} {}
+        constexpr month_day(const month& _Month_, const day& _Day_) noexcept : _Month{_Month_}, _Day{_Day_} {}
 
         _NODISCARD constexpr month month() const noexcept {
             return _Month;
@@ -1068,7 +1069,7 @@ namespace chrono {
         return _Left.month() == _Right.month() && _Left.day() == _Right.day();
     }
     constexpr strong_ordering operator<=>(const month_day& _Left, const month_day& _Right) noexcept {
-        auto _Comp = _Left.month() <=> _Right.month();
+        const auto _Comp = _Left.month() <=> _Right.month();
         if (_Comp != 0) {
             return _Comp;
         }
@@ -1177,7 +1178,7 @@ namespace chrono {
         return _Left.year() == _Right.year() && _Left.month() == _Right.month();
     }
     constexpr strong_ordering operator<=>(const year_month& _Left, const year_month& _Right) noexcept {
-        auto _Comp = _Left.year() <=> _Right.year();
+        const auto _Comp = _Left.year() <=> _Right.year();
         if (_Comp != 0) {
             return _Comp;
         }
@@ -1241,11 +1242,10 @@ namespace chrono {
     }
 
     class year_month_day {
-
     public:
         year_month_day() = default;
-        constexpr year_month_day(const year& _Y, const month& _M, const day& _D) noexcept
-            : _Year{_Y}, _Month{_M}, _Day{_D} {}
+        constexpr year_month_day(const year& _Year_, const month& _Month_, const day& _Day_) noexcept
+            : _Year{_Year_}, _Month{_Month_}, _Day{_Day_} {}
         constexpr year_month_day(const class year_month_day_last& _Ymdl) noexcept;
         constexpr year_month_day(const sys_days& _Sys_days) noexcept
             : year_month_day{_Civil_from_days(_Sys_days.time_since_epoch().count())} {}
@@ -1293,14 +1293,14 @@ namespace chrono {
             static_assert(numeric_limits<int>::digits >= 20);
             const int _Zx              = _Tp + 719468; // Shift epoch to 0000-03-01
             const int _Era             = (_Zx >= 0 ? _Zx : _Zx - 146096) / 146097;
-            const unsigned _Day_of_era = static_cast<unsigned>(_Zx - _Era * 146097); // // [0, 146096]
+            const unsigned _Day_of_era = static_cast<unsigned>(_Zx - _Era * 146097); // [0, 146096]
             const unsigned _Year_of_era =
                 (_Day_of_era - _Day_of_era / 1460 + _Day_of_era / 36524 - _Day_of_era / 146096) / 365; // [0, 399]
             const int _Year = static_cast<int>(_Year_of_era) + _Era * 400; // Where March is the first month
             const unsigned _Day_of_year =
-                _Day_of_era - (365 * _Year_of_era + _Year_of_era / 4 - _Year_of_era / 100); // // [0, 365]
-            const unsigned _Mp    = (5 * _Day_of_year + 2) / 153; // // [0, 11]
-            const unsigned _Day   = _Day_of_year - (153 * _Mp + 2) / 5 + 1; // // [1, 31]
+                _Day_of_era - (365 * _Year_of_era + _Year_of_era / 4 - _Year_of_era / 100); // [0, 365]
+            const unsigned _Mp    = (5 * _Day_of_year + 2) / 153; // [0, 11]
+            const unsigned _Day   = _Day_of_year - (153 * _Mp + 2) / 5 + 1; // [1, 31]
             const unsigned _Month = _Mp + (_Mp < 10 ? 3 : static_cast<unsigned>(-9)); // [1, 12]
             return year_month_day(_CHRONO year{_Year + (_Month <= 2)}, _CHRONO month{_Month}, _CHRONO day{_Day});
         }
@@ -1382,8 +1382,8 @@ namespace chrono {
 
     class year_month_day_last {
     public:
-        constexpr year_month_day_last(const year& _Y, const month_day_last& _Mdl) noexcept
-            : _Year{_Y}, _Month_day_last{_Mdl} {}
+        constexpr year_month_day_last(const year& _Year_, const month_day_last& _Mdl) noexcept
+            : _Year{_Year_}, _Month_day_last{_Mdl} {}
 
         constexpr year_month_day_last& operator+=(const months& _Months) noexcept;
         constexpr year_month_day_last& operator-=(const months& _Months) noexcept;
@@ -1423,7 +1423,7 @@ namespace chrono {
     }
     constexpr strong_ordering operator<=>(
         const year_month_day_last& _Left, const year_month_day_last& _Right) noexcept {
-        auto _Comp = _Left.year() <=> _Right.year();
+        const auto _Comp = _Left.year() <=> _Right.year();
         if (_Comp != 0) {
             return _Comp;
         }
@@ -1469,15 +1469,16 @@ namespace chrono {
         *this = *this - _Years;
         return *this;
     }
-    // year
+
+    // year_month_day
     constexpr year_month_day::year_month_day(const year_month_day_last& _Ymdl) noexcept
         : _Year{_Ymdl.year()}, _Month{_Ymdl.month()}, _Day{_Ymdl.day()} {}
 
     class year_month_weekday {
     public:
         year_month_weekday() = default;
-        constexpr year_month_weekday(const year& _Y, const month& _M, const weekday_indexed& _Wdi) noexcept
-            : _Year{_Y}, _Month{_M}, _Weekday_index{_Wdi} {}
+        constexpr year_month_weekday(const year& _Year_, const month& _Month_, const weekday_indexed& _Wdi) noexcept
+            : _Year{_Year_}, _Month{_Month_}, _Weekday_index{_Wdi} {}
         constexpr year_month_weekday(const sys_days& _Sys_days) noexcept
             : year_month_weekday{_Ymwd_from_days(_Sys_days.time_since_epoch())} {}
         constexpr explicit year_month_weekday(const local_days& _Local_days) noexcept
@@ -1590,8 +1591,8 @@ namespace chrono {
 
     class year_month_weekday_last {
     public:
-        constexpr year_month_weekday_last(const year& _Y, const month& _M, const weekday_last& _Wdl) noexcept
-            : _Year{_Y}, _Month{_M}, _Weekday_last{_Wdl} {}
+        constexpr year_month_weekday_last(const year& _Year_, const month& _Month_, const weekday_last& _Wdl) noexcept
+            : _Year{_Year_}, _Month{_Month_}, _Weekday_last{_Wdl} {}
 
         constexpr year_month_weekday_last& operator+=(const months& _Months) noexcept;
         constexpr year_month_weekday_last& operator-=(const months& _Months) noexcept;
@@ -1822,7 +1823,7 @@ namespace chrono {
     inline constexpr month December{12};
 
     // Returns the number of fractional digits of _Num / _Den in the range [0, 18].
-    // If it can't be represented 6 is returned.
+    // If it can't be represented, 6 is returned.
     // Example: _Fractional_width(1, 8) would return 3 for 0.125.
     constexpr unsigned _Fractional_width(intmax_t _Num, const intmax_t _Den) {
         _STL_ASSERT(_Den > 0, "Denominator can't be less than 1.");
