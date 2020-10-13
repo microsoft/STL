@@ -1915,6 +1915,104 @@ namespace ranges {
         inline constexpr _Drop_fn drop;
     } // namespace views
 
+    // CLASS TEMPLATE ranges::drop_while_view
+    // clang-format off
+    template <view _Vw, class _Pr>
+        requires input_range<_Vw> && is_object_v<_Pr> && indirect_unary_predicate<const _Pr, iterator_t<_Vw>>
+    class drop_while_view : public _Cached_position_t<forward_range<_Vw>, _Vw, drop_while_view<_Vw, _Pr>> {
+        // clang-format on
+    private:
+        /* [[no_unique_address]] */ _Vw _Range{};
+        /* [[no_unique_address]] */ _Semiregular_box<_Pr> _Pred{};
+
+    public:
+        drop_while_view() = default;
+
+        constexpr drop_while_view(_Vw _Range_, _Pr _Pred_) noexcept(
+            is_nothrow_move_constructible_v<_Vw>) // strengthened
+            : _Range(_STD move(_Range_)), _Pred{in_place, _STD move(_Pred_)} {}
+
+        _NODISCARD constexpr _Vw base() const& noexcept(
+            is_nothrow_copy_constructible_v<_Vw>) /* strengthened */ requires copy_constructible<_Vw> {
+            return _Range;
+        }
+        _NODISCARD constexpr _Vw base() && noexcept(is_nothrow_move_constructible_v<_Vw>) /* strengthened */ {
+            return _STD move(_Range);
+        }
+
+        _NODISCARD constexpr const _Pr& pred() const noexcept /* strengthened */ {
+#if _CONTAINER_DEBUG_LEVEL > 0
+            _STL_VERIFY(_Pred, "value-initialized drop_while_view has no predicate");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+            return *_Pred;
+        }
+
+        _NODISCARD constexpr auto begin() {
+#if _CONTAINER_DEBUG_LEVEL > 0
+            _STL_VERIFY(_Pred, "N4861 [range.drop.while.view] forbids calling begin on a drop_while_view that holds no "
+                               "predicate"); // Per LWG-XXXX
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+            if constexpr (forward_range<_Vw>) {
+                if (this->_Has_cache()) {
+                    return this->_Get_cache(_Range);
+                }
+            }
+
+            auto _First = _RANGES find_if_not(_Range, _STD cref(*_Pred));
+            if constexpr (forward_range<_Vw>) {
+                this->_Set_cache(_Range, _First);
+            }
+
+            return _STD move(_First);
+        }
+
+        _NODISCARD constexpr auto end() noexcept(noexcept(_RANGES end(_Range))) {
+            return _RANGES end(_Range);
+        }
+    };
+
+    template <class _Rng, class _Pr>
+    drop_while_view(_Rng&&, _Pr) -> drop_while_view<views::all_t<_Rng>, _Pr>;
+
+    namespace views {
+        // VARIABLE views::drop_while
+        class _Drop_while_fn {
+        private:
+            template <class _Pr>
+            struct _Partial : _Pipe::_Base<_Partial<_Pr>> {
+                /* [[no_unique_address]] */ _Semiregular_box<_Pr> _Pred;
+
+                template <viewable_range _Rng>
+                _NODISCARD constexpr auto operator()(_Rng&& _Range) const noexcept(
+                    noexcept(drop_while_view{_STD forward<_Rng>(_Range), _STD move(*_Pred)})) requires requires {
+                    drop_while_view{static_cast<_Rng&&>(_Range), _STD move(*_Pred)};
+                }
+                {
+                    // clang-format on
+                    return drop_while_view{_STD forward<_Rng>(_Range), _STD move(*_Pred)};
+                }
+            };
+
+        public:
+            template <viewable_range _Rng, class _Pr>
+            _NODISCARD constexpr auto operator()(_Rng&& _Range, _Pr _Pred) const
+                noexcept(noexcept(drop_while_view{_STD forward<_Rng>(_Range), _STD move(_Pred)})) requires requires {
+                drop_while_view{static_cast<_Rng&&>(_Range), _STD move(_Pred)};
+            }
+            {
+                // clang-format on
+                return drop_while_view{_STD forward<_Rng>(_Range), _STD move(_Pred)};
+            }
+
+            template <_Copy_constructible_object _Pr>
+            _NODISCARD constexpr auto operator()(_Pr _Pred) const noexcept(is_nothrow_move_constructible_v<_Pr>) {
+                return _Partial<_Pr>{._Pred = {in_place, _STD move(_Pred)}};
+            }
+        };
+
+        inline constexpr _Drop_while_fn drop_while;
+    } // namespace views
+
     // CLASS TEMPLATE ranges::reverse_view
     // clang-format off
     template <view _Vw>
