@@ -6,15 +6,13 @@
 #include <cassert>
 #include <cstddef>
 #include <ranges>
-#include <vector>
+#include <span>
 
 #include <test_death.hpp>
 using namespace std;
 
-static int some_ints[] = {0, 1, 2, 3};
-
 [[maybe_unused]] constexpr auto lambda = [x = 42](int) { return x == 42; };
-using DWV                              = decltype(ranges::drop_while_view{some_ints, lambda});
+using DWV                              = decltype(ranges::drop_while_view{span<int, 0>{}, lambda});
 
 void test_view_predicate() {
     DWV r;
