@@ -215,6 +215,7 @@ tests\P0202R3_constexpr_algorithm_and_exchange
 tests\P0218R1_filesystem
 tests\P0220R1_any
 tests\P0220R1_optional
+tests\P0220R1_optional_death
 tests\P0220R1_polymorphic_memory_resources
 tests\P0220R1_sample
 tests\P0220R1_searchers
