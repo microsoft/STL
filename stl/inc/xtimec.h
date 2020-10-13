@@ -30,8 +30,6 @@ _CRTIMP2_PURE int __cdecl xtime_get(xtime*, int);
 _CRTIMP2_PURE long __cdecl _Xtime_diff_to_millis(const xtime*);
 _CRTIMP2_PURE long __cdecl _Xtime_diff_to_millis2(const xtime*, const xtime*);
 _CRTIMP2_PURE long long __cdecl _Xtime_get_ticks();
-#define _XTIME_NSECS_PER_TICK   100
-#define _XTIME_TICKS_PER_TIME_T 10000000LL
 
 _CRTIMP2_PURE long long __cdecl _Query_perf_counter();
 _CRTIMP2_PURE long long __cdecl _Query_perf_frequency();

@@ -4,8 +4,6 @@
 jobs:
 - job: ${{ parameters.targetPlatform }}
   timeoutInMinutes: 360
-  pool:
-    name: $(agentPool)
 
   variables:
     buildOutputLocation: 'D:\build\${{ parameters.targetPlatform }}'
@@ -74,7 +72,7 @@ jobs:
     - task: CmdLine@2
       displayName: 'Run Tests'
       timeoutInMinutes: 120
-      condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
+      condition: and(succeeded(), in('${{ parameters.targetPlatform }}', 'x64', 'x86'))
       inputs:
         workingDirectory: $(buildOutputLocation)
         script: |
@@ -85,7 +83,7 @@ jobs:
     - task: PublishTestResults@2
       displayName: 'Publish Tests'
       timeoutInMinutes: 10
-      condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
+      condition: and(succeededOrFailed(), in('${{ parameters.targetPlatform }}', 'x64', 'x86'))
       inputs:
         searchFolder: $(buildOutputLocation)
         testResultsFormat: JUnit

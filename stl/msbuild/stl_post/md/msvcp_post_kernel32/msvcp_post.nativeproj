@@ -8,6 +8,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     <PropertyGroup>
         <CrtBuildModel>md</CrtBuildModel>
         <MsvcpFlavor>kernel32</MsvcpFlavor>
+        <Arm64X>true</Arm64X>
     </PropertyGroup>
 
     <Import Project="$(MSBuildThisFileDirectory)..\..\msvcp_post.settings.targets"/>

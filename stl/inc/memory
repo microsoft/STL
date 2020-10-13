@@ -3281,10 +3281,10 @@ public:
     }
 
     pointer release() noexcept {
-        return _STD exchange(_Mypair._Myval2, pointer());
+        return _STD exchange(_Mypair._Myval2, nullptr);
     }
 
-    void reset(pointer _Ptr = pointer()) noexcept {
+    void reset(pointer _Ptr = nullptr) noexcept {
         pointer _Old = _STD exchange(_Mypair._Myval2, _Ptr);
         if (_Old) {
             _Mypair._Get_first()(_Old);
@@ -3413,7 +3413,7 @@ public:
     }
 
     pointer release() noexcept {
-        return _STD exchange(_Mypair._Myval2, pointer());
+        return _STD exchange(_Mypair._Myval2, nullptr);
     }
 
     template <class _Uty, class = _Enable_ctor_reset<_Uty, false_type>>

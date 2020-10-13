@@ -2713,7 +2713,7 @@ private:
         auto& _Right_data = _Right._Mypair._Myval2;
         if (_Right_data._Large_string_engaged()) { // steal buffer
             _Construct_in_place(_My_data._Bx._Ptr, _Right_data._Bx._Ptr);
-            _Right_data._Bx._Ptr = pointer();
+            _Right_data._Bx._Ptr = nullptr;
             _Swap_proxy_and_iterators(_Right);
         } else { // copy small string buffer
             _Traits::copy(_My_data._Bx._Buf, _Right_data._Bx._Buf, _Right_data._Mysize + 1);

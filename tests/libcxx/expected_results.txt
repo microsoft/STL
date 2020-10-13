@@ -530,9 +530,6 @@ std/input.output/file.streams/fstreams/filebuf.virtuals/underflow.pass.cpp FAIL
 # GH-1004 <regex>: Error C2664 in std::regex_traits::transform
 std/re/re.traits/transform.pass.cpp FAIL
 
-# GH-1260 <complex>: pow, incorrect type conversion
-std/numerics/complex.number/cmplx.over/pow.pass.cpp FAIL
-
 # GH-1295 <array>: array<const T, 0> allows fill() and swap()
 std/containers/sequences/array/array.fill/fill.fail.cpp FAIL
 std/containers/sequences/array/array.swap/swap.fail.cpp FAIL
@@ -745,13 +742,16 @@ std/language.support/cmp/cmp.weakord/weakord.pass.cpp FAIL
 # error C4576: a parenthesized type followed by an initializer list is a non-standard explicit type conversion syntax
 std/containers/sequences/array/array.creation/to_array.pass.cpp:0 FAIL
 
-# Tests that need to learn that insert iterators have non-void difference type in C++20
+# Tests that need to learn that iterators have non-void difference types in C++20
 std/iterators/predef.iterators/insert.iterators/back.insert.iterator/types.pass.cpp FAIL
 std/iterators/predef.iterators/insert.iterators/front.insert.iterator/types.pass.cpp FAIL
 std/iterators/predef.iterators/insert.iterators/insert.iterator/types.pass.cpp FAIL
+std/iterators/stream.iterators/ostream.iterator/types.pass.cpp FAIL
+std/iterators/stream.iterators/ostreambuf.iterator/types.pass.cpp FAIL
 
 # Tests emit warning C4244: 'argument': conversion from 'T' to 'const std::complex<double>::_Ty', possible loss of data
 std/numerics/complex.number/cmplx.over/conj.pass.cpp:0 FAIL
+std/numerics/complex.number/cmplx.over/pow.pass.cpp:0 FAIL
 std/numerics/complex.number/cmplx.over/proj.pass.cpp:0 FAIL
 
 # Assertion failed: std::abs(skew - x_skew) < 0.01
