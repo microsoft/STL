@@ -569,7 +569,7 @@ _NODISCARD inline chrono::steady_clock::time_point _To_absolute_time(
     const chrono::duration<_Rep, _Period>& _Rel_time) noexcept {
     chrono::steady_clock::time_point _Abs_time = chrono::steady_clock::now();
     if (_Rel_time > chrono::duration<_Rep, _Period>::zero()) {
-        const auto _Forever = chrono::steady_clock::time_point::max();
+        const auto _Forever = (chrono::steady_clock::time_point::max)();
         if (_Abs_time < _Forever - _Rel_time) {
             _Abs_time += _Rel_time;
         } else {
