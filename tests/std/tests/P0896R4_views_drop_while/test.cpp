@@ -298,8 +298,9 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     return true;
 }
 
-static constexpr int some_ints[]            = {0, 1, 2, 3, 4, 5, 6, 7};
-static constexpr int only_larger_than_two[] = {3, 4, 5, 6, 7};
+static constexpr int some_ints[]                    = {0, 1, 2, 3, 4, 3, 2, 1};
+static constexpr int only_larger_than_two[]         = {3, 4, 3, 2, 1};
+static constexpr int only_larger_than_two_reverse[] = {0, 1, 2, 3, 4, 3};
 
 struct instantiator {
     template <ranges::input_range R>
@@ -391,9 +392,7 @@ int main() {
         auto r1  = some_ints | rdw_pipe;
         using R1 = decltype(r1);
         STATIC_ASSERT(ranges::bidirectional_range<R1> && ranges::view<R1>);
-        assert(ranges::equal(r1, views::reverse(some_ints)));
-
-        assert(!ranges::equal(r0, r1));
+        assert(ranges::equal(r1, views::reverse(only_larger_than_two_reverse)));
     }
 
     STATIC_ASSERT((instantiation_test(), true));
