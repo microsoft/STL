@@ -400,5 +400,12 @@ const daily_table = [
     { date: '2020-10-03', merged: 40.95, pr: 30, cxx20: 19, lwg: 1, issue: 294, bug: 95, avg_age: 70.79, avg_wait: 50.40, sum_age: 70.79, sum_wait: 50.40, },
     { date: '2020-10-04', merged: 39.40, pr: 31, cxx20: 19, lwg: 1, issue: 294, bug: 95, avg_age: 69.47, avg_wait: 49.75, sum_age: 71.79, sum_wait: 51.40, },
     { date: '2020-10-05', merged: 40.36, pr: 32, cxx20: 19, lwg: 1, issue: 293, bug: 94, avg_age: 68.08, avg_wait: 48.97, sum_age: 72.62, sum_wait: 52.23, },
+    { date: '2020-10-06', merged: 39.27, pr: 33, cxx20: 19, lwg: 1, issue: 293, bug: 94, avg_age: 67.00, avg_wait: 48.46, sum_age: 73.70, sum_wait: 53.31, },
+    { date: '2020-10-07', merged: 38.27, pr: 34, cxx20: 19, lwg: 1, issue: 293, bug: 94, avg_age: 65.61, avg_wait: 47.62, sum_age: 74.36, sum_wait: 53.97, },
+    { date: '2020-10-08', merged: 44.27, pr: 31, cxx20: 19, lwg: 1, issue: 292, bug: 93, avg_age: 70.89, avg_wait: 50.82, sum_age: 73.26, sum_wait: 52.51, },
+    { date: '2020-10-09', merged: 43.27, pr: 32, cxx20: 19, lwg: 1, issue: 292, bug: 93, avg_age: 69.65, avg_wait: 50.20, sum_age: 74.30, sum_wait: 53.55, },
+    { date: '2020-10-10', merged: 42.28, pr: 32, cxx20: 19, lwg: 1, issue: 292, bug: 93, avg_age: 70.65, avg_wait: 51.20, sum_age: 75.36, sum_wait: 54.62, },
+    { date: '2020-10-11', merged: 41.38, pr: 32, cxx20: 19, lwg: 1, issue: 293, bug: 93, avg_age: 71.65, avg_wait: 52.20, sum_age: 76.43, sum_wait: 55.68, },
+    { date: '2020-10-12', merged: 41.38, pr: 31, cxx20: 19, lwg: 1, issue: 292, bug: 93, avg_age: 74.87, avg_wait: 54.09, sum_age: 77.36, sum_wait: 55.89, },
 ];
 // Generated file - DO NOT EDIT manually!
