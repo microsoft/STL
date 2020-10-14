@@ -203,7 +203,7 @@ constexpr const _CharT* _Parse_width(const _CharT* _Begin, const _CharT* _End, _
     } else if (*_Begin == '{') {
         ++_Begin;
         if (_Begin != _End) {
-            _Begin = _Parse_arg_id(_Begin, _End, _Width_adapter<_CharT, _Callbacks_type>(_Callbacks));
+            _Begin = _Parse_arg_id(_Begin, _End, _Width_adapter<_CharT, _Callbacks_type>{_Callbacks});
         }
         if (_Begin == _End || *_Begin != '}') {
             throw format_error("Invalid format string.");
@@ -228,8 +228,9 @@ constexpr const _CharT* _Parse_precision(const _CharT* _Begin, const _CharT* _En
     } else if (_Ch == '{') {
         ++_Begin;
         if (_Begin != _End) {
-            _Begin = _Parse_arg_id(_Begin, _End, _Precision_adapter<_CharT, _Callbacks_type>(_Callbacks));
+            _Begin = _Parse_arg_id(_Begin, _End, _Precision_adapter<_CharT, _Callbacks_type>{_Callbacks});
         }
+
         if (_Begin == _End || *_Begin != '}') {
             throw format_error("Invalid format string.");
         }

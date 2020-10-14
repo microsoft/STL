@@ -61,7 +61,7 @@ struct testing_callbacks {
         assert(id == expected_dynamic_precision);
     }
     constexpr void _On_dynamic_precision(_Auto_id_tag) {
-        assert(expected_dynamic_width);
+        assert(expected_auto_dynamic_precision);
     }
 };
 template <typename CharT>
@@ -93,10 +93,10 @@ constexpr bool test_parse_align() {
     auto parse_align_fn = _Parse_align<CharT, testing_callbacks<CharT>>;
     using view_typ      = basic_string_view<CharT>;
 
-    auto s0 = view_typ(TYPED_LITERAL(CharT, ""));
-    auto s1 = view_typ(TYPED_LITERAL(CharT, "*<"));
-    auto s2 = view_typ(TYPED_LITERAL(CharT, "*>"));
-    auto s3 = view_typ(TYPED_LITERAL(CharT, "*^"));
+    view_typ s0(TYPED_LITERAL(CharT, ""));
+    view_typ s1(TYPED_LITERAL(CharT, "*<"));
+    view_typ s2(TYPED_LITERAL(CharT, "*>"));
+    view_typ s3(TYPED_LITERAL(CharT, "*^"));
 
     test_parse_helper(parse_align_fn, s0, false, view_typ::npos, {_Align::_None, view_typ(TYPED_LITERAL(CharT, ""))});
     test_parse_helper(parse_align_fn, s1, false, view_typ::npos, {_Align::_Left, view_typ(TYPED_LITERAL(CharT, "*"))});
@@ -120,12 +120,12 @@ constexpr bool test_parse_width() {
     auto parse_width_fn = _Parse_width<CharT, testing_callbacks<CharT>>;
     using view_typ      = basic_string_view<CharT>;
 
-    auto s0 = view_typ(TYPED_LITERAL(CharT, "1"));
-    auto s1 = view_typ(TYPED_LITERAL(CharT, "{1}"));
-    auto s2 = view_typ(TYPED_LITERAL(CharT, "{0}"));
-    auto s3 = view_typ(TYPED_LITERAL(CharT, "{}"));
-    auto i0 = view_typ(TYPED_LITERAL(CharT, "0"));
-    auto i1 = view_typ(TYPED_LITERAL(CharT, "01"));
+    view_typ s0(TYPED_LITERAL(CharT, "1"));
+    view_typ s1(TYPED_LITERAL(CharT, "{1}"));
+    view_typ s2(TYPED_LITERAL(CharT, "{0}"));
+    view_typ s3(TYPED_LITERAL(CharT, "{}"));
+    view_typ i0(TYPED_LITERAL(CharT, "0"));
+    view_typ i1(TYPED_LITERAL(CharT, "01"));
 
     test_parse_helper(parse_width_fn, s0, false, view_typ::npos, {.expected_width = 1});
     test_parse_helper(parse_width_fn, s1, false, view_typ::npos, {.expected_dynamic_width = 1});
@@ -142,14 +142,14 @@ constexpr bool test_parse_arg_id() {
     using view_typ       = basic_string_view<CharT>;
     // note that parse arg id starts with the arg id itself, not the { beginning of the
     // format spec
-    auto s0 = view_typ(TYPED_LITERAL(CharT, "}"));
-    auto s1 = view_typ(TYPED_LITERAL(CharT, ":"));
-    auto s2 = view_typ(TYPED_LITERAL(CharT, ":}"));
-    auto s3 = view_typ(TYPED_LITERAL(CharT, "0:}"));
-    auto s4 = view_typ(TYPED_LITERAL(CharT, "0:"));
-    auto s5 = view_typ(TYPED_LITERAL(CharT, "1}"));
-    auto i0 = view_typ(TYPED_LITERAL(CharT, "01}"));
-    auto i1 = view_typ(TYPED_LITERAL(CharT, "0"));
+    view_typ s0(TYPED_LITERAL(CharT, "}"));
+    view_typ s1(TYPED_LITERAL(CharT, ":"));
+    view_typ s2(TYPED_LITERAL(CharT, ":}"));
+    view_typ s3(TYPED_LITERAL(CharT, "0:}"));
+    view_typ s4(TYPED_LITERAL(CharT, "0:"));
+    view_typ s5(TYPED_LITERAL(CharT, "1}"));
+    view_typ i0(TYPED_LITERAL(CharT, "01}"));
+    view_typ i1(TYPED_LITERAL(CharT, "0"));
 
     test_parse_helper(parse_arg_id_fn, s0, false, 0);
     test_parse_helper(parse_arg_id_fn, s1, false, 0);
@@ -173,16 +173,16 @@ constexpr bool test_parse_precision() {
     auto parse_pre_fn = _Parse_precision<CharT, testing_callbacks<CharT>>;
     using view_typ    = basic_string_view<CharT>;
 
-    auto s0 = view_typ(TYPED_LITERAL(CharT, ".0"));
-    auto s1 = view_typ(TYPED_LITERAL(CharT, ".1"));
-    auto s2 = view_typ(TYPED_LITERAL(CharT, ".12"));
-    auto s3 = view_typ(TYPED_LITERAL(CharT, ".{1}"));
-    auto s4 = view_typ(TYPED_LITERAL(CharT, ".{}"));
+    view_typ s0(TYPED_LITERAL(CharT, ".0"));
+    view_typ s1(TYPED_LITERAL(CharT, ".1"));
+    view_typ s2(TYPED_LITERAL(CharT, ".12"));
+    view_typ s3(TYPED_LITERAL(CharT, ".{1}"));
+    view_typ s4(TYPED_LITERAL(CharT, ".{}"));
 
-    auto i0 = view_typ(TYPED_LITERAL(CharT, ".{ }"));
-    auto i1 = view_typ(TYPED_LITERAL(CharT, "."));
-    auto i2 = view_typ(TYPED_LITERAL(CharT, ".{    |"));
-    auto i3 = view_typ(TYPED_LITERAL(CharT, ".{"));
+    view_typ i0(TYPED_LITERAL(CharT, ".{ }"));
+    view_typ i1(TYPED_LITERAL(CharT, "."));
+    view_typ i2(TYPED_LITERAL(CharT, ".{    |"));
+    view_typ i3(TYPED_LITERAL(CharT, ".{"));
 
     test_parse_helper(parse_pre_fn, s0, false, view_typ::npos, {.expected_precision = 0});
     test_parse_helper(parse_pre_fn, s1, false, view_typ::npos, {.expected_precision = 1});
