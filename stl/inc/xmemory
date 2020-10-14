@@ -79,8 +79,7 @@ struct _Default_allocate_traits {
 
 #ifdef __cpp_aligned_new
     __declspec(allocator) static _CONSTEXPR20_DYNALLOC
-        void* _Allocate_aligned(
-        const size_t _Bytes, const size_t _Align) {
+        void* _Allocate_aligned(const size_t _Bytes, const size_t _Align) {
         return ::operator new (_Bytes, align_val_t{_Align});
     }
 #endif // __cpp_aligned_new
