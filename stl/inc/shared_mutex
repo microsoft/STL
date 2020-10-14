@@ -110,7 +110,7 @@ public:
 
     template <class _Rep, class _Period>
     _NODISCARD bool try_lock_for(const chrono::duration<_Rep, _Period>& _Rel_time) { // try to lock for duration
-        return try_lock_until(chrono::steady_clock::now() + _Rel_time);
+        return try_lock_until(_To_absolute_time(_Rel_time));
     }
 
     template <class _Clock, class _Duration>
@@ -168,7 +168,7 @@ public:
     template <class _Rep, class _Period>
     _NODISCARD bool try_lock_shared_for(
         const chrono::duration<_Rep, _Period>& _Rel_time) { // try to lock non-exclusive for relative time
-        return try_lock_shared_until(_Rel_time + chrono::steady_clock::now());
+        return try_lock_shared_until(_To_absolute_time(_Rel_time));
     }
 
     template <class _Time>
