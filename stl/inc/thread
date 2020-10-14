@@ -157,10 +157,10 @@ private:
 };
 
 template <class _Rep, class _Period>
-_NODISCARD chrono::steady_clock::time_point _To_absolute_time(
-    const chrono::duration<_Rep, _Period>& _Rel_time) noexcept {
-    auto _Abs_time       = chrono::steady_clock::now();
-    constexpr auto _Zero = chrono::duration<_Rep, _Period>::zero();
+_NODISCARD auto _To_absolute_time(const chrono::duration<_Rep, _Period>& _Rel_time) noexcept {
+    constexpr auto _Zero                 = chrono::duration<_Rep, _Period>::zero();
+    const auto _Now                      = chrono::steady_clock::now();
+    decltype(_Now + _Rel_time) _Abs_time = _Now; // return common type
     if (_Rel_time > _Zero) {
         constexpr auto _Forever = (chrono::steady_clock::time_point::max)();
         if (_Abs_time < _Forever - _Rel_time) {
