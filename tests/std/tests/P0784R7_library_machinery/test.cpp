@@ -55,7 +55,8 @@ constexpr bool test() {
         int_wrapper_copy input[]   = {1, 2, 3, 4};
         int_wrapper_copy output[4] = {5, 6, 7, 8};
 
-        const same_as<int_wrapper_copy*> auto result = _Copy_unchecked(begin(input), end(input), begin(output));
+        const auto result = _Copy_unchecked(begin(input), end(input), begin(output));
+        static_assert(is_same_v<remove_const_t<decltype(result)>, int_wrapper_copy*>);
         assert(result == end(output));
         assert(equal(begin(expected_copy), end(expected_copy), begin(output), end(output)));
     }
@@ -64,7 +65,8 @@ constexpr bool test() {
         int_wrapper_copy input[]   = {1, 2, 3, 4};
         int_wrapper_copy output[4] = {5, 6, 7, 8};
 
-        const same_as<int_wrapper_copy*> auto result = _Copy_backward_unchecked(begin(input), end(input), end(output));
+        const auto result = _Copy_backward_unchecked(begin(input), end(input), end(output));
+        static_assert(is_same_v<remove_const_t<decltype(result)>, int_wrapper_copy*>);
         assert(result == begin(output));
         assert(equal(begin(expected_copy), end(expected_copy), begin(output), end(output)));
     }
@@ -74,8 +76,8 @@ constexpr bool test() {
         int_wrapper_copy input[] = {1, 2, 3, 4};
         int_wrapper_copy output[4];
 
-        const same_as<int_wrapper_copy*> auto result =
-            _Uninitialized_copy_unchecked(begin(input), end(input), begin(output));
+        const auto result = _Uninitialized_copy_unchecked(begin(input), end(input), begin(output));
+        static_assert(is_same_v<remove_const_t<decltype(result)>, int_wrapper_copy*>);
         assert(result == end(output));
         assert(equal(begin(expected_copy), end(expected_copy), begin(output), end(output)));
     }
@@ -85,7 +87,8 @@ constexpr bool test() {
         int_wrapper_move input[]   = {1, 2, 3, 4};
         int_wrapper_move output[4] = {5, 6, 7, 8};
 
-        const same_as<int_wrapper_move*> auto result = _Move_unchecked(begin(input), end(input), begin(output));
+        const auto result = _Move_unchecked(begin(input), end(input), begin(output));
+        static_assert(is_same_v<remove_const_t<decltype(result)>, int_wrapper_move*>);
         assert(result == end(output));
         assert(equal(begin(expected_move), end(expected_move), begin(output), end(output)));
         if (is_constant_evaluated()) {
@@ -97,7 +100,8 @@ constexpr bool test() {
         int_wrapper_move input[]   = {1, 2, 3, 4};
         int_wrapper_move output[4] = {5, 6, 7, 8};
 
-        const same_as<int_wrapper_move*> auto result = _Move_backward_unchecked(begin(input), end(input), end(output));
+        const auto result = _Move_backward_unchecked(begin(input), end(input), end(output));
+        static_assert(is_same_v<remove_const_t<decltype(result)>, int_wrapper_move*>);
         assert(result == begin(output));
         assert(equal(begin(expected_move), end(expected_move), begin(output), end(output)));
         if (is_constant_evaluated()) {
@@ -109,8 +113,8 @@ constexpr bool test() {
         int_wrapper_move input[]   = {1, 2, 3, 4};
         int_wrapper_move output[4] = {5, 6, 7, 8};
 
-        const same_as<int_wrapper_move*> auto result =
-            ranges::_Move_backward_common(begin(input), end(input), end(output));
+        const auto result = ranges::_Move_backward_common(begin(input), end(input), end(output));
+        static_assert(is_same_v<remove_const_t<decltype(result)>, int_wrapper_move*>);
         assert(result == begin(output));
         assert(equal(begin(expected_move), end(expected_move), begin(output), end(output)));
         if (is_constant_evaluated()) {
@@ -123,8 +127,8 @@ constexpr bool test() {
         int_wrapper_move input[] = {1, 2, 3, 4};
         int_wrapper_move output[4];
 
-        const same_as<int_wrapper_move*> auto result =
-            _Uninitialized_move_unchecked(begin(input), end(input), begin(output));
+        const auto result = _Uninitialized_move_unchecked(begin(input), end(input), begin(output));
+        static_assert(is_same_v<remove_const_t<decltype(result)>, int_wrapper_move*>);
         assert(result == end(output));
         assert(equal(begin(expected_move), end(expected_move), begin(output), end(output)));
         if (is_constant_evaluated()) {
