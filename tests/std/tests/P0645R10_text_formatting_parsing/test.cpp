@@ -258,5 +258,9 @@ int main() {
     test_parse_precision<wchar_t>();
     static_assert(test_parse_precision<char>());
     static_assert(test_parse_precision<wchar_t>());
+    test_parse_format_specs<char>();
+    test_parse_format_specs<wchar_t>();
+    static_assert(test_parse_format_specs<char>());
+    static_assert(test_parse_format_specs<wchar_t>());
     return 0;
 }
