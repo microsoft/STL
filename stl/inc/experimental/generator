@@ -32,9 +32,7 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 
 namespace experimental {
-    // NOTE WELL: _CPPUNWIND currently affects the ABI of generator. Linking together /EHs
-    // translation units and /EHs- translation units that use the same specialization of generator
-    // violates the One Definition Rule. This could result in fantastic failures or obscure bugs.
+    // NOTE WELL: _CPPUNWIND currently affects the ABI of generator.
     template <class _Ty, class _Alloc = allocator<char>>
     struct generator {
         struct promise_type {
