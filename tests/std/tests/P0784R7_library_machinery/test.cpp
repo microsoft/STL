@@ -109,6 +109,7 @@ constexpr bool test() {
         }
     }
 
+#ifdef __cpp_lib_concepts
     { // _Move_backward_common
         int_wrapper_move input[]   = {1, 2, 3, 4};
         int_wrapper_move output[4] = {5, 6, 7, 8};
@@ -121,6 +122,7 @@ constexpr bool test() {
             assert(equal(begin(input), end(input), begin(expected_after_move), end(expected_after_move)));
         }
     }
+#endif // __cpp_lib_concepts
 
 #if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc)
     { // _Uninitialized_move_unchecked
