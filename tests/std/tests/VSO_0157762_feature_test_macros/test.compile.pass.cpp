@@ -412,6 +412,20 @@ STATIC_ASSERT(__cpp_lib_constexpr_complex == 201711L);
 #endif
 
 #if _HAS_CXX20
+#ifndef __cpp_lib_constexpr_dynamic_alloc
+#error __cpp_lib_constexpr_dynamic_alloc is not defined
+#elif __cpp_lib_constexpr_dynamic_alloc != 201907L
+#error __cpp_lib_constexpr_dynamic_alloc is not 201907L
+#else 
+STATIC_ASSERT(__cpp_lib_constexpr_dynamic_alloc == 201907L);
+#endif
+#else
+#ifdef __cpp_lib_constexpr_dynamic_alloc
+#error __cpp_lib_constexpr_dynamic_alloc is defined
+#endif
+#endif
+
+#if _HAS_CXX20
 #ifndef __cpp_lib_constexpr_functional
 #error __cpp_lib_constexpr_functional is not defined
 #elif __cpp_lib_constexpr_functional != 201907L

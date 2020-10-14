@@ -1194,8 +1194,13 @@
 #define __cpp_lib_concepts 201907L
 #endif // !defined(__EDG__) || defined(__INTELLISENSE__)
 
-#define __cpp_lib_constexpr_algorithms  201806L
-#define __cpp_lib_constexpr_complex     201711L
+#define __cpp_lib_constexpr_algorithms 201806L
+#define __cpp_lib_constexpr_complex    201711L
+
+#if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc)
+#define __cpp_lib_constexpr_dynamic_alloc 201907L
+#endif
+
 #define __cpp_lib_constexpr_functional  201907L
 #define __cpp_lib_constexpr_iterator    201811L
 #define __cpp_lib_constexpr_memory      201811L
@@ -1234,11 +1239,10 @@
 #define __cpp_lib_three_way_comparison 201711L
 #endif // __cpp_lib_concepts
 
-#define __cpp_lib_to_address              201711L
-#define __cpp_lib_to_array                201907L
-#define __cpp_lib_type_identity           201806L
-#define __cpp_lib_unwrap_ref              201811L
-#define __cpp_lib_constexpr_dynamic_alloc 201907L
+#define __cpp_lib_to_address    201711L
+#define __cpp_lib_to_array      201907L
+#define __cpp_lib_type_identity 201806L
+#define __cpp_lib_unwrap_ref    201811L
 #endif // _HAS_CXX20
 
 #ifndef _M_CEE
