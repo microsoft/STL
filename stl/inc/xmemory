@@ -634,7 +634,7 @@ struct _Normal_allocator_traits { // defines traits for allocators
 #endif // _HAS_IF_CONSTEXPR
 
 #if _HAS_IF_CONSTEXPR
-    _NODISCARD static _CONSTEXPR20_DYNALLOC _Alloc select_on_container_copy_construction(const _Alloc& _Al) {
+    _NODISCARD static _CONSTEXPR20 _Alloc select_on_container_copy_construction(const _Alloc& _Al) {
         if constexpr (_Has_select_on_container_copy_construction<_Alloc>::value) {
             return _Al.select_on_container_copy_construction();
         } else {
@@ -856,12 +856,12 @@ public:
 };
 
 template <class _Ty, class _Other>
-_NODISCARD _CONSTEXPR20_DYNALLOC bool operator==(const allocator<_Ty>&, const allocator<_Other>&) noexcept {
+_NODISCARD _CONSTEXPR20 bool operator==(const allocator<_Ty>&, const allocator<_Other>&) noexcept {
     return true;
 }
 
 template <class _Ty, class _Other>
-_NODISCARD _CONSTEXPR20_DYNALLOC bool operator!=(const allocator<_Ty>&, const allocator<_Other>&) noexcept {
+_NODISCARD _CONSTEXPR20 bool operator!=(const allocator<_Ty>&, const allocator<_Other>&) noexcept {
     return false;
 }
 

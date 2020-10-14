@@ -121,7 +121,7 @@ struct _Get_rebind_alias<_Ty, _Other, void_t<typename _Ty::template rebind<_Othe
 
 // FUNCTION TEMPLATE _Voidify_iter
 template <class _Iter>
-_NODISCARD _CONSTEXPR20_DYNALLOC void* _Voidify_iter(_Iter _It) noexcept {
+_NODISCARD constexpr void* _Voidify_iter(_Iter _It) noexcept {
 #if _HAS_IF_CONSTEXPR
     if constexpr (is_pointer_v<_Iter>) {
         return const_cast<void*>(static_cast<const volatile void*>(_It));
