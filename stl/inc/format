@@ -761,6 +761,32 @@ public:
     }
 };
 
+template <class _Visitor, class _Context>
+auto visit_format_arg(_Visitor&& _Vis, basic_format_arg<_Context> _Arg) {
+    return _STD visit(_STD forward<_Visitor>(_Vis), _Arg._Value);
+}
+
+// The top level set of parsing "actions".
+// This is like the _Parse_spec_callbacks concept but need not be a concept
+// because it's not really involved in any user customization.
+template <class _ArgFormatter, typename _CharT, typename _Context>
+struct _Format_handler {
+    basic_format_parse_context<_CharT> _Parse_context;
+    _Context _Ctx;
+
+    explicit _Format_hander(typename _ArgFormatter::iterator _Out, basic_string_view<_Char> _Str,
+        basic_format_args<_Context> _Format_args, locale& _Loc)
+        : _Parse_context(_Str), _Ctx(_Out, _Format_args, _Loc) {}
+
+    void _On_text(const _CharT* _Begin, const _CharT* _End) {
+        /* TODO: output the text */
+    }
+
+    void _On_replacement_field(int _Id, const _CharT*) {}
+
+    const _CharT* _On_format_specs(int _Id, const _CharT* _Begin, const _CharT* _End) {}
+};
+
 using format_context  = basic_format_context<back_insert_iterator<string>, string::value_type>;
 using wformat_context = basic_format_context<back_insert_iterator<wstring>, wstring::value_type>;
 using format_args     = basic_format_args<format_context>;
