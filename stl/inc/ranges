@@ -1913,6 +1913,44 @@ namespace ranges {
         };
 
         inline constexpr _Drop_fn drop;
+
+        // VARIABLE views::counted
+        class _Counted_fn {
+        private:
+            enum class _St { _Span, _Subrange, _Subrange_counted };
+
+            template <class _It>
+            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+                if constexpr (contiguous_iterator<_It>) {
+                    return {_St::_Span, noexcept(span{_STD to_address(_STD declval<_It>()), iter_difference_t<_It>{}})};
+                } else if constexpr (random_access_iterator<_It>) {
+                    return {_St::_Subrange,
+                        noexcept(subrange{_STD declval<_It>(), _STD declval<_It>() + iter_difference_t<_It>{}})};
+                } else {
+                    return {_St::_Subrange_counted,
+                        noexcept(subrange{
+                            counted_iterator{_STD declval<_It>(), iter_difference_t<_It>{}}, default_sentinel})};
+                }
+            }
+
+            template <class _It>
+            static constexpr _Choice_t<_St> _Choice = _Choose<_It>();
+
+        public:
+            template <input_or_output_iterator _It>
+            _NODISCARD constexpr auto operator()(_It _First, iter_difference_t<_It> _Count) const
+                noexcept(_Choice<_It>._No_throw) {
+                if constexpr (_Choice<_It>._Strategy == _St::_Span) {
+                    return span{_STD to_address(_First), iter_difference_t<_It>(_Count)};
+                } else if constexpr (_Choice<_It>._Strategy == _St::_Subrange) {
+                    return subrange{_First, _First + _Count};
+                } else if constexpr (_Choice<_It>._Strategy == _St::_Subrange_counted) {
+                    return subrange{counted_iterator{_STD move(_First), _Count}, default_sentinel};
+                }
+            }
+        };
+
+        inline constexpr _Counted_fn counted;
     } // namespace views
 
     // CLASS TEMPLATE ranges::reverse_view
