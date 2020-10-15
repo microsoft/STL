@@ -13,7 +13,7 @@ constexpr int y_max = 32767;
 
 constexpr void day_test() {
     day d{0u};
-    assert(static_cast<unsigned>(d) == 0u);
+    assert(static_cast<unsigned int>(d) == 0u);
     assert(d == 0d);
     assert(++d == 1d);
     assert(d++ == 1d);
@@ -44,7 +44,7 @@ constexpr void day_test() {
 
 constexpr void month_test() {
     month m{1u};
-    assert(static_cast<unsigned>(m) == 1u);
+    assert(static_cast<unsigned int>(m) == 1u);
     assert(m == January);
     assert(++m == February);
     assert(m++ == February);
@@ -59,7 +59,7 @@ constexpr void month_test() {
     m -= months{2};
     assert(m == January);
 
-    for (unsigned i = 0; i <= 255; ++i) {
+    for (unsigned int i = 0; i <= 255; ++i) {
         if (i >= 1 && i <= 12) {
             assert(month{i}.ok());
         } else {
@@ -143,7 +143,7 @@ constexpr void weekday_test() {
     assert(Sunday.c_encoding() == 0u);
     assert(Sunday.iso_encoding() == 7u);
 
-    for (unsigned i = 0; i <= 255; ++i) {
+    for (unsigned int i = 0; i <= 255; ++i) {
         if (i <= 7) {
             assert(weekday{i}.ok());
         } else {
@@ -166,7 +166,7 @@ constexpr void weekday_indexed_test() {
     assert(wdi1 == wdi2);
 
     assert(!weekday_indexed(Sunday, 0).ok());
-    for (unsigned i = 1; i <= 5; i++) {
+    for (unsigned int i = 1; i <= 5; i++) {
         assert(weekday_indexed(Sunday, i).ok());
         assert(weekday_indexed(Monday, i).ok());
         assert(weekday_indexed(Tuesday, i).ok());
@@ -197,9 +197,9 @@ constexpr void month_day_test() {
     assert(month_day(December, 25d) > md);
     assert(md == month_day(January, 1d));
 
-    for (unsigned i = 1; i <= 12; ++i) {
+    for (unsigned int i = 1; i <= 12; ++i) {
         month m{i};
-        for (unsigned d = 0; d <= 32; ++d) {
+        for (unsigned int d = 0; d <= 32; ++d) {
             if (d == 0) {
                 assert(!month_day(m, day{d}).ok());
             } else if (d == 30 && m == February) {
@@ -219,7 +219,7 @@ constexpr void month_day_test() {
 constexpr void month_day_last_test() {
     assert((February / last).month() == February);
 
-    unsigned i = 0;
+    unsigned int i = 0;
     assert(!(month{i++} / last).ok());
     for (; i <= 12; ++i) {
         assert((month{i} / last).ok());
