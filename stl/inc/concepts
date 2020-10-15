@@ -48,6 +48,10 @@ concept convertible_to = __is_convertible_to(_From, _To)
         static_cast<_To>(_Fn());
     };
 
+// CONCEPT _Implicitly_convertible_to
+template <class _From, class _To>
+concept _Implicitly_convertible_to = is_convertible_v<_From, _To>;
+
 // CONCEPT common_reference_with
 template <class _Ty1, class _Ty2>
 concept common_reference_with =
@@ -305,6 +309,14 @@ template <class _FTy, class _Ty1, class _Ty2>
 concept strict_weak_order = relation<_FTy, _Ty1, _Ty2>;
 
 // clang-format on
+
+// STRUCT TEMPLATE _Choice_t
+template <class _Ty>
+struct _Choice_t {
+    _Ty _Strategy  = _Ty{};
+    bool _No_throw = false;
+};
+
 _STD_END
 
 #pragma pop_macro("new")

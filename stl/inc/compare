@@ -342,17 +342,6 @@ struct compare_three_way {
 };
 // clang-format on
 
-// CONCEPT _Implicitly_convertible_to
-template <class _From, class _To>
-concept _Implicitly_convertible_to = is_convertible_v<_From, _To>;
-
-// STRUCT TEMPLATE _Choice_t
-template <class _Ty>
-struct _Choice_t {
-    _Ty _Strategy  = _Ty{};
-    bool _No_throw = false;
-};
-
 // Note: The following CPOs are passing arguments as lvalues; see GH-1374.
 
 // CUSTOMIZATION POINT OBJECT strong_order
