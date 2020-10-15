@@ -14,7 +14,7 @@
 // Intentionally not `using namespace std;` because we need to test ADL.
 using std::bit_cast, std::compare_partial_order_fallback, std::compare_strong_order_fallback,
     std::compare_weak_order_fallback, std::declval, std::extent_v, std::is_same_v, std::numeric_limits, std::pair,
-    std::partial_ordering, std::size_t, std::strong_ordering, std::void_t, std::weak_ordering;
+    std::partial_ordering, std::size_t, std::strong_ordering, std::weak_ordering;
 
 // Define test machinery.
 struct IllFormed {};
@@ -24,8 +24,11 @@ struct CpoResultImpl {
     using type = IllFormed;
 };
 
+// clang-format off
 template <const auto& CPO, typename E, typename F>
-struct CpoResultImpl<CPO, E, F, void_t<decltype(CPO(declval<E>(), declval<F>()))>> {
+    requires requires { CPO(declval<E>(), declval<F>()); }
+struct CpoResultImpl<CPO, E, F> {
+    // clang-format on
     using type = decltype(CPO(declval<E>(), declval<F>()));
 };
 
