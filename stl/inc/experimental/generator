@@ -119,7 +119,7 @@ namespace experimental {
             coroutine_handle<promise_type> _Coro = nullptr;
 
             iterator() = default;
-            explicit iterator(coroutine_handle<promise_type> _CoroArg) noexcept : _Coro(_CoroArg) {}
+            explicit iterator(coroutine_handle<promise_type> _Coro_) noexcept : _Coro(_Coro_) {}
 
             iterator& operator++() {
                 _Coro.resume();
