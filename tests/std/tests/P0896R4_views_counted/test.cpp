@@ -18,12 +18,11 @@ struct instantiator {
     static constexpr void call() {
         using ranges::contiguous_range, ranges::equal, ranges::iterator_t, ranges::random_access_range, ranges::size,
             ranges::subrange;
-        using IterValue = remove_reference_t<iter_reference_t<Iter>>;
-        int input[]     = {13, 42, 1729, -1, -1};
+        int input[] = {13, 42, 1729, -1, -1};
 
         auto result = ranges::views::counted(Iter{input}, 3);
         if constexpr (contiguous_iterator<Iter>) {
-            STATIC_ASSERT(same_as<decltype(result), span<IterValue, dynamic_extent>>);
+            STATIC_ASSERT(same_as<decltype(result), span<remove_reference_t<iter_reference_t<Iter>>, dynamic_extent>>);
         } else if constexpr (random_access_iterator<Iter>) {
             STATIC_ASSERT(same_as<decltype(result), subrange<Iter, Iter>>);
         } else {
