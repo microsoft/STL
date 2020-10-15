@@ -297,11 +297,11 @@ constexpr const _CharT* _Parse_format_specs(const _CharT* _Begin, const _CharT* 
 
     // Parse precision
     if (*_Begin == '*') {
-        _Begin == _Parse_precision(_Begin, _End, _Callbacks);
+        _Begin = _Parse_precision(_Begin, _End, _Callbacks);
     }
 
     // Parse type
-    if (_Begin != _End && _Begin != '}') {
+    if (_Begin != _End && *_Begin != '}') {
         _Callbacks._On_type(*_Begin++);
     }
     return _Begin;

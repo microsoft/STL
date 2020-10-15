@@ -224,21 +224,25 @@ constexpr bool test_parse_format_specs() {
     auto parse_format_specs_fn = _Parse_format_specs<CharT, testing_callbacks<CharT>>;
     using view_typ             = basic_string_view<CharT>;
 
-    auto s0 = view_typ(TYPED_LITERAL(CharT, "{:6}"));
-    auto s1 = view_typ(TYPED_LITERAL(CharT, "{:*<6}"));
-    auto s2 = view_typ(TYPED_LITERAL(CharT, "{:*>6}"));
-    auto s3 = view_typ(TYPED_LITERAL(CharT, "{:*^6}"));
-    auto s4 = view_typ(TYPED_LITERAL(CharT, "{:6d}"));
-
-    test_parse_helper(parse_format_specs_fn, s0, view_typ::npos, {.expected_width = 6});
-    test_parse_helper(parse_format_specs_fn, s1, view_typ::npos,
-        {.expected_fill = view_typ(TYPED_LITERAL(CharT, '*')), .expected_align = _Align::_Left, .expected_width = 6});
-    test_parse_helper(parse_format_specs_fn, s2, view_typ::npos,
-        {.expected_fill = view_typ(TYPED_LITERAL(CharT, '*')), .expected_align = _Align::_Right, .expected_width = 6});
-    test_parse_helper(parse_format_specs_fn, s3, view_typ::npos,
-        {.expected_fill = view_typ(TYPED_LITERAL(CharT, '*')), .expected_align = _Align::_Center, .expected_width = 6});
-    test_parse_helper(parse_format_specs_fn, s4, view_typ::npos, {.expected_width = 6, .expected_type = 'd'});
-
+    view_typ s0(TYPED_LITERAL(CharT, "6}"));
+    view_typ s1(TYPED_LITERAL(CharT, "*<6}"));
+    view_typ s2(TYPED_LITERAL(CharT, "*>6}"));
+    view_typ s3(TYPED_LITERAL(CharT, "*^6}"));
+    view_typ s4(TYPED_LITERAL(CharT, "6d}"));
+    test_parse_helper(parse_format_specs_fn, s0, false, view_typ::npos, {.expected_width = 6});
+    test_parse_helper(parse_format_specs_fn, s1, false, view_typ::npos,
+        {.expected_alignment = _Align::_Left,
+            .expected_fill   = view_typ(TYPED_LITERAL(CharT, "*")),
+            .expected_width  = 6});
+    test_parse_helper(parse_format_specs_fn, s2, false, view_typ::npos,
+        {.expected_alignment = _Align::_Right,
+            .expected_fill   = view_typ(TYPED_LITERAL(CharT, "*")),
+            .expected_width  = 6});
+    test_parse_helper(parse_format_specs_fn, s3, false, view_typ::npos,
+        {.expected_alignment = _Align::_Center,
+            .expected_fill   = view_typ(TYPED_LITERAL(CharT, "*")),
+            .expected_width  = 6});
+    test_parse_helper(parse_format_specs_fn, s4, false, view_typ::npos, {.expected_width = 6, .expected_type = 'd'});
     return true;
 }
 
