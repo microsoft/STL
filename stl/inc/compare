@@ -635,20 +635,20 @@ namespace _Cpos {
 }
 using namespace _Cpos;
 
+// clang-format off
+template <class _Ty1, class _Ty2>
+concept _Can_fallback_eq_lt = requires(_Ty1& _Left, _Ty2& _Right) {
+    { _Left == _Right } -> _Implicitly_convertible_to<bool>;
+    { _Left <  _Right } -> _Implicitly_convertible_to<bool>;
+};
+// clang-format on
+
 // CUSTOMIZATION POINT OBJECT compare_strong_order_fallback
 namespace _Compare_strong_order_fallback {
     template <class _Ty1, class _Ty2>
     concept _Can_strong_order = requires(_Ty1& _Left, _Ty2& _Right) {
         _STD strong_order(_Left, _Right);
     };
-
-    // clang-format off
-    template <class _Ty1, class _Ty2>
-    concept _Can_fallback = requires(_Ty1& _Left, _Ty2& _Right) {
-        { _Left == _Right } -> _Implicitly_convertible_to<bool>;
-        { _Left <  _Right } -> _Implicitly_convertible_to<bool>;
-    };
-    // clang-format on
 
     class _Cpo {
     private:
@@ -660,7 +660,7 @@ namespace _Compare_strong_order_fallback {
                 return {_St::_None};
             } else if constexpr (_Can_strong_order<_Ty1, _Ty2>) {
                 return {_St::_Strong, noexcept(_STD strong_order(_STD declval<_Ty1&>(), _STD declval<_Ty2&>()))};
-            } else if constexpr (_Can_fallback<_Ty1, _Ty2>) {
+            } else if constexpr (_Can_fallback_eq_lt<_Ty1, _Ty2>) {
                 return {_St::_Fallback,
                     noexcept(_STD declval<_Ty1&>() == _STD declval<_Ty2&>()
                                  ? strong_ordering::equal
@@ -706,14 +706,6 @@ namespace _Compare_weak_order_fallback {
         _STD weak_order(_Left, _Right);
     };
 
-    // clang-format off
-    template <class _Ty1, class _Ty2>
-    concept _Can_fallback = requires(_Ty1& _Left, _Ty2& _Right) {
-        { _Left == _Right } -> _Implicitly_convertible_to<bool>;
-        { _Left <  _Right } -> _Implicitly_convertible_to<bool>;
-    };
-    // clang-format on
-
     class _Cpo {
     private:
         enum class _St { _None, _Weak, _Fallback };
@@ -724,7 +716,7 @@ namespace _Compare_weak_order_fallback {
                 return {_St::_None};
             } else if constexpr (_Can_weak_order<_Ty1, _Ty2>) {
                 return {_St::_Weak, noexcept(_STD weak_order(_STD declval<_Ty1&>(), _STD declval<_Ty2&>()))};
-            } else if constexpr (_Can_fallback<_Ty1, _Ty2>) {
+            } else if constexpr (_Can_fallback_eq_lt<_Ty1, _Ty2>) {
                 return {_St::_Fallback,
                     noexcept(_STD declval<_Ty1&>() == _STD declval<_Ty2&>()
                                  ? weak_ordering::equivalent
@@ -772,7 +764,7 @@ namespace _Compare_partial_order_fallback {
 
     // clang-format off
     template <class _Ty1, class _Ty2>
-    concept _Can_fallback = requires(_Ty1& _Left, _Ty2& _Right) {
+    concept _Can_fallback_eq_lt_twice = requires(_Ty1& _Left, _Ty2& _Right) {
         { _Left  == _Right } -> _Implicitly_convertible_to<bool>;
         { _Left  <  _Right } -> _Implicitly_convertible_to<bool>;
         { _Right <  _Left  } -> _Implicitly_convertible_to<bool>; // missing requirement in N4861, see LWG-3465
@@ -789,7 +781,7 @@ namespace _Compare_partial_order_fallback {
                 return {_St::_None};
             } else if constexpr (_Can_partial_order<_Ty1, _Ty2>) {
                 return {_St::_Partial, noexcept(_STD partial_order(_STD declval<_Ty1&>(), _STD declval<_Ty2&>()))};
-            } else if constexpr (_Can_fallback<_Ty1, _Ty2>) {
+            } else if constexpr (_Can_fallback_eq_lt_twice<_Ty1, _Ty2>) {
                 return {_St::_Fallback,
                     noexcept(_STD declval<_Ty1&>() == _STD declval<_Ty2&>()
                                  ? partial_ordering::equivalent
