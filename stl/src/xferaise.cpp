@@ -3,10 +3,7 @@
 
 // _Feraise function
 
-#include <yvals.h>
-
-#include <cerrno>
-#include <ymath.h>
+#include "xmath.hpp"
 
 _EXTERN_C_UNLESS_PURE
 

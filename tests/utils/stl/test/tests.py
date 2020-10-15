@@ -34,6 +34,7 @@ class STLTest(Test):
 
         self._configure_cxx(lit_config, envlst_entry, default_cxx)
 
+        use_edg = False
         for flag in chain(self.cxx.flags, self.cxx.compile_flags):
             if flag[1:] == 'clr:pure':
                 self.requires.append('clr_pure') # TRANSITION, GH-798
@@ -41,6 +42,10 @@ class STLTest(Test):
                 self.requires.append('clr') # TRANSITION, GH-797
             elif flag[1:] == 'BE':
                 self.requires.append('edg') # available for x86, see config.py
+                use_edg = True
+
+        if not use_edg and self.cxx.edg_drop is not None:
+            self.skipped = True
 
     def getOutputDir(self):
         return Path(os.path.join(
@@ -142,7 +147,7 @@ class STLTest(Test):
                 compile_flags.append('-m32')
 
         self.cxx = CXXCompiler(cxx, flags, compile_flags, link_flags,
-                               default_cxx.compile_env)
+                               default_cxx.compile_env, default_cxx.edg_drop)
 
     # This is partially lifted from lit's Test class. The changes here are to
     # handle skipped tests, our env.lst format, and different naming schemes.
