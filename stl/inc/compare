@@ -425,9 +425,10 @@ namespace _Strong_order {
                 } else {
                     return _Left_uint <=> _Right_uint;
                 }
-            } else {
-                static_assert(_Strat == _St::_Three);
+            } else if constexpr (_Strat == _St::_Three) {
                 return static_cast<strong_ordering>(compare_three_way{}(_Left, _Right));
+            } else {
+                static_assert(_Always_false<_Ty1>, "should be unreachable");
             }
         }
     };
@@ -550,9 +551,10 @@ namespace _Weak_order {
                 }
             } else if constexpr (_Strat == _St::_Three) {
                 return static_cast<weak_ordering>(compare_three_way{}(_Left, _Right));
-            } else {
-                static_assert(_Strat == _St::_Strong);
+            } else if constexpr (_Strat == _St::_Strong) {
                 return static_cast<weak_ordering>(_STD strong_order(_Left, _Right));
+            } else {
+                static_assert(_Always_false<_Ty1>, "should be unreachable");
             }
         }
     };
@@ -619,9 +621,10 @@ namespace _Partial_order {
                 return static_cast<partial_ordering>(partial_order(_Left, _Right));
             } else if constexpr (_Strat == _St::_Three) {
                 return static_cast<partial_ordering>(compare_three_way{}(_Left, _Right));
-            } else {
-                static_assert(_Strat == _St::_Weak);
+            } else if constexpr (_Strat == _St::_Weak) {
                 return static_cast<partial_ordering>(_STD weak_order(_Left, _Right));
+            } else {
+                static_assert(_Always_false<_Ty1>, "should be unreachable");
             }
         }
     };
@@ -681,10 +684,11 @@ namespace _Compare_strong_order_fallback {
             constexpr _St _Strat = _Choice<_Ty1&, _Ty2&>._Strategy;
             if constexpr (_Strat == _St::_Strong) {
                 return _STD strong_order(_Left, _Right);
-            } else {
-                static_assert(_Strat == _St::_Fallback);
+            } else if constexpr (_Strat == _St::_Fallback) {
                 return _Left == _Right ? strong_ordering::equal
                                        : _Left < _Right ? strong_ordering::less : strong_ordering::greater;
+            } else {
+                static_assert(_Always_false<_Ty1>, "should be unreachable");
             }
         }
     };
@@ -744,10 +748,11 @@ namespace _Compare_weak_order_fallback {
             constexpr _St _Strat = _Choice<_Ty1&, _Ty2&>._Strategy;
             if constexpr (_Strat == _St::_Weak) {
                 return _STD weak_order(_Left, _Right);
-            } else {
-                static_assert(_Strat == _St::_Fallback);
+            } else if constexpr (_Strat == _St::_Fallback) {
                 return _Left == _Right ? weak_ordering::equivalent
                                        : _Left < _Right ? weak_ordering::less : weak_ordering::greater;
+            } else {
+                static_assert(_Always_false<_Ty1>, "should be unreachable");
             }
         }
     };
@@ -810,12 +815,13 @@ namespace _Compare_partial_order_fallback {
             constexpr _St _Strat = _Choice<_Ty1&, _Ty2&>._Strategy;
             if constexpr (_Strat == _St::_Partial) {
                 return _STD partial_order(_Left, _Right);
-            } else {
-                static_assert(_Strat == _St::_Fallback);
+            } else if constexpr (_Strat == _St::_Fallback) {
                 return _Left == _Right
                            ? partial_ordering::equivalent
                            : _Left < _Right ? partial_ordering::less
                                             : _Right < _Left ? partial_ordering::greater : partial_ordering::unordered;
+            } else {
+                static_assert(_Always_false<_Ty1>, "should be unreachable");
             }
         }
     };
