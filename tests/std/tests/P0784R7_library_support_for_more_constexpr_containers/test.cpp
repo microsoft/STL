@@ -363,7 +363,7 @@ constexpr void test_compiletime_allocator_traits() {
 static_assert((test_compiletime_allocator_traits(), true));
 
 constexpr void test_compiletime_allocator() {
-    { 
+    {
         auto result = std::allocator<A<int>>{}.allocate(10);
         std::allocator<A<int>>{}.deallocate(result, 10);
     }
