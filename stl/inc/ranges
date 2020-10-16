@@ -1945,7 +1945,8 @@ namespace ranges {
                 noexcept(_Choice<_It>._No_throw) {
                 _STL_VERIFY(_Count >= 0, "The size passed to views::counted must be non-negative");
                 if constexpr (_Choice<_It>._Strategy == _St::_Span) {
-                    return span{_STD to_address(_First), static_cast<iter_difference_t<_It>>(_Count)};
+                    return span{
+                        _STD to_address(_First), static_cast<size_t>(static_cast<iter_difference_t<_It>>(_Count))};
                 } else if constexpr (_Choice<_It>._Strategy == _St::_Subrange) {
                     return subrange{_First, _First + static_cast<iter_difference_t<_It>>(_Count)};
                 } else if constexpr (_Choice<_It>._Strategy == _St::_Subrange_counted) {
