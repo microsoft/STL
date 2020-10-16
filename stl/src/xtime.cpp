@@ -4,8 +4,6 @@
 // xtime functions
 
 #include <atomic>
-#include <stdlib.h>
-#include <time.h>
 #include <xtimec.h>
 
 #include "awint.hpp"

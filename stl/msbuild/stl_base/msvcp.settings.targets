@@ -10,8 +10,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
         <DependsOnVCStartupLib>$(MsvcpFlavor)</DependsOnVCStartupLib>
         <DependsOnConcRT Condition="'$(MsvcpFlavor)' == 'kernel32'">true</DependsOnConcRT>
-        <DependsOnDelayImpLib Condition="'$(DependsOnConcRT)' == 'true'">true</DependsOnDelayImpLib>
-
 
         <TargetAppFamily Condition="'$(MsvcpFlavor)' == 'app'">true</TargetAppFamily>
         <TargetCoreSystem Condition="'$(MsvcpFlavor)' == 'onecore'">true</TargetCoreSystem>
@@ -41,15 +39,17 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <IntermediateImportLibOutput>$(CrtBuildDir)\msvcprt_base$(BuildSuffix).$(MsvcpFlavor).import_only.lib</IntermediateImportLibOutput>
         <DllDefName>$(LibOutputFileName).$(MsvcpFlavor)</DllDefName>
         <DllDef>$(IntermediateOutputDirectory)\$(DllDefName).def</DllDef>
+        <DllDef Condition="'$(Arm64X)' == 'true'">$(IntermediateOutputDirectoryEC)\$(DllDefName).def</DllDef>
+        <DllDefArm64Native Condition="'$(Arm64X)' == 'true'">$(IntermediateOutputDirectory)\$(DllDefName).def</DllDefArm64Native>
         <ClDefines Condition="'$(DependsOnConcRT)' == 'true'">$(ClDefines);_STL_CONCRT_SUPPORT</ClDefines>
 
         <LinkGenerateDebugInformation Condition="'$(BLD_REL_NO_DBINFO)' != '1'">true</LinkGenerateDebugInformation>
         <LinkProgramDataBaseFileName Condition="'$(BLD_REL_NO_DBINFO)' != '1'">$(OutputPath)\$(OutputName)$(_PDB_VER_NAME_)$(DllPdbFlavorSuffix)</LinkProgramDataBaseFileName>
+        <LinkProgramDataBaseFileName Condition="'$(BLD_REL_NO_DBINFO)' != '1' and '$(BuildArchitecture)' =='arm64ec' and '$(_BuildArch)' != '$(BuildArchitecture)'">$(OutputPath)\$(OutputName).arm64$(DllPdbFlavorSuffix)</LinkProgramDataBaseFileName>
 
         <LinkAdditionalOptions Condition="'$(BLD_REL_NO_DBINFO)' != '1'">-debugtype:cv,fixup $(LinkAdditionalOptions)</LinkAdditionalOptions>
         <LinkAdditionalOptions Condition="$(DebugBuild) != 'true'">-opt:ref,icf=3 $(LinkAdditionalOptions)</LinkAdditionalOptions>
         <LinkAdditionalOptions Condition="$(DebugBuild) == 'true'">-opt:ref,noicf $(LinkAdditionalOptions)</LinkAdditionalOptions>
-        <LinkAdditionalOptions Condition="'$(DependsOnConcRT)' == 'true'">/delayload:concrt$(VCToolsProdVerSuffix)$(BuildSuffix)$(MsvcpFlavorSuffix).dll $(LinkAdditionalOptions)</LinkAdditionalOptions>
         <LinkAdditionalOptions>-nodefaultlib:libcpmt$(BuildSuffix).lib $(LinkAdditionalOptions)</LinkAdditionalOptions>
         <LinkAdditionalOptions>-nodefaultlib:$(LibOutputFile) $(LinkAdditionalOptions)</LinkAdditionalOptions>
 
@@ -75,14 +75,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <TargetLib Include="$(UniversalCRTLib)"/>
     </ItemGroup>
 
-    <ItemGroup Condition="'$(DependsOnConcRT)' == 'true'">
-        <ProjectReference Condition="'$(CanSkipProjectReferenceForTargetLib)' != 'true' and ('$(CrtBuildModel)'=='md' or '$(CrtBuildModel)'=='xmd')" Include="$(VCToolsRootPath)\crt\concrt\build\$(CrtBuildModel)\concrt_$(MsvcpFlavor)\concrt.nativeproj"/>
-        <ProjectReference Condition="'$(CanSkipProjectReferenceForTargetLib)' != 'true' and ('$(CrtBuildModel)'!='md' and '$(CrtBuildModel)'!='xmd')" Include="$(VCToolsRootPath)\crt\concrt\build\$(CrtBuildModel)\libconcrt_$(MsvcpFlavor)\concrt.nativeproj"/>
-        <ProjectReference Include="$(VCToolsRootPath)\delayimp\delayimp.nativeproj" />
-        <TargetLib Include="$(CrtLibPath)\concrt$(BuildSuffix)$(ClrLibSuffix).lib"/>
-        <TargetLib Include="$(CrtLibPath)\delayimp.lib"/>
-    </ItemGroup>
-
     <!-- Copy the output dll and pdb to various destinations -->
     <ItemGroup>
         <CopyFilesForCrossTools Condition="'$(MsvcpFlavor)' == 'kernel32'" Include="
@@ -96,6 +88,292 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     </ItemGroup>
 
     <Import Project="$(MSBuildThisFileDirectory)\stl.files.settings.targets"/>
+
+    <!-- Note: semicolons must be included after ".obj"; otherwise msbuild doesn't build it -->
+    <PropertyGroup>
+        <ECImportLibObjs>
+            $(IntermediateOutputDirectoryEC)\_tolower.obj;
+            $(IntermediateOutputDirectoryEC)\_toupper.obj;
+            $(IntermediateOutputDirectoryEC)\atomic.obj;
+            $(IntermediateOutputDirectoryEC)\cthread.obj;
+            $(IntermediateOutputDirectoryEC)\xnotify.obj;
+            $(IntermediateOutputDirectoryEC)\xtime.obj;
+            $(IntermediateOutputDirectoryEC)\xcosh.obj;
+            $(IntermediateOutputDirectoryEC)\xdint.obj;
+            $(IntermediateOutputDirectoryEC)\xdnorm.obj;
+            $(IntermediateOutputDirectoryEC)\xdscale.obj;
+            $(IntermediateOutputDirectoryEC)\xdtento.obj;
+            $(IntermediateOutputDirectoryEC)\xdtest.obj;
+            $(IntermediateOutputDirectoryEC)\xdunscal.obj;
+            $(IntermediateOutputDirectoryEC)\xexp.obj;
+            $(IntermediateOutputDirectoryEC)\xfcosh.obj;
+            $(IntermediateOutputDirectoryEC)\xfdint.obj;
+            $(IntermediateOutputDirectoryEC)\xfdnorm.obj;
+            $(IntermediateOutputDirectoryEC)\xfdscale.obj;
+            $(IntermediateOutputDirectoryEC)\xfdtento.obj;
+            $(IntermediateOutputDirectoryEC)\xfdtest.obj;
+            $(IntermediateOutputDirectoryEC)\xfdunsca.obj;
+            $(IntermediateOutputDirectoryEC)\xferaise.obj;
+            $(IntermediateOutputDirectoryEC)\xfexp.obj;
+            $(IntermediateOutputDirectoryEC)\xfprec.obj;
+            $(IntermediateOutputDirectoryEC)\xfsinh.obj;
+            $(IntermediateOutputDirectoryEC)\xfvalues.obj;
+            $(IntermediateOutputDirectoryEC)\xgetwctype.obj;
+            $(IntermediateOutputDirectoryEC)\xlcosh.obj;
+            $(IntermediateOutputDirectoryEC)\xldint.obj;
+            $(IntermediateOutputDirectoryEC)\xldscale.obj;
+            $(IntermediateOutputDirectoryEC)\xldtento.obj;
+            $(IntermediateOutputDirectoryEC)\xldtest.obj;
+            $(IntermediateOutputDirectoryEC)\xldunsca.obj;
+            $(IntermediateOutputDirectoryEC)\xlexp.obj;
+            $(IntermediateOutputDirectoryEC)\xlpoly.obj;
+            $(IntermediateOutputDirectoryEC)\xlprec.obj;
+            $(IntermediateOutputDirectoryEC)\xlsinh.obj;
+            $(IntermediateOutputDirectoryEC)\xlvalues.obj;
+            $(IntermediateOutputDirectoryEC)\xmbtowc.obj;
+            $(IntermediateOutputDirectoryEC)\xmtx.obj;
+            $(IntermediateOutputDirectoryEC)\xpoly.obj;
+            $(IntermediateOutputDirectoryEC)\xprec.obj;
+            $(IntermediateOutputDirectoryEC)\xsinh.obj;
+            $(IntermediateOutputDirectoryEC)\xstod.obj;
+            $(IntermediateOutputDirectoryEC)\xstof.obj;
+            $(IntermediateOutputDirectoryEC)\xstoflt.obj;
+            $(IntermediateOutputDirectoryEC)\xstol.obj;
+            $(IntermediateOutputDirectoryEC)\xstold.obj;
+            $(IntermediateOutputDirectoryEC)\xstoll.obj;
+            $(IntermediateOutputDirectoryEC)\xstopfx.obj;
+            $(IntermediateOutputDirectoryEC)\xstoul.obj;
+            $(IntermediateOutputDirectoryEC)\xstoull.obj;
+            $(IntermediateOutputDirectoryEC)\xstoxflt.obj;
+            $(IntermediateOutputDirectoryEC)\xstrcoll.obj;
+            $(IntermediateOutputDirectoryEC)\xstrxfrm.obj;
+            $(IntermediateOutputDirectoryEC)\xtowlower.obj;
+            $(IntermediateOutputDirectoryEC)\xtowupper.obj;
+            $(IntermediateOutputDirectoryEC)\xvalues.obj;
+            $(IntermediateOutputDirectoryEC)\xwcscoll.obj;
+            $(IntermediateOutputDirectoryEC)\xwcsxfrm.obj;
+            $(IntermediateOutputDirectoryEC)\xwctomb.obj;
+            $(IntermediateOutputDirectoryEC)\xwstod.obj;
+            $(IntermediateOutputDirectoryEC)\xwstof.obj;
+            $(IntermediateOutputDirectoryEC)\xwstoflt.obj;
+            $(IntermediateOutputDirectoryEC)\xwstold.obj;
+            $(IntermediateOutputDirectoryEC)\xwstopfx.obj;
+            $(IntermediateOutputDirectoryEC)\xwstoxfl.obj;
+            $(IntermediateOutputDirectoryEC)\excptptr.obj;
+            $(IntermediateOutputDirectoryEC)\StlCompareStringA.obj;
+            $(IntermediateOutputDirectoryEC)\StlCompareStringW.obj;
+            $(IntermediateOutputDirectoryEC)\StlLCMapStringA.obj;
+            $(IntermediateOutputDirectoryEC)\StlLCMapStringW.obj;
+            $(IntermediateOutputDirectoryEC)\winapinls.obj;
+            $(IntermediateOutputDirectoryEC)\cerr.obj;
+            $(IntermediateOutputDirectoryEC)\cin.obj;
+            $(IntermediateOutputDirectoryEC)\clog.obj;
+            $(IntermediateOutputDirectoryEC)\cout.obj;
+            $(IntermediateOutputDirectoryEC)\filesys.obj;
+            $(IntermediateOutputDirectoryEC)\fiopen.obj;
+            $(IntermediateOutputDirectoryEC)\future.obj;
+            $(IntermediateOutputDirectoryEC)\iomanip.obj;
+            $(IntermediateOutputDirectoryEC)\ios.obj;
+            $(IntermediateOutputDirectoryEC)\iosptrs.obj;
+            $(IntermediateOutputDirectoryEC)\iostream.obj;
+            $(IntermediateOutputDirectoryEC)\locale.obj;
+            $(IntermediateOutputDirectoryEC)\locale0.obj;
+            $(IntermediateOutputDirectoryEC)\multprec.obj;
+            $(IntermediateOutputDirectoryEC)\raisehan.obj;
+            $(IntermediateOutputDirectoryEC)\stdhndlr.obj;
+            $(IntermediateOutputDirectoryEC)\stdthrow.obj;
+            $(IntermediateOutputDirectoryEC)\syserror.obj;
+            $(IntermediateOutputDirectoryEC)\cond.obj;
+            $(IntermediateOutputDirectoryEC)\mutex.obj;
+            $(IntermediateOutputDirectoryEC)\pplerror.obj;
+            $(IntermediateOutputDirectoryEC)\ppltasks.obj;
+            $(IntermediateOutputDirectoryEC)\taskscheduler.obj;
+            $(IntermediateOutputDirectoryEC)\thread0.obj;
+            $(IntermediateOutputDirectoryEC)\uncaught_exception.obj;
+            $(IntermediateOutputDirectoryEC)\uncaught_exceptions.obj;
+            $(IntermediateOutputDirectoryEC)\ushcerr.obj;
+            $(IntermediateOutputDirectoryEC)\ushcin.obj;
+            $(IntermediateOutputDirectoryEC)\ushclog.obj;
+            $(IntermediateOutputDirectoryEC)\ushcout.obj;
+            $(IntermediateOutputDirectoryEC)\ushiostr.obj;
+            $(IntermediateOutputDirectoryEC)\wcerr.obj;
+            $(IntermediateOutputDirectoryEC)\wcin.obj;
+            $(IntermediateOutputDirectoryEC)\wclog.obj;
+            $(IntermediateOutputDirectoryEC)\wcout.obj;
+            $(IntermediateOutputDirectoryEC)\wiostrea.obj;
+            $(IntermediateOutputDirectoryEC)\wlocale.obj;
+            $(IntermediateOutputDirectoryEC)\xalloc.obj;
+            $(IntermediateOutputDirectoryEC)\xdateord.obj;
+            $(IntermediateOutputDirectoryEC)\xlgamma.obj;
+            $(IntermediateOutputDirectoryEC)\xlocale.obj;
+            $(IntermediateOutputDirectoryEC)\xlock.obj;
+            $(IntermediateOutputDirectoryEC)\xonce.obj;
+            $(IntermediateOutputDirectoryEC)\xrngabort.obj;
+            $(IntermediateOutputDirectoryEC)\xrngdev.obj;
+            $(IntermediateOutputDirectoryEC)\xthrow.obj;
+            $(IntermediateOutputDirectoryEC)\winapisupp.obj;
+            $(IntermediateOutputDirectoryEC)\dllmain.obj;
+            $(IntermediateOutputDirectoryEC)\instances.obj;
+       </ECImportLibObjs>
+        <!-- OBJs that need to get added to msvcprt[d].lib and msvcprt_base[d].lib. -->
+        <!-- They get added to both through msvcprt_base.exp -->
+        <ECLibObjs>
+            $(IntermediateOutputDirectoryEC)\filesystem.obj;
+            $(IntermediateOutputDirectoryEC)\locale0_implib.obj;
+            $(IntermediateOutputDirectoryEC)\nothrow.obj;
+            $(IntermediateOutputDirectoryEC)\parallel_algorithms.obj;
+            $(IntermediateOutputDirectoryEC)\sharedmutex.obj;
+            $(IntermediateOutputDirectoryEC)\vector_algorithms.obj;
+        </ECLibObjs>
+    </PropertyGroup>
+
+    <!-- OBJs for msvcprt_base.lib -->
+    <ItemGroup Condition="'$(Arm64X)' == 'true'">
+        <!-- Add EC symbols to import lib -->
+        <ImportLib Include="$(ECImportLibObjs)" />
+        <!-- Add these EC OBJs to import lib -->
+        <ImportLib Include="$(ECLibObjs)">
+            <IncludeInLink>false</IncludeInLink>
+            <IncludeInImportLib>true</IncludeInImportLib>
+        </ImportLib>
+    </ItemGroup>
+
+
+    <ItemGroup Condition="'$(Arm64X)' == 'true' and '$(TargetNetFx)' != true" >
+        <Link Include="$(IntermediateOutputDirectoryEC)\_tolower.obj;
+                $(IntermediateOutputDirectoryEC)\_toupper.obj;
+                $(IntermediateOutputDirectoryEC)\atomic.obj;
+                $(IntermediateOutputDirectoryEC)\cthread.obj;
+                $(IntermediateOutputDirectoryEC)\xnotify.obj;
+                $(IntermediateOutputDirectoryEC)\xtime.obj;
+                $(IntermediateOutputDirectoryEC)\xcosh.obj;
+                $(IntermediateOutputDirectoryEC)\xdint.obj;
+                $(IntermediateOutputDirectoryEC)\xdnorm.obj;
+                $(IntermediateOutputDirectoryEC)\xdscale.obj;
+                $(IntermediateOutputDirectoryEC)\xdtento.obj;
+                $(IntermediateOutputDirectoryEC)\xdtest.obj;
+                $(IntermediateOutputDirectoryEC)\xdunscal.obj;
+                $(IntermediateOutputDirectoryEC)\xexp.obj;
+                $(IntermediateOutputDirectoryEC)\xfcosh.obj;
+                $(IntermediateOutputDirectoryEC)\xfdint.obj;
+                $(IntermediateOutputDirectoryEC)\xfdnorm.obj;
+                $(IntermediateOutputDirectoryEC)\xfdscale.obj;
+                $(IntermediateOutputDirectoryEC)\xfdtento.obj;
+                $(IntermediateOutputDirectoryEC)\xfdtest.obj;
+                $(IntermediateOutputDirectoryEC)\xfdunsca.obj;
+                $(IntermediateOutputDirectoryEC)\xferaise.obj;
+                $(IntermediateOutputDirectoryEC)\xfexp.obj;
+                $(IntermediateOutputDirectoryEC)\xfprec.obj;
+                $(IntermediateOutputDirectoryEC)\xfsinh.obj;
+                $(IntermediateOutputDirectoryEC)\xfvalues.obj;
+                $(IntermediateOutputDirectoryEC)\xgetwctype.obj;
+                $(IntermediateOutputDirectoryEC)\xlcosh.obj;
+                $(IntermediateOutputDirectoryEC)\xldint.obj;
+                $(IntermediateOutputDirectoryEC)\xldscale.obj;
+                $(IntermediateOutputDirectoryEC)\xldtento.obj;
+                $(IntermediateOutputDirectoryEC)\xldtest.obj;
+                $(IntermediateOutputDirectoryEC)\xldunsca.obj;
+                $(IntermediateOutputDirectoryEC)\xlexp.obj;
+                $(IntermediateOutputDirectoryEC)\xlpoly.obj;
+                $(IntermediateOutputDirectoryEC)\xlprec.obj;
+                $(IntermediateOutputDirectoryEC)\xlsinh.obj;
+                $(IntermediateOutputDirectoryEC)\xlvalues.obj;
+                $(IntermediateOutputDirectoryEC)\xmbtowc.obj;
+                $(IntermediateOutputDirectoryEC)\xmtx.obj;
+                $(IntermediateOutputDirectoryEC)\xpoly.obj;
+                $(IntermediateOutputDirectoryEC)\xprec.obj;
+                $(IntermediateOutputDirectoryEC)\xsinh.obj;
+                $(IntermediateOutputDirectoryEC)\xstod.obj;
+                $(IntermediateOutputDirectoryEC)\xstof.obj;
+                $(IntermediateOutputDirectoryEC)\xstoflt.obj;
+                $(IntermediateOutputDirectoryEC)\xstol.obj;
+                $(IntermediateOutputDirectoryEC)\xstold.obj;
+                $(IntermediateOutputDirectoryEC)\xstoll.obj;
+                $(IntermediateOutputDirectoryEC)\xstopfx.obj;
+                $(IntermediateOutputDirectoryEC)\xstoul.obj;
+                $(IntermediateOutputDirectoryEC)\xstoull.obj;
+                $(IntermediateOutputDirectoryEC)\xstoxflt.obj;
+                $(IntermediateOutputDirectoryEC)\xstrcoll.obj;
+                $(IntermediateOutputDirectoryEC)\xstrxfrm.obj;
+                $(IntermediateOutputDirectoryEC)\xtowlower.obj;
+                $(IntermediateOutputDirectoryEC)\xtowupper.obj;
+                $(IntermediateOutputDirectoryEC)\xvalues.obj;
+                $(IntermediateOutputDirectoryEC)\xwcscoll.obj;
+                $(IntermediateOutputDirectoryEC)\xwcsxfrm.obj;
+                $(IntermediateOutputDirectoryEC)\xwctomb.obj;
+                $(IntermediateOutputDirectoryEC)\xwstod.obj;
+                $(IntermediateOutputDirectoryEC)\xwstof.obj;
+                $(IntermediateOutputDirectoryEC)\xwstoflt.obj;
+                $(IntermediateOutputDirectoryEC)\xwstold.obj;
+                $(IntermediateOutputDirectoryEC)\xwstopfx.obj;
+                $(IntermediateOutputDirectoryEC)\xwstoxfl.obj;
+                $(IntermediateOutputDirectoryEC)\excptptr.obj;
+                $(IntermediateOutputDirectoryEC)\StlCompareStringA.obj;
+                $(IntermediateOutputDirectoryEC)\StlCompareStringW.obj;
+                $(IntermediateOutputDirectoryEC)\StlLCMapStringA.obj;
+                $(IntermediateOutputDirectoryEC)\StlLCMapStringW.obj;
+                $(IntermediateOutputDirectoryEC)\winapinls.obj;
+                $(IntermediateOutputDirectoryEC)\cerr.obj;
+                $(IntermediateOutputDirectoryEC)\cin.obj;
+                $(IntermediateOutputDirectoryEC)\clog.obj;
+                $(IntermediateOutputDirectoryEC)\cout.obj;
+                $(IntermediateOutputDirectoryEC)\filesys.obj;
+                $(IntermediateOutputDirectoryEC)\fiopen.obj;
+                $(IntermediateOutputDirectoryEC)\future.obj;
+                $(IntermediateOutputDirectoryEC)\iomanip.obj;
+                $(IntermediateOutputDirectoryEC)\ios.obj;
+                $(IntermediateOutputDirectoryEC)\iosptrs.obj;
+                $(IntermediateOutputDirectoryEC)\iostream.obj;
+                $(IntermediateOutputDirectoryEC)\locale.obj;
+                $(IntermediateOutputDirectoryEC)\locale0.obj;
+                $(IntermediateOutputDirectoryEC)\multprec.obj;
+                $(IntermediateOutputDirectoryEC)\raisehan.obj;
+                $(IntermediateOutputDirectoryEC)\stdhndlr.obj;
+                $(IntermediateOutputDirectoryEC)\stdthrow.obj;
+                $(IntermediateOutputDirectoryEC)\syserror.obj;
+                $(IntermediateOutputDirectoryEC)\cond.obj;
+                $(IntermediateOutputDirectoryEC)\mutex.obj;
+                $(IntermediateOutputDirectoryEC)\pplerror.obj;
+                $(IntermediateOutputDirectoryEC)\ppltasks.obj;
+                $(IntermediateOutputDirectoryEC)\taskscheduler.obj;
+                $(IntermediateOutputDirectoryEC)\thread0.obj;
+                $(IntermediateOutputDirectoryEC)\uncaught_exception.obj;
+                $(IntermediateOutputDirectoryEC)\uncaught_exceptions.obj;
+                $(IntermediateOutputDirectoryEC)\ushcerr.obj;
+                $(IntermediateOutputDirectoryEC)\ushcin.obj;
+                $(IntermediateOutputDirectoryEC)\ushclog.obj;
+                $(IntermediateOutputDirectoryEC)\ushcout.obj;
+                $(IntermediateOutputDirectoryEC)\ushiostr.obj;
+                $(IntermediateOutputDirectoryEC)\wcerr.obj;
+                $(IntermediateOutputDirectoryEC)\wcin.obj;
+                $(IntermediateOutputDirectoryEC)\wclog.obj;
+                $(IntermediateOutputDirectoryEC)\wcout.obj;
+                $(IntermediateOutputDirectoryEC)\wiostrea.obj;
+                $(IntermediateOutputDirectoryEC)\wlocale.obj;
+                $(IntermediateOutputDirectoryEC)\xalloc.obj;
+                $(IntermediateOutputDirectoryEC)\xdateord.obj;
+                $(IntermediateOutputDirectoryEC)\xlgamma.obj;
+                $(IntermediateOutputDirectoryEC)\xlocale.obj;
+                $(IntermediateOutputDirectoryEC)\xlock.obj;
+                $(IntermediateOutputDirectoryEC)\xonce.obj;
+                $(IntermediateOutputDirectoryEC)\xrngabort.obj;
+                $(IntermediateOutputDirectoryEC)\xrngdev.obj;
+                $(IntermediateOutputDirectoryEC)\xthrow.obj;
+                $(IntermediateOutputDirectoryEC)\winapisupp.obj;"/>
+        <Link Condition="'$(CrtBuildModelIsDll)' == 'true'"
+        Include="$(IntermediateOutputDirectoryEC)\dllmain.obj;
+                $(IntermediateOutputDirectoryEC)\instances.obj;"/>
+        <Link Condition="'$(CrtBuildModelIsDll)' != 'true'"
+        Include="$(IntermediateOutputDirectoryEC)\filesystem.obj;
+                $(IntermediateOutputDirectoryEC)\locale0_implib.obj;
+                $(IntermediateOutputDirectoryEC)\memory_resource.obj;
+                $(IntermediateOutputDirectoryEC)\nothrow.obj;
+                $(IntermediateOutputDirectoryEC)\parallel_algorithms.obj;
+                $(IntermediateOutputDirectoryEC)\sharedmutex.obj;
+                $(IntermediateOutputDirectoryEC)\special_math.obj;
+                $(IntermediateOutputDirectoryEC)\ulocale.obj;
+                $(IntermediateOutputDirectoryEC)\vector_algorithms.obj;"/>
+    </ItemGroup>
 
     <Import Project="$(VCToolsRootPath)\crt\crt_build.targets"/>
     <Target Name="GetBaseAddress"/>
