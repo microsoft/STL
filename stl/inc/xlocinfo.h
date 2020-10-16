@@ -23,19 +23,6 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _EXTERN_C_UNLESS_PURE
 
-// CTYPE CODE BITS
-#define _XB 0x000 // extra blank
-#define _XA 0x100 // extra alphabetic
-#define _XS 0x000 // extra space
-#define _BB _CONTROL // BEL, BS, etc.
-#define _CN _SPACE // CR, FF, HT, NL, VT
-#define _DI _DIGIT // '0'-'9'
-#define _LO _LOWER // 'a'-'z'
-#define _PU _PUNCT // punctuation
-#define _SP _BLANK // space
-#define _UP _UPPER // 'A'-'Z'
-#define _XD _HEX // '0'-'9', 'A'-'F', 'a'-'f'
-
 // SUPPLEMENTAL LOCALE MACROS AND DECLARATIONS
 #define _X_ALL      LC_ALL
 #define _X_COLLATE  LC_COLLATE
@@ -87,7 +74,8 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Getdateorder();
     _Mbrtowc(_Out_opt_ wchar_t*, const char*, size_t, mbstate_t*, const _Cvtvec*);
 
 #else // _M_CEE_PURE
-_MRTIMP2 int __cdecl _Mbrtowc(_Out_opt_ wchar_t*, const char*, size_t, mbstate_t*, const _Cvtvec*);
+_MRTIMP2 _Success_(return >= 0) int __cdecl _Mbrtowc(
+    _When_(_Max_multibyte != 0, _Out_) wchar_t*, const char*, size_t _Max_multibyte, mbstate_t*, const _Cvtvec*);
 #endif // _M_CEE_PURE
 
 _CRTIMP2_PURE float __CLRCALL_PURE_OR_CDECL _Stof(const char*, _Out_opt_ _Deref_post_opt_valid_ char**, long);
@@ -100,7 +88,8 @@ _CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Strxfrm(_Out_writes_(_End1 - _Stri
     _In_z_ char* _End1, const char*, const char*, const _Collvec*);
 _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Tolower(int, const _Ctypevec*);
 _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Toupper(int, const _Ctypevec*);
-_CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Wcrtomb(_Out_ char*, wchar_t, mbstate_t*, const _Cvtvec*);
+_CRTIMP2_PURE _Success_(return != -1) int __CLRCALL_PURE_OR_CDECL
+    _Wcrtomb(_Out_ char*, wchar_t, mbstate_t*, const _Cvtvec*);
 _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Wcscoll(
     const wchar_t*, const wchar_t*, const wchar_t*, const wchar_t*, const _Collvec*);
 _CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Wcsxfrm(_Out_writes_(_End1 - _String1) _Post_readable_size_(return )

@@ -12,6 +12,9 @@
 #include <memory>
 #include <mutex>
 #include <xthreads.h>
+#if _HAS_CXX20
+#include <stop_token>
+#endif // _HAS_CXX20
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -25,6 +28,27 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // _M_CEE
 
 _STD_BEGIN
+template <class _Lock>
+struct _Unlock_guard {
+    explicit _Unlock_guard(_Lock& _Mtx_) : _Mtx(_Mtx_) {
+        _Mtx.unlock();
+    }
+
+    ~_Unlock_guard() noexcept /* terminates */ {
+        // relock mutex or terminate()
+        // condition_variable_any wait functions are required to terminate if
+        // the mutex cannot be relocked;
+        // we slam into noexcept here for easier user debugging.
+        _Mtx.lock();
+    }
+
+    _Unlock_guard(const _Unlock_guard&) = delete;
+    _Unlock_guard& operator=(const _Unlock_guard&) = delete;
+
+private:
+    _Lock& _Mtx;
+};
+
 class condition_variable_any { // class for waiting for conditions with any kind of mutex
 public:
     condition_variable_any() : _Myptr{_STD make_shared<mutex>()} {
@@ -50,20 +74,17 @@ public:
 
     template <class _Lock>
     void wait(_Lock& _Lck) noexcept /* terminates */ { // wait for signal
-        {
-            const shared_ptr<mutex> _Ptr = _Myptr; // for immunity to *this destruction
-            lock_guard<mutex> _Guard{*_Ptr};
-            _Lck.unlock();
-            _Cnd_wait(_Mycnd(), _Ptr->_Mymtx());
-        } // unlock
-
-        _Lck.lock();
-    }
+        const shared_ptr<mutex> _Ptr = _Myptr; // for immunity to *this destruction
+        unique_lock<mutex> _Guard{*_Ptr};
+        _Unlock_guard<_Lock> _Unlock_outer{_Lck};
+        _Cnd_wait(_Mycnd(), _Ptr->_Mymtx());
+        _Guard.unlock();
+    } // relock _Lck
 
     template <class _Lock, class _Predicate>
-    void wait(_Lock& _Lck, _Predicate _Pred) noexcept(noexcept(!_Pred())) /* strengthened */ {
+    void wait(_Lock& _Lck, _Predicate _Pred) noexcept(noexcept(static_cast<bool>(_Pred()))) /* strengthened */ {
         // wait for signal and check predicate
-        while (!_Pred()) {
+        while (!static_cast<bool>(_Pred())) {
             wait(_Lck);
         }
     }
@@ -89,8 +110,8 @@ public:
     template <class _Lock, class _Rep, class _Period>
     cv_status wait_for(_Lock& _Lck, const chrono::duration<_Rep, _Period>& _Rel_time) { // wait for duration
         if (_Rel_time <= chrono::duration<_Rep, _Period>::zero()) {
-            _Lck.unlock();
-            _Relock(_Lck);
+            _Unlock_guard<_Lock> _Unlock_outer{_Lck};
+            (void) _Unlock_outer;
             return cv_status::timeout;
         }
 
@@ -128,6 +149,93 @@ public:
         return true;
     }
 
+#if _HAS_CXX20
+private:
+    struct _Cv_any_notify_all {
+        condition_variable_any* _This;
+
+        explicit _Cv_any_notify_all(condition_variable_any* _This_) : _This{_This_} {}
+
+        _Cv_any_notify_all(const _Cv_any_notify_all&) = delete;
+        _Cv_any_notify_all& operator=(const _Cv_any_notify_all&) = delete;
+
+        void operator()() const noexcept {
+            _This->notify_all();
+        }
+    };
+
+public:
+    template <class _Lock, class _Predicate>
+    bool wait(_Lock& _Lck, stop_token _Stoken, _Predicate _Pred) noexcept(
+        noexcept(static_cast<bool>(_Pred()))) /* strengthened */ {
+        // TRANSITION, ABI: Due to the unsynchronized delivery of notify_all by _Stoken,
+        // this implementation cannot tolerate *this destruction while an interruptible wait
+        // is outstanding. A future ABI should store both the internal CV and internal mutex
+        // in the reference counted block to allow this.
+        stop_callback<_Cv_any_notify_all> _Cb{_Stoken, this};
+        for (;;) {
+            if (_Pred()) {
+                return true;
+            }
+
+            unique_lock<mutex> _Guard{*_Myptr};
+            if (_Stoken.stop_requested()) {
+                _Guard.unlock();
+                return _Pred();
+            }
+
+            _Unlock_guard<_Lock> _Unlock_outer{_Lck};
+            _Cnd_wait(_Mycnd(), _Myptr->_Mymtx());
+            _Guard.unlock();
+        } // relock
+    }
+
+    template <class _Lock, class _Clock, class _Duration, class _Predicate>
+    bool wait_until(
+        _Lock& _Lck, stop_token _Stoken, const chrono::time_point<_Clock, _Duration>& _Abs_time, _Predicate _Pred) {
+        stop_callback<_Cv_any_notify_all> _Cb{_Stoken, this};
+        for (;;) {
+            if (_Pred()) {
+                return true;
+            }
+
+            unique_lock<mutex> _Guard{*_Myptr};
+            if (_Stoken.stop_requested()) {
+                break;
+            }
+
+            _Unlock_guard<_Lock> _Unlock_outer{_Lck};
+            const auto _Now = _Clock::now();
+            if (_Now >= _Abs_time) {
+                break;
+            }
+
+            const auto _Rel_time = _Abs_time - _Now;
+            // TRANSITION, ABI: The standard says that we should use a steady clock,
+            // but unfortunately our ABI speaks struct xtime, which is relative to the system clock.
+            _CSTD xtime _Tgt;
+            (void) _To_xtime_10_day_clamped(_Tgt, _Rel_time);
+            const int _Res = _Cnd_timedwait(_Mycnd(), _Myptr->_Mymtx(), &_Tgt);
+            _Guard.unlock();
+
+            switch (_Res) {
+            case _Thrd_timedout:
+            case _Thrd_success:
+                break;
+            default:
+                _Throw_C_error(_Res);
+            }
+        } // relock
+
+        return _Pred();
+    }
+
+    template <class _Lock, class _Rep, class _Period, class _Predicate>
+    bool wait_for(_Lock& _Lck, stop_token _Stoken, const chrono::duration<_Rep, _Period>& _Rel_time, _Predicate _Pred) {
+        return wait_until(_Lck, _STD move(_Stoken), chrono::steady_clock::now() + _Rel_time, _STD move(_Pred));
+    }
+#endif // _HAS_CXX20
+
 private:
     shared_ptr<mutex> _Myptr;
 
@@ -139,16 +247,11 @@ private:
 
     template <class _Lock>
     cv_status _Wait_until(_Lock& _Lck, const xtime* const _Abs_time) { // wait for signal with timeout
-        int _Res;
-
-        {
-            const shared_ptr<mutex> _Ptr = _Myptr; // for immunity to *this destruction
-            lock_guard<mutex> _Guard{*_Ptr};
-            _Lck.unlock();
-            _Res = _Cnd_timedwait(_Mycnd(), _Ptr->_Mymtx(), _Abs_time);
-        } // unlock
-
-        _Relock(_Lck);
+        const shared_ptr<mutex> _Ptr = _Myptr; // for immunity to *this destruction
+        unique_lock<mutex> _Guard{*_Ptr};
+        _Unlock_guard<_Lock> _Unlock_outer{_Lck};
+        const int _Res = _Cnd_timedwait(_Mycnd(), _Ptr->_Mymtx(), _Abs_time);
+        _Guard.unlock();
 
         switch (_Res) {
         case _Thrd_success:
@@ -158,13 +261,6 @@ private:
         default:
             _Throw_C_error(_Res);
         }
-    }
-
-    template <class _Lock>
-    static void _Relock(_Lock& _Lck) noexcept /* terminates */ { // relock external mutex or terminate()
-        // Wait functions are required to terminate if the mutex cannot be locked;
-        // we slam into noexcept here for easier user debugging.
-        _Lck.lock();
     }
 };
 

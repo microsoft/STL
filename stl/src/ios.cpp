@@ -3,7 +3,6 @@
 
 // ios_base basic members
 
-#include <new>
 #include <xiosbase>
 _STD_BEGIN
 
@@ -22,22 +21,9 @@ __PURE_APPDOMAIN_GLOBAL int ios_base::_Index = 0; // initialize source of unique
 __PURE_APPDOMAIN_GLOBAL bool ios_base::_Sync = true; // initialize synchronization flag
 
 
-__PURE_APPDOMAIN_GLOBAL static ios_base* stdstr[_Nstdstr + 2] = {0}; // [1, _Nstdstr] hold pointers to standard streams
+__PURE_APPDOMAIN_GLOBAL static ios_base* stdstr[_Nstdstr + 2] = {
+    nullptr}; // [1, _Nstdstr] hold pointers to standard streams
 __PURE_APPDOMAIN_GLOBAL static char stdopens[_Nstdstr + 2] = {0}; // [1, _Nstdstr] hold open counts for standard streams
-
-// void __CLR_OR_THIS_CALL ios_base::clear(iostate state, bool reraise) { // set state, possibly reraise exception
-//     _Mystate = (iostate)(state & _Statmask);
-//     if ((_Mystate & _Except) == 0)
-//         ;
-//     else if (reraise)
-//         _RERAISE;
-//     else if (_Mystate & _Except & badbit)
-//         _THROW(failure("ios_base::badbit set"));
-//     else if (_Mystate & _Except & failbit)
-//         _THROW(failure("ios_base::failbit set"));
-//     else
-//         _THROW(failure("ios_base::eofbit set"));
-// }
 
 void __CLRCALL_PURE_OR_CDECL ios_base::_Ios_base_dtor(ios_base* _This) { // destroy the object
     if (0 < _This->_Stdstr && 0 < --stdopens[_This->_Stdstr]) {
@@ -47,30 +33,6 @@ void __CLRCALL_PURE_OR_CDECL ios_base::_Ios_base_dtor(ios_base* _This) { // dest
     _This->_Tidy();
     delete _This->_Ploc;
 }
-
-// ios_base::_Iosarray& __CLR_OR_THIS_CALL ios_base::_Findarr(int idx) { // locate or make a variable array element
-//     static _Iosarray stub(0, 0);
-//     _Iosarray *p, *q;
-//
-//     if (idx < 0) { // handle bad index
-//         setstate(badbit);
-//         return stub;
-//     }
-//
-//     for (p = _Arr, q = 0; p != 0; p = p->_Next)
-//         if (p->_Index == idx)
-//             return *p; // found element, return it
-//         else if (q == 0 && p->_Lo == 0 && p->_Vp == 0)
-//             q = p; // found recycling candidate
-//
-//     if (q != 0) { // recycle existing element
-//         q->_Index = idx;
-//         return *q;
-//     }
-//
-//     _Arr = new _Iosarray(idx, _Arr); // make a new element
-//     return *_Arr;
-// }
 
 void __CLRCALL_PURE_OR_CDECL ios_base::_Addstd(ios_base* _This) { // add standard stream to destructor list
     _BEGIN_LOCK(_LOCK_STREAM)

@@ -278,10 +278,10 @@ private:
         inc_dec(3);
     }
     static void do_it2() { // increment/decrement by max() - 5
-        inc_dec(std::numeric_limits<Ty>::max() - 5);
+        inc_dec(STD numeric_limits<Ty>::max() - 5);
     }
     static void do_it3() { // increment/decrement by max() - 7
-        inc_dec(std::numeric_limits<Ty>::max() - 7);
+        inc_dec(STD numeric_limits<Ty>::max() - 7);
     }
     static void inc_dec(Ty value) { // increment/decrement by value
         unsigned long limit = iterations;

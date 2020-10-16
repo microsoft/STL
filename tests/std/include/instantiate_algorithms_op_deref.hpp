@@ -7,8 +7,8 @@
 
 #include <instantiate_algorithms.hpp>
 
-// DevDiv#758138 "Several algorithms break with iterators that overload the comma operator."
-// DevDiv#758134 "uninitialized_copy and uninitialized_copy_n break with classes that overload operator &."
+// DevDiv-758138 "Several algorithms break with iterators that overload the comma operator."
+// DevDiv-758134 "uninitialized_copy and uninitialized_copy_n break with classes that overload operator &."
 
 // ADL will search this namespace for op,().
 namespace Meow {
@@ -310,7 +310,7 @@ void test() {
         Meow::BasicBidIt<true>{}, Meow::BasicRanIt<true>{}, Meow::BasicOutIt<true>{11, 22});
 }
 
-// Also test DevDiv#938759 "<type_traits>: is_assignable should tolerate overloaded comma operators [libcxx]".
+// Also test DevDiv-938759 "<type_traits>: is_assignable should tolerate overloaded comma operators [libcxx]".
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
 STATIC_ASSERT(std::is_assignable_v<Meow::Evil&, Meow::Evil>);

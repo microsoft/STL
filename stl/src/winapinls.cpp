@@ -6,8 +6,8 @@
 #if _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
 
 #include <algorithm>
-#include <ctype.h>
-#include <stdlib.h>
+#include <cctype>
+#include <cstdlib> // for _countof
 #include <string_view>
 
 namespace {
@@ -621,41 +621,24 @@ extern "C" int __cdecl __crtDownlevelLCIDToLocaleName(LCID lcid, LPWSTR outLocal
     return count + 1;
 }
 
-// __crtCompareStringEx() - Wrapper for CompareStringEx().
-extern "C" int __cdecl __crtCompareStringEx(
-    LPCWSTR lpLocaleName, DWORD dwCmpFlags, LPCWSTR lpString1, int cchCount1, LPCWSTR lpString2, int cchCount2) {
-    // use CompareStringEx if it is available (only on Windows Vista+)...
-    IFDYNAMICGETCACHEDFUNCTION(PFNCOMPARESTRINGEX, CompareStringEx, pfCompareStringEx) {
-        return pfCompareStringEx(
-            lpLocaleName, dwCmpFlags, lpString1, cchCount1, lpString2, cchCount2, nullptr, nullptr, 0);
-    }
-
-    // ...otherwise fall back to using CompareString.
-    return CompareStringW(
-        __crtDownlevelLocaleNameToLCID(lpLocaleName), dwCmpFlags, lpString1, cchCount1, lpString2, cchCount2);
+// TRANSITION, ABI: preserved for binary compatibility
+extern "C" _CRTIMP2 int __cdecl __crtCompareStringEx(_In_opt_ LPCWSTR lpLocaleName, _In_ DWORD dwCmpFlags,
+    _In_NLS_string_(cchCount1) LPCWSTR lpString1, _In_ int cchCount1, _In_NLS_string_(cchCount2) LPCWSTR lpString2,
+    _In_ int cchCount2) {
+    return CompareStringEx(lpLocaleName, dwCmpFlags, lpString1, cchCount1, lpString2, cchCount2, nullptr, nullptr, 0);
 }
 
-// __crtLCMapStringEx() - Wrapper for LCMapStringEx().
-extern "C" int __cdecl __crtLCMapStringEx(
-    LPCWSTR lpLocaleName, DWORD dwMapFlags, LPCWSTR lpSrcStr, int cchSrc, LPWSTR lpDestStr, int cchDest) {
-    // use LCMapStringEx if it is available (only on Windows Vista+)...
-    IFDYNAMICGETCACHEDFUNCTION(PFNLCMAPSTRINGEX, LCMapStringEx, pfLCMapStringEx) {
-        return pfLCMapStringEx(lpLocaleName, dwMapFlags, lpSrcStr, cchSrc, lpDestStr, cchDest, nullptr, nullptr, 0);
-    }
-
-    // ...otherwise fall back to using LCMapString.
-    return LCMapStringW(__crtDownlevelLocaleNameToLCID(lpLocaleName), dwMapFlags, lpSrcStr, cchSrc, lpDestStr, cchDest);
+// TRANSITION, ABI: preserved for binary compatibility
+extern "C" _CRTIMP2 int __cdecl __crtLCMapStringEx(_In_opt_ LPCWSTR lpLocaleName, _In_ DWORD dwMapFlags,
+    _In_reads_(cchSrc) LPCWSTR lpSrcStr, _In_ int cchSrc, _Out_writes_opt_(cchDest) LPWSTR lpDestStr,
+    _In_ int cchDest) {
+    return LCMapStringEx(lpLocaleName, dwMapFlags, lpSrcStr, cchSrc, lpDestStr, cchDest, nullptr, nullptr, 0);
 }
 
-
-// __crtGetLocaleInfoEx() - Wrapper for GetLocaleInfoEx().
-extern "C" int __cdecl __crtGetLocaleInfoEx(
-    LPCWSTR const lpLocaleName, LCTYPE const LCType, LPWSTR const lpLCData, int const cchData) {
-    IFDYNAMICGETCACHEDFUNCTION(PFNGETLOCALEINFOEX, GetLocaleInfoEx, pfGetLocaleInfoEx) {
-        return pfGetLocaleInfoEx(lpLocaleName, LCType, lpLCData, cchData);
-    }
-
-    return GetLocaleInfoW(__crtDownlevelLocaleNameToLCID(lpLocaleName), LCType, lpLCData, cchData);
+// TRANSITION, ABI: preserved for binary compatibility
+extern "C" _CRTIMP2 int __cdecl __crtGetLocaleInfoEx(_In_opt_ LPCWSTR const lpLocaleName, _In_ LCTYPE const LCType,
+    _Out_writes_opt_(cchData) LPWSTR const lpLCData, _In_ int const cchData) {
+    return GetLocaleInfoEx(lpLocaleName, LCType, lpLCData, cchData);
 }
 
 #endif // _STL_WIN32_WINNT < _WIN32_WINNT_VISTA

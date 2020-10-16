@@ -55,7 +55,7 @@ int main() {
     }
 
     {
-        // Also test DevDiv#850453 "<vector>: Missing emplace methods in std::vector<bool> container".
+        // Also test DevDiv-850453 "<vector>: Missing emplace methods in std::vector<bool> container".
 
         vector<bool> v(47, allocator<bool>());
 

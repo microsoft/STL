@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// Dev10#544258 "STL/xutility: Debug validation of predicate classes fail on bound predicates"
-// DevDiv#813065 "<algorithm>: C++ stdlib comparator debugging breaks compile of custom Comparators in std::equal_range
+// Dev10-544258 "STL/xutility: Debug validation of predicate classes fail on bound predicates"
+// DevDiv-813065 "<algorithm>: C++ stdlib comparator debugging breaks compile of custom Comparators in std::equal_range
 // family of functions"
 
 #include <algorithm>

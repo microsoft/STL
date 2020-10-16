@@ -3,9 +3,9 @@
 
 // mutex functions
 
+#include <cstdio>
+#include <cstdlib>
 #include <internal_shared.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <type_traits>
 #include <xthreads.h>
 #include <xtimec.h>

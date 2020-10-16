@@ -21,8 +21,8 @@ using namespace std;
     STATIC_ASSERT(is_same_v<BASE::type, __VA_ARGS__::type>)
 
 // Regression test for:
-// DevDiv2 #387795:  is_pod<void> should be false
-// DevDiv2 #424157:  is_assignable/is_trivially_assignable/is_trivially_move_assignable for void
+// DevDiv-387795:  is_pod<void> should be false
+// DevDiv-424157:  is_assignable/is_trivially_assignable/is_trivially_move_assignable for void
 
 // N3376 20.9.4.1[meta.unary.cat]:  primary type categories:
 STATIC_ASSERT(is_void_v<void>);
@@ -363,7 +363,7 @@ STATIC_ASSERT(!is_convertible_v<const void, int>);
 STATIC_ASSERT(!is_convertible_v<volatile void, int>);
 STATIC_ASSERT(!is_convertible_v<const volatile void, int>);
 
-// Verify simplifications after DevDiv#1195735 "C1XX should select IsConst<const T> for IsConst<const int[3]>" was
+// Verify simplifications after DevDiv-1195735 "C1XX should select IsConst<const T> for IsConst<const int[3]>" was
 // fixed.
 STATIC_ASSERT(!is_const_v<int>);
 STATIC_ASSERT(!is_const_v<int[3]>);
@@ -550,7 +550,7 @@ STATIC_ASSERT(is_base_of_v<bool_constant<false>, negation<final_fake_bool<true>>
 // </P0013R1>
 
 
-// DDB#198043 "[VS2008 / TR1] problems with is_pod and has_trivial_constructor"
+// DDB-198043 "[VS2008 / TR1] problems with is_pod and has_trivial_constructor"
 struct TrivialExceptConstruct {
     TrivialExceptConstruct();
     int i;

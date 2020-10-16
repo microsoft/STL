@@ -11,6 +11,9 @@
 
 #include <intrin0.h>
 #include <type_traits>
+#if defined(_WIN64) && (_MSC_FULL_VER <= 192829213) // TRANSITION
+#include <intrin.h> // Visual Studio 2019 to define 128-bit CAS in <intrin0.h>
+#endif // defined(_WIN64) && (_MSC_FULL_VER <= 192829213), TRANSITION
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -23,14 +26,14 @@ _STL_DISABLE_CLANG_WARNINGS
 #define _CONCAT(x, y)  _CONCATX(x, y)
 
 // Interlocked intrinsic mapping for _nf/_acq/_rel
-#if defined(_M_CEE_PURE) || defined(_M_IX86) || defined(_M_X64)
+#if defined(_M_CEE_PURE) || defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
 #define _INTRIN_RELAXED(x) x
 #define _INTRIN_ACQUIRE(x) x
 #define _INTRIN_RELEASE(x) x
 #define _INTRIN_ACQ_REL(x) x
 #define _YIELD_PROCESSOR()
 
-#elif defined(_M_ARM) || defined(_M_ARM64)
+#elif defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
 #define _INTRIN_RELAXED(x) _CONCAT(x, _nf)
 #define _INTRIN_ACQUIRE(x) _CONCAT(x, _acq)
 #define _INTRIN_RELEASE(x) _CONCAT(x, _rel)

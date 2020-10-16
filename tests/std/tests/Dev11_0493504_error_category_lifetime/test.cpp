@@ -29,7 +29,7 @@ struct Global {
 Global global;
 
 int main() {
-    // Also test DevDiv#781294 "<system_error>: Visual C++ 2013 RC system_category().equivalent function does not work".
+    // Also test DevDiv-781294 "<system_error>: Visual C++ 2013 RC system_category().equivalent function does not work".
     const error_code code(ERROR_NOT_ENOUGH_MEMORY, system_category());
 
     const error_condition cond = make_error_condition(errc::not_enough_memory);
@@ -47,7 +47,7 @@ int main() {
 }
 
 
-// Also test DevDiv#833886 "<system_error>: comparisons should be free functions".
+// Also test DevDiv-833886 "<system_error>: comparisons should be free functions".
 bool test_code(const io_errc l, const error_code& r) {
     return l == r && l != r && l < r;
 }

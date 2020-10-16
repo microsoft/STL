@@ -6,6 +6,7 @@
 #include <concepts>
 #include <cstddef>
 #include <iterator>
+#include <memory>
 #include <ranges>
 #include <type_traits>
 #include <utility>
@@ -767,6 +768,135 @@ namespace permutable_test {
     STATIC_ASSERT(permutable<archetype<2>>);
 } // namespace permutable_test
 
+namespace mergeable_test {
+    using ranges::less;
+    using std::identity, std::indirect_strict_weak_order, std::permutable, std::projected, std::mergeable;
+
+    enum class readable_status { not_input_iter, good };
+
+    template <class T, readable_status RS>
+    struct readable_archetype {
+        using value_type      = T;
+        using difference_type = int;
+
+        T const& operator*() const;
+        readable_archetype& operator++();
+
+        // clang-format off
+        // 0: not input_iterator
+        void operator++(int) requires (RS != readable_status::not_input_iter);
+        // clang-format on
+    };
+
+    enum class writable_status { not_weakly_incrementable, not_ind_copy_int, not_ind_copy_long, good };
+
+    template <writable_status WS>
+    struct writable_archetype {
+        using difference_type = int;
+
+        writable_archetype& operator*();
+        writable_archetype& operator++();
+
+        // clang-format off
+        writable_archetype operator++(int) requires (WS != writable_status::not_weakly_incrementable);
+
+        // 1: not indirectly_copyable<const int*, writable_archetype>
+        void operator=(int) requires (WS == writable_status::not_ind_copy_int) = delete;
+        writable_archetype& operator=(int) requires (WS != writable_status::not_ind_copy_int);
+
+        // 2: not indirectly_copyable<const long*, writable_archetype>
+        void operator=(long) requires (WS == writable_status::not_ind_copy_long) = delete;
+        writable_archetype& operator=(long) requires (WS != writable_status::not_ind_copy_long);
+        // clang-format on
+    };
+
+    void test() {
+        using std::indirect_strict_weak_order, std::indirectly_copyable, std::input_iterator, std::mergeable,
+            std::weakly_incrementable;
+
+        using I1  = readable_archetype<int, readable_status::good>;
+        using I2  = readable_archetype<long, readable_status::good>;
+        using O   = writable_archetype<writable_status::good>;
+        using Pr  = ranges::less;
+        using Pj1 = std::identity;
+        using Pj2 = std::identity;
+
+        {
+            using Bad_I1 = readable_archetype<int, readable_status::not_input_iter>;
+            STATIC_ASSERT(!input_iterator<Bad_I1>);
+            STATIC_ASSERT(input_iterator<I2>);
+            STATIC_ASSERT(weakly_incrementable<O>);
+            STATIC_ASSERT(indirectly_copyable<Bad_I1, O>);
+            STATIC_ASSERT(indirectly_copyable<I2, O>);
+            STATIC_ASSERT(indirect_strict_weak_order<Pr, projected<Bad_I1, Pj1>, projected<I2, Pj2>>);
+            STATIC_ASSERT(!mergeable<Bad_I1, I2, O, Pr, Pj1, Pj2>);
+        }
+
+        {
+            using Bad_I2 = readable_archetype<long, readable_status::not_input_iter>;
+            STATIC_ASSERT(input_iterator<I1>);
+            STATIC_ASSERT(!input_iterator<Bad_I2>);
+            STATIC_ASSERT(weakly_incrementable<O>);
+            STATIC_ASSERT(indirectly_copyable<I1, O>);
+            STATIC_ASSERT(indirectly_copyable<Bad_I2, O>);
+            STATIC_ASSERT(indirect_strict_weak_order<Pr, projected<I1, Pj1>, projected<Bad_I2, Pj2>>);
+            STATIC_ASSERT(!mergeable<I1, Bad_I2, O, Pr, Pj1, Pj2>);
+        }
+
+        {
+            using Bad_O = writable_archetype<writable_status::not_weakly_incrementable>;
+            STATIC_ASSERT(input_iterator<I1>);
+            STATIC_ASSERT(input_iterator<I2>);
+            STATIC_ASSERT(!weakly_incrementable<Bad_O>);
+            STATIC_ASSERT(indirectly_copyable<I1, Bad_O>);
+            STATIC_ASSERT(indirectly_copyable<I2, Bad_O>);
+            STATIC_ASSERT(indirect_strict_weak_order<Pr, projected<I1, Pj1>, projected<I2, Pj2>>);
+            STATIC_ASSERT(!mergeable<I1, I2, Bad_O, Pr, Pj1, Pj2>);
+        }
+
+        {
+            using Bad_O = writable_archetype<writable_status::not_ind_copy_int>;
+            STATIC_ASSERT(input_iterator<I1>);
+            STATIC_ASSERT(input_iterator<I2>);
+            STATIC_ASSERT(weakly_incrementable<Bad_O>);
+            STATIC_ASSERT(!indirectly_copyable<I1, Bad_O>);
+            STATIC_ASSERT(indirectly_copyable<I2, Bad_O>);
+            STATIC_ASSERT(indirect_strict_weak_order<Pr, projected<I1, Pj1>, projected<I2, Pj2>>);
+            STATIC_ASSERT(!mergeable<I1, I2, Bad_O, Pr, Pj1, Pj2>);
+        }
+
+        {
+            using Bad_O = writable_archetype<writable_status::not_ind_copy_long>;
+            STATIC_ASSERT(input_iterator<I1>);
+            STATIC_ASSERT(input_iterator<I2>);
+            STATIC_ASSERT(weakly_incrementable<Bad_O>);
+            STATIC_ASSERT(indirectly_copyable<I1, Bad_O>);
+            STATIC_ASSERT(!indirectly_copyable<I2, Bad_O>);
+            STATIC_ASSERT(indirect_strict_weak_order<Pr, projected<I1, Pj1>, projected<I2, Pj2>>);
+            STATIC_ASSERT(!mergeable<I1, I2, Bad_O, Pr, Pj1, Pj2>);
+        }
+
+        {
+            using Bad_Pr = int;
+            STATIC_ASSERT(input_iterator<I1>);
+            STATIC_ASSERT(input_iterator<I2>);
+            STATIC_ASSERT(weakly_incrementable<O>);
+            STATIC_ASSERT(indirectly_copyable<I1, O>);
+            STATIC_ASSERT(indirectly_copyable<I2, O>);
+            STATIC_ASSERT(!indirect_strict_weak_order<Bad_Pr, projected<I1, Pj1>, projected<I2, Pj2>>);
+            STATIC_ASSERT(!mergeable<I1, I2, O, Bad_Pr, Pj1, Pj2>);
+        }
+
+        STATIC_ASSERT(input_iterator<I1>);
+        STATIC_ASSERT(input_iterator<I2>);
+        STATIC_ASSERT(weakly_incrementable<O>);
+        STATIC_ASSERT(indirectly_copyable<I1, O>);
+        STATIC_ASSERT(indirectly_copyable<I2, O>);
+        STATIC_ASSERT(indirect_strict_weak_order<Pr, projected<I1, Pj1>, projected<I2, Pj2>>);
+        STATIC_ASSERT(mergeable<I1, I2, O, Pr, Pj1, Pj2>);
+    }
+} // namespace mergeable_test
+
 namespace sortable_test {
     using ranges::less;
     using std::identity, std::indirect_strict_weak_order, std::permutable, std::projected, std::sortable;
@@ -800,3 +930,182 @@ namespace sortable_test {
         }
     }
 } // namespace sortable_test
+
+namespace gh_1089 {
+    // Defend against regression of GH-1089: "_Pass_fn/_Ref_fn interferes with the Ranges invoke protocol"
+    // The _Pass_fn protocol would previously assume that anything larger than a pointer was a function object that it
+    // could call with `()` and not a pointer-to-member that requires the `invoke` protocol.
+
+    void test() {
+        {
+            struct Base {
+                virtual int purr() = 0;
+            };
+
+            struct Derived1 : virtual Base {
+                int purr() override {
+                    return 1729;
+                }
+            };
+
+            struct Derived2 : virtual Base {};
+
+            struct MostDerived : Derived1, Derived2 {
+                int purr() override {
+                    return 2020;
+                }
+            };
+
+
+            STATIC_ASSERT(sizeof(&Derived1::purr) > sizeof(void*)); // NB: relies on non-portable platform properties
+
+            Derived1 a[2];
+            MostDerived b[3];
+            Derived1* pointers[] = {&b[0], &a[0], &b[1], &a[1], &b[2]};
+
+            (void) ranges::count(pointers, 2020, &Derived1::purr);
+        }
+        {
+            struct Cat;
+
+            using PMD_Cat = int Cat::*;
+            // Quantum effects: we must observe the size before defining Cat or it will become smaller.
+            STATIC_ASSERT(sizeof(PMD_Cat) > sizeof(void*));
+
+            struct Cat {
+                int x = 42;
+            };
+
+            STATIC_ASSERT(sizeof(&Cat::x) > sizeof(void*)); // NB: relies on non-portable platform properties
+
+            Cat cats[42];
+
+            (void) ranges::count(cats, 42, &Cat::x);
+        }
+    }
+} // namespace gh_1089
+
+namespace special_memory_concepts {
+    // Validate the concepts from [special.mem.concepts] used to constrain the specialized memory algorithms
+    // NB: Non-portable tests of internal machinery
+    using ranges::_No_throw_input_iterator, ranges::_No_throw_sentinel_for, ranges::_No_throw_input_range,
+        ranges::_No_throw_forward_iterator, ranges::_No_throw_forward_range;
+    using std::forward_iterator, std::input_iterator, std::sentinel_for;
+
+    enum class iterator_status : int { not_input, not_lvalue_reference, different_reference_and_value, input, forward };
+
+    template <iterator_status I>
+    struct iterator_archetype {
+        using iterator_concept = std::conditional_t<I == iterator_status::not_input, std::output_iterator_tag,
+            std::conditional_t<I == iterator_status::forward, std::forward_iterator_tag, std::input_iterator_tag>>;
+        using difference_type  = int;
+        using value_type       = std::conditional_t<I == iterator_status::different_reference_and_value, long, int>;
+
+        // clang-format off
+        int operator*() const requires (I == iterator_status::not_lvalue_reference);
+        int& operator*() const requires (I != iterator_status::not_lvalue_reference);
+
+        iterator_archetype& operator++();
+        void operator++(int) requires (I != iterator_status::forward);
+        iterator_archetype operator++(int) requires (I == iterator_status::forward);
+
+        bool operator==(std::default_sentinel_t) const;
+        bool operator==(iterator_archetype const&) const requires (I == iterator_status::forward);
+        // clang-format on
+    };
+    // Verify iterator_archetype
+    STATIC_ASSERT(!input_iterator<iterator_archetype<iterator_status::not_input>>);
+    STATIC_ASSERT(input_iterator<iterator_archetype<iterator_status::not_lvalue_reference>>);
+    STATIC_ASSERT(input_iterator<iterator_archetype<iterator_status::different_reference_and_value>>);
+    STATIC_ASSERT(input_iterator<iterator_archetype<iterator_status::input>>);
+    STATIC_ASSERT(!forward_iterator<iterator_archetype<iterator_status::input>>);
+    STATIC_ASSERT(forward_iterator<iterator_archetype<iterator_status::forward>>);
+
+    template <class I>
+    inline constexpr bool has_lvalue_reference = std::is_lvalue_reference_v<std::iter_reference_t<I>>;
+    STATIC_ASSERT(has_lvalue_reference<iterator_archetype<iterator_status::not_input>>);
+    STATIC_ASSERT(!has_lvalue_reference<iterator_archetype<iterator_status::not_lvalue_reference>>);
+    STATIC_ASSERT(has_lvalue_reference<iterator_archetype<iterator_status::different_reference_and_value>>);
+    STATIC_ASSERT(has_lvalue_reference<iterator_archetype<iterator_status::input>>);
+    STATIC_ASSERT(has_lvalue_reference<iterator_archetype<iterator_status::forward>>);
+
+    template <class I>
+    inline constexpr bool same_reference_value =
+        std::same_as<std::remove_cvref_t<std::iter_reference_t<I>>, std::iter_value_t<I>>;
+    STATIC_ASSERT(same_reference_value<iterator_archetype<iterator_status::not_input>>);
+    STATIC_ASSERT(same_reference_value<iterator_archetype<iterator_status::not_lvalue_reference>>);
+    STATIC_ASSERT(!same_reference_value<iterator_archetype<iterator_status::different_reference_and_value>>);
+    STATIC_ASSERT(same_reference_value<iterator_archetype<iterator_status::input>>);
+    STATIC_ASSERT(same_reference_value<iterator_archetype<iterator_status::forward>>);
+
+    // Validate _No_throw_input_iterator
+    STATIC_ASSERT(!_No_throw_input_iterator<iterator_archetype<iterator_status::not_input>>);
+    STATIC_ASSERT(!_No_throw_input_iterator<iterator_archetype<iterator_status::not_lvalue_reference>>);
+    STATIC_ASSERT(!_No_throw_input_iterator<iterator_archetype<iterator_status::different_reference_and_value>>);
+    STATIC_ASSERT(_No_throw_input_iterator<iterator_archetype<iterator_status::input>>);
+    STATIC_ASSERT(_No_throw_input_iterator<iterator_archetype<iterator_status::forward>>);
+
+    enum class sentinel_status : int { no, yes };
+
+    template <sentinel_status I>
+    struct sentinel_archetype {
+        // clang-format off
+        template <iterator_status S>
+        bool operator==(iterator_archetype<S> const&) const requires (I != sentinel_status::no);
+        // clang-format on
+    };
+    // Verify sentinel_archetype
+    STATIC_ASSERT(!sentinel_for<sentinel_archetype<sentinel_status::no>, iterator_archetype<iterator_status::input>>);
+    STATIC_ASSERT(sentinel_for<sentinel_archetype<sentinel_status::yes>, iterator_archetype<iterator_status::input>>);
+
+    // Validate _No_throw_sentinel_for
+    STATIC_ASSERT(
+        !_No_throw_sentinel_for<sentinel_archetype<sentinel_status::no>, iterator_archetype<iterator_status::input>>);
+    STATIC_ASSERT(
+        _No_throw_sentinel_for<sentinel_archetype<sentinel_status::yes>, iterator_archetype<iterator_status::input>>);
+    STATIC_ASSERT(!_No_throw_sentinel_for<iterator_archetype<iterator_status::input>,
+                  iterator_archetype<iterator_status::input>>);
+    STATIC_ASSERT(_No_throw_sentinel_for<iterator_archetype<iterator_status::forward>,
+        iterator_archetype<iterator_status::forward>>);
+
+    // Validate _No_throw_forward_iterator
+    STATIC_ASSERT(!_No_throw_forward_iterator<iterator_archetype<iterator_status::not_input>>);
+    STATIC_ASSERT(!_No_throw_forward_iterator<iterator_archetype<iterator_status::not_lvalue_reference>>);
+    STATIC_ASSERT(!_No_throw_forward_iterator<iterator_archetype<iterator_status::different_reference_and_value>>);
+    STATIC_ASSERT(!_No_throw_forward_iterator<iterator_archetype<iterator_status::input>>);
+    STATIC_ASSERT(_No_throw_forward_iterator<iterator_archetype<iterator_status::forward>>);
+
+    enum class range_status : int { not_range, not_input, input, forward };
+
+    template <range_status I>
+    struct range_archetype {
+        using It = std::conditional_t<I == range_status::not_range, void,
+            std::conditional_t<I == range_status::not_input, iterator_archetype<iterator_status::not_input>,
+                std::conditional_t<I == range_status::forward, iterator_archetype<iterator_status::forward>,
+                    iterator_archetype<iterator_status::input>>>>;
+        using Se = std::conditional_t<I == range_status::not_range, void,
+            std::conditional_t<I == range_status::forward, iterator_archetype<iterator_status::forward>,
+                std::default_sentinel_t>>;
+
+        It begin() const;
+        Se end() const;
+    };
+    // Verify range_archetype
+    STATIC_ASSERT(!ranges::range<range_archetype<range_status::not_range>>);
+    STATIC_ASSERT(ranges::range<range_archetype<range_status::not_input>>);
+    STATIC_ASSERT(ranges::range<range_archetype<range_status::input>>);
+    STATIC_ASSERT(ranges::range<range_archetype<range_status::forward>>);
+
+    // Validate _No_throw_input_range; note that the distinction betweeen range<R> and
+    // no-throw-sentinel-for<sentinel_t<R>, iterator_t<R>> is purely semantic, so we can't test them separately.
+    STATIC_ASSERT(!_No_throw_input_range<range_archetype<range_status::not_range>>);
+    STATIC_ASSERT(!_No_throw_input_range<range_archetype<range_status::not_input>>);
+    STATIC_ASSERT(_No_throw_input_range<range_archetype<range_status::input>>);
+    STATIC_ASSERT(_No_throw_input_range<range_archetype<range_status::forward>>);
+
+    // Validate _No_throw_forward_range
+    STATIC_ASSERT(!_No_throw_forward_range<range_archetype<range_status::not_range>>);
+    STATIC_ASSERT(!_No_throw_forward_range<range_archetype<range_status::not_input>>);
+    STATIC_ASSERT(!_No_throw_forward_range<range_archetype<range_status::input>>);
+    STATIC_ASSERT(_No_throw_forward_range<range_archetype<range_status::forward>>);
+} // namespace special_memory_concepts

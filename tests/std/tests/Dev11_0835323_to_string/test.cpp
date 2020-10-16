@@ -20,9 +20,9 @@ void assert_out_of_range(F f) noexcept {
     }
 }
 
-// DevDiv#96290 "[Product Issue] to_string doesn't work with the param LDBL_MAX"
-// DevDiv#730419 "<string>: std::to_string documentation & code disparity"
-// DevDiv#835323 "<string>: Bad to_string() result for infinity"
+// DevDiv-96290 "[Product Issue] to_string doesn't work with the param LDBL_MAX"
+// DevDiv-730419 "<string>: std::to_string documentation & code disparity"
+// DevDiv-835323 "<string>: Bad to_string() result for infinity"
 
 int main() {
     assert(to_string(numeric_limits<int>::min()) == "-2147483648");
@@ -145,7 +145,7 @@ int main() {
     assert(to_wstring(numeric_limits<long double>::infinity()) == L"inf");
 
 
-    // Also test DevDiv#875295 "<string>: std::stof returns 1.#INF instead of throwing out_of_range [libcxx]".
+    // Also test DevDiv-875295 "<string>: std::stof returns 1.#INF instead of throwing out_of_range [libcxx]".
 
     assert_out_of_range([] { stof("1.2e60"); });
 
@@ -166,7 +166,7 @@ int main() {
     assert_out_of_range([] { stof(L"-1.5e63"); });
 
 
-    // Also test DevDiv#1113936 "std::stod incorrectly throws exception on some inputs, violating STL specification".
+    // Also test DevDiv-1113936 "std::stod incorrectly throws exception on some inputs, violating STL specification".
 
     for (const char* const p : {"inf", "Inf", "INF", "infinity", "Infinity", "INFINITY"}) {
         assert(isinf(stof(p)));

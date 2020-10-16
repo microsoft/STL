@@ -1146,6 +1146,45 @@ __PURE_APPDOMAIN_GLOBAL locale::id num_get<_Elem, _InIt>::id;
 #pragma clang diagnostic pop
 #endif // __clang__
 
+// STRUCT TEMPLATE _Hex_float_precision
+template <class _Ty>
+struct _Hex_float_precision;
+
+template <>
+struct _Hex_float_precision<double> {
+    // the number of hexits needed to represent (DBL_MANT_DIG - 1) bits after the radix point exactly
+    static constexpr int value = ((DBL_MANT_DIG - 1) + 3) / 4;
+};
+
+template <>
+struct _Hex_float_precision<long double> {
+    // the number of hexits needed to represent (LDBL_MANT_DIG - 1) bits after the radix point exactly
+    static constexpr int value = ((LDBL_MANT_DIG - 1) + 3) / 4;
+};
+
+// FUNCTION TEMPLATE _Float_put_desired_precision
+template <class _Ty>
+int _Float_put_desired_precision(const streamsize _Precision, const ios_base::fmtflags _Float_flags) {
+    const bool _Is_hex = _Float_flags == (ios_base::fixed | ios_base::scientific);
+    if (_Is_hex) {
+        return _Hex_float_precision<_Ty>::value;
+    }
+
+    if (_Precision > 0) {
+        return static_cast<int>(_Precision);
+    } else if (_Precision == 0) {
+        const bool _Is_default_float = _Float_flags == 0;
+        if (_Is_default_float) {
+            return 1;
+        } else {
+            return 0;
+        }
+    } else {
+        constexpr int _Default_precision = 6;
+        return _Default_precision;
+    }
+}
+
 // CLASS TEMPLATE num_put
 template <class _Elem, class _OutIt = ostreambuf_iterator<_Elem, char_traits<_Elem>>>
 class num_put : public locale::facet { // facet for converting encoded numbers to text
@@ -1258,7 +1297,8 @@ protected:
 #pragma warning(disable : 4774) // format string expected in argument N is not a string literal (/Wall)
     virtual _OutIt __CLR_OR_THIS_CALL do_put(
         _OutIt _Dest, ios_base& _Iosbase, _Elem _Fill, long _Val) const { // put formatted long to _Dest
-        char _Buf[2 * _MAX_INT_DIG], _Fmt[6];
+        char _Buf[2 * _MAX_INT_DIG];
+        char _Fmt[6];
 
         return _Iput(_Dest, _Iosbase, _Fill, _Buf,
             static_cast<size_t>(_CSTD sprintf_s(_Buf, sizeof(_Buf), _Ifmt(_Fmt, "ld", _Iosbase.flags()), _Val)));
@@ -1266,7 +1306,8 @@ protected:
 
     virtual _OutIt __CLR_OR_THIS_CALL do_put(_OutIt _Dest, ios_base& _Iosbase, _Elem _Fill,
         unsigned long _Val) const { // put formatted unsigned long to _Dest
-        char _Buf[2 * _MAX_INT_DIG], _Fmt[6];
+        char _Buf[2 * _MAX_INT_DIG];
+        char _Fmt[6];
 
         return _Iput(_Dest, _Iosbase, _Fill, _Buf,
             static_cast<size_t>(_CSTD sprintf_s(_Buf, sizeof(_Buf), _Ifmt(_Fmt, "lu", _Iosbase.flags()), _Val)));
@@ -1274,7 +1315,8 @@ protected:
 
     virtual _OutIt __CLR_OR_THIS_CALL do_put(
         _OutIt _Dest, ios_base& _Iosbase, _Elem _Fill, long long _Val) const { // put formatted long long to _Dest
-        char _Buf[2 * _MAX_INT_DIG], _Fmt[8];
+        char _Buf[2 * _MAX_INT_DIG];
+        char _Fmt[8];
 
         return _Iput(_Dest, _Iosbase, _Fill, _Buf,
             static_cast<size_t>(_CSTD sprintf_s(_Buf, sizeof(_Buf), _Ifmt(_Fmt, "Ld", _Iosbase.flags()), _Val)));
@@ -1282,7 +1324,8 @@ protected:
 
     virtual _OutIt __CLR_OR_THIS_CALL do_put(_OutIt _Dest, ios_base& _Iosbase, _Elem _Fill,
         unsigned long long _Val) const { // put formatted unsigned long long to _Dest
-        char _Buf[2 * _MAX_INT_DIG], _Fmt[8];
+        char _Buf[2 * _MAX_INT_DIG];
+        char _Fmt[8];
 
         return _Iput(_Dest, _Iosbase, _Fill, _Buf,
             static_cast<size_t>(_CSTD sprintf_s(_Buf, sizeof(_Buf), _Ifmt(_Fmt, "Lu", _Iosbase.flags()), _Val)));
@@ -1292,10 +1335,14 @@ protected:
         _OutIt _Dest, ios_base& _Iosbase, _Elem _Fill, double _Val) const { // put formatted double to _Dest
         string _Buf;
         char _Fmt[8];
-        bool _Isfixed         = (_Iosbase.flags() & ios_base::floatfield) == ios_base::fixed;
-        streamsize _Precision = _Iosbase.precision() <= 0 && !_Isfixed ? 6 : _Iosbase.precision(); // desired precision
-        size_t _Bufsize       = static_cast<size_t>(_Precision);
-        if (_Isfixed && 1e10 < _CSTD fabs(_Val)) { // f or F format
+        const auto _Float_flags     = _Iosbase.flags() & ios_base::floatfield;
+        const bool _Is_fixed        = _Float_flags == ios_base::fixed;
+        const bool _Is_hex          = _Float_flags == (ios_base::fixed | ios_base::scientific);
+        const streamsize _Precision = _Is_hex ? -1 : _Iosbase.precision(); // precision setting
+        const int _Desired_precision =
+            _Float_put_desired_precision<double>(_Precision, _Float_flags); // desired precision
+        size_t _Bufsize = static_cast<size_t>(_Desired_precision);
+        if (_Is_fixed && 1e10 < _CSTD fabs(_Val)) { // f or F format
             int _Ptwo;
             (void) _CSTD frexp(_Val, &_Ptwo);
             _Bufsize += _CSTD abs(_Ptwo) * 30103L / 100000L;
@@ -1312,10 +1359,14 @@ protected:
         _OutIt _Dest, ios_base& _Iosbase, _Elem _Fill, long double _Val) const { // put formatted long double to _Dest
         string _Buf;
         char _Fmt[8];
-        bool _Isfixed         = (_Iosbase.flags() & ios_base::floatfield) == ios_base::fixed;
-        streamsize _Precision = _Iosbase.precision() <= 0 && !_Isfixed ? 6 : _Iosbase.precision(); // desired precision
-        size_t _Bufsize       = static_cast<size_t>(_Precision);
-        if (_Isfixed && 1e10 < _CSTD fabsl(_Val)) { // f or F format
+        const auto _Float_flags     = _Iosbase.flags() & ios_base::floatfield;
+        const bool _Is_fixed        = _Float_flags == ios_base::fixed;
+        const bool _Is_hex          = _Float_flags == (ios_base::fixed | ios_base::scientific);
+        const streamsize _Precision = _Is_hex ? -1 : _Iosbase.precision(); // precision setting
+        const int _Desired_precision =
+            _Float_put_desired_precision<long double>(_Precision, _Float_flags); // desired precision
+        size_t _Bufsize = static_cast<size_t>(_Desired_precision);
+        if (_Is_fixed && 1e10 < _CSTD fabsl(_Val)) { // f or F format
             int _Ptwo;
             (void) _CSTD frexpl(_Val, &_Ptwo);
             _Bufsize += _CSTD abs(_Ptwo) * 30103L / 100000L;

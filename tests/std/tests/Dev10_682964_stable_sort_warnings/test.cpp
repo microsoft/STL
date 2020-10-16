@@ -62,7 +62,7 @@ int main() {
 
 
     {
-        // Also test DevDiv#957501 "<algorithm>: stable_sort calls self-move-assignment operator".
+        // Also test DevDiv-957501 "<algorithm>: stable_sort calls self-move-assignment operator".
 
         class NoSelfMove {
         public:

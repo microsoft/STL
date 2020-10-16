@@ -424,7 +424,7 @@ static void tdiscrete() {
     CHECK_DOUBLE(dist0.probabilities()[0], 1.0);
     dist0.reset();
 
-    std::vector<double> vec(4, 1.0);
+    STD vector<double> vec(4, 1.0);
 
     dist_t dist1(STD initializer_list<double>(vec.data(), vec.data() + vec.size()));
 
@@ -461,17 +461,30 @@ static void tpiecewise_constant() {
     CHECK(st);
 
     dist_t dist0;
-    CHECK_INT(dist0.probabilities().size(), 1);
-    CHECK_DOUBLE(dist0.probabilities()[0], 1.0);
+    CHECK_INT(dist0.densities().size(), 1);
+    CHECK_DOUBLE(dist0.densities()[0], 1.0);
+    CHECK_INT(dist0.intervals().size(), 2);
+    CHECK_DOUBLE(dist0.intervals()[0], 0.0);
+    CHECK_DOUBLE(dist0.intervals()[1], 1.0);
     dist0.reset();
 
-    std::vector<double> ends;
+    STD vector<double> ends_not_enough = {0.5};
+    STD vector<double> vec_not_enough  = {0.5};
+    dist_t dist0_2(ends_not_enough.begin(), ends_not_enough.end(), vec_not_enough.begin());
+    CHECK_INT(dist0_2.densities().size(), 1);
+    CHECK_DOUBLE(dist0_2.densities()[0], 1.0);
+    CHECK_INT(dist0_2.intervals().size(), 2);
+    CHECK_DOUBLE(dist0_2.intervals()[0], 0.0);
+    CHECK_DOUBLE(dist0_2.intervals()[1], 1.0);
+
+
+    STD vector<double> ends;
     ends.push_back(0.0);
     ends.push_back(1.0);
     ends.push_back(2.0);
     ends.push_back(3.0);
     ends.push_back(4.0);
-    std::vector<double> vec(4, 1.0);
+    STD vector<double> vec(4, 1.0);
     dist_t dist1(ends.begin(), ends.end(), vec.begin());
     CHECK_INT(dist1.densities().size(), 4);
     CHECK_DOUBLE(dist1.densities()[0], 0.25);
@@ -486,9 +499,10 @@ static void tpiecewise_constant() {
     dist_t dist2(10, 1.0, 2.0, myfn);
     CHECK_INT(dist2.densities().size(), 10);
 
-    double arr[] = {1.0, 1.1, 1.2, 1.3, 1.4};
+    double arr[] = {1.0, 1.5, 2.0, 3.0, 4.0};
     dist_t dist3(STD initializer_list<double>(&arr[0], &arr[5]), myfn);
     CHECK_INT(dist3.densities().size(), 4);
+    CHECK_DOUBLE(dist3.densities()[0], 0.2777777777777778);
 
     dist_t::param_type::distribution_type::param_type par0 = dist1.param();
     CHECK(!(par0 != dist1.param()));
@@ -520,39 +534,58 @@ static void tpiecewise_linear() {
     CHECK(st);
 
     dist_t dist0;
-    CHECK_INT(dist0.probabilities().size(), 1);
-    CHECK_DOUBLE(dist0.probabilities()[0], 1.0);
+    CHECK_INT(dist0.densities().size(), 2);
+    CHECK_DOUBLE(dist0.densities()[0], 1.0);
+    CHECK_DOUBLE(dist0.densities()[1], 1.0);
+    CHECK_INT(dist0.intervals().size(), 2);
+    CHECK_DOUBLE(dist0.intervals()[0], 0.0);
+    CHECK_DOUBLE(dist0.intervals()[1], 1.0);
     dist0.reset();
 
-    std::vector<double> ends;
+    STD vector<double> ends_not_enough = {0.5};
+    STD vector<double> vec_not_enough  = {0.5};
+    dist_t dist0_2(ends_not_enough.begin(), ends_not_enough.end(), vec_not_enough.begin());
+    CHECK_INT(dist0_2.densities().size(), 2);
+    CHECK_DOUBLE(dist0_2.densities()[0], 1.0);
+    CHECK_DOUBLE(dist0_2.densities()[1], 1.0);
+    CHECK_INT(dist0_2.intervals().size(), 2);
+    CHECK_DOUBLE(dist0_2.intervals()[0], 0.0);
+    CHECK_DOUBLE(dist0_2.intervals()[1], 1.0);
+
+    STD vector<double> ends;
     ends.push_back(0.0);
     ends.push_back(1.0);
     ends.push_back(2.0);
     ends.push_back(3.0);
     ends.push_back(4.0);
-    std::vector<double> vec(5, 1.0);
+    STD vector<double> vec(5, 1.0);
     dist_t dist1(ends.begin(), ends.end(), vec.begin());
     CHECK_INT(dist1.densities().size(), 5);
+    CHECK_DOUBLE(dist1.densities()[0], 0.25);
     CHECK_INT(dist1.intervals().size(), 5);
     CHECK_DOUBLE(dist1.intervals()[0], 0.0);
     STD stringstream str;
     str << dist1;
     str >> dist0;
     CHECK_INT(dist0.densities().size(), 5);
+    CHECK_DOUBLE(dist0.densities()[0], 0.25);
 
     dist_t dist2(10, 1.0, 2.0, myfn);
-    CHECK_INT(dist2.densities().size(), 10);
+    CHECK_INT(dist2.densities().size(), 11);
 
-    double arr[] = {1.0, 1.1, 1.2, 1.3, 1.4};
+    double arr[] = {1.0, 1.5, 2.0, 3.0, 4.0};
     dist_t dist3(STD initializer_list<double>(&arr[0], &arr[5]), myfn);
     CHECK_INT(dist3.densities().size(), 5);
+    CHECK_DOUBLE(dist3.densities()[0], 0.13333333333333333);
 
     dist_t::param_type::distribution_type::param_type par0 = dist1.param();
     CHECK(!(par0 != dist1.param()));
     dist0.param(par0);
+    CHECK(dist0.densities() == par0.densities());
     CHECK(dist0.intervals() == par0.intervals());
 
     ends = par0.intervals();
+    vec  = par0.densities();
     CHECK(par0 == dist_t::param_type(ends.begin(), ends.end(), vec.begin()));
 
     CHECK(dist2.param() == dist_t::param_type(10, 1.0, 2.0, myfn));

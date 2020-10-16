@@ -115,33 +115,14 @@ _NODISCARD constexpr int _Popcount_fallback(_Ty _Val) noexcept {
 
 #if defined(_M_IX86) || defined(_M_X64)
 
-// TRANSITION, VS 2019 16.8 Preview 1, intrin0.h will declare __lzcnt* and __popcnt*
 extern "C" {
-__MACHINEX86_X64(unsigned int __lzcnt(unsigned int))
-__MACHINEX86_X64(unsigned short __lzcnt16(unsigned short))
-__MACHINEX64(unsigned __int64 __lzcnt64(unsigned __int64))
-__MACHINEX86_X64(unsigned int __popcnt(unsigned int))
-__MACHINEX86_X64(unsigned short __popcnt16(unsigned short))
-__MACHINEX64(unsigned __int64 __popcnt64(unsigned __int64))
 extern int __isa_available;
 }
 
 template <class _Ty>
-_NODISCARD int _Checked_x86_x64_countl_zero(const _Ty _Val) noexcept {
-    constexpr int _Digits  = numeric_limits<_Ty>::digits;
+_NODISCARD int _Countl_zero_lzcnt(const _Ty _Val) noexcept {
+    constexpr int _Digits = numeric_limits<_Ty>::digits;
 
-#ifndef __AVX2__
-    const bool _Have_lzcnt = __isa_available >= __ISA_AVAILABLE_AVX2;
-    // lzcnt (when it doesn't fall back to bsr) is defined correctly for zero
-    // bsr has undefined output for zero
-    if (!_Have_lzcnt && _Val == 0) {
-        return _Digits;
-    }
-#endif // __AVX2__
-
-    // We use lzcnt (actually bsr if lzcnt is not supported) now that we know
-    // we're not zero. We can do this because lzcnt and bsr share the same instruction
-    // encoding.
     if constexpr (_Digits <= 16) {
         return static_cast<int>(__lzcnt16(_Val) - (16 - _Digits));
     } else if constexpr (_Digits == 32) {
@@ -151,24 +132,65 @@ _NODISCARD int _Checked_x86_x64_countl_zero(const _Ty _Val) noexcept {
         const unsigned int _High = _Val >> 32;
         const auto _Low          = static_cast<unsigned int>(_Val);
         if (_High == 0) {
-            return 32 + _Checked_x86_x64_countl_zero(_Low);
+            return 32 + _Countl_zero_lzcnt(_Low);
         } else {
-            return _Checked_x86_x64_countl_zero(_High);
+            return _Countl_zero_lzcnt(_High);
         }
 #else // ^^^ _M_IX86 / !_M_IX86 vvv
         return static_cast<int>(__lzcnt64(_Val));
 #endif // _M_IX86
     }
-    // note: we don't need to call a fallback here because
-    // all supported x86 processors at least have bsr/bsf
+}
+
+template <class _Ty>
+_NODISCARD int _Countl_zero_bsr(const _Ty _Val) noexcept {
+    constexpr int _Digits = numeric_limits<_Ty>::digits;
+
+    unsigned long _Result;
+    if constexpr (_Digits <= 32) {
+        if (!_BitScanReverse(&_Result, _Val)) {
+            return _Digits;
+        }
+    } else {
+#ifdef _M_IX86
+        const unsigned int _High = _Val >> 32;
+        if (_BitScanReverse(&_Result, _High)) {
+            return static_cast<int>(31 - _Result);
+        }
+
+        const auto _Low = static_cast<unsigned int>(_Val);
+        if (!_BitScanReverse(&_Result, _Low)) {
+            return _Digits;
+        }
+#else // ^^^ _M_IX86 / !_M_IX86 vvv
+        if (!_BitScanReverse64(&_Result, _Val)) {
+            return _Digits;
+        }
+#endif // _M_IX86
+    }
+    return static_cast<int>(_Digits - 1 - _Result);
+}
+
+template <class _Ty>
+_NODISCARD int _Checked_x86_x64_countl_zero(const _Ty _Val) noexcept {
+#ifdef __AVX2__
+    return _Countl_zero_lzcnt(_Val);
+#else // __AVX2__
+    const bool _Definitely_have_lzcnt = __isa_available >= __ISA_AVAILABLE_AVX2;
+    if (_Definitely_have_lzcnt) {
+        return _Countl_zero_lzcnt(_Val);
+    } else {
+        return _Countl_zero_bsr(_Val);
+    }
+#endif // __AVX2__
 }
 
 template <class _Ty>
 _NODISCARD int _Checked_x86_x64_popcount(const _Ty _Val) noexcept {
-    constexpr int _Digits   = numeric_limits<_Ty>::digits;
+    constexpr int _Digits              = numeric_limits<_Ty>::digits;
 #ifndef __AVX__
-    const bool _Have_popcnt = __isa_available >= __ISA_AVAILABLE_SSE42;
-    if (!_Have_popcnt) {
+    const bool _Definitely_have_popcnt = __isa_available >= __ISA_AVAILABLE_SSE42;
+    if (!_Definitely_have_popcnt) {
         return _Popcount_fallback(_Val);
     }
 #endif // !defined(__AVX__)
