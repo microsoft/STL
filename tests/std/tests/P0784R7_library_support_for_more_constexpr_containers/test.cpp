@@ -297,11 +297,12 @@ struct Alloc {
     using size_type  = std::size_t;
 
     constexpr Alloc(int id_) noexcept : id(id_) {}
-    constexpr ~Alloc() = default;
+    constexpr Alloc(const Alloc&) = default;
+    constexpr ~Alloc()            = default;
 
     constexpr value_type* allocate(size_t n) {
         assert(n == 10);
-        return ::operator new(n * sizeof(value_type));
+        return static_cast<value_type*>(::operator new(n * sizeof(value_type)));
     }
 
     constexpr void deallocate(value_type* ptr, size_t n) {
