@@ -736,11 +736,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE uninitialized_default_construct
-template <class _Iter>
-_NODISCARD void* _Voidify_iter(_Iter _It) noexcept {
-    return const_cast<void*>(static_cast<const volatile void*>(_STD addressof(*_It)));
-}
-
 template <class _NoThrowFwdIt>
 void uninitialized_default_construct(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last) {
     // default-initialize all elements in [_First, _Last)
@@ -750,7 +745,7 @@ void uninitialized_default_construct(const _NoThrowFwdIt _First, const _NoThrowF
         _Uninitialized_backout _Backout{_Get_unwrapped(_First)};
 
         for (const auto _ULast = _Get_unwrapped(_Last); _Backout._Last != _ULast; ++_Backout._Last) {
-            ::new (_Voidify_iter(_Backout._Last)) _Ty;
+            _Default_construct_in_place(*_Backout._Last);
         }
 
         _Backout._Release();
@@ -802,7 +797,7 @@ namespace ranges {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
                 for (; _Backout._Last != _OLast; ++_Backout._Last) {
-                    ::new (_Voidify_iter(_Backout._Last)) _Ty;
+                    _Default_construct_in_place(*_Backout._Last);
                 }
 
                 return _Backout._Release();
@@ -831,7 +826,7 @@ _NoThrowFwdIt uninitialized_default_construct_n(_NoThrowFwdIt _First, const _Dif
         _Uninitialized_backout _Backout{_Get_unwrapped_n(_First, _Count)};
 
         for (; _Count > 0; ++_Backout._Last, (void) --_Count) {
-            ::new (_Voidify_iter(_Backout._Last)) _Ty;
+            _Default_construct_in_place(*_Backout._Last);
         }
 
         _Seek_wrapped(_First, _Backout._Release());
@@ -862,7 +857,7 @@ namespace ranges {
                 auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
 
                 for (; _Count > 0; --_Count, (void) ++_UFirst) {
-                    ::new (_Voidify_iter(_UFirst)) _Ty;
+                    _Default_construct_in_place(*_UFirst);
                 }
 
                 _Seek_wrapped(_First, _STD move(_UFirst));
@@ -870,7 +865,7 @@ namespace ranges {
                 _Uninitialized_backout _Backout{_Get_unwrapped_n(_STD move(_First), _Count)};
 
                 for (; _Count > 0; --_Count, (void) ++_Backout._Last) {
-                    ::new (_Voidify_iter(_Backout._Last)) _Ty;
+                    _Default_construct_in_place(*_Backout._Last);
                 }
 
                 _Seek_wrapped(_First, _Backout._Release());
@@ -2176,7 +2171,7 @@ public:
     explicit _Ref_count_obj2(_Types&&... _Args) : _Ref_count_base() {
 #if _HAS_CXX20
         if constexpr (sizeof...(_Types) == 1 && (is_same_v<_For_overwrite_tag, remove_cvref_t<_Types>> && ...)) {
-            _Construct_in_place_for_overwrite(_Storage._Value);
+            _Default_construct_in_place(_Storage._Value);
             ((void) _Args, ...);
         } else
 #endif // _HAS_CXX20
@@ -2296,7 +2291,7 @@ struct _Uninitialized_rev_destroying_backout {
     }
 
     void _Emplace_back_for_overwrite() {
-        _Construct_in_place_for_overwrite(*_Last);
+        _Default_construct_in_place(*_Last);
         ++_Last;
     }
 
@@ -2596,7 +2591,7 @@ public:
         : _Ebco_base<_Rebound>(_Al_arg), _Ref_count_base() {
 #if _HAS_CXX20
         if constexpr (sizeof...(_Types) == 1 && (is_same_v<_For_overwrite_tag, remove_cvref_t<_Types>> && ...)) {
-            _Construct_in_place_for_overwrite(_Storage._Value);
+            _Default_construct_in_place(_Storage._Value);
             ((void) _Args, ...);
         } else
 #endif // _HAS_CXX20
