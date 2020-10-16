@@ -560,8 +560,11 @@ struct _Normal_allocator_traits { // defines traits for allocators
     static _CONSTEXPR20_DYNALLOC void construct(_Alloc& _Al, _Ty* _Ptr, _Types&&... _Args) {
         if constexpr (_Uses_default_construct<_Alloc, _Ty*, _Types...>::value) {
             (void) _Al; // TRANSITION, DevCom-1004719
-            // construct_at(_Ptr, _STD forward<_Types>(_Args)...);
+#if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc)
+            construct_at(_Ptr, _STD forward<_Types>(_Args)...);
+#else
             ::new (static_cast<void*>(_Ptr)) _Ty(_STD forward<_Types>(_Args)...);
+#endif
         } else {
             _Al.construct(_Ptr, _STD forward<_Types>(_Args)...);
         }
@@ -589,8 +592,11 @@ struct _Normal_allocator_traits { // defines traits for allocators
     static _CONSTEXPR20_DYNALLOC void destroy(_Alloc& _Al, _Ty* _Ptr) {
         if constexpr (_Uses_default_destroy<_Alloc, _Ty*>::value) {
             (void) _Al;
-            // destroy_at(_Ptr)
+#if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc)
+            destroy_at(_Ptr)
+#else
             _Ptr->~_Ty();
+#endif
         } else {
             _Al.destroy(_Ptr);
         }
