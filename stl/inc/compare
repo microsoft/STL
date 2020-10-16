@@ -473,9 +473,9 @@ namespace _Weak_order {
                 return {_St::_Three, noexcept(static_cast<weak_ordering>(
                                          compare_three_way{}(_STD declval<_Ty1&>(), _STD declval<_Ty2&>())))};
             } else if constexpr (_Strong_order::_Has_ADL<_Ty1, _Ty2>) {
-                return {_St::_Strong, noexcept(static_cast<weak_ordering>(
+                return {_St::_Strong, noexcept(static_cast<weak_ordering>(static_cast<strong_ordering>(
                                           /* ADL, throughput optimization */ strong_order(
-                                              _STD declval<_Ty1&>(), _STD declval<_Ty2&>())))};
+                                              _STD declval<_Ty1&>(), _STD declval<_Ty2&>()))))};
             } else {
                 return {_St::_None};
             }
@@ -551,7 +551,8 @@ namespace _Weak_order {
             } else if constexpr (_Strat == _St::_Three) {
                 return static_cast<weak_ordering>(compare_three_way{}(_Left, _Right));
             } else if constexpr (_Strat == _St::_Strong) {
-                return static_cast<weak_ordering>(/* ADL, throughput optimization */ strong_order(_Left, _Right));
+                return static_cast<weak_ordering>(
+                    static_cast<strong_ordering>(/* ADL, throughput optimization */ strong_order(_Left, _Right)));
             } else {
                 static_assert(_Always_false<_Ty1>, "should be unreachable");
             }
@@ -599,12 +600,12 @@ namespace _Partial_order {
                                          compare_three_way{}(_STD declval<_Ty1&>(), _STD declval<_Ty2&>())))};
             } else if constexpr (_Weak_order::_Has_ADL<_Ty1, _Ty2>) {
                 return {_St::_Weak,
-                    noexcept(static_cast<partial_ordering>(
-                        /* ADL, throughput optimization */ weak_order(_STD declval<_Ty1&>(), _STD declval<_Ty2&>())))};
+                    noexcept(static_cast<partial_ordering>(static_cast<weak_ordering>(
+                        /* ADL, throughput optimization */ weak_order(_STD declval<_Ty1&>(), _STD declval<_Ty2&>()))))};
             } else if constexpr (_Strong_order::_Has_ADL<_Ty1, _Ty2>) {
-                return {_St::_Strong, noexcept(static_cast<partial_ordering>(
+                return {_St::_Strong, noexcept(static_cast<partial_ordering>(static_cast<strong_ordering>(
                                           /* ADL, throughput optimization */ strong_order(
-                                              _STD declval<_Ty1&>(), _STD declval<_Ty2&>())))};
+                                              _STD declval<_Ty1&>(), _STD declval<_Ty2&>()))))};
             } else {
                 return {_St::_None};
             }
@@ -626,9 +627,11 @@ namespace _Partial_order {
             } else if constexpr (_Strat == _St::_Three) {
                 return static_cast<partial_ordering>(compare_three_way{}(_Left, _Right));
             } else if constexpr (_Strat == _St::_Weak) {
-                return static_cast<partial_ordering>(/* ADL, throughput optimization */ weak_order(_Left, _Right));
+                return static_cast<partial_ordering>(
+                    static_cast<weak_ordering>(/* ADL, throughput optimization */ weak_order(_Left, _Right)));
             } else if constexpr (_Strat == _St::_Strong) {
-                return static_cast<partial_ordering>(/* ADL, throughput optimization */ strong_order(_Left, _Right));
+                return static_cast<partial_ordering>(
+                    static_cast<strong_ordering>(/* ADL, throughput optimization */ strong_order(_Left, _Right)));
             } else {
                 static_assert(_Always_false<_Ty1>, "should be unreachable");
             }
