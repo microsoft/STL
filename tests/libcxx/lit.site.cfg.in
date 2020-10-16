@@ -18,11 +18,8 @@ config.msvc_toolset_libs_root      = "@TOOLSET_LIB@"
 config.stl_build_root              = "@STL_BUILD_ROOT@"
 config.stl_src_root                = "@STL_SOURCE_DIR@"
 config.target_arch                 = "@VCLIBS_TARGET_ARCHITECTURE@"
+config.test_exec_root              = "@LIBCXX_TEST_OUTPUT_DIR@"
+config.test_source_root            = "@LIBCXX_SOURCE_DIR@/test"
 config.test_subdirs                = ["@LIBCXX_SOURCE_DIR@/test/std"]
 
-lit_config.params['use_old_format'] = True
-config.loaded_site_config = True
-lit_config.load_config(config, "@LIBCXX_SOURCE_DIR@/test/lit.cfg")
-
-config.suffixes                    = [".pass.cpp", ".fail.cpp"]
-config.test_exec_root              = "@LIBCXX_TEST_OUTPUT_DIR@"
+lit_config.load_config(config, "@CMAKE_CURRENT_SOURCE_DIR@/lit.cfg")
