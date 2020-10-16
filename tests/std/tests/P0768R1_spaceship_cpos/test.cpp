@@ -19,7 +19,7 @@ using std::bit_cast, std::compare_partial_order_fallback, std::compare_strong_or
 // Define test machinery.
 struct IllFormed {};
 
-template <const auto& CPO, typename E, typename F, typename = void>
+template <const auto& CPO, typename E, typename F>
 struct CpoResultImpl {
     using type = IllFormed;
 };
