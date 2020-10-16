@@ -105,6 +105,55 @@ namespace TestAdl {
     }
 } // namespace TestAdl
 
+// Define test machinery for ADL, when the return type is a weird user-defined type
+// with a conversion operator to a Standard comparison category type.
+namespace TestUdt {
+    template <typename Ordering, bool NE>
+    struct WeirdOrdering {
+        Ordering ordering;
+
+        constexpr explicit operator Ordering() const noexcept(NE) {
+            return ordering;
+        }
+
+        template <typename AnythingElse>
+        constexpr explicit operator AnythingElse() const = delete;
+    };
+
+    template <bool NE = NonThrowing>
+    struct StrongWeird {
+        int val;
+    };
+
+    template <bool NE>
+    [[nodiscard]] constexpr WeirdOrdering<strong_ordering, NE> strong_order(
+        const StrongWeird<NE>& left, const StrongWeird<NE>& right) noexcept {
+        return {left.val <=> right.val};
+    }
+
+    template <bool NE = NonThrowing>
+    struct WeakWeird {
+        int val;
+    };
+
+    template <bool NE>
+    [[nodiscard]] constexpr WeirdOrdering<weak_ordering, NE> weak_order(
+        const WeakWeird<NE>& left, const WeakWeird<NE>& right) noexcept {
+        return {left.val <=> right.val};
+    }
+
+    template <bool NE = NonThrowing>
+    struct PartialWeird {
+        int val;
+    };
+
+    template <bool NE>
+    [[nodiscard]] constexpr WeirdOrdering<partial_ordering, NE> partial_order(
+        const PartialWeird<NE>& left, const PartialWeird<NE>& right) noexcept {
+        return {left.val <=> right.val};
+    }
+} // namespace TestUdt
+
 // Define test machinery for compare_three_way.
 template <bool NE = NonThrowing>
 struct SpaceshipType {
@@ -218,6 +267,15 @@ static_assert(is_same_v<CpoResult<std::weak_order, TestAdl::StrongType<>>, weak_
 static_assert(is_same_v<CpoResult<std::partial_order, TestAdl::StrongType<>>, partial_ordering>); // [cmp.alg]/3.4
 static_assert(is_same_v<CpoResult<std::partial_order, TestAdl::WeakType<>>, partial_ordering>); // [cmp.alg]/3.4
 
+// Test weird ADL cases. Part A, return types.
+static_assert(is_same_v<CpoResult<std::strong_order, TestUdt::StrongWeird<>>, strong_ordering>); // [cmp.alg]/1.2
+static_assert(is_same_v<CpoResult<std::weak_order, TestUdt::WeakWeird<>>, weak_ordering>); // [cmp.alg]/2.2
+static_assert(is_same_v<CpoResult<std::partial_order, TestUdt::PartialWeird<>>, partial_ordering>); // [cmp.alg]/3.2
+
+static_assert(is_same_v<CpoResult<std::weak_order, TestUdt::StrongWeird<>>, weak_ordering>); // [cmp.alg]/2.5
+static_assert(is_same_v<CpoResult<std::partial_order, TestUdt::StrongWeird<>>, partial_ordering>); // [cmp.alg]/3.4
+static_assert(is_same_v<CpoResult<std::partial_order, TestUdt::WeakWeird<>>, partial_ordering>); // [cmp.alg]/3.4
+
 // Test non-fallback cases, just enough to verify CPO usage. Part A, return types. See [cmp.alg]/4.2, 5.2, and 6.2.
 static_assert(is_same_v<CpoResult<compare_strong_order_fallback, TestAdl::StrongType<>>, strong_ordering>);
 static_assert(is_same_v<CpoResult<compare_weak_order_fallback, TestAdl::WeakType<>>, weak_ordering>);
@@ -309,6 +367,23 @@ static_assert(!NoexceptCpo<std::partial_order, TestAdl::WeakType<Throwing>>); //
 static_assert(NoexceptCpo<std::weak_order, TestAdl::StrongType<NonThrowing>>); // [cmp.alg]/2.5
 static_assert(NoexceptCpo<std::partial_order, TestAdl::StrongType<NonThrowing>>); // [cmp.alg]/3.4
 static_assert(NoexceptCpo<std::partial_order, TestAdl::WeakType<NonThrowing>>); // [cmp.alg]/3.4
+
+// Test weird ADL cases. Part B, exception specifications.
+static_assert(!NoexceptCpo<std::strong_order, TestUdt::StrongWeird<Throwing>>); // [cmp.alg]/1.2
+static_assert(!NoexceptCpo<std::weak_order, TestUdt::WeakWeird<Throwing>>); // [cmp.alg]/2.2
+static_assert(!NoexceptCpo<std::partial_order, TestUdt::PartialWeird<Throwing>>); // [cmp.alg]/3.2
+
+static_assert(NoexceptCpo<std::strong_order, TestUdt::StrongWeird<NonThrowing>>); // [cmp.alg]/1.2
+static_assert(NoexceptCpo<std::weak_order, TestUdt::WeakWeird<NonThrowing>>); // [cmp.alg]/2.2
+static_assert(NoexceptCpo<std::partial_order, TestUdt::PartialWeird<NonThrowing>>); // [cmp.alg]/3.2
+
+static_assert(!NoexceptCpo<std::weak_order, TestUdt::StrongWeird<Throwing>>); // [cmp.alg]/2.5
+static_assert(!NoexceptCpo<std::partial_order, TestUdt::StrongWeird<Throwing>>); // [cmp.alg]/3.4
+static_assert(!NoexceptCpo<std::partial_order, TestUdt::WeakWeird<Throwing>>); // [cmp.alg]/3.4
+
+static_assert(NoexceptCpo<std::weak_order, TestUdt::StrongWeird<NonThrowing>>); // [cmp.alg]/2.5
+static_assert(NoexceptCpo<std::partial_order, TestUdt::StrongWeird<NonThrowing>>); // [cmp.alg]/3.4
+static_assert(NoexceptCpo<std::partial_order, TestUdt::WeakWeird<NonThrowing>>); // [cmp.alg]/3.4
 
 // Test non-fallback cases. Part B, exception specifications.
 static_assert(!NoexceptCpo<compare_strong_order_fallback, SpaceshipType<Throwing>>); // [cmp.alg]/4.2
@@ -448,6 +523,15 @@ constexpr void test_floating() {
     test_behavior<std::weak_order, TestAdl::StrongType<>>(); // [cmp.alg]/2.5
     test_behavior<std::partial_order, TestAdl::StrongType<>>(); // [cmp.alg]/3.4
     test_behavior<std::partial_order, TestAdl::WeakType<>>(); // [cmp.alg]/3.4
+
+    // Test weird ADL cases. Part C, compile-time and run-time behavior.
+    test_behavior<std::strong_order, TestUdt::StrongWeird<>>(); // [cmp.alg]/1.2
+    test_behavior<std::weak_order, TestUdt::WeakWeird<>>(); // [cmp.alg]/2.2
+    test_behavior<std::partial_order, TestUdt::PartialWeird<>>(); // [cmp.alg]/3.2
+
+    test_behavior<std::weak_order, TestUdt::StrongWeird<>>(); // [cmp.alg]/2.5
+    test_behavior<std::partial_order, TestUdt::StrongWeird<>>(); // [cmp.alg]/3.4
+    test_behavior<std::partial_order, TestUdt::WeakWeird<>>(); // [cmp.alg]/3.4
 
     // Test non-fallback cases. Part C, compile-time and run-time behavior.
     test_behavior<compare_strong_order_fallback, SpaceshipType<>>(); // [cmp.alg]/4.2
