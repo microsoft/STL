@@ -3033,7 +3033,6 @@ _NODISCARD shared_ptr<_Ty> _Allocate_shared_unbounded_array(
 template <class _Ty, class _Alloc>
 _NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared(
     const _Alloc& _Al, const size_t _Count) {
-    // make a shared_ptr to an unbounded array
     return _Allocate_shared_unbounded_array<_Ty>(_Al, _Count);
 }
 
