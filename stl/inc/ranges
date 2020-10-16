@@ -1937,15 +1937,20 @@ namespace ranges {
             static constexpr _Choice_t<_St> _Choice = _Choose<_It>();
 
         public:
-            template <input_or_output_iterator _It>
-            _NODISCARD constexpr auto operator()(_It _First, iter_difference_t<_It> _Count) const
+            // clang-format off
+            template <input_or_output_iterator _It, class _Diff>
+                requires convertible_to<_Diff, iter_difference_t<_It>>
+            _NODISCARD constexpr auto operator()(_It _First, const _Diff _Count) const
+                // clang-format on
                 noexcept(_Choice<_It>._No_throw) {
+                _STL_VERIFY(_Count >= 0, "The size passed to views::counted must be non-negative");
                 if constexpr (_Choice<_It>._Strategy == _St::_Span) {
-                    return span{_STD to_address(_First), iter_difference_t<_It>(_Count)};
+                    return span{_STD to_address(_First), static_cast<iter_difference_t<_It>>(_Count)};
                 } else if constexpr (_Choice<_It>._Strategy == _St::_Subrange) {
-                    return subrange{_First, _First + _Count};
+                    return subrange{_First, _First + static_cast<iter_difference_t<_It>>(_Count)};
                 } else if constexpr (_Choice<_It>._Strategy == _St::_Subrange_counted) {
-                    return subrange{counted_iterator{_STD move(_First), _Count}, default_sentinel};
+                    return subrange{counted_iterator{_STD move(_First), static_cast<iter_difference_t<_It>>(_Count)},
+                        default_sentinel};
                 }
             }
         };

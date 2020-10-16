@@ -11,6 +11,15 @@
 
 using namespace std;
 
+template <input_or_output_iterator Iter>
+struct convertible_difference {
+    constexpr convertible_difference(const int _val_) noexcept : _val(_val_) {}
+    constexpr operator iter_difference_t<Iter>() const noexcept {
+        return iter_difference_t<Iter>{_val};
+    }
+    int _val = 0;
+};
+
 struct instantiator {
     static constexpr int expected[] = {13, 42, 1729};
 
@@ -20,7 +29,7 @@ struct instantiator {
             ranges::subrange;
         int input[] = {13, 42, 1729, -1, -1};
 
-        auto result = ranges::views::counted(Iter{input}, 3);
+        auto result = ranges::views::counted(Iter{input}, convertible_difference<Iter>{3});
         if constexpr (contiguous_iterator<Iter>) {
             STATIC_ASSERT(same_as<decltype(result), span<remove_reference_t<iter_reference_t<Iter>>, dynamic_extent>>);
         } else if constexpr (random_access_iterator<Iter>) {
