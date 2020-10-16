@@ -2422,7 +2422,7 @@ public:
 
     template <class _Arg>
     explicit _Ref_count_unbounded_array(const size_t _Count, const _Arg& _Val) : _Ref_count_base() {
-        if constexpr (is_same_v<_For_overwrite_tag, remove_cvref_t<_Arg>>) {
+        if constexpr (is_same_v<_For_overwrite_tag, _Arg>) {
             _Uninitialized_default_construct_multidimensional_n(_Get_ptr(), _Count);
         } else {
             _Uninitialized_fill_multidimensional_n(_Get_ptr(), _Count, _Val);
@@ -2468,7 +2468,7 @@ public:
 
     template <class _Arg>
     explicit _Ref_count_unbounded_array(const size_t _Count, const _Arg& _Val) : _Ref_count_base(), _Size(_Count) {
-        if constexpr (is_same_v<_For_overwrite_tag, remove_cvref_t<_Arg>>) {
+        if constexpr (is_same_v<_For_overwrite_tag, _Arg>) {
             _Uninitialized_default_construct_multidimensional_n(_Get_ptr(), _Size);
         } else {
             _Uninitialized_fill_multidimensional_n(_Get_ptr(), _Size, _Val);
@@ -2513,7 +2513,7 @@ public:
 
     template <class _Arg>
     explicit _Ref_count_bounded_array(const _Arg& _Val) : _Ref_count_base() { // don't value-initialize _Storage
-        if constexpr (is_same_v<_For_overwrite_tag, remove_cvref_t<_Arg>>) {
+        if constexpr (is_same_v<_For_overwrite_tag, _Arg>) {
             _Uninitialized_default_construct_multidimensional_n(_Storage._Value, extent_v<_Ty>);
         } else {
             _Uninitialized_fill_multidimensional_n(_Storage._Value, extent_v<_Ty>, _Val);
@@ -2774,7 +2774,7 @@ public:
     template <class _Arg>
     explicit _Ref_count_unbounded_array_alloc(const _Alloc& _Al_arg, const size_t _Count, const _Arg& _Val)
         : _Ebco_base<_Rebound>(_Al_arg), _Ref_count_base(), _Size(_Count) {
-        if constexpr (is_same_v<_For_overwrite_tag, remove_cvref_t<_Arg>>) {
+        if constexpr (is_same_v<_For_overwrite_tag, _Arg>) {
             _Uninitialized_default_construct_multidimensional_n(_Get_ptr(), _Size); // the allocator isn't needed
         } else {
             _Uninitialized_fill_multidimensional_n_al(_Get_ptr(), _Size, _Val, this->_Get_val());
@@ -2840,7 +2840,7 @@ public:
     template <class _Arg>
     explicit _Ref_count_bounded_array_alloc(const _Alloc& _Al_arg, const _Arg& _Val)
         : _Ebco_base<_Rebound>(_Al_arg), _Ref_count_base() { // don't value-initialize _Storage
-        if constexpr (is_same_v<_For_overwrite_tag, remove_cvref_t<_Arg>>) {
+        if constexpr (is_same_v<_For_overwrite_tag, _Arg>) {
             _Uninitialized_default_construct_multidimensional_n(
                 _Storage._Value, extent_v<_Ty>); // the allocator isn't needed
         } else {
