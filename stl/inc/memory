@@ -3581,7 +3581,7 @@ _NODISCARD unique_ptr<_Ty> make_unique_for_overwrite(
     return unique_ptr<_Ty>(new _Elem[_Size]);
 }
 
-template <class _Ty, class... _Types, enable_if_t<extent_v<_Ty> != 0, int> = 0>
+template <class _Ty, class... _Types, enable_if_t<is_bounded_array_v<_Ty>, int> = 0>
 void make_unique_for_overwrite(_Types&&...) = delete;
 #endif // _HAS_CXX20
 
