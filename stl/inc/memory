@@ -1951,11 +1951,11 @@ private:
         const _Alloc& _Al_arg, size_t _Count);
 
     template <class _Ty0, class... _ArgTypes>
-    friend shared_ptr<_Ty0> _Make_shared_unbounded_array(const size_t _Count, const _ArgTypes&... _Args);
+    friend shared_ptr<_Ty0> _Make_shared_unbounded_array(size_t _Count, const _ArgTypes&... _Args);
 
     template <class _Ty0, class _Alloc, class... _ArgTypes>
     friend shared_ptr<_Ty0> _Allocate_shared_unbounded_array(
-        const _Alloc& _Al, const size_t _Count, const _ArgTypes&... _Args);
+        const _Alloc& _Al, size_t _Count, const _ArgTypes&... _Args);
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     template <class _Ty0, class... _Types>
     friend shared_ptr<_Ty0> make_shared(_Types&&... _Args);
