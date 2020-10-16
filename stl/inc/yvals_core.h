@@ -1007,7 +1007,19 @@
 #define _CXX20_DEPRECATE_MOVE_ITERATOR_ARROW
 #endif // ^^^ warning disabled ^^^
 
-// next warning number: STL4032
+#if _HAS_CXX20 && !defined(_SILENCE_CXX20_POLYMORPHIC_ALLOCATOR_DESTROY_DEPRECATION_WARNING) \
+    && !defined(_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS)
+#define _CXX20_DEPRECATE_POLYMORPHIC_ALLOCATOR_DESTROY                                              \
+    [[deprecated("warning STL4032: "                                                                \
+                 "std::pmr::polymorphic_allocator::destroy() is deprecated by C++20. "              \
+                 "Prefer std::destroy_at or std::allocator_traits<polymorphic_allocator>::destroy." \
+                 "You can define _SILENCE_CXX20_POLYMORPHIC_ALLOCATOR_DESTROY_DEPRECATION_WARNING " \
+                 "or _SILENCE_ALL_CXX20_DEPRECATION_WARNINGS to acknowledge that you have received this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _CXX20_DEPRECATE_POLYMORPHIC_ALLOCATOR_DESTROY
+#endif // ^^^ warning disabled ^^^
+
+// next warning number: STL4033
 
 // P0619R4 Removing C++17-Deprecated Features
 #ifndef _HAS_FEATURES_REMOVED_IN_CXX20
