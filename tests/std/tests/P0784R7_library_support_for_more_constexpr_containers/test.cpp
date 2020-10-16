@@ -272,6 +272,107 @@ constexpr void test_compiletime() {
     }
 }
 static_assert((test_compiletime(), true));
+
+template <class T>
+struct A {
+    T value;
+
+    constexpr A() noexcept = default;
+    constexpr ~A()         = default;
+};
+
+template <class T>
+struct nontrivial_A {
+    T value;
+
+    constexpr nontrivial_A(T in = T{}) noexcept : value(in){};
+    constexpr ~nontrivial_A() {
+        value.~T();
+    };
+};
+
+template <class T>
+struct Alloc {
+    using value_type = T;
+    using size_type  = std::size_t;
+
+    constexpr Alloc(int id_) noexcept : id(id_) {}
+    constexpr ~Alloc() = default;
+
+    constexpr value_type* allocate(size_t n) {
+        assert(n == 10);
+        return ::operator new(n * sizeof(value_type));
+    }
+
+    constexpr void deallocate(value_type* ptr, size_t n) {
+        assert(n == 10);
+        ::operator delete(ptr, n * sizeof(value_type));
+    }
+
+    constexpr Alloc<T> select_on_container_copy_construction() const noexcept {
+        return Alloc<T>{id + 1};
+    }
+
+    constexpr size_type max_size() noexcept {
+        return std::numeric_limits<size_type>::max() / sizeof(value_type);
+    }
+
+    int id;
+};
+
+constexpr void test_compiletime_allocator_traits() {
+    {
+        storage_for<A<int>> a;
+        Alloc<A<int>> alloc{10};
+        assert(alloc.id == 10);
+
+        auto result = std::allocator_traits<Alloc<A<int>>>::allocate(alloc, 10);
+        assert(result != nullptr);
+        std::allocator_traits<Alloc<A<int>>>::deallocate(alloc, result, 10);
+
+        std::allocator_traits<Alloc<A<int>>>::construct(alloc, &a.object, 10);
+        assert(a.object.value == 10);
+        std::allocator_traits<Alloc<A<int>>>::destroy(alloc, &a.object);
+
+        static_assert(std::allocator_traits<Alloc<A<int>>>::select_on_container_copy_construction(alloc).id == 11);
+
+        static_assert(std::allocator_traits<Alloc<A<int>>>::max_size()
+                      == std::numeric_limits<Alloc<A<int>>::size_type>::max() / sizeof(Alloc<A<int>>::value_type));
+    }
+    {
+        storage_for<nontrivial_A<int>> a;
+        Alloc<nontrivial_A<int>> alloc{10};
+        assert(alloc.id == 10);
+
+        auto result = std::allocator_traits<Alloc<nontrivial_A<int>>>::allocate(alloc, 10);
+        assert(result != nullptr);
+        std::allocator_traits<Alloc<nontrivial_A<int>>>::deallocate(alloc, result, 10);
+
+        std::allocator_traits<Alloc<nontrivial_A<int>>>::construct(alloc, &a.object, 10);
+        assert(a.object.value == 10);
+        std::allocator_traits<Alloc<nontrivial_A<int>>>::destroy(alloc, &a.object);
+
+        static_assert(
+            std::allocator_traits<Alloc<nontrivial_A<int>>>::select_on_container_copy_construction(alloc).id == 11);
+
+        static_assert(std::allocator_traits<Alloc<nontrivial_A<int>>>::max_size()
+                      == std::numeric_limits<Alloc<nontrivial_A<int>>::size_type>::max()
+                             / sizeof(Alloc<nontrivial_A<int>>::value_type));
+    }
+}
+static_assert((test_compiletime_allocator_traits(), true));
+
+constexpr void test_compiletime_allocator() {
+    { 
+        auto result = std::allocator<A<int>>{}.allocate(10);
+        std::allocator<A<int>>{}.deallocate(result, 10);
+    }
+    {
+        auto result = std::allocator<nontrivial_A<int>>{}.allocate(10);
+        std::allocator<nontrivial_A<int>>{}.deallocate(result, 10);
+    }
+}
+static_assert((test_compiletime_allocator(), true));
 #endif // _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc)
 
 int main() {
