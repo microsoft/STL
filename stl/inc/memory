@@ -736,11 +736,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE uninitialized_default_construct
-template <class _Iter>
-_NODISCARD void* _Voidify_iter(_Iter _It) noexcept {
-    return const_cast<void*>(static_cast<const volatile void*>(_STD addressof(*_It)));
-}
-
 template <class _NoThrowFwdIt>
 void uninitialized_default_construct(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last) {
     // default-initialize all elements in [_First, _Last)
@@ -750,7 +745,7 @@ void uninitialized_default_construct(const _NoThrowFwdIt _First, const _NoThrowF
         _Uninitialized_backout _Backout{_Get_unwrapped(_First)};
 
         for (const auto _ULast = _Get_unwrapped(_Last); _Backout._Last != _ULast; ++_Backout._Last) {
-            ::new (_Voidify_iter(_Backout._Last)) _Ty;
+            _Default_construct_in_place(*_Backout._Last);
         }
 
         _Backout._Release();
@@ -802,7 +797,7 @@ namespace ranges {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
                 for (; _Backout._Last != _OLast; ++_Backout._Last) {
-                    ::new (_Voidify_iter(_Backout._Last)) _Ty;
+                    _Default_construct_in_place(*_Backout._Last);
                 }
 
                 return _Backout._Release();
@@ -831,7 +826,7 @@ _NoThrowFwdIt uninitialized_default_construct_n(_NoThrowFwdIt _First, const _Dif
         _Uninitialized_backout _Backout{_Get_unwrapped_n(_First, _Count)};
 
         for (; _Count > 0; ++_Backout._Last, (void) --_Count) {
-            ::new (_Voidify_iter(_Backout._Last)) _Ty;
+            _Default_construct_in_place(*_Backout._Last);
         }
 
         _Seek_wrapped(_First, _Backout._Release());
@@ -858,19 +853,11 @@ namespace ranges {
             using _Ty = remove_reference_t<iter_reference_t<_It>>;
             if constexpr (is_trivially_default_constructible_v<_Ty>) {
                 _RANGES advance(_First, _Count);
-            } else if constexpr (is_nothrow_default_constructible_v<_Ty>) {
-                auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
-
-                for (; _Count > 0; --_Count, (void) ++_UFirst) {
-                    ::new (_Voidify_iter(_UFirst)) _Ty;
-                }
-
-                _Seek_wrapped(_First, _STD move(_UFirst));
             } else {
                 _Uninitialized_backout _Backout{_Get_unwrapped_n(_STD move(_First), _Count)};
 
                 for (; _Count > 0; --_Count, (void) ++_Backout._Last) {
-                    ::new (_Voidify_iter(_Backout._Last)) _Ty;
+                    _Default_construct_in_place(*_Backout._Last);
                 }
 
                 _Seek_wrapped(_First, _Backout._Release());
@@ -1909,25 +1896,10 @@ private:
     friend enable_if_t<!is_array_v<_Ty0>, shared_ptr<_Ty0>> allocate_shared(const _Alloc& _Al_arg, _Types&&... _Args);
 
     template <class _Ty0>
-    friend enable_if_t<is_unbounded_array_v<_Ty0>, shared_ptr<_Ty0>> make_shared(size_t _Count);
-
-    template <class _Ty0, class _Alloc>
-    friend enable_if_t<is_unbounded_array_v<_Ty0>, shared_ptr<_Ty0>> allocate_shared(
-        const _Alloc& _Al_arg, size_t _Count);
-
-    template <class _Ty0>
     friend enable_if_t<is_bounded_array_v<_Ty0>, shared_ptr<_Ty0>> make_shared();
 
     template <class _Ty0, class _Alloc>
     friend enable_if_t<is_bounded_array_v<_Ty0>, shared_ptr<_Ty0>> allocate_shared(const _Alloc& _Al_arg);
-
-    template <class _Ty0>
-    friend enable_if_t<is_unbounded_array_v<_Ty0>, shared_ptr<_Ty0>> make_shared(
-        size_t _Count, const remove_extent_t<_Ty0>& _Val);
-
-    template <class _Ty0, class _Alloc>
-    friend enable_if_t<is_unbounded_array_v<_Ty0>, shared_ptr<_Ty0>> allocate_shared(
-        const _Alloc& _Al_arg, size_t _Count, const remove_extent_t<_Ty0>& _Val);
 
     template <class _Ty0>
     friend enable_if_t<is_bounded_array_v<_Ty0>, shared_ptr<_Ty0>> make_shared(const remove_extent_t<_Ty0>& _Val);
@@ -1935,6 +1907,20 @@ private:
     template <class _Ty0, class _Alloc>
     friend enable_if_t<is_bounded_array_v<_Ty0>, shared_ptr<_Ty0>> allocate_shared(
         const _Alloc& _Al_arg, const remove_extent_t<_Ty0>& _Val);
+
+    template <class _Ty0>
+    friend enable_if_t<!is_unbounded_array_v<_Ty0>, shared_ptr<_Ty0>> make_shared_for_overwrite();
+
+    template <class _Ty0, class _Alloc>
+    friend enable_if_t<!is_unbounded_array_v<_Ty0>, shared_ptr<_Ty0>> allocate_shared_for_overwrite(
+        const _Alloc& _Al_arg);
+
+    template <class _Ty0, class... _ArgTypes>
+    friend shared_ptr<_Ty0> _Make_shared_unbounded_array(size_t _Count, const _ArgTypes&... _Args);
+
+    template <class _Ty0, class _Alloc, class... _ArgTypes>
+    friend shared_ptr<_Ty0> _Allocate_shared_unbounded_array(
+        const _Alloc& _Al, size_t _Count, const _ArgTypes&... _Args);
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     template <class _Ty0, class... _Types>
     friend shared_ptr<_Ty0> make_shared(_Types&&... _Args);
@@ -2163,13 +2149,27 @@ template <class _Dx, class _Ty>
 _Dx* get_deleter(const shared_ptr<_Ty>&) noexcept = delete; // requires static RTTI
 #endif // _HAS_STATIC_RTTI
 
+#if _HAS_CXX20
+struct _For_overwrite_tag {
+    explicit _For_overwrite_tag() = default;
+};
+#endif // _HAS_CXX20
+
 // CLASS TEMPLATE _Ref_count_obj2
 template <class _Ty>
 class _Ref_count_obj2 : public _Ref_count_base { // handle reference counting for object in control block, no allocator
 public:
     template <class... _Types>
     explicit _Ref_count_obj2(_Types&&... _Args) : _Ref_count_base() {
-        _Construct_in_place(_Storage._Value, _STD forward<_Types>(_Args)...);
+#if _HAS_CXX20
+        if constexpr (sizeof...(_Types) == 1 && (is_same_v<_For_overwrite_tag, remove_cvref_t<_Types>> && ...)) {
+            _Default_construct_in_place(_Storage._Value);
+            ((void) _Args, ...);
+        } else
+#endif // _HAS_CXX20
+        {
+            _Construct_in_place(_Storage._Value, _STD forward<_Types>(_Args)...);
+        }
     }
 
     ~_Ref_count_obj2() {
@@ -2282,6 +2282,11 @@ struct _Uninitialized_rev_destroying_backout {
         ++_Last;
     }
 
+    void _Emplace_back_for_overwrite() {
+        _Default_construct_in_place(*_Last);
+        ++_Last;
+    }
+
     _NoThrowIt _Release() noexcept { // suppress any exception handling backout and return _Last
         _First = _Last;
         return _Last;
@@ -2352,6 +2357,25 @@ void _Uninitialized_value_construct_multidimensional_n(_Ty* const _Out, const si
 }
 
 template <class _Ty>
+void _Uninitialized_default_construct_multidimensional_n(_Ty* const _Out, const size_t _Size) {
+    if constexpr (!is_trivially_default_constructible_v<_Ty>) {
+        if constexpr (is_array_v<_Ty>) {
+            _Reverse_destroy_multidimensional_n_guard<_Ty> _Guard{_Out, 0};
+            for (size_t& _Idx = _Guard._Index; _Idx < _Size; ++_Idx) {
+                _Uninitialized_default_construct_multidimensional_n(_Out[_Idx], extent_v<_Ty>);
+            }
+            _Guard._Target = nullptr;
+        } else {
+            _Uninitialized_rev_destroying_backout _Backout{_Out};
+            for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
+                _Backout._Emplace_back_for_overwrite();
+            }
+            _Backout._Release();
+        }
+    }
+}
+
+template <class _Ty>
 void _Uninitialized_fill_multidimensional_n(_Ty* const _Out, const size_t _Size, const _Ty& _Val) {
     if constexpr (is_array_v<_Ty>) {
         _Reverse_destroy_multidimensional_n_guard<_Ty> _Guard{_Out, 0};
@@ -2383,8 +2407,13 @@ public:
         _Uninitialized_value_construct_multidimensional_n(_Get_ptr(), _Count);
     }
 
-    explicit _Ref_count_unbounded_array(const size_t _Count, const _Element_type& _Val) : _Ref_count_base() {
-        _Uninitialized_fill_multidimensional_n(_Get_ptr(), _Count, _Val);
+    template <class _Arg>
+    explicit _Ref_count_unbounded_array(const size_t _Count, const _Arg& _Val) : _Ref_count_base() {
+        if constexpr (is_same_v<_For_overwrite_tag, _Arg>) {
+            _Uninitialized_default_construct_multidimensional_n(_Get_ptr(), _Count);
+        } else {
+            _Uninitialized_fill_multidimensional_n(_Get_ptr(), _Count, _Val);
+        }
     }
 
     _NODISCARD auto _Get_ptr() noexcept {
@@ -2424,9 +2453,13 @@ public:
         _Uninitialized_value_construct_multidimensional_n(_Get_ptr(), _Size);
     }
 
-    explicit _Ref_count_unbounded_array(const size_t _Count, const _Element_type& _Val)
-        : _Ref_count_base(), _Size(_Count) {
-        _Uninitialized_fill_multidimensional_n(_Get_ptr(), _Size, _Val);
+    template <class _Arg>
+    explicit _Ref_count_unbounded_array(const size_t _Count, const _Arg& _Val) : _Ref_count_base(), _Size(_Count) {
+        if constexpr (is_same_v<_For_overwrite_tag, _Arg>) {
+            _Uninitialized_default_construct_multidimensional_n(_Get_ptr(), _Size);
+        } else {
+            _Uninitialized_fill_multidimensional_n(_Get_ptr(), _Size, _Val);
+        }
     }
 
     _NODISCARD auto _Get_ptr() noexcept {
@@ -2465,9 +2498,13 @@ public:
 
     _Ref_count_bounded_array() : _Ref_count_base(), _Storage() {} // value-initializing _Storage is necessary here
 
-    explicit _Ref_count_bounded_array(const remove_extent_t<_Ty>& _Val)
-        : _Ref_count_base() { // don't value-initialize _Storage
-        _Uninitialized_fill_multidimensional_n(_Storage._Value, extent_v<_Ty>, _Val);
+    template <class _Arg>
+    explicit _Ref_count_bounded_array(const _Arg& _Val) : _Ref_count_base() { // don't value-initialize _Storage
+        if constexpr (is_same_v<_For_overwrite_tag, _Arg>) {
+            _Uninitialized_default_construct_multidimensional_n(_Storage._Value, extent_v<_Ty>);
+        } else {
+            _Uninitialized_fill_multidimensional_n(_Storage._Value, extent_v<_Ty>, _Val);
+        }
     }
 
     union {
@@ -2544,8 +2581,16 @@ public:
     template <class... _Types>
     explicit _Ref_count_obj_alloc3(const _Alloc& _Al_arg, _Types&&... _Args)
         : _Ebco_base<_Rebound>(_Al_arg), _Ref_count_base() {
-        allocator_traits<_Rebound>::construct(
-            this->_Get_val(), _STD addressof(_Storage._Value), _STD forward<_Types>(_Args)...);
+#if _HAS_CXX20
+        if constexpr (sizeof...(_Types) == 1 && (is_same_v<_For_overwrite_tag, remove_cvref_t<_Types>> && ...)) {
+            _Default_construct_in_place(_Storage._Value);
+            ((void) _Args, ...);
+        } else
+#endif // _HAS_CXX20
+        {
+            allocator_traits<_Rebound>::construct(
+                this->_Get_val(), _STD addressof(_Storage._Value), _STD forward<_Types>(_Args)...);
+        }
     }
 
     union {
@@ -2713,9 +2758,14 @@ public:
         _Uninitialized_value_construct_multidimensional_n_al(_Get_ptr(), _Size, this->_Get_val());
     }
 
-    explicit _Ref_count_unbounded_array_alloc(const _Alloc& _Al_arg, const size_t _Count, const _Element_type& _Val)
+    template <class _Arg>
+    explicit _Ref_count_unbounded_array_alloc(const _Alloc& _Al_arg, const size_t _Count, const _Arg& _Val)
         : _Ebco_base<_Rebound>(_Al_arg), _Ref_count_base(), _Size(_Count) {
-        _Uninitialized_fill_multidimensional_n_al(_Get_ptr(), _Size, _Val, this->_Get_val());
+        if constexpr (is_same_v<_For_overwrite_tag, _Arg>) {
+            _Uninitialized_default_construct_multidimensional_n(_Get_ptr(), _Size); // the allocator isn't needed
+        } else {
+            _Uninitialized_fill_multidimensional_n_al(_Get_ptr(), _Size, _Val, this->_Get_val());
+        }
     }
 
     _NODISCARD auto _Get_ptr() noexcept {
@@ -2774,9 +2824,15 @@ public:
         _Uninitialized_value_construct_multidimensional_n_al(_Storage._Value, extent_v<_Ty>, this->_Get_val());
     }
 
-    explicit _Ref_count_bounded_array_alloc(const _Alloc& _Al_arg, const remove_extent_t<_Ty>& _Val)
+    template <class _Arg>
+    explicit _Ref_count_bounded_array_alloc(const _Alloc& _Al_arg, const _Arg& _Val)
         : _Ebco_base<_Rebound>(_Al_arg), _Ref_count_base() { // don't value-initialize _Storage
-        _Uninitialized_fill_multidimensional_n_al(_Storage._Value, extent_v<_Ty>, _Val, this->_Get_val());
+        if constexpr (is_same_v<_For_overwrite_tag, _Arg>) {
+            _Uninitialized_default_construct_multidimensional_n(
+                _Storage._Value, extent_v<_Ty>); // the allocator isn't needed
+        } else {
+            _Uninitialized_fill_multidimensional_n_al(_Storage._Value, extent_v<_Ty>, _Val, this->_Get_val());
+        }
     }
 
     union {
@@ -2834,13 +2890,14 @@ struct _Global_delete_guard {
     }
 };
 
-template <class _Ty>
-_NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(const size_t _Count) {
+template <class _Ty, class... _ArgTypes>
+_NODISCARD shared_ptr<_Ty> _Make_shared_unbounded_array(const size_t _Count, const _ArgTypes&... _Args) {
     // make a shared_ptr to an unbounded array
+    static_assert(is_unbounded_array_v<_Ty>);
     using _Refc    = _Ref_count_unbounded_array<_Ty>;
     const auto _Rx = _Allocate_flexible_array<_Refc>(_Count);
     _Global_delete_guard<_Refc> _Guard{_Rx};
-    ::new (static_cast<void*>(_Rx)) _Refc(_Count);
+    ::new (static_cast<void*>(_Rx)) _Refc(_Count, _Args...);
     _Guard._Target = nullptr;
     shared_ptr<_Ty> _Ret;
     _Ret._Set_ptr_rep_and_enable_shared(_Rx->_Get_ptr(), _Rx);
@@ -2848,17 +2905,14 @@ _NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(c
 }
 
 template <class _Ty>
+_NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(const size_t _Count) {
+    return _Make_shared_unbounded_array<_Ty>(_Count);
+}
+
+template <class _Ty>
 _NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(
     const size_t _Count, const remove_extent_t<_Ty>& _Val) {
-    // make a shared_ptr to an unbounded array
-    using _Refc    = _Ref_count_unbounded_array<_Ty>;
-    const auto _Rx = _Allocate_flexible_array<_Refc>(_Count);
-    _Global_delete_guard<_Refc> _Guard{_Rx};
-    ::new (static_cast<void*>(_Rx)) _Refc(_Count, _Val);
-    _Guard._Target = nullptr;
-    shared_ptr<_Ty> _Ret;
-    _Ret._Set_ptr_rep_and_enable_shared(_Rx->_Get_ptr(), _Rx);
-    return _Ret;
+    return _Make_shared_unbounded_array<_Ty>(_Count, _Val);
 }
 
 template <class _Ty>
@@ -2877,6 +2931,27 @@ _NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(con
     shared_ptr<_Ty> _Ret;
     _Ret._Set_ptr_rep_and_enable_shared(_Rx->_Storage._Value, _Rx);
     return _Ret;
+}
+
+// FUNCTION TEMPLATE make_shared_for_overwrite
+template <class _Ty>
+_NODISCARD enable_if_t<!is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared_for_overwrite() {
+    shared_ptr<_Ty> _Ret;
+    if constexpr (is_array_v<_Ty>) {
+        // make a shared_ptr to a bounded array
+        const auto _Rx = new _Ref_count_bounded_array<_Ty>(_For_overwrite_tag{});
+        _Ret._Set_ptr_rep_and_enable_shared(_Rx->_Storage._Value, _Rx);
+    } else {
+        // make a shared_ptr to non-array object
+        const auto _Rx = new _Ref_count_obj2<_Ty>(_For_overwrite_tag{});
+        _Ret._Set_ptr_rep_and_enable_shared(_STD addressof(_Rx->_Storage._Value), _Rx);
+    }
+    return _Ret;
+}
+
+template <class _Ty>
+_NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared_for_overwrite(const size_t _Count) {
+    return _Make_shared_unbounded_array<_Ty>(_Count, _For_overwrite_tag{});
 }
 #endif // _HAS_CXX20
 
@@ -2922,10 +2997,11 @@ struct _Allocate_n_ptr {
     _Allocate_n_ptr& operator=(const _Allocate_n_ptr&) = delete;
 };
 
-template <class _Ty, class _Alloc>
-_NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared(
-    const _Alloc& _Al, const size_t _Count) {
+template <class _Ty, class _Alloc, class... _ArgTypes>
+_NODISCARD shared_ptr<_Ty> _Allocate_shared_unbounded_array(
+    const _Alloc& _Al, const size_t _Count, const _ArgTypes&... _Args) {
     // make a shared_ptr to an unbounded array
+    static_assert(is_unbounded_array_v<_Ty>);
     using _Refc             = _Ref_count_unbounded_array_alloc<remove_cv_t<_Ty>, _Alloc>;
     constexpr size_t _Align = alignof(_Refc);
     using _Storage          = _Alignas_storage_unit<_Align>;
@@ -2934,7 +3010,7 @@ _NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shar
     const size_t _Storage_units = _Bytes / sizeof(_Storage);
     _Allocate_n_ptr _Guard{_Rebound, _Storage_units};
     const auto _Rx = reinterpret_cast<_Refc*>(_Unfancy(_Guard._Ptr));
-    ::new (static_cast<void*>(_Rx)) _Refc(_Al, _Count);
+    ::new (static_cast<void*>(_Rx)) _Refc(_Al, _Count, _Args...);
     _Guard._Ptr = nullptr;
     shared_ptr<_Ty> _Ret;
     _Ret._Set_ptr_rep_and_enable_shared(_Rx->_Get_ptr(), _Rx);
@@ -2943,21 +3019,14 @@ _NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shar
 
 template <class _Ty, class _Alloc>
 _NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared(
+    const _Alloc& _Al, const size_t _Count) {
+    return _Allocate_shared_unbounded_array<_Ty>(_Al, _Count);
+}
+
+template <class _Ty, class _Alloc>
+_NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared(
     const _Alloc& _Al, const size_t _Count, const remove_extent_t<_Ty>& _Val) {
-    // make a shared_ptr to an unbounded array
-    using _Refc             = _Ref_count_unbounded_array_alloc<remove_cv_t<_Ty>, _Alloc>;
-    constexpr size_t _Align = alignof(_Refc);
-    using _Storage          = _Alignas_storage_unit<_Align>;
-    _Rebind_alloc_t<_Alloc, _Storage> _Rebound(_Al);
-    const size_t _Bytes         = _Calculate_bytes_for_flexible_array<_Refc, _Check_overflow::_Yes>(_Count);
-    const size_t _Storage_units = _Bytes / sizeof(_Storage);
-    _Allocate_n_ptr _Guard{_Rebound, _Storage_units};
-    const auto _Rx = reinterpret_cast<_Refc*>(_Unfancy(_Guard._Ptr));
-    ::new (static_cast<void*>(_Rx)) _Refc(_Al, _Count, _Val);
-    _Guard._Ptr = nullptr;
-    shared_ptr<_Ty> _Ret;
-    _Ret._Set_ptr_rep_and_enable_shared(_Rx->_Get_ptr(), _Rx);
-    return _Ret;
+    return _Allocate_shared_unbounded_array<_Ty>(_Al, _Count, _Val);
 }
 
 template <class _Ty, class _Alloc>
@@ -2989,6 +3058,41 @@ _NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared
     const auto _Ptr = static_cast<remove_extent_t<_Ty>*>(_Constructor._Ptr->_Storage._Value);
     _Ret._Set_ptr_rep_and_enable_shared(_Ptr, _Unfancy(_Constructor._Release()));
     return _Ret;
+}
+
+// FUNCTION TEMPLATE allocate_shared_for_overwrite
+template <class _Ty, class _Alloc>
+_NODISCARD enable_if_t<!is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared_for_overwrite(const _Alloc& _Al) {
+    shared_ptr<_Ty> _Ret;
+    if constexpr (is_array_v<_Ty>) {
+        // make a shared_ptr to a bounded array
+        using _Refc    = _Ref_count_bounded_array_alloc<remove_cv_t<_Ty>, _Alloc>;
+        using _Alblock = _Rebind_alloc_t<_Alloc, _Refc>;
+        _Alblock _Rebound(_Al);
+        _Alloc_construct_ptr _Constructor{_Rebound};
+        _Constructor._Allocate();
+        ::new (_Voidify_iter(_Constructor._Ptr)) _Refc(_Al, _For_overwrite_tag{});
+        const auto _Ptr = static_cast<remove_extent_t<_Ty>*>(_Constructor._Ptr->_Storage._Value);
+        _Ret._Set_ptr_rep_and_enable_shared(_Ptr, _Unfancy(_Constructor._Release()));
+    } else {
+        // make a shared_ptr to non-array object
+        using _Refoa   = _Ref_count_obj_alloc3<remove_cv_t<_Ty>, _Alloc>;
+        using _Alblock = _Rebind_alloc_t<_Alloc, _Refoa>;
+        _Alblock _Rebound(_Al);
+        _Alloc_construct_ptr<_Alblock> _Constructor{_Rebound};
+        _Constructor._Allocate();
+        _Construct_in_place(*_Constructor._Ptr, _Al, _For_overwrite_tag{});
+        const auto _Ptr = reinterpret_cast<_Ty*>(_STD addressof(_Constructor._Ptr->_Storage._Value));
+        _Ret._Set_ptr_rep_and_enable_shared(_Ptr, _Unfancy(_Constructor._Release()));
+    }
+
+    return _Ret;
+}
+
+template <class _Ty, class _Alloc>
+_NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared_for_overwrite(
+    const _Alloc& _Al, const size_t _Count) {
+    return _Allocate_shared_unbounded_array<_Ty>(_Al, _Count, _For_overwrite_tag{});
 }
 #endif // _HAS_CXX20
 
@@ -3442,13 +3546,31 @@ _NODISCARD unique_ptr<_Ty> make_unique(_Types&&... _Args) { // make a unique_ptr
 }
 
 template <class _Ty, enable_if_t<is_array_v<_Ty> && extent_v<_Ty> == 0, int> = 0>
-_NODISCARD unique_ptr<_Ty> make_unique(size_t _Size) { // make a unique_ptr
+_NODISCARD unique_ptr<_Ty> make_unique(const size_t _Size) { // make a unique_ptr
     using _Elem = remove_extent_t<_Ty>;
     return unique_ptr<_Ty>(new _Elem[_Size]());
 }
 
 template <class _Ty, class... _Types, enable_if_t<extent_v<_Ty> != 0, int> = 0>
 void make_unique(_Types&&...) = delete;
+
+#if _HAS_CXX20
+// FUNCTION TEMPLATE make_unique_for_overwrite
+template <class _Ty, enable_if_t<!is_array_v<_Ty>, int> = 0>
+_NODISCARD unique_ptr<_Ty> make_unique_for_overwrite() { // make a unique_ptr with default initialization
+    return unique_ptr<_Ty>(new _Ty);
+}
+
+template <class _Ty, enable_if_t<is_unbounded_array_v<_Ty>, int> = 0>
+_NODISCARD unique_ptr<_Ty> make_unique_for_overwrite(
+    const size_t _Size) { // make a unique_ptr with default initialization
+    using _Elem = remove_extent_t<_Ty>;
+    return unique_ptr<_Ty>(new _Elem[_Size]);
+}
+
+template <class _Ty, class... _Types, enable_if_t<is_bounded_array_v<_Ty>, int> = 0>
+void make_unique_for_overwrite(_Types&&...) = delete;
+#endif // _HAS_CXX20
 
 template <class _Ty, class _Dx, enable_if_t<_Is_swappable<_Dx>::value, int> = 0>
 void swap(unique_ptr<_Ty, _Dx>& _Left, unique_ptr<_Ty, _Dx>& _Right) noexcept {
