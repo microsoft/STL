@@ -628,7 +628,7 @@ public:
     template <class _Rep, class _Period, class _Predicate>
     bool wait_for(unique_lock<mutex>& _Lck, const chrono::duration<_Rep, _Period>& _Rel_time, _Predicate _Pred) {
         // wait for signal with timeout and check predicate
-        return _Wait_until1(_Lck, chrono::steady_clock::now() + _Rel_time, _Pred);
+        return _Wait_until1(_Lck, _To_absolute_time(_Rel_time), _Pred);
     }
 
     template <class _Clock, class _Duration>
@@ -776,7 +776,7 @@ public:
 
     template <class _Rep, class _Period>
     _NODISCARD bool try_lock_for(const chrono::duration<_Rep, _Period>& _Rel_time) { // try to lock for duration
-        return try_lock_until(chrono::steady_clock::now() + _Rel_time);
+        return try_lock_until(_To_absolute_time(_Rel_time));
     }
 
     template <class _Time>
@@ -875,7 +875,7 @@ public:
 
     template <class _Rep, class _Period>
     _NODISCARD bool try_lock_for(const chrono::duration<_Rep, _Period>& _Rel_time) { // try to lock for duration
-        return try_lock_until(chrono::steady_clock::now() + _Rel_time);
+        return try_lock_until(_To_absolute_time(_Rel_time));
     }
 
     template <class _Time>

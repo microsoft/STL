@@ -130,7 +130,7 @@ public:
     template <class _Lock, class _Rep, class _Period, class _Predicate>
     bool wait_for(_Lock& _Lck, const chrono::duration<_Rep, _Period>& _Rel_time, _Predicate _Pred) {
         // wait for signal with timeout and check predicate
-        return wait_until(_Lck, chrono::steady_clock::now() + _Rel_time, _STD move(_Pred));
+        return wait_until(_Lck, _To_absolute_time(_Rel_time), _STD move(_Pred));
     }
 
     template <class _Lock>
@@ -232,7 +232,7 @@ public:
 
     template <class _Lock, class _Rep, class _Period, class _Predicate>
     bool wait_for(_Lock& _Lck, stop_token _Stoken, const chrono::duration<_Rep, _Period>& _Rel_time, _Predicate _Pred) {
-        return wait_until(_Lck, _STD move(_Stoken), chrono::steady_clock::now() + _Rel_time, _STD move(_Pred));
+        return wait_until(_Lck, _STD move(_Stoken), _To_absolute_time(_Rel_time), _STD move(_Pred));
     }
 #endif // _HAS_CXX20
 
