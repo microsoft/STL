@@ -215,6 +215,7 @@ tests\P0202R3_constexpr_algorithm_and_exchange
 tests\P0218R1_filesystem
 tests\P0220R1_any
 tests\P0220R1_optional
+tests\P0220R1_optional_death
 tests\P0220R1_polymorphic_memory_resources
 tests\P0220R1_sample
 tests\P0220R1_searchers
@@ -353,6 +354,7 @@ tests\P0912R5_coroutine
 tests\P0919R3_heterogeneous_unordered_lookup
 tests\P0966R1_string_reserve_should_not_shrink
 tests\P1007R3_assume_aligned
+tests\P1020R1_smart_pointer_for_overwrite
 tests\P1023R0_constexpr_for_array_comparisons
 tests\P1032R1_miscellaneous_constexpr
 tests\P1135R6_atomic_flag_test

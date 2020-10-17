@@ -179,6 +179,7 @@
 // P1001R2 execution::unseq
 // P1006R1 constexpr For pointer_traits<T*>::pointer_to()
 // P1007R3 assume_aligned()
+// P1020R1 Smart Pointer Creation With Default Initialization
 // P1023R0 constexpr For std::array Comparisons
 // P1024R3 Enhancing span Usability
 // P1032R1 Miscellaneous constexpr
@@ -219,6 +220,7 @@
 // P1959R0 Removing weak_equality And strong_equality
 // P1960R0 atomic_ref Cleanup
 // P1964R2 Replacing boolean With boolean-testable
+// P1973R1 Renaming default_init To for_overwrite
 // P1976R2 Explicit Constructors For Fixed-Extent span From Dynamic-Extent Ranges
 // P2091R0 Fixing Issues With Range Access CPOs
 // P2102R0 Making "Implicit Expression Variations" More Explicit
@@ -1208,6 +1210,7 @@
 #define __cpp_lib_remove_cvref                 201711L
 #define __cpp_lib_semaphore                    201907L
 #define __cpp_lib_shift                        201806L
+#define __cpp_lib_smart_ptr_for_overwrite      202002L
 #define __cpp_lib_span                         202002L
 #define __cpp_lib_ssize                        201902L
 #define __cpp_lib_starts_ends_with             201711L
