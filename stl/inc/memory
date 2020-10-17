@@ -853,14 +853,6 @@ namespace ranges {
             using _Ty = remove_reference_t<iter_reference_t<_It>>;
             if constexpr (is_trivially_default_constructible_v<_Ty>) {
                 _RANGES advance(_First, _Count);
-            } else if constexpr (is_nothrow_default_constructible_v<_Ty>) {
-                auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
-
-                for (; _Count > 0; --_Count, (void) ++_UFirst) {
-                    _Default_construct_in_place(*_UFirst);
-                }
-
-                _Seek_wrapped(_First, _STD move(_UFirst));
             } else {
                 _Uninitialized_backout _Backout{_Get_unwrapped_n(_STD move(_First), _Count)};
 
