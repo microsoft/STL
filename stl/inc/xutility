@@ -119,11 +119,29 @@ struct _Get_rebind_alias<_Ty, _Other, void_t<typename _Ty::template rebind<_Othe
     using type = typename _Ty::template rebind<_Other>;
 };
 
+// FUNCTION TEMPLATE _Voidify_iter
+template <class _Iter>
+_NODISCARD void* _Voidify_iter(_Iter _It) noexcept {
+#if _HAS_IF_CONSTEXPR
+    if constexpr (is_pointer_v<_Iter>) {
+        return const_cast<void*>(static_cast<const volatile void*>(_It));
+    } else
+#endif // _HAS_IF_CONSTEXPR
+    {
+        return const_cast<void*>(static_cast<const volatile void*>(_STD addressof(*_It)));
+    }
+}
+
 // FUNCTION TEMPLATE _Construct_in_place
 template <class _Ty, class... _Types>
 void _Construct_in_place(_Ty& _Obj, _Types&&... _Args) noexcept(is_nothrow_constructible_v<_Ty, _Types...>) {
-    ::new (const_cast<void*>(static_cast<const volatile void*>(_STD addressof(_Obj))))
-        _Ty(_STD forward<_Types>(_Args)...);
+    ::new (_Voidify_iter(_STD addressof(_Obj))) _Ty(_STD forward<_Types>(_Args)...);
+}
+
+// FUNCTION TEMPLATE _Default_construct_in_place
+template <class _Ty>
+void _Default_construct_in_place(_Ty& _Obj) noexcept(is_nothrow_default_constructible_v<_Ty>) {
+    ::new (_Voidify_iter(_STD addressof(_Obj))) _Ty;
 }
 
 // STRUCT TEMPLATE pointer_traits
