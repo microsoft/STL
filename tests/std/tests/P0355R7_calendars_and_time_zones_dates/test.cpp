@@ -13,6 +13,31 @@ constexpr int y_max = 32767;
 
 constexpr void day_test() {
     day d{0u};
+
+    static_assert(noexcept(day{}));
+    static_assert(noexcept(day{0u}));
+
+    static_assert(noexcept(++d));
+    static_assert(noexcept(d++));
+    static_assert(noexcept(--d));
+    static_assert(noexcept(d--));
+    static_assert(noexcept(d += days{}));
+    static_assert(noexcept(d -= days{}));
+
+    static_assert(noexcept(static_cast<unsigned int>(d)));
+    static_assert(noexcept(d.ok()));
+
+    static_assert(noexcept(d == d));
+    static_assert(noexcept(d <=> d));
+
+    static_assert(noexcept(d + days{}));
+    static_assert(noexcept(days{} + d));
+
+    static_assert(noexcept(d - days{}));
+    static_assert(noexcept(d - d));
+
+    static_assert(noexcept(0d));
+
     assert(static_cast<unsigned int>(d) == 0u);
     assert(d == 0d);
     assert(++d == 1d);
@@ -44,6 +69,29 @@ constexpr void day_test() {
 
 constexpr void month_test() {
     month m{1u};
+
+    static_assert(noexcept(month{}));
+    static_assert(noexcept(month{0u}));
+
+    static_assert(noexcept(++m));
+    static_assert(noexcept(m++));
+    static_assert(noexcept(--m));
+    static_assert(noexcept(m--));
+    static_assert(noexcept(m += months{}));
+    static_assert(noexcept(m -= months{}));
+
+    static_assert(noexcept(static_cast<unsigned int>(m)));
+    static_assert(noexcept(m.ok()));
+
+    static_assert(noexcept(m == m));
+    static_assert(noexcept(m <=> m));
+
+    static_assert(noexcept(m + months{}));
+    static_assert(noexcept(months{0} + m));
+
+    static_assert(noexcept(m - months{}));
+    static_assert(noexcept(m - m));
+
     assert(static_cast<unsigned int>(m) == 1u);
     assert(m == January);
     assert(++m == February);
@@ -78,6 +126,36 @@ constexpr void month_test() {
 
 constexpr void year_test() {
     year y{1};
+
+    static_assert(noexcept(year{}));
+    static_assert(noexcept(year{0}));
+
+    static_assert(noexcept(++y));
+    static_assert(noexcept(y++));
+    static_assert(noexcept(--y));
+    static_assert(noexcept(y--));
+    static_assert(noexcept(y += years{}));
+    static_assert(noexcept(y -= years{}));
+    static_assert(noexcept(+y));
+    static_assert(noexcept(-y));
+
+    static_assert(noexcept(y.is_leap()));
+    static_assert(noexcept(static_cast<int>(y)));
+    static_assert(noexcept(y.ok()));
+    static_assert(noexcept(y.min()));
+    static_assert(noexcept(y.max()));
+
+    static_assert(noexcept(y == y));
+    static_assert(noexcept(y <=> y));
+
+    static_assert(noexcept(y + years{}));
+    static_assert(noexcept(years{} + y));
+
+    static_assert(noexcept(y - years{}));
+    static_assert(noexcept(y - y));
+
+    static_assert(noexcept(0y));
+
     assert(static_cast<int>(y) == 1);
     assert(y == 1y);
     assert(++y == 2y);
@@ -121,11 +199,38 @@ constexpr void year_test() {
 }
 
 constexpr void weekday_test() {
+    weekday wd{0u};
+
+    static_assert(noexcept(weekday{}));
+    static_assert(noexcept(weekday{0u}));
+    static_assert(noexcept(weekday{sys_days{}}));
+    static_assert(noexcept(weekday{local_days{}}));
+
+    static_assert(noexcept(++wd));
+    static_assert(noexcept(wd++));
+    static_assert(noexcept(--wd));
+    static_assert(noexcept(wd--));
+    static_assert(noexcept(wd += days{}));
+    static_assert(noexcept(wd -= days{}));
+
+    static_assert(noexcept(wd.c_encoding()));
+    static_assert(noexcept(wd.iso_encoding()));
+    static_assert(noexcept(wd.ok()));
+    static_assert(noexcept(wd[0u]));
+    static_assert(noexcept(wd[last]));
+
+    static_assert(noexcept(wd == wd));
+
+    static_assert(noexcept(wd + days{}));
+    static_assert(noexcept(days{} + wd));
+
+    static_assert(noexcept(wd - days{}));
+    static_assert(noexcept(wd - wd));
+
     assert(weekday{7} == Sunday);
     assert(weekday{sys_days{}} == Thursday);
     assert(weekday{local_days{}} == sys_days{local_days{}.time_since_epoch()});
 
-    weekday wd{0u};
     assert(wd == Sunday);
     assert(++wd == Monday);
     assert(wd++ == Monday);
@@ -155,7 +260,17 @@ constexpr void weekday_test() {
 }
 
 constexpr void weekday_indexed_test() {
-    weekday_indexed wdi1{Monday, 2};
+    const weekday_indexed wdi1{Monday, 2};
+
+    static_assert(noexcept(weekday_indexed{}));
+    static_assert(noexcept(weekday_indexed{weekday{}, 0u}));
+
+    static_assert(noexcept(wdi1.weekday()));
+    static_assert(noexcept(wdi1.index()));
+    static_assert(noexcept(wdi1.ok()));
+
+    static_assert(noexcept(wdi1 == wdi1));
+
     assert(wdi1.weekday() == Monday);
     assert(wdi1.index() == 2);
 
@@ -179,15 +294,35 @@ constexpr void weekday_indexed_test() {
 }
 
 constexpr void weekday_last_test() {
-    assert(weekday_last{Monday}.ok());
+    const weekday_last wdl{Monday};
+
+    static_assert(noexcept(weekday_last{weekday{}}));
+
+    static_assert(noexcept(wdl.weekday()));
+    static_assert(noexcept(wdl.ok()));
+
+    static_assert(noexcept(wdl == wdl));
+
+    assert(wdl.ok());
     assert(Monday[last].ok());
     assert(Monday[last].weekday() == Monday);
-    assert(weekday_last{Monday}.weekday() == Monday);
-    assert(weekday_last{Monday} == weekday_last{Monday});
+    assert(wdl.weekday() == Monday);
+    assert(wdl == weekday_last{Monday});
 }
 
 constexpr void month_day_test() {
-    month_day md{January, 1d};
+    const month_day md{January, 1d};
+
+    static_assert(noexcept(month_day{}));
+    static_assert(noexcept(month_day{month{}, day{}}));
+
+    static_assert(noexcept(md.month()));
+    static_assert(noexcept(md.day()));
+    static_assert(noexcept(md.ok()));
+
+    static_assert(noexcept(md == md));
+    static_assert(noexcept(md <=> md));
+
     assert(md.month() == January);
     assert(md.day() == 1d);
 
@@ -217,14 +352,22 @@ constexpr void month_day_test() {
 }
 
 constexpr void month_day_last_test() {
+    const month_day_last mdl{January};
+
+    static_assert(noexcept(month_day_last{month{}}));
+    static_assert(noexcept(mdl.month()));
+    static_assert(noexcept(mdl.ok()));
+
+    static_assert(noexcept(mdl == mdl));
+    static_assert(noexcept(mdl <=> mdl));
+
     assert((February / last).month() == February);
 
-    unsigned int i = 0;
-    assert(!(month{i++} / last).ok());
-    for (; i <= 12; ++i) {
+    assert(!(month{0} / last).ok());
+    for (unsigned int i = 1; i <= 12; ++i) {
         assert((month{i} / last).ok());
     }
-    assert(!(month{i} / last).ok());
+    assert(!(month{13} / last).ok());
 
     assert(January / last == January / last);
     assert(January / last < February / last);
@@ -233,6 +376,15 @@ constexpr void month_day_last_test() {
 
 constexpr void month_weekday_test() {
     const auto mwd1 = January / Monday[2];
+
+    static_assert(noexcept(month_weekday{month{}, weekday_indexed{Sunday, 0u}}));
+
+    static_assert(noexcept(mwd1.month()));
+    static_assert(noexcept(mwd1.weekday_indexed()));
+    static_assert(noexcept(mwd1.ok()));
+
+    static_assert(noexcept(mwd1 == mwd1));
+
     assert(mwd1.month() == January);
     assert(mwd1.weekday_indexed().weekday() == Monday);
     assert(mwd1.weekday_indexed().index() == 2);
@@ -263,6 +415,14 @@ constexpr void month_weekday_test() {
 
 constexpr void month_weekday_last_test() {
     const auto mwdl = January / Monday[last];
+
+    static_assert(noexcept(month_weekday_last{month{}, weekday_last{Sunday}}));
+    static_assert(noexcept(mwdl.month()));
+    static_assert(noexcept(mwdl.weekday_last()));
+    static_assert(noexcept(mwdl.ok()));
+
+    static_assert(noexcept(mwdl == mwdl));
+
     assert(mwdl.month() == January);
     assert(mwdl.weekday_last().weekday() == Monday);
     assert(mwdl == January / Monday[last]);
@@ -270,6 +430,32 @@ constexpr void month_weekday_last_test() {
 
 constexpr void year_month_test() {
     auto ym = 2020y / January;
+
+    static_assert(noexcept(year_month{}));
+    static_assert(noexcept(year_month{year{}, month{}}));
+
+    static_assert(noexcept(ym.year()));
+    static_assert(noexcept(ym.month()));
+
+    static_assert(noexcept(ym += months{}));
+    static_assert(noexcept(ym -= months{}));
+    static_assert(noexcept(ym += years{}));
+    static_assert(noexcept(ym -= years{}));
+
+    static_assert(noexcept(ym.ok()));
+
+    static_assert(noexcept(ym == ym));
+    static_assert(noexcept(ym <=> ym));
+
+    static_assert(noexcept(ym + months{}));
+    static_assert(noexcept(months{} + ym));
+    static_assert(noexcept(ym - months{}));
+
+    static_assert(noexcept(ym - ym));
+    static_assert(noexcept(ym + years{}));
+    static_assert(noexcept(years{} + ym));
+    static_assert(noexcept(ym - years{}));
+
     assert(ym.year() == 2020y);
     assert(ym.month() == January);
 
@@ -323,6 +509,37 @@ constexpr void year_month_test() {
 
 constexpr void year_month_day_test() {
     year_month_day ymd1{2020y / January / 1d};
+
+    static_assert(noexcept(year_month_day{}));
+    static_assert(noexcept(year_month_day{year{}, month{}, day{}}));
+    static_assert(noexcept(year_month_day{year_month_day_last{year{}, month_day_last{January}}}));
+    static_assert(noexcept(year_month_day{sys_days{}}));
+    static_assert(noexcept(year_month_day{local_days{}}));
+
+    static_assert(noexcept(ymd1 += months{}));
+    static_assert(noexcept(ymd1 -= months{}));
+    static_assert(noexcept(ymd1 += years{}));
+    static_assert(noexcept(ymd1 -= years{}));
+
+    static_assert(noexcept(ymd1.year()));
+    static_assert(noexcept(ymd1.month()));
+    static_assert(noexcept(ymd1.day()));
+
+    static_assert(noexcept(static_cast<sys_days>(ymd1)));
+    static_assert(noexcept(static_cast<local_days>(ymd1)));
+    static_assert(noexcept(ymd1.ok()));
+
+    static_assert(noexcept(ymd1 == ymd1));
+    static_assert(noexcept(ymd1 <=> ymd1));
+
+    static_assert(noexcept(ymd1 + months{}));
+    static_assert(noexcept(months{} + ymd1));
+    static_assert(noexcept(ymd1 - months{}));
+
+    static_assert(noexcept(ymd1 + years{}));
+    static_assert(noexcept(years{} + ymd1));
+    static_assert(noexcept(ymd1 - years{}));
+
     assert(ymd1.year() == 2020y);
     assert(ymd1.month() == January);
     assert(ymd1.day() == 1d);
@@ -425,6 +642,34 @@ constexpr void year_month_day_test() {
 
 constexpr void year_month_day_last_test() {
     auto ymdl = 2020y / February / last;
+
+    static_assert(noexcept(year_month_day_last{year{}, month_day_last{January}}));
+
+    static_assert(noexcept(ymdl += months{}));
+    static_assert(noexcept(ymdl -= months{}));
+    static_assert(noexcept(ymdl += years{}));
+    static_assert(noexcept(ymdl -= years{}));
+
+    static_assert(noexcept(ymdl.year()));
+    static_assert(noexcept(ymdl.month()));
+    static_assert(noexcept(ymdl.month_day_last()));
+    static_assert(noexcept(ymdl.day()));
+
+    static_assert(noexcept(static_cast<sys_days>(ymdl)));
+    static_assert(noexcept(static_cast<local_days>(ymdl)));
+    static_assert(noexcept(ymdl.ok()));
+
+    static_assert(noexcept(ymdl == ymdl));
+    static_assert(noexcept(ymdl <=> ymdl));
+
+    static_assert(noexcept(ymdl + months{}));
+    static_assert(noexcept(months{} + ymdl));
+    static_assert(noexcept(ymdl - months{}));
+
+    static_assert(noexcept(ymdl + years{}));
+    static_assert(noexcept(years{} + ymdl));
+    static_assert(noexcept(ymdl - years{}));
+
     assert(ymdl == 2020y / February / last);
     assert(ymdl == 2020y / February / 29d);
     assert(ymdl.year() == 2020y);
@@ -482,6 +727,37 @@ constexpr void year_month_day_last_test() {
 
 constexpr void year_month_weekday_test() {
     auto ymwd = 2020y / April / Tuesday[2];
+
+    static_assert(noexcept(year_month_weekday{}));
+    static_assert(noexcept(year_month_weekday{year{}, month{}, weekday_indexed{}}));
+    static_assert(noexcept(year_month_weekday{sys_days{}}));
+    static_assert(noexcept(year_month_weekday{local_days{}}));
+
+    static_assert(noexcept(ymwd += months{}));
+    static_assert(noexcept(ymwd -= months{}));
+    static_assert(noexcept(ymwd += years{}));
+    static_assert(noexcept(ymwd -= years{}));
+
+    static_assert(noexcept(ymwd.year()));
+    static_assert(noexcept(ymwd.month()));
+    static_assert(noexcept(ymwd.weekday()));
+    static_assert(noexcept(ymwd.index()));
+    static_assert(noexcept(ymwd.weekday_indexed()));
+
+    static_assert(noexcept(static_cast<sys_days>(ymwd)));
+    static_assert(noexcept(static_cast<local_days>(ymwd)));
+    static_assert(noexcept(ymwd.ok()));
+
+    static_assert(noexcept(ymwd == ymwd));
+
+    static_assert(noexcept(ymwd + months{}));
+    static_assert(noexcept(months{} + ymwd));
+    static_assert(noexcept(ymwd - months{}));
+
+    static_assert(noexcept(ymwd + years{}));
+    static_assert(noexcept(years{} + ymwd));
+    static_assert(noexcept(ymwd - years{}));
+
     assert(ymwd == 2020y / April / Tuesday[2]);
     assert(ymwd.year() == 2020y);
     assert(ymwd.month() == April);
@@ -531,6 +807,33 @@ constexpr void year_month_weekday_test() {
 
 constexpr void year_month_weekday_last_test() {
     auto ymwdl = 2020y / January / Monday[last];
+
+    static_assert(noexcept(year_month_weekday_last{year{}, month{}, weekday_last{Sunday}}));
+
+    static_assert(noexcept(ymwdl += months{}));
+    static_assert(noexcept(ymwdl -= months{}));
+    static_assert(noexcept(ymwdl += years{}));
+    static_assert(noexcept(ymwdl -= years{}));
+
+    static_assert(noexcept(ymwdl.year()));
+    static_assert(noexcept(ymwdl.month()));
+    static_assert(noexcept(ymwdl.weekday()));
+    static_assert(noexcept(ymwdl.weekday_last()));
+
+    static_assert(noexcept(static_cast<sys_days>(ymwdl)));
+    static_assert(noexcept(static_cast<local_days>(ymwdl)));
+    static_assert(noexcept(ymwdl.ok()));
+
+    static_assert(noexcept(ymwdl == ymwdl));
+
+    static_assert(noexcept(ymwdl + months{}));
+    static_assert(noexcept(months{} + ymwdl));
+    static_assert(noexcept(ymwdl - months{}));
+
+    static_assert(noexcept(ymwdl + years{}));
+    static_assert(noexcept(years{} + ymwdl));
+    static_assert(noexcept(ymwdl - years{}));
+
     assert(ymwdl == 2020y / January / Monday[last]);
     assert(ymwdl.year() == 2020y);
     assert(ymwdl.month() == January);

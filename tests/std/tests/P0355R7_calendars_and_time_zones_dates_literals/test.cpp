@@ -9,6 +9,47 @@ using namespace std::chrono;
 
 int main() {} // COMPILE-ONLY
 
+static_assert(noexcept(year{} / month{}));
+static_assert(noexcept(year{} / 0));
+static_assert(noexcept(month{} / day{}));
+static_assert(noexcept(month{} / 0));
+static_assert(noexcept(0 / day{}));
+static_assert(noexcept(day{} / month{}));
+static_assert(noexcept(day{} / 0));
+static_assert(noexcept(month{} / last));
+static_assert(noexcept(0 / last));
+static_assert(noexcept(last / month{}));
+static_assert(noexcept(last / 0));
+static_assert(noexcept(month{} / Sunday[1]));
+static_assert(noexcept(0 / Sunday[1]));
+static_assert(noexcept(Sunday[1] / month{}));
+static_assert(noexcept(Sunday[1] / 0));
+static_assert(noexcept(month{} / Sunday[last]));
+static_assert(noexcept(0 / Sunday[last]));
+static_assert(noexcept(Sunday[last] / month{}));
+static_assert(noexcept(Sunday[last] / 0));
+static_assert(noexcept(year_month{} / day{}));
+static_assert(noexcept(year_month{} / 0));
+static_assert(noexcept(year{} / month_day{}));
+static_assert(noexcept(0 / month_day{}));
+static_assert(noexcept(month_day{} / year{}));
+static_assert(noexcept(month_day{} / 0));
+static_assert(noexcept(year_month{} / last));
+static_assert(noexcept(year{} / month_day_last{January}));
+static_assert(noexcept(0 / month_day_last{January}));
+static_assert(noexcept(month_day_last{January} / year{}));
+static_assert(noexcept(month_day_last{January} / 0));
+static_assert(noexcept(year_month{} / Sunday[1]));
+static_assert(noexcept(year{} / month_weekday{January, Sunday[1]}));
+static_assert(noexcept(0 / month_weekday{January, Sunday[1]}));
+static_assert(noexcept(month_weekday{January, Sunday[1]} / year{}));
+static_assert(noexcept(month_weekday{January, Sunday[1]} / 0));
+static_assert(noexcept(year_month{} / Sunday[last]));
+static_assert(noexcept(year{} / month_weekday_last{January, Sunday[last]}));
+static_assert(noexcept(0 / month_weekday_last{January, Sunday[last]}));
+static_assert(noexcept(month_weekday_last{January, Sunday[last]} / year{}));
+static_assert(noexcept(month_weekday_last{January, Sunday[last]} / 0));
+
 #define TRIVIAL_COPY_STANDARD_LAYOUT(TYPE)                                                       \
     static_assert(is_trivially_copyable_v<TYPE>, "chrono::" #TYPE " is not trivially copyable"); \
     static_assert(is_standard_layout_v<TYPE>, "chrono::" #TYPE " is not standard layout");
