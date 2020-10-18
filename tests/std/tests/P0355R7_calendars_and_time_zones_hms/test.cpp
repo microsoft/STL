@@ -7,7 +7,12 @@
 using namespace std;
 using namespace std::chrono;
 
+using hms_hours = hh_mm_ss<hours>;
+
 constexpr void am_pm() {
+    static_assert(noexcept(is_am(hours{})));
+    static_assert(noexcept(is_pm(hours{})));
+
     for (hours i = 0h; i < 12h; ++i) {
         assert(is_am(i));
         assert(!is_pm(i));
@@ -19,6 +24,9 @@ constexpr void am_pm() {
 }
 
 constexpr void make12_24() {
+    static_assert(noexcept(make12(hours{})));
+    static_assert(noexcept(make24(hours{}, true)));
+
     assert(make12(1h) == 1h);
     assert(make12(13h) == 1h);
     assert(make12(0h) == 12h);
@@ -61,7 +69,18 @@ constexpr void fractional_width() {
     static_assert(width<3780, 625>() == 3);
 }
 
+constexpr void constructor() {
+    static_assert(noexcept(hms_hours{}));
+
+    assert(hms_hours{}.hours() == hms_hours{hours::zero()}.hours());
+    assert(hms_hours{}.minutes() == hms_hours{hours::zero()}.minutes());
+    assert(hms_hours{}.seconds() == hms_hours{hours::zero()}.seconds());
+    assert(hms_hours{}.subseconds() == hms_hours{hours::zero()}.subseconds());
+}
+
 constexpr void is_negative() {
+    static_assert(noexcept(hms_hours{}.is_negative()));
+
     assert(hh_mm_ss<days>(days{-1}).is_negative());
     assert(!hh_mm_ss<days>(days{1}).is_negative());
 
@@ -87,6 +106,8 @@ constexpr void is_negative() {
 constexpr auto ones = 1h + 1min + 1s + 1ms;
 
 constexpr void hour() {
+    static_assert(noexcept(hms_hours{}.hours()));
+
     assert(hh_mm_ss(days{1}).hours() == 24h);
     assert(hh_mm_ss(ones).hours() == 1h);
     assert(hh_mm_ss(-ones).hours() == 1h);
@@ -94,18 +115,24 @@ constexpr void hour() {
 }
 
 constexpr void mins() {
+    static_assert(noexcept(hms_hours{}.minutes()));
+
     assert(hh_mm_ss(ones).minutes() == 1min);
     assert(hh_mm_ss(-ones).minutes() == 1min);
     assert(hh_mm_ss(59s).minutes() == 0min);
 }
 
 constexpr void secs() {
+    static_assert(noexcept(hms_hours{}.seconds()));
+
     assert(hh_mm_ss(ones).seconds() == 1s);
     assert(hh_mm_ss(-ones).seconds() == 1s);
     assert(hh_mm_ss(999ms).seconds() == 0s);
 }
 
 constexpr void subsecs() {
+    static_assert(noexcept(hms_hours{}.subseconds()));
+
     assert(hh_mm_ss(ones).subseconds() == 1ms);
     assert(hh_mm_ss(-ones).subseconds() == 1ms);
     assert(hh_mm_ss(999us).subseconds() == 999us);
@@ -113,19 +140,25 @@ constexpr void subsecs() {
 }
 
 constexpr void to_duration() {
+    using precision = hms_hours::precision;
+
+    static_assert(noexcept(hms_hours{}.to_duration()));
+    static_assert(noexcept(static_cast<precision>(hms_hours{})));
+
     assert(hh_mm_ss(ones).to_duration() == ones);
     assert(hh_mm_ss(-ones).to_duration() == -ones);
 
     hh_mm_ss<milliseconds> hms(50ms);
-    milliseconds mili = static_cast<milliseconds>(hms);
+    milliseconds milli = static_cast<milliseconds>(hms);
     static_assert(is_same_v<decltype(hms.to_duration()), milliseconds>);
-    assert(hms.to_duration() == mili);
+    assert(hms.to_duration() == milli);
 }
 
 constexpr bool test() {
     am_pm();
     make12_24();
     fractional_width();
+    constructor();
     is_negative();
     hour();
     mins();
