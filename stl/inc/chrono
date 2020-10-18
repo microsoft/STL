@@ -1832,6 +1832,17 @@ namespace chrono {
     inline constexpr month November{11};
     inline constexpr month December{12};
 
+    // Returns the number of fractional digits of _Num / _Den in the range [0, 18].
+    // If it can't be represented, 6 is returned.
+    // Example: _Fractional_width(1, 8) would return 3 for 0.125.
+    constexpr unsigned int _Fractional_width(intmax_t _Num, const intmax_t _Den) {
+        _STL_ASSERT(_Num > 0 && _Den > 0, "Numerator and denominator can't be less than 1.");
+        unsigned int _Result = 0;
+        for (; _Num % _Den != 0 && _Result < 19; _Num = _Num % _Den * 10, ++_Result) {
+        }
+        return _Result == 19 ? 6 : _Result;
+    }
+
     constexpr intmax_t _Pow10(const int _Exp) {
         intmax_t _Result = 1;
         for (int _Ix = 0; _Ix < _Exp; ++_Ix) {
@@ -1888,17 +1899,6 @@ namespace chrono {
         }
 
     private:
-        // Returns the number of fractional digits of _Num / _Den in the range [0, 18].
-        // If it can't be represented, 6 is returned.
-        // Example: _Fractional_width(1, 8) would return 3 for 0.125.
-        static constexpr unsigned int _Fractional_width(intmax_t _Num, const intmax_t _Den) {
-            _STL_ASSERT(_Num > 0 && _Den > 0, "Numerator and denominator can't be less than 1.");
-            unsigned int _Result = 0;
-            for (; _Num % _Den != 0 && _Result < 19; _Num = _Num % _Den * 10, ++_Result) {
-            }
-            return _Result == 19 ? 6 : _Result;
-        }
-
         bool _Is_neg;
         _CHRONO hours _Hours;
         _CHRONO minutes _Mins;
