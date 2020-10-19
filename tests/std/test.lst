@@ -278,6 +278,7 @@ tests\P0896R4_ranges_alg_generate
 tests\P0896R4_ranges_alg_generate_n
 tests\P0896R4_ranges_alg_heap
 tests\P0896R4_ranges_alg_includes
+tests\P0896R4_ranges_alg_inplace_merge
 tests\P0896R4_ranges_alg_is_permutation
 tests\P0896R4_ranges_alg_is_sorted
 tests\P0896R4_ranges_alg_lexicographical_compare

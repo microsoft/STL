@@ -7609,6 +7609,331 @@ void inplace_merge(_ExPo&&, _BidIt _First, _BidIt _Mid, _BidIt _Last) noexcept /
 }
 #endif // _HAS_CXX17
 
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::inplace_merge
+    template <bidirectional_iterator _It>
+    void _Rotate_one_right(_It _First, _It _Mid, _It _Last) {
+        // exchanges the range [_First, _Mid) with [_Mid, _Last)
+        // pre: distance(_Mid, _Last) is 1
+        const auto _Temp = _RANGES iter_move(_Mid);
+        _RANGES _Move_backward_common(_First, _STD move(_Mid), _STD move(_Last));
+        *_First = _STD move(_Temp);
+    }
+
+    template <bidirectional_iterator _It>
+    void _Rotate_one_left(_It _First, _It _Mid, _It _Last) {
+        // exchanges the range [_First, _Mid) with [_Mid, _Last)
+        // pre: distance(_First, _Mid) is 1
+        const auto _Temp = _RANGES iter_move(_Mid);
+        auto _Result     = _RANGES _Move_unchecked(_STD move(_Mid), _STD move(_Last), _STD move(_First));
+        *_Result.out     = _STD move(_Temp);
+    }
+
+    // clang-format off
+    template <bidirectional_iterator _It, class _Pr, class _Pj>
+        requires sortable<_It, _Pr, _Pj>
+    void _Inplace_merge_buffer_left(_It _First, _It _Mid, _It _Last, iter_value_t<_It>* _Left_first,
+        const ptrdiff_t _Capacity, _Pr _Pred, _Pj _Proj) {
+        // clang-format on
+        // move the range [_First, _Mid) to _Left_first, and merge it with [_Mid, _Last) to _First
+        // usual invariants apply
+        using _Ty = iter_value_t<_It>;
+
+        _Ty* _Left_last = _RANGES _Uninitialized_move_unchecked(_First, _Mid, _Left_first, _Left_first + _Capacity).out;
+        _Uninitialized_backout<_Ty*> _Backout(_Left_first, _Left_last);
+
+        // we already know, that _Backout._Last - 1 is the highest element so do not compare against it again.
+        --_Left_last;
+
+        // we already know, that _Mid points to the lowest element and that there is more than 1 element left.
+        *_First = _RANGES iter_move(_Mid);
+        ++_First;
+        ++_Mid;
+
+        for (;;) {
+            if (_STD invoke(_Pred, _STD invoke(_Proj, *_Mid), _STD invoke(_Proj, *_Left_first))) {
+                *_First = _RANGES iter_move(_Mid); // the lowest element is now in position
+                ++_First;
+                ++_Mid;
+                if (_Mid == _Last) {
+                    // move the remaining left partition
+                    _RANGES _Move_unchecked(_Left_first, _Backout._Last, _First);
+                    return;
+                }
+            } else {
+                *_First = _RANGES iter_move(_Left_first);
+                ++_First;
+                ++_Left_first;
+                if (_Left_first == _Left_last) {
+                    // move the remaining right partition and highest element, since *_Left_first is highest
+                    const auto _Final = _RANGES _Move_unchecked(_Mid, _Last, _First);
+                    *_Final.out       = _RANGES iter_move(_Left_first);
+                    return;
+                }
+            }
+        }
+    }
+
+    // clang-format off
+    template <bidirectional_iterator _It, class _Pr, class _Pj>
+        requires sortable<_It, _Pr, _Pj>
+    void _Inplace_merge_buffer_right(_It _First, _It _Mid, _It _Last, iter_value_t<_It>* _Right_first,
+        const ptrdiff_t _Capacity, _Pr _Pred, _Pj _Proj) {
+        // clang-format on
+        // move the range [_Mid, _Last) to _Right_first, and merge it with [_First, _Mid) to _Last
+        // usual invariants apply
+        using _Ty = iter_value_t<_It>;
+
+        _Ty* _Right_last =
+            _RANGES _Uninitialized_move_unchecked(_Mid, _Last, _Right_first, _Right_first + _Capacity).out;
+        _Uninitialized_backout<_Ty*> _Backout(_Right_first, _Right_last);
+
+        // we already know, that _Mid points to the next highest element and that there is more than 1 element left.
+        *--_Last = _RANGES iter_move(--_Mid);
+
+        // we already know, that _Backout._Last - 1 is the highest element so do not compare against it again.
+        --_Mid;
+        --_Right_last;
+        for (;;) {
+            if (_STD invoke(_Pred, _STD invoke(_Proj, *_Right_last), _STD invoke(_Proj, *_Mid))) {
+                *--_Last = _RANGES iter_move(_Mid); // the lowest element is now in position
+                if (_First == _Mid) {
+                    *--_Last = _RANGES iter_move(_Right_last); // to make [_Right_first, _Right_last) a half-open range
+                    _RANGES _Move_backward_common(_Right_first, _Right_last, _STD move(_Last));
+                    return;
+                }
+                --_Mid;
+            } else {
+                *--_Last = _RANGES iter_move(_Right_last);
+                --_Right_last;
+                if (_Right_first == _Right_last) { // we can't compare with *_Right_first, but we know it is lowest
+                    *--_Last = _RANGES iter_move(_Mid); // restore half-open range [_First, _Mid)
+                    _RANGES _Move_backward_common(_First, _STD move(_Mid), _STD move(_Last));
+                    *_First = _RANGES iter_move(_Right_first);
+                    return;
+                }
+            }
+        }
+    }
+
+    // clang-format off
+    template <bidirectional_iterator _It, class _Pr, class _Pj>
+        requires sortable<_It, _Pr, _Pj>
+    void _Buffered_inplace_merge_divide_and_conquer2(_It _First, _It _Mid, _It _Last,
+        const iter_difference_t<_It> _Count1, const iter_difference_t<_It> _Count2, iter_value_t<_It>* const _Temp_ptr,
+        const ptrdiff_t _Capacity, _Pr _Pred, _Pj _Proj, _It _Firstn, _It _Lastn, const iter_difference_t<_It> _Count1n,
+        const iter_difference_t<_It> _Count2n) {
+        // clang-format on
+        // common block of _Buffered_inplace_merge_divide_and_conquer, below
+        _It _Midn = _RANGES _Buffered_rotate_common(_Firstn, _Mid, _Lastn,
+            static_cast<iter_difference_t<_It>>(_Count1 - _Count1n), _Count2n, _Temp_ptr,
+            _Capacity); // rearrange middle
+        _RANGES _Buffered_inplace_merge_common(
+            _First, _Firstn, _Midn, _Count1n, _Count2n, _Temp_ptr, _Capacity, _Pred, _Proj); // merge each new part
+        _RANGES _Buffered_inplace_merge_common(_Midn, _Lastn, _Last,
+            static_cast<iter_difference_t<_It>>(_Count1 - _Count1n),
+            static_cast<iter_difference_t<_It>>(_Count2 - _Count2n), _Temp_ptr, _Capacity, _Pred, _Proj);
+    }
+
+    // clang-format off
+    template <bidirectional_iterator _It, class _Pr, class _Pj>
+        requires sortable<_It, _Pr, _Pj>
+    void _Buffered_inplace_merge_divide_and_conquer(_It _First, _It _Mid, _It _Last,
+        const iter_difference_t<_It> _Count1, const iter_difference_t<_It> _Count2, iter_value_t<_It>* const _Temp_ptr,
+        const ptrdiff_t _Capacity, _Pr _Pred, _Pj _Proj) {
+        // clang-format on
+        // merge sorted [_First, _Mid) with sorted [_Mid, _Last)
+        // usual invariants apply
+        if (_Count1 <= _Count2) {
+            const iter_difference_t<_It> _Count1n = _Count1 >> 1; // shift for codegen
+            const _It _Firstn                     = _RANGES next(_First, _Count1n);
+            const _It _Lastn =
+                _RANGES _Lower_bound_unchecked(_Mid, _Count1, _STD invoke(_Proj, *_Firstn), _Pred, _Proj);
+            const auto _Count2n = _RANGES distance(_Mid, _Lastn);
+            _RANGES _Buffered_inplace_merge_divide_and_conquer2(_STD move(_First), _STD move(_Mid), _STD move(_Last),
+                _Count1, _Count2, _Temp_ptr, _Capacity, _STD move(_Pred), _STD move(_Proj), _STD move(_Firstn),
+                _STD move(_Lastn), _Count1n, _Count2n);
+        } else {
+            const iter_difference_t<_It> _Count2n = _Count2 >> 1; // shift for codegen
+            const _It _Lastn                      = _RANGES next(_Mid, _Count2n);
+            const _It _Firstn =
+                _RANGES _Upper_bound_unchecked(_First, _Count2, _STD invoke(_Proj, *_Lastn), _Pred, _Proj);
+            const auto _Count1n = _RANGES distance(_First, _Firstn);
+            _RANGES _Buffered_inplace_merge_divide_and_conquer2(_STD move(_First), _STD move(_Mid), _STD move(_Last),
+                _Count1, _Count2, _Temp_ptr, _Capacity, _STD move(_Pred), _STD move(_Proj), _STD move(_Firstn),
+                _STD move(_Lastn), _Count1n, _Count2n);
+        }
+    }
+
+    // clang-format off
+    template <bidirectional_iterator _It, class _Pr, class _Pj>
+        requires sortable<_It, _Pr, _Pj>
+    void _Buffered_inplace_merge_common(_It _First, _It _Mid, _It _Last, iter_difference_t<_It> _Count1,
+        iter_difference_t<_It> _Count2, iter_value_t<_It>* const _Temp_ptr, const ptrdiff_t _Capacity, _Pr _Pred,
+        _Pj _Proj) {
+        // clang-format on
+        // merge sorted [_First, _Mid) with sorted [_Mid, _Last)
+        // usual invariants *do not* apply; only sortedness applies
+        // establish the usual invariants
+        if (_First == _Mid || _Mid == _Last) {
+            return;
+        }
+
+        // Find first element in [_First, _Mid) that is not less than *_Mid
+        while (!_STD invoke(_Pred, _STD invoke(_Proj, *_Mid), _STD invoke(_Proj, *_First))) {
+            --_Count1;
+            if (++_First == _Mid) {
+                return;
+            }
+        }
+
+        // Fast early return if there is only one element to be moved
+        if (--_Last == _Mid) {
+            // rotate only element remaining in right partition to the beginning, without allocating
+            _RANGES _Rotate_one_right(_STD move(_First), _STD move(_Mid), _STD move(++_Last));
+            return;
+        }
+        --_Count2;
+
+        // Find last element in [_Mid, _Last) that is less than *--_Mid
+        const auto _Highest = _Prev_iter(_Mid);
+        while (!_STD invoke(_Pred, _STD invoke(_Proj, *_Last), _STD invoke(_Proj, *_Highest))) {
+            if (_Mid == --_Last) {
+                // rotate only element remaining in right partition to the beginning, without allocating
+                _RANGES _Rotate_one_right(_STD move(_First), _STD move(_Mid), _STD move(++_Last));
+                return;
+            }
+            --_Count2;
+        }
+        ++_Last;
+        ++_Count2;
+
+        if (_Count1 == 1) {
+            _RANGES _Rotate_one_left(_STD move(_First), _STD move(_Mid), _STD move(_Last));
+            return;
+        }
+
+        if (_Count1 <= _Count2 && _Count1 <= _Capacity) {
+            _RANGES _Inplace_merge_buffer_left(_STD move(_First), _STD move(_Mid), _STD move(_Last), _Temp_ptr,
+                _Capacity, _STD move(_Pred), _STD move(_Proj));
+        } else if (_Count2 <= _Capacity) {
+            _RANGES _Inplace_merge_buffer_right(_STD move(_First), _STD move(_Mid), _STD move(_Last), _Temp_ptr,
+                _Capacity, _STD move(_Pred), _STD move(_Proj));
+        } else {
+            _RANGES _Buffered_inplace_merge_divide_and_conquer(_STD move(_First), _STD move(_Mid), _STD move(_Last),
+                _Count1, _Count2, _Temp_ptr, _Capacity, _STD move(_Pred), _STD move(_Proj));
+        }
+    }
+
+    class _Inplace_merge_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <bidirectional_iterator _It, sentinel_for<_It> _Se, class _Pr = ranges::less, class _Pj = identity>
+            requires sortable<_It, _Pr, _Pj>
+        _It operator()(_It _First, _It _Mid, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            // clang-format on
+            _Adl_verify_range(_First, _Mid);
+            _Adl_verify_range(_Mid, _Last);
+
+            auto _UFirst = _Get_unwrapped(_STD move(_First));
+            auto _ULast  = _Get_final_iterator_unwrapped<_It>(_UFirst, _STD move(_Last));
+            _Seek_wrapped(_First, _ULast);
+
+            _Inplace_merge_common(_STD move(_UFirst), _Get_unwrapped(_STD move(_Mid)), _STD move(_ULast),
+                _Pass_fn(_Pred), _Pass_fn(_Proj));
+            return _First;
+        }
+
+        // clang-format off
+        template <bidirectional_range _Rng, class _Pr = ranges::less, class _Pj = identity>
+            requires sortable<iterator_t<_Rng>, _Pr, _Pj>
+        borrowed_iterator_t<_Rng> operator()(
+            _Rng&& _Range, iterator_t<_Rng> _Mid, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            // clang-format on
+            auto _First = _RANGES begin(_Range);
+            auto _Last  = _RANGES end(_Range);
+
+            _Adl_verify_range(_First, _Mid);
+            _Adl_verify_range(_Mid, _Last);
+
+            auto _UFirst = _Get_unwrapped(_STD move(_First));
+            auto _ULast  = _Get_final_iterator_unwrapped<iterator_t<_Rng>>(_UFirst, _STD move(_Last));
+            _Seek_wrapped(_First, _ULast);
+
+            _Inplace_merge_common(_STD move(_UFirst), _Get_unwrapped(_STD move(_Mid)), _STD move(_ULast),
+                _Pass_fn(_Pred), _Pass_fn(_Proj));
+            return _First;
+        }
+
+    private:
+        template <class _It, class _Pr, class _Pj>
+        static void _Inplace_merge_common(_It _First, _It _Mid, _It _Last, _Pr _Pred, _Pj _Proj) {
+            _STL_INTERNAL_STATIC_ASSERT(bidirectional_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
+
+            if (_First == _Mid || _Mid == _Last) {
+                return;
+            }
+#if _ITERATOR_DEBUG_LEVEL == 2
+            _STL_VERIFY(_RANGES is_sorted(_First, _Mid, _Pred, _Proj),
+                "ranges::inplace_merge requires the range [first, middle) to be sorted");
+            _STL_VERIFY(_RANGES is_sorted(_Mid, _Last, _Pred, _Proj),
+                "ranges::inplace_merge requires the range [middle, last)] to be sorted");
+#endif //_ITERATOR_DEBUG_LEVEL == 2
+
+            // Find first element in [_First, _Mid) that is not less than *_Mid
+            while (!_STD invoke(_Pred, _STD invoke(_Proj, *_Mid), _STD invoke(_Proj, *_First))) {
+                if (++_First == _Mid) {
+                    return;
+                }
+            }
+
+            // Fast early return if there is only one element to be moved
+            if (_Mid == --_Last) {
+                // rotate only element remaining in right partition to the beginning, without allocating
+                _RANGES _Rotate_one_right(_STD move(_First), _STD move(_Mid), _STD move(++_Last));
+                return;
+            }
+
+            // Find last element in [_Mid, _Last) that is less than *--_Mid
+            const auto _Highest = _Prev_iter(_Mid);
+            while (!_STD invoke(_Pred, _STD invoke(_Proj, *_Last), _STD invoke(_Proj, *_Highest))) {
+                if (_Mid == --_Last) {
+                    // rotate only element remaining in right partition to the beginning, without allocating
+                    _RANGES _Rotate_one_right(_STD move(_First), _STD move(_Mid), _STD move(++_Last));
+                    return;
+                }
+            }
+            ++_Last;
+
+            const iter_difference_t<_It> _Count1 = _RANGES distance(_First, _Mid);
+            if (_Count1 == 1) { // rotate only element remaining in left partition to the end, without allocating
+                _RANGES _Rotate_one_left(_STD move(_First), _STD move(_Mid), _STD move(_Last));
+                return;
+            }
+
+            const iter_difference_t<_It> _Count2 = _RANGES distance(_Mid, _Last);
+            _Optimistic_temporary_buffer<iter_value_t<_It>> _Temp_buf{(_STD min)(_Count1, _Count2)};
+            if (_Count1 <= _Count2 && _Count1 <= _Temp_buf._Capacity) {
+                _RANGES _Inplace_merge_buffer_left(_STD move(_First), _STD move(_Mid), _STD move(_Last),
+                    _Temp_buf._Data, _Temp_buf._Capacity, _STD move(_Pred), _STD move(_Proj));
+            } else if (_Count2 <= _Temp_buf._Capacity) {
+                _RANGES _Inplace_merge_buffer_right(_STD move(_First), _STD move(_Mid), _STD move(_Last),
+                    _Temp_buf._Data, _Temp_buf._Capacity, _STD move(_Pred), _STD move(_Proj));
+            } else {
+                _RANGES _Buffered_inplace_merge_divide_and_conquer(_STD move(_First), _STD move(_Mid), _STD move(_Last),
+                    _Count1, _Count2, _Temp_buf._Data, _Temp_buf._Capacity, _STD move(_Pred), _STD move(_Proj));
+            }
+        }
+    };
+
+    inline constexpr _Inplace_merge_fn inplace_merge{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
+
 // FUNCTION TEMPLATE sort
 template <class _BidIt, class _Pr>
 _CONSTEXPR20 _BidIt _Insertion_sort_unchecked(const _BidIt _First, const _BidIt _Last, _Pr _Pred) {
