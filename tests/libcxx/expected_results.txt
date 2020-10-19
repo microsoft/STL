@@ -768,6 +768,10 @@ std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/eval.pass.cpp F
 # They shouldn't behave differently. Both of them should probably return NaN.
 std/numerics/c.math/c.math.lerp/c.math.lerp.pass.cpp FAIL
 
+# These tests supress warnings only for Clang [Fixed upstream]
+std/numerics/numbers/defined.pass.cpp:0 FAIL
+std/numerics/numbers/specialize.pass.cpp:0 FAIL
+
 
 # *** LIKELY STL BUGS ***
 # Not yet analyzed, likely STL bugs. Assertions and other runtime failures.

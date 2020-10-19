@@ -768,6 +768,10 @@ numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\eval.pass.cpp
 # They shouldn't behave differently. Both of them should probably return NaN.
 numerics\c.math\c.math.lerp\c.math.lerp.pass.cpp
 
+# These tests supress warnings only for Clang [Fixed upstream]
+numerics\numbers\defined.pass.cpp
+numerics\numbers\specialize.pass.cpp
+
 
 # *** LIKELY STL BUGS ***
 # Not yet analyzed, likely STL bugs. Assertions and other runtime failures.
