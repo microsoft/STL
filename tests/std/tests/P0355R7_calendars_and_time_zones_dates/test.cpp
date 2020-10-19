@@ -56,14 +56,17 @@ constexpr void day_test() {
     assert(d < 2d);
     assert(2d > d);
 
-    day d2{0u};
-    assert(!d2.ok());
-    ++d2;
-    for (int i = 1; i <= 31; ++i, ++d2) {
-        assert(d2.ok());
+    for (unsigned int i = 0; i <= 255; ++i) {
+        if (i > 0 && i <= 31) {
+            assert(day{i}.ok());
+        } else {
+            assert(!day{i}.ok());
+        }
     }
-    assert(!d2.ok());
 
+    assert(5d + days{5} == 10d);
+    assert(days{5} + 5d == 10d);
+    assert(10d - days{5} == 5d);
     assert(10d - 2d == days{8});
 }
 
@@ -120,6 +123,9 @@ constexpr void month_test() {
 
     assert(February + months{11} == January);
     assert(months{11} + February == January);
+    assert(month{0} + months{1} == January);
+    assert(month{13} + months{1} == February);
+    assert(month{23} + months{1} == December);
     assert(February - months{2} == December);
     assert(January - February == months{11});
 }
@@ -173,6 +179,9 @@ constexpr void year_test() {
 
     assert(+y == 1y);
     assert(-y == -1y);
+    auto y2 = -y;
+    assert(-y2 == y);
+    assert(+y2 == -y);
 
     assert(year::min() == year{y_min});
     assert(year::max() == year{y_max});
@@ -196,6 +205,8 @@ constexpr void year_test() {
     assert(years{4} + y == 5y);
 
     assert(y - years{4} == -3y);
+    assert(year{10} - year{5} == years{5});
+    assert(year{-5} - year{-10} == years{5});
 }
 
 constexpr void weekday_test() {
@@ -256,7 +267,11 @@ constexpr void weekday_test() {
         }
     }
     assert(Monday + days{6} == Sunday);
+    assert(Monday + days{8} == Tuesday);
+    assert(Wednesday + days{14} == Wednesday);
     assert(Sunday - Monday == days{6});
+    assert(Sunday - Tuesday == days{5});
+    assert(Wednesday - Thursday == days{6});
 }
 
 constexpr void weekday_indexed_test() {
@@ -291,6 +306,7 @@ constexpr void weekday_indexed_test() {
         assert(weekday_indexed(Saturday, i).ok());
     }
     assert(!weekday_indexed(Sunday, 6).ok());
+    assert(!weekday_indexed(Sunday, 7).ok());
 }
 
 constexpr void weekday_last_test() {
@@ -332,20 +348,29 @@ constexpr void month_day_test() {
     assert(month_day(December, 25d) > md);
     assert(md == month_day(January, 1d));
 
-    for (unsigned int i = 1; i <= 12; ++i) {
-        month m{i};
-        for (unsigned int d = 0; d <= 32; ++d) {
-            if (d == 0) {
-                assert(!month_day(m, day{d}).ok());
-            } else if (d == 30 && m == February) {
-                assert(!month_day(m, day{d}).ok());
-                break;
-            } else if (d == 31 && (m == April || m == June || m == September || m == November)) {
-                assert(!month_day(m, day{d}).ok());
-            } else if (d == 32) {
-                assert(!month_day(m, day{d}).ok());
-            } else {
-                assert(month_day(m, day{d}).ok());
+    if (is_constant_evaluated()) {
+        static_assert((January / 31).ok());
+        static_assert((February / 29).ok());
+        static_assert((April / 30).ok());
+        static_assert(!(January / 32).ok());
+        static_assert(!(February / 30).ok());
+        static_assert(!(April / 31).ok());
+    } else {
+        for (unsigned int i = 0; i <= 255; ++i) {
+            month m{i};
+            for (unsigned int d = 0; d <= 255; ++d) {
+                if (d < 1 || d > 31 || i < 1 || i > 12) {
+                    assert(!month_day(m, day{d}).ok());
+                } else if (d == 30 && m == February) {
+                    assert(!month_day(m, day{d}).ok());
+                    break;
+                } else if (d == 31 && (m == April || m == June || m == September || m == November)) {
+                    assert(!month_day(m, day{d}).ok());
+                } else if (d == 32) {
+                    assert(!month_day(m, day{d}).ok());
+                } else {
+                    assert(month_day(m, day{d}).ok());
+                }
             }
         }
     }
@@ -550,6 +575,7 @@ constexpr void year_month_day_test() {
     assert(ymd2.day() == 31d);
 
     year_month_day epoch{sys_days{}};
+    assert(epoch == year_month_day{sys_days{epoch}});
     assert(epoch.year() == 1970y);
     assert(epoch.month() == January);
     assert(epoch.day() == 1d);
@@ -766,6 +792,7 @@ constexpr void year_month_weekday_test() {
     assert(ymwd.weekday_indexed() == Tuesday[2]);
 
     const year_month_weekday epoch{sys_days{}};
+    assert(epoch == year_month_weekday{sys_days{epoch}});
     assert(epoch == 1970y / January / Thursday[1]);
 
     local_days ldp;
