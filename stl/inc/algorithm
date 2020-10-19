@@ -1795,6 +1795,19 @@ namespace ranges {
     using move_result = in_out_result<_In, _Out>;
 
     // VARIABLE ranges::move
+    // clang-format off
+    template <input_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out>
+        requires indirectly_movable<_It, _Out>
+    constexpr move_result<_It, _Out> _Move_unchecked(_It _First, const _Se _Last, _Out _Result) {
+        // clang-format on
+
+        for (; _First != _Last; ++_First, (void) ++_Result) {
+            *_Result = _RANGES iter_move(_First);
+        }
+
+        return {_STD move(_First), _STD move(_Result)};
+    }
+
     class _Move_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -1803,38 +1816,26 @@ namespace ranges {
         template <input_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out>
             requires indirectly_movable<_It, _Out>
         constexpr move_result<_It, _Out> operator()(_It _First, _Se _Last, _Out _Result) const {
+            // clang-format on
             _Adl_verify_range(_First, _Last);
-            auto _UResult = _Move_unchecked(
+            auto _UResult = _RANGES _Move_unchecked(
                 _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _STD move(_Result));
 
             _Seek_wrapped(_First, _STD move(_UResult.in));
             return {_STD move(_First), _STD move(_UResult.out)};
         }
 
+        // clang-format off
         template <input_range _Rng, weakly_incrementable _Out>
             requires indirectly_movable<iterator_t<_Rng>, _Out>
         constexpr move_result<borrowed_iterator_t<_Rng>, _Out> operator()(_Rng&& _Range, _Out _Result) const {
-            auto _First   = _RANGES begin(_Range);
-            auto _UResult = _Move_unchecked(_Get_unwrapped(_STD move(_First)), _Uend(_Range), _STD move(_Result));
+            // clang-format on
+            auto _First = _RANGES begin(_Range);
+            auto _UResult =
+                _RANGES _Move_unchecked(_Get_unwrapped(_STD move(_First)), _Uend(_Range), _STD move(_Result));
 
             _Seek_wrapped(_First, _STD move(_UResult.in));
             return {_STD move(_First), _STD move(_UResult.out)};
-        }
-        // clang-format on
-
-    private:
-        template <class _It, class _Se, class _Out>
-        _NODISCARD static constexpr move_result<_It, _Out> _Move_unchecked(_It _First, const _Se _Last, _Out _Result) {
-            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
-            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
-            _STL_INTERNAL_STATIC_ASSERT(weakly_incrementable<_Out>);
-            _STL_INTERNAL_STATIC_ASSERT(indirectly_movable<_It, _Out>);
-
-            for (; _First != _Last; ++_First, (void) ++_Result) {
-                *_Result = _RANGES iter_move(_First);
-            }
-
-            return {_STD move(_First), _STD move(_Result)};
         }
     };
 
@@ -6066,6 +6067,209 @@ _BidIt stable_partition(_ExPo&&, _BidIt _First, _BidIt _Last, _Pr _Pred) noexcep
     return _STD stable_partition(_First, _Last, _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX17
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // VARIABLE ranges::stable_partition
+    template <bidirectional_iterator _It>
+    _It _Buffered_rotate_common(const _It _First, const _It _Mid, const _It _Last, const iter_difference_t<_It> _Count1,
+        const iter_difference_t<_It> _Count2, iter_value_t<_It>* const _Temp_ptr, const ptrdiff_t _Capacity) {
+        // rotate [_First, _Last) using temp buffer
+        // precondition: _Count1 == distance(_First, _Mid)
+        // precondition: _Count2 == distance(_Mid, _Last)
+        if (_Count1 == 0) {
+            return _Last;
+        }
+
+        if (_Count2 == 0) {
+            return _First;
+        }
+
+        if (_Count1 <= _Count2 && _Count1 <= _Capacity) { // buffer left range, then copy parts
+            _Uninitialized_backout<iter_value_t<_It>*> _Backout{
+                _Temp_ptr, _RANGES _Uninitialized_move_unchecked(_First, _Mid, _Temp_ptr, _Temp_ptr + _Count1).out};
+            const _It _New_mid = _RANGES _Move_unchecked(_STD move(_Mid), _STD move(_Last), _STD move(_First)).out;
+            _RANGES _Move_unchecked(_Backout._First, _Backout._Last, _New_mid);
+            return _New_mid;
+        }
+
+        if (_Count2 <= _Capacity) { // buffer right range, then copy parts
+            _Uninitialized_backout<iter_value_t<_It>*> _Backout{
+                _Temp_ptr, _RANGES _Uninitialized_move_unchecked(_Mid, _Last, _Temp_ptr, _Temp_ptr + _Count2).out};
+            _RANGES _Move_backward_common(_First, _STD move(_Mid), _STD move(_Last));
+            return _RANGES _Move_unchecked(_Backout._First, _Backout._Last, _STD move(_First)).out;
+        }
+
+        // buffer too small, rotate in place
+        return _RANGES rotate(_STD move(_First), _STD move(_Mid), _STD move(_Last)).begin();
+    }
+
+    class _Stable_partition_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <bidirectional_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
+            indirect_unary_predicate<projected<_It, _Pj>> _Pr>
+            requires permutable<_It>
+        subrange<_It> operator()(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) const {
+            // clang-format on
+            _Adl_verify_range(_First, _Last);
+            auto _UFirst = _Get_unwrapped(_STD move(_First));
+            auto _ULast  = _Get_final_iterator_unwrapped<_It>(_UFirst, _STD move(_Last));
+
+            auto _UResult =
+                _Stable_partition_common(_STD move(_UFirst), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            return _Rewrap_subrange<subrange<_It>>(_First, _STD move(_UResult));
+        }
+
+        // clang-format off
+        template <bidirectional_range _Rng, class _Pj = identity,
+            indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
+            requires permutable<iterator_t<_Rng>>
+        borrowed_subrange_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
+            // clang-format on
+            auto _ULast = _Get_final_iterator_unwrapped(_Range);
+            auto _UResult =
+                _Stable_partition_common(_Ubegin(_Range), _STD move(_ULast), _Pass_fn(_Pred), _Pass_fn(_Proj));
+            return _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_Range, _STD move(_UResult));
+        }
+
+    private:
+        template <class _It, class _Pr, class _Pj>
+        _NODISCARD static subrange<_It> _Stable_partition_common(_It _First, _It _Last, _Pr _Pred, _Pj _Proj) {
+            _STL_INTERNAL_STATIC_ASSERT(bidirectional_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(permutable<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(indirect_unary_predicate<_Pr, projected<_It, _Pj>>);
+
+            // partition preserving order of equivalents
+            auto _Saved_last = _Last;
+            for (;;) { // skip in-place elements at front
+                if (_First == _Last) { // the input range range is true (already partitioned)
+                    return {_STD move(_First), _STD move(_Saved_last)};
+                }
+                if (!_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
+                    break;
+                }
+                ++_First;
+            }
+
+            do { // skip in-place elements at end
+                --_Last;
+                if (_First == _Last) {
+                    return {_STD move(_First), _STD move(_Saved_last)};
+                }
+            } while (!_STD invoke(_Pred, _STD invoke(_Proj, *_Last)));
+
+            const iter_difference_t<_It> _Temp_count = _RANGES distance(_First, _Last);
+            _Optimistic_temporary_buffer<iter_value_t<_It>> _Temp_buf{_Temp_count};
+
+            // _Temp_count + 1 since we work on closed ranges
+            const iter_difference_t<_It> _Total_count = _Temp_count + static_cast<iter_difference_t<_It>>(1);
+            auto _Result = _Stable_partition_common_buffered(_STD move(_First), _STD move(_Last), _STD move(_Pred),
+                _STD move(_Proj), _Total_count, _Temp_buf._Data, _Temp_buf._Capacity);
+            return {_STD move(_Result.first), _STD move(_Saved_last)};
+        }
+
+        template <class _It, class _Pr, class _Pj>
+        _NODISCARD static pair<_It, iter_difference_t<_It>> _Stable_partition_common_buffered(_It _First, _It _Last,
+            _Pr _Pred, _Pj _Proj, const iter_difference_t<_It> _Count, iter_value_t<_It>* const _Temp_ptr,
+            const ptrdiff_t _Capacity) {
+            // implement stable_partition of [_First, _Last] (note: closed range)
+            // precondition: !_STD invoke(_Pred, _STD invoke(_Proj, *_First))
+            // precondition: _STD invoke(_Pred, _STD invoke(_Proj, *_Last))
+            // precondition: _RANGES distance(_First, _Last) + 1 == _Count
+            // note: _Count >= 2 and _First != _Last
+            _STL_INTERNAL_STATIC_ASSERT(bidirectional_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(permutable<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(indirect_unary_predicate<_Pr, projected<_It, _Pj>>);
+
+            using _Diff = iter_difference_t<_It>;
+            if (_Count - static_cast<_Diff>(1) <= _Capacity) { // - 1 since we never need to store *_Last
+                _Uninitialized_backout<iter_value_t<_It>*> _Backout{_Temp_ptr};
+                _It _Next = _First;
+                _Backout._Emplace_back(_RANGES iter_move(_First));
+                while (++_First != _Last) {
+                    // test each element, copying to _Temp_ptr if it's in the false range, or
+                    // assigning backwards if it's in the true range
+                    if (_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
+                        *_Next = _RANGES iter_move(_First);
+                        ++_Next;
+                    } else {
+                        _Backout._Emplace_back(_RANGES iter_move(_First));
+                    }
+                }
+
+                // move the last true element, *_Last, to the end of the true range
+                *_Next = _RANGES iter_move(_Last);
+                ++_Next;
+                // copy back the false range
+                _RANGES _Move_unchecked(_Backout._First, _Backout._Last, _Next);
+                const _Diff _True_distance =
+                    static_cast<_Diff>(_Count - static_cast<_Diff>(_Backout._Last - _Backout._First));
+                return {_STD move(_Next), _True_distance};
+            }
+
+            const _Diff _Mid_offset = _Count >> 1; // note: >= 1 because _Count >= 2
+            const _It _Mid          = _RANGES next(_First, _Mid_offset);
+            // form [_First, _Left) true range, [_Left, _Mid) false range
+            _It _Left              = _Mid;
+            _Diff _Left_true_count = _Mid_offset;
+            for (;;) { // skip over the trailing false range before _Mid
+                --_Left;
+                if (_First == _Left) { // the entire left range is false
+                    --_Left_true_count; // to exclude *_First
+                    break;
+                }
+
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_Left))) {
+                    // excluded the false range before _Mid, invariants reestablished, recurse
+                    const auto _Low = _Stable_partition_common_buffered(
+                        _First, _Left, _Pred, _Proj, _Left_true_count, _Temp_ptr, _Capacity);
+                    _Left            = _STD move(_Low.first);
+                    _Left_true_count = _Low.second;
+                    break;
+                }
+
+                --_Left_true_count;
+            }
+
+            // form [_Mid, _Right) true range, [_Right, next(_Last)) false range
+            _It _Right              = _Mid;
+            _Diff _Right_true_count = 0;
+            for (;;) { // skip over the leading true range after and including _Mid
+                if (_Right == _Last) { // the entire right range is true
+                    ++_Right; // to include _Last
+                    ++_Right_true_count;
+                    break;
+                }
+
+                if (!_STD invoke(_Pred, _STD invoke(_Proj, *_Right))) {
+                    // excluded the true range after and including _Mid, invariants reestablished, recurse
+                    const _Diff _Right_count = _Count - _Mid_offset;
+                    const _Diff _Remaining   = _Right_count - _Right_true_count;
+                    const auto _High         = _Stable_partition_common_buffered(
+                        _Right, _Last, _Pred, _Proj, _Remaining, _Temp_ptr, _Capacity);
+                    _Right = _STD move(_High.first);
+                    _Right_true_count += _High.second;
+                    break;
+                }
+
+                ++_Right;
+                ++_Right_true_count;
+            }
+
+            // swap the [_Left, _Mid) false range with the [_Mid, _Right) true range
+            const auto _Partition_point =
+                _RANGES _Buffered_rotate_common(_STD move(_Left), _STD move(_Mid), _STD move(_Right),
+                    static_cast<_Diff>(_Mid_offset - _Left_true_count), _Right_true_count, _Temp_ptr, _Capacity);
+            return {_Partition_point, static_cast<_Diff>(_Left_true_count + _Right_true_count)};
+        }
+    };
+
+    inline constexpr _Stable_partition_fn stable_partition{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE push_heap
 template <class _RanIt, class _Ty, class _Pr>

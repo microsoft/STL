@@ -1518,6 +1518,64 @@ _NoThrowFwdIt _Uninitialized_move_unchecked(_InIt _First, const _InIt _Last, _No
 }
 #endif // _HAS_IF_CONSTEXPR
 
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // clang-format off
+    // CONCEPT _No_throw_input_iterator
+    template <class _It>
+    concept _No_throw_input_iterator = input_iterator<_It>
+        && is_lvalue_reference_v<iter_reference_t<_It>>
+        && same_as<remove_cvref_t<iter_reference_t<_It>>, iter_value_t<_It>>;
+
+    // CONCEPT _No_throw_sentinel_for
+    template <class _Se, class _It>
+    concept _No_throw_sentinel_for = sentinel_for<_Se, _It>;
+
+    // CONCEPT _No_throw_forward_iterator
+    template <class _It>
+    concept _No_throw_forward_iterator = _No_throw_input_iterator<_It>
+        && forward_iterator<_It>
+        && _No_throw_sentinel_for<_It, _It>;
+
+    // CONCEPT _No_throw_input_range
+    template <class _Rng>
+    concept _No_throw_input_range = range<_Rng>
+        && _No_throw_input_iterator<iterator_t<_Rng>>
+        && _No_throw_sentinel_for<sentinel_t<_Rng>, iterator_t<_Rng>>;
+
+    // CONCEPT _No_throw_forward_range
+    template <class _Rng>
+    concept _No_throw_forward_range = _No_throw_input_range<_Rng>
+        && _No_throw_forward_iterator<iterator_t<_Rng>>;
+    // clang-format on
+
+    // ALIAS TEMPLATE uninitialized_move_result
+    template <class _In, class _Out>
+    using uninitialized_move_result = in_out_result<_In, _Out>;
+
+    // FUNCTION TEMPLATE _Uninitialized_move_unchecked
+    // clang-format off
+    template <input_iterator _It, sentinel_for<_It> _Se, _No_throw_forward_iterator _Out,
+        _No_throw_sentinel_for<_Out> _OSe>
+        requires constructible_from<iter_value_t<_Out>, iter_rvalue_reference_t<_It>>
+    _NODISCARD uninitialized_move_result<_It, _Out> _Uninitialized_move_unchecked(
+            _It _IFirst, const _Se _ILast, _Out _OFirst, const _OSe _OLast) {
+        // clang-format on
+        if constexpr (is_same_v<_Se, _It> && _Ptr_move_cat<_It, _Out>::_Really_trivial) {
+            return _Copy_memcpy_common(_IFirst, _ILast, _OFirst, _OLast);
+        } else {
+            _Uninitialized_backout _Backout{_STD move(_OFirst)};
+
+            for (; _IFirst != _ILast && _Backout._Last != _OLast; ++_IFirst) {
+                _Backout._Emplace_back(_RANGES iter_move(_IFirst));
+            }
+
+            return {_STD move(_IFirst), _Backout._Release()};
+        }
+    }
+} // namespace ranges
+#endif // __cpp_lib_concepts
+
 // STRUCT TEMPLATE _Uninitialized_backout_al
 template <class _Alloc>
 class _Uninitialized_backout_al { // struct to undo partially constructed ranges in _Uninitialized_xxx_al algorithms
