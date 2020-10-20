@@ -22,7 +22,6 @@
 #error <experimental/generator> requires /std:c++latest or /await compiler options
 #endif // ^^^ no coroutine support ^^^
 
-
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
@@ -33,18 +32,16 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 
 namespace experimental {
-
-    template <typename _Ty, typename _Alloc = allocator<char>>
+    // NOTE WELL: _CPPUNWIND currently affects the ABI of generator.
+    template <class _Ty, class _Alloc = allocator<char>>
     struct generator {
         struct promise_type {
-            _Ty const* _CurrentValue;
-#if 1 // TRANSITION, VSO-1172852
-#ifdef _CPPUNWIND
-            exception_ptr _Eptr;
-#endif // _CPPUNWIND
+            const _Ty* _Value;
+#ifdef _CPPUNWIND // TRANSITION, VSO-1172852
+            exception_ptr _Exception;
 #endif // TRANSITION, VSO-1172852
 
-            auto get_return_object() {
+            generator get_return_object() noexcept {
                 return generator{*this};
             }
 
@@ -56,38 +53,38 @@ namespace experimental {
                 return {};
             }
 
-#if defined(_CPPUNWIND) || defined(__cpp_impl_coroutine)
+#ifndef _KERNEL_MODE
+#ifdef _CPPUNWIND
+#if 1 // TRANSITION, VSO-1172852
             void unhandled_exception() noexcept {
-#if 1 // TRANSITION, VSO-1172852
-#ifdef _CPPUNWIND
-                _Eptr = _STD current_exception();
-#else // ^^^ _CPPUNWIND / !_CPPUNWIND vvv
-                abort();
-#endif // _CPPUNWIND
+                _Exception = _STD current_exception();
+            }
 #else // ^^^ workaround / no workaround vvv
+            void unhandled_exception() {
                 throw;
-#endif // TRANSITION, VSO-1172852
             }
-#endif // defined(_CPPUNWIND) || defined(__cpp_impl_coroutine)
-
-#if 1 // TRANSITION, VSO-1172852
-            void _Rethrow_if_exception() {
-#ifdef _CPPUNWIND
-                if (_Eptr) {
-                    _STD rethrow_exception(_Eptr);
-                }
+#endif // TRANSITION, VSO-1172852
+#else // ^^^ defined(_CPPUNWIND) / !defined(_CPPUNWIND) vvv
+            void unhandled_exception() noexcept {}
 #endif // _CPPUNWIND
+#endif // _KERNEL_MODE
+
+#ifdef _CPPUNWIND // TRANSITION, VSO-1172852
+            void _Rethrow_if_exception() {
+                if (_Exception) {
+                    _STD rethrow_exception(_Exception);
+                }
             }
 #endif // TRANSITION, VSO-1172852
 
-            auto yield_value(_Ty const& _Value) {
-                _CurrentValue = _STD addressof(_Value);
-                return suspend_always{};
+            suspend_always yield_value(const _Ty& _Val) noexcept {
+                _Value = _STD addressof(_Val);
+                return {};
             }
 
-            void return_void() {}
+            void return_void() noexcept {}
 
-            template <typename _Uty>
+            template <class _Uty>
             _Uty&& await_transform(_Uty&& _Whatever) {
                 static_assert(_Always_false<_Uty>,
                     "co_await is not supported in coroutines of type std::experimental::generator");
@@ -98,15 +95,16 @@ namespace experimental {
             static_assert(is_same_v<char*, typename allocator_traits<_Alloc_char>::pointer>,
                 "generator does not support allocators with fancy pointer types");
             static_assert(
-                allocator_traits<_Alloc_char>::is_always_equal::value, "generator only supports stateless allocators");
+                allocator_traits<_Alloc_char>::is_always_equal::value && is_default_constructible_v<_Alloc_char>,
+                "generator supports only stateless allocators");
 
             static void* operator new(size_t _Size) {
-                _Alloc_char _Al;
+                _Alloc_char _Al{};
                 return allocator_traits<_Alloc_char>::allocate(_Al, _Size);
             }
 
             static void operator delete(void* _Ptr, size_t _Size) noexcept {
-                _Alloc_char _Al;
+                _Alloc_char _Al{};
                 return allocator_traits<_Alloc_char>::deallocate(_Al, static_cast<char*>(_Ptr), _Size);
             }
         };
@@ -115,21 +113,19 @@ namespace experimental {
             using iterator_category = input_iterator_tag;
             using difference_type   = ptrdiff_t;
             using value_type        = _Ty;
-            using reference         = _Ty const&;
-            using pointer           = _Ty const*;
+            using reference         = const _Ty&;
+            using pointer           = const _Ty*;
 
             coroutine_handle<promise_type> _Coro = nullptr;
 
             iterator() = default;
-            iterator(nullptr_t) : _Coro(nullptr) {}
-
-            iterator(coroutine_handle<promise_type> _CoroArg) : _Coro(_CoroArg) {}
+            explicit iterator(coroutine_handle<promise_type> _Coro_) noexcept : _Coro(_Coro_) {}
 
             iterator& operator++() {
                 _Coro.resume();
                 if (_Coro.done()) {
-#if 1 // TRANSITION, VSO-1172852
-                    _STD exchange(_Coro, {}).promise()._Rethrow_if_exception();
+#ifdef _CPPUNWIND // TRANSITION, VSO-1172852
+                    _STD exchange(_Coro, nullptr).promise()._Rethrow_if_exception();
 #else // ^^^ workaround / no workaround vvv
                     _Coro = nullptr;
 #endif // TRANSITION, VSO-1172852
@@ -139,25 +135,25 @@ namespace experimental {
             }
 
             void operator++(int) {
-                // This postincrement operator meets the requirements of the Ranges TS
-                // InputIterator concept, but not those of Standard C++ InputIterator.
+                // This operator meets the requirements of the C++20 input_iterator concept,
+                // but not the Cpp17InputIterator requirements.
                 ++*this;
             }
 
-            _NODISCARD bool operator==(iterator const& _Right) const {
+            _NODISCARD bool operator==(const iterator& _Right) const noexcept {
                 return _Coro == _Right._Coro;
             }
 
-            _NODISCARD bool operator!=(iterator const& _Right) const {
+            _NODISCARD bool operator!=(const iterator& _Right) const noexcept {
                 return !(*this == _Right);
             }
 
-            _NODISCARD reference operator*() const {
-                return *_Coro.promise()._CurrentValue;
+            _NODISCARD reference operator*() const noexcept {
+                return *_Coro.promise()._Value;
             }
 
-            _NODISCARD pointer operator->() const {
-                return _Coro.promise()._CurrentValue;
+            _NODISCARD pointer operator->() const noexcept {
+                return _Coro.promise()._Value;
             }
         };
 
@@ -165,35 +161,28 @@ namespace experimental {
             if (_Coro) {
                 _Coro.resume();
                 if (_Coro.done()) {
-#if 1 // TRANSITION, VSO-1172852
+#ifdef _CPPUNWIND // TRANSITION, VSO-1172852
                     _Coro.promise()._Rethrow_if_exception();
 #endif // TRANSITION, VSO-1172852
-                    return {nullptr};
+                    return {};
                 }
             }
 
-            return {_Coro};
+            return iterator{_Coro};
         }
 
-        _NODISCARD iterator end() {
-            return {nullptr};
+        _NODISCARD iterator end() noexcept {
+            return {};
         }
 
-        explicit generator(promise_type& _Prom) : _Coro(coroutine_handle<promise_type>::from_promise(_Prom)) {}
+        explicit generator(promise_type& _Prom) noexcept : _Coro(coroutine_handle<promise_type>::from_promise(_Prom)) {}
 
-        generator()                 = default;
-        generator(generator const&) = delete;
-        generator& operator=(generator const&) = delete;
+        generator() = default;
 
-        generator(generator&& _Right) : _Coro(_Right._Coro) {
-            _Right._Coro = nullptr;
-        }
+        generator(generator&& _Right) noexcept : _Coro(_STD exchange(_Right._Coro, nullptr)) {}
 
-        generator& operator=(generator&& _Right) {
-            if (this != _STD addressof(_Right)) {
-                _Coro        = _Right._Coro;
-                _Right._Coro = nullptr;
-            }
+        generator& operator=(generator&& _Right) noexcept {
+            _Coro = _STD exchange(_Right._Coro, nullptr);
             return *this;
         }
 
@@ -206,7 +195,6 @@ namespace experimental {
     private:
         coroutine_handle<promise_type> _Coro = nullptr;
     };
-
 } // namespace experimental
 
 _STD_END

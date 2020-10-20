@@ -3,9 +3,9 @@
 
 // _WStoflt function
 
-#include <locale.h>
-#include <wchar.h>
-#include <wctype.h>
+#include <clocale>
+#include <cwchar>
+#include <cwctype>
 
 #include "xmath.hpp"
 

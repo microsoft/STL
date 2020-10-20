@@ -3,10 +3,10 @@
 
 // _WStoxflt function
 
-#include <ctype.h>
-#include <locale.h>
-#include <wchar.h>
-#include <wctype.h>
+#include <cctype>
+#include <clocale>
+#include <cwchar>
+#include <cwctype>
 
 #include "xmath.hpp"
 

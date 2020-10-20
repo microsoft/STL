@@ -25,11 +25,16 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
     <PropertyGroup>
         <ClProgramDataBaseFileName>$(OutputLibPath)$(OutputName)$(PdbVerName).pdb</ClProgramDataBaseFileName>
+        <ClProgramDataBaseFileName Condition="'$(BuildArchitecture)' =='arm64ec' and '$(_BuildArch)' != '$(BuildArchitecture)'">$(OutputLibPath)$(OutputName).arm64.pdb</ClProgramDataBaseFileName>
         <ClDefines Condition="'$(DependsOnConcRT)' == 'true'">$(ClDefines);_STL_CONCRT_SUPPORT</ClDefines>
         <ClDefines>$(ClDefines);_VCRT_ALLOW_INTERNALS</ClDefines>
     </PropertyGroup>
 
     <Import Project="$(MSBuildThisFileDirectory)\stl.files.settings.targets"/>
+
+    <ItemGroup>
+        <Lib Condition="'$(Arm64X)' == 'true'" Include="$(IntermediateOutputDirectoryEC)\%2A.obj;"/>
+    </ItemGroup>
 
     <Import Project="$(VCToolsRootPath)\crt\crt_build.targets"/>
     <Target Name="GetBaseAddress"/>

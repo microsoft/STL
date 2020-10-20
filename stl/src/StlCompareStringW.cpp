@@ -1,9 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <crtdbg.h>
-#include <internal_shared.h>
-#include <string.h>
+#include <cstring> // for wcsnlen
 
 #include <Windows.h>
 
@@ -43,5 +41,5 @@ extern "C" int __cdecl __crtCompareStringW(_In_z_ LPCWSTR LocaleName, _In_ DWORD
         return (cchCount1 - cchCount2 == 0) ? 2 : (cchCount1 - cchCount2 < 0) ? 1 : 3;
     }
 
-    return __crtCompareStringEx(LocaleName, dwCmpFlags, lpString1, cchCount1, lpString2, cchCount2);
+    return CompareStringEx(LocaleName, dwCmpFlags, lpString1, cchCount1, lpString2, cchCount2, nullptr, nullptr, 0);
 }
