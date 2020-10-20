@@ -66,6 +66,12 @@ std/numerics/bit/bit.pow.two/log2p1.pass.cpp FAIL
 # test emits warning C4310: cast truncates constant value
 std/numerics/bit/bitops.rot/rotl.pass.cpp:0 FAIL
 
+# libc++ doesn't yet implement P1754R1 or P1964R2, so it expects an old value for `__cpp_lib_concepts`
+std/language.support/support.limits/support.limits.general/concepts.version.pass.cpp FAIL
+
+# libc++ doesn't yet implement P1001R2, so it expects an old value for `__cpp_lib_execution`
+std/language.support/support.limits/support.limits.general/execution.version.pass.cpp FAIL
+
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
 # Tracked by VSO-593630 "<filesystem> Enable libcxx filesystem tests"
@@ -251,6 +257,9 @@ std/utilities/function.objects/negators/not1.depr_in_cxx17.verify.cpp SKIPPED
 std/utilities/function.objects/negators/not2.depr_in_cxx17.verify.cpp SKIPPED
 std/utilities/memory/allocator.traits/allocator.traits.members/allocate.verify.cpp SKIPPED
 std/utilities/memory/default.allocator/allocator.members/allocate.verify.cpp SKIPPED
+
+# GH-1382: Our machinery doesn't understand compile-only `.compile.pass.cpp` tests
+strings\string.view\string.view.io\stream_insert_decl_present.compile.pass.cpp
 
 
 # *** MISSING STL FEATURES ***
@@ -464,6 +473,21 @@ std/utilities/variant/variant.variant/variant.ctor/T.pass.cpp FAIL
 # C++20 P0768R1 "Library Support for the Spaceship (Comparison) Operator"
 std/language.support/support.limits/support.limits.general/compare.version.pass.cpp FAIL
 
+# C++20 P0784R7 "More constexpr containers"
+std/utilities/memory/allocator.traits/allocator.traits.members/allocate.pass.cpp FAIL
+std/utilities/memory/allocator.traits/allocator.traits.members/allocate_hint.pass.cpp FAIL
+std/utilities/memory/allocator.traits/allocator.traits.members/construct.pass.cpp FAIL
+std/utilities/memory/allocator.traits/allocator.traits.members/deallocate.pass.cpp FAIL
+std/utilities/memory/allocator.traits/allocator.traits.members/destroy.pass.cpp FAIL
+std/utilities/memory/allocator.traits/allocator.traits.members/max_size.pass.cpp FAIL
+std/utilities/memory/allocator.traits/allocator.traits.members/select_on_container_copy_construction.pass.cpp FAIL
+std/utilities/memory/default.allocator/allocator.globals/eq.pass.cpp FAIL
+std/utilities/memory/default.allocator/allocator.members/allocate.pass.cpp FAIL
+std/utilities/memory/specialized.algorithms/specialized.construct/construct_at.pass.cpp FAIL
+std/utilities/memory/specialized.algorithms/specialized.destroy/destroy.pass.cpp FAIL
+std/utilities/memory/specialized.algorithms/specialized.destroy/destroy_at.pass.cpp FAIL
+std/utilities/memory/specialized.algorithms/specialized.destroy/destroy_n.pass.cpp FAIL
+
 # C++20 P0896R4 "<ranges>"
 std/language.support/support.limits/support.limits.general/algorithm.version.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/functional.version.pass.cpp FAIL
@@ -494,6 +518,11 @@ std/utilities/meta/meta.unary/meta.unary.prop/is_constructible.pass.cpp:0 FAIL
 std/containers/views/span.cons/ptr_len.pass.cpp:0 FAIL
 std/containers/views/span.cons/ptr_ptr.pass.cpp:0 FAIL
 
+# VSO-1168723 "Implicit copy assignment incorrectly not constexpr when subobject has explicit constexpr copy constructor"
+std/utilities/utility/pairs/pairs.pair/assign_pair.pass.cpp:0 FAIL
+std/utilities/utility/pairs/pairs.pair/assign_rv_pair.pass.cpp:0 FAIL
+std/utilities/utility/pairs/pairs.pair/assign_rv_pair_U_V.pass.cpp:0 FAIL
+
 
 # *** CLANG COMPILER BUGS ***
 # LLVM-33230 "Clang on Windows should define __STDCPP_THREADS__ to be 1"
@@ -501,11 +530,6 @@ std/thread/macro.pass.cpp:1 FAIL
 
 # LLVM-46207 Clang's tgmath.h interferes with the UCRT's tgmath.h
 std/depr/depr.c.headers/tgmath_h.pass.cpp:1 FAIL
-
-
-# *** CLANG FEATURES NOT YET IMPLEMENTED ***
-# P0960R3 "Allow initializing aggregates from a parenthesized list of values"
-std/utilities/tuple/tuple.tuple/tuple.creation/tuple_cat.pass.cpp:0 FAIL
 
 
 # *** CLANG ISSUES, NOT YET ANALYZED ***
@@ -616,6 +640,10 @@ std/language.support/support.runtime/cstdlib.pass.cpp FAIL
 # OS-11107628 "_Exit allows cleanup in other DLLs"
 std/thread/thread.threads/thread.thread.class/thread.thread.assign/move2.pass.cpp SKIPPED
 std/thread/thread.threads/thread.thread.class/thread.thread.member/join.pass.cpp SKIPPED
+
+# OS-29877133 "LDBL_DECIMAL_DIG missing from <float.h>"
+std/depr/depr.c.headers/float_h.pass.cpp:0 FAIL
+std/language.support/support.limits/c.limits/cfloat.pass.cpp:0 FAIL
 
 
 # *** LIKELY BOGUS TESTS ***
@@ -746,8 +774,6 @@ std/containers/sequences/array/array.creation/to_array.pass.cpp:0 FAIL
 std/iterators/predef.iterators/insert.iterators/back.insert.iterator/types.pass.cpp FAIL
 std/iterators/predef.iterators/insert.iterators/front.insert.iterator/types.pass.cpp FAIL
 std/iterators/predef.iterators/insert.iterators/insert.iterator/types.pass.cpp FAIL
-std/iterators/stream.iterators/ostream.iterator/types.pass.cpp FAIL
-std/iterators/stream.iterators/ostreambuf.iterator/types.pass.cpp FAIL
 
 # Tests emit warning C4244: 'argument': conversion from 'T' to 'const std::complex<double>::_Ty', possible loss of data
 std/numerics/complex.number/cmplx.over/conj.pass.cpp:0 FAIL
