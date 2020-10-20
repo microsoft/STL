@@ -1850,7 +1850,7 @@ namespace ranges {
     // concept-constrained for strict enforcement as it is used by several algorithms
     template <bidirectional_iterator _It1, bidirectional_iterator _It2>
         requires indirectly_movable<_It1, _It2>
-    _NODISCARD constexpr _It2 _Move_backward_common(const _It1 _First, _It1 _Last, _It2 _Result) {
+    constexpr _It2 _Move_backward_common(const _It1 _First, _It1 _Last, _It2 _Result) {
         if constexpr (_Ptr_move_cat<_It1, _It2>::_Trivially_copyable) {
             if (!_STD is_constant_evaluated()) {
                 return _Copy_backward_memmove(_First, _Last, _Result);
@@ -7720,6 +7720,14 @@ namespace ranges {
     // clang-format off
     template <bidirectional_iterator _It, class _Pr, class _Pj>
         requires sortable<_It, _Pr, _Pj>
+    void _Buffered_inplace_merge_common(_It _First, _It _Mid, _It _Last, iter_difference_t<_It> _Count1,
+        iter_difference_t<_It> _Count2, iter_value_t<_It>* const _Temp_ptr, const ptrdiff_t _Capacity, _Pr _Pred,
+        _Pj _Proj);
+    // clang-format on
+
+    // clang-format off
+    template <bidirectional_iterator _It, class _Pr, class _Pj>
+        requires sortable<_It, _Pr, _Pj>
     void _Buffered_inplace_merge_divide_and_conquer2(_It _First, _It _Mid, _It _Last,
         const iter_difference_t<_It> _Count1, const iter_difference_t<_It> _Count2, iter_value_t<_It>* const _Temp_ptr,
         const ptrdiff_t _Capacity, _Pr _Pred, _Pj _Proj, _It _Firstn, _It _Lastn, const iter_difference_t<_It> _Count1n,
@@ -7878,9 +7886,9 @@ namespace ranges {
                 return;
             }
 #if _ITERATOR_DEBUG_LEVEL == 2
-            _STL_VERIFY(_RANGES is_sorted(_First, _Mid, _Pred, _Proj),
+            _STL_VERIFY(_RANGES _Is_sorted_until_unchecked(_First, _Mid, _Pred, _Proj) == _Mid,
                 "ranges::inplace_merge requires the range [first, middle) to be sorted");
-            _STL_VERIFY(_RANGES is_sorted(_Mid, _Last, _Pred, _Proj),
+            _STL_VERIFY(_RANGES _Is_sorted_until_unchecked(_Mid, _Last, _Pred, _Proj) == _Last,
                 "ranges::inplace_merge requires the range [middle, last)] to be sorted");
 #endif //_ITERATOR_DEBUG_LEVEL == 2
 
@@ -10546,26 +10554,6 @@ _NODISCARD bool is_sorted(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last) noexcept /
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // FUNCTION TEMPLATE _Is_sorted_until_unchecked
-    template <class _It, class _Se, class _Pr, class _Pj>
-    _NODISCARD constexpr _It _Is_sorted_until_unchecked(_It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
-        _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It>);
-        _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
-        _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, projected<_It, _Pj>>);
-
-        if (_First == _Last) {
-            return _First;
-        }
-
-        for (auto _Prev = _First; ++_First != _Last; ++_Prev) {
-            if (_STD invoke(_Pred, _STD invoke(_Proj, *_First), _STD invoke(_Proj, *_Prev))) {
-                break;
-            }
-        }
-
-        return _First;
-    }
-
     // VARIABLE ranges::is_sorted
     class _Is_sorted_fn : private _Not_quite_object {
     public:
