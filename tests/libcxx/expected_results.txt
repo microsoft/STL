@@ -259,7 +259,7 @@ std/utilities/memory/allocator.traits/allocator.traits.members/allocate.verify.c
 std/utilities/memory/default.allocator/allocator.members/allocate.verify.cpp SKIPPED
 
 # GH-1382: Our machinery doesn't understand compile-only `.compile.pass.cpp` tests
-strings\string.view\string.view.io\stream_insert_decl_present.compile.pass.cpp SKIPPED
+std/strings/string.view/string.view.io/stream_insert_decl_present.compile.pass.cpp SKIPPED
 
 
 # *** MISSING STL FEATURES ***
