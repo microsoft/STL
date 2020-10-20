@@ -19,6 +19,7 @@ import time
 import lit.Test        # pylint: disable=import-error
 import lit.TestRunner  # pylint: disable=import-error
 
+from stl.test.executor import Executor
 from stl.test.tests import STLTest, LibcxxTest
 import stl.test.file_parsing
 import stl.util
@@ -31,7 +32,31 @@ class TestStep:
     file_deps: List[os.PathLike] = field(default_factory=list)
     env: Dict[str, str] = field(default_factory=dict)
     should_fail: bool = field(default=False)
+    executor: Executor = field(default=None)
+    def run(self):
+        return self.executor.run(self.cmd, self.work_dir,
+                                 self.file_deps, self.env)
 
+@dataclass
+class SigningRunStep(TestStep):
+    is_kernel: bool = field(default=False)
+    wdk_bin: str = field(default=None)
+
+    cert_path: os.PathLike = field(default=Path(''))
+    cert_pass: str = field(default="")
+    def run(self):
+        # TODO clean up this hacky mess
+        if self.is_kernel:
+            # sign the binary before running it.
+            cmd = [self.wdk_bin + '/x64/signtool.exe', 'sign',
+                   '/f', self.cert_path,
+                   '/p', self.cert_pass,
+                   self.cmd[0]]
+            out, err, rc = stl.util.executeCommand(cmd, self.work_dir)
+            if rc != 0:
+                self.should_fail = False
+                return (cmd, out, err, rc)
+        return super().run()
 
 class STLTestFormat:
     """
@@ -188,9 +213,7 @@ class STLTestFormat:
 
             report = ""
             for step in buildSteps:
-                cmd, out, err, rc = \
-                    self.build_executor.run(step.cmd, step.work_dir,
-                                            step.file_deps, step.env)
+                cmd, out, err, rc = step.run()
 
                 if step.should_fail and rc == 0:
                     report += "Build step succeeded unexpectedly.\n"
@@ -204,9 +227,7 @@ class STLTestFormat:
                     return lit.Test.Result(fail_var, report)
 
             for step in testSteps:
-                cmd, out, err, rc = \
-                    self.test_executor.run(step.cmd, step.work_dir,
-                                           step.file_deps, step.env)
+                cmd, out, err, rc = step.run()
 
                 if step.should_fail and rc == 0:
                     report += "Test step succeeded unexpectedly.\n"
@@ -250,15 +271,21 @@ class STLTestFormat:
                                                 [], [], [])
 
             yield TestStep(cmd, shared.exec_dir, [source_path],
-                           test.cxx.compile_env)
+                           test.cxx.compile_env,
+                           executor = self.build_executor)
 
     def getTestSteps(self, test, lit_config, shared):
         if shared.exec_file is not None:
             exec_env = test.cxx.compile_env
             exec_env['TMP'] = str(shared.exec_dir)
 
-            yield TestStep([str(shared.exec_file)], shared.exec_dir,
-                           [shared.exec_file], exec_env)
+            yield SigningRunStep([str(shared.exec_file)], shared.exec_dir,
+                                 [shared.exec_file], exec_env,
+                                 executor = self.test_executor,
+                                 is_kernel = lit_config.is_kernel,
+                                 wdk_bin = lit_config.wdk_bin,
+                                 cert_path = lit_config.cert_path,
+                                 cert_pass = lit_config.cert_pass)
         elif test.path_in_suite[-1].endswith('.fail.cpp'):
             exec_dir = test.getExecDir()
             source_path = Path(test.getSourcePath())
@@ -275,7 +302,8 @@ class STLTestFormat:
 
             cmd, _ = test.cxx.compileCmd([source_path], os.devnull, flags)
             yield TestStep(cmd, exec_dir, [source_path],
-                           test.cxx.compile_env, True)
+                           test.cxx.compile_env, True,
+                           executor = self.build_executor)
 
 
 class LibcxxTestFormat(STLTestFormat):

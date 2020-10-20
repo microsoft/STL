@@ -11,12 +11,12 @@ import os
 import platform
 import shlex
 
-from stl.test.executor import LocalExecutor
+from stl.test.executor import LocalExecutor, PrefixExecutor
 from stl.compiler import CXXCompiler
 import stl.util
 import stl.test.file_parsing
 import stl.test.target_info
-
+import secrets
 
 # Extract the value of a numeric macro such as __cplusplus or a feature-test
 # macro.
@@ -49,6 +49,8 @@ class Configuration:
         self.target_info = stl.test.target_info.WindowsLocalTI(lit_config)
         self.test_executor = None
         self.test_source_root = None
+        self.wdk_include = None
+        self.wdk_lib = None
 
     def get_lit_conf(self, name, default=None):
         val = self.lit_config.params.get(name, None)
@@ -66,12 +68,12 @@ class Configuration:
                 return value
             if not isinstance(value, str):
                 raise TypeError('expected bool or string')
-            if value.lower() in ('1', 'true'):
+            if value.lower() in ('1', 'true', 'on'):
                 return True
-            if value.lower() in ('', '0', 'false'):
+            if value.lower() in ('', '0', 'false', 'off'):
                 return False
             self.lit_config.fatal(
-                "parameter '{}' should be true or false".format(var_name))
+                "parameter '{}' should be true or false.  Was '{}'".format(var_name, value))
 
         conf_val = self.get_lit_conf(name)
         if env_var is not None and env_var in os.environ and \
@@ -91,6 +93,23 @@ class Configuration:
         self.configure_expected_results()
         self.configure_test_dirs()
         self.configure_test_format()
+        self.configure_driver_certificate()
+
+    def configure_driver_certificate(self):
+        if not self.lit_config.is_kernel:
+            return
+        self.configure_build_root()
+
+        self.lit_config.cert_pass = secrets.token_hex(64)
+        self.lit_config.cert_path = self.stl_build_root / 'MsvcStlTestingCert.pfx'
+        cmd = ['powershell', '-ExecutionPolicy', 'Bypass',
+               '-File', 'E:/src/msstl/tests/utils/kernel/generateMsvcCert.ps1',
+               '-out', self.lit_config.cert_path,
+               '-pass', self.lit_config.cert_pass]
+        out, err, rc = stl.util.executeCommand(cmd)
+        if rc != 0:
+            report = stl.util.makeReport(cmd, out, err, rc)
+            raise RuntimeError(report)
 
     def configure_test_format(self):
         format_name = self.get_lit_conf('format_name', None)
@@ -171,6 +190,11 @@ class Configuration:
 
         self.target_arch = target_arch
         self.config.target_arch = target_arch
+
+        self.lit_config.is_kernel = self.get_lit_bool('is_kernel', False)
+        self.wdk_include = self.get_lit_conf('wdk_include', None)
+        self.wdk_lib = self.get_lit_conf('wdk_lib', None)
+        self.lit_config.wdk_bin = self.get_lit_conf('wdk_bin', None)
 
     def configure_build_root(self):
         stl_build_root = self.get_lit_conf('stl_build_root', None)
@@ -296,12 +320,17 @@ class Configuration:
         self.configure_link_flags()
         self.configure_test_env()
 
+        self.default_compiler.is_kernel = self.get_lit_bool('is_kernel', False)
         self.default_compiler.compile_env = self.config.environment
 
     # TRANSITION: Investigate using SSHExecutor for ARM
     def configure_executors(self):
         self.build_executor = LocalExecutor()
-        self.test_executor = LocalExecutor()
+
+        if self.lit_config.is_kernel:
+            self.test_executor = PrefixExecutor(str(self.cxx_runtime_root / "stl_kernel_loader.exe"), LocalExecutor())
+        else:
+            self.test_executor = LocalExecutor()
 
     def configure_compile_flags(self):
         self.configure_compile_flags_header_includes()
@@ -312,8 +341,24 @@ class Configuration:
         if additional_flags_str:
             self.default_compiler.compile_flags += \
                 shlex.split(additional_flags_str)
+        if self.lit_config.is_kernel:
+            self.default_compiler.compile_flags.extend([
+                '/FIstl_kernel/kernel_test_constants.h',
+            ])
+
 
     def configure_compile_flags_header_includes(self):
+        if self.lit_config.is_kernel:
+            if self.stl_src_root is None:
+                self.configure_src_root()
+            self.kernel_util_dir = self.stl_src_root / 'tests' / 'utils' / 'kernel' / 'inc'
+            self.default_compiler.compile_flags.extend([
+                '/I' + str(self.kernel_util_dir),
+                '/I' + self.wdk_include + '/km',
+                #'/I' + self.wdk_include + '/km/crt', #causes vadefs.h conflicts
+                '/I' + self.wdk_include + '/shared',
+            ])
+
         if self.cxx_headers is None:
             self.configure_cxx_headers()
 
@@ -324,12 +369,14 @@ class Configuration:
         for directory in include_dirs:
             self.default_compiler.compile_flags.append('/I' + directory)
 
+
     def configure_cxx_headers(self):
         cxx_headers = self.get_lit_conf('cxx_headers')
 
         if cxx_headers is None:
             if self.stl_build_root is None:
                 self.configure_build_root()
+
 
             cxx_headers = self.stl_build_root / 'inc'
 
@@ -353,6 +400,30 @@ class Configuration:
 
         self.default_compiler.link_flags.append(
             '/LIBPATH:' + str(self.msvc_toolset_libs_root))
+
+        if self.lit_config.is_kernel:
+            arch_name = None
+            if self.target_arch.casefold() == 'AMD64'.casefold():
+                arch_name = 'x64'
+            else:
+                arch_name = self.target_arch.lower()
+
+            self.default_compiler.link_flags.extend([
+                '/LIBPATH:' + self.wdk_lib + '/km/' + arch_name,
+                '/IGNORE:4210',
+                '/machine:'+arch_name,
+                '/entry:DriverEntry',
+                '/subsystem:native',
+                '/nodefaultlib',
+                'stl_kernel.lib',
+                'BufferOverflowFastFailK.lib',
+                'ntoskrnl.lib',
+                'hal.lib',
+                'wmilib.lib',
+                'Ntstrsafe.lib',
+                'libcpmt.lib',
+                'libcmt.lib',
+            ])
 
         additional_flags_str = self.get_lit_conf('additional_link_flags')
         if additional_flags_str:

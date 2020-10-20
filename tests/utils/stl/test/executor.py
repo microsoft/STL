@@ -76,11 +76,9 @@ class PrefixExecutor(Executor):
         self.commandPrefix = commandPrefix
         self.chain = chain
 
-    def run(self, exe_path, cmd=None, work_dir='.', file_deps=None, env=None):
-        cmd = cmd or [exe_path]
-        return self.chain.run(exe_path, self.commandPrefix + cmd, work_dir,
+    def run(self, cmd, work_dir='.', file_deps=None, env=None):
+        return self.chain.run([self.commandPrefix] + cmd, work_dir,
                               file_deps, env=env)
-
 
 class PostfixExecutor(Executor):
     """Postfix an executor with some args."""

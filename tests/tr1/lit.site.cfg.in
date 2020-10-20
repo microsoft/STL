@@ -14,5 +14,9 @@ config.target_arch                 = "@VCLIBS_TARGET_ARCHITECTURE@"
 config.test_exec_root              = "@TR1_TEST_OUTPUT_DIR@"
 config.test_subdirs_file           = "@TR1_TEST_SUBDIRS_FILE@"
 config.test_subdirs_root           = "@TR1_TEST_SUBDIRS_ROOT@"
+config.is_kernel                   = "@STL_IS_KERNEL@"
+config.wdk_include                 = "@WDK_INCLUDE_DIRECTORY@"
+config.wdk_lib                     = "@WDK_LIB_DIRECTORY@"
+config.wdk_bin                     = "@WDK_BIN_DIRECTORY@"
 
 lit_config.load_config(config, "@CMAKE_CURRENT_SOURCE_DIR@/lit.cfg")

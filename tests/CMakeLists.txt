@@ -13,6 +13,9 @@ set(LLVM_PROJECT_SOURCE_DIR "${STL_SOURCE_DIR}/llvm-project" CACHE PATH
 add_subdirectory(libcxx)
 add_subdirectory(std)
 add_subdirectory(tr1)
+if(STL_IS_KERNEL)
+    add_subdirectory(utils/kernel)
+endif()
 
 # Add the stl-lit subdirectory last so all the test directories have had a
 # chance to add to the config map and test directory global properties.

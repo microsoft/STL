@@ -19,6 +19,10 @@ config.stl_build_root              = "@STL_BUILD_ROOT@"
 config.stl_src_root                = "@STL_SOURCE_DIR@"
 config.target_arch                 = "@VCLIBS_TARGET_ARCHITECTURE@"
 config.test_subdirs                = ["@LIBCXX_SOURCE_DIR@/test/std"]
+config.is_kernel                   = "@STL_IS_KERNEL@"
+config.wdk_include                 = "@WDK_INCLUDE_DIRECTORY@"
+config.wdk_lib                     = "@WDK_LIB_DIRECTORY@"
+config.wdk_bin                     = "@WDK_BIN_DIRECTORY@"
 
 lit_config.params['use_old_format'] = True
 config.loaded_site_config = True

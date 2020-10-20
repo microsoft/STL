@@ -32,6 +32,7 @@ class CXXCompiler:
         self.compile_flags = compile_flags or []
         self.flags = flags or []
         self.link_flags = link_flags or []
+        self.is_kernel = None
 
         self.compile_env = compile_env
 
@@ -85,6 +86,11 @@ class CXXCompiler:
         if mode in (self.CM_Analyze, self.CM_Compile, self.CM_Default):
             cmd.extend(self.compile_flags)
             cmd.extend(compile_flags)
+
+        if self.is_kernel and mode in (self.CM_PreProcess, self.CM_Compile, self.CM_Default):
+            name = str(out).replace('\\','.').replace(':','.')
+            cmd.extend(['/DKERNEL_TEST_NAME=L"' + name + '"'])
+            # TODO need to sign the linked binary
 
         cmd.extend(self.flags)
         cmd.extend(flags)

@@ -143,6 +143,7 @@ class STLTest(Test):
 
         self.cxx = CXXCompiler(cxx, flags, compile_flags, link_flags,
                                default_cxx.compile_env)
+        self.cxx.is_kernel = lit_config.is_kernel
 
     # This is partially lifted from lit's Test class. The changes here are to
     # handle skipped tests, our env.lst format, and different naming schemes.
