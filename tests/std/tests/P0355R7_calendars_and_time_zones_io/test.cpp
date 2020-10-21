@@ -3,7 +3,6 @@
 
 #include "duration_output_tests.h"
 
-
 int main() {
     duration_output::test();
     return 0;

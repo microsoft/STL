@@ -44,7 +44,7 @@ namespace duration_output {
         ss.imbue(locale(ss.getloc(), new comma));
         ss << ' ' << d;
         expected += WIDEN(CharT, " 1,406e-01s");
-#endif
+#endif // !defined(_DLL) || ((_ITERATOR_DEBUG_LEVEL == 0) != defined(_DEBUG))
 
         return ss.str() == expected;
     }

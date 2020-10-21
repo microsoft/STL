@@ -644,6 +644,7 @@ namespace chrono {
                 _Rnext    = _UIntegral_to_buff(_Rnext, static_cast<uintmax_t>(_Den));
                 *--_Rnext = '/';
             }
+            
             _Rnext    = _UIntegral_to_buff(_Rnext, static_cast<uintmax_t>(_Num));
             *--_Rnext = '[';
             return _Rnext;
