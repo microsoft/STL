@@ -52,6 +52,7 @@ namespace duration_output {
 #undef WIDEN
 
     void test() {
+        using LongRatio = ratio<INTMAX_MAX - 1, INTMAX_MAX>;
         assert(test_duration(duration<int, atto>{1}, "1as"));
         assert(test_duration(duration<int, femto>{2}, "2fs"));
         assert(test_duration(duration<int, pico>{3}, "3ps"));
@@ -76,6 +77,7 @@ namespace duration_output {
         assert(test_duration(duration<int, ratio<2>>{24}, "24[2]s"));
         assert(test_duration(duration<int, ratio<1, 2>>{24}, "24[1/2]s"));
         assert(test_duration(duration<int, ratio<22, 7>>{24}, "24[22/7]s"));
+        assert(test_duration(duration<int, LongRatio>{24}, "24[9223372036854775806/9223372036854775807]s"));
 
         assert(test_duration(duration<float>{0.140625}, "0.140625s"));
         assert(test_duration_stream_manip<char>());
@@ -84,7 +86,7 @@ namespace duration_output {
         assert(test_duration(duration<int, femto>{2}, L"2fs"));
         assert(test_duration(duration<int, pico>{3}, L"3ps"));
         assert(test_duration(duration<int, nano>{42}, L"42ns"));
-        assert(test_duration(duration<int, micro>{42}, L"42\u00b5\u0073"));
+        assert(test_duration(duration<int, micro>{42}, L"42us"));
         assert(test_duration(duration<int, milli>{42}, "42ms"));
         assert(test_duration(duration<int, centi>{42}, L"42cs"));
         assert(test_duration(duration<int, deci>{42}, L"42ds"));
@@ -104,6 +106,7 @@ namespace duration_output {
         assert(test_duration(duration<int, ratio<2>>{24}, L"24[2]s"));
         assert(test_duration(duration<int, ratio<1, 2>>{24}, L"24[1/2]s"));
         assert(test_duration(duration<int, ratio<22, 7>>{24}, L"24[22/7]s"));
+        assert(test_duration(duration<int, LongRatio>{24}, L"24[9223372036854775806/9223372036854775807]s"));
 
         assert(test_duration(duration<float>{0.140625}, L"0.140625s"));
         assert(test_duration_stream_manip<wchar_t>());

@@ -644,7 +644,7 @@ namespace chrono {
                 _Rnext    = _UIntegral_to_buff(_Rnext, static_cast<uintmax_t>(_Den));
                 *--_Rnext = '/';
             }
-            
+
             _Rnext    = _UIntegral_to_buff(_Rnext, static_cast<uintmax_t>(_Num));
             *--_Rnext = '[';
             return _Rnext;
@@ -659,8 +659,6 @@ namespace chrono {
 
 #define _LITERAL_SUFFIX(_TYPE, _SUFFIX) \
     { _TYPE::num, _TYPE::den, _STD make_pair(_SUFFIX, L##_SUFFIX) }
-#define _LITERAL_SUFFIX2(_TYPE, _NARROW_SUFFIX, _WIDE_SUFFIX) \
-    { _TYPE::num, _TYPE::den, _STD make_pair(_NARROW_SUFFIX, _WIDE_SUFFIX) }
 
         static constexpr _Suf_names _Suffixes[]{
             // clang-format off
@@ -668,7 +666,7 @@ namespace chrono {
             _LITERAL_SUFFIX(femto, "fs"),
             _LITERAL_SUFFIX(pico, "ps"),
             _LITERAL_SUFFIX(nano, "ns"),
-            _LITERAL_SUFFIX2(micro, "us", L"\u00b5s"),
+            _LITERAL_SUFFIX(micro, "us"),
             _LITERAL_SUFFIX(milli, "ms"),
             _LITERAL_SUFFIX(centi, "cs"),
             _LITERAL_SUFFIX(deci, "ds"),
@@ -701,13 +699,13 @@ namespace chrono {
         _Sstr << _Dur.count();
 
         constexpr auto _Suffix = _Units_suffix_helper::_Get_literal<_CharT, _Period>();
-        if _CONSTEXPR_IF (_Suffix != nullptr) {
-            _Sstr << _Suffix;
-        } else {
+        if _CONSTEXPR_IF (_Suffix == nullptr) {
             _CharT _Buffer[2 * (numeric_limits<intmax_t>::digits10 + 1) + 5] = {}; // 2 numbers + "[/]s\0"
             const _CharT* _Begin =
                 _Units_suffix_helper::_Get_general<_CharT>(_STD end(_Buffer), _Period::num, _Period::den);
             _Sstr << _Begin;
+        } else {
+            _Sstr << _Suffix;
         }
 
         return _Os << _Sstr.str();
