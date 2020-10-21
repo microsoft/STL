@@ -774,17 +774,33 @@ struct _Format_handler {
     basic_format_parse_context<_CharT> _Parse_context;
     _Context _Ctx;
 
-    explicit _Format_hander(typename _ArgFormatter::iterator _Out, basic_string_view<_Char> _Str,
+    explicit _Format_handler(typename _ArgFormatter::iterator _Out, basic_string_view<_CharT> _Str,
         basic_format_args<_Context> _Format_args, locale& _Loc)
         : _Parse_context(_Str), _Ctx(_Out, _Format_args, _Loc) {}
 
     void _On_text(const _CharT* _Begin, const _CharT* _End) {
-        /* TODO: output the text */
+        auto _Size = _End - _Begin;
+        auto _Out  = _Ctx.out();
+        _STD copy_n(_Begin, _Size, _Out);
+        _Ctx.advance_to(_Out);
     }
 
-    void _On_replacement_field(int _Id, const _CharT*) {}
+    int _On_arg_id() {
+        return _Parse_context.next_arg_id();
+    }
 
-    const _CharT* _On_format_specs(int _Id, const _CharT* _Begin, const _CharT* _End) {}
+    int _On_arg_id(int _Id) {
+        return _Parse_context.check_arg_id(_Id);
+    }
+
+    void _On_replacement_field(int _Id, const _CharT*) {
+        auto _Arg = _Ctx.arg(_Id);
+    }
+
+    const _CharT* _On_format_specs(int _Id, const _CharT* _Begin, const _CharT* _End) {
+        _Parse_context.advance_to(_Begin);
+        auto _Arg = _Ctx.arg(_Id);
+    }
 };
 
 using format_context  = basic_format_context<back_insert_iterator<string>, string::value_type>;
