@@ -2135,7 +2135,7 @@ void test_copy_assignment_same_index() {
     assert(std::get<0>(v1) == 42);
   }
   {
-    using V = std::variant<int, long, unsigned>;
+    using V = std::variant<int, long, unsigned int>;
     V v1(43l);
     V v2(42l);
     V &vref = (v1 = v2);
@@ -2144,7 +2144,7 @@ void test_copy_assignment_same_index() {
     assert(std::get<1>(v1) == 42);
   }
   {
-    using V = std::variant<int, CopyAssign, unsigned>;
+    using V = std::variant<int, CopyAssign, unsigned int>;
     V v1(std::in_place_type<CopyAssign>, 43);
     V v2(std::in_place_type<CopyAssign>, 42);
     CopyAssign::reset();
@@ -2192,7 +2192,7 @@ void test_copy_assignment_same_index() {
   {
     struct {
       constexpr Result<long> operator()() const {
-        using V = std::variant<int, long, unsigned>;
+        using V = std::variant<int, long, unsigned int>;
         V v(43l);
         V v2(42l);
         v = v2;
@@ -2206,7 +2206,7 @@ void test_copy_assignment_same_index() {
   {
     struct {
       constexpr Result<int> operator()() const {
-        using V = std::variant<int, TCopyAssign, unsigned>;
+        using V = std::variant<int, TCopyAssign, unsigned int>;
         V v(std::in_place_type<TCopyAssign>, 43);
         V v2(std::in_place_type<TCopyAssign>, 42);
         v = v2;
@@ -2220,7 +2220,7 @@ void test_copy_assignment_same_index() {
   {
     struct {
       constexpr Result<int> operator()() const {
-        using V = std::variant<int, TCopyAssignNTMoveAssign, unsigned>;
+        using V = std::variant<int, TCopyAssignNTMoveAssign, unsigned int>;
         V v(std::in_place_type<TCopyAssignNTMoveAssign>, 43);
         V v2(std::in_place_type<TCopyAssignNTMoveAssign>, 42);
         v = v2;
@@ -2236,7 +2236,7 @@ void test_copy_assignment_same_index() {
 
 void test_copy_assignment_different_index() {
   {
-    using V = std::variant<int, long, unsigned>;
+    using V = std::variant<int, long, unsigned int>;
     V v1(43);
     V v2(42l);
     V &vref = (v1 = v2);
@@ -2245,9 +2245,9 @@ void test_copy_assignment_different_index() {
     assert(std::get<1>(v1) == 42);
   }
   {
-    using V = std::variant<int, CopyAssign, unsigned>;
+    using V = std::variant<int, CopyAssign, unsigned int>;
     CopyAssign::reset();
-    V v1(std::in_place_type<unsigned>, 43u);
+    V v1(std::in_place_type<unsigned int>, 43u);
     V v2(std::in_place_type<CopyAssign>, 42);
     assert(CopyAssign::copy_construct == 0);
     assert(CopyAssign::move_construct == 0);
@@ -2326,7 +2326,7 @@ void test_copy_assignment_different_index() {
   {
     struct {
       constexpr Result<long> operator()() const {
-        using V = std::variant<int, long, unsigned>;
+        using V = std::variant<int, long, unsigned int>;
         V v(43);
         V v2(42l);
         v = v2;
@@ -2340,8 +2340,8 @@ void test_copy_assignment_different_index() {
   {
     struct {
       constexpr Result<int> operator()() const {
-        using V = std::variant<int, TCopyAssign, unsigned>;
-        V v(std::in_place_type<unsigned>, 43u);
+        using V = std::variant<int, TCopyAssign, unsigned int>;
+        V v(std::in_place_type<unsigned int>, 43u);
         V v2(std::in_place_type<TCopyAssign>, 42);
         v = v2;
         return {v.index(), std::get<1>(v).value};
@@ -2707,7 +2707,7 @@ void test_move_assignment_same_index() {
     assert(std::get<0>(v1) == 42);
   }
   {
-    using V = std::variant<int, long, unsigned>;
+    using V = std::variant<int, long, unsigned int>;
     V v1(43l);
     V v2(42l);
     V &vref = (v1 = std::move(v2));
@@ -2716,7 +2716,7 @@ void test_move_assignment_same_index() {
     assert(std::get<1>(v1) == 42);
   }
   {
-    using V = std::variant<int, MoveAssign, unsigned>;
+    using V = std::variant<int, MoveAssign, unsigned int>;
     V v1(std::in_place_type<MoveAssign>, 43);
     V v2(std::in_place_type<MoveAssign>, 42);
     MoveAssign::reset();
@@ -2763,7 +2763,7 @@ void test_move_assignment_same_index() {
   {
     struct {
       constexpr Result<long> operator()() const {
-        using V = std::variant<int, long, unsigned>;
+        using V = std::variant<int, long, unsigned int>;
         V v(43l);
         V v2(42l);
         v = std::move(v2);
@@ -2777,7 +2777,7 @@ void test_move_assignment_same_index() {
   {
     struct {
       constexpr Result<int> operator()() const {
-        using V = std::variant<int, TMoveAssign, unsigned>;
+        using V = std::variant<int, TMoveAssign, unsigned int>;
         V v(std::in_place_type<TMoveAssign>, 43);
         V v2(std::in_place_type<TMoveAssign>, 42);
         v = std::move(v2);
@@ -2793,7 +2793,7 @@ void test_move_assignment_same_index() {
 
 void test_move_assignment_different_index() {
   {
-    using V = std::variant<int, long, unsigned>;
+    using V = std::variant<int, long, unsigned int>;
     V v1(43);
     V v2(42l);
     V &vref = (v1 = std::move(v2));
@@ -2802,8 +2802,8 @@ void test_move_assignment_different_index() {
     assert(std::get<1>(v1) == 42);
   }
   {
-    using V = std::variant<int, MoveAssign, unsigned>;
-    V v1(std::in_place_type<unsigned>, 43u);
+    using V = std::variant<int, MoveAssign, unsigned int>;
+    V v1(std::in_place_type<unsigned int>, 43u);
     V v2(std::in_place_type<MoveAssign>, 42);
     MoveAssign::reset();
     V &vref = (v1 = std::move(v2));
@@ -2843,7 +2843,7 @@ void test_move_assignment_different_index() {
   {
     struct {
       constexpr Result<long> operator()() const {
-        using V = std::variant<int, long, unsigned>;
+        using V = std::variant<int, long, unsigned int>;
         V v(43);
         V v2(42l);
         v = std::move(v2);
@@ -2857,8 +2857,8 @@ void test_move_assignment_different_index() {
   {
     struct {
       constexpr Result<long> operator()() const {
-        using V = std::variant<int, TMoveAssign, unsigned>;
-        V v(std::in_place_type<unsigned>, 43u);
+        using V = std::variant<int, TMoveAssign, unsigned int>;
+        V v(std::in_place_type<unsigned int>, 43u);
         V v2(std::in_place_type<TMoveAssign>, 42);
         v = std::move(v2);
         return {v.index(), std::get<1>(v).value};
@@ -3107,7 +3107,7 @@ void test_T_assignment_basic() {
 #if 0 // TRANSITION, P0608
 #ifndef TEST_VARIANT_ALLOWS_NARROWING_CONVERSIONS
   {
-    std::variant<unsigned, long> v;
+    std::variant<unsigned int, long> v;
     v = 42;
     assert(v.index() == 1);
     assert(std::get<1>(v) == 42);
@@ -4632,7 +4632,7 @@ void test_T_ctor_basic() {
 #if 0 // TRANSITION, P0608
 #ifndef TEST_VARIANT_ALLOWS_NARROWING_CONVERSIONS
   {
-    constexpr std::variant<unsigned, long> v(42);
+    constexpr std::variant<unsigned int, long> v(42);
     static_assert(v.index() == 1, "");
     static_assert(std::get<1>(v) == 42, "");
   }
@@ -6073,7 +6073,7 @@ int run_test() {
 #include "variant_test_helpers.h"
 
 namespace visit {
-enum CallType : unsigned {
+enum CallType : unsigned int {
   CT_None,
   CT_NonConst = 1,
   CT_Const = 2,
@@ -6082,8 +6082,8 @@ enum CallType : unsigned {
 };
 
 inline constexpr CallType operator|(CallType LHS, CallType RHS) {
-  return static_cast<CallType>(static_cast<unsigned>(LHS) |
-                               static_cast<unsigned>(RHS));
+  return static_cast<CallType>(static_cast<unsigned int>(LHS) |
+                               static_cast<unsigned int>(RHS));
 }
 
 struct ForwardingCallObject {
@@ -6617,10 +6617,10 @@ namespace msvc {
         //
         //===----------------------------------------------------------------------===//
 
-        enum CallType : unsigned { CT_None, CT_NonConst = 1, CT_Const = 2, CT_LValue = 4, CT_RValue = 8 };
+        enum CallType : unsigned int { CT_None, CT_NonConst = 1, CT_Const = 2, CT_LValue = 4, CT_RValue = 8 };
 
         constexpr CallType operator|(CallType LHS, CallType RHS) {
-            return static_cast<CallType>(static_cast<unsigned>(LHS) | static_cast<unsigned>(RHS));
+            return static_cast<CallType>(static_cast<unsigned int>(LHS) | static_cast<unsigned int>(RHS));
         }
 
         struct ForwardingCallObject {
