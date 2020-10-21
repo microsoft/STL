@@ -323,6 +323,10 @@ class Configuration:
         self.default_compiler.is_kernel = self.get_lit_bool('is_kernel', False)
         self.default_compiler.compile_env = self.config.environment
 
+        env_var = 'STL_EDG_DROP'
+        if env_var in os.environ and os.environ[env_var] is not None:
+            self.default_compiler.edg_drop = os.environ[env_var]
+
     # TRANSITION: Investigate using SSHExecutor for ARM
     def configure_executors(self):
         self.build_executor = LocalExecutor()

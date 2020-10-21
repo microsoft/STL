@@ -22,7 +22,7 @@ class CXXCompiler:
     CM_Analyze = 4
 
     def __init__(self, path, flags=None, compile_flags=None,
-                 link_flags=None, compile_env=None):
+                 link_flags=None, compile_env=None, edg_drop=None):
         self.path = path
         if path is not None:
             self.name = os.path.basename(path).split('.')[0]
@@ -35,6 +35,7 @@ class CXXCompiler:
         self.is_kernel = None
 
         self.compile_env = compile_env
+        self.edg_drop = edg_drop
 
     def _basicCmd(self, source_files: List[Path], out: Path,
                   mode=CM_Default, flags=[], compile_flags=[], link_flags=[],
