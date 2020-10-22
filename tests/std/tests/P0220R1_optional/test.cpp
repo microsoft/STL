@@ -5718,7 +5718,7 @@ class X
 {
     int i_;
 public:
-    static unsigned int dtor_called;
+    static unsigned dtor_called;
     X(int i) : i_(i) {}
     X(X&& x) = default;
     X& operator=(X&&) = default;
@@ -5727,13 +5727,13 @@ public:
     friend bool operator==(const X& x, const X& y) {return x.i_ == y.i_;}
 };
 
-unsigned int X::dtor_called = 0;
+unsigned X::dtor_called = 0;
 
 class Y
 {
     int i_;
 public:
-    static unsigned int dtor_called;
+    static unsigned dtor_called;
     Y(int i) : i_(i) {}
     Y(Y&&) = default;
     ~Y() {++dtor_called;}
@@ -5742,7 +5742,7 @@ public:
     friend void swap(Y& x, Y& y) {std::swap(x.i_, y.i_);}
 };
 
-unsigned int Y::dtor_called = 0;
+unsigned Y::dtor_called = 0;
 
 class Z
 {
@@ -6955,7 +6955,7 @@ class X
 {
     int i_;
 public:
-    static unsigned int dtor_called;
+    static unsigned dtor_called;
     X(int i) : i_(i) {}
     X(X&& x) = default;
     X& operator=(X&&) = default;
@@ -6964,13 +6964,13 @@ public:
     friend bool operator==(const X& x, const X& y) {return x.i_ == y.i_;}
 };
 
-unsigned int X::dtor_called = 0;
+unsigned X::dtor_called = 0;
 
 class Y
 {
     int i_;
 public:
-    static unsigned int dtor_called;
+    static unsigned dtor_called;
     Y(int i) : i_(i) {}
     Y(Y&&) = default;
     ~Y() {++dtor_called;}
@@ -6979,7 +6979,7 @@ public:
     friend void swap(Y& x, Y& y) {std::swap(x.i_, y.i_);}
 };
 
-unsigned int Y::dtor_called = 0;
+unsigned Y::dtor_called = 0;
 
 class Z
 {
