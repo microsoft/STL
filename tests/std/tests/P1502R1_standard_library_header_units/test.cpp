@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// N4861 [headers]/4:
+// N4868 [headers]/4:
 // "The headers listed in Table 21 [...] are collectively known as the importable C++ library headers.
-// [Note: Importable C++ library headers can be imported as module units (10.3). - end note]"
+// [Note 1: Importable C++ library headers can be imported as module units (10.3). - end note]"
 // [tab:headers.cpp]: "Table 21: C++ library headers"
 
 // This EXCLUDES the <cmeow> headers in:
@@ -46,8 +46,8 @@ import <limits>;
 import <list>;
 import <locale>;
 import <map>;
-import <memory_resource>;
 import <memory>;
+import <memory_resource>;
 import <mutex>;
 import <new>;
 import <numbers>;
@@ -70,8 +70,8 @@ import <stack>;
 import <stdexcept>;
 import <stop_token>;
 import <streambuf>;
-import <string_view>;
 import <string>;
+import <string_view>;
 import <strstream>;
 // import <syncstream>;
 import <system_error>;
@@ -94,20 +94,14 @@ import <version>;
 #include <force_include.hpp>
 using namespace std;
 
-[[nodiscard]] constexpr int compiletime_10_or_runtime_20() {
-    if (is_constant_evaluated()) {
-        return 10;
-    } else {
-        return 20;
-    }
-}
-
 int main() {
     {
         puts("Testing <algorithm>.");
         constexpr int arr[]{11, 0, 22, 0, 33, 0, 44, 0, 55};
         assert(count(begin(arr), end(arr), 0) == 4);
+        assert(ranges::count(arr, 0) == 4);
         static_assert(count(begin(arr), end(arr), 0) == 4);
+        static_assert(ranges::count(arr, 0) == 4);
     }
 
     {
@@ -182,8 +176,12 @@ int main() {
         const to_chars_result result = to_chars(buf, end(buf), 3.14);
         assert(result.ec == errc{});
         assert(result.ptr == end(buf));
+#if 0 // TRANSITION, DevCom-1224512 (char_traits)
         const string_view sv{buf, size(buf)};
         assert(sv == "3.14");
+#else // ^^^ no workaround / workaround vvv
+        assert(buf[0] == '3' && buf[1] == '.' && buf[2] == '1' && buf[3] == '4');
+#endif // ^^^ workaround ^^^
     }
 
     {
@@ -270,8 +268,9 @@ int main() {
 
     {
         puts("Testing <coroutine>.");
-        const coroutine_handle<> handle{};
+        constexpr coroutine_handle<> handle{};
         assert(handle.address() == nullptr);
+        static_assert(handle.address() == nullptr);
     }
 
     {
@@ -297,12 +296,14 @@ int main() {
 
     {
         puts("Testing <filesystem>.");
+#if 0 // TRANSITION, DevCom-1224512 (char_traits)
         constexpr wstring_view dot{L"."};
         error_code ec{};
         const filesystem::space_info info = filesystem::space(dot, ec);
         assert(!ec);
         assert(info.capacity > 0);
         assert(info.capacity != static_cast<decltype(info.capacity)>(-1));
+#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -320,8 +321,10 @@ int main() {
 
     {
         puts("Testing <fstream>.");
+#if 0 // TRANSITION, DevCom-1224512 (char_traits)
         const ifstream f{};
         assert(!f.is_open());
+#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -353,6 +356,7 @@ int main() {
 
     {
         puts("Testing <iomanip>.");
+#if 0 // TRANSITION, DevCom-1224512 (char_traits)
         ostringstream oss;
         oss << "I have " << setfill('.') << setw(7) << 9 * 9 * 9 + 10 * 10 * 10 << " cute fluffy kittens.";
         assert(oss.str() == "I have ...1729 cute fluffy kittens.");
@@ -360,15 +364,18 @@ int main() {
         oss << quoted(R"(Read "C:\Temp\Cat Names.txt" for more info.)");
         const char* const expected_quoted = R"("Read \"C:\\Temp\\Cat Names.txt\" for more info.")";
         assert(oss.str() == expected_quoted);
+#endif // ^^^ no workaround ^^^
     }
 
     {
         puts("Testing <ios>.");
+#if 0 // TRANSITION, DevCom-1224512 (char_traits)
         ios b{nullptr};
         assert(b.rdbuf() == nullptr);
         assert(b.rdstate() == ios_base::badbit);
         assert(b.precision() == 6);
         static_assert(ios_base::floatfield == (ios_base::fixed | ios_base::scientific));
+#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -379,14 +386,18 @@ int main() {
 
     {
         puts("Testing <iostream>.");
+#if 0 // TRANSITION, DevCom-1224512 (char_traits)
         cout << "Testing P1502R1_standard_library_header_units.\n";
         assert(cin.tie() == &cout);
+#endif // ^^^ no workaround ^^^
     }
 
     {
         puts("Testing <istream>.");
+#if 0 // TRANSITION, DevCom-1224512 (char_traits)
         const istream is{nullptr};
         assert(is.gcount() == 0);
+#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -541,8 +552,10 @@ int main() {
 
     {
         puts("Testing <ostream>.");
+#if 0 // TRANSITION, DevCom-1224512 (char_traits)
         const ostream os{nullptr};
         assert(os.rdbuf() == nullptr);
+#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -560,7 +573,6 @@ int main() {
         assert(q.front() == 30);
         q.pop();
         assert(q.empty());
-#endif // ^^^ no workaround ^^^
 
         priority_queue<int> pq;
         pq.push(50);
@@ -577,6 +589,7 @@ int main() {
         assert(pq.top() == 10);
         pq.pop();
         assert(pq.empty());
+#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -587,14 +600,23 @@ int main() {
             (void) lcg();
         }
 
-        assert(lcg() == 1043618065); // N4861 [rand.predef]/1
+        assert(lcg() == 1043618065); // N4868 [rand.predef]/1
     }
 
     {
         puts("Testing <ranges>.");
         constexpr int arr[]{11, 0, 22, 0, 33, 0, 44, 0, 55};
-        assert(ranges::count(arr, 0) == 4);
-        static_assert(ranges::count(arr, 0) == 4);
+#if 0 // TRANSITION, VSO-1088552 (deduction guides)
+        assert(ranges::distance(views::filter(arr, [](int x) { return x == 0; })) == 4);
+        static_assert(ranges::distance(views::filter(arr, [](int x) { return x != 0; })) == 5);
+#elif 0 // TRANSITION, VSO-1237145 (trailing requires clause)
+        auto is_zero                  = [](int x) { return x == 0; };
+        using FV1                     = ranges::filter_view<ranges::ref_view<decltype(arr)>, decltype(is_zero)>;
+        assert(ranges::distance(FV1{arr, is_zero}) == 4);
+        constexpr auto not_zero = [](int x) { return x != 0; };
+        using FV2 = ranges::filter_view<ranges::ref_view<decltype(arr)>, remove_const_t<decltype(not_zero)>>;
+        static_assert(ranges::distance(FV2{arr, not_zero}) == 5);
+#endif // ^^^ workaround ^^^
     }
 
     {
@@ -719,9 +741,11 @@ int main() {
 
     {
         puts("Testing <sstream>.");
+#if 0 // TRANSITION, DevCom-1224512 (char_traits)
         ostringstream oss;
         oss << "I have " << 9 * 9 * 9 + 10 * 10 * 10 << " cute fluffy kittens.";
         assert(oss.str() == "I have 1729 cute fluffy kittens.");
+#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -744,6 +768,7 @@ int main() {
 
     {
         puts("Testing <stdexcept>.");
+#if 0 // TRANSITION, DevCom-1224512 (char_traits)
         bool caught_puppies = false;
 
         try {
@@ -755,6 +780,7 @@ int main() {
         }
 
         assert(caught_puppies);
+#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -794,38 +820,53 @@ int main() {
             1079, 3238, 1619, 4858, 2429, 7288, 3644, 1822, 911, 2734, 1367, 4102, 2051, 6154, 3077, 9232, 4616, 2308,
             1154, 577, 1732, 866, 433, 1300, 650, 325, 976, 488, 244, 122, 61, 184, 92, 46, 23, 70, 35, 106, 53, 160,
             80, 40, 20, 10, 5, 16, 8, 4, 2, 1, -1000};
+#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1160260 (partial specialization)
         assert(equal(vec.begin(), vec.end(), begin(expected), end(expected)));
+#else // ^^^ no workaround / workaround vvv
+        assert(vec.size() == size(expected));
+        for (size_t i = 0; i < vec.size(); ++i) {
+            assert(vec[i] == expected[i]);
+        }
+#endif // ^^^ workaround ^^^
     }
 
     {
         puts("Testing <streambuf>.");
+#if 0 // TRANSITION, DevCom-1224512 (char_traits)
         istringstream iss{"kittens"};
         assert(iss.rdbuf()->in_avail() == 7);
+#endif // ^^^ no workaround ^^^
     }
 
     {
         puts("Testing <string_view>.");
+#if 0 // TRANSITION, DevCom-1224512 (char_traits)
         constexpr string_view catenary{"catenary"};
         assert(catenary.starts_with("cat"));
         assert(!catenary.starts_with("dog"));
         static_assert(catenary.starts_with("cat"));
         static_assert(!catenary.starts_with("dog"));
+#endif // ^^^ no workaround ^^^
     }
 
     {
         puts("Testing <string>.");
+#if 0 // TRANSITION, DevCom-1224512 (char_traits)
         const string small_string{"homeowner"};
         const string large_string{"Cute fluffy kittens are so adorable when they meow and purr."};
         assert(small_string.find("meow") == 2);
         assert(large_string.find("meow") == 46);
+#endif // ^^^ no workaround ^^^
     }
 
     {
         puts("Testing <strstream>.");
+#if 0 // TRANSITION, DevCom-1224512 (char_traits)
         istrstream istr{"1729"};
         int n = -1;
         istr >> n;
         assert(n == 1729);
+#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -864,6 +905,14 @@ int main() {
         static_assert(!is_void_v<double>);
         static_assert(is_same_v<remove_extent_t<int[10][20][30]>, int[20][30]>);
         static_assert(is_same_v<remove_extent_t<double>, double>);
+
+        constexpr auto compiletime_10_or_runtime_20 = [] {
+            if (is_constant_evaluated()) {
+                return 10;
+            } else {
+                return 20;
+            }
+        };
 
         assert(compiletime_10_or_runtime_20() == 20);
         static_assert(compiletime_10_or_runtime_20() == 10);
