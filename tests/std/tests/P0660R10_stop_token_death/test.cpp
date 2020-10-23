@@ -36,7 +36,7 @@ void test_case_throw_during_request_stop() {
 }
 
 int main(int argc, char* argv[]) {
-    std_testing::death_test_executive exec([] {});
+    std_testing::death_test_executive exec;
 
     exec.add_death_tests({
         test_case_throw_during_request_stop,
