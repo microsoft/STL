@@ -117,7 +117,7 @@ class STLTestFormat:
                                                        lit.TestRunner.ParserKind.LIST,
                                                        initial_value=additionalCompileFlags)
         ]
-    
+
         script = \
             lit.TestRunner.parseIntegratedTestScript(test, additional_parsers=parsers, require_script=False)
 

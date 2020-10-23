@@ -16,7 +16,8 @@ def configure(parameters, features, config, lit_config):
     feature = param.getFeature(config, lit_config.params)
     if feature:
       feature.enableIn(config)
-      lit_config.note("Enabling Lit feature '{}' as a result of parameter '{}'".format(feature.getName(config), param.name))
+      lit_config.note(
+        "Enabling Lit feature '{}' as a result of parameter '{}'".format(feature.getName(config), param.name))
 
   # Then, apply the automatically-detected features.
   printFeatures = []
