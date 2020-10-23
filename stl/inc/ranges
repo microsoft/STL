@@ -2083,41 +2083,92 @@ namespace ranges {
             return _STD move(_Base);
         }
 
-        _NODISCARD constexpr auto begin() noexcept(
-            noexcept(_RANGES begin(_Base)) && is_nothrow_move_constructible_v<iterator_t<_Vw>>) /* strengthened */ {
+        enum class _St { _None, _Common, _NotCommon };
+
+        _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose_begin() noexcept {
             if constexpr (random_access_range<_Vw> && sized_range<_Vw>) {
+                return {_St::_Common, noexcept(_RANGES begin(_STD declval<_Vw>()))};
+            } else {
+                return {_St::_NotCommon,
+                    noexcept(common_iterator<iterator_t<_Vw>, sentinel_t<_Vw>>{_RANGES begin(_STD declval<_Vw>())})};
+            }
+        }
+        static constexpr _Choice_t<_St> _Choice_begin = _Choose_begin();
+
+        _NODISCARD constexpr auto begin() noexcept(_Choice_begin._No_throw) /* strengthened */ {
+            if constexpr (_Choice_begin._Strategy == _St::_Common) {
                 return _RANGES begin(_Base);
             } else {
                 return common_iterator<iterator_t<_Vw>, sentinel_t<_Vw>>{_RANGES begin(_Base)};
             }
         }
 
-        _NODISCARD constexpr auto begin() const noexcept(
-            noexcept(_RANGES begin(_Base))
-            && is_nothrow_move_constructible_v<iterator_t<const _Vw>>) /* strengthened */ requires range<const _Vw> {
-            if constexpr (random_access_range<const _Vw> && sized_range<const _Vw>) {
-                return _RANGES begin(_Base);
+        _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose_const_begin() noexcept {
+            if constexpr (!range<const _Vw>) {
+                return {_St::_None};
+            } else if constexpr (random_access_range<const _Vw> && sized_range<const _Vw>) {
+                return {_St::_Common, noexcept(_RANGES begin(_STD declval<const _Vw>()))};
             } else {
+                return {_St::_NotCommon, noexcept(common_iterator<iterator_t<const _Vw>, sentinel_t<const _Vw>>{
+                                             _RANGES begin(_STD declval<const _Vw>())})};
+            }
+        }
+        static constexpr _Choice_t<_St> _Choice_const_begin = _Choose_const_begin();
+
+        // clang-format off
+        _NODISCARD constexpr auto begin() const noexcept(_Choice_const_begin._No_throw) /* strengthened */
+            requires (_Choice_const_begin._Strategy != _St::_None) {
+            // clang-format on
+            if constexpr (_Choice_const_begin._Strategy == _St::_Common) {
+                return _RANGES begin(_Base);
+            } else if constexpr (_Choice_const_begin._Strategy == _St::_NotCommon) {
                 return common_iterator<iterator_t<const _Vw>, sentinel_t<const _Vw>>{_RANGES begin(_Base)};
+            } else {
+                static_assert(_Always_false<const _Vw>, "Should be unreachable");
             }
         }
 
-        _NODISCARD constexpr auto end() noexcept(
-            noexcept(_RANGES end(_Base)) && is_nothrow_move_constructible_v<iterator_t<_Vw>>) /* strengthened */ {
+        _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose_end() noexcept {
             if constexpr (random_access_range<_Vw> && sized_range<_Vw>) {
+                return {_St::_Common, noexcept(_RANGES begin(_STD declval<_Vw>()) + _RANGES size(_STD declval<_Vw>()))};
+            } else {
+                return {_St::_NotCommon,
+                    noexcept(common_iterator<iterator_t<_Vw>, sentinel_t<_Vw>>{_RANGES end(_STD declval<_Vw>())})};
+            }
+        }
+        static constexpr _Choice_t<_St> _Choice_end = _Choose_end();
+
+        _NODISCARD constexpr auto end() noexcept(_Choice_end._No_throw) /* strengthened */ {
+            if constexpr (_Choice_end._Strategy == _St::_Common) {
                 return _RANGES begin(_Base) + _RANGES size(_Base);
             } else {
                 return common_iterator<iterator_t<_Vw>, sentinel_t<_Vw>>{_RANGES end(_Base)};
             }
         }
 
-        _NODISCARD constexpr auto end() const noexcept(
-            noexcept(_RANGES end(_Base))
-            && is_nothrow_move_constructible_v<iterator_t<const _Vw>>) /* strengthened */ requires range<const _Vw> {
-            if constexpr (random_access_range<const _Vw> && sized_range<const _Vw>) {
-                return _RANGES begin(_Base) + _RANGES size(_Base);
+        _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose_const_end() noexcept {
+            if constexpr (!range<const _Vw>) {
+                return {_St::_None};
+            } else if constexpr (random_access_range<const _Vw> && sized_range<const _Vw>) {
+                return {_St::_Common,
+                    noexcept(_RANGES begin(_STD declval<const _Vw>()) + _RANGES size(_STD declval<const _Vw>()))};
             } else {
+                return {_St::_NotCommon, noexcept(common_iterator<iterator_t<const _Vw>, sentinel_t<const _Vw>>{
+                                             _RANGES end(_STD declval<const _Vw>())})};
+            }
+        }
+        static constexpr _Choice_t<_St> _Choice_const_end = _Choose_const_end();
+
+        // clang-format off
+        _NODISCARD constexpr auto end() const noexcept(_Choice_const_end._No_throw) /* strengthened */
+            requires (_Choice_const_end._Strategy != _St::_None) {
+            // clang-format on
+            if constexpr (_Choice_const_end._Strategy == _St::_Common) {
+                return _RANGES begin(_Base) + _RANGES size(_Base);
+            } else if constexpr (_Choice_const_end._Strategy == _St::_NotCommon) {
                 return common_iterator<iterator_t<const _Vw>, sentinel_t<const _Vw>>{_RANGES end(_Base)};
+            } else {
+                static_assert(_Always_false<const _Vw>, "Should be unreachable");
             }
         }
 
