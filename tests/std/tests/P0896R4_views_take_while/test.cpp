@@ -108,9 +108,9 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         STATIC_ASSERT(same_as<decltype(move(rng) | pipeline), pipeline_t<remove_reference_t<Rng>>>);
         STATIC_ASSERT(noexcept(move(rng) | pipeline) == is_noexcept);
     } else if constexpr (enable_borrowed_range<remove_cvref_t<Rng>>) {
-        using S                    = decltype(ranges::subrange{declval<remove_reference_t<Rng>>()});
+        using S                    = decltype(ranges::subrange{move(rng)});
         using RS                   = take_while_view<S, Pred>;
-        constexpr bool is_noexcept = noexcept(S{declval<remove_reference_t<Rng>>()});
+        constexpr bool is_noexcept = noexcept(S{move(rng)});
 
         STATIC_ASSERT(same_as<decltype(views::take_while(move(rng), is_less_than_three)), RS>);
         STATIC_ASSERT(noexcept(views::take_while(move(rng), is_less_than_three)) == is_noexcept);
@@ -129,17 +129,17 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         constexpr bool is_noexcept = is_nothrow_copy_constructible_v<V>;
 
         STATIC_ASSERT(same_as<decltype(views::take_while(move(as_const(rng)), is_less_than_three)), R>);
-        STATIC_ASSERT(noexcept(views::take_while(as_const(rng), is_less_than_three)) == is_noexcept);
+        STATIC_ASSERT(noexcept(views::take_while(move(as_const(rng)), is_less_than_three)) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | take_while_even), R>);
-        STATIC_ASSERT(noexcept(as_const(rng) | take_while_even) == is_noexcept);
+        STATIC_ASSERT(noexcept(move(as_const(rng)) | take_while_even) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | pipeline), pipeline_t<const remove_reference_t<Rng>>>);
         STATIC_ASSERT(noexcept(move(as_const(rng)) | pipeline) == is_noexcept);
     } else if constexpr (!is_view && enable_borrowed_range<remove_cvref_t<Rng>>) {
-        using S                    = decltype(ranges::subrange{declval<const remove_reference_t<Rng>>()});
+        using S                    = decltype(ranges::subrange{move(as_const(rng))});
         using RS                   = take_while_view<S, Pred>;
-        constexpr bool is_noexcept = noexcept(S{declval<const remove_reference_t<Rng>>()});
+        constexpr bool is_noexcept = noexcept(S{move(as_const(rng))});
 
         STATIC_ASSERT(same_as<decltype(views::take_while(move(as_const(rng)), is_less_than_three)), RS>);
         STATIC_ASSERT(noexcept(views::take_while(move(as_const(rng)), is_less_than_three)) == is_noexcept);
