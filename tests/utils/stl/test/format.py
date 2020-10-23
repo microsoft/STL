@@ -129,8 +129,8 @@ class STLTestFormat:
         test.fileDependencies.extend(fileDependencies)
 
     def _handleIsenseRspFile(self, test, litConfig):
-        if litConfig.edg_drop is not None:
-            with open(isenseRspPath) as f:
+        if litConfig.edg_drop is not None and test.isenseRspPath is not None:
+            with open(test.isenseRspPath) as f:
                 cmd = [line.strip() for line in f]
             cmd[0] = litConfig.edg_drop
 
@@ -190,10 +190,6 @@ class STLTestFormat:
     def getBuildSteps(self, test, litConfig, shared):
         filename = test.path_in_suite[-1]
         _, tmpBase = test.getTempPaths()
-
-        if litConfig.edg_drop is not None:
-            isenseRspPath = tmpBase + '.isense.rsp'
-            test.compileFlags.extend(['/dE--write-isense-rsp', '/dE' + isenseRspPath])
 
         shouldFail = TestType.FAIL in test.testType
         if TestType.COMPILE in test.testType:

@@ -9,17 +9,13 @@
 
 from enum import Flag, auto
 from itertools import chain
-from pathlib import Path
 import copy
 import os
-import pipes
 import shutil
 
 from lit.Test import SKIPPED, Test, UNRESOLVED, UNSUPPORTED
 from libcxx.test.dsl import Feature
 import lit
-
-from stl.compiler import CXXCompiler
 
 _compilerPathCache = dict()
 
@@ -41,10 +37,10 @@ class STLTest(Test):
         self.envNum = envNum
         self.fileDependencies = []
         self.flags = []
+        self.isenseRspPath = None
         self.linkFlags = []
         self.testType = None
-        Test.__init__(self, suite, pathInSuite, copy.deepcopy(testConfig),
-                      None)
+        Test.__init__(self, suite, pathInSuite, copy.deepcopy(testConfig), None)
 
         self._configureExpectedResult(suite, litConfig)
         if self.result:
@@ -109,13 +105,11 @@ class STLTest(Test):
             self.expectedResult = litConfig.expected_results[self.config.name][testName]
         else:
           currentPrefix = ""
-          for prefix, result in \
-                  litConfig.expected_results.get(self.config.name, dict()).items():
+          for prefix, result in litConfig.expected_results.get(self.config.name, dict()).items():
               if testName == prefix:
                   self.expectedResult = result
                   break
-              elif testName.startswith(prefix) and \
-                      len(prefix) > len(currentPrefix):
+              elif testName.startswith(prefix) and len(prefix) > len(currentPrefix):
                   currentPrefix = prefix
                   self.expectedResult = result
 
@@ -184,8 +178,13 @@ class STLTest(Test):
             Feature('c++14').enableIn(self.config)
             self.compileFlags.append('/D_LIBCPP_CONSTEXPR_AFTER_CXX17= ')
 
-        if 'edg_drop' in self.config.available_features and not 'edg' in self.requires:
-            self.result = lit.Test.Result(UNSUPPORTED, "We only run /BE tests with the edg drop")
+        if 'edg_drop' in self.config.available_features:
+            if not 'edg' in self.requires:
+                self.result = lit.Test.Result(UNSUPPORTED, "We only run /BE tests with the edg drop")
+            else:
+                _, tmpBase = self.getTempPaths()
+                self.isenseRspPath = tmpBase + '.isense.rsp'
+                self.compileFlags.extend(['/dE--write-isense-rsp', '/dE' + self.isenseRspPath])
 
 
 class LibcxxTest(STLTest):

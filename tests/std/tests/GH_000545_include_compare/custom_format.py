@@ -4,6 +4,7 @@
 import os
 
 from stl.test.format import STLTestFormat, TestStep
+from stl.test.tests import TestType
 
 
 class CustomTestFormat(STLTestFormat):
@@ -16,7 +17,11 @@ class CustomTestFormat(STLTestFormat):
             if filename.endswith('.cpp'):
                 sourceFiles.append(os.path.join(exeSourceDir, filename))
 
-        shared.execFile = outputBase + '.exe'
-        cmd = [test.cxx, *sourceFiles, *test.flags, *test.compileFlags, '/Fe' + shared.execFile,
-               '/link', *test.linkFlags]
+        if TestType.COMPILE in test.testType:
+            cmd = [test.cxx, '/c', *sourceFiles, *test.flags, *test.compileFlags]
+        elif TestType.RUN in test.testType:
+            shared.execFile = outputBase + '.exe'
+            cmd = [test.cxx, *sourceFiles, *test.flags, *test.compileFlags, '/Fe' + shared.execFile,
+                   '/link', *test.linkFlags]
+
         yield TestStep(cmd, shared.execDir, shared.env, False)

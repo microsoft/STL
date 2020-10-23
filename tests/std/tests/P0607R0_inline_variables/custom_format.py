@@ -4,6 +4,7 @@
 import os
 
 from stl.test.format import STLTestFormat, TestStep
+from stl.test.tests import TestType
 
 
 class CustomTestFormat(STLTestFormat):
@@ -13,13 +14,13 @@ class CustomTestFormat(STLTestFormat):
 
         outputDir, outputBase = test.getTempPaths()
 
-        if litConfig.edg_drop is not None:
-            isenseRspPath = outputBase + '.isense.rsp'
-            test.compileFlags.extend(['/dE--write-isense-rsp', '/dE' + isenseRspPath])
+        if TestType.COMPILE in test.testType:
+            cmd = [test.cxx, '/c', exeSource, test2Source, *test.flags, *test.compileFlags]
+        elif TestType.RUN in test.testType:
+            shared.execFile = outputBase + '.exe'
+            cmd = [test.cxx, exeSource, test2Source, *test.flags, *test.compileFlags, '/Fe' + shared.execFile,
+                   '/link', *test.linkFlags]
 
-        shared.execFile = outputBase + '.exe'
-        cmd = [test.cxx, exeSource, test2Source, *test.flags, *test.compileFlags, '/Fe' + shared.execFile,
-               '/link', *test.linkFlags]
         yield TestStep(cmd, shared.execDir, shared.env, False)
 
         for step in self._handleIsenseRspFile(test, litConfig):

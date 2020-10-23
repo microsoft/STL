@@ -5,6 +5,7 @@ import itertools
 import os
 
 from stl.test.format import STLTestFormat, TestStep
+from stl.test.tests import TestType
 
 
 class CustomTestFormat(STLTestFormat):
@@ -114,8 +115,11 @@ class CustomTestFormat(STLTestFormat):
         if compileTestCppWithEdg:
             test.compileFlags.append('/BE')
 
-        shared.execFile = outputBase + '.exe'
-        cmd = [test.cxx, sourcePath, *test.flags, *test.compileFlags, *headerUnitOptions, '/Fe' + shared.execFile,
-               '/link', *test.linkFlags]
+        if TestType.COMPILE in test.testType:
+            cmd = [test.cxx, '/c', sourcePath, *test.flags, *test.compileFlags, *headerUnitOptions]
+        elif TestType.RUN in test.testType:
+            shared.execFile = outputBase + '.exe'
+            cmd = [test.cxx, sourcePath, *test.flags, *test.compileFlags, *headerUnitOptions, '/Fe' + shared.execFile,
+                   '/link', *test.linkFlags]
 
         yield TestStep(cmd, shared.execDir, shared.env, False)
