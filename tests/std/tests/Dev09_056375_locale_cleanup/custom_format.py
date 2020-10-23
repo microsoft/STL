@@ -9,12 +9,12 @@ from stl.test.format import STLTestFormat, TestStep
 class CustomTestFormat(STLTestFormat):
     def getBuildSteps(self, test, litConfig, shared):
         exeSource = test.getSourcePath()
-        dll_source = os.path.join(os.path.dirname(exeSource), 'TestDll.cpp')
+        dllSource = os.path.join(os.path.dirname(exeSource), 'TestDll.cpp')
 
         outputDir, outputBase = test.getTempPaths()
         dllOutput = os.path.join(outputDir, 'TestDll.DLL')
 
-        cmd = [test.cxx, dll_source, *test.flags, *test.compileFlags, '/Fe' + dllOutput,
+        cmd = [test.cxx, dllSource, *test.flags, *test.compileFlags, '/Fe' + dllOutput,
                '/link', '/DLL', *test.linkFlags]
 
         yield TestStep(cmd, shared.execDir, shared.env, False)
