@@ -124,6 +124,8 @@ class STLTest(Test):
                 self.result = (lit.Test.SKIPPED, 'This test was explicitly marked as skipped')
             elif self.expectedResult.isFailure:
                 self.xfails = ['*']
+        elif self.config.unsupported:
+            self.result = (lit.Test.UNSUPPORTED, 'This test was marked as unsupported by a lit.cfg')
 
     def _handleEnvlst(self, litConfig, envlstEntry):
         envCompiler = envlstEntry.getEnvVal('PM_COMPILER', 'cl')
