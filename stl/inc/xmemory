@@ -1558,7 +1558,7 @@ namespace ranges {
     template <input_iterator _It, sentinel_for<_It> _Se, _No_throw_forward_iterator _Out,
         _No_throw_sentinel_for<_Out> _OSe>
         requires constructible_from<iter_value_t<_Out>, iter_rvalue_reference_t<_It>>
-    _NODISCARD uninitialized_move_result<_It, _Out> _Uninitialized_move_unchecked(
+    uninitialized_move_result<_It, _Out> _Uninitialized_move_unchecked(
             _It _IFirst, const _Se _ILast, _Out _OFirst, const _OSe _OLast) {
         // clang-format on
         if constexpr (is_same_v<_Se, _It> && _Ptr_move_cat<_It, _Out>::_Really_trivial) {
