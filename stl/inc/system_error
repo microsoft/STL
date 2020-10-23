@@ -513,7 +513,6 @@ public:
     }
 };
 
-// TRANSITION, Visual Studio 2019 version 16.8
 // _Immortalize_memcpy_image is used to provide a nonstandard guarantee.
 // Specifically, we want the error category objects returned from things like std::system_category() to always
 //   be available, even during DLL unload (otherwise, <system_error> would be a huge regression vs. legacy error codes).
@@ -556,7 +555,13 @@ _NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
     static constexpr _Ty _Static;
     return _Static;
 }
-#elif defined(_MSC_VER) && _MSC_VER > 1927 && !defined(_M_CEE) // _M_CEE test is TRANSITION, VSO-1153256
+#elif defined(__clang__)
+template <class _Ty>
+_NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
+    [[clang::require_constant_initialization]] static _Ty _Static;
+    return _Static;
+}
+#elif !defined(_M_CEE) // TRANSITION, VSO-1153256
 template <class _Ty>
 struct _Constexpr_immortalize_impl {
     union {
@@ -578,7 +583,7 @@ _NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
     static _Constexpr_immortalize_impl<_Ty> _Static;
     return _Static._Storage;
 }
-#else // choose immortalize strategy
+#else // ^^^ no workaround / workaround vvv
 template <class _Ty>
 _NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
     // return reference to a memcpy'd default-initialized _Ty

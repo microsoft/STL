@@ -12,11 +12,21 @@
 #pragma warning(disable : 4643) // Forward declaring '%s' in namespace std is not permitted by the C++ Standard
 #pragma warning(disable : 4702) // unreachable code
 #pragma warning(disable : 5219) // implicit conversion from '%s' to '%s', possible loss of data
+#pragma warning(disable : 6326) // potential comparison of a constant with another constant
 
 #define BOOST_CHRONO_HEADER_ONLY
 #define BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE
 #define BOOST_MATH_DOMAIN_ERROR_POLICY   errno_on_error
 #define BOOST_MATH_OVERFLOW_ERROR_POLICY ignore_error
+
+// Avoid SSE intrinsics in EC
+#if defined(_M_ARM64EC)
+// need to include intrinsics to ensure that x64 definitions in intrin0.h are not lost
+#include <intrin.h>
+#undef _M_AMD64
+#undef _M_X64
+#define _M_ARM64
+#endif // defined(_M_ARM64EC)
 
 // Using headers from Boost.Math
 #include <boost/math/special_functions/bessel.hpp>
@@ -32,6 +42,13 @@
 #include <boost/math/special_functions/zeta.hpp>
 #include <boost/math/tools/config.hpp>
 #include <boost/math/tools/precision.hpp>
+
+#if defined(_M_ARM64EC)
+#undef _M_ARM64
+#define _M_AMD64
+#define _M_X64
+#endif // defined(_M_ARM64EC)
+
 
 #pragma warning(pop)
 
@@ -472,9 +489,9 @@ namespace {
         _Dy = _STD abs(_Dy);
         _Dz = _STD abs(_Dz);
 
-        constexpr _Ty _Inf = _STD numeric_limits<_Ty>::infinity();
-        if (_Dx == _Inf || _Dy == _Inf || _Dz == _Inf) {
-            return _Inf;
+        constexpr _Ty _Infinity = _STD numeric_limits<_Ty>::infinity();
+        if (_Dx == _Infinity || _Dy == _Infinity || _Dz == _Infinity) {
+            return _Infinity;
         }
 
         if (_Dy > _Dx) {

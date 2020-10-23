@@ -329,42 +329,43 @@ struct emplace_argument {
 
 // clang-format off
 
-#define DEFINE_TYPE(name, dtor, default_ctor, copy_ctor, move_ctor, emplace_ctor, copy_assign, move_assign, emplace_assign) \
-    class name {                                                                                                            \
-    public:                 name(key) { }                                                                                   \
-    private: dtor           ~name() { }                                                                                     \
-    private: default_ctor   name() { }                                                                                      \
-    private: copy_ctor      name(name const&) { }                                                                           \
-    private: move_ctor      name(name&&) { }                                                                                \
-    private: emplace_ctor   name(emplace_argument&&) { }                                                                    \
-    private: emplace_ctor   name(emplace_argument&&, emplace_argument&&) { }                                                \
-    private: emplace_ctor   name(emplace_argument&&, emplace_argument&&, emplace_argument&&) { }                            \
-    private: copy_assign    name& operator=(name const&) { return *this; }                                                  \
-    private: move_assign    name& operator=(name&&) noexcept { return *this; }                                              \
-    private: emplace_assign name& operator=(emplace_argument&&) { return *this; }                                           \
+#define DEFINE_TYPE(name, dtor, def_ctor, copy_ctor, move_ctor, emp_ctor, copy_assign, move_assign, emp_assign) \
+    class name {                                                                                                \
+    public:              name(key) { }                                                                          \
+    private: dtor        ~name() { }                                                                            \
+    private: def_ctor    name() { }                                                                             \
+    private: copy_ctor   name(name const&) { }                                                                  \
+    private: move_ctor   name(name&&) { }                                                                       \
+    private: emp_ctor    name(emplace_argument&&) { }                                                           \
+    private: emp_ctor    name(emplace_argument&&, emplace_argument&&) { }                                       \
+    private: emp_ctor    name(emplace_argument&&, emplace_argument&&, emplace_argument&&) { }                   \
+    private: copy_assign name& operator=(name const&) { return *this; }                                         \
+    private: move_assign name& operator=(name&&) noexcept { return *this; }                                     \
+    private: emp_assign  name& operator=(emplace_argument&&) { return *this; }                                  \
     }
 
 #define YES public:
 
-//                                 dtor          default ctor  copy ctor     move ctor     emplace ctor  copy assign   move assign   emplace assign
-DEFINE_TYPE(erasable             , YES         ,             ,             ,             ,             ,             ,             ,             );
-DEFINE_TYPE(default_constructible, YES         , YES         ,             ,             ,             ,             ,             ,             );
-DEFINE_TYPE(copy_insertable      , YES         ,             , YES         , YES         ,             ,             ,             ,             );
-DEFINE_TYPE(move_insertable      , YES         ,             ,             , YES         ,             ,             ,             ,             );
-DEFINE_TYPE(emplace_constructible, YES         ,             ,             ,             , YES         ,             ,             ,             );
-DEFINE_TYPE(copy_assignable      , YES         ,             ,             ,             ,             , YES         , YES         ,             );
-DEFINE_TYPE(move_assignable      , YES         ,             ,             ,             ,             ,             , YES         ,             );
-DEFINE_TYPE(equality_comparable  , YES         ,             ,             ,             ,             ,             ,             ,             );
-DEFINE_TYPE(less_comparable      , YES         ,             ,             ,             ,             ,             ,             ,             );
+//                                        default   copy   move   emplace    copy     move    emplace
+//                                 dtor    ctor     ctor   ctor    ctor     assign   assign   assign
+DEFINE_TYPE(erasable             , YES  ,         ,      ,      ,         ,        ,        ,         );
+DEFINE_TYPE(default_constructible, YES  , YES     ,      ,      ,         ,        ,        ,         );
+DEFINE_TYPE(copy_insertable      , YES  ,         , YES  , YES  ,         ,        ,        ,         );
+DEFINE_TYPE(move_insertable      , YES  ,         ,      , YES  ,         ,        ,        ,         );
+DEFINE_TYPE(emplace_constructible, YES  ,         ,      ,      , YES     ,        ,        ,         );
+DEFINE_TYPE(copy_assignable      , YES  ,         ,      ,      ,         , YES    , YES    ,         );
+DEFINE_TYPE(move_assignable      , YES  ,         ,      ,      ,         ,        , YES    ,         );
+DEFINE_TYPE(equality_comparable  , YES  ,         ,      ,      ,         ,        ,        ,         );
+DEFINE_TYPE(less_comparable      , YES  ,         ,      ,      ,         ,        ,        ,         );
 
-DEFINE_TYPE(ca_ci                , YES         ,             , YES         , YES         ,             , YES         , YES         ,             );
-DEFINE_TYPE(ci_ma                , YES         ,             , YES         , YES         ,             ,             , YES         ,             );
-DEFINE_TYPE(dc_mi                , YES         , YES         ,             , YES         ,             ,             ,             ,             );
-DEFINE_TYPE(ec_ma_mi             , YES         ,             ,             , YES         , YES         ,             , YES         ,             );
-DEFINE_TYPE(ec_mi                , YES         ,             ,             , YES         , YES         ,             ,             ,             );
-DEFINE_TYPE(ma_mi                , YES         ,             ,             , YES         ,             ,             , YES         ,             );
-DEFINE_TYPE(ec_ea                , YES         ,             ,             ,             , YES         ,             ,             , YES         );
-DEFINE_TYPE(ec_ea_mi             , YES         ,             ,             , YES         , YES         ,             ,             , YES         );
+DEFINE_TYPE(ca_ci                , YES  ,         , YES  , YES  ,         , YES    , YES    ,         );
+DEFINE_TYPE(ci_ma                , YES  ,         , YES  , YES  ,         ,        , YES    ,         );
+DEFINE_TYPE(dc_mi                , YES  , YES     ,      , YES  ,         ,        ,        ,         );
+DEFINE_TYPE(ec_ma_mi             , YES  ,         ,      , YES  , YES     ,        , YES    ,         );
+DEFINE_TYPE(ec_mi                , YES  ,         ,      , YES  , YES     ,        ,        ,         );
+DEFINE_TYPE(ma_mi                , YES  ,         ,      , YES  ,         ,        , YES    ,         );
+DEFINE_TYPE(ec_ea                , YES  ,         ,      ,      , YES     ,        ,        , YES     );
+DEFINE_TYPE(ec_ea_mi             , YES  ,         ,      , YES  , YES     ,        ,        , YES     );
 
 #undef YES
 

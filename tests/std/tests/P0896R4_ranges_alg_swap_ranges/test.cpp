@@ -98,9 +98,7 @@ constexpr void run_tests() {
 }
 
 int main() {
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-938163
     STATIC_ASSERT((run_tests(), true));
-#endif // TRANSITION, VSO-938163
     run_tests();
 }
 #endif // TEST_EVERYTHING

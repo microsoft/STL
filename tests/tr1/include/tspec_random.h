@@ -135,4 +135,5 @@ void test_random() { // test all of the distributions
     TESTR(student_t_distribution);
     TESTR(discrete_distribution);
     TESTR(piecewise_constant_distribution);
+    TESTR(piecewise_linear_distribution);
 }

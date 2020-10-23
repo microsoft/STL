@@ -19,8 +19,8 @@ using namespace std;
 
 // This thing is a workaround for C4309 "truncation of constant value"
 template <typename T, typename U>
-T cast(U i) {
-    return static_cast<T>(i);
+remove_volatile_t<T> cast(U i) {
+    return static_cast<remove_volatile_t<T>>(i);
 }
 
 // Tests that `fillCall`(buffer, value, startIndex, endIndex) fills [startIndex, endIndex) with `value`
@@ -131,9 +131,41 @@ int main() {
     test_fill<int, char>();
     test_fill<char, int>();
 
+    test_fill<volatile char, char>(); // Test GH-1183
+
     test_uninitialized_fill(
         [](count_copies* buff, size_t n, const count_copies& src) { uninitialized_fill(buff, buff + n, src); });
 
     test_uninitialized_fill(
         [](count_copies* buff, size_t n, const count_copies& src) { uninitialized_fill_n(buff, n, src); });
+
+    // Validate int is properly converted to bool
+    {
+        bool output[] = {false, true, false};
+        fill(output, output + 3, 5);
+        for (const bool& elem : output) {
+            assert(elem == true);
+        }
+    }
+    {
+        bool output[] = {false, true, false};
+        fill_n(output, 3, 5);
+        for (const bool& elem : output) {
+            assert(elem == true);
+        }
+    }
+    {
+        bool output[] = {false, true, false};
+        uninitialized_fill(output, output + 3, 5);
+        for (const bool& elem : output) {
+            assert(elem == true);
+        }
+    }
+    {
+        bool output[] = {false, true, false};
+        uninitialized_fill_n(output, 3, 5);
+        for (const bool& elem : output) {
+            assert(elem == true);
+        }
+    }
 }

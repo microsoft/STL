@@ -308,7 +308,7 @@ class STLTestFormat:
             return lit.Test.Result(passVar, report)
 
         except Exception as e:
-            print(repr(e))
+            lit_config.warning(repr(e))
 
 
 class LibcxxTestFormat(STLTestFormat):

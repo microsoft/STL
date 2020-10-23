@@ -97,4 +97,6 @@ struct instantiator {
     }
 };
 
+#ifndef _PREFAST_ // TRANSITION, GH-1030
 template void test_in_in<instantiator, const int, const int>();
+#endif // TRANSITION, GH-1030

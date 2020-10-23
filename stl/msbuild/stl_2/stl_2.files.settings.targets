@@ -11,6 +11,12 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
             ">
             <BuildAs>nativecpp</BuildAs>
         </BuildFiles>
+        <Link Condition="'$(Arm64X)' == 'true'" Include="$(IntermediateOutputDirectoryEC)\special_math.obj;"/>
+        <BuildFiles Condition="'$(CrtBuildModelIsDll)' == 'true'" Include="
+            $(CrtRoot)\github\stl\src\dllmain_satellite.cpp;
+            ">
+            <BuildAs>nativecpp</BuildAs>
+        </BuildFiles>
     </ItemGroup>
 
     <Choose>
