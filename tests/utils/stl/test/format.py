@@ -198,7 +198,7 @@ class STLTestFormat:
         shouldFail = TestType.FAIL in test.testType
         if TestType.COMPILE in test.testType:
             cmd = [test.cxx, '/c', test.getSourcePath(), *test.flags, *test.compileFlags]
-            return TestStep(cmd, shared.execDir, shared.env, shouldFail)
+            yield TestStep(cmd, shared.execDir, shared.env, shouldFail)
         elif TestType.LINK in test.testType:
             objFile = tmpBase + '.o'
             cmd = [test.cxx, '/c', test.getSourcePath(), *test.flags, *test.compileFlags, '/Fo' + objFile]
@@ -252,7 +252,7 @@ class STLTestFormat:
 
             buildSetupSteps, buildSteps, testSetupSteps, testSteps = self.getSteps(test, litConfig)
 
-            report = ''
+            report = 'Build setup steps:\n'
             for step in buildSetupSteps:
                 cmd, out, err, rc = self.runStep(step, litConfig)
 
@@ -266,6 +266,7 @@ class STLTestFormat:
                     litConfig.note(report)
                     return lit.Test.Result(failVar, report)
 
+            report += 'Build steps:\n'
             for step in buildSteps:
                 cmd, out, err, rc = self.runStep(step, litConfig)
 
@@ -279,6 +280,7 @@ class STLTestFormat:
                     litConfig.note(report)
                     return lit.Test.Result(failVar, report)
 
+            report += 'Test setup steps:\n'
             for step in testSetupSteps:
                 cmd, out, err, rc = self.runStep(step, litConfig)
 
@@ -292,6 +294,7 @@ class STLTestFormat:
                     litConfig.note(report)
                     return lit.Test.Result(failVar, report)
 
+            report += 'Test steps:\n'
             for step in testSteps:
                 cmd, out, err, rc = self.runStep(step, litConfig)
 
