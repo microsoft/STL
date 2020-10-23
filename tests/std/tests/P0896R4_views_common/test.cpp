@@ -24,6 +24,8 @@ concept CanViewAll = requires(Rng&& r) {
 // Test a silly precomposed range adaptor pipeline
 constexpr auto pipeline = views::all | views::common;
 
+// Due to language limitations we cannot declare variables of non-literal type in a branch that is guarded by
+// `!is_constant_evaluated())`. But we can call a non-constexpr function that declares those variables.
 template <ranges::view V, ranges::input_range R, ranges::input_range E>
 void non_literal_parts(R& r, E& expected) {
     using ranges::iterator_t, ranges::begin, ranges::bidirectional_range, ranges::end, ranges::prev;
@@ -36,17 +38,17 @@ void non_literal_parts(R& r, E& expected) {
     }
 
     if constexpr (copyable<V>) {
-        auto r2                              = r;
-        const same_as<iterator_t<R>> auto i2 = r2.begin();
+        auto r2                                  = r;
+        const same_as<iterator_t<R>> auto first2 = r2.begin();
         if (!is_empty) {
-            assert(*i2 == *first);
+            assert(*first2 == *first);
         }
     }
 
     if constexpr (CanBegin<const R&>) {
-        const same_as<iterator_t<const R>> auto i3 = as_const(r).begin();
+        const same_as<iterator_t<const R>> auto first3 = as_const(r).begin();
         if (!is_empty) {
-            assert(*i3 == *first);
+            assert(*first3 == *first);
         }
     }
 
@@ -58,10 +60,10 @@ void non_literal_parts(R& r, E& expected) {
     }
 
     if constexpr (CanEnd<const R&>) {
-        const same_as<iterator_t<const R>> auto i2 = as_const(r).end();
+        const same_as<iterator_t<const R>> auto last2 = as_const(r).end();
         if constexpr (bidirectional_range<const R>) {
             if (!is_empty) {
-                assert(*prev(i2) == *prev(end(expected)));
+                assert(*prev(last2) == *prev(end(expected)));
             }
         }
     }
@@ -78,7 +80,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     using V                  = views::all_t<Rng>;
     constexpr bool is_common = common_range<V>;
 
-    // Validate range adapter object
+    // Validate range adaptor object
     if constexpr (!is_common) { // range adaptor results in common_view
         using R = common_view<V>;
         static_assert(ranges::view<R>);
@@ -144,9 +146,9 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             static_assert(same_as<decltype(move(rng) | pipeline), R>);
             static_assert(noexcept(move(rng) | pipeline) == is_noexcept);
         } else if constexpr (enable_borrowed_range<Rng>) {
-            using S                    = decltype(ranges::subrange{declval<Rng>()});
+            using S                    = decltype(ranges::subrange{move(rng)});
             using RS                   = common_view<S>;
-            constexpr bool is_noexcept = noexcept(S{declval<Rng>()});
+            constexpr bool is_noexcept = noexcept(S{move(rng)});
 
             static_assert(same_as<decltype(views::common(move(rng))), RS>);
             static_assert(noexcept(views::common(move(rng))) == is_noexcept);
@@ -168,10 +170,10 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             constexpr bool is_noexcept = is_nothrow_copy_constructible_v<V>;
 
             static_assert(same_as<decltype(views::common(move(as_const(rng)))), R>);
-            static_assert(noexcept(views::common(as_const(rng))) == is_nothrow_copy_constructible_v<R>);
+            static_assert(noexcept(views::common(move(as_const(rng)))) == is_nothrow_copy_constructible_v<R>);
 
             static_assert(same_as<decltype(move(as_const(rng)) | views::common), R>);
-            static_assert(noexcept(as_const(rng) | views::common) == is_nothrow_copy_constructible_v<R>);
+            static_assert(noexcept(move(as_const(rng)) | views::common) == is_nothrow_copy_constructible_v<R>);
 
             static_assert(same_as<decltype(move(as_const(rng)) | views::common | views::common | views::common), R>);
             static_assert(noexcept(move(as_const(rng)) | views::common | views::common | views::common) == is_noexcept);
@@ -179,9 +181,9 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             static_assert(same_as<decltype(move(as_const(rng)) | pipeline), R>);
             static_assert(noexcept(move(as_const(rng)) | pipeline) == is_noexcept);
         } else if constexpr (!is_view && enable_borrowed_range<const remove_cvref_t<Rng>>) {
-            using S                    = decltype(ranges::subrange{declval<const remove_cvref_t<Rng>>()});
+            using S                    = decltype(ranges::subrange{move(as_const(rng))});
             using RS                   = common_view<S>;
-            constexpr bool is_noexcept = noexcept(S{declval<const remove_cvref_t<Rng>>()});
+            constexpr bool is_noexcept = noexcept(S{move(as_const(rng))});
 
             static_assert(same_as<decltype(views::common(move(as_const(rng)))), RS>);
             static_assert(noexcept(views::common(move(as_const(rng)))) == is_noexcept);
@@ -236,8 +238,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             static_assert(same_as<decltype(move(rng) | views::common), V>);
             static_assert(noexcept(move(rng) | views::common) == is_noexcept);
         } else if constexpr (enable_borrowed_range<Rng>) {
-            using S                    = decltype(ranges::subrange{declval<Rng>()});
-            constexpr bool is_noexcept = noexcept(S{declval<Rng>()});
+            using S                    = decltype(ranges::subrange{move(rng)});
+            constexpr bool is_noexcept = noexcept(S{move(rng)});
 
             static_assert(same_as<decltype(views::common(move(rng))), V>);
             static_assert(noexcept(views::common(move(rng))) == is_noexcept);
@@ -253,13 +255,13 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             constexpr bool is_noexcept = is_nothrow_copy_constructible_v<V>;
 
             static_assert(same_as<decltype(views::common(move(as_const(rng)))), V>);
-            static_assert(noexcept(views::common(as_const(rng))) == is_noexcept);
+            static_assert(noexcept(views::common(move(as_const(rng)))) == is_noexcept);
 
             static_assert(same_as<decltype(move(as_const(rng)) | views::common), V>);
-            static_assert(noexcept(as_const(rng) | views::common) == is_noexcept);
+            static_assert(noexcept(move(as_const(rng)) | views::common) == is_noexcept);
         } else if constexpr (!is_view && enable_borrowed_range<const remove_cvref_t<Rng>>) {
-            using S                    = decltype(ranges::subrange{declval<const remove_cvref_t<Rng>>()});
-            constexpr bool is_noexcept = noexcept(S{declval<const remove_cvref_t<Rng>>()});
+            using S                    = decltype(ranges::subrange{move(as_const(rng))});
+            constexpr bool is_noexcept = noexcept(S{move(as_const(rng))});
 
             static_assert(same_as<decltype(views::common(move(as_const(rng)))), V>);
             static_assert(noexcept(views::common(move(as_const(rng)))) == is_noexcept);
@@ -297,6 +299,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
                 assert(r.empty() == is_empty);
                 assert(static_cast<bool>(r) == !is_empty);
             }
+
             if constexpr (CanMemberEmpty<const R>) {
                 assert(as_const(r).empty() == is_empty);
                 assert(static_cast<bool>(as_const(r)) == !is_empty);
@@ -320,6 +323,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             if constexpr (CanIndex<R>) {
                 assert(r[0] == *begin(expected));
             }
+
             if constexpr (CanIndex<const R>) {
                 assert(as_const(r)[0] == *begin(expected));
             }
@@ -328,6 +332,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             if constexpr (CanMemberFront<R>) {
                 assert(r.front() == *begin(expected));
             }
+
             if constexpr (CanMemberFront<const R>) {
                 assert(as_const(r).front() == *begin(expected));
             }
@@ -335,6 +340,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             if constexpr (CanMemberBack<R>) {
                 assert(r.back() == *prev(end(expected)));
             }
+
             if constexpr (CanMemberBack<const R>) {
                 assert(as_const(r).back() == *prev(end(expected)));
             }
