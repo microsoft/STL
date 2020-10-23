@@ -52,6 +52,7 @@ class STLTest(Test):
 
         self._handleEnvlst(litConfig, envlstEntry)
         self._configureTestType()
+        _, tmpBase = self.getTempPaths()
 
     def _configureTestType(self):
         self.testType = TestType.UNKNOWN
@@ -64,13 +65,13 @@ class STLTest(Test):
         else:
             self.testType = self.testType | TestType.PASS
 
-        if 'analyze:only' in [flag[1:] for flag in \
-                chain(self.flags, self.compileFlags, self.linkFlags)] or \
-                filename.endswith('.compile.pass.cpp') or filename.endswith('.compile.fail.cpp'):
+        shortenedFlags = [flag[1:] for flag in chain(self.flags, self.compileFlags, self.linkFlags)]
+        if 'analyze:only' in shortenedFlags or 'c' in shortenedFlags or \
+                filename.endswith(('.compile.pass.cpp', 'compile.fail.cpp')):
             self.testType = self.testType | TestType.COMPILE
-        elif filename.endswith('.link.pass.cpp') or filename.endswith('.link.fail.cpp'):
+        elif filename.endswith(('.link.pass.cpp', '.link.fail.cpp')):
             self.testType = self.testType | TestType.LINK
-        elif filename.endswith('run.fail.cpp') or filename.endswith('run.pass.cpp') or filename == 'test.cpp':
+        elif filename.endswith(('run.fail.cpp','run.pass.cpp')):
             self.testType = self.testType | TestType.RUN
         elif filename.endswith('.fail.cpp'):
             self.testType = self.testType | TestType.COMPILE
@@ -175,7 +176,7 @@ class STLTest(Test):
             elif flag[1:] == 'clr':
                 self.requires.append('clr') # TRANSITION, GH-797
             elif flag[1:] == 'BE':
-                self.requires.append('edg') # available for x86, see config.py
+                self.requires.append('edg') # available for x86, see features.py
 
         if not foundStd:
             Feature('c++14').enableIn(self.config)

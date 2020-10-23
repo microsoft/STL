@@ -42,7 +42,7 @@ def getDefaultFeatures(config, litConfig):
         litConfig.edg_drop = os.environ[env_var]
         DEFAULT_FEATURES.append(Feature(name='edg_drop'))
 
-    if litConfig.target_arch == 'x86':
+    if litConfig.target_arch.casefold() == 'x86'.casefold():
         DEFAULT_FEATURES.append(Feature(name='edg'))
 
     return DEFAULT_FEATURES
