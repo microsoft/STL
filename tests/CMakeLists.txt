@@ -9,6 +9,8 @@ set(STL_TESTED_HEADERS_DIR "${STL_BUILD_ROOT}/inc")
 
 set(LLVM_PROJECT_SOURCE_DIR "${STL_SOURCE_DIR}/llvm-project" CACHE PATH
     "Location of the llvm-project source tree")
+set(LIBCXX_SOURCE_DIR "${LLVM_PROJECT_SOURCE_DIR}/libcxx" CACHE PATH
+    "Location of the libcxx source tree")
 
 add_subdirectory(libcxx)
 add_subdirectory(std)
