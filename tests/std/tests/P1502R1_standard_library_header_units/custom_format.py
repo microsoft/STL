@@ -107,13 +107,15 @@ class CustomTestFormat(STLTestFormat):
             if not compileTestCppWithEdg:
                 headerUnitOptions.append(headerObjPath)
 
-            cmd = [test.cxx, '/exportHeader', '<{}>'.format(header), '/Fo{}'.format(headerObjPath)]
+            cmd = [test.cxx, *test.flags, *test.compileFlags,
+                   '/exportHeader', '<{}>'.format(header), '/Fo{}'.format(headerObjPath)]
             yield TestStep(cmd, shared.execDir, shared.env, False)
 
         if compileTestCppWithEdg:
             test.compileFlags.append('/BE')
 
         shared.execFile = outputBase + '.exe'
-        cmd = [test.cxx, sourcePath, *test.flags, *test.compileFlags, '/Fe' + shared.execFile, '/link', *test.linkFlags]
+        cmd = [test.cxx, sourcePath, *test.flags, *test.compileFlags, *headerUnitOptions, '/Fe' + shared.execFile,
+               '/link', *test.linkFlags]
 
         yield TestStep(cmd, shared.execDir, shared.env, False)
