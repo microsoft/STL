@@ -12,7 +12,7 @@ import stl.test.format
 import stl.test.params
 
 config.name           = 'std'
-config.suffixes       = ['test[.]cpp$']
+config.suffixes       = ['test[.]cpp$', 'test[.]compile[.]pass[.]cpp$']
 config.test_exec_root = "@STD_TEST_OUTPUT_DIR@"
 config.test_format    = stl.test.format.STLTestFormat()
 
