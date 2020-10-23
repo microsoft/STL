@@ -152,7 +152,7 @@ class STLTest(Test):
             targetArch = litConfig.target_arch.casefold()
             if (targetArch == 'x64'.casefold()):
                 self.compileFlags.append('-m64')
-            elif (target_arch == 'x86'.casefold()):
+            elif (targetArch == 'x86'.casefold()):
                 self.compileFlags.append('-m32')
 
         self.cxx = os.path.normpath(cxx)
