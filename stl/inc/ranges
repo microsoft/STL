@@ -2146,9 +2146,9 @@ namespace ranges {
                     return {_St::_All, noexcept(views::all(_STD declval<_Rng>()))};
                 } else if constexpr (copyable<iterator_t<_Rng>>) {
                     return {_St::_Common, noexcept(common_view{_STD declval<_Rng>()})};
+                } else {
+                    return {_St::_None};
                 }
-
-                return {_St::_None};
             }
 
             template <class _Rng>
