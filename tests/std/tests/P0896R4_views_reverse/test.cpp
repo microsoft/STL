@@ -131,10 +131,10 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         constexpr bool is_noexcept = is_nothrow_copy_constructible_v<V>;
 
         static_assert(same_as<decltype(views::reverse(move(as_const(rng)))), R>);
-        static_assert(noexcept(views::reverse(as_const(rng))) == is_nothrow_copy_constructible_v<R>);
+        static_assert(noexcept(views::reverse(move(as_const(rng)))) == is_nothrow_copy_constructible_v<R>);
 
         static_assert(same_as<decltype(move(as_const(rng)) | views::reverse), R>);
-        static_assert(noexcept(as_const(rng) | views::reverse) == is_nothrow_copy_constructible_v<R>);
+        static_assert(noexcept(move(as_const(rng)) | views::reverse) == is_nothrow_copy_constructible_v<R>);
 
         static_assert(same_as<decltype(move(as_const(rng)) | views::reverse | views::reverse | views::reverse), R>);
         static_assert(noexcept(move(as_const(rng)) | views::reverse | views::reverse | views::reverse) == is_noexcept);
