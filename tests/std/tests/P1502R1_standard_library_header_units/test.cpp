@@ -607,7 +607,7 @@ int main() {
 #if 0 // TRANSITION, VSO-1088552 (deduction guides)
         assert(ranges::distance(views::filter(arr, [](int x) { return x == 0; })) == 4);
         static_assert(ranges::distance(views::filter(arr, [](int x) { return x != 0; })) == 5);
-#elif 0 // TRANSITION, VSO-1237145 (trailing requires clause)
+#elif defined(MSVC_INTERNAL_TESTING) // TRANSITION, VSO-1237145 (trailing requires clause)
         auto is_zero                  = [](int x) { return x == 0; };
         using FV1                     = ranges::filter_view<ranges::ref_view<decltype(arr)>, decltype(is_zero)>;
         assert(ranges::distance(FV1{arr, is_zero}) == 4);
