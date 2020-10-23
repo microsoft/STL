@@ -128,7 +128,7 @@ class STLTestFormat:
         test.compileFlags.extend(additionalCompileFlags)
         test.fileDependencies.extend(fileDependencies)
 
-    def _handleIsenseRspFile(self, test, litConfig):
+    def _handleIsenseRspFile(self, test, litConfig, shared):
         if litConfig.edg_drop is not None and test.isenseRspPath is not None:
             with open(test.isenseRspPath) as f:
                 cmd = [line.strip() for line in f]
@@ -177,6 +177,7 @@ class STLTestFormat:
         return \
             self.getBuildSetupSteps(test, litConfig, shared), \
             self.getBuildSteps(test, litConfig, shared), \
+            self._handleIsenseRspFile(test, litConfig, shared), \
             self.getTestSetupSteps(test, litConfig, shared), \
             self.getTestSteps(test, litConfig, shared)
 
@@ -208,9 +209,6 @@ class STLTestFormat:
             cmd = [test.cxx, test.getSourcePath(), *test.flags, *test.compileFlags,
                    '/Fe' + shared.execFile, '/link', *test.linkFlags]
             yield TestStep(cmd, shared.execDir, shared.env, False)
-
-        for step in self._handleIsenseRspFile(test, litConfig):
-            yield step
 
     def getTestSetupSteps(self, test, litConfig, shared):
         if TestType.RUN in test.testType:
@@ -246,7 +244,8 @@ class STLTestFormat:
                 failVar = lit.Test.FAIL
                 passVar = lit.Test.PASS
 
-            buildSetupSteps, buildSteps, testSetupSteps, testSteps = self.getSteps(test, litConfig)
+            buildSetupSteps, buildSteps, handleIsenseRspFile, testSetupSteps, testSteps = \
+                self.getSteps(test, litConfig)
 
             report = 'Build setup steps:\n'
             for step in buildSetupSteps:
@@ -275,6 +274,20 @@ class STLTestFormat:
                 if (step.shouldFail and rc == 0) or (not step.shouldFail and rc != 0):
                     litConfig.note(report)
                     return lit.Test.Result(failVar, report)
+
+            # The following block is for internal use only
+            if litConfig.edg_drop:
+                report += 'Intellisense response file steps:\n'
+                for step in handleIsenseRspFile:
+                    if step.shouldFail and rc == 0:
+                        report += 'Intellisense response step succeeded unexpectedly.\n'
+                    elif rc != 0:
+                        report += 'Intellisense response step failed unexpectedly.\n'
+
+                    report += stl.util.makeReport(cmd, out, err, rc)
+                    if (step.shouldFail and rc == 0) or (not step.shouldFail and rc != 0):
+                        litConfig.note(report)
+                        return lit.Test.Result(failVar, report)
 
             report += 'Test setup steps:\n'
             for step in testSetupSteps:

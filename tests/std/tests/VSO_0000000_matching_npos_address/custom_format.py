@@ -22,6 +22,3 @@ class CustomTestFormat(STLTestFormat):
                    '/link', *test.linkFlags]
 
         yield TestStep(cmd, shared.execDir, shared.env, False)
-
-        for step in self._handleIsenseRspFile(test, litConfig):
-            yield step
