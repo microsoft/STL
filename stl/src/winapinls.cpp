@@ -1,9 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include "awint.hpp"
+#include <yvals_core.h>
 
-#if _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
+#if _STL_WIN32_WINNT < _STL_WIN32_WINNT_VISTA
+
+#include "awint.hpp"
 
 // TRANSITION, ABI: preserved for binary compatibility
 extern "C" _CRTIMP2 int __cdecl __crtCompareStringEx(_In_opt_ LPCWSTR lpLocaleName, _In_ DWORD dwCmpFlags,
@@ -25,4 +27,4 @@ extern "C" _CRTIMP2 int __cdecl __crtGetLocaleInfoEx(_In_opt_ LPCWSTR const lpLo
     return GetLocaleInfoEx(lpLocaleName, LCType, lpLCData, cchData);
 }
 
-#endif // _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
+#endif // _STL_WIN32_WINNT < _STL_WIN32_WINNT_VISTA
