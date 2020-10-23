@@ -176,7 +176,7 @@ int main() {
         const to_chars_result result = to_chars(buf, end(buf), 3.14);
         assert(result.ec == errc{});
         assert(result.ptr == end(buf));
-#if 0 // TRANSITION, DevCom-1224512 (char_traits)
+#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         const string_view sv{buf, size(buf)};
         assert(sv == "3.14");
 #else // ^^^ no workaround / workaround vvv
@@ -197,7 +197,7 @@ int main() {
 
     {
         puts("Testing <codecvt>.");
-#if 0 // TRANSITION, DevCom-1161187 (access control), VSO-1236034 (error LNK2005: _Yarn::operator= already defined)
+#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1161187 (access control), VSO-1236034 (error LNK2005: _Yarn)
         const string utf8_koshka_cat{"\xD0\xBA\xD0\xBE\xD1\x88\xD0\xBA\xD0\xB0_\xF0\x9F\x90\x88"};
         const wstring utf16_koshka_cat{L"\x043A\x043E\x0448\x043A\x0430_\xD83D\xDC08"};
         wstring_convert<codecvt_utf8_utf16<wchar_t>> conv;
@@ -296,7 +296,7 @@ int main() {
 
     {
         puts("Testing <filesystem>.");
-#if 0 // TRANSITION, DevCom-1224512 (char_traits)
+#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         constexpr wstring_view dot{L"."};
         error_code ec{};
         const filesystem::space_info info = filesystem::space(dot, ec);
@@ -321,7 +321,7 @@ int main() {
 
     {
         puts("Testing <fstream>.");
-#if 0 // TRANSITION, DevCom-1224512 (char_traits)
+#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         const ifstream f{};
         assert(!f.is_open());
 #endif // ^^^ no workaround ^^^
@@ -356,7 +356,7 @@ int main() {
 
     {
         puts("Testing <iomanip>.");
-#if 0 // TRANSITION, DevCom-1224512 (char_traits)
+#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         ostringstream oss;
         oss << "I have " << setfill('.') << setw(7) << 9 * 9 * 9 + 10 * 10 * 10 << " cute fluffy kittens.";
         assert(oss.str() == "I have ...1729 cute fluffy kittens.");
@@ -369,7 +369,7 @@ int main() {
 
     {
         puts("Testing <ios>.");
-#if 0 // TRANSITION, DevCom-1224512 (char_traits)
+#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         ios b{nullptr};
         assert(b.rdbuf() == nullptr);
         assert(b.rdstate() == ios_base::badbit);
@@ -386,7 +386,7 @@ int main() {
 
     {
         puts("Testing <iostream>.");
-#if 0 // TRANSITION, DevCom-1224512 (char_traits)
+#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         cout << "Testing P1502R1_standard_library_header_units.\n";
         assert(cin.tie() == &cout);
 #endif // ^^^ no workaround ^^^
@@ -394,7 +394,7 @@ int main() {
 
     {
         puts("Testing <istream>.");
-#if 0 // TRANSITION, DevCom-1224512 (char_traits)
+#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         const istream is{nullptr};
         assert(is.gcount() == 0);
 #endif // ^^^ no workaround ^^^
@@ -535,7 +535,6 @@ int main() {
 
     {
         puts("Testing <optional>.");
-#ifndef MSVC_INTERNAL_TESTING // TRANSITION, VSO-1236047 (c1xx!FindConversionFunctions() assertion)
         constexpr optional<int> opt{in_place, 1729};
         assert(opt.has_value());
         assert(opt.value() == 1729);
@@ -547,12 +546,11 @@ int main() {
         assert(empty.value_or(-1) == -1);
         static_assert(!empty.has_value());
         static_assert(empty.value_or(-1) == -1);
-#endif // ^^^ no workaround ^^^
     }
 
     {
         puts("Testing <ostream>.");
-#if 0 // TRANSITION, DevCom-1224512 (char_traits)
+#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         const ostream os{nullptr};
         assert(os.rdbuf() == nullptr);
 #endif // ^^^ no workaround ^^^
@@ -626,7 +624,7 @@ int main() {
 
     {
         puts("Testing <regex>.");
-#if 0 // TRANSITION, DevCom-1224512 (char_traits)
+#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         const regex r{R"(\w+)"};
         const string s{"cute! fluffy? kittens."};
         vector<string> v;
@@ -741,7 +739,7 @@ int main() {
 
     {
         puts("Testing <sstream>.");
-#if 0 // TRANSITION, DevCom-1224512 (char_traits)
+#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         ostringstream oss;
         oss << "I have " << 9 * 9 * 9 + 10 * 10 * 10 << " cute fluffy kittens.";
         assert(oss.str() == "I have 1729 cute fluffy kittens.");
@@ -768,7 +766,7 @@ int main() {
 
     {
         puts("Testing <stdexcept>.");
-#if 0 // TRANSITION, DevCom-1224512 (char_traits)
+#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         bool caught_puppies = false;
 
         try {
@@ -832,7 +830,7 @@ int main() {
 
     {
         puts("Testing <streambuf>.");
-#if 0 // TRANSITION, DevCom-1224512 (char_traits)
+#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         istringstream iss{"kittens"};
         assert(iss.rdbuf()->in_avail() == 7);
 #endif // ^^^ no workaround ^^^
@@ -840,7 +838,7 @@ int main() {
 
     {
         puts("Testing <string_view>.");
-#if 0 // TRANSITION, DevCom-1224512 (char_traits)
+#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         constexpr string_view catenary{"catenary"};
         assert(catenary.starts_with("cat"));
         assert(!catenary.starts_with("dog"));
@@ -851,7 +849,7 @@ int main() {
 
     {
         puts("Testing <string>.");
-#if 0 // TRANSITION, DevCom-1224512 (char_traits)
+#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         const string small_string{"homeowner"};
         const string large_string{"Cute fluffy kittens are so adorable when they meow and purr."};
         assert(small_string.find("meow") == 2);
@@ -861,7 +859,7 @@ int main() {
 
     {
         puts("Testing <strstream>.");
-#if 0 // TRANSITION, DevCom-1224512 (char_traits)
+#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         istrstream istr{"1729"};
         int n = -1;
         istr >> n;
@@ -982,6 +980,7 @@ int main() {
 
     {
         puts("Testing <variant>.");
+#ifndef MSVC_INTERNAL_TESTING // TRANSITION, VSO-1237804 (c1xx!Module::InterfaceReader::materialize_function)
         constexpr const char* cats = "CATS";
 #if 0 // TRANSITION, DevCom-1162647 (constexpr variant stores wrong pointer)
         constexpr variant<int, const char*, double> var{in_place_type<const char*>, cats};
@@ -1002,6 +1001,7 @@ int main() {
         static_assert(var2.index() == 2);
         static_assert(holds_alternative<double>(var2));
         static_assert(get<double>(var2) == 2.5);
+#endif // TRANSITION, VSO-1237804 (c1xx!Module::InterfaceReader::materialize_function)
     }
 
     {
