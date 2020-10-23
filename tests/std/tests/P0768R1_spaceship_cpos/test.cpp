@@ -444,8 +444,9 @@ template <typename Floating>
 constexpr void test_floating() {
     if constexpr (is_same_v<Floating, float>) {
         const pair<int, float> rank_value_pairs[]{
-            {10, bit_cast<float>(0xFFC01234u)}, // negative quiet NaN, payload bits
-            {10, bit_cast<float>(0xFFC00000u)}, // negative quiet NaN, no payload bits
+            {10, bit_cast<float>(0xFFFFFFFFu)}, // negative quiet NaN, all payload bits set
+            {10, bit_cast<float>(0xFFC01234u)}, // negative quiet NaN, some payload bits set
+            {10, bit_cast<float>(0xFFC00000u)}, // negative quiet NaN, no payload bits set
             {20, -numeric_limits<float>::infinity()}, // negative infinity
             {30, -0x1.fffffep+127f}, // negative max normal
             {31, -0x1.000000p-126f}, // negative min normal
@@ -458,15 +459,17 @@ constexpr void test_floating() {
             {70, 0x1.000000p-126f}, // min normal
             {71, 0x1.fffffep+127f}, // max normal
             {80, numeric_limits<float>::infinity()}, // infinity
-            {90, bit_cast<float>(0x7FC00000u)}, // quiet NaN, no payload bits
-            {90, bit_cast<float>(0x7FC01234u)}, // quiet NaN, payload bits
+            {90, bit_cast<float>(0x7FC00000u)}, // quiet NaN, no payload bits set
+            {90, bit_cast<float>(0x7FC01234u)}, // quiet NaN, some payload bits set
+            {90, bit_cast<float>(0x7FFFFFFFu)}, // quiet NaN, all payload bits set
         };
 
         test_ranked_values(rank_value_pairs);
     } else {
         const pair<int, Floating> rank_value_pairs[]{
-            {10, bit_cast<Floating>(0xFFF8000000001234ull)}, // negative quiet NaN, payload bits
-            {10, bit_cast<Floating>(0xFFF8000000000000ull)}, // negative quiet NaN, no payload bits
+            {10, bit_cast<Floating>(0xFFFFFFFFFFFFFFFFull)}, // negative quiet NaN, all payload bits set
+            {10, bit_cast<Floating>(0xFFF8000000001234ull)}, // negative quiet NaN, some payload bits set
+            {10, bit_cast<Floating>(0xFFF8000000000000ull)}, // negative quiet NaN, no payload bits set
             {20, -numeric_limits<Floating>::infinity()}, // negative infinity
             {30, -0x1.fffffffffffffp+1023}, // negative max normal
             {31, -0x1.0000000000000p-1022}, // negative min normal
@@ -479,8 +482,9 @@ constexpr void test_floating() {
             {70, 0x1.0000000000000p-1022}, // min normal
             {71, 0x1.fffffffffffffp+1023}, // max normal
             {80, numeric_limits<Floating>::infinity()}, // infinity
-            {90, bit_cast<Floating>(0x7FF8000000000000ull)}, // quiet NaN, no payload bits
-            {90, bit_cast<Floating>(0x7FF8000000001234ull)}, // quiet NaN, payload bits
+            {90, bit_cast<Floating>(0x7FF8000000000000ull)}, // quiet NaN, no payload bits set
+            {90, bit_cast<Floating>(0x7FF8000000001234ull)}, // quiet NaN, some payload bits set
+            {90, bit_cast<Floating>(0x7FFFFFFFFFFFFFFFull)}, // quiet NaN, all payload bits set
         };
 
         test_ranked_values(rank_value_pairs);
