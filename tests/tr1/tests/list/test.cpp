@@ -346,7 +346,7 @@ void test_main() { // test basic workings of list definitions
 
     {
         const char* data = "abc";
-        STD initializer_list<char> init(data, data + CSTD strlen(data));
+        STD initializer_list<char> init {'a', 'b', 'c'};
         Mycont v11(init);
         CHECK_INT(v11.size(), 3);
         CHECK_INT(v11.back(), 'c');
