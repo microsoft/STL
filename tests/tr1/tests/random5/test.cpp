@@ -499,7 +499,7 @@ static void tpiecewise_constant() {
     dist_t dist2(10, 1.0, 2.0, myfn);
     CHECK_INT(dist2.densities().size(), 10);
 
-	STD initializer_list<double> ilist {1.0, 1.5, 2.0, 3.0, 4.0};
+	STD initializer_list<double> ilist{1.0, 1.5, 2.0, 3.0, 4.0};
     dist_t dist3(ilist, myfn);
     CHECK_INT(dist3.densities().size(), 4);
     CHECK_DOUBLE(dist3.densities()[0], 0.2777777777777778);
@@ -573,7 +573,7 @@ static void tpiecewise_linear() {
     dist_t dist2(10, 1.0, 2.0, myfn);
     CHECK_INT(dist2.densities().size(), 11);
 
-    STD initializer_list<double> ilist {1.0, 1.5, 2.0, 3.0, 4.0};
+    STD initializer_list<double> ilist{1.0, 1.5, 2.0, 3.0, 4.0};
     dist_t dist3(ilist, myfn);
     CHECK_INT(dist3.densities().size(), 5);
     CHECK_DOUBLE(dist3.densities()[0], 0.13333333333333333);

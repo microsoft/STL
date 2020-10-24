@@ -347,7 +347,7 @@ void test_unordered_map() { // test unordered_map
     }
 
     {
-        STD initializer_list<Myval> init {xarr[0], xarr[1], xarr[2]};
+        STD initializer_list<Myval> init{xarr[0], xarr[1], xarr[2]};
         Mycont v11(init);
         CHECK_INT(v11.size(), 3);
         CHECK_INT(v11.find('a')->second, 1);

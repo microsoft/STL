@@ -528,7 +528,7 @@ void test_main() { // test basic workings of string definitions
     }
 
     {
-        STD initializer_list<wchar_t> init {L'a', L'b', L'c'};
+        STD initializer_list<wchar_t> init{L'a', L'b', L'c'};
         STD wstring s11(init);
         CHECK_SIZE_T(s11.size(), 3);
         CHECK_INT(s11[2], L'c');

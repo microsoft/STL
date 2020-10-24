@@ -315,7 +315,7 @@ void test_unordered_set() { // test unordered_set
     }
 
     {
-        STD initializer_list<char> init {'a', 'b', 'c'};
+        STD initializer_list<char> init{'a', 'b', 'c'};
         Mycont v11(init);
         CHECK_INT(v11.size(), 3);
         CHECK_INT(*v11.find('a'), 'a');
