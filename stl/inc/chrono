@@ -917,7 +917,7 @@ namespace chrono {
             return *this -= days{1};
         }
         constexpr weekday operator--(int) noexcept {
-            weekday _Temp{*this};
+            const weekday _Temp{*this};
             --(*this);
             return _Temp;
         }
@@ -1832,20 +1832,9 @@ namespace chrono {
     inline constexpr month November{11};
     inline constexpr month December{12};
 
-    // Returns the number of fractional digits of _Num / _Den in the range [0, 18].
-    // If it can't be represented, 6 is returned.
-    // Example: _Fractional_width(1, 8) would return 3 for 0.125.
-    constexpr unsigned int _Fractional_width(intmax_t _Num, const intmax_t _Den) {
-        _STL_ASSERT(_Num > 0 && _Den > 0, "Numerator and denominator can't be less than 1.");
-        unsigned int _Result = 0;
-        for (; _Num % _Den != 0 && _Result < 19; _Num = _Num % _Den * 10, ++_Result) {
-        }
-        return _Result == 19 ? 6 : _Result;
-    }
-
-    constexpr intmax_t _Pow10(const int _Exp) {
+    _NODISCARD constexpr intmax_t _Pow10(const unsigned int _Exp) {
         intmax_t _Result = 1;
-        for (int _Ix = 0; _Ix < _Exp; ++_Ix) {
+        for (unsigned int _Ix = 0; _Ix < _Exp; ++_Ix) {
             _Result *= 10;
         }
         return _Result;
@@ -1854,8 +1843,17 @@ namespace chrono {
     template <class _Duration>
     requires _Is_duration_v<_Duration> class hh_mm_ss {
     public:
-        static constexpr unsigned int fractional_width =
-            _Fractional_width(_Duration::period::num, _Duration::period::den);
+        static constexpr unsigned int fractional_width = [_Num     = _Duration::period::num,
+                                                             &_Den = as_const(_Duration::period::den)]() mutable {
+            // Returns the number of fractional digits of _Num / _Den in the range [0, 18].
+            // If it can't be represented, 6 is returned.
+            // Example: _Fractional_width(1, 8) would return 3 for 0.125.
+            _STL_ASSERT(_Num > 0 && _Den > 0, "Numerator and denominator can't be less than 1.");
+            unsigned int _Result = 0;
+            for (; _Num % _Den != 0 && _Result < 19; _Num = _Num % _Den * 10, ++_Result) {
+            }
+            return _Result == 19 ? 6 : _Result;
+        }();
         using precision =
             duration<common_type_t<typename _Duration::rep, seconds::rep>, ratio<1, _Pow10(fractional_width)>>;
 

@@ -189,7 +189,7 @@ constexpr void year_test() {
     assert(!year{y_min - 1}.ok());
     assert(!year{y_max + 1}.ok());
 
-    for (int i = y_min; i <= y_max; i++) {
+    for (int i = y_min; i <= y_max; ++i) {
         assert(year{i}.ok());
         if (i % 4 == 0 && (i % 100 != 0 || i % 400 == 0)) {
             assert(year{i}.is_leap());
@@ -296,7 +296,7 @@ constexpr void weekday_indexed_test() {
     assert(wdi1 == wdi2);
 
     assert(!weekday_indexed(Sunday, 0).ok());
-    for (unsigned int i = 1; i <= 5; i++) {
+    for (unsigned int i = 1; i <= 5; ++i) {
         assert(weekday_indexed(Sunday, i).ok());
         assert(weekday_indexed(Monday, i).ok());
         assert(weekday_indexed(Tuesday, i).ok());
@@ -518,11 +518,14 @@ constexpr void year_month_test() {
     if (is_constant_evaluated()) {
         static_assert((2020y / 01).ok());
         static_assert(!(2020y / 13).ok());
+        static_assert(!(32768y / 01).ok());
     } else {
-        for (int y = y_min; y <= y_max; y++) {
+        for (int y = y_min - 1; y <= y_max + 1; ++y) {
             for (auto m = 0u; m <= 255u; ++m) {
                 const auto ym2 = year{y} / month{m};
-                if (m >= 1 && m <= 12) {
+                if (y == y_min - 1 || y == y_max + 1) {
+                    assert(!ym2.ok());
+                } else if (m >= 1 && m <= 12) {
                     assert(ym2.ok());
                 } else {
                     assert(!ym2.ok());
