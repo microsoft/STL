@@ -426,7 +426,7 @@ static void tdiscrete() {
 
     STD vector<double> vec(4, 1.0);
 
-    dist_t dist1 {vec[0], vec[1], vec[2], vec[3]};
+    dist_t dist1(vec.begin(), vec.end());
 
     CHECK_INT(dist1.probabilities().size(), 4);
     STD stringstream str;
@@ -443,7 +443,7 @@ static void tdiscrete() {
     CHECK(dist0.probabilities() == par0.probabilities());
     vec = par0.probabilities();
 
-    CHECK(par0 == dist_t::param_type({vec[0], vec[1], vec[2], vec[3]}));
+    CHECK(par0 == dist_t::param_type(vec.begin(), vec.end()));
 
     typedef STD ranlux24 rng_t;
     rng_t rng;
@@ -499,7 +499,7 @@ static void tpiecewise_constant() {
     dist_t dist2(10, 1.0, 2.0, myfn);
     CHECK_INT(dist2.densities().size(), 10);
 
-	STD initializer_list<double> ilist{1.0, 1.5, 2.0, 3.0, 4.0};
+    STD initializer_list<double> ilist{1.0, 1.5, 2.0, 3.0, 4.0};
     dist_t dist3(ilist, myfn);
     CHECK_INT(dist3.densities().size(), 4);
     CHECK_DOUBLE(dist3.densities()[0], 0.2777777777777778);
