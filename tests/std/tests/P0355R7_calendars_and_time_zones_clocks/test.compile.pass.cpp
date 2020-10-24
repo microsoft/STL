@@ -49,9 +49,9 @@ struct no_duration {
 };
 
 struct no_time_point {
-    using rep        = bool;
-    using period     = char;
-    using duration   = float;
+    using rep      = bool;
+    using period   = char;
+    using duration = float;
     static long is_steady;
     static short now();
 };
