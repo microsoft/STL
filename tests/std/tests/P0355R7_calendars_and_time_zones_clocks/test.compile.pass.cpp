@@ -33,7 +33,7 @@ struct no_rep {
 };
 
 struct no_period {
-    using period     = char;
+    using rep        = bool;
     using duration   = float;
     using time_point = int;
     static long is_steady;
