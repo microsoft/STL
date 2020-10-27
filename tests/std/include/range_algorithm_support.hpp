@@ -110,7 +110,16 @@ namespace test {
 
         using _Prevent_inheriting_unwrap = sentinel;
 
-        using unwrap = sentinel<Element, IsWrapped::no>;
+        using unwrap    = sentinel<Element, IsWrapped::no>;
+        using Constinel = sentinel<const Element, Wrapped>;
+
+        constexpr operator Constinel() && noexcept {
+            return Constinel{exchange(ptr_, nullptr)};
+        }
+
+        constexpr operator Constinel() const& noexcept {
+            return Constinel{ptr_};
+        }
 
         // clang-format off
         [[nodiscard]] constexpr auto _Unwrapped() const noexcept requires (to_bool(Wrapped)) {

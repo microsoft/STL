@@ -45,7 +45,7 @@ concept reconstructible = ranges::random_access_range<V>
     && ranges::sized_range<V>
     && (is_empty_view<V>
         || is_dynamic_span<V>
-     // || is_string_view<V> // TRANSITION, P1391R4
+        || is_string_view<V>
      // || is_iota_view<V> // TRANSITION, iota_view
         || is_subrange<V>);
 // clang-format on
@@ -184,9 +184,6 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     const bool is_empty = ranges::empty(expected);
 
     // Validate deduction guide
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1159442
-    (void) 42;
-#endif // TRANSITION, DevCom-1159442
     same_as<drop_view<V>> auto r = drop_view{forward<Rng>(rng), 4};
     using R                      = decltype(r);
     STATIC_ASSERT(ranges::view<R>);
@@ -442,17 +439,16 @@ constexpr void move_only_test() {
 }
 
 constexpr void output_range_test() {
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-938163
-    if (!is_constant_evaluated())
-#endif // TRANSITION, VSO-938163
-    {
-        using R = test::range<output_iterator_tag, int, test::Sized::no, test::CanDifference::no, test::Common::no,
-            test::CanCompare::no, test::ProxyRef::yes, test::CanView::yes, test::Copyability::move_only>;
-        int some_writable_ints[] = {0, 1, 2, 3};
-        STATIC_ASSERT(same_as<decltype(views::drop(R{some_writable_ints}, 2)), ranges::drop_view<R>>);
-        ranges::fill(R{some_writable_ints} | views::drop(2), 42);
-        assert(ranges::equal(some_writable_ints, initializer_list<int>{0, 1, 42, 42}));
-    }
+    using R = test::range<output_iterator_tag, int, test::Sized::no, test::CanDifference::no, test::Common::no,
+        test::CanCompare::no, test::ProxyRef::yes, test::CanView::yes, test::Copyability::move_only>;
+    int some_writable_ints[] = {0, 1, 2, 3};
+    STATIC_ASSERT(same_as<decltype(views::drop(R{some_writable_ints}, 2)), ranges::drop_view<R>>);
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-1217687
+    ranges::fill(views::drop(R{some_writable_ints}, 2), 42);
+#else // ^^^ workaround / no workaround vvv
+    ranges::fill(R{some_writable_ints} | views::drop(2), 42);
+#endif // TRANSITION, VSO-1217687
+    assert(ranges::equal(some_writable_ints, initializer_list<int>{0, 1, 42, 42}));
 }
 
 int main() {
@@ -469,9 +465,8 @@ int main() {
         STATIC_ASSERT(test_one(views::empty<int>, span<const int, 0>{}));
         test_one(views::empty<int>, span<const int, 0>{});
 
-        // TRANSITION, P1391R4
-        // STATIC_ASSERT(test_one(basic_string_view{some_ints}, only_four_ints));
-        // test_one(basic_string_view{some_ints}, only_four_ints);
+        STATIC_ASSERT(test_one(basic_string_view{ranges::begin(some_ints), ranges::end(some_ints)}, only_four_ints));
+        test_one(basic_string_view{ranges::begin(some_ints), ranges::end(some_ints)}, only_four_ints);
 
         // TRANSITION, iota_view
         // STATIC_ASSERT(test_one(ranges::iota_view{0, 8}, only_four_ints));

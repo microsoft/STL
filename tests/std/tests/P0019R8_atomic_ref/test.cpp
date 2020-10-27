@@ -94,40 +94,72 @@ void test_int_ops() {
     const std::atomic_ref rx(v);
     const std::atomic_ref ry(v);
 
-    vx.fetch_add(0x10);
-    rx.fetch_add(0x10);
+    assert(vx.fetch_add(0x10) == 0x40);
+    assert(rx.fetch_add(0x10) == 0x40);
 
     assert(vx.load() == 0x50);
     assert(vy.load() == 0x40);
     assert(rx.load() == 0x50);
     assert(ry.load() == 0x50);
 
-    vx.fetch_sub(0x8);
-    rx.fetch_sub(0x8);
+    assert(vx.fetch_sub(0x8) == 0x50);
+    assert(rx.fetch_sub(0x8) == 0x50);
 
     assert(vx.load() == 0x48);
     assert(vy.load() == 0x40);
     assert(rx.load() == 0x48);
     assert(ry.load() == 0x48);
 
-    vx.fetch_or(0xF);
-    rx.fetch_or(0xF);
+    assert(vx.fetch_or(0xF) == 0x48);
+    assert(rx.fetch_or(0xF) == 0x48);
 
     assert(vx.load() == 0x4F);
     assert(vy.load() == 0x40);
     assert(rx.load() == 0x4F);
     assert(ry.load() == 0x4F);
 
-    vx.fetch_and(0x3C);
-    rx.fetch_and(0x3C);
+    assert(vx.fetch_and(0x3C) == 0x4F);
+    assert(rx.fetch_and(0x3C) == 0x4F);
 
     assert(vx.load() == 0xC);
     assert(vy.load() == 0x40);
     assert(rx.load() == 0xC);
     assert(ry.load() == 0xC);
 
-    vx.fetch_xor(0x3F);
-    rx.fetch_xor(0x3F);
+    assert(vx.fetch_xor(0x3F) == 0xC);
+    assert(rx.fetch_xor(0x3F) == 0xC);
+
+    assert(vx.load() == 0x33);
+    assert(vy.load() == 0x40);
+    assert(rx.load() == 0x33);
+    assert(ry.load() == 0x33);
+
+    assert(vx-- == 0x33);
+    assert(rx-- == 0x33);
+
+    assert(vx.load() == 0x32);
+    assert(vy.load() == 0x40);
+    assert(rx.load() == 0x32);
+    assert(ry.load() == 0x32);
+
+    assert(--vx == 0x31);
+    assert(--rx == 0x31);
+
+    assert(vx.load() == 0x31);
+    assert(vy.load() == 0x40);
+    assert(rx.load() == 0x31);
+    assert(ry.load() == 0x31);
+
+    assert(vx++ == 0x31);
+    assert(rx++ == 0x31);
+
+    assert(vx.load() == 0x32);
+    assert(vy.load() == 0x40);
+    assert(rx.load() == 0x32);
+    assert(ry.load() == 0x32);
+
+    assert(++vx == 0x33);
+    assert(++rx == 0x33);
 
     assert(vx.load() == 0x33);
     assert(vy.load() == 0x40);
@@ -145,16 +177,16 @@ void test_float_ops() {
     const std::atomic_ref rx(v);
     const std::atomic_ref ry(v);
 
-    vx.fetch_add(0x10);
-    rx.fetch_add(0x10);
+    assert(vx.fetch_add(0x10) == 0x40);
+    assert(rx.fetch_add(0x10) == 0x40);
 
     assert(vx.load() == 0x50);
     assert(vy.load() == 0x40);
     assert(rx.load() == 0x50);
     assert(ry.load() == 0x50);
 
-    vx.fetch_sub(0x8);
-    rx.fetch_sub(0x8);
+    assert(vx.fetch_sub(0x8) == 0x50);
+    assert(rx.fetch_sub(0x8) == 0x50);
 
     assert(vx.load() == 0x48);
     assert(vy.load() == 0x40);
@@ -180,16 +212,16 @@ void test_ptr_ops() {
     const std::atomic_ref rx(v);
     const std::atomic_ref ry(v);
 
-    vx.fetch_add(0x10);
-    rx.fetch_add(0x10);
+    assert(vx.fetch_add(0x10) == a);
+    assert(rx.fetch_add(0x10) == a);
 
     assert(vx.load() == a + 0x10);
     assert(vy.load() == a);
     assert(rx.load() == a + 0x10);
     assert(ry.load() == a + 0x10);
 
-    vx.fetch_sub(0x8);
-    rx.fetch_sub(0x8);
+    assert(vx.fetch_sub(0x8) == a + 0x10);
+    assert(rx.fetch_sub(0x8) == a + 0x10);
 
     assert(vx.load() == a + 0x8);
     assert(vy.load() == a);
@@ -198,6 +230,38 @@ void test_ptr_ops() {
 
     vx.store(a + 0x10);
     rx.store(a + 0x10);
+
+    assert(vx.load() == a + 0x10);
+    assert(vy.load() == a);
+    assert(rx.load() == a + 0x10);
+    assert(ry.load() == a + 0x10);
+
+    assert(vx-- == a + 0x10);
+    assert(rx-- == a + 0x10);
+
+    assert(vx.load() == a + 0xF);
+    assert(vy.load() == a);
+    assert(rx.load() == a + 0xF);
+    assert(ry.load() == a + 0xF);
+
+    assert(--vx == a + 0xE);
+    assert(--rx == a + 0xE);
+
+    assert(vx.load() == a + 0xE);
+    assert(vy.load() == a);
+    assert(rx.load() == a + 0xE);
+    assert(ry.load() == a + 0xE);
+
+    assert(vx++ == a + 0xE);
+    assert(rx++ == a + 0xE);
+
+    assert(vx.load() == a + 0xF);
+    assert(vy.load() == a);
+    assert(rx.load() == a + 0xF);
+    assert(ry.load() == a + 0xF);
+
+    assert(++vx == a + 0x10);
+    assert(++rx == a + 0x10);
 
     assert(vx.load() == a + 0x10);
     assert(vy.load() == a);

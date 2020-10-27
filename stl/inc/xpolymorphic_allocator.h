@@ -140,7 +140,7 @@ namespace pmr {
     // CLASS memory_resource
     class __declspec(novtable) memory_resource {
     public:
-        virtual ~memory_resource() noexcept {}
+        virtual ~memory_resource() noexcept = default;
 
         _NODISCARD __declspec(allocator) void* allocate(_CRT_GUARDOVERFLOW const size_t _Bytes,
             const size_t _Align = alignof(max_align_t)) { // allocate _Bytes bytes of memory with alignment _Align
@@ -186,7 +186,11 @@ namespace pmr {
     }
 
     // CLASS TEMPLATE polymorphic_allocator
+#if _HAS_CXX20 && defined(__cpp_lib_byte)
+    template <class _Ty = byte>
+#else
     template <class _Ty>
+#endif // _HAS_CXX20 && defined(__cpp_lib_byte)
     class polymorphic_allocator {
     public:
         template <class>
@@ -221,6 +225,47 @@ namespace pmr {
             // No need to verify that size_t can represent the size of _Ty[_Count].
             _Resource->deallocate(_Ptr, _Count * sizeof(_Ty), alignof(_Ty));
         }
+
+#if _HAS_CXX20
+        _NODISCARD __declspec(allocator) void* allocate_bytes(
+            const size_t _Bytes, const size_t _Align = alignof(max_align_t)) {
+            return _Resource->allocate(_Bytes, _Align);
+        }
+
+        void deallocate_bytes(void* const _Ptr, const size_t _Bytes,
+            const size_t _Align = alignof(max_align_t)) noexcept /* strengthened */ {
+            _Resource->deallocate(_Ptr, _Bytes, _Align);
+        }
+
+        template <class _Uty>
+        _NODISCARD __declspec(allocator) _Uty* allocate_object(_CRT_GUARDOVERFLOW const size_t _Count = 1) {
+            void* const _Vp = allocate_bytes(_Get_size_of_n<sizeof(_Uty)>(_Count), alignof(_Uty));
+            return static_cast<_Uty*>(_Vp);
+        }
+
+        template <class _Uty>
+        void deallocate_object(_Uty* const _Ptr, const size_t _Count = 1) noexcept /* strengthened */ {
+            deallocate_bytes(_Ptr, _Count * sizeof(_Uty), alignof(_Uty));
+        }
+
+        template <class _Uty, class... _Types>
+        _NODISCARD __declspec(allocator) _Uty* new_object(_Types&&... _Args) {
+            _Uty* const _Ptr = allocate_object<_Uty>();
+            _TRY_BEGIN
+            construct(_Ptr, _STD forward<_Types>(_Args)...);
+            _CATCH_ALL
+            deallocate_object(_Ptr);
+            _RERAISE;
+            _CATCH_END
+            return _Ptr;
+        }
+
+        template <class _Uty>
+        void delete_object(_Uty* const _Ptr) noexcept /* strengthened */ {
+            _Destroy_in_place(*_Ptr);
+            deallocate_object(_Ptr);
+        }
+#endif // _HAS_CXX20
 
         template <class _Uty, class... _Types>
         void construct(_Uty* const _Ptr, _Types&&... _Args) {

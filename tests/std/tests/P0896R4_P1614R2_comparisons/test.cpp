@@ -260,9 +260,7 @@ STATIC_ASSERT(test_compare_three_way<int, int, strong_ordering>());
 STATIC_ASSERT(test_compare_three_way<int, long, strong_ordering>());
 STATIC_ASSERT(test_compare_three_way<float, float, partial_ordering>());
 STATIC_ASSERT(test_compare_three_way<float, double, partial_ordering>());
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1044530
 STATIC_ASSERT(test_compare_three_way<long, double, partial_ordering>());
-#endif // TRANSITION, DevCom-1044530
 STATIC_ASSERT(test_compare_three_way<bool, int, void>());
 
 STATIC_ASSERT(test_compare_three_way<some_enum, some_enum, strong_ordering>());
@@ -419,9 +417,7 @@ constexpr void ordering_test_cases() {
     test_strongly_ordered(13U, u8'x');
 #endif // __cpp_char8_t
     test_strongly_ordered(13U, u'x');
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1062618
     test_strongly_ordered(13U, U'x');
-#endif // TRANSITION, VSO-1062618
 
     test_strongly_ordered(scoped{13}, scoped{42});
     test_strongly_ordered(unscoped{13}, unscoped{42});
