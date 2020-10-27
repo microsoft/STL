@@ -426,7 +426,7 @@ static void tdiscrete() {
 
     STD vector<double> vec(4, 1.0);
 
-    dist_t dist1(vec.begin(), vec.end());
+    dist_t dist1{1.0, 1.0, 1.0, 1.0};
 
     CHECK_INT(dist1.probabilities().size(), 4);
     STD stringstream str;
