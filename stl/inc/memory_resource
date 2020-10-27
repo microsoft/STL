@@ -661,7 +661,7 @@ namespace pmr {
         }
 
     protected:
-        virtual void* do_allocate(const size_t _Bytes, const size_t _Align) override {
+        virtual void* do_allocate(size_t _Bytes, size_t _Align) override { // TRANSITION, DevCom-1159869
             // allocate from the current buffer or a new larger buffer from upstream
             if (!_STD align(_Align, _Bytes, _Current_buffer, _Space_available)) {
                 _Increase_capacity(_Bytes, _Align);

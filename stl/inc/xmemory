@@ -1447,16 +1447,11 @@ namespace ranges {
     template <class _To, class _From>
     concept _Convertible_from = convertible_to<_From, _To>;
 
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-attributes"
-#endif // __clang__
-
     // STRUCT TEMPLATE in_out_result
     template <class _In, class _Out>
     struct in_out_result {
-        [[no_unique_address]] _In in;
-        [[no_unique_address]] _Out out;
+        /* [[no_unique_address]] */ _In in;
+        /* [[no_unique_address]] */ _Out out;
 
         template <_Convertible_from<const _In&> _IIn, _Convertible_from<const _Out&> _OOut>
         constexpr operator in_out_result<_IIn, _OOut>() const& {
@@ -1468,10 +1463,6 @@ namespace ranges {
             return {_STD move(in), _STD move(out)};
         }
     };
-
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif // __clang__
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
