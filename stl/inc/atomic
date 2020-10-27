@@ -13,9 +13,9 @@
 #error <atomic> is not supported when compiling with /clr:pure.
 #endif // _M_CEE_PURE
 
-#include <stddef.h> // for size_t
-#include <stdint.h>
-#include <string.h>
+#include <cstddef>
+#include <cstdint>
+#include <cstring>
 #include <xatomic.h>
 #if _HAS_CXX20
 #include <xatomic_wait.h>

@@ -8,9 +8,9 @@
 #define _CHRONO_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
+#include <ctime>
 #include <limits>
 #include <ratio>
-#include <time.h>
 #include <utility>
 #include <xtimec.h>
 
