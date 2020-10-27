@@ -668,7 +668,7 @@ namespace ranges {
             _Iterator& operator++() {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 // Per LWG-3489
-                _STL_VERIFY(_Parent != nullptr, "cannot increment default initialized istream_view iterator");
+                _STL_VERIFY(_Parent != nullptr, "cannot increment default-initialized istream_view iterator");
                 _STL_VERIFY(
                     _Parent->_Stream != nullptr, "cannot increment istream_view iterator with uninitialized stream");
                 _STL_VERIFY(!_Parent->_Stream_at_end(), "cannot increment istream_view iterator at end of stream");
@@ -684,7 +684,7 @@ namespace ranges {
             _NODISCARD _Ty& operator*() const noexcept /* strengthened */ {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 // Per LWG-3489
-                _STL_VERIFY(_Parent != nullptr, "cannot dereference default initialized istream_view iterator");
+                _STL_VERIFY(_Parent != nullptr, "cannot dereference default-initialized istream_view iterator");
                 _STL_VERIFY(
                     _Parent->_Stream != nullptr, "cannot dereference istream_view iterator with uninitialized stream");
                 _STL_VERIFY(!_Parent->_Stream_at_end(), "cannot dereference istream_view iterator at end of stream");

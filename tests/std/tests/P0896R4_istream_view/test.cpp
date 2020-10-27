@@ -7,6 +7,7 @@
 #include <iostream>
 #include <ranges>
 #include <sstream>
+#include <type_traits>
 
 #include <range_algorithm_support.hpp>
 
