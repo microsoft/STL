@@ -557,7 +557,6 @@ void test_main() { // test basic workings of string definitions
     }
 
     {
-
         STD initializer_list<char> init{'a', 'b', 'c'};
         STD string s11(init);
         CHECK_SIZE_T(s11.size(), 3);

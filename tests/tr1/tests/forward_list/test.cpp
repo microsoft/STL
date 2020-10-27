@@ -333,7 +333,6 @@ void test_main() { // test basic workings of forward_list definitions
     CHECK_INT(v0.front(), 'b');
 
     {
-
         STD initializer_list<char> init{'a', 'b', 'c'};
         Mycont v11(init);
         CHECK_INT(size(v11), 3);
