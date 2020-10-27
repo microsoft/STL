@@ -948,8 +948,7 @@ public:
 private:
     void _Move_assign(_Tree& _Right, _Equal_allocators) noexcept(is_nothrow_move_assignable_v<key_compare>) {
         clear();
-        _Destroy_in_place(_Getcomp());
-        _Construct_in_place(_Getcomp(), _STD move(_Right._Getcomp()));
+        _Getcomp() = _Right._Getcomp();
         _Pocma(_Getal(), _Right._Getal());
         const auto _Scary = _Get_scary();
         auto _Right_scary = _Right._Get_scary();
@@ -963,8 +962,7 @@ private:
             _Move_assign(_Right, _Equal_allocators{});
         } else {
             clear();
-            _Destroy_in_place(_Getcomp());
-            _Construct_in_place(_Getcomp(), _STD move(_Right._Getcomp()));
+            _Getcomp()            = _Right._Getcomp();
             auto&& _Alproxy       = _GET_PROXY_ALLOCATOR(_Alnode, _Getal());
             auto&& _Right_alproxy = _GET_PROXY_ALLOCATOR(_Alnode, _Right._Getal());
             _Container_proxy_ptr<_Alty> _Proxy(_Right_alproxy, _Leave_proxy_unbound{});
