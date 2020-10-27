@@ -28,8 +28,8 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
     <ItemGroup Condition="'$(Arm64X)' == 'true' and '$(TargetNetFx)' != 'true'">
         <!-- Add EC symbols to import lib -->
-        <ImportLib Include="$(ECObjs);" />
-        <Link Include="$(ECObjs);"/>
+        <ImportLib Include="$(ECObjs)" />
+        <Link Include="$(ECObjs)"/>
         <Link Condition="'$(CrtBuildModelIsDll)' == 'true'" Include="
         $(IntermediateOutputDirectoryEC)\dllmain_satellite.obj;
         "/>

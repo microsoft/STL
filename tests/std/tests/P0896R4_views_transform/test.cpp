@@ -159,9 +159,6 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     const bool is_empty = ranges::empty(expected);
 
     // Validate deduction guide
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1159442
-    (void) 42;
-#endif // TRANSITION, DevCom-1159442
     same_as<TV> auto r = transform_view{forward<Rng>(rng), add8};
     using R            = decltype(r);
     STATIC_ASSERT(ranges::view<R>);
