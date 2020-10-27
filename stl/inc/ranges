@@ -2068,7 +2068,8 @@ namespace ranges {
         requires _Index < tuple_size_v<_Tuple>;
         typename tuple_element_t<_Index, _Tuple>;
         // clang-format off
-        { get<_Index>(__t) } -> convertible_to<const tuple_element_t<_Index, _Tuple>&>;
+        { _STD get<_Index>(__t) } -> convertible_to<const tuple_element_t<_Index, _Tuple>&>;
+
         // clang-format on
     };
 
