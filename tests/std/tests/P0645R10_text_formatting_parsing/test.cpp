@@ -229,6 +229,8 @@ constexpr bool test_parse_format_specs() {
     view_typ s2(TYPED_LITERAL(CharT, "*>6}"));
     view_typ s3(TYPED_LITERAL(CharT, "*^6}"));
     view_typ s4(TYPED_LITERAL(CharT, "6d}"));
+    view_typ s5(TYPED_LITERAL(CharT, "*^+4.4a}"));
+    view_typ s6(TYPED_LITERAL(CharT, "*^+#04.4a}"));
     test_parse_helper(parse_format_specs_fn, s0, false, s0.size() - 1, {.expected_width = 6});
     test_parse_helper(parse_format_specs_fn, s1, false, s1.size(),
         {.expected_alignment = _Align::_Left,
@@ -243,6 +245,22 @@ constexpr bool test_parse_format_specs() {
             .expected_fill   = view_typ(TYPED_LITERAL(CharT, "*")),
             .expected_width  = 6});
     test_parse_helper(parse_format_specs_fn, s4, false, s4.size() - 1, {.expected_width = 6, .expected_type = 'd'});
+    test_parse_helper(parse_format_specs_fn, s5, false, s5.size() - 1,
+        {.expected_alignment    = _Align::_Center,
+            .expected_sign      = _Sign::_Plus,
+            .expected_fill      = view_typ(TYPED_LITERAL(CharT, "*")),
+            .expected_width     = 4,
+            .expected_precision = 4,
+            .expected_type      = 'a'});
+    test_parse_helper(parse_format_specs_fn, s6, false, s6.size() - 1,
+        {.expected_alignment    = _Align::_Center,
+            .expected_sign      = _Sign::_Plus,
+            .expected_fill      = view_typ(TYPED_LITERAL(CharT, "*")),
+            .expected_width     = 4,
+            .expected_precision = 4,
+            .expected_hash      = true,
+            .expected_zero      = true,
+            .expected_type      = 'a'});
     return true;
 }
 

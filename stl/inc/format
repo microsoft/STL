@@ -296,7 +296,7 @@ constexpr const _CharT* _Parse_format_specs(const _CharT* _Begin, const _CharT* 
     }
 
     // Parse precision
-    if (*_Begin == '*') {
+    if (*_Begin == '.') {
         _Begin = _Parse_precision(_Begin, _End, _Callbacks);
     }
 
