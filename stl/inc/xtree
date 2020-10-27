@@ -908,11 +908,7 @@ public:
         : _Mypair(
             _One_then_variadic_args_t{}, _Right.key_comp(), _One_then_variadic_args_t{}, _STD move(_Right._Getal())) {
         _Alloc_sentinel_and_proxy();
-        const auto _Scary = _Get_scary();
-        auto _Right_scary = _Right._Get_scary();
-        _Scary->_Swap_proxy_and_iterators(*_Right_scary);
-        _Swap_adl(_Scary->_Myhead, _Right_scary->_Myhead);
-        _STD swap(_Scary->_Mysize, _Right_scary->_Mysize);
+        _Swap_val_excluding_comp(_Right);
     }
 
 private:
@@ -938,11 +934,7 @@ public:
         }
 
         _Alloc_sentinel_and_proxy();
-        const auto _Scary = _Get_scary();
-        auto _Right_scary = _Right._Get_scary();
-        _Scary->_Swap_proxy_and_iterators(*_Right_scary);
-        _Swap_adl(_Scary->_Myhead, _Right_scary->_Myhead);
-        _STD swap(_Scary->_Mysize, _Right_scary->_Mysize);
+        _Swap_val_excluding_comp(_Right);
     }
 
 private:
@@ -950,11 +942,7 @@ private:
         clear();
         _Getcomp() = _Right._Getcomp();
         _Pocma(_Getal(), _Right._Getal());
-        const auto _Scary = _Get_scary();
-        auto _Right_scary = _Right._Get_scary();
-        _Scary->_Swap_proxy_and_iterators(*_Right_scary);
-        _Swap_adl(_Scary->_Myhead, _Right_scary->_Myhead);
-        _STD swap(_Scary->_Mysize, _Right_scary->_Mysize);
+        _Swap_val_excluding_comp(_Right);
     }
 
     void _Move_assign(_Tree& _Right, _Propagate_allocators) {
@@ -999,6 +987,14 @@ public:
     }
 
 private:
+    void _Swap_val_excluding_comp(_Tree& _Right) { // swap contents (except comparator) with _Right, equal allocators
+        const auto _Scary = _Get_scary();
+        auto _Right_scary = _Right._Get_scary();
+        _Scary->_Swap_proxy_and_iterators(*_Right_scary);
+        _Swap_adl(_Scary->_Myhead, _Right_scary->_Myhead);
+        _STD swap(_Scary->_Mysize, _Right_scary->_Mysize);
+    }
+
     void _Swap_val(_Tree& _Right) { // swap contents with _Right, equal allocators
         const auto _Scary = _Get_scary();
         auto _Right_scary = _Right._Get_scary();
