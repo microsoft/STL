@@ -539,10 +539,8 @@ protected:
 private:
     ios_base::iostate __CLRCALL_OR_CDECL _Getint(_InIt& _First, _InIt& _Last, int _Lo, int _Hi, int& _Val,
         const _Ctype& _Ctype_fac) const { // get integer in range [_Lo, _Hi] from [_First, _Last)
-        const int _Hi_digits =
-            (_Hi <= 9 ? 1
-                      : _Hi <= 99 ? 2
-                                  : _Hi <= 999 ? 3 : _Hi <= 9999 ? 4 : static_cast<int>(_STD log10(_STD abs(_Hi))) + 1);
+        _STL_INTERNAL_CHECK(0 <= _Hi && _Hi <= 9999);
+        const int _Hi_digits = (_Hi <= 9 ? 1 : _Hi <= 99 ? 2 : _Hi <= 999 ? 3 : 4);
         char _Ac[_MAX_INT_DIG];
         char* _Ep;
         char* _Ptr = _Ac;
