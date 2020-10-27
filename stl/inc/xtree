@@ -995,15 +995,6 @@ private:
         _STD swap(_Scary->_Mysize, _Right_scary->_Mysize);
     }
 
-    void _Swap_val(_Tree& _Right) { // swap contents with _Right, equal allocators
-        const auto _Scary = _Get_scary();
-        auto _Right_scary = _Right._Get_scary();
-        _Scary->_Swap_proxy_and_iterators(*_Right_scary);
-        _Swap_adl(_Getcomp(), _Right._Getcomp());
-        _Swap_adl(_Scary->_Myhead, _Right_scary->_Myhead);
-        _STD swap(_Scary->_Mysize, _Right_scary->_Mysize);
-    }
-
 protected:
 #if _HAS_IF_CONSTEXPR
     template <class... _Valtys>
@@ -1583,7 +1574,8 @@ public:
     void swap(_Tree& _Right) noexcept(_Is_nothrow_swappable<key_compare>::value) /* strengthened */ {
         if (this != _STD addressof(_Right)) {
             _Pocs(_Getal(), _Right._Getal());
-            _Swap_val(_Right);
+            _Swap_val_excluding_comp(_Right);
+            _Swap_adl(_Getcomp(), _Right._Getcomp());
         }
     }
 
