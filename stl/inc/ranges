@@ -2069,7 +2069,6 @@ namespace ranges {
         typename tuple_element_t<_Index, _Tuple>;
         // clang-format off
         { _STD get<_Index>(__t) } -> convertible_to<const tuple_element_t<_Index, _Tuple>&>;
-
         // clang-format on
     };
 
@@ -2109,7 +2108,6 @@ namespace ranges {
             iterator_t<_Base> _Current{};
 
         public:
-            using iterator_category = typename iterator_traits<iterator_t<_Base>>::iterator_category;
             using value_type        = remove_cvref_t<tuple_element_t<_Index, range_value_t<_Base>>>;
             using difference_type   = range_difference_t<_Base>;
 
@@ -2154,7 +2152,7 @@ namespace ranges {
 
             constexpr _Iterator operator++(int) noexcept(
                 noexcept(++_Current) && is_nothrow_copy_constructible_v<iterator_t<_Base>>) /* strengthened */
-                requires(forward_range<_Base>) {
+                requires forward_range<_Base> {
                 auto _Tmp = *this;
                 ++_Current;
                 return _Tmp;
@@ -2336,7 +2334,7 @@ namespace ranges {
     public:
         elements_view() = default;
 
-        constexpr elements_view(_Vw _Range_) noexcept(is_nothrow_move_constructible_v<_Vw>) // strengthened
+        constexpr explicit elements_view(_Vw _Range_) noexcept(is_nothrow_move_constructible_v<_Vw>) // strengthened
             : _Range(_STD move(_Range_)) {}
 
         _NODISCARD constexpr _Vw base() const& noexcept(is_nothrow_copy_constructible_v<_Vw>) /* strengthened */
@@ -2428,7 +2426,7 @@ namespace ranges {
         };
 
         template <size_t _Index>
-        inline constexpr auto elements = _Elements_fn<_Index>();
+        inline constexpr _Elements_fn<_Index> elements;
         inline constexpr auto keys     = elements<0>;
         inline constexpr auto values   = elements<1>;
     } // namespace views

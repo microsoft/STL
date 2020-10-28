@@ -14,7 +14,7 @@
 using namespace std;
 using P = pair<int, int>;
 
-constexpr auto pipeline = views::elements<0>() | views::all;
+constexpr auto pipeline = views::elements<0> | views::all;
 
 template <class Rng, class V = views::all_t<Rng>>
 using pipeline_t = ranges::elements_view<V, 0>;
@@ -200,7 +200,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected_keys, Expected&& expected
         }
     }
 
-    STATIC_ASSERT(CanMemberEmpty<const R> == (forward_range<const Rng>) );
+    STATIC_ASSERT(CanMemberEmpty<const R> == forward_range<const Rng>);
     STATIC_ASSERT(CanBool<const R> == CanEmpty<const R>);
     if constexpr (CanMemberEmpty<const R>) {
         assert(as_const(r).empty() == is_empty);
@@ -244,17 +244,17 @@ constexpr bool test_one(Rng&& rng, Expected&& expected_keys, Expected&& expected
 
     // Validate elements_view::end
     STATIC_ASSERT(CanMemberEnd<R>);
-    STATIC_ASSERT(CanEnd<const R&> == (range<const V>) );
+    STATIC_ASSERT(CanEnd<const R&> == range<const V>);
     if (!is_empty) {
         same_as<sentinel_t<R>> auto i = r.end();
-        // static_assert(is_same_v<sentinel_t<R>, iterator_t<R>> == common_range<V>);
+        static_assert(common_range<R> == common_range<V>);
         if constexpr (bidirectional_range<R> && common_range<R>) {
             assert(*prev(i) == *prev(end(expected_keys)));
         }
 
         if constexpr (CanEnd<const R&>) {
             same_as<sentinel_t<const R>> auto i2 = as_const(r).end();
-            static_assert(is_same_v<sentinel_t<const R>, iterator_t<const R>> == common_range<const V>);
+            static_assert(common_range<const R> == common_range<const V>);
             if constexpr (bidirectional_range<const R> && common_range<const R>) {
                 assert(*prev(i2) == *prev(end(expected_keys)));
             }
@@ -295,7 +295,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected_keys, Expected&& expected
             assert(r[0] == *r.begin());
         }
 
-        STATIC_ASSERT(CanIndex<const R> == (random_access_range<const V>) );
+        STATIC_ASSERT(CanIndex<const R> == random_access_range<const V>);
         if constexpr (CanIndex<const R>) {
             assert(as_const(r)[0] == *as_const(r).begin());
         }
@@ -315,9 +315,6 @@ constexpr bool test_one(Rng&& rng, Expected&& expected_keys, Expected&& expected
     }
 
     // Validate elements_view::base() && (NB: do this last since it leaves r moved-from)
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1159442
-    (void) 42;
-#endif // TRANSITION, DevCom-1159442
     if (forward_range<V>) { // intentionally not if constexpr
         same_as<V> auto b2 = move(r).base();
         STATIC_ASSERT(noexcept(move(r).base()) == is_nothrow_move_constructible_v<V>);
