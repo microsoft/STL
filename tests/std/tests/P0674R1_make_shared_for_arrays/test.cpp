@@ -617,7 +617,7 @@ void test_allocate_shared_array_unknown_bounds() {
     test_allocate_init_destruct_order<ReportAddress[][3][3]>(3u); // failure multidimensional
 
     allocator<int> a8;
-    shared_ptr<int[7]> p8 = allocate_shared<int[7]>(a8, 0);
+    shared_ptr<int[]> p8 = allocate_shared<int[]>(a8, 7u, 0);
     for (int i = 0; i < 7; ++i) {
         assert(p8[i] == 0);
     }
