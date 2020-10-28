@@ -417,9 +417,7 @@ constexpr void ordering_test_cases() {
     test_strongly_ordered(13U, u8'x');
 #endif // __cpp_char8_t
     test_strongly_ordered(13U, u'x');
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1062618
     test_strongly_ordered(13U, U'x');
-#endif // TRANSITION, VSO-1062618
 
     test_strongly_ordered(scoped{13}, scoped{42});
     test_strongly_ordered(unscoped{13}, unscoped{42});

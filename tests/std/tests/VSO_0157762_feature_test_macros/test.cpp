@@ -1092,6 +1092,20 @@ STATIC_ASSERT(__cpp_lib_parallel_algorithm == 201603L);
 #endif
 #endif
 
+#if _HAS_CXX20
+#ifndef __cpp_lib_polymorphic_allocator
+#error __cpp_lib_polymorphic_allocator is not defined
+#elif __cpp_lib_polymorphic_allocator != 201902L
+#error __cpp_lib_polymorphic_allocator is not 201902L
+#else
+STATIC_ASSERT(__cpp_lib_polymorphic_allocator == 201902L);
+#endif
+#else
+#ifdef __cpp_lib_polymorphic_allocator
+#error __cpp_lib_polymorphic_allocator is defined
+#endif
+#endif
+
 #ifndef __cpp_lib_quoted_string_io
 #error __cpp_lib_quoted_string_io is not defined
 #elif __cpp_lib_quoted_string_io != 201304L
@@ -1249,6 +1263,20 @@ STATIC_ASSERT(__cpp_lib_shift == 201806L);
 #else
 #ifdef __cpp_lib_shift
 #error __cpp_lib_shift is defined
+#endif
+#endif
+
+#if _HAS_CXX20
+#ifndef __cpp_lib_smart_ptr_for_overwrite
+#error __cpp_lib_smart_ptr_for_overwrite is not defined
+#elif __cpp_lib_smart_ptr_for_overwrite != 202002L
+#error __cpp_lib_smart_ptr_for_overwrite is not 202002L
+#else
+STATIC_ASSERT(__cpp_lib_smart_ptr_for_overwrite == 202002L);
+#endif
+#else
+#ifdef __cpp_lib_smart_ptr_for_overwrite
+#error __cpp_lib_smart_ptr_for_overwrite is defined
 #endif
 #endif
 

@@ -3,13 +3,11 @@
 
 // Convert wide character to multibyte character, with locale.
 
-#include <errno.h>
-#include <limits.h> // for MB_LEN_MAX
-#include <locale.h>
+#include <cerrno>
+#include <climits> // for MB_LEN_MAX
+#include <clocale>
+#include <cstdlib>
 #include <mbctype.h>
-#include <stdio.h> // for EOF
-#include <stdlib.h>
-#include <string.h> // for memcpy
 #include <xlocinfo.h> // for _Cvtvec, _Wcrtomb
 
 #include <Windows.h>

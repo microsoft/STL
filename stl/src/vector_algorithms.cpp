@@ -5,13 +5,17 @@
 // injected into the msvcprt.lib and msvcprtd.lib import libraries.
 // Do not include or define anything else here.
 // In particular, basic_string must not be included here.
-#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE)
+
+#ifdef _M_CEE_PURE
+#error _M_CEE_PURE should not be defined when compiling vector_algorithms.cpp.
+#endif
+
+#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_ARM64EC)
 
 #include <emmintrin.h>
 #include <immintrin.h>
 #include <intrin0.h>
 #include <isa_availability.h>
-#include <xmmintrin.h>
 
 extern "C" long __isa_enabled;
 
@@ -419,4 +423,4 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
 
 } // extern "C"
 
-#endif // (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE)
+#endif // (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_ARM64EC)

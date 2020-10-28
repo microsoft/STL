@@ -3,11 +3,10 @@
 
 // Transform a string using the locale information as set by LC_COLLATE.
 
-#include <limits.h>
-#include <locale.h>
+#include <clocale>
+#include <cstdlib>
+#include <cstring>
 #include <malloc.h>
-#include <stdlib.h>
-#include <string.h>
 #include <xlocinfo.h> // for _Collvec
 
 #include <Windows.h>

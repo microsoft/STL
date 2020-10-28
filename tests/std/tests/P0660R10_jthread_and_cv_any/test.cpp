@@ -180,7 +180,7 @@ int main() {
         jthread worker([&](stop_token token) {
             unique_lock lck{m};
             assert(cv.wait(lck, move(token), [] { return true; }) == true);
-            assert(cv.wait(lck, move(token), [&] { return b; }) == true);
+            assert(cv.wait(lck, move(token), [&] { return b; }) == true); // Intentionally uses moved-from token
         });
 
         {
@@ -198,7 +198,8 @@ int main() {
         jthread worker([&](stop_token token) {
             unique_lock lck{m};
             assert(cv.wait_until(lck, move(token), infinity, [] { return true; }) == true);
-            assert(cv.wait_until(lck, move(token), infinity, [&] { return b; }) == true);
+            assert(cv.wait_until(lck, move(token), infinity, [&] { return b; })
+                   == true); // Intentionally uses moved-from token
         });
 
         {
@@ -216,7 +217,8 @@ int main() {
         jthread worker([&](stop_token token) {
             unique_lock lck{m};
             assert(cv.wait_for(lck, move(token), forever, [] { return true; }) == true);
-            assert(cv.wait_for(lck, move(token), forever, [&] { return b; }) == true);
+            assert(cv.wait_for(lck, move(token), forever, [&] { return b; })
+                   == true); // Intentionally uses moved-from token
         });
 
         {
