@@ -4824,7 +4824,7 @@ template <class _Ty>
 _NODISCARD bool _Is_all_bits_zero(const _Ty& _Val) {
     // checks if scalar type has all bits set to zero
     _STL_INTERNAL_STATIC_ASSERT(is_scalar_v<_Ty> && !is_member_pointer_v<_Ty>);
-    constexpr _Ty _Zero = static_cast<_Ty>(0);
+    constexpr _Ty _Zero{};
     return _CSTD memcmp(&_Val, &_Zero, sizeof(_Ty)) == 0;
 }
 
