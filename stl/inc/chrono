@@ -686,7 +686,6 @@ namespace chrono {
         };
 
 #undef _LITERAL_SUFFIX
-#undef _LITERAL_SUFFIX2
     };
 
     template <class _CharT, class _Traits, class _Rep, class _Period>
