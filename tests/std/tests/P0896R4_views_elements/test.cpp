@@ -39,10 +39,6 @@ constexpr bool test_one(Rng&& rng, Expected&& expected_keys, Expected&& expected
     STATIC_ASSERT(random_access_range<EV> == random_access_range<Rng>);
     STATIC_ASSERT(!contiguous_range<EV>);
 
-    // Validate range adaptor object and range adaptor closure
-    constexpr auto elements_incr = views::elements<0>();
-
-
     // ... with lvalue argument
     STATIC_ASSERT(CanViewElements<Rng&>);
     constexpr bool is_view = ranges::view<remove_cvref_t<Rng>>;
@@ -52,8 +48,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected_keys, Expected&& expected
         STATIC_ASSERT(same_as<decltype(views::elements<0>(rng)), EV>);
         STATIC_ASSERT(noexcept(views::elements<0>(rng)) == is_noexcept);
 
-        STATIC_ASSERT(same_as<decltype(rng | elements_incr), EV>);
-        STATIC_ASSERT(noexcept(rng | elements_incr) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(rng | views::elements<0>), EV>);
+        STATIC_ASSERT(noexcept(rng | views::elements<0>) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(rng | pipeline), pipeline_t<Rng&>>);
         STATIC_ASSERT(noexcept(rng | pipeline) == is_noexcept);
@@ -67,8 +63,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected_keys, Expected&& expected
         STATIC_ASSERT(same_as<decltype(views::elements<0>(as_const(rng))), EV>);
         STATIC_ASSERT(noexcept(views::elements<0>(as_const(rng))) == is_noexcept);
 
-        STATIC_ASSERT(same_as<decltype(as_const(rng) | elements_incr), EV>);
-        STATIC_ASSERT(noexcept(as_const(rng) | elements_incr) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(as_const(rng) | views::elements<0>), EV>);
+        STATIC_ASSERT(noexcept(as_const(rng) | views::elements<0>) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(as_const(rng) | pipeline), pipeline_t<const remove_reference_t<Rng>&>>);
         STATIC_ASSERT(noexcept(as_const(rng) | pipeline) == is_noexcept);
@@ -79,8 +75,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected_keys, Expected&& expected
         STATIC_ASSERT(same_as<decltype(views::elements<0>(as_const(rng))), RC>);
         STATIC_ASSERT(noexcept(views::elements<0>(as_const(rng))) == is_noexcept);
 
-        STATIC_ASSERT(same_as<decltype(as_const(rng) | elements_incr), RC>);
-        STATIC_ASSERT(noexcept(as_const(rng) | elements_incr) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(as_const(rng) | views::elements<0>), RC>);
+        STATIC_ASSERT(noexcept(as_const(rng) | views::elements<0>) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(as_const(rng) | pipeline), pipeline_t<const remove_reference_t<Rng>&>>);
         STATIC_ASSERT(noexcept(as_const(rng) | pipeline) == is_noexcept);
@@ -93,8 +89,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected_keys, Expected&& expected
         STATIC_ASSERT(same_as<decltype(views::elements<0>(move(rng))), EV>);
         STATIC_ASSERT(noexcept(views::elements<0>(move(rng))) == is_noexcept);
 
-        STATIC_ASSERT(same_as<decltype(move(rng) | elements_incr), EV>);
-        STATIC_ASSERT(noexcept(move(rng) | elements_incr) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(move(rng) | views::elements<0>), EV>);
+        STATIC_ASSERT(noexcept(move(rng) | views::elements<0>) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(rng) | pipeline), pipeline_t<remove_reference_t<Rng>>>);
         STATIC_ASSERT(noexcept(move(rng) | pipeline) == is_noexcept);
@@ -106,8 +102,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected_keys, Expected&& expected
         STATIC_ASSERT(same_as<decltype(views::elements<0>(move(rng))), RS>);
         STATIC_ASSERT(noexcept(views::elements<0>(move(rng))) == is_noexcept);
 
-        STATIC_ASSERT(same_as<decltype(move(rng) | elements_incr), RS>);
-        STATIC_ASSERT(noexcept(move(rng) | elements_incr) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(move(rng) | views::elements<0>), RS>);
+        STATIC_ASSERT(noexcept(move(rng) | views::elements<0>) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(rng) | pipeline), pipeline_t<remove_reference_t<Rng>>>);
         STATIC_ASSERT(noexcept(move(rng) | pipeline) == is_noexcept);
@@ -122,8 +118,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected_keys, Expected&& expected
         STATIC_ASSERT(same_as<decltype(views::elements<0>(move(as_const(rng)))), EV>);
         STATIC_ASSERT(noexcept(views::elements<0>(move(as_const(rng)))) == is_noexcept);
 
-        STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | elements_incr), EV>);
-        STATIC_ASSERT(noexcept(move(as_const(rng)) | elements_incr) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | views::elements<0>), EV>);
+        STATIC_ASSERT(noexcept(move(as_const(rng)) | views::elements<0>) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | pipeline), pipeline_t<const remove_reference_t<Rng>>>);
         STATIC_ASSERT(noexcept(move(as_const(rng)) | pipeline) == is_noexcept);
@@ -135,8 +131,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected_keys, Expected&& expected
         STATIC_ASSERT(same_as<decltype(views::elements<0>(move(as_const(rng)))), RS>);
         STATIC_ASSERT(noexcept(views::elements<0>(move(as_const(rng)))) == is_noexcept);
 
-        STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | elements_incr), RS>);
-        STATIC_ASSERT(noexcept(move(as_const(rng)) | elements_incr) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | views::elements<0>), RS>);
+        STATIC_ASSERT(noexcept(move(as_const(rng)) | views::elements<0>) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | pipeline), pipeline_t<const remove_reference_t<Rng>>>);
         STATIC_ASSERT(noexcept(move(as_const(rng)) | pipeline) == is_noexcept);
@@ -153,24 +149,9 @@ constexpr bool test_one(Rng&& rng, Expected&& expected_keys, Expected&& expected
     STATIC_ASSERT(!contiguous_range<R>);
 
     // Validate views::keys and views::values
+    using VR            = elements_view<views::all_t<Rng>, 1>;
     same_as<EV> auto kr = ranges::keys_view<Rng>{forward<Rng>(rng)};
-    using KR            = decltype(kr);
-    STATIC_ASSERT(ranges::view<KR>);
-    STATIC_ASSERT(input_range<KR>);
-    STATIC_ASSERT(forward_range<KR> == forward_range<Rng>);
-    STATIC_ASSERT(bidirectional_range<KR> == bidirectional_range<Rng>);
-    STATIC_ASSERT(random_access_range<KR> == random_access_range<Rng>);
-    STATIC_ASSERT(!contiguous_range<KR>);
-
-    using EV2            = elements_view<views::all_t<Rng>, 1>;
-    same_as<EV2> auto vr = ranges::values_view<Rng>{forward<Rng>(rng)};
-    using VR             = decltype(vr);
-    STATIC_ASSERT(ranges::view<VR>);
-    STATIC_ASSERT(input_range<VR>);
-    STATIC_ASSERT(forward_range<VR> == forward_range<Rng>);
-    STATIC_ASSERT(bidirectional_range<VR> == bidirectional_range<Rng>);
-    STATIC_ASSERT(random_access_range<VR> == random_access_range<Rng>);
-    STATIC_ASSERT(!contiguous_range<VR>);
+    same_as<VR> auto vr = ranges::values_view<Rng>{forward<Rng>(rng)};
 
     // Validate elements_view::size
     STATIC_ASSERT(CanMemberSize<R> == CanSize<V>);
