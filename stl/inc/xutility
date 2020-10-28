@@ -1477,10 +1477,6 @@ _NODISCARD constexpr _Ty* _Get_unwrapped_n(_Ty* const _Src, _Diff) {
 }
 #endif // _HAS_IF_CONSTEXPR
 
-template <class _Iter>
-using _Unwrapped_n_t =
-    _Remove_cvref_t<decltype(_Get_unwrapped_n(_STD declval<_Iter>(), _Iter_diff_t<_Remove_cvref_t<_Iter>>{}))>;
-
 // FUNCTION TEMPLATE _Seek_wrapped
 template <class _Iter, class _UIter, class = void>
 _INLINE_VAR constexpr bool _Wrapped_seekable_v = false;
@@ -4825,10 +4821,11 @@ void _Fill_zero_memset(_DestTy* const _Dest, const size_t _Count) {
 }
 
 template <class _Ty>
-_NODISCARD bool _Is_scalar_zero(const _Ty& _Val) {
-    // checks if scalar type has all bits set to zero, avoids using user defined operator== for enums
-    _STL_INTERNAL_STATIC_ASSERT(is_scalar_v<_Ty>);
-    return static_cast<_Unwrap_enum_t<_Ty>>(_Val) == static_cast<_Unwrap_enum_t<_Ty>>(0);
+_NODISCARD bool _Is_all_bits_zero(const _Ty& _Val) {
+    // checks if scalar type has all bits set to zero
+    _STL_INTERNAL_STATIC_ASSERT(is_scalar_v<_Ty> && !is_member_pointer_v<_Ty>);
+    constexpr _Ty _Zero = static_cast<_Ty>(0);
+    return _CSTD memcmp(&_Val, &_Zero, sizeof(_Ty)) == 0;
 }
 
 #if _HAS_IF_CONSTEXPR
@@ -4849,7 +4846,7 @@ _CONSTEXPR20 void fill(const _FwdIt _First, const _FwdIt _Last, const _Ty& _Val)
                 _Fill_memset(_UFirst, _Val, static_cast<size_t>(_ULast - _UFirst));
                 return;
             } else if constexpr (_Fill_zero_memset_is_safe<decltype(_UFirst), _Ty>) {
-                if (_Is_scalar_zero(_Val)) {
+                if (_Is_all_bits_zero(_Val)) {
                     _Fill_zero_memset(_UFirst, static_cast<size_t>(_ULast - _UFirst));
                     return;
                 }
@@ -4916,7 +4913,7 @@ _CONSTEXPR20 _OutIt fill_n(_OutIt _Dest, const _Diff _Count_raw, const _Ty& _Val
                     _Seek_wrapped(_Dest, _UDest + _Count);
                     return _Dest;
                 } else if constexpr (_Fill_zero_memset_is_safe<decltype(_UDest), _Ty>) {
-                    if (_Is_scalar_zero(_Val)) {
+                    if (_Is_all_bits_zero(_Val)) {
                         _Fill_zero_memset(_UDest, static_cast<size_t>(_Count));
                         _Seek_wrapped(_Dest, _UDest + _Count);
                         return _Dest;

@@ -1747,7 +1747,7 @@ _Alloc_ptr_t<_Alloc> _Uninitialized_fill_n(
         return _First + _Count;
     } else {
         if constexpr (_Fill_zero_memset_is_safe<_Ty*, _Ty> && _Uses_default_construct<_Alloc, _Ty*, _Ty>::value) {
-            if (_Is_scalar_zero(_Val)) {
+            if (_Is_all_bits_zero(_Val)) {
                 _Fill_zero_memset(_Unfancy(_First), static_cast<size_t>(_Count));
                 return _First + _Count;
             }
@@ -1803,7 +1803,7 @@ void uninitialized_fill(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last, c
         _Fill_memset(_UFirst, _Val, static_cast<size_t>(_ULast - _UFirst));
     } else {
         if constexpr (_Fill_zero_memset_is_safe<_Unwrapped_t<const _NoThrowFwdIt&>, _Tval>) {
-            if (_Is_scalar_zero(_Val)) {
+            if (_Is_all_bits_zero(_Val)) {
                 _Fill_zero_memset(_UFirst, static_cast<size_t>(_ULast - _UFirst));
                 return;
             }
