@@ -173,7 +173,7 @@ int main() {
     // Test (indirectly) _Uninitialized_fill_n with zero
     {
         vector<void*> vec(43, nullptr);
-        for (void* p : vec) {
+        for (const auto& p : vec) {
             assert(p == nullptr);
         }
     }
