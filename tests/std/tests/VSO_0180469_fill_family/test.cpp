@@ -10,6 +10,7 @@
 // calls std::fill and std::uninitialized_fill with (signed*, signed*, unsigned)
 #include <algorithm>
 #include <assert.h>
+#include <cmath>
 #include <cstddef>
 #include <memory>
 #include <stdio.h>
@@ -175,7 +176,8 @@ int main() {
         float output[] = {1.0f, 2.0f, 3.0f};
         fill(output, output + 3, -0.0f);
         for (const float& elem : output) {
-            assert(_Bit_cast<int>(elem) == _Bit_cast<int>(-0.0f));
+            assert(elem == 0.0f); // elem is positive or negative zero
+            assert(signbit(elem)); // elem is negative
         }
     }
 
