@@ -16,12 +16,14 @@ using namespace std;
 #include <iostream>
 
 // Test a silly precomposed range adaptor pipeline
-constexpr auto is_less_than_three = [](const auto& x) { return x < 3; };
-using Pred                        = remove_const_t<decltype(is_less_than_three)>;
+template <int X>
+constexpr auto is_less_than = [](const auto& x) { return x < X; };
+
+using Pred = remove_const_t<decltype(is_less_than<3>)>;
 STATIC_ASSERT(is_nothrow_copy_constructible_v<Pred>&& is_nothrow_move_constructible_v<Pred>);
 
-constexpr auto pipeline = views::take_while(is_less_than_three) | views::take_while(is_less_than_three)
-                          | views::take_while(is_less_than_three) | views::take_while(is_less_than_three);
+constexpr auto pipeline = views::take_while(is_less_than<3>) | views::take_while(is_less_than<3>)
+                          | views::take_while(is_less_than<3>) | views::take_while(is_less_than<3>);
 
 template <class Rng, class V = views::all_t<Rng>>
 using pipeline_t = ranges::take_while_view<
@@ -29,7 +31,7 @@ using pipeline_t = ranges::take_while_view<
 
 template <class Rng>
 concept CanViewTake_while = requires(Rng&& r) {
-    views::take_while(static_cast<Rng&&>(r), is_less_than_three);
+    views::take_while(static_cast<Rng&&>(r), is_less_than<3>);
 };
 
 template <ranges::input_range Rng, ranges::random_access_range Expected>
@@ -50,15 +52,15 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     STATIC_ASSERT(contiguous_range<R> == contiguous_range<Rng>);
 
     // Validate range adaptor object and range adaptor closure
-    constexpr auto take_while_even = views::take_while(is_less_than_three);
+    constexpr auto take_while_even = views::take_while(is_less_than<3>);
 
     // ... with lvalue argument
     STATIC_ASSERT(CanViewTake_while<Rng&> == (!is_view || copyable<V>) );
     if constexpr (CanViewTake_while<Rng&>) { // Validate lvalue
         constexpr bool is_noexcept = !is_view || is_nothrow_copy_constructible_v<V>;
 
-        STATIC_ASSERT(same_as<decltype(views::take_while(rng, is_less_than_three)), R>);
-        STATIC_ASSERT(noexcept(views::take_while(rng, is_less_than_three)) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(views::take_while(rng, is_less_than<3>)), R>);
+        STATIC_ASSERT(noexcept(views::take_while(rng, is_less_than<3>)) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(rng | take_while_even), R>);
         STATIC_ASSERT(noexcept(rng | take_while_even) == is_noexcept);
@@ -72,8 +74,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     if constexpr (is_view && copyable<V>) {
         constexpr bool is_noexcept = is_nothrow_copy_constructible_v<V>;
 
-        STATIC_ASSERT(same_as<decltype(views::take_while(as_const(rng), is_less_than_three)), R>);
-        STATIC_ASSERT(noexcept(views::take_while(as_const(rng), is_less_than_three)) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(views::take_while(as_const(rng), is_less_than<3>)), R>);
+        STATIC_ASSERT(noexcept(views::take_while(as_const(rng), is_less_than<3>)) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(as_const(rng) | take_while_even), R>);
         STATIC_ASSERT(noexcept(as_const(rng) | take_while_even) == is_noexcept);
@@ -83,10 +85,10 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     } else if constexpr (!is_view) {
         using RC = take_while_view<views::all_t<const remove_reference_t<Rng>&>, Pred>;
         constexpr bool is_noexcept =
-            is_nothrow_constructible_v<RC, const remove_reference_t<Rng>&, decltype((is_less_than_three))>;
+            is_nothrow_constructible_v<RC, const remove_reference_t<Rng>&, decltype((is_less_than<3>) )>;
 
-        STATIC_ASSERT(same_as<decltype(views::take_while(as_const(rng), is_less_than_three)), RC>);
-        STATIC_ASSERT(noexcept(views::take_while(as_const(rng), is_less_than_three)) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(views::take_while(as_const(rng), is_less_than<3>)), RC>);
+        STATIC_ASSERT(noexcept(views::take_while(as_const(rng), is_less_than<3>)) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(as_const(rng) | take_while_even), RC>);
         STATIC_ASSERT(noexcept(as_const(rng) | take_while_even) == is_noexcept);
@@ -99,8 +101,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     STATIC_ASSERT(CanViewTake_while<remove_reference_t<Rng>> == is_view || enable_borrowed_range<remove_cvref_t<Rng>>);
     if constexpr (is_view) {
         constexpr bool is_noexcept = is_nothrow_move_constructible_v<V>;
-        STATIC_ASSERT(same_as<decltype(views::take_while(move(rng), is_less_than_three)), R>);
-        STATIC_ASSERT(noexcept(views::take_while(move(rng), is_less_than_three)) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(views::take_while(move(rng), is_less_than<3>)), R>);
+        STATIC_ASSERT(noexcept(views::take_while(move(rng), is_less_than<3>)) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(rng) | take_while_even), R>);
         STATIC_ASSERT(noexcept(move(rng) | take_while_even) == is_noexcept);
@@ -112,8 +114,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         using RS                   = take_while_view<S, Pred>;
         constexpr bool is_noexcept = noexcept(S{move(rng)});
 
-        STATIC_ASSERT(same_as<decltype(views::take_while(move(rng), is_less_than_three)), RS>);
-        STATIC_ASSERT(noexcept(views::take_while(move(rng), is_less_than_three)) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(views::take_while(move(rng), is_less_than<3>)), RS>);
+        STATIC_ASSERT(noexcept(views::take_while(move(rng), is_less_than<3>)) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(rng) | take_while_even), RS>);
         STATIC_ASSERT(noexcept(move(rng) | take_while_even) == is_noexcept);
@@ -128,8 +130,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     if constexpr (is_view && copyable<V>) {
         constexpr bool is_noexcept = is_nothrow_copy_constructible_v<V>;
 
-        STATIC_ASSERT(same_as<decltype(views::take_while(move(as_const(rng)), is_less_than_three)), R>);
-        STATIC_ASSERT(noexcept(views::take_while(move(as_const(rng)), is_less_than_three)) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(views::take_while(move(as_const(rng)), is_less_than<3>)), R>);
+        STATIC_ASSERT(noexcept(views::take_while(move(as_const(rng)), is_less_than<3>)) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | take_while_even), R>);
         STATIC_ASSERT(noexcept(move(as_const(rng)) | take_while_even) == is_noexcept);
@@ -141,8 +143,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         using RS                   = take_while_view<S, Pred>;
         constexpr bool is_noexcept = noexcept(S{move(as_const(rng))});
 
-        STATIC_ASSERT(same_as<decltype(views::take_while(move(as_const(rng)), is_less_than_three)), RS>);
-        STATIC_ASSERT(noexcept(views::take_while(move(as_const(rng)), is_less_than_three)) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(views::take_while(move(as_const(rng)), is_less_than<3>)), RS>);
+        STATIC_ASSERT(noexcept(views::take_while(move(as_const(rng)), is_less_than<3>)) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | take_while_even), RS>);
         STATIC_ASSERT(noexcept(move(as_const(rng)) | take_while_even) == is_noexcept);
@@ -155,7 +157,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 #if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1159442
     (void) 42;
 #endif // TRANSITION, DevCom-1159442
-    same_as<R> auto r = take_while_view{forward<Rng>(rng), is_less_than_three};
+    same_as<R> auto r = take_while_view{forward<Rng>(rng), is_less_than<3>};
     assert(ranges::equal(r, expected));
 
     { // Validate take_while_view::pred
@@ -360,15 +362,15 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     return true;
 }
 
-static constexpr int some_ints[]                    = {0, 1, 2, 3, 4, 3, 2, 1};
-static constexpr int only_less_than_three[]         = {0, 1, 2};
-static constexpr int only_less_than_three_reverse[] = {2, 1};
+static constexpr int some_ints[]               = {0, 1, 2, 3, 4, 3, 2, 1};
+static constexpr int expected_output[]         = {0, 1, 2};
+static constexpr int expected_output_reverse[] = {2, 1};
 
 struct instantiator {
     template <ranges::input_range R>
     static constexpr void call() {
         R r{some_ints};
-        test_one(r, only_less_than_three);
+        test_one(r, expected_output);
     }
 };
 
@@ -407,61 +409,59 @@ int main() {
     // Validate views
     { // ... copyable
         constexpr span<const int> s{some_ints};
-        STATIC_ASSERT(test_one(s, only_less_than_three));
-        test_one(s, only_less_than_three);
+        STATIC_ASSERT(test_one(s, expected_output));
+        test_one(s, expected_output);
     }
     { // ... move-only
-        test_one(move_only_view<input_iterator_tag, test::Common::no>{some_ints}, only_less_than_three);
-        test_one(move_only_view<forward_iterator_tag, test::Common::no>{some_ints}, only_less_than_three);
-        test_one(move_only_view<forward_iterator_tag, test::Common::yes>{some_ints}, only_less_than_three);
-        test_one(move_only_view<bidirectional_iterator_tag, test::Common::no>{some_ints}, only_less_than_three);
-        test_one(move_only_view<bidirectional_iterator_tag, test::Common::yes>{some_ints}, only_less_than_three);
-        test_one(move_only_view<random_access_iterator_tag, test::Common::no>{some_ints}, only_less_than_three);
-        test_one(move_only_view<random_access_iterator_tag, test::Common::yes>{some_ints}, only_less_than_three);
+        test_one(move_only_view<input_iterator_tag, test::Common::no>{some_ints}, expected_output);
+        test_one(move_only_view<forward_iterator_tag, test::Common::no>{some_ints}, expected_output);
+        test_one(move_only_view<forward_iterator_tag, test::Common::yes>{some_ints}, expected_output);
+        test_one(move_only_view<bidirectional_iterator_tag, test::Common::no>{some_ints}, expected_output);
+        test_one(move_only_view<bidirectional_iterator_tag, test::Common::yes>{some_ints}, expected_output);
+        test_one(move_only_view<random_access_iterator_tag, test::Common::no>{some_ints}, expected_output);
+        test_one(move_only_view<random_access_iterator_tag, test::Common::yes>{some_ints}, expected_output);
     }
 
     // Validate non-views
     {
-        STATIC_ASSERT(test_one(some_ints, only_less_than_three));
-        test_one(some_ints, only_less_than_three);
+        STATIC_ASSERT(test_one(some_ints, expected_output));
+        test_one(some_ints, expected_output);
     }
     {
         vector vec(ranges::begin(some_ints), ranges::end(some_ints));
-        test_one(vec, only_less_than_three);
+        test_one(vec, expected_output);
     }
     {
         forward_list lst(ranges::begin(some_ints), ranges::end(some_ints));
-        test_one(lst, only_less_than_three);
+        test_one(lst, expected_output);
     }
 
     // Validate a non-view borrowed range
     {
         constexpr span s{some_ints};
-        STATIC_ASSERT(test_one(s, only_less_than_three));
-        test_one(s, only_less_than_three);
+        STATIC_ASSERT(test_one(s, expected_output));
+        test_one(s, expected_output);
     }
 
     // take_while/reverse interaction test
     {
-        auto dwr_pipe = views::take_while(is_less_than_three) | views::reverse;
-        auto rdw_pipe = views::reverse | views::take_while(is_less_than_three);
+        auto dwr_pipe = views::take_while(is_less_than<3>) | views::reverse;
+        auto rdw_pipe = views::reverse | views::take_while(is_less_than<3>);
 
         auto r0  = some_ints | dwr_pipe;
         using R0 = decltype(r0);
         STATIC_ASSERT(ranges::bidirectional_range<R0> && ranges::view<R0>);
-        assert(ranges::equal(r0, views::reverse(only_less_than_three)));
+        assert(ranges::equal(r0, views::reverse(expected_output)));
 
         auto r1  = some_ints | rdw_pipe;
         using R1 = decltype(r1);
         STATIC_ASSERT(ranges::bidirectional_range<R1> && ranges::view<R1>);
-        assert(ranges::equal(r1, views::reverse(only_less_than_three_reverse)));
+        assert(ranges::equal(r1, views::reverse(expected_output_reverse)));
     }
 
     { // empty range
-        constexpr span<const int, 0> empty{};
-        constexpr span<const int, 0> empty_expected{};
-        STATIC_ASSERT(test_one(empty, empty_expected));
-        test_one(empty, empty_expected);
+        STATIC_ASSERT(test_one(span<const int, 0>{}, span<const int, 0>{}));
+        test_one(span<const int, 0>{}, span<const int, 0>{});
     }
 
 
