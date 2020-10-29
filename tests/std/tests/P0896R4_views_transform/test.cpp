@@ -710,4 +710,26 @@ int main() {
 
     STATIC_ASSERT((iterator_instantiation_test(), true));
     iterator_instantiation_test();
+
+    { // Validate **non-standard guarantee** that predicates are moved into the range adaptor closure, and into the view
+      // object from an rvalue closure
+        struct Fn {
+            Fn()     = default;
+            Fn(Fn&&) = default;
+            Fn(const Fn&) {
+                assert(false);
+            }
+            Fn& operator=(Fn&&) = default;
+            Fn& operator        =(const Fn&) {
+                assert(false);
+                return *this;
+            }
+
+            bool operator()(int) const {
+                return true;
+            }
+        };
+
+        (void) views::transform(Fn{})(span<int>{});
+    }
 }

@@ -987,14 +987,18 @@ namespace ranges {
                 /* [[no_unique_address]] */ _Semiregular_box<_Pr> _Pred;
 
                 template <viewable_range _Rng>
-                _NODISCARD constexpr auto operator()(_Rng&& _Range) const
-                    noexcept(noexcept(filter_view{_STD forward<_Rng>(_Range), _STD move(*_Pred)})) requires requires {
+                _NODISCARD constexpr auto operator()(_Rng&& _Range) const& noexcept(
+                    noexcept(filter_view{_STD forward<_Rng>(_Range), *_Pred})) requires requires {
+                    filter_view{static_cast<_Rng&&>(_Range), *_Pred};
+                }
+                { return filter_view{_STD forward<_Rng>(_Range), *_Pred}; }
+
+                template <viewable_range _Rng>
+                _NODISCARD constexpr auto operator()(_Rng&& _Range) && noexcept(
+                    noexcept(filter_view{_STD forward<_Rng>(_Range), _STD move(*_Pred)})) requires requires {
                     filter_view{static_cast<_Rng&&>(_Range), _STD move(*_Pred)};
                 }
-                {
-                    // clang-format on
-                    return filter_view{_STD forward<_Rng>(_Range), _STD move(*_Pred)};
-                }
+                { return filter_view{_STD forward<_Rng>(_Range), _STD move(*_Pred)}; }
             };
 
         public:
@@ -1470,15 +1474,19 @@ namespace ranges {
             struct _Partial : _Pipe::_Base<_Partial<_Fn>> {
                 /* [[no_unique_address]] */ _Semiregular_box<_Fn> _Fun;
 
-                // clang-format off
                 template <viewable_range _Rng>
-                _NODISCARD constexpr auto operator()(_Rng&& _Range) const noexcept(noexcept(
-                    transform_view{_STD forward<_Rng>(_Range), _STD move(*_Fun)})) requires requires {
-                    transform_view{static_cast<_Rng&&>(_Range), _STD move(*_Fun)};
-                } {
-                    // clang-format on
-                    return transform_view{_STD forward<_Rng>(_Range), _STD move(*_Fun)};
+                _NODISCARD constexpr auto operator()(_Rng&& _Range) const& noexcept(
+                    noexcept(transform_view{_STD forward<_Rng>(_Range), *_Fun})) requires requires {
+                    transform_view{static_cast<_Rng&&>(_Range), *_Fun};
                 }
+                { return transform_view{_STD forward<_Rng>(_Range), *_Fun}; }
+
+                template <viewable_range _Rng>
+                _NODISCARD constexpr auto operator()(_Rng&& _Range) && noexcept(
+                    noexcept(transform_view{_STD forward<_Rng>(_Range), _STD move(*_Fun)})) requires requires {
+                    transform_view{static_cast<_Rng&&>(_Range), _STD move(*_Fun)};
+                }
+                { return transform_view{_STD forward<_Rng>(_Range), _STD move(*_Fun)}; }
             };
 
         public:
