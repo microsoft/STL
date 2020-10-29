@@ -20,8 +20,8 @@ constexpr auto is_less_than = [](const auto& x) { return x < X; };
 using Pred = remove_const_t<decltype(is_less_than<3>)>;
 STATIC_ASSERT(is_nothrow_copy_constructible_v<Pred>&& is_nothrow_move_constructible_v<Pred>);
 
-constexpr auto pipeline = views::drop_while(is_less_than<0>) | views::drop_while(is_less_than<1>)
-                          | views::drop_while(is_less_than<2>) | views::drop_while(is_less_than<3>);
+constexpr auto pipeline = views::drop_while(is_less_than<3>) | views::drop_while(is_less_than<3>)
+                          | views::drop_while(is_less_than<3>) | views::drop_while(is_less_than<3>);
 
 template <class Rng, class V = views::all_t<Rng>>
 using pipeline_t = ranges::drop_while_view<
