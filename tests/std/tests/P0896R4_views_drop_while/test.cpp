@@ -253,7 +253,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     STATIC_ASSERT(CanIndex<R> == random_access_range<V>);
     if constexpr (CanIndex<R>) {
         if (!is_empty) {
-            assert(r[0]] == expected[0]);
+            assert(r[0] == expected[0]);
         }
     }
     STATIC_ASSERT(!CanIndex<const R>);
