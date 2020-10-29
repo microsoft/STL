@@ -1929,7 +1929,7 @@ namespace ranges {
         drop_while_view() = default;
 
         constexpr drop_while_view(_Vw _Range_, _Pr _Pred_) noexcept(
-            is_nothrow_move_constructible_v<_Vw>) // strengthened
+            is_nothrow_move_constructible_v<_Vw>&& is_nothrow_move_constructible_v<_Pr>) // strengthened
             : _Range(_STD move(_Range_)), _Pred{in_place, _STD move(_Pred_)} {}
 
         _NODISCARD constexpr _Vw base() const& noexcept(
@@ -1950,7 +1950,7 @@ namespace ranges {
         _NODISCARD constexpr auto begin() {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(_Pred, "N4861 [range.drop.while.view] forbids calling begin on a drop_while_view that holds no "
-                               "predicate"); // Per LWG-XXXX
+                               "predicate");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
             if constexpr (forward_range<_Vw>) {
                 if (this->_Has_cache()) {
@@ -1963,7 +1963,7 @@ namespace ranges {
                 this->_Set_cache(_Range, _First);
             }
 
-            return _STD move(_First);
+            return _First;
         }
 
         _NODISCARD constexpr auto end() noexcept(noexcept(_RANGES end(_Range))) {
@@ -1983,7 +1983,17 @@ namespace ranges {
                 /* [[no_unique_address]] */ _Semiregular_box<_Pr> _Pred;
 
                 template <viewable_range _Rng>
-                _NODISCARD constexpr auto operator()(_Rng&& _Range) const noexcept(
+                _NODISCARD constexpr auto operator()(_Rng&& _Range) const& noexcept(
+                    noexcept(drop_while_view{_STD forward<_Rng>(_Range), *_Pred})) requires requires {
+                    drop_while_view{static_cast<_Rng&&>(_Range), *_Pred};
+                }
+                {
+                    // clang-format on
+                    return drop_while_view{_STD forward<_Rng>(_Range), *_Pred};
+                }
+
+                template <viewable_range _Rng>
+                _NODISCARD constexpr auto operator()(_Rng&& _Range) && noexcept(
                     noexcept(drop_while_view{_STD forward<_Rng>(_Range), _STD move(*_Pred)})) requires requires {
                     drop_while_view{static_cast<_Rng&&>(_Range), _STD move(*_Pred)};
                 }
