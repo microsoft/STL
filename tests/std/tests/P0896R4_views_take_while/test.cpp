@@ -199,34 +199,34 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         const same_as<iterator_t<R>> auto i = r.begin();
         if (!is_empty) {
             assert(*i == *begin(expected));
+            assert(*r.begin() == *begin(expected));
+            assert(*r.begin() == *begin(expected));
         }
-        assert(*r.begin() == *begin(expected));
-        assert(*r.begin() == *begin(expected));
 
         if constexpr (copyable<V>) {
             auto r2                              = r;
             const same_as<iterator_t<R>> auto i2 = r2.begin();
-            assert(*r2.begin() == *i2);
-            assert(*r2.begin() == *i2);
             if (!is_empty) {
                 assert(*i2 == *i);
+                assert(*r2.begin() == *i2);
+                assert(*r2.begin() == *i2);
             }
         }
 
         const same_as<iterator_t<const R>> auto ic = as_const(r).begin();
         if (!is_empty) {
             assert(*ic == *begin(expected));
+            assert(*as_const(r).begin() == *begin(expected));
+            assert(*as_const(r).begin() == *begin(expected));
         }
-        assert(*as_const(r).begin() == *begin(expected));
-        assert(*as_const(r).begin() == *begin(expected));
 
         if constexpr (copyable<V>) {
             auto rc2                                    = as_const(r);
             const same_as<iterator_t<const R>> auto ic2 = rc2.begin();
-            assert(*rc2.begin() == *ic2);
-            assert(*rc2.begin() == *ic2);
             if (!is_empty) {
                 assert(*ic2 == *ic);
+                assert(*rc2.begin() == *ic2);
+                assert(*rc2.begin() == *ic2);
             }
         }
     }
@@ -278,15 +278,14 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     // Validate view_interface::data
     STATIC_ASSERT(CanMemberData<R> == contiguous_range<V>);
     STATIC_ASSERT(CanData<R&> == contiguous_range<V>);
-    STATIC_ASSERT(CanData<const R&> == contiguous_range<const V>);
-    if constexpr (contiguous_range<V>) {
+    if constexpr (CanData<R&>) {
         const same_as<remove_reference_t<ranges::range_reference_t<V>>*> auto ptr1 = r.data();
-        assert(to_address(ptr1) == to_address(r.begin()));
-
-        if constexpr (contiguous_range<const V>) {
-            const same_as<remove_reference_t<ranges::range_reference_t<const V>>*> auto ptr2 = as_const(r).data();
-            assert(to_address(ptr2) == to_address(as_const(r).begin()));
-        }
+        assert(ptr1 == to_address(r.begin()));
+    }
+    STATIC_ASSERT(CanData<const R&> == contiguous_range<const V>);
+    if constexpr (CanData<const R&>) {
+        const same_as<remove_reference_t<ranges::range_reference_t<const V>>*> auto ptr2 = as_const(r).data();
+        assert(ptr2 == to_address(as_const(r).begin()));
     }
 
     // Validate view_interface::size
@@ -295,28 +294,42 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 
     // Validate view_interface::operator[]
     STATIC_ASSERT(CanIndex<R> == random_access_range<V>);
-    STATIC_ASSERT(CanIndex<const R> == random_access_range<const V>);
-    if (!is_empty) {
-        if constexpr (CanIndex<R>) {
+    if constexpr (CanIndex<R>) {
+        if (!is_empty) {
             assert(r[0] == *r.begin());
         }
-        if constexpr (CanIndex<const R>) {
+    }
+    STATIC_ASSERT(CanIndex<const R> == random_access_range<const V>);
+    if constexpr (CanIndex<const R>) {
+        if (!is_empty) {
             assert(as_const(r)[0] == *as_const(r).begin());
         }
     }
 
     // Validate view_interface::front and back
     STATIC_ASSERT(CanMemberFront<R> == forward_range<V>);
-    STATIC_ASSERT(CanMemberBack<R> == (bidirectional_range<R> && common_range<R>) );
-    STATIC_ASSERT(CanMemberFront<const R> == forward_range<const V>);
-    STATIC_ASSERT(CanMemberBack<const R> == (bidirectional_range<const R> && common_range<const R>) );
-    if (!is_empty) {
-        if constexpr (forward_range<V>) {
+    if constexpr (CanMemberFront<R>) {
+        if (!is_empty) {
             assert(r.front() == *begin(expected));
         }
+    }
+    STATIC_ASSERT(CanMemberFront<const R> == forward_range<const V>);
+    if constexpr (CanMemberFront<const R>) {
+        if (!is_empty) {
+            assert(as_const(r).front() == *begin(expected));
+        }
+    }
 
-        if constexpr (CanMemberBack<R>) {
+    STATIC_ASSERT(CanMemberBack<R> == (bidirectional_range<R> && common_range<R>) );
+    if constexpr (CanMemberBack<R>) {
+        if (!is_empty) {
             assert(r.back() == *prev(end(expected)));
+        }
+    }
+    STATIC_ASSERT(CanMemberBack<const R> == (bidirectional_range<const R> && common_range<const R>) );
+    if constexpr (CanMemberBack<const R>) {
+        if (!is_empty) {
+            assert(as_const(r).back() == *prev(end(expected)));
         }
     }
 
@@ -334,9 +347,6 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // Validate take_while_view::base() && (NB: do this last since it leaves r moved-from)
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1159442
-    (void) 42;
-#endif // TRANSITION, DevCom-1159442
     if (forward_range<V>) { // intentionally not if constexpr
         same_as<V> auto b2 = move(r).base();
         STATIC_ASSERT(noexcept(move(r).base()) == is_nothrow_move_constructible_v<V>);
@@ -447,6 +457,37 @@ int main() {
         assert(ranges::equal(r1, views::reverse(only_less_than_three_reverse)));
     }
 
+    { // empty range
+        constexpr span<const int, 0> empty{};
+        constexpr span<const int, 0> empty_expected{};
+        STATIC_ASSERT(test_one(empty, empty_expected));
+        test_one(empty, empty_expected);
+    }
+
+
     STATIC_ASSERT((instantiation_test(), true));
     instantiation_test();
+
+    { // Validate **non-standard guarantee** that predicates are moved into the range adaptor closure, and into the view
+        // object from an rvalue closure
+        struct Fn {
+            Fn()     = default;
+            Fn(Fn&&) = default;
+            Fn(const Fn&) {
+                assert(false);
+            }
+            Fn& operator=(Fn&&) = default;
+
+            Fn& operator=(const Fn&) {
+                assert(false);
+                return *this;
+            }
+
+            bool operator()(int) const {
+                return true;
+            }
+        };
+
+        (void) views::take_while(Fn{})(span<int>{});
+    }
 }
