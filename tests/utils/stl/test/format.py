@@ -279,6 +279,8 @@ class STLTestFormat:
             if litConfig.edg_drop:
                 report += 'Intellisense response file steps:\n'
                 for step in handleIsenseRspFile:
+                    cmd, out, err, rc = self.runStep(step, litConfig)
+
                     if step.shouldFail and rc == 0:
                         report += 'Intellisense response step succeeded unexpectedly.\n'
                     elif rc != 0:
