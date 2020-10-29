@@ -31,13 +31,13 @@ void assert_same() {
 
 template <int Expected, class Source, class Dest>
 struct test_ptr_cat_helper {
-    static constexpr bool CopyReallyTrivial     = _Ptr_copy_cat<Source, Dest>::_Really_trivial;
-    static constexpr bool CopyTriviallyCopyable = _Ptr_copy_cat<Source, Dest>::_Trivially_copyable;
+    static constexpr bool CopyReallyTrivial     = _Memmove_in_uninitialized_copy_is_safe<Source, Dest>;
+    static constexpr bool CopyTriviallyCopyable = _Memmove_in_copy_is_safe<Source, Dest>;
     STATIC_ASSERT(Expected == CopyReallyTrivial + CopyTriviallyCopyable);
     STATIC_ASSERT(!CopyReallyTrivial || CopyTriviallyCopyable);
 
-    static constexpr bool MoveReallyTrivial     = _Ptr_move_cat<Source, Dest>::_Really_trivial;
-    static constexpr bool MoveTriviallyCopyable = _Ptr_move_cat<Source, Dest>::_Trivially_copyable;
+    static constexpr bool MoveReallyTrivial     = _Memmove_in_uninitialized_move_is_safe<Source, Dest>;
+    static constexpr bool MoveTriviallyCopyable = _Memmove_in_move_is_safe<Source, Dest>;
     STATIC_ASSERT(Expected == MoveReallyTrivial + MoveTriviallyCopyable);
     STATIC_ASSERT(!MoveReallyTrivial || MoveTriviallyCopyable);
 };
@@ -176,6 +176,17 @@ void ptr_cat_test_cases() {
     test_ptr_cat<2, volatile int*, const volatile int*>();
     test_ptr_cat<2, const volatile int*, const volatile int*>();
 
+    // Pointer to pointer should work
+    test_ptr_cat<2, int**, int**>();
+    test_ptr_cat<2, pod_struct**, pod_struct**>();
+    test_ptr_cat<2, trivially_copyable_struct**, trivially_copyable_struct**>();
+    test_ptr_cat<2, custom_copy_struct**, custom_copy_struct**>();
+
+    // Pointer to pointer of different types should not work
+    test_ptr_cat<0, int**, pod_struct**>();
+    test_ptr_cat<0, pod_struct**, trivially_copyable_struct**>();
+    test_ptr_cat<0, trivially_copyable_struct**, custom_copy_struct**>();
+
     // Pointers to derived are implicitly convertible to pointers to base, but there
     // may still be code required to change an offset, so we don't want to memmove them
     test_ptr_cat<0, derived_class, base_class>();
@@ -211,217 +222,218 @@ void ptr_cat_test_cases() {
 }
 
 template <bool Expected, class Elem1, class Elem2, class Pr>
-void test_case_Equal_memcmp_is_safe_comparator() {
+void test_case_Memcmp_in_equal_is_safe_comparator() {
     // Default case
-    STATIC_ASSERT(_Equal_memcmp_is_safe<Elem1*, Elem2*, Pr> == Expected);
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<Elem1*, Elem2*, Pr> == Expected);
     // Adding const should not change the answer
-    STATIC_ASSERT(_Equal_memcmp_is_safe<const Elem1*, Elem2*, Pr> == Expected);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<Elem1*, const Elem2*, Pr> == Expected);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<const Elem1*, const Elem2*, Pr> == Expected);
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<const Elem1*, Elem2*, Pr> == Expected);
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<Elem1*, const Elem2*, Pr> == Expected);
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<const Elem1*, const Elem2*, Pr> == Expected);
     // Top level const should not change the answer
-    STATIC_ASSERT(_Equal_memcmp_is_safe<Elem1* const, Elem2*, Pr> == Expected);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<Elem1*, Elem2* const, Pr> == Expected);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<Elem1* const, Elem2* const, Pr> == Expected);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<Elem1* const, const Elem2*, Pr> == Expected);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<Elem1*, const Elem2* const, Pr> == Expected);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<Elem1* const, const Elem2* const, Pr> == Expected);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<const Elem1* const, Elem2*, Pr> == Expected);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<const Elem1*, Elem2* const, Pr> == Expected);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<const Elem1* const, Elem2* const, Pr> == Expected);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<const Elem1* const, const Elem2*, Pr> == Expected);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<const Elem1*, const Elem2* const, Pr> == Expected);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<const Elem1* const, const Elem2* const, Pr> == Expected);
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<Elem1* const, Elem2*, Pr> == Expected);
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<Elem1*, Elem2* const, Pr> == Expected);
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<Elem1* const, Elem2* const, Pr> == Expected);
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<Elem1* const, const Elem2*, Pr> == Expected);
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<Elem1*, const Elem2* const, Pr> == Expected);
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<Elem1* const, const Elem2* const, Pr> == Expected);
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<const Elem1* const, Elem2*, Pr> == Expected);
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<const Elem1*, Elem2* const, Pr> == Expected);
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<const Elem1* const, Elem2* const, Pr> == Expected);
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<const Elem1* const, const Elem2*, Pr> == Expected);
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<const Elem1*, const Elem2* const, Pr> == Expected);
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<const Elem1* const, const Elem2* const, Pr> == Expected);
     // Adding volatile anywhere should explode
-    STATIC_ASSERT(_Equal_memcmp_is_safe<volatile Elem1*, Elem2*, Pr> == false);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<Elem1*, volatile Elem2*, Pr> == false);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<volatile Elem1*, volatile Elem2*, Pr> == false);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<const volatile Elem1*, Elem2*, Pr> == false);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<const Elem1*, volatile Elem2*, Pr> == false);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<const volatile Elem1*, volatile Elem2*, Pr> == false);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<volatile Elem1*, const Elem2*, Pr> == false);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<Elem1*, const volatile Elem2*, Pr> == false);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<volatile Elem1*, const volatile Elem2*, Pr> == false);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<const volatile Elem1*, const Elem2*, Pr> == false);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<const Elem1*, const volatile Elem2*, Pr> == false);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<const volatile Elem1*, const volatile Elem2*, Pr> == false);
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<volatile Elem1*, Elem2*, Pr> == false);
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<Elem1*, volatile Elem2*, Pr> == false);
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<volatile Elem1*, volatile Elem2*, Pr> == false);
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<const volatile Elem1*, Elem2*, Pr> == false);
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<const Elem1*, volatile Elem2*, Pr> == false);
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<const volatile Elem1*, volatile Elem2*, Pr> == false);
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<volatile Elem1*, const Elem2*, Pr> == false);
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<Elem1*, const volatile Elem2*, Pr> == false);
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<volatile Elem1*, const volatile Elem2*, Pr> == false);
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<const volatile Elem1*, const Elem2*, Pr> == false);
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<const Elem1*, const volatile Elem2*, Pr> == false);
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<const volatile Elem1*, const volatile Elem2*, Pr> == false);
 
 #ifdef __cpp_lib_concepts
     // contiguous iterators should not change the answer
     if constexpr (!is_same_v<Elem1, bool> && !is_same_v<Elem2, bool>) { // vector<bool>::iterator is not contiguous
-        STATIC_ASSERT(
-            _Equal_memcmp_is_safe<typename vector<Elem1>::iterator, typename vector<Elem2>::iterator, Pr> == Expected);
-        STATIC_ASSERT(_Equal_memcmp_is_safe<typename vector<Elem1>::const_iterator,
+        STATIC_ASSERT(_Memcmp_in_equal_is_safe<typename vector<Elem1>::iterator, typename vector<Elem2>::iterator,
+                          Pr> == Expected);
+        STATIC_ASSERT(_Memcmp_in_equal_is_safe<typename vector<Elem1>::const_iterator,
                           typename vector<Elem2>::const_iterator, Pr> == Expected);
     }
-    STATIC_ASSERT(
-        _Equal_memcmp_is_safe<typename array<Elem1, 1>::iterator, typename array<Elem2, 1>::iterator, Pr> == Expected);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<typename array<Elem1, 1>::const_iterator,
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<typename array<Elem1, 1>::iterator, typename array<Elem2, 1>::iterator,
+                      Pr> == Expected);
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<typename array<Elem1, 1>::const_iterator,
                       typename array<Elem2, 1>::const_iterator, Pr> == Expected);
     // Mixing contiguous iterators should not change the answer
     if constexpr (!is_same_v<Elem1, bool> && !is_same_v<Elem2, bool>) {
-        STATIC_ASSERT(_Equal_memcmp_is_safe<typename vector<Elem1>::iterator, typename vector<Elem2>::const_iterator,
+        STATIC_ASSERT(_Memcmp_in_equal_is_safe<typename vector<Elem1>::iterator, typename vector<Elem2>::const_iterator,
                           Pr> == Expected);
     }
 
     if constexpr (!is_same_v<Elem2, bool>) {
-        STATIC_ASSERT(_Equal_memcmp_is_safe<typename array<Elem1, 1>::const_iterator,
+        STATIC_ASSERT(_Memcmp_in_equal_is_safe<typename array<Elem1, 1>::const_iterator,
                           typename vector<Elem2>::const_iterator, Pr> == Expected);
     }
 
     if constexpr (!is_same_v<Elem1, bool>) {
-        STATIC_ASSERT(_Equal_memcmp_is_safe<typename vector<Elem1>::iterator, typename array<Elem2, 1>::iterator,
+        STATIC_ASSERT(_Memcmp_in_equal_is_safe<typename vector<Elem1>::iterator, typename array<Elem2, 1>::iterator,
                           Pr> == Expected);
-        STATIC_ASSERT(_Equal_memcmp_is_safe<typename vector<Elem1>::iterator, typename array<Elem2, 1>::const_iterator,
-                          Pr> == Expected);
+        STATIC_ASSERT(_Memcmp_in_equal_is_safe<typename vector<Elem1>::iterator,
+                          typename array<Elem2, 1>::const_iterator, Pr> == Expected);
     }
     // span iterators are contiguous
     STATIC_ASSERT(
-        _Equal_memcmp_is_safe<typename span<Elem1>::iterator, typename span<Elem2>::iterator, Pr> == Expected);
+        _Memcmp_in_equal_is_safe<typename span<Elem1>::iterator, typename span<Elem2>::iterator, Pr> == Expected);
     STATIC_ASSERT(
-        _Equal_memcmp_is_safe<typename span<const Elem1>::iterator, typename span<Elem2>::iterator, Pr> == Expected);
+        _Memcmp_in_equal_is_safe<typename span<const Elem1>::iterator, typename span<Elem2>::iterator, Pr> == Expected);
     STATIC_ASSERT(
-        _Equal_memcmp_is_safe<typename span<Elem1>::iterator, typename span<const Elem2>::iterator, Pr> == Expected);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<typename span<const Elem1>::iterator, typename span<const Elem2>::iterator,
+        _Memcmp_in_equal_is_safe<typename span<Elem1>::iterator, typename span<const Elem2>::iterator, Pr> == Expected);
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<typename span<const Elem1>::iterator, typename span<const Elem2>::iterator,
                       Pr> == Expected);
     // contiguous iterators to volatile should explode
     STATIC_ASSERT(
-        _Equal_memcmp_is_safe<typename span<volatile Elem1>::iterator, typename span<Elem2>::iterator, Pr> == false);
+        _Memcmp_in_equal_is_safe<typename span<volatile Elem1>::iterator, typename span<Elem2>::iterator, Pr> == false);
     STATIC_ASSERT(
-        _Equal_memcmp_is_safe<typename span<Elem1>::iterator, typename span<volatile Elem2>::iterator, Pr> == false);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<typename span<volatile Elem1>::iterator,
+        _Memcmp_in_equal_is_safe<typename span<Elem1>::iterator, typename span<volatile Elem2>::iterator, Pr> == false);
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<typename span<volatile Elem1>::iterator,
                       typename span<volatile Elem2>::iterator, Pr> == false);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<typename span<const volatile Elem1>::iterator, typename span<Elem2>::iterator,
-                      Pr> == false);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<typename span<const Elem1>::iterator, typename span<volatile Elem2>::iterator,
-                      Pr> == false);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<typename span<const volatile Elem1>::iterator,
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<typename span<const volatile Elem1>::iterator,
+                      typename span<Elem2>::iterator, Pr> == false);
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<typename span<const Elem1>::iterator,
                       typename span<volatile Elem2>::iterator, Pr> == false);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<typename span<volatile Elem1>::iterator, typename span<const Elem2>::iterator,
-                      Pr> == false);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<typename span<Elem1>::iterator, typename span<const volatile Elem2>::iterator,
-                      Pr> == false);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<typename span<volatile Elem1>::iterator,
-                      typename span<const volatile Elem2>::iterator, Pr> == false);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<typename span<const volatile Elem1>::iterator,
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<typename span<const volatile Elem1>::iterator,
+                      typename span<volatile Elem2>::iterator, Pr> == false);
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<typename span<volatile Elem1>::iterator,
                       typename span<const Elem2>::iterator, Pr> == false);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<typename span<const Elem1>::iterator,
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<typename span<Elem1>::iterator,
                       typename span<const volatile Elem2>::iterator, Pr> == false);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<typename span<const volatile Elem1>::iterator,
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<typename span<volatile Elem1>::iterator,
+                      typename span<const volatile Elem2>::iterator, Pr> == false);
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<typename span<const volatile Elem1>::iterator,
+                      typename span<const Elem2>::iterator, Pr> == false);
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<typename span<const Elem1>::iterator,
+                      typename span<const volatile Elem2>::iterator, Pr> == false);
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<typename span<const volatile Elem1>::iterator,
                       typename span<const volatile Elem2>::iterator, Pr> == false);
 #endif // __cpp_lib_concepts
 
     // Non-contiguous iterators should explode
-    STATIC_ASSERT(_Equal_memcmp_is_safe<typename list<Elem1>::iterator, typename list<Elem2>::iterator, Pr> == false);
+    STATIC_ASSERT(
+        _Memcmp_in_equal_is_safe<typename list<Elem1>::iterator, typename list<Elem2>::iterator, Pr> == false);
 }
 
 template <bool Expected, class Elem1, class Elem2>
-void test_case_Equal_memcmp_is_safe() {
-    test_case_Equal_memcmp_is_safe_comparator<Expected && is_same_v<Elem1, Elem2>, Elem1, Elem2, equal_to<Elem1>>();
-    test_case_Equal_memcmp_is_safe_comparator<Expected, Elem1, Elem2, equal_to<>>();
+void test_case_Memcmp_in_equal_is_safe() {
+    test_case_Memcmp_in_equal_is_safe_comparator<Expected && is_same_v<Elem1, Elem2>, Elem1, Elem2, equal_to<Elem1>>();
+    test_case_Memcmp_in_equal_is_safe_comparator<Expected, Elem1, Elem2, equal_to<>>();
 #ifdef __cpp_lib_concepts
-    test_case_Equal_memcmp_is_safe_comparator<Expected, Elem1, Elem2, ranges::equal_to>();
+    test_case_Memcmp_in_equal_is_safe_comparator<Expected, Elem1, Elem2, ranges::equal_to>();
 #endif // __cpp_lib_concepts
 
     // equal_to< some other T > should explode
-    STATIC_ASSERT(_Equal_memcmp_is_safe<Elem1*, Elem2*, equal_to<list<int>>> == false);
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<Elem1*, Elem2*, equal_to<list<int>>> == false);
     // Non-equal_to comparison functions should explode
     auto lambda = [](Elem1*, Elem2*) { return false; };
-    STATIC_ASSERT(_Equal_memcmp_is_safe<Elem1*, Elem2*, decltype(lambda)> == false);
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<Elem1*, Elem2*, decltype(lambda)> == false);
     // equal_to<T> should not explode
-    STATIC_ASSERT(_Equal_memcmp_is_safe<Elem1*, Elem2*, equal_to<Elem1>> == (Expected && is_same_v<Elem1, Elem2>) );
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<Elem1*, Elem2*, equal_to<Elem1>> == (Expected && is_same_v<Elem1, Elem2>) );
     // But again, not volatile
-    STATIC_ASSERT(_Equal_memcmp_is_safe<Elem1*, Elem2*, equal_to<volatile Elem1>> == false);
-    STATIC_ASSERT(_Equal_memcmp_is_safe<Elem1*, Elem2*, equal_to<const volatile Elem1>> == false);
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<Elem1*, Elem2*, equal_to<volatile Elem1>> == false);
+    STATIC_ASSERT(_Memcmp_in_equal_is_safe<Elem1*, Elem2*, equal_to<const volatile Elem1>> == false);
 }
 
 void equal_safe_test_cases() {
     // memcmp is safe for integral types
-    test_case_Equal_memcmp_is_safe<true, bool, bool>();
-    test_case_Equal_memcmp_is_safe<true, char, char>();
-    test_case_Equal_memcmp_is_safe<true, signed char, signed char>();
-    test_case_Equal_memcmp_is_safe<true, unsigned char, unsigned char>();
-    test_case_Equal_memcmp_is_safe<true, short, short>();
-    test_case_Equal_memcmp_is_safe<true, unsigned short, unsigned short>();
-    test_case_Equal_memcmp_is_safe<true, wchar_t, wchar_t>();
-    test_case_Equal_memcmp_is_safe<true, char16_t, char16_t>();
-    test_case_Equal_memcmp_is_safe<true, char32_t, char32_t>();
-    test_case_Equal_memcmp_is_safe<true, int, int>();
-    test_case_Equal_memcmp_is_safe<true, unsigned int, unsigned int>();
-    test_case_Equal_memcmp_is_safe<true, long, long>();
-    test_case_Equal_memcmp_is_safe<true, unsigned long, unsigned long>();
-    test_case_Equal_memcmp_is_safe<true, long long, long long>();
-    test_case_Equal_memcmp_is_safe<true, unsigned long long, unsigned long long>();
+    test_case_Memcmp_in_equal_is_safe<true, bool, bool>();
+    test_case_Memcmp_in_equal_is_safe<true, char, char>();
+    test_case_Memcmp_in_equal_is_safe<true, signed char, signed char>();
+    test_case_Memcmp_in_equal_is_safe<true, unsigned char, unsigned char>();
+    test_case_Memcmp_in_equal_is_safe<true, short, short>();
+    test_case_Memcmp_in_equal_is_safe<true, unsigned short, unsigned short>();
+    test_case_Memcmp_in_equal_is_safe<true, wchar_t, wchar_t>();
+    test_case_Memcmp_in_equal_is_safe<true, char16_t, char16_t>();
+    test_case_Memcmp_in_equal_is_safe<true, char32_t, char32_t>();
+    test_case_Memcmp_in_equal_is_safe<true, int, int>();
+    test_case_Memcmp_in_equal_is_safe<true, unsigned int, unsigned int>();
+    test_case_Memcmp_in_equal_is_safe<true, long, long>();
+    test_case_Memcmp_in_equal_is_safe<true, unsigned long, unsigned long>();
+    test_case_Memcmp_in_equal_is_safe<true, long long, long long>();
+    test_case_Memcmp_in_equal_is_safe<true, unsigned long long, unsigned long long>();
     // unless their sizes differ
-    test_case_Equal_memcmp_is_safe<false, unsigned short, unsigned long long>();
-    test_case_Equal_memcmp_is_safe<false, unsigned long long, unsigned short>();
+    test_case_Memcmp_in_equal_is_safe<false, unsigned short, unsigned long long>();
+    test_case_Memcmp_in_equal_is_safe<false, unsigned long long, unsigned short>();
     // signedness must be the same if usual arithmetic conversions are not bits-preserving
-    test_case_Equal_memcmp_is_safe<is_signed_v<char>, char, signed char>();
-    test_case_Equal_memcmp_is_safe<is_signed_v<char>, signed char, char>();
-    test_case_Equal_memcmp_is_safe<is_unsigned_v<char>, char, unsigned char>();
-    test_case_Equal_memcmp_is_safe<is_unsigned_v<char>, unsigned char, char>();
-    test_case_Equal_memcmp_is_safe<false, signed char, unsigned char>();
-    test_case_Equal_memcmp_is_safe<false, unsigned char, signed char>();
-    test_case_Equal_memcmp_is_safe<false, short, unsigned short>();
-    test_case_Equal_memcmp_is_safe<false, unsigned short, short>();
+    test_case_Memcmp_in_equal_is_safe<is_signed_v<char>, char, signed char>();
+    test_case_Memcmp_in_equal_is_safe<is_signed_v<char>, signed char, char>();
+    test_case_Memcmp_in_equal_is_safe<is_unsigned_v<char>, char, unsigned char>();
+    test_case_Memcmp_in_equal_is_safe<is_unsigned_v<char>, unsigned char, char>();
+    test_case_Memcmp_in_equal_is_safe<false, signed char, unsigned char>();
+    test_case_Memcmp_in_equal_is_safe<false, unsigned char, signed char>();
+    test_case_Memcmp_in_equal_is_safe<false, short, unsigned short>();
+    test_case_Memcmp_in_equal_is_safe<false, unsigned short, short>();
     // but if UACs don't change bits the signedness can differ
-    test_case_Equal_memcmp_is_safe<true, int, unsigned int>();
-    test_case_Equal_memcmp_is_safe<true, unsigned int, int>();
-    test_case_Equal_memcmp_is_safe<true, long, unsigned long>();
-    test_case_Equal_memcmp_is_safe<true, unsigned long, long>();
-    test_case_Equal_memcmp_is_safe<sizeof(int) == sizeof(long), int, long>();
-    test_case_Equal_memcmp_is_safe<sizeof(int) == sizeof(long), long, int>();
-    test_case_Equal_memcmp_is_safe<sizeof(int) == sizeof(long), unsigned int, long>();
-    test_case_Equal_memcmp_is_safe<sizeof(int) == sizeof(long), unsigned long, int>();
-    test_case_Equal_memcmp_is_safe<sizeof(int) == sizeof(long), int, unsigned long>();
-    test_case_Equal_memcmp_is_safe<sizeof(int) == sizeof(long), long, unsigned int>();
-    test_case_Equal_memcmp_is_safe<sizeof(int) == sizeof(long), unsigned int, unsigned long>();
-    test_case_Equal_memcmp_is_safe<sizeof(int) == sizeof(long), unsigned long, unsigned int>();
-    test_case_Equal_memcmp_is_safe<true, long long, unsigned long long>();
-    test_case_Equal_memcmp_is_safe<true, unsigned long long, long long>();
+    test_case_Memcmp_in_equal_is_safe<true, int, unsigned int>();
+    test_case_Memcmp_in_equal_is_safe<true, unsigned int, int>();
+    test_case_Memcmp_in_equal_is_safe<true, long, unsigned long>();
+    test_case_Memcmp_in_equal_is_safe<true, unsigned long, long>();
+    test_case_Memcmp_in_equal_is_safe<sizeof(int) == sizeof(long), int, long>();
+    test_case_Memcmp_in_equal_is_safe<sizeof(int) == sizeof(long), long, int>();
+    test_case_Memcmp_in_equal_is_safe<sizeof(int) == sizeof(long), unsigned int, long>();
+    test_case_Memcmp_in_equal_is_safe<sizeof(int) == sizeof(long), unsigned long, int>();
+    test_case_Memcmp_in_equal_is_safe<sizeof(int) == sizeof(long), int, unsigned long>();
+    test_case_Memcmp_in_equal_is_safe<sizeof(int) == sizeof(long), long, unsigned int>();
+    test_case_Memcmp_in_equal_is_safe<sizeof(int) == sizeof(long), unsigned int, unsigned long>();
+    test_case_Memcmp_in_equal_is_safe<sizeof(int) == sizeof(long), unsigned long, unsigned int>();
+    test_case_Memcmp_in_equal_is_safe<true, long long, unsigned long long>();
+    test_case_Memcmp_in_equal_is_safe<true, unsigned long long, long long>();
     // memcmp is safe between bool and other integral types with the same size because we don't care about
     // representations other than 0 and 1
-    test_case_Equal_memcmp_is_safe<true, bool, char>();
-    test_case_Equal_memcmp_is_safe<true, char, bool>();
+    test_case_Memcmp_in_equal_is_safe<true, bool, char>();
+    test_case_Memcmp_in_equal_is_safe<true, char, bool>();
     // No enums
-    test_case_Equal_memcmp_is_safe<false, bool_enum, bool>();
-    test_case_Equal_memcmp_is_safe<false, bool, bool_enum>();
-    test_case_Equal_memcmp_is_safe<false, short_enum, short>();
-    test_case_Equal_memcmp_is_safe<false, short, short_enum>();
-    test_case_Equal_memcmp_is_safe<false, int_enum, int>();
-    test_case_Equal_memcmp_is_safe<false, int, int_enum>();
+    test_case_Memcmp_in_equal_is_safe<false, bool_enum, bool>();
+    test_case_Memcmp_in_equal_is_safe<false, bool, bool_enum>();
+    test_case_Memcmp_in_equal_is_safe<false, short_enum, short>();
+    test_case_Memcmp_in_equal_is_safe<false, short, short_enum>();
+    test_case_Memcmp_in_equal_is_safe<false, int_enum, int>();
+    test_case_Memcmp_in_equal_is_safe<false, int, int_enum>();
     // No user-defined types
-    test_case_Equal_memcmp_is_safe<false, base_class, base_class>();
+    test_case_Memcmp_in_equal_is_safe<false, base_class, base_class>();
 
 #ifdef __cpp_lib_byte
     // memcmp is safe for std::byte, but it can't be compared to integral types
-    test_case_Equal_memcmp_is_safe<true, byte, byte>();
-    test_case_Equal_memcmp_is_safe<false, byte, char>();
-    test_case_Equal_memcmp_is_safe<false, char, byte>();
+    test_case_Memcmp_in_equal_is_safe<true, byte, byte>();
+    test_case_Memcmp_in_equal_is_safe<false, byte, char>();
+    test_case_Memcmp_in_equal_is_safe<false, char, byte>();
 #endif // __cpp_lib_byte
 
     // Pointers to cv T are OK (they *point to* volatile stuff, they aren't volatile themselves)
     typedef void (*funcptr_t)(int);
-    test_case_Equal_memcmp_is_safe<true, void*, void*>();
-    test_case_Equal_memcmp_is_safe<true, void*, const void*>();
-    test_case_Equal_memcmp_is_safe<true, void*, volatile void*>();
-    test_case_Equal_memcmp_is_safe<true, void*, const volatile void*>();
-    test_case_Equal_memcmp_is_safe<true, const void*, void*>();
-    test_case_Equal_memcmp_is_safe<true, volatile void*, void*>();
-    test_case_Equal_memcmp_is_safe<true, const volatile void*, void*>();
-    test_case_Equal_memcmp_is_safe<true, base_class*, base_class*>();
-    test_case_Equal_memcmp_is_safe<true, base_class*, const base_class*>();
-    test_case_Equal_memcmp_is_safe<true, base_class*, volatile base_class*>();
-    test_case_Equal_memcmp_is_safe<true, base_class*, const volatile base_class*>();
-    test_case_Equal_memcmp_is_safe<true, funcptr_t, funcptr_t>();
+    test_case_Memcmp_in_equal_is_safe<true, void*, void*>();
+    test_case_Memcmp_in_equal_is_safe<true, void*, const void*>();
+    test_case_Memcmp_in_equal_is_safe<true, void*, volatile void*>();
+    test_case_Memcmp_in_equal_is_safe<true, void*, const volatile void*>();
+    test_case_Memcmp_in_equal_is_safe<true, const void*, void*>();
+    test_case_Memcmp_in_equal_is_safe<true, volatile void*, void*>();
+    test_case_Memcmp_in_equal_is_safe<true, const volatile void*, void*>();
+    test_case_Memcmp_in_equal_is_safe<true, base_class*, base_class*>();
+    test_case_Memcmp_in_equal_is_safe<true, base_class*, const base_class*>();
+    test_case_Memcmp_in_equal_is_safe<true, base_class*, volatile base_class*>();
+    test_case_Memcmp_in_equal_is_safe<true, base_class*, const volatile base_class*>();
+    test_case_Memcmp_in_equal_is_safe<true, funcptr_t, funcptr_t>();
 
     // Pointers to not-the-same-type need to go to the general algorithm
-    test_case_Equal_memcmp_is_safe<false, base_class*, derived_class*>();
+    test_case_Memcmp_in_equal_is_safe<false, base_class*, derived_class*>();
 
     // Technically pointers to cv-void and any other object pointer should be OK, but the
     // metaprogramming shouldn't attempt to handle that case because detecting function pointer
     // types is not worth it
-    test_case_Equal_memcmp_is_safe<false, void*, int*>();
-    test_case_Equal_memcmp_is_safe<false, void*, funcptr_t>();
+    test_case_Memcmp_in_equal_is_safe<false, void*, int*>();
+    test_case_Memcmp_in_equal_is_safe<false, void*, funcptr_t>();
 }
 
 template <class Expected, class Ptr1, class Ptr2, class Pr>
@@ -432,7 +444,7 @@ void test_case_Lex_compare_optimize_helper() {
 
 template <class Expected, class Elem1, class Elem2, class Pr>
 void test_case_Lex_compare_optimize() {
-    // same cv-qualifiers song and dance as test_case_Equal_memcmp_is_safe
+    // same cv-qualifiers song and dance as test_case_Memcmp_in_equal_is_safe
     test_case_Lex_compare_optimize_helper<Expected, Elem1*, Elem2*, Pr>();
     test_case_Lex_compare_optimize_helper<Expected, const Elem1*, Elem2*, Pr>();
     test_case_Lex_compare_optimize_helper<Expected, Elem1*, const Elem2*, Pr>();

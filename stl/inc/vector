@@ -669,13 +669,13 @@ private:
             _My_data._Orphan_all();
 
             const auto _Oldcapacity = static_cast<size_type>(_My_data._Myend - _Myfirst);
-            if constexpr (conjunction_v<bool_constant<_Ptr_copy_cat<_Ty*, _Ty*>::_Trivially_copyable>,
+            if constexpr (conjunction_v<bool_constant<_Memmove_in_copy_is_safe<_Ty*, _Ty*>>,
                               _Uses_default_construct<_Alty, _Ty*, _Ty>, _Uses_default_destroy<_Alty, _Ty*>>) {
                 if (_Newsize > _Oldcapacity) {
                     _Clear_and_reserve_geometric(_Newsize);
                 }
 
-                _Mylast = _Refancy<pointer>(_Copy_memmove(_Unfancy(_First), _Unfancy(_Last), _Unfancy(_Myfirst)));
+                _Mylast = _Refancy<pointer>(_Memmove_forward(_Unfancy(_First), _Unfancy(_Last), _Unfancy(_Myfirst)));
             } else {
                 auto _Oldsize = static_cast<size_type>(_Mylast - _Myfirst);
 
@@ -1145,7 +1145,7 @@ private:
 
         _My_data._Orphan_all();
 
-        if constexpr (conjunction_v<bool_constant<_Ptr_copy_cat<_Iter, _Ty*>::_Trivially_copyable>,
+        if constexpr (conjunction_v<bool_constant<_Memmove_in_copy_is_safe<_Iter, _Ty*>>,
                           _Uses_default_construct<_Alty, _Ty*, decltype(*_First)>,
                           _Uses_default_destroy<_Alty, _Ty*>>) {
 #ifdef __cpp_lib_constexpr_dynamic_alloc
@@ -1157,7 +1157,7 @@ private:
                     _Clear_and_reserve_geometric(_Newsize);
                 }
 
-                _Mylast = _Refancy<pointer>(_Copy_memmove(_First, _Last, _Unfancy(_Myfirst)));
+                _Mylast = _Refancy<pointer>(_Memmove_forward(_First, _Last, _Unfancy(_Myfirst)));
                 return;
             }
         }
