@@ -720,7 +720,8 @@ int main() {
                 assert(false);
             }
             Fn& operator=(Fn&&) = default;
-            Fn& operator        =(const Fn&) {
+
+            Fn& operator=(const Fn&) {
                 assert(false);
                 return *this;
             }
