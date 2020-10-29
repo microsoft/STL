@@ -1950,7 +1950,7 @@ namespace ranges {
         _NODISCARD constexpr auto begin() {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(_Pred, "N4861 [range.drop.while.view] forbids calling begin on a drop_while_view that holds no "
-                               "predicate");
+                               "predicate"); // Per LWG-3490
 #endif // _CONTAINER_DEBUG_LEVEL > 0
             if constexpr (forward_range<_Vw>) {
                 if (this->_Has_cache()) {
