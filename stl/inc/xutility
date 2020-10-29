@@ -662,13 +662,6 @@ struct iterator_traits<_Ty*> {
 
 // CUSTOMIZATION POINT OBJECT ranges::iter_move
 namespace ranges {
-    // STRUCT TEMPLATE _Choice_t
-    template <class _Ty>
-    struct _Choice_t {
-        _Ty _Strategy  = _Ty{};
-        bool _No_throw = false;
-    };
-
     namespace _Iter_move {
         void iter_move(); // Block unqualified name lookup
 
@@ -2068,11 +2061,6 @@ public:
 protected:
     _BidIt current{};
 };
-
-#ifdef __cpp_lib_concepts
-template <class _From, class _To>
-concept _Implicitly_convertible_to = is_convertible_v<_From, _To>;
-#endif // __cpp_lib_concepts
 
 template <class _BidIt1, class _BidIt2>
 _NODISCARD _CONSTEXPR17 bool operator==(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right)

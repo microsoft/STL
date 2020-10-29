@@ -165,7 +165,6 @@
 // P0718R2 atomic<shared_ptr<T>>, atomic<weak_ptr<T>>
 // P0758R1 is_nothrow_convertible
 // P0768R1 Library Support For The Spaceship Comparison Operator <=>
-//     (partially implemented)
 // P0769R2 shift_left(), shift_right()
 // P0811R3 midpoint(), lerp()
 // P0879R0 constexpr For Swapping Functions
@@ -1214,10 +1213,15 @@
 #define __cpp_lib_span                         202002L
 #define __cpp_lib_ssize                        201902L
 #define __cpp_lib_starts_ends_with             201711L
-#define __cpp_lib_to_address                   201711L
-#define __cpp_lib_to_array                     201907L
-#define __cpp_lib_type_identity                201806L
-#define __cpp_lib_unwrap_ref                   201811L
+
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#define __cpp_lib_three_way_comparison 201711L
+#endif // __cpp_lib_concepts
+
+#define __cpp_lib_to_address    201711L
+#define __cpp_lib_to_array      201907L
+#define __cpp_lib_type_identity 201806L
+#define __cpp_lib_unwrap_ref    201811L
 #endif // _HAS_CXX20
 
 #ifndef _M_CEE
