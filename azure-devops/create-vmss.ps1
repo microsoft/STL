@@ -19,7 +19,7 @@ $ErrorActionPreference = 'Stop'
 
 $Location = 'westus2'
 $Prefix = 'StlBuild-' + (Get-Date -Format 'yyyy-MM-dd')
-$VMSize = 'Standard_D16as_v4'
+$VMSize = 'Standard_D32as_v4'
 $ProtoVMName = 'PROTOTYPE'
 $LiveVMPrefix = 'BUILD'
 $WindowsServerSku = '2019-Datacenter'
