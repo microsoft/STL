@@ -33,10 +33,9 @@ void test_single(char* first, char*) { // test single-element template functions
     CHECK_INT(STD minmax('0', '2', lessf).first, '0');
     CHECK_INT(STD minmax('0', '2', lessf).second, '2');
 
-    char arr[] = {"012"};
-    STD initializer_list<char> ilist1(&arr[0], &arr[1]);
-    STD initializer_list<char> ilist2(&arr[1], &arr[3]);
-    STD initializer_list<char> ilist3(&arr[0], &arr[3]);
+    STD initializer_list<char> ilist1{'0'};
+    STD initializer_list<char> ilist2{'1', '2'};
+    STD initializer_list<char> ilist3{'0', '1', '2'};
 
     CHECK_INT(STD max(ilist1), '0');
     CHECK_INT(STD max(ilist3), '2');
