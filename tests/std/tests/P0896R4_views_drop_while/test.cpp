@@ -301,15 +301,15 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     return true;
 }
 
-static constexpr int some_ints[]        = {0, 1, 2, 3, 4, 3, 2, 1};
-static constexpr int expected[]         = {3, 4, 3, 2, 1};
-static constexpr int expected_reverse[] = {0, 1, 2, 3, 4, 3};
+static constexpr int some_ints[]               = {0, 1, 2, 3, 4, 3, 2, 1};
+static constexpr int expected_output[]         = {3, 4, 3, 2, 1};
+static constexpr int expected_output_reverse[] = {0, 1, 2, 3, 4, 3};
 
 struct instantiator {
     template <ranges::input_range R>
     static constexpr void call() {
         R r{some_ints};
-        test_one(r, expected);
+        test_one(r, expected_output);
     }
 };
 
@@ -348,38 +348,38 @@ int main() {
     // Validate views
     { // ... copyable
         constexpr span<const int> s{some_ints};
-        STATIC_ASSERT(test_one(s, expected));
-        test_one(s, expected);
+        STATIC_ASSERT(test_one(s, expected_output));
+        test_one(s, expected_output);
     }
     { // ... move-only
-        test_one(move_only_view<input_iterator_tag, test::Common::no>{some_ints}, expected);
-        test_one(move_only_view<forward_iterator_tag, test::Common::no>{some_ints}, expected);
-        test_one(move_only_view<forward_iterator_tag, test::Common::yes>{some_ints}, expected);
-        test_one(move_only_view<bidirectional_iterator_tag, test::Common::no>{some_ints}, expected);
-        test_one(move_only_view<bidirectional_iterator_tag, test::Common::yes>{some_ints}, expected);
-        test_one(move_only_view<random_access_iterator_tag, test::Common::no>{some_ints}, expected);
-        test_one(move_only_view<random_access_iterator_tag, test::Common::yes>{some_ints}, expected);
+        test_one(move_only_view<input_iterator_tag, test::Common::no>{some_ints}, expected_output);
+        test_one(move_only_view<forward_iterator_tag, test::Common::no>{some_ints}, expected_output);
+        test_one(move_only_view<forward_iterator_tag, test::Common::yes>{some_ints}, expected_output);
+        test_one(move_only_view<bidirectional_iterator_tag, test::Common::no>{some_ints}, expected_output);
+        test_one(move_only_view<bidirectional_iterator_tag, test::Common::yes>{some_ints}, expected_output);
+        test_one(move_only_view<random_access_iterator_tag, test::Common::no>{some_ints}, expected_output);
+        test_one(move_only_view<random_access_iterator_tag, test::Common::yes>{some_ints}, expected_output);
     }
 
     // Validate non-views
     {
-        STATIC_ASSERT(test_one(some_ints, expected));
-        test_one(some_ints, expected);
+        STATIC_ASSERT(test_one(some_ints, expected_output));
+        test_one(some_ints, expected_output);
     }
     {
         vector vec(ranges::begin(some_ints), ranges::end(some_ints));
-        test_one(vec, expected);
+        test_one(vec, expected_output);
     }
     {
         forward_list lst(ranges::begin(some_ints), ranges::end(some_ints));
-        test_one(lst, expected);
+        test_one(lst, expected_output);
     }
 
     // Validate a non-view borrowed range
     {
         constexpr span s{some_ints};
-        STATIC_ASSERT(test_one(s, expected));
-        test_one(s, expected);
+        STATIC_ASSERT(test_one(s, expected_output));
+        test_one(s, expected_output);
     }
 
     // drop_while/reverse interaction test
@@ -390,19 +390,17 @@ int main() {
         auto r0  = some_ints | dwr_pipe;
         using R0 = decltype(r0);
         STATIC_ASSERT(ranges::bidirectional_range<R0> && ranges::view<R0>);
-        assert(ranges::equal(r0, views::reverse(expected)));
+        assert(ranges::equal(r0, views::reverse(expected_output)));
 
         auto r1  = some_ints | rdw_pipe;
         using R1 = decltype(r1);
         STATIC_ASSERT(ranges::bidirectional_range<R1> && ranges::view<R1>);
-        assert(ranges::equal(r1, views::reverse(expected_reverse)));
+        assert(ranges::equal(r1, views::reverse(expected_output_reverse)));
     }
 
     { // empty range
-        constexpr span<const int, 0> empty{};
-        constexpr span<const int, 0> empty_expected{};
-        STATIC_ASSERT(test_one(empty, empty_expected));
-        test_one(empty, empty_expected);
+        STATIC_ASSERT(test_one(span<const int, 0>{}, span<const int, 0>{}));
+        test_one(span<const int, 0>{}, span<const int, 0>{});
     }
 
     STATIC_ASSERT((instantiation_test(), true));
