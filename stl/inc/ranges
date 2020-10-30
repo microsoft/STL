@@ -1941,7 +1941,7 @@ namespace ranges {
             template <class _It>
                 requires input_or_output_iterator<decay_t<_It>>
             _NODISCARD constexpr auto operator()(_It&& _First, const iter_difference_t<decay_t<_It>> _Count) const
-                noexcept(_Choice<_It>._No_throw) {
+                noexcept(_Choice<decay_t<_It>>._No_throw) {
                 // clang-format on
                 _STL_ASSERT(_Count >= 0, "The size passed to views::counted must be non-negative");
                 if constexpr (_Choice<decay_t<_It>>._Strategy == _St::_Span) {

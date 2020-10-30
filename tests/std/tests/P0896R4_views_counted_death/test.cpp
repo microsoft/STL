@@ -11,15 +11,17 @@ using namespace std;
 static int some_ints[] = {0, 1, 2, 3};
 
 void test_constructor_negative_size() {
-    views::counted(some_ints, -3); // The size passed to views::counted must be non-negative
+    (void) views::counted(some_ints, -3); // The size passed to views::counted must be non-negative
 }
 
 int main(int argc, char* argv[]) {
     std_testing::death_test_executive exec;
 
+#ifdef _DEBUG
     exec.add_death_tests({
         test_constructor_negative_size,
     });
+#endif // _DEBUG
 
     return exec.run(argc, argv);
 }
