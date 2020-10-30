@@ -197,7 +197,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     // Validate take_while_view::begin
     STATIC_ASSERT(CanMemberBegin<R>);
     STATIC_ASSERT(
-        CanMemberBegin<const R> == range<const R> && indirect_unary_predicate<const Pred, iterator_t<const V>>);
+        CanMemberBegin<const R> == ranges::range<const R> && indirect_unary_predicate<const Pred, iterator_t<const V>>);
     if (forward_range<V>) { // intentionally not if constexpr
         const same_as<iterator_t<R>> auto i = r.begin();
         if (!is_empty) {
@@ -242,8 +242,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     STATIC_ASSERT(!common_range<R>);
     STATIC_ASSERT(!common_range<const R>);
     if (!is_empty) {
-        [[maybe_unused]] same_as<ranges::sentinel_t<R>> auto s        = r.end();
-        [[maybe_unused]] same_as<ranges::sentinel_t<const R>> auto sc = as_const(r).end();
+        same_as<ranges::sentinel_t<R>> auto s        = r.end();
+        same_as<ranges::sentinel_t<const R>> auto sc = as_const(r).end();
 
         if (forward_range<V>) { // intentionally not if constexpr
             // Compare with const / non const iterators
@@ -258,12 +258,13 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
                 assert(s == sc.base());
                 assert(sc == s.base());
                 assert(sc == sc.base());
-            } else if constexpr (forward_range<V>) {
+            } else if constexpr (forward_range<V> && is_lvalue_reference_v<Rng>) {
+                auto full_range   = views::take_while(rng, [](auto const&) { return true; });
                 const auto length = 8; // NB: depends on the test data
-                assert(s == next(r.begin(), length));
-                assert(s == next(as_const(r).begin(), length));
-                assert(sc == next(r.begin(), length));
-                assert(sc == next(as_const(r).begin(), length));
+                assert(full_range.end() == next(full_range.begin(), length));
+                assert(full_range.end() == next(as_const(full_range).begin(), length));
+                assert(as_const(full_range).end() == next(full_range.begin(), length));
+                assert(as_const(full_range).end() == next(as_const(full_range).begin(), length));
             }
 
             // Compare with iterator whose predicate evaluates to false

@@ -1754,7 +1754,7 @@ namespace ranges {
             using _Base_iterator = _Maybe_wrapped<_Wrapped, iterator_t<_Base_Ty>>;
             using _Base_sentinel = _Maybe_wrapped<_Wrapped, sentinel_t<_Base_Ty>>;
 
-            template <bool _OtherConst = !_Const>
+            template <bool _OtherConst>
             using _Maybe_const_iter = _Maybe_wrapped<_Wrapped, iterator_t<_Maybe_const<_OtherConst, _Vw>>>;
 
             _Base_sentinel _Last{};
@@ -1767,11 +1767,11 @@ namespace ranges {
                 is_nothrow_move_constructible_v<_Base_sentinel>&& is_nothrow_move_constructible_v<_Pr>) // strengthened
                 : _Last(_STD move(_Last_)), _Pred(_Pred_) {}
 
-            // clang-format of
+            // clang-format off
             constexpr _Sentinel(_Sentinel<!_Const, _Wrapped> _That) noexcept(
                 is_nothrow_constructible_v<_Base_sentinel, _Maybe_wrapped<_Wrapped, sentinel_t<_Vw>>>&&
                     is_nothrow_move_constructible_v<_Pr>) // strengthened
-                requires _Const&& convertible_to<_Maybe_wrapped<_Wrapped, sentinel_t<_Vw>>, _Base_sentinel>
+                requires _Const && convertible_to<_Maybe_wrapped<_Wrapped, sentinel_t<_Vw>>, _Base_sentinel>
                 : _Last(_STD move(_That._Last)), _Pred(_That._Pred) {}
             // clang-format on
 
@@ -1787,7 +1787,8 @@ namespace ranges {
             // clang-format off
             template <bool _OtherConst = !_Const>
                 requires sentinel_for<_Base_sentinel, _Maybe_const_iter<_OtherConst>> // Per Resolution of LWG-3449
-            friend constexpr bool operator==(const _Maybe_const_iter<_OtherConst>& _Left, const _Sentinel& _Right) {
+            _NODISCARD friend constexpr bool operator==(
+                const _Maybe_const_iter<_OtherConst>& _Left, const _Sentinel& _Right) {
                 // clang-format on
                 return _Right._Last == _Left || !_STD invoke(*_Right._Pred, *_Left);
             }
