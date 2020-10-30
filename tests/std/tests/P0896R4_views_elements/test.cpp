@@ -14,6 +14,10 @@
 using namespace std;
 using P = pair<int, int>;
 
+// Validate views::keys and views::values
+STATIC_ASSERT(same_as<remove_const_t<decltype(views::keys)>, remove_const_t<decltype(views::elements<0>)>>);
+STATIC_ASSERT(same_as<remove_const_t<decltype(views::values)>, remove_const_t<decltype(views::elements<1>)>>);
+
 constexpr auto pipeline = views::elements<0> | views::all;
 
 template <class Rng, class V = views::all_t<Rng>>
@@ -195,11 +199,9 @@ constexpr bool test_one(Rng&& rng) {
     // Validate content
     assert(ranges::equal(r, expected_keys));
 
-    // Validate views::keys and views::values
+    // Validate keys_view and values_view
     STATIC_ASSERT(same_as<ranges::keys_view<Rng>, R>);
     STATIC_ASSERT(same_as<ranges::values_view<Rng>, elements_view<V, 1>>);
-    STATIC_ASSERT(same_as<views::keys, views::elements<0>>);
-    STATIC_ASSERT(same_as<views::values, views::elements<1>>);
     if constexpr (forward_range<Rng> && is_lvalue_reference_v<Rng>) {
         assert(ranges::equal(ranges::values_view<Rng>{rng}, expected_values));
     }
