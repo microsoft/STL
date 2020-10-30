@@ -1,4 +1,4 @@
-// cctype standard header
+// cctype standard header (core)
 
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
@@ -6,7 +6,7 @@
 #pragma once
 #ifndef _CCTYPE_
 #define _CCTYPE_
-#include <yvals.h>
+#include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
 #include <ctype.h>
