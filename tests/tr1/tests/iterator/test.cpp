@@ -444,7 +444,7 @@ void test_size_data() { // test size/empty/data
     CHECK(!STD empty(c0));
     CHECK_PTR(STD data(c0), c0.data());
 
-    STD initializer_list<char> ilist(c0.data(), c0.data() + 3);
+    STD initializer_list<char> ilist{c0[0], c0[1], c0[2]};
     CHECK_INT(STD size(ilist), 3);
     CHECK_PTR(STD data(ilist), ilist.begin());
 }

@@ -2466,25 +2466,6 @@ _NODISCARD bool atomic_is_lock_free(const atomic<_Ty>* _Mem) noexcept {
 }
 
 template <class _Ty>
-_CXX20_DEPRECATE_ATOMIC_INIT void atomic_init(
-    atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Value) noexcept {
-#if 1 // TRANSITION, ABI
-    _CSTD memcpy(_STD addressof(_Mem->_Storage), _STD addressof(_Value), sizeof(_Ty));
-#else // ^^^ don't break ABI / break ABI vvv
-    _CSTD memcpy(_Mem, _STD addressof(_Value), sizeof(_Ty));
-#endif // TRANSITION, ABI
-    _CSTD memset(reinterpret_cast<unsigned char*>(_Mem) + sizeof(_Ty), 0, sizeof(atomic<_Ty>) - sizeof(_Ty));
-}
-
-template <class _Ty>
-_CXX20_DEPRECATE_ATOMIC_INIT void atomic_init(
-    volatile atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Value) noexcept {
-    // NB: respecting volatility here appears unimplementable
-    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
-    _STD atomic_init(const_cast<atomic<_Ty>*>(_Mem), _Value);
-}
-
-template <class _Ty>
 void atomic_store(volatile atomic<_Ty>* const _Mem, const _Identity_t<_Ty> _Value) noexcept {
     static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     _Mem->store(_Value);
@@ -2505,6 +2486,19 @@ void atomic_store_explicit(
 template <class _Ty>
 void atomic_store_explicit(atomic<_Ty>* const _Mem, const _Identity_t<_Ty> _Value, const memory_order _Order) noexcept {
     _Mem->store(_Value, _Order);
+}
+
+template <class _Ty>
+_CXX20_DEPRECATE_ATOMIC_INIT void atomic_init(
+    volatile atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Value) noexcept {
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
+    _STD atomic_store_explicit(_Mem, _Value, memory_order_relaxed);
+}
+
+template <class _Ty>
+_CXX20_DEPRECATE_ATOMIC_INIT void atomic_init(
+    atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Value) noexcept {
+    _STD atomic_store_explicit(_Mem, _Value, memory_order_relaxed);
 }
 
 template <class _Ty>
