@@ -1764,13 +1764,14 @@ namespace ranges {
             _Sentinel() = default;
 
             constexpr explicit _Sentinel(_Base_sentinel _Last_, const _Pr* _Pred_) noexcept(
-                is_nothrow_move_constructible_v<_Base_sentinel>) // strengthened
+                is_nothrow_move_constructible_v<_Base_sentinel>&& is_nothrow_move_constructible_v<_Pr>) // strengthened
                 : _Last(_STD move(_Last_)), _Pred(_Pred_) {}
 
-            // clang-format off
+            // clang-format of
             constexpr _Sentinel(_Sentinel<!_Const, _Wrapped> _That) noexcept(
-                is_nothrow_constructible_v<_Base_sentinel, _Maybe_wrapped<_Wrapped, sentinel_t<_Vw>>>) // strengthened
-                requires _Const && convertible_to<_Maybe_wrapped<_Wrapped, sentinel_t<_Vw>>, _Base_sentinel>
+                is_nothrow_constructible_v<_Base_sentinel, _Maybe_wrapped<_Wrapped, sentinel_t<_Vw>>>&&
+                    is_nothrow_move_constructible_v<_Pr>) // strengthened
+                requires _Const&& convertible_to<_Maybe_wrapped<_Wrapped, sentinel_t<_Vw>>, _Base_sentinel>
                 : _Last(_STD move(_That._Last)), _Pred(_That._Pred) {}
             // clang-format on
 
@@ -1854,7 +1855,8 @@ namespace ranges {
 
         // clang-format off
         _NODISCARD constexpr auto end() noexcept(
-            noexcept(_RANGES end(_Range))) /* strengthened */ requires (!_Simple_view<_Vw>) {
+            noexcept(_RANGES end(_Range)) && is_nothrow_move_constructible_v<_Sentinel<false>>) /* strengthened */
+            requires (!_Simple_view<_Vw>) {
             // clang-format on
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(_Pred, "value-initialized take_while_view cannot call end");
@@ -1864,8 +1866,9 @@ namespace ranges {
 
         // clang-format off
         _NODISCARD constexpr auto end() const noexcept(
-            noexcept(_RANGES end(_Range))) /* strengthened */ requires range<const _Vw>
-            && indirect_unary_predicate<const _Pr, iterator_t<const _Vw>> { // Per Resolution of LWG-3450
+            noexcept(_RANGES end(_Range)) && is_nothrow_move_constructible_v<_Sentinel<true>>) /* strengthened */
+            requires range<const _Vw> && indirect_unary_predicate<const _Pr, iterator_t<const _Vw>> {
+            // Per Resolution of LWG-3450
             // clang-format on
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(_Pred, "value-initialized take_while_view cannot call end");
@@ -1890,20 +1893,14 @@ namespace ranges {
                     noexcept(take_while_view{_STD forward<_Rng>(_Range), *_Pred})) requires requires {
                     take_while_view{static_cast<_Rng&&>(_Range), *_Pred};
                 }
-                {
-                    // clang-format on
-                    return take_while_view{_STD forward<_Rng>(_Range), *_Pred};
-                }
+                { return take_while_view{_STD forward<_Rng>(_Range), *_Pred}; }
 
                 template <viewable_range _Rng>
                 _NODISCARD constexpr auto operator()(_Rng&& _Range) && noexcept(
                     noexcept(take_while_view{_STD forward<_Rng>(_Range), _STD move(*_Pred)})) requires requires {
                     take_while_view{static_cast<_Rng&&>(_Range), _STD move(*_Pred)};
                 }
-                {
-                    // clang-format on
-                    return take_while_view{_STD forward<_Rng>(_Range), _STD move(*_Pred)};
-                }
+                { return take_while_view{_STD forward<_Rng>(_Range), _STD move(*_Pred)}; }
             };
 
         public:
@@ -1912,10 +1909,7 @@ namespace ranges {
                 noexcept(noexcept(take_while_view{_STD forward<_Rng>(_Range), _STD move(_Pred)})) requires requires {
                 take_while_view{static_cast<_Rng&&>(_Range), _STD move(_Pred)};
             }
-            {
-                // clang-format on
-                return take_while_view{_STD forward<_Rng>(_Range), _STD move(_Pred)};
-            }
+            { return take_while_view{_STD forward<_Rng>(_Range), _STD move(_Pred)}; }
 
             template <_Copy_constructible_object _Pr>
             _NODISCARD constexpr auto operator()(_Pr _Pred) const noexcept(is_nothrow_move_constructible_v<_Pr>) {

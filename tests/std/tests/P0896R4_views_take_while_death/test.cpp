@@ -3,8 +3,6 @@
 
 #define _CONTAINER_DEBUG_LEVEL 1
 
-#include <cassert>
-#include <cstddef>
 #include <ranges>
 #include <span>
 
@@ -21,7 +19,12 @@ void test_view_predicate() {
 
 void test_view_end() {
     DWV r;
-    (void) r.end(); // N4861 [range.take_while.view] forbids calling end on a take_while_view that holds no predicate
+    (void) r.end(); // N4868 [range.take_while.view] forbids calling end on a take_while_view that holds no predicate
+}
+
+void test_view_const_end() {
+    const DWV r;
+    (void) r.end(); // N4868 [range.take_while.view] forbids calling end on a take_while_view that holds no predicate
 }
 
 int main(int argc, char* argv[]) {
@@ -30,6 +33,7 @@ int main(int argc, char* argv[]) {
     exec.add_death_tests({
         test_view_predicate,
         test_view_end,
+        test_view_const_end,
     });
 
     return exec.run(argc, argv);

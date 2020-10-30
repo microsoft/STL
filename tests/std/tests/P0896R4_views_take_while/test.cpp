@@ -30,7 +30,7 @@ using pipeline_t = ranges::take_while_view<
     ranges::take_while_view<ranges::take_while_view<ranges::take_while_view<V, Pred>, Pred>, Pred>, Pred>;
 
 template <class Rng>
-concept CanViewTake_while = requires(Rng&& r) {
+concept CanViewTakeWhile = requires(Rng&& r) {
     views::take_while(static_cast<Rng&&>(r), is_less_than<3>);
 };
 
@@ -55,8 +55,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     constexpr auto take_while_even = views::take_while(is_less_than<3>);
 
     // ... with lvalue argument
-    STATIC_ASSERT(CanViewTake_while<Rng&> == (!is_view || copyable<V>) );
-    if constexpr (CanViewTake_while<Rng&>) { // Validate lvalue
+    STATIC_ASSERT(CanViewTakeWhile<Rng&> == (!is_view || copyable<V>) );
+    if constexpr (CanViewTakeWhile<Rng&>) { // Validate lvalue
         constexpr bool is_noexcept = !is_view || is_nothrow_copy_constructible_v<V>;
 
         STATIC_ASSERT(same_as<decltype(views::take_while(rng, is_less_than<3>)), R>);
@@ -70,7 +70,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // ... with const lvalue argument
-    STATIC_ASSERT(CanViewTake_while<const remove_reference_t<Rng>&> == (!is_view || copyable<V>) );
+    STATIC_ASSERT(CanViewTakeWhile<const remove_reference_t<Rng>&> == (!is_view || copyable<V>) );
     if constexpr (is_view && copyable<V>) {
         constexpr bool is_noexcept = is_nothrow_copy_constructible_v<V>;
 
@@ -98,7 +98,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // ... with rvalue argument
-    STATIC_ASSERT(CanViewTake_while<remove_reference_t<Rng>> == is_view || enable_borrowed_range<remove_cvref_t<Rng>>);
+    STATIC_ASSERT(CanViewTakeWhile<remove_reference_t<Rng>> == is_view || enable_borrowed_range<remove_cvref_t<Rng>>);
     if constexpr (is_view) {
         constexpr bool is_noexcept = is_nothrow_move_constructible_v<V>;
         STATIC_ASSERT(same_as<decltype(views::take_while(move(rng), is_less_than<3>)), R>);
@@ -125,7 +125,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // ... with const rvalue argument
-    STATIC_ASSERT(CanViewTake_while<const remove_reference_t<Rng>> == (is_view && copyable<V>)
+    STATIC_ASSERT(CanViewTakeWhile<const remove_reference_t<Rng>> == (is_view && copyable<V>)
                   || (!is_view && enable_borrowed_range<remove_cvref_t<Rng>>) );
     if constexpr (is_view && copyable<V>) {
         constexpr bool is_noexcept = is_nothrow_copy_constructible_v<V>;
@@ -196,7 +196,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 
     // Validate take_while_view::begin
     STATIC_ASSERT(CanMemberBegin<R>);
-    STATIC_ASSERT(CanMemberBegin<const R>);
+    STATIC_ASSERT(
+        CanMemberBegin<const R> == range<const R> && indirect_unary_predicate<const Pred, iterator_t<const V>>);
     if (forward_range<V>) { // intentionally not if constexpr
         const same_as<iterator_t<R>> auto i = r.begin();
         if (!is_empty) {
@@ -235,8 +236,9 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 
     // Validate take_while_view::end
     STATIC_ASSERT(CanMemberEnd<R>);
-    STATIC_ASSERT(CanMemberEnd<const R>);
-    STATIC_ASSERT(CanEnd<const R&> == ranges::range<const V>);
+    STATIC_ASSERT(
+        CanMemberEnd<const R> == ranges::range<const R> && indirect_unary_predicate<const Pred, iterator_t<const V>>);
+    STATIC_ASSERT(CanEnd<const R&> == CanMemberEnd<const R>);
     STATIC_ASSERT(!common_range<R>);
     STATIC_ASSERT(!common_range<const R>);
     if (!is_empty) {
@@ -256,14 +258,12 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
                 assert(s == sc.base());
                 assert(sc == s.base());
                 assert(sc == sc.base());
-            } else {
-                if constexpr (forward_range<V>) {
-                    const auto length = 8; // NB: depends on the test data
-                    assert(s == next(r.begin(), length));
-                    assert(s == next(as_const(r).begin(), length));
-                    assert(sc == next(r.begin(), length));
-                    assert(sc == next(as_const(r).begin(), length));
-                }
+            } else if constexpr (forward_range<V>) {
+                const auto length = 8; // NB: depends on the test data
+                assert(s == next(r.begin(), length));
+                assert(s == next(as_const(r).begin(), length));
+                assert(sc == next(r.begin(), length));
+                assert(sc == next(as_const(r).begin(), length));
             }
 
             // Compare with iterator whose predicate evaluates to false
@@ -278,13 +278,10 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // Validate view_interface::data
-    STATIC_ASSERT(CanMemberData<R> == contiguous_range<V>);
-    STATIC_ASSERT(CanData<R&> == contiguous_range<V>);
     if constexpr (CanData<R&>) {
         const same_as<remove_reference_t<ranges::range_reference_t<V>>*> auto ptr1 = r.data();
         assert(ptr1 == to_address(r.begin()));
     }
-    STATIC_ASSERT(CanData<const R&> == contiguous_range<const V>);
     if constexpr (CanData<const R&>) {
         const same_as<remove_reference_t<ranges::range_reference_t<const V>>*> auto ptr2 = as_const(r).data();
         assert(ptr2 == to_address(as_const(r).begin()));
@@ -463,7 +460,6 @@ int main() {
         STATIC_ASSERT(test_one(span<const int, 0>{}, span<const int, 0>{}));
         test_one(span<const int, 0>{}, span<const int, 0>{});
     }
-
 
     STATIC_ASSERT((instantiation_test(), true));
     instantiation_test();
