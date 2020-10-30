@@ -21,8 +21,7 @@ void test_view_predicate() {
 
 void test_view_begin() {
     DWV r;
-    (void)
-        r.begin(); // N4861 [range.drop_while.view]/3 forbids calling begin on a drop_while_view that holds no predicate
+    (void) r.begin(); // LWG-3490 forbids calling begin on a drop_while_view with no predicate
 }
 
 int main(int argc, char* argv[]) {
