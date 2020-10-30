@@ -198,6 +198,8 @@ constexpr bool test_one(Rng&& rng) {
     // Validate views::keys and views::values
     STATIC_ASSERT(same_as<ranges::keys_view<Rng>, R>);
     STATIC_ASSERT(same_as<ranges::values_view<Rng>, elements_view<V, 1>>);
+    STATIC_ASSERT(same_as<views::keys, views::elements<0>>);
+    STATIC_ASSERT(same_as<views::values, views::elements<1>>);
     if constexpr (forward_range<Rng> && is_lvalue_reference_v<Rng>) {
         assert(ranges::equal(ranges::values_view<Rng>{rng}, expected_values));
     }
