@@ -1921,6 +1921,7 @@ namespace ranges {
 
             template <class _It>
             _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+                _STL_INTERNAL_STATIC_ASSERT(input_or_output_iterator<_It>);
                 if constexpr (contiguous_iterator<_It>) {
                     return {_St::_Span, noexcept(span{_STD to_address(_STD declval<_It>()), iter_difference_t<_It>{}})};
                 } else if constexpr (random_access_iterator<_It>) {
