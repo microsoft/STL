@@ -3,7 +3,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <concepts>
 #include <ranges>
 #include <span>
 
@@ -17,6 +16,9 @@ struct convertible_difference {
     constexpr operator iter_difference_t<Iter>() const noexcept {
         return iter_difference_t<Iter>{_val};
     }
+    convertible_difference(convertible_difference&&) = delete;
+    convertible_difference& operator=(convertible_difference&&) = delete;
+
     int _val = 0;
 };
 

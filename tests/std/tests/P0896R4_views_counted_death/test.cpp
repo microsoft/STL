@@ -3,10 +3,7 @@
 
 #define _CONTAINER_DEBUG_LEVEL 1
 
-#include <cassert>
-#include <cstddef>
 #include <ranges>
-#include <vector>
 
 #include <test_death.hpp>
 using namespace std;
@@ -14,7 +11,7 @@ using namespace std;
 static int some_ints[] = {0, 1, 2, 3};
 
 void test_constructor_negative_size() {
-    [[maybe_unused]] auto r = views::counted(some_ints, -3); // The size passed to views::counted must be non-negative
+    views::counted(some_ints, -3); // The size passed to views::counted must be non-negative
 }
 
 int main(int argc, char* argv[]) {
