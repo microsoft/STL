@@ -72,7 +72,7 @@
 #include <cwchar>
 #include <cwctype>
 
-#ifndef _EXCLUDE_NON_CORE_HEADERS
+#ifndef _CORE_HEADERS_ONLY
 
 // Non-Core STL Headers
 #include <algorithm>
@@ -167,7 +167,7 @@
 #include <experimental/unordered_set>
 #include <experimental/vector>
 
-#endif // _EXCLUDE_NON_CORE_HEADERS
+#endif // _CORE_HEADERS_ONLY
 
 #ifndef _MSVC_TESTING_NVCC
 #include <assert.h>
@@ -217,10 +217,10 @@
 #include <wchar.h>
 #include <wctype.h>
 
-#ifndef _EXCLUDE_NON_CORE_HEADERS
+#ifndef _CORE_HEADERS_ONLY
 #include <complex.h>
 #include <new.h>
-#endif // _EXCLUDE_NON_CORE_HEADERS
+#endif // _CORE_HEADERS_ONLY
 
 #ifndef _M_CEE_PURE
 #include <fpieee.h>
