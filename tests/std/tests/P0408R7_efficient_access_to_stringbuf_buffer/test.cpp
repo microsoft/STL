@@ -66,6 +66,40 @@ struct test_allocator {
     }
 };
 
+template <typename Stream>
+struct test_pmr_allocator {
+    pmr::polymorphic_allocator<char> alloc;
+
+    void operator()(const pmr::string& init_value) {
+        Stream stream{init_value, alloc};
+        assert(stream.rdbuf()->get_allocator() != init_value.get_allocator());
+        {
+            pmr::string new_str = stream.str(init_value.get_allocator());
+            assert(new_str == init_value);
+            assert(new_str.get_allocator() == init_value.get_allocator());
+        }
+        {
+            pmr::string new_str = stream.str();
+            assert(new_str == init_value);
+            assert(new_str.get_allocator() != init_value.get_allocator());
+        }
+        stream.str(init_value);
+        assert(stream.rdbuf()->get_allocator() != init_value.get_allocator());
+        {
+            pmr::string new_str = stream.str(init_value.get_allocator());
+            assert(new_str == init_value);
+            assert(new_str.get_allocator() == init_value.get_allocator());
+        }
+        {
+            pmr::string new_str = stream.str();
+            assert(new_str == init_value);
+            assert(new_str.get_allocator() != init_value.get_allocator());
+        }
+        Stream stream2{init_value, init_value.get_allocator()};
+        assert(stream2.rdbuf()->get_allocator() == init_value.get_allocator());
+    }
+};
+
 template <typename Test>
 void run_test_util() {
     Test test{};
@@ -79,6 +113,25 @@ void run_test() {
     run_test_util<Test<stringstream>>();
     run_test_util<Test<istringstream>>();
     run_test_util<Test<ostringstream>>();
+}
+
+using pmr_stringstream  = std::basic_stringstream<char, std::char_traits<char>, std::pmr::polymorphic_allocator<char>>;
+using pmr_istringstream = std::basic_istringstream<char, std::char_traits<char>, std::pmr::polymorphic_allocator<char>>;
+using pmr_ostringstream = std::basic_ostringstream<char, std::char_traits<char>, std::pmr::polymorphic_allocator<char>>;
+
+template <typename Test>
+void run_pmr_allocator_test_util() {
+    pmr::monotonic_buffer_resource resource{};
+    Test test{pmr::polymorphic_allocator<char>{&resource}};
+    test(empty_string);
+    test(small_string);
+    test(large_string);
+}
+
+void run_pmr_allocator_test() {
+    run_pmr_allocator_test_util<test_pmr_allocator<pmr_stringstream>>();
+    run_pmr_allocator_test_util<test_pmr_allocator<pmr_istringstream>>();
+    run_pmr_allocator_test_util<test_pmr_allocator<pmr_ostringstream>>();
 }
 
 template <typename T>
@@ -214,6 +267,7 @@ int main(int argc, char* argv[]) {
     std_testing::death_test_executive exec([] {
         run_test<test_rvalue>();
         run_test<test_allocator>();
+        run_pmr_allocator_test();
 
 #if _ITERATOR_DEBUG_LEVEL == 0
         run_counting_test<test_counting_allocator>();
