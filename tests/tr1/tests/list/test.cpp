@@ -345,8 +345,7 @@ void test_main() { // test basic workings of list definitions
     CHECK_INT(v0.front(), 'b');
 
     {
-        const char* data = "abc";
-        STD initializer_list<char> init(data, data + CSTD strlen(data));
+        STD initializer_list<char> init{'a', 'b', 'c'};
         Mycont v11(init);
         CHECK_INT(v11.size(), 3);
         CHECK_INT(v11.back(), 'c');
@@ -356,7 +355,7 @@ void test_main() { // test basic workings of list definitions
         CHECK_INT(v11.size(), 3);
         CHECK_INT(v11.back(), 'c');
 
-        CHECK_INT(*v11.insert(++v11.begin(), init), data[0]);
+        CHECK_INT(*v11.insert(++v11.begin(), init), *init.begin());
         CHECK_INT(v11.size(), 6);
         CHECK_INT(*++v11.begin(), 'a');
 

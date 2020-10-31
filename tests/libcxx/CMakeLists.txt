@@ -11,5 +11,6 @@ configure_file(
 
 set(LIBCXX_LIT_CONFIG_MAP "map_config(\"${LIBCXX_SOURCE_DIR}/test/lit.cfg.py\", \"${CMAKE_CURRENT_BINARY_DIR}/lit.site.cfg\")\n")
 string(APPEND LIBCXX_LIT_CONFIG_MAP "map_config(\"${CMAKE_CURRENT_SOURCE_DIR}/lit.cfg\", \"${CMAKE_CURRENT_BINARY_DIR}/lit.site.cfg\")\n")
+
 set_property(GLOBAL APPEND_STRING PROPERTY STL_LIT_CONFIG_MAP ${LIBCXX_LIT_CONFIG_MAP})
 set_property(GLOBAL APPEND PROPERTY STL_LIT_TEST_DIRS "${LIBCXX_SOURCE_DIR}/test/std")
