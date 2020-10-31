@@ -2102,8 +2102,7 @@ namespace ranges {
             }
         }
 
-        _NODISCARD constexpr auto end() noexcept(
-            noexcept(_RANGES end(_Base)) && is_nothrow_move_constructible_v<iterator_t<_Vw>>) /* strengthened */ {
+        _NODISCARD constexpr auto end() {
             if constexpr (random_access_range<_Vw> && sized_range<_Vw>) {
                 return _RANGES begin(_Base) + _RANGES size(_Base);
             } else {
@@ -2111,9 +2110,7 @@ namespace ranges {
             }
         }
 
-        _NODISCARD constexpr auto end() const noexcept(
-            noexcept(_RANGES end(_Base))
-            && is_nothrow_move_constructible_v<iterator_t<const _Vw>>) /* strengthened */ requires range<const _Vw> {
+        _NODISCARD constexpr auto end() const requires range<const _Vw> {
             if constexpr (random_access_range<const _Vw> && sized_range<const _Vw>) {
                 return _RANGES begin(_Base) + _RANGES size(_Base);
             } else {
