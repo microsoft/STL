@@ -32,6 +32,13 @@ lit_config.test_subdirs[config.name]     = \
 lit_config.cxx_runtime = '@CMAKE_RUNTIME_OUTPUT_DIRECTORY@'
 lit_config.target_arch = '@VCLIBS_TARGET_ARCHITECTURE@'
 
+lit_config.is_kernel = '@STL_IS_KERNEL@'.lower() in ['1', 'true', 'on']
+if lit_config.is_kernel:
+    lit_config.wdk_include = "@WDK_INCLUDE_DIRECTORY@"
+    lit_config.wdk_lib     = "@WDK_LIB_DIRECTORY@"
+    lit_config.wdk_bin     = "@WDK_BIN_DIRECTORY@"
+    lit_config.utils_dir   = "@STL_TEST_UTILS_DIR@"
+
 # Add parameters and features to the config
 stl.test.config.configure(
     stl.test.params.getDefaultParameters(config, lit_config),

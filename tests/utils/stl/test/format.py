@@ -206,9 +206,53 @@ class STLTestFormat:
             yield TestStep(cmd, shared.execDir, shared.env, shouldFail)
         elif TestType.RUN in test.testType:
             shared.execFile = tmpBase + '.exe'
-            cmd = [test.cxx, test.getSourcePath(), *test.flags, *test.compileFlags,
-                   '/Fe' + shared.execFile, '/link', *test.linkFlags]
-            yield TestStep(cmd, shared.execDir, shared.env, False)
+            if not litConfig.is_kernel:
+                cmd = [test.cxx, test.getSourcePath(), *test.flags, *test.compileFlags,
+                       '/Fe' + shared.execFile, '/link', *test.linkFlags]
+                yield TestStep(cmd, shared.execDir, shared.env, False)
+
+            if litConfig.is_kernel:
+                name = str(shared.execFile).replace('\\','.').replace(':','.')
+
+                customKernelCompileFlags = [
+                    '/DKERNEL_TEST_NAME=L"' + name + '"',
+                    '/FIstl_kernel/kernel_test_constants.h',
+                    '/I' + litConfig.utils_dir + '/kernel/inc',
+                    '/I' + litConfig.wdk_include + '/km',
+                    #'/I' + litConfig.wdk_include + '/km/crt', #causes vadefs.h conflicts
+                    '/I' + litConfig.wdk_include + '/shared',
+                ]
+                customKernelLinkFlags = [
+                    '/LIBPATH:' + litConfig.wdk_lib + '/km/' + litConfig.target_arch,
+                    '/IGNORE:4210',
+                    '/machine:'+litConfig.target_arch,
+                    '/entry:DriverEntry',
+                    '/subsystem:native',
+                    '/nodefaultlib',
+                    'stl_kernel.lib',
+                    'BufferOverflowFastFailK.lib',
+                    'ntoskrnl.lib',
+                    'hal.lib',
+                    'wmilib.lib',
+                    'Ntstrsafe.lib',
+                    'libcpmt.lib',
+                    'libcmt.lib',
+                ]
+                cmd = [test.cxx, test.getSourcePath(),
+                       *customKernelCompileFlags,
+                       *test.flags, *test.compileFlags,
+                       '/Fe' + shared.execFile, '/link', *test.linkFlags,
+                       *customKernelLinkFlags,
+                       ]
+                yield TestStep(cmd, shared.execDir, shared.env, False)
+
+
+                # sign the binary
+                cmd = [litConfig.wdk_bin + '/x86/signtool.exe', 'sign',
+                       '/f', litConfig.cert_path,
+                       '/p', litConfig.cert_pass,
+                       shared.execFile]
+                yield TestStep(cmd, shared.execDir, shared.env, shouldFail=False)
 
     def getTestSetupSteps(self, test, litConfig, shared):
         if TestType.RUN in test.testType:
@@ -225,7 +269,11 @@ class STLTestFormat:
             return
 
         shouldFail = TestType.FAIL in test.testType
-        yield TestStep([shared.execFile], shared.execDir, shared.env, shouldFail)
+        if litConfig.is_kernel:
+            cmd = [litConfig.cxx_runtime + "/stl_kernel_loader.exe", shared.execFile]
+        else:
+            cmd = [shared.execFile]
+        yield TestStep(cmd, shared.execDir, shared.env, shouldFail)
 
     def execute(self, test, litConfig):
         try:
@@ -320,7 +368,7 @@ class STLTestFormat:
             return lit.Test.Result(passVar, report)
 
         except Exception as e:
-            lit_config.warning(repr(e))
+            litConfig.warning(repr(e))
 
 
 class LibcxxTestFormat(STLTestFormat):
