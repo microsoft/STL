@@ -101,7 +101,6 @@ class STLTestFormat:
                         litConfig.fatal("Could not find an env.lst file.")
 
                     for envEntry, envNum in zip(envEntries, itertools.count()):
-
                         yield testClass(testSuite, pathInSuite + (filename,),
                                         litConfig, localConfig, envEntry,
                                         formatString.format(envNum))
