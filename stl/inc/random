@@ -1824,12 +1824,12 @@ private:
     result_type _Eval(_Engine& _Eng, _Ty _Min, _Ty _Max) const { // compute next value in range [_Min, _Max]
         _Rng_from_urng<_Uty, _Engine> _Generator(_Eng);
 
-        const _Uty _Umin = _Adjust(_Uty(_Min));
-        const _Uty _Umax = _Adjust(_Uty(_Max));
+        const _Uty _Umin = _Adjust(static_cast<_Uty>(_Min));
+        const _Uty _Umax = _Adjust(static_cast<_Uty>(_Max));
 
         _Uty _Uret;
 
-        if (_Umax - _Umin == _Uty(-1)) {
+        if (_Umax - _Umin == static_cast<_Uty>(-1)) {
             _Uret = static_cast<_Uty>(_Generator._Get_all_bits());
         } else {
             _Uret = static_cast<_Uty>(_Generator(static_cast<_Uty>(_Umax - _Umin + 1)));
@@ -1843,7 +1843,7 @@ private:
     }
 
     static _Uty _Adjust(_Uty _Uval, true_type) { // convert signed ranges to unsigned ranges and vice versa
-        const _Uty _Adjuster = (_Uty(-1) >> 1) + 1; // 2^(N-1)
+        const _Uty _Adjuster = (static_cast<_Uty>(-1) >> 1) + 1; // 2^(N-1)
 
         if (_Uval < _Adjuster) {
             return static_cast<_Uty>(_Uval + _Adjuster);
