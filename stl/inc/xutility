@@ -5466,7 +5466,8 @@ _NODISCARD constexpr bool _Within_limits(const _Ty& _Val, false_type, false_type
 template <class _InIt, class _Ty>
 _NODISCARD constexpr bool _Within_limits(_InIt, const _Ty& _Val) { // check whether _Val is within the limits of _Elem
     using _Elem = remove_pointer_t<_InIt>;
-    return _Within_limits(_Val, is_signed<_Elem>{}, is_signed<_Ty>{}, bool_constant<-1 == static_cast<_Ty>(-1)>{});
+    return _Within_limits(_Val, bool_constant<is_signed_v<_Elem>>{}, bool_constant<is_signed_v<_Ty>>{},
+        bool_constant<-1 == static_cast<_Ty>(-1)>{});
 }
 
 template <class _InIt>
