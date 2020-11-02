@@ -7,7 +7,8 @@ jobs:
 
   variables:
     buildOutputLocation: 'D:\build\${{ parameters.targetPlatform }}'
-    litFlags: '-j$(testParallelism);--timeout=240;--shuffle;--xunit-xml-output=$(buildOutputLocation)/test-results.xml;--num-shards ${{ parameters.numShards }};--run-shard ${{ parameters.shardNum }}'
+    litFlags: '-j$(testParallelism);--timeout=240;--shuffle;--xunit-xml-output=$(buildOutputLocation)/test-results.xml'
+    shardFlags: '--num-shards=${{ parameters.numShards }};--run-shard=${{ parameters.shardNum }}'
     vcpkgLocation: '$(Build.SourcesDirectory)/vcpkg'
   steps:
     - script: |
@@ -62,7 +63,7 @@ jobs:
         -host_arch=amd64 -arch=${{ parameters.vsDevCmdArch }} -no_logo
         cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=$(vcpkgLocation)\scripts\buildsystems\vcpkg.cmake ^
         -DVCPKG_TARGET_TRIPLET=${{ parameters.targetPlatform }}-windows -DCMAKE_CXX_COMPILER=cl ^
-        -DCMAKE_BUILD_TYPE=Release -DLIT_FLAGS=$(litFlags) ^
+        -DCMAKE_BUILD_TYPE=Release -DLIT_FLAGS=$(litFlags);$(shardFlags) ^
         -DCMAKE_CXX_FLAGS=/analyze ^
         -S $(Build.SourcesDirectory) -B $(buildOutputLocation)
         cmake --build $(buildOutputLocation)
