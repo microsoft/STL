@@ -258,9 +258,9 @@ class STLTestFormat:
 
                     report += stl.util.makeReport(cmd, out, err, rc)
                     if (step.shouldFail and rc == 0) or (not step.shouldFail and rc != 0):
-                        return lit.Test.Result(failVar, report)
+                        return (failVar, report)
 
-            return lit.Test.Result(passVar, report)
+            return (passVar, '')
 
         except Exception as e:
             litConfig.error(repr(e))
