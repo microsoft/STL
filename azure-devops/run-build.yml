@@ -2,12 +2,12 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 jobs:
-- job: ${{ parameters.targetPlatform }}
+- job: '${{ parameters.targetPlatform }}-${{ parameters.shardNum }}'
   timeoutInMinutes: 360
 
   variables:
     buildOutputLocation: 'D:\build\${{ parameters.targetPlatform }}'
-    litFlags: '-j$(testParallelism);--timeout=240;--shuffle;--xunit-xml-output=$(buildOutputLocation)/test-results.xml'
+    litFlags: '-j$(testParallelism);--timeout=240;--shuffle;--xunit-xml-output=$(buildOutputLocation)/test-results.xml;--num-shards ${{ parameters.numShards }};--run-shard ${{ parameters.shardNum }}'
     vcpkgLocation: '$(Build.SourcesDirectory)/vcpkg'
   steps:
     - script: |
@@ -88,4 +88,4 @@ jobs:
         searchFolder: $(buildOutputLocation)
         testResultsFormat: JUnit
         testResultsFiles: '**/test-results.xml'
-        testRunTitle: 'test-${{ parameters.targetPlatform }}'
+        testRunTitle: 'test-${{ parameters.targetPlatform }}-${{ parameters.shardNum }}'
