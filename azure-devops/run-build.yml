@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 jobs:
-- job: '${{ parameters.targetPlatform }}-${{ parameters.shardNum }}'
+- job: '${{ parameters.targetPlatform }}_${{ parameters.shardNum }}'
   timeoutInMinutes: 360
 
   variables:
