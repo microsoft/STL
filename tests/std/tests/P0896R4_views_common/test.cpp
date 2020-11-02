@@ -145,7 +145,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 
             static_assert(same_as<decltype(move(rng) | pipeline), R>);
             static_assert(noexcept(move(rng) | pipeline) == is_noexcept);
-        } else if constexpr (enable_borrowed_range<Rng>) {
+        } else if constexpr (enable_borrowed_range<remove_cvref_t<Rng>>) {
             using S                    = decltype(ranges::subrange{move(rng)});
             using RS                   = common_view<S>;
             constexpr bool is_noexcept = noexcept(S{move(rng)});
@@ -180,7 +180,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 
             static_assert(same_as<decltype(move(as_const(rng)) | pipeline), R>);
             static_assert(noexcept(move(as_const(rng)) | pipeline) == is_noexcept);
-        } else if constexpr (!is_view && enable_borrowed_range<const remove_cvref_t<Rng>>) {
+        } else if constexpr (!is_view && enable_borrowed_range<remove_cvref_t<Rng>>) {
             using S                    = decltype(ranges::subrange{move(as_const(rng))});
             using RS                   = common_view<S>;
             constexpr bool is_noexcept = noexcept(S{move(as_const(rng))});
@@ -237,7 +237,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 
             static_assert(same_as<decltype(move(rng) | views::common), V>);
             static_assert(noexcept(move(rng) | views::common) == is_noexcept);
-        } else if constexpr (enable_borrowed_range<Rng>) {
+        } else if constexpr (enable_borrowed_range<remove_cvref_t<Rng>>) {
             using S                    = decltype(ranges::subrange{move(rng)});
             constexpr bool is_noexcept = noexcept(S{move(rng)});
 
@@ -259,7 +259,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 
             static_assert(same_as<decltype(move(as_const(rng)) | views::common), V>);
             static_assert(noexcept(move(as_const(rng)) | views::common) == is_noexcept);
-        } else if constexpr (!is_view && enable_borrowed_range<const remove_cvref_t<Rng>>) {
+        } else if constexpr (!is_view && enable_borrowed_range<remove_cvref_t<Rng>>) {
             using S                    = decltype(ranges::subrange{move(as_const(rng))});
             constexpr bool is_noexcept = noexcept(S{move(as_const(rng))});
 
