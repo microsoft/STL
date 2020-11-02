@@ -4,13 +4,12 @@
 #pragma once
 
 #ifdef __STL_IS_KERNEL
-    #include <ntddk.h>
+#include <ntddk.h>
 #else
-    #include <winioctl.h>
+#include <winioctl.h>
 #endif
 
-#define IOCTL_SIOCTL_METHOD_RUN_TEST \
-    CTL_CODE( 40000, 0x800, METHOD_BUFFERED, FILE_ANY_ACCESS  )
+#define IOCTL_SIOCTL_METHOD_RUN_TEST CTL_CODE(40000, 0x800, METHOD_BUFFERED, FILE_ANY_ACCESS)
 
 typedef struct TestResults {
     int main_return;

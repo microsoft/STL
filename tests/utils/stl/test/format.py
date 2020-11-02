@@ -205,23 +205,18 @@ class STLTestFormat:
             yield TestStep(cmd, shared.execDir, shared.env, shouldFail)
         elif TestType.RUN in test.testType:
             shared.execFile = tmpBase + '.exe'
-            if not litConfig.is_kernel:
-                cmd = [test.cxx, test.getSourcePath(), *test.flags, *test.compileFlags,
-                       '/Fe' + shared.execFile, '/link', *test.linkFlags]
-                yield TestStep(cmd, shared.execDir, shared.env, False)
-
-            if litConfig.is_kernel:
+            if 'kernel' in test.requires:
                 name = str(shared.execFile).replace('\\','.').replace(':','.')
 
-                customKernelCompileFlags = [
+                test.compileFlags.append([
                     '/DKERNEL_TEST_NAME=L"' + name + '"',
                     '/FIstl_kernel/kernel_test_constants.h',
                     '/I' + litConfig.utils_dir + '/kernel/inc',
                     '/I' + litConfig.wdk_include + '/km',
                     #'/I' + litConfig.wdk_include + '/km/crt', #causes vadefs.h conflicts
                     '/I' + litConfig.wdk_include + '/shared',
-                ]
-                customKernelLinkFlags = [
+                ])
+                test.linkFlags.append([
                     '/LIBPATH:' + litConfig.wdk_lib + '/km/' + litConfig.target_arch,
                     '/IGNORE:4210',
                     '/machine:'+litConfig.target_arch,
@@ -236,16 +231,13 @@ class STLTestFormat:
                     'Ntstrsafe.lib',
                     'libcpmt.lib',
                     'libcmt.lib',
-                ]
-                cmd = [test.cxx, test.getSourcePath(),
-                       *customKernelCompileFlags,
-                       *test.flags, *test.compileFlags,
-                       '/Fe' + shared.execFile, '/link', *test.linkFlags,
-                       *customKernelLinkFlags,
-                       ]
-                yield TestStep(cmd, shared.execDir, shared.env, False)
+                ])
 
+            cmd = [test.cxx, test.getSourcePath(), *test.flags, *test.compileFlags,
+                   '/Fe' + shared.execFile, '/link', *test.linkFlags]
+            yield TestStep(cmd, shared.execDir, shared.env, False)
 
+            if 'kernel' in test.requires: 
                 # sign the binary
                 cmd = [litConfig.wdk_bin + '/x86/signtool.exe', 'sign',
                        '/f', litConfig.cert_path,
@@ -268,7 +260,7 @@ class STLTestFormat:
             return
 
         shouldFail = TestType.FAIL in test.testType
-        if litConfig.is_kernel:
+        if 'kernel' in test.requires:
             cmd = [litConfig.cxx_runtime + "/stl_kernel_loader.exe", shared.execFile]
         else:
             cmd = [shared.execFile]

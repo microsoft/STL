@@ -30,6 +30,8 @@ class TestType(Flag):
 
 
 class STLTest(Test):
+    # TRANSITION: A lot of the members of this class could be computed at execution time to minimize the transmitted
+    # size of the class.
     def __init__(self, suite, pathInSuite, litConfig, testConfig,
                  envlstEntry, envNum):
         self.compileFlags = []
@@ -173,6 +175,8 @@ class STLTest(Test):
                 self.requires.append('clr') # TRANSITION, GH-797
             elif flag[1:] == 'BE':
                 self.requires.append('edg') # available for x86, see features.py
+            elif flag[1:] == 'kernel':
+                self.requires.append('kernel')
 
         if not foundStd:
             Feature('c++14').enableIn(self.config)
