@@ -7,6 +7,8 @@
 #===----------------------------------------------------------------------===##
 
 import os
+import secrets
+import stl.util
 
 def configure(parameters, features, config, lit_config):
   # Apply parameters to the configuration first, since parameters are things
@@ -45,3 +47,16 @@ def configure(parameters, features, config, lit_config):
     ['/LIBPATH:' + os.path.normpath(dir) for dir in lit_config.library_dirs[config.name]]
 
   lit_config.test_env = {'PATH' : os.path.normpath(lit_config.cxx_runtime)}
+
+  if lit_config.is_kernel:
+    lit_config.cert_pass = secrets.token_hex(64)
+    lit_config.cert_path = lit_config.cxx_runtime + '/MsvcStlTestingCert.pfx'
+    cmd = ['powershell', '-ExecutionPolicy', 'Bypass',
+           '-File', lit_config.utils_dir + '/kernel/generateMsvcCert.ps1',
+           '-out', lit_config.cert_path,
+           '-pass', lit_config.cert_pass]
+
+    out, err, rc = stl.util.executeCommand(cmd)
+    if rc != 0:
+        report = stl.util.makeReport(cmd, out, err, rc)
+        raise RuntimeError(report)
