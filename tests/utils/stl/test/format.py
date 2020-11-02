@@ -127,7 +127,7 @@ class STLTestFormat:
         test.compileFlags.extend(additionalCompileFlags)
         test.fileDependencies.extend(fileDependencies)
 
-    def _handleIsenseRspFile(self, test, litConfig, shared):
+    def getIsenseRspFileSteps(self, test, litConfig, shared):
         if litConfig.edg_drop is not None and test.isenseRspPath is not None:
             with open(test.isenseRspPath) as f:
                 cmd = [line.strip() for line in f]
@@ -159,7 +159,7 @@ class STLTestFormat:
 
         return testStep.cmd, *stl.util.executeCommand(testStep.cmd, cwd=testStep.workDir, env=env)
 
-    def getSteps(self, test, litConfig):
+    def getStages(self, test, litConfig):
         @dataclass
         class SharedState:
             execFile: Optional[os.PathLike] = field(default=None)
@@ -173,12 +173,12 @@ class STLTestFormat:
         shared.env['TMPDIR'] = execDir
         shared.env['TEMPDIR'] = execDir
 
-        return \
-            self.getBuildSetupSteps(test, litConfig, shared), \
-            self.getBuildSteps(test, litConfig, shared), \
-            self._handleIsenseRspFile(test, litConfig, shared), \
-            self.getTestSetupSteps(test, litConfig, shared), \
-            self.getTestSteps(test, litConfig, shared)
+        return [
+            ('Build setup', self.getBuildSetupSteps(test, litConfig, shared)),
+            ('Build', self.getBuildSteps(test, litConfig, shared)),
+            ('Intellisense response file', self.getIsenseRspFileSteps(test, litConfig, shared)),
+            ('Test setup', self.getTestSetupSteps(test, litConfig, shared)),
+            ('Test', self.getTestSteps(test, litConfig, shared))]
 
     def getBuildSetupSteps(self, test, litConfig, shared):
         shutil.rmtree(shared.execDir, ignore_errors=True)
@@ -243,85 +243,27 @@ class STLTestFormat:
                 failVar = lit.Test.FAIL
                 passVar = lit.Test.PASS
 
-            buildSetupSteps, buildSteps, handleIsenseRspFile, testSetupSteps, testSteps = \
-                self.getSteps(test, litConfig)
+            stages = self.getStages(test, litConfig)
 
-            report = 'Build setup steps:\n'
-            for step in buildSetupSteps:
-                cmd, out, err, rc = self.runStep(step, litConfig)
-
-                if step.shouldFail and rc == 0:
-                    report += 'Build setup step succeeded unexpectedly.\n'
-                elif rc != 0:
-                    report += 'Build setup step failed unexpectedly.\n'
-
-                report += stl.util.makeReport(cmd, out, err, rc)
-                if (step.shouldFail and rc == 0) or (not step.shouldFail and rc != 0):
-                    litConfig.note(report)
-                    return lit.Test.Result(failVar, report)
-
-            report += 'Build steps:\n'
-            for step in buildSteps:
-                cmd, out, err, rc = self.runStep(step, litConfig)
-
-                if step.shouldFail and rc == 0:
-                    report += 'Build step succeeded unexpectedly.\n'
-                elif rc != 0:
-                    report += 'Build step failed unexpectedly.\n'
-
-                report += stl.util.makeReport(cmd, out, err, rc)
-                if (step.shouldFail and rc == 0) or (not step.shouldFail and rc != 0):
-                    litConfig.note(report)
-                    return lit.Test.Result(failVar, report)
-
-            # The following block is for internal use only
-            if litConfig.edg_drop:
-                report += 'Intellisense response file steps:\n'
-                for step in handleIsenseRspFile:
+            report = ''
+            for stageName, steps in stages:
+                report += stageName + ' steps:\n'
+                for step in steps:
                     cmd, out, err, rc = self.runStep(step, litConfig)
 
                     if step.shouldFail and rc == 0:
-                        report += 'Intellisense response step succeeded unexpectedly.\n'
+                        report += stageName + ' step succeeded unxexpectedly.\n'
                     elif rc != 0:
-                        report += 'Intellisense response step failed unexpectedly.\n'
+                        report += stageName + ' step failed unexpectedly.\n'
 
                     report += stl.util.makeReport(cmd, out, err, rc)
                     if (step.shouldFail and rc == 0) or (not step.shouldFail and rc != 0):
-                        litConfig.note(report)
                         return lit.Test.Result(failVar, report)
-
-            report += 'Test setup steps:\n'
-            for step in testSetupSteps:
-                cmd, out, err, rc = self.runStep(step, litConfig)
-
-                if step.shouldFail and rc == 0:
-                    report += 'Test setup step succeeded unexpectedly.\n'
-                elif rc != 0:
-                    report += 'Test setup step failed unexpectedly.\n'
-
-                report += stl.util.makeReport(cmd, out, err, rc)
-                if (step.shouldFail and rc == 0) or (not step.shouldFail and rc != 0):
-                    litConfig.note(report)
-                    return lit.Test.Result(failVar, report)
-
-            report += 'Test steps:\n'
-            for step in testSteps:
-                cmd, out, err, rc = self.runStep(step, litConfig)
-
-                if step.shouldFail and rc == 0:
-                    report += 'Test step succeeded unexpectedly.\n'
-                elif rc != 0:
-                    report += 'Test step failed unexpectedly.\n'
-
-                report += stl.util.makeReport(cmd, out, err, rc)
-                if (step.shouldFail and rc == 0) or (not step.shouldFail and rc != 0):
-                    litConfig.note(report)
-                    return lit.Test.Result(failVar, report)
 
             return lit.Test.Result(passVar, report)
 
         except Exception as e:
-            lit_config.warning(repr(e))
+            litConfig.error(repr(e))
 
 
 class LibcxxTestFormat(STLTestFormat):

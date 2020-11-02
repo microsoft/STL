@@ -13,7 +13,7 @@ import copy
 import os
 import shutil
 
-from lit.Test import SKIPPED, Test, UNRESOLVED, UNSUPPORTED
+from lit.Test import SKIPPED, Result, Test, UNRESOLVED, UNSUPPORTED
 from libcxx.test.dsl import Feature
 import lit
 
@@ -115,11 +115,11 @@ class STLTest(Test):
 
         if self.expectedResult is not None:
             if self.expectedResult == SKIPPED:
-                self.result = (lit.Test.SKIPPED, 'This test was explicitly marked as skipped')
+                self.result = Result(SKIPPED, 'This test was explicitly marked as skipped')
             elif self.expectedResult.isFailure:
                 self.xfails = ['*']
         elif self.config.unsupported:
-            self.result = (lit.Test.UNSUPPORTED, 'This test was marked as unsupported by a lit.cfg')
+            self.result = Result(lit.Test.UNSUPPORTED, 'This test was marked as unsupported by a lit.cfg')
 
     def _handleEnvlst(self, litConfig, envlstEntry):
         envCompiler = envlstEntry.getEnvVal('PM_COMPILER', 'cl')
@@ -180,7 +180,7 @@ class STLTest(Test):
 
         if 'edg_drop' in self.config.available_features:
             if not 'edg' in self.requires:
-                self.result = lit.Test.Result(UNSUPPORTED, "We only run /BE tests with the edg drop")
+                self.result = Result(UNSUPPORTED, 'We only run /BE tests with the edg drop')
             else:
                 _, tmpBase = self.getTempPaths()
                 self.isenseRspPath = tmpBase + '.isense.rsp'
