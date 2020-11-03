@@ -25,7 +25,7 @@ concept CanViewAll = requires(Rng&& r) {
 constexpr auto pipeline = views::all | views::common;
 
 // Due to language limitations we cannot declare variables of non-literal type in a branch that is guarded by
-// `!is_constant_evaluated())`. But we can call a non-constexpr function that declares those variables.
+// `!is_constant_evaluated()`. But we can call a non-constexpr function that declares those variables.
 template <ranges::view V, ranges::input_range R, ranges::input_range E>
 void non_literal_parts(R& r, E& expected) {
     using ranges::iterator_t, ranges::begin, ranges::bidirectional_range, ranges::end, ranges::prev;
