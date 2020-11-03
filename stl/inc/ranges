@@ -1187,7 +1187,7 @@ namespace ranges {
             _Iterator() = default;
 
             constexpr _Iterator(_Parent_t& _Parent_, iterator_t<_Base> _Current_) noexcept(
-                noexcept(is_nothrow_move_constructible_v<iterator_t<_Base>>)) // strengthened
+                is_nothrow_move_constructible_v<iterator_t<_Base>>) // strengthened
                 : _Current{_STD move(_Current_)}, _Parent{_STD addressof(_Parent_)} {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _Adl_verify_range(_Current, _RANGES end(_Parent_._Range));
