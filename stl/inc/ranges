@@ -857,11 +857,10 @@ namespace ranges {
         /* [[no_unique_address]] */ _Semiregular_box<_Pr> _Pred{};
 
         template <class _Traits> // TRANSITION, LWG-3289
-        struct _Iterator_base {};
+        struct _Category_base {};
         // clang-format off
-        template <class _Traits>
-            requires _Has_member_iterator_category<_Traits>
-        struct _Iterator_base<_Traits> {
+        template <_Has_member_iterator_category _Traits>
+        struct _Category_base<_Traits> {
             // clang-format on
             using iterator_category =
                 conditional_t<derived_from<typename _Traits::iterator_category, bidirectional_iterator_tag>,
@@ -870,7 +869,7 @@ namespace ranges {
                         forward_iterator_tag, input_iterator_tag>>;
         };
 
-        class _Iterator : public _Iterator_base<iterator_traits<iterator_t<_Vw>>> {
+        class _Iterator : public _Category_base<iterator_traits<iterator_t<_Vw>>> {
         private:
             /* [[no_unique_address]] */ iterator_t<_Vw> _Current{};
             filter_view* _Parent{};
@@ -1137,11 +1136,10 @@ namespace ranges {
         class _Sentinel;
 
         template <class _Traits, class _Base> // TRANSITION, LWG-3289
-        struct _Iterator_base {};
+        struct _Category_base {};
         // clang-format off
-        template <class _Traits, class _Base>
-            requires _Has_member_iterator_category<_Traits>
-        struct _Iterator_base<_Traits, _Base> {
+        template <_Has_member_iterator_category _Traits, class _Base>
+        struct _Category_base<_Traits, _Base> {
             // clang-format on
             using iterator_category =
                 conditional_t<is_lvalue_reference_v<invoke_result_t<_Fn&, range_reference_t<_Base>>>,
@@ -1151,7 +1149,7 @@ namespace ranges {
         };
 
         template <bool _Const>
-        class _Iterator : public _Iterator_base<iterator_traits<iterator_t<_Vw>>, _Maybe_const<_Const, _Vw>> {
+        class _Iterator : public _Category_base<iterator_traits<iterator_t<_Vw>>, _Maybe_const<_Const, _Vw>> {
         private:
             template <bool>
             friend class _Iterator;
