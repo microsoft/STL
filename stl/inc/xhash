@@ -319,9 +319,9 @@ struct _Hash_vec {
     void _Tidy() noexcept {
         _Destroy_range(_Mypair._Myval2._Myfirst, _Mypair._Myval2._Mylast);
         _Mypair._Get_first().deallocate(_Mypair._Myval2._Myfirst, size());
-        _Mypair._Myval2._Myfirst = pointer();
-        _Mypair._Myval2._Mylast  = pointer();
-        _Mypair._Myval2._Myend   = pointer();
+        _Mypair._Myval2._Myfirst = nullptr;
+        _Mypair._Myval2._Mylast  = nullptr;
+        _Mypair._Myval2._Myend   = nullptr;
     }
 
     ~_Hash_vec() {
@@ -472,7 +472,7 @@ private:
         _Min_buckets_construct_ptr(const _Min_buckets_construct_ptr&) = delete;
         _NODISCARD pointer _Release(_Unchecked_iterator _Newend) noexcept {
             _STD uninitialized_fill(_Base, _Base + _Min_buckets * 2, _Newend);
-            return _STD exchange(_Base, pointer());
+            return _STD exchange(_Base, nullptr);
         }
         ~_Min_buckets_construct_ptr() {
             if (_Base) {

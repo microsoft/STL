@@ -5049,4 +5049,12 @@ inline constexpr DoublePrecisionToCharsTestCase double_general_precision_to_char
     {0x1.88e2d605edc3dp+345, chars_format::general, 3, "1.1e+104"},
     {0x1.88e2d605edc3dp+345, chars_format::general, 2, "1.1e+104"},
     {0x1.88e2d605edc3dp+345, chars_format::general, 1, "1e+104"},
+
+    // More cases that the UCRT had trouble with (e.g. DevCom-1093399).
+    {0x1.8p+62, chars_format::general, 17, "6.9175290276410819e+18"},
+    {0x1.0a2742p+17, chars_format::general, 6, "136271"},
+    {0x1.f8b0f962cdffbp+205, chars_format::general, 14, "1.0137595739223e+62"},
+    {0x1.f8b0f962cdffbp+205, chars_format::general, 17, "1.0137595739222531e+62"},
+    {0x1.f8b0f962cdffbp+205, chars_format::general, 51, "1.01375957392225305727423222620636224221808910954041e+62"},
+    {0x1.f8b0f962cdffbp+205, chars_format::general, 55, "1.013759573922253057274232226206362242218089109540405973e+62"},
 };

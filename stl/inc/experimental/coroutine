@@ -95,7 +95,7 @@ namespace experimental {
             return _Ptr;
         }
 
-        void operator()() const noexcept {
+        void operator()() const {
             resume();
         }
 

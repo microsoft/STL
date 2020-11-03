@@ -67,8 +67,7 @@ add_compile_definitions(
     _ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH WIN32_LEAN_AND_MEAN STRICT _CRT_STDIO_ARBITRARY_WIDE_SPECIFIERS
     _CRT_DECLARE_NONSTDC_NAMES=1 )
 
-# TRANSITION, /analyze ?
-add_compile_options(/diagnostics:caret /W4 /WX /w14265 /w15038 /d1FastFail /guard:cf /Z7 /d2Zi+ /Gm- /Gy /Zp8 /std:c++latest /permissive- /Zc:threadSafeInit- /Zl)
+add_compile_options(/diagnostics:caret /W4 /WX /w14265 /w15038 /d1FastFail /guard:cf /Z7 /Gm- /Gy /Zp8 /std:c++latest /permissive- /Zc:threadSafeInit- /Zl)
 
 set(VCLIBS_DEBUG_OPTIONS "/Od")
 set(VCLIBS_RELEASE_OPTIONS "/O2;/Os") # TRANSITION: Potentially remove /Os

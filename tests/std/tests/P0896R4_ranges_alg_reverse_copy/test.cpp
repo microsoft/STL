@@ -147,7 +147,9 @@ struct test_vector {
 };
 
 int main() {
+#ifndef _PREFAST_ // TRANSITION, GH-1030
     STATIC_ASSERT((test_bidi_write<instantiator, const nontrivial_int, nontrivial_int>(), true));
+#endif // TRANSITION, GH-1030
     test_bidi_write<instantiator, const nontrivial_int, nontrivial_int>();
 
     STATIC_ASSERT((test_contiguous_write<test_vector, const bytes<1>, bytes<1>>(), true));

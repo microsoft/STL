@@ -3,9 +3,7 @@
 
 // thread support functions
 
-#include <yvals.h>
-
-#include <stdlib.h>
+#include <cstdlib>
 #include <system_error>
 #include <xthreads.h>
 

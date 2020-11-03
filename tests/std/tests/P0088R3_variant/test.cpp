@@ -1771,8 +1771,10 @@ int run_test()
 #if 0 // TRANSITION, P0608
   static_assert(std::is_assignable<std::variant<char>, int>::value == VariantAllowsNarrowingConversions, "");
 
-  static_assert(std::is_assignable<std::variant<std::string, float>, int>::value == VariantAllowsNarrowingConversions, "");
-  static_assert(std::is_assignable<std::variant<std::string, double>, int>::value == VariantAllowsNarrowingConversions, "");
+  static_assert(std::is_assignable<std::variant<std::string, float>, int>::value
+    == VariantAllowsNarrowingConversions, "");
+  static_assert(std::is_assignable<std::variant<std::string, double>, int>::value
+    == VariantAllowsNarrowingConversions, "");
   static_assert(!std::is_assignable<std::variant<std::string, bool>, int>::value, "");
 
   static_assert(!std::is_assignable<std::variant<int, bool>, decltype("meow")>::value, "");
@@ -3267,8 +3269,10 @@ int run_test()
 #if 0 // TRANSITION, P0608
   static_assert(std::is_constructible<std::variant<char>, int>::value == VariantAllowsNarrowingConversions, "");
 
-  static_assert(std::is_constructible<std::variant<std::string, float>, int>::value == VariantAllowsNarrowingConversions, "");
-  static_assert(std::is_constructible<std::variant<std::string, double>, int>::value == VariantAllowsNarrowingConversions, "");
+  static_assert(std::is_constructible<std::variant<std::string, float>, int>::value
+    == VariantAllowsNarrowingConversions, "");
+  static_assert(std::is_constructible<std::variant<std::string, double>, int>::value
+    == VariantAllowsNarrowingConversions, "");
   static_assert(!std::is_constructible<std::variant<std::string, bool>, int>::value, "");
 
   static_assert(!std::is_constructible<std::variant<int, bool>, decltype("meow")>::value, "");
@@ -6613,10 +6617,10 @@ namespace msvc {
         //
         //===----------------------------------------------------------------------===//
 
-        enum CallType : unsigned { CT_None, CT_NonConst = 1, CT_Const = 2, CT_LValue = 4, CT_RValue = 8 };
+        enum CallType : unsigned int { CT_None, CT_NonConst = 1, CT_Const = 2, CT_LValue = 4, CT_RValue = 8 };
 
         constexpr CallType operator|(CallType LHS, CallType RHS) {
-            return static_cast<CallType>(static_cast<unsigned>(LHS) | static_cast<unsigned>(RHS));
+            return static_cast<CallType>(static_cast<unsigned int>(LHS) | static_cast<unsigned int>(RHS));
         }
 
         struct ForwardingCallObject {

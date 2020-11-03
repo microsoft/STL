@@ -3,14 +3,12 @@
 
 // _Stoull function
 
-#include <ctype.h>
-#include <errno.h>
-#include <limits.h>
-#include <stddef.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include "xmath.hpp"
+#include <cctype>
+#include <cerrno>
+#include <climits>
+#include <cstddef>
+#include <cstdlib>
+#include <cstring>
 
 _EXTERN_C_UNLESS_PURE
 
@@ -70,7 +68,7 @@ _CRTIMP2_PURE unsigned long long __CLRCALL_PURE_OR_CDECL _Stoullx(
     }
 
     x = 0;
-    for (s2 = sc, y = 0, dig = 0; (sd = static_cast<const char*>(memchr(&digits[0], tolower(*sc), base))) != 0;
+    for (s2 = sc, y = 0, dig = 0; (sd = static_cast<const char*>(memchr(&digits[0], tolower(*sc), base))) != nullptr;
          ++sc) { // accumulate digits
         y   = x;
         dig = static_cast<char>(sd - digits); // for overflow checking

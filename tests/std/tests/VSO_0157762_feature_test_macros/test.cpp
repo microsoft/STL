@@ -84,6 +84,20 @@ STATIC_ASSERT(__cpp_lib_as_const == 201510L);
 #endif
 
 #if _HAS_CXX20
+#ifndef __cpp_lib_assume_aligned
+#error __cpp_lib_assume_aligned is not defined
+#elif __cpp_lib_assume_aligned != 201811L
+#error __cpp_lib_assume_aligned is not 201811L
+#else
+STATIC_ASSERT(__cpp_lib_assume_aligned == 201811L);
+#endif
+#else
+#ifdef __cpp_lib_assume_aligned
+#error __cpp_lib_assume_aligned is defined
+#endif
+#endif
+
+#if _HAS_CXX20
 #ifndef __cpp_lib_atomic_flag_test
 #error __cpp_lib_atomic_flag_test is not defined
 #elif __cpp_lib_atomic_flag_test != 201907L
@@ -140,6 +154,20 @@ STATIC_ASSERT(__cpp_lib_atomic_lock_free_type_aliases == 201907L);
 #endif
 
 #if _HAS_CXX20
+#ifndef __cpp_lib_atomic_ref
+#error __cpp_lib_atomic_ref is not defined
+#elif __cpp_lib_atomic_ref != 201806L
+#error __cpp_lib_atomic_ref is not 201806L
+#else
+STATIC_ASSERT(__cpp_lib_atomic_ref == 201806L);
+#endif
+#else
+#ifdef __cpp_lib_atomic_ref
+#error __cpp_lib_atomic_ref is defined
+#endif
+#endif
+
+#if _HAS_CXX20
 #ifndef __cpp_lib_atomic_shared_ptr
 #error __cpp_lib_atomic_shared_ptr is not defined
 #elif __cpp_lib_atomic_shared_ptr != 201711L
@@ -172,6 +200,20 @@ STATIC_ASSERT(__cpp_lib_atomic_wait == 201907L);
 #else
 #ifdef __cpp_lib_atomic_wait
 #error __cpp_lib_atomic_wait is defined
+#endif
+#endif
+
+#if _HAS_CXX20
+#ifndef __cpp_lib_barrier
+#error __cpp_lib_barrier is not defined
+#elif __cpp_lib_barrier != 201907L
+#error __cpp_lib_barrier is not 201907L
+#else
+STATIC_ASSERT(__cpp_lib_barrier == 201907L);
+#endif
+#else
+#ifdef __cpp_lib_barrier
+#error __cpp_lib_barrier is defined
 #endif
 #endif
 
@@ -464,6 +506,25 @@ STATIC_ASSERT(__cpp_lib_constexpr_utility == 201811L);
 #else
 #ifdef __cpp_lib_constexpr_utility
 #error __cpp_lib_constexpr_utility is defined
+#endif
+#endif
+
+#if _HAS_CXX20 && defined(__cpp_impl_coroutine) // TRANSITION, Clang and EDG coroutine support
+#if __cpp_impl_coroutine >= 201902L
+#define ExpectedCppLibCoroutine 201902L
+#else
+#define ExpectedCppLibCoroutine 197000L // TRANSITION, VS 2019 16.8 Preview 4
+#endif
+#ifndef __cpp_lib_coroutine
+#error __cpp_lib_coroutine is not defined
+#elif __cpp_lib_coroutine != ExpectedCppLibCoroutine
+#error __cpp_lib_coroutine is not ExpectedCppLibCoroutine
+#else
+STATIC_ASSERT(__cpp_lib_coroutine == ExpectedCppLibCoroutine);
+#endif
+#else
+#ifdef __cpp_lib_coroutine
+#error __cpp_lib_coroutine is defined
 #endif
 #endif
 
@@ -815,6 +876,34 @@ STATIC_ASSERT(__cpp_lib_is_swappable == 201603L);
 #endif
 #endif
 
+#if _HAS_CXX20
+#ifndef __cpp_lib_jthread
+#error __cpp_lib_jthread is not defined
+#elif __cpp_lib_jthread != 201911L
+#error __cpp_lib_jthread is not 201911L
+#else
+STATIC_ASSERT(__cpp_lib_jthread == 201911L);
+#endif
+#else
+#ifdef __cpp_lib_jthread
+#error __cpp_lib_jthread is defined
+#endif
+#endif
+
+#if _HAS_CXX20
+#ifndef __cpp_lib_latch
+#error __cpp_lib_latch is not defined
+#elif __cpp_lib_latch != 201907L
+#error __cpp_lib_latch is not 201907L
+#else
+STATIC_ASSERT(__cpp_lib_latch == 201907L);
+#endif
+#else
+#ifdef __cpp_lib_latch
+#error __cpp_lib_latch is defined
+#endif
+#endif
+
 #if _HAS_CXX17
 #ifndef __cpp_lib_launder
 #error __cpp_lib_launder is not defined
@@ -1003,6 +1092,20 @@ STATIC_ASSERT(__cpp_lib_parallel_algorithm == 201603L);
 #endif
 #endif
 
+#if _HAS_CXX20
+#ifndef __cpp_lib_polymorphic_allocator
+#error __cpp_lib_polymorphic_allocator is not defined
+#elif __cpp_lib_polymorphic_allocator != 201902L
+#error __cpp_lib_polymorphic_allocator is not 201902L
+#else
+STATIC_ASSERT(__cpp_lib_polymorphic_allocator == 201902L);
+#endif
+#else
+#ifdef __cpp_lib_polymorphic_allocator
+#error __cpp_lib_polymorphic_allocator is defined
+#endif
+#endif
+
 #ifndef __cpp_lib_quoted_string_io
 #error __cpp_lib_quoted_string_io is not defined
 #elif __cpp_lib_quoted_string_io != 201304L
@@ -1083,6 +1186,20 @@ STATIC_ASSERT(__cpp_lib_scoped_lock == 201703L);
 #endif
 #endif
 
+#if _HAS_CXX20
+#ifndef __cpp_lib_semaphore
+#error __cpp_lib_semaphore is not defined
+#elif __cpp_lib_semaphore != 201907L
+#error __cpp_lib_semaphore is not 201907L
+#else
+STATIC_ASSERT(__cpp_lib_semaphore == 201907L);
+#endif
+#else
+#ifdef __cpp_lib_semaphore
+#error __cpp_lib_semaphore is defined
+#endif
+#endif
+
 #ifndef __cpp_lib_shared_mutex
 #error __cpp_lib_shared_mutex is not defined
 #elif __cpp_lib_shared_mutex != 201505L
@@ -1150,6 +1267,20 @@ STATIC_ASSERT(__cpp_lib_shift == 201806L);
 #endif
 
 #if _HAS_CXX20
+#ifndef __cpp_lib_smart_ptr_for_overwrite
+#error __cpp_lib_smart_ptr_for_overwrite is not defined
+#elif __cpp_lib_smart_ptr_for_overwrite != 202002L
+#error __cpp_lib_smart_ptr_for_overwrite is not 202002L
+#else
+STATIC_ASSERT(__cpp_lib_smart_ptr_for_overwrite == 202002L);
+#endif
+#else
+#ifdef __cpp_lib_smart_ptr_for_overwrite
+#error __cpp_lib_smart_ptr_for_overwrite is defined
+#endif
+#endif
+
+#if _HAS_CXX20
 #ifndef __cpp_lib_span
 #error __cpp_lib_span is not defined
 #elif __cpp_lib_span != 202002L
@@ -1210,6 +1341,20 @@ STATIC_ASSERT(__cpp_lib_string_view == 201803L);
 #else
 #ifdef __cpp_lib_string_view
 #error __cpp_lib_string_view is defined
+#endif
+#endif
+
+#if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifndef __cpp_lib_three_way_comparison
+#error __cpp_lib_three_way_comparison is not defined
+#elif __cpp_lib_three_way_comparison != 201711L
+#error __cpp_lib_three_way_comparison is not 201711L
+#else
+STATIC_ASSERT(__cpp_lib_three_way_comparison == 201711L);
+#endif
+#else
+#ifdef __cpp_lib_three_way_comparison
+#error __cpp_lib_three_way_comparison is defined
 #endif
 #endif
 

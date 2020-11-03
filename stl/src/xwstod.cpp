@@ -3,8 +3,8 @@
 
 // _WStod function
 
-#include <stdlib.h>
-#include <wchar.h>
+#include <cstdlib>
+#include <cwchar>
 
 #include "xmath.hpp"
 #include "xxdftype.hpp"

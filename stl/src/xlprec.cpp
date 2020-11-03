@@ -3,6 +3,5 @@
 
 // _LXp* functions
 
-#include "xmath.hpp"
 #include "xxlftype.hpp"
 #include "xxxprec.hpp"
