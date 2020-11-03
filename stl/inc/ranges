@@ -2083,19 +2083,18 @@ namespace ranges {
         template <bool _Const>
         class _Sentinel;
 
-        template <class _Traits, class _Base> // TRANSITION, LWG-3289
-        struct _Iterator_base {};
+        template <class _Traits> // TRANSITION, LWG-3289
+        struct _Category_base {};
 
         // clang-format off
-        template <class _Traits, class _Base>
-            requires _Has_member_iterator_category<_Traits>
-        struct _Iterator_base<_Traits, _Base> {
+        template <_Has_member_iterator_category _Traits>
+        struct _Category_base<_Traits> {
             // clang-format on
             using iterator_category = typename _Traits::iterator_category;
         };
 
         template <bool _Const>
-        class _Iterator : public _Iterator_base<iterator_traits<iterator_t<_Vw>>, _Maybe_const<_Const, _Vw>> {
+        class _Iterator : public _Category_base<iterator_traits<iterator_t<_Vw>>> {
         private:
             template <bool>
             friend class _Iterator;
