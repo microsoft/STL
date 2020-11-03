@@ -237,7 +237,7 @@ class STLTestFormat:
                    '/Fe' + shared.execFile, '/link', *test.linkFlags]
             yield TestStep(cmd, shared.execDir, shared.env, False)
 
-            if 'kernel' in test.requires: 
+            if 'kernel' in test.requires:
                 # sign the binary
                 cmd = [litConfig.wdk_bin + '/x86/signtool.exe', 'sign',
                        '/f', litConfig.cert_path,

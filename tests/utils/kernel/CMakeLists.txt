@@ -42,4 +42,3 @@ target_link_libraries(stl_kernel_loader PRIVATE
     ucrt.lib
     AdvApi32.lib
 )
-
