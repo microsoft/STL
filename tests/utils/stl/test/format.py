@@ -292,15 +292,15 @@ class STLTestFormat:
                     cmd, out, err, rc = self.runStep(step, litConfig)
 
                     if step.shouldFail and rc == 0:
-                        report += stageName + ' step succeeded unxexpectedly.\n'
+                        report += stageName + ' step succeeded unexpectedly.\n'
                     elif rc != 0:
                         report += stageName + ' step failed unexpectedly.\n'
 
                     report += stl.util.makeReport(cmd, out, err, rc)
                     if (step.shouldFail and rc == 0) or (not step.shouldFail and rc != 0):
-                        return lit.Test.Result(failVar, report)
+                        return (failVar, report)
 
-            return lit.Test.Result(passVar, report)
+            return (passVar, '')
 
         except Exception as e:
             litConfig.error(repr(e))

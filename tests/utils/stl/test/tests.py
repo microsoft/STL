@@ -121,7 +121,7 @@ class STLTest(Test):
             elif self.expectedResult.isFailure:
                 self.xfails = ['*']
         elif self.config.unsupported:
-            self.result = Result(lit.Test.UNSUPPORTED, 'This test was marked as unsupported by a lit.cfg')
+            self.result = Result(UNSUPPORTED, 'This test was marked as unsupported by a lit.cfg')
 
     def _handleEnvlst(self, litConfig, envlstEntry):
         envCompiler = envlstEntry.getEnvVal('PM_COMPILER', 'cl')
