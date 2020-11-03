@@ -2116,12 +2116,12 @@ namespace ranges {
             _Iterator() = default;
 
             constexpr explicit _Iterator(iterator_t<_Base> _Current_) noexcept(
-                noexcept(is_nothrow_move_constructible_v<iterator_t<_Base>>)) // strengthened
+                is_nothrow_move_constructible_v<iterator_t<_Base>>) // strengthened
                 : _Current{_STD move(_Current_)} {}
 
             // clang-format off
-            constexpr _Iterator(_Iterator<!_Const> _It)
-                noexcept(is_nothrow_constructible_v<iterator_t<_Base>, iterator_t<_Vw>>) // strengthened
+            constexpr _Iterator(_Iterator<!_Const> _It) noexcept(
+                is_nothrow_constructible_v<iterator_t<_Base>, iterator_t<_Vw>>) // strengthened
                 requires _Const && convertible_to<iterator_t<_Vw>, iterator_t<_Base>>
                 : _Current{_STD move(_It._Current)} {}
             // clang-format on
