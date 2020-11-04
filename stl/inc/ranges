@@ -2263,7 +2263,7 @@ namespace ranges {
                 noexcept(--_Current) && is_nothrow_copy_constructible_v<iterator_t<_Base>>) /* strengthened */
                 requires bidirectional_range<_Base> {
                 auto _Tmp = *this;
-                --*this;
+                --_Current;
                 return _Tmp;
             }
 

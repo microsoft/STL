@@ -296,9 +296,9 @@ constexpr bool test_one(Rng&& rng) {
         same_as<V> auto b1 = as_const(r).base();
         STATIC_ASSERT(noexcept(as_const(r).base()) == is_nothrow_copy_constructible_v<V>);
         if (!is_empty) {
-            assert(*b1.begin() == pair(0, -1)); // NB: depends on the test data
+            assert((*b1.begin() == pair{0, -1})); // NB: depends on the test data
             if constexpr (bidirectional_range<V> && common_range<V>) {
-                assert(*prev(b1.end()) == pair(7, -8)); // NB: depends on the test data
+                assert((*prev(b1.end()) == pair{7, -8})); // NB: depends on the test data
             }
         }
     }
@@ -308,9 +308,9 @@ constexpr bool test_one(Rng&& rng) {
         same_as<V> auto b2 = move(r).base();
         STATIC_ASSERT(noexcept(move(r).base()) == is_nothrow_move_constructible_v<V>);
         if (!is_empty) {
-            assert(*b2.begin() == pair(0, -1)); // NB: depends on the test data
+            assert((*b2.begin() == pair{0, -1})); // NB: depends on the test data
             if constexpr (bidirectional_range<V> && common_range<V>) {
-                assert(*prev(b2.end()) == pair(7, -8)); // NB: depends on the test data
+                assert((*prev(b2.end()) == pair{7, -8})); // NB: depends on the test data
             }
         }
     }
