@@ -1965,7 +1965,7 @@ namespace ranges {
             return _First;
         }
 
-        _NODISCARD constexpr auto end() noexcept(noexcept(_RANGES end(_Range))) /* strengthened*/ {
+        _NODISCARD constexpr auto end() noexcept(noexcept(_RANGES end(_Range))) /* strengthened */ {
             return _RANGES end(_Range);
         }
     };
