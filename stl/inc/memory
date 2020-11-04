@@ -428,10 +428,17 @@ namespace ranges {
 
             if constexpr (_Fill_memset_is_safe<_It, _Ty>) {
                 const auto _OFinal = _RANGES next(_OFirst, _STD move(_OLast));
-                const auto _Diff   = static_cast<size_t>(_OFinal - _OFirst);
-                _Fill_memset(_OFirst, _Val, _Diff);
+                _Fill_memset(_OFirst, _Val, static_cast<size_t>(_OFinal - _OFirst));
                 return _OFinal;
             } else {
+                if constexpr (_Fill_zero_memset_is_safe<_It, _Ty>) {
+                    if (_Is_all_bits_zero(_Val)) {
+                        const auto _OFinal = _RANGES next(_OFirst, _STD move(_OLast));
+                        _Fill_zero_memset(_OFirst, static_cast<size_t>(_OFinal - _OFirst));
+                        return _OFinal;
+                    }
+                }
+
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
                 while (_Backout._Last != _OLast) {
@@ -458,11 +465,19 @@ _NoThrowFwdIt uninitialized_fill_n(_NoThrowFwdIt _First, const _Diff _Count_raw,
     }
 
     auto _UFirst = _Get_unwrapped_n(_First, _Count);
-    if constexpr (_Fill_memset_is_safe<_Unwrapped_n_t<const _NoThrowFwdIt&>, _Tval>) {
+    if constexpr (_Fill_memset_is_safe<decltype(_UFirst), _Tval>) {
         _Fill_memset(_UFirst, _Val, static_cast<size_t>(_Count));
         _UFirst += _Count;
     } else {
-        _Uninitialized_backout<_Unwrapped_n_t<const _NoThrowFwdIt&>> _Backout{_UFirst};
+        if constexpr (_Fill_zero_memset_is_safe<decltype(_UFirst), _Tval>) {
+            if (_Is_all_bits_zero(_Val)) {
+                _Fill_zero_memset(_UFirst, static_cast<size_t>(_Count));
+                _Seek_wrapped(_First, _UFirst + _Count);
+                return _First;
+            }
+        }
+
+        _Uninitialized_backout<decltype(_UFirst)> _Backout{_UFirst};
 
         for (; _Count > 0; --_Count) {
             _Backout._Emplace_back(_Val);
@@ -527,10 +542,18 @@ namespace ranges {
             }
 
             auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
-            if constexpr (_Fill_memset_is_safe<_It, _Ty>) {
+            if constexpr (_Fill_memset_is_safe<decltype(_UFirst), _Ty>) {
                 _Fill_memset(_UFirst, _Val, static_cast<size_t>(_Count));
                 _Seek_wrapped(_First, _UFirst + _Count);
             } else {
+                if constexpr (_Fill_zero_memset_is_safe<decltype(_UFirst), _Ty>) {
+                    if (_Is_all_bits_zero(_Val)) {
+                        _Fill_zero_memset(_UFirst, static_cast<size_t>(_Count));
+                        _Seek_wrapped(_First, _UFirst + _Count);
+                        return _First;
+                    }
+                }
+
                 _Uninitialized_backout _Backout{_STD move(_UFirst)};
 
                 for (; _Count > 0; --_Count) {
@@ -2386,6 +2409,12 @@ void _Uninitialized_fill_multidimensional_n(_Ty* const _Out, const size_t _Size,
     } else if constexpr (_Fill_memset_is_safe<_Ty*, _Ty>) {
         _Fill_memset(_Out, _Val, _Size);
     } else {
+        if constexpr (_Fill_zero_memset_is_safe<_Ty*, _Ty>) {
+            if (_Is_all_bits_zero(_Val)) {
+                _Fill_zero_memset(_Out, _Size);
+                return;
+            }
+        }
         _Uninitialized_rev_destroying_backout _Backout{_Out};
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _Backout._Emplace_back(_Val);
@@ -2730,6 +2759,13 @@ void _Uninitialized_fill_multidimensional_n_al(_Ty* const _Out, const size_t _Si
     } else if constexpr (_Fill_memset_is_safe<_Ty*, _Ty> && _Uses_default_construct<_Alloc, _Ty*, const _Ty&>::value) {
         _Fill_memset(_Out, _Val, _Size);
     } else {
+        if constexpr (_Fill_zero_memset_is_safe<_Ty*,
+                          _Ty> && _Uses_default_construct<_Alloc, _Ty*, const _Ty&>::value) {
+            if (_Is_all_bits_zero(_Val)) {
+                _Fill_zero_memset(_Out, _Size);
+                return;
+            }
+        }
         _Uninitialized_rev_destroying_backout_al _Backout{_Out, _Al};
         for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
             _Backout._Emplace_back(_Val);

@@ -7,12 +7,14 @@
 
 #include "awint.hpp"
 
-_STD_BEGIN
+namespace {
+    struct _Xfg_trampoline_parameter {
+        void* _Pv;
+        _STD _Execute_once_fp_t _Callback;
+    };
+} // unnamed namespace
 
-struct _Xfg_trampoline_parameter {
-    void* _Pv;
-    _Execute_once_fp_t _Callback;
-};
+_STD_BEGIN
 
 // TRANSITION, ABI
 _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Execute_once(

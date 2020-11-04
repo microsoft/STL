@@ -221,6 +221,11 @@ void test_make_shared_array_known_bounds() {
     test_make_init_destruct_order<ReportAddress[2][2][2]>(); // success multidimensional
 
     test_make_init_destruct_order<ReportAddress[3][3][3]>(); // failure multidimensional
+
+    shared_ptr<int[7]> p7 = make_shared<int[7]>(0);
+    for (int i = 0; i < 7; ++i) {
+        assert(p7[i] == 0);
+    }
 }
 
 void test_make_shared_array_unknown_bounds() {
@@ -286,6 +291,11 @@ void test_make_shared_array_unknown_bounds() {
     test_make_init_destruct_order<ReportAddress[][2][2]>(2u); // success multidimensional
 
     test_make_init_destruct_order<ReportAddress[][3][3]>(3u); // failure multidimensional
+
+    shared_ptr<int[]> p8 = make_shared<int[]>(7u, 0);
+    for (int i = 0; i < 7; ++i) {
+        assert(p8[i] == 0);
+    }
 }
 
 int constructCount = 0;
@@ -506,6 +516,12 @@ void test_allocate_shared_array_known_bounds() {
     test_allocate_init_destruct_order<ReportAddress[2][2][2]>(); // success multidimensional
 
     test_allocate_init_destruct_order<ReportAddress[3][3][3]>(); // failure multidimensional
+
+    allocator<int> a7;
+    shared_ptr<int[7]> p7 = allocate_shared<int[7]>(a7, 0);
+    for (int i = 0; i < 7; ++i) {
+        assert(p7[i] == 0);
+    }
 }
 
 void test_allocate_shared_array_unknown_bounds() {
@@ -599,6 +615,12 @@ void test_allocate_shared_array_unknown_bounds() {
     test_allocate_init_destruct_order<ReportAddress[][2][2]>(2u); // success multidimensional
 
     test_allocate_init_destruct_order<ReportAddress[][3][3]>(3u); // failure multidimensional
+
+    allocator<int> a8;
+    shared_ptr<int[]> p8 = allocate_shared<int[]>(a8, 7u, 0);
+    for (int i = 0; i < 7; ++i) {
+        assert(p8[i] == 0);
+    }
 }
 
 int main() {
