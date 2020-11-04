@@ -2191,9 +2191,8 @@ namespace ranges {
                 constexpr _St _Strat = _Choice<_Rng>._Strategy;
 
                 if constexpr _Strat == _St::_Base) {
-                        return _STD forward<_Rng>(_Range).base();
-                    }
-                else if constexpr (_Strat == _St::_Subrange_unsized) {
+                    return _STD forward<_Rng>(_Range).base();
+                } else if constexpr (_Strat == _St::_Subrange_unsized) {
                     return subrange{_Range.end().base(), _Range.begin().base()};
                 } else if constexpr (_Strat == _St::_Subrange_sized) {
                     return subrange{_Range.end().base(), _Range.begin().base(), _Range.size()};
