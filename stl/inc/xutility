@@ -698,7 +698,6 @@ namespace ranges {
             template <class _Ty>
                 requires (_Choice<_Ty>._Strategy != _St::_None)
             _NODISCARD constexpr decltype(auto) operator()(_Ty&& _Val) const noexcept(_Choice<_Ty>._No_throw) {
-
                 constexpr _St _Strat = _Choice<_Ty>._Strategy;
 
                 if constexpr (_Strat == _St::_Custom) {
@@ -1088,7 +1087,6 @@ namespace ranges {
             template <class _Ty1, class _Ty2>
                 requires (_Choice<_Ty1, _Ty2>._Strategy != _St::_None)
             constexpr void operator()(_Ty1&& _Val1, _Ty2&& _Val2) const noexcept(_Choice<_Ty1, _Ty2>._No_throw) {
-
                 constexpr _St _Strat = _Choice<_Ty1, _Ty2>._Strategy;
 
                 if constexpr (_Strat == _St::_Custom) {
@@ -2405,7 +2403,6 @@ namespace ranges {
             template <_Should_range_access _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
-
                 constexpr _St _Strat = _Choice<_Ty&>._Strategy;
 
                 if constexpr (_Strat == _St::_Array) {
@@ -2471,7 +2468,6 @@ namespace ranges {
             template <_Should_range_access _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
-
                 constexpr _St _Strat = _Choice<_Ty&>._Strategy;
 
                 if constexpr (_Strat == _St::_Member) {
@@ -2546,7 +2542,6 @@ namespace ranges {
             template <_Should_range_access _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
-
                 constexpr _St _Strat = _Choice<_Ty&>._Strategy;
 
                 if constexpr (_Strat == _St::_Array) {
@@ -2610,7 +2605,6 @@ namespace ranges {
             template <_Should_range_access _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
-
                 constexpr _St _Strat = _Choice<_Ty&>._Strategy;
 
                 if constexpr (_Strat == _St::_Member) {
@@ -2748,7 +2742,6 @@ namespace ranges {
             template <_Should_range_access _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
-
                 constexpr _St _Strat = _Choice<_Ty&>._Strategy;
 
                 if constexpr (_Strat == _St::_Member) {
@@ -2822,7 +2815,6 @@ namespace ranges {
             template <_Should_range_access _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
-
                 constexpr _St _Strat = _Choice<_Ty&>._Strategy;
 
                 if constexpr (_Strat == _St::_Member) {
@@ -2942,7 +2934,6 @@ namespace ranges {
             template <class _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
-
                 constexpr _St _Strat = _Choice<_Ty&>._Strategy;
 
                 if constexpr (_Strat == _St::_Array) {
@@ -3018,7 +3009,6 @@ namespace ranges {
             template <class _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
             _NODISCARD constexpr bool operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
-
                 constexpr _St _Strat = _Choice<_Ty&>._Strategy;
 
                 if constexpr (_Strat == _St::_Member) {
@@ -3081,7 +3071,6 @@ namespace ranges {
             template <_Should_range_access _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
-
                 constexpr _St _Strat = _Choice<_Ty&>._Strategy;
 
                 if constexpr (_Strat == _St::_Member) {

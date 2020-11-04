@@ -2045,7 +2045,6 @@ namespace ranges {
                 noexcept(_Choice<decay_t<_It>>._No_throw) {
                 // clang-format on
                 _STL_ASSERT(_Count >= 0, "The size passed to views::counted must be non-negative");
-
                 constexpr _St _Strat = _Choice<decay_t<_It>>._Strategy;
 
                 if constexpr (_Strat == _St::_Span) {
