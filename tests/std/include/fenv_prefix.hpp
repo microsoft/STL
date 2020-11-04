@@ -37,7 +37,7 @@
 #endif // ^^^ invalid FP_CONTRACT_MODE ^^^
 
 #endif // ^^^ MSVC ^^^
-#endif // defined(FP_CONTRACT_MODE) && !defined(__clang__)
+#endif // defined(FP_CONTRACT_MODE)
 
 #include <cassert>
 #include <float.h>

@@ -1545,10 +1545,10 @@ _NODISCARD complex<_Ty> exp(const complex<_Ty>& _Left) {
 
 // FUNCTION TEMPLATE _Fabs
 template <class _Ty>
-_Ty _Fabs(const complex<_Ty>& _Left, int* _Pexp) { // used by sqrt(), return magnitude and scale factor.
-                                                   // returns a non-zero even integer in *_Pexp when _Left is finite
+_Ty _Fabs(const complex<_Ty>& _Left, int* _Pexp) { // Used by sqrt(), return magnitude and scale factor.
+                                                   // Returns a non-zero even integer in *_Pexp when _Left is finite
                                                    // and non-zero.
-                                                   // returns 0 in *_Pexp when _Left is zero, infinity or NaN.
+                                                   // Returns 0 in *_Pexp when _Left is zero, infinity, or NaN.
     *_Pexp  = 0;
     _Ty _Av = _Ctraits<_Ty>::_Abs(_STD real(_Left));
     _Ty _Bv = _Ctraits<_Ty>::_Abs(_STD imag(_Left));
@@ -1614,11 +1614,11 @@ template <class _Ty>
 _NODISCARD _Ty _Log_abs(const complex<_Ty>& _Left) noexcept { // for double, long double, and non floating point types
     return static_cast<_Ty>(
         __std_math_log_hypot(static_cast<double>(_STD real(_Left)), static_cast<double>(_STD imag(_Left))));
-};
+}
 
 _NODISCARD inline float _Log_abs(const complex<float>& _Left) noexcept {
     return __std_math_log_hypotf(_STD real(_Left), _STD imag(_Left));
-};
+}
 
 template <class _Ty>
 _NODISCARD complex<_Ty> log(const complex<_Ty>& _Left) {

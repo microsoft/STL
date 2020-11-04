@@ -29,9 +29,9 @@ namespace _Float_multi_prec {
 
     template <class _Ty>
     struct _Fmp_t<_Ty, 2> {
-        static_assert(_STD is_floating_point_v<_Ty>);
-        _Ty _Val0; // most significant numeric_limis<_Ty>::precision bits
-        _Ty _Val1; // least significant numeric_limis<_Ty>::precision bits
+        static_assert(is_floating_point_v<_Ty>);
+        _Ty _Val0; // most significant numeric_limits<_Ty>::precision bits
+        _Ty _Val1; // least significant numeric_limits<_Ty>::precision bits
     };
 
     // addition
@@ -92,10 +92,10 @@ namespace _Float_multi_prec {
     // multiplication
 
     // round to 26 significant bits, ties toward zero
-    _NODISCARD inline constexpr double _High_half(const double _Val) {
-        const auto _Bits           = _STD _Bit_cast<unsigned long long>(_Val);
+    _NODISCARD constexpr double _High_half(const double _Val) noexcept {
+        const auto _Bits           = _Bit_cast<unsigned long long>(_Val);
         const auto _High_half_bits = (_Bits + 0x3ff'ffffULL) & 0xffff'ffff'f800'0000ULL;
-        return _STD _Bit_cast<double>(_High_half_bits);
+        return _Bit_cast<double>(_High_half_bits);
     }
 
     // _Xval * _Xval - _Prod0
@@ -103,7 +103,7 @@ namespace _Float_multi_prec {
     // 1) _Prod0 is _Xval^2 faithfully rounded
     // 2) no internal overflow or underflow occurs
     // violation of condition 1 could lead to relative error on the order of epsilon
-    _NODISCARD inline constexpr double _Sqr_error_fallback(const double _Xval, const double _Prod0) noexcept {
+    _NODISCARD constexpr double _Sqr_error_fallback(const double _Xval, const double _Prod0) noexcept {
         const double _Xhigh = _High_half(_Xval);
         const double _Xlow  = _Xval - _Xhigh;
         return ((_Xhigh * _Xhigh - _Prod0) + 2.0 * _Xhigh * _Xlow) + _Xlow * _Xlow;
@@ -133,7 +133,7 @@ namespace _Float_multi_prec {
 
     // square(1x precision) -> 2x precision
     // the result is exact when no internal overflow or underflow occurs
-    _NODISCARD inline constexpr _Fmp_t<double, 2> _Sqr_x2(const double _Xval) noexcept {
+    _NODISCARD constexpr _Fmp_t<double, 2> _Sqr_x2(const double _Xval) noexcept {
         const double _Prod0 = _Xval * _Xval;
 
         if (_STD is_constant_evaluated()) {

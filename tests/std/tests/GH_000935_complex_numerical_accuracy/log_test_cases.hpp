@@ -114,7 +114,7 @@ constexpr complex_unary_test_case<double> log_double_cases[] = {
     {{+0x1.fffffffffffffp-1, -0x1p-52}, {-0x1.ffffffffffffep-54, -0x1.0000000000000p-52}},
     {{+0x1.fffffffffffffp-1, +0x1p-26}, {+0x1.0000000000000p-107, +0x1.0000000000000p-26}},
 
-    // z close to -1, i or -i
+    // z close to -1, i, or -i
     {{-0x1.0000000000001p+0, -0x1p-52}, {+0x1.0000000000000p-52, -0x1.921fb54442d18p+1}},
     {{-0x1.0000000000000p+0, +0x1p-52}, {+0x1.0000000000000p-105, +0x1.921fb54442d18p+1}},
     {{-0x1.fffffffffffffp-1, -0x1p-52}, {-0x1.ffffffffffffep-54, -0x1.921fb54442d18p+1}},
@@ -243,7 +243,7 @@ constexpr complex_unary_test_case<float> log_float_cases[] = {
     {{+0x1.fffffep-1F, -0x1.000000p-23F}, {-0x1.fffffcp-25F, -0x1.000000p-23F}},
     {{+0x1.fffffep-1F, +0x1.6a09e6p-12F}, {-0x1.302ae0p-52F, +0x1.6a09e6p-12F}},
 
-    // z close to -1, i or -i
+    // z close to -1, i, or -i
     {{-0x1.000002p+0F, -0x1.000000p-23F}, {+0x1.000000p-23F, -0x1.921fb4p+1F}},
     {{-0x1.000000p+0F, +0x1.000000p-23F}, {+0x1.000000p-47F, +0x1.921fb4p+1F}},
     {{-0x1.fffffep-1F, -0x1.000000p-23F}, {-0x1.fffffcp-25F, -0x1.921fb4p+1F}},

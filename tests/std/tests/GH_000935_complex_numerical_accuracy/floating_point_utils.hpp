@@ -36,13 +36,13 @@ namespace fputil {
     _INLINE_VAR constexpr float_bits_t<T> infinity_bits_v = exponent_mask_v<T>;
 
     // not affected by abrupt underflow
-    template <typename T, std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
+    template <typename T, std::enable_if_t<std::is_floating_point_v<T>, int> = 0>
     constexpr bool iszero(const T& x) {
         return _STD _Float_abs_bits(x) == 0;
     }
 
     // not affected by /fp:fast
-    template <typename T, std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
+    template <typename T, std::enable_if_t<std::is_floating_point_v<T>, int> = 0>
     constexpr bool signbit(const T& x) {
         const auto bits = std::_Bit_cast<float_bits_t<T>>(x);
         return (bits & sign_mask_v<T>) != 0;
@@ -126,7 +126,7 @@ namespace fputil {
 
     // compares whether two floating point values are equal
     // all NaNs are equal, +0.0 and -0.0 are not equal
-    template <typename T, std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
+    template <typename T, std::enable_if_t<std::is_floating_point_v<T>, int> = 0>
     bool precise_equal(const T& actual, const T& expected) {
         if (_STD _Is_nan(actual) || _STD _Is_nan(expected)) {
             return _STD _Is_nan(actual) == _STD _Is_nan(expected);
@@ -137,13 +137,13 @@ namespace fputil {
 
     namespace detail {
         // 0x80...00 = zero, 0x80...01 = numeric_limits<T>::denorm_min(), 0x7f...ff = -numeric_limits<T>::denorm_min()
-        template <typename T, std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
+        template <typename T, std::enable_if_t<std::is_floating_point_v<T>, int> = 0>
         float_bits_t<T> offset_representation(const T& x) {
             const float_bits_t<T> abs_bits = _STD _Float_abs_bits(x);
             return fputil::signbit(x) ? sign_mask_v<T> - abs_bits : sign_mask_v<T> + abs_bits;
         }
 
-        template <typename T, std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
+        template <typename T, std::enable_if_t<std::is_floating_point_v<T>, int> = 0>
         float_bits_t<T> is_offset_value_subnormal_or_zero(const float_bits_t<T> offset_value) {
             constexpr float_bits_t<T> positive_norm_min_offset = sign_mask_v<T> + norm_min_bits_v<T>;
             constexpr float_bits_t<T> negative_norm_min_offset = sign_mask_v<T> - norm_min_bits_v<T>;
@@ -152,7 +152,7 @@ namespace fputil {
         }
 
         // number of ulps above zero, if we count [0, numeric_limits<T>::min()) as 1 ulp
-        template <typename T, std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
+        template <typename T, std::enable_if_t<std::is_floating_point_v<T>, int> = 0>
         double abrupt_underflow_ulp(const float_bits_t<T> offset_value) {
             using bits_type = float_bits_t<T>;
 
@@ -170,7 +170,7 @@ namespace fputil {
             }
         }
 
-        template <typename T, std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
+        template <typename T, std::enable_if_t<std::is_floating_point_v<T>, int> = 0>
         bool is_within_ulp_tolerance(const T& actual, const T& expected, const int ulp_tolerance) {
             if (_STD _Is_nan(actual) || _STD _Is_nan(expected)) {
                 return _STD _Is_nan(actual) == _STD _Is_nan(expected);
@@ -213,7 +213,7 @@ namespace fputil {
             return false;
         }
 
-        template <typename T, std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
+        template <typename T, std::enable_if_t<std::is_floating_point_v<T>, int> = 0>
         bool is_within_absolute_tolerance(const T& actual, const T& expected, const double absolute_tolerance) {
             return _STD _Is_finite(actual) && _STD _Is_finite(expected)
                    && std::abs(actual - expected) <= absolute_tolerance;
@@ -221,7 +221,7 @@ namespace fputil {
     } // namespace detail
 
     // returns whether floating point result is nearly equal to the expected value
-    template <typename T, std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
+    template <typename T, std::enable_if_t<std::is_floating_point_v<T>, int> = 0>
     bool near_equal(
         const T& actual, const T& expected, const int ulp_tolerance = 1, const double absolute_tolerance = 0) {
         if (precise_equal(actual, expected)) {

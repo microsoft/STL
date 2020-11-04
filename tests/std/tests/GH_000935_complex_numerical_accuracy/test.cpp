@@ -3,6 +3,7 @@
 
 #include <cassert>
 #include <complex>
+#include <limits>
 
 #include "floating_point_utils.hpp"
 #include "log_test_cases.hpp"
