@@ -6075,8 +6075,9 @@ namespace ranges {
     _It _Buffered_rotate_common(const _It _First, const _It _Mid, const _It _Last, const iter_difference_t<_It> _Count1,
         const iter_difference_t<_It> _Count2, iter_value_t<_It>* const _Temp_ptr, const ptrdiff_t _Capacity) {
         // rotate [_First, _Last) using temp buffer
-        // precondition: _Count1 == distance(_First, _Mid)
-        // precondition: _Count2 == distance(_Mid, _Last)
+        _STL_INTERNAL_CHECK(_Count1 == _RANGES distance(_First == _Mid));
+        _STL_INTERNAL_CHECK(_Count2 == _RANGES distance(_Mid == _Last));
+
         if (_Count1 == 0) {
             return _Last;
         }
@@ -6085,7 +6086,7 @@ namespace ranges {
             return _First;
         }
 
-        if (_Count1 <= _Count2 && _Count1 <= _Capacity) { // buffer left range, then copy parts
+        if (_Count1 <= _Count2 && _Count1 <= _Capacity) { // buffer left range, then move parts
             _Uninitialized_backout<iter_value_t<_It>*> _Backout{
                 _Temp_ptr, _RANGES _Uninitialized_move_unchecked(_First, _Mid, _Temp_ptr, _Temp_ptr + _Count1).out};
             const _It _New_mid = _RANGES _Move_unchecked(_STD move(_Mid), _STD move(_Last), _STD move(_First)).out;
@@ -6093,7 +6094,7 @@ namespace ranges {
             return _New_mid;
         }
 
-        if (_Count2 <= _Capacity) { // buffer right range, then copy parts
+        if (_Count2 <= _Capacity) { // buffer right range, then move parts
             _Uninitialized_backout<iter_value_t<_It>*> _Backout{
                 _Temp_ptr, _RANGES _Uninitialized_move_unchecked(_Mid, _Last, _Temp_ptr, _Temp_ptr + _Count2).out};
             _RANGES _Move_backward_common(_First, _STD move(_Mid), _STD move(_Last));
@@ -6143,10 +6144,9 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(indirect_unary_predicate<_Pr, projected<_It, _Pj>>);
 
             // partition preserving order of equivalents
-            auto _Saved_last = _Last;
             for (;;) { // skip in-place elements at front
                 if (_First == _Last) { // the input range range is true (already partitioned)
-                    return {_STD move(_First), _STD move(_Saved_last)};
+                    return {_STD move(_First), _STD move(_Last)};
                 }
                 if (!_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
                     break;
@@ -6154,6 +6154,7 @@ namespace ranges {
                 ++_First;
             }
 
+            auto _Saved_last = _Last;
             do { // skip in-place elements at end
                 --_Last;
                 if (_First == _Last) {
@@ -6176,13 +6177,13 @@ namespace ranges {
             _Pr _Pred, _Pj _Proj, const iter_difference_t<_It> _Count, iter_value_t<_It>* const _Temp_ptr,
             const ptrdiff_t _Capacity) {
             // implement stable_partition of [_First, _Last] (note: closed range)
-            // precondition: !_STD invoke(_Pred, _STD invoke(_Proj, *_First))
-            // precondition: _STD invoke(_Pred, _STD invoke(_Proj, *_Last))
-            // precondition: _RANGES distance(_First, _Last) + 1 == _Count
             // note: _Count >= 2 and _First != _Last
-            _STL_INTERNAL_STATIC_ASSERT(bidirectional_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(permutable<_It>);
             _STL_INTERNAL_STATIC_ASSERT(indirect_unary_predicate<_Pr, projected<_It, _Pj>>);
+            _STL_INTERNAL_STATIC_ASSERT(bidirectional_iterator<_It>);
+            _STL_INTERNAL_CHECK(!_STD invoke(_Pred, _STD invoke(_Proj, *_First)));
+            _STL_INTERNAL_CHECK(_STD invoke(_Pred, _STD invoke(_Proj, *_Last)));
+            _STL_INTERNAL_CHECK(_Count == _RANGES distance(_First, _Last) + 1);
 
             using _Diff = iter_difference_t<_It>;
             if (_Count - 1 <= _Capacity) { // - 1 since we never need to store *_Last
@@ -6224,7 +6225,7 @@ namespace ranges {
                 if (_STD invoke(_Pred, _STD invoke(_Proj, *_Left))) {
                     // excluded the false range before _Mid, invariants reestablished, recurse
                     const auto _Low = _Stable_partition_common_buffered(
-                        _First, _Left, _Pred, _Proj, _Left_true_count, _Temp_ptr, _Capacity);
+                        _First, _STD move(_Left), _Pred, _Proj, _Left_true_count, _Temp_ptr, _Capacity);
                     _Left            = _STD move(_Low.first);
                     _Left_true_count = _Low.second;
                     break;
@@ -6248,7 +6249,7 @@ namespace ranges {
                     const auto _Right_count = static_cast<_Diff>(_Count - _Mid_offset);
                     const auto _Remaining   = static_cast<_Diff>(_Right_count - _Right_true_count);
                     const auto _High        = _Stable_partition_common_buffered(
-                        _Right, _Last, _Pred, _Proj, _Remaining, _Temp_ptr, _Capacity);
+                        _STD move(_Right), _Last, _Pred, _Proj, _Remaining, _Temp_ptr, _Capacity);
                     _Right = _STD move(_High.first);
                     _Right_true_count += _High.second;
                     break;
@@ -6259,10 +6260,10 @@ namespace ranges {
             }
 
             // swap the [_Left, _Mid) false range with the [_Mid, _Right) true range
-            const auto _Partition_point =
+            auto _Partition_point =
                 _RANGES _Buffered_rotate_common(_STD move(_Left), _STD move(_Mid), _STD move(_Right),
                     static_cast<_Diff>(_Mid_offset - _Left_true_count), _Right_true_count, _Temp_ptr, _Capacity);
-            return {_Partition_point, static_cast<_Diff>(_Left_true_count + _Right_true_count)};
+            return {_STD move(_Partition_point), static_cast<_Diff>(_Left_true_count + _Right_true_count)};
         }
     };
 
@@ -7698,7 +7699,7 @@ namespace ranges {
             if (_STD invoke(_Pred, _STD invoke(_Proj, *_Right_last), _STD invoke(_Proj, *_Mid))) {
                 *--_Last = _RANGES iter_move(_Mid); // the lowest element is now in position
                 if (_First == _Mid) {
-                    *--_Last = _RANGES iter_move(_Right_last); // to make [_Right_first, _Right_last) a half-open range
+                    ++_Right_last; // to make [_Right_first, _Right_last) a half-open range
                     _RANGES _Move_backward_common(_Right_first, _Right_last, _STD move(_Last));
                     return;
                 }
@@ -7707,7 +7708,7 @@ namespace ranges {
                 *--_Last = _RANGES iter_move(_Right_last);
                 --_Right_last;
                 if (_Right_first == _Right_last) { // we can't compare with *_Right_first, but we know it is lowest
-                    *--_Last = _RANGES iter_move(_Mid); // restore half-open range [_First, _Mid)
+                    ++_Mid; // restore half-open range [_First, _Mid)
                     _RANGES _Move_backward_common(_First, _STD move(_Mid), _STD move(_Last));
                     *_First = _RANGES iter_move(_Right_first);
                     return;
