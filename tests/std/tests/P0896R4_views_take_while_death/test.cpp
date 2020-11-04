@@ -10,20 +10,20 @@
 using namespace std;
 
 [[maybe_unused]] constexpr auto lambda = [x = 42](int) { return x == 42; };
-using DWV                              = decltype(ranges::take_while_view{span<int, 0>{}, lambda});
+using TWV                              = decltype(ranges::take_while_view{span<int, 0>{}, lambda});
 
 void test_view_predicate() {
-    DWV r;
+    TWV r;
     (void) r.pred(); // value-initialized take_while_view has no predicate
 }
 
 void test_view_end() {
-    DWV r;
+    TWV r;
     (void) r.end(); // N4868 [range.take_while.view] forbids calling end on a take_while_view that holds no predicate
 }
 
 void test_view_const_end() {
-    const DWV r;
+    const TWV r;
     (void) r.end(); // N4868 [range.take_while.view] forbids calling end on a take_while_view that holds no predicate
 }
 

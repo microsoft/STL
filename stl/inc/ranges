@@ -1757,20 +1757,19 @@ namespace ranges {
             template <bool _OtherConst>
             using _Maybe_const_iter = _Maybe_wrapped<_Wrapped, iterator_t<_Maybe_const<_OtherConst, _Vw>>>;
 
-            _Base_sentinel _Last{};
+            /* [[no_unique_address]] */ _Base_sentinel _Last{};
             const _Pr* _Pred = nullptr;
 
         public:
             _Sentinel() = default;
 
-            constexpr explicit _Sentinel(_Base_sentinel _Last_, const _Pr* _Pred_) noexcept(
-                is_nothrow_move_constructible_v<_Base_sentinel>&& is_nothrow_move_constructible_v<_Pr>) // strengthened
+            constexpr explicit _Sentinel(_Base_sentinel _Last_, const _Pr* const _Pred_) noexcept(
+                is_nothrow_move_constructible_v<_Base_sentinel>) // strengthened
                 : _Last(_STD move(_Last_)), _Pred(_Pred_) {}
 
             // clang-format off
             constexpr _Sentinel(_Sentinel<!_Const, _Wrapped> _That) noexcept(
-                is_nothrow_constructible_v<_Base_sentinel, _Maybe_wrapped<_Wrapped, sentinel_t<_Vw>>>&&
-                    is_nothrow_move_constructible_v<_Pr>) // strengthened
+                is_nothrow_constructible_v<_Base_sentinel, _Maybe_wrapped<_Wrapped, sentinel_t<_Vw>>>) // strengthened
                 requires _Const && convertible_to<_Maybe_wrapped<_Wrapped, sentinel_t<_Vw>>, _Base_sentinel>
                 : _Last(_STD move(_That._Last)), _Pred(_That._Pred) {}
             // clang-format on

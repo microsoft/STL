@@ -52,7 +52,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     STATIC_ASSERT(contiguous_range<R> == contiguous_range<Rng>);
 
     // Validate range adaptor object and range adaptor closure
-    constexpr auto take_while_even = views::take_while(is_less_than<3>);
+    constexpr auto closure = views::take_while(is_less_than<3>);
 
     // ... with lvalue argument
     STATIC_ASSERT(CanViewTakeWhile<Rng&> == (!is_view || copyable<V>) );
@@ -62,8 +62,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         STATIC_ASSERT(same_as<decltype(views::take_while(rng, is_less_than<3>)), R>);
         STATIC_ASSERT(noexcept(views::take_while(rng, is_less_than<3>)) == is_noexcept);
 
-        STATIC_ASSERT(same_as<decltype(rng | take_while_even), R>);
-        STATIC_ASSERT(noexcept(rng | take_while_even) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(rng | closure), R>);
+        STATIC_ASSERT(noexcept(rng | closure) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(rng | pipeline), pipeline_t<Rng&>>);
         STATIC_ASSERT(noexcept(rng | pipeline) == is_noexcept);
@@ -77,8 +77,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         STATIC_ASSERT(same_as<decltype(views::take_while(as_const(rng), is_less_than<3>)), R>);
         STATIC_ASSERT(noexcept(views::take_while(as_const(rng), is_less_than<3>)) == is_noexcept);
 
-        STATIC_ASSERT(same_as<decltype(as_const(rng) | take_while_even), R>);
-        STATIC_ASSERT(noexcept(as_const(rng) | take_while_even) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(as_const(rng) | closure), R>);
+        STATIC_ASSERT(noexcept(as_const(rng) | closure) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(as_const(rng) | pipeline), pipeline_t<const remove_reference_t<Rng>&>>);
         STATIC_ASSERT(noexcept(as_const(rng) | pipeline) == is_noexcept);
@@ -90,8 +90,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         STATIC_ASSERT(same_as<decltype(views::take_while(as_const(rng), is_less_than<3>)), RC>);
         STATIC_ASSERT(noexcept(views::take_while(as_const(rng), is_less_than<3>)) == is_noexcept);
 
-        STATIC_ASSERT(same_as<decltype(as_const(rng) | take_while_even), RC>);
-        STATIC_ASSERT(noexcept(as_const(rng) | take_while_even) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(as_const(rng) | closure), RC>);
+        STATIC_ASSERT(noexcept(as_const(rng) | closure) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(as_const(rng) | pipeline), pipeline_t<const remove_reference_t<Rng>&>>);
         STATIC_ASSERT(noexcept(as_const(rng) | pipeline) == is_noexcept);
@@ -104,8 +104,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         STATIC_ASSERT(same_as<decltype(views::take_while(move(rng), is_less_than<3>)), R>);
         STATIC_ASSERT(noexcept(views::take_while(move(rng), is_less_than<3>)) == is_noexcept);
 
-        STATIC_ASSERT(same_as<decltype(move(rng) | take_while_even), R>);
-        STATIC_ASSERT(noexcept(move(rng) | take_while_even) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(move(rng) | closure), R>);
+        STATIC_ASSERT(noexcept(move(rng) | closure) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(rng) | pipeline), pipeline_t<remove_reference_t<Rng>>>);
         STATIC_ASSERT(noexcept(move(rng) | pipeline) == is_noexcept);
@@ -117,8 +117,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         STATIC_ASSERT(same_as<decltype(views::take_while(move(rng), is_less_than<3>)), RS>);
         STATIC_ASSERT(noexcept(views::take_while(move(rng), is_less_than<3>)) == is_noexcept);
 
-        STATIC_ASSERT(same_as<decltype(move(rng) | take_while_even), RS>);
-        STATIC_ASSERT(noexcept(move(rng) | take_while_even) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(move(rng) | closure), RS>);
+        STATIC_ASSERT(noexcept(move(rng) | closure) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(rng) | pipeline), pipeline_t<remove_reference_t<Rng>>>);
         STATIC_ASSERT(noexcept(move(rng) | pipeline) == is_noexcept);
@@ -133,8 +133,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         STATIC_ASSERT(same_as<decltype(views::take_while(move(as_const(rng)), is_less_than<3>)), R>);
         STATIC_ASSERT(noexcept(views::take_while(move(as_const(rng)), is_less_than<3>)) == is_noexcept);
 
-        STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | take_while_even), R>);
-        STATIC_ASSERT(noexcept(move(as_const(rng)) | take_while_even) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | closure), R>);
+        STATIC_ASSERT(noexcept(move(as_const(rng)) | closure) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | pipeline), pipeline_t<const remove_reference_t<Rng>>>);
         STATIC_ASSERT(noexcept(move(as_const(rng)) | pipeline) == is_noexcept);
@@ -146,8 +146,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         STATIC_ASSERT(same_as<decltype(views::take_while(move(as_const(rng)), is_less_than<3>)), RS>);
         STATIC_ASSERT(noexcept(views::take_while(move(as_const(rng)), is_less_than<3>)) == is_noexcept);
 
-        STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | take_while_even), RS>);
-        STATIC_ASSERT(noexcept(move(as_const(rng)) | take_while_even) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | closure), RS>);
+        STATIC_ASSERT(noexcept(move(as_const(rng)) | closure) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | pipeline), pipeline_t<const remove_reference_t<Rng>>>);
         STATIC_ASSERT(noexcept(move(as_const(rng)) | pipeline) == is_noexcept);
@@ -283,6 +283,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         const same_as<remove_reference_t<ranges::range_reference_t<V>>*> auto ptr1 = r.data();
         assert(ptr1 == to_address(r.begin()));
     }
+
     if constexpr (CanData<const R&>) {
         const same_as<remove_reference_t<ranges::range_reference_t<const V>>*> auto ptr2 = as_const(r).data();
         assert(ptr2 == to_address(as_const(r).begin()));
@@ -443,15 +444,15 @@ int main() {
 
     // take_while/reverse interaction test
     {
-        auto dwr_pipe = views::take_while(is_less_than<3>) | views::reverse;
-        auto rdw_pipe = views::reverse | views::take_while(is_less_than<3>);
+        auto twr_pipe = views::take_while(is_less_than<3>) | views::reverse;
+        auto rtw_pipe = views::reverse | views::take_while(is_less_than<3>);
 
-        auto r0  = some_ints | dwr_pipe;
+        auto r0  = some_ints | twr_pipe;
         using R0 = decltype(r0);
         STATIC_ASSERT(ranges::bidirectional_range<R0> && ranges::view<R0>);
         assert(ranges::equal(r0, views::reverse(expected_output)));
 
-        auto r1  = some_ints | rdw_pipe;
+        auto r1  = some_ints | rtw_pipe;
         using R1 = decltype(r1);
         STATIC_ASSERT(ranges::bidirectional_range<R1> && ranges::view<R1>);
         assert(ranges::equal(r1, views::reverse(expected_output_reverse)));
