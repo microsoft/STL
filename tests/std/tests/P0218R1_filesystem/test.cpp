@@ -952,19 +952,11 @@ void check_symlink_permissions(const error_code& ec, const wchar_t* const functi
         pass = false;
     }
 
-#ifdef WINDOWS_XP
-    if (ec.value() != 50) {
-        wcerr << L"Expected ERROR_NOT_SUPPORTED from " << function_id << L" but it returned " << ec.message().c_str()
-              << L"\n";
-        pass = false;
-    }
-#else // ^^^ WINDOWS_XP ^^^ // vvv !WINDOWS_XP vvv
     if (ec.value() != 1314) {
         wcerr << L"Expected ERROR_PRIVILEGE_NOT_HELD from " << function_id << L" but it returned "
               << ec.message().c_str() << L"\n";
         pass = false;
     }
-#endif // WINDOWS_XP
 
     wcerr << L"Warning: could not test " << function_id
           << L" due to symlink creation failure, do you have admin rights?\n";
@@ -1565,12 +1557,7 @@ void test_canonical() {
 
     // test that canonical on a directory is not an error
     (void) canonical(L"."sv, ec); // == canonical(current_path())?
-#ifdef WINDOWS_XP
-    EXPECT(ec.value() == 50 /* ERROR_NOT_SUPPORTED */);
-    EXPECT(ec.category() == system_category());
-#else // ^^^ WINDOWS_XP ^^^ // vvv !WINDOWS_XP vvv
     EXPECT(good(ec));
-#endif // WINDOWS_XP
 
     // test that canonical on an ordinary file returns that file's DOS path
     const auto filename = L"test_canonical.txt"sv;
@@ -1578,10 +1565,6 @@ void test_canonical() {
     EXPECT(good(ec));
     create_file_containing(L"test_canonical.txt", L"Hello world\n");
     const path p(canonical(filename, ec));
-#ifdef WINDOWS_XP
-    EXPECT(ec.value() == 50 /* ERROR_NOT_SUPPORTED */);
-    EXPECT(ec.category() == system_category());
-#else // ^^^ WINDOWS_XP ^^^ // vvv !WINDOWS_XP vvv
     EXPECT(good(ec));
     const auto& text = p.native();
     assert(text.size() > filename.size() + 1);
@@ -1589,7 +1572,6 @@ void test_canonical() {
     const auto diffSize = static_cast<ptrdiff_t>(filename.size());
     EXPECT(*(text.end() - diffSize - 1) == L'\\');
     EXPECT(equal(text.end() - diffSize, text.end(), filename.begin(), filename.end()));
-#endif // WINDOWS_XP
     EXPECT(remove(L"test_canonical.txt", ec));
     EXPECT(good(ec));
 }
@@ -3193,7 +3175,6 @@ void test_lexically_proximate() {
 }
 
 void test_weakly_canonical() {
-#ifndef WINDOWS_XP
     error_code ec;
 
     create_directories(L"test_weakly_canonical/a/b/c"sv, ec);
@@ -3277,7 +3258,6 @@ void test_weakly_canonical() {
 
     remove_all(L"test_weakly_canonical"sv, ec);
     EXPECT(good(ec));
-#endif // WINDOWS_XP
 }
 
 void test_remove() {
@@ -3511,9 +3491,6 @@ void test_permissions() {
         EXPECT(good(ec));
         // try to make the symlink target not readonly
         permissions(linkname, perms::all, perm_options::replace, ec);
-#ifdef WINDOWS_XP
-        EXPECT(bad(ec)); // missing SetFileInformationByHandle
-#else // ^^^ WINDOWS_XP ^^^ // vvv !WINDOWS_XP vvv
         EXPECT(good(ec));
         // symlink unchanged:
         EXPECT(symlink_status(linkname).permissions() == readonlyPerms);
@@ -3521,7 +3498,6 @@ void test_permissions() {
         // target changed:
         EXPECT(status(linkname).permissions() == perms::all);
         EXPECT(good(ec));
-#endif // WINDOWS_XP
     }
 
     permissions(linkname, perms::all, perm_options::replace | perm_options::nofollow, ec);
