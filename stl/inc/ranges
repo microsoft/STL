@@ -827,8 +827,8 @@ namespace ranges {
                 requires (_Choice<_Rng>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Rng&& _Range) const noexcept(_Choice<_Rng>._No_throw) {
                 // clang-format on
-				constexpr _St _Strat = _Choice<_Rng>._Strategy;
-				
+                constexpr _St _Strat = _Choice<_Rng>._Strategy;
+
                 if constexpr (_Strat == _St::_View) {
                     return _STD forward<_Rng>(_Range);
                 } else if constexpr (_Strat == _St::_Ref) {
@@ -2192,8 +2192,9 @@ namespace ranges {
                 constexpr _St _Strat = _Choice<_Rng>._Strategy;
 
                 if constexpr _Strat == _St::_Base) {
-                    return _STD forward<_Rng>(_Range).base();
-                } else if constexpr (_Strat == _St::_Subrange_unsized) {
+                        return _STD forward<_Rng>(_Range).base();
+                    }
+                else if constexpr (_Strat == _St::_Subrange_unsized) {
                     return subrange{_Range.end().base(), _Range.begin().base()};
                 } else if constexpr (_Strat == _St::_Subrange_sized) {
                     return subrange{_Range.end().base(), _Range.begin().base(), _Range.size()};
