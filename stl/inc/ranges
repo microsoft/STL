@@ -1965,7 +1965,7 @@ namespace ranges {
             return _First;
         }
 
-        _NODISCARD constexpr auto end() noexcept(noexcept(_RANGES end(_Range))) {
+        _NODISCARD constexpr auto end() noexcept(noexcept(_RANGES end(_Range))) /* strengthened*/ {
             return _RANGES end(_Range);
         }
     };
@@ -1986,20 +1986,14 @@ namespace ranges {
                     noexcept(drop_while_view{_STD forward<_Rng>(_Range), *_Pred})) requires requires {
                     drop_while_view{static_cast<_Rng&&>(_Range), *_Pred};
                 }
-                {
-                    // clang-format on
-                    return drop_while_view{_STD forward<_Rng>(_Range), *_Pred};
-                }
+                { return drop_while_view{_STD forward<_Rng>(_Range), *_Pred}; }
 
                 template <viewable_range _Rng>
                 _NODISCARD constexpr auto operator()(_Rng&& _Range) && noexcept(
                     noexcept(drop_while_view{_STD forward<_Rng>(_Range), _STD move(*_Pred)})) requires requires {
                     drop_while_view{static_cast<_Rng&&>(_Range), _STD move(*_Pred)};
                 }
-                {
-                    // clang-format on
-                    return drop_while_view{_STD forward<_Rng>(_Range), _STD move(*_Pred)};
-                }
+                { return drop_while_view{_STD forward<_Rng>(_Range), _STD move(*_Pred)}; }
             };
 
         public:
@@ -2008,10 +2002,7 @@ namespace ranges {
                 noexcept(noexcept(drop_while_view{_STD forward<_Rng>(_Range), _STD move(_Pred)})) requires requires {
                 drop_while_view{static_cast<_Rng&&>(_Range), _STD move(_Pred)};
             }
-            {
-                // clang-format on
-                return drop_while_view{_STD forward<_Rng>(_Range), _STD move(_Pred)};
-            }
+            { return drop_while_view{_STD forward<_Rng>(_Range), _STD move(_Pred)}; }
 
             template <_Copy_constructible_object _Pr>
             _NODISCARD constexpr auto operator()(_Pr _Pred) const noexcept(is_nothrow_move_constructible_v<_Pr>) {
