@@ -528,8 +528,7 @@ void test_main() { // test basic workings of string definitions
     }
 
     {
-        const wchar_t* data = L"abc";
-        STD initializer_list<wchar_t> init(data, data + CSTD wcslen(data));
+        STD initializer_list<wchar_t> init{L'a', L'b', L'c'};
         STD wstring s11(init);
         CHECK_SIZE_T(s11.size(), 3);
         CHECK_INT(s11[2], L'c');
@@ -554,7 +553,7 @@ void test_main() { // test basic workings of string definitions
         CHECK_SIZE_T(s11.size(), 3);
         CHECK_INT(s11[2], L'c');
 
-        CHECK_INT(*s11.insert(s11.begin() + 1, init), data[0]);
+        CHECK_INT(*s11.insert(s11.begin() + 1, init), *init.begin());
         CHECK_SIZE_T(s11.size(), 6);
         CHECK_INT(s11[2], L'b');
 

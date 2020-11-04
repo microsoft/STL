@@ -121,10 +121,10 @@ constexpr bool test_one(Rng&& rng) {
 
         static_assert(same_as<views::all_t<const remove_cvref_t<Rng>>, V>);
         static_assert(same_as<decltype(views::all(move(as_const(rng)))), V>);
-        static_assert(noexcept(views::all(as_const(rng))) == is_noexcept);
+        static_assert(noexcept(views::all(move(as_const(rng)))) == is_noexcept);
 
         static_assert(same_as<decltype(move(as_const(rng)) | views::all), V>);
-        static_assert(noexcept(as_const(rng) | views::all) == is_noexcept);
+        static_assert(noexcept(move(as_const(rng)) | views::all) == is_noexcept);
 
         static_assert(same_as<decltype(move(as_const(rng)) | views::all | views::all | views::all), V>);
         static_assert(noexcept(move(as_const(rng)) | views::all | views::all | views::all) == is_noexcept);
