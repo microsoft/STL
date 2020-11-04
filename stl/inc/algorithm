@@ -6165,7 +6165,7 @@ namespace ranges {
             _Optimistic_temporary_buffer<iter_value_t<_It>> _Temp_buf{_Temp_count};
 
             // _Temp_count + 1 since we work on closed ranges
-            const iter_difference_t<_It> _Total_count = _Temp_count + static_cast<iter_difference_t<_It>>(1);
+            const auto _Total_count = static_cast<iter_difference_t<_It>>(_Temp_count + 1);
             auto _Result = _Stable_partition_common_buffered(_STD move(_First), _STD move(_Last), _STD move(_Pred),
                 _STD move(_Proj), _Total_count, _Temp_buf._Data, _Temp_buf._Capacity);
             return {_STD move(_Result.first), _STD move(_Saved_last)};
@@ -6185,12 +6185,12 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(indirect_unary_predicate<_Pr, projected<_It, _Pj>>);
 
             using _Diff = iter_difference_t<_It>;
-            if (_Count - static_cast<_Diff>(1) <= _Capacity) { // - 1 since we never need to store *_Last
+            if (_Count - 1 <= _Capacity) { // - 1 since we never need to store *_Last
                 _Uninitialized_backout<iter_value_t<_It>*> _Backout{_Temp_ptr};
                 _It _Next = _First;
                 _Backout._Emplace_back(_RANGES iter_move(_First));
                 while (++_First != _Last) {
-                    // test each element, copying to _Temp_ptr if it's in the false range, or
+                    // test each element, moving into the temporary buffer if it's in the false range, or
                     // assigning backwards if it's in the true range
                     if (_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
                         *_Next = _RANGES iter_move(_First);
@@ -6205,12 +6205,11 @@ namespace ranges {
                 ++_Next;
                 // copy back the false range
                 _RANGES _Move_unchecked(_Backout._First, _Backout._Last, _Next);
-                const _Diff _True_distance =
-                    static_cast<_Diff>(_Count - static_cast<_Diff>(_Backout._Last - _Backout._First));
+                const auto _True_distance = static_cast<_Diff>(_Count - (_Backout._Last - _Backout._First));
                 return {_STD move(_Next), _True_distance};
             }
 
-            const _Diff _Mid_offset = _Count >> 1; // note: >= 1 because _Count >= 2
+            const _Diff _Mid_offset = _Count >> 1; // _Mid_offset >= 1 because _Count >= 2
             const _It _Mid          = _RANGES next(_First, _Mid_offset);
             // form [_First, _Left) true range, [_Left, _Mid) false range
             _It _Left              = _Mid;
@@ -6246,8 +6245,8 @@ namespace ranges {
 
                 if (!_STD invoke(_Pred, _STD invoke(_Proj, *_Right))) {
                     // excluded the true range after and including _Mid, invariants reestablished, recurse
-                    const _Diff _Right_count = _Count - _Mid_offset;
-                    const _Diff _Remaining   = _Right_count - _Right_true_count;
+                    const auto _Right_count = static_cast<_Diff>(_Count - _Mid_offset);
+                    const auto _Remaining   = static_cast<_Diff>(_Right_count - _Right_true_count);
                     const auto _High         = _Stable_partition_common_buffered(
                         _Right, _Last, _Pred, _Proj, _Remaining, _Temp_ptr, _Capacity);
                     _Right = _STD move(_High.first);
@@ -7615,8 +7614,8 @@ namespace ranges {
     template <bidirectional_iterator _It>
     void _Rotate_one_right(_It _First, _It _Mid, _It _Last) {
         // exchanges the range [_First, _Mid) with [_Mid, _Last)
-        // pre: distance(_Mid, _Last) is 1
-        const auto _Temp = _RANGES iter_move(_Mid);
+        _STL_INTERNAL_CHECK(_RANGES next(_Mid) == _Last);
+        auto _Temp = _RANGES iter_move(_Mid);
         _RANGES _Move_backward_common(_First, _STD move(_Mid), _STD move(_Last));
         *_First = _STD move(_Temp);
     }
@@ -7624,8 +7623,8 @@ namespace ranges {
     template <bidirectional_iterator _It>
     void _Rotate_one_left(_It _First, _It _Mid, _It _Last) {
         // exchanges the range [_First, _Mid) with [_Mid, _Last)
-        // pre: distance(_First, _Mid) is 1
-        const auto _Temp = _RANGES iter_move(_Mid);
+        _STL_INTERNAL_CHECK(_RANGES next(_First) == _Mid);
+        auto _Temp = _RANGES iter_move(_Mid);
         auto _Result     = _RANGES _Move_unchecked(_STD move(_Mid), _STD move(_Last), _STD move(_First));
         *_Result.out     = _STD move(_Temp);
     }
