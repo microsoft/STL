@@ -698,9 +698,12 @@ namespace ranges {
             template <class _Ty>
                 requires (_Choice<_Ty>._Strategy != _St::_None)
             _NODISCARD constexpr decltype(auto) operator()(_Ty&& _Val) const noexcept(_Choice<_Ty>._No_throw) {
-                if constexpr (_Choice<_Ty>._Strategy == _St::_Custom) {
+
+                constexpr _St _Strat = _Choice<_Ty>._Strategy;
+
+                if constexpr (_Strat == _St::_Custom) {
                     return iter_move(static_cast<_Ty&&>(_Val));
-                } else if constexpr (_Choice<_Ty>._Strategy == _St::_Fallback) {
+                } else if constexpr (_Strat == _St::_Fallback) {
                     using _Ref = decltype(*static_cast<_Ty&&>(_Val));
                     if constexpr (is_lvalue_reference_v<_Ref>) {
                         return _STD move(*static_cast<_Ty&&>(_Val));
@@ -1085,11 +1088,14 @@ namespace ranges {
             template <class _Ty1, class _Ty2>
                 requires (_Choice<_Ty1, _Ty2>._Strategy != _St::_None)
             constexpr void operator()(_Ty1&& _Val1, _Ty2&& _Val2) const noexcept(_Choice<_Ty1, _Ty2>._No_throw) {
-                if constexpr (_Choice<_Ty1, _Ty2>._Strategy == _St::_Custom) {
+
+                constexpr _St _Strat = _Choice<_Ty1, _Ty2>._Strategy;
+
+                if constexpr (_Strat == _St::_Custom) {
                     iter_swap(static_cast<_Ty1&&>(_Val1), static_cast<_Ty2&&>(_Val2));
-                } else if constexpr (_Choice<_Ty1, _Ty2>._Strategy == _St::_Swap) {
+                } else if constexpr (_Strat == _St::_Swap) {
                     _RANGES swap(*static_cast<_Ty1&&>(_Val1), *static_cast<_Ty2&&>(_Val2));
-                } else if constexpr (_Choice<_Ty1, _Ty2>._Strategy == _St::_Exchange) {
+                } else if constexpr (_Strat == _St::_Exchange) {
                     *static_cast<_Ty1&&>(_Val1) =
                         _Iter_exchange_move(static_cast<_Ty2&&>(_Val2), static_cast<_Ty1&&>(_Val1));
                 } else {
@@ -2399,11 +2405,14 @@ namespace ranges {
             template <_Should_range_access _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
-                if constexpr (_Choice<_Ty&>._Strategy == _St::_Array) {
+
+                constexpr _St _Strat = _Choice<_Ty&>._Strategy;
+
+                if constexpr (_Strat == _St::_Array) {
                     return _Val;
-                } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Member) {
+                } else if constexpr (_Strat == _St::_Member) {
                     return _Val.begin();
-                } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Non_member) {
+                } else if constexpr (_Strat == _St::_Non_member) {
                     return begin(_Val);
                 } else {
                     static_assert(_Always_false<_Ty>, "Should be unreachable");
@@ -2462,9 +2471,12 @@ namespace ranges {
             template <_Should_range_access _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
-                if constexpr (_Choice<_Ty&>._Strategy == _St::_Member) {
+
+                constexpr _St _Strat = _Choice<_Ty&>._Strategy;
+
+                if constexpr (_Strat == _St::_Member) {
                     return _Val._Unchecked_begin();
-                } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Unwrap) {
+                } else if constexpr (_Strat == _St::_Unwrap) {
                     return _Get_unwrapped(_RANGES begin(_Val));
                 } else {
                     static_assert(_Always_false<_Ty>, "Should be unreachable");
@@ -2534,12 +2546,15 @@ namespace ranges {
             template <_Should_range_access _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
-                if constexpr (_Choice<_Ty&>._Strategy == _St::_Array) {
+
+                constexpr _St _Strat = _Choice<_Ty&>._Strategy;
+
+                if constexpr (_Strat == _St::_Array) {
                     // extent_v<remove_reference_t<_Ty&>> reuses specializations from _Choose
                     return _Val + extent_v<remove_reference_t<_Ty&>>;
-                } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Member) {
+                } else if constexpr (_Strat == _St::_Member) {
                     return _Val.end();
-                } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Non_member) {
+                } else if constexpr (_Strat == _St::_Non_member) {
                     return end(_Val);
                 } else {
                     static_assert(_Always_false<_Ty>, "should be unreachable");
@@ -2595,9 +2610,12 @@ namespace ranges {
             template <_Should_range_access _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
-                if constexpr (_Choice<_Ty&>._Strategy == _St::_Member) {
+
+                constexpr _St _Strat = _Choice<_Ty&>._Strategy;
+
+                if constexpr (_Strat == _St::_Member) {
                     return _Val._Unchecked_end();
-                } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Unwrap) {
+                } else if constexpr (_Strat == _St::_Unwrap) {
                     return _Get_unwrapped(_RANGES end(_Val));
                 } else {
                     static_assert(_Always_false<_Ty>, "Should be unreachable");
@@ -2730,11 +2748,14 @@ namespace ranges {
             template <_Should_range_access _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
-                if constexpr (_Choice<_Ty&>._Strategy == _St::_Member) {
+
+                constexpr _St _Strat = _Choice<_Ty&>._Strategy;
+
+                if constexpr (_Strat == _St::_Member) {
                     return _Val.rbegin();
-                } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Non_member) {
+                } else if constexpr (_Strat == _St::_Non_member) {
                     return rbegin(_Val);
-                } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Make_reverse) {
+                } else if constexpr (_Strat == _St::_Make_reverse) {
                     return _STD make_reverse_iterator(_RANGES end(_Val));
                 } else {
                     static_assert(_Always_false<_Ty>, "should be unreachable");
@@ -2801,11 +2822,14 @@ namespace ranges {
             template <_Should_range_access _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
-                if constexpr (_Choice<_Ty&>._Strategy == _St::_Member) {
+
+                constexpr _St _Strat = _Choice<_Ty&>._Strategy;
+
+                if constexpr (_Strat == _St::_Member) {
                     return _Val.rend();
-                } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Non_member) {
+                } else if constexpr (_Strat == _St::_Non_member) {
                     return rend(_Val);
-                } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Make_reverse) {
+                } else if constexpr (_Strat == _St::_Make_reverse) {
                     return _STD make_reverse_iterator(_RANGES begin(_Val));
                 } else {
                     static_assert(_Always_false<_Ty>, "should be unreachable");
@@ -2918,14 +2942,17 @@ namespace ranges {
             template <class _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
-                if constexpr (_Choice<_Ty&>._Strategy == _St::_Array) {
+
+                constexpr _St _Strat = _Choice<_Ty&>._Strategy;
+
+                if constexpr (_Strat == _St::_Array) {
                     // extent_v<remove_cvref_t<_Ty&>> reuses specializations from _Choose
                     return extent_v<remove_cvref_t<_Ty&>>;
-                } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Member) {
+                } else if constexpr (_Strat == _St::_Member) {
                     return _Val.size();
-                } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Non_member) {
+                } else if constexpr (_Strat == _St::_Non_member) {
                     return size(_Val);
-                } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Subtract) {
+                } else if constexpr (_Strat == _St::_Subtract) {
                     const auto _Delta = _RANGES end(_Val) - _RANGES begin(_Val);
                     return static_cast<_Make_unsigned_like_t<remove_cv_t<decltype(_Delta)>>>(_Delta);
                 } else {
@@ -2991,11 +3018,14 @@ namespace ranges {
             template <class _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
             _NODISCARD constexpr bool operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
-                if constexpr (_Choice<_Ty&>._Strategy == _St::_Member) {
+
+                constexpr _St _Strat = _Choice<_Ty&>._Strategy;
+
+                if constexpr (_Strat == _St::_Member) {
                     return static_cast<bool>(_Val.empty());
-                } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Size) {
+                } else if constexpr (_Strat == _St::_Size) {
                     return _RANGES size(_Val) == 0;
-                } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Compare) {
+                } else if constexpr (_Strat == _St::_Compare) {
                     return static_cast<bool>(_RANGES begin(_Val) == _RANGES end(_Val));
                 } else {
                     static_assert(_Always_false<_Ty>, "should be unreachable");
@@ -3051,9 +3081,12 @@ namespace ranges {
             template <_Should_range_access _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
-                if constexpr (_Choice<_Ty&>._Strategy == _St::_Member) {
+
+                constexpr _St _Strat = _Choice<_Ty&>._Strategy;
+
+                if constexpr (_Strat == _St::_Member) {
                     return _Val.data();
-                } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Address) {
+                } else if constexpr (_Strat == _St::_Address) {
                     return _STD to_address(_RANGES begin(_Val));
                 } else {
                     static_assert(_Always_false<_Ty>, "should be unreachable");
