@@ -19,7 +19,7 @@
 
 #include <atomic>
 #include <chrono>
-#include <limits.h>
+#include <climits>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)

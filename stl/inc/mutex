@@ -14,7 +14,7 @@
 #endif // _M_CEE_PURE
 
 #include <chrono>
-#include <stdlib.h>
+#include <cstdlib>
 #include <system_error>
 #include <thread>
 #include <utility>
