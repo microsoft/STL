@@ -94,16 +94,11 @@ struct _Optimistic_temporary_buffer { // temporary storage with _alloca-like att
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-attributes"
-#endif // __clang__
-
     // STRUCT TEMPLATE in_fun_result
     template <class _In, class _Fun>
     struct in_fun_result {
-        [[no_unique_address]] _In in;
-        [[no_unique_address]] _Fun fun;
+        /* [[no_unique_address]] */ _In in;
+        /* [[no_unique_address]] */ _Fun fun;
 
         template <_Convertible_from<const _In&> _IIn, _Convertible_from<const _Fun&> _FFun>
         constexpr operator in_fun_result<_IIn, _FFun>() const& {
@@ -119,8 +114,8 @@ namespace ranges {
     // STRUCT TEMPLATE in_in_result
     template <class _In1, class _In2>
     struct in_in_result {
-        [[no_unique_address]] _In1 in1;
-        [[no_unique_address]] _In2 in2;
+        /* [[no_unique_address]] */ _In1 in1;
+        /* [[no_unique_address]] */ _In2 in2;
 
         template <_Convertible_from<const _In1&> _IIn1, _Convertible_from<const _In2&> _IIn2>
         constexpr operator in_in_result<_IIn1, _IIn2>() const& {
@@ -136,9 +131,9 @@ namespace ranges {
     // STRUCT TEMPLATE in_in_out_result
     template <class _In1, class _In2, class _Out>
     struct in_in_out_result {
-        [[no_unique_address]] _In1 in1;
-        [[no_unique_address]] _In2 in2;
-        [[no_unique_address]] _Out out;
+        /* [[no_unique_address]] */ _In1 in1;
+        /* [[no_unique_address]] */ _In2 in2;
+        /* [[no_unique_address]] */ _Out out;
 
         template <_Convertible_from<const _In1&> _IIn1, _Convertible_from<const _In2&> _IIn2,
             _Convertible_from<const _Out&> _OOut>
@@ -155,9 +150,9 @@ namespace ranges {
     // STRUCT TEMPLATE in_out_out_result
     template <class _In, class _Out1, class _Out2>
     struct in_out_out_result {
-        [[no_unique_address]] _In in;
-        [[no_unique_address]] _Out1 out1;
-        [[no_unique_address]] _Out2 out2;
+        /* [[no_unique_address]] */ _In in;
+        /* [[no_unique_address]] */ _Out1 out1;
+        /* [[no_unique_address]] */ _Out2 out2;
 
         template <_Convertible_from<const _In&> _IIn, _Convertible_from<const _Out1&> _OOut1,
             _Convertible_from<const _Out2&> _OOut2>
@@ -174,8 +169,8 @@ namespace ranges {
     // STRUCT TEMPLATE min_max_result
     template <class _Ty>
     struct min_max_result {
-        [[no_unique_address]] _Ty min;
-        [[no_unique_address]] _Ty max;
+        /* [[no_unique_address]] */ _Ty min;
+        /* [[no_unique_address]] */ _Ty max;
 
         template <_Convertible_from<const _Ty&> _Ty2>
         constexpr operator min_max_result<_Ty2>() const& {
@@ -191,7 +186,7 @@ namespace ranges {
     // STRUCT TEMPLATE in_found_result
     template <class _In>
     struct in_found_result {
-        [[no_unique_address]] _In in;
+        /* [[no_unique_address]] */ _In in;
         bool found;
 
         template <_Convertible_from<const _In&> _IIn>
@@ -291,10 +286,6 @@ namespace ranges {
             return _RANGES next(_Mid, _Uend(_Range));
         }
     }
-
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif // __clang__
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
@@ -3938,16 +3929,19 @@ namespace ranges {
             _Adl_verify_range(_First, _Last);
             auto _UFirst      = _Get_unwrapped(_STD move(_First));
             const auto _ULast = _Get_unwrapped(_STD move(_Last));
-            if constexpr (_Fill_memset_is_safe<decltype(_UFirst), _Ty>) {
-#ifdef __cpp_lib_is_constant_evaluated
-                if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
-                {
+            if (!_STD is_constant_evaluated()) {
+                if constexpr (_Fill_memset_is_safe<decltype(_UFirst), _Ty>) {
                     const auto _Distance = static_cast<size_t>(_ULast - _UFirst);
                     _Fill_memset(_UFirst, _Value, _Distance);
-                    _UFirst += _Distance;
-                    _Seek_wrapped(_First, _UFirst);
+                    _Seek_wrapped(_First, _UFirst + _Distance);
                     return _First;
+                } else if constexpr (_Fill_zero_memset_is_safe<decltype(_UFirst), _Ty>) {
+                    if (_Is_all_bits_zero(_Value)) {
+                        const auto _Distance = static_cast<size_t>(_ULast - _UFirst);
+                        _Fill_zero_memset(_UFirst, _Distance);
+                        _Seek_wrapped(_First, _UFirst + _Distance);
+                        return _First;
+                    }
                 }
             }
 
@@ -3978,15 +3972,17 @@ namespace ranges {
         constexpr _It operator()(_It _First, iter_difference_t<_It> _Count, const _Ty& _Value) const {
             if (_Count > 0) {
                 auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
-                if constexpr (_Fill_memset_is_safe<decltype(_UFirst), _Ty>) {
-#ifdef __cpp_lib_is_constant_evaluated
-                    if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
-                    {
+                if (!_STD is_constant_evaluated()) {
+                    if constexpr (_Fill_memset_is_safe<decltype(_UFirst), _Ty>) {
                         _Fill_memset(_UFirst, _Value, static_cast<size_t>(_Count));
-                        _UFirst += _Count;
-                        _Seek_wrapped(_First, _UFirst); // no need to move since _UFirst is a pointer
+                        _Seek_wrapped(_First, _UFirst + _Count); // no need to move since _UFirst is a pointer
                         return _First;
+                    } else if constexpr (_Fill_zero_memset_is_safe<decltype(_UFirst), _Ty>) {
+                        if (_Is_all_bits_zero(_Value)) {
+                            _Fill_zero_memset(_UFirst, static_cast<size_t>(_Count));
+                            _Seek_wrapped(_First, _UFirst + _Count); // no need to move since _UFirst is a pointer
+                            return _First;
+                        }
                     }
                 }
 

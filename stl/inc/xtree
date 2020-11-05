@@ -905,10 +905,10 @@ public:
     }
 
     _Tree(_Tree&& _Right)
-        : _Mypair(
-            _One_then_variadic_args_t{}, _Right.key_comp(), _One_then_variadic_args_t{}, _STD move(_Right._Getal())) {
+        : _Mypair(_One_then_variadic_args_t{}, _Right.key_comp(), // intentionally copy comparator, see LWG-2227
+            _One_then_variadic_args_t{}, _STD move(_Right._Getal())) {
         _Alloc_sentinel_and_proxy();
-        _Swap_val(_Right);
+        _Swap_val_excluding_comp(_Right);
     }
 
 private:
@@ -925,7 +925,8 @@ private:
 
 public:
     _Tree(_Tree&& _Right, const allocator_type& _Al)
-        : _Mypair(_One_then_variadic_args_t{}, _Right.key_comp(), _One_then_variadic_args_t{}, _Al) {
+        : _Mypair(_One_then_variadic_args_t{}, _Right.key_comp(), // intentionally copy comparator, see LWG-2227
+            _One_then_variadic_args_t{}, _Al) {
         if _CONSTEXPR_IF (!_Alnode_traits::is_always_equal::value) {
             if (_Getal() != _Right._Getal()) {
                 _Different_allocator_move_construct(_STD move(_Right));
@@ -934,15 +935,15 @@ public:
         }
 
         _Alloc_sentinel_and_proxy();
-        _Swap_val(_Right);
+        _Swap_val_excluding_comp(_Right);
     }
 
 private:
     void _Move_assign(_Tree& _Right, _Equal_allocators) noexcept(is_nothrow_move_assignable_v<key_compare>) {
         clear();
-        _Getcomp() = _Right._Getcomp();
+        _Getcomp() = _Right._Getcomp(); // intentionally copy comparator, see LWG-2227
         _Pocma(_Getal(), _Right._Getal());
-        _Swap_val(_Right);
+        _Swap_val_excluding_comp(_Right);
     }
 
     void _Move_assign(_Tree& _Right, _Propagate_allocators) {
@@ -950,14 +951,14 @@ private:
             _Move_assign(_Right, _Equal_allocators{});
         } else {
             clear();
-            _Getcomp()            = _Right._Getcomp();
+            _Getcomp()            = _Right._Getcomp(); // intentionally copy comparator, see LWG-2227
             auto&& _Alproxy       = _GET_PROXY_ALLOCATOR(_Alnode, _Getal());
             auto&& _Right_alproxy = _GET_PROXY_ALLOCATOR(_Alnode, _Right._Getal());
             _Container_proxy_ptr<_Alty> _Proxy(_Right_alproxy, _Leave_proxy_unbound{});
-            const auto _Scary   = _Get_scary();
-            auto _Right_scary   = _Right._Get_scary();
-            const auto _Newhead = _STD exchange(_Right_scary->_Myhead, _Node::_Buyheadnode(_Right._Getal()));
-            const auto _Newsize = _STD exchange(_Right_scary->_Mysize, size_type{0});
+            const auto _Scary       = _Get_scary();
+            const auto _Right_scary = _Right._Get_scary();
+            const auto _Newhead     = _STD exchange(_Right_scary->_Myhead, _Node::_Buyheadnode(_Right._Getal()));
+            const auto _Newsize     = _STD exchange(_Right_scary->_Mysize, size_type{0});
             _Scary->_Erase_head(_Getal());
             _Pocma(_Getal(), _Right._Getal());
             _Scary->_Myhead = _Newhead;
@@ -972,7 +973,7 @@ private:
             _Move_assign(_Right, _Equal_allocators{});
         } else {
             clear();
-            _Getcomp() = _Right._Getcomp();
+            _Getcomp() = _Right._Getcomp(); // intentionally copy comparator, see LWG-2227
             _Copy(_Right, _Move_tag{});
         }
     }
@@ -987,11 +988,10 @@ public:
     }
 
 private:
-    void _Swap_val(_Tree& _Right) { // swap contents with _Right, equal allocators
-        const auto _Scary = _Get_scary();
-        auto _Right_scary = _Right._Get_scary();
+    void _Swap_val_excluding_comp(_Tree& _Right) { // swap contents (except comparator) with _Right, equal allocators
+        const auto _Scary       = _Get_scary();
+        const auto _Right_scary = _Right._Get_scary();
         _Scary->_Swap_proxy_and_iterators(*_Right_scary);
-        _Swap_adl(_Getcomp(), _Right._Getcomp());
         _Swap_adl(_Scary->_Myhead, _Right_scary->_Myhead);
         _STD swap(_Scary->_Mysize, _Right_scary->_Mysize);
     }
@@ -1575,7 +1575,8 @@ public:
     void swap(_Tree& _Right) noexcept(_Is_nothrow_swappable<key_compare>::value) /* strengthened */ {
         if (this != _STD addressof(_Right)) {
             _Pocs(_Getal(), _Right._Getal());
-            _Swap_val(_Right);
+            _Swap_val_excluding_comp(_Right);
+            _Swap_adl(_Getcomp(), _Right._Getcomp());
         }
     }
 

@@ -156,6 +156,22 @@ private:
     _Thrd_t _Thr;
 };
 
+template <class _Rep, class _Period>
+_NODISCARD auto _To_absolute_time(const chrono::duration<_Rep, _Period>& _Rel_time) noexcept {
+    constexpr auto _Zero                 = chrono::duration<_Rep, _Period>::zero();
+    const auto _Now                      = chrono::steady_clock::now();
+    decltype(_Now + _Rel_time) _Abs_time = _Now; // return common type
+    if (_Rel_time > _Zero) {
+        constexpr auto _Forever = (chrono::steady_clock::time_point::max)();
+        if (_Abs_time < _Forever - _Rel_time) {
+            _Abs_time += _Rel_time;
+        } else {
+            _Abs_time = _Forever;
+        }
+    }
+    return _Abs_time;
+}
+
 namespace this_thread {
     _NODISCARD thread::id get_id() noexcept;
 
@@ -183,7 +199,7 @@ namespace this_thread {
 
     template <class _Rep, class _Period>
     void sleep_for(const chrono::duration<_Rep, _Period>& _Rel_time) {
-        sleep_until(chrono::steady_clock::now() + _Rel_time);
+        sleep_until(_To_absolute_time(_Rel_time));
     }
 } // namespace this_thread
 

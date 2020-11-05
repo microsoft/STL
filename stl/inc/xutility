@@ -21,7 +21,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-#if (defined(_M_IX86) || defined(_M_X64) && !defined(_M_ARM64EC)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID)
+#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID) && !defined(_M_ARM64EC)
 #define _USE_STD_VECTOR_ALGORITHMS 1
 #else
 #define _USE_STD_VECTOR_ALGORITHMS 0
@@ -119,11 +119,29 @@ struct _Get_rebind_alias<_Ty, _Other, void_t<typename _Ty::template rebind<_Othe
     using type = typename _Ty::template rebind<_Other>;
 };
 
+// FUNCTION TEMPLATE _Voidify_iter
+template <class _Iter>
+_NODISCARD void* _Voidify_iter(_Iter _It) noexcept {
+#if _HAS_IF_CONSTEXPR
+    if constexpr (is_pointer_v<_Iter>) {
+        return const_cast<void*>(static_cast<const volatile void*>(_It));
+    } else
+#endif // _HAS_IF_CONSTEXPR
+    {
+        return const_cast<void*>(static_cast<const volatile void*>(_STD addressof(*_It)));
+    }
+}
+
 // FUNCTION TEMPLATE _Construct_in_place
 template <class _Ty, class... _Types>
 void _Construct_in_place(_Ty& _Obj, _Types&&... _Args) noexcept(is_nothrow_constructible_v<_Ty, _Types...>) {
-    ::new (const_cast<void*>(static_cast<const volatile void*>(_STD addressof(_Obj))))
-        _Ty(_STD forward<_Types>(_Args)...);
+    ::new (_Voidify_iter(_STD addressof(_Obj))) _Ty(_STD forward<_Types>(_Args)...);
+}
+
+// FUNCTION TEMPLATE _Default_construct_in_place
+template <class _Ty>
+void _Default_construct_in_place(_Ty& _Obj) noexcept(is_nothrow_default_constructible_v<_Ty>) {
+    ::new (_Voidify_iter(_STD addressof(_Obj))) _Ty;
 }
 
 // STRUCT TEMPLATE pointer_traits
@@ -474,21 +492,11 @@ concept _Cpp17_input_iterator = _Cpp17_iterator<_It>
         requires signed_integral<typename incrementable_traits<_It>::difference_type>;
     };
 
-#if 1 // TRANSITION, VSO-1002863
-template <class _Ty>
-using _Member_iterator_category = typename _Ty::iterator_category;
-#endif // TRANSITION, VSO-1002863
-
 template <class _It>
     requires (!_Has_iter_types<_It> && _Cpp17_iterator<_It> && !_Cpp17_input_iterator<_It>
         // Implements the proposed resolution of LWG-3283:
-#if 1 // TRANSITION, VSO-1002863
-        && (!requires { typename _It::iterator_category; }
-            || derived_from<_Member_iterator_category<_It>, output_iterator_tag>))
-#else // ^^^ workaround / no workaround vvv
         && (!requires { typename _It::iterator_category; }
             || derived_from<typename _It::iterator_category, output_iterator_tag>))
-#endif // TRANSITION, VSO-1002863
 struct _Iterator_traits_base<_It> {
     using iterator_category = output_iterator_tag;
     using difference_type =
@@ -654,13 +662,6 @@ struct iterator_traits<_Ty*> {
 
 // CUSTOMIZATION POINT OBJECT ranges::iter_move
 namespace ranges {
-    // STRUCT TEMPLATE _Choice_t
-    template <class _Ty>
-    struct _Choice_t {
-        _Ty _Strategy  = _Ty{};
-        bool _No_throw = false;
-    };
-
     namespace _Iter_move {
         void iter_move(); // Block unqualified name lookup
 
@@ -1477,10 +1478,6 @@ _NODISCARD constexpr _Ty* _Get_unwrapped_n(_Ty* const _Src, _Diff) {
 }
 #endif // _HAS_IF_CONSTEXPR
 
-template <class _Iter>
-using _Unwrapped_n_t =
-    _Remove_cvref_t<decltype(_Get_unwrapped_n(_STD declval<_Iter>(), _Iter_diff_t<_Remove_cvref_t<_Iter>>{}))>;
-
 // FUNCTION TEMPLATE _Seek_wrapped
 template <class _Iter, class _UIter, class = void>
 _INLINE_VAR constexpr bool _Wrapped_seekable_v = false;
@@ -1494,20 +1491,20 @@ _INLINE_VAR constexpr bool
 template <class _Iter, class _UIter>
 constexpr void _Seek_wrapped(_Iter& _It, _UIter&& _UIt) {
     if constexpr (_Wrapped_seekable_v<_Iter, _UIter>) {
-        _It._Seek_to(static_cast<_UIter&&>(_UIt));
+        _It._Seek_to(_STD forward<_UIter>(_UIt));
     } else {
-        _It = static_cast<_UIter&&>(_UIt);
+        _It = _STD forward<_UIter>(_UIt);
     }
 }
 #else // ^^^ _HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
 template <class _Iter, class _UIter, enable_if_t<_Wrapped_seekable_v<_Iter, _UIter>, int> = 0>
 constexpr void _Seek_wrapped(_Iter& _It, _UIter&& _UIt) {
-    _It._Seek_to(static_cast<_UIter&&>(_UIt));
+    _It._Seek_to(_STD forward<_UIter>(_UIt));
 }
 
 template <class _Iter, class _UIter, enable_if_t<!_Wrapped_seekable_v<_Iter, _UIter>, int> = 0>
 constexpr void _Seek_wrapped(_Iter& _It, _UIter&& _UIt) {
-    _It = static_cast<_UIter&&>(_UIt);
+    _It = _STD forward<_UIter>(_UIt);
 }
 
 template <class _Ty>
@@ -2064,11 +2061,6 @@ public:
 protected:
     _BidIt current{};
 };
-
-#ifdef __cpp_lib_concepts
-template <class _From, class _To>
-concept _Implicitly_convertible_to = is_convertible_v<_From, _To>;
-#endif // __cpp_lib_concepts
 
 template <class _BidIt1, class _BidIt2>
 _NODISCARD _CONSTEXPR17 bool operator==(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right)
@@ -4805,10 +4797,31 @@ _INLINE_VAR constexpr bool _Fill_memset_is_safe = conjunction_v<is_scalar<_Ty>,
 template <class _FwdIt, class _Ty>
 _INLINE_VAR constexpr bool _Fill_memset_is_safe<_FwdIt, _Ty, false> = false;
 
+template <class _FwdIt, class _Ty, bool = is_pointer_v<_FwdIt>>
+_INLINE_VAR constexpr bool _Fill_zero_memset_is_safe =
+    conjunction_v<is_scalar<_Ty>, is_scalar<_Iter_value_t<_FwdIt>>, negation<is_member_pointer<_Iter_value_t<_FwdIt>>>,
+        negation<is_volatile<remove_reference_t<_Iter_ref_t<_FwdIt>>>>, is_assignable<_Iter_ref_t<_FwdIt>, const _Ty&>>;
+
+template <class _FwdIt, class _Ty>
+_INLINE_VAR constexpr bool _Fill_zero_memset_is_safe<_FwdIt, _Ty, false> = false;
+
 template <class _DestTy, class _Ty>
 void _Fill_memset(_DestTy* const _Dest, const _Ty _Val, const size_t _Count) {
     _DestTy _Dest_val = _Val; // implicitly convert (a cast would suppress warnings); also handles _DestTy being bool
     _CSTD memset(_Dest, static_cast<unsigned char>(_Dest_val), _Count);
+}
+
+template <class _DestTy>
+void _Fill_zero_memset(_DestTy* const _Dest, const size_t _Count) {
+    _CSTD memset(_Dest, 0, _Count * sizeof(_DestTy));
+}
+
+template <class _Ty>
+_NODISCARD bool _Is_all_bits_zero(const _Ty& _Val) {
+    // checks if scalar type has all bits set to zero
+    _STL_INTERNAL_STATIC_ASSERT(is_scalar_v<_Ty> && !is_member_pointer_v<_Ty>);
+    constexpr _Ty _Zero{};
+    return _CSTD memcmp(&_Val, &_Zero, sizeof(_Ty)) == 0;
 }
 
 #if _HAS_IF_CONSTEXPR
@@ -4821,13 +4834,18 @@ _CONSTEXPR20 void fill(const _FwdIt _First, const _FwdIt _Last, const _Ty& _Val)
     } else {
         auto _UFirst      = _Get_unwrapped(_First);
         const auto _ULast = _Get_unwrapped(_Last);
-        if constexpr (_Fill_memset_is_safe<decltype(_UFirst), _Ty>) {
 #ifdef __cpp_lib_is_constant_evaluated
-            if (!_STD is_constant_evaluated())
+        if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
-            {
+        {
+            if constexpr (_Fill_memset_is_safe<decltype(_UFirst), _Ty>) {
                 _Fill_memset(_UFirst, _Val, static_cast<size_t>(_ULast - _UFirst));
                 return;
+            } else if constexpr (_Fill_zero_memset_is_safe<decltype(_UFirst), _Ty>) {
+                if (_Is_all_bits_zero(_Val)) {
+                    _Fill_zero_memset(_UFirst, static_cast<size_t>(_ULast - _UFirst));
+                    return;
+                }
             }
         }
 
@@ -4882,15 +4900,20 @@ _CONSTEXPR20 _OutIt fill_n(_OutIt _Dest, const _Diff _Count_raw, const _Ty& _Val
             return _Last;
         } else {
             auto _UDest = _Get_unwrapped_n(_Dest, _Count);
-            if constexpr (_Fill_memset_is_safe<decltype(_UDest), _Ty>) {
 #ifdef __cpp_lib_is_constant_evaluated
-                if (!_STD is_constant_evaluated())
+            if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
-                {
+            {
+                if constexpr (_Fill_memset_is_safe<decltype(_UDest), _Ty>) {
                     _Fill_memset(_UDest, _Val, static_cast<size_t>(_Count));
-                    _UDest += _Count;
-                    _Seek_wrapped(_Dest, _UDest);
+                    _Seek_wrapped(_Dest, _UDest + _Count);
                     return _Dest;
+                } else if constexpr (_Fill_zero_memset_is_safe<decltype(_UDest), _Ty>) {
+                    if (_Is_all_bits_zero(_Val)) {
+                        _Fill_zero_memset(_UDest, static_cast<size_t>(_Count));
+                        _Seek_wrapped(_Dest, _UDest + _Count);
+                        return _Dest;
+                    }
                 }
             }
 
