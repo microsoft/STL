@@ -1759,7 +1759,7 @@ protected:
         _Nodeptr _Newroot = _Scary->_Myhead; // point at nil node
 
         if (!_Rootnode->_Isnil) { // copy or move a node, then any subtrees
-            typename is_same<key_type, value_type>::type _Is_set;
+            bool_constant<is_same_v<key_type, value_type>> _Is_set;
             _Nodeptr _Pnode = _Copy_or_move(_Rootnode->_Myval, _Movefl, _Is_set);
             _Pnode->_Parent = _Wherenode;
             _Pnode->_Color  = _Rootnode->_Color;
