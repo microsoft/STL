@@ -55,7 +55,7 @@ class STLTest(Test):
         missing_required_features = self.getMissingRequiredFeatures()
         if missing_required_features:
             msg = ', '.join(missing_required_features)
-            return Result(UNSUPPORTED,  "Test requires the following unavailable features: %s" % msg)
+            return Result(UNSUPPORTED, "Test requires the following unavailable features: %s" % msg)
 
         unsupported_features = self.getUnsupportedFeatures()
         if unsupported_features:
