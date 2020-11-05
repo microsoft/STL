@@ -106,6 +106,7 @@ STATIC_ASSERT(test_cpo(ranges::views::filter));
 STATIC_ASSERT(test_cpo(ranges::views::reverse));
 STATIC_ASSERT(test_cpo(ranges::views::single));
 STATIC_ASSERT(test_cpo(ranges::views::take));
+STATIC_ASSERT(test_cpo(ranges::views::take_while));
 STATIC_ASSERT(test_cpo(ranges::views::transform));
 
 void test_cpo_ambiguity() {
