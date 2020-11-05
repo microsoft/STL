@@ -101,6 +101,7 @@ STATIC_ASSERT(test_cpo(ranges::views::all));
 STATIC_ASSERT(test_cpo(ranges::views::common));
 STATIC_ASSERT(test_cpo(ranges::views::counted));
 STATIC_ASSERT(test_cpo(ranges::views::drop));
+STATIC_ASSERT(test_cpo(ranges::views::drop_while));
 STATIC_ASSERT(test_cpo(ranges::views::filter));
 STATIC_ASSERT(test_cpo(ranges::views::reverse));
 STATIC_ASSERT(test_cpo(ranges::views::single));

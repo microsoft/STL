@@ -349,6 +349,8 @@ tests\P0896R4_views_common
 tests\P0896R4_views_counted
 tests\P0896R4_views_counted_death
 tests\P0896R4_views_drop
+tests\P0896R4_views_drop_while
+tests\P0896R4_views_drop_while_death
 tests\P0896R4_views_empty
 tests\P0896R4_views_filter
 tests\P0896R4_views_filter_death
