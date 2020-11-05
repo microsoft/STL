@@ -397,7 +397,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [CMake]: https://cmake.org/download
 [Code of Conduct FAQ]: https://opensource.microsoft.com/codeofconduct/faq/
 [Compiler Explorer]: https://godbolt.org
-[Developer Community]: https://developercommunity.visualstudio.com/spaces/62/index.html
+[Developer Community]: https://aka.ms/feedback/report?space=62
 [Discord server]: https://discord.gg/XWanNww
 [How To Build With A Native Tools Command Prompt]: #how-to-build-with-a-native-tools-command-prompt
 [How To Build With The Visual Studio IDE]: #how-to-build-with-the-visual-studio-ide
@@ -409,7 +409,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [N4868]: https://wg21.link/n4868
 [NOTICE.txt]: NOTICE.txt
 [Ninja]: https://ninja-build.org
-[Pipelines]: https://dev.azure.com/vclibs/STL/_build/latest?definitionId=2&branchName=master
+[Pipelines]: https://dev.azure.com/vclibs/STL/_build
 [Python]: https://www.python.org/downloads/windows/
 [Roadmap]: https://github.com/microsoft/STL/wiki/Roadmap
 [Status Chart]: https://microsoft.github.io/STL/
