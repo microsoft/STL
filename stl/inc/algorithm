@@ -6217,21 +6217,20 @@ namespace ranges {
             _Diff _Left_true_count = _Mid_offset;
             for (;;) { // skip over the trailing false range before _Mid
                 --_Left;
+                --_Left_true_count;
                 if (_First == _Left) { // the entire left range is false
-                    --_Left_true_count; // to exclude *_First
                     break;
                 }
 
                 if (_STD invoke(_Pred, _STD invoke(_Proj, *_Left))) {
                     // excluded the false range before _Mid, invariants reestablished, recurse
+                    ++_Left_true_count; // to include *_First
                     const auto _Low = _Stable_partition_common_buffered(
                         _First, _STD move(_Left), _Pred, _Proj, _Left_true_count, _Temp_ptr, _Capacity);
                     _Left            = _STD move(_Low.first);
                     _Left_true_count = _Low.second;
                     break;
                 }
-
-                --_Left_true_count;
             }
 
             // form [_Mid, _Right) true range, [_Right, next(_Last)) false range
@@ -7775,8 +7774,7 @@ namespace ranges {
         if (_Count1 <= _Count2) {
             const iter_difference_t<_It> _Count1n = _Count1 >> 1; // shift for codegen
             _It _Firstn                           = _RANGES next(_First, _Count1n);
-            _It _Lastn =
-                _RANGES _Lower_bound_unchecked(_Mid, _Count1, _STD invoke(_Proj, *_Firstn), _Pred, _Proj);
+            _It _Lastn = _RANGES _Lower_bound_unchecked(_Mid, _Count1, _STD invoke(_Proj, *_Firstn), _Pred, _Proj);
             const auto _Count2n = _RANGES distance(_Mid, _Lastn);
             _RANGES _Buffered_inplace_merge_divide_and_conquer2(_STD move(_First), _STD move(_Mid), _STD move(_Last),
                 _Count1, _Count2, _Temp_ptr, _Capacity, _Pred, _Proj, _STD move(_Firstn), _STD move(_Lastn), _Count1n,
@@ -7784,8 +7782,7 @@ namespace ranges {
         } else {
             const iter_difference_t<_It> _Count2n = _Count2 >> 1; // shift for codegen
             _It _Lastn                            = _RANGES next(_Mid, _Count2n);
-            _It _Firstn =
-                _RANGES _Upper_bound_unchecked(_First, _Count2, _STD invoke(_Proj, *_Lastn), _Pred, _Proj);
+            _It _Firstn = _RANGES _Upper_bound_unchecked(_First, _Count2, _STD invoke(_Proj, *_Lastn), _Pred, _Proj);
             const auto _Count1n = _RANGES distance(_First, _Firstn);
             _RANGES _Buffered_inplace_merge_divide_and_conquer2(_STD move(_First), _STD move(_Mid), _STD move(_Last),
                 _Count1, _Count2, _Temp_ptr, _Capacity, _Pred, _Proj, _STD move(_Firstn), _STD move(_Lastn), _Count1n,
@@ -8511,7 +8508,7 @@ void _Stable_sort_unchecked(const _BidIt _First, const _BidIt _Last, const _Iter
     if (_Count <= _ISORT_MAX) {
         _Insertion_sort_unchecked(_First, _Last, _Pred); // small
     } else { // sort halves and merge
-        const auto _Half_count      = static_cast<_Diff>(_Count / 2);
+        const auto _Half_count      = _Count >> 1;
         const auto _Half_count_ceil = static_cast<_Diff>(_Count - _Half_count);
         const _BidIt _Mid           = _STD next(_First, _Half_count_ceil);
         if (_Half_count_ceil <= _Capacity) { // temp buffer big enough, sort each half using buffer
@@ -8705,18 +8702,18 @@ namespace ranges {
             _STL_INTERNAL_CHECK(_RANGES distance(_First, _Last) == _Count);
 
             _Uninitialized_backout<iter_value_t<_It>*> _Backout{_Dest};
-            const auto _Backout_end            = _Dest + _Count;
-            iter_difference_t<_It> _Chunk_size = _Isort_max<_It>;
-            while (_Chunk_size < _Count) {
-                _Count -= _Chunk_size;
-                const auto _Chunk2 = (_STD min)(_Chunk_size, _Count);
+            const auto _Backout_end = _Dest + _Count;
+            while (_Isort_max<_It> < _Count) {
+                _Count -= _Isort_max<_It>;
+                const auto _Chunk2 = (_STD min)(_Isort_max<_It>, _Count);
                 _Count -= _Chunk2;
 
-                const auto _Mid1  = _First + _Chunk_size;
-                const auto _Last1 = _Mid1 + _Chunk2;
-                const auto _Last2 = _Backout._Last + _Chunk_size + _Chunk2;
-                _Backout._Last = _Uninitialized_merge_move(_First, _Mid1, _Last1, _Backout._Last, _Last2, _Pred, _Proj);
-                _First         = _Last1;
+                auto _Mid1     = _First + _Isort_max<_It>;
+                auto _Last1    = _Mid1 + _Chunk2;
+                auto _Last2    = _Backout._Last + _Isort_max<_It> + _Chunk2;
+                _Backout._Last = _Uninitialized_merge_move(
+                    _STD move(_First), _STD move(_Mid1), _Last1, _Backout._Last, _Last2, _Pred, _Proj);
+                _First = _STD move(_Last1);
             }
 
             // copy partial last chunk
@@ -8732,6 +8729,7 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
             _STL_INTERNAL_CHECK(_First != _Mid);
             _STL_INTERNAL_CHECK(_Mid != _Last);
+            _STL_INTERNAL_CHECK(_Last - _First <= _Dest_last - _Dest);
 
             _Uninitialized_backout<iter_value_t<_It>*> _Backout{_Dest};
             _It _Next = _Mid;
@@ -8774,10 +8772,10 @@ namespace ranges {
                 const auto _Right_chunk_size = (_STD min)(_Chunk_size, _Count);
                 _Count -= _Right_chunk_size;
 
-                const auto _Mid1  = _First + _Chunk_size;
-                const auto _Last1 = _Mid1 + _Right_chunk_size;
-                _Dest             = _Merge_move_to_buffer(_First, _Mid1, _Last1, _Dest, _Pred, _Proj);
-                _First            = _Last1;
+                auto _Mid1  = _First + _Chunk_size;
+                auto _Last1 = _Mid1 + _Right_chunk_size;
+                _Dest       = _Merge_move_to_buffer(_STD move(_First), _STD move(_Mid1), _Last1, _Dest, _Pred, _Proj);
+                _First      = _STD move(_Last1);
             }
 
             // copy partial last chunk
@@ -8792,6 +8790,7 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
             _STL_INTERNAL_CHECK(_First != _Mid);
             _STL_INTERNAL_CHECK(_Mid != _Last);
+            _STL_INTERNAL_CHECK(_Last - _First <= _Dest_last - _Dest);
 
             _Uninitialized_backout<iter_value_t<_It>*> _Backout{_Dest};
             _It _Next = _Mid;
@@ -8834,10 +8833,10 @@ namespace ranges {
                 const auto _Right_chunk_size = (_STD min)(_Chunk_size, _Count);
                 _Count -= _Right_chunk_size;
 
-                const auto _Mid1  = _First + _Chunk_size;
-                const auto _Last1 = _Mid1 + _Right_chunk_size;
-                _Dest             = _Merge_move_from_buffer(_First, _Mid1, _Last1, _Dest, _Pred, _Proj);
-                _First            = _Last1;
+                auto _Mid1  = _First + _Chunk_size;
+                auto _Last1 = _Mid1 + _Right_chunk_size;
+                _Dest       = _Merge_move_from_buffer(_STD move(_First), _STD move(_Mid1), _Last1, _Dest, _Pred, _Proj);
+                _First      = _STD move(_Last1);
             }
 
             // copy partial last chunk
@@ -8847,11 +8846,12 @@ namespace ranges {
         template <class _It, class _Pr, class _Pj>
         _NODISCARD static _It _Merge_move_from_buffer(iter_value_t<_It>* _First, iter_value_t<_It>* _Mid,
             iter_value_t<_It>* _Last, _It _Dest, _Pr _Pred, _Pj _Proj) {
-            // move merging adjacent ranges [_First, _Mid) and [_Mid, _Last) to [_Dest_first, _Dest_last)
+            // move merging adjacent ranges [_First, _Mid) and [_Mid, _Last) to _Dest
             _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
             _STL_INTERNAL_CHECK(_First != _Mid);
             _STL_INTERNAL_CHECK(_Mid != _Last);
+            _STL_INTERNAL_CHECK(_Last - _First <= _Dest_last - _Dest);
 
             iter_value_t<_It>* _Next = _Mid;
             for (;;) {
