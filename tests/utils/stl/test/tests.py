@@ -60,7 +60,7 @@ class STLTest(Test):
         unsupported_features = self.getUnsupportedFeatures()
         if unsupported_features:
             msg = ', '.join(unsupported_features)
-            return Result(UNSUPPORTED, "Test does not support the following features and/or targets: %s" %msg)
+            return Result(UNSUPPORTED, "Test does not support the following features and/or targets: %s" % msg)
 
         if not self.isWithinFeatureLimits():
             msg = ', '.join(self.config.limit_to_features)
