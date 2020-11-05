@@ -448,7 +448,7 @@ inline long double stold(const wstring& _Str, size_t* _Idx = nullptr) { // conve
     return _Ans;
 }
 
-// HELPERS FOR to_string AND to_wstring
+// HELPERS FOR to_string AND to_wstring AND operator<<(duration)
 template <class _Elem, class _UTy>
 _Elem* _UIntegral_to_buff(_Elem* _RNext, _UTy _UVal) { // format _UVal into buffer *ending at* _RNext
     static_assert(is_unsigned_v<_UTy>, "_UTy must be unsigned");
