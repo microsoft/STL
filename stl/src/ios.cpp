@@ -32,9 +32,7 @@ void __CLRCALL_PURE_OR_CDECL ios_base::_Ios_base_dtor(ios_base* _This) { // dest
 
     _This->_Tidy();
 
-    if (_This->_Ploc != nullptr) {
-        delete _This->_Ploc;
-    }
+    delete _This->_Ploc;
 }
 
 void __CLRCALL_PURE_OR_CDECL ios_base::_Addstd(ios_base* _This) { // add standard stream to destructor list

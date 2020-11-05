@@ -5,17 +5,17 @@
 #include <istream>
 #include <stdexcept>
 
-struct bad_buf : public std::streambuf {
+struct bad_buf : std::streambuf {
     bad_buf() {
         throw std::runtime_error("throw in constructor!");
     }
 };
 
-struct custom_stream : public std::istream {
+struct custom_stream : std::istream {
     custom_stream() : std::istream(new bad_buf{}) {}
 };
 
-int main(int, char**) {
+int main() {
 
     {
         // GH-1105 std::istream destructor should not crash if custom streambuf implementation throws.
