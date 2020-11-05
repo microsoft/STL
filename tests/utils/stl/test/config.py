@@ -129,6 +129,12 @@ class Configuration:
 
         if self.target_arch == 'x86':
             self.config.available_features.add('edg')
+            self.config.available_features.add('arch_ia32')
+            self.config.available_features.add('arch_avx2')
+        elif self.target_arch == 'x64':
+            self.config.available_features.add('arch_avx2')
+        elif self.target_arch == 'arm':
+            self.config.available_features.add('arch_vfpv4')
 
     def configure_test_source_root(self):
         test_source_root = self.get_lit_conf('test_source_root', None)

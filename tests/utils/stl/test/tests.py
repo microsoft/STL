@@ -43,6 +43,12 @@ class STLTest(Test):
             elif flag[1:] == 'BE':
                 self.requires.append('edg') # available for x86, see config.py
                 use_edg = True
+            elif flag[1:] == 'arch:AVX2':
+                self.requires.append('arch_avx2') # available for x86 and x64, see config.py
+            elif flag[1:] == 'arch:IA32':
+                self.requires.append('arch_ia32') # available for x86, see config.py
+            elif flag[1:] == 'arch:VFPv4':
+                self.requires.append('arch_vfpv4') # available for arm, see config.py
 
         if not use_edg and self.cxx.edg_drop is not None:
             self.skipped = True

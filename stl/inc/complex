@@ -40,6 +40,11 @@ struct _C_ldouble_complex {
 #define _RE 0
 #define _IM 1
 
+_EXTERN_C
+_NODISCARD double __stdcall __std_math_log_hypot(double, double) noexcept;
+_NODISCARD float __stdcall __std_math_log_hypotf(float, float) noexcept;
+_END_EXTERN_C
+
 _STD_BEGIN
 using _Dcomplex_value = _CSTD _C_double_complex;
 using _Fcomplex_value = _CSTD _C_float_complex;
@@ -66,8 +71,12 @@ public:
         return (numeric_limits<_Ty>::max)();
     }
 
+    static constexpr _Ty _Flt_norm_min() {
+        return (numeric_limits<_Ty>::min)() > 0 ? (numeric_limits<_Ty>::min)() : 0;
+    }
+
     static _Ty _Abs(_Ty _Left) {
-        return static_cast<_Ty>(_Left < 0 ? -_Left : _Left);
+        return static_cast<_Ty>(_Signbit(_Left) ? -_Left : _Left);
     }
 
     static _Ty _Cosh(_Ty _Left, _Ty _Right) { // return cosh(_Left) * _Right
@@ -75,7 +84,7 @@ public:
     }
 
     static _Ty _Copysign(_Ty _Magnitude, _Ty _Sign) {
-        return static_cast<_Ty>(_Sign < 0 ? -_Abs(_Magnitude) : _Abs(_Magnitude));
+        return static_cast<_Ty>(_Signbit(_Sign) ? -_Abs(_Magnitude) : _Abs(_Magnitude));
     }
 
     static short _Exp(_Ty* _Pleft, _Ty _Right, short _Exponent) { // compute exp(*_Pleft) * _Right * 2 ^ _Exponent
@@ -106,7 +115,7 @@ public:
     }
 
     static bool _Signbit(_Ty _Left) {
-        return _Left < 0;
+        return (_STD signbit)(static_cast<double>(_Left));
     }
 
     static _Ty _Sinh(_Ty _Left, _Ty _Right) { // return sinh(_Left) * _Right
@@ -198,6 +207,10 @@ public:
 
     static constexpr _Ty _Flt_max() {
         return (numeric_limits<long double>::max)();
+    }
+
+    static constexpr _Ty _Flt_norm_min() {
+        return (numeric_limits<long double>::min)();
     }
 
     static _Ty _Abs(_Ty _Left) {
@@ -340,6 +353,10 @@ public:
         return (numeric_limits<double>::max)();
     }
 
+    static constexpr _Ty _Flt_norm_min() {
+        return (numeric_limits<double>::min)();
+    }
+
     static _Ty _Abs(_Ty _Left) {
         // testing _Left < 0 would be incorrect when _Left is -0.0
         return _CSTD fabs(_Left);
@@ -473,6 +490,10 @@ public:
 
     static constexpr _Ty _Flt_max() {
         return (numeric_limits<float>::max)();
+    }
+
+    static constexpr _Ty _Flt_norm_min() {
+        return (numeric_limits<float>::min)();
     }
 
     static _Ty _Abs(_Ty _Left) {
@@ -1524,10 +1545,13 @@ _NODISCARD complex<_Ty> exp(const complex<_Ty>& _Left) {
 
 // FUNCTION TEMPLATE _Fabs
 template <class _Ty>
-_Ty _Fabs(const complex<_Ty>& _Left, int* _Pexp) { // return magnitude and scale factor
+_Ty _Fabs(const complex<_Ty>& _Left, int* _Pexp) { // Used by sqrt(), return magnitude and scale factor.
+                                                   // Returns a non-zero even integer in *_Pexp when _Left is finite
+                                                   // and non-zero.
+                                                   // Returns 0 in *_Pexp when _Left is zero, infinity, or NaN.
     *_Pexp  = 0;
-    _Ty _Av = real(_Left);
-    _Ty _Bv = imag(_Left);
+    _Ty _Av = _Ctraits<_Ty>::_Abs(_STD real(_Left));
+    _Ty _Bv = _Ctraits<_Ty>::_Abs(_STD imag(_Left));
 
     if (_Ctraits<_Ty>::_Isinf(_Av) || _Ctraits<_Ty>::_Isinf(_Bv)) {
         return _Ctraits<_Ty>::_Infv(); // at least one component is INF
@@ -1536,13 +1560,8 @@ _Ty _Fabs(const complex<_Ty>& _Left, int* _Pexp) { // return magnitude and scale
     } else if (_Ctraits<_Ty>::_Isnan(_Bv)) {
         return _Bv; // imaginary component is NaN
     } else { // neither component is NaN or INF
-        _Av = _Ctraits<_Ty>::_Abs(_Av);
-        _Bv = _Ctraits<_Ty>::_Abs(_Bv);
-
         if (_Av < _Bv) { // ensure that |_Bv| <= |_Av|
-            _Ty _Tmp = _Av;
-            _Av      = _Bv;
-            _Bv      = _Tmp;
+            _STD swap(_Av, _Bv);
         }
 
         if (_Av == 0) {
@@ -1550,16 +1569,28 @@ _Ty _Fabs(const complex<_Ty>& _Left, int* _Pexp) { // return magnitude and scale
         }
 
         if (1 <= _Av) {
-            *_Pexp = 2;
-            _Av    = _Av * static_cast<_Ty>(0.25);
-            _Bv    = _Bv * static_cast<_Ty>(0.25);
+            *_Pexp = 4;
+            _Av    = _Av * static_cast<_Ty>(0.0625);
+            _Bv    = _Bv * static_cast<_Ty>(0.0625);
         } else {
-            *_Pexp = -2;
-            _Av    = _Av * 4;
-            _Bv    = _Bv * 4;
+            constexpr _Ty _Flt_eps = _Ctraits<_Ty>::_Flt_eps();
+            // TRANSITION, workaround for non floating point _Ty
+            constexpr _Ty _Leg_tiny = _Flt_eps == 0 ? _Ty{0} : 2 * _Ctraits<_Ty>::_Flt_norm_min() / _Flt_eps;
+
+            if (_Av < _Leg_tiny) {
+                constexpr int _Exponent = -2 * numeric_limits<_Ty>::digits;
+
+                *_Pexp = _Exponent;
+                _Av    = _Ctraits<_Ty>::ldexp(_Av, -_Exponent);
+                _Bv    = _Ctraits<_Ty>::ldexp(_Bv, -_Exponent);
+            } else {
+                *_Pexp = -2;
+                _Av    = _Av * 4;
+                _Bv    = _Bv * 4;
+            }
         }
 
-        _Ty _Tmp = _Av - _Bv;
+        const _Ty _Tmp = _Av - _Bv;
         if (_Tmp == _Av) {
             return _Av; // _Bv unimportant
         } else if (_Bv < _Tmp) { // use simple approximation
@@ -1580,32 +1611,20 @@ _Ty _Fabs(const complex<_Ty>& _Left, int* _Pexp) { // return magnitude and scale
 
 // FUNCTION TEMPLATE log
 template <class _Ty>
+_NODISCARD _Ty _Log_abs(const complex<_Ty>& _Left) noexcept { // for double, long double, and non floating point types
+    return static_cast<_Ty>(
+        __std_math_log_hypot(static_cast<double>(_STD real(_Left)), static_cast<double>(_STD imag(_Left))));
+}
+
+_NODISCARD inline float _Log_abs(const complex<float>& _Left) noexcept {
+    return __std_math_log_hypotf(_STD real(_Left), _STD imag(_Left));
+}
+
+template <class _Ty>
 _NODISCARD complex<_Ty> log(const complex<_Ty>& _Left) {
-    _Ty _Theta = _Ctraits<_Ty>::atan2(imag(_Left), real(_Left)); // get phase
-
-    if (_Ctraits<_Ty>::_Isnan(_Theta)) {
-        return complex<_Ty>(_Theta, _Theta); // real or imag is NaN
-    } else { // use 1 1/2 precision to preserve bits
-        constexpr _Ty _Cm = static_cast<_Ty>(22713.0L / 32768.0L);
-        constexpr _Ty _Cl = static_cast<_Ty>(1.4286068203094172321214581765680755e-6L);
-        int _Leftexp;
-        _Ty _Rho = _Fabs(_Left, &_Leftexp); // get magnitude and scale factor
-
-        _Ty _Leftn = static_cast<_Ty>(_Leftexp);
-
-        _Ty _Real;
-        if (_Rho == 0) {
-            _Real = -_Ctraits<_Ty>::_Infv(); // log(0) == -INF
-        } else if (_Ctraits<_Ty>::_Isinf(_Rho)) {
-            _Real = _Rho; // log(INF) == INF
-        } else {
-            _Real = static_cast<_Ty>(_Ctraits<_Ty>::log(_Rho)); // These casts are TRANSITION, DevCom-1093507
-            _Real += static_cast<_Ty>(_Leftn * _Cl);
-            _Real += static_cast<_Ty>(_Leftn * _Cm);
-        }
-
-        return complex<_Ty>(_Real, _Theta);
-    }
+    const _Ty _Log_abs_v = _STD _Log_abs(_Left); // get logarithm of magnitude
+    const _Ty _Theta     = _Ctraits<_Ty>::atan2(_STD imag(_Left), _STD real(_Left)); // get phase
+    return complex<_Ty>(_Log_abs_v, _Theta);
 }
 
 // FUNCTION TEMPLATE pow
@@ -1678,7 +1697,7 @@ _NODISCARD complex<_Ty> sqrt(const complex<_Ty>& _Left) {
                 return complex<_Ty>(_Ctraits<_Ty>::_Infv(), _Im); // (any, +/-Inf)
             } else if (_Ctraits<_Ty>::_Isnan(_Im)) {
                 if (_Re < 0) {
-                    return complex<_Ty>(_Im, _Re); // (-Inf, NaN)
+                    return complex<_Ty>(_Ctraits<_Ty>::_Abs(_Im), _Ctraits<_Ty>::_Copysign(_Re, _Im)); // (-Inf, NaN)
                 } else {
                     return _Left; // (+Inf, NaN)
                 }
