@@ -158,10 +158,10 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         constexpr bool is_noexcept = is_nothrow_copy_constructible_v<V> && !is_subrange<V>;
 
         STATIC_ASSERT(same_as<decltype(views::take(move(as_const(rng)), 4)), M>);
-        STATIC_ASSERT(noexcept(views::take(as_const(rng), 4)) == is_noexcept);
+        STATIC_ASSERT(noexcept(views::take(move(as_const(rng)), 4)) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | take_four), M>);
-        STATIC_ASSERT(noexcept(as_const(rng) | take_four) == is_noexcept);
+        STATIC_ASSERT(noexcept(move(as_const(rng)) | take_four) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | pipeline), pipeline_t<const remove_reference_t<Rng>>>);
         STATIC_ASSERT(noexcept(move(as_const(rng)) | pipeline) == is_noexcept);
@@ -183,9 +183,6 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     const bool is_empty = ranges::empty(expected);
 
     // Validate deduction guide
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1159442
-    (void) 42;
-#endif // TRANSITION, DevCom-1159442
     same_as<take_view<V>> auto r = take_view{forward<Rng>(rng), 4};
     using R                      = decltype(r);
     STATIC_ASSERT(ranges::view<R>);
@@ -460,9 +457,9 @@ constexpr void move_only_test() {
 }
 
 constexpr void output_range_test() {
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-938163
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-1132704
     if (!is_constant_evaluated())
-#endif // TRANSITION, VSO-938163
+#endif // TRANSITION, VSO-1132704
     {
         using R = test::range<output_iterator_tag, int, test::Sized::no, test::CanDifference::no, test::Common::no,
             test::CanCompare::no, test::ProxyRef::yes, test::CanView::yes, test::Copyability::move_only>;
@@ -470,10 +467,18 @@ constexpr void output_range_test() {
         STATIC_ASSERT(same_as<decltype(views::take(R{some_writable_ints}, 99999)), ranges::take_view<R>>);
 
         // How do I implement "Fill up to n elements in {output range} with {value}"?
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-1217687
+        ranges::fill(views::take(R{some_writable_ints}, 99999), 42);
+#else // ^^^ workaround / no workaround vvv
         ranges::fill(R{some_writable_ints} | views::take(99999), 42);
+#endif // TRANSITION, VSO-1217687
         assert(ranges::equal(some_writable_ints, initializer_list<int>{42, 42, 42, 42}));
 
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-1217687
+        ranges::fill(views::take(R{some_writable_ints}, 3), 13);
+#else // ^^^ workaround / no workaround vvv
         ranges::fill(R{some_writable_ints} | views::take(3), 13);
+#endif // TRANSITION, VSO-1217687
         assert(ranges::equal(some_writable_ints, initializer_list<int>{13, 13, 13, 42}));
     }
 }

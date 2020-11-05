@@ -244,13 +244,43 @@ class STLTestFormat:
             output_dir = test.getOutputDir()
             source_path = Path(test.getSourcePath())
 
+            flags = []
+            isense_rsp_path = None
+            if test.cxx.edg_drop is not None:
+                isense_rsp_path = output_dir / (output_base + '.isense.rsp')
+                flags.extend(['/dE--write-isense-rsp', '/dE' + str(isense_rsp_path)])
+
             cmd, out_files, shared.exec_file = \
                 test.cxx.executeBasedOnFlagsCmd([source_path], output_dir,
                                                 shared.exec_dir, output_base,
-                                                [], [], [])
+                                                flags, [], [])
 
             yield TestStep(cmd, shared.exec_dir, [source_path],
                            test.cxx.compile_env)
+
+            if isense_rsp_path is not None:
+                with open(isense_rsp_path) as f:
+                    cmd = [line.strip() for line in f]
+                cmd[0] = test.cxx.edg_drop
+
+                # cpfecl translates /Fo into --import_dir, but that is not
+                # used in the same way by upstream EDG.
+                try:
+                    index = cmd.index('--import_dir')
+                    cmd.pop(index)
+                    cmd.pop(index)
+                except ValueError:
+                    pass
+
+                # --print_diagnostics is not recognized by upstream EDG.
+                try:
+                    index = cmd.index('--print_diagnostics')
+                    cmd.pop(index)
+                except ValueError:
+                    pass
+
+                yield TestStep(cmd, shared.exec_dir, [source_path],
+                               test.cxx.compile_env)
 
     def getTestSteps(self, test, lit_config, shared):
         if shared.exec_file is not None:

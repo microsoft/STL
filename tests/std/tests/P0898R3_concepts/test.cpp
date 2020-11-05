@@ -876,7 +876,7 @@ namespace test_integral_concepts {
 
     STATIC_ASSERT(test_integral<unsigned char, is_signed::no>());
     STATIC_ASSERT(test_integral<unsigned short, is_signed::no>());
-    STATIC_ASSERT(test_integral<unsigned, is_signed::no>());
+    STATIC_ASSERT(test_integral<unsigned int, is_signed::no>());
     STATIC_ASSERT(test_integral<unsigned long, is_signed::no>());
     STATIC_ASSERT(test_integral<unsigned long long, is_signed::no>());
 
@@ -934,7 +934,7 @@ namespace test_floating_point {
 
     STATIC_ASSERT(!test_floating_point<unsigned char>());
     STATIC_ASSERT(!test_floating_point<unsigned short>());
-    STATIC_ASSERT(!test_floating_point<unsigned>());
+    STATIC_ASSERT(!test_floating_point<unsigned int>());
     STATIC_ASSERT(!test_floating_point<unsigned long>());
     STATIC_ASSERT(!test_floating_point<unsigned long long>());
 
@@ -2403,7 +2403,7 @@ namespace test_boolean_testable {
     };
     STATIC_ASSERT(_Boolean_testable<MutatingBoolConversion>);
 
-    template <unsigned Select> // values in [0, Archetype_max) select a requirement to violate
+    template <unsigned int Select> // values in [0, Archetype_max) select a requirement to violate
     struct Archetype {
         // clang-format off
         operator bool() const requires (Select != 0); // Archetype<0> is not implicitly convertible to bool
@@ -2448,14 +2448,14 @@ namespace test_equality_comparable {
 
     STATIC_ASSERT(!test<EmptyClass>());
 
-    template <unsigned> // selects one requirement to violate
+    template <unsigned int> // selects one requirement to violate
     struct Archetype {};
 
-    template <unsigned Select>
+    template <unsigned int Select>
     bool operator==(Archetype<Select> const&, Archetype<Select> const&);
     void operator==(Archetype<0> const&, Archetype<0> const&); // Archetype<0> == Archetype<0> is not _Boolean_testable
 
-    template <unsigned Select>
+    template <unsigned int Select>
     bool operator!=(Archetype<Select> const&, Archetype<Select> const&);
     void operator!=(Archetype<1> const&, Archetype<1> const&); // Archetype<1> != Archetype<1> is not _Boolean_testable
 
@@ -2605,31 +2605,31 @@ namespace test_totally_ordered {
     STATIC_ASSERT(!test<std::nullptr_t>());
     STATIC_ASSERT(!test<EmptyClass>());
 
-    constexpr unsigned Archetype_max = 6;
-    template <unsigned> // values in [0, Archetype_max) select a requirement to violate
+    constexpr unsigned int Archetype_max = 6;
+    template <unsigned int> // values in [0, Archetype_max) select a requirement to violate
     struct Archetype {};
 
-    template <unsigned Select>
+    template <unsigned int Select>
     bool operator==(Archetype<Select> const&, Archetype<Select> const&);
     void operator==(Archetype<0> const&, Archetype<0> const&);
 
-    template <unsigned Select>
+    template <unsigned int Select>
     bool operator!=(Archetype<Select> const&, Archetype<Select> const&);
     void operator!=(Archetype<1> const&, Archetype<1> const&);
 
-    template <unsigned Select>
+    template <unsigned int Select>
     bool operator<(Archetype<Select> const&, Archetype<Select> const&);
     void operator<(Archetype<2> const&, Archetype<2> const&);
 
-    template <unsigned Select>
+    template <unsigned int Select>
     bool operator>(Archetype<Select> const&, Archetype<Select> const&);
     void operator>(Archetype<3> const&, Archetype<3> const&);
 
-    template <unsigned Select>
+    template <unsigned int Select>
     bool operator<=(Archetype<Select> const&, Archetype<Select> const&);
     void operator<=(Archetype<4> const&, Archetype<4> const&);
 
-    template <unsigned Select>
+    template <unsigned int Select>
     bool operator>=(Archetype<Select> const&, Archetype<Select> const&);
     void operator>=(Archetype<5> const&, Archetype<5> const&);
 
@@ -3334,29 +3334,29 @@ namespace test_relation {
         operator bool() const;
     };
 
-    template <unsigned>
+    template <unsigned int>
     struct A {};
     // clang-format off
-    template <unsigned U>
+    template <unsigned int U>
         requires (0 < U)
     Bool operator==(A<U>, A<U>); // A<0> == A<0> is invalid
     // clang-format on
     STATIC_ASSERT(!test<Equivalent, A<0>>());
     STATIC_ASSERT(test<Equivalent, A<1>>());
 
-    template <unsigned>
+    template <unsigned int>
     struct B {};
     void operator==(B<1>, B<1>); // B<1> == B<1> does not model _Boolean_testable
-    template <unsigned U>
+    template <unsigned int U>
     bool operator==(B<U>, B<U>);
     STATIC_ASSERT(test<Equivalent, B<0>>());
     STATIC_ASSERT(!test<Equivalent, B<1>>());
 
     // clang-format off
-    template <unsigned I>
+    template <unsigned int I>
         requires (2 != I)
     bool operator==(A<I>, B<I>); // A<2> == B<2> rewrites to B<2> == A<2>
-    template <unsigned I>
+    template <unsigned int I>
         requires (3 != I)
     bool operator==(B<I>, A<I>); // B<3> == A<3> rewrites to A<3> == B<3>
     // clang-format on
@@ -3367,12 +3367,12 @@ namespace test_relation {
     STATIC_ASSERT(test<Equivalent, A<3>, B<3>>());
     STATIC_ASSERT(test<Equivalent, A<4>, B<4>>());
 
-    template <unsigned I>
+    template <unsigned int I>
     struct C {};
     enum E : bool { No, Yes };
     E operator==(C<0>&, C<0>&); // const C<0> == const C<0> is invalid
     // clang-format off
-    template <unsigned I>
+    template <unsigned int I>
         requires (0 != I)
     E operator==(C<I>, C<I>);
     // clang-format on
@@ -3397,23 +3397,23 @@ namespace test_uniform_random_bit_generator {
     STATIC_ASSERT(uniform_random_bit_generator<std::random_device>);
 
     struct NoCall {
-        static constexpr unsigned min() {
+        static constexpr unsigned int min() {
             return 0;
         }
-        static constexpr unsigned max() {
+        static constexpr unsigned int max() {
             return 42;
         }
     };
     STATIC_ASSERT(!uniform_random_bit_generator<NoCall>);
 
     struct NoLvalueCall {
-        static constexpr unsigned min() {
+        static constexpr unsigned int min() {
             return 0;
         }
-        static constexpr unsigned max() {
+        static constexpr unsigned int max() {
             return 42;
         }
-        unsigned operator()() &&;
+        unsigned int operator()() &&;
     };
     STATIC_ASSERT(!uniform_random_bit_generator<NoLvalueCall>);
 
@@ -3429,21 +3429,21 @@ namespace test_uniform_random_bit_generator {
     STATIC_ASSERT(!uniform_random_bit_generator<SignedValue>);
 
     struct NoMin {
-        static constexpr unsigned max() {
+        static constexpr unsigned int max() {
             return 42;
         }
-        unsigned operator()();
+        unsigned int operator()();
     };
     STATIC_ASSERT(!uniform_random_bit_generator<NoMin>);
 
     struct NonConstexprMin {
-        static unsigned min() {
+        static unsigned int min() {
             return 0;
         }
-        static constexpr unsigned max() {
+        static constexpr unsigned int max() {
             return 42;
         }
-        unsigned operator()();
+        unsigned int operator()();
     };
     STATIC_ASSERT(!uniform_random_bit_generator<NonConstexprMin>);
 
@@ -3451,85 +3451,85 @@ namespace test_uniform_random_bit_generator {
         static constexpr int min() {
             return 0;
         }
-        static constexpr unsigned max() {
+        static constexpr unsigned int max() {
             return 42;
         }
-        unsigned operator()();
+        unsigned int operator()();
     };
     STATIC_ASSERT(!uniform_random_bit_generator<BadMin>);
 
     struct NoMax {
-        static constexpr unsigned min() {
+        static constexpr unsigned int min() {
             return 0;
         }
-        unsigned operator()();
+        unsigned int operator()();
     };
     STATIC_ASSERT(!uniform_random_bit_generator<NoMax>);
 
     struct NonConstexprMax {
-        static constexpr unsigned min() {
+        static constexpr unsigned int min() {
             return 0;
         }
-        static unsigned max() {
+        static unsigned int max() {
             return 42;
         }
-        unsigned operator()();
+        unsigned int operator()();
     };
     STATIC_ASSERT(!uniform_random_bit_generator<NonConstexprMax>);
 
     struct BadMax {
-        static constexpr unsigned min() {
+        static constexpr unsigned int min() {
             return 0;
         }
         static constexpr int max() {
             return 42;
         }
-        unsigned operator()();
+        unsigned int operator()();
     };
     STATIC_ASSERT(!uniform_random_bit_generator<BadMax>);
 
     struct EmptyRange {
-        static constexpr unsigned min() {
+        static constexpr unsigned int min() {
             return 0;
         }
-        static constexpr unsigned max() {
+        static constexpr unsigned int max() {
             return 0;
         }
-        unsigned operator()();
+        unsigned int operator()();
     };
     STATIC_ASSERT(!uniform_random_bit_generator<EmptyRange>);
 
     struct ReversedRange {
-        static constexpr unsigned min() {
+        static constexpr unsigned int min() {
             return 42;
         }
-        static constexpr unsigned max() {
+        static constexpr unsigned int max() {
             return 0;
         }
-        unsigned operator()();
+        unsigned int operator()();
     };
     STATIC_ASSERT(!uniform_random_bit_generator<ReversedRange>);
 
     struct URBG {
-        static constexpr unsigned min() {
+        static constexpr unsigned int min() {
             return 0;
         }
-        static constexpr unsigned max() {
+        static constexpr unsigned int max() {
             return 42;
         }
-        unsigned operator()();
+        unsigned int operator()();
     };
     STATIC_ASSERT(uniform_random_bit_generator<URBG>);
     STATIC_ASSERT(!uniform_random_bit_generator<const URBG>);
 
     struct ConstURBG {
-        static constexpr unsigned min() {
+        static constexpr unsigned int min() {
             return 0;
         }
-        static constexpr unsigned max() {
+        static constexpr unsigned int max() {
             return 42;
         }
-        unsigned operator()() const;
+        unsigned int operator()() const;
     };
     STATIC_ASSERT(uniform_random_bit_generator<ConstURBG>);
     STATIC_ASSERT(uniform_random_bit_generator<const ConstURBG>);

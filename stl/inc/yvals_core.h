@@ -165,7 +165,6 @@
 // P0718R2 atomic<shared_ptr<T>>, atomic<weak_ptr<T>>
 // P0758R1 is_nothrow_convertible
 // P0768R1 Library Support For The Spaceship Comparison Operator <=>
-//     (partially implemented)
 // P0769R2 shift_left(), shift_right()
 // P0811R3 midpoint(), lerp()
 // P0879R0 constexpr For Swapping Functions
@@ -179,6 +178,7 @@
 // P1001R2 execution::unseq
 // P1006R1 constexpr For pointer_traits<T*>::pointer_to()
 // P1007R3 assume_aligned()
+// P1020R1 Smart Pointer Creation With Default Initialization
 // P1023R0 constexpr For std::array Comparisons
 // P1024R3 Enhancing span Usability
 // P1032R1 Miscellaneous constexpr
@@ -219,6 +219,7 @@
 // P1959R0 Removing weak_equality And strong_equality
 // P1960R0 atomic_ref Cleanup
 // P1964R2 Replacing boolean With boolean-testable
+// P1973R1 Renaming default_init To for_overwrite
 // P1976R2 Explicit Constructors For Fixed-Extent span From Dynamic-Extent Ranges
 // P2091R0 Fixing Issues With Range Access CPOs
 // P2102R0 Making "Implicit Expression Variations" More Explicit
@@ -501,7 +502,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 142
-#define _MSVC_STL_UPDATE  202009L
+#define _MSVC_STL_UPDATE  202010L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #ifdef __EDG__
@@ -1208,13 +1209,19 @@
 #define __cpp_lib_remove_cvref                 201711L
 #define __cpp_lib_semaphore                    201907L
 #define __cpp_lib_shift                        201806L
+#define __cpp_lib_smart_ptr_for_overwrite      202002L
 #define __cpp_lib_span                         202002L
 #define __cpp_lib_ssize                        201902L
 #define __cpp_lib_starts_ends_with             201711L
-#define __cpp_lib_to_address                   201711L
-#define __cpp_lib_to_array                     201907L
-#define __cpp_lib_type_identity                201806L
-#define __cpp_lib_unwrap_ref                   201811L
+
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#define __cpp_lib_three_way_comparison 201711L
+#endif // __cpp_lib_concepts
+
+#define __cpp_lib_to_address    201711L
+#define __cpp_lib_to_array      201907L
+#define __cpp_lib_type_identity 201806L
+#define __cpp_lib_unwrap_ref    201811L
 #endif // _HAS_CXX20
 
 #ifndef _M_CEE

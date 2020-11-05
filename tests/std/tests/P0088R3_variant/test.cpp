@@ -6485,7 +6485,6 @@ namespace msvc {
 
     namespace derived_variant {
         void run_test() {
-#ifndef __EDG__ // TRANSITION, VSO-1178211
             // Extension: std::visit accepts types derived from a specialization of variant.
             {
                 struct my_variant : std::variant<int, char, double> {
@@ -6538,7 +6537,6 @@ namespace msvc {
                 } catch (std::bad_variant_access&) {
                 }
             }
-#endif // TRANSITION, VSO-1178211
         }
     } // namespace derived_variant
 
@@ -6619,10 +6617,10 @@ namespace msvc {
         //
         //===----------------------------------------------------------------------===//
 
-        enum CallType : unsigned { CT_None, CT_NonConst = 1, CT_Const = 2, CT_LValue = 4, CT_RValue = 8 };
+        enum CallType : unsigned int { CT_None, CT_NonConst = 1, CT_Const = 2, CT_LValue = 4, CT_RValue = 8 };
 
         constexpr CallType operator|(CallType LHS, CallType RHS) {
-            return static_cast<CallType>(static_cast<unsigned>(LHS) | static_cast<unsigned>(RHS));
+            return static_cast<CallType>(static_cast<unsigned int>(LHS) | static_cast<unsigned int>(RHS));
         }
 
         struct ForwardingCallObject {
