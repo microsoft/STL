@@ -38,7 +38,7 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
-#include <stdint.h>
+#include <cstdint>
 
 #if !_HAS_CXX17
 #error The contents of <charconv> are only available with C++17. (Also, you should not include this internal header.)

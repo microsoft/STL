@@ -16,7 +16,7 @@
 #if _HAS_EXCEPTIONS
 #include <exception>
 #endif
-#include <stdint.h>
+#include <cstdint>
 #include <type_traits>
 
 #pragma pack(push, _CRT_PACKING)
