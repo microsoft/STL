@@ -6166,8 +6166,8 @@ namespace ranges {
 
             // _Temp_count + 1 since we work on closed ranges
             const auto _Total_count = static_cast<iter_difference_t<_It>>(_Temp_count + 1);
-            auto _Result = _Stable_partition_common_buffered(_STD move(_First), _STD move(_Last), _STD move(_Pred),
-                _STD move(_Proj), _Total_count, _Temp_buf._Data, _Temp_buf._Capacity);
+            auto _Result            = _Stable_partition_common_buffered(
+                _STD move(_First), _STD move(_Last), _Pred, _Proj, _Total_count, _Temp_buf._Data, _Temp_buf._Capacity);
             return {_STD move(_Result.first), _STD move(_Saved_last)};
         }
 
@@ -6247,7 +6247,7 @@ namespace ranges {
                     // excluded the true range after and including _Mid, invariants reestablished, recurse
                     const auto _Right_count = static_cast<_Diff>(_Count - _Mid_offset);
                     const auto _Remaining   = static_cast<_Diff>(_Right_count - _Right_true_count);
-                    const auto _High         = _Stable_partition_common_buffered(
+                    const auto _High        = _Stable_partition_common_buffered(
                         _Right, _Last, _Pred, _Proj, _Remaining, _Temp_ptr, _Capacity);
                     _Right = _STD move(_High.first);
                     _Right_true_count += _High.second;
@@ -7624,9 +7624,9 @@ namespace ranges {
     void _Rotate_one_left(_It _First, _It _Mid, _It _Last) {
         // exchanges the range [_First, _Mid) with [_Mid, _Last)
         _STL_INTERNAL_CHECK(_RANGES next(_First) == _Mid);
-        auto _Temp = _RANGES iter_move(_Mid);
-        auto _Result     = _RANGES _Move_unchecked(_STD move(_Mid), _STD move(_Last), _STD move(_First));
-        *_Result.out     = _STD move(_Temp);
+        auto _Temp   = _RANGES iter_move(_Mid);
+        auto _Result = _RANGES _Move_unchecked(_STD move(_Mid), _STD move(_Last), _STD move(_First));
+        *_Result.out = _STD move(_Temp);
     }
 
     // clang-format off
@@ -7759,8 +7759,8 @@ namespace ranges {
                 _RANGES _Lower_bound_unchecked(_Mid, _Count1, _STD invoke(_Proj, *_Firstn), _Pred, _Proj);
             const auto _Count2n = _RANGES distance(_Mid, _Lastn);
             _RANGES _Buffered_inplace_merge_divide_and_conquer2(_STD move(_First), _STD move(_Mid), _STD move(_Last),
-                _Count1, _Count2, _Temp_ptr, _Capacity, _STD move(_Pred), _STD move(_Proj), _STD move(_Firstn),
-                _STD move(_Lastn), _Count1n, _Count2n);
+                _Count1, _Count2, _Temp_ptr, _Capacity, _Pred, _Proj, _STD move(_Firstn), _STD move(_Lastn), _Count1n,
+                _Count2n);
         } else {
             const iter_difference_t<_It> _Count2n = _Count2 >> 1; // shift for codegen
             const _It _Lastn                      = _RANGES next(_Mid, _Count2n);
@@ -7768,8 +7768,8 @@ namespace ranges {
                 _RANGES _Upper_bound_unchecked(_First, _Count2, _STD invoke(_Proj, *_Lastn), _Pred, _Proj);
             const auto _Count1n = _RANGES distance(_First, _Firstn);
             _RANGES _Buffered_inplace_merge_divide_and_conquer2(_STD move(_First), _STD move(_Mid), _STD move(_Last),
-                _Count1, _Count2, _Temp_ptr, _Capacity, _STD move(_Pred), _STD move(_Proj), _STD move(_Firstn),
-                _STD move(_Lastn), _Count1n, _Count2n);
+                _Count1, _Count2, _Temp_ptr, _Capacity, _Pred, _Proj, _STD move(_Firstn), _STD move(_Lastn), _Count1n,
+                _Count2n);
         }
     }
 
@@ -7822,14 +7822,14 @@ namespace ranges {
         }
 
         if (_Count1 <= _Count2 && _Count1 <= _Capacity) {
-            _RANGES _Inplace_merge_buffer_left(_STD move(_First), _STD move(_Mid), _STD move(_Last), _Temp_ptr,
-                _Capacity, _STD move(_Pred), _STD move(_Proj));
+            _RANGES _Inplace_merge_buffer_left(
+                _STD move(_First), _STD move(_Mid), _STD move(_Last), _Temp_ptr, _Capacity, _Pred, _Proj);
         } else if (_Count2 <= _Capacity) {
-            _RANGES _Inplace_merge_buffer_right(_STD move(_First), _STD move(_Mid), _STD move(_Last), _Temp_ptr,
-                _Capacity, _STD move(_Pred), _STD move(_Proj));
+            _RANGES _Inplace_merge_buffer_right(
+                _STD move(_First), _STD move(_Mid), _STD move(_Last), _Temp_ptr, _Capacity, _Pred, _Proj);
         } else {
             _RANGES _Buffered_inplace_merge_divide_and_conquer(_STD move(_First), _STD move(_Mid), _STD move(_Last),
-                _Count1, _Count2, _Temp_ptr, _Capacity, _STD move(_Pred), _STD move(_Proj));
+                _Count1, _Count2, _Temp_ptr, _Capacity, _Pred, _Proj);
         }
     }
 
@@ -7926,13 +7926,13 @@ namespace ranges {
             _Optimistic_temporary_buffer<iter_value_t<_It>> _Temp_buf{(_STD min)(_Count1, _Count2)};
             if (_Count1 <= _Count2 && _Count1 <= _Temp_buf._Capacity) {
                 _RANGES _Inplace_merge_buffer_left(_STD move(_First), _STD move(_Mid), _STD move(_Last),
-                    _Temp_buf._Data, _Temp_buf._Capacity, _STD move(_Pred), _STD move(_Proj));
+                    _Temp_buf._Data, _Temp_buf._Capacity, _Pred, _Proj);
             } else if (_Count2 <= _Temp_buf._Capacity) {
                 _RANGES _Inplace_merge_buffer_right(_STD move(_First), _STD move(_Mid), _STD move(_Last),
-                    _Temp_buf._Data, _Temp_buf._Capacity, _STD move(_Pred), _STD move(_Proj));
+                    _Temp_buf._Data, _Temp_buf._Capacity, _Pred, _Proj);
             } else {
                 _RANGES _Buffered_inplace_merge_divide_and_conquer(_STD move(_First), _STD move(_Mid), _STD move(_Last),
-                    _Count1, _Count2, _Temp_buf._Data, _Temp_buf._Capacity, _STD move(_Pred), _STD move(_Proj));
+                    _Count1, _Count2, _Temp_buf._Data, _Temp_buf._Capacity, _Pred, _Proj);
             }
         }
     };
@@ -8589,13 +8589,13 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
 
             if (_Count <= _Isort_max<_It>) {
-                _RANGES _Insertion_sort_common(_STD move(_First), _STD move(_Last), _STD move(_Pred), _STD move(_Proj));
+                _RANGES _Insertion_sort_common(_STD move(_First), _STD move(_Last), _Pred, _Proj);
                 return;
             }
 
             _Optimistic_temporary_buffer<_Iter_value_t<_It>> _Temp_buf{_Count - _Count / 2};
-            _Stable_sort_common_buffered(_STD move(_First), _STD move(_Last), _Count, _Temp_buf._Data,
-                _Temp_buf._Capacity, _STD move(_Pred), _STD move(_Proj));
+            _Stable_sort_common_buffered(
+                _STD move(_First), _STD move(_Last), _Count, _Temp_buf._Data, _Temp_buf._Capacity, _Pred, _Proj);
         }
 
         template <class _It, class _Pr, class _Pj>
@@ -8606,7 +8606,7 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
 
             if (_Count <= _Isort_max<_It>) {
-                _RANGES _Insertion_sort_common(_STD move(_First), _STD move(_Last), _STD move(_Pred), _STD move(_Proj));
+                _RANGES _Insertion_sort_common(_STD move(_First), _STD move(_Last), _Pred, _Proj);
             } else { // sort halves and merge
                 const iter_difference_t<_It> _Half_count      = _Count >> 1;
                 const iter_difference_t<_It> _Half_count_ceil = _Count - _Half_count;
@@ -8620,7 +8620,7 @@ namespace ranges {
                 }
                 // merge halves
                 _RANGES _Buffered_inplace_merge_common(_STD move(_First), _STD move(_Mid), _STD move(_Last),
-                    _Half_count_ceil, _Half_count, _Temp_ptr, _Capacity, _STD move(_Pred), _STD move(_Proj));
+                    _Half_count_ceil, _Half_count, _Temp_ptr, _Capacity, _Pred, _Proj);
             }
         }
 
@@ -8670,7 +8670,7 @@ namespace ranges {
             }
 
             // sort partial last chunk
-            _RANGES _Insertion_sort_common(_STD move(_First), _STD move(_Last), _STD move(_Pred), _STD move(_Proj));
+            _RANGES _Insertion_sort_common(_STD move(_First), _STD move(_Last), _Pred, _Proj);
         }
 
         template <class _It, class _Pr, class _Pj>
@@ -9255,7 +9255,7 @@ namespace ranges {
             }
 
             // sort any remainder
-            _Insertion_sort_common(_STD move(_First), _STD move(_Last), _STD move(_Pred), _STD move(_Proj));
+            _Insertion_sort_common(_STD move(_First), _STD move(_Last), _Pred, _Proj);
         }
     };
 
