@@ -602,7 +602,7 @@ public:
 #endif // TRANSITION, VSO-1225825
 
     _Variantish(const _Variantish& _That) noexcept(
-        noexcept(is_nothrow_copy_constructible_v<_It>&& is_nothrow_copy_constructible_v<_Se>))
+        is_nothrow_copy_constructible_v<_It>&& is_nothrow_copy_constructible_v<_Se>)
         : _Contains{_That._Contains} {
         switch (_Contains) {
         case _Variantish_state::_Holds_iter:
