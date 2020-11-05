@@ -409,7 +409,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [N4868]: https://wg21.link/n4868
 [NOTICE.txt]: NOTICE.txt
 [Ninja]: https://ninja-build.org
-[Pipelines]: https://dev.azure.com/vclibs/STL/_build
+[Pipelines]: https://dev.azure.com/vclibs/STL/_build/latest?definitionId=4&branchName=master
 [Python]: https://www.python.org/downloads/windows/
 [Roadmap]: https://github.com/microsoft/STL/wiki/Roadmap
 [Status Chart]: https://microsoft.github.io/STL/
