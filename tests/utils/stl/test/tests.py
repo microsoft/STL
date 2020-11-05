@@ -107,7 +107,7 @@ class STLTest(Test):
 
         shortenedFlags = [flag[1:] for flag in chain(self.flags, self.compileFlags, self.linkFlags)]
         if 'analyze:only' in shortenedFlags or 'c' in shortenedFlags or \
-                filename.endswith(('.compile.pass.cpp', 'compile.fail.cpp')):
+                filename.endswith(('.compile.pass.cpp', '.compile.fail.cpp')):
             self.testType = self.testType | TestType.COMPILE
         elif filename.endswith(('.link.pass.cpp', '.link.fail.cpp')):
             self.testType = self.testType | TestType.LINK
