@@ -134,10 +134,10 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         constexpr bool is_noexcept = is_nothrow_copy_constructible_v<V>;
 
         STATIC_ASSERT(same_as<decltype(views::transform(move(as_const(rng)), add8)), TV>);
-        STATIC_ASSERT(noexcept(views::transform(as_const(rng), add8)) == is_noexcept);
+        STATIC_ASSERT(noexcept(views::transform(move(as_const(rng)), add8)) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | transform_incr), TV>);
-        STATIC_ASSERT(noexcept(as_const(rng) | transform_incr) == is_noexcept);
+        STATIC_ASSERT(noexcept(move(as_const(rng)) | transform_incr) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | pipeline), pipeline_t<const remove_reference_t<Rng>>>);
         STATIC_ASSERT(noexcept(move(as_const(rng)) | pipeline) == is_noexcept);
@@ -159,9 +159,6 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     const bool is_empty = ranges::empty(expected);
 
     // Validate deduction guide
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1159442
-    (void) 42;
-#endif // TRANSITION, DevCom-1159442
     same_as<TV> auto r = transform_view{forward<Rng>(rng), add8};
     using R            = decltype(r);
     STATIC_ASSERT(ranges::view<R>);

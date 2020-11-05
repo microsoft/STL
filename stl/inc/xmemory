@@ -1447,16 +1447,11 @@ namespace ranges {
     template <class _To, class _From>
     concept _Convertible_from = convertible_to<_From, _To>;
 
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-attributes"
-#endif // __clang__
-
     // STRUCT TEMPLATE in_out_result
     template <class _In, class _Out>
     struct in_out_result {
-        [[no_unique_address]] _In in;
-        [[no_unique_address]] _Out out;
+        /* [[no_unique_address]] */ _In in;
+        /* [[no_unique_address]] */ _Out out;
 
         template <_Convertible_from<const _In&> _IIn, _Convertible_from<const _Out&> _OOut>
         constexpr operator in_out_result<_IIn, _OOut>() const& {
@@ -1468,10 +1463,6 @@ namespace ranges {
             return {_STD move(in), _STD move(out)};
         }
     };
-
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif // __clang__
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
@@ -1746,6 +1737,12 @@ _Alloc_ptr_t<_Alloc> _Uninitialized_fill_n(
         _Fill_memset(_Unfancy(_First), _Val, static_cast<size_t>(_Count));
         return _First + _Count;
     } else {
+        if constexpr (_Fill_zero_memset_is_safe<_Ty*, _Ty> && _Uses_default_construct<_Alloc, _Ty*, _Ty>::value) {
+            if (_Is_all_bits_zero(_Val)) {
+                _Fill_zero_memset(_Unfancy(_First), static_cast<size_t>(_Count));
+                return _First + _Count;
+            }
+        }
         _Uninitialized_backout_al<_Alloc> _Backout{_First, _Al};
         for (; 0 < _Count; --_Count) {
             _Backout._Emplace_back(_Val);
@@ -1796,6 +1793,12 @@ void uninitialized_fill(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last, c
     if constexpr (_Fill_memset_is_safe<_Unwrapped_t<const _NoThrowFwdIt&>, _Tval>) {
         _Fill_memset(_UFirst, _Val, static_cast<size_t>(_ULast - _UFirst));
     } else {
+        if constexpr (_Fill_zero_memset_is_safe<_Unwrapped_t<const _NoThrowFwdIt&>, _Tval>) {
+            if (_Is_all_bits_zero(_Val)) {
+                _Fill_zero_memset(_UFirst, static_cast<size_t>(_ULast - _UFirst));
+                return;
+            }
+        }
         _Uninitialized_backout<_Unwrapped_t<const _NoThrowFwdIt&>> _Backout{_UFirst};
         while (_Backout._Last != _ULast) {
             _Backout._Emplace_back(_Val);

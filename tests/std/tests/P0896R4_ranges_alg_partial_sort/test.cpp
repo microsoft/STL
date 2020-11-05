@@ -21,34 +21,28 @@ struct instantiator {
 
     template <ranges::random_access_range R>
     static constexpr void call() {
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-938163
-#pragma warning(suppress : 4127) // conditional expression is constant
-        if (!ranges::contiguous_range<R> || !is_constant_evaluated())
-#endif // TRANSITION, VSO-938163
-        {
-            using ranges::partial_sort, ranges::equal, ranges::iterator_t, ranges::less, ranges::next, ranges::size;
+        using ranges::partial_sort, ranges::equal, ranges::iterator_t, ranges::less, ranges::next, ranges::size;
 
-            { // Validate range overload
-                for (size_t i = 0; i <= size(sorted); ++i) {
-                    P elements[] = {{7, 10}, {5, 11}, {1, 12}, {3, 13}, {6, 14}, {4, 15}, {0, 16}, {2, 17}};
-                    const R range{elements};
-                    const auto middle                        = next(range.begin(), static_cast<int>(i));
-                    const same_as<iterator_t<R>> auto result = partial_sort(range, middle, less{}, get_first);
-                    assert(result == range.end());
-                    assert(equal(range.begin(), middle, sorted + 0, sorted + i));
-                }
+        { // Validate range overload
+            for (size_t i = 0; i <= size(sorted); ++i) {
+                P elements[] = {{7, 10}, {5, 11}, {1, 12}, {3, 13}, {6, 14}, {4, 15}, {0, 16}, {2, 17}};
+                const R range{elements};
+                const auto middle                        = next(range.begin(), static_cast<int>(i));
+                const same_as<iterator_t<R>> auto result = partial_sort(range, middle, less{}, get_first);
+                assert(result == range.end());
+                assert(equal(range.begin(), middle, sorted + 0, sorted + i));
             }
+        }
 
-            { // Validate iterator overload
-                for (size_t i = 0; i <= size(sorted); ++i) {
-                    P elements[] = {{7, 10}, {5, 11}, {1, 12}, {3, 13}, {6, 14}, {4, 15}, {0, 16}, {2, 17}};
-                    const R range{elements};
-                    const auto middle = next(range.begin(), static_cast<int>(i));
-                    const same_as<iterator_t<R>> auto result =
-                        partial_sort(range.begin(), middle, range.end(), less{}, get_first);
-                    assert(result == range.end());
-                    assert(equal(range.begin(), middle, sorted + 0, sorted + i));
-                }
+        { // Validate iterator overload
+            for (size_t i = 0; i <= size(sorted); ++i) {
+                P elements[] = {{7, 10}, {5, 11}, {1, 12}, {3, 13}, {6, 14}, {4, 15}, {0, 16}, {2, 17}};
+                const R range{elements};
+                const auto middle = next(range.begin(), static_cast<int>(i));
+                const same_as<iterator_t<R>> auto result =
+                    partial_sort(range.begin(), middle, range.end(), less{}, get_first);
+                assert(result == range.end());
+                assert(equal(range.begin(), middle, sorted + 0, sorted + i));
             }
         }
     }

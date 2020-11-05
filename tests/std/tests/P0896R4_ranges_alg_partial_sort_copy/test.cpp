@@ -33,37 +33,31 @@ constexpr P expected[] = {{0, 16}, {1, 12}, {2, 17}, {3, 13}, {4, 15}, {5, 11}};
 struct instantiator1 {
     template <ranges::input_range In, ranges::random_access_range Out>
     static constexpr void call() {
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-938163
-#pragma warning(suppress : 4127) // conditional expression is constant
-        if ((!ranges::contiguous_range<In> && !ranges::contiguous_range<Out>) || !is_constant_evaluated())
-#endif // TRANSITION, VSO-938163
-        {
-            using ranges::partial_sort_copy, ranges::partial_sort_copy_result, ranges::equal, ranges::iterator_t,
-                ranges::less, ranges::min, ranges::next, ranges::size;
+        using ranges::partial_sort_copy, ranges::partial_sort_copy_result, ranges::equal, ranges::iterator_t,
+            ranges::less, ranges::min, ranges::next, ranges::size;
 
-            P output[2 * size(source)];
-            constexpr int sizes[] = {0, int{size(source) / 2}, int{size(source)}, int{2 * size(source)}};
+        P output[2 * size(source)];
+        constexpr int sizes[] = {0, int{size(source) / 2}, int{size(source)}, int{2 * size(source)}};
 
-            { // Validate range overload
-                for (const int& i : sizes) {
-                    In range1{source};
-                    Out range2{span{output}.first(static_cast<size_t>(i))};
-                    const same_as<partial_sort_copy_result<iterator_t<In>, iterator_t<Out>>> auto result =
-                        partial_sort_copy(range1, range2, less{}, get_first, get_first);
-                    assert(result.in == range1.end());
-                    const auto n = min(i, int{size(source)});
-                    assert(result.out == range2.begin() + n);
-                    assert(equal(range2.begin(), range2.begin() + n, expected, expected + n));
-                }
-
-                // also with empty input
-                In range1{};
-                Out range2{output};
+        { // Validate range overload
+            for (const int& i : sizes) {
+                In range1{source};
+                Out range2{span{output}.first(static_cast<size_t>(i))};
                 const same_as<partial_sort_copy_result<iterator_t<In>, iterator_t<Out>>> auto result =
                     partial_sort_copy(range1, range2, less{}, get_first, get_first);
                 assert(result.in == range1.end());
-                assert(result.out == range2.begin());
+                const auto n = min(i, int{size(source)});
+                assert(result.out == range2.begin() + n);
+                assert(equal(range2.begin(), range2.begin() + n, expected, expected + n));
             }
+
+            // also with empty input
+            In range1{};
+            Out range2{output};
+            const same_as<partial_sort_copy_result<iterator_t<In>, iterator_t<Out>>> auto result =
+                partial_sort_copy(range1, range2, less{}, get_first, get_first);
+            assert(result.in == range1.end());
+            assert(result.out == range2.begin());
         }
     }
 };
@@ -71,39 +65,32 @@ struct instantiator1 {
 struct instantiator2 {
     template <ranges::input_range In, ranges::random_access_range Out>
     static constexpr void call() {
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-938163
-#pragma warning(suppress : 4127) // conditional expression is constant
-        if ((!ranges::contiguous_range<In> && !ranges::contiguous_range<Out>) || !is_constant_evaluated())
-#endif // TRANSITION, VSO-938163
-        {
-            using ranges::partial_sort_copy, ranges::partial_sort_copy_result, ranges::equal, ranges::iterator_t,
-                ranges::less, ranges::min, ranges::next, ranges::size;
+        using ranges::partial_sort_copy, ranges::partial_sort_copy_result, ranges::equal, ranges::iterator_t,
+            ranges::less, ranges::min, ranges::next, ranges::size;
 
-            P output[2 * size(source)];
-            constexpr int sizes[] = {0, int{size(source) / 2}, int{size(source)}, int{2 * size(source)}};
+        P output[2 * size(source)];
+        constexpr int sizes[] = {0, int{size(source) / 2}, int{size(source)}, int{2 * size(source)}};
 
-            { // Validate iterator overload
-                for (const int& i : sizes) {
-                    In range1{source};
-                    Out range2{span{output}.first(static_cast<size_t>(i))};
-                    const same_as<partial_sort_copy_result<iterator_t<In>, iterator_t<Out>>> auto result =
-                        partial_sort_copy(
-                            range1.begin(), range1.end(), range2.begin(), range2.end(), less{}, get_first, get_first);
-                    assert(result.in == range1.end());
-                    const auto n = min(i, int{size(source)});
-                    assert(result.out == range2.begin() + n);
-                    assert(equal(range2.begin(), range2.begin() + n, expected, expected + n));
-                }
-
-                // also with empty input
-                In range1{};
-                Out range2{output};
+        { // Validate iterator overload
+            for (const int& i : sizes) {
+                In range1{source};
+                Out range2{span{output}.first(static_cast<size_t>(i))};
                 const same_as<partial_sort_copy_result<iterator_t<In>, iterator_t<Out>>> auto result =
                     partial_sort_copy(
                         range1.begin(), range1.end(), range2.begin(), range2.end(), less{}, get_first, get_first);
                 assert(result.in == range1.end());
-                assert(result.out == range2.begin());
+                const auto n = min(i, int{size(source)});
+                assert(result.out == range2.begin() + n);
+                assert(equal(range2.begin(), range2.begin() + n, expected, expected + n));
             }
+
+            // also with empty input
+            In range1{};
+            Out range2{output};
+            const same_as<partial_sort_copy_result<iterator_t<In>, iterator_t<Out>>> auto result = partial_sort_copy(
+                range1.begin(), range1.end(), range2.begin(), range2.end(), less{}, get_first, get_first);
+            assert(result.in == range1.end());
+            assert(result.out == range2.begin());
         }
     }
 };
