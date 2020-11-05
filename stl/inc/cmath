@@ -61,7 +61,7 @@ _NODISCARD _Check_return_ inline float cbrt(_In_ float _Xx) noexcept /* strength
 
 _NODISCARD _Check_return_ inline float ceil(_In_ float _Xx) noexcept /* strengthened */ {
 #ifdef __clang__
-    return _CSTD ceilf(_Xx);
+    return __builtin_ceilf(_Xx);
 #else // ^^^ __clang__ / !__clang__ vvv
     return __ceilf(_Xx);
 #endif // __clang__
@@ -69,7 +69,7 @@ _NODISCARD _Check_return_ inline float ceil(_In_ float _Xx) noexcept /* strength
 
 _NODISCARD _Check_return_ inline float copysign(_In_ float _Number, _In_ float _Sign) noexcept /* strengthened */ {
 #ifdef __clang__
-    return _CSTD copysignf(_Number, _Sign);
+    return __builtin_copysignf(_Number, _Sign);
 #else // ^^^ __clang__ / !__clang__ vvv
     return __copysignf(_Number, _Sign);
 #endif // __clang__
@@ -113,7 +113,7 @@ _NODISCARD _Check_return_ inline float fdim(_In_ float _Xx, _In_ float _Yx) noex
 
 _NODISCARD _Check_return_ inline float floor(_In_ float _Xx) noexcept /* strengthened */ {
 #ifdef __clang__
-    return _CSTD floorf(_Xx);
+    return __builtin_floorf(_Xx);
 #else // ^^^ __clang__ / !__clang__ vvv
     return __floorf(_Xx);
 #endif // __clang__
@@ -225,7 +225,7 @@ _NODISCARD _Check_return_ inline float rint(_In_ float _Xx) noexcept /* strength
 
 _NODISCARD _Check_return_ inline float round(_In_ float _Xx) noexcept /* strengthened */ {
 #ifdef __clang__
-    return _CSTD roundf(_Xx);
+    return __builtin_roundf(_Xx);
 #else // ^^^ __clang__ / !__clang__ vvv
     return __roundf(_Xx);
 #endif // __clang__
@@ -265,7 +265,7 @@ _NODISCARD _Check_return_ inline float tgamma(_In_ float _Xx) noexcept /* streng
 
 _NODISCARD _Check_return_ inline float trunc(_In_ float _Xx) noexcept /* strengthened */ {
 #ifdef __clang__
-    return _CSTD truncf(_Xx);
+    return __builtin_truncf(_Xx);
 #else // ^^^ __clang__ / !__clang__ vvv
     return __truncf(_Xx);
 #endif // __clang__
@@ -306,7 +306,7 @@ _NODISCARD _Check_return_ inline long double cbrt(_In_ long double _Xx) noexcept
 
 _NODISCARD _Check_return_ inline long double ceil(_In_ long double _Xx) noexcept /* strengthened */ {
 #ifdef __clang__
-    return _CSTD ceill(_Xx);
+    return __builtin_ceill(_Xx);
 #else // ^^^ __clang__ / !__clang__ vvv
     return __ceil(static_cast<double>(_Xx));
 #endif // __clang__
@@ -315,7 +315,7 @@ _NODISCARD _Check_return_ inline long double ceil(_In_ long double _Xx) noexcept
 _NODISCARD _Check_return_ inline long double copysign(_In_ long double _Number, _In_ long double _Sign) noexcept
 /* strengthened */ {
 #ifdef __clang__
-    return _CSTD copysignl(_Number, _Sign);
+    return __builtin_copysignl(_Number, _Sign);
 #else // ^^^ __clang__ / !__clang__ vvv
     return __copysign(static_cast<double>(_Number), static_cast<double>(_Sign));
 #endif // __clang__
@@ -360,7 +360,7 @@ _NODISCARD _Check_return_ inline long double fdim(_In_ long double _Xx, _In_ lon
 
 _NODISCARD _Check_return_ inline long double floor(_In_ long double _Xx) noexcept /* strengthened */ {
 #ifdef __clang__
-    return _CSTD floorl(_Xx);
+    return __builtin_floorl(_Xx);
 #else // ^^^ __clang__ / !__clang__ vvv
     return __floor(static_cast<double>(_Xx));
 #endif // __clang__
@@ -481,7 +481,7 @@ _NODISCARD _Check_return_ inline long double rint(_In_ long double _Xx) noexcept
 
 _NODISCARD _Check_return_ inline long double round(_In_ long double _Xx) noexcept /* strengthened */ {
 #ifdef __clang__
-    return _CSTD roundl(_Xx);
+    return __builtin_roundl(_Xx);
 #else // ^^^ __clang__ / !__clang__ vvv
     return __round(static_cast<double>(_Xx));
 #endif // __clang__
@@ -521,7 +521,7 @@ _NODISCARD _Check_return_ inline long double tgamma(_In_ long double _Xx) noexce
 
 _NODISCARD _Check_return_ inline long double trunc(_In_ long double _Xx) noexcept /* strengthened */ {
 #ifdef __clang__
-    return _CSTD truncl(_Xx);
+    return __builtin_truncl(_Xx);
 #else // ^^^ __clang__ / !__clang__ vvv
     return __trunc(static_cast<double>(_Xx));
 #endif // __clang__
@@ -615,9 +615,9 @@ _STD _Common_float_type_t<_Ty1, _Ty2> remquo(_Ty1 _Left, _Ty2 _Right, int* _Pquo
 #define _GENERIC_MATH1(FUN)       _GENERIC_MATH1R(FUN, double)
 
 #ifdef __clang__
-#define _GENERIC_MATH1I(FUN, INTRIN) _GENERIC_MATH1R(FUN, double)
+#define _GENERIC_MATH1I(FUN, CLANG_INTRIN, MSVC_INTRIN) _GENERIC_MATH1_BASE(FUN, double, CLANG_INTRIN)
 #else // ^^^ __clang__ / !__clang__ vvv
-#define _GENERIC_MATH1I(FUN, INTRIN) _GENERIC_MATH1_BASE(FUN, double, INTRIN)
+#define _GENERIC_MATH1I(FUN, CLANG_INTRIN, MSVC_INTRIN) _GENERIC_MATH1_BASE(FUN, double, MSVC_INTRIN)
 #endif // __clang__
 
 #define _GENERIC_MATH1X(FUN, ARG2)                                             \
@@ -637,9 +637,9 @@ _STD _Common_float_type_t<_Ty1, _Ty2> remquo(_Ty1 _Left, _Ty2 _Right, int* _Pquo
 #define _GENERIC_MATH2(FUN) _GENERIC_MATH2_BASE(FUN, _CSTD FUN)
 
 #ifdef __clang__
-#define _GENERIC_MATH2I(FUN, INTRIN) _GENERIC_MATH2(FUN)
+#define _GENERIC_MATH2I(FUN, CLANG_INTRIN, MSVC_INTRIN) _GENERIC_MATH2_BASE(FUN, CLANG_INTRIN)
 #else // ^^^ __clang__ / !__clang__ vvv
-#define _GENERIC_MATH2I(FUN, INTRIN) _GENERIC_MATH2_BASE(FUN, INTRIN)
+#define _GENERIC_MATH2I(FUN, CLANG_INTRIN, MSVC_INTRIN) _GENERIC_MATH2_BASE(FUN, MSVC_INTRIN)
 #endif // __clang__
 
 // The following order matches N4820 26.8.1 [cmath.syn].
@@ -681,20 +681,20 @@ _GENERIC_MATH1(erf)
 _GENERIC_MATH1(erfc)
 _GENERIC_MATH1(lgamma)
 _GENERIC_MATH1(tgamma)
-_GENERIC_MATH1I(ceil, __ceil)
-_GENERIC_MATH1I(floor, __floor)
+_GENERIC_MATH1I(ceil, __builtin_ceil, __ceil)
+_GENERIC_MATH1I(floor, __builtin_floor, __floor)
 _GENERIC_MATH1(nearbyint)
 _GENERIC_MATH1(rint)
 _GENERIC_MATH1R(lrint, long)
 _GENERIC_MATH1R(llrint, long long)
-_GENERIC_MATH1I(round, __round)
+_GENERIC_MATH1I(round, __builtin_round, __round)
 _GENERIC_MATH1R(lround, long)
 _GENERIC_MATH1R(llround, long long)
-_GENERIC_MATH1I(trunc, __trunc)
+_GENERIC_MATH1I(trunc, __builtin_trunc, __trunc)
 _GENERIC_MATH2(fmod)
 _GENERIC_MATH2(remainder)
 // remquo() is hand-crafted
-_GENERIC_MATH2I(copysign, __copysign)
+_GENERIC_MATH2I(copysign, __builtin_copysign, __copysign)
 // nan(const char*) is exempt
 _GENERIC_MATH2(nextafter)
 _GENERIC_MATH1X(nexttoward, long double)
@@ -706,10 +706,14 @@ _GENERIC_MATH2(fmin)
 // The "classification/comparison functions" (fpclassify(), etc.) are exempt, LWG-1327
 // TRANSITION, VSO-945789, Special Math shouldn't be exempt
 
+#undef _GENERIC_MATH1_BASE
 #undef _GENERIC_MATH1R
 #undef _GENERIC_MATH1
+#undef _GENERIC_MATH1I
 #undef _GENERIC_MATH1X
+#undef _GENERIC_MATH2_BASE
 #undef _GENERIC_MATH2
+#undef _GENERIC_MATH2I
 
 
 _STD_BEGIN
