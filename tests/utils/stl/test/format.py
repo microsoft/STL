@@ -33,7 +33,7 @@ class TestStep:
 def _mergeEnvironments(currentEnv, otherEnv):
     """Merges two execution environments.
 
-    If both environments contain the PATH variables, they are also merged
+    If both environments contain PATH variables, they are also merged
     using the proper separator.
     """
     resultEnv = dict(currentEnv)
