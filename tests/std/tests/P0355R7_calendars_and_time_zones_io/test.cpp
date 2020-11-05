@@ -3,8 +3,12 @@
 
 #include <cassert>
 #include <chrono>
+#include <climits>
 #include <locale>
+#include <ratio>
 #include <sstream>
+#include <string>
+#include <utility>
 
 using namespace std;
 using chrono::duration;
@@ -22,7 +26,7 @@ bool test_duration_basic_out(const duration<Rep, Period>& d, const CharT* expect
 template <class CharT>
 bool test_duration_locale_out() {
     basic_stringstream<CharT> ss;
-    const duration<float> d{0.140625};
+    const duration<double> d{0.140625};
     ss.precision(3);
     ss << d;
     ss.setf(ios_base::scientific, ios_base::floatfield);
@@ -30,8 +34,14 @@ bool test_duration_locale_out() {
 
     basic_string<CharT> expected = WIDEN(CharT, "0.141s 1.406e-01s");
 
-#if !defined(_DLL) || ((_ITERATOR_DEBUG_LEVEL == 0) != defined(_DEBUG))
-    // Using dynamic linking, only release mode supports IDL == 0.
+#ifdef _DEBUG
+#define DEFAULT_IDL_SETTING 2
+#else
+#define DEFAULT_IDL_SETTING 0
+#endif
+
+#if !defined(_DLL) || _ITERATOR_DEBUG_LEVEL == DEFAULT_IDL_SETTING
+    // When linking dynamically, user-defined facets are incompatible with non-default _ITERATOR_DEBUG_LEVEL settings.
     struct comma : numpunct<CharT> {
         CharT do_decimal_point() const {
             return ',';
@@ -41,7 +51,7 @@ bool test_duration_locale_out() {
     ss.imbue(locale(ss.getloc(), new comma));
     ss << ' ' << d;
     expected += WIDEN(CharT, " 1,406e-01s");
-#endif // !defined(_DLL) || ((_ITERATOR_DEBUG_LEVEL == 0) != defined(_DEBUG))
+#endif // !defined(_DLL) || _ITERATOR_DEBUG_LEVEL == DEFAULT_IDL_SETTING
 
     return ss.str() == expected;
 }
@@ -76,7 +86,7 @@ void test_duration_output() {
     assert(test_duration_basic_out(duration<int, ratio<22, 7>>{24}, "24[22/7]s"));
     assert(test_duration_basic_out(duration<int, LongRatio>{24}, "24[9223372036854775806/9223372036854775807]s"));
 
-    assert(test_duration_basic_out(duration<float>{0.140625}, "0.140625s"));
+    assert(test_duration_basic_out(duration<double>{0.140625}, "0.140625s"));
     assert(test_duration_locale_out<char>());
 
     assert(test_duration_basic_out(duration<int, atto>{1}, L"1as"));
@@ -105,7 +115,7 @@ void test_duration_output() {
     assert(test_duration_basic_out(duration<int, ratio<22, 7>>{24}, L"24[22/7]s"));
     assert(test_duration_basic_out(duration<int, LongRatio>{24}, L"24[9223372036854775806/9223372036854775807]s"));
 
-    assert(test_duration_basic_out(duration<float>{0.140625}, L"0.140625s"));
+    assert(test_duration_basic_out(duration<double>{0.140625}, L"0.140625s"));
     assert(test_duration_locale_out<wchar_t>());
 }
 

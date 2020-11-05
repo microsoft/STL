@@ -619,7 +619,7 @@ namespace chrono {
 
     using high_resolution_clock = steady_clock;
 
-#ifdef _HAS_CXX20
+#if _HAS_CXX20
     // [time.duration.io]
     class _Units_suffix_helper {
     public:
@@ -634,7 +634,7 @@ namespace chrono {
         }
 
         template <class _CharT>
-        _NODISCARD static _CharT* _Get_general(_CharT* _Rnext, intmax_t _Num, intmax_t _Den) {
+        _NODISCARD static _CharT* _Get_general(_CharT* _Rnext, const intmax_t _Num, const intmax_t _Den) {
             // Returns the head pointer of the string, built in reverse.
             _STL_INTERNAL_CHECK(_Num > 0 && _Den > 0);
             *--_Rnext = '\0';
@@ -657,11 +657,12 @@ namespace chrono {
             const pair<const char*, const wchar_t*> _Name;
         };
 
+        // clang-format off
 #define _LITERAL_SUFFIX(_TYPE, _SUFFIX) \
-    { _TYPE::num, _TYPE::den, _STD make_pair(_SUFFIX, L##_SUFFIX) }
+    { _TYPE::num, _TYPE::den, pair{_SUFFIX, L##_SUFFIX} }
+        // clang-format on
 
         static constexpr _Suf_names _Suffixes[]{
-            // clang-format off
             _LITERAL_SUFFIX(atto, "as"),
             _LITERAL_SUFFIX(femto, "fs"),
             _LITERAL_SUFFIX(pico, "ps"),
@@ -681,8 +682,7 @@ namespace chrono {
             _LITERAL_SUFFIX(exa, "Es"),
             _LITERAL_SUFFIX(minutes::period, "min"),
             _LITERAL_SUFFIX(hours::period, "h"),
-            _LITERAL_SUFFIX(ratio<86400>, "d")
-            // clang-format on
+            _LITERAL_SUFFIX(ratio<86400>, "d"),
         };
 
 #undef _LITERAL_SUFFIX
@@ -698,9 +698,9 @@ namespace chrono {
         _Sstr << _Dur.count();
 
         constexpr auto _Suffix = _Units_suffix_helper::_Get_literal<_CharT, _Period>();
-        if _CONSTEXPR_IF (_Suffix == nullptr) {
+        if constexpr (_Suffix == nullptr) {
             _CharT _Buffer[2 * (numeric_limits<intmax_t>::digits10 + 1) + 5] = {}; // 2 numbers + "[/]s\0"
-            const _CharT* _Begin =
+            const _CharT* const _Begin =
                 _Units_suffix_helper::_Get_general<_CharT>(_STD end(_Buffer), _Period::num, _Period::den);
             _Sstr << _Begin;
         } else {
