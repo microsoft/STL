@@ -7755,8 +7755,8 @@ namespace ranges {
         // usual invariants apply
         if (_Count1 <= _Count2) {
             const iter_difference_t<_It> _Count1n = _Count1 >> 1; // shift for codegen
-            const _It _Firstn                     = _RANGES next(_First, _Count1n);
-            const _It _Lastn =
+            _It _Firstn                           = _RANGES next(_First, _Count1n);
+            _It _Lastn =
                 _RANGES _Lower_bound_unchecked(_Mid, _Count1, _STD invoke(_Proj, *_Firstn), _Pred, _Proj);
             const auto _Count2n = _RANGES distance(_Mid, _Lastn);
             _RANGES _Buffered_inplace_merge_divide_and_conquer2(_STD move(_First), _STD move(_Mid), _STD move(_Last),
@@ -7764,8 +7764,8 @@ namespace ranges {
                 _Count2n);
         } else {
             const iter_difference_t<_It> _Count2n = _Count2 >> 1; // shift for codegen
-            const _It _Lastn                      = _RANGES next(_Mid, _Count2n);
-            const _It _Firstn =
+            _It _Lastn                            = _RANGES next(_Mid, _Count2n);
+            _It _Firstn =
                 _RANGES _Upper_bound_unchecked(_First, _Count2, _STD invoke(_Proj, *_Lastn), _Pred, _Proj);
             const auto _Count1n = _RANGES distance(_First, _Firstn);
             _RANGES _Buffered_inplace_merge_divide_and_conquer2(_STD move(_First), _STD move(_Mid), _STD move(_Last),
@@ -7805,7 +7805,7 @@ namespace ranges {
         --_Count2;
 
         // Find last element in [_Mid, _Last) that is less than *--_Mid
-        const auto _Highest = _Prev_iter(_Mid);
+        const auto _Highest = _RANGES prev(_Mid);
         while (!_STD invoke(_Pred, _STD invoke(_Proj, *_Last), _STD invoke(_Proj, *_Highest))) {
             if (_Mid == --_Last) {
                 // rotate only element remaining in right partition to the beginning, without allocating
@@ -7907,7 +7907,7 @@ namespace ranges {
             }
 
             // Find last element in [_Mid, _Last) that is less than *--_Mid
-            const auto _Highest = _Prev_iter(_Mid);
+            const auto _Highest = _RANGES prev(_Mid);
             while (!_STD invoke(_Pred, _STD invoke(_Proj, *_Last), _STD invoke(_Proj, *_Highest))) {
                 if (_Mid == --_Last) {
                     // rotate only element remaining in right partition to the beginning, without allocating
@@ -8580,7 +8580,7 @@ namespace ranges {
 
     private:
         template <random_access_iterator _It>
-        static constexpr iter_difference_t<_It> _Isort_max = static_cast<iter_difference_t<_It>>(_ISORT_MAX);
+        static constexpr auto _Isort_max = static_cast<iter_difference_t<_It>>(_ISORT_MAX);
 
         template <class _It, class _Pr, class _Pj>
         static void _Stable_sort_common(
@@ -8588,6 +8588,7 @@ namespace ranges {
             // sort [_First, _Last) with respect to _Pred and _Proj
             _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
+            _STL_INTERNAL_CHECK(_RANGES distance(_First, _Last) == _Count);
 
             if (_Count <= _Isort_max<_It>) {
                 _RANGES _Insertion_sort_common(_STD move(_First), _STD move(_Last), _Pred, _Proj);
@@ -8605,6 +8606,8 @@ namespace ranges {
             // sort [_First, _Last) with respect to _Pred and _Proj
             _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
+            _STL_INTERNAL_CHECK(_RANGES distance(_First, _Last) == _Count);
+            // Pre: _Temp_ptr points to empty storage for _Capacity objects
 
             if (_Count <= _Isort_max<_It>) {
                 _RANGES _Insertion_sort_common(_STD move(_First), _STD move(_Last), _Pred, _Proj);
@@ -8797,7 +8800,6 @@ namespace ranges {
                 }
             }
         }
-
 
         template <class _It, class _Pr, class _Pj>
         static void _Chunked_merge_from_buffer(iter_value_t<_It>* _First, iter_value_t<_It>* _Last, _It _Dest,
