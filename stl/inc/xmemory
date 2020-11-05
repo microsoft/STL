@@ -593,7 +593,7 @@ struct _Normal_allocator_traits { // defines traits for allocators
         if constexpr (_Uses_default_destroy<_Alloc, _Ty*>::value) {
             (void) _Al;
 #if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc)
-            destroy_at(_Ptr)
+            destroy_at(_Ptr);
 #else
             _Ptr->~_Ty();
 #endif
