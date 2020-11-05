@@ -827,11 +827,13 @@ namespace ranges {
                 requires (_Choice<_Rng>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Rng&& _Range) const noexcept(_Choice<_Rng>._No_throw) {
                 // clang-format on
-                if constexpr (_Choice<_Rng>._Strategy == _St::_View) {
+                constexpr _St _Strat = _Choice<_Rng>._Strategy;
+
+                if constexpr (_Strat == _St::_View) {
                     return _STD forward<_Rng>(_Range);
-                } else if constexpr (_Choice<_Rng>._Strategy == _St::_Ref) {
+                } else if constexpr (_Strat == _St::_Ref) {
                     return ref_view{_STD forward<_Rng>(_Range)};
-                } else if constexpr (_Choice<_Rng>._Strategy == _St::_Subrange) {
+                } else if constexpr (_Strat == _St::_Subrange) {
                     return subrange{_STD forward<_Rng>(_Range)};
                 } else {
                     static_assert(_Always_false<_Rng>, "Should be unreachable");
@@ -1812,15 +1814,17 @@ namespace ranges {
             _NODISCARD constexpr auto operator()(_Rng&& _Range, range_difference_t<_Rng> _Count) const noexcept(
                 _Choice<_Rng>._No_throw) {
                 // clang-format on
-                if constexpr (_Choice<_Rng>._Strategy == _St::_Empty) {
+                constexpr _St _Strat = _Choice<_Rng>._Strategy;
+
+                if constexpr (_Strat == _St::_Empty) {
                     // it's an empty_view: return another empty view
                     return remove_cvref_t<_Rng>{};
-                } else if constexpr (_Choice<_Rng>._Strategy == _St::_Preserve) {
+                } else if constexpr (_Strat == _St::_Preserve) {
                     // it's a "reconstructible range"; return the same kind of range with a restricted extent
                     _Count            = (_STD min)(_RANGES distance(_Range), _Count);
                     const auto _First = _RANGES begin(_Range);
                     return remove_cvref_t<_Rng>{_First, _First + _Count};
-                } else if constexpr (_Choice<_Rng>._Strategy == _St::_Take_view) {
+                } else if constexpr (_Strat == _St::_Take_view) {
                     return take_view{_STD forward<_Rng>(_Range), _Count};
                 }
             }
@@ -2180,14 +2184,16 @@ namespace ranges {
             _NODISCARD constexpr auto operator()(_Rng&& _Range, range_difference_t<_Rng> _Count) const noexcept(
                 _Choice<_Rng>._No_throw) {
                 // clang-format on
-                if constexpr (_Choice<_Rng>._Strategy == _St::_Empty) {
+                constexpr _St _Strat = _Choice<_Rng>._Strategy;
+
+                if constexpr (_Strat == _St::_Empty) {
                     // it's an empty_view: return another empty view
                     return remove_cvref_t<_Rng>{};
-                } else if constexpr (_Choice<_Rng>._Strategy == _St::_Preserve) {
+                } else if constexpr (_Strat == _St::_Preserve) {
                     // it's a "reconstructible range"; return the same kind of range with a restricted extent
                     _Count = (_STD min)(_RANGES distance(_Range), _Count);
                     return remove_cvref_t<_Rng>{_RANGES begin(_Range) + _Count, _RANGES end(_Range)};
-                } else if constexpr (_Choice<_Rng>._Strategy == _St::_Drop_view) {
+                } else if constexpr (_Strat == _St::_Drop_view) {
                     return drop_view{_STD forward<_Rng>(_Range), _Count};
                 }
             }
@@ -2231,11 +2237,13 @@ namespace ranges {
                 noexcept(_Choice<decay_t<_It>>._No_throw) {
                 // clang-format on
                 _STL_ASSERT(_Count >= 0, "The size passed to views::counted must be non-negative");
-                if constexpr (_Choice<decay_t<_It>>._Strategy == _St::_Span) {
+                constexpr _St _Strat = _Choice<decay_t<_It>>._Strategy;
+
+                if constexpr (_Strat == _St::_Span) {
                     return span{_STD to_address(_STD forward<_It>(_First)), static_cast<size_t>(_Count)};
-                } else if constexpr (_Choice<decay_t<_It>>._Strategy == _St::_Subrange) {
+                } else if constexpr (_Strat == _St::_Subrange) {
                     return subrange{_First, _First + _Count};
-                } else if constexpr (_Choice<decay_t<_It>>._Strategy == _St::_Subrange_counted) {
+                } else if constexpr (_Strat == _St::_Subrange_counted) {
                     return subrange{counted_iterator{_STD forward<_It>(_First), _Count}, default_sentinel};
                 }
             }
@@ -2439,9 +2447,11 @@ namespace ranges {
                 requires (_Choice<_Rng>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Rng&& _Range) const noexcept(_Choice<_Rng>._No_throw) {
                 // clang-format on
-                if constexpr (_Choice<_Rng>._Strategy == _St::_All) {
+                constexpr _St _Strat = _Choice<_Rng>._Strategy;
+
+                if constexpr (_Strat == _St::_All) {
                     return views::all(_STD forward<_Rng>(_Range));
-                } else if constexpr (_Choice<_Rng>._Strategy == _St::_Common) {
+                } else if constexpr (_Strat == _St::_Common) {
                     return common_view{_STD forward<_Rng>(_Range)};
                 } else {
                     static_assert(_Always_false<_Rng>, "Should be unreachable");
@@ -2580,13 +2590,15 @@ namespace ranges {
                 requires (_Choice<_Rng>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Rng&& _Range) const noexcept(_Choice<_Rng>._No_throw) {
                 // clang-format on
-                if constexpr (_Choice<_Rng>._Strategy == _St::_Base) {
+                constexpr _St _Strat = _Choice<_Rng>._Strategy;
+
+                if constexpr (_Strat == _St::_Base) {
                     return _STD forward<_Rng>(_Range).base();
-                } else if constexpr (_Choice<_Rng>._Strategy == _St::_Subrange_unsized) {
+                } else if constexpr (_Strat == _St::_Subrange_unsized) {
                     return subrange{_Range.end().base(), _Range.begin().base()};
-                } else if constexpr (_Choice<_Rng>._Strategy == _St::_Subrange_sized) {
+                } else if constexpr (_Strat == _St::_Subrange_sized) {
                     return subrange{_Range.end().base(), _Range.begin().base(), _Range.size()};
-                } else if constexpr (_Choice<_Rng>._Strategy == _St::_Reverse) {
+                } else if constexpr (_Strat == _St::_Reverse) {
                     return reverse_view{_STD forward<_Rng>(_Range)};
                 } else {
                     static_assert(_Always_false<_Rng>, "Should be unreachable");
