@@ -63,6 +63,8 @@ public:
     basic_stringbuf(const basic_string<_Elem, _Traits, _Alloc2>& _Str, const _Alloc& _Al_)
         : basic_stringbuf(_Str, ios_base::in | ios_base::out, _Al_) {}
 
+    // The overload in previous version will be selected
+    // when std::is_same_v<_Alloc2, _Alloc>
     template <_Allocator _Alloc2>
     explicit basic_stringbuf(
         const basic_string<_Elem, _Traits, _Alloc2>& _Str, ios_base::openmode _Mode = ios_base::in | ios_base::out)
