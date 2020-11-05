@@ -5899,30 +5899,6 @@ _NODISCARD _CONSTEXPR20 _FwdIt lower_bound(_FwdIt _First, _FwdIt _Last, const _T
     return _STD lower_bound(_First, _Last, _Val, less<>{});
 }
 
-
-#ifdef __cpp_lib_concepts
-namespace ranges {
-    // FUNCTION TEMPLATE _Is_sorted_until_unchecked
-    // clang-format off
-    template <forward_iterator _It, sentinel_for<_It> _Se, class _Pr, class _Pj>
-        requires indirect_strict_weak_order<_Pr, projected<_It, _Pj>>
-    _NODISCARD constexpr _It _Is_sorted_until_unchecked(_It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
-        // clang-format on
-        if (_First == _Last) {
-            return _First;
-        }
-
-        for (auto _Prev = _First; ++_First != _Last; ++_Prev) {
-            if (_STD invoke(_Pred, _STD invoke(_Proj, *_First), _STD invoke(_Proj, *_Prev))) {
-                break;
-            }
-        }
-
-        return _First;
-    }
-} // namespace ranges
-#endif // __cpp_lib_concepts
-
 // FUNCTION TEMPLATE _Swap_ranges_unchecked
 template <class _FwdIt1, class _FwdIt2>
 _CONSTEXPR20 _FwdIt2 _Swap_ranges_unchecked(_FwdIt1 _First1, const _FwdIt1 _Last1, _FwdIt2 _First2) {

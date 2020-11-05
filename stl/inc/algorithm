@@ -7611,6 +7611,25 @@ void inplace_merge(_ExPo&&, _BidIt _First, _BidIt _Mid, _BidIt _Last) noexcept /
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
+    // FUNCTION TEMPLATE _Is_sorted_until_unchecked
+    // clang-format off
+    template <forward_iterator _It, sentinel_for<_It> _Se, class _Pr, class _Pj>
+        requires indirect_strict_weak_order<_Pr, projected<_It, _Pj>>
+    _NODISCARD constexpr _It _Is_sorted_until_unchecked(_It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
+        // clang-format on
+        if (_First == _Last) {
+            return _First;
+        }
+
+        for (auto _Prev = _First; ++_First != _Last; ++_Prev) {
+            if (_STD invoke(_Pred, _STD invoke(_Proj, *_First), _STD invoke(_Proj, *_Prev))) {
+                break;
+            }
+        }
+
+        return _First;
+    }
+
     // VARIABLE ranges::inplace_merge
     template <bidirectional_iterator _It>
     void _Rotate_one_right(_It _First, _It _Mid, _It _Last) {
