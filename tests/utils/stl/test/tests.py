@@ -207,13 +207,10 @@ class STLTest(Test):
                 foundStd = True
                 if flag[5:] == 'c++latest':
                     Feature('c++2a').enableIn(self.config)
-                    self.compileFlags.append('/D_LIBCPP_CONSTEXPR_AFTER_CXX17=constexpr')
                 elif flag[5:] == 'c++17':
                     Feature('c++17').enableIn(self.config)
-                    self.compileFlags.append('/D_LIBCPP_CONSTEXPR_AFTER_CXX17=constexpr')
                 elif flag[5:] == 'c++14':
                     Feature('c++14').enableIn(self.config)
-                    self.compileFlags.append('/D_LIBCPP_CONSTEXPR_AFTER_CXX17= ')
             elif flag[1:] == 'clr:pure':
                 self.requires.append('clr_pure') # TRANSITION, GH-798
             elif flag[1:] == 'clr':
@@ -223,7 +220,6 @@ class STLTest(Test):
 
         if not foundStd:
             Feature('c++14').enableIn(self.config)
-            self.compileFlags.append('/D_LIBCPP_CONSTEXPR_AFTER_CXX17= ')
 
 
 class LibcxxTest(STLTest):
