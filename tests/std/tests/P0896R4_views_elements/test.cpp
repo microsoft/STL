@@ -238,14 +238,22 @@ constexpr bool test_one(Rng&& rng) {
         same_as<sentinel_t<R>> auto i = r.end();
         static_assert(common_range<R> == common_range<V>);
         if constexpr (bidirectional_range<R> && common_range<R>) {
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1243263
             assert(*prev(i) == *prev(end(expected_keys)));
+#else // ^^^ no workaround / workaround vvv
+            assert(*ranges::prev(i) == *ranges::prev(end(expected_keys)));
+#endif // ^^^ workaround ^^^
         }
 
         if constexpr (CanEnd<const R&>) {
             same_as<sentinel_t<const R>> auto i2 = as_const(r).end();
             static_assert(common_range<const R> == common_range<const V>);
             if constexpr (bidirectional_range<const R> && common_range<const R>) {
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1243263
                 assert(*prev(i2) == *prev(end(expected_keys)));
+#else // ^^^ no workaround / workaround vvv
+                assert(*ranges::prev(i2) == *ranges::prev(end(expected_keys)));
+#endif // ^^^ workaround ^^^
             }
         }
     }
@@ -263,7 +271,11 @@ constexpr bool test_one(Rng&& rng) {
 
         STATIC_ASSERT(CanMemberBack<R> == (bidirectional_range<V> && common_range<V>) );
         if constexpr (CanMemberBack<R>) {
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1243263
             assert(r.back() == *prev(end(expected_keys)));
+#else // ^^^ no workaround / workaround vvv
+            assert(r.back() == *ranges::prev(end(expected_keys)));
+#endif // ^^^ workaround ^^^
         }
 
         STATIC_ASSERT(CanMemberFront<const R> == (forward_range<const V>) );
@@ -273,7 +285,11 @@ constexpr bool test_one(Rng&& rng) {
 
         STATIC_ASSERT(CanMemberBack<const R> == (bidirectional_range<const V> && common_range<const V>) );
         if constexpr (CanMemberBack<const R>) {
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1243263
             assert(as_const(r).back() == *prev(end(expected_keys)));
+#else // ^^^ no workaround / workaround vvv
+            assert(as_const(r).back() == *ranges::prev(end(expected_keys)));
+#endif // ^^^ workaround ^^^
         }
     }
 
@@ -298,7 +314,11 @@ constexpr bool test_one(Rng&& rng) {
         if (!is_empty) {
             assert((*b1.begin() == pair{0, -1})); // NB: depends on the test data
             if constexpr (bidirectional_range<V> && common_range<V>) {
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1243263
                 assert((*prev(b1.end()) == pair{7, -8})); // NB: depends on the test data
+#else // ^^^ no workaround / workaround vvv
+                assert((*ranges::prev(b1.end()) == pair{7, -8})); // NB: depends on the test data
+#endif // ^^^ workaround ^^^
             }
         }
     }
@@ -310,7 +330,11 @@ constexpr bool test_one(Rng&& rng) {
         if (!is_empty) {
             assert((*b2.begin() == pair{0, -1})); // NB: depends on the test data
             if constexpr (bidirectional_range<V> && common_range<V>) {
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1243263
                 assert((*prev(b2.end()) == pair{7, -8})); // NB: depends on the test data
+#else // ^^^ no workaround / workaround vvv
+                assert((*ranges::prev(b2.end()) == pair{7, -8})); // NB: depends on the test data
+#endif // ^^^ workaround ^^^
             }
         }
     }
