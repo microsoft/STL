@@ -490,58 +490,6 @@ template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_E
 _NODISCARD _FwdIt find_if_not(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
 
-#ifdef __cpp_lib_concepts
-namespace ranges {
-    // VARIABLE ranges::find_if_not
-    class _Find_if_not_fn : private _Not_quite_object {
-    public:
-        using _Not_quite_object::_Not_quite_object;
-
-        template <input_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
-            indirect_unary_predicate<projected<_It, _Pj>> _Pr>
-        _NODISCARD constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) const {
-            _Adl_verify_range(_First, _Last);
-
-            auto _UResult = _Find_if_not_unchecked(
-                _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _Pass_fn(_Pred), _Pass_fn(_Proj));
-
-            _Seek_wrapped(_First, _STD move(_UResult));
-            return _First;
-        }
-
-        template <input_range _Rng, class _Pj = identity,
-            indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
-        _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
-            auto _First = _RANGES begin(_Range);
-
-            auto _UResult = _Find_if_not_unchecked(
-                _Get_unwrapped(_STD move(_First)), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
-
-            _Seek_wrapped(_First, _STD move(_UResult));
-            return _First;
-        }
-
-    private:
-        template <class _It, class _Se, class _Pj, class _Pr>
-        _NODISCARD static constexpr _It _Find_if_not_unchecked(_It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
-            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
-            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
-            _STL_INTERNAL_STATIC_ASSERT(indirect_unary_predicate<_Pr, projected<_It, _Pj>>);
-
-            for (; _First != _Last; ++_First) {
-                if (!_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
-                    break;
-                }
-            }
-
-            return _First;
-        }
-    };
-
-    inline constexpr _Find_if_not_fn find_if_not{_Not_quite_object::_Construct_tag{}};
-} // namespace ranges
-#endif // __cpp_lib_concepts
-
 // FUNCTION TEMPLATE adjacent_find
 template <class _FwdIt, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt adjacent_find(const _FwdIt _First, _FwdIt _Last, _Pr _Pred) {
