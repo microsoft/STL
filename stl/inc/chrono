@@ -621,72 +621,62 @@ namespace chrono {
 
 #if _HAS_CXX20
     // [time.duration.io]
-    class _Units_suffix_helper {
-    public:
-        template <class _CharT, class _Period>
-        _NODISCARD static constexpr const _CharT* _Get_literal() {
-            for (const auto& _Entry : _Suffixes) {
-                if (_Entry._Num == _Period::num && _Entry._Den == _Period::den) {
-                    return _STD get<const _CharT*>(_Entry._Name);
-                }
-            }
+
+#define _IF_PERIOD_RETURN_SUFFIX_ELSE(_TYPE, _SUFFIX) \
+    if constexpr (is_same_v<_Period, _TYPE>) {        \
+        if constexpr (is_same_v<_CharT, char>) {      \
+            return _SUFFIX;                           \
+        } else {                                      \
+            return L##_SUFFIX;                        \
+        }                                             \
+    } else
+
+    template <class _CharT, class _Period>
+    _NODISCARD constexpr const _CharT* _Get_literal_unit_suffix() {
+        _IF_PERIOD_RETURN_SUFFIX_ELSE(atto, "as")
+        _IF_PERIOD_RETURN_SUFFIX_ELSE(femto, "fs")
+        _IF_PERIOD_RETURN_SUFFIX_ELSE(pico, "ps")
+        _IF_PERIOD_RETURN_SUFFIX_ELSE(nano, "ns")
+        _IF_PERIOD_RETURN_SUFFIX_ELSE(micro, "us")
+        _IF_PERIOD_RETURN_SUFFIX_ELSE(milli, "ms")
+        _IF_PERIOD_RETURN_SUFFIX_ELSE(centi, "cs")
+        _IF_PERIOD_RETURN_SUFFIX_ELSE(deci, "ds")
+        _IF_PERIOD_RETURN_SUFFIX_ELSE(seconds::period, "s")
+        _IF_PERIOD_RETURN_SUFFIX_ELSE(deca, "das")
+        _IF_PERIOD_RETURN_SUFFIX_ELSE(hecto, "hs")
+        _IF_PERIOD_RETURN_SUFFIX_ELSE(kilo, "ks")
+        _IF_PERIOD_RETURN_SUFFIX_ELSE(mega, "Ms")
+        _IF_PERIOD_RETURN_SUFFIX_ELSE(giga, "Gs")
+        _IF_PERIOD_RETURN_SUFFIX_ELSE(tera, "Ts")
+        _IF_PERIOD_RETURN_SUFFIX_ELSE(peta, "Ps")
+        _IF_PERIOD_RETURN_SUFFIX_ELSE(exa, "Es")
+        _IF_PERIOD_RETURN_SUFFIX_ELSE(minutes::period, "min")
+        _IF_PERIOD_RETURN_SUFFIX_ELSE(hours::period, "h")
+        _IF_PERIOD_RETURN_SUFFIX_ELSE(ratio<86400>, "d")
+
+        {
             return nullptr;
         }
+    }
 
-        template <class _CharT>
-        _NODISCARD static _CharT* _Get_general(_CharT* _Rnext, const intmax_t _Num, const intmax_t _Den) {
-            // Returns the head pointer of the string, built in reverse.
-            _STL_INTERNAL_CHECK(_Num > 0 && _Den > 0);
-            *--_Rnext = '\0';
-            *--_Rnext = 's';
-            *--_Rnext = ']';
-            if (_Den != 1) {
-                _Rnext    = _UIntegral_to_buff(_Rnext, static_cast<uintmax_t>(_Den));
-                *--_Rnext = '/';
-            }
+#undef _IF_PERIOD_RETURN_SUFFIX_ELSE
 
-            _Rnext    = _UIntegral_to_buff(_Rnext, static_cast<uintmax_t>(_Num));
-            *--_Rnext = '[';
-            return _Rnext;
+    template <class _CharT>
+    _NODISCARD _CharT* _Get_general_unit_suffix(_CharT* _Rnext, const intmax_t _Num, const intmax_t _Den) {
+        // Returns the head pointer of the string, built in reverse.
+        _STL_INTERNAL_CHECK(_Num > 0 && _Den > 0);
+        *--_Rnext = '\0';
+        *--_Rnext = 's';
+        *--_Rnext = ']';
+        if (_Den != 1) {
+            _Rnext    = _UIntegral_to_buff(_Rnext, static_cast<uintmax_t>(_Den));
+            *--_Rnext = '/';
         }
 
-    private:
-        struct _Suf_names {
-            const intmax_t _Num;
-            const intmax_t _Den;
-            const pair<const char*, const wchar_t*> _Name;
-        };
-
-        // clang-format off
-#define _LITERAL_SUFFIX(_TYPE, _SUFFIX) \
-    { _TYPE::num, _TYPE::den, pair{_SUFFIX, L##_SUFFIX} }
-        // clang-format on
-
-        static constexpr _Suf_names _Suffixes[]{
-            _LITERAL_SUFFIX(atto, "as"),
-            _LITERAL_SUFFIX(femto, "fs"),
-            _LITERAL_SUFFIX(pico, "ps"),
-            _LITERAL_SUFFIX(nano, "ns"),
-            _LITERAL_SUFFIX(micro, "us"),
-            _LITERAL_SUFFIX(milli, "ms"),
-            _LITERAL_SUFFIX(centi, "cs"),
-            _LITERAL_SUFFIX(deci, "ds"),
-            _LITERAL_SUFFIX(seconds::period, "s"),
-            _LITERAL_SUFFIX(deca, "das"),
-            _LITERAL_SUFFIX(hecto, "hs"),
-            _LITERAL_SUFFIX(kilo, "ks"),
-            _LITERAL_SUFFIX(mega, "Ms"),
-            _LITERAL_SUFFIX(giga, "Gs"),
-            _LITERAL_SUFFIX(tera, "Ts"),
-            _LITERAL_SUFFIX(peta, "Ps"),
-            _LITERAL_SUFFIX(exa, "Es"),
-            _LITERAL_SUFFIX(minutes::period, "min"),
-            _LITERAL_SUFFIX(hours::period, "h"),
-            _LITERAL_SUFFIX(ratio<86400>, "d"),
-        };
-
-#undef _LITERAL_SUFFIX
-    };
+        _Rnext    = _UIntegral_to_buff(_Rnext, static_cast<uintmax_t>(_Num));
+        *--_Rnext = '[';
+        return _Rnext;
+    }
 
     template <class _CharT, class _Traits, class _Rep, class _Period>
     basic_ostream<_CharT, _Traits>& operator<<(
@@ -697,11 +687,11 @@ namespace chrono {
         _Sstr.precision(_Os.precision());
         _Sstr << _Dur.count();
 
-        constexpr auto _Suffix = _Units_suffix_helper::_Get_literal<_CharT, _Period>();
+        constexpr auto _Suffix = _Get_literal_unit_suffix<_CharT, _Period>();
         if constexpr (_Suffix == nullptr) {
             _CharT _Buffer[2 * (numeric_limits<intmax_t>::digits10 + 1) + 5] = {}; // 2 numbers + "[/]s\0"
             const _CharT* const _Begin =
-                _Units_suffix_helper::_Get_general<_CharT>(_STD end(_Buffer), _Period::num, _Period::den);
+                _Get_general_unit_suffix<_CharT>(_STD end(_Buffer), _Period::num, _Period::den);
             _Sstr << _Begin;
         } else {
             _Sstr << _Suffix;
