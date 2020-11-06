@@ -68,7 +68,7 @@ namespace chrono {
     struct is_clock : bool_constant<_Is_clock<_Clock>> {};
     template <class _Clock>
     inline constexpr bool is_clock_v = _Is_clock<_Clock>;
-#endif // HAS_CXX20
+#endif // _HAS_CXX20
 
     // CLASS TEMPLATE duration
     template <class _Rep, class _Period = ratio<1>>
@@ -217,18 +217,18 @@ namespace chrono {
         }
 
 #if _HAS_CXX20
-        constexpr time_point& operator++() {
+        constexpr time_point& operator++() noexcept(is_arithmetic_v<rep>) /* strengthened */ {
             ++_MyDur;
             return *this;
         }
-        constexpr time_point operator++(int) {
+        constexpr time_point operator++(int) noexcept(is_arithmetic_v<rep>) /* strengthened */ {
             return time_point{_MyDur++};
         }
-        constexpr time_point& operator--() {
+        constexpr time_point& operator--() noexcept(is_arithmetic_v<rep>) /* strengthened */ {
             --_MyDur;
             return *this;
         }
-        constexpr time_point operator--(int) {
+        constexpr time_point operator--(int) noexcept(is_arithmetic_v<rep>) /* strengthened */ {
             return time_point{_MyDur--};
         }
 #endif // _HAS_CXX20
@@ -763,7 +763,7 @@ namespace chrono {
             return *this;
         }
         constexpr month operator--(int) noexcept {
-            const month _Temp{*this};
+            month _Temp{*this};
             --(*this);
             return _Temp;
         }
@@ -772,7 +772,7 @@ namespace chrono {
         constexpr month& operator-=(const months& _Months) noexcept;
 
         _NODISCARD constexpr explicit operator unsigned int() const noexcept {
-            return static_cast<unsigned int>(_Month);
+            return _Month;
         }
         _NODISCARD constexpr bool ok() const noexcept {
             return _Month >= 1 && _Month <= 12;
@@ -909,7 +909,7 @@ namespace chrono {
             return *this += days{1};
         }
         constexpr weekday operator++(int) noexcept {
-            const weekday _Temp{*this};
+            weekday _Temp{*this};
             ++(*this);
             return _Temp;
         }
@@ -917,7 +917,7 @@ namespace chrono {
             return *this -= days{1};
         }
         constexpr weekday operator--(int) noexcept {
-            const weekday _Temp{*this};
+            weekday _Temp{*this};
             --(*this);
             return _Temp;
         }

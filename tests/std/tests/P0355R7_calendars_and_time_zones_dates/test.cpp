@@ -177,6 +177,12 @@ constexpr void year_test() {
     y -= years{2};
     assert(y == 1y);
 
+    year extreme{-30'000};
+    extreme += years{60'000};
+    assert(extreme == 30'000y);
+    extreme -= years{60'000};
+    assert(extreme == -30'000y);
+
     assert(+y == 1y);
     assert(-y == -1y);
     auto y2 = -y;

@@ -35,6 +35,12 @@ static_assert(is_same_v<local_days, time_point<local_t, days>>,
 
 constexpr bool test() {
     steady_clock::time_point tp1;
+
+    static_assert(noexcept(++tp1)); // strengthened
+    static_assert(noexcept(tp1++)); // strengthened
+    static_assert(noexcept(--tp1)); // strengthened
+    static_assert(noexcept(tp1--)); // strengthened
+
     auto tp2 = tp1++;
     assert(tp1.time_since_epoch().count() == 1);
     assert(tp2.time_since_epoch().count() == 0);
