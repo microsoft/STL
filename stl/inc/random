@@ -11,8 +11,8 @@
 #if _STL_COMPILER_PREPROCESSOR
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 #include <iosfwd>
-#include <stdint.h>
 #include <vector>
 #include <xbit_ops.h>
 #include <xstring>
