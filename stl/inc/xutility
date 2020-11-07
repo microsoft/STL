@@ -5600,7 +5600,7 @@ _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked1(_InIt _First, const _InIt _Last, 
     }
 #endif // __cpp_lib_is_constant_evaluated
     const auto _First_ptr = _To_address(_First);
-    const auto _Result    = static_cast<_Iter_value_t<_InIt>*>(
+    const auto _Result    = static_cast<remove_reference_t<_Iter_ref_t<_InIt>>*>(
         _CSTD memchr(_First_ptr, static_cast<unsigned char>(_Val), static_cast<size_t>(_Last - _First)));
 #if _HAS_IF_CONSTEXPR
     if constexpr (is_pointer_v<_InIt>) {
@@ -5624,7 +5624,7 @@ _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked(const _InIt _First, const _InIt _L
             conjunction<is_same<_Ty, byte>, is_same<_Iter_value_t<_InIt>, byte>>
 #endif // __cpp_lib_byte
             >,
-        is_volatile<remove_reference_t<_Iter_ref_t<_InIt>>>>;
+        negation<is_volatile<remove_reference_t<_Iter_ref_t<_InIt>>>>>;
 
     return _Find_unchecked1(_First, _Last, _Val, _Memchr_opt{});
 }
