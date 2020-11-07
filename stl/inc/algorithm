@@ -4879,7 +4879,7 @@ _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
     auto _UDest        = _Get_unwrapped_n(_Dest, _Idl_distance<_BidIt>(_UFirst, _ULast));
 
 #if _HAS_IF_CONSTEXPR && _USE_STD_VECTOR_ALGORITHMS
-    using _Elem                         = remove_reference_t<_Iter_ref_t<decltype(_UFirst)>>;
+    using _Elem                         = remove_reference_t<_Iter_ref_t<remove_const_t<decltype(_UFirst)>>>;
     using _DestElem                     = remove_reference_t<_Iter_ref_t<decltype(_UDest)>>;
     constexpr bool _Allow_vectorization = conjunction_v<is_same<remove_const_t<_Elem>, _DestElem>,
         bool_constant<_Iterators_are_contiguous<decltype(_UFirst), decltype(_UDest)>>, is_trivially_copyable<_Elem>,
