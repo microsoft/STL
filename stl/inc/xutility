@@ -5140,8 +5140,7 @@ _NODISCARD _CONSTEXPR20 bool equal(const _InIt1 _First1, const _InIt1 _Last1, co
         {
             const auto _First1_ch = reinterpret_cast<const char*>(_To_address(_First1));
             const auto _First2_ch = reinterpret_cast<const char*>(_To_address(_First2));
-            const auto _Count =
-                static_cast<size_t>(reinterpret_cast<const char*>(_To_address(_ULast1)) - _First1_ch);
+            const auto _Count = static_cast<size_t>(reinterpret_cast<const char*>(_To_address(_ULast1)) - _First1_ch);
             return _CSTD memcmp(_First1_ch, _First2_ch, _Count) == 0;
         }
     }
@@ -5520,7 +5519,8 @@ _NODISCARD constexpr auto lexicographical_compare_three_way(
 
 // FUNCTION TEMPLATE find
 template <class _Ty>
-_NODISCARD constexpr bool _Within_limits(const _Ty& _Val, true_type, true_type, _Any_tag, false_type) { // signed _Elem, signed _Ty
+_NODISCARD constexpr bool _Within_limits(
+    const _Ty& _Val, true_type, true_type, _Any_tag, false_type) { // signed _Elem, signed _Ty
     return SCHAR_MIN <= _Val && _Val <= SCHAR_MAX;
 }
 
@@ -5600,7 +5600,7 @@ _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked1(_InIt _First, const _InIt _Last, 
     }
 #endif // __cpp_lib_is_constant_evaluated
     const auto _First_ptr = _To_address(_First);
-    const auto _Result = static_cast<_Iter_value_t<_InIt>*>(
+    const auto _Result    = static_cast<_Iter_value_t<_InIt>*>(
         _CSTD memchr(_First_ptr, static_cast<unsigned char>(_Val), static_cast<size_t>(_Last - _First)));
 #if _HAS_IF_CONSTEXPR
     if constexpr (is_pointer_v<_InIt>) {
@@ -5756,7 +5756,7 @@ _CONSTEXPR20 void reverse(const _BidIt _First, const _BidIt _Last) { // reverse 
     using _Elem = remove_reference_t<_Iter_ref_t<decltype(_UFirst)>>;
     constexpr bool _Allow_vectorization = conjunction_v<bool_constant<_Iterator_is_contiguous<decltype(_UFirst)>>,
         _Is_trivially_swappable<_Elem>, negation<is_volatile<_Elem>>>;
-    constexpr size_t _Nx = sizeof(_Elem);
+    constexpr size_t _Nx                = sizeof(_Elem);
 
 #pragma warning(suppress : 6326) // Potential comparison of a constant with another constant
     if constexpr (_Allow_vectorization && _Nx <= 8 && (_Nx & (_Nx - 1)) == 0) {
