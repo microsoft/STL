@@ -5138,8 +5138,8 @@ _NODISCARD _CONSTEXPR20 bool equal(const _InIt1 _First1, const _InIt1 _Last1, co
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
         {
-            const auto _First1_ch = reinterpret_cast<const char*>(_To_address(_First1));
-            const auto _First2_ch = reinterpret_cast<const char*>(_To_address(_First2));
+            const auto _First1_ch = reinterpret_cast<const char*>(_To_address(_UFirst1));
+            const auto _First2_ch = reinterpret_cast<const char*>(_To_address(_UFirst2));
             const auto _Count = static_cast<size_t>(reinterpret_cast<const char*>(_To_address(_ULast1)) - _First1_ch);
             return _CSTD memcmp(_First1_ch, _First2_ch, _Count) == 0;
         }

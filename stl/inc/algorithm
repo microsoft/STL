@@ -432,11 +432,14 @@ namespace ranges {
                 const auto _First_ptr = _STD to_address(_First);
                 const auto _Result = static_cast<iter_value_t<_It>*>(_CSTD memchr(_First_ptr,
                     static_cast<unsigned char>(_Val), static_cast<size_t>(_Last - _First)));
-                if constexpr (is_pointer_v<_It>) {
-                    return _Result ? _Result : _RANGES next(_First, _Last);
+                if (_Result) {
+                    if constexpr (is_pointer_v<_It>) {
+                        return _Result;
+                    } else {
+                        return _RANGES next(_STD move(_First), _Result - _First_ptr);
+                    }
                 } else {
-                    return _Result ? _RANGES next(_STD move(_First), _Result - _First_ptr)
-                        : _RANGES next(_STD move(_First), _Last);
+                    return _RANGES next(_STD move(_First), _Last);
                 }
             }
         }
