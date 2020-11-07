@@ -5753,7 +5753,7 @@ _CONSTEXPR20 void reverse(const _BidIt _First, const _BidIt _Last) { // reverse 
     auto _UFirst = _Get_unwrapped(_First);
     auto _ULast  = _Get_unwrapped(_Last);
 #if _HAS_IF_CONSTEXPR && _USE_STD_VECTOR_ALGORITHMS
-    using _Elem = remove_reference_t<_Iter_ref_t<decltype(_UFirst)>>;
+    using _Elem                         = remove_reference_t<_Iter_ref_t<decltype(_UFirst)>>;
     constexpr bool _Allow_vectorization = conjunction_v<bool_constant<_Iterator_is_contiguous<decltype(_UFirst)>>,
         _Is_trivially_swappable<_Elem>, negation<is_volatile<_Elem>>>;
     constexpr size_t _Nx                = sizeof(_Elem);
