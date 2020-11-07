@@ -64,123 +64,21 @@ stages:
           targetPlatform: x86
           vsDevCmdArch: x86
           numShards: 8
-          shardNum: 1
-
-      - template: azure-devops/run-build.yml
-        parameters:
-          targetPlatform: x86
-          vsDevCmdArch: x86
-          numShards: 8
-          shardNum: 2
-
-      - template: azure-devops/run-build.yml
-        parameters:
-          targetPlatform: x86
-          vsDevCmdArch: x86
-          numShards: 8
-          shardNum: 3
-
-      - template: azure-devops/run-build.yml
-        parameters:
-          targetPlatform: x86
-          vsDevCmdArch: x86
-          numShards: 8
-          shardNum: 4
-
-      - template: azure-devops/run-build.yml
-        parameters:
-          targetPlatform: x86
-          vsDevCmdArch: x86
-          numShards: 8
-          shardNum: 5
-
-      - template: azure-devops/run-build.yml
-        parameters:
-          targetPlatform: x86
-          vsDevCmdArch: x86
-          numShards: 8
-          shardNum: 6
-
-      - template: azure-devops/run-build.yml
-        parameters:
-          targetPlatform: x86
-          vsDevCmdArch: x86
-          numShards: 8
-          shardNum: 7
-
-      - template: azure-devops/run-build.yml
-        parameters:
-          targetPlatform: x86
-          vsDevCmdArch: x86
-          numShards: 8
-          shardNum: 8
 
       - template: azure-devops/run-build.yml
         parameters:
           targetPlatform: x64
           vsDevCmdArch: amd64
           numShards: 8
-          shardNum: 1
-
-      - template: azure-devops/run-build.yml
-        parameters:
-          targetPlatform: x64
-          vsDevCmdArch: amd64
-          numShards: 8
-          shardNum: 2
-
-      - template: azure-devops/run-build.yml
-        parameters:
-          targetPlatform: x64
-          vsDevCmdArch: amd64
-          numShards: 8
-          shardNum: 3
-
-      - template: azure-devops/run-build.yml
-        parameters:
-          targetPlatform: x64
-          vsDevCmdArch: amd64
-          numShards: 8
-          shardNum: 4
-
-      - template: azure-devops/run-build.yml
-        parameters:
-          targetPlatform: x64
-          vsDevCmdArch: amd64
-          numShards: 8
-          shardNum: 5
-
-      - template: azure-devops/run-build.yml
-        parameters:
-          targetPlatform: x64
-          vsDevCmdArch: amd64
-          numShards: 8
-          shardNum: 6
-
-      - template: azure-devops/run-build.yml
-        parameters:
-          targetPlatform: x64
-          vsDevCmdArch: amd64
-          numShards: 8
-          shardNum: 7
-
-      - template: azure-devops/run-build.yml
-        parameters:
-          targetPlatform: x64
-          vsDevCmdArch: amd64
-          numShards: 8
-          shardNum: 8
 
       - template: azure-devops/run-build.yml
         parameters:
           targetPlatform: arm
           vsDevCmdArch: arm
           numShards: 1
-          shardNum: 1
 
       - template: azure-devops/run-build.yml
         parameters:
           targetPlatform: arm64
           vsDevCmdArch: arm64
           numShards: 1
-          shardNum: 1
