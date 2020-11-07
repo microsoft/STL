@@ -916,11 +916,15 @@ namespace chrono {
         }
 
         constexpr year& operator+=(const years& _Years) noexcept {
-            _Year += static_cast<short>(_Years.count());
+            int _Temp = _Year; // TRANSITION, EDG bug not yet reported
+            _Temp += _Years.count();
+            _Year = static_cast<short>(_Temp);
             return *this;
         }
         constexpr year& operator-=(const years& _Years) noexcept {
-            _Year -= static_cast<short>(_Years.count());
+            int _Temp = _Year; // TRANSITION, EDG bug not yet reported
+            _Temp -= _Years.count();
+            _Year = static_cast<short>(_Temp);
             return *this;
         }
 
