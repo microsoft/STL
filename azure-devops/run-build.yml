@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 jobs:
-- job: '${{ parameters.targetPlatform }}_$(System.JobPositionInPhase)'
+- job: '${{ parameters.targetPlatform }}'
   timeoutInMinutes: 360
   variables:
     buildOutputLocation: 'D:\build\${{ parameters.targetPlatform }}'
