@@ -9,7 +9,7 @@
 #include <yvals.h>
 #if _STL_COMPILER_PREPROCESSOR
 
-#include <time.h>
+#include <ctime>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)

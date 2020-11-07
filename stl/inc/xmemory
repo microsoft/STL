@@ -397,7 +397,7 @@ struct _Get_propagate_on_container_swap<_Ty, void_t<typename _Ty::propagate_on_c
 // STRUCT TEMPLATE _Get_is_always_equal
 template <class _Ty, class = void>
 struct _Get_is_always_equal {
-    using type = typename is_empty<_Ty>::type;
+    using type = bool_constant<is_empty_v<_Ty>>;
 };
 
 template <class _Ty>

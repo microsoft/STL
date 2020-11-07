@@ -32,10 +32,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
     <Import Project="$(MSBuildThisFileDirectory)\stl.files.settings.targets"/>
 
-    <ItemGroup>
-        <Lib Condition="'$(Arm64X)' == 'true'" Include="$(IntermediateOutputDirectoryEC)\%2A.obj;"/>
-    </ItemGroup>
-
     <Import Project="$(VCToolsRootPath)\crt\crt_build.targets"/>
     <Target Name="GetBaseAddress"/>
 

@@ -31,6 +31,7 @@ void __CLRCALL_PURE_OR_CDECL ios_base::_Ios_base_dtor(ios_base* _This) { // dest
     }
 
     _This->_Tidy();
+
     delete _This->_Ploc;
 }
 

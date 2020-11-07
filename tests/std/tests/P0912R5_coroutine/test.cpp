@@ -120,6 +120,12 @@ int main() {
     }
 
     assert(g_tasks_destroyed == 11); // triangular_number() called for [0, 10]
+
+    {
+        // Also test GH-1422: hash<coroutine_handle<>>::operator() must be const
+        const hash<coroutine_handle<>> h;
+        (void) h(coroutine_handle<>{});
+    }
 }
 
 #else // ^^^ test <coroutine> ^^^ / vvv don't test <coroutine> vvv
