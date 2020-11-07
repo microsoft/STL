@@ -418,6 +418,29 @@ namespace ranges {
     template <input_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pj>
         requires indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>
     _NODISCARD constexpr _It _Find_unchecked(_It _First, const _Se _Last, const _Ty& _Val, _Pj _Proj) {
+        if constexpr (contiguous_iterator<_It> && sized_sentinel_for<_Se, _It> &&
+            ((integral<_Ty> && _Is_character_or_bool<iter_value_t<_It>>::value)
+#ifdef __cpp_lib_byte
+                || (same_as<_Ty, byte> && same_as<iter_value_t<_It>, byte>)
+#endif // __cpp_lib_byte
+            ) && !is_volatile_v<remove_reference_t<iter_reference_t<_It>>>) {
+            if (!_STD is_constant_evaluated()) {
+                if (!_Within_limits(_First, _Val)) {
+                    return _RANGES next(_STD move(_First), _Last);
+                }
+
+                const auto _First_ptr = _STD to_address(_First);
+                const auto _Result = static_cast<iter_value_t<_It>*>(_CSTD memchr(_First_ptr,
+                    static_cast<unsigned char>(_Val), static_cast<size_t>(_Last - _First)));
+                if constexpr (is_pointer_v<_It>) {
+                    return _Result ? _Result : _RANGES next(_First, _Last);
+                } else {
+                    return _Result ? _RANGES next(_STD move(_First), _Result - _First_ptr)
+                        : _RANGES next(_STD move(_First), _Last);
+                }
+            }
+        }
+
         for (; _First != _Last; ++_First) {
             if (_STD invoke(_Proj, *_First) == _Val) {
                 break;
@@ -927,6 +950,16 @@ namespace ranges {
         template <class _It1, class _It2, class _Size, class _Pr, class _Pj1, class _Pj2>
         _NODISCARD static constexpr bool _Equal_count(
             _It1 _First1, _It2 _First2, _Size _Count, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            if constexpr (_Equal_memcmp_is_safe<_It1, _It2,
+                              _Pr> && same_as<_Pj1, identity> && same_as<_Pj2, identity>) {
+                if (!_STD is_constant_evaluated()) {
+                    const auto _First1_ch = reinterpret_cast<const char*>(_STD to_address(_First1));
+                    const auto _First2_ch = reinterpret_cast<const char*>(_STD to_address(_First2));
+                    const auto _ByteSize  = static_cast<size_t>(_Count) * sizeof(iter_value_t<_It1>);
+                    return _CSTD memcmp(_First1_ch, _First2_ch, _ByteSize) == 0;
+                }
+            }
+
             for (; _Count != 0; ++_First1, (void) ++_First2, --_Count) {
                 if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_First2))) {
                     return false;
@@ -2161,9 +2194,9 @@ _NODISCARD _CONSTEXPR20 bool _Equal_rev_pred_unchecked(_InIt1 _First1, _InIt2 _F
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
         {
-            const auto _First1_ch = reinterpret_cast<const char*>(_First1);
-            const auto _First2_ch = reinterpret_cast<const char*>(_First2);
-            const auto _Count     = static_cast<size_t>(reinterpret_cast<const char*>(_Last2) - _First2_ch);
+            const auto _First1_ch = reinterpret_cast<const char*>(_To_address(_First1));
+            const auto _First2_ch = reinterpret_cast<const char*>(_To_address(_First2));
+            const auto _Count     = static_cast<size_t>(reinterpret_cast<const char*>(_To_address(_Last2)) - _First2_ch);
             return _CSTD memcmp(_First1_ch, _First2_ch, _Count) == 0;
         }
     }
@@ -2192,9 +2225,9 @@ bool _Equal_rev_pred_unchecked(_InIt1 _First1, _InIt2 _First2, const _InIt2 _Las
 template <class _InIt1, class _InIt2, class _Pr, enable_if_t<_Equal_memcmp_is_safe<_InIt1, _InIt2, _Pr>, int> = 0>
 bool _Equal_rev_pred_unchecked(const _InIt1 _First1, const _InIt2 _First2, const _InIt2 _Last2, _Pr) {
     // compare [_First1, ...) to [_First2, _Last2), memcmp optimization
-    const auto _First1_ch = reinterpret_cast<const char*>(_First1);
-    const auto _First2_ch = reinterpret_cast<const char*>(_First2);
-    const auto _Count     = static_cast<size_t>(reinterpret_cast<const char*>(_Last2) - _First2_ch);
+    const auto _First1_ch = reinterpret_cast<const char*>(_To_address(_First1));
+    const auto _First2_ch = reinterpret_cast<const char*>(_To_address(_First2));
+    const auto _Count     = static_cast<size_t>(reinterpret_cast<const char*>(_To_address(_Last2)) - _First2_ch);
     return _CSTD memcmp(_First1_ch, _First2_ch, _Count) == 0;
 }
 #endif // _HAS_IF_CONSTEXPR
@@ -3878,17 +3911,19 @@ namespace ranges {
             auto _UFirst      = _Get_unwrapped(_STD move(_First));
             const auto _ULast = _Get_unwrapped(_STD move(_Last));
             if (!_STD is_constant_evaluated()) {
-                if constexpr (_Fill_memset_is_safe<decltype(_UFirst), _Ty>) {
-                    const auto _Distance = static_cast<size_t>(_ULast - _UFirst);
-                    _Fill_memset(_UFirst, _Value, _Distance);
-                    _Seek_wrapped(_First, _UFirst + _Distance);
-                    return _First;
-                } else if constexpr (_Fill_zero_memset_is_safe<decltype(_UFirst), _Ty>) {
-                    if (_Is_all_bits_zero(_Value)) {
+                if constexpr (sized_sentinel_for<decltype(_ULast), decltype(_UFirst)>) {
+                    if constexpr (_Fill_memset_is_safe<decltype(_UFirst), _Ty>) {
                         const auto _Distance = static_cast<size_t>(_ULast - _UFirst);
-                        _Fill_zero_memset(_UFirst, _Distance);
+                        _Fill_memset(_UFirst, _Value, _Distance);
                         _Seek_wrapped(_First, _UFirst + _Distance);
                         return _First;
+                    } else if constexpr (_Fill_zero_memset_is_safe<decltype(_UFirst), _Ty>) {
+                        if (_Is_all_bits_zero(_Value)) {
+                            const auto _Distance = static_cast<size_t>(_ULast - _UFirst);
+                            _Fill_zero_memset(_UFirst, _Distance);
+                            _Seek_wrapped(_First, _UFirst + _Distance);
+                            return _First;
+                        }
                     }
                 }
             }
@@ -4841,10 +4876,11 @@ _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
     auto _UDest        = _Get_unwrapped_n(_Dest, _Idl_distance<_BidIt>(_UFirst, _ULast));
 
 #if _HAS_IF_CONSTEXPR && _USE_STD_VECTOR_ALGORITHMS
-    using _Elem                         = remove_pointer_t<decltype(_UFirst)>;
-    using _DestElem                     = remove_pointer_t<decltype(_UDest)>;
+    using _Elem                         = remove_reference_t<_Iter_ref_t<decltype(_UFirst)>>;
+    using _DestElem                     = remove_reference_t<_Iter_ref_t<decltype(_UDest)>>;
     constexpr bool _Allow_vectorization = conjunction_v<is_same<remove_const_t<_Elem>, _DestElem>,
-        is_pointer<decltype(_UFirst)>, is_trivially_copyable<_Elem>, negation<is_volatile<_Elem>>>;
+        bool_constant<_Iterators_are_contiguous<decltype(_UFirst), decltype(_UDest)>>, is_trivially_copyable<_Elem>,
+        negation<is_volatile<_Elem>>>;
     constexpr size_t _Nx                = sizeof(_Elem);
 
 #pragma warning(suppress : 6326) // Potential comparison of a constant with another constant
@@ -4854,13 +4890,13 @@ _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
 #endif // __cpp_lib_is_constant_evaluated
         {
             if constexpr (_Nx == 1) {
-                __std_reverse_copy_trivially_copyable_1(_UFirst, _ULast, _UDest);
+                __std_reverse_copy_trivially_copyable_1(_To_address(_UFirst), _To_address(_ULast), _To_address(_UDest));
             } else if constexpr (_Nx == 2) {
-                __std_reverse_copy_trivially_copyable_2(_UFirst, _ULast, _UDest);
+                __std_reverse_copy_trivially_copyable_2(_To_address(_UFirst), _To_address(_ULast), _To_address(_UDest));
             } else if constexpr (_Nx == 4) {
-                __std_reverse_copy_trivially_copyable_4(_UFirst, _ULast, _UDest);
+                __std_reverse_copy_trivially_copyable_4(_To_address(_UFirst), _To_address(_ULast), _To_address(_UDest));
             } else {
-                __std_reverse_copy_trivially_copyable_8(_UFirst, _ULast, _UDest);
+                __std_reverse_copy_trivially_copyable_8(_To_address(_UFirst), _To_address(_ULast), _To_address(_UDest));
             }
 
             _UDest += _ULast - _UFirst;
@@ -10130,6 +10166,19 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It2>);
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se2, _It2>);
             _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, projected<_It1, _Pj1>, projected<_It2, _Pj2>>);
+
+            using _Memcmp_classification_pred =
+                typename decltype(_Lex_compare_memcmp_classify(_First1, _First2, _Pred))::_Pred;
+            if constexpr (!same_as<_Memcmp_classification_pred,
+                              void> && sized_sentinel_for<_Se1, _It1> && sized_sentinel_for<_Se2, _It2>) {
+                if (!_STD is_constant_evaluated()) {
+                    const auto _Num1 = static_cast<size_t>(_Last1 - _First1);
+                    const auto _Num2 = static_cast<size_t>(_Last2 - _First2);
+                    const int _Ans =
+                        _CSTD memcmp(_STD to_address(_First1), _STD to_address(_First2), (_STD min)(_Num1, _Num2));
+                    return _Memcmp_classification_pred{}(_Ans, 0) || (_Ans == 0 && _Num1 < _Num2);
+                }
+            }
 
             for (;; ++_First1, (void) ++_First2) {
                 if (_First2 == _Last2) {

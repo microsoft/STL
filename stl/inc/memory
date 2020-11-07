@@ -954,7 +954,7 @@ namespace ranges {
             if constexpr (_Use_memset_value_construct_v<_It>) {
                 const auto _OFinal = _RANGES next(_OFirst, _STD move(_OLast));
                 const auto _Count  = static_cast<size_t>(_OFinal - _OFirst);
-                _CSTD memset(_OFirst, 0, _Count);
+                _CSTD memset(_STD to_address(_OFirst), 0, _Count);
                 return _OFinal;
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
@@ -1004,7 +1004,7 @@ namespace ranges {
 
             auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
             if constexpr (_Use_memset_value_construct_v<_It>) {
-                _CSTD memset(_UFirst, 0, static_cast<size_t>(_Count));
+                _CSTD memset(_STD to_address(_UFirst), 0, static_cast<size_t>(_Count));
                 _Seek_wrapped(_First, _UFirst + _Count);
             } else {
                 _Uninitialized_backout _Backout{_STD move(_UFirst)};

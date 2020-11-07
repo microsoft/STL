@@ -2245,20 +2245,6 @@ namespace ranges {
         using is_transparent = int;
     };
 
-    // STRUCT ranges::greater
-    struct greater {
-        // clang-format off
-        template <class _Ty1, class _Ty2>
-            requires totally_ordered_with<_Ty1, _Ty2> // TRANSITION, GH-489
-        _NODISCARD constexpr bool operator()(_Ty1&& _Left, _Ty2&& _Right) const noexcept(noexcept(
-            static_cast<bool>(static_cast<_Ty2&&>(_Right) < static_cast<_Ty1&&>(_Left)))) /* strengthened */ {
-            return static_cast<bool>(static_cast<_Ty2&&>(_Right) < static_cast<_Ty1&&>(_Left));
-        }
-        // clang-format on
-
-        using is_transparent = int;
-    };
-
     // STRUCT ranges::greater_equal
     struct greater_equal {
         // clang-format off

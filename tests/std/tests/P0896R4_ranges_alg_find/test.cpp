@@ -48,6 +48,16 @@ struct instantiator {
             STATIC_ASSERT(same_as<decltype(result), iterator_t<Read>>);
             assert(result == wrapped_input.end());
         }
+        { // Validate memchr case [found case]
+            char arr[5]{4, 8, 1, -15, 125};
+            auto result = find(arr, 1);
+            assert(*result == 1);
+        }
+        { // Validate memchr case [not found case]
+            char arr[5]{4, 8, 1, -15, 125};
+            auto result = find(arr, 10);
+            assert(result == end(arr));
+        }
     }
 };
 

@@ -345,4 +345,11 @@ int main() {
         assert(find(begin(sc), end(sc), 0xFFFFFFFFFFFFFF7FULL) == end(sc));
         assert(find(begin(sc), end(sc), 0xFFFFFFFFFFFFFF00ULL) == end(sc));
     }
+
+    { // Test bools
+        const bool arr[]{true, true, true, false, true, false};
+        assert(find(begin(arr), end(arr), false) == begin(arr) + 3);
+        assert(find(begin(arr), end(arr), true) == begin(arr));
+        assert(find(begin(arr), end(arr), 2) == end(arr));
+    }
 }

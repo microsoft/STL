@@ -1839,14 +1839,15 @@ void uninitialized_fill(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last, c
 
 // FUNCTION TEMPLATE _Uninitialized_value_construct_n WITH ALLOCATOR
 template <class _NoThrowFwdIt>
-_INLINE_VAR constexpr bool _Use_memset_value_construct_v = conjunction_v<is_pointer<_NoThrowFwdIt>,
-    is_scalar<_Iter_value_t<_NoThrowFwdIt>>, negation<is_volatile<remove_reference_t<_Iter_ref_t<_NoThrowFwdIt>>>>,
-    negation<is_member_pointer<_Iter_value_t<_NoThrowFwdIt>>>>;
+_INLINE_VAR constexpr bool _Use_memset_value_construct_v =
+    conjunction_v<bool_constant<_Iterator_is_contiguous<_NoThrowFwdIt>>, is_scalar<_Iter_value_t<_NoThrowFwdIt>>,
+        negation<is_volatile<remove_reference_t<_Iter_ref_t<_NoThrowFwdIt>>>>,
+        negation<is_member_pointer<_Iter_value_t<_NoThrowFwdIt>>>>;
 
 template <class _Ptr>
 _Ptr _Zero_range(const _Ptr _First, const _Ptr _Last) { // fill [_First, _Last) with zeroes
-    char* const _First_ch = reinterpret_cast<char*>(_First);
-    char* const _Last_ch  = reinterpret_cast<char*>(_Last);
+    char* const _First_ch = reinterpret_cast<char*>(_To_address(_First));
+    char* const _Last_ch  = reinterpret_cast<char*>(_To_address(_Last));
     _CSTD memset(_First_ch, 0, static_cast<size_t>(_Last_ch - _First_ch));
     return _Last;
 }

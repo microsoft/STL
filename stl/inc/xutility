@@ -3451,6 +3451,20 @@ namespace ranges {
         using is_transparent = int;
     };
 
+    // STRUCT ranges::greater
+    struct greater {
+        // clang-format off
+        template <class _Ty1, class _Ty2>
+            requires totally_ordered_with<_Ty1, _Ty2> // TRANSITION, GH-489
+        _NODISCARD constexpr bool operator()(_Ty1&& _Left, _Ty2&& _Right) const noexcept(noexcept(
+            static_cast<bool>(static_cast<_Ty2&&>(_Right) < static_cast<_Ty1&&>(_Left)))) /* strengthened */ {
+            return static_cast<bool>(static_cast<_Ty2&&>(_Right) < static_cast<_Ty1&&>(_Left));
+        }
+        // clang-format on
+
+        using is_transparent = int;
+    };
+
     // CONCEPT ranges::common_range
     // clang-format off
     template <class _Rng>
@@ -4782,6 +4796,30 @@ _BidIt2 move_backward(_ExPo&&, _BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) noe
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE fill
+
+// _Iterator_is_contiguous<_Iter> reports whether iterator is known to be contiguous.
+// (Without concepts, this detection is limited, which will limit when we can activate the memset optimization.)
+
+#ifdef __cpp_lib_concepts
+// When concepts are available, we can detect arbitrary contiguous iterators.
+template <class _Iter>
+_INLINE_VAR constexpr bool _Iterator_is_contiguous = contiguous_iterator<_Iter>;
+
+template <class _Ptr>
+_NODISCARD constexpr auto _To_address(const _Ptr& _Val) noexcept {
+    return _STD to_address(_Val);
+}
+#else // ^^^ defined(__cpp_lib_concepts) ^^^ / vvv !defined(__cpp_lib_concepts) vvv
+// When concepts aren't available, we can detect pointers. (Iterators should be unwrapped before using this.)
+template <class _Iter>
+_INLINE_VAR constexpr bool _Iterator_is_contiguous = is_pointer_v<_Iter>;
+
+template <class _Ptr>
+_NODISCARD constexpr auto _To_address(const _Ptr& _Val) noexcept {
+    return _Val;
+}
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+
 template <class _Ty>
 struct _Is_character : false_type {}; // by default, not a character type
 
@@ -4800,18 +4838,21 @@ struct _Is_character<char8_t> : true_type {}; // UTF-8 code units are sort-of ch
 #endif // __cpp_char8_t
 
 template <class _Ty>
-struct _Is_character_or_byte_or_bool : _Is_character<_Ty>::type {};
+struct _Is_character_or_bool : _Is_character<_Ty>::type {};
+
+template <>
+struct _Is_character_or_bool<bool> : true_type {};
+
+template <class _Ty>
+struct _Is_character_or_byte_or_bool : _Is_character_or_bool<_Ty>::type {};
 
 #ifdef __cpp_lib_byte
 template <>
 struct _Is_character_or_byte_or_bool<byte> : true_type {};
 #endif // __cpp_lib_byte
 
-template <>
-struct _Is_character_or_byte_or_bool<bool> : true_type {};
-
 // _Fill_memset_is_safe determines if _FwdIt and _Ty are eligible for memset optimization in fill
-template <class _FwdIt, class _Ty, bool = is_pointer_v<_FwdIt>>
+template <class _FwdIt, class _Ty, bool = _Iterator_is_contiguous<_FwdIt>>
 _INLINE_VAR constexpr bool _Fill_memset_is_safe = conjunction_v<is_scalar<_Ty>,
     _Is_character_or_byte_or_bool<_Unwrap_enum_t<remove_reference_t<_Iter_ref_t<_FwdIt>>>>,
     is_assignable<_Iter_ref_t<_FwdIt>, const _Ty&>>;
@@ -4819,7 +4860,7 @@ _INLINE_VAR constexpr bool _Fill_memset_is_safe = conjunction_v<is_scalar<_Ty>,
 template <class _FwdIt, class _Ty>
 _INLINE_VAR constexpr bool _Fill_memset_is_safe<_FwdIt, _Ty, false> = false;
 
-template <class _FwdIt, class _Ty, bool = is_pointer_v<_FwdIt>>
+template <class _FwdIt, class _Ty, bool = _Iterator_is_contiguous<_FwdIt>>
 _INLINE_VAR constexpr bool _Fill_zero_memset_is_safe =
     conjunction_v<is_scalar<_Ty>, is_scalar<_Iter_value_t<_FwdIt>>, negation<is_member_pointer<_Iter_value_t<_FwdIt>>>,
         negation<is_volatile<remove_reference_t<_Iter_ref_t<_FwdIt>>>>, is_assignable<_Iter_ref_t<_FwdIt>, const _Ty&>>;
@@ -4827,15 +4868,16 @@ _INLINE_VAR constexpr bool _Fill_zero_memset_is_safe =
 template <class _FwdIt, class _Ty>
 _INLINE_VAR constexpr bool _Fill_zero_memset_is_safe<_FwdIt, _Ty, false> = false;
 
-template <class _DestTy, class _Ty>
-void _Fill_memset(_DestTy* const _Dest, const _Ty _Val, const size_t _Count) {
-    _DestTy _Dest_val = _Val; // implicitly convert (a cast would suppress warnings); also handles _DestTy being bool
-    _CSTD memset(_Dest, static_cast<unsigned char>(_Dest_val), _Count);
+template <class _CtgIt, class _Ty>
+void _Fill_memset(_CtgIt _Dest, const _Ty _Val, const size_t _Count) {
+    // implicitly convert (a cast would suppress warnings); also handles _DestTy being bool
+    _Iter_value_t<_CtgIt> _Dest_val = _Val;
+    _CSTD memset(_To_address(_Dest), static_cast<unsigned char>(_Dest_val), _Count);
 }
 
-template <class _DestTy>
-void _Fill_zero_memset(_DestTy* const _Dest, const size_t _Count) {
-    _CSTD memset(_Dest, 0, _Count * sizeof(_DestTy));
+template <class _CtgIt>
+void _Fill_zero_memset(_CtgIt _Dest, const size_t _Count) {
+    _CSTD memset(_To_address(_Dest), 0, _Count * sizeof(_Iter_value_t<_CtgIt>));
 }
 
 template <class _Ty>
@@ -5096,9 +5138,10 @@ _NODISCARD _CONSTEXPR20 bool equal(const _InIt1 _First1, const _InIt1 _Last1, co
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
         {
-            const auto _First1_ch = reinterpret_cast<const char*>(_UFirst1);
-            const auto _First2_ch = reinterpret_cast<const char*>(_UFirst2);
-            const auto _Count     = static_cast<size_t>(reinterpret_cast<const char*>(_ULast1) - _First1_ch);
+            const auto _First1_ch = reinterpret_cast<const char*>(_To_address(_First1));
+            const auto _First2_ch = reinterpret_cast<const char*>(_To_address(_First2));
+            const auto _Count =
+                static_cast<size_t>(reinterpret_cast<const char*>(_To_address(_ULast1)) - _First1_ch);
             return _CSTD memcmp(_First1_ch, _First2_ch, _Count) == 0;
         }
     }
@@ -5127,9 +5170,9 @@ bool _Equal_unchecked(_InIt1 _First1, const _InIt1 _Last1, _InIt2 _First2, _Pr _
 template <class _InIt1, class _InIt2, class _Pr, enable_if_t<_Equal_memcmp_is_safe<_InIt1, _InIt2, _Pr>, int> = 0>
 bool _Equal_unchecked(const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2, _Pr) {
     // compare [_First1, _Last1) to [_First2, ...), memcmp optimization
-    const auto _First1_ch = reinterpret_cast<const char*>(_First1);
-    const auto _First2_ch = reinterpret_cast<const char*>(_First2);
-    const auto _Count = static_cast<size_t>(reinterpret_cast<const char*>(_Last1) - _First1_ch);
+    const auto _First1_ch = reinterpret_cast<const char*>(_To_address(_First1));
+    const auto _First2_ch = reinterpret_cast<const char*>(_To_address(_First2));
+    const auto _Count = static_cast<size_t>(reinterpret_cast<const char*>(_To_address(_Last1)) - _First1_ch);
     return _CSTD memcmp(_First1_ch, _First2_ch, _Count) == 0;
 }
 
@@ -5297,6 +5340,8 @@ struct _Lex_compare_check_element_types_helper<byte, byte, void> : true_type {
 template <class _Memcmp_pr>
 struct _Lex_compare_optimize {
     explicit _Lex_compare_optimize() = default;
+
+    using _Pred = _Memcmp_pr;
 }; // optimization tag for lexicographical_compare
 
 template <class _Memcmp_pr, class _Obj1, class _Obj2, class _FTy>
@@ -5310,17 +5355,35 @@ constexpr auto _Lex_compare_memcmp_classify(const _InIt1&, const _InIt2&, const 
     return _Lex_compare_optimize<void>{};
 }
 
-template <class _Obj1, class _Obj2, class _FTy>
-constexpr auto _Lex_compare_memcmp_classify(_Obj1* const&, _Obj2* const&, const less<_FTy>&) {
-    // return lex_compare optimization category for pointer iterators and less<_FTy>
-    return _Lex_compare_check_element_types<less<int>, _Obj1, _Obj2, _FTy>{};
+template <class _CtgIt1, class _CtgIt2, class _FTy, enable_if_t<_Iterators_are_contiguous<_CtgIt1, _CtgIt2>, int> = 0>
+constexpr auto _Lex_compare_memcmp_classify(const _CtgIt1&, const _CtgIt2&, const less<_FTy>&) {
+    // return lex_compare optimization category for contiguous iterators and less<_FTy>
+    return _Lex_compare_check_element_types<less<int>, remove_reference_t<_Iter_ref_t<_CtgIt1>>,
+        remove_reference_t<_Iter_ref_t<_CtgIt2>>, _FTy>{};
 }
 
-template <class _Obj1, class _Obj2, class _FTy>
-constexpr auto _Lex_compare_memcmp_classify(_Obj1* const&, _Obj2* const&, const greater<_FTy>&) {
-    // return lex_compare optimization category for pointer iterators and greater<_FTy>
-    return _Lex_compare_check_element_types<greater<int>, _Obj1, _Obj2, _FTy>{};
+template <class _CtgIt1, class _CtgIt2, class _FTy, enable_if_t<_Iterators_are_contiguous<_CtgIt1, _CtgIt2>, int> = 0>
+constexpr auto _Lex_compare_memcmp_classify(const _CtgIt1&, const _CtgIt2&, const greater<_FTy>&) {
+    // return lex_compare optimization category for contiguous iterators and greater<_FTy>
+    return _Lex_compare_check_element_types<greater<int>, remove_reference_t<_Iter_ref_t<_CtgIt1>>,
+        remove_reference_t<_Iter_ref_t<_CtgIt2>>, _FTy>{};
 }
+
+#ifdef __cpp_lib_concepts
+template <class _CtgIt1, class _CtgIt2, enable_if_t<_Iterators_are_contiguous<_CtgIt1, _CtgIt2>, int> = 0>
+constexpr auto _Lex_compare_memcmp_classify(const _CtgIt1&, const _CtgIt2&, const _RANGES less&) {
+    // return lex_compare optimization category for contiguous iterators and ranges::less
+    return _Lex_compare_check_element_types<less<int>, remove_reference_t<_Iter_ref_t<_CtgIt1>>,
+        remove_reference_t<_Iter_ref_t<_CtgIt2>>, void>{};
+}
+
+template <class _CtgIt1, class _CtgIt2, enable_if_t<_Iterators_are_contiguous<_CtgIt1, _CtgIt2>, int> = 0>
+constexpr auto _Lex_compare_memcmp_classify(const _CtgIt1&, const _CtgIt2&, const _RANGES greater&) {
+    // return lex_compare optimization category for contiguous iterators and ranges::greater
+    return _Lex_compare_check_element_types<greater<int>, remove_reference_t<_Iter_ref_t<_CtgIt1>>,
+        remove_reference_t<_Iter_ref_t<_CtgIt2>>, void>{};
+}
+#endif // __cpp_lib_concepts
 
 template <class _InIt1, class _InIt2, class _Pr>
 _NODISCARD constexpr bool _Lex_compare_unchecked(
@@ -5337,9 +5400,9 @@ _NODISCARD constexpr bool _Lex_compare_unchecked(
     return _First1 == _Last1 && _First2 != _Last2;
 }
 
-template <class _InIt1, class _InIt2, class _Pr, class _Memcmp_pr>
+template <class _CtgIt1, class _CtgIt2, class _Pr, class _Memcmp_pr>
 _NODISCARD _CONSTEXPR20 bool _Lex_compare_unchecked(
-    _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _Pr _Pred, _Lex_compare_optimize<_Memcmp_pr>) {
+    _CtgIt1 _First1, _CtgIt1 _Last1, _CtgIt2 _First2, _CtgIt2 _Last2, _Pr _Pred, _Lex_compare_optimize<_Memcmp_pr>) {
     // order [_First1, _Last1) vs. [_First2, _Last2) memcmp optimization
 #ifdef __cpp_lib_is_constant_evaluated
     if (_STD is_constant_evaluated()) {
@@ -5349,7 +5412,7 @@ _NODISCARD _CONSTEXPR20 bool _Lex_compare_unchecked(
     (void) _Pred;
     const auto _Num1 = static_cast<size_t>(_Last1 - _First1);
     const auto _Num2 = static_cast<size_t>(_Last2 - _First2);
-    const int _Ans   = _CSTD memcmp(_First1, _First2, _Num1 < _Num2 ? _Num1 : _Num2);
+    const int _Ans   = _CSTD memcmp(_To_address(_First1), _To_address(_First2), _Num1 < _Num2 ? _Num1 : _Num2);
     return _Memcmp_pr{}(_Ans, 0) || (_Ans == 0 && _Num1 < _Num2);
 }
 
@@ -5411,17 +5474,17 @@ _NODISCARD constexpr auto lexicographical_compare_three_way(
     using _Ty1         = remove_const_t<remove_pointer_t<_UIt1>>;
     using _Ty2         = remove_const_t<remove_pointer_t<_UIt2>>;
 
-    if constexpr (conjunction_v<is_same<_Cmp, compare_three_way>, is_pointer<_UIt1>, is_pointer<_UIt2>,
-                      disjunction<
+    if constexpr (
+        conjunction_v<is_same<_Cmp, compare_three_way>, bool_constant<_Iterators_are_contiguous<_UIt1, _UIt2>>,
+            disjunction<
 #ifdef __cpp_lib_byte
-                          conjunction<is_same<_Ty1, byte>, is_same<_Ty2, byte>>,
+                conjunction<is_same<_Ty1, byte>, is_same<_Ty2, byte>>,
 #endif // __cpp_lib_byte
-                          conjunction<_Is_character<_Ty1>, is_unsigned<_Ty1>, _Is_character<_Ty2>,
-                              is_unsigned<_Ty2>>>>) {
+                conjunction<_Is_character<_Ty1>, is_unsigned<_Ty1>, _Is_character<_Ty2>, is_unsigned<_Ty2>>>>) {
         if (!_STD is_constant_evaluated()) {
             const auto _Num1 = static_cast<size_t>(_ULast1 - _UFirst1);
             const auto _Num2 = static_cast<size_t>(_ULast2 - _UFirst2);
-            const int _Ans   = _CSTD memcmp(_UFirst1, _UFirst2, (_STD min)(_Num1, _Num2));
+            const int _Ans   = _CSTD memcmp(_To_address(_UFirst1), _To_address(_UFirst2), (_STD min)(_Num1, _Num2));
             if (_Ans == 0) {
                 return _Num1 <=> _Num2;
             } else {
@@ -5457,45 +5520,59 @@ _NODISCARD constexpr auto lexicographical_compare_three_way(
 
 // FUNCTION TEMPLATE find
 template <class _Ty>
-_NODISCARD constexpr bool _Within_limits(const _Ty& _Val, true_type, true_type, _Any_tag) { // signed _Elem, signed _Ty
+_NODISCARD constexpr bool _Within_limits(const _Ty& _Val, true_type, true_type, _Any_tag, false_type) { // signed _Elem, signed _Ty
     return SCHAR_MIN <= _Val && _Val <= SCHAR_MAX;
 }
 
 template <class _Ty>
-_NODISCARD constexpr bool _Within_limits(const _Ty& _Val, true_type, false_type, true_type) {
+_NODISCARD constexpr bool _Within_limits(const _Ty& _Val, true_type, false_type, true_type, false_type) {
     // signed _Elem, unsigned _Ty, -1 == static_cast<_Ty>(-1)
     return _Val <= SCHAR_MAX || static_cast<_Ty>(SCHAR_MIN) <= _Val;
 }
 
 template <class _Ty>
-_NODISCARD constexpr bool _Within_limits(const _Ty& _Val, true_type, false_type, false_type) {
+_NODISCARD constexpr bool _Within_limits(const _Ty& _Val, true_type, false_type, false_type, false_type) {
     // signed _Elem, unsigned _Ty, -1 != static_cast<_Ty>(-1)
     return _Val <= SCHAR_MAX;
 }
 
 template <class _Ty>
-_NODISCARD constexpr bool _Within_limits(const _Ty& _Val, false_type, true_type, _Any_tag) {
+_NODISCARD constexpr bool _Within_limits(const _Ty& _Val, false_type, true_type, _Any_tag, false_type) {
     // unsigned _Elem, signed _Ty
     return 0 <= _Val && _Val <= UCHAR_MAX;
 }
 
 template <class _Ty>
-_NODISCARD constexpr bool _Within_limits(const _Ty& _Val, false_type, false_type, _Any_tag) {
+_NODISCARD constexpr bool _Within_limits(const _Ty& _Val, false_type, false_type, _Any_tag, false_type) {
     // unsigned _Elem, unsigned _Ty
     return _Val <= UCHAR_MAX;
 }
 
+template <class _Ty>
+_NODISCARD constexpr bool _Within_limits(const _Ty& _Val, _Any_tag, _Any_tag, _Any_tag, true_type) {
+    // bool _Elem
+    return _Val == true || _Val == false;
+}
+
 template <class _InIt, class _Ty>
-_NODISCARD constexpr bool _Within_limits(_InIt, const _Ty& _Val) { // check whether _Val is within the limits of _Elem
-    using _Elem = remove_pointer_t<_InIt>;
+_NODISCARD constexpr bool _Within_limits(
+    const _InIt&, const _Ty& _Val) { // check whether _Val is within the limits of _Elem
+    using _Elem = _Iter_value_t<_InIt>;
     return _Within_limits(_Val, bool_constant<is_signed_v<_Elem>>{}, bool_constant<is_signed_v<_Ty>>{},
-        bool_constant<-1 == static_cast<_Ty>(-1)>{});
+        bool_constant<-1 == static_cast<_Ty>(-1)>{}, bool_constant<is_same_v<_Elem, bool>>{});
 }
 
 template <class _InIt>
-_NODISCARD constexpr bool _Within_limits(_InIt, const bool&) { // bools are always within the limits of _Elem
+_NODISCARD constexpr bool _Within_limits(const _InIt&, const bool&) { // bools are always within the limits of _Elem
     return true;
 }
+
+#ifdef __cpp_lib_byte
+template <class _InIt>
+_NODISCARD constexpr bool _Within_limits(const _InIt&, const byte&) { // bytes are only comparable with other bytes
+    return true;
+}
+#endif // __cpp_lib_byte
 
 template <class _InIt, class _Ty>
 _NODISCARD constexpr _InIt _Find_unchecked1(_InIt _First, const _InIt _Last, const _Ty& _Val, false_type) {
@@ -5518,22 +5595,36 @@ _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked1(_InIt _First, const _InIt _Last, 
 
 #ifdef __cpp_lib_is_constant_evaluated
     if (_STD is_constant_evaluated()) {
-        using _Elem = remove_pointer_t<_InIt>;
+        using _Elem = _Iter_value_t<_InIt>;
         return _Find_unchecked1(_First, _Last, static_cast<_Elem>(_Val), false_type{});
     }
 #endif // __cpp_lib_is_constant_evaluated
-    _First =
-        static_cast<_InIt>(_CSTD memchr(_First, static_cast<unsigned char>(_Val), static_cast<size_t>(_Last - _First)));
-    return _First ? _First : _Last;
+    const auto _First_ptr = _To_address(_First);
+    const auto _Result = static_cast<_Iter_value_t<_InIt>*>(
+        _CSTD memchr(_First_ptr, static_cast<unsigned char>(_Val), static_cast<size_t>(_Last - _First)));
+#if _HAS_IF_CONSTEXPR
+    if constexpr (is_pointer_v<_InIt>) {
+        return _Result ? _Result : _Last;
+    } else
+#endif // _HAS_IF_CONSTEXPR
+    {
+        return _Result ? _First + (_Result - _First_ptr) : _Last;
+    }
 }
 
 template <class _InIt, class _Ty>
 _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked(const _InIt _First, const _InIt _Last, const _Ty& _Val) {
     // find first matching _Val; choose optimization
     // activate optimization for pointers to (const) bytes and integral values
-    using _Memchr_opt = bool_constant<
-        is_integral_v<_Ty> && _Is_any_of_v<_InIt, char*, signed char*, unsigned char*, //
-            const char*, const signed char*, const unsigned char*>>;
+    using _Memchr_opt = conjunction<bool_constant<_Iterator_is_contiguous<_InIt>>,
+        disjunction< //
+            conjunction<is_integral<_Ty>, _Is_character_or_bool<_Iter_value_t<_InIt>>>
+#ifdef __cpp_lib_byte
+            ,
+            conjunction<is_same<_Ty, byte>, is_same<_Iter_value_t<_InIt>, byte>>
+#endif // __cpp_lib_byte
+            >,
+        is_volatile<remove_reference_t<_Iter_ref_t<_InIt>>>>;
 
     return _Find_unchecked1(_First, _Last, _Val, _Memchr_opt{});
 }
@@ -5662,9 +5753,9 @@ _CONSTEXPR20 void reverse(const _BidIt _First, const _BidIt _Last) { // reverse 
     auto _UFirst = _Get_unwrapped(_First);
     auto _ULast  = _Get_unwrapped(_Last);
 #if _HAS_IF_CONSTEXPR && _USE_STD_VECTOR_ALGORITHMS
-    using _Elem = remove_pointer_t<decltype(_UFirst)>;
-    constexpr bool _Allow_vectorization =
-        conjunction_v<is_pointer<decltype(_UFirst)>, _Is_trivially_swappable<_Elem>, negation<is_volatile<_Elem>>>;
+    using _Elem = remove_reference_t<_Iter_ref_t<decltype(_UFirst)>>;
+    constexpr bool _Allow_vectorization = conjunction_v<bool_constant<_Iterator_is_contiguous<decltype(_UFirst)>>,
+        _Is_trivially_swappable<_Elem>, negation<is_volatile<_Elem>>>;
     constexpr size_t _Nx = sizeof(_Elem);
 
 #pragma warning(suppress : 6326) // Potential comparison of a constant with another constant
@@ -5674,13 +5765,13 @@ _CONSTEXPR20 void reverse(const _BidIt _First, const _BidIt _Last) { // reverse 
 #endif // __cpp_lib_is_constant_evaluated
         {
             if constexpr (_Nx == 1) {
-                __std_reverse_trivially_swappable_1(_UFirst, _ULast);
+                __std_reverse_trivially_swappable_1(_To_address(_UFirst), _To_address(_ULast));
             } else if constexpr (_Nx == 2) {
-                __std_reverse_trivially_swappable_2(_UFirst, _ULast);
+                __std_reverse_trivially_swappable_2(_To_address(_UFirst), _To_address(_ULast));
             } else if constexpr (_Nx == 4) {
-                __std_reverse_trivially_swappable_4(_UFirst, _ULast);
+                __std_reverse_trivially_swappable_4(_To_address(_UFirst), _To_address(_ULast));
             } else {
-                __std_reverse_trivially_swappable_8(_UFirst, _ULast);
+                __std_reverse_trivially_swappable_8(_To_address(_UFirst), _To_address(_ULast));
             }
 
             return;
