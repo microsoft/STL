@@ -3,13 +3,11 @@
 
 jobs:
 - job: '${{ parameters.targetPlatform }}_$(System.JobPositionInPhase)'
-  strategy:
-    parallel: ${{ parameters.numShards }}
   timeoutInMinutes: 360
   variables:
     buildOutputLocation: 'D:\build\${{ parameters.targetPlatform }}'
     litFlags: '-j$(testParallelism);--timeout=240;--shuffle;--xunit-xml-output=$(buildOutputLocation)/test-results.xml'
-    shardFlags: '--num-shards=${{ parameters.numShards }};--run-shard=$(System.JobPositionInPhase)'
+    shardFlags: '--num-shards=$(System.TotalJobsInPhase);--run-shard=$(System.JobPositionInPhase)'
     vcpkgLocation: '$(Build.SourcesDirectory)/vcpkg'
   steps:
     - script: |
