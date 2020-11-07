@@ -418,7 +418,7 @@ namespace ranges {
     template <input_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pj>
         requires indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>
     _NODISCARD constexpr _It _Find_unchecked(_It _First, const _Se _Last, const _Ty& _Val, _Pj _Proj) {
-        if constexpr (contiguous_iterator<_It> && sized_sentinel_for<_Se, _It> &&
+        if constexpr (contiguous_iterator<_It> && sized_sentinel_for<_Se, _It> && same_as<_Pj, identity> &&
             ((integral<_Ty> && _Is_character_or_bool<iter_value_t<_It>>::value)
 #ifdef __cpp_lib_byte
                 || (same_as<_Ty, byte> && same_as<iter_value_t<_It>, byte>)
@@ -10170,7 +10170,8 @@ namespace ranges {
             using _Memcmp_classification_pred =
                 typename decltype(_Lex_compare_memcmp_classify(_First1, _First2, _Pred))::_Pred;
             if constexpr (!same_as<_Memcmp_classification_pred,
-                              void> && sized_sentinel_for<_Se1, _It1> && sized_sentinel_for<_Se2, _It2>) {
+                    void> && sized_sentinel_for<_Se1, _It1> && sized_sentinel_for<_Se2, _It2> &&
+                same_as<_Pj1, identity> && same_as<_Pj2, identity>) {
                 if (!_STD is_constant_evaluated()) {
                     const auto _Num1 = static_cast<size_t>(_Last1 - _First1);
                     const auto _Num2 = static_cast<size_t>(_Last2 - _First2);
