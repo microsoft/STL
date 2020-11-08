@@ -5037,6 +5037,83 @@ namespace ranges {
 #ifdef __cpp_lib_concepts
 namespace ranges {
     // VARIABLE ranges::rotate
+    template <permutable _It>
+    _NODISCARD constexpr subrange<_It> _Reverse_until_mid_unchecked(_It _First, const _It _Mid, _It _Last) {
+        // reverse until either _First or _Last hits _Mid
+        _STL_INTERNAL_CHECK(_First != _Mid);
+        _STL_INTERNAL_CHECK(_Mid != _Last);
+
+        do {
+            _RANGES iter_swap(_First, --_Last);
+        } while (++_First != _Mid && _Last != _Mid);
+
+        return {_STD move(_First), _STD move(_Last)};
+    }
+
+    template <permutable _It, sentinel_for<_It> _Se>
+    _NODISCARD constexpr subrange<_It> _Rotate_unchecked(_It _First, _It _Mid, _Se _Last) {
+        // Exchange the ranges [_First, _Mid) and [_Mid, _Last)
+        // that is, rotates [_First, _Last) left by distance(_First, _Mid) positions
+
+        if (_First == _Mid) {
+            auto _Final = _Get_final_iterator_unwrapped<_It>(_Mid, _STD move(_Last));
+            return {_Final, _Final};
+        }
+
+        if (_Mid == _Last) {
+            return {_STD move(_First), _STD move(_Mid)};
+        }
+
+        if constexpr (bidirectional_iterator<_It>) {
+            _Reverse_common(_First, _Mid);
+            auto _Final = _Get_final_iterator_unwrapped<_It>(_Mid, _STD move(_Last));
+            _Reverse_common(_Mid, _Final);
+
+            if constexpr (random_access_iterator<_It>) {
+                _Reverse_common(_First, _Final);
+                _First += _Final - _Mid;
+
+                return {_STD move(_First), _STD move(_Final)};
+            } else {
+                const auto _Result = _RANGES _Reverse_until_mid_unchecked(_STD move(_First), _Mid, _Final);
+                auto _Mid_first    = _Result.begin();
+                auto _Mid_last     = _Result.end();
+                _Reverse_common(_Mid_first, _Mid_last);
+
+                if (_Mid_first == _Mid) {
+                    return {_STD move(_Mid_last), _STD move(_Final)};
+                } else {
+                    return {_STD move(_Mid_first), _STD move(_Final)};
+                }
+            }
+        } else {
+            auto _Next = _Mid;
+            do { // rotate the first cycle
+                _RANGES iter_swap(_First, _Next);
+                ++_First;
+                ++_Next;
+                if (_First == _Mid) {
+                    _Mid = _Next;
+                }
+            } while (_Next != _Last);
+
+            auto _Begin = _First;
+
+            while (_Mid != _Last) { // rotate subsequent cycles
+                _Next = _Mid;
+                do {
+                    _RANGES iter_swap(_First, _Next);
+                    ++_First;
+                    ++_Next;
+                    if (_First == _Mid) {
+                        _Mid = _Next;
+                    }
+                } while (_Next != _Last);
+            }
+            return {_STD move(_Begin), _STD move(_Mid)};
+        }
+    }
+
     class _Rotate_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -5045,7 +5122,7 @@ namespace ranges {
         constexpr subrange<_It> operator()(_It _First, _It _Mid, _Se _Last) const {
             _Adl_verify_range(_First, _Mid);
             _Adl_verify_range(_Mid, _Last);
-            auto _UResult = _Rotate_unchecked(
+            auto _UResult = _RANGES _Rotate_unchecked(
                 _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Mid)), _Get_unwrapped(_STD move(_Last)));
 
             return _Rewrap_subrange<subrange<_It>>(_First, _STD move(_UResult));
@@ -5058,90 +5135,9 @@ namespace ranges {
             // clang-format on
             _Adl_verify_range(_RANGES begin(_Range), _Mid);
             _Adl_verify_range(_Mid, _RANGES end(_Range));
-            auto _UResult = _Rotate_unchecked(_Ubegin(_Range), _Get_unwrapped(_STD move(_Mid)), _Uend(_Range));
+            auto _UResult = _RANGES _Rotate_unchecked(_Ubegin(_Range), _Get_unwrapped(_STD move(_Mid)), _Uend(_Range));
 
             return _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_Mid, _STD move(_UResult));
-        }
-
-    private:
-        template <class _It, class _Se>
-        _NODISCARD static constexpr subrange<_It> _Rotate_unchecked(_It _First, _It _Mid, _Se _Last) {
-            // Exchange the ranges [_First, _Mid) and [_Mid, _Last)
-            // that is, rotates [_First, _Last) left by distance(_First, _Mid) positions
-            _STL_INTERNAL_STATIC_ASSERT(permutable<_It>);
-            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
-
-            if (_First == _Mid) {
-                auto _Final = _Get_final_iterator_unwrapped<_It>(_Mid, _STD move(_Last));
-                return {_Final, _Final};
-            }
-
-            if (_Mid == _Last) {
-                return {_STD move(_First), _STD move(_Mid)};
-            }
-
-            if constexpr (bidirectional_iterator<_It>) {
-                _Reverse_common(_First, _Mid);
-                auto _Final = _Get_final_iterator_unwrapped<_It>(_Mid, _STD move(_Last));
-                _Reverse_common(_Mid, _Final);
-
-                if constexpr (random_access_iterator<_It>) {
-                    _Reverse_common(_First, _Final);
-                    _First += _Final - _Mid;
-
-                    return {_STD move(_First), _STD move(_Final)};
-                } else {
-                    const auto _Result = _Reverse_until_mid_unchecked(_STD move(_First), _Mid, _Final);
-                    auto _Mid_first    = _Result.begin();
-                    auto _Mid_last     = _Result.end();
-                    _Reverse_common(_Mid_first, _Mid_last);
-
-                    if (_Mid_first == _Mid) {
-                        return {_STD move(_Mid_last), _STD move(_Final)};
-                    } else {
-                        return {_STD move(_Mid_first), _STD move(_Final)};
-                    }
-                }
-            } else {
-                auto _Next = _Mid;
-                do { // rotate the first cycle
-                    _RANGES iter_swap(_First, _Next);
-                    ++_First;
-                    ++_Next;
-                    if (_First == _Mid) {
-                        _Mid = _Next;
-                    }
-                } while (_Next != _Last);
-
-                auto _Begin = _First;
-
-                while (_Mid != _Last) { // rotate subsequent cycles
-                    _Next = _Mid;
-                    do {
-                        _RANGES iter_swap(_First, _Next);
-                        ++_First;
-                        ++_Next;
-                        if (_First == _Mid) {
-                            _Mid = _Next;
-                        }
-                    } while (_Next != _Last);
-                }
-                return {_STD move(_Begin), _STD move(_Mid)};
-            }
-        }
-
-        template <class _It>
-        _NODISCARD static constexpr subrange<_It> _Reverse_until_mid_unchecked(_It _First, const _It _Mid, _It _Last) {
-            // reverse until either _First or _Last hits _Mid
-            _STL_INTERNAL_STATIC_ASSERT(permutable<_It>);
-            _STL_INTERNAL_CHECK(_First != _Mid);
-            _STL_INTERNAL_CHECK(_Mid != _Last);
-
-            do {
-                _RANGES iter_swap(_First, --_Last);
-            } while (++_First != _Mid && _Last != _Mid);
-
-            return {_STD move(_First), _STD move(_Last)};
         }
     };
 
@@ -6102,7 +6098,7 @@ namespace ranges {
         }
 
         // buffer too small, rotate in place
-        return _RANGES rotate(_STD move(_First), _STD move(_Mid), _STD move(_Last)).begin();
+        return _RANGES _Rotate_unchecked(_STD move(_First), _STD move(_Mid), _STD move(_Last)).begin();
     }
 
     class _Stable_partition_fn : private _Not_quite_object {
