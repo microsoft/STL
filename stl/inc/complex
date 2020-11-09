@@ -28,7 +28,7 @@ extern "C" int __isa_available;
 extern "C" __m128d __cdecl _mm_fmsub_sd(__m128d, __m128d, __m128d);
 #elif defined(_M_ARM64)
 #define _FMP_USING_ARM64_INTRINSICS
-#include <arm64/arm64_neon.h>
+#include <arm64_neon.h>
 #endif // ^^^ defined(_M_ARM64) ^^^
 
 #pragma pack(push, _CRT_PACKING)
