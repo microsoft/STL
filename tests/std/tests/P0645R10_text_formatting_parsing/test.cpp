@@ -266,23 +266,29 @@ constexpr bool test_parse_format_specs() {
 
 int main() {
     test_parse_align<char>();
+    test_parse_align<wchar_t>();
+    static_assert(test_parse_align<char>());
+    static_assert(test_parse_align<wchar_t>());
+
+    test_parse_arg_id<char>();
+    test_parse_arg_id<wchar_t>();
     static_assert(test_parse_arg_id<char>());
     static_assert(test_parse_arg_id<wchar_t>());
+
     test_parse_width<char>();
     test_parse_width<wchar_t>();
     static_assert(test_parse_width<char>());
     static_assert(test_parse_width<wchar_t>());
+
     test_parse_precision<char>();
     test_parse_precision<wchar_t>();
     static_assert(test_parse_precision<char>());
     static_assert(test_parse_precision<wchar_t>());
-    test_parse_precision<char>();
-    test_parse_precision<wchar_t>();
-    static_assert(test_parse_precision<char>());
-    static_assert(test_parse_precision<wchar_t>());
+
     test_parse_format_specs<char>();
     test_parse_format_specs<wchar_t>();
     static_assert(test_parse_format_specs<char>());
     static_assert(test_parse_format_specs<wchar_t>());
+
     return 0;
 }

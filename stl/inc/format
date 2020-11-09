@@ -274,7 +274,6 @@ constexpr const _CharT* _Parse_format_specs(const _CharT* _Begin, const _CharT* 
         return _Begin;
     }
 
-    // Parse hash.
     if (*_Begin == '#') {
         _Callbacks._On_hash();
         if (++_Begin == _End) {
@@ -282,7 +281,6 @@ constexpr const _CharT* _Parse_format_specs(const _CharT* _Begin, const _CharT* 
         }
     }
 
-    // Parse zero flag
     if (*_Begin == '0') {
         _Callbacks._On_zero();
         if (++_Begin == _End) {
@@ -295,12 +293,11 @@ constexpr const _CharT* _Parse_format_specs(const _CharT* _Begin, const _CharT* 
         return _Begin;
     }
 
-    // Parse precision
     if (*_Begin == '.') {
         _Begin = _Parse_precision(_Begin, _End, _Callbacks);
     }
 
-    // Parse type
+    // If there's anything remaining we assume it's a type.
     if (_Begin != _End && *_Begin != '}') {
         _Callbacks._On_type(*_Begin++);
     }
