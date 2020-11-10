@@ -6123,35 +6123,13 @@ struct _CXX17_DEPRECATE_ITERATOR_BASE_CLASS iterator { // base type for iterator
     using reference         = _Reference;
 };
 
-// STRUCT TEMPLATE _Float_traits
-template <class _Ty>
-struct _Float_traits {
-    static_assert(is_floating_point_v<_Ty>, "_Float_traits<NonFloatingPoint> is invalid");
-
-    // traits for double and long double:
-    using type = unsigned long long;
-
-    static constexpr type _Sign_mask      = 0x8000'0000'0000'0000ULL;
-    static constexpr type _Magnitude_mask = 0x7fff'ffff'ffff'ffffULL;
-    static constexpr type _Exponent_mask  = 0x7ff0'0000'0000'0000ULL;
-    static constexpr type _Quiet_nan_mask = 0x0008'0000'0000'0000ULL;
-};
-
-template <>
-struct _Float_traits<float> {
-    using type = unsigned int;
-
-    static constexpr type _Sign_mask      = 0x8000'0000U;
-    static constexpr type _Magnitude_mask = 0x7fff'ffffU;
-    static constexpr type _Exponent_mask  = 0x7f80'0000U;
-    static constexpr type _Quiet_nan_mask = 0x0040'0000U;
-};
-
 // FUNCTION TEMPLATE _Float_abs_bits
 template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR_BIT_CAST auto _Float_abs_bits(const _Ty& _Xx) {
-    const auto _Bits = _Bit_cast<typename _Float_traits<_Ty>::type>(_Xx);
-    return _Bits & _Float_traits<_Ty>::_Magnitude_mask;
+    using _Traits    = _Floating_type_traits<_Ty>;
+    using _Uint_type = typename _Traits::_Uint_type;
+    const auto _Bits = _Bit_cast<_Uint_type>(_Xx);
+    return _Bits & ~_Traits::_Shifted_sign_mask;
 }
 
 // FUNCTION TEMPLATE _Float_abs
@@ -6163,14 +6141,17 @@ _NODISCARD _CONSTEXPR_BIT_CAST _Ty _Float_abs(const _Ty _Xx) { // constexpr floa
 // FUNCTION TEMPLATE _Float_copysign
 template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR_BIT_CAST _Ty _Float_copysign(const _Ty _Magnitude, const _Ty _Sign) { // constexpr copysign()
-    const auto _Signbit = _Bit_cast<typename _Float_traits<_Ty>::type>(_Sign) & _Float_traits<_Ty>::_Sign_mask;
+    using _Traits       = _Floating_type_traits<_Ty>;
+    using _Uint_type    = typename _Traits::_Uint_type;
+    const auto _Signbit = _Bit_cast<_Uint_type>(_Sign) & _Traits::_Shifted_sign_mask;
     return _Bit_cast<_Ty>(_Float_abs_bits(_Magnitude) | _Signbit);
 }
 
 // FUNCTION TEMPLATE _Is_nan
 template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR_BIT_CAST bool _Is_nan(const _Ty _Xx) { // constexpr isnan()
-    return _Float_abs_bits(_Xx) > _Float_traits<_Ty>::_Exponent_mask;
+    using _Traits = _Floating_type_traits<_Ty>;
+    return _Float_abs_bits(_Xx) > _Traits::_Shifted_exponent_mask;
 }
 
 // FUNCTION TEMPLATE _Is_signaling_nan
@@ -6180,20 +6161,23 @@ _NODISCARD _CONSTEXPR_BIT_CAST bool _Is_nan(const _Ty _Xx) { // constexpr isnan(
 // and turns it into a quiet NaN. This behavior is undesirable if we want to test for signaling NaNs.
 template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR_BIT_CAST bool _Is_signaling_nan(const _Ty& _Xx) { // returns true if input is a signaling NaN
+    using _Traits        = _Floating_type_traits<_Ty>;
     const auto _Abs_bits = _Float_abs_bits(_Xx);
-    return _Abs_bits > _Float_traits<_Ty>::_Exponent_mask && ((_Abs_bits & _Float_traits<_Ty>::_Quiet_nan_mask) == 0);
+    return _Abs_bits > _Traits::_Shifted_exponent_mask && ((_Abs_bits & _Traits::_Special_nan_mantissa_mask) == 0);
 }
 
 // FUNCTION TEMPLATE _Is_inf
 template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR_BIT_CAST bool _Is_inf(const _Ty _Xx) { // constexpr isinf()
-    return _Float_abs_bits(_Xx) == _Float_traits<_Ty>::_Exponent_mask;
+    using _Traits = _Floating_type_traits<_Ty>;
+    return _Float_abs_bits(_Xx) == _Traits::_Shifted_exponent_mask;
 }
 
 // FUNCTION TEMPLATE _Is_finite
 template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR_BIT_CAST bool _Is_finite(const _Ty _Xx) { // constexpr isfinite()
-    return _Float_abs_bits(_Xx) < _Float_traits<_Ty>::_Exponent_mask;
+    using _Traits = _Floating_type_traits<_Ty>;
+    return _Float_abs_bits(_Xx) < _Traits::_Shifted_exponent_mask;
 }
 
 // STRUCT _Nontrivial_dummy_type
