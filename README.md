@@ -150,7 +150,7 @@ acquire this dependency.
 2. Open Visual Studio, and choose the "Clone or check out code" option. Enter the URL of this repository,
    `https://github.com/microsoft/STL`.
 3. Open a terminal in the IDE with `` Ctrl + ` `` (by default) or press on "View" in the top bar, and then "Terminal".
-4. In the terminal, invoke `git submodule update --init vcpkg`
+4. In the terminal, invoke `git submodule update --init --progress llvm-project vcpkg`
 5. In the terminal, invoke `.\vcpkg\bootstrap-vcpkg.bat`
 6. In the terminal, invoke `.\vcpkg\vcpkg.exe install boost-math:x86-windows boost-math:x64-windows`
 7. Choose the architecture you wish to build in the IDE, and build as you would any other project. All necessary CMake
@@ -166,7 +166,7 @@ acquire this dependency.
 3. Change directories to a location where you'd like a clone of this STL repository.
 4. `git clone https://github.com/microsoft/STL`
 5. `cd STL`
-6. `git submodule update --init vcpkg`
+6. `git submodule update --init --progress llvm-project vcpkg`
 7. `.\vcpkg\bootstrap-vcpkg.bat`
 8. `.\vcpkg\vcpkg.exe install boost-math:x86-windows boost-math:x64-windows`
 
@@ -234,13 +234,12 @@ C:\Users\username\Desktop>dumpbin /IMPORTS .\example.exe | findstr msvcp
 # How To Run The Tests With A Native Tools Command Prompt
 
 1. Follow either [How To Build With A Native Tools Command Prompt][] or [How To Build With The Visual Studio IDE][].
-2. Invoke `git submodule update --init llvm-project` at the root of the STL source tree.
-3. Acquire [Python][] 3.9 or newer and have it on the `PATH` (or run it directly using its absolute or relative path).
-4. Have LLVM's `bin` directory on the `PATH` (so `clang-cl.exe` is available).
+2. Acquire [Python][] 3.9 or newer and have it on the `PATH` (or run it directly using its absolute or relative path).
+3. Have LLVM's `bin` directory on the `PATH` (so `clang-cl.exe` is available).
     * We recommend selecting "C++ Clang tools for Windows" in the VS Installer. This will automatically add LLVM to the
     `PATH` of the x86 and x64 Native Tools Command Prompts, and will ensure that you're using a supported version.
     * Otherwise, use [LLVM's installer][] and choose to add LLVM to your `PATH` during installation.
-5. Follow the instructions below.
+4. Follow the instructions below.
 
 ## Running All The Tests
 
