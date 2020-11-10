@@ -15,6 +15,13 @@
 #include <typeinfo>
 #include <utility>
 
+#if _HAS_CXX17
+#include <string_view>
+using string_or_view = std::string_view;
+#else
+using string_or_view = std::string;
+#endif
+
 using namespace std;
 using namespace std::placeholders;
 
@@ -678,7 +685,7 @@ STATIC_ASSERT(is_same_v<result_of_t<const Purr()>, long>);
 STATIC_ASSERT(is_same_v<result_of_t<const Purr&()>, short>);
 STATIC_ASSERT(is_same_v<result_of_t<const Purr && ()>, long>);
 
-// Also test references to functions, DDB#198033.
+// Also test references to functions, DDB-198033.
 using FuncRef = int (&)(float, double);
 STATIC_ASSERT(is_same_v<result_of_t<FuncRef(float, double)>, int>);
 
@@ -716,41 +723,8 @@ int cube_noexcept(int n) noexcept {
     return n * n * n;
 }
 
-void test_dev11_391117();
-void test_dev11_535636();
-void test_dev11_794227();
-void test_dev11_868374();
-void test_more_reference_wrapper();
-void test_reference_wrapper_invocation();
-void test_invoke();
-void test_mem_fn();
-void test_function();
-void test_bind();
-void test_more_bind();
-void test_dev11_1160769();
-void test_not_fn();
 
-int main() {
-    // Test addressof() with functions.
-    assert(addressof(triple) == &triple);
-
-    test_dev11_391117();
-    test_dev11_535636();
-    test_dev11_794227();
-    test_dev11_868374();
-    test_more_reference_wrapper();
-    test_reference_wrapper_invocation();
-    test_invoke();
-    test_mem_fn();
-    test_function();
-    test_bind();
-    test_more_bind();
-    test_dev11_1160769();
-    test_not_fn();
-}
-
-
-// Test DevDiv#391117 "<functional> reference_wrapper: reference_wrapper doesn't compile with pure virtual function call
+// Test DevDiv-391117 "<functional> reference_wrapper: reference_wrapper doesn't compile with pure virtual function call
 // operators".
 struct BaseMeow {
     BaseMeow() {}
@@ -777,7 +751,7 @@ void test_dev11_391117() {
 }
 
 
-// Test DevDiv#535636 "<functional> reference_wrapper: reference_wrapper<int (int)>::get() doesn't compile".
+// Test DevDiv-535636 "<functional> reference_wrapper: reference_wrapper<int (int)>::get() doesn't compile".
 void test_dev11_535636() {
     reference_wrapper<int(int)> rw(triple);
 
@@ -793,7 +767,7 @@ void test_dev11_535636() {
 }
 
 
-// Test DevDiv#794227 "<functional> reference_wrapper: ambiguous access of result_type - functional, xrefwrap".
+// Test DevDiv-794227 "<functional> reference_wrapper: ambiguous access of result_type - functional, xrefwrap".
 template <typename Arg, typename Result>
 struct UnaryFunction {
     typedef Arg argument_type;
@@ -832,7 +806,7 @@ void test_dev11_794227() {
 }
 
 
-// Test DevDiv#868374 "<functional> reference_wrapper: Cannot assign a std::reference_wrapper object to another
+// Test DevDiv-868374 "<functional> reference_wrapper: Cannot assign a std::reference_wrapper object to another
 // std::reference_wrapper object [libcxx]".
 void test_dev11_868374() {
     reference_wrapper<int(int)> rw(triple);
@@ -877,7 +851,7 @@ void test_dev11_868374() {
 
 
 // More reference_wrapper tests.
-void test_more_reference_wrapper() {
+_CONSTEXPR20 bool test_more_reference_wrapper() {
     STATIC_ASSERT(is_trivially_copyable_v<reference_wrapper<int>>);
     STATIC_ASSERT(is_trivially_copyable_v<reference_wrapper<string>>);
     STATIC_ASSERT(is_trivially_copyable_v<reference_wrapper<int(int, int)>>);
@@ -908,6 +882,20 @@ void test_more_reference_wrapper() {
     auto crw3 = cref(crw);
     STATIC_ASSERT(is_same_v<decltype(crw3), reference_wrapper<const int>>);
     assert(&crw3.get() == &x);
+
+    struct Cat {};
+    struct Dog {
+        Cat cat;
+        constexpr operator Cat&() {
+            return cat;
+        }
+    };
+
+    Dog dog;
+    reference_wrapper<Cat> catref(dog);
+    assert(&catref.get() == &dog.cat);
+
+    return true;
 }
 
 
@@ -939,7 +927,7 @@ struct Thing {
 
 class UnaryBinary {
 public:
-    // Originally for testing Dev10#539137
+    // Originally for testing Dev10-539137
     // "reference_wrapper: Doesn't handle classes that derive from both unary_function and binary_function".
     // The typedefs are tested elsewhere here (see SameResults and DifferentResults).
 
@@ -1108,28 +1096,32 @@ void test_invoke() {
     assert(invoke(&Thing::sum, sp, 6) == 1026);
     STATIC_ASSERT(!noexcept(invoke(&Thing::sum, sp, 6) == 1026));
 
-#if _HAS_CXX17
+    constexpr bool noexcept_is_in_the_type_system =
+#ifdef __cpp_noexcept_function_type
+        true
+#else
+        false
+#endif // __cpp_noexcept_function_type
+        ;
+
     assert(invoke(&Thing::sum_noexcept, *sp, 3) == 1023);
-    STATIC_ASSERT(noexcept(invoke(&Thing::sum_noexcept, *sp, 3) == 1023));
+    STATIC_ASSERT(noexcept(invoke(&Thing::sum_noexcept, *sp, 3) == 1023) == noexcept_is_in_the_type_system);
     assert(invoke(&Thing::sum_noexcept, ref(*sp), 4) == 1024);
-    STATIC_ASSERT(noexcept(invoke(&Thing::sum_noexcept, ref(*sp), 4) == 1024));
+    STATIC_ASSERT(noexcept(invoke(&Thing::sum_noexcept, ref(*sp), 4) == 1024) == noexcept_is_in_the_type_system);
     assert(invoke(&Thing::sum_noexcept, sp.get(), 5) == 1025);
-    STATIC_ASSERT(noexcept(invoke(&Thing::sum_noexcept, sp.get(), 5) == 1025));
+    STATIC_ASSERT(noexcept(invoke(&Thing::sum_noexcept, sp.get(), 5) == 1025) == noexcept_is_in_the_type_system);
     assert(invoke(&Thing::sum_noexcept, sp, 6) == 1026);
-    STATIC_ASSERT(noexcept(invoke(&Thing::sum_noexcept, sp, 6) == 1026));
-#endif // _HAS_CXX17
+    STATIC_ASSERT(noexcept(invoke(&Thing::sum_noexcept, sp, 6) == 1026) == noexcept_is_in_the_type_system);
 
     assert(invoke(square, 6) == 36);
     STATIC_ASSERT(!noexcept(invoke(square, 6) == 36));
     assert(invoke(&cube, 7) == 343);
     STATIC_ASSERT(!noexcept(invoke(&cube, 7) == 343));
 
-#if _HAS_CXX17
     assert(invoke(square_noexcept, 6) == 36);
-    STATIC_ASSERT(noexcept(invoke(square_noexcept, 6) == 36));
+    STATIC_ASSERT(noexcept(invoke(square_noexcept, 6) == 36) == noexcept_is_in_the_type_system);
     assert(invoke(&cube_noexcept, 7) == 343);
-    STATIC_ASSERT(noexcept(invoke(&cube_noexcept, 7) == 343));
-#endif // _HAS_CXX17
+    STATIC_ASSERT(noexcept(invoke(&cube_noexcept, 7) == 343) == noexcept_is_in_the_type_system);
 }
 
 
@@ -1297,7 +1289,7 @@ STATIC_ASSERT(TestRWTypes<Empty, None, None, None, None>::value);
 STATIC_ASSERT(TestRWTypes<int, None, None, None, None>::value);
 STATIC_ASSERT(TestRWTypes<int X::*, None, None, None, None>::value);
 
-// Test DevDiv#864867 "<functional> reference_wrapper: reference_wrapper should handle functors that are both unary and
+// Test DevDiv-864867 "<functional> reference_wrapper: reference_wrapper should handle functors that are both unary and
 // binary [libs-conformance]".
 struct SameResults : UnaryFunction<int, bool>, BinaryFunction<short, long, bool> {
 
@@ -1319,29 +1311,29 @@ STATIC_ASSERT(TestRWTypes<DifferentResults, None, unsigned int, unsigned short, 
 #endif // _HAS_CXX20
 
 // Test mem_fn().
-void test_mem_fn() {
+_CONSTEXPR20 bool test_mem_fn() {
     struct Widget {
         int m_i = 100;
 
-        int nullary() {
+        constexpr int nullary() {
             return ++m_i;
         }
-        int unary(int x) {
+        constexpr int unary(int x) {
             return m_i += x;
         }
-        int binary(int x, int y) {
+        constexpr int binary(int x, int y) {
             return m_i += x * y;
         }
-        int nullary_c() const {
+        constexpr int nullary_c() const {
             return m_i * 2;
         }
-        int unary_c(int x) const {
+        constexpr int unary_c(int x) const {
             return m_i * x;
         }
-        int unary_lv(int x) & {
+        constexpr int unary_lv(int x) & {
             return m_i += x * x;
         }
-        int unary_rv(int x) && {
+        constexpr int unary_rv(int x) && {
             return m_i += x * x * x;
         }
     };
@@ -1400,6 +1392,8 @@ void test_mem_fn() {
     assert(mem_fn(&Widget::unary_lv)(&w, 6) == 1061);
 
     assert(mem_fn(&Widget::unary_rv)(move(w), 7) == 1404);
+
+    return true;
 }
 
 
@@ -1475,7 +1469,7 @@ void test_function() {
     // std::functions.
 
 
-    // Test DevDiv#759096 "<functional> function: std::function construction copies its target instead of moving".
+    // Test DevDiv-759096 "<functional> function: std::function construction copies its target instead of moving".
     {
         CopyMoveCounter<1> cmc0;
         CopyMoveCounter<1> cmc1(cmc0);
@@ -1673,7 +1667,7 @@ void test_function() {
     }
 
 
-    // Test DevDiv#1010027 "<functional> function: std::function with return type void does not ignore return type on
+    // Test DevDiv-1010027 "<functional> function: std::function with return type void does not ignore return type on
     // assignment".
     {
         string s("ChooseAMovieTitle");
@@ -1722,8 +1716,8 @@ void test_function() {
     }
 
 
-    // Test DevDiv#294051 "<functional> function: std::function has lost the ability to invoke PMFs/PMDs on various
-    // things". Test DevDiv#789899 "<functional> function: std::function does not work for member functions".
+    // Test DevDiv-294051 "<functional> function: std::function has lost the ability to invoke PMFs/PMDs on various
+    // things". Test DevDiv-789899 "<functional> function: std::function does not work for member functions".
     {
         struct Y {
             int m_n;
@@ -1872,7 +1866,7 @@ void test_function() {
 
 // Test bind(), user-reported bugs.
 void test_bind() {
-    // Test DDB#176058 "TR1: result_of doesn't accept result_type typedefs for references" (title is now bogus).
+    // Test DDB-176058 "TR1: result_of doesn't accept result_type typedefs for references" (title is now bogus).
     {
         struct PassThru {
             int& operator()(int& obj) const {
@@ -1890,9 +1884,9 @@ void test_bind() {
     }
 
 
-    // Test DevDiv#343411 "<functional> bind: bind() and std::function don't work with rvalue references".
-    // Test DevDiv#410033 "<functional>: bind() doesn't work with rvalue reference signatures".
-    // Test DevDiv#862588 "<functional> bind: std::bind doesn't forward unbound arguments".
+    // Test DevDiv-343411 "<functional> bind: bind() and std::function don't work with rvalue references".
+    // Test DevDiv-410033 "<functional>: bind() doesn't work with rvalue reference signatures".
+    // Test DevDiv-862588 "<functional> bind: std::bind doesn't forward unbound arguments".
     {
 #ifndef _M_CEE_PURE
 
@@ -1931,8 +1925,8 @@ void test_bind() {
 }
 
 
-// Test DevDiv#487679 "<functional> bind: MSVS 2012 C++ std::bind illegal indirection compiler error".
-// Test DevDiv#617421 "<functional> bind: Bind failing to compile with a vector of functions".
+// Test DevDiv-487679 "<functional> bind: MSVS 2012 C++ std::bind illegal indirection compiler error".
+// Test DevDiv-617421 "<functional> bind: Bind failing to compile with a vector of functions".
 {
     struct BaseFunctor {
         int operator()(int n) const {
@@ -1950,7 +1944,7 @@ void test_bind() {
 }
 
 
-// Test DevDiv#505570 "<functional> bind: Can't bind a pointer to a data member using a pointer, smart pointer or
+// Test DevDiv-505570 "<functional> bind: Can't bind a pointer to a data member using a pointer, smart pointer or
 // iterator to the object".
 {
     struct Object {
@@ -1974,7 +1968,7 @@ void test_bind() {
 }
 
 
-// Test DevDiv#535246 "<functional> bind: Cannot call const forwarding call wrapper result of std::bind".
+// Test DevDiv-535246 "<functional> bind: Cannot call const forwarding call wrapper result of std::bind".
 {
     const auto cb = bind(&quadruple, 11);
 
@@ -1993,7 +1987,7 @@ namespace std {
 
 struct UserBind {
     template <typename T>
-    T operator()(const T& a, const T& b) const {
+    constexpr T operator()(const T& a, const T& b) const {
         return a + b + b;
     }
 };
@@ -2008,17 +2002,17 @@ struct Pack {};
 
 struct Typewriter {
     template <typename... Types>
-    Pack<Typewriter&, Types&&...> operator()(Types&&...) {
+    constexpr Pack<Typewriter&, Types&&...> operator()(Types&&...) {
         return Pack<Typewriter&, Types&&...>();
     }
 
     template <typename... Types>
-    Pack<const Typewriter&, Types&&...> operator()(Types&&...) const {
+    constexpr Pack<const Typewriter&, Types&&...> operator()(Types&&...) const {
         return Pack<const Typewriter&, Types&&...>();
     }
 };
 
-void test_more_bind() {
+_CONSTEXPR20 bool test_more_bind() {
     STATIC_ASSERT(is_placeholder_v<int> == 0);
 
     STATIC_ASSERT(is_placeholder_v<decltype(_1)> == 1);
@@ -2110,11 +2104,11 @@ void test_more_bind() {
 
     // Verify that bind()'s function call operator is const-overloaded.
     struct ConstOverloaded {
-        int operator()(int x, int y) {
+        constexpr int operator()(int x, int y) {
             return x * x * y;
         }
 
-        int operator()(int x, int y) const {
+        constexpr int operator()(int x, int y) const {
             return x * x * x * y;
         }
     };
@@ -2134,15 +2128,15 @@ void test_more_bind() {
         return p + i;
     };
 
-    const string s("cute fluffy kittens");
+    const string_or_view s("cute fluffy kittens");
 
-    assert(bind<const char*>(lambda2, s.c_str(), _1)(2) == s.c_str() + 2);
+    assert(bind<const char*>(lambda2, s.data(), _1)(2) == s.data() + 2);
     assert(calls == 1);
 
-    assert(bind<string>(lambda2, s.c_str(), _1)(3).size() == 16);
+    assert(bind<string_or_view>(lambda2, s.data(), _1)(3).size() == 16);
     assert(calls == 2);
 
-    bind<void>(lambda2, s.c_str(), _1)(4);
+    bind<void>(lambda2, s.data(), _1)(4);
     assert(calls == 3);
 
 
@@ -2169,10 +2163,61 @@ void test_more_bind() {
     STATIC_ASSERT(
         is_same_v<decltype(p11), Pack<const Typewriter&, const bool&,
                                      Pack<const Typewriter&, Z&, const Z&, Z&&, const Z&&>&&, Z&, const double&>>);
+
+#if _HAS_CXX17
+    struct NothrowInvocable {
+        int operator()(int i) noexcept {
+            return i;
+        }
+    };
+    struct NotNothrowInvocable {
+        int operator()(int i) {
+            return i;
+        }
+    };
+    struct PossiblyThrowingInt {
+        int i;
+        PossiblyThrowingInt() = default;
+        constexpr PossiblyThrowingInt(int j) : i(j) {}
+        operator int() {
+            return i;
+        }
+    };
+    PossiblyThrowingInt possibly_throwing_int{1729};
+
+    static_assert(is_nothrow_invocable_v<decltype(bind(NothrowInvocable{}, 0))>);
+    static_assert(is_nothrow_invocable_v<decltype(bind(NothrowInvocable{}, ref(n)))>);
+    static_assert(is_nothrow_invocable_v<decltype(bind(NothrowInvocable{}, _1)), int>);
+    static_assert(is_nothrow_invocable_v<decltype(bind<long>(NothrowInvocable{}, 0))>);
+    static_assert(is_nothrow_invocable_v<decltype(bind<long>(NothrowInvocable{}, ref(n)))>);
+    static_assert(is_nothrow_invocable_v<decltype(bind<long>(NothrowInvocable{}, _1)), int>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind<PossiblyThrowingInt>(NothrowInvocable{}, 0))>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind<PossiblyThrowingInt>(NothrowInvocable{}, ref(n)))>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind<PossiblyThrowingInt>(NothrowInvocable{}, _1)), int>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind(NothrowInvocable{}, PossiblyThrowingInt{}))>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind(NothrowInvocable{}, ref(possibly_throwing_int)))>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind(NothrowInvocable{}, _1)), PossiblyThrowingInt>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind<long>(NothrowInvocable{}, PossiblyThrowingInt{}))>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind<long>(NothrowInvocable{}, ref(possibly_throwing_int)))>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind<long>(NothrowInvocable{}, _1)), PossiblyThrowingInt>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind(NotNothrowInvocable{}, 0))>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind(NotNothrowInvocable{}, ref(n)))>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind(NotNothrowInvocable{}, _1)), int>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind<long>(NotNothrowInvocable{}, 0))>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind<long>(NotNothrowInvocable{}, ref(n)))>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind<long>(NotNothrowInvocable{}, _1)), int>);
+
+    static_assert(is_nothrow_invocable_v<decltype(bind(NothrowInvocable{}, bind(NothrowInvocable{}, _1))), int>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind(NothrowInvocable{}, bind(NotNothrowInvocable{}, _1))), int>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind(NotNothrowInvocable{}, bind(NothrowInvocable{}, _1))), int>);
+    static_assert(!is_nothrow_invocable_v<decltype(bind(NotNothrowInvocable{}, bind(NotNothrowInvocable{}, _1))), int>);
+#endif // _HAS_CXX17
+
+    return true;
 }
 
 
-// Test DevDiv#1160769 "<functional>: bind()'s cv-overloaded function call operators are triggering Expression SFINAE
+// Test DevDiv-1160769 "<functional>: bind()'s cv-overloaded function call operators are triggering Expression SFINAE
 // problems".
 struct Test1160769 {
     void method(const int&) {}
@@ -2195,56 +2240,56 @@ struct BoolWrapper {
 struct TestNotFn {
     int m_x;
 
-    explicit TestNotFn(const int x) : m_x(x) {}
+    constexpr explicit TestNotFn(const int x) : m_x(x) {}
 
     TestNotFn(const TestNotFn&) = delete;
     TestNotFn(TestNotFn&&)      = default;
     TestNotFn& operator=(const TestNotFn&) = delete;
     TestNotFn& operator=(TestNotFn&&) = delete;
 
-    bool operator()(const int i) & {
+    constexpr bool operator()(const int i) & {
         return i < m_x + 100;
     }
 
-    bool operator()(const int i) const& {
+    constexpr bool operator()(const int i) const& {
         return i < m_x + 200;
     }
 
-    bool operator()(const int i) && {
+    constexpr bool operator()(const int i) && {
         return i < m_x + 300;
     }
 
-    bool operator()(const int i) const&& {
+    constexpr bool operator()(const int i) const&& {
         return i < m_x + 400;
     }
 };
 
 struct EmptyTestNotFn {
-    explicit EmptyTestNotFn(int) {}
+    constexpr explicit EmptyTestNotFn(int) {}
 
-    EmptyTestNotFn(const EmptyTestNotFn&) = delete;
-    EmptyTestNotFn(EmptyTestNotFn&&)      = default;
+    EmptyTestNotFn(const EmptyTestNotFn&)      = delete;
+    constexpr EmptyTestNotFn(EmptyTestNotFn&&) = default;
     EmptyTestNotFn& operator=(const EmptyTestNotFn&) = delete;
     EmptyTestNotFn& operator=(EmptyTestNotFn&&) = delete;
 
-    bool operator()(const int i) & {
+    constexpr bool operator()(const int i) & {
         return i < 1500;
     }
 
-    bool operator()(const int i) const& {
+    constexpr bool operator()(const int i) const& {
         return i < 2500;
     }
 
-    bool operator()(const int i) && {
+    constexpr bool operator()(const int i) && {
         return i < 3500;
     }
 
-    bool operator()(const int i) const&& {
+    constexpr bool operator()(const int i) const&& {
         return i < 4500;
     }
 };
 
-void test_not_fn() {
+_CONSTEXPR20 bool test_not_fn() {
 #if _HAS_CXX17
     {
         BoolWrapper bw_true{true};
@@ -2284,4 +2329,31 @@ void test_not_fn() {
         assert(move(cg)(4600));
     }
 #endif // _HAS_CXX17
+    return true;
+}
+
+int main() {
+    // Test addressof() with functions.
+    assert(addressof(triple) == &triple);
+
+    test_dev11_391117();
+    test_dev11_535636();
+    test_dev11_794227();
+    test_dev11_868374();
+    test_more_reference_wrapper();
+    test_reference_wrapper_invocation();
+    test_invoke();
+    test_mem_fn();
+    test_function();
+    test_bind();
+    test_more_bind();
+    test_dev11_1160769();
+    test_not_fn();
+
+#if _HAS_CXX20
+    static_assert(test_more_reference_wrapper());
+    static_assert(test_mem_fn());
+    static_assert(test_more_bind());
+    static_assert(test_not_fn());
+#endif // _HAS_CXX20
 }

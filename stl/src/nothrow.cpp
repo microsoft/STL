@@ -11,8 +11,6 @@
 #undef MRTDLL
 #endif
 
-#include <yvals.h>
-
 #include <new>
 _STD_BEGIN
 

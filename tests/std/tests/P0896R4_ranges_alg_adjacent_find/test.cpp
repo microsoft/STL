@@ -71,4 +71,4 @@ struct instantiator {
     }
 };
 
-template void test_fwd<instantiator>();
+template void test_fwd<instantiator, const int>();

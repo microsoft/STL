@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// Test DevDiv#1114006 "[+ VS2015] conditional_variable with predicate does not behave according to the standard".
+// Test DevDiv-1114006 "[+ VS2015] conditional_variable with predicate does not behave according to the standard".
 
 #include <assert.h>
 #include <chrono>

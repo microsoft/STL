@@ -966,9 +966,7 @@ struct _Can_stream_out<_Ostr, _Ty, void_t<decltype(_STD declval<_Ostr&>() << _ST
 };
 
 template <class _Ostr, class _Ty,
-    enable_if_t<conjunction_v< // prevent infinite recursion
-                    negation<is_lvalue_reference<_Ostr>>, is_base_of<ios_base, _Ostr>, _Can_stream_out<_Ostr, _Ty>>,
-        int> = 0>
+    enable_if_t<conjunction_v<is_convertible<_Ostr*, ios_base*>, _Can_stream_out<_Ostr, _Ty>>, int> = 0>
 _Ostr&& operator<<(_Ostr&& _Os, const _Ty& _Val) { // insert to rvalue stream
     _Os << _Val;
     return _STD move(_Os);

@@ -53,13 +53,6 @@ protected:
     _THROW(bad_optional_access{});
 }
 
-struct _Nontrivial_dummy_type {
-    constexpr _Nontrivial_dummy_type() noexcept {
-        // This default constructor is user-provided to avoid zero-initialization when objects are value-initialized.
-    }
-};
-_STL_INTERNAL_STATIC_ASSERT(!is_trivially_default_constructible_v<_Nontrivial_dummy_type>);
-
 template <class _Ty, bool = is_trivially_destructible_v<_Ty>>
 struct _Optional_destruct_base { // either contains a value of _Ty or is empty (trivial destructor)
     union {
@@ -345,22 +338,40 @@ public:
 
     // observers [optional.object.observe]
     _NODISCARD constexpr const _Ty* operator->() const {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(this->_Has_value, "Cannot access value of empty optional");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
         return _STD addressof(this->_Value);
     }
     _NODISCARD constexpr _Ty* operator->() {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(this->_Has_value, "Cannot access value of empty optional");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
         return _STD addressof(this->_Value);
     }
 
     _NODISCARD constexpr const _Ty& operator*() const& {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(this->_Has_value, "Cannot access value of empty optional");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
         return this->_Value;
     }
     _NODISCARD constexpr _Ty& operator*() & {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(this->_Has_value, "Cannot access value of empty optional");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
         return this->_Value;
     }
     _NODISCARD constexpr _Ty&& operator*() && {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(this->_Has_value, "Cannot access value of empty optional");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
         return _STD move(this->_Value);
     }
     _NODISCARD constexpr const _Ty&& operator*() const&& {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(this->_Has_value, "Cannot access value of empty optional");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
         return _STD move(this->_Value);
     }
 

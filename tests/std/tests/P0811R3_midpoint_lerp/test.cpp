@@ -1,12 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <algorithm>
 #include <assert.h>
+#include <bit>
 #include <charconv>
 #include <cmath>
 #include <fenv.h>
+#include <iterator>
 #include <limits>
 #include <numeric>
+#include <optional>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,13 +23,16 @@ using namespace std;
 template <typename Ty>
 using limits = numeric_limits<Ty>;
 
+// "major" floating point exceptions, excluding underflow and inexact
+constexpr int fe_major_except = FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW;
+
 #ifdef _M_FP_STRICT
 // According to:
 // https://docs.microsoft.com/en-us/cpp/build/reference/fp-specify-floating-point-behavior
 // Under the default /fp:precise mode:
 //  The compiler generates code intended to run in the default floating-point environment and assumes that the
 //  floating-point environment is not accessed or modified at runtime.
-// ... so we only do testing of rounding modes when strict is enabled.
+// ... so we only do testing of rounding modes and floating-point exceptions when strict is enabled.
 
 // TRANSITION, VSO-923474 -- should be #pragma STDC FENV_ACCESS ON
 #pragma fenv_access(on)
@@ -51,49 +58,89 @@ public:
 private:
     int oldRound;
 };
-#endif // _M_FP_STRICT
+
+void checked_feholdexcept(fenv_t* const env) {
+    [[maybe_unused]] const int holdExcept = feholdexcept(env);
+    assert(holdExcept == 0);
+}
+
+void checked_fesetenv(const fenv_t* const env) {
+    [[maybe_unused]] const int setEnv = fesetenv(env);
+    assert(setEnv == 0);
+}
+
+class ExceptGuard {
+public:
+    ExceptGuard() {
+        checked_feholdexcept(&env);
+    }
+
+    ExceptGuard(const ExceptGuard&) = delete;
+    ExceptGuard& operator=(const ExceptGuard&) = delete;
+
+    ~ExceptGuard() {
+        checked_fesetenv(&env);
+    }
+
+private:
+    fenv_t env;
+};
+
+bool check_feexcept(const int expected_excepts, const int except_mask = fe_major_except) {
+    return fetestexcept(except_mask) == (expected_excepts & except_mask);
+}
+#else // ^^^ defined(_M_FP_STRICT) / !defined(_M_FP_STRICT) vvv
+class ExceptGuard {
+public:
+    ExceptGuard() {}
+
+    ExceptGuard(const ExceptGuard&) = delete;
+    ExceptGuard& operator=(const ExceptGuard&) = delete;
+
+    ~ExceptGuard() {}
+};
+
+bool check_feexcept(
+    [[maybe_unused]] const int expected_excepts, [[maybe_unused]] const int except_mask = fe_major_except) {
+    return true;
+}
+#endif // ^^^ !defined(_M_FP_STRICT) ^^^
 
 template <class Ty>
-Ty mint_nan(const bool sign, const unsigned long long payload);
+constexpr Ty mint_nan(const bool sign, const unsigned long long payload);
 
 template <>
-float mint_nan<float>(const bool sign, const unsigned long long payload) {
-    const unsigned int filteredPayload = payload & 0x7F'FFFFu; // bottom 23 bits
+constexpr float mint_nan<float>(const bool sign, const unsigned long long payload) {
+    const unsigned int filteredPayload = payload & 0x3F'FFFFu; // bottom 22 bits
     assert(filteredPayload == payload); // if this assert fails, payload didn't fit
-    assert(filteredPayload != 0); // if this assert fails, the NaN would be an infinity
 
     // clang-format off
     const unsigned int result =
         (static_cast<unsigned int>(sign) << 31)
-        | 0x7F80'0000u // turn on all exponent bits
+        | 0x7FC0'0000u // turn on all exponent bits and the qNaN bit
         | filteredPayload;
     // clang-format on
 
-    float resultConverted; // TRANSITION, bit_cast
-    memcpy(&resultConverted, &result, sizeof(result));
-    return resultConverted;
+    return bit_cast<float>(result);
 }
 
 template <>
-double mint_nan<double>(const bool sign, const unsigned long long payload) {
-    const unsigned long long filteredPayload = payload & 0xF'FFFF'FFFF'FFFFllu; // bottom 52 bits
+constexpr double mint_nan<double>(const bool sign, const unsigned long long payload) {
+    const unsigned long long filteredPayload = payload & 0x7'FFFF'FFFF'FFFFllu; // bottom 51 bits
     assert(filteredPayload == payload); // if this assert fails, payload didn't fit
-    assert(filteredPayload != 0); // if this assert fails, the NaN would be an infinity
 
     // clang-format off
     const unsigned long long result =
         (static_cast<unsigned long long>(sign) << 63)
-        | 0x7FF0'0000'0000'0000u // turn on all exponent bits
+        | 0x7FF8'0000'0000'0000u // turn on all exponent bits and the qNaN bit
         | filteredPayload;
     // clang-format on
 
-    double resultConverted; // TRANSITION, bit_cast
-    memcpy(&resultConverted, &result, sizeof(result));
-    return resultConverted;
+    return bit_cast<double>(result);
 }
 
 template <>
-long double mint_nan<long double>(const bool sign, const unsigned long long payload) {
+constexpr long double mint_nan<long double>(const bool sign, const unsigned long long payload) {
     return mint_nan<double>(sign, payload);
 }
 
@@ -102,17 +149,36 @@ void assert_bitwise_equal(const Ty& a, const Ty& b) {
     assert(memcmp(&a, &b, sizeof(Ty)) == 0);
 }
 
+// TRANSITION
+// numeric_limits<T>::signaling_NaN() doesn't work on x86 hosted MSVC
+// numeric_limits<float>::signaling_NaN() doesn't work on x64 hosted MSVC
+void make_snan(float& x) {
+    constexpr unsigned int bits = 0x7f80'0001U;
+    memcpy(&x, &bits, sizeof(x));
+}
+
+void make_snan(double& x) {
+    constexpr unsigned long long bits = 0x7ff0'0000'0000'0001ULL;
+    memcpy(&x, &bits, sizeof(x));
+}
+
+void make_snan(long double& x) {
+    constexpr unsigned long long bits = 0x7ff0'0000'0000'0001ULL;
+    memcpy(&x, &bits, sizeof(x));
+}
+
 template <typename Ty>
 struct constants; // not defined
 
 template <>
 struct constants<float> {
-    static constexpr float TwoPlusUlp       = 0x1.000002p+1f;
-    static constexpr float OnePlusUlp       = 0x1.000002p+0f;
-    static constexpr float PointFivePlusUlp = 0x1.000002p-1f;
-    static constexpr float OneMinusUlp      = 0x1.fffffep-1f;
-    static constexpr float NegOneMinusUlp   = -OnePlusUlp;
-    static constexpr float NegOnePlusUlp    = -OneMinusUlp;
+    static constexpr float TwoPlusUlp        = 0x1.000002p+1f;
+    static constexpr float OnePlusUlp        = 0x1.000002p+0f;
+    static constexpr float PointFivePlusUlp  = 0x1.000002p-1f;
+    static constexpr float OneMinusUlp       = 0x1.fffffep-1f;
+    static constexpr float PointFiveMinusUlp = 0x1.fffffep-2f;
+    static constexpr float NegOneMinusUlp    = -OnePlusUlp;
+    static constexpr float NegOnePlusUlp     = -OneMinusUlp;
 
     static constexpr float EighthPlusUlp  = 0x1.000002p-3f;
     static constexpr float EighthMinusUlp = 0x1.fffffep-4f;
@@ -120,12 +186,13 @@ struct constants<float> {
 
 template <>
 struct constants<double> {
-    static constexpr double TwoPlusUlp       = 0x1.0000000000001p+1;
-    static constexpr double OnePlusUlp       = 0x1.0000000000001p+0;
-    static constexpr double PointFivePlusUlp = 0x1.0000000000001p-1;
-    static constexpr double OneMinusUlp      = 0x1.fffffffffffffp-1;
-    static constexpr double NegOneMinusUlp   = -OnePlusUlp;
-    static constexpr double NegOnePlusUlp    = -OneMinusUlp;
+    static constexpr double TwoPlusUlp        = 0x1.0000000000001p+1;
+    static constexpr double OnePlusUlp        = 0x1.0000000000001p+0;
+    static constexpr double PointFivePlusUlp  = 0x1.0000000000001p-1;
+    static constexpr double OneMinusUlp       = 0x1.fffffffffffffp-1;
+    static constexpr double PointFiveMinusUlp = 0x1.fffffffffffffp-2;
+    static constexpr double NegOneMinusUlp    = -OnePlusUlp;
+    static constexpr double NegOnePlusUlp     = -OneMinusUlp;
 
     static constexpr double EighthPlusUlp  = 0x1.0000000000001p-3;
     static constexpr double EighthMinusUlp = 0x1.fffffffffffffp-4;
@@ -133,12 +200,13 @@ struct constants<double> {
 
 template <>
 struct constants<long double> {
-    static constexpr long double TwoPlusUlp       = 0x1.0000000000001p+1;
-    static constexpr long double OnePlusUlp       = 0x1.0000000000001p+0;
-    static constexpr long double PointFivePlusUlp = 0x1.0000000000001p-1;
-    static constexpr long double OneMinusUlp      = 0x1.fffffffffffffp-1;
-    static constexpr long double NegOneMinusUlp   = -OnePlusUlp;
-    static constexpr long double NegOnePlusUlp    = -OneMinusUlp;
+    static constexpr long double TwoPlusUlp        = 0x1.0000000000001p+1;
+    static constexpr long double OnePlusUlp        = 0x1.0000000000001p+0;
+    static constexpr long double PointFivePlusUlp  = 0x1.0000000000001p-1;
+    static constexpr long double OneMinusUlp       = 0x1.fffffffffffffp-1;
+    static constexpr long double PointFiveMinusUlp = 0x1.fffffffffffffp-2;
+    static constexpr long double NegOneMinusUlp    = -OnePlusUlp;
+    static constexpr long double NegOnePlusUlp     = -OneMinusUlp;
 
     static constexpr long double EighthPlusUlp  = 0x1.0000000000001p-3;
     static constexpr long double EighthMinusUlp = 0x1.fffffffffffffp-4;
@@ -150,6 +218,7 @@ void test_constants() {
     assert(constants<Ty>::OnePlusUlp == nextafter(Ty(1.0), Ty(3.0)));
     assert(constants<Ty>::PointFivePlusUlp == nextafter(Ty(0.5), Ty(3.0)));
     assert(constants<Ty>::OneMinusUlp == nextafter(Ty(1.0), Ty(0.0)));
+    assert(constants<Ty>::PointFiveMinusUlp == nextafter(Ty(0.5), Ty(-2.0)));
     assert(constants<Ty>::NegOneMinusUlp == nextafter(Ty(-1.0), Ty(-2.0)));
     assert(constants<Ty>::NegOnePlusUlp == nextafter(Ty(-1.0), Ty(0.0)));
 
@@ -326,6 +395,7 @@ void test_midpoint_floating() {
 #ifdef _M_FP_STRICT
     {
         // test results exactly between 1 ULP:
+        ExceptGuard except;
         RoundGuard round{FE_UPWARD};
         assert(midpoint(Ty(1.0), constants<Ty>::OnePlusUlp) == constants<Ty>::OnePlusUlp);
         assert(midpoint(Ty(1.0), constants<Ty>::OneMinusUlp) == Ty(1.0));
@@ -356,10 +426,13 @@ void test_midpoint_floating() {
         assert(midpoint(-limits<Ty>::min(), -limits<Ty>::max()) == -limits<Ty>::max() / 2);
         assert(midpoint(-limits<Ty>::denorm_min(), limits<Ty>::max()) == limits<Ty>::max() / 2);
         assert(midpoint(-limits<Ty>::denorm_min(), -limits<Ty>::max()) == -limits<Ty>::max() / 2);
+
+        assert(check_feexcept(0));
     }
 
     // ditto for the other rounding modes:
     {
+        ExceptGuard except;
         RoundGuard round{FE_DOWNWARD};
         assert(midpoint(Ty(1.0), constants<Ty>::OnePlusUlp) == Ty(1.0));
         assert(midpoint(Ty(1.0), constants<Ty>::OneMinusUlp) == constants<Ty>::OneMinusUlp);
@@ -394,9 +467,12 @@ void test_midpoint_floating() {
                == nextafter(limits<Ty>::max() / 2, limits<Ty>::lowest()));
         assert(midpoint(-limits<Ty>::denorm_min(), -limits<Ty>::max())
                == nextafter(-limits<Ty>::max() / 2, limits<Ty>::lowest()));
+
+        assert(check_feexcept(0));
     }
 
     {
+        ExceptGuard except;
         RoundGuard round{FE_TOWARDZERO};
         assert(midpoint(Ty(1.0), constants<Ty>::OnePlusUlp) == Ty(1.0));
         assert(midpoint(Ty(1.0), constants<Ty>::OneMinusUlp) == constants<Ty>::OneMinusUlp);
@@ -422,27 +498,49 @@ void test_midpoint_floating() {
         assert(midpoint(-limits<Ty>::min(), -limits<Ty>::max()) == -limits<Ty>::max() / 2);
         assert(midpoint(-limits<Ty>::denorm_min(), limits<Ty>::max()) == nextafter(limits<Ty>::max() / 2, Ty(0)));
         assert(midpoint(-limits<Ty>::denorm_min(), -limits<Ty>::max()) == -limits<Ty>::max() / 2);
+
+        assert(check_feexcept(0));
     }
 #endif // _M_FP_STRICT
 
-    assert(midpoint(limits<Ty>::denorm_min(), Ty(1.0)) == (limits<Ty>::denorm_min() + Ty(1.0)) / Ty(2.0));
-    assert(midpoint(limits<Ty>::denorm_min(), limits<Ty>::max())
-           == (limits<Ty>::denorm_min() + limits<Ty>::max()) / Ty(2.0));
-    assert(midpoint(limits<Ty>::denorm_min(), limits<Ty>::lowest())
-           == (limits<Ty>::denorm_min() + limits<Ty>::lowest()) / Ty(2.0));
-    assert(midpoint(limits<Ty>::denorm_min(), limits<Ty>::infinity()) == limits<Ty>::infinity());
-    assert(midpoint(limits<Ty>::denorm_min(), -limits<Ty>::infinity()) == -limits<Ty>::infinity());
+    {
+        ExceptGuard except;
 
-    assert_bitwise_equal(mint_nan<Ty>(0, 1), midpoint(mint_nan<Ty>(0, 1), Ty(0)));
-    assert_bitwise_equal(mint_nan<Ty>(0, 1), midpoint(Ty(0), mint_nan<Ty>(0, 1)));
-    assert_bitwise_equal(mint_nan<Ty>(0, 1), midpoint(mint_nan<Ty>(0, 1), limits<Ty>::max()));
-    assert_bitwise_equal(mint_nan<Ty>(0, 1), midpoint(limits<Ty>::max(), mint_nan<Ty>(0, 1)));
-    assert_bitwise_equal(mint_nan<Ty>(0, 1), midpoint(mint_nan<Ty>(0, 1), mint_nan<Ty>(0, 2)));
+        assert(midpoint(limits<Ty>::denorm_min(), Ty(1.0)) == (limits<Ty>::denorm_min() + Ty(1.0)) / Ty(2.0));
+        assert(midpoint(limits<Ty>::denorm_min(), limits<Ty>::max())
+               == (limits<Ty>::denorm_min() + limits<Ty>::max()) / Ty(2.0));
+        assert(midpoint(limits<Ty>::denorm_min(), limits<Ty>::lowest())
+               == (limits<Ty>::denorm_min() + limits<Ty>::lowest()) / Ty(2.0));
+        assert(midpoint(limits<Ty>::denorm_min(), limits<Ty>::infinity()) == limits<Ty>::infinity());
+        assert(midpoint(limits<Ty>::denorm_min(), -limits<Ty>::infinity()) == -limits<Ty>::infinity());
 
-    assert(isnan(midpoint(-limits<Ty>::infinity(), limits<Ty>::infinity())));
-    assert(isnan(midpoint(limits<Ty>::quiet_NaN(), Ty(2.0))));
-    assert(isnan(midpoint(Ty(2.0), limits<Ty>::quiet_NaN())));
-    assert(isnan(midpoint(limits<Ty>::quiet_NaN(), limits<Ty>::quiet_NaN())));
+        assert_bitwise_equal(mint_nan<Ty>(0, 1), midpoint(mint_nan<Ty>(0, 1), Ty(0)));
+        assert_bitwise_equal(mint_nan<Ty>(0, 1), midpoint(Ty(0), mint_nan<Ty>(0, 1)));
+        assert_bitwise_equal(mint_nan<Ty>(0, 1), midpoint(mint_nan<Ty>(0, 1), limits<Ty>::max()));
+        assert_bitwise_equal(mint_nan<Ty>(0, 1), midpoint(limits<Ty>::max(), mint_nan<Ty>(0, 1)));
+        assert_bitwise_equal(mint_nan<Ty>(0, 1), midpoint(mint_nan<Ty>(0, 1), mint_nan<Ty>(0, 1)));
+
+        assert(isnan(midpoint(limits<Ty>::quiet_NaN(), Ty(2.0))));
+        assert(isnan(midpoint(Ty(2.0), limits<Ty>::quiet_NaN())));
+        assert(isnan(midpoint(limits<Ty>::quiet_NaN(), limits<Ty>::quiet_NaN())));
+
+        assert(check_feexcept(0));
+    }
+
+    // cases where midpoint() should raise FE_INVALID and return NaN
+    constexpr auto test_midpoint_fe_invalid = [](const Ty& a, const Ty& b) {
+        ExceptGuard except;
+        const auto answer = midpoint(a, b);
+        return check_feexcept(FE_INVALID) && isnan(answer);
+    };
+
+    Ty snan;
+    make_snan(snan);
+
+    assert(test_midpoint_fe_invalid(-limits<Ty>::infinity(), limits<Ty>::infinity()));
+    assert(test_midpoint_fe_invalid(snan, limits<Ty>::quiet_NaN()));
+    assert(test_midpoint_fe_invalid(limits<Ty>::quiet_NaN(), snan));
+    assert(test_midpoint_fe_invalid(snan, snan));
 }
 
 template <typename Ty>
@@ -496,7 +594,7 @@ constexpr bool test_midpoint_pointer() {
 }
 
 template <typename Ty>
-int cmp(const Ty x, const Ty y) {
+constexpr int cmp(const Ty x, const Ty y) {
     if (x > y) {
         return 1;
     } else if (x < y) {
@@ -519,11 +617,12 @@ struct LerpNaNTestCase {
     Ty x;
     Ty y;
     Ty t;
+    optional<Ty> expected_list[3] = {};
 };
 
 template <typename Ty>
 struct LerpCases { // TRANSITION, VSO-934633
-    static inline const LerpTestCase<Ty> lerpTestCases[] = {
+    static inline constexpr LerpTestCase<Ty> lerpTestCases[] = {
         {Ty(-1.0), Ty(1.0), Ty(2.0), Ty(3.0)},
         {Ty(0.0), Ty(1.0), Ty(2.0), Ty(2.0)},
         {Ty(-1.0), Ty(0.0), Ty(2.0), Ty(1.0)},
@@ -564,8 +663,8 @@ struct LerpCases { // TRANSITION, VSO-934633
         // double: lerp(-0x0.0000000000001p-1022, -0x1.0000000000001p+0, 0.5) = -0x1.0000000000001p-1
         {-limits<Ty>::denorm_min(), constants<Ty>::NegOneMinusUlp, Ty(0.5), -constants<Ty>::PointFivePlusUlp},
 
-        {Ty(1.0), constants<Ty>::OnePlusUlp, nextafter(Ty(0.5), Ty(-1.0)), Ty(1.0)},
-        {Ty(-1.0), constants<Ty>::NegOneMinusUlp, nextafter(Ty(0.5), Ty(-1.0)), Ty(-1.0)},
+        {Ty(1.0), constants<Ty>::OnePlusUlp, constants<Ty>::PointFiveMinusUlp, Ty(1.0)},
+        {Ty(-1.0), constants<Ty>::NegOneMinusUlp, constants<Ty>::PointFiveMinusUlp, Ty(-1.0)},
 
         {Ty(1.0), constants<Ty>::OnePlusUlp, Ty(0.5), Ty(1.0)},
         {Ty(-1.0), constants<Ty>::NegOneMinusUlp, Ty(0.5), Ty(-1.0)},
@@ -586,8 +685,6 @@ struct LerpCases { // TRANSITION, VSO-934633
         {Ty(1.0), Ty(2.0), constants<Ty>::TwoPlusUlp, constants<Ty>::TwoPlusUlp + Ty(1.0)},
         {Ty(1.0), Ty(2.0), Ty(0.5), constants<Ty>::PointFivePlusUlp + Ty(1.0)},
 
-        {limits<Ty>::lowest(), limits<Ty>::max(), Ty(2.0), limits<Ty>::infinity()},
-        {limits<Ty>::max(), limits<Ty>::lowest(), Ty(2.0), -limits<Ty>::infinity()},
         {limits<Ty>::max(), limits<Ty>::max(), Ty(2.0), limits<Ty>::max()},
         {limits<Ty>::lowest(), limits<Ty>::lowest(), Ty(2.0), limits<Ty>::lowest()},
 
@@ -598,84 +695,192 @@ struct LerpCases { // TRANSITION, VSO-934633
         {limits<Ty>::denorm_min(), limits<Ty>::infinity(), Ty(0.5), limits<Ty>::infinity()},
         {limits<Ty>::denorm_min(), -limits<Ty>::infinity(), Ty(0.5), -limits<Ty>::infinity()},
 
-        // the following handling of NaNs and infinities isn't in the spec, but seems like the right behavior:
-
-        // when the inputs are infinity and T is 1 or more, return the second parameter
-        {-limits<Ty>::infinity(), limits<Ty>::infinity(), constants<Ty>::OnePlusUlp, limits<Ty>::infinity()},
-        {limits<Ty>::infinity(), -limits<Ty>::infinity(), constants<Ty>::OnePlusUlp, -limits<Ty>::infinity()},
-        {-limits<Ty>::infinity(), limits<Ty>::infinity(), Ty(1.0), limits<Ty>::infinity()},
-        {limits<Ty>::infinity(), -limits<Ty>::infinity(), Ty(1.0), -limits<Ty>::infinity()},
-
-        // when the inputs are infinity and T is 0 or less, return the first parameter
-        {-limits<Ty>::infinity(), limits<Ty>::infinity(), -limits<Ty>::denorm_min(), -limits<Ty>::infinity()},
-        {limits<Ty>::infinity(), -limits<Ty>::infinity(), -limits<Ty>::denorm_min(), limits<Ty>::infinity()},
-        {-limits<Ty>::infinity(), limits<Ty>::infinity(), Ty(0), -limits<Ty>::infinity()},
-        {limits<Ty>::infinity(), -limits<Ty>::infinity(), Ty(0), limits<Ty>::infinity()},
-
-        // if any of the inputs are NaN, return the first NaN
-        {mint_nan<Ty>(0, 42), mint_nan<Ty>(1, 42), mint_nan<Ty>(0, 1729), mint_nan<Ty>(0, 42)},
-        {Ty(1.0), mint_nan<Ty>(1, 42), mint_nan<Ty>(0, 1729), mint_nan<Ty>(1, 42)},
-        {mint_nan<Ty>(1, 42), Ty(1.0), mint_nan<Ty>(0, 1729), mint_nan<Ty>(1, 42)},
-        {Ty(1.0), Ty(1.0), mint_nan<Ty>(0, 1729), mint_nan<Ty>(0, 1729)},
-
-        {limits<Ty>::infinity(), mint_nan<Ty>(1, 42), mint_nan<Ty>(0, 1729), mint_nan<Ty>(1, 42)},
-        {mint_nan<Ty>(1, 42), limits<Ty>::infinity(), mint_nan<Ty>(0, 1729), mint_nan<Ty>(1, 42)},
-        {limits<Ty>::infinity(), limits<Ty>::infinity(), mint_nan<Ty>(0, 1729), mint_nan<Ty>(0, 1729)},
+        // the following handling of infinities isn't in the spec, but seems like the right behavior:
 
         // if the values differ and T is an infinity, the appropriate infinity according to direction
         {Ty(0), Ty(1), limits<Ty>::infinity(), limits<Ty>::infinity()},
         {Ty(0), Ty(1), -limits<Ty>::infinity(), -limits<Ty>::infinity()},
-
         {Ty(0), -Ty(1), limits<Ty>::infinity(), -limits<Ty>::infinity()},
         {Ty(0), -Ty(1), -limits<Ty>::infinity(), limits<Ty>::infinity()},
 
-        // if one of a or b is an infinity, choose the other value when t says exact, otherwise
-        // return that infinity or the other according to "direction" of t
-        {limits<Ty>::infinity(), Ty(1.0), Ty(1.0), Ty(1.0)},
-        {limits<Ty>::infinity(), Ty(1.0), constants<Ty>::OnePlusUlp, -limits<Ty>::infinity()},
-        {limits<Ty>::infinity(), Ty(1.0), constants<Ty>::OneMinusUlp, limits<Ty>::infinity()},
-        {limits<Ty>::infinity(), Ty(1.0), limits<Ty>::denorm_min(), limits<Ty>::infinity()},
+        // when the inputs are infinity of the same sign and 0 < T < 1, return that infinity
+        {limits<Ty>::infinity(), limits<Ty>::infinity(), limits<Ty>::denorm_min(), limits<Ty>::infinity()},
+        {-limits<Ty>::infinity(), -limits<Ty>::infinity(), limits<Ty>::denorm_min(), -limits<Ty>::infinity()},
+        {limits<Ty>::infinity(), limits<Ty>::infinity(), Ty(0.5), limits<Ty>::infinity()},
+        {-limits<Ty>::infinity(), -limits<Ty>::infinity(), Ty(0.5), -limits<Ty>::infinity()},
+        {limits<Ty>::infinity(), limits<Ty>::infinity(), constants<Ty>::OneMinusUlp, limits<Ty>::infinity()},
+        {-limits<Ty>::infinity(), -limits<Ty>::infinity(), constants<Ty>::OneMinusUlp, -limits<Ty>::infinity()},
+
+        // when the inputs are infinity of opposite signs and T > 1, return the second parameter
+        {-limits<Ty>::infinity(), limits<Ty>::infinity(), constants<Ty>::OnePlusUlp, limits<Ty>::infinity()},
+        {limits<Ty>::infinity(), -limits<Ty>::infinity(), constants<Ty>::OnePlusUlp, -limits<Ty>::infinity()},
+        {-limits<Ty>::infinity(), limits<Ty>::infinity(), Ty(2.0), limits<Ty>::infinity()},
+        {limits<Ty>::infinity(), -limits<Ty>::infinity(), Ty(2.0), -limits<Ty>::infinity()},
+        {-limits<Ty>::infinity(), limits<Ty>::infinity(), limits<Ty>::max(), limits<Ty>::infinity()},
+        {limits<Ty>::infinity(), -limits<Ty>::infinity(), limits<Ty>::max(), -limits<Ty>::infinity()},
+        {-limits<Ty>::infinity(), limits<Ty>::infinity(), limits<Ty>::infinity(), limits<Ty>::infinity()},
+        {limits<Ty>::infinity(), -limits<Ty>::infinity(), limits<Ty>::infinity(), -limits<Ty>::infinity()},
+
+        // when the inputs are infinity of opposite signs and T < 0, return the first parameter
+        {-limits<Ty>::infinity(), limits<Ty>::infinity(), -limits<Ty>::infinity(), -limits<Ty>::infinity()},
+        {limits<Ty>::infinity(), -limits<Ty>::infinity(), -limits<Ty>::infinity(), limits<Ty>::infinity()},
+        {-limits<Ty>::infinity(), limits<Ty>::infinity(), -limits<Ty>::max(), -limits<Ty>::infinity()},
+        {limits<Ty>::infinity(), -limits<Ty>::infinity(), -limits<Ty>::max(), limits<Ty>::infinity()},
+        {-limits<Ty>::infinity(), limits<Ty>::infinity(), -Ty(2.0), -limits<Ty>::infinity()},
+        {limits<Ty>::infinity(), -limits<Ty>::infinity(), -Ty(2.0), limits<Ty>::infinity()},
+        {-limits<Ty>::infinity(), limits<Ty>::infinity(), -limits<Ty>::denorm_min(), -limits<Ty>::infinity()},
+        {limits<Ty>::infinity(), -limits<Ty>::infinity(), -limits<Ty>::denorm_min(), limits<Ty>::infinity()},
+
+        // if a is an infinity, b is finite and T != 1, return that infinity or the other according to "direction" of t
+        {limits<Ty>::infinity(), Ty(1.0), -limits<Ty>::infinity(), limits<Ty>::infinity()},
+        {limits<Ty>::infinity(), Ty(1.0), -limits<Ty>::max(), limits<Ty>::infinity()},
+        {limits<Ty>::infinity(), Ty(1.0), -Ty(1.0), limits<Ty>::infinity()},
+        {limits<Ty>::infinity(), Ty(1.0), -limits<Ty>::denorm_min(), limits<Ty>::infinity()},
+        {limits<Ty>::infinity(), Ty(1.0), -Ty(0.0), limits<Ty>::infinity()},
         {limits<Ty>::infinity(), Ty(1.0), Ty(0.0), limits<Ty>::infinity()},
+        {limits<Ty>::infinity(), Ty(1.0), limits<Ty>::denorm_min(), limits<Ty>::infinity()},
+        {limits<Ty>::infinity(), Ty(1.0), Ty(0.5), limits<Ty>::infinity()},
+        {limits<Ty>::infinity(), Ty(1.0), constants<Ty>::OneMinusUlp, limits<Ty>::infinity()},
 
-        {-limits<Ty>::infinity(), Ty(1.0), Ty(1.0), Ty(1.0)},
-        {-limits<Ty>::infinity(), Ty(1.0), constants<Ty>::OnePlusUlp, limits<Ty>::infinity()},
-        {-limits<Ty>::infinity(), Ty(1.0), constants<Ty>::OneMinusUlp, -limits<Ty>::infinity()},
-        {-limits<Ty>::infinity(), Ty(1.0), limits<Ty>::denorm_min(), -limits<Ty>::infinity()},
+        {limits<Ty>::infinity(), Ty(1.0), constants<Ty>::OnePlusUlp, -limits<Ty>::infinity()},
+        {limits<Ty>::infinity(), Ty(1.0), Ty(2.0), -limits<Ty>::infinity()},
+        {limits<Ty>::infinity(), Ty(1.0), limits<Ty>::max(), -limits<Ty>::infinity()},
+        {limits<Ty>::infinity(), Ty(1.0), limits<Ty>::infinity(), -limits<Ty>::infinity()},
+
+        {-limits<Ty>::infinity(), Ty(1.0), -limits<Ty>::infinity(), -limits<Ty>::infinity()},
+        {-limits<Ty>::infinity(), Ty(1.0), -limits<Ty>::max(), -limits<Ty>::infinity()},
+        {-limits<Ty>::infinity(), Ty(1.0), -Ty(1.0), -limits<Ty>::infinity()},
+        {-limits<Ty>::infinity(), Ty(1.0), -limits<Ty>::denorm_min(), -limits<Ty>::infinity()},
+        {-limits<Ty>::infinity(), Ty(1.0), -Ty(0.0), -limits<Ty>::infinity()},
         {-limits<Ty>::infinity(), Ty(1.0), Ty(0.0), -limits<Ty>::infinity()},
+        {-limits<Ty>::infinity(), Ty(1.0), limits<Ty>::denorm_min(), -limits<Ty>::infinity()},
+        {-limits<Ty>::infinity(), Ty(1.0), Ty(0.5), -limits<Ty>::infinity()},
+        {-limits<Ty>::infinity(), Ty(1.0), constants<Ty>::OneMinusUlp, -limits<Ty>::infinity()},
 
-        {Ty(1.0), limits<Ty>::infinity(), Ty(0.0), Ty(1.0)},
-        {Ty(1.0), limits<Ty>::infinity(), -Ty(0.0), Ty(1.0)},
-        {Ty(1.0), limits<Ty>::infinity(), limits<Ty>::denorm_min(), limits<Ty>::infinity()},
+        {-limits<Ty>::infinity(), Ty(1.0), constants<Ty>::OnePlusUlp, limits<Ty>::infinity()},
+        {-limits<Ty>::infinity(), Ty(1.0), Ty(2.0), limits<Ty>::infinity()},
+        {-limits<Ty>::infinity(), Ty(1.0), limits<Ty>::max(), limits<Ty>::infinity()},
+        {-limits<Ty>::infinity(), Ty(1.0), limits<Ty>::infinity(), limits<Ty>::infinity()},
+
+        // if b is an infinity, a is finite and T != 0, return that infinity or the other according to "direction" of t
+        {Ty(1.0), limits<Ty>::infinity(), -limits<Ty>::infinity(), -limits<Ty>::infinity()},
+        {Ty(1.0), limits<Ty>::infinity(), -limits<Ty>::max(), -limits<Ty>::infinity()},
+        {Ty(1.0), limits<Ty>::infinity(), -Ty(1.0), -limits<Ty>::infinity()},
         {Ty(1.0), limits<Ty>::infinity(), -limits<Ty>::denorm_min(), -limits<Ty>::infinity()},
 
-        {Ty(1.0), -limits<Ty>::infinity(), Ty(0.0), Ty(1.0)},
-        {Ty(1.0), -limits<Ty>::infinity(), -Ty(0.0), Ty(1.0)},
-        {Ty(1.0), -limits<Ty>::infinity(), limits<Ty>::denorm_min(), -limits<Ty>::infinity()},
+        {Ty(1.0), limits<Ty>::infinity(), limits<Ty>::denorm_min(), limits<Ty>::infinity()},
+        {Ty(1.0), limits<Ty>::infinity(), Ty(0.5), limits<Ty>::infinity()},
+        {Ty(1.0), limits<Ty>::infinity(), constants<Ty>::OneMinusUlp, limits<Ty>::infinity()},
+        {Ty(1.0), limits<Ty>::infinity(), Ty(1.0), limits<Ty>::infinity()},
+        {Ty(1.0), limits<Ty>::infinity(), constants<Ty>::OnePlusUlp, limits<Ty>::infinity()},
+        {Ty(1.0), limits<Ty>::infinity(), Ty(2.0), limits<Ty>::infinity()},
+        {Ty(1.0), limits<Ty>::infinity(), limits<Ty>::max(), limits<Ty>::infinity()},
+        {Ty(1.0), limits<Ty>::infinity(), limits<Ty>::infinity(), limits<Ty>::infinity()},
+
+        {Ty(1.0), -limits<Ty>::infinity(), -limits<Ty>::infinity(), limits<Ty>::infinity()},
+        {Ty(1.0), -limits<Ty>::infinity(), -limits<Ty>::max(), limits<Ty>::infinity()},
+        {Ty(1.0), -limits<Ty>::infinity(), -Ty(1.0), limits<Ty>::infinity()},
         {Ty(1.0), -limits<Ty>::infinity(), -limits<Ty>::denorm_min(), limits<Ty>::infinity()},
 
-        // if all 3 values are infinities, choose the selected one according to t
-        {limits<Ty>::infinity(), limits<Ty>::infinity(), limits<Ty>::infinity(), limits<Ty>::infinity()},
-        {limits<Ty>::infinity(), limits<Ty>::infinity(), -limits<Ty>::infinity(), limits<Ty>::infinity()},
-        {limits<Ty>::infinity(), -limits<Ty>::infinity(), limits<Ty>::infinity(), -limits<Ty>::infinity()},
-        {limits<Ty>::infinity(), -limits<Ty>::infinity(), -limits<Ty>::infinity(), limits<Ty>::infinity()},
-        {-limits<Ty>::infinity(), limits<Ty>::infinity(), limits<Ty>::infinity(), limits<Ty>::infinity()},
-        {-limits<Ty>::infinity(), limits<Ty>::infinity(), -limits<Ty>::infinity(), -limits<Ty>::infinity()},
-        {-limits<Ty>::infinity(), -limits<Ty>::infinity(), limits<Ty>::infinity(), -limits<Ty>::infinity()},
-        {-limits<Ty>::infinity(), -limits<Ty>::infinity(), -limits<Ty>::infinity(), -limits<Ty>::infinity()},
+        {Ty(1.0), -limits<Ty>::infinity(), limits<Ty>::denorm_min(), -limits<Ty>::infinity()},
+        {Ty(1.0), -limits<Ty>::infinity(), Ty(0.5), -limits<Ty>::infinity()},
+        {Ty(1.0), -limits<Ty>::infinity(), constants<Ty>::OneMinusUlp, -limits<Ty>::infinity()},
+        {Ty(1.0), -limits<Ty>::infinity(), Ty(1.0), -limits<Ty>::infinity()},
+        {Ty(1.0), -limits<Ty>::infinity(), constants<Ty>::OnePlusUlp, -limits<Ty>::infinity()},
+        {Ty(1.0), -limits<Ty>::infinity(), Ty(2.0), -limits<Ty>::infinity()},
+        {Ty(1.0), -limits<Ty>::infinity(), limits<Ty>::max(), -limits<Ty>::infinity()},
+        {Ty(1.0), -limits<Ty>::infinity(), limits<Ty>::infinity(), -limits<Ty>::infinity()},
     };
 
-    static inline constexpr LerpNaNTestCase<Ty> lerpNaNTestCases[] = {
-        // when the inputs are infinity and T is between 0 and 1, return NaN
-        {-limits<Ty>::infinity(), limits<Ty>::infinity(), limits<Ty>::denorm_min()},
-        {limits<Ty>::infinity(), -limits<Ty>::infinity(), limits<Ty>::denorm_min()},
-        {-limits<Ty>::infinity(), limits<Ty>::infinity(), constants<Ty>::OneMinusUlp},
-        {limits<Ty>::infinity(), -limits<Ty>::infinity(), constants<Ty>::OneMinusUlp},
-        {-limits<Ty>::infinity(), limits<Ty>::infinity(), Ty(0.5)},
-        {limits<Ty>::infinity(), -limits<Ty>::infinity(), Ty(0.5)},
+    static inline constexpr LerpTestCase<Ty> lerpOverflowTestCases[] = {
+        {limits<Ty>::lowest(), limits<Ty>::max(), Ty(2.0), limits<Ty>::infinity()},
+        {limits<Ty>::max(), limits<Ty>::lowest(), Ty(2.0), -limits<Ty>::infinity()},
+    };
 
+    static inline constexpr LerpNaNTestCase<Ty> lerpInvalidTestCases[] = {
         // if the values are equal and T is an infinity, NaN
         {Ty(0), Ty(0), limits<Ty>::infinity()},
         {Ty(0), Ty(0), -limits<Ty>::infinity()},
+
+        // when the inputs are infinity of the same sign and T <= 0, return NaN
+        {limits<Ty>::infinity(), limits<Ty>::infinity(), -limits<Ty>::infinity()},
+        {-limits<Ty>::infinity(), -limits<Ty>::infinity(), -limits<Ty>::infinity()},
+        {limits<Ty>::infinity(), limits<Ty>::infinity(), -limits<Ty>::max()},
+        {-limits<Ty>::infinity(), -limits<Ty>::infinity(), -limits<Ty>::max()},
+        {limits<Ty>::infinity(), limits<Ty>::infinity(), -Ty(1.0)},
+        {-limits<Ty>::infinity(), -limits<Ty>::infinity(), -Ty(1.0)},
+        {limits<Ty>::infinity(), limits<Ty>::infinity(), -limits<Ty>::denorm_min()},
+        {-limits<Ty>::infinity(), -limits<Ty>::infinity(), -limits<Ty>::denorm_min()},
+        {limits<Ty>::infinity(), limits<Ty>::infinity(), -Ty(0.0)},
+        {-limits<Ty>::infinity(), -limits<Ty>::infinity(), -Ty(0.0)},
+        {limits<Ty>::infinity(), limits<Ty>::infinity(), Ty(0.0)},
+        {-limits<Ty>::infinity(), -limits<Ty>::infinity(), Ty(0.0)},
+
+        // when the inputs are infinity of the same sign and T >= 1, return NaN
+        {limits<Ty>::infinity(), limits<Ty>::infinity(), Ty(1.0)},
+        {-limits<Ty>::infinity(), -limits<Ty>::infinity(), Ty(1.0)},
+        {limits<Ty>::infinity(), limits<Ty>::infinity(), constants<Ty>::OnePlusUlp},
+        {-limits<Ty>::infinity(), -limits<Ty>::infinity(), constants<Ty>::OnePlusUlp},
+        {limits<Ty>::infinity(), limits<Ty>::infinity(), Ty(2.0)},
+        {-limits<Ty>::infinity(), -limits<Ty>::infinity(), Ty(2.0)},
+        {limits<Ty>::infinity(), limits<Ty>::infinity(), limits<Ty>::max()},
+        {-limits<Ty>::infinity(), -limits<Ty>::infinity(), limits<Ty>::max()},
+        {limits<Ty>::infinity(), limits<Ty>::infinity(), limits<Ty>::infinity()},
+        {-limits<Ty>::infinity(), -limits<Ty>::infinity(), limits<Ty>::infinity()},
+
+        // when the inputs are infinity of opposite signs and 0 <= T <= 1, return NaN
+        {-limits<Ty>::infinity(), limits<Ty>::infinity(), -Ty(0.0)},
+        {limits<Ty>::infinity(), -limits<Ty>::infinity(), -Ty(0.0)},
+        {-limits<Ty>::infinity(), limits<Ty>::infinity(), Ty(0.0)},
+        {limits<Ty>::infinity(), -limits<Ty>::infinity(), Ty(0.0)},
+        {-limits<Ty>::infinity(), limits<Ty>::infinity(), limits<Ty>::denorm_min()},
+        {limits<Ty>::infinity(), -limits<Ty>::infinity(), limits<Ty>::denorm_min()},
+        {-limits<Ty>::infinity(), limits<Ty>::infinity(), Ty(0.5)},
+        {limits<Ty>::infinity(), -limits<Ty>::infinity(), Ty(0.5)},
+        {-limits<Ty>::infinity(), limits<Ty>::infinity(), constants<Ty>::OneMinusUlp},
+        {limits<Ty>::infinity(), -limits<Ty>::infinity(), constants<Ty>::OneMinusUlp},
+        {-limits<Ty>::infinity(), limits<Ty>::infinity(), Ty(1.0)},
+        {limits<Ty>::infinity(), -limits<Ty>::infinity(), Ty(1.0)},
+
+        // if a is an infinity, b is finite and T = 1, return NaN
+        {limits<Ty>::infinity(), Ty(1.0), Ty(1.0)},
+        {-limits<Ty>::infinity(), Ty(1.0), Ty(1.0)},
+
+        // if b is an infinity, a is finite and T = 0, return NaN
+        {Ty(1.0), limits<Ty>::infinity(), Ty(0.0)},
+        {Ty(1.0), limits<Ty>::infinity(), -Ty(0.0)},
+        {Ty(1.0), -limits<Ty>::infinity(), Ty(0.0)},
+        {Ty(1.0), -limits<Ty>::infinity(), -Ty(0.0)},
+    };
+
+    static inline constexpr LerpNaNTestCase<Ty> lerpNaNTestCases[] = {
+        {mint_nan<Ty>(0, 42), mint_nan<Ty>(1, 42), mint_nan<Ty>(0, 1729),
+            {mint_nan<Ty>(0, 42), mint_nan<Ty>(1, 42), mint_nan<Ty>(0, 1729)}},
+        {Ty(1.0), mint_nan<Ty>(1, 42), mint_nan<Ty>(0, 1729), {mint_nan<Ty>(1, 42), mint_nan<Ty>(0, 1729)}},
+        {mint_nan<Ty>(1, 42), Ty(1.0), mint_nan<Ty>(0, 1729), {mint_nan<Ty>(1, 42), mint_nan<Ty>(0, 1729)}},
+        {Ty(1.0), Ty(1.0), mint_nan<Ty>(0, 1729), {mint_nan<Ty>(0, 1729)}},
+
+        {limits<Ty>::infinity(), mint_nan<Ty>(1, 42), mint_nan<Ty>(0, 1729),
+            {mint_nan<Ty>(1, 42), mint_nan<Ty>(0, 1729)}},
+        {mint_nan<Ty>(1, 42), limits<Ty>::infinity(), mint_nan<Ty>(0, 1729),
+            {mint_nan<Ty>(1, 42), mint_nan<Ty>(0, 1729)}},
+        {limits<Ty>::infinity(), limits<Ty>::infinity(), mint_nan<Ty>(0, 1729), {mint_nan<Ty>(0, 1729)}},
+
+        {mint_nan<Ty>(0, 42), mint_nan<Ty>(1, 42), -Ty(0.0), {mint_nan<Ty>(0, 42), mint_nan<Ty>(1, 42)}},
+        {mint_nan<Ty>(0, 42), mint_nan<Ty>(1, 42), Ty(0.0), {mint_nan<Ty>(0, 42), mint_nan<Ty>(1, 42)}},
+        {mint_nan<Ty>(0, 42), mint_nan<Ty>(1, 42), Ty(1.0), {mint_nan<Ty>(0, 42), mint_nan<Ty>(1, 42)}},
+        {mint_nan<Ty>(0, 42), Ty(1.0), -Ty(0.0), {mint_nan<Ty>(0, 42)}},
+        {mint_nan<Ty>(0, 42), Ty(1.0), Ty(0.0), {mint_nan<Ty>(0, 42)}},
+        {mint_nan<Ty>(0, 42), Ty(1.0), Ty(1.0), {mint_nan<Ty>(0, 42)}},
+        {mint_nan<Ty>(0, 42), limits<Ty>::infinity(), -Ty(0.0), {mint_nan<Ty>(0, 42)}},
+        {mint_nan<Ty>(0, 42), limits<Ty>::infinity(), Ty(0.0), {mint_nan<Ty>(0, 42)}},
+        {mint_nan<Ty>(0, 42), limits<Ty>::infinity(), Ty(1.0), {mint_nan<Ty>(0, 42)}},
+        {Ty(1.0), mint_nan<Ty>(1, 42), -Ty(0.0), {mint_nan<Ty>(1, 42)}},
+        {Ty(1.0), mint_nan<Ty>(1, 42), Ty(0.0), {mint_nan<Ty>(1, 42)}},
+        {Ty(1.0), mint_nan<Ty>(1, 42), Ty(1.0), {mint_nan<Ty>(1, 42)}},
+        {limits<Ty>::infinity(), mint_nan<Ty>(1, 42), -Ty(0.0), {mint_nan<Ty>(1, 42)}},
+        {limits<Ty>::infinity(), mint_nan<Ty>(1, 42), Ty(0.0), {mint_nan<Ty>(1, 42)}},
+        {limits<Ty>::infinity(), mint_nan<Ty>(1, 42), Ty(1.0), {mint_nan<Ty>(1, 42)}},
     };
 };
 
@@ -730,24 +935,92 @@ bool test_lerp() {
     STATIC_ASSERT(is_signed_v<Ty>);
     STATIC_ASSERT(noexcept(lerp(Ty(), Ty(), Ty())));
 
-    // No constexpr tests for now because implementing constexpr lerp appears to depend on p0553, which was not accepted
-    // (yet?).
+    constexpr auto test_lerp_constexpr = [] {
+        using bit_type = conditional_t<sizeof(Ty) == 4, unsigned int, unsigned long long>;
+
+        for (const auto& testCase : LerpCases<Ty>::lerpTestCases) {
+            const auto answer = lerp(testCase.x, testCase.y, testCase.t);
+            assert(bit_cast<bit_type>(answer) == bit_cast<bit_type>(testCase.expected));
+        }
+
+        for (auto&& testCase : LerpCases<Ty>::lerpNaNTestCases) {
+            const auto answer = lerp(testCase.x, testCase.y, testCase.t);
+            assert(any_of(begin(testCase.expected_list), end(testCase.expected_list), [&](const auto& expected) {
+                return expected.has_value() && bit_cast<bit_type>(answer) == bit_cast<bit_type>(expected.value());
+            }));
+        }
+
+        return true;
+    };
+
+    STATIC_ASSERT(test_lerp_constexpr());
 
     for (auto&& testCase : LerpCases<Ty>::lerpTestCases) {
+        ExceptGuard except;
         const auto answer = lerp(testCase.x, testCase.y, testCase.t);
-        if (memcmp(&answer, &testCase.expected, sizeof(Ty)) != 0) {
+        if (!check_feexcept(0) || memcmp(&answer, &testCase.expected, sizeof(Ty)) != 0) {
+            print_lerp_result(testCase, answer);
+            abort();
+        }
+    }
+
+    for (auto&& testCase : LerpCases<Ty>::lerpOverflowTestCases) {
+        ExceptGuard except;
+        const auto answer = lerp(testCase.x, testCase.y, testCase.t);
+        if (!check_feexcept(FE_OVERFLOW) || memcmp(&answer, &testCase.expected, sizeof(Ty)) != 0) {
+            print_lerp_result(testCase, answer);
+            abort();
+        }
+    }
+
+    for (auto&& testCase : LerpCases<Ty>::lerpInvalidTestCases) {
+        ExceptGuard except;
+        const auto answer = lerp(testCase.x, testCase.y, testCase.t);
+        if (!check_feexcept(FE_INVALID) || !isnan(answer)) {
             print_lerp_result(testCase, answer);
             abort();
         }
     }
 
     for (auto&& testCase : LerpCases<Ty>::lerpNaNTestCases) {
+        ExceptGuard except;
         const auto answer = lerp(testCase.x, testCase.y, testCase.t);
-        if (!isnan(answer)) {
+        if (!check_feexcept(0)
+            || none_of(begin(testCase.expected_list), end(testCase.expected_list), [&answer](const auto& expected) {
+                   return expected.has_value() && memcmp(&answer, &expected.value(), sizeof(Ty)) == 0;
+               })) {
             print_lerp_result(testCase, answer);
             abort();
         }
     }
+
+    constexpr auto test_lerp_snan = [](const Ty& a, const Ty& b, const Ty& t) {
+        ExceptGuard except;
+        const auto answer = lerp(a, b, t);
+        return check_feexcept(FE_INVALID) && isnan(answer);
+    };
+
+    Ty snan;
+    make_snan(snan);
+
+    assert(test_lerp_snan(snan, limits<Ty>::quiet_NaN(), limits<Ty>::quiet_NaN()));
+    assert(test_lerp_snan(limits<Ty>::quiet_NaN(), snan, limits<Ty>::quiet_NaN()));
+    assert(test_lerp_snan(snan, snan, limits<Ty>::quiet_NaN()));
+    assert(test_lerp_snan(limits<Ty>::quiet_NaN(), limits<Ty>::quiet_NaN(), snan));
+    assert(test_lerp_snan(snan, limits<Ty>::quiet_NaN(), snan));
+    assert(test_lerp_snan(limits<Ty>::quiet_NaN(), snan, snan));
+    assert(test_lerp_snan(snan, snan, snan));
+
+    assert(test_lerp_snan(Ty{0}, Ty{0}, snan));
+    assert(test_lerp_snan(Ty{1}, Ty{1}, snan));
+    assert(test_lerp_snan(Ty{0}, snan, Ty{0}));
+    assert(test_lerp_snan(Ty{0}, snan, Ty{1}));
+    assert(test_lerp_snan(snan, Ty{0}, Ty{0}));
+    assert(test_lerp_snan(snan, Ty{0}, Ty{1}));
+
+    STATIC_ASSERT(cmp(lerp(Ty(1.0), Ty(2.0), Ty(4.0)), lerp(Ty(1.0), Ty(2.0), Ty(3.0))) * cmp(Ty(4.0), Ty(3.0))
+                      * cmp(Ty(2.0), Ty(1.0))
+                  >= 0);
 
     assert(cmp(lerp(Ty(1.0), Ty(2.0), Ty(4.0)), lerp(Ty(1.0), Ty(2.0), Ty(3.0))) * cmp(Ty(4.0), Ty(3.0))
                * cmp(Ty(2.0), Ty(1.0))
@@ -803,9 +1076,13 @@ int main() {
     STATIC_ASSERT(test_midpoint_floating_constexpr<double>());
     STATIC_ASSERT(test_midpoint_floating_constexpr<long double>());
 
-    test_midpoint_floating_constexpr<float>();
-    test_midpoint_floating_constexpr<double>();
-    test_midpoint_floating_constexpr<long double>();
+    {
+        ExceptGuard except;
+        test_midpoint_floating_constexpr<float>();
+        test_midpoint_floating_constexpr<double>();
+        test_midpoint_floating_constexpr<long double>();
+        assert(check_feexcept(0));
+    }
 
     test_midpoint_floating<float>();
     test_midpoint_floating<double>();

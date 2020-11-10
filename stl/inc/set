@@ -175,6 +175,38 @@ set(initializer_list<_Kty>, _Alloc) -> set<_Kty, less<_Kty>, _Alloc>;
 #endif // _HAS_CXX17
 
 template <class _Kty, class _Pr, class _Alloc>
+_NODISCARD bool operator==(const set<_Kty, _Pr, _Alloc>& _Left, const set<_Kty, _Pr, _Alloc>& _Right) {
+    return _Left.size() == _Right.size()
+           && _STD equal(_Left._Unchecked_begin(), _Left._Unchecked_end_iter(), _Right._Unchecked_begin());
+}
+
+template <class _Kty, class _Pr, class _Alloc>
+_NODISCARD bool operator!=(const set<_Kty, _Pr, _Alloc>& _Left, const set<_Kty, _Pr, _Alloc>& _Right) {
+    return !(_Left == _Right);
+}
+
+template <class _Kty, class _Pr, class _Alloc>
+_NODISCARD bool operator<(const set<_Kty, _Pr, _Alloc>& _Left, const set<_Kty, _Pr, _Alloc>& _Right) {
+    return _STD lexicographical_compare(
+        _Left._Unchecked_begin(), _Left._Unchecked_end_iter(), _Right._Unchecked_begin(), _Right._Unchecked_end_iter());
+}
+
+template <class _Kty, class _Pr, class _Alloc>
+_NODISCARD bool operator>(const set<_Kty, _Pr, _Alloc>& _Left, const set<_Kty, _Pr, _Alloc>& _Right) {
+    return _Right < _Left;
+}
+
+template <class _Kty, class _Pr, class _Alloc>
+_NODISCARD bool operator<=(const set<_Kty, _Pr, _Alloc>& _Left, const set<_Kty, _Pr, _Alloc>& _Right) {
+    return !(_Right < _Left);
+}
+
+template <class _Kty, class _Pr, class _Alloc>
+_NODISCARD bool operator>=(const set<_Kty, _Pr, _Alloc>& _Left, const set<_Kty, _Pr, _Alloc>& _Right) {
+    return !(_Left < _Right);
+}
+
+template <class _Kty, class _Pr, class _Alloc>
 void swap(set<_Kty, _Pr, _Alloc>& _Left, set<_Kty, _Pr, _Alloc>& _Right) noexcept(noexcept(_Left.swap(_Right))) {
     _Left.swap(_Right);
 }
@@ -313,6 +345,38 @@ multiset(_Iter, _Iter, _Alloc) -> multiset<_Iter_value_t<_Iter>, less<_Iter_valu
 template <class _Kty, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
 multiset(initializer_list<_Kty>, _Alloc) -> multiset<_Kty, less<_Kty>, _Alloc>;
 #endif // _HAS_CXX17
+
+template <class _Kty, class _Pr, class _Alloc>
+_NODISCARD bool operator==(const multiset<_Kty, _Pr, _Alloc>& _Left, const multiset<_Kty, _Pr, _Alloc>& _Right) {
+    return _Left.size() == _Right.size()
+           && _STD equal(_Left._Unchecked_begin(), _Left._Unchecked_end_iter(), _Right._Unchecked_begin());
+}
+
+template <class _Kty, class _Pr, class _Alloc>
+_NODISCARD bool operator!=(const multiset<_Kty, _Pr, _Alloc>& _Left, const multiset<_Kty, _Pr, _Alloc>& _Right) {
+    return !(_Left == _Right);
+}
+
+template <class _Kty, class _Pr, class _Alloc>
+_NODISCARD bool operator<(const multiset<_Kty, _Pr, _Alloc>& _Left, const multiset<_Kty, _Pr, _Alloc>& _Right) {
+    return _STD lexicographical_compare(
+        _Left._Unchecked_begin(), _Left._Unchecked_end_iter(), _Right._Unchecked_begin(), _Right._Unchecked_end_iter());
+}
+
+template <class _Kty, class _Pr, class _Alloc>
+_NODISCARD bool operator>(const multiset<_Kty, _Pr, _Alloc>& _Left, const multiset<_Kty, _Pr, _Alloc>& _Right) {
+    return _Right < _Left;
+}
+
+template <class _Kty, class _Pr, class _Alloc>
+_NODISCARD bool operator<=(const multiset<_Kty, _Pr, _Alloc>& _Left, const multiset<_Kty, _Pr, _Alloc>& _Right) {
+    return !(_Right < _Left);
+}
+
+template <class _Kty, class _Pr, class _Alloc>
+_NODISCARD bool operator>=(const multiset<_Kty, _Pr, _Alloc>& _Left, const multiset<_Kty, _Pr, _Alloc>& _Right) {
+    return !(_Left < _Right);
+}
 
 template <class _Kty, class _Pr, class _Alloc>
 void swap(multiset<_Kty, _Pr, _Alloc>& _Left, multiset<_Kty, _Pr, _Alloc>& _Right) noexcept(

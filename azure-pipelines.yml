@@ -4,8 +4,9 @@
 # Build STL targeting x86, x64, arm, arm64
 
 variables:
-  agentPool: 'StlBuild-2020-06-18'
   tmpDir: 'D:\Temp'
+
+pool: 'StlBuild-2020-10-23'
 
 stages:
   - stage: Code_Format
@@ -14,9 +15,6 @@ stages:
       - job: Code_Format_Validation
         timeoutInMinutes: 90
         displayName: 'Validation'
-        pool:
-          name: $(agentPool)
-
         variables:
           buildOutputLocation: 'D:\tools'
         steps:
@@ -43,6 +41,7 @@ stages:
           - task: BatchScript@1
             displayName: 'Enforce clang-format'
             timeoutInMinutes: 60
+            condition: succeededOrFailed()
             inputs:
               filename: 'azure-devops/enforce-clang-format.cmd'
               failOnStandardError: true
@@ -51,6 +50,7 @@ stages:
           - task: BatchScript@1
             displayName: 'Validate Files'
             timeoutInMinutes: 2
+            condition: succeededOrFailed()
             inputs:
               filename: 'azure-devops/validate-files.cmd'
               failOnStandardError: true
@@ -63,18 +63,124 @@ stages:
         parameters:
           targetPlatform: x86
           vsDevCmdArch: x86
+          numShards: 8
+          shardNum: 1
+
+      - template: azure-devops/run-build.yml
+        parameters:
+          targetPlatform: x86
+          vsDevCmdArch: x86
+          numShards: 8
+          shardNum: 2
+
+      - template: azure-devops/run-build.yml
+        parameters:
+          targetPlatform: x86
+          vsDevCmdArch: x86
+          numShards: 8
+          shardNum: 3
+
+      - template: azure-devops/run-build.yml
+        parameters:
+          targetPlatform: x86
+          vsDevCmdArch: x86
+          numShards: 8
+          shardNum: 4
+
+      - template: azure-devops/run-build.yml
+        parameters:
+          targetPlatform: x86
+          vsDevCmdArch: x86
+          numShards: 8
+          shardNum: 5
+
+      - template: azure-devops/run-build.yml
+        parameters:
+          targetPlatform: x86
+          vsDevCmdArch: x86
+          numShards: 8
+          shardNum: 6
+
+      - template: azure-devops/run-build.yml
+        parameters:
+          targetPlatform: x86
+          vsDevCmdArch: x86
+          numShards: 8
+          shardNum: 7
+
+      - template: azure-devops/run-build.yml
+        parameters:
+          targetPlatform: x86
+          vsDevCmdArch: x86
+          numShards: 8
+          shardNum: 8
 
       - template: azure-devops/run-build.yml
         parameters:
           targetPlatform: x64
           vsDevCmdArch: amd64
+          numShards: 8
+          shardNum: 1
+
+      - template: azure-devops/run-build.yml
+        parameters:
+          targetPlatform: x64
+          vsDevCmdArch: amd64
+          numShards: 8
+          shardNum: 2
+
+      - template: azure-devops/run-build.yml
+        parameters:
+          targetPlatform: x64
+          vsDevCmdArch: amd64
+          numShards: 8
+          shardNum: 3
+
+      - template: azure-devops/run-build.yml
+        parameters:
+          targetPlatform: x64
+          vsDevCmdArch: amd64
+          numShards: 8
+          shardNum: 4
+
+      - template: azure-devops/run-build.yml
+        parameters:
+          targetPlatform: x64
+          vsDevCmdArch: amd64
+          numShards: 8
+          shardNum: 5
+
+      - template: azure-devops/run-build.yml
+        parameters:
+          targetPlatform: x64
+          vsDevCmdArch: amd64
+          numShards: 8
+          shardNum: 6
+
+      - template: azure-devops/run-build.yml
+        parameters:
+          targetPlatform: x64
+          vsDevCmdArch: amd64
+          numShards: 8
+          shardNum: 7
+
+      - template: azure-devops/run-build.yml
+        parameters:
+          targetPlatform: x64
+          vsDevCmdArch: amd64
+          numShards: 8
+          shardNum: 8
 
       - template: azure-devops/run-build.yml
         parameters:
           targetPlatform: arm
           vsDevCmdArch: arm
+          numShards: 1
+          shardNum: 1
 
       - template: azure-devops/run-build.yml
         parameters:
           targetPlatform: arm64
           vsDevCmdArch: arm64
+          numShards: 1
+          shardNum: 1

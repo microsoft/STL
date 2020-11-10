@@ -211,7 +211,7 @@ int main() {
     }
 }
 
-// Also test DevDiv#1205400 "C++ compiler: static_assert in std::tuple_element prevents SFINAE".
+// Also test DevDiv-1205400 "C++ compiler: static_assert in std::tuple_element prevents SFINAE".
 template <typename T, typename = void>
 struct HasTupleElement : false_type {};
 
@@ -221,7 +221,7 @@ struct HasTupleElement<T, void_t<tuple_element_t<0, T>>> : true_type {};
 STATIC_ASSERT(!HasTupleElement<int>::value);
 STATIC_ASSERT(HasTupleElement<tuple<short, long>>::value);
 
-// Also test DevDiv#1192603 "<tuple>: tuple_size's static_assert is problematic".
+// Also test DevDiv-1192603 "<tuple>: tuple_size's static_assert is problematic".
 template <typename T, typename = void>
 struct HasTupleSize : false_type {};
 

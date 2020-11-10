@@ -5,7 +5,7 @@
 
 #include <yvals.h>
 
-#include <float.h>
+#include <cfloat>
 
 #define FTYPE   long double
 #define FBITS   LDBL_MANT_DIG

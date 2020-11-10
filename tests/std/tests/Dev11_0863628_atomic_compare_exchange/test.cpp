@@ -83,11 +83,11 @@ void test_nullptr_compares() {
 }
 
 // Also test:
-// DevDiv#826403 "<atomic>: passing volatile atomic<T> to store won't compile  [libs-conformance]"
-// DevDiv#829873 "<atomic>: Error when using atomic pointer to const"
-// DevDiv#846428 "<atomic>: std::atomic<T>::store with volatile specifier does not work for non-integral type"
-// DevDiv#879700 "<atomic>: atomic<T *> constructor missing cast?"
-// DevDiv#1181758 "<atomic>: MSVC 2015 std::atomic is implemented using non-conforming C++"
+// DevDiv-826403 "<atomic>: passing volatile atomic<T> to store won't compile  [libs-conformance]"
+// DevDiv-829873 "<atomic>: Error when using atomic pointer to const"
+// DevDiv-846428 "<atomic>: std::atomic<T>::store with volatile specifier does not work for non-integral type"
+// DevDiv-879700 "<atomic>: atomic<T *> constructor missing cast?"
+// DevDiv-1181758 "<atomic>: MSVC 2015 std::atomic is implemented using non-conforming C++"
 // This is compile-only.
 
 template <typename T>

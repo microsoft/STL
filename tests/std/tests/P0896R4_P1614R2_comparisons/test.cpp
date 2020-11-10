@@ -83,19 +83,21 @@ struct three_way_archetype {
     three_way_archetype(three_way_archetype const&) = delete;
     three_way_archetype& operator=(three_way_archetype const&) = delete;
     ~three_way_archetype()                                     = delete;
+    // clang-format off
     // 0: not equality_comparable
-    bool operator==(three_way_archetype const&) const requires(I == 0) = delete;
-    bool operator==(three_way_archetype const&) const requires(I != 0);
+    bool operator==(three_way_archetype const&) const requires (I == 0) = delete;
+    bool operator==(three_way_archetype const&) const requires (I != 0);
     // 1: not totally_ordered
-    bool operator<(three_way_archetype const&) const requires(I == 1) = delete;
-    bool operator<(three_way_archetype const&) const requires(I != 1);
-    bool operator>(three_way_archetype const&) const requires(I != 1);
-    bool operator<=(three_way_archetype const&) const requires(I != 1);
-    bool operator>=(three_way_archetype const&) const requires(I != 1);
+    bool operator<(three_way_archetype const&) const requires (I == 1) = delete;
+    bool operator<(three_way_archetype const&) const requires (I != 1);
+    bool operator>(three_way_archetype const&) const requires (I != 1);
+    bool operator<=(three_way_archetype const&) const requires (I != 1);
+    bool operator>=(three_way_archetype const&) const requires (I != 1);
     // 2: <=> isn't defined
-    Category operator<=>(three_way_archetype const&) const requires(I != 2 && I != 3);
+    Category operator<=>(three_way_archetype const&) const requires (I != 2 && I != 3);
     // 3: <=> doesn't return a comparison category type
-    int operator<=>(three_way_archetype const&) const requires(I == 3);
+    int operator<=>(three_way_archetype const&) const requires (I == 3);
+    // clang-format on
 };
 constexpr int three_way_archetype_max = 4;
 
@@ -258,9 +260,7 @@ STATIC_ASSERT(test_compare_three_way<int, int, strong_ordering>());
 STATIC_ASSERT(test_compare_three_way<int, long, strong_ordering>());
 STATIC_ASSERT(test_compare_three_way<float, float, partial_ordering>());
 STATIC_ASSERT(test_compare_three_way<float, double, partial_ordering>());
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1044530
 STATIC_ASSERT(test_compare_three_way<long, double, partial_ordering>());
-#endif // TRANSITION, DevCom-1044530
 STATIC_ASSERT(test_compare_three_way<bool, int, void>());
 
 STATIC_ASSERT(test_compare_three_way<some_enum, some_enum, strong_ordering>());
@@ -417,9 +417,7 @@ constexpr void ordering_test_cases() {
     test_strongly_ordered(13U, u8'x');
 #endif // __cpp_char8_t
     test_strongly_ordered(13U, u'x');
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1062618
     test_strongly_ordered(13U, U'x');
-#endif // TRANSITION, VSO-1062618
 
     test_strongly_ordered(scoped{13}, scoped{42});
     test_strongly_ordered(unscoped{13}, unscoped{42});
@@ -431,9 +429,9 @@ constexpr void ordering_test_cases() {
 
     derived const some_deriveds[2] = {};
     test_strongly_ordered(&some_deriveds[0], &some_deriveds[1]);
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-938163
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-1168721
     if (!std::is_constant_evaluated())
-#endif // TRANSITION, VSO-938163
+#endif // TRANSITION, VSO-1168721
     {
         test_strongly_ordered(static_cast<base const*>(&some_deriveds[0]), &some_deriveds[1]);
         test_strongly_ordered(&some_deriveds[0], static_cast<base const*>(&some_deriveds[1]));

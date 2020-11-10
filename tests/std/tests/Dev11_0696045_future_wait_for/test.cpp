@@ -12,7 +12,7 @@ int func() {
 }
 
 int main() {
-    { // DevDiv#482796 "C++11 unexpected behavior for std::future::wait_for and std::packaged_task"
+    { // DevDiv-482796 "C++11 unexpected behavior for std::future::wait_for and std::packaged_task"
         packaged_task<int()> pt(func);
 
         future<int> f = pt.get_future();
@@ -26,7 +26,7 @@ int main() {
         assert(f.get() == 1729);
     }
 
-    { // DevDiv#696045 "<future>: The function wait_for() wait until timeout."
+    { // DevDiv-696045 "<future>: The function wait_for() wait until timeout."
         future<int> f = async(launch::deferred, func);
 
         const auto dur = chrono::minutes(5);
