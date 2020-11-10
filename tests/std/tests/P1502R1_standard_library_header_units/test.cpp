@@ -453,7 +453,7 @@ int main() {
 
     {
         puts("Testing <map>.");
-#if 0 // TRANSITION, DevCom-1160260 (partial specialization), VSO-1236041 (error LNK2019 pair piecewise_construct_t)
+#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1160260 (partial specialization)
         map<int, int> m{{10, 11}, {20, 22}, {30, 33}, {40, 44}, {50, 55}};
         assert(m[30] == 33);
 #endif // ^^^ no workaround ^^^
