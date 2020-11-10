@@ -7,7 +7,6 @@
 
 using namespace std;
 
-#ifdef __cpp_lib_bitops // TRANSITION, VSO-1020212
 template <typename T>
 constexpr bool test_has_single_bit() {
     assert(!has_single_bit(T{0}));
@@ -97,10 +96,8 @@ void test_all() {
     static_assert(test_bit_width<T>());
     test_bit_width<T>();
 }
-#endif // __cpp_lib_bitops
 
 int main() {
-#ifdef __cpp_lib_bitops // TRANSITION, VSO-1020212
     test_all<unsigned char>();
     test_all<unsigned short>();
     test_all<unsigned int>();
@@ -108,5 +105,4 @@ int main() {
     test_all<unsigned long long>();
     test_bit_floor_specialcases_unsigned();
     test_bit_ceil_specialcases_unsigned();
-#endif // __cpp_lib_bitops
 }

@@ -251,8 +251,7 @@ void test_main() { // test basic workings of vector definitions
     }
 
     {
-        const char* data = "abc";
-        STD initializer_list<char> init(data, data + CSTD strlen(data));
+        STD initializer_list<char> init{'a', 'b', 'c'};
         Mycont v11(init);
         CHECK_INT(v11.size(), 3);
         CHECK_INT(v11[2], 'c');
@@ -350,8 +349,7 @@ void test_main() { // test basic workings of vector definitions
         }
 
         {
-            bool data[] = {false, true, false};
-            STD initializer_list<bool> init(data + 0, data + 3);
+            STD initializer_list<bool> init{false, true, false};
             Bvector bv11(init);
             CHECK_INT(bv11.size(), 3);
             CHECK_INT(bv11[2], false);

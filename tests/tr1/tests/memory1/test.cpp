@@ -288,7 +288,7 @@ static void t_shared_ptr() { // test shared_ptr interface
     { // shared_ptr = shared_ptr(_V*, _D, _A)
         deleter::called = 0;
         X2* it          = new X2;
-        STD shared_ptr<X2> sp0(it, deleter(), std::allocator<int>());
+        STD shared_ptr<X2> sp0(it, deleter(), STD allocator<int>());
         STD shared_ptr<X0> sp1;
         sp1 = sp0;
         CHECK_INT(sp0.use_count(), 2);
@@ -304,7 +304,7 @@ static void t_shared_ptr() { // test shared_ptr interface
     { // shared_ptr = shared_ptr(const _SP&, _T*)
         deleter::called = 0;
         X2* it          = new X2;
-        STD shared_ptr<X2> sp0(it, deleter(), std::allocator<int>());
+        STD shared_ptr<X2> sp0(it, deleter(), STD allocator<int>());
         int x = 3;
         STD shared_ptr<int> sp1(sp0, &x);
         CHECK_INT(sp0.use_count(), 2);
@@ -488,7 +488,7 @@ static void t_shared_ptr() { // test shared_ptr interface
         X0* it0         = new X0;
         X2* it1         = new X2;
         STD shared_ptr<X0> sp0(it0);
-        sp0.reset(it1, deleter(), std::allocator<int>());
+        sp0.reset(it1, deleter(), STD allocator<int>());
         CHECK_INT(sp0.use_count(), 1);
         CHECK_PTR(sp0.get(), it1);
         CHECK(STD get_deleter<deleter>(sp0) != nullptr);

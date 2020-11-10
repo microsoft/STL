@@ -2,20 +2,15 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 jobs:
-- job: ${{ parameters.targetPlatform }}
+- job: '${{ parameters.targetPlatform }}_${{ parameters.shardNum }}'
   timeoutInMinutes: 360
-  pool:
-    name: $(agentPool)
 
   variables:
     buildOutputLocation: 'D:\build\${{ parameters.targetPlatform }}'
     litFlags: '-j$(testParallelism);--timeout=240;--shuffle;--xunit-xml-output=$(buildOutputLocation)/test-results.xml'
+    shardFlags: '--num-shards=${{ parameters.numShards }};--run-shard=${{ parameters.shardNum }}'
     vcpkgLocation: '$(Build.SourcesDirectory)/vcpkg'
   steps:
-    - script: |
-        python -m pip install --upgrade pip
-        pip install psutil
-      displayName: pip install psutil
     - script: |
         if exist "$(tmpDir)" (
           rmdir /S /Q $(tmpDir)
@@ -68,7 +63,8 @@ jobs:
         -host_arch=amd64 -arch=${{ parameters.vsDevCmdArch }} -no_logo
         cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=$(vcpkgLocation)\scripts\buildsystems\vcpkg.cmake ^
         -DVCPKG_TARGET_TRIPLET=${{ parameters.targetPlatform }}-windows -DCMAKE_CXX_COMPILER=cl ^
-        -DCMAKE_BUILD_TYPE=Release -DLIT_FLAGS=$(litFlags) ^
+        -DCMAKE_BUILD_TYPE=Release -DLIT_FLAGS=$(litFlags);$(shardFlags) ^
+        -DCMAKE_CXX_FLAGS=/analyze:autolog- ^
         -S $(Build.SourcesDirectory) -B $(buildOutputLocation)
         cmake --build $(buildOutputLocation)
       displayName: 'Build the STL'
@@ -77,7 +73,7 @@ jobs:
     - task: CmdLine@2
       displayName: 'Run Tests'
       timeoutInMinutes: 120
-      condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
+      condition: and(succeeded(), in('${{ parameters.targetPlatform }}', 'x64', 'x86'))
       inputs:
         workingDirectory: $(buildOutputLocation)
         script: |
@@ -88,9 +84,9 @@ jobs:
     - task: PublishTestResults@2
       displayName: 'Publish Tests'
       timeoutInMinutes: 10
-      condition: in('${{ parameters.targetPlatform }}', 'x64', 'x86')
+      condition: and(succeededOrFailed(), in('${{ parameters.targetPlatform }}', 'x64', 'x86'))
       inputs:
         searchFolder: $(buildOutputLocation)
         testResultsFormat: JUnit
         testResultsFiles: '**/test-results.xml'
-        testRunTitle: 'test-${{ parameters.targetPlatform }}'
+        testRunTitle: 'test-${{ parameters.targetPlatform }}-${{ parameters.shardNum }}'

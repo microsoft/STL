@@ -30,7 +30,7 @@ public:
     int i;
 };
 
-int main() { // DevDiv#377755 "<thread>: thread's ctor doesn't compile with movable-only arguments"
+int main() { // DevDiv-377755 "<thread>: thread's ctor doesn't compile with movable-only arguments"
     std::vector<std::thread> t;
     std::unique_ptr<int> p = std::make_unique<int>(-1);
     // Check if std::thread ctor accepts move-only arguments.

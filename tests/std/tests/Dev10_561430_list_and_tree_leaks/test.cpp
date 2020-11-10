@@ -24,7 +24,7 @@
 
 int g_mallocs = 0;
 
-// Also test DevDiv#483844 and DevDiv#781187, minimal allocator requirements.
+// Also test DevDiv-483844 and DevDiv-781187, minimal allocator requirements.
 template <typename T>
 struct Mallocator {
     typedef T value_type;
@@ -192,7 +192,7 @@ int main() {
 }
 
 
-// Also test DevDiv#819467 "<memory>: Custom allocator with virtual max_size function causes infinite recursion".
+// Also test DevDiv-819467 "<memory>: Custom allocator with virtual max_size function causes infinite recursion".
 
 template <typename T>
 struct WeirdAllocator {

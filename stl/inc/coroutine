@@ -76,11 +76,11 @@ struct coroutine_handle<void> {
         return __builtin_coro_done(_Ptr);
     }
 
-    void operator()() const noexcept { // strengthened
+    void operator()() const {
         __builtin_coro_resume(_Ptr);
     }
 
-    void resume() const noexcept { // strengthened
+    void resume() const {
         __builtin_coro_resume(_Ptr);
     }
 
@@ -126,15 +126,60 @@ _NODISCARD constexpr bool operator==(const coroutine_handle<> _Left, const corou
 
 _NODISCARD constexpr strong_ordering operator<=>(
     const coroutine_handle<> _Left, const coroutine_handle<> _Right) noexcept {
-    return compare_three_way()(_Left.address(), _Right.address());
+#ifdef __cpp_lib_concepts
+    return compare_three_way{}(_Left.address(), _Right.address());
+#else // ^^^ no workaround / workaround vvv
+    return _Left.address() <=> _Right.address();
+#endif // __cpp_lib_concepts
 }
 
 template <class _Promise>
 struct hash<coroutine_handle<_Promise>> {
-    _NODISCARD size_t operator()(const coroutine_handle<_Promise>& _Coro) noexcept {
+    _NODISCARD size_t operator()(const coroutine_handle<_Promise>& _Coro) const noexcept {
         return _Hash_representation(_Coro.address());
     }
 };
+
+// STRUCT noop_coroutine_promise
+struct noop_coroutine_promise {};
+
+// STRUCT coroutine_handle<noop_coroutine_promise>
+template <>
+struct coroutine_handle<noop_coroutine_promise> : coroutine_handle<> {
+    friend coroutine_handle noop_coroutine() noexcept;
+
+    constexpr explicit operator bool() const noexcept {
+        return true;
+    }
+    _NODISCARD constexpr bool done() const noexcept {
+        return false;
+    }
+
+    constexpr void operator()() const noexcept {}
+    constexpr void resume() const noexcept {}
+    constexpr void destroy() const noexcept {}
+
+    using _Promise = noop_coroutine_promise;
+
+    _NODISCARD _Promise& promise() const noexcept {
+        // Returns a reference to the associated promise
+        return *reinterpret_cast<_Promise*>(__builtin_coro_promise(_Ptr, 0, false));
+    }
+
+private:
+    coroutine_handle() noexcept {
+        _Ptr = __builtin_coro_noop();
+    }
+};
+
+// ALIAS noop_coroutine_handle
+using noop_coroutine_handle = coroutine_handle<noop_coroutine_promise>;
+
+// FUNCTION noop_coroutine
+_NODISCARD inline noop_coroutine_handle noop_coroutine() noexcept {
+    // Returns a handle to a coroutine that has no observable effects when resumed or destroyed.
+    return noop_coroutine_handle{};
+}
 
 // STRUCT suspend_never
 struct suspend_never {

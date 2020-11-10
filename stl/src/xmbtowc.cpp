@@ -3,14 +3,11 @@
 
 // Convert multibyte char to wide char.
 
+#include <cctype>
+#include <cerrno>
+#include <climits> // for INT_MAX
 #include <crtdbg.h>
-#include <ctype.h>
-#include <errno.h>
 #include <internal_shared.h>
-#include <limits.h> // for INT_MAX
-#include <locale.h>
-#include <stdio.h> // for EOF
-#include <stdlib.h>
 #include <xlocinfo.h> // for _Cvtvec, _Mbrtowc
 
 _EXTERN_C_UNLESS_PURE
@@ -66,7 +63,8 @@ static int _Decode_utf8_trailing_byte(unsigned long* partialCh, unsigned char ch
 //          -1 (if the next n or fewer bytes not valid mbc)
 //          -2 (if partial conversion)
 //          number of bytes comprising converted mbc
-_MRTIMP2 int __cdecl _Mbrtowc(wchar_t* pwc, const char* s, size_t n, mbstate_t* pst, const _Cvtvec* ploc) {
+_MRTIMP2 _Success_(return >= 0) int __cdecl _Mbrtowc(
+    _When_(n != 0, _Out_) wchar_t* pwc, const char* s, size_t n, mbstate_t* pst, const _Cvtvec* ploc) {
     (void) pst;
     if (n == 0) { // indicate do not have state-dependent encodings, handle zero length string
         return 0;
