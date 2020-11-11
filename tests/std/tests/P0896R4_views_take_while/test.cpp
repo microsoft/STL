@@ -246,7 +246,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         same_as<ranges::sentinel_t<const R>> auto sc = as_const(r).end();
 
         if (forward_range<V>) { // intentionally not if constexpr
-            // Compare with const / non const iterators
+            // Compare with const / non-const iterators
             assert(s != r.begin());
             assert(s != as_const(r).begin());
             assert(sc != r.begin());

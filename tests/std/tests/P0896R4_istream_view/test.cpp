@@ -71,7 +71,7 @@ void test_one_type() {
     static_assert(noexcept(default_constructed.end()));
     static_assert(noexcept(ranges::end(default_constructed)));
 
-    // Non existing member functions
+    // Nonexistent member functions
     static_assert(!CanMemberSize<R>);
     static_assert(!CanMemberData<R>);
     static_assert(!CanMemberEmpty<R>);
