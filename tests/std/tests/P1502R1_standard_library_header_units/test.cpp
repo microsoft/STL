@@ -972,10 +972,8 @@ int main() {
         const vector<int> v{10, 20, 30, 40, 50};
         assert(v[2] == 30);
 
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, should work with VS 2019 16.9 Preview 1
         const vector<bool> vb{true, true, false, true};
         assert(vb[0] && vb[1] && !vb[2] && vb[3]);
-#endif // ^^^ no workaround ^^^
     }
 
     {
