@@ -1,0 +1,29 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "clang-cl Launch",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${fileBasenameNoExtension}.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/out",
+            "environment": [],
+            "externalConsole": false,
+            "preLaunchTask": "C/C++: build active file with clang-cl"
+        },
+        {
+            "name": "cl Launch",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${fileBasenameNoExtension}.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/out",
+            "environment": [],
+            "externalConsole": false,
+            "preLaunchTask": "C/C++: build active file with cl"
+        }
+    ]
+}

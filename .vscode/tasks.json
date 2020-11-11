@@ -1,0 +1,102 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "cppbuild",
+			"label": "C/C++: build active file with cl",
+			"command": "cl.exe",
+			"args": [
+				"/ID:${workspaceFolder}/out/build/x64/out/inc",
+				"/IC:${workspaceFolder}/tests/std/include",
+				"/LIBPATH:${workspaceFolder}/out/build/x64/out/lib/amd64",
+				"/FIforce_include.hpp",
+				"/nologo",
+				"/EHsc",
+				"/W4",
+				"/WX",
+				"/Od",
+				"/w14061",
+				"/w14242",
+				"/w14265",
+				"/w14365",
+				"/w14582",
+				"/w14583",
+				"/w14587",
+				"/w14588",
+				"/w14749",
+				"/w14841",
+				"/w14842",
+				"/w15038",
+				"/w15214",
+				"/w15215",
+				"/w15216",
+				"/w15217",
+				"/MTd",
+				"/std:c++latest",
+				"/I",
+				"${workspaceFolder}/tests/std/include",
+				"${file}"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}/out"
+			},
+			"problemMatcher": [
+				"$msCompile"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"detail": "compiler: cl.exe"
+		},
+		{
+			"type": "cppbuild",
+			"label": "C/C++: build active file with clang-cl",
+			"command": "clang-cl.exe",
+			"args": [
+				"/ID:${workspaceFolder}\\out\\build\\x64\\out\\inc",
+				"/IC:${workspaceFolder}\\tests\\std\\include",
+				"/FIforce_include.hpp",
+				"/nologo",
+				"/EHsc",
+				"/W4",
+				"/WX",
+				"/Od",
+				"/w14061",
+				"/w14242",
+				"/w14265",
+				"/w14365",
+				"/w14582",
+				"/w14583",
+				"/w14587",
+				"/w14588",
+				"/w14749",
+				"/w14841",
+				"/w14842",
+				"/w15038",
+				"/w15214",
+				"/w15215",
+				"/w15216",
+				"/w15217",
+				"/MTd",
+				"/std:c++latest",
+				"-fno-ms-compatibility",
+				"-fno-delayed-template-parsing",
+				"/I",
+				"${workspaceFolder}/tests/std/include",
+				"${file}"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}/out"
+			},
+			"problemMatcher": [
+				"$msCompile"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"detail": "compiler: clang-cl.exe"
+		}
+	]
+}
