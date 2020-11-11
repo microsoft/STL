@@ -143,10 +143,10 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 The STL uses boost-math headers to provide P0226R1 Mathematical Special Functions. We recommend using [vcpkg][] to
 acquire this dependency.
 
-1. Install Visual Studio 2019 16.8 Preview 5 or later.
+1. Install Visual Studio 2019 16.9 Preview 1 or later.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
-    * Otherwise, install [CMake][] 3.17 or later, and [Ninja][] 1.8.2 or later.
+    * Otherwise, install [CMake][] 3.18 or later, and [Ninja][] 1.8.2 or later.
 2. Open Visual Studio, and choose the "Clone or check out code" option. Enter the URL of this repository,
    `https://github.com/microsoft/STL`.
 3. Open a terminal in the IDE with `` Ctrl + ` `` (by default) or press on "View" in the top bar, and then "Terminal".
@@ -158,10 +158,10 @@ acquire this dependency.
 
 # How To Build With A Native Tools Command Prompt
 
-1. Install Visual Studio 2019 16.8 Preview 5 or later.
+1. Install Visual Studio 2019 16.9 Preview 1 or later.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
-    * Otherwise, install [CMake][] 3.17 or later, and [Ninja][] 1.8.2 or later.
+    * Otherwise, install [CMake][] 3.18 or later, and [Ninja][] 1.8.2 or later.
 2. Open a command prompt.
 3. Change directories to a location where you'd like a clone of this STL repository.
 4. `git clone https://github.com/microsoft/STL`
