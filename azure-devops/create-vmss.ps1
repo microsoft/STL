@@ -25,7 +25,7 @@ $LiveVMPrefix = 'BUILD'
 $WindowsServerSku = '2019-Datacenter'
 
 $ProgressActivity = 'Creating Scale Set'
-$TotalProgress = 11
+$TotalProgress = 12
 $CurrentProgress = 1
 
 <#
@@ -158,6 +158,14 @@ function Wait-Shutdown {
   }
 }
 
+
+####################################################################################################
+Write-Progress `
+  -Activity $ProgressActivity `
+  -Status 'Setting the subscription context' `
+  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+
+Set-AzContext -SubscriptionName CPP_STL_GitHub
 
 ####################################################################################################
 Write-Progress `
