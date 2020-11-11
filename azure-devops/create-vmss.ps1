@@ -391,6 +391,4 @@ New-AzVmss `
 Write-Progress -Activity $ProgressActivity -Completed
 Write-Host "Location: $Location"
 Write-Host "Resource group name: $ResourceGroupName"
-Write-Host "User name: AdminUser"
-Write-Host "Using generated password: $AdminPW"
 Write-Host 'Finished!'
