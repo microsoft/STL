@@ -13,6 +13,7 @@
 #else // ^^^ !defined(__cpp_lib_concepts) / defined(__cpp_lib_concepts) vvv
 #include <iosfwd>
 #include <iterator>
+#include <limits>
 #include <span>
 #include <string_view>
 
@@ -532,6 +533,332 @@ namespace ranges {
         };
 
         inline constexpr _Single_fn single;
+    } // namespace views
+
+    // CLASS TEMPLATE ranges::iota_view
+    template <class _Ty>
+    using _Iota_diff_t = conditional_t<is_integral_v<_Ty>, conditional_t<(sizeof(_Ty) < sizeof(int)), int, long long>,
+        iter_difference_t<_Ty>>;
+
+    // clang-format off
+    template <class _Ty>
+    concept _Decrementable = incrementable<_Ty> && requires(_Ty __t) {
+        { --__t } -> same_as<_Ty&>;
+        { __t-- } -> same_as<_Ty>;
+    };
+
+    template <class _Ty>
+    concept _Advanceable = _Decrementable<_Ty> && totally_ordered<_Ty> &&
+        requires(_Ty __i, const _Ty __j, const _Iota_diff_t<_Ty> __n) {
+            { __i += __n } -> same_as<_Ty&>;
+            { __i -= __n } -> same_as<_Ty&>;
+            _Ty(__j + __n);
+            _Ty(__n + __j);
+            _Ty(__j - __n);
+            { __j - __j } -> convertible_to<_Iota_diff_t<_Ty>>;
+        };
+
+    // clang-format off
+    template <weakly_incrementable _Wi>
+        requires semiregular<_Wi>
+    struct _Ioterator {
+        // clang-format on
+        /* [[no_unique_address]] */ _Wi _Current{};
+
+        using iterator_concept  = conditional_t<_Advanceable<_Wi>, random_access_iterator_tag,
+            conditional_t<_Decrementable<_Wi>, bidirectional_iterator_tag,
+                conditional_t<incrementable<_Wi>, forward_iterator_tag, input_iterator_tag>>>;
+        using iterator_category = input_iterator_tag;
+        using value_type        = _Wi;
+        using difference_type   = _Iota_diff_t<_Wi>;
+
+        _NODISCARD constexpr _Wi operator*() const noexcept(is_nothrow_copy_constructible_v<_Wi>) {
+            return _Current;
+        }
+
+        constexpr _Ioterator& operator++() noexcept(noexcept(++_Current)) /* strengthened */ {
+            ++_Current;
+            return *this;
+        }
+
+        constexpr auto operator++(int) noexcept(
+            is_nothrow_copy_constructible_v<_Wi>&& noexcept(++_Current)) /* strengthened */ {
+            if constexpr (incrementable<_Wi>) {
+                auto _Tmp = *this;
+                ++_Current;
+                return _Tmp;
+            } else {
+                ++_Current;
+            }
+        }
+
+        constexpr _Ioterator& operator--() noexcept(
+            noexcept(--_Current)) /* strengthened */ requires _Decrementable<_Wi> {
+            --_Current;
+            return *this;
+        }
+
+        constexpr _Ioterator operator--(int) noexcept(is_nothrow_copy_constructible_v<_Wi>&& noexcept(
+            --_Current)) /* strengthened */ requires _Decrementable<_Wi> {
+            auto _Tmp = *this;
+            --_Current;
+            return _Tmp;
+        }
+
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1347136
+    private:
+        template <class _Left, class _Right>
+        static constexpr bool _Nothrow_plus_equal = noexcept(_STD declval<_Left&>() += _STD declval<const _Right&>());
+        template <_Integer_like _Left, class _Right>
+        static constexpr bool _Nothrow_plus_equal<_Left, _Right> = true;
+
+        template <class _Left, class _Right>
+        static constexpr bool _Nothrow_minus_equal = noexcept(_STD declval<_Left&>() -= _STD declval<const _Right&>());
+        template <_Integer_like _Left, class _Right>
+        static constexpr bool _Nothrow_minus_equal<_Left, _Right> = true;
+
+    public:
+#endif // TRANSITION, DevCom-1347136
+
+        constexpr _Ioterator& operator+=(const difference_type _Off)
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1347136
+            noexcept(noexcept(_Current += _Off)) /* strengthened */
+#else // ^^^ no workaround / workaround vvv
+            noexcept(noexcept(_Nothrow_plus_equal<_Wi, difference_type>)) /* strengthened */
+#endif // TRANSITION, DevCom-1347136
+            requires _Advanceable<_Wi> {
+            if constexpr (_Integer_like<_Wi>) {
+                if constexpr (!_Signed_integer_like<_Wi>) {
+                    if (_Off >= difference_type{0}) {
+                        _Current += static_cast<_Wi>(_Off);
+                    } else {
+                        _Current -= static_cast<_Wi>(-_Off);
+                    }
+                } else {
+                    _Current = static_cast<_Wi>(_Current + _Off);
+                }
+            } else {
+                _Current += _Off;
+            }
+            return *this;
+        }
+
+        constexpr _Ioterator& operator-=(const difference_type _Off)
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1347136
+            noexcept(noexcept(_Current -= _Off)) /* strengthened */
+#else // ^^^ no workaround / workaround vvv
+            noexcept(noexcept(_Nothrow_minus_equal<_Wi, difference_type>)) /* strengthened */
+#endif // TRANSITION, DevCom-1347136
+            requires _Advanceable<_Wi> {
+            if constexpr (_Integer_like<_Wi>) {
+                if constexpr (!_Signed_integer_like<_Wi>) {
+                    if (_Off >= difference_type{0}) {
+                        _Current -= static_cast<_Wi>(_Off);
+                    } else {
+                        _Current += static_cast<_Wi>(-_Off);
+                    }
+                } else {
+                    _Current = static_cast<_Wi>(_Current - _Off);
+                }
+            } else {
+                _Current -= _Off;
+            }
+            return *this;
+        }
+
+        _NODISCARD constexpr _Wi operator[](const difference_type _Idx) const
+            noexcept(noexcept(static_cast<_Wi>(_Current + _Idx))) /* strengthened */ requires _Advanceable<_Wi> {
+            if constexpr (_Integer_like<_Wi>) {
+                return static_cast<_Wi>(_Current + static_cast<_Wi>(_Idx));
+            } else {
+                return static_cast<_Wi>(_Current + _Idx);
+            }
+        }
+
+        _NODISCARD friend constexpr bool operator==(
+            const _Ioterator& _Left, const _Ioterator& _Right) requires equality_comparable<_Wi> = default;
+        _NODISCARD friend constexpr bool operator<(const _Ioterator& _Left, const _Ioterator& _Right) noexcept(
+            noexcept(_Left._Current < _Right._Current)) /* strengthened */ requires totally_ordered<_Wi> {
+            return _Left._Current < _Right._Current;
+        }
+        _NODISCARD friend constexpr bool operator>(const _Ioterator& _Left, const _Ioterator& _Right) noexcept(
+            noexcept(_Left._Current < _Right._Current)) /* strengthened */ requires totally_ordered<_Wi> {
+            return _Right._Current < _Left._Current;
+        }
+        _NODISCARD friend constexpr bool operator<=(const _Ioterator& _Left, const _Ioterator& _Right) noexcept(
+            noexcept(_Left._Current < _Right._Current)) /* strengthened */ requires totally_ordered<_Wi> {
+            return !(_Right._Current < _Left._Current);
+        }
+        _NODISCARD friend constexpr bool operator>=(const _Ioterator& _Left, const _Ioterator& _Right) noexcept(
+            noexcept(_Left._Current < _Right._Current)) /* strengthened */ requires totally_ordered<_Wi> {
+            return !(_Left._Current < _Right._Current);
+        }
+        // clang-format off
+        _NODISCARD friend constexpr auto operator<=>(const _Ioterator& _Left, const _Ioterator& _Right) noexcept(
+            noexcept(_Left._Current <=> _Right._Current)) /* strengthened */
+            requires totally_ordered<_Wi> && three_way_comparable<_Wi> {
+            // clang-format on
+            return _Left._Current <=> _Right._Current;
+        }
+
+        _NODISCARD friend constexpr _Ioterator operator+(_Ioterator _It, const difference_type _Off) noexcept(
+            noexcept(static_cast<_Wi>(_It._Current + _Off))) /* strengthened*/ requires _Advanceable<_Wi> {
+            return _Ioterator{static_cast<_Wi>(_It._Current + _Off)};
+        }
+        _NODISCARD friend constexpr _Ioterator operator+(const difference_type _Off, _Ioterator _It) noexcept(
+            noexcept(static_cast<_Wi>(_It._Current + _Off))) /* strengthened*/ requires _Advanceable<_Wi> {
+            return _Ioterator{static_cast<_Wi>(_It._Current + _Off)};
+        }
+        _NODISCARD friend constexpr _Ioterator operator-(_Ioterator _It, const difference_type _Off) noexcept(
+            noexcept(static_cast<_Wi>(_It._Current + _Off))) /* strengthened*/ requires _Advanceable<_Wi> {
+            return _Ioterator{static_cast<_Wi>(_It._Current - _Off)};
+        }
+        _NODISCARD friend constexpr difference_type
+            operator-(const _Ioterator& _Left, const _Ioterator& _Right) noexcept(
+                noexcept(_Left._Current - _Right._Current)) /* strengthened */ requires _Advanceable<_Wi> {
+            return static_cast<difference_type>(_Left._Current - _Right._Current);
+        }
+    };
+
+    // clang-format off
+    template <weakly_incrementable _Wi, semiregular _Bo>
+        requires _Weakly_equality_comparable_with<_Wi, _Bo> && semiregular<_Wi>
+    struct _Iotinel {
+        // clang-format on
+    private:
+        using _It = _Ioterator<_Wi>;
+
+        _NODISCARD constexpr bool _Equal(const _It& _That) const noexcept(noexcept(_That._Current == _Last)) {
+            return _That._Current == _Last;
+        }
+
+        _NODISCARD constexpr iter_difference_t<_Wi> _Delta(const _It& _That) const
+            noexcept(noexcept(_Last - _That._Current)) {
+            _STL_INTERNAL_STATIC_ASSERT(sized_sentinel_for<_Bo, _Wi>);
+            return _Last - _That._Current;
+        }
+
+    public:
+        /* [[no_unique_address]] */ _Bo _Last{};
+
+        _NODISCARD friend constexpr bool operator==(const _It& _Left, const _Iotinel& _Right) noexcept(
+            noexcept(_Right._Equal(_Left))) /* strengthened */ {
+            return _Right._Equal(_Left);
+        }
+
+        _NODISCARD friend constexpr iter_difference_t<_Wi> operator-(const _It& _Left, const _Iotinel& _Right) noexcept(
+            noexcept(_Right._Delta(_Left))) /* strengthened */ requires sized_sentinel_for<_Bo, _Wi> {
+            return -_Right._Delta(_Left);
+        }
+
+        _NODISCARD friend constexpr iter_difference_t<_Wi> operator-(const _Iotinel& _Left, const _It& _Right) noexcept(
+            noexcept(_Left._Delta(_Right))) /* strengthened */ requires sized_sentinel_for<_Bo, _Wi> {
+            return _Left._Delta(_Right);
+        }
+    };
+
+    // clang-format off
+    template <weakly_incrementable _Wi, semiregular _Bo = unreachable_sentinel_t>
+        requires _Weakly_equality_comparable_with<_Wi, _Bo> && semiregular<_Wi>
+    class iota_view : public view_interface<iota_view<_Wi, _Bo>> {
+        // clang-format on
+    private:
+        /* [[no_unique_address]] */ _Wi _Value{};
+        /* [[no_unique_address]] */ _Bo _Bound{};
+
+        using _It = _Ioterator<_Wi>;
+        using _Se = conditional_t<same_as<_Wi, _Bo>, _It,
+            conditional_t<same_as<_Bo, unreachable_sentinel_t>, _Bo, _Iotinel<_Wi, _Bo>>>;
+
+        _NODISCARD static constexpr _Bo& _Bound_from(_Se& _Last) noexcept {
+            if constexpr (same_as<_Wi, _Bo>) {
+                return _Last._Current;
+            } else if constexpr (same_as<_Bo, unreachable_sentinel_t>) {
+                return _Last;
+            } else {
+                return _Last._Last;
+            }
+        }
+
+    public:
+        iota_view() = default;
+
+        constexpr explicit iota_view(_Wi _Value_) noexcept(
+            is_nothrow_move_constructible_v<_Wi>&& is_nothrow_default_constructible_v<_Bo>) // strengthened
+            : _Value(_STD move(_Value_)) {}
+
+        constexpr iota_view(type_identity_t<_Wi> _Value_, type_identity_t<_Bo> _Bound_) noexcept(
+            is_nothrow_move_constructible_v<_Wi>&& is_nothrow_move_constructible_v<_Bo>) // strengthened
+            : _Value(_STD move(_Value_)), _Bound(_STD move(_Bound_)) {
+            if constexpr (totally_ordered_with<_Wi, _Bo>) {
+                _STL_ASSERT(_Value_ <= _Bound_, "Per N4878 [range.iota.view]/8, the first argument must precede the "
+                                                "second when their types are totally ordered.");
+            }
+        }
+
+        constexpr iota_view(_It _First, _Se _Last) noexcept( // Per LWG-3523
+            is_nothrow_move_constructible_v<_Wi>&& is_nothrow_move_constructible_v<_Bo>) // strengthened
+            : _Value(_STD move(_First._Current)), _Bound(_STD move(_Bound_from(_Last))) {}
+
+        _NODISCARD constexpr _It begin() const noexcept(is_nothrow_copy_constructible_v<_Wi>) /* strengthened */ {
+            return _It{_Value};
+        }
+
+        _NODISCARD constexpr _Se end() const noexcept(is_nothrow_copy_constructible_v<_Bo>) /* strengthened */ {
+            if constexpr (same_as<_Bo, unreachable_sentinel_t>) {
+                return unreachable_sentinel;
+            } else {
+                return _Se{_Bound};
+            }
+        }
+
+        // clang-format off
+        _NODISCARD constexpr auto size() const noexcept(noexcept(_Bound - _Value)) /* strengthened */
+            requires (same_as<_Wi, _Bo> && _Advanceable<_Wi>)
+                || (integral<_Wi> && integral<_Bo>)
+                || sized_sentinel_for<_Bo, _Wi> {
+            // clang-format on
+            if constexpr (_Integer_like<_Wi> && _Integer_like<_Bo>) {
+#pragma warning(suppress : 4146) // unary minus operator applied to unsigned type, result still unsigned
+                return (_Value < 0) ? ((_Bound < 0) ? (_To_unsigned_like(-_Value) - _To_unsigned_like(-_Bound))
+#pragma warning(suppress : 4146) // unary minus operator applied to unsigned type, result still unsigned
+                                                    : (_To_unsigned_like(_Bound) + _To_unsigned_like(-_Value)))
+                                    : (_To_unsigned_like(_Bound) - _To_unsigned_like(_Value));
+            } else {
+                return _To_unsigned_like(_Bound - _Value);
+            }
+        }
+    };
+
+    // clang-format off
+    template <class _Wi, class _Bo>
+        requires (!_Integer_like<_Wi> || !_Integer_like<_Bo>
+            || (_Signed_integer_like<_Wi> == _Signed_integer_like<_Bo>))
+    iota_view(_Wi, _Bo) -> iota_view<_Wi, _Bo>;
+    // clang-format on
+
+    template <class _Wi, class _Bo>
+    inline constexpr bool enable_borrowed_range<iota_view<_Wi, _Bo>> = true;
+
+    namespace views {
+        // VARIABLE views::iota
+        struct _Iota_fn {
+            template <class _Ty>
+            _NODISCARD constexpr auto operator()(_Ty&& _Val) const
+                noexcept(noexcept(iota_view{static_cast<_Ty&&>(_Val)})) requires requires {
+                iota_view{static_cast<_Ty&&>(_Val)};
+            }
+            { return iota_view{static_cast<_Ty&&>(_Val)}; }
+
+            template <class _Ty1, class _Ty2>
+            _NODISCARD constexpr auto operator()(_Ty1&& _Val1, _Ty2&& _Val2) const noexcept(
+                noexcept(iota_view{static_cast<_Ty1&&>(_Val1), static_cast<_Ty2&&>(_Val2)})) requires requires {
+                iota_view{static_cast<_Ty1&&>(_Val1), static_cast<_Ty2&&>(_Val2)};
+            }
+            { return iota_view{static_cast<_Ty1&&>(_Val1), static_cast<_Ty2&&>(_Val2)}; }
+        };
+
+        inline constexpr _Iota_fn iota;
     } // namespace views
 
     // CLASS TEMPLATE ranges::istream_view
@@ -1666,25 +1993,25 @@ namespace ranges {
     namespace views {
         // VARIABLE views::take
         template <class>
-        static constexpr bool _Is_dynamic_span = false;
-        template <class _Elem>
-        static constexpr bool _Is_dynamic_span<span<_Elem, dynamic_extent>> = true;
-
-        template <class>
-        static constexpr bool _Is_subrange = false;
+        inline constexpr bool _Is_subrange = false;
         template <class _It, class _Se, subrange_kind _Ki>
-        static constexpr bool _Is_subrange<subrange<_It, _Se, _Ki>> = true;
+        inline constexpr bool _Is_subrange<subrange<_It, _Se, _Ki>> = true;
 
+        // clang-format off
         template <class _Rng>
-        concept _Reconstructible_range = random_access_range<_Rng> && sized_range<_Rng>
-            && (_Is_dynamic_span<remove_cvref_t<_Rng>>
-                || _Is_specialization_v<remove_cvref_t<_Rng>, basic_string_view>
-                // || _Is_specialization_v<remove_cvref_t<_Rng>, iota_view> // TRANSITION, iota_view
-                || _Is_subrange<remove_cvref_t<_Rng>>);
+        concept _Random_sized_range = random_access_range<_Rng> && sized_range<_Rng>;
+        // clang-format on
 
         class _Take_fn {
         private:
-            enum class _St { _Empty, _Preserve, _Take_view };
+            enum class _St {
+                _Empty,
+                _Reconstruct_span,
+                _Reconstruct_string_view,
+                _Reconstruct_iota_view,
+                _Reconstruct_subrange,
+                _Take_view
+            };
 
             template <class _Rng>
             _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
@@ -1692,9 +2019,16 @@ namespace ranges {
 
                 if constexpr (_Is_specialization_v<_Ty, empty_view>) {
                     return {_St::_Empty, true};
-                } else if constexpr (_Reconstructible_range<_Rng>) {
-                    return {_St::_Preserve,
-                        noexcept(_Ty{_RANGES begin(_STD declval<_Rng&>()),
+                } else if constexpr (_Is_span_v<_Ty>) {
+                    return {_St::_Reconstruct_span, true};
+                } else if constexpr (_Is_specialization_v<_Ty, basic_string_view>) {
+                    return {_St::_Reconstruct_string_view, true};
+                } else if constexpr (_Random_sized_range<_Ty> && _Is_specialization_v<_Ty, iota_view>) {
+                    return {_St::_Reconstruct_iota_view,
+                        noexcept(_RANGES begin(_STD declval<_Rng&>()) + _RANGES distance(_STD declval<_Rng&>()))};
+                } else if constexpr (_Random_sized_range<_Ty> && _Is_subrange<_Ty>) {
+                    return {_St::_Reconstruct_subrange,
+                        noexcept(subrange{_RANGES begin(_STD declval<_Rng&>()),
                             _RANGES begin(_STD declval<_Rng&>()) + _RANGES distance(_STD declval<_Rng&>())})};
                 } else {
                     return {_St::_Take_view, noexcept(take_view{_STD declval<_Rng>(), range_difference_t<_Rng>{0}})};
@@ -1730,13 +2064,26 @@ namespace ranges {
                 if constexpr (_Strat == _St::_Empty) {
                     // it's an empty_view: return another empty view
                     return remove_cvref_t<_Rng>{};
-                } else if constexpr (_Strat == _St::_Preserve) {
+                } else if constexpr (_Strat == _St::_Take_view) {
+                    return take_view{_STD forward<_Rng>(_Range), _Count};
+                } else {
                     // it's a "reconstructible range"; return the same kind of range with a restricted extent
                     _Count            = (_STD min)(_RANGES distance(_Range), _Count);
                     const auto _First = _RANGES begin(_Range);
-                    return remove_cvref_t<_Rng>{_First, _First + _Count};
-                } else if constexpr (_Strat == _St::_Take_view) {
-                    return take_view{_STD forward<_Rng>(_Range), _Count};
+
+                    // The following are all per the proposed resolution of LWG-3407
+                    if constexpr (_Strat == _St::_Reconstruct_span) {
+                        return span(_First, _First + _Count);
+                    } else if constexpr (_Strat == _St::_Reconstruct_string_view) {
+                        return remove_cvref_t<_Rng>{_First, _First + _Count};
+                    } else if constexpr (_Strat == _St::_Reconstruct_iota_view) {
+                        using _Vt = range_value_t<_Rng>;
+                        return iota_view<_Vt, _Vt>{_First, _First + _Count};
+                    } else if constexpr (_Strat == _St::_Reconstruct_subrange) {
+                        return subrange{_First, _First + _Count};
+                    } else {
+                        static_assert(_Always_false<_Rng>, "Should be unreachable");
+                    }
                 }
             }
 
@@ -2053,7 +2400,7 @@ namespace ranges {
         // VARIABLE views::drop
         class _Drop_fn {
         private:
-            enum class _St { _Empty, _Preserve, _Drop_view };
+            enum class _St { _Empty, _Reconstruct_span, _Reconstruct_subrange, _Reconstruct_other, _Drop_view };
 
             template <class _Rng>
             _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
@@ -2061,10 +2408,24 @@ namespace ranges {
 
                 if constexpr (_Is_specialization_v<_Ty, empty_view>) {
                     return {_St::_Empty, true};
-                } else if constexpr (_Reconstructible_range<_Rng>) {
-                    return {_St::_Preserve,
-                        noexcept(_Ty{_RANGES begin(_STD declval<_Rng&>()) + _RANGES distance(_STD declval<_Rng&>()),
-                            _RANGES end(_STD declval<_Rng&>())})};
+                } else if constexpr (_Is_span_v<_Ty>) {
+                    return {_St::_Reconstruct_span, true};
+                } else if constexpr (_Is_specialization_v<_Ty, basic_string_view>) {
+                    return {_St::_Reconstruct_other, true};
+                } else if constexpr (_Random_sized_range<_Ty> && _Is_subrange<_Ty>) {
+                    if constexpr (sized_sentinel_for<sentinel_t<_Ty>, iterator_t<_Ty>>) {
+                        return {_St::_Reconstruct_subrange,
+                            noexcept(_Ty{_RANGES begin(_STD declval<_Rng&>()) + _RANGES distance(_STD declval<_Rng&>()),
+                                _RANGES end(_STD declval<_Rng&>())})};
+                    } else {
+                        return {_St::_Reconstruct_subrange,
+                            noexcept(_Ty{_RANGES begin(_STD declval<_Rng&>()) + _RANGES distance(_STD declval<_Rng&>()),
+                                _RANGES end(_STD declval<_Rng&>()), range_difference_t<_Rng>{0}})};
+                    }
+                } else if constexpr (_Random_sized_range<_Ty> && _Is_specialization_v<_Ty, iota_view>) {
+                    return {_St::_Reconstruct_other,
+                        noexcept(_Ty(_RANGES begin(_STD declval<_Rng&>()) + _RANGES distance(_STD declval<_Rng&>()),
+                            _RANGES end(_STD declval<_Rng&>())))};
                 } else {
                     return {_St::_Drop_view, noexcept(drop_view{_STD declval<_Rng>(), range_difference_t<_Rng>{0}})};
                 }
@@ -2099,12 +2460,27 @@ namespace ranges {
                 if constexpr (_Strat == _St::_Empty) {
                     // it's an empty_view: return another empty view
                     return remove_cvref_t<_Rng>{};
-                } else if constexpr (_Strat == _St::_Preserve) {
-                    // it's a "reconstructible range"; return the same kind of range with a restricted extent
-                    _Count = (_STD min)(_RANGES distance(_Range), _Count);
-                    return remove_cvref_t<_Rng>{_RANGES begin(_Range) + _Count, _RANGES end(_Range)};
                 } else if constexpr (_Strat == _St::_Drop_view) {
                     return drop_view{_STD forward<_Rng>(_Range), _Count};
+                } else {
+                    // it's a "reconstructible range"; return the same kind of range with a restricted extent
+                    _Count = (_STD min)(_RANGES distance(_Range), _Count);
+
+                    // The following are all per the proposed resolution of LWG-3407
+                    if constexpr (_Strat == _St::_Reconstruct_span) {
+                        return span{_Ubegin(_Range) + _Count, _Uend(_Range)};
+                    } else if constexpr (_Strat == _St::_Reconstruct_subrange) {
+                        if constexpr (sized_sentinel_for<sentinel_t<_Rng>, iterator_t<_Rng>>) {
+                            return remove_cvref_t<_Rng>{_RANGES begin(_Range) + _Count, _RANGES end(_Range)};
+                        } else {
+                            return remove_cvref_t<_Rng>{
+                                _RANGES begin(_Range) + _Count, _RANGES end(_Range), _RANGES size(_Range) - _Count};
+                        }
+                    } else if constexpr (_Strat == _St::_Reconstruct_other) {
+                        return remove_cvref_t<_Rng>{_RANGES begin(_Range) + _Count, _RANGES end(_Range)};
+                    } else {
+                        static_assert(_Always_false<_Rng>, "Should be unreachable");
+                    }
                 }
             }
 
