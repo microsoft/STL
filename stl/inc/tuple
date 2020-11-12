@@ -684,6 +684,9 @@ public:
     template <size_t _Index, class... _Types>
     friend constexpr const tuple_element_t<_Index, tuple<_Types...>>&& get(const tuple<_Types...>&& _Tuple) noexcept;
 
+    template <size_t _Index, class... _Types>
+    friend constexpr tuple_element_t<_Index, tuple<_Types...>>&& _Tuple_get(tuple<_Types...>&& _Tuple) noexcept;
+
     template <class _Ty, class... _Types>
     friend constexpr _Ty& get(tuple<_Types...>& _Tuple) noexcept;
 
@@ -752,6 +755,81 @@ _NODISCARD constexpr bool operator<=(const tuple<_Types1...>& _Left, const tuple
 template <class... _Types, enable_if_t<conjunction_v<_Is_swappable<_Types>...>, int> = 0>
 _CONSTEXPR20 void swap(tuple<_Types...>& _Left, tuple<_Types...>& _Right) noexcept(noexcept(_Left.swap(_Right))) {
     return _Left.swap(_Right);
+}
+
+// CLASS _Tuple_element (find element by type)
+template <class _Ty, class _Tuple>
+struct _Tuple_element {}; // backstop _Tuple_element definition
+
+template <class _This, class... _Rest>
+struct _Tuple_element<_This, tuple<_This, _Rest...>> { // select first element
+    static_assert(!_Is_any_of_v<_This, _Rest...>, "duplicate type T in get<T>(tuple)");
+    using _Ttype = tuple<_This, _Rest...>;
+};
+
+template <class _Ty, class _This, class... _Rest>
+struct _Tuple_element<_Ty, tuple<_This, _Rest...>> { // recursive _Tuple_element definition
+    using _Ttype = typename _Tuple_element<_Ty, tuple<_Rest...>>::_Ttype;
+};
+
+// FUNCTION TEMPLATE get (by index)
+template <size_t _Index, class... _Types>
+_NODISCARD constexpr tuple_element_t<_Index, tuple<_Types...>>& get(tuple<_Types...>& _Tuple) noexcept {
+    using _Ttype = typename tuple_element<_Index, tuple<_Types...>>::_Ttype;
+    return static_cast<_Ttype&>(_Tuple)._Myfirst._Val;
+}
+
+template <size_t _Index, class... _Types>
+_NODISCARD constexpr const tuple_element_t<_Index, tuple<_Types...>>& get(const tuple<_Types...>& _Tuple) noexcept {
+    using _Ttype = typename tuple_element<_Index, tuple<_Types...>>::_Ttype;
+    return static_cast<const _Ttype&>(_Tuple)._Myfirst._Val;
+}
+
+template <size_t _Index, class... _Types>
+_NODISCARD constexpr tuple_element_t<_Index, tuple<_Types...>>&& get(tuple<_Types...>&& _Tuple) noexcept {
+    using _Ty    = tuple_element_t<_Index, tuple<_Types...>>;
+    using _Ttype = typename tuple_element<_Index, tuple<_Types...>>::_Ttype;
+    return static_cast<_Ty&&>(static_cast<_Ttype&>(_Tuple)._Myfirst._Val);
+}
+
+template <size_t _Index, class... _Types>
+_NODISCARD constexpr const tuple_element_t<_Index, tuple<_Types...>>&& get(const tuple<_Types...>&& _Tuple) noexcept {
+    using _Ty    = tuple_element_t<_Index, tuple<_Types...>>;
+    using _Ttype = typename tuple_element<_Index, tuple<_Types...>>::_Ttype;
+    return static_cast<const _Ty&&>(static_cast<const _Ttype&>(_Tuple)._Myfirst._Val);
+}
+
+template <size_t _Index, class... _Types>
+_NODISCARD constexpr tuple_element_t<_Index, tuple<_Types...>>&& _Tuple_get(tuple<_Types...>&& _Tuple) noexcept {
+    // used by pair's piecewise constructor
+    using _Ty    = tuple_element_t<_Index, tuple<_Types...>>;
+    using _Ttype = typename tuple_element<_Index, tuple<_Types...>>::_Ttype;
+    return static_cast<_Ty&&>(static_cast<_Ttype&>(_Tuple)._Myfirst._Val);
+}
+
+// FUNCTION TEMPLATE get (by type)
+template <class _Ty, class... _Types>
+_NODISCARD constexpr _Ty& get(tuple<_Types...>& _Tuple) noexcept {
+    using _Ttype = typename _Tuple_element<_Ty, tuple<_Types...>>::_Ttype;
+    return static_cast<_Ttype&>(_Tuple)._Myfirst._Val;
+}
+
+template <class _Ty, class... _Types>
+_NODISCARD constexpr const _Ty& get(const tuple<_Types...>& _Tuple) noexcept {
+    using _Ttype = typename _Tuple_element<_Ty, tuple<_Types...>>::_Ttype;
+    return static_cast<const _Ttype&>(_Tuple)._Myfirst._Val;
+}
+
+template <class _Ty, class... _Types>
+_NODISCARD constexpr _Ty&& get(tuple<_Types...>&& _Tuple) noexcept {
+    using _Ttype = typename _Tuple_element<_Ty, tuple<_Types...>>::_Ttype;
+    return static_cast<_Ty&&>(static_cast<_Ttype&>(_Tuple)._Myfirst._Val);
+}
+
+template <class _Ty, class... _Types>
+_NODISCARD constexpr const _Ty&& get(const tuple<_Types...>&& _Tuple) noexcept {
+    using _Ttype = typename _Tuple_element<_Ty, tuple<_Types...>>::_Ttype;
+    return static_cast<const _Ty&&>(static_cast<const _Ttype&>(_Tuple)._Myfirst._Val);
 }
 
 // CONSTRUCTOR TEMPLATES FOR tuple

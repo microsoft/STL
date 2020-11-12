@@ -498,73 +498,6 @@ template <size_t _Index, class _This, class... _Rest>
 struct _MSVC_KNOWN_SEMANTICS tuple_element<_Index, tuple<_This, _Rest...>>
     : tuple_element<_Index - 1, tuple<_Rest...>> {}; // recursive tuple_element definition
 
-// FUNCTION TEMPLATE get (by index)
-template <size_t _Index, class... _Types>
-_NODISCARD constexpr tuple_element_t<_Index, tuple<_Types...>>& get(tuple<_Types...>& _Tuple) noexcept {
-    using _Ttype = typename tuple_element<_Index, tuple<_Types...>>::_Ttype;
-    return static_cast<_Ttype&>(_Tuple)._Myfirst._Val;
-}
-
-template <size_t _Index, class... _Types>
-_NODISCARD constexpr const tuple_element_t<_Index, tuple<_Types...>>& get(const tuple<_Types...>& _Tuple) noexcept {
-    using _Ttype = typename tuple_element<_Index, tuple<_Types...>>::_Ttype;
-    return static_cast<const _Ttype&>(_Tuple)._Myfirst._Val;
-}
-
-template <size_t _Index, class... _Types>
-_NODISCARD constexpr tuple_element_t<_Index, tuple<_Types...>>&& get(tuple<_Types...>&& _Tuple) noexcept {
-    using _Ty    = tuple_element_t<_Index, tuple<_Types...>>;
-    using _Ttype = typename tuple_element<_Index, tuple<_Types...>>::_Ttype;
-    return static_cast<_Ty&&>(static_cast<_Ttype&>(_Tuple)._Myfirst._Val);
-}
-
-template <size_t _Index, class... _Types>
-_NODISCARD constexpr const tuple_element_t<_Index, tuple<_Types...>>&& get(const tuple<_Types...>&& _Tuple) noexcept {
-    using _Ty    = tuple_element_t<_Index, tuple<_Types...>>;
-    using _Ttype = typename tuple_element<_Index, tuple<_Types...>>::_Ttype;
-    return static_cast<const _Ty&&>(static_cast<const _Ttype&>(_Tuple)._Myfirst._Val);
-}
-
-// CLASS _Tuple_element (find element by type)
-template <class _Ty, class _Tuple>
-struct _Tuple_element {}; // backstop _Tuple_element definition
-
-template <class _This, class... _Rest>
-struct _Tuple_element<_This, tuple<_This, _Rest...>> { // select first element
-    static_assert(!_Is_any_of_v<_This, _Rest...>, "duplicate type T in get<T>(tuple)");
-    using _Ttype = tuple<_This, _Rest...>;
-};
-
-template <class _Ty, class _This, class... _Rest>
-struct _Tuple_element<_Ty, tuple<_This, _Rest...>> { // recursive _Tuple_element definition
-    using _Ttype = typename _Tuple_element<_Ty, tuple<_Rest...>>::_Ttype;
-};
-
-// FUNCTION TEMPLATE get (by type)
-template <class _Ty, class... _Types>
-_NODISCARD constexpr _Ty& get(tuple<_Types...>& _Tuple) noexcept {
-    using _Ttype = typename _Tuple_element<_Ty, tuple<_Types...>>::_Ttype;
-    return static_cast<_Ttype&>(_Tuple)._Myfirst._Val;
-}
-
-template <class _Ty, class... _Types>
-_NODISCARD constexpr const _Ty& get(const tuple<_Types...>& _Tuple) noexcept {
-    using _Ttype = typename _Tuple_element<_Ty, tuple<_Types...>>::_Ttype;
-    return static_cast<const _Ttype&>(_Tuple)._Myfirst._Val;
-}
-
-template <class _Ty, class... _Types>
-_NODISCARD constexpr _Ty&& get(tuple<_Types...>&& _Tuple) noexcept {
-    using _Ttype = typename _Tuple_element<_Ty, tuple<_Types...>>::_Ttype;
-    return static_cast<_Ty&&>(static_cast<_Ttype&>(_Tuple)._Myfirst._Val);
-}
-
-template <class _Ty, class... _Types>
-_NODISCARD constexpr const _Ty&& get(const tuple<_Types...>&& _Tuple) noexcept {
-    using _Ttype = typename _Tuple_element<_Ty, tuple<_Types...>>::_Ttype;
-    return static_cast<const _Ty&&>(static_cast<const _Ttype&>(_Tuple)._Myfirst._Val);
-}
-
 // TUPLE INTERFACE TO pair
 template <class _Ty1, class _Ty2>
 struct tuple_size<pair<_Ty1, _Ty2>> : integral_constant<size_t, 2> {}; // size of pair
@@ -659,11 +592,14 @@ _NODISCARD constexpr const _Ty2&& get(
 }
 
 // TEMPLATE CONSTRUCTOR pair::pair(tuple, tuple, sequence, sequence)
+template <size_t _Index, class... _Types>
+_NODISCARD constexpr tuple_element_t<_Index, tuple<_Types...>>&& _Tuple_get(tuple<_Types...>&& _Tuple) noexcept;
+
 template <class _Ty1, class _Ty2>
 template <class _Tuple1, class _Tuple2, size_t... _Indexes1, size_t... _Indexes2>
 constexpr pair<_Ty1, _Ty2>::pair(
     _Tuple1& _Val1, _Tuple2& _Val2, index_sequence<_Indexes1...>, index_sequence<_Indexes2...>)
-    : first(_STD get<_Indexes1>(_STD move(_Val1))...), second(_STD get<_Indexes2>(_STD move(_Val2))...) {}
+    : first(_Tuple_get<_Indexes1>(_STD move(_Val1))...), second(_Tuple_get<_Indexes2>(_STD move(_Val2))...) {}
 
 // FUNCTION TEMPLATE exchange
 template <class _Ty, class _Other = _Ty>
