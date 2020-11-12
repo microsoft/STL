@@ -1618,7 +1618,9 @@ namespace ranges {
 
             using _Base_Ty       = _Maybe_const<_Const, _Vw>;
             using _Base_sentinel = _Maybe_wrapped<_Wrapped, sentinel_t<_Base_Ty>>;
-            using _Counted_Iter  = counted_iterator<_Maybe_wrapped<_Wrapped, iterator_t<_Base_Ty>>>;
+            template <bool _OtherConst>
+            using _Counted_Iter =
+                counted_iterator<_Maybe_wrapped<_Wrapped, iterator_t<_Maybe_const<_OtherConst, _Vw>>>>;
 
             _Base_sentinel _Last{};
 
@@ -1641,7 +1643,16 @@ namespace ranges {
                 return _Last;
             }
 
-            _NODISCARD friend constexpr bool operator==(const _Counted_Iter& _Left, const _Sentinel& _Right) {
+            _NODISCARD friend constexpr bool operator==(const _Counted_Iter<_Const>& _Left, const _Sentinel& _Right) {
+                return _Left.count() == 0 || _Left.base() == _Right._Last;
+            }
+
+            // clang-format off
+            template <bool _OtherConst = !_Const>
+                requires sentinel_for<_Base_sentinel, _Counted_Iter<_OtherConst>>
+            _NODISCARD friend constexpr bool operator==(
+                const _Counted_Iter<_OtherConst>& _Left, const _Sentinel& _Right) {
+                // clang-format on
                 return _Left.count() == 0 || _Left.base() == _Right._Last;
             }
 
