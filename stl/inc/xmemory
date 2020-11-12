@@ -561,10 +561,10 @@ struct _Normal_allocator_traits { // defines traits for allocators
         if constexpr (_Uses_default_construct<_Alloc, _Ty*, _Types...>::value) {
             (void) _Al; // TRANSITION, DevCom-1004719
 #if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc)
-            construct_at(_Ptr, _STD forward<_Types>(_Args)...);
-#else
+            _STD construct_at(_Ptr, _STD forward<_Types>(_Args)...);
+#else // _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc)
             ::new (static_cast<void*>(_Ptr)) _Ty(_STD forward<_Types>(_Args)...);
-#endif
+#endif // _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc)
         } else {
             _Al.construct(_Ptr, _STD forward<_Types>(_Args)...);
         }
@@ -593,10 +593,10 @@ struct _Normal_allocator_traits { // defines traits for allocators
         if constexpr (_Uses_default_destroy<_Alloc, _Ty*>::value) {
             (void) _Al;
 #if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc)
-            destroy_at(_Ptr);
-#else
+            _STD destroy_at(_Ptr);
+#else // _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc)
             _Ptr->~_Ty();
-#endif
+#endif // _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc)
         } else {
             _Al.destroy(_Ptr);
         }
@@ -713,11 +713,11 @@ struct _Default_allocator_traits { // traits for std::allocator
         _Ptr->~_Uty();
     }
 
-    _NODISCARD static _CONSTEXPR20_DYNALLOC size_type max_size(const _Alloc&) noexcept {
+    _NODISCARD static _CONSTEXPR20 size_type max_size(const _Alloc&) noexcept {
         return static_cast<size_t>(-1) / sizeof(value_type);
     }
 
-    _NODISCARD static _CONSTEXPR20_DYNALLOC _Alloc select_on_container_copy_construction(const _Alloc& _Al) {
+    _NODISCARD static _CONSTEXPR20 _Alloc select_on_container_copy_construction(const _Alloc& _Al) {
         return _Al;
     }
 };

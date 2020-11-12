@@ -1199,7 +1199,7 @@
 
 #if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc)
 #define __cpp_lib_constexpr_dynamic_alloc 201907L
-#endif
+#endif // _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc)
 
 #define __cpp_lib_constexpr_functional  201907L
 #define __cpp_lib_constexpr_iterator    201811L
