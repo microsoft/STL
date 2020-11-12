@@ -110,12 +110,10 @@ constexpr bool test_parse_align() {
     auto parse_align_fn = _Parse_align<CharT, testing_callbacks<CharT>>;
     using view_typ      = basic_string_view<CharT>;
 
-    view_typ s0(TYPED_LITERAL(CharT, ""));
     view_typ s1(TYPED_LITERAL(CharT, "*<"));
     view_typ s2(TYPED_LITERAL(CharT, "*>"));
     view_typ s3(TYPED_LITERAL(CharT, "*^"));
 
-    test_parse_helper(parse_align_fn, s0, false, view_typ::npos, {.expected_fill = view_typ(TYPED_LITERAL(CharT, ""))});
     test_parse_helper(parse_align_fn, s1, false, view_typ::npos,
         {.expected_alignment = _Align::_Left, .expected_fill = view_typ(TYPED_LITERAL(CharT, "*"))});
     test_parse_helper(parse_align_fn, s2, false, view_typ::npos,

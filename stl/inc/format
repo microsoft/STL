@@ -122,8 +122,7 @@ constexpr const _CharT* _Parse_arg_id(const _CharT* _Begin, const _CharT* _End, 
 
 template <class _CharT, _Parse_spec_callbacks<_CharT> _Callbacks_type>
 constexpr const _CharT* _Parse_align(const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
-    // Preconditions: _Begin != _End && *_Begin != '}'
-
+    _STL_INTERNAL_CHECK(_Begin != _End && *_Begin != '}');
     // align and fill
     auto _Parsed_align = _Align::_None;
     auto _Align_pt     = _Begin + 1;
