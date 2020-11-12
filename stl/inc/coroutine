@@ -120,7 +120,7 @@ struct coroutine_handle : private coroutine_handle<> {
         return static_cast<const coroutine_handle<>&>(*this);
     }
 
-    using coroutine_handle<>::explicit operator bool;
+    using coroutine_handle<>::operator bool;
     using coroutine_handle<>::done;
 
     using coroutine_handle<>::operator();
