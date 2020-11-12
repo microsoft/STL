@@ -204,7 +204,7 @@ class tuple;
 template <>
 class tuple<> { // empty tuple
 public:
-    constexpr tuple() noexcept /* strengthened */ {}
+    constexpr tuple() noexcept = default; /* strengthened */
 
     constexpr tuple(const tuple&) noexcept /* strengthened */ {} // TRANSITION, ABI: should be defaulted
 
