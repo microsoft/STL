@@ -123,6 +123,9 @@ _INLINE_VAR constexpr piecewise_construct_t piecewise_construct{};
 template <class...>
 class tuple;
 
+template <size_t _Index, class... _Types>
+_NODISCARD constexpr decltype(auto) _Tuple_get(tuple<_Types...>&& _Tuple) noexcept;
+
 template <class _Ty1, class _Ty2>
 struct pair { // store a pair of values
     using first_type  = _Ty1;
@@ -263,7 +266,8 @@ struct pair { // store a pair of values
 #endif // ^^^ !_HAS_CONDITIONAL_EXPLICIT ^^^
 
     template <class _Tuple1, class _Tuple2, size_t... _Indexes1, size_t... _Indexes2>
-    constexpr pair(_Tuple1& _Val1, _Tuple2& _Val2, index_sequence<_Indexes1...>, index_sequence<_Indexes2...>);
+    constexpr pair(_Tuple1& _Val1, _Tuple2& _Val2, index_sequence<_Indexes1...>, index_sequence<_Indexes2...>)
+        : first(_Tuple_get<_Indexes1>(_STD move(_Val1))...), second(_Tuple_get<_Indexes2>(_STD move(_Val2))...) {}
 
     template <class... _Types1, class... _Types2>
     _CONSTEXPR20 pair(piecewise_construct_t, tuple<_Types1...> _Val1, tuple<_Types2...> _Val2)
@@ -590,16 +594,6 @@ _NODISCARD constexpr const _Ty2&& get(
     const pair<_Ty1, _Ty2>&& _Pr) noexcept { // get const rvalue reference to element _Ty2 in pair _Pr
     return _STD get<1>(_STD move(_Pr));
 }
-
-// TEMPLATE CONSTRUCTOR pair::pair(tuple, tuple, sequence, sequence)
-template <size_t _Index, class... _Types>
-_NODISCARD constexpr tuple_element_t<_Index, tuple<_Types...>>&& _Tuple_get(tuple<_Types...>&& _Tuple) noexcept;
-
-template <class _Ty1, class _Ty2>
-template <class _Tuple1, class _Tuple2, size_t... _Indexes1, size_t... _Indexes2>
-constexpr pair<_Ty1, _Ty2>::pair(
-    _Tuple1& _Val1, _Tuple2& _Val2, index_sequence<_Indexes1...>, index_sequence<_Indexes2...>)
-    : first(_Tuple_get<_Indexes1>(_STD move(_Val1))...), second(_Tuple_get<_Indexes2>(_STD move(_Val2))...) {}
 
 // FUNCTION TEMPLATE exchange
 template <class _Ty, class _Other = _Ty>

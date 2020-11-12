@@ -685,7 +685,7 @@ public:
     friend constexpr const tuple_element_t<_Index, tuple<_Types...>>&& get(const tuple<_Types...>&& _Tuple) noexcept;
 
     template <size_t _Index, class... _Types>
-    friend constexpr tuple_element_t<_Index, tuple<_Types...>>&& _Tuple_get(tuple<_Types...>&& _Tuple) noexcept;
+    friend constexpr decltype(auto) _Tuple_get(tuple<_Types...>&& _Tuple) noexcept;
 
     template <class _Ty, class... _Types>
     friend constexpr _Ty& get(tuple<_Types...>& _Tuple) noexcept;
@@ -800,7 +800,7 @@ _NODISCARD constexpr const tuple_element_t<_Index, tuple<_Types...>>&& get(const
 }
 
 template <size_t _Index, class... _Types>
-_NODISCARD constexpr tuple_element_t<_Index, tuple<_Types...>>&& _Tuple_get(tuple<_Types...>&& _Tuple) noexcept {
+_NODISCARD constexpr decltype(auto) _Tuple_get(tuple<_Types...>&& _Tuple) noexcept {
     // used by pair's piecewise constructor
     using _Ty    = tuple_element_t<_Index, tuple<_Types...>>;
     using _Ttype = typename tuple_element<_Index, tuple<_Types...>>::_Ttype;
