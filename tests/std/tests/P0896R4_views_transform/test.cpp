@@ -241,17 +241,27 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     STATIC_ASSERT(CanMemberEnd<R>);
     STATIC_ASSERT(CanEnd<const R&> == (range<const V> && const_invocable));
     if (!is_empty) {
-        same_as<sentinel_t<R>> auto i = r.end();
+        same_as<sentinel_t<R>> auto s = r.end();
         static_assert(is_same_v<sentinel_t<R>, iterator_t<R>> == common_range<V>);
         if constexpr (bidirectional_range<R> && common_range<R>) {
-            assert(*prev(i) == *prev(end(expected)));
+            assert(*prev(s) == *prev(end(expected)));
         }
 
         if constexpr (CanEnd<const R&>) {
-            same_as<sentinel_t<const R>> auto i2 = as_const(r).end();
+            same_as<sentinel_t<const R>> auto sc = as_const(r).end();
             static_assert(is_same_v<sentinel_t<const R>, iterator_t<const R>> == common_range<const V>);
             if constexpr (bidirectional_range<const R> && common_range<const R>) {
-                assert(*prev(i2) == *prev(end(expected)));
+                assert(*prev(sc) == *prev(end(expected)));
+            }
+
+            if (forward_range<V>) { // intentionally not if constexpr
+                // Compare with const / non const iterators
+                const same_as<iterator_t<R>> auto i        = r.begin();
+                const same_as<iterator_t<const R>> auto ic = as_const(r).begin();
+                assert(s != i);
+                assert(s != ic);
+                assert(sc != i);
+                assert(sc != ic);
             }
         }
     }
