@@ -36,11 +36,13 @@ class format_error : public runtime_error {
 
 enum class _Align { _None, _Left, _Right, _Center };
 
+enum class _Sign { _None, _Plus, _Minus, _Space };
+
 struct _Auto_id_tag {};
 
 // clang-format off
 template <class _Ty, class _CharT>
-concept _Parse_spec_callbacks = requires(_Ty _At, basic_string_view<_CharT> _Sv, _Align _Aln) {
+concept _Parse_spec_callbacks = requires(_Ty _At, basic_string_view<_CharT> _Sv, _Align _Aln, _Sign _Sgn) {
     { _At._On_align(_Aln) } -> same_as<void>;
     { _At._On_fill(_Sv) } -> same_as<void>;
     { _At._On_width(_STD declval<int>()) } -> same_as<void>;
@@ -49,8 +51,10 @@ concept _Parse_spec_callbacks = requires(_Ty _At, basic_string_view<_CharT> _Sv,
     { _At._On_precision(_STD declval<int>()) } -> same_as<void>;
     { _At._On_dynamic_precision(_STD declval<int>()) } -> same_as<void>;
     { _At._On_dynamic_precision(_STD declval<_Auto_id_tag>()) } -> same_as<void>;
-
-    /* { _At._On_type(_STD declval<_CharT>()) } -> same_as<void>; */
+    { _At._On_sign(_Sgn) } -> same_as<void>;
+    { _At._On_hash() } -> same_as<void>;
+    { _At._On_zero() } -> same_as<void>;
+    { _At._On_type(_STD declval<_CharT>()) } -> same_as<void>;
 };
 template <class _Ty, class _CharT>
 concept _Parse_arg_id_callbacks = requires(_Ty _At) {
@@ -118,11 +122,7 @@ constexpr const _CharT* _Parse_arg_id(const _CharT* _Begin, const _CharT* _End, 
 
 template <class _CharT, _Parse_spec_callbacks<_CharT> _Callbacks_type>
 constexpr const _CharT* _Parse_align(const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
-    // done with parsing, or reached the end of a replacement field.
-    if (_Begin == _End || *_Begin == '}') {
-        return _Begin;
-    }
-
+    _STL_INTERNAL_CHECK(_Begin != _End && *_Begin != '}');
     // align and fill
     auto _Parsed_align = _Align::_None;
     auto _Align_pt     = _Begin + 1;
@@ -236,6 +236,68 @@ constexpr const _CharT* _Parse_precision(const _CharT* _Begin, const _CharT* _En
         }
     } else {
         throw format_error("Missing precision specifier.");
+    }
+    return _Begin;
+}
+
+template <class _CharT, _Parse_spec_callbacks<_CharT> _Callbacks_type>
+constexpr const _CharT* _Parse_format_specs(const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
+    if (_Begin == _End || *_Begin == '}') {
+        return _Begin;
+    }
+
+    _Begin = _Parse_align(_Begin, _End, _Callbacks);
+    if (_Begin == _End) {
+        return _Begin;
+    }
+
+    switch (*_Begin) {
+    case '+':
+        _Callbacks._On_sign(_Sign::_Plus);
+        ++_Begin;
+        break;
+    case '-':
+        _Callbacks._On_sign(_Sign::_Minus);
+        ++_Begin;
+        break;
+    case ' ':
+        _Callbacks._On_sign(_Sign::_Space);
+        ++_Begin;
+        break;
+    default:
+        break;
+    }
+
+    if (_Begin == _End) {
+        return _Begin;
+    }
+
+    if (*_Begin == '#') {
+        _Callbacks._On_hash();
+        if (++_Begin == _End) {
+            return _Begin;
+        }
+    }
+
+    if (*_Begin == '0') {
+        _Callbacks._On_zero();
+        if (++_Begin == _End) {
+            return _Begin;
+        }
+    }
+
+    _Begin = _Parse_width(_Begin, _End, _Callbacks);
+    if (_Begin == _End) {
+        return _Begin;
+    }
+
+    if (*_Begin == '.') {
+        _Begin = _Parse_precision(_Begin, _End, _Callbacks);
+    }
+
+    // If there's anything remaining we assume it's a type.
+    if (_Begin != _End && *_Begin != '}') {
+        _Callbacks._On_type(*_Begin++);
     }
     return _Begin;
 }

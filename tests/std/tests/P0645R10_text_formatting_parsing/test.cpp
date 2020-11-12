@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <concepts>
 #include <format>
+#include <optional>
 #include <stdio.h>
 #include <string_view>
 
@@ -32,6 +33,7 @@ struct choose_literal<wchar_t> {
 template <typename CharT>
 struct testing_callbacks {
     _Align expected_alignment = _Align::_None;
+    _Sign expected_sign       = _Sign::_None;
     basic_string_view<CharT> expected_fill;
     int expected_width                   = -1;
     int expected_dynamic_width           = -1;
@@ -39,6 +41,9 @@ struct testing_callbacks {
     int expected_precision               = -1;
     int expected_dynamic_precision       = -1;
     bool expected_auto_dynamic_precision = false;
+    bool expected_hash                   = false;
+    bool expected_zero                   = false;
+    CharT expected_type                  = '\0';
     constexpr void _On_align(_Align aln) {
         assert(aln == expected_alignment);
     }
@@ -62,6 +67,18 @@ struct testing_callbacks {
     }
     constexpr void _On_dynamic_precision(_Auto_id_tag) {
         assert(expected_auto_dynamic_precision);
+    }
+    constexpr void _On_sign(_Sign sgn) {
+        assert(sgn == expected_sign);
+    }
+    constexpr void _On_hash() {
+        assert(expected_hash);
+    }
+    constexpr void _On_zero() {
+        assert(expected_zero);
+    }
+    constexpr void _On_type(CharT type) {
+        assert(type == expected_type);
     }
 };
 template <typename CharT>
@@ -93,23 +110,23 @@ constexpr bool test_parse_align() {
     auto parse_align_fn = _Parse_align<CharT, testing_callbacks<CharT>>;
     using view_typ      = basic_string_view<CharT>;
 
-    view_typ s0(TYPED_LITERAL(CharT, ""));
     view_typ s1(TYPED_LITERAL(CharT, "*<"));
     view_typ s2(TYPED_LITERAL(CharT, "*>"));
     view_typ s3(TYPED_LITERAL(CharT, "*^"));
 
-    test_parse_helper(parse_align_fn, s0, false, view_typ::npos, {_Align::_None, view_typ(TYPED_LITERAL(CharT, ""))});
-    test_parse_helper(parse_align_fn, s1, false, view_typ::npos, {_Align::_Left, view_typ(TYPED_LITERAL(CharT, "*"))});
-    test_parse_helper(parse_align_fn, s2, false, view_typ::npos, {_Align::_Right, view_typ(TYPED_LITERAL(CharT, "*"))});
-    test_parse_helper(
-        parse_align_fn, s3, false, view_typ::npos, {_Align::_Center, view_typ(TYPED_LITERAL(CharT, "*"))});
+    test_parse_helper(parse_align_fn, s1, false, view_typ::npos,
+        {.expected_alignment = _Align::_Left, .expected_fill = view_typ(TYPED_LITERAL(CharT, "*"))});
+    test_parse_helper(parse_align_fn, s2, false, view_typ::npos,
+        {.expected_alignment = _Align::_Right, .expected_fill = view_typ(TYPED_LITERAL(CharT, "*"))});
+    test_parse_helper(parse_align_fn, s3, false, view_typ::npos,
+        {.expected_alignment = _Align::_Center, .expected_fill = view_typ(TYPED_LITERAL(CharT, "*"))});
     if constexpr (same_as<CharT, wchar_t>) {
         // This is a CJK character where the least significant byte is the same as ascii '>',
         // libfmt and initial drafts of <format> narrowed characters when parsing alignments, causing
         // \x343E (which is from CJK unified ideographs extension A) and similar characters to parse as
         // an alignment specifier.
         auto s4 = L"*\x343E"sv;
-        test_parse_helper(parse_align_fn, s4, false, view_typ::npos, {_Align::_None, L"*"sv});
+        test_parse_helper(parse_align_fn, s4, false, view_typ::npos, {.expected_fill = L"*"sv});
     }
 
     return true;
@@ -200,22 +217,76 @@ constexpr bool test_parse_precision() {
     return true;
 }
 
+template <typename CharT>
+constexpr bool test_parse_format_specs() {
+    auto parse_format_specs_fn = _Parse_format_specs<CharT, testing_callbacks<CharT>>;
+    using view_typ             = basic_string_view<CharT>;
+
+    view_typ s0(TYPED_LITERAL(CharT, "6}"));
+    view_typ s1(TYPED_LITERAL(CharT, "*<6"));
+    view_typ s2(TYPED_LITERAL(CharT, "*>6}"));
+    view_typ s3(TYPED_LITERAL(CharT, "*^6}"));
+    view_typ s4(TYPED_LITERAL(CharT, "6d}"));
+    view_typ s5(TYPED_LITERAL(CharT, "*^+4.4a}"));
+    view_typ s6(TYPED_LITERAL(CharT, "*^+#04.4a}"));
+    test_parse_helper(parse_format_specs_fn, s0, false, s0.size() - 1, {.expected_width = 6});
+    test_parse_helper(parse_format_specs_fn, s1, false, s1.size(),
+        {.expected_alignment = _Align::_Left,
+            .expected_fill   = view_typ(TYPED_LITERAL(CharT, "*")),
+            .expected_width  = 6});
+    test_parse_helper(parse_format_specs_fn, s2, false, s2.size() - 1,
+        {.expected_alignment = _Align::_Right,
+            .expected_fill   = view_typ(TYPED_LITERAL(CharT, "*")),
+            .expected_width  = 6});
+    test_parse_helper(parse_format_specs_fn, s3, false, s3.size() - 1,
+        {.expected_alignment = _Align::_Center,
+            .expected_fill   = view_typ(TYPED_LITERAL(CharT, "*")),
+            .expected_width  = 6});
+    test_parse_helper(parse_format_specs_fn, s4, false, s4.size() - 1, {.expected_width = 6, .expected_type = 'd'});
+    test_parse_helper(parse_format_specs_fn, s5, false, s5.size() - 1,
+        {.expected_alignment    = _Align::_Center,
+            .expected_sign      = _Sign::_Plus,
+            .expected_fill      = view_typ(TYPED_LITERAL(CharT, "*")),
+            .expected_width     = 4,
+            .expected_precision = 4,
+            .expected_type      = 'a'});
+    test_parse_helper(parse_format_specs_fn, s6, false, s6.size() - 1,
+        {.expected_alignment    = _Align::_Center,
+            .expected_sign      = _Sign::_Plus,
+            .expected_fill      = view_typ(TYPED_LITERAL(CharT, "*")),
+            .expected_width     = 4,
+            .expected_precision = 4,
+            .expected_hash      = true,
+            .expected_zero      = true,
+            .expected_type      = 'a'});
+    return true;
+}
+
 int main() {
     test_parse_align<char>();
     test_parse_align<wchar_t>();
     static_assert(test_parse_align<char>());
     static_assert(test_parse_align<wchar_t>());
+
     test_parse_arg_id<char>();
     test_parse_arg_id<wchar_t>();
     static_assert(test_parse_arg_id<char>());
     static_assert(test_parse_arg_id<wchar_t>());
+
     test_parse_width<char>();
     test_parse_width<wchar_t>();
     static_assert(test_parse_width<char>());
     static_assert(test_parse_width<wchar_t>());
+
     test_parse_precision<char>();
     test_parse_precision<wchar_t>();
     static_assert(test_parse_precision<char>());
     static_assert(test_parse_precision<wchar_t>());
+
+    test_parse_format_specs<char>();
+    test_parse_format_specs<wchar_t>();
+    static_assert(test_parse_format_specs<char>());
+    static_assert(test_parse_format_specs<wchar_t>());
+
     return 0;
 }
