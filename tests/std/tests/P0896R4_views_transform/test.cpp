@@ -587,26 +587,53 @@ struct iterator_instantiator {
             const auto first = r.begin();
             const auto last  = r.end();
 
+            const auto const_first = ranges::iterator_t<const R>{first};
+            const auto const_last  = ranges::sentinel_t<const R>{last};
+
             assert(first == first);
             assert(I{} == I{});
             STATIC_ASSERT(noexcept(first == first));
+
+            assert(first == const_first);
+            assert(const_first == first);
+            STATIC_ASSERT(noexcept(first == const_first));
 
             assert(!(first == last));
             STATIC_ASSERT(noexcept(first == last));
             assert(!(last == first));
             STATIC_ASSERT(noexcept(last == first));
 
+            assert(!(const_first == last));
+            STATIC_ASSERT(noexcept(const_first == last));
+            assert(!(last == const_first));
+            STATIC_ASSERT(noexcept(last == const_first));
+
+            assert(!(first == const_last));
+            STATIC_ASSERT(noexcept(first == const_last));
+            assert(!(const_last == first));
+            STATIC_ASSERT(noexcept(const_last == first));
+
             assert(!(first != first));
             assert(!(I{} != I{}));
             STATIC_ASSERT(noexcept(first != first));
 
             if constexpr (forward_iterator<Iter>) {
-                const auto final = ranges::next(first, last);
+                const auto final       = ranges::next(first, last);
+                const auto const_final = ranges::next(const_first, const_last);
                 assert(!(first == final));
                 assert(first != final);
 
                 assert(last == final);
                 assert(final == last);
+
+                assert(const_last == final);
+                assert(final == const_last);
+
+                assert(last == const_final);
+                assert(const_final == last);
+
+                assert(const_last == const_final);
+                assert(const_final == const_last);
 
                 assert(!(last != final));
                 assert(!(final != last));
@@ -624,7 +651,23 @@ struct iterator_instantiator {
                     assert(first - last == -ranges::ssize(mutable_ints));
                     STATIC_ASSERT(noexcept(last - first));
                     STATIC_ASSERT(noexcept(first - last));
+
+                    assert(last - const_first == ranges::ssize(mutable_ints));
+                    assert(const_first - last == -ranges::ssize(mutable_ints));
+                    STATIC_ASSERT(noexcept(last - const_first));
+                    STATIC_ASSERT(noexcept(const_first - last));
+
+                    assert(const_last - first == ranges::ssize(mutable_ints));
+                    assert(first - const_last == -ranges::ssize(mutable_ints));
+                    STATIC_ASSERT(noexcept(const_last - first));
+                    STATIC_ASSERT(noexcept(first - const_last));
+
+                    assert(const_last - const_first == ranges::ssize(mutable_ints));
+                    assert(const_first - const_last == -ranges::ssize(mutable_ints));
+                    STATIC_ASSERT(noexcept(const_last - const_first));
+                    STATIC_ASSERT(noexcept(const_first - const_last));
                 }
+
 
                 if constexpr (random_access_iterator<Iter>) { // Validate relational operators
                     assert(!(first < first));
