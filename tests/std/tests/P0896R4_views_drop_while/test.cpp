@@ -152,9 +152,6 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // Validate deduction guide
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1159442
-    (void) 42;
-#endif // TRANSITION, DevCom-1159442
     same_as<R> auto r = drop_while_view{forward<Rng>(rng), is_less_than<3>};
     assert(ranges::equal(r, expected));
     if constexpr (forward_range<V>) {

@@ -501,7 +501,7 @@ std/utilities/memory/allocator.traits/allocator.traits.members/destroy.pass.cpp 
 std/utilities/memory/allocator.traits/allocator.traits.members/max_size.pass.cpp FAIL
 std/utilities/memory/allocator.traits/allocator.traits.members/select_on_container_copy_construction.pass.cpp FAIL
 std/utilities/memory/default.allocator/allocator.globals/eq.pass.cpp FAIL
-std/utilities/memory/default.allocator/allocator.members/allocate.pass.cpp FAIL
+std/utilities/memory/default.allocator/allocator.members/allocate.pass.cpp:1 FAIL
 std/utilities/memory/specialized.algorithms/specialized.construct/construct_at.pass.cpp FAIL
 std/utilities/memory/specialized.algorithms/specialized.destroy/destroy.pass.cpp FAIL
 std/utilities/memory/specialized.algorithms/specialized.destroy/destroy_at.pass.cpp FAIL

@@ -1184,12 +1184,8 @@
 #define __cpp_lib_constexpr_tuple       201811L
 #define __cpp_lib_constexpr_utility     201811L
 
-#ifdef __cpp_impl_coroutine // TRANSITION, Clang and EDG coroutine support
-#if __cpp_impl_coroutine >= 201902L
+#ifdef __cpp_impl_coroutine // TRANSITION, Clang coroutine support
 #define __cpp_lib_coroutine 201902L
-#else // ^^^ __cpp_impl_coroutine >= 201902L ^^^ / vvv __cpp_impl_coroutine < 201902L vvv
-#define __cpp_lib_coroutine 197000L // TRANSITION, VS 2019 16.8 Preview 4
-#endif // ^^^ __cpp_impl_coroutine < 201902L ^^^
 #endif // __cpp_impl_coroutine
 
 #define __cpp_lib_destroying_delete            201806L
