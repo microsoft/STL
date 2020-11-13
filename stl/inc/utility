@@ -124,7 +124,7 @@ template <class...>
 class tuple;
 
 template <size_t _Index, class... _Types>
-_NODISCARD constexpr decltype(auto) _Tuple_get(tuple<_Types...>&& _Tuple) noexcept;
+_NODISCARD constexpr auto&& _Tuple_get(tuple<_Types...>&& _Tuple) noexcept;
 
 template <class _Ty1, class _Ty2>
 struct pair { // store a pair of values
