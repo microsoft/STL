@@ -15,7 +15,6 @@
 #include <string.h>
 #include <type_traits>
 
-
 using namespace std;
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
@@ -503,12 +502,24 @@ void test_layout_paranoia() {
     assert(b[2] == 3);
 }
 
+#ifdef _KERNEL_MODE
+
+#define assert_bitwise_identical(MSG, LHS, RHS) { \
+    double lhs = LHS; \
+    double rhs = RHS; \
+    if (memcmp(&lhs, &rhs, sizeof(lhs)) != 0) { \
+        assert(!MSG); \
+    } \
+}
+
+#else
 void assert_bitwise_identical(const char* const msg, const double lhs, const double rhs) {
     if (memcmp(&lhs, &rhs, sizeof(lhs)) != 0) {
         printf("counterexample found in %s: %a and %a\n", msg, lhs, rhs);
         abort();
     }
 }
+#endif
 
 void test_double_identical_results() {
 #if _HAS_CXX20
