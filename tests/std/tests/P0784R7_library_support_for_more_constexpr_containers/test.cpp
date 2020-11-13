@@ -376,6 +376,19 @@ constexpr void test_compiletime_allocator() {
 static_assert((test_compiletime_allocator(), true));
 #endif // _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc)
 
+#if _HAS_CXX20
+constexpr void test_compiletime_operators() {
+    {
+        auto allocatorA = std::allocator<int>{};
+        auto allocatorB = std::allocator<float>{};
+
+        static_assert(allocatorA == allocatorB);
+        static_assert(!(allocatorA != allocatorB));
+    }
+}
+static_assert((test_compiletime_operators(), true));
+#endif // _HAS_CXX20
+
 int main() {
     test_runtime(1234);
     test_runtime(string("hello world"));
