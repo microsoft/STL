@@ -91,14 +91,12 @@ long add(short x, int y) {
     return x + y;
 }
 
-struct UniqueTagCanDeduceFrom {}; // TRANSITION, VSO-587956
-
 template <typename Void, template <typename...> class ClassTemplate, typename... CtorArgs>
 struct CanDeduceFromHelper : false_type {};
 
 template <template <typename...> class ClassTemplate, typename... CtorArgs>
-struct CanDeduceFromHelper<void_t<UniqueTagCanDeduceFrom, decltype(ClassTemplate(declval<CtorArgs>()...))>,
-    ClassTemplate, CtorArgs...> : true_type {};
+struct CanDeduceFromHelper<void_t<decltype(ClassTemplate(declval<CtorArgs>()...))>, ClassTemplate, CtorArgs...>
+    : true_type {};
 
 template <template <typename...> class ClassTemplate, typename... CtorArgs>
 constexpr bool CanDeduceFrom = CanDeduceFromHelper<void, ClassTemplate, CtorArgs...>::value;

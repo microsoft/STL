@@ -161,6 +161,7 @@ tests\GH_000625_vector_bool_optimization
 tests\GH_000685_condition_variable_any
 tests\GH_000690_overaligned_function
 tests\GH_000890_pow_template
+tests\GH_000935_complex_numerical_accuracy
 tests\GH_000940_missing_valarray_copy
 tests\GH_001001_random_rejection_rounding
 tests\GH_001010_filesystem_error_encoding
@@ -168,7 +169,9 @@ tests\GH_001017_discrete_distribution_out_of_range
 tests\GH_001059_hyperbolic_truncation
 tests\GH_001086_partial_sort_copy
 tests\GH_001103_countl_zero_correctness
+tests\GH_001105_custom_streambuf_throws
 tests\GH_001123_random_cast_out_of_range
+tests\GH_001411_core_headers
 tests\LWG2597_complex_branch_cut
 tests\LWG3018_shared_ptr_function
 tests\P0019R8_atomic_ref
@@ -222,6 +225,7 @@ tests\P0220R1_searchers
 tests\P0220R1_string_view
 tests\P0325R4_to_array
 tests\P0339R6_polymorphic_allocator
+tests\P0355R7_calendars_and_time_zones_io
 tests\P0356R5_bind_front
 tests\P0357R3_supporting_incomplete_types_in_reference_wrapper
 tests\P0414R2_shared_ptr_for_arrays
@@ -247,6 +251,7 @@ tests\P0660R10_stop_token_death
 tests\P0674R1_make_shared_for_arrays
 tests\P0718R2_atomic_smart_ptrs
 tests\P0758R1_is_nothrow_convertible
+tests\P0768R1_spaceship_cpos
 tests\P0768R1_spaceship_operator
 tests\P0769R2_shift_left_shift_right
 tests\P0784R7_library_support_for_more_constexpr_containers
@@ -255,6 +260,8 @@ tests\P0896R4_common_iterator
 tests\P0896R4_common_iterator_death
 tests\P0896R4_counted_iterator
 tests\P0896R4_counted_iterator_death
+tests\P0896R4_istream_view
+tests\P0896R4_istream_view_death
 tests\P0896R4_P1614R2_comparisons
 tests\P0896R4_ranges_alg_adjacent_find
 tests\P0896R4_ranges_alg_all_of
@@ -341,13 +348,21 @@ tests\P0896R4_ranges_test_machinery
 tests\P0896R4_ranges_to_address
 tests\P0896R4_stream_iterators
 tests\P0896R4_views_all
+tests\P0896R4_views_common
+tests\P0896R4_views_counted
+tests\P0896R4_views_counted_death
 tests\P0896R4_views_drop
+tests\P0896R4_views_drop_while
+tests\P0896R4_views_drop_while_death
+tests\P0896R4_views_elements
 tests\P0896R4_views_empty
 tests\P0896R4_views_filter
 tests\P0896R4_views_filter_death
 tests\P0896R4_views_reverse
 tests\P0896R4_views_single
 tests\P0896R4_views_take
+tests\P0896R4_views_take_while
+tests\P0896R4_views_take_while_death
 tests\P0896R4_views_transform
 tests\P0896R4_views_transform_death
 tests\P0898R3_concepts

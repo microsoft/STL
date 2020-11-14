@@ -292,7 +292,7 @@ void test_hash_set() { // test hash_set
     }
 
     {
-        STD initializer_list<char> init(carr, carr + 3);
+        STD initializer_list<char> init{carr[0], carr[1], carr[2]};
         Mycont v11(init);
         CHECK_INT(v11.size(), 3);
         CHECK_INT(*v11.find('a'), 'a');
@@ -589,7 +589,7 @@ void test_hash_multiset() { // test hash_multiset
     }
 
     {
-        STD initializer_list<char> init(carr, carr + 3);
+        STD initializer_list<char> init{carr[0], carr[1], carr[2]};
         Mycont v11(init);
         CHECK_INT(v11.size(), 3);
         CHECK_INT(*v11.find('a'), 'a');

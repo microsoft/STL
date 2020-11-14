@@ -165,7 +165,6 @@
 // P0718R2 atomic<shared_ptr<T>>, atomic<weak_ptr<T>>
 // P0758R1 is_nothrow_convertible
 // P0768R1 Library Support For The Spaceship Comparison Operator <=>
-//     (partially implemented)
 // P0769R2 shift_left(), shift_right()
 // P0811R3 midpoint(), lerp()
 // P0879R0 constexpr For Swapping Functions
@@ -503,7 +502,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 142
-#define _MSVC_STL_UPDATE  202010L
+#define _MSVC_STL_UPDATE  202011L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #ifdef __EDG__
@@ -1185,12 +1184,8 @@
 #define __cpp_lib_constexpr_tuple       201811L
 #define __cpp_lib_constexpr_utility     201811L
 
-#ifdef __cpp_impl_coroutine // TRANSITION, Clang and EDG coroutine support
-#if __cpp_impl_coroutine >= 201902L
+#ifdef __cpp_impl_coroutine // TRANSITION, Clang coroutine support
 #define __cpp_lib_coroutine 201902L
-#else // ^^^ __cpp_impl_coroutine >= 201902L ^^^ / vvv __cpp_impl_coroutine < 201902L vvv
-#define __cpp_lib_coroutine 197000L // TRANSITION, VS 2019 16.8 Preview 4
-#endif // ^^^ __cpp_impl_coroutine < 201902L ^^^
 #endif // __cpp_impl_coroutine
 
 #define __cpp_lib_destroying_delete            201806L
@@ -1214,10 +1209,15 @@
 #define __cpp_lib_span                         202002L
 #define __cpp_lib_ssize                        201902L
 #define __cpp_lib_starts_ends_with             201711L
-#define __cpp_lib_to_address                   201711L
-#define __cpp_lib_to_array                     201907L
-#define __cpp_lib_type_identity                201806L
-#define __cpp_lib_unwrap_ref                   201811L
+
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#define __cpp_lib_three_way_comparison 201711L
+#endif // __cpp_lib_concepts
+
+#define __cpp_lib_to_address    201711L
+#define __cpp_lib_to_array      201907L
+#define __cpp_lib_type_identity 201806L
+#define __cpp_lib_unwrap_ref    201811L
 #endif // _HAS_CXX20
 
 #ifndef _M_CEE

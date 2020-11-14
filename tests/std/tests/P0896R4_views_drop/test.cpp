@@ -159,10 +159,10 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         constexpr bool is_noexcept = is_nothrow_copy_constructible_v<V> && !is_subrange<V>;
 
         STATIC_ASSERT(same_as<decltype(views::drop(move(as_const(rng)), 4)), M>);
-        STATIC_ASSERT(noexcept(views::drop(as_const(rng), 4)) == is_noexcept);
+        STATIC_ASSERT(noexcept(views::drop(move(as_const(rng)), 4)) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | drop_four), M>);
-        STATIC_ASSERT(noexcept(as_const(rng) | drop_four) == is_noexcept);
+        STATIC_ASSERT(noexcept(move(as_const(rng)) | drop_four) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | pipeline), pipeline_t<const remove_reference_t<Rng>>>);
         STATIC_ASSERT(noexcept(move(as_const(rng)) | pipeline) == is_noexcept);
