@@ -5121,6 +5121,13 @@ template <class _Iter1, class _Iter2, class _Pr>
 _INLINE_VAR constexpr bool _Equal_memcmp_is_safe =
     _Equal_memcmp_is_safe_helper<remove_const_t<_Iter1>, remove_const_t<_Iter2>, _Pr>;
 
+template <class _CtgIt1, class _CtgIt2>
+_NODISCARD int _Memcmp_ranges(_CtgIt1 _First1, _CtgIt2 _First2, const size_t _Count) {
+    const auto _First1_ch = reinterpret_cast<const char*>(_To_address(_First1));
+    const auto _First2_ch = reinterpret_cast<const char*>(_To_address(_First2));
+    return _CSTD memcmp(_First1_ch, _First2_ch, _Count * sizeof(_Iter_value_t<_CtgIt1>));
+}
+
 #if _HAS_IF_CONSTEXPR
 template <class _InIt1, class _InIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 bool equal(const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2, _Pr _Pred) {
@@ -5134,10 +5141,7 @@ _NODISCARD _CONSTEXPR20 bool equal(const _InIt1 _First1, const _InIt1 _Last1, co
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
         {
-            const auto _First1_ch = reinterpret_cast<const char*>(_To_address(_UFirst1));
-            const auto _First2_ch = reinterpret_cast<const char*>(_To_address(_UFirst2));
-            const auto _Count = static_cast<size_t>(reinterpret_cast<const char*>(_To_address(_ULast1)) - _First1_ch);
-            return _CSTD memcmp(_First1_ch, _First2_ch, _Count) == 0;
+            return _Memcmp_ranges(_UFirst1, _UFirst2, static_cast<size_t>(_ULast1 - _UFirst1)) == 0;
         }
     }
 
@@ -5165,10 +5169,7 @@ bool _Equal_unchecked(_InIt1 _First1, const _InIt1 _Last1, _InIt2 _First2, _Pr _
 template <class _InIt1, class _InIt2, class _Pr, enable_if_t<_Equal_memcmp_is_safe<_InIt1, _InIt2, _Pr>, int> = 0>
 bool _Equal_unchecked(const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2, _Pr) {
     // compare [_First1, _Last1) to [_First2, ...), memcmp optimization
-    const auto _First1_ch = reinterpret_cast<const char*>(_To_address(_First1));
-    const auto _First2_ch = reinterpret_cast<const char*>(_To_address(_First2));
-    const auto _Count = static_cast<size_t>(reinterpret_cast<const char*>(_To_address(_Last1)) - _First1_ch);
-    return _CSTD memcmp(_First1_ch, _First2_ch, _Count) == 0;
+    return _Memcmp_ranges(_First1, _First2, static_cast<size_t>(_Last1 - _First1)) == 0;
 }
 
 template <class _InIt1, class _InIt2, class _Pr>
@@ -5407,7 +5408,7 @@ _NODISCARD _CONSTEXPR20 bool _Lex_compare_unchecked(
     (void) _Pred;
     const auto _Num1 = static_cast<size_t>(_Last1 - _First1);
     const auto _Num2 = static_cast<size_t>(_Last2 - _First2);
-    const int _Ans   = _CSTD memcmp(_To_address(_First1), _To_address(_First2), _Num1 < _Num2 ? _Num1 : _Num2);
+    const int _Ans   = _Memcmp_ranges(_First1, _First2, (_STD min)(_Num1, _Num2));
     return _Memcmp_pr{}(_Ans, 0) || (_Ans == 0 && _Num1 < _Num2);
 }
 
@@ -5479,7 +5480,7 @@ _NODISCARD constexpr auto lexicographical_compare_three_way(
         if (!_STD is_constant_evaluated()) {
             const auto _Num1 = static_cast<size_t>(_ULast1 - _UFirst1);
             const auto _Num2 = static_cast<size_t>(_ULast2 - _UFirst2);
-            const int _Ans   = _CSTD memcmp(_To_address(_UFirst1), _To_address(_UFirst2), (_STD min)(_Num1, _Num2));
+            const int _Ans   = _Memcmp_ranges(_UFirst1, _UFirst2, (_STD min)(_Num1, _Num2));
             if (_Ans == 0) {
                 return _Num1 <=> _Num2;
             } else {
