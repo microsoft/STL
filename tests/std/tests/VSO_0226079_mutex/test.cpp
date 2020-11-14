@@ -313,7 +313,8 @@ struct mutex_test_fixture {
             assert(ul.owns_lock());
         }) < 1h);
 
-        // Test failing to acquire locks on timeout
+#if 0 // TRANSITION, GH-1472
+      // Test failing to acquire locks on timeout
         ot.lock();
         assert(time_execution([this] { assert(!mtx.try_lock_for(50ms)); }) >= 50ms);
         assert(time_execution([this] { assert(!mtx.try_lock_until(system_clock::now() + 50ms)); }) >= 50ms);
@@ -334,6 +335,7 @@ struct mutex_test_fixture {
             assert(!ul.owns_lock());
         }) >= 50ms);
         ot.unlock();
+#endif // TRANSITION, GH-1472
     }
 
     // nonstandard xtime type
@@ -365,6 +367,7 @@ struct mutex_test_fixture {
             assert(ul.try_lock_until(&xt));
         }) < 1h);
 
+#if 0 // TRANSITION, GH-1472
         ot.lock();
         assert(time_execution([this] {
             const auto xt = to_xtime(50ms);
@@ -376,6 +379,7 @@ struct mutex_test_fixture {
             assert(!ul.try_lock_until(&xt));
         }) >= 50ms);
         ot.unlock();
+#endif // TRANSITION, GH-1472
     }
 
     void test_recursive_lockable() {

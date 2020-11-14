@@ -44,8 +44,7 @@ mkdir arm64ec
   chpe\std_init_once_begin_initialize.obj
 ..\..\..\..\..\tools\amd64\aliasobj.exe ^
   /machine:arm64ec ^
-  __imp___std_init_once_begin_initialize ^
-  __imp_InitOnceBeginInitialize ^
+  -m std_init_once_begin_initialize-arm64ec.txt ^
   arm64ec\std_init_once_begin_initialize.obj
 
 :: __std_init_once_complete
@@ -72,6 +71,5 @@ mkdir arm64ec
   chpe\std_init_once_complete.obj
 ..\..\..\..\..\tools\amd64\aliasobj.exe ^
   /machine:arm64ec ^
-  __imp___std_init_once_complete ^
-  __imp_InitOnceComplete ^
+  -m std_init_once_complete-arm64ec.txt ^
   arm64ec\std_init_once_complete.obj

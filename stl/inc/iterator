@@ -602,7 +602,7 @@ public:
 #endif // TRANSITION, VSO-1225825
 
     _Variantish(const _Variantish& _That) noexcept(
-        noexcept(is_nothrow_copy_constructible_v<_It>&& is_nothrow_copy_constructible_v<_Se>))
+        is_nothrow_copy_constructible_v<_It>&& is_nothrow_copy_constructible_v<_Se>)
         : _Contains{_That._Contains} {
         switch (_Contains) {
         case _Variantish_state::_Holds_iter:
@@ -1105,7 +1105,6 @@ public:
     // [counted.iter.elem]
     _NODISCARD constexpr decltype(auto) operator*() noexcept(noexcept(*_Current)) /* strengthened */ {
 #if _ITERATOR_DEBUG_LEVEL != 0
-        // Per proposed resolution of LWG-3472
         _STL_VERIFY(_Length > 0, "counted_iterator dereference beyond end of range");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         return *_Current;
@@ -1114,7 +1113,6 @@ public:
     _NODISCARD constexpr decltype(auto) operator*() const noexcept(noexcept(*_Current)) /* strengthened */
         requires _Dereferenceable<const _Iter> {
 #if _ITERATOR_DEBUG_LEVEL != 0
-        // Per proposed resolution of LWG-3472
         _STL_VERIFY(_Length > 0, "counted_iterator dereference beyond end of range");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         return *_Current;

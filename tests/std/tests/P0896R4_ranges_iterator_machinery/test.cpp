@@ -1841,7 +1841,6 @@ namespace unwrap_move_only {
     STATIC_ASSERT(!std::_Unwrappable_for_offset_v<iter<int, true> const&>);
     STATIC_ASSERT(std::_Unwrappable_for_offset_v<iter<int, true>>);
     STATIC_ASSERT(!std::_Unwrappable_for_offset_v<iter<int, true> const>);
-    STATIC_ASSERT(std::same_as<std::_Unwrapped_n_t<iter<int, true>>, iter<int, false>>);
 
     STATIC_ASSERT(!std::_Wrapped_seekable_v<iter<int, true>, iter<int, false>&>);
     STATIC_ASSERT(!std::_Wrapped_seekable_v<iter<int, true>, iter<int, false> const&>);

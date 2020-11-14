@@ -1,0 +1,2 @@
+#__std_init_once_complete #InitOnceComplete
+__imp___std_init_once_complete __imp_InitOnceComplete

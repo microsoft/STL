@@ -2,12 +2,13 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 jobs:
-- job: ${{ parameters.targetPlatform }}
+- job: '${{ parameters.targetPlatform }}_${{ parameters.shardNum }}'
   timeoutInMinutes: 360
 
   variables:
     buildOutputLocation: 'D:\build\${{ parameters.targetPlatform }}'
     litFlags: '-j$(testParallelism);--timeout=240;--shuffle;--xunit-xml-output=$(buildOutputLocation)/test-results.xml'
+    shardFlags: '--num-shards=${{ parameters.numShards }};--run-shard=${{ parameters.shardNum }}'
     vcpkgLocation: '$(Build.SourcesDirectory)/vcpkg'
   steps:
     - script: |
@@ -62,8 +63,8 @@ jobs:
         -host_arch=amd64 -arch=${{ parameters.vsDevCmdArch }} -no_logo
         cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=$(vcpkgLocation)\scripts\buildsystems\vcpkg.cmake ^
         -DVCPKG_TARGET_TRIPLET=${{ parameters.targetPlatform }}-windows -DCMAKE_CXX_COMPILER=cl ^
-        -DCMAKE_BUILD_TYPE=Release -DLIT_FLAGS=$(litFlags) ^
-        -DCMAKE_CXX_FLAGS=/analyze ^
+        -DCMAKE_BUILD_TYPE=Release -DLIT_FLAGS=$(litFlags);$(shardFlags) ^
+        -DCMAKE_CXX_FLAGS=/analyze:autolog- ^
         -S $(Build.SourcesDirectory) -B $(buildOutputLocation)
         cmake --build $(buildOutputLocation)
       displayName: 'Build the STL'
@@ -88,4 +89,4 @@ jobs:
         searchFolder: $(buildOutputLocation)
         testResultsFormat: JUnit
         testResultsFiles: '**/test-results.xml'
-        testRunTitle: 'test-${{ parameters.targetPlatform }}'
+        testRunTitle: 'test-${{ parameters.targetPlatform }}-${{ parameters.shardNum }}'
