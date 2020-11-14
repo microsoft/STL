@@ -418,12 +418,7 @@ namespace ranges {
     template <input_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pj>
         requires indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>
     _NODISCARD constexpr _It _Find_unchecked(_It _First, const _Se _Last, const _Ty& _Val, _Pj _Proj) {
-        if constexpr (contiguous_iterator<_It> && sized_sentinel_for<_Se, _It> && same_as<_Pj, identity> &&
-            ((integral<_Ty> && _Is_character_or_bool<iter_value_t<_It>>::value)
-#ifdef __cpp_lib_byte
-                || (same_as<_Ty, byte> && same_as<iter_value_t<_It>, byte>)
-#endif // __cpp_lib_byte
-            ) && !is_volatile_v<remove_reference_t<iter_reference_t<_It>>>) {
+        if constexpr (_Memchr_in_find_is_safe<_It, _Ty> && sized_sentinel_for<_Se, _It> && same_as<_Pj, identity>) {
             if (!_STD is_constant_evaluated()) {
                 if (!_Within_limits(_First, _Val)) {
                     return _RANGES next(_STD move(_First), _Last);

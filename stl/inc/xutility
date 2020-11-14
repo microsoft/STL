@@ -5571,6 +5571,16 @@ _NODISCARD constexpr bool _Within_limits(const _InIt&, const byte&) { // bytes a
 }
 #endif // __cpp_lib_byte
 
+template <class _Iter, class _Ty>
+_INLINE_VAR constexpr bool _Memchr_in_find_is_safe =
+    _Iterator_is_contiguous<_Iter>&&
+        disjunction_v<conjunction<is_integral<_Ty>, _Is_character_or_bool<_Iter_value_t<_Iter>>>
+#ifdef __cpp_lib_byte
+            ,
+            conjunction<is_same<_Ty, byte>, is_same<_Iter_value_t<_Iter>, byte>>
+#endif // __cpp_lib_byte
+            > && !is_volatile_v<remove_reference_t<_Iter_ref_t<_Iter>>>;
+
 template <class _InIt, class _Ty>
 _NODISCARD constexpr _InIt _Find_unchecked1(_InIt _First, const _InIt _Last, const _Ty& _Val, false_type) {
     // find first matching _Val
@@ -5612,18 +5622,8 @@ _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked1(_InIt _First, const _InIt _Last, 
 template <class _InIt, class _Ty>
 _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked(const _InIt _First, const _InIt _Last, const _Ty& _Val) {
     // find first matching _Val; choose optimization
-    // activate optimization for pointers to (const) bytes and integral values
-    using _Memchr_opt = conjunction<bool_constant<_Iterator_is_contiguous<_InIt>>,
-        disjunction< //
-            conjunction<is_integral<_Ty>, _Is_character_or_bool<_Iter_value_t<_InIt>>>
-#ifdef __cpp_lib_byte
-            ,
-            conjunction<is_same<_Ty, byte>, is_same<_Iter_value_t<_InIt>, byte>>
-#endif // __cpp_lib_byte
-            >,
-        negation<is_volatile<remove_reference_t<_Iter_ref_t<_InIt>>>>>;
-
-    return _Find_unchecked1(_First, _Last, _Val, _Memchr_opt{});
+    // activate optimization for contiguous iterators to (const) bytes and integral values
+    return _Find_unchecked1(_First, _Last, _Val, bool_constant<_Memchr_in_find_is_safe<_InIt, _Ty>>{});
 }
 
 template <class _InIt, class _Ty>
