@@ -2104,20 +2104,11 @@ namespace filesystem {
         __std_fs_stats_flags::_Attributes | __std_fs_stats_flags::_Reparse_tag;
 
     // ALIAS file_time_type
-    struct _File_time_clock { // Implementation of trivial-clock
-        using rep        = long long;
-        using period     = chrono::system_clock::period;
-        using duration   = chrono::duration<rep, period>;
-        using time_point = chrono::time_point<_File_time_clock>;
-
-        static constexpr bool is_steady = false;
-
-        _NODISCARD static time_point now() noexcept { // get current time; undo epoch adjustment
-            return time_point(duration(_Xtime_get_ticks() + __std_fs_file_time_epoch_adjustment)); // TRANSITION, ABI
-        }
-    };
-
-    using file_time_type = chrono::time_point<_File_time_clock>;
+#if _HAS_CXX20
+    using file_time_type = chrono::time_point<chrono::file_clock>;
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+    using file_time_type = chrono::time_point<chrono::_File_time_clock>;
+#endif // ^^^ !_HAS_CXX20
 
     // CLASS directory_entry
     class directory_entry {
