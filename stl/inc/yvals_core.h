@@ -234,6 +234,9 @@
 // P1831R1 Deprecating volatile In The Standard Library
 // Other C++20 deprecation warnings
 
+// _HAS_CXX23 directly controls:
+// P1679R3 string contains
+
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
 // This implementation parallelizes several common algorithm calls, but not all.
@@ -1239,6 +1242,11 @@
 #else // _HAS_CXX20
 #define __cpp_lib_shared_ptr_arrays 201611L // P0497R0 Fixing shared_ptr For Arrays
 #endif // _HAS_CXX20
+
+// C++23
+#if _HAS_CXX23
+#define __cpp_lib_string_contains  202011L
+#endif // _HAS_CXX23
 
 // EXPERIMENTAL
 #define __cpp_lib_experimental_erase_if   201411L
