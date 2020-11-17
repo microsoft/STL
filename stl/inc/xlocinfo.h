@@ -9,10 +9,10 @@
 #include <yvals.h>
 #if _STL_COMPILER_PREPROCESSOR
 
-#include <ctype.h>
-#include <locale.h>
-#include <stdio.h> // TRANSITION, VSO-661721
-#include <wchar.h>
+#include <cctype>
+#include <clocale>
+#include <cstdio> // TRANSITION, VSO-661721
+#include <cwchar>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)

@@ -126,10 +126,10 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         constexpr bool is_noexcept = is_nothrow_copy_constructible_v<V>;
 
         STATIC_ASSERT(same_as<decltype(views::filter(move(as_const(rng)), is_even)), F>);
-        STATIC_ASSERT(noexcept(views::filter(as_const(rng), is_even)) == is_noexcept);
+        STATIC_ASSERT(noexcept(views::filter(move(as_const(rng)), is_even)) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | filter_even), F>);
-        STATIC_ASSERT(noexcept(as_const(rng) | filter_even) == is_noexcept);
+        STATIC_ASSERT(noexcept(move(as_const(rng)) | filter_even) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | pipeline), pipeline_t<const remove_reference_t<Rng>>>);
         STATIC_ASSERT(noexcept(move(as_const(rng)) | pipeline) == is_noexcept);
@@ -380,4 +380,27 @@ int main() {
 
     STATIC_ASSERT((instantiation_test(), true));
     instantiation_test();
+
+    { // Validate **non-standard guarantee** that predicates are moved into the range adaptor closure, and into the view
+      // object from an rvalue closure
+        struct Fn {
+            Fn()     = default;
+            Fn(Fn&&) = default;
+            Fn(const Fn&) {
+                assert(false);
+            }
+            Fn& operator=(Fn&&) = default;
+
+            Fn& operator=(const Fn&) {
+                assert(false);
+                return *this;
+            }
+
+            bool operator()(int) const {
+                return true;
+            }
+        };
+
+        (void) views::filter(Fn{})(span<int>{});
+    }
 }

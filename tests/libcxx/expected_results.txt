@@ -66,6 +66,12 @@ std/numerics/bit/bit.pow.two/log2p1.pass.cpp FAIL
 # test emits warning C4310: cast truncates constant value
 std/numerics/bit/bitops.rot/rotl.pass.cpp:0 FAIL
 
+# libc++ doesn't yet implement P1754R1 or P1964R2, so it expects an old value for `__cpp_lib_concepts`
+std/language.support/support.limits/support.limits.general/concepts.version.pass.cpp FAIL
+
+# libc++ doesn't yet implement P1001R2, so it expects an old value for `__cpp_lib_execution`
+std/language.support/support.limits/support.limits.general/execution.version.pass.cpp FAIL
+
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
 # Tracked by VSO-593630 "<filesystem> Enable libcxx filesystem tests"
@@ -191,6 +197,7 @@ std/language.support/support.limits/support.limits.general/type_traits.version.p
 std/language.support/support.limits/support.limits.general/version.version.pass.cpp FAIL
 
 # Contest does not understand .sh tests, which must be run specially
+std/namespace/addressable_functions.sh.cpp SKIPPED
 std/thread/thread.condition/thread.condition.condvarany/wait_terminates.sh.cpp SKIPPED
 
 # These tests set an allocator with a max_size() too small to default construct an unordered container
@@ -215,8 +222,8 @@ std/containers/sequences/array/empty.verify.cpp SKIPPED
 std/containers/sequences/deque/deque.capacity/empty.verify.cpp SKIPPED
 std/containers/sequences/forwardlist/empty.verify.cpp SKIPPED
 std/containers/sequences/list/list.capacity/empty.verify.cpp SKIPPED
-std/containers/sequences/vector/vector.capacity/empty.verify.cpp SKIPPED
 std/containers/sequences/vector.bool/empty.verify.cpp SKIPPED
+std/containers/sequences/vector/vector.capacity/empty.verify.cpp SKIPPED
 std/containers/sequences/vector/vector.cons/copy.move_only.verify.cpp SKIPPED
 std/containers/unord/unord.map/empty.verify.cpp SKIPPED
 std/containers/unord/unord.multimap/empty.verify.cpp SKIPPED
@@ -227,30 +234,54 @@ std/depr/depr.lib.binders/depr.lib.bind.2nd/bind2nd.depr_in_cxx11.verify.cpp SKI
 std/depr/depr.lib.binders/depr.lib.binder.1st/binder1st.depr_in_cxx11.verify.cpp SKIPPED
 std/depr/depr.lib.binders/depr.lib.binder.2nd/binder2nd.depr_in_cxx11.verify.cpp SKIPPED
 std/input.output/filesystems/class.path/path.member/path.decompose/empty.verify.cpp SKIPPED
+std/input.output/iostream.format/input.streams/istream.rvalue/not_istreamable.verify.cpp SKIPPED
+std/input.output/iostream.format/output.streams/ostream.rvalue/not_ostreamable.verify.cpp SKIPPED
+std/input.output/iostream.format/quoted.manip/quoted_char.verify.cpp SKIPPED
+std/input.output/iostream.format/quoted.manip/quoted_traits.verify.cpp SKIPPED
 std/iterators/iterator.container/empty.array.verify.cpp SKIPPED
 std/iterators/iterator.container/empty.container.verify.cpp SKIPPED
 std/iterators/iterator.container/empty.initializer_list.verify.cpp SKIPPED
-std/language.support/support.dynamic/new.delete/new.delete.array/new_size.verify.cpp SKIPPED
-std/language.support/support.dynamic/new.delete/new.delete.array/new_size_align.verify.cpp SKIPPED
+std/language.support/cmp/cmp.categories.pre/zero_type.verify.cpp SKIPPED
 std/language.support/support.dynamic/new.delete/new.delete.array/new_size_align_nothrow.verify.cpp SKIPPED
+std/language.support/support.dynamic/new.delete/new.delete.array/new_size_align.verify.cpp SKIPPED
 std/language.support/support.dynamic/new.delete/new.delete.array/new_size_nothrow.verify.cpp SKIPPED
+std/language.support/support.dynamic/new.delete/new.delete.array/new_size.verify.cpp SKIPPED
 std/language.support/support.dynamic/new.delete/new.delete.placement/new_array_ptr.verify.cpp SKIPPED
 std/language.support/support.dynamic/new.delete/new.delete.placement/new_ptr.verify.cpp SKIPPED
-std/language.support/support.dynamic/new.delete/new.delete.single/new_size.verify.cpp SKIPPED
-std/language.support/support.dynamic/new.delete/new.delete.single/new_size_align.verify.cpp SKIPPED
 std/language.support/support.dynamic/new.delete/new.delete.single/new_size_align_nothrow.verify.cpp SKIPPED
+std/language.support/support.dynamic/new.delete/new.delete.single/new_size_align.verify.cpp SKIPPED
 std/language.support/support.dynamic/new.delete/new.delete.single/new_size_nothrow.verify.cpp SKIPPED
+std/language.support/support.dynamic/new.delete/new.delete.single/new_size.verify.cpp SKIPPED
 std/language.support/support.dynamic/ptr.launder/launder.nodiscard.verify.cpp SKIPPED
+std/numerics/numbers/illformed.verify.cpp SKIPPED
 std/re/re.results/re.results.size/empty.verify.cpp SKIPPED
 std/strings/basic.string/string.capacity/empty.verify.cpp SKIPPED
 std/strings/string.view/string.view.capacity/empty.verify.cpp SKIPPED
 std/thread/futures/futures.async/async.verify.cpp SKIPPED
-std/utilities/allocator.adaptor/allocator.adaptor.members/allocate_size.verify.cpp SKIPPED
+std/thread/futures/futures.promise/copy_assign.verify.cpp SKIPPED
+std/thread/futures/futures.promise/copy_ctor.verify.cpp SKIPPED
+std/thread/futures/futures.unique_future/copy_assign.verify.cpp SKIPPED
+std/thread/futures/futures.unique_future/copy_ctor.verify.cpp SKIPPED
 std/utilities/allocator.adaptor/allocator.adaptor.members/allocate_size_hint.verify.cpp SKIPPED
+std/utilities/allocator.adaptor/allocator.adaptor.members/allocate_size.verify.cpp SKIPPED
+std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/alloc_F.verify.cpp SKIPPED
+std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/alloc_function.verify.cpp SKIPPED
+std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/alloc_nullptr.verify.cpp SKIPPED
+std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/alloc_rfunction.verify.cpp SKIPPED
+std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/alloc.verify.cpp SKIPPED
+std/utilities/function.objects/negators/binary_negate.depr_in_cxx17.verify.cpp SKIPPED
 std/utilities/function.objects/negators/not1.depr_in_cxx17.verify.cpp SKIPPED
 std/utilities/function.objects/negators/not2.depr_in_cxx17.verify.cpp SKIPPED
+std/utilities/function.objects/negators/unary_negate.depr_in_cxx17.verify.cpp SKIPPED
 std/utilities/memory/allocator.traits/allocator.traits.members/allocate.verify.cpp SKIPPED
+std/utilities/memory/default.allocator/allocator_types.deprecated_in_cxx17.verify.cpp SKIPPED
+std/utilities/memory/default.allocator/allocator_types.removed_in_cxx20.verify.cpp SKIPPED
+std/utilities/memory/default.allocator/allocator_void.deprecated_in_cxx17.verify.cpp SKIPPED
+std/utilities/memory/default.allocator/allocator.members/allocate.constexpr.size.verify.cpp SKIPPED
 std/utilities/memory/default.allocator/allocator.members/allocate.verify.cpp SKIPPED
+
+# GH-1382: Our machinery doesn't understand compile-only `.compile.pass.cpp` tests
+std/strings/string.view/string.view.io/stream_insert_decl_present.compile.pass.cpp SKIPPED
 
 
 # *** MISSING STL FEATURES ***
@@ -461,8 +492,20 @@ std/utilities/variant/variant.variant/variant.assign/T.pass.cpp FAIL
 std/utilities/variant/variant.variant/variant.ctor/conv.pass.cpp FAIL
 std/utilities/variant/variant.variant/variant.ctor/T.pass.cpp FAIL
 
-# C++20 P0768R1 "Library Support for the Spaceship (Comparison) Operator"
-std/language.support/support.limits/support.limits.general/compare.version.pass.cpp FAIL
+# C++20 P0784R7 "More constexpr containers"
+std/utilities/memory/allocator.traits/allocator.traits.members/allocate.pass.cpp FAIL
+std/utilities/memory/allocator.traits/allocator.traits.members/allocate_hint.pass.cpp FAIL
+std/utilities/memory/allocator.traits/allocator.traits.members/construct.pass.cpp FAIL
+std/utilities/memory/allocator.traits/allocator.traits.members/deallocate.pass.cpp FAIL
+std/utilities/memory/allocator.traits/allocator.traits.members/destroy.pass.cpp FAIL
+std/utilities/memory/allocator.traits/allocator.traits.members/max_size.pass.cpp FAIL
+std/utilities/memory/allocator.traits/allocator.traits.members/select_on_container_copy_construction.pass.cpp FAIL
+std/utilities/memory/default.allocator/allocator.globals/eq.pass.cpp FAIL
+std/utilities/memory/default.allocator/allocator.members/allocate.pass.cpp FAIL
+std/utilities/memory/specialized.algorithms/specialized.construct/construct_at.pass.cpp FAIL
+std/utilities/memory/specialized.algorithms/specialized.destroy/destroy.pass.cpp FAIL
+std/utilities/memory/specialized.algorithms/specialized.destroy/destroy_at.pass.cpp FAIL
+std/utilities/memory/specialized.algorithms/specialized.destroy/destroy_n.pass.cpp FAIL
 
 # C++20 P0896R4 "<ranges>"
 std/language.support/support.limits/support.limits.general/algorithm.version.pass.cpp FAIL
@@ -494,6 +537,11 @@ std/utilities/meta/meta.unary/meta.unary.prop/is_constructible.pass.cpp:0 FAIL
 std/containers/views/span.cons/ptr_len.pass.cpp:0 FAIL
 std/containers/views/span.cons/ptr_ptr.pass.cpp:0 FAIL
 
+# VSO-1168723 "Implicit copy assignment incorrectly not constexpr when subobject has explicit constexpr copy constructor"
+std/utilities/utility/pairs/pairs.pair/assign_pair.pass.cpp:0 FAIL
+std/utilities/utility/pairs/pairs.pair/assign_rv_pair.pass.cpp:0 FAIL
+std/utilities/utility/pairs/pairs.pair/assign_rv_pair_U_V.pass.cpp:0 FAIL
+
 
 # *** CLANG COMPILER BUGS ***
 # LLVM-33230 "Clang on Windows should define __STDCPP_THREADS__ to be 1"
@@ -501,11 +549,6 @@ std/thread/macro.pass.cpp:1 FAIL
 
 # LLVM-46207 Clang's tgmath.h interferes with the UCRT's tgmath.h
 std/depr/depr.c.headers/tgmath_h.pass.cpp:1 FAIL
-
-
-# *** CLANG FEATURES NOT YET IMPLEMENTED ***
-# P0960R3 "Allow initializing aggregates from a parenthesized list of values"
-std/utilities/tuple/tuple.tuple/tuple.creation/tuple_cat.pass.cpp:0 FAIL
 
 
 # *** CLANG ISSUES, NOT YET ANALYZED ***
@@ -616,6 +659,10 @@ std/language.support/support.runtime/cstdlib.pass.cpp FAIL
 # OS-11107628 "_Exit allows cleanup in other DLLs"
 std/thread/thread.threads/thread.thread.class/thread.thread.assign/move2.pass.cpp SKIPPED
 std/thread/thread.threads/thread.thread.class/thread.thread.member/join.pass.cpp SKIPPED
+
+# OS-29877133 "LDBL_DECIMAL_DIG missing from <float.h>"
+std/depr/depr.c.headers/float_h.pass.cpp:0 FAIL
+std/language.support/support.limits/c.limits/cfloat.pass.cpp:0 FAIL
 
 
 # *** LIKELY BOGUS TESTS ***
@@ -746,8 +793,6 @@ std/containers/sequences/array/array.creation/to_array.pass.cpp:0 FAIL
 std/iterators/predef.iterators/insert.iterators/back.insert.iterator/types.pass.cpp FAIL
 std/iterators/predef.iterators/insert.iterators/front.insert.iterator/types.pass.cpp FAIL
 std/iterators/predef.iterators/insert.iterators/insert.iterator/types.pass.cpp FAIL
-std/iterators/stream.iterators/ostream.iterator/types.pass.cpp FAIL
-std/iterators/stream.iterators/ostreambuf.iterator/types.pass.cpp FAIL
 
 # Tests emit warning C4244: 'argument': conversion from 'T' to 'const std::complex<double>::_Ty', possible loss of data
 std/numerics/complex.number/cmplx.over/conj.pass.cpp:0 FAIL

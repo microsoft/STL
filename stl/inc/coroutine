@@ -135,7 +135,7 @@ _NODISCARD constexpr strong_ordering operator<=>(
 
 template <class _Promise>
 struct hash<coroutine_handle<_Promise>> {
-    _NODISCARD size_t operator()(const coroutine_handle<_Promise>& _Coro) noexcept {
+    _NODISCARD size_t operator()(const coroutine_handle<_Promise>& _Coro) const noexcept {
         return _Hash_representation(_Coro.address());
     }
 };

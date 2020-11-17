@@ -1,4 +1,4 @@
-// csignal standard header
+// csignal standard header (core)
 
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
@@ -6,7 +6,7 @@
 #pragma once
 #ifndef _CSIGNAL_
 #define _CSIGNAL_
-#include <yvals.h>
+#include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
 #include <signal.h>

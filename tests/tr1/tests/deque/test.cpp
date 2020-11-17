@@ -277,8 +277,7 @@ void test_main() { // test basic workings of deque definitions
     }
 
     {
-        const char* data = "abc";
-        STD initializer_list<char> init(data, data + CSTD strlen(data));
+        STD initializer_list<char> init{'a', 'b', 'c'};
         Mycont v11(init);
         CHECK_INT(v11.size(), 3);
         CHECK_INT(v11[2], 'c');
@@ -288,7 +287,7 @@ void test_main() { // test basic workings of deque definitions
         CHECK_INT(v11.size(), 3);
         CHECK_INT(v11[2], 'c');
 
-        CHECK_INT(*v11.insert(v11.begin() + 1, init), data[0]);
+        CHECK_INT(*v11.insert(v11.begin() + 1, init), *init.begin());
         CHECK_INT(v11.size(), 6);
         CHECK_INT(v11[2], 'b');
 

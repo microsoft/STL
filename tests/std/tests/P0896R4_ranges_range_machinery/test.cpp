@@ -72,6 +72,14 @@ constexpr bool test_cpo(T const& obj) {
 
     return true;
 }
+
+STATIC_ASSERT(test_cpo(std::strong_order));
+STATIC_ASSERT(test_cpo(std::weak_order));
+STATIC_ASSERT(test_cpo(std::partial_order));
+STATIC_ASSERT(test_cpo(std::compare_strong_order_fallback));
+STATIC_ASSERT(test_cpo(std::compare_weak_order_fallback));
+STATIC_ASSERT(test_cpo(std::compare_partial_order_fallback));
+
 STATIC_ASSERT(test_cpo(ranges::swap));
 STATIC_ASSERT(test_cpo(ranges::iter_swap));
 STATIC_ASSERT(test_cpo(ranges::iter_move));
@@ -90,12 +98,19 @@ STATIC_ASSERT(test_cpo(ranges::data));
 STATIC_ASSERT(test_cpo(ranges::cdata));
 
 STATIC_ASSERT(test_cpo(ranges::views::all));
+STATIC_ASSERT(test_cpo(ranges::views::common));
+STATIC_ASSERT(test_cpo(ranges::views::counted));
 STATIC_ASSERT(test_cpo(ranges::views::drop));
+STATIC_ASSERT(test_cpo(ranges::views::drop_while));
+STATIC_ASSERT(test_cpo(ranges::views::elements<42>));
 STATIC_ASSERT(test_cpo(ranges::views::filter));
+STATIC_ASSERT(test_cpo(ranges::views::keys));
 STATIC_ASSERT(test_cpo(ranges::views::reverse));
 STATIC_ASSERT(test_cpo(ranges::views::single));
 STATIC_ASSERT(test_cpo(ranges::views::take));
+STATIC_ASSERT(test_cpo(ranges::views::take_while));
 STATIC_ASSERT(test_cpo(ranges::views::transform));
+STATIC_ASSERT(test_cpo(ranges::views::values));
 
 void test_cpo_ambiguity() {
     using namespace std::ranges;
