@@ -1245,7 +1245,7 @@
 
 // C++23
 #if _HAS_CXX23
-#define __cpp_lib_string_contains  202011L
+#define __cpp_lib_string_contains 202011L
 #endif // _HAS_CXX23
 
 // EXPERIMENTAL
