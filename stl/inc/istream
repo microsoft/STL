@@ -600,7 +600,7 @@ public:
     }
 
     _NODISCARD streamsize __CLR_OR_THIS_CALL gcount() const { // get count from last extraction
-        return _Chcount;
+        return _Chcount < 0 ? (numeric_limits<streamsize>::max)() : _Chcount;
     }
 
     int __CLR_OR_THIS_CALL sync() { // synchronize with input source
