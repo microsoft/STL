@@ -2120,6 +2120,23 @@ _OutIt _Format_sed(const match_results<_BidIt, _Alloc>& _Match, _OutIt _Out, _In
     return _Out;
 }
 
+#ifdef _IS_THERE_A_MACRO_TO_DETECT_EHa_COMPILER_OPTION
+template <typename _TMatcher, typename _TMatchResult>
+bool _Regex_match_helper(_TMatcher& _Mx, _TMatchResult* _Matches, bool _Full) {
+    __try {
+        return _Mx._Match(_Matches, _Full);
+    } __except (GetExceptionCode() == EXCEPTION_STACK_OVERFLOW) {
+        _resetstkoflw();
+        _Xregex_error(regex_constants::error_stack);
+    }
+}
+#else // _IS_THERE_A_MACRO_TO_DETECT_EHa_COMPILER_OPTION
+template <typename _TMatcher, typename _TMatchResult>
+bool _Regex_match_helper(_TMatcher& _Mx, _TMatchResult* _Matches, bool _Full) {
+    return _Mx._Match(_Matches, _Full);
+}
+#endif // _IS_THERE_A_MACRO_TO_DETECT_EHa_COMPILER_OPTION
+
 // FUNCTION TEMPLATE _Regex_match1
 template <class _BidIt, class _Alloc, class _Elem, class _RxTraits, class _It>
 bool _Regex_match1(_It _First, _It _Last, match_results<_BidIt, _Alloc>* _Matches,
@@ -2131,7 +2148,7 @@ bool _Regex_match1(_It _First, _It _Last, match_results<_BidIt, _Alloc>* _Matche
 
     _Matcher<_BidIt, _Elem, _RxTraits, _It> _Mx(
         _First, _Last, _Re._Get_traits(), _Re._Get(), _Re.mark_count() + 1, _Re.flags(), _Flgs);
-    return _Mx._Match(_Matches, _Full);
+    return _Regex_match_helper(_Mx, _Matches, _Full);
 }
 
 // FUNCTION TEMPLATE regex_match
