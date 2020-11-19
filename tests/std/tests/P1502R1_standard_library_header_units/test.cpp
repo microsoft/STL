@@ -186,18 +186,14 @@ int main() {
 
     {
         puts("Testing <chrono>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1159995 (UDLs)
         constexpr chrono::seconds dur = 3min;
-#else // ^^^ no workaround / workaround vvv
-        constexpr chrono::seconds dur = chrono::minutes{3};
-#endif // ^^^ workaround ^^^
         assert(dur.count() == 180);
         static_assert(dur.count() == 180);
     }
 
     {
         puts("Testing <codecvt>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1161187 (access control), VSO-1236034 (error LNK2005: _Yarn)
+#ifdef MSVC_INTERNAL_TESTING // TRANSITION, VSO-1236034 (error LNK2005: _Yarn)
         const string utf8_koshka_cat{"\xD0\xBA\xD0\xBE\xD1\x88\xD0\xBA\xD0\xB0_\xF0\x9F\x90\x88"};
         const wstring utf16_koshka_cat{L"\x043A\x043E\x0448\x043A\x0430_\xD83D\xDC08"};
         wstring_convert<codecvt_utf8_utf16<wchar_t>> conv;
@@ -275,10 +271,8 @@ int main() {
 
     {
         puts("Testing <deque>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1160260 (partial specialization)
         const deque<int> d{10, 20, 30, 40, 50};
         assert(d[2] == 30);
-#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -313,10 +307,8 @@ int main() {
 
     {
         puts("Testing <forward_list>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1160260 (partial specialization)
         const forward_list<int> fl{10, 20, 30, 40, 50};
         assert(*next(fl.begin(), 2) == 30);
-#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -436,10 +428,8 @@ int main() {
 
     {
         puts("Testing <list>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1160260 (partial specialization)
         const list<int> l{10, 20, 30, 40, 50};
         assert(*next(l.begin(), 2) == 30);
-#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -453,10 +443,8 @@ int main() {
 
     {
         puts("Testing <map>.");
-#if 0 // TRANSITION, DevCom-1160260 (partial specialization), VSO-1236041 (error LNK2019 pair piecewise_construct_t)
         map<int, int> m{{10, 11}, {20, 22}, {30, 33}, {40, 44}, {50, 55}};
         assert(m[30] == 33);
-#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -558,7 +546,6 @@ int main() {
 
     {
         puts("Testing <queue>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1160260 (partial specialization)
         queue<int> q;
         q.push(10);
         q.push(20);
@@ -587,7 +574,6 @@ int main() {
         assert(pq.top() == 10);
         pq.pop();
         assert(pq.empty());
-#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -608,8 +594,8 @@ int main() {
         assert(ranges::distance(views::filter(arr, [](int x) { return x == 0; })) == 4);
         static_assert(ranges::distance(views::filter(arr, [](int x) { return x != 0; })) == 5);
 #elif defined(MSVC_INTERNAL_TESTING) // TRANSITION, VSO-1237145 (trailing requires clause)
-        auto is_zero                  = [](int x) { return x == 0; };
-        using FV1                     = ranges::filter_view<ranges::ref_view<decltype(arr)>, decltype(is_zero)>;
+        auto is_zero = [](int x) { return x == 0; };
+        using FV1    = ranges::filter_view<ranges::ref_view<decltype(arr)>, decltype(is_zero)>;
         assert(ranges::distance(FV1{arr, is_zero}) == 4);
         constexpr auto not_zero = [](int x) { return x != 0; };
         using FV2 = ranges::filter_view<ranges::ref_view<decltype(arr)>, remove_const_t<decltype(not_zero)>>;
@@ -640,14 +626,12 @@ int main() {
 
     {
         puts("Testing <scoped_allocator>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1162644 (deprecated warning)
         vector<int, scoped_allocator_adaptor<allocator<int>>> v;
         v.push_back(11);
         v.push_back(22);
         v.push_back(33);
         constexpr int expected[]{11, 22, 33};
         assert(equal(v.begin(), v.end(), begin(expected), end(expected)));
-#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -678,14 +662,12 @@ int main() {
 
     {
         puts("Testing <set>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1160260 (partial specialization)
         const set<int> s{10, 20, 30, 40, 50};
         assert(*next(s.begin(), 2) == 30);
 
         const multiset<int> ms{10, 20, 20, 30, 30, 30, 40, 40, 40, 40};
         const auto p = ms.equal_range(30);
         assert(distance(p.first, p.second) == 3);
-#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -748,7 +730,6 @@ int main() {
 
     {
         puts("Testing <stack>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1160260 (partial specialization)
         stack<int> s;
         s.push(10);
         s.push(20);
@@ -761,7 +742,6 @@ int main() {
         assert(s.top() == 10);
         s.pop();
         assert(s.empty());
-#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -802,11 +782,7 @@ int main() {
                 }
                 l.count_down(); // tell main() that we're done
                 while (!token.stop_requested()) {
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1159995 (UDLs)
                     this_thread::sleep_for(10ms); // not a timing assumption; avoids spinning furiously
-#else // ^^^ no workaround / workaround vvv
-                    this_thread::sleep_for(chrono::milliseconds{10}); // not a timing assumption
-#endif // ^^^ workaround ^^^
                 }
                 vec.push_back(-1000); // indicate that token.stop_requested() returned true
             }};
@@ -818,14 +794,7 @@ int main() {
             1079, 3238, 1619, 4858, 2429, 7288, 3644, 1822, 911, 2734, 1367, 4102, 2051, 6154, 3077, 9232, 4616, 2308,
             1154, 577, 1732, 866, 433, 1300, 650, 325, 976, 488, 244, 122, 61, 184, 92, 46, 23, 70, 35, 106, 53, 160,
             80, 40, 20, 10, 5, 16, 8, 4, 2, 1, -1000};
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1160260 (partial specialization)
         assert(equal(vec.begin(), vec.end(), begin(expected), end(expected)));
-#else // ^^^ no workaround / workaround vvv
-        assert(vec.size() == size(expected));
-        for (size_t i = 0; i < vec.size(); ++i) {
-            assert(vec[i] == expected[i]);
-        }
-#endif // ^^^ workaround ^^^
     }
 
     {
@@ -936,22 +905,18 @@ int main() {
 
     {
         puts("Testing <unordered_map>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1160260 (partial specialization)
         unordered_map<int, int> um{{1, 1}, {2, 4}, {3, 9}, {4, 16}, {5, 25}};
         for (const auto& p : um) {
             assert(p.first * p.first == p.second);
         }
-#endif // ^^^ no workaround ^^^
     }
 
     {
         puts("Testing <unordered_set>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1160260 (partial specialization)
         unordered_set<int> us{10, 20, 30, 40, 50};
         for (const auto& elem : us) {
             assert(elem % 10 == 0);
         }
-#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -1007,10 +972,8 @@ int main() {
         const vector<int> v{10, 20, 30, 40, 50};
         assert(v[2] == 30);
 
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, should work with VS 2019 16.9 Preview 1
         const vector<bool> vb{true, true, false, true};
         assert(vb[0] && vb[1] && !vb[2] && vb[3]);
-#endif // ^^^ no workaround ^^^
     }
 
     {

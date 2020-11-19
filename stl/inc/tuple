@@ -684,6 +684,9 @@ public:
     template <size_t _Index, class... _Types>
     friend constexpr const tuple_element_t<_Index, tuple<_Types...>>&& get(const tuple<_Types...>&& _Tuple) noexcept;
 
+    template <size_t _Index, class... _Types>
+    friend constexpr auto&& _Tuple_get(tuple<_Types...>&& _Tuple) noexcept;
+
     template <class _Ty, class... _Types>
     friend constexpr _Ty& get(tuple<_Types...>& _Tuple) noexcept;
 
@@ -794,6 +797,14 @@ _NODISCARD constexpr const tuple_element_t<_Index, tuple<_Types...>>&& get(const
     using _Ty    = tuple_element_t<_Index, tuple<_Types...>>;
     using _Ttype = typename tuple_element<_Index, tuple<_Types...>>::_Ttype;
     return static_cast<const _Ty&&>(static_cast<const _Ttype&>(_Tuple)._Myfirst._Val);
+}
+
+template <size_t _Index, class... _Types>
+_NODISCARD constexpr auto&& _Tuple_get(tuple<_Types...>&& _Tuple) noexcept {
+    // used by pair's piecewise constructor
+    using _Ty    = tuple_element_t<_Index, tuple<_Types...>>;
+    using _Ttype = typename tuple_element<_Index, tuple<_Types...>>::_Ttype;
+    return static_cast<_Ty&&>(static_cast<_Ttype&>(_Tuple)._Myfirst._Val);
 }
 
 // FUNCTION TEMPLATE get (by type)
@@ -970,19 +981,6 @@ _NODISCARD constexpr _Ty make_from_tuple(_Tuple&& _Tpl) { // construct _Ty from 
         _STD forward<_Tuple>(_Tpl), make_index_sequence<tuple_size_v<remove_reference_t<_Tuple>>>{});
 }
 #endif // _HAS_CXX17
-
-// TEMPLATE CONSTRUCTOR pair::pair(tuple, tuple, sequence, sequence)
-template <class _Ty1, class _Ty2>
-template <class _Tuple1, class _Tuple2, size_t... _Indexes1, size_t... _Indexes2>
-constexpr pair<_Ty1, _Ty2>::pair(
-    _Tuple1& _Val1, _Tuple2& _Val2, index_sequence<_Indexes1...>, index_sequence<_Indexes2...>)
-    : first(_STD get<_Indexes1>(_STD move(_Val1))...), second(_STD get<_Indexes2>(_STD move(_Val2))...) {}
-
-// TEMPLATE CONSTRUCTOR pair::pair(piecewise_construct_t, tuple, tuple)
-template <class _Ty1, class _Ty2>
-template <class... _Types1, class... _Types2>
-_CONSTEXPR20 pair<_Ty1, _Ty2>::pair(piecewise_construct_t, tuple<_Types1...> _Val1, tuple<_Types2...> _Val2)
-    : pair(_Val1, _Val2, index_sequence_for<_Types1...>{}, index_sequence_for<_Types2...>{}) {}
 
 // STRUCT TEMPLATE uses_allocator
 template <class... _Types, class _Alloc>

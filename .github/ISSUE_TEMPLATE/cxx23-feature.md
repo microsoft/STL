@@ -1,8 +1,8 @@
 ---
-name: cxx20 Feature
+name: cxx23 Feature
 about: For STL maintainers only
 title: PAPER_NUMBER PAPER_TITLE
-labels: cxx20
+labels: cxx23
 assignees: ''
 
 ---
@@ -22,3 +22,8 @@ the https://wg21.link redirector will start working.
 
 Feature-test macro:
 `#define MACRO_NAME MACRO_VALUE`
+
+Note: We're still working on finishing C++20. Until we're done
+with that (and the compiler implements distinct `/std:c++20` and
+`/std:c++latest` options), we won't be able to review PRs for
+C++23 features.
