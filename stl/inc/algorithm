@@ -8448,7 +8448,7 @@ void _Stable_sort_unchecked(const _BidIt _First, const _BidIt _Last, const _Iter
     if (_Count <= _ISORT_MAX) {
         _Insertion_sort_unchecked(_First, _Last, _Pred); // small
     } else { // sort halves and merge
-        const auto _Half_count      = _Count >> 1;
+        const auto _Half_count      = static_cast<_Diff>(_Count >> 1);
         const auto _Half_count_ceil = static_cast<_Diff>(_Count - _Half_count);
         const _BidIt _Mid           = _STD next(_First, _Half_count_ceil);
         if (_Half_count_ceil <= _Capacity) { // temp buffer big enough, sort each half using buffer
