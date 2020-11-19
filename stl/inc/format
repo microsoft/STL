@@ -302,6 +302,16 @@ constexpr const _CharT* _Parse_format_specs(const _CharT* _Begin, const _CharT* 
     return _Begin;
 }
 
+template <typename _Char>
+struct _Basic_format_specs {
+    int width, precision;
+    char type;
+    _Align _Alignment;
+    _Sign _Sgn;
+    bool _Alt;
+    _Char _Fill[4];
+}
+
 template <class _Ty, class _CharT = char>
 struct formatter;
 
@@ -765,6 +775,27 @@ template <class _Visitor, class _Context>
 auto visit_format_arg(_Visitor&& _Vis, basic_format_arg<_Context> _Arg) {
     return _STD visit(_STD forward<_Visitor>(_Vis), _Arg._Value);
 }
+
+// Dispatcher to call enabled custom formatters, and do nothing otherwise.
+template <class _Context>
+class _Custom_formatter_dispatcher {
+private:
+    using _Char_type = typename _Context::char_type;
+
+    basic_format_parse_context<_Char_type>& _Parse_ctx;
+    _Context& _Ctx;
+
+public:
+    explicit constexpr _Custom_formatter_dispatcher(basic_format_parse_context<_Char_type>& _Parse_ctx, _Context& _Ctx)
+        : _Parse_ctx(_Parse_ctx), _Ctx(_Ctx) {}
+
+    void operator()(typename basic_format_arg<_Context>::handle h) const {
+        h.format(_Parse_ctx, _Ctx);
+    }
+
+    template <class _Ty>
+    void operator()(_Ty) const {}
+};
 
 // The top level set of parsing "actions".
 // This is like the _Parse_spec_callbacks concept but need not be a concept
