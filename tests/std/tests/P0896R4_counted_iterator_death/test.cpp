@@ -51,7 +51,7 @@ void test_case_operator_dereference_value_initialized_iterator() {
 
 void test_case_operator_dereference_end_iterator() {
     counted_iterator<int*> cit{globalArray, 0};
-    (void) (*cit); // cannot dereference end counted_iterator (per proposed resolution of LWG-3472)
+    (void) (*cit); // cannot dereference end counted_iterator
 }
 
 void test_case_operator_preincrement_value_initialized_iterator() {
