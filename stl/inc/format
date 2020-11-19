@@ -310,7 +310,7 @@ struct _Basic_format_specs {
     _Sign _Sgn;
     bool _Alt;
     _Char _Fill[4];
-}
+};
 
 template <class _Ty, class _CharT = char>
 struct formatter;
