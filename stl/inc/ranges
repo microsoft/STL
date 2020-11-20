@@ -584,7 +584,7 @@ namespace ranges {
         // clang-format off
         template <class... _Types>
             requires constructible_from<_Ty, _Types...>
-        constexpr explicit single_view(in_place_t, _Types&&... _Args) noexcept( // explicit per LWG-3428
+        constexpr explicit single_view(in_place_t, _Types&&... _Args) noexcept(
             is_nothrow_constructible_v<_Ty, _Types...>) // strengthened
             // clang-format on
             : _Val{in_place, _STD forward<_Types>(_Args)...} {}
@@ -1393,8 +1393,7 @@ namespace ranges {
 
             _NODISCARD friend constexpr difference_type operator-(const _Iterator& _Left,
                 const _Iterator& _Right) noexcept(noexcept(_Left._Current - _Right._Current)) /* strengthened */
-                requires sized_sentinel_for<iterator_t<_Base>, iterator_t<_Base>> { // constraints per LWG issue
-                                                                                    // unnumbered as of 2020-09-03
+                requires sized_sentinel_for<iterator_t<_Base>, iterator_t<_Base>> {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _Left._Same_range(_Right);
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -1750,8 +1749,8 @@ namespace ranges {
         }
     };
 
-    template <class _Rng> // Per P/R of LWG-3447
-    take_view(_Rng&&, range_difference_t<_Rng>)->take_view<views::all_t<_Rng>>;
+    template <class _Rng>
+    take_view(_Rng&&, range_difference_t<_Rng>) -> take_view<views::all_t<_Rng>>;
 
     namespace views {
         // VARIABLE views::take
@@ -1890,7 +1889,7 @@ namespace ranges {
 
             // clang-format off
             template <bool _OtherConst = !_Const>
-                requires sentinel_for<_Base_sentinel, _Maybe_const_iter<_OtherConst>> // Per Resolution of LWG-3449
+                requires sentinel_for<_Base_sentinel, _Maybe_const_iter<_OtherConst>>
             _NODISCARD friend constexpr bool operator==(
                 const _Maybe_const_iter<_OtherConst>& _Left, const _Sentinel& _Right) {
                 // clang-format on
@@ -1953,7 +1952,7 @@ namespace ranges {
         // clang-format off
         _NODISCARD constexpr auto begin() const noexcept(
             noexcept(_RANGES begin(_Range))) /* strengthened */ requires range<const _Vw>
-            && indirect_unary_predicate<const _Pr, iterator_t<const _Vw>> { // Per Resolution of LWG-3450
+            && indirect_unary_predicate<const _Pr, iterator_t<const _Vw>> {
             // clang-format on
             return _RANGES begin(_Range);
         }
@@ -1973,7 +1972,6 @@ namespace ranges {
         _NODISCARD constexpr auto end() const noexcept(
             noexcept(_RANGES end(_Range)) && is_nothrow_move_constructible_v<_Sentinel<true>>) /* strengthened */
             requires range<const _Vw> && indirect_unary_predicate<const _Pr, iterator_t<const _Vw>> {
-            // Per Resolution of LWG-3450
             // clang-format on
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(_Pred, "value-initialized take_while_view cannot call end");
@@ -2053,7 +2051,7 @@ namespace ranges {
         }
 
         // clang-format off
-        _NODISCARD constexpr auto begin() // constraints per proposed resolution of LWG-3482
+        _NODISCARD constexpr auto begin()
             requires (!(_Simple_view<_Vw> && random_access_range<const _Vw> && sized_range<const _Vw>)) {
             // clang-format on
             if constexpr (sized_range<_Vw> && random_access_range<_Vw>) {
@@ -2099,7 +2097,7 @@ namespace ranges {
         }
 
         // clang-format off
-        _NODISCARD constexpr auto begin() const // constraints per proposed resolution of LWG-3482
+        _NODISCARD constexpr auto begin() const
             requires random_access_range<const _Vw> && sized_range<const _Vw> {
             // clang-format on
             const auto _Offset = (_STD min)(_RANGES distance(_Range), _Count);
@@ -2364,7 +2362,6 @@ namespace ranges {
         common_view() = default;
         constexpr explicit common_view(_Vw _Base_) noexcept(is_nothrow_move_constructible_v<_Vw>) // strengthened
             : _Base(_STD move(_Base_)) {}
-        // converting constructor template omitted per LWG-3405
 
         _NODISCARD constexpr _Vw base() const& noexcept(
             is_nothrow_copy_constructible_v<_Vw>) /* strengthened */ requires copy_constructible<_Vw> {
@@ -2828,7 +2825,7 @@ namespace ranges {
 
             _NODISCARD friend constexpr difference_type operator-(const _Iterator& _Left,
                 const _Iterator& _Right) noexcept(noexcept(_Left._Current - _Right._Current)) /* strengthened */
-                requires sized_sentinel_for<iterator_t<_Base>, iterator_t<_Base>> { // Per LWG-3483
+                requires sized_sentinel_for<iterator_t<_Base>, iterator_t<_Base>> {
                 return _Left._Current - _Right._Current;
             }
         };
@@ -2870,7 +2867,7 @@ namespace ranges {
             }
 
             // clang-format off
-            template <bool _OtherConst> // Per resolution of LWG-3406
+            template <bool _OtherConst>
                 requires sentinel_for<sentinel_t<_Base>, _Maybe_const_iter<_OtherConst>>
             _NODISCARD friend constexpr bool operator==(const _Iterator<_OtherConst>& _Left,
                 const _Sentinel& _Right) noexcept(noexcept(_Get_current(_Left) == _Right._Last)) /* strengthened */ {
@@ -2879,7 +2876,7 @@ namespace ranges {
             }
 
             // clang-format off
-            template <bool _OtherConst> // Per resolution of LWG-3406
+            template <bool _OtherConst>
                 requires sized_sentinel_for<sentinel_t<_Base>, _Maybe_const_iter<_OtherConst>>
             _NODISCARD friend constexpr range_difference_t<_Maybe_const<_OtherConst, _Vw>> operator-(
                 const _Iterator<_OtherConst>& _Left, const _Sentinel& _Right) noexcept(
@@ -2889,7 +2886,7 @@ namespace ranges {
             }
 
             // clang-format off
-            template <bool _OtherConst> // Per resolution of LWG-3406
+            template <bool _OtherConst>
                 requires sized_sentinel_for<sentinel_t<_Base>, _Maybe_const_iter<_OtherConst>>
             _NODISCARD friend constexpr range_difference_t<_Maybe_const<_OtherConst, _Vw>> operator-(
                 const _Sentinel& _Left, const _Iterator<_OtherConst>& _Right) noexcept(
@@ -2925,14 +2922,14 @@ namespace ranges {
         _NODISCARD constexpr _Iterator<true> begin() const
             noexcept(noexcept(_RANGES begin(_Range))
                      && is_nothrow_move_constructible_v<iterator_t<const _Vw>>) /* strengthened */
-            requires range<const _Vw> { // Per resolution of LWG-3406
+            requires range<const _Vw> {
             return _Iterator<true>{_RANGES begin(_Range)};
         }
 
         // clang-format off
         _NODISCARD constexpr auto end() noexcept(noexcept(
             _RANGES end(_Range)) && is_nothrow_move_constructible_v<sentinel_t<_Vw>>) /* strengthened */
-            requires (!_Simple_view<_Vw>) { // Per resolution of LWG-3406
+            requires (!_Simple_view<_Vw>) {
             // clang-format on
             if constexpr (common_range<_Vw>) {
                 return _Iterator<false>{_RANGES end(_Range)};

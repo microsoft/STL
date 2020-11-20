@@ -413,7 +413,7 @@ template <_Has_member_element_type _Ty>
 struct indirectly_readable_traits<_Ty> : _Cond_value_type<typename _Ty::element_type> {};
 
 // clang-format off
-template <_Has_member_value_type _Ty> // Per LWG-3446
+template <_Has_member_value_type _Ty>
     requires _Has_member_element_type<_Ty>
         && same_as<remove_cv_t<typename _Ty::value_type>, remove_cv_t<typename _Ty::element_type>>
 struct indirectly_readable_traits<_Ty> : _Cond_value_type<typename _Ty::value_type> {};
@@ -473,7 +473,7 @@ struct _Iter_traits_difference<false> {
 
 // clang-format off
 template <class _It>
-concept _Cpp17_iterator = // per LWG-3420
+concept _Cpp17_iterator =
     requires(_It __i) {
         { *__i } -> _Can_reference;
         { ++__i } -> same_as<_It&>;
@@ -765,7 +765,7 @@ concept indirectly_writable = requires(_It&& __i, _Ty&& __t) {
 // CONCEPT _Integer_like
 // clang-format off
 template <class _Ty>
-concept _Integer_like = _Is_nonbool_integral<_Ty>; // per the proposed resolution of LWG-3467
+concept _Integer_like = _Is_nonbool_integral<_Ty>;
 
 // CONCEPT _Signed_integer_like
 template <class _Ty>
@@ -778,7 +778,7 @@ using _Make_unsigned_like_t = make_unsigned_t<_Ty>;
 
 // ALIAS TEMPLATE _Make_signed_like_t
 template <class _Ty>
-using _Make_signed_like_t = make_signed_t<_Ty>; // per the proposed resolution of LWG-3403
+using _Make_signed_like_t = make_signed_t<_Ty>;
 
 // CONCEPT weakly_incrementable
 // clang-format off
@@ -1912,7 +1912,6 @@ public:
     // clang-format off
     template <class _Other>
 #ifdef __cpp_lib_concepts
-        // Per LWG-3435
         requires (!is_same_v<_Other, _BidIt>) && convertible_to<const _Other&, _BidIt>
 #endif // __cpp_lib_concepts
     _CONSTEXPR17 reverse_iterator(const reverse_iterator<_Other>& _Right) noexcept(
@@ -1921,7 +1920,6 @@ public:
 
     template <class _Other>
 #ifdef __cpp_lib_concepts
-        // Per LWG-3435
         requires (!is_same_v<_Other, _BidIt>) && convertible_to<const _Other&, _BidIt>
             && assignable_from<_BidIt&, const _Other&>
 #endif // __cpp_lib_concepts
@@ -3333,7 +3331,7 @@ namespace ranges {
     inline constexpr _Distance_fn distance{_Not_quite_object::_Construct_tag{}};
 
     // VARIABLE ranges::ssize
-    class _Ssize_fn { // Per the proposed resolution of LWG-3403
+    class _Ssize_fn {
     public:
         // clang-format off
         template <class _Rng>
@@ -4006,7 +4004,6 @@ public:
     // clang-format off
     template <class _Other>
 #ifdef __cpp_lib_concepts
-        // per LWG-3435
         requires (!is_same_v<_Other, _Iter>) && convertible_to<const _Other&, _Iter>
 #endif // __cpp_lib_concepts
     _CONSTEXPR17 move_iterator(const move_iterator<_Other>& _Right) noexcept(
@@ -4015,7 +4012,6 @@ public:
 
     template <class _Other>
 #ifdef __cpp_lib_concepts
-        // per LWG-3435
         requires (!is_same_v<_Other, _Iter>) && convertible_to<const _Other&, _Iter>
             && assignable_from<_Iter&, const _Other&>
 #endif // __cpp_lib_concepts

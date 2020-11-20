@@ -160,9 +160,6 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // Validate deduction guide
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1159442
-    (void) 42;
-#endif // TRANSITION, DevCom-1159442
     same_as<R> auto r = reverse_view{forward<Rng>(rng)};
     assert(ranges::equal(r, expected));
 
@@ -294,9 +291,6 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // Validate reverse_view::base() && (NB: do this last since it leaves r moved-from)
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1159442
-    (void) 42;
-#endif // TRANSITION, DevCom-1159442
     same_as<V> auto b2 = move(r).base();
     static_assert(noexcept(move(r).base()) == is_nothrow_move_constructible_v<V>);
     if (!is_empty) {
