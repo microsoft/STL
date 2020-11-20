@@ -294,7 +294,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             }
 
             if (forward_range<V>) { // intentionally not if constexpr
-                // Compare with const / non const iterators
+                // Compare with const / non-const iterators
                 const same_as<iterator_t<R>> auto i        = r.begin();
                 const same_as<iterator_t<const R>> auto ic = as_const(r).begin();
                 assert(s != i);
