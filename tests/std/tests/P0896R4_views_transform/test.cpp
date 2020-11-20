@@ -255,7 +255,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             }
 
             if (forward_range<V>) { // intentionally not if constexpr
-                // Compare with const / non const iterators
+                // Compare with const / non-const iterators
                 const same_as<iterator_t<R>> auto i        = r.begin();
                 const same_as<iterator_t<const R>> auto ic = as_const(r).begin();
                 assert(s != i);
@@ -592,8 +592,9 @@ struct iterator_instantiator {
             STATIC_ASSERT(noexcept(first == first));
 
             assert(first == const_first);
-            assert(const_first == first);
             STATIC_ASSERT(noexcept(first == const_first));
+            assert(const_first == first);
+            STATIC_ASSERT(noexcept(const_first == first));
 
             assert(!(first == last));
             STATIC_ASSERT(noexcept(first == last));
