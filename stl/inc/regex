@@ -23,6 +23,12 @@
 #include <utility>
 #include <vector>
 
+// clang-format off
+// The order of these includes are important
+#include <Windows.h>
+#include <processthreadsapi.h>
+// clang-format on
+
 #if _HAS_CXX17
 #include <xpolymorphic_allocator.h>
 #endif // _HAS_CXX17
@@ -38,13 +44,9 @@ _STL_DISABLE_CLANG_WARNINGS
 #define _REGEX_MAX_COMPLEXITY_COUNT 10000000L // set to 0 to disable
 #endif // _REGEX_MAX_COMPLEXITY_COUNT
 
-#ifndef _REGEX_MAX_STACK_COUNT
-#ifdef _WIN64
-#define _REGEX_MAX_STACK_COUNT 225L // set to 0 to disable
-#else // _WIN64
-#define _REGEX_MAX_STACK_COUNT 1000L // set to 0 to disable
-#endif // _WIN64
-#endif // _REGEX_MAX_STACK_COUNT
+#ifndef _REGEX_NEEDED_STACK_SIZE
+#define _REGEX_NEEDED_STACK_SIZE 35000L
+#endif // _REGEX_NEEDED_STACK_SIZE
 
 #ifndef _ENHANCED_REGEX_VISUALIZER
 
@@ -1584,7 +1586,6 @@ public:
         _Cap                  = static_cast<bool>(_Matches);
         _Full                 = _Full_match;
         _Max_complexity_count = _REGEX_MAX_COMPLEXITY_COUNT;
-        _Max_stack_count      = _REGEX_MAX_STACK_COUNT;
 
         _Matched = false;
 
@@ -1650,7 +1651,6 @@ private:
     const _RxTraits& _Traits;
     bool _Full;
     long _Max_complexity_count;
-    long _Max_stack_count;
 
 public:
     _Matcher& operator=(const _Matcher&) = delete;
@@ -2120,23 +2120,6 @@ _OutIt _Format_sed(const match_results<_BidIt, _Alloc>& _Match, _OutIt _Out, _In
     return _Out;
 }
 
-#ifdef _IS_THERE_A_MACRO_TO_DETECT_EHa_COMPILER_OPTION
-template <typename _TMatcher, typename _TMatchResult>
-bool _Regex_match_helper(_TMatcher& _Mx, _TMatchResult* _Matches, bool _Full) {
-    __try {
-        return _Mx._Match(_Matches, _Full);
-    } __except (GetExceptionCode() == EXCEPTION_STACK_OVERFLOW) {
-        _resetstkoflw();
-        _Xregex_error(regex_constants::error_stack);
-    }
-}
-#else // _IS_THERE_A_MACRO_TO_DETECT_EHa_COMPILER_OPTION
-template <typename _TMatcher, typename _TMatchResult>
-bool _Regex_match_helper(_TMatcher& _Mx, _TMatchResult* _Matches, bool _Full) {
-    return _Mx._Match(_Matches, _Full);
-}
-#endif // _IS_THERE_A_MACRO_TO_DETECT_EHa_COMPILER_OPTION
-
 // FUNCTION TEMPLATE _Regex_match1
 template <class _BidIt, class _Alloc, class _Elem, class _RxTraits, class _It>
 bool _Regex_match1(_It _First, _It _Last, match_results<_BidIt, _Alloc>* _Matches,
@@ -2148,7 +2131,7 @@ bool _Regex_match1(_It _First, _It _Last, match_results<_BidIt, _Alloc>* _Matche
 
     _Matcher<_BidIt, _Elem, _RxTraits, _It> _Mx(
         _First, _Last, _Re._Get_traits(), _Re._Get(), _Re.mark_count() + 1, _Re.flags(), _Flgs);
-    return _Regex_match_helper(_Mx, _Matches, _Full);
+    return _Mx._Match(_Matches, _Full);
 }
 
 // FUNCTION TEMPLATE regex_match
@@ -3458,9 +3441,21 @@ unsigned int _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Get_ncap() const {
     return static_cast<unsigned int>(_Ncap);
 }
 
+ULONG_PTR _AvailableStackCapacity() {
+
+    ULONG_PTR _StackLowBoundary;
+    ULONG_PTR _StackHighBoundary;
+    GetCurrentThreadStackLimits(&_StackLowBoundary, &_StackHighBoundary);
+
+    char aDummyValue;
+    ULONG_PTR _CurrentStackPointer = reinterpret_cast<ULONG_PTR>(&aDummyValue);
+    ULONG_PTR _AvailableStackSize  = _CurrentStackPointer - _StackLowBoundary;
+    return _AvailableStackSize;
+}
+
 template <class _BidIt, class _Elem, class _RxTraits, class _It>
 bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Match_pat(_Node_base* _Nx) { // check for match
-    if (0 < _Max_stack_count && --_Max_stack_count <= 0) {
+    if (_AvailableStackCapacity() < _REGEX_NEEDED_STACK_SIZE) {
         _Xregex_error(regex_constants::error_stack);
     }
 
@@ -3643,10 +3638,6 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Match_pat(_Node_base* _Nx) { // c
         } else if (_Nx) {
             _Nx = _Nx->_Next;
         }
-    }
-
-    if (0 < _Max_stack_count) {
-        ++_Max_stack_count;
     }
 
     return !_Failed;
