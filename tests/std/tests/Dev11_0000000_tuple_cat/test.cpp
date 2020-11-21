@@ -211,7 +211,7 @@ int main() {
     }
 
     // LWG-3211 std::tuple<> should be trivially constructible
-    STATIC_ASSERT(is_trivially_constructible_v<tuple<>>);
+    STATIC_ASSERT(is_trivially_default_constructible_v<tuple<>>);
 }
 
 // Also test DevDiv-1205400 "C++ compiler: static_assert in std::tuple_element prevents SFINAE".
