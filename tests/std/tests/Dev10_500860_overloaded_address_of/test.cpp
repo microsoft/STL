@@ -124,9 +124,9 @@ template class std::unordered_multimap<Evil, Evil, Hash>;
 template class std::unordered_set<Evil, Hash>;
 template class std::unordered_multiset<Evil, Hash>;
 
-
-template class std::_Array_iterator<Evil, 5>;
-template class std::_Array_const_iterator<Evil, 5>;
+// container iterators
+template class std::_Array_iterator<Evil, true, true>;
+template class std::_Array_iterator<Evil, false, true>;
 
 template class std::_Deque_iterator<_Deque_val<_Deque_simple_types<Evil>>>;
 template class std::_Deque_const_iterator<_Deque_val<_Deque_simple_types<Evil>>>;
@@ -148,6 +148,9 @@ template class std::_Tree_const_iterator<_Tree_val<_Tree_simple_types<Evil>>>;
 template class std::_List_iterator<_List_val<_List_simple_types<pair<const Evil, Evil>>>>;
 template class std::_List_const_iterator<_List_val<_List_simple_types<pair<const Evil, Evil>>>>;
 
+// unchecked container iterators
+template class std::_Array_iterator<Evil, true, false>;
+template class std::_Array_iterator<Evil, false, false>;
 
 template class std::_Deque_unchecked_iterator<_Deque_val<_Deque_simple_types<Evil>>>;
 template class std::_Deque_unchecked_const_iterator<_Deque_val<_Deque_simple_types<Evil>>>;

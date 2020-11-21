@@ -220,6 +220,10 @@ struct identity {
 };
 #endif // _HAS_CXX20
 
+// ALIAS TEMPLATE _Maybe_const
+template <bool _IsConst, class _Ty>
+using _Maybe_const = conditional_t<_IsConst, const _Ty, _Ty>;
+
 // FUNCTION TEMPLATE _Pass_fn
 // TRANSITION, VSO-386225
 template <class _Fx>
