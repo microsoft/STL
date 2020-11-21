@@ -153,7 +153,10 @@ struct _Ignore { // struct that ignores assignments
 
 _INLINE_VAR constexpr _Ignore ignore{};
 
-// Note: This file uses extra _STD qualification within enable_if_t in order to improve throughput for large tuples.
+// Note: To improve throughput, this file uses extra _STD qualification for names that appear in the
+// arguments of enable_if_t. Specifically, we qualify names which appear anywhere in the STL as members of
+// some class - including injected-class-names! - that we know are not members of the class being defined.
+// This avoids pointless class-member lookup for those names in this context.
 
 // STRUCT TEMPLATE _Tuple_val
 template <class _Ty>
