@@ -176,6 +176,22 @@ public:
             }
         }
     }
+
+    void should_not_crash(
+        const std::string& subject, const std::string& pattern, const std::regex_constants::error_type expectedCode) {
+        try {
+            const std::regex r(pattern);
+            std::smatch m;
+            std::regex_match(subject, m, r);
+        } catch (const std::regex_error& e) {
+            if (e.code() != expectedCode) {
+                printf(R"(regex r("%s") threw 0x%X; expected 0x%X)"
+                       "\n",
+                    pattern.c_str(), static_cast<unsigned int>(e.code()), static_cast<unsigned int>(expectedCode));
+                fail_regex();
+            }
+        }
+    }
 };
 
 class test_regex {

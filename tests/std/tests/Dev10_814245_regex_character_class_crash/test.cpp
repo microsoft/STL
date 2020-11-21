@@ -111,25 +111,12 @@ void test_VSO_984741_splitting_a_string_with_a_regex() {
     assert(equal(i, sregex_token_iterator{}, begin(tokens), end(tokens)));
 }
 
-void test_GH_997_grouping_repetition_should_not_crash() {
-    // This case should match successfully or throw a C++ exception but should not crash with stack overflow
-    try {
-        std::string str(1000, 'a');
-        std::smatch match{};
-        std::regex_match(str, match, std::regex{"(?:a)+"});
-        assert(true);
-    } catch (std::exception&) {
-        assert(true);
-    }
-}
-
 int main() {
     init_character_strings();
     test_dev10_814245_character_class_should_not_crash();
     test_dev10_723057_normal_to_high_bit_ranges_should_not_throw_error_range();
     test_VSO_153556_singular_classes_can_have_high_bit_set();
     test_VSO_984741_splitting_a_string_with_a_regex();
-    test_GH_997_grouping_repetition_should_not_crash();
 
     return g_regexTester.result();
 }

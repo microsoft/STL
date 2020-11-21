@@ -546,6 +546,11 @@ void test_VSO_226914_word_boundaries() {
     aWordAny.should_search_fail("aa", match_not_bow | match_not_eow);
 }
 
+void test_GH_997_regex_should_throw_regex_error_on_stack_overflow() {
+    // This case should match successfully or throw a regex error but should not crash on stack overflow
+    g_regexTester.should_not_crash(std::string(2000, 'a'), R"((?:a)+)", error_stack);
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -572,6 +577,7 @@ int main() {
     test_VSO_225160_match_bol_flag();
     test_VSO_225160_match_eol_flag();
     test_VSO_226914_word_boundaries();
+    test_GH_997_regex_should_throw_regex_error_on_stack_overflow();
 
     return g_regexTester.result();
 }

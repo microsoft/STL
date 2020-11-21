@@ -24,7 +24,7 @@
 #include <vector>
 
 // clang-format off
-// The order of these includes are important
+// The order of these includes is important.
 #include <Windows.h>
 #include <processthreadsapi.h>
 // clang-format on
