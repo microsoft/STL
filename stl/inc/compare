@@ -411,7 +411,7 @@ namespace _Strong_order {
                 const _Uint_type _Right_shifted_sign = _Right_uint & _Traits::_Shifted_sign_mask;
 
                 // 3. Interpret floating-point bit patterns as sign magnitude representations of integers,
-                //    and then transform then into one's complement representation.
+                //    and then transform them into one's complement representation.
                 // (One's complement representations of positive zero and negative zero are different.)
                 const _Uint_type _Left_sign  = _Left_shifted_sign >> _Traits::_Sign_shift;
                 const _Uint_type _Right_sign = _Right_shifted_sign >> _Traits::_Sign_shift;
@@ -530,7 +530,7 @@ namespace _Weak_order {
                 }
 
                 // 4. Interpret floating-point bit patterns as sign magnitude representations of integers,
-                //    and then transform then into two's complement representation.
+                //    and then transform them into two's complement representation.
                 // (Two's complement representations of positive zero and negative zero are the same.)
                 const _Uint_type _Left_sign  = _Left_shifted_sign >> _Traits::_Sign_shift;
                 const _Uint_type _Right_sign = _Right_shifted_sign >> _Traits::_Sign_shift;
