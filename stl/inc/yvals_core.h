@@ -351,6 +351,14 @@
 // _HAS_NODISCARD (in vcruntime.h) controls:
 // [[nodiscard]] attributes on STL functions
 
+#ifndef __has_cpp_attribute
+#define _NODISCARD_CTOR
+#elif __has_cpp_attribute(nodiscard) >= 201907L
+#define _NODISCARD_CTOR _NODISCARD
+#else
+#define _NODISCARD_CTOR
+#endif
+
 // Determine if we should use [[msvc::known_semantics]] to communicate to the compiler
 // that certain type trait specializations have the standard-mandated semantics
 #ifndef __has_cpp_attribute

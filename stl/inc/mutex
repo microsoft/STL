@@ -125,7 +125,7 @@ _INLINE_VAR constexpr try_to_lock_t try_to_lock{};
 
 // CLASS TEMPLATE unique_lock
 template <class _Mutex>
-class unique_lock { // whizzy class with destructor that unlocks mutex
+class _NODISCARD_CTOR unique_lock { // whizzy class with destructor that unlocks mutex
 public:
     using mutex_type = _Mutex;
 
@@ -421,7 +421,7 @@ void lock(_Lock0& _Lk0, _Lock1& _Lk1, _LockN&... _LkN) { // lock multiple locks,
 
 // CLASS TEMPLATE lock_guard
 template <class _Mutex>
-class lock_guard { // class with destructor that unlocks a mutex
+class _NODISCARD_CTOR lock_guard { // class with destructor that unlocks a mutex
 public:
     using mutex_type = _Mutex;
 
@@ -445,7 +445,7 @@ private:
 #if _HAS_CXX17
 // CLASS TEMPLATE scoped_lock
 template <class... _Mutexes>
-class scoped_lock { // class with destructor that unlocks mutexes
+class _NODISCARD_CTOR scoped_lock { // class with destructor that unlocks mutexes
 public:
     explicit scoped_lock(_Mutexes&... _Mtxes) : _MyMutexes(_Mtxes...) { // construct and lock
         _STD lock(_Mtxes...);
@@ -465,7 +465,7 @@ private:
 };
 
 template <class _Mutex>
-class scoped_lock<_Mutex> {
+class _NODISCARD_CTOR scoped_lock<_Mutex> {
 public:
     using mutex_type = _Mutex;
 
