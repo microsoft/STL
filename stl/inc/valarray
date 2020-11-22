@@ -548,7 +548,7 @@ private:
 
     void _Tidy_deallocate() noexcept {
         if (_Myptr) { // destroy elements
-            for (size_t _Idx = 1; _Idx < _Mysize; ++_Idx) {
+            for (size_t _Idx = 0; _Idx < _Mysize; ++_Idx) {
                 _Destroy_in_place(_Myptr[_Idx]);
             }
 
