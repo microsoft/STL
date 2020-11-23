@@ -73,14 +73,28 @@ _INLINE_VAR constexpr size_t _New_alignof = (_STD max)(alignof(_Ty),
 
 // STRUCT _Default_allocate_traits
 struct _Default_allocate_traits {
-    __declspec(allocator) static _CONSTEXPR20_DYNALLOC void* _Allocate(const size_t _Bytes) {
+#ifdef __clang__
+    _CONSTEXPR20_DYNALLOC
+#endif // __clang__
+    __declspec(allocator) static void* _Allocate(const size_t _Bytes) {
         return ::operator new(_Bytes);
     }
 
 #ifdef __cpp_aligned_new
-    __declspec(allocator) static _CONSTEXPR20_DYNALLOC
-        void* _Allocate_aligned(const size_t _Bytes, const size_t _Align) {
-        return ::operator new (_Bytes, align_val_t{_Align});
+#ifdef __clang__
+    _CONSTEXPR20_DYNALLOC
+#endif // __clang__
+    __declspec(allocator) static void* _Allocate_aligned(const size_t _Bytes, const size_t _Align) {
+#ifdef __clang__
+#ifdef __cpp_lib_is_constant_evaluated
+        if (_STD is_constant_evaluated()) {
+            return ::operator new(_Bytes);
+        } else
+#endif // __cpp_lib_is_constant_evaluated
+#endif // __clang__
+        {
+            return ::operator new (_Bytes, align_val_t{_Align});
+        }
     }
 #endif // __cpp_aligned_new
 };
@@ -164,29 +178,42 @@ __declspec(allocator) _CONSTEXPR20_DYNALLOC void* _Allocate(const size_t _Bytes)
         return nullptr;
     }
 
-    size_t _Passed_align = _Align;
+#ifdef __cpp_lib_is_constant_evaluated
+    if (_STD is_constant_evaluated()) {
+        return _Traits::_Allocate(_Bytes);
+    } else
+#endif // __cpp_lib_is_constant_evaluated
+    {
+        size_t _Passed_align = _Align;
 #if defined(_M_IX86) || defined(_M_X64)
-    if (_Bytes >= _Big_allocation_threshold) {
-        // boost the alignment of big allocations to help autovectorization
-        _Passed_align = (_STD max)(_Align, _Big_allocation_alignment);
-    }
+        if (_Bytes >= _Big_allocation_threshold) {
+            // boost the alignment of big allocations to help autovectorization
+            _Passed_align = (_STD max)(_Align, _Big_allocation_alignment);
+        }
 #endif // defined(_M_IX86) || defined(_M_X64)
-
-    return _Traits::_Allocate_aligned(_Bytes, _Passed_align);
+        return _Traits::_Allocate_aligned(_Bytes, _Passed_align);
+    }
 }
 
 template <size_t _Align, enable_if_t<(_Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__), int> = 0>
 _CONSTEXPR20_DYNALLOC void _Deallocate(void* _Ptr, const size_t _Bytes) noexcept {
     // deallocate storage allocated by _Allocate when __cpp_aligned_new && _Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__
-    size_t _Passed_align = _Align;
+#ifdef __cpp_lib_is_constant_evaluated
+    if (_STD is_constant_evaluated()) {
+        ::operator delete(_Ptr);
+    } else
+#endif // __cpp_lib_is_constant_evaluated
+    {
+        size_t _Passed_align = _Align;
 #if defined(_M_IX86) || defined(_M_X64)
-    if (_Bytes >= _Big_allocation_threshold) { // boost the alignment of big allocations to help autovectorization
-        _Passed_align = (_STD max)(_Align, _Big_allocation_alignment);
-    }
+        if (_Bytes >= _Big_allocation_threshold) { // boost the alignment of big allocations to help autovectorization
+            _Passed_align = (_STD max)(_Align, _Big_allocation_alignment);
+        }
 #endif // defined(_M_IX86) || defined(_M_X64)
-
-    ::operator delete (_Ptr, _Bytes, align_val_t{_Passed_align});
+        ::operator delete (_Ptr, _Bytes, align_val_t{_Passed_align});
+    }
 }
+
 
 #define _HAS_ALIGNED_NEW 1
 #else // ^^^ __cpp_aligned_new ^^^ / vvv !__cpp_aligned_new vvv
@@ -198,8 +225,13 @@ template <size_t _Align, class _Traits = _Default_allocate_traits,
 __declspec(allocator) _CONSTEXPR20_DYNALLOC void* _Allocate(const size_t _Bytes) {
     // allocate _Bytes when !_HAS_ALIGNED_NEW || _Align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__
 #if defined(_M_IX86) || defined(_M_X64)
-    if (_Bytes >= _Big_allocation_threshold) { // boost the alignment of big allocations to help autovectorization
-        return _Allocate_manually_vector_aligned<_Traits>(_Bytes);
+#ifdef __cpp_lib_is_constant_evaluated
+    if (!_STD is_constant_evaluated())
+#endif // __cpp_lib_is_constant_evaluated
+    {
+        if (_Bytes >= _Big_allocation_threshold) { // boost the alignment of big allocations to help autovectorization
+            return _Allocate_manually_vector_aligned<_Traits>(_Bytes);
+        }
     }
 #endif // defined(_M_IX86) || defined(_M_X64)
 
@@ -213,13 +245,19 @@ __declspec(allocator) _CONSTEXPR20_DYNALLOC void* _Allocate(const size_t _Bytes)
 template <size_t _Align, enable_if_t<(!_HAS_ALIGNED_NEW || _Align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__), int> = 0>
 _CONSTEXPR20_DYNALLOC void _Deallocate(void* _Ptr, size_t _Bytes) noexcept {
     // deallocate storage allocated by _Allocate when !_HAS_ALIGNED_NEW || _Align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__
+#ifdef __cpp_lib_is_constant_evaluated
+    if (_STD is_constant_evaluated()) {
+        ::operator delete(_Ptr);
+    } else
+#endif // __cpp_lib_is_constant_evaluated
+    {
 #if defined(_M_IX86) || defined(_M_X64)
-    if (_Bytes >= _Big_allocation_threshold) { // boost the alignment of big allocations to help autovectorization
-        _Adjust_manually_vector_aligned(_Ptr, _Bytes);
-    }
+        if (_Bytes >= _Big_allocation_threshold) { // boost the alignment of big allocations to help autovectorization
+            _Adjust_manually_vector_aligned(_Ptr, _Bytes);
+        }
 #endif // defined(_M_IX86) || defined(_M_X64)
-
-    ::operator delete(_Ptr, _Bytes);
+        ::operator delete(_Ptr, _Bytes);
+    }
 }
 
 #undef _HAS_ALIGNED_NEW
@@ -271,6 +309,21 @@ _CONSTEXPR20_DYNALLOC void _Destroy_in_place(_Ty& _Obj) noexcept {
         _Obj.~_Ty();
     }
 }
+
+#if _HAS_CXX17
+// FUNCTION TEMPLATE destroy_at
+template <class _Ty>
+_CONSTEXPR20_DYNALLOC void destroy_at(_Ty* const _Location) noexcept /* strengthened */ {
+#if _HAS_CXX20
+    if constexpr (is_array_v<_Ty>) {
+        _Destroy_range(_STD begin(*_Location), _STD end(*_Location));
+    } else
+#endif // _HAS_CXX20
+    {
+        _Location->~_Ty();
+    }
+}
+#endif _HAS_CXX17
 
 // FUNCTION TEMPLATE _Const_cast
 template <class _Ptrty>
@@ -689,23 +742,55 @@ struct _Default_allocator_traits { // traits for std::allocator
     using rebind_traits = allocator_traits<allocator<_Other>>;
 
     _NODISCARD static _CONSTEXPR20_DYNALLOC __declspec(allocator) pointer
-        allocate(_Alloc&, _CRT_GUARDOVERFLOW const size_type _Count) {
-        return static_cast<pointer>(_Allocate<_New_alignof<value_type>>(_Get_size_of_n<sizeof(value_type)>(_Count)));
+        allocate(_Alloc& _Al, _CRT_GUARDOVERFLOW const size_type _Count) {
+#ifdef __cpp_lib_is_constant_evaluated
+        if (_STD is_constant_evaluated()) {
+            return _Al.allocate(_Count);
+        } else
+#endif // __cpp_lib_is_constant_evaluated
+        {
+            return static_cast<pointer>(
+                _Allocate<_New_alignof<value_type>>(_Get_size_of_n<sizeof(value_type)>(_Count)));
+        }
     }
 
     _NODISCARD static _CONSTEXPR20_DYNALLOC __declspec(allocator) pointer
-        allocate(_Alloc&, _CRT_GUARDOVERFLOW const size_type _Count, const_void_pointer) {
-        return static_cast<pointer>(_Allocate<_New_alignof<value_type>>(_Get_size_of_n<sizeof(value_type)>(_Count)));
+        allocate(_Alloc& _Al, _CRT_GUARDOVERFLOW const size_type _Count, const_void_pointer) {
+#ifdef __cpp_lib_is_constant_evaluated
+        if (_STD is_constant_evaluated()) {
+            return _Al.allocate(_Count);
+        } else
+#endif // __cpp_lib_is_constant_evaluated
+        {
+            (void) _Al;
+            return static_cast<pointer>(
+                _Allocate<_New_alignof<value_type>>(_Get_size_of_n<sizeof(value_type)>(_Count)));
+        }
     }
 
-    static _CONSTEXPR20_DYNALLOC void deallocate(_Alloc&, const pointer _Ptr, const size_type _Count) {
+    static _CONSTEXPR20_DYNALLOC void deallocate(_Alloc& _Al, const pointer _Ptr, const size_type _Count) {
         // no overflow check on the following multiply; we assume _Allocate did that check
-        _Deallocate<_New_alignof<value_type>>(_Ptr, sizeof(value_type) * _Count);
+#ifdef __cpp_lib_is_constant_evaluated
+        if (_STD is_constant_evaluated()) {
+            return _Al.deallocate(_Ptr, _Count);
+        } else
+#endif // __cpp_lib_is_constant_evaluated
+        {
+            (void) _Al;
+            _Deallocate<_New_alignof<value_type>>(_Ptr, sizeof(value_type) * _Count);
+        }
     }
 
     template <class _Objty, class... _Types>
     static _CONSTEXPR20_DYNALLOC void construct(_Alloc&, _Objty* const _Ptr, _Types&&... _Args) {
-        ::new (const_cast<void*>(static_cast<const volatile void*>(_Ptr))) _Objty(_STD forward<_Types>(_Args)...);
+#ifdef __cpp_lib_is_constant_evaluated
+        if (_STD is_constant_evaluated()) {
+            _STD construct_at(_Ptr, _STD forward<_Types>(_Args)...);
+        } else
+#endif // __cpp_lib_is_constant_evaluated
+        {
+            ::new (const_cast<void*>(static_cast<const volatile void*>(_Ptr))) _Objty(_STD forward<_Types>(_Args)...);
+        }
     }
 
     template <class _Uty>
