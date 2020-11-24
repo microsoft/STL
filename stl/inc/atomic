@@ -2346,12 +2346,7 @@ private:
     using _Base = _Choose_atomic_base_t<_Ty, _Ty&>;
 
 public:
-    // clang-format off
-    static_assert(is_trivially_copyable_v<_Ty> && is_copy_constructible_v<_Ty> && is_move_constructible_v<_Ty>
-        && is_copy_assignable_v<_Ty> && is_move_assignable_v<_Ty>,
-        "atomic_ref<T> requires T to be trivially copyable, copy constructible, move constructible, copy assignable, "
-        "and move assignable.");
-    // clang-format on
+    static_assert(is_trivially_copyable_v<_Ty>, "atomic_ref<T> requires T to be trivially copyable.");
 
     using value_type = _Ty;
 
