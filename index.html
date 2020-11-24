@@ -56,6 +56,14 @@
                     yAxisID: 'smallAxis',
                 },
                 {
+                    data: get_values(weekly_table, 'cxx23').concat(get_values(daily_table, 'cxx23')),
+                    label: 'C++23 Features',
+                    borderColor: '#9966FF',
+                    backgroundColor: '#9966FF',
+                    borderDash: [10, 5],
+                    yAxisID: 'smallAxis',
+                },
+                {
                     data: get_values(weekly_table, 'lwg').concat(get_values(daily_table, 'lwg')),
                     label: 'LWG Resolutions',
                     borderColor: '#0070C0',
@@ -360,8 +368,8 @@
                 window.status_chart.update();
             });
 
-            for (const field of ['cxx20', 'lwg', 'pr', 'bug', 'issue', 'avg_age', 'avg_wait', 'sum_age', 'sum_wait',
-                'merged']) {
+            for (const field of ['cxx20', 'cxx23', 'lwg', 'pr', 'bug', 'issue', 'avg_age', 'avg_wait', 'sum_age',
+                'sum_wait', 'merged']) {
                 const value = daily_table[daily_table.length - 1][field];
                 document.getElementById(`currentValue-${field}`).textContent = value;
             }
@@ -398,6 +406,9 @@
                         C++20 STL features remaining to be implemented.</a>
                     This increased whenever more features were voted into the Working Paper at
                     <a href="https://isocpp.org/std/meetings-and-participation" rel="nofollow">WG21 meetings</a>.</li>
+                <li>(<span class="currentValue" id="currentValue-cxx23"></span>)
+                    <a href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Acxx23">
+                        C++23 STL features remaining to be implemented.</a> Also increases after WG21 meetings.</li>
                 <li>(<span class="currentValue" id="currentValue-lwg"></span>) <a
                         href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3ALWG+-label%3AvNext+-label%3Ablocked">
                         LWG issue resolutions remaining to be implemented.</a> Also increases after WG21 meetings.</li>
@@ -413,11 +424,11 @@
                 <li>(<span class="currentValue" id="currentValue-bug"></span>)
                     <a href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Abug">
                         Open GitHub bugs.</a> That is, only GitHub issues that have <b>bug</b> labels.</li>
-                <li>(<span class="currentValue" id="currentValue-issue"></span>)
-                    <a href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+-label%3Acxx20">
+                <li>(<span class="currentValue" id="currentValue-issue"></span>) <a
+                        href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+-label%3Acxx20+-label%3Acxx23+-label%3ALWG">
                         Open GitHub issues.</a> That is, all GitHub issues including <b>bug</b>,
                     <b>documentation</b>, <b>enhancement</b>, <b>performance</b>, <b>throughput</b>, etc.
-                    and excluding only <b>cxx20</b> and <b>LWG</b> to avoid double-counting.</li>
+                    and excluding only <b>cxx20</b>, <b>cxx23</b>, and <b>LWG</b> to avoid double-counting.</li>
                 <li>(<span class="currentValue" id="currentValue-libcxx"></span>)
                     <a href="https://github.com/microsoft/STL/blob/master/tests/libcxx/skipped_tests.txt">
                         Skipped tests in the libcxx test suite.</a> There are many reasons for skipped tests:
