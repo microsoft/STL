@@ -776,7 +776,7 @@ public:
     using size_type       = size_t;
     using difference_type = ptrdiff_t;
 
-    using propagate_on_container_move_assignment = true_type;
+    using propagate_on_container_move_assignment                 = true_type;
     using is_always_equal _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS = true_type;
 
     template <class _Other>
@@ -838,7 +838,7 @@ public:
     using size_type       = size_t;
     using difference_type = ptrdiff_t;
 
-    using propagate_on_container_move_assignment = true_type;
+    using propagate_on_container_move_assignment                 = true_type;
     using is_always_equal _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS = true_type;
 
     template <class _Other>
