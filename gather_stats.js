@@ -243,6 +243,7 @@ function transform_issue_nodes(issue_nodes) {
             opened: DateTime.fromISO(node.createdAt),
             closed: DateTime.fromISO(node.closedAt ?? '2100-01-01'),
             labeled_cxx20: labels.includes('cxx20'),
+            labeled_cxx23: labels.includes('cxx23'),
             labeled_lwg: labels.includes('LWG') && !labels.includes('vNext') && !labels.includes('blocked'),
             labeled_bug: labels.includes('bug'),
         };
@@ -294,6 +295,7 @@ function write_daily_table(script_start, all_prs, all_issues) {
         let str = 'const daily_table = [\n';
 
         const begin = DateTime.fromISO('2019-09-05' + 'T23:00:00-07');
+        const begin_cxx23 = DateTime.fromISO('2020-11-10');
 
         progress_bar.start(Math.ceil(script_start.diff(begin).as('days')), 0);
 
@@ -301,6 +303,7 @@ function write_daily_table(script_start, all_prs, all_issues) {
             let num_merged = 0;
             let num_pr = 0;
             let num_cxx20 = 0;
+            let num_cxx23 = 0;
             let num_lwg = 0;
             let num_issue = 0;
             let num_bug = 0;
@@ -325,6 +328,9 @@ function write_daily_table(script_start, all_prs, all_issues) {
                 } else if (issue.labeled_cxx20) {
                     // Avoid double-counting C++20 Features and GitHub Issues.
                     ++num_cxx20;
+                } else if (issue.labeled_cxx23) {
+                    // Avoid double-counting C++23 Features and GitHub Issues.
+                    ++num_cxx23;
                 } else if (issue.labeled_lwg) {
                     // Avoid double-counting LWG Resolutions and GitHub Issues.
                     ++num_lwg;
@@ -342,12 +348,18 @@ function write_daily_table(script_start, all_prs, all_issues) {
             const sum_age = combined_pr_age.as('months');
             const sum_wait = combined_pr_wait.as('months');
 
-            str += '    { ';
-            str += [
+            const cells = [
                 `date: '${when.toISODate()}'`,
                 `merged: ${Number.parseFloat(num_merged).toFixed(2)}`,
                 `pr: ${num_pr}`,
                 `cxx20: ${num_cxx20}`,
+            ];
+
+            if (when >= begin_cxx23) {
+                cells.push(`cxx23: ${num_cxx23}`);
+            }
+
+            cells.push(
                 `lwg: ${num_lwg}`,
                 `issue: ${num_issue}`,
                 `bug: ${num_bug}`,
@@ -355,8 +367,11 @@ function write_daily_table(script_start, all_prs, all_issues) {
                 `avg_wait: ${Number.parseFloat(avg_wait).toFixed(2)}`,
                 `sum_age: ${Number.parseFloat(sum_age).toFixed(2)}`,
                 `sum_wait: ${Number.parseFloat(sum_wait).toFixed(2)}`,
-                '},\n',
-            ].join(', ');
+                '},\n'
+            );
+
+            str += '    { ';
+            str += cells.join(', ');
 
             progress_bar.increment();
         }
