@@ -291,7 +291,7 @@ struct nontrivial_A {
     };
 };
 
-template <class T>
+template <class T, bool Construct = false, bool Destroy = false>
 struct Alloc {
     using value_type = T;
     using size_type  = std::size_t;
@@ -306,6 +306,17 @@ struct Alloc {
     constexpr void deallocate(value_type* ptr, size_t n) {
         assert(n == 10);
         allocator<T>{}.deallocate(ptr, n);
+    }
+
+    template <class Valid = enable_if_t<Construct>>
+    constexpr void construct(value_type* ptr, value_type n) {
+        assert(n == 10);
+        allocator<T>{}.construct(ptr, n);
+    }
+
+    template <class Valid = enable_if_t<Destroy>>
+    constexpr void destroy(value_type* ptr) {
+        allocator<T>{}.destroy(ptr);
     }
 
     constexpr Alloc select_on_container_copy_construction() const noexcept {
@@ -356,6 +367,27 @@ constexpr void test_compiletime_allocator_traits() {
         assert(std::allocator_traits<Alloc<nontrivial_A<int>>>::max_size(alloc)
                == std::numeric_limits<Alloc<nontrivial_A<int>>::size_type>::max()
                       / sizeof(Alloc<nontrivial_A<int>>::value_type));
+    }
+    {
+        storage_for<nontrivial_A<int>> a;
+
+        std::allocator_traits<Alloc<nontrivial_A<int>, true>>::construct(alloc, &a.object, 10);
+        assert(a.object.value == 10);
+        std::allocator_traits<Alloc<nontrivial_A<int>, true>>::destroy(alloc, &a.object);
+    }
+    {
+        storage_for<nontrivial_A<int>> a;
+
+        std::allocator_traits<Alloc<nontrivial_A<int>, false, true>>::construct(alloc, &a.object, 10);
+        assert(a.object.value == 10);
+        std::allocator_traits<Alloc<nontrivial_A<int>, false, true>>::destroy(alloc, &a.object);
+    }
+    {
+        storage_for<nontrivial_A<int>> a;
+
+        std::allocator_traits<Alloc<nontrivial_A<int>, true, true>>::construct(alloc, &a.object, 10);
+        assert(a.object.value == 10);
+        std::allocator_traits<Alloc<nontrivial_A<int>, true, true>>::destroy(alloc, &a.object);
     }
 }
 static_assert((test_compiletime_allocator_traits(), true));
