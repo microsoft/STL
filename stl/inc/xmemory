@@ -400,10 +400,12 @@ struct _Get_is_always_equal {
     using type = bool_constant<is_empty_v<_Ty>>;
 };
 
+_STL_DISABLE_DEPRECATED_WARNING
 template <class _Ty>
 struct _Get_is_always_equal<_Ty, void_t<typename _Ty::is_always_equal>> {
     using type = typename _Ty::is_always_equal;
 };
+_STL_RESTORE_DEPRECATED_WARNING
 
 // STRUCT TEMPLATE _Get_rebind_type
 template <class _Ty, class _Other, class = void>
