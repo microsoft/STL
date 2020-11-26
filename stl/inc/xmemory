@@ -749,6 +749,7 @@ struct _Default_allocator_traits { // traits for std::allocator
         } else
 #endif // __cpp_lib_is_constant_evaluated
         {
+            (void) _Al;
             return static_cast<pointer>(
                 _Allocate<_New_alignof<value_type>>(_Get_size_of_n<sizeof(value_type)>(_Count)));
         }
