@@ -3683,6 +3683,10 @@ _BidIt _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Skip(_BidIt _First_arg, _BidIt 
                 _It _Next                            = _First_arg;
                 ++_Next;
 
+                if (_Sflags & regex_constants::icase) {
+                    _Ch = static_cast<typename _RxTraits::_Uelem>(_Traits.translate_nocase(static_cast<_Elem>(_Ch)));
+                }
+
                 if (_Node->_Coll && _Lookup_coll(_First_arg, _Next, _Node->_Coll) != _First_arg) {
                     _Found = true;
                 } else if (_Node->_Ranges
