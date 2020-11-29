@@ -206,6 +206,7 @@ private:
         return *this;
     }
 
+    template <class = void>
     void _Increment_gcount() {
         if (_Chcount != (numeric_limits<streamsize>::max)()) {
             ++_Chcount;
@@ -347,7 +348,7 @@ public:
                 _State |= ios_base::eofbit | ios_base::failbit; // end of file
             } else { // got a character, count it
                 _Myios::rdbuf()->sbumpc();
-                _Increment_gcount();
+                _Chcount = 1;
             }
             _CATCH_IO_END
         }
@@ -517,11 +518,7 @@ public:
         if (_Ok && 0 < _Count) { // state okay, use facet to extract
             _TRY_IO_BEGIN
             const streamsize _Num = _Myios::rdbuf()->sgetn(_Str, _Count);
-            if (_Chcount <= (numeric_limits<streamsize>::max)() - _Num) {
-                _Chcount += _Num;
-            } else { // overflow
-                _Chcount = (numeric_limits<streamsize>::max)();
-            }
+            _Chcount              = _Num;
 
             if (_Num != _Count) {
                 _State |= ios_base::eofbit | ios_base::failbit; // short read
