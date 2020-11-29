@@ -546,6 +546,34 @@ void test_VSO_226914_word_boundaries() {
     aWordAny.should_search_fail("aa", match_not_bow | match_not_eow);
 }
 
+void test_GH_993_regex_character_class_case_insensitive_search() {
+    {
+        const wstring subject = L" Copyright";
+        const test_wregex case_regex(&g_regexTester, LR"([a-z][a-z])", ECMAScript);
+        const test_wregex icase_regex(&g_regexTester, LR"([a-z][a-z])", ECMAScript | icase);
+
+        case_regex.should_search_match(subject, L"op");
+        icase_regex.should_search_match(subject, L"Co");
+    }
+
+    {
+        const wstring subject = L"blahZblah";
+        const test_wregex Z_case_regex(&g_regexTester, LR"([Z])", ECMAScript);
+        const test_wregex Z_icase_regex(&g_regexTester, LR"([Z])", ECMAScript | icase);
+        const test_wregex z_case_regex(&g_regexTester, LR"([z])", ECMAScript);
+        const test_wregex z_icase_regex(&g_regexTester, LR"([z])", ECMAScript | icase);
+
+        Z_case_regex.should_search_match(subject, L"Z");
+        Z_icase_regex.should_search_match(subject, L"Z");
+        z_icase_regex.should_search_match(subject, L"Z");
+
+        z_case_regex.should_search_fail(subject);
+        z_case_regex.should_search_fail(subject, match_not_bow);
+        z_case_regex.should_search_fail(subject, match_not_eow);
+        z_case_regex.should_search_fail(subject, match_not_bow | match_not_eow);
+    }
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -572,6 +600,7 @@ int main() {
     test_VSO_225160_match_bol_flag();
     test_VSO_225160_match_eol_flag();
     test_VSO_226914_word_boundaries();
+    test_GH_993_regex_character_class_case_insensitive_search();
 
     return g_regexTester.result();
 }
