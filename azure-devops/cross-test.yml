@@ -1,0 +1,54 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+parameters:
+- name: hostArch
+  type: string
+  default: x86
+- name: targetPlatform
+  type: string
+- name: vsDevCmdArch
+  type: string
+- name: buildOutputLocationVar
+  type: string
+  default: buildOutputLocation
+- name: numShards
+  type: number
+  default: 8
+jobs:
+- job: 'test_${{ parameters.targetPlatform }}'
+  pool: Arm2
+  variables:
+    fixedFlags: '--timeout=240;--shuffle'
+    parallelismFlag: '-j$(testParallelism)'
+    xmlOutputFlag: '--xunit-xml-output=$(${{ parameters.buildOutputLocationVar }})/test-results.xml'
+    shardFlags: '--num-shards=$(System.TotalJobsInPhase);--run-shard=$(System.JobPositionInPhase)'
+    litFlags: '$(fixedFlags);$(parallelismFlag);$(xmlOutputFlag);$(shardFlags)'
+  strategy:
+    parallel: ${{ parameters.numShards }}
+  timeoutInMinutes: 360
+  steps:
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        artifact: '${{ parameters.targetPlatform }}-$(System.JobPositionInPhase)-tests'
+      timeoutInMinutes: 120
+    - task: CmdLine@2
+      displayName: 'Run Tests'
+      timeoutInMinutes: 120
+      condition: succeeded()
+      inputs:
+        script: |
+          call "%PROGRAMFILES(X86)%\Microsoft Visual Studio\2019\Preview\Common7\Tools\VsDevCmd.bat" ^
+          -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.vsDevCmdArch }} -no_logo
+          cd ..
+          python tests\utils\stl-lit\stl-lit.py ..\..\..\tests\std ..\..\..\tests\tr1
+      env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
+    - task: PublishTestResults@2
+      displayName: 'Publish Tests'
+      timeoutInMinutes: 10
+      condition: succeededOrFailed()
+      inputs:
+        searchFolder: current
+        testResultsFormat: JUnit
+        testResultsFiles: '**/test-results.xml'
+        testRunTitle: 'test-${{ parameters.targetPlatform }}-${{ parameters.numShards }}'

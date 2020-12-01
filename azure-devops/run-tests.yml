@@ -43,6 +43,6 @@ steps:
   condition: ${{ parameters.publishArtifact }}
   displayName: 'Publish Libs and Headers Artifact'
 - publish: $(${{ parameters.buildOutPutLocationVar }})/tests
-  artifact: '${{ parameters.targetPlatform }}-$(System.JobPositionInPhase)-tests-$(System.JobId)'
+  artifact: '${{ parameters.targetPlatform }}-$(System.JobPositionInPhase)-tests'
   condition: ${{ parameters.publishArtifact }}
   displayName: 'Publish Tests Artifact'
