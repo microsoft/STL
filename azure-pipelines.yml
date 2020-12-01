@@ -56,8 +56,9 @@ stages:
               failOnStandardError: true
               arguments: '$(buildOutputLocation)/validate/validate.exe'
             env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
-  - stage: Build_And_Test
-    displayName: 'Build and Test'
+  - stage: Build_And_Test_x86
+    dependsOn: Code_Format
+    displayName: 'Build and Test x86'
     jobs:
       - template: azure-devops/run-build.yml
         parameters:
@@ -115,6 +116,10 @@ stages:
           numShards: 8
           shardNum: 8
 
+  - stage: Build_And_Test_AMD64
+    dependsOn: Code_Format
+    displayName: 'Build and Test AMD64'
+    jobs:
       - template: azure-devops/run-build.yml
         parameters:
           targetPlatform: x64
@@ -171,16 +176,122 @@ stages:
           numShards: 8
           shardNum: 8
 
-      - template: azure-devops/run-build.yml
+  - stage: Build_ARM
+    dependsOn: Code_Format
+    displayName: 'Build ARM'
+    jobs:
+      - template: azure-devops/cross-build.yml
         parameters:
           targetPlatform: arm
           vsDevCmdArch: arm
-          numShards: 1
+          numShards: 8
           shardNum: 1
 
-      - template: azure-devops/run-build.yml
+      - template: azure-devops/cross-build.yml
+        parameters:
+          targetPlatform: arm
+          vsDevCmdArch: arm
+          numShards: 8
+          shardNum: 2
+
+      - template: azure-devops/cross-build.yml
+        parameters:
+          targetPlatform: arm
+          vsDevCmdArch: arm
+          numShards: 8
+          shardNum: 3
+
+      - template: azure-devops/cross-build.yml
+        parameters:
+          targetPlatform: arm
+          vsDevCmdArch: arm
+          numShards: 8
+          shardNum: 4
+
+      - template: azure-devops/cross-build.yml
+        parameters:
+          targetPlatform: arm
+          vsDevCmdArch: arm
+          numShards: 8
+          shardNum: 5
+
+      - template: azure-devops/cross-build.yml
+        parameters:
+          targetPlatform: arm
+          vsDevCmdArch: arm
+          numShards: 8
+          shardNum: 6
+
+      - template: azure-devops/cross-build.yml
+        parameters:
+          targetPlatform: arm
+          vsDevCmdArch: arm
+          numShards: 8
+          shardNum: 7
+
+      - template: azure-devops/cross-build.yml
+        parameters:
+          targetPlatform: arm
+          vsDevCmdArch: arm
+          numShards: 8
+          shardNum: 8
+
+  - stage: Build_ARM64
+    dependsOn: Code_Format
+    displayName: 'Build ARM64'
+    jobs:
+      - template: azure-devops/cross-build.yml
         parameters:
           targetPlatform: arm64
           vsDevCmdArch: arm64
-          numShards: 1
+          numShards: 8
           shardNum: 1
+
+      - template: azure-devops/cross-build.yml
+        parameters:
+          targetPlatform: arm64
+          vsDevCmdArch: arm64
+          numShards: 8
+          shardNum: 2
+
+      - template: azure-devops/cross-build.yml
+        parameters:
+          targetPlatform: arm64
+          vsDevCmdArch: arm64
+          numShards: 8
+          shardNum: 3
+
+      - template: azure-devops/cross-build.yml
+        parameters:
+          targetPlatform: arm64
+          vsDevCmdArch: arm64
+          numShards: 8
+          shardNum: 4
+
+      - template: azure-devops/cross-build.yml
+        parameters:
+          targetPlatform: arm64
+          vsDevCmdArch: arm64
+          numShards: 8
+          shardNum: 5
+
+      - template: azure-devops/cross-build.yml
+        parameters:
+          targetPlatform: arm64
+          vsDevCmdArch: arm64
+          numShards: 8
+          shardNum: 6
+
+      - template: azure-devops/cross-build.yml
+        parameters:
+          targetPlatform: arm64
+          vsDevCmdArch: arm64
+          numShards: 8
+          shardNum: 7
+
+      - template: azure-devops/cross-build.yml
+        parameters:
+          targetPlatform: arm64
+          vsDevCmdArch: arm64
+          numShards: 8
+          shardNum: 8

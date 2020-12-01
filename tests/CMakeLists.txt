@@ -12,6 +12,8 @@ set(LLVM_PROJECT_SOURCE_DIR "${STL_SOURCE_DIR}/llvm-project" CACHE PATH
 set(LIBCXX_SOURCE_DIR "${LLVM_PROJECT_SOURCE_DIR}/libcxx" CACHE PATH
     "Location of the libcxx source tree")
 
+option(BUILD_ONLY "Only run the build steps of tests" OFF)
+
 add_subdirectory(libcxx)
 add_subdirectory(std)
 add_subdirectory(tr1)

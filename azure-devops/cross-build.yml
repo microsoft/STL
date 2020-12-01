@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 jobs:
-- job: '${{ parameters.targetPlatform }}_${{ parameters.shardNum }}'
+- job: 'build_${{ parameters.targetPlatform }}_${{ parameters.shardNum }}'
   timeoutInMinutes: 360
 
   variables:
@@ -27,6 +27,16 @@ jobs:
         key: '"${{ parameters.targetPlatform }}" | $(Build.SourcesDirectory)/.git/modules/vcpkg/HEAD | "2020-03-01.01"'
         path: '$(vcpkgLocation)/installed'
         cacheHitVar: CACHE_RESTORED
+    - task: run-vcpkg@0
+      displayName: 'Run vcpkg to Install boost-build'
+      condition: ne(variables.CACHE_RESTORED, 'true')
+      timeoutInMinutes: 10
+      inputs:
+        doNotUpdateVcpkg: true
+        vcpkgArguments: 'boost-build'
+        vcpkgDirectory: '$(vcpkgLocation)'
+        vcpkgTriplet: 'x86-windows'
+      env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
     - task: run-vcpkg@0
       displayName: 'Run vcpkg to Install boost-math'
       condition: ne(variables.CACHE_RESTORED, 'true')
@@ -53,7 +63,7 @@ jobs:
         -host_arch=amd64 -arch=${{ parameters.vsDevCmdArch }} -no_logo
         cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=$(vcpkgLocation)\scripts\buildsystems\vcpkg.cmake ^
         -DVCPKG_TARGET_TRIPLET=${{ parameters.targetPlatform }}-windows -DCMAKE_CXX_COMPILER=cl ^
-        -DCMAKE_BUILD_TYPE=Release -DLIT_FLAGS=$(litFlags);$(shardFlags) ^
+        -DCMAKE_BUILD_TYPE=Release -DLIT_FLAGS=$(litFlags);$(shardFlags) -DBUILD_ONLY=ON ^
         -DCMAKE_CXX_FLAGS=/analyze:autolog- ^
         -S $(Build.SourcesDirectory) -B $(buildOutputLocation)
         cmake --build $(buildOutputLocation)
@@ -61,22 +71,22 @@ jobs:
       timeoutInMinutes: 10
       env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
     - task: CmdLine@2
-      displayName: 'Run Tests'
+      displayName: 'Build Tests'
       timeoutInMinutes: 120
       condition: succeeded()
       inputs:
         workingDirectory: $(buildOutputLocation)
         script: |
           call "%PROGRAMFILES(X86)%\Microsoft Visual Studio\2019\Preview\Common7\Tools\VsDevCmd.bat" ^
-          -host_arch=${{ parameters.vsDevCmdArch }} -arch=${{ parameters.vsDevCmdArch }} -no_logo
+          -host_arch=amd64 -arch=${{ parameters.vsDevCmdArch }} -no_logo
           ctest -V
       env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
     - task: PublishTestResults@2
-      displayName: 'Publish Tests'
+      displayName: 'Publish Build Stage of Tests'
       timeoutInMinutes: 10
       condition: succeededOrFailed()
       inputs:
         searchFolder: $(buildOutputLocation)
         testResultsFormat: JUnit
         testResultsFiles: '**/test-results.xml'
-        testRunTitle: 'test-${{ parameters.targetPlatform }}-${{ parameters.shardNum }}'
+        testRunTitle: 'build-test-${{ parameters.targetPlatform }}-${{ parameters.shardNum }}'
