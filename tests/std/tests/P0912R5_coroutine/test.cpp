@@ -95,6 +95,46 @@ Task triangular_number(const int n) {
     co_return n + co_await triangular_number(n - 1);
 }
 
+void test_noop_handle() { // Validate noop_coroutine_handle
+    const noop_coroutine_handle noop = noop_coroutine();
+    const coroutine_handle<> as_void = noop;
+
+    assert(!noop.done());
+    assert(!as_void.done());
+    static_assert(noexcept(noop.done()));
+    static_assert(noexcept(as_void.done()));
+
+    assert(noop);
+    assert(as_void);
+    noop();
+    as_void();
+    static_assert(noexcept(noop()));
+
+    assert(noop);
+    assert(as_void);
+    noop.resume();
+    as_void.resume();
+    static_assert(noexcept(noop.resume()));
+
+    assert(noop);
+    assert(as_void);
+    noop.destroy();
+    as_void.destroy();
+    static_assert(noexcept(noop.destroy()));
+
+    assert(noop);
+    assert(as_void);
+    assert(&noop.promise() != nullptr);
+    static_assert(noexcept(noop.promise()));
+
+    assert(noop);
+    assert(as_void);
+    assert(noop.address() != nullptr);
+    assert(noop.address() == as_void.address());
+    static_assert(noexcept(noop.address()));
+    static_assert(noexcept(as_void.address()));
+}
+
 int main() {
     assert(g_tasks_destroyed == 0);
 
@@ -126,6 +166,8 @@ int main() {
         const hash<coroutine_handle<>> h;
         (void) h(coroutine_handle<>{});
     }
+
+    test_noop_handle();
 }
 
 #else // ^^^ test <coroutine> ^^^ / vvv don't test <coroutine> vvv
