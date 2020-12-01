@@ -109,6 +109,7 @@ void test_noop_handle() { // Validate noop_coroutine_handle
 
     assert(noop);
     assert(as_void);
+    static_assert(noexcept(static_cast<bool>(noop)));
     noop();
     as_void();
     static_assert(noexcept(noop()));
