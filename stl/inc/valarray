@@ -552,7 +552,15 @@ private:
                 _Destroy_in_place(_Myptr[_Idx]);
             }
 
-            ::operator delete(static_cast<void*>(_Myptr));
+#ifdef __cpp_aligned_new
+            constexpr bool _Extended_alignment = alignof(_Ty) > __STDCPP_DEFAULT_NEW_ALIGNMENT__;
+            if _CONSTEXPR_IF (_Extended_alignment) {
+                ::operator delete (static_cast<void*>(_Myptr), align_val_t{alignof(_Ty)});
+            } else
+#endif // __cpp_aligned_new
+            {
+                ::operator delete(static_cast<void*>(_Myptr));
+            }
         }
 
         _Tidy_init();
