@@ -60,10 +60,10 @@ struct _C_ldouble_complex {
 
 _STD_BEGIN
 
-// implements multi-precision floating point arithmetic for numerical algorithms
+// implements multi-precision floating-point arithmetic for numerical algorithms
 #pragma float_control(precise, on, push)
 namespace _Float_multi_prec {
-    // multi-precision floating point types
+    // multi-precision floating-point types
     template <class _Ty, int _Prec>
     struct _Fmp_t;
 
@@ -1877,7 +1877,7 @@ _Ty _Fabs(const complex<_Ty>& _Left, int* _Pexp) { // Used by sqrt(), return mag
             _Bv    = _Bv * static_cast<_Ty>(0.0625);
         } else {
             constexpr _Ty _Flt_eps = _Ctraits<_Ty>::_Flt_eps();
-            // TRANSITION, workaround for non floating point _Ty
+            // TRANSITION, workaround for non-floating-point _Ty
             constexpr _Ty _Leg_tiny = _Flt_eps == 0 ? _Ty{0} : 2 * _Ctraits<_Ty>::_Flt_norm_min() / _Flt_eps;
 
             if (_Av < _Leg_tiny) {
@@ -1914,7 +1914,7 @@ _Ty _Fabs(const complex<_Ty>& _Left, int* _Pexp) { // Used by sqrt(), return mag
 
 // FUNCTION TEMPLATE log
 template <class _Ty>
-_NODISCARD _Ty _Log_abs(const complex<_Ty>& _Left) noexcept { // for double, long double, and non floating point types
+_NODISCARD _Ty _Log_abs(const complex<_Ty>& _Left) noexcept { // for double, long double, and non-floating-point types
     return static_cast<_Ty>(
         _Math_algorithms::_Log_hypot(static_cast<double>(_STD real(_Left)), static_cast<double>(_STD imag(_Left))));
 }
