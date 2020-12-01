@@ -181,4 +181,5 @@ const weekly_table = [
     { date: '2020-11-06', vso: 151, libcxx: 564 },
     { date: '2020-11-13', vso: 149, libcxx: 564 },
     { date: '2020-11-20', vso: 150, libcxx: 564 },
+    { date: '2020-11-27', vso: 150, libcxx: 564 },
 ];
