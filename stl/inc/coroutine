@@ -200,6 +200,10 @@ struct coroutine_handle<noop_coroutine_promise> {
         return *reinterpret_cast<noop_coroutine_promise*>(__builtin_coro_promise(_Ptr, 0, false));
     }
 
+    _NODISCARD constexpr void* address() const noexcept {
+        return _Ptr;
+    }
+
 private:
     coroutine_handle() noexcept = default;
 
