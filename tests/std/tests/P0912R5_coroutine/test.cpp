@@ -97,7 +97,10 @@ Task triangular_number(const int n) {
 
 void test_noop_handle() { // Validate noop_coroutine_handle
     const noop_coroutine_handle noop = noop_coroutine();
+    static_assert(noexcept(noop_coroutine()));
+
     const coroutine_handle<> as_void = noop;
+    static_assert(noexcept(static_cast<coroutine_handle<>>(noop_coroutine())));
 
     assert(!noop.done());
     assert(!as_void.done());
