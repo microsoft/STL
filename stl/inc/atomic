@@ -478,11 +478,11 @@ inline bool __stdcall _Atomic_wait_compare_16_bytes(const void* _Storage, void* 
     const auto _Dest              = static_cast<long long*>(const_cast<void*>(_Storage));
     const auto _Cmp               = static_cast<const long long*>(_Comparand);
     alignas(16) long long _Tmp[2] = {_Cmp[0], _Cmp[1]};
-#ifdef _M_X64
-    return _STD_COMPARE_EXCHANGE_128(_Dest, _Tmp[1], _Tmp[0], _Tmp) != 0;
-#else // ^^^ _M_X64 / ARM64 vvv
+#if defined(_M_ARM64) && !defined(__clang__) // TRANSITION, LLVM-92062: Add more 128bit cmpxchg intrinsics for AArch64
     return _InterlockedCompareExchange128_nf(_Dest, _Tmp[1], _Tmp[0], _Tmp) != 0;
-#endif // ^^^ ARM64 ^^^
+#else // ^^^ ARM64 && !__clang__ / !ARM64 || __clang__ vvv
+    return _STD_COMPARE_EXCHANGE_128(_Dest, _Tmp[1], _Tmp[0], _Tmp) != 0;
+#endif // ^^^ !ARM64 || __clang__ ^^^
 }
 #endif // _WIN64
 #endif // _HAS_CXX20
