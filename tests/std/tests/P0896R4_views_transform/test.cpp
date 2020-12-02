@@ -666,7 +666,6 @@ struct iterator_instantiator {
                     STATIC_ASSERT(noexcept(const_first - const_last));
                 }
 
-
                 if constexpr (random_access_iterator<Iter>) { // Validate relational operators
                     assert(!(first < first));
                     assert(first < final);
