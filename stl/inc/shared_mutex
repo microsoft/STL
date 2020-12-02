@@ -227,7 +227,7 @@ private:
 
 // CLASS TEMPLATE shared_lock
 template <class _Mutex>
-class shared_lock { // shareable lock
+class _NODISCARD shared_lock { // shareable lock
 public:
     using mutex_type = _Mutex;
 
