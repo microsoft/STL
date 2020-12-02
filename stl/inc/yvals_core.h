@@ -1007,7 +1007,8 @@
 #define _CXX20_DEPRECATE_MOVE_ITERATOR_ARROW
 #endif // ^^^ warning disabled ^^^
 
-#if _HAS_CXX20 && !defined(_SILENCE_CXX20_POLYMORPHIC_ALLOCATOR_DESTROY_DEPRECATION_WARNING) \
+// Yes, this is intentionally _HAS_CXX17: we're retroactively deprecating in C++17 mode as well.
+#if _HAS_CXX17 && !defined(_SILENCE_CXX20_POLYMORPHIC_ALLOCATOR_DESTROY_DEPRECATION_WARNING) \
     && !defined(_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS)
 #define _CXX20_DEPRECATE_POLYMORPHIC_ALLOCATOR_DESTROY                                              \
     [[deprecated("warning STL4032: "                                                                \
