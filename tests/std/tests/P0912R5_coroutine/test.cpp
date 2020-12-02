@@ -102,6 +102,11 @@ void test_noop_handle() { // Validate noop_coroutine_handle
     const coroutine_handle<> as_void = noop;
     static_assert(noexcept(static_cast<coroutine_handle<>>(noop_coroutine())));
 
+    assert(noop);
+    assert(as_void);
+    static_assert(noexcept(static_cast<bool>(noop)));
+    static_assert(noexcept(static_cast<bool>(as_void)));
+
     assert(!noop.done());
     assert(!as_void.done());
     static_assert(noexcept(noop.done()));
@@ -109,7 +114,6 @@ void test_noop_handle() { // Validate noop_coroutine_handle
 
     assert(noop);
     assert(as_void);
-    static_assert(noexcept(static_cast<bool>(noop)));
     noop();
     as_void();
     static_assert(noexcept(noop()));
