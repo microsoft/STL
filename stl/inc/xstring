@@ -1248,7 +1248,7 @@ public:
     // clang-format off
     template <contiguous_iterator _It, sized_sentinel_for<_It> _Se>
         requires (is_same_v<iter_value_t<_It>, _Elem> && !is_convertible_v<_Se, size_type>)
-    constexpr basic_string_view(_It _First, _Se _Last) noexcept // strengthened
+    constexpr basic_string_view(_It _First, _Se _Last) noexcept(noexcept(_Last - _First)) // strengthened
         : _Mydata(_STD to_address(_First)), _Mysize(static_cast<size_type>(_Last - _First)) {}
     // clang-format on
 #endif // __cpp_lib_concepts
