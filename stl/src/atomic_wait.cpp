@@ -98,6 +98,8 @@ namespace {
 
 #if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
 
+#pragma comment(lib, "synchronization")
+
 #define __crtWaitOnAddress       WaitOnAddress
 #define __crtWakeByAddressSingle WakeByAddressSingle
 #define __crtWakeByAddressAll    WakeByAddressAll
