@@ -475,11 +475,9 @@ bool __stdcall _Atomic_wait_compare_non_lock_free(
 
 #ifdef _WIN64
 inline bool __stdcall _Atomic_wait_compare_16_bytes(const void* _Storage, void* _Comparand, size_t, void*) noexcept {
-
-#ifdef _M_ARM64
-#ifdef __clang__ // TRANSITION, Clang 12
-    auto _Dest      = static_cast<__int128*>(const_cast<void*>(_Storage));
-    const auto _Tmp = static_cast<const __int128*>(_Comparand);
+#if defined(__clang__) && defined(_M_ARM64) // TRANSITION, Clang 12
+    const auto _Dest = static_cast<__int128*>(const_cast<void*>(_Storage));
+    const auto _Tmp  = static_cast<const __int128*>(_Comparand);
 
     do {
         if (__builtin_arm_ldrex(_Dest) != *_Tmp) {
@@ -488,20 +486,16 @@ inline bool __stdcall _Atomic_wait_compare_16_bytes(const void* _Storage, void* 
     } while (__builtin_arm_strex(*_Tmp, _Dest));
 
     return true;
-#else // ^^^ __clang__ / !__clang__ vvv
+#else // ^^^ workaround / no workaround vvv
     const auto _Dest              = static_cast<long long*>(const_cast<void*>(_Storage));
     const auto _Cmp               = static_cast<const long long*>(_Comparand);
     alignas(16) long long _Tmp[2] = {_Cmp[0], _Cmp[1]};
-
-    return _InterlockedCompareExchange128_nf(_Dest, _Tmp[1], _Tmp[0], _Tmp) != 0;
-#endif // ^^^ !__clang__ ^^^
-#else // ^^^ ARM64 / !ARM64 vvv
-    const auto _Dest              = static_cast<long long*>(const_cast<void*>(_Storage));
-    const auto _Cmp               = static_cast<const long long*>(_Comparand);
-    alignas(16) long long _Tmp[2] = {_Cmp[0], _Cmp[1]};
-
+#ifdef _M_X64
     return _STD_COMPARE_EXCHANGE_128(_Dest, _Tmp[1], _Tmp[0], _Tmp) != 0;
-#endif // ^^^ !ARM64 ^^^
+#else // ^^^ _M_X64 / ARM64 vvv
+    return _InterlockedCompareExchange128_nf(_Dest, _Tmp[1], _Tmp[0], _Tmp) != 0;
+#endif // ^^^ ARM64 ^^^
+#endif // TRANSITION, Clang 12
 }
 #endif // _WIN64
 #endif // _HAS_CXX20
