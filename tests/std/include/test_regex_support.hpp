@@ -277,7 +277,7 @@ public:
         } catch (const std::regex_error& e) {
             wprintf(LR"(Failed to regex_search("%s", regex("%s", 0x%X), 0x%X): regex_error: )", subject.c_str(),
                 pattern.c_str(), static_cast<unsigned int>(syntax), static_cast<unsigned int>(match_flags));
-            printf("%s\n", e.what());
+            printf("\"%s\"\n", e.what());
             fixture->fail_regex();
         }
     }
@@ -296,7 +296,7 @@ public:
         } catch (const std::regex_error& e) {
             wprintf(LR"(Failed to regex_search("%s", regex("%s", 0x%X), 0x%X): regex_error: )", subject.c_str(),
                 pattern.c_str(), static_cast<unsigned int>(syntax), static_cast<unsigned int>(match_flags));
-            printf("%s\n", e.what());
+            printf("\"%s\"\n", e.what());
             fixture->fail_regex();
         }
     }
