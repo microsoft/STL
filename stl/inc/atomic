@@ -478,7 +478,7 @@ inline bool __stdcall _Atomic_wait_compare_16_bytes(const void* _Storage, void* 
 
 #ifdef _M_ARM64
 #ifdef __clang__ // TRANSITION, Clang 12
-    const auto _Dest = static_cast<const __int128*>(_Storage);
+    auto _Dest       = static_cast<__int128*>(const_cast<void*>(_Storage));
     const auto _Tmp  = static_cast<const __int128*>(_Comparand);
 
     do {
