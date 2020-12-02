@@ -193,7 +193,7 @@ protected:
         if (_Old_gptr && eback() < _Old_gptr) { // if the input sequence has a putback position available
             if (_Meta == EOF) {
                 _Meta = 0; // a value other than EOF
-            } else if (!(_Strmode & _Constant)) { // non constant, overwrite no matter what
+            } else if (!(_Strmode & _Constant)) { // non-constant, overwrite no matter what
                 _Old_gptr[-1] = static_cast<char>(_Meta);
             } else if (_Old_gptr[-1] != static_cast<char>(_Meta)) { // constant, unequal, can't put it back
                 return EOF;

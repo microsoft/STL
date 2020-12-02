@@ -333,7 +333,7 @@ struct compare_three_way_result<_Ty1, _Ty2> {
 struct compare_three_way {
     template <class _Ty1, class _Ty2>
         requires three_way_comparable_with<_Ty1, _Ty2> // TRANSITION, GH-489
-    constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
+    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
         noexcept(noexcept(_STD forward<_Ty1>(_Left) <=> _STD forward<_Ty2>(_Right))) /* strengthened */ {
         return _STD forward<_Ty1>(_Left) <=> _STD forward<_Ty2>(_Right);
     }
@@ -396,9 +396,10 @@ namespace _Strong_order {
                 using _Floating_type = decay_t<_Ty1>;
                 using _Traits        = _Floating_type_traits<_Floating_type>;
                 using _Uint_type     = typename _Traits::_Uint_type;
+                using _Sint_type     = make_signed_t<_Uint_type>;
 
-                auto _Left_uint  = _STD bit_cast<_Uint_type>(_Left);
-                auto _Right_uint = _STD bit_cast<_Uint_type>(_Right);
+                const auto _Left_uint  = _STD bit_cast<_Uint_type>(_Left);
+                const auto _Right_uint = _STD bit_cast<_Uint_type>(_Right);
 
                 // 1. Ultra-fast path: equal representations are equal.
                 if (_Left_uint == _Right_uint) {
@@ -406,25 +407,26 @@ namespace _Strong_order {
                 }
 
                 // 2. Examine the sign bits.
-                const bool _Left_negative  = (_Left_uint & _Traits::_Shifted_sign_mask) != 0;
-                const bool _Right_negative = (_Right_uint & _Traits::_Shifted_sign_mask) != 0;
+                const _Uint_type _Left_shifted_sign  = _Left_uint & _Traits::_Shifted_sign_mask;
+                const _Uint_type _Right_shifted_sign = _Right_uint & _Traits::_Shifted_sign_mask;
 
-                // 3. Fast path: any negative value is less than any positive value.
-                if (_Left_negative != _Right_negative) {
-                    return _Left_negative ? strong_ordering::less : strong_ordering::greater;
-                }
+                // 3. Interpret floating-point bit patterns as sign magnitude representations of integers,
+                //    and then transform them into ones' complement representation.
+                // (Ones' complement representations of positive zero and negative zero are different.)
+                const _Uint_type _Left_sign  = _Left_shifted_sign >> _Traits::_Sign_shift;
+                const _Uint_type _Right_sign = _Right_shifted_sign >> _Traits::_Sign_shift;
 
-                // 4. Clear the (identical) sign bits. We've already stored them for use at the end.
-                _Left_uint &= ~_Traits::_Shifted_sign_mask;
-                _Right_uint &= ~_Traits::_Shifted_sign_mask;
+                const _Uint_type _Left_xor  = _Left_shifted_sign - _Left_sign;
+                const _Uint_type _Right_xor = _Right_shifted_sign - _Right_sign;
 
-                // 5. Perform the final comparison, reversed for negative values.
-                // (For example, 1.5 is less than 2.5, but -1.5 is greater than -2.5.)
-                if (_Left_negative) {
-                    return _Right_uint <=> _Left_uint;
-                } else {
-                    return _Left_uint <=> _Right_uint;
-                }
+                const _Uint_type _Left_ones_complement_uint  = _Left_uint ^ _Left_xor;
+                const _Uint_type _Right_ones_complement_uint = _Right_uint ^ _Right_xor;
+
+                const auto _Left_ones_complement  = static_cast<_Sint_type>(_Left_ones_complement_uint);
+                const auto _Right_ones_complement = static_cast<_Sint_type>(_Right_ones_complement_uint);
+
+                // 4. Perform the final comparison.
+                return _Left_ones_complement <=> _Right_ones_complement;
             } else if constexpr (_Strat == _St::_Three) {
                 return static_cast<strong_ordering>(compare_three_way{}(_Left, _Right));
             } else {
@@ -498,6 +500,7 @@ namespace _Weak_order {
                 using _Floating_type = decay_t<_Ty1>;
                 using _Traits        = _Floating_type_traits<_Floating_type>;
                 using _Uint_type     = typename _Traits::_Uint_type;
+                using _Sint_type     = make_signed_t<_Uint_type>;
 
                 auto _Left_uint  = _STD bit_cast<_Uint_type>(_Left);
                 auto _Right_uint = _STD bit_cast<_Uint_type>(_Right);
@@ -507,47 +510,42 @@ namespace _Weak_order {
                     return weak_ordering::equivalent;
                 }
 
-                // 2. Fold negative zero into positive zero.
-                constexpr _Uint_type _Negative_zero = _Traits::_Shifted_sign_mask;
+                // 2. Examine the sign bits.
+                const _Uint_type _Left_shifted_sign  = _Left_uint & _Traits::_Shifted_sign_mask;
+                const _Uint_type _Right_shifted_sign = _Right_uint & _Traits::_Shifted_sign_mask;
 
-                if (_Left_uint == _Negative_zero) {
-                    _Left_uint = 0;
-                } else if (_Right_uint == _Negative_zero) { // The representations are known to be non-equal here.
-                    _Right_uint = 0;
-                }
-
-                // 3. Examine the sign bits.
-                const bool _Left_negative  = (_Left_uint & _Traits::_Shifted_sign_mask) != 0;
-                const bool _Right_negative = (_Right_uint & _Traits::_Shifted_sign_mask) != 0;
-
-                // 4. Fast path: after folding negative zero, any negative value is less than any positive value.
-                if (_Left_negative != _Right_negative) {
-                    return _Left_negative ? weak_ordering::less : weak_ordering::greater;
-                }
-
-                // 5. Clear the (identical) sign bits. We've already stored them for use at the end.
-                _Left_uint &= ~_Traits::_Shifted_sign_mask;
-                _Right_uint &= ~_Traits::_Shifted_sign_mask;
-
-                // 6. Fold all NaN values together.
+                // 3. Fold all NaN values together.
                 // (The fact that _Infinity_plus_one represents a signaling NaN is irrelevant here.)
                 constexpr _Uint_type _Infinity_plus_one = _Traits::_Shifted_exponent_mask + 1;
 
-                if (_Left_uint > _Infinity_plus_one) {
-                    _Left_uint = _Infinity_plus_one;
+                const _Uint_type _Left_magnitude  = _Left_uint & ~_Traits::_Shifted_sign_mask;
+                const _Uint_type _Right_magnitude = _Right_uint & ~_Traits::_Shifted_sign_mask;
+
+                if (_Left_magnitude > _Infinity_plus_one) {
+                    _Left_uint = _Left_shifted_sign | _Infinity_plus_one;
                 }
 
-                if (_Right_uint > _Infinity_plus_one) {
-                    _Right_uint = _Infinity_plus_one;
+                if (_Right_magnitude > _Infinity_plus_one) {
+                    _Right_uint = _Right_shifted_sign | _Infinity_plus_one;
                 }
 
-                // 7. Perform the final comparison, reversed for negative values.
-                // (For example, 1.5 is less than 2.5, but -1.5 is greater than -2.5.)
-                if (_Left_negative) {
-                    return static_cast<weak_ordering>(_Right_uint <=> _Left_uint);
-                } else {
-                    return static_cast<weak_ordering>(_Left_uint <=> _Right_uint);
-                }
+                // 4. Interpret floating-point bit patterns as sign magnitude representations of integers,
+                //    and then transform them into two's complement representation.
+                // (Two's complement representations of positive zero and negative zero are the same.)
+                const _Uint_type _Left_sign  = _Left_shifted_sign >> _Traits::_Sign_shift;
+                const _Uint_type _Right_sign = _Right_shifted_sign >> _Traits::_Sign_shift;
+
+                const _Uint_type _Left_xor  = _Left_shifted_sign - _Left_sign;
+                const _Uint_type _Right_xor = _Right_shifted_sign - _Right_sign;
+
+                const _Uint_type _Left_twos_complement_uint  = (_Left_uint ^ _Left_xor) + _Left_sign;
+                const _Uint_type _Right_twos_complement_uint = (_Right_uint ^ _Right_xor) + _Right_sign;
+
+                const auto _Left_twos_complement  = static_cast<_Sint_type>(_Left_twos_complement_uint);
+                const auto _Right_twos_complement = static_cast<_Sint_type>(_Right_twos_complement_uint);
+
+                // 5. Perform the final comparison.
+                return static_cast<weak_ordering>(_Left_twos_complement <=> _Right_twos_complement);
             } else if constexpr (_Strat == _St::_Three) {
                 return static_cast<weak_ordering>(compare_three_way{}(_Left, _Right));
             } else if constexpr (_Strat == _St::_Strong) {
