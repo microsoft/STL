@@ -280,7 +280,7 @@ public:
 
     template <class _FwdIt>
     string_type transform(_FwdIt _First, _FwdIt _Last) const { // apply locale-specific transformation
-        string_type _Str(_First, _Last);
+        const string_type _Str(_First, _Last);
         return _Getcoll()->transform(_Str.data(), _Str.data() + _Str.size());
     }
 
