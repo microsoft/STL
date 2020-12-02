@@ -571,6 +571,12 @@ void test_GH_993_regex_character_class_case_insensitive_search() {
         z_case_regex.should_search_fail(subject, match_not_bow);
         z_case_regex.should_search_fail(subject, match_not_eow);
         z_case_regex.should_search_fail(subject, match_not_bow | match_not_eow);
+
+        const wstring lowercase_subject = L"hungry_zombies";
+        Z_case_regex.should_search_fail(lowercase_subject);
+        Z_icase_regex.should_search_match(lowercase_subject, L"z");
+        z_case_regex.should_search_match(lowercase_subject, L"z");
+        z_icase_regex.should_search_match(lowercase_subject, L"z");
     }
 }
 
