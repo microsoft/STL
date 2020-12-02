@@ -19,12 +19,49 @@ jobs:
       displayName: 'Setup TMP Directory'
     - checkout: self
       clean: true
-      submodules: true
+      submodules: false
+    - task: PowerShell@2
+      displayName: 'Get submodule SHAs'
+      timeoutInMinutes: 1
+      inputs:
+        targetType: inline
+        script: |
+          cd $(Build.SourcesDirectory)
+          $vcpkgSHA = git ls-tree HEAD vcpkg | %{($_ -split "\s+")[2]}
+          Write-Host "##vso[task.setvariable variable=vcpkgSHA;]$vcpkgSHA"
+          $llvmSHA = git ls-tree HEAD llvm-project | %{($_ -split "\s+")[2]}
+          Write-Host "##vso[task.setvariable variable=llvmSHA;]$llvmSHA"
+    - script: |
+        cd $(Build.SourcesDirectory)
+        if not exist "llvm-project" (
+          mkdir llvm-project
+        )
+        cd llvm-project
+        git init
+        git remote add llvm https://github.com/llvm/llvm-project
+        git config --local extensions.partialClone llvm
+        git fetch --filter=tree:0 --depth=1 -v llvm $(llvmSHA)
+        git reset --quiet $(llvmSHA)
+        git sparse-checkout init --cone
+        git sparse-checkout set libcxx/test libcxx/utils/libcxx llvm/utils/lit
+      displayName: "Checkout LLVM source"
+    - script: |
+        cd $(Build.SourcesDirectory)
+        if not exist "vcpkg" (
+          mkdir vcpkg
+        )
+        cd vcpkg
+        git init
+        git remote add vcpkg https://github.com/Microsoft/vcpkg
+        git config --local extensions.partialClone vcpkg
+        git fetch --filter=tree:0 --depth=1 vcpkg $(vcpkgSHA)
+        git checkout $(vcpkgSHA)
+      displayName: "Checkout vcpkg source"
     - task: Cache@2
       displayName: vcpkg/installed Caching
       timeoutInMinutes: 10
       inputs:
-        key: '"${{ parameters.targetPlatform }}" | $(Build.SourcesDirectory)/.git/modules/vcpkg/HEAD | "2020-03-01.01"'
+        key: '"${{ parameters.targetPlatform }}" | "$(vcpkgSHA)" | "2020-03-01.01"'
         path: '$(vcpkgLocation)/installed'
         cacheHitVar: CACHE_RESTORED
     - task: run-vcpkg@0
@@ -49,7 +86,7 @@ jobs:
       env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
     - task: PowerShell@2
       displayName: 'Get Test Parallelism'
-      timeoutInMinutes: 2
+      timeoutInMinutes: 1
       inputs:
         targetType: inline
         script: |
