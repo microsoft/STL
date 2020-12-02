@@ -661,7 +661,7 @@
 #ifndef _STD_VECTORIZE_WITH_FLOAT_CONTROL
 #ifdef _M_FP_EXCEPT
 #define _STD_VECTORIZE_WITH_FLOAT_CONTROL 0
-#else // ^^^ floating point exceptions enabled / floating point exceptions disabled (default) vvv
+#else // ^^^ floating-point exceptions enabled / floating-point exceptions disabled (default) vvv
 #define _STD_VECTORIZE_WITH_FLOAT_CONTROL 1
 #endif // _M_FP_EXCEPT
 #endif // _STD_VECTORIZE_WITH_FLOAT_CONTROL

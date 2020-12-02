@@ -105,11 +105,11 @@ namespace std {
 
     template <>
     struct hash<Hashable> {
-        hash() { // non trivial
+        hash() { // non-trivial
         }
-        hash(const hash&) { // non trivial
+        hash(const hash&) { // non-trivial
         }
-        hash& operator=(const hash&) { // non trivial
+        hash& operator=(const hash&) { // non-trivial
             return *this;
         }
         size_t operator()(Hashable) {

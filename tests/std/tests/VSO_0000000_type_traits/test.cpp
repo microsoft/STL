@@ -493,7 +493,7 @@ VERIFY_BASE_CHARACTERISTIC(is_void<int>, conjunction<is_void<int>, void>);
 VERIFY_BASE_CHARACTERISTIC(is_volatile<int>, conjunction<is_const<const int>, is_volatile<int>, void>);
 VERIFY_BASE_CHARACTERISTIC(is_const<int>, conjunction<is_const<int>, void, void>);
 VERIFY_BASE_CHARACTERISTIC(is_const<int>, conjunction<is_const<int>, void, void, void>);
-// non integral_constant family
+// non-integral_constant family
 VERIFY_BASE_CHARACTERISTIC_V(fake_bool<true>, conjunction<fake_bool<true>>);
 VERIFY_BASE_CHARACTERISTIC_V(fake_bool<true>, conjunction<fake_bool<true>, fake_bool<true>>);
 VERIFY_BASE_CHARACTERISTIC_V(fake_bool<true>, conjunction<fake_bool<true>, fake_bool<true>, fake_bool<true>>);
@@ -530,7 +530,7 @@ VERIFY_BASE_CHARACTERISTIC(is_void<void>, disjunction<is_void<void>, void>);
 VERIFY_BASE_CHARACTERISTIC(is_void<void>, disjunction<is_const<int>, is_void<void>, void>);
 VERIFY_BASE_CHARACTERISTIC(is_void<void>, disjunction<is_void<void>, void, void>);
 VERIFY_BASE_CHARACTERISTIC(is_void<void>, disjunction<is_void<void>, void, void, void>);
-// non integral_constant family
+// non-integral_constant family
 VERIFY_BASE_CHARACTERISTIC_V(fake_bool<false>, disjunction<fake_bool<false>>);
 VERIFY_BASE_CHARACTERISTIC_V(fake_bool<false>, disjunction<fake_bool<false>, fake_bool<false>>);
 VERIFY_BASE_CHARACTERISTIC_V(fake_bool<false>, disjunction<fake_bool<false>, fake_bool<false>, fake_bool<false>>);
