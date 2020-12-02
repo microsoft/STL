@@ -445,7 +445,7 @@ inline void _Atomic_lock_release(_Smtx_t* _Spinlock) noexcept {
 }
 
 template <class _Spinlock_t>
-class _Atomic_lock_guard {
+class _NODISCARD _Atomic_lock_guard {
 public:
     explicit _Atomic_lock_guard(_Spinlock_t& _Spinlock_) noexcept : _Spinlock(_Spinlock_) {
         _Atomic_lock_acquire(_Spinlock);

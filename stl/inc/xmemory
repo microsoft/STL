@@ -25,7 +25,7 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 // STRUCT TEMPLATE _Tidy_guard
 template <class _Ty>
-struct _Tidy_guard { // class with destructor that calls _Tidy
+struct _NODISCARD _Tidy_guard { // class with destructor that calls _Tidy
     _Ty* _Target;
     ~_Tidy_guard() {
         if (_Target) {
@@ -36,7 +36,7 @@ struct _Tidy_guard { // class with destructor that calls _Tidy
 
 // STRUCT TEMPLATE _Tidy_deallocate_guard
 template <class _Ty>
-struct _Tidy_deallocate_guard { // class with destructor that calls _Tidy_deallocate
+struct _NODISCARD _Tidy_deallocate_guard { // class with destructor that calls _Tidy_deallocate
     _Ty* _Target;
     ~_Tidy_deallocate_guard() {
         if (_Target) {
@@ -226,7 +226,7 @@ void _Deallocate(void* _Ptr, size_t _Bytes) noexcept {
 // FUNCTION TEMPLATE _Global_new
 template <class _Ty, class... _Types>
 _Ty* _Global_new(_Types&&... _Args) { // acts as "new" while disallowing user overload selection
-    struct _Guard_type {
+    struct _NODISCARD _Guard_type {
         void* _Result;
         ~_Guard_type() {
             if (_Result) {

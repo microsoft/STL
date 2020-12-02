@@ -2329,7 +2329,7 @@ void _Reverse_destroy_multidimensional_n(_Ty* const _Arr, size_t _Size) noexcept
 }
 
 template <class _Ty>
-struct _Reverse_destroy_multidimensional_n_guard {
+struct _NODISCARD _Reverse_destroy_multidimensional_n_guard {
     _Ty* _Target;
     size_t _Index;
 
@@ -2696,7 +2696,7 @@ void _Reverse_destroy_multidimensional_n_al(_Ty* const _Arr, size_t _Size, _Allo
 }
 
 template <class _Ty, class _Alloc>
-struct _Reverse_destroy_multidimensional_n_al_guard {
+struct _NODISCARD _Reverse_destroy_multidimensional_n_al_guard {
     _Ty* _Target;
     size_t _Index;
     _Alloc& _Al;
@@ -2913,7 +2913,7 @@ _NODISCARD
 
 #if _HAS_CXX20
 template <class _Refc>
-struct _Global_delete_guard {
+struct _NODISCARD _Global_delete_guard {
     _Refc* _Target;
 
     ~_Global_delete_guard() {
