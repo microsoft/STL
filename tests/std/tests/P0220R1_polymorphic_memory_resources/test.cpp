@@ -951,7 +951,7 @@ namespace {
                 struct S {
                     bool& destroy_ref;
 
-                    S(bool& _destroy_ref_) : destroy_ref{_destroy_ref_} {}
+                    explicit S(bool& _destroy_ref_) : destroy_ref{_destroy_ref_} {}
                     ~S() {
                         destroy_ref = true;
                     }
