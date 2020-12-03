@@ -190,8 +190,16 @@ public:
             for (_Kx = 0; _Kx < _Mx; ++_Kx) { // scramble and add any vector contributions
                 result_type _Rx1 =
                     1664525 * _Xor27(_UFirst[_Kx % _Nx] ^ _UFirst[(_Kx + _Px) % _Nx] ^ _UFirst[(_Kx - 1) % _Nx]);
-                result_type _Rx2 = static_cast<result_type>(
-                    (_Rx1 + (_Kx == 0 ? _Sx : _Kx <= _Sx ? _Kx % _Nx + _Myvec[(_Kx - 1) % _Sx] : _Kx % _Nx)) & _Mask);
+
+                size_t _Off;
+                if (_Kx == 0) {
+                    _Off = _Sx;
+                } else if (_Kx <= _Sx) {
+                    _Off = _Kx % _Nx + _Myvec[_Kx - 1];
+                } else {
+                    _Off = _Kx % _Nx;
+                }
+                result_type _Rx2 = static_cast<result_type>((_Rx1 + _Off) & _Mask);
 
                 _UFirst[(_Kx + _Px) % _Nx] = (_UFirst[(_Kx + _Px) % _Nx] + _Rx1) & _Mask;
                 _UFirst[(_Kx + _Qx) % _Nx] = (_UFirst[(_Kx + _Qx) % _Nx] + _Rx2) & _Mask;

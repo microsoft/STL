@@ -436,10 +436,9 @@ namespace _Strong_order {
     };
 } // namespace _Strong_order
 
-namespace _Cpos {
+inline namespace _Cpos {
     inline constexpr _Strong_order::_Cpo strong_order;
 }
-using namespace _Cpos;
 
 // CUSTOMIZATION POINT OBJECT weak_order
 namespace _Weak_order {
@@ -558,10 +557,9 @@ namespace _Weak_order {
     };
 } // namespace _Weak_order
 
-namespace _Cpos {
+inline namespace _Cpos {
     inline constexpr _Weak_order::_Cpo weak_order;
 }
-using namespace _Cpos;
 
 // CUSTOMIZATION POINT OBJECT partial_order
 namespace _Partial_order {
@@ -637,10 +635,9 @@ namespace _Partial_order {
     };
 } // namespace _Partial_order
 
-namespace _Cpos {
+inline namespace _Cpos {
     inline constexpr _Partial_order::_Cpo partial_order;
 }
-using namespace _Cpos;
 
 // clang-format off
 template <class _Ty1, class _Ty2>
@@ -701,10 +698,9 @@ namespace _Compare_strong_order_fallback {
     };
 } // namespace _Compare_strong_order_fallback
 
-namespace _Cpos {
+inline namespace _Cpos {
     inline constexpr _Compare_strong_order_fallback::_Cpo compare_strong_order_fallback;
 }
-using namespace _Cpos;
 
 // CUSTOMIZATION POINT OBJECT compare_weak_order_fallback
 namespace _Compare_weak_order_fallback {
@@ -757,10 +753,9 @@ namespace _Compare_weak_order_fallback {
     };
 } // namespace _Compare_weak_order_fallback
 
-namespace _Cpos {
+inline namespace _Cpos {
     inline constexpr _Compare_weak_order_fallback::_Cpo compare_weak_order_fallback;
 }
-using namespace _Cpos;
 
 // CUSTOMIZATION POINT OBJECT compare_partial_order_fallback
 namespace _Compare_partial_order_fallback {
@@ -826,10 +821,9 @@ namespace _Compare_partial_order_fallback {
     };
 } // namespace _Compare_partial_order_fallback
 
-namespace _Cpos {
+inline namespace _Cpos {
     inline constexpr _Compare_partial_order_fallback::_Cpo compare_partial_order_fallback;
 }
-using namespace _Cpos;
 
 #endif // __cpp_lib_concepts
 _STD_END
