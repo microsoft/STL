@@ -265,7 +265,7 @@ public:
         }
     }
 
-    shared_lock(shared_lock&& _Other) noexcept : _Pmtx(_Other._Pmtx), _Owns(_Other._Owns) {
+    _NODISCARD_CTOR shared_lock(shared_lock&& _Other) noexcept : _Pmtx(_Other._Pmtx), _Owns(_Other._Owns) {
         _Other._Pmtx = nullptr;
         _Other._Owns = false;
     }
