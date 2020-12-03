@@ -271,7 +271,7 @@ public:
 
     _Elem translate(_Elem _Ch) const { // provide locale-sensitive mapping
         string_type _Res = _Getcoll()->transform(_STD addressof(_Ch), _STD addressof(_Ch) + 1);
-        return _Res.length() == 1 ? _Res[0] : _Ch;
+        return _Res.size() == 1 ? _Res[0] : _Ch;
     }
 
     _Elem translate_nocase(_Elem _Ch) const { // provide case-insensitive mapping
@@ -280,7 +280,8 @@ public:
 
     template <class _FwdIt>
     string_type transform(_FwdIt _First, _FwdIt _Last) const { // apply locale-specific transformation
-        return _Getcoll()->transform(_First, _Last);
+        const string_type _Str(_First, _Last);
+        return _Getcoll()->transform(_Str.data(), _Str.data() + _Str.size());
     }
 
     template <class _FwdIt>
