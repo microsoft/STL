@@ -1426,26 +1426,19 @@ namespace ranges {
 
             using _Parent_t = _Maybe_const<_Const, transform_view>;
             using _Base     = _Maybe_const<_Const, _Vw>;
+            template <bool _OtherConst>
+            using _Maybe_const_iter = iterator_t<_Maybe_const<_OtherConst, _Vw>>;
 
             sentinel_t<_Base> _Last{};
 
-            _NODISCARD constexpr bool _Equal(const _Iterator<_Const>& _It) const
-                noexcept(noexcept(_It._Current == _Last)) {
+            template <bool _OtherConst>
+            _NODISCARD static constexpr const _Maybe_const_iter<_OtherConst>& _Get_current(
+                const _Iterator<_OtherConst>& _It) noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _STL_VERIFY(
                     _It._Parent != nullptr, "cannot compare transform_view sentinel with value-initialized iterator");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
-                return _It._Current == _Last;
-            }
-
-            _NODISCARD constexpr range_difference_t<_Base> _Distance_to(const _Iterator<_Const>& _It) const
-                noexcept(noexcept(_It._Current - _Last)) {
-                _STL_INTERNAL_STATIC_ASSERT(sized_sentinel_for<sentinel_t<_Base>, iterator_t<_Base>>);
-#if _ITERATOR_DEBUG_LEVEL != 0
-                _STL_VERIFY(
-                    _It._Parent != nullptr, "cannot compare transform_view sentinel with value-initialized iterator");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
-                return _It._Current - _Last;
+                return _It._Current;
             }
 
         public:
@@ -1466,22 +1459,30 @@ namespace ranges {
                 return _Last;
             }
 
-            _NODISCARD friend constexpr bool operator==(const _Iterator<_Const>& _Left,
-                const _Sentinel& _Right) noexcept(noexcept(_Right._Equal(_Left))) /* strengthened */ {
-                return _Right._Equal(_Left);
+            // clang-format off
+            template <bool _OtherConst>
+                requires sentinel_for<sentinel_t<_Base>, _Maybe_const_iter<_OtherConst>>
+            _NODISCARD friend constexpr bool operator==(const _Iterator<_OtherConst>& _Left,
+                const _Sentinel& _Right) noexcept(noexcept(_Get_current(_Left) == _Right._Last)) /* strengthened */ {
+                return _Get_current(_Left) == _Right._Last;
             }
 
-            _NODISCARD friend constexpr range_difference_t<_Base>
-                operator-(const _Iterator<_Const>& _Left, const _Sentinel& _Right) noexcept(
-                    noexcept(_Right._Distance_to(
-                        _Left))) /* strengthened */ requires sized_sentinel_for<sentinel_t<_Base>, iterator_t<_Base>> {
-                return _Right._Distance_to(_Left);
+            template <bool _OtherConst>
+                requires sized_sentinel_for<sentinel_t<_Base>, _Maybe_const_iter<_OtherConst>>
+            _NODISCARD friend constexpr range_difference_t<_Maybe_const<_OtherConst, _Vw>>
+                operator-(const _Iterator<_OtherConst>& _Left, const _Sentinel& _Right) noexcept(
+                    noexcept(_Get_current(_Left) - _Right._Last)) /* strengthened */ {
+                return _Get_current(_Left) - _Right._Last;
             }
-            _NODISCARD friend constexpr range_difference_t<_Base>
-                operator-(const _Sentinel& _Left, const _Iterator<_Const>& _Right) noexcept(noexcept(_Left._Distance_to(
-                    _Right))) /* strengthened */ requires sized_sentinel_for<sentinel_t<_Base>, iterator_t<_Base>> {
-                return -_Left._Distance_to(_Right);
+
+            template <bool _OtherConst>
+                requires sized_sentinel_for<sentinel_t<_Base>, _Maybe_const_iter<_OtherConst>>
+            _NODISCARD friend constexpr range_difference_t<_Maybe_const<_OtherConst, _Vw>>
+                operator-(const _Sentinel& _Left, const _Iterator<_OtherConst>& _Right) noexcept(
+                    noexcept(_Left._Last - _Get_current(_Right))) /* strengthened */ {
+                return _Left._Last - _Get_current(_Right);
             }
+            // clang-format on
         };
 
     public:
@@ -2836,11 +2837,13 @@ namespace ranges {
             friend class _Sentinel;
 
             using _Base = _Maybe_const<_Const, _Vw>;
+            template <bool _OtherConst>
+            using _Maybe_const_iter = iterator_t<_Maybe_const<_OtherConst, _Vw>>;
 
             sentinel_t<_Base> _Last{};
 
             template <bool _OtherConst>
-            _NODISCARD static constexpr const iterator_t<_Maybe_const<_OtherConst, _Vw>>& _Get_current(
+            _NODISCARD static constexpr const _Maybe_const_iter<_OtherConst>& _Get_current(
                 const _Iterator<_OtherConst>& _It) noexcept {
                 return _It._Current;
             }
@@ -2865,7 +2868,7 @@ namespace ranges {
 
             // clang-format off
             template <bool _OtherConst>
-                requires sentinel_for<sentinel_t<_Base>, iterator_t<_Maybe_const<_OtherConst, _Vw>>>
+                requires sentinel_for<sentinel_t<_Base>, _Maybe_const_iter<_OtherConst>>
             _NODISCARD friend constexpr bool operator==(const _Iterator<_OtherConst>& _Left,
                 const _Sentinel& _Right) noexcept(noexcept(_Get_current(_Left) == _Right._Last)) /* strengthened */ {
                 // clang-format on
@@ -2874,7 +2877,7 @@ namespace ranges {
 
             // clang-format off
             template <bool _OtherConst>
-                requires sized_sentinel_for<sentinel_t<_Base>, iterator_t<_Maybe_const<_OtherConst, _Vw>>>
+                requires sized_sentinel_for<sentinel_t<_Base>, _Maybe_const_iter<_OtherConst>>
             _NODISCARD friend constexpr range_difference_t<_Maybe_const<_OtherConst, _Vw>> operator-(
                 const _Iterator<_OtherConst>& _Left, const _Sentinel& _Right) noexcept(
                 noexcept(_Get_current(_Left) - _Right._Last)) /* strengthened */ {
@@ -2884,7 +2887,7 @@ namespace ranges {
 
             // clang-format off
             template <bool _OtherConst>
-                requires sized_sentinel_for<sentinel_t<_Base>, iterator_t<_Maybe_const<_OtherConst, _Vw>>>
+                requires sized_sentinel_for<sentinel_t<_Base>, _Maybe_const_iter<_OtherConst>>
             _NODISCARD friend constexpr range_difference_t<_Maybe_const<_OtherConst, _Vw>> operator-(
                 const _Sentinel& _Left, const _Iterator<_OtherConst>& _Right) noexcept(
                 noexcept(_Left._Last - _Get_current(_Right))) /* strengthened */ {
