@@ -125,7 +125,7 @@ _INLINE_VAR constexpr try_to_lock_t try_to_lock{};
 
 // CLASS TEMPLATE unique_lock
 template <class _Mutex>
-class _NODISCARD unique_lock { // whizzy class with destructor that unlocks mutex
+class unique_lock { // whizzy class with destructor that unlocks mutex
 public:
     using mutex_type = _Mutex;
 
