@@ -886,7 +886,7 @@
     [[deprecated("warning STL4021: "                                                                                 \
                  "The std::filesystem::u8path() overloads are deprecated in C++20. "                                 \
                  "The constructors of std::filesystem::path provide equivalent functionality via construction from " \
-                 "u8string, u8string_view, or iterators with value_type char8_t."                                    \
+                 "u8string, u8string_view, or iterators with value_type char8_t. "                                   \
                  "You can define _SILENCE_CXX20_U8PATH_DEPRECATION_WARNING "                                         \
                  "or _SILENCE_ALL_CXX20_DEPRECATION_WARNINGS to acknowledge that you have received this warning.")]]
 #else // ^^^ warning enabled / warning disabled vvv
@@ -1015,7 +1015,19 @@
 #define _CXX20_DEPRECATE_MOVE_ITERATOR_ARROW
 #endif // ^^^ warning disabled ^^^
 
-// next warning number: STL4032
+#if _HAS_CXX17 && !defined(_SILENCE_CXX17_POLYMORPHIC_ALLOCATOR_DESTROY_DEPRECATION_WARNING) \
+    && !defined(_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS)
+#define _CXX17_DEPRECATE_POLYMORPHIC_ALLOCATOR_DESTROY                                                   \
+    [[deprecated("warning STL4032: "                                                                     \
+                 "std::pmr::polymorphic_allocator::destroy() is deprecated in C++17 by LWG-3036. "       \
+                 "Prefer std::destroy_at() or std::allocator_traits<polymorphic_allocator>::destroy(). " \
+                 "You can define _SILENCE_CXX17_POLYMORPHIC_ALLOCATOR_DESTROY_DEPRECATION_WARNING "      \
+                 "or _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS to acknowledge that you have received this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _CXX17_DEPRECATE_POLYMORPHIC_ALLOCATOR_DESTROY
+#endif // ^^^ warning disabled ^^^
+
+// next warning number: STL4033
 
 // P0619R4 Removing C++17-Deprecated Features
 #ifndef _HAS_FEATURES_REMOVED_IN_CXX20
