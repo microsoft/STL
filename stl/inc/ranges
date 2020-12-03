@@ -1616,11 +1616,12 @@ namespace ranges {
             template <bool, bool>
             friend class _Sentinel;
 
-            using _Base_Ty       = _Maybe_const<_Const, _Vw>;
-            using _Base_sentinel = _Maybe_wrapped<_Wrapped, sentinel_t<_Base_Ty>>;
+            using _Base_t        = _Maybe_const<_Const, _Vw>;
+            using _Base_sentinel = _Maybe_wrapped<_Wrapped, sentinel_t<_Base_t>>;
             template <bool _OtherConst>
-            using _Counted_Iter =
-                counted_iterator<_Maybe_wrapped<_Wrapped, iterator_t<_Maybe_const<_OtherConst, _Vw>>>>;
+            using _Base_iterator = _Maybe_wrapped<_Wrapped, iterator_t<_Maybe_const<_OtherConst, _Vw>>>;
+            template <bool _OtherConst>
+            using _Counted_iter = counted_iterator<_Base_iterator<_OtherConst>>;
 
             _Base_sentinel _Last{};
 
@@ -1643,15 +1644,15 @@ namespace ranges {
                 return _Last;
             }
 
-            _NODISCARD friend constexpr bool operator==(const _Counted_Iter<_Const>& _Left, const _Sentinel& _Right) {
+            _NODISCARD friend constexpr bool operator==(const _Counted_iter<_Const>& _Left, const _Sentinel& _Right) {
                 return _Left.count() == 0 || _Left.base() == _Right._Last;
             }
 
             // clang-format off
-            template <bool _OtherConst = !_Const>
-                requires sentinel_for<_Base_sentinel, _Counted_Iter<_OtherConst>>
+            template <bool _OtherConst = _Const>
+                requires sentinel_for<_Base_sentinel, _Base_iterator<_OtherConst>>
             _NODISCARD friend constexpr bool operator==(
-                const _Counted_Iter<_OtherConst>& _Left, const _Sentinel& _Right) {
+                const _Counted_iter<_OtherConst>& _Left, const _Sentinel& _Right) {
                 // clang-format on
                 return _Left.count() == 0 || _Left.base() == _Right._Last;
             }
@@ -1660,17 +1661,17 @@ namespace ranges {
 
             // clang-format off
             _NODISCARD constexpr auto _Unwrapped() const&
-                requires _Wrapped && _Unwrappable_v<const iterator_t<_Base_Ty>&> {
+                requires _Wrapped && _Unwrappable_v<const iterator_t<_Base_t>&> {
                 // clang-format on
                 return _Sentinel<_Const, false>{_Get_unwrapped(_Last)};
             }
             // clang-format off
-            _NODISCARD constexpr auto _Unwrapped() && requires _Wrapped && _Unwrappable_v<iterator_t<_Base_Ty>> {
+            _NODISCARD constexpr auto _Unwrapped() && requires _Wrapped && _Unwrappable_v<iterator_t<_Base_t>> {
                 // clang-format on
                 return _Sentinel<_Const, false>{_Get_unwrapped(_STD move(_Last))};
             }
 
-            static constexpr bool _Unwrap_when_unverified = _Do_unwrap_when_unverified_v<iterator_t<_Base_Ty>>;
+            static constexpr bool _Unwrap_when_unverified = _Do_unwrap_when_unverified_v<iterator_t<_Base_t>>;
 
             constexpr void _Seek_to(const _Sentinel<_Const, false>& _That) requires _Wrapped {
                 _Seek_wrapped(_Last, _That._Last);
@@ -1865,9 +1866,9 @@ namespace ranges {
             template <bool, bool>
             friend class _Sentinel;
 
-            using _Base_Ty       = _Maybe_const<_Const, _Vw>;
-            using _Base_iterator = _Maybe_wrapped<_Wrapped, iterator_t<_Base_Ty>>;
-            using _Base_sentinel = _Maybe_wrapped<_Wrapped, sentinel_t<_Base_Ty>>;
+            using _Base_t        = _Maybe_const<_Const, _Vw>;
+            using _Base_iterator = _Maybe_wrapped<_Wrapped, iterator_t<_Base_t>>;
+            using _Base_sentinel = _Maybe_wrapped<_Wrapped, sentinel_t<_Base_t>>;
 
             template <bool _OtherConst>
             using _Maybe_const_iter = _Maybe_wrapped<_Wrapped, iterator_t<_Maybe_const<_OtherConst, _Vw>>>;
@@ -1911,17 +1912,17 @@ namespace ranges {
 
             // clang-format off
             _NODISCARD constexpr auto _Unwrapped() const&
-                requires _Wrapped && _Unwrappable_v<const iterator_t<_Base_Ty>&> {
+                requires _Wrapped && _Unwrappable_v<const iterator_t<_Base_t>&> {
                 // clang-format on
                 return _Sentinel<_Const, false>{_Get_unwrapped(_Last), _Pred};
             }
             // clang-format off
-            _NODISCARD constexpr auto _Unwrapped() && requires _Wrapped && _Unwrappable_v<iterator_t<_Base_Ty>> {
+            _NODISCARD constexpr auto _Unwrapped() && requires _Wrapped && _Unwrappable_v<iterator_t<_Base_t>> {
                 // clang-format on
                 return _Sentinel<_Const, false>{_Get_unwrapped(_STD move(_Last)), _Pred};
             }
 
-            static constexpr bool _Unwrap_when_unverified = _Do_unwrap_when_unverified_v<iterator_t<_Base_Ty>>;
+            static constexpr bool _Unwrap_when_unverified = _Do_unwrap_when_unverified_v<iterator_t<_Base_t>>;
 
             constexpr void _Seek_to(const _Sentinel<_Const, false>& _That) requires _Wrapped {
                 _Seek_wrapped(_Last, _That._Last);
