@@ -274,7 +274,7 @@ namespace pmr {
         }
 
         template <class _Uty>
-        _CXX20_DEPRECATE_POLYMORPHIC_ALLOCATOR_DESTROY void destroy(_Uty* const _Ptr) noexcept /* strengthened */ {
+        _CXX17_DEPRECATE_POLYMORPHIC_ALLOCATOR_DESTROY void destroy(_Uty* const _Ptr) noexcept /* strengthened */ {
             _Destroy_in_place(*_Ptr);
         }
 
