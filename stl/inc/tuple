@@ -153,6 +153,11 @@ struct _Ignore { // struct that ignores assignments
 
 _INLINE_VAR constexpr _Ignore ignore{};
 
+// Note: To improve throughput, this file uses extra _STD qualification for names that appear in the
+// arguments of enable_if_t. Specifically, we qualify names which appear anywhere in the STL as members of
+// some class - including injected-class-names! - that we know are not members of the class being defined.
+// This avoids pointless class-member lookup for those names in this context.
+
 // STRUCT TEMPLATE _Tuple_val
 template <class _Ty>
 struct _Tuple_val { // stores each value in a tuple
@@ -165,15 +170,15 @@ struct _Tuple_val { // stores each value in a tuple
     constexpr _Tuple_val(const _Alloc&, allocator_arg_t, _Other&&... _Arg) : _Val(_STD forward<_Other>(_Arg)...) {}
 
     template <class _Alloc, class... _Other,
-        enable_if_t<conjunction_v<uses_allocator<_Ty, _Alloc>,
-                        is_constructible<_Ty, allocator_arg_t, const _Alloc&, _Other...>>,
+        enable_if_t<conjunction_v<_STD uses_allocator<_Ty, _Alloc>,
+                        _STD is_constructible<_Ty, _STD allocator_arg_t, const _Alloc&, _Other...>>,
             int> = 0>
     constexpr _Tuple_val(const _Alloc& _Al, allocator_arg_t, _Other&&... _Arg)
         : _Val(allocator_arg, _Al, _STD forward<_Other>(_Arg)...) {}
 
     template <class _Alloc, class... _Other,
-        enable_if_t<conjunction_v<uses_allocator<_Ty, _Alloc>,
-                        negation<is_constructible<_Ty, allocator_arg_t, const _Alloc&, _Other...>>>,
+        enable_if_t<conjunction_v<_STD uses_allocator<_Ty, _Alloc>,
+                        _STD negation<_STD is_constructible<_Ty, _STD allocator_arg_t, const _Alloc&, _Other...>>>,
             int> = 0>
     constexpr _Tuple_val(const _Alloc& _Al, allocator_arg_t, _Other&&... _Arg)
         : _Val(_STD forward<_Other>(_Arg)..., _Al) {}
@@ -214,10 +219,10 @@ public:
     template <class _Alloc>
     _CONSTEXPR20 tuple(allocator_arg_t, const _Alloc&, const tuple&) noexcept /* strengthened */ {}
 
-    template <class _Tag, enable_if_t<is_same_v<_Tag, _Exact_args_t>, int> = 0>
+    template <class _Tag, enable_if_t<is_same_v<_Tag, _STD _Exact_args_t>, int> = 0>
     constexpr tuple(_Tag) noexcept /* strengthened */ {}
 
-    template <class _Tag, class _Alloc, enable_if_t<is_same_v<_Tag, _Alloc_exact_args_t>, int> = 0>
+    template <class _Tag, class _Alloc, enable_if_t<is_same_v<_Tag, _STD _Alloc_exact_args_t>, int> = 0>
     constexpr tuple(_Tag, const _Alloc&) noexcept /* strengthened */ {}
 
     constexpr tuple& operator=(const tuple&) = default;
@@ -239,36 +244,37 @@ public:
     using _This_type = _This;
     using _Mybase    = tuple<_Rest...>;
 
-    template <class _Tag, class _This2, class... _Rest2, enable_if_t<is_same_v<_Tag, _Exact_args_t>, int> = 0>
+    template <class _Tag, class _This2, class... _Rest2, enable_if_t<is_same_v<_Tag, _STD _Exact_args_t>, int> = 0>
     constexpr tuple(_Tag, _This2&& _This_arg, _Rest2&&... _Rest_arg)
         : _Mybase(_Exact_args_t{}, _STD forward<_Rest2>(_Rest_arg)...), _Myfirst(_STD forward<_This2>(_This_arg)) {}
 
-    template <class _Tag, class _Tpl, size_t... _Indices, enable_if_t<is_same_v<_Tag, _Unpack_tuple_t>, int> = 0>
+    template <class _Tag, class _Tpl, size_t... _Indices, enable_if_t<is_same_v<_Tag, _STD _Unpack_tuple_t>, int> = 0>
     constexpr tuple(_Tag, _Tpl&& _Right, index_sequence<_Indices...>);
 
-    template <class _Tag, class _Tpl, enable_if_t<is_same_v<_Tag, _Unpack_tuple_t>, int> = 0>
+    template <class _Tag, class _Tpl, enable_if_t<is_same_v<_Tag, _STD _Unpack_tuple_t>, int> = 0>
     constexpr tuple(_Tag, _Tpl&& _Right)
         : tuple(_Unpack_tuple_t{}, _STD forward<_Tpl>(_Right),
             make_index_sequence<tuple_size_v<remove_reference_t<_Tpl>>>{}) {}
 
     template <class _Tag, class _Alloc, class _This2, class... _Rest2,
-        enable_if_t<is_same_v<_Tag, _Alloc_exact_args_t>, int> = 0>
+        enable_if_t<is_same_v<_Tag, _STD _Alloc_exact_args_t>, int> = 0>
     constexpr tuple(_Tag, const _Alloc& _Al, _This2&& _This_arg, _Rest2&&... _Rest_arg)
         : _Mybase(_Alloc_exact_args_t{}, _Al, _STD forward<_Rest2>(_Rest_arg)...),
           _Myfirst(_Al, allocator_arg, _STD forward<_This2>(_This_arg)) {}
 
     template <class _Tag, class _Alloc, class _Tpl, size_t... _Indices,
-        enable_if_t<is_same_v<_Tag, _Alloc_unpack_tuple_t>, int> = 0>
+        enable_if_t<is_same_v<_Tag, _STD _Alloc_unpack_tuple_t>, int> = 0>
     constexpr tuple(_Tag, const _Alloc& _Al, _Tpl&& _Right, index_sequence<_Indices...>);
 
-    template <class _Tag, class _Alloc, class _Tpl, enable_if_t<is_same_v<_Tag, _Alloc_unpack_tuple_t>, int> = 0>
+    template <class _Tag, class _Alloc, class _Tpl, enable_if_t<is_same_v<_Tag, _STD _Alloc_unpack_tuple_t>, int> = 0>
     constexpr tuple(_Tag, const _Alloc& _Al, _Tpl&& _Right)
         : tuple(_Alloc_unpack_tuple_t{}, _Al, _STD forward<_Tpl>(_Right),
             make_index_sequence<tuple_size_v<remove_reference_t<_Tpl>>>{}) {}
 
 #if _HAS_CONDITIONAL_EXPLICIT
-    template <class _This2                                                                                    = _This,
-        enable_if_t<conjunction_v<is_default_constructible<_This2>, is_default_constructible<_Rest>...>, int> = 0>
+    template <class _This2 = _This,
+        enable_if_t<conjunction_v<_STD is_default_constructible<_This2>, _STD is_default_constructible<_Rest>...>,
+            int>           = 0>
     constexpr explicit(
         !conjunction_v<_Is_implicitly_default_constructible<_This2>, _Is_implicitly_default_constructible<_Rest>...>)
         tuple() noexcept(conjunction_v<is_nothrow_default_constructible<_This2>,
@@ -317,8 +323,8 @@ public:
 
 #if _HAS_CONDITIONAL_EXPLICIT
     template <class _This2, class... _Rest2,
-        enable_if_t<conjunction_v<_Tuple_perfect_val<tuple, _This2, _Rest2...>,
-                        _Tuple_constructible_val<tuple, _This2, _Rest2...>>,
+        enable_if_t<conjunction_v<_STD _Tuple_perfect_val<tuple, _This2, _Rest2...>,
+                        _STD _Tuple_constructible_val<tuple, _This2, _Rest2...>>,
             int> = 0>
     constexpr explicit(_Tuple_conditional_explicit_v<tuple, _This2, _Rest2...>) tuple(_This2&& _This_arg,
         _Rest2&&... _Rest_arg) noexcept(_Tuple_nothrow_constructible_v<tuple, _This2, _Rest2...>) // strengthened
@@ -345,8 +351,8 @@ public:
     tuple(tuple&&)      = default;
 
 #if _HAS_CONDITIONAL_EXPLICIT
-    template <class... _Other, enable_if_t<conjunction_v<_Tuple_constructible_val<tuple, const _Other&...>,
-                                               _Tuple_convert_copy_val<tuple, _Other...>>,
+    template <class... _Other, enable_if_t<conjunction_v<_STD _Tuple_constructible_val<tuple, const _Other&...>,
+                                               _STD _Tuple_convert_copy_val<tuple, _Other...>>,
                                    int> = 0>
     constexpr explicit(_Tuple_conditional_explicit_v<tuple, const _Other&...>)
         tuple(const tuple<_Other...>& _Right) noexcept(
@@ -369,8 +375,8 @@ public:
 #endif // ^^^ !_HAS_CONDITIONAL_EXPLICIT ^^^
 
 #if _HAS_CONDITIONAL_EXPLICIT
-    template <class... _Other, enable_if_t<conjunction_v<_Tuple_constructible_val<tuple, _Other...>,
-                                               _Tuple_convert_move_val<tuple, _Other...>>,
+    template <class... _Other, enable_if_t<conjunction_v<_STD _Tuple_constructible_val<tuple, _Other...>,
+                                               _STD _Tuple_convert_move_val<tuple, _Other...>>,
                                    int> = 0>
     constexpr explicit(_Tuple_conditional_explicit_v<tuple, _Other...>)
         tuple(tuple<_Other...>&& _Right) noexcept(_Tuple_nothrow_constructible_v<tuple, _Other...>) // strengthened
@@ -431,7 +437,8 @@ public:
 
 #if _HAS_CONDITIONAL_EXPLICIT
     template <class _Alloc, class _This2 = _This,
-        enable_if_t<conjunction_v<is_default_constructible<_This2>, is_default_constructible<_Rest>...>, int> = 0>
+        enable_if_t<conjunction_v<_STD is_default_constructible<_This2>, _STD is_default_constructible<_Rest>...>,
+            int> = 0>
     _CONSTEXPR20 explicit(
         !conjunction_v<_Is_implicitly_default_constructible<_This2>, _Is_implicitly_default_constructible<_Rest>...>)
         tuple(allocator_arg_t, const _Alloc& _Al)
@@ -473,8 +480,8 @@ public:
 
 #if _HAS_CONDITIONAL_EXPLICIT
     template <class _Alloc, class _This2, class... _Rest2,
-        enable_if_t<conjunction_v<_Tuple_perfect_val<tuple, _This2, _Rest2...>,
-                        _Tuple_constructible_val<tuple, _This2, _Rest2...>>,
+        enable_if_t<conjunction_v<_STD _Tuple_perfect_val<tuple, _This2, _Rest2...>,
+                        _STD _Tuple_constructible_val<tuple, _This2, _Rest2...>>,
             int> = 0>
     _CONSTEXPR20 explicit(_Tuple_conditional_explicit_v<tuple, _This2, _Rest2...>)
         tuple(allocator_arg_t, const _Alloc& _Al, _This2&& _This_arg, _Rest2&&... _Rest_arg)
@@ -506,8 +513,8 @@ public:
 
 #if _HAS_CONDITIONAL_EXPLICIT
     template <class _Alloc, class... _Other,
-        enable_if_t<
-            conjunction_v<_Tuple_constructible_val<tuple, const _Other&...>, _Tuple_convert_copy_val<tuple, _Other...>>,
+        enable_if_t<conjunction_v<_STD _Tuple_constructible_val<tuple, const _Other&...>,
+                        _STD _Tuple_convert_copy_val<tuple, _Other...>>,
             int> = 0>
     _CONSTEXPR20 explicit(_Tuple_conditional_explicit_v<tuple, const _Other&...>)
         tuple(allocator_arg_t, const _Alloc& _Al, const tuple<_Other...>& _Right)
@@ -530,9 +537,9 @@ public:
 
 #if _HAS_CONDITIONAL_EXPLICIT
     template <class _Alloc, class... _Other,
-        enable_if_t<
-            conjunction_v<_Tuple_constructible_val<tuple, _Other...>, _Tuple_convert_move_val<tuple, _Other...>>, int> =
-            0>
+        enable_if_t<conjunction_v<_STD _Tuple_constructible_val<tuple, _Other...>,
+                        _STD _Tuple_convert_move_val<tuple, _Other...>>,
+            int> = 0>
     _CONSTEXPR20 explicit(_Tuple_conditional_explicit_v<tuple, _Other...>)
         tuple(allocator_arg_t, const _Alloc& _Al, tuple<_Other...>&& _Right)
         : tuple(_Alloc_unpack_tuple_t{}, _Al, _STD move(_Right)) {}
@@ -589,8 +596,8 @@ public:
     tuple& operator=(const volatile tuple&) = delete;
 
     template <class _Myself = tuple, class _This2 = _This,
-        enable_if_t<conjunction_v<_Is_copy_assignable_no_precondition_check<_This2>,
-                        _Is_copy_assignable_no_precondition_check<_Rest>...>,
+        enable_if_t<conjunction_v<_STD _Is_copy_assignable_no_precondition_check<_This2>,
+                        _STD _Is_copy_assignable_no_precondition_check<_Rest>...>,
             int> = 0>
     _CONSTEXPR20 tuple& operator=(_Identity_t<const _Myself&> _Right) noexcept(
         conjunction_v<is_nothrow_copy_assignable<_This2>, is_nothrow_copy_assignable<_Rest>...>) /* strengthened */ {
@@ -600,8 +607,8 @@ public:
     }
 
     template <class _Myself = tuple, class _This2 = _This,
-        enable_if_t<conjunction_v<_Is_move_assignable_no_precondition_check<_This2>,
-                        _Is_move_assignable_no_precondition_check<_Rest>...>,
+        enable_if_t<conjunction_v<_STD _Is_move_assignable_no_precondition_check<_This2>,
+                        _STD _Is_move_assignable_no_precondition_check<_Rest>...>,
             int> = 0>
     _CONSTEXPR20 tuple& operator=(_Identity_t<_Myself&&> _Right) noexcept(
         conjunction_v<is_nothrow_move_assignable<_This2>, is_nothrow_move_assignable<_Rest>...>) {
@@ -610,8 +617,8 @@ public:
         return *this;
     }
 
-    template <class... _Other, enable_if_t<conjunction_v<negation<is_same<tuple, tuple<_Other...>>>,
-                                               _Tuple_assignable_val<tuple, const _Other&...>>,
+    template <class... _Other, enable_if_t<conjunction_v<_STD negation<_STD is_same<tuple, _STD tuple<_Other...>>>,
+                                               _STD _Tuple_assignable_val<tuple, const _Other&...>>,
                                    int> = 0>
     _CONSTEXPR20 tuple& operator=(const tuple<_Other...>& _Right) noexcept(
         _Tuple_nothrow_assignable_v<tuple, const _Other&...>) /* strengthened */ {
@@ -620,9 +627,9 @@ public:
         return *this;
     }
 
-    template <class... _Other,
-        enable_if_t<conjunction_v<negation<is_same<tuple, tuple<_Other...>>>, _Tuple_assignable_val<tuple, _Other...>>,
-            int> = 0>
+    template <class... _Other, enable_if_t<conjunction_v<_STD negation<_STD is_same<tuple, _STD tuple<_Other...>>>,
+                                               _STD _Tuple_assignable_val<tuple, _Other...>>,
+                                   int> = 0>
     _CONSTEXPR20 tuple& operator=(tuple<_Other...>&& _Right) noexcept(
         _Tuple_nothrow_assignable_v<tuple, _Other...>) /* strengthened */ {
         _Myfirst._Val = _STD forward<typename tuple<_Other...>::_This_type>(_Right._Myfirst._Val);
@@ -752,7 +759,7 @@ _NODISCARD constexpr bool operator<=(const tuple<_Types1...>& _Left, const tuple
     return !(_Right < _Left);
 }
 
-template <class... _Types, enable_if_t<conjunction_v<_Is_swappable<_Types>...>, int> = 0>
+template <class... _Types, enable_if_t<conjunction_v<_STD _Is_swappable<_Types>...>, int> = 0>
 _CONSTEXPR20 void swap(tuple<_Types...>& _Left, tuple<_Types...>& _Right) noexcept(noexcept(_Left.swap(_Right))) {
     return _Left.swap(_Right);
 }
@@ -834,13 +841,13 @@ _NODISCARD constexpr const _Ty&& get(const tuple<_Types...>&& _Tuple) noexcept {
 
 // CONSTRUCTOR TEMPLATES FOR tuple
 template <class _This, class... _Rest>
-template <class _Tag, class _Tpl, size_t... _Indices, enable_if_t<is_same_v<_Tag, _Unpack_tuple_t>, int>>
+template <class _Tag, class _Tpl, size_t... _Indices, enable_if_t<is_same_v<_Tag, _STD _Unpack_tuple_t>, int>>
 constexpr tuple<_This, _Rest...>::tuple(_Tag, _Tpl&& _Right, index_sequence<_Indices...>)
     : tuple(_Exact_args_t{}, _STD get<_Indices>(_STD forward<_Tpl>(_Right))...) {}
 
 template <class _This, class... _Rest>
 template <class _Tag, class _Alloc, class _Tpl, size_t... _Indices,
-    enable_if_t<is_same_v<_Tag, _Alloc_unpack_tuple_t>, int>>
+    enable_if_t<is_same_v<_Tag, _STD _Alloc_unpack_tuple_t>, int>>
 constexpr tuple<_This, _Rest...>::tuple(_Tag, const _Alloc& _Al, _Tpl&& _Right, index_sequence<_Indices...>)
     : tuple(_Alloc_exact_args_t{}, _Al, _STD get<_Indices>(_STD forward<_Tpl>(_Right))...) {}
 
