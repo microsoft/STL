@@ -1416,6 +1416,18 @@ private:
     _MyPromiseType _MyPromise;
 };
 
+#if _HAS_CXX17
+#define _PACKAGED_TASK_DEDUCTION_GUIDE(CALL_OPT, X1, X2, X3) \
+    template <class _Ret, class... _Types>                   \
+    packaged_task(_Ret(CALL_OPT*)(_Types...)) -> packaged_task<_Ret(_Types...)>; // intentionally discards CALL_OPT
+
+_NON_MEMBER_CALL(_PACKAGED_TASK_DEDUCTION_GUIDE, X1, X2, X3)
+#undef _PACKAGED_TASK_DEDUCTION_GUIDE
+
+template <class _Fx>
+packaged_task(_Fx) -> packaged_task<typename _Deduce_signature<_Fx>::type>;
+#endif // _HAS_CXX17
+
 #if _HAS_FUNCTION_ALLOCATOR_SUPPORT
 template <class _Ty, class _Alloc>
 struct uses_allocator<packaged_task<_Ty>, _Alloc> : true_type {};

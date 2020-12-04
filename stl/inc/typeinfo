@@ -55,7 +55,7 @@ protected:
     }
 };
 
-class _CRTIMP2_IMPORT __non_rtti_object : public bad_typeid { // report a non RTTI object
+class _CRTIMP2_IMPORT __non_rtti_object : public bad_typeid { // report a non-RTTI object
 public:
     __non_rtti_object(const char* _Message) : bad_typeid(_Message) {}
 };

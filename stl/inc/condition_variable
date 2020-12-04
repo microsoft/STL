@@ -29,7 +29,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 template <class _Lock>
-struct _Unlock_guard {
+struct _NODISCARD _Unlock_guard {
     explicit _Unlock_guard(_Lock& _Mtx_) : _Mtx(_Mtx_) {
         _Mtx.unlock();
     }
