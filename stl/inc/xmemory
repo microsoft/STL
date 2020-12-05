@@ -25,7 +25,7 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 // STRUCT TEMPLATE _Tidy_guard
 template <class _Ty>
-struct _Tidy_guard { // class with destructor that calls _Tidy
+struct _NODISCARD _Tidy_guard { // class with destructor that calls _Tidy
     _Ty* _Target;
     ~_Tidy_guard() {
         if (_Target) {
@@ -36,7 +36,7 @@ struct _Tidy_guard { // class with destructor that calls _Tidy
 
 // STRUCT TEMPLATE _Tidy_deallocate_guard
 template <class _Ty>
-struct _Tidy_deallocate_guard { // class with destructor that calls _Tidy_deallocate
+struct _NODISCARD _Tidy_deallocate_guard { // class with destructor that calls _Tidy_deallocate
     _Ty* _Target;
     ~_Tidy_deallocate_guard() {
         if (_Target) {
@@ -226,7 +226,7 @@ void _Deallocate(void* _Ptr, size_t _Bytes) noexcept {
 // FUNCTION TEMPLATE _Global_new
 template <class _Ty, class... _Types>
 _Ty* _Global_new(_Types&&... _Args) { // acts as "new" while disallowing user overload selection
-    struct _Guard_type {
+    struct _NODISCARD _Guard_type {
         void* _Result;
         ~_Guard_type() {
             if (_Result) {
@@ -397,13 +397,15 @@ struct _Get_propagate_on_container_swap<_Ty, void_t<typename _Ty::propagate_on_c
 // STRUCT TEMPLATE _Get_is_always_equal
 template <class _Ty, class = void>
 struct _Get_is_always_equal {
-    using type = typename is_empty<_Ty>::type;
+    using type = bool_constant<is_empty_v<_Ty>>;
 };
 
+_STL_DISABLE_DEPRECATED_WARNING
 template <class _Ty>
 struct _Get_is_always_equal<_Ty, void_t<typename _Ty::is_always_equal>> {
     using type = typename _Ty::is_always_equal;
 };
+_STL_RESTORE_DEPRECATED_WARNING
 
 // STRUCT TEMPLATE _Get_rebind_type
 template <class _Ty, class _Other, class = void>
@@ -776,8 +778,8 @@ public:
     using size_type       = size_t;
     using difference_type = ptrdiff_t;
 
-    using propagate_on_container_move_assignment = true_type;
-    using is_always_equal                        = true_type;
+    using propagate_on_container_move_assignment                 = true_type;
+    using is_always_equal _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS = true_type;
 
     template <class _Other>
     struct _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS rebind {
@@ -838,8 +840,8 @@ public:
     using size_type       = size_t;
     using difference_type = ptrdiff_t;
 
-    using propagate_on_container_move_assignment = true_type;
-    using is_always_equal                        = true_type;
+    using propagate_on_container_move_assignment                 = true_type;
+    using is_always_equal _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS = true_type;
 
     template <class _Other>
     struct _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS rebind {
@@ -1413,7 +1415,8 @@ void _Return_temporary_buffer(_Ty* const _Pbuf) noexcept {
 
 // STRUCT TEMPLATE _Uninitialized_backout
 template <class _NoThrowFwdIt>
-struct _Uninitialized_backout { // struct to undo partially constructed ranges in _Uninitialized_xxx algorithms
+struct _NODISCARD _Uninitialized_backout {
+    // struct to undo partially constructed ranges in _Uninitialized_xxx algorithms
     _NoThrowFwdIt _First;
     _NoThrowFwdIt _Last;
 
@@ -1511,7 +1514,8 @@ _NoThrowFwdIt _Uninitialized_move_unchecked(_InIt _First, const _InIt _Last, _No
 
 // STRUCT TEMPLATE _Uninitialized_backout_al
 template <class _Alloc>
-class _Uninitialized_backout_al { // struct to undo partially constructed ranges in _Uninitialized_xxx_al algorithms
+class _NODISCARD _Uninitialized_backout_al {
+    // struct to undo partially constructed ranges in _Uninitialized_xxx_al algorithms
     using pointer = _Alloc_ptr_t<_Alloc>;
 
 public:

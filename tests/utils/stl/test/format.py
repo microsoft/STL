@@ -33,7 +33,11 @@ class TestStep:
 def _mergeEnvironments(currentEnv, otherEnv):
     """Merges two execution environments.
 
+<<<<<<< HEAD
     If both environments contain the PATH variables, they are also merged
+=======
+    If both environments contain PATH variables, they are also merged
+>>>>>>> e604b6c2ff7e425940264858dba2bc4bfd052b55
     using the proper separator.
     """
     resultEnv = dict(currentEnv)
@@ -104,28 +108,6 @@ class STLTestFormat:
                         yield testClass(testSuite, pathInSuite + (filename,),
                                         litConfig, localConfig, envEntry,
                                         formatString.format(envNum))
-
-    def _parseScript(self, test):
-        additionalCompileFlags = []
-        fileDependencies = []
-        parsers = [
-            lit.TestRunner.IntegratedTestKeywordParser('FILE_DEPENDENCIES:',
-                                                       lit.TestRunner.ParserKind.LIST,
-                                                       initial_value=fileDependencies),
-            lit.TestRunner.IntegratedTestKeywordParser('ADDITIONAL_COMPILE_FLAGS:',
-                                                       lit.TestRunner.ParserKind.LIST,
-                                                       initial_value=additionalCompileFlags)
-        ]
-
-        script = \
-            lit.TestRunner.parseIntegratedTestScript(test, additional_parsers=parsers, require_script=False)
-
-        if isinstance(script, lit.Test.Result):
-            test.result = script
-            return
-
-        test.compileFlags.extend(additionalCompileFlags)
-        test.fileDependencies.extend(fileDependencies)
 
     def getIsenseRspFileSteps(self, test, litConfig, shared):
         if litConfig.edg_drop is not None and test.isenseRspPath is not None:
@@ -268,12 +250,8 @@ class STLTestFormat:
 
     def execute(self, test, litConfig):
         try:
-            self._parseScript(test)
-            if test.result is not None:
-                # TRANSITION: Find a way to do this more cleanly.
-                # Lit asserts that the result has not already been set.
-                result = test.result
-                test.result = None
+            result = test.configureTest(litConfig)
+            if result:
                 return result
 
             if test.expectedResult and test.expectedResult.isFailure:

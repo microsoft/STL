@@ -14,7 +14,7 @@
 #endif // _M_CEE_PURE
 
 #include <chrono>
-#include <stdlib.h>
+#include <cstdlib>
 #include <system_error>
 #include <thread>
 #include <utility>
@@ -132,34 +132,35 @@ public:
     // CONSTRUCT, ASSIGN, AND DESTROY
     unique_lock() noexcept : _Pmtx(nullptr), _Owns(false) {}
 
-    explicit unique_lock(_Mutex& _Mtx) : _Pmtx(_STD addressof(_Mtx)), _Owns(false) { // construct and lock
+    _NODISCARD_CTOR explicit unique_lock(_Mutex& _Mtx)
+        : _Pmtx(_STD addressof(_Mtx)), _Owns(false) { // construct and lock
         _Pmtx->lock();
         _Owns = true;
     }
 
-    unique_lock(_Mutex& _Mtx, adopt_lock_t)
+    _NODISCARD_CTOR unique_lock(_Mutex& _Mtx, adopt_lock_t)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(true) {} // construct and assume already locked
 
     unique_lock(_Mutex& _Mtx, defer_lock_t) noexcept
         : _Pmtx(_STD addressof(_Mtx)), _Owns(false) {} // construct but don't lock
 
-    unique_lock(_Mutex& _Mtx, try_to_lock_t)
+    _NODISCARD_CTOR unique_lock(_Mutex& _Mtx, try_to_lock_t)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(_Pmtx->try_lock()) {} // construct and try to lock
 
     template <class _Rep, class _Period>
-    unique_lock(_Mutex& _Mtx, const chrono::duration<_Rep, _Period>& _Rel_time)
+    _NODISCARD_CTOR unique_lock(_Mutex& _Mtx, const chrono::duration<_Rep, _Period>& _Rel_time)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(_Pmtx->try_lock_for(_Rel_time)) {} // construct and lock with timeout
 
     template <class _Clock, class _Duration>
-    unique_lock(_Mutex& _Mtx, const chrono::time_point<_Clock, _Duration>& _Abs_time)
+    _NODISCARD_CTOR unique_lock(_Mutex& _Mtx, const chrono::time_point<_Clock, _Duration>& _Abs_time)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(_Pmtx->try_lock_until(_Abs_time)) {} // construct and lock with timeout
 
-    unique_lock(_Mutex& _Mtx, const xtime* _Abs_time)
+    _NODISCARD_CTOR unique_lock(_Mutex& _Mtx, const xtime* _Abs_time)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(false) { // try to lock until _Abs_time
         _Owns = _Pmtx->try_lock_until(_Abs_time);
     }
 
-    unique_lock(unique_lock&& _Other) noexcept : _Pmtx(_Other._Pmtx), _Owns(_Other._Owns) {
+    _NODISCARD_CTOR unique_lock(unique_lock&& _Other) noexcept : _Pmtx(_Other._Pmtx), _Owns(_Other._Owns) {
         _Other._Pmtx = nullptr;
         _Other._Owns = false;
     }
@@ -421,7 +422,7 @@ void lock(_Lock0& _Lk0, _Lock1& _Lk1, _LockN&... _LkN) { // lock multiple locks,
 
 // CLASS TEMPLATE lock_guard
 template <class _Mutex>
-class lock_guard { // class with destructor that unlocks a mutex
+class _NODISCARD lock_guard { // class with destructor that unlocks a mutex
 public:
     using mutex_type = _Mutex;
 
@@ -445,7 +446,7 @@ private:
 #if _HAS_CXX17
 // CLASS TEMPLATE scoped_lock
 template <class... _Mutexes>
-class scoped_lock { // class with destructor that unlocks mutexes
+class _NODISCARD scoped_lock { // class with destructor that unlocks mutexes
 public:
     explicit scoped_lock(_Mutexes&... _Mtxes) : _MyMutexes(_Mtxes...) { // construct and lock
         _STD lock(_Mtxes...);
@@ -465,7 +466,7 @@ private:
 };
 
 template <class _Mutex>
-class scoped_lock<_Mutex> {
+class _NODISCARD scoped_lock<_Mutex> {
 public:
     using mutex_type = _Mutex;
 

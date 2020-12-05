@@ -33,11 +33,10 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <UseMsvcrt>false</UseMsvcrt>
         <GenerateImportLib>true</GenerateImportLib>
         <RCIntermediateOutputDirectory>$(IntermediateOutputDirectory)</RCIntermediateOutputDirectory>
-        <IntermediateImportLibOutput>$(CrtBuildDir)\msvcprt_2$(BuildSuffix).$(MsvcpFlavor).import_only.lib</IntermediateImportLibOutput>
+        <IntermediateImportLibOutput>$(CrtBuildDirNative)\msvcprt_2$(BuildSuffix).$(MsvcpFlavor).import_only.lib</IntermediateImportLibOutput>
+        <IntermediateImportLibOutputA64X>$(CrtBuildDir)\msvcprt_2$(BuildSuffix).$(MsvcpFlavor).import_only.lib</IntermediateImportLibOutputA64X>
         <DllDefName>$(LibOutputFileName).$(MsvcpFlavor)</DllDefName>
         <DllDef>$(IntermediateOutputDirectory)\$(DllDefName).def</DllDef>
-        <DllDef Condition="'$(Arm64X)' == 'true'">$(IntermediateOutputDirectoryEC)\$(DllDefName).def</DllDef>
-        <DllDefArm64Native Condition="'$(Arm64X)' == 'true'">$(IntermediateOutputDirectory)\$(DllDefName).def</DllDefArm64Native>
 
         <LinkGenerateDebugInformation Condition="'$(BLD_REL_NO_DBINFO)' != '1'">true</LinkGenerateDebugInformation>
         <LinkProgramDataBaseFileName Condition="'$(BLD_REL_NO_DBINFO)' != '1'">$(OutputPath)\$(OutputName)$(_PDB_VER_NAME_)$(DllPdbFlavorSuffix)</LinkProgramDataBaseFileName>

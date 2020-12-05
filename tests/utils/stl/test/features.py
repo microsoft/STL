@@ -44,6 +44,14 @@ def getDefaultFeatures(config, litConfig):
 
     if litConfig.target_arch.casefold() == 'x86'.casefold():
         DEFAULT_FEATURES.append(Feature(name='edg'))
+        DEFAULT_FEATURES.append(Feature(name='arch_ia32'))
+        DEFAULT_FEATURES.append(Feature(name='arch_avx2'))
+
+    if litConfig.target_arch.casefold() == 'x64'.casefold():
+        DEFAULT_FEATURES.append(Feature(name='arch_avx2'))
+
+    if litConfig.target_arch.casefold() == 'arm'.casefold():
+        DEFAULT_FEATURES.append(Feature(name='arch_vfpv4'))
 
     if litConfig.is_kernel:
         DEFAULT_FEATURES.append(Feature(name='kernel'))

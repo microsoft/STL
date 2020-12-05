@@ -501,7 +501,7 @@ std/utilities/memory/allocator.traits/allocator.traits.members/destroy.pass.cpp 
 std/utilities/memory/allocator.traits/allocator.traits.members/max_size.pass.cpp FAIL
 std/utilities/memory/allocator.traits/allocator.traits.members/select_on_container_copy_construction.pass.cpp FAIL
 std/utilities/memory/default.allocator/allocator.globals/eq.pass.cpp FAIL
-std/utilities/memory/default.allocator/allocator.members/allocate.pass.cpp FAIL
+std/utilities/memory/default.allocator/allocator.members/allocate.pass.cpp:1 FAIL
 std/utilities/memory/specialized.algorithms/specialized.construct/construct_at.pass.cpp FAIL
 std/utilities/memory/specialized.algorithms/specialized.destroy/destroy.pass.cpp FAIL
 std/utilities/memory/specialized.algorithms/specialized.destroy/destroy_at.pass.cpp FAIL
@@ -569,9 +569,6 @@ std/localization/locale.categories/category.monetary/locale.moneypunct/money_bas
 # GH-1113 <fstream>: basic_filebuf doesn't comply with setbuf(0,0) requirement in the standard
 std/input.output/file.streams/fstreams/filebuf.virtuals/overflow.pass.cpp FAIL
 std/input.output/file.streams/fstreams/filebuf.virtuals/underflow.pass.cpp FAIL
-
-# GH-1004 <regex>: Error C2664 in std::regex_traits::transform
-std/re/re.traits/transform.pass.cpp FAIL
 
 # GH-1295 <array>: array<const T, 0> allows fill() and swap()
 std/containers/sequences/array/array.fill/fill.fail.cpp FAIL

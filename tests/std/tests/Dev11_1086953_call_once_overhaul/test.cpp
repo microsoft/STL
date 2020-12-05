@@ -52,17 +52,7 @@ void ThrowingFunc(int* const p) {
     }
 }
 
-// ***** Machinery to test the XP codepath: *****
-// extern "C" {
-//     extern void * __encodedKERNEL32Functions[40 /* eMaxKernel32Function */];
-//     extern uintptr_t __security_cookie;
-// }
-
 void run_tests() {
-
-    // ***** Machinery to test the XP codepath: *****
-    // __encodedKERNEL32Functions[5 /* eInitOnceExecuteOnce */] = reinterpret_cast<void *>(__security_cookie);
-
     // Basic check.
     {
         once_flag flag;

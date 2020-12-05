@@ -106,7 +106,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 
         static_assert(same_as<decltype(move(rng) | pipeline), R>);
         static_assert(noexcept(move(rng) | pipeline) == is_noexcept);
-    } else if constexpr (enable_borrowed_range<Rng>) {
+    } else if constexpr (enable_borrowed_range<remove_cvref_t<Rng>>) {
         using S                    = decltype(ranges::subrange{declval<Rng>()});
         using RS                   = reverse_view<S>;
         constexpr bool is_noexcept = noexcept(S{declval<Rng>()});
@@ -141,7 +141,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 
         static_assert(same_as<decltype(move(as_const(rng)) | pipeline), R>);
         static_assert(noexcept(move(as_const(rng)) | pipeline) == is_noexcept);
-    } else if constexpr (!is_view && enable_borrowed_range<const remove_cvref_t<Rng>>) {
+    } else if constexpr (!is_view && enable_borrowed_range<remove_cvref_t<Rng>>) {
         using S                    = decltype(ranges::subrange{declval<const remove_cvref_t<Rng>>()});
         using RS                   = reverse_view<S>;
         constexpr bool is_noexcept = noexcept(S{declval<const remove_cvref_t<Rng>>()});
@@ -160,9 +160,6 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // Validate deduction guide
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1159442
-    (void) 42;
-#endif // TRANSITION, DevCom-1159442
     same_as<R> auto r = reverse_view{forward<Rng>(rng)};
     assert(ranges::equal(r, expected));
 
@@ -294,9 +291,6 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // Validate reverse_view::base() && (NB: do this last since it leaves r moved-from)
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1159442
-    (void) 42;
-#endif // TRANSITION, DevCom-1159442
     same_as<V> auto b2 = move(r).base();
     static_assert(noexcept(move(r).base()) == is_nothrow_move_constructible_v<V>);
     if (!is_empty) {

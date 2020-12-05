@@ -1628,26 +1628,26 @@ void typeindex_test() {
 template <typename FunctorArg, typename Arg>
 void functors_test_impl(Arg val) {
     // Following from <xstddef>:
-    plus<FunctorArg>()(val, val);
-    minus<FunctorArg>()(val, val);
-    multiplies<FunctorArg>()(val, val);
-    equal_to<FunctorArg>()(val, val);
-    less<FunctorArg>()(val, val);
+    (void) plus<FunctorArg>()(val, val);
+    (void) minus<FunctorArg>()(val, val);
+    (void) multiplies<FunctorArg>()(val, val);
+    (void) equal_to<FunctorArg>()(val, val);
+    (void) less<FunctorArg>()(val, val);
 
-    divides<FunctorArg>()(val, val);
-    modulus<FunctorArg>()(val, val);
-    negate<FunctorArg>()(val);
-    not_equal_to<FunctorArg>()(val, val);
-    greater<FunctorArg>()(val, val);
-    greater_equal<FunctorArg>()(val, val);
-    less_equal<FunctorArg>()(val, val);
-    logical_and<FunctorArg>()(val, val);
-    logical_or<FunctorArg>()(val, val);
-    logical_not<FunctorArg>()(val);
-    bit_and<FunctorArg>()(val, val);
-    bit_or<FunctorArg>()(val, val);
-    bit_xor<FunctorArg>()(val, val);
-    bit_not<FunctorArg>()(val);
+    (void) divides<FunctorArg>()(val, val);
+    (void) modulus<FunctorArg>()(val, val);
+    (void) negate<FunctorArg>()(val);
+    (void) not_equal_to<FunctorArg>()(val, val);
+    (void) greater<FunctorArg>()(val, val);
+    (void) greater_equal<FunctorArg>()(val, val);
+    (void) less_equal<FunctorArg>()(val, val);
+    (void) logical_and<FunctorArg>()(val, val);
+    (void) logical_or<FunctorArg>()(val, val);
+    (void) logical_not<FunctorArg>()(val);
+    (void) bit_and<FunctorArg>()(val, val);
+    (void) bit_or<FunctorArg>()(val, val);
+    (void) bit_xor<FunctorArg>()(val, val);
+    (void) bit_not<FunctorArg>()(val);
 }
 
 int real_unary_function(int) {
@@ -1661,8 +1661,8 @@ int real_binary_function(int, int) {
 void xfunctional_test() {
     functors_test_impl<int>(5);
     functors_test_impl<void>(5);
-    not1(negate<int>())(5); // not1 requires T::second_argument_type
-    not2(less_equal<int>())(5, 5); // not2 requires T::second_argument_type
+    (void) not1(negate<int>())(5); // not1 requires T::second_argument_type
+    (void) not2(less_equal<int>())(5, 5); // not2 requires T::second_argument_type
 
 #if _HAS_AUTO_PTR_ETC
     auto b1 = bind1st(plus<int>(), 1);

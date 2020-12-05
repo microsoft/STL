@@ -85,7 +85,7 @@ private:
 
 public:
     template <class _Fn, class... _Args, enable_if_t<!is_same_v<_Remove_cvref_t<_Fn>, thread>, int> = 0>
-    explicit thread(_Fn&& _Fx, _Args&&... _Ax) {
+    _NODISCARD_CTOR explicit thread(_Fn&& _Fx, _Args&&... _Ax) {
         _Start(_STD forward<_Fn>(_Fx), _STD forward<_Args>(_Ax)...);
     }
 
@@ -282,7 +282,7 @@ public:
     jthread() noexcept : _Impl{}, _Ssource{nostopstate} {}
 
     template <class _Fn, class... _Args, enable_if_t<!is_same_v<remove_cvref_t<_Fn>, jthread>, int> = 0>
-    explicit jthread(_Fn&& _Fx, _Args&&... _Ax) {
+    _NODISCARD_CTOR explicit jthread(_Fn&& _Fx, _Args&&... _Ax) {
         if constexpr (is_invocable_v<decay_t<_Fn>, stop_token, decay_t<_Args>...>) {
             _Impl._Start(_STD forward<_Fn>(_Fx), _Ssource.get_token(), _STD forward<_Args>(_Ax)...);
         } else {

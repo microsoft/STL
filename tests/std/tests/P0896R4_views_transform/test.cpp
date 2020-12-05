@@ -241,17 +241,27 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     STATIC_ASSERT(CanMemberEnd<R>);
     STATIC_ASSERT(CanEnd<const R&> == (range<const V> && const_invocable));
     if (!is_empty) {
-        same_as<sentinel_t<R>> auto i = r.end();
+        same_as<sentinel_t<R>> auto s = r.end();
         static_assert(is_same_v<sentinel_t<R>, iterator_t<R>> == common_range<V>);
         if constexpr (bidirectional_range<R> && common_range<R>) {
-            assert(*prev(i) == *prev(end(expected)));
+            assert(*prev(s) == *prev(end(expected)));
         }
 
         if constexpr (CanEnd<const R&>) {
-            same_as<sentinel_t<const R>> auto i2 = as_const(r).end();
+            same_as<sentinel_t<const R>> auto sc = as_const(r).end();
             static_assert(is_same_v<sentinel_t<const R>, iterator_t<const R>> == common_range<const V>);
             if constexpr (bidirectional_range<const R> && common_range<const R>) {
-                assert(*prev(i2) == *prev(end(expected)));
+                assert(*prev(sc) == *prev(end(expected)));
+            }
+
+            if (forward_range<V>) { // intentionally not if constexpr
+                // Compare with const / non-const iterators
+                const same_as<iterator_t<R>> auto i        = r.begin();
+                const same_as<iterator_t<const R>> auto ic = as_const(r).begin();
+                assert(s != i);
+                assert(s != ic);
+                assert(sc != i);
+                assert(sc != ic);
             }
         }
     }
@@ -311,9 +321,6 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // Validate transform_view::base() && (NB: do this last since it leaves r moved-from)
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1159442
-    (void) 42;
-#endif // TRANSITION, DevCom-1159442
     if (forward_range<V>) { // intentionally not if constexpr
         same_as<V> auto b2 = move(r).base();
         STATIC_ASSERT(noexcept(move(r).base()) == is_nothrow_move_constructible_v<V>);
@@ -577,26 +584,54 @@ struct iterator_instantiator {
             const auto first = r.begin();
             const auto last  = r.end();
 
+            const auto const_first = ranges::iterator_t<const R>{first};
+            const auto const_last  = ranges::sentinel_t<const R>{last};
+
             assert(first == first);
             assert(I{} == I{});
             STATIC_ASSERT(noexcept(first == first));
+
+            assert(first == const_first);
+            STATIC_ASSERT(noexcept(first == const_first));
+            assert(const_first == first);
+            STATIC_ASSERT(noexcept(const_first == first));
 
             assert(!(first == last));
             STATIC_ASSERT(noexcept(first == last));
             assert(!(last == first));
             STATIC_ASSERT(noexcept(last == first));
 
+            assert(!(const_first == last));
+            STATIC_ASSERT(noexcept(const_first == last));
+            assert(!(last == const_first));
+            STATIC_ASSERT(noexcept(last == const_first));
+
+            assert(!(first == const_last));
+            STATIC_ASSERT(noexcept(first == const_last));
+            assert(!(const_last == first));
+            STATIC_ASSERT(noexcept(const_last == first));
+
             assert(!(first != first));
             assert(!(I{} != I{}));
             STATIC_ASSERT(noexcept(first != first));
 
             if constexpr (forward_iterator<Iter>) {
-                const auto final = ranges::next(first, last);
+                const auto final       = ranges::next(first, last);
+                const auto const_final = ranges::next(const_first, const_last);
                 assert(!(first == final));
                 assert(first != final);
 
                 assert(last == final);
                 assert(final == last);
+
+                assert(const_last == final);
+                assert(final == const_last);
+
+                assert(last == const_final);
+                assert(const_final == last);
+
+                assert(const_last == const_final);
+                assert(const_final == const_last);
 
                 assert(!(last != final));
                 assert(!(final != last));
@@ -614,6 +649,21 @@ struct iterator_instantiator {
                     assert(first - last == -ranges::ssize(mutable_ints));
                     STATIC_ASSERT(noexcept(last - first));
                     STATIC_ASSERT(noexcept(first - last));
+
+                    assert(last - const_first == ranges::ssize(mutable_ints));
+                    assert(const_first - last == -ranges::ssize(mutable_ints));
+                    STATIC_ASSERT(noexcept(last - const_first));
+                    STATIC_ASSERT(noexcept(const_first - last));
+
+                    assert(const_last - first == ranges::ssize(mutable_ints));
+                    assert(first - const_last == -ranges::ssize(mutable_ints));
+                    STATIC_ASSERT(noexcept(const_last - first));
+                    STATIC_ASSERT(noexcept(first - const_last));
+
+                    assert(const_last - const_first == ranges::ssize(mutable_ints));
+                    assert(const_first - const_last == -ranges::ssize(mutable_ints));
+                    STATIC_ASSERT(noexcept(const_last - const_first));
+                    STATIC_ASSERT(noexcept(const_first - const_last));
                 }
 
                 if constexpr (random_access_iterator<Iter>) { // Validate relational operators
@@ -710,4 +760,27 @@ int main() {
 
     STATIC_ASSERT((iterator_instantiation_test(), true));
     iterator_instantiation_test();
+
+    { // Validate **non-standard guarantee** that predicates are moved into the range adaptor closure, and into the view
+      // object from an rvalue closure
+        struct Fn {
+            Fn()     = default;
+            Fn(Fn&&) = default;
+            Fn(const Fn&) {
+                assert(false);
+            }
+            Fn& operator=(Fn&&) = default;
+
+            Fn& operator=(const Fn&) {
+                assert(false);
+                return *this;
+            }
+
+            bool operator()(int) const {
+                return true;
+            }
+        };
+
+        (void) views::transform(Fn{})(span<int>{});
+    }
 }

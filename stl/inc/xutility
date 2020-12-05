@@ -413,7 +413,7 @@ template <_Has_member_element_type _Ty>
 struct indirectly_readable_traits<_Ty> : _Cond_value_type<typename _Ty::element_type> {};
 
 // clang-format off
-template <_Has_member_value_type _Ty> // Per LWG-3446
+template <_Has_member_value_type _Ty>
     requires _Has_member_element_type<_Ty>
         && same_as<remove_cv_t<typename _Ty::value_type>, remove_cv_t<typename _Ty::element_type>>
 struct indirectly_readable_traits<_Ty> : _Cond_value_type<typename _Ty::value_type> {};
@@ -473,7 +473,7 @@ struct _Iter_traits_difference<false> {
 
 // clang-format off
 template <class _It>
-concept _Cpp17_iterator = // per LWG-3420
+concept _Cpp17_iterator =
     requires(_It __i) {
         { *__i } -> _Can_reference;
         { ++__i } -> same_as<_It&>;
@@ -698,9 +698,11 @@ namespace ranges {
             template <class _Ty>
                 requires (_Choice<_Ty>._Strategy != _St::_None)
             _NODISCARD constexpr decltype(auto) operator()(_Ty&& _Val) const noexcept(_Choice<_Ty>._No_throw) {
-                if constexpr (_Choice<_Ty>._Strategy == _St::_Custom) {
+                constexpr _St _Strat = _Choice<_Ty>._Strategy;
+
+                if constexpr (_Strat == _St::_Custom) {
                     return iter_move(static_cast<_Ty&&>(_Val));
-                } else if constexpr (_Choice<_Ty>._Strategy == _St::_Fallback) {
+                } else if constexpr (_Strat == _St::_Fallback) {
                     using _Ref = decltype(*static_cast<_Ty&&>(_Val));
                     if constexpr (is_lvalue_reference_v<_Ref>) {
                         return _STD move(*static_cast<_Ty&&>(_Val));
@@ -763,7 +765,7 @@ concept indirectly_writable = requires(_It&& __i, _Ty&& __t) {
 // CONCEPT _Integer_like
 // clang-format off
 template <class _Ty>
-concept _Integer_like = _Is_nonbool_integral<_Ty>; // per the proposed resolution of LWG-3467
+concept _Integer_like = _Is_nonbool_integral<_Ty>;
 
 // CONCEPT _Signed_integer_like
 template <class _Ty>
@@ -776,7 +778,7 @@ using _Make_unsigned_like_t = make_unsigned_t<_Ty>;
 
 // ALIAS TEMPLATE _Make_signed_like_t
 template <class _Ty>
-using _Make_signed_like_t = make_signed_t<_Ty>; // per the proposed resolution of LWG-3403
+using _Make_signed_like_t = make_signed_t<_Ty>;
 
 // CONCEPT weakly_incrementable
 // clang-format off
@@ -1085,11 +1087,13 @@ namespace ranges {
             template <class _Ty1, class _Ty2>
                 requires (_Choice<_Ty1, _Ty2>._Strategy != _St::_None)
             constexpr void operator()(_Ty1&& _Val1, _Ty2&& _Val2) const noexcept(_Choice<_Ty1, _Ty2>._No_throw) {
-                if constexpr (_Choice<_Ty1, _Ty2>._Strategy == _St::_Custom) {
+                constexpr _St _Strat = _Choice<_Ty1, _Ty2>._Strategy;
+
+                if constexpr (_Strat == _St::_Custom) {
                     iter_swap(static_cast<_Ty1&&>(_Val1), static_cast<_Ty2&&>(_Val2));
-                } else if constexpr (_Choice<_Ty1, _Ty2>._Strategy == _St::_Swap) {
+                } else if constexpr (_Strat == _St::_Swap) {
                     _RANGES swap(*static_cast<_Ty1&&>(_Val1), *static_cast<_Ty2&&>(_Val2));
-                } else if constexpr (_Choice<_Ty1, _Ty2>._Strategy == _St::_Exchange) {
+                } else if constexpr (_Strat == _St::_Exchange) {
                     *static_cast<_Ty1&&>(_Val1) =
                         _Iter_exchange_move(static_cast<_Ty2&&>(_Val2), static_cast<_Ty1&&>(_Val1));
                 } else {
@@ -1908,7 +1912,6 @@ public:
     // clang-format off
     template <class _Other>
 #ifdef __cpp_lib_concepts
-        // Per LWG-3435
         requires (!is_same_v<_Other, _BidIt>) && convertible_to<const _Other&, _BidIt>
 #endif // __cpp_lib_concepts
     _CONSTEXPR17 reverse_iterator(const reverse_iterator<_Other>& _Right) noexcept(
@@ -1917,7 +1920,6 @@ public:
 
     template <class _Other>
 #ifdef __cpp_lib_concepts
-        // Per LWG-3435
         requires (!is_same_v<_Other, _BidIt>) && convertible_to<const _Other&, _BidIt>
             && assignable_from<_BidIt&, const _Other&>
 #endif // __cpp_lib_concepts
@@ -2399,11 +2401,13 @@ namespace ranges {
             template <_Should_range_access _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
-                if constexpr (_Choice<_Ty&>._Strategy == _St::_Array) {
+                constexpr _St _Strat = _Choice<_Ty&>._Strategy;
+
+                if constexpr (_Strat == _St::_Array) {
                     return _Val;
-                } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Member) {
+                } else if constexpr (_Strat == _St::_Member) {
                     return _Val.begin();
-                } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Non_member) {
+                } else if constexpr (_Strat == _St::_Non_member) {
                     return begin(_Val);
                 } else {
                     static_assert(_Always_false<_Ty>, "Should be unreachable");
@@ -2462,9 +2466,11 @@ namespace ranges {
             template <_Should_range_access _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
-                if constexpr (_Choice<_Ty&>._Strategy == _St::_Member) {
+                constexpr _St _Strat = _Choice<_Ty&>._Strategy;
+
+                if constexpr (_Strat == _St::_Member) {
                     return _Val._Unchecked_begin();
-                } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Unwrap) {
+                } else if constexpr (_Strat == _St::_Unwrap) {
                     return _Get_unwrapped(_RANGES begin(_Val));
                 } else {
                     static_assert(_Always_false<_Ty>, "Should be unreachable");
@@ -2534,12 +2540,14 @@ namespace ranges {
             template <_Should_range_access _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
-                if constexpr (_Choice<_Ty&>._Strategy == _St::_Array) {
+                constexpr _St _Strat = _Choice<_Ty&>._Strategy;
+
+                if constexpr (_Strat == _St::_Array) {
                     // extent_v<remove_reference_t<_Ty&>> reuses specializations from _Choose
                     return _Val + extent_v<remove_reference_t<_Ty&>>;
-                } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Member) {
+                } else if constexpr (_Strat == _St::_Member) {
                     return _Val.end();
-                } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Non_member) {
+                } else if constexpr (_Strat == _St::_Non_member) {
                     return end(_Val);
                 } else {
                     static_assert(_Always_false<_Ty>, "should be unreachable");
@@ -2595,9 +2603,11 @@ namespace ranges {
             template <_Should_range_access _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
-                if constexpr (_Choice<_Ty&>._Strategy == _St::_Member) {
+                constexpr _St _Strat = _Choice<_Ty&>._Strategy;
+
+                if constexpr (_Strat == _St::_Member) {
                     return _Val._Unchecked_end();
-                } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Unwrap) {
+                } else if constexpr (_Strat == _St::_Unwrap) {
                     return _Get_unwrapped(_RANGES end(_Val));
                 } else {
                     static_assert(_Always_false<_Ty>, "Should be unreachable");
@@ -2730,11 +2740,13 @@ namespace ranges {
             template <_Should_range_access _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
-                if constexpr (_Choice<_Ty&>._Strategy == _St::_Member) {
+                constexpr _St _Strat = _Choice<_Ty&>._Strategy;
+
+                if constexpr (_Strat == _St::_Member) {
                     return _Val.rbegin();
-                } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Non_member) {
+                } else if constexpr (_Strat == _St::_Non_member) {
                     return rbegin(_Val);
-                } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Make_reverse) {
+                } else if constexpr (_Strat == _St::_Make_reverse) {
                     return _STD make_reverse_iterator(_RANGES end(_Val));
                 } else {
                     static_assert(_Always_false<_Ty>, "should be unreachable");
@@ -2801,11 +2813,13 @@ namespace ranges {
             template <_Should_range_access _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
-                if constexpr (_Choice<_Ty&>._Strategy == _St::_Member) {
+                constexpr _St _Strat = _Choice<_Ty&>._Strategy;
+
+                if constexpr (_Strat == _St::_Member) {
                     return _Val.rend();
-                } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Non_member) {
+                } else if constexpr (_Strat == _St::_Non_member) {
                     return rend(_Val);
-                } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Make_reverse) {
+                } else if constexpr (_Strat == _St::_Make_reverse) {
                     return _STD make_reverse_iterator(_RANGES begin(_Val));
                 } else {
                     static_assert(_Always_false<_Ty>, "should be unreachable");
@@ -2918,14 +2932,16 @@ namespace ranges {
             template <class _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
-                if constexpr (_Choice<_Ty&>._Strategy == _St::_Array) {
+                constexpr _St _Strat = _Choice<_Ty&>._Strategy;
+
+                if constexpr (_Strat == _St::_Array) {
                     // extent_v<remove_cvref_t<_Ty&>> reuses specializations from _Choose
                     return extent_v<remove_cvref_t<_Ty&>>;
-                } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Member) {
+                } else if constexpr (_Strat == _St::_Member) {
                     return _Val.size();
-                } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Non_member) {
+                } else if constexpr (_Strat == _St::_Non_member) {
                     return size(_Val);
-                } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Subtract) {
+                } else if constexpr (_Strat == _St::_Subtract) {
                     const auto _Delta = _RANGES end(_Val) - _RANGES begin(_Val);
                     return static_cast<_Make_unsigned_like_t<remove_cv_t<decltype(_Delta)>>>(_Delta);
                 } else {
@@ -2991,11 +3007,13 @@ namespace ranges {
             template <class _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
             _NODISCARD constexpr bool operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
-                if constexpr (_Choice<_Ty&>._Strategy == _St::_Member) {
+                constexpr _St _Strat = _Choice<_Ty&>._Strategy;
+
+                if constexpr (_Strat == _St::_Member) {
                     return static_cast<bool>(_Val.empty());
-                } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Size) {
+                } else if constexpr (_Strat == _St::_Size) {
                     return _RANGES size(_Val) == 0;
-                } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Compare) {
+                } else if constexpr (_Strat == _St::_Compare) {
                     return static_cast<bool>(_RANGES begin(_Val) == _RANGES end(_Val));
                 } else {
                     static_assert(_Always_false<_Ty>, "should be unreachable");
@@ -3051,9 +3069,11 @@ namespace ranges {
             template <_Should_range_access _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
-                if constexpr (_Choice<_Ty&>._Strategy == _St::_Member) {
+                constexpr _St _Strat = _Choice<_Ty&>._Strategy;
+
+                if constexpr (_Strat == _St::_Member) {
                     return _Val.data();
-                } else if constexpr (_Choice<_Ty&>._Strategy == _St::_Address) {
+                } else if constexpr (_Strat == _St::_Address) {
                     return _STD to_address(_RANGES begin(_Val));
                 } else {
                     static_assert(_Always_false<_Ty>, "should be unreachable");
@@ -3311,7 +3331,7 @@ namespace ranges {
     inline constexpr _Distance_fn distance{_Not_quite_object::_Construct_tag{}};
 
     // VARIABLE ranges::ssize
-    class _Ssize_fn { // Per the proposed resolution of LWG-3403
+    class _Ssize_fn {
     public:
         // clang-format off
         template <class _Rng>
@@ -3984,7 +4004,6 @@ public:
     // clang-format off
     template <class _Other>
 #ifdef __cpp_lib_concepts
-        // per LWG-3435
         requires (!is_same_v<_Other, _Iter>) && convertible_to<const _Other&, _Iter>
 #endif // __cpp_lib_concepts
     _CONSTEXPR17 move_iterator(const move_iterator<_Other>& _Right) noexcept(
@@ -3993,7 +4012,6 @@ public:
 
     template <class _Other>
 #ifdef __cpp_lib_concepts
-        // per LWG-3435
         requires (!is_same_v<_Other, _Iter>) && convertible_to<const _Other&, _Iter>
             && assignable_from<_Iter&, const _Other&>
 #endif // __cpp_lib_concepts
@@ -5466,7 +5484,8 @@ _NODISCARD constexpr bool _Within_limits(const _Ty& _Val, false_type, false_type
 template <class _InIt, class _Ty>
 _NODISCARD constexpr bool _Within_limits(_InIt, const _Ty& _Val) { // check whether _Val is within the limits of _Elem
     using _Elem = remove_pointer_t<_InIt>;
-    return _Within_limits(_Val, is_signed<_Elem>{}, is_signed<_Ty>{}, bool_constant<-1 == static_cast<_Ty>(-1)>{});
+    return _Within_limits(_Val, bool_constant<is_signed_v<_Elem>>{}, bool_constant<is_signed_v<_Ty>>{},
+        bool_constant<-1 == static_cast<_Ty>(-1)>{});
 }
 
 template <class _InIt>
@@ -5882,6 +5901,54 @@ namespace ranges {
     };
 
     inline constexpr _Find_if_fn find_if{_Not_quite_object::_Construct_tag{}};
+
+    // VARIABLE ranges::find_if_not
+    class _Find_if_not_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <input_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
+            indirect_unary_predicate<projected<_It, _Pj>> _Pr>
+        _NODISCARD constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Last);
+
+            auto _UResult = _Find_if_not_unchecked(
+                _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _Pass_fn(_Pred), _Pass_fn(_Proj));
+
+            _Seek_wrapped(_First, _STD move(_UResult));
+            return _First;
+        }
+
+        template <input_range _Rng, class _Pj = identity,
+            indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
+        _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
+            auto _First = _RANGES begin(_Range);
+
+            auto _UResult = _Find_if_not_unchecked(
+                _Get_unwrapped(_STD move(_First)), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+
+            _Seek_wrapped(_First, _STD move(_UResult));
+            return _First;
+        }
+
+    private:
+        template <class _It, class _Se, class _Pj, class _Pr>
+        _NODISCARD static constexpr _It _Find_if_not_unchecked(_It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(indirect_unary_predicate<_Pr, projected<_It, _Pj>>);
+
+            for (; _First != _Last; ++_First) {
+                if (!_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
+                    break;
+                }
+            }
+
+            return _First;
+        }
+    };
+
+    inline constexpr _Find_if_not_fn find_if_not{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
@@ -6052,49 +6119,61 @@ struct _CXX17_DEPRECATE_ITERATOR_BASE_CLASS iterator { // base type for iterator
     using reference         = _Reference;
 };
 
-// STRUCT TEMPLATE _Float_traits
-template <class _Ty>
-struct _Float_traits {
-    static_assert(is_floating_point_v<_Ty>, "_Float_traits<NonFloatingPoint> is invalid");
-
-    // traits for double and long double:
-    using type = unsigned long long;
-
-    static constexpr type _Magnitude_mask = 0x7fff'ffff'ffff'ffffULL;
-    static constexpr type _Exponent_mask  = 0x7ff0'0000'0000'0000ULL;
-};
-
-template <>
-struct _Float_traits<float> {
-    using type = unsigned int;
-
-    static constexpr type _Magnitude_mask = 0x7fff'ffffU;
-    static constexpr type _Exponent_mask  = 0x7f80'0000U;
-};
-
 // FUNCTION TEMPLATE _Float_abs_bits
 template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR_BIT_CAST auto _Float_abs_bits(const _Ty& _Xx) {
-    const auto _Bits = _Bit_cast<typename _Float_traits<_Ty>::type>(_Xx);
-    return _Bits & _Float_traits<_Ty>::_Magnitude_mask;
+    using _Traits    = _Floating_type_traits<_Ty>;
+    using _Uint_type = typename _Traits::_Uint_type;
+    const auto _Bits = _Bit_cast<_Uint_type>(_Xx);
+    return _Bits & ~_Traits::_Shifted_sign_mask;
 }
 
 // FUNCTION TEMPLATE _Float_abs
 template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
-_NODISCARD _CONSTEXPR_BIT_CAST _Ty _Float_abs(const _Ty _Xx) { // constexpr floating point abs()
+_NODISCARD _CONSTEXPR_BIT_CAST _Ty _Float_abs(const _Ty _Xx) { // constexpr floating-point abs()
     return _Bit_cast<_Ty>(_Float_abs_bits(_Xx));
+}
+
+// FUNCTION TEMPLATE _Float_copysign
+template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
+_NODISCARD _CONSTEXPR_BIT_CAST _Ty _Float_copysign(const _Ty _Magnitude, const _Ty _Sign) { // constexpr copysign()
+    using _Traits       = _Floating_type_traits<_Ty>;
+    using _Uint_type    = typename _Traits::_Uint_type;
+    const auto _Signbit = _Bit_cast<_Uint_type>(_Sign) & _Traits::_Shifted_sign_mask;
+    return _Bit_cast<_Ty>(_Float_abs_bits(_Magnitude) | _Signbit);
 }
 
 // FUNCTION TEMPLATE _Is_nan
 template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR_BIT_CAST bool _Is_nan(const _Ty _Xx) { // constexpr isnan()
-    return _Float_abs_bits(_Xx) > _Float_traits<_Ty>::_Exponent_mask;
+    using _Traits = _Floating_type_traits<_Ty>;
+    return _Float_abs_bits(_Xx) > _Traits::_Shifted_exponent_mask;
+}
+
+// FUNCTION TEMPLATE _Is_signaling_nan
+// TRANSITION, workaround x86 ABI
+// On x86 ABI, floating-point by-value arguments and return values are passed in 80-bit x87 registers.
+// When the value is a 32-bit or 64-bit signaling NaN, the conversion to/from 80-bit raises FE_INVALID
+// and turns it into a quiet NaN. This behavior is undesirable if we want to test for signaling NaNs.
+template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
+_NODISCARD _CONSTEXPR_BIT_CAST bool _Is_signaling_nan(const _Ty& _Xx) { // returns true if input is a signaling NaN
+    using _Traits        = _Floating_type_traits<_Ty>;
+    const auto _Abs_bits = _Float_abs_bits(_Xx);
+    return _Abs_bits > _Traits::_Shifted_exponent_mask && ((_Abs_bits & _Traits::_Special_nan_mantissa_mask) == 0);
+}
+
+// FUNCTION TEMPLATE _Is_inf
+template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
+_NODISCARD _CONSTEXPR_BIT_CAST bool _Is_inf(const _Ty _Xx) { // constexpr isinf()
+    using _Traits = _Floating_type_traits<_Ty>;
+    return _Float_abs_bits(_Xx) == _Traits::_Shifted_exponent_mask;
 }
 
 // FUNCTION TEMPLATE _Is_finite
 template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR_BIT_CAST bool _Is_finite(const _Ty _Xx) { // constexpr isfinite()
-    return _Float_abs_bits(_Xx) < _Float_traits<_Ty>::_Exponent_mask;
+    using _Traits = _Floating_type_traits<_Ty>;
+    return _Float_abs_bits(_Xx) < _Traits::_Shifted_exponent_mask;
 }
 
 // STRUCT _Nontrivial_dummy_type
@@ -6106,7 +6185,6 @@ struct _Nontrivial_dummy_type {
 _STL_INTERNAL_STATIC_ASSERT(!is_trivially_default_constructible_v<_Nontrivial_dummy_type>);
 
 _STD_END
-#undef _CONSTEXPR_BIT_CAST
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)

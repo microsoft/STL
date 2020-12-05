@@ -98,12 +98,19 @@ STATIC_ASSERT(test_cpo(ranges::data));
 STATIC_ASSERT(test_cpo(ranges::cdata));
 
 STATIC_ASSERT(test_cpo(ranges::views::all));
+STATIC_ASSERT(test_cpo(ranges::views::common));
+STATIC_ASSERT(test_cpo(ranges::views::counted));
 STATIC_ASSERT(test_cpo(ranges::views::drop));
+STATIC_ASSERT(test_cpo(ranges::views::drop_while));
+STATIC_ASSERT(test_cpo(ranges::views::elements<42>));
 STATIC_ASSERT(test_cpo(ranges::views::filter));
+STATIC_ASSERT(test_cpo(ranges::views::keys));
 STATIC_ASSERT(test_cpo(ranges::views::reverse));
 STATIC_ASSERT(test_cpo(ranges::views::single));
 STATIC_ASSERT(test_cpo(ranges::views::take));
+STATIC_ASSERT(test_cpo(ranges::views::take_while));
 STATIC_ASSERT(test_cpo(ranges::views::transform));
+STATIC_ASSERT(test_cpo(ranges::views::values));
 
 void test_cpo_ambiguity() {
     using namespace std::ranges;
@@ -1491,8 +1498,8 @@ namespace borrowed_range_testing {
     STATIC_ASSERT(test_borrowed_range<std::span<int>, std::span<int>::iterator>());
     STATIC_ASSERT(test_borrowed_range<std::span<int, 42>, std::span<int, 42>::iterator>());
     STATIC_ASSERT(test_borrowed_range<ranges::subrange<int*, int*>, int*>());
-#if 0 // TRANSITION, future
     STATIC_ASSERT(test_borrowed_range<ranges::ref_view<int[42]>, int*>());
+#if 0 // TRANSITION, future
     STATIC_ASSERT(test_borrowed_range<ranges::iota_view<int, int>, ...>());
 #endif // TRANSITION, future
 

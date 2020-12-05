@@ -33,7 +33,8 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <UseMsvcrt>false</UseMsvcrt>
         <GenerateImportLib>true</GenerateImportLib>
         <RCIntermediateOutputDirectory>$(IntermediateOutputDirectory)</RCIntermediateOutputDirectory>
-        <IntermediateImportLibOutput>$(CrtBuildDir)\msvcprt$(BuildSuffix)_codecvt_ids.$(MsvcpFlavor).import_only.lib</IntermediateImportLibOutput>
+        <IntermediateImportLibOutput>$(CrtBuildDirNative)\msvcprt$(BuildSuffix)_codecvt_ids.$(MsvcpFlavor).import_only.lib</IntermediateImportLibOutput>
+        <IntermediateImportLibOutputA64X>$(CrtBuildDir)\msvcprt$(BuildSuffix)_codecvt_ids.$(MsvcpFlavor).import_only.lib</IntermediateImportLibOutputA64X>
         <DllDefName>$(LibOutputFileName).$(MsvcpFlavor)</DllDefName>
         <DllDef>$(IntermediateOutputDirectory)\$(DllDefName).def</DllDef>
 
@@ -48,11 +49,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
         <LinkGenerateMapFile>true</LinkGenerateMapFile>
         <LinkRelease>true</LinkRelease>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="'$(Arm64X)' == 'true' and '$(TargetNetFx)' != 'true'">
-        <DllDef>$(IntermediateOutputDirectoryEC)\$(DllDefName).def</DllDef>
-        <DllDefArm64Native>$(IntermediateOutputDirectory)\$(DllDefName).def</DllDefArm64Native>
     </PropertyGroup>
 
     <ItemGroup>
@@ -73,11 +69,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <TargetLib Include="$(CrtLibPath)\msvcrt$(BuildSuffix)$(ClrLibSuffix).lib"/>
         <TargetLib Include="$(CrtLibPath)\vcruntime$(BuildSuffix)$(ClrLibSuffix).lib"/>
         <TargetLib Include="$(UniversalCRTLib)"/>
-    </ItemGroup>
-
-    <ItemGroup Condition="'$(Arm64X)' == 'true' and '$(TargetNetFx)' != 'true'">
-        <ImportLib Include="$(IntermediateOutputDirectoryEC)\ulocale.obj" />
-        <Link Include="$(IntermediateOutputDirectoryEC)\ulocale.obj" />
     </ItemGroup>
 
     <!-- Copy the output dll and pdb to various destinations -->

@@ -30,27 +30,69 @@ class TestType(Flag):
 
 
 class STLTest(Test):
-    # TRANSITION: A lot of the members of this class could be computed at execution time to minimize the transmitted
-    # size of the class.
-    def __init__(self, suite, pathInSuite, litConfig, testConfig,
-                 envlstEntry, envNum):
+    def __init__(self, suite, pathInSuite, litConfig, testConfig, envlstEntry, envNum):
+        self.envNum = envNum
+        self.envlstEntry = envlstEntry
+        Test.__init__(self, suite, pathInSuite, testConfig, None)
+
+    def configureTest(self, litConfig):
         self.compileFlags = []
         self.cxx = None
-        self.envNum = envNum
         self.fileDependencies = []
         self.flags = []
         self.isenseRspPath = None
         self.linkFlags = []
         self.testType = None
-        Test.__init__(self, suite, pathInSuite, copy.deepcopy(testConfig), None)
 
-        self._configureExpectedResult(suite, litConfig)
-        if self.result:
-            return
+        result = self._configureExpectedResult(litConfig)
+        if result:
+            return result
 
-        self._handleEnvlst(litConfig, envlstEntry)
+        self._handleEnvlst(litConfig)
+        self._parseTest()
+        self._parseFlags()
+
+        missing_required_features = self.getMissingRequiredFeatures()
+        if missing_required_features:
+            msg = ', '.join(missing_required_features)
+            return Result(UNSUPPORTED, "Test requires the following unavailable features: %s" % msg)
+
+        unsupported_features = self.getUnsupportedFeatures()
+        if unsupported_features:
+            msg = ', '.join(unsupported_features)
+            return Result(UNSUPPORTED, "Test does not support the following features and/or targets: %s" % msg)
+
+        if not self.isWithinFeatureLimits():
+            msg = ', '.join(self.config.limit_to_features)
+            return Result(UNSUPPORTED, "Test does not require any of the features specified in limit_to_features: %s" %
+                          msg)
+
+        if 'edg_drop' in self.config.available_features:
+            if not 'edg' in self.requires:
+                return Result(UNSUPPORTED, 'We only run /BE tests with the edg drop')
+
+            _, tmpBase = self.getTempPaths()
+            self.isenseRspPath = tmpBase + '.isense.rsp'
+            self.compileFlags.extend(['/dE--write-isense-rsp', '/dE' + self.isenseRspPath])
+
         self._configureTestType()
-        _, tmpBase = self.getTempPaths()
+        return None
+
+    def _parseTest(self):
+        additionalCompileFlags = []
+        fileDependencies = []
+        parsers = [
+            lit.TestRunner.IntegratedTestKeywordParser('FILE_DEPENDENCIES:',
+                                                       lit.TestRunner.ParserKind.LIST,
+                                                       initial_value=fileDependencies),
+            lit.TestRunner.IntegratedTestKeywordParser('ADDITIONAL_COMPILE_FLAGS:',
+                                                       lit.TestRunner.ParserKind.LIST,
+                                                       initial_value=additionalCompileFlags)
+        ]
+
+        lit.TestRunner.parseIntegratedTestScript(self, additional_parsers=parsers, require_script=False)
+        self.compileFlags.extend(additionalCompileFlags)
+        self.fileDependencies.extend(fileDependencies)
 
     def _configureTestType(self):
         self.testType = TestType.UNKNOWN
@@ -65,7 +107,7 @@ class STLTest(Test):
 
         shortenedFlags = [flag[1:] for flag in chain(self.flags, self.compileFlags, self.linkFlags)]
         if 'analyze:only' in shortenedFlags or 'c' in shortenedFlags or \
-                filename.endswith(('.compile.pass.cpp', 'compile.fail.cpp')):
+                filename.endswith(('.compile.pass.cpp', '.compile.fail.cpp')):
             self.testType = self.testType | TestType.COMPILE
         elif filename.endswith(('.link.pass.cpp', '.link.fail.cpp')):
             self.testType = self.testType | TestType.LINK
@@ -99,7 +141,7 @@ class STLTest(Test):
         tmpBase = os.path.join(tmpDir, self.path_in_suite[-2])
         return tmpDir, os.path.normpath(tmpBase)
 
-    def _configureExpectedResult(self, suite, litConfig):
+    def _configureExpectedResult(self, litConfig):
         testName = self.getTestName()
         self.expectedResult = None
 
@@ -117,14 +159,16 @@ class STLTest(Test):
 
         if self.expectedResult is not None:
             if self.expectedResult == SKIPPED:
-                self.result = Result(SKIPPED, 'This test was explicitly marked as skipped')
+                return Result(SKIPPED, 'This test was explicitly marked as skipped')
             elif self.expectedResult.isFailure:
                 self.xfails = ['*']
         elif self.config.unsupported:
-            self.result = Result(UNSUPPORTED, 'This test was marked as unsupported by a lit.cfg')
+            return Result(UNSUPPORTED, 'This test was marked as unsupported by a lit.cfg')
 
-    def _handleEnvlst(self, litConfig, envlstEntry):
-        envCompiler = envlstEntry.getEnvVal('PM_COMPILER', 'cl')
+        return None
+
+    def _handleEnvlst(self, litConfig):
+        envCompiler = self.envlstEntry.getEnvVal('PM_COMPILER', 'cl')
 
         cxx = None
         if not os.path.isfile(envCompiler):
@@ -144,8 +188,8 @@ class STLTest(Test):
         self.compileFlags = copy.deepcopy(litConfig.compile_flags[self.config.name])
         self.linkFlags = copy.deepcopy(litConfig.link_flags[self.config.name])
 
-        self.compileFlags.extend(envlstEntry.getEnvVal('PM_CL', '').split())
-        self.linkFlags.extend(envlstEntry.getEnvVal('PM_LINK', '').split())
+        self.compileFlags.extend(self.envlstEntry.getEnvVal('PM_CL', '').split())
+        self.linkFlags.extend(self.envlstEntry.getEnvVal('PM_LINK', '').split())
 
         if ('clang'.casefold() in os.path.basename(cxx).casefold()):
             targetArch = litConfig.target_arch.casefold()
@@ -156,39 +200,34 @@ class STLTest(Test):
 
         self.cxx = os.path.normpath(cxx)
 
+    def _parseFlags(self):
         foundStd = False
         for flag in chain(self.flags, self.compileFlags, self.linkFlags):
             if flag[1:5] == 'std:':
                 foundStd = True
                 if flag[5:] == 'c++latest':
                     Feature('c++2a').enableIn(self.config)
-                    self.compileFlags.append('/D_LIBCPP_CONSTEXPR_AFTER_CXX17=constexpr')
                 elif flag[5:] == 'c++17':
                     Feature('c++17').enableIn(self.config)
-                    self.compileFlags.append('/D_LIBCPP_CONSTEXPR_AFTER_CXX17=constexpr')
                 elif flag[5:] == 'c++14':
                     Feature('c++14').enableIn(self.config)
-                    self.compileFlags.append('/D_LIBCPP_CONSTEXPR_AFTER_CXX17= ')
             elif flag[1:] == 'clr:pure':
                 self.requires.append('clr_pure') # TRANSITION, GH-798
             elif flag[1:] == 'clr':
                 self.requires.append('clr') # TRANSITION, GH-797
             elif flag[1:] == 'BE':
                 self.requires.append('edg') # available for x86, see features.py
+            elif flag[1:] == 'arch:AVX2':
+                self.requires.append('arch_avx2') # available for x86 and x64, see features.py
+            elif flag[1:] == 'arch:IA32':
+                self.requires.append('arch_ia32') # available for x86, see features.py
+            elif flag[1:] == 'arch:VFPv4':
+                self.requires.append('arch_vfpv4') # available for arm, see features.py
             elif flag[1:] == 'kernel':
                 self.requires.append('kernel')
 
         if not foundStd:
             Feature('c++14').enableIn(self.config)
-            self.compileFlags.append('/D_LIBCPP_CONSTEXPR_AFTER_CXX17= ')
-
-        if 'edg_drop' in self.config.available_features:
-            if not 'edg' in self.requires:
-                self.result = Result(UNSUPPORTED, 'We only run /BE tests with the edg drop')
-            else:
-                _, tmpBase = self.getTempPaths()
-                self.isenseRspPath = tmpBase + '.isense.rsp'
-                self.compileFlags.extend(['/dE--write-isense-rsp', '/dE' + self.isenseRspPath])
 
 
 class LibcxxTest(STLTest):
