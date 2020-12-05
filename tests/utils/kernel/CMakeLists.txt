@@ -26,7 +26,9 @@ target_include_directories(stl_kernel PRIVATE
     ${WDK_INCLUDE_DIRECTORY}/km/crt
     ${WDK_INCLUDE_DIRECTORY}/shared
 )
-target_compile_options(stl_kernel PRIVATE /kernel)
+
+# TRANSITION, WDK needs to suppress C5040
+target_compile_options(stl_kernel PRIVATE /kernel /wd5040)
 
 add_executable(stl_kernel_loader ${STL_KERNEL_LOADER_SOURCES})
 target_include_directories(stl_kernel_loader PRIVATE
