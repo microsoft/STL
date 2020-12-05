@@ -504,13 +504,14 @@ void test_layout_paranoia() {
 
 #ifdef _KERNEL_MODE
 
-#define assert_bitwise_identical(MSG, LHS, RHS) { \
-    double lhs = LHS; \
-    double rhs = RHS; \
-    if (memcmp(&lhs, &rhs, sizeof(lhs)) != 0) { \
-        assert(!MSG); \
-    } \
-}
+#define assert_bitwise_identical(MSG, LHS, RHS)     \
+    {                                               \
+        double lhs = LHS;                           \
+        double rhs = RHS;                           \
+        if (memcmp(&lhs, &rhs, sizeof(lhs)) != 0) { \
+            assert(!MSG);                           \
+        }                                           \
+    }
 
 #else
 void assert_bitwise_identical(const char* const msg, const double lhs, const double rhs) {
