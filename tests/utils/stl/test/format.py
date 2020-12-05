@@ -15,6 +15,7 @@ import itertools
 import os
 import re
 import shutil
+import traceback
 
 import lit
 
@@ -187,39 +188,29 @@ class STLTestFormat:
             yield TestStep(cmd, shared.execDir, shared.env, shouldFail)
         elif TestType.RUN in test.testType:
             shared.execFile = tmpBase + '.exe'
-            if 'kernel' in test.requires:
+            isKernel = 'kernel' in test.requires
+            if isKernel:
                 name = str(shared.execFile).replace('\\','.').replace(':','.')
 
-                test.compileFlags.append([
+                test.compileFlags = [
                     '/DKERNEL_TEST_NAME=L"' + name + '"',
                     '/FIstl_kernel/kernel_test_constants.h',
                     '/I' + litConfig.utils_dir + '/kernel/inc',
                     '/I' + litConfig.wdk_include + '/km',
                     #'/I' + litConfig.wdk_include + '/km/crt', #causes vadefs.h conflicts
                     '/I' + litConfig.wdk_include + '/shared',
-                ])
-                test.linkFlags.append([
+                ] + test.compileFlags
+                test.linkFlags.extend([
                     '/LIBPATH:' + litConfig.wdk_lib + '/km/' + litConfig.target_arch,
-                    '/IGNORE:4210',
                     '/machine:'+litConfig.target_arch,
-                    '/entry:DriverEntry',
-                    '/subsystem:native',
-                    '/nodefaultlib',
-                    'stl_kernel.lib',
-                    'BufferOverflowFastFailK.lib',
-                    'ntoskrnl.lib',
-                    'hal.lib',
-                    'wmilib.lib',
-                    'Ntstrsafe.lib',
-                    'libcpmt.lib',
-                    'libcmt.lib',
                 ])
 
+            # common path for kernel and non-kernel
             cmd = [test.cxx, test.getSourcePath(), *test.flags, *test.compileFlags,
                    '/Fe' + shared.execFile, '/link', *test.linkFlags]
             yield TestStep(cmd, shared.execDir, shared.env, False)
 
-            if 'kernel' in test.requires:
+            if isKernel:
                 # sign the binary
                 cmd = [litConfig.wdk_bin + '/x86/signtool.exe', 'sign',
                        '/f', litConfig.cert_path,
@@ -281,7 +272,9 @@ class STLTestFormat:
             return (passVar, '')
 
         except Exception as e:
-            litConfig.error(repr(e))
+            errorStr = "".join(traceback.format_exception(None, e, e.__traceback__))
+            litConfig.error(errorStr)
+            return (lit.Test.FAIL, errorStr)
 
 
 class LibcxxTestFormat(STLTestFormat):
