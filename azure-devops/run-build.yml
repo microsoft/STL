@@ -8,7 +8,7 @@ jobs:
   variables:
     buildOutputLocation: 'D:\build\${{ parameters.targetPlatform }}'
     litFlags: '-j$(testParallelism);--timeout=240;--shuffle;--xunit-xml-output=$(buildOutputLocation)/test-results.xml'
-    shardFlags: '--num-shards=${{ parameters.numShards }};--run-shard=${{ parameters.shardNum }}'
+    shardFlags: '-vv;--num-shards=${{ parameters.numShards }};--run-shard=${{ parameters.shardNum }}'
     vcpkgLocation: '$(Build.SourcesDirectory)/vcpkg'
   steps:
     - script: |
@@ -64,7 +64,7 @@ jobs:
         cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=$(vcpkgLocation)\scripts\buildsystems\vcpkg.cmake ^
         -DVCPKG_TARGET_TRIPLET=${{ parameters.targetPlatform }}-windows -DCMAKE_CXX_COMPILER=cl ^
         -DCMAKE_BUILD_TYPE=Release -DLIT_FLAGS=$(litFlags);$(shardFlags) ^
-        -DCMAKE_CXX_FLAGS=/analyze:autolog- ^ -DSTL_IS_KERNEL=ON ^
+        -DCMAKE_CXX_FLAGS="/showIncludes /analyze:autolog-" -DSTL_IS_KERNEL=ON ^
         -DWDK_INCLUDE_DIRECTORY="C:/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0" ^
         -DWDK_LIB_DIRECTORY="C:/Program Files (x86)/Windows Kits/10/Lib/10.0.19041.0" ^
         -DWDK_BIN_DIRECTORY="C:/Program Files (x86)/Windows Kits/10/bin/10.0.19041.0" ^
