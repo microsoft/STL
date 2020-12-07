@@ -9,6 +9,8 @@
 // at the globals that have the error text and the failure count
 #include <cassert>
 
+#pragma comment(lib, "ntoskrnl")
+
 struct device_handle {
     DEVICE_OBJECT* h = nullptr;
 
