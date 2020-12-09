@@ -282,7 +282,7 @@ _FS_DLL int64_t __CLRCALL_PURE_OR_CDECL _Last_write_time(const wchar_t* _Fname) 
 
     // success, convert time
     unsigned long long _Wtime = static_cast<unsigned long long>(_Data.ftLastWriteTime.dwHighDateTime) << 32
-                                | _Data.ftLastWriteTime.dwLowDateTime;
+                              | _Data.ftLastWriteTime.dwLowDateTime;
     return static_cast<int64_t>(_Wtime - _Win_ticks_from_epoch);
 }
 
@@ -354,9 +354,9 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Equivalent(
         return 0;
     } else { // test existing files for equivalence
         return _Info1.VolumeSerialNumber != _Info2.VolumeSerialNumber
-                       || memcmp(&_Info1.FileId, &_Info2.FileId, sizeof(_Info1.FileId)) != 0
-                   ? 0
-                   : 1;
+                    || memcmp(&_Info1.FileId, &_Info2.FileId, sizeof(_Info1.FileId)) != 0
+                 ? 0
+                 : 1;
     }
 #else // _CRT_APP
     BY_HANDLE_FILE_INFORMATION _Info1 = {0};
@@ -382,9 +382,9 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Equivalent(
         return 0;
     } else { // test existing files for equivalence
         return _Info1.dwVolumeSerialNumber != _Info2.dwVolumeSerialNumber
-                       || _Info1.nFileIndexHigh != _Info2.nFileIndexHigh || _Info1.nFileIndexLow != _Info2.nFileIndexLow
-                   ? 0
-                   : 1;
+                    || _Info1.nFileIndexHigh != _Info2.nFileIndexHigh || _Info1.nFileIndexLow != _Info2.nFileIndexLow
+                 ? 0
+                 : 1;
     }
 #endif // _CRT_APP
 }

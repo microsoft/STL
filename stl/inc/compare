@@ -666,10 +666,9 @@ namespace _Compare_strong_order_fallback {
                 return {_St::_Strong, noexcept(_STD strong_order(_STD declval<_Ty1&>(), _STD declval<_Ty2&>()))};
             } else if constexpr (_Can_fallback_eq_lt<_Ty1, _Ty2>) {
                 return {_St::_Fallback,
-                    noexcept(_STD declval<_Ty1&>() == _STD declval<_Ty2&>()
-                                 ? strong_ordering::equal
-                                 : _STD declval<_Ty1&>() < _STD declval<_Ty2&>() ? strong_ordering::less
-                                                                                 : strong_ordering::greater)};
+                    noexcept(_STD declval<_Ty1&>() == _STD declval<_Ty2&>()  ? strong_ordering::equal
+                             : _STD declval<_Ty1&>() < _STD declval<_Ty2&>() ? strong_ordering::less
+                                                                             : strong_ordering::greater)};
             } else {
                 return {_St::_None};
             }
@@ -690,7 +689,8 @@ namespace _Compare_strong_order_fallback {
                 return _STD strong_order(_Left, _Right);
             } else if constexpr (_Strat == _St::_Fallback) {
                 return _Left == _Right ? strong_ordering::equal
-                                       : _Left < _Right ? strong_ordering::less : strong_ordering::greater;
+                     : _Left < _Right  ? strong_ordering::less
+                                       : strong_ordering::greater;
             } else {
                 static_assert(_Always_false<_Ty1>, "should be unreachable");
             }
@@ -720,11 +720,10 @@ namespace _Compare_weak_order_fallback {
             } else if constexpr (_Can_weak_order<_Ty1, _Ty2>) {
                 return {_St::_Weak, noexcept(_STD weak_order(_STD declval<_Ty1&>(), _STD declval<_Ty2&>()))};
             } else if constexpr (_Can_fallback_eq_lt<_Ty1, _Ty2>) {
-                return {_St::_Fallback,
-                    noexcept(_STD declval<_Ty1&>() == _STD declval<_Ty2&>()
-                                 ? weak_ordering::equivalent
-                                 : _STD declval<_Ty1&>() < _STD declval<_Ty2&>() ? weak_ordering::less
-                                                                                 : weak_ordering::greater)};
+                return {
+                    _St::_Fallback, noexcept(_STD declval<_Ty1&>() == _STD declval<_Ty2&>()  ? weak_ordering::equivalent
+                                             : _STD declval<_Ty1&>() < _STD declval<_Ty2&>() ? weak_ordering::less
+                                                                                             : weak_ordering::greater)};
             } else {
                 return {_St::_None};
             }
@@ -745,7 +744,8 @@ namespace _Compare_weak_order_fallback {
                 return _STD weak_order(_Left, _Right);
             } else if constexpr (_Strat == _St::_Fallback) {
                 return _Left == _Right ? weak_ordering::equivalent
-                                       : _Left < _Right ? weak_ordering::less : weak_ordering::greater;
+                     : _Left < _Right  ? weak_ordering::less
+                                       : weak_ordering::greater;
             } else {
                 static_assert(_Always_false<_Ty1>, "should be unreachable");
             }
@@ -785,12 +785,10 @@ namespace _Compare_partial_order_fallback {
                 return {_St::_Partial, noexcept(_STD partial_order(_STD declval<_Ty1&>(), _STD declval<_Ty2&>()))};
             } else if constexpr (_Can_fallback_eq_lt_twice<_Ty1, _Ty2>) {
                 return {_St::_Fallback,
-                    noexcept(_STD declval<_Ty1&>() == _STD declval<_Ty2&>()
-                                 ? partial_ordering::equivalent
-                                 : _STD declval<_Ty1&>() < _STD declval<_Ty2&>()
-                                       ? partial_ordering::less
-                                       : _STD declval<_Ty2&>() < _STD declval<_Ty1&>() ? partial_ordering::greater
-                                                                                       : partial_ordering::unordered)};
+                    noexcept(_STD declval<_Ty1&>() == _STD declval<_Ty2&>()  ? partial_ordering::equivalent
+                             : _STD declval<_Ty1&>() < _STD declval<_Ty2&>() ? partial_ordering::less
+                             : _STD declval<_Ty2&>() < _STD declval<_Ty1&>() ? partial_ordering::greater
+                                                                             : partial_ordering::unordered)};
             } else {
                 return {_St::_None};
             }
@@ -810,10 +808,10 @@ namespace _Compare_partial_order_fallback {
             if constexpr (_Strat == _St::_Partial) {
                 return _STD partial_order(_Left, _Right);
             } else if constexpr (_Strat == _St::_Fallback) {
-                return _Left == _Right
-                           ? partial_ordering::equivalent
-                           : _Left < _Right ? partial_ordering::less
-                                            : _Right < _Left ? partial_ordering::greater : partial_ordering::unordered;
+                return _Left == _Right ? partial_ordering::equivalent
+                     : _Left < _Right  ? partial_ordering::less
+                     : _Right < _Left  ? partial_ordering::greater
+                                       : partial_ordering::unordered;
             } else {
                 static_assert(_Always_false<_Ty1>, "should be unreachable");
             }

@@ -3869,7 +3869,7 @@ namespace ranges {
     subrange(_It, _Se, _Make_unsigned_like_t<iter_difference_t<_It>>) -> subrange<_It, _Se, subrange_kind::sized>;
 
     template <borrowed_range _Rng>
-    subrange(_Rng &&) -> subrange<iterator_t<_Rng>, sentinel_t<_Rng>,
+    subrange(_Rng&&) -> subrange<iterator_t<_Rng>, sentinel_t<_Rng>,
         (sized_range<_Rng> || sized_sentinel_for<sentinel_t<_Rng>, iterator_t<_Rng>>) ? subrange_kind::sized
                                                                                       : subrange_kind::unsized>;
 
@@ -4984,8 +4984,8 @@ _FwdIt fill_n(_ExPo&&, _FwdIt _Dest, _Diff _Count_raw, const _Ty& _Val) noexcept
 #pragma warning(disable : 4806) // no value of type 'bool' promoted to type 'char' can equal the given constant
 template <class _Elem1, class _Elem2,
     bool = sizeof(_Elem1) == sizeof(_Elem2) //
-           && is_integral_v<_Elem1> && !is_volatile_v<_Elem1> //
-           && is_integral_v<_Elem2> && !is_volatile_v<_Elem2>>
+        && is_integral_v<_Elem1> && !is_volatile_v<_Elem1> //
+        && is_integral_v<_Elem2> && !is_volatile_v<_Elem2>>
 _INLINE_VAR constexpr bool _Can_memcmp_elements =
     is_same_v<_Elem1, bool> || is_same_v<_Elem2, bool> || static_cast<_Elem1>(-1) == static_cast<_Elem2>(-1);
 #pragma warning(pop)

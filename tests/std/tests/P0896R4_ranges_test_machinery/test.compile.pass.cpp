@@ -27,7 +27,7 @@ constexpr bool iter_test() {
     STATIC_ASSERT(!movable<Element> || indirectly_writable<I, Element>);
 
     constexpr bool can_write = derived_from<Category, output_iterator_tag> //
-                               || (derived_from<Category, forward_iterator_tag> && assignable_from<Element&, Element>);
+                            || (derived_from<Category, forward_iterator_tag> && assignable_from<Element&, Element>);
     STATIC_ASSERT(!can_write || output_iterator<I, Element>);
 
     STATIC_ASSERT(!derived_from<Category, input_iterator_tag> || input_iterator<I>);

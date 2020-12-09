@@ -2200,10 +2200,11 @@ public:
     // length of internal buffer, [1, 16]:
     static constexpr size_type _BUF_SIZE = 16 / sizeof(value_type) < 1 ? 1 : 16 / sizeof(value_type);
     // roundup mask for allocated buffers, [0, 15]:
-    static constexpr size_type _ALLOC_MASK =
-        sizeof(value_type) <= 1
-            ? 15
-            : sizeof(value_type) <= 2 ? 7 : sizeof(value_type) <= 4 ? 3 : sizeof(value_type) <= 8 ? 1 : 0;
+    static constexpr size_type _ALLOC_MASK = sizeof(value_type) <= 1 ? 15
+                                           : sizeof(value_type) <= 2 ? 7
+                                           : sizeof(value_type) <= 4 ? 3
+                                           : sizeof(value_type) <= 8 ? 1
+                                                                     : 0;
 
     value_type* _Myptr() noexcept {
         value_type* _Result = _Bx._Buf;
