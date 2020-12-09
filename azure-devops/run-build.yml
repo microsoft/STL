@@ -29,10 +29,10 @@ jobs:
           cd $(Build.SourcesDirectory)
           $pattern = "[^a-zA-Z0-9]"
           $llvmSHA = git submodule status llvm-project | %{($_ -split "\s+")[0]}
-          $llvmSHA -replace $pattern,""
+          $llvmSHA = $llvmSHA -replace $pattern,""
           Write-Host "##vso[task.setvariable variable=llvmSHA;]$llvmSHA"
           $vcpkgSHA = git submodule status vcpkg | %{($_ -split "\s+")[0]}
-          $vcpkgSHA -replace $pattern,""
+          $vcpkgSHA = $vcpkgSHA -replace $pattern,""
           Write-Host "##vso[task.setvariable variable=vcpkgSHA;]$vcpkgSHA"
     - script: |
         cd $(Build.SourcesDirectory)
