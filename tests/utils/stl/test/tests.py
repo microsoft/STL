@@ -198,6 +198,10 @@ class STLTest(Test):
             elif (targetArch == 'x86'.casefold()):
                 self.compileFlags.append('-m32')
 
+        if ('nvcc'.casefold() in os.path.basename(cxx).casefold()):
+            # nvcc only supports targeting x64
+            self.requires.append('x64')
+
         self.cxx = os.path.normpath(cxx)
 
     def _parseFlags(self):
