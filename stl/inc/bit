@@ -211,6 +211,24 @@ _NODISCARD int _Checked_x86_x64_popcount(const _Ty _Val) noexcept {
 
 
 #if defined(_M_ARM) || defined(_M_ARM64)
+#ifdef __clang__ // workaround
+inline constexpr int _Clang_arm_arm64_countl_zero(const unsigned short _Val) {
+    return __builtin_clzs(_Val);
+}
+
+inline constexpr int _Clang_arm_arm64_countl_zero(const unsigned int _Val) {
+    return __builtin_clz(_Val);
+}
+
+inline constexpr int _Clang_arm_arm64_countl_zero(const unsigned long _Val) {
+    return __builtin_clzl(_Val);
+}
+
+inline constexpr int _Clang_arm_arm64_countl_zero(const unsigned long long _Val) {
+    return __builtin_clzll(_Val);
+}
+#endif // ^^^ __clang__ workaround ^^^
+
 template <class _Ty>
 _NODISCARD int _Checked_arm_arm64_countl_zero(const _Ty _Val) noexcept {
     constexpr int _Digits = numeric_limits<_Ty>::digits;
@@ -218,11 +236,19 @@ _NODISCARD int _Checked_arm_arm64_countl_zero(const _Ty _Val) noexcept {
         return _Digits;
     }
 
-    if constexpr (_Digits <= 32) {
-        return _CountLeadingZeros(_Val);
+#ifdef __clang__ // workaround
+    if constexpr (sizeof(_Ty) < sizeof(unsigned short)) {
+        return _Clang_arm_arm64_countl_zero(static_cast<const unsigned short>(_Val));
     } else {
-        return _CountLeadingZeros64(_Val);
+        return _Clang_arm_arm64_countl_zero(_Val);
     }
+#else // ^^^ __clang__ / !__clang__ vvv
+    if constexpr (_Digits <= 32) {
+        return static_cast<int>(_CountLeadingZeros(_Val));
+    } else {
+        return static_cast<int>(_CountLeadingZeros64(_Val));
+    }
+#endif // ^^^ !__clang__ ^^^
 }
 #endif // defined(_M_ARM) || defined(_M_ARM64)
 
