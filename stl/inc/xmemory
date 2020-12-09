@@ -99,7 +99,7 @@ static_assert(_Is_pow_2(_Big_allocation_alignment), "Big allocation alignment mu
 #ifdef _DEBUG
 constexpr size_t _Non_user_size = 2 * sizeof(void*) + _Big_allocation_alignment - 1;
 #else // _DEBUG
-constexpr size_t _Non_user_size           = sizeof(void*) + _Big_allocation_alignment - 1;
+constexpr size_t _Non_user_size = sizeof(void*) + _Big_allocation_alignment - 1;
 #endif // _DEBUG
 
 #ifdef _WIN64

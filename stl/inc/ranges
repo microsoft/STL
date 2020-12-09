@@ -2316,7 +2316,7 @@ namespace ranges {
     };
 
     template <class _Rng>
-    common_view(_Rng &&) -> common_view<views::all_t<_Rng>>;
+    common_view(_Rng&&) -> common_view<views::all_t<_Rng>>;
 
     namespace views {
         // VARIABLE views::common
@@ -2428,7 +2428,7 @@ namespace ranges {
     };
 
     template <class _Rng>
-    reverse_view(_Rng &&) -> reverse_view<views::all_t<_Rng>>;
+    reverse_view(_Rng&&) -> reverse_view<views::all_t<_Rng>>;
 
     namespace views {
         // VARIABLE views::reverse
