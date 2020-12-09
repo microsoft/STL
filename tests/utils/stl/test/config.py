@@ -40,8 +40,8 @@ def configure(parameters, features, config, lit_config):
 
   lit_config.flags[config.name] = []
   lit_config.compile_flags[config.name] = \
-    ['/I' + os.path.normpath(dir) for dir in lit_config.include_dirs[config.name]]
+    ['-I' + os.path.normpath(dir) for dir in lit_config.include_dirs[config.name]]
   lit_config.link_flags[config.name] = \
-    ['/LIBPATH:' + os.path.normpath(dir) for dir in lit_config.library_dirs[config.name]]
+    ['-LIBPATH:' + os.path.normpath(dir) for dir in lit_config.library_dirs[config.name]]
 
   lit_config.test_env = {'PATH' : os.path.normpath(lit_config.cxx_runtime)}
