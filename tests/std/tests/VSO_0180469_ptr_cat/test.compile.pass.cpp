@@ -502,3 +502,46 @@ void test_Lex_compare_optimize() {
     test_case_Lex_compare_optimize_pr<less>();
     test_case_Lex_compare_optimize_pr<greater>();
 }
+
+#ifdef __cpp_lib_concepts
+// Also test GH-1523, in which std::equal does not properly convert non-pointer contiguous iterators to pointers.
+struct gh1523_iter {
+    // a contiguous_iterator that doesn't unwrap into a pointer
+    using iterator_concept = contiguous_iterator_tag;
+    using iterator_category = random_access_iterator_tag;
+    using value_type = int;
+
+    int& operator*() const;
+    bool operator==(const gh1523_iter&) const;
+    gh1523_iter& operator++();
+    gh1523_iter operator++(int);
+    gh1523_iter& operator--();
+    gh1523_iter operator--(int);
+
+    friend ptrdiff_t operator-(const gh1523_iter&, const gh1523_iter&);
+
+    strong_ordering operator<=>(const gh1523_iter&) const;
+
+    gh1523_iter& operator-=(ptrdiff_t);
+    gh1523_iter operator-(ptrdiff_t) const;
+    friend gh1523_iter operator-(ptrdiff_t, const gh1523_iter&);
+    gh1523_iter& operator+=(ptrdiff_t);
+    gh1523_iter operator+(ptrdiff_t) const;
+    friend gh1523_iter operator+(ptrdiff_t, const gh1523_iter&);
+    int& operator[](ptrdiff_t) const;
+};
+
+template <>
+struct std::pointer_traits<gh1523_iter> {
+    using pointer = gh1523_iter;
+    using element_type = int;
+    using difference_type = ptrdiff_t;
+
+    static int* to_address(const pointer&) noexcept;
+};
+static_assert(contiguous_iterator<gh1523_iter>);
+
+void test_gh1523() {
+    (void) std::equal(gh1523_iter{}, gh1523_iter{}, gh1523_iter{}, gh1523_iter{});
+}
+#endif // __cpp_lib_concepts
