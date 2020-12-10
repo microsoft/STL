@@ -159,7 +159,7 @@ public:
         facet& __CLR_OR_THIS_CALL operator=(const facet&) = delete;
     };
 
-    struct _Facet_guard {
+    struct _NODISCARD _Facet_guard {
         facet* _Target;
         ~_Facet_guard() {
             if (_Target) {
@@ -1377,7 +1377,7 @@ private:
 
 #if defined(__cpp_char8_t) && !defined(_M_CEE_PURE)
 template <class _From, class _To>
-struct _Codecvt_guard {
+struct _NODISCARD _Codecvt_guard {
     const _From* const& _First1;
     const _From*& _Mid1;
     _To* const& _First2;

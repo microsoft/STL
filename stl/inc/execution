@@ -2837,10 +2837,10 @@ inline size_t _Get_stable_sort_tree_height(const size_t _Count, const size_t _Hw
     // go to the next smaller power of 2
     const auto _Count_max_tree_height = _Log_count_max_chunks & ~static_cast<size_t>(1);
 
-    const auto _Ideal_chunks           = _Hw_threads * _Oversubscription_multiplier;
-    const size_t _Log_ideal_chunks     = _Floor_of_log_2(_Ideal_chunks);
+    const auto _Ideal_chunks       = _Hw_threads * _Oversubscription_multiplier;
+    const size_t _Log_ideal_chunks = _Floor_of_log_2(_Ideal_chunks);
 #ifdef _WIN64
-    const size_t _Max_tree_height      = 62; // to avoid ptrdiff_t overflow
+    const size_t _Max_tree_height = 62; // to avoid ptrdiff_t overflow
 #else // ^^^ _WIN64 ^^^ // vvv !_WIN64 vvv
     const size_t _Max_tree_height = 30;
 #endif // _WIN64
@@ -3262,7 +3262,7 @@ _NODISCARD bool is_partitioned(_ExPo&&, const _FwdIt _First, const _FwdIt _Last,
                 _Static_partitioned_is_partitioned _Operation{_Hw_threads, _Count, _UFirst, _Pass_fn(_Pred)};
                 _Run_chunked_parallel_work(_Hw_threads, _Operation);
                 return _Operation._Rightmost_true.load(memory_order_relaxed)
-                       <= _Operation._Leftmost_false.load(memory_order_relaxed);
+                    <= _Operation._Leftmost_false.load(memory_order_relaxed);
                 _CATCH(const _Parallelism_resources_exhausted&)
                 // fall through to serial case below
                 _CATCH_END
@@ -3519,12 +3519,11 @@ struct _Static_partitioned_partition2 {
             const auto _Range = _Basis._Get_chunk(_Key);
             if (_Merge_index == 0 || _Chunk_locals[_Merge_index - 1]._State.load() == _Chunk_state::_Done) {
                 // no predecessor, so run serial algorithm directly into results
-                const auto _Chunk_results =
-                    _Merge_index == 0 || _Results == _Range._First
-                        ? _Partition_with_count_unchecked(_Range._First, _Range._Last, _Pred)
-                        : _Partition_swap_backward(_Range._First, _Range._Last, _Results, _Pred);
-                _Results                 = _Chunk_results.first;
-                _Chunk_data._Chunk_trues = _Chunk_results.second;
+                const auto _Chunk_results = _Merge_index == 0 || _Results == _Range._First
+                                              ? _Partition_with_count_unchecked(_Range._First, _Range._Last, _Pred)
+                                              : _Partition_swap_backward(_Range._First, _Range._Last, _Results, _Pred);
+                _Results                  = _Chunk_results.first;
+                _Chunk_data._Chunk_trues  = _Chunk_results.second;
                 _Results_falses += _Key._Size - _Chunk_results.second;
                 _Chunk_data._State.store(_Chunk_state::_Done);
                 ++_Merge_index; // this chunk is already merged

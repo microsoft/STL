@@ -1169,7 +1169,7 @@ public:
                         {
                             constexpr size_t _That_idx = decltype(_That_ref)::_Idx;
 #ifdef __EDG__ // TRANSITION, VSO-657455
-                            constexpr size_t _My_idx   = decltype(_My_ref)::_Idx + 0 * _That_idx;
+                            constexpr size_t _My_idx = decltype(_My_ref)::_Idx + 0 * _That_idx;
 #else // ^^^ workaround ^^^ / vvv no workaround vvv
                             constexpr size_t _My_idx = decltype(_My_ref)::_Idx;
 #endif // TRANSITION, VSO-657455
@@ -1390,7 +1390,7 @@ _NODISCARD constexpr bool operator==(const variant<_Types...>& _Left, const vari
     using _Visitor            = _Variant_relop_visitor<equal_to<>, _Types...>;
     const size_t _Right_index = _Right.index();
     return _Left.index() == _Right_index
-           && _Variant_raw_visit(_Right_index, _Right._Storage(), _Visitor{_Left._Storage()});
+        && _Variant_raw_visit(_Right_index, _Right._Storage(), _Visitor{_Left._Storage()});
 }
 
 template <class... _Types>
@@ -1400,7 +1400,7 @@ _NODISCARD constexpr bool operator!=(const variant<_Types...>& _Left, const vari
     using _Visitor            = _Variant_relop_visitor<not_equal_to<>, _Types...>;
     const size_t _Right_index = _Right.index();
     return _Left.index() != _Right_index
-           || _Variant_raw_visit(_Right_index, _Right._Storage(), _Visitor{_Left._Storage()});
+        || _Variant_raw_visit(_Right_index, _Right._Storage(), _Visitor{_Left._Storage()});
 }
 
 template <class... _Types>
@@ -1412,8 +1412,8 @@ _NODISCARD constexpr bool operator<(const variant<_Types...>& _Left, const varia
     const size_t _Left_offset  = _Left.index() + 1;
     const size_t _Right_offset = _Right.index() + 1;
     return _Left_offset < _Right_offset
-           || (_Left_offset == _Right_offset
-               && _Variant_raw_visit(_Right_offset - 1, _Right._Storage(), _Visitor{_Left._Storage()}));
+        || (_Left_offset == _Right_offset
+            && _Variant_raw_visit(_Right_offset - 1, _Right._Storage(), _Visitor{_Left._Storage()}));
 }
 
 template <class... _Types>
@@ -1425,8 +1425,8 @@ _NODISCARD constexpr bool operator>(const variant<_Types...>& _Left, const varia
     const size_t _Left_offset  = _Left.index() + 1;
     const size_t _Right_offset = _Right.index() + 1;
     return _Left_offset > _Right_offset
-           || (_Left_offset == _Right_offset
-               && _Variant_raw_visit(_Right_offset - 1, _Right._Storage(), _Visitor{_Left._Storage()}));
+        || (_Left_offset == _Right_offset
+            && _Variant_raw_visit(_Right_offset - 1, _Right._Storage(), _Visitor{_Left._Storage()}));
 }
 
 template <class... _Types>
@@ -1438,8 +1438,8 @@ _NODISCARD constexpr bool operator<=(const variant<_Types...>& _Left, const vari
     const size_t _Left_offset  = _Left.index() + 1;
     const size_t _Right_offset = _Right.index() + 1;
     return _Left_offset < _Right_offset
-           || (_Left_offset == _Right_offset
-               && _Variant_raw_visit(_Right_offset - 1, _Right._Storage(), _Visitor{_Left._Storage()}));
+        || (_Left_offset == _Right_offset
+            && _Variant_raw_visit(_Right_offset - 1, _Right._Storage(), _Visitor{_Left._Storage()}));
 }
 
 template <class... _Types>
@@ -1451,8 +1451,8 @@ _NODISCARD constexpr bool operator>=(const variant<_Types...>& _Left, const vari
     const size_t _Left_offset  = _Left.index() + 1;
     const size_t _Right_offset = _Right.index() + 1;
     return _Left_offset > _Right_offset
-           || (_Left_offset == _Right_offset
-               && _Variant_raw_visit(_Right_offset - 1, _Right._Storage(), _Visitor{_Left._Storage()}));
+        || (_Left_offset == _Right_offset
+            && _Variant_raw_visit(_Right_offset - 1, _Right._Storage(), _Visitor{_Left._Storage()}));
 }
 
 // VISITATION [variant.visit]
@@ -1643,8 +1643,12 @@ using _As_variant = // Deduce variant specialization from a derived type
 
 template <size_t _Size, class _Ret, class _ListOfIndexVectors, class _Callable, class... _Variants>
 constexpr _Ret _Visit_impl(_Callable&& _Obj, _Variants&&... _Args) {
-    constexpr int _Strategy =
-        _Size == 1 ? 0 : _Size <= 4 ? 1 : _Size <= 16 ? 2 : _Size <= 64 ? 3 : _Size <= 256 ? 4 : -1;
+    constexpr int _Strategy = _Size == 1   ? 0
+                            : _Size <= 4   ? 1
+                            : _Size <= 16  ? 2
+                            : _Size <= 64  ? 3
+                            : _Size <= 256 ? 4
+                                           : -1;
     return _Visit_strategy<_Strategy>::template _Visit2<_Ret, _ListOfIndexVectors>(
         _Variant_visit_index1(0, static_cast<_As_variant<_Variants>&>(_Args)...), static_cast<_Callable&&>(_Obj),
         static_cast<_As_variant<_Variants>&&>(_Args)...);

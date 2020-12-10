@@ -486,7 +486,7 @@ private:
         _Pocma(_Vec._Mypair._Get_first(), _Right._Vec._Mypair._Get_first());
     }
 
-    struct _Clear_guard {
+    struct _NODISCARD _Clear_guard {
         _Hash* _Target;
 
         explicit _Clear_guard(_Hash* const _Target_) : _Target(_Target_) {}

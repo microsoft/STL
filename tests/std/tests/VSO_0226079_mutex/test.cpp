@@ -496,6 +496,21 @@ void test_nonmember_try_lock() {
     rtOt.join();
 }
 
+// Also test VSO-1253916, in which RWC like the following broke when we annotated unique_lock with [[nodiscard]].
+unique_lock<shared_mutex> do_locked_things(unique_lock<shared_mutex> lck) {
+    return lck;
+}
+
+shared_lock<shared_mutex> do_shared_locked_things(shared_lock<shared_mutex> lck) {
+    return lck;
+}
+
+void test_vso_1253916() {
+    shared_mutex mtx;
+    do_locked_things(unique_lock<shared_mutex>{mtx});
+    do_shared_locked_things(shared_lock<shared_mutex>{mtx});
+}
+
 int main() {
     {
         mutex_test_fixture<mutex> fixture;
@@ -537,4 +552,6 @@ int main() {
 
     test_nonmember_lock();
     test_nonmember_try_lock();
+
+    test_vso_1253916();
 }
