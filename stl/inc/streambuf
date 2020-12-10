@@ -137,8 +137,9 @@ public:
     }
 
     int_type __CLR_OR_THIS_CALL snextc() { // point to next character and return it
-        return 1 < _Gnavail() ? _Traits::to_int_type(*_Gnpreinc())
-                              : _Traits::eq_int_type(_Traits::eof(), sbumpc()) ? _Traits::eof() : sgetc();
+        return 1 < _Gnavail()                                 ? _Traits::to_int_type(*_Gnpreinc())
+             : _Traits::eq_int_type(_Traits::eof(), sbumpc()) ? _Traits::eof()
+                                                              : sgetc();
     }
 
     int_type __CLR_OR_THIS_CALL sputbackc(_Elem _Ch) { // put back _Ch

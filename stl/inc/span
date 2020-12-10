@@ -33,7 +33,7 @@ inline constexpr size_t dynamic_extent = static_cast<size_t>(-1);
 template <class _Ty>
 struct _Span_iterator {
 #ifdef __cpp_lib_concepts
-    using iterator_concept  = contiguous_iterator_tag;
+    using iterator_concept = contiguous_iterator_tag;
 #endif // __cpp_lib_concepts
     using iterator_category = random_access_iterator_tag;
     using value_type        = remove_cv_t<_Ty>;
@@ -179,7 +179,7 @@ struct _Span_iterator {
         _Myptr = _It;
     }
 
-    pointer _Myptr   = nullptr;
+    pointer _Myptr = nullptr;
 #if _ITERATOR_DEBUG_LEVEL >= 1
     pointer _Mybegin = nullptr;
     pointer _Myend   = nullptr;
@@ -660,7 +660,7 @@ template <contiguous_iterator _It, class _End>
 span(_It, _End) -> span<remove_reference_t<iter_reference_t<_It>>>;
 
 template <_RANGES contiguous_range _Rng>
-span(_Rng &&) -> span<remove_reference_t<_RANGES range_reference_t<_Rng>>>;
+span(_Rng&&) -> span<remove_reference_t<_RANGES range_reference_t<_Rng>>>;
 
 #else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
 

@@ -570,9 +570,6 @@ localization\locale.categories\category.monetary\locale.moneypunct\money_base.pa
 input.output\file.streams\fstreams\filebuf.virtuals\overflow.pass.cpp
 input.output\file.streams\fstreams\filebuf.virtuals\underflow.pass.cpp
 
-# GH-1004 <regex>: Error C2664 in std::regex_traits::transform
-re\re.traits\transform.pass.cpp
-
 # GH-1295 <array>: array<const T, 0> allows fill() and swap()
 containers\sequences\array\array.fill\fill.fail.cpp
 containers\sequences\array\array.swap\swap.fail.cpp
