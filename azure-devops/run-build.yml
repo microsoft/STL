@@ -20,16 +20,9 @@ jobs:
     - checkout: self
       clean: true
       submodules: true
-    - task: Cache@2
-      displayName: vcpkg/installed Caching
-      timeoutInMinutes: 10
-      inputs:
-        key: '"${{ parameters.targetPlatform }}" | $(Build.SourcesDirectory)/.git/modules/vcpkg/HEAD | "2020-03-01.01"'
-        path: '$(vcpkgLocation)/installed'
-        cacheHitVar: CACHE_RESTORED
     - task: run-vcpkg@0
       displayName: 'Run vcpkg to Install boost-build'
-      condition: and(ne(variables.CACHE_RESTORED, 'true'), contains('${{ parameters.targetPlatform }}', 'arm'))
+      condition: contains('${{ parameters.targetPlatform }}', 'arm')
       timeoutInMinutes: 10
       inputs:
         doNotUpdateVcpkg: true
@@ -39,7 +32,6 @@ jobs:
       env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
     - task: run-vcpkg@0
       displayName: 'Run vcpkg to Install boost-math'
-      condition: ne(variables.CACHE_RESTORED, 'true')
       timeoutInMinutes: 10
       inputs:
         doNotUpdateVcpkg: true
