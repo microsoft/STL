@@ -554,7 +554,7 @@
 #endif // ^^^ inline (not constexpr) in C++17 and earlier ^^^
 
 // Functions that became constexpr in C++20 via P0784R7
-#if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc)
+#if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc) && (defined(__clang__) || defined(__EDG__))
 #define _CONSTEXPR20_DYNALLOC constexpr
 #else
 #define _CONSTEXPR20_DYNALLOC inline
@@ -1197,7 +1197,7 @@
 #define __cpp_lib_constexpr_algorithms 201806L
 #define __cpp_lib_constexpr_complex    201711L
 
-#if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc)
+#if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc) && (defined(__clang__) || defined(__EDG__))
 #define __cpp_lib_constexpr_dynamic_alloc 201907L
 #endif // _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc)
 

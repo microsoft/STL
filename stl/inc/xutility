@@ -140,7 +140,7 @@ _CONSTEXPR20_DYNALLOC auto construct_at(_Ty* const _Location, _Types&&... _Args)
     -> decltype(::new (_Voidify_iter(_Location)) _Ty(_STD forward<_Types>(_Args)...)) {
     return ::new (_Voidify_iter(_Location)) _Ty(_STD forward<_Types>(_Args)...);
 }
-#endif _HAS_CXX20
+#endif // _HAS_CXX20
 
 // FUNCTION TEMPLATE _Construct_in_place
 template <class _Ty, class... _Types>
@@ -3903,7 +3903,7 @@ namespace ranges {
     subrange(_It, _Se, _Make_unsigned_like_t<iter_difference_t<_It>>) -> subrange<_It, _Se, subrange_kind::sized>;
 
     template <borrowed_range _Rng>
-    subrange(_Rng &&) -> subrange<iterator_t<_Rng>, sentinel_t<_Rng>,
+    subrange(_Rng&&) -> subrange<iterator_t<_Rng>, sentinel_t<_Rng>,
         (sized_range<_Rng> || sized_sentinel_for<sentinel_t<_Rng>, iterator_t<_Rng>>) ? subrange_kind::sized
                                                                                       : subrange_kind::unsized>;
 

@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#ifdef __cpp_constexpr_dynamic_alloc
+#define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING
+#endif // __cpp_constexpr_dynamic_alloc
+
 #include <assert.h>
 #include <memory>
 #include <stddef.h>
@@ -285,12 +289,11 @@ template <class T>
 struct nontrivial_A {
     T value;
 
-    constexpr nontrivial_A(T in = T{}) noexcept : value(in){};
-    constexpr ~nontrivial_A() {
-        value.~T();
-    };
+    constexpr nontrivial_A(T in = T{}) noexcept : value(in) {}
+    constexpr ~nontrivial_A() {}
 };
 
+#if defined(__clang__) || defined(__EDG__)
 template <class T, bool Construct = false, bool Destroy = false>
 struct Alloc {
     using value_type = T;
@@ -308,14 +311,11 @@ struct Alloc {
         allocator<T>{}.deallocate(ptr, n);
     }
 
-    template <class Valid = enable_if_t<Construct>>
-    constexpr void construct(value_type* ptr, value_type n) {
-        assert(n == 10);
+    constexpr void construct(value_type* ptr, value_type n) requires(Construct) {
         allocator<T>{}.construct(ptr, n);
     }
 
-    template <class Valid = enable_if_t<Destroy>>
-    constexpr void destroy(value_type* ptr) {
+    constexpr void destroy(value_type* ptr) requires(Destroy) {
         allocator<T>{}.destroy(ptr);
     }
 
@@ -370,6 +370,7 @@ constexpr void test_compiletime_allocator_traits() {
     }
     {
         storage_for<nontrivial_A<int>> a;
+        Alloc<nontrivial_A<int>, true> alloc{10};
 
         std::allocator_traits<Alloc<nontrivial_A<int>, true>>::construct(alloc, &a.object, 10);
         assert(a.object.value == 10);
@@ -377,6 +378,7 @@ constexpr void test_compiletime_allocator_traits() {
     }
     {
         storage_for<nontrivial_A<int>> a;
+        Alloc<nontrivial_A<int>, false, true> alloc{10};
 
         std::allocator_traits<Alloc<nontrivial_A<int>, false, true>>::construct(alloc, &a.object, 10);
         assert(a.object.value == 10);
@@ -384,6 +386,7 @@ constexpr void test_compiletime_allocator_traits() {
     }
     {
         storage_for<nontrivial_A<int>> a;
+        Alloc<nontrivial_A<int>, true, true> alloc{10};
 
         std::allocator_traits<Alloc<nontrivial_A<int>, true, true>>::construct(alloc, &a.object, 10);
         assert(a.object.value == 10);
@@ -403,6 +406,7 @@ constexpr void test_compiletime_allocator() {
     }
 }
 static_assert((test_compiletime_allocator(), true));
+#endif // defined(__clang__ ) || defined(__EDG__)
 #endif // _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc)
 
 #if _HAS_CXX20
