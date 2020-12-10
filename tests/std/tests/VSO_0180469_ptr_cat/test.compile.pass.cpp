@@ -507,9 +507,9 @@ void test_Lex_compare_optimize() {
 // Also test GH-1523, in which std::equal does not properly convert non-pointer contiguous iterators to pointers.
 struct gh1523_iter {
     // a contiguous_iterator that doesn't unwrap into a pointer
-    using iterator_concept = contiguous_iterator_tag;
+    using iterator_concept  = contiguous_iterator_tag;
     using iterator_category = random_access_iterator_tag;
-    using value_type = int;
+    using value_type        = int;
 
     int& operator*() const;
     bool operator==(const gh1523_iter&) const;
@@ -533,8 +533,8 @@ struct gh1523_iter {
 
 template <>
 struct std::pointer_traits<gh1523_iter> {
-    using pointer = gh1523_iter;
-    using element_type = int;
+    using pointer         = gh1523_iter;
+    using element_type    = int;
     using difference_type = ptrdiff_t;
 
     static int* to_address(const pointer&) noexcept;
