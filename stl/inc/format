@@ -30,6 +30,14 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 
+template <class... _Tys>
+struct _Overloaded : _Tys... {
+    using _Tys::operator()...;
+};
+
+template <class... _Tys>
+_Overloaded(_Tys...) -> _Overloaded<_Tys...>;
+
 class format_error : public runtime_error {
     using runtime_error::runtime_error;
 };
@@ -38,6 +46,29 @@ enum class _Align { _None, _Left, _Right, _Center };
 
 enum class _Sign { _None, _Plus, _Minus, _Space };
 
+enum class _Type {
+    _None,
+    _Int32,
+    _Int64,
+    _UInt32,
+    _UInt64,
+    _Bool,
+    _Char,
+    _Last_integer_type = _Char,
+    _Float32,
+    _Float64,
+    _Last_numeric_type = _Float64,
+    _CString,
+    _String,
+    _Pointer,
+    _Custom
+};
+constexpr bool _Is_integral_fmt_type(_Type _Ty) {
+    return _Ty > _Type::_None && _Ty <= _Type::_Last_integer_type;
+}
+constexpr bool _Is_numeric_fmt_type(_Type _Ty) {
+    return _Ty > _Type::_None && _Ty <= _Type::_Last_numeric_type;
+}
 struct _Auto_id_tag {};
 
 // clang-format off
@@ -304,12 +335,91 @@ constexpr const _CharT* _Parse_format_specs(const _CharT* _Begin, const _CharT* 
 
 template <typename _Char>
 struct _Basic_format_specs {
-    int width, precision;
-    char type;
+    int _Width, _Precision;
+    char _Type;
     _Align _Alignment;
     _Sign _Sgn;
     bool _Alt;
     _Char _Fill[4];
+};
+
+// Extremely dull set of parsing callbacks that just fills a struct with parsed data.
+template <class _CharT>
+class _Specs_setter {
+    explicit constexpr _Specs_setter(_Basic_format_specs<_CharT> _Specs) : _Specs(_Specs) {}
+
+    constexpr void _On_align(_Align _Aln) {
+        _Specs._Alignment = _Aln;
+    }
+
+    constexpr void _On_fill(basic_string_view<_CharT> _Sv) {
+        _Specs._Fill = _Sv;
+    }
+
+    constexpr void _On_sign(_Sign _Sgn) {
+        _Specs._Sgn = _Sgn;
+    }
+
+    constexpr void _On_hash() {
+        _Specs._Alt = true;
+    }
+
+    constexpr void _On_zero() {
+        _Specs._Alignment = _Align::_None;
+        _Specs._Fill[0]   = '0';
+    }
+
+    constexpr void _On_width(int _Width) {
+        _Specs._Width = _Width;
+    }
+
+    constexpr void _On_Precision(int _Precision) {
+        _Specs._Precision = _Precision;
+    }
+
+    constexpr void _On_type(_CharT _Type) {
+        _Specs._Type = static_cast<_CharT>(_Type);
+    }
+
+protected:
+    _Basic_format_specs<_CharT> _Specs;
+};
+
+
+class _Numeric_specs_checker {
+    _Type _Arg_type = _Type::_None;
+
+public:
+    constexpr _Numeric_specs_checker(_Type _Arg_type) : _Arg_type(_Arg_type) {}
+
+    constexpr void _Require_numeric_argument() {
+        if (!_Is_numeric_fmt_type(_Arg_type)) {
+            throw format_error("Format specifier requires numeric argument.");
+        }
+    }
+
+    constexpr void _Check_sign() {
+        _Require_numeric_argument();
+        if (_Is_integral_fmt_type(_Arg_type) && _Arg_type != _Type::_Int32 && _Arg_type != _Type::_Int64
+            && _Arg_type != _Type::_Char) {
+            throw format_error("Format specifier requires signed argument.");
+        }
+    }
+
+    constexpr void _Check_precision() {
+        if (_Is_integral_fmt_type(_Arg_type) || _Arg_type == _Type::_Pointer) {
+            throw format_error("Precision not allowed for this argument type.");
+        }
+    }
+};
+
+class _Specs_checker {
+    _Numeric_specs_checker _Numeric_checker;
+
+public:
+    constexpr _Specs_checker(_Type _Arg_type) : _Numeric_checker(_Arg_type) {}
+
+    constexpr void _On_align(_Align _Aln) {}
 };
 
 template <class _Ty, class _CharT = char>
@@ -776,6 +886,12 @@ auto visit_format_arg(_Visitor&& _Vis, basic_format_arg<_Context> _Arg) {
     return _STD visit(_STD forward<_Visitor>(_Vis), _Arg._Value);
 }
 
+template <class _CharT, class _OutputIt>
+_OutputIt _Write(_OutputIt _Out, monostate) {
+    _STL_INTERNAL_CHECK(false);
+    return _Out;
+}
+
 // Dispatcher to call enabled custom formatters, and do nothing otherwise.
 template <class _Context>
 class _Custom_formatter_dispatcher {
@@ -826,6 +942,11 @@ struct _Format_handler {
 
     void _On_replacement_field(int _Id, const _CharT*) {
         auto _Arg = _Ctx.arg(_Id);
+        _Ctx.advance_to(visit_format_arg(
+            _Overloaded {
+
+            }
+        )
     }
 
     const _CharT* _On_format_specs(int _Id, const _CharT* _Begin, const _CharT* _End) {
