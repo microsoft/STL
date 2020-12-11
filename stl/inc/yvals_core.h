@@ -351,6 +351,14 @@
 // _HAS_NODISCARD (in vcruntime.h) controls:
 // [[nodiscard]] attributes on STL functions
 
+#ifndef __has_cpp_attribute
+#define _NODISCARD_CTOR
+#elif __has_cpp_attribute(nodiscard) >= 201907L
+#define _NODISCARD_CTOR _NODISCARD
+#else
+#define _NODISCARD_CTOR
+#endif
+
 // Determine if we should use [[msvc::known_semantics]] to communicate to the compiler
 // that certain type trait specializations have the standard-mandated semantics
 #ifndef __has_cpp_attribute
@@ -502,14 +510,14 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 142
-#define _MSVC_STL_UPDATE  202010L
+#define _MSVC_STL_UPDATE  202011L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #ifdef __EDG__
 // not attempting to detect __EDG_VERSION__ being less than expected
 #elif defined(__clang__)
-#if __clang_major__ < 10
-#error STL1000: Unexpected compiler version, expected Clang 10.0.0 or newer.
+#if __clang_major__ < 11
+#error STL1000: Unexpected compiler version, expected Clang 11.0.0 or newer.
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
 #if _MSC_VER < 1928 // Coarse-grained, not inspecting _MSC_FULL_VER
@@ -653,7 +661,7 @@
 #ifndef _STD_VECTORIZE_WITH_FLOAT_CONTROL
 #ifdef _M_FP_EXCEPT
 #define _STD_VECTORIZE_WITH_FLOAT_CONTROL 0
-#else // ^^^ floating point exceptions enabled / floating point exceptions disabled (default) vvv
+#else // ^^^ floating-point exceptions enabled / floating-point exceptions disabled (default) vvv
 #define _STD_VECTORIZE_WITH_FLOAT_CONTROL 1
 #endif // _M_FP_EXCEPT
 #endif // _STD_VECTORIZE_WITH_FLOAT_CONTROL
@@ -878,7 +886,7 @@
     [[deprecated("warning STL4021: "                                                                                 \
                  "The std::filesystem::u8path() overloads are deprecated in C++20. "                                 \
                  "The constructors of std::filesystem::path provide equivalent functionality via construction from " \
-                 "u8string, u8string_view, or iterators with value_type char8_t."                                    \
+                 "u8string, u8string_view, or iterators with value_type char8_t. "                                   \
                  "You can define _SILENCE_CXX20_U8PATH_DEPRECATION_WARNING "                                         \
                  "or _SILENCE_ALL_CXX20_DEPRECATION_WARNINGS to acknowledge that you have received this warning.")]]
 #else // ^^^ warning enabled / warning disabled vvv
@@ -1007,7 +1015,19 @@
 #define _CXX20_DEPRECATE_MOVE_ITERATOR_ARROW
 #endif // ^^^ warning disabled ^^^
 
-// next warning number: STL4032
+#if _HAS_CXX17 && !defined(_SILENCE_CXX17_POLYMORPHIC_ALLOCATOR_DESTROY_DEPRECATION_WARNING) \
+    && !defined(_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS)
+#define _CXX17_DEPRECATE_POLYMORPHIC_ALLOCATOR_DESTROY                                                   \
+    [[deprecated("warning STL4032: "                                                                     \
+                 "std::pmr::polymorphic_allocator::destroy() is deprecated in C++17 by LWG-3036. "       \
+                 "Prefer std::destroy_at() or std::allocator_traits<polymorphic_allocator>::destroy(). " \
+                 "You can define _SILENCE_CXX17_POLYMORPHIC_ALLOCATOR_DESTROY_DEPRECATION_WARNING "      \
+                 "or _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS to acknowledge that you have received this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _CXX17_DEPRECATE_POLYMORPHIC_ALLOCATOR_DESTROY
+#endif // ^^^ warning disabled ^^^
+
+// next warning number: STL4033
 
 // P0619R4 Removing C++17-Deprecated Features
 #ifndef _HAS_FEATURES_REMOVED_IN_CXX20
@@ -1184,12 +1204,8 @@
 #define __cpp_lib_constexpr_tuple       201811L
 #define __cpp_lib_constexpr_utility     201811L
 
-#ifdef __cpp_impl_coroutine // TRANSITION, Clang and EDG coroutine support
-#if __cpp_impl_coroutine >= 201902L
+#ifdef __cpp_impl_coroutine // TRANSITION, Clang coroutine support
 #define __cpp_lib_coroutine 201902L
-#else // ^^^ __cpp_impl_coroutine >= 201902L ^^^ / vvv __cpp_impl_coroutine < 201902L vvv
-#define __cpp_lib_coroutine 197000L // TRANSITION, VS 2019 16.8 Preview 4
-#endif // ^^^ __cpp_impl_coroutine < 201902L ^^^
 #endif // __cpp_impl_coroutine
 
 #define __cpp_lib_destroying_delete            201806L

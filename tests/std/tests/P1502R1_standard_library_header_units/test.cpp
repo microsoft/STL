@@ -176,34 +176,24 @@ int main() {
         const to_chars_result result = to_chars(buf, end(buf), 3.14);
         assert(result.ec == errc{});
         assert(result.ptr == end(buf));
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         const string_view sv{buf, size(buf)};
         assert(sv == "3.14");
-#else // ^^^ no workaround / workaround vvv
-        assert(buf[0] == '3' && buf[1] == '.' && buf[2] == '1' && buf[3] == '4');
-#endif // ^^^ workaround ^^^
     }
 
     {
         puts("Testing <chrono>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1159995 (UDLs)
         constexpr chrono::seconds dur = 3min;
-#else // ^^^ no workaround / workaround vvv
-        constexpr chrono::seconds dur = chrono::minutes{3};
-#endif // ^^^ workaround ^^^
         assert(dur.count() == 180);
         static_assert(dur.count() == 180);
     }
 
     {
         puts("Testing <codecvt>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1161187 (access control), VSO-1236034 (error LNK2005: _Yarn)
         const string utf8_koshka_cat{"\xD0\xBA\xD0\xBE\xD1\x88\xD0\xBA\xD0\xB0_\xF0\x9F\x90\x88"};
         const wstring utf16_koshka_cat{L"\x043A\x043E\x0448\x043A\x0430_\xD83D\xDC08"};
         wstring_convert<codecvt_utf8_utf16<wchar_t>> conv;
         assert(conv.from_bytes(utf8_koshka_cat) == utf16_koshka_cat);
         assert(conv.to_bytes(utf16_koshka_cat) == utf8_koshka_cat);
-#endif // ^^^ no workaround ^^^
 
         static_assert(static_cast<int>(codecvt_mode::consume_header) == 4); // TRANSITION, DevCom-1160041 (deprecated)
     }
@@ -275,10 +265,8 @@ int main() {
 
     {
         puts("Testing <deque>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1160260 (partial specialization)
         const deque<int> d{10, 20, 30, 40, 50};
         assert(d[2] == 30);
-#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -296,14 +284,12 @@ int main() {
 
     {
         puts("Testing <filesystem>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         constexpr wstring_view dot{L"."};
         error_code ec{};
         const filesystem::space_info info = filesystem::space(dot, ec);
         assert(!ec);
         assert(info.capacity > 0);
         assert(info.capacity != static_cast<decltype(info.capacity)>(-1));
-#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -313,18 +299,14 @@ int main() {
 
     {
         puts("Testing <forward_list>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1160260 (partial specialization)
         const forward_list<int> fl{10, 20, 30, 40, 50};
         assert(*next(fl.begin(), 2) == 30);
-#endif // ^^^ no workaround ^^^
     }
 
     {
         puts("Testing <fstream>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         const ifstream f{};
         assert(!f.is_open());
-#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -356,7 +338,6 @@ int main() {
 
     {
         puts("Testing <iomanip>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         ostringstream oss;
         oss << "I have " << setfill('.') << setw(7) << 9 * 9 * 9 + 10 * 10 * 10 << " cute fluffy kittens.";
         assert(oss.str() == "I have ...1729 cute fluffy kittens.");
@@ -364,18 +345,15 @@ int main() {
         oss << quoted(R"(Read "C:\Temp\Cat Names.txt" for more info.)");
         const char* const expected_quoted = R"("Read \"C:\\Temp\\Cat Names.txt\" for more info.")";
         assert(oss.str() == expected_quoted);
-#endif // ^^^ no workaround ^^^
     }
 
     {
         puts("Testing <ios>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         ios b{nullptr};
         assert(b.rdbuf() == nullptr);
         assert(b.rdstate() == ios_base::badbit);
         assert(b.precision() == 6);
         static_assert(ios_base::floatfield == (ios_base::fixed | ios_base::scientific));
-#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -386,18 +364,14 @@ int main() {
 
     {
         puts("Testing <iostream>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         cout << "Testing P1502R1_standard_library_header_units.\n";
         assert(cin.tie() == &cout);
-#endif // ^^^ no workaround ^^^
     }
 
     {
         puts("Testing <istream>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         const istream is{nullptr};
         assert(is.gcount() == 0);
-#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -436,10 +410,8 @@ int main() {
 
     {
         puts("Testing <list>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1160260 (partial specialization)
         const list<int> l{10, 20, 30, 40, 50};
         assert(*next(l.begin(), 2) == 30);
-#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -453,10 +425,8 @@ int main() {
 
     {
         puts("Testing <map>.");
-#if 0 // TRANSITION, DevCom-1160260 (partial specialization), VSO-1236041 (error LNK2019 pair piecewise_construct_t)
         map<int, int> m{{10, 11}, {20, 22}, {30, 33}, {40, 44}, {50, 55}};
         assert(m[30] == 33);
-#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -550,15 +520,12 @@ int main() {
 
     {
         puts("Testing <ostream>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         const ostream os{nullptr};
         assert(os.rdbuf() == nullptr);
-#endif // ^^^ no workaround ^^^
     }
 
     {
         puts("Testing <queue>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1160260 (partial specialization)
         queue<int> q;
         q.push(10);
         q.push(20);
@@ -587,7 +554,6 @@ int main() {
         assert(pq.top() == 10);
         pq.pop();
         assert(pq.empty());
-#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -607,9 +573,9 @@ int main() {
 #if 0 // TRANSITION, VSO-1088552 (deduction guides)
         assert(ranges::distance(views::filter(arr, [](int x) { return x == 0; })) == 4);
         static_assert(ranges::distance(views::filter(arr, [](int x) { return x != 0; })) == 5);
-#elif defined(MSVC_INTERNAL_TESTING) // TRANSITION, VSO-1237145 (trailing requires clause)
-        auto is_zero                  = [](int x) { return x == 0; };
-        using FV1                     = ranges::filter_view<ranges::ref_view<decltype(arr)>, decltype(is_zero)>;
+#else // ^^^ no workaround / workaround vvv
+        auto is_zero = [](int x) { return x == 0; };
+        using FV1    = ranges::filter_view<ranges::ref_view<decltype(arr)>, decltype(is_zero)>;
         assert(ranges::distance(FV1{arr, is_zero}) == 4);
         constexpr auto not_zero = [](int x) { return x != 0; };
         using FV2 = ranges::filter_view<ranges::ref_view<decltype(arr)>, remove_const_t<decltype(not_zero)>>;
@@ -624,7 +590,6 @@ int main() {
 
     {
         puts("Testing <regex>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         const regex r{R"(\w+)"};
         const string s{"cute! fluffy? kittens."};
         vector<string> v;
@@ -635,19 +600,16 @@ int main() {
 
         const vector<string> expected{"cute", "fluffy", "kittens"};
         assert(v == expected);
-#endif // ^^^ no workaround ^^^
     }
 
     {
         puts("Testing <scoped_allocator>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1162644 (deprecated warning)
         vector<int, scoped_allocator_adaptor<allocator<int>>> v;
         v.push_back(11);
         v.push_back(22);
         v.push_back(33);
         constexpr int expected[]{11, 22, 33};
         assert(equal(v.begin(), v.end(), begin(expected), end(expected)));
-#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -678,14 +640,12 @@ int main() {
 
     {
         puts("Testing <set>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1160260 (partial specialization)
         const set<int> s{10, 20, 30, 40, 50};
         assert(*next(s.begin(), 2) == 30);
 
         const multiset<int> ms{10, 20, 20, 30, 30, 30, 40, 40, 40, 40};
         const auto p = ms.equal_range(30);
         assert(distance(p.first, p.second) == 3);
-#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -739,16 +699,13 @@ int main() {
 
     {
         puts("Testing <sstream>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         ostringstream oss;
         oss << "I have " << 9 * 9 * 9 + 10 * 10 * 10 << " cute fluffy kittens.";
         assert(oss.str() == "I have 1729 cute fluffy kittens.");
-#endif // ^^^ no workaround ^^^
     }
 
     {
         puts("Testing <stack>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1160260 (partial specialization)
         stack<int> s;
         s.push(10);
         s.push(20);
@@ -761,12 +718,10 @@ int main() {
         assert(s.top() == 10);
         s.pop();
         assert(s.empty());
-#endif // ^^^ no workaround ^^^
     }
 
     {
         puts("Testing <stdexcept>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         bool caught_puppies = false;
 
         try {
@@ -778,7 +733,6 @@ int main() {
         }
 
         assert(caught_puppies);
-#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -802,11 +756,7 @@ int main() {
                 }
                 l.count_down(); // tell main() that we're done
                 while (!token.stop_requested()) {
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1159995 (UDLs)
                     this_thread::sleep_for(10ms); // not a timing assumption; avoids spinning furiously
-#else // ^^^ no workaround / workaround vvv
-                    this_thread::sleep_for(chrono::milliseconds{10}); // not a timing assumption
-#endif // ^^^ workaround ^^^
                 }
                 vec.push_back(-1000); // indicate that token.stop_requested() returned true
             }};
@@ -818,53 +768,38 @@ int main() {
             1079, 3238, 1619, 4858, 2429, 7288, 3644, 1822, 911, 2734, 1367, 4102, 2051, 6154, 3077, 9232, 4616, 2308,
             1154, 577, 1732, 866, 433, 1300, 650, 325, 976, 488, 244, 122, 61, 184, 92, 46, 23, 70, 35, 106, 53, 160,
             80, 40, 20, 10, 5, 16, 8, 4, 2, 1, -1000};
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1160260 (partial specialization)
         assert(equal(vec.begin(), vec.end(), begin(expected), end(expected)));
-#else // ^^^ no workaround / workaround vvv
-        assert(vec.size() == size(expected));
-        for (size_t i = 0; i < vec.size(); ++i) {
-            assert(vec[i] == expected[i]);
-        }
-#endif // ^^^ workaround ^^^
     }
 
     {
         puts("Testing <streambuf>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         istringstream iss{"kittens"};
         assert(iss.rdbuf()->in_avail() == 7);
-#endif // ^^^ no workaround ^^^
     }
 
     {
         puts("Testing <string_view>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         constexpr string_view catenary{"catenary"};
         assert(catenary.starts_with("cat"));
         assert(!catenary.starts_with("dog"));
         static_assert(catenary.starts_with("cat"));
         static_assert(!catenary.starts_with("dog"));
-#endif // ^^^ no workaround ^^^
     }
 
     {
         puts("Testing <string>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         const string small_string{"homeowner"};
         const string large_string{"Cute fluffy kittens are so adorable when they meow and purr."};
         assert(small_string.find("meow") == 2);
         assert(large_string.find("meow") == 46);
-#endif // ^^^ no workaround ^^^
     }
 
     {
         puts("Testing <strstream>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         istrstream istr{"1729"};
         int n = -1;
         istr >> n;
         assert(n == 1729);
-#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -936,22 +871,18 @@ int main() {
 
     {
         puts("Testing <unordered_map>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1160260 (partial specialization)
         unordered_map<int, int> um{{1, 1}, {2, 4}, {3, 9}, {4, 16}, {5, 25}};
         for (const auto& p : um) {
             assert(p.first * p.first == p.second);
         }
-#endif // ^^^ no workaround ^^^
     }
 
     {
         puts("Testing <unordered_set>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1160260 (partial specialization)
         unordered_set<int> us{10, 20, 30, 40, 50};
         for (const auto& elem : us) {
             assert(elem % 10 == 0);
         }
-#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -1007,10 +938,8 @@ int main() {
         const vector<int> v{10, 20, 30, 40, 50};
         assert(v[2] == 30);
 
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, should work with VS 2019 16.9 Preview 1
         const vector<bool> vb{true, true, false, true};
         assert(vb[0] && vb[1] && !vb[2] && vb[3]);
-#endif // ^^^ no workaround ^^^
     }
 
     {

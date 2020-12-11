@@ -1771,7 +1771,7 @@ void swap(vector<_Ty, _Alloc>& _Left, vector<_Ty, _Alloc>& _Right) noexcept /* s
 template <class _Ty, class _Alloc>
 _NODISCARD bool operator==(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
     return _Left.size() == _Right.size()
-           && _STD equal(_Left._Unchecked_begin(), _Left._Unchecked_end(), _Right._Unchecked_begin());
+        && _STD equal(_Left._Unchecked_begin(), _Left._Unchecked_end(), _Right._Unchecked_begin());
 }
 
 template <class _Ty, class _Alloc>
@@ -2003,7 +2003,7 @@ public:
     _NODISCARD difference_type operator-(const _Vb_const_iterator& _Right) const noexcept {
         _Compat(_Right);
         return static_cast<difference_type>(_VBITS * (this->_Myptr - _Right._Myptr))
-               + static_cast<difference_type>(this->_Myoff) - static_cast<difference_type>(_Right._Myoff);
+             + static_cast<difference_type>(this->_Myoff) - static_cast<difference_type>(_Right._Myoff);
     }
 
     _NODISCARD const_reference operator[](const difference_type _Off) const noexcept {

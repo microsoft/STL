@@ -447,6 +447,11 @@ constexpr void test_floating() {
             {10, bit_cast<float>(0xFFFFFFFFu)}, // negative quiet NaN, all payload bits set
             {10, bit_cast<float>(0xFFC01234u)}, // negative quiet NaN, some payload bits set
             {10, bit_cast<float>(0xFFC00000u)}, // negative quiet NaN, no payload bits set
+#ifdef __clang__ // TRANSITION, MSVC "quiets" signaling NaNs into quiet NaNs when constant evaluated
+            {10, bit_cast<float>(0xFFBFFFFFu)}, // negative signaling NaN, all payload bits set
+            {10, bit_cast<float>(0xFF801234u)}, // negative signaling NaN, some payload bits set
+            {10, bit_cast<float>(0xFF800001u)}, // negative signaling NaN, minimum payload bits set
+#endif // defined(__clang__)
             {20, -numeric_limits<float>::infinity()}, // negative infinity
             {30, -0x1.fffffep+127f}, // negative max normal
             {31, -0x1.000000p-126f}, // negative min normal
@@ -459,6 +464,11 @@ constexpr void test_floating() {
             {70, 0x1.000000p-126f}, // min normal
             {71, 0x1.fffffep+127f}, // max normal
             {80, numeric_limits<float>::infinity()}, // infinity
+#ifdef __clang__ // TRANSITION, MSVC "quiets" signaling NaNs into quiet NaNs when constant evaluated
+            {90, bit_cast<float>(0x7F800001u)}, // signaling NaN, minimum payload bits set
+            {90, bit_cast<float>(0x7F801234u)}, // signaling NaN, some payload bits set
+            {90, bit_cast<float>(0x7FBFFFFFu)}, // signaling NaN, all payload bits set
+#endif // defined(__clang__)
             {90, bit_cast<float>(0x7FC00000u)}, // quiet NaN, no payload bits set
             {90, bit_cast<float>(0x7FC01234u)}, // quiet NaN, some payload bits set
             {90, bit_cast<float>(0x7FFFFFFFu)}, // quiet NaN, all payload bits set
@@ -470,6 +480,11 @@ constexpr void test_floating() {
             {10, bit_cast<Floating>(0xFFFFFFFFFFFFFFFFull)}, // negative quiet NaN, all payload bits set
             {10, bit_cast<Floating>(0xFFF8000000001234ull)}, // negative quiet NaN, some payload bits set
             {10, bit_cast<Floating>(0xFFF8000000000000ull)}, // negative quiet NaN, no payload bits set
+#ifdef __clang__ // TRANSITION, MSVC "quiets" signaling NaNs into quiet NaNs when constant evaluated
+            {10, bit_cast<Floating>(0xFFF7FFFFFFFFFFFFull)}, // negative signaling NaN, all payload bits set
+            {10, bit_cast<Floating>(0xFFF0000000001234ull)}, // negative signaling NaN, some payload bits set
+            {10, bit_cast<Floating>(0xFFF0000000000001ull)}, // negative signaling NaN, minimum payload bits set
+#endif // defined(__clang__)
             {20, -numeric_limits<Floating>::infinity()}, // negative infinity
             {30, -0x1.fffffffffffffp+1023}, // negative max normal
             {31, -0x1.0000000000000p-1022}, // negative min normal
@@ -482,6 +497,11 @@ constexpr void test_floating() {
             {70, 0x1.0000000000000p-1022}, // min normal
             {71, 0x1.fffffffffffffp+1023}, // max normal
             {80, numeric_limits<Floating>::infinity()}, // infinity
+#ifdef __clang__ // TRANSITION, MSVC "quiets" signaling NaNs into quiet NaNs when constant evaluated
+            {90, bit_cast<Floating>(0x7FF0000000000001ull)}, // signaling NaN, minimum payload bits set
+            {90, bit_cast<Floating>(0x7FF0000000001234ull)}, // signaling NaN, some payload bits set
+            {90, bit_cast<Floating>(0x7FF7FFFFFFFFFFFFull)}, // signaling NaN, all payload bits set
+#endif // defined(__clang__)
             {90, bit_cast<Floating>(0x7FF8000000000000ull)}, // quiet NaN, no payload bits set
             {90, bit_cast<Floating>(0x7FF8000000001234ull)}, // quiet NaN, some payload bits set
             {90, bit_cast<Floating>(0x7FFFFFFFFFFFFFFFull)}, // quiet NaN, all payload bits set

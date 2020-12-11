@@ -45,7 +45,7 @@ struct divides {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _SECOND_ARGUMENT_TYPE_NAME;
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _RESULT_TYPE_NAME;
 
-    constexpr _Ty operator()(const _Ty& _Left, const _Ty& _Right) const {
+    _NODISCARD constexpr _Ty operator()(const _Ty& _Left, const _Ty& _Right) const {
         return _Left / _Right;
     }
 };
@@ -57,7 +57,7 @@ struct modulus {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _SECOND_ARGUMENT_TYPE_NAME;
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _RESULT_TYPE_NAME;
 
-    constexpr _Ty operator()(const _Ty& _Left, const _Ty& _Right) const {
+    _NODISCARD constexpr _Ty operator()(const _Ty& _Left, const _Ty& _Right) const {
         return _Left % _Right;
     }
 };
@@ -68,7 +68,7 @@ struct negate {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _ARGUMENT_TYPE_NAME;
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _RESULT_TYPE_NAME;
 
-    constexpr _Ty operator()(const _Ty& _Left) const {
+    _NODISCARD constexpr _Ty operator()(const _Ty& _Left) const {
         return -_Left;
     }
 };
@@ -98,7 +98,7 @@ struct logical_and {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _SECOND_ARGUMENT_TYPE_NAME;
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef bool _RESULT_TYPE_NAME;
 
-    constexpr bool operator()(const _Ty& _Left, const _Ty& _Right) const {
+    _NODISCARD constexpr bool operator()(const _Ty& _Left, const _Ty& _Right) const {
         return _Left && _Right;
     }
 };
@@ -110,7 +110,7 @@ struct logical_or {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _SECOND_ARGUMENT_TYPE_NAME;
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef bool _RESULT_TYPE_NAME;
 
-    constexpr bool operator()(const _Ty& _Left, const _Ty& _Right) const {
+    _NODISCARD constexpr bool operator()(const _Ty& _Left, const _Ty& _Right) const {
         return _Left || _Right;
     }
 };
@@ -121,7 +121,7 @@ struct logical_not {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _ARGUMENT_TYPE_NAME;
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef bool _RESULT_TYPE_NAME;
 
-    constexpr bool operator()(const _Ty& _Left) const {
+    _NODISCARD constexpr bool operator()(const _Ty& _Left) const {
         return !_Left;
     }
 };
@@ -133,7 +133,7 @@ struct bit_and {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _SECOND_ARGUMENT_TYPE_NAME;
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _RESULT_TYPE_NAME;
 
-    constexpr _Ty operator()(const _Ty& _Left, const _Ty& _Right) const {
+    _NODISCARD constexpr _Ty operator()(const _Ty& _Left, const _Ty& _Right) const {
         return _Left & _Right;
     }
 };
@@ -145,7 +145,7 @@ struct bit_or {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _SECOND_ARGUMENT_TYPE_NAME;
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _RESULT_TYPE_NAME;
 
-    constexpr _Ty operator()(const _Ty& _Left, const _Ty& _Right) const {
+    _NODISCARD constexpr _Ty operator()(const _Ty& _Left, const _Ty& _Right) const {
         return _Left | _Right;
     }
 };
@@ -157,7 +157,7 @@ struct bit_xor {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _SECOND_ARGUMENT_TYPE_NAME;
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _RESULT_TYPE_NAME;
 
-    constexpr _Ty operator()(const _Ty& _Left, const _Ty& _Right) const {
+    _NODISCARD constexpr _Ty operator()(const _Ty& _Left, const _Ty& _Right) const {
         return _Left ^ _Right;
     }
 };
@@ -168,7 +168,7 @@ struct bit_not {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _ARGUMENT_TYPE_NAME;
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _RESULT_TYPE_NAME;
 
-    constexpr _Ty operator()(const _Ty& _Left) const {
+    _NODISCARD constexpr _Ty operator()(const _Ty& _Left) const {
         return ~_Left;
     }
 };
@@ -186,7 +186,7 @@ struct bit_not {
 template <>
 struct divides<void> {
     template <class _Ty1, class _Ty2>
-    constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
+    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
         -> decltype(_STD forward<_Ty1>(_Left) / _STD forward<_Ty2>(_Right)) {
         return _STD forward<_Ty1>(_Left) / _STD forward<_Ty2>(_Right);
     }
@@ -198,7 +198,7 @@ struct divides<void> {
 template <>
 struct modulus<void> {
     template <class _Ty1, class _Ty2>
-    constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
+    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
         -> decltype(_STD forward<_Ty1>(_Left) % _STD forward<_Ty2>(_Right)) {
         return _STD forward<_Ty1>(_Left) % _STD forward<_Ty2>(_Right);
     }
@@ -210,7 +210,7 @@ struct modulus<void> {
 template <>
 struct negate<void> {
     template <class _Ty>
-    constexpr auto operator()(_Ty&& _Left) const -> decltype(-_STD forward<_Ty>(_Left)) {
+    _NODISCARD constexpr auto operator()(_Ty&& _Left) const -> decltype(-_STD forward<_Ty>(_Left)) {
         return -_STD forward<_Ty>(_Left);
     }
 
@@ -239,7 +239,7 @@ struct negate<void> {
 template <>
 struct logical_and<void> {
     template <class _Ty1, class _Ty2>
-    constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
+    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
         -> decltype(_STD forward<_Ty1>(_Left) && _STD forward<_Ty2>(_Right)) {
         return _STD forward<_Ty1>(_Left) && _STD forward<_Ty2>(_Right);
     }
@@ -251,7 +251,7 @@ struct logical_and<void> {
 template <>
 struct logical_or<void> {
     template <class _Ty1, class _Ty2>
-    constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
+    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
         -> decltype(_STD forward<_Ty1>(_Left) || _STD forward<_Ty2>(_Right)) {
         return _STD forward<_Ty1>(_Left) || _STD forward<_Ty2>(_Right);
     }
@@ -263,7 +263,7 @@ struct logical_or<void> {
 template <>
 struct logical_not<void> {
     template <class _Ty>
-    constexpr auto operator()(_Ty&& _Left) const -> decltype(!_STD forward<_Ty>(_Left)) {
+    _NODISCARD constexpr auto operator()(_Ty&& _Left) const -> decltype(!_STD forward<_Ty>(_Left)) {
         return !_STD forward<_Ty>(_Left);
     }
 
@@ -274,7 +274,7 @@ struct logical_not<void> {
 template <>
 struct bit_and<void> {
     template <class _Ty1, class _Ty2>
-    constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
+    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
         -> decltype(_STD forward<_Ty1>(_Left) & _STD forward<_Ty2>(_Right)) {
         return _STD forward<_Ty1>(_Left) & _STD forward<_Ty2>(_Right);
     }
@@ -286,7 +286,7 @@ struct bit_and<void> {
 template <>
 struct bit_or<void> {
     template <class _Ty1, class _Ty2>
-    constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
+    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
         -> decltype(_STD forward<_Ty1>(_Left) | _STD forward<_Ty2>(_Right)) {
         return _STD forward<_Ty1>(_Left) | _STD forward<_Ty2>(_Right);
     }
@@ -298,7 +298,7 @@ struct bit_or<void> {
 template <>
 struct bit_xor<void> {
     template <class _Ty1, class _Ty2>
-    constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
+    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
         -> decltype(_STD forward<_Ty1>(_Left) ^ _STD forward<_Ty2>(_Right)) {
         return _STD forward<_Ty1>(_Left) ^ _STD forward<_Ty2>(_Right);
     }
@@ -310,7 +310,7 @@ struct bit_xor<void> {
 template <>
 struct bit_not<void> {
     template <class _Ty>
-    constexpr auto operator()(_Ty&& _Left) const -> decltype(~_STD forward<_Ty>(_Left)) {
+    _NODISCARD constexpr auto operator()(_Ty&& _Left) const -> decltype(~_STD forward<_Ty>(_Left)) {
         return ~_STD forward<_Ty>(_Left);
     }
 
@@ -328,7 +328,7 @@ public:
 
     constexpr explicit unary_negate(const _Fn& _Func) : _Functor(_Func) {}
 
-    constexpr bool operator()(const argument_type& _Left) const {
+    _NODISCARD constexpr bool operator()(const argument_type& _Left) const {
         return !_Functor(_Left);
     }
 
@@ -352,7 +352,7 @@ public:
 
     constexpr explicit binary_negate(const _Fn& _Func) : _Functor(_Func) {}
 
-    constexpr bool operator()(const first_argument_type& _Left, const second_argument_type& _Right) const {
+    _NODISCARD constexpr bool operator()(const first_argument_type& _Left, const second_argument_type& _Right) const {
         return !_Functor(_Left, _Right);
     }
 
@@ -829,7 +829,7 @@ constexpr size_t _Space_size = (_Small_object_num_ptrs - 1) * sizeof(void*);
 
 template <class _Impl> // determine whether _Impl must be dynamically allocated
 _INLINE_VAR constexpr bool _Is_large = sizeof(_Impl) > _Space_size || alignof(_Impl) > alignof(max_align_t)
-                                       || !_Impl::_Nothrow_move::value;
+                                    || !_Impl::_Nothrow_move::value;
 
 #if _HAS_FUNCTION_ALLOCATOR_SUPPORT
 // CLASS TEMPLATE _Func_impl

@@ -88,6 +88,9 @@ $Workloads = @(
   'Microsoft.VisualStudio.Component.VC.CMake.Project',
   'Microsoft.VisualStudio.Component.VC.CoreIde',
   'Microsoft.VisualStudio.Component.VC.Llvm.Clang',
+  'Microsoft.VisualStudio.Component.VC.Runtimes.ARM.Spectre',
+  'Microsoft.VisualStudio.Component.VC.Runtimes.ARM64.Spectre',
+  'Microsoft.VisualStudio.Component.VC.Runtimes.x86.x64.Spectre',
   'Microsoft.VisualStudio.Component.VC.Tools.ARM',
   'Microsoft.VisualStudio.Component.VC.Tools.ARM64',
   'Microsoft.VisualStudio.Component.VC.Tools.x86.x64',
@@ -98,6 +101,9 @@ $ReleaseInPath = 'Preview'
 $Sku = 'Enterprise'
 $VisualStudioBootstrapperUrl = 'https://aka.ms/vs/16/pre/vs_enterprise.exe'
 $PythonUrl = 'https://www.python.org/ftp/python/3.9.0/python-3.9.0-amd64.exe'
+
+# https://docs.microsoft.com/en-us/windows-hardware/drivers/download-the-wdk
+$WindowsDriverKitUrl = 'https://go.microsoft.com/fwlink/?linkid=2128854'
 
 $CudaUrl = `
   'https://developer.download.nvidia.com/compute/cuda/10.1/Prod/local_installers/cuda_10.1.243_426.00_win10.exe'
@@ -225,6 +231,36 @@ Function InstallPython {
 
 <#
 .SYNOPSIS
+Installs the Windows Driver Kit.
+
+.DESCRIPTION
+InstallWindowsDriverKit installs the Windows Driver Kit from the supplied URL.
+
+.PARAMETER Url
+The URL of the Windows Driver Kit installer.
+#>
+Function InstallWindowsDriverKit {
+  Param(
+    [String]$Url
+  )
+
+  Write-Host 'Downloading the Windows Driver Kit...'
+  [string]$installerPath = Get-TempFilePath -Extension 'exe'
+  curl.exe -L -o $installerPath -s -S $Url
+  Write-Host 'Installing the Windows Driver Kit...'
+  $proc = Start-Process -FilePath cmd.exe -ArgumentList `
+  @('/c', 'start', '/wait', $installerPath, '/quiet', '/features', '+') -Wait -PassThru
+  $exitCode = $proc.ExitCode
+  if ($exitCode -eq 0) {
+    Write-Host 'Installation successful!'
+  }
+  else {
+    Write-Error "Installation failed! Exited with $exitCode."
+  }
+}
+
+<#
+.SYNOPSIS
 Installs NVIDIA's CUDA Toolkit.
 
 .DESCRIPTION
@@ -300,6 +336,7 @@ Add-MpPreference -ExclusionProcess python.exe
 
 InstallPython $PythonUrl
 InstallVisualStudio -Workloads $Workloads -BootstrapperUrl $VisualStudioBootstrapperUrl
+InstallWindowsDriverKit $WindowsDriverKitUrl
 InstallCuda -Url $CudaUrl -Features $CudaFeatures
 
 Write-Host 'Updating PATH...'

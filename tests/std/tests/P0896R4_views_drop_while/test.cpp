@@ -21,7 +21,7 @@ using Pred = remove_const_t<decltype(is_less_than<3>)>;
 STATIC_ASSERT(is_nothrow_copy_constructible_v<Pred>&& is_nothrow_move_constructible_v<Pred>);
 
 constexpr auto pipeline = views::drop_while(is_less_than<3>) | views::drop_while(is_less_than<3>)
-                          | views::drop_while(is_less_than<3>) | views::drop_while(is_less_than<3>);
+                        | views::drop_while(is_less_than<3>) | views::drop_while(is_less_than<3>);
 
 template <class Rng, class V = views::all_t<Rng>>
 using pipeline_t = ranges::drop_while_view<
@@ -152,9 +152,6 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // Validate deduction guide
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1159442
-    (void) 42;
-#endif // TRANSITION, DevCom-1159442
     same_as<R> auto r = drop_while_view{forward<Rng>(rng), is_less_than<3>};
     assert(ranges::equal(r, expected));
     if constexpr (forward_range<V>) {

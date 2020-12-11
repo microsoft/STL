@@ -413,7 +413,7 @@ template <_Has_member_element_type _Ty>
 struct indirectly_readable_traits<_Ty> : _Cond_value_type<typename _Ty::element_type> {};
 
 // clang-format off
-template <_Has_member_value_type _Ty> // Per LWG-3446
+template <_Has_member_value_type _Ty>
     requires _Has_member_element_type<_Ty>
         && same_as<remove_cv_t<typename _Ty::value_type>, remove_cv_t<typename _Ty::element_type>>
 struct indirectly_readable_traits<_Ty> : _Cond_value_type<typename _Ty::value_type> {};
@@ -473,7 +473,7 @@ struct _Iter_traits_difference<false> {
 
 // clang-format off
 template <class _It>
-concept _Cpp17_iterator = // per LWG-3420
+concept _Cpp17_iterator =
     requires(_It __i) {
         { *__i } -> _Can_reference;
         { ++__i } -> same_as<_It&>;
@@ -717,10 +717,9 @@ namespace ranges {
         // clang-format on
     } // namespace _Iter_move
 
-    namespace _Cpos {
+    inline namespace _Cpos {
         inline constexpr _Iter_move::_Cpo iter_move;
     }
-    using namespace _Cpos;
 } // namespace ranges
 
 // iter_swap defined below since it depends on indirectly_movable_storable
@@ -765,7 +764,7 @@ concept indirectly_writable = requires(_It&& __i, _Ty&& __t) {
 // CONCEPT _Integer_like
 // clang-format off
 template <class _Ty>
-concept _Integer_like = _Is_nonbool_integral<_Ty>; // per the proposed resolution of LWG-3467
+concept _Integer_like = _Is_nonbool_integral<_Ty>;
 
 // CONCEPT _Signed_integer_like
 template <class _Ty>
@@ -778,7 +777,7 @@ using _Make_unsigned_like_t = make_unsigned_t<_Ty>;
 
 // ALIAS TEMPLATE _Make_signed_like_t
 template <class _Ty>
-using _Make_signed_like_t = make_signed_t<_Ty>; // per the proposed resolution of LWG-3403
+using _Make_signed_like_t = make_signed_t<_Ty>;
 
 // CONCEPT weakly_incrementable
 // clang-format off
@@ -1104,10 +1103,9 @@ namespace ranges {
         };
     } // namespace _Iter_swap
 
-    namespace _Cpos {
+    inline namespace _Cpos {
         inline constexpr _Iter_swap::_Cpo iter_swap;
     }
-    using namespace _Cpos;
 } // namespace ranges
 
 // clang-format off
@@ -1912,7 +1910,6 @@ public:
     // clang-format off
     template <class _Other>
 #ifdef __cpp_lib_concepts
-        // Per LWG-3435
         requires (!is_same_v<_Other, _BidIt>) && convertible_to<const _Other&, _BidIt>
 #endif // __cpp_lib_concepts
     _CONSTEXPR17 reverse_iterator(const reverse_iterator<_Other>& _Right) noexcept(
@@ -1921,7 +1918,6 @@ public:
 
     template <class _Other>
 #ifdef __cpp_lib_concepts
-        // Per LWG-3435
         requires (!is_same_v<_Other, _BidIt>) && convertible_to<const _Other&, _BidIt>
             && assignable_from<_BidIt&, const _Other&>
 #endif // __cpp_lib_concepts
@@ -2419,10 +2415,9 @@ namespace ranges {
         };
     } // namespace _Begin
 
-    namespace _Cpos {
+    inline namespace _Cpos {
         inline constexpr _Begin::_Cpo begin;
     }
-    using namespace _Cpos;
 
     // ALIAS TEMPLATE ranges::iterator_t
     template <class _Ty>
@@ -2482,10 +2477,9 @@ namespace ranges {
         };
     } // namespace _Unchecked_begin
 
-    namespace _Cpos {
+    inline namespace _Cpos {
         inline constexpr _Unchecked_begin::_Cpo _Ubegin;
     }
-    using namespace _Cpos;
 
     // CUSTOMIZATION POINT OBJECT ranges::end
     namespace _End {
@@ -2559,10 +2553,9 @@ namespace ranges {
         };
     } // namespace _End
 
-    namespace _Cpos {
+    inline namespace _Cpos {
         inline constexpr _End::_Cpo end;
     }
-    using namespace _Cpos;
 
     // CUSTOMIZATION POINT OBJECT ranges::_Uend
     namespace _Unchecked_end {
@@ -2619,10 +2612,9 @@ namespace ranges {
         };
     } // namespace _Unchecked_end
 
-    namespace _Cpos {
+    inline namespace _Cpos {
         inline constexpr _Unchecked_end::_Cpo _Uend;
     }
-    using namespace _Cpos;
 
     // CONCEPT ranges::range
     template <class _Rng>
@@ -2669,10 +2661,9 @@ namespace ranges {
         // clang-format on
     };
 
-    namespace _Cpos {
+    inline namespace _Cpos {
         inline constexpr _Cbegin_fn cbegin;
     }
-    using namespace _Cpos;
 
     // CUSTOMIZATION POINT OBJECT ranges::cend
     struct _Cend_fn {
@@ -2686,10 +2677,9 @@ namespace ranges {
         // clang-format on
     };
 
-    namespace _Cpos {
+    inline namespace _Cpos {
         inline constexpr _Cend_fn cend;
     }
-    using namespace _Cpos;
 
     // CUSTOMIZATION POINT OBJECT ranges::rbegin
     namespace _Rbegin {
@@ -2758,10 +2748,9 @@ namespace ranges {
         };
     } // namespace _Rbegin
 
-    namespace _Cpos {
+    inline namespace _Cpos {
         inline constexpr _Rbegin::_Cpo rbegin;
     }
-    using namespace _Cpos;
 
     // CUSTOMIZATION POINT OBJECT ranges::rend
     namespace _Rend {
@@ -2831,10 +2820,9 @@ namespace ranges {
         };
     } // namespace _Rend
 
-    namespace _Cpos {
+    inline namespace _Cpos {
         inline constexpr _Rend::_Cpo rend;
     }
-    using namespace _Cpos;
 
     // CUSTOMIZATION POINT OBJECT ranges::crbegin
     struct _Crbegin_fn {
@@ -2848,10 +2836,9 @@ namespace ranges {
         // clang-format on
     };
 
-    namespace _Cpos {
+    inline namespace _Cpos {
         inline constexpr _Crbegin_fn crbegin;
     }
-    using namespace _Cpos;
 
     // CUSTOMIZATION POINT OBJECT ranges::crend
     struct _Crend_fn {
@@ -2865,10 +2852,9 @@ namespace ranges {
         // clang-format on
     };
 
-    namespace _Cpos {
+    inline namespace _Cpos {
         inline constexpr _Crend_fn crend;
     }
-    using namespace _Cpos;
 
     // VARIABLE TEMPLATE ranges::disable_sized_range
     template <class>
@@ -2954,10 +2940,9 @@ namespace ranges {
         };
     } // namespace _Size
 
-    namespace _Cpos {
+    inline namespace _Cpos {
         inline constexpr _Size::_Cpo size;
     }
-    using namespace _Cpos;
 
     // CUSTOMIZATION POINT OBJECT ranges::empty
     namespace _Empty {
@@ -3025,10 +3010,9 @@ namespace ranges {
         };
     } // namespace _Empty
 
-    namespace _Cpos {
+    inline namespace _Cpos {
         inline constexpr _Empty::_Cpo empty;
     }
-    using namespace _Cpos;
 
     // CUSTOMIZATION POINT OBJECT ranges::data
     namespace _Data {
@@ -3085,10 +3069,9 @@ namespace ranges {
         };
     } // namespace _Data
 
-    namespace _Cpos {
+    inline namespace _Cpos {
         inline constexpr _Data::_Cpo data;
     }
-    using namespace _Cpos;
 
     // CUSTOMIZATION POINT OBJECT ranges::cdata
     struct _Cdata_fn {
@@ -3102,10 +3085,9 @@ namespace ranges {
         // clang-format on
     };
 
-    namespace _Cpos {
+    inline namespace _Cpos {
         inline constexpr _Cdata_fn cdata;
     }
-    using namespace _Cpos;
 
     // clang-format off
     // CONCEPT ranges::sized_range
@@ -3333,7 +3315,7 @@ namespace ranges {
     inline constexpr _Distance_fn distance{_Not_quite_object::_Construct_tag{}};
 
     // VARIABLE ranges::ssize
-    class _Ssize_fn { // Per the proposed resolution of LWG-3403
+    class _Ssize_fn {
     public:
         // clang-format off
         template <class _Rng>
@@ -3345,10 +3327,9 @@ namespace ranges {
         // clang-format on
     };
 
-    namespace _Cpos {
+    inline namespace _Cpos {
         inline constexpr _Ssize_fn ssize;
     }
-    using namespace _Cpos;
 
     // VARIABLE ranges::next
     class _Next_fn : private _Not_quite_object {
@@ -3888,7 +3869,7 @@ namespace ranges {
     subrange(_It, _Se, _Make_unsigned_like_t<iter_difference_t<_It>>) -> subrange<_It, _Se, subrange_kind::sized>;
 
     template <borrowed_range _Rng>
-    subrange(_Rng &&) -> subrange<iterator_t<_Rng>, sentinel_t<_Rng>,
+    subrange(_Rng&&) -> subrange<iterator_t<_Rng>, sentinel_t<_Rng>,
         (sized_range<_Rng> || sized_sentinel_for<sentinel_t<_Rng>, iterator_t<_Rng>>) ? subrange_kind::sized
                                                                                       : subrange_kind::unsized>;
 
@@ -4006,7 +3987,6 @@ public:
     // clang-format off
     template <class _Other>
 #ifdef __cpp_lib_concepts
-        // per LWG-3435
         requires (!is_same_v<_Other, _Iter>) && convertible_to<const _Other&, _Iter>
 #endif // __cpp_lib_concepts
     _CONSTEXPR17 move_iterator(const move_iterator<_Other>& _Right) noexcept(
@@ -4015,7 +3995,6 @@ public:
 
     template <class _Other>
 #ifdef __cpp_lib_concepts
-        // per LWG-3435
         requires (!is_same_v<_Other, _Iter>) && convertible_to<const _Other&, _Iter>
             && assignable_from<_Iter&, const _Other&>
 #endif // __cpp_lib_concepts
@@ -5005,8 +4984,8 @@ _FwdIt fill_n(_ExPo&&, _FwdIt _Dest, _Diff _Count_raw, const _Ty& _Val) noexcept
 #pragma warning(disable : 4806) // no value of type 'bool' promoted to type 'char' can equal the given constant
 template <class _Elem1, class _Elem2,
     bool = sizeof(_Elem1) == sizeof(_Elem2) //
-           && is_integral_v<_Elem1> && !is_volatile_v<_Elem1> //
-           && is_integral_v<_Elem2> && !is_volatile_v<_Elem2>>
+        && is_integral_v<_Elem1> && !is_volatile_v<_Elem1> //
+        && is_integral_v<_Elem2> && !is_volatile_v<_Elem2>>
 _INLINE_VAR constexpr bool _Can_memcmp_elements =
     is_same_v<_Elem1, bool> || is_same_v<_Elem2, bool> || static_cast<_Elem1>(-1) == static_cast<_Elem2>(-1);
 #pragma warning(pop)
@@ -6123,77 +6102,61 @@ struct _CXX17_DEPRECATE_ITERATOR_BASE_CLASS iterator { // base type for iterator
     using reference         = _Reference;
 };
 
-// STRUCT TEMPLATE _Float_traits
-template <class _Ty>
-struct _Float_traits {
-    static_assert(is_floating_point_v<_Ty>, "_Float_traits<NonFloatingPoint> is invalid");
-
-    // traits for double and long double:
-    using type = unsigned long long;
-
-    static constexpr type _Sign_mask      = 0x8000'0000'0000'0000ULL;
-    static constexpr type _Magnitude_mask = 0x7fff'ffff'ffff'ffffULL;
-    static constexpr type _Exponent_mask  = 0x7ff0'0000'0000'0000ULL;
-    static constexpr type _Quiet_nan_mask = 0x0008'0000'0000'0000ULL;
-};
-
-template <>
-struct _Float_traits<float> {
-    using type = unsigned int;
-
-    static constexpr type _Sign_mask      = 0x8000'0000U;
-    static constexpr type _Magnitude_mask = 0x7fff'ffffU;
-    static constexpr type _Exponent_mask  = 0x7f80'0000U;
-    static constexpr type _Quiet_nan_mask = 0x0040'0000U;
-};
-
 // FUNCTION TEMPLATE _Float_abs_bits
 template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR_BIT_CAST auto _Float_abs_bits(const _Ty& _Xx) {
-    const auto _Bits = _Bit_cast<typename _Float_traits<_Ty>::type>(_Xx);
-    return _Bits & _Float_traits<_Ty>::_Magnitude_mask;
+    using _Traits    = _Floating_type_traits<_Ty>;
+    using _Uint_type = typename _Traits::_Uint_type;
+    const auto _Bits = _Bit_cast<_Uint_type>(_Xx);
+    return _Bits & ~_Traits::_Shifted_sign_mask;
 }
 
 // FUNCTION TEMPLATE _Float_abs
 template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
-_NODISCARD _CONSTEXPR_BIT_CAST _Ty _Float_abs(const _Ty _Xx) { // constexpr floating point abs()
+_NODISCARD _CONSTEXPR_BIT_CAST _Ty _Float_abs(const _Ty _Xx) { // constexpr floating-point abs()
     return _Bit_cast<_Ty>(_Float_abs_bits(_Xx));
 }
 
 // FUNCTION TEMPLATE _Float_copysign
 template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR_BIT_CAST _Ty _Float_copysign(const _Ty _Magnitude, const _Ty _Sign) { // constexpr copysign()
-    const auto _Signbit = _Bit_cast<typename _Float_traits<_Ty>::type>(_Sign) & _Float_traits<_Ty>::_Sign_mask;
+    using _Traits       = _Floating_type_traits<_Ty>;
+    using _Uint_type    = typename _Traits::_Uint_type;
+    const auto _Signbit = _Bit_cast<_Uint_type>(_Sign) & _Traits::_Shifted_sign_mask;
     return _Bit_cast<_Ty>(_Float_abs_bits(_Magnitude) | _Signbit);
 }
 
 // FUNCTION TEMPLATE _Is_nan
 template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR_BIT_CAST bool _Is_nan(const _Ty _Xx) { // constexpr isnan()
-    return _Float_abs_bits(_Xx) > _Float_traits<_Ty>::_Exponent_mask;
+    using _Traits = _Floating_type_traits<_Ty>;
+    return _Float_abs_bits(_Xx) > _Traits::_Shifted_exponent_mask;
 }
 
 // FUNCTION TEMPLATE _Is_signaling_nan
 // TRANSITION, workaround x86 ABI
-// On x86 ABI, floating point by-value arguments and return values are passed in 80-bit x87 registers.
+// On x86 ABI, floating-point by-value arguments and return values are passed in 80-bit x87 registers.
 // When the value is a 32-bit or 64-bit signaling NaN, the conversion to/from 80-bit raises FE_INVALID
 // and turns it into a quiet NaN. This behavior is undesirable if we want to test for signaling NaNs.
 template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR_BIT_CAST bool _Is_signaling_nan(const _Ty& _Xx) { // returns true if input is a signaling NaN
+    using _Traits        = _Floating_type_traits<_Ty>;
     const auto _Abs_bits = _Float_abs_bits(_Xx);
-    return _Abs_bits > _Float_traits<_Ty>::_Exponent_mask && ((_Abs_bits & _Float_traits<_Ty>::_Quiet_nan_mask) == 0);
+    return _Abs_bits > _Traits::_Shifted_exponent_mask && ((_Abs_bits & _Traits::_Special_nan_mantissa_mask) == 0);
 }
 
 // FUNCTION TEMPLATE _Is_inf
 template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR_BIT_CAST bool _Is_inf(const _Ty _Xx) { // constexpr isinf()
-    return _Float_abs_bits(_Xx) == _Float_traits<_Ty>::_Exponent_mask;
+    using _Traits = _Floating_type_traits<_Ty>;
+    return _Float_abs_bits(_Xx) == _Traits::_Shifted_exponent_mask;
 }
 
 // FUNCTION TEMPLATE _Is_finite
 template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR_BIT_CAST bool _Is_finite(const _Ty _Xx) { // constexpr isfinite()
-    return _Float_abs_bits(_Xx) < _Float_traits<_Ty>::_Exponent_mask;
+    using _Traits = _Floating_type_traits<_Ty>;
+    return _Float_abs_bits(_Xx) < _Traits::_Shifted_exponent_mask;
 }
 
 // STRUCT _Nontrivial_dummy_type
