@@ -48,7 +48,10 @@ class STLTest(Test):
         if result:
             return result
 
-        self._handleEnvlst(litConfig)
+        result = self._handleEnvlst(litConfig)
+        if result:
+            return result
+
         self._parseTest()
         self._parseFlags()
 
@@ -205,11 +208,12 @@ class STLTest(Test):
             elif (targetArch == 'x86'.casefold()):
                 self.compileFlags.append('-m32')
             elif (targetArch == 'arm'.casefold()):
-                self.compileFlags.append('--target=arm-pc-windows-msvc')
+                return Result(UNSUPPORTED, 'clang targeting arm is not supported')
             elif (targetArch == 'arm64'.casefold()):
                 self.compileFlags.append('--target=arm64-pc-windows-msvc')
 
         self.cxx = os.path.normpath(cxx)
+        return None
 
     def _parseFlags(self):
         foundStd = False
