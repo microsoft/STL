@@ -334,7 +334,7 @@ void test_case_Equal_memcmp_is_safe() {
 
     // equal_to< some other T > should explode
     STATIC_ASSERT(_Equal_memcmp_is_safe<Elem1*, Elem2*, equal_to<list<int>>> == false);
-    // Non equal_to comparison functions should explode
+    // Non-equal_to comparison functions should explode
     auto lambda = [](Elem1*, Elem2*) { return false; };
     STATIC_ASSERT(_Equal_memcmp_is_safe<Elem1*, Elem2*, decltype(lambda)> == false);
     // equal_to<T> should not explode

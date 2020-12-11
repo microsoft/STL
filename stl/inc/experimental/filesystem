@@ -1152,10 +1152,10 @@ public:
         string_type _Str  = filename().native();
         const size_t _Idx = _Str.rfind(_FS_PERIOD);
         return _Idx == string_type::npos // no .
-                       || _Str.size() == 1 // only .
-                       || (_Str.size() == 2 && _Str[0] == _FS_PERIOD && _Str[1] == _FS_PERIOD) // only ..
-                   ? path{}
-                   : path(_Str.substr(_Idx));
+                    || _Str.size() == 1 // only .
+                    || (_Str.size() == 2 && _Str[0] == _FS_PERIOD && _Str[1] == _FS_PERIOD) // only ..
+                 ? path{}
+                 : path(_Str.substr(_Idx));
     }
 
     _NODISCARD bool empty() const noexcept {
@@ -1406,7 +1406,7 @@ public:
         _Mysymstat = _Symstatarg;
     }
 
-    operator const _FSPFX path &() const noexcept {
+    operator const _FSPFX path&() const noexcept {
         return _Mypval;
     }
 

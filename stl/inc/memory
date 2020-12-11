@@ -2281,13 +2281,12 @@ void _Deallocate_flexible_array(_Refc* const _Ptr) noexcept {
 }
 
 template <class _NoThrowIt>
-struct _Uninitialized_rev_destroying_backout {
+struct _NODISCARD _Uninitialized_rev_destroying_backout {
     // struct to undo partially constructed ranges in _Uninitialized_xxx algorithms
     _NoThrowIt _First;
     _NoThrowIt _Last;
 
-    explicit _Uninitialized_rev_destroying_backout(_NoThrowIt _Dest) noexcept
-        : _First(_Dest), _Last(_Dest) {} // TRANSITION, P1771R1 [[nodiscard]] For Constructors
+    explicit _Uninitialized_rev_destroying_backout(_NoThrowIt _Dest) noexcept : _First(_Dest), _Last(_Dest) {}
 
     _Uninitialized_rev_destroying_backout(const _Uninitialized_rev_destroying_backout&) = delete;
     _Uninitialized_rev_destroying_backout& operator=(const _Uninitialized_rev_destroying_backout&) = delete;
@@ -2329,7 +2328,7 @@ void _Reverse_destroy_multidimensional_n(_Ty* const _Arr, size_t _Size) noexcept
 }
 
 template <class _Ty>
-struct _Reverse_destroy_multidimensional_n_guard {
+struct _NODISCARD _Reverse_destroy_multidimensional_n_guard {
     _Ty* _Target;
     size_t _Index;
 
@@ -2646,7 +2645,7 @@ private:
 
 #if _HAS_CXX20
 template <class _Alloc>
-class _Uninitialized_rev_destroying_backout_al {
+class _NODISCARD _Uninitialized_rev_destroying_backout_al {
     // class to undo partially constructed ranges in _Uninitialized_xxx_al algorithms
 
 private:
@@ -2654,7 +2653,7 @@ private:
 
 public:
     _Uninitialized_rev_destroying_backout_al(pointer _Dest, _Alloc& _Al_) noexcept
-        : _First(_Dest), _Last(_Dest), _Al(_Al_) {} // TRANSITION, P1771R1 [[nodiscard]] For Constructors
+        : _First(_Dest), _Last(_Dest), _Al(_Al_) {}
 
     _Uninitialized_rev_destroying_backout_al(const _Uninitialized_rev_destroying_backout_al&) = delete;
     _Uninitialized_rev_destroying_backout_al& operator=(const _Uninitialized_rev_destroying_backout_al&) = delete;
@@ -2696,7 +2695,7 @@ void _Reverse_destroy_multidimensional_n_al(_Ty* const _Arr, size_t _Size, _Allo
 }
 
 template <class _Ty, class _Alloc>
-struct _Reverse_destroy_multidimensional_n_al_guard {
+struct _NODISCARD _Reverse_destroy_multidimensional_n_al_guard {
     _Ty* _Target;
     size_t _Index;
     _Alloc& _Al;
@@ -2913,7 +2912,7 @@ _NODISCARD
 
 #if _HAS_CXX20
 template <class _Refc>
-struct _Global_delete_guard {
+struct _NODISCARD _Global_delete_guard {
     _Refc* _Target;
 
     ~_Global_delete_guard() {

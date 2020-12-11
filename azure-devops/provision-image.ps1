@@ -248,8 +248,8 @@ Function InstallWindowsDriverKit {
   [string]$installerPath = Get-TempFilePath -Extension 'exe'
   curl.exe -L -o $installerPath -s -S $Url
   Write-Host 'Installing the Windows Driver Kit...'
-  $proc = Start-Process -FilePath $installerPath -ArgumentList `
-  @('/quiet', '/features', 'OptionId.WindowsDriverKitComplete') -Wait -PassThru
+  $proc = Start-Process -FilePath cmd.exe -ArgumentList `
+  @('/c', 'start', '/wait', $installerPath, '/quiet', '/features', '+') -Wait -PassThru
   $exitCode = $proc.ExitCode
   if ($exitCode -eq 0) {
     Write-Host 'Installation successful!'

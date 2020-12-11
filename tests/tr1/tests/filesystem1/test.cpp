@@ -19,13 +19,6 @@
 #define GAMMA16 01623
 #define GAMMA8  "\316\223"
 
-#ifdef _HAS_WINDOWS_FILESYSTEM
-#elif defined(_WIN32)
-#define _HAS_WINDOWS_FILESYSTEM 1
-#else // defined(_WIN32)
-#define _HAS_WINDOWS_FILESYSTEM 0
-#endif // defined(_WIN32)
-
 #define ALT(x, y)           y
 #define NEVER_HAS_ROOT_NAME false
 #define ROOT_NAME           "c:"
