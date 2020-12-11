@@ -15,7 +15,7 @@ std/input.output/iostreams.base/ios.base/ios.base.storage/pword.pass.cpp SKIPPED
 std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.ctor/null.pass.cpp FAIL
 
 # allocator<const T>.
-std/utilities/memory/default.allocator/allocator.ctor.pass.cpp:0 FAIL
+std/utilities/memory/default.allocator/allocator.ctor.pass.cpp FAIL
 
 # path::value_type is char assumptions
 std/input.output/file.streams/fstreams/filebuf.members/open_path.pass.cpp FAIL
