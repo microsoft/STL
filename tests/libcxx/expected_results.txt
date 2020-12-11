@@ -15,7 +15,7 @@ std/input.output/iostreams.base/ios.base/ios.base.storage/pword.pass.cpp SKIPPED
 std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.ctor/null.pass.cpp FAIL
 
 # allocator<const T>.
-std/utilities/memory/default.allocator/allocator.ctor.pass.cpp FAIL
+std/utilities/memory/default.allocator/allocator.ctor.pass.cpp:0 FAIL
 
 # path::value_type is char assumptions
 std/input.output/file.streams/fstreams/filebuf.members/open_path.pass.cpp FAIL
@@ -494,17 +494,15 @@ std/utilities/variant/variant.variant/variant.ctor/T.pass.cpp FAIL
 
 # C++20 P0784R7 "More constexpr containers"
 std/utilities/memory/allocator.traits/allocator.traits.members/allocate.pass.cpp FAIL
-std/utilities/memory/allocator.traits/allocator.traits.members/allocate_hint.pass.cpp FAIL
+std/utilities/memory/allocator.traits/allocator.traits.members/allocate_hint.pass.cpp:0 FAIL
 std/utilities/memory/allocator.traits/allocator.traits.members/construct.pass.cpp FAIL
-std/utilities/memory/allocator.traits/allocator.traits.members/deallocate.pass.cpp FAIL
+std/utilities/memory/allocator.traits/allocator.traits.members/deallocate.pass.cpp:0 FAIL
 std/utilities/memory/allocator.traits/allocator.traits.members/destroy.pass.cpp FAIL
-std/utilities/memory/allocator.traits/allocator.traits.members/max_size.pass.cpp FAIL
-std/utilities/memory/allocator.traits/allocator.traits.members/select_on_container_copy_construction.pass.cpp FAIL
-std/utilities/memory/default.allocator/allocator.globals/eq.pass.cpp FAIL
-std/utilities/memory/default.allocator/allocator.members/allocate.pass.cpp:1 FAIL
+std/utilities/memory/allocator.traits/allocator.traits.members/max_size.pass.cpp:0 FAIL
+std/utilities/memory/default.allocator/allocator.members/allocate.pass.cpp:0 FAIL
 std/utilities/memory/specialized.algorithms/specialized.construct/construct_at.pass.cpp FAIL
 std/utilities/memory/specialized.algorithms/specialized.destroy/destroy.pass.cpp FAIL
-std/utilities/memory/specialized.algorithms/specialized.destroy/destroy_at.pass.cpp FAIL
+std/utilities/memory/specialized.algorithms/specialized.destroy/destroy_at.pass.cpp:0 FAIL
 std/utilities/memory/specialized.algorithms/specialized.destroy/destroy_n.pass.cpp FAIL
 
 # C++20 P0896R4 "<ranges>"
