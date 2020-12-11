@@ -493,7 +493,7 @@ std/utilities/variant/variant.variant/variant.ctor/conv.pass.cpp FAIL
 std/utilities/variant/variant.variant/variant.ctor/T.pass.cpp FAIL
 
 # C++20 P0784R7 "More constexpr containers"
-std/utilities/memory/allocator.traits/allocator.traits.members/allocate.pass.cpp FAIL
+std/utilities/memory/allocator.traits/allocator.traits.members/allocate.pass.cpp:0 FAIL
 std/utilities/memory/allocator.traits/allocator.traits.members/allocate_hint.pass.cpp:0 FAIL
 std/utilities/memory/allocator.traits/allocator.traits.members/construct.pass.cpp FAIL
 std/utilities/memory/allocator.traits/allocator.traits.members/deallocate.pass.cpp:0 FAIL
