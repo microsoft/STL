@@ -16,10 +16,6 @@
 #include <span>
 #include <string_view>
 
-#if 1 // TRANSITION, VSO-1225825
-#include <optional>
-#endif // TRANSITION, VSO-1225825
-
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
@@ -245,7 +241,6 @@ namespace ranges {
     using _Cached_position_t = conditional_t<_Enable, _Cached_position<_Rng, _Derived>, view_interface<_Derived>>;
 
     // CLASS TEMPLATE ranges::_Semiregular_box
-#if 0 // TRANSITION, VSO-1225825
     template <_Copy_constructible_object _Ty>
     class _Semiregular_box {
     public:
@@ -437,102 +432,6 @@ namespace ranges {
     private:
         /* [[no_unique_address]] */ _Ty _Val = _Ty();
     };
-#else // ^^^ no workaround / workaround vvv
-    template <class _Ty>
-    class _Semiregular_box_copy : public optional<_Ty> {
-    public:
-        using optional<_Ty>::optional;
-
-        _Semiregular_box_copy() = default;
-        _Semiregular_box_copy(const _Semiregular_box_copy&) = default;
-        _Semiregular_box_copy(_Semiregular_box_copy&&) = default;
-        _Semiregular_box_copy& operator=(_Semiregular_box_copy&&) = default;
-
-        _Semiregular_box_copy& operator=(const _Semiregular_box_copy& _That) noexcept(
-            is_nothrow_copy_constructible_v<_Ty>) {
-            if (_STD addressof(_That) != this) {
-                optional<_Ty>::reset();
-                if (_That) {
-                    optional<_Ty>::emplace(*_That);
-                }
-            }
-
-            return *this;
-        }
-    };
-
-    template <class _Ty>
-    using _Choose_semiregular_box_copy =
-        conditional_t<assignable_from<_Ty&, const _Ty&>, optional<_Ty>, _Semiregular_box_copy<_Ty>>;
-
-    template <class _Ty>
-    class _Semiregular_box_move : public _Choose_semiregular_box_copy<_Ty> {
-    public:
-        using _Choose_semiregular_box_copy<_Ty>::_Choose_semiregular_box_copy;
-
-        _Semiregular_box_move() = default;
-        _Semiregular_box_move(const _Semiregular_box_move&) = default;
-        _Semiregular_box_move(_Semiregular_box_move&&) = default;
-        _Semiregular_box_move& operator=(const _Semiregular_box_move&) = default;
-
-        _Semiregular_box_move& operator=(_Semiregular_box_move&& _That) noexcept(is_nothrow_move_constructible_v<_Ty>) {
-            if (_STD addressof(_That) != this) {
-                optional<_Ty>::reset();
-                if (_That) {
-                    optional<_Ty>::emplace(_STD move(*_That));
-                }
-            }
-
-            return *this;
-        }
-    };
-
-    template <class _Ty>
-    using _Choose_semiregular_box_move =
-        conditional_t<assignable_from<_Ty&, _Ty>, _Choose_semiregular_box_copy<_Ty>, _Semiregular_box_move<_Ty>>;
-
-    template <_Copy_constructible_object _Ty>
-    class _Semiregular_box : public _Choose_semiregular_box_move<_Ty> {
-    public:
-        constexpr _Semiregular_box() noexcept {}
-        constexpr _Semiregular_box() noexcept(
-            is_nothrow_default_constructible_v<_Ty>) requires default_initializable<_Ty>
-            : _Choose_semiregular_box_move<_Ty>{in_place} {}
-
-        template <class... _Types>
-        constexpr _Semiregular_box(in_place_t, _Types&&... _Args) noexcept(
-            is_nothrow_constructible_v<_Ty, _Types...>) // strengthened
-            : _Choose_semiregular_box_move<_Ty>{in_place, _STD forward<_Types>(_Args)...} {}
-    };
-
-    // clang-format off
-    template <_Copy_constructible_object _Ty>
-        requires default_initializable<_Ty> && copyable<_Ty>
-    class _Semiregular_box<_Ty> {
-        // clang-format on
-    public:
-        _Semiregular_box() = default;
-
-        template <class... _Types>
-        constexpr _Semiregular_box(in_place_t, _Types&&... _Args) noexcept(
-            is_nothrow_constructible_v<_Ty, _Types...>) // strengthened
-            : _Val(_STD forward<_Types>(_Args)...) {}
-
-        constexpr explicit operator bool() const noexcept {
-            return true;
-        }
-
-        _NODISCARD constexpr _Ty& operator*() noexcept {
-            return _Val;
-        }
-        _NODISCARD constexpr const _Ty& operator*() const noexcept {
-            return _Val;
-        }
-
-    private:
-        /* [[no_unique_address]] */ _Ty _Val = _Ty();
-    };
-#endif // TRANSITION, VSO-1225825
 
     // CLASS TEMPLATE ranges::empty_view
     // clang-format off
@@ -1426,26 +1325,19 @@ namespace ranges {
 
             using _Parent_t = _Maybe_const<_Const, transform_view>;
             using _Base     = _Maybe_const<_Const, _Vw>;
+            template <bool _OtherConst>
+            using _Maybe_const_iter = iterator_t<_Maybe_const<_OtherConst, _Vw>>;
 
             sentinel_t<_Base> _Last{};
 
-            _NODISCARD constexpr bool _Equal(const _Iterator<_Const>& _It) const
-                noexcept(noexcept(_It._Current == _Last)) {
+            template <bool _OtherConst>
+            _NODISCARD static constexpr const _Maybe_const_iter<_OtherConst>& _Get_current(
+                const _Iterator<_OtherConst>& _It) noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _STL_VERIFY(
                     _It._Parent != nullptr, "cannot compare transform_view sentinel with value-initialized iterator");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
-                return _It._Current == _Last;
-            }
-
-            _NODISCARD constexpr range_difference_t<_Base> _Distance_to(const _Iterator<_Const>& _It) const
-                noexcept(noexcept(_It._Current - _Last)) {
-                _STL_INTERNAL_STATIC_ASSERT(sized_sentinel_for<sentinel_t<_Base>, iterator_t<_Base>>);
-#if _ITERATOR_DEBUG_LEVEL != 0
-                _STL_VERIFY(
-                    _It._Parent != nullptr, "cannot compare transform_view sentinel with value-initialized iterator");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
-                return _It._Current - _Last;
+                return _It._Current;
             }
 
         public:
@@ -1466,22 +1358,30 @@ namespace ranges {
                 return _Last;
             }
 
-            _NODISCARD friend constexpr bool operator==(const _Iterator<_Const>& _Left,
-                const _Sentinel& _Right) noexcept(noexcept(_Right._Equal(_Left))) /* strengthened */ {
-                return _Right._Equal(_Left);
+            // clang-format off
+            template <bool _OtherConst>
+                requires sentinel_for<sentinel_t<_Base>, _Maybe_const_iter<_OtherConst>>
+            _NODISCARD friend constexpr bool operator==(const _Iterator<_OtherConst>& _Left,
+                const _Sentinel& _Right) noexcept(noexcept(_Get_current(_Left) == _Right._Last)) /* strengthened */ {
+                return _Get_current(_Left) == _Right._Last;
             }
 
-            _NODISCARD friend constexpr range_difference_t<_Base>
-                operator-(const _Iterator<_Const>& _Left, const _Sentinel& _Right) noexcept(
-                    noexcept(_Right._Distance_to(
-                        _Left))) /* strengthened */ requires sized_sentinel_for<sentinel_t<_Base>, iterator_t<_Base>> {
-                return _Right._Distance_to(_Left);
+            template <bool _OtherConst>
+                requires sized_sentinel_for<sentinel_t<_Base>, _Maybe_const_iter<_OtherConst>>
+            _NODISCARD friend constexpr range_difference_t<_Maybe_const<_OtherConst, _Vw>>
+                operator-(const _Iterator<_OtherConst>& _Left, const _Sentinel& _Right) noexcept(
+                    noexcept(_Get_current(_Left) - _Right._Last)) /* strengthened */ {
+                return _Get_current(_Left) - _Right._Last;
             }
-            _NODISCARD friend constexpr range_difference_t<_Base>
-                operator-(const _Sentinel& _Left, const _Iterator<_Const>& _Right) noexcept(noexcept(_Left._Distance_to(
-                    _Right))) /* strengthened */ requires sized_sentinel_for<sentinel_t<_Base>, iterator_t<_Base>> {
-                return -_Left._Distance_to(_Right);
+
+            template <bool _OtherConst>
+                requires sized_sentinel_for<sentinel_t<_Base>, _Maybe_const_iter<_OtherConst>>
+            _NODISCARD friend constexpr range_difference_t<_Maybe_const<_OtherConst, _Vw>>
+                operator-(const _Sentinel& _Left, const _Iterator<_OtherConst>& _Right) noexcept(
+                    noexcept(_Left._Last - _Get_current(_Right))) /* strengthened */ {
+                return _Left._Last - _Get_current(_Right);
             }
+            // clang-format on
         };
 
     public:
@@ -2416,7 +2316,7 @@ namespace ranges {
     };
 
     template <class _Rng>
-    common_view(_Rng &&) -> common_view<views::all_t<_Rng>>;
+    common_view(_Rng&&) -> common_view<views::all_t<_Rng>>;
 
     namespace views {
         // VARIABLE views::common
@@ -2528,7 +2428,7 @@ namespace ranges {
     };
 
     template <class _Rng>
-    reverse_view(_Rng &&) -> reverse_view<views::all_t<_Rng>>;
+    reverse_view(_Rng&&) -> reverse_view<views::all_t<_Rng>>;
 
     namespace views {
         // VARIABLE views::reverse
@@ -2836,11 +2736,13 @@ namespace ranges {
             friend class _Sentinel;
 
             using _Base = _Maybe_const<_Const, _Vw>;
+            template <bool _OtherConst>
+            using _Maybe_const_iter = iterator_t<_Maybe_const<_OtherConst, _Vw>>;
 
             sentinel_t<_Base> _Last{};
 
             template <bool _OtherConst>
-            _NODISCARD static constexpr const iterator_t<_Maybe_const<_OtherConst, _Vw>>& _Get_current(
+            _NODISCARD static constexpr const _Maybe_const_iter<_OtherConst>& _Get_current(
                 const _Iterator<_OtherConst>& _It) noexcept {
                 return _It._Current;
             }
@@ -2865,7 +2767,7 @@ namespace ranges {
 
             // clang-format off
             template <bool _OtherConst>
-                requires sentinel_for<sentinel_t<_Base>, iterator_t<_Maybe_const<_OtherConst, _Vw>>>
+                requires sentinel_for<sentinel_t<_Base>, _Maybe_const_iter<_OtherConst>>
             _NODISCARD friend constexpr bool operator==(const _Iterator<_OtherConst>& _Left,
                 const _Sentinel& _Right) noexcept(noexcept(_Get_current(_Left) == _Right._Last)) /* strengthened */ {
                 // clang-format on
@@ -2874,7 +2776,7 @@ namespace ranges {
 
             // clang-format off
             template <bool _OtherConst>
-                requires sized_sentinel_for<sentinel_t<_Base>, iterator_t<_Maybe_const<_OtherConst, _Vw>>>
+                requires sized_sentinel_for<sentinel_t<_Base>, _Maybe_const_iter<_OtherConst>>
             _NODISCARD friend constexpr range_difference_t<_Maybe_const<_OtherConst, _Vw>> operator-(
                 const _Iterator<_OtherConst>& _Left, const _Sentinel& _Right) noexcept(
                 noexcept(_Get_current(_Left) - _Right._Last)) /* strengthened */ {
@@ -2884,7 +2786,7 @@ namespace ranges {
 
             // clang-format off
             template <bool _OtherConst>
-                requires sized_sentinel_for<sentinel_t<_Base>, iterator_t<_Maybe_const<_OtherConst, _Vw>>>
+                requires sized_sentinel_for<sentinel_t<_Base>, _Maybe_const_iter<_OtherConst>>
             _NODISCARD friend constexpr range_difference_t<_Maybe_const<_OtherConst, _Vw>> operator-(
                 const _Sentinel& _Left, const _Iterator<_OtherConst>& _Right) noexcept(
                 noexcept(_Left._Last - _Get_current(_Right))) /* strengthened */ {

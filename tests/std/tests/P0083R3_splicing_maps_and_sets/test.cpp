@@ -464,11 +464,11 @@ void test_map() {
             nh1, nh2,
             [&m](NH& h) {
                 return static_cast<bool>(h) && !h.empty() && h.key() == 0 && h.mapped() == 'x'
-                       && h.get_allocator() == m.get_allocator();
+                    && h.get_allocator() == m.get_allocator();
             },
             [&m](NH& h) {
                 return static_cast<bool>(h) && !h.empty() && h.key() == 1 && h.mapped() == 'y'
-                       && h.get_allocator() == m.get_allocator();
+                    && h.get_allocator() == m.get_allocator();
             });
 
         allocation_allowed = true;
@@ -567,11 +567,11 @@ void test_unordered_map() {
             nh1, nh2,
             [&m](NH& h) {
                 return static_cast<bool>(h) && !h.empty() && h.key() == 0 && h.mapped() == 'x'
-                       && h.get_allocator() == m.get_allocator();
+                    && h.get_allocator() == m.get_allocator();
             },
             [&m](NH& h) {
                 return static_cast<bool>(h) && !h.empty() && h.key() == 1 && h.mapped() == 'y'
-                       && h.get_allocator() == m.get_allocator();
+                    && h.get_allocator() == m.get_allocator();
             });
 
         allocation_allowed = true;

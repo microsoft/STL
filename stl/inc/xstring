@@ -1248,7 +1248,7 @@ public:
     // clang-format off
     template <contiguous_iterator _It, sized_sentinel_for<_It> _Se>
         requires (is_same_v<iter_value_t<_It>, _Elem> && !is_convertible_v<_Se, size_type>)
-    constexpr basic_string_view(_It _First, _Se _Last) noexcept // strengthened
+    constexpr basic_string_view(_It _First, _Se _Last) noexcept(noexcept(_Last - _First)) // strengthened
         : _Mydata(_STD to_address(_First)), _Mysize(static_cast<size_type>(_Last - _First)) {}
     // clang-format on
 #endif // __cpp_lib_concepts
@@ -2200,10 +2200,11 @@ public:
     // length of internal buffer, [1, 16]:
     static constexpr size_type _BUF_SIZE = 16 / sizeof(value_type) < 1 ? 1 : 16 / sizeof(value_type);
     // roundup mask for allocated buffers, [0, 15]:
-    static constexpr size_type _ALLOC_MASK =
-        sizeof(value_type) <= 1
-            ? 15
-            : sizeof(value_type) <= 2 ? 7 : sizeof(value_type) <= 4 ? 3 : sizeof(value_type) <= 8 ? 1 : 0;
+    static constexpr size_type _ALLOC_MASK = sizeof(value_type) <= 1 ? 15
+                                           : sizeof(value_type) <= 2 ? 7
+                                           : sizeof(value_type) <= 4 ? 3
+                                           : sizeof(value_type) <= 8 ? 1
+                                                                     : 0;
 
     value_type* _Myptr() noexcept {
         value_type* _Result = _Bx._Buf;
@@ -4116,7 +4117,7 @@ public:
 
     _NODISCARD size_type find_first_not_of(const _Elem _Ch, const size_type _Off = 0) const noexcept
     /* strengthened */ {
-        // look for non _Ch at or after _Off
+        // look for non-_Ch at or after _Off
         return static_cast<size_type>(
             _Traits_find_not_ch<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ch));
     }
@@ -4155,7 +4156,7 @@ public:
 
     _NODISCARD size_type find_last_not_of(const _Elem _Ch, const size_type _Off = npos) const noexcept
     /* strengthened */ {
-        // look for non _Ch before _Off
+        // look for non-_Ch before _Off
         return static_cast<size_type>(
             _Traits_rfind_not_ch<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ch));
     }
