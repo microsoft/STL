@@ -271,7 +271,7 @@ public:
 
     _Elem translate(_Elem _Ch) const { // provide locale-sensitive mapping
         string_type _Res = _Getcoll()->transform(_STD addressof(_Ch), _STD addressof(_Ch) + 1);
-        return _Res.length() == 1 ? _Res[0] : _Ch;
+        return _Res.size() == 1 ? _Res[0] : _Ch;
     }
 
     _Elem translate_nocase(_Elem _Ch) const { // provide case-insensitive mapping
@@ -280,7 +280,8 @@ public:
 
     template <class _FwdIt>
     string_type transform(_FwdIt _First, _FwdIt _Last) const { // apply locale-specific transformation
-        return _Getcoll()->transform(_First, _Last);
+        const string_type _Str(_First, _Last);
+        return _Getcoll()->transform(_Str.data(), _Str.data() + _Str.size());
     }
 
     template <class _FwdIt>
@@ -302,7 +303,7 @@ public:
             return _Getctype()->is(_Fx, _Ch);
         } else {
             return _Ch == '_' // assumes L'_' == '_'
-                   || _Getctype()->is(_Ch_alnum, _Ch);
+                || _Getctype()->is(_Ch_alnum, _Ch);
         }
     }
 
@@ -1130,7 +1131,7 @@ _NODISCARD bool operator==(const match_results<_BidIt, _Alloc>& _Left, const mat
         return false;
     } else {
         return _Left.size() == _Right.size() && _Left.prefix() == _Right.prefix() && _Left.suffix() == _Right.suffix()
-               && _STD equal(_Left.begin(), _Left.end(), _Right.begin());
+            && _STD equal(_Left.begin(), _Left.end(), _Right.begin());
     }
 }
 
@@ -2425,7 +2426,7 @@ public:
         }
 
         return _Begin == _Right._Begin && _End == _Right._End && _Flags == _Right._Flags
-               && _MyVal._At(0) == _Right._MyVal._At(0);
+            && _MyVal._At(0) == _Right._MyVal._At(0);
     }
 
     _NODISCARD bool operator!=(const regex_iterator& _Right) const {
@@ -3407,7 +3408,7 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Better_match() { // check for bet
         if (_Res._Grp_valid[_Ix] && _Tgt_state._Grp_valid[_Ix]) {
             if (_Res._Grps[_Ix]._Begin != _Tgt_state._Grps[_Ix]._Begin) {
                 return _STD distance(_Begin, _Res._Grps[_Ix]._Begin)
-                       < _STD distance(_Begin, _Tgt_state._Grps[_Ix]._Begin);
+                     < _STD distance(_Begin, _Tgt_state._Grps[_Ix]._Begin);
             }
 
             if (_Res._Grps[_Ix]._End != _Tgt_state._Grps[_Ix]._End) {
@@ -3489,24 +3490,26 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Match_pat(_Node_base* _Nx) { // c
 
             break;
 
-        case _N_str: { // check for string match
-            _Node_str<_Elem>* _Node = static_cast<_Node_str<_Elem>*>(_Nx);
-            _It _Res0;
-            if ((_Res0 = _Compare(_Tgt_state._Cur, _End, _Node->_Data._Str(),
-                     _Node->_Data._Str() + _Node->_Data._Size(), _Traits, _Sflags))
-                != _Tgt_state._Cur) {
-                _Tgt_state._Cur = _Res0;
-            } else {
-                _Failed = true;
+        case _N_str:
+            { // check for string match
+                _Node_str<_Elem>* _Node = static_cast<_Node_str<_Elem>*>(_Nx);
+                _It _Res0;
+                if ((_Res0 = _Compare(_Tgt_state._Cur, _End, _Node->_Data._Str(),
+                         _Node->_Data._Str() + _Node->_Data._Size(), _Traits, _Sflags))
+                    != _Tgt_state._Cur) {
+                    _Tgt_state._Cur = _Res0;
+                } else {
+                    _Failed = true;
+                }
+
+                break;
             }
 
-            break;
-        }
-
-        case _N_class: { // check for bracket expression match
-            _Failed = _Tgt_state._Cur == _End || !_Do_class(_Nx);
-            break;
-        }
+        case _N_class:
+            { // check for bracket expression match
+                _Failed = _Tgt_state._Cur == _End || !_Do_class(_Nx);
+                break;
+            }
 
         case _N_group:
             break;
@@ -3515,60 +3518,64 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Match_pat(_Node_base* _Nx) { // c
             break;
 
         case _N_neg_assert:
-        case _N_assert: { // check assert
-            _It _Ch              = _Tgt_state._Cur;
-            bool _Neg            = _Nx->_Kind == _N_neg_assert;
-            _Bt_state_t<_It> _St = _Tgt_state;
-            if (_Match_pat(static_cast<_Node_assert*>(_Nx)->_Child) == _Neg) {
-                // restore initial state and indicate failure
-                _Tgt_state = _St;
-                _Failed    = true;
-            } else {
-                _Tgt_state._Cur = _Ch;
-            }
+        case _N_assert:
+            { // check assert
+                _It _Ch              = _Tgt_state._Cur;
+                bool _Neg            = _Nx->_Kind == _N_neg_assert;
+                _Bt_state_t<_It> _St = _Tgt_state;
+                if (_Match_pat(static_cast<_Node_assert*>(_Nx)->_Child) == _Neg) {
+                    // restore initial state and indicate failure
+                    _Tgt_state = _St;
+                    _Failed    = true;
+                } else {
+                    _Tgt_state._Cur = _Ch;
+                }
 
-            break;
-        }
+                break;
+            }
 
         case _N_end_assert:
             _Nx = nullptr;
             break;
 
-        case _N_capture: { // record current position
-            _Node_capture* _Node                 = static_cast<_Node_capture*>(_Nx);
-            _Tgt_state._Grps[_Node->_Idx]._Begin = _Tgt_state._Cur;
-            for (size_t _Idx = _Tgt_state._Grp_valid.size(); _Node->_Idx < _Idx;) {
-                _Tgt_state._Grp_valid[--_Idx] = false;
-            }
-
-            break;
-        }
-
-        case _N_end_capture: { // record successful capture
-            _Node_end_group* _Node = static_cast<_Node_end_group*>(_Nx);
-            _Node_capture* _Node0  = static_cast<_Node_capture*>(_Node->_Back);
-            if (_Cap || _Node0->_Idx != 0) { // update capture data
-                _Tgt_state._Grp_valid[_Node0->_Idx] = true;
-                _Tgt_state._Grps[_Node0->_Idx]._End = _Tgt_state._Cur;
-            }
-            break;
-        }
-
-        case _N_back: { // check back reference
-            _Node_back* _Node = static_cast<_Node_back*>(_Nx);
-            if (_Tgt_state._Grp_valid[_Node->_Idx]) { // check for match
-                _It _Res0 = _Tgt_state._Cur;
-                _It _Bx   = _Tgt_state._Grps[_Node->_Idx]._Begin;
-                _It _Ex   = _Tgt_state._Grps[_Node->_Idx]._End;
-                if (_Bx != _Ex // _Bx == _Ex for zero-length match
-                    && (_Res0 = _Compare(_Tgt_state._Cur, _End, _Bx, _Ex, _Traits, _Sflags)) == _Tgt_state._Cur) {
-                    _Failed = true;
-                } else {
-                    _Tgt_state._Cur = _Res0;
+        case _N_capture:
+            { // record current position
+                _Node_capture* _Node                 = static_cast<_Node_capture*>(_Nx);
+                _Tgt_state._Grps[_Node->_Idx]._Begin = _Tgt_state._Cur;
+                for (size_t _Idx = _Tgt_state._Grp_valid.size(); _Node->_Idx < _Idx;) {
+                    _Tgt_state._Grp_valid[--_Idx] = false;
                 }
+
+                break;
             }
-            break;
-        }
+
+        case _N_end_capture:
+            { // record successful capture
+                _Node_end_group* _Node = static_cast<_Node_end_group*>(_Nx);
+                _Node_capture* _Node0  = static_cast<_Node_capture*>(_Node->_Back);
+                if (_Cap || _Node0->_Idx != 0) { // update capture data
+                    _Tgt_state._Grp_valid[_Node0->_Idx] = true;
+                    _Tgt_state._Grps[_Node0->_Idx]._End = _Tgt_state._Cur;
+                }
+                break;
+            }
+
+        case _N_back:
+            { // check back reference
+                _Node_back* _Node = static_cast<_Node_back*>(_Nx);
+                if (_Tgt_state._Grp_valid[_Node->_Idx]) { // check for match
+                    _It _Res0 = _Tgt_state._Cur;
+                    _It _Bx   = _Tgt_state._Grps[_Node->_Idx]._Begin;
+                    _It _Ex   = _Tgt_state._Grps[_Node->_Idx]._End;
+                    if (_Bx != _Ex // _Bx == _Ex for zero-length match
+                        && (_Res0 = _Compare(_Tgt_state._Cur, _End, _Bx, _Ex, _Traits, _Sflags)) == _Tgt_state._Cur) {
+                        _Failed = true;
+                    } else {
+                        _Tgt_state._Cur = _Res0;
+                    }
+                }
+                break;
+            }
 
         case _N_if:
             if (!_Do_if(static_cast<_Node_if*>(_Nx))) {
@@ -3589,17 +3596,18 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Match_pat(_Node_base* _Nx) { // c
             _Nx = nullptr;
             break;
 
-        case _N_end_rep: {
-            _Node_rep* _Nr      = static_cast<_Node_end_rep*>(_Nx)->_Begin_rep;
-            _Loop_vals_t* _Psav = &_Loop_vals[_Nr->_Loop_number];
+        case _N_end_rep:
+            {
+                _Node_rep* _Nr      = static_cast<_Node_end_rep*>(_Nx)->_Begin_rep;
+                _Loop_vals_t* _Psav = &_Loop_vals[_Nr->_Loop_number];
 
-            if (_Nr->_Simple_loop == 0 && !_Do_rep(_Nr, (_Nr->_Flags & _Fl_greedy) != 0, _Psav->_Loop_idx)) {
-                _Failed = true; // recurse only if loop contains if/do
+                if (_Nr->_Simple_loop == 0 && !_Do_rep(_Nr, (_Nr->_Flags & _Fl_greedy) != 0, _Psav->_Loop_idx)) {
+                    _Failed = true; // recurse only if loop contains if/do
+                }
+
+                _Nx = nullptr;
+                break;
             }
-
-            _Nx = nullptr;
-            break;
-        }
 
         case _N_begin:
             break;
@@ -3646,73 +3654,76 @@ _BidIt _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Skip(_BidIt _First_arg, _BidIt 
         case _N_nop:
             break;
 
-        case _N_bol: { // check for embedded newline
-                       // return iterator to character just after the newline; for input like "\nabc"
-                       // matching "^abc", _First_arg could be pointing at 'a', so we need to check
-                       // --_First_arg for '\n'
-            if (*_Prev_iter(_First_arg) != _Meta_nl) {
-                _First_arg = _STD find(_First_arg, _Last, _Meta_nl);
-                if (_First_arg != _Last) {
-                    ++_First_arg;
+        case _N_bol:
+            { // check for embedded newline
+              // return iterator to character just after the newline; for input like "\nabc"
+              // matching "^abc", _First_arg could be pointing at 'a', so we need to check
+              // --_First_arg for '\n'
+                if (*_Prev_iter(_First_arg) != _Meta_nl) {
+                    _First_arg = _STD find(_First_arg, _Last, _Meta_nl);
+                    if (_First_arg != _Last) {
+                        ++_First_arg;
+                    }
                 }
-            }
 
-            return _First_arg;
-        }
+                return _First_arg;
+            }
 
         case _N_eol:
             return _STD find(_First_arg, _Last, _Meta_nl);
 
-        case _N_str: { // check for string match
-            _Node_str<_Elem>* _Node = static_cast<_Node_str<_Elem>*>(_Nx);
-            for (; _First_arg != _Last; ++_First_arg) { // look for starting match
-                _BidIt _Next = _First_arg;
-                if (_Compare(_First_arg, ++_Next, _Node->_Data._Str(), _Node->_Data._Str() + 1, _Traits, _Sflags)
-                    != _First_arg) {
-                    break;
+        case _N_str:
+            { // check for string match
+                _Node_str<_Elem>* _Node = static_cast<_Node_str<_Elem>*>(_Nx);
+                for (; _First_arg != _Last; ++_First_arg) { // look for starting match
+                    _BidIt _Next = _First_arg;
+                    if (_Compare(_First_arg, ++_Next, _Node->_Data._Str(), _Node->_Data._Str() + 1, _Traits, _Sflags)
+                        != _First_arg) {
+                        break;
+                    }
+                }
+                return _First_arg;
+            }
+
+        case _N_class:
+            { // check for string match
+                for (; _First_arg != _Last; ++_First_arg) { // look for starting match
+                    bool _Found;
+                    auto _Ch                             = static_cast<typename _RxTraits::_Uelem>(*_First_arg);
+                    _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Nx);
+                    _It _Next                            = _First_arg;
+                    ++_Next;
+
+                    if (_Node->_Coll && _Lookup_coll(_First_arg, _Next, _Node->_Coll) != _First_arg) {
+                        _Found = true;
+                    } else if (_Node->_Ranges
+                               && (_Lookup_range(
+                                   static_cast<typename _RxTraits::_Uelem>(
+                                       _Sflags & regex_constants::collate ? _Traits.translate(static_cast<_Elem>(_Ch))
+                                                                          : static_cast<_Elem>(_Ch)),
+                                   _Node->_Ranges))) {
+                        _Found = true;
+                    } else if (_Ch < _Bmp_max) {
+                        _Found = _Node->_Small && _Node->_Small->_Find(_Ch);
+                    } else if (_Node->_Large
+                               && _STD find(_Node->_Large->_Str(), _Node->_Large->_Str() + _Node->_Large->_Size(), _Ch)
+                                      != _Node->_Large->_Str() + _Node->_Large->_Size()) {
+                        _Found = true;
+                    } else if (_Node->_Classes && _Traits.isctype(static_cast<_Elem>(_Ch), _Node->_Classes)) {
+                        _Found = true;
+                    } else if (_Node->_Equiv && _Lookup_equiv(_Ch, _Node->_Equiv, _Traits)) {
+                        _Found = true;
+                    } else {
+                        _Found = false;
+                    }
+
+                    const bool _Negated = (_Node->_Flags & _Fl_negate) != 0;
+
+                    if (_Found != _Negated) {
+                        return _First_arg;
+                    }
                 }
             }
-            return _First_arg;
-        }
-
-        case _N_class: { // check for string match
-            for (; _First_arg != _Last; ++_First_arg) { // look for starting match
-                bool _Found;
-                auto _Ch                             = static_cast<typename _RxTraits::_Uelem>(*_First_arg);
-                _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Nx);
-                _It _Next                            = _First_arg;
-                ++_Next;
-
-                if (_Node->_Coll && _Lookup_coll(_First_arg, _Next, _Node->_Coll) != _First_arg) {
-                    _Found = true;
-                } else if (_Node->_Ranges
-                           && (_Lookup_range(
-                               static_cast<typename _RxTraits::_Uelem>(_Sflags & regex_constants::collate
-                                                                           ? _Traits.translate(static_cast<_Elem>(_Ch))
-                                                                           : static_cast<_Elem>(_Ch)),
-                               _Node->_Ranges))) {
-                    _Found = true;
-                } else if (_Ch < _Bmp_max) {
-                    _Found = _Node->_Small && _Node->_Small->_Find(_Ch);
-                } else if (_Node->_Large
-                           && _STD find(_Node->_Large->_Str(), _Node->_Large->_Str() + _Node->_Large->_Size(), _Ch)
-                                  != _Node->_Large->_Str() + _Node->_Large->_Size()) {
-                    _Found = true;
-                } else if (_Node->_Classes && _Traits.isctype(static_cast<_Elem>(_Ch), _Node->_Classes)) {
-                    _Found = true;
-                } else if (_Node->_Equiv && _Lookup_equiv(_Ch, _Node->_Equiv, _Traits)) {
-                    _Found = true;
-                } else {
-                    _Found = false;
-                }
-
-                const bool _Negated = (_Node->_Flags & _Fl_negate) != 0;
-
-                if (_Found != _Negated) {
-                    return _First_arg;
-                }
-            }
-        }
             return _First_arg;
 
         case _N_group:
@@ -3731,15 +3742,16 @@ _BidIt _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Skip(_BidIt _First_arg, _BidIt 
         case _N_end_capture:
             break;
 
-        case _N_if: { // check for soonest string match
-            _Node_if* _Node = static_cast<_Node_if*>(_Nx);
+        case _N_if:
+            { // check for soonest string match
+                _Node_if* _Node = static_cast<_Node_if*>(_Nx);
 
-            for (; _First_arg != _Last && _Node; _Node = _Node->_Child) {
-                _Last = _Skip(_First_arg, _Last, _Node->_Next);
+                for (; _First_arg != _Last && _Node; _Node = _Node->_Child) {
+                    _Last = _Skip(_First_arg, _Last, _Node->_Next);
+                }
+
+                return _Last;
             }
-
-            return _Last;
-        }
 
         case _N_begin:
             break;
@@ -3777,8 +3789,8 @@ template <class _FwdIt, class _Elem, class _RxTraits>
 bool _Parser<_FwdIt, _Elem, _RxTraits>::_Is_esc() const { // assumes _Pat != _End
     _FwdIt _Ch0 = _Pat;
     return ++_Ch0 != _End
-           && ((!(_L_flags & _L_nex_grp) && (*_Ch0 == _Meta_lpar || *_Ch0 == _Meta_rpar))
-               || (!(_L_flags & _L_nex_rep) && (*_Ch0 == _Meta_lbr || *_Ch0 == _Meta_rbr)));
+        && ((!(_L_flags & _L_nex_grp) && (*_Ch0 == _Meta_lpar || *_Ch0 == _Meta_rpar))
+            || (!(_L_flags & _L_nex_rep) && (*_Ch0 == _Meta_lbr || *_Ch0 == _Meta_rbr)));
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
@@ -3839,14 +3851,15 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Trans() { // map character to meta-char
 
         break;
 
-    case _Meta_dlr: { // check if $ is special
-        _FwdIt _Ch0 = _Pat;
-        if ((_L_flags & _L_anch_rstr) && ++_Ch0 != _End && *_Ch0 != _Meta_nl) {
-            _Mchar = _Meta_chr;
-        }
+    case _Meta_dlr:
+        { // check if $ is special
+            _FwdIt _Ch0 = _Pat;
+            if ((_L_flags & _L_anch_rstr) && ++_Ch0 != _End && *_Ch0 != _Meta_nl) {
+                _Mchar = _Meta_chr;
+            }
 
-        break;
-    }
+            break;
+        }
 
     case _Meta_plus:
     case _Meta_query:
@@ -3920,13 +3933,12 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_OctalDigits() { // check for up to 3 oc
 template <class _FwdIt, class _Elem, class _RxTraits>
 void _Parser<_FwdIt, _Elem, _RxTraits>::_Do_ex_class(
     _Meta_type _End_arg) { // handle delimited expressions within bracket expression
-    regex_constants::error_type _Errtype =
-        (_End_arg == _Meta_colon ? regex_constants::error_ctype
-                                 : _End_arg == _Meta_equal ? regex_constants::error_collate
-                                                           : _End_arg == _Meta_dot ? regex_constants::error_collate
-                                                                                   : regex_constants::error_syntax);
-    _FwdIt _Beg                = _Pat;
-    _Iter_diff_t<_FwdIt> _Diff = 0;
+    regex_constants::error_type _Errtype = (_End_arg == _Meta_colon   ? regex_constants::error_ctype
+                                            : _End_arg == _Meta_equal ? regex_constants::error_collate
+                                            : _End_arg == _Meta_dot   ? regex_constants::error_collate
+                                                                      : regex_constants::error_syntax);
+    _FwdIt _Beg                          = _Pat;
+    _Iter_diff_t<_FwdIt> _Diff           = 0;
 
     while (_Mchar != _Meta_colon && _Mchar != _Meta_equal && _Mchar != _Meta_dot && _Mchar != _Meta_eos) {
         // advance to end delimiter
@@ -4518,9 +4530,9 @@ _Parser<_FwdIt, _Elem, _RxTraits>::_Parser(
 
     // PARSER LANGUAGE FLAGS
     constexpr unsigned int _ECMA_flags = _L_ext_rep | _L_alt_pipe | _L_nex_grp | _L_nex_rep | _L_nc_grp | _L_asrt_gen
-                                         | _L_asrt_wrd | _L_bckr | _L_ngr_rep | _L_esc_uni | _L_esc_hex | _L_esc_bsl
-                                         | _L_esc_ffn | _L_esc_wsd | _L_esc_ctrl | _L_bzr_chr | _L_grp_esc
-                                         | _L_ident_ECMA | _L_empty_grp;
+                                       | _L_asrt_wrd | _L_bckr | _L_ngr_rep | _L_esc_uni | _L_esc_hex | _L_esc_bsl
+                                       | _L_esc_ffn | _L_esc_wsd | _L_esc_ctrl | _L_bzr_chr | _L_grp_esc | _L_ident_ECMA
+                                       | _L_empty_grp;
 
     constexpr unsigned int _Basic_flags =
         _L_bckr | _L_lim_bckr | _L_anch_rstr | _L_star_beg | _L_empty_grp | _L_brk_rstr | _L_mtch_long;
