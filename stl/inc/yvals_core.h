@@ -166,6 +166,7 @@
 // P0758R1 is_nothrow_convertible
 // P0768R1 Library Support For The Spaceship Comparison Operator <=>
 // P0769R2 shift_left(), shift_right()
+// P0784R7 More constexpr containers
 // P0811R3 midpoint(), lerp()
 // P0879R0 constexpr For Swapping Functions
 // P0887R1 type_identity
@@ -1197,9 +1198,10 @@
 #define __cpp_lib_constexpr_algorithms 201806L
 #define __cpp_lib_constexpr_complex    201711L
 
-#if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc) && (defined(__clang__) || defined(__EDG__))
+#if defined(__cpp_constexpr_dynamic_alloc) \
+    && (defined(__clang__) || defined(__EDG__)) // TRANSITION, MSVC support for constexpr dynamic allocation
 #define __cpp_lib_constexpr_dynamic_alloc 201907L
-#endif // _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc)
+#endif // defined(__cpp_constexpr_dynamic_alloc) && (defined(__clang__) || defined(__EDG__))
 
 #define __cpp_lib_constexpr_functional  201907L
 #define __cpp_lib_constexpr_iterator    201811L

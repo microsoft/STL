@@ -617,7 +617,8 @@ namespace ranges {
 #if _HAS_CXX17
 // FUNCTION TEMPLATE destroy
 template <class _NoThrowFwdIt>
-void destroy(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last) { // destroy all elements in [_First, _Last)
+_CONSTEXPR20_DYNALLOC void destroy(
+    const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last) { // destroy all elements in [_First, _Last)
     _Adl_verify_range(_First, _Last);
     _Destroy_range(_Get_unwrapped(_First), _Get_unwrapped(_Last));
 }
@@ -642,9 +643,9 @@ namespace ranges {
         using _Not_quite_object::_Not_quite_object;
 
         // clang-format off
-        template <_No_throw_input_iterator _It, _No_throw_sentinel_for<_It> _Se>
-            requires destructible<iter_value_t<_It>>
-        /* _CONSTEXPR20_DYNALLOC */ _It operator()(_It _First, _Se _Last) const noexcept {
+        template <_No_throw_input_iterator _It, _No_throw_sentinel_for<_It> _Se> 
+            requires destructible<iter_value_t<_It>> 
+         _CONSTEXPR20_DYNALLOC _It operator()(_It _First, _Se _Last) const noexcept {
             // clang-format on
             _Adl_verify_range(_First, _Last);
             _Seek_wrapped(_First,
@@ -655,7 +656,7 @@ namespace ranges {
         // clang-format off
         template <_No_throw_input_range _Rng>
             requires destructible<range_value_t<_Rng>>
-        /* _CONSTEXPR20_DYNALLOC */ borrowed_iterator_t<_Rng> operator()(_Rng&& _Range) const noexcept {
+         _CONSTEXPR20_DYNALLOC  borrowed_iterator_t<_Rng> operator()(_Rng&& _Range) const noexcept {
             // clang-format on
             auto _First = _RANGES begin(_Range);
             _Seek_wrapped(_First, _RANGES _Destroy_unchecked(_Get_unwrapped(_STD move(_First)), _Uend(_Range)));
@@ -669,7 +670,7 @@ namespace ranges {
 
 // FUNCTION TEMPLATE destroy_n
 template <class _NoThrowFwdIt, class _Diff>
-_NoThrowFwdIt destroy_n(_NoThrowFwdIt _First, const _Diff _Count_raw) {
+_CONSTEXPR20_DYNALLOC _NoThrowFwdIt destroy_n(_NoThrowFwdIt _First, const _Diff _Count_raw) {
     // destroy all elements in [_First, _First + _Count)
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
     if (_Count <= 0) {
@@ -699,7 +700,7 @@ namespace ranges {
         // clang-format off
         template <_No_throw_input_iterator _It>
             requires destructible<iter_value_t<_It>>
-        /* _CONSTEXPR20_DYNALLOC */ _It operator()(_It _First, const iter_difference_t<_It> _Count) const noexcept {
+         _CONSTEXPR20_DYNALLOC _It operator()(_It _First, const iter_difference_t<_It> _Count) const noexcept {
             // clang-format on
             if (_Count <= 0) {
                 return _First;

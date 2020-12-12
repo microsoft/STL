@@ -147,7 +147,6 @@ static_assert(destroy_at_noexcept<volatile string>());
 static_assert(destroy_at_noexcept<const volatile int>());
 static_assert(destroy_at_noexcept<const volatile string>());
 
-#if _HAS_CXX20
 static_assert(destroy_at_noexcept<int[42]>());
 static_assert(destroy_at_noexcept<string[42]>());
 static_assert(destroy_at_noexcept<const int[42]>());
@@ -156,16 +155,13 @@ static_assert(destroy_at_noexcept<volatile int[42]>());
 static_assert(destroy_at_noexcept<volatile string[42]>());
 static_assert(destroy_at_noexcept<const volatile int[42]>());
 static_assert(destroy_at_noexcept<const volatile string[42]>());
-#endif // _HAS_CXX20
 
 struct throwing_dtor {
     ~throwing_dtor() noexcept(false) {}
 };
 
 static_assert(destroy_at_noexcept<throwing_dtor>());
-#if _HAS_CXX20
 static_assert(destroy_at_noexcept<throwing_dtor[42]>());
-#endif // _HAS_CXX20
 
 #ifdef __cpp_lib_concepts
 static_assert(!can_ranges_destroy_at<throwing_dtor>);
@@ -209,7 +205,6 @@ void test_array(const T& val) {
     constexpr int N = 42;
     (void) val;
 
-#if _HAS_CXX20
     alignas(T) unsigned char storage[sizeof(T) * N];
     using U        = conditional_t<is_scalar_v<T>, const volatile T, T>;
     const auto ptr = reinterpret_cast<U*>(storage);
@@ -231,10 +226,9 @@ void test_array(const T& val) {
     ranges::destroy_at(reinterpret_cast<T(*)[N]>(const_cast<T*>(ptr)));
 #endif // TRANSITION, VSO-1049320
 #endif // __cpp_lib_concepts
-#endif // _HAS_CXX20
 }
 
-#if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc)
+#ifdef __cpp_constexpr_dynamic_alloc
 template <class T>
 struct storage_for {
     union {
@@ -293,7 +287,52 @@ struct nontrivial_A {
     constexpr ~nontrivial_A() {}
 };
 
-#if defined(__clang__) || defined(__EDG__)
+constexpr void test_compiletime_destroy_variants() {
+    {
+        A<int> a[10];
+        for (int i = 0; i < 10; i++) {
+            construct_at(&a[i].value, i);
+        }
+        destroy(begin(a), end(a));
+
+        for (int i = 0; i < 10; i++) {
+            ranges::construct_at(&a[i].value, i);
+        }
+        ranges::destroy(ranges::begin(a), ranges::end(a));
+
+        for (int i = 0; i < 10; i++) {
+            ranges::construct_at(&a[i].value, i);
+        }
+        ranges::destroy(a);
+    }
+    {
+        A<int> a[10];
+        for (int i = 0; i < 10; i++) {
+            construct_at(&a[i].value, i);
+        }
+        destroy_n(begin(a), 10);
+
+        for (int i = 0; i < 10; i++) {
+            ranges::construct_at(&a[i].value, i);
+        }
+        ranges::destroy_n(ranges::begin(a), 10);
+    }
+    {
+        nontrivial_A<int> a[10];
+        for (int i = 0; i < 10; i++) {
+            construct_at(&a[i].value, i);
+        }
+        destroy_n(begin(a), 10);
+
+        for (int i = 0; i < 10; i++) {
+            ranges::construct_at(&a[i].value, i);
+        }
+        ranges::destroy_n(ranges::begin(a), 10);
+    }
+}
+static_assert((test_compiletime_destroy_variants(), true));
+
+#ifdef __cpp_lib_constexpr_dynamic_alloc
 template <class T, bool Construct = false, bool Destroy = false>
 struct Alloc {
     using value_type = T;
@@ -406,21 +445,21 @@ constexpr void test_compiletime_allocator() {
     }
 }
 static_assert((test_compiletime_allocator(), true));
-#endif // defined(__clang__ ) || defined(__EDG__)
-#endif // _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc)
 
-#if _HAS_CXX20
 constexpr void test_compiletime_operators() {
     {
-        auto allocatorA = std::allocator<int>{};
-        auto allocatorB = std::allocator<float>{};
+        auto allocatorA           = std::allocator<int>{};
+        auto allocatorB           = std::allocator<float>{};
+        constexpr auto allocatorC = allocatorA;
 
         static_assert(allocatorA == allocatorB);
         static_assert(!(allocatorA != allocatorB));
+        static_assert(allocatorA == allocatorC);
     }
 }
 static_assert((test_compiletime_operators(), true));
-#endif // _HAS_CXX20
+#endif // __cpp_lib_constexpr_dynamic_alloc
+#endif // __cpp_constexpr_dynamic_alloc
 
 int main() {
     test_runtime(1234);

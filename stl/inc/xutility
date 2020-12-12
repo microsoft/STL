@@ -145,14 +145,7 @@ _CONSTEXPR20_DYNALLOC auto construct_at(_Ty* const _Location, _Types&&... _Args)
 // FUNCTION TEMPLATE _Construct_in_place
 template <class _Ty, class... _Types>
 void _Construct_in_place(_Ty& _Obj, _Types&&... _Args) noexcept(is_nothrow_constructible_v<_Ty, _Types...>) {
-#ifdef __cpp_lib_is_constant_evaluated
-    if (_STD is_constant_evaluated()) {
-        _STD construct_at(_STD addressof(_Obj), _STD forward<_Types>(_Args)...);
-    } else
-#endif // __cpp_lib_is_constant_evaluated
-    {
-        ::new (_Voidify_iter(_STD addressof(_Obj))) _Ty(_STD forward<_Types>(_Args)...);
-    }
+    ::new (_Voidify_iter(_STD addressof(_Obj))) _Ty(_STD forward<_Types>(_Args)...);
 }
 
 // FUNCTION TEMPLATE _Default_construct_in_place
