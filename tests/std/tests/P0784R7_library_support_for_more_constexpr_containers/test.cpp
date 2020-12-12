@@ -1,10 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#ifdef __cpp_constexpr_dynamic_alloc
-#define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING
-#endif // __cpp_constexpr_dynamic_alloc
-
 #include <assert.h>
 #include <memory>
 #include <stddef.h>
@@ -364,11 +360,11 @@ struct Alloc {
     }
 
     constexpr void construct(value_type* ptr, value_type n) requires(Construct) {
-        allocator<T>{}.construct(ptr, n);
+        construct_at(ptr, n);
     }
 
     constexpr void destroy(value_type* ptr) requires(Destroy) {
-        allocator<T>{}.destroy(ptr);
+        destroy_at(ptr);
     }
 
     constexpr Alloc select_on_container_copy_construction() const noexcept {
