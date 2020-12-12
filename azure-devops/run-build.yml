@@ -27,12 +27,10 @@ jobs:
         targetType: inline
         script: |
           cd $(Build.SourcesDirectory)
-          $pattern = "[^a-zA-Z0-9]"
-          $llvmSHA = git submodule status llvm-project | %{($_ -split "\s+")[0]}
-          $llvmSHA = $llvmSHA -replace $pattern,""
+          $regexSubmoduleSHA = '^[ \-+]([0-9a-f]+) .*$'
+          $llvmSHA = git submodule status --cached llvm-project | %{$_ -replace $regexSubmoduleSHA, '$1'}
           Write-Host "##vso[task.setvariable variable=llvmSHA;]$llvmSHA"
-          $vcpkgSHA = git submodule status vcpkg | %{($_ -split "\s+")[0]}
-          $vcpkgSHA = $vcpkgSHA -replace $pattern,""
+          $vcpkgSHA = git submodule status --cached vcpkg | %{$_ -replace $regexSubmoduleSHA, '$1'}
           Write-Host "##vso[task.setvariable variable=vcpkgSHA;]$vcpkgSHA"
     - script: |
         cd $(Build.SourcesDirectory)
@@ -43,7 +41,7 @@ jobs:
         git init
         git remote add llvm https://github.com/llvm/llvm-project
         git config --local extensions.partialClone llvm
-        git fetch --filter=tree:0 --depth=1 -v llvm $(llvmSHA)
+        git fetch --filter=tree:0 --depth=1 llvm $(llvmSHA)
         git reset --quiet $(llvmSHA)
         git sparse-checkout init --cone
         git sparse-checkout set libcxx/test libcxx/utils/libcxx llvm/utils/lit
