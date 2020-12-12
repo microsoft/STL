@@ -228,7 +228,7 @@ void test_array(const T& val) {
 #endif // __cpp_lib_concepts
 }
 
-#ifdef __cpp_constexpr_dynamic_alloc
+#ifdef __cpp_lib_constexpr_dynamic_alloc
 template <class T>
 struct storage_for {
     union {
@@ -338,7 +338,6 @@ constexpr void test_compiletime_destroy_variants() {
 }
 static_assert((test_compiletime_destroy_variants(), true));
 
-#ifdef __cpp_lib_constexpr_dynamic_alloc
 template <class T, bool Construct = false, bool Destroy = false>
 struct Alloc {
     using value_type = T;
@@ -465,7 +464,6 @@ constexpr void test_compiletime_operators() {
 }
 static_assert((test_compiletime_operators(), true));
 #endif // __cpp_lib_constexpr_dynamic_alloc
-#endif // __cpp_constexpr_dynamic_alloc
 
 int main() {
     test_runtime(1234);
