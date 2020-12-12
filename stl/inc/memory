@@ -643,8 +643,8 @@ namespace ranges {
         using _Not_quite_object::_Not_quite_object;
 
         // clang-format off
-        template <_No_throw_input_iterator _It, _No_throw_sentinel_for<_It> _Se> 
-            requires destructible<iter_value_t<_It>> 
+        template <_No_throw_input_iterator _It, _No_throw_sentinel_for<_It> _Se>
+            requires destructible<iter_value_t<_It>>
          _CONSTEXPR20_DYNALLOC _It operator()(_It _First, _Se _Last) const noexcept {
             // clang-format on
             _Adl_verify_range(_First, _Last);
