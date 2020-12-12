@@ -328,7 +328,6 @@ constexpr void test_compiletime_destroy_variants() {
     }
 #endif // __cpp_lib_concepts
     {
-        A<int> a[10];
         nontrivial_A<int> a[10];
         for (int i = 0; i < 10; i++) {
             construct_at(&a[i].value, i);
