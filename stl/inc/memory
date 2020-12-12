@@ -700,8 +700,9 @@ namespace ranges {
         // clang-format off
         template <_No_throw_input_iterator _It>
             requires destructible<iter_value_t<_It>>
-         _CONSTEXPR20_DYNALLOC _It operator()(_It _First, const iter_difference_t<_It> _Count) const noexcept {
+         _CONSTEXPR20_DYNALLOC _It operator()(_It _First, const iter_difference_t<_It> _Count_raw) const noexcept {
             // clang-format on
+            _Algorithm_int_t<iter_difference_t<_It>> _Count = _Count_raw;
             if (_Count <= 0) {
                 return _First;
             }
