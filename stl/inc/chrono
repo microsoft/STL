@@ -1281,8 +1281,8 @@ namespace chrono {
 
     _NODISCARD constexpr months operator-(const year_month& _Left, const year_month& _Right) noexcept {
         return _Left.year() - _Right.year()
-               + months{static_cast<int>(static_cast<unsigned int>(_Left.month()))
-                        - static_cast<int>(static_cast<unsigned int>(_Right.month()))};
+             + months{static_cast<int>(static_cast<unsigned int>(_Left.month()))
+                      - static_cast<int>(static_cast<unsigned int>(_Right.month()))};
     }
 
     _NODISCARD constexpr year_month operator+(const year_month& _Left, const years& _Right) noexcept {
@@ -1395,7 +1395,7 @@ namespace chrono {
             const int _Era                  = (_Ye >= 0 ? _Ye : _Ye - 399) / 400;
             const unsigned int _Year_of_era = static_cast<unsigned int>(_Ye - _Era * 400); // [0, 399]
             const unsigned int _Day_of_year = (153 * (_Mo + (_Mo > 2 ? static_cast<unsigned int>(-3) : 9)) + 2) / 5
-                                              + static_cast<unsigned int>(_Day) - 1; // [0, 365]
+                                            + static_cast<unsigned int>(_Day) - 1; // [0, 365]
             const unsigned int _Day_of_era =
                 _Year_of_era * 365 + _Year_of_era / 4 - _Year_of_era / 100 + _Day_of_year; // [0, 146096]
             return days{_Era * 146097 + static_cast<int>(_Day_of_era) - 719468};
@@ -1631,7 +1631,7 @@ namespace chrono {
 
     _NODISCARD constexpr bool operator==(const year_month_weekday& _Left, const year_month_weekday& _Right) noexcept {
         return _Left.year() == _Right.year() && _Left.month() == _Right.month()
-               && _Left.weekday_indexed() == _Right.weekday_indexed();
+            && _Left.weekday_indexed() == _Right.weekday_indexed();
     }
 
     _NODISCARD constexpr year_month_weekday operator+(const year_month_weekday& _Left, const months& _Right) noexcept {
@@ -1719,7 +1719,7 @@ namespace chrono {
     _NODISCARD constexpr bool operator==(
         const year_month_weekday_last& _Left, const year_month_weekday_last& _Right) noexcept {
         return _Left.year() == _Right.year() && _Left.month() == _Right.month()
-               && _Left.weekday_last() == _Right.weekday_last();
+            && _Left.weekday_last() == _Right.weekday_last();
     }
 
     _NODISCARD constexpr year_month_weekday_last operator+(
