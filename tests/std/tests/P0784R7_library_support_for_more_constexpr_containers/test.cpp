@@ -294,47 +294,56 @@ constexpr void test_compiletime_destroy_variants() {
             construct_at(&a[i].value, i);
         }
         destroy(begin(a), end(a));
-
+    }
 #ifdef __cpp_lib_concepts
+    {
+        A<int> a[10];
         for (int i = 0; i < 10; i++) {
             ranges::construct_at(&a[i].value, i);
         }
         ranges::destroy(ranges::begin(a), ranges::end(a));
-
+    }
+    {
+        A<int> a[10];
         for (int i = 0; i < 10; i++) {
             ranges::construct_at(&a[i].value, i);
         }
         ranges::destroy(a);
-#endif // __cpp_lib_concepts
     }
+#endif // __cpp_lib_concepts
     {
         A<int> a[10];
         for (int i = 0; i < 10; i++) {
             construct_at(&a[i].value, i);
         }
         destroy_n(begin(a), 10);
-
+    }
 #ifdef __cpp_lib_concepts
+    {
+        A<int> a[10];
         for (int i = 0; i < 10; i++) {
             ranges::construct_at(&a[i].value, i);
         }
         ranges::destroy_n(ranges::begin(a), 10);
-#endif // __cpp_lib_concepts
     }
+#endif // __cpp_lib_concepts
     {
+        A<int> a[10];
         nontrivial_A<int> a[10];
         for (int i = 0; i < 10; i++) {
             construct_at(&a[i].value, i);
         }
         destroy_n(begin(a), 10);
-
+    }
 #ifdef __cpp_lib_concepts
+    {
+        A<int> a[10];
         for (int i = 0; i < 10; i++) {
             ranges::construct_at(&a[i].value, i);
         }
         ranges::destroy_n(ranges::begin(a), 10);
-#endif // __cpp_lib_concepts
     }
+#endif // __cpp_lib_concepts
 }
 static_assert((test_compiletime_destroy_variants(), true));
 
