@@ -48,7 +48,10 @@ class STLTest(Test):
         if result:
             return result
 
-        self._handleEnvlst(litConfig)
+        result = self._handleEnvlst(litConfig)
+        if result:
+            return result
+
         self._parseTest()
         self._parseFlags()
 
@@ -171,18 +174,20 @@ class STLTest(Test):
         envCompiler = self.envlstEntry.getEnvVal('PM_COMPILER', 'cl')
 
         cxx = None
-        if not os.path.isfile(envCompiler):
+        if os.path.isfile(envCompiler):
+            cxx = envCompiler
+        else:
             cxx = _compilerPathCache.get(envCompiler, None)
 
-            if cxx is None:
+            if not cxx:
                 searchPaths = self.config.environment['PATH']
                 cxx = shutil.which(envCompiler, path=searchPaths)
                 _compilerPathCache[envCompiler] = cxx
-        else:
-            cxx = envCompiler
 
         if not cxx:
-            litConfig.fatal('Could not find: %r' % envCompiler)
+            litConfig.warning('Could not find: %r' % envCompiler)
+            return Result(SKIPPED, 'This test was skipped because the compiler, "' +
+                                   envCompiler + '", could not be found')
 
         self.flags = copy.deepcopy(litConfig.flags[self.config.name])
         self.compileFlags = copy.deepcopy(litConfig.compile_flags[self.config.name])
@@ -203,6 +208,7 @@ class STLTest(Test):
             self.requires.append('x64')
 
         self.cxx = os.path.normpath(cxx)
+        return None
 
     def _parseFlags(self):
         foundStd = False
