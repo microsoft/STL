@@ -125,10 +125,10 @@ void test_common_to_chars(
 
     constexpr size_t BufferPrefix = 20; // detect buffer underruns (specific value isn't important)
 
-    constexpr size_t Space =
-        is_integral_v<T> ? 1 + 64 // worst case: -2^63 in binary
-                         : is_same_v<T, float> ? 1 + 151 // worst case: negative min subnormal float, fixed notation
-                                               : 1 + 1076; // worst case: negative min subnormal double, fixed notation
+    constexpr size_t Space = is_integral_v<T> ? 1 + 64 // worst case: -2^63 in binary
+                           : is_same_v<T, float>
+                               ? 1 + 151 // worst case: negative min subnormal float, fixed notation
+                               : 1 + 1076; // worst case: negative min subnormal double, fixed notation
 
     constexpr size_t BufferSuffix = 30; // detect buffer overruns (specific value isn't important)
 
@@ -595,8 +595,8 @@ constexpr uint32_t PrefixesToTest = 100; // Tunable for test coverage vs. perfor
 static_assert(PrefixesToTest >= 1, "Must test at least 1 prefix.");
 
 constexpr uint32_t PrefixLimit = 2 // sign bit
-                                 * 255 // non-INF/NAN exponents for float
-                                 * (1U << (23 - FractionBits)); // fraction bits in prefix
+                               * 255 // non-INF/NAN exponents for float
+                               * (1U << (23 - FractionBits)); // fraction bits in prefix
 static_assert(PrefixesToTest <= PrefixLimit, "Too many prefixes.");
 
 template <bool IsDouble>
@@ -701,9 +701,9 @@ void test_floating_precision_prefix(const conditional_t<IsDouble, uint64_t, uint
 
     // Size for fixed notation. (More than enough for scientific notation.)
     constexpr size_t charconv_buffer_size = 1 // negative sign
-                                            + max_integer_length // integer digits
-                                            + 1 // decimal point
-                                            + precision; // fractional digits
+                                          + max_integer_length // integer digits
+                                          + 1 // decimal point
+                                          + precision; // fractional digits
     char charconv_buffer[charconv_buffer_size];
 
     constexpr size_t stdio_buffer_size = charconv_buffer_size + 1; // null terminator

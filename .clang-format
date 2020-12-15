@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-# https://releases.llvm.org/10.0.0/tools/clang/docs/ClangFormatStyleOptions.html
+# https://releases.llvm.org/11.0.0/tools/clang/docs/ClangFormatStyleOptions.html
 
 ---
 # Language:        Cpp
@@ -14,15 +14,18 @@ AlignAfterOpenBracket: DontAlign
 AlignConsecutiveMacros: true
 # AlignConsecutiveAssignments: false
 AlignConsecutiveAssignments: true
+# AlignConsecutiveBitFields: false
 # AlignConsecutiveDeclarations: false
 # AlignEscapedNewlines: Right
 AlignEscapedNewlines: Left
-# AlignOperands:   true
+# AlignOperands:   Align
+AlignOperands: AlignAfterOperator
 # AlignTrailingComments: true
 AlignTrailingComments: false
 # AllowAllArgumentsOnNextLine: true
 # AllowAllConstructorInitializersOnNextLine: true
 # AllowAllParametersOfDeclarationOnNextLine: true
+# AllowShortEnumsOnASingleLine: true
 # AllowShortBlocksOnASingleLine: Never
 # AllowShortCaseLabelsOnASingleLine: false
 # AllowShortFunctionsOnASingleLine: All
@@ -40,7 +43,7 @@ AlwaysBreakTemplateDeclarations: Yes
 # BraceWrapping:
 #   AfterCaseLabel:  false
 #   AfterClass:      false
-#   AfterControlStatement: false
+#   AfterControlStatement: Never
 #   AfterEnum:       false
 #   AfterFunction:   false
 #   AfterNamespace:  false
@@ -50,6 +53,8 @@ AlwaysBreakTemplateDeclarations: Yes
 #   AfterExternBlock: false
 #   BeforeCatch:     false
 #   BeforeElse:      false
+#   BeforeLambdaBody: false
+#   BeforeWhile:     false
 #   IndentBraces:    false
 #   SplitEmptyFunction: true
 #   SplitEmptyRecord: true
@@ -112,12 +117,16 @@ IncludeCategories:
 # IncludeIsMainRegex: '(Test)?$'
 # IncludeIsMainSourceRegex: ''
 # IndentCaseLabels: false
+# IndentCaseBlocks: false
+IndentCaseBlocks: true
 # IndentGotoLabels: true
 # IndentPPDirectives: None
+# IndentExternBlock: AfterExternBlock
 # IndentWidth:     2
 IndentWidth:     4
 # IndentWrappedFunctionNames: false
 IndentWrappedFunctionNames: true
+# InsertTrailingCommas: None
 # JavaScriptQuotes: Leave
 # JavaScriptWrapImports: true
 # KeepEmptyLinesAtTheStartOfBlocks: true
@@ -130,6 +139,7 @@ MaxEmptyLinesToKeep: 2
 NamespaceIndentation: All
 # ObjCBinPackProtocolList: Auto
 # ObjCBlockIndentWidth: 2
+# ObjCBreakBeforeNestedBlockParam: true
 # ObjCSpaceAfterProperty: false
 # ObjCSpaceBeforeProtocolList: true
 # PenaltyBreakAssignment: 2
@@ -184,4 +194,8 @@ StatementMacros:
 # UseCRLF:         false
 UseCRLF:         true
 # UseTab:          Never
+# WhitespaceSensitiveMacros:
+#   - STRINGIZE
+#   - PP_STRINGIZE
+#   - BOOST_PP_STRINGIZE
 ...

@@ -149,7 +149,7 @@ bool throws_filesystem_error(Lambda lambda, string_view functionName, const path
     } catch (const filesystem_error& err) {
         // Good!
         return string_view(err.what()).find(functionName) != string_view::npos && bad(err.code())
-               && err.path1().native() == p1.native() && err.path2().native() == p2.native();
+            && err.path1().native() == p1.native() && err.path2().native() == p2.native();
     }
 }
 
@@ -3457,7 +3457,7 @@ void test_permissions() {
     EXPECT(good(ec));
 
     constexpr auto readonlyPerms = perms::owner_read | perms::owner_exec | perms::group_read | perms::group_exec
-                                   | perms::others_read | perms::others_exec;
+                                 | perms::others_read | perms::others_exec;
     permissions(filename, readonlyPerms, perm_options::replace);
     EXPECT(status(filename, ec).permissions() == readonlyPerms);
     EXPECT(good(ec));

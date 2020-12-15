@@ -516,8 +516,8 @@
 #ifdef __EDG__
 // not attempting to detect __EDG_VERSION__ being less than expected
 #elif defined(__clang__)
-#if __clang_major__ < 10
-#error STL1000: Unexpected compiler version, expected Clang 10.0.0 or newer.
+#if __clang_major__ < 11
+#error STL1000: Unexpected compiler version, expected Clang 11.0.0 or newer.
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
 #if _MSC_VER < 1928 // Coarse-grained, not inspecting _MSC_FULL_VER

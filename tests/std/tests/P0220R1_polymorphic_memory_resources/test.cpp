@@ -360,8 +360,8 @@ namespace {
                     for (std::size_t size : allocation_sizes) {
                         for (auto align = 1_zu; align <= 512_zu && size % align == 0_zu; align *= 2_zu) {
                             auto ptr = (align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__)
-                                           ? ::operator new(size)
-                                           : ::operator new (size, std::align_val_t{align});
+                                         ? ::operator new(size)
+                                         : ::operator new (size, std::align_val_t{align});
                             ndr.deallocate(ptr, size, align);
                         }
                     }
@@ -401,8 +401,8 @@ namespace {
                     for (std::size_t size : allocation_sizes) {
                         for (auto align = 1_zu; align <= 512_zu && size % align == 0_zu; align *= 2_zu) {
                             void* ptr = align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__
-                                            ? ::operator new(size)
-                                            : ::operator new (size, std::align_val_t{align});
+                                          ? ::operator new(size)
+                                          : ::operator new (size, std::align_val_t{align});
                             nmr.deallocate(ptr, size, align);
                             if (align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
                                 ::operator delete(ptr, size);

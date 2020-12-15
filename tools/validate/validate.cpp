@@ -247,8 +247,8 @@ int main() {
         }
 
         const TabPolicy tab_policy = binary_search(tabby_filenames.begin(), tabby_filenames.end(), filename)
-                                         ? TabPolicy::Allowed
-                                         : TabPolicy::Forbidden;
+                                       ? TabPolicy::Allowed
+                                       : TabPolicy::Forbidden;
 
         scan_file(filepath, tab_policy, buffer);
     }
