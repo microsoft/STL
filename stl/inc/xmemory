@@ -178,7 +178,7 @@ __declspec(allocator) _CONSTEXPR20_DYNALLOC void* _Allocate(const size_t _Bytes)
         return nullptr;
     }
 
-#ifdef __cpp_lib_is_constant_evaluated
+#ifdef __cpp_lib_is_constant_evaluated // TRANSITION, GH-1532
     if (_STD is_constant_evaluated()) {
         return _Traits::_Allocate(_Bytes);
     } else
@@ -198,7 +198,7 @@ __declspec(allocator) _CONSTEXPR20_DYNALLOC void* _Allocate(const size_t _Bytes)
 template <size_t _Align, enable_if_t<(_Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__), int> = 0>
 _CONSTEXPR20_DYNALLOC void _Deallocate(void* _Ptr, const size_t _Bytes) noexcept {
     // deallocate storage allocated by _Allocate when __cpp_aligned_new && _Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__
-#ifdef __cpp_lib_is_constant_evaluated
+#ifdef __cpp_lib_is_constant_evaluated // TRANSITION, GH-1532
     if (_STD is_constant_evaluated()) {
         ::operator delete(_Ptr);
     } else
@@ -225,7 +225,7 @@ template <size_t _Align, class _Traits = _Default_allocate_traits,
 __declspec(allocator) _CONSTEXPR20_DYNALLOC void* _Allocate(const size_t _Bytes) {
     // allocate _Bytes when !_HAS_ALIGNED_NEW || _Align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__
 #if defined(_M_IX86) || defined(_M_X64)
-#ifdef __cpp_lib_is_constant_evaluated
+#ifdef __cpp_lib_is_constant_evaluated // TRANSITION, GH-1532
     if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
     {
@@ -245,7 +245,7 @@ __declspec(allocator) _CONSTEXPR20_DYNALLOC void* _Allocate(const size_t _Bytes)
 template <size_t _Align, enable_if_t<(!_HAS_ALIGNED_NEW || _Align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__), int> = 0>
 _CONSTEXPR20_DYNALLOC void _Deallocate(void* _Ptr, size_t _Bytes) noexcept {
     // deallocate storage allocated by _Allocate when !_HAS_ALIGNED_NEW || _Align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__
-#ifdef __cpp_lib_is_constant_evaluated
+#ifdef __cpp_lib_is_constant_evaluated // TRANSITION, GH-1532
     if (_STD is_constant_evaluated()) {
         ::operator delete(_Ptr);
     } else
@@ -743,7 +743,7 @@ struct _Default_allocator_traits { // traits for std::allocator
 
     _NODISCARD static _CONSTEXPR20_DYNALLOC __declspec(allocator) pointer
         allocate(_Alloc& _Al, _CRT_GUARDOVERFLOW const size_type _Count) {
-#ifdef __cpp_lib_is_constant_evaluated
+#ifdef __cpp_lib_is_constant_evaluated // TRANSITION, GH-1532
         if (_STD is_constant_evaluated()) {
             return _Al.allocate(_Count);
         } else
@@ -757,7 +757,7 @@ struct _Default_allocator_traits { // traits for std::allocator
 
     _NODISCARD static _CONSTEXPR20_DYNALLOC __declspec(allocator) pointer
         allocate(_Alloc& _Al, _CRT_GUARDOVERFLOW const size_type _Count, const_void_pointer) {
-#ifdef __cpp_lib_is_constant_evaluated
+#ifdef __cpp_lib_is_constant_evaluated // TRANSITION, GH-1532
         if (_STD is_constant_evaluated()) {
             return _Al.allocate(_Count);
         } else
@@ -771,7 +771,7 @@ struct _Default_allocator_traits { // traits for std::allocator
 
     static _CONSTEXPR20_DYNALLOC void deallocate(_Alloc& _Al, const pointer _Ptr, const size_type _Count) {
         // no overflow check on the following multiply; we assume _Allocate did that check
-#ifdef __cpp_lib_is_constant_evaluated
+#ifdef __cpp_lib_is_constant_evaluated // TRANSITION, GH-1532
         if (_STD is_constant_evaluated()) {
             return _Al.deallocate(_Ptr, _Count);
         } else
