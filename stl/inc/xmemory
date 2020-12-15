@@ -25,7 +25,7 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 // STRUCT TEMPLATE _Tidy_guard
 template <class _Ty>
-struct _Tidy_guard { // class with destructor that calls _Tidy
+struct _NODISCARD _Tidy_guard { // class with destructor that calls _Tidy
     _Ty* _Target;
     ~_Tidy_guard() {
         if (_Target) {
@@ -36,7 +36,7 @@ struct _Tidy_guard { // class with destructor that calls _Tidy
 
 // STRUCT TEMPLATE _Tidy_deallocate_guard
 template <class _Ty>
-struct _Tidy_deallocate_guard { // class with destructor that calls _Tidy_deallocate
+struct _NODISCARD _Tidy_deallocate_guard { // class with destructor that calls _Tidy_deallocate
     _Ty* _Target;
     ~_Tidy_deallocate_guard() {
         if (_Target) {
@@ -99,7 +99,7 @@ static_assert(_Is_pow_2(_Big_allocation_alignment), "Big allocation alignment mu
 #ifdef _DEBUG
 constexpr size_t _Non_user_size = 2 * sizeof(void*) + _Big_allocation_alignment - 1;
 #else // _DEBUG
-constexpr size_t _Non_user_size           = sizeof(void*) + _Big_allocation_alignment - 1;
+constexpr size_t _Non_user_size = sizeof(void*) + _Big_allocation_alignment - 1;
 #endif // _DEBUG
 
 #ifdef _WIN64
@@ -226,7 +226,7 @@ void _Deallocate(void* _Ptr, size_t _Bytes) noexcept {
 // FUNCTION TEMPLATE _Global_new
 template <class _Ty, class... _Types>
 _Ty* _Global_new(_Types&&... _Args) { // acts as "new" while disallowing user overload selection
-    struct _Guard_type {
+    struct _NODISCARD _Guard_type {
         void* _Result;
         ~_Guard_type() {
             if (_Result) {
@@ -1415,7 +1415,8 @@ void _Return_temporary_buffer(_Ty* const _Pbuf) noexcept {
 
 // STRUCT TEMPLATE _Uninitialized_backout
 template <class _NoThrowFwdIt>
-struct _Uninitialized_backout { // struct to undo partially constructed ranges in _Uninitialized_xxx algorithms
+struct _NODISCARD _Uninitialized_backout {
+    // struct to undo partially constructed ranges in _Uninitialized_xxx algorithms
     _NoThrowFwdIt _First;
     _NoThrowFwdIt _Last;
 
@@ -1513,7 +1514,8 @@ _NoThrowFwdIt _Uninitialized_move_unchecked(_InIt _First, const _InIt _Last, _No
 
 // STRUCT TEMPLATE _Uninitialized_backout_al
 template <class _Alloc>
-class _Uninitialized_backout_al { // struct to undo partially constructed ranges in _Uninitialized_xxx_al algorithms
+class _NODISCARD _Uninitialized_backout_al {
+    // struct to undo partially constructed ranges in _Uninitialized_xxx_al algorithms
     using pointer = _Alloc_ptr_t<_Alloc>;
 
 public:

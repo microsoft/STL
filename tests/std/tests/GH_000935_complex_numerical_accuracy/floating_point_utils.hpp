@@ -216,7 +216,7 @@ namespace fputil {
         template <typename T, std::enable_if_t<std::is_floating_point_v<T>, int> = 0>
         bool is_within_absolute_tolerance(const T& actual, const T& expected, const double absolute_tolerance) {
             return _STD _Is_finite(actual) && _STD _Is_finite(expected)
-                   && std::abs(actual - expected) <= absolute_tolerance;
+                && std::abs(actual - expected) <= absolute_tolerance;
         }
     } // namespace detail
 

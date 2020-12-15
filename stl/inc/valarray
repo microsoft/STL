@@ -37,7 +37,7 @@ class valarray;
 // FUNCTION TEMPLATE _Allocate_for_op_delete
 template <class _Ty>
 _Ty* _Allocate_for_op_delete(size_t _Count) {
-    // allocates space for _Count copies of _Ty, which will be freed with scalar delete
+    // allocates space for _Count objects of type _Ty
     if (_Count == 0) {
         return nullptr;
     }
@@ -45,7 +45,7 @@ _Ty* _Allocate_for_op_delete(size_t _Count) {
     const size_t _Bytes = _Get_size_of_n<sizeof(_Ty)>(_Count);
 #ifdef __cpp_aligned_new
     constexpr bool _Extended_alignment = alignof(_Ty) > __STDCPP_DEFAULT_NEW_ALIGNMENT__;
-    if _CONSTEXPR_IF (_Extended_alignment) {
+    if constexpr (_Extended_alignment) {
         return static_cast<_Ty*>(::operator new (_Bytes, align_val_t{alignof(_Ty)}));
     } else
 #endif // __cpp_aligned_new
@@ -548,11 +548,19 @@ private:
 
     void _Tidy_deallocate() noexcept {
         if (_Myptr) { // destroy elements
-            for (size_t _Idx = 1; _Idx < _Mysize; ++_Idx) {
+            for (size_t _Idx = 0; _Idx < _Mysize; ++_Idx) {
                 _Destroy_in_place(_Myptr[_Idx]);
             }
 
-            delete _Myptr;
+#ifdef __cpp_aligned_new
+            constexpr bool _Extended_alignment = alignof(_Ty) > __STDCPP_DEFAULT_NEW_ALIGNMENT__;
+            if constexpr (_Extended_alignment) {
+                ::operator delete (static_cast<void*>(_Myptr), align_val_t{alignof(_Ty)});
+            } else
+#endif // __cpp_aligned_new
+            {
+                ::operator delete(static_cast<void*>(_Myptr));
+            }
         }
 
         _Tidy_init();

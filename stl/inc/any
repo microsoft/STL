@@ -47,13 +47,13 @@ inline constexpr size_t _Any_trivial_space_size = (_Small_object_num_ptrs - 1) *
 
 template <class _Ty>
 inline constexpr bool _Any_is_trivial = alignof(_Ty) <= alignof(max_align_t)
-                                        && is_trivially_copyable_v<_Ty> && sizeof(_Ty) <= _Any_trivial_space_size;
+                                     && is_trivially_copyable_v<_Ty> && sizeof(_Ty) <= _Any_trivial_space_size;
 
 inline constexpr size_t _Any_small_space_size = (_Small_object_num_ptrs - 2) * sizeof(void*);
 
 template <class _Ty>
 inline constexpr bool _Any_is_small = alignof(_Ty) <= alignof(max_align_t)
-                                      && is_nothrow_move_constructible_v<_Ty> && sizeof(_Ty) <= _Any_small_space_size;
+                                   && is_nothrow_move_constructible_v<_Ty> && sizeof(_Ty) <= _Any_small_space_size;
 
 enum class _Any_representation : uintptr_t { _Trivial, _Big, _Small };
 

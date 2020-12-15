@@ -26,7 +26,7 @@ namespace {
         CONDITION_VARIABLE _Condition;
     };
 
-    struct _Guarded_wait_context : _Wait_context {
+    struct _NODISCARD _Guarded_wait_context : _Wait_context {
         _Guarded_wait_context(const void* _Storage_, _Wait_context* const _Head) noexcept
             : _Wait_context{_Storage_, _Head, _Head->_Prev, CONDITION_VARIABLE_INIT} {
             _Prev->_Next = this;
@@ -44,7 +44,7 @@ namespace {
         _Guarded_wait_context& operator=(const _Guarded_wait_context&) = delete;
     };
 
-    class _SrwLock_guard {
+    class _NODISCARD _SrwLock_guard {
     public:
         explicit _SrwLock_guard(SRWLOCK& _Locked_) noexcept : _Locked(&_Locked_) {
             AcquireSRWLockExclusive(_Locked);
@@ -97,6 +97,8 @@ namespace {
 #endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
 
 #if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
+
+#pragma comment(lib, "synchronization")
 
 #define __crtWaitOnAddress       WaitOnAddress
 #define __crtWakeByAddressSingle WakeByAddressSingle
@@ -192,7 +194,7 @@ namespace {
             return __iso_volatile_load32(static_cast<const int*>(_Storage)) == *static_cast<const int*>(_Comparand);
         case 8:
             return __iso_volatile_load64(static_cast<const long long*>(_Storage))
-                   == *static_cast<const long long*>(_Comparand);
+                == *static_cast<const long long*>(_Comparand);
         default:
             _CSTD abort();
         }

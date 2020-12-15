@@ -539,8 +539,11 @@ private:
     static constexpr size_t _Bytes = sizeof(value_type);
 
 public:
-    static constexpr int _Block_size =
-        _Bytes <= 1 ? 16 : _Bytes <= 2 ? 8 : _Bytes <= 4 ? 4 : _Bytes <= 8 ? 2 : 1; // elements per block (a power of 2)
+    static constexpr int _Block_size = _Bytes <= 1 ? 16
+                                     : _Bytes <= 2 ? 8
+                                     : _Bytes <= 4 ? 4
+                                     : _Bytes <= 8 ? 2
+                                                   : 1; // elements per block (a power of 2)
 
     _Deque_val() noexcept : _Map(), _Mapsize(0), _Myoff(0), _Mysize(0) {}
 
@@ -1576,7 +1579,7 @@ void swap(deque<_Ty, _Alloc>& _Left, deque<_Ty, _Alloc>& _Right) noexcept /* str
 template <class _Ty, class _Alloc>
 _NODISCARD bool operator==(const deque<_Ty, _Alloc>& _Left, const deque<_Ty, _Alloc>& _Right) {
     return _Left.size() == _Right.size()
-           && _STD equal(_Left._Unchecked_begin(), _Left._Unchecked_end(), _Right._Unchecked_begin());
+        && _STD equal(_Left._Unchecked_begin(), _Left._Unchecked_end(), _Right._Unchecked_begin());
 }
 
 template <class _Ty, class _Alloc>
