@@ -76,6 +76,7 @@ void test(const int num) {
         vector<int> v(10, 1729);
         long long a = 0, b = 0, c = 0, d = 0, e = 0;
         auto big_lambda = [v, a, b, c, d, e] {
+            (void) v;
             (void) a;
             (void) b;
             (void) c;
