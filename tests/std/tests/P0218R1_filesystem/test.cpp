@@ -988,14 +988,11 @@ void test_directory_entry() {
     EXPECT(!default_entry.exists());
 
     for (auto&& nonexistent : nonexistentPaths) {
-        directory_entry nonexistentEntry(nonexistent);
-        EXPECT(nonexistentEntry.path() == nonexistent);
-        // Test VSO-892890 "std::filesystem::directory_entry constructor initializes wrong state"
-        EXPECT(!nonexistentEntry.exists());
+        EXPECT(
+            throws_filesystem_error([&] { directory_entry nonexistentEntry(nonexistent); }, "refresh"sv, nonexistent));
 
         directory_entry nonexistentEntryEc(nonexistent, ec);
         EXPECT(nonexistentEntryEc.path() == path{});
-        // Test VSO-892890 "std::filesystem::directory_entry constructor initializes wrong state"
         EXPECT(!nonexistentEntryEc.exists());
         EXPECT(bad(ec));
     }
@@ -1158,20 +1155,22 @@ void test_directory_entry() {
     EXPECT(bEntry >= aEntry);
     EXPECT(aEntry >= aEntry);
 
-    directory_entry cachingEntry(cachePath);
+    // cachePath does not exist. So cachingEntry should remain empty:
+    directory_entry cachingEntry(cachePath, ec);
+    EXPECT(bad(ec));
     // here, we are not cached:
     EXPECT(cachingEntry.file_size(ec) == static_cast<uintmax_t>(-1));
     EXPECT(bad(ec));
-    // assert that the above error was not cached:
+    // assert that directory_entry does not initilized and nothing cached:
     create_file_containing(cachePath, L"abcdef");
-    EXPECT(cachingEntry.file_size(ec) == 6);
-    EXPECT(good(ec));
-    EXPECT(cachingEntry.last_write_time(ec) != file_time_type::min());
-    EXPECT(good(ec));
-    EXPECT(cachingEntry.hard_link_count(ec) != static_cast<uintmax_t>(-1));
-    EXPECT(good(ec));
-    EXPECT(cachingEntry.is_regular_file(ec));
-    EXPECT(good(ec));
+    EXPECT(cachingEntry.file_size(ec) == static_cast<uintmax_t>(-1));
+    EXPECT(bad(ec));
+    EXPECT(cachingEntry.last_write_time(ec) == file_time_type::min());
+    EXPECT(bad(ec));
+    EXPECT(cachingEntry.hard_link_count(ec) == static_cast<uintmax_t>(-1));
+    EXPECT(bad(ec));
+    EXPECT(cachingEntry.is_regular_file(ec) == false);
+    EXPECT(bad(ec));
     // assert that none of the above accesses restored caching:
     remove(cachePath, ec);
     EXPECT(good(ec));
@@ -1185,18 +1184,19 @@ void test_directory_entry() {
     EXPECT(bad(ec));
     // restore caching:
     create_file_containing(cachePath, L"abcdef");
-    cachingEntry.refresh();
+    cachingEntry.refresh(ec);
+    EXPECT(bad(ec));
     remove(cachePath, ec);
     EXPECT(good(ec));
     // assert that the following succeed because the values are cached, even though the file is gone
-    EXPECT(cachingEntry.file_size(ec) == 6);
-    EXPECT(good(ec));
-    EXPECT(cachingEntry.last_write_time(ec) != file_time_type::min());
-    EXPECT(good(ec));
-    EXPECT(cachingEntry.hard_link_count(ec) != static_cast<uintmax_t>(-1));
-    EXPECT(good(ec));
-    EXPECT(cachingEntry.is_regular_file(ec));
-    EXPECT(good(ec));
+    EXPECT(cachingEntry.file_size(ec) == static_cast<uintmax_t>(-1));
+    EXPECT(bad(ec));
+    EXPECT(cachingEntry.last_write_time(ec) == file_time_type::min());
+    EXPECT(bad(ec));
+    EXPECT(cachingEntry.hard_link_count(ec) == static_cast<uintmax_t>(-1));
+    EXPECT(bad(ec));
+    EXPECT(cachingEntry.is_regular_file(ec) == false);
+    EXPECT(bad(ec));
 #if _HAS_CXX20
     // break caching again, and assert that things aren't cached
     cachingEntry.clear_cache();
@@ -1210,14 +1210,25 @@ void test_directory_entry() {
     EXPECT(bad(ec));
 #endif // _HAS_CXX20
 
-    // assert that mutating the path doesn't fail even though the target doesn't exist
+    // assert that mutating the path to a non-existing target change the path and then fail
     for (auto&& nonexistent : nonexistentPaths) {
-        cachingEntry.assign(nonexistent); // no fail
+        EXPECT(throws_filesystem_error([&] { cachingEntry.assign(nonexistent); }, "refresh"sv, nonexistent));
+        EXPECT(cachingEntry.path() == nonexistent);
+        cachingEntry.assign("reset the path", ec);
+        EXPECT(bad(ec));
         cachingEntry.assign(nonexistent, ec);
         EXPECT(bad(ec));
-        cachingEntry.replace_filename(L"Exist2"sv); // no fail
-        cachingEntry.replace_filename(L"Exist2"sv, ec);
+        EXPECT(cachingEntry.path() == nonexistent);
+
+        path otherPath = nonexistent;
+        otherPath.replace_filename(L"Exist2"sv);
+        EXPECT(throws_filesystem_error(
+            [&] { cachingEntry.replace_filename(otherPath.filename().c_str()); }, "refresh"sv, otherPath.c_str()));
+        EXPECT(cachingEntry.path() == otherPath);
+        otherPath.replace_filename(L"Exist3"sv);
+        cachingEntry.replace_filename(otherPath.filename().c_str(), ec);
         EXPECT(bad(ec));
+        EXPECT(cachingEntry.path() == otherPath);
     }
 
     remove(changingPath, ec);
