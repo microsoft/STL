@@ -1061,10 +1061,12 @@ _NODISCARD int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
         // Intended widening to int. This operation means that a narrow 0 will widen
         // to 0xFFFF....FFFF0... instead of 0. We need this to avoid counting all the zeros
         // of the wider type.
-        // Because the widening will always give a non-0 value, checking for tzcnt is not
+        // Because the widening will always give a non-0 value, tzcnt is not
         // required, since the only difference in behavior between bsf and tzcnt is when
         // the value is 0.
-        return static_cast<int>(_TZCNT_U32(static_cast<unsigned int>(~_Max | _Val)));
+        unsigned long _Index;
+        _BitScanForward(&_Index, static_cast<unsigned long>(~_Max | _Val));
+        return static_cast<int>(_Index);
     } else {
 #ifndef __AVX2__
         const bool _Definitely_have_tzcnt = __isa_available >= __ISA_AVAILABLE_AVX2;
