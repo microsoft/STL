@@ -513,7 +513,15 @@
 #define _MSVC_STL_UPDATE  202011L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
-#ifdef __EDG__
+#ifdef __CUDACC__
+
+#if __CUDACC_VER_MAJOR__ == 10 && __CUDACC_VER_MINOR__ == 1 && __CUDACC_VER_BUILD__ == 243
+#error GOOD, THIS IS WHAT I EXPECT
+#else
+#error BAD, I DID NOT EXPECT THIS
+#endif
+
+#elif defined(__EDG__)
 // not attempting to detect __EDG_VERSION__ being less than expected
 #elif defined(__clang__)
 #if __clang_major__ < 11
