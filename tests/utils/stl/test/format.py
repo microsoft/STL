@@ -171,20 +171,20 @@ class STLTestFormat:
 
         shouldFail = TestType.FAIL in test.testType
         if TestType.COMPILE in test.testType:
-            cmd = [test.cxx, '/c', test.getSourcePath(), *test.flags, *test.compileFlags]
+            cmd = [test.cxx, '-c', test.getSourcePath(), *test.flags, *test.compileFlags]
             yield TestStep(cmd, shared.execDir, shared.env, shouldFail)
         elif TestType.LINK in test.testType:
             objFile = tmpBase + '.o'
-            cmd = [test.cxx, '/c', test.getSourcePath(), *test.flags, *test.compileFlags, '/Fo' + objFile]
+            cmd = [test.cxx, '-c', test.getSourcePath(), *test.flags, *test.compileFlags, '-Fo' + objFile]
             yield TestStep(cmd, shared.execDir, shared.env, False)
 
             exeFile = tmpBase + '.exe'
-            cmd = [test.cxx, objFile, *test.flags, '/Fe' + exeFile, '/link', *test.linkFlags]
+            cmd = [test.cxx, objFile, *test.flags, '-Fe' + exeFile, '-link', *test.linkFlags]
             yield TestStep(cmd, shared.execDir, shared.env, shouldFail)
         elif TestType.RUN in test.testType:
             shared.execFile = tmpBase + '.exe'
             cmd = [test.cxx, test.getSourcePath(), *test.flags, *test.compileFlags,
-                   '/Fe' + shared.execFile, '/link', *test.linkFlags]
+                   '-Fe' + shared.execFile, '-link', *test.linkFlags]
             yield TestStep(cmd, shared.execDir, shared.env, False)
 
     def getTestSetupSteps(self, test, litConfig, shared):
