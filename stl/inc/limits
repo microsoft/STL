@@ -1057,19 +1057,22 @@ _NODISCARD int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
     constexpr int _Digits = numeric_limits<_Ty>::digits;
     constexpr _Ty _Max    = (numeric_limits<_Ty>::max)();
 
-#ifndef __AVX2__
-    const bool _Definitely_have_tzcnt = __isa_available >= __ISA_AVAILABLE_AVX2;
-    if (!_Definitely_have_tzcnt && _Val == 0) {
-        return _Digits;
-    }
-#endif // __AVX2__
-
     if _CONSTEXPR_IF (_Digits <= 32) {
         // Intended widening to int. This operation means that a narrow 0 will widen
         // to 0xFFFF....FFFF0... instead of 0. We need this to avoid counting all the zeros
         // of the wider type.
+        // Because the widening will always give a non-0 value, checking for tzcnt is not
+        // required, since the only difference in behavior between bsf and tzcnt is when
+        // the value is 0.
         return static_cast<int>(_TZCNT_U32(static_cast<unsigned int>(~_Max | _Val)));
     } else {
+#ifndef __AVX2__
+        const bool _Definitely_have_tzcnt = __isa_available >= __ISA_AVAILABLE_AVX2;
+        if (!_Definitely_have_tzcnt && _Val == 0) {
+            return _Digits;
+        }
+#endif // __AVX2__
+
 #ifdef _M_IX86
         const unsigned int _High = _Val >> 32;
         const unsigned int _Low  = static_cast<unsigned int>(_Val);
