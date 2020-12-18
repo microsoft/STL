@@ -400,11 +400,11 @@
 #endif // _HAS_EXCEPTIONS
 
 // warning C4984: 'if constexpr' is a C++17 language extension
-#if !_HAS_CXX17 && _HAS_IF_CONSTEXPR
+#if !_HAS_CXX17
 #define _STL_DISABLED_WARNING_C4984 4984
-#else // !_HAS_CXX17 && _HAS_IF_CONSTEXPR
+#else // !_HAS_CXX17
 #define _STL_DISABLED_WARNING_C4984
-#endif // !_HAS_CXX17 && _HAS_IF_CONSTEXPR
+#endif // !_HAS_CXX17
 
 // warning C5053: support for 'explicit(<expr>)' in C++17 and earlier is a vendor extension
 #if !_HAS_CXX20 && _HAS_CONDITIONAL_EXPLICIT
