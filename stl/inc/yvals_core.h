@@ -513,7 +513,13 @@
 #define _MSVC_STL_UPDATE  202012L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
-#ifdef __EDG__
+#ifdef __CUDACC__
+#if __CUDACC_VER_MAJOR__ < 10      \
+    || (__CUDACC_VER_MAJOR__ == 10 \
+        && (__CUDACC_VER_MINOR__ < 1 || (__CUDACC_VER_MINOR__ == 1 && __CUDACC_VER_BUILD__ < 243)))
+#error STL1002: Unexpected compiler version, expected CUDA 10.1 Update 2 or newer.
+#endif // ^^^ old CUDA ^^^
+#elif defined(__EDG__)
 // not attempting to detect __EDG_VERSION__ being less than expected
 #elif defined(__clang__)
 #if __clang_major__ < 11
