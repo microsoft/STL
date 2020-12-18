@@ -55,7 +55,7 @@ template <size_t _Ty_size>
 _NODISCARD constexpr size_t _Get_size_of_n(const size_t _Count) {
     constexpr bool _Overflow_is_possible = _Ty_size > 1;
 
-    if _CONSTEXPR_IF (_Overflow_is_possible) {
+    if constexpr (_Overflow_is_possible) {
         constexpr size_t _Max_possible = static_cast<size_t>(-1) / _Ty_size;
         if (_Count > _Max_possible) {
             _Throw_bad_array_new_length(); // multiply overflow
@@ -956,7 +956,7 @@ template <class _Alloc>
 void _Destroy_range(_Alloc_ptr_t<_Alloc> _First, const _Alloc_ptr_t<_Alloc> _Last, _Alloc& _Al) noexcept {
     // note that this is an optimization for debug mode codegen; in release mode the BE removes all of this
     using _Ty = typename _Alloc::value_type;
-    if _CONSTEXPR_IF (!conjunction_v<is_trivially_destructible<_Ty>, _Uses_default_destroy<_Alloc, _Ty*>>) {
+    if constexpr (!conjunction_v<is_trivially_destructible<_Ty>, _Uses_default_destroy<_Alloc, _Ty*>>) {
         for (; _First != _Last; ++_First) {
             allocator_traits<_Alloc>::destroy(_Al, _Unfancy(_First));
         }
@@ -967,7 +967,7 @@ void _Destroy_range(_Alloc_ptr_t<_Alloc> _First, const _Alloc_ptr_t<_Alloc> _Las
 template <class _NoThrowFwdIt, class _NoThrowSentinel>
 _CONSTEXPR20_DYNALLOC void _Destroy_range(_NoThrowFwdIt _First, const _NoThrowSentinel _Last) noexcept {
     // note that this is an optimization for debug mode codegen; in release mode the BE removes all of this
-    if _CONSTEXPR_IF (!is_trivially_destructible_v<_Iter_value_t<_NoThrowFwdIt>>) {
+    if constexpr (!is_trivially_destructible_v<_Iter_value_t<_NoThrowFwdIt>>) {
         for (; _First != _Last; ++_First) {
             _Destroy_in_place(*_First);
         }
@@ -2034,7 +2034,7 @@ struct _Alloc_temporary {
 
 template <class _Alloc>
 _NODISCARD constexpr bool _Allocators_equal(const _Alloc& _Lhs, const _Alloc& _Rhs) noexcept {
-    if _CONSTEXPR_IF (allocator_traits<_Alloc>::is_always_equal::value) {
+    if constexpr (allocator_traits<_Alloc>::is_always_equal::value) {
         return true;
     } else {
         return _Lhs == _Rhs;

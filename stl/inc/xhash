@@ -436,7 +436,7 @@ private:
 public:
     _Hash(_Hash&& _Right, const allocator_type& _Al) : _Traitsobj(_Right._Traitsobj), _List(_Al), _Vec(_Al) {
         // construct hash table by moving _Right, allocator
-        if _CONSTEXPR_IF (_Alnode_traits::is_always_equal::value) {
+        if constexpr (_Alnode_traits::is_always_equal::value) {
             _Move_construct_equal_alloc(_Right);
         } else if (_List._Getal() == _Right._List._Getal()) {
             _Move_construct_equal_alloc(_Right);
@@ -1232,7 +1232,7 @@ public:
         _Nothrow_hash<_Traits, key_type> //
         && (!_Multi || _Nothrow_compare<_Traits, key_type, key_type>) ) /* strengthened */ {
         const size_t _Hashval = _Traitsobj(_Keyval);
-        if _CONSTEXPR_IF (_Multi) {
+        if constexpr (_Multi) {
             const auto _Where = _Equal_range(_Keyval, _Hashval);
             _Unchecked_erase(_Where._First._Ptr, _Where._Last._Ptr);
             return _Where._Distance;
@@ -1261,7 +1261,7 @@ public:
             return;
         }
 
-        if _CONSTEXPR_IF (_Nothrow_hash<_Traits, key_type>) {
+        if constexpr (_Nothrow_hash<_Traits, key_type>) {
             // In testing, hash<size_t>{}(size_t{}) takes about 14 times as much time as assigning a pointer, or
             // ~7-8 times as much as clearing a bucket. Therefore, if we would need to assign over more than 8 times
             // as many buckets as elements, remove element-by-element.
@@ -1291,7 +1291,7 @@ private:
         const _Nodeptr _Bucket_hi = _Vec._Mypair._Myval2._Myfirst[(_Bucket << 1) + 1]._Ptr;
         for (;;) {
             if (!_Traitsobj(_Traits::_Kfn(_Where->_Myval), _Keyval)) {
-                if _CONSTEXPR_IF (!_Traits::_Standard) {
+                if constexpr (!_Traits::_Standard) {
                     if (_Traitsobj(_Keyval, _Traits::_Kfn(_Where->_Myval))) {
                         return _End;
                     }
@@ -1310,7 +1310,7 @@ private:
 
     template <class _Keyty>
     _Nodeptr _Find(const _Keyty& _Keyval, const size_t _Hashval) const {
-        if _CONSTEXPR_IF (_Traits::_Multi) {
+        if constexpr (_Traits::_Multi) {
             return _Find_first(_Keyval, _Hashval);
         } else {
             // use _Find_last for unique containers to avoid increase in code size of instantiating _Find_first
@@ -1344,7 +1344,7 @@ public:
     template <class _Keyty = void>
     _NODISCARD size_type count(typename _Traits::template _Deduce_key<_Keyty> _Keyval) const {
         const size_t _Hashval = _Traitsobj(_Keyval);
-        if _CONSTEXPR_IF (_Multi) {
+        if constexpr (_Multi) {
             return _Equal_range(_Keyval, _Hashval)._Distance;
         } else {
             return static_cast<bool>(_Find_last(_Keyval, _Hashval)._Duplicate);
@@ -1405,14 +1405,14 @@ private:
             }
         }
 
-        if _CONSTEXPR_IF (!_Traits::_Standard) {
+        if constexpr (!_Traits::_Standard) {
             if (_Traitsobj(_Keyval, _Traits::_Kfn(*_Where))) {
                 return {_End, _End, 0};
             }
         }
 
         const _Unchecked_const_iterator _First = _Where;
-        if _CONSTEXPR_IF (_Multi) {
+        if constexpr (_Multi) {
             size_type _Distance = 0;
             for (;;) {
                 ++_Distance;
@@ -1662,7 +1662,7 @@ protected:
         for (;;) {
             // Search backwards to maintain sorted [_Bucket_lo, _Bucket_hi] when !_Standard
             if (!_Traitsobj(_Keyval, _Traits::_Kfn(_Where->_Myval))) {
-                if _CONSTEXPR_IF (!_Traits::_Standard) {
+                if constexpr (!_Traits::_Standard) {
                     if (_Traitsobj(_Traits::_Kfn(_Where->_Myval), _Keyval)) {
                         return {_Where->_Next, _Nodeptr{}};
                     }
@@ -1685,7 +1685,7 @@ protected:
         // if _Hint points to an element equivalent to _Keyval, returns _Hint; otherwise,
         // returns _Find_last(_Keyval, _Hashval)
         if (_Hint != _List._Mypair._Myval2._Myhead && !_Traitsobj(_Traits::_Kfn(_Hint->_Myval), _Keyval)) {
-            if _CONSTEXPR_IF (!_Traits::_Standard) {
+            if constexpr (!_Traits::_Standard) {
                 if (_Traitsobj(_Keyval, _Traits::_Kfn(_Hint->_Myval))) {
                     return _Find_last(_Keyval, _Hashval);
                 }
@@ -1928,7 +1928,7 @@ protected:
         }
 
         _Unchecked_const_iterator _Left_stop_at;
-        if _CONSTEXPR_IF (_Traits::_Standard) {
+        if constexpr (_Traits::_Standard) {
             _Left_stop_at = _Unchecked_end();
         } else {
             // check the first elements for equivalence when !_Standard
@@ -2036,13 +2036,13 @@ public:
             const _Unchecked_const_iterator _Bucket_hi = _Vec._Mypair._Myval2._Myfirst[(_Bucket << 1) + 1];
             if (_Where != _End) {
                 // check that the bucket is sorted for legacy hash_meow:
-                if _CONSTEXPR_IF (!_Traits::_Standard) {
+                if constexpr (!_Traits::_Standard) {
                     if (_Where != _Bucket_hi) {
                         auto _SFirst = _Where;
                         auto _SNext  = _Where;
                         for (;;) {
                             ++_SNext;
-                            if _CONSTEXPR_IF (_Traits::_Multi) {
+                            if constexpr (_Traits::_Multi) {
                                 _STL_INTERNAL_CHECK(!_Traitsobj(_Traits::_Kfn(*_SNext), _Traits::_Kfn(*_SFirst)));
                             } else {
                                 _STL_INTERNAL_CHECK(_Traitsobj(_Traits::_Kfn(*_SFirst), _Traits::_Kfn(*_SNext)));

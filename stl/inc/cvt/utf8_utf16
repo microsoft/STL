@@ -142,7 +142,7 @@ namespace stdext {
                     if (*_Pstate == 0) { // first time, maybe look for and consume header
                         *_Pstate = 1;
 
-                        if _CONSTEXPR_IF ((_Mode & _STD consume_header) != 0) {
+                        if constexpr ((_Mode & _STD consume_header) != 0) {
                             if (_Ch == 0xfeff) { // drop header and retry
                                 result _Ans = do_in(_State, _Mid1, _Last1, _Mid1, _First2, _Last2, _Mid2);
 
@@ -208,7 +208,7 @@ namespace stdext {
                         break; // not enough room, even without header
                     }
 
-                    if _CONSTEXPR_IF ((_Mode & _STD generate_header) != 0) { // maybe header to put
+                    if constexpr ((_Mode & _STD generate_header) != 0) { // maybe header to put
                         if (*_Pstate == 0) { // header to put
                             if (_Last2 - _Mid2 < 3 + _Nput) {
                                 break; // not enough room for both
@@ -282,9 +282,9 @@ namespace stdext {
             }
 
             virtual int do_max_length() const noexcept override { // return maximum length required for a conversion
-                if _CONSTEXPR_IF ((_Mode & _STD consume_header) != 0) {
+                if constexpr ((_Mode & _STD consume_header) != 0) {
                     return 9; // header + max input
-                } else if _CONSTEXPR_IF ((_Mode & _STD generate_header) != 0) {
+                } else if constexpr ((_Mode & _STD generate_header) != 0) {
                     return 7; // header + max output
                 } else {
                     return 6; // 6-byte max input sequence, no 3-byte header

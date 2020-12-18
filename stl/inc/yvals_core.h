@@ -650,12 +650,6 @@
 #define _STL_OPTIMIZE_SYSTEM_ERROR_OPERATORS 1
 #endif // _STL_OPTIMIZE_SYSTEM_ERROR_OPERATORS
 
-#if _HAS_IF_CONSTEXPR
-#define _CONSTEXPR_IF constexpr
-#else // _HAS_IF_CONSTEXPR
-#define _CONSTEXPR_IF
-#endif // _HAS_IF_CONSTEXPR
-
 #ifdef __cpp_consteval
 #define _CONSTEVAL consteval
 #else // ^^^ supports consteval / no consteval vvv

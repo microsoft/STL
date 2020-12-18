@@ -927,7 +927,7 @@ public:
     _Tree(_Tree&& _Right, const allocator_type& _Al)
         : _Mypair(_One_then_variadic_args_t{}, _Right.key_comp(), // intentionally copy comparator, see LWG-2227
             _One_then_variadic_args_t{}, _Al) {
-        if _CONSTEXPR_IF (!_Alnode_traits::is_always_equal::value) {
+        if constexpr (!_Alnode_traits::is_always_equal::value) {
             if (_Getal() != _Right._Getal()) {
                 _Different_allocator_move_construct(_STD move(_Right));
                 return;
@@ -1062,7 +1062,7 @@ protected:
         {
             _Tree_temp_node<_Alnode> _Newnode(_Getal(), _Scary->_Myhead, _STD forward<_Valtys>(_Vals)...);
             const auto& _Keyval = _Traits::_Kfn(_Newnode._Ptr->_Myval);
-            if _CONSTEXPR_IF (_Multi) { // duplicate check if unique
+            if constexpr (_Multi) { // duplicate check if unique
                 _Loc = _Find_upper_bound(_Keyval);
             } else {
                 _Loc = _Find_lower_bound(_Keyval);
@@ -1494,7 +1494,7 @@ public:
 #endif // _HAS_CXX20
 
     _NODISCARD size_type count(const key_type& _Keyval) const {
-        if _CONSTEXPR_IF (_Multi) {
+        if constexpr (_Multi) {
             const auto _Ans = _Eqrange(_Keyval);
             return static_cast<size_type>(_STD distance(
                 _Unchecked_const_iterator(_Ans.first, nullptr), _Unchecked_const_iterator(_Ans.second, nullptr)));
@@ -1585,7 +1585,7 @@ protected:
     _Tree_find_hint_result<_Nodeptr> _Find_hint(const _Nodeptr _Hint, const _Keyty& _Keyval) const {
         const auto& _Comp = _Getcomp();
         const auto _Head  = _Get_scary()->_Myhead;
-        if _CONSTEXPR_IF (_Multi) { // insert even if duplicate
+        if constexpr (_Multi) { // insert even if duplicate
             if (_Hint->_Isnil) {
                 // insert at end if greater than or equal to last element
                 if (_Head->_Parent->_Isnil || !_DEBUG_LT_PRED(_Comp, _Keyval, _Traits::_Kfn(_Head->_Right->_Myval))) {
