@@ -762,10 +762,6 @@ private:
     friend class _Hash;
     template <class _Traits>
     friend bool _Hash_equal(const _Hash<_Traits>&, const _Hash<_Traits>&);
-#if !_HAS_IF_CONSTEXPR
-    template <class _Traits>
-    friend bool _Hash_equal_elements(const _Hash<_Traits>& _Left, const _Hash<_Traits>& _Right, false_type);
-#endif // _HAS_IF_CONSTEXPR
 
     using _Alty          = _Rebind_alloc_t<_Alloc, _Ty>;
     using _Alty_traits   = allocator_traits<_Alty>;

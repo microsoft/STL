@@ -281,12 +281,6 @@ _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _MP_Add(_MP_arr, uint64_t) noexcept;
 _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _MP_Mul(_MP_arr, uint64_t, uint64_t) noexcept;
 _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _MP_Rem(_MP_arr, uint64_t) noexcept;
 
-#if !_HAS_IF_CONSTEXPR
-#pragma warning(push)
-#pragma warning(disable : 4309) // static_cast: truncation of constant value
-#pragma warning(disable : 4724) // potential mod by 0
-#endif // !_HAS_IF_CONSTEXPR
-
 template <class _Uint, _Uint _Ax, _Uint _Cx, _Uint _Mx>
 _NODISCARD _Uint _Next_linear_congruential_value(_Uint _Prev) noexcept {
     // Choose intermediate type:
@@ -324,10 +318,6 @@ _NODISCARD _Uint _Next_linear_congruential_value(_Uint _Prev) noexcept {
     }
 }
 
-#if !_HAS_IF_CONSTEXPR
-#pragma warning(pop)
-#endif // !_HAS_IF_CONSTEXPR
-
 template <class _Seed_seq>
 _NODISCARD constexpr unsigned int _Seed_seq_to_uint(_Seed_seq& _Seq) {
     unsigned int _Arr[4]{};
@@ -344,11 +334,6 @@ _NODISCARD constexpr unsigned long long _Seed_seq_to_ull(_Seed_seq& _Seq) {
     _Result |= _Arr[3];
     return _Result;
 }
-
-#if !_HAS_IF_CONSTEXPR
-#pragma warning(push)
-#pragma warning(disable : 4724) // potential mod by 0
-#endif // !_HAS_IF_CONSTEXPR
 
 template <class _Uint, _Uint _Cx, _Uint _Mx>
 _NODISCARD constexpr _Uint _Get_linear_congruential_seed(_Uint _Sx) noexcept { // N4741 [rand.eng.lcong]/5
@@ -382,10 +367,6 @@ _NODISCARD _Uint _Get_linear_congruential_seed_from_seq(_Seed_seq& _Seq) { // N4
 
     return _Get_linear_congruential_seed<_Uint, _Cx, _Mx>(_Sx);
 }
-
-#if !_HAS_IF_CONSTEXPR
-#pragma warning(pop)
-#endif // !_HAS_IF_CONSTEXPR
 
 template <class _Uint, _Uint _Ax, _Uint _Cx, _Uint _Mx>
 class linear_congruential_engine { // a linear congruential generator random engine

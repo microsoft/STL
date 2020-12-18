@@ -1868,18 +1868,6 @@ _NODISCARD _CONSTEXPR17 _BidIt prev(_BidIt _First, _Iter_diff_t<_BidIt> _Off = 1
 }
 
 // CLASS TEMPLATE reverse_iterator
-#if !_HAS_IF_CONSTEXPR
-template <class _Iter>
-_NODISCARD constexpr _Iter _Operator_arrow(true_type, _Iter _Target) {
-    return _Target;
-}
-
-template <class _Iter>
-_NODISCARD constexpr decltype(auto) _Operator_arrow(false_type, _Iter& _Target) {
-    return _Target.operator->();
-}
-#endif // !_HAS_IF_CONSTEXPR
-
 template <class _BidIt>
 class reverse_iterator {
 public:
@@ -5577,26 +5565,6 @@ _NODISCARD constexpr _Iter_diff_t<_InIt> _Count_pr(_InIt _First, const _InIt _La
 
     return _Count;
 }
-
-#if !_HAS_IF_CONSTEXPR
-template <class _FwdIt1, class _FwdIt2, class _Pr>
-void _Trim_matching_suffixes(_FwdIt1&, _FwdIt2&, _Pr, forward_iterator_tag, forward_iterator_tag) {
-    // trim matching suffixes, forward iterators (do nothing)
-}
-
-template <class _FwdIt1, class _FwdIt2, class _Pr>
-void _Trim_matching_suffixes(
-    _FwdIt1& _Last1, _FwdIt2& _Last2, _Pr _Pred, bidirectional_iterator_tag, bidirectional_iterator_tag) {
-    // trim matching suffixes, bidirectional iterators
-    // assumptions: same lengths, non-empty, !_Pred(*_First1, *_First2)
-    do { // find last inequality
-        --_Last1;
-        --_Last2;
-    } while (_Pred(*_Last1, *_Last2));
-    ++_Last1;
-    ++_Last2;
-}
-#endif // !_HAS_IF_CONSTEXPR
 
 template <class _FwdIt1, class _FwdIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 bool _Check_match_counts(
