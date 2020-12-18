@@ -88,18 +88,19 @@ sub CustomBuildHook()
         "version",
     );
 
+    my $export_header_options = "/exportHeader /Fo /MP";
     my $header_unit_options = "";
 
     foreach (@stl_headers) {
+        $export_header_options .= " $stl_include_dir/$_";
+
         $header_unit_options .= " /headerUnit";
         $header_unit_options .= " $stl_include_dir/$_=$_.ifc";
         $header_unit_options .= " $_.obj";
-
-        # TRANSITION, remove /DMSVC_INTERNAL_TESTING after all compiler bugs are fixed
-        Run::ExecuteCL("/DMSVC_INTERNAL_TESTING /exportHeader \"<$_>\" /Fo$_.obj");
     }
 
     # TRANSITION, remove /DMSVC_INTERNAL_TESTING after all compiler bugs are fixed
+    Run::ExecuteCL("/DMSVC_INTERNAL_TESTING $export_header_options");
     Run::ExecuteCL("/DMSVC_INTERNAL_TESTING test.cpp /Fe$cwd.exe $header_unit_options");
 }
 1
