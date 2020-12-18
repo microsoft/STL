@@ -772,7 +772,6 @@ template <class _Ty>
 _INLINE_VAR constexpr bool _Testable_callable_v =
     disjunction_v<is_pointer<_Ty>, _Is_specialization<_Ty, function>, is_member_pointer<_Ty>>;
 
-#if _HAS_IF_CONSTEXPR
 template <class _Ty>
 bool _Test_callable(const _Ty& _Arg) noexcept { // determine whether std::function must store _Arg
     if constexpr (_Testable_callable_v<_Ty>) {
@@ -781,23 +780,6 @@ bool _Test_callable(const _Ty& _Arg) noexcept { // determine whether std::functi
         return true;
     }
 }
-#else // ^^^ _HAS_IF_CONSTEXPR // !_HAS_IF_CONSTEXPR vvv
-template <class _Ty>
-bool _Test_callable(true_type, const _Ty& _Arg) noexcept {
-    // std::function must store non-null testable callable objects
-    return !!_Arg;
-}
-
-template <class _Ty>
-bool _Test_callable(false_type, const _Ty&) noexcept { // std::function must store arbitrary callable objects
-    return true;
-}
-
-template <class _Ty>
-bool _Test_callable(const _Ty& _Arg) noexcept { // determine whether std::function must store _Arg
-    return _Test_callable(bool_constant<_Testable_callable_v<_Ty>>{}, _Arg);
-}
-#endif // _HAS_IF_CONSTEXPR
 
 // CLASS TEMPLATE _Func_base
 template <class _Rx, class... _Types>
