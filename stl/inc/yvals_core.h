@@ -371,15 +371,6 @@
 #define _MSVC_KNOWN_SEMANTICS
 #endif
 
-// Controls whether the STL uses "if constexpr" internally in C++14 mode
-#ifndef _HAS_IF_CONSTEXPR
-#ifdef __CUDACC__
-#define _HAS_IF_CONSTEXPR 0
-#else // __CUDACC__
-#define _HAS_IF_CONSTEXPR 1
-#endif // __CUDACC__
-#endif // _HAS_IF_CONSTEXPR
-
 // Controls whether the STL uses "conditional explicit" internally
 #ifndef _HAS_CONDITIONAL_EXPLICIT
 #ifdef __cpp_conditional_explicit
