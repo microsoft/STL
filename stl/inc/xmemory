@@ -214,7 +214,6 @@ _CONSTEXPR20_DYNALLOC void _Deallocate(void* _Ptr, const size_t _Bytes) noexcept
     }
 }
 
-
 #define _HAS_ALIGNED_NEW 1
 #else // ^^^ __cpp_aligned_new ^^^ / vvv !__cpp_aligned_new vvv
 #define _HAS_ALIGNED_NEW 0
