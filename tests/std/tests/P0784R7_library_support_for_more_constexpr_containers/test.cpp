@@ -291,6 +291,13 @@ constexpr void test_compiletime_destroy_variants() {
         }
         destroy(begin(a), end(a));
     }
+    {
+        nontrivial_A<int> a[10];
+        for (int i = 0; i < 10; i++) {
+            construct_at(&a[i].value, i);
+        }
+        destroy(begin(a), end(a));
+    }
 #ifdef __cpp_lib_concepts
     {
         auto alloc = allocator<A<int>>{};
@@ -302,11 +309,13 @@ constexpr void test_compiletime_destroy_variants() {
         alloc.deallocate(a, 10);
     }
     {
-        A<int> a[10];
+        auto alloc           = allocator<nontrivial_A<int>>{};
+        nontrivial_A<int>* a = alloc.allocate(10);
         for (int i = 0; i < 10; i++) {
-            ranges::construct_at(&a[i].value, i);
+            ranges::construct_at(a + i);
         }
-        ranges::destroy(a);
+        ranges::destroy(a, a + 10);
+        alloc.deallocate(a, 10);
     }
 #endif // __cpp_lib_concepts
     {
@@ -316,15 +325,6 @@ constexpr void test_compiletime_destroy_variants() {
         }
         destroy_n(begin(a), 10);
     }
-#ifdef __cpp_lib_concepts
-    {
-        A<int> a[10];
-        for (int i = 0; i < 10; i++) {
-            ranges::construct_at(&a[i].value, i);
-        }
-        ranges::destroy_n(ranges::begin(a), 10);
-    }
-#endif // __cpp_lib_concepts
     {
         nontrivial_A<int> a[10];
         for (int i = 0; i < 10; i++) {
@@ -334,11 +334,22 @@ constexpr void test_compiletime_destroy_variants() {
     }
 #ifdef __cpp_lib_concepts
     {
-        nontrivial_A<int> a[10];
+        auto alloc = std::allocator<A<int>>{};
+        A<int>* a  = alloc.allocate(10);
         for (int i = 0; i < 10; i++) {
-            ranges::construct_at(&a[i].value, i);
+            ranges::construct_at(a + i);
         }
-        ranges::destroy_n(ranges::begin(a), 10);
+        ranges::destroy_n(a, 10);
+        alloc.deallocate(a, 10);
+    }
+    {
+        auto alloc           = std::allocator<nontrivial_A<int>>{};
+        nontrivial_A<int>* a = alloc.allocate(10);
+        for (int i = 0; i < 10; i++) {
+            ranges::construct_at(a + i);
+        }
+        ranges::destroy_n(a, 10);
+        alloc.deallocate(a, 10);
     }
 #endif // __cpp_lib_concepts
 }
