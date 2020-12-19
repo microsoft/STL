@@ -293,11 +293,13 @@ constexpr void test_compiletime_destroy_variants() {
     }
 #ifdef __cpp_lib_concepts
     {
-        A<int> a[10];
+        auto alloc = allocator<A<int>>{};
+        A<int>* a  = alloc.allocate(10);
         for (int i = 0; i < 10; i++) {
-            ranges::construct_at(&a[i].value, i);
+            ranges::construct_at(a + i);
         }
-        ranges::destroy(ranges::begin(a), ranges::end(a));
+        ranges::destroy(a, a + 10);
+        alloc.deallocate(a, 10);
     }
     {
         A<int> a[10];
@@ -332,7 +334,7 @@ constexpr void test_compiletime_destroy_variants() {
     }
 #ifdef __cpp_lib_concepts
     {
-        A<int> a[10];
+        nontrivial_A<int> a[10];
         for (int i = 0; i < 10; i++) {
             ranges::construct_at(&a[i].value, i);
         }

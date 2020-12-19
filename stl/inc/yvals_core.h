@@ -555,7 +555,8 @@
 #endif // ^^^ inline (not constexpr) in C++17 and earlier ^^^
 
 // Functions that became constexpr in C++20 via P0784R7
-#if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc) && (defined(__clang__) || defined(__EDG__))
+#if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc) \
+    && (defined(__clang__) || defined(__EDG__)) // TRANSITION, MSVC support for constexpr dynamic allocation
 #define _CONSTEXPR20_DYNALLOC constexpr
 #else
 #define _CONSTEXPR20_DYNALLOC inline

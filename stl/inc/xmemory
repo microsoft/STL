@@ -795,14 +795,7 @@ struct _Default_allocator_traits { // traits for std::allocator
 
     template <class _Uty>
     static _CONSTEXPR20_DYNALLOC void destroy(_Alloc&, _Uty* const _Ptr) {
-#ifdef __cpp_lib_is_constant_evaluated
-        if (_STD is_constant_evaluated()) {
-            _STD destroy_at(_Ptr);
-        } else
-#endif // __cpp_lib_is_constant_evaluated
-        {
-            _Ptr->~_Uty();
-        }
+        _STD destroy_at(_Ptr);
     }
 
     _NODISCARD static _CONSTEXPR20_DYNALLOC size_type max_size(const _Alloc&) noexcept {
