@@ -56,9 +56,18 @@ if ([string]::IsNullOrEmpty($AdminUserPassword)) {
   Start-Transcript -Path $TranscriptPath
 } else {
   Write-Host 'AdminUser password supplied; switching to AdminUser.'
-  $PsExecPath = Get-TempFilePath -Extension 'exe'
-  Write-Host "Downloading psexec to: $PsExecPath"
-  & curl.exe -L -o $PsExecPath -s -S https://live.sysinternals.com/PsExec64.exe
+
+  # https://docs.microsoft.com/en-us/sysinternals/downloads/psexec
+  $PsToolsZipUrl = 'https://download.sysinternals.com/files/PSTools.zip'
+  $PsToolsZipPath = Get-TempFilePath -Extension 'PSTools.zip'
+  Write-Host "Downloading $PsToolsZipUrl to: $PsToolsZipPath"
+  & curl.exe -L -o $PsToolsZipPath -s -S $PsToolsZipUrl
+
+  $TempSubdirPath = Get-TempFilePath -Extension 'dir'
+  Write-Host "Extracting $PsToolsZipPath to: $TempSubdirPath"
+  Expand-Archive -Path $PsToolsZipPath -DestinationPath $TempSubdirPath -Force
+  $PsExecPath = Join-Path $TempSubdirPath 'PsExec64.exe'
+
   $PsExecArgs = @(
     '-u',
     'AdminUser',
