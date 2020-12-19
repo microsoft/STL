@@ -70,11 +70,8 @@ Function DownloadAndExtractZip {
   }
 
   $ZipPath = Get-TempFilePath -Extension 'zip'
-  Write-Host "Downloading $Url to: $ZipPath"
   & curl.exe -L -o $ZipPath -s -S $Url
-
   $TempSubdirPath = Get-TempFilePath -Extension 'dir'
-  Write-Host "Extracting $ZipPath to: $TempSubdirPath"
   Expand-Archive -Path $ZipPath -DestinationPath $TempSubdirPath -Force
 
   return $TempSubdirPath
@@ -89,11 +86,13 @@ if ([string]::IsNullOrEmpty($AdminUserPassword)) {
 
   # https://docs.microsoft.com/en-us/sysinternals/downloads/psexec
   $PsToolsZipUrl = 'https://download.sysinternals.com/files/PSTools.zip'
+  Write-Host "Downloading: $PsToolsZipUrl"
   $ExtractedPsToolsPath = DownloadAndExtractZip -Url $PsToolsZipUrl
   $PsExecPath = Join-Path $ExtractedPsToolsPath 'PsExec64.exe'
 
   # https://github.com/PowerShell/PowerShell/releases/latest
   $PowerShellZipUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.1.0/PowerShell-7.1.0-win-x64.zip'
+  Write-Host "Downloading: $PowerShellZipUrl"
   $ExtractedPowerShellPath = DownloadAndExtractZip -Url $PowerShellZipUrl
   $PwshPath = Join-Path $ExtractedPowerShellPath 'pwsh.exe'
 
