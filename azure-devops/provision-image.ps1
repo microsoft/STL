@@ -50,6 +50,36 @@ Function Get-TempFilePath {
   return Join-Path $tempPath $tempName
 }
 
+<#
+.SYNOPSIS
+Downloads and extracts a ZIP file to a newly created temporary subdirectory.
+
+.DESCRIPTION
+DownloadAndExtractZip returns a path containing the extracted contents.
+
+.PARAMETER Url
+The URL of the ZIP file to download.
+#>
+Function DownloadAndExtractZip {
+  Param(
+    [String]$Url
+  )
+
+  if ([String]::IsNullOrWhiteSpace($Url)) {
+    throw 'Missing Url'
+  }
+
+  $ZipPath = Get-TempFilePath -Extension 'zip'
+  Write-Host "Downloading $Url to: $ZipPath"
+  & curl.exe -L -o $ZipPath -s -S $Url
+
+  $TempSubdirPath = Get-TempFilePath -Extension 'dir'
+  Write-Host "Extracting $ZipPath to: $TempSubdirPath"
+  Expand-Archive -Path $ZipPath -DestinationPath $TempSubdirPath -Force
+
+  return $TempSubdirPath
+}
+
 $TranscriptPath = 'C:\provision-image-transcript.txt'
 
 if ([string]::IsNullOrEmpty($AdminUserPassword)) {
@@ -59,14 +89,8 @@ if ([string]::IsNullOrEmpty($AdminUserPassword)) {
 
   # https://docs.microsoft.com/en-us/sysinternals/downloads/psexec
   $PsToolsZipUrl = 'https://download.sysinternals.com/files/PSTools.zip'
-  $PsToolsZipPath = Get-TempFilePath -Extension 'PSTools.zip'
-  Write-Host "Downloading $PsToolsZipUrl to: $PsToolsZipPath"
-  & curl.exe -L -o $PsToolsZipPath -s -S $PsToolsZipUrl
-
-  $TempSubdirPath = Get-TempFilePath -Extension 'dir'
-  Write-Host "Extracting $PsToolsZipPath to: $TempSubdirPath"
-  Expand-Archive -Path $PsToolsZipPath -DestinationPath $TempSubdirPath -Force
-  $PsExecPath = Join-Path $TempSubdirPath 'PsExec64.exe'
+  $ExtractedPsToolsPath = DownloadAndExtractZip -Url $PsToolsZipUrl
+  $PsExecPath = Join-Path $ExtractedPsToolsPath 'PsExec64.exe'
 
   $PsExecArgs = @(
     '-u',
