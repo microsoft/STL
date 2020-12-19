@@ -83,7 +83,7 @@ Function DownloadAndExtractZip {
 $TranscriptPath = 'C:\provision-image-transcript.txt'
 
 if ([string]::IsNullOrEmpty($AdminUserPassword)) {
-  Start-Transcript -Path $TranscriptPath
+  Start-Transcript -Path $TranscriptPath -UseMinimalHeader
 } else {
   Write-Host 'AdminUser password supplied; switching to AdminUser.'
 
@@ -92,6 +92,11 @@ if ([string]::IsNullOrEmpty($AdminUserPassword)) {
   $ExtractedPsToolsPath = DownloadAndExtractZip -Url $PsToolsZipUrl
   $PsExecPath = Join-Path $ExtractedPsToolsPath 'PsExec64.exe'
 
+  # https://github.com/PowerShell/PowerShell/releases/latest
+  $PowerShellZipUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.1.0/PowerShell-7.1.0-win-x64.zip'
+  $ExtractedPowerShellPath = DownloadAndExtractZip -Url $PowerShellZipUrl
+  $PwshPath = Join-Path $ExtractedPowerShellPath 'pwsh.exe'
+
   $PsExecArgs = @(
     '-u',
     'AdminUser',
@@ -99,7 +104,7 @@ if ([string]::IsNullOrEmpty($AdminUserPassword)) {
     $AdminUserPassword,
     '-accepteula',
     '-h',
-    'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe',
+    $PwshPath,
     '-ExecutionPolicy',
     'Unrestricted',
     '-File',
@@ -112,7 +117,8 @@ if ([string]::IsNullOrEmpty($AdminUserPassword)) {
   Write-Host 'Reading transcript...'
   Get-Content -Path $TranscriptPath
   Write-Host 'Cleaning up...'
-  Remove-Item $PsExecPath
+  Remove-Item -Recurse -Path $ExtractedPsToolsPath
+  Remove-Item -Recurse -Path $ExtractedPowerShellPath
   exit $proc.ExitCode
 }
 
