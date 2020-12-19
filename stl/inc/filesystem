@@ -2138,7 +2138,6 @@ namespace filesystem {
         }
 
         directory_entry(const filesystem::path& _Path_arg, error_code& _Ec) : _Cached_data{}, _Path(_Path_arg) {
-            _Ec.clear();
             refresh(_Ec);
             if (_Ec) {
                 _Path.clear();
@@ -2182,7 +2181,11 @@ namespace filesystem {
         }
 
         void refresh(error_code& _Ec) noexcept {
-            _Ec = _Make_ec(_Refresh(_Cached_data, _Path));
+            _Ec.clear();
+            const auto _Error = _Refresh(_Cached_data, _Path);
+            if (_Error != __std_win_error::_Success && __std_is_file_not_found(_Error) == false) {
+                _Ec = _Make_ec(_Error);
+            }
         }
 
 #if _HAS_CXX20
