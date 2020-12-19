@@ -285,18 +285,22 @@ struct nontrivial_A {
 
 constexpr void test_compiletime_destroy_variants() {
     {
-        A<int> a[10];
+        auto alloc = allocator<A<int>>{};
+        A<int>* a  = alloc.allocate(10);
         for (int i = 0; i < 10; i++) {
-            construct_at(&a[i].value, i);
+            construct_at(a + i);
         }
-        destroy(begin(a), end(a));
+        destroy(a, a + 10);
+        alloc.deallocate(a, 10);
     }
     {
-        nontrivial_A<int> a[10];
+        auto alloc           = allocator<nontrivial_A<int>>{};
+        nontrivial_A<int>* a = alloc.allocate(10);
         for (int i = 0; i < 10; i++) {
-            construct_at(&a[i].value, i);
+            construct_at(a + i);
         }
-        destroy(begin(a), end(a));
+        destroy(a, a + 10);
+        alloc.deallocate(a, 10);
     }
 #ifdef __cpp_lib_concepts
     {
@@ -319,18 +323,22 @@ constexpr void test_compiletime_destroy_variants() {
     }
 #endif // __cpp_lib_concepts
     {
-        A<int> a[10];
+        auto alloc = allocator<A<int>>{};
+        A<int>* a  = alloc.allocate(10);
         for (int i = 0; i < 10; i++) {
-            construct_at(&a[i].value, i);
+            construct_at(a + i);
         }
-        destroy_n(begin(a), 10);
+        destroy_n(a, 10);
+        alloc.deallocate(a, 10);
     }
     {
-        nontrivial_A<int> a[10];
+        auto alloc           = allocator<nontrivial_A<int>>{};
+        nontrivial_A<int>* a = alloc.allocate(10);
         for (int i = 0; i < 10; i++) {
-            construct_at(&a[i].value, i);
+            construct_at(a + i);
         }
-        destroy_n(begin(a), 10);
+        destroy_n(a, 10);
+        alloc.deallocate(a, 10);
     }
 #ifdef __cpp_lib_concepts
     {
