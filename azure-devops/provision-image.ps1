@@ -101,7 +101,7 @@ if ([string]::IsNullOrEmpty($AdminUserPassword)) {
     '-u',
     'AdminUser',
     '-p',
-    $AdminUserPassword,
+    'AdminUserPassword_REDACTED',
     '-accepteula',
     '-h',
     $PwshPath,
@@ -110,8 +110,8 @@ if ([string]::IsNullOrEmpty($AdminUserPassword)) {
     '-File',
     $PSCommandPath
   )
-
   Write-Host "Executing: $PsExecPath $PsExecArgs"
+  $PsExecArgs[3] = $AdminUserPassword
 
   $proc = Start-Process -FilePath $PsExecPath -ArgumentList $PsExecArgs -Wait -PassThru
   Write-Host 'Reading transcript...'
