@@ -58,8 +58,7 @@ DRIVER_UNLOAD PAGE, StlKernelUnloadDriver;
 #pragma alloc_text(PAGE, StlKernelDeviceControl)
 #pragma alloc_text(PAGE, StlKernelUnloadDriver)
 
-_Use_decl_annotations_
-NTSTATUS DriverEntry(DRIVER_OBJECT* driver, UNICODE_STRING* /*reg_path*/) {
+_Use_decl_annotations_ NTSTATUS DriverEntry(DRIVER_OBJECT* driver, UNICODE_STRING* /*reg_path*/) {
     UNICODE_STRING nt_name;
     RtlInitUnicodeString(&nt_name, STL_KERNEL_NT_DEVICE_NAME);
 
