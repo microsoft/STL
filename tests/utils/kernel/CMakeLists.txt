@@ -28,7 +28,13 @@ target_include_directories(stl_kernel PRIVATE
 )
 
 # TRANSITION, WDK needs to suppress C5040
-target_compile_options(stl_kernel PRIVATE /kernel /wd5040)
+if(VCLIBS_TARGET_ARCHITECTURE STREQUAL "x86")
+    set(STL_KERNEL_CALLING_CONVENTION "/Gz")
+else()
+    set(STL_KERNEL_CALLING_CONVENTION "")
+endif()
+
+target_compile_options(stl_kernel PRIVATE /kernel /wd5040 ${STL_KERNEL_CALLING_CONVENTION})
 
 add_executable(stl_kernel_loader ${STL_KERNEL_LOADER_SOURCES})
 target_include_directories(stl_kernel_loader PRIVATE

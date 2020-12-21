@@ -1,4 +1,4 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-PM_CL="/kernel /Zc:preprocessor /std:c++latest /w14640 /Zc:threadSafeInit- /DNO_TEST_ENVIRONMENT_PREPARER" PM_LINK="/IGNORE:4210 /entry:DriverEntry /subsystem:native /nodefaultlib stl_kernel.lib BufferOverflowFastFailK.lib ntoskrnl.lib hal.lib wmilib.lib Ntstrsafe.lib libcpmt.lib libcmt.lib"
+PM_CL="/kernel /Zc:preprocessor /std:c++latest /w14640 /Zc:threadSafeInit- /DNO_TEST_ENVIRONMENT_PREPARER" PM_LINK="/IGNORE:4210 /subsystem:native /nodefaultlib stl_kernel.lib BufferOverflowFastFailK.lib ntoskrnl.lib hal.lib wmilib.lib Ntstrsafe.lib libcpmt.lib libcmt.lib"

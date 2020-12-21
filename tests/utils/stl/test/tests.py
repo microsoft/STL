@@ -50,7 +50,7 @@ class STLTest(Test):
 
         self._handleEnvlst(litConfig)
         self._parseTest()
-        self._parseFlags()
+        self._parseFlags(litConfig)
 
         missing_required_features = self.getMissingRequiredFeatures()
         if missing_required_features:
@@ -200,7 +200,7 @@ class STLTest(Test):
 
         self.cxx = os.path.normpath(cxx)
 
-    def _parseFlags(self):
+    def _parseFlags(self, litConfig):
         foundStd = False
         for flag in chain(self.flags, self.compileFlags, self.linkFlags):
             if flag[1:5] == 'std:':
@@ -225,6 +225,16 @@ class STLTest(Test):
                 self.requires.append('arch_vfpv4') # available for arm, see features.py
             elif flag[1:] == 'kernel':
                 self.requires.append('kernel')
+                # TRANSITION, We should support kernel mode tests on all platforms
+                self.requires.append('x64')
+                targetArch = litConfig.target_arch.casefold()
+                if (targetArch == 'x86'.casefold()):
+                    # 32-bit kernel uses stdcall by default
+                    self.compileFlags.append('/Gz')
+                    self.compileFlags.append('/wd4007')
+                    self.linkFlags.append('/entry:DriverEntry@8')
+                else:
+                    self.linkFlags.append('/entry:DriverEntry')
 
         if not foundStd:
             Feature('c++14').enableIn(self.config)
