@@ -3399,7 +3399,7 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Do_class(_Node_base* _Nx) { // ap
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It>
 bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Better_match() { // check for better match under UNIX rules
-    unsigned int _Res_valid_count = 0;
+    unsigned int _Res_valid_count       = 0;
     unsigned int _Tgt_state_valid_count = 0;
 
     for (unsigned int _Ix = 0; _Ix < _Get_ncap(); ++_Ix) {
@@ -3413,11 +3413,8 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Better_match() { // check for bet
     }
 
     // more captured groups means a better match
-    if (_Tgt_state_valid_count > _Res_valid_count) {
-        return true;
-    }
-    else if (_Tgt_state_valid_count < _Res_valid_count) {
-        return false;
+    if (_Tgt_state_valid_count != _Res_valid_count) {
+        return _Tgt_state_valid_count > _Res_valid_count;
     }
 
     for (unsigned int _Ix = 0; _Ix < _Get_ncap(); ++_Ix) { // check each capture group

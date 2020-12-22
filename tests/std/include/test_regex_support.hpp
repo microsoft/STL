@@ -3,6 +3,7 @@
 
 #pragma once
 #include <cstdio>
+#include <numeric>
 #include <regex>
 #include <string>
 
@@ -112,6 +113,48 @@ public:
             printf(R"(should_capture("%s", "%s", "%s"): regex_error: "%s")"
                    "\n",
                 subject.c_str(), pattern.c_str(), group.c_str(), e.what());
+            fail_regex();
+        }
+    }
+
+    void should_capture_groups(
+        const std::string& subject, const std::string& pattern, const std::vector<std::string>& groups) {
+        try {
+            const std::regex r(pattern);
+            std::smatch m;
+
+            if (!std::regex_match(subject, m, r)) {
+                printf(R"(Expected regex("%s") to match "%s".)"
+                       "\n",
+                    pattern.c_str(), subject.c_str());
+                fail_regex();
+                return;
+            }
+
+            if (m[0] != subject) {
+                printf(R"(should_capture("%s", "%s"): m[0] == "%s")"
+                       "\n",
+                    subject.c_str(), pattern.c_str(), m[0].str().c_str());
+                fail_regex();
+            }
+
+            for (size_t i = 0; i < groups.size(); ++i) {
+                if (m[i + 1] != groups[i]) {
+                    printf(R"(should_capture("%s", "%s"): m[%zd] == "%s")"
+                           "\n",
+                        groups[i].c_str(), pattern.c_str(), i, m[i + 1].str().c_str());
+                    fail_regex();
+                }
+            }
+        } catch (const std::regex_error& e) {
+            std::string groups_string = std::accumulate(groups.cbegin(), groups.cend(), std::string(),
+                [](const std::string& result, const std::string& value) -> std::string {
+                    return !result.empty() ? result + ";" + value : value;
+                });
+
+            printf(R"(should_capture("%s", "%s", "%s"): regex_error: "%s")"
+                   "\n",
+                subject.c_str(), pattern.c_str(), groups_string.c_str(), e.what());
             fail_regex();
         }
     }
