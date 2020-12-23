@@ -139,7 +139,6 @@ class STLTestFormat:
             testStep.workDir = os.getcwd()
 
         env = _mergeEnvironments(os.environ, testStep.env)
-
         return testStep.cmd, *stl.util.executeCommand(testStep.cmd, cwd=testStep.workDir, env=env)
 
     def getStages(self, test, litConfig):
@@ -189,6 +188,7 @@ class STLTestFormat:
         elif TestType.RUN in test.testType:
             shared.execFile = tmpBase + '.exe'
             isKernel = 'kernel' in test.requires
+            needsSigning = False
             if isKernel:
                 name = str(shared.execFile).replace('\\','.').replace(':','.')
 
@@ -205,12 +205,15 @@ class STLTestFormat:
                     '/machine:'+litConfig.target_arch,
                 ])
 
+                # only sign (and run) kernel mode tests on x64
+                needsSigning = (litConfig.target_arch == 'x64'.casefold())
+
             # common path for kernel and non-kernel
             cmd = [test.cxx, test.getSourcePath(), *test.flags, *test.compileFlags,
                    '/Fe' + shared.execFile, '/link', *test.linkFlags]
             yield TestStep(cmd, shared.execDir, shared.env, False)
 
-            if isKernel:
+            if needsSigning:
                 # sign the binary
                 cmd = [litConfig.wdk_bin + '/x86/signtool.exe', 'sign',
                        '/f', litConfig.cert_path,
@@ -234,6 +237,11 @@ class STLTestFormat:
 
         shouldFail = TestType.FAIL in test.testType
         if 'kernel' in test.requires:
+            if litConfig.target_arch != 'x64'.casefold():
+                # don't attempt to run kernel tests on any platform except
+                # x64.  We only build on x64 right now.
+                yield from []
+                return
             cmd = [litConfig.cxx_runtime + "/stl_kernel_loader.exe", shared.execFile]
         else:
             cmd = [shared.execFile]
