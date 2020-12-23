@@ -5934,11 +5934,11 @@ public:
         const uint32_t __b00Lo = static_cast<uint32_t>(__b00);
         const uint32_t __b00Hi = static_cast<uint32_t>(__b00 >> 32);
 
-        const uint64_t __mid1   = __b10 + __b00Hi;
+        const uint64_t __mid1 = __b10 + __b00Hi;
         const uint32_t __mid1Lo = static_cast<uint32_t>(__mid1);
         const uint32_t __mid1Hi = static_cast<uint32_t>(__mid1 >> 32);
 
-        const uint64_t __mid2   = __b01 + __mid1Lo;
+        const uint64_t __mid2 = __b01 + __mid1Lo;
         const uint32_t __mid2Lo = static_cast<uint32_t>(__mid2);
         const uint32_t __mid2Hi = static_cast<uint32_t>(__mid2 >> 32);
 
