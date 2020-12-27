@@ -2527,7 +2527,7 @@ private:
             // Events are rare, use waiting time method (Luc Devroye, Non-Uniform Random Variate Generation, p. 525).
             const _Ty1 _Rand = _NRAND(_Eng, _Ty1);
             {
-                // The exit condition is -log(1 - _Rand)/t > -log(1-p), which is equivalent to _Rand > 1 - (1-p)^t. If
+                // The exit condition is log(1 - _Rand)/t < log(1-p), which is equivalent to _Rand > 1 - (1-p)^t. If
                 // we have a cheap upper bound for 1-(1-p)^t, we can exit early without having to call log. We use two
                 // such bounds, one that is tight for mean ~0 and another for mean ~1. In the first case, Bernoulli's
                 // inequality gives -1+p*t >= -(1-p)^t, so 1 - (1-p)^t <= p*t = mean. For the other bound, 1-(1-p)^t =
