@@ -2533,7 +2533,7 @@ private:
                 // inequality gives -1+p*t >= -(1-p)^t, so 1 - (1-p)^t <= p*t = mean. For the other bound, 1-(1-p)^t =
                 // 1-(1-p)(1-mean/t)^(t-1) <= 1-(1-p)(1-1/t)^(t-1) <= 1-(1-p)/e.
                 const _Ty1 _Ub =
-                    std::min(_Par0._Mean, _Ty1{3.678794411714423216e-1} * _Par0._Px + _Ty1{6.32120558828557678e-1});
+                    (_STD min)(_Par0._Mean, _Ty1{3.678794411714423216e-1} * _Par0._Px + _Ty1{6.32120558828557678e-1});
                 if (_Rand > _Ub)
                     return 0;
             }
