@@ -79,7 +79,7 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(constructible_from<iter_value_t<_Out>, iter_reference_t<_It>>);
 
             if constexpr (is_same_v<_Se, _It> && _Ptr_copy_cat<_It, _Out>::_Really_trivial) {
-                return _Copy_memcpy_common(_IFirst, _ILast, _OFirst, _OLast);
+                return {_ILast, _Copy_memcpy_common(_IFirst, _ILast, _OFirst, _OLast)};
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 

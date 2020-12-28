@@ -154,6 +154,21 @@ struct throwing_test {
     }
 };
 
+struct memcopy_test {
+    static constexpr int expected_output[] = {13, 55, 12345};
+    static constexpr int expected_input[]  = {13, 55, 12345};
+
+    static void call() {
+        // Validate only range overload (one is plenty since they both use the same backend)
+        int input[]  = {13, 55, 12345};
+        int output[] = {-1, -1, -1};
+
+        ranges::uninitialized_move(input, output);
+        assert(ranges::equal(input, expected_input));
+        assert(ranges::equal(output, expected_output));
+    }
+};
+
 template <test::ProxyRef IsProxy>
 using test_input  = test::range<test::input, int_wrapper, test::Sized::no, test::CanDifference::no, test::Common::no,
     test::CanCompare::yes, IsProxy>;
@@ -168,4 +183,5 @@ int main() {
     instantiator::call<test_input<test::ProxyRef::yes>, test_output>();
     throwing_test::call<test_input<test::ProxyRef::no>, test_output>();
     throwing_test::call<test_input<test::ProxyRef::yes>, test_output>();
+    memcopy_test::call();
 }
