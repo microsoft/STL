@@ -8,6 +8,7 @@
 #include <string>
 #include <type_traits>
 #include <utility>
+#include <span>
 
 #pragma warning(disable : 4582) // '%s': constructor is not implicitly called
 #pragma warning(disable : 4583) // '%s': destructor is not implicitly called
@@ -378,6 +379,16 @@ constexpr void test_compiletime_destroy_variants() {
         }
         ranges::destroy_n(a, 10);
         alloc.deallocate(a, 10);
+    }
+#endif // __cpp_lib_concepts
+    {
+        A<int> a[10] = {};
+        destroy_at(&a);
+    }
+#ifdef __cpp_lib_concepts
+    {
+        A<int> a[10] = {};
+        ranges::destroy_at(&a);
     }
 #endif // __cpp_lib_concepts
 }
