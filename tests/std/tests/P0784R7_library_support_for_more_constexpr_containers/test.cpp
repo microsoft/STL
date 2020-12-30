@@ -3,12 +3,12 @@
 
 #include <assert.h>
 #include <memory>
+#include <span>
 #include <stddef.h>
 #include <string.h>
 #include <string>
 #include <type_traits>
 #include <utility>
-#include <span>
 
 #pragma warning(disable : 4582) // '%s': constructor is not implicitly called
 #pragma warning(disable : 4583) // '%s': destructor is not implicitly called
