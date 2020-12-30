@@ -47,9 +47,6 @@ namespace ranges {
         && (is_pointer_v<_It> || _Has_member_arrow<_It&>);
     // clang-format on
 
-    template <bool _IsConst, class _Ty>
-    using _Maybe_const = conditional_t<_IsConst, const _Ty, _Ty>;
-
     template <bool _IsWrapped, class _Ty>
     using _Maybe_wrapped = conditional_t<_IsWrapped, _Ty, _Unwrapped_t<_Ty>>;
 
