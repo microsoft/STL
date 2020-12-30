@@ -798,7 +798,7 @@ struct _Default_allocator_traits { // traits for std::allocator
 #ifdef __cpp_lib_constexpr_dynamic_alloc
         _STD destroy_at(_Ptr);
 #else
-        _Ptr->~Uty();
+        _Ptr->~_Uty();
 #endif // __cpp_lib_constexpr_dynamic_alloc
     }
 
