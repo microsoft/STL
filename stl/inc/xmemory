@@ -85,7 +85,7 @@ struct _Default_allocate_traits {
     _CONSTEXPR20_DYNALLOC
 #endif // __clang__
     __declspec(allocator) static void* _Allocate_aligned(const size_t _Bytes, const size_t _Align) {
-#ifdef __clang__ // TRANSITION, MSVC support for constexpr ::operator new
+#ifdef __clang__ // TRANSITION, MSVC support for constexpr dynamic allocation
 #ifdef __cpp_lib_is_constant_evaluated
         if (_STD is_constant_evaluated()) {
             return ::operator new(_Bytes);
