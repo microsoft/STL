@@ -380,17 +380,6 @@ constexpr void test_compiletime_destroy_variants() {
         ranges::destroy_n(a, 10);
         alloc.deallocate(a, 10);
     }
-#endif // __cpp_lib_concepts
-    {
-        A<int> a[10] = {};
-        destroy_at(&a);
-    }
-#ifdef __cpp_lib_concepts
-    {
-        A<int> a[10] = {};
-        ranges::destroy_at(&a);
-    }
-#endif // __cpp_lib_concepts
 }
 static_assert((test_compiletime_destroy_variants(), true));
 
