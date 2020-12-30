@@ -1,0 +1,1076 @@
+// static_vector standard header
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#pragma once
+#ifndef _STATIC_VECTOR_
+#define _STATIC_VECTOR_
+#include <yvals_core.h>
+#if _STL_COMPILER_PREPROCESSOR
+
+#if !_HAS_CXX20 // TRANSITION _HAS_CXX23
+#pragma message("The contents of <static_vector> are available only with C++23 or later.")
+#else // ^^^ !_HAS_CXX23 / _HAS_CXX23 vvv
+
+#include <concepts>
+#include <memory>
+#include <type_traits>
+#include <xutility>
+
+#pragma pack(push, _CRT_PACKING)
+#pragma warning(push, _STL_WARNING_LEVEL)
+#pragma warning(disable : _STL_DISABLED_WARNINGS)
+_STL_DISABLE_CLANG_WARNINGS
+#pragma push_macro("new")
+#undef new
+
+_STD_BEGIN
+
+// CLASS TEMPLATE _Sttatic_vector
+// clang-format off
+template <class _Ty, size_t _Capacity>
+    requires (_Capacity != 0)
+class static_vector;
+// clang-format on
+template <class _Ty, size_t _Capacity, bool _Const, bool _Checked>
+class _Static_vector_iterator {
+private:
+    template <bool _OtherConst>
+    using _OtherIter = _Static_vector_iterator<_Ty, _Capacity, _OtherConst, _Checked>;
+
+    template <class, size_t, bool, bool>
+    friend class _Static_vector_iterator;
+
+    friend class static_vector<_Ty, _Capacity>;
+
+    _Maybe_const<_Const, remove_cv_t<_Ty>>* _Current{}; // current position in array
+#if _ITERATOR_DEBUG_LEVEL != 0
+    const static_vector<_Ty, _Capacity>* _Parent{};
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+
+public:
+#ifdef __cpp_lib_concepts
+    using iterator_concept = contiguous_iterator_tag;
+#endif // __cpp_lib_concepts
+    using iterator_category = random_access_iterator_tag;
+    using value_type        = _Ty;
+    using difference_type   = ptrdiff_t;
+    using pointer           = _Maybe_const<_Const, _Ty>*;
+    using reference         = _Maybe_const<_Const, _Ty>&;
+
+    constexpr _Static_vector_iterator() = default;
+
+    constexpr _Static_vector_iterator(const static_vector<_Ty, _Capacity>& _Parent_, pointer _Current_) noexcept
+#if _ITERATOR_DEBUG_LEVEL == 0
+        : _Current(_Current_) {
+        (void) _Parent_;
+    }
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^ / vvv _ITERATOR_DEBUG_LEVEL != 0 vvv
+        : _Current(_Current_), _Parent(_STD addressof(_Parent_)) {
+        _STL_VERIFY(_Parent->_Elems <= _Current, "cannot create static_static_vector iterator outside of storage");
+        _STL_VERIFY(_Current <= _Parent->_End, "cannot create static_static_vector iterator outside of storage");
+    }
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+
+    constexpr _Static_vector_iterator(_OtherIter<!_Const> _It) requires _Const
+#if _ITERATOR_DEBUG_LEVEL == 0
+        : _Current(_It._Current) {
+    }
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^ / vvv _ITERATOR_DEBUG_LEVEL != 0 vvv
+        : _Current(_It._Current),
+          _Parent(_It._Parent) {
+    }
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+
+    _NODISCARD constexpr reference operator*() const noexcept {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        if constexpr (_Checked) {
+            _STL_VERIFY(_Current, "cannot dereference value-initialized static_vector iterator");
+            _STL_VERIFY(_Parent->_Elems <= _Current && _Current < _Parent->_End,
+                "cannot dereference out of range static_vector iterator");
+        }
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        return *_Current;
+    }
+
+    _NODISCARD constexpr pointer operator->() const noexcept {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        if constexpr (_Checked) {
+            _STL_VERIFY(_Current, "cannot dereference value-initialized static_vector iterator");
+            _STL_VERIFY(_Parent->_Elems <= _Current && _Current < _Parent->_End,
+                "cannot dereference out of range static_vector iterator");
+        }
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        return _Current;
+    }
+
+    _NODISCARD _CONSTEXPR17 reference operator[](const ptrdiff_t _Off) const noexcept {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        if constexpr (_Checked) {
+            _Verify_offset(_Off);
+        }
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        return _Current[_Off];
+    }
+
+    constexpr _Static_vector_iterator& operator++() noexcept {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        if constexpr (_Checked) {
+            _STL_VERIFY(_Current, "cannot increment value-initialized static_vector iterator");
+            _STL_VERIFY(_Current < _Parent->_End, "cannot increment static_vector iterator past end");
+        }
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        ++_Current;
+        return *this;
+    }
+
+    constexpr _Static_vector_iterator operator++(int) noexcept {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        if constexpr (_Checked) {
+            _STL_VERIFY(_Current, "cannot increment value-initialized static_vector iterator");
+            _STL_VERIFY(_Current < _Parent->_End, "cannot increment static_vector iterator past end");
+        }
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        _Static_vector_iterator _Tmp = *this;
+        ++_Current;
+        return _Tmp;
+    }
+
+    constexpr _Static_vector_iterator& operator--() noexcept {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        if constexpr (_Checked) {
+            _STL_VERIFY(_Current, "cannot decrement value-initialized static_vector iterator");
+            _STL_VERIFY(_Parent->_Elems < _Current, "cannot decrement static_vector iterator before begin");
+        }
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        --_Current;
+        return *this;
+    }
+
+    constexpr _Static_vector_iterator operator--(int) noexcept {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        if constexpr (_Checked) {
+            _STL_VERIFY(_Current, "cannot decrement value-initialized static_vector iterator");
+            _STL_VERIFY(_Parent->_Elems < _Current, "cannot decrement static_vector iterator before begin");
+        }
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        _Static_vector_iterator _Tmp = *this;
+        --_Current;
+        return _Tmp;
+    }
+
+    constexpr _Static_vector_iterator& operator+=(const difference_type _Off) noexcept {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        if constexpr (_Checked) {
+            _Verify_offset(_Off);
+        }
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        _Current += _Off;
+        return *this;
+    }
+
+    _NODISCARD constexpr _Static_vector_iterator operator+(const difference_type _Off) const noexcept {
+        _Static_vector_iterator _Tmp{*this};
+        return _Tmp += _Off;
+    }
+
+    constexpr _Static_vector_iterator& operator-=(const difference_type _Off) noexcept {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _Verify_offset(-_Off);
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        _Current -= _Off;
+        return *this;
+    }
+
+    _NODISCARD constexpr _Static_vector_iterator operator-(const difference_type _Off) const noexcept {
+        _Static_vector_iterator _Tmp{*this};
+        return _Tmp -= _Off;
+    }
+
+    _NODISCARD friend constexpr _Static_vector_iterator operator+(
+        const difference_type _Off, _Static_vector_iterator _Next) noexcept {
+        return _Next += _Off;
+    }
+
+    template <bool _OtherConst>
+    _NODISCARD constexpr difference_type operator-(const _OtherIter<_OtherConst>& _Right) const noexcept {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        if constexpr (_Checked) {
+            _STL_VERIFY(_Parent == _Right._Parent, "cannot subtract incompatible static_vector iterators");
+        }
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        return _Current - _Right._Current;
+    }
+
+    template <bool _OtherConst>
+    _NODISCARD friend constexpr bool operator==(
+        const _Static_vector_iterator& _Left, const _OtherIter<_OtherConst>& _Right) noexcept {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        if constexpr (_Checked) {
+            _STL_VERIFY(
+                _Left._Parent == _Right._Parent, "cannot compare incompatible static_vector iterators for equality");
+        }
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        return _Left._Current == _Right._Current;
+    }
+
+    template <bool _OtherConst>
+    _NODISCARD friend constexpr strong_ordering operator<=>(
+        const _Static_vector_iterator& _Left, const _OtherIter<_OtherConst>& _Right) noexcept {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        if constexpr (_Checked) {
+            _STL_VERIFY(_Left._Parent == _Right._Parent, "cannot compare incompatible static_vector iterators");
+        }
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        return _Left._Current <=> _Right._Current;
+    }
+
+#if _ITERATOR_DEBUG_LEVEL != 0
+    constexpr void _Verify_offset([[maybe_unused]] const difference_type _Off) const noexcept {
+        if constexpr (_Checked) {
+            if (_Off != 0) {
+                _STL_VERIFY(_Parent, "cannot seek value-initialized static_vector iterator");
+            }
+
+            if (_Off < 0) {
+                _STL_VERIFY(_Current - _Parent->_Elems >= -_Off, "cannot seek static_vector iterator before begin");
+            }
+
+            if (_Off > 0) {
+                _STL_VERIFY(_Parent->_End - _Current >= _Off, "cannot seek static_vector iterator after end");
+            }
+        }
+    }
+
+    template <bool _OtherConst>
+    friend constexpr void _Verify_range(
+        const _Static_vector_iterator& _First, const _OtherIter<_OtherConst>& _Last) noexcept {
+        if constexpr (_Checked) {
+            _STL_VERIFY(_First._Parent == _Last._Parent,
+                "static_vector iterators from different static_vector do not form a range");
+            _STL_VERIFY(_First._Current <= _Last._Current, "static_vector iterator range transposed");
+        }
+    }
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+
+    using _Prevent_inheriting_unwrap = _Static_vector_iterator;
+
+    _NODISCARD constexpr pointer _Unwrapped() const noexcept {
+        return _Current;
+    }
+
+    static constexpr bool _Unwrap_when_unverified = _ITERATOR_DEBUG_LEVEL == 0;
+
+    constexpr void _Seek_to(const pointer _It) noexcept {
+        _Current = _It;
+    }
+};
+
+// CLASS TEMPLATE static_vector
+// clang-format off
+template <class _Ty, size_t _Capacity>
+    requires (_Capacity != 0)
+class static_vector {
+    // clang-format on
+private:
+    template <class, size_t, bool, bool>
+    friend class _Static_vector_iterator;
+
+    _Ty _Elems[_Capacity];
+    _Ty* _End{_Elems};
+
+public:
+    using value_type      = _Ty;
+    using size_type       = size_t;
+    using difference_type = ptrdiff_t;
+    using pointer         = _Ty*;
+    using const_pointer   = const _Ty*;
+    using reference       = _Ty&;
+    using const_reference = const _Ty&;
+
+    using iterator       = _Static_vector_iterator<_Ty, _Capacity, false, true>;
+    using const_iterator = _Static_vector_iterator<_Ty, _Capacity, true, true>;
+
+    using reverse_iterator       = _STD reverse_iterator<iterator>;
+    using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
+
+    // static_vector.constructors
+    _NODISCARD constexpr static_vector() noexcept = default;
+
+    _NODISCARD constexpr static_vector(const static_vector& _Other) noexcept(is_nothrow_copy_constructible_v<_Ty>) {
+        _End = _RANGES _Uninitialized_copy_unchecked(_Other._Elems, _Other._End, _Elems, _Elems + _Capacity).out;
+    }
+
+    _NODISCARD constexpr static_vector(static_vector&& _Other) noexcept(is_nothrow_move_constructible_v<_Ty>) {
+        _End = _RANGES _Uninitialized_move_unchecked(_Other._Elems, _Other._End, _Elems, _Elems + _Capacity).out;
+    }
+
+    _NODISCARD constexpr explicit static_vector(const size_type _Count) noexcept(
+        is_nothrow_default_constructible_v<_Ty>) {
+#if _CONTAINER_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Count <= _Capacity, "static_vector(n) out of capacity");
+#endif // _CONTAINER_DEBUG_LEVEL != 0
+        _End = _RANGES _Uninitialized_value_construct_unchecked(_Elems, _Elems + _Count);
+    }
+
+    _NODISCARD constexpr static_vector(const size_type _Count, const _Ty& _Val) noexcept(
+        is_nothrow_copy_constructible_v<_Ty>) {
+#if _CONTAINER_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Count <= _Capacity, "static_vector(n, val) out of capacity");
+#endif // _CONTAINER_DEBUG_LEVEL != 0
+        _End = _RANGES _Uninitialized_fill_unchecked(_Elems, _Elems + _Count, _Val);
+    }
+
+    // clang-format off
+    template <input_iterator _It, sentinel_for<_It> _Se>
+        requires is_constructible_v<_Ty, iter_reference_t<_It>>
+    _NODISCARD constexpr static_vector(_It _First, _Se _Last) noexcept(is_nothrow_copy_constructible_v<_Ty>) {
+        // clang-format on
+        _Adl_verify_range(_First, _Last);
+#if _CONTAINER_DEBUG_LEVEL != 0
+        if constexpr (sized_sentinel_for<_Se, _It>) {
+            _STL_VERIFY(
+                static_cast<size_type>(_Last - _First) <= _Capacity, "static_vector(first, last) out of capacity");
+        } else if constexpr (forward_iterator<_It>) {
+            _STL_VERIFY(static_cast<size_type>(_RANGES distance(_First, _Last)) <= _Capacity,
+                "static_vector(first, last) out of capacity");
+        }
+#endif // _CONTAINER_DEBUG_LEVEL != 0
+       // clang-format off
+        _End = _RANGES _Uninitialized_copy_unchecked(
+            _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _Elems, _Elems + _Capacity).out;
+        // clang-format on
+    }
+
+    // clang-format off
+    template <_RANGES input_range _Rng>
+        requires is_constructible_v<_Ty, _RANGES range_reference_t<_Rng>>
+    _NODISCARD constexpr static_vector(_Rng&& _Range) noexcept(is_nothrow_copy_constructible_v<_Ty>) {
+        // clang-format on
+#if _CONTAINER_DEBUG_LEVEL != 0
+        if constexpr (_RANGES sized_range<_Rng>) {
+            _STL_VERIFY(_RANGES size(_Range) <= _Capacity, "static_vector(range) out of capacity");
+        } else if constexpr (_RANGES forward_range<_Rng>) {
+            _STL_VERIFY(
+                static_cast<size_type>(_RANGES distance(_Range)) <= _Capacity, "static_vector(range) out of capacity");
+        }
+#endif // _CONTAINER_DEBUG_LEVEL != 0
+       // clang-format off
+        _End = _RANGES _Uninitialized_copy_unchecked(
+            _RANGES _Ubegin(_Range), _RANGES _Uend(_Range), _Elems, _Elems + _Capacity).out;
+        // clang-format on
+    }
+
+    _NODISCARD constexpr static_vector(initializer_list<_Ty> _Ilist) noexcept(is_nothrow_move_constructible_v<_Ty>) {
+#if _CONTAINER_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Ilist.size() <= _Capacity, "static_vector(initializer_list) out of capacity");
+#endif // _CONTAINER_DEBUG_LEVEL != 0
+        _End = _RANGES _Uninitialized_move_unchecked(_Ilist.begin(), _Ilist.end(), _Elems, _Elems + _Capacity).out;
+    }
+
+    // static_vector.assignment
+    constexpr static_vector& operator=(const static_vector& _Other) noexcept(is_nothrow_copy_assignable_v<_Ty>) {
+        if (_Other.size() < size()) {
+            auto _Newend = _RANGES _Copy_unchecked(_Other._Elems, _Other._End, _Elems).out;
+            _Destroy_range(_Newend, _End);
+            _End = _Newend;
+        } else {
+            auto _Result = _RANGES _Copy_unchecked(_Other._Elems, _Other._Elems + size(), _Elems);
+            _End         = _RANGES _Uninitialized_copy_unchecked(_Result.in, _Other._End, _End, _Elems + _Capacity).out;
+        }
+        return *this;
+    }
+
+    constexpr static_vector& operator=(static_vector&& _Other) noexcept(is_nothrow_move_assignable_v<_Ty>) {
+        if (_Other.size() < size()) {
+            auto _Newend = _RANGES _Move_unchecked(_Other._Elems, _Other._End, _Elems).out;
+            _Destroy_range(_Newend, _End);
+            _End = _Newend;
+        } else {
+            auto _Result = _RANGES _Move_unchecked(_Other._Elems, _Other._Elems + size(), _Elems);
+            _End         = _RANGES _Uninitialized_move_unchecked(_Result.in, _Other._End, _End, _Elems + _Capacity).out;
+        }
+        return *this;
+    }
+
+    constexpr static_vector& operator=(initializer_list<_Ty> _Ilist) noexcept(is_nothrow_move_assignable_v<_Ty>) {
+        const auto _Count = _Ilist.size();
+        auto _Newend      = _Elems + _Count;
+#if _CONTAINER_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Newend <= _Elems + _Capacity, "static_vector& operator=(initializer_list) out of capacity");
+#endif // _CONTAINER_DEBUG_LEVEL != 0
+        if (_Newend <= _End) {
+            _RANGES _Move_unchecked(_Ilist.begin(), _Ilist.end(), _Elems);
+            _Destroy_range(_Newend, _End);
+        } else {
+            auto _Result = _RANGES _Move_unchecked(_Ilist.begin(), _Ilist.begin() + _Count, _Elems);
+            _RANGES _Uninitialized_move_unchecked(_Result.in, _Ilist.end(), _End, _Newend);
+        }
+        _End = _Newend;
+        return *this;
+    }
+
+    // static_vector.assign
+    constexpr void assign(const size_type _Count, const _Ty& _Val) noexcept(is_nothrow_copy_constructible_v<_Ty>) {
+        auto _Newend = _Elems + _Count;
+#if _CONTAINER_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Newend <= _Elems + _Capacity, "static_vector::assign(n, val) out of capacity");
+#endif // _CONTAINER_DEBUG_LEVEL != 0
+        if (_Newend <= _End) {
+            _RANGES fill(_Elems, _Newend, _Val);
+            _Destroy_range(_Newend, _End);
+        } else {
+            _RANGES fill(_Elems, _End, _Val);
+            _RANGES _Uninitialized_fill_unchecked(_End, _Newend, _Val);
+        }
+        _End = _Newend;
+    }
+
+    // clang-format off
+    template <input_iterator _It, sentinel_for<_It> _Se>
+        requires is_constructible_v<_Ty, iter_reference_t<_It>>
+    constexpr void assign(_It _First, _Se _Last) noexcept(is_nothrow_copy_constructible_v<_Ty>) {
+        // clang-format on
+        _Adl_verify_range(_First, _Last);
+        auto _UFirst = _Get_unwrapped(_STD move(_First));
+        auto _ULast  = _Get_unwrapped(_STD move(_Last));
+        if constexpr (sized_sentinel_for<_Se, _It> || forward_iterator<_It>) {
+            const auto _Count = [&]() { // Immediately invoked lambda to support sized input iteratord
+                if constexpr (sized_sentinel_for<_Se, _It>) {
+                    return _ULast - _UFirst;
+                } else {
+                    return _RANGES distance(_UFirst, _ULast);
+                }
+            }();
+            auto _Newend = _Elems + _Count;
+#if _CONTAINER_DEBUG_LEVEL != 0
+            _STL_VERIFY(_Newend <= _Elems + _Capacity, "static_vector::assign(first, last) out of capacity");
+#endif // _CONTAINER_DEBUG_LEVEL != 0
+            if (_Newend <= _End) {
+                _RANGES _Copy_unchecked(_STD move(_UFirst), _STD move(_ULast), _Elems);
+                _Destroy_range(_Newend, _End);
+            } else {
+                auto _Result = _RANGES copy_n(_STD move(_UFirst), _Count, _Elems);
+                _RANGES _Uninitialized_copy_unchecked(_STD move(_Result.in), _STD move(_ULast), _End, _Newend);
+            }
+            _End = _Newend;
+        } else {
+            auto _Newend = _Elems;
+            for (; _UFirst != _ULast && _Newend != _End; ++_Newend, (void) ++_UFirst) {
+                *_Newend = *_UFirst;
+            }
+
+            if (_Newend != _End) { // NOTE: Inequality to ensure that _UFirst != _ULast
+                _Destroy_range(_Newend, _End);
+                _End = _Newend;
+            } else {
+                // clang-format off
+                _End = _RANGES _Uninitialized_copy_unchecked(
+                    _STD move(_UFirst), _STD move(_ULast), _Newend, _Elems + _Capacity).out;
+                // clang-format on
+            }
+        }
+    }
+
+    // clang-format off
+    template <_RANGES input_range _Rng>
+        requires is_constructible_v<_Ty, _RANGES range_reference_t<_Rng>>
+    constexpr void assign(_Rng&& _Range) noexcept(is_nothrow_copy_constructible_v<_Ty>) {
+        // clang-format on
+        if constexpr (_RANGES sized_range<_Rng> || _RANGES forward_range<_Rng>) {
+            const auto _Count = _RANGES distance(_Range);
+            auto _Newend      = _Elems + _Count;
+#if _CONTAINER_DEBUG_LEVEL != 0
+            _STL_VERIFY(_Newend <= _Elems + _Capacity, "static_vector::assign(range) out of capacity");
+#endif // _CONTAINER_DEBUG_LEVEL != 0
+
+            if (_Newend <= _End) {
+                _RANGES _Copy_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range), _Elems);
+                _Destroy_range(_Newend, _End);
+            } else {
+                auto _Result = _RANGES copy_n(_RANGES _Ubegin(_Range), _Count, _Elems);
+                _RANGES _Uninitialized_copy_unchecked(_STD move(_Result.in), _RANGES _Uend(_Range), _End, _Newend);
+            }
+            _End = _Newend;
+        } else {
+            auto _UFirst = _RANGES _Ubegin(_Range);
+            auto _ULast  = _RANGES _Uend(_Range);
+            auto _Newend = _Elems;
+
+            for (; _UFirst != _ULast && _Newend != _End; ++_Newend, (void) ++_UFirst) {
+                *_Newend = _RANGES iter_move(_UFirst);
+            }
+
+            if (_Newend != _End) { // NOTE: Inequality to discriminate the different cases
+                _Destroy_range(_Newend, _End);
+                _End = _Newend;
+            } else {
+                // clang-format off
+                _End = _RANGES _Uninitialized_copy_unchecked(
+                    _STD move(_UFirst), _STD move(_ULast), _Newend, _Elems + _Capacity).out;
+                // clang-format on
+            }
+        }
+    }
+
+    constexpr void assign(initializer_list<_Ty> _Ilist) noexcept(is_nothrow_copy_constructible_v<_Ty>) {
+        const auto _Count = _Ilist.size();
+        auto _Newend      = _Elems + _Count;
+#if _CONTAINER_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Newend <= _Elems + _Capacity, "static_vector::assign(initializer_list) out of capacity");
+#endif // _CONTAINER_DEBUG_LEVEL != 0
+
+        if (_Newend <= _End) {
+            _RANGES _Move_unchecked(_Ilist.begin(), _Ilist.end(), _Elems);
+            _Destroy_range(_Newend, _End);
+        } else {
+            auto _Result = _RANGES _Move_unchecked(_Ilist.begin(), _Ilist.begin() + _Count, _Elems);
+            _RANGES _Uninitialized_move_unchecked(_STD move(_Result.in), _Ilist.end(), _End, _Newend);
+        }
+        _End = _Newend;
+    }
+
+    // static_vector.access
+    _NODISCARD constexpr reference operator[](const size_type _Off) noexcept {
+#if _CONTAINER_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Elems + _Off < _End, "static_vector subscript out of range");
+#endif // _CONTAINER_DEBUG_LEVEL != 0
+        return *(_Elems + _Off);
+    }
+
+    _NODISCARD constexpr const_reference operator[](const size_type _Off) const noexcept {
+#if _CONTAINER_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Elems + _Off < _End, "static_vector subscript out of range");
+#endif // _CONTAINER_DEBUG_LEVEL != 0
+        return *(_Elems + _Off);
+    }
+
+    _NODISCARD constexpr reference front() noexcept {
+#if _CONTAINER_DEBUG_LEVEL != 0
+        _STL_VERIFY(_End != _Elems, "front() called on empty static_vector");
+#endif // _CONTAINER_DEBUG_LEVEL != 0
+        return *_Elems;
+    }
+
+    _NODISCARD constexpr const_reference front() const noexcept {
+#if _CONTAINER_DEBUG_LEVEL != 0
+        _STL_VERIFY(_End != _Elems, "front() called on empty static_vector");
+#endif // _CONTAINER_DEBUG_LEVEL != 0
+        return *_Elems;
+    }
+
+    _NODISCARD constexpr reference back() noexcept {
+#if _CONTAINER_DEBUG_LEVEL != 0
+        _STL_VERIFY(_End != _Elems, "back() called on empty static_vector");
+#endif // _CONTAINER_DEBUG_LEVEL != 0
+        return *(_End - 1);
+    }
+
+    _NODISCARD constexpr const_reference back() const noexcept {
+#if _CONTAINER_DEBUG_LEVEL != 0
+        _STL_VERIFY(_End != _Elems, "back() called on empty static_vector");
+#endif // _CONTAINER_DEBUG_LEVEL != 0
+        return *(_End - 1);
+    }
+
+    _NODISCARD constexpr _Ty* data() noexcept {
+        return _Elems;
+    }
+
+    _NODISCARD constexpr const _Ty* data() const noexcept {
+        return _Elems;
+    }
+
+    // static_vector.iterators
+    _NODISCARD constexpr auto begin() noexcept {
+        return iterator{*this, _Elems};
+    }
+
+    _NODISCARD constexpr auto begin() const noexcept {
+        return const_iterator{*this, _Elems};
+    }
+
+    _NODISCARD constexpr auto end() noexcept {
+        return iterator{*this, _End};
+    }
+
+    _NODISCARD constexpr auto end() const noexcept {
+        return const_iterator{*this, _End};
+    }
+
+    _NODISCARD constexpr auto rbegin() noexcept {
+        return reverse_iterator(iterator{*this, _End});
+    }
+
+    _NODISCARD constexpr auto rbegin() const noexcept {
+        return const_reverse_iterator(const_iterator{*this, _End});
+    }
+
+    _NODISCARD constexpr auto rend() noexcept {
+        return reverse_iterator(iterator{*this, _Elems});
+    }
+
+    _NODISCARD constexpr auto rend() const noexcept {
+        return const_reverse_iterator{const_iterator{*this, _Elems}};
+    }
+
+    _NODISCARD constexpr auto cbegin() const noexcept {
+        return const_iterator{*this, _Elems};
+    }
+
+    _NODISCARD constexpr auto cend() const noexcept {
+        return const_iterator{*this, _End};
+    }
+
+    _NODISCARD constexpr auto crbegin() const noexcept {
+        return const_reverse_iterator(const_iterator{*this, _End});
+    }
+
+    _NODISCARD constexpr auto crend() const noexcept {
+        return const_reverse_iterator(const_iterator{*this, _Elems});
+    }
+
+    _NODISCARD constexpr _Ty* _Unchecked_begin() noexcept {
+        return _Elems;
+    }
+
+    _NODISCARD constexpr const _Ty* _Unchecked_begin() const noexcept {
+        return _Elems;
+    }
+
+    _NODISCARD constexpr _Ty* _Unchecked_end() noexcept {
+        return _End;
+    }
+
+    _NODISCARD constexpr const _Ty* _Unchecked_end() const noexcept {
+        return _End;
+    }
+
+    // static_vector.state
+    _NODISCARD constexpr bool empty() const noexcept {
+        return _End == _Elems;
+    }
+
+    _NODISCARD constexpr size_type size() const noexcept {
+        return static_cast<size_type>(_End - _Elems);
+    }
+
+    _NODISCARD constexpr size_type max_size() const noexcept {
+        return _Capacity;
+    }
+
+    _NODISCARD constexpr size_type capacity() const noexcept {
+        return _Capacity;
+    }
+
+    // static_vector.modifiers
+    constexpr iterator insert(const_iterator _Where, const _Ty& _Val) {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(this == _Where._Parent, "static_vector::insert(where, value) iterator outside range");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+#if _CONTAINER_DEBUG_LEVEL != 0
+        _STL_VERIFY(_End != _Elems + _Capacity, "static_vector::insert(where, value) beyond capacity");
+#endif // _CONTAINER_DEBUG_LEVEL != 0
+        return emplace(_Where, _Val);
+    }
+
+    constexpr iterator insert(const_iterator _Where, _Ty&& _Val) {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(this == _Where._Parent, "static_vector::insert(where, value&&) iterator outside range");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+#if _CONTAINER_DEBUG_LEVEL != 0
+        _STL_VERIFY(_End != _Elems + _Capacity, "static_vector::insert(where, value) beyond capacity");
+#endif // _CONTAINER_DEBUG_LEVEL != 0
+        return emplace(_Where, _STD move(_Val));
+    }
+
+    constexpr iterator insert(const_iterator _Where, _CRT_GUARDOVERFLOW const size_type _Count, const _Ty& _Val) {
+        // insert _Count * _Val at _Where
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(this == _Where._Parent, "static_vector::insert(count, value) iterator outside range");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        const auto _Whereoff = static_cast<size_type>(_Where._Current - _Elems);
+        const auto _Whereptr = _Elems + _Whereoff;
+
+        if (_Count == 0) {
+            return iterator{*this, _Whereptr};
+        } else if (_Count == 1) {
+            return emplace(_Where, _Val);
+        }
+
+        const auto _Newend = _End + _Count;
+        const auto _Middle = _Whereptr + _Count;
+#if _CONTAINER_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Newend <= _Elems + _Capacity, "static_vector::insert(count, value) beyond capacity");
+#endif // _CONTAINER_DEBUG_LEVEL != 0
+
+        if (_End <= _Middle) { // new elements spill into uninitialized memory
+            _RANGES _Uninitialized_move_unchecked(_Whereptr, _End, _Middle, _Newend);
+            _RANGES _Uninitialized_fill_unchecked(_End, _Middle, _Val);
+            _RANGES fill(_Whereptr, _End, _Val);
+        } else { // new elements in filled storage
+            const auto _First1 = _End - _Count;
+            _RANGES _Uninitialized_move_unchecked(_First1, _End, _Middle, _Newend);
+            _RANGES _Move_backward_common(_Whereptr, _First1, _End);
+            _RANGES fill(_Whereptr, _Middle, _Val);
+        }
+        _End = _Newend;
+
+        return iterator{*this, _Whereptr};
+    }
+
+    // clang-format off
+    template <input_iterator _It, sentinel_for<_It> _Se>
+        requires is_constructible_v<_Ty, iter_reference_t<_It>>
+    constexpr iterator insert(const_iterator _Where, _It _First, _Se _Last) {
+        // clang-format on
+        // insert range [_First, _Last) at _Where
+        _Adl_verify_range(_First, _Last);
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(this == _Where._Parent, "static_vector::insert(first, last) iterator outside range");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+
+        const auto _Whereoff = static_cast<size_type>(_Where._Current - _Elems);
+        const auto _Whereptr = _Elems + _Whereoff;
+        if (_First == _Last) {
+            return iterator{*this, _Whereptr};
+        }
+
+        auto _UFirst = _Get_unwrapped(_STD move(_First));
+        auto _ULast  = _Get_unwrapped(_STD move(_Last));
+        if constexpr (sized_sentinel_for<_Se, _It> || forward_iterator<_It>) {
+            const auto _Count = [&]() { // Immediately invoked lambda to support sized input iteratord
+                if constexpr (sized_sentinel_for<_Se, _It>) {
+                    return _ULast - _UFirst;
+                } else {
+                    return _RANGES distance(_UFirst, _ULast);
+                }
+            }();
+            if (_Count == 1) {
+                return emplace(_Where, *_UFirst);
+            }
+
+            const auto _Newend = _End + _Count;
+            const auto _Middle = _Whereptr + _Count;
+#if _CONTAINER_DEBUG_LEVEL != 0
+            _STL_VERIFY(_Newend <= _Elems + _Capacity, "static_vector::insert(first, last) beyond capacity");
+#endif // _CONTAINER_DEBUG_LEVEL != 0
+
+            if (_End <= _Middle) { // new elements spill into uninitialized memory
+                const auto _Affected_elements = _End - _Whereptr;
+                _RANGES _Uninitialized_move_unchecked(_Whereptr, _End, _Middle, _Newend);
+                auto _Result = _RANGES copy_n(_STD move(_UFirst), _Affected_elements, _Whereptr);
+                _RANGES _Uninitialized_copy_unchecked(_STD move(_Result.in), _STD move(_ULast), _End, _Newend);
+            } else { // new elements in filled storage
+                const auto _First1 = _End - _Count;
+                _RANGES _Uninitialized_move_unchecked(_First1, _End, _Middle, _Newend);
+                _RANGES move_backward(_Whereptr, _First1, _End);
+                _RANGES _Copy_unchecked(_STD move(_First), _STD move(_Last), _Whereptr);
+            }
+            _End = _Newend;
+        } else {
+            auto _Oldend = _End;
+            for (; _UFirst != _ULast; ++_UFirst) {
+                emplace_back(*_UFirst);
+            }
+            _RANGES rotate(_Whereptr, _Oldend, _End);
+        }
+        return iterator{*this, _Whereptr};
+    }
+
+    // clang-format off
+    template <_RANGES input_range _Rng>
+        requires is_constructible_v<_Ty, _RANGES range_reference_t<_Rng>>
+    constexpr iterator insert(const_iterator _Where, _Rng&& _Range) {
+        // clang-format on
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(this == _Where._Parent, "static_vector::insert(range) iterator outside range");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+
+        const auto _Whereoff = static_cast<size_type>(_Where._Current - _Elems);
+        const auto _Whereptr = _Elems + _Whereoff;
+        if constexpr (_RANGES sized_range<_Rng> || _RANGES forward_range<_Rng>) {
+            const auto _Count = _RANGES distance(_Range);
+            auto _UFirst      = _RANGES _Ubegin(_Range);
+            auto _ULast       = _RANGES _Uend(_Range);
+            if (_Count == 0) {
+                return iterator{*this, _Whereptr};
+            } else if (_Count == 1) {
+                return emplace(_Where, *_UFirst);
+            }
+
+            const auto _Newend = _End + _Count;
+            const auto _Middle = _Whereptr + _Count;
+#if _CONTAINER_DEBUG_LEVEL != 0
+            _STL_VERIFY(_Newend <= _Elems + _Capacity, "static_vector::insert(range) beyond capacity");
+#endif // _CONTAINER_DEBUG_LEVEL != 0
+            if (_End <= _Middle) { // new elements spill into uninitialized memory
+                const auto _Affected_elements = _End - _Whereptr;
+                _RANGES _Uninitialized_move_unchecked(_Whereptr, _End, _Middle, _Newend);
+                auto _Result = _RANGES copy_n(_STD move(_UFirst), _Affected_elements, _Whereptr);
+                _RANGES _Uninitialized_copy_unchecked(_STD move(_Result.in), _STD move(_ULast), _End, _Newend);
+            } else { // new elements in filled storage
+                const auto _First1 = _End - _Count;
+                _RANGES _Uninitialized_move_unchecked(_First1, _End, _Middle, _Newend);
+                _RANGES move_backward(_Whereptr, _First1, _End);
+                _RANGES _Copy_unchecked(_STD move(_UFirst), _STD move(_ULast), _Whereptr);
+            }
+            _End = _Newend;
+        } else {
+            auto _UFirst = _RANGES _Ubegin(_Range);
+            auto _ULast  = _RANGES _Uend(_Range);
+            auto _Oldend = _End;
+            for (; _UFirst != _ULast; ++_UFirst) {
+                emplace_back(*_UFirst);
+            }
+            _RANGES rotate(_Whereptr, _Oldend, _End);
+        }
+        return iterator{*this, _Whereptr};
+    }
+
+    constexpr iterator insert(const_iterator _Where, initializer_list<_Ty> _Ilist) {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(this == _Where._Parent, "static_vector::insert(initializer_list) iterator outside range");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+
+        const auto _Count    = _Ilist.size();
+        const auto _Whereoff = static_cast<size_type>(_Where._Current - _Elems);
+        const auto _Whereptr = _Elems + _Whereoff;
+        if (_Count == 0) {
+            return iterator{*this, _Whereptr};
+        } else if (_Count == 1) {
+            return emplace(_Where, *_Ilist.begin());
+        }
+
+        const auto _Newend = _End + _Count;
+        const auto _Middle = _Whereptr + _Count;
+#if _CONTAINER_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Newend <= _Elems + _Capacity, "static_vector::insert(initializer_list) beyond capacity");
+#endif // _CONTAINER_DEBUG_LEVEL != 0
+
+        if (_End <= _Middle) { // new elements spill into uninitialized memory
+            const auto _Affected_elements = _End - _Whereptr;
+            _RANGES _Uninitialized_move_unchecked(_Whereptr, _End, _Middle, _Newend);
+            auto _Result = _RANGES _Move_unchecked(_Ilist.begin(), _Ilist.begin() + _Affected_elements, _Whereptr);
+            _RANGES _Uninitialized_move_unchecked(_STD move(_Result.in), _Ilist.end(), _End, _Newend);
+        } else { // new elements in filled storage
+            const auto _First1 = _End - _Count;
+            _RANGES _Uninitialized_move_unchecked(_First1, _End, _Middle, _Newend);
+            _RANGES move_backward(_Whereptr, _First1, _End);
+            _RANGES _Copy_unchecked(_Ilist.begin(), _Ilist.end(), _Whereptr);
+        }
+        _End = _Newend;
+
+        return iterator{*this, _Whereptr};
+    }
+
+    template <class... _Args>
+    constexpr iterator emplace(const_iterator _Where, _Args&&... _Arg) noexcept(
+        is_nothrow_constructible_v<_Ty, _Args...>&& is_nothrow_move_assignable_v<_Ty>) {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(this == _Where._Parent, "static_vector::emplace iterator outside range");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+#if _CONTAINER_DEBUG_LEVEL != 0
+        _STL_VERIFY(_End != _Elems + _Capacity, "static_vector::emplace beyond capacity");
+#endif // _CONTAINER_DEBUG_LEVEL != 0
+
+        const auto _Whereoff = static_cast<size_type>(_Where._Current - _Elems);
+        const auto _Whereptr = _Elems + _Whereoff;
+        if (_Whereptr == _End) {
+            _STD construct_at(_End, _STD forward<_Args>(_Arg)...);
+        } else {
+            auto _New_elem{_STD forward<_Args>(_Arg)...}; // Basic guarantee from here on
+            _STD construct_at(_End, _STD move(*(_End - 1)));
+            _RANGES move_backward(_Whereptr, _End - 1, _End);
+            *_Whereptr = _STD move(_New_elem);
+        }
+        ++_End;
+        return iterator{*this, _Whereptr};
+    }
+
+    template <class... _Args>
+    constexpr reference emplace_back(_Args&&... _Arg) noexcept(
+        is_nothrow_constructible_v<_Ty, _Args...>) /* strengthened */ {
+#if _CONTAINER_DEBUG_LEVEL != 0
+        _STL_VERIFY(_End != _Elems + _Capacity, "static_vector::emplace_back beyond capacity");
+#endif // _CONTAINER_DEBUG_LEVEL != 0
+        _STD construct_at(_End, _STD forward<_Args>(_Arg)...);
+        return *(_End++);
+    }
+
+    constexpr reference push_back(const _Ty& _Val) noexcept(is_nothrow_copy_constructible_v<_Ty>) /* strengthened */ {
+#if _CONTAINER_DEBUG_LEVEL != 0
+        _STL_VERIFY(_End != _Elems + _Capacity, "static_vector::push_back(const value&) beyond capacity");
+#endif // _CONTAINER_DEBUG_LEVEL != 0
+        _STD construct_at(_End, _Val);
+        return *(_End++);
+    }
+
+    constexpr reference push_back(_Ty&& _Val) noexcept(is_nothrow_move_constructible_v<_Ty>) /* strengthened */ {
+#if _CONTAINER_DEBUG_LEVEL != 0
+        _STL_VERIFY(_End != _Elems + _Capacity, "static_vector::push_back(value&&) beyond capacity");
+#endif // _CONTAINER_DEBUG_LEVEL != 0
+        _STD construct_at(_End, _STD move(_Val));
+        return *(_End++);
+    }
+
+    constexpr void pop_back() noexcept /* strengthened */ {
+#if _CONTAINER_DEBUG_LEVEL != 0
+        _STL_VERIFY(_End != _Elems, "static_vector::pop_back when empty");
+#endif // _CONTAINER_DEBUG_LEVEL != 0
+        --_End;
+        destroy_at(_End);
+    }
+
+    constexpr iterator erase(const_iterator _Where) noexcept(is_nothrow_move_assignable_v<_Ty>) /* strengthened */ {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(this == _Where._Parent, "static_vector::erase(where) iterator outside range");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+#if _CONTAINER_DEBUG_LEVEL != 0
+        _STL_VERIFY(_End != _Elems, "static_vector::erase(where) when empty");
+#endif // _CONTAINER_DEBUG_LEVEL != 0
+        const auto _Whereoff = static_cast<size_type>(_Where._Current - _Elems);
+        const auto _Whereptr = _Elems + _Whereoff;
+        _RANGES _Move_unchecked(_Whereptr + 1, _End, _Whereptr);
+        --_End;
+        destroy_at(_End);
+
+        return iterator{*this, _Whereptr};
+    }
+
+    constexpr iterator erase(const_iterator _First, const_iterator _Last) noexcept(
+        is_nothrow_move_assignable_v<_Ty>) /* strengthened */ {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(this == _First._Parent, "static_vector::erase(first, last) iterator outside range");
+        _STL_VERIFY(this == _Last._Parent, "static_vector::erase(first, last) iterator outside range");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+
+        const auto _Firstoff = static_cast<size_type>(_First._Current - _Elems);
+        const auto _Firstptr = _Elems + _Firstoff;
+        if (_First != _Last) {
+            const auto _Lastoff = static_cast<size_type>(_Last._Current - _Elems);
+            const auto _Lastptr = _Elems + _Lastoff;
+
+            const auto _Oldend = _End;
+            _End               = _RANGES _Move_unchecked(_Lastptr, _End, _Firstptr).out;
+            _Destroy_range(_End, _Oldend);
+        }
+
+        return iterator{*this, _Firstptr};
+    }
+
+    constexpr void clear() noexcept {
+        _Destroy_range(_Elems, _End);
+        _End = _Elems;
+    }
+
+    constexpr void resize(const size_type _Count) noexcept(is_nothrow_default_constructible_v<_Ty>) {
+        const auto _Newend = _Elems + _Count;
+        if (_Newend <= _End) {
+            _Destroy_range(_Newend, _End);
+        } else {
+#if _CONTAINER_DEBUG_LEVEL != 0
+            _STL_VERIFY(_Newend <= _Elems + _Capacity, "static_vector::resize(count) beyond capacity");
+#endif // _CONTAINER_DEBUG_LEVEL != 0
+            _RANGES _Uninitialized_value_construct_unchecked(_End, _Newend);
+        }
+        _End = _Newend;
+    }
+
+    constexpr void resize(const size_type _Count, const _Ty& _Val) noexcept(is_nothrow_copy_constructible_v<_Ty>) {
+        const auto _Newend = _Elems + _Count;
+        if (_Newend <= _End) {
+            _Destroy_range(_Newend, _End);
+        } else {
+#if _CONTAINER_DEBUG_LEVEL != 0
+            _STL_VERIFY(_Newend <= _Elems + _Capacity, "static_vector::resize(count, value) beyond capacity");
+#endif // _CONTAINER_DEBUG_LEVEL != 0
+            _RANGES _Uninitialized_fill_unchecked(_End, _Newend, _Val);
+        }
+        _End = _Newend;
+    }
+
+    constexpr void swap(static_vector& _Other) noexcept(is_nothrow_swappable_v<_Ty>&&
+            is_nothrow_move_constructible_v<_Ty>) requires(is_swappable_v<_Ty>&& is_move_constructible_v<_Ty>) {
+        auto _Result = _RANGES _Swap_ranges_unchecked(_Elems, _End, _Other._Elems, _Other._End);
+        if (_Result.in1 == _End) { // _Other is larger, need to move
+            _End = _RANGES _Uninitialized_move_unchecked(_Result.in2, _Other._End, _End, _Elems + _Capacity).out;
+            _Destroy_range(_Result.in2, _Other._End);
+            _Other._End = _Result.in2;
+        } else {
+            _Other._End =
+                _RANGES _Uninitialized_move_unchecked(_Result.in1, _End, _Other._End, _Other._Elems + _Capacity).out;
+            _Destroy_range(_Result.in1, _End);
+            _End = _Result.in1;
+        }
+    }
+
+    // static_vector.comparison
+    _NODISCARD friend constexpr bool operator==(const static_vector& _Left, const static_vector& _Right) noexcept(
+        noexcept(_RANGES equal(_Left, _Right))) {
+        return _RANGES equal(_Left, _Right);
+    }
+
+    _NODISCARD friend constexpr strong_ordering operator<=>(const static_vector& _Left,
+        const static_vector& _Right) noexcept(noexcept(_RANGES lexicographical_compare(_Left, _Right))) {
+        return _RANGES lexicographical_compare(_Left, _Right);
+    }
+
+    template <class _Uty>
+    constexpr size_type _Erase(const _Uty& _Val) noexcept {
+        // erase each element matching _Val
+        const auto _Oldend = _End;
+        _End               = _STD remove(_Elems, _End, _Val);
+        _Destroy_range(_Oldend, _End);
+        return static_cast<size_type>(_Oldend - _End);
+    }
+
+    template <class _Pr>
+    constexpr size_type _Erase_if(_Pr _Pred) noexcept {
+        // erase each element satisfying _Pred
+        const auto _Oldend = _End;
+        _End               = _STD remove_if(_Elems, _End, _STD move(_Pred));
+        _Destroy_range(_Oldend, _End);
+        return static_cast<size_type>(_Oldend - _End);
+    }
+};
+
+template <class _Ty, size_t _Capacity, bool _Const, bool _Checked>
+struct pointer_traits<_Static_vector_iterator<_Ty, _Capacity, _Const, _Checked>> {
+    using pointer         = _Static_vector_iterator<_Ty, _Capacity, _Const, _Checked>;
+    using element_type    = _Maybe_const<_Const, _Ty>;
+    using difference_type = ptrdiff_t;
+
+    _NODISCARD static constexpr element_type* to_address(const pointer _Iter) noexcept {
+        return _Iter._Unwrapped();
+    }
+};
+
+// clang-format off
+template <class _Ty, size_t _Capacity>
+constexpr void swap(static_vector<_Ty, _Capacity>& _Left, static_vector<_Ty, _Capacity>& _Right) noexcept(
+    noexcept(_Left.swap(_Right))) {
+    return _Left.swap(_Right);
+}
+// clang-format on
+
+template <class _Ty, size_t _Capacity, class _Uty>
+constexpr auto erase(static_vector<_Ty, _Capacity>& _Cont, const _Uty& _Val) {
+    return _Cont._Erase(_Val);
+}
+
+template <class _Ty, size_t _Capacity, class _Pr>
+constexpr auto erase_if(static_vector<_Ty, _Capacity>& _Cont, _Pr _Pred) {
+    return _Cont._Erase_if(_Pass_fn(_Pred));
+}
+
+_STD_END
+
+#pragma pop_macro("new")
+_STL_RESTORE_CLANG_WARNINGS
+#pragma warning(pop)
+#pragma pack(pop)
+#endif // _HAS_CXX23
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _STATIC_VECTOR_

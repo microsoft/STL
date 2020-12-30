@@ -115,6 +115,7 @@
 #include <span>
 #include <sstream>
 #include <stack>
+#include <static_vector>
 #include <stdexcept>
 #include <streambuf>
 #include <string>
