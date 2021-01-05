@@ -742,11 +742,11 @@ struct _Default_allocator_traits { // traits for std::allocator
 
     _NODISCARD static _CONSTEXPR20_DYNALLOC __declspec(allocator) pointer
         allocate(_Alloc& _Al, _CRT_GUARDOVERFLOW const size_type _Count) {
-#ifdef __cpp_lib_is_constant_evaluated // TRANSITION, GH-1532
+#ifdef __cpp_lib_constexpr_dynamic_alloc // TRANSITION, GH-1532
         if (_STD is_constant_evaluated()) {
             return _Al.allocate(_Count);
         } else
-#endif // __cpp_lib_is_constant_evaluated
+#endif // __cpp_lib_constexpr_dynamic_alloc
         {
             (void) _Al;
             return static_cast<pointer>(
@@ -756,11 +756,11 @@ struct _Default_allocator_traits { // traits for std::allocator
 
     _NODISCARD static _CONSTEXPR20_DYNALLOC __declspec(allocator) pointer
         allocate(_Alloc& _Al, _CRT_GUARDOVERFLOW const size_type _Count, const_void_pointer) {
-#ifdef __cpp_lib_is_constant_evaluated // TRANSITION, GH-1532
+#ifdef __cpp_lib_constexpr_dynamic_alloc // TRANSITION, GH-1532
         if (_STD is_constant_evaluated()) {
             return _Al.allocate(_Count);
         } else
-#endif // __cpp_lib_is_constant_evaluated
+#endif // __cpp_lib_constexpr_dynamic_alloc
         {
             (void) _Al;
             return static_cast<pointer>(
@@ -770,11 +770,11 @@ struct _Default_allocator_traits { // traits for std::allocator
 
     static _CONSTEXPR20_DYNALLOC void deallocate(_Alloc& _Al, const pointer _Ptr, const size_type _Count) {
         // no overflow check on the following multiply; we assume _Allocate did that check
-#ifdef __cpp_lib_is_constant_evaluated // TRANSITION, GH-1532
+#ifdef __cpp_lib_constexpr_dynamic_alloc // TRANSITION, GH-1532
         if (_STD is_constant_evaluated()) {
             return _Al.deallocate(_Ptr, _Count);
         } else
-#endif // __cpp_lib_is_constant_evaluated
+#endif // __cpp_lib_constexpr_dynamic_alloc
         {
             (void) _Al;
             _Deallocate<_New_alignof<value_type>>(_Ptr, sizeof(value_type) * _Count);
@@ -783,11 +783,11 @@ struct _Default_allocator_traits { // traits for std::allocator
 
     template <class _Objty, class... _Types>
     static _CONSTEXPR20_DYNALLOC void construct(_Alloc&, _Objty* const _Ptr, _Types&&... _Args) {
-#ifdef __cpp_lib_is_constant_evaluated
+#ifdef __cpp_lib_constexpr_dynamic_alloc
         if (_STD is_constant_evaluated()) {
             _STD construct_at(_Ptr, _STD forward<_Types>(_Args)...);
         } else
-#endif // __cpp_lib_is_constant_evaluated
+#endif // __cpp_lib_constexpr_dynamic_alloc
         {
             ::new (_Voidify_iter(_Ptr)) _Objty(_STD forward<_Types>(_Args)...);
         }
