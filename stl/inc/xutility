@@ -4552,7 +4552,7 @@ _INLINE_VAR constexpr bool _Iterators_are_contiguous = contiguous_iterator<_Iter
     && contiguous_iterator<_Iter2>;
 
 template <class _Target, class _Iter>
-constexpr _Target* _To_pointer(const _Iter& _It) noexcept {
+_NODISCARD constexpr _Target* _To_pointer(const _Iter& _It) noexcept {
     _STL_INTERNAL_STATIC_ASSERT(contiguous_iterator<_Iter>);
     return reinterpret_cast<_Target*>(_STD to_address(_It));
 }
@@ -4562,7 +4562,7 @@ template <class _Iter1, class _Iter2>
 _INLINE_VAR constexpr bool _Iterators_are_contiguous = conjunction_v<is_pointer<_Iter1>, is_pointer<_Iter2>>;
 
 template <class _Target, class _Iter>
-constexpr _Target* _To_pointer(const _Iter& _It) noexcept {
+_NODISCARD constexpr _Target* _To_pointer(const _Iter& _It) noexcept {
     _STL_INTERNAL_STATIC_ASSERT(is_pointer_v<_Iter>);
     return reinterpret_cast<_Target*>(_It);
 }

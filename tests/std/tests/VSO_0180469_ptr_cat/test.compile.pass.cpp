@@ -504,7 +504,7 @@ void test_Lex_compare_optimize() {
 }
 
 #ifdef __cpp_lib_concepts
-// Also test GH-1523, in which std::equal does not properly convert non-pointer contiguous iterators to pointers.
+// Also test GH-1523, in which std::equal didn't properly convert non-pointer contiguous iterators to pointers.
 struct gh1523_iter {
     // a contiguous_iterator that doesn't unwrap into a pointer
     using iterator_concept  = contiguous_iterator_tag;
@@ -524,7 +524,6 @@ struct gh1523_iter {
 
     gh1523_iter& operator-=(ptrdiff_t);
     gh1523_iter operator-(ptrdiff_t) const;
-    friend gh1523_iter operator-(ptrdiff_t, const gh1523_iter&);
     gh1523_iter& operator+=(ptrdiff_t);
     gh1523_iter operator+(ptrdiff_t) const;
     friend gh1523_iter operator+(ptrdiff_t, const gh1523_iter&);
@@ -542,6 +541,6 @@ struct std::pointer_traits<gh1523_iter> {
 static_assert(contiguous_iterator<gh1523_iter>);
 
 void test_gh1523() {
-    (void) std::equal(gh1523_iter{}, gh1523_iter{}, gh1523_iter{}, gh1523_iter{});
+    (void) equal(gh1523_iter{}, gh1523_iter{}, gh1523_iter{}, gh1523_iter{});
 }
 #endif // __cpp_lib_concepts
