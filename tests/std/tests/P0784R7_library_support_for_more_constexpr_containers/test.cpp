@@ -288,7 +288,7 @@ constexpr void test_compiletime_destroy_variants() {
     {
         auto alloc = allocator<A<int>>{};
         A<int>* a  = alloc.allocate(10);
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 10; ++i) {
             construct_at(a + i);
         }
         destroy(a, a + 10);
@@ -297,7 +297,7 @@ constexpr void test_compiletime_destroy_variants() {
     {
         auto alloc           = allocator<nontrivial_A<int>>{};
         nontrivial_A<int>* a = alloc.allocate(10);
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 10; ++i) {
             construct_at(a + i);
         }
         destroy(a, a + 10);
@@ -307,7 +307,7 @@ constexpr void test_compiletime_destroy_variants() {
     {
         auto alloc = allocator<A<int>>{};
         A<int>* a  = alloc.allocate(10);
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 10; ++i) {
             ranges::construct_at(a + i);
         }
         ranges::destroy(a, a + 10);
@@ -316,7 +316,7 @@ constexpr void test_compiletime_destroy_variants() {
     {
         auto alloc           = allocator<nontrivial_A<int>>{};
         nontrivial_A<int>* a = alloc.allocate(10);
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 10; ++i) {
             ranges::construct_at(a + i);
         }
         ranges::destroy(a, a + 10);
@@ -325,7 +325,7 @@ constexpr void test_compiletime_destroy_variants() {
     {
         auto alloc = allocator<A<int>>{};
         A<int>* a  = alloc.allocate(10);
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 10; ++i) {
             ranges::construct_at(a + i);
         }
         std::span s{a, 10};
@@ -335,7 +335,7 @@ constexpr void test_compiletime_destroy_variants() {
     {
         auto alloc           = allocator<nontrivial_A<int>>{};
         nontrivial_A<int>* a = alloc.allocate(10);
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 10; ++i) {
             ranges::construct_at(a + i);
         }
         std::span s{a, 10};
@@ -346,7 +346,7 @@ constexpr void test_compiletime_destroy_variants() {
     {
         auto alloc = allocator<A<int>>{};
         A<int>* a  = alloc.allocate(10);
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 10; ++i) {
             construct_at(a + i);
         }
         destroy_n(a, 10);
@@ -355,7 +355,7 @@ constexpr void test_compiletime_destroy_variants() {
     {
         auto alloc           = allocator<nontrivial_A<int>>{};
         nontrivial_A<int>* a = alloc.allocate(10);
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 10; ++i) {
             construct_at(a + i);
         }
         destroy_n(a, 10);
@@ -365,7 +365,7 @@ constexpr void test_compiletime_destroy_variants() {
     {
         auto alloc = std::allocator<A<int>>{};
         A<int>* a  = alloc.allocate(10);
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 10; ++i) {
             ranges::construct_at(a + i);
         }
         ranges::destroy_n(a, 10);
@@ -374,7 +374,7 @@ constexpr void test_compiletime_destroy_variants() {
     {
         auto alloc           = std::allocator<nontrivial_A<int>>{};
         nontrivial_A<int>* a = alloc.allocate(10);
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 10; ++i) {
             ranges::construct_at(a + i);
         }
         ranges::destroy_n(a, 10);
