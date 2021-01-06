@@ -128,8 +128,8 @@ template class std::unordered_multiset<Evil, Hash>;
 template class std::_Array_iterator<Evil, true, true>;
 template class std::_Array_iterator<Evil, false, true>;
 
-template class std::_Deque_iterator<_Deque_val<_Deque_simple_types<Evil>>>;
-template class std::_Deque_const_iterator<_Deque_val<_Deque_simple_types<Evil>>>;
+template class std::_Deque_iterator<_Deque_val<_Deque_simple_types<Evil>>, true, true>;
+template class std::_Deque_iterator<_Deque_val<_Deque_simple_types<Evil>>, false, true>;
 
 template class std::_Flist_iterator<_Flist_val<_Flist_simple_types<Evil>>>;
 template class std::_Flist_const_iterator<_Flist_val<_Flist_simple_types<Evil>>>;
@@ -152,8 +152,8 @@ template class std::_List_const_iterator<_List_val<_List_simple_types<pair<const
 template class std::_Array_iterator<Evil, true, false>;
 template class std::_Array_iterator<Evil, false, false>;
 
-template class std::_Deque_unchecked_iterator<_Deque_val<_Deque_simple_types<Evil>>>;
-template class std::_Deque_unchecked_const_iterator<_Deque_val<_Deque_simple_types<Evil>>>;
+template class std::_Deque_iterator<_Deque_val<_Deque_simple_types<Evil>>, true, false>;
+template class std::_Deque_iterator<_Deque_val<_Deque_simple_types<Evil>>, false, false>;
 
 template class std::_Flist_unchecked_iterator<_Flist_val<_Flist_simple_types<Evil>>>;
 template class std::_Flist_unchecked_const_iterator<_Flist_val<_Flist_simple_types<Evil>>>;
