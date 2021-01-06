@@ -772,7 +772,6 @@ template <class _Ty>
 _INLINE_VAR constexpr bool _Testable_callable_v =
     disjunction_v<is_pointer<_Ty>, _Is_specialization<_Ty, function>, is_member_pointer<_Ty>>;
 
-#if _HAS_IF_CONSTEXPR
 template <class _Ty>
 bool _Test_callable(const _Ty& _Arg) noexcept { // determine whether std::function must store _Arg
     if constexpr (_Testable_callable_v<_Ty>) {
@@ -781,23 +780,6 @@ bool _Test_callable(const _Ty& _Arg) noexcept { // determine whether std::functi
         return true;
     }
 }
-#else // ^^^ _HAS_IF_CONSTEXPR // !_HAS_IF_CONSTEXPR vvv
-template <class _Ty>
-bool _Test_callable(true_type, const _Ty& _Arg) noexcept {
-    // std::function must store non-null testable callable objects
-    return !!_Arg;
-}
-
-template <class _Ty>
-bool _Test_callable(false_type, const _Ty&) noexcept { // std::function must store arbitrary callable objects
-    return true;
-}
-
-template <class _Ty>
-bool _Test_callable(const _Ty& _Arg) noexcept { // determine whether std::function must store _Arg
-    return _Test_callable(bool_constant<_Testable_callable_v<_Ty>>{}, _Arg);
-}
-#endif // _HAS_IF_CONSTEXPR
 
 // CLASS TEMPLATE _Func_base
 template <class _Rx, class... _Types>
@@ -829,7 +811,7 @@ constexpr size_t _Space_size = (_Small_object_num_ptrs - 1) * sizeof(void*);
 
 template <class _Impl> // determine whether _Impl must be dynamically allocated
 _INLINE_VAR constexpr bool _Is_large = sizeof(_Impl) > _Space_size || alignof(_Impl) > alignof(max_align_t)
-                                       || !_Impl::_Nothrow_move::value;
+                                    || !_Impl::_Nothrow_move::value;
 
 #if _HAS_FUNCTION_ALLOCATOR_SUPPORT
 // CLASS TEMPLATE _Func_impl
@@ -851,7 +833,7 @@ public:
 private:
     virtual _Mybase* _Copy(void* _Where) const override {
         auto& _Myax = _Mypair._Get_first();
-        if _CONSTEXPR_IF (_Is_large<_Func_impl>) {
+        if constexpr (_Is_large<_Func_impl>) {
             _Myalty _Rebound(_Myax);
             _Alloc_construct_ptr<_Myalty> _Constructor{_Rebound};
             _Constructor._Allocate();
@@ -865,7 +847,7 @@ private:
     }
 
     virtual _Mybase* _Move(void* _Where) noexcept override {
-        if _CONSTEXPR_IF (_Is_large<_Func_impl>) {
+        if constexpr (_Is_large<_Func_impl>) {
             return nullptr;
         } else {
             const auto _Ptr = static_cast<_Func_impl*>(_Where);
@@ -917,7 +899,7 @@ public:
 
 private:
     virtual _Mybase* _Copy(void* _Where) const override {
-        if _CONSTEXPR_IF (_Is_large<_Func_impl_no_alloc>) {
+        if constexpr (_Is_large<_Func_impl_no_alloc>) {
             (void) _Where; // TRANSITION, DevCom-1004719
             return _Global_new<_Func_impl_no_alloc>(_Callee);
         } else {
@@ -926,7 +908,7 @@ private:
     }
 
     virtual _Mybase* _Move(void* _Where) noexcept override {
-        if _CONSTEXPR_IF (_Is_large<_Func_impl_no_alloc>) {
+        if constexpr (_Is_large<_Func_impl_no_alloc>) {
             (void) _Where; // TRANSITION, DevCom-1004719
             return nullptr;
         } else {
@@ -1025,7 +1007,7 @@ protected:
         }
 
         using _Impl = _Func_impl_no_alloc<decay_t<_Fx>, _Ret, _Types...>;
-        if _CONSTEXPR_IF (_Is_large<_Impl>) {
+        if constexpr (_Is_large<_Impl>) {
             // dynamically allocate _Val
             _Set(_Global_new<_Impl>(_STD forward<_Fx>(_Val)));
         } else {
@@ -1042,7 +1024,7 @@ protected:
         }
 
         using _Myimpl = _Func_impl<decay_t<_Fx>, _Alloc, _Ret, _Types...>;
-        if _CONSTEXPR_IF (_Is_large<_Myimpl>) {
+        if constexpr (_Is_large<_Myimpl>) {
             // dynamically allocate _Val
             using _Alimpl = _Rebind_alloc_t<_Alloc, _Myimpl>;
             _Alimpl _Al(_Ax);

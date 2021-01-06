@@ -762,10 +762,6 @@ private:
     friend class _Hash;
     template <class _Traits>
     friend bool _Hash_equal(const _Hash<_Traits>&, const _Hash<_Traits>&);
-#if !_HAS_IF_CONSTEXPR
-    template <class _Traits>
-    friend bool _Hash_equal_elements(const _Hash<_Traits>& _Left, const _Hash<_Traits>& _Right, false_type);
-#endif // _HAS_IF_CONSTEXPR
 
     using _Alty          = _Rebind_alloc_t<_Alloc, _Ty>;
     using _Alty_traits   = allocator_traits<_Alty>;
@@ -895,7 +891,7 @@ public:
     }
 
     list(list&& _Right, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        if _CONSTEXPR_IF (!_Alnode_traits::is_always_equal::value) {
+        if constexpr (!_Alnode_traits::is_always_equal::value) {
             if (_Getal() != _Right._Getal()) {
                 _Construct_range_unchecked(_STD make_move_iterator(_Right._Unchecked_begin()),
                     _STD make_move_iterator(_Right._Unchecked_end()));
@@ -1682,7 +1678,7 @@ private:
 
 #if _ITERATOR_DEBUG_LEVEL != 0
         _DEBUG_ORDER_UNWRAPPED(_Right._Unchecked_begin(), _Right._Unchecked_end(), _Pred);
-        if _CONSTEXPR_IF (!_Alnode_traits::is_always_equal::value) {
+        if constexpr (!_Alnode_traits::is_always_equal::value) {
             _STL_VERIFY(_Getal() == _Right._Getal(), "list allocators incompatible for merge");
         }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -1739,7 +1735,7 @@ private:
         // splice _Right [_First, _Last) before _Where; returns _Last
         if (this != _STD addressof(_Right)) { // splicing from another list, adjust counts
 #if _ITERATOR_DEBUG_LEVEL != 0
-            if _CONSTEXPR_IF (!_Alnode_traits::is_always_equal::value) {
+            if constexpr (!_Alnode_traits::is_always_equal::value) {
                 _STL_VERIFY(_Getal() == _Right._Getal(), "list allocators incompatible for splice");
             }
 #endif // _ITERATOR_DEBUG_LEVEL != 0

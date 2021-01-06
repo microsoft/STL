@@ -220,20 +220,22 @@ protected:
         case ios_base::end:
             _Newoff = _Seekdist;
             break;
-        case ios_base::cur: {
-            constexpr auto _Both = ios_base::in | ios_base::out;
-            if ((_Mode & _Both) != _Both) { // prohibited by N4727 [stringbuf.virtuals] Table 107 "seekoff positioning"
-                if (_Mode & ios_base::in) {
-                    if (_Gptr_old || !_Seeklow) {
-                        _Newoff = _Gptr_old - _Seeklow;
+        case ios_base::cur:
+            {
+                constexpr auto _Both = ios_base::in | ios_base::out;
+                if ((_Mode & _Both)
+                    != _Both) { // prohibited by N4727 [stringbuf.virtuals] Table 107 "seekoff positioning"
+                    if (_Mode & ios_base::in) {
+                        if (_Gptr_old || !_Seeklow) {
+                            _Newoff = _Gptr_old - _Seeklow;
+                            break;
+                        }
+                    } else if ((_Mode & ios_base::out) && (_Pptr_old || !_Seeklow)) {
+                        _Newoff = _Pptr_old - _Seeklow;
                         break;
                     }
-                } else if ((_Mode & ios_base::out) && (_Pptr_old || !_Seeklow)) {
-                    _Newoff = _Pptr_old - _Seeklow;
-                    break;
                 }
             }
-        }
 
             // fallthrough
         default:

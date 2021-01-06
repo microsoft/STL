@@ -270,34 +270,35 @@ protected:
 
             _Off += _Seekdist;
             break;
-        case ios_base::cur: {
-            constexpr auto _Both = ios_base::in | ios_base::out;
-            if ((_Which & _Both)
-                == _Both) { // prohibited by N4727 [depr.strstreambuf.virtuals] Table 137 "seekoff positioning"
-                return pos_type(off_type(-1));
+        case ios_base::cur:
+            {
+                constexpr auto _Both = ios_base::in | ios_base::out;
+                if ((_Which & _Both)
+                    == _Both) { // prohibited by N4727 [depr.strstreambuf.virtuals] Table 137 "seekoff positioning"
+                    return pos_type(off_type(-1));
+                }
+
+                off_type _Oldoff;
+                off_type _Oldleft;
+                if (_Which & ios_base::in) {
+                    _Oldoff  = gptr() - eback();
+                    _Oldleft = _Seekhigh - gptr();
+                } else if (_Which & ios_base::out) {
+                    _Oldoff  = pptr() - pbase();
+                    _Oldleft = _Seekhigh - pptr();
+                } else {
+                    return pos_type(off_type(-1));
+                }
+
+                if (_Off < -_Oldoff // runs off beginning
+                    || _Off > _Oldleft) { // runs off end
+                    return pos_type(off_type(-1));
+                }
+
+                _Off += _Oldoff;
             }
 
-            off_type _Oldoff;
-            off_type _Oldleft;
-            if (_Which & ios_base::in) {
-                _Oldoff  = gptr() - eback();
-                _Oldleft = _Seekhigh - gptr();
-            } else if (_Which & ios_base::out) {
-                _Oldoff  = pptr() - pbase();
-                _Oldleft = _Seekhigh - pptr();
-            } else {
-                return pos_type(off_type(-1));
-            }
-
-            if (_Off < -_Oldoff // runs off beginning
-                || _Off > _Oldleft) { // runs off end
-                return pos_type(off_type(-1));
-            }
-
-            _Off += _Oldoff;
-        }
-
-        break;
+            break;
         default:
             return pos_type(off_type(-1));
         }
