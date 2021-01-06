@@ -138,7 +138,7 @@ $Workloads = @(
 $ReleaseInPath = 'Preview'
 $Sku = 'Enterprise'
 $VisualStudioBootstrapperUrl = 'https://aka.ms/vs/16/pre/vs_enterprise.exe'
-$PythonUrl = 'https://www.python.org/ftp/python/3.9.0/python-3.9.0-amd64.exe'
+$PythonUrl = 'https://www.python.org/ftp/python/3.9.1/python-3.9.1-amd64.exe'
 
 # https://docs.microsoft.com/en-us/windows-hardware/drivers/download-the-wdk
 $WindowsDriverKitUrl = 'https://go.microsoft.com/fwlink/?linkid=2128854'
