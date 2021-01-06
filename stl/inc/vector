@@ -561,7 +561,7 @@ private:
     }
 
     void _Move_construct(vector& _Right, false_type) { // move from _Right, possibly moving its contents
-        if _CONSTEXPR_IF (!_Alty_traits::is_always_equal::value) {
+        if constexpr (!_Alty_traits::is_always_equal::value) {
             if (_Getal() != _Right._Getal()) {
                 const auto& _Right_data   = _Right._Mypair._Myval2;
                 const pointer _Rightfirst = _Right_data._Myfirst;
@@ -635,7 +635,6 @@ private:
             _My_data._Orphan_all();
 
             const auto _Oldcapacity = static_cast<size_type>(_My_data._Myend - _Myfirst);
-#if _HAS_IF_CONSTEXPR
             if constexpr (conjunction_v<bool_constant<_Ptr_copy_cat<_Ty*, _Ty*>::_Trivially_copyable>,
                               _Uses_default_construct<_Alty, _Ty*, _Ty>, _Uses_default_destroy<_Alty, _Ty*>>) {
                 if (_Newsize > _Oldcapacity) {
@@ -643,9 +642,7 @@ private:
                 }
 
                 _Mylast = _Refancy<pointer>(_Copy_memmove(_Unfancy(_First), _Unfancy(_Last), _Unfancy(_Myfirst)));
-            } else
-#endif // _HAS_IF_CONSTEXPR
-            {
+            } else {
                 auto _Oldsize = static_cast<size_type>(_Mylast - _Myfirst);
 
                 if (_Newsize > _Oldsize) {
@@ -1107,7 +1104,6 @@ private:
 
         _My_data._Orphan_all();
 
-#if _HAS_IF_CONSTEXPR
         if constexpr (conjunction_v<bool_constant<_Ptr_copy_cat<_Iter, _Ty*>::_Trivially_copyable>,
                           _Uses_default_construct<_Alty, _Ty*, decltype(*_First)>,
                           _Uses_default_destroy<_Alty, _Ty*>>) {
@@ -1117,9 +1113,7 @@ private:
             }
 
             _Mylast = _Refancy<pointer>(_Copy_memmove(_First, _Last, _Unfancy(_Myfirst)));
-        } else
-#endif // _HAS_IF_CONSTEXPR
-        {
+        } else {
             auto _Oldsize = static_cast<size_type>(_Mylast - _Myfirst);
 
             if (_Newsize > _Oldsize) {
@@ -2323,7 +2317,7 @@ public:
 
     vector(vector&& _Right, const _Alloc& _Al) noexcept(is_nothrow_constructible_v<_Mybase, _Mybase, const _Alloc&>)
         : _Mybase(_STD move(_Right), _Al) {
-        if _CONSTEXPR_IF (!_Alvbase_traits::is_always_equal::value) {
+        if constexpr (!_Alvbase_traits::is_always_equal::value) {
             if (this->_Getal() != _Right._Getal()) {
                 return;
             }
@@ -2892,7 +2886,6 @@ namespace pmr {
 } // namespace pmr
 #endif // _HAS_CXX17
 
-#if _HAS_IF_CONSTEXPR
 // VARIABLE TEMPLATE _Is_vb_iterator
 template <class _Alloc, bool _RequiresMutable>
 _INLINE_VAR constexpr bool _Is_vb_iterator<_Vb_iterator<_Alloc>, _RequiresMutable> = true;
@@ -2949,7 +2942,6 @@ _CONSTEXPR20 void _Fill_vbool(_FwdIt _First, _FwdIt _Last, const _Ty& _Val) {
         *_VbFirst                  = (*_VbFirst & _LastDestMask) | (_FillVal & _LastSourceMask);
     }
 }
-#endif // _HAS_IF_CONSTEXPR
 _STD_END
 
 #pragma pop_macro("new")
