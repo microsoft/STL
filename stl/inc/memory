@@ -126,7 +126,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE uninitialized_copy_n
-#if _HAS_IF_CONSTEXPR
 template <class _InIt, class _Diff, class _NoThrowFwdIt>
 _NoThrowFwdIt uninitialized_copy_n(const _InIt _First, const _Diff _Count_raw, _NoThrowFwdIt _Dest) {
     // copy [_First, _First + _Count) to [_Dest, ...)
@@ -152,40 +151,6 @@ _NoThrowFwdIt uninitialized_copy_n(const _InIt _First, const _Diff _Count_raw, _
     _Seek_wrapped(_Dest, _UDest);
     return _Dest;
 }
-#else // ^^^ _HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
-template <class _InIt, class _Diff, class _NoThrowFwdIt>
-_NoThrowFwdIt _Uninitialized_copy_n_unchecked2(_InIt _First, _Diff _Count, const _NoThrowFwdIt _Dest,
-    false_type) { // copy [_First, _First + _Count) to [_Dest, ...), no special optimization
-    _Uninitialized_backout<_NoThrowFwdIt> _Backout{_Dest};
-
-    for (; _Count > 0; --_Count, (void) ++_First) {
-        _Backout._Emplace_back(*_First);
-    }
-
-    return _Backout._Release();
-}
-
-template <class _InIt, class _Diff, class _NoThrowFwdIt>
-_NoThrowFwdIt _Uninitialized_copy_n_unchecked2(const _InIt _First, const _Diff _Count, const _NoThrowFwdIt _Dest,
-    true_type) { // copy [_First, _First + _Count) to [_Dest, ...), memmove optimization
-    return _Copy_memmove(_First, _First + _Count, _Dest);
-}
-
-template <class _InIt, class _Diff, class _NoThrowFwdIt>
-_NoThrowFwdIt uninitialized_copy_n(const _InIt _First, const _Diff _Count_raw, _NoThrowFwdIt _Dest) {
-    // copy [_First, _First + _Count) to [_Dest, ...)]
-    _Algorithm_int_t<_Diff> _Count = _Count_raw;
-    if (_Count <= 0) {
-        return _Dest;
-    }
-
-    auto _UFirst = _Get_unwrapped_n(_First, _Count);
-    auto _UDest  = _Get_unwrapped_n(_Dest, _Count);
-    _Seek_wrapped(_Dest, _Uninitialized_copy_n_unchecked2(_UFirst, _Count, _UDest,
-                             bool_constant<_Ptr_copy_cat<decltype(_UFirst), decltype(_UDest)>::_Really_trivial>{}));
-    return _Dest;
-}
-#endif // _HAS_IF_CONSTEXPR
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
@@ -455,7 +420,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE uninitialized_fill_n
-#if _HAS_IF_CONSTEXPR
 template <class _NoThrowFwdIt, class _Diff, class _Tval>
 _NoThrowFwdIt uninitialized_fill_n(_NoThrowFwdIt _First, const _Diff _Count_raw, const _Tval& _Val) {
     // copy _Count copies of _Val to raw _First
@@ -489,41 +453,6 @@ _NoThrowFwdIt uninitialized_fill_n(_NoThrowFwdIt _First, const _Diff _Count_raw,
     _Seek_wrapped(_First, _UFirst);
     return _First;
 }
-#else // ^^^ _HAS_IF_CONSTEXPR // !_HAS_IF_CONSTEXPR vvv
-template <class _NoThrowFwdIt, class _Diff, class _Tval>
-_NoThrowFwdIt _Uninitialized_fill_n_unchecked1(
-    const _NoThrowFwdIt _First, _Diff _Count, const _Tval& _Val, false_type) {
-    // copy _Count copies of _Val to raw _First, no special optimization
-    _Uninitialized_backout<_NoThrowFwdIt> _Backout{_First};
-    for (; _Count > 0; --_Count) {
-        _Backout._Emplace_back(_Val);
-    }
-
-    return _Backout._Release();
-}
-
-template <class _NoThrowFwdIt, class _Diff, class _Tval>
-_NoThrowFwdIt _Uninitialized_fill_n_unchecked1(
-    const _NoThrowFwdIt _First, const _Diff _Count, const _Tval& _Val, true_type) {
-    // copy _Count copies of _Val to raw _First, memset optimization
-    _Fill_memset(_First, _Val, _Count);
-    return _First + _Count;
-}
-
-template <class _NoThrowFwdIt, class _Diff, class _Tval>
-_NoThrowFwdIt uninitialized_fill_n(_NoThrowFwdIt _First, const _Diff _Count_raw, const _Tval& _Val) {
-    // copy _Count copies of _Val to raw _First
-    _Algorithm_int_t<_Diff> _Count = _Count_raw;
-    if (_Count <= 0) {
-        return _First;
-    }
-
-    auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
-    _Seek_wrapped(_First, _Uninitialized_fill_n_unchecked1(_STD move(_UFirst), _Count, _Val,
-                              bool_constant<_Fill_memset_is_safe<_Unwrapped_t<_NoThrowFwdIt>, _Tval>>{}));
-    return _First;
-}
-#endif // _HAS_IF_CONSTEXPR
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
@@ -1386,21 +1315,6 @@ struct _Can_enable_shared<_Yty, void_t<typename _Yty::_Esft_type>>
     // is_convertible is necessary to verify unambiguous inheritance
 };
 
-#if !_HAS_IF_CONSTEXPR
-template <class _Other, class _Yty>
-void _Enable_shared_from_this1(const shared_ptr<_Other>& _This, _Yty* _Ptr, true_type) noexcept {
-    // enable shared_from_this
-    if (_Ptr && _Ptr->_Wptr.expired()) {
-        _Ptr->_Wptr = shared_ptr<remove_cv_t<_Yty>>(_This, const_cast<remove_cv_t<_Yty>*>(_Ptr));
-    }
-}
-
-template <class _Other, class _Yty>
-void _Enable_shared_from_this1(const shared_ptr<_Other>&, _Yty*, false_type) noexcept {
-    // don't enable shared_from_this
-}
-#endif // !_HAS_IF_CONSTEXPR
-
 // CLASS TEMPLATE _Ptr_base
 struct _Exception_ptr_access;
 
@@ -1676,7 +1590,6 @@ public:
                         _SP_convertible<_Ux, _Ty>>,
             int> = 0>
     explicit shared_ptr(_Ux* _Px) { // construct shared_ptr object that owns _Px
-#if _HAS_IF_CONSTEXPR
         if constexpr (is_array_v<_Ty>) {
             _Setpd(_Px, default_delete<_Ux[]>{});
         } else {
@@ -1684,9 +1597,6 @@ public:
             _Set_ptr_rep_and_enable_shared(_Owner._Ptr, new _Ref_count<_Ux>(_Owner._Ptr));
             _Owner._Ptr = nullptr;
         }
-#else // ^^^ _HAS_IF_CONSTEXPR // !_HAS_IF_CONSTEXPR vvv
-        _Setp(_Px, is_array<_Ty>{});
-#endif // _HAS_IF_CONSTEXPR
     }
 
     template <class _Ux, class _Dx,
@@ -1875,20 +1785,6 @@ public:
     }
 
 private:
-#if !_HAS_IF_CONSTEXPR
-    template <class _Ux>
-    void _Setp(_Ux* _Px, true_type) { // take ownership of _Px
-        _Setpd(_Px, default_delete<_Ux[]>{});
-    }
-
-    template <class _Ux>
-    void _Setp(_Ux* const _Px, false_type) { // take ownership of _Px
-        _Temporary_owner<_Ux> _Owner(_Px);
-        _Set_ptr_rep_and_enable_shared(_Owner._Ptr, new _Ref_count<_Ux>(_Owner._Ptr));
-        _Owner._Ptr = nullptr;
-    }
-#endif // !_HAS_IF_CONSTEXPR
-
     template <class _UxptrOrNullptr, class _Dx>
     void _Setpd(const _UxptrOrNullptr _Px, _Dx _Dt) { // take ownership of _Px, deleter _Dt
         _Temporary_owner_del<_UxptrOrNullptr, _Dx> _Owner(_Px, _Dt);
@@ -1956,17 +1852,11 @@ private:
     void _Set_ptr_rep_and_enable_shared(_Ux* const _Px, _Ref_count_base* const _Rx) noexcept { // take ownership of _Px
         this->_Ptr = _Px;
         this->_Rep = _Rx;
-#if _HAS_IF_CONSTEXPR
         if constexpr (conjunction_v<negation<is_array<_Ty>>, negation<is_volatile<_Ux>>, _Can_enable_shared<_Ux>>) {
             if (_Px && _Px->_Wptr.expired()) {
                 _Px->_Wptr = shared_ptr<remove_cv_t<_Ux>>(*this, const_cast<remove_cv_t<_Ux>*>(_Px));
             }
         }
-#else // ^^^ _HAS_IF_CONSTEXPR // !_HAS_IF_CONSTEXPR vvv
-        _Enable_shared_from_this1(*this, _Px,
-            bool_constant<
-                conjunction_v<negation<is_array<_Ty>>, negation<is_volatile<_Ux>>, _Can_enable_shared<_Ux>>>{});
-#endif // _HAS_IF_CONSTEXPR
     }
 
     void _Set_ptr_rep_and_enable_shared(nullptr_t, _Ref_count_base* const _Rx) noexcept { // take ownership of nullptr
@@ -3257,13 +3147,8 @@ protected:
     ~enable_shared_from_this() = default;
 
 private:
-#if _HAS_IF_CONSTEXPR
     template <class _Yty>
     friend class shared_ptr;
-#else // ^^^ _HAS_IF_CONSTEXPR // !_HAS_IF_CONSTEXPR vvv
-    template <class _Other, class _Yty>
-    friend void _Enable_shared_from_this1(const shared_ptr<_Other>& _This, _Yty* _Ptr, true_type) noexcept;
-#endif // _HAS_IF_CONSTEXPR
 
     mutable weak_ptr<_Ty> _Wptr;
 };
