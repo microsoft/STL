@@ -803,8 +803,8 @@ struct alignas(long long) _Aligned_file_attrs {
     // Let's try to open the file (either reparse point or destination).
     __std_win_error _Last_error;
     const auto _File_flags = _Follow_symlinks
-                                 ? __std_fs_file_flags::_Backup_semantics
-                                 : __std_fs_file_flags::_Backup_semantics | __std_fs_file_flags::_Open_reparse_point;
+                               ? __std_fs_file_flags::_Backup_semantics
+                               : __std_fs_file_flags::_Backup_semantics | __std_fs_file_flags::_Open_reparse_point;
     const _STD _Fs_file _Handle(_Path, __std_access_rights::_File_read_attributes, _File_flags, &_Last_error);
     if (_Last_error != __std_win_error::_Success) {
         return _Last_error;

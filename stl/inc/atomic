@@ -287,14 +287,11 @@ template <class _Integral, class _Ty>
 _NODISCARD _Integral _Atomic_reinterpret_as(const _Ty& _Source) noexcept {
     // interprets _Source as the supplied integral type
     static_assert(is_integral_v<_Integral>, "Tried to reinterpret memory as non-integral");
-#if _HAS_IF_CONSTEXPR
     if constexpr (is_integral_v<_Ty> && sizeof(_Integral) == sizeof(_Ty)) {
         return static_cast<_Integral>(_Source);
     } else if constexpr (is_pointer_v<_Ty> && sizeof(_Integral) == sizeof(_Ty)) {
         return reinterpret_cast<_Integral>(_Source);
-    } else
-#endif // _HAS_IF_CONSTEXPR
-    {
+    } else {
         _Integral _Result{}; // zero padding bits
         _CSTD memcpy(&_Result, _STD addressof(_Source), sizeof(_Source));
         return _Result;
@@ -330,15 +327,14 @@ struct _Atomic_padded {
 // STRUCT TEMPLATE _Atomic_storage_traits
 template <class _Ty>
 struct _Atomic_storage_traits { // properties for how _Ty is stored in an atomic
-    static constexpr size_t _Storage_size =
-        sizeof(_Ty) == 1 ? 1
-                         : sizeof(_Ty) == 2 ? 2
-                                            : sizeof(_Ty) <= 4 ? 4
-                                                               : sizeof(_Ty) <= 8 ? 8
+    static constexpr size_t _Storage_size = sizeof(_Ty) == 1 ? 1
+                                          : sizeof(_Ty) == 2 ? 2
+                                          : sizeof(_Ty) <= 4 ? 4
+                                          : sizeof(_Ty) <= 8 ? 8
 #if defined(_M_X64) || defined(_M_ARM64) || defined(_M_ARM64EC)
-                                                                                  : sizeof(_Ty) <= 16 ? 16
+                                          : sizeof(_Ty) <= 16 ? 16
 #endif // 64 bits
-                                                                                                      : sizeof(_Ty);
+                                                              : sizeof(_Ty);
 
     static constexpr size_t _Padding_size = _Storage_size - sizeof(_Ty);
     static constexpr bool _Uses_padding   = _Padding_size != 0;

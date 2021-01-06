@@ -718,7 +718,7 @@ public:
                 _Ans = log1p(_Left + _Left * _Left / (1 + sqrt(_Left * _Left + 1)));
             } else {
                 _Ans = log(_Left) // _Left big, compute log(_Left+_Left)
-                       + static_cast<_Ty>(0.69314718055994530941723212145817658L);
+                     + static_cast<_Ty>(0.69314718055994530941723212145817658L);
             }
 
             return _Copysign(_Ans, _Old_left);

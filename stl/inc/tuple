@@ -676,7 +676,7 @@ public:
     template <class... _Other>
     constexpr bool _Less(const tuple<_Other...>& _Right) const {
         return _Myfirst._Val < _Right._Myfirst._Val
-               || (!(_Right._Myfirst._Val < _Myfirst._Val) && _Mybase::_Less(_Right._Get_rest()));
+            || (!(_Right._Myfirst._Val < _Myfirst._Val) && _Mybase::_Less(_Right._Get_rest()));
     }
 
     template <size_t _Index, class... _Types>

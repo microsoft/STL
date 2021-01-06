@@ -282,15 +282,25 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
     STATIC_ASSERT(CanEnd<const R&> == range<const V>);
     if (!is_empty) {
-        same_as<sentinel_t<R>> auto i = r.end();
+        same_as<sentinel_t<R>> auto s = r.end();
         if constexpr (bidirectional_range<R> && common_range<R>) {
-            assert(*prev(i) == *prev(end(expected)));
+            assert(*prev(s) == *prev(end(expected)));
         }
 
         if constexpr (range<const V>) {
-            same_as<sentinel_t<const R>> auto i2 = as_const(r).end();
+            same_as<sentinel_t<const R>> auto sc = as_const(r).end();
             if constexpr (bidirectional_range<const R> && common_range<const R>) {
-                assert(*prev(i2) == *prev(end(expected)));
+                assert(*prev(sc) == *prev(end(expected)));
+            }
+
+            if (forward_range<V>) { // intentionally not if constexpr
+                // Compare with const / non-const iterators
+                const same_as<iterator_t<R>> auto i        = r.begin();
+                const same_as<iterator_t<const R>> auto ic = as_const(r).begin();
+                assert(s != i);
+                assert(s != ic);
+                assert(sc != i);
+                assert(sc != ic);
             }
         }
     }

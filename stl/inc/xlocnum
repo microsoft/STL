@@ -1526,10 +1526,11 @@ private:
         }
 
         ios_base::fmtflags _Basefield = _Flags & ios_base::basefield;
-        *_Ptr++                       = _Basefield == ios_base::oct ? 'o'
-                                              : _Basefield != ios_base::hex ? _Spec[1] // 'd' or 'u'
-                                                                            : _Flags & ios_base::uppercase ? 'X' : 'x';
-        *_Ptr = '\0';
+        *_Ptr++                       = _Basefield == ios_base::oct  ? 'o'
+                                      : _Basefield != ios_base::hex  ? _Spec[1] // 'd' or 'u'
+                                      : _Flags & ios_base::uppercase ? 'X'
+                                                                     : 'x';
+        *_Ptr                         = '\0';
         return _Fmt;
     }
 
