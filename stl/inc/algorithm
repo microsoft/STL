@@ -732,7 +732,6 @@ _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
 }
 #endif // _HAS_CXX17
 
-#if _HAS_IF_CONSTEXPR
 template <class _InIt1, class _InIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(
     _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _Pr _Pred) {
@@ -764,42 +763,6 @@ _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(
     _Seek_wrapped(_First1, _UFirst1);
     return {_First1, _First2};
 }
-#else // ^^^ _HAS_IF_CONSTEXPR ^^^ // vvv !_HAS_IF_CONSTEXPR vvv
-template <class _InIt1, class _InIt2, class _Pr>
-pair<_InIt1, _InIt2> _Mismatch_unchecked(_InIt1 _First1, const _InIt1 _Last1, _InIt2 _First2, const _InIt2 _Last2,
-    _Pr _Pred, input_iterator_tag, input_iterator_tag) {
-    // return [_First1, _Last1)/[_First2, _Last2) mismatch, no special optimization
-    while (_First1 != _Last1 && _First2 != _Last2 && _Pred(*_First1, *_First2)) {
-        ++_First1;
-        ++_First2;
-    }
-
-    return {_First1, _First2};
-}
-
-template <class _InIt1, class _InIt2, class _Pr>
-pair<_InIt1, _InIt2> _Mismatch_unchecked(const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2,
-    const _InIt2 _Last2, _Pr _Pred, random_access_iterator_tag, random_access_iterator_tag) {
-    // return [_First1, _Last1)/[_First2, _Last2) mismatch, random-access iterators
-    using _CT         = _Common_diff_t<_InIt1, _InIt2>;
-    const _CT _Count1 = _Last1 - _First1;
-    const _CT _Count2 = _Last2 - _First2;
-    const auto _Count = static_cast<_Iter_diff_t<_InIt1>>((_STD min)(_Count1, _Count2));
-    return _STD mismatch(_First1, _First1 + _Count, _First2, _Pred);
-}
-
-template <class _InIt1, class _InIt2, class _Pr>
-_NODISCARD pair<_InIt1, _InIt2> mismatch(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _Pr _Pred) {
-    // return [_First1, _Last1)/[_First2, _Last2) mismatch
-    _Adl_verify_range(_First1, _Last1);
-    _Adl_verify_range(_First2, _Last2);
-    const auto _Result = _Mismatch_unchecked(_Get_unwrapped(_First1), _Get_unwrapped(_Last1), _Get_unwrapped(_First2),
-        _Get_unwrapped(_Last2), _Pass_fn(_Pred), _Iter_cat_t<_InIt1>{}, _Iter_cat_t<_InIt2>{});
-    _Seek_wrapped(_First2, _Result.second);
-    _Seek_wrapped(_First1, _Result.first);
-    return {_First1, _First2};
-}
-#endif // _HAS_IF_CONSTEXPR
 
 #if _HAS_CXX17
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
@@ -2152,7 +2115,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE _Equal_rev_pred_unchecked
-#if _HAS_IF_CONSTEXPR
 template <class _InIt1, class _InIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 bool _Equal_rev_pred_unchecked(_InIt1 _First1, _InIt2 _First2, const _InIt2 _Last2, _Pr _Pred) {
     // compare [_First1, ...) to [_First2, _Last2)
@@ -2176,31 +2138,8 @@ _NODISCARD _CONSTEXPR20 bool _Equal_rev_pred_unchecked(_InIt1 _First1, _InIt2 _F
 
     return true;
 }
-#else // ^^^ _HAS_IF_CONSTEXPR ^^^ // vvv !_HAS_IF_CONSTEXPR vvv
-template <class _InIt1, class _InIt2, class _Pr, enable_if_t<!_Equal_memcmp_is_safe<_InIt1, _InIt2, _Pr>, int> = 0>
-bool _Equal_rev_pred_unchecked(_InIt1 _First1, _InIt2 _First2, const _InIt2 _Last2, _Pr _Pred) {
-    // compare [_First1, ...) to [_First2, _Last2), no special optimization
-    for (; _First2 != _Last2; ++_First1, (void) ++_First2) {
-        if (!_Pred(*_First1, *_First2)) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-template <class _InIt1, class _InIt2, class _Pr, enable_if_t<_Equal_memcmp_is_safe<_InIt1, _InIt2, _Pr>, int> = 0>
-bool _Equal_rev_pred_unchecked(const _InIt1 _First1, const _InIt2 _First2, const _InIt2 _Last2, _Pr) {
-    // compare [_First1, ...) to [_First2, _Last2), memcmp optimization
-    const auto _First1_ch = _To_pointer<const char>(_First1);
-    const auto _First2_ch = _To_pointer<const char>(_First2);
-    const auto _Count     = static_cast<size_t>(_To_pointer<const char>(_Last2) - _First2_ch);
-    return _CSTD memcmp(_First1_ch, _First2_ch, _Count) == 0;
-}
-#endif // _HAS_IF_CONSTEXPR
 
 // FUNCTION TEMPLATE search
-#if _HAS_IF_CONSTEXPR
 template <class _FwdItHaystack, class _FwdItPat, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdItHaystack search(_FwdItHaystack _First1, _FwdItHaystack _Last1, const _FwdItPat _First2,
     const _FwdItPat _Last2, _Pr _Pred) { // find first [_First2, _Last2) satisfying _Pred
@@ -2243,57 +2182,6 @@ _NODISCARD _CONSTEXPR20 _FwdItHaystack search(_FwdItHaystack _First1, _FwdItHays
 
     return _Last1;
 }
-#else // ^^^ _HAS_IF_CONSTEXPR ^^^ // vvv !_HAS_IF_CONSTEXPR vvv
-template <class _FwdItHaystack, class _FwdItPat, class _Pr>
-_FwdItHaystack _Search_unchecked(_FwdItHaystack _First1, _FwdItHaystack _Last1, _FwdItPat _First2, _FwdItPat _Last2,
-    _Pr _Pred, forward_iterator_tag, forward_iterator_tag) {
-    // find first [_First2, _Last2) satisfying _Pred, arbitrary iterators
-    for (;; ++_First1) { // loop until match or end of a sequence
-        _FwdItHaystack _Mid1 = _First1;
-        for (_FwdItPat _Mid2 = _First2;; ++_Mid1, (void) ++_Mid2) {
-            if (_Mid2 == _Last2) {
-                return _First1;
-            } else if (_Mid1 == _Last1) {
-                return _Last1;
-            } else if (!_Pred(*_Mid1, *_Mid2)) {
-                break;
-            }
-        }
-    }
-}
-
-template <class _FwdItHaystack, class _FwdItPat, class _Pr>
-_FwdItHaystack _Search_unchecked(_FwdItHaystack _First1, const _FwdItHaystack _Last1, const _FwdItPat _First2,
-    const _FwdItPat _Last2, _Pr _Pred, random_access_iterator_tag, random_access_iterator_tag) {
-    // find first [_First2, _Last2) satisfying _Pred, random-access iterators
-    _Iter_diff_t<_FwdItPat> _Count2 = _Last2 - _First2;
-    if (_Last1 - _First1 >= _Count2) {
-        const auto _Last_possible = _Last1 - static_cast<_Iter_diff_t<_FwdItHaystack>>(_Count2);
-        for (;; ++_First1) {
-            if (_Equal_rev_pred_unchecked(_First1, _First2, _Last2, _Pred)) {
-                return _First1;
-            }
-
-            if (_First1 == _Last_possible) {
-                break;
-            }
-        }
-    }
-
-    return _Last1;
-}
-
-template <class _FwdItHaystack, class _FwdItPat, class _Pr>
-_NODISCARD _FwdItHaystack search(_FwdItHaystack _First1, const _FwdItHaystack _Last1, const _FwdItPat _First2,
-    const _FwdItPat _Last2, _Pr _Pred) { // find first [_First2, _Last2) satisfying _Pred
-    _Adl_verify_range(_First1, _Last1);
-    _Adl_verify_range(_First2, _Last2);
-    _Seek_wrapped(
-        _First1, _Search_unchecked(_Get_unwrapped(_First1), _Get_unwrapped(_Last1), _Get_unwrapped(_First2),
-                     _Get_unwrapped(_Last2), _Pass_fn(_Pred), _Iter_cat_t<_FwdItHaystack>{}, _Iter_cat_t<_FwdItPat>{}));
-    return _First1;
-}
-#endif // _HAS_IF_CONSTEXPR
 
 #if _HAS_CXX17
 template <class _ExPo, class _FwdItHaystack, class _FwdItPat, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
@@ -2475,7 +2363,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE search_n
-#if _HAS_IF_CONSTEXPR
 template <class _FwdIt, class _Diff, class _Ty, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt search_n(
     const _FwdIt _First, _FwdIt _Last, const _Diff _Count_raw, const _Ty& _Val, _Pr _Pred) {
@@ -2547,88 +2434,6 @@ _NODISCARD _CONSTEXPR20 _FwdIt search_n(
 
     return _Last;
 }
-#else // ^^^ _HAS_IF_CONSTEXPR ^^^ // vvv !_HAS_IF_CONSTEXPR vvv
-template <class _FwdIt, class _Diff, class _Ty, class _Pr>
-_FwdIt _Search_n_unchecked1(_FwdIt _First, const _FwdIt _Last, const _Diff _Count, const _Ty& _Val, _Pr _Pred,
-    forward_iterator_tag) { // find first _Count * _Val satisfying _Pred, forward iterators
-    for (; _First != _Last; ++_First) {
-        if (_Pred(*_First, _Val)) { // found start of possible match, check it out
-            _FwdIt _Mid = _First;
-
-            for (_Diff _Count1 = _Count;;) {
-                if (--_Count1 == 0) {
-                    return _First; // found rest of match, report it
-                } else if (++_Mid == _Last) {
-                    return _Last; // short match at end
-                } else if (!_Pred(*_Mid, _Val)) { // short match not at end
-                    break;
-                }
-            }
-
-            _First = _Mid; // pick up just beyond failed match
-        }
-    }
-
-    return _Last;
-}
-
-template <class _FwdIt, class _Diff, class _Ty, class _Pr>
-_FwdIt _Search_n_unchecked1(_FwdIt _First, const _FwdIt _Last, const _Diff _Count, const _Ty& _Val, _Pr _Pred,
-    random_access_iterator_tag) { // find first _Count * _Val satisfying _Pred, random-access iterators
-    const auto _Count_diff = static_cast<_Iter_diff_t<_FwdIt>>(_Count);
-    _FwdIt _Old_first      = _First;
-    for (_Iter_diff_t<_FwdIt> _Inc = 0; _Count_diff <= _Last - _Old_first;) { // enough room, look for a match
-        _First = _Old_first + _Inc;
-        if (_Pred(*_First, _Val)) { // found part of possible match, check it out
-            _Iter_diff_t<_FwdIt> _Count1 = _Count_diff;
-            _FwdIt _Mid                  = _First;
-
-            while (_Old_first != _First && _Pred(*_Prev_iter(_First), _Val)) {
-                --_Count1; // back up over any skipped prefix
-                --_First;
-            }
-
-            if (_Count1 <= _Last - _Mid) {
-                for (;;) { // enough left, test suffix
-                    if (--_Count1 == 0) {
-                        return _First; // found rest of match, report it
-                    } else if (!_Pred(*++_Mid, _Val)) { // short match not at end
-                        break;
-                    }
-                }
-            }
-            _Old_first = ++_Mid; // failed match, take small jump
-            _Inc       = 0;
-        } else { // no match, take big jump and back up as needed
-            _Old_first = _Next_iter(_First);
-            _Inc       = _Count_diff - 1;
-        }
-    }
-
-    return _Last;
-}
-
-template <class _FwdIt, class _Diff, class _Ty, class _Pr>
-_NODISCARD _FwdIt search_n(_FwdIt _First, const _FwdIt _Last, const _Diff _Count_raw, const _Ty& _Val, _Pr _Pred) {
-    // find first _Count * _Val satisfying _Pred
-    const _Algorithm_int_t<_Diff> _Count = _Count_raw;
-    if (_Count <= 0) {
-        return _First;
-    }
-
-    if (static_cast<uintmax_t>(_Count) > static_cast<uintmax_t>((numeric_limits<_Iter_diff_t<_FwdIt>>::max)())) {
-        // if the number of _Vals searched for is larger than the longest possible sequence, we can't find it
-        _First = _Last;
-        return _First;
-    }
-
-    _Adl_verify_range(_First, _Last);
-    _Seek_wrapped(_First, _Search_n_unchecked1(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Count, _Val,
-                              _Pass_fn(_Pred), _Iter_cat_t<_FwdIt>{}));
-
-    return _First;
-}
-#endif // _HAS_IF_CONSTEXPR
 
 #if _HAS_CXX17
 template <class _ExPo, class _FwdIt, class _Diff, class _Ty, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
@@ -2815,7 +2620,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE find_end
-#if _HAS_IF_CONSTEXPR
 template <class _FwdIt1, class _FwdIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt1 find_end(
     _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2, const _FwdIt2 _Last2, _Pr _Pred) {
@@ -2896,96 +2700,6 @@ _NODISCARD _CONSTEXPR20 _FwdIt1 find_end(
         return _First1;
     }
 }
-#else // ^^^ _HAS_IF_CONSTEXPR ^^^ // vvv !_HAS_IF_CONSTEXPR vvv
-template <class _FwdIt1, class _FwdIt2, class _Pr>
-_FwdIt1 _Find_end_unchecked(_FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2, const _FwdIt2 _Last2,
-    _Pr _Pred, forward_iterator_tag, forward_iterator_tag) {
-    // find last [_First2, _Last2) satisfying _Pred in forward ranges
-    _FwdIt1 _Result = _Last1;
-    for (;;) { // try a match at _First1
-        _FwdIt1 _Next1 = _First1;
-        _FwdIt2 _Next2 = _First2;
-        for (;;) { // test if [_First2, _Last2) is a prefix of [_First1, _Last1)
-            const bool _End_of_needle = static_cast<bool>(_Next2 == _Last2);
-            if (_End_of_needle) { // match candidate found
-                _Result = _First1;
-            }
-
-            if (_Next1 == _Last1) {
-                // trying the next candidate would make [_First1, _Last1) shorter than [_First2, _Last2), done
-                return _Result;
-            }
-
-            if (_End_of_needle || !_Pred(*_Next1, *_Next2)) {
-                break; // end of match or counterexample found, go to the next candidate
-            }
-
-            ++_Next1;
-            ++_Next2;
-        }
-
-        ++_First1;
-    }
-}
-
-template <class _BidIt1, class _BidIt2, class _Pr>
-_BidIt1 _Find_end_unchecked(const _BidIt1 _First1, const _BidIt1 _Last1, const _BidIt2 _First2, const _BidIt2 _Last2,
-    _Pr _Pred, bidirectional_iterator_tag, bidirectional_iterator_tag) {
-    // find last [_First2, _Last2) satisfying _Pred in bidirectional ranges
-    for (_BidIt1 _Candidate = _Last1;; --_Candidate) { // try a match at _Candidate
-        _BidIt1 _Next1 = _Candidate;
-        _BidIt2 _Next2 = _Last2;
-        for (;;) { // test if [_First2, _Last2) is a suffix of [_First1, _Candidate)
-            if (_First2 == _Next2) { // match found
-                return _Next1;
-            }
-
-            if (_First1 == _Next1) {
-                // [_First1, _Candidate) is shorter than [_First2, _Last2), remaining candidates nonviable
-                return _Last1;
-            }
-
-            --_Next1;
-            --_Next2;
-            if (!_Pred(*_Next1, *_Next2)) { // counterexample found
-                break;
-            }
-        }
-    }
-}
-
-template <class _RanIt1, class _RanIt2, class _Pr>
-_RanIt1 _Find_end_unchecked(const _RanIt1 _First1, const _RanIt1 _Last1, const _RanIt2 _First2, const _RanIt2 _Last2,
-    _Pr _Pred, random_access_iterator_tag, random_access_iterator_tag) {
-    // find last [_First2, _Last2) satisfying _Pred in random-access ranges
-    const _Iter_diff_t<_RanIt2> _Count2 = _Last2 - _First2;
-    if (_Count2 > 0 && _Count2 <= _Last1 - _First1) {
-        for (_RanIt1 _Candidate = _Last1 - static_cast<_Iter_diff_t<_RanIt1>>(_Count2);; --_Candidate) {
-            if (_Equal_rev_pred_unchecked(_Candidate, _First2, _Last2, _Pred)) {
-                return _Candidate;
-            }
-
-            if (_First1 == _Candidate) {
-                break;
-            }
-        }
-    }
-
-    return _Last1;
-}
-
-template <class _FwdIt1, class _FwdIt2, class _Pr>
-_NODISCARD _FwdIt1 find_end(_FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2, const _FwdIt2 _Last2,
-    _Pr _Pred) { // find last [_First2, _Last2) satisfying _Pred
-    _Adl_verify_range(_First1, _Last1);
-    _Adl_verify_range(_First2, _Last2);
-    _Seek_wrapped(
-        _First1, _Find_end_unchecked(_Get_unwrapped(_First1), _Get_unwrapped(_Last1), _Get_unwrapped(_First2),
-                     _Get_unwrapped(_Last2), _Pass_fn(_Pred), _Iter_cat_t<_FwdIt1>{}, _Iter_cat_t<_FwdIt2>{}));
-
-    return _First1;
-}
-#endif // _HAS_IF_CONSTEXPR
 
 template <class _FwdIt1, class _FwdIt2>
 _NODISCARD _CONSTEXPR20 _FwdIt1 find_end(
@@ -4485,7 +4199,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE unique_copy
-#if _HAS_IF_CONSTEXPR
 // clang-format off
 #ifdef __cpp_lib_concepts
 template <class _InIt, class _OutIt>
@@ -4552,83 +4265,6 @@ _CONSTEXPR20 _OutIt unique_copy(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pr
     _Seek_wrapped(_Dest, _UDest);
     return _Dest;
 }
-
-#else // ^^^ _HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
-template <class _FwdIt, class _OutIt, class _Pr>
-_OutIt _Unique_copy_unchecked(_FwdIt _First, _FwdIt _Last, _OutIt _Dest, _Pr _Pred, true_type, _Any_tag) {
-    // copy compressing pairs satisfying _Pred, forward source iterator
-    // (can reread the source for comparison)
-    if (_First != _Last) {
-        _FwdIt _Firstb = _First;
-
-        *_Dest = *_Firstb;
-        ++_Dest;
-
-        while (++_First != _Last) {
-            if (!_Pred(*_Firstb, *_First)) { // copy unmatched
-                _Firstb = _First;
-                *_Dest  = *_Firstb;
-                ++_Dest;
-            }
-        }
-    }
-
-    return _Dest;
-}
-
-template <class _InIt, class _FwdIt, class _Pr>
-_FwdIt _Unique_copy_unchecked(_InIt _First, _InIt _Last, _FwdIt _Dest, _Pr _Pred, false_type, true_type) {
-    // copy compressing pairs satisfying _Pred, forward dest iterator with matching T
-    // (assignment copies T; can reread dest for comparison)
-    if (_First != _Last) {
-        *_Dest = *_First;
-
-        while (++_First != _Last) {
-            if (!_Pred(*_Dest, *_First)) {
-                *++_Dest = *_First;
-            }
-        }
-
-        ++_Dest;
-    }
-
-    return _Dest;
-}
-
-template <class _InIt, class _OutIt, class _Pr>
-_OutIt _Unique_copy_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pred, false_type, false_type) {
-    // copy compressing pairs satisfying _Pred, otherwise
-    // (can't reread source or dest, construct a temporary)
-    if (_First != _Last) {
-        _Iter_value_t<_InIt> _Val = *_First;
-
-        *_Dest = _Val;
-        ++_Dest;
-
-        while (++_First != _Last) {
-            if (!_Pred(_Val, *_First)) { // copy unmatched
-                _Val   = *_First;
-                *_Dest = _Val;
-                ++_Dest;
-            }
-        }
-    }
-
-    return _Dest;
-}
-
-template <class _InIt, class _OutIt, class _Pr>
-_OutIt unique_copy(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pred) { // copy compressing pairs that match
-    _Adl_verify_range(_First, _Last);
-    _Seek_wrapped(
-        _Dest, _Unique_copy_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Get_unwrapped_unverified(_Dest),
-                   _Pass_fn(_Pred), bool_constant<_Is_fwd_iter_v<_InIt>>{}, // to avoid ambiguity
-                   bool_constant<conjunction_v<bool_constant<_Is_fwd_iter_v<_OutIt>>,
-                       is_same<_Iter_value_t<_InIt>, _Iter_value_t<_OutIt>>>>{}));
-
-    return _Dest;
-}
-#endif // _HAS_IF_CONSTEXPR
 
 template <class _InIt, class _OutIt>
 _CONSTEXPR20 _OutIt unique_copy(_InIt _First, _InIt _Last, _OutIt _Dest) { // copy compressing pairs that match
@@ -4840,7 +4476,7 @@ _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
     auto _ULast        = _Get_unwrapped(_Last);
     auto _UDest        = _Get_unwrapped_n(_Dest, _Idl_distance<_BidIt>(_UFirst, _ULast));
 
-#if _HAS_IF_CONSTEXPR && _USE_STD_VECTOR_ALGORITHMS
+#if _USE_STD_VECTOR_ALGORITHMS
     using _Elem                         = remove_pointer_t<decltype(_UFirst)>;
     using _DestElem                     = remove_pointer_t<decltype(_UDest)>;
     constexpr bool _Allow_vectorization = conjunction_v<is_same<remove_const_t<_Elem>, _DestElem>,
@@ -4868,7 +4504,7 @@ _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
             return _Dest;
         }
     }
-#endif // _HAS_IF_CONSTEXPR && _USE_STD_VECTOR_ALGORITHMS
+#endif // _USE_STD_VECTOR_ALGORITHMS
 
     for (; _UFirst != _ULast; ++_UDest) {
         *_UDest = *--_ULast;
@@ -5629,7 +5265,6 @@ _FwdIt shift_right(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Iter_diff_t<_FwdIt> _P
 #endif // _HAS_CXX20
 
 // FUNCTION TEMPLATE partition
-#if _HAS_IF_CONSTEXPR
 template <class _FwdIt, class _Pr>
 _CONSTEXPR20 _FwdIt partition(_FwdIt _First, const _FwdIt _Last, _Pr _Pred) {
     // move elements satisfying _Pred to beginning of sequence
@@ -5687,70 +5322,6 @@ _CONSTEXPR20 _FwdIt partition(_FwdIt _First, const _FwdIt _Last, _Pr _Pred) {
     _Seek_wrapped(_First, _UFirst);
     return _First;
 }
-#else // ^^^ _HAS_IF_CONSTEXPR ^^^ // vvv !_HAS_IF_CONSTEXPR vvv
-template <class _FwdIt, class _Pr>
-_FwdIt _Partition_unchecked(_FwdIt _First, const _FwdIt _Last, _Pr _Pred, forward_iterator_tag) {
-    // move elements satisfying _Pred to front, forward iterators
-    for (;;) { // skip in-place elements at beginning
-        if (_First == _Last) {
-            return _First;
-        }
-
-        if (!_Pred(*_First)) {
-            break;
-        }
-
-        ++_First;
-    }
-
-    for (_FwdIt _Next = _First; ++_Next != _Last;) {
-        if (_Pred(*_Next)) {
-            _STD iter_swap(_First, _Next); // out of place, swap and loop
-            ++_First;
-        }
-    }
-
-    return _First;
-}
-
-template <class _BidIt, class _Pr>
-_BidIt _Partition_unchecked(_BidIt _First, _BidIt _Last, _Pr _Pred, bidirectional_iterator_tag) {
-    // move elements satisfying _Pred to front, bidirectional iterators
-    for (;;) { // find any out-of-order pair
-        for (;;) { // skip in-place elements at beginning
-            if (_First == _Last) {
-                return _First;
-            }
-
-            if (!_Pred(*_First)) {
-                break;
-            }
-
-            ++_First;
-        }
-
-        do { // skip in-place elements at end
-            --_Last;
-            if (_First == _Last) {
-                return _First;
-            }
-        } while (!_Pred(*_Last));
-
-        _STD iter_swap(_First, _Last); // out of place, swap and loop
-        ++_First;
-    }
-}
-
-template <class _FwdIt, class _Pr>
-_FwdIt partition(_FwdIt _First, const _FwdIt _Last, _Pr _Pred) {
-    // move elements satisfying _Pred to beginning of sequence
-    _Adl_verify_range(_First, _Last);
-    _Seek_wrapped(_First,
-        _Partition_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Pass_fn(_Pred), _Iter_cat_t<_FwdIt>{}));
-
-    return _First;
-}
-#endif // _HAS_IF_CONSTEXPR
 
 #if _HAS_CXX17
 template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
