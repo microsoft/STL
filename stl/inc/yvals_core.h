@@ -371,15 +371,6 @@
 #define _MSVC_KNOWN_SEMANTICS
 #endif
 
-// Controls whether the STL uses "if constexpr" internally in C++14 mode
-#ifndef _HAS_IF_CONSTEXPR
-#ifdef __CUDACC__
-#define _HAS_IF_CONSTEXPR 0
-#else // __CUDACC__
-#define _HAS_IF_CONSTEXPR 1
-#endif // __CUDACC__
-#endif // _HAS_IF_CONSTEXPR
-
 // Controls whether the STL uses "conditional explicit" internally
 #ifndef _HAS_CONDITIONAL_EXPLICIT
 #ifdef __cpp_conditional_explicit
@@ -400,11 +391,11 @@
 #endif // _HAS_EXCEPTIONS
 
 // warning C4984: 'if constexpr' is a C++17 language extension
-#if !_HAS_CXX17 && _HAS_IF_CONSTEXPR
+#if !_HAS_CXX17
 #define _STL_DISABLED_WARNING_C4984 4984
-#else // !_HAS_CXX17 && _HAS_IF_CONSTEXPR
+#else // !_HAS_CXX17
 #define _STL_DISABLED_WARNING_C4984
-#endif // !_HAS_CXX17 && _HAS_IF_CONSTEXPR
+#endif // !_HAS_CXX17
 
 // warning C5053: support for 'explicit(<expr>)' in C++17 and earlier is a vendor extension
 #if !_HAS_CXX20 && _HAS_CONDITIONAL_EXPLICIT
@@ -513,7 +504,13 @@
 #define _MSVC_STL_UPDATE  202012L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
-#ifdef __EDG__
+#ifdef __CUDACC__
+#if __CUDACC_VER_MAJOR__ < 10      \
+    || (__CUDACC_VER_MAJOR__ == 10 \
+        && (__CUDACC_VER_MINOR__ < 1 || (__CUDACC_VER_MINOR__ == 1 && __CUDACC_VER_BUILD__ < 243)))
+#error STL1002: Unexpected compiler version, expected CUDA 10.1 Update 2 or newer.
+#endif // ^^^ old CUDA ^^^
+#elif defined(__EDG__)
 // not attempting to detect __EDG_VERSION__ being less than expected
 #elif defined(__clang__)
 #if __clang_major__ < 11
@@ -643,12 +640,6 @@
 #ifndef _STL_OPTIMIZE_SYSTEM_ERROR_OPERATORS
 #define _STL_OPTIMIZE_SYSTEM_ERROR_OPERATORS 1
 #endif // _STL_OPTIMIZE_SYSTEM_ERROR_OPERATORS
-
-#if _HAS_IF_CONSTEXPR
-#define _CONSTEXPR_IF constexpr
-#else // _HAS_IF_CONSTEXPR
-#define _CONSTEXPR_IF
-#endif // _HAS_IF_CONSTEXPR
 
 #ifdef __cpp_consteval
 #define _CONSTEVAL consteval
