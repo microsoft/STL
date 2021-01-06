@@ -2504,7 +2504,7 @@ public:
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
-        if _CONSTEXPR_IF (!_Alty_traits::is_always_equal::value) {
+        if constexpr (!_Alty_traits::is_always_equal::value) {
             if (_Getal() != _Right._Getal()) {
                 _Construct_lv_contents(_Right);
                 _Proxy._Release();
@@ -2814,7 +2814,7 @@ private:
     void _Copy_assign_val_from_small(const basic_string& _Right) {
         // TRANSITION, VSO-761321; inline into only caller when that's fixed
         _Tidy_deallocate();
-        if _CONSTEXPR_IF (_Can_memcpy_val) {
+        if constexpr (_Can_memcpy_val) {
             _Memcpy_val_from(_Right);
         } else {
             _Traits::copy(
@@ -2980,7 +2980,6 @@ public:
             _Count, _Ch);
     }
 
-#if _HAS_IF_CONSTEXPR
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     basic_string& append(const _Iter _First, const _Iter _Last) { // append [_First, _Last), input iterators
         _Adl_verify_range(_First, _Last);
@@ -2993,25 +2992,6 @@ public:
             return append(_Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
         }
     }
-#else // ^^^ _HAS_IF_CONSTEXPR // !_HAS_IF_CONSTEXPR vvv
-    template <class _Iter>
-    basic_string& _Append_range(const _Iter _UFirst, const _Iter _ULast, true_type) {
-        return append(_UFirst, _Convert_size<size_type>(static_cast<size_t>(_ULast - _UFirst)));
-    }
-
-    template <class _Iter>
-    basic_string& _Append_range(const _Iter _UFirst, const _Iter _ULast, false_type) {
-        const basic_string _Right(_UFirst, _ULast, get_allocator());
-        return append(_Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
-    }
-
-    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
-    basic_string& append(const _Iter _First, const _Iter _Last) { // append [_First, _Last), input iterators {
-        _Adl_verify_range(_First, _Last);
-        const auto _UFirst = _Get_unwrapped(_First);
-        return _Append_range(_UFirst, _Get_unwrapped(_Last), _Is_elem_cptr<decltype(_UFirst)>{});
-    }
-#endif // _HAS_IF_CONSTEXPR
 
     basic_string& assign(const basic_string& _Right) {
         *this = _Right;
@@ -3081,7 +3061,6 @@ public:
             _Ch);
     }
 
-#if _HAS_IF_CONSTEXPR
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     basic_string& assign(const _Iter _First, const _Iter _Last) {
         _Adl_verify_range(_First, _Last);
@@ -3100,31 +3079,6 @@ public:
             }
         }
     }
-#else // ^^^ _HAS_IF_CONSTEXPR // !_HAS_IF_CONSTEXPR vvv
-    template <class _Iter>
-    basic_string& _Assign_range(const _Iter _UFirst, const _Iter _ULast, true_type) {
-        return assign(_UFirst, _Convert_size<size_type>(static_cast<size_t>(_ULast - _UFirst)));
-    }
-
-    template <class _Iter>
-    basic_string& _Assign_range(const _Iter _UFirst, const _Iter _ULast, false_type) {
-        basic_string _Right(_UFirst, _ULast, get_allocator());
-        if (_Mypair._Myval2._Myres < _Right._Mypair._Myval2._Myres) {
-            _Mypair._Myval2._Orphan_all();
-            _Swap_data(_Right, bool_constant<_Can_memcpy_val>{});
-            return *this;
-        } else {
-            return assign(_Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
-        }
-    }
-
-    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
-    basic_string& assign(const _Iter _First, const _Iter _Last) {
-        _Adl_verify_range(_First, _Last);
-        const auto _UFirst = _Get_unwrapped(_First);
-        return _Assign_range(_UFirst, _Get_unwrapped(_Last), _Is_elem_cptr<decltype(_UFirst)>{});
-    }
-#endif // _HAS_IF_CONSTEXPR
 
     basic_string& insert(const size_type _Off, const basic_string& _Right) { // insert _Right at _Off
         return insert(_Off, _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
@@ -3239,7 +3193,6 @@ public:
         return begin() + static_cast<difference_type>(_Off);
     }
 
-#if _HAS_IF_CONSTEXPR
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     iterator insert(const const_iterator _Where, const _Iter _First, const _Iter _Last) {
         // insert [_First, _Last) at _Where, input iterators
@@ -3259,31 +3212,6 @@ public:
 
         return begin() + static_cast<difference_type>(_Off);
     }
-#else // ^^^ _HAS_IF_CONSTEXPR // !_HAS_IF_CONSTEXPR vvv
-    template <class _Iter>
-    void _Insert_range(const size_type _Off, const _Iter _UFirst, const _Iter _ULast, true_type) {
-        insert(_Off, _UFirst, _Convert_size<size_type>(static_cast<size_t>(_ULast - _UFirst)));
-    }
-
-    template <class _Iter>
-    void _Insert_range(const size_type _Off, const _Iter _UFirst, const _Iter _ULast, false_type) {
-        const basic_string _Right(_UFirst, _ULast, get_allocator());
-        insert(_Off, _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
-    }
-
-    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
-    iterator insert(const const_iterator _Where, const _Iter _First, const _Iter _Last) {
-        // insert [_First, _Last) at _Where, input iterators
-#if _ITERATOR_DEBUG_LEVEL != 0
-        _STL_VERIFY(_Where._Getcont() == _STD addressof(_Mypair._Myval2), "string iterator incompatible");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
-        const auto _Off = static_cast<size_type>(_Unfancy(_Where._Ptr) - _Mypair._Myval2._Myptr());
-        _Adl_verify_range(_First, _Last);
-        const auto _UFirst = _Get_unwrapped(_First);
-        _Insert_range(_Off, _UFirst, _Get_unwrapped(_Last), _Is_elem_cptr<decltype(_UFirst)>{});
-        return begin() + static_cast<difference_type>(_Off);
-    }
-#endif // _HAS_IF_CONSTEXPR
 
     basic_string& erase(const size_type _Off = 0) { // erase elements [_Off, ...)
         _Mypair._Myval2._Check_offset(_Off);
@@ -3514,7 +3442,6 @@ public:
             static_cast<size_type>(_Last._Ptr - _First._Ptr), _Count, _Ch);
     }
 
-#if _HAS_IF_CONSTEXPR
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     basic_string& replace(
         const const_iterator _First, const const_iterator _Last, const _Iter _First2, const _Iter _Last2) {
@@ -3535,37 +3462,6 @@ public:
             return replace(_Off, _Length, _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
         }
     }
-#else // ^^^ _HAS_IF_CONSTEXPR // !_HAS_IF_CONSTEXPR vvv
-    template <class _Ptr>
-    basic_string& _Replace_range(
-        const size_type _Off, const size_type _Length, const _Ptr _UFirst2, const _Ptr _ULast2, true_type) {
-        // replace [_First, _Last) with [_First2, _Last2), pointers
-        return replace(_Off, _Length, _UFirst2, _Convert_size<size_type>(static_cast<size_t>(_ULast2 - _UFirst2)));
-    }
-
-    template <class _Iter>
-    basic_string& _Replace_range(
-        const size_type _Off, const size_type _Length, const _Iter _First2, const _Iter _Last2, false_type) {
-        // replace [_First, _Last) with [_First2, _Last2), input iterators
-        const basic_string _Right(_First2, _Last2, get_allocator());
-        return replace(_Off, _Length, _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
-    }
-
-    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
-    basic_string& replace(
-        const const_iterator _First, const const_iterator _Last, const _Iter _First2, const _Iter _Last2) {
-        // replace [_First, _Last) with [_First2, _Last2), input iterators
-        _Adl_verify_range(_First, _Last);
-#if _ITERATOR_DEBUG_LEVEL != 0
-        _STL_VERIFY(_First._Getcont() == _STD addressof(_Mypair._Myval2), "string iterators incompatible");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
-        _Adl_verify_range(_First2, _Last2);
-        const auto _UFirst2 = _Get_unwrapped(_First2);
-        const auto _ULast2 = _Get_unwrapped(_Last2);
-        return _Replace_range(static_cast<size_type>(_Unfancy(_First._Ptr) - _Mypair._Myval2._Myptr()),
-            static_cast<size_type>(_Last._Ptr - _First._Ptr), _UFirst2, _ULast2, _Is_elem_cptr<decltype(_UFirst2)>{});
-    }
-#endif // _HAS_IF_CONSTEXPR
 
     _NODISCARD iterator begin() noexcept {
         return iterator(_Refancy<pointer>(_Mypair._Myval2._Myptr()), _STD addressof(_Mypair._Myval2));
