@@ -93,7 +93,7 @@ namespace Concurrency {
             virtual bool wait_for(stl_critical_section_interface* lock, unsigned int timeout) override {
                 return SleepConditionVariableCS(&m_condition_variable,
                            static_cast<stl_critical_section_vista*>(lock)->native_handle(), timeout)
-                       != 0;
+                    != 0;
             }
 
             virtual void notify_one() override {
@@ -166,7 +166,7 @@ namespace Concurrency {
             virtual bool wait_for(stl_critical_section_interface* lock, unsigned int timeout) override {
                 return SleepConditionVariableSRW(&m_condition_variable,
                            static_cast<stl_critical_section_win7*>(lock)->native_handle(), timeout, 0)
-                       != 0;
+                    != 0;
             }
 
             virtual void notify_one() override {

@@ -269,6 +269,26 @@ void test_ptr_ops() {
     assert(ry.load() == a + 0x10);
 }
 
+// GH-1497 <atomic>: atomic_ref<const T> fails to compile
+void test_gh_1497_const_type() {
+    {
+        static constexpr int ci{1729}; // static storage duration, so this is stored in read-only memory
+        const std::atomic_ref atom{ci};
+        assert(atom.load() == 1729);
+    }
+
+    {
+        int i{11};
+        const std::atomic_ref<int> atom_modify{i};
+        const std::atomic_ref<const int> atom_observe{i};
+        assert(atom_modify.load() == 11);
+        assert(atom_observe.load() == 11);
+        atom_modify.store(22);
+        assert(atom_modify.load() == 22);
+        assert(atom_observe.load() == 22);
+    }
+}
+
 int main() {
     test_ops<false, char>();
     test_ops<false, signed char>();
@@ -319,4 +339,6 @@ int main() {
 
     test_ptr_ops<char*>();
     test_ptr_ops<long*>();
+
+    test_gh_1497_const_type();
 }

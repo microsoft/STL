@@ -264,7 +264,7 @@ _CONSTEXPR20 _OutIt partial_sum(const _InIt _First, const _InIt _Last, _OutIt _D
 #if _HAS_CXX20
             _Val = _Reduce_op(_STD move(_Val), *_UFirst);
 #else // ^^^ _HAS_CXX20 ^^^ // vvv !_HAS_CXX20 vvv
-            _Val      = _Reduce_op(_Val, *_UFirst);
+            _Val = _Reduce_op(_Val, *_UFirst);
 #endif // _HAS_CXX20
         }
     }

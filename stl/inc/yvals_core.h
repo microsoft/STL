@@ -351,6 +351,14 @@
 // _HAS_NODISCARD (in vcruntime.h) controls:
 // [[nodiscard]] attributes on STL functions
 
+#ifndef __has_cpp_attribute
+#define _NODISCARD_CTOR
+#elif __has_cpp_attribute(nodiscard) >= 201907L
+#define _NODISCARD_CTOR _NODISCARD
+#else
+#define _NODISCARD_CTOR
+#endif
+
 // Determine if we should use [[msvc::known_semantics]] to communicate to the compiler
 // that certain type trait specializations have the standard-mandated semantics
 #ifndef __has_cpp_attribute
@@ -362,15 +370,6 @@
 #else
 #define _MSVC_KNOWN_SEMANTICS
 #endif
-
-// Controls whether the STL uses "if constexpr" internally in C++14 mode
-#ifndef _HAS_IF_CONSTEXPR
-#ifdef __CUDACC__
-#define _HAS_IF_CONSTEXPR 0
-#else // __CUDACC__
-#define _HAS_IF_CONSTEXPR 1
-#endif // __CUDACC__
-#endif // _HAS_IF_CONSTEXPR
 
 // Controls whether the STL uses "conditional explicit" internally
 #ifndef _HAS_CONDITIONAL_EXPLICIT
@@ -392,11 +391,11 @@
 #endif // _HAS_EXCEPTIONS
 
 // warning C4984: 'if constexpr' is a C++17 language extension
-#if !_HAS_CXX17 && _HAS_IF_CONSTEXPR
+#if !_HAS_CXX17
 #define _STL_DISABLED_WARNING_C4984 4984
-#else // !_HAS_CXX17 && _HAS_IF_CONSTEXPR
+#else // !_HAS_CXX17
 #define _STL_DISABLED_WARNING_C4984
-#endif // !_HAS_CXX17 && _HAS_IF_CONSTEXPR
+#endif // !_HAS_CXX17
 
 // warning C5053: support for 'explicit(<expr>)' in C++17 and earlier is a vendor extension
 #if !_HAS_CXX20 && _HAS_CONDITIONAL_EXPLICIT
@@ -502,14 +501,20 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 142
-#define _MSVC_STL_UPDATE  202011L
+#define _MSVC_STL_UPDATE  202101L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
-#ifdef __EDG__
+#ifdef __CUDACC__
+#if __CUDACC_VER_MAJOR__ < 10      \
+    || (__CUDACC_VER_MAJOR__ == 10 \
+        && (__CUDACC_VER_MINOR__ < 1 || (__CUDACC_VER_MINOR__ == 1 && __CUDACC_VER_BUILD__ < 243)))
+#error STL1002: Unexpected compiler version, expected CUDA 10.1 Update 2 or newer.
+#endif // ^^^ old CUDA ^^^
+#elif defined(__EDG__)
 // not attempting to detect __EDG_VERSION__ being less than expected
 #elif defined(__clang__)
-#if __clang_major__ < 10
-#error STL1000: Unexpected compiler version, expected Clang 10.0.0 or newer.
+#if __clang_major__ < 11
+#error STL1000: Unexpected compiler version, expected Clang 11.0.0 or newer.
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
 #if _MSC_VER < 1928 // Coarse-grained, not inspecting _MSC_FULL_VER
@@ -636,12 +641,6 @@
 #define _STL_OPTIMIZE_SYSTEM_ERROR_OPERATORS 1
 #endif // _STL_OPTIMIZE_SYSTEM_ERROR_OPERATORS
 
-#if _HAS_IF_CONSTEXPR
-#define _CONSTEXPR_IF constexpr
-#else // _HAS_IF_CONSTEXPR
-#define _CONSTEXPR_IF
-#endif // _HAS_IF_CONSTEXPR
-
 #ifdef __cpp_consteval
 #define _CONSTEVAL consteval
 #else // ^^^ supports consteval / no consteval vvv
@@ -653,7 +652,7 @@
 #ifndef _STD_VECTORIZE_WITH_FLOAT_CONTROL
 #ifdef _M_FP_EXCEPT
 #define _STD_VECTORIZE_WITH_FLOAT_CONTROL 0
-#else // ^^^ floating point exceptions enabled / floating point exceptions disabled (default) vvv
+#else // ^^^ floating-point exceptions enabled / floating-point exceptions disabled (default) vvv
 #define _STD_VECTORIZE_WITH_FLOAT_CONTROL 1
 #endif // _M_FP_EXCEPT
 #endif // _STD_VECTORIZE_WITH_FLOAT_CONTROL
@@ -878,7 +877,7 @@
     [[deprecated("warning STL4021: "                                                                                 \
                  "The std::filesystem::u8path() overloads are deprecated in C++20. "                                 \
                  "The constructors of std::filesystem::path provide equivalent functionality via construction from " \
-                 "u8string, u8string_view, or iterators with value_type char8_t."                                    \
+                 "u8string, u8string_view, or iterators with value_type char8_t. "                                   \
                  "You can define _SILENCE_CXX20_U8PATH_DEPRECATION_WARNING "                                         \
                  "or _SILENCE_ALL_CXX20_DEPRECATION_WARNINGS to acknowledge that you have received this warning.")]]
 #else // ^^^ warning enabled / warning disabled vvv
@@ -1007,7 +1006,19 @@
 #define _CXX20_DEPRECATE_MOVE_ITERATOR_ARROW
 #endif // ^^^ warning disabled ^^^
 
-// next warning number: STL4032
+#if _HAS_CXX17 && !defined(_SILENCE_CXX17_POLYMORPHIC_ALLOCATOR_DESTROY_DEPRECATION_WARNING) \
+    && !defined(_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS)
+#define _CXX17_DEPRECATE_POLYMORPHIC_ALLOCATOR_DESTROY                                                   \
+    [[deprecated("warning STL4032: "                                                                     \
+                 "std::pmr::polymorphic_allocator::destroy() is deprecated in C++17 by LWG-3036. "       \
+                 "Prefer std::destroy_at() or std::allocator_traits<polymorphic_allocator>::destroy(). " \
+                 "You can define _SILENCE_CXX17_POLYMORPHIC_ALLOCATOR_DESTROY_DEPRECATION_WARNING "      \
+                 "or _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS to acknowledge that you have received this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _CXX17_DEPRECATE_POLYMORPHIC_ALLOCATOR_DESTROY
+#endif // ^^^ warning disabled ^^^
+
+// next warning number: STL4033
 
 // P0619R4 Removing C++17-Deprecated Features
 #ifndef _HAS_FEATURES_REMOVED_IN_CXX20
