@@ -5024,12 +5024,9 @@ _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked1(_InIt _First, const _InIt _Last, 
     const auto _First_ptr = _To_address(_First);
     const auto _Result    = static_cast<remove_reference_t<_Iter_ref_t<_InIt>>*>(
         _CSTD memchr(_First_ptr, static_cast<unsigned char>(_Val), static_cast<size_t>(_Last - _First)));
-#if _HAS_IF_CONSTEXPR
     if constexpr (is_pointer_v<_InIt>) {
         return _Result ? _Result : _Last;
-    } else
-#endif // _HAS_IF_CONSTEXPR
-    {
+    } else {
         return _Result ? _First + (_Result - _First_ptr) : _Last;
     }
 }
