@@ -287,8 +287,8 @@ struct nontrivial_A {
 
 constexpr void test_compiletime_destroy_variants() {
     {
-        auto alloc = allocator<A<int>>{};
-        A<int>* a  = alloc.allocate(10);
+        allocator<A<int>> alloc{};
+        A<int>* a = alloc.allocate(10);
         for (int i = 0; i < 10; ++i) {
             construct_at(a + i);
         }
@@ -296,7 +296,7 @@ constexpr void test_compiletime_destroy_variants() {
         alloc.deallocate(a, 10);
     }
     {
-        auto alloc           = allocator<nontrivial_A<int>>{};
+        allocator<nontrivial_A<int>> alloc{};
         nontrivial_A<int>* a = alloc.allocate(10);
         for (int i = 0; i < 10; ++i) {
             construct_at(a + i);
@@ -306,8 +306,8 @@ constexpr void test_compiletime_destroy_variants() {
     }
 #ifdef __cpp_lib_concepts
     {
-        auto alloc = allocator<A<int>>{};
-        A<int>* a  = alloc.allocate(10);
+        allocator<A<int>> alloc{};
+        A<int>* a = alloc.allocate(10);
         for (int i = 0; i < 10; ++i) {
             ranges::construct_at(a + i);
         }
@@ -315,7 +315,7 @@ constexpr void test_compiletime_destroy_variants() {
         alloc.deallocate(a, 10);
     }
     {
-        auto alloc           = allocator<nontrivial_A<int>>{};
+        allocator<nontrivial_A<int>> alloc{};
         nontrivial_A<int>* a = alloc.allocate(10);
         for (int i = 0; i < 10; ++i) {
             ranges::construct_at(a + i);
@@ -324,8 +324,8 @@ constexpr void test_compiletime_destroy_variants() {
         alloc.deallocate(a, 10);
     }
     {
-        auto alloc = allocator<A<int>>{};
-        A<int>* a  = alloc.allocate(10);
+        allocator<A<int>> alloc{};
+        A<int>* a = alloc.allocate(10);
         for (int i = 0; i < 10; ++i) {
             ranges::construct_at(a + i);
         }
@@ -334,7 +334,7 @@ constexpr void test_compiletime_destroy_variants() {
         alloc.deallocate(a, 10);
     }
     {
-        auto alloc           = allocator<nontrivial_A<int>>{};
+        allocator<nontrivial_A<int>> alloc{};
         nontrivial_A<int>* a = alloc.allocate(10);
         for (int i = 0; i < 10; ++i) {
             ranges::construct_at(a + i);
@@ -345,8 +345,8 @@ constexpr void test_compiletime_destroy_variants() {
     }
 #endif // __cpp_lib_concepts
     {
-        auto alloc = allocator<A<int>>{};
-        A<int>* a  = alloc.allocate(10);
+        allocator<A<int>> alloc{};
+        A<int>* a = alloc.allocate(10);
         for (int i = 0; i < 10; ++i) {
             construct_at(a + i);
         }
@@ -354,7 +354,7 @@ constexpr void test_compiletime_destroy_variants() {
         alloc.deallocate(a, 10);
     }
     {
-        auto alloc           = allocator<nontrivial_A<int>>{};
+        allocator<nontrivial_A<int>> alloc{};
         nontrivial_A<int>* a = alloc.allocate(10);
         for (int i = 0; i < 10; ++i) {
             construct_at(a + i);
@@ -364,8 +364,8 @@ constexpr void test_compiletime_destroy_variants() {
     }
 #ifdef __cpp_lib_concepts
     {
-        auto alloc = allocator<A<int>>{};
-        A<int>* a  = alloc.allocate(10);
+        allocator<A<int>> alloc{};
+        A<int>* a = alloc.allocate(10);
         for (int i = 0; i < 10; ++i) {
             ranges::construct_at(a + i);
         }
@@ -373,7 +373,7 @@ constexpr void test_compiletime_destroy_variants() {
         alloc.deallocate(a, 10);
     }
     {
-        auto alloc           = allocator<nontrivial_A<int>>{};
+        allocator<nontrivial_A<int>> alloc{};
         nontrivial_A<int>* a = alloc.allocate(10);
         for (int i = 0; i < 10; ++i) {
             ranges::construct_at(a + i);
@@ -513,8 +513,8 @@ static_assert((test_compiletime_allocator(), true));
 
 constexpr void test_compiletime_operators() {
     {
-        auto allocatorA           = allocator<int>{};
-        auto allocatorB           = allocator<float>{};
+        allocator<int> allocatorA{};
+        allocator<float> allocatorB{};
         constexpr auto allocatorC = allocatorA;
 
         static_assert(allocatorA == allocatorB);
