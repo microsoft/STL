@@ -3281,6 +3281,15 @@ void test_remove() {
     EXPECT(!exists(filename, ec));
     EXPECT(good(ec));
 
+    create_file_containing(filename, L"hello");
+    permissions(filename, perms::owner_write | perms::group_write | perms::others_write, perm_options::remove);
+
+    // remove a read-only file also
+    EXPECT(remove(filename, ec));
+    EXPECT(good(ec));
+    EXPECT(!exists(filename, ec));
+    EXPECT(good(ec));
+
     EXPECT(remove(dirname, ec));
     EXPECT(good(ec));
     EXPECT(!exists(dirname, ec));
