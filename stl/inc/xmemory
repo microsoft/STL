@@ -73,27 +73,18 @@ _INLINE_VAR constexpr size_t _New_alignof = (_STD max)(alignof(_Ty),
 
 // STRUCT _Default_allocate_traits
 struct _Default_allocate_traits {
-    __declspec(allocator) static
-#ifdef __clang__ // TRANSITION, MSVC support for constexpr dynamic allocation
-        _CONSTEXPR20_DYNALLOC
-#endif // __clang__
-        void* _Allocate(const size_t _Bytes) {
+    __declspec(allocator) static _CONSTEXPR20_DYNALLOC void* _Allocate(const size_t _Bytes) {
         return ::operator new(_Bytes);
     }
 
 #ifdef __cpp_aligned_new
-    __declspec(allocator) static
-#ifdef __clang__ // TRANSITION, MSVC support for constexpr dynamic allocation
-        _CONSTEXPR20_DYNALLOC
-#endif // __clang__
+    __declspec(allocator) static _CONSTEXPR20_DYNALLOC
         void* _Allocate_aligned(const size_t _Bytes, const size_t _Align) {
-#ifdef __clang__ // TRANSITION, MSVC support for constexpr dynamic allocation
 #ifdef __cpp_lib_constexpr_dynamic_alloc
         if (_STD is_constant_evaluated()) {
             return ::operator new(_Bytes);
         } else
 #endif // __cpp_lib_constexpr_dynamic_alloc
-#endif // __clang__
         {
             return ::operator new (_Bytes, align_val_t{_Align});
         }

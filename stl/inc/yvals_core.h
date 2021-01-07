@@ -1183,9 +1183,9 @@
 #define __cpp_lib_constexpr_complex    201711L
 
 #if defined(__cpp_constexpr_dynamic_alloc) \
-    && (defined(__clang__) || defined(__EDG__)) // TRANSITION, MSVC support for constexpr dynamic allocation
+    && defined(__clang__) // TRANSITION, MSVC support for constexpr dynamic allocation
 #define __cpp_lib_constexpr_dynamic_alloc 201907L
-#endif // defined(__cpp_constexpr_dynamic_alloc) && (defined(__clang__) || defined(__EDG__))
+#endif // defined(__cpp_constexpr_dynamic_alloc) && defined(__clang__)
 
 #define __cpp_lib_constexpr_functional  201907L
 #define __cpp_lib_constexpr_iterator    201811L
