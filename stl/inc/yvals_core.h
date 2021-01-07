@@ -166,7 +166,7 @@
 // P0758R1 is_nothrow_convertible
 // P0768R1 Library Support For The Spaceship Comparison Operator <=>
 // P0769R2 shift_left(), shift_right()
-// P0784R7 More constexpr containers
+// P0784R7 Library Support For More constexpr Containers
 // P0811R3 midpoint(), lerp()
 // P0879R0 constexpr For Swapping Functions
 // P0887R1 type_identity
@@ -550,14 +550,6 @@
 #else // ^^^ constexpr in C++20 and later / inline (not constexpr) in C++17 and earlier vvv
 #define _CONSTEXPR20 inline
 #endif // ^^^ inline (not constexpr) in C++17 and earlier ^^^
-
-// Functions that became constexpr in C++20 via P0784R7
-#if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc) \
-    && (defined(__clang__) || defined(__EDG__)) // TRANSITION, MSVC support for constexpr dynamic allocation
-#define _CONSTEXPR20_DYNALLOC constexpr
-#else
-#define _CONSTEXPR20_DYNALLOC inline
-#endif
 
 // P0607R0 Inline Variables For The STL
 #if _HAS_CXX17
@@ -1262,6 +1254,13 @@
 // EXPERIMENTAL
 #define __cpp_lib_experimental_erase_if   201411L
 #define __cpp_lib_experimental_filesystem 201406L
+
+// Functions that became constexpr in C++20 via P0784R7
+#ifdef __cpp_lib_constexpr_dynamic_alloc
+#define _CONSTEXPR20_DYNALLOC constexpr
+#else
+#define _CONSTEXPR20_DYNALLOC inline
+#endif
 
 #ifdef _RTC_CONVERSION_CHECKS_ENABLED
 #ifndef _ALLOW_RTCc_IN_STL

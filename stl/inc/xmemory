@@ -73,18 +73,20 @@ _INLINE_VAR constexpr size_t _New_alignof = (_STD max)(alignof(_Ty),
 
 // STRUCT _Default_allocate_traits
 struct _Default_allocate_traits {
+    __declspec(allocator) static
 #ifdef __clang__ // TRANSITION, MSVC support for constexpr dynamic allocation
-    _CONSTEXPR20_DYNALLOC
+        _CONSTEXPR20_DYNALLOC
 #endif // __clang__
-    __declspec(allocator) static void* _Allocate(const size_t _Bytes) {
+        void* _Allocate(const size_t _Bytes) {
         return ::operator new(_Bytes);
     }
 
 #ifdef __cpp_aligned_new
+    __declspec(allocator) static
 #ifdef __clang__ // TRANSITION, MSVC support for constexpr dynamic allocation
-    _CONSTEXPR20_DYNALLOC
+        _CONSTEXPR20_DYNALLOC
 #endif // __clang__
-    __declspec(allocator) static void* _Allocate_aligned(const size_t _Bytes, const size_t _Align) {
+        void* _Allocate_aligned(const size_t _Bytes, const size_t _Align) {
 #ifdef __clang__ // TRANSITION, MSVC support for constexpr dynamic allocation
 #ifdef __cpp_lib_constexpr_dynamic_alloc
         if (_STD is_constant_evaluated()) {
@@ -604,7 +606,6 @@ struct _Normal_allocator_traits { // defines traits for allocators
     template <class _Ty>
     static _CONSTEXPR20_DYNALLOC void destroy(_Alloc& _Al, _Ty* _Ptr) {
         if constexpr (_Uses_default_destroy<_Alloc, _Ty*>::value) {
-            (void) _Al;
 #ifdef __cpp_lib_constexpr_dynamic_alloc
             _STD destroy_at(_Ptr);
 #else // __cpp_lib_constexpr_dynamic_alloc
@@ -689,7 +690,7 @@ struct _Default_allocator_traits { // traits for std::allocator
         // no overflow check on the following multiply; we assume _Allocate did that check
 #ifdef __cpp_lib_constexpr_dynamic_alloc // TRANSITION, GH-1532
         if (_STD is_constant_evaluated()) {
-            return _Al.deallocate(_Ptr, _Count);
+            _Al.deallocate(_Ptr, _Count);
         } else
 #endif // __cpp_lib_constexpr_dynamic_alloc
         {
@@ -714,7 +715,7 @@ struct _Default_allocator_traits { // traits for std::allocator
     static _CONSTEXPR20_DYNALLOC void destroy(_Alloc&, _Uty* const _Ptr) {
 #ifdef __cpp_lib_constexpr_dynamic_alloc
         _STD destroy_at(_Ptr);
-#else
+#else // __cpp_lib_constexpr_dynamic_alloc
         _Ptr->~_Uty();
 #endif // __cpp_lib_constexpr_dynamic_alloc
     }

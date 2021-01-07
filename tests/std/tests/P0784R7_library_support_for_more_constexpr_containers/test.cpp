@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <assert.h>
+#include <limits>
 #include <memory>
 #include <span>
 #include <stddef.h>
@@ -389,7 +390,15 @@ struct Alloc {
     using value_type = T;
     using size_type  = size_t;
 
+    template <class U>
+    struct rebind {
+        using other = Alloc<U, Construct, Destroy>;
+    };
+
     constexpr Alloc(int id_) noexcept : id(id_) {}
+
+    template <class U>
+    constexpr Alloc(const Alloc<U, Construct, Destroy>& al) noexcept : id(al.id) {}
 
     constexpr value_type* allocate(size_t n) {
         assert(n == 10);
@@ -413,8 +422,13 @@ struct Alloc {
         return Alloc{id + 1};
     }
 
-    constexpr size_type max_size() noexcept {
+    constexpr size_type max_size() const noexcept {
         return numeric_limits<size_type>::max() / sizeof(value_type);
+    }
+
+    template <class U>
+    constexpr bool operator==(const Alloc<U, Construct, Destroy>&) const noexcept {
+        return true;
     }
 
     int id;
