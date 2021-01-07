@@ -328,7 +328,7 @@ constexpr void test_compiletime_destroy_variants() {
         for (int i = 0; i < 10; ++i) {
             ranges::construct_at(a + i);
         }
-        std::span s{a, 10};
+        span s{a, 10};
         ranges::destroy(s);
         alloc.deallocate(a, 10);
     }
@@ -338,7 +338,7 @@ constexpr void test_compiletime_destroy_variants() {
         for (int i = 0; i < 10; ++i) {
             ranges::construct_at(a + i);
         }
-        std::span s{a, 10};
+        span s{a, 10};
         ranges::destroy(s);
         alloc.deallocate(a, 10);
     }
@@ -363,7 +363,7 @@ constexpr void test_compiletime_destroy_variants() {
     }
 #ifdef __cpp_lib_concepts
     {
-        auto alloc = std::allocator<A<int>>{};
+        auto alloc = allocator<A<int>>{};
         A<int>* a  = alloc.allocate(10);
         for (int i = 0; i < 10; ++i) {
             ranges::construct_at(a + i);
@@ -372,7 +372,7 @@ constexpr void test_compiletime_destroy_variants() {
         alloc.deallocate(a, 10);
     }
     {
-        auto alloc           = std::allocator<nontrivial_A<int>>{};
+        auto alloc           = allocator<nontrivial_A<int>>{};
         nontrivial_A<int>* a = alloc.allocate(10);
         for (int i = 0; i < 10; ++i) {
             ranges::construct_at(a + i);
@@ -387,7 +387,7 @@ static_assert((test_compiletime_destroy_variants(), true));
 template <class T, bool Construct = false, bool Destroy = false>
 struct Alloc {
     using value_type = T;
-    using size_type  = std::size_t;
+    using size_type  = size_t;
 
     constexpr Alloc(int id_) noexcept : id(id_) {}
 
@@ -414,7 +414,7 @@ struct Alloc {
     }
 
     constexpr size_type max_size() noexcept {
-        return std::numeric_limits<size_type>::max() / sizeof(value_type);
+        return numeric_limits<size_type>::max() / sizeof(value_type);
     }
 
     int id;
@@ -426,81 +426,81 @@ constexpr void test_compiletime_allocator_traits() {
         Alloc<A<int>> alloc{10};
         assert(alloc.id == 10);
 
-        auto result = std::allocator_traits<Alloc<A<int>>>::allocate(alloc, 10);
+        auto result = allocator_traits<Alloc<A<int>>>::allocate(alloc, 10);
         assert(result != nullptr);
-        std::allocator_traits<Alloc<A<int>>>::deallocate(alloc, result, 10);
+        allocator_traits<Alloc<A<int>>>::deallocate(alloc, result, 10);
 
-        std::allocator_traits<Alloc<A<int>>>::construct(alloc, &a.object);
+        allocator_traits<Alloc<A<int>>>::construct(alloc, &a.object);
         assert(a.object.value == 0);
-        std::allocator_traits<Alloc<A<int>>>::destroy(alloc, &a.object);
+        allocator_traits<Alloc<A<int>>>::destroy(alloc, &a.object);
 
-        assert(std::allocator_traits<Alloc<A<int>>>::select_on_container_copy_construction(alloc).id == 11);
+        assert(allocator_traits<Alloc<A<int>>>::select_on_container_copy_construction(alloc).id == 11);
 
-        assert(std::allocator_traits<Alloc<A<int>>>::max_size(alloc)
-               == std::numeric_limits<Alloc<A<int>>::size_type>::max() / sizeof(Alloc<A<int>>::value_type));
+        assert(allocator_traits<Alloc<A<int>>>::max_size(alloc)
+               == numeric_limits<Alloc<A<int>>::size_type>::max() / sizeof(Alloc<A<int>>::value_type));
     }
     {
         storage_for<nontrivial_A<int>> a;
         Alloc<nontrivial_A<int>> alloc{10};
         assert(alloc.id == 10);
 
-        auto result = std::allocator_traits<Alloc<nontrivial_A<int>>>::allocate(alloc, 10);
+        auto result = allocator_traits<Alloc<nontrivial_A<int>>>::allocate(alloc, 10);
         assert(result != nullptr);
-        std::allocator_traits<Alloc<nontrivial_A<int>>>::deallocate(alloc, result, 10);
+        allocator_traits<Alloc<nontrivial_A<int>>>::deallocate(alloc, result, 10);
 
-        std::allocator_traits<Alloc<nontrivial_A<int>>>::construct(alloc, &a.object, 10);
+        allocator_traits<Alloc<nontrivial_A<int>>>::construct(alloc, &a.object, 10);
         assert(a.object.value == 10);
-        std::allocator_traits<Alloc<nontrivial_A<int>>>::destroy(alloc, &a.object);
+        allocator_traits<Alloc<nontrivial_A<int>>>::destroy(alloc, &a.object);
 
-        assert(std::allocator_traits<Alloc<nontrivial_A<int>>>::select_on_container_copy_construction(alloc).id == 11);
+        assert(allocator_traits<Alloc<nontrivial_A<int>>>::select_on_container_copy_construction(alloc).id == 11);
 
-        assert(std::allocator_traits<Alloc<nontrivial_A<int>>>::max_size(alloc)
-               == std::numeric_limits<Alloc<nontrivial_A<int>>::size_type>::max()
+        assert(allocator_traits<Alloc<nontrivial_A<int>>>::max_size(alloc)
+               == numeric_limits<Alloc<nontrivial_A<int>>::size_type>::max()
                       / sizeof(Alloc<nontrivial_A<int>>::value_type));
     }
     {
         storage_for<nontrivial_A<int>> a;
         Alloc<nontrivial_A<int>, true> alloc{10};
 
-        std::allocator_traits<Alloc<nontrivial_A<int>, true>>::construct(alloc, &a.object, 10);
+        allocator_traits<Alloc<nontrivial_A<int>, true>>::construct(alloc, &a.object, 10);
         assert(a.object.value == 10);
-        std::allocator_traits<Alloc<nontrivial_A<int>, true>>::destroy(alloc, &a.object);
+        allocator_traits<Alloc<nontrivial_A<int>, true>>::destroy(alloc, &a.object);
     }
     {
         storage_for<nontrivial_A<int>> a;
         Alloc<nontrivial_A<int>, false, true> alloc{10};
 
-        std::allocator_traits<Alloc<nontrivial_A<int>, false, true>>::construct(alloc, &a.object, 10);
+        allocator_traits<Alloc<nontrivial_A<int>, false, true>>::construct(alloc, &a.object, 10);
         assert(a.object.value == 10);
-        std::allocator_traits<Alloc<nontrivial_A<int>, false, true>>::destroy(alloc, &a.object);
+        allocator_traits<Alloc<nontrivial_A<int>, false, true>>::destroy(alloc, &a.object);
     }
     {
         storage_for<nontrivial_A<int>> a;
         Alloc<nontrivial_A<int>, true, true> alloc{10};
 
-        std::allocator_traits<Alloc<nontrivial_A<int>, true, true>>::construct(alloc, &a.object, 10);
+        allocator_traits<Alloc<nontrivial_A<int>, true, true>>::construct(alloc, &a.object, 10);
         assert(a.object.value == 10);
-        std::allocator_traits<Alloc<nontrivial_A<int>, true, true>>::destroy(alloc, &a.object);
+        allocator_traits<Alloc<nontrivial_A<int>, true, true>>::destroy(alloc, &a.object);
     }
 }
 static_assert((test_compiletime_allocator_traits(), true));
 
 constexpr void test_compiletime_allocator() {
     {
-        auto result = std::allocator<A<int>>{}.allocate(10);
-        std::allocator<A<int>>{}.deallocate(result, 10);
+        auto result = allocator<A<int>>{}.allocate(10);
+        allocator<A<int>>{}.deallocate(result, 10);
     }
     {
-        auto result = std::allocator<nontrivial_A<int>>{}.allocate(10);
-        std::allocator<nontrivial_A<int>>{}.deallocate(result, 10);
+        auto result = allocator<nontrivial_A<int>>{}.allocate(10);
+        allocator<nontrivial_A<int>>{}.deallocate(result, 10);
     }
 }
 static_assert((test_compiletime_allocator(), true));
 
 constexpr void test_compiletime_operators() {
     {
-        auto allocatorA           = std::allocator<int>{};
-        auto allocatorB           = std::allocator<float>{};
+        auto allocatorA           = allocator<int>{};
+        auto allocatorB           = allocator<float>{};
         constexpr auto allocatorC = allocatorA;
 
         static_assert(allocatorA == allocatorB);
