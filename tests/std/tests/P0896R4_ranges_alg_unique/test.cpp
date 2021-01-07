@@ -58,6 +58,15 @@ struct instantiator {
             assert(equal(expected, span{input}.first<4>()));
             assert(comparisonCounter == size(input) - 1);
         }
+
+        { // Validate already unique output returns empty subrange
+            P input[4] = {{0, 99}, {1, 47}, {3, 99}, {4, 47}};
+            ReadWrite wrapped_input{input};
+
+            auto result = unique(wrapped_input, countedEq, get_second);
+            STATIC_ASSERT(same_as<decltype(result), subrange<iterator_t<ReadWrite>>>);
+            assert(result.empty());
+        }
     }
 };
 
