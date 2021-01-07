@@ -858,8 +858,11 @@ protected:
 
         for (_Num = 16;; _Num *= 2) { // convert into ever larger string buffer until success
             _Str.append(_Num, '\0');
-            if (0 < (_Count = _Wcsftime(&_Str[0], _Str.size(), _Fmt, _Pt, _Tnames._Getptr()))) {
+            _Count = _Wcsftime(&_Str[0], _Str.size(), _Fmt, _Pt, _Tnames._Getptr());
+            if (0 < _Count) {
                 break;
+            } else if (0 == _Count) {
+                return _OutIt();
             }
         }
         return _STD copy(&_Str[1], &_Str[_Count], _Dest);
