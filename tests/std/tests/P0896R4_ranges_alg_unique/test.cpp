@@ -45,7 +45,7 @@ struct instantiator {
             assert(comparisonCounter == size(input) - 1);
         }
 
-        { // Validate already unique output returns empty subrange
+        { // Validate already unique range returns empty subrange
             P input[4] = {{0, 99}, {1, 47}, {3, 99}, {4, 47}};
             ReadWrite wrapped_input{input};
 
@@ -68,7 +68,7 @@ struct instantiator {
             assert(comparisonCounter == size(input) - 1);
         }
 
-        { // Validate already unique output returns empty subrange
+        { // Validate already unique range returns empty subrange
             P input[4] = {{0, 99}, {1, 47}, {3, 99}, {4, 47}};
             ReadWrite wrapped_input{input};
 
