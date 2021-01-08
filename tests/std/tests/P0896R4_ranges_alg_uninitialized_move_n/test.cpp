@@ -67,39 +67,76 @@ struct holder {
     }
 };
 
-template <class R>
-void not_ranges_destroy(R&& r) { // TRANSITION, ranges::destroy
-    for (auto& e : r) {
-        destroy_at(&e);
-    }
-}
-
 struct instantiator {
-    static constexpr int expected_output[] = {13, 55, 12345};
-    static constexpr int expected_input[]  = {-1, -1, -1};
+    static constexpr int expected_output[]      = {13, 55, 12345};
+    static constexpr int expected_output_long[] = {13, 55, 12345, -1};
+    static constexpr int expected_input[]       = {-1, -1, -1};
+    static constexpr int expected_input_long[]  = {-1, -1, -1, 42};
 
     template <ranges::input_range Read, ranges::forward_range Write>
     static void call() {
-        using ranges::uninitialized_move_n, ranges::uninitialized_move_n_result, ranges::equal, ranges::equal_to,
-            ranges::iterator_t;
+        using ranges::destroy, ranges::uninitialized_move_n, ranges::uninitialized_move_n_result, ranges::equal,
+            ranges::equal_to, ranges::iterator_t;
+        { // Validate matching ranges
+            int_wrapper input[3] = {13, 55, 12345};
+            Read wrapped_input{input};
+            holder<int_wrapper, 3> mem;
+            Write wrapped_output{mem.as_span()};
 
-        int_wrapper input[3] = {13, 55, 12345};
-        Read wrapped_input{input};
-        holder<int_wrapper, 3> mem;
-        Write wrapped_output{mem.as_span()};
+            int_wrapper::clear_counts();
+            const same_as<uninitialized_move_n_result<iterator_t<Read>, iterator_t<Write>>> auto result =
+                uninitialized_move_n(wrapped_input.begin(), 3, wrapped_output.begin(), wrapped_output.end());
+            assert(int_wrapper::constructions == 3);
+            assert(int_wrapper::destructions == 0);
+            assert(result.in == wrapped_input.end());
+            assert(result.out == wrapped_output.end());
+            assert(equal(wrapped_output, expected_output, equal_to{}, &int_wrapper::val));
+            assert(equal(input, expected_input, equal_to{}, &int_wrapper::val));
+            destroy(wrapped_output);
+            assert(int_wrapper::constructions == 3);
+            assert(int_wrapper::destructions == 3);
+        }
 
-        int_wrapper::clear_counts();
-        const same_as<uninitialized_move_n_result<iterator_t<Read>, iterator_t<Write>>> auto result =
-            uninitialized_move_n(wrapped_input.begin(), 3, wrapped_output.begin(), wrapped_output.end());
-        assert(int_wrapper::constructions == 3);
-        assert(int_wrapper::destructions == 0);
-        assert(result.in == wrapped_input.end());
-        assert(result.out == wrapped_output.end());
-        assert(equal(wrapped_output, expected_output, equal_to{}, &int_wrapper::val));
-        assert(equal(input, expected_input, equal_to{}, &int_wrapper::val));
-        not_ranges_destroy(wrapped_output);
-        assert(int_wrapper::constructions == 3);
-        assert(int_wrapper::destructions == 3);
+        { // Validate shorter output
+            int_wrapper input[4] = {13, 55, 12345, 42};
+            Read wrapped_input{input};
+            holder<int_wrapper, 3> mem;
+            Write wrapped_output{mem.as_span()};
+
+            int_wrapper::clear_counts();
+            same_as<uninitialized_move_n_result<iterator_t<Read>, iterator_t<Write>>> auto result =
+                uninitialized_move_n(wrapped_input.begin(), 3, wrapped_output.begin(), wrapped_output.end());
+            assert(int_wrapper::constructions == 3);
+            assert(int_wrapper::destructions == 0);
+            assert(++result.in == wrapped_input.end());
+            assert(result.out == wrapped_output.end());
+            assert(equal(wrapped_output, expected_output, equal_to{}, &int_wrapper::val));
+            assert(equal(input, expected_input_long, equal_to{}, &int_wrapper::val));
+            destroy(wrapped_output);
+            assert(int_wrapper::constructions == 3);
+            assert(int_wrapper::destructions == 3);
+        }
+
+        { // Validate shorter input
+            int_wrapper input[3] = {13, 55, 12345};
+            Read wrapped_input{input};
+            holder<int_wrapper, 4> mem;
+            Write wrapped_output{mem.as_span()};
+
+            int_wrapper::clear_counts();
+            same_as<uninitialized_move_n_result<iterator_t<Read>, iterator_t<Write>>> auto result =
+                uninitialized_move_n(wrapped_input.begin(), 3, wrapped_output.begin(), wrapped_output.end());
+            assert(int_wrapper::constructions == 3);
+            assert(int_wrapper::destructions == 0);
+            assert(result.in == wrapped_input.end());
+            construct_at(addressof(*result.out), -1); // Need to construct non written element for comparison
+            assert(++result.out == wrapped_output.end());
+            assert(equal(wrapped_output, expected_output_long, equal_to{}, &int_wrapper::val));
+            assert(equal(input, expected_input, equal_to{}, &int_wrapper::val));
+            destroy(wrapped_output);
+            assert(int_wrapper::constructions == 4);
+            assert(int_wrapper::destructions == 4);
+        }
     }
 };
 
@@ -129,17 +166,39 @@ struct throwing_test {
 };
 
 struct memcopy_test {
-    static constexpr int expected_output[] = {13, 55, 12345, -1};
-    static constexpr int expected_input[]  = {13, 55, 12345, 42};
+    static constexpr int expected_output[]      = {13, 55, 12345, -1};
+    static constexpr int expected_output_long[] = {13, 55, -1, -1};
+    static constexpr int expected_input[]       = {13, 55, 12345, 42};
+    static constexpr int expected_input_short[] = {13, 55};
+    static constexpr int expected_input_long[]  = {13, 55, 12345, 42};
 
     static void call() {
-        // Validate only range overload (one is plenty since they both use the same backend)
-        int input[]  = {13, 55, 12345, 42};
-        int output[] = {-1, -1, -1, -1};
+        { // Validate range overload
+            int input[]  = {13, 55, 12345, 42};
+            int output[] = {-1, -1, -1, -1};
 
-        ranges::uninitialized_move_n(input, 3, output, output + 4);
-        assert(ranges::equal(input, expected_input));
-        assert(ranges::equal(output, expected_output));
+            ranges::uninitialized_move_n(input, 3, begin(output), end(output));
+            assert(ranges::equal(input, expected_input));
+            assert(ranges::equal(output, expected_output));
+        }
+
+        { // Validate shorter input
+            int input[]  = {13, 55};
+            int output[] = {-1, -1, -1, -1};
+
+            ranges::uninitialized_move_n(input, 2, begin(output), end(output));
+            assert(ranges::equal(input, expected_input_short));
+            assert(ranges::equal(output, expected_output_long));
+        }
+
+        { // Validate shorter output
+            int input[]  = {13, 55, 12345, 42};
+            int output[] = {-1, -1};
+
+            ranges::uninitialized_move_n(input, 3, begin(output), end(output));
+            assert(ranges::equal(input, expected_input));
+            assert(ranges::equal(output, expected_input_short));
+        }
     }
 };
 
