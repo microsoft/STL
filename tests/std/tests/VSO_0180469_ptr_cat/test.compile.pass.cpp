@@ -511,23 +511,46 @@ struct gh1523_iter {
     using iterator_category = random_access_iterator_tag;
     using value_type        = int;
 
-    int& operator*() const;
-    bool operator==(const gh1523_iter&) const;
-    gh1523_iter& operator++();
-    gh1523_iter operator++(int);
-    gh1523_iter& operator--();
-    gh1523_iter operator--(int);
+    int* ptr = nullptr;
 
-    friend ptrdiff_t operator-(const gh1523_iter&, const gh1523_iter&);
-
-    strong_ordering operator<=>(const gh1523_iter&) const;
-
-    gh1523_iter& operator-=(ptrdiff_t);
-    gh1523_iter operator-(ptrdiff_t) const;
-    gh1523_iter& operator+=(ptrdiff_t);
-    gh1523_iter operator+(ptrdiff_t) const;
-    friend gh1523_iter operator+(ptrdiff_t, const gh1523_iter&);
-    int& operator[](ptrdiff_t) const;
+    // This test is compile-only; the following function definitions allow it to link.
+    int& operator*() const {
+        return *ptr;
+    }
+    gh1523_iter& operator++() {
+        return *this;
+    }
+    gh1523_iter operator++(int) {
+        return {};
+    }
+    gh1523_iter& operator--() {
+        return *this;
+    }
+    gh1523_iter operator--(int) {
+        return {};
+    }
+    ptrdiff_t operator-(const gh1523_iter&) const {
+        return 0;
+    }
+    auto operator<=>(const gh1523_iter&) const = default;
+    gh1523_iter& operator-=(ptrdiff_t) {
+        return *this;
+    }
+    gh1523_iter operator-(ptrdiff_t) const {
+        return {};
+    }
+    gh1523_iter& operator+=(ptrdiff_t) {
+        return *this;
+    }
+    gh1523_iter operator+(ptrdiff_t) const {
+        return {};
+    }
+    friend gh1523_iter operator+(ptrdiff_t, const gh1523_iter&) {
+        return {};
+    }
+    int& operator[](ptrdiff_t) const {
+        return *ptr;
+    }
 };
 
 template <>
@@ -536,7 +559,9 @@ struct std::pointer_traits<gh1523_iter> {
     using element_type    = int;
     using difference_type = ptrdiff_t;
 
-    static int* to_address(const pointer&) noexcept;
+    static int* to_address(const pointer&) noexcept {
+        return nullptr;
+    }
 };
 static_assert(contiguous_iterator<gh1523_iter>);
 
