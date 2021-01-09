@@ -4349,7 +4349,7 @@ _BidIt2 move_backward(_ExPo&&, _BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) noe
 // FUNCTION TEMPLATE fill
 
 // _Iterator_is_contiguous<_Iter> reports whether an iterator is known to be contiguous.
-// (Without concepts, this detection is limited, which will limit when we can activate the memset optimization.)
+// (Without concepts, this detection is limited, which will limit when we can activate optimizations.)
 
 #ifdef __cpp_lib_concepts
 // When concepts are available, we can detect arbitrary contiguous iterators.
@@ -4372,6 +4372,12 @@ _NODISCARD constexpr auto _To_address(const _Iter& _Val) noexcept {
     return _Val;
 }
 #endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+
+// _Iterators_are_contiguous<_Iter1, _Iter2> reports whether both iterators are known to be contiguous.
+
+template <class _Iter1, class _Iter2>
+_INLINE_VAR constexpr bool _Iterators_are_contiguous =
+    _Iterator_is_contiguous<_Iter1>&& _Iterator_is_contiguous<_Iter2>;
 
 template <class _Ty>
 struct _Is_character : false_type {}; // by default, not a character type
@@ -4596,20 +4602,6 @@ template <class _Elem1, class _Elem2, class _Pr>
 _INLINE_VAR constexpr bool _Can_memcmp_elements_with_pred = _Can_memcmp_elements<_Elem1, _Elem2> //
     && _Pred_is_consistent_with_memcmp<_Elem1, _Elem2, _Pr>;
 
-// _Iterators_are_contiguous<_Iter1, _Iter2> reports whether both iterators are known to be contiguous.
-// (Without concepts, this detection is limited, which will limit when we can activate the memcmp optimization.)
-
-#ifdef __cpp_lib_concepts
-// When concepts are available, we can detect arbitrary contiguous iterators.
-template <class _Iter1, class _Iter2>
-_INLINE_VAR constexpr bool _Iterators_are_contiguous = contiguous_iterator<_Iter1> //
-    && contiguous_iterator<_Iter2>;
-#else // ^^^ defined(__cpp_lib_concepts) ^^^ / vvv !defined(__cpp_lib_concepts) vvv
-// When concepts aren't available, we can detect pointers. (Iterators should be unwrapped before using this.)
-template <class _Iter1, class _Iter2>
-_INLINE_VAR constexpr bool _Iterators_are_contiguous = conjunction_v<is_pointer<_Iter1>, is_pointer<_Iter2>>;
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
-
 // _Equal_memcmp_is_safe<_Iter1, _Iter2, _Pr> reports whether we can activate the memcmp optimization
 // for arbitrary iterators and predicates.
 // It ignores top-level constness on the iterators and on the elements.
@@ -4623,7 +4615,15 @@ _INLINE_VAR constexpr bool _Equal_memcmp_is_safe =
     _Equal_memcmp_is_safe_helper<remove_const_t<_Iter1>, remove_const_t<_Iter2>, _Pr>;
 
 template <class _CtgIt1, class _CtgIt2>
-_NODISCARD int _Memcmp_ranges(_CtgIt1 _First1, _CtgIt2 _First2, const size_t _Count) {
+_NODISCARD int _Memcmp_ranges(_CtgIt1 _First1, _CtgIt1 _Last1, _CtgIt2 _First2) {
+    const auto _First1_ch = reinterpret_cast<const char*>(_To_address(_First1));
+    const auto _Last1_ch = reinterpret_cast<const char*>(_To_address(_Last1));
+    const auto _First2_ch = reinterpret_cast<const char*>(_To_address(_First2));
+    return _CSTD memcmp(_First1_ch, _First2_ch, _Last1_ch - _First1_ch);
+}
+
+template <class _CtgIt1, class _CtgIt2>
+_NODISCARD int _Memcmp_count(_CtgIt1 _First1, _CtgIt2 _First2, const size_t _Count) {
     const auto _First1_ch = reinterpret_cast<const char*>(_To_address(_First1));
     const auto _First2_ch = reinterpret_cast<const char*>(_To_address(_First2));
     return _CSTD memcmp(_First1_ch, _First2_ch, _Count * sizeof(_Iter_value_t<_CtgIt1>));
@@ -4641,7 +4641,7 @@ _NODISCARD _CONSTEXPR20 bool equal(const _InIt1 _First1, const _InIt1 _Last1, co
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
         {
-            return _Memcmp_ranges(_UFirst1, _UFirst2, static_cast<size_t>(_ULast1 - _UFirst1)) == 0;
+            return _Memcmp_ranges(_UFirst1, _ULast1, _UFirst2) == 0;
         }
     }
 
@@ -4835,7 +4835,7 @@ _NODISCARD _CONSTEXPR20 bool _Lex_compare_unchecked(
     (void) _Pred;
     const auto _Num1 = static_cast<size_t>(_Last1 - _First1);
     const auto _Num2 = static_cast<size_t>(_Last2 - _First2);
-    const int _Ans   = _Memcmp_ranges(_First1, _First2, (_STD min)(_Num1, _Num2));
+    const int _Ans   = _Memcmp_count(_First1, _First2, (_STD min)(_Num1, _Num2));
     return _Memcmp_pr{}(_Ans, 0) || (_Ans == 0 && _Num1 < _Num2);
 }
 
@@ -4907,7 +4907,7 @@ _NODISCARD constexpr auto lexicographical_compare_three_way(
         if (!_STD is_constant_evaluated()) {
             const auto _Num1 = static_cast<size_t>(_ULast1 - _UFirst1);
             const auto _Num2 = static_cast<size_t>(_ULast2 - _UFirst2);
-            const int _Ans   = _Memcmp_ranges(_UFirst1, _UFirst2, (_STD min)(_Num1, _Num2));
+            const int _Ans   = _Memcmp_count(_UFirst1, _UFirst2, (_STD min)(_Num1, _Num2));
             if (_Ans == 0) {
                 return _Num1 <=> _Num2;
             } else {
