@@ -1059,7 +1059,7 @@ _NODISCARD int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
 
 #ifndef __AVX2__
     // Because the widening done below will always give a non-0 value, checking for tzcnt
-    // is not required on 16-bits and smaller since the only difference in behavior between
+    // is not required for 8-bit and 16-bit since the only difference in behavior between
     // bsf and tzcnt is when the value is 0.
     if constexpr (_Digits > 16) {
         const bool _Definitely_have_tzcnt = __isa_available >= __ISA_AVAILABLE_AVX2;
