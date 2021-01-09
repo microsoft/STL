@@ -4619,7 +4619,7 @@ _NODISCARD int _Memcmp_ranges(_CtgIt1 _First1, _CtgIt1 _Last1, _CtgIt2 _First2) 
     const auto _First1_ch = reinterpret_cast<const char*>(_To_address(_First1));
     const auto _Last1_ch  = reinterpret_cast<const char*>(_To_address(_Last1));
     const auto _First2_ch = reinterpret_cast<const char*>(_To_address(_First2));
-    return _CSTD memcmp(_First1_ch, _First2_ch, _Last1_ch - _First1_ch);
+    return _CSTD memcmp(_First1_ch, _First2_ch, static_cast<size_t>(_Last1_ch - _First1_ch));
 }
 
 template <class _CtgIt1, class _CtgIt2>
