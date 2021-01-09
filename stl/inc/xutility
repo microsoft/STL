@@ -4348,13 +4348,13 @@ _BidIt2 move_backward(_ExPo&&, _BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) noe
 
 // FUNCTION TEMPLATE fill
 
-// _Iterator_is_contiguous<_Iter> reports whether iterator is known to be contiguous.
+// _Iterator_is_contiguous<_Iter> reports whether an iterator is known to be contiguous.
 // (Without concepts, this detection is limited, which will limit when we can activate the memset optimization.)
 
 #ifdef __cpp_lib_concepts
 // When concepts are available, we can detect arbitrary contiguous iterators.
 template <class _Iter>
-_INLINE_VAR constexpr bool _Iterator_is_contiguous = contiguous_iterator<_Iter>;
+inline constexpr bool _Iterator_is_contiguous = contiguous_iterator<_Iter>;
 
 template <class _Iter>
 _NODISCARD constexpr auto _To_address(const _Iter& _Val) noexcept {
@@ -4423,7 +4423,7 @@ _INLINE_VAR constexpr bool _Fill_zero_memset_is_safe<_FwdIt, _Ty, false> = false
 
 template <class _CtgIt, class _Ty>
 void _Fill_memset(_CtgIt _Dest, const _Ty _Val, const size_t _Count) {
-    // implicitly convert (a cast would suppress warnings); also handles _DestTy being bool
+    // implicitly convert (a cast would suppress warnings); also handles _Iter_value_t<_CtgIt> being bool
     _Iter_value_t<_CtgIt> _Dest_val = _Val;
     _CSTD memset(_To_address(_Dest), static_cast<unsigned char>(_Dest_val), _Count);
 }
