@@ -103,6 +103,7 @@ void test_990695();
 void test_locale_russian();
 void test_locale_german();
 void test_locale_chinese();
+void test_invalid_argument();
 
 int main() {
     assert(read_hour("12 AM") == 0);
@@ -146,6 +147,7 @@ int main() {
     test_locale_russian();
     test_locale_german();
     test_locale_chinese();
+    test_invalid_argument();
 }
 
 typedef istreambuf_iterator<char> Iter;
@@ -701,4 +703,28 @@ void test_locale_chinese() {
     // December in Chinese (expanded and abbreviated)
     assert(read_date_locale(L"2020-\x5341\x4e8c\x6708-31", "zh-CN") == make_tuple(31, 11, 120));
     assert(read_date_locale(L"2020-\x0031\x0032\x6708-31", "zh-CN") == make_tuple(31, 11, 120));
+}
+
+void test_invalid_argument() {
+    //_set_invalid_parameter_handler(NULL);
+    //_CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE);
+    //_CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDERR);
+
+    time_t t = time(nullptr);
+    tm currentTime;
+    localtime_s(&currentTime, &t);
+
+    {
+        wstringstream wss;
+        const wstring fmt(L"%Y-%m-%d-%H-%M-%s");
+        wss << put_time(&currentTime, fmt.c_str());
+        //assert(wss.rdstate() == ios_base::badbit);
+    }
+
+    {
+        stringstream ss;
+        const string fmt("%Y-%m-%d-%H-%M-%s");
+        ss << put_time(&currentTime, fmt.c_str());
+        //assert(ss.rdstate() == ios_base::badbit);
+    }
 }
