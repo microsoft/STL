@@ -707,8 +707,6 @@ void test_locale_chinese() {
 
 void test_invalid_argument() {
     //_set_invalid_parameter_handler(NULL);
-    //_CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE);
-    //_CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDERR);
 
     time_t t = time(nullptr);
     tm currentTime;
@@ -718,13 +716,13 @@ void test_invalid_argument() {
         wstringstream wss;
         const wstring fmt(L"%Y-%m-%d-%H-%M-%s");
         wss << put_time(&currentTime, fmt.c_str());
-        //assert(wss.rdstate() == ios_base::badbit);
+        assert(wss.rdstate() == ios_base::badbit);
     }
 
     {
         stringstream ss;
         const string fmt("%Y-%m-%d-%H-%M-%s");
         ss << put_time(&currentTime, fmt.c_str());
-        //assert(ss.rdstate() == ios_base::badbit);
+        assert(ss.rdstate() == ios_base::badbit);
     }
 }
