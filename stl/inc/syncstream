@@ -8,12 +8,17 @@
 #define _SYNCSTREAM_
 #include <yvals.h>
 #if _STL_COMPILER_PREPROCESSOR
+
+#ifdef _M_CEE_PURE
+#error <syncstream> is not supported when compiling with /clr:pure
+#endif // _M_CEE_PURE
+
 #ifndef __cpp_lib_syncbuf
 #pragma message("The contents of <syncstream> are available only with C++20 syncbuf support.")
 #else // ^^^ !defined(__cpp_lib_syncbuf) / defined(__cpp_lib_syncbuf) vvv
 #include <map>
 #include <memory>
-#include <mutex>
+#include <shared_mutex>
 #include <streambuf>
 
 #pragma pack(push, _CRT_PACKING)
@@ -26,60 +31,38 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef emit
 
 _STD_BEGIN
-struct _Basic_syncbuf_global_mutex {
-private:
-    struct _Mutex_count_pair {
-        mutex _Mutex;
-        uint64_t _Ref_count = 0;
-    };
-    static map<void*, _Mutex_count_pair>& _Get_mutex_map() noexcept {
-        static map<void*, _Mutex_count_pair> _Mutex_Map;
-        return _Mutex_Map;
-    }
-    static mutex& _Get_map_mutex() noexcept {
-        static mutex _Mutex;
-        return _Mutex;
-    }
-    static mutex& _Get_mutex_for_instance(void* _Ptr) {
-        mutex& _Mutex = _Get_map_mutex();
-        {
-            scoped_lock _Guard(_Mutex);
 
-            auto& _Mutex_map         = _Get_mutex_map();
-            auto _Instance_mutex_itr = _Mutex_map.find(_Ptr);
-
-            _STL_ASSERT(_Instance_mutex_itr != _Mutex_map.end(), "No mutex exists for given instance!");
-            return _Instance_mutex_itr->second._Mutex;
-        }
-    }
-    static void _Add_mutex_for_instance_or_increment(void* _Ptr) noexcept {
-        mutex& _Mutex = _Get_map_mutex();
-        {
-            scoped_lock _Guard(_Mutex);
-
-            auto& _Mutex_map = _Get_mutex_map();
-            _Mutex_map.try_emplace(_Ptr).first->second._Ref_count++;
-        }
-    }
-    static void _Delete_mutex_for_instance_or_decrement(void* _Ptr) noexcept {
-        mutex& _Mutex = _Get_map_mutex();
-        {
-            scoped_lock _Guard(_Mutex);
-
-            auto& _Mutex_map         = _Get_mutex_map();
-            auto _Instance_mutex_itr = _Mutex_map.find(_Ptr);
-            if (_Instance_mutex_itr == _Mutex_map.end())
-                return;
-            _Instance_mutex_itr->second._Ref_count--;
-            if (_Instance_mutex_itr->second._Ref_count == 0) {
-                _Mutex_map.erase(_Ptr);
-            }
-        }
-    }
-
-    template <class _Elem, class _Traits, class _Alloc>
-    friend class basic_syncbuf;
+struct _Mutex_count_pair {
+    shared_mutex _Mutex;
+    uint64_t _Ref_count = 0;
 };
+
+_CRTIMP2_PURE map<void*, _Mutex_count_pair>& __cdecl _Get_mutex_map();
+_CRTIMP2_PURE shared_mutex& __cdecl _Get_map_mutex();
+
+shared_mutex& _Get_mutex_for_instance(void* _Ptr) {
+    scoped_lock _Guard(_Get_map_mutex());
+    auto& _Mutex_map         = _Get_mutex_map();
+    auto _Instance_mutex_itr = _Mutex_map.find(_Ptr);
+    _STL_ASSERT(_Instance_mutex_itr != _Mutex_map.end(), "No mutex exists for given instance!");
+    return _Instance_mutex_itr->second._Mutex;
+}
+void _Add_mutex_for_instance_or_increment(void* _Ptr) noexcept {
+    scoped_lock _Guard(_Get_map_mutex());
+    auto& _Mutex_map = _Get_mutex_map();
+    _Mutex_map.try_emplace(_Ptr).first->second._Ref_count++;
+}
+void _Delete_mutex_for_instance_or_decrement(void* _Ptr) noexcept {
+    scoped_lock _Guard(_Get_map_mutex());
+    auto& _Mutex_map         = _Get_mutex_map();
+    auto _Instance_mutex_itr = _Mutex_map.find(_Ptr);
+    if (_Instance_mutex_itr == _Mutex_map.end())
+        return;
+    _Instance_mutex_itr->second._Ref_count--;
+    if (_Instance_mutex_itr->second._Ref_count == 0) {
+        _Mutex_map.erase(_Ptr);
+    }
+}
 
 // CLASS TEMPLATE basic_syncbuf
 template <class _Elem, class _Traits, class _Alloc>
@@ -100,7 +83,7 @@ public:
 
     basic_syncbuf(streambuf_type* _StrBuf, const _Alloc& _Al) : _Wrapped(_StrBuf), _Al(_Al) {
         if (_Wrapped != nullptr) {
-            _Basic_syncbuf_global_mutex::_Add_mutex_for_instance_or_increment(static_cast<void*>(_Wrapped));
+            _Add_mutex_for_instance_or_increment(static_cast<void*>(_Wrapped));
         }
         _Init();
     }
@@ -137,7 +120,7 @@ public:
         const size_type _Data_size   = _Get_data_size();
         const pointer _Begin_seq_ptr = pointer_traits<pointer>::pointer_to(*streambuf_type::pbase());
         if (_Data_size > 0 || _Record_sync) {
-            scoped_lock _Guard(_Basic_syncbuf_global_mutex::_Get_mutex_for_instance(static_cast<void*>(_Wrapped)));
+            scoped_lock _Guard(_Get_mutex_for_instance(static_cast<void*>(_Wrapped)));
 
             if (_Data_size > 0 && _Data_size != _Wrapped->sputn(_Begin_seq_ptr, _Data_size)) {
                 _Result = false;
@@ -220,7 +203,7 @@ private:
 
         streambuf_type::setp(nullptr, nullptr, nullptr);
         if (_Wrapped != nullptr) {
-            _Basic_syncbuf_global_mutex::_Delete_mutex_for_instance_or_decrement(static_cast<void*>(_Wrapped));
+            _Delete_mutex_for_instance_or_decrement(static_cast<void*>(_Wrapped));
             _Wrapped = nullptr;
         }
     }
