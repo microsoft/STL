@@ -186,6 +186,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/string
     ${CMAKE_CURRENT_LIST_DIR}/inc/string_view
     ${CMAKE_CURRENT_LIST_DIR}/inc/strstream
+    ${CMAKE_CURRENT_LIST_DIR}/inc/syncstream
     ${CMAKE_CURRENT_LIST_DIR}/inc/system_error
     ${CMAKE_CURRENT_LIST_DIR}/inc/thread
     ${CMAKE_CURRENT_LIST_DIR}/inc/tuple

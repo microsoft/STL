@@ -72,7 +72,7 @@ sub CustomBuildHook()
         "string_view",
         "string",
         "strstream",
-        # "syncstream",
+        "syncstream",
         "system_error",
         "thread",
         "tuple",
