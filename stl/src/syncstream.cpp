@@ -11,8 +11,8 @@
 
 _STD_BEGIN
 // OBJECT DECLARATIONS
-map<void*, _Mutex_count_pair> _Mutex_map{};
-shared_mutex _Mutex{};
+static map<void*, _Mutex_count_pair> _Mutex_map{};
+static shared_mutex _Mutex{};
 
 shared_mutex& _Get_map_mutex() {
     return _Mutex;
