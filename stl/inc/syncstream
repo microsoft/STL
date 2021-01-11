@@ -31,14 +31,7 @@ struct _Basic_syncbuf_global_mutex {
 private:
     struct _Mutex_count_pair {
         mutex _Mutex;
-        uint64_t _Ref_count;
-
-        _Mutex_count_pair() : _Ref_count(0), _Mutex(mutex{}) {}
-        ~_Mutex_count_pair()                        = default;
-        _Mutex_count_pair(_Mutex_count_pair&&)      = delete;
-        _Mutex_count_pair(const _Mutex_count_pair&) = delete;
-        _Mutex_count_pair& operator=(const _Mutex_count_pair&) = delete;
-        _Mutex_count_pair& operator=(_Mutex_count_pair&&) = delete;
+        uint64_t _Ref_count = 0;
     };
     static map<void*, _Mutex_count_pair>& _Get_mutex_map() noexcept {
         static map<void*, _Mutex_count_pair> _Mutex_Map;
@@ -51,7 +44,7 @@ private:
     static mutex& _Get_mutex_for_instance(void* _Ptr) {
         mutex& _Mutex = _Get_map_mutex();
         {
-            lock_guard<mutex> _Guard(_Mutex);
+            scoped_lock _Guard(_Mutex);
 
             auto& _Mutex_map         = _Get_mutex_map();
             auto _Instance_mutex_itr = _Mutex_map.find(_Ptr);
@@ -63,17 +56,16 @@ private:
     static void _Add_mutex_for_instance_or_increment(void* _Ptr) noexcept {
         mutex& _Mutex = _Get_map_mutex();
         {
-            lock_guard<mutex> _Guard(_Mutex);
+            scoped_lock _Guard(_Mutex);
 
             auto& _Mutex_map = _Get_mutex_map();
-            _Mutex_map.emplace(std::piecewise_construct, std::forward_as_tuple(_Ptr), std::forward_as_tuple())
-                .first->second._Ref_count++;
+            _Mutex_map.try_emplace(_Ptr).first->second._Ref_count++;
         }
     }
     static void _Delete_mutex_for_instance_or_decrement(void* _Ptr) noexcept {
         mutex& _Mutex = _Get_map_mutex();
         {
-            lock_guard<mutex> _Guard(_Mutex);
+            scoped_lock _Guard(_Mutex);
 
             auto& _Mutex_map         = _Get_mutex_map();
             auto _Instance_mutex_itr = _Mutex_map.find(_Ptr);
@@ -91,7 +83,7 @@ private:
 };
 
 // CLASS TEMPLATE basic_syncbuf
-template <class _Elem, class _Traits = char_traits<_Elem>, class _Alloc = allocator<_Elem>>
+template <class _Elem, class _Traits, class _Alloc>
 class basic_syncbuf : public basic_streambuf<_Elem, _Traits> {
 public:
     using int_type       = typename _Traits::int_type;
@@ -146,7 +138,7 @@ public:
         const size_type _Data_size   = _Get_data_size();
         const pointer _Begin_seq_ptr = pointer_traits<pointer>::pointer_to(*streambuf_type::pbase());
         if (_Data_size > 0 || _Record_sync) {
-            lock_guard<mutex> _Guard(
+            scoped_lock _Guard(
                 _Basic_syncbuf_global_mutex::_Get_mutex_for_instance(static_cast<void*>(_Wrapped)));
 
             if (_Data_size > 0 && _Data_size != _Wrapped->sputn(_Begin_seq_ptr, _Data_size)) {
