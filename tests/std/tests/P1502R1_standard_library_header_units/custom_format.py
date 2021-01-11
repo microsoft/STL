@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-import itertools
 import os
 
 from stl.test.format import STLTestFormat, TestStep
