@@ -93,9 +93,10 @@ class CustomTestFormat(STLTestFormat):
         outputDir, outputBase = test.getTempPaths()
         sourcePath = test.getSourcePath()
 
-        compileTestCppWithEdg = '/BE' in itertools.chain(test.flags, test.compileFlags)
-        if compileTestCppWithEdg:
+        if '/BE' in test.flags:
             test.flags.remove('/BE')
+
+        if '/BE' in test.compileFlags:
             test.compileFlags.remove('/BE')
 
         exportHeaderOptions = ['/exportHeader', '/Fo', '/MP']
