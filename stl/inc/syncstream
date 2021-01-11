@@ -138,8 +138,7 @@ public:
         const size_type _Data_size   = _Get_data_size();
         const pointer _Begin_seq_ptr = pointer_traits<pointer>::pointer_to(*streambuf_type::pbase());
         if (_Data_size > 0 || _Record_sync) {
-            scoped_lock _Guard(
-                _Basic_syncbuf_global_mutex::_Get_mutex_for_instance(static_cast<void*>(_Wrapped)));
+            scoped_lock _Guard(_Basic_syncbuf_global_mutex::_Get_mutex_for_instance(static_cast<void*>(_Wrapped)));
 
             if (_Data_size > 0 && _Data_size != _Wrapped->sputn(_Begin_seq_ptr, _Data_size)) {
                 _Result = false;
