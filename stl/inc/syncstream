@@ -78,7 +78,7 @@ private:
         }
     }
 
-    template <class _Elem, class _Traits = char_traits<_Elem>, class _Alloc = allocator<_Elem>>
+    template <class _Elem, class _Traits, class _Alloc>
     friend class basic_syncbuf;
 };
 
