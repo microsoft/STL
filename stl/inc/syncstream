@@ -1,0 +1,356 @@
+// syncstream standard header
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#pragma once
+#ifndef _SYNCSTREAM_
+#define _SYNCSTREAM_
+#include <yvals_core.h>
+#if _STL_COMPILER_PREPROCESSOR
+#define __cpp_lib_syncbuf // Remove before commit, visual
+#ifndef __cpp_lib_syncbuf
+#pragma message("The contents of <syncstream> are available only with C++20 syncbuf support.")
+#else // ^^^ !defined(__cpp_lib_syncbuf) / defined(__cpp_lib_syncbuf) vvv
+#include <map>
+#include <memory>
+#include <mutex>
+#include <streambuf>
+
+#pragma pack(push, _CRT_PACKING)
+#pragma warning(push, _STL_WARNING_LEVEL)
+#pragma warning(disable : _STL_DISABLED_WARNINGS)
+_STL_DISABLE_CLANG_WARNINGS
+#pragma push_macro("new")
+#pragma push_macro("emit")
+#undef new
+#undef emit
+
+_STD_BEGIN
+struct _Basic_syncbuf_global_mutex {
+private:
+    struct _Mutex_count_pair {
+        mutex* _Mutex;
+        uint64_t _Ref_count;
+
+        _Mutex_count_pair() : _Ref_count(0) {
+            _Mutex = new mutex;
+        }
+        _Mutex_count_pair(_Mutex_count_pair&& _Elem) noexcept
+            : _Mutex(_STD move(_Elem._Mutex)), _Ref_count(_Elem._Ref_count) {
+            _Elem._Mutex     = nullptr;
+            _Elem._Ref_count = 0;
+        }
+        _Mutex_count_pair& operator=(_Mutex_count_pair&& _Elem) noexcept {
+            _Mutex           = _STD move(_Elem._Mutex);
+            _Ref_count       = _Elem._Ref_count;
+            _Elem._Mutex     = nullptr;
+            _Elem._Ref_count = 0;
+
+            return *this;
+        }
+        ~_Mutex_count_pair() {
+            if (_Mutex)
+                delete _Mutex;
+        }
+        _Mutex_count_pair(const _Mutex_count_pair&) = delete;
+        _Mutex_count_pair& operator=(const _Mutex_count_pair&) = delete;
+    };
+    static map<void*, _Mutex_count_pair>& _Get_mutex_map() noexcept {
+        static map<void*, _Mutex_count_pair> _Mutex_Map;
+        return _Mutex_Map;
+    }
+    static mutex& _Get_map_mutex() noexcept {
+        static mutex _Mutex;
+        return _Mutex;
+    }
+    static mutex& _Get_mutex_for_instance(void* _Ptr) {
+        mutex& _Mutex = _Get_map_mutex();
+        lock_guard<mutex> _Guard(_Mutex);
+
+        map<void*, _Mutex_count_pair>& _Mutex_map = _Get_mutex_map();
+        _Mutex_count_pair& _Instance_mutex        = _Mutex_map[_Ptr];
+        _STL_ASSERT(_Instance_mutex._Ref_count != 0, "No mutex exists for given instance!");
+        return *_Instance_mutex._Mutex;
+    }
+    static void _Add_mutex_for_instance_or_increment(void* _Ptr) noexcept {
+        mutex& _Mutex = _Get_map_mutex();
+        lock_guard<mutex> _Guard(_Mutex);
+
+        map<void*, _Mutex_count_pair>& _Mutex_map = _Get_mutex_map();
+        if (!_Mutex_map.contains(_Ptr)) {
+            _Mutex_map[_Ptr] = _STD move(_Mutex_count_pair{});
+        }
+        _Mutex_map[_Ptr]._Ref_count++;
+    }
+    static void _Delete_mutex_for_instance_or_decrement(void* _Ptr) noexcept {
+        mutex& _Mutex = _Get_map_mutex();
+        lock_guard<mutex> _Guard(_Mutex);
+
+        map<void*, _Mutex_count_pair>& _Mutex_map = _Get_mutex_map();
+        if (!_Mutex_map.contains(_Ptr)) {
+            return;
+        }
+        _Mutex_count_pair& _Instance_mutex = _Mutex_map[_Ptr];
+        --_Instance_mutex._Ref_count;
+        if (_Instance_mutex._Ref_count == 0) {
+            _Mutex_map.erase(_Ptr);
+        }
+    }
+
+    template <class _Elem, class _Traits = char_traits<_Elem>, class _Alloc = allocator<_Elem>>
+    friend class basic_syncbuf;
+};
+
+// CLASS TEMPLATE basic_syncbuf
+template <class _Elem, class _Traits = char_traits<_Elem>, class _Alloc = allocator<_Elem>>
+class basic_syncbuf : public basic_streambuf<_Elem, _Traits> {
+private:
+    enum { // constant for minimum buffer size
+        _MINSIZE = 32
+    };
+
+    void _Init() {
+        const pointer _New_ptr = _Unfancy(_Al.allocate(_MINSIZE));
+        streambuf_type::setp(_New_ptr, _New_ptr + _MINSIZE);
+    }
+
+    void _Tidy() noexcept {
+        const auto _Buf_size = static_cast<typename allocator_traits<allocator_type>::size_type>(
+            streambuf_type::epptr() - streambuf_type::pbase());
+        _Al.deallocate(pointer_traits<pointer>::pointer_to(*streambuf_type::pbase()), _Buf_size);
+
+        streambuf_type::setp(nullptr, nullptr, nullptr);
+        _Wrapped = nullptr;
+    }
+
+    void _Assign_rv(basic_syncbuf&& _Right) {
+        if (this != _STD addressof(_Right)) {
+            _Tidy();
+            this->_Swap_except_al(_Right);
+        }
+    }
+
+public:
+    using int_type       = typename _Traits::int_type;
+    using pos_type       = typename _Traits::pos_type;
+    using off_type       = typename _Traits::off_type;
+    using allocator_type = _Alloc;
+    using streambuf_type = basic_streambuf<_Elem, _Traits>;
+
+    using pointer   = typename allocator_traits<_Alloc>::pointer;
+    using size_type = typename allocator_traits<allocator_type>::size_type;
+
+    basic_syncbuf() : basic_syncbuf(nullptr) {}
+
+    explicit basic_syncbuf(streambuf_type* _StrBuf) : basic_syncbuf(_StrBuf, _Alloc()) {}
+
+    basic_syncbuf(streambuf_type* _StrBuf, const _Alloc& _Al) : _Wrapped(_StrBuf), _Al(_Al) {
+        _Basic_syncbuf_global_mutex::_Add_mutex_for_instance_or_increment(static_cast<void*>(_Wrapped));
+        _Init();
+    }
+
+    basic_syncbuf(basic_syncbuf&& _Right) {
+        _Al = _STD move(_Right._Al);
+        _Assign_rv(_STD move(_Right));
+    }
+
+    ~basic_syncbuf() {
+        _Emit();
+        const auto _Buf_size = streambuf_type::epptr() - streambuf_type::pbase();
+        _Al.deallocate(streambuf_type::pbase(), _Buf_size);
+        _Basic_syncbuf_global_mutex::_Delete_mutex_for_instance_or_decrement(static_cast<void*>(_Wrapped));
+    }
+
+private:
+    void _Move_assign(basic_syncbuf&& _Right, _Equal_allocators) noexcept {
+        _Tidy();
+        _Pocma(_Getal(), _Right._Getal());
+        this->_Swap_except_al(_Right);
+    }
+
+    void _Move_assign(basic_syncbuf&& _Right, _Propagate_allocators) noexcept {
+        _Tidy();
+        _Pocma(_Getal(), _Right._Getal());
+        this->_Swap_except_al(_Right);
+    }
+
+    void _Move_assign(basic_syncbuf&& _Right, _No_propagate_allocators) {
+        if (_Getal() == _Right._Getal()) {
+            _Move_assign(_Right, _Equal_allocators{});
+        } else {
+            const auto _Right_Buf_size  = _Right._Get_buffer_size();
+            const auto _Right_Data_size = _Right._Get_data_size();
+
+            const pointer _New_ptr = _Unfancy(_Al.allocate(_Right_Buf_size));
+            _Traits::copy(_New_ptr, pointer_traits<pointer>::pointer_to(*_Right.pbase()), _Right_Data_size);
+
+            streambuf_type::setp(_New_ptr, _New_ptr + _Right_Data_size, _New_ptr + _Right_Buf_size);
+            streambuf_type::_Plocale = _STD move(_Right._Plocale);
+
+            _Right._Tidy();
+        }
+    }
+
+public:
+    basic_syncbuf& operator=(basic_syncbuf&& _Right) {
+        _Emit();
+        _Move_assign(_STD move(_Right), _Choose_pocma<_Alloc>{});
+        return *this;
+    }
+
+private:
+    void _Swap_except_al(basic_syncbuf& _Right) {
+        streambuf_type::swap(_Right);
+        _STD swap(_Emit_on_sync, _Right._Emit_on_sync);
+        _STD swap(_Record_sync, _Right._Record_sync);
+        _STD swap(_Wrapped, _Right._Wrapped);
+    }
+
+public:
+    void swap(basic_syncbuf& _Right) {
+        if (this != _STD addressof(_Right)) {
+            _Pocs(_Getal(), _Right._Getal());
+            _Swap_except_al(_Right);
+        }
+    }
+
+private:
+    bool _Emit() noexcept {
+        _TRY_BEGIN
+        return emit();
+        _CATCH_ALL
+        _CATCH_END
+    }
+
+public:
+    bool emit() {
+        if (!_Wrapped) {
+            return false;
+        }
+
+        bool _Result              = true;
+        const auto _Data_size     = _Get_data_size();
+        const auto _Begin_seq_ptr = streambuf_type::pbase();
+        if (_Data_size > 0 || _Record_sync) {
+            lock_guard<mutex> _Guard(
+                _Basic_syncbuf_global_mutex::_Get_mutex_for_instance(static_cast<void*>(_Wrapped)));
+
+            if (_Data_size > 0 && _Data_size != _Wrapped->sputn(_Begin_seq_ptr, _Data_size)) {
+                _Result = false;
+            }
+
+            if (_Record_sync) {
+                if (_Wrapped->pubsync() == -1) {
+                    _Result = false;
+                }
+            }
+        }
+        _Record_sync = false;
+        streambuf_type::setp(_Begin_seq_ptr, streambuf_type::epptr()); // reset written data
+        return _Result;
+    }
+
+    streambuf_type* get_wrapped() const noexcept {
+        return _Wrapped;
+    }
+
+    allocator_type get_allocator() const noexcept {
+        return _Getal();
+    }
+
+    void set_emit_on_sync(bool _Val) noexcept {
+        _Emit_on_sync = _Val;
+    }
+
+protected:
+    int sync() override {
+        _Record_sync = true;
+
+        if (_Emit_on_sync) {
+            if (!emit()) {
+                return -1;
+            }
+        }
+        return 0;
+    }
+
+    int_type overflow(int_type _Current_elem) override {
+        if (!_Wrapped)
+            return _Traits::eof();
+        const bool _Chk_eof = _Traits::eq_int_type(_Current_elem, _Traits::eof());
+        if (_Chk_eof)
+            return _Traits::not_eof(_Current_elem);
+
+        const size_type _Buf_size       = _Get_buffer_size();
+        const size_type _Max_allocation = allocator_traits<allocator_type>::max_size(_Al);
+        if (_Buf_size == _Max_allocation)
+            return _Traits::eof();
+
+        const size_type _New_capacity  = _Calculate_growth(_Buf_size, _Buf_size + 1, _Max_allocation);
+        const pointer _Old_ptr         = pointer_traits<pointer>::pointer_to(*streambuf_type::pbase());
+        const size_type _Old_data_size = _Get_data_size();
+
+        const pointer _New_ptr = _Al.allocate(_New_capacity);
+        ::memcpy(_New_ptr, _Old_ptr, _Old_data_size);
+
+        streambuf_type::setp(_New_ptr, _New_ptr + _Old_data_size, _New_ptr + _New_capacity);
+        streambuf_type::sputc(_Current_elem);
+
+        return _Current_elem;
+    }
+
+private:
+    size_type _Calculate_growth(const size_type _Oldsize, const size_type _Newsize, const size_type _Maxsize) const {
+        if (_Oldsize > _Maxsize - _Oldsize / 2) {
+            return _Maxsize; // geometric growth would overflow
+        }
+
+        const size_type _Geometric = _Oldsize + _Oldsize / 2;
+
+        if (_Geometric < _Newsize) {
+            return _Newsize; // geometric growth would be insufficient
+        }
+
+        return _Geometric; // geometric growth is sufficient
+    }
+
+    size_type _Get_data_size() const noexcept {
+        return static_cast<typename allocator_traits<allocator_type>::size_type>(
+            streambuf_type::pptr() - streambuf_type::pbase());
+    }
+
+    size_type _Get_buffer_size() const noexcept {
+        return static_cast<typename allocator_traits<allocator_type>::size_type>(
+            streambuf_type::epptr() - streambuf_type::pbase());
+    }
+
+    _Alloc& _Getal() noexcept {
+        return _Al;
+    }
+
+    const _Alloc& _Getal() const noexcept {
+        return _Al;
+    }
+
+    streambuf_type* _Wrapped;
+    allocator_type _Al; // the allocator object
+    bool _Emit_on_sync;
+    bool _Record_sync;
+};
+
+template <class _Elem, class _Traits, class _Alloc>
+void swap(basic_syncbuf<_Elem, _Traits, _Alloc>& _Left, basic_syncbuf<_Elem, _Traits, _Alloc>& _Right) {
+    _Left.swap(_Right);
+}
+
+_STD_END
+
+#pragma pop_macro("emit")
+#pragma pop_macro("new")
+_STL_RESTORE_CLANG_WARNINGS
+#pragma warning(pop)
+#pragma pack(pop)
+#endif // __cpp_lib_syncbuf
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _SYNCSTREAM_

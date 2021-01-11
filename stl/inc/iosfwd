@@ -200,6 +200,10 @@ template <class _Elem, class _Traits = char_traits<_Elem>>
 class basic_ofstream;
 template <class _Elem, class _Traits = char_traits<_Elem>>
 class basic_fstream;
+template <class _Elem, class _Traits = char_traits<_Elem>, class _Alloc = allocator<_Elem>>
+class basic_syncbuf;
+template <class _Elem, class _Traits = char_traits<_Elem>, class _Alloc = allocator<_Elem>>
+class basic_osyncstream;
 
 #if defined(_DLL_CPPLIB)
 template <class _Elem, class _InIt>
@@ -224,6 +228,8 @@ using filebuf       = basic_filebuf<char, char_traits<char>>;
 using ifstream      = basic_ifstream<char, char_traits<char>>;
 using ofstream      = basic_ofstream<char, char_traits<char>>;
 using fstream       = basic_fstream<char, char_traits<char>>;
+using syncbuf       = basic_syncbuf<char>;
+using osyncstream   = basic_osyncstream<char>;
 
 // wchar_t TYPEDEFS
 using wios           = basic_ios<wchar_t, char_traits<wchar_t>>;
@@ -239,6 +245,8 @@ using wfilebuf       = basic_filebuf<wchar_t, char_traits<wchar_t>>;
 using wifstream      = basic_ifstream<wchar_t, char_traits<wchar_t>>;
 using wofstream      = basic_ofstream<wchar_t, char_traits<wchar_t>>;
 using wfstream       = basic_fstream<wchar_t, char_traits<wchar_t>>;
+using wsyncbuf       = basic_syncbuf<wchar_t>;
+using wosyncstream   = basic_osyncstream<wchar_t>;
 
 #if defined(_CRTBLD)
 // unsigned short TYPEDEFS
