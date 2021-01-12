@@ -11,15 +11,32 @@
 
 _STD_BEGIN
 // OBJECT DECLARATIONS
+struct _Mutex_count_pair {
+    shared_mutex _Mutex;
+    uint64_t _Ref_count = 0;
+};
 static map<void*, _Mutex_count_pair> _Mutex_map{};
 static shared_mutex _Mutex{};
 
-shared_mutex& _Get_map_mutex() {
-    return _Mutex;
+extern "C" _CRTIMP2 shared_mutex& _Get_mutex_for_instance(void* _Ptr) {
+    scoped_lock _Guard(_Mutex);
+    auto _Instance_mutex_itr = _Mutex_map.find(_Ptr);
+    _ASSERT_EXPR(_Instance_mutex_itr != _Mutex_map.end(), "No mutex exists for given instance!");
+    return _Instance_mutex_itr->second._Mutex;
 }
-
-map<void*, _Mutex_count_pair>& _Get_mutex_map() {
-    return _Mutex_map;
+extern "C" _CRTIMP2 void _Add_mutex_for_instance_or_increment(void* _Ptr) noexcept {
+    scoped_lock _Guard(_Mutex);
+    _Mutex_map.try_emplace(_Ptr).first->second._Ref_count++;
+}
+extern "C" _CRTIMP2 void _Delete_mutex_for_instance_or_decrement(void* _Ptr) noexcept {
+    scoped_lock _Guard(_Mutex);
+    auto _Instance_mutex_itr = _Mutex_map.find(_Ptr);
+    if (_Instance_mutex_itr == _Mutex_map.end()) {
+        return;
+    }
+    if (--_Instance_mutex_itr->second._Ref_count == 0) {
+        _Mutex_map.erase(_Ptr);
+    }
 }
 
 _STD_END
