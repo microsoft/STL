@@ -101,7 +101,7 @@ jobs:
         -host_arch=amd64 -arch=${{ parameters.vsDevCmdArch }} -no_logo
         cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE=$(vcpkgLocation)\scripts\buildsystems\vcpkg.cmake ^
         -DVCPKG_TARGET_TRIPLET=${{ parameters.targetPlatform }}-windows -DCMAKE_CXX_COMPILER=cl ^
-        -DCMAKE_BUILD_TYPE=Release -DLIT_FLAGS=$(litFlags);$(shardFlags) -TESTS_DBUILD_ONLY=ON ^
+        -DCMAKE_BUILD_TYPE=Release -DLIT_FLAGS=$(litFlags);$(shardFlags) -DTESTS_BUILD_ONLY=ON ^
         -DCMAKE_CXX_FLAGS=/analyze:autolog- ^
         -S $(Build.SourcesDirectory) -B $(buildOutputLocation)
         cmake --build $(buildOutputLocation)
