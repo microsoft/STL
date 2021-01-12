@@ -13,6 +13,7 @@
 #pragma message("The contents of <syncstream> are available only with C++20 syncbuf support.")
 #else // ^^^ !defined(__cpp_lib_syncbuf) / defined(__cpp_lib_syncbuf) vvv
 #include <memory>
+#include <ostream>
 #include <shared_mutex>
 #include <streambuf>
 
@@ -268,6 +269,63 @@ template <class _Elem, class _Traits, class _Alloc>
 void swap(basic_syncbuf<_Elem, _Traits, _Alloc>& _Left, basic_syncbuf<_Elem, _Traits, _Alloc>& _Right) {
     _Left.swap(_Right);
 }
+
+template <class _Elem, class _Traits, class _Alloc>
+class basic_osyncstream : public basic_ostream<_Elem, _Traits> {
+public:
+    using char_type      = _Elem;
+    using int_type       = typename _Traits::int_type;
+    using pos_type       = typename _Traits::pos_type;
+    using off_type       = typename _Traits::off_type;
+    using traits_type    = _Traits;
+    using allocator_type = _Alloc;
+    using streambuf_type = basic_streambuf<_Elem, _Traits>;
+    using syncbuf_type   = basic_syncbuf<_Elem, _Traits, _Alloc>;
+
+    using _Mybase = basic_ostream<_Elem, _Traits>;
+
+    basic_osyncstream(streambuf_type* _Strbuf, const _Alloc& _Al)
+        : _Mybase(_STD addressof(_Sync_buf)), _Sync_buf(_Strbuf, _Al) {}
+
+    explicit basic_osyncstream(streambuf_type* _Strbuf) : basic_osyncstream(_Strbuf, _Alloc{}) {}
+
+    basic_osyncstream(basic_ostream<_Elem, _Traits>& _Str, const _Alloc& _Al) : basic_osyncstream(_Str.rdbuf(), _Al) {}
+
+    explicit basic_osyncstream(basic_ostream<_Elem, _Traits>& _Str) : basic_osyncstream(_Str, _Alloc{}) {}
+
+    basic_osyncstream(basic_osyncstream&& _Right) noexcept
+        : _Mybase(_STD move(_Right)), _Sync_buf(_STD move(_Right._Sync_buf)) {
+        _Mybase::set_rdbuf(_STD addressof(_Sync_buf));
+    }
+
+    ~basic_osyncstream() {
+        _Emit();
+    }
+
+    basic_osyncstream& operator=(basic_osyncstream&&) noexcept = default;
+
+    void emit() {
+        if (!_Sync_buf.emit()) {
+            _Mybase::setstate(ios::badbit);
+        }
+    }
+    _NODISCARD streambuf_type* get_wrapped() const noexcept {
+        return _Sync_buf.get_wrapped();
+    }
+    _NODISCARD syncbuf_type* rdbuf() const noexcept {
+        return const_cast<syncbuf_type*>(_STD addressof(_Sync_buf));
+    }
+
+private:
+    void _Emit() {
+        _TRY_BEGIN
+        return emit();
+        _CATCH_ALL
+        _CATCH_END
+    }
+
+    syncbuf_type _Sync_buf;
+};
 
 _STD_END
 
