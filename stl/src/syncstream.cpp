@@ -3,7 +3,8 @@
 
 // initialize syncstream mutex map
 
-#include <syncstream>
+#include <shared_mutex>
+#include <map>
 
 #pragma warning(disable : 4074)
 #pragma init_seg(compiler)
