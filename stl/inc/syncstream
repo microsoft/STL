@@ -9,7 +9,6 @@
 #include <yvals.h>
 #if _STL_COMPILER_PREPROCESSOR
 
-#define __cpp_lib_syncbuf
 #ifndef __cpp_lib_syncbuf
 #pragma message("The contents of <syncstream> are available only with C++20 syncbuf support.")
 #else // ^^^ !defined(__cpp_lib_syncbuf) / defined(__cpp_lib_syncbuf) vvv

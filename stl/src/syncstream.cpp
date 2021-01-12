@@ -5,7 +5,6 @@
 
 #include <syncstream>
 
-#ifdef __cpp_lib_syncbuf
 #pragma warning(disable : 4074)
 #pragma init_seg(compiler)
 
@@ -40,4 +39,3 @@ extern "C" _CRTIMP2 void _Delete_mutex_for_instance_or_decrement(void* _Ptr) noe
 }
 
 _STD_END
-#endif
