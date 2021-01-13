@@ -736,7 +736,7 @@ protected:
             _Count = _Strftime(&_Str[0], _Str.size(), _Fmt, _Pt, _Tnames._Getptr());
             if (0 < _Count) {
                 break;
-            } else if (0 == _Count) {
+            } else if (errno == EINVAL) {
                 _Iosbase.setstate(ios_base::badbit);
                 return _Dest;
             }
@@ -865,7 +865,7 @@ protected:
             _Count = _Wcsftime(&_Str[0], _Str.size(), _Fmt, _Pt, _Tnames._Getptr());
             if (0 < _Count) {
                 break;
-            } else if (0 == _Count) {
+            } else if (errno == EINVAL) {
                 _Iosbase.setstate(ios_base::badbit);
                 return _Dest;
             }
@@ -994,7 +994,7 @@ protected:
             _Count = _Wcsftime(&_Str[0], _Str.size(), _Fmt, _Pt, _Tnames._Getptr());
             if (0 < _Count) {
                 break;
-            } else if (0 == _Count) {
+            } else if (errno == EINVAL) {
                 _Iosbase.setstate(ios_base::badbit);
                 return _Dest;
             }

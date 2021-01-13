@@ -180,7 +180,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
 
     const typename _Myos::sentry _Ok(_Ostr);
 
-    _Ostr.setstate(ios_base::goodbit);
     if (_Ok) { // state okay, insert monetary amount
         const _Mytput& _Tput_fac = _STD use_facet<_Mytput>(_Ostr.getloc());
         _TRY_IO_BEGIN
