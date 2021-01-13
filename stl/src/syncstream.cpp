@@ -19,22 +19,20 @@ static map<void*, _Mutex_count_pair> _Mutex_map{};
 static shared_mutex _Mutex{};
 
 extern "C" _CRTIMP2 shared_mutex& _Get_mutex_for_instance(void* _Ptr) {
-    scoped_lock _Guard(_Mutex);
-    auto _Instance_mutex_itr = _Mutex_map.find(_Ptr);
-    _ASSERT_EXPR(_Instance_mutex_itr != _Mutex_map.end(), "No mutex exists for given instance!");
-    return _Instance_mutex_itr->second._Mutex;
+    shared_lock _Guard(_Mutex);
+    auto _Instance_mutex_iter = _Mutex_map.find(_Ptr);
+    _ASSERT_EXPR(_Instance_mutex_iter != _Mutex_map.end(), "No mutex exists for given instance!");
+    return _Instance_mutex_iter->second._Mutex;
 }
-extern "C" _CRTIMP2 void _Add_mutex_for_instance_or_increment(void* _Ptr) noexcept {
+extern "C" _CRTIMP2 void _Acquire_mutex_for_instance(void* _Ptr) noexcept {
     scoped_lock _Guard(_Mutex);
     _Mutex_map.try_emplace(_Ptr).first->second._Ref_count++;
 }
-extern "C" _CRTIMP2 void _Delete_mutex_for_instance_or_decrement(void* _Ptr) noexcept {
+extern "C" _CRTIMP2 void _Release_mutex_for_instance(void* _Ptr) noexcept {
     scoped_lock _Guard(_Mutex);
-    auto _Instance_mutex_itr = _Mutex_map.find(_Ptr);
-    if (_Instance_mutex_itr == _Mutex_map.end()) {
-        return;
-    }
-    if (--_Instance_mutex_itr->second._Ref_count == 0) {
+    auto _Instance_mutex_iter = _Mutex_map.find(_Ptr);
+    _ASSERT_EXPR(_Instance_mutex_iter != _Mutex_map.end(), "No mutex exists for given instance!");
+    if (--_Instance_mutex_iter->second._Ref_count == 0) {
         _Mutex_map.erase(_Ptr);
     }
 }

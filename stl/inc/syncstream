@@ -8,10 +8,9 @@
 #define _SYNCSTREAM_
 #include <yvals.h>
 #if _STL_COMPILER_PREPROCESSOR
-
-#ifndef __cpp_lib_syncbuf
-#pragma message("The contents of <syncstream> are available only with C++20 syncbuf support.")
-#else // ^^^ !defined(__cpp_lib_syncbuf) / defined(__cpp_lib_syncbuf) vvv
+#if !_HAS_CXX20
+#pragma message("The contents of <syncstream> are available only with C++20 or later.")
+#else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
 #include <memory>
 #include <ostream>
 #include <shared_mutex>
@@ -29,8 +28,8 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 
 extern "C" shared_mutex& __cdecl _Get_mutex_for_instance(void* _Ptr);
-extern "C" void __cdecl _Add_mutex_for_instance_or_increment(void* _Ptr) noexcept;
-extern "C" void __cdecl _Delete_mutex_for_instance_or_decrement(void* _Ptr) noexcept;
+extern "C" void __cdecl _Acquire_mutex_for_instance(void* _Ptr) noexcept;
+extern "C" void __cdecl _Release_mutex_for_instance(void* _Ptr) noexcept;
 
 // CLASS TEMPLATE basic_syncbuf
 template <class _Elem, class _Traits, class _Alloc>
@@ -51,7 +50,7 @@ public:
 
     basic_syncbuf(streambuf_type* _Strbuf, const _Alloc& _Al_) : _Wrapped(_Strbuf), _Al(_Al_) {
         if (_Wrapped != nullptr) {
-            _Add_mutex_for_instance_or_increment(_Wrapped);
+            _Acquire_mutex_for_instance(_Wrapped);
         }
         _Init();
     }
@@ -172,7 +171,7 @@ private:
 
         streambuf_type::setp(nullptr, nullptr, nullptr);
         if (_Wrapped != nullptr) {
-            _Delete_mutex_for_instance_or_decrement(_Wrapped);
+            _Release_mutex_for_instance(_Wrapped);
             _Wrapped = nullptr;
         }
     }
@@ -298,9 +297,7 @@ public:
         _Mybase::set_rdbuf(_STD addressof(_Sync_buf));
     }
 
-    ~basic_osyncstream() {
-        _Emit();
-    }
+    ~basic_osyncstream() = default;
 
     basic_osyncstream& operator=(basic_osyncstream&&) noexcept = default;
 
@@ -317,13 +314,6 @@ public:
     }
 
 private:
-    void _Emit() {
-        _TRY_BEGIN
-        return emit();
-        _CATCH_ALL
-        _CATCH_END
-    }
-
     syncbuf_type _Sync_buf;
 };
 
@@ -334,6 +324,6 @@ _STD_END
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
-#endif // __cpp_lib_syncbuf
+#endif // _HAS_CXX20
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _SYNCSTREAM_
