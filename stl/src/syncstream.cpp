@@ -26,7 +26,7 @@ public:
     using propagate_on_container_move_assignment = true_type;
     using is_always_equal                        = true_type;
 
-    constexpr _Crt_allocator() noexcept {}
+    constexpr _Crt_allocator() noexcept = default;
 
     constexpr _Crt_allocator(const _Crt_allocator&) noexcept = default;
     template <class _Other>
@@ -44,11 +44,11 @@ public:
 static map<void*, _Mutex_count_pair, less<void*>, _Crt_allocator<pair<void* const, _Mutex_count_pair>>> _Mutex_map;
 static shared_mutex _Mutex;
 
-extern "C" _CRTIMP2 shared_mutex& _Get_mutex_for_instance(void* _Ptr) {
+extern "C" _CRTIMP2 shared_mutex* _Get_mutex_for_instance(void* _Ptr) {
     shared_lock _Guard(_Mutex);
     auto _Instance_mutex_iter = _Mutex_map.find(_Ptr);
     _ASSERT_EXPR(_Instance_mutex_iter != _Mutex_map.end(), "No mutex exists for given instance!");
-    return _Instance_mutex_iter->second._Mutex;
+    return _STD addressof(_Instance_mutex_iter->second._Mutex);
 }
 extern "C" _CRTIMP2 void _Acquire_mutex_for_instance(void* _Ptr) noexcept {
     scoped_lock _Guard(_Mutex);
