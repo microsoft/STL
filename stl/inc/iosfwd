@@ -201,6 +201,8 @@ class basic_ofstream;
 template <class _Elem, class _Traits = char_traits<_Elem>>
 class basic_fstream;
 #if _HAS_CXX20
+template <class _Elem, class _Traits = char_traits<_Elem>>
+class _Basic_syncbuf_impl;
 template <class _Elem, class _Traits = char_traits<_Elem>, class _Alloc = allocator<_Elem>>
 class basic_syncbuf;
 template <class _Elem, class _Traits = char_traits<_Elem>, class _Alloc = allocator<_Elem>>

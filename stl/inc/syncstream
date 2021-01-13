@@ -31,9 +31,38 @@ extern "C" shared_mutex* __cdecl _Get_mutex_for_instance(void* _Ptr) noexcept;
 extern "C" void __cdecl _Acquire_mutex_for_instance(void* _Ptr);
 extern "C" void __cdecl _Release_mutex_for_instance(void* _Ptr) noexcept;
 
+// CLASS TEMPLATE _Basic_osyncbuf_impl
+template <class _Elem, class _Traits>
+class _Basic_syncbuf_impl : public basic_streambuf<_Elem, _Traits> {
+public:
+    void _Set_emit_on_sync(const bool _Val) noexcept {
+        _Emit_on_sync = _Val;
+    }
+
+    virtual bool _Do_emit() = 0;
+
+protected:
+    using _Mysb = basic_streambuf<_Elem, _Traits>;
+
+    _Basic_syncbuf_impl() = default;
+
+    _Basic_syncbuf_impl(_Basic_syncbuf_impl&& _Right) {
+        swap(_Right);
+    }
+
+    void swap(_Basic_syncbuf_impl& _Right) {
+        if (this != _STD addressof(_Right)) {
+            _Mysb::swap(_Right);
+            _STD swap(_Right._Emit_on_sync, _Emit_on_sync);
+        }
+    }
+
+    bool _Emit_on_sync{false};
+};
+
 // CLASS TEMPLATE basic_syncbuf
 template <class _Elem, class _Traits, class _Alloc>
-class basic_syncbuf : public basic_streambuf<_Elem, _Traits> {
+class basic_syncbuf : public _Basic_syncbuf_impl<_Elem, _Traits> {
 public:
     using int_type       = typename _Traits::int_type;
     using pos_type       = typename _Traits::pos_type;
@@ -41,6 +70,7 @@ public:
     using allocator_type = _Alloc;
     using streambuf_type = basic_streambuf<_Elem, _Traits>;
 
+    using _Mybase   = _Basic_syncbuf_impl<_Elem, _Traits>;
     using pointer   = typename allocator_traits<_Alloc>::pointer;
     using size_type = typename allocator_traits<_Alloc>::size_type;
 
@@ -91,7 +121,7 @@ public:
         if (_Data_size > 0 || _Record_sync) {
             scoped_lock _Guard(*_Get_mutex_for_instance(_Wrapped));
 
-            if (_Data_size > 0 && _Data_size != _Wrapped->sputn(_Begin_seq_ptr, _Data_size)) {
+            if (_Data_size > 0 && _Data_size != static_cast<size_type>(_Wrapped->sputn(_Begin_seq_ptr, _Data_size))) {
                 _Result = false;
             }
 
@@ -116,14 +146,14 @@ public:
     }
 
     void set_emit_on_sync(const bool _Val) noexcept {
-        _Emit_on_sync = _Val;
+        _Mybase::_Set_emit_on_sync(_Val);
     }
 
 protected:
     int sync() override {
         _Record_sync = true;
 
-        if (_Emit_on_sync) {
+        if (_Mybase::_Emit_on_sync) {
             if (!emit()) {
                 return -1;
             }
@@ -210,15 +240,22 @@ private:
             streambuf_type::setp(_New_ptr, _New_ptr + _Right_data_size, _New_ptr + _Right_buf_size);
             streambuf_type::_Plocale = _STD move(_Right._Plocale);
 
+            _STD swap(_Mybase::_Emit_on_sync, _Right._Emit_on_sync);
+            _STD swap(_Record_sync, _Right._Record_sync);
+            _STD swap(_Wrapped, _Right._Wrapped);
+
             _Right._Tidy();
         }
     }
 
     void _Swap_except_al(basic_syncbuf& _Right) noexcept {
-        streambuf_type::swap(_Right);
-        _STD swap(_Emit_on_sync, _Right._Emit_on_sync);
+        _Mybase::swap(_Right);
         _STD swap(_Record_sync, _Right._Record_sync);
         _STD swap(_Wrapped, _Right._Wrapped);
+    }
+
+    bool _Do_emit() override {
+        return emit();
     }
 
     bool _Emit() noexcept {
@@ -254,7 +291,6 @@ private:
 
     streambuf_type* _Wrapped{nullptr};
     allocator_type _Al{};
-    bool _Emit_on_sync{false};
     bool _Record_sync{false};
 };
 
@@ -282,9 +318,10 @@ public:
 
     explicit basic_osyncstream(streambuf_type* _Strbuf) : basic_osyncstream(_Strbuf, _Alloc{}) {}
 
-    basic_osyncstream(basic_ostream<_Elem, _Traits>& _Str, const _Alloc& _Al) : basic_osyncstream(_Str.rdbuf(), _Al) {}
+    basic_osyncstream(basic_ostream<_Elem, _Traits>& _Ostr, const _Alloc& _Al)
+        : basic_osyncstream(_Ostr.rdbuf(), _Al) {}
 
-    explicit basic_osyncstream(basic_ostream<_Elem, _Traits>& _Str) : basic_osyncstream(_Str, _Alloc{}) {}
+    explicit basic_osyncstream(basic_ostream<_Elem, _Traits>& _Ostr) : basic_osyncstream(_Ostr, _Alloc{}) {}
 
     basic_osyncstream(basic_osyncstream&& _Right) noexcept
         : _Mybase(_STD move(_Right)), _Sync_buf(_STD move(_Right._Sync_buf)) {
