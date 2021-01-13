@@ -27,8 +27,8 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 
-extern "C" shared_mutex* __cdecl _Get_mutex_for_instance(void* _Ptr);
-extern "C" void __cdecl _Acquire_mutex_for_instance(void* _Ptr) noexcept;
+extern "C" shared_mutex* __cdecl _Get_mutex_for_instance(void* _Ptr) noexcept;
+extern "C" void __cdecl _Acquire_mutex_for_instance(void* _Ptr);
 extern "C" void __cdecl _Release_mutex_for_instance(void* _Ptr) noexcept;
 
 // CLASS TEMPLATE basic_syncbuf
@@ -115,7 +115,7 @@ public:
         return _Al;
     }
 
-    void set_emit_on_sync(bool _Val) noexcept {
+    void set_emit_on_sync(const bool _Val) noexcept {
         _Emit_on_sync = _Val;
     }
 
