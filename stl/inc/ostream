@@ -998,7 +998,7 @@ template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& emit_on_flush(basic_ostream<_Elem, _Traits>& _Ostr) {
     auto _Sync_buf_ptr = dynamic_cast<_Basic_syncbuf_impl<_Elem, _Traits>*>(_Ostr.rdbuf());
     if (_Sync_buf_ptr) {
-        _Sync_buf_ptr->_Set_emit_on_sync(true);
+        _Sync_buf_ptr->set_emit_on_sync(true);
     }
     return _Ostr;
 }
@@ -1007,7 +1007,7 @@ template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& noemit_on_flush(basic_ostream<_Elem, _Traits>& _Ostr) {
     auto _Sync_buf_ptr = dynamic_cast<_Basic_syncbuf_impl<_Elem, _Traits>*>(_Ostr.rdbuf());
     if (_Sync_buf_ptr) {
-        _Sync_buf_ptr->_Set_emit_on_sync(false);
+        _Sync_buf_ptr->set_emit_on_sync(false);
     }
     return _Ostr;
 }

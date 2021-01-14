@@ -35,7 +35,7 @@ extern "C" void __cdecl _Release_mutex_for_instance(void* _Ptr) noexcept;
 template <class _Elem, class _Traits>
 class _Basic_syncbuf_impl : public basic_streambuf<_Elem, _Traits> {
 public:
-    void _Set_emit_on_sync(const bool _Val) noexcept {
+    void set_emit_on_sync(const bool _Val) noexcept {
         _Emit_on_sync = _Val;
     }
 
@@ -51,13 +51,13 @@ protected:
     }
 
     void swap(_Basic_syncbuf_impl& _Right) {
-        if (this != _STD addressof(_Right)) {
-            _Mysb::swap(_Right);
-            _STD swap(_Right._Emit_on_sync, _Emit_on_sync);
-        }
+        _Mysb::swap(_Right);
+        _STD swap(_Emit_on_sync, _Right._Emit_on_sync);
+        _STD swap(_Sync_recorded, _Right._Sync_recorded);
     }
 
     bool _Emit_on_sync{false};
+    bool _Sync_recorded{false};
 };
 
 // CLASS TEMPLATE basic_syncbuf
@@ -74,6 +74,8 @@ public:
     using pointer   = typename allocator_traits<_Alloc>::pointer;
     using size_type = typename allocator_traits<_Alloc>::size_type;
 
+    using _Mybase::set_emit_on_sync;
+
     basic_syncbuf() = default;
 
     explicit basic_syncbuf(streambuf_type* _Strbuf) : basic_syncbuf(_Strbuf, _Alloc{}) {}
@@ -85,9 +87,8 @@ public:
         _Init();
     }
 
-    basic_syncbuf(basic_syncbuf&& _Right) {
-        _Al = _STD move(_Right._Al);
-        _Assign_rv(_STD move(_Right));
+    basic_syncbuf(basic_syncbuf&& _Right) : _Al(_STD move(_Right._Al)) {
+        _Swap_except_al(_Right);
     }
 
     ~basic_syncbuf() {
@@ -118,20 +119,20 @@ public:
         bool _Result                 = true;
         const size_type _Data_size   = _Get_data_size();
         const pointer _Begin_seq_ptr = pointer_traits<pointer>::pointer_to(*streambuf_type::pbase());
-        if (_Data_size > 0 || _Record_sync) {
+        if (_Data_size > 0 || _Mybase::_Sync_recorded) {
             scoped_lock _Guard(*_Get_mutex_for_instance(_Wrapped));
 
             if (_Data_size > 0 && _Data_size != static_cast<size_type>(_Wrapped->sputn(_Begin_seq_ptr, _Data_size))) {
                 _Result = false;
             }
 
-            if (_Record_sync) {
+            if (_Mybase::_Sync_recorded) {
                 if (_Wrapped->pubsync() == -1) {
                     _Result = false;
                 }
             }
         }
-        _Record_sync = false;
+        _Mybase::_Sync_recorded = false;
         streambuf_type::setp(
             _Begin_seq_ptr, pointer_traits<pointer>::pointer_to(*streambuf_type::epptr())); // reset written data
         return _Result;
@@ -145,13 +146,9 @@ public:
         return _Al;
     }
 
-    void set_emit_on_sync(const bool _Val) noexcept {
-        _Mybase::_Set_emit_on_sync(_Val);
-    }
-
 protected:
     int sync() override {
-        _Record_sync = true;
+        _Mybase::_Sync_recorded = true;
 
         if (_Mybase::_Emit_on_sync) {
             if (!emit()) {
@@ -208,23 +205,16 @@ private:
         }
     }
 
-    void _Assign_rv(basic_syncbuf&& _Right) {
-        if (this != _STD addressof(_Right)) {
-            _Tidy();
-            this->_Swap_except_al(_Right);
-        }
-    }
-
     void _Move_assign(basic_syncbuf&& _Right, _Equal_allocators) noexcept {
         _Tidy();
         _Pocma(_Al, _Right._Al);
-        this->_Swap_except_al(_Right);
+        _Swap_except_al(_Right);
     }
 
     void _Move_assign(basic_syncbuf&& _Right, _Propagate_allocators) noexcept {
         _Tidy();
         _Pocma(_Al, _Right._Al);
-        this->_Swap_except_al(_Right);
+        _Swap_except_al(_Right);
     }
 
     void _Move_assign(basic_syncbuf&& _Right, _No_propagate_allocators) {
@@ -241,7 +231,7 @@ private:
             streambuf_type::_Plocale = _STD move(_Right._Plocale);
 
             _STD swap(_Mybase::_Emit_on_sync, _Right._Emit_on_sync);
-            _STD swap(_Record_sync, _Right._Record_sync);
+            _STD swap(_Mybase::_Sync_recorded, _Right._Sync_recorded);
             _STD swap(_Wrapped, _Right._Wrapped);
 
             _Right._Tidy();
@@ -250,7 +240,6 @@ private:
 
     void _Swap_except_al(basic_syncbuf& _Right) noexcept {
         _Mybase::swap(_Right);
-        _STD swap(_Record_sync, _Right._Record_sync);
         _STD swap(_Wrapped, _Right._Wrapped);
     }
 
@@ -291,7 +280,6 @@ private:
 
     streambuf_type* _Wrapped{nullptr};
     allocator_type _Al{};
-    bool _Record_sync{false};
 };
 
 template <class _Elem, class _Traits, class _Alloc>
@@ -299,6 +287,7 @@ void swap(basic_syncbuf<_Elem, _Traits, _Alloc>& _Left, basic_syncbuf<_Elem, _Tr
     _Left.swap(_Right);
 }
 
+// CLASS TEMPLATE basic_osyncstream
 template <class _Elem, class _Traits, class _Alloc>
 class basic_osyncstream : public basic_ostream<_Elem, _Traits> {
 public:
