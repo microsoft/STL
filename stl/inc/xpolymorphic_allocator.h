@@ -136,7 +136,6 @@ void _Uses_allocator_construct(
 
 #if _HAS_CXX17
 namespace pmr {
-
     // CLASS memory_resource
     class __declspec(novtable) memory_resource {
     public:
@@ -274,6 +273,11 @@ namespace pmr {
             _Uses_allocator_construct(_Ptr, _Al, *this, _STD forward<_Types>(_Args)...);
         }
 
+        template <class _Uty>
+        _CXX17_DEPRECATE_POLYMORPHIC_ALLOCATOR_DESTROY void destroy(_Uty* const _Ptr) noexcept /* strengthened */ {
+            _Destroy_in_place(*_Ptr);
+        }
+
         _NODISCARD polymorphic_allocator select_on_container_copy_construction() const noexcept /* strengthened */ {
             // don't propagate on copy
             return {};
@@ -302,6 +306,12 @@ namespace pmr {
     }
 
 } // namespace pmr
+
+template <class _Ty, class _Ptr>
+struct _Has_no_alloc_destroy<pmr::polymorphic_allocator<_Ty>, _Ptr, void> : true_type {
+    // polymorphic_allocator technically _does_ have a destroy member, but it's equivalent to the
+    // default implementation in allocator_traits so we can optimize it away.
+};
 
 #endif // _HAS_CXX17
 

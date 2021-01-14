@@ -898,7 +898,7 @@ private:
         if (_Sticky) { // increment ls digit in memory of those lost
             char* _Px = _Ptr;
             while (--_Px != _Leading) { // add in carry
-                if (*_Px != localeconv()->decimal_point[0]) { // non decimal point
+                if (*_Px != localeconv()->decimal_point[0]) { // not decimal point
                     if (*_Px != '9') { // carry stops here
                         ++*_Px;
                         break;
@@ -1526,10 +1526,11 @@ private:
         }
 
         ios_base::fmtflags _Basefield = _Flags & ios_base::basefield;
-        *_Ptr++                       = _Basefield == ios_base::oct ? 'o'
-                                              : _Basefield != ios_base::hex ? _Spec[1] // 'd' or 'u'
-                                                                            : _Flags & ios_base::uppercase ? 'X' : 'x';
-        *_Ptr = '\0';
+        *_Ptr++                       = _Basefield == ios_base::oct  ? 'o'
+                                      : _Basefield != ios_base::hex  ? _Spec[1] // 'd' or 'u'
+                                      : _Flags & ios_base::uppercase ? 'X'
+                                                                     : 'x';
+        *_Ptr                         = '\0';
         return _Fmt;
     }
 

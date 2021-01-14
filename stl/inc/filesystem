@@ -622,7 +622,6 @@ namespace filesystem {
 
     _NODISCARD inline bool _Is_drive_prefix_with_slash_slash_question(const wstring_view _Text) {
         // test if _Text starts with a \\?\X: prefix
-        using namespace _STD string_view_literals; // TRANSITION, VSO-571749
         return _Text.size() >= 6 && _Text._Starts_with(LR"(\\?\)"sv) && _Is_drive_prefix(_Text.data() + 4);
     }
 
@@ -1250,8 +1249,6 @@ namespace filesystem {
         }
 
         _NODISCARD path lexically_normal() const {
-            using namespace _STD string_view_literals; // TRANSITION, VSO-571749
-
             constexpr wstring_view _Dot     = L"."sv;
             constexpr wstring_view _Dot_dot = L".."sv;
 
@@ -1686,8 +1683,6 @@ namespace filesystem {
     }
 
     _NODISCARD inline path path::lexically_relative(const path& _Base) const {
-        using namespace _STD string_view_literals; // TRANSITION, VSO-571749
-
         constexpr wstring_view _Dot     = L"."sv;
         constexpr wstring_view _Dot_dot = L".."sv;
 
@@ -1810,7 +1805,6 @@ namespace filesystem {
 
     private:
         static string _Pretty_message(const string_view _Op, const path& _Path1, const path& _Path2 = {}) {
-            using namespace _STD string_view_literals; // TRANSITION, VSO-571749
             string _Result;
             // Convert the paths to narrow encoding in a way that gracefully handles non-encodable characters
             const auto _Code_page   = __std_fs_code_page();
@@ -2099,7 +2093,7 @@ namespace filesystem {
             // [fs.op.status]/Throws: result values of file_status(file_type::not_found) and
             // file_status(file_type::unknown) are not considered failures and do not cause an exception to be thrown.
             return _Error != __std_win_error::_Success && _Status.type() != file_type::not_found
-                   && _Status.type() != file_type::unknown;
+                && _Status.type() != file_type::unknown;
         }
     };
 
@@ -2199,7 +2193,7 @@ namespace filesystem {
             return _Path;
         }
 
-        operator const filesystem::path &() const noexcept {
+        operator const filesystem::path&() const noexcept {
             return _Path;
         }
 
@@ -2275,8 +2269,8 @@ namespace filesystem {
 
         _NODISCARD bool _Is_symlink_or_junction() const noexcept {
             return _Has_cached_attribute(__std_fs_file_attr::_Reparse_point)
-                   && (_Cached_data._Reparse_point_tag == __std_fs_reparse_tag::_Symlink
-                       || _Cached_data._Reparse_point_tag == __std_fs_reparse_tag::_Mount_point);
+                && (_Cached_data._Reparse_point_tag == __std_fs_reparse_tag::_Symlink
+                    || _Cached_data._Reparse_point_tag == __std_fs_reparse_tag::_Mount_point);
         }
 
         _NODISCARD bool is_symlink() const {
@@ -2482,7 +2476,7 @@ namespace filesystem {
             _Cached_data._Available         = __std_fs_stats_flags::_Attributes | __std_fs_stats_flags::_Reparse_tag;
             if (!_Bitmask_includes(_Data._Attributes, __std_fs_file_attr::_Reparse_point)) {
                 _Cached_data._File_size = (static_cast<uintmax_t>(_Data._File_size_high) << 32)
-                                          + static_cast<uintmax_t>(_Data._File_size_low);
+                                        + static_cast<uintmax_t>(_Data._File_size_low);
                 _CSTD memcpy(
                     &_Cached_data._Last_write_time, &_Data._Last_write_time, sizeof(_Cached_data._Last_write_time));
                 _Cached_data._Available |= __std_fs_stats_flags::_File_size | __std_fs_stats_flags::_Last_write_time;
@@ -2550,7 +2544,6 @@ namespace filesystem {
 
         _NODISCARD static __std_win_error _Open_dir(
             path& _Path, const directory_options _Options_arg, _Find_file_handle& _Dir, __std_fs_find_data& _Data) {
-            using namespace _STD string_view_literals; // TRANSITION, VSO-571749
             const size_t _Null_term_len = _CSTD wcslen(_Path.c_str());
             if (_Null_term_len == 0 || _Null_term_len != _Path.native().size()) {
                 return __std_win_error::_File_not_found;
@@ -3021,7 +3014,6 @@ namespace filesystem {
 
     // FUNCTION canonical
     _NODISCARD inline __std_win_error _Canonical(path& _Result, const wstring& _Text) { // pre: _Result.empty()
-        using namespace _STD string_view_literals; // TRANSITION, VSO-571749
         if (_Text.empty()) {
             return __std_win_error::_Success;
         }
@@ -3512,7 +3504,7 @@ namespace filesystem {
     _NODISCARD inline bool is_empty(const path& _Path, error_code& _Ec) {
         // test whether _Path refers to a zero sized file or empty directory
         constexpr auto _Flags = __std_fs_stats_flags::_Attributes | __std_fs_stats_flags::_File_size
-                                | __std_fs_stats_flags::_Follow_symlinks;
+                              | __std_fs_stats_flags::_Follow_symlinks;
         __std_fs_stats _Stats;
         const auto _Error = __std_fs_get_stats(_Path.c_str(), &_Stats, _Flags);
         _Ec               = _Make_ec(_Error);
@@ -4211,7 +4203,7 @@ namespace filesystem {
         // Other parts of LWG-3057 remain under discussion in the committee and are not yet implemented.
         //  (In particular, changes to existing destination flags, and error handling).
         const bool _Flink = (_Options & (copy_options::skip_symlinks | copy_options::copy_symlinks))
-                            != copy_options::none; // create_symlinks intentionally removed by LWG-3057
+                         != copy_options::none; // create_symlinks intentionally removed by LWG-3057
         const auto _Fstat = _From._Get_any_status(_Flink ? _Symlink_status_stats_flags : _Status_stats_flags);
         if (_Fstat._Error != __std_win_error::_Success) { // report an error if exists(f) is false
             _Ec = _Make_ec(_Fstat._Error);

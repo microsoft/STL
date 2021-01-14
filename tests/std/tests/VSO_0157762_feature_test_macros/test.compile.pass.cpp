@@ -411,6 +411,21 @@ STATIC_ASSERT(__cpp_lib_constexpr_complex == 201711L);
 #endif
 #endif
 
+#if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc) \
+    && defined(__clang__) // TRANSITION, MSVC support for constexpr dynamic allocation
+#ifndef __cpp_lib_constexpr_dynamic_alloc
+#error __cpp_lib_constexpr_dynamic_alloc is not defined
+#elif __cpp_lib_constexpr_dynamic_alloc != 201907L
+#error __cpp_lib_constexpr_dynamic_alloc is not 201907L
+#else
+STATIC_ASSERT(__cpp_lib_constexpr_dynamic_alloc == 201907L);
+#endif
+#else
+#ifdef __cpp_lib_constexpr_dynamic_alloc
+#error __cpp_lib_constexpr_dynamic_alloc is defined
+#endif
+#endif
+
 #if _HAS_CXX20
 #ifndef __cpp_lib_constexpr_functional
 #error __cpp_lib_constexpr_functional is not defined
@@ -509,18 +524,13 @@ STATIC_ASSERT(__cpp_lib_constexpr_utility == 201811L);
 #endif
 #endif
 
-#if _HAS_CXX20 && defined(__cpp_impl_coroutine) // TRANSITION, Clang and EDG coroutine support
-#if __cpp_impl_coroutine >= 201902L
-#define ExpectedCppLibCoroutine 201902L
-#else
-#define ExpectedCppLibCoroutine 197000L // TRANSITION, VS 2019 16.8 Preview 4
-#endif
+#if _HAS_CXX20 && defined(__cpp_impl_coroutine) // TRANSITION, Clang coroutine support
 #ifndef __cpp_lib_coroutine
 #error __cpp_lib_coroutine is not defined
-#elif __cpp_lib_coroutine != ExpectedCppLibCoroutine
-#error __cpp_lib_coroutine is not ExpectedCppLibCoroutine
+#elif __cpp_lib_coroutine != 201902L
+#error __cpp_lib_coroutine is not 201902L
 #else
-STATIC_ASSERT(__cpp_lib_coroutine == ExpectedCppLibCoroutine);
+STATIC_ASSERT(__cpp_lib_coroutine == 201902L);
 #endif
 #else
 #ifdef __cpp_lib_coroutine

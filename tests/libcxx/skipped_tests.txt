@@ -501,7 +501,6 @@ utilities\memory\allocator.traits\allocator.traits.members\destroy.pass.cpp
 utilities\memory\allocator.traits\allocator.traits.members\max_size.pass.cpp
 utilities\memory\allocator.traits\allocator.traits.members\select_on_container_copy_construction.pass.cpp
 utilities\memory\default.allocator\allocator.globals\eq.pass.cpp
-utilities\memory\default.allocator\allocator.members\allocate.pass.cpp
 utilities\memory\specialized.algorithms\specialized.construct\construct_at.pass.cpp
 utilities\memory\specialized.algorithms\specialized.destroy\destroy.pass.cpp
 utilities\memory\specialized.algorithms\specialized.destroy\destroy_at.pass.cpp
@@ -569,9 +568,6 @@ localization\locale.categories\category.monetary\locale.moneypunct\money_base.pa
 # GH-1113 <fstream>: basic_filebuf doesn't comply with setbuf(0,0) requirement in the standard
 input.output\file.streams\fstreams\filebuf.virtuals\overflow.pass.cpp
 input.output\file.streams\fstreams\filebuf.virtuals\underflow.pass.cpp
-
-# GH-1004 <regex>: Error C2664 in std::regex_traits::transform
-re\re.traits\transform.pass.cpp
 
 # GH-1295 <array>: array<const T, 0> allows fill() and swap()
 containers\sequences\array\array.fill\fill.fail.cpp

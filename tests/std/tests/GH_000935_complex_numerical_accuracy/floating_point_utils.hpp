@@ -12,19 +12,19 @@
 
 namespace fputil {
     template <typename T>
-    using float_bits_t = typename _STD _Float_traits<T>::type;
+    using float_bits_t = typename _STD _Floating_type_traits<T>::_Uint_type;
 
     template <typename T>
-    _INLINE_VAR constexpr float_bits_t<T> magnitude_mask_v = _STD _Float_traits<T>::_Magnitude_mask;
+    _INLINE_VAR constexpr float_bits_t<T> sign_mask_v = _STD _Floating_type_traits<T>::_Shifted_sign_mask;
 
     template <typename T>
-    _INLINE_VAR constexpr float_bits_t<T> exponent_mask_v = _STD _Float_traits<T>::_Exponent_mask;
+    _INLINE_VAR constexpr float_bits_t<T> magnitude_mask_v = ~sign_mask_v<T>;
+
+    template <typename T>
+    _INLINE_VAR constexpr float_bits_t<T> exponent_mask_v = _STD _Floating_type_traits<T>::_Shifted_exponent_mask;
 
     template <typename T>
     _INLINE_VAR constexpr float_bits_t<T> significand_mask_v = magnitude_mask_v<T> & ~exponent_mask_v<T>;
-
-    template <typename T>
-    _INLINE_VAR constexpr float_bits_t<T> sign_mask_v = _STD _Float_traits<T>::_Sign_mask;
 
     template <typename T>
     _INLINE_VAR constexpr float_bits_t<T> norm_min_bits_v = significand_mask_v<T> + 1U;
@@ -216,7 +216,7 @@ namespace fputil {
         template <typename T, std::enable_if_t<std::is_floating_point_v<T>, int> = 0>
         bool is_within_absolute_tolerance(const T& actual, const T& expected, const double absolute_tolerance) {
             return _STD _Is_finite(actual) && _STD _Is_finite(expected)
-                   && std::abs(actual - expected) <= absolute_tolerance;
+                && std::abs(actual - expected) <= absolute_tolerance;
         }
     } // namespace detail
 

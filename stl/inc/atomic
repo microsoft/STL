@@ -287,14 +287,11 @@ template <class _Integral, class _Ty>
 _NODISCARD _Integral _Atomic_reinterpret_as(const _Ty& _Source) noexcept {
     // interprets _Source as the supplied integral type
     static_assert(is_integral_v<_Integral>, "Tried to reinterpret memory as non-integral");
-#if _HAS_IF_CONSTEXPR
     if constexpr (is_integral_v<_Ty> && sizeof(_Integral) == sizeof(_Ty)) {
         return static_cast<_Integral>(_Source);
     } else if constexpr (is_pointer_v<_Ty> && sizeof(_Integral) == sizeof(_Ty)) {
         return reinterpret_cast<_Integral>(_Source);
-    } else
-#endif // _HAS_IF_CONSTEXPR
-    {
+    } else {
         _Integral _Result{}; // zero padding bits
         _CSTD memcpy(&_Result, _STD addressof(_Source), sizeof(_Source));
         return _Result;
@@ -330,15 +327,14 @@ struct _Atomic_padded {
 // STRUCT TEMPLATE _Atomic_storage_traits
 template <class _Ty>
 struct _Atomic_storage_traits { // properties for how _Ty is stored in an atomic
-    static constexpr size_t _Storage_size =
-        sizeof(_Ty) == 1 ? 1
-                         : sizeof(_Ty) == 2 ? 2
-                                            : sizeof(_Ty) <= 4 ? 4
-                                                               : sizeof(_Ty) <= 8 ? 8
+    static constexpr size_t _Storage_size = sizeof(_Ty) == 1 ? 1
+                                          : sizeof(_Ty) == 2 ? 2
+                                          : sizeof(_Ty) <= 4 ? 4
+                                          : sizeof(_Ty) <= 8 ? 8
 #if defined(_M_X64) || defined(_M_ARM64) || defined(_M_ARM64EC)
-                                                                                  : sizeof(_Ty) <= 16 ? 16
+                                          : sizeof(_Ty) <= 16 ? 16
 #endif // 64 bits
-                                                                                                      : sizeof(_Ty);
+                                                              : sizeof(_Ty);
 
     static constexpr size_t _Padding_size = _Storage_size - sizeof(_Ty);
     static constexpr bool _Uses_padding   = _Padding_size != 0;
@@ -445,7 +441,7 @@ inline void _Atomic_lock_release(_Smtx_t* _Spinlock) noexcept {
 }
 
 template <class _Spinlock_t>
-class _Atomic_lock_guard {
+class _NODISCARD _Atomic_lock_guard {
 public:
     explicit _Atomic_lock_guard(_Spinlock_t& _Spinlock_) noexcept : _Spinlock(_Spinlock_) {
         _Atomic_lock_acquire(_Spinlock);
@@ -475,6 +471,18 @@ bool __stdcall _Atomic_wait_compare_non_lock_free(
 
 #ifdef _WIN64
 inline bool __stdcall _Atomic_wait_compare_16_bytes(const void* _Storage, void* _Comparand, size_t, void*) noexcept {
+#if defined(__clang__) && defined(_M_ARM64) // TRANSITION, Clang 12
+    const auto _Dest = static_cast<__int128*>(const_cast<void*>(_Storage));
+    const auto _Cmp  = static_cast<const __int128*>(_Comparand);
+
+    do {
+        if (__builtin_arm_ldrex(_Dest) != *_Cmp) {
+            return false;
+        }
+    } while (__builtin_arm_strex(*_Cmp, _Dest));
+
+    return true;
+#else // ^^^ workaround / no workaround vvv
     const auto _Dest              = static_cast<long long*>(const_cast<void*>(_Storage));
     const auto _Cmp               = static_cast<const long long*>(_Comparand);
     alignas(16) long long _Tmp[2] = {_Cmp[0], _Cmp[1]};
@@ -483,6 +491,7 @@ inline bool __stdcall _Atomic_wait_compare_16_bytes(const void* _Storage, void* 
 #else // ^^^ _M_X64 / ARM64 vvv
     return _InterlockedCompareExchange128_nf(_Dest, _Tmp[1], _Tmp[0], _Tmp) != 0;
 #endif // ^^^ ARM64 ^^^
+#endif // TRANSITION, Clang 12
 }
 #endif // _WIN64
 #endif // _HAS_CXX20
@@ -2346,12 +2355,7 @@ private:
     using _Base = _Choose_atomic_base_t<_Ty, _Ty&>;
 
 public:
-    // clang-format off
-    static_assert(is_trivially_copyable_v<_Ty> && is_copy_constructible_v<_Ty> && is_move_constructible_v<_Ty>
-        && is_copy_assignable_v<_Ty> && is_move_assignable_v<_Ty>,
-        "atomic_ref<T> requires T to be trivially copyable, copy constructible, move constructible, copy assignable, "
-        "and move assignable.");
-    // clang-format on
+    static_assert(is_trivially_copyable_v<_Ty>, "atomic_ref<T> requires T to be trivially copyable.");
 
     using value_type = _Ty;
 
