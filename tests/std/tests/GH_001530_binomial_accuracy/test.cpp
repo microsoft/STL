@@ -9,18 +9,17 @@
 
 using namespace std;
 
-int main() {
-    constexpr int it_max  = 100'000;
-    constexpr int n       = 25;
-    constexpr double mean = 0.99;
-    constexpr double p    = mean / n;
-    constexpr double var  = n * p * (1.0 - p);
-
-    mt19937 gen;
+template <class Generator>
+void test_binomial(const int n, const double mean, Generator& gen) {
+    const double p       = mean / n;
+    const double var     = n * p * (1.0 - p);
+    constexpr double tol = 0.01;
+    constexpr double x   = 4.0;
+    const size_t it_max  = 2 * static_cast<size_t>(pow(var / (tol / x), 2.0));
     binomial_distribution<> dist(n, p);
 
-    vector<int> counts(n + 1);
-    for (int i = 0; i < it_max; ++i) {
+    vector<size_t> counts(static_cast<size_t>(n) + 1);
+    for (size_t i = 0; i < it_max; ++i) {
         ++counts[static_cast<size_t>(dist(gen))];
     }
 
@@ -38,5 +37,12 @@ int main() {
 
     assert(abs(sample_mean / mean - 1.0) < 0.01);
     assert(abs(sample_var / var - 1.0) < 0.01);
+}
+
+int main() {
+    mt19937 gen;
+    constexpr int n = 25;
+    test_binomial(n, 0.99, gen);
+    test_binomial(n, n - 0.99, gen);
     return 0;
 }
