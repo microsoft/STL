@@ -23,10 +23,10 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 // CLASS TEMPLATE _Flist_iterator
-template <class _Mylist, bool _Const, bool _Checked>
+template <class _Mylist, _ConstIter _Const, _CheckedIter _Checked>
 class _Flist_iterator : public _Iterator_base {
 private:
-    template <class, bool, bool>
+    template <class, _ConstIter, _CheckedIter>
     friend class _Flist_iterator;
 
     using _Nodeptr = typename _Mylist::_Nodeptr;
@@ -40,8 +40,9 @@ public:
     using iterator_category = forward_iterator_tag;
     using value_type        = typename _Mylist::value_type;
     using difference_type   = typename _Mylist::difference_type;
-    using pointer           = conditional_t<_Const, typename _Mylist::const_pointer, typename _Mylist::pointer>;
-    using reference         = _Maybe_const<_Const, value_type>&;
+    using pointer =
+        conditional_t<_Const == _ConstIter::_Yes, typename _Mylist::const_pointer, typename _Mylist::pointer>;
+    using reference = _Maybe_const<_Const == _ConstIter::_Yes, value_type>&;
 
     _Flist_iterator() noexcept = default;
 
@@ -49,14 +50,14 @@ public:
         this->_Adopt(_Plist);
     }
 
-    template <bool _IsConst = _Const, enable_if_t<_IsConst, int> = 0>
-    _Flist_iterator(const _Flist_iterator<_Mylist, !_IsConst, _Checked>& _It) noexcept : _Ptr(_It._Ptr) {
+    template <_ConstIter _IsConst = _Const, enable_if_t<_IsConst == _ConstIter::_Yes, int> = 0>
+    _Flist_iterator(const _Flist_iterator<_Mylist, _ConstIter::_No, _Checked>& _It) noexcept : _Ptr(_It._Ptr) {
         this->_Adopt(_It._Getcont());
     }
 
     _NODISCARD reference operator*() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL == 2
-        if constexpr (_Checked) {
+        if constexpr (_Checked == _CheckedIter::_Yes) {
             const auto _Cont = static_cast<const _Mylist*>(this->_Getcont());
             _STL_ASSERT(_Cont, "cannot dereference value-initialized forward_list iterator");
             _STL_VERIFY(_Ptr != _Cont->_Before_head(), "cannot dereference forward_list before_begin");
@@ -71,7 +72,7 @@ public:
 
     _Flist_iterator& operator++() noexcept {
 #if _ITERATOR_DEBUG_LEVEL == 2
-        if constexpr (_Checked) {
+        if constexpr (_Checked == _CheckedIter::_Yes) {
             _STL_VERIFY(this->_Getcont(), "value-initialized forward_list iterator not incrementable");
         }
 #endif // _ITERATOR_DEBUG_LEVEL == 2
@@ -81,7 +82,7 @@ public:
 
     _Flist_iterator operator++(int) noexcept {
 #if _ITERATOR_DEBUG_LEVEL == 2
-        if constexpr (_Checked) {
+        if constexpr (_Checked == _CheckedIter::_Yes) {
             _STL_VERIFY(this->_Getcont(), "value-initialized forward_list iterator not incrementable");
         }
 #endif // _ITERATOR_DEBUG_LEVEL == 2
@@ -90,10 +91,10 @@ public:
         return _Tmp;
     }
 
-    template <bool _OtherConst>
+    template <_ConstIter _OtherConst>
     _NODISCARD bool operator==(const _Flist_iterator<_Mylist, _OtherConst, _Checked>& _Right) const noexcept {
 #if _ITERATOR_DEBUG_LEVEL == 2
-        if constexpr (_Checked) {
+        if constexpr (_Checked == _CheckedIter::_Yes) {
             _STL_VERIFY(this->_Getcont() == _Right._Getcont(), "forward_list iterators incompatible");
         }
 #endif // _ITERATOR_DEBUG_LEVEL == 2
@@ -105,10 +106,10 @@ public:
     }
 
 #if !_HAS_CXX20
-    template <bool _OtherConst>
+    template <_ConstIter _OtherConst>
     _NODISCARD bool operator!=(const _Flist_iterator<_Mylist, _OtherConst, _Checked>& _Right) const noexcept {
 #if _ITERATOR_DEBUG_LEVEL == 2
-        if constexpr (_Checked) {
+        if constexpr (_Checked == _CheckedIter::_Yes) {
             _STL_VERIFY(this->_Getcont() == _Right._Getcont(), "forward_list iterators incompatible");
         }
 #endif // _ITERATOR_DEBUG_LEVEL == 2
@@ -121,25 +122,25 @@ public:
 #endif // !_HAS_CXX20
 
 #if _ITERATOR_DEBUG_LEVEL == 2
-    template <bool _OtherConst>
+    template <_ConstIter _OtherConst>
     friend constexpr void _Verify_range(
         const _Flist_iterator& _First, const _Flist_iterator<_Mylist, _OtherConst, _Checked>& _Last) noexcept {
-        if constexpr (_Checked) {
+        if constexpr (_Checked == _CheckedIter::_Yes) {
             _STL_VERIFY(
                 _First._Getcont() == _Last._Getcont(), "forward_list iterators in range are from different containers");
         }
     }
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
-    using _Prevent_inheriting_unwrap = _Flist_iterator<_Mylist, _Const, true>;
+    using _Prevent_inheriting_unwrap = _Flist_iterator<_Mylist, _Const, _CheckedIter::_Yes>;
 
-    template <bool _IsChecked = _Checked, enable_if_t<_IsChecked, int> = 0>
+    template <_CheckedIter _IsChecked = _Checked, enable_if_t<_IsChecked == _CheckedIter::_Yes, int> = 0>
     _NODISCARD constexpr auto _Unwrapped() const noexcept {
-        return _Flist_iterator<_Mylist, _Const, false>{_Ptr, static_cast<const _Mylist*>(this->_Getcont())};
+        return _Flist_iterator<_Mylist, _Const, _CheckedIter::_No>{_Ptr, static_cast<const _Mylist*>(this->_Getcont())};
     }
 
-    template <bool _IsChecked = _Checked, enable_if_t<_IsChecked, int> = 0>
-    constexpr void _Seek_to(const _Flist_iterator<_Mylist, _Const, false>& _It) noexcept {
+    template <_CheckedIter _IsChecked = _Checked, enable_if_t<_IsChecked == _CheckedIter::_Yes, int> = 0>
+    constexpr void _Seek_to(const _Flist_iterator<_Mylist, _Const, _CheckedIter::_No>& _It) noexcept {
         _Ptr = _It._Ptr;
     }
 };
@@ -206,7 +207,8 @@ public:
         _Lockit _Lock(_LOCK_DEBUG);
         _Iterator_base12** _Pnext = &this->_Myproxy->_Myfirstiter;
         while (*_Pnext) {
-            const auto _Pnextptr = static_cast<_Flist_iterator<_Flist_val, true, true>&>(**_Pnext)._Ptr;
+            const auto _Pnextptr =
+                static_cast<_Flist_iterator<_Flist_val, _ConstIter::_Yes, _CheckedIter::_Yes>&>(**_Pnext)._Ptr;
             if (_Pnextptr == _BHead || (_Ptr != nullptr && _Pnextptr != _Ptr)) {
                 _Pnext = &(*_Pnext)->_Mynextiter;
             } else { // orphan the iterator
@@ -452,10 +454,10 @@ public:
     using reference       = value_type&;
     using const_reference = const value_type&;
 
-    using iterator                  = _Flist_iterator<_Scary_val, false, true>;
-    using const_iterator            = _Flist_iterator<_Scary_val, true, true>;
-    using _Unchecked_iterator       = _Flist_iterator<_Scary_val, false, false>;
-    using _Unchecked_const_iterator = _Flist_iterator<_Scary_val, true, false>;
+    using iterator                  = _Flist_iterator<_Scary_val, _ConstIter::_No, _CheckedIter::_Yes>;
+    using const_iterator            = _Flist_iterator<_Scary_val, _ConstIter::_Yes, _CheckedIter::_Yes>;
+    using _Unchecked_iterator       = _Flist_iterator<_Scary_val, _ConstIter::_No, _CheckedIter::_No>;
+    using _Unchecked_const_iterator = _Flist_iterator<_Scary_val, _ConstIter::_Yes, _CheckedIter::_No>;
 
     forward_list() noexcept(is_nothrow_default_constructible_v<_Alnode>) // strengthened
         : _Mypair(_Zero_then_variadic_args_t{}) {
