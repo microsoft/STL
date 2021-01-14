@@ -23,10 +23,10 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 // CLASS TEMPLATE _Deque_iterator
-template <class _Mydeque, bool _Const, bool _Checked>
+template <class _Mydeque, _ConstIter _Const, _CheckedIter _Checked>
 class _Deque_iterator : public _Iterator_base12 {
 private:
-    template <class, bool, bool>
+    template <class, _ConstIter, _CheckedIter>
     friend class _Deque_iterator;
 
     using _Size_type = typename _Mydeque::size_type;
@@ -42,8 +42,9 @@ public:
     using iterator_category = random_access_iterator_tag;
     using value_type        = typename _Mydeque::value_type;
     using difference_type   = typename _Mydeque::difference_type;
-    using pointer           = conditional_t<_Const, typename _Mydeque::const_pointer, typename _Mydeque::pointer>;
-    using reference         = _Maybe_const<_Const, value_type>&;
+    using pointer =
+        conditional_t<_Const == _ConstIter::_Yes, typename _Mydeque::const_pointer, typename _Mydeque::pointer>;
+    using reference = _Maybe_const<_Const == _ConstIter::_Yes, value_type>&;
 
     using _Mydeque_t = _Mydeque; // helper for expression evaluator
     enum { _EEN_DS = _Block_size }; // helper for expression evaluator
@@ -51,7 +52,7 @@ public:
     _Deque_iterator() noexcept = default;
 
     explicit _Deque_iterator(_Size_type _Off, const _Container_base12* _Cont) noexcept : _Myoff(_Off) {
-        if constexpr (_Checked) {
+        if constexpr (_Checked == _CheckedIter::_Yes) {
             const auto _Cont_ = static_cast<const _Mydeque*>(_Cont);
             _STL_VERIFY(_Cont_, "Construct deque iterator without container");
             _STL_VERIFY(_Cont_->_Myoff <= _Myoff && _Myoff <= _Cont_->_Myoff + _Cont_->_Mysize,
@@ -60,14 +61,14 @@ public:
         this->_Adopt(_Cont);
     }
 
-    template <bool _IsConst = _Const, enable_if_t<_IsConst, int> = 0>
-    _Deque_iterator(const _Deque_iterator<_Mydeque, !_IsConst, _Checked>& _It) noexcept : _Myoff(_It._Myoff) {
+    template <_ConstIter _IsConst = _Const, enable_if_t<_IsConst == _ConstIter::_Yes, int> = 0>
+    _Deque_iterator(const _Deque_iterator<_Mydeque, _ConstIter::_No, _Checked>& _It) noexcept : _Myoff(_It._Myoff) {
         this->_Adopt(_It._Getcont());
     }
 
     _NODISCARD reference operator*() const noexcept {
         const auto _Cont = static_cast<const _Mydeque*>(this->_Getcont());
-        if constexpr (_Checked) {
+        if constexpr (_Checked == _CheckedIter::_Yes) {
             _STL_VERIFY(_Cont, "cannot dereference value-initialized deque iterator");
             _STL_VERIFY(_Cont->_Myoff <= _Myoff && _Myoff < _Cont->_Myoff + _Cont->_Mysize,
                 "cannot deference out of range deque iterator");
@@ -84,7 +85,7 @@ public:
     _NODISCARD reference operator[](const difference_type _Off_) const noexcept {
         const auto _Cont    = static_cast<const _Mydeque*>(this->_Getcont());
         const auto _New_pos = _Myoff + _Off_;
-        if constexpr (_Checked) {
+        if constexpr (_Checked == _CheckedIter::_Yes) {
             _STL_VERIFY(_Cont, "cannot subscript value-initialized deque iterator");
             _STL_VERIFY(_Cont->_Myoff <= _New_pos && _New_pos < _Cont->_Myoff + _Cont->_Mysize,
                 "cannot subscript out of range deque iterator");
@@ -95,7 +96,7 @@ public:
     }
 
     _Deque_iterator& operator++() noexcept {
-        if constexpr (_Checked) {
+        if constexpr (_Checked == _CheckedIter::_Yes) {
             const auto _Cont = static_cast<const _Mydeque*>(this->_Getcont());
             _STL_VERIFY(_Cont, "cannot increment value-initialized deque iterator");
             _STL_VERIFY(_Myoff < _Cont->_Myoff + _Cont->_Mysize, "cannot increment deque iterator past end");
@@ -105,7 +106,7 @@ public:
     }
 
     _Deque_iterator operator++(int) noexcept {
-        if constexpr (_Checked) {
+        if constexpr (_Checked == _CheckedIter::_Yes) {
             const auto _Cont = static_cast<const _Mydeque*>(this->_Getcont());
             _STL_VERIFY(_Cont, "cannot increment value-initialized deque iterator");
             _STL_VERIFY(_Myoff < _Cont->_Myoff + _Cont->_Mysize, "cannot increment deque iterator past end");
@@ -116,7 +117,7 @@ public:
     }
 
     _Deque_iterator& operator--() noexcept {
-        if constexpr (_Checked) {
+        if constexpr (_Checked == _CheckedIter::_Yes) {
             const auto _Cont = static_cast<const _Mydeque*>(this->_Getcont());
             _STL_VERIFY(_Cont, "cannot decrement value-initialized deque iterator");
             _STL_VERIFY(_Cont->_Myoff < _Myoff, "cannot decrement deque iterator past end");
@@ -126,7 +127,7 @@ public:
     }
 
     _Deque_iterator operator--(int) noexcept {
-        if constexpr (_Checked) {
+        if constexpr (_Checked == _CheckedIter::_Yes) {
             const auto _Cont = static_cast<const _Mydeque*>(this->_Getcont());
             _STL_VERIFY(_Cont, "cannot decrement value-initialized deque iterator");
             _STL_VERIFY(_Cont->_Myoff < _Myoff, "cannot decrement deque iterator past end");
@@ -137,7 +138,7 @@ public:
     }
 
     _Deque_iterator& operator+=(const difference_type _Off) noexcept {
-        if constexpr (_Checked) {
+        if constexpr (_Checked == _CheckedIter::_Yes) {
             if (_Off != 0) {
                 const auto _Cont = static_cast<const _Mydeque*>(this->_Getcont());
                 _STL_VERIFY(_Cont, "cannot seek value-initialized deque iterator");
@@ -155,7 +156,7 @@ public:
     }
 
     _Deque_iterator& operator-=(const difference_type _Off) noexcept {
-        if constexpr (_Checked) {
+        if constexpr (_Checked == _CheckedIter::_Yes) {
             if (_Off != 0) {
                 const auto _Cont = static_cast<const _Mydeque*>(this->_Getcont());
                 _STL_VERIFY(_Cont, "cannot seek value-initialized deque iterator");
@@ -176,28 +177,28 @@ public:
         return _Next += _Off;
     }
 
-    template <bool _OtherConst>
+    template <_ConstIter _OtherConst>
     _NODISCARD difference_type operator-(
         const _Deque_iterator<_Mydeque, _OtherConst, _Checked>& _Right) const noexcept {
-        if constexpr (_Checked) {
+        if constexpr (_Checked == _CheckedIter::_Yes) {
             _STL_VERIFY(this->_Getcont() == _Right._Getcont(), "deque iterators incompatible");
         }
         return static_cast<difference_type>(_Myoff - _Right._Myoff);
     }
 
-    template <bool _OtherConst>
+    template <_ConstIter _OtherConst>
     _NODISCARD bool operator==(const _Deque_iterator<_Mydeque, _OtherConst, _Checked>& _Right) const noexcept {
-        if constexpr (_Checked) {
+        if constexpr (_Checked == _CheckedIter::_Yes) {
             _STL_VERIFY(this->_Getcont() == _Right._Getcont(), "deque iterators incompatible");
         }
         return _Myoff == _Right._Myoff;
     }
 
 #if _HAS_CXX20
-    template <bool _OtherConst>
+    template <_ConstIter _OtherConst>
     _NODISCARD constexpr strong_ordering operator<=>(
         const _Deque_iterator<_Mydeque, _OtherConst, _Checked>& _Right) const noexcept {
-        if constexpr (_Checked) {
+        if constexpr (_Checked == _CheckedIter::_Yes) {
             _STL_VERIFY(this->_Getcont() == _Right._Getcont(), "deque iterators incompatible");
         }
         return _Myoff <=> _Right._Myoff;
@@ -205,42 +206,42 @@ public:
 
 #else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
 
-    template <bool _OtherConst>
+    template <_ConstIter _OtherConst>
     _NODISCARD bool operator!=(const _Deque_iterator<_Mydeque, _OtherConst, _Checked>& _Right) const noexcept {
         return !(*this == _Right);
     }
 
-    template <bool _OtherConst>
+    template <_ConstIter _OtherConst>
     _NODISCARD bool operator<(const _Deque_iterator<_Mydeque, _OtherConst, _Checked>& _Right) const noexcept {
-        if constexpr (_Checked) {
+        if constexpr (_Checked == _CheckedIter::_Yes) {
             _STL_VERIFY(this->_Getcont() == _Right._Getcont(), "deque iterators incompatible");
         }
         return _Myoff < _Right._Myoff;
     }
 
-    template <bool _OtherConst>
+    template <_ConstIter _OtherConst>
     _NODISCARD bool operator>(const _Deque_iterator<_Mydeque, _OtherConst, _Checked>& _Right) const noexcept {
         return _Right < *this;
     }
 
-    template <bool _OtherConst>
+    template <_ConstIter _OtherConst>
     _NODISCARD bool operator<=(const _Deque_iterator<_Mydeque, _OtherConst, _Checked>& _Right) const noexcept {
         return !(_Right < *this);
     }
 
-    template <bool _OtherConst>
+    template <_ConstIter _OtherConst>
     _NODISCARD bool operator>=(const _Deque_iterator<_Mydeque, _OtherConst, _Checked>& _Right) const noexcept {
         return !(*this < _Right);
     }
 #endif // !_HAS_CXX20
 
 #if _ITERATOR_DEBUG_LEVEL == 0
-    template <bool _IsChecked = _Checked, enable_if_t<_IsChecked, int> = 0>
+    template <_CheckedIter _IsChecked = _Checked, enable_if_t<_IsChecked == _CheckedIter::_Yes, int> = 0>
     void _Verify_offset(const difference_type) const noexcept {}
 
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^ / vvv _ITERATOR_DEBUG_LEVEL != 0 vvv
 
-    template <bool _IsChecked = _Checked, enable_if_t<_IsChecked, int> = 0>
+    template <_CheckedIter _IsChecked = _Checked, enable_if_t<_IsChecked == _CheckedIter::_Yes, int> = 0>
     void _Verify_offset(const difference_type _Off) const noexcept {
         if (_Off != 0) {
             const auto _Mycont = static_cast<const _Mydeque*>(this->_Getcont());
@@ -250,24 +251,25 @@ public:
         }
     }
 
-    template <bool _OtherConst>
+    template <_ConstIter _OtherConst>
     friend constexpr void _Verify_range(
         const _Deque_iterator& _First, const _Deque_iterator<_Mydeque, _OtherConst, _Checked>& _Last) noexcept {
-        if constexpr (_Checked) {
+        if constexpr (_Checked == _CheckedIter::_Yes) {
             _STL_VERIFY(_First <= _Last, "array iterator range transposed");
         }
     }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
-    using _Prevent_inheriting_unwrap = _Deque_iterator<_Mydeque, _Const, true>;
+    using _Prevent_inheriting_unwrap = _Deque_iterator<_Mydeque, _Const, _CheckedIter::_Yes>;
 
-    template <bool _IsChecked = _Checked, enable_if_t<_IsChecked, int> = 0>
+    template <_CheckedIter _IsChecked = _Checked, enable_if_t<_IsChecked == _CheckedIter::_Yes, int> = 0>
     _NODISCARD constexpr auto _Unwrapped() const noexcept {
-        return _Deque_iterator<_Mydeque, _Const, false>{_Myoff, static_cast<const _Mydeque*>(this->_Getcont())};
+        return _Deque_iterator<_Mydeque, _Const, _CheckedIter::_No>{
+            _Myoff, static_cast<const _Mydeque*>(this->_Getcont())};
     }
 
-    template <bool _IsChecked = _Checked, enable_if_t<_IsChecked, int> = 0>
-    constexpr void _Seek_to(const _Deque_iterator<_Mydeque, _Const, false>& _It) noexcept {
+    template <_CheckedIter _IsChecked = _Checked, enable_if_t<_IsChecked == _CheckedIter::_Yes, int> = 0>
+    constexpr void _Seek_to(const _Deque_iterator<_Mydeque, _Const, _CheckedIter::_No>& _It) noexcept {
         _Myoff = _It._Myoff;
     }
 };
@@ -356,10 +358,10 @@ public:
     using reference       = _Ty&;
     using const_reference = const _Ty&;
 
-    using iterator                  = _Deque_iterator<_Scary_val, false, true>;
-    using const_iterator            = _Deque_iterator<_Scary_val, true, true>;
-    using _Unchecked_iterator       = _Deque_iterator<_Scary_val, false, false>;
-    using _Unchecked_const_iterator = _Deque_iterator<_Scary_val, true, false>;
+    using iterator                  = _Deque_iterator<_Scary_val, _ConstIter::_No, _CheckedIter::_Yes>;
+    using const_iterator            = _Deque_iterator<_Scary_val, _ConstIter::_Yes, _CheckedIter::_Yes>;
+    using _Unchecked_iterator       = _Deque_iterator<_Scary_val, _ConstIter::_No, _CheckedIter::_No>;
+    using _Unchecked_const_iterator = _Deque_iterator<_Scary_val, _ConstIter::_Yes, _CheckedIter::_No>;
 
     using reverse_iterator       = _STD reverse_iterator<iterator>;
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
