@@ -20,7 +20,7 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 
 // CLASS TEMPLATE _Array_iterator
-template <class _Ty, bool _Const, bool _Checked>
+template <class _Ty, _ConstIter _Const, _CheckedIter _Checked>
 class _Array_iterator {
 public:
 #ifdef __cpp_lib_concepts
@@ -29,8 +29,8 @@ public:
     using iterator_category = random_access_iterator_tag;
     using value_type        = _Ty;
     using difference_type   = ptrdiff_t;
-    using pointer           = _Maybe_const<_Const, _Ty>*;
-    using reference         = _Maybe_const<_Const, _Ty>&;
+    using pointer           = _Maybe_const<_Const == _ConstIter::_Yes, _Ty>*;
+    using reference         = _Maybe_const<_Const == _ConstIter::_Yes, _Ty>&;
 
     _CONSTEXPR17 _Array_iterator() noexcept = default;
 
@@ -42,15 +42,15 @@ public:
     }
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 / _ITERATOR_DEBUG_LEVEL != 0 vvv
         : _Ptr(_Ptr_), _Begin(_Begin_), _End(_End_) {
-        if constexpr (_Checked) {
+        if constexpr (_Checked == _CheckedIter::_Yes) {
             _STL_VERIFY(_Begin <= _Ptr, "cannot create array iterator outside of bounds");
             _STL_VERIFY(_Ptr <= _End, "cannot create array iterator outside of bounds");
         }
     }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
-    template <bool _IsConst = _Const, enable_if_t<_IsConst, int> = 0>
-    _CONSTEXPR17 _Array_iterator(const _Array_iterator<_Ty, !_IsConst, _Checked>& _It) noexcept
+    template <_ConstIter _IsConst = _Const, enable_if_t<_IsConst == _ConstIter::_Yes, int> = 0>
+    _CONSTEXPR17 _Array_iterator(const _Array_iterator<_Ty, _ConstIter::_No, _Checked>& _It) noexcept
 #if _ITERATOR_DEBUG_LEVEL == 0
         : _Ptr(_It._Ptr) {
     }
@@ -61,7 +61,7 @@ public:
 
     _NODISCARD _CONSTEXPR17 reference operator*() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
-        if constexpr (_Checked) {
+        if constexpr (_Checked == _CheckedIter::_Yes) {
             _STL_VERIFY(_Ptr, "cannot dereference value-initialized array iterator");
             _STL_VERIFY(_Begin <= _Ptr && _Ptr < _End, "cannot dereference out of range array iterator");
         }
@@ -71,7 +71,7 @@ public:
 
     _NODISCARD _CONSTEXPR17 pointer operator->() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
-        if constexpr (_Checked) {
+        if constexpr (_Checked == _CheckedIter::_Yes) {
             _STL_VERIFY(_Ptr, "cannot dereference value-initialized array iterator");
             _STL_VERIFY(_Begin <= _Ptr && _Ptr < _End, "cannot dereference out of range array iterator");
         }
@@ -79,9 +79,9 @@ public:
         return _Ptr;
     }
 
-    _NODISCARD _CONSTEXPR17 reference operator[](const ptrdiff_t _Off) const noexcept {
+    _NODISCARD _CONSTEXPR17 reference operator[](const difference_type _Off) const noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
-        if constexpr (_Checked) {
+        if constexpr (_Checked == _CheckedIter::_Yes) {
             _Verify_offset(_Off);
         }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -90,7 +90,7 @@ public:
 
     _CONSTEXPR17 _Array_iterator& operator++() noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
-        if constexpr (_Checked) {
+        if constexpr (_Checked == _CheckedIter::_Yes) {
             _STL_VERIFY(_Ptr, "cannot increment value-initialized array iterator");
             _STL_VERIFY(_Ptr < _End, "cannot increment array iterator past end");
         }
@@ -101,7 +101,7 @@ public:
 
     _CONSTEXPR17 _Array_iterator operator++(int) noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
-        if constexpr (_Checked) {
+        if constexpr (_Checked == _CheckedIter::_Yes) {
             _STL_VERIFY(_Ptr, "cannot increment value-initialized array iterator");
             _STL_VERIFY(_Ptr < _End, "cannot increment array iterator past end");
         }
@@ -113,7 +113,7 @@ public:
 
     _CONSTEXPR17 _Array_iterator& operator--() noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
-        if constexpr (_Checked) {
+        if constexpr (_Checked == _CheckedIter::_Yes) {
             _STL_VERIFY(_Ptr, "cannot decrement value-initialized array iterator");
             _STL_VERIFY(_Begin < _Ptr, "cannot decrement array iterator before begin");
         }
@@ -124,7 +124,7 @@ public:
 
     _CONSTEXPR17 _Array_iterator operator--(int) noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
-        if constexpr (_Checked) {
+        if constexpr (_Checked == _CheckedIter::_Yes) {
             _STL_VERIFY(_Ptr, "cannot decrement value-initialized array iterator");
             _STL_VERIFY(_Begin < _Ptr, "cannot decrement array iterator before begin");
         }
@@ -134,9 +134,9 @@ public:
         return _Tmp;
     }
 
-    _CONSTEXPR17 _Array_iterator& operator+=(const ptrdiff_t _Off) noexcept {
+    _CONSTEXPR17 _Array_iterator& operator+=(const difference_type _Off) noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
-        if constexpr (_Checked) {
+        if constexpr (_Checked == _CheckedIter::_Yes) {
             _Verify_offset(_Off);
         }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -144,14 +144,14 @@ public:
         return *this;
     }
 
-    _NODISCARD _CONSTEXPR17 _Array_iterator operator+(const ptrdiff_t _Off) const noexcept {
+    _NODISCARD _CONSTEXPR17 _Array_iterator operator+(const difference_type _Off) const noexcept {
         _Array_iterator _Tmp = *this;
         return _Tmp += _Off;
     }
 
-    _CONSTEXPR17 _Array_iterator& operator-=(const ptrdiff_t _Off) noexcept {
+    _CONSTEXPR17 _Array_iterator& operator-=(const difference_type _Off) noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
-        if constexpr (_Checked) {
+        if constexpr (_Checked == _CheckedIter::_Yes) {
             _Verify_offset(-_Off);
         }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -159,30 +159,31 @@ public:
         return *this;
     }
 
-    _NODISCARD _CONSTEXPR17 _Array_iterator operator-(const ptrdiff_t _Off) const noexcept {
+    _NODISCARD _CONSTEXPR17 _Array_iterator operator-(const difference_type _Off) const noexcept {
         _Array_iterator _Tmp = *this;
         return _Tmp -= _Off;
     }
 
-    _NODISCARD _CONSTEXPR17 friend _Array_iterator operator+(const ptrdiff_t _Off, _Array_iterator _Next) noexcept {
+    _NODISCARD _CONSTEXPR17 friend _Array_iterator operator+(
+        const difference_type _Off, _Array_iterator _Next) noexcept {
         return _Next += _Off;
     }
 
-    template <bool _OtherConst>
+    template <_ConstIter _OtherConst>
     _NODISCARD _CONSTEXPR17 ptrdiff_t operator-(
         const _Array_iterator<_Ty, _OtherConst, _Checked>& _Right) const noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
-        if constexpr (_Checked) {
+        if constexpr (_Checked == _CheckedIter::_Yes) {
             _STL_VERIFY(_Begin == _Right._Begin, "array iterators incompatible");
         }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         return _Ptr - _Right._Ptr;
     }
 
-    template <bool _OtherConst>
+    template <_ConstIter _OtherConst>
     _NODISCARD _CONSTEXPR17 bool operator==(const _Array_iterator<_Ty, _OtherConst, _Checked>& _Right) const noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
-        if constexpr (_Checked) {
+        if constexpr (_Checked == _CheckedIter::_Yes) {
             _STL_VERIFY(_Begin == _Right._Begin, "array iterators incompatible");
         }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -190,11 +191,11 @@ public:
     }
 
 #if _HAS_CXX20
-    template <bool _OtherConst>
+    template <_ConstIter _OtherConst>
     _NODISCARD constexpr strong_ordering operator<=>(
         const _Array_iterator<_Ty, _OtherConst, _Checked>& _Right) const noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
-        if constexpr (_Checked) {
+        if constexpr (_Checked == _CheckedIter::_Yes) {
             _STL_VERIFY(_Begin == _Right._Begin, "array iterators incompatible");
         }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -203,40 +204,40 @@ public:
 
 #else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
 
-    template <bool _OtherConst>
+    template <_ConstIter _OtherConst>
     _NODISCARD _CONSTEXPR17 bool operator!=(const _Array_iterator<_Ty, _OtherConst, _Checked>& _Right) const noexcept {
         return !(*this == _Right);
     }
 
-    template <bool _OtherConst>
+    template <_ConstIter _OtherConst>
     _NODISCARD _CONSTEXPR17 bool operator<(const _Array_iterator<_Ty, _OtherConst, _Checked>& _Right) const noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
-        if constexpr (_Checked) {
+        if constexpr (_Checked == _CheckedIter::_Yes) {
             _STL_VERIFY(_Begin == _Right._Begin, "array iterators incompatible");
         }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         return _Ptr < _Right._Ptr;
     }
 
-    template <bool _OtherConst>
+    template <_ConstIter _OtherConst>
     _NODISCARD _CONSTEXPR17 bool operator>(const _Array_iterator<_Ty, _OtherConst, _Checked>& _Right) const noexcept {
         return _Right < *this;
     }
 
-    template <bool _OtherConst>
+    template <_ConstIter _OtherConst>
     _NODISCARD _CONSTEXPR17 bool operator<=(const _Array_iterator<_Ty, _OtherConst, _Checked>& _Right) const noexcept {
         return !(_Right < *this);
     }
 
-    template <bool _OtherConst>
+    template <_ConstIter _OtherConst>
     _NODISCARD _CONSTEXPR17 bool operator>=(const _Array_iterator<_Ty, _OtherConst, _Checked>& _Right) const noexcept {
         return !(*this < _Right);
     }
 #endif // !_HAS_CXX20
 
 #if _ITERATOR_DEBUG_LEVEL != 0
-    constexpr void _Verify_offset(const ptrdiff_t _Off) const noexcept {
-        if constexpr (_Checked) {
+    constexpr void _Verify_offset(const difference_type _Off) const noexcept {
+        if constexpr (_Checked == _CheckedIter::_Yes) {
             if (_Off != 0) {
                 _STL_VERIFY(_Ptr, "cannot seek value-initialized array iterator");
             }
@@ -251,10 +252,10 @@ public:
         }
     }
 
-    template <bool _OtherConst>
+    template <_ConstIter _OtherConst>
     friend constexpr void _Verify_range(
         const _Array_iterator& _First, const _Array_iterator<_Ty, _OtherConst, _Checked>& _Last) noexcept {
-        if constexpr (_Checked) {
+        if constexpr (_Checked == _CheckedIter::_Yes) {
             _STL_VERIFY(_First <= _Last, "array iterator range transposed");
         }
     }
@@ -273,7 +274,7 @@ public:
     }
 
 private:
-    template <class, bool, bool>
+    template <class, _ConstIter, _CheckedIter>
     friend class _Array_iterator;
 
     pointer _Ptr{}; // current position in array
@@ -284,10 +285,10 @@ private:
 };
 
 #if _HAS_CXX20
-template <class _Ty, bool _Const, bool _Checked>
+template <class _Ty, _ConstIter _Const, _CheckedIter _Checked>
 struct pointer_traits<_Array_iterator<_Ty, _Const, _Checked>> {
     using pointer         = _Array_iterator<_Ty, _Const, _Checked>;
-    using element_type    = _Maybe_const<_Const, _Ty>;
+    using element_type    = _Maybe_const<_Const == _ConstIter::_Yes, _Ty>;
     using difference_type = ptrdiff_t;
 
     _NODISCARD static constexpr element_type* to_address(const pointer _Iter) noexcept {
@@ -308,8 +309,8 @@ public:
     using reference       = _Ty&;
     using const_reference = const _Ty&;
 
-    using iterator       = _Array_iterator<_Ty, false, true>;
-    using const_iterator = _Array_iterator<_Ty, true, true>;
+    using iterator       = _Array_iterator<_Ty, _ConstIter::_No, _CheckedIter::_Yes>;
+    using const_iterator = _Array_iterator<_Ty, _ConstIter::_Yes, _CheckedIter::_Yes>;
 
     using reverse_iterator       = _STD reverse_iterator<iterator>;
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
@@ -490,8 +491,8 @@ public:
     using reference       = _Ty&;
     using const_reference = const _Ty&;
 
-    using iterator               = _Array_iterator<_Ty, false, true>;
-    using const_iterator         = _Array_iterator<_Ty, true, true>;
+    using iterator               = _Array_iterator<_Ty, _ConstIter::_No, _CheckedIter::_Yes>;
+    using const_iterator         = _Array_iterator<_Ty, _ConstIter::_Yes, _CheckedIter::_Yes>;
     using reverse_iterator       = _STD reverse_iterator<iterator>;
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
 
