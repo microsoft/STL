@@ -1,7 +1,11 @@
 #include <assert.h>
+#include <memory>
 #include <string>
+#include <syncstream>
 #include <type_traits>
 #include <utility>
+
+using namespace std;
 
 constexpr size_t _Min_size_allocation = 50;
 constexpr size_t _Min_syncbuf_size    = 32;

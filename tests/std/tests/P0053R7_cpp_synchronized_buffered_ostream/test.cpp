@@ -3,8 +3,6 @@
 
 #include "test.hpp"
 
-#include <syncstream>
-
 using namespace std;
 
 static_assert(is_default_constructible_v<syncbuf>);
