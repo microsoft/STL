@@ -53,17 +53,17 @@ public:
         _Init_string_inplace(_STD move(_Str), _Getstate(_Mode));
     }
 
-    template <_Allocator _Alloc2>
+    template <class _Alloc2>
     basic_stringbuf(const basic_string<_Elem, _Traits, _Alloc2>& _Str, ios_base::openmode _Mode, const _Alloc& _Al_)
         : _Al(_Al_) {
         _Init(_Str.c_str(), _Str.size(), _Getstate(_Mode));
     }
 
-    template <_Allocator _Alloc2>
+    template <class _Alloc2>
     basic_stringbuf(const basic_string<_Elem, _Traits, _Alloc2>& _Str, const _Alloc& _Al_)
         : basic_stringbuf(_Str, ios_base::in | ios_base::out, _Al_) {}
 
-    template <_Allocator _Alloc2>
+    template <class _Alloc2, enable_if_t<!is_same_v<_Alloc2, _Alloc>, int> = 0>
     explicit basic_stringbuf(
         const basic_string<_Elem, _Traits, _Alloc2>& _Str, ios_base::openmode _Mode = ios_base::in | ios_base::out)
         : basic_stringbuf(_Str, _Mode, _Alloc{}) {}
@@ -199,7 +199,7 @@ public:
         return _Mystr_view{_View._Ptr, _View._Size};
     }
 
-    template <_Allocator _Alloc2>
+    template <class _Alloc2, enable_if_t<!is_same_v<_Alloc2, _Alloc>, int> = 0>
     void str(const basic_string<_Elem, _Traits, _Alloc2>& _Newstr) {
         _Tidy();
         _Init(_Newstr.c_str(), _Newstr.size(), _Mystate);
@@ -572,15 +572,15 @@ public:
     explicit basic_istringstream(_Mystr&& _Str, ios_base::openmode _Mode = ios_base::in)
         : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_STD move(_Str), _Mode | ios_base::in) {}
 
-    template <_Allocator _Alloc2>
+    template <class _Alloc2>
     basic_istringstream(const basic_string<_Elem, _Traits, _Alloc2>& _Str, const _Alloc& _Al)
         : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Str, ios_base::in, _Al) {}
 
-    template <_Allocator _Alloc2>
+    template <class _Alloc2>
     basic_istringstream(const basic_string<_Elem, _Traits, _Alloc2>& _Str, ios_base::openmode _Mode, const _Alloc& _Al)
         : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Str, _Mode | ios_base::in, _Al) {}
 
-    template <_Allocator _Alloc2>
+    template <class _Alloc2, enable_if_t<!is_same_v<_Alloc2, _Alloc>, int> = 0>
     explicit basic_istringstream(
         const basic_string<_Elem, _Traits, _Alloc2>& _Str, ios_base::openmode _Mode = ios_base::in)
         : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Str, _Mode | ios_base::in) {}
@@ -645,7 +645,7 @@ public:
         return _Stringbuffer.view();
     }
 
-    template <_Allocator _Alloc2>
+    template <class _Alloc2, enable_if_t<!is_same_v<_Alloc2, _Alloc>, int> = 0>
     void str(const basic_string<_Elem, _Traits, _Alloc2>& _Newstr) {
         _Stringbuffer.str(_Newstr);
     }
@@ -692,15 +692,15 @@ public:
     explicit basic_ostringstream(_Mystr&& _Str, ios_base::openmode _Mode = ios_base::out)
         : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_STD move(_Str), _Mode | ios_base::out) {}
 
-    template <_Allocator _Alloc2>
+    template <class _Alloc2>
     basic_ostringstream(const basic_string<_Elem, _Traits, _Alloc2>& _Str, const _Alloc& _Al)
         : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Str, ios_base::out, _Al) {}
 
-    template <_Allocator _Alloc2>
+    template <class _Alloc2>
     basic_ostringstream(const basic_string<_Elem, _Traits, _Alloc2>& _Str, ios_base::openmode _Mode, const _Alloc& _Al)
         : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Str, _Mode | ios_base::out, _Al) {}
 
-    template <_Allocator _Alloc2>
+    template <class _Alloc2, enable_if_t<!is_same_v<_Alloc2, _Alloc>, int> = 0>
     explicit basic_ostringstream(
         const basic_string<_Elem, _Traits, _Alloc2>& _Str, ios_base::openmode _Mode = ios_base::out)
         : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Str, _Mode | ios_base::out) {}
@@ -765,7 +765,7 @@ public:
         return _Stringbuffer.view();
     }
 
-    template <_Allocator _Alloc2>
+    template <class _Alloc2, enable_if_t<!is_same_v<_Alloc2, _Alloc>, int> = 0>
     void str(const basic_string<_Elem, _Traits, _Alloc2>& _Newstr) {
         _Stringbuffer.str(_Newstr);
     }
@@ -818,15 +818,15 @@ public:
     explicit basic_stringstream(_Mystr&& _Str, ios_base::openmode _Mode = ios_base::in | ios_base::out)
         : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_STD move(_Str), _Mode) {}
 
-    template <_Allocator _Alloc2>
+    template <class _Alloc2>
     basic_stringstream(const basic_string<_Elem, _Traits, _Alloc2>& _Str, const _Alloc& _Al)
         : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Str, ios_base::in | ios_base::out, _Al) {}
 
-    template <_Allocator _Alloc2>
+    template <class _Alloc2>
     basic_stringstream(const basic_string<_Elem, _Traits, _Alloc2>& _Str, ios_base::openmode _Mode, const _Alloc& _Al)
         : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Str, _Mode, _Al) {}
 
-    template <_Allocator _Alloc2>
+    template <class _Alloc2, enable_if_t<!is_same_v<_Alloc2, _Alloc>, int> = 0>
     explicit basic_stringstream(
         const basic_string<_Elem, _Traits, _Alloc2>& _Str, ios_base::openmode _Mode = ios_base::in | ios_base::out)
         : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Str, _Mode) {}
@@ -891,7 +891,7 @@ public:
         return _Stringbuffer.view();
     }
 
-    template <_Allocator _Alloc2>
+    template <class _Alloc2, enable_if_t<!is_same_v<_Alloc2, _Alloc>, int> = 0>
     void str(const basic_string<_Elem, _Traits, _Alloc2>& _Newstr) {
         _Stringbuffer.str(_Newstr);
     }
