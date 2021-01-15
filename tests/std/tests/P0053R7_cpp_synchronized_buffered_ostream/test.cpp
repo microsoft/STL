@@ -223,9 +223,9 @@ void test_syncbuf_move_swap_operations(string_buffer<typename Alloc::value_type>
         assert(buf1.Test_get_data_size() == 0);
 
         if constexpr (allocator_traits<Alloc>::propagate_on_container_move_assignment::value
-                      && is_same_v<allocator_traits<Alloc>::is_always_equal, true_type>) {
+                      && is_same_v<typename allocator_traits<Alloc>::is_always_equal, true_type>) {
             assert(buf1.get_allocator() == buf2.get_allocator());
-        } else if constexpr (is_same_v<allocator_traits<Alloc>::is_always_equal, true_type>) {
+        } else if constexpr (is_same_v<typename allocator_traits<Alloc>::is_always_equal, true_type>) {
             assert(buf1.get_allocator() == buf2.get_allocator());
         } else {
             assert(buf1.get_allocator() != buf2.get_allocator());
@@ -244,7 +244,7 @@ void test_syncbuf_move_swap_operations(string_buffer<typename Alloc::value_type>
         auto buf2BufferSize    = buf2.Test_get_buffer_size();
         auto buf2DataSize      = buf2.Test_get_data_size();
         if constexpr (allocator_traits<Alloc>::propagate_on_container_swap::value
-                      || is_same_v<allocator_traits<Alloc>::is_always_equal, true_type>) {
+                      || is_same_v<typename allocator_traits<Alloc>::is_always_equal, true_type>) {
             buf1.swap(buf2);
             assert(buf2.get_wrapped() == buf1WrappedObject);
             assert(buf2.Test_get_buffer_size() == buf1BufferSize);

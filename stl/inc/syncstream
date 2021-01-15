@@ -122,7 +122,10 @@ public:
         if (_Data_size > 0 || _Mybase::_Sync_recorded) {
             scoped_lock _Guard(*_Get_mutex_for_instance(_Wrapped));
 
-            if (_Data_size > 0 && _Data_size != static_cast<size_type>(_Wrapped->sputn(_Begin_seq_ptr, _Data_size))) {
+            if (_Data_size > 0
+                && _Data_size
+                       != static_cast<size_type>(
+                           _Wrapped->sputn(_Begin_seq_ptr, static_cast<streamsize>(_Data_size)))) {
                 _Result = false;
             }
 

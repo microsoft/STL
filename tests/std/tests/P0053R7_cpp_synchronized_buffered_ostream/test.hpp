@@ -17,7 +17,7 @@ public:
     ~string_buffer() = default;
 
     streamsize xsputn(const Ty* _Ptr, streamsize _Count) override {
-        str.append(_Ptr, _Count);
+        str.append(_Ptr, static_cast<string::size_type>(_Count));
         return _Count;
     }
 
