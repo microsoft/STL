@@ -573,7 +573,7 @@ public:
 
     template <_Allocator _Alloc2>
     basic_istringstream(const basic_string<_Elem, _Traits, _Alloc2>& _Str, const _Alloc& _Al)
-        : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Str, _Al) {}
+        : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Str, ios_base::in, _Al) {}
 
     template <_Allocator _Alloc2>
     basic_istringstream(const basic_string<_Elem, _Traits, _Alloc2>& _Str, ios_base::openmode _Mode, const _Alloc& _Al)
@@ -693,7 +693,7 @@ public:
 
     template <_Allocator _Alloc2>
     basic_ostringstream(const basic_string<_Elem, _Traits, _Alloc2>& _Str, const _Alloc& _Al)
-        : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Str, _Al) {}
+        : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Str, ios_base::out, _Al) {}
 
     template <_Allocator _Alloc2>
     basic_ostringstream(const basic_string<_Elem, _Traits, _Alloc2>& _Str, ios_base::openmode _Mode, const _Alloc& _Al)
@@ -819,7 +819,7 @@ public:
 
     template <_Allocator _Alloc2>
     basic_stringstream(const basic_string<_Elem, _Traits, _Alloc2>& _Str, const _Alloc& _Al)
-        : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Str, _Al) {}
+        : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Str, ios_base::in | ios_base::out, _Al) {}
 
     template <_Allocator _Alloc2>
     basic_stringstream(const basic_string<_Elem, _Traits, _Alloc2>& _Str, ios_base::openmode _Mode, const _Alloc& _Al)
