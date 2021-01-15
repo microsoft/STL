@@ -115,9 +115,9 @@ void run_test() {
     run_test_util<Test<ostringstream>>();
 }
 
-using pmr_stringstream  = std::basic_stringstream<char, std::char_traits<char>, std::pmr::polymorphic_allocator<char>>;
-using pmr_istringstream = std::basic_istringstream<char, std::char_traits<char>, std::pmr::polymorphic_allocator<char>>;
-using pmr_ostringstream = std::basic_ostringstream<char, std::char_traits<char>, std::pmr::polymorphic_allocator<char>>;
+using pmr_stringstream  = basic_stringstream<char, char_traits<char>, pmr::polymorphic_allocator<char>>;
+using pmr_istringstream = basic_istringstream<char, char_traits<char>, pmr::polymorphic_allocator<char>>;
+using pmr_ostringstream = basic_ostringstream<char, char_traits<char>, pmr::polymorphic_allocator<char>>;
 
 template <typename Test>
 void run_pmr_allocator_test_util() {
@@ -138,15 +138,15 @@ template <typename T>
 struct counting_allocator {
     using value_type = T;
 
-    std::allocator<T> allocator{};
-    std::shared_ptr<std::size_t> count{std::make_shared<std::size_t>(std::size_t{0})};
+    allocator<T> allocator{};
+    shared_ptr<size_t> count{make_shared<size_t>(size_t{0})};
 
-    T* allocate(std::size_t n) {
+    T* allocate(size_t n) {
         (*count)++;
         return allocator.allocate(n);
     }
 
-    void deallocate(T* p, std::size_t n) {
+    void deallocate(T* p, size_t n) {
         allocator.deallocate(p, n);
     }
 
@@ -161,10 +161,10 @@ bool operator==(const counting_allocator<T>& c1, const counting_allocator<U>& c2
     return c1.allocator == c2.allocator;
 }
 
-using counting_string        = std::basic_string<char, std::char_traits<char>, counting_allocator<char>>;
-using counting_stringstream  = std::basic_stringstream<char, std::char_traits<char>, counting_allocator<char>>;
-using counting_istringstream = std::basic_istringstream<char, std::char_traits<char>, counting_allocator<char>>;
-using counting_ostringstream = std::basic_ostringstream<char, std::char_traits<char>, counting_allocator<char>>;
+using counting_string        = basic_string<char, char_traits<char>, counting_allocator<char>>;
+using counting_stringstream  = basic_stringstream<char, char_traits<char>, counting_allocator<char>>;
+using counting_istringstream = basic_istringstream<char, char_traits<char>, counting_allocator<char>>;
+using counting_ostringstream = basic_ostringstream<char, char_traits<char>, counting_allocator<char>>;
 
 template <typename Stream>
 struct test_counting_allocator {
