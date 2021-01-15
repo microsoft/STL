@@ -63,8 +63,6 @@ public:
     basic_stringbuf(const basic_string<_Elem, _Traits, _Alloc2>& _Str, const _Alloc& _Al_)
         : basic_stringbuf(_Str, ios_base::in | ios_base::out, _Al_) {}
 
-    // The overload in previous version will be selected
-    // when std::is_same_v<_Alloc2, _Alloc>
     template <_Allocator _Alloc2>
     explicit basic_stringbuf(
         const basic_string<_Elem, _Traits, _Alloc2>& _Str, ios_base::openmode _Mode = ios_base::in | ios_base::out)
@@ -178,7 +176,7 @@ public:
     _NODISCARD _Mystr str() && {
         _Mystr _Result{_String_constructor_rvalue_allocator_tag{}, _STD move(_Al)};
         const auto _View = _Get_buffer_view();
-        // _Size cannot larger than _Res, but it could be equal,
+        // _Size cannot be larger than _Res, but it could be equal,
         // because basic_stringbuf doesn't allocate for the terminating '\0'.
         if (_View._Size == _View._Res) {
             // the buffer is full
@@ -531,7 +529,7 @@ private:
         return _State;
     }
 
-    // TRANSITION, GH-938
+    // TRANSITION, ABI, see GH-938
     _Elem* _Seekhigh; // the high-water pointer in character array
     int _Mystate; // the stream state
     allocator_type _Al; // the allocator object
