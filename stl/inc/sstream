@@ -466,12 +466,12 @@ protected:
     void _Init_string_inplace(_Mystr&& _Str, int _State) {
         _State |= _From_rvalue;
 
-        auto [_Ptr, _Length, _Count] = _Str._Release_to_buffer(_Al);
-        _Elem* const _Pnew           = _Unfancy(_Ptr);
-        if (_Count != 0 && (_State & (_Noread | _Constant)) != (_Noread | _Constant)) {
+        auto [_Ptr, _Size, _Res] = _Str._Release_to_buffer(_Al);
+        _Elem* const _Pnew       = _Unfancy(_Ptr);
+        if (_Res != 0 && (_State & (_Noread | _Constant)) != (_Noread | _Constant)) {
             // finite buffer that can be read or written, set it up
-            _Seekhigh        = _Pnew + _Length;
-            auto _End_buffer = _Pnew + _Count;
+            _Seekhigh        = _Pnew + _Size;
+            auto _End_buffer = _Pnew + _Res;
 
             _Mysb::setp(_Pnew, (_State & (_Atend | _Append)) ? _Seekhigh : _Pnew, _End_buffer);
 
