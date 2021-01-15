@@ -91,10 +91,8 @@ public:
         }
     }
 
-    void swap(basic_stringbuf& _Right) noexcept(allocator_traits<_Alloc>::propagate_on_container_swap::value
-                                                || allocator_traits<_Alloc>::is_always_equal::value) {
+    void swap(basic_stringbuf& _Right) noexcept /* strengthened */ {
         if (this != _STD addressof(_Right)) {
-            // Note from GH-919: this can be strengthened to noexcept.
             _STL_ASSERT(allocator_traits<_Alloc>::propagate_on_container_swap::value || _Al == _Right._Al,
                 "The allocators of basic_stringbuf should propagate or be equal on swap.");
             _Mysb::swap(_Right);
@@ -540,8 +538,8 @@ private:
 };
 
 template <class _Elem, class _Traits, class _Alloc>
-void swap(basic_stringbuf<_Elem, _Traits, _Alloc>& _Left, basic_stringbuf<_Elem, _Traits, _Alloc>& _Right) noexcept(
-    noexcept(_Left.swap(_Right))) {
+void swap(basic_stringbuf<_Elem, _Traits, _Alloc>& _Left, basic_stringbuf<_Elem, _Traits, _Alloc>& _Right) noexcept
+/* strengthened */ {
     _Left.swap(_Right);
 }
 
