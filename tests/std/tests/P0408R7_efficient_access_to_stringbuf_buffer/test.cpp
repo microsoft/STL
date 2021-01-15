@@ -15,9 +15,9 @@
 
 using namespace std;
 
-constexpr const char empty_string[] = "";
-constexpr const char small_string[] = "a";
-constexpr const char large_string[] =
+constexpr char empty_string[] = "";
+constexpr char small_string[] = "a";
+constexpr char large_string[] =
     "This is a long long long long long long long long string to avoid small string optimization.";
 
 template <typename Stream>
@@ -32,7 +32,7 @@ struct test_rvalue {
         assert(stream.rdbuf()->get_allocator() == init_value.get_allocator());
         // Move out the buffer, the underlying buffer should be empty.
         buffer = move(stream).str();
-        if (buffer == string_view{large_string}) {
+        if (buffer == large_string) {
             // stream doesn't actually have space for a null-terminator
             assert(buffer.capacity() == res);
         } else {
@@ -144,7 +144,7 @@ struct counting_allocator {
     shared_ptr<size_t> count{make_shared<size_t>(size_t{0})};
 
     T* allocate(size_t n) {
-        (*count)++;
+        ++*count;
         return allocator<T>{}.allocate(n);
     }
 
