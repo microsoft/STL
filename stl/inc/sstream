@@ -91,8 +91,11 @@ public:
 
     void swap(basic_stringbuf& _Right) noexcept /* strengthened */ {
         if (this != _STD addressof(_Right)) {
-            _STL_ASSERT(allocator_traits<_Alloc>::propagate_on_container_swap::value || _Al == _Right._Al,
-                "The allocators of basic_stringbuf should propagate or be equal on swap.");
+            if constexpr (!allocator_traits<_Alloc>::propagate_on_container_swap::value) {
+                _STL_ASSERT(
+                    _Al == _Right._Al, "The allocators of basic_stringbuf should propagate or be equal on swap.");
+            }
+
             _Mysb::swap(_Right);
             _STD swap(_Seekhigh, _Right._Seekhigh);
             _STD swap(_Mystate, _Right._Mystate);
