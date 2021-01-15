@@ -228,7 +228,7 @@ public:
     }
 
     _NODISCARD allocator_type get_allocator() const noexcept {
-        return static_cast<allocator_type>(_Al);
+        return _Al;
     }
 #endif // _HAS_CXX20
 
