@@ -804,7 +804,13 @@ int main() {
 
     {
         puts("Testing <syncstream>.");
-        puts("(TRANSITION, not yet implemented.)");
+        syncbuf sync_buf{nullptr};
+        assert(sync_buf.get_wrapped() == nullptr);
+        assert(sync_buf.get_allocator() == std::allocator<char>{});
+        assert(sync_buf.emit() == false);
+        osyncstream sync_str{cout};
+        sync_str << "Testing P1502R1_standard_library_header_units.\n";
+        assert(sync_str.rdbuf()->get_wrapped() == cout.rdbuf());
     }
 
     {
