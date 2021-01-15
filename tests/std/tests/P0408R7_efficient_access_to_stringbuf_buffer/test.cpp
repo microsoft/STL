@@ -138,27 +138,26 @@ template <typename T>
 struct counting_allocator {
     using value_type = T;
 
-    allocator<T> allocator{};
     shared_ptr<size_t> count{make_shared<size_t>(size_t{0})};
 
     T* allocate(size_t n) {
         (*count)++;
-        return allocator.allocate(n);
+        return allocator<T>{}.allocate(n);
     }
 
     void deallocate(T* p, size_t n) {
-        allocator.deallocate(p, n);
+        allocator<T>{}.deallocate(p, n);
     }
 
     counting_allocator() {}
 
     template <typename U>
-    explicit counting_allocator(const counting_allocator<U>& c) : allocator(c.allocator), count(c.count) {}
+    explicit counting_allocator(const counting_allocator<U>& c) : count(c.count) {}
 };
 
 template <typename T, typename U>
-bool operator==(const counting_allocator<T>& c1, const counting_allocator<U>& c2) {
-    return c1.allocator == c2.allocator;
+bool operator==(const counting_allocator<T>&, const counting_allocator<U>&) {
+    return true;
 }
 
 using counting_string        = basic_string<char, char_traits<char>, counting_allocator<char>>;
