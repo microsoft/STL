@@ -369,7 +369,7 @@ protected:
             _Str += _Punct_fac.falsename();
             _Str.push_back(_Elem{});
             _Str += _Punct_fac.truename(); // construct "\0false\0true"
-            switch (_Getloctxt(_First, _Last, 2, _Str.c_str())) {
+            switch (_Getloctxt(_First, _Last, 2, _Str.c_str(), _Case_sensitive::_Yes)) {
             case 0:
                 _Val = false;
                 break;
