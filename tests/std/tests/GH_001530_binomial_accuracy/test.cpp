@@ -14,7 +14,7 @@ void test_binomial(const int n, const double mean, Generator& gen) {
     const double p       = mean / n;
     const double var     = n * p * (1.0 - p);
     constexpr double tol = 0.01;
-    constexpr double x   = 4.0;
+    constexpr double x   = 4.0; // Standard deviation of sample variance should be less than tol / x.
     const size_t it_max  = 2 * static_cast<size_t>(pow(var / (tol / x), 2.0));
     binomial_distribution<> dist(n, p);
 
@@ -35,8 +35,8 @@ void test_binomial(const int n, const double mean, Generator& gen) {
     }
     sample_var /= it_max - 1;
 
-    assert(abs(sample_mean / mean - 1.0) < 0.01);
-    assert(abs(sample_var / var - 1.0) < 0.01);
+    assert(abs(sample_mean / mean - 1.0) < tol);
+    assert(abs(sample_var / var - 1.0) < tol);
 }
 
 int main() {
