@@ -2272,6 +2272,11 @@ struct _String_constructor_concat_tag {
     explicit _String_constructor_concat_tag() = default;
 };
 
+struct _String_constructor_rvalue_allocator_tag {
+    // tag to select constructors used by basic_stringbuf's rvalue str()
+    explicit _String_constructor_rvalue_allocator_tag() = default;
+};
+
 [[noreturn]] inline void _Xlen_string() {
     _Xlength_error("string too long");
 }
@@ -2280,6 +2285,7 @@ template <class _Elem, class _Traits = char_traits<_Elem>, class _Alloc = alloca
 class basic_string { // null-terminated transparent array of elements
 private:
     friend _Tidy_deallocate_guard<basic_string>;
+    friend basic_stringbuf<_Elem, _Traits, _Alloc>;
 
     using _Alty        = _Rebind_alloc_t<_Alloc, _Elem>;
     using _Alty_traits = allocator_traits<_Alty>;
@@ -2633,6 +2639,14 @@ public:
     }
 #endif // _HAS_CXX17
 
+#if _HAS_CXX20
+    basic_string(_String_constructor_rvalue_allocator_tag, _Alloc&& _Al)
+        : _Mypair(_One_then_variadic_args_t{}, _STD move(_Al)) {
+        _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
+        _Tidy_init();
+    }
+#endif // _HAS_CXX20
+
 private:
     void _Move_assign(basic_string& _Right, _Equal_allocators) noexcept {
         _Tidy_deallocate();
@@ -2662,6 +2676,51 @@ private:
     }
 
 public:
+#if _HAS_CXX20
+    bool _Move_assign_from_buffer(_Elem* const _Right, const size_type _Size, const size_type _Res) {
+        // Move assign from a buffer, used by basic_stringbuf; returns _Large_string_engaged()
+        _Tidy_deallocate();
+        pointer _Fancy_right = _Refancy<pointer>(_Right);
+        auto& _My_data       = _Mypair._Myval2;
+        _My_data._Mysize     = _Size;
+        _My_data._Myres      = _Res - 1;
+        if (_My_data._Large_string_engaged()) {
+            _Construct_in_place(_My_data._Bx._Ptr, _Fancy_right);
+            return true;
+        } else {
+            _Traits::copy(_My_data._Bx._Buf, _Right, _Res);
+            _My_data._Myres = _BUF_SIZE - 1;
+            return false;
+        }
+    }
+
+    // No instance of this type can exist where an exception may be thrown.
+    struct _Released_buffer {
+        pointer _Ptr;
+        size_type _Size;
+        size_type _Res;
+    };
+
+    _NODISCARD _Released_buffer _Release_to_buffer(_Alloc& _Al) {
+        // Release to a buffer, or allocate a new one if in small string mode
+        _Released_buffer _Result;
+        auto& _My_data = _Mypair._Myval2;
+        _Result._Size  = _My_data._Mysize;
+        if (_My_data._Large_string_engaged()) {
+            _Result._Ptr = _My_data._Bx._Ptr;
+            _Result._Res = _My_data._Myres + 1;
+        } else {
+            // use _BUF_SIZE + 1 to avoid SSO, if the buffer is assigned back
+            _Result._Ptr = _Al.allocate(_BUF_SIZE + 1);
+            _Traits::copy(_Unfancy(_Result._Ptr), _My_data._Bx._Buf, _BUF_SIZE);
+            _Result._Res = _BUF_SIZE + 1;
+        }
+        _My_data._Orphan_all();
+        _Tidy_init();
+        return _Result;
+    }
+#endif // _HAS_CXX20
+
     basic_string& operator=(basic_string&& _Right) noexcept(noexcept(_Move_assign(_Right, _Choose_pocma<_Alty>{}))) {
         if (this != _STD addressof(_Right)) {
             _Move_assign(_Right, _Choose_pocma<_Alty>{});

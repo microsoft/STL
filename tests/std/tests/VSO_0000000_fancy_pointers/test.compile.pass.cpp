@@ -11,6 +11,7 @@
 #include <memory>
 #include <new>
 #include <set>
+#include <sstream>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
@@ -428,6 +429,7 @@ template class std::unordered_multiset<T2, omni_hash, std::equal_to<>, fancy_all
 template class std::unordered_multiset<T3, omni_hash, std::equal_to<>, fancy_allocator<T3>>;
 
 template class std::basic_string<char, std::char_traits<char>, fancy_allocator<char>>;
+template class std::basic_stringbuf<char, std::char_traits<char>, fancy_allocator<char>>;
 
 void instantiate() {
     random_iterators_test<std::deque<T1, fancy_allocator<T1>>>();
