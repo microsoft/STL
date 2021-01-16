@@ -378,7 +378,7 @@ int main() {
 
     test_syncbuf_move_swap_operations<allocator<char>>(&char_buffer);
     test_syncbuf_move_swap_operations<fancy_ptr_allocator<char>>(&char_buffer);
-    // test_syncbuf_move_swap_operations<non_move_assignable_non_equal_allocator<char>>(&char_buffer);
+    test_syncbuf_move_swap_operations<non_move_assignable_non_equal_allocator<char>>(&char_buffer);
     test_syncbuf_move_swap_operations<non_move_assignable_equal_allocator<char>>(&char_buffer);
     test_syncbuf_move_swap_operations<non_swapable_equal_allocator<char>>(&char_buffer);
 
