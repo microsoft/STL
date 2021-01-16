@@ -936,7 +936,7 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, 
 }
 
 // FORWARD DECLARATIONS
-template <class _BidIt, class _Allocator = allocator<sub_match<_BidIt>>>
+template <class _BidIt, class _Alloc = allocator<sub_match<_BidIt>>>
 class match_results;
 
 template <class _BidIt, class _Alloc, class _InIt, class _OutIt>
@@ -3688,19 +3688,23 @@ _BidIt _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Skip(_BidIt _First_arg, _BidIt 
         case _N_class:
             { // check for string match
                 for (; _First_arg != _Last; ++_First_arg) { // look for starting match
+                    using _Uelem = typename _RxTraits::_Uelem;
                     bool _Found;
-                    auto _Ch                             = static_cast<typename _RxTraits::_Uelem>(*_First_arg);
+                    auto _Ch                             = static_cast<_Uelem>(*_First_arg);
                     _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Nx);
                     _It _Next                            = _First_arg;
                     ++_Next;
 
+                    if (_Sflags & regex_constants::icase) {
+                        _Ch = static_cast<_Uelem>(_Traits.translate_nocase(static_cast<_Elem>(_Ch)));
+                    }
+
                     if (_Node->_Coll && _Lookup_coll(_First_arg, _Next, _Node->_Coll) != _First_arg) {
                         _Found = true;
                     } else if (_Node->_Ranges
-                               && (_Lookup_range(
-                                   static_cast<typename _RxTraits::_Uelem>(
-                                       _Sflags & regex_constants::collate ? _Traits.translate(static_cast<_Elem>(_Ch))
-                                                                          : static_cast<_Elem>(_Ch)),
+                               && (_Lookup_range(static_cast<_Uelem>(_Sflags & regex_constants::collate
+                                                                         ? _Traits.translate(static_cast<_Elem>(_Ch))
+                                                                         : static_cast<_Elem>(_Ch)),
                                    _Node->_Ranges))) {
                         _Found = true;
                     } else if (_Ch < _Bmp_max) {
