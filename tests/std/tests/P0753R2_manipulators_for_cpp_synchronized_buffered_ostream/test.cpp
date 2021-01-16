@@ -1,7 +1,7 @@
 #include <assert.h>
 #include <string>
 #include <syncstream>
-#include <type_triats>
+#include <type_traits>
 
 using namespace std;
 
