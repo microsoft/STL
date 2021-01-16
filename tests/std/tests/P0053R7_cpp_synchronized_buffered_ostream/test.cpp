@@ -258,10 +258,109 @@ void test_syncbuf_move_swap_operations(string_buffer<typename Alloc::value_type>
     buf->str.clear();
 }
 
+template <class Alloc>
+void test_osyncstream(string_buffer<typename Alloc::value_type>* buf = nullptr) {
+    using value_type  = typename Alloc::value_type;
+    using OSyncStream = basic_osyncstream<value_type, char_traits<value_type>, Alloc>;
+
+    {
+        OSyncStream oss{buf};
+
+        // test construction post-conditions
+        assert(oss.get_wrapped() == buf);
+        assert(oss.rdbuf()->get_wrapped() == buf);
+
+        oss.emit();
+        assert(oss.rdstate() == (buf ? ios::goodbit : ios::badbit));
+
+        oss << "A small string\n";
+        oss.emit();
+        assert(oss.rdstate() == (buf ? ios::goodbit : ios::badbit));
+        if (buf) {
+            assert(buf->str == "A small string\n");
+            buf->str.clear();
+        }
+
+        oss << "A string holds more than 32 characters"; // requires one re-allocation
+        oss.emit();
+        assert(oss.rdstate() == (buf ? ios::goodbit : ios::badbit));
+        if (buf) {
+            assert(buf->str == "A string holds more than 32 characters");
+            buf->str.clear();
+        }
+
+        oss << "A string that will definitely overflow the small_size_allocator"; // requires more than one
+                                                                                  // re-allocation
+        if constexpr (is_base_of_v<small_size_allocation, Alloc>) { // fail to allocate enough memory
+            assert(oss.rdstate() == ios::badbit);
+            oss.clear();
+            oss.emit();
+            assert(oss.rdstate() == (buf ? ios::goodbit : ios::badbit));
+            assert(buf ? buf->str == "A string that will definitely overflow the small_s" : true);
+        } else {
+            assert(oss.rdstate() == (buf ? ios::goodbit : ios::badbit));
+            oss.emit();
+            assert(oss.rdstate() == (buf ? ios::goodbit : ios::badbit));
+            assert(buf ? buf->str == "A string that will definitely overflow the small_size_allocator" : true);
+        }
+    }
+    if (buf) {
+        buf->str.clear();
+    }
+
+    { // move construction
+        OSyncStream oss{buf};
+        oss << "Some input";
+        auto ossWrapped = oss.get_wrapped();
+        OSyncStream oss1{move(oss)};
+
+        assert(oss1.get_wrapped() == ossWrapped);
+        assert(oss.get_wrapped() == nullptr);
+    }
+    if (buf) {
+        assert(buf->str == "Some input");
+        buf->str.clear();
+    }
+
+    {
+        OSyncStream oss{buf};
+        oss << "Some input";
+        auto ossWrapped = oss.get_wrapped();
+
+        OSyncStream oss1{buf};
+        oss1 << "An input to emit first\n";
+
+        oss1 = move(oss);
+
+        assert(oss1.get_wrapped() == ossWrapped);
+        assert(oss.get_wrapped() == nullptr);
+        if (buf) {
+            assert(buf->str == "An input to emit first\n");
+            buf->str.clear();
+        }
+    }
+    if (buf) {
+        assert(buf->str == "Some input");
+        buf->str.clear();
+    }
+
+    { // test synchronization
+        OSyncStream oss(buf);
+        oss << "Last ";
+        { OSyncStream(oss.get_wrapped()) << "First Input!\n"; }
+        oss << "Input!" << '\n';
+    }
+    if (buf) {
+        assert(buf->str == "First Input!\nLast Input!\n");
+        buf->str.clear();
+    }
+}
+
 int main() {
     string_buffer<char> char_buffer{};
     string_buffer<char, true> no_sync_char_buffer{};
 
+    // Testing basic_syncbuf
     test_syncbuf_member_functions<allocator<char>>();
     test_syncbuf_member_functions<small_size_allocator<char>>();
     test_syncbuf_member_functions<fancy_ptr_allocator<char>>();
@@ -282,4 +381,15 @@ int main() {
     // test_syncbuf_move_swap_operations<non_move_assignable_non_equal_allocator<char>>(&char_buffer);
     test_syncbuf_move_swap_operations<non_move_assignable_equal_allocator<char>>(&char_buffer);
     test_syncbuf_move_swap_operations<non_swapable_equal_allocator<char>>(&char_buffer);
+
+    // Testing basic_osyncstream
+    test_osyncstream<allocator<char>>();
+    test_osyncstream<small_size_allocator<char>>();
+    test_osyncstream<fancy_ptr_allocator<char>>();
+    test_osyncstream<small_size_fancy_ptr_allocator<char>>();
+
+    test_osyncstream<allocator<char>>(&char_buffer);
+    test_osyncstream<small_size_allocator<char>>(&char_buffer);
+    test_osyncstream<fancy_ptr_allocator<char>>(&char_buffer);
+    test_osyncstream<small_size_fancy_ptr_allocator<char>>(&char_buffer);
 }
