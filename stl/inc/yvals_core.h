@@ -1263,6 +1263,13 @@
 #define _CONSTEXPR20_DYNALLOC inline
 #endif
 
+// Functions that became constexpr in C++20 via P0980R1 or P1004R2
+#if defined(__cpp_lib_constexpr_dynamic_alloc) && !defined(__clang__) // TRANSITION:LLVM-48606
+#define _CONSTEXPR20_CONTAINER constexpr
+#else
+#define _CONSTEXPR20_CONTAINER inline
+#endif
+
 #ifdef _RTC_CONVERSION_CHECKS_ENABLED
 #ifndef _ALLOW_RTCc_IN_STL
 #error /RTCc rejects conformant code, so it is not supported by the C++ Standard Library. Either remove this \

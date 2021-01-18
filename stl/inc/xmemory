@@ -1016,15 +1016,15 @@ struct _Alloc_construct_ptr { // pointer used to help construct 1 _Alloc::value_
 struct _Fake_allocator {};
 
 struct _Container_base0 {
-    _CONSTEXPR20 void _Orphan_all() noexcept {}
-    _CONSTEXPR20 void _Swap_proxy_and_iterators(_Container_base0&) noexcept {}
-    _CONSTEXPR20 void _Alloc_proxy(const _Fake_allocator&) noexcept {}
-    _CONSTEXPR20 void _Reload_proxy(const _Fake_allocator&, const _Fake_allocator&) noexcept {}
+    _CONSTEXPR20_CONTAINER void _Orphan_all() noexcept {}
+    _CONSTEXPR20_CONTAINER void _Swap_proxy_and_iterators(_Container_base0&) noexcept {}
+    _CONSTEXPR20_CONTAINER void _Alloc_proxy(const _Fake_allocator&) noexcept {}
+    _CONSTEXPR20_CONTAINER void _Reload_proxy(const _Fake_allocator&, const _Fake_allocator&) noexcept {}
 };
 
 struct _Iterator_base0 {
-    _CONSTEXPR20 void _Adopt(const void*) noexcept {}
-    _CONSTEXPR20 const _Container_base0* _Getcont() const noexcept {
+    _CONSTEXPR20_CONTAINER void _Adopt(const void*) noexcept {}
+    _CONSTEXPR20_CONTAINER const _Container_base0* _Getcont() const noexcept {
         return nullptr;
     }
 
@@ -1034,8 +1034,8 @@ struct _Iterator_base0 {
 // CLASS _Container_proxy
 struct _Container_base12;
 struct _Container_proxy { // store head of iterator chain and back pointer
-    _CONSTEXPR20 _Container_proxy() noexcept = default;
-    _CONSTEXPR20 _Container_proxy(_Container_base12* _Mycont_) noexcept : _Mycont(_Mycont_) {}
+    _CONSTEXPR20_CONTAINER _Container_proxy() noexcept = default;
+    _CONSTEXPR20_CONTAINER _Container_proxy(_Container_base12* _Mycont_) noexcept : _Mycont(_Mycont_) {}
 
     const _Container_base12* _Mycont       = nullptr;
     mutable _Iterator_base12* _Myfirstiter = nullptr;
@@ -1043,16 +1043,16 @@ struct _Container_proxy { // store head of iterator chain and back pointer
 
 struct _Container_base12 {
 public:
-    _CONSTEXPR20_DYNALLOC _Container_base12() noexcept = default;
+    _CONSTEXPR20_CONTAINER _Container_base12() noexcept = default;
 
     _Container_base12(const _Container_base12&) = delete;
     _Container_base12& operator=(const _Container_base12&) = delete;
 
-    _CONSTEXPR20_DYNALLOC void _Orphan_all() noexcept;
-    _CONSTEXPR20_DYNALLOC void _Swap_proxy_and_iterators(_Container_base12&) noexcept;
+    _CONSTEXPR20_CONTAINER void _Orphan_all() noexcept;
+    _CONSTEXPR20_CONTAINER void _Swap_proxy_and_iterators(_Container_base12&) noexcept;
 
     template <class _Alloc>
-    _CONSTEXPR20_DYNALLOC void _Alloc_proxy(_Alloc&& _Al) {
+    _CONSTEXPR20_CONTAINER void _Alloc_proxy(_Alloc&& _Al) {
         _Container_proxy* const _New_proxy = _Unfancy(_Al.allocate(1));
         _Construct_in_place(*_New_proxy, this);
         _Myproxy            = _New_proxy;
@@ -1060,7 +1060,7 @@ public:
     }
 
     template <class _Alloc>
-    _CONSTEXPR20_DYNALLOC void _Reload_proxy(_Alloc&& _Old_alloc, _Alloc&& _New_alloc) {
+    _CONSTEXPR20_CONTAINER void _Reload_proxy(_Alloc&& _Old_alloc, _Alloc&& _New_alloc) {
         // pre: no iterators refer to the existing proxy
         _Container_proxy* const _New_proxy = _Unfancy(_New_alloc.allocate(1));
         _Construct_in_place(*_New_proxy, this);
@@ -1071,21 +1071,21 @@ public:
     _Container_proxy* _Myproxy = nullptr;
 
 private:
-    _CONSTEXPR20_DYNALLOC void _Orphan_all_unlocked() noexcept;
+    _CONSTEXPR20_CONTAINER void _Orphan_all_unlocked() noexcept;
     inline void _Orphan_all_locked() noexcept;
-    _CONSTEXPR20_DYNALLOC void _Swap_proxy_and_iterators_unlocked(_Container_base12&) noexcept;
+    _CONSTEXPR20_CONTAINER void _Swap_proxy_and_iterators_unlocked(_Container_base12&) noexcept;
     inline void _Swap_proxy_and_iterators_locked(_Container_base12&) noexcept;
 };
 
 struct _Iterator_base12 { // store links to container proxy, next iterator
 public:
-    _CONSTEXPR20_DYNALLOC _Iterator_base12() noexcept = default; // construct orphaned iterator
+    _CONSTEXPR20_CONTAINER _Iterator_base12() noexcept = default; // construct orphaned iterator
 
-    _CONSTEXPR20_DYNALLOC _Iterator_base12(const _Iterator_base12& _Right) noexcept {
+    _CONSTEXPR20_CONTAINER _Iterator_base12(const _Iterator_base12& _Right) noexcept {
         *this = _Right;
     }
 
-    _CONSTEXPR20_DYNALLOC _Iterator_base12& operator=(const _Iterator_base12& _Right) noexcept {
+    _CONSTEXPR20_CONTAINER _Iterator_base12& operator=(const _Iterator_base12& _Right) noexcept {
         if (_Myproxy != _Right._Myproxy) {
             if (_Right._Myproxy) {
                 _Adopt(_Right._Myproxy->_Mycont);
@@ -1101,11 +1101,11 @@ public:
     }
 
 #if _ITERATOR_DEBUG_LEVEL == 2
-    _CONSTEXPR20_DYNALLOC ~_Iterator_base12() noexcept {
+    _CONSTEXPR20_CONTAINER ~_Iterator_base12() noexcept {
         _Orphan_me();
     }
 
-    _CONSTEXPR20_DYNALLOC void _Adopt(const _Container_base12* _Parent) noexcept {
+    _CONSTEXPR20_CONTAINER void _Adopt(const _Container_base12* _Parent) noexcept {
         if (_Parent) { // have a parent, do adoption
             _Container_proxy* _Parent_proxy = _Parent->_Myproxy;
             if (_Myproxy != _Parent_proxy) { // change parentage
@@ -1123,7 +1123,7 @@ public:
         }
     }
 
-    _CONSTEXPR20_DYNALLOC void _Orphan_me() noexcept {
+    _CONSTEXPR20_CONTAINER void _Orphan_me() noexcept {
         if (_Myproxy) { // adopted, remove self from list
 #ifdef __cpp_lib_is_constant_evaluated
             if (_STD is_constant_evaluated()) {
@@ -1137,7 +1137,7 @@ public:
     }
 
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 ^^^ / vvv _ITERATOR_DEBUG_LEVEL != 2 vvv
-    _CONSTEXPR20_DYNALLOC void _Adopt(const _Container_base12* _Parent) noexcept {
+    _CONSTEXPR20_CONTAINER void _Adopt(const _Container_base12* _Parent) noexcept {
         if (_Parent) { // have a parent, do adoption
             _Myproxy = _Parent->_Myproxy;
         } else { // no future parent, just disown current parent
@@ -1146,7 +1146,7 @@ public:
     }
 #endif // _ITERATOR_DEBUG_LEVEL != 2
 
-    _CONSTEXPR20_DYNALLOC const _Container_base12* _Getcont() const noexcept {
+    _CONSTEXPR20_CONTAINER const _Container_base12* _Getcont() const noexcept {
         return _Myproxy ? _Myproxy->_Mycont : nullptr;
     }
 
@@ -1157,7 +1157,7 @@ public:
 
 #if _ITERATOR_DEBUG_LEVEL == 2
 private:
-    _CONSTEXPR20_DYNALLOC void _Adopt_unlocked(_Container_proxy* _Parent_proxy) noexcept {
+    _CONSTEXPR20_CONTAINER void _Adopt_unlocked(_Container_proxy* _Parent_proxy) noexcept {
         if (_Myproxy) { // adopted, remove self from list
             _Orphan_me_unlocked();
         }
@@ -1171,7 +1171,7 @@ private:
         _Adopt_unlocked(_Parent_proxy);
     }
 
-    _CONSTEXPR20_DYNALLOC void _Orphan_me_unlocked() noexcept {
+    _CONSTEXPR20_CONTAINER void _Orphan_me_unlocked() noexcept {
         _Iterator_base12** _Pnext = &_Myproxy->_Myfirstiter;
         while (*_Pnext && *_Pnext != this) {
             _Pnext = &(*_Pnext)->_Mynextiter;
@@ -1190,7 +1190,7 @@ private:
 };
 
 // MEMBER FUNCTIONS FOR _Container_base12
-_CONSTEXPR20_DYNALLOC void _Container_base12::_Orphan_all_unlocked() noexcept {
+_CONSTEXPR20_CONTAINER void _Container_base12::_Orphan_all_unlocked() noexcept {
     for (auto _Pnext = &_Myproxy->_Myfirstiter; *_Pnext; *_Pnext = (*_Pnext)->_Mynextiter) {
         (*_Pnext)->_Myproxy = nullptr;
     }
@@ -1202,7 +1202,7 @@ inline void _Container_base12::_Orphan_all_locked() noexcept {
     _Orphan_all_unlocked();
 }
 
-_CONSTEXPR20_DYNALLOC void _Container_base12::_Orphan_all() noexcept {
+_CONSTEXPR20_CONTAINER void _Container_base12::_Orphan_all() noexcept {
 #if _ITERATOR_DEBUG_LEVEL == 2
     if (_Myproxy) { // proxy allocated, drain it
 #ifdef __cpp_lib_is_constant_evaluated
@@ -1217,7 +1217,7 @@ _CONSTEXPR20_DYNALLOC void _Container_base12::_Orphan_all() noexcept {
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 }
 
-_CONSTEXPR20_DYNALLOC void _Container_base12::_Swap_proxy_and_iterators_unlocked(_Container_base12& _Right) noexcept {
+_CONSTEXPR20_CONTAINER void _Container_base12::_Swap_proxy_and_iterators_unlocked(_Container_base12& _Right) noexcept {
     _Container_proxy* _Temp = _Myproxy;
     _Myproxy                = _Right._Myproxy;
     _Right._Myproxy         = _Temp;
@@ -1236,7 +1236,7 @@ inline void _Container_base12::_Swap_proxy_and_iterators_locked(_Container_base1
     _Swap_proxy_and_iterators_unlocked(_Right);
 }
 
-_CONSTEXPR20_DYNALLOC void _Container_base12::_Swap_proxy_and_iterators(_Container_base12& _Right) noexcept {
+_CONSTEXPR20_CONTAINER void _Container_base12::_Swap_proxy_and_iterators(_Container_base12& _Right) noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 2
     _Swap_proxy_and_iterators_unlocked(_Right);
 #else // ^^^ _ITERATOR_DEBUG_LEVEL != 2 ^^^ / vvv _ITERATOR_DEBUG_LEVEL == 2 vvv
@@ -1267,11 +1267,11 @@ struct _Leave_proxy_unbound {
 struct _Fake_proxy_ptr_impl { // fake replacement for a container proxy smart pointer when no container proxy is in use
     _Fake_proxy_ptr_impl(const _Fake_proxy_ptr_impl&) = delete;
     _Fake_proxy_ptr_impl& operator=(const _Fake_proxy_ptr_impl&) = delete;
-    _CONSTEXPR20_DYNALLOC _Fake_proxy_ptr_impl(const _Fake_allocator&, _Leave_proxy_unbound) noexcept {}
-    _CONSTEXPR20_DYNALLOC _Fake_proxy_ptr_impl(const _Fake_allocator&, const _Container_base0&) noexcept {}
+    _CONSTEXPR20_CONTAINER _Fake_proxy_ptr_impl(const _Fake_allocator&, _Leave_proxy_unbound) noexcept {}
+    _CONSTEXPR20_CONTAINER _Fake_proxy_ptr_impl(const _Fake_allocator&, const _Container_base0&) noexcept {}
 
-    _CONSTEXPR20_DYNALLOC void _Bind(const _Fake_allocator&, _Container_base0*) noexcept {}
-    _CONSTEXPR20_DYNALLOC void _Release() noexcept {}
+    _CONSTEXPR20_CONTAINER void _Bind(const _Fake_allocator&, _Container_base0*) noexcept {}
+    _CONSTEXPR20_CONTAINER void _Release() noexcept {}
 };
 
 struct _Basic_container_proxy_ptr12 {
@@ -1283,7 +1283,7 @@ struct _Basic_container_proxy_ptr12 {
     }
 
 protected:
-    _CONSTEXPR20_DYNALLOC _Basic_container_proxy_ptr12()              = default;
+    _CONSTEXPR20_CONTAINER _Basic_container_proxy_ptr12()             = default;
     _Basic_container_proxy_ptr12(const _Basic_container_proxy_ptr12&) = delete;
     _Basic_container_proxy_ptr12(_Basic_container_proxy_ptr12&&)      = delete;
 };
@@ -1293,27 +1293,27 @@ struct _Container_proxy_ptr12 : _Basic_container_proxy_ptr12 {
     // smart pointer components for a _Container_proxy * for an allocator family
     _Alloc& _Al;
 
-    _CONSTEXPR20_DYNALLOC _Container_proxy_ptr12(_Alloc& _Al_, _Leave_proxy_unbound) : _Al(_Al_) {
+    _CONSTEXPR20_CONTAINER _Container_proxy_ptr12(_Alloc& _Al_, _Leave_proxy_unbound) : _Al(_Al_) {
         // create a new unbound _Container_proxy
         _Ptr = _Unfancy(_Al_.allocate(1));
         _Construct_in_place(*_Ptr);
     }
 
-    _CONSTEXPR20_DYNALLOC _Container_proxy_ptr12(_Alloc& _Al_, _Container_base12& _Mycont) : _Al(_Al_) {
+    _CONSTEXPR20_CONTAINER _Container_proxy_ptr12(_Alloc& _Al_, _Container_base12& _Mycont) : _Al(_Al_) {
         // create a new _Container_proxy pointing at _Mycont
         _Ptr = _Unfancy(_Al_.allocate(1));
         _Construct_in_place(*_Ptr, _STD addressof(_Mycont));
         _Mycont._Myproxy = _Ptr;
     }
 
-    _CONSTEXPR20_DYNALLOC void _Bind(_Alloc& _Old_alloc, _Container_base12* _Mycont) noexcept {
+    _CONSTEXPR20_CONTAINER void _Bind(_Alloc& _Old_alloc, _Container_base12* _Mycont) noexcept {
         // Attach the proxy stored in *this to _Mycont, and destroy _Mycont's existing proxy
         // with _Old_alloc. Requires that no iterators are alive referring to _Mycont.
         _Ptr->_Mycont = _Mycont;
         _Delete_plain_internal(_Old_alloc, _STD exchange(_Mycont->_Myproxy, _STD exchange(_Ptr, nullptr)));
     }
 
-    _CONSTEXPR20_DYNALLOC ~_Container_proxy_ptr12() {
+    _CONSTEXPR20_CONTAINER ~_Container_proxy_ptr12() {
         if (_Ptr) {
             _Delete_plain_internal(_Al, _Ptr);
         }
