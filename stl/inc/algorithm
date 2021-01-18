@@ -4174,6 +4174,7 @@ namespace ranges {
 
             for (;; ++_Current) {
                 if (++_First == _Last) {
+                    ++_Current;
                     return {_STD move(_Current), _STD move(_First)};
                 }
 

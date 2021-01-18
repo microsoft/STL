@@ -34,21 +34,34 @@ struct test_iterator_overload {
     static constexpr void call() {
         using ranges::unique_copy, ranges::unique_copy_result, ranges::equal, ranges::equal_to, ranges::iterator_t,
             ranges::size;
-        // Validate iterator + sentinel overload
-        P input[6]  = {{0, 99}, {0, 47}, {0, 47}, {0, 99}, {0, 47}, {0, 47}};
-        P output[4] = {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}};
-        Read wrapped_input{input};
+        { // Validate iterator + sentinel overload
+            P input[6]  = {{0, 99}, {0, 47}, {0, 47}, {0, 99}, {0, 47}, {0, 47}};
+            P output[4] = {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}};
+            Read wrapped_input{input};
 
-        const same_as<unique_copy_result<iterator_t<Read>, Write>> auto result =
-            unique_copy(wrapped_input.begin(), wrapped_input.end(), Write{output}, equal_to{}, countedProjection);
-        assert(result.in == wrapped_input.end());
-        assert(result.out.peek() == end(output));
-        if constexpr (input_iterator<Write> || !ranges::forward_range<Read>) {
-            assert(equal(output, expectedOutputRead));
-            assert(equal(input, expectedInputRead));
-        } else {
-            assert(equal(output, expectedOutput));
-            assert(equal(input, expectedInput));
+            const same_as<unique_copy_result<iterator_t<Read>, Write>> auto result =
+                unique_copy(wrapped_input.begin(), wrapped_input.end(), Write{output}, equal_to{}, countedProjection);
+            assert(result.in == wrapped_input.end());
+            assert(result.out.peek() == end(output));
+            if constexpr (input_iterator<Write> || !ranges::forward_range<Read>) {
+                assert(equal(output, expectedOutputRead));
+                assert(equal(input, expectedInputRead));
+            } else {
+                assert(equal(output, expectedOutput));
+                assert(equal(input, expectedInput));
+            }
+        }
+
+        { // Validate already unique range
+            P input[4]  = {{0, 99}, {0, 47}, {0, 99}, {0, 47}};
+            P output[4] = {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}};
+            Read wrapped_input{input};
+
+            const same_as<unique_copy_result<iterator_t<Read>, Write>> auto result =
+                unique_copy(wrapped_input.begin(), wrapped_input.end(), Write{output}, equal_to{});
+            assert(result.in == wrapped_input.end());
+            assert(result.out.peek() == end(output));
+            assert(equal(output, input));
         }
     }
 };
@@ -58,21 +71,34 @@ struct test_range_overload {
     static constexpr void call() {
         using ranges::unique_copy, ranges::unique_copy_result, ranges::equal, ranges::equal_to, ranges::iterator_t,
             ranges::size;
-        // Validate range overload
-        P input[6]  = {{0, 99}, {0, 47}, {0, 47}, {0, 99}, {0, 47}, {0, 47}};
-        P output[4] = {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}};
-        Read wrapped_input{input};
+        { // Validate range overload
+            P input[6]  = {{0, 99}, {0, 47}, {0, 47}, {0, 99}, {0, 47}, {0, 47}};
+            P output[4] = {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}};
+            Read wrapped_input{input};
 
-        const same_as<unique_copy_result<iterator_t<Read>, Write>> auto result =
-            unique_copy(wrapped_input, Write{output}, equal_to{}, countedProjection);
-        assert(result.in == wrapped_input.end());
-        assert(result.out.peek() == end(output));
-        if constexpr (input_iterator<Write> || !ranges::forward_range<Read>) {
-            assert(equal(output, expectedOutputRead));
-            assert(equal(input, expectedInputRead));
-        } else {
-            assert(equal(output, expectedOutput));
-            assert(equal(input, expectedInput));
+            const same_as<unique_copy_result<iterator_t<Read>, Write>> auto result =
+                unique_copy(wrapped_input, Write{output}, equal_to{}, countedProjection);
+            assert(result.in == wrapped_input.end());
+            assert(result.out.peek() == end(output));
+            if constexpr (input_iterator<Write> || !ranges::forward_range<Read>) {
+                assert(equal(output, expectedOutputRead));
+                assert(equal(input, expectedInputRead));
+            } else {
+                assert(equal(output, expectedOutput));
+                assert(equal(input, expectedInput));
+            }
+        }
+
+        { // Validate already unique range
+            P input[4]  = {{0, 99}, {0, 47}, {0, 99}, {0, 47}};
+            P output[4] = {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}};
+            Read wrapped_input{input};
+
+            const same_as<unique_copy_result<iterator_t<Read>, Write>> auto result =
+                unique_copy(wrapped_input, Write{output}, equal_to{});
+            assert(result.in == wrapped_input.end());
+            assert(result.out.peek() == end(output));
+            assert(equal(output, input));
         }
     }
 };
