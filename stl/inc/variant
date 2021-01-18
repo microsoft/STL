@@ -967,10 +967,24 @@ using _Variant_destroy_layer = conditional_t<conjunction_v<is_trivially_destruct
 #pragma warning(disable : 4365) // '%s': conversion from '%s' to '%s', signed/unsigned mismatch
 #pragma warning(disable : 5215) // '%s' a function parameter with volatile qualified type is deprecated in C++20
 #endif // __clang__
-template <size_t _Idx, class _Ty>
+struct _Variant_type_test { // build Ti x[] = {std::forward<T>(t)};
+    template <size_t _Idx, class _Type>
+    static constexpr auto _Construct_array(_Type(&&)[1]) -> _Meta_list<integral_constant<size_t, _Idx>, _Type>;
+
+    template <size_t _Idx, class _Ty, class _Type>
+    using type = decltype(_Construct_array<_Idx, _Type>({_STD declval<_Ty&>()}));
+};
+
+template <size_t _Idx, class _Ty, class _Type>
+using _Variant_type_resolver = typename _Variant_type_test::template type<_Idx, _Ty, _Type>;
+
+template <size_t _Idx, class _Type>
 struct _Variant_init_single_overload {
-    using _FTy = _Meta_list<integral_constant<size_t, _Idx>, _Ty> (*)(_Ty);
-    operator _FTy();
+    template <class _Ty>
+    using _FTy = _Variant_type_resolver<_Idx, _Ty, _Type>;
+
+    template <class _Ty>
+    auto operator()(_Ty, _Type) -> _FTy<_Ty>;
 };
 
 template <class _Indices, class... _Types>
@@ -987,11 +1001,12 @@ template <class Enable, class _Ty, class... _Types>
 struct _Variant_init_helper {}; // failure case (has no member "type")
 
 template <class _Ty, class... _Types>
-struct _Variant_init_helper<void_t<decltype(_Variant_init_overload_set<_Types...>{}(_STD declval<_Ty>()))>, _Ty,
+struct _Variant_init_helper<
+    void_t<decltype(_Variant_init_overload_set<_Types...>{}(std::declval<_Ty>(), std::declval<_Ty>()))>, _Ty,
     _Types...> {
     // perform overload resolution to determine the unique alternative that should be initialized in
     // variant<_Types...> from an argument expression with type and value category _Ty
-    using type = decltype(_Variant_init_overload_set<_Types...>{}(_STD declval<_Ty>()));
+    using type = decltype(_Variant_init_overload_set<_Types...>{}(std::declval<_Ty>(), std::declval<_Ty>()));
 };
 
 template <class _Ty, class... _Types> // extract the type from _Variant_init_helper

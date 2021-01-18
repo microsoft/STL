@@ -249,6 +249,7 @@ tests\P0556R3_bit_integral_power_of_two_operations
 tests\P0586R2_integer_comparison
 tests\P0595R2_is_constant_evaluated
 tests\P0607R0_inline_variables
+tests\P0608R3_sane_variant_converting_constructor
 tests\P0616R0_using_move_in_numeric
 tests\P0631R8_numbers_math_constants
 tests\P0660R10_jthread_and_cv_any
