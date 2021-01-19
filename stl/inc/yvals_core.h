@@ -1207,7 +1207,9 @@
 #define __cpp_lib_integer_comparison_functions 202002L
 #define __cpp_lib_interpolate                  201902L
 #define __cpp_lib_is_constant_evaluated        201811L
+#define __cpp_lib_is_layout_compatible         202101L
 #define __cpp_lib_is_nothrow_convertible       201806L
+#define __cpp_lib_is_pointer_interconvertible  202101L
 #define __cpp_lib_jthread                      201911L
 #define __cpp_lib_latch                        201907L
 #define __cpp_lib_list_remove_return_type      201806L
