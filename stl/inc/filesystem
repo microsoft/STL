@@ -2471,8 +2471,8 @@ namespace filesystem {
 
         // [fs.dir.entry.io], inserter
         template <class _Elem, class _Traits>
-        friend _STD basic_ostream<_Elem, _Traits>& operator<<(
-            _STD basic_ostream<_Elem, _Traits>& _Ostr, const directory_entry& _Entry) {
+        friend _STD basic_ostream<_Elem, _Traits>& operator<<( // TRANSITION, VSO-570323
+            _STD basic_ostream<_Elem, _Traits>& _Ostr, const directory_entry& _Entry) { // TRANSITION, VSO-570323
             // insert a directory_entry into a stream
             return _Ostr << _Entry.path();
         }
