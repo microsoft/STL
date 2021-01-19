@@ -9,7 +9,7 @@ This branch generates the STL's [Status Chart][].
 2. Open a new Command Prompt.
     + You can run `node --version` to verify that Node.js was successfully installed.
 3. Change to a directory where you'd like a clone of this branch.
-4. `git clone --branch gh-pages --config push.default=upstream https://github.com/microsoft/STL.git chart`
+4. `git clone --branch gh-pages --single-branch --config push.default=upstream https://github.com/microsoft/STL.git chart`
     + This will clone into a subdirectory named `chart`; you can choose a different name.
     + `--config push.default=upstream` sets a repository-local option, which will prevent `git push` from failing with
     "fatal: The upstream branch of your current branch does not match the name of your current branch."
@@ -17,8 +17,9 @@ This branch generates the STL's [Status Chart][].
 6. Set the environment variable `GH_USER` to your GitHub username: `set GH_USER=octocat` (Replace `octocat` with your
     GitHub username.)
     + This is just to simplify the following instructions.
-7. `git remote add --fetch %GH_USER% https://github.com/%GH_USER%/STL.git`
+7. `git remote add --track gh-pages --fetch %GH_USER% https://github.com/%GH_USER%/STL.git`
     + This will add your fork as a remote, and then fetch from it.
+    + If you created your fork before the Status Chart was added, you can omit `--track gh-pages`.
 8. `git push %GH_USER% gh-pages`
     + If you created your fork before the Status Chart was added, this will copy the `gh-pages` branch into your fork.
     + If you created your fork after the Status Chart was added, this will update the `gh-pages` branch in your fork.
