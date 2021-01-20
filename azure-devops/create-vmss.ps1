@@ -15,15 +15,17 @@ at https://docs.microsoft.com/en-us/powershell/azure/install-az-ps
 or are running from Azure Cloud Shell.
 #>
 
+$ErrorActionPreference = 'Stop'
+
 $Location = 'westus2'
 $Prefix = 'StlBuild-' + (Get-Date -Format 'yyyy-MM-dd')
-$VMSize = 'Standard_D16as_v4'
+$VMSize = 'Standard_D32as_v4'
 $ProtoVMName = 'PROTOTYPE'
 $LiveVMPrefix = 'BUILD'
 $WindowsServerSku = '2019-Datacenter'
 
 $ProgressActivity = 'Creating Scale Set'
-$TotalProgress = 11
+$TotalProgress = 12
 $CurrentProgress = 1
 
 <#
@@ -156,6 +158,14 @@ function Wait-Shutdown {
   }
 }
 
+
+####################################################################################################
+Write-Progress `
+  -Activity $ProgressActivity `
+  -Status 'Setting the subscription context' `
+  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+
+Set-AzContext -SubscriptionName CPP_STL_GitHub
 
 ####################################################################################################
 Write-Progress `
@@ -389,6 +399,4 @@ New-AzVmss `
 Write-Progress -Activity $ProgressActivity -Completed
 Write-Host "Location: $Location"
 Write-Host "Resource group name: $ResourceGroupName"
-Write-Host "User name: AdminUser"
-Write-Host "Using generated password: $AdminPW"
 Write-Host 'Finished!'

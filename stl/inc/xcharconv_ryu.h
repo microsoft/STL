@@ -38,7 +38,7 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
-#include <string.h>
+#include <cstring>
 #include <xcharconv.h>
 #include <xcharconv_ryu_tables.h>
 

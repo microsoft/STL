@@ -1096,28 +1096,32 @@ void test_invoke() {
     assert(invoke(&Thing::sum, sp, 6) == 1026);
     STATIC_ASSERT(!noexcept(invoke(&Thing::sum, sp, 6) == 1026));
 
-#if _HAS_CXX17
+    constexpr bool noexcept_is_in_the_type_system =
+#ifdef __cpp_noexcept_function_type
+        true
+#else
+        false
+#endif // __cpp_noexcept_function_type
+        ;
+
     assert(invoke(&Thing::sum_noexcept, *sp, 3) == 1023);
-    STATIC_ASSERT(noexcept(invoke(&Thing::sum_noexcept, *sp, 3) == 1023));
+    STATIC_ASSERT(noexcept(invoke(&Thing::sum_noexcept, *sp, 3) == 1023) == noexcept_is_in_the_type_system);
     assert(invoke(&Thing::sum_noexcept, ref(*sp), 4) == 1024);
-    STATIC_ASSERT(noexcept(invoke(&Thing::sum_noexcept, ref(*sp), 4) == 1024));
+    STATIC_ASSERT(noexcept(invoke(&Thing::sum_noexcept, ref(*sp), 4) == 1024) == noexcept_is_in_the_type_system);
     assert(invoke(&Thing::sum_noexcept, sp.get(), 5) == 1025);
-    STATIC_ASSERT(noexcept(invoke(&Thing::sum_noexcept, sp.get(), 5) == 1025));
+    STATIC_ASSERT(noexcept(invoke(&Thing::sum_noexcept, sp.get(), 5) == 1025) == noexcept_is_in_the_type_system);
     assert(invoke(&Thing::sum_noexcept, sp, 6) == 1026);
-    STATIC_ASSERT(noexcept(invoke(&Thing::sum_noexcept, sp, 6) == 1026));
-#endif // _HAS_CXX17
+    STATIC_ASSERT(noexcept(invoke(&Thing::sum_noexcept, sp, 6) == 1026) == noexcept_is_in_the_type_system);
 
     assert(invoke(square, 6) == 36);
     STATIC_ASSERT(!noexcept(invoke(square, 6) == 36));
     assert(invoke(&cube, 7) == 343);
     STATIC_ASSERT(!noexcept(invoke(&cube, 7) == 343));
 
-#if _HAS_CXX17
     assert(invoke(square_noexcept, 6) == 36);
-    STATIC_ASSERT(noexcept(invoke(square_noexcept, 6) == 36));
+    STATIC_ASSERT(noexcept(invoke(square_noexcept, 6) == 36) == noexcept_is_in_the_type_system);
     assert(invoke(&cube_noexcept, 7) == 343);
-    STATIC_ASSERT(noexcept(invoke(&cube_noexcept, 7) == 343));
-#endif // _HAS_CXX17
+    STATIC_ASSERT(noexcept(invoke(&cube_noexcept, 7) == 343) == noexcept_is_in_the_type_system);
 }
 
 

@@ -3,10 +3,16 @@
 
 #ifndef _XMATH
 #define _XMATH
-#include <errno.h>
-#include <math.h>
-#include <stddef.h>
+#include <cerrno>
+#include <cmath>
 #include <ymath.h>
+
+// MACROS FOR _Feraise ARGUMENT
+#define _FE_DIVBYZERO 0x04
+#define _FE_INEXACT   0x20
+#define _FE_INVALID   0x01
+#define _FE_OVERFLOW  0x08
+#define _FE_UNDERFLOW 0x10
 
 // FLOAT PROPERTIES
 #define _D0 3 // little-endian, small long doubles
@@ -49,11 +55,15 @@
 _EXTERN_C_UNLESS_PURE
 
 int _Stopfx(const char**, char**);
-int _Stoflt(const char*, const char*, char**, long[], int);
-int _Stoxflt(const char*, const char*, char**, long[], int);
+_In_range_(0, maxsig) int _Stoflt(
+    const char*, const char*, char**, _Out_writes_(maxsig) long[], _In_range_(1, 4) int maxsig);
+_In_range_(0, maxsig) int _Stoxflt(
+    const char*, const char*, char**, _Out_writes_(maxsig) long[], _In_range_(1, 4) int maxsig);
 int _WStopfx(const wchar_t**, wchar_t**);
-int _WStoflt(const wchar_t*, const wchar_t*, wchar_t**, long[], int);
-int _WStoxflt(const wchar_t*, const wchar_t*, wchar_t**, long[], int);
+_In_range_(0, maxsig) int _WStoflt(
+    const wchar_t*, const wchar_t*, wchar_t**, _Out_writes_(maxsig) long[], _In_range_(1, 4) int maxsig);
+_In_range_(0, maxsig) int _WStoxflt(
+    const wchar_t*, const wchar_t*, wchar_t**, _Out_writes_(maxsig) long[], _In_range_(1, 4) int maxsig);
 
 // double declarations
 union _Dval { // pun floating type as integer array

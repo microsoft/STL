@@ -9,7 +9,7 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
-#include <stdint.h>
+#include <cstdint>
 #include <type_traits>
 #include <xerrc.h>
 

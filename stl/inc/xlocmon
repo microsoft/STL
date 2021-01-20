@@ -111,9 +111,9 @@ protected:
     void _Getvals(_Elem2, const lconv* _Ptr) { // get values
         _Currencysign = _Maklocstr(
             _International ? _Ptr->int_curr_symbol : _Ptr->currency_symbol, static_cast<_Elem2*>(nullptr), _Cvt);
-        _Plussign     = _Maklocstr(4 < static_cast<unsigned int>(_Ptr->p_sign_posn) ? "" : _Ptr->positive_sign,
+        _Plussign = _Maklocstr(4 < static_cast<unsigned int>(_Ptr->p_sign_posn) ? "" : _Ptr->positive_sign,
             static_cast<_Elem2*>(nullptr), _Cvt);
-        _Minussign    = _Maklocstr(4 < static_cast<unsigned int>(_Ptr->n_sign_posn) ? "-" : _Ptr->negative_sign,
+        _Minussign = _Maklocstr(4 < static_cast<unsigned int>(_Ptr->n_sign_posn) ? "-" : _Ptr->negative_sign,
             static_cast<_Elem2*>(nullptr), _Cvt);
         _Decimalpoint = _Maklocchr(_Ptr->mon_decimal_point[0], static_cast<_Elem2*>(nullptr), _Cvt);
         _Kseparator   = _Maklocchr(_Ptr->mon_thousands_sep[0], static_cast<_Elem2*>(nullptr), _Cvt);
@@ -216,8 +216,8 @@ private:
                 "+x$v" "+ $v" "$v +" "+ $v" "$ +v";
             // clang-format on
             _Ptr += _Signposition * 4 // pick even/odd column
-                    + _Symbolprecedes * 20 // pick even/odd row
-                    + _Sepbyspace * 40; // pick first/second/third group
+                  + _Symbolprecedes * 20 // pick even/odd row
+                  + _Sepbyspace * 40; // pick first/second/third group
         }
 
         _CSTD memcpy(_Pattern.field, _Ptr, sizeof(_Pattern.field));
@@ -422,7 +422,8 @@ private:
             _Ppunct_fac = _STD addressof(_STD use_facet<_Mypunct0>(_Iosbase.getloc())); // local
         }
 
-        bool _Bad = false, _Neg = false;
+        bool _Bad = false;
+        bool _Neg = false;
         string_type _Sign;
         const money_base::pattern _Pattern = _Ppunct_fac->neg_format();
         string _Val;
@@ -433,30 +434,31 @@ private:
 
         for (size_t _Off = 0; !_Bad && _Off < 4; ++_Off) {
             switch (_Pattern.field[_Off]) { // parse a format component
-            case money_base::symbol: { // parse currency symbol
-                string_type _Symbol = _Ppunct_fac->curr_symbol();
-                typename string_type::const_iterator _Source;
+            case money_base::symbol:
+                { // parse currency symbol
+                    string_type _Symbol = _Ppunct_fac->curr_symbol();
+                    typename string_type::const_iterator _Source;
 
-                if ((!(_Iosbase.flags() & ios_base::showbase) && _First != _Last && *_First != *_Symbol.c_str())
-                    || (_Off == 3 && _Sign.size() <= 1
-                        && (_First == _Last || *_First != *_Symbol.c_str()))) { // showbase ==> mandatory symbol
-                                                                                // or
-                                                                                // currency symbol optional at end
-                    _Symbol.erase();
-                }
+                    if ((!(_Iosbase.flags() & ios_base::showbase) && _First != _Last && *_First != *_Symbol.c_str())
+                        || (_Off == 3 && _Sign.size() <= 1
+                            && (_First == _Last || *_First != *_Symbol.c_str()))) { // showbase ==> mandatory symbol
+                                                                                    // or
+                                                                                    // currency symbol optional at end
+                        _Symbol.erase();
+                    }
 
-                _Source = _Symbol.begin();
-                while (_First != _Last && _Source != _Symbol.end() && *_First == *_Source) {
-                    // still matching currency symbol
-                    ++_Source;
-                    ++_First;
-                }
+                    _Source = _Symbol.begin();
+                    while (_First != _Last && _Source != _Symbol.end() && *_First == *_Source) {
+                        // still matching currency symbol
+                        ++_Source;
+                        ++_First;
+                    }
 
-                if (_Source != _Symbol.end()) {
-                    _Bad = true; // currency symbol match failed
+                    if (_Source != _Symbol.end()) {
+                        _Bad = true; // currency symbol match failed
+                    }
+                    break;
                 }
-                break;
-            }
 
             case money_base::sign: // parse sign
                 if (_First != _Last) {
@@ -476,101 +478,103 @@ private:
 
                 break; // sign match can't fail
 
-            case money_base::value: { // parse value field
-                int _Fracdigseen        = 0;
-                int _Fracdigits         = _Ppunct_fac->frac_digits();
-                const string _Grouping  = _Ppunct_fac->grouping();
-                const _Elem _Kseparator = _Grouping.size() == 0 ? _Elem{} : _Ppunct_fac->thousands_sep();
+            case money_base::value:
+                { // parse value field
+                    int _Fracdigseen        = 0;
+                    int _Fracdigits         = _Ppunct_fac->frac_digits();
+                    const string _Grouping  = _Ppunct_fac->grouping();
+                    const _Elem _Kseparator = _Grouping.size() == 0 ? _Elem{} : _Ppunct_fac->thousands_sep();
 
-                if (_Kseparator == _Elem{} || CHAR_MAX <= static_cast<unsigned char>(*_Grouping.c_str())) {
-                    for (; _First != _Last && (_Idx = _Find_elem(_Atoms, *_First)) < 10; ++_First) {
-                        _Val += _Src[_Idx]; // no grouping, just gather digits
-                    }
-                } else { // grouping specified, gather digits and group sizes
-                    string _Groups;
-                    _Groups.push_back('\0');
-                    size_t _Group = 0;
+                    if (_Kseparator == _Elem{} || CHAR_MAX <= static_cast<unsigned char>(*_Grouping.c_str())) {
+                        for (; _First != _Last && (_Idx = _Find_elem(_Atoms, *_First)) < 10; ++_First) {
+                            _Val += _Src[_Idx]; // no grouping, just gather digits
+                        }
+                    } else { // grouping specified, gather digits and group sizes
+                        string _Groups;
+                        _Groups.push_back('\0');
+                        size_t _Group = 0;
 
-                    for (; _First != _Last; ++_First) {
-                        if ((_Idx = _Find_elem(_Atoms, *_First)) < 10) { // got a digit, add to group size
-                            _Val += _Src[_Idx];
-                            if (_Groups[_Group] != CHAR_MAX) {
-                                ++_Groups[_Group];
+                        for (; _First != _Last; ++_First) {
+                            if ((_Idx = _Find_elem(_Atoms, *_First)) < 10) { // got a digit, add to group size
+                                _Val += _Src[_Idx];
+                                if (_Groups[_Group] != CHAR_MAX) {
+                                    ++_Groups[_Group];
+                                }
+                            } else if (_Groups[_Group] == '\0' || *_First != _Kseparator) {
+                                break; // not a group separator, done
+                            } else { // add a new group to _Groups string
+                                _Groups.push_back('\0');
+                                ++_Group;
                             }
-                        } else if (_Groups[_Group] == '\0' || *_First != _Kseparator) {
-                            break; // not a group separator, done
-                        } else { // add a new group to _Groups string
-                            _Groups.push_back('\0');
-                            ++_Group;
+                        }
+
+                        if (_Group != 0) { // thousands separators seen
+                            if ('\0' < _Groups[_Group]) {
+                                ++_Group; // add trailing group to group count
+                            } else {
+                                _Bad = true; // trailing separator, fail
+                            }
+                        }
+
+                        for (const char* _Pg = _Grouping.c_str(); !_Bad && 0 < _Group;) {
+                            if (*_Pg == CHAR_MAX) {
+                                break; // end of grouping constraints to check
+                            }
+
+                            if ((0 < --_Group && *_Pg != _Groups[_Group]) || (0 == _Group && *_Pg < _Groups[_Group])) {
+                                _Bad = true; // bad group size, fail
+                            } else if ('\0' < _Pg[1]) {
+                                ++_Pg; // group size okay, advance to next test
+                            }
+                        }
+
+                        if (_Bad) {
+                            break; // bad grouping, give up
                         }
                     }
 
-                    if (_Group != 0) { // thousands separators seen
-                        if ('\0' < _Groups[_Group]) {
-                            ++_Group; // add trailing group to group count
-                        } else {
-                            _Bad = true; // trailing separator, fail
+                    const _Elem _Point = _Ppunct_fac->decimal_point();
+                    if (_First != _Last && _Point != _Elem{}
+                        && *_First == _Point) { // seen decimal point, gather fraction digits
+                        while (++_First != _Last && _Fracdigseen < _Fracdigits
+                               && (_Idx = _Find_elem(_Atoms, *_First)) < 10) {
+                            _Val += _Src[_Idx];
+                            ++_Fracdigseen;
+                        }
+
+                        if (_Fracdigseen < _Fracdigits) {
+                            _Bad = true; // short fraction
                         }
                     }
 
-                    for (const char* _Pg = _Grouping.c_str(); !_Bad && 0 < _Group;) {
-                        if (*_Pg == CHAR_MAX) {
-                            break; // end of grouping constraints to check
-                        }
-
-                        if ((0 < --_Group && *_Pg != _Groups[_Group]) || (0 == _Group && *_Pg < _Groups[_Group])) {
-                            _Bad = true; // bad group size, fail
-                        } else if ('\0' < _Pg[1]) {
-                            ++_Pg; // group size okay, advance to next test
+                    if (_Val.size() == 0) {
+                        _Bad = true; // fail if no elements parsed
+                    } else {
+                        for (; _Fracdigseen < _Fracdigits; ++_Fracdigseen) {
+                            _Val += '0'; // pad out fraction with zeros
                         }
                     }
 
-                    if (_Bad) {
-                        break; // bad grouping, give up
-                    }
+                    break;
                 }
-
-                const _Elem _Point = _Ppunct_fac->decimal_point();
-                if (_First != _Last && _Point != _Elem{}
-                    && *_First == _Point) { // seen decimal point, gather fraction digits
-                    while (
-                        ++_First != _Last && _Fracdigseen < _Fracdigits && (_Idx = _Find_elem(_Atoms, *_First)) < 10) {
-                        _Val += _Src[_Idx];
-                        ++_Fracdigseen;
-                    }
-
-                    if (_Fracdigseen < _Fracdigits) {
-                        _Bad = true; // short fraction
-                    }
-                }
-
-                if (_Val.size() == 0) {
-                    _Bad = true; // fail if no elements parsed
-                } else {
-                    for (; _Fracdigseen < _Fracdigits; ++_Fracdigseen) {
-                        _Val += '0'; // pad out fraction with zeros
-                    }
-                }
-
-                break;
-            }
 
             case money_base::space:
-            case money_base::none: { // parse optional space
-                if (_Off == 3) {
-                    break; // ignore space at end
-                }
+            case money_base::none:
+                { // parse optional space
+                    if (_Off == 3) {
+                        break; // ignore space at end
+                    }
 
-                bool _Seen = false;
+                    bool _Seen = false;
 
-                for (; _First != _Last && _Ctype_fac.is(ctype_base::space, *_First); ++_First) {
-                    _Seen = true; // skip any space
-                }
+                    for (; _First != _Last && _Ctype_fac.is(ctype_base::space, *_First); ++_First) {
+                        _Seen = true; // skip any space
+                    }
 
-                if (_Pattern.field[_Off] == money_base::space && !_Seen) {
-                    _Bad = true; // fail if no space seen
-                }
-            } // parse optional space
+                    if (_Pattern.field[_Off] == money_base::space && !_Seen) {
+                        _Bad = true; // fail if no space seen
+                    }
+                } // parse optional space
             } // switch
         }
 
@@ -779,7 +783,7 @@ private:
 
             case money_base::value: // count value field size
                 _Fillcount += _Val.size() + (0 < _Fracdigits ? 1 : 0)
-                              + (_Val.size() <= _Fracdigits ? _Fracdigits - _Val.size() + 1 : 0);
+                            + (_Val.size() <= _Fracdigits ? _Fracdigits - _Val.size() + 1 : 0);
                 break;
 
             case money_base::space: // count space size

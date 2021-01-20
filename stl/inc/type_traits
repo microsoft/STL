@@ -8,6 +8,7 @@
 #define _TYPE_TRAITS_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
+#include <cstdint>
 #include <xstddef>
 
 #pragma pack(push, _CRT_PACKING)
@@ -1590,7 +1591,6 @@ _CONSTEXPR17 auto invoke(_Callable&& _Obj, _Ty1&& _Arg1, _Types2&&... _Args2) no
         static_cast<_Callable&&>(_Obj), static_cast<_Ty1&&>(_Arg1), static_cast<_Types2&&>(_Args2)...)))
     -> decltype(_Invoker1<_Callable, _Ty1>::_Call(
         static_cast<_Callable&&>(_Obj), static_cast<_Ty1&&>(_Arg1), static_cast<_Types2&&>(_Args2)...)) {
-#if _HAS_IF_CONSTEXPR
     if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Functor) {
         return static_cast<_Callable&&>(_Obj)(static_cast<_Ty1&&>(_Arg1), static_cast<_Types2&&>(_Args2)...);
     } else if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmf_object) {
@@ -1607,10 +1607,6 @@ _CONSTEXPR17 auto invoke(_Callable&& _Obj, _Ty1&& _Arg1, _Types2&&... _Args2) no
         static_assert(_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmd_pointer, "bug in invoke");
         return (*static_cast<_Ty1&&>(_Arg1)).*_Obj;
     }
-#else // ^^^ _HAS_IF_CONSTEXPR // !_HAS_IF_CONSTEXPR vvv
-    return _Invoker1<_Callable, _Ty1>::_Call(
-        static_cast<_Callable&&>(_Obj), static_cast<_Ty1&&>(_Arg1), static_cast<_Types2&&>(_Args2)...);
-#endif // _HAS_IF_CONSTEXPR
 }
 #pragma warning(pop) // TRANSITION, DevCom-936696
 
@@ -1657,6 +1653,32 @@ template <class _From, class _To>
 using is_nothrow_convertible = _Is_nothrow_convertible<_From, _To>;
 #endif // _HAS_CXX20
 
+template <class _Ty>
+_Ty _Returns_exactly() noexcept; // not defined
+
+template <class _From, class _To, class = void>
+struct _Invoke_convertible : false_type {};
+
+template <class _From, class _To>
+struct _Invoke_convertible<_From, _To, void_t<decltype(_Implicitly_convert_to<_To>(_Returns_exactly<_From>()))>>
+    : true_type {};
+
+template <class _From, class _To>
+struct _Invoke_nothrow_convertible : bool_constant<noexcept(_Implicitly_convert_to<_To>(_Returns_exactly<_From>()))> {};
+
+template <class _Result, bool _Nothrow>
+struct _Invoke_traits_common {
+    using type                  = _Result;
+    using _Is_invocable         = true_type;
+    using _Is_nothrow_invocable = bool_constant<_Nothrow>;
+    template <class _Rx>
+    using _Is_invocable_r = bool_constant<disjunction_v<is_void<_Rx>, _Invoke_convertible<type, _Rx>>>;
+    template <class _Rx>
+    using _Is_nothrow_invocable_r = bool_constant<conjunction_v<_Is_nothrow_invocable,
+        disjunction<is_void<_Rx>,
+            conjunction<_Invoke_convertible<type, _Rx>, _Invoke_nothrow_convertible<type, _Rx>>>>>;
+};
+
 template <class _Void, class _Callable>
 struct _Invoke_traits_zero {
     // selected when _Callable isn't callable with zero _Args
@@ -1672,17 +1694,8 @@ template <class _Callable>
 using _Decltype_invoke_zero = decltype(_STD declval<_Callable>()());
 
 template <class _Callable>
-struct _Invoke_traits_zero<void_t<_Decltype_invoke_zero<_Callable>>, _Callable> {
-    // selected when _Callable is callable with zero _Args
-    using type                  = _Decltype_invoke_zero<_Callable>;
-    using _Is_invocable         = true_type;
-    using _Is_nothrow_invocable = bool_constant<noexcept(_STD declval<_Callable>()())>;
-    template <class _Rx>
-    using _Is_invocable_r = bool_constant<disjunction_v<is_void<_Rx>, is_convertible<type, _Rx>>>;
-    template <class _Rx>
-    using _Is_nothrow_invocable_r = bool_constant<
-        conjunction_v<_Is_nothrow_invocable, disjunction<is_void<_Rx>, _Is_nothrow_convertible<type, _Rx>>>>;
-};
+struct _Invoke_traits_zero<void_t<_Decltype_invoke_zero<_Callable>>, _Callable>
+    : _Invoke_traits_common<_Decltype_invoke_zero<_Callable>, noexcept(_STD declval<_Callable>()())> {};
 
 template <class _Void, class... _Types>
 struct _Invoke_traits_nonzero {
@@ -1701,18 +1714,9 @@ using _Decltype_invoke_nonzero = decltype(
 
 template <class _Callable, class _Ty1, class... _Types2>
 struct _Invoke_traits_nonzero<void_t<_Decltype_invoke_nonzero<_Callable, _Ty1, _Types2...>>, _Callable, _Ty1,
-    _Types2...> {
-    // selected when _Callable is callable with nonzero _Args
-    using type                  = _Decltype_invoke_nonzero<_Callable, _Ty1, _Types2...>;
-    using _Is_invocable         = true_type;
-    using _Is_nothrow_invocable = bool_constant<noexcept(_Invoker1<_Callable, _Ty1>::_Call(
-        _STD declval<_Callable>(), _STD declval<_Ty1>(), _STD declval<_Types2>()...))>;
-    template <class _Rx>
-    using _Is_invocable_r = bool_constant<disjunction_v<is_void<_Rx>, is_convertible<type, _Rx>>>;
-    template <class _Rx>
-    using _Is_nothrow_invocable_r = bool_constant<
-        conjunction_v<_Is_nothrow_invocable, disjunction<is_void<_Rx>, _Is_nothrow_convertible<type, _Rx>>>>;
-};
+    _Types2...> : _Invoke_traits_common<_Decltype_invoke_nonzero<_Callable, _Ty1, _Types2...>,
+                      noexcept(_Invoker1<_Callable, _Ty1>::_Call(
+                          _STD declval<_Callable>(), _STD declval<_Ty1>(), _STD declval<_Types2>()...))> {};
 
 template <class _Callable, class... _Args>
 using _Select_invoke_traits = conditional_t<sizeof...(_Args) == 0, _Invoke_traits_zero<void, _Callable>,
@@ -2263,6 +2267,56 @@ struct _Is_nothrow_hashable : false_type {}; // tests if std::hash can hash _Kty
 template <class _Kty>
 struct _Is_nothrow_hashable<_Kty, void_t<decltype(hash<_Kty>{}(_STD declval<const _Kty&>()))>>
     : bool_constant<noexcept(hash<_Kty>{}(_STD declval<const _Kty&>()))> {};
+
+// vvvvvvvvvv DERIVED FROM corecrt_internal_fltintrn.h vvvvvvvvvv
+
+template <class _FloatingType>
+struct _Floating_type_traits;
+
+template <>
+struct _Floating_type_traits<float> {
+    static constexpr int32_t _Mantissa_bits           = 24; // FLT_MANT_DIG
+    static constexpr int32_t _Exponent_bits           = 8; // sizeof(float) * CHAR_BIT - FLT_MANT_DIG
+    static constexpr int32_t _Maximum_binary_exponent = 127; // FLT_MAX_EXP - 1
+    static constexpr int32_t _Minimum_binary_exponent = -126; // FLT_MIN_EXP - 1
+    static constexpr int32_t _Exponent_bias           = 127;
+    static constexpr int32_t _Sign_shift              = 31; // _Exponent_bits + _Mantissa_bits - 1
+    static constexpr int32_t _Exponent_shift          = 23; // _Mantissa_bits - 1
+
+    using _Uint_type = uint32_t;
+
+    static constexpr uint32_t _Exponent_mask             = 0x000000FFu; // (1u << _Exponent_bits) - 1
+    static constexpr uint32_t _Normal_mantissa_mask      = 0x00FFFFFFu; // (1u << _Mantissa_bits) - 1
+    static constexpr uint32_t _Denormal_mantissa_mask    = 0x007FFFFFu; // (1u << (_Mantissa_bits - 1)) - 1
+    static constexpr uint32_t _Special_nan_mantissa_mask = 0x00400000u; // 1u << (_Mantissa_bits - 2)
+    static constexpr uint32_t _Shifted_sign_mask         = 0x80000000u; // 1u << _Sign_shift
+    static constexpr uint32_t _Shifted_exponent_mask     = 0x7F800000u; // _Exponent_mask << _Exponent_shift
+};
+
+template <>
+struct _Floating_type_traits<double> {
+    static constexpr int32_t _Mantissa_bits           = 53; // DBL_MANT_DIG
+    static constexpr int32_t _Exponent_bits           = 11; // sizeof(double) * CHAR_BIT - DBL_MANT_DIG
+    static constexpr int32_t _Maximum_binary_exponent = 1023; // DBL_MAX_EXP - 1
+    static constexpr int32_t _Minimum_binary_exponent = -1022; // DBL_MIN_EXP - 1
+    static constexpr int32_t _Exponent_bias           = 1023;
+    static constexpr int32_t _Sign_shift              = 63; // _Exponent_bits + _Mantissa_bits - 1
+    static constexpr int32_t _Exponent_shift          = 52; // _Mantissa_bits - 1
+
+    using _Uint_type = uint64_t;
+
+    static constexpr uint64_t _Exponent_mask             = 0x00000000000007FFu; // (1ULL << _Exponent_bits) - 1
+    static constexpr uint64_t _Normal_mantissa_mask      = 0x001FFFFFFFFFFFFFu; // (1ULL << _Mantissa_bits) - 1
+    static constexpr uint64_t _Denormal_mantissa_mask    = 0x000FFFFFFFFFFFFFu; // (1ULL << (_Mantissa_bits - 1)) - 1
+    static constexpr uint64_t _Special_nan_mantissa_mask = 0x0008000000000000u; // 1ULL << (_Mantissa_bits - 2)
+    static constexpr uint64_t _Shifted_sign_mask         = 0x8000000000000000u; // 1ULL << _Sign_shift
+    static constexpr uint64_t _Shifted_exponent_mask     = 0x7FF0000000000000u; // _Exponent_mask << _Exponent_shift
+};
+
+template <>
+struct _Floating_type_traits<long double> : _Floating_type_traits<double> {};
+
+// ^^^^^^^^^^ DERIVED FROM corecrt_internal_fltintrn.h ^^^^^^^^^^
 
 #if _HAS_TR1_NAMESPACE
 _STL_DISABLE_DEPRECATED_WARNING

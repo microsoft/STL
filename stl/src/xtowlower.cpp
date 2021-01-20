@@ -3,7 +3,7 @@
 
 // _Towlower -- convert wchar_t to lower case
 
-#include <wchar.h>
+#include <cwchar>
 #include <xlocinfo.h>
 
 #include "awint.hpp"

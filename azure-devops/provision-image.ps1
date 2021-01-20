@@ -88,6 +88,9 @@ $Workloads = @(
   'Microsoft.VisualStudio.Component.VC.CMake.Project',
   'Microsoft.VisualStudio.Component.VC.CoreIde',
   'Microsoft.VisualStudio.Component.VC.Llvm.Clang',
+  'Microsoft.VisualStudio.Component.VC.Runtimes.ARM.Spectre',
+  'Microsoft.VisualStudio.Component.VC.Runtimes.ARM64.Spectre',
+  'Microsoft.VisualStudio.Component.VC.Runtimes.x86.x64.Spectre',
   'Microsoft.VisualStudio.Component.VC.Tools.ARM',
   'Microsoft.VisualStudio.Component.VC.Tools.ARM64',
   'Microsoft.VisualStudio.Component.VC.Tools.x86.x64',
@@ -97,9 +100,13 @@ $Workloads = @(
 $ReleaseInPath = 'Preview'
 $Sku = 'Enterprise'
 $VisualStudioBootstrapperUrl = 'https://aka.ms/vs/16/pre/vs_enterprise.exe'
-$PythonUrl = 'https://www.python.org/ftp/python/3.8.5/python-3.8.5-amd64.exe'
+$PythonUrl = 'https://www.python.org/ftp/python/3.9.0/python-3.9.0-amd64.exe'
 
-$CudaUrl = 'https://developer.download.nvidia.com/compute/cuda/10.1/Prod/local_installers/cuda_10.1.243_426.00_win10.exe'
+# https://docs.microsoft.com/en-us/windows-hardware/drivers/download-the-wdk
+$WindowsDriverKitUrl = 'https://go.microsoft.com/fwlink/?linkid=2128854'
+
+$CudaUrl = `
+  'https://developer.download.nvidia.com/compute/cuda/10.1/Prod/local_installers/cuda_10.1.243_426.00_win10.exe'
 $CudaFeatures = 'nvcc_10.1 cuobjdump_10.1 nvprune_10.1 cupti_10.1 gpu_library_advisor_10.1 memcheck_10.1 ' + `
   'nvdisasm_10.1 nvprof_10.1 visual_profiler_10.1 visual_studio_integration_10.1 cublas_10.1 cublas_dev_10.1 ' + `
   'cudart_10.1 cufft_10.1 cufft_dev_10.1 curand_10.1 curand_dev_10.1 cusolver_10.1 cusolver_dev_10.1 cusparse_10.1 ' + `
@@ -224,6 +231,36 @@ Function InstallPython {
 
 <#
 .SYNOPSIS
+Installs the Windows Driver Kit.
+
+.DESCRIPTION
+InstallWindowsDriverKit installs the Windows Driver Kit from the supplied URL.
+
+.PARAMETER Url
+The URL of the Windows Driver Kit installer.
+#>
+Function InstallWindowsDriverKit {
+  Param(
+    [String]$Url
+  )
+
+  Write-Host 'Downloading the Windows Driver Kit...'
+  [string]$installerPath = Get-TempFilePath -Extension 'exe'
+  curl.exe -L -o $installerPath -s -S $Url
+  Write-Host 'Installing the Windows Driver Kit...'
+  $proc = Start-Process -FilePath cmd.exe -ArgumentList `
+  @('/c', 'start', '/wait', $installerPath, '/quiet', '/features', '+') -Wait -PassThru
+  $exitCode = $proc.ExitCode
+  if ($exitCode -eq 0) {
+    Write-Host 'Installation successful!'
+  }
+  else {
+    Write-Error "Installation failed! Exited with $exitCode."
+  }
+}
+
+<#
+.SYNOPSIS
 Installs NVIDIA's CUDA Toolkit.
 
 .DESCRIPTION
@@ -299,6 +336,7 @@ Add-MpPreference -ExclusionProcess python.exe
 
 InstallPython $PythonUrl
 InstallVisualStudio -Workloads $Workloads -BootstrapperUrl $VisualStudioBootstrapperUrl
+InstallWindowsDriverKit $WindowsDriverKitUrl
 InstallCuda -Url $CudaUrl -Features $CudaFeatures
 
 Write-Host 'Updating PATH...'
