@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-import itertools
 import os
 
 from stl.test.format import STLTestFormat, TestStep
@@ -93,24 +92,30 @@ class CustomTestFormat(STLTestFormat):
         outputDir, outputBase = test.getTempPaths()
         sourcePath = test.getSourcePath()
 
-        compileTestCppWithEdg = '/BE' in itertools.chain(test.flags, test.compileFlags)
-        if compileTestCppWithEdg:
+        compileTestCppWithEdg = False
+        if '/BE' in test.flags:
+            compileTestCppWithEdg = True
             test.flags.remove('/BE')
+
+        if '/BE' in test.compileFlags:
+            compileTestCppWithEdg = True
             test.compileFlags.remove('/BE')
 
+        exportHeaderOptions = ['/exportHeader', '/Fo', '/MP']
         headerUnitOptions = []
         for header in stlHeaders:
-            headerObjPath = os.path.join(outputDir, header + '.obj')
+            headerAbsolutePath = os.path.join(litConfig.cxx_headers, header)
+
+            exportHeaderOptions.append(headerAbsolutePath)
 
             headerUnitOptions.append('/headerUnit')
-            headerUnitOptions.append('{0}/{1}={1}.ifc'.format(litConfig.cxx_headers, header))
+            headerUnitOptions.append('{0}={1}.ifc'.format(headerAbsolutePath, header))
 
             if not compileTestCppWithEdg:
-                headerUnitOptions.append(headerObjPath)
+                headerUnitOptions.append(os.path.join(outputDir, header + '.obj'))
 
-            cmd = [test.cxx, *test.flags, *test.compileFlags,
-                   '/exportHeader', '<{}>'.format(header), '/Fo{}'.format(headerObjPath)]
-            yield TestStep(cmd, shared.execDir, shared.env, False)
+        cmd = [test.cxx, *test.flags, *test.compileFlags, *exportHeaderOptions]
+        yield TestStep(cmd, shared.execDir, shared.env, False)
 
         if compileTestCppWithEdg:
             test.compileFlags.append('/BE')

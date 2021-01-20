@@ -281,12 +281,6 @@ _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _MP_Add(_MP_arr, uint64_t) noexcept;
 _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _MP_Mul(_MP_arr, uint64_t, uint64_t) noexcept;
 _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _MP_Rem(_MP_arr, uint64_t) noexcept;
 
-#if !_HAS_IF_CONSTEXPR
-#pragma warning(push)
-#pragma warning(disable : 4309) // static_cast: truncation of constant value
-#pragma warning(disable : 4724) // potential mod by 0
-#endif // !_HAS_IF_CONSTEXPR
-
 template <class _Uint, _Uint _Ax, _Uint _Cx, _Uint _Mx>
 _NODISCARD _Uint _Next_linear_congruential_value(_Uint _Prev) noexcept {
     // Choose intermediate type:
@@ -298,20 +292,20 @@ _NODISCARD _Uint _Next_linear_congruential_value(_Uint _Prev) noexcept {
     // Divide by _Ax:
     //   _Cx <= numeric_limits<T>::max()
     //   && (_Mx - 1) <= (numeric_limits<T>::max() - _Cx) / _Ax
-    if _CONSTEXPR_IF (_Ax == 0) { // degenerate case; avoid divide by 0
+    if constexpr (_Ax == 0) { // degenerate case; avoid divide by 0
         return static_cast<_Uint>(_Cx); // relies on _Mx == 0 || _Cx <= _Mx, N4741 [rand.eng.lcong]/3
-    } else if _CONSTEXPR_IF (_Mx == 0) {
+    } else if constexpr (_Mx == 0) {
         // N4762 [rand.eng.lcong]/2: "If the template parameter m is 0, the modulus m
         // used throughout this subclause [rand.eng.lcong] is
         // numeric_limits<result_type>::max() plus 1." That is: Just do the multiply
         // and let normal unsigned modulo take care of it
         return static_cast<_Uint>(static_cast<_Uint>(_Ax * _Prev) + _Cx);
-    } else if _CONSTEXPR_IF (_Cx <= UINT_MAX && static_cast<_Uint>(_Mx - 1) <= (UINT_MAX - _Cx) / _Ax) {
+    } else if constexpr (_Cx <= UINT_MAX && static_cast<_Uint>(_Mx - 1) <= (UINT_MAX - _Cx) / _Ax) {
         // unsigned int is sufficient to store intermediate calculation
         const auto _Mul =
             static_cast<unsigned int>(_Prev) * static_cast<unsigned int>(_Ax) + static_cast<unsigned int>(_Cx);
         return static_cast<_Uint>(_Mul % _Mx);
-    } else if _CONSTEXPR_IF (_Cx <= ULLONG_MAX && static_cast<_Uint>(_Mx - 1) <= (ULLONG_MAX - _Cx) / _Ax) {
+    } else if constexpr (_Cx <= ULLONG_MAX && static_cast<_Uint>(_Mx - 1) <= (ULLONG_MAX - _Cx) / _Ax) {
         // unsigned long long is sufficient to store intermediate calculation
         const auto _Mul = static_cast<unsigned long long>(_Prev) * _Ax + _Cx;
         return static_cast<_Uint>(_Mul % _Mx);
@@ -323,10 +317,6 @@ _NODISCARD _Uint _Next_linear_congruential_value(_Uint _Prev) noexcept {
         return static_cast<_Uint>(_MP_Get(_Wx));
     }
 }
-
-#if !_HAS_IF_CONSTEXPR
-#pragma warning(pop)
-#endif // !_HAS_IF_CONSTEXPR
 
 template <class _Seed_seq>
 _NODISCARD constexpr unsigned int _Seed_seq_to_uint(_Seed_seq& _Seq) {
@@ -345,18 +335,13 @@ _NODISCARD constexpr unsigned long long _Seed_seq_to_ull(_Seed_seq& _Seq) {
     return _Result;
 }
 
-#if !_HAS_IF_CONSTEXPR
-#pragma warning(push)
-#pragma warning(disable : 4724) // potential mod by 0
-#endif // !_HAS_IF_CONSTEXPR
-
 template <class _Uint, _Uint _Cx, _Uint _Mx>
 _NODISCARD constexpr _Uint _Get_linear_congruential_seed(_Uint _Sx) noexcept { // N4741 [rand.eng.lcong]/5
-    if _CONSTEXPR_IF (_Mx != 0) {
+    if constexpr (_Mx != 0) {
         _Sx %= _Mx;
     }
 
-    if _CONSTEXPR_IF (_Cx == 0) {
+    if constexpr (_Cx == 0) {
         if (_Sx == 0) {
             _Sx = _Uint{1};
         }
@@ -368,13 +353,13 @@ _NODISCARD constexpr _Uint _Get_linear_congruential_seed(_Uint _Sx) noexcept { /
 template <class _Uint, _Uint _Cx, _Uint _Mx, class _Seed_seq>
 _NODISCARD _Uint _Get_linear_congruential_seed_from_seq(_Seed_seq& _Seq) { // N4741 [rand.eng.lcong]/6
     _Uint _Sx;
-    if _CONSTEXPR_IF (_Mx == 0) {
-        if _CONSTEXPR_IF (sizeof(_Uint) <= sizeof(unsigned int)) {
+    if constexpr (_Mx == 0) {
+        if constexpr (sizeof(_Uint) <= sizeof(unsigned int)) {
             _Sx = static_cast<_Uint>(_Seed_seq_to_uint(_Seq));
         } else {
             _Sx = static_cast<_Uint>(_Seed_seq_to_ull(_Seq));
         }
-    } else if _CONSTEXPR_IF (_Mx <= UINT_MAX) {
+    } else if constexpr (_Mx <= UINT_MAX) {
         _Sx = static_cast<_Uint>(_Seed_seq_to_uint(_Seq) % _Mx);
     } else {
         _Sx = static_cast<_Uint>(_Seed_seq_to_ull(_Seq) % _Mx);
@@ -382,10 +367,6 @@ _NODISCARD _Uint _Get_linear_congruential_seed_from_seq(_Seed_seq& _Seq) { // N4
 
     return _Get_linear_congruential_seed<_Uint, _Cx, _Mx>(_Sx);
 }
-
-#if !_HAS_IF_CONSTEXPR
-#pragma warning(pop)
-#endif // !_HAS_IF_CONSTEXPR
 
 template <class _Uint, _Uint _Ax, _Uint _Cx, _Uint _Mx>
 class linear_congruential_engine { // a linear congruential generator random engine
@@ -795,7 +776,7 @@ struct _Swc_traits { // traits for subtract_with_carry generator
     static int _Get_wc() { // compute number of 32-bit words per element
         int _Kx;
 
-        if _CONSTEXPR_IF (_Mx == 0) {
+        if constexpr (_Mx == 0) {
             _Kx = (8 * sizeof(_Ty) + 31) / 32;
         } else { // compute number of 32-bit words required
             unsigned long long _Val = 1ULL << 32;
@@ -831,7 +812,7 @@ struct _Swc_traits { // traits for subtract_with_carry generator
 #pragma warning(push)
 #pragma warning(disable : 4724) // potential mod by 0
     static _Cy_t _Reduce(_Ty* _Ax) { // reduce values to allowed range
-        if _CONSTEXPR_IF (_Mx != 0) {
+        if constexpr (_Mx != 0) {
             for (size_t _Ix = 0; _Ix < _Nw; ++_Ix) {
                 _Ax[_Ix] = _Ax[_Ix] % _Mx;
             }
@@ -925,7 +906,7 @@ public:
             }
 
             constexpr bool _Mod_non_zero = _Traits::_Mod != 0;
-            if _CONSTEXPR_IF (_Mod_non_zero) {
+            if constexpr (_Mod_non_zero) {
                 this->_Ax[_Ix] %= _Traits::_Mod;
             }
         }
@@ -1847,7 +1828,7 @@ private:
     }
 
     static _Uty _Adjust(_Uty _Uval) { // convert signed ranges to unsigned ranges and vice versa
-        if _CONSTEXPR_IF (is_signed_v<_Ty>) {
+        if constexpr (is_signed_v<_Ty>) {
             const _Uty _Adjuster = (static_cast<_Uty>(-1) >> 1) + 1; // 2^(N-1)
 
             if (_Uval < _Adjuster) {
@@ -2044,7 +2025,7 @@ _NODISCARD _Flt _Float_upper_bound(_Ty _Val) {
     constexpr auto _Flt_digits = numeric_limits<_Flt>::digits;
     using _Ty_32or64           = conditional_t<_Ty_digits <= 32, uint32_t, uint64_t>;
 
-    if _CONSTEXPR_IF (_Ty_digits <= _Flt_digits) {
+    if constexpr (_Ty_digits <= _Flt_digits) {
         return static_cast<_Flt>(_Val) + _Flt{1};
     } else {
 #pragma warning(push)

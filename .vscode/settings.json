@@ -5,6 +5,7 @@
     "editor.formatOnSave": true,
     "files.associations": {
         ".clang-format": "yaml",
+        "header-units.json": "jsonc",
         "**/stl/inc/**": "cpp"
     },
     "files.eol": "\r\n",

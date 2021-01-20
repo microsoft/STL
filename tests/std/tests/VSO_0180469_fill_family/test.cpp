@@ -134,6 +134,9 @@ int main() {
     test_fill<char, int>();
 
     test_fill<volatile char, char>(); // Test GH-1183
+#ifdef __cpp_lib_byte
+    test_fill<volatile byte, byte>(); // Test GH-1556
+#endif // __cpp_lib_byte
 
     test_uninitialized_fill(
         [](count_copies* buff, size_t n, const count_copies& src) { uninitialized_fill(buff, buff + n, src); });

@@ -327,7 +327,6 @@ utilities\memory\allocator.traits\allocator.traits.members\destroy.pass.cpp
 utilities\memory\allocator.traits\allocator.traits.members\max_size.pass.cpp
 utilities\memory\allocator.traits\allocator.traits.members\select_on_container_copy_construction.pass.cpp
 utilities\memory\default.allocator\allocator.globals\eq.pass.cpp
-utilities\memory\default.allocator\allocator.members\allocate.pass.cpp
 utilities\memory\specialized.algorithms\specialized.construct\construct_at.pass.cpp
 utilities\memory\specialized.algorithms\specialized.destroy\destroy.pass.cpp
 utilities\memory\specialized.algorithms\specialized.destroy\destroy_at.pass.cpp

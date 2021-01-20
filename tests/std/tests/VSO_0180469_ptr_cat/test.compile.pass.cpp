@@ -502,3 +502,70 @@ void test_Lex_compare_optimize() {
     test_case_Lex_compare_optimize_pr<less>();
     test_case_Lex_compare_optimize_pr<greater>();
 }
+
+#ifdef __cpp_lib_concepts
+// Also test GH-1523, in which std::equal didn't properly convert non-pointer contiguous iterators to pointers.
+struct gh1523_iter {
+    // a contiguous_iterator that doesn't unwrap into a pointer
+    using iterator_concept  = contiguous_iterator_tag;
+    using iterator_category = random_access_iterator_tag;
+    using value_type        = int;
+
+    int* ptr = nullptr;
+
+    // This test is compile-only; the following function definitions allow it to link.
+    int& operator*() const {
+        return *ptr;
+    }
+    gh1523_iter& operator++() {
+        return *this;
+    }
+    gh1523_iter operator++(int) {
+        return {};
+    }
+    gh1523_iter& operator--() {
+        return *this;
+    }
+    gh1523_iter operator--(int) {
+        return {};
+    }
+    ptrdiff_t operator-(const gh1523_iter&) const {
+        return 0;
+    }
+    auto operator<=>(const gh1523_iter&) const = default;
+    gh1523_iter& operator-=(ptrdiff_t) {
+        return *this;
+    }
+    gh1523_iter operator-(ptrdiff_t) const {
+        return {};
+    }
+    gh1523_iter& operator+=(ptrdiff_t) {
+        return *this;
+    }
+    gh1523_iter operator+(ptrdiff_t) const {
+        return {};
+    }
+    friend gh1523_iter operator+(ptrdiff_t, const gh1523_iter&) {
+        return {};
+    }
+    int& operator[](ptrdiff_t) const {
+        return *ptr;
+    }
+};
+
+template <>
+struct std::pointer_traits<gh1523_iter> {
+    using pointer         = gh1523_iter;
+    using element_type    = int;
+    using difference_type = ptrdiff_t;
+
+    static int* to_address(const pointer&) noexcept {
+        return nullptr;
+    }
+};
+static_assert(contiguous_iterator<gh1523_iter>);
+
+void test_gh1523() {
+    (void) equal(gh1523_iter{}, gh1523_iter{}, gh1523_iter{}, gh1523_iter{});
+}
+#endif // __cpp_lib_concepts
