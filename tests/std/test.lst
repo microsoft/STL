@@ -172,6 +172,7 @@ tests\GH_001103_countl_zero_correctness
 tests\GH_001105_custom_streambuf_throws
 tests\GH_001123_random_cast_out_of_range
 tests\GH_001411_core_headers
+tests\GH_001541_case_sensitive_boolalpha
 tests\LWG2597_complex_branch_cut
 tests\LWG3018_shared_ptr_function
 tests\P0019R8_atomic_ref
@@ -228,6 +229,7 @@ tests\P0339R6_polymorphic_allocator
 tests\P0355R7_calendars_and_time_zones_io
 tests\P0356R5_bind_front
 tests\P0357R3_supporting_incomplete_types_in_reference_wrapper
+tests\P0408R7_efficient_access_to_stringbuf_buffer
 tests\P0414R2_shared_ptr_for_arrays
 tests\P0415R1_constexpr_complex
 tests\P0426R1_constexpr_char_traits

@@ -140,6 +140,7 @@
 // P0339R6 polymorphic_allocator<>
 // P0356R5 bind_front()
 // P0357R3 Supporting Incomplete Types In reference_wrapper
+// P0408R7 Efficient Access To basic_stringbuf's Buffer
 // P0415R1 constexpr For <complex> (Again)
 // P0439R0 enum class memory_order
 // P0457R2 starts_with()/ends_with() For basic_string/basic_string_view
@@ -166,6 +167,7 @@
 // P0758R1 is_nothrow_convertible
 // P0768R1 Library Support For The Spaceship Comparison Operator <=>
 // P0769R2 shift_left(), shift_right()
+// P0784R7 Library Support For More constexpr Containers
 // P0811R3 midpoint(), lerp()
 // P0879R0 constexpr For Swapping Functions
 // P0887R1 type_identity
@@ -549,13 +551,6 @@
 #else // ^^^ constexpr in C++20 and later / inline (not constexpr) in C++17 and earlier vvv
 #define _CONSTEXPR20 inline
 #endif // ^^^ inline (not constexpr) in C++17 and earlier ^^^
-
-// Functions that became constexpr in C++20 via P0784R7
-#if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc)
-#define _CONSTEXPR20_DYNALLOC constexpr
-#else
-#define _CONSTEXPR20_DYNALLOC inline
-#endif
 
 // P0607R0 Inline Variables For The STL
 #if _HAS_CXX17
@@ -1185,8 +1180,14 @@
 #define __cpp_lib_concepts 201907L
 #endif // !defined(__EDG__) || defined(__INTELLISENSE__)
 
-#define __cpp_lib_constexpr_algorithms  201806L
-#define __cpp_lib_constexpr_complex     201711L
+#define __cpp_lib_constexpr_algorithms 201806L
+#define __cpp_lib_constexpr_complex    201711L
+
+#if defined(__cpp_constexpr_dynamic_alloc) \
+    && defined(__clang__) // TRANSITION, MSVC support for constexpr dynamic allocation
+#define __cpp_lib_constexpr_dynamic_alloc 201907L
+#endif // defined(__cpp_constexpr_dynamic_alloc) && defined(__clang__)
+
 #define __cpp_lib_constexpr_functional  201907L
 #define __cpp_lib_constexpr_iterator    201811L
 #define __cpp_lib_constexpr_memory      201811L
@@ -1254,6 +1255,13 @@
 // EXPERIMENTAL
 #define __cpp_lib_experimental_erase_if   201411L
 #define __cpp_lib_experimental_filesystem 201406L
+
+// Functions that became constexpr in C++20 via P0784R7
+#ifdef __cpp_lib_constexpr_dynamic_alloc
+#define _CONSTEXPR20_DYNALLOC constexpr
+#else
+#define _CONSTEXPR20_DYNALLOC inline
+#endif
 
 #ifdef _RTC_CONVERSION_CHECKS_ENABLED
 #ifndef _ALLOW_RTCc_IN_STL
