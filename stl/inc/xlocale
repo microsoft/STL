@@ -3242,7 +3242,7 @@ protected:
 };
 
 // FUNCTION TEMPLATE _Getloctxt
-enum class _Case_sensitive : bool { _No, _Yes };
+enum class _Case_sensitive : bool { _Nope, _Yes };
 
 template <class _InIt, class _Elem>
 int __CRTDECL _Getloctxt(
