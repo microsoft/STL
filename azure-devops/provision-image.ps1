@@ -396,3 +396,9 @@ Write-Host 'Finished updating PATH!'
 
 PipInstall pip
 PipInstall psutil
+
+# https://docs.microsoft.com/en-us/windows-hardware/drivers/devtest/bcdedit--set#verification-settings
+Write-Host 'Enabling test-signed kernel-mode drivers...'
+bcdedit /set testsigning on
+
+Write-Host 'Done!'
