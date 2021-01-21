@@ -354,7 +354,7 @@ Function PipInstall {
 
   try {
     Write-Host "Installing or upgrading $Package..."
-    python.exe -m pip install --upgrade $Package
+    python.exe -m pip install --progress-bar off --upgrade $Package
     Write-Host "Done installing or upgrading $Package."
   }
   catch {
