@@ -10,9 +10,6 @@
 #if _STL_COMPILER_PREPROCESSOR
 
 #include <intrin0.h>
-#if 1 // TRANSITION, GH-1197
-#include <intrin.h>
-#endif // TRANSITION, GH-1197
 #include <type_traits>
 
 #pragma pack(push, _CRT_PACKING)
@@ -34,6 +31,9 @@ _STL_DISABLE_CLANG_WARNINGS
 #ifdef _M_CEE_PURE
 #define _YIELD_PROCESSOR()
 #else // ^^^ _M_CEE_PURE / !_M_CEE_PURE vvv
+#if 1 // TRANSITION, VS 2019 16.10
+extern "C" void _mm_pause(void);
+#endif // TRANSITION, VS 2019 16.10
 #define _YIELD_PROCESSOR() _mm_pause()
 #endif // ^^^ !_M_CEE_PURE ^^^
 
