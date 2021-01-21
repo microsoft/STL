@@ -102,6 +102,7 @@ if ([string]::IsNullOrEmpty($AdminUserPassword)) {
     '-p',
     'AdminUserPassword_REDACTED',
     '-accepteula',
+    '-i',
     '-h',
     $PwshPath,
     '-ExecutionPolicy',
