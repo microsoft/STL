@@ -893,7 +893,7 @@ STATIC_ASSERT(__cpp_lib_is_layout_compatible == 201907L);
 STATIC_ASSERT(__cpp_lib_is_null_pointer == 201309L);
 #endif
 
-#if _HAS_CXX20 
+#if _HAS_CXX20
 #ifndef __clang__ // TRANSITION, LLVM-Bug #: To Be Filed
 #ifndef __cpp_lib_is_pointer_interconvertible
 #error __cpp_lib_is_pointer_interconvertible is not defined
