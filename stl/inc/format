@@ -882,6 +882,9 @@ public:
         size_t _Arg_index = 0;
         (_Store(_Arg_index++, _Vals), ...);
     }
+    constexpr _Type _Get_type() {
+        return _STD visit(_Format_arg_type_to_enum<_CharT>{}, _Value);
+    }
 };
 
 template <class _Context>
@@ -1080,6 +1083,9 @@ struct _Format_handler {
     const _CharT* _On_format_specs(int _Id, const _CharT* _Begin, const _CharT* _End) {
         _Parse_context.advance_to(_Begin);
         auto _Arg = _Ctx.arg(_Id);
+        basic_format_specs<_CharT> _Specs;
+        _Specs_checker<_Specs_handler<basic_format_parse_context<_CharT>, _Context>> _Handler(
+            _Specs_handler<basic_format_parse_context<_CharT>, _Context>(_Specs, _Parse_context, _Ctx), _Arg.type())
     }
 };
 
