@@ -1769,13 +1769,10 @@ _NODISCARD bool operator==(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _
         return false;
     }
 
-#if _HAS_IF_CONSTEXPR
     if constexpr (is_same_v<_Ty, bool>) {
         return _STD equal(
             _Left._Myvec._Unchecked_begin(), _Left._Myvec._Unchecked_end(), _Right._Myvec._Unchecked_begin());
-    } else
-#endif // _HAS_IF_CONSTEXPR
-    {
+    } else {
         return _STD equal(_Left._Unchecked_begin(), _Left._Unchecked_end(), _Right._Unchecked_begin());
     }
 }
@@ -1787,7 +1784,6 @@ _NODISCARD bool operator!=(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _
 }
 #endif // !_HAS_CXX20
 
-#if _HAS_IF_CONSTEXPR
 // Optimize vector<bool> lexicographical comparisons.
 
 // There are several endianness/ordering issues to consider here.
@@ -1829,7 +1825,6 @@ struct _Vbase_compare_three_way {
 #endif // __cpp_lib_concepts
     }
 };
-#endif // _HAS_IF_CONSTEXPR
 
 #ifdef __cpp_lib_concepts
 template <class _Ty, class _Alloc>
@@ -1859,7 +1854,6 @@ _NODISCARD _Synth_three_way_result<_Ty> operator<=>(
 #else // __cpp_lib_concepts
 template <class _Ty, class _Alloc>
 _NODISCARD bool operator<(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
-#if _HAS_IF_CONSTEXPR
     if constexpr (is_same_v<_Ty, bool>) {
         // This optimization works because vector<bool> "trims" its underlying storage by zeroing out unused bits.
         auto _First = _Left._Myvec._Unchecked_begin();
@@ -1879,9 +1873,7 @@ _NODISCARD bool operator<(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _A
         }
 
         return _Left.size() < _Right.size();
-    } else
-#endif // _HAS_IF_CONSTEXPR
-    {
+    } else {
         return _STD lexicographical_compare(
             _Left._Unchecked_begin(), _Left._Unchecked_end(), _Right._Unchecked_begin(), _Right._Unchecked_end());
     }
