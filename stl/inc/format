@@ -333,15 +333,16 @@ constexpr const _CharT* _Parse_format_specs(const _CharT* _Begin, const _CharT* 
     return _Begin;
 }
 
-template <typename _Char>
+template <typename _CharT>
 struct _Basic_format_specs {
     int _Width, _Precision;
     char _Type;
     _Align _Alignment;
     _Sign _Sgn;
     bool _Alt;
-    _Char _Fill[4];
+    _CharT _Fill[4];
 };
+
 
 // Extremely dull set of parsing callbacks that just fills a struct with parsed data.
 template <class _CharT>
@@ -386,6 +387,59 @@ protected:
 };
 
 
+template <class _Handler, class _FormatArg>
+constexpr int _Get_dynamic_specs(_FormatArg _Arg) {
+    unsigned long long _Val = visit_format_arg(_Handler(), _Arg);
+    if (_Val > static_cast<unsigned int>((_STD numeric_limits<int>::max)())) {
+        throw format_error("Number is too big.");
+    }
+    return static_cast<int>(value);
+}
+
+template <class _Context>
+constexpr basic_format_arg<_Context> _Get_arg(_Context _Ctx, int _Arg_id) {
+    // note: while this is parameterized on the _Arg_id type in libfmt we don't
+    // need to do that in std::format because it's only called with either an integer
+    // id or a named id (which we do not support in std::format)
+    auto _Arg = _Ctx.arg(_Arg_id);
+    if (!_Arg) {
+        throw format_error("Argument not found.");
+    }
+    return _Arg;
+}
+
+template <class _ParseContext, class _Context>
+class _Specs_handler : public _Specs_setter<typename _Context::char_type> {
+public:
+    using _CharT = typename _Context::char_type;
+
+    constexpr _Specs_handler(_Basic_format_specs<_CharT>& _Specs, _ParseContext& _Parse_ctx, _Context& _Ctx)
+        : _Specs_setter<_CharT>(_Specs), _Parse_ctx(_Parse_ctx), _Ctx(_Ctx) {}
+
+    template <class _Id>
+    constexpr void _On_dynamic_width(_Id _Arg_id) {
+        this->_Specs._Width = _Get_dynamic_specs<_Width_checker>(_Get_arg(_Arg_id));
+    }
+
+    template <class _Id>
+    constexpr void _On_dynamic_precision(_Id _Arg_id) {
+        this->_Specs._Precision = _Get_dynamic_specs<_Precision_checker>(_Get_arg(_Arg_id));
+    }
+
+private:
+    _ParseContext& _Parse_ctx;
+    _Context& _Ctx;
+
+    constexpr basic_format_arg<_Context> _Get_arg(_Auto_id_tag) {
+        return _STD _Get_arg(_Ctx, _Parse_ctx.next_arg_id());
+    }
+
+    constexpr basic_format_arg<_Context> _Get_arg(int _Arg_id) {
+        _Parse_ctx.check_arg_id(_Arg_id);
+        return _STD _Get_arg(_Ctx, _Arg_id);
+    }
+};
+
 class _Numeric_specs_checker {
     _Type _Arg_type = _Type::_None;
 
@@ -413,13 +467,66 @@ public:
     }
 };
 
-class _Specs_checker {
+class _Width_checker {
+public:
+    template <class _Ty>
+    constexpr unsigned long long operator()(_Ty _Value) {
+        if constexpr (is_integral_v<_Ty>) {
+            if constexpr (is_signed_v<_Ty>) {
+                if (_Value < 0) {
+                    throw format_error("Negative width.");
+                }
+            }
+            return static_cast<unsigned long long>(_Value);
+        }
+        throw format_error("Width is not an integer.");
+    }
+};
+
+class _Precision_checker {
+public:
+    template <class _Ty>
+    constexpr unsigned long long operator()(_Ty _Value) {
+        if constexpr (is_integral_v<_Ty>) {
+            if constexpr (is_signed_v<_Ty>) {
+                if (_Value < 0) {
+                    throw format_error("Nagative precision.");
+                }
+            }
+            return static_cast<unsigned long long)(_Value);
+        }
+        throw format_error("Precision is not an integer.");
+    }
+};
+
+template <class _Handler>
+class _Specs_checker : public _Handler {
     _Numeric_specs_checker _Numeric_checker;
 
 public:
-    constexpr _Specs_checker(_Type _Arg_type) : _Numeric_checker(_Arg_type) {}
+    constexpr _Specs_checker(const _Handler& _Handler_inst, _Type _Arg_type)
+        : _Handler(_Handler_inst), _Numeric_checker(_Arg_type) {}
 
-    constexpr void _On_align(_Align _Aln) {}
+    // _On_align has no checking, since we don't implement numeric alignments.
+    constexpr void _On_sign(_Sign _Sgn) {
+        _Numeric_checker._Check_sign();
+        _Handler::_On_sign(_Sgn);
+    }
+
+    constexpr void _On_hash() {
+        _Numeric_checker._Require_numeric_argument();
+        _Handler::_On_hash();
+    }
+
+    constexpr void _On_zero() {
+        _Numeric_checker._Require_numeric_argument();
+        _Handler::_On_zero();
+    }
+
+    constexpr void _On_precision(int _Precision) {
+        _Numeric_checker._Check_precision();
+        _Handler::_On_precision(_Precision);
+    }
 };
 
 template <class _Ty, class _CharT = char>
@@ -913,16 +1020,40 @@ public:
     void operator()(_Ty) const {}
 };
 
+// this is the visitor that's used for replacement fields,
+// it could be a generic lambda (with overloaded), but that's
+// bad for throughput
+template <class _OutputIt, class _CharT>
+struct _Default_arg_formatter {
+    using _Context = basic_format_context<_OutputIt, _CharT>;
+
+    _OutputIt _Out;
+    basic_format_args<_Context> _Args;
+    locale& _Loc;
+
+    template <class _Ty>
+    _OutputIt operator()(_Ty _Val) {
+        return _Write<_CharT>(_Out, _Val);
+    }
+
+    _OutputIt operator()(typename basic_format_arg<_Context>::handle _Handle) {
+        basic_format_parse_context<_CharT> _Parse_ctx({});
+        basic_format_context<_OutputIt, _CHarT> _Format_ctx(_Out, _Args, _Loc);
+        _Handle.format(parse_ctx, format_ctx);
+        return _Format_ctx.out();
+    }
+};
+
 // The top level set of parsing "actions".
 // This is like the _Parse_spec_callbacks concept but need not be a concept
 // because it's not really involved in any user customization.
-template <class _ArgFormatter, typename _CharT, typename _Context>
+template <class _OutputIt, typename _CharT, typename _Context>
 struct _Format_handler {
     basic_format_parse_context<_CharT> _Parse_context;
     _Context _Ctx;
 
-    explicit _Format_handler(typename _ArgFormatter::iterator _Out, basic_string_view<_CharT> _Str,
-        basic_format_args<_Context> _Format_args, locale& _Loc)
+    explicit _Format_handler(
+        typename _OutputIt _Out, basic_string_view<_CharT> _Str, basic_format_args<_Context> _Format_args, locale& _Loc)
         : _Parse_context(_Str), _Ctx(_Out, _Format_args, _Loc) {}
 
     void _On_text(const _CharT* _Begin, const _CharT* _End) {
@@ -942,11 +1073,8 @@ struct _Format_handler {
 
     void _On_replacement_field(int _Id, const _CharT*) {
         auto _Arg = _Ctx.arg(_Id);
-        _Ctx.advance_to(visit_format_arg(
-            _Overloaded {
-
-            }
-        )
+        _Ctx.advance_to(
+            visit_format_arg(_Default_arg_formatter<_OutputIt, _CharT>{_Ctx.out(), _Ctx.args(), _Ctx.locale()}, _Arg));
     }
 
     const _CharT* _On_format_specs(int _Id, const _CharT* _Begin, const _CharT* _End) {
