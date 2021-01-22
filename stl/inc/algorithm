@@ -8163,7 +8163,7 @@ namespace ranges {
             // pre: _Count <= capacity of buffer at _Temp_ptr; also allows safe narrowing to ptrdiff_t
             _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
-            _STL_INTERNAL_CHECK(_RANGES distance(_First, _Last) == _Count);
+            _STL_INTERNAL_CHECK(_Last - _First == _Count);
 
             _Insertion_sort_isort_max_chunks(_First, _Last, _Count, _Pred, _Proj);
             // merge adjacent pairs of chunks to and from temp buffer
@@ -8178,20 +8178,20 @@ namespace ranges {
             for (;;) {
                 // unconditionally merge elements back into the source buffer
                 _Chunk_size <<= 1;
-                _Chunked_merge_from_buffer(_Temp_ptr, _Temp_ptr + _Count, _First, _Chunk_size, _Count, _Pred, _Proj);
+                _Chunked_merge_common(_Temp_ptr, _Temp_ptr + _Count, _First, _Chunk_size, _Count, _Pred, _Proj);
                 _Chunk_size <<= 1;
                 if (_Count <= _Chunk_size) { // if the input would be a single chunk, it's already sorted and we're done
                     return;
                 }
 
                 // more merges necessary; merge to temporary buffer
-                _Chunked_merge_to_buffer(_First, _Last, _Temp_ptr, _Chunk_size, _Count, _Pred, _Proj);
+                _Chunked_merge_common(_First, _Last, _Temp_ptr, _Chunk_size, _Count, _Pred, _Proj);
             }
         }
 
         template <class _It, class _Pr, class _Pj>
         static void _Insertion_sort_isort_max_chunks(
-            _It _First, const _It _Last, iter_difference_t<_It> _Count, _Pr _Pred, _Pj _Proj) {
+            _It _First, _It _Last, iter_difference_t<_It> _Count, _Pr _Pred, _Pj _Proj) {
             // insertion sort every chunk of distance _Isort_max<_It> in [_First, _Last)
             _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
@@ -8211,6 +8211,7 @@ namespace ranges {
             // move to uninitialized merging adjacent chunks of distance _Chunk
             _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
+            _STL_INTERNAL_STATIC_ASSERT(constructible_from<iter_value_t<_It>, iter_rvalue_reference_t<_It>>);
             _STL_INTERNAL_CHECK(_RANGES distance(_First, _Last) == _Count);
 
             _Uninitialized_backout<iter_value_t<_It>*> _Backout{_Dest};
@@ -8228,7 +8229,7 @@ namespace ranges {
                 _First = _STD move(_Last1);
             }
 
-            // copy partial last chunk
+            // move partial last chunk
             _RANGES _Uninitialized_move_unchecked(_STD move(_First), _STD move(_Last), _Backout._Last, _Backout_end);
             _Backout._Release();
         }
@@ -8237,11 +8238,11 @@ namespace ranges {
         _NODISCARD static iter_value_t<_It>* _Uninitialized_merge_move(_It _First, _It _Mid, _It _Last,
             iter_value_t<_It>* const _Dest, iter_value_t<_It>* const _Dest_last, _Pr _Pred, _Pj _Proj) {
             // move merging ranges to uninitialized storage
-            _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
+            _STL_INTERNAL_STATIC_ASSERT(constructible_from<iter_value_t<_It>, iter_rvalue_reference_t<_It>>);
             _STL_INTERNAL_CHECK(_First != _Mid);
             _STL_INTERNAL_CHECK(_Mid != _Last);
-            _STL_INTERNAL_CHECK(_Last - _First <= _Dest_last - _Dest);
+            _STL_INTERNAL_CHECK(_RANGES distance(_First, _Last) <= _RANGES distance(_Dest, _Dest_last));
 
             _Uninitialized_backout<iter_value_t<_It>*> _Backout{_Dest};
             _It _Next = _Mid;
@@ -8270,103 +8271,19 @@ namespace ranges {
             }
         }
 
-        template <class _It, class _Pr, class _Pj>
-        static void _Chunked_merge_to_buffer(_It _First, const _It _Last, iter_value_t<_It>* _Dest,
-            const iter_difference_t<_It> _Chunk_size, iter_difference_t<_It> _Count, _Pr _Pred, _Pj _Proj) {
-            // move merging adjacent chunks of distance _Chunk_size to temporary buffer
-            _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
-            _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
-            _STL_INTERNAL_CHECK(_RANGES distance(_First, _Last) == _Count);
-            _STL_INTERNAL_CHECK(_Chunk_size > 0);
-
-            while (_Chunk_size < _Count) {
-                _Count -= _Chunk_size;
-                const auto _Right_chunk_size = (_STD min)(_Chunk_size, _Count);
-                _Count -= _Right_chunk_size;
-
-                auto _Mid1  = _First + _Chunk_size;
-                auto _Last1 = _Mid1 + _Right_chunk_size;
-                _Dest       = _Merge_move_to_buffer(_STD move(_First), _STD move(_Mid1), _Last1, _Dest, _Pred, _Proj);
-                _First      = _STD move(_Last1);
-            }
-
-            // copy partial last chunk
-            _RANGES _Move_unchecked(_STD move(_First), _STD move(_Last), _STD move(_Dest));
-        }
-
-        template <class _It, class _Pr, class _Pj>
-        _NODISCARD static iter_value_t<_It>* _Merge_move_to_buffer(
-            _It _First, _It _Mid, _It _Last, iter_value_t<_It>* const _Dest, _Pr _Pred, _Pj _Proj) {
-            // move merging ranges to temporary storage
-            _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
-            _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
-            _STL_INTERNAL_CHECK(_First != _Mid);
-            _STL_INTERNAL_CHECK(_Mid != _Last);
-
-            _Uninitialized_backout<iter_value_t<_It>*> _Backout{_Dest};
-            _It _Next = _Mid;
-            for (;;) {
-                if (_STD invoke(_Pred, _STD invoke(_Proj, *_Next), _STD invoke(_Proj, *_First))) {
-                    _RANGES iter_swap(_Backout._Last, _Next);
-                    ++_Backout._Last;
-                    ++_Next;
-
-                    if (_Next == _Last) {
-                        _Backout._Last =
-                            _RANGES _Move_unchecked(_STD move(_First), _STD move(_Mid), _Backout._Last).out;
-                        return _Backout._Release();
-                    }
-                } else {
-                    _RANGES iter_swap(_Backout._Last, _First);
-                    ++_Backout._Last;
-                    ++_First;
-
-                    if (_First == _Mid) {
-                        _Backout._Last =
-                            _RANGES _Move_unchecked(_STD move(_Next), _STD move(_Last), _Backout._Last).out;
-                        return _Backout._Release();
-                    }
-                }
-            }
-        }
-
-        template <class _It, class _Pr, class _Pj>
-        static void _Chunked_merge_from_buffer(iter_value_t<_It>* _First, iter_value_t<_It>* _Last, _It _Dest,
-            const iter_difference_t<_It> _Chunk_size, iter_difference_t<_It> _Count, _Pr _Pred, _Pj _Proj) {
-            // move merging adjacent chunks of distance _Chunk_size from temporary buffer
-            _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
-            _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
-            _STL_INTERNAL_CHECK(_RANGES distance(_First, _Last) == _Count);
-            _STL_INTERNAL_CHECK(_Chunk_size > 0);
-
-            while (_Chunk_size < _Count) {
-                _Count -= _Chunk_size;
-                const auto _Right_chunk_size = (_STD min)(_Chunk_size, _Count);
-                _Count -= _Right_chunk_size;
-
-                auto _Mid1  = _First + _Chunk_size;
-                auto _Last1 = _Mid1 + _Right_chunk_size;
-                _Dest       = _Merge_move_from_buffer(_STD move(_First), _STD move(_Mid1), _Last1, _Dest, _Pred, _Proj);
-                _First      = _STD move(_Last1);
-            }
-
-            // copy partial last chunk
-            _RANGES _Move_unchecked(_STD move(_First), _STD move(_Last), _STD move(_Dest));
-        }
-
-        template <class _It, class _Pr, class _Pj>
-        _NODISCARD static _It _Merge_move_from_buffer(iter_value_t<_It>* _First, iter_value_t<_It>* _Mid,
-            iter_value_t<_It>* _Last, _It _Dest, _Pr _Pred, _Pj _Proj) {
+        template <class _InIt, class _OutIt, class _Pr, class _Pj>
+        _NODISCARD static _OutIt _Merge_move_common(
+            _InIt _First, _InIt _Mid, _InIt _Last, _OutIt _Dest, _Pr _Pred, _Pj _Proj) {
             // move merging adjacent ranges [_First, _Mid) and [_Mid, _Last) to _Dest
-            _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
-            _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
+            _STL_INTERNAL_STATIC_ASSERT(sortable<_InIt, _Pr, _Pj>);
+            _STL_INTERNAL_STATIC_ASSERT(indirectly_movable<_InIt, _OutIt>);
             _STL_INTERNAL_CHECK(_First != _Mid);
             _STL_INTERNAL_CHECK(_Mid != _Last);
 
-            iter_value_t<_It>* _Next = _Mid;
+            _InIt _Next = _Mid;
             for (;;) {
                 if (_STD invoke(_Pred, _STD invoke(_Proj, *_Next), _STD invoke(_Proj, *_First))) {
-                    _RANGES iter_swap(_Dest, _Next);
+                    *_Dest = _RANGES iter_move(_Next);
                     ++_Dest;
                     ++_Next;
 
@@ -8374,7 +8291,7 @@ namespace ranges {
                         return _RANGES _Move_unchecked(_STD move(_First), _STD move(_Mid), _STD move(_Dest)).out;
                     }
                 } else {
-                    _RANGES iter_swap(_Dest, _First);
+                    *_Dest = _RANGES iter_move(_First);
                     ++_Dest;
                     ++_First;
 
@@ -8383,6 +8300,31 @@ namespace ranges {
                     }
                 }
             }
+        }
+
+        template <class _It1, class _It2, class _Pr, class _Pj>
+        static void _Chunked_merge_common(_It1 _First, const _It1 _Last, _It2 _Dest,
+            const iter_difference_t<_It1> _Chunk_size, iter_difference_t<_It1> _Count, _Pr _Pred, _Pj _Proj) {
+            // move merging adjacent chunks of distance _Chunk_size
+            _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It1>);
+            _STL_INTERNAL_STATIC_ASSERT(sortable<_It1, _Pr, _Pj>);
+            _STL_INTERNAL_STATIC_ASSERT(indirectly_movable<_It1, _It2>);
+            _STL_INTERNAL_CHECK(_Last - _First == _Count);
+            _STL_INTERNAL_CHECK(_Chunk_size > 0);
+
+            while (_Chunk_size < _Count) {
+                _Count -= _Chunk_size;
+                const auto _Right_chunk_size = (_STD min)(_Chunk_size, _Count);
+                _Count -= _Right_chunk_size;
+
+                auto _Mid1  = _First + _Chunk_size;
+                auto _Last1 = _Mid1 + _Right_chunk_size;
+                _Dest       = _Merge_move_common(_STD move(_First), _STD move(_Mid1), _Last1, _Dest, _Pred, _Proj);
+                _First      = _STD move(_Last1);
+            }
+
+            // copy partial last chunk
+            _RANGES _Move_unchecked(_STD move(_First), _STD move(_Last), _STD move(_Dest));
         }
     };
 
