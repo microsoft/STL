@@ -1274,7 +1274,7 @@ struct _Fake_proxy_ptr_impl { // fake replacement for a container proxy smart po
 
 struct _Basic_container_proxy_ptr12 {
     // smart pointer components for a _Container_proxy * that don't depend on the allocator
-    _Container_proxy* _Ptr;
+    _Container_proxy* _Ptr = nullptr;
 
     constexpr void _Release() noexcept { // disengage this _Basic_container_proxy_ptr12
         _Ptr = nullptr;
