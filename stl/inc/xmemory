@@ -1117,11 +1117,11 @@ public:
         if (_Parent) { // have a parent, do adoption
             _Container_proxy* _Parent_proxy = _Parent->_Myproxy;
             if (_Myproxy != _Parent_proxy) { // change parentage
-#ifdef __cpp_lib_is_constant_evaluated
+#ifdef __cpp_lib_constexpr_dynamic_alloc
                 if (_STD is_constant_evaluated()) {
                     _Adopt_unlocked(_Parent_proxy);
                 } else
-#endif // __cpp_lib_is_constant_evaluated
+#endif // __cpp_lib_constexpr_dynamic_alloc
                 {
                     _Adopt_locked(_Parent_proxy);
                 }
@@ -1133,11 +1133,11 @@ public:
 
     _CONSTEXPR20_CONTAINER void _Orphan_me_v2() noexcept {
         if (_Myproxy) { // adopted, remove self from list
-#ifdef __cpp_lib_is_constant_evaluated
+#ifdef __cpp_lib_constexpr_dynamic_alloc
             if (_STD is_constant_evaluated()) {
                 _Orphan_me_unlocked();
             } else
-#endif // __cpp_lib_is_constant_evaluated
+#endif // __cpp_lib_constexpr_dynamic_alloc
             {
                 _Orphan_me_locked();
             }
@@ -1208,11 +1208,11 @@ _CONSTEXPR20_CONTAINER void _Container_base12::_Orphan_all_unlocked() noexcept {
 _CONSTEXPR20_CONTAINER void _Container_base12::_Orphan_all() noexcept {
 #if _ITERATOR_DEBUG_LEVEL == 2
     if (_Myproxy) { // proxy allocated, drain it
-#ifdef __cpp_lib_is_constant_evaluated
+#ifdef __cpp_lib_constexpr_dynamic_alloc
         if (_STD is_constant_evaluated()) {
             _Orphan_all_unlocked();
         } else
-#endif // __cpp_lib_is_constant_evaluated
+#endif // __cpp_lib_constexpr_dynamic_alloc
         {
             _Orphan_all_locked();
         }
@@ -1236,11 +1236,11 @@ _CONSTEXPR20_CONTAINER void _Container_base12::_Swap_proxy_and_iterators_unlocke
 
 _CONSTEXPR20_CONTAINER void _Container_base12::_Swap_proxy_and_iterators(_Container_base12& _Right) noexcept {
 #if _ITERATOR_DEBUG_LEVEL == 2
-#ifdef __cpp_lib_is_constant_evaluated
+#ifdef __cpp_lib_constexpr_dynamic_alloc
     if (_STD is_constant_evaluated()) {
         _Swap_proxy_and_iterators_unlocked(_Right);
     } else
-#endif // __cpp_lib_is_constant_evaluated
+#endif // __cpp_lib_constexpr_dynamic_alloc
     {
         _Swap_proxy_and_iterators_locked(_Right);
     }
@@ -1492,9 +1492,9 @@ _CONSTEXPR20_DYNALLOC _NoThrowFwdIt _Uninitialized_move_unchecked(
     _InIt _First, const _InIt _Last, _NoThrowFwdIt _Dest) {
     // move [_First, _Last) to raw [_Dest, ...)
     if constexpr (_Ptr_move_cat<_InIt, _NoThrowFwdIt>::_Really_trivial) {
-#ifdef __cpp_lib_is_constant_evaluated
+#ifdef __cpp_lib_constexpr_dynamic_alloc
         if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
+#endif // __cpp_lib_constexpr_dynamic_alloc
         {
             return _Copy_memmove(_First, _Last, _Dest);
         }
@@ -1554,9 +1554,9 @@ _CONSTEXPR20_DYNALLOC _Alloc_ptr_t<_Alloc> _Uninitialized_copy(
 
     if constexpr (conjunction_v<bool_constant<_Ptr_copy_cat<decltype(_UFirst), _Ptrval>::_Really_trivial>,
                       _Uses_default_construct<_Alloc, _Ptrval, decltype(*_UFirst)>>) {
-#ifdef __cpp_lib_is_constant_evaluated
+#ifdef __cpp_lib_constexpr_dynamic_alloc
         if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
+#endif // __cpp_lib_constexpr_dynamic_alloc
         {
             _Copy_memmove(_UFirst, _ULast, _Unfancy(_Dest));
             _Dest += _ULast - _UFirst;
@@ -1579,9 +1579,9 @@ _CONSTEXPR20_DYNALLOC _NoThrowFwdIt _Uninitialized_copy_unchecked(
     _InIt _First, const _InIt _Last, _NoThrowFwdIt _Dest) {
     // copy [_First, _Last) to raw [_Dest, ...)
     if constexpr (_Ptr_move_cat<_InIt, _NoThrowFwdIt>::_Really_trivial) {
-#ifdef __cpp_lib_is_constant_evaluated
+#ifdef __cpp_lib_constexpr_dynamic_alloc
         if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
+#endif // __cpp_lib_constexpr_dynamic_alloc
         {
             return _Copy_memmove(_First, _Last, _Dest);
         }
@@ -1618,9 +1618,9 @@ _CONSTEXPR20_DYNALLOC _Alloc_ptr_t<_Alloc> _Uninitialized_move(
     const auto _ULast = _Get_unwrapped(_Last);
     if constexpr (conjunction_v<bool_constant<_Ptr_move_cat<decltype(_UFirst), _Ptrval>::_Really_trivial>,
                       _Uses_default_construct<_Alloc, _Ptrval, decltype(_STD move(*_UFirst))>>) {
-#ifdef __cpp_lib_is_constant_evaluated
+#ifdef __cpp_lib_constexpr_dynamic_alloc
         if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
+#endif // __cpp_lib_constexpr_dynamic_alloc
         {
             _Copy_memmove(_UFirst, _ULast, _Unfancy(_Dest));
             return _Dest + (_ULast - _UFirst);
@@ -1641,17 +1641,17 @@ _CONSTEXPR20_DYNALLOC _Alloc_ptr_t<_Alloc> _Uninitialized_fill_n(
     // copy _Count copies of _Val to raw _First, using _Al
     using _Ty = typename _Alloc::value_type;
     if constexpr (_Fill_memset_is_safe<_Ty*, _Ty> && _Uses_default_construct<_Alloc, _Ty*, _Ty>::value) {
-#ifdef __cpp_lib_is_constant_evaluated
+#ifdef __cpp_lib_constexpr_dynamic_alloc
         if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
+#endif // __cpp_lib_constexpr_dynamic_alloc
         {
             _Fill_memset(_Unfancy(_First), _Val, static_cast<size_t>(_Count));
             return _First + _Count;
         }
     } else if constexpr (_Fill_zero_memset_is_safe<_Ty*, _Ty> && _Uses_default_construct<_Alloc, _Ty*, _Ty>::value) {
-#ifdef __cpp_lib_is_constant_evaluated
+#ifdef __cpp_lib_constexpr_dynamic_alloc
         if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
+#endif // __cpp_lib_constexpr_dynamic_alloc
         {
             if (_Is_all_bits_zero(_Val)) {
                 _Fill_zero_memset(_Unfancy(_First), static_cast<size_t>(_Count));
@@ -1713,9 +1713,9 @@ _CONSTEXPR20_DYNALLOC _Alloc_ptr_t<_Alloc> _Uninitialized_value_construct_n(
     // value-initialize _Count objects to raw _First, using _Al
     using _Ptrty = typename _Alloc::value_type*;
     if constexpr (_Use_memset_value_construct_v<_Ptrty> && _Uses_default_construct<_Alloc, _Ptrty>::value) {
-#ifdef __cpp_lib_is_constant_evaluated
+#ifdef __cpp_lib_constexpr_dynamic_alloc
         if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
+#endif // __cpp_lib_constexpr_dynamic_alloc
         {
             auto _PFirst = _Unfancy(_First);
             _Zero_range(_PFirst, _PFirst + _Count);
