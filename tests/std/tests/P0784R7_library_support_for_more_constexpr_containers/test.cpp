@@ -244,9 +244,11 @@ constexpr void test_compiletime() {
         assert(s.object == 42);
         destroy_at(&s.object);
 
+#ifdef __cpp_lib_concepts
         ranges::construct_at(&s.object, 1729);
         assert(s.object == 1729);
         ranges::destroy_at(&s.object);
+#endif // __cpp_lib_concepts
     }
 
     struct nontrivial {
@@ -262,9 +264,11 @@ constexpr void test_compiletime() {
         assert(s.object.x == 42);
         destroy_at(&s.object);
 
+#ifdef __cpp_lib_concepts
         ranges::construct_at(&s.object, 1729);
         assert(s.object.x == 1729);
         ranges::destroy_at(&s.object);
+#endif // __cpp_lib_concepts
     }
 }
 static_assert((test_compiletime(), true));
