@@ -9,6 +9,7 @@ using namespace std;
 
 
 constexpr bool test() {
+#ifndef __EDG__ // TRANSITION, VSO-1268984
 #ifndef __clang__ // TRANSITION, LLVM-Bug #: To Be Filed
     // is_layout_compatible tests
     {
@@ -47,35 +48,22 @@ constexpr bool test() {
             int v2;
         };
 
-
-        const struct S6 {
-            int v1;
-            int v2;
-        };
-
-        volatile struct S7 {
-            int v1;
-            int v2;
-        };
-
         enum E1 { e1, e2, e3, e4 };
         enum E2 : int { e5 };
         enum E3 : unsigned int { e6, e7, e8 };
         enum class E4 : unsigned int { no, yes };
         enum class E5 { zero, fortytwo = 42 };
-        const enum E6 : int {};
-        volatile enum E7 : int {};
 
         ASSERT(is_layout_compatible_v<int, int>);
         ASSERT(is_layout_compatible_v<E1, E2>);
         ASSERT(is_layout_compatible_v<E3, E4>);
         ASSERT(is_layout_compatible_v<E5, E1>);
-        ASSERT(is_layout_compatible_v<E6, E1>);
-        ASSERT(is_layout_compatible_v<E7, E1>);
-        ASSERT(is_layout_compatible_v<S0, S6>);
-        ASSERT(is_layout_compatible_v<S0, S7>);
+        ASSERT(is_layout_compatible_v<const E1, E2>);
+        ASSERT(is_layout_compatible_v<volatile E3, const E4>);
+        ASSERT(is_layout_compatible_v<S1, volatile S2>);
         ASSERT(is_layout_compatible_v<S1, S2>);
         ASSERT(is_layout_compatible_v<S4, S4>);
+        ASSERT(is_layout_compatible_v<const volatile S4, S4>);
 
         ASSERT(!is_layout_compatible_v<int, char>);
         ASSERT(!is_layout_compatible_v<E1, E3>);
@@ -98,9 +86,6 @@ constexpr bool test() {
             union {};
         };
 #pragma warning(pop)
-        const class E : public A { int v1 = 2; };
-        volatile class F : public A { int v1 = 2; };
-
         class A1 : public A {};
         class A2 : public A {};
         class A3 : public A2 {};
@@ -108,20 +93,19 @@ constexpr bool test() {
 
         ASSERT(is_pointer_interconvertible_base_of_v<A, A>);
         ASSERT(is_pointer_interconvertible_base_of_v<A, B>);
+        ASSERT(is_pointer_interconvertible_base_of_v<A, const B>);
         ASSERT(is_pointer_interconvertible_base_of_v<A, C>);
+        ASSERT(is_pointer_interconvertible_base_of_v<A, volatile C>);
+        ASSERT(is_pointer_interconvertible_base_of_v<volatile A, const C>);
         ASSERT(is_pointer_interconvertible_base_of_v<A, D>);
-        ASSERT(is_pointer_interconvertible_base_of_v<A, E>);
-        ASSERT(is_pointer_interconvertible_base_of_v<A, F>);
         ASSERT(is_pointer_interconvertible_base_of_v<A, A1>);
         ASSERT(is_pointer_interconvertible_base_of_v<A, A2>);
         ASSERT(is_pointer_interconvertible_base_of_v<A, A3>);
         ASSERT(is_pointer_interconvertible_base_of_v<A2, A3>);
 
-        ASSERT(!is_pointer_interconvertible_base_of_v<A1, E>);
         ASSERT(!is_pointer_interconvertible_base_of_v<A1, A2>);
-        ASSERT(!is_pointer_interconvertible_base_of_v<A3, E>);
         ASSERT(!is_pointer_interconvertible_base_of_v<A4, A>);
-        ASSERT(!is_pointer_interconvertible_base_of_v<E, F>);
+        ASSERT(!is_pointer_interconvertible_base_of_v<B, C>);
     }
 
     // is_corresponding_member tests
@@ -206,6 +190,7 @@ constexpr bool test() {
         ASSERT(is_pointer_interconvertible_with_class(&U::v2));
     }
 #endif // __clang__
+#endif // __EDG__
     return true;
 }
 
