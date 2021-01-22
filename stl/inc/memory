@@ -2082,10 +2082,10 @@ struct _Alignas_storage_unit {
     alignas(_Align) char _Space[_Align];
 };
 
-enum class _Check_overflow : bool { _No, _Yes };
+enum class _Check_overflow : bool { _Nope, _Yes };
 
 template <class _Refc, _Check_overflow _Check>
-_NODISCARD size_t _Calculate_bytes_for_flexible_array(const size_t _Count) noexcept(_Check == _Check_overflow::_No) {
+_NODISCARD size_t _Calculate_bytes_for_flexible_array(const size_t _Count) noexcept(_Check == _Check_overflow::_Nope) {
     constexpr size_t _Align = alignof(_Refc);
 
     size_t _Bytes = sizeof(_Refc); // contains storage for one element
@@ -2691,7 +2691,7 @@ private:
 
         _Rebind_alloc_t<_Alloc, _Storage> _Al(this->_Get_val());
         const size_t _Bytes =
-            _Calculate_bytes_for_flexible_array<_Ref_count_unbounded_array_alloc, _Check_overflow::_No>(_Size);
+            _Calculate_bytes_for_flexible_array<_Ref_count_unbounded_array_alloc, _Check_overflow::_Nope>(_Size);
         const size_t _Storage_units = _Bytes / sizeof(_Storage);
 
         this->~_Ref_count_unbounded_array_alloc();
