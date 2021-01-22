@@ -326,7 +326,7 @@ protected:
 
     virtual _InIt __CLR_OR_THIS_CALL do_get_weekday(_InIt _First, _InIt _Last, ios_base&, ios_base::iostate& _State,
         tm* _Pt) const { // get weekday from [_First, _Last) into _Pt
-        int _Num = _Getloctxt(_First, _Last, 0, _Days);
+        int _Num = _Getloctxt(_First, _Last, 0, _Days, _Case_sensitive::_Nope);
         if (_Num < 0) {
             _State |= ios_base::failbit;
         } else {
@@ -338,7 +338,7 @@ protected:
 
     virtual _InIt __CLR_OR_THIS_CALL do_get_monthname(_InIt _First, _InIt _Last, ios_base&, ios_base::iostate& _State,
         tm* _Pt) const { // get month from [_First, _Last) into _Pt
-        int _Num = _Getloctxt(_First, _Last, 0, _Months);
+        int _Num = _Getloctxt(_First, _Last, 0, _Months, _Case_sensitive::_Nope);
 
         if (_Num < 0) {
             _State |= ios_base::failbit;
@@ -444,7 +444,7 @@ protected:
             break;
 
         case 'p':
-            _Ans = _Getloctxt(_First, _Last, 0, ":AM:am:PM:pm");
+            _Ans = _Getloctxt(_First, _Last, 0, ":AM:am:PM:pm", _Case_sensitive::_Nope);
             if (_Ans < 0) {
                 _State |= ios_base::failbit;
             } else if (1 < _Ans) {

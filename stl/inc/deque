@@ -690,7 +690,7 @@ public:
 
     deque(deque&& _Right, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
         _Alproxy_ty _Alproxy(_Getal());
-        if _CONSTEXPR_IF (!_Alty_traits::is_always_equal::value) {
+        if constexpr (!_Alty_traits::is_always_equal::value) {
             if (_Getal() != _Right._Getal()) {
                 _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
                 _Construct(_STD make_move_iterator(_Right._Unchecked_begin()),
