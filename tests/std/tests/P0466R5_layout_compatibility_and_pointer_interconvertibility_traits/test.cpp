@@ -192,7 +192,7 @@ constexpr bool test() {
             int b;
         };
 
-        struct C : public A, public B {};
+        struct C : A, B {};
 
         union U {
             int v1;
