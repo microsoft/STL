@@ -52,7 +52,7 @@ static_assert(noexcept(month_weekday_last{January, Sunday[last]} / 0));
 
 #define TRIVIAL_COPY_STANDARD_LAYOUT(TYPE)                                                       \
     static_assert(is_trivially_copyable_v<TYPE>, "chrono::" #TYPE " is not trivially copyable"); \
-    static_assert(is_standard_layout_v<TYPE>, "chrono::" #TYPE " is not standard layout");
+    static_assert(is_standard_layout_v<TYPE>, "chrono::" #TYPE " is not standard-layout");
 
 TRIVIAL_COPY_STANDARD_LAYOUT(day)
 TRIVIAL_COPY_STANDARD_LAYOUT(month)

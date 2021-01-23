@@ -3,6 +3,9 @@
 
 #include <cassert>
 #include <chrono>
+#include <cstdint>
+#include <ratio>
+#include <type_traits>
 
 using namespace std;
 using namespace std::chrono;
@@ -149,9 +152,9 @@ constexpr void to_duration() {
     assert(hh_mm_ss(-ones).to_duration() == -ones);
 
     hh_mm_ss<milliseconds> hms(50ms);
-    milliseconds milli = static_cast<milliseconds>(hms);
+    milliseconds milli_val = static_cast<milliseconds>(hms);
     static_assert(is_same_v<decltype(hms.to_duration()), milliseconds>);
-    assert(hms.to_duration() == milli);
+    assert(hms.to_duration() == milli_val);
 }
 
 constexpr bool test() {
