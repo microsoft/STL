@@ -18,10 +18,10 @@ static const double invln2 = 1.4426950408889634073599246810018921;
 _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _Exp(
     double* px, double y, short eoff) { // compute y * e^(*px), (*px) finite, |y| not huge
     if (*px < -hugexp || y == 0.0) { // certain underflow
-        *px = 0.0;
+        *px = 0.0 * y;
         return 0;
     } else if (hugexp < *px) { // certain overflow
-        *px = _Inf._Double;
+        *px = _Inf._Double * y;
         return _INFCODE;
     } else { // xexp won't overflow
         double g   = *px * invln2;

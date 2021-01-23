@@ -17,10 +17,10 @@ static const float invln2 = 1.4426950408889634073599246810018921F;
 _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _FExp(
     float* px, float y, short eoff) { // compute y * e^(*px), (*px) finite, |y| not huge
     if (*px < -hugexp || y == 0.0F) { // certain underflow
-        *px = 0.0F;
+        *px = 0.0F * y;
         return 0;
     } else if (hugexp < *px) { // certain overflow
-        *px = _FInf._Float;
+        *px = _FInf._Float * y;
         return _INFCODE;
     } else { // xexp won't overflow
         float g    = *px * invln2;
