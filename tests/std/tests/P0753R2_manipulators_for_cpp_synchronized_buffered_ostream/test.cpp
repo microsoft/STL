@@ -98,7 +98,7 @@ requires(is_base_of_v<basic_ostream<typename Ty::char_type, typename Ty::traits_
 int main() {
     string_buffer<char> char_buffer{};
     string_buffer<char, true> no_sync_char_buffer{};
-
+#ifdef _CPPRTTI
     test_osyncstream_manipulators<basic_ostream<char>>();
     test_osyncstream_manipulators<basic_osyncstream<char, char_traits<char>, allocator<char>>, allocator<char>>();
 
@@ -109,4 +109,5 @@ int main() {
     test_osyncstream_manipulators<basic_ostream<char>>(&no_sync_char_buffer);
     test_osyncstream_manipulators<basic_osyncstream<char, char_traits<char>, allocator<char>>, allocator<char>>(
         &no_sync_char_buffer);
+#endif
 }
