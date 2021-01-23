@@ -89,8 +89,8 @@ namespace stdext {
         }
 
         template <class _Ty1, class _Ty2>
-        _NODISCARD static const _Ty2& _Nonkfn(
-            const pair<_Ty1, _Ty2>& _Val) noexcept { // extract non-key from element value
+        _NODISCARD static const _Ty2& _Nonkfn(const pair<_Ty1, _Ty2>& _Val) noexcept {
+            // extract non-key from element value
             return _Val.second;
         }
 
@@ -221,7 +221,7 @@ namespace stdext {
             return *this;
         }
 
-        _NODISCARD mapped_type& operator[](const key_type& _Keyval) {
+        mapped_type& operator[](const key_type& _Keyval) {
             return this->_Try_emplace(_Keyval).first->_Myval.second;
         }
 
