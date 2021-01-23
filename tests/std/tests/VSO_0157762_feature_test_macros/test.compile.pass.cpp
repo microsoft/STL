@@ -851,20 +851,6 @@ STATIC_ASSERT(__cpp_lib_is_invocable == 201703L);
 #endif
 
 #if _HAS_CXX20
-#ifndef __cpp_lib_is_nothrow_convertible
-#error __cpp_lib_is_nothrow_convertible is not defined
-#elif __cpp_lib_is_nothrow_convertible != 201806L
-#error __cpp_lib_is_nothrow_convertible is not 201806L
-#else
-STATIC_ASSERT(__cpp_lib_is_nothrow_convertible == 201806L);
-#endif
-#else
-#ifdef __cpp_lib_is_nothrow_convertible
-#error __cpp_lib_is_nothrow_convertible is defined
-#endif
-#endif
-
-#if _HAS_CXX20
 #ifndef __EDG__ // TRANSITION, VSO-1268984
 #ifndef __clang__ // TRANSITION, LLVM-Bug #: To Be Filed
 #ifndef __cpp_lib_is_layout_compatible
@@ -879,6 +865,20 @@ STATIC_ASSERT(__cpp_lib_is_layout_compatible == 201907L);
 #error __cpp_lib_is_layout_compatible is defined
 #endif
 #endif
+#endif
+#endif
+
+#if _HAS_CXX20
+#ifndef __cpp_lib_is_nothrow_convertible
+#error __cpp_lib_is_nothrow_convertible is not defined
+#elif __cpp_lib_is_nothrow_convertible != 201806L
+#error __cpp_lib_is_nothrow_convertible is not 201806L
+#else
+STATIC_ASSERT(__cpp_lib_is_nothrow_convertible == 201806L);
+#endif
+#else
+#ifdef __cpp_lib_is_nothrow_convertible
+#error __cpp_lib_is_nothrow_convertible is defined
 #endif
 #endif
 
