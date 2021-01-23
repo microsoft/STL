@@ -788,16 +788,20 @@ public:
 
     using value_type = _Ty;
 
+#if _HAS_DEPRECATED_ALLOCATOR_MEMBERS
     _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS typedef _Ty* pointer;
     _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS typedef const _Ty* const_pointer;
 
     _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS typedef _Ty& reference;
     _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS typedef const _Ty& const_reference;
+#endif // _HAS_DEPRECATED_ALLOCATOR_MEMBERS
 
     using size_type       = size_t;
     using difference_type = ptrdiff_t;
 
-    using propagate_on_container_move_assignment                 = true_type;
+    using propagate_on_container_move_assignment = true_type;
+
+#if _HAS_DEPRECATED_ALLOCATOR_MEMBERS
     using is_always_equal _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS = true_type;
 
     template <class _Other>
@@ -812,6 +816,7 @@ public:
     _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS _NODISCARD const _Ty* address(const _Ty& _Val) const noexcept {
         return _STD addressof(_Val);
     }
+#endif // _HAS_DEPRECATED_ALLOCATOR_MEMBERS
 
     constexpr allocator() noexcept {}
 
@@ -830,6 +835,7 @@ public:
         return static_cast<_Ty*>(_Allocate<_New_alignof<_Ty>>(_Get_size_of_n<sizeof(_Ty)>(_Count)));
     }
 
+#if _HAS_DEPRECATED_ALLOCATOR_MEMBERS
     _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS _NODISCARD __declspec(allocator) _Ty* allocate(
         _CRT_GUARDOVERFLOW const size_t _Count, const void*) {
         return allocate(_Count);
@@ -848,8 +854,10 @@ public:
     _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS _NODISCARD size_t max_size() const noexcept {
         return static_cast<size_t>(-1) / sizeof(_Ty);
     }
+#endif // _HAS_DEPRECATED_ALLOCATOR_MEMBERS
 };
 
+#if _HAS_DEPRECATED_ALLOCATOR_MEMBERS
 // CLASS allocator<void>
 template <>
 class allocator<void> {
@@ -869,6 +877,7 @@ public:
         using other = allocator<_Other>;
     };
 };
+#endif // _HAS_DEPRECATED_ALLOCATOR_MEMBERS
 
 template <class _Ty, class _Other>
 _NODISCARD _CONSTEXPR20_DYNALLOC bool operator==(const allocator<_Ty>&, const allocator<_Other>&) noexcept {
