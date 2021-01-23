@@ -51,9 +51,9 @@ constexpr auto width() {
 }
 
 constexpr void fractional_width() {
+    static_assert(width<days>() == 0);
     static_assert(width<hours>() == 0);
     static_assert(width<minutes>() == 0);
-    static_assert(width<hours>() == 0);
     static_assert(width<seconds>() == 0);
     static_assert(width<milliseconds>() == 3);
     static_assert(width<microseconds>() == 6);
