@@ -882,7 +882,6 @@ numerics\complex.number\complex.transcendentals\asinh.pass.cpp
 numerics\complex.number\complex.transcendentals\atanh.pass.cpp
 numerics\complex.number\complex.transcendentals\cos.pass.cpp
 numerics\complex.number\complex.transcendentals\cosh.pass.cpp
-numerics\complex.number\complex.transcendentals\exp.pass.cpp
 numerics\complex.number\complex.transcendentals\log10.pass.cpp
 numerics\complex.number\complex.transcendentals\pow_complex_complex.pass.cpp
 numerics\complex.number\complex.transcendentals\pow_complex_scalar.pass.cpp

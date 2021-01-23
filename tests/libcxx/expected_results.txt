@@ -882,7 +882,6 @@ std/numerics/complex.number/complex.transcendentals/asinh.pass.cpp FAIL
 std/numerics/complex.number/complex.transcendentals/atanh.pass.cpp FAIL
 std/numerics/complex.number/complex.transcendentals/cos.pass.cpp FAIL
 std/numerics/complex.number/complex.transcendentals/cosh.pass.cpp FAIL
-std/numerics/complex.number/complex.transcendentals/exp.pass.cpp FAIL
 std/numerics/complex.number/complex.transcendentals/log10.pass.cpp FAIL
 std/numerics/complex.number/complex.transcendentals/pow_complex_complex.pass.cpp FAIL
 std/numerics/complex.number/complex.transcendentals/pow_complex_scalar.pass.cpp FAIL
