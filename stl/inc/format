@@ -333,6 +333,137 @@ constexpr const _CharT* _Parse_format_specs(const _CharT* _Begin, const _CharT* 
     return _Begin;
 }
 
+// TODO: test coverage
+template <class _CharT>
+class basic_format_parse_context {
+public:
+    using char_type      = _CharT;
+    using const_iterator = typename basic_string_view<_CharT>::const_iterator;
+    using iterator       = const_iterator;
+
+private:
+    basic_string_view<_CharT> _Format_string;
+    size_t _Num_args;
+    // The standard says this is size_t, however we use ptrdiff_t to save some space
+    // by not having to store the indexing mode. Below is a more detailed explanation
+    // of how this works.
+    ptrdiff_t _Next_arg_id = 0;
+
+public:
+    constexpr explicit basic_format_parse_context(basic_string_view<_CharT> _Fmt, size_t _Num_args_ = 0) noexcept
+        : _Format_string(_Fmt), _Num_args(_Num_args_) {}
+    basic_format_parse_context(const basic_format_parse_context&) = delete;
+    basic_format_parse_context& operator=(const basic_format_parse_context&) = delete;
+
+    _NODISCARD constexpr const_iterator begin() const noexcept {
+        return _Format_string.begin();
+    }
+    _NODISCARD constexpr const_iterator end() const noexcept {
+        return _Format_string.end();
+    }
+    constexpr void advance_to(const_iterator _It) {
+        _Format_string.remove_prefix(_It - begin());
+    }
+
+    // While the standard presents an exposition only enum value for
+    // the indexing mode (manual, automatic, or unknown) we use _Next_arg_id to indicate it.
+    // _Next_arg_id == 0 means unknown
+    // _Next_arg_id > 0 means automatic
+    // _Next_arg_id == -1 means manual
+    constexpr size_t next_arg_id() {
+        if (_Next_arg_id >= 0) {
+            return _Next_arg_id++;
+        }
+        throw format_error("Can not switch from manual to automatic indexing");
+    }
+    constexpr void check_arg_id(size_t _Id) {
+        (void) _Id;
+        if (_Next_arg_id > 0) {
+            throw format_error("Can not switch from automatic to manual indexing");
+        }
+        _Next_arg_id = -1;
+    }
+};
+
+template <class _Context>
+class basic_format_arg {
+public:
+    class handle;
+
+private:
+    using _CharT = typename _Context::char_type;
+
+    using _Format_arg_value = variant<monostate, int, unsigned, long long, unsigned long long, bool,
+        typename _Context::char_type, float, double, long double, const void*, const typename _Context::char_type,
+        basic_string_view<typename _Context::char_type>, handle>;
+
+    _Format_arg_value _Value;
+
+    template <class _CharT>
+    struct _Format_arg_type_to_enum {
+        constexpr _Type operator()(_STD monostate) {
+            return _Type::_None;
+        }
+        constexpr _Type operator()(int32_t) {
+            return _Type::_Int32;
+        }
+        constexpr _Type operator()(int64_t) {
+            return _Type::_Int64;
+        }
+        constexpr _Type operator()(uint32_t) {
+            return _Type::_UInt32;
+        }
+        constexpr _Type operator()(uint64_t) {
+            return _Type::_UInt64;
+        }
+        constexpr _Type operator()(bool) {
+            return _Type::_Bool;
+        }
+        constexpr _Type operator()(_CharT) {
+            return _Type::_Char;
+        }
+        constexpr _Type operator()(float) {
+            return _Type::_Float32;
+        }
+        constexpr _Type operator()(double) {
+            return _Type::_Float64;
+        }
+        constexpr _Type operator()(const _CharT*) {
+            return _Type::_CString;
+        }
+        constexpr _Type operator()(const basic_string_view<_CharT>&) {
+            return _Type::_String;
+        }
+        constexpr _Type operator()(const void*) {
+            return _Type::_Pointer;
+        }
+        constexpr _Type operator()(const basic_format_arg::handle&) {
+            return _Type::_Custom;
+        }
+    };
+
+public:
+    class handle {
+    private:
+        const void* _Ptr;
+        void (*_Format)(basic_format_parse_context<_CharT>& _Parse_ctx, _Context _Format_ctx, const void*);
+        friend basic_format_arg;
+
+    public:
+        void format(basic_format_parse_context<_CharT>& _Parse_ctx, _Context& _Format_ctx) {
+            _Format(_Parse_ctx, _Format_ctx, _Ptr);
+        }
+    };
+
+    basic_format_arg() noexcept = default;
+    explicit operator bool() const noexcept {
+        return !_STD holds_alternative<monostate>(_Value);
+    }
+    constexpr _Type _Get_type() {
+        return _STD visit(_Format_arg_type_to_enum<_CharT>{}, _Value);
+    }
+};
+
 template <typename _CharT>
 struct _Basic_format_specs {
     int _Width, _Precision;
@@ -393,7 +524,7 @@ constexpr int _Get_dynamic_specs(_FormatArg _Arg) {
     if (_Val > static_cast<unsigned int>((_STD numeric_limits<int>::max)())) {
         throw format_error("Number is too big.");
     }
-    return static_cast<int>(value);
+    return static_cast<int>(_Val);
 }
 
 template <class _Context>
@@ -407,6 +538,38 @@ constexpr basic_format_arg<_Context> _Get_arg(_Context _Ctx, int _Arg_id) {
     }
     return _Arg;
 }
+
+class _Width_checker {
+public:
+    template <class _Ty>
+    constexpr unsigned long long operator()(_Ty _Value) {
+        if constexpr (is_integral_v<_Ty>) {
+            if constexpr (is_signed_v<_Ty>) {
+                if (_Value < 0) {
+                    throw format_error("Negative width.");
+                }
+            }
+            return static_cast<unsigned long long>(_Value);
+        }
+        throw format_error("Width is not an integer.");
+    }
+};
+
+class _Precision_checker {
+public:
+    template <class _Ty>
+    constexpr unsigned long long operator()(_Ty _Value) {
+        if constexpr (is_integral_v<_Ty>) {
+            if constexpr (is_signed_v<_Ty>) {
+                if (_Value < 0) {
+                    throw format_error("Nagative precision.");
+                }
+            }
+            return static_cast<unsigned long long>(_Value);
+        }
+        throw format_error("Precision is not an integer.");
+    }
+};
 
 template <class _ParseContext, class _Context>
 class _Specs_handler : public _Specs_setter<typename _Context::char_type> {
@@ -464,38 +627,6 @@ public:
         if (_Is_integral_fmt_type(_Arg_type) || _Arg_type == _Type::_Pointer) {
             throw format_error("Precision not allowed for this argument type.");
         }
-    }
-};
-
-class _Width_checker {
-public:
-    template <class _Ty>
-    constexpr unsigned long long operator()(_Ty _Value) {
-        if constexpr (is_integral_v<_Ty>) {
-            if constexpr (is_signed_v<_Ty>) {
-                if (_Value < 0) {
-                    throw format_error("Negative width.");
-                }
-            }
-            return static_cast<unsigned long long>(_Value);
-        }
-        throw format_error("Width is not an integer.");
-    }
-};
-
-class _Precision_checker {
-public:
-    template <class _Ty>
-    constexpr unsigned long long operator()(_Ty _Value) {
-        if constexpr (is_integral_v<_Ty>) {
-            if constexpr (is_signed_v<_Ty>) {
-                if (_Value < 0) {
-                    throw format_error("Nagative precision.");
-                }
-            }
-            return static_cast<unsigned long long)(_Value);
-        }
-        throw format_error("Precision is not an integer.");
     }
 };
 
@@ -1051,8 +1182,8 @@ struct _Default_arg_formatter {
 
     _OutputIt operator()(typename basic_format_arg<_Context>::handle _Handle) {
         basic_format_parse_context<_CharT> _Parse_ctx({});
-        basic_format_context<_OutputIt, _CHarT> _Format_ctx(_Out, _Args, _Loc);
-        _Handle.format(parse_ctx, format_ctx);
+        basic_format_context<_OutputIt, _CharT> _Format_ctx(_Out, _Args, _Loc);
+        _Handle.format(_Parse_ctx, _Format_ctx);
         return _Format_ctx.out();
     }
 };
@@ -1066,7 +1197,7 @@ struct _Format_handler {
     _Context _Ctx;
 
     explicit _Format_handler(
-        typename _OutputIt _Out, basic_string_view<_CharT> _Str, basic_format_args<_Context> _Format_args, locale& _Loc)
+        _OutputIt _Out, basic_string_view<_CharT> _Str, basic_format_args<_Context> _Format_args, locale& _Loc)
         : _Parse_context(_Str), _Ctx(_Out, _Format_args, _Loc) {}
 
     void _On_text(const _CharT* _Begin, const _CharT* _End) {
@@ -1091,9 +1222,9 @@ struct _Format_handler {
     }
 
     const _CharT* _On_format_specs(int _Id, const _CharT* _Begin, const _CharT* _End) {
-        _Parse_context.advance_to(_Parse_ctx.begin() + (_Begin - &*_Parse_ctx.begin()));
+        _Parse_context.advance_to(_Parse_context.begin() + (_Begin - &*_Parse_context.begin()));
         auto _Arg = _Ctx.arg(_Id);
-        basic_format_specs<_CharT> _Specs;
+        _Basic_format_specs<_CharT> _Specs;
         _Specs_checker<_Specs_handler<basic_format_parse_context<_CharT>, _Context>> _Handler(
             _Specs_handler<basic_format_parse_context<_CharT>, _Context>(_Specs, _Parse_context, _Ctx),
             _Arg._Get_type());
@@ -1101,7 +1232,7 @@ struct _Format_handler {
         if (_Begin == _End || *_Begin != '}') {
             throw format_error("Missing '}' in format string.");
         }
-        _Ctx.advance_to(visit_format_arg())
+        _STL_INTERNAL_CHECK(false);
     }
 };
 
