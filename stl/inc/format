@@ -1002,6 +1002,16 @@ _OutputIt _Write(_OutputIt _Out, monostate) {
     return _Out;
 }
 
+template <class _CharT, class _OutputIt>
+_OutputIt _Write(_OutputIt _Out, const _CharT* _Value) {
+    if (!_Value) {
+        throw format_error("String pointer is null.");
+    }
+    while (*_Value) {
+        *_Out++ = *_Value++;
+    }
+}
+
 // Dispatcher to call enabled custom formatters, and do nothing otherwise.
 template <class _Context>
 class _Custom_formatter_dispatcher {
@@ -1081,11 +1091,17 @@ struct _Format_handler {
     }
 
     const _CharT* _On_format_specs(int _Id, const _CharT* _Begin, const _CharT* _End) {
-        _Parse_context.advance_to(_Begin);
+        _Parse_context.advance_to(_Parse_ctx.begin() + (_Begin - &*_Parse_ctx.begin()));
         auto _Arg = _Ctx.arg(_Id);
         basic_format_specs<_CharT> _Specs;
         _Specs_checker<_Specs_handler<basic_format_parse_context<_CharT>, _Context>> _Handler(
-            _Specs_handler<basic_format_parse_context<_CharT>, _Context>(_Specs, _Parse_context, _Ctx), _Arg.type())
+            _Specs_handler<basic_format_parse_context<_CharT>, _Context>(_Specs, _Parse_context, _Ctx),
+            _Arg._Get_type());
+        _Begin = _Parse_format_specs(_Begin, _End, _Handler);
+        if (_Begin == _End || *_Begin != '}') {
+            throw format_error("Missing '}' in format string.");
+        }
+        _Ctx.advance_to(visit_format_arg())
     }
 };
 
