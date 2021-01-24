@@ -5,6 +5,8 @@
 #define _XMATH
 #include <cerrno>
 #include <cmath>
+#include <concepts>
+#include <limits>
 #include <ymath.h>
 
 // MACROS FOR _Feraise ARGUMENT
@@ -164,5 +166,22 @@ long double* _LXp_invx(long double*, int, long double*);
 long double* _LXp_sqrtx(long double*, int, long double*);
 
 _END_EXTERN_C_UNLESS_PURE
+
+// raise IEEE 754 exceptions
+#pragma float_control(except, on, push)
+
+template <_STD floating_point T>
+T _Xfe_overflow(const T sign) noexcept {
+    constexpr T huge = _STD numeric_limits<T>::max();
+    return _STD copysign(huge, sign) * huge;
+}
+
+template <_STD floating_point T>
+T _Xfe_underflow(const T sign) noexcept {
+    constexpr T tiny = _STD numeric_limits<T>::min();
+    return _STD copysign(tiny, sign) * tiny;
+}
+
+#pragma float_control(pop)
 
 #endif // _XMATH
