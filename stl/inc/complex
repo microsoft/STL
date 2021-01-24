@@ -1867,18 +1867,16 @@ _NODISCARD complex<_Ty> exp(const complex<_Ty>& _Left) {
     }
 
     // real component is NaN/Inf
-    _Ty _Rho;
+    // return polar(exp(re), im)
     if (_Ctraits<_Ty>::_Isinf(_Log_rho)) {
         if (_Log_rho < _Ty{0}) {
-            _Rho = _Ty{0}; // exp(-Inf) = +0
+            return _Polar_positive_nan_inf_zero_rho(_Ty{0}, _Theta); // exp(-Inf) = +0
         } else {
-            _Rho = _Log_rho; // exp(+Inf) = +Inf
+            return _Polar_positive_nan_inf_zero_rho(_Log_rho, _Theta); // exp(+Inf) = +Inf
         }
     } else {
-        _Rho = _Ctraits<_Ty>::_Abs(_Log_rho); // exp(NaN) = +NaN
+        return _Polar_positive_nan_inf_zero_rho(_Ctraits<_Ty>::_Abs(_Log_rho), _Theta); // exp(NaN) = +NaN
     }
-
-    return _Polar_positive_nan_inf_zero_rho(_Rho, _Theta);
 }
 
 // FUNCTION TEMPLATE _Fabs
