@@ -16,14 +16,14 @@ parameters:
 - name: shards
   type: object
   default:
-    - 1
-    - 2
-    - 3
-    - 4
-    - 5
-    - 6
-    - 7
-    - 8
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
 jobs:
 - ${{ each shard in parameters.shards }}:
   - job: '${{ parameters.targetPlatform }}_${{ shard }}'
