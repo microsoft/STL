@@ -795,6 +795,11 @@ numerics\complex.number\cmplx.over\conj.pass.cpp
 numerics\complex.number\cmplx.over\pow.pass.cpp
 numerics\complex.number\cmplx.over\proj.pass.cpp
 
+# Assertion failed: c == NaN || c == non_zero_nan
+# Testing input values outside the range of [complex.value.ops]/9
+# libc++ handles those input values differently
+numerics\complex.number\complex.value.ops\polar.pass.cpp
+
 # Assertion failed: std::abs(skew - x_skew) < 0.01
 # Random number generation test with too strict pass criteria (test8 failure probability ~= 0.04)
 numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.pconst\eval.pass.cpp
@@ -890,7 +895,6 @@ numerics\complex.number\complex.transcendentals\sin.pass.cpp
 numerics\complex.number\complex.transcendentals\sinh.pass.cpp
 numerics\complex.number\complex.transcendentals\tanh.pass.cpp
 numerics\complex.number\complex.value.ops\norm.pass.cpp
-numerics\complex.number\complex.value.ops\polar.pass.cpp
 
 # Not yet analyzed, likely STL bugs. Many various assertions.
 localization\locale.categories\category.ctype\facet.ctype.special\facet.ctype.char.statics\classic_table.pass.cpp
