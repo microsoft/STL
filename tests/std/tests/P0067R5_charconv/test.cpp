@@ -25,6 +25,7 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
+#include <xcharconv_ryu.h>
 
 #include "double_fixed_precision_to_chars_test_cases_1.hpp"
 #include "double_fixed_precision_to_chars_test_cases_2.hpp"
@@ -1076,6 +1077,13 @@ void test_right_shift_64_bits_with_rounding() {
     assert(_Right_shift_with_rounding(0xffff'ffff'ffff'ffffULL, 64, true) == 1);
     assert(_Right_shift_with_rounding(0xffff'ffff'ffff'ffffULL, 64, false) == 1);
 }
+
+// GH-1569 - Test instantiation of wchar_t helpers.
+template pair<wchar_t*, errc> std::__to_chars(
+    wchar_t* const, wchar_t* const, const __floating_decimal_32, chars_format, const uint32_t, const uint32_t);
+template pair<wchar_t*, errc> std::__to_chars(
+    wchar_t* const, wchar_t* const, const __floating_decimal_64, chars_format, const double);
+template pair<wchar_t*, errc> std::__d2fixed_buffered_n(wchar_t*, wchar_t* const, const double, const uint32_t);
 
 int main(int argc, char** argv) {
     const auto start = chrono::steady_clock::now();

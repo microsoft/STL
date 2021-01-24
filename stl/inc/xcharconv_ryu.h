@@ -39,6 +39,8 @@
 #if _STL_COMPILER_PREPROCESSOR
 
 #include <cstring>
+#include <type_traits>
+#include <utility>
 #include <xcharconv.h>
 #include <xcharconv_ryu_tables.h>
 
@@ -389,7 +391,16 @@ _NODISCARD inline uint32_t __mulShift_mod1e9(const uint64_t __m, const uint64_t*
 #endif // ^^^ intrinsics unavailable ^^^
 }
 
-inline void __append_n_digits(const uint32_t __olength, uint32_t __digits, char* const __result) {
+#define _WIDEN(_TYPE, _CHAR) (is_same_v<_TYPE,char> ? _CHAR : L##_CHAR)
+
+template <class _CharT>
+void _Copy_digits_from_table(_CharT* _Dst, ptrdiff_t _Offset)
+{
+    _CSTD memcpy(_Dst, __DIGIT_TABLE<_CharT> + _Offset, 2 * sizeof(_CharT));
+}
+
+template <class _CharT>
+inline void __append_n_digits(const uint32_t __olength, uint32_t __digits, _CharT* const __result) {
   uint32_t __i = 0;
   while (__digits >= 10000) {
 #ifdef __clang__ // TRANSITION, LLVM-38217
@@ -400,21 +411,21 @@ inline void __append_n_digits(const uint32_t __olength, uint32_t __digits, char*
     __digits /= 10000;
     const uint32_t __c0 = (__c % 100) << 1;
     const uint32_t __c1 = (__c / 100) << 1;
-    _CSTD memcpy(__result + __olength - __i - 2, __DIGIT_TABLE + __c0, 2);
-    _CSTD memcpy(__result + __olength - __i - 4, __DIGIT_TABLE + __c1, 2);
+    _Copy_digits_from_table(__result + __olength - __i - 2, __c0);
+    _Copy_digits_from_table(__result + __olength - __i - 4, __c1);
     __i += 4;
   }
   if (__digits >= 100) {
     const uint32_t __c = (__digits % 100) << 1;
     __digits /= 100;
-    _CSTD memcpy(__result + __olength - __i - 2, __DIGIT_TABLE + __c, 2);
+    _Copy_digits_from_table(__result + __olength - __i - 2, __c);
     __i += 2;
   }
   if (__digits >= 10) {
     const uint32_t __c = __digits << 1;
-    _CSTD memcpy(__result + __olength - __i - 2, __DIGIT_TABLE + __c, 2);
+    _Copy_digits_from_table(__result + __olength - __i - 2, __c);
   } else {
-    __result[0] = static_cast<char>('0' + __digits);
+    __result[0] = static_cast<_CharT>(_WIDEN(_CharT, '0') + __digits);
   }
 }
 
@@ -429,43 +440,56 @@ inline void __append_d_digits(const uint32_t __olength, uint32_t __digits, char*
     __digits /= 10000;
     const uint32_t __c0 = (__c % 100) << 1;
     const uint32_t __c1 = (__c / 100) << 1;
-    _CSTD memcpy(__result + __olength + 1 - __i - 2, __DIGIT_TABLE + __c0, 2);
-    _CSTD memcpy(__result + __olength + 1 - __i - 4, __DIGIT_TABLE + __c1, 2);
+    _CSTD memcpy(__result + __olength + 1 - __i - 2, __DIGIT_TABLE<char> + __c0, 2);
+    _CSTD memcpy(__result + __olength + 1 - __i - 4, __DIGIT_TABLE<char> + __c1, 2);
     __i += 4;
   }
   if (__digits >= 100) {
     const uint32_t __c = (__digits % 100) << 1;
     __digits /= 100;
-    _CSTD memcpy(__result + __olength + 1 - __i - 2, __DIGIT_TABLE + __c, 2);
+    _CSTD memcpy(__result + __olength + 1 - __i - 2, __DIGIT_TABLE<char> + __c, 2);
     __i += 2;
   }
   if (__digits >= 10) {
     const uint32_t __c = __digits << 1;
-    __result[2] = __DIGIT_TABLE[__c + 1];
+    __result[2] = __DIGIT_TABLE<char>[__c + 1];
     __result[1] = '.';
-    __result[0] = __DIGIT_TABLE[__c];
+    __result[0] = __DIGIT_TABLE<char>[__c];
   } else {
     __result[1] = '.';
     __result[0] = static_cast<char>('0' + __digits);
   }
 }
 
-inline void __append_c_digits(const uint32_t __count, uint32_t __digits, char* const __result) {
+template <class _CharT>
+inline void _Fill_string_zero(_CharT* _Dst, size_t _Size) {
+    if constexpr (is_same_v<_CharT, char>) {
+        memset(_Dst, '0', _Size);
+    } else {
+        for (; 0 < _Size; --_Size, (void) ++_Dst) {
+            *_Dst = _WIDEN(_CharT, '0');
+        }
+    }
+}
+
+template <class _CharT>
+inline void __append_c_digits(const uint32_t __count, uint32_t __digits, _CharT* const __result) {
   uint32_t __i = 0;
   for (; __i < __count - 1; __i += 2) {
     const uint32_t __c = (__digits % 100) << 1;
     __digits /= 100;
-    _CSTD memcpy(__result + __count - __i - 2, __DIGIT_TABLE + __c, 2);
+    _Copy_digits_from_table(__result + __count - __i - 2, __c);
   }
   if (__i < __count) {
-    const char __c = static_cast<char>('0' + (__digits % 10));
+    const _CharT __c = static_cast<_CharT>(_WIDEN(_CharT, '0') + (__digits % 10));
     __result[__count - __i - 1] = __c;
   }
 }
 
-inline void __append_nine_digits(uint32_t __digits, char* const __result) {
+template <class _CharT>
+inline void __append_nine_digits(uint32_t __digits, _CharT* const __result) {
   if (__digits == 0) {
-    _CSTD memset(__result, '0', 9);
+    _Fill_string_zero(__result, 9);
     return;
   }
 
@@ -478,10 +502,10 @@ inline void __append_nine_digits(uint32_t __digits, char* const __result) {
     __digits /= 10000;
     const uint32_t __c0 = (__c % 100) << 1;
     const uint32_t __c1 = (__c / 100) << 1;
-    _CSTD memcpy(__result + 7 - __i, __DIGIT_TABLE + __c0, 2);
-    _CSTD memcpy(__result + 5 - __i, __DIGIT_TABLE + __c1, 2);
+    _Copy_digits_from_table(__result + 7 - __i, __c0);
+    _Copy_digits_from_table(__result + 5 - __i, __c1);
   }
-  __result[0] = static_cast<char>('0' + __digits);
+  __result[0] = static_cast<_CharT>(_WIDEN(_CharT, '0') + __digits);
 }
 
 _NODISCARD inline uint32_t __indexForExponent(const uint32_t __e) {
@@ -497,9 +521,10 @@ _NODISCARD inline uint32_t __lengthForIndex(const uint32_t __idx) {
   return (__log10Pow2(16 * static_cast<int32_t>(__idx)) + 1 + 16 + 8) / 9;
 }
 
-_NODISCARD inline to_chars_result __d2fixed_buffered_n(char* _First, char* const _Last, const double __d,
+template <class _CharT>
+_NODISCARD pair<_CharT*, errc> __d2fixed_buffered_n(_CharT* _First, _CharT* const _Last, const double __d,
   const uint32_t __precision) {
-  char* const _Original_first = _First;
+  _CharT* const _Original_first = _First;
 
   const uint64_t __bits = __double_to_bits(__d);
 
@@ -513,10 +538,10 @@ _NODISCARD inline to_chars_result __d2fixed_buffered_n(char* _First, char* const
       return { _Last, errc::value_too_large };
     }
 
-    *_First++ = '0';
+    *_First++ = _WIDEN(_CharT, '0');
     if (__precision > 0) {
-      *_First++ = '.';
-      _CSTD memset(_First, '0', __precision);
+      *_First++ = _WIDEN(_CharT, '.');
+      _Fill_string_zero(_First, __precision);
       _First += __precision;
     }
     return { _First, errc{} };
@@ -568,13 +593,13 @@ _NODISCARD inline to_chars_result __d2fixed_buffered_n(char* _First, char* const
     if (_First == _Last) {
       return { _Last, errc::value_too_large };
     }
-    *_First++ = '0';
+    *_First++ = _WIDEN(_CharT, '0');
   }
   if (__precision > 0) {
     if (_First == _Last) {
       return { _Last, errc::value_too_large };
     }
-    *_First++ = '.';
+    *_First++ = _WIDEN(_CharT, '.');
   }
   if (__e2 < 0) {
     const int32_t __idx = -__e2 / 16;
@@ -587,14 +612,14 @@ _NODISCARD inline to_chars_result __d2fixed_buffered_n(char* _First, char* const
       if (_Last - _First < static_cast<ptrdiff_t>(__precision)) {
         return { _Last, errc::value_too_large };
       }
-      _CSTD memset(_First, '0', __precision);
+      _Fill_string_zero(_First, __precision);
       _First += __precision;
     } else if (__i < __MIN_BLOCK_2[__idx]) {
       __i = __MIN_BLOCK_2[__idx];
       if (_Last - _First < static_cast<ptrdiff_t>(9 * __i)) {
         return { _Last, errc::value_too_large };
       }
-      _CSTD memset(_First, '0', 9 * __i);
+      _Fill_string_zero(_First, 9 * __i);
       _First += 9 * __i;
     }
     for (; __i < __blocks; ++__i) {
@@ -607,7 +632,7 @@ _NODISCARD inline to_chars_result __d2fixed_buffered_n(char* _First, char* const
         if (_Last - _First < static_cast<ptrdiff_t>(__fill)) {
           return { _Last, errc::value_too_large };
         }
-        _CSTD memset(_First, '0', __fill);
+        _Fill_string_zero(_First, __fill);
         _First += __fill;
         break;
       }
@@ -647,31 +672,31 @@ _NODISCARD inline to_chars_result __d2fixed_buffered_n(char* _First, char* const
       }
     }
     if (__roundUp != 0) {
-      char* _Round = _First;
-      char* _Dot = _Last;
+      _CharT* _Round = _First;
+      _CharT* _Dot = _Last;
       while (true) {
         if (_Round == _Original_first) {
-          _Round[0] = '1';
+          _Round[0] = _WIDEN(_CharT, '1');
           if (_Dot != _Last) {
-            _Dot[0] = '0';
-            _Dot[1] = '.';
+            _Dot[0] = _WIDEN(_CharT, '0');
+            _Dot[1] = _WIDEN(_CharT, '.');
           }
           if (_First == _Last) {
             return { _Last, errc::value_too_large };
           }
-          *_First++ = '0';
+          *_First++ = _WIDEN(_CharT, '0');
           break;
         }
         --_Round;
-        const char __c = _Round[0];
+        const _CharT __c = _Round[0];
         if (__c == '.') {
           _Dot = _Round;
-        } else if (__c == '9') {
-          _Round[0] = '0';
+        } else if (__c == _WIDEN(_CharT, '9')) {
+          _Round[0] = _WIDEN(_CharT, '0');
           __roundUp = 1;
         } else {
           if (__roundUp == 1 || __c % 2 != 0) {
-            _Round[0] = __c + 1;
+            _Round[0] = static_cast<_CharT>(__c + 1);
           }
           break;
         }
@@ -681,7 +706,7 @@ _NODISCARD inline to_chars_result __d2fixed_buffered_n(char* _First, char* const
     if (_Last - _First < static_cast<ptrdiff_t>(__precision)) {
       return { _Last, errc::value_too_large };
     }
-    _CSTD memset(_First, '0', __precision);
+    _Fill_string_zero(_First, __precision);
     _First += __precision;
   }
   return { _First, errc{} };
@@ -919,11 +944,11 @@ _NODISCARD inline to_chars_result __d2exp_buffered_n(char* _First, char* const _
 
   if (__exp >= 100) {
     const int32_t __c = __exp % 10;
-    _CSTD memcpy(_First, __DIGIT_TABLE + 2 * (__exp / 10), 2);
+    _CSTD memcpy(_First, __DIGIT_TABLE<char> + 2 * (__exp / 10), 2);
     _First[2] = static_cast<char>('0' + __c);
     _First += 3;
   } else {
-    _CSTD memcpy(_First, __DIGIT_TABLE + 2 * __exp, 2);
+    _CSTD memcpy(_First, __DIGIT_TABLE<char> + 2 * __exp, 2);
     _First += 2;
   }
 
@@ -1175,7 +1200,8 @@ _NODISCARD inline __floating_decimal_32 __f2d(const uint32_t __ieeeMantissa, con
   return __fd;
 }
 
-_NODISCARD inline to_chars_result _Large_integer_to_chars(char* const _First, char* const _Last,
+template <class _CharT>
+_NODISCARD inline pair<_CharT*, errc> _Large_integer_to_chars(_CharT* const _First, _CharT* const _Last,
   const uint32_t _Mantissa2, const int32_t _Exponent2) {
 
   // Print the integer _Mantissa2 * 2^_Exponent2 exactly.
@@ -1283,7 +1309,7 @@ _NODISCARD inline to_chars_result _Large_integer_to_chars(char* const _First, ch
     return { _Last, errc::value_too_large };
   }
 
-  char* _Result = _First;
+  _CharT* _Result = _First;
 
   // Print _Data[0]. While it's up to 10 digits,
   // which is more than Ryu generates, the code below can handle this.
@@ -1299,7 +1325,8 @@ _NODISCARD inline to_chars_result _Large_integer_to_chars(char* const _First, ch
   return { _Result, errc{} };
 }
 
-_NODISCARD inline to_chars_result __to_chars(char* const _First, char* const _Last, const __floating_decimal_32 __v,
+template <class _CharT>
+_NODISCARD pair<_CharT*, errc> __to_chars(_CharT* const _First, _CharT* const _Last, const __floating_decimal_32 __v,
   chars_format _Fmt, const uint32_t __ieeeMantissa, const uint32_t __ieeeExponent) {
   // Step 5: Print the decimal representation.
   uint32_t __output = __v.__mantissa;
@@ -1385,7 +1412,7 @@ _NODISCARD inline to_chars_result __to_chars(char* const _First, char* const _La
       return { _Last, errc::value_too_large };
     }
 
-    char* _Mid;
+    _CharT* _Mid;
     if (_Ryu_exponent > 0) { // case "172900"
       bool _Can_use_ryu;
 
@@ -1448,35 +1475,35 @@ _NODISCARD inline to_chars_result __to_chars(char* const _First, char* const _La
       __output /= 10000;
       const uint32_t __c0 = (__c % 100) << 1;
       const uint32_t __c1 = (__c / 100) << 1;
-      _CSTD memcpy(_Mid -= 2, __DIGIT_TABLE + __c0, 2);
-      _CSTD memcpy(_Mid -= 2, __DIGIT_TABLE + __c1, 2);
+      _Copy_digits_from_table(_Mid -= 2, __c0);
+      _Copy_digits_from_table(_Mid -= 2, __c1);
     }
     if (__output >= 100) {
       const uint32_t __c = (__output % 100) << 1;
       __output /= 100;
-      _CSTD memcpy(_Mid -= 2, __DIGIT_TABLE + __c, 2);
+      _Copy_digits_from_table(_Mid -= 2, __c);
     }
     if (__output >= 10) {
       const uint32_t __c = __output << 1;
-      _CSTD memcpy(_Mid -= 2, __DIGIT_TABLE + __c, 2);
+      _Copy_digits_from_table(_Mid -= 2, __c);
     } else {
-      *--_Mid = static_cast<char>('0' + __output);
+      *--_Mid = static_cast<_CharT>(_WIDEN(_CharT, '0') + __output);
     }
 
     if (_Ryu_exponent > 0) { // case "172900" with _Can_use_ryu
       // Performance note: it might be more efficient to do this immediately after setting _Mid.
-      _CSTD memset(_First + __olength, '0', static_cast<size_t>(_Ryu_exponent));
+      _Fill_string_zero(_First + __olength, static_cast<size_t>(_Ryu_exponent));
     } else if (_Ryu_exponent == 0) { // case "1729"
       // Done!
     } else if (_Whole_digits > 0) { // case "17.29"
       // Performance note: moving digits might not be optimal.
-      _CSTD memmove(_First, _First + 1, static_cast<size_t>(_Whole_digits));
+      _CSTD memmove(_First, _First + 1, static_cast<size_t>(_Whole_digits) * sizeof(_CharT));
       _First[_Whole_digits] = '.';
     } else { // case "0.001729"
       // Performance note: a larger memset() followed by overwriting '.' might be more efficient.
-      _First[0] = '0';
-      _First[1] = '.';
-      _CSTD memset(_First + 2, '0', static_cast<size_t>(-_Whole_digits));
+      _First[0] = _WIDEN(_CharT, '0');
+      _First[1] = _WIDEN(_CharT, '.');
+      _Fill_string_zero(_First + 2, static_cast<size_t>(-_Whole_digits));
     }
 
     return { _First + _Total_fixed_length, errc{} };
@@ -1487,7 +1514,7 @@ _NODISCARD inline to_chars_result __to_chars(char* const _First, char* const _La
   if (_Last - _First < static_cast<ptrdiff_t>(_Total_scientific_length)) {
     return { _Last, errc::value_too_large };
   }
-  char* const __result = _First;
+  _CharT* const __result = _First;
 
   // Print the decimal digits.
   uint32_t __i = 0;
@@ -1500,47 +1527,51 @@ _NODISCARD inline to_chars_result __to_chars(char* const _First, char* const _La
     __output /= 10000;
     const uint32_t __c0 = (__c % 100) << 1;
     const uint32_t __c1 = (__c / 100) << 1;
-    _CSTD memcpy(__result + __olength - __i - 1, __DIGIT_TABLE + __c0, 2);
-    _CSTD memcpy(__result + __olength - __i - 3, __DIGIT_TABLE + __c1, 2);
+    _Copy_digits_from_table(__result + __olength - __i - 1, __c0);
+    _Copy_digits_from_table(__result + __olength - __i - 3, __c1);
     __i += 4;
   }
   if (__output >= 100) {
     const uint32_t __c = (__output % 100) << 1;
     __output /= 100;
-    _CSTD memcpy(__result + __olength - __i - 1, __DIGIT_TABLE + __c, 2);
+    _Copy_digits_from_table(__result + __olength - __i - 1, __c);
     __i += 2;
   }
   if (__output >= 10) {
     const uint32_t __c = __output << 1;
     // We can't use memcpy here: the decimal dot goes between these two digits.
-    __result[2] = __DIGIT_TABLE[__c + 1];
-    __result[0] = __DIGIT_TABLE[__c];
+    __result[2] = __DIGIT_TABLE<_CharT>[__c + 1];
+    __result[0] = __DIGIT_TABLE<_CharT>[__c];
   } else {
-    __result[0] = static_cast<char>('0' + __output);
+    __result[0] = static_cast<_CharT>(_WIDEN(_CharT, '0') + __output);
   }
 
   // Print decimal point if needed.
   uint32_t __index;
   if (__olength > 1) {
-    __result[1] = '.';
+    __result[1] = _WIDEN(_CharT, '.');
     __index = __olength + 1;
   } else {
     __index = 1;
   }
 
   // Print the exponent.
-  __result[__index++] = 'e';
+  __result[__index++] = _WIDEN(_CharT, 'e');
   if (_Scientific_exponent < 0) {
-    __result[__index++] = '-';
+    __result[__index++] = _WIDEN(_CharT, '-');
     _Scientific_exponent = -_Scientific_exponent;
   } else {
-    __result[__index++] = '+';
+    __result[__index++] = _WIDEN(_CharT, '+');
   }
 
-  _CSTD memcpy(__result + __index, __DIGIT_TABLE + 2 * _Scientific_exponent, 2);
+  _Copy_digits_from_table(__result + __index, 2 * _Scientific_exponent);
   __index += 2;
 
   return { _First + _Total_scientific_length, errc{} };
+}
+
+_NODISCARD inline to_chars_result _Convert_to_chars_result(const pair<char*, errc>& _Pair) {
+    return {_Pair.first, _Pair.second};
 }
 
 _NODISCARD inline to_chars_result __f2s_buffered_n(char* const _First, char* const _Last, const float __f,
@@ -1586,12 +1617,12 @@ _NODISCARD inline to_chars_result __f2s_buffered_n(char* const _First, char* con
     // (Subnormals are different, but they'll be rejected by the _Exponent2 test here, so they can be ignored.)
 
     if (_Exponent2 > 0) {
-      return _Large_integer_to_chars(_First, _Last, _Mantissa2, _Exponent2);
+      return _Convert_to_chars_result(_Large_integer_to_chars(_First, _Last, _Mantissa2, _Exponent2));
     }
   }
 
   const __floating_decimal_32 __v = __f2d(__ieeeMantissa, __ieeeExponent);
-  return __to_chars(_First, _Last, __v, _Fmt, __ieeeMantissa, __ieeeExponent);
+  return _Convert_to_chars_result(__to_chars(_First, _Last, __v, _Fmt, __ieeeMantissa, __ieeeExponent));
 }
 
 // ^^^^^^^^^^ DERIVED FROM f2s.c ^^^^^^^^^^
@@ -1897,7 +1928,8 @@ _NODISCARD inline __floating_decimal_64 __d2d(const uint64_t __ieeeMantissa, con
   return __fd;
 }
 
-_NODISCARD inline to_chars_result __to_chars(char* const _First, char* const _Last, const __floating_decimal_64 __v,
+template <class _CharT>
+_NODISCARD pair<_CharT*, errc> __to_chars(_CharT* const _First, _CharT* const _Last, const __floating_decimal_64 __v,
   chars_format _Fmt, const double __f) {
   // Step 5: Print the decimal representation.
   uint64_t __output = __v.__mantissa;
@@ -1989,7 +2021,7 @@ _NODISCARD inline to_chars_result __to_chars(char* const _First, char* const _La
       return { _Last, errc::value_too_large };
     }
 
-    char* _Mid;
+    _CharT* _Mid;
     if (_Ryu_exponent > 0) { // case "172900"
       bool _Can_use_ryu;
 
@@ -2072,10 +2104,10 @@ _NODISCARD inline to_chars_result __to_chars(char* const _First, char* const _La
       const uint32_t __d0 = (__d % 100) << 1;
       const uint32_t __d1 = (__d / 100) << 1;
 
-      _CSTD memcpy(_Mid -= 2, __DIGIT_TABLE + __c0, 2);
-      _CSTD memcpy(_Mid -= 2, __DIGIT_TABLE + __c1, 2);
-      _CSTD memcpy(_Mid -= 2, __DIGIT_TABLE + __d0, 2);
-      _CSTD memcpy(_Mid -= 2, __DIGIT_TABLE + __d1, 2);
+      _Copy_digits_from_table(_Mid -= 2, __c0);
+      _Copy_digits_from_table(_Mid -= 2, __c1);
+      _Copy_digits_from_table(_Mid -= 2, __d0);
+      _Copy_digits_from_table(_Mid -= 2, __d1);
     }
     uint32_t __output2 = static_cast<uint32_t>(__output);
     while (__output2 >= 10000) {
@@ -2087,35 +2119,35 @@ _NODISCARD inline to_chars_result __to_chars(char* const _First, char* const _La
       __output2 /= 10000;
       const uint32_t __c0 = (__c % 100) << 1;
       const uint32_t __c1 = (__c / 100) << 1;
-      _CSTD memcpy(_Mid -= 2, __DIGIT_TABLE + __c0, 2);
-      _CSTD memcpy(_Mid -= 2, __DIGIT_TABLE + __c1, 2);
+      _Copy_digits_from_table(_Mid -= 2, __c0);
+      _Copy_digits_from_table(_Mid -= 2, __c1);
     }
     if (__output2 >= 100) {
       const uint32_t __c = (__output2 % 100) << 1;
       __output2 /= 100;
-      _CSTD memcpy(_Mid -= 2, __DIGIT_TABLE + __c, 2);
+      _Copy_digits_from_table(_Mid -= 2, __c);
     }
     if (__output2 >= 10) {
       const uint32_t __c = __output2 << 1;
-      _CSTD memcpy(_Mid -= 2, __DIGIT_TABLE + __c, 2);
+      _Copy_digits_from_table(_Mid -= 2, __c);
     } else {
-      *--_Mid = static_cast<char>('0' + __output2);
+      *--_Mid = static_cast<_CharT>(_WIDEN(_CharT, '0') + __output2);
     }
 
     if (_Ryu_exponent > 0) { // case "172900" with _Can_use_ryu
       // Performance note: it might be more efficient to do this immediately after setting _Mid.
-      _CSTD memset(_First + __olength, '0', static_cast<size_t>(_Ryu_exponent));
+      _Fill_string_zero(_First + __olength, static_cast<size_t>(_Ryu_exponent));
     } else if (_Ryu_exponent == 0) { // case "1729"
       // Done!
     } else if (_Whole_digits > 0) { // case "17.29"
       // Performance note: moving digits might not be optimal.
-      _CSTD memmove(_First, _First + 1, static_cast<size_t>(_Whole_digits));
-      _First[_Whole_digits] = '.';
+      _CSTD memmove(_First, _First + 1, static_cast<size_t>(_Whole_digits) * sizeof(_CharT));
+      _First[_Whole_digits] = _WIDEN(_CharT, '.');
     } else { // case "0.001729"
       // Performance note: a larger memset() followed by overwriting '.' might be more efficient.
-      _First[0] = '0';
-      _First[1] = '.';
-      _CSTD memset(_First + 2, '0', static_cast<size_t>(-_Whole_digits));
+      _First[0] = _WIDEN(_CharT, '0');
+      _First[1] = _WIDEN(_CharT, '.');
+      _Fill_string_zero(_First + 2, static_cast<size_t>(-_Whole_digits));
     }
 
     return { _First + _Total_fixed_length, errc{} };
@@ -2126,7 +2158,7 @@ _NODISCARD inline to_chars_result __to_chars(char* const _First, char* const _La
   if (_Last - _First < static_cast<ptrdiff_t>(_Total_scientific_length)) {
     return { _Last, errc::value_too_large };
   }
-  char* const __result = _First;
+  _CharT* const __result = _First;
 
   // Print the decimal digits.
   uint32_t __i = 0;
@@ -2147,10 +2179,10 @@ _NODISCARD inline to_chars_result __to_chars(char* const _First, char* const _La
     const uint32_t __c1 = (__c / 100) << 1;
     const uint32_t __d0 = (__d % 100) << 1;
     const uint32_t __d1 = (__d / 100) << 1;
-    _CSTD memcpy(__result + __olength - __i - 1, __DIGIT_TABLE + __c0, 2);
-    _CSTD memcpy(__result + __olength - __i - 3, __DIGIT_TABLE + __c1, 2);
-    _CSTD memcpy(__result + __olength - __i - 5, __DIGIT_TABLE + __d0, 2);
-    _CSTD memcpy(__result + __olength - __i - 7, __DIGIT_TABLE + __d1, 2);
+    _Copy_digits_from_table(__result + __olength - __i - 1, __c0);
+    _Copy_digits_from_table(__result + __olength - __i - 3, __c1);
+    _Copy_digits_from_table(__result + __olength - __i - 5, __d0);
+    _Copy_digits_from_table(__result + __olength - __i - 7, __d1);
     __i += 8;
   }
   uint32_t __output2 = static_cast<uint32_t>(__output);
@@ -2163,55 +2195,57 @@ _NODISCARD inline to_chars_result __to_chars(char* const _First, char* const _La
     __output2 /= 10000;
     const uint32_t __c0 = (__c % 100) << 1;
     const uint32_t __c1 = (__c / 100) << 1;
-    _CSTD memcpy(__result + __olength - __i - 1, __DIGIT_TABLE + __c0, 2);
-    _CSTD memcpy(__result + __olength - __i - 3, __DIGIT_TABLE + __c1, 2);
+    _Copy_digits_from_table(__result + __olength - __i - 1, __c0);
+    _Copy_digits_from_table(__result + __olength - __i - 3, __c1);
     __i += 4;
   }
   if (__output2 >= 100) {
     const uint32_t __c = (__output2 % 100) << 1;
     __output2 /= 100;
-    _CSTD memcpy(__result + __olength - __i - 1, __DIGIT_TABLE + __c, 2);
+    _Copy_digits_from_table(__result + __olength - __i - 1, __c);
     __i += 2;
   }
   if (__output2 >= 10) {
     const uint32_t __c = __output2 << 1;
     // We can't use memcpy here: the decimal dot goes between these two digits.
-    __result[2] = __DIGIT_TABLE[__c + 1];
-    __result[0] = __DIGIT_TABLE[__c];
+    __result[2] = __DIGIT_TABLE<_CharT>[__c + 1];
+    __result[0] = __DIGIT_TABLE<_CharT>[__c];
   } else {
-    __result[0] = static_cast<char>('0' + __output2);
+    __result[0] = static_cast<_CharT>(_WIDEN(_CharT, '0') + __output2);
   }
 
   // Print decimal point if needed.
   uint32_t __index;
   if (__olength > 1) {
-    __result[1] = '.';
+    __result[1] = _WIDEN(_CharT, '.');
     __index = __olength + 1;
   } else {
     __index = 1;
   }
 
   // Print the exponent.
-  __result[__index++] = 'e';
+  __result[__index++] = _WIDEN(_CharT, 'e');
   if (_Scientific_exponent < 0) {
-    __result[__index++] = '-';
+    __result[__index++] = _WIDEN(_CharT, '-');
     _Scientific_exponent = -_Scientific_exponent;
   } else {
-    __result[__index++] = '+';
+    __result[__index++] = _WIDEN(_CharT, '+');
   }
 
   if (_Scientific_exponent >= 100) {
     const int32_t __c = _Scientific_exponent % 10;
-    _CSTD memcpy(__result + __index, __DIGIT_TABLE + 2 * (_Scientific_exponent / 10), 2);
-    __result[__index + 2] = static_cast<char>('0' + __c);
+    _Copy_digits_from_table(__result + __index, 2 * (_Scientific_exponent / 10));
+    __result[__index + 2] = static_cast<_CharT>(_WIDEN(_CharT, '0') + __c);
     __index += 3;
   } else {
-    _CSTD memcpy(__result + __index, __DIGIT_TABLE + 2 * _Scientific_exponent, 2);
+    _Copy_digits_from_table(__result + __index, 2 * _Scientific_exponent);
     __index += 2;
   }
 
   return { _First + _Total_scientific_length, errc{} };
 }
+
+#undef _WIDEN
 
 _NODISCARD inline bool __d2d_small_int(const uint64_t __ieeeMantissa, const uint32_t __ieeeExponent,
   __floating_decimal_64* const __v) {
@@ -2296,7 +2330,7 @@ _NODISCARD inline to_chars_result __d2s_buffered_n(char* const _First, char* con
     // exponents here and skipping Ryu. Calling __d2fixed_buffered_n() with precision 0 is valid for all integers
     // (so it's okay if we call it with a Ryu-friendly value).
     if (_Exponent2 > 0) {
-      return __d2fixed_buffered_n(_First, _Last, __f, 0);
+      return _Convert_to_chars_result(__d2fixed_buffered_n(_First, _Last, __f, 0));
     }
   }
 
@@ -2320,7 +2354,7 @@ _NODISCARD inline to_chars_result __d2s_buffered_n(char* const _First, char* con
     __v = __d2d(__ieeeMantissa, __ieeeExponent);
   }
 
-  return __to_chars(_First, _Last, __v, _Fmt, __f);
+  return _Convert_to_chars_result(__to_chars(_First, _Last, __v, _Fmt, __f));
 }
 
 // ^^^^^^^^^^ DERIVED FROM d2s.c ^^^^^^^^^^
@@ -2376,7 +2410,7 @@ _NODISCARD to_chars_result _Floating_to_chars_fixed_precision(
         return {_Last, errc::value_too_large};
     }
 
-    return __d2fixed_buffered_n(_First, _Last, _Value, static_cast<uint32_t>(_Precision));
+    return _Convert_to_chars_result(__d2fixed_buffered_n(_First, _Last, _Value, static_cast<uint32_t>(_Precision)));
 }
 
 _STD_END
