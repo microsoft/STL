@@ -1,0 +1,47 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+parameters:
+- name: vcpkgSHAVar
+  type: string
+  default: vcpkgSHA
+- name: llvmSHAVar
+  type: string
+  default: llvmSHA
+steps:
+- task: PowerShell@2
+  displayName: 'Get submodule SHAs'
+  timeoutInMinutes: 1
+  inputs:
+    targetType: inline
+  script: |
+    cd $(Build.SourcesDirectory)
+    $regexSubmoduleSHA = '^[ \-+]([0-9a-f]+) .*$'
+    $llvmSHA = git submodule status --cached llvm-project | %{$_ -replace $regexSubmoduleSHA, '$1'}
+    Write-Host "##vso[task.setvariable variable=${{ parameters.llvmSHAVar }};]$llvmSHA"
+    $vcpkgSHA = git submodule status --cached vcpkg | %{$_ -replace $regexSubmoduleSHA, '$1'}
+    Write-Host "##vso[task.setvariable variable=${{ parameters.vcpkgSHAVar }};]$vcpkgSHA"
+- script: |
+  cd $(Build.SourcesDirectory)
+  if not exist "llvm-project" (
+  mkdir llvm-project
+  )
+  cd llvm-project
+  git init
+  git remote add llvm https://github.com/llvm/llvm-project
+  git config --local extensions.partialClone llvm
+  git fetch --filter=tree:0 --depth=1 llvm $(${{ parameters.llvmSHAVar }})
+  git reset --quiet $(${{ parameters.llvmSHAVar }})
+  git sparse-checkout init --cone
+  git sparse-checkout set libcxx/test libcxx/utils/libcxx llvm/utils/lit
+  displayName: "Checkout LLVM source"
+- script: |
+  cd $(Build.SourcesDirectory)
+  if not exist "vcpkg" (mkdir vcpkg)
+  cd vcpkg
+  git init
+  git remote add vcpkg https://github.com/Microsoft/vcpkg
+  git config --local extensions.partialClone vcpkg
+  git fetch --filter=tree:0 --depth=1 vcpkg $(${{ parameters.vcpkgSHAVar }})
+  git checkout $(${{ parameters.vcpkgSHAVar }})
+  displayName: "Checkout vcpkg source"

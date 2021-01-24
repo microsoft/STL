@@ -5,9 +5,6 @@ parameters:
   - name: tmpDirVar
     type: string
     default: tmpDir
-  - name: hostArch
-    type: string
-    default: amd64
   - name: targetPlatform
     type: string
   - name: vsDevCmdArch
@@ -29,7 +26,7 @@ parameters:
       - 8
 jobs:
 - ${{ each shard in parameters.shards }}:
-  - job: '$build_{{ parameters.targetPlatform }}_${{ shard }}'
+  - job: '${{ parameters.targetPlatform }}_${{ shard }}'
     timeoutInMinutes: 360
 
     - script: |
@@ -48,14 +45,12 @@ jobs:
     - template: azure-devops/cmake-configure-build.yml
       parameters:
         targetPlatform: ${{ parameters.targetPlatform }}
-        hostArch: amd64
         targetArch: ${{ parameters.vsDevCmdArch }}
+        hostArch: ${{ parameters.vsDevCmdArch }}
         shardNum: ${{ shard }}
         numShards: ${{ parameters.numShards }}
-        additionalLitFlags: ';-DTEST_BUILD_ONLY=TRUE'
     - template: azure-devops/run-tests.yml
       parameters:
         targetArch: ${{ parameters.vsDevCmdArch }}
-        hostArch: ${{ parameters.hostArch }}
+        hostArch: ${{ parameters.vsDevCmdArch }}
         shardNum: ${{ shard }}
-        displayName: 'Build Tests'

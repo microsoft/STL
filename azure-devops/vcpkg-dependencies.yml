@@ -1,0 +1,38 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+parameters:
+- name: targetPlatform
+  type: string
+- name: vcpkgLocationVar
+  type: string
+  default: vcpkgLocation
+- name: vcpkgSHAVar
+  type: string
+  default: vcpkgSHA
+steps:
+- task: Cache@2
+  displayName: vcpkg/installed Caching
+  timeoutInMinutes: 10
+  inputs:
+    key: '"${{ parameters.targetPlatform }}" | "$(${{ parameters.vcpkgSHAVar }})" | "2020-03-01.01"'
+    path: '$(${{ parameters.vcpkgLocationVar }})/installed'
+    cacheHitVar: CACHE_RESTORED
+- task: run-vcpkg@0
+  displayName: 'Run vcpkg to Install boost-build'
+  condition: ne(variables.CACHE_RESTORED, 'true')
+  timeoutInMinutes: 10
+  inputs:
+    doNotUpdateVcpkg: true
+    vcpkgArguments: 'boost-build'
+    vcpkgDirectory: '$(${{ parameters.vcpkgLocationVar }})'
+    vcpkgTriplet: 'x86-windows'
+- task: run-vcpkg@0
+  displayName: 'Run vcpkg to Install boost-math'
+  condition: ne(variables.CACHE_RESTORED, 'true')
+  timeoutInMinutes: 10
+  inputs:
+    doNotUpdateVcpkg: true
+    vcpkgArguments: 'boost-math'
+    vcpkgDirectory: '$(${{ parameters.vcpkgLocationVar }})'
+    vcpkgTriplet: '${{ parameters.targetPlatform }}-windows'
