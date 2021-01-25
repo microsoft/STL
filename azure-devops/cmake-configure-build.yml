@@ -27,33 +27,33 @@ variables:
   shardFlags: '--num-shards=$(System.TotalJobsInPhase);--run-shard=$(System.JobPositionInPhase)'
   litFlags: '$(fixedFlags);$(parallelismFlag);$(xmlOutputFlag);$(shardFlags)${{ additionalLitFlags }}'
 steps:
-  - task: PowerShell@2
-    displayName: 'Get Test Parallelism'
-    timeoutInMinutes: 1
-    inputs:
-      targetType: inline
-      script: |
-        $testParallelism = $env:NUMBER_OF_PROCESSORS - 2
-        Write-Host "##vso[task.setvariable variable=testParallelism;]$testParallelism"
-  - script: |
-      if exist "$(${{ parameters.buildOutputLocationVar }})" (
-        rmdir /S /Q "$(${{ parameters.buildOutputLocationVar }})"
-      )
-      call "%PROGRAMFILES(X86)%\Microsoft Visual Studio\2019\Preview\Common7\Tools\VsDevCmd.bat" ^
-      -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
-      cmake -G Ninja ^
-      -DCMAKE_TOOLCHAIN_FILE=$(${{ parameters.vcpkgLocationVar }})\scripts\buildsystems\vcpkg.cmake ^
-      -DVCPKG_TARGET_TRIPLET=${{ parameters.targetPlatform }}-windows ^
-      -DCMAKE_CXX_COMPILER=cl ^
-      -DCMAKE_BUILD_TYPE=Release ^
-      -DLIT_FLAGS=$(litFlags) ^
-      -DCMAKE_CXX_FLAGS=/analyze:autolog- ^
-      -S $(Build.SourcesDirectory) -B $(${{ parameters.buildOutputLocationVar }})
-    displayName: 'Configure the STL'
+- task: PowerShell@2
+  displayName: 'Get Test Parallelism'
+  timeoutInMinutes: 1
+  inputs:
+    targetType: inline
+    script: |
+      $testParallelism = $env:NUMBER_OF_PROCESSORS - 2
+      Write-Host "##vso[task.setvariable variable=testParallelism;]$testParallelism"
+- script: |
+    if exist "$(${{ parameters.buildOutputLocationVar }})" (
+      rmdir /S /Q "$(${{ parameters.buildOutputLocationVar }})"
+    )
+    call "%PROGRAMFILES(X86)%\Microsoft Visual Studio\2019\Preview\Common7\Tools\VsDevCmd.bat" ^
+    -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
+    cmake -G Ninja ^
+    -DCMAKE_TOOLCHAIN_FILE=$(${{ parameters.vcpkgLocationVar }})\scripts\buildsystems\vcpkg.cmake ^
+    -DVCPKG_TARGET_TRIPLET=${{ parameters.targetPlatform }}-windows ^
+    -DCMAKE_CXX_COMPILER=cl ^
+    -DCMAKE_BUILD_TYPE=Release ^
+    -DLIT_FLAGS=$(litFlags) ^
+    -DCMAKE_CXX_FLAGS=/analyze:autolog- ^
+    -S $(Build.SourcesDirectory) -B $(${{ parameters.buildOutputLocationVar }})
+  displayName: 'Configure the STL'
   timeoutInMinutes: 2
   env: { TMP: $(${{ parameters.tmpDirVar }}), TEMP: $(${{ parameters.tmpDirVar }}) }
-  - script: |
-      cmake --build $(${{ parameters.buildOutputLocationVar }})
-    displayName: 'Build the STL'
-    timeoutInMinutes: 10
-    env: { TMP: $(${{ parameters.tmpDirVar }}), TEMP: $(${{ parameters.tmpDirVar }}) }
+- script: |
+    cmake --build $(${{ parameters.buildOutputLocationVar }})
+  displayName: 'Build the STL'
+  timeoutInMinutes: 10
+  env: { TMP: $(${{ parameters.tmpDirVar }}), TEMP: $(${{ parameters.tmpDirVar }}) }
