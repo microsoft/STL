@@ -9,6 +9,9 @@ parameters:
   type: string
   default: llvmSHA
 steps:
+- checkout: self
+  clean: true
+  submodules: false
 - task: PowerShell@2
   displayName: 'Get submodule SHAs'
   timeoutInMinutes: 1

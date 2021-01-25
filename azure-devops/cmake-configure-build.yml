@@ -9,9 +9,6 @@ parameters:
 - name: vcpkgLocationVar
   type: string
   default: vcpkgLocation
-- name: tmpDirVar
-  type: string
-  default: tmpDir
 - name: targetPlatform
   type: string
 - name: buildOutputLocationVar

@@ -2,9 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 parameters:
-- name: tmpDirVar
-  type: string
-  default: tmpDir
 - name: targetPlatform
   type: string
 - name: vsDevCmdArch
@@ -28,13 +25,9 @@ jobs:
   timeoutInMinutes: 360
   steps:
   - script: |
-      if exist "$(${{ parameters.tmpDirVar }})" (rmdir /S /Q $(${{ parameters.tmpDirVar }}))
-      mkdir $(${{ parameters.tmpDirVar }})
+      if exist "$(tmpDir)" (rmdir /S /Q $(tmpDir))
+      mkdir $(tmpDir)
     displayName: 'Setup TMP Directory'
-
-  - checkout: self
-    clean: true
-    submodules: false
 
   - template: checkout-sources.yml
   - template: vcpkg-dependencies.yml

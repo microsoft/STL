@@ -2,9 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 parameters:
-- name: tmpDirVar
-  type: string
-  default: tmpDir
 - name: buildOutputLocationVar
   type: string
   default: buildOutputLocation
