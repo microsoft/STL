@@ -63,7 +63,7 @@ _STD_BEGIN
 
 // A table of all two-digit numbers. This is used to speed up decimal digit
 // generation by copying pairs of digits into the final output.
-template <class T> inline constexpr T __DIGIT_TABLE[] = {};
+template <class _CharT> inline constexpr _CharT __DIGIT_TABLE[] = {_CharT{}};
 
 template <> inline constexpr char __DIGIT_TABLE<char>[200] = {
   '0','0','0','1','0','2','0','3','0','4','0','5','0','6','0','7','0','8','0','9',

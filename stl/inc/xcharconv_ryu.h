@@ -394,7 +394,7 @@ _NODISCARD inline uint32_t __mulShift_mod1e9(const uint64_t __m, const uint64_t*
 #define _WIDEN(_TYPE, _CHAR) (is_same_v<_TYPE,char> ? _CHAR : L##_CHAR)
 
 template <class _CharT>
-void _Copy_digits_from_table(_CharT* _Dst, ptrdiff_t _Offset)
+void _Copy_digits_from_table(_CharT* _Dst, uint32_t _Offset)
 {
     _CSTD memcpy(_Dst, __DIGIT_TABLE<_CharT> + _Offset, 2 * sizeof(_CharT));
 }
@@ -1564,7 +1564,7 @@ _NODISCARD pair<_CharT*, errc> __to_chars(_CharT* const _First, _CharT* const _L
     __result[__index++] = _WIDEN(_CharT, '+');
   }
 
-  _Copy_digits_from_table(__result + __index, 2 * _Scientific_exponent);
+  _Copy_digits_from_table(__result + __index, static_cast<uint32_t>(2 * _Scientific_exponent));
   __index += 2;
 
   return { _First + _Total_scientific_length, errc{} };
@@ -2234,11 +2234,11 @@ _NODISCARD pair<_CharT*, errc> __to_chars(_CharT* const _First, _CharT* const _L
 
   if (_Scientific_exponent >= 100) {
     const int32_t __c = _Scientific_exponent % 10;
-    _Copy_digits_from_table(__result + __index, 2 * (_Scientific_exponent / 10));
+    _Copy_digits_from_table(__result + __index, static_cast<uint32_t>(2 * (_Scientific_exponent / 10)));
     __result[__index + 2] = static_cast<_CharT>(_WIDEN(_CharT, '0') + __c);
     __index += 3;
   } else {
-    _Copy_digits_from_table(__result + __index, 2 * _Scientific_exponent);
+    _Copy_digits_from_table(__result + __index, static_cast<uint32_t>(2 * _Scientific_exponent));
     __index += 2;
   }
 
