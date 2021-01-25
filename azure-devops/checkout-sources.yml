@@ -31,8 +31,8 @@ steps:
     )
     cd llvm-project
 
-    git status
-    if errorlevel 1 (
+    if not exist ".git" (
+      del /S /Q *
       git init
     )
 
@@ -43,7 +43,7 @@ steps:
     )
 
     git fetch --filter=tree:0 --depth=1 llvm $(${{ parameters.llvmSHAVar }})
-    git reset --quiet $(${{ parameters.llvmSHAVar }})
+    git reset --quiet FETCH_HEAD
     git sparse-checkout init --cone
     git sparse-checkout set libcxx/test libcxx/utils/libcxx llvm/utils/lit
   displayName: "Checkout LLVM source"
@@ -54,8 +54,8 @@ steps:
     )
     cd vcpkg
 
-    git status
-    if errorlevel 1 (
+    if not exist ".git" (
+      del /S /Q *
       git init
     )
 
@@ -66,5 +66,5 @@ steps:
     )
 
     git fetch --filter=tree:0 --depth=1 vcpkg $(${{ parameters.vcpkgSHAVar }})
-    git checkout $(${{ parameters.vcpkgSHAVar }})
+    git checkout -f FETCH_HEAD
   displayName: "Checkout vcpkg source"
