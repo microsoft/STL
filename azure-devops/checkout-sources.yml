@@ -27,8 +27,10 @@ steps:
 - script: |
     cd $(Build.SourcesDirectory)
     dir
-    if not exist "llvm-project" (
-      mkdir llvm-project
+    if not exist "llvm-project/.git/index" (
+      if not exist "llvm-project" (
+        mkdir llvm-project
+      )
       cd llvm-project
       git init
       git remote add llvm https://github.com/llvm/llvm-project.git
@@ -45,8 +47,10 @@ steps:
 - script: |
     cd $(Build.SourcesDirectory)
     dir
-    if not exist "vcpkg" (
-      mkdir vcpkg
+    if not exist "vcpkg/.git/index" (
+      if not exist "vcpkg" (
+        mkdir vcpkg
+      )
       cd vcpkg
       git init
       git remote add vcpkg https://github.com/Microsoft/vcpkg.git
