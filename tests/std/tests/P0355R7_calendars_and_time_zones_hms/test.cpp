@@ -45,9 +45,9 @@ template <class D>
 constexpr auto width() {
     return hh_mm_ss<D>::fractional_width;
 }
-template <intmax_t N, intmax_t D>
+template <class T, intmax_t N, intmax_t D>
 constexpr auto width() {
-    return hh_mm_ss<duration<int, ratio<N, D>>>::fractional_width;
+    return hh_mm_ss<duration<T, ratio<N, D>>>::fractional_width;
 }
 
 constexpr void fractional_width() {
@@ -59,17 +59,31 @@ constexpr void fractional_width() {
     static_assert(width<microseconds>() == 6);
     static_assert(width<nanoseconds>() == 9);
 
-    static_assert(width<1, 2>() == 1);
-    static_assert(width<1, 3>() == 6);
-    static_assert(width<1, 4>() == 2);
-    static_assert(width<1, 5>() == 1);
-    static_assert(width<1, 6>() == 6);
-    static_assert(width<1, 7>() == 6);
-    static_assert(width<1, 8>() == 3);
-    static_assert(width<1, 9>() == 6);
-    static_assert(width<1, 10>() == 1);
-    static_assert(width<756, 625>() == 4);
-    static_assert(width<3780, 625>() == 3);
+    static_assert(width<int, 1, 2>() == 1);
+    static_assert(width<int, 1, 3>() == 6);
+    static_assert(width<int, 1, 4>() == 2);
+    static_assert(width<int, 1, 5>() == 1);
+    static_assert(width<int, 1, 6>() == 6);
+    static_assert(width<int, 1, 7>() == 6);
+    static_assert(width<int, 1, 8>() == 3);
+    static_assert(width<int, 1, 9>() == 6);
+    static_assert(width<int, 1, 10>() == 1);
+    static_assert(width<int, 756, 625>() == 4);
+    static_assert(width<int, 3780, 625>() == 3);
+    static_assert(width<int, 1, 400000000000000000LL>() == 6);
+
+    static_assert(width<float, 1, 2>() == 1);
+    static_assert(width<float, 1, 3>() == 6);
+    static_assert(width<float, 1, 4>() == 2);
+    static_assert(width<float, 1, 5>() == 1);
+    static_assert(width<float, 1, 6>() == 6);
+    static_assert(width<float, 1, 7>() == 6);
+    static_assert(width<float, 1, 8>() == 3);
+    static_assert(width<float, 1, 9>() == 6);
+    static_assert(width<float, 1, 10>() == 1);
+    static_assert(width<float, 756, 625>() == 4);
+    static_assert(width<float, 3780, 625>() == 3);
+    static_assert(width<float, 1, 400000000000000000LL>() == 6);
 }
 
 constexpr void constructor() {
