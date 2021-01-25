@@ -210,8 +210,8 @@ class STLTestFormat:
             if result:
                 return result
 
-            # This test is expected to fail at some point but we're not sure if during the build phase or
-            # the test phase.
+            # This test is expected to fail at some point, but we're not sure if
+            # it should fail during the build phase or the test phase.
             someFail = test.expectedResult and test.expectedResult.isFailure
 
             stages = self.getStages(test, litConfig)
