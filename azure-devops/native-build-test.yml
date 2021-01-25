@@ -9,6 +9,9 @@ parameters:
   type: string
 - name: vsDevCmdArch
   type: string
+- name: buildOutputLocationVar
+  type: string
+  default: buildOutputLocation
 - name: numShards
   type: number
   default: 8
