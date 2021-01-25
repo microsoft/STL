@@ -39,9 +39,9 @@ steps:
     -S $(Build.SourcesDirectory) -B $(${{ parameters.buildOutputLocationVar }})
   displayName: 'Configure the STL'
   timeoutInMinutes: 2
-  env: { TMP: $(${{ parameters.tmpDirVar }}), TEMP: $(${{ parameters.tmpDirVar }}) }
+  env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
 - script: |
     cmake --build $(${{ parameters.buildOutputLocationVar }})
   displayName: 'Build the STL'
   timeoutInMinutes: 10
-  env: { TMP: $(${{ parameters.tmpDirVar }}), TEMP: $(${{ parameters.tmpDirVar }}) }
+  env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
