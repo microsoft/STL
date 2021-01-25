@@ -10,7 +10,9 @@
 using namespace std;
 using namespace std::chrono;
 
-using hms_hours = hh_mm_ss<hours>;
+using hms_hours   = hh_mm_ss<hours>;
+using f_hours     = duration<double, ratio<3600>>;
+using f_hms_hours = hh_mm_ss<f_hours>;
 
 constexpr void am_pm() {
     static_assert(noexcept(is_am(hours{})));
@@ -71,6 +73,7 @@ constexpr void fractional_width() {
     static_assert(width<int, 756, 625>() == 4);
     static_assert(width<int, 3780, 625>() == 3);
     static_assert(width<int, 1, 400000000000000000LL>() == 6);
+    // static_assert(width<int, 1, 2000000000000000000LL>() == 6); overflows
 
     static_assert(width<float, 1, 2>() == 1);
     static_assert(width<float, 1, 3>() == 6);
@@ -84,19 +87,27 @@ constexpr void fractional_width() {
     static_assert(width<float, 756, 625>() == 4);
     static_assert(width<float, 3780, 625>() == 3);
     static_assert(width<float, 1, 400000000000000000LL>() == 6);
+    // static_assert(width<float, 1, 2000000000000000000LL>() == 6); overflows
 }
 
 constexpr void constructor() {
     static_assert(noexcept(hms_hours{}));
+    static_assert(noexcept(f_hms_hours{}));
 
     assert(hms_hours{}.hours() == hms_hours{hours::zero()}.hours());
     assert(hms_hours{}.minutes() == hms_hours{hours::zero()}.minutes());
     assert(hms_hours{}.seconds() == hms_hours{hours::zero()}.seconds());
     assert(hms_hours{}.subseconds() == hms_hours{hours::zero()}.subseconds());
+
+    assert(f_hms_hours{}.hours() == f_hms_hours{hours::zero()}.hours());
+    assert(f_hms_hours{}.minutes() == f_hms_hours{hours::zero()}.minutes());
+    assert(f_hms_hours{}.seconds() == f_hms_hours{hours::zero()}.seconds());
+    assert(f_hms_hours{}.subseconds() == f_hms_hours{hours::zero()}.subseconds());
 }
 
 constexpr void is_negative() {
     static_assert(noexcept(hms_hours{}.is_negative()));
+    static_assert(noexcept(f_hms_hours{}.is_negative()));
 
     assert(hh_mm_ss<days>(days{-1}).is_negative());
     assert(!hh_mm_ss<days>(days{1}).is_negative());
@@ -118,52 +129,69 @@ constexpr void is_negative() {
 
     assert(hh_mm_ss<nanoseconds>(-1ns).is_negative());
     assert(!hh_mm_ss<nanoseconds>(1ns).is_negative());
+
+    assert(f_hms_hours(f_hours(-1.f)).is_negative());
+    assert(!f_hms_hours(f_hours(1.f)).is_negative());
 }
 
 constexpr auto ones = 1h + 1min + 1s + 1ms;
 
 constexpr void hour() {
     static_assert(noexcept(hms_hours{}.hours()));
+    static_assert(noexcept(f_hms_hours{}.hours()));
 
     assert(hh_mm_ss(days{1}).hours() == 24h);
     assert(hh_mm_ss(ones).hours() == 1h);
     assert(hh_mm_ss(-ones).hours() == 1h);
     assert(hh_mm_ss(59min).hours() == 0h);
+    assert(f_hms_hours(f_hours(1.f)).hours() == 1h);
 }
 
 constexpr void mins() {
     static_assert(noexcept(hms_hours{}.minutes()));
+    static_assert(noexcept(f_hms_hours{}.minutes()));
 
     assert(hh_mm_ss(ones).minutes() == 1min);
     assert(hh_mm_ss(-ones).minutes() == 1min);
     assert(hh_mm_ss(59s).minutes() == 0min);
+    assert(f_hms_hours(f_hours(0.0166667f)).minutes() == 1min);
 }
 
 constexpr void secs() {
     static_assert(noexcept(hms_hours{}.seconds()));
+    static_assert(noexcept(f_hms_hours{}.seconds()));
 
     assert(hh_mm_ss(ones).seconds() == 1s);
     assert(hh_mm_ss(-ones).seconds() == 1s);
     assert(hh_mm_ss(999ms).seconds() == 0s);
+    assert(f_hms_hours(f_hours(0.000277778f)).seconds() == 1s);
 }
 
 constexpr void subsecs() {
     static_assert(noexcept(hms_hours{}.subseconds()));
+    static_assert(noexcept(f_hms_hours{}.subseconds()));
 
     assert(hh_mm_ss(ones).subseconds() == 1ms);
     assert(hh_mm_ss(-ones).subseconds() == 1ms);
     assert(hh_mm_ss(999us).subseconds() == 999us);
     assert(hh_mm_ss(duration_cast<milliseconds>(999us)).subseconds() == 0ms);
+    using f_hms_milli = hh_mm_ss<duration<float, milli>>;
+    assert(f_hms_milli(1ms).subseconds() == 1ms);
 }
 
 constexpr void to_duration() {
-    using precision = hms_hours::precision;
+    using precision   = hms_hours::precision;
+    using f_precision = f_hms_hours::precision;
 
     static_assert(noexcept(hms_hours{}.to_duration()));
     static_assert(noexcept(static_cast<precision>(hms_hours{})));
+    static_assert(noexcept(f_hms_hours{}.to_duration()));
+    static_assert(noexcept(static_cast<f_precision>(f_hms_hours{})));
 
     assert(hh_mm_ss(ones).to_duration() == ones);
     assert(hh_mm_ss(-ones).to_duration() == -ones);
+    assert(f_hms_hours(f_hours(1.f)).to_duration() == 1h);
+    assert(f_hms_hours(f_hours(-1.f)).to_duration() == -1h);
 
     hh_mm_ss<milliseconds> hms(50ms);
     milliseconds milli_val = static_cast<milliseconds>(hms);
