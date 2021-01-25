@@ -41,7 +41,7 @@ struct instantiator {
             assert(empty_result.end() == empty_range.end());
         }
 
-        { // Validate iterator overloads of stable_partition, is_partitioned, partition_point
+        { // Validate iterator overload
             P input[] = {P{0, 1}, P{1, 2}, P{0, 3}, P{1, 4}, P{0, 5}, P{1, 6}, P{0, 7}, P{1, 8}};
             Range range{input};
             const auto mid = ranges::next(range.begin(), 4);
