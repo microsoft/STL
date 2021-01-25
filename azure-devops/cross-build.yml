@@ -19,29 +19,29 @@ jobs:
 - job: '$build_{{ parameters.targetPlatform }}'
   strategy:
     parallel: ${{ parameters.numShards }}
-    timeoutInMinutes: 360
+  timeoutInMinutes: 360
   steps:
-    - script: |
-        if exist "$(${{ parameters.tmpDirVar }})" (rmdir /S /Q $(${{ parameters.tmpDirVar }}))
-        mkdir $(${{ parameters.tmpDirVar }})
-      displayName: 'Setup TMP Directory'
+  - script: |
+      if exist "$(${{ parameters.tmpDirVar }})" (rmdir /S /Q $(${{ parameters.tmpDirVar }}))
+      mkdir $(${{ parameters.tmpDirVar }})
+    displayName: 'Setup TMP Directory'
 
-    - checkout: self
-      clean: true
-      submodules: false
+  - checkout: self
+    clean: true
+    submodules: false
 
-    - template: azure-devops/checkout-sources.yml
-    - template: azure-devops/vcpkg-dependencies.yml
-      parameters:
-        targetPlatform: ${{ parameters.targetPlatform }}
-    - template: azure-devops/cmake-configure-build.yml
-      parameters:
-        targetPlatform: ${{ parameters.targetPlatform }}
-        hostArch: amd64
-        targetArch: ${{ parameters.vsDevCmdArch }}
-        additionalLitFlags: ';-DTEST_BUILD_ONLY=TRUE'
-    - template: azure-devops/run-tests.yml
-      parameters:
-        targetArch: ${{ parameters.vsDevCmdArch }}
-        hostArch: ${{ parameters.hostArch }}
-        displayName: 'Build Tests'
+  - template: azure-devops/checkout-sources.yml
+  - template: azure-devops/vcpkg-dependencies.yml
+    parameters:
+      targetPlatform: ${{ parameters.targetPlatform }}
+  - template: azure-devops/cmake-configure-build.yml
+    parameters:
+      targetPlatform: ${{ parameters.targetPlatform }}
+      hostArch: amd64
+      targetArch: ${{ parameters.vsDevCmdArch }}
+      additionalLitFlags: ';-DTEST_BUILD_ONLY=TRUE'
+  - template: azure-devops/run-tests.yml
+    parameters:
+      targetArch: ${{ parameters.vsDevCmdArch }}
+      hostArch: ${{ parameters.hostArch }}
+      displayName: 'Build Tests'

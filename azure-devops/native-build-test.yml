@@ -17,26 +17,26 @@ jobs:
   strategy:
     parallel: ${{ parameters.numShards }}
   timeoutInMinutes: 360
-steps:
-- script: |
-    if exist "$(${{ parameters.tmpDirVar }})" (rmdir /S /Q $(${{ parameters.tmpDirVar }}))
-    mkdir $(${{ parameters.tmpDirVar }})
-  displayName: 'Setup TMP Directory'
+  steps:
+  - script: |
+      if exist "$(${{ parameters.tmpDirVar }})" (rmdir /S /Q $(${{ parameters.tmpDirVar }}))
+      mkdir $(${{ parameters.tmpDirVar }})
+    displayName: 'Setup TMP Directory'
 
-- checkout: self
-  clean: true
-  submodules: false
-
-- template: azure-devops/checkout-sources.yml
-- template: azure-devops/vcpkg-dependencies.yml
-  parameters:
-    targetPlatform: ${{ parameters.targetPlatform }}
-- template: azure-devops/cmake-configure-build.yml
-  parameters:
-    targetPlatform: ${{ parameters.targetPlatform }}
-    targetArch: ${{ parameters.vsDevCmdArch }}
-    hostArch: ${{ parameters.vsDevCmdArch }}
-- template: azure-devops/run-tests.yml
-  parameters:
-    targetArch: ${{ parameters.vsDevCmdArch }}
-    hostArch: ${{ parameters.vsDevCmdArch }}
+  - checkout: self
+    clean: true
+    submodules: false
+  
+  - template: azure-devops/checkout-sources.yml
+  - template: azure-devops/vcpkg-dependencies.yml
+    parameters:
+      targetPlatform: ${{ parameters.targetPlatform }}
+  - template: azure-devops/cmake-configure-build.yml
+    parameters:
+      targetPlatform: ${{ parameters.targetPlatform }}
+      targetArch: ${{ parameters.vsDevCmdArch }}
+      hostArch: ${{ parameters.vsDevCmdArch }}
+  - template: azure-devops/run-tests.yml
+    parameters:
+      targetArch: ${{ parameters.vsDevCmdArch }}
+      hostArch: ${{ parameters.vsDevCmdArch }}
