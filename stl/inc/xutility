@@ -4029,7 +4029,9 @@ template <class _InIt, class _OutIt>
 _CONSTEXPR20 _OutIt _Copy_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest) {
     // copy [_First, _Last) to [_Dest, ...)
     // note: _Copy_unchecked has callers other than the copy family
-    if constexpr (_Iter_copy_cat<_InIt, _OutIt>::_Bitcopy_assignable) {
+    if constexpr (_Is_vb_iterator<_InIt> && _Is_vb_iterator<_OutIt>) {
+        return _Copy_vbool(_First, _Last, _Dest);
+    } else if constexpr (_Iter_copy_cat<_InIt, _OutIt>::_Bitcopy_assignable) {
 #if _HAS_CXX20
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
@@ -4145,7 +4147,12 @@ template <class _InIt, class _Diff, class _OutIt>
 _CONSTEXPR20 _OutIt copy_n(_InIt _First, _Diff _Count_raw, _OutIt _Dest) {
     // copy [_First, _First + _Count) to [_Dest, ...)
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
-    if (0 < _Count) {
+    if (_Count <= 0) {
+        return _Dest;
+    }
+    if constexpr (_Is_vb_iterator<_InIt> && _Is_vb_iterator<_OutIt>) {
+        return _Copy_vbool(_First, _First + _Count, _Dest);
+    } else {
         auto _UFirst = _Get_unwrapped_n(_First, _Count);
         auto _UDest  = _Get_unwrapped_n(_Dest, _Count);
         if constexpr (_Iter_copy_cat<decltype(_UFirst), decltype(_UDest)>::_Bitcopy_assignable) {
@@ -4254,7 +4261,9 @@ template <class _InIt, class _OutIt>
 _CONSTEXPR20 _OutIt _Move_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest) {
     // move [_First, _Last) to [_Dest, ...)
     // note: _Move_unchecked has callers other than the move family
-    if constexpr (_Iter_move_cat<_InIt, _OutIt>::_Bitcopy_assignable) {
+    if constexpr (_Is_vb_iterator<_InIt> && _Is_vb_iterator<_OutIt>) {
+        return _Copy_vbool(_First, _Last, _Dest);
+    } else if constexpr (_Iter_move_cat<_InIt, _OutIt>::_Bitcopy_assignable) {
 #if _HAS_CXX20
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
