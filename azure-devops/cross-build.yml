@@ -50,6 +50,7 @@ jobs:
       targetArch: ${{ parameters.vsDevCmdArch }}
   - template: run-tests.yml
     parameters:
-      targetArch: ${{ parameters.vsDevCmdArch }}
       hostArch: ${{ parameters.hostArch }}
+      targetPlatform: ${{ parameters.targetPlatform }}
+      targetArch: ${{ parameters.vsDevCmdArch }}
       displayName: 'Build Tests'

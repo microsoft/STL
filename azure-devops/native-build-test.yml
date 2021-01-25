@@ -47,5 +47,6 @@ jobs:
       hostArch: ${{ parameters.vsDevCmdArch }}
   - template: run-tests.yml
     parameters:
-      targetArch: ${{ parameters.vsDevCmdArch }}
       hostArch: ${{ parameters.vsDevCmdArch }}
+      targetPlatform: ${{ parameters.targetPlatform }}
+      targetArch: ${{ parameters.vsDevCmdArch }}
