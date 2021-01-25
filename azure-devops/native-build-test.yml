@@ -9,48 +9,34 @@ parameters:
   type: string
 - name: vsDevCmdArch
   type: string
-# numShards and the shards object must be kept in sync
 - name: numShards
   type: number
   default: 8
-- name: shards
-  type: object
-  default:
-  - 1
-  - 2
-  - 3
-  - 4
-  - 5
-  - 6
-  - 7
-  - 8
 jobs:
-- ${{ each shard in parameters.shards }}:
-  - job: '${{ parameters.targetPlatform }}_${{ shard }}'
-    timeoutInMinutes: 360
-  steps:
-    - script: |
-        if exist "$(${{ parameters.tmpDirVar }})" (rmdir /S /Q $(${{ parameters.tmpDirVar }}))
-        mkdir $(${{ parameters.tmpDirVar }})
-      displayName: 'Setup TMP Directory'
+- job: '${{ parameters.targetPlatform }}'
+  strategy:
+    parallel: ${{ parameters.numShards }}
+  timeoutInMinutes: 360
+steps:
+- script: |
+    if exist "$(${{ parameters.tmpDirVar }})" (rmdir /S /Q $(${{ parameters.tmpDirVar }}))
+    mkdir $(${{ parameters.tmpDirVar }})
+  displayName: 'Setup TMP Directory'
 
-    - checkout: self
-      clean: true
-      submodules: false
+- checkout: self
+  clean: true
+  submodules: false
 
-    - template: azure-devops/checkout-sources.yml
-    - template: azure-devops/vcpkg-dependencies.yml
-      parameters:
-        targetPlatform: ${{ parameters.targetPlatform }}
-    - template: azure-devops/cmake-configure-build.yml
-      parameters:
-        targetPlatform: ${{ parameters.targetPlatform }}
-        targetArch: ${{ parameters.vsDevCmdArch }}
-        hostArch: ${{ parameters.vsDevCmdArch }}
-        shardNum: ${{ shard }}
-        numShards: ${{ parameters.numShards }}
-    - template: azure-devops/run-tests.yml
-      parameters:
-        targetArch: ${{ parameters.vsDevCmdArch }}
-        hostArch: ${{ parameters.vsDevCmdArch }}
-        shardNum: ${{ shard }}
+- template: azure-devops/checkout-sources.yml
+- template: azure-devops/vcpkg-dependencies.yml
+  parameters:
+    targetPlatform: ${{ parameters.targetPlatform }}
+- template: azure-devops/cmake-configure-build.yml
+  parameters:
+    targetPlatform: ${{ parameters.targetPlatform }}
+    targetArch: ${{ parameters.vsDevCmdArch }}
+    hostArch: ${{ parameters.vsDevCmdArch }}
+- template: azure-devops/run-tests.yml
+  parameters:
+    targetArch: ${{ parameters.vsDevCmdArch }}
+    hostArch: ${{ parameters.vsDevCmdArch }}

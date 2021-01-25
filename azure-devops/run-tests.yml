@@ -8,8 +8,6 @@ parameters:
 - name: buildOutputLocationVar
   type: string
   default: buildOutputLocation
-- name: shardNum
-  type: number
 - name: targetPlatform
   type: string
 - name: hostArch
@@ -39,4 +37,4 @@ steps:
     searchFolder: $(${{ parameters.buildOutputLocationVar }})
     testResultsFormat: JUnit
     testResultsFiles: '**/test-results.xml'
-    testRunTitle: 'test-${{ parameters.targetPlatform }}-${{ parameters.shardNum }}'
+    testRunTitle: 'test-${{ parameters.targetPlatform }}-$(System.JobPositionInPhase)'

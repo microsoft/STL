@@ -17,10 +17,6 @@ parameters:
   default: tmpDir
 - name: targetPlatform
   type: string
-- name: shardNum
-  type: number
-- name: numShards
-  type: number
 - name: additionalLitFlags
   type: string
   default: ''
@@ -28,7 +24,7 @@ variables:
   fixedFlags: '--timeout=240;--shuffle'
   parallelismFlag: '-j$(testParallelism)'
   xmlOutputFlag: '--xunit-xml-output=$(${{ parameters.buildOutputLocationVar }})/test-results.xml'
-  shardFlags: '--num-shards=${{ parameters.numShards }};--run-shard=${{ parameters.shardNum }}'
+  shardFlags: '--num-shards=$(System.TotalJobsInPhase);--run-shard=$(System.JobPositionInPhase)'
   litFlags: '$(fixedFlags);$(parallelismFlag);$(xmlOutputFlag);$(shardFlags)${{ additionalLitFlags }}'
 steps:
   - task: PowerShell@2
