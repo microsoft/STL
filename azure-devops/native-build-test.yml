@@ -27,16 +27,16 @@ jobs:
     clean: true
     submodules: false
   
-  - template: azure-devops/checkout-sources.yml
-  - template: azure-devops/vcpkg-dependencies.yml
+  - template: checkout-sources.yml
+  - template: vcpkg-dependencies.yml
     parameters:
       targetPlatform: ${{ parameters.targetPlatform }}
-  - template: azure-devops/cmake-configure-build.yml
+  - template: cmake-configure-build.yml
     parameters:
       targetPlatform: ${{ parameters.targetPlatform }}
       targetArch: ${{ parameters.vsDevCmdArch }}
       hostArch: ${{ parameters.vsDevCmdArch }}
-  - template: azure-devops/run-tests.yml
+  - template: run-tests.yml
     parameters:
       targetArch: ${{ parameters.vsDevCmdArch }}
       hostArch: ${{ parameters.vsDevCmdArch }}
