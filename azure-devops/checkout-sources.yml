@@ -14,13 +14,13 @@ steps:
   timeoutInMinutes: 1
   inputs:
     targetType: inline
-  script: |
-    cd $(Build.SourcesDirectory)
-    $regexSubmoduleSHA = '^[ \-+]([0-9a-f]+) .*$'
-    $llvmSHA = git submodule status --cached llvm-project | %{$_ -replace $regexSubmoduleSHA, '$1'}
-    Write-Host "##vso[task.setvariable variable=${{ parameters.llvmSHAVar }};]$llvmSHA"
-    $vcpkgSHA = git submodule status --cached vcpkg | %{$_ -replace $regexSubmoduleSHA, '$1'}
-    Write-Host "##vso[task.setvariable variable=${{ parameters.vcpkgSHAVar }};]$vcpkgSHA"
+    script: |
+      cd $(Build.SourcesDirectory)
+      $regexSubmoduleSHA = '^[ \-+]([0-9a-f]+) .*$'
+      $llvmSHA = git submodule status --cached llvm-project | %{$_ -replace $regexSubmoduleSHA, '$1'}
+      Write-Host "##vso[task.setvariable variable=${{ parameters.llvmSHAVar }};]$llvmSHA"
+      $vcpkgSHA = git submodule status --cached vcpkg | %{$_ -replace $regexSubmoduleSHA, '$1'}
+      Write-Host "##vso[task.setvariable variable=${{ parameters.vcpkgSHAVar }};]$vcpkgSHA"
 - script: |
     cd $(Build.SourcesDirectory)
     if not exist "llvm-project" (mkdir llvm-project)
