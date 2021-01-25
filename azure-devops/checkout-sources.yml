@@ -14,7 +14,7 @@ steps:
   timeoutInMinutes: 1
   inputs:
     targetType: inline
-- script: |
+  script: |
     cd $(Build.SourcesDirectory)
     $regexSubmoduleSHA = '^[ \-+]([0-9a-f]+) .*$'
     $llvmSHA = git submodule status --cached llvm-project | %{$_ -replace $regexSubmoduleSHA, '$1'}
@@ -32,7 +32,7 @@ steps:
     git reset --quiet $(${{ parameters.llvmSHAVar }})
     git sparse-checkout init --cone
     git sparse-checkout set libcxx/test libcxx/utils/libcxx llvm/utils/lit
-    displayName: "Checkout LLVM source"
+  displayName: "Checkout LLVM source"
 - script: |
     cd $(Build.SourcesDirectory)
     if not exist "vcpkg" (mkdir vcpkg)
@@ -42,4 +42,4 @@ steps:
     git config --local extensions.partialClone vcpkg
     git fetch --filter=tree:0 --depth=1 vcpkg $(${{ parameters.vcpkgSHAVar }})
     git checkout $(${{ parameters.vcpkgSHAVar }})
-    displayName: "Checkout vcpkg source"
+  displayName: "Checkout vcpkg source"
