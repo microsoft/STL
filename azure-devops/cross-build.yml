@@ -21,7 +21,7 @@ parameters:
 jobs:
 - job: 'build_${{ parameters.targetPlatform }}'
   variables:
-    fixedFlags: '--timeout=240;--shuffle;-DTESTS_BUILD_ONLY=TRUE'
+    fixedFlags: '--timeout=240;--shuffle'
     parallelismFlag: '-j$(testParallelism)'
     xmlOutputFlag: '--xunit-xml-output=$(${{ parameters.buildOutputLocationVar }})/test-results.xml'
     shardFlags: '--num-shards=$(System.TotalJobsInPhase);--run-shard=$(System.JobPositionInPhase)'
@@ -46,8 +46,9 @@ jobs:
   - template: cmake-configure-build.yml
     parameters:
       targetPlatform: ${{ parameters.targetPlatform }}
-      hostArch: amd64
+      hostArch: ${{ parameters.hostArch }}
       targetArch: ${{ parameters.vsDevCmdArch }}
+      cmakeAdditionalFlags: '-DTESTS_BUILD_ONLY=ON'
   - template: run-tests.yml
     parameters:
       hostArch: ${{ parameters.hostArch }}

@@ -17,6 +17,9 @@ parameters:
 - name: buildOutputLocationVar
   type: string
   default: buildOutputLocation
+- name: cmakeAdditionalFlags
+  type: string
+  default: ''
 steps:
 - task: PowerShell@2
   displayName: 'Get Test Parallelism'
@@ -32,7 +35,7 @@ steps:
     )
     call "%PROGRAMFILES(X86)%\Microsoft Visual Studio\2019\Preview\Common7\Tools\VsDevCmd.bat" ^
     -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
-    cmake -G Ninja ^
+    cmake ${{ parameters.cmakeAdditionalFlags}} -G Ninja ^
     -DCMAKE_TOOLCHAIN_FILE=$(${{ parameters.vcpkgLocationVar }})\scripts\buildsystems\vcpkg.cmake ^
     -DVCPKG_TARGET_TRIPLET=${{ parameters.targetPlatform }}-windows ^
     -DCMAKE_CXX_COMPILER=cl ^
