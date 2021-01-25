@@ -35,7 +35,7 @@ jobs:
   - checkout: self
     clean: true
     submodules: false
-  
+
   - template: checkout-sources.yml
   - template: vcpkg-dependencies.yml
     parameters:
