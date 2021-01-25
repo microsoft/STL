@@ -28,13 +28,13 @@ steps:
     cd $(Build.SourcesDirectory)
     if not exist "llvm-project" (
       mkdir llvm-project
-      git init llvm-project
       cd llvm-project
+      git init
       git remote add llvm https://github.com/llvm/llvm-project
       git config --local extensions.partialClone llvm
-    ) else (
-      cd llvm-project
+      cd ..
     )
+    cd llvm-project
     git fetch --filter=tree:0 --depth=1 llvm $(${{ parameters.llvmSHAVar }})
     git reset --quiet $(${{ parameters.llvmSHAVar }})
     git sparse-checkout init --cone
@@ -44,13 +44,13 @@ steps:
     cd $(Build.SourcesDirectory)
     if not exist "vcpkg" (
       mkdir vcpkg
-      git init vcpkg
       cd vcpkg
+      git init
       git remote add vcpkg https://github.com/Microsoft/vcpkg
       git config --local extensions.partialClone vcpkg
-    ) else (
-      cd vcpkg
+      cd ..
     )
+    cd vcpkg
     git fetch --filter=tree:0 --depth=1 vcpkg $(${{ parameters.vcpkgSHAVar }})
     git checkout $(${{ parameters.vcpkgSHAVar }})
   displayName: "Checkout vcpkg source"
