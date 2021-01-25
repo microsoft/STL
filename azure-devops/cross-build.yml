@@ -12,11 +12,20 @@ parameters:
   type: string
 - name: vsDevCmdArch
   type: string
+- name: buildOutputLocationVar
+  type: string
+  default: buildOutputLocation
 - name: numShards
   type: number
   default: 8
 jobs:
 - job: '$build_{{ parameters.targetPlatform }}'
+  variables:
+    fixedFlags: '--timeout=240;--shuffle;-DTEST_BUILD_ONLY=TRUE'
+    parallelismFlag: '-j$(testParallelism)'
+    xmlOutputFlag: '--xunit-xml-output=$(${{ parameters.buildOutputLocationVar }})/test-results.xml'
+    shardFlags: '--num-shards=$(System.TotalJobsInPhase);--run-shard=$(System.JobPositionInPhase)'
+    litFlags: '$(fixedFlags);$(parallelismFlag);$(xmlOutputFlag);$(shardFlags)'
   strategy:
     parallel: ${{ parameters.numShards }}
   timeoutInMinutes: 360
@@ -39,7 +48,6 @@ jobs:
       targetPlatform: ${{ parameters.targetPlatform }}
       hostArch: amd64
       targetArch: ${{ parameters.vsDevCmdArch }}
-      additionalLitFlags: ';-DTEST_BUILD_ONLY=TRUE'
   - template: run-tests.yml
     parameters:
       targetArch: ${{ parameters.vsDevCmdArch }}

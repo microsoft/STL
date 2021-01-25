@@ -9,24 +9,12 @@ parameters:
 - name: vcpkgLocationVar
   type: string
   default: vcpkgLocation
-- name: buildOutputLocationVar
-  type: string
-  default: buildOutputLocation
 - name: tmpDirVar
   type: string
   default: tmpDir
 - name: targetPlatform
   type: string
-- name: additionalLitFlags
-  type: string
-  default: ''
 steps:
-  variables:
-    fixedFlags: '--timeout=240;--shuffle'
-    parallelismFlag: '-j$(testParallelism)'
-    xmlOutputFlag: '--xunit-xml-output=$(${{ parameters.buildOutputLocationVar }})/test-results.xml'
-    shardFlags: '--num-shards=$(System.TotalJobsInPhase);--run-shard=$(System.JobPositionInPhase)'
-    litFlags: '$(fixedFlags);$(parallelismFlag);$(xmlOutputFlag);$(shardFlags)${{ additionalLitFlags }}'
 - task: PowerShell@2
   displayName: 'Get Test Parallelism'
   timeoutInMinutes: 1
