@@ -26,6 +26,7 @@ steps:
       Write-Host "##vso[task.setvariable variable=${{ parameters.vcpkgSHAVar }};]$vcpkgSHA"
 - script: |
     cd $(Build.SourcesDirectory)
+    dir
     if not exist "llvm-project" (
       mkdir llvm-project
       cd llvm-project
@@ -35,6 +36,7 @@ steps:
       cd ..
     )
     cd llvm-project
+    dir
     git fetch --filter=tree:0 --depth=1 llvm $(${{ parameters.llvmSHAVar }})
     git reset --quiet $(${{ parameters.llvmSHAVar }})
     git sparse-checkout init --cone
@@ -42,6 +44,7 @@ steps:
   displayName: "Checkout LLVM source"
 - script: |
     cd $(Build.SourcesDirectory)
+    dir
     if not exist "vcpkg" (
       mkdir vcpkg
       cd vcpkg
@@ -51,6 +54,7 @@ steps:
       cd ..
     )
     cd vcpkg
+    dir
     git fetch --filter=tree:0 --depth=1 vcpkg $(${{ parameters.vcpkgSHAVar }})
     git checkout $(${{ parameters.vcpkgSHAVar }})
   displayName: "Checkout vcpkg source"
