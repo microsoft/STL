@@ -21,7 +21,7 @@ parameters:
 jobs:
 - job: 'build_${{ parameters.targetPlatform }}'
   variables:
-    fixedFlags: '--timeout=240;--shuffle;-DTEST_BUILD_ONLY=TRUE'
+    fixedFlags: '--timeout=240;--shuffle;-DTESTS_BUILD_ONLY=TRUE'
     parallelismFlag: '-j$(testParallelism)'
     xmlOutputFlag: '--xunit-xml-output=$(${{ parameters.buildOutputLocationVar }})/test-results.xml'
     shardFlags: '--num-shards=$(System.TotalJobsInPhase);--run-shard=$(System.JobPositionInPhase)'
