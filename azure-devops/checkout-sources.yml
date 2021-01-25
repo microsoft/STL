@@ -30,7 +30,7 @@ steps:
       mkdir llvm-project
       cd llvm-project
       git init
-      git remote add llvm https://github.com/llvm/llvm-project
+      git remote add llvm https://github.com/llvm/llvm-project.git
       git config --local extensions.partialClone llvm
       cd ..
     )
@@ -46,7 +46,7 @@ steps:
       mkdir vcpkg
       cd vcpkg
       git init
-      git remote add vcpkg https://github.com/Microsoft/vcpkg
+      git remote add vcpkg https://github.com/Microsoft/vcpkg.git
       git config --local extensions.partialClone vcpkg
       cd ..
     )
