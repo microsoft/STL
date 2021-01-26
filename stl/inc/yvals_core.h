@@ -145,7 +145,7 @@
 // P0457R2 starts_with()/ends_with() For basic_string/basic_string_view
 // P0458R2 contains() For Ordered And Unordered Associative Containers
 // P0463R1 endian
-// P0466R5 Layout-compatibility and Pointer-interconvertibility Traits
+// P0466R5 Layout-Compatibility And Pointer-Interconvertibility Traits
 // P0476R2 <bit> bit_cast
 // P0482R6 Library Support For char8_t
 //     (mbrtoc8 and c8rtomb not yet implemented)
@@ -1210,7 +1210,7 @@
 #define __cpp_lib_is_constant_evaluated        201811L
 
 #ifndef __EDG__ // TRANSITION, VSO-1268984
-#ifndef __clang__ // TRANSITION, LLVM-Bug #: To Be Filed
+#ifndef __clang__ // TRANSITION, LLVM-48860
 #define __cpp_lib_is_layout_compatible 201907L
 #endif // __clang__
 #endif // __EDG__
@@ -1218,7 +1218,7 @@
 #define __cpp_lib_is_nothrow_convertible 201806L
 
 #ifndef __EDG__ // TRANSITION, VSO-1268984
-#ifndef __clang__ // TRANSITION, LLVM-Bug #: To Be Filed
+#ifndef __clang__ // TRANSITION, LLVM-48860
 #define __cpp_lib_is_pointer_interconvertible 201907L
 #endif // __clang__
 #endif // __EDG__

@@ -7,10 +7,15 @@ using namespace std;
 
 #define ASSERT(...) assert((__VA_ARGS__))
 
+struct S { // struct with static type, so declaring global
+    static int s1;
+    int v1;
+    int v2;
+};
 
 constexpr bool test() {
 #ifndef __EDG__ // TRANSITION, VSO-1268984
-#ifndef __clang__ // TRANSITION, LLVM-Bug #: To Be Filed
+#ifndef __clang__ // TRANSITION, LLVM-48860
     // is_layout_compatible tests
     {
         struct S0 {
@@ -55,21 +60,34 @@ constexpr bool test() {
         enum class E5 { zero, fortytwo = 42 };
 
         ASSERT(is_layout_compatible_v<int, int>);
+        ASSERT(is_layout_compatible_v<const void, void>);
+        ASSERT(is_layout_compatible_v<S1, volatile S2>);
+        ASSERT(is_layout_compatible_v<S1, S2>);
+        ASSERT(is_layout_compatible_v<S4, S4>);
+        ASSERT(is_layout_compatible_v<const volatile S4, S4>);
         ASSERT(is_layout_compatible_v<E1, E2>);
         ASSERT(is_layout_compatible_v<E3, E4>);
         ASSERT(is_layout_compatible_v<E5, E1>);
         ASSERT(is_layout_compatible_v<const E1, E2>);
         ASSERT(is_layout_compatible_v<volatile E3, const E4>);
-        ASSERT(is_layout_compatible_v<S1, volatile S2>);
-        ASSERT(is_layout_compatible_v<S1, S2>);
-        ASSERT(is_layout_compatible_v<S4, S4>);
-        ASSERT(is_layout_compatible_v<const volatile S4, S4>);
+        ASSERT(is_layout_compatible_v<int[], int[]>);
+        ASSERT(is_layout_compatible_v<int[3], int[3]>);
+
+        // TRANSITION, VSO-1269781
+        // ASSERT(is_layout_compatible_v<const int[], int[]>);
+        // ASSERT(is_layout_compatible_v<const int[3], int[3]>);
+        // ASSERT(is_layout_compatible_v<int[], volatile int[]>);
 
         ASSERT(!is_layout_compatible_v<int, char>);
-        ASSERT(!is_layout_compatible_v<E1, E3>);
-        ASSERT(!is_layout_compatible_v<E2, E4>);
+        ASSERT(!is_layout_compatible_v<int, void>);
+        ASSERT(!is_layout_compatible_v<S1, void>);
         ASSERT(!is_layout_compatible_v<S1, S3>);
         ASSERT(!is_layout_compatible_v<S4, S5>);
+        ASSERT(!is_layout_compatible_v<E1, void>);
+        ASSERT(!is_layout_compatible_v<E1, E3>);
+        ASSERT(!is_layout_compatible_v<E2, E4>);
+        ASSERT(!is_layout_compatible_v<int[], int[2]>);
+        ASSERT(!is_layout_compatible_v<int[3], int[1]>);
     }
 
     // is_pointer_interconvertible_base_of tests
@@ -79,17 +97,22 @@ constexpr bool test() {
         class C : public A {
             int : 0;
         };
+        class D : public C {};
 // Disable warning C4408: anonymous union did not declare any data members
 #pragma warning(push)
 #pragma warning(disable : 4408)
-        class D : public A {
+        class E : public A {
             union {};
         };
 #pragma warning(pop)
-        class A1 : public A {};
-        class A2 : public A {};
-        class A3 : public A2 {};
-        class A4 : public A1, public A3 {};
+        class F : private A {}; // Non-public inheritance
+        class NS : public B, public C {}; // Non-standard
+        class I; // Incomplete
+
+        union U {
+            int i;
+            char c;
+        };
 
         ASSERT(is_pointer_interconvertible_base_of_v<A, A>);
         ASSERT(is_pointer_interconvertible_base_of_v<A, B>);
@@ -98,14 +121,21 @@ constexpr bool test() {
         ASSERT(is_pointer_interconvertible_base_of_v<A, volatile C>);
         ASSERT(is_pointer_interconvertible_base_of_v<volatile A, const C>);
         ASSERT(is_pointer_interconvertible_base_of_v<A, D>);
-        ASSERT(is_pointer_interconvertible_base_of_v<A, A1>);
-        ASSERT(is_pointer_interconvertible_base_of_v<A, A2>);
-        ASSERT(is_pointer_interconvertible_base_of_v<A, A3>);
-        ASSERT(is_pointer_interconvertible_base_of_v<A2, A3>);
+        ASSERT(is_pointer_interconvertible_base_of_v<A, E>);
+        ASSERT(is_pointer_interconvertible_base_of_v<A, F>);
+        ASSERT(is_pointer_interconvertible_base_of_v<C, D>);
+        ASSERT(is_pointer_interconvertible_base_of_v<I, I>);
+        ASSERT(is_pointer_interconvertible_base_of_v<const I, I>);
 
-        ASSERT(!is_pointer_interconvertible_base_of_v<A1, A2>);
-        ASSERT(!is_pointer_interconvertible_base_of_v<A4, A>);
+        ASSERT(!is_pointer_interconvertible_base_of_v<int, int>);
+        ASSERT(!is_pointer_interconvertible_base_of_v<void, void>);
+        ASSERT(!is_pointer_interconvertible_base_of_v<A, int>);
         ASSERT(!is_pointer_interconvertible_base_of_v<B, C>);
+        ASSERT(!is_pointer_interconvertible_base_of_v<A, NS>);
+        ASSERT(!is_pointer_interconvertible_base_of_v<B, NS>);
+        ASSERT(!is_pointer_interconvertible_base_of_v<int, I>);
+        ASSERT(!is_pointer_interconvertible_base_of_v<U, U>);
+        ASSERT(!is_pointer_interconvertible_base_of_v<U, I>);
     }
 
     // is_corresponding_member tests
@@ -116,8 +146,8 @@ constexpr bool test() {
         };
 
         struct S2 {
-            int v1;
-            int v2;
+            int w1;
+            int w2;
         };
 
         struct S3 {
@@ -144,19 +174,28 @@ constexpr bool test() {
             double v3;
         };
 
+        struct S7 {
+            int f1() {
+                return 0;
+            }
+        };
+
+        struct NS : S1, S2 {}; // Non-standard
+
+        ASSERT(is_corresponding_member(&S1::v1, &S::v1));
+        ASSERT(is_corresponding_member(&S1::v2, &S::v2));
         ASSERT(is_corresponding_member(&S1::v1, &S1::v1));
         ASSERT(is_corresponding_member(&S1::v2, &S1::v2));
-        ASSERT(!is_corresponding_member(&S1::v1, &S1::v2));
-        ASSERT(!is_corresponding_member(&S1::v2, &S1::v1));
-        ASSERT(is_corresponding_member(&S1::v1, &S2::v1));
-        ASSERT(is_corresponding_member(&S1::v2, &S2::v2));
+        ASSERT(is_corresponding_member(&S1::v1, &S2::w1));
+        ASSERT(is_corresponding_member(&S1::v2, &S2::w2));
         ASSERT(is_corresponding_member(&S1::v1, &S3::v1));
         ASSERT(is_corresponding_member(&S1::v2, &S3::v2));
         ASSERT(is_corresponding_member(&S5::v1, &S6::v1));
         ASSERT(is_corresponding_member(&S5::v2, &S6::v2));
 
-        ASSERT(!is_corresponding_member(&S1::v1, &S2::v2));
-        ASSERT(!is_corresponding_member(&S1::v2, &S2::v1));
+        ASSERT(!is_corresponding_member(&S1::v1, &S1::v2));
+        ASSERT(!is_corresponding_member(&S1::v2, &S1::v1));
+        ASSERT(!is_corresponding_member(&S1::v2, &S2::w1));
         ASSERT(!is_corresponding_member(&S1::v1, &S4::v1));
         ASSERT(!is_corresponding_member(&S1::v2, &S4::v2));
         ASSERT(!is_corresponding_member(&S3::v1, &S4::v1));
@@ -164,6 +203,10 @@ constexpr bool test() {
         ASSERT(!is_corresponding_member(&S5::v1, &S6::v2));
         ASSERT(!is_corresponding_member(&S5::v2, &S6::v1));
         ASSERT(!is_corresponding_member(&S5::v3, &S6::v3));
+        ASSERT(!is_corresponding_member<NS, NS>(&NS::v1, &NS::w1));
+        ASSERT(!is_corresponding_member(&S7::f1, &S7::f1));
+        ASSERT(!is_corresponding_member<S1, S2, int, int>(nullptr, nullptr));
+        ASSERT(!is_corresponding_member<S1, S2, int, int>(&S1::v1, nullptr));
     }
 
     // is_pointer_interconvertible_with_class tests
@@ -176,18 +219,28 @@ constexpr bool test() {
             int b;
         };
 
-        struct C : A, B {};
+        struct C {
+            int f1() {
+                return 0;
+            }
+        };
+
+        struct NS : A, B {}; // Non-standard
 
         union U {
             int v1;
             char v2;
         };
 
-        ASSERT(is_pointer_interconvertible_with_class(&C::b));
-        ASSERT(!is_pointer_interconvertible_with_class<C>(&C::b));
-
+        ASSERT(is_pointer_interconvertible_with_class(&A::a));
+        ASSERT(is_pointer_interconvertible_with_class(&NS::b));
         ASSERT(is_pointer_interconvertible_with_class(&U::v1));
         ASSERT(is_pointer_interconvertible_with_class(&U::v2));
+
+        ASSERT(!is_pointer_interconvertible_with_class<NS>(&NS::a));
+        ASSERT(!is_pointer_interconvertible_with_class<NS>(&NS::b));
+        ASSERT(!is_pointer_interconvertible_with_class(&C::f1));
+        ASSERT(!is_pointer_interconvertible_with_class<A, int>(nullptr));
     }
 #endif // __clang__
 #endif // __EDG__

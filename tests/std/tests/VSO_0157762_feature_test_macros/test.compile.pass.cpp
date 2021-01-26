@@ -852,7 +852,7 @@ STATIC_ASSERT(__cpp_lib_is_invocable == 201703L);
 
 #if _HAS_CXX20
 #ifndef __EDG__ // TRANSITION, VSO-1268984
-#ifndef __clang__ // TRANSITION, LLVM-Bug #: To Be Filed
+#ifndef __clang__ // TRANSITION, LLVM-48860
 #ifndef __cpp_lib_is_layout_compatible
 #error __cpp_lib_is_layout_compatible is not defined
 #elif __cpp_lib_is_layout_compatible != 201907L
@@ -892,7 +892,7 @@ STATIC_ASSERT(__cpp_lib_is_null_pointer == 201309L);
 
 #if _HAS_CXX20
 #ifndef __EDG__ // TRANSITION, VSO-1268984
-#ifndef __clang__ // TRANSITION, LLVM-Bug #: To Be Filed
+#ifndef __clang__ // TRANSITION, LLVM-48860
 #ifndef __cpp_lib_is_pointer_interconvertible
 #error __cpp_lib_is_pointer_interconvertible is not defined
 #elif __cpp_lib_is_pointer_interconvertible != 201907L
