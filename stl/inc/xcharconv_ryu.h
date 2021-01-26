@@ -43,6 +43,7 @@
 #include <utility>
 #include <xcharconv.h>
 #include <xcharconv_ryu_tables.h>
+#include <xutility>
 
 #ifdef _M_X64
 #include <intrin0.h> // for _umul128() and __shiftright128()
@@ -391,7 +392,7 @@ _NODISCARD inline uint32_t __mulShift_mod1e9(const uint64_t __m, const uint64_t*
 #endif // ^^^ intrinsics unavailable ^^^
 }
 
-#define _WIDEN(_TYPE, _CHAR) (is_same_v<_TYPE,char> ? _CHAR : L##_CHAR)
+#define _WIDEN(_TYPE, _CHAR) _STD get<_TYPE>(_STD make_pair(_CHAR, L##_CHAR))
 
 template <class _CharT>
 void _Copy_digits_from_table(_CharT* _Dst, uint32_t _Offset)
@@ -462,17 +463,6 @@ inline void __append_d_digits(const uint32_t __olength, uint32_t __digits, char*
 }
 
 template <class _CharT>
-inline void _Fill_string_zero(_CharT* _Dst, size_t _Size) {
-    if constexpr (is_same_v<_CharT, char>) {
-        memset(_Dst, '0', _Size);
-    } else {
-        for (; 0 < _Size; --_Size, (void) ++_Dst) {
-            *_Dst = _WIDEN(_CharT, '0');
-        }
-    }
-}
-
-template <class _CharT>
 inline void __append_c_digits(const uint32_t __count, uint32_t __digits, _CharT* const __result) {
   uint32_t __i = 0;
   for (; __i < __count - 1; __i += 2) {
@@ -489,7 +479,7 @@ inline void __append_c_digits(const uint32_t __count, uint32_t __digits, _CharT*
 template <class _CharT>
 inline void __append_nine_digits(uint32_t __digits, _CharT* const __result) {
   if (__digits == 0) {
-    _Fill_string_zero(__result, 9);
+    _STD fill_n(__result, 9, _WIDEN(_CharT, '0'));
     return;
   }
 
@@ -541,7 +531,7 @@ _NODISCARD pair<_CharT*, errc> __d2fixed_buffered_n(_CharT* _First, _CharT* cons
     *_First++ = _WIDEN(_CharT, '0');
     if (__precision > 0) {
       *_First++ = _WIDEN(_CharT, '.');
-      _Fill_string_zero(_First, __precision);
+      _STD fill_n(_First, __precision, _WIDEN(_CharT, '0'));
       _First += __precision;
     }
     return { _First, errc{} };
@@ -612,14 +602,14 @@ _NODISCARD pair<_CharT*, errc> __d2fixed_buffered_n(_CharT* _First, _CharT* cons
       if (_Last - _First < static_cast<ptrdiff_t>(__precision)) {
         return { _Last, errc::value_too_large };
       }
-      _Fill_string_zero(_First, __precision);
+      _STD fill_n(_First, __precision, _WIDEN(_CharT, '0'));
       _First += __precision;
     } else if (__i < __MIN_BLOCK_2[__idx]) {
       __i = __MIN_BLOCK_2[__idx];
       if (_Last - _First < static_cast<ptrdiff_t>(9 * __i)) {
         return { _Last, errc::value_too_large };
       }
-      _Fill_string_zero(_First, 9 * __i);
+      _STD fill_n(_First, 9 * __i, _WIDEN(_CharT, '0'));
       _First += 9 * __i;
     }
     for (; __i < __blocks; ++__i) {
@@ -632,7 +622,7 @@ _NODISCARD pair<_CharT*, errc> __d2fixed_buffered_n(_CharT* _First, _CharT* cons
         if (_Last - _First < static_cast<ptrdiff_t>(__fill)) {
           return { _Last, errc::value_too_large };
         }
-        _Fill_string_zero(_First, __fill);
+        _STD fill_n(_First, __fill, _WIDEN(_CharT, '0'));
         _First += __fill;
         break;
       }
@@ -706,7 +696,7 @@ _NODISCARD pair<_CharT*, errc> __d2fixed_buffered_n(_CharT* _First, _CharT* cons
     if (_Last - _First < static_cast<ptrdiff_t>(__precision)) {
       return { _Last, errc::value_too_large };
     }
-    _Fill_string_zero(_First, __precision);
+    _STD fill_n(_First, __precision, _WIDEN(_CharT, '0'));
     _First += __precision;
   }
   return { _First, errc{} };
@@ -1492,7 +1482,7 @@ _NODISCARD pair<_CharT*, errc> __to_chars(_CharT* const _First, _CharT* const _L
 
     if (_Ryu_exponent > 0) { // case "172900" with _Can_use_ryu
       // Performance note: it might be more efficient to do this immediately after setting _Mid.
-      _Fill_string_zero(_First + __olength, static_cast<size_t>(_Ryu_exponent));
+      _STD fill_n(_First + __olength, _Ryu_exponent, _WIDEN(_CharT, '0'));
     } else if (_Ryu_exponent == 0) { // case "1729"
       // Done!
     } else if (_Whole_digits > 0) { // case "17.29"
@@ -1503,7 +1493,7 @@ _NODISCARD pair<_CharT*, errc> __to_chars(_CharT* const _First, _CharT* const _L
       // Performance note: a larger memset() followed by overwriting '.' might be more efficient.
       _First[0] = _WIDEN(_CharT, '0');
       _First[1] = _WIDEN(_CharT, '.');
-      _Fill_string_zero(_First + 2, static_cast<size_t>(-_Whole_digits));
+      _STD fill_n(_First + 2, -_Whole_digits, _WIDEN(_CharT, '0'));
     }
 
     return { _First + _Total_fixed_length, errc{} };
@@ -2136,7 +2126,7 @@ _NODISCARD pair<_CharT*, errc> __to_chars(_CharT* const _First, _CharT* const _L
 
     if (_Ryu_exponent > 0) { // case "172900" with _Can_use_ryu
       // Performance note: it might be more efficient to do this immediately after setting _Mid.
-      _Fill_string_zero(_First + __olength, static_cast<size_t>(_Ryu_exponent));
+      _STD fill_n(_First + __olength, _Ryu_exponent, _WIDEN(_CharT, '0'));
     } else if (_Ryu_exponent == 0) { // case "1729"
       // Done!
     } else if (_Whole_digits > 0) { // case "17.29"
@@ -2147,7 +2137,7 @@ _NODISCARD pair<_CharT*, errc> __to_chars(_CharT* const _First, _CharT* const _L
       // Performance note: a larger memset() followed by overwriting '.' might be more efficient.
       _First[0] = _WIDEN(_CharT, '0');
       _First[1] = _WIDEN(_CharT, '.');
-      _Fill_string_zero(_First + 2, static_cast<size_t>(-_Whole_digits));
+      _STD fill_n(_First + 2, -_Whole_digits, _WIDEN(_CharT, '0'));
     }
 
     return { _First + _Total_fixed_length, errc{} };
