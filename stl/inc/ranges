@@ -2301,9 +2301,7 @@ namespace ranges {
                 _STL_VERIFY(_Outer != _RANGES end(_Parent->_Range), "cannot dereference end join_view iterator");
                 _STL_VERIFY(_Inner != _RANGES end(_Parent->_Inner), "cannot dereference end join_view iterator");
             }
-#endif // _ITERATOR_DEBUG_LEVEL != 0
 
-#if _ITERATOR_DEBUG_LEVEL != 0
             constexpr void _Same_range(const _Iterator& _Right) const noexcept {
                 _STL_VERIFY(_Parent == _Right._Parent, "cannot compare incompatible join_view iterators");
             }
@@ -2345,9 +2343,11 @@ namespace ranges {
                 return *_Inner;
             }
 
+            // clang-format off
             _NODISCARD constexpr _InnerIter operator->() const // Per resolution of LWG-3500
                 noexcept(is_nothrow_copy_constructible_v<_InnerIter>) /* strengthened */
-                requires _Has_arrow<_InnerIter>&& copyable<_InnerIter> {
+                requires _Has_arrow<_InnerIter> && copyable<_InnerIter> {
+                // clang-format on
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _Check_dereference();
 #endif // _ITERATOR_DEBUG_LEVEL != 0
