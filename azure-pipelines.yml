@@ -58,9 +58,10 @@ stages:
               failOnStandardError: true
               arguments: '$(buildOutputLocation)/validate/validate.exe'
             env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
+
   - stage: Build_And_Test_x86
     dependsOn: Code_Format
-    displayName: 'Build and Test x86'
+    displayName: 'Build and Test'
     jobs:
       - template: azure-devops/native-build-test.yml
         parameters:
@@ -69,7 +70,7 @@ stages:
 
   - stage: Build_And_Test_x64
     dependsOn: Code_Format
-    displayName: 'Build and Test x64'
+    displayName: 'Build and Test'
     jobs:
       - template: azure-devops/native-build-test.yml
         parameters:
@@ -78,7 +79,7 @@ stages:
 
   - stage: Build_ARM
     dependsOn: Code_Format
-    displayName: 'Build ARM'
+    displayName: 'Build'
     jobs:
       - template: azure-devops/cross-build.yml
         parameters:
@@ -87,7 +88,7 @@ stages:
 
   - stage: Build_ARM64
     dependsOn: Code_Format
-    displayName: 'Build ARM64'
+    displayName: 'Build'
     jobs:
       - template: azure-devops/cross-build.yml
         parameters:

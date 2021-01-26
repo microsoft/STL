@@ -16,7 +16,7 @@ parameters:
   type: number
   default: 8
 jobs:
-- job: 'build_${{ parameters.targetPlatform }}'
+- job: '${{ parameters.targetPlatform }}'
   variables:
     fixedFlags: '--timeout=240;--shuffle'
     parallelismFlag: '-j$(testParallelism)'
