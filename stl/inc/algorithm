@@ -41,6 +41,9 @@ _STD_BEGIN
 // COMMON SORT PARAMETERS
 _INLINE_VAR constexpr int _ISORT_MAX = 32; // maximum size for insertion sort
 
+template <class _It>
+_INLINE_VAR constexpr auto _Isort_max = _Iter_diff_t<_It>{_ISORT_MAX};
+
 // STRUCT TEMPLATE _Optimistic_temporary_buffer
 template <class _Diff>
 constexpr ptrdiff_t _Temporary_buffer_size(const _Diff _Value) noexcept {
@@ -7316,7 +7319,7 @@ namespace ranges {
             return;
         }
 
-        // Find first element in [_First, _Mid) that is not less than *_Mid
+        // Find first element in [_First, _Mid) that is greater than *_Mid
         while (!_STD invoke(_Pred, _STD invoke(_Proj, *_Mid), _STD invoke(_Proj, *_First))) {
             --_Count1;
             if (++_First == _Mid) {
@@ -7324,24 +7327,17 @@ namespace ranges {
             }
         }
 
-        // Fast early return if there is only one element to be moved
-        if (--_Last == _Mid) {
-            // rotate only element remaining in right partition to the beginning, without allocating
-            _RANGES _Rotate_one_right(_STD move(_First), _STD move(_Mid), _STD move(++_Last));
-            return;
-        }
-        --_Count2;
-
         // Find last element in [_Mid, _Last) that is less than *--_Mid
         const auto _Highest = _RANGES prev(_Mid);
-        while (!_STD invoke(_Pred, _STD invoke(_Proj, *_Last), _STD invoke(_Proj, *_Highest))) {
+        do {
+            // Fast early return if there is only one element to be moved
             if (_Mid == --_Last) {
                 // rotate only element remaining in right partition to the beginning, without allocating
                 _RANGES _Rotate_one_right(_STD move(_First), _STD move(_Mid), _STD move(++_Last));
                 return;
             }
             --_Count2;
-        }
+        } while (!_STD invoke(_Pred, _STD invoke(_Proj, *_Last), _STD invoke(_Proj, *_Highest)));
         ++_Last;
         ++_Count2;
 
@@ -7420,7 +7416,7 @@ namespace ranges {
                 "ranges::inplace_merge requires the range [middle, last) to be sorted");
 #endif //_ITERATOR_DEBUG_LEVEL == 2
 
-            // Find first element in [_First, _Mid) that is not less than *_Mid
+            // Find first element in [_First, _Mid) that is greater than *_Mid
             while (!_STD invoke(_Pred, _STD invoke(_Proj, *_Mid), _STD invoke(_Proj, *_First))) {
                 if (++_First == _Mid) {
                     return;
@@ -7931,16 +7927,16 @@ _OutIt _Merge_move(_InIt _First, const _InIt _Mid, const _InIt _Last, _OutIt _De
 }
 
 template <class _BidIt, class _Ty, class _Pr>
-void _Uninitialized_chunked_merge_unchecked(_BidIt _First, const _BidIt _Last, _Ty* _Dest,
-    const _Iter_diff_t<_BidIt> _Chunk, _Iter_diff_t<_BidIt> _Count, _Pr _Pred) {
-    // move to uninitialized merging adjacent chunks of distance _Chunk
+void _Uninitialized_chunked_merge_unchecked2(
+    _BidIt _First, const _BidIt _Last, _Ty* _Dest, _Iter_diff_t<_BidIt> _Count, _Pr _Pred) {
+    // move to uninitialized merging adjacent chunks of distance _Isort_max<_BidIt>
     // pre: _Count == distance(_First, _Last)
     // pre: _Chunk > 0
     _Uninitialized_backout<_Ty*> _Backout{_Dest};
-    while (_Chunk < _Count) {
-        _Count -= _Chunk;
-        const _BidIt _Mid1 = _STD next(_First, _Chunk);
-        const auto _Chunk2 = (_STD min)(_Chunk, _Count);
+    while (_Count > _Isort_max<_BidIt>) {
+        _Count -= _Isort_max<_BidIt>;
+        const _BidIt _Mid1 = _STD next(_First, _Isort_max<_BidIt>);
+        const auto _Chunk2 = (_STD min)(_Isort_max<_BidIt>, _Count);
         _Count -= _Chunk2;
         const _BidIt _Mid2 = _STD next(_Mid1, _Chunk2);
         _Backout._Last     = _Uninitialized_merge_move(_First, _Mid1, _Mid2, _Backout._Last, _Pred);
@@ -7972,10 +7968,10 @@ void _Chunked_merge_unchecked(_BidIt _First, const _BidIt _Last, _OutIt _Dest, c
 
 template <class _BidIt, class _Pr>
 void _Insertion_sort_isort_max_chunks(_BidIt _First, const _BidIt _Last, _Iter_diff_t<_BidIt> _Count, _Pr _Pred) {
-    // insertion sort every chunk of distance _ISORT_MAX in [_First, _Last)
+    // insertion sort every chunk of distance _Isort_max<_BidIt> in [_First, _Last)
     // pre: _Count == distance(_First, _Last)
-    for (; _ISORT_MAX < _Count; _Count -= _ISORT_MAX) { // sort chunks
-        _First = _Insertion_sort_unchecked(_First, _STD next(_First, _ISORT_MAX), _Pred);
+    for (; _Isort_max<_BidIt> < _Count; _Count -= _Isort_max<_BidIt>) { // sort chunks
+        _First = _Insertion_sort_unchecked(_First, _STD next(_First, _Isort_max<_BidIt>), _Pred);
     }
 
     _Insertion_sort_unchecked(_First, _Last, _Pred); // sort partial last chunk
@@ -7989,14 +7985,14 @@ void _Buffered_merge_sort_unchecked(const _BidIt _First, const _BidIt _Last, con
     // pre: _Count <= capacity of buffer at _Temp_ptr; also allows safe narrowing to ptrdiff_t
     _Insertion_sort_isort_max_chunks(_First, _Last, _Count, _Pred);
     // merge adjacent pairs of chunks to and from temp buffer
-    auto _Chunk = static_cast<_Iter_diff_t<_BidIt>>(_ISORT_MAX);
-    if (_Count <= _Chunk) {
+    if (_Count <= _Isort_max<_BidIt>) {
         return;
     }
 
     // do the first merge, constructing elements in the temporary buffer
-    _Uninitialized_chunked_merge_unchecked(_First, _Last, _Temp_ptr, _Chunk, _Count, _Pred);
+    _Uninitialized_chunked_merge_unchecked2(_First, _Last, _Temp_ptr, _Count, _Pred);
     _Uninitialized_backout<_Iter_value_t<_BidIt>*> _Backout{_Temp_ptr, _Temp_ptr + _Count};
+    auto _Chunk = _Isort_max<_BidIt>;
     for (;;) {
         // unconditionally merge elements back into the source buffer
         _Chunk <<= 1;
@@ -8107,9 +8103,6 @@ namespace ranges {
         }
 
     private:
-        template <random_access_iterator _It>
-        static constexpr auto _Isort_max = static_cast<iter_difference_t<_It>>(_ISORT_MAX);
-
         template <class _It, class _Pr, class _Pj>
         static void _Stable_sort_common(
             _It _First, _It _Last, const iter_difference_t<_It> _Count, _Pr _Pred, _Pj _Proj) {
@@ -8208,7 +8201,7 @@ namespace ranges {
         template <class _It, class _Pr, class _Pj>
         static void _Uninitialized_chunked_merge_common(_It _First, const _It _Last, iter_value_t<_It>* const _Dest,
             iter_difference_t<_It> _Count, _Pr _Pred, _Pj _Proj) {
-            // move to uninitialized merging adjacent chunks of distance _Chunk
+            // move to uninitialized merging adjacent chunks of distance _Isort_max<_It>
             _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(sortable<_It, _Pr, _Pj>);
             _STL_INTERNAL_STATIC_ASSERT(constructible_from<iter_value_t<_It>, iter_rvalue_reference_t<_It>>);
