@@ -2370,17 +2370,14 @@ namespace ranges {
                 }
             }
 
-            constexpr void operator++(int) {
-                ++*this;
-            }
-
-            // clang-format off
-            constexpr decltype(auto) operator++(int)
-                requires _Deref_is_ref && forward_range<_Base>&& forward_range<_SubRng> {
-                // clang-format on
-                auto _Tmp = *this;
-                ++*this;
-                return _Tmp;
+            constexpr auto operator++(int) {
+                if constexpr (_Deref_is_ref && forward_range<_Base> && forward_range<_SubRng>) {
+                    auto _Tmp = *this;
+                    ++*this;
+                    return _Tmp;
+                } else {
+                    ++*this;
+                }
             }
 
             // clang-format off
