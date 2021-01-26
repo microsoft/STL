@@ -2270,8 +2270,8 @@ namespace ranges {
 
             static constexpr bool _Deref_is_ref = is_reference_v<_SubRng>;
 
-            _OuterIter _Outer{};
-            _InnerIter _Inner{};
+            /* [[no_unique_address]] */ _OuterIter _Outer{};
+            /* [[no_unique_address]] */ _InnerIter _Inner{};
             _Parent_t* _Parent{};
 
             constexpr void _Satisfy() {
@@ -2451,7 +2451,7 @@ namespace ranges {
             template <bool _OtherConst>
             using _Maybe_const_iter = iterator_t<_Maybe_const<_OtherConst, _Vw>>;
 
-            sentinel_t<_Base> _Last{};
+            /* [[no_unique_address]] */ sentinel_t<_Base> _Last{};
 
             template <bool _OtherConst>
             _NODISCARD static constexpr const _Maybe_const_iter<_OtherConst>& _Get_current(
