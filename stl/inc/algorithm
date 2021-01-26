@@ -5534,7 +5534,7 @@ template <class _BidIt, class _Pr>
 _BidIt _Stable_partition_unchecked(_BidIt _First, _BidIt _Last, _Pr _Pred) {
     // partition preserving order of equivalents
     for (;;) {
-        if (_First == _Last) { // the input range range is true (already partitioned)
+        if (_First == _Last) { // the input range is true (already partitioned)
             return _First;
         }
 
@@ -5657,9 +5657,10 @@ namespace ranges {
 
             // partition preserving order of equivalents
             for (;;) { // skip in-place elements at front
-                if (_First == _Last) { // the input range range is true (already partitioned)
+                if (_First == _Last) { // the input range is true (already partitioned)
                     return {_STD move(_First), _STD move(_Last)};
                 }
+
                 if (!_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
                     break;
                 }
@@ -7171,12 +7172,12 @@ namespace ranges {
         using _Ty = iter_value_t<_It>;
 
         _Ty* _Left_last = _RANGES _Uninitialized_move_unchecked(_First, _Mid, _Left_first, _Left_first + _Capacity).out;
-        _Uninitialized_backout<_Ty*> _Backout(_Left_first, _Left_last);
+        _Uninitialized_backout<_Ty*> _Backout{_Left_first, _Left_last};
 
-        // we already know, that _Backout._Last - 1 is the highest element so do not compare against it again.
+        // We already know that _Backout._Last - 1 is the highest element, so do not compare against it again.
         --_Left_last;
 
-        // we already know, that _Mid points to the lowest element and that there is more than 1 element left.
+        // We already know that _Mid points to the lowest element and that there is more than 1 element left.
         *_First = _RANGES iter_move(_Mid);
         ++_First;
         ++_Mid;
@@ -7217,12 +7218,12 @@ namespace ranges {
 
         _Ty* _Right_last =
             _RANGES _Uninitialized_move_unchecked(_Mid, _Last, _Right_first, _Right_first + _Capacity).out;
-        _Uninitialized_backout<_Ty*> _Backout(_Right_first, _Right_last);
+        _Uninitialized_backout<_Ty*> _Backout{_Right_first, _Right_last};
 
-        // we already know, that _Mid points to the next highest element and that there is more than 1 element left.
+        // We already know that _Mid points to the next highest element and that there is more than 1 element left.
         *--_Last = _RANGES iter_move(--_Mid);
 
-        // we already know, that _Backout._Last - 1 is the highest element so do not compare against it again.
+        // We already know that _Backout._Last - 1 is the highest element, so do not compare against it again.
         --_Mid;
         --_Right_last;
         for (;;) {
@@ -7251,8 +7252,7 @@ namespace ranges {
     template <bidirectional_iterator _It, class _Pr, class _Pj>
         requires sortable<_It, _Pr, _Pj>
     void _Buffered_inplace_merge_common(_It _First, _It _Mid, _It _Last, iter_difference_t<_It> _Count1,
-        iter_difference_t<_It> _Count2, iter_value_t<_It>* const _Temp_ptr, const ptrdiff_t _Capacity, _Pr _Pred,
-        _Pj _Proj);
+        iter_difference_t<_It> _Count2, iter_value_t<_It>* _Temp_ptr, ptrdiff_t _Capacity, _Pr _Pred, _Pj _Proj);
     // clang-format on
 
     // clang-format off
@@ -7417,7 +7417,7 @@ namespace ranges {
             _STL_VERIFY(_RANGES _Is_sorted_until_unchecked(_First, _Mid, _Pred, _Proj) == _Mid,
                 "ranges::inplace_merge requires the range [first, middle) to be sorted");
             _STL_VERIFY(_RANGES _Is_sorted_until_unchecked(_Mid, _Last, _Pred, _Proj) == _Last,
-                "ranges::inplace_merge requires the range [middle, last)] to be sorted");
+                "ranges::inplace_merge requires the range [middle, last) to be sorted");
 #endif //_ITERATOR_DEBUG_LEVEL == 2
 
             // Find first element in [_First, _Mid) that is not less than *_Mid
@@ -8020,7 +8020,7 @@ void _Stable_sort_unchecked(const _BidIt _First, const _BidIt _Last, const _Iter
     if (_Count <= _ISORT_MAX) {
         _Insertion_sort_unchecked(_First, _Last, _Pred); // small
     } else { // sort halves and merge
-        const auto _Half_count      = static_cast<_Diff>(_Count >> 1);
+        const auto _Half_count      = static_cast<_Diff>(_Count >> 1); // shift for codegen
         const auto _Half_count_ceil = static_cast<_Diff>(_Count - _Half_count);
         const _BidIt _Mid           = _STD next(_First, _Half_count_ceil);
         if (_Half_count_ceil <= _Capacity) { // temp buffer big enough, sort each half using buffer
@@ -8140,7 +8140,7 @@ namespace ranges {
             if (_Count <= _Isort_max<_It>) {
                 _RANGES _Insertion_sort_common(_STD move(_First), _STD move(_Last), _Pred, _Proj);
             } else { // sort halves and merge
-                const iter_difference_t<_It> _Half_count      = _Count >> 1;
+                const iter_difference_t<_It> _Half_count      = _Count >> 1; // shift for codegen
                 const iter_difference_t<_It> _Half_count_ceil = _Count - _Half_count;
                 const _It _Mid                                = _First + _Half_count_ceil;
                 if (_Half_count_ceil <= _Capacity) { // temp buffer big enough, sort each half using buffer

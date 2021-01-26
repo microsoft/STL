@@ -30,7 +30,7 @@ struct instantiator {
             const R range{buff};
             const same_as<iterator_t<R>> auto result = stable_sort(range, less{}, get_first);
             assert(result == range.end());
-            assert(is_sorted(range)); // No projection to check for stability
+            assert(is_sorted(range)); // Check for stability by not using a projection
         }
 
         { // Validate iterator overload
@@ -38,7 +38,7 @@ struct instantiator {
             const R range{buff};
             const same_as<iterator_t<R>> auto result = stable_sort(range.begin(), range.end(), less{}, get_first);
             assert(result == range.end());
-            assert(is_sorted(range.begin(), range.end())); // No projection to check for stability
+            assert(is_sorted(range.begin(), range.end())); // Check for stability by not using a projection
         }
 
         { // Validate empty range
