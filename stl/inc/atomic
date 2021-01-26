@@ -414,23 +414,44 @@ void _Atomic_wait_direct(
 }
 #endif // _HAS_CXX20
 
-#if 1 // TRANSITION, ABI
+#if 1 // TRANSITION, ABI, GH-1151
 inline void _Atomic_lock_acquire(long& _Spinlock) noexcept {
-    while (_InterlockedExchange(&_Spinlock, 1)) {
-        _YIELD_PROCESSOR();
+#if defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
+    // Algorithm from Intel(R) 64 and IA-32 Architectures Optimization Reference Manual, May 2020
+    // Example 2-4. Contended Locks with Increasing Back-off Example - Improved Version, page 2-22
+    // The code in mentioned manual is covered by the 0BSD license.
+    int _Current_backoff   = 1;
+    const int _Max_backoff = 64;
+    while (_InterlockedExchange(&_Spinlock, 1) != 0) {
+        while (__iso_volatile_load32(&reinterpret_cast<int&>(_Spinlock)) != 0) {
+            for (int _Count_down = _Current_backoff; _Count_down != 0; --_Count_down) {
+                _mm_pause();
+            }
+            _Current_backoff = _Current_backoff < _Max_backoff ? _Current_backoff << 1 : _Max_backoff;
+        }
     }
+#elif defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
+    while (_InterlockedExchange(&_Spinlock, 1) != 0) { // TRANSITION, GH-1133: _InterlockedExchange_acq
+        while (__iso_volatile_load32(&reinterpret_cast<int&>(_Spinlock)) != 0) {
+            __yield();
+        }
+    }
+#else // ^^^ defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC) ^^^
+#error Unsupported hardware
+#endif
 }
 
 inline void _Atomic_lock_release(long& _Spinlock) noexcept {
-#if defined(_M_ARM) || defined(_M_ARM64)
+#if defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
+    _InterlockedExchange(&_Spinlock, 0); // TRANSITION, GH-1133: same as ARM
+#elif defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
     _Memory_barrier();
     __iso_volatile_store32(reinterpret_cast<int*>(&_Spinlock), 0);
-    _Memory_barrier();
-#else // ^^^ ARM32/ARM64 hardware / x86/x64 hardware vvv
-    _InterlockedExchange(&_Spinlock, 0);
-#endif // hardware
+    _Memory_barrier(); // TRANSITION, GH-1133: remove
+#else // ^^^ defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC) ^^^
+#error Unsupported hardware
+#endif
 }
-
 
 inline void _Atomic_lock_acquire(_Smtx_t* _Spinlock) noexcept {
     _Smtx_lock_exclusive(_Spinlock);
