@@ -1008,7 +1008,6 @@ namespace ranges {
 
             template <_Copy_constructible_object _Pr>
             _NODISCARD constexpr auto operator()(_Pr _Pred) const noexcept(is_nothrow_move_constructible_v<_Pr>) {
-                // clang-format on
                 return _Partial<_Pr>{._Pred = {in_place, _STD move(_Pred)}};
             }
         };
@@ -2501,18 +2500,18 @@ namespace ranges {
         }
 
         // clang-format off
-            _NODISCARD constexpr _Iterator<true> begin() const noexcept(noexcept(
-                _RANGES begin(_Range)) && is_nothrow_move_constructible_v<iterator_t<const _Vw>>) /* strengthened */
-                requires input_range<const _Vw> && is_reference_v<range_reference_t<const _Vw>> {
+        _NODISCARD constexpr _Iterator<true> begin() const noexcept(noexcept(
+            _RANGES begin(_Range)) && is_nothrow_move_constructible_v<iterator_t<const _Vw>>) /* strengthened */
+            requires input_range<const _Vw> && is_reference_v<range_reference_t<const _Vw>> {
             // clang-format on
             return _Iterator<true>{*this, _RANGES begin(_Range)};
         }
 
         // clang-format off
-            _NODISCARD constexpr auto end() noexcept(noexcept(
-                _RANGES end(_Range)) && is_nothrow_move_constructible_v<sentinel_t<_Vw>>) /* strengthened */ {
-                if constexpr (forward_range<_Vw> && is_reference_v<range_reference_t<_Vw>>
-                        && forward_range<_InnerRng> && common_range<_Vw> && common_range<_InnerRng>) {
+        _NODISCARD constexpr auto end() noexcept(noexcept(
+            _RANGES end(_Range)) && is_nothrow_move_constructible_v<sentinel_t<_Vw>>) /* strengthened */ {
+            if constexpr (forward_range<_Vw> && is_reference_v<range_reference_t<_Vw>>
+                    && forward_range<_InnerRng> && common_range<_Vw> && common_range<_InnerRng>) {
                 // clang-format on
                 return _Iterator<_Simple_view<_Vw>>{*this, _RANGES end(_Range)};
             } else {
@@ -2521,12 +2520,12 @@ namespace ranges {
         }
 
         // clang-format off
-            _NODISCARD constexpr auto end() const noexcept(noexcept(
-                _RANGES end(_Range)) && is_nothrow_move_constructible_v<sentinel_t<_Vw>>) /* strengthened */
-                requires input_range<const _Vw> && is_reference_v<range_reference_t<const _Vw>> {
-                if constexpr (forward_range<const _Vw> && is_reference_v<range_reference_t<const _Vw>>
-                      && forward_range<range_reference_t<const _Vw>> && common_range<const _Vw>
-                      && common_range<range_reference_t<const _Vw>>) {
+        _NODISCARD constexpr auto end() const noexcept(noexcept(
+            _RANGES end(_Range)) && is_nothrow_move_constructible_v<sentinel_t<_Vw>>) /* strengthened */
+            requires input_range<const _Vw> && is_reference_v<range_reference_t<const _Vw>> {
+            if constexpr (forward_range<const _Vw> && is_reference_v<range_reference_t<const _Vw>>
+                    && forward_range<range_reference_t<const _Vw>> && common_range<const _Vw>
+                    && common_range<range_reference_t<const _Vw>>) {
                 // clang-format on
                 return _Iterator<true>{*this, _RANGES end(_Range)};
             } else {
@@ -2543,11 +2542,11 @@ namespace ranges {
         class _Join_fn : public _Pipe::_Base<_Join_fn> {
         public:
             // clang-format off
-                template <viewable_range _Rng>
-                _NODISCARD constexpr auto operator()(_Rng&& _Range) const noexcept(noexcept(
-                    join_view<views::all_t<_Rng>>{_STD forward<_Rng>(_Range)})) requires requires {
-                    join_view<views::all_t<_Rng>>{static_cast<_Rng&&>(_Range)};
-                } {
+            template <viewable_range _Rng>
+            _NODISCARD constexpr auto operator()(_Rng&& _Range) const noexcept(noexcept(
+                join_view<views::all_t<_Rng>>{_STD forward<_Rng>(_Range)})) requires requires {
+                join_view<views::all_t<_Rng>>{static_cast<_Rng&&>(_Range)};
+            } {
                 // clang-format on
                 return join_view<views::all_t<_Rng>>{_STD forward<_Rng>(_Range)};
             }
