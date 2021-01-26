@@ -732,7 +732,7 @@ protected:
         _Elem* _First2, _Elem* _Last2, _Elem*& _Mid2) const { // convert bytes [_First1, _Last1) to [_First2, _Last2)
         _Mid1 = _First1;
         _Mid2 = _First2;
-        if _CONSTEXPR_IF (is_same_v<_Byte, _Elem>) {
+        if constexpr (is_same_v<_Byte, _Elem>) {
             return noconv; // convert nothing
         } else {
             // types differ, copy one for one
@@ -751,7 +751,7 @@ protected:
         _Byte* _First2, _Byte* _Last2, _Byte*& _Mid2) const { // convert [_First1, _Last1) to bytes [_First2, _Last2)
         _Mid1 = _First1;
         _Mid2 = _First2;
-        if _CONSTEXPR_IF (is_same_v<_Byte, _Elem>) {
+        if constexpr (is_same_v<_Byte, _Elem>) {
             return noconv; // convert nothing
         } else {
             // types differ, copy one for one
@@ -3242,8 +3242,11 @@ protected:
 };
 
 // FUNCTION TEMPLATE _Getloctxt
-template <class _Elem, class _InIt>
-int __CRTDECL _Getloctxt(_InIt& _First, _InIt& _Last, size_t _Numfields, const _Elem* _Ptr) {
+enum class _Case_sensitive : bool { _Nope, _Yes };
+
+template <class _InIt, class _Elem>
+int __CRTDECL _Getloctxt(
+    _InIt& _First, _InIt& _Last, size_t _Numfields, const _Elem* _Ptr, const _Case_sensitive _Matching) {
     // find field at _Ptr that matches longest in [_First, _Last)
     for (size_t _Off = 0; _Ptr[_Off] != _Elem{}; ++_Off) {
         if (_Ptr[_Off] == _Ptr[0]) {
@@ -3271,7 +3274,10 @@ int __CRTDECL _Getloctxt(_InIt& _First, _InIt& _Last, size_t _Numfields, const _
                        || _Ptr[_Off] == _Elem{}) { // matched all of field, save as possible answer
                 _Str[_Field] = static_cast<char>(_Column < 127 ? _Column : 127); // save skip count if small enough
                 _Ans         = static_cast<int>(_Field); // save answer
-            } else if (_First == _Last || _CType.tolower(_Ptr[_Off]) != _CType.tolower(static_cast<_Elem>(*_First))) {
+            } else if (_First == _Last
+                       || (_Matching == _Case_sensitive::_Yes
+                               ? _Ptr[_Off] != *_First
+                               : _CType.tolower(_Ptr[_Off]) != _CType.tolower(static_cast<_Elem>(*_First)))) {
                 _Str[_Field] = static_cast<char>(_Column < 127 ? _Column : 127); // no match, just save skip count
             } else {
                 _Prefix = true; // still a valid prefix

@@ -18,10 +18,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-#if !_HAS_IF_CONSTEXPR
-#pragma warning(disable : 4127) // conditional expression is constant
-#endif // !_HAS_IF_CONSTEXPR
-
 namespace stdext {
     namespace cvt {
 
@@ -57,7 +53,7 @@ namespace stdext {
                     if (_Bytecode < _Table::_Nlow) {
                         _Widecode = _Bytecode; // map byte to same wide value
                     } else if ((_Widecode = _Table::_Btw[_Bytecode - _Table::_Nlow]) == 0) {
-                        if _CONSTEXPR_IF (_Table::_Nbytes < 2) {
+                        if constexpr (_Table::_Nbytes < 2) {
                             return _Mybase::error; // no single-byte mapping
                         } else {
                             if (_Mid1 + 1 == _Last1) {
