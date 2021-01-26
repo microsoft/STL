@@ -2425,7 +2425,7 @@ namespace ranges {
             }
 
             friend constexpr void iter_swap(const _Iterator& _Left, const _Iterator& _Right) noexcept(
-                noexcept(ranges::iter_swap(_Left._Inner, _Right._Inner))) requires indirectly_swappable<_InnerIter> {
+                noexcept(_RANGES iter_swap(_Left._Inner, _Right._Inner))) requires indirectly_swappable<_InnerIter> {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _Left._Check_dereference();
                 _Right._Check_dereference();
