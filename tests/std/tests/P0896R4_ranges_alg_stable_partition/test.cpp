@@ -52,7 +52,7 @@ struct instantiator {
             assert(is_partitioned(range, is_even, get_first));
             assert(is_sorted(range));
 
-            // Validate empty ranges
+            // Validate empty range
             const Range empty_range{};
             const same_as<subrange<iterator_t<Range>>> auto empty_result =
                 stable_partition(empty_range.begin(), empty_range.end(), is_even, get_first);

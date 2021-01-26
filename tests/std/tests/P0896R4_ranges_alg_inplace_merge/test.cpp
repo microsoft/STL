@@ -46,7 +46,7 @@ struct instantiator {
             assert(result == range.end());
             assert(equal(input, expected));
 
-            // Validate empty ranges
+            // Validate empty range
             const Range empty_range{};
             const same_as<iterator_t<Range>> auto empty_result =
                 inplace_merge(empty_range.begin(), empty_range.begin(), empty_range.end(), ranges::less{}, get_first);
