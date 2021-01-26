@@ -2535,7 +2535,7 @@ namespace ranges {
     };
 
     template <class _Rng>
-    join_view(_Rng&&) -> join_view<views::all_t<_Rng>>;
+    explicit join_view(_Rng&&) -> join_view<views::all_t<_Rng>>;
 
     namespace views {
         // VARIABLE views::join
