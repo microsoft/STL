@@ -817,8 +817,8 @@ constexpr void year_month_weekday_test() {
     assert(ymwd == 2020y / April / Tuesday[2]);
 
     assert(static_cast<sys_days>(epoch) == sys_days{});
-    const auto prev = 1970y / January / Thursday[0];
-    assert(static_cast<sys_days>(prev) == (sys_days{} - days{7}));
+    const auto previous = 1970y / January / Thursday[0];
+    assert(static_cast<sys_days>(previous) == (sys_days{} - days{7}));
     assert(static_cast<local_days>(ymwd) == local_days{ymwd});
 
 
