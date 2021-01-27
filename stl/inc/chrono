@@ -1317,7 +1317,7 @@ namespace chrono {
     inline constexpr day _Last_day_table[] = {
         day{31}, day{28}, day{31}, day{30}, day{31}, day{30}, day{31}, day{31}, day{30}, day{31}, day{30}, day{31}};
 
-    _NODISCARD constexpr inline day _Last_day(const year& _Year, const month& _Month) {
+    _NODISCARD constexpr day _Last_day(const year& _Year, const month& _Month) {
         return _Month == month{2} && _Year.is_leap() ? _Last_day_table[static_cast<unsigned int>(_Month) - 1] + days{1}
                                                      : _Last_day_table[static_cast<unsigned int>(_Month) - 1];
     }
