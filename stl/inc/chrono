@@ -1926,7 +1926,7 @@ namespace chrono {
     requires _Is_duration_v<_Duration> class hh_mm_ss {
     public:
         static constexpr unsigned int fractional_width = [_Num     = _Duration::period::num,
-                                                             &_Den = as_const(_Duration::period::den)]() mutable {
+                                                             &_Den = _Duration::period::den]() mutable {
             // Returns the number of fractional digits of _Num / _Den in the range [0, 18].
             // If it can't be represented, 6 is returned.
             // Example: _Fractional_width(1, 8) would return 3 for 0.125.
