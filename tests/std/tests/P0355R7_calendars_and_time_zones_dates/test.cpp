@@ -592,7 +592,7 @@ constexpr void year_month_day_test() {
     local_days ldp;
     sys_days sys{ldp.time_since_epoch()};
     year_month_day ymld{ldp};
-    assert((ymld == year_month_day{sys}));
+    assert(ymld == year_month_day{sys});
 
     ymd1 += months{2};
     assert(ymd1.year() == 2020y);
@@ -665,9 +665,9 @@ constexpr void year_month_day_test() {
                     const month m{um};
                     const day d{ud};
                     if (y.ok() && m.ok() && d >= 1d && d <= (y / m / last).day()) {
-                        assert(((y / m / d).ok()));
+                        assert((y / m / d).ok());
                     } else {
-                        assert((!(y / m / d).ok()));
+                        assert(!(y / m / d).ok());
                     }
                 }
             }
@@ -753,7 +753,7 @@ constexpr void year_month_day_last_test() {
                 if (y.ok() && mdl.ok()) {
                     assert((y / mdl).ok());
                 } else {
-                    assert((!(y / mdl).ok()));
+                    assert(!(y / mdl).ok());
                 }
             }
         }
@@ -807,7 +807,7 @@ constexpr void year_month_weekday_test() {
     local_days ldp;
     sys_days sys{ldp.time_since_epoch()};
     year_month_weekday ymlwd{ldp};
-    assert((ymlwd == year_month_weekday{sys}));
+    assert(ymlwd == year_month_weekday{sys});
 
     ymwd += months{2};
     assert(ymwd == 2020y / June / Tuesday[2]);
@@ -886,8 +886,8 @@ constexpr void year_month_weekday_last_test() {
     ymwdl -= years{2};
     assert(ymwdl == 2020y / January / Monday[last]);
 
-    assert((static_cast<sys_days>(ymwdl) == sys_days{days{18'288}}));
-    assert((static_cast<local_days>(ymwdl) == local_days{ymwdl}));
+    assert(static_cast<sys_days>(ymwdl) == sys_days{days{18'288}});
+    assert(static_cast<local_days>(ymwdl) == local_days{ymwdl});
 
     assert((2020y / April / Wednesday[last]).ok());
     assert(!(-32768y / April / Wednesday[last]).ok());
