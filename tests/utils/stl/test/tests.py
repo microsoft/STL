@@ -7,13 +7,13 @@
 #
 #===----------------------------------------------------------------------===##
 
-from enum import Flag, auto
+from enum import auto, Flag
 from itertools import chain
 import copy
 import os
 import shutil
 
-from lit.Test import SKIPPED, Result, Test, UNRESOLVED, UNSUPPORTED
+from lit.Test import Result, SKIPPED, Test, UNRESOLVED, UNSUPPORTED
 from libcxx.test.dsl import Feature
 import lit
 
@@ -79,6 +79,15 @@ class STLTest(Test):
             self.compileFlags.extend(['/dE--write-isense-rsp', '/dE' + self.isenseRspPath])
 
         self._configureTestType()
+
+        forceFail = self.expectedResult and self.expectedResult.isFailure
+        buildFail = forceFail and TestType.COMPILE|TestType.LINK in self.testType
+
+        if (litConfig.build_only and buildFail):
+            self.xfails = ['*']
+        elif (not litConfig.build_only and forceFail):
+            self.xfails = ['*']
+
         return None
 
     def _parseTest(self):
@@ -163,8 +172,6 @@ class STLTest(Test):
         if self.expectedResult is not None:
             if self.expectedResult == SKIPPED:
                 return Result(SKIPPED, 'This test was explicitly marked as skipped')
-            elif self.expectedResult.isFailure:
-                self.xfails = ['*']
         elif self.config.unsupported:
             return Result(UNSUPPORTED, 'This test was marked as unsupported by a lit.cfg')
 
@@ -202,6 +209,10 @@ class STLTest(Test):
                 self.compileFlags.append('-m64')
             elif (targetArch == 'x86'.casefold()):
                 self.compileFlags.append('-m32')
+            elif (targetArch == 'arm'.casefold()):
+                return Result(UNSUPPORTED, 'clang targeting arm is not supported')
+            elif (targetArch == 'arm64'.casefold()):
+                self.compileFlags.append('--target=arm64-pc-windows-msvc')
 
         if ('nvcc'.casefold() in os.path.basename(cxx).casefold()):
             # nvcc only supports targeting x64
