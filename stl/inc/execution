@@ -2665,24 +2665,23 @@ bool _Process_sort_work_item(const _RanIt _Basis, _Pr _Pred, _Sort_work_item<_Ra
     //   the return value is false
     //   _Wi's range is completely sorted
     //   _Right_fork_wi is unmodified
-    using _Diff                  = _Iter_diff_t<_RanIt>;
-    constexpr auto _Diffsort_max = static_cast<_Diff>(_ISORT_MAX);
-    const auto _Size             = _Wi._Size;
-    const auto _First            = _Basis + _Wi._Offset;
-    const auto _Last             = _First + _Size;
-    const auto _Ideal            = _Wi._Ideal;
-    if (_Size <= _Diffsort_max) {
+    const auto _Size  = _Wi._Size;
+    const auto _First = _Basis + _Wi._Offset;
+    const auto _Last  = _First + _Size;
+    const auto _Ideal = _Wi._Ideal;
+    if (_Size <= _Isort_max<_RanIt>) {
         _Insertion_sort_unchecked(_First, _Last, _Pred);
         _Work_complete += _Size;
         return false;
     }
 
     if (0 < _Ideal) { // divide and conquer by partitioning (quicksort)
-        const auto _Mid       = _Partition_by_median_guess_unchecked(_First, _Last, _Pred);
-        const auto _New_ideal = static_cast<_Diff>(_Ideal / 2 + _Ideal / 4); // allow 1.5 log2(N) divisions
-        _Wi._Size             = _Mid.first - _First;
-        _Wi._Ideal            = _New_ideal;
-        _Right_fork_wi        = {_Mid.second - _Basis, _Last - _Mid.second, _New_ideal};
+        const auto _Mid = _Partition_by_median_guess_unchecked(_First, _Last, _Pred);
+        const auto _New_ideal =
+            static_cast<_Iter_diff_t<_RanIt>>(_Ideal / 2 + _Ideal / 4); // allow 1.5 log2(N) divisions
+        _Wi._Size      = _Mid.first - _First;
+        _Wi._Ideal     = _New_ideal;
+        _Right_fork_wi = {_Mid.second - _Basis, _Last - _Mid.second, _New_ideal};
         _Work_complete += _Mid.second - _Mid.first;
         return true;
     }
