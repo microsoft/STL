@@ -75,12 +75,12 @@ public:
     constexpr fancy_ptr_allocator() noexcept = default;
 
     _NODISCARD pointer allocate(_CRT_GUARDOVERFLOW const size_t _Count) {
-        auto _Ptr = ::operator new(_Count * sizeof(value_type));
+        auto _Ptr = allocator<value_type>{}.allocate(_Count);
         return static_cast<pointer>(static_cast<Ty*>(_Ptr));
     }
 
     void deallocate(pointer const _Ptr, const size_t _Count) noexcept {
-        ::operator delete(&*_Ptr, _Count);
+        allocator<value_type>{}.deallocate(&*_Ptr, _Count);
     }
 };
 
@@ -100,12 +100,12 @@ public:
     constexpr small_size_fancy_ptr_allocator() noexcept = default;
 
     _NODISCARD pointer allocate(_CRT_GUARDOVERFLOW const size_t _Count) {
-        auto _Ptr = ::operator new(_Count * sizeof(value_type));
+        auto _Ptr = allocator<value_type>{}.allocate(_Count);
         return static_cast<pointer>(static_cast<Ty*>(_Ptr));
     }
 
     void deallocate(pointer const _Ptr, const size_t _Count) noexcept {
-        ::operator delete(&*_Ptr, _Count);
+        allocator<value_type>{}.deallocate(&*_Ptr, _Count);
     }
 };
 
@@ -126,11 +126,11 @@ public:
     constexpr small_size_allocator() noexcept = default;
 
     _NODISCARD __declspec(allocator) pointer allocate(_CRT_GUARDOVERFLOW const size_t _Count) {
-        return static_cast<pointer>(::operator new(_Count * sizeof(value_type)));
+        return static_cast<pointer>(allocator<value_type>{}.allocate(_Count));
     }
 
     void deallocate(pointer const _Ptr, const size_t _Count) noexcept {
-        ::operator delete(_Ptr, _Count);
+        allocator<value_type>{}.deallocate(_Ptr, _Count);
     }
 };
 
@@ -152,11 +152,11 @@ public:
     constexpr non_move_assignable_non_equal_allocator() noexcept = default;
 
     _NODISCARD __declspec(allocator) pointer allocate(_CRT_GUARDOVERFLOW const size_t _Count) {
-        return static_cast<pointer>(::operator new(_Count * sizeof(value_type)));
+        return static_cast<pointer>(allocator<value_type>{}.allocate(_Count));
     }
 
     void deallocate(pointer const _Ptr, const size_t _Count) noexcept {
-        ::operator delete(_Ptr, _Count);
+        allocator<value_type>{}.deallocate(_Ptr, _Count);
     }
 
     _NODISCARD size_type max_size() const noexcept {
@@ -182,11 +182,11 @@ public:
     constexpr non_move_assignable_equal_allocator() noexcept = default;
 
     _NODISCARD __declspec(allocator) pointer allocate(_CRT_GUARDOVERFLOW const size_t _Count) {
-        return static_cast<pointer>(::operator new(_Count * sizeof(value_type)));
+        return static_cast<pointer>(allocator<value_type>{}.allocate(_Count));
     }
 
     void deallocate(pointer const _Ptr, const size_t _Count) noexcept {
-        ::operator delete(_Ptr, _Count);
+        allocator<value_type>{}.deallocate(_Ptr, _Count);
     }
 };
 
@@ -208,11 +208,11 @@ public:
     constexpr non_swapable_equal_allocator() noexcept = default;
 
     _NODISCARD __declspec(allocator) pointer allocate(_CRT_GUARDOVERFLOW const size_t _Count) {
-        return static_cast<pointer>(::operator new(_Count * sizeof(value_type)));
+        return static_cast<pointer>(allocator<value_type>{}.allocate(_Count));
     }
 
     void deallocate(pointer const _Ptr, const size_t _Count) noexcept {
-        ::operator delete(_Ptr, _Count);
+        allocator<value_type>{}.deallocate(_Ptr, _Count);
     }
 };
 

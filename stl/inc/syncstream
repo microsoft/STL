@@ -234,7 +234,7 @@ private:
             _Traits::copy(_New_ptr, _Right.pbase(), _Right_data_size);
 
             streambuf_type::setp(_New_ptr, _New_ptr + _Right_data_size, _New_ptr + _Right_buf_size);
-            streambuf_type::_Plocale = _STD move(_Right._Plocale);
+            _STD swap(streambuf_type::_Plocale, _Right._Plocale);
 
             _STD swap(_Mybase::_Emit_on_sync, _Right._Emit_on_sync);
             _STD swap(_Mybase::_Sync_recorded, _Right._Sync_recorded);
