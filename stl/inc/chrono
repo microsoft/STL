@@ -1158,7 +1158,7 @@ namespace chrono {
 
     class month_day_last {
     public:
-        constexpr explicit month_day_last(const month& _M) noexcept : _Month{_M} {}
+        constexpr explicit month_day_last(const month& _Month_) noexcept : _Month{_Month_} {}
 
         _NODISCARD constexpr month month() const noexcept {
             return _Month;
@@ -1181,8 +1181,8 @@ namespace chrono {
 
     class month_weekday {
     public:
-        constexpr month_weekday(const month& _M, const weekday_indexed& _Wdi) noexcept
-            : _Month{_M}, _Weekday_index{_Wdi} {}
+        constexpr month_weekday(const month& _Month_, const weekday_indexed& _Wdi) noexcept
+            : _Month{_Month_}, _Weekday_index{_Wdi} {}
 
         _NODISCARD constexpr month month() const noexcept {
             return _Month;
@@ -1206,8 +1206,8 @@ namespace chrono {
 
     class month_weekday_last {
     public:
-        constexpr month_weekday_last(const month& _M, const weekday_last& _Wdl) noexcept
-            : _Month{_M}, _Weekday_last{_Wdl} {}
+        constexpr month_weekday_last(const month& _Month_, const weekday_last& _Wdl) noexcept
+            : _Month{_Month_}, _Weekday_last{_Wdl} {}
 
         _NODISCARD constexpr month month() const noexcept {
             return _Month;
@@ -1231,7 +1231,7 @@ namespace chrono {
     class year_month {
     public:
         year_month() = default;
-        constexpr year_month(const year& _Y, const month& _M) noexcept : _Year{_Y}, _Month{_M} {}
+        constexpr year_month(const year& _Year_, const month& _Month_) noexcept : _Year{_Year_}, _Month{_Month_} {}
 
         _NODISCARD constexpr year year() const noexcept {
             return _Year;
