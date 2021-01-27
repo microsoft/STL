@@ -7,7 +7,7 @@ using namespace std;
 
 #define ASSERT(...) assert((__VA_ARGS__))
 
-struct S { // struct with static type, so declaring global
+struct S { // Must be declared at namespace scope due to static data member
     static int s1;
     int v1;
     int v2;
@@ -73,10 +73,11 @@ constexpr bool test() {
         ASSERT(is_layout_compatible_v<int[], int[]>);
         ASSERT(is_layout_compatible_v<int[3], int[3]>);
 
-        // TRANSITION, VSO-1269781
-        // ASSERT(is_layout_compatible_v<const int[], int[]>);
-        // ASSERT(is_layout_compatible_v<const int[3], int[3]>);
-        // ASSERT(is_layout_compatible_v<int[], volatile int[]>);
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1269781
+        ASSERT(is_layout_compatible_v<const int[], int[]>);
+        ASSERT(is_layout_compatible_v<const int[3], int[3]>);
+        ASSERT(is_layout_compatible_v<int[], volatile int[]>);
+#endif // TRANSITION, VSO-1269781
 
         ASSERT(!is_layout_compatible_v<int, char>);
         ASSERT(!is_layout_compatible_v<int, void>);
@@ -106,7 +107,7 @@ constexpr bool test() {
         };
 #pragma warning(pop)
         class F : private A {}; // Non-public inheritance
-        class NS : public B, public C {}; // Non-standard
+        class NS : public B, public C {}; // Non-standard layout
         class I; // Incomplete
 
         union U {
@@ -180,7 +181,7 @@ constexpr bool test() {
             }
         };
 
-        struct NS : S1, S2 {}; // Non-standard
+        struct NS : S1, S2 {}; // Non-standard layout
 
         ASSERT(is_corresponding_member(&S1::v1, &S::v1));
         ASSERT(is_corresponding_member(&S1::v2, &S::v2));
@@ -225,7 +226,7 @@ constexpr bool test() {
             }
         };
 
-        struct NS : A, B {}; // Non-standard
+        struct NS : A, B {}; // Non-standard layout
 
         union U {
             int v1;
