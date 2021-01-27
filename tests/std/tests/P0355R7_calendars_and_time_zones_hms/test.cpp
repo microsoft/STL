@@ -11,7 +11,7 @@ using namespace std;
 using namespace std::chrono;
 
 using hms_hours   = hh_mm_ss<hours>;
-using f_hours     = duration<double, ratio<3600>>;
+using f_hours     = duration<float, ratio<3600>>;
 using f_hms_hours = hh_mm_ss<f_hours>;
 
 constexpr void am_pm() {
@@ -112,26 +112,26 @@ constexpr void is_negative() {
     assert(hh_mm_ss<days>(days{-1}).is_negative());
     assert(!hh_mm_ss<days>(days{1}).is_negative());
 
-    assert(hh_mm_ss<hours>(-1h).is_negative());
-    assert(!hh_mm_ss<hours>(1h).is_negative());
+    assert(hh_mm_ss<hours>{-1h}.is_negative());
+    assert(!hh_mm_ss<hours>{1h}.is_negative());
 
-    assert(hh_mm_ss<minutes>(-1min).is_negative());
-    assert(!hh_mm_ss<minutes>(1min).is_negative());
+    assert(hh_mm_ss<minutes>{-1min}.is_negative());
+    assert(!hh_mm_ss<minutes>{1min}.is_negative());
 
-    assert(hh_mm_ss<seconds>(-1s).is_negative());
-    assert(!hh_mm_ss<seconds>(1s).is_negative());
+    assert(hh_mm_ss<seconds>{-1s}.is_negative());
+    assert(!hh_mm_ss<seconds>{1s}.is_negative());
 
-    assert(hh_mm_ss<milliseconds>(-1ms).is_negative());
-    assert(!hh_mm_ss<milliseconds>(1ms).is_negative());
+    assert(hh_mm_ss<milliseconds>{-1ms}.is_negative());
+    assert(!hh_mm_ss<milliseconds>{1ms}.is_negative());
 
-    assert(hh_mm_ss<microseconds>(-1us).is_negative());
-    assert(!hh_mm_ss<microseconds>(1us).is_negative());
+    assert(hh_mm_ss<microseconds>{-1us}.is_negative());
+    assert(!hh_mm_ss<microseconds>{1us}.is_negative());
 
-    assert(hh_mm_ss<nanoseconds>(-1ns).is_negative());
-    assert(!hh_mm_ss<nanoseconds>(1ns).is_negative());
+    assert(hh_mm_ss<nanoseconds>{-1ns}.is_negative());
+    assert(!hh_mm_ss<nanoseconds>{1ns}.is_negative());
 
-    assert(f_hms_hours(f_hours(-1.f)).is_negative());
-    assert(!f_hms_hours(f_hours(1.f)).is_negative());
+    assert(f_hms_hours{f_hours{-1.f}}.is_negative());
+    assert(!f_hms_hours{f_hours{1.f}}.is_negative());
 }
 
 constexpr auto ones = 1h + 1min + 1s + 1ms;
@@ -144,7 +144,7 @@ constexpr void hour() {
     assert(hh_mm_ss(ones).hours() == 1h);
     assert(hh_mm_ss(-ones).hours() == 1h);
     assert(hh_mm_ss(59min).hours() == 0h);
-    assert(f_hms_hours(f_hours(1.f)).hours() == 1h);
+    assert(f_hms_hours{f_hours{1.f}}.hours() == 1h);
 }
 
 constexpr void mins() {
@@ -154,7 +154,7 @@ constexpr void mins() {
     assert(hh_mm_ss(ones).minutes() == 1min);
     assert(hh_mm_ss(-ones).minutes() == 1min);
     assert(hh_mm_ss(59s).minutes() == 0min);
-    assert(f_hms_hours(f_hours(0.0166667f)).minutes() == 1min);
+    assert(f_hms_hours{f_hours{0.0166667f}}.minutes() == 1min);
 }
 
 constexpr void secs() {
@@ -164,7 +164,7 @@ constexpr void secs() {
     assert(hh_mm_ss(ones).seconds() == 1s);
     assert(hh_mm_ss(-ones).seconds() == 1s);
     assert(hh_mm_ss(999ms).seconds() == 0s);
-    assert(f_hms_hours(f_hours(0.000277778f)).seconds() == 1s);
+    assert(f_hms_hours{f_hours{0.000277778f}}.seconds() == 1s);
 }
 
 constexpr void subsecs() {
@@ -176,7 +176,7 @@ constexpr void subsecs() {
     assert(hh_mm_ss(999us).subseconds() == 999us);
     assert(hh_mm_ss(duration_cast<milliseconds>(999us)).subseconds() == 0ms);
     using f_hms_milli = hh_mm_ss<duration<float, milli>>;
-    assert(f_hms_milli(1ms).subseconds() == 1ms);
+    assert(f_hms_milli{1ms}.subseconds() == 1ms);
 }
 
 constexpr void to_duration() {
@@ -190,13 +190,19 @@ constexpr void to_duration() {
 
     assert(hh_mm_ss(ones).to_duration() == ones);
     assert(hh_mm_ss(-ones).to_duration() == -ones);
-    assert(f_hms_hours(f_hours(1.f)).to_duration() == 1h);
-    assert(f_hms_hours(f_hours(-1.f)).to_duration() == -1h);
+    assert(f_hms_hours{f_hours{1.f}}.to_duration() == 1h);
+    assert(f_hms_hours{f_hours{-1.f}}.to_duration() == -1h);
 
     hh_mm_ss<milliseconds> hms(50ms);
     milliseconds milli_val = static_cast<milliseconds>(hms);
     static_assert(is_same_v<decltype(hms.to_duration()), milliseconds>);
     assert(hms.to_duration() == milli_val);
+
+    f_hms_hours fhms{f_hours{1}};
+    auto fhours_val = static_cast<f_precision>(fhms);
+    static_assert(is_same_v<decltype(fhms.to_duration()), f_precision>);
+    static_assert(is_same_v<duration<float>, f_precision>);
+    assert(fhms.to_duration() == fhours_val);
 }
 
 constexpr bool test() {
