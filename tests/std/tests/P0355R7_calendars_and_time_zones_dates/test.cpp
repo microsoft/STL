@@ -369,10 +369,7 @@ constexpr void month_day_test() {
                     assert((!month_day{m, day{d}}.ok()));
                 } else if (d == 30 && m == February) {
                     assert((!month_day{m, day{d}}.ok()));
-                    break;
-                } else if (d == 31 && (m == April || m == June || m == September || m == November)) {
-                    assert((!month_day{m, day{d}}.ok()));
-                } else if (d == 32) {
+                } else if (d == 31 && (m == February || m == April || m == June || m == September || m == November)) {
                     assert((!month_day{m, day{d}}.ok()));
                 } else {
                     assert((month_day{m, day{d}}.ok()));
