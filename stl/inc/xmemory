@@ -857,27 +857,30 @@ public:
 #endif // _HAS_DEPRECATED_ALLOCATOR_MEMBERS
 };
 
-#if _HAS_DEPRECATED_ALLOCATOR_MEMBERS
 // CLASS allocator<void>
 template <>
 class allocator<void> {
 public:
     using value_type = void;
+#if _HAS_DEPRECATED_ALLOCATOR_MEMBERS
     _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS typedef void* pointer;
     _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS typedef const void* const_pointer;
+#endif // _HAS_DEPRECATED_ALLOCATOR_MEMBERS
 
     using size_type       = size_t;
     using difference_type = ptrdiff_t;
 
-    using propagate_on_container_move_assignment                 = true_type;
+    using propagate_on_container_move_assignment = true_type;
+
+#if _HAS_DEPRECATED_ALLOCATOR_MEMBERS
     using is_always_equal _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS = true_type;
 
     template <class _Other>
     struct _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS rebind {
         using other = allocator<_Other>;
     };
-};
 #endif // _HAS_DEPRECATED_ALLOCATOR_MEMBERS
+};
 
 template <class _Ty, class _Other>
 _NODISCARD _CONSTEXPR20_DYNALLOC bool operator==(const allocator<_Ty>&, const allocator<_Other>&) noexcept {
