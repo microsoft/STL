@@ -148,8 +148,8 @@ constexpr void year_test() {
     static_assert(noexcept(y.is_leap()));
     static_assert(noexcept(static_cast<int>(y)));
     static_assert(noexcept(y.ok()));
-    static_assert(noexcept(y.min()));
-    static_assert(noexcept(y.max()));
+    static_assert(noexcept(year::min()));
+    static_assert(noexcept(year::max()));
 
     static_assert(noexcept(y == y));
     static_assert(noexcept(y <=> y));
