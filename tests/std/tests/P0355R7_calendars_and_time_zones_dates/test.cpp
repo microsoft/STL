@@ -301,18 +301,18 @@ constexpr void weekday_indexed_test() {
 
     assert(wdi1 == wdi2);
 
-    assert(!weekday_indexed(Sunday, 0).ok());
+    assert((!weekday_indexed{Sunday, 0}.ok()));
     for (unsigned int i = 1; i <= 5; ++i) {
-        assert(weekday_indexed(Sunday, i).ok());
-        assert(weekday_indexed(Monday, i).ok());
-        assert(weekday_indexed(Tuesday, i).ok());
-        assert(weekday_indexed(Wednesday, i).ok());
-        assert(weekday_indexed(Thursday, i).ok());
-        assert(weekday_indexed(Friday, i).ok());
-        assert(weekday_indexed(Saturday, i).ok());
+        assert((weekday_indexed{Sunday, i}.ok()));
+        assert((weekday_indexed{Monday, i}.ok()));
+        assert((weekday_indexed{Tuesday, i}.ok()));
+        assert((weekday_indexed{Wednesday, i}.ok()));
+        assert((weekday_indexed{Thursday, i}.ok()));
+        assert((weekday_indexed{Friday, i}.ok()));
+        assert((weekday_indexed{Saturday, i}.ok()));
     }
-    assert(!weekday_indexed(Sunday, 6).ok());
-    assert(!weekday_indexed(Sunday, 7).ok());
+    assert((!weekday_indexed{Sunday, 6}.ok()));
+    assert((!weekday_indexed{Sunday, 7}.ok()));
 }
 
 constexpr void weekday_last_test() {
@@ -348,11 +348,11 @@ constexpr void month_day_test() {
     assert(md.month() == January);
     assert(md.day() == 1d);
 
-    assert(md < month_day(January, 2d));
-    assert(month_day(January, 2d) > md);
-    assert(md < month_day(December, 25d));
-    assert(month_day(December, 25d) > md);
-    assert(md == month_day(January, 1d));
+    assert((md < month_day{January, 2d}));
+    assert((month_day{January, 2d} > md));
+    assert((md < month_day{December, 25d}));
+    assert((month_day{December, 25d} > md));
+    assert((md == month_day{January, 1d}));
 
     if (is_constant_evaluated()) {
         static_assert((January / 31).ok());
@@ -366,16 +366,16 @@ constexpr void month_day_test() {
             month m{i};
             for (unsigned int d = 0; d <= 255; ++d) {
                 if (d < 1 || d > 31 || i < 1 || i > 12) {
-                    assert(!month_day(m, day{d}).ok());
+                    assert((!month_day{m, day{d}}.ok()));
                 } else if (d == 30 && m == February) {
-                    assert(!month_day(m, day{d}).ok());
+                    assert((!month_day{m, day{d}}.ok()));
                     break;
                 } else if (d == 31 && (m == April || m == June || m == September || m == November)) {
-                    assert(!month_day(m, day{d}).ok());
+                    assert((!month_day{m, day{d}}.ok()));
                 } else if (d == 32) {
-                    assert(!month_day(m, day{d}).ok());
+                    assert((!month_day{m, day{d}}.ok()));
                 } else {
-                    assert(month_day(m, day{d}).ok());
+                    assert((month_day{m, day{d}}.ok()));
                 }
             }
         }
