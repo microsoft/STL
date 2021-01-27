@@ -655,8 +655,8 @@ constexpr void year_month_day_test() {
         static_assert((2020y / 2 / 29).ok());
         static_assert((2020y / 7 / 31).ok());
     } else {
-        for (int iy = y_min; iy <= y_max; ++iy) {
-            for (auto um = 0u; um <= 255u; ++um) {
+        for (int iy = -3000; iy <= 3000; ++iy) { // instead of [y_min, y_max], to limit the number of iterations
+            for (auto um = 0u; um <= 13u; ++um) { // instead of [0, 255], to limit the number of iterations
                 for (auto ud = 0u; ud <= 32u; ++ud) {
                     const year y{iy};
                     const month m{um};
