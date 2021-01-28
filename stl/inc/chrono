@@ -944,7 +944,7 @@ namespace chrono {
         }
 
         _NODISCARD constexpr explicit operator int() const noexcept {
-            return static_cast<int>(_Year);
+            return _Year;
         }
 
         _NODISCARD constexpr bool ok() const noexcept {
