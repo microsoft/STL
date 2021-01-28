@@ -984,6 +984,9 @@ namespace chrono {
         return years{static_cast<int>(_Left) - static_cast<int>(_Right)};
     }
 
+    class weekday_indexed;
+    class weekday_last;
+
     class weekday {
     public:
         weekday() = default;
@@ -1024,8 +1027,8 @@ namespace chrono {
             return _Weekday <= 6;
         }
 
-        _NODISCARD constexpr class weekday_indexed operator[](unsigned int _Index) const noexcept;
-        _NODISCARD constexpr class weekday_last operator[](last_spec) const noexcept;
+        _NODISCARD constexpr weekday_indexed operator[](unsigned int _Index) const noexcept;
+        _NODISCARD constexpr weekday_last operator[](last_spec) const noexcept;
 
     private:
         unsigned char _Weekday;
@@ -1330,12 +1333,14 @@ namespace chrono {
                                                      : _Last_day_table[static_cast<unsigned int>(_Month) - 1];
     }
 
+    class year_month_day_last;
+
     class year_month_day {
     public:
         year_month_day() = default;
         constexpr year_month_day(const year& _Year_, const month& _Month_, const day& _Day_) noexcept
             : _Year{_Year_}, _Month{_Month_}, _Day{_Day_} {}
-        constexpr year_month_day(const class year_month_day_last& _Ymdl) noexcept;
+        constexpr year_month_day(const year_month_day_last& _Ymdl) noexcept;
         constexpr year_month_day(const sys_days& _Sys_days) noexcept
             : year_month_day{_Civil_from_days(_Sys_days.time_since_epoch().count())} {}
         constexpr explicit year_month_day(const local_days& _Local_days) noexcept
