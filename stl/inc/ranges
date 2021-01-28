@@ -2218,13 +2218,29 @@ namespace ranges {
     // clang-format off
     template <input_range _Vw>
         requires view<_Vw> && input_range<range_reference_t<_Vw>>
-              && (is_reference_v<range_reference_t<_Vw>> || view<range_value_t<_Vw>>)
+            && (is_reference_v<range_reference_t<_Vw>> || view<range_value_t<_Vw>>)
+    class join_view;
+    // clang-format on
+
+    template <class _Vw>
+    class _Join_view_base : public view_interface<join_view<_Vw>> {
+    protected:
+        /* [[no_unique_address]] */ views::all_t<range_reference_t<_Vw>> _Inner{};
+    };
+
+    // clang-format off
+    template <class _Vw>
+        requires is_reference_v<range_reference_t<_Vw>>
+    class _Join_view_base<_Vw> : public view_interface<join_view<_Vw>> {};
+
+    template <input_range _Vw>
+        requires view<_Vw>&& input_range<range_reference_t<_Vw>>
+            && (is_reference_v<range_reference_t<_Vw>> || view<range_value_t<_Vw>>)
     class join_view : public view_interface<join_view<_Vw>> {
         // clang-format on
     private:
         using _InnerRng = range_reference_t<_Vw>;
         /* [[no_unique_address]] */ _Vw _Range{};
-        /* [[no_unique_address]] */ views::all_t<_InnerRng> _Inner{};
 
         template <bool _Const>
         class _Sentinel;
@@ -2299,7 +2315,13 @@ namespace ranges {
             constexpr void _Check_dereference() const noexcept {
                 _STL_VERIFY(_Parent != nullptr, "cannot dereference value-initialized join_view iterator");
                 _STL_VERIFY(_Outer != _RANGES end(_Parent->_Range), "cannot dereference end join_view iterator");
-                _STL_VERIFY(_Inner != _RANGES end(_Parent->_Inner), "cannot dereference end join_view iterator");
+                sentinel_t<_InnerRng> _Last;
+                if constexpr (_Deref_is_ref) {
+                    _Last = _RANGES end(*_Outer);
+                } else {
+                    _Last = _RANGES end(_Parent->_Inner);
+                }
+                _STL_VERIFY(_Inner != _Last, "cannot dereference end join_view iterator");
             }
 
             constexpr void _Same_range(const _Iterator& _Right) const noexcept {
@@ -2360,14 +2382,13 @@ namespace ranges {
                         ++_Outer;
                         _Satisfy();
                     }
-                    return *this;
                 } else {
                     if (++_Inner == _RANGES end(_Parent->_Inner)) {
                         ++_Outer;
                         _Satisfy();
                     }
-                    return *this;
                 }
+                return *this;
             }
 
             constexpr auto operator++(int) {
