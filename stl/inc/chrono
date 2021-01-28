@@ -1445,7 +1445,7 @@ namespace chrono {
     }
 
     _NODISCARD constexpr year_month_day operator-(const year_month_day& _Left, const months& _Right) noexcept {
-        return _Left + (-_Right);
+        return _Left + -_Right;
     }
 
     _NODISCARD constexpr year_month_day operator+(const year_month_day& _Left, const years& _Right) noexcept {
@@ -1457,7 +1457,7 @@ namespace chrono {
     }
 
     _NODISCARD constexpr year_month_day operator-(const year_month_day& _Left, const years& _Right) noexcept {
-        return _Left + (-_Right);
+        return _Left + -_Right;
     }
 
     constexpr year_month_day& year_month_day::operator+=(const months& _Months) noexcept {
@@ -1540,7 +1540,7 @@ namespace chrono {
 
     _NODISCARD constexpr year_month_day_last operator-(
         const year_month_day_last& _Left, const months& _Right) noexcept {
-        return _Left + (-_Right);
+        return _Left + -_Right;
     }
 
     _NODISCARD constexpr year_month_day_last operator+(const year_month_day_last& _Left, const years& _Right) noexcept {
@@ -1550,7 +1550,7 @@ namespace chrono {
         return _Right + _Left;
     }
     _NODISCARD constexpr year_month_day_last operator-(const year_month_day_last& _Left, const years& _Right) noexcept {
-        return _Left + (-_Right);
+        return _Left + -_Right;
     }
 
     constexpr year_month_day_last& year_month_day_last::operator+=(const months& _Months) noexcept {
@@ -1657,7 +1657,7 @@ namespace chrono {
     }
 
     _NODISCARD constexpr year_month_weekday operator-(const year_month_weekday& _Left, const months& _Right) noexcept {
-        return _Left + (-_Right);
+        return _Left + -_Right;
     }
 
     _NODISCARD constexpr year_month_weekday operator+(const year_month_weekday& _Left, const years& _Right) noexcept {
@@ -1668,7 +1668,7 @@ namespace chrono {
     }
 
     _NODISCARD constexpr year_month_weekday operator-(const year_month_weekday& _Left, const years& _Right) noexcept {
-        return _Left + (-_Right);
+        return _Left + -_Right;
     }
 
     constexpr year_month_weekday& year_month_weekday::operator+=(const months& _Months) noexcept {
@@ -1748,7 +1748,7 @@ namespace chrono {
 
     _NODISCARD constexpr year_month_weekday_last operator-(
         const year_month_weekday_last& _Left, const months& _Right) noexcept {
-        return _Left + (-_Right);
+        return _Left + -_Right;
     }
 
     _NODISCARD constexpr year_month_weekday_last operator+(
@@ -1762,7 +1762,7 @@ namespace chrono {
 
     _NODISCARD constexpr year_month_weekday_last operator-(
         const year_month_weekday_last& _Left, const years& _Right) noexcept {
-        return _Left + (-_Right);
+        return _Left + -_Right;
     }
 
     constexpr year_month_weekday_last& year_month_weekday_last::operator+=(const months& _Months) noexcept {
