@@ -1398,7 +1398,7 @@ namespace chrono {
             const unsigned int _Mp    = (5 * _Day_of_year + 2) / 153; // [0, 11]
             const unsigned int _Day   = _Day_of_year - (153 * _Mp + 2) / 5 + 1; // [1, 31]
             const unsigned int _Month = _Mp + (_Mp < 10 ? 3 : static_cast<unsigned int>(-9)); // [1, 12]
-            return year_month_day(_CHRONO year{_Year + (_Month <= 2)}, _CHRONO month{_Month}, _CHRONO day{_Day});
+            return year_month_day{_CHRONO year{_Year + (_Month <= 2)}, _CHRONO month{_Month}, _CHRONO day{_Day}};
         }
         // courtesy of Howard Hinnant
         // https://howardhinnant.github.io/date_algorithms.html#days_from_civil
