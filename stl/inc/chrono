@@ -1114,7 +1114,6 @@ namespace chrono {
         return _Left.weekday() == _Right.weekday();
     }
 
-    // weekday
     _NODISCARD constexpr weekday_indexed weekday::operator[](unsigned int _Index) const noexcept {
         return {*this, _Index};
     }
@@ -1568,7 +1567,6 @@ namespace chrono {
         return *this;
     }
 
-    // year_month_day
     constexpr year_month_day::year_month_day(const year_month_day_last& _Ymdl) noexcept
         : _Year{_Ymdl.year()}, _Month{_Ymdl.month()}, _Day{_Ymdl.day()} {}
 
