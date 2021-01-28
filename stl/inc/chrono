@@ -640,7 +640,7 @@ namespace chrono {
     };
 
 #if _HAS_CXX20
-    // SYS_TIME aliases
+    // sys_time ALIASES
     template <class _Duration>
     using sys_time    = time_point<system_clock, _Duration>;
     using sys_seconds = sys_time<seconds>;
