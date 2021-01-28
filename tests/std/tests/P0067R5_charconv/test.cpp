@@ -45,6 +45,7 @@
 #include "float_hex_precision_to_chars_test_cases.hpp"
 #include "float_scientific_precision_to_chars_test_cases.hpp"
 #include "float_to_chars_test_cases.hpp"
+#include "wchar_test_cases.hpp"
 #include <floating_point_test_cases.hpp>
 
 using namespace std;
@@ -1078,6 +1079,46 @@ void test_right_shift_64_bits_with_rounding() {
     assert(_Right_shift_with_rounding(0xffff'ffff'ffff'ffffULL, 64, false) == 1);
 }
 
+void wchar_tests() {
+    static_assert(sizeof(__DIGIT_TABLE<char>) == sizeof(__DIGIT_TABLE<wchar_t>) / sizeof(wchar_t));
+    auto& fac = use_facet<ctype<wchar_t>>(locale{});
+    for (size_t i = 0; i < sizeof(__DIGIT_TABLE<char>); ++i) {
+        assert(fac.widen(__DIGIT_TABLE<char>[i]) == __DIGIT_TABLE<wchar_t>[i]);
+    }
+
+    wchar_t buffer[32];
+    for (const auto& t : double_to_wide_test_cases) {
+        auto result = __d2s_buffered_n<wchar_t>(begin(buffer), end(buffer), t.value, t.fmt);
+        const wstring_view sv(t.correct);
+        assert(equal(buffer, result.first, sv.begin(), sv.end()));
+    }
+
+    for (const auto& t : float_to_wide_test_cases) {
+        auto result = __f2s_buffered_n<wchar_t>(begin(buffer), end(buffer), t.value, t.fmt);
+        const wstring_view sv(t.correct);
+        assert(equal(buffer, result.first, sv.begin(), sv.end()));
+    }
+
+    wchar_t correct_lo[] = L"0.0001020304";
+    wchar_t correct_hi[] = L"0.0506070809";
+    double val_lo        = 0.0001020304;
+    double val_hi        = 0.0506070809;
+    for (int i = 0; i < 10; ++i) {
+        auto result = __d2fixed_buffered_n(begin(buffer), end(buffer), val_lo, 10);
+        assert(equal(buffer, result.first, correct_lo));
+
+        result = __d2fixed_buffered_n(begin(buffer), end(buffer), val_hi, 10);
+        assert(equal(buffer, result.first, correct_hi));
+
+        val_lo += 0.1010101010;
+        val_hi += 0.1010101010;
+        for (int j = 2; j <= 10; j += 2) {
+            ++correct_lo[j];
+            ++correct_hi[j];
+        }
+    }
+}
+
 // GH-1569 - Test instantiation of wchar_t helpers.
 template pair<wchar_t*, errc> std::__to_chars(
     wchar_t* const, wchar_t* const, const __floating_decimal_32, chars_format, const uint32_t, const uint32_t);
@@ -1097,6 +1138,8 @@ int main(int argc, char** argv) {
     all_floating_tests(mt64);
 
     test_right_shift_64_bits_with_rounding();
+
+    wchar_tests();
 
     const auto finish  = chrono::steady_clock::now();
     const long long ms = chrono::duration_cast<chrono::milliseconds>(finish - start).count();

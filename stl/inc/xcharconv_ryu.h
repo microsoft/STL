@@ -392,13 +392,7 @@ _NODISCARD inline uint32_t __mulShift_mod1e9(const uint64_t __m, const uint64_t*
 #endif // ^^^ intrinsics unavailable ^^^
 }
 
-#define _WIDEN(_TYPE, _CHAR) _STD get<_TYPE>(_STD make_pair(_CHAR, L##_CHAR))
-
-template <class _CharT>
-void _Copy_digits_from_table(_CharT* _Dst, uint32_t _Offset)
-{
-    _CSTD memcpy(_Dst, __DIGIT_TABLE<_CharT> + _Offset, 2 * sizeof(_CharT));
-}
+#define _WIDEN(_TYPE, _CHAR) static_cast<_TYPE>(is_same_v<_TYPE, char> ? _CHAR : L##_CHAR)
 
 template <class _CharT>
 inline void __append_n_digits(const uint32_t __olength, uint32_t __digits, _CharT* const __result) {
@@ -412,19 +406,19 @@ inline void __append_n_digits(const uint32_t __olength, uint32_t __digits, _Char
     __digits /= 10000;
     const uint32_t __c0 = (__c % 100) << 1;
     const uint32_t __c1 = (__c / 100) << 1;
-    _Copy_digits_from_table(__result + __olength - __i - 2, __c0);
-    _Copy_digits_from_table(__result + __olength - __i - 4, __c1);
+    memcpy(__result + __olength - __i - 2, __DIGIT_TABLE<_CharT> + __c0, 2 * sizeof(_CharT));
+    memcpy(__result + __olength - __i - 4, __DIGIT_TABLE<_CharT> + __c1, 2 * sizeof(_CharT));
     __i += 4;
   }
   if (__digits >= 100) {
     const uint32_t __c = (__digits % 100) << 1;
     __digits /= 100;
-    _Copy_digits_from_table(__result + __olength - __i - 2, __c);
+    memcpy(__result + __olength - __i - 2, __DIGIT_TABLE<_CharT> + __c, 2 * sizeof(_CharT));
     __i += 2;
   }
   if (__digits >= 10) {
     const uint32_t __c = __digits << 1;
-    _Copy_digits_from_table(__result + __olength - __i - 2, __c);
+    memcpy(__result + __olength - __i - 2, __DIGIT_TABLE<_CharT> + __c, 2 * sizeof(_CharT));
   } else {
     __result[0] = static_cast<_CharT>(_WIDEN(_CharT, '0') + __digits);
   }
@@ -468,7 +462,7 @@ inline void __append_c_digits(const uint32_t __count, uint32_t __digits, _CharT*
   for (; __i < __count - 1; __i += 2) {
     const uint32_t __c = (__digits % 100) << 1;
     __digits /= 100;
-    _Copy_digits_from_table(__result + __count - __i - 2, __c);
+    memcpy(__result + __count - __i - 2, __DIGIT_TABLE<_CharT> + __c, 2 * sizeof(_CharT));
   }
   if (__i < __count) {
     const _CharT __c = static_cast<_CharT>(_WIDEN(_CharT, '0') + (__digits % 10));
@@ -492,8 +486,8 @@ inline void __append_nine_digits(uint32_t __digits, _CharT* const __result) {
     __digits /= 10000;
     const uint32_t __c0 = (__c % 100) << 1;
     const uint32_t __c1 = (__c / 100) << 1;
-    _Copy_digits_from_table(__result + 7 - __i, __c0);
-    _Copy_digits_from_table(__result + 5 - __i, __c1);
+    memcpy(__result + 7 - __i, __DIGIT_TABLE<_CharT> + __c0, 2 * sizeof(_CharT));
+    memcpy(__result + 5 - __i, __DIGIT_TABLE<_CharT> + __c1, 2 * sizeof(_CharT));
   }
   __result[0] = static_cast<_CharT>(_WIDEN(_CharT, '0') + __digits);
 }
@@ -1465,17 +1459,17 @@ _NODISCARD pair<_CharT*, errc> __to_chars(_CharT* const _First, _CharT* const _L
       __output /= 10000;
       const uint32_t __c0 = (__c % 100) << 1;
       const uint32_t __c1 = (__c / 100) << 1;
-      _Copy_digits_from_table(_Mid -= 2, __c0);
-      _Copy_digits_from_table(_Mid -= 2, __c1);
+      memcpy(_Mid -= 2, __DIGIT_TABLE<_CharT> + __c0, 2 * sizeof(_CharT));
+      memcpy(_Mid -= 2, __DIGIT_TABLE<_CharT> + __c1, 2 * sizeof(_CharT));
     }
     if (__output >= 100) {
       const uint32_t __c = (__output % 100) << 1;
       __output /= 100;
-      _Copy_digits_from_table(_Mid -= 2, __c);
+      memcpy(_Mid -= 2, __DIGIT_TABLE<_CharT> + __c, 2 * sizeof(_CharT));
     }
     if (__output >= 10) {
       const uint32_t __c = __output << 1;
-      _Copy_digits_from_table(_Mid -= 2, __c);
+      memcpy(_Mid -= 2, __DIGIT_TABLE<_CharT> + __c, 2 * sizeof(_CharT));
     } else {
       *--_Mid = static_cast<_CharT>(_WIDEN(_CharT, '0') + __output);
     }
@@ -1517,14 +1511,14 @@ _NODISCARD pair<_CharT*, errc> __to_chars(_CharT* const _First, _CharT* const _L
     __output /= 10000;
     const uint32_t __c0 = (__c % 100) << 1;
     const uint32_t __c1 = (__c / 100) << 1;
-    _Copy_digits_from_table(__result + __olength - __i - 1, __c0);
-    _Copy_digits_from_table(__result + __olength - __i - 3, __c1);
+    memcpy(__result + __olength - __i - 1, __DIGIT_TABLE<_CharT> + __c0, 2 * sizeof(_CharT));
+    memcpy(__result + __olength - __i - 3, __DIGIT_TABLE<_CharT> + __c1, 2 * sizeof(_CharT));
     __i += 4;
   }
   if (__output >= 100) {
     const uint32_t __c = (__output % 100) << 1;
     __output /= 100;
-    _Copy_digits_from_table(__result + __olength - __i - 1, __c);
+    memcpy(__result + __olength - __i - 1, __DIGIT_TABLE<_CharT> + __c, 2 * sizeof(_CharT));
     __i += 2;
   }
   if (__output >= 10) {
@@ -1554,7 +1548,7 @@ _NODISCARD pair<_CharT*, errc> __to_chars(_CharT* const _First, _CharT* const _L
     __result[__index++] = _WIDEN(_CharT, '+');
   }
 
-  _Copy_digits_from_table(__result + __index, static_cast<uint32_t>(2 * _Scientific_exponent));
+  memcpy(__result + __index, __DIGIT_TABLE<_CharT> + 2 * _Scientific_exponent, 2 * sizeof(_CharT));
   __index += 2;
 
   return { _First + _Total_scientific_length, errc{} };
@@ -1564,7 +1558,8 @@ _NODISCARD inline to_chars_result _Convert_to_chars_result(const pair<char*, err
     return {_Pair.first, _Pair.second};
 }
 
-_NODISCARD inline to_chars_result __f2s_buffered_n(char* const _First, char* const _Last, const float __f,
+template <class _CharT>
+_NODISCARD pair<_CharT*, errc> __f2s_buffered_n(_CharT* const _First, _CharT* const _Last, const float __f,
   const chars_format _Fmt) {
 
   // Step 1: Decode the floating-point number, and unify normalized and subnormal cases.
@@ -1577,7 +1572,11 @@ _NODISCARD inline to_chars_result __f2s_buffered_n(char* const _First, char* con
         return { _Last, errc::value_too_large };
       }
 
-      _CSTD memcpy(_First, "0e+00", 5);
+      if constexpr (is_same_v<_CharT,char>) {
+        _CSTD memcpy(_First, "0e+00", 5);
+      } else {
+        _CSTD memcpy(_First, L"0e+00", 5 * sizeof(wchar_t));
+      }
 
       return { _First + 5, errc{} };
     }
@@ -1587,7 +1586,7 @@ _NODISCARD inline to_chars_result __f2s_buffered_n(char* const _First, char* con
       return { _Last, errc::value_too_large };
     }
 
-    *_First = '0';
+    *_First = _WIDEN(_CharT, '0');
 
     return { _First + 1, errc{} };
   }
@@ -1607,12 +1606,12 @@ _NODISCARD inline to_chars_result __f2s_buffered_n(char* const _First, char* con
     // (Subnormals are different, but they'll be rejected by the _Exponent2 test here, so they can be ignored.)
 
     if (_Exponent2 > 0) {
-      return _Convert_to_chars_result(_Large_integer_to_chars(_First, _Last, _Mantissa2, _Exponent2));
+      return _Large_integer_to_chars(_First, _Last, _Mantissa2, _Exponent2);
     }
   }
 
   const __floating_decimal_32 __v = __f2d(__ieeeMantissa, __ieeeExponent);
-  return _Convert_to_chars_result(__to_chars(_First, _Last, __v, _Fmt, __ieeeMantissa, __ieeeExponent));
+  return __to_chars(_First, _Last, __v, _Fmt, __ieeeMantissa, __ieeeExponent);
 }
 
 // ^^^^^^^^^^ DERIVED FROM f2s.c ^^^^^^^^^^
@@ -2094,10 +2093,10 @@ _NODISCARD pair<_CharT*, errc> __to_chars(_CharT* const _First, _CharT* const _L
       const uint32_t __d0 = (__d % 100) << 1;
       const uint32_t __d1 = (__d / 100) << 1;
 
-      _Copy_digits_from_table(_Mid -= 2, __c0);
-      _Copy_digits_from_table(_Mid -= 2, __c1);
-      _Copy_digits_from_table(_Mid -= 2, __d0);
-      _Copy_digits_from_table(_Mid -= 2, __d1);
+      memcpy(_Mid -= 2, __DIGIT_TABLE<_CharT> + __c0, 2 * sizeof(_CharT));
+      memcpy(_Mid -= 2, __DIGIT_TABLE<_CharT> + __c1, 2 * sizeof(_CharT));
+      memcpy(_Mid -= 2, __DIGIT_TABLE<_CharT> + __d0, 2 * sizeof(_CharT));
+      memcpy(_Mid -= 2, __DIGIT_TABLE<_CharT> + __d1, 2 * sizeof(_CharT));
     }
     uint32_t __output2 = static_cast<uint32_t>(__output);
     while (__output2 >= 10000) {
@@ -2109,17 +2108,17 @@ _NODISCARD pair<_CharT*, errc> __to_chars(_CharT* const _First, _CharT* const _L
       __output2 /= 10000;
       const uint32_t __c0 = (__c % 100) << 1;
       const uint32_t __c1 = (__c / 100) << 1;
-      _Copy_digits_from_table(_Mid -= 2, __c0);
-      _Copy_digits_from_table(_Mid -= 2, __c1);
+      memcpy(_Mid -= 2, __DIGIT_TABLE<_CharT> + __c0, 2 * sizeof(_CharT));
+      memcpy(_Mid -= 2, __DIGIT_TABLE<_CharT> + __c1, 2 * sizeof(_CharT));
     }
     if (__output2 >= 100) {
       const uint32_t __c = (__output2 % 100) << 1;
       __output2 /= 100;
-      _Copy_digits_from_table(_Mid -= 2, __c);
+      memcpy(_Mid -= 2, __DIGIT_TABLE<_CharT> + __c, 2 * sizeof(_CharT));
     }
     if (__output2 >= 10) {
       const uint32_t __c = __output2 << 1;
-      _Copy_digits_from_table(_Mid -= 2, __c);
+      memcpy(_Mid -= 2, __DIGIT_TABLE<_CharT> + __c, 2 * sizeof(_CharT));
     } else {
       *--_Mid = static_cast<_CharT>(_WIDEN(_CharT, '0') + __output2);
     }
@@ -2169,10 +2168,10 @@ _NODISCARD pair<_CharT*, errc> __to_chars(_CharT* const _First, _CharT* const _L
     const uint32_t __c1 = (__c / 100) << 1;
     const uint32_t __d0 = (__d % 100) << 1;
     const uint32_t __d1 = (__d / 100) << 1;
-    _Copy_digits_from_table(__result + __olength - __i - 1, __c0);
-    _Copy_digits_from_table(__result + __olength - __i - 3, __c1);
-    _Copy_digits_from_table(__result + __olength - __i - 5, __d0);
-    _Copy_digits_from_table(__result + __olength - __i - 7, __d1);
+    memcpy(__result + __olength - __i - 1, __DIGIT_TABLE<_CharT> + __c0, 2 * sizeof(_CharT));
+    memcpy(__result + __olength - __i - 3, __DIGIT_TABLE<_CharT> + __c1, 2 * sizeof(_CharT));
+    memcpy(__result + __olength - __i - 5, __DIGIT_TABLE<_CharT> + __d0, 2 * sizeof(_CharT));
+    memcpy(__result + __olength - __i - 7, __DIGIT_TABLE<_CharT> + __d1, 2 * sizeof(_CharT));
     __i += 8;
   }
   uint32_t __output2 = static_cast<uint32_t>(__output);
@@ -2185,14 +2184,14 @@ _NODISCARD pair<_CharT*, errc> __to_chars(_CharT* const _First, _CharT* const _L
     __output2 /= 10000;
     const uint32_t __c0 = (__c % 100) << 1;
     const uint32_t __c1 = (__c / 100) << 1;
-    _Copy_digits_from_table(__result + __olength - __i - 1, __c0);
-    _Copy_digits_from_table(__result + __olength - __i - 3, __c1);
+    memcpy(__result + __olength - __i - 1, __DIGIT_TABLE<_CharT> + __c0, 2 * sizeof(_CharT));
+    memcpy(__result + __olength - __i - 3, __DIGIT_TABLE<_CharT> + __c1, 2 * sizeof(_CharT));
     __i += 4;
   }
   if (__output2 >= 100) {
     const uint32_t __c = (__output2 % 100) << 1;
     __output2 /= 100;
-    _Copy_digits_from_table(__result + __olength - __i - 1, __c);
+    memcpy(__result + __olength - __i - 1, __DIGIT_TABLE<_CharT> + __c, 2 * sizeof(_CharT));
     __i += 2;
   }
   if (__output2 >= 10) {
@@ -2224,18 +2223,16 @@ _NODISCARD pair<_CharT*, errc> __to_chars(_CharT* const _First, _CharT* const _L
 
   if (_Scientific_exponent >= 100) {
     const int32_t __c = _Scientific_exponent % 10;
-    _Copy_digits_from_table(__result + __index, static_cast<uint32_t>(2 * (_Scientific_exponent / 10)));
+    memcpy(__result + __index, __DIGIT_TABLE<_CharT> + 2 * (_Scientific_exponent / 10), 2 * sizeof(_CharT));
     __result[__index + 2] = static_cast<_CharT>(_WIDEN(_CharT, '0') + __c);
     __index += 3;
   } else {
-    _Copy_digits_from_table(__result + __index, static_cast<uint32_t>(2 * _Scientific_exponent));
+    memcpy(__result + __index, __DIGIT_TABLE<_CharT> + 2 * _Scientific_exponent, 2 * sizeof(_CharT));
     __index += 2;
   }
 
   return { _First + _Total_scientific_length, errc{} };
 }
-
-#undef _WIDEN
 
 _NODISCARD inline bool __d2d_small_int(const uint64_t __ieeeMantissa, const uint32_t __ieeeExponent,
   __floating_decimal_64* const __v) {
@@ -2269,7 +2266,8 @@ _NODISCARD inline bool __d2d_small_int(const uint64_t __ieeeMantissa, const uint
   return true;
 }
 
-_NODISCARD inline to_chars_result __d2s_buffered_n(char* const _First, char* const _Last, const double __f,
+template <class _CharT>
+_NODISCARD pair<_CharT*, errc> __d2s_buffered_n(_CharT* const _First, _CharT* const _Last, const double __f,
   const chars_format _Fmt) {
 
   // Step 1: Decode the floating-point number, and unify normalized and subnormal cases.
@@ -2282,7 +2280,11 @@ _NODISCARD inline to_chars_result __d2s_buffered_n(char* const _First, char* con
         return { _Last, errc::value_too_large };
       }
 
-      _CSTD memcpy(_First, "0e+00", 5);
+      if constexpr (is_same_v<_CharT,char>) {
+        _CSTD memcpy(_First, "0e+00", 5);
+      } else {
+        _CSTD memcpy(_First, L"0e+00", 5 * sizeof(wchar_t));
+      }
 
       return { _First + 5, errc{} };
     }
@@ -2292,7 +2294,7 @@ _NODISCARD inline to_chars_result __d2s_buffered_n(char* const _First, char* con
       return { _Last, errc::value_too_large };
     }
 
-    *_First = '0';
+    *_First = _WIDEN(_CharT, '0');
 
     return { _First + 1, errc{} };
   }
@@ -2320,7 +2322,7 @@ _NODISCARD inline to_chars_result __d2s_buffered_n(char* const _First, char* con
     // exponents here and skipping Ryu. Calling __d2fixed_buffered_n() with precision 0 is valid for all integers
     // (so it's okay if we call it with a Ryu-friendly value).
     if (_Exponent2 > 0) {
-      return _Convert_to_chars_result(__d2fixed_buffered_n(_First, _Last, __f, 0));
+      return __d2fixed_buffered_n(_First, _Last, __f, 0);
     }
   }
 
@@ -2344,7 +2346,7 @@ _NODISCARD inline to_chars_result __d2s_buffered_n(char* const _First, char* con
     __v = __d2d(__ieeeMantissa, __ieeeExponent);
   }
 
-  return _Convert_to_chars_result(__to_chars(_First, _Last, __v, _Fmt, __f));
+  return __to_chars(_First, _Last, __v, _Fmt, __f);
 }
 
 // ^^^^^^^^^^ DERIVED FROM d2s.c ^^^^^^^^^^
@@ -2355,9 +2357,9 @@ template <class _Floating>
 _NODISCARD to_chars_result _Floating_to_chars_ryu(
     char* const _First, char* const _Last, const _Floating _Value, const chars_format _Fmt) noexcept {
     if constexpr (is_same_v<_Floating, float>) {
-        return __f2s_buffered_n(_First, _Last, _Value, _Fmt);
+        return _Convert_to_chars_result(__f2s_buffered_n(_First, _Last, _Value, _Fmt));
     } else {
-        return __d2s_buffered_n(_First, _Last, _Value, _Fmt);
+        return _Convert_to_chars_result(__d2s_buffered_n(_First, _Last, _Value, _Fmt));
     }
 }
 
@@ -2404,6 +2406,8 @@ _NODISCARD to_chars_result _Floating_to_chars_fixed_precision(
 }
 
 _STD_END
+
+#undef _WIDEN
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
