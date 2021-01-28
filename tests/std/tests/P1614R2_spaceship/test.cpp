@@ -487,6 +487,7 @@ void ordering_test_cases() {
         std::thread::id id1_equal;
         std::thread::id id2 = std::this_thread::get_id();
 
+        // Implementation-specific assumption: std::thread::id{} occurs first in the unspecified total ordering.
         spaceship_test<std::strong_ordering>(id1, id1_equal, id2);
     }
 }
