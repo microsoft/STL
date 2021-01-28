@@ -932,10 +932,10 @@ namespace chrono {
             return *this;
         }
 
-        constexpr year operator+() const noexcept {
+        _NODISCARD constexpr year operator+() const noexcept {
             return *this;
         }
-        constexpr year operator-() const noexcept {
+        _NODISCARD constexpr year operator-() const noexcept {
             return year{-_Year};
         }
 
