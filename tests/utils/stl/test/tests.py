@@ -221,17 +221,22 @@ class STLTest(Test):
         self.cxx = os.path.normpath(cxx)
         return None
 
+    def _addCustomFeature(self, name):
+        actions = Feature(name).getActions(self.config)
+        for action in actions:
+            action.applyTo(self.config)
+
     def _parseFlags(self):
         foundStd = False
         for flag in chain(self.flags, self.compileFlags, self.linkFlags):
             if flag[1:5] == 'std:':
                 foundStd = True
                 if flag[5:] == 'c++latest':
-                    Feature('c++2a').enableIn(self.config)
+                    self._addCustomFeature('c++2a')
                 elif flag[5:] == 'c++17':
-                    Feature('c++17').enableIn(self.config)
+                    self._addCustomFeature('c++17')
                 elif flag[5:] == 'c++14':
-                    Feature('c++14').enableIn(self.config)
+                    self._addCustomFeature('c++14')
             elif flag[1:] == 'clr:pure':
                 self.requires.append('clr_pure') # TRANSITION, GH-798
             elif flag[1:] == 'clr':
@@ -246,7 +251,7 @@ class STLTest(Test):
                 self.requires.append('arch_vfpv4') # available for arm, see features.py
 
         if not foundStd:
-            Feature('c++14').enableIn(self.config)
+            self._addCustomFeature('c++14')
 
 
 class LibcxxTest(STLTest):
