@@ -916,11 +916,19 @@ namespace chrono {
         }
 
         constexpr year& operator+=(const years& _Years) noexcept {
-            _Year = static_cast<short>(_Year + _Years.count()); // TRANSITION, EDG bug not yet reported
+#ifdef __EDG__ // TRANSITION, VSO-1271098
+            _Year = static_cast<short>(_Year + _Years.count());
+#else // ^^^ workaround / no workaround vvv
+            _Year += static_cast<short>(_Years.count());
+#endif // ^^^ no workaround ^^^
             return *this;
         }
         constexpr year& operator-=(const years& _Years) noexcept {
-            _Year = static_cast<short>(_Year - _Years.count()); // TRANSITION, EDG bug not yet reported
+#ifdef __EDG__ // TRANSITION, VSO-1271098
+            _Year = static_cast<short>(_Year - _Years.count());
+#else // ^^^ workaround / no workaround vvv
+            _Year -= static_cast<short>(_Years.count());
+#endif // ^^^ no workaround ^^^
             return *this;
         }
 
