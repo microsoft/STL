@@ -1139,8 +1139,8 @@ namespace chrono {
 
             const auto _Da = static_cast<unsigned int>(_Day);
             const auto _Mo = static_cast<unsigned int>(_Month);
-            if (_Mo == 2 && _Da > 29) {
-                return false;
+            if (_Mo == 2) {
+                return _Da <= 29;
             }
 
             if (_Mo == 4 || _Mo == 6 || _Mo == 9 || _Mo == 11) {
