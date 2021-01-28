@@ -1328,8 +1328,11 @@ namespace chrono {
         day{31}, day{28}, day{31}, day{30}, day{31}, day{30}, day{31}, day{31}, day{30}, day{31}, day{30}, day{31}};
 
     _NODISCARD constexpr day _Last_day(const year& _Year, const month& _Month) {
-        return _Month == month{2} && _Year.is_leap() ? _Last_day_table[static_cast<unsigned int>(_Month) - 1] + days{1}
-                                                     : _Last_day_table[static_cast<unsigned int>(_Month) - 1];
+        if (_Month == month{2} && _Year.is_leap()) {
+            return day{29};
+        }
+
+        return _Last_day_table[static_cast<unsigned int>(_Month) - 1];
     }
 
     class year_month_day_last;
