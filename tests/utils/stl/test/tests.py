@@ -253,6 +253,9 @@ class STLTest(Test):
         if not foundStd:
             self._addCustomFeature('c++14')
 
+        self._addCustomFeature('non-lockfree-atomics') # we always support non-lockfree-atomics
+        self._addCustomFeature('is-lockfree-runtime-function') # Ditto
+
 
 class LibcxxTest(STLTest):
     def getTestName(self):
