@@ -2461,7 +2461,7 @@ namespace ranges {
         public:
             _Sentinel() = default;
             // clang-format off
-            constexpr explicit _Sentinel(_Parent_t& _Parent) noexcept(noexcept(_RANGES end(_STD declval<_Base>()))
+            constexpr explicit _Sentinel(_Parent_t& _Parent) noexcept(noexcept(_RANGES end(_Parent._Range))
                 && is_nothrow_move_constructible_v<sentinel_t<_Base>>) // strengthened
                 : _Last(_RANGES end(_Parent._Range)) {}
 
@@ -2473,7 +2473,7 @@ namespace ranges {
             template <bool _OtherConst>
                 requires sentinel_for<sentinel_t<_Base>, _Maybe_const_iter<_OtherConst>>
             _NODISCARD friend constexpr bool operator==(const _Iterator<_OtherConst>& _Left,
-                const _Sentinel& _Right) noexcept(noexcept(_Get_current(_Right) == _Last)) /* strengthened */ {
+                const _Sentinel& _Right) noexcept(noexcept(_Get_current(_Left) == _Right._Last)) /* strengthened */ {
                 // clang-format on
                 return _Get_current(_Left) == _Right._Last;
             }
