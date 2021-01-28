@@ -836,7 +836,7 @@ namespace chrono {
         }
         constexpr month operator++(int) noexcept {
             month _Temp{*this};
-            ++(*this);
+            ++*this;
             return _Temp;
         }
         constexpr month& operator--() noexcept {
@@ -845,7 +845,7 @@ namespace chrono {
         }
         constexpr month operator--(int) noexcept {
             month _Temp{*this};
-            --(*this);
+            --*this;
             return _Temp;
         }
 
@@ -991,7 +991,7 @@ namespace chrono {
         }
         constexpr weekday operator++(int) noexcept {
             weekday _Temp{*this};
-            ++(*this);
+            ++*this;
             return _Temp;
         }
         constexpr weekday& operator--() noexcept {
@@ -999,7 +999,7 @@ namespace chrono {
         }
         constexpr weekday operator--(int) noexcept {
             weekday _Temp{*this};
-            --(*this);
+            --*this;
             return _Temp;
         }
 
