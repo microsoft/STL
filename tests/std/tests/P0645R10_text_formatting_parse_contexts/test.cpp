@@ -34,9 +34,9 @@ constexpr bool ensure_is_constant_expression(const bool should_be_constant_expre
 }
 
 const bool check_arg_id_is_constexpr_char   = ensure_is_constant_expression<char>(true);
-const bool check_arg_id_not_constexpr_char  = not ensure_is_constant_expression<char>(false);
+const bool check_arg_id_not_constexpr_char  = !ensure_is_constant_expression<char>(false);
 const bool check_arg_id_is_constexpr_wchar  = ensure_is_constant_expression<wchar_t>(true);
-const bool check_arg_id_not_constexpr_wchar = not ensure_is_constant_expression<wchar_t>(false);
+const bool check_arg_id_not_constexpr_wchar = !ensure_is_constant_expression<wchar_t>(false);
 
 template <class CharType>
 constexpr bool test_basic_format_parse_context() {
