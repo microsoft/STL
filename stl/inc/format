@@ -343,13 +343,12 @@ public:
     // _Next_arg_id > 0 means automatic
     // _Next_arg_id == -1 means manual
     constexpr size_t next_arg_id() {
-        if (_Next_arg_id >= 0) {
-            return _Next_arg_id++;
+        if (_Next_arg_id == -1) {
+            throw format_error("Can not switch from manual to automatic indexing");
         }
-        throw format_error("Can not switch from manual to automatic indexing");
+        return _Next_arg_id++;
     }
-    constexpr void check_arg_id(size_t _Id) {
-        (void) _Id;
+    constexpr void check_arg_id(size_t) {
         if (_Next_arg_id > 0) {
             throw format_error("Can not switch from automatic to manual indexing");
         }
