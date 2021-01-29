@@ -11,6 +11,9 @@ using namespace std::chrono;
 constexpr int y_min = -32767;
 constexpr int y_max = 32767;
 
+// For testing LWG-3260 "year_month* arithmetic rejects durations convertible to years"
+using Decades = duration<int, ratio_multiply<ratio<10>, years::period>>;
+
 constexpr void day_test() {
     day d{0u};
 
@@ -501,6 +504,13 @@ constexpr void year_month_test() {
     assert(ym.year() == 2020y);
     assert(ym.month() == January);
 
+    ym += Decades{2};
+    assert(ym.year() == 2040y);
+    assert(ym.month() == January);
+    ym -= Decades{2};
+    assert(ym.year() == 2020y);
+    assert(ym.month() == January);
+
     assert(2020y / April == 2020y / April);
     assert(2019y / April < 2020y / April);
     assert(2020y / March < 2020y / April);
@@ -517,6 +527,11 @@ constexpr void year_month_test() {
     assert(years{2} + ym == 2022y / January);
 
     assert(ym - years{2} == 2018y / January);
+
+    assert(ym + Decades{2} == 2040y / January);
+    assert(Decades{2} + ym == 2040y / January);
+
+    assert(ym - Decades{2} == 2000y / January);
 
     if (is_constant_evaluated()) {
         static_assert((2020y / 1).ok());
@@ -611,6 +626,16 @@ constexpr void year_month_day_test() {
     assert(ymd1.month() == January);
     assert(ymd1.day() == 1d);
 
+    ymd1 += Decades{2};
+    assert(ymd1.year() == 2040y);
+    assert(ymd1.month() == January);
+    assert(ymd1.day() == 1d);
+
+    ymd1 -= Decades{2};
+    assert(ymd1.year() == 2020y);
+    assert(ymd1.month() == January);
+    assert(ymd1.day() == 1d);
+
     assert(2020y / April / 6d == sys_days{days{18'358}});
     assert(sys_days{2017y / January / 0} == 2016y / December / 31);
     assert(sys_days{2017y / January / 31} == 2017y / January / 31);
@@ -638,6 +663,11 @@ constexpr void year_month_day_test() {
     assert(years{2} + 2020y / January / 1d == 2022y / January / 1d);
 
     assert(2020y / January / 1d - years{2} == 2018y / January / 1d);
+
+    assert(2020y / January / 1d + Decades{2} == 2040y / January / 1d);
+    assert(Decades{2} + 2020y / January / 1d == 2040y / January / 1d);
+
+    assert(2020y / January / 1d - Decades{2} == 2000y / January / 1d);
 
     if (is_constant_evaluated()) {
         static_assert(!(-32768y / 1 / 1).ok());
@@ -721,6 +751,12 @@ constexpr void year_month_day_last_test() {
     ymdl -= years{2};
     assert(ymdl == 2020y / February / 29d);
 
+    ymdl += Decades{2};
+    assert(ymdl == 2040y / February / 29d);
+
+    ymdl -= Decades{2};
+    assert(ymdl == 2020y / February / 29d);
+
     assert(2020y / April / last == sys_days{days{18'382}});
     assert(static_cast<local_days>(ymdl) == local_days{ymdl});
 
@@ -738,6 +774,11 @@ constexpr void year_month_day_last_test() {
     assert(years{2} + ymdl == 2022y / February / last);
 
     assert(ymdl - years{2} == 2018y / February / last);
+
+    assert(ymdl + Decades{2} == 2040y / February / last);
+    assert(Decades{2} + ymdl == 2040y / February / last);
+
+    assert(ymdl - Decades{2} == 2000y / February / last);
 
     if (is_constant_evaluated()) {
         static_assert((2020y / 1 / last).ok());
@@ -816,6 +857,11 @@ constexpr void year_month_weekday_test() {
     ymwd -= years{2};
     assert(ymwd == 2020y / April / Tuesday[2]);
 
+    ymwd += Decades{2};
+    assert(ymwd == 2040y / April / Tuesday[2]);
+    ymwd -= Decades{2};
+    assert(ymwd == 2020y / April / Tuesday[2]);
+
     assert(static_cast<sys_days>(epoch) == sys_days{});
     const auto previous = 1970y / January / Thursday[0];
     assert(static_cast<sys_days>(previous) == (sys_days{} - days{7}));
@@ -836,6 +882,11 @@ constexpr void year_month_weekday_test() {
     assert(years{2} + ymwd == 2022y / April / Tuesday[2]);
 
     assert(ymwd - years{2} == 2018y / April / Tuesday[2]);
+
+    assert(ymwd + Decades{2} == 2040y / April / Tuesday[2]);
+    assert(Decades{2} + ymwd == 2040y / April / Tuesday[2]);
+
+    assert(ymwd - Decades{2} == 2000y / April / Tuesday[2]);
 }
 
 constexpr void year_month_weekday_last_test() {
@@ -883,6 +934,11 @@ constexpr void year_month_weekday_last_test() {
     ymwdl -= years{2};
     assert(ymwdl == 2020y / January / Monday[last]);
 
+    ymwdl += Decades{2};
+    assert(ymwdl == 2040y / January / Monday[last]);
+    ymwdl -= Decades{2};
+    assert(ymwdl == 2020y / January / Monday[last]);
+
     assert(static_cast<sys_days>(ymwdl) == sys_days{days{18'288}});
     assert(static_cast<local_days>(ymwdl) == local_days{ymwdl});
 
@@ -900,6 +956,11 @@ constexpr void year_month_weekday_last_test() {
     assert(years{2} + ymwdl == 2022y / January / Monday[last]);
 
     assert(ymwdl - years{2} == 2018y / January / Monday[last]);
+
+    assert(ymwdl + Decades{2} == 2040y / January / Monday[last]);
+    assert(Decades{2} + ymwdl == 2040y / January / Monday[last]);
+
+    assert(ymwdl - Decades{2} == 2000y / January / Monday[last]);
 }
 
 constexpr void operator_noexcept_test() {

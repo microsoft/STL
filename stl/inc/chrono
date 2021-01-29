@@ -1250,7 +1250,9 @@ namespace chrono {
             return _Month;
         }
 
+        template <int = 0>
         constexpr year_month& operator+=(const months& _Months) noexcept;
+        template <int = 0>
         constexpr year_month& operator-=(const months& _Months) noexcept;
         constexpr year_month& operator+=(const years& _Years) noexcept;
         constexpr year_month& operator-=(const years& _Years) noexcept;
@@ -1276,15 +1278,18 @@ namespace chrono {
         return _Left.month() <=> _Right.month();
     }
 
+    template <int = 0>
     _NODISCARD constexpr year_month operator+(const year_month& _Left, const months& _Right) noexcept {
         const auto _Mo  = static_cast<long long>(static_cast<unsigned int>(_Left.month())) + (_Right.count() - 1);
         const auto _Div = (_Mo >= 0 ? _Mo : _Mo - 11) / 12;
         return year_month{_Left.year() + years{_Div}, month{static_cast<unsigned int>(_Mo - _Div * 12 + 1)}};
     }
+    template <int = 0>
     _NODISCARD constexpr year_month operator+(const months& _Left, const year_month& _Right) noexcept {
         return _Right + _Left;
     }
 
+    template <int = 0>
     _NODISCARD constexpr year_month operator-(const year_month& _Left, const months& _Right) noexcept {
         return _Left + -_Right;
     }
@@ -1307,10 +1312,12 @@ namespace chrono {
         return _Left + -_Right;
     }
 
+    template <int>
     constexpr year_month& year_month::operator+=(const months& _Months) noexcept {
         *this = *this + _Months;
         return *this;
     }
+    template <int>
     constexpr year_month& year_month::operator-=(const months& _Months) noexcept {
         *this = *this - _Months;
         return *this;
@@ -1348,7 +1355,9 @@ namespace chrono {
         constexpr explicit year_month_day(const local_days& _Local_days) noexcept
             : year_month_day{_Civil_from_days(_Local_days.time_since_epoch().count())} {}
 
+        template <int = 0>
         constexpr year_month_day& operator+=(const months& _Months) noexcept;
+        template <int = 0>
         constexpr year_month_day& operator-=(const months& _Months) noexcept;
         constexpr year_month_day& operator+=(const years& _Years) noexcept;
         constexpr year_month_day& operator-=(const years& _Years) noexcept;
@@ -1435,15 +1444,18 @@ namespace chrono {
         return _Left.day() <=> _Right.day();
     }
 
+    template <int = 0>
     _NODISCARD constexpr year_month_day operator+(const year_month_day& _Left, const months& _Right) noexcept {
         const auto _Ym = year_month{_Left.year(), _Left.month()} + _Right;
         return {_Ym.year(), _Ym.month(), _Left.day()};
     }
 
+    template <int = 0>
     _NODISCARD constexpr year_month_day operator+(const months& _Left, const year_month_day& _Right) noexcept {
         return _Right + _Left;
     }
 
+    template <int = 0>
     _NODISCARD constexpr year_month_day operator-(const year_month_day& _Left, const months& _Right) noexcept {
         return _Left + -_Right;
     }
@@ -1460,10 +1472,12 @@ namespace chrono {
         return _Left + -_Right;
     }
 
+    template <int>
     constexpr year_month_day& year_month_day::operator+=(const months& _Months) noexcept {
         *this = *this + _Months;
         return *this;
     }
+    template <int>
     constexpr year_month_day& year_month_day::operator-=(const months& _Months) noexcept {
         *this = *this - _Months;
         return *this;
@@ -1482,7 +1496,9 @@ namespace chrono {
         constexpr year_month_day_last(const year& _Year_, const month_day_last& _Mdl) noexcept
             : _Year{_Year_}, _Month_day_last{_Mdl} {}
 
+        template <int = 0>
         constexpr year_month_day_last& operator+=(const months& _Months) noexcept;
+        template <int = 0>
         constexpr year_month_day_last& operator-=(const months& _Months) noexcept;
         constexpr year_month_day_last& operator+=(const years& _Years) noexcept;
         constexpr year_month_day_last& operator-=(const years& _Years) noexcept;
@@ -1528,16 +1544,19 @@ namespace chrono {
         return _Left.month_day_last() <=> _Right.month_day_last();
     }
 
+    template <int = 0>
     _NODISCARD constexpr year_month_day_last operator+(
         const year_month_day_last& _Left, const months& _Right) noexcept {
         const auto _Ym = year_month{_Left.year(), _Left.month()} + _Right;
         return {_Ym.year(), month_day_last{_Ym.month()}};
     }
+    template <int = 0>
     _NODISCARD constexpr year_month_day_last operator+(
         const months& _Left, const year_month_day_last& _Right) noexcept {
         return _Right + _Left;
     }
 
+    template <int = 0>
     _NODISCARD constexpr year_month_day_last operator-(
         const year_month_day_last& _Left, const months& _Right) noexcept {
         return _Left + -_Right;
@@ -1553,10 +1572,12 @@ namespace chrono {
         return _Left + -_Right;
     }
 
+    template <int>
     constexpr year_month_day_last& year_month_day_last::operator+=(const months& _Months) noexcept {
         *this = *this + _Months;
         return *this;
     }
+    template <int>
     constexpr year_month_day_last& year_month_day_last::operator-=(const months& _Months) noexcept {
         *this = *this - _Months;
         return *this;
@@ -1583,7 +1604,9 @@ namespace chrono {
         constexpr explicit year_month_weekday(const local_days& _Local_days) noexcept
             : year_month_weekday{_Ymwd_from_days(_Local_days.time_since_epoch())} {}
 
+        template <int = 0>
         constexpr year_month_weekday& operator+=(const months& _Months) noexcept;
+        template <int = 0>
         constexpr year_month_weekday& operator-=(const months& _Months) noexcept;
         constexpr year_month_weekday& operator+=(const years& _Years) noexcept;
         constexpr year_month_weekday& operator-=(const years& _Years) noexcept;
@@ -1648,14 +1671,17 @@ namespace chrono {
             && _Left.weekday_indexed() == _Right.weekday_indexed();
     }
 
+    template <int = 0>
     _NODISCARD constexpr year_month_weekday operator+(const year_month_weekday& _Left, const months& _Right) noexcept {
         const auto _Ym = year_month{_Left.year(), _Left.month()} + _Right;
         return {_Ym.year(), _Ym.month(), _Left.weekday_indexed()};
     }
+    template <int = 0>
     _NODISCARD constexpr year_month_weekday operator+(const months& _Left, const year_month_weekday& _Right) noexcept {
         return _Right + _Left;
     }
 
+    template <int = 0>
     _NODISCARD constexpr year_month_weekday operator-(const year_month_weekday& _Left, const months& _Right) noexcept {
         return _Left + -_Right;
     }
@@ -1671,10 +1697,12 @@ namespace chrono {
         return _Left + -_Right;
     }
 
+    template <int>
     constexpr year_month_weekday& year_month_weekday::operator+=(const months& _Months) noexcept {
         *this = *this + _Months;
         return *this;
     }
+    template <int>
     constexpr year_month_weekday& year_month_weekday::operator-=(const months& _Months) noexcept {
         *this = *this - _Months;
         return *this;
@@ -1693,7 +1721,9 @@ namespace chrono {
         constexpr year_month_weekday_last(const year& _Year_, const month& _Month_, const weekday_last& _Wdl) noexcept
             : _Year{_Year_}, _Month{_Month_}, _Weekday_last{_Wdl} {}
 
+        template <int = 0>
         constexpr year_month_weekday_last& operator+=(const months& _Months) noexcept;
+        template <int = 0>
         constexpr year_month_weekday_last& operator-=(const months& _Months) noexcept;
         constexpr year_month_weekday_last& operator+=(const years& _Years) noexcept;
         constexpr year_month_weekday_last& operator-=(const years& _Years) noexcept;
@@ -1736,16 +1766,19 @@ namespace chrono {
             && _Left.weekday_last() == _Right.weekday_last();
     }
 
+    template <int = 0>
     _NODISCARD constexpr year_month_weekday_last operator+(
         const year_month_weekday_last& _Left, const months& _Right) noexcept {
         const auto _Ym = year_month{_Left.year(), _Left.month()} + _Right;
         return {_Ym.year(), _Ym.month(), _Left.weekday_last()};
     }
+    template <int = 0>
     _NODISCARD constexpr year_month_weekday_last operator+(
         const months& _Left, const year_month_weekday_last& _Right) noexcept {
         return _Right + _Left;
     }
 
+    template <int = 0>
     _NODISCARD constexpr year_month_weekday_last operator-(
         const year_month_weekday_last& _Left, const months& _Right) noexcept {
         return _Left + -_Right;
@@ -1765,10 +1798,12 @@ namespace chrono {
         return _Left + -_Right;
     }
 
+    template <int>
     constexpr year_month_weekday_last& year_month_weekday_last::operator+=(const months& _Months) noexcept {
         *this = *this + _Months;
         return *this;
     }
+    template <int>
     constexpr year_month_weekday_last& year_month_weekday_last::operator-=(const months& _Months) noexcept {
         *this = *this - _Months;
         return *this;
