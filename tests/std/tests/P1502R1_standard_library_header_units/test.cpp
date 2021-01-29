@@ -806,7 +806,7 @@ int main() {
         puts("Testing <syncstream>.");
         syncbuf sync_buf{nullptr};
         assert(sync_buf.get_wrapped() == nullptr);
-        assert(sync_buf.get_allocator() == std::allocator<char>{});
+        assert(sync_buf.get_allocator() == allocator<char>{});
         assert(sync_buf.emit() == false);
         osyncstream sync_str{cout};
         sync_str << "Testing P1502R1_standard_library_header_units.\n";

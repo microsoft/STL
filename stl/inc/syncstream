@@ -27,11 +27,11 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 
-extern "C" shared_mutex* __cdecl _Get_mutex_for_instance(void* _Ptr) noexcept;
-extern "C" void __cdecl _Acquire_mutex_for_instance(void* _Ptr);
-extern "C" void __cdecl _Release_mutex_for_instance(void* _Ptr) noexcept;
+extern "C" _NODISCARD shared_mutex* __stdcall _Get_mutex_for_instance(void* _Ptr) noexcept;
+extern "C" void __stdcall _Acquire_mutex_for_instance(void* _Ptr);
+extern "C" void __stdcall _Release_mutex_for_instance(void* _Ptr) noexcept;
 
-// CLASS TEMPLATE _Basic_osyncbuf_impl
+// CLASS TEMPLATE _Basic_syncbuf_impl
 template <class _Elem, class _Traits>
 class _Basic_syncbuf_impl : public basic_streambuf<_Elem, _Traits> {
 public:
@@ -47,10 +47,10 @@ protected:
     _Basic_syncbuf_impl() = default;
 
     _Basic_syncbuf_impl(_Basic_syncbuf_impl&& _Right) {
-        swap(_Right);
+        _Swap(_Right);
     }
 
-    void swap(_Basic_syncbuf_impl& _Right) {
+    void _Swap(_Basic_syncbuf_impl& _Right) noexcept {
         _Mysb::swap(_Right);
         _STD swap(_Emit_on_sync, _Right._Emit_on_sync);
         _STD swap(_Sync_recorded, _Right._Sync_recorded);
@@ -70,9 +70,9 @@ public:
     using allocator_type = _Alloc;
     using streambuf_type = basic_streambuf<_Elem, _Traits>;
 
-    using _Mybase   = _Basic_syncbuf_impl<_Elem, _Traits>;
-    using pointer   = typename allocator_traits<_Alloc>::pointer;
-    using size_type = typename allocator_traits<_Alloc>::size_type;
+    using _Mybase    = _Basic_syncbuf_impl<_Elem, _Traits>;
+    using _Pointer   = typename allocator_traits<_Alloc>::pointer;
+    using _Size_type = typename allocator_traits<_Alloc>::size_type;
 
     using _Mybase::set_emit_on_sync;
 
@@ -117,14 +117,14 @@ public:
         }
 
         bool _Result                = true;
-        const size_type _Data_size  = _Get_data_size();
+        const _Size_type _Data_size = _Get_data_size();
         _Elem* const _Begin_seq_ptr = streambuf_type::pbase();
         if (_Data_size > 0 || _Mybase::_Sync_recorded) {
             scoped_lock _Guard(*_Get_mutex_for_instance(_Wrapped));
 
             if (_Data_size > 0
                 && _Data_size
-                       != static_cast<size_type>(
+                       != static_cast<_Size_type>(
                            _Wrapped->sputn(_Begin_seq_ptr, static_cast<streamsize>(_Data_size)))) {
                 _Result = false;
             }
@@ -169,15 +169,15 @@ protected:
             return _Traits::not_eof(_Current_elem);
         }
 
-        const size_type _Buf_size       = _Get_buffer_size();
-        const size_type _Max_allocation = allocator_traits<_Alloc>::max_size(_Al);
+        const _Size_type _Buf_size       = _Get_buffer_size();
+        const _Size_type _Max_allocation = allocator_traits<_Alloc>::max_size(_Al);
         if (_Buf_size == _Max_allocation) {
             return _Traits::eof();
         }
 
-        const size_type _New_capacity  = _Calculate_growth(_Buf_size, _Buf_size + 1, _Max_allocation);
-        const _Elem* const _Old_ptr    = streambuf_type::pbase();
-        const size_type _Old_data_size = _Get_data_size();
+        const _Size_type _New_capacity  = _Calculate_growth(_Buf_size, _Buf_size + 1, _Max_allocation);
+        const _Elem* const _Old_ptr     = streambuf_type::pbase();
+        const _Size_type _Old_data_size = _Get_data_size();
 
         _Elem* const _New_ptr = _Unfancy(_Al.allocate(_New_capacity));
         _Traits::copy(_New_ptr, _Old_ptr, _Old_data_size);
@@ -189,7 +189,7 @@ protected:
     }
 
 private:
-    static constexpr size_type _Min_size = 32; // constant for minimum buffer size
+    static constexpr _Size_type _Min_size = 32; // constant for minimum buffer size
 
     void _Init() {
         _Elem* const _New_ptr = _Unfancy(_Al.allocate(_Min_size));
@@ -197,9 +197,9 @@ private:
     }
 
     void _Tidy() noexcept {
-        const size_type _Buf_size = _Get_buffer_size();
+        const _Size_type _Buf_size = _Get_buffer_size();
         if (0 < _Buf_size) {
-            _Al.deallocate(pointer_traits<pointer>::pointer_to(*streambuf_type::pbase()), _Buf_size);
+            _Al.deallocate(pointer_traits<_Pointer>::pointer_to(*streambuf_type::pbase()), _Buf_size);
         }
 
         streambuf_type::setp(nullptr, nullptr, nullptr);
@@ -227,8 +227,8 @@ private:
         } else {
             _Tidy();
 
-            const size_type _Right_buf_size  = _Right._Get_buffer_size();
-            const size_type _Right_data_size = _Right._Get_data_size();
+            const _Size_type _Right_buf_size  = _Right._Get_buffer_size();
+            const _Size_type _Right_data_size = _Right._Get_data_size();
 
             _Elem* const _New_ptr = _Unfancy(_Al.allocate(_Right_buf_size));
             _Traits::copy(_New_ptr, _Right.pbase(), _Right_data_size);
@@ -245,7 +245,7 @@ private:
     }
 
     void _Swap_except_al(basic_syncbuf& _Right) noexcept {
-        _Mybase::swap(_Right);
+        _Mybase::_Swap(_Right);
         _STD swap(_Wrapped, _Right._Wrapped);
     }
 
@@ -261,13 +261,13 @@ private:
         _CATCH_END
     }
 
-    _NODISCARD constexpr size_type _Calculate_growth(
-        const size_type _Oldsize, const size_type _Newsize, const size_type _Maxsize) const {
+    _NODISCARD constexpr _Size_type _Calculate_growth(
+        const _Size_type _Oldsize, const _Size_type _Newsize, const _Size_type _Maxsize) const {
         if (_Oldsize > _Maxsize - _Oldsize / 2) {
             return _Maxsize; // geometric growth would overflow
         }
 
-        const size_type _Geometric = _Oldsize + _Oldsize / 2;
+        const _Size_type _Geometric = _Oldsize + _Oldsize / 2;
 
         if (_Geometric < _Newsize) {
             return _Newsize; // geometric growth would be insufficient
@@ -276,12 +276,12 @@ private:
         return _Geometric; // geometric growth is sufficient
     }
 
-    _NODISCARD constexpr size_type _Get_data_size() const noexcept {
-        return static_cast<size_type>(streambuf_type::pptr() - streambuf_type::pbase());
+    _NODISCARD constexpr _Size_type _Get_data_size() const noexcept {
+        return static_cast<_Size_type>(streambuf_type::pptr() - streambuf_type::pbase());
     }
 
-    _NODISCARD constexpr size_type _Get_buffer_size() const noexcept {
-        return static_cast<size_type>(streambuf_type::epptr() - streambuf_type::pbase());
+    _NODISCARD constexpr _Size_type _Get_buffer_size() const noexcept {
+        return static_cast<_Size_type>(streambuf_type::epptr() - streambuf_type::pbase());
     }
 
     streambuf_type* _Wrapped{nullptr};

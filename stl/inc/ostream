@@ -997,7 +997,7 @@ basic_ostream<_Elem, _Traits>& __CLRCALL_OR_CDECL flush(basic_ostream<_Elem, _Tr
 #ifdef _CPPRTTI
 template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& emit_on_flush(basic_ostream<_Elem, _Traits>& _Ostr) {
-    auto _Sync_buf_ptr = dynamic_cast<_Basic_syncbuf_impl<_Elem, _Traits>*>(_Ostr.rdbuf());
+    const auto _Sync_buf_ptr = dynamic_cast<_Basic_syncbuf_impl<_Elem, _Traits>*>(_Ostr.rdbuf());
     if (_Sync_buf_ptr) {
         _Sync_buf_ptr->set_emit_on_sync(true);
     }
@@ -1006,7 +1006,7 @@ basic_ostream<_Elem, _Traits>& emit_on_flush(basic_ostream<_Elem, _Traits>& _Ost
 
 template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& noemit_on_flush(basic_ostream<_Elem, _Traits>& _Ostr) {
-    auto _Sync_buf_ptr = dynamic_cast<_Basic_syncbuf_impl<_Elem, _Traits>*>(_Ostr.rdbuf());
+    const auto _Sync_buf_ptr = dynamic_cast<_Basic_syncbuf_impl<_Elem, _Traits>*>(_Ostr.rdbuf());
     if (_Sync_buf_ptr) {
         _Sync_buf_ptr->set_emit_on_sync(false);
     }
@@ -1016,7 +1016,7 @@ basic_ostream<_Elem, _Traits>& noemit_on_flush(basic_ostream<_Elem, _Traits>& _O
 template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& flush_emit(basic_ostream<_Elem, _Traits>& _Ostr) {
     _Ostr.flush();
-    auto _Sync_buf_ptr = dynamic_cast<_Basic_syncbuf_impl<_Elem, _Traits>*>(_Ostr.rdbuf());
+    const auto _Sync_buf_ptr = dynamic_cast<_Basic_syncbuf_impl<_Elem, _Traits>*>(_Ostr.rdbuf());
     if (_Sync_buf_ptr) {
         if (!_Sync_buf_ptr->_Do_emit()) {
             _Ostr.setstate(ios::badbit);
