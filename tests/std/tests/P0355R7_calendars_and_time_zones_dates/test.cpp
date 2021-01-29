@@ -963,63 +963,6 @@ constexpr void year_month_weekday_last_test() {
     assert(ymwdl - Decades{2} == 2000y / January / Monday[last]);
 }
 
-constexpr void operator_noexcept_test() {
-    constexpr year y{2021};
-    constexpr int y_int{2021};
-    constexpr month m{1};
-    constexpr int m_int{1};
-    constexpr day d{27};
-    constexpr int d_int{27};
-    constexpr weekday_indexed wdi{Wednesday[4]};
-    constexpr weekday_last wdl{Wednesday[last]};
-    constexpr year_month ym{y / m};
-    constexpr month_day md{m / d};
-    constexpr month_day_last mdl{m / last};
-    constexpr month_weekday mwd{m / wdi};
-    constexpr month_weekday_last mwdl{m / wdl};
-
-    static_assert(noexcept(y / m));
-    static_assert(noexcept(y / m_int));
-    static_assert(noexcept(m / d));
-    static_assert(noexcept(m / d_int));
-    static_assert(noexcept(m_int / d));
-    static_assert(noexcept(d / m));
-    static_assert(noexcept(d / m_int));
-    static_assert(noexcept(m / last));
-    static_assert(noexcept(m_int / last));
-    static_assert(noexcept(last / m));
-    static_assert(noexcept(last / m_int));
-    static_assert(noexcept(m / wdi));
-    static_assert(noexcept(m_int / wdi));
-    static_assert(noexcept(wdi / m));
-    static_assert(noexcept(wdi / m_int));
-    static_assert(noexcept(m / wdl));
-    static_assert(noexcept(m_int / wdl));
-    static_assert(noexcept(wdl / m));
-    static_assert(noexcept(wdl / m_int));
-    static_assert(noexcept(ym / d));
-    static_assert(noexcept(ym / d_int));
-    static_assert(noexcept(y / md));
-    static_assert(noexcept(y_int / md));
-    static_assert(noexcept(md / y));
-    static_assert(noexcept(md / y_int));
-    static_assert(noexcept(ym / last));
-    static_assert(noexcept(y / mdl));
-    static_assert(noexcept(y_int / mdl));
-    static_assert(noexcept(mdl / y));
-    static_assert(noexcept(mdl / y_int));
-    static_assert(noexcept(ym / wdi));
-    static_assert(noexcept(y / mwd));
-    static_assert(noexcept(y_int / mwd));
-    static_assert(noexcept(mwd / y));
-    static_assert(noexcept(mwd / y_int));
-    static_assert(noexcept(ym / wdl));
-    static_assert(noexcept(y / mwdl));
-    static_assert(noexcept(y_int / mwdl));
-    static_assert(noexcept(mwdl / y));
-    static_assert(noexcept(mwdl / y_int));
-}
-
 constexpr bool test() {
     day_test();
     month_test();
@@ -1036,7 +979,6 @@ constexpr bool test() {
     year_month_day_last_test();
     year_month_weekday_test();
     year_month_weekday_last_test();
-    operator_noexcept_test();
     return true;
 }
 
