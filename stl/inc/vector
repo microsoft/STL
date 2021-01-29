@@ -1447,10 +1447,10 @@ public:
 #endif // __cpp_lib_constexpr_dynamic_alloc
         {
             _STL_VERIFY(_My_data._Myfirst != _Mylast, "vector empty before pop");
-            _Orphan_range(_Mylast - 1, _Mylast);
         }
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
+        _Orphan_range(_Mylast - 1, _Mylast);
         _Alty_traits::destroy(_Getal(), _Unfancy(_Mylast - 1));
         --_Mylast;
     }
@@ -1469,10 +1469,10 @@ public:
             _STL_VERIFY(
                 _Where._Getcont() == _STD addressof(_My_data) && _Whereptr >= _My_data._Myfirst && _Mylast > _Whereptr,
                 "vector erase iterator outside range");
-            _Orphan_range(_Whereptr, _Mylast);
         }
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
+        _Orphan_range(_Whereptr, _Mylast);
         _Move_unchecked(_Whereptr + 1, _Mylast, _Whereptr);
         _Alty_traits::destroy(_Getal(), _Unfancy(_Mylast - 1));
         --_Mylast;
@@ -1871,8 +1871,7 @@ private:
     }
 
 #if _ITERATOR_DEBUG_LEVEL == 2
-    void _Orphan_range_locked(pointer _First, pointer _Last) const {
-        _Lockit _Lock(_LOCK_DEBUG);
+    _CONSTEXPR20_CONTAINER void _Orphan_range_unlocked(pointer _First, pointer _Last) const {
         _Iterator_base12** _Pnext = &_Mypair._Myval2._Myproxy->_Myfirstiter;
         while (*_Pnext) {
             const auto _Pnextptr = static_cast<const_iterator&>(**_Pnext)._Ptr;
@@ -1885,9 +1884,16 @@ private:
         }
     }
 
+    void _Orphan_range_locked(pointer _First, pointer _Last) const {
+        _Lockit _Lock(_LOCK_DEBUG);
+        _Orphan_range_unlocked(_First, _Last);
+    }
+
     _CONSTEXPR20_CONTAINER void _Orphan_range(pointer _First, pointer _Last) const {
 #ifdef __cpp_lib_constexpr_dynamic_alloc
-        if (!_STD is_constant_evaluated())
+        if (_STD is_constant_evaluated()) {
+            _Orphan_range_unlocked(_First, _Last);
+        } else
 #endif // __cpp_lib_constexpr_dynamic_alloc
         {
             _Orphan_range_locked(_First, _Last);
@@ -3013,8 +3019,7 @@ public:
     }
 
 #if _ITERATOR_DEBUG_LEVEL == 2
-    void _Orphan_range_locked(size_type _Offlo, size_type _Offhi) const {
-        _Lockit _Lock(_LOCK_DEBUG);
+    _CONSTEXPR20_CONTAINER void _Orphan_range_unlocked(size_type _Offlo, size_type _Offhi) const {
         const auto _Base = this->_Myvec.data();
 
         _Iterator_base12** _Pnext = &this->_Myproxy->_Myfirstiter;
@@ -3030,9 +3035,16 @@ public:
         }
     }
 
+    void _Orphan_range_locked(size_type _Offlo, size_type _Offhi) const {
+        _Lockit _Lock(_LOCK_DEBUG);
+        _Orphan_range_unlocked(_Offlo, _Offhi);
+    }
+
     _CONSTEXPR20_CONTAINER void _Orphan_range(size_type _Offlo, size_type _Offhi) const {
 #ifdef __cpp_lib_constexpr_dynamic_alloc
-        if (!_STD is_constant_evaluated())
+        if (!_STD is_constant_evaluated()) {
+            _Orphan_range_unlocked(_Offlo, _Offhi);
+        } else
 #endif // __cpp_lib_constexpr_dynamic_alloc
         {
             _Orphan_range_locked(_Offlo, _Offhi);
