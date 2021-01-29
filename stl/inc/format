@@ -333,8 +333,9 @@ public:
     _NODISCARD constexpr const_iterator end() const noexcept {
         return _Format_string.end();
     }
-    constexpr void advance_to(const_iterator _It) {
-        _Format_string.remove_prefix(_It - begin());
+    constexpr void advance_to(const const_iterator _It) {
+        _Adl_verify_range(_It, _Format_string.end());
+        _Format_string.remove_prefix(_It - _Format_string.begin());
     }
 
     // While the standard presents an exposition only enum value for
