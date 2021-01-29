@@ -314,6 +314,8 @@ public:
     using iterator       = const_iterator;
 
 private:
+    using _Size_type = typename basic_string_view<_CharT>::size_type;
+
     basic_string_view<_CharT> _Format_string;
     size_t _Num_args;
     // The standard says this is size_t, however we use ptrdiff_t to save some space
@@ -335,7 +337,8 @@ public:
     }
     constexpr void advance_to(const const_iterator _It) {
         _Adl_verify_range(_It, _Format_string.end());
-        _Format_string.remove_prefix(_It - _Format_string.begin());
+        const auto _Diff = static_cast<_Size_type>(_It - _Format_string.begin());
+        _Format_string.remove_prefix(_Diff);
     }
 
     // While the standard presents an exposition only enum value for
@@ -347,14 +350,14 @@ public:
         if (_Next_arg_id == -1) {
             throw format_error("Can not switch from manual to automatic indexing");
         }
-        return _Next_arg_id++;
+        return static_cast<size_t>(_Next_arg_id++);
     }
     constexpr void check_arg_id(const size_t _Id) {
         if (_STD is_constant_evaluated()) {
             if (_Id >= _Num_args) {
                 _TRY_BEGIN
                 throw 42;
-                _CATCH(42)
+                _CATCH_ALL
                 _CATCH_END
             }
         }
