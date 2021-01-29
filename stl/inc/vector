@@ -1375,7 +1375,10 @@ private:
 
     _CONSTEXPR20_CONTAINER void _Check_all_orphaned() const noexcept {
 #ifdef __cpp_lib_constexpr_dynamic_alloc
-        if (!_STD is_constant_evaluated())
+        if (_STD is_constant_evaluated()) {
+            auto& _My_data = _Mypair._Myval2;
+            _STL_INTERNAL_CHECK(!_My_data._Myproxy->_Myfirstiter);
+        } else
 #endif // __cpp_lib_constexpr_dynamic_alloc
         {
             _Check_all_orphaned_locked();
