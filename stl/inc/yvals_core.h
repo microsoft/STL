@@ -177,6 +177,7 @@
 // P0912R5 Library Support For Coroutines
 // P0919R3 Heterogeneous Lookup For Unordered Containers
 // P0966R1 string::reserve() Should Not Shrink
+// P0980R1 constexpr std::string
 // P1001R2 execution::unseq
 // P1006R1 constexpr For pointer_traits<T*>::pointer_to()
 // P1007R3 assume_aligned()
@@ -1187,10 +1188,15 @@
 #define __cpp_lib_constexpr_dynamic_alloc 201907L
 #endif // __cpp_constexpr_dynamic_alloc
 
-#define __cpp_lib_constexpr_functional  201907L
-#define __cpp_lib_constexpr_iterator    201811L
-#define __cpp_lib_constexpr_memory      201811L
-#define __cpp_lib_constexpr_numeric     201911L
+#define __cpp_lib_constexpr_functional 201907L
+#define __cpp_lib_constexpr_iterator   201811L
+#define __cpp_lib_constexpr_memory     201811L
+#define __cpp_lib_constexpr_numeric    201911L
+
+#if defined(__cpp_constexpr_dynamic_alloc) && !defined(__clang__) // TRANSITION, LLVM-48606
+#define __cpp_lib_constexpr_string 201907L
+#endif // __cpp_constexpr_dynamic_alloc && !__clang__
+
 #define __cpp_lib_constexpr_string_view 201811L
 #define __cpp_lib_constexpr_tuple       201811L
 #define __cpp_lib_constexpr_utility     201811L
