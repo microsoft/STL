@@ -39,7 +39,7 @@ steps:
     testResultsFiles: '**/test-results.xml'
     testRunTitle: 'test-${{ parameters.targetPlatform }}-$(System.JobPositionInPhase)'
 - publish: $(${{ parameters.buildOutPutLocationVar }})/out
-  artifact: '${{ parameters.targetPlatform }}-$(System.JobPositionInPhase)-libs-$(System.JobId)'
+  artifact: '${{ parameters.targetPlatform }}-$(System.JobPositionInPhase)-libs'
   condition: ${{ parameters.publishArtifact }}
   displayName: 'Publish Libs and Headers Artifact'
 - publish: $(${{ parameters.buildOutPutLocationVar }})/tests
