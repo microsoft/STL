@@ -291,7 +291,6 @@ struct nontrivial_A {
     constexpr ~nontrivial_A() {}
 };
 
-
 constexpr void test_compiletime_destroy_variants() {
 #ifndef __EDG__ // TRANSITION, VSO-1270011
     {
