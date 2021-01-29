@@ -69,9 +69,6 @@ std/numerics/bit/bitops.rot/rotl.pass.cpp:0 FAIL
 # libc++ doesn't yet implement P1754R1 or P1964R2, so it expects an old value for `__cpp_lib_concepts`
 std/language.support/support.limits/support.limits.general/concepts.version.pass.cpp FAIL
 
-# libc++ doesn't yet implement P1001R2, so it expects an old value for `__cpp_lib_execution`
-std/language.support/support.limits/support.limits.general/execution.version.pass.cpp FAIL
-
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
 # Tracked by VSO-593630 "<filesystem> Enable libcxx filesystem tests"
@@ -486,11 +483,18 @@ std/utilities/time/time.hms/time.hms.members/subseconds.pass.cpp FAIL
 std/utilities/time/time.hms/time.hms.members/to_duration.pass.cpp FAIL
 std/utilities/time/time.hms/time.hms.members/width.pass.cpp FAIL
 
+# C++20 P0466R5 "Layout-Compatibility And Pointer-Interconvertibility Traits"
+std/language.support/support.limits/support.limits.general/type_traits.version.pass.cpp FAIL
+
 # C++20 P0608R3 "Improving variant's Converting Constructor/Assignment"
 std/utilities/variant/variant.variant/variant.assign/conv.pass.cpp FAIL
 std/utilities/variant/variant.variant/variant.assign/T.pass.cpp FAIL
 std/utilities/variant/variant.variant/variant.ctor/conv.pass.cpp FAIL
 std/utilities/variant/variant.variant/variant.ctor/T.pass.cpp FAIL
+
+# C++20 P0645R10 "<format> Text Formatting"
+std/language.support/support.limits/support.limits.general/format.version.pass.cpp FAIL
+std/utilities/format/format.error/format.error.pass.cpp FAIL
 
 # C++20 P0784R7 "More constexpr containers"
 std/utilities/memory/allocator.traits/allocator.traits.members/allocate.pass.cpp:0 FAIL
@@ -512,12 +516,21 @@ std/language.support/support.limits/support.limits.general/functional.version.pa
 std/language.support/support.limits/support.limits.general/iterator.version.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/memory.version.pass.cpp FAIL
 
+# C++20 P1004R2 "constexpr std::vector"
+std/language.support/support.limits/support.limits.general/vector.version.pass.cpp FAIL
+
+# C++20 P1614R2 "Adding Spaceship <=> To The Library"
+std/language.support/support.limits/support.limits.general/compare.version.pass.cpp FAIL
+
 
 # *** MISSING COMPILER FEATURES ***
 # Nothing here! :-)
 
 
 # *** MISSING LWG ISSUE RESOLUTIONS ***
+# LWG-2503 "multiline option should be added to syntax_option_type"
+std/re/re.const/re.matchflag/match_multiline.pass.cpp FAIL
+
 # LWG-2532 "Satisfying a promise at thread exit" (Open)
 # WCFB02 implements the proposed resolution for this issue
 std/thread/futures/futures.promise/set_exception_at_thread_exit.pass.cpp FAIL
@@ -540,6 +553,10 @@ std/containers/views/span.cons/ptr_ptr.pass.cpp:0 FAIL
 std/utilities/utility/pairs/pairs.pair/assign_pair.pass.cpp:0 FAIL
 std/utilities/utility/pairs/pairs.pair/assign_rv_pair.pass.cpp:0 FAIL
 std/utilities/utility/pairs/pairs.pair/assign_rv_pair_U_V.pass.cpp:0 FAIL
+
+# VSO-1271673 "static analyzer doesn't know about short-circuiting"
+std/algorithms/alg.sorting/alg.sort/partial.sort/partial_sort.pass.cpp:0 FAIL
+std/algorithms/alg.sorting/alg.sort/partial.sort/partial_sort_comp.pass.cpp:0 FAIL
 
 
 # *** CLANG COMPILER BUGS ***
@@ -581,7 +598,6 @@ std/containers/sequences/array/array.data/data.pass.cpp FAIL
 std/containers/sequences/array/iterators.pass.cpp FAIL
 
 # GH-1006 <algorithm>: debug checks for predicates are observable
-std/algorithms/alg.sorting/alg.heap.operations/make.heap/make_heap_comp.pass.cpp FAIL
 std/algorithms/alg.sorting/alg.merge/inplace_merge_comp.pass.cpp FAIL
 std/algorithms/alg.sorting/alg.min.max/minmax_init_list_comp.pass.cpp FAIL
 
@@ -646,6 +662,15 @@ std/utilities/meta/meta.trans/meta.trans.other/aligned_storage.pass.cpp FAIL
 std/depr/depr.c.headers/math_h.pass.cpp FAIL
 std/numerics/c.math/cmath.pass.cpp FAIL
 
+# GH-1596: <algorithm>: unqualified calls to _Adl_verify_range incorrectly cause instantiation
+std/algorithms/robust_against_adl.pass.cpp FAIL
+
+# GH-1595: <bit>: bit_ceil(T(-1)) should not be a constant expression
+std/numerics/bit/bit.pow.two/bit_ceil.fail.cpp:0 FAIL
+
+# GH-1530: <random>: Poisson approximation for binomial_distribution is not accurate
+std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.bin/eval.PR44847.pass.cpp FAIL
+
 
 # *** CRT BUGS ***
 # We're permanently missing aligned_alloc().
@@ -662,15 +687,6 @@ std/language.support/support.limits/c.limits/cfloat.pass.cpp:0 FAIL
 
 
 # *** LIKELY BOGUS TESTS ***
-# "error: _LIBCPP_VERSION not defined"
-std/thread/thread.barrier/version.pass.cpp FAIL
-std/thread/thread.latch/version.pass.cpp FAIL
-std/thread/thread.semaphore/version.pass.cpp FAIL
-
-# "error C3861: 'assert': identifier not found"
-std/thread/thread.semaphore/timed.pass.cpp FAIL
-std/thread/thread.semaphore/try_acquire.pass.cpp FAIL
-
 # pass lambda without noexcept to barrier
 std/thread/thread.barrier/completion.pass.cpp FAIL
 std/thread/thread.barrier/max.pass.cpp FAIL
@@ -683,15 +699,6 @@ std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.asgn/move.pass.cpp
 
 # Test bug after LWG-3257 "Missing feature testing macro update from P0858" was accepted.
 std/language.support/support.limits/support.limits.general/string.version.pass.cpp FAIL
-
-# libc++ expects an old value for `__cpp_lib_array_constexpr` (`201603L`). We've implemented P0858R0, P1023R0, and P1032R1, increasing the value to `201811L`.
-std/language.support/support.limits/support.limits.general/array.version.pass.cpp FAIL
-
-# libc++ expects the old macro `__cpp_lib_constexpr_misc`. After P1902R1, it should expect `__cpp_lib_constexpr_tuple` to have the value `201811L`.
-std/language.support/support.limits/support.limits.general/tuple.version.pass.cpp FAIL
-
-# libc++ expects the old macro `__cpp_lib_constexpr_misc`. After P1902R1, it should expect `__cpp_lib_constexpr_utility` to have the value `201811L`.
-std/language.support/support.limits/support.limits.general/utility.version.pass.cpp FAIL
 
 # Not yet analyzed, likely bogus tests. Appears to be timing assumptions.
 std/thread/futures/futures.async/async.pass.cpp SKIPPED
@@ -808,6 +815,9 @@ std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/eval.pass.cpp F
 # Asserts `(std::lerp(T(2.3), T(2.3), inf) == T(2.3))` and `std::isnan(std::lerp(T( 0), T( 0), inf))`
 # They shouldn't behave differently. Both of them should probably return NaN.
 std/numerics/c.math/c.math.lerp/c.math.lerp.pass.cpp FAIL
+
+# Bogus test passes a class type as the second argument to std::advance
+std/iterators/iterator.primitives/iterator.operations/robust_against_adl.pass.cpp FAIL
 
 
 # *** LIKELY STL BUGS ***
@@ -1006,6 +1016,21 @@ std/containers/sequences/deque/deque.modifiers/insert_iter_iter.pass.cpp SKIPPED
 
 # Not yet analyzed. Failing after https://reviews.llvm.org/D75622.
 std/re/re.const/re.matchflag/match_prev_avail.pass.cpp FAIL
+
+# Not yet analyzed. Many diagnostics.
+std/input.output/filesystems/class.path/path.member/path.charconv.pass.cpp FAIL
+
+# Not yet analyzed. Probably ADL shenanigans.
+std/thread/thread.threads/thread.thread.class/thread.thread.constr/robust_against_adl.pass.cpp FAIL
+std/utilities/function.objects/func.wrap/func.wrap.func/robust_against_adl.pass.cpp FAIL
+std/utilities/function.objects/refwrap/refwrap.invoke/robust_against_adl.pass.cpp FAIL
+std/utilities/variant/variant.visit/robust_against_adl.pass.cpp FAIL
+
+# Not yet analyzed. Probably MSVC bug.
+std/utilities/function.objects/func.invoke/invoke_constexpr.pass.cpp:0 FAIL
+
+# Not yet analyzed. Probably name mangling bug.
+std/utilities/function.objects/func.wrap/func.wrap.func/noncopyable_return_type.pass.cpp FAIL
 
 
 # *** XFAILs WHICH PASS ***
