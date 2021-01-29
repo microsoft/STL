@@ -349,7 +349,15 @@ public:
         }
         return _Next_arg_id++;
     }
-    constexpr void check_arg_id(size_t) {
+    constexpr void check_arg_id(const size_t _Id) {
+        if (_STD is_constant_evaluated()) {
+            if (_Id >= _Num_args) {
+                _TRY_BEGIN
+                throw 42;
+                _CATCH(42)
+                _CATCH_END
+            }
+        }
         if (_Next_arg_id > 0) {
             throw format_error("Can not switch from automatic to manual indexing");
         }
