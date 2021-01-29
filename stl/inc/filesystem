@@ -2461,10 +2461,6 @@ namespace filesystem {
             return _Result._Status;
         }
 
-        _NODISCARD bool operator<(const directory_entry& _Rhs) const noexcept {
-            return _Path < _Rhs._Path;
-        }
-
         _NODISCARD bool operator==(const directory_entry& _Rhs) const noexcept {
             return _Path == _Rhs._Path;
         }
@@ -2476,6 +2472,10 @@ namespace filesystem {
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
         _NODISCARD bool operator!=(const directory_entry& _Rhs) const noexcept {
             return _Path != _Rhs._Path;
+        }
+
+        _NODISCARD bool operator<(const directory_entry& _Rhs) const noexcept {
+            return _Path < _Rhs._Path;
         }
 
         _NODISCARD bool operator<=(const directory_entry& _Rhs) const noexcept {
