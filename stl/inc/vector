@@ -3045,7 +3045,7 @@ public:
 
     _CONSTEXPR20_CONTAINER void _Orphan_range(size_type _Offlo, size_type _Offhi) const {
 #ifdef __cpp_lib_constexpr_dynamic_alloc
-        if (!_STD is_constant_evaluated()) {
+        if (_STD is_constant_evaluated()) {
             _Orphan_range_unlocked(_Offlo, _Offhi);
         } else
 #endif // __cpp_lib_constexpr_dynamic_alloc
