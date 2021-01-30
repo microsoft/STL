@@ -3057,7 +3057,7 @@ public:
         }
 
         _NODISCARD bool operator==(const param_type& _Right) const {
-            return _Px == _Right._Px;
+            return _Alpha == _Right._Alpha && _Beta == _Right._Beta;
         }
 
         _NODISCARD bool operator!=(const param_type& _Right) const {
