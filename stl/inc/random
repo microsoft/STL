@@ -2917,7 +2917,7 @@ public:
     }
 
     _NODISCARD result_type(min)() const { // get smallest possible result
-        return numeric_limits<result_type>::denorm_min();
+        return -(numeric_limits<result_type>::max)();
     }
 
     _NODISCARD result_type(max)() const { // get largest possible result
@@ -3576,7 +3576,7 @@ public:
     }
 
     _NODISCARD result_type(min)() const { // get smallest possible result
-        return -(numeric_limits<result_type>::max)();
+        return numeric_limits<result_type>::denorm_min();
     }
 
     _NODISCARD result_type(max)() const { // get largest possible result
