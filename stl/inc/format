@@ -31,14 +31,6 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 
-template <class... _Tys>
-struct _Overloaded : _Tys... {
-    using _Tys::operator()...;
-};
-
-template <class... _Tys>
-_Overloaded(_Tys...) -> _Overloaded<_Tys...>;
-
 class format_error : public runtime_error {
     using runtime_error::runtime_error;
 };
