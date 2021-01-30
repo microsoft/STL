@@ -174,7 +174,7 @@
             timeframe_all,
             timeframe_github,
         ];
-        let timeframe_idx = 0;
+        let timeframe_idx = 1;
 
         const common_options = {
             animation: {
@@ -230,7 +230,7 @@
                 text: 'STL Status Chart',
             },
             scales: {
-                xAxes: make_xAxes(timeframe_all),
+                xAxes: make_xAxes(timeframes[timeframe_idx]),
                 yAxes: [
                     {
                         type: 'linear',
