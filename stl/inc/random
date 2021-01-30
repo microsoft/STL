@@ -2780,7 +2780,7 @@ public:
     }
 
     _NODISCARD result_type(max)() const { // get largest possible result
-        return (numeric_limits<result_type>::max)();
+        return numeric_limits<result_type>::infinity();
     }
 
     void reset() {} // clear internal state
@@ -2917,11 +2917,11 @@ public:
     }
 
     _NODISCARD result_type(min)() const { // get smallest possible result
-        return -(numeric_limits<result_type>::max)();
+        return -numeric_limits<result_type>::infinity();
     }
 
     _NODISCARD result_type(max)() const { // get largest possible result
-        return (numeric_limits<result_type>::max)();
+        return numeric_limits<result_type>::infinity();
     }
 
     void reset() { // clear internal state
@@ -3111,11 +3111,11 @@ public:
     }
 
     _NODISCARD result_type(min)() const { // get smallest possible result
-        return numeric_limits<result_type>::denorm_min();
+        return result_type{0.0};
     }
 
     _NODISCARD result_type(max)() const { // get largest possible result
-        return (numeric_limits<result_type>::max)();
+        return numeric_limits<result_type>::infinity();
     }
 
     void reset() {} // clear internal state
@@ -3306,7 +3306,7 @@ public:
     }
 
     _NODISCARD result_type(max)() const { // get largest possible result
-        return (numeric_limits<result_type>::max)();
+        return numeric_limits<result_type>::infinity();
     }
 
     void reset() {} // clear internal state
@@ -3438,11 +3438,11 @@ public:
     }
 
     _NODISCARD result_type(min)() const { // get smallest possible result
-        return -(numeric_limits<result_type>::max)();
+        return -numeric_limits<result_type>::infinity();
     }
 
     _NODISCARD result_type(max)() const { // get largest possible result
-        return (numeric_limits<result_type>::max)();
+        return numeric_limits<result_type>::infinity();
     }
 
     void reset() {} // clear internal state
@@ -3576,11 +3576,11 @@ public:
     }
 
     _NODISCARD result_type(min)() const { // get smallest possible result
-        return numeric_limits<result_type>::denorm_min();
+        return result_type{0.0};
     }
 
     _NODISCARD result_type(max)() const { // get largest possible result
-        return (numeric_limits<result_type>::max)();
+        return numeric_limits<result_type>::infinity();
     }
 
     void reset() {} // clear internal state
@@ -3702,11 +3702,11 @@ public:
     }
 
     _NODISCARD result_type(min)() const { // get smallest possible result
-        return numeric_limits<result_type>::denorm_min();
+        return result_type{0.0};
     }
 
     _NODISCARD result_type(max)() const { // get largest possible result
-        return (numeric_limits<result_type>::max)();
+        return numeric_limits<result_type>::infinity();
     }
 
     void reset() {} // clear internal state
@@ -3834,11 +3834,11 @@ public:
     }
 
     _NODISCARD result_type(min)() const { // get smallest possible result
-        return -(numeric_limits<result_type>::max)();
+        return -numeric_limits<result_type>::infinity();
     }
 
     _NODISCARD result_type(max)() const { // get largest possible result
-        return (numeric_limits<result_type>::max)();
+        return numeric_limits<result_type>::infinity();
     }
 
     void reset() {} // clear internal state
@@ -4035,7 +4035,7 @@ public:
     }
 
     _NODISCARD result_type(max)() const { // get largest possible result
-        return (numeric_limits<result_type>::max)();
+        return numeric_limits<result_type>::infinity();
     }
 
     void reset() {} // clear internal state
@@ -4168,11 +4168,11 @@ public:
     }
 
     _NODISCARD result_type(min)() const { // get smallest possible result
-        return -(numeric_limits<result_type>::max)();
+        return -numeric_limits<result_type>::infinity();
     }
 
     _NODISCARD result_type(max)() const { // get largest possible result
-        return (numeric_limits<result_type>::max)();
+        return numeric_limits<result_type>::infinity();
     }
 
     void reset() {} // clear internal state
