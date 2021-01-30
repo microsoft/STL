@@ -12,6 +12,7 @@
 #pragma message("The contents of <format> are available only with C++20 concepts support.")
 #else // ^^^ !defined(__cpp_lib_concepts) / defined(__cpp_lib_concepts) vvv
 
+#include <array>
 #include <charconv>
 #include <concepts>
 #include <exception>
@@ -71,6 +72,57 @@ constexpr bool _Is_numeric_fmt_type(_Type _Ty) {
 }
 struct _Auto_id_tag {};
 
+template <class _CharT>
+class basic_format_parse_context {
+public:
+    using char_type      = _CharT;
+    using const_iterator = typename basic_string_view<_CharT>::const_iterator;
+    using iterator       = const_iterator;
+
+private:
+    basic_string_view<_CharT> _Format_string;
+    size_t _Num_args;
+    // The standard says this is size_t, however we use ptrdiff_t to save some space
+    // by not having to store the indexing mode. Below is a more detailed explanation
+    // of how this works.
+    ptrdiff_t _Next_arg_id = 0;
+
+public:
+    constexpr explicit basic_format_parse_context(basic_string_view<_CharT> _Fmt, size_t _Num_args_ = 0) noexcept
+        : _Format_string(_Fmt), _Num_args(_Num_args_) {}
+    basic_format_parse_context(const basic_format_parse_context&) = delete;
+    basic_format_parse_context& operator=(const basic_format_parse_context&) = delete;
+
+    _NODISCARD constexpr const_iterator begin() const noexcept {
+        return _Format_string.begin();
+    }
+    _NODISCARD constexpr const_iterator end() const noexcept {
+        return _Format_string.end();
+    }
+    constexpr void advance_to(const_iterator _It) {
+        _Format_string.remove_prefix(_It - begin());
+    }
+
+    // While the standard presents an exposition only enum value for
+    // the indexing mode (manual, automatic, or unknown) we use _Next_arg_id to indicate it.
+    // _Next_arg_id == 0 means unknown
+    // _Next_arg_id > 0 means automatic
+    // _Next_arg_id == -1 means manual
+    constexpr size_t next_arg_id() {
+        if (_Next_arg_id >= 0) {
+            return _Next_arg_id++;
+        }
+        throw format_error("Can not switch from manual to automatic indexing");
+    }
+    constexpr void check_arg_id(size_t _Id) {
+        (void) _Id;
+        if (_Next_arg_id > 0) {
+            throw format_error("Can not switch from automatic to manual indexing");
+        }
+        _Next_arg_id = -1;
+    }
+};
+
 // clang-format off
 template <class _Ty, class _CharT>
 concept _Parse_spec_callbacks = requires(_Ty _At, basic_string_view<_CharT> _Sv, _Align _Aln, _Sign _Sgn) {
@@ -92,6 +144,15 @@ concept _Parse_arg_id_callbacks = requires(_Ty _At) {
     { _At._On_auto_id() } -> same_as<void>;
     { _At._On_manual_id(_STD declval<int>()) } -> same_as<void>;
 };
+
+template<class _Ty, class _CharT>
+concept _Parse_replacement_field_callbacks = requires(_Ty _At, const _CharT* _Begin, const _CharT* _End) {
+    { _At._Parse_context } -> _STD convertible_to<basic_format_parse_context<_CharT>&>;
+    { _At._On_text(_Begin, _End) } -> same_as<void>;
+    { _At._On_replacement_field(int{}, _STD declval<const _CharT*>()) } -> same_as<void>;
+    { _At._On_format_specs(int{}, _Begin, _End) } -> same_as<const _CharT*>;
+};
+
 // clang-format on
 
 // we need to implement this ourselves because from_chars does not work with wide characters
@@ -224,6 +285,19 @@ struct _Precision_adapter {
     }
 };
 
+template <class _CharT>
+struct _Id_adapter {
+    basic_format_parse_context<_CharT>& _Parse_context;
+    int _Arg_id = 0;
+    constexpr void _On_auto_id() {
+        _Arg_id = _Parse_context.next_arg_id();
+    }
+    constexpr void _On_manual_id(int _Id) {
+        _Parse_context.check_arg_id(_Id);
+        _Arg_id = _Id;
+    }
+};
+
 template <class _CharT, _Parse_spec_callbacks<_CharT> _Callbacks_type>
 constexpr const _CharT* _Parse_width(const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
     _STL_INTERNAL_CHECK(_Begin != _End);
@@ -333,57 +407,79 @@ constexpr const _CharT* _Parse_format_specs(const _CharT* _Begin, const _CharT* 
     return _Begin;
 }
 
+template <class _CharT, _Parse_replacement_field_callbacks<_CharT> _HandlerT>
+constexpr const _CharT* _Parse_replacement_field(const _CharT* _Begin, const _CharT* _End, _HandlerT&& _Handler) {
+    ++_Begin;
+    if (_Begin == _End) {
+        throw format_error("Invalid format string.");
+    }
+
+    if (*_Begin == '}') {
+        // string was "{}", and we have a replacement field
+        _Handler._On_replacement_field(_Handler._On_auto_id());
+    } else if (*_Begin == '{') {
+        // string was "{{", so we have a literal "{" to print
+        _Handler._On_text(_Begin, _Begin + 1);
+    } else {
+        _Id_adapter<_CharT> _Adapter{_Handler._Parse_context};
+        _Begin     = _Parse_arg_id(_Begin, _End, _Adapter);
+        _CharT _Ch = _CharT{};
+        if (_Begin != _End) {
+            _Ch = *_Begin;
+        }
+        if (_Ch == '}') {
+            _Handler._On_replacement_field(_Adapter._Arg_id, _Begin);
+        } else if (_Ch == ':') {
+            _Begin = _Handler._On_format_specs(_Adapter._Arg_id, _Begin + 1, _End);
+            if (_Begin == _End || *_Begin != '}') {
+                throw format_error("Unknown format specifier.");
+            }
+        } else {
+            throw format_error("Missing '}' in format string.");
+        }
+    }
+    return _Begin + 1;
+}
+
+template <class _CharT, _Parse_replacement_field_callbacks<_CharT> _HandlerT>
+constexpr void _Parse_format_string(basic_string_view<_CharT> _Format_str, _HandlerT&& _Handler) {
+    auto _Begin = _Format_str.data();
+    auto _End   = _Begin + _Format_str.size();
+    struct _Writer {
+        constexpr void operator()(const _CharT* _Begin, const _CharT* _End) {
+            if (_Begin == _End) {
+                return;
+            }
+            for (;;) {
+                const _CharT* _Pt = _STD find(_Begin, _End, '}');
+                if (_Pt == _End) {
+                    return _Handler._On_text(_Begin, _End);
+                }
+                ++_Pt;
+                if (_Pt == _End || *_Pt != '}') {
+                    throw format_error("Unmatched '}' in format string.");
+                }
+                _Handler._On_text(_Begin, _Pt);
+                _Begin = _Pt + 1;
+            }
+        }
+        _HandlerT& _Handler;
+    } _Writer_loop{_Handler};
+    while (_Begin != _End) {
+        const _CharT* _Pt = _Begin;
+        if (*_Begin != '{') {
+            _Pt = _STD find(_Begin + 1, _End, '{', _Pt);
+            if (_Pt == _End) {
+                return _Writer_loop(_Begin, _End);
+            }
+        }
+        _Writer_loop(_Begin, _End);
+        _Begin = _Parse_replacement_field(_Pt, _End, _Handler);
+    }
+}
+
 // TODO: test coverage
-template <class _CharT>
-class basic_format_parse_context {
-public:
-    using char_type      = _CharT;
-    using const_iterator = typename basic_string_view<_CharT>::const_iterator;
-    using iterator       = const_iterator;
 
-private:
-    basic_string_view<_CharT> _Format_string;
-    size_t _Num_args;
-    // The standard says this is size_t, however we use ptrdiff_t to save some space
-    // by not having to store the indexing mode. Below is a more detailed explanation
-    // of how this works.
-    ptrdiff_t _Next_arg_id = 0;
-
-public:
-    constexpr explicit basic_format_parse_context(basic_string_view<_CharT> _Fmt, size_t _Num_args_ = 0) noexcept
-        : _Format_string(_Fmt), _Num_args(_Num_args_) {}
-    basic_format_parse_context(const basic_format_parse_context&) = delete;
-    basic_format_parse_context& operator=(const basic_format_parse_context&) = delete;
-
-    _NODISCARD constexpr const_iterator begin() const noexcept {
-        return _Format_string.begin();
-    }
-    _NODISCARD constexpr const_iterator end() const noexcept {
-        return _Format_string.end();
-    }
-    constexpr void advance_to(const_iterator _It) {
-        _Format_string.remove_prefix(_It - begin());
-    }
-
-    // While the standard presents an exposition only enum value for
-    // the indexing mode (manual, automatic, or unknown) we use _Next_arg_id to indicate it.
-    // _Next_arg_id == 0 means unknown
-    // _Next_arg_id > 0 means automatic
-    // _Next_arg_id == -1 means manual
-    constexpr size_t next_arg_id() {
-        if (_Next_arg_id >= 0) {
-            return _Next_arg_id++;
-        }
-        throw format_error("Can not switch from manual to automatic indexing");
-    }
-    constexpr void check_arg_id(size_t _Id) {
-        (void) _Id;
-        if (_Next_arg_id > 0) {
-            throw format_error("Can not switch from automatic to manual indexing");
-        }
-        _Next_arg_id = -1;
-    }
-};
 
 template <class _Context>
 class basic_format_arg {
@@ -1189,8 +1285,6 @@ struct _Default_arg_formatter {
 };
 
 // The top level set of parsing "actions".
-// This is like the _Parse_spec_callbacks concept but need not be a concept
-// because it's not really involved in any user customization.
 template <class _OutputIt, typename _CharT, typename _Context>
 struct _Format_handler {
     basic_format_parse_context<_CharT> _Parse_context;
@@ -1205,14 +1299,6 @@ struct _Format_handler {
         auto _Out  = _Ctx.out();
         _STD copy_n(_Begin, _Size, _Out);
         _Ctx.advance_to(_Out);
-    }
-
-    int _On_arg_id() {
-        return _Parse_context.next_arg_id();
-    }
-
-    int _On_arg_id(int _Id) {
-        return _Parse_context.check_arg_id(_Id);
     }
 
     void _On_replacement_field(int _Id, const _CharT*) {
@@ -1249,6 +1335,16 @@ auto make_format_args(const _Args&... _Vals) {
 template <class _Context = wformat_context, class... _Args>
 auto make_wformat_args(const _Args&... _Vals) {
     return _Format_arg_store<_Context, _Args...>{_Vals...};
+}
+
+template <class _Out, class _CharT>
+using format_args_t = basic_format_args<basic_format_context<_Out, _CharT>>;
+
+template <class _Out>
+_Out vformat_to(
+    _Out _OutputIt, const locale& _Loc, string_view _Fmt, format_args_t<type_identity_t<_Out>, char> _Args) {
+    _Format_handler<_Out, char, basic_format_context<_Out, char>> _Handler(_OutputIt, _Fmt, _Args, _Loc);
+    _Parse_format_string(_Fmt, _Handler);
 }
 
 // FUNCTION vformat
