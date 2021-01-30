@@ -3,11 +3,13 @@
 
 #include <assert.h>
 #include <concepts>
+#include <cstddef>
 #include <format>
+#include <memory>
 #include <string_view>
+#include <type_traits>
 
 using namespace std;
-using namespace literals;
 
 template <class CharType>
 constexpr auto get_input() {
@@ -26,11 +28,8 @@ constexpr bool ensure_is_constant_expression(const bool should_be_constant_expre
     } else {
         context.check_arg_id(1);
     }
-    if (is_constant_evaluated()) {
-        return true;
-    } else {
-        return false;
-    }
+
+    return is_constant_evaluated();
 }
 
 const bool check_arg_id_is_constexpr_char   = ensure_is_constant_expression<char>(true);
@@ -54,7 +53,7 @@ constexpr bool test_basic_format_parse_context() {
         assert(e == format_string.end());
         static_assert(noexcept(context.end()));
 
-        const auto new_position = b + 5;
+        const auto new_position = format_string.begin() + 5;
         context.advance_to(new_position);
         assert(to_address(context.begin()) == to_address(new_position));
         assert(to_address(context.end()) == to_address(e));
@@ -71,7 +70,7 @@ constexpr bool test_basic_format_parse_context() {
         if (!is_constant_evaluated()) {
             try {
                 context.check_arg_id(0);
-            } catch (format_error e) {
+            } catch (const format_error& e) {
                 assert(e.what() == "Can not switch from automatic to manual indexing"sv);
             }
         }
@@ -79,13 +78,16 @@ constexpr bool test_basic_format_parse_context() {
 
     { // check_arg_id
         basic_format_parse_context<CharType> context{format_string, 3};
+        context.check_arg_id(0);
         context.check_arg_id(1);
+        context.check_arg_id(2); // intentional duplicates to check whether this is ok to call multiple times
         context.check_arg_id(1);
+        context.check_arg_id(0);
 
         if (!is_constant_evaluated()) {
             try {
                 context.next_arg_id();
-            } catch (format_error e) {
+            } catch (const format_error& e) {
                 assert(e.what() == "Can not switch from manual to automatic indexing"sv);
             }
         }

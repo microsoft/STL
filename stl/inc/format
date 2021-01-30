@@ -305,7 +305,6 @@ constexpr const _CharT* _Parse_format_specs(const _CharT* _Begin, const _CharT* 
 template <class _Ty, class _CharT = char>
 struct formatter;
 
-// TODO: test coverage
 template <class _CharT>
 class basic_format_parse_context {
 public:
@@ -313,17 +312,6 @@ public:
     using const_iterator = typename basic_string_view<_CharT>::const_iterator;
     using iterator       = const_iterator;
 
-private:
-    using _Size_type = typename basic_string_view<_CharT>::size_type;
-
-    basic_string_view<_CharT> _Format_string;
-    size_t _Num_args;
-    // The standard says this is size_t, however we use ptrdiff_t to save some space
-    // by not having to store the indexing mode. Below is a more detailed explanation
-    // of how this works.
-    ptrdiff_t _Next_arg_id = 0;
-
-public:
     constexpr explicit basic_format_parse_context(basic_string_view<_CharT> _Fmt, size_t _Num_args_ = 0) noexcept
         : _Format_string(_Fmt), _Num_args(_Num_args_) {}
     basic_format_parse_context(const basic_format_parse_context&) = delete;
@@ -337,7 +325,7 @@ public:
     }
     constexpr void advance_to(const const_iterator _It) {
         _Adl_verify_range(_It, _Format_string.end());
-        const auto _Diff = static_cast<_Size_type>(_It - _Format_string.begin());
+        const auto _Diff = static_cast<size_t>(_It._Unwrapped() - _Format_string._Unchecked_begin());
         _Format_string.remove_prefix(_Diff);
     }
 
@@ -350,22 +338,37 @@ public:
         if (_Next_arg_id == -1) {
             throw format_error("Can not switch from manual to automatic indexing");
         }
+
         return static_cast<size_t>(_Next_arg_id++);
     }
+
     constexpr void check_arg_id(const size_t _Id) {
         if (_STD is_constant_evaluated()) {
             if (_Id >= _Num_args) {
+#ifdef __clang__ // TRANSITION clang-12
                 _TRY_BEGIN
                 throw 42;
                 _CATCH_ALL
                 _CATCH_END
+#else // ^^^ workaround ^^^ / vvv no workaround vvv
+                [[maybe_unused]] const auto _Reinterpret_to_make_not_constexpr = reinterpret_cast<double*>(&_Num_args);
+#endif // !__clang__
             }
         }
+
         if (_Next_arg_id > 0) {
             throw format_error("Can not switch from automatic to manual indexing");
         }
         _Next_arg_id = -1;
     }
+
+private:
+    basic_string_view<_CharT> _Format_string;
+    size_t _Num_args;
+    // The standard says this is size_t, however we use ptrdiff_t to save some space
+    // by not having to store the indexing mode. Below is a more detailed explanation
+    // of how this works.
+    ptrdiff_t _Next_arg_id = 0;
 };
 
 // TODO: test coverage
