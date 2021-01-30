@@ -818,34 +818,16 @@ numerics\rand\rand.dis\rand.dist.bern\rand.dist.bern.geo\eval_param.pass.cpp
 numerics\rand\rand.dis\rand.dist.bern\rand.dist.bern.geo\eval.pass.cpp
 numerics\rand\rand.dis\rand.dist.bern\rand.dist.bern.negbin\eval_param.pass.cpp
 numerics\rand\rand.dis\rand.dist.bern\rand.dist.bern.negbin\eval.pass.cpp
-numerics\rand\rand.dis\rand.dist.norm\rand.dist.norm.cauchy\max.pass.cpp
-numerics\rand\rand.dis\rand.dist.norm\rand.dist.norm.cauchy\min.pass.cpp
-numerics\rand\rand.dis\rand.dist.norm\rand.dist.norm.chisq\max.pass.cpp
-numerics\rand\rand.dis\rand.dist.norm\rand.dist.norm.chisq\min.pass.cpp
-numerics\rand\rand.dis\rand.dist.norm\rand.dist.norm.f\max.pass.cpp
 numerics\rand\rand.dis\rand.dist.norm\rand.dist.norm.lognormal\eval_param.pass.cpp
 numerics\rand\rand.dis\rand.dist.norm\rand.dist.norm.lognormal\eval.pass.cpp
-numerics\rand\rand.dis\rand.dist.norm\rand.dist.norm.lognormal\max.pass.cpp
-numerics\rand\rand.dis\rand.dist.norm\rand.dist.norm.lognormal\min.pass.cpp
-numerics\rand\rand.dis\rand.dist.norm\rand.dist.norm.normal\max.pass.cpp
-numerics\rand\rand.dis\rand.dist.norm\rand.dist.norm.normal\min.pass.cpp
 numerics\rand\rand.dis\rand.dist.norm\rand.dist.norm.t\eval_param.pass.cpp
 numerics\rand\rand.dis\rand.dist.norm\rand.dist.norm.t\eval.pass.cpp
-numerics\rand\rand.dis\rand.dist.norm\rand.dist.norm.t\max.pass.cpp
-numerics\rand\rand.dis\rand.dist.norm\rand.dist.norm.t\min.pass.cpp
-numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.exp\max.pass.cpp
 numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.extreme\eval_param.pass.cpp
 numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.extreme\eval.pass.cpp
-numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.extreme\max.pass.cpp
-numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.extreme\min.pass.cpp
-numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.gamma\eq.pass.cpp
 numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.gamma\eval_param.pass.cpp
 numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.gamma\eval.pass.cpp
-numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.gamma\max.pass.cpp
-numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.gamma\min.pass.cpp
 numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.poisson\eval_param.pass.cpp
 numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.poisson\eval.pass.cpp
-numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.weibull\max.pass.cpp
 numerics\rand\rand.dis\rand.dist.uni\rand.dist.uni.real\param_ctor.pass.cpp
 
 # Not yet analyzed, likely STL bugs. Various assertions.
