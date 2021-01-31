@@ -57,12 +57,6 @@ std/language.support/support.limits/support.limits.general/locale.version.pass.c
 std/language.support/support.limits/support.limits.general/ostream.version.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/string_view.version.pass.cpp FAIL
 
-# libc++ doesn't yet implement P1956R1, so it expects the old names `ispow2`, `ceil2`, `floor2`, and `log2p1`
-std/numerics/bit/bit.pow.two/ceil2.pass.cpp FAIL
-std/numerics/bit/bit.pow.two/floor2.pass.cpp FAIL
-std/numerics/bit/bit.pow.two/ispow2.pass.cpp FAIL
-std/numerics/bit/bit.pow.two/log2p1.pass.cpp FAIL
-
 # test emits warning C4310: cast truncates constant value
 std/numerics/bit/bitops.rot/rotl.pass.cpp:0 FAIL
 
@@ -194,6 +188,8 @@ std/language.support/support.limits/support.limits.general/type_traits.version.p
 std/language.support/support.limits/support.limits.general/version.version.pass.cpp FAIL
 
 # Contest does not understand .sh tests, which must be run specially
+std/input.output/iostream.objects/narrow.stream.objects/cin.sh.cpp SKIPPED
+std/input.output/iostream.objects/wide.stream.objects/wcin.sh.cpp SKIPPED
 std/namespace/addressable_functions.sh.cpp SKIPPED
 std/thread/thread.condition/thread.condition.condvarany/wait_terminates.sh.cpp SKIPPED
 
@@ -276,9 +272,6 @@ std/utilities/memory/default.allocator/allocator_types.removed_in_cxx20.verify.c
 std/utilities/memory/default.allocator/allocator_void.deprecated_in_cxx17.verify.cpp SKIPPED
 std/utilities/memory/default.allocator/allocator.members/allocate.constexpr.size.verify.cpp SKIPPED
 std/utilities/memory/default.allocator/allocator.members/allocate.verify.cpp SKIPPED
-
-# GH-1382: Our machinery doesn't understand compile-only `.compile.pass.cpp` tests
-std/strings/string.view/string.view.io/stream_insert_decl_present.compile.pass.cpp SKIPPED
 
 
 # *** MISSING STL FEATURES ***
@@ -521,6 +514,17 @@ std/language.support/support.limits/support.limits.general/vector.version.pass.c
 
 # C++20 P1614R2 "Adding Spaceship <=> To The Library"
 std/language.support/support.limits/support.limits.general/compare.version.pass.cpp FAIL
+
+# C++23 P1048R1 "is_scoped_enum"
+std/utilities/meta/meta.unary/meta.unary.prop/is_scoped_enum.pass.cpp FAIL
+
+# C++23 P1679R3 "contains() For basic_string/basic_string_view"
+std/strings/basic.string/string.contains/contains.char.pass.cpp FAIL
+std/strings/basic.string/string.contains/contains.ptr.pass.cpp FAIL
+std/strings/basic.string/string.contains/contains.string_view.pass.cpp FAIL
+std/strings/string.view/string.view.template/contains.char.pass.cpp FAIL
+std/strings/string.view/string.view.template/contains.ptr.pass.cpp FAIL
+std/strings/string.view/string.view.template/contains.string_view.pass.cpp FAIL
 
 
 # *** MISSING COMPILER FEATURES ***
@@ -819,6 +823,12 @@ std/numerics/c.math/c.math.lerp/c.math.lerp.pass.cpp FAIL
 # Bogus test passes a class type as the second argument to std::advance
 std/iterators/iterator.primitives/iterator.operations/robust_against_adl.pass.cpp FAIL
 
+# Non-Standard test should be moved from libcxx/test/std to libcxx/test/libcxx
+std/utilities/memory/util.smartptr/util.smartptr.shared/libcxx.control_block_layout.pass.cpp FAIL
+
+# Non-Standard assumption that std::filesystem::file_time_type::duration::period is std::nano
+std/input.output/filesystems/fs.filesystem.synopsis/file_time_type_resolution.compile.pass.cpp FAIL
+
 
 # *** LIKELY STL BUGS ***
 # Not yet analyzed, likely STL bugs. Assertions and other runtime failures.
@@ -1031,6 +1041,16 @@ std/utilities/function.objects/func.invoke/invoke_constexpr.pass.cpp:0 FAIL
 
 # Not yet analyzed. Probably name mangling bug.
 std/utilities/function.objects/func.wrap/func.wrap.func/noncopyable_return_type.pass.cpp FAIL
+
+# Not yet analyzed. Failing for "[a[.ch.]z]".
+std/re/re.alg/re.alg.match/awk.locale.pass.cpp FAIL
+std/re/re.alg/re.alg.match/basic.locale.pass.cpp FAIL
+std/re/re.alg/re.alg.match/ecma.locale.pass.cpp FAIL
+std/re/re.alg/re.alg.match/extended.locale.pass.cpp FAIL
+std/re/re.alg/re.alg.search/awk.locale.pass.cpp FAIL
+std/re/re.alg/re.alg.search/basic.locale.pass.cpp FAIL
+std/re/re.alg/re.alg.search/ecma.locale.pass.cpp FAIL
+std/re/re.alg/re.alg.search/extended.locale.pass.cpp FAIL
 
 
 # *** XFAILs WHICH PASS ***

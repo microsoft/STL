@@ -57,12 +57,6 @@ language.support\support.limits\support.limits.general\locale.version.pass.cpp
 language.support\support.limits\support.limits.general\ostream.version.pass.cpp
 language.support\support.limits\support.limits.general\string_view.version.pass.cpp
 
-# libc++ doesn't yet implement P1956R1, so it expects the old names `ispow2`, `ceil2`, `floor2`, and `log2p1`
-numerics\bit\bit.pow.two\ceil2.pass.cpp
-numerics\bit\bit.pow.two\floor2.pass.cpp
-numerics\bit\bit.pow.two\ispow2.pass.cpp
-numerics\bit\bit.pow.two\log2p1.pass.cpp
-
 # test emits warning C4310: cast truncates constant value
 numerics\bit\bitops.rot\rotl.pass.cpp
 
@@ -194,6 +188,8 @@ language.support\support.limits\support.limits.general\type_traits.version.pass.
 language.support\support.limits\support.limits.general\version.version.pass.cpp
 
 # Contest does not understand .sh tests, which must be run specially
+input.output\iostream.objects\narrow.stream.objects\cin.sh.cpp
+input.output\iostream.objects\wide.stream.objects\wcin.sh.cpp
 namespace\addressable_functions.sh.cpp
 thread\thread.condition\thread.condition.condvarany\wait_terminates.sh.cpp
 
@@ -276,9 +272,6 @@ utilities\memory\default.allocator\allocator_types.removed_in_cxx20.verify.cpp
 utilities\memory\default.allocator\allocator_void.deprecated_in_cxx17.verify.cpp
 utilities\memory\default.allocator\allocator.members\allocate.constexpr.size.verify.cpp
 utilities\memory\default.allocator\allocator.members\allocate.verify.cpp
-
-# GH-1382: Our machinery doesn't understand compile-only `.compile.pass.cpp` tests
-strings\string.view\string.view.io\stream_insert_decl_present.compile.pass.cpp
 
 
 # *** MISSING STL FEATURES ***
@@ -521,6 +514,17 @@ language.support\support.limits\support.limits.general\vector.version.pass.cpp
 
 # C++20 P1614R2 "Adding Spaceship <=> To The Library"
 language.support\support.limits\support.limits.general\compare.version.pass.cpp
+
+# C++23 P1048R1 "is_scoped_enum"
+utilities\meta\meta.unary\meta.unary.prop\is_scoped_enum.pass.cpp
+
+# C++23 P1679R3 "contains() For basic_string/basic_string_view"
+strings\basic.string\string.contains\contains.char.pass.cpp
+strings\basic.string\string.contains\contains.ptr.pass.cpp
+strings\basic.string\string.contains\contains.string_view.pass.cpp
+strings\string.view\string.view.template\contains.char.pass.cpp
+strings\string.view\string.view.template\contains.ptr.pass.cpp
+strings\string.view\string.view.template\contains.string_view.pass.cpp
 
 
 # *** MISSING COMPILER FEATURES ***
@@ -819,6 +823,12 @@ numerics\c.math\c.math.lerp\c.math.lerp.pass.cpp
 # Bogus test passes a class type as the second argument to std::advance
 iterators\iterator.primitives\iterator.operations\robust_against_adl.pass.cpp
 
+# Non-Standard test should be moved from libcxx/test/std to libcxx/test/libcxx
+utilities\memory\util.smartptr\util.smartptr.shared\libcxx.control_block_layout.pass.cpp
+
+# Non-Standard assumption that std::filesystem::file_time_type::duration::period is std::nano
+input.output\filesystems\fs.filesystem.synopsis\file_time_type_resolution.compile.pass.cpp
+
 
 # *** LIKELY STL BUGS ***
 # Not yet analyzed, likely STL bugs. Assertions and other runtime failures.
@@ -1031,3 +1041,20 @@ utilities\function.objects\func.invoke\invoke_constexpr.pass.cpp
 
 # Not yet analyzed. Probably name mangling bug.
 utilities\function.objects\func.wrap\func.wrap.func\noncopyable_return_type.pass.cpp
+
+# Not yet analyzed. Failing for "[a[.ch.]z]".
+re\re.alg\re.alg.match\awk.locale.pass.cpp
+re\re.alg\re.alg.match\basic.locale.pass.cpp
+re\re.alg\re.alg.match\ecma.locale.pass.cpp
+re\re.alg\re.alg.match\extended.locale.pass.cpp
+re\re.alg\re.alg.search\awk.locale.pass.cpp
+re\re.alg\re.alg.search\basic.locale.pass.cpp
+re\re.alg\re.alg.search\ecma.locale.pass.cpp
+re\re.alg\re.alg.search\extended.locale.pass.cpp
+
+
+# *** SKIPPED FOR MSVC-INTERNAL CONTEST ONLY ***
+# Our machinery doesn't understand compile-only `.compile.pass.cpp` tests.
+# (Implemented for GitHub, see GH-1382.)
+concepts\concept.constructible\constructible_from.compile.pass.cpp
+strings\string.view\string.view.io\stream_insert_decl_present.compile.pass.cpp
