@@ -484,7 +484,7 @@ std/utilities/time/time.hms/time.hms.members/to_duration.pass.cpp FAIL
 std/utilities/time/time.hms/time.hms.members/width.pass.cpp FAIL
 
 # C++20 P0466R5 "Layout-Compatibility And Pointer-Interconvertibility Traits"
-std/language.support/support.limits/support.limits.general/type_traits.version.pass.cpp FAIL
+std/language.support/support.limits/support.limits.general/type_traits.version.pass.cpp:1 FAIL
 
 # C++20 P0608R3 "Improving variant's Converting Constructor/Assignment"
 std/utilities/variant/variant.variant/variant.assign/conv.pass.cpp FAIL
