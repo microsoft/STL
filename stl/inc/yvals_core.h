@@ -146,6 +146,7 @@
 // P0457R2 starts_with()/ends_with() For basic_string/basic_string_view
 // P0458R2 contains() For Ordered And Unordered Associative Containers
 // P0463R1 endian
+// P0466R5 Layout-Compatibility And Pointer-Interconvertibility Traits
 // P0476R2 <bit> bit_cast
 // P0482R6 Library Support For char8_t
 //     (mbrtoc8 and c8rtomb not yet implemented)
@@ -1208,19 +1209,33 @@
 #define __cpp_lib_integer_comparison_functions 202002L
 #define __cpp_lib_interpolate                  201902L
 #define __cpp_lib_is_constant_evaluated        201811L
-#define __cpp_lib_is_nothrow_convertible       201806L
-#define __cpp_lib_jthread                      201911L
-#define __cpp_lib_latch                        201907L
-#define __cpp_lib_list_remove_return_type      201806L
-#define __cpp_lib_math_constants               201907L
-#define __cpp_lib_polymorphic_allocator        201902L
-#define __cpp_lib_remove_cvref                 201711L
-#define __cpp_lib_semaphore                    201907L
-#define __cpp_lib_shift                        201806L
-#define __cpp_lib_smart_ptr_for_overwrite      202002L
-#define __cpp_lib_span                         202002L
-#define __cpp_lib_ssize                        201902L
-#define __cpp_lib_starts_ends_with             201711L
+
+#ifndef __EDG__ // TRANSITION, VSO-1268984
+#ifndef __clang__ // TRANSITION, LLVM-48860
+#define __cpp_lib_is_layout_compatible 201907L
+#endif // __clang__
+#endif // __EDG__
+
+#define __cpp_lib_is_nothrow_convertible 201806L
+
+#ifndef __EDG__ // TRANSITION, VSO-1268984
+#ifndef __clang__ // TRANSITION, LLVM-48860
+#define __cpp_lib_is_pointer_interconvertible 201907L
+#endif // __clang__
+#endif // __EDG__
+
+#define __cpp_lib_jthread                 201911L
+#define __cpp_lib_latch                   201907L
+#define __cpp_lib_list_remove_return_type 201806L
+#define __cpp_lib_math_constants          201907L
+#define __cpp_lib_polymorphic_allocator   201902L
+#define __cpp_lib_remove_cvref            201711L
+#define __cpp_lib_semaphore               201907L
+#define __cpp_lib_shift                   201806L
+#define __cpp_lib_smart_ptr_for_overwrite 202002L
+#define __cpp_lib_span                    202002L
+#define __cpp_lib_ssize                   201902L
+#define __cpp_lib_starts_ends_with        201711L
 
 #ifdef __cpp_lib_concepts // TRANSITION, GH-395
 #define __cpp_lib_three_way_comparison 201711L
