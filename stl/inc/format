@@ -305,6 +305,8 @@ constexpr const _CharT* _Parse_format_specs(const _CharT* _Begin, const _CharT* 
 template <class _Ty, class _CharT = char>
 struct formatter;
 
+inline void _You_see_this_error_because_arg_id_is_out_of_range() noexcept {}
+
 template <class _CharT>
 class basic_format_parse_context {
 public:
@@ -345,14 +347,7 @@ public:
     constexpr void check_arg_id(const size_t _Id) {
         if (_STD is_constant_evaluated()) {
             if (_Id >= _Num_args) {
-#ifdef __clang__ // TRANSITION clang-12
-                _TRY_BEGIN
-                throw 42;
-                _CATCH_ALL
-                _CATCH_END
-#else // ^^^ workaround ^^^ / vvv no workaround vvv
-                [[maybe_unused]] const auto _Reinterpret_to_make_not_constexpr = reinterpret_cast<double*>(&_Num_args);
-#endif // !__clang__
+                _You_see_this_error_because_arg_id_is_out_of_range();
             }
         }
 
