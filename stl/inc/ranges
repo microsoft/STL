@@ -2293,6 +2293,7 @@ namespace ranges {
             constexpr void _Satisfy() {
                 auto _Update_inner = [this](_SubRng _Range) -> auto& {
                     if constexpr (_Deref_is_ref) {
+                        (void) this; // Suppress Clang "unused capture" warning
                         return _Range;
                     } else {
                         return (_Parent->_Inner = views::all(_STD move(_Range)));
