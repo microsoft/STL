@@ -138,6 +138,8 @@
 // P0318R1 unwrap_reference, unwrap_ref_decay
 // P0325R4 to_array()
 // P0339R6 polymorphic_allocator<>
+// P0355R7 <chrono> Calendars And Time Zones
+//     (partially implemented)
 // P0356R5 bind_front()
 // P0357R3 Supporting Incomplete Types In reference_wrapper
 // P0408R7 Efficient Access To basic_stringbuf's Buffer
@@ -1293,6 +1295,7 @@ compiler option, or define _ALLOW_RTCc_IN_STL to acknowledge that you have recei
 #define _STD_BEGIN namespace std {
 #define _STD_END   }
 #define _STD       ::std::
+#define _CHRONO    ::std::chrono::
 #define _RANGES    ::std::ranges::
 
 // We use the stdext (standard extension) namespace to contain extensions that are not part of the current standard
