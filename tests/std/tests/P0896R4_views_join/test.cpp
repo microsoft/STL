@@ -129,7 +129,7 @@ constexpr bool test_one(Outer&& rng, Inner&&, Expected&& expected) {
         assert(ranges::equal(r, expected));
 
 #if 0 // FIXME
-        // Validate join_view::size
+      // Validate join_view::size
         static_assert(CanMemberSize<R> == sized_range<Outer>);
         if constexpr (sized_range<Outer>) {
             assert(r.size() == static_cast<range_size_t<R>>(size(expected)));
@@ -257,9 +257,9 @@ constexpr bool test_one(Outer&& rng, Inner&&, Expected&& expected) {
         }
 
         // Validate join_view::base() && (NB: do this last since it leaves r moved-from)
-    #if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1159442
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1159442
         (void) 42;
-    #endif // TRANSITION, DevCom-1159442
+#endif // TRANSITION, DevCom-1159442
         same_as<V> auto b2 = move(r).base();
         static_assert(noexcept(move(r).base()) == is_nothrow_move_constructible_v<V>);
         if (!is_empty) {
@@ -353,8 +353,8 @@ using move_only_view = test::range<Category, const int, test::Sized{is_random}, 
 int main() {
     // Validate views
     { // ...copyable
-        array<string_view, 5> data = {{{}, "Hello "sv, {}, "World!"sv, {}}};
-        span<string_view, 5> input{data};
+        static constexpr array<string_view, 5> data = {{{}, "Hello "sv, {}, "World!"sv, {}}};
+        constexpr span<const string_view, 5> input{data};
         constexpr string_view expected = "Hello World!"sv;
         static_assert(test_one(input, string_view{}, expected));
         test_one(input, string_view{}, expected);
