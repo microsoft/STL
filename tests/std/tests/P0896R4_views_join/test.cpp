@@ -20,9 +20,6 @@ concept CanViewJoin = requires(Rng&& r) {
     views::join(static_cast<Rng&&>(r));
 };
 
-// Test a silly precomposed range adaptor pipeline
-constexpr auto pipeline = views::all | views::join;
-
 template <ranges::input_range Outer, ranges::range Inner, ranges::random_access_range Expected>
 constexpr bool test_one(Outer&& rng, Inner&&, Expected&& expected) {
     using ranges::begin, ranges::bidirectional_range, ranges::common_range, ranges::enable_borrowed_range, ranges::end,
@@ -35,7 +32,10 @@ constexpr bool test_one(Outer&& rng, Inner&&, Expected&& expected) {
         using V = views::all_t<Outer>;
         using R = join_view<V>;
         static_assert(ranges::view<R>);
-#if 0 // FIXME
+#if 1 // FIXME
+        (void) rng;
+        (void) expected;
+#else // FIXME
         static_assert(input_range<R> == input_range<Outer> && input_range<Inner>);
         static_assert(forward_range<R> == forward_range<Outer> && forward_range<Inner>);
         static_assert(bidirectional_range<R> == bidirectional_range<Outer> && bidirectional_range<Inner>);
@@ -53,9 +53,6 @@ constexpr bool test_one(Outer&& rng, Inner&&, Expected&& expected) {
 
             static_assert(same_as<decltype(rng | views::join), R>);
             static_assert(noexcept(rng | views::join) == is_noexcept);
-
-            static_assert(same_as<decltype(rng | pipeline), R>);
-            static_assert(noexcept(rng | pipeline) == is_noexcept);
         }
 
         // ... with const lvalue argument
@@ -68,9 +65,6 @@ constexpr bool test_one(Outer&& rng, Inner&&, Expected&& expected) {
 
             static_assert(same_as<decltype(as_const(rng) | views::join), R>);
             static_assert(noexcept(as_const(rng) | views::join) == is_noexcept);
-
-            static_assert(same_as<decltype(as_const(rng) | pipeline), R>);
-            static_assert(noexcept(as_const(rng) | pipeline) == is_noexcept);
         } else if constexpr (!is_view) {
             using RC                   = join_view<views::all_t<const remove_reference_t<Outer>&>>;
             constexpr bool is_noexcept = is_nothrow_constructible_v<RC, const remove_reference_t<Outer>&>;
@@ -80,9 +74,6 @@ constexpr bool test_one(Outer&& rng, Inner&&, Expected&& expected) {
 
             static_assert(same_as<decltype(as_const(rng) | views::join), RC>);
             static_assert(noexcept(as_const(rng) | views::join) == is_noexcept);
-
-            static_assert(same_as<decltype(as_const(rng) | pipeline), RC>);
-            static_assert(noexcept(as_const(rng) | pipeline) == is_noexcept);
         }
 
         // ... with rvalue argument
@@ -95,9 +86,6 @@ constexpr bool test_one(Outer&& rng, Inner&&, Expected&& expected) {
 
             static_assert(same_as<decltype(move(rng) | views::join), R>);
             static_assert(noexcept(move(rng) | views::join) == is_noexcept);
-
-            static_assert(same_as<decltype(move(rng) | pipeline), R>);
-            static_assert(noexcept(move(rng) | pipeline) == is_noexcept);
         } else if constexpr (enable_borrowed_range<Outer>) {
             using S                    = decltype(ranges::subrange{move(rng)});
             using RS                   = join_view<S>;
@@ -108,9 +96,6 @@ constexpr bool test_one(Outer&& rng, Inner&&, Expected&& expected) {
 
             static_assert(same_as<decltype(move(rng) | views::join), RS>);
             static_assert(noexcept(move(rng) | views::join) == is_noexcept);
-
-            static_assert(same_as<decltype(move(rng) | pipeline), RS>);
-            static_assert(noexcept(move(rng) | pipeline) == is_noexcept);
         }
 
         // ... with const rvalue argument
@@ -124,9 +109,6 @@ constexpr bool test_one(Outer&& rng, Inner&&, Expected&& expected) {
 
             static_assert(same_as<decltype(move(as_const(rng)) | views::join), R>);
             static_assert(noexcept(move(as_const(rng)) | views::join) == is_nothrow_copy_constructible_v<R>);
-
-            static_assert(same_as<decltype(move(as_const(rng)) | pipeline), R>);
-            static_assert(noexcept(move(as_const(rng)) | pipeline) == is_noexcept);
         } else if constexpr (!is_view && enable_borrowed_range<const remove_cvref_t<Outer>>) {
             using S                    = decltype(ranges::subrange{as_const(rng)});
             using RS                   = join_view<S>;
@@ -137,9 +119,6 @@ constexpr bool test_one(Outer&& rng, Inner&&, Expected&& expected) {
 
             static_assert(same_as<decltype(move(as_const(rng)) | views::join), RS>);
             static_assert(noexcept(move(as_const(rng)) | views::join) == is_noexcept);
-
-            static_assert(same_as<decltype(move(as_const(rng)) | pipeline), RS>);
-            static_assert(noexcept(move(as_const(rng)) | pipeline) == is_noexcept);
         }
 
         // Validate deduction guide
