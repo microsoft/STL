@@ -2391,7 +2391,7 @@ namespace ranges {
                 return *this;
             }
 
-            constexpr auto operator++(int) {
+            constexpr decltype(auto) operator++(int) {
                 if constexpr (_Deref_is_ref && forward_range<_Base> && forward_range<_SubRng>) {
                     auto _Tmp = *this;
                     ++*this;
@@ -2417,7 +2417,7 @@ namespace ranges {
             }
 
             // clang-format off
-            constexpr _Iterator& operator--(int)
+            constexpr _Iterator operator--(int)
                 requires _Deref_is_ref && bidirectional_range<_Base> && bidirectional_range<_SubRng>
                       && common_range<_SubRng> {
                 // clang-format on
