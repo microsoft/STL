@@ -120,21 +120,21 @@ template <class _Ty, class _CharT>
 concept _Parse_spec_callbacks = requires(_Ty _At, basic_string_view<_CharT> _Sv, _Align _Aln, _Sign _Sgn) {
     { _At._On_align(_Aln) } -> same_as<void>;
     { _At._On_fill(_Sv) } -> same_as<void>;
-    { _At._On_width(_STD declval<int>()) } -> same_as<void>;
-    { _At._On_dynamic_width(_STD declval<int>()) } -> same_as<void>;
-    { _At._On_dynamic_width(_STD declval<_Auto_id_tag>()) } -> same_as<void>;
-    { _At._On_precision(_STD declval<int>()) } -> same_as<void>;
-    { _At._On_dynamic_precision(_STD declval<int>()) } -> same_as<void>;
-    { _At._On_dynamic_precision(_STD declval<_Auto_id_tag>()) } -> same_as<void>;
+    { _At._On_width(int{}) } -> same_as<void>;
+    { _At._On_dynamic_width(int{}) } -> same_as<void>;
+    { _At._On_dynamic_width(_Auto_id_tag{}) } -> same_as<void>;
+    { _At._On_precision(int{}) } -> same_as<void>;
+    { _At._On_dynamic_precision(int{}) } -> same_as<void>;
+    { _At._On_dynamic_precision(_Auto_id_tag{}) } -> same_as<void>;
     { _At._On_sign(_Sgn) } -> same_as<void>;
     { _At._On_hash() } -> same_as<void>;
     { _At._On_zero() } -> same_as<void>;
-    { _At._On_type(_STD declval<_CharT>()) } -> same_as<void>;
+    { _At._On_type(_CharT{}) } -> same_as<void>;
 };
 template <class _Ty, class _CharT>
 concept _Parse_arg_id_callbacks = requires(_Ty _At) {
     { _At._On_auto_id() } -> same_as<void>;
-    { _At._On_manual_id(_STD declval<int>()) } -> same_as<void>;
+    { _At._On_manual_id(int{}) } -> same_as<void>;
 };
 
 template<class _Ty, class _CharT>
@@ -1310,6 +1310,7 @@ struct _Format_handler {
         if (_Begin == _End || *_Begin != '}') {
             throw format_error("Missing '}' in format string.");
         }
+        // TODO: implement format spec dispatching.
         _STL_INTERNAL_CHECK(false);
     }
 };
