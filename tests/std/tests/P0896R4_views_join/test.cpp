@@ -35,7 +35,7 @@ constexpr bool test_one(Outer&& rng, Inner&&, Expected&& expected) {
         using V = views::all_t<Outer>;
         using R = join_view<V>;
         static_assert(ranges::view<R>);
-        /*
+#if 0 // FIXME
         static_assert(input_range<R> == input_range<Outer> && input_range<Inner>);
         static_assert(forward_range<R> == forward_range<Outer> && forward_range<Inner>);
         static_assert(bidirectional_range<R> == bidirectional_range<Outer> && bidirectional_range<Inner>);
@@ -149,7 +149,7 @@ constexpr bool test_one(Outer&& rng, Inner&&, Expected&& expected) {
         same_as<R> auto r = join_view{forward<Outer>(rng)};
         assert(ranges::equal(r, expected));
 
-        /*
+#if 0 // FIXME
         // Validate join_view::size
         static_assert(CanMemberSize<R> == sized_range<Outer>);
         if constexpr (sized_range<Outer>) {
@@ -289,7 +289,8 @@ constexpr bool test_one(Outer&& rng, Inner&&, Expected&& expected) {
                 assert(*prev(b2.end()) == *begin(expected));
             }
         }
-        */
+#endif // FIXME
+#endif // FIXME
     }
     return true;
 }
@@ -379,7 +380,7 @@ int main() {
         static_assert(test_one(input, string_view{}, expected));
         test_one(input, string_view{}, expected);
     }
-    /*
+#if 0 // FIXME
     { // ... move-only
         test_one(move_only_view<bidirectional_iterator_tag, test::Common::no>{some_ints}, joind_ints);
         test_one(move_only_view<bidirectional_iterator_tag, test::Common::yes>{some_ints}, joind_ints);
@@ -418,5 +419,5 @@ int main() {
     // Get full instantiation coverage
     static_assert((test_nested_inout<instantiator, const int>(), true));
     test_nested_inout<instantiator, const int>();
-    */
+#endif // FIXME
 }
