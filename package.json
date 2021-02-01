@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@octokit/graphql": "^4.5.9",
-    "cli-progress": "^3.8.2",
+    "cli-progress": "^3.9.0",
     "dotenv": "^8.2.0",
     "luxon": "^1.25.0"
   }
