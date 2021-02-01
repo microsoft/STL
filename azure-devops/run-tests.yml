@@ -42,7 +42,7 @@ steps:
   artifact: '${{ parameters.targetPlatform }}-$(System.JobPositionInPhase)-libs'
   condition: ${{ parameters.publishArtifact }}
   displayName: 'Publish Libs and Headers Artifact'
-- publish: $(${{ Build.SourcesDirectory }})/llvm-project
+- publish: $(Build.SourcesDirectory)/llvm-project
   artifact: '${{ parameters.targetPlatform }}-$(System.JobPositionInPhase)-llvm'
   condition: ${{ parameters.publishArtifact }}
   displayName: 'Publish Llvm Artifact'
