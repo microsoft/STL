@@ -2336,7 +2336,7 @@ namespace ranges {
                     conditional_t<_Deref_is_ref && forward_range<_Base> && forward_range<_SubRng>, forward_iterator_tag,
                         input_iterator_tag>>;
             using value_type      = range_value_t<_SubRng>;
-            using difference_type = common_type<range_difference_t<_Base>, range_difference_t<_SubRng>>;
+            using difference_type = common_type_t<range_difference_t<_Base>, range_difference_t<_SubRng>>;
 
             _Iterator() = default;
 
