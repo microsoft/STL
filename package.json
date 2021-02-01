@@ -19,16 +19,16 @@
     "url": "https://github.com/microsoft/STL/issues"
   },
   "homepage": "https://github.com/microsoft/STL/tree/gh-pages#readme",
-  "dependencies": {
-    "@octokit/graphql": "^4.5.8",
-    "cli-progress": "^3.8.2",
-    "dotenv": "^8.2.0",
-    "luxon": "^1.25.0"
-  },
   "prettier": {
     "arrowParens": "avoid",
     "printWidth": 120,
     "singleQuote": true,
     "tabWidth": 4
+  },
+  "dependencies": {
+    "@octokit/graphql": "^4.5.9",
+    "cli-progress": "^3.9.0",
+    "dotenv": "^8.2.0",
+    "luxon": "^1.25.0"
   }
 }
