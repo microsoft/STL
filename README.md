@@ -7,7 +7,7 @@ which ships as part of the MSVC toolset and the Visual Studio IDE.
 * Our [Status Chart][] displays our overall progress over time.
 * Join our [Discord server][].
 
-[![Build Status](https://dev.azure.com/vclibs/STL/_apis/build/status/microsoft.STL?branchName=master)][Pipelines]
+[![Build Status](https://dev.azure.com/vclibs/STL/_apis/build/status/microsoft.STL?branchName=main)][Pipelines]
 
 # What This Repo Is Useful For
 
@@ -408,7 +408,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [N4868]: https://wg21.link/n4868
 [NOTICE.txt]: NOTICE.txt
 [Ninja]: https://ninja-build.org
-[Pipelines]: https://dev.azure.com/vclibs/STL/_build/latest?definitionId=4&branchName=master
+[Pipelines]: https://dev.azure.com/vclibs/STL/_build/latest?definitionId=4&branchName=main
 [Python]: https://www.python.org/downloads/windows/
 [Roadmap]: https://github.com/microsoft/STL/wiki/Roadmap
 [Status Chart]: https://microsoft.github.io/STL/
