@@ -319,16 +319,19 @@ constexpr void test_nested_inout() {
 }
 
 static constexpr int some_ints[]             = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-static constexpr span<const int> intervals[] = {{some_ints, some_ints + 3}, {some_ints + 3, some_ints + 7},
-    {some_ints + 7, some_ints + 7}, {some_ints + 7, some_ints + 10}};
+static constexpr span<const int> intervals[] = {
+    {some_ints + 0, some_ints + 3},
+    {some_ints + 3, some_ints + 7},
+    {some_ints + 7, some_ints + 7},
+    {some_ints + 7, some_ints + 10},
+};
 
 struct instantiator {
     template <ranges::range Inner, ranges::input_range Outer>
     static constexpr void call() {
         static_assert(ranges::size(intervals) == 4);
         array inner_ranges = {Inner{intervals[0]}, Inner{intervals[1]}, Inner{intervals[2]}, Inner{intervals[3]}};
-        Outer r{inner_ranges};
-        test_one(r, some_ints);
+        test_one(Outer{inner_ranges}, some_ints);
     }
 };
 
