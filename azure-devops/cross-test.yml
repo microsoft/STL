@@ -28,14 +28,12 @@ jobs:
     parallel: ${{ parameters.numShards }}
   timeoutInMinutes: 360
   steps:
-    - task: DownloadPipelineArtifact@1
-      inputs:
-        artifact: '${{ parameters.targetPlatform }}-$(System.JobPositionInPhase)-tests'
-      timeoutInMinutes: 120
-    - task: DownloadPipelineArtifact@2
-      inputs:
-        artifact: '${{ parameters.targetPlatform }}-$(System.JobPositionInPhase)-llvm'
-      timeoutInMinutes: 120
+    - download: current
+      artifact: '${{ parameters.targetPlatform }}-$(System.JobPositionInPhase)-tests'
+      displayName: DownloadPipelineArtifactTests
+    - download: current
+      artifact: '${{ parameters.targetPlatform }}-$(System.JobPositionInPhase)-llvm'
+      displayName: DownloadPipelineArtifactLLVM
     - task: CmdLine@2
       displayName: 'Run Tests'
       timeoutInMinutes: 120
