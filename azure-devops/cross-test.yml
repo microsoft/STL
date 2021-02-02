@@ -44,7 +44,10 @@ jobs:
           -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.vsDevCmdArch }} -no_logo
           cd ..
           C:\Users\vcwrkspc\AppData\Local\Programs\Python\Python39-32\python.exe ^
-          tests\utils\stl-lit\stl-lit.py ..\..\..\tests\std ..\..\..\tests\tr1
+          tests\utils\stl-lit\stl-lit.py ^
+          ..\..\..\${{ parameters.targetPlatform }}-$(System.JobPositionInPhase)-llvm\libcxx\test ^
+          ..\..\..\tests\std ^
+          ..\..\..\tests\tr1
       env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
     - task: PublishTestResults@2
       displayName: 'Publish Tests'
