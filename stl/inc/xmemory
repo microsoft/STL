@@ -1182,7 +1182,7 @@ private:
     _CONSTEXPR20_CONTAINER void _Orphan_me_unlocked() noexcept {
         _Iterator_base12** _Pnext = &_Myproxy->_Myfirstiter;
         while (*_Pnext && *_Pnext != this) {
-            const auto _Temp = *_Pnext; // TRANSITION: ASO-XXXXX
+            const auto _Temp = *_Pnext; // TRANSITION: VSO-1269037
             _Pnext           = &_Temp->_Mynextiter;
         }
 
@@ -1531,7 +1531,7 @@ public:
         ++_Last;
     }
 
-    _CONSTEXPR20_DYNALLOC pointer _Release() { // suppress any exception handling backout and return _Last
+    constexpr pointer _Release() { // suppress any exception handling backout and return _Last
         _First = _Last;
         return _Last;
     }
@@ -1564,14 +1564,13 @@ _CONSTEXPR20_DYNALLOC _Alloc_ptr_t<_Alloc> _Uninitialized_copy(
             return _Dest;
         }
     }
+
     _Uninitialized_backout_al<_Alloc> _Backout{_Dest, _Al};
     for (; _UFirst != _ULast; ++_UFirst) {
         _Backout._Emplace_back(*_UFirst);
     }
 
-    _Dest = _Backout._Release();
-
-    return _Dest;
+    return _Backout._Release();
 }
 
 // FUNCTION TEMPLATE uninitialized_copy
@@ -1579,7 +1578,7 @@ template <class _InIt, class _NoThrowFwdIt>
 _CONSTEXPR20_DYNALLOC _NoThrowFwdIt _Uninitialized_copy_unchecked(
     _InIt _First, const _InIt _Last, _NoThrowFwdIt _Dest) {
     // copy [_First, _Last) to raw [_Dest, ...)
-    if constexpr (_Ptr_move_cat<_InIt, _NoThrowFwdIt>::_Really_trivial) {
+    if constexpr (_Ptr_copy_cat<_InIt, _NoThrowFwdIt>::_Really_trivial) {
 #ifdef __cpp_lib_constexpr_dynamic_alloc
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_constexpr_dynamic_alloc
@@ -1587,14 +1586,13 @@ _CONSTEXPR20_DYNALLOC _NoThrowFwdIt _Uninitialized_copy_unchecked(
             return _Copy_memmove(_First, _Last, _Dest);
         }
     }
+
     _Uninitialized_backout<_NoThrowFwdIt> _Backout{_Dest};
     for (; _First != _Last; ++_First) {
         _Backout._Emplace_back(*_First);
     }
 
-    _Dest = _Backout._Release();
-
-    return _Dest;
+    return _Backout._Release();
 }
 
 template <class _InIt, class _NoThrowFwdIt>
@@ -1627,6 +1625,7 @@ _CONSTEXPR20_DYNALLOC _Alloc_ptr_t<_Alloc> _Uninitialized_move(
             return _Dest + (_ULast - _UFirst);
         }
     }
+
     _Uninitialized_backout_al<_Alloc> _Backout{_Dest, _Al};
     for (; _UFirst != _ULast; ++_UFirst) {
         _Backout._Emplace_back(_STD move(*_UFirst));
@@ -1660,8 +1659,8 @@ _CONSTEXPR20_DYNALLOC _Alloc_ptr_t<_Alloc> _Uninitialized_fill_n(
             }
         }
     }
-    _Uninitialized_backout_al<_Alloc> _Backout{_First, _Al};
 
+    _Uninitialized_backout_al<_Alloc> _Backout{_First, _Al};
     for (; 0 < _Count; --_Count) {
         _Backout._Emplace_back(_Val);
     }
@@ -1685,6 +1684,7 @@ void uninitialized_fill(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last, c
                 return;
             }
         }
+
         _Uninitialized_backout<_Unwrapped_t<const _NoThrowFwdIt&>> _Backout{_UFirst};
         while (_Backout._Last != _ULast) {
             _Backout._Emplace_back(_Val);
@@ -1723,6 +1723,7 @@ _CONSTEXPR20_DYNALLOC _Alloc_ptr_t<_Alloc> _Uninitialized_value_construct_n(
             return _First + _Count;
         }
     }
+
     _Uninitialized_backout_al<_Alloc> _Backout{_First, _Al};
     for (; 0 < _Count; --_Count) {
         _Backout._Emplace_back();
