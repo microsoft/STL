@@ -57,20 +57,11 @@ std/language.support/support.limits/support.limits.general/locale.version.pass.c
 std/language.support/support.limits/support.limits.general/ostream.version.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/string_view.version.pass.cpp FAIL
 
-# libc++ doesn't yet implement P1956R1, so it expects the old names `ispow2`, `ceil2`, `floor2`, and `log2p1`
-std/numerics/bit/bit.pow.two/ceil2.pass.cpp FAIL
-std/numerics/bit/bit.pow.two/floor2.pass.cpp FAIL
-std/numerics/bit/bit.pow.two/ispow2.pass.cpp FAIL
-std/numerics/bit/bit.pow.two/log2p1.pass.cpp FAIL
-
 # test emits warning C4310: cast truncates constant value
 std/numerics/bit/bitops.rot/rotl.pass.cpp:0 FAIL
 
 # libc++ doesn't yet implement P1754R1 or P1964R2, so it expects an old value for `__cpp_lib_concepts`
 std/language.support/support.limits/support.limits.general/concepts.version.pass.cpp FAIL
-
-# libc++ doesn't yet implement P1001R2, so it expects an old value for `__cpp_lib_execution`
-std/language.support/support.limits/support.limits.general/execution.version.pass.cpp FAIL
 
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
@@ -197,6 +188,8 @@ std/language.support/support.limits/support.limits.general/type_traits.version.p
 std/language.support/support.limits/support.limits.general/version.version.pass.cpp FAIL
 
 # Contest does not understand .sh tests, which must be run specially
+std/input.output/iostream.objects/narrow.stream.objects/cin.sh.cpp SKIPPED
+std/input.output/iostream.objects/wide.stream.objects/wcin.sh.cpp SKIPPED
 std/namespace/addressable_functions.sh.cpp SKIPPED
 std/thread/thread.condition/thread.condition.condvarany/wait_terminates.sh.cpp SKIPPED
 
@@ -280,9 +273,6 @@ std/utilities/memory/default.allocator/allocator_void.deprecated_in_cxx17.verify
 std/utilities/memory/default.allocator/allocator.members/allocate.constexpr.size.verify.cpp SKIPPED
 std/utilities/memory/default.allocator/allocator.members/allocate.verify.cpp SKIPPED
 
-# GH-1382: Our machinery doesn't understand compile-only `.compile.pass.cpp` tests
-std/strings/string.view/string.view.io/stream_insert_decl_present.compile.pass.cpp SKIPPED
-
 
 # *** MISSING STL FEATURES ***
 # C++20 P0355R7 "<chrono> Calendars And Time Zones"
@@ -306,11 +296,18 @@ std/utilities/time/time.clock/time.clock.file/file_time.pass.cpp FAIL
 std/utilities/time/time.clock/time.clock.file/now.pass.cpp FAIL
 std/utilities/time/time.clock/time.clock.file/rep_signed.pass.cpp FAIL
 
+# C++20 P0466R5 "Layout-Compatibility And Pointer-Interconvertibility Traits"
+std/language.support/support.limits/support.limits.general/type_traits.version.pass.cpp:1 FAIL
+
 # C++20 P0608R3 "Improving variant's Converting Constructor/Assignment"
 std/utilities/variant/variant.variant/variant.assign/conv.pass.cpp FAIL
 std/utilities/variant/variant.variant/variant.assign/T.pass.cpp FAIL
 std/utilities/variant/variant.variant/variant.ctor/conv.pass.cpp FAIL
 std/utilities/variant/variant.variant/variant.ctor/T.pass.cpp FAIL
+
+# C++20 P0645R10 "<format> Text Formatting"
+std/language.support/support.limits/support.limits.general/format.version.pass.cpp FAIL
+std/utilities/format/format.error/format.error.pass.cpp FAIL
 
 # C++20 P0784R7 "More constexpr containers"
 std/utilities/memory/allocator.traits/allocator.traits.members/allocate.pass.cpp:0 FAIL
@@ -332,12 +329,32 @@ std/language.support/support.limits/support.limits.general/functional.version.pa
 std/language.support/support.limits/support.limits.general/iterator.version.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/memory.version.pass.cpp FAIL
 
+# C++20 P1004R2 "constexpr std::vector"
+std/language.support/support.limits/support.limits.general/vector.version.pass.cpp FAIL
+
+# C++20 P1614R2 "Adding Spaceship <=> To The Library"
+std/language.support/support.limits/support.limits.general/compare.version.pass.cpp FAIL
+
+# C++23 P1048R1 "is_scoped_enum"
+std/utilities/meta/meta.unary/meta.unary.prop/is_scoped_enum.pass.cpp FAIL
+
+# C++23 P1679R3 "contains() For basic_string/basic_string_view"
+std/strings/basic.string/string.contains/contains.char.pass.cpp FAIL
+std/strings/basic.string/string.contains/contains.ptr.pass.cpp FAIL
+std/strings/basic.string/string.contains/contains.string_view.pass.cpp FAIL
+std/strings/string.view/string.view.template/contains.char.pass.cpp FAIL
+std/strings/string.view/string.view.template/contains.ptr.pass.cpp FAIL
+std/strings/string.view/string.view.template/contains.string_view.pass.cpp FAIL
+
 
 # *** MISSING COMPILER FEATURES ***
 # Nothing here! :-)
 
 
 # *** MISSING LWG ISSUE RESOLUTIONS ***
+# LWG-2503 "multiline option should be added to syntax_option_type"
+std/re/re.const/re.matchflag/match_multiline.pass.cpp FAIL
+
 # LWG-2532 "Satisfying a promise at thread exit" (Open)
 # WCFB02 implements the proposed resolution for this issue
 std/thread/futures/futures.promise/set_exception_at_thread_exit.pass.cpp FAIL
@@ -360,6 +377,10 @@ std/containers/views/span.cons/ptr_ptr.pass.cpp:0 FAIL
 std/utilities/utility/pairs/pairs.pair/assign_pair.pass.cpp:0 FAIL
 std/utilities/utility/pairs/pairs.pair/assign_rv_pair.pass.cpp:0 FAIL
 std/utilities/utility/pairs/pairs.pair/assign_rv_pair_U_V.pass.cpp:0 FAIL
+
+# VSO-1271673 "static analyzer doesn't know about short-circuiting"
+std/algorithms/alg.sorting/alg.sort/partial.sort/partial_sort.pass.cpp:0 FAIL
+std/algorithms/alg.sorting/alg.sort/partial.sort/partial_sort_comp.pass.cpp:0 FAIL
 
 
 # *** CLANG COMPILER BUGS ***
@@ -401,7 +422,6 @@ std/containers/sequences/array/array.data/data.pass.cpp FAIL
 std/containers/sequences/array/iterators.pass.cpp FAIL
 
 # GH-1006 <algorithm>: debug checks for predicates are observable
-std/algorithms/alg.sorting/alg.heap.operations/make.heap/make_heap_comp.pass.cpp FAIL
 std/algorithms/alg.sorting/alg.merge/inplace_merge_comp.pass.cpp FAIL
 std/algorithms/alg.sorting/alg.min.max/minmax_init_list_comp.pass.cpp FAIL
 
@@ -466,6 +486,15 @@ std/utilities/meta/meta.trans/meta.trans.other/aligned_storage.pass.cpp FAIL
 std/depr/depr.c.headers/math_h.pass.cpp FAIL
 std/numerics/c.math/cmath.pass.cpp FAIL
 
+# GH-1596: <algorithm>: unqualified calls to _Adl_verify_range incorrectly cause instantiation
+std/algorithms/robust_against_adl.pass.cpp FAIL
+
+# GH-1595: <bit>: bit_ceil(T(-1)) should not be a constant expression
+std/numerics/bit/bit.pow.two/bit_ceil.fail.cpp:0 FAIL
+
+# GH-1530: <random>: Poisson approximation for binomial_distribution is not accurate
+std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.bin/eval.PR44847.pass.cpp FAIL
+
 
 # *** CRT BUGS ***
 # We're permanently missing aligned_alloc().
@@ -482,15 +511,6 @@ std/language.support/support.limits/c.limits/cfloat.pass.cpp:0 FAIL
 
 
 # *** LIKELY BOGUS TESTS ***
-# "error: _LIBCPP_VERSION not defined"
-std/thread/thread.barrier/version.pass.cpp FAIL
-std/thread/thread.latch/version.pass.cpp FAIL
-std/thread/thread.semaphore/version.pass.cpp FAIL
-
-# "error C3861: 'assert': identifier not found"
-std/thread/thread.semaphore/timed.pass.cpp FAIL
-std/thread/thread.semaphore/try_acquire.pass.cpp FAIL
-
 # pass lambda without noexcept to barrier
 std/thread/thread.barrier/completion.pass.cpp FAIL
 std/thread/thread.barrier/max.pass.cpp FAIL
@@ -503,15 +523,6 @@ std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.asgn/move.pass.cpp
 
 # Test bug after LWG-3257 "Missing feature testing macro update from P0858" was accepted.
 std/language.support/support.limits/support.limits.general/string.version.pass.cpp FAIL
-
-# libc++ expects an old value for `__cpp_lib_array_constexpr` (`201603L`). We've implemented P0858R0, P1023R0, and P1032R1, increasing the value to `201811L`.
-std/language.support/support.limits/support.limits.general/array.version.pass.cpp FAIL
-
-# libc++ expects the old macro `__cpp_lib_constexpr_misc`. After P1902R1, it should expect `__cpp_lib_constexpr_tuple` to have the value `201811L`.
-std/language.support/support.limits/support.limits.general/tuple.version.pass.cpp FAIL
-
-# libc++ expects the old macro `__cpp_lib_constexpr_misc`. After P1902R1, it should expect `__cpp_lib_constexpr_utility` to have the value `201811L`.
-std/language.support/support.limits/support.limits.general/utility.version.pass.cpp FAIL
 
 # Not yet analyzed, likely bogus tests. Appears to be timing assumptions.
 std/thread/futures/futures.async/async.pass.cpp SKIPPED
@@ -652,6 +663,15 @@ std/utilities/time/time.cal/time.cal.ymwdlast/time.cal.ymwdlast.nonmembers/compa
 # warning C28301: No annotations for first declaration of 'printf'.
 std/utilities/time/time.cal/time.cal.weekday/time.cal.weekday.nonmembers/minus.pass.cpp:0 FAIL
 std/utilities/time/time.cal/time.cal.year/time.cal.year.nonmembers/minus.pass.cpp:0 FAIL
+
+# Bogus test passes a class type as the second argument to std::advance
+std/iterators/iterator.primitives/iterator.operations/robust_against_adl.pass.cpp FAIL
+
+# Non-Standard test should be moved from libcxx/test/std to libcxx/test/libcxx
+std/utilities/memory/util.smartptr/util.smartptr.shared/libcxx.control_block_layout.pass.cpp FAIL
+
+# Non-Standard assumption that std::filesystem::file_time_type::duration::period is std::nano
+std/input.output/filesystems/fs.filesystem.synopsis/file_time_type_resolution.compile.pass.cpp FAIL
 
 
 # *** LIKELY STL BUGS ***
@@ -850,6 +870,31 @@ std/containers/sequences/deque/deque.modifiers/insert_iter_iter.pass.cpp SKIPPED
 
 # Not yet analyzed. Failing after https://reviews.llvm.org/D75622.
 std/re/re.const/re.matchflag/match_prev_avail.pass.cpp FAIL
+
+# Not yet analyzed. Many diagnostics.
+std/input.output/filesystems/class.path/path.member/path.charconv.pass.cpp FAIL
+
+# Not yet analyzed. Probably ADL shenanigans.
+std/thread/thread.threads/thread.thread.class/thread.thread.constr/robust_against_adl.pass.cpp FAIL
+std/utilities/function.objects/func.wrap/func.wrap.func/robust_against_adl.pass.cpp FAIL
+std/utilities/function.objects/refwrap/refwrap.invoke/robust_against_adl.pass.cpp FAIL
+std/utilities/variant/variant.visit/robust_against_adl.pass.cpp FAIL
+
+# Not yet analyzed. Probably MSVC bug.
+std/utilities/function.objects/func.invoke/invoke_constexpr.pass.cpp:0 FAIL
+
+# Not yet analyzed. Probably name mangling bug.
+std/utilities/function.objects/func.wrap/func.wrap.func/noncopyable_return_type.pass.cpp FAIL
+
+# Not yet analyzed. Failing for "[a[.ch.]z]".
+std/re/re.alg/re.alg.match/awk.locale.pass.cpp FAIL
+std/re/re.alg/re.alg.match/basic.locale.pass.cpp FAIL
+std/re/re.alg/re.alg.match/ecma.locale.pass.cpp FAIL
+std/re/re.alg/re.alg.match/extended.locale.pass.cpp FAIL
+std/re/re.alg/re.alg.search/awk.locale.pass.cpp FAIL
+std/re/re.alg/re.alg.search/basic.locale.pass.cpp FAIL
+std/re/re.alg/re.alg.search/ecma.locale.pass.cpp FAIL
+std/re/re.alg/re.alg.search/extended.locale.pass.cpp FAIL
 
 
 # *** XFAILs WHICH PASS ***
