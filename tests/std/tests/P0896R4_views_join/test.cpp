@@ -20,31 +20,34 @@ concept CanViewJoin = requires(Rng&& r) {
     views::join(static_cast<Rng&&>(r));
 };
 
-template <ranges::input_range Outer, ranges::range Inner, ranges::random_access_range Expected>
-constexpr bool test_one(Outer&& rng, Inner&&, Expected&& expected) {
+template <ranges::input_range Outer, ranges::random_access_range Expected>
+constexpr bool test_one(Outer&& rng, Expected&& expected) {
     using ranges::begin, ranges::bidirectional_range, ranges::common_range, ranges::enable_borrowed_range, ranges::end,
         ranges::forward_range, ranges::input_range, ranges::iterator_t, ranges::join_view, ranges::range_value_t;
 
-    constexpr bool deref_is_reference = is_reference_v<ranges::range_reference_t<Outer>>;
-    constexpr bool is_view            = ranges::view<range_value_t<Outer>>;
+    using Inner = range_value_t<Outer>;
+    static_assert(ranges::range<Inner>);
 
-    if constexpr (deref_is_reference || is_view) {
+    constexpr bool deref_is_glvalue = is_reference_v<ranges::range_reference_t<Outer>>;
+
+    if constexpr (deref_is_glvalue || ranges::view<Inner>) {
         using V = views::all_t<Outer>;
         using R = join_view<V>;
         static_assert(ranges::view<R>);
-#if 1 // FIXME
-        (void) rng;
-        (void) expected;
-#else // FIXME
-        static_assert(input_range<R> == input_range<Outer> && input_range<Inner>);
+        static_assert(input_range<R> == input_range<Inner>);
         static_assert(forward_range<R> == forward_range<Outer> && forward_range<Inner>);
         static_assert(bidirectional_range<R> == bidirectional_range<Outer> && bidirectional_range<Inner>);
         static_assert(!ranges::random_access_range<R>);
         static_assert(!ranges::contiguous_range<R>);
 
-        // Validate range adapter object
-        // ...with lvalue argument
-        static_assert(CanViewJoin<Outer&> == (!is_view || copyable<V>) );
+#if 1 // FIXME
+        (void) rng;
+        (void) expected;
+#else // FIXME
+      // Validate range adapter object
+      // ...with lvalue argument
+        static_assert(
+            CanViewJoin<Outer&> == (!is_view || copyable<V>) ); // FIXME: This "is_view" is different from line 32.
         if constexpr (CanViewJoin<Outer&>) {
             constexpr bool is_noexcept = !is_view || is_nothrow_copy_constructible_v<V>;
 
@@ -329,19 +332,17 @@ constexpr void test_nested_inout() {
     with_input_or_output_ranges<with_dependent_input_ranges<Instantiator>, Element>::call();
 }
 
-static constexpr int full_range[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-static constexpr span<const int> first_range{full_range, full_range + 3};
-static constexpr span<const int> second_range{full_range + 3, full_range + 7};
-static constexpr span<const int> third_range{full_range + 7, full_range + 7}; // NB: Intentionally left empty
-static constexpr span<const int> fourth_range{full_range + 7, full_range + 10};
+static constexpr int some_ints[]             = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+static constexpr span<const int> intervals[] = {{some_ints, some_ints + 3}, {some_ints + 3, some_ints + 7},
+    {some_ints + 7, some_ints + 7}, {some_ints + 7, some_ints + 10}};
 
 struct instantiator {
     template <ranges::range Inner, ranges::input_range Outer>
     static constexpr void call() {
-        array<Inner, 4> inner_ranges = {
-            Inner{first_range}, Inner{second_range}, Inner{third_range}, Inner{fourth_range}};
+        static_assert(ranges::size(intervals) == 4);
+        array inner_ranges = {Inner{intervals[0]}, Inner{intervals[1]}, Inner{intervals[2]}, Inner{intervals[3]}};
         Outer r{inner_ranges};
-        test_one(r, first_range, full_range);
+        test_one(r, some_ints);
     }
 };
 
@@ -356,8 +357,8 @@ int main() {
         static constexpr array<string_view, 5> data = {{{}, "Hello "sv, {}, "World!"sv, {}}};
         constexpr span<const string_view, 5> input{data};
         constexpr string_view expected = "Hello World!"sv;
-        static_assert(test_one(input, string_view{}, expected));
-        test_one(input, string_view{}, expected);
+        static_assert(test_one(input, expected));
+        test_one(input, expected);
     }
 #if 0 // FIXME
     { // ... move-only
