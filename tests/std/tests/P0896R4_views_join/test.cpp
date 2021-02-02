@@ -40,14 +40,11 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
         static_assert(!ranges::random_access_range<R>);
         static_assert(!ranges::contiguous_range<R>);
 
-#if 1 // FIXME
-        (void) rng;
-        (void) expected;
-#else // FIXME
-      // Validate range adapter object
-      // ...with lvalue argument
-        static_assert(
-            CanViewJoin<Outer&> == (!is_view || copyable<V>) ); // FIXME: This "is_view" is different from line 32.
+        constexpr bool is_view = ranges::view<Outer>;
+
+        // Validate range adapter object
+        // ...with lvalue argument
+        static_assert(CanViewJoin<Outer&> == (!is_view || copyable<V>) );
         if constexpr (CanViewJoin<Outer&>) {
             constexpr bool is_noexcept = !is_view || is_nothrow_copy_constructible_v<V>;
 
@@ -108,10 +105,10 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
             constexpr bool is_noexcept = is_nothrow_copy_constructible_v<V>;
 
             static_assert(same_as<decltype(views::join(move(as_const(rng)))), R>);
-            static_assert(noexcept(views::join(move(as_const(rng)))) == is_nothrow_copy_constructible_v<R>);
+            static_assert(noexcept(views::join(move(as_const(rng)))) == is_noexcept);
 
             static_assert(same_as<decltype(move(as_const(rng)) | views::join), R>);
-            static_assert(noexcept(move(as_const(rng)) | views::join) == is_nothrow_copy_constructible_v<R>);
+            static_assert(noexcept(move(as_const(rng)) | views::join) == is_noexcept);
         } else if constexpr (!is_view && enable_borrowed_range<const remove_cvref_t<Outer>>) {
             using S                    = decltype(ranges::subrange{as_const(rng)});
             using RS                   = join_view<S>;
@@ -125,47 +122,40 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
         }
 
         // Validate deduction guide
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1159442
-        (void) 42;
-#endif // TRANSITION, DevCom-1159442
         same_as<R> auto r = join_view{forward<Outer>(rng)};
         assert(ranges::equal(r, expected));
 
-#if 0 // FIXME
-      // Validate join_view::size
-        static_assert(CanMemberSize<R> == sized_range<Outer>);
-        if constexpr (sized_range<Outer>) {
-            assert(r.size() == static_cast<range_size_t<R>>(size(expected)));
-            static_assert(noexcept(r.size()) == noexcept(size(rng)));
-        }
-
-        static_assert(CanMemberSize<const R> == sized_range<const Outer>);
-        if constexpr (sized_range<const Outer>) {
-            assert(as_const(r).size() == static_cast<range_size_t<R>>(size(expected)));
-            static_assert(noexcept(r.size()) == noexcept(size(as_const(rng))));
-        }
+        // Validate join_view::size
+        static_assert(!CanSize<R>);
 
         // Validate view_interface::empty and operator bool
-        const bool is_empty = ranges::empty(expected);
-        assert(r.empty() == is_empty);
-        assert(static_cast<bool>(r) == !is_empty);
-        static_assert(CanMemberEmpty<const R> == common_range<Outer>);
-        if constexpr (common_range<Outer>) {
-            assert(as_const(r).empty() == is_empty);
-            assert(static_cast<bool>(as_const(r)) == !is_empty);
+        static_assert(CanEmpty<R> == forward_range<Outer>);
+        static_assert(CanMemberEmpty<R> == CanEmpty<R>);
+        if (forward_range<Outer>) {
+            const bool is_empty = ranges::empty(expected);
+            assert(r.empty() == is_empty);
+            assert(static_cast<bool>(r) == !is_empty);
+
+            static_assert(CanEmpty<const R> == forward_range<const Outer>);
+            static_assert(CanMemberEmpty<const R> == CanEmpty<const R>);
+            if constexpr (forward_range<const Outer>) {
+                assert(as_const(r).empty() == is_empty);
+                assert(static_cast<bool>(as_const(r)) == !is_empty);
+            }
         }
 
-        // Validate join_view::begin
+#if 0 // FIXME
+      // Validate join_view::begin
         static_assert(CanMemberBegin<R>);
         {
-            // join_view sometimes caches begin, so let's make several extra calls
+            // join_view sometimes caches begin, so let's make several extra calls // FIXME: lies
             const same_as<join_iterator<iterator_t<V>>> auto i = r.begin();
             if (!is_empty) {
                 assert(*i == *begin(expected));
             }
             assert(r.begin() == i);
             assert(r.begin() == i);
-            // NB: non-const begin is unconditionally noexcept(false) due to caching
+            // NB: non-const begin is unconditionally noexcept(false) due to caching // FIXME: lies
             static_assert(!noexcept(r.begin()));
 
             if constexpr (copyable<V>) {
@@ -260,9 +250,6 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
         }
 
         // Validate join_view::base() && (NB: do this last since it leaves r moved-from)
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1159442
-        (void) 42;
-#endif // TRANSITION, DevCom-1159442
         same_as<V> auto b2 = move(r).base();
         static_assert(noexcept(move(r).base()) == is_nothrow_move_constructible_v<V>);
         if (!is_empty) {
@@ -271,7 +258,6 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
                 assert(*prev(b2.end()) == *begin(expected));
             }
         }
-#endif // FIXME
 #endif // FIXME
     }
     return true;
