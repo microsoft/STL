@@ -324,9 +324,13 @@ int main() {
         puts("Testing <future>.");
         promise<int> p{};
         future<int> f{p.get_future()};
+#if 0 // TRANSITION, VSO-1271718 (Standard Library Header Units ICE with C++20 chrono)
         assert(f.wait_for(chrono::seconds{0}) == future_status::timeout);
+#endif // ^^^ no workaround ^^^
         p.set_value(1729);
+#if 0 // TRANSITION, VSO-1271718 (Standard Library Header Units ICE with C++20 chrono)
         assert(f.wait_for(chrono::seconds{0}) == future_status::ready);
+#endif // ^^^ no workaround ^^^
         assert(f.get() == 1729);
     }
 
@@ -756,7 +760,9 @@ int main() {
                 }
                 l.count_down(); // tell main() that we're done
                 while (!token.stop_requested()) {
+#if 0 // TRANSITION, VSO-1271718 (Standard Library Header Units ICE with C++20 chrono)
                     this_thread::sleep_for(10ms); // not a timing assumption; avoids spinning furiously
+#endif // ^^^ no workaround ^^^
                 }
                 vec.push_back(-1000); // indicate that token.stop_requested() returned true
             }};
