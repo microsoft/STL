@@ -468,7 +468,7 @@ constexpr void _Parse_format_string(basic_string_view<_CharT> _Format_str, _Hand
                 return _Writer_loop(_Begin, _End);
             }
         }
-        _Writer_loop(_Begin, _End);
+        _Writer_loop(_Begin, _Pt);
         _Begin = _Parse_replacement_field(_Pt, _End, _Handler);
     }
 }
