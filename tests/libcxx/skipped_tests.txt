@@ -310,18 +310,9 @@ language.support\support.limits\support.limits.general\format.version.pass.cpp
 utilities\format\format.error\format.error.pass.cpp
 
 # C++20 P0784R7 "More constexpr containers"
-utilities\memory\allocator.traits\allocator.traits.members\allocate.pass.cpp
-utilities\memory\allocator.traits\allocator.traits.members\allocate_hint.pass.cpp
 utilities\memory\allocator.traits\allocator.traits.members\construct.pass.cpp
-utilities\memory\allocator.traits\allocator.traits.members\deallocate.pass.cpp
 utilities\memory\allocator.traits\allocator.traits.members\destroy.pass.cpp
-utilities\memory\allocator.traits\allocator.traits.members\max_size.pass.cpp
-utilities\memory\allocator.traits\allocator.traits.members\select_on_container_copy_construction.pass.cpp
-utilities\memory\default.allocator\allocator.globals\eq.pass.cpp
 utilities\memory\specialized.algorithms\specialized.construct\construct_at.pass.cpp
-utilities\memory\specialized.algorithms\specialized.destroy\destroy.pass.cpp
-utilities\memory\specialized.algorithms\specialized.destroy\destroy_at.pass.cpp
-utilities\memory\specialized.algorithms\specialized.destroy\destroy_n.pass.cpp
 
 # C++20 P0896R4 "<ranges>"
 language.support\support.limits\support.limits.general\algorithm.version.pass.cpp
