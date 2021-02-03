@@ -571,7 +571,7 @@ struct _Basic_format_specs {
 };
 
 
-// Extremely dull set of parsing callbacks that just fills a struct with parsed data.
+// _Parse_specs_callbacks that fill a _Basic_format_specs struct with the parsed data
 template <class _CharT>
 class _Specs_setter {
 public:
@@ -618,7 +618,9 @@ protected:
     _Basic_format_specs<_CharT> _Specs;
 };
 
-
+// Actually fetch the value of an argument associated with a dynamic
+// width or precision specifier. This will be called with either
+// _Width_checker or _Precision_checker as "_Handler".
 template <class _Handler, class _FormatArg>
 constexpr unsigned int _Get_dynamic_specs(_FormatArg _Arg) {
     unsigned long long _Val = visit_format_arg(_Handler(), _Arg);
@@ -640,6 +642,8 @@ constexpr basic_format_arg<_Context> _Get_arg(_Context _Ctx, size_t _Arg_id) {
     return _Arg;
 }
 
+// Checks that the type and value of an argument associated with a dynamic
+// width specifier is valid.
 class _Width_checker {
 public:
     template <class _Ty>
@@ -656,6 +660,8 @@ public:
     }
 };
 
+// Checks that the type and value of an argument associated with a dynamic
+// precision specifier is valid.
 class _Precision_checker {
 public:
     template <class _Ty>
@@ -672,6 +678,10 @@ public:
     }
 };
 
+// Parses standard format specs into a _Basic_format_specs using _Specs_setter, and,
+// in addition handles dynamic width and precision. This is seperate from _Specs setter
+// because it needs to know about the current basic_format_parse_context and basic_format_context
+// in order to fetch the width from the arguments.
 template <class _ParseContext, class _Context>
 class _Specs_handler : public _Specs_setter<typename _Context::char_type> {
 public:
@@ -703,7 +713,6 @@ private:
         return _STD _Get_arg(_Ctx, _Arg_id);
     }
 };
-
 class _Numeric_specs_checker {
     _Type _Arg_type = _Type::_None;
 
@@ -730,7 +739,10 @@ public:
         }
     }
 };
-
+// Uses _Numeric_specs_checker to check that the type of the argument printed by
+// a replacement field with format specs actually satisfies the requirements for
+// that format spec. If the requirements are met then calls the base class
+// handler method.
 template <class _Handler>
 class _Specs_checker : public _Handler {
     _Numeric_specs_checker _Numeric_checker;
@@ -1281,9 +1293,10 @@ public:
     void operator()(_Ty) const {}
 };
 
-// this is the visitor that's used for replacement fields,
+// This is the visitor that's used for "simple" replacement fields,
 // it could be a generic lambda (with overloaded), but that's
-// bad for throughput
+// bad for throughput. A simple replacement field is a replacement field
+// that's just "{}", without any format specs.
 template <class _OutputIt, class _CharT>
 struct _Default_arg_formatter {
     using _Context = basic_format_context<_OutputIt, _CharT>;
