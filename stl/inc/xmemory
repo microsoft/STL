@@ -1182,7 +1182,7 @@ private:
     _CONSTEXPR20_CONTAINER void _Orphan_me_unlocked() noexcept {
         _Iterator_base12** _Pnext = &_Myproxy->_Myfirstiter;
         while (*_Pnext && *_Pnext != this) {
-            const auto _Temp = *_Pnext; // TRANSITION: VSO-1269037
+            const auto _Temp = *_Pnext; // TRANSITION, VSO-1269037
             _Pnext           = &_Temp->_Mynextiter;
         }
 
