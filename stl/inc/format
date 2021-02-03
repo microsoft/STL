@@ -65,6 +65,7 @@ constexpr bool _Is_numeric_fmt_type(_Type _Ty) {
 }
 struct _Auto_id_tag {};
 
+// TODO: test coverage
 template <class _CharT>
 class basic_format_parse_context {
 public:
@@ -472,9 +473,8 @@ constexpr void _Parse_format_string(basic_string_view<_CharT> _Format_str, _Hand
     }
 }
 
+
 // TODO: test coverage
-
-
 template <class _Context>
 class basic_format_arg {
 public:
@@ -739,6 +739,7 @@ public:
         }
     }
 };
+
 // Uses _Numeric_specs_checker to check that the type of the argument printed by
 // a replacement field with format specs actually satisfies the requirements for
 // that format spec. If the requirements are met then calls the base class
