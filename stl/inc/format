@@ -12,6 +12,7 @@
 #pragma message("The contents of <format> are available only with C++20 concepts support.")
 #else // ^^^ !defined(__cpp_lib_concepts) / defined(__cpp_lib_concepts) vvv
 
+#include <algorithm>
 #include <array>
 #include <charconv>
 #include <concepts>
@@ -92,7 +93,9 @@ public:
         return _Format_string.end();
     }
     constexpr void advance_to(const_iterator _It) {
-        _Format_string.remove_prefix(_It - begin());
+        _STL_INTERNAL_CHECK(_It - begin() >= 0);
+        using _Size_type = typename basic_string_view<_CharT>::size_type;
+        _Format_string.remove_prefix(static_cast<_Size_type>(_It - begin()));
     }
 
     // While the standard presents an exposition only enum value for
@@ -102,7 +105,7 @@ public:
     // _Next_arg_id == -1 means manual
     constexpr size_t next_arg_id() {
         if (_Next_arg_id >= 0) {
-            return _Next_arg_id++;
+            return static_cast<size_t>(_Next_arg_id++);
         }
         throw format_error("Can not switch from manual to automatic indexing");
     }
@@ -134,15 +137,15 @@ concept _Parse_spec_callbacks = requires(_Ty _At, basic_string_view<_CharT> _Sv,
 template <class _Ty, class _CharT>
 concept _Parse_arg_id_callbacks = requires(_Ty _At) {
     { _At._On_auto_id() } -> same_as<void>;
-    { _At._On_manual_id(int{}) } -> same_as<void>;
+    { _At._On_manual_id(size_t{}) } -> same_as<void>;
 };
 
 template<class _Ty, class _CharT>
 concept _Parse_replacement_field_callbacks = requires(_Ty _At, const _CharT* _Begin, const _CharT* _End) {
-    { _At._Parse_context } -> _STD convertible_to<basic_format_parse_context<_CharT>&>;
+    //{ _At._Parse_context } -> same_as<basic_format_parse_context<_CharT>>;
     { _At._On_text(_Begin, _End) } -> same_as<void>;
-    { _At._On_replacement_field(int{}, _STD declval<const _CharT*>()) } -> same_as<void>;
-    { _At._On_format_specs(int{}, _Begin, _End) } -> same_as<const _CharT*>;
+    { _At._On_replacement_field(size_t{}, _STD declval<const _CharT*>()) } -> same_as<void>;
+    { _At._On_format_specs(size_t{}, _Begin, _End) } -> same_as<const _CharT*>;
 };
 
 // clang-format on
@@ -197,7 +200,7 @@ constexpr const _CharT* _Parse_arg_id(const _CharT* _Begin, const _CharT* _End, 
         if (_Begin == _End || (*_Begin != '}' && *_Begin != ':')) {
             throw format_error("Invalid format string.");
         }
-        _Callbacks._On_manual_id(_Index);
+        _Callbacks._On_manual_id(static_cast<size_t>(_Index));
         return _Begin;
     }
     // This is where we would parse named arg ids if std::format were to support them.
@@ -256,7 +259,7 @@ struct _Width_adapter {
     constexpr void _On_auto_id() {
         _Callbacks._On_dynamic_width(_Auto_id_tag{});
     }
-    constexpr void _On_manual_id(int _Id) {
+    constexpr void _On_manual_id(size_t _Id) {
         _Callbacks._On_dynamic_width(_Id);
     }
 };
@@ -272,7 +275,7 @@ struct _Precision_adapter {
     constexpr void _On_auto_id() {
         _Callbacks._On_dynamic_precision(_Auto_id_tag{});
     }
-    constexpr void _On_manual_id(int _Id) {
+    constexpr void _On_manual_id(size_t _Id) {
         _Callbacks._On_dynamic_precision(_Id);
     }
 };
@@ -280,11 +283,11 @@ struct _Precision_adapter {
 template <class _CharT>
 struct _Id_adapter {
     basic_format_parse_context<_CharT>& _Parse_context;
-    int _Arg_id = 0;
+    size_t _Arg_id = 0;
     constexpr void _On_auto_id() {
         _Arg_id = _Parse_context.next_arg_id();
     }
-    constexpr void _On_manual_id(int _Id) {
+    constexpr void _On_manual_id(size_t _Id) {
         _Parse_context.check_arg_id(_Id);
         _Arg_id = _Id;
     }
@@ -408,7 +411,7 @@ constexpr const _CharT* _Parse_replacement_field(const _CharT* _Begin, const _Ch
 
     if (*_Begin == '}') {
         // string was "{}", and we have a replacement field
-        _Handler._On_replacement_field(_Handler._On_auto_id());
+        _Handler._On_replacement_field(_Handler._Parse_context.next_arg_id(), _Begin);
     } else if (*_Begin == '{') {
         // string was "{{", so we have a literal "{" to print
         _Handler._On_text(_Begin, _Begin + 1);
@@ -460,7 +463,7 @@ constexpr void _Parse_format_string(basic_string_view<_CharT> _Format_str, _Hand
     while (_Begin != _End) {
         const _CharT* _Pt = _Begin;
         if (*_Begin != '{') {
-            _Pt = _STD find(_Begin + 1, _End, '{', _Pt);
+            _Pt = _STD find(_Begin + 1, _End, '{');
             if (_Pt == _End) {
                 return _Writer_loop(_Begin, _End);
             }
@@ -479,6 +482,9 @@ public:
     class handle;
 
 private:
+    template <class _Visitor, class _Ctx>
+    friend auto visit_format_arg(_Visitor&& _Vis, basic_format_arg<_Ctx> _Arg) -> decltype(_Vis(0));
+
     using _CharT = typename _Context::char_type;
 
     using _Format_arg_value = variant<monostate, int, unsigned, long long, unsigned long long, bool,
@@ -514,6 +520,9 @@ private:
             return _Type::_Float32;
         }
         constexpr _Type operator()(double) {
+            return _Type::_Float64;
+        }
+        constexpr _Type operator()(long double) {
             return _Type::_Float64;
         }
         constexpr _Type operator()(const _CharT*) {
@@ -566,6 +575,7 @@ struct _Basic_format_specs {
 // Extremely dull set of parsing callbacks that just fills a struct with parsed data.
 template <class _CharT>
 class _Specs_setter {
+public:
     explicit constexpr _Specs_setter(_Basic_format_specs<_CharT> _Specs) : _Specs(_Specs) {}
 
     constexpr void _On_align(_Align _Aln) {
@@ -573,7 +583,11 @@ class _Specs_setter {
     }
 
     constexpr void _On_fill(basic_string_view<_CharT> _Sv) {
-        _Specs._Fill = _Sv;
+        if (_Sv.size() > 4) {
+            throw format_error("Invalid fill.");
+        }
+        _STD fill(_Specs._Fill, _Specs._Fill + 4, '\0');
+        _STD copy(_Sv.begin(), _Sv.end(), _Specs._Fill);
     }
 
     constexpr void _On_sign(_Sign _Sgn) {
@@ -593,7 +607,7 @@ class _Specs_setter {
         _Specs._Width = _Width;
     }
 
-    constexpr void _On_Precision(int _Precision) {
+    constexpr void _On_precision(int _Precision) {
         _Specs._Precision = _Precision;
     }
 
@@ -616,7 +630,7 @@ constexpr int _Get_dynamic_specs(_FormatArg _Arg) {
 }
 
 template <class _Context>
-constexpr basic_format_arg<_Context> _Get_arg(_Context _Ctx, int _Arg_id) {
+constexpr basic_format_arg<_Context> _Get_arg(_Context _Ctx, size_t _Arg_id) {
     // note: while this is parameterized on the _Arg_id type in libfmt we don't
     // need to do that in std::format because it's only called with either an integer
     // id or a named id (which we do not support in std::format)
@@ -685,7 +699,7 @@ private:
         return _STD _Get_arg(_Ctx, _Parse_ctx.next_arg_id());
     }
 
-    constexpr basic_format_arg<_Context> _Get_arg(int _Arg_id) {
+    constexpr basic_format_arg<_Context> _Get_arg(size_t _Arg_id) {
         _Parse_ctx.check_arg_id(_Arg_id);
         return _STD _Get_arg(_Ctx, _Arg_id);
     }
@@ -1194,6 +1208,10 @@ public:
     template <class _Ty>
     using formatter_type = formatter<_Ty, _CharT>;
 
+    constexpr basic_format_context(
+        _Out _OutputIt, basic_format_args<basic_format_context> _Ctx_args, const locale& _Loc)
+        : _OutputIt(_OutputIt), _Args(_Ctx_args), _Loc(_Loc) {}
+
     basic_format_arg<basic_format_context> arg(size_t _Id) const {
         return _Args.get(_Id);
     }
@@ -1208,10 +1226,14 @@ public:
         // TODO: IDL support probably required
         _OutputIt = _It;
     }
+
+    const basic_format_args<basic_format_context>& _Get_args() const {
+        return _Args;
+    }
 };
 
 template <class _Visitor, class _Context>
-auto visit_format_arg(_Visitor&& _Vis, basic_format_arg<_Context> _Arg) {
+auto visit_format_arg(_Visitor&& _Vis, basic_format_arg<_Context> _Arg) -> decltype(_Vis(0)) {
     return _STD visit(_STD forward<_Visitor>(_Vis), _Arg._Value);
 }
 
@@ -1229,6 +1251,14 @@ _OutputIt _Write(_OutputIt _Out, const _CharT* _Value) {
     while (*_Value) {
         *_Out++ = *_Value++;
     }
+    return _Out;
+}
+
+template <class _CharT, class _OutputIt, class _Ty>
+_OutputIt _Write(_OutputIt _Out, _Ty _Val) {
+    (void) _Val;
+    _STL_INTERNAL_CHECK(false);
+    return _Out;
 }
 
 // Dispatcher to call enabled custom formatters, and do nothing otherwise.
@@ -1261,7 +1291,7 @@ struct _Default_arg_formatter {
 
     _OutputIt _Out;
     basic_format_args<_Context> _Args;
-    locale& _Loc;
+    locale _Loc;
 
     template <class _Ty>
     _OutputIt operator()(_Ty _Val) {
@@ -1283,7 +1313,7 @@ struct _Format_handler {
     _Context _Ctx;
 
     explicit _Format_handler(
-        _OutputIt _Out, basic_string_view<_CharT> _Str, basic_format_args<_Context> _Format_args, locale& _Loc)
+        _OutputIt _Out, basic_string_view<_CharT> _Str, basic_format_args<_Context> _Format_args, const locale& _Loc)
         : _Parse_context(_Str), _Ctx(_Out, _Format_args, _Loc) {}
 
     void _On_text(const _CharT* _Begin, const _CharT* _End) {
@@ -1293,13 +1323,13 @@ struct _Format_handler {
         _Ctx.advance_to(_Out);
     }
 
-    void _On_replacement_field(int _Id, const _CharT*) {
+    void _On_replacement_field(size_t _Id, const _CharT*) {
         auto _Arg = _Ctx.arg(_Id);
-        _Ctx.advance_to(
-            visit_format_arg(_Default_arg_formatter<_OutputIt, _CharT>{_Ctx.out(), _Ctx.args(), _Ctx.locale()}, _Arg));
+        _Ctx.advance_to(visit_format_arg(
+            _Default_arg_formatter<_OutputIt, _CharT>{_Ctx.out(), _Ctx._Get_args(), _Ctx.locale()}, _Arg));
     }
 
-    const _CharT* _On_format_specs(int _Id, const _CharT* _Begin, const _CharT* _End) {
+    const _CharT* _On_format_specs(size_t _Id, const _CharT* _Begin, const _CharT* _End) {
         _Parse_context.advance_to(_Parse_context.begin() + (_Begin - &*_Parse_context.begin()));
         auto _Arg = _Ctx.arg(_Id);
         _Basic_format_specs<_CharT> _Specs;
@@ -1312,6 +1342,7 @@ struct _Format_handler {
         }
         // TODO: implement format spec dispatching.
         _STL_INTERNAL_CHECK(false);
+        return _Begin;
     }
 };
 
@@ -1338,6 +1369,7 @@ _Out vformat_to(
     _Out _OutputIt, const locale& _Loc, string_view _Fmt, format_args_t<type_identity_t<_Out>, char> _Args) {
     _Format_handler<_Out, char, basic_format_context<_Out, char>> _Handler(_OutputIt, _Fmt, _Args, _Loc);
     _Parse_format_string(_Fmt, _Handler);
+    return _Handler._Ctx.out();
 }
 
 // FUNCTION vformat
