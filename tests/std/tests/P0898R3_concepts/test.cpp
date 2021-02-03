@@ -2876,10 +2876,13 @@ namespace test_invocable_concepts {
 #define MCALLCONV __thiscall
 #include "invocable_cc.hpp"
 
+#if !defined(_M_ARM) && !defined(_M_ARM64)
 #define NAME      test_vector_vector
 #define CALLCONV  __vectorcall
 #define MCALLCONV __vectorcall
 #include "invocable_cc.hpp"
+#endif // ^^^ !ARM && !ARM64 ^^^
+
 } // namespace test_invocable_concepts
 
 namespace test_predicate {
