@@ -351,18 +351,18 @@ int main() {
     }
 #if 0 // FIXME
     { // ... move-only
-        test_one(move_only_view<bidirectional_iterator_tag, test::Common::no>{some_ints}, joind_ints);
-        test_one(move_only_view<bidirectional_iterator_tag, test::Common::yes>{some_ints}, joind_ints);
-        test_one(move_only_view<random_access_iterator_tag, test::Common::no>{some_ints}, joind_ints);
-        test_one(move_only_view<random_access_iterator_tag, test::Common::yes>{some_ints}, joind_ints);
-        test_one(move_only_view<contiguous_iterator_tag, test::Common::no>{some_ints}, joind_ints);
-        test_one(move_only_view<contiguous_iterator_tag, test::Common::yes>{some_ints}, joind_ints);
+        test_one(move_only_view<bidirectional_iterator_tag, test::Common::no>{some_ints}, joined_ints);
+        test_one(move_only_view<bidirectional_iterator_tag, test::Common::yes>{some_ints}, joined_ints);
+        test_one(move_only_view<random_access_iterator_tag, test::Common::no>{some_ints}, joined_ints);
+        test_one(move_only_view<random_access_iterator_tag, test::Common::yes>{some_ints}, joined_ints);
+        test_one(move_only_view<contiguous_iterator_tag, test::Common::no>{some_ints}, joined_ints);
+        test_one(move_only_view<contiguous_iterator_tag, test::Common::yes>{some_ints}, joined_ints);
     }
 
     // Validate non-views
     { // ... C array
-        static_assert(test_one(some_ints, joind_ints));
-        test_one(some_ints, joind_ints);
+        static_assert(test_one(some_ints, joined_ints));
+        test_one(some_ints, joined_ints);
     }
     { // ... contiguous container
         string str{"Hello, World!"};
@@ -371,20 +371,21 @@ int main() {
     }
     { // ... bidi container
         list<int> lst{3, 4, 5};
-        static constexpr int joind[] = {5, 4, 3};
-        test_one(lst, joind);
+        static constexpr int joined[] = {5, 4, 3};
+        test_one(lst, joined);
 
-        static constexpr int joind_prefix[] = {4, 3};
+        static constexpr int joined_prefix[] = {4, 3};
         assert(ranges::equal(
-            views::join(ranges::subrange{counted_iterator{lst.begin(), 2}, default_sentinel}), joind_prefix));
+            views::join(ranges::subrange{counted_iterator{lst.begin(), 2}, default_sentinel}), joined_prefix));
     }
 
     // Validate a non-view borrowed range
     {
         constexpr span s{some_ints};
-        static_assert(test_one(s, joind_ints));
-        test_one(s, joind_ints);
+        static_assert(test_one(s, joined_ints));
+        test_one(s, joined_ints);
     }
+
     // Get full instantiation coverage
     static_assert((test_nested_inout<instantiator, const int>(), true));
     test_nested_inout<instantiator, const int>();
