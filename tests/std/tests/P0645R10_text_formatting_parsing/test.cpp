@@ -34,11 +34,11 @@ template <typename CharT>
 struct noop_testing_callbacks {
     constexpr void _On_align(_Align) {}
     constexpr void _On_fill(basic_string_view<CharT>) {}
-    constexpr void _On_width(int) {}
-    constexpr void _On_dynamic_width(int) {}
+    constexpr void _On_width(unsigned int) {}
+    constexpr void _On_dynamic_width(size_t) {}
     constexpr void _On_dynamic_width(_Auto_id_tag) {}
-    constexpr void _On_precision(int) {}
-    constexpr void _On_dynamic_precision(int) {}
+    constexpr void _On_precision(unsigned int) {}
+    constexpr void _On_dynamic_precision(size_t) {}
     constexpr void _On_dynamic_precision(_Auto_id_tag) {}
     constexpr void _On_sign(_Sign) {}
     constexpr void _On_hash() {}
@@ -51,11 +51,11 @@ struct testing_callbacks {
     _Align expected_alignment = _Align::_None;
     _Sign expected_sign       = _Sign::_None;
     basic_string_view<CharT> expected_fill;
-    int expected_width                   = -1;
-    int expected_dynamic_width           = -1;
+    unsigned int expected_width          = static_cast<unsigned int>(-1);
+    size_t expected_dynamic_width        = static_cast<size_t>(-1);
     bool expected_auto_dynamic_width     = false;
-    int expected_precision               = -1;
-    int expected_dynamic_precision       = -1;
+    unsigned int expected_precision      = static_cast<unsigned int>(-1);
+    size_t expected_dynamic_precision    = static_cast<size_t>(-1);
     bool expected_auto_dynamic_precision = false;
     bool expected_hash                   = false;
     bool expected_zero                   = false;
@@ -66,19 +66,19 @@ struct testing_callbacks {
     constexpr void _On_fill(basic_string_view<CharT> str_view) {
         assert(str_view == expected_fill);
     }
-    constexpr void _On_width(int width) {
+    constexpr void _On_width(unsigned int width) {
         assert(width == expected_width);
     }
-    constexpr void _On_dynamic_width(int id) {
+    constexpr void _On_dynamic_width(size_t id) {
         assert(id == expected_dynamic_width);
     }
     constexpr void _On_dynamic_width(_Auto_id_tag) {
         assert(expected_auto_dynamic_width);
     }
-    constexpr void _On_precision(int pre) {
+    constexpr void _On_precision(unsigned int pre) {
         assert(pre == expected_precision);
     }
-    constexpr void _On_dynamic_precision(int id) {
+    constexpr void _On_dynamic_precision(size_t id) {
         assert(id == expected_dynamic_precision);
     }
     constexpr void _On_dynamic_precision(_Auto_id_tag) {
@@ -102,7 +102,7 @@ testing_callbacks(_Align, basic_string_view<CharT>) -> testing_callbacks<CharT>;
 
 struct testing_arg_id_callbacks {
     constexpr void _On_auto_id() {}
-    constexpr void _On_manual_id(int) {}
+    constexpr void _On_manual_id(size_t) {}
 };
 
 template <typename CharT, typename callback_type>
