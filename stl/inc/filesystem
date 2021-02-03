@@ -26,6 +26,10 @@
 #include <xfilesystem_abi.h>
 #include <xstring>
 
+#if _HAS_CXX20
+#include <compare>
+#endif // _HAS_CXX20
+
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
@@ -1399,6 +1403,11 @@ namespace filesystem {
             return _Left.compare(_Right) == 0;
         }
 
+#if _HAS_CXX20
+        _NODISCARD friend strong_ordering operator<=>(const path& _Left, const path& _Right) noexcept {
+            return _Left.compare(_Right) <=> 0;
+        }
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
         _NODISCARD friend bool operator!=(const path& _Left, const path& _Right) noexcept {
             return _Left.compare(_Right) != 0;
         }
@@ -1418,6 +1427,7 @@ namespace filesystem {
         _NODISCARD friend bool operator>=(const path& _Left, const path& _Right) noexcept {
             return _Left.compare(_Right) >= 0;
         }
+#endif // !_HAS_CXX20
 
         _NODISCARD friend path operator/(const path& _Left, const path& _Right) { // append a pair of paths together
             return path(_Left) /= _Right;
@@ -1967,6 +1977,12 @@ namespace filesystem {
             return _Myperms;
         }
 
+#if _HAS_CXX20
+        _NODISCARD friend bool operator==(const file_status& _Lhs, const file_status& _Rhs) noexcept {
+            return _Lhs._Myftype == _Rhs._Myftype && _Lhs._Myperms == _Rhs._Myperms;
+        }
+#endif // _HAS_CXX20
+
         void _Refresh(const __std_win_error _Error, const __std_fs_stats& _Stats) noexcept {
             if (_Error == __std_win_error::_Success) {
                 const auto _Attrs = _Stats._Attributes;
@@ -2445,16 +2461,21 @@ namespace filesystem {
             return _Result._Status;
         }
 
-        _NODISCARD bool operator<(const directory_entry& _Rhs) const noexcept {
-            return _Path < _Rhs._Path;
-        }
-
         _NODISCARD bool operator==(const directory_entry& _Rhs) const noexcept {
             return _Path == _Rhs._Path;
         }
 
+#if _HAS_CXX20
+        _NODISCARD strong_ordering operator<=>(const directory_entry& _Rhs) const noexcept {
+            return _Path <=> _Rhs._Path;
+        }
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
         _NODISCARD bool operator!=(const directory_entry& _Rhs) const noexcept {
             return _Path != _Rhs._Path;
+        }
+
+        _NODISCARD bool operator<(const directory_entry& _Rhs) const noexcept {
+            return _Path < _Rhs._Path;
         }
 
         _NODISCARD bool operator<=(const directory_entry& _Rhs) const noexcept {
@@ -2468,6 +2489,7 @@ namespace filesystem {
         _NODISCARD bool operator>=(const directory_entry& _Rhs) const noexcept {
             return _Path >= _Rhs._Path;
         }
+#endif // !_HAS_CXX20
 
         // [fs.dir.entry.io], inserter
         template <class _Elem, class _Traits>
@@ -3649,6 +3671,10 @@ namespace filesystem {
         uintmax_t capacity;
         uintmax_t free;
         uintmax_t available;
+
+#if _HAS_CXX20
+        _NODISCARD friend constexpr bool operator==(const space_info&, const space_info&) noexcept = default;
+#endif // _HAS_CXX20
     };
 
     _NODISCARD inline space_info space(const path& _Target) {
