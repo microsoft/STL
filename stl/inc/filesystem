@@ -2469,6 +2469,14 @@ namespace filesystem {
             return _Path >= _Rhs._Path;
         }
 
+        // [fs.dir.entry.io], inserter
+        template <class _Elem, class _Traits>
+        friend _STD basic_ostream<_Elem, _Traits>& operator<<( // TRANSITION, VSO-570323
+            _STD basic_ostream<_Elem, _Traits>& _Ostr, const directory_entry& _Entry) { // TRANSITION, VSO-570323
+            // insert a directory_entry into a stream
+            return _Ostr << _Entry.path();
+        }
+
     private:
         void _Refresh(const __std_fs_find_data& _Data) noexcept {
             _Cached_data._Attributes        = _Data._Attributes;

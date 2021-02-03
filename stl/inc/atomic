@@ -75,6 +75,84 @@ extern "C" _NODISCARD char __stdcall __std_atomic_has_cmpxchg16b() noexcept;
 #define _ATOMIC_HAS_DCAS 0
 #endif // _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 || !defined(_M_X64) || defined(_M_ARM64EC)
 
+#if defined(_M_ARM64) && defined(__clang__) && __clang_major__ == 11 // TRANSITION, LLVM 12
+inline unsigned char _InterlockedCompareExchange128(
+    __int64 volatile* _Destination, __int64 _Val_high, __int64 _Val_low, __int64* _Comparand) {
+    auto _Dest = reinterpret_cast<__int128 volatile*>(_Destination);
+    auto _Cmp  = reinterpret_cast<__int128*>(_Comparand);
+    __int128 _Val;
+    reinterpret_cast<__int64*>(&_Val)[0] = _Val_low;
+    reinterpret_cast<__int64*>(&_Val)[1] = _Val_high;
+
+    __int128 _Stored;
+    do {
+        if (_Stored = __builtin_arm_ldaex(_Dest); _Stored != *_Cmp) {
+            *_Cmp = _Stored;
+            return 0;
+        }
+    } while (__builtin_arm_stlex(_Val, _Dest));
+
+    return 1;
+}
+
+inline unsigned char _InterlockedCompareExchange128_acq(
+    __int64 volatile* _Destination, __int64 _Val_high, __int64 _Val_low, __int64* _Comparand) {
+    auto _Dest = reinterpret_cast<__int128 volatile*>(_Destination);
+    auto _Cmp  = reinterpret_cast<__int128*>(_Comparand);
+    __int128 _Val;
+    reinterpret_cast<__int64*>(&_Val)[0] = _Val_low;
+    reinterpret_cast<__int64*>(&_Val)[1] = _Val_high;
+
+    __int128 _Stored;
+    do {
+        if (_Stored = __builtin_arm_ldaex(_Dest); _Stored != *_Cmp) {
+            *_Cmp = _Stored;
+            return 0;
+        }
+    } while (__builtin_arm_strex(_Val, _Dest));
+
+    return 1;
+}
+
+inline unsigned char _InterlockedCompareExchange128_nf(
+    __int64 volatile* _Destination, __int64 _Val_high, __int64 _Val_low, __int64* _Comparand) {
+    auto _Dest = reinterpret_cast<__int128 volatile*>(_Destination);
+    auto _Cmp  = reinterpret_cast<__int128*>(_Comparand);
+    __int128 _Val;
+    reinterpret_cast<__int64*>(&_Val)[0] = _Val_low;
+    reinterpret_cast<__int64*>(&_Val)[1] = _Val_high;
+
+    __int128 _Stored;
+    do {
+        if (_Stored = __builtin_arm_ldrex(_Dest); _Stored != *_Cmp) {
+            *_Cmp = _Stored;
+            return 0;
+        }
+    } while (__builtin_arm_strex(_Val, _Dest));
+
+    return 1;
+}
+
+inline unsigned char _InterlockedCompareExchange128_rel(
+    __int64 volatile* _Destination, __int64 _Val_high, __int64 _Val_low, __int64* _Comparand) {
+    auto _Dest = reinterpret_cast<__int128 volatile*>(_Destination);
+    auto _Cmp  = reinterpret_cast<__int128*>(_Comparand);
+    __int128 _Val;
+    reinterpret_cast<__int64*>(&_Val)[0] = _Val_low;
+    reinterpret_cast<__int64*>(&_Val)[1] = _Val_high;
+
+    __int128 _Stored;
+    do {
+        if (_Stored = __builtin_arm_ldaex(_Dest); _Stored != *_Cmp) {
+            *_Cmp = _Stored;
+            return 0;
+        }
+    } while (__builtin_arm_stlex(_Val, _Dest));
+
+    return 1;
+}
+#endif // ^^^ ARM64 && LLVM 11 workaround ^^^
+
 // MACRO _ATOMIC_CHOOSE_INTRINSIC
 #if defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
 #define _ATOMIC_CHOOSE_INTRINSIC(_Order, _Result, _Intrinsic, ...) \
@@ -414,23 +492,44 @@ void _Atomic_wait_direct(
 }
 #endif // _HAS_CXX20
 
-#if 1 // TRANSITION, ABI
+#if 1 // TRANSITION, ABI, GH-1151
 inline void _Atomic_lock_acquire(long& _Spinlock) noexcept {
-    while (_InterlockedExchange(&_Spinlock, 1)) {
-        _YIELD_PROCESSOR();
+#if defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
+    // Algorithm from Intel(R) 64 and IA-32 Architectures Optimization Reference Manual, May 2020
+    // Example 2-4. Contended Locks with Increasing Back-off Example - Improved Version, page 2-22
+    // The code in mentioned manual is covered by the 0BSD license.
+    int _Current_backoff   = 1;
+    const int _Max_backoff = 64;
+    while (_InterlockedExchange(&_Spinlock, 1) != 0) {
+        while (__iso_volatile_load32(&reinterpret_cast<int&>(_Spinlock)) != 0) {
+            for (int _Count_down = _Current_backoff; _Count_down != 0; --_Count_down) {
+                _mm_pause();
+            }
+            _Current_backoff = _Current_backoff < _Max_backoff ? _Current_backoff << 1 : _Max_backoff;
+        }
     }
+#elif defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
+    while (_InterlockedExchange(&_Spinlock, 1) != 0) { // TRANSITION, GH-1133: _InterlockedExchange_acq
+        while (__iso_volatile_load32(&reinterpret_cast<int&>(_Spinlock)) != 0) {
+            __yield();
+        }
+    }
+#else // ^^^ defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC) ^^^
+#error Unsupported hardware
+#endif
 }
 
 inline void _Atomic_lock_release(long& _Spinlock) noexcept {
-#if defined(_M_ARM) || defined(_M_ARM64)
+#if defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
+    _InterlockedExchange(&_Spinlock, 0); // TRANSITION, GH-1133: same as ARM
+#elif defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
     _Memory_barrier();
     __iso_volatile_store32(reinterpret_cast<int*>(&_Spinlock), 0);
-    _Memory_barrier();
-#else // ^^^ ARM32/ARM64 hardware / x86/x64 hardware vvv
-    _InterlockedExchange(&_Spinlock, 0);
-#endif // hardware
+    _Memory_barrier(); // TRANSITION, GH-1133: remove
+#else // ^^^ defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC) ^^^
+#error Unsupported hardware
+#endif
 }
-
 
 inline void _Atomic_lock_acquire(_Smtx_t* _Spinlock) noexcept {
     _Smtx_lock_exclusive(_Spinlock);
@@ -471,18 +570,6 @@ bool __stdcall _Atomic_wait_compare_non_lock_free(
 
 #ifdef _WIN64
 inline bool __stdcall _Atomic_wait_compare_16_bytes(const void* _Storage, void* _Comparand, size_t, void*) noexcept {
-#if defined(__clang__) && defined(_M_ARM64) // TRANSITION, Clang 12
-    const auto _Dest = static_cast<__int128*>(const_cast<void*>(_Storage));
-    const auto _Cmp  = static_cast<const __int128*>(_Comparand);
-
-    do {
-        if (__builtin_arm_ldrex(_Dest) != *_Cmp) {
-            return false;
-        }
-    } while (__builtin_arm_strex(*_Cmp, _Dest));
-
-    return true;
-#else // ^^^ workaround / no workaround vvv
     const auto _Dest              = static_cast<long long*>(const_cast<void*>(_Storage));
     const auto _Cmp               = static_cast<const long long*>(_Comparand);
     alignas(16) long long _Tmp[2] = {_Cmp[0], _Cmp[1]};
@@ -491,7 +578,6 @@ inline bool __stdcall _Atomic_wait_compare_16_bytes(const void* _Storage, void* 
 #else // ^^^ _M_X64 / ARM64 vvv
     return _InterlockedCompareExchange128_nf(_Dest, _Tmp[1], _Tmp[0], _Tmp) != 0;
 #endif // ^^^ ARM64 ^^^
-#endif // TRANSITION, Clang 12
 }
 #endif // _WIN64
 #endif // _HAS_CXX20
