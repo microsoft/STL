@@ -143,7 +143,7 @@ concept _Parse_arg_id_callbacks = requires(_Ty _At) {
 
 template<class _Ty, class _CharT>
 concept _Parse_replacement_field_callbacks = requires(_Ty _At, const _CharT* _Begin, const _CharT* _End) {
-    //{ _At._Parse_context } -> same_as<basic_format_parse_context<_CharT>>;
+    { _At._Parse_context };
     { _At._On_text(_Begin, _End) } -> same_as<void>;
     { _At._On_replacement_field(size_t{}, _STD declval<const _CharT*>()) } -> same_as<void>;
     { _At._On_format_specs(size_t{}, _Begin, _End) } -> same_as<const _CharT*>;
