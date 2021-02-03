@@ -307,7 +307,6 @@ utilities\variant\variant.variant\variant.ctor\T.pass.cpp
 
 # C++20 P0645R10 "<format> Text Formatting"
 language.support\support.limits\support.limits.general\format.version.pass.cpp
-utilities\format\format.error\format.error.pass.cpp
 
 # C++20 P0784R7 "More constexpr containers"
 utilities\memory\allocator.traits\allocator.traits.members\allocate.pass.cpp
