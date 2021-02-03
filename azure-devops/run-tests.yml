@@ -1,3 +1,4 @@
+
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
@@ -38,15 +39,11 @@ steps:
     testResultsFormat: JUnit
     testResultsFiles: '**/test-results.xml'
     testRunTitle: 'test-${{ parameters.targetPlatform }}-$(System.JobPositionInPhase)'
-- publish: $(${{ parameters.buildOutPutLocationVar }})/out
+- publish: $(${{ parameters.buildOutputLocationVar }})/out
   artifact: '${{ parameters.targetPlatform }}-$(System.JobPositionInPhase)-libs'
   condition: ${{ parameters.publishArtifact }}
   displayName: 'Publish Libs and Headers Artifact'
-- publish: $(Build.SourcesDirectory)/llvm-project
-  artifact: '${{ parameters.targetPlatform }}-$(System.JobPositionInPhase)-llvm'
-  condition: ${{ parameters.publishArtifact }}
-  displayName: 'Publish Llvm Artifact'
-- publish: $(${{ parameters.buildOutPutLocationVar }})/tests
+- publish: $(${{ parameters.buildOutputLocationVar }})/tests
   artifact: '${{ parameters.targetPlatform }}-$(System.JobPositionInPhase)-tests'
   condition: ${{ parameters.publishArtifact }}
   displayName: 'Publish Tests Artifact'

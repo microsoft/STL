@@ -31,30 +31,23 @@ jobs:
     - download: current
       artifact: '${{ parameters.targetPlatform }}-$(System.JobPositionInPhase)-tests'
       displayName: DownloadPipelineArtifactTests
-    - download: current
-      artifact: '${{ parameters.targetPlatform }}-$(System.JobPositionInPhase)-llvm'
-      displayName: DownloadPipelineArtifactLLVM
     - task: CmdLine@2
       displayName: 'Run Tests'
       timeoutInMinutes: 120
       condition: succeeded()
-      inputs:
-        script: |
-          call "%PROGRAMFILES(X86)%\Microsoft Visual Studio\2019\Preview\Common7\Tools\VsDevCmd.bat" ^
-          -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.vsDevCmdArch }} -no_logo
-          cd ..
-          C:\Users\vcwrkspc\AppData\Local\Programs\Python\Python39-32\python.exe ^
-          tests\utils\stl-lit\stl-lit.py ^
-          ..\..\..\${{ parameters.targetPlatform }}-$(System.JobPositionInPhase)-llvm\libcxx\test ^
-          ..\..\..\tests\std ^
-          ..\..\..\tests\tr1
-      env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
-    - task: PublishTestResults@2
-      displayName: 'Publish Tests'
-      timeoutInMinutes: 10
-      condition: succeededOrFailed()
-      inputs:
-        searchFolder: current
-        testResultsFormat: JUnit
-        testResultsFiles: '**/test-results.xml'
-        testRunTitle: 'test-${{ parameters.targetPlatform }}-${{ parameters.numShards }}'
+      - template: vcpkg-dependencies.yml
+        parameters:
+          targetPlatform: ${{ parameters.targetPlatform }}
+      - template: cmake-configure-build.yml
+        parameters:
+          targetPlatform: ${{ parameters.targetPlatform }}
+          hostArch: ${{ parameters.hostArch }}
+          targetArch: ${{ parameters.vsDevCmdArch }}
+          cmakeAdditionalFlags: '-DTESTS_RUN_ONLY=ON'
+      - template: run-tests.yml
+        parameters:
+          hostArch: ${{ parameters.hostArch }}
+          targetPlatform: ${{ parameters.targetPlatform }}
+          targetArch: ${{ parameters.vsDevCmdArch }}
+          displayName: 'Build Tests'
+          publishArtifact: true

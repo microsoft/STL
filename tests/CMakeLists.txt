@@ -13,6 +13,7 @@ set(LIBCXX_SOURCE_DIR "${LLVM_PROJECT_SOURCE_DIR}/libcxx" CACHE PATH
     "Location of the libcxx source tree")
 
 option(TESTS_BUILD_ONLY "Only run the build steps of tests" OFF)
+option(TESTS_RUN_ONLY "Only run the execution steps of tests" OFF)
 
 add_subdirectory(libcxx)
 add_subdirectory(std)

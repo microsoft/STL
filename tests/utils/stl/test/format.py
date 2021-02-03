@@ -221,6 +221,9 @@ class STLTestFormat:
                 if not isBuildStep and litConfig.build_only:
                     continue
 
+                if isBuildStep and litConfig.run_only:
+                    continue
+
                 report += stageName + ' steps:\n'
                 for step in steps:
                     cmd, out, err, rc = self.runStep(step, litConfig)
