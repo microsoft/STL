@@ -62,7 +62,7 @@ struct soccc_allocator {
 
 using vec = vector<bool, soccc_allocator<bool>>;
 
-_CONSTEXPR20_DYNALLOC bool test_interface() {
+_CONSTEXPR20_CONTAINER bool test_interface() {
     { // constructors
 
         // Non allocator constructors
@@ -432,7 +432,7 @@ _CONSTEXPR20_DYNALLOC bool test_interface() {
     return true;
 }
 
-_CONSTEXPR20_DYNALLOC bool test_iterators() {
+_CONSTEXPR20_CONTAINER bool test_iterators() {
     vec range_constructed(begin(input), end(input));
 
     { // increment
