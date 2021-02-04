@@ -406,19 +406,19 @@ inline void __append_n_digits(const uint32_t __olength, uint32_t __digits, _Char
     __digits /= 10000;
     const uint32_t __c0 = (__c % 100) << 1;
     const uint32_t __c1 = (__c / 100) << 1;
-    memcpy(__result + __olength - __i - 2, __DIGIT_TABLE<_CharT> + __c0, 2 * sizeof(_CharT));
-    memcpy(__result + __olength - __i - 4, __DIGIT_TABLE<_CharT> + __c1, 2 * sizeof(_CharT));
+    _CSTD memcpy(__result + __olength - __i - 2, __DIGIT_TABLE<_CharT> + __c0, 2 * sizeof(_CharT));
+    _CSTD memcpy(__result + __olength - __i - 4, __DIGIT_TABLE<_CharT> + __c1, 2 * sizeof(_CharT));
     __i += 4;
   }
   if (__digits >= 100) {
     const uint32_t __c = (__digits % 100) << 1;
     __digits /= 100;
-    memcpy(__result + __olength - __i - 2, __DIGIT_TABLE<_CharT> + __c, 2 * sizeof(_CharT));
+    _CSTD memcpy(__result + __olength - __i - 2, __DIGIT_TABLE<_CharT> + __c, 2 * sizeof(_CharT));
     __i += 2;
   }
   if (__digits >= 10) {
     const uint32_t __c = __digits << 1;
-    memcpy(__result + __olength - __i - 2, __DIGIT_TABLE<_CharT> + __c, 2 * sizeof(_CharT));
+    _CSTD memcpy(__result + __olength - __i - 2, __DIGIT_TABLE<_CharT> + __c, 2 * sizeof(_CharT));
   } else {
     __result[0] = static_cast<_CharT>(_WIDEN(_CharT, '0') + __digits);
   }
@@ -462,7 +462,7 @@ inline void __append_c_digits(const uint32_t __count, uint32_t __digits, _CharT*
   for (; __i < __count - 1; __i += 2) {
     const uint32_t __c = (__digits % 100) << 1;
     __digits /= 100;
-    memcpy(__result + __count - __i - 2, __DIGIT_TABLE<_CharT> + __c, 2 * sizeof(_CharT));
+    _CSTD memcpy(__result + __count - __i - 2, __DIGIT_TABLE<_CharT> + __c, 2 * sizeof(_CharT));
   }
   if (__i < __count) {
     const _CharT __c = static_cast<_CharT>(_WIDEN(_CharT, '0') + (__digits % 10));
@@ -486,8 +486,8 @@ inline void __append_nine_digits(uint32_t __digits, _CharT* const __result) {
     __digits /= 10000;
     const uint32_t __c0 = (__c % 100) << 1;
     const uint32_t __c1 = (__c / 100) << 1;
-    memcpy(__result + 7 - __i, __DIGIT_TABLE<_CharT> + __c0, 2 * sizeof(_CharT));
-    memcpy(__result + 5 - __i, __DIGIT_TABLE<_CharT> + __c1, 2 * sizeof(_CharT));
+    _CSTD memcpy(__result + 7 - __i, __DIGIT_TABLE<_CharT> + __c0, 2 * sizeof(_CharT));
+    _CSTD memcpy(__result + 5 - __i, __DIGIT_TABLE<_CharT> + __c1, 2 * sizeof(_CharT));
   }
   __result[0] = static_cast<_CharT>(_WIDEN(_CharT, '0') + __digits);
 }
@@ -1459,17 +1459,17 @@ _NODISCARD pair<_CharT*, errc> __to_chars(_CharT* const _First, _CharT* const _L
       __output /= 10000;
       const uint32_t __c0 = (__c % 100) << 1;
       const uint32_t __c1 = (__c / 100) << 1;
-      memcpy(_Mid -= 2, __DIGIT_TABLE<_CharT> + __c0, 2 * sizeof(_CharT));
-      memcpy(_Mid -= 2, __DIGIT_TABLE<_CharT> + __c1, 2 * sizeof(_CharT));
+      _CSTD memcpy(_Mid -= 2, __DIGIT_TABLE<_CharT> + __c0, 2 * sizeof(_CharT));
+      _CSTD memcpy(_Mid -= 2, __DIGIT_TABLE<_CharT> + __c1, 2 * sizeof(_CharT));
     }
     if (__output >= 100) {
       const uint32_t __c = (__output % 100) << 1;
       __output /= 100;
-      memcpy(_Mid -= 2, __DIGIT_TABLE<_CharT> + __c, 2 * sizeof(_CharT));
+      _CSTD memcpy(_Mid -= 2, __DIGIT_TABLE<_CharT> + __c, 2 * sizeof(_CharT));
     }
     if (__output >= 10) {
       const uint32_t __c = __output << 1;
-      memcpy(_Mid -= 2, __DIGIT_TABLE<_CharT> + __c, 2 * sizeof(_CharT));
+      _CSTD memcpy(_Mid -= 2, __DIGIT_TABLE<_CharT> + __c, 2 * sizeof(_CharT));
     } else {
       *--_Mid = static_cast<_CharT>(_WIDEN(_CharT, '0') + __output);
     }
@@ -1511,14 +1511,14 @@ _NODISCARD pair<_CharT*, errc> __to_chars(_CharT* const _First, _CharT* const _L
     __output /= 10000;
     const uint32_t __c0 = (__c % 100) << 1;
     const uint32_t __c1 = (__c / 100) << 1;
-    memcpy(__result + __olength - __i - 1, __DIGIT_TABLE<_CharT> + __c0, 2 * sizeof(_CharT));
-    memcpy(__result + __olength - __i - 3, __DIGIT_TABLE<_CharT> + __c1, 2 * sizeof(_CharT));
+    _CSTD memcpy(__result + __olength - __i - 1, __DIGIT_TABLE<_CharT> + __c0, 2 * sizeof(_CharT));
+    _CSTD memcpy(__result + __olength - __i - 3, __DIGIT_TABLE<_CharT> + __c1, 2 * sizeof(_CharT));
     __i += 4;
   }
   if (__output >= 100) {
     const uint32_t __c = (__output % 100) << 1;
     __output /= 100;
-    memcpy(__result + __olength - __i - 1, __DIGIT_TABLE<_CharT> + __c, 2 * sizeof(_CharT));
+    _CSTD memcpy(__result + __olength - __i - 1, __DIGIT_TABLE<_CharT> + __c, 2 * sizeof(_CharT));
     __i += 2;
   }
   if (__output >= 10) {
@@ -1548,7 +1548,7 @@ _NODISCARD pair<_CharT*, errc> __to_chars(_CharT* const _First, _CharT* const _L
     __result[__index++] = _WIDEN(_CharT, '+');
   }
 
-  memcpy(__result + __index, __DIGIT_TABLE<_CharT> + 2 * _Scientific_exponent, 2 * sizeof(_CharT));
+  _CSTD memcpy(__result + __index, __DIGIT_TABLE<_CharT> + 2 * _Scientific_exponent, 2 * sizeof(_CharT));
   __index += 2;
 
   return { _First + _Total_scientific_length, errc{} };
@@ -2093,10 +2093,10 @@ _NODISCARD pair<_CharT*, errc> __to_chars(_CharT* const _First, _CharT* const _L
       const uint32_t __d0 = (__d % 100) << 1;
       const uint32_t __d1 = (__d / 100) << 1;
 
-      memcpy(_Mid -= 2, __DIGIT_TABLE<_CharT> + __c0, 2 * sizeof(_CharT));
-      memcpy(_Mid -= 2, __DIGIT_TABLE<_CharT> + __c1, 2 * sizeof(_CharT));
-      memcpy(_Mid -= 2, __DIGIT_TABLE<_CharT> + __d0, 2 * sizeof(_CharT));
-      memcpy(_Mid -= 2, __DIGIT_TABLE<_CharT> + __d1, 2 * sizeof(_CharT));
+      _CSTD memcpy(_Mid -= 2, __DIGIT_TABLE<_CharT> + __c0, 2 * sizeof(_CharT));
+      _CSTD memcpy(_Mid -= 2, __DIGIT_TABLE<_CharT> + __c1, 2 * sizeof(_CharT));
+      _CSTD memcpy(_Mid -= 2, __DIGIT_TABLE<_CharT> + __d0, 2 * sizeof(_CharT));
+      _CSTD memcpy(_Mid -= 2, __DIGIT_TABLE<_CharT> + __d1, 2 * sizeof(_CharT));
     }
     uint32_t __output2 = static_cast<uint32_t>(__output);
     while (__output2 >= 10000) {
@@ -2108,17 +2108,17 @@ _NODISCARD pair<_CharT*, errc> __to_chars(_CharT* const _First, _CharT* const _L
       __output2 /= 10000;
       const uint32_t __c0 = (__c % 100) << 1;
       const uint32_t __c1 = (__c / 100) << 1;
-      memcpy(_Mid -= 2, __DIGIT_TABLE<_CharT> + __c0, 2 * sizeof(_CharT));
-      memcpy(_Mid -= 2, __DIGIT_TABLE<_CharT> + __c1, 2 * sizeof(_CharT));
+      _CSTD memcpy(_Mid -= 2, __DIGIT_TABLE<_CharT> + __c0, 2 * sizeof(_CharT));
+      _CSTD memcpy(_Mid -= 2, __DIGIT_TABLE<_CharT> + __c1, 2 * sizeof(_CharT));
     }
     if (__output2 >= 100) {
       const uint32_t __c = (__output2 % 100) << 1;
       __output2 /= 100;
-      memcpy(_Mid -= 2, __DIGIT_TABLE<_CharT> + __c, 2 * sizeof(_CharT));
+      _CSTD memcpy(_Mid -= 2, __DIGIT_TABLE<_CharT> + __c, 2 * sizeof(_CharT));
     }
     if (__output2 >= 10) {
       const uint32_t __c = __output2 << 1;
-      memcpy(_Mid -= 2, __DIGIT_TABLE<_CharT> + __c, 2 * sizeof(_CharT));
+      _CSTD memcpy(_Mid -= 2, __DIGIT_TABLE<_CharT> + __c, 2 * sizeof(_CharT));
     } else {
       *--_Mid = static_cast<_CharT>(_WIDEN(_CharT, '0') + __output2);
     }
@@ -2168,10 +2168,10 @@ _NODISCARD pair<_CharT*, errc> __to_chars(_CharT* const _First, _CharT* const _L
     const uint32_t __c1 = (__c / 100) << 1;
     const uint32_t __d0 = (__d % 100) << 1;
     const uint32_t __d1 = (__d / 100) << 1;
-    memcpy(__result + __olength - __i - 1, __DIGIT_TABLE<_CharT> + __c0, 2 * sizeof(_CharT));
-    memcpy(__result + __olength - __i - 3, __DIGIT_TABLE<_CharT> + __c1, 2 * sizeof(_CharT));
-    memcpy(__result + __olength - __i - 5, __DIGIT_TABLE<_CharT> + __d0, 2 * sizeof(_CharT));
-    memcpy(__result + __olength - __i - 7, __DIGIT_TABLE<_CharT> + __d1, 2 * sizeof(_CharT));
+    _CSTD memcpy(__result + __olength - __i - 1, __DIGIT_TABLE<_CharT> + __c0, 2 * sizeof(_CharT));
+    _CSTD memcpy(__result + __olength - __i - 3, __DIGIT_TABLE<_CharT> + __c1, 2 * sizeof(_CharT));
+    _CSTD memcpy(__result + __olength - __i - 5, __DIGIT_TABLE<_CharT> + __d0, 2 * sizeof(_CharT));
+    _CSTD memcpy(__result + __olength - __i - 7, __DIGIT_TABLE<_CharT> + __d1, 2 * sizeof(_CharT));
     __i += 8;
   }
   uint32_t __output2 = static_cast<uint32_t>(__output);
@@ -2184,14 +2184,14 @@ _NODISCARD pair<_CharT*, errc> __to_chars(_CharT* const _First, _CharT* const _L
     __output2 /= 10000;
     const uint32_t __c0 = (__c % 100) << 1;
     const uint32_t __c1 = (__c / 100) << 1;
-    memcpy(__result + __olength - __i - 1, __DIGIT_TABLE<_CharT> + __c0, 2 * sizeof(_CharT));
-    memcpy(__result + __olength - __i - 3, __DIGIT_TABLE<_CharT> + __c1, 2 * sizeof(_CharT));
+    _CSTD memcpy(__result + __olength - __i - 1, __DIGIT_TABLE<_CharT> + __c0, 2 * sizeof(_CharT));
+    _CSTD memcpy(__result + __olength - __i - 3, __DIGIT_TABLE<_CharT> + __c1, 2 * sizeof(_CharT));
     __i += 4;
   }
   if (__output2 >= 100) {
     const uint32_t __c = (__output2 % 100) << 1;
     __output2 /= 100;
-    memcpy(__result + __olength - __i - 1, __DIGIT_TABLE<_CharT> + __c, 2 * sizeof(_CharT));
+    _CSTD memcpy(__result + __olength - __i - 1, __DIGIT_TABLE<_CharT> + __c, 2 * sizeof(_CharT));
     __i += 2;
   }
   if (__output2 >= 10) {
@@ -2223,11 +2223,11 @@ _NODISCARD pair<_CharT*, errc> __to_chars(_CharT* const _First, _CharT* const _L
 
   if (_Scientific_exponent >= 100) {
     const int32_t __c = _Scientific_exponent % 10;
-    memcpy(__result + __index, __DIGIT_TABLE<_CharT> + 2 * (_Scientific_exponent / 10), 2 * sizeof(_CharT));
+    _CSTD memcpy(__result + __index, __DIGIT_TABLE<_CharT> + 2 * (_Scientific_exponent / 10), 2 * sizeof(_CharT));
     __result[__index + 2] = static_cast<_CharT>(_WIDEN(_CharT, '0') + __c);
     __index += 3;
   } else {
-    memcpy(__result + __index, __DIGIT_TABLE<_CharT> + 2 * _Scientific_exponent, 2 * sizeof(_CharT));
+    _CSTD memcpy(__result + __index, __DIGIT_TABLE<_CharT> + 2 * _Scientific_exponent, 2 * sizeof(_CharT));
     __index += 2;
   }
 
