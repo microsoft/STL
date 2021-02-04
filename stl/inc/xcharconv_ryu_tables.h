@@ -78,7 +78,7 @@ template <> inline constexpr char __DIGIT_TABLE<char>[200] = {
   '9','0','9','1','9','2','9','3','9','4','9','5','9','6','9','7','9','8','9','9'
 };
 
-template<> inline constexpr wchar_t __DIGIT_TABLE<wchar_t>[200] = {
+template <> inline constexpr wchar_t __DIGIT_TABLE<wchar_t>[200] = {
   L'0',L'0',L'0',L'1',L'0',L'2',L'0',L'3',L'0',L'4',L'0',L'5',L'0',L'6',L'0',L'7',L'0',L'8',L'0',L'9',
   L'1',L'0',L'1',L'1',L'1',L'2',L'1',L'3',L'1',L'4',L'1',L'5',L'1',L'6',L'1',L'7',L'1',L'8',L'1',L'9',
   L'2',L'0',L'2',L'1',L'2',L'2',L'2',L'3',L'2',L'4',L'2',L'5',L'2',L'6',L'2',L'7',L'2',L'8',L'2',L'9',

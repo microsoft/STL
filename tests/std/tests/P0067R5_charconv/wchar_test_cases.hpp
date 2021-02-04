@@ -9,7 +9,7 @@
 using namespace std;
 
 // The wchar_t machinery is currently limited to a subset of the Ryu code. It is known to not handle: negative numbers,
-// inifnity, NaN, or hex formatting.
+// infinity, NaN, or hex formatting.
 
 inline constexpr DoubleToWideTestCase double_to_wide_test_cases[] = {
     // Test special cases (zero, inf, nan) and an ordinary case. Also test negative signs.

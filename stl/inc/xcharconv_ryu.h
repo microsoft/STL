@@ -1185,7 +1185,7 @@ _NODISCARD inline __floating_decimal_32 __f2d(const uint32_t __ieeeMantissa, con
 }
 
 template <class _CharT>
-_NODISCARD inline pair<_CharT*, errc> _Large_integer_to_chars(_CharT* const _First, _CharT* const _Last,
+_NODISCARD pair<_CharT*, errc> _Large_integer_to_chars(_CharT* const _First, _CharT* const _Last,
   const uint32_t _Mantissa2, const int32_t _Exponent2) {
 
   // Print the integer _Mantissa2 * 2^_Exponent2 exactly.
@@ -1572,7 +1572,7 @@ _NODISCARD pair<_CharT*, errc> __f2s_buffered_n(_CharT* const _First, _CharT* co
         return { _Last, errc::value_too_large };
       }
 
-      if constexpr (is_same_v<_CharT,char>) {
+      if constexpr (is_same_v<_CharT, char>) {
         _CSTD memcpy(_First, "0e+00", 5);
       } else {
         _CSTD memcpy(_First, L"0e+00", 5 * sizeof(wchar_t));
@@ -2280,7 +2280,7 @@ _NODISCARD pair<_CharT*, errc> __d2s_buffered_n(_CharT* const _First, _CharT* co
         return { _Last, errc::value_too_large };
       }
 
-      if constexpr (is_same_v<_CharT,char>) {
+      if constexpr (is_same_v<_CharT, char>) {
         _CSTD memcpy(_First, "0e+00", 5);
       } else {
         _CSTD memcpy(_First, L"0e+00", 5 * sizeof(wchar_t));

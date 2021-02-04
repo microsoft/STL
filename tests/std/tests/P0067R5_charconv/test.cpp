@@ -12,6 +12,7 @@
 #include <fstream>
 #include <functional>
 #include <limits>
+#include <locale>
 #include <optional>
 #include <random>
 #include <set>
@@ -25,7 +26,6 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
-#include <xcharconv_ryu.h>
 
 #include "double_fixed_precision_to_chars_test_cases_1.hpp"
 #include "double_fixed_precision_to_chars_test_cases_2.hpp"
@@ -1080,21 +1080,21 @@ void test_right_shift_64_bits_with_rounding() {
 }
 
 void wchar_tests() {
-    static_assert(sizeof(__DIGIT_TABLE<char>) == sizeof(__DIGIT_TABLE<wchar_t>) / sizeof(wchar_t));
+    static_assert(size(__DIGIT_TABLE<char>) == size(__DIGIT_TABLE<wchar_t>));
     auto& fac = use_facet<ctype<wchar_t>>(locale{});
-    for (size_t i = 0; i < sizeof(__DIGIT_TABLE<char>); ++i) {
+    for (size_t i = 0; i < size(__DIGIT_TABLE<char>); ++i) {
         assert(fac.widen(__DIGIT_TABLE<char>[i]) == __DIGIT_TABLE<wchar_t>[i]);
     }
 
     wchar_t buffer[32];
     for (const auto& t : double_to_wide_test_cases) {
-        auto result = __d2s_buffered_n<wchar_t>(begin(buffer), end(buffer), t.value, t.fmt);
+        auto result = __d2s_buffered_n(begin(buffer), end(buffer), t.value, t.fmt);
         const wstring_view sv(t.correct);
         assert(equal(buffer, result.first, sv.begin(), sv.end()));
     }
 
     for (const auto& t : float_to_wide_test_cases) {
-        auto result = __f2s_buffered_n<wchar_t>(begin(buffer), end(buffer), t.value, t.fmt);
+        auto result = __f2s_buffered_n(begin(buffer), end(buffer), t.value, t.fmt);
         const wstring_view sv(t.correct);
         assert(equal(buffer, result.first, sv.begin(), sv.end()));
     }
