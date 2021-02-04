@@ -6,6 +6,7 @@
 
 #include <array>
 #include <cassert>
+#include <chrono>
 #include <compare>
 #include <concepts>
 #include <deque>
@@ -13,10 +14,12 @@
 #include <forward_list>
 #include <functional>
 #include <iostream>
+#include <limits>
 #include <list>
 #include <map>
 #include <queue>
 #include <ranges>
+#include <ratio>
 #include <regex>
 #include <set>
 #include <stack>
@@ -31,6 +34,11 @@
 
 template <class T>
 using SpaceshipType = decltype(std::declval<T>() <=> std::declval<T>());
+
+template <class T, class U>
+concept HasSpaceshipWith = requires {
+    std::declval<T>() <=> std::declval<U>();
+};
 
 using PartiallyOrdered = double;
 
@@ -208,6 +216,45 @@ void diagnostics_test() {
 }
 
 void ordering_test_cases() {
+    { // chrono::duration
+        using std::chrono::hours;
+        using std::chrono::minutes;
+        using std::chrono::seconds;
+
+        spaceship_test<std::strong_ordering>(seconds{1}, seconds{1}, seconds{2});
+        spaceship_test<std::strong_ordering>(seconds{3600}, hours{1}, minutes{61});
+
+        using double_seconds     = std::chrono::duration<double>;
+        using float_milliseconds = std::chrono::duration<float, std::milli>;
+        using ntsc_fields        = std::chrono::duration<long long, std::ratio<1001, 60000>>;
+
+        spaceship_test<std::partial_ordering>(double_seconds{1}, float_milliseconds{1000}, ntsc_fields{60});
+
+        constexpr double_seconds nan_s{std::numeric_limits<double>::quiet_NaN()};
+#ifdef __clang__ // TRANSITION, DevCom-445462
+        static_assert(nan_s <=> nan_s == std::partial_ordering::unordered);
+#endif // defined(__clang__)
+        assert(nan_s <=> nan_s == std::partial_ordering::unordered);
+    }
+    { // chrono::time_point
+        using std::chrono::milliseconds;
+        using double_seconds = std::chrono::duration<double>;
+        using sys_tp         = std::chrono::system_clock::time_point;
+        using sys_ms         = std::chrono::time_point<std::chrono::system_clock, milliseconds>;
+        using sys_double_s   = std::chrono::time_point<std::chrono::system_clock, double_seconds>;
+
+        spaceship_test<std::strong_ordering>(sys_tp{}, sys_ms{}, sys_ms{milliseconds{1}});
+        spaceship_test<std::partial_ordering>(sys_tp{}, sys_double_s{}, sys_double_s{double_seconds{1}});
+
+        constexpr sys_double_s nan_tp{double_seconds{std::numeric_limits<double>::quiet_NaN()}};
+#ifdef __clang__ // TRANSITION, DevCom-445462
+        static_assert(nan_tp <=> nan_tp == std::partial_ordering::unordered);
+#endif // defined(__clang__)
+        assert(nan_tp <=> nan_tp == std::partial_ordering::unordered);
+
+        using steady_tp = std::chrono::steady_clock::time_point;
+        static_assert(!HasSpaceshipWith<sys_tp, steady_tp>);
+    }
 }
 
 int main() {

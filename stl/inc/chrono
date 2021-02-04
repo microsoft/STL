@@ -17,6 +17,9 @@
 
 #if _HAS_CXX20
 #include <compare>
+#ifdef __cpp_lib_concepts
+#include <concepts>
+#endif // defined(__cpp_lib_concepts)
 #endif // _HAS_CXX20
 
 #pragma pack(push, _CRT_PACKING)
@@ -370,12 +373,14 @@ namespace chrono {
         return _CT(_Left).count() == _CT(_Right).count();
     }
 
+#if !_HAS_CXX20
     template <class _Rep1, class _Period1, class _Rep2, class _Period2>
     _NODISCARD constexpr bool
         operator!=(const duration<_Rep1, _Period1>& _Left, const duration<_Rep2, _Period2>& _Right) noexcept(
             is_arithmetic_v<_Rep1>&& is_arithmetic_v<_Rep2>) /* strengthened */ {
         return !(_Left == _Right);
     }
+#endif // !_HAS_CXX20
 
     template <class _Rep1, class _Period1, class _Rep2, class _Period2>
     _NODISCARD constexpr bool
@@ -405,6 +410,19 @@ namespace chrono {
             is_arithmetic_v<_Rep1>&& is_arithmetic_v<_Rep2>) /* strengthened */ {
         return !(_Left < _Right);
     }
+
+#ifdef __cpp_lib_concepts
+    // clang-format off
+    template <class _Rep1, class _Period1, class _Rep2, class _Period2>
+        requires three_way_comparable<typename common_type_t<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>::rep>
+    _NODISCARD constexpr auto
+        operator<=>(const duration<_Rep1, _Period1>& _Left, const duration<_Rep2, _Period2>& _Right) noexcept(
+            is_arithmetic_v<_Rep1>&& is_arithmetic_v<_Rep2>) /* strengthened */ {
+        // clang-format on
+        using _CT = common_type_t<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>;
+        return _CT(_Left).count() <=> _CT(_Right).count();
+    }
+#endif // defined(__cpp_lib_concepts)
 
     // FUNCTION TEMPLATE duration_cast
     template <class _To, class _Rep, class _Period, enable_if_t<_Is_duration_v<_To>, int> _Enabled>
@@ -550,12 +568,14 @@ namespace chrono {
         return _Left.time_since_epoch() == _Right.time_since_epoch();
     }
 
+#if !_HAS_CXX20
     template <class _Clock, class _Duration1, class _Duration2>
     _NODISCARD constexpr bool
         operator!=(const time_point<_Clock, _Duration1>& _Left, const time_point<_Clock, _Duration2>& _Right) noexcept(
             is_arithmetic_v<typename _Duration1::rep>&& is_arithmetic_v<typename _Duration2::rep>) /* strengthened */ {
         return !(_Left == _Right);
     }
+#endif // !_HAS_CXX20
 
     template <class _Clock, class _Duration1, class _Duration2>
     _NODISCARD constexpr bool
@@ -584,6 +604,15 @@ namespace chrono {
             is_arithmetic_v<typename _Duration1::rep>&& is_arithmetic_v<typename _Duration2::rep>) /* strengthened */ {
         return !(_Left < _Right);
     }
+
+#ifdef __cpp_lib_concepts
+    template <class _Clock, class _Duration1, three_way_comparable_with<_Duration1> _Duration2>
+    _NODISCARD constexpr auto
+        operator<=>(const time_point<_Clock, _Duration1>& _Left, const time_point<_Clock, _Duration2>& _Right) noexcept(
+            is_arithmetic_v<typename _Duration1::rep>&& is_arithmetic_v<typename _Duration2::rep>) /* strengthened */ {
+        return _Left.time_since_epoch() <=> _Right.time_since_epoch();
+    }
+#endif // defined(__cpp_lib_concepts)
 
     // FUNCTION TEMPLATE time_point_cast
     template <class _To, class _Clock, class _Duration, enable_if_t<_Is_duration_v<_To>, int> = 0>
