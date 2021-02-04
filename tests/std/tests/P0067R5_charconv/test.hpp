@@ -70,3 +70,10 @@ struct DoublePrecisionToCharsTestCase {
     int precision;
     const char* correct;
 };
+
+struct DoublePrecisionToWideTestCase {
+    double value;
+    chars_format fmt;
+    int precision;
+    const wchar_t* correct;
+};

@@ -1099,23 +1099,10 @@ void wchar_tests() {
         assert(equal(buffer, result.first, sv.begin(), sv.end()));
     }
 
-    wchar_t correct_lo[] = L"0.0001020304";
-    wchar_t correct_hi[] = L"0.0506070809";
-    double val_lo        = 0.0001020304;
-    double val_hi        = 0.0506070809;
-    for (int i = 0; i < 10; ++i) {
-        auto result = __d2fixed_buffered_n(begin(buffer), end(buffer), val_lo, 10);
-        assert(equal(buffer, result.first, correct_lo));
-
-        result = __d2fixed_buffered_n(begin(buffer), end(buffer), val_hi, 10);
-        assert(equal(buffer, result.first, correct_hi));
-
-        val_lo += 0.1010101010;
-        val_hi += 0.1010101010;
-        for (int j = 2; j <= 10; j += 2) {
-            ++correct_lo[j];
-            ++correct_hi[j];
-        }
+    for (const auto& t : wide_digit_pairs_test_cases) {
+        auto result = __d2fixed_buffered_n(begin(buffer), end(buffer), t.value, static_cast<uint32_t>(t.precision));
+        const wstring_view sv(t.correct);
+        assert(equal(buffer, result.first, sv.begin(), sv.end()));
     }
 }
 
