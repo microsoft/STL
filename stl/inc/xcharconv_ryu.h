@@ -395,7 +395,7 @@ _NODISCARD inline uint32_t __mulShift_mod1e9(const uint64_t __m, const uint64_t*
 #define _WIDEN(_TYPE, _CHAR) static_cast<_TYPE>(is_same_v<_TYPE, char> ? _CHAR : L##_CHAR)
 
 template <class _CharT>
-inline void __append_n_digits(const uint32_t __olength, uint32_t __digits, _CharT* const __result) {
+void __append_n_digits(const uint32_t __olength, uint32_t __digits, _CharT* const __result) {
   uint32_t __i = 0;
   while (__digits >= 10000) {
 #ifdef __clang__ // TRANSITION, LLVM-38217
@@ -457,7 +457,7 @@ inline void __append_d_digits(const uint32_t __olength, uint32_t __digits, char*
 }
 
 template <class _CharT>
-inline void __append_c_digits(const uint32_t __count, uint32_t __digits, _CharT* const __result) {
+void __append_c_digits(const uint32_t __count, uint32_t __digits, _CharT* const __result) {
   uint32_t __i = 0;
   for (; __i < __count - 1; __i += 2) {
     const uint32_t __c = (__digits % 100) << 1;
@@ -471,7 +471,7 @@ inline void __append_c_digits(const uint32_t __count, uint32_t __digits, _CharT*
 }
 
 template <class _CharT>
-inline void __append_nine_digits(uint32_t __digits, _CharT* const __result) {
+void __append_nine_digits(uint32_t __digits, _CharT* const __result) {
   if (__digits == 0) {
     _STD fill_n(__result, 9, _WIDEN(_CharT, '0'));
     return;
