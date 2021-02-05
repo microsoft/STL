@@ -79,11 +79,7 @@ requires(is_base_of_v<basic_ostream<typename Ty::char_type, typename Ty::traits_
 
     assert(addressof(flush_emit(os)) == addressof(os));
     if constexpr (is_base_of_v<basic_osyncstream<char_type, traits_type, Alloc>, Ty>) {
-        if constexpr (ThrowOnSync) {
-            assert(os.rdstate() == ios::badbit);
-        } else {
-            assert(os.rdstate() == (buf ? ios::goodbit : ios::badbit));
-        }
+        assert(os.rdstate() == ios::goodbit);
         if (buf) {
             assert(buf->str == "Another input");
         }
