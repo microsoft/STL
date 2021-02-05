@@ -31,7 +31,7 @@ extern "C" _NODISCARD shared_mutex* __stdcall _Get_mutex_for_instance(void* _Ptr
 extern "C" _NODISCARD bool __stdcall _Acquire_mutex_for_instance_impl(void* _Ptr) noexcept;
 extern "C" void __stdcall _Release_mutex_for_instance(void* _Ptr) noexcept;
 
-template < class _Enabler>
+template <class _Enabler>
 inline void _Acquire_mutex_for_instance(void* _Ptr) {
     if (!_Acquire_mutex_for_instance_impl(_Ptr)) {
         throw std::bad_alloc{};
