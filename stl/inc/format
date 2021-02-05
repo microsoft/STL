@@ -391,9 +391,6 @@ class basic_format_arg {
 public:
     using _CharType = typename _Context::char_type;
 
-    template <class _Visitor>
-    friend auto visit_format_arg(_Visitor&& _Vis, basic_format_arg<_Context> _Arg) -> decltype(_Vis(0));
-
     class handle {
     private:
         const void* _Ptr;
@@ -451,7 +448,6 @@ public:
         return _Active_state != _Basic_format_arg_type::_None;
     }
 
-private:
     _Basic_format_arg_type _Active_state = _Basic_format_arg_type::_None;
     union {
         monostate _No_state = monostate{};
