@@ -391,7 +391,7 @@ class basic_format_arg {
 public:
     using _CharType = typename _Context::char_type;
 
-    template <class _Visitor, class _Context>
+    template <class _Visitor>
     friend auto visit_format_arg(_Visitor&& _Vis, basic_format_arg<_Context> _Arg) -> decltype(_Vis(0));
 
     class handle {
