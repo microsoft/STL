@@ -573,8 +573,8 @@ private:
         }
     }
 
-    byte _Storage[(_STD max)(_Storage_length, 1ull)];
-    _Index_type _Index_array[(_STD max)(_Num_args, 1ull)];
+    byte _Storage[(_STD max)(_Storage_length, static_cast<size_t>(1))];
+    _Index_type _Index_array[(_STD max)(_Num_args, static_cast<size_t>(1))];
 
 public:
     // See [format.arg]/5
