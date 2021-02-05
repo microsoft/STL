@@ -28,15 +28,8 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 
 extern "C" _NODISCARD shared_mutex* __stdcall _Get_mutex_for_instance(void* _Ptr) noexcept;
-extern "C" _NODISCARD bool __stdcall _Acquire_mutex_for_instance_impl(void* _Ptr) noexcept;
+extern "C" _NODISCARD bool __stdcall _Acquire_mutex_for_instance(void* _Ptr) noexcept;
 extern "C" void __stdcall _Release_mutex_for_instance(void* _Ptr) noexcept;
-
-template <class _Enabler>
-inline void _Acquire_mutex_for_instance(void* _Ptr) {
-    if (!_Acquire_mutex_for_instance_impl(_Ptr)) {
-        throw std::bad_alloc{};
-    }
-}
 
 // CLASS TEMPLATE _Basic_syncbuf_impl
 template <class _Elem, class _Traits>
@@ -89,7 +82,9 @@ public:
 
     basic_syncbuf(streambuf_type* _Strbuf, const _Alloc& _Al_) : _Wrapped(_Strbuf), _Al(_Al_) {
         if (_Wrapped) {
-            _Acquire_mutex_for_instance<void>(_Wrapped);
+            if (!_Acquire_mutex_for_instance(_Wrapped)) {
+                throw std::bad_alloc{};
+            }
         }
         _Init();
     }
