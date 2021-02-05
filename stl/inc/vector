@@ -43,6 +43,9 @@ public:
         this->_Adopt(_Pvector);
     }
 
+    // TRANSITION, DevCom-1331017
+    _CONSTEXPR20_CONTAINER _Vector_const_iterator& operator=(const _Vector_const_iterator&) = default;
+
     _NODISCARD _CONSTEXPR20_CONTAINER reference operator*() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
         const auto _Mycont = static_cast<const _Myvec*>(this->_Getcont());
@@ -249,6 +252,9 @@ public:
     using reference         = value_type&;
 
     using _Mybase::_Mybase;
+
+    // TRANSITION, DevCom-1331017
+    _CONSTEXPR20_CONTAINER _Vector_iterator& operator=(const _Vector_iterator&) noexcept = default;
 
     _NODISCARD _CONSTEXPR20_CONTAINER reference operator*() const noexcept {
         return const_cast<reference>(_Mybase::operator*());
@@ -1767,7 +1773,8 @@ private:
         while (*_Pnext) {
             const auto _Pnextptr = static_cast<const_iterator&>(**_Pnext)._Ptr;
             if (_Pnextptr < _First || _Last < _Pnextptr) { // skip the iterator
-                _Pnext = &(*_Pnext)->_Mynextiter;
+                const auto _Temp = *_Pnext; // TRANSITION, VSO-1269037
+                _Pnext           = &_Temp->_Mynextiter;
             } else { // orphan the iterator
                 (*_Pnext)->_Myproxy = nullptr;
                 *_Pnext             = (*_Pnext)->_Mynextiter;
