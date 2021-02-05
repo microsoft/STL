@@ -53,10 +53,15 @@ extern "C" _NODISCARD _CRTIMP2 shared_mutex* __stdcall _Get_mutex_for_instance(v
     return &_Instance_mutex_iter->second._Mutex;
 }
 
-extern "C" _CRTIMP2 void __stdcall _Acquire_mutex_for_instance(void* _Ptr) {
-    scoped_lock _Guard(_Mutex);
-    auto& _Refs = _Mutex_map.try_emplace(_Ptr).first->second._Ref_count;
-    ++_Refs;
+extern "C" _NODISCARD _CRTIMP2 bool __stdcall _Acquire_mutex_for_instance_impl(void* _Ptr) noexcept {
+    try {
+        scoped_lock _Guard(_Mutex);
+        auto& _Refs = _Mutex_map.try_emplace(_Ptr).first->second._Ref_count;
+        ++_Refs;
+        return true;
+    } catch (...) {
+        return false;
+    }
 }
 
 extern "C" _CRTIMP2 void __stdcall _Release_mutex_for_instance(void* _Ptr) noexcept {
