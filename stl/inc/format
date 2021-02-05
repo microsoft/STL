@@ -565,7 +565,7 @@ struct _Format_arg_store_packed_index {
     constexpr _Format_arg_store_packed_index(const size_t _Index)
         : _Index(static_cast<_Index_type>(_Index)), _Type(_Basic_format_arg_type::_None) {}
 
-    _Index_type _Index : (sizeof(_Index_type) - 4);
+    _Index_type _Index : (sizeof(_Index_type) * 8 - 4);
     _Basic_format_arg_type _Type : 4;
 };
 
