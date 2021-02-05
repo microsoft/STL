@@ -149,7 +149,7 @@ public:
     }
 
 protected:
-    int sync() override {
+    virtual int sync() override {
         _Mybase::_Sync_recorded = true;
 
         if (_Mybase::_Emit_on_sync) {
@@ -160,8 +160,8 @@ protected:
         return 0;
     }
 
-    int_type overflow(int_type _Current_elem) override {
-        if (_Wrapped == nullptr) {
+    virtual int_type overflow(int_type _Current_elem) override {
+        if (!_Wrapped) {
             return _Traits::eof();
         }
         const bool _Chk_eof = _Traits::eq_int_type(_Current_elem, _Traits::eof());
@@ -199,11 +199,11 @@ private:
     void _Tidy() noexcept {
         const _Size_type _Buf_size = _Get_buffer_size();
         if (0 < _Buf_size) {
-            _Al.deallocate(pointer_traits<_Pointer>::pointer_to(*streambuf_type::pbase()), _Buf_size);
+            _Al.deallocate(_Refancy<_Pointer>(streambuf_type::pbase()), _Buf_size);
         }
 
         streambuf_type::setp(nullptr, nullptr, nullptr);
-        if (_Wrapped != nullptr) {
+        if (_Wrapped) {
             _Release_mutex_for_instance(_Wrapped);
             _Wrapped = nullptr;
         }
@@ -249,7 +249,7 @@ private:
         _STD swap(_Wrapped, _Right._Wrapped);
     }
 
-    bool _Do_emit() override {
+    virtual bool _Do_emit() override {
         return emit();
     }
 
@@ -261,8 +261,8 @@ private:
         _CATCH_END
     }
 
-    _NODISCARD constexpr _Size_type _Calculate_growth(
-        const _Size_type _Oldsize, const _Size_type _Newsize, const _Size_type _Maxsize) const {
+    _NODISCARD static constexpr _Size_type _Calculate_growth(
+        const _Size_type _Oldsize, const _Size_type _Newsize, const _Size_type _Maxsize) {
         if (_Oldsize > _Maxsize - _Oldsize / 2) {
             return _Maxsize; // geometric growth would overflow
         }
@@ -276,11 +276,11 @@ private:
         return _Geometric; // geometric growth is sufficient
     }
 
-    _NODISCARD constexpr _Size_type _Get_data_size() const noexcept {
+    _NODISCARD _Size_type _Get_data_size() const noexcept {
         return static_cast<_Size_type>(streambuf_type::pptr() - streambuf_type::pbase());
     }
 
-    _NODISCARD constexpr _Size_type _Get_buffer_size() const noexcept {
+    _NODISCARD _Size_type _Get_buffer_size() const noexcept {
         return static_cast<_Size_type>(streambuf_type::epptr() - streambuf_type::pbase());
     }
 
@@ -289,7 +289,7 @@ private:
 };
 
 template <class _Elem, class _Traits, class _Alloc>
-void swap(basic_syncbuf<_Elem, _Traits, _Alloc>& _Left, basic_syncbuf<_Elem, _Traits, _Alloc>& _Right) {
+void swap(basic_syncbuf<_Elem, _Traits, _Alloc>& _Left, basic_syncbuf<_Elem, _Traits, _Alloc>& _Right) noexcept {
     _Left.swap(_Right);
 }
 

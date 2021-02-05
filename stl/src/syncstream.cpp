@@ -21,8 +21,6 @@ template <class _Ty>
 class _Crt_allocator {
 public:
     using value_type                             = _Ty;
-    using size_type                              = size_t;
-    using difference_type                        = ptrdiff_t;
     using propagate_on_container_move_assignment = true_type;
     using is_always_equal                        = true_type;
 
@@ -33,14 +31,14 @@ public:
     constexpr _Crt_allocator(const _Crt_allocator<_Other>&) noexcept {}
 
     _NODISCARD __declspec(allocator) _Ty* allocate(_CRT_GUARDOVERFLOW const size_t _Count) {
-        auto _Ptr = _calloc_crt(_Count, sizeof(_Ty));
+        const auto _Ptr = _calloc_crt(_Count, sizeof(_Ty));
         if (!_Ptr) {
             throw bad_alloc{};
         }
         return static_cast<_Ty*>(_Ptr);
     }
 
-    void deallocate(_Ty* const _Ptr, const size_t) noexcept {
+    void deallocate(_Ty* const _Ptr, size_t) noexcept {
         _free_crt(_Ptr);
     }
 };
@@ -52,18 +50,22 @@ extern "C" _NODISCARD _CRTIMP2 shared_mutex* __stdcall _Get_mutex_for_instance(v
     shared_lock _Guard(_Mutex);
     auto _Instance_mutex_iter = _Mutex_map.find(_Ptr);
     _ASSERT_EXPR(_Instance_mutex_iter != _Mutex_map.end(), "No mutex exists for given instance!");
-    return _STD addressof(_Instance_mutex_iter->second._Mutex);
+    return &_Instance_mutex_iter->second._Mutex;
 }
+
 extern "C" _CRTIMP2 void __stdcall _Acquire_mutex_for_instance(void* _Ptr) {
     scoped_lock _Guard(_Mutex);
-    _Mutex_map.try_emplace(_Ptr).first->second._Ref_count++;
+    auto& _Refs = _Mutex_map.try_emplace(_Ptr).first->second._Ref_count;
+    ++_Refs;
 }
+
 extern "C" _CRTIMP2 void __stdcall _Release_mutex_for_instance(void* _Ptr) noexcept {
     scoped_lock _Guard(_Mutex);
-    auto _Instance_mutex_iter = _Mutex_map.find(_Ptr);
+    const auto _Instance_mutex_iter = _Mutex_map.find(_Ptr);
     _ASSERT_EXPR(_Instance_mutex_iter != _Mutex_map.end(), "No mutex exists for given instance!");
-    if (--_Instance_mutex_iter->second._Ref_count == 0) {
-        _Mutex_map.erase(_Ptr);
+    auto& _Refs = _Instance_mutex_iter->second._Ref_count;
+    if (--_Refs == 0) {
+        _Mutex_map.erase(_Instance_mutex_iter);
     }
 }
 
