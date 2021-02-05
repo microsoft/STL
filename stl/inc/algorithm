@@ -10507,6 +10507,29 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
+#if _HAS_CXX20
+#ifdef __cpp_lib_concepts
+template <class InputIterator1, class InputIterator2, class Cmp>
+constexpr auto lexicographical_compare_three_way(InputIterator1 b1, InputIterator1 e1, InputIterator2 b2,
+    InputIterator2 e2, Cmp comp) -> common_comparison_category_t<decltype(comp(*b1, *b2)), strong_ordering> {
+    for (; b1 != e1 && b2 != e2; void(++b1), void(++b2)) {
+        if (auto cmp = comp(*b1, *b2); cmp != 0) {
+            return cmp;
+        }
+    }
+
+    return b1 != e1 ? std::strong_ordering::greater
+         : b2 != e2 ? std::strong_ordering::less
+                    : std::strong_ordering::equal;
+}
+template <class InputIterator1, class InputIterator2>
+constexpr auto lexicographical_compare_three_way(
+    InputIterator1 b1, InputIterator1 e1, InputIterator2 b2, InputIterator2 e2) {
+    lexicographical_compare_three_way(b1, e1, b2, e2, compare_three_way());
+}
+#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
+
 _STD_END
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
