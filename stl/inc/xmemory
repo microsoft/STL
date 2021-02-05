@@ -1639,8 +1639,6 @@ _CONSTEXPR20_DYNALLOC _Alloc_ptr_t<_Alloc> _Uninitialized_copy(
         _Backout._Emplace_back(*_UFirst);
     }
 
-    _Dest = _Backout._Release();
-
     return _Backout._Release();
 }
 

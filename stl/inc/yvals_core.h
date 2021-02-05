@@ -1205,7 +1205,7 @@
 
 #if defined(__cpp_constexpr_dynamic_alloc) && !defined(__clang__) // TRANSITION, LLVM-48606
 #define __cpp_lib_constexpr_vector 201907L
-#endif // __cpp_constexpr_dynamic_alloc && !__clang__
+#endif // defined(__cpp_constexpr_dynamic_alloc) && !defined(__clang__)
 
 #ifdef __cpp_impl_coroutine // TRANSITION, Clang coroutine support
 #define __cpp_lib_coroutine 201902L
@@ -1289,7 +1289,7 @@
 #endif
 
 // Functions that became constexpr in C++20 via P0980R1 or P1004R2
-#if defined(__cpp_lib_constexpr_dynamic_alloc) && !defined(__clang__) // TRANSITION:LLVM-48606
+#if defined(__cpp_lib_constexpr_dynamic_alloc) && !defined(__clang__) // TRANSITION, LLVM-48606
 #define _CONSTEXPR20_CONTAINER constexpr
 #else
 #define _CONSTEXPR20_CONTAINER inline

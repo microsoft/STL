@@ -45,15 +45,10 @@ public:
 
     _NODISCARD _CONSTEXPR20_CONTAINER reference operator*() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
-#ifdef __cpp_lib_constexpr_dynamic_alloc
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_constexpr_dynamic_alloc
-        {
-            const auto _Mycont = static_cast<const _Myvec*>(this->_Getcont());
-            _STL_VERIFY(_Ptr, "can't dereference value-initialized vector iterator");
-            _STL_VERIFY(
-                _Mycont->_Myfirst <= _Ptr && _Ptr < _Mycont->_Mylast, "can't dereference out of range vector iterator");
-        }
+        const auto _Mycont = static_cast<const _Myvec*>(this->_Getcont());
+        _STL_VERIFY(_Ptr, "can't dereference value-initialized vector iterator");
+        _STL_VERIFY(
+            _Mycont->_Myfirst <= _Ptr && _Ptr < _Mycont->_Mylast, "can't dereference out of range vector iterator");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
         return *_Ptr;
@@ -61,15 +56,10 @@ public:
 
     _NODISCARD _CONSTEXPR20_CONTAINER pointer operator->() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
-#ifdef __cpp_lib_constexpr_dynamic_alloc
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_constexpr_dynamic_alloc
-        {
-            const auto _Mycont = static_cast<const _Myvec*>(this->_Getcont());
-            _STL_VERIFY(_Ptr, "can't dereference value-initialized vector iterator");
-            _STL_VERIFY(
-                _Mycont->_Myfirst <= _Ptr && _Ptr < _Mycont->_Mylast, "can't dereference out of range vector iterator");
-        }
+        const auto _Mycont = static_cast<const _Myvec*>(this->_Getcont());
+        _STL_VERIFY(_Ptr, "can't dereference value-initialized vector iterator");
+        _STL_VERIFY(
+            _Mycont->_Myfirst <= _Ptr && _Ptr < _Mycont->_Mylast, "can't dereference out of range vector iterator");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
         return _Ptr;
@@ -77,14 +67,9 @@ public:
 
     _CONSTEXPR20_CONTAINER _Vector_const_iterator& operator++() noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
-#ifdef __cpp_lib_constexpr_dynamic_alloc
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_constexpr_dynamic_alloc
-        {
-            const auto _Mycont = static_cast<const _Myvec*>(this->_Getcont());
-            _STL_VERIFY(_Ptr, "can't increment value-initialized vector iterator");
-            _STL_VERIFY(_Ptr < _Mycont->_Mylast, "can't increment vector iterator past end");
-        }
+        const auto _Mycont = static_cast<const _Myvec*>(this->_Getcont());
+        _STL_VERIFY(_Ptr, "can't increment value-initialized vector iterator");
+        _STL_VERIFY(_Ptr < _Mycont->_Mylast, "can't increment vector iterator past end");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
         ++_Ptr;
@@ -99,14 +84,9 @@ public:
 
     _CONSTEXPR20_CONTAINER _Vector_const_iterator& operator--() noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
-#ifdef __cpp_lib_constexpr_dynamic_alloc
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_constexpr_dynamic_alloc
-        {
-            const auto _Mycont = static_cast<const _Myvec*>(this->_Getcont());
-            _STL_VERIFY(_Ptr, "can't decrement value-initialized vector iterator");
-            _STL_VERIFY(_Mycont->_Myfirst < _Ptr, "can't decrement vector iterator before begin");
-        }
+        const auto _Mycont = static_cast<const _Myvec*>(this->_Getcont());
+        _STL_VERIFY(_Ptr, "can't decrement value-initialized vector iterator");
+        _STL_VERIFY(_Mycont->_Myfirst < _Ptr, "can't decrement vector iterator before begin");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
         --_Ptr;
@@ -123,19 +103,14 @@ public:
 #if _ITERATOR_DEBUG_LEVEL == 0
         (void) _Off;
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^ // vvv _ITERATOR_DEBUG_LEVEL != 0 vvv
-#ifdef __cpp_lib_constexpr_dynamic_alloc
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_constexpr_dynamic_alloc
-        {
-            const auto _Mycont = static_cast<const _Myvec*>(this->_Getcont());
-            _STL_VERIFY(_Off == 0 || _Ptr, "cannot seek value-initialized vector iterator");
-            if (_Off < 0) {
-                _STL_VERIFY(_Off >= _Mycont->_Myfirst - _Ptr, "cannot seek vector iterator before begin");
-            }
+        const auto _Mycont = static_cast<const _Myvec*>(this->_Getcont());
+        _STL_VERIFY(_Off == 0 || _Ptr, "cannot seek value-initialized vector iterator");
+        if (_Off < 0) {
+            _STL_VERIFY(_Off >= _Mycont->_Myfirst - _Ptr, "cannot seek vector iterator before begin");
+        }
 
-            if (_Off > 0) {
-                _STL_VERIFY(_Off <= _Mycont->_Mylast - _Ptr, "cannot seek vector iterator after end");
-            }
+        if (_Off > 0) {
+            _STL_VERIFY(_Off <= _Mycont->_Mylast - _Ptr, "cannot seek vector iterator after end");
         }
 #endif // _ITERATOR_DEBUG_LEVEL == 0
     }
@@ -200,26 +175,15 @@ public:
 #if _ITERATOR_DEBUG_LEVEL == 0
         (void) _Right;
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^ // vvv _ITERATOR_DEBUG_LEVEL != 0 vvv
-#ifdef __cpp_lib_constexpr_dynamic_alloc
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_constexpr_dynamic_alloc
-        {
-            _STL_VERIFY(this->_Getcont() == _Right._Getcont(), "vector iterators incompatible");
-        }
+        _STL_VERIFY(this->_Getcont() == _Right._Getcont(), "vector iterators incompatible");
 #endif // _ITERATOR_DEBUG_LEVEL == 0
     }
 
 #if _ITERATOR_DEBUG_LEVEL != 0
     friend _CONSTEXPR20_CONTAINER void _Verify_range(
         const _Vector_const_iterator& _First, const _Vector_const_iterator& _Last) noexcept {
-#ifdef __cpp_lib_constexpr_dynamic_alloc
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_constexpr_dynamic_alloc
-        {
-            _STL_VERIFY(
-                _First._Getcont() == _Last._Getcont(), "vector iterators in range are from different containers");
-            _STL_VERIFY(_First._Ptr <= _Last._Ptr, "vector iterator range transposed");
-        }
+        _STL_VERIFY(_First._Getcont() == _Last._Getcont(), "vector iterators in range are from different containers");
+        _STL_VERIFY(_First._Ptr <= _Last._Ptr, "vector iterator range transposed");
     }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
@@ -255,17 +219,12 @@ struct pointer_traits<_Vector_const_iterator<_Myvec>> {
         // capacity() of 0 is not. This function cannot distinguish those two cases, so it incorrectly does not diagnose
         // the latter. In practice, this isn't a significant problem since to_address returns nullptr for such an
         // iterator.
-#ifdef __cpp_lib_constexpr_dynamic_alloc
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_constexpr_dynamic_alloc
-        {
-            const auto _Mycont = static_cast<const _Myvec*>(_Iter._Getcont());
-            if (_Mycont) {
-                _STL_VERIFY(_Mycont->_Myfirst <= _Iter._Ptr && _Iter._Ptr <= _Mycont->_Mylast,
-                    "can't convert out-of-range vector iterator to pointer");
-            } else {
-                _STL_VERIFY(!_Iter._Ptr, "can't convert invalid vector iterator to pointer");
-            }
+        const auto _Mycont = static_cast<const _Myvec*>(_Iter._Getcont());
+        if (_Mycont) {
+            _STL_VERIFY(_Mycont->_Myfirst <= _Iter._Ptr && _Iter._Ptr <= _Mycont->_Mylast,
+                "can't convert out-of-range vector iterator to pointer");
+        } else {
+            _STL_VERIFY(!_Iter._Ptr, "can't convert invalid vector iterator to pointer");
         }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
@@ -297,15 +256,10 @@ public:
 
     _NODISCARD _CONSTEXPR20_CONTAINER pointer operator->() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
-#ifdef __cpp_lib_constexpr_dynamic_alloc
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_constexpr_dynamic_alloc
-        {
-            const auto _Mycont = static_cast<const _Myvec*>(this->_Getcont());
-            _STL_VERIFY(this->_Ptr, "can't dereference value-initialized vector iterator");
-            _STL_VERIFY(_Mycont->_Myfirst <= this->_Ptr && this->_Ptr < _Mycont->_Mylast,
-                "can't dereference out of range vector iterator");
-        }
+        const auto _Mycont = static_cast<const _Myvec*>(this->_Getcont());
+        _STL_VERIFY(this->_Ptr, "can't dereference value-initialized vector iterator");
+        _STL_VERIFY(_Mycont->_Myfirst <= this->_Ptr && this->_Ptr < _Mycont->_Mylast,
+            "can't dereference out of range vector iterator");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
         return this->_Ptr;
@@ -385,17 +339,12 @@ struct pointer_traits<_Vector_iterator<_Myvec>> {
         // capacity() of 0 is not. This function cannot distinguish those two cases, so it incorrectly does not diagnose
         // the latter. In practice, this isn't a significant problem since to_address returns nullptr for such an
         // iterator.
-#ifdef __cpp_lib_constexpr_dynamic_alloc
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_constexpr_dynamic_alloc
-        {
-            const auto _Mycont = static_cast<const _Myvec*>(_Iter._Getcont());
-            if (_Mycont) {
-                _STL_VERIFY(_Mycont->_Myfirst <= _Iter._Ptr && _Iter._Ptr <= _Mycont->_Mylast,
-                    "can't convert out-of-range vector iterator to pointer");
-            } else {
-                _STL_VERIFY(!_Iter._Ptr, "can't convert invalid vector iterator to pointer");
-            }
+        const auto _Mycont = static_cast<const _Myvec*>(_Iter._Getcont());
+        if (_Mycont) {
+            _STL_VERIFY(_Mycont->_Myfirst <= _Iter._Ptr && _Iter._Ptr <= _Mycont->_Mylast,
+                "can't convert out-of-range vector iterator to pointer");
+        } else {
+            _STL_VERIFY(!_Iter._Ptr, "can't convert invalid vector iterator to pointer");
         }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
@@ -462,13 +411,13 @@ public:
 
 // FUNCTION TEMPLATE _Unfancy_maybe_null
 template <class _Ptrty>
-_CONSTEXPR20_CONTAINER auto _Unfancy_maybe_null(_Ptrty _Ptr) noexcept {
+constexpr auto _Unfancy_maybe_null(_Ptrty _Ptr) noexcept {
     // converts from a (potentially null) fancy pointer to a plain pointer
     return _Ptr ? _STD addressof(*_Ptr) : nullptr;
 }
 
 template <class _Ty>
-_CONSTEXPR20_CONTAINER _Ty* _Unfancy_maybe_null(_Ty* _Ptr) noexcept { // do nothing for plain pointers
+constexpr _Ty* _Unfancy_maybe_null(_Ty* _Ptr) noexcept { // do nothing for plain pointers
     return _Ptr;
 }
 
@@ -847,14 +796,9 @@ public:
         auto& _My_data          = _Mypair._Myval2;
         const pointer _Oldlast  = _My_data._Mylast;
 #if _ITERATOR_DEBUG_LEVEL == 2
-#ifdef __cpp_lib_constexpr_dynamic_alloc
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_constexpr_dynamic_alloc
-        {
-            _STL_VERIFY(_Where._Getcont() == _STD addressof(_My_data) && _Whereptr >= _My_data._Myfirst
-                            && _Oldlast >= _Whereptr,
-                "vector emplace iterator outside range");
-        }
+        _STL_VERIFY(
+            _Where._Getcont() == _STD addressof(_My_data) && _Whereptr >= _My_data._Myfirst && _Oldlast >= _Whereptr,
+            "vector emplace iterator outside range");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
         if (_Oldlast != _My_data._Myend) {
@@ -896,14 +840,8 @@ public:
         const pointer _Oldfirst = _My_data._Myfirst;
         const pointer _Oldlast  = _Mylast;
 #if _ITERATOR_DEBUG_LEVEL == 2
-#ifdef __cpp_lib_constexpr_dynamic_alloc
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_constexpr_dynamic_alloc
-        {
-            _STL_VERIFY(
-                _Where._Getcont() == _STD addressof(_My_data) && _Whereptr >= _Oldfirst && _Oldlast >= _Whereptr,
-                "vector insert iterator outside range");
-        }
+        _STL_VERIFY(_Where._Getcont() == _STD addressof(_My_data) && _Whereptr >= _Oldfirst && _Oldlast >= _Whereptr,
+            "vector insert iterator outside range");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
         const auto _Whereoff        = static_cast<size_type>(_Whereptr - _Oldfirst);
@@ -1106,14 +1044,9 @@ public:
         auto& _My_data          = _Mypair._Myval2;
         const pointer _Oldfirst = _My_data._Myfirst;
 #if _ITERATOR_DEBUG_LEVEL == 2
-#ifdef __cpp_lib_constexpr_dynamic_alloc
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_constexpr_dynamic_alloc
-        {
-            _STL_VERIFY(_Where._Getcont() == _STD addressof(_My_data) && _Whereptr >= _Oldfirst
-                            && _My_data._Mylast >= _Whereptr,
-                "vector insert iterator outside range");
-        }
+        _STL_VERIFY(
+            _Where._Getcont() == _STD addressof(_My_data) && _Whereptr >= _Oldfirst && _My_data._Mylast >= _Whereptr,
+            "vector insert iterator outside range");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
         _Adl_verify_range(_First, _Last);
@@ -1445,12 +1378,7 @@ public:
         pointer& _Mylast = _My_data._Mylast;
 
 #if _ITERATOR_DEBUG_LEVEL == 2
-#ifdef __cpp_lib_constexpr_dynamic_alloc
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_constexpr_dynamic_alloc
-        {
-            _STL_VERIFY(_My_data._Myfirst != _Mylast, "vector empty before pop");
-        }
+        _STL_VERIFY(_My_data._Myfirst != _Mylast, "vector empty before pop");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
         _Orphan_range(_Mylast - 1, _Mylast);
@@ -1465,14 +1393,9 @@ public:
         pointer& _Mylast        = _My_data._Mylast;
 
 #if _ITERATOR_DEBUG_LEVEL == 2
-#ifdef __cpp_lib_constexpr_dynamic_alloc
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_constexpr_dynamic_alloc
-        {
-            _STL_VERIFY(
-                _Where._Getcont() == _STD addressof(_My_data) && _Whereptr >= _My_data._Myfirst && _Mylast > _Whereptr,
-                "vector erase iterator outside range");
-        }
+        _STL_VERIFY(
+            _Where._Getcont() == _STD addressof(_My_data) && _Whereptr >= _My_data._Myfirst && _Mylast > _Whereptr,
+            "vector erase iterator outside range");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
         _Orphan_range(_Whereptr, _Mylast);
@@ -1490,14 +1413,9 @@ public:
         pointer& _Mylast        = _My_data._Mylast;
 
 #if _ITERATOR_DEBUG_LEVEL == 2
-#ifdef __cpp_lib_constexpr_dynamic_alloc
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_constexpr_dynamic_alloc
-        {
-            _STL_VERIFY(_First._Getcont() == _STD addressof(_My_data) && _Last._Getcont() == _STD addressof(_My_data)
-                            && _Firstptr >= _My_data._Myfirst && _Lastptr >= _Firstptr && _Mylast >= _Lastptr,
-                "vector erase iterator outside range");
-        }
+        _STL_VERIFY(_First._Getcont() == _STD addressof(_My_data) && _Last._Getcont() == _STD addressof(_My_data)
+                        && _Firstptr >= _My_data._Myfirst && _Lastptr >= _Firstptr && _Mylast >= _Lastptr,
+            "vector erase iterator outside range");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
         if (_Firstptr != _Lastptr) { // something to do, invalidate iterators
@@ -1521,7 +1439,6 @@ public:
         _Mylast = _Myfirst;
     }
 
-public:
     _CONSTEXPR20_CONTAINER void swap(vector& _Right) noexcept /* strengthened */ {
         if (this != _STD addressof(_Right)) {
             _Pocs(_Getal(), _Right._Getal());
@@ -1628,13 +1545,8 @@ public:
     _NODISCARD _CONSTEXPR20_CONTAINER _Ty& operator[](const size_type _Pos) noexcept /* strengthened */ {
         auto& _My_data = _Mypair._Myval2;
 #if _CONTAINER_DEBUG_LEVEL > 0
-#ifdef __cpp_lib_constexpr_dynamic_alloc
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_constexpr_dynamic_alloc
-        {
-            _STL_VERIFY(
-                _Pos < static_cast<size_type>(_My_data._Mylast - _My_data._Myfirst), "vector subscript out of range");
-        }
+        _STL_VERIFY(
+            _Pos < static_cast<size_type>(_My_data._Mylast - _My_data._Myfirst), "vector subscript out of range");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
         return _My_data._Myfirst[_Pos];
@@ -1643,13 +1555,8 @@ public:
     _NODISCARD _CONSTEXPR20_CONTAINER const _Ty& operator[](const size_type _Pos) const noexcept /* strengthened */ {
         auto& _My_data = _Mypair._Myval2;
 #if _CONTAINER_DEBUG_LEVEL > 0
-#ifdef __cpp_lib_constexpr_dynamic_alloc
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_constexpr_dynamic_alloc
-        {
-            _STL_VERIFY(
-                _Pos < static_cast<size_type>(_My_data._Mylast - _My_data._Myfirst), "vector subscript out of range");
-        }
+        _STL_VERIFY(
+            _Pos < static_cast<size_type>(_My_data._Mylast - _My_data._Myfirst), "vector subscript out of range");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
         return _My_data._Myfirst[_Pos];
@@ -1676,12 +1583,7 @@ public:
     _NODISCARD _CONSTEXPR20_CONTAINER _Ty& front() noexcept /* strengthened */ {
         auto& _My_data = _Mypair._Myval2;
 #if _CONTAINER_DEBUG_LEVEL > 0
-#ifdef __cpp_lib_constexpr_dynamic_alloc
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_constexpr_dynamic_alloc
-        {
-            _STL_VERIFY(_My_data._Myfirst != _My_data._Mylast, "front() called on empty vector");
-        }
+        _STL_VERIFY(_My_data._Myfirst != _My_data._Mylast, "front() called on empty vector");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
         return *_My_data._Myfirst;
@@ -1690,12 +1592,7 @@ public:
     _NODISCARD _CONSTEXPR20_CONTAINER const _Ty& front() const noexcept /* strengthened */ {
         auto& _My_data = _Mypair._Myval2;
 #if _CONTAINER_DEBUG_LEVEL > 0
-#ifdef __cpp_lib_constexpr_dynamic_alloc
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_constexpr_dynamic_alloc
-        {
-            _STL_VERIFY(_My_data._Myfirst != _My_data._Mylast, "front() called on empty vector");
-        }
+        _STL_VERIFY(_My_data._Myfirst != _My_data._Mylast, "front() called on empty vector");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
         return *_My_data._Myfirst;
@@ -1704,12 +1601,7 @@ public:
     _NODISCARD _CONSTEXPR20_CONTAINER _Ty& back() noexcept /* strengthened */ {
         auto& _My_data = _Mypair._Myval2;
 #if _CONTAINER_DEBUG_LEVEL > 0
-#ifdef __cpp_lib_constexpr_dynamic_alloc
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_constexpr_dynamic_alloc
-        {
-            _STL_VERIFY(_My_data._Myfirst != _My_data._Mylast, "back() called on empty vector");
-        }
+        _STL_VERIFY(_My_data._Myfirst != _My_data._Mylast, "back() called on empty vector");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
         return _My_data._Mylast[-1];
@@ -1718,12 +1610,7 @@ public:
     _NODISCARD _CONSTEXPR20_CONTAINER const _Ty& back() const noexcept /* strengthened */ {
         auto& _My_data = _Mypair._Myval2;
 #if _CONTAINER_DEBUG_LEVEL > 0
-#ifdef __cpp_lib_constexpr_dynamic_alloc
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_constexpr_dynamic_alloc
-        {
-            _STL_VERIFY(_My_data._Myfirst != _My_data._Mylast, "back() called on empty vector");
-        }
+        _STL_VERIFY(_My_data._Myfirst != _My_data._Mylast, "back() called on empty vector");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
         return _My_data._Mylast[-1];
@@ -1771,7 +1658,8 @@ private:
             bool_constant<disjunction_v<is_nothrow_move_constructible<_Ty>, negation<is_copy_constructible<_Ty>>>>{});
     }
 
-    _CONSTEXPR20_CONTAINER void _Destroy(pointer _First, pointer _Last) { // destroy [_First, _Last) using allocator
+    _CONSTEXPR20_CONTAINER void _Destroy(pointer _First, pointer _Last) {
+        // destroy [_First, _Last) using allocator
         _Destroy_range(_First, _Last, _Getal());
     }
 
@@ -1893,6 +1781,7 @@ private:
     }
 
     _CONSTEXPR20_CONTAINER void _Orphan_range(pointer _First, pointer _Last) const {
+        // orphan iterators within specified (inclusive) range
 #ifdef __cpp_lib_constexpr_dynamic_alloc
         if (_STD is_constant_evaluated()) {
             _Orphan_range_unlocked(_First, _Last);
@@ -2056,15 +1945,10 @@ public:
 
     _CONSTEXPR20_CONTAINER const _Vbase* _Getptr() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
-#ifdef __cpp_lib_constexpr_dynamic_alloc
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_constexpr_dynamic_alloc
-        {
-            const auto _Cont = static_cast<const _Mycont*>(this->_Getcont());
-            _STL_VERIFY(_Cont, "cannot dereference value-initialized vector<bool> iterator");
-            _STL_VERIFY(this->_Total_off(_Cont) <= static_cast<_Difference_type>(_Cont->_Mysize),
-                "vector<bool> iterator not dereferenceable");
-        }
+        const auto _Cont = static_cast<const _Mycont*>(this->_Getcont());
+        _STL_VERIFY(_Cont, "cannot dereference value-initialized vector<bool> iterator");
+        _STL_VERIFY(this->_Total_off(_Cont) <= static_cast<_Difference_type>(_Cont->_Mysize),
+            "vector<bool> iterator not dereferenceable");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
         return this->_Myptr;
@@ -2111,15 +1995,10 @@ public:
 
     _NODISCARD _CONSTEXPR20_CONTAINER const_reference operator*() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
-#ifdef __cpp_lib_constexpr_dynamic_alloc
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_constexpr_dynamic_alloc
-        {
-            const auto _Cont = static_cast<const _Mycont*>(this->_Getcont());
-            _STL_VERIFY(_Cont, "cannot dereference value-initialized vector<bool> iterator");
-            _STL_VERIFY(this->_Total_off(_Cont) < static_cast<_Difference_type>(_Cont->_Mysize),
-                "vector<bool> iterator not dereferenceable");
-        }
+        const auto _Cont = static_cast<const _Mycont*>(this->_Getcont());
+        _STL_VERIFY(_Cont, "cannot dereference value-initialized vector<bool> iterator");
+        _STL_VERIFY(this->_Total_off(_Cont) < static_cast<_Difference_type>(_Cont->_Mysize),
+            "vector<bool> iterator not dereferenceable");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
         return _Reft(*this);
@@ -2149,20 +2028,15 @@ public:
 
     _CONSTEXPR20_CONTAINER _Vb_const_iterator& operator+=(const difference_type _Off) noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
-#ifdef __cpp_lib_constexpr_dynamic_alloc
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_constexpr_dynamic_alloc
-        {
-            if (_Off != 0) {
-                const auto _Cont = static_cast<const _Mycont*>(this->_Getcont());
-                _STL_VERIFY(_Cont, "cannot seek value-initialized vector<bool> iterator");
-                const auto _Start_offset = this->_Total_off(_Cont);
-                if (_Off < 0) {
-                    _STL_VERIFY(-_Start_offset <= _Off, "cannot seek vector<bool> iterator before begin");
-                } else if (0 < _Off) {
-                    _STL_VERIFY(_Off <= static_cast<_Difference_type>(_Cont->_Mysize - _Start_offset),
-                        "cannot seek vector<bool> iterator after end");
-                }
+        if (_Off != 0) {
+            const auto _Cont = static_cast<const _Mycont*>(this->_Getcont());
+            _STL_VERIFY(_Cont, "cannot seek value-initialized vector<bool> iterator");
+            const auto _Start_offset = this->_Total_off(_Cont);
+            if (_Off < 0) {
+                _STL_VERIFY(-_Start_offset <= _Off, "cannot seek vector<bool> iterator before begin");
+            } else if (0 < _Off) {
+                _STL_VERIFY(_Off <= static_cast<_Difference_type>(_Cont->_Mysize - _Start_offset),
+                    "cannot seek vector<bool> iterator after end");
             }
         }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -2229,17 +2103,12 @@ public:
         return !(*this < _Right);
     }
 
-    _CONSTEXPR20_CONTAINER void _Compat(
-        const _Vb_const_iterator& _Right) const noexcept { // test for compatible iterator pair
+    _CONSTEXPR20_CONTAINER void _Compat(const _Vb_const_iterator& _Right) const noexcept {
+        // test for compatible iterator pair
 #if _ITERATOR_DEBUG_LEVEL == 0
         (void) _Right;
 #else // _ITERATOR_DEBUG_LEVEL == 0
-#ifdef __cpp_lib_constexpr_dynamic_alloc
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_constexpr_dynamic_alloc
-        {
-            _STL_VERIFY(this->_Getcont() == _Right._Getcont(), "vector<bool> iterators incompatible");
-        }
+        _STL_VERIFY(this->_Getcont() == _Right._Getcont(), "vector<bool> iterators incompatible");
 #endif // _ITERATOR_DEBUG_LEVEL
     }
 
@@ -2255,14 +2124,9 @@ public:
 
     _CONSTEXPR20_CONTAINER void _Dec() noexcept { // decrement bit position
 #if _ITERATOR_DEBUG_LEVEL != 0
-#ifdef __cpp_lib_constexpr_dynamic_alloc
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_constexpr_dynamic_alloc
-        {
-            const auto _Cont = static_cast<const _Mycont*>(this->_Getcont());
-            _STL_VERIFY(_Cont, "cannot decrement value-initialized vector<bool> iterator");
-            _STL_VERIFY(this->_Total_off(_Cont) > 0, "cannot decrement vector<bool> begin iterator");
-        }
+        const auto _Cont = static_cast<const _Mycont*>(this->_Getcont());
+        _STL_VERIFY(_Cont, "cannot decrement value-initialized vector<bool> iterator");
+        _STL_VERIFY(this->_Total_off(_Cont) > 0, "cannot decrement vector<bool> begin iterator");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
         if (this->_Myoff != 0) {
@@ -2275,15 +2139,10 @@ public:
 
     _CONSTEXPR20_CONTAINER void _Inc() noexcept { // increment bit position
 #if _ITERATOR_DEBUG_LEVEL != 0
-#ifdef __cpp_lib_constexpr_dynamic_alloc
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_constexpr_dynamic_alloc
-        {
-            const auto _Cont = static_cast<const _Mycont*>(this->_Getcont());
-            _STL_VERIFY(_Cont, "cannot increment value-initialized vector<bool> iterator");
-            _STL_VERIFY(this->_Total_off(_Cont) < static_cast<_Difference_type>(_Cont->_Mysize),
-                "cannot increment vector<bool> end iterator");
-        }
+        const auto _Cont = static_cast<const _Mycont*>(this->_Getcont());
+        _STL_VERIFY(_Cont, "cannot increment value-initialized vector<bool> iterator");
+        _STL_VERIFY(this->_Total_off(_Cont) < static_cast<_Difference_type>(_Cont->_Mysize),
+            "cannot increment vector<bool> end iterator");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
         if (this->_Myoff < _VBITS - 1) {
@@ -2323,15 +2182,10 @@ public:
 
     _NODISCARD _CONSTEXPR20_CONTAINER reference operator*() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
-#ifdef __cpp_lib_constexpr_dynamic_alloc
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_constexpr_dynamic_alloc
-        {
-            const auto _Cont = static_cast<const _Mycont*>(this->_Getcont());
-            _STL_VERIFY(_Cont, "cannot dereference value-initialized vector<bool> iterator");
-            _STL_VERIFY(this->_Total_off(_Cont) < static_cast<_Difference_type>(_Cont->_Mysize),
-                "vector<bool> iterator not dereferenceable");
-        }
+        const auto _Cont = static_cast<const _Mycont*>(this->_Getcont());
+        _STL_VERIFY(_Cont, "cannot dereference value-initialized vector<bool> iterator");
+        _STL_VERIFY(this->_Total_off(_Cont) < static_cast<_Difference_type>(_Cont->_Mysize),
+            "vector<bool> iterator not dereferenceable");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
         return _Reft(*this);
