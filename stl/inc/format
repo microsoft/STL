@@ -499,7 +499,7 @@ auto visit_format_arg(_Visitor&& _Vis, basic_format_arg<_Context> _Arg) -> declt
 }
 
 template <class _Context, class _Ty>
-static constexpr auto _Get_format_arg_storage_type() noexcept {
+constexpr auto _Get_format_arg_storage_type() noexcept {
     using _CharType = typename _Context::char_type;
     if constexpr (is_same_v<_Ty, monostate>) {
         return monostate{};
@@ -533,7 +533,7 @@ static constexpr auto _Get_format_arg_storage_type() noexcept {
 }
 
 template <class _Context, class _Ty>
-static constexpr size_t _Get_format_arg_storage_size() noexcept {
+constexpr size_t _Get_format_arg_storage_size() noexcept {
     return sizeof(_Get_format_arg_storage_type<_Context, _Ty>());
 }
 
