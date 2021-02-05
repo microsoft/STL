@@ -1372,6 +1372,11 @@ public:
     _NODISCARD size_t stride() const noexcept /* strengthened */ {
         return _Stride;
     }
+#if _HAS_CXX200
+    friend bool operator==(const slice& x, const slice& y) {
+        return x.start() == y.start() && x.size() == y.size() && x.stride() == y.stride();
+    }
+#endif
 
 protected:
     size_t _Start  = 0; // the starting offset
