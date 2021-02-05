@@ -99,8 +99,7 @@ sub CustomBuildHook()
         $header_unit_options .= " $_.obj";
     }
 
-    # TRANSITION, remove /DMSVC_INTERNAL_TESTING after all compiler bugs are fixed
-    Run::ExecuteCL("/DMSVC_INTERNAL_TESTING $export_header_options");
-    Run::ExecuteCL("/DMSVC_INTERNAL_TESTING test.cpp /Fe$cwd.exe $header_unit_options");
+    Run::ExecuteCL("$export_header_options");
+    Run::ExecuteCL("test.cpp /Fe$cwd.exe $header_unit_options");
 }
 1
