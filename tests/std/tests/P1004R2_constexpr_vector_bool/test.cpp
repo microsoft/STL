@@ -466,7 +466,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
     }
 
     { // erase
-#ifndef __EDG__ // TRANSITION, UPDATE ME: xmemory:1858 access to uninitialized object
+#ifndef __EDG__ // TRANSITION, VSO-1274387
         vec erased{false, false, true, false, true};
         erase(erased, false);
         constexpr bool expected_erased[] = {true, true};
@@ -480,7 +480,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
     }
 
     { // comparison
-#ifndef __EDG__ // TRANSITION, UPDATE ME: xmemory:1858 access to uninitialized object
+#ifndef __EDG__ // TRANSITION, VSO-1274387
         vec first(begin(input), end(input));
         vec second(begin(input), end(input));
         vec third{true, false, true};
@@ -501,7 +501,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
 
 _CONSTEXPR20_CONTAINER bool test_iterators() {
 #if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1270433
-#ifndef __EDG__ // TRANSITION, UPDATE ME: xmemory:1858 access to uninitialized object
+#ifndef __EDG__ // TRANSITION, VSO-1274387
     vec range_constructed(begin(input), end(input));
 
 #if !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1273381
