@@ -1996,6 +1996,9 @@ public:
         this->_Adopt(_Mypvbool);
     }
 
+    // TRANSITION, DevCom-1331017
+    _CONSTEXPR20_CONTAINER _Vb_iter_base& operator=(const _Vb_iter_base&) noexcept = default;
+
     _CONSTEXPR20_CONTAINER void _Advance(_Size_type _Off) noexcept {
         _Myoff += _Off;
         _Myptr += _Myoff / _VBITS;
@@ -2102,6 +2105,9 @@ public:
 
     _CONSTEXPR20_CONTAINER _Vb_const_iterator(const _Vbase* _Ptr, const _Container_base* _Mypvbool) noexcept
         : _Mybase(_Ptr, 0, _Mypvbool) {}
+
+    // TRANSITION, DevCom-1331017
+    _CONSTEXPR20_CONTAINER _Vb_const_iterator& operator=(const _Vb_const_iterator&) noexcept = default;
 
     _NODISCARD _CONSTEXPR20_CONTAINER const_reference operator*() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -2330,6 +2336,9 @@ public:
 
         return _Reft(*this);
     }
+
+    // TRANSITION, DevCom-1331017
+    _CONSTEXPR20_CONTAINER _Vb_iterator& operator=(const _Vb_iterator&) noexcept = default;
 
     _CONSTEXPR20_CONTAINER _Vb_iterator& operator++() noexcept {
         _Mybase::operator++();
