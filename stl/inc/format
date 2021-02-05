@@ -372,8 +372,6 @@ enum class _Basic_format_arg_type : uint8_t {
     _UInt_type,
     _Long_type,
     _ULong_type,
-    //_Int128_type,
-    //_UInt128_type,
     _Bool_type,
     _Char_type,
     _Float_type,
@@ -422,10 +420,6 @@ public:
         : _Active_state(_Basic_format_arg_type::_Long_type), _Long_state(_Val) {}
     explicit basic_format_arg(const unsigned long long _Val) noexcept
         : _Active_state(_Basic_format_arg_type::_ULong_type), _ULong_state(_Val) {}
-    // explicit basic_format_arg(const __int128 _Val) noexcept
-    //    : _Active_state(_Basic_format_arg_type::_Int128_type), _Int128_state(_Val) {}
-    // explicit basic_format_arg(const __uint128 _Val) noexcept
-    //    : _Active_state(_Basic_format_arg_type::_UInt128_type), _UInt128_state(_Val) {}
     explicit basic_format_arg(const bool _Val) noexcept
         : _Active_state(_Basic_format_arg_type::_Bool_type), _Bool_state(_Val) {}
     explicit basic_format_arg(const _CharType _Val) noexcept
@@ -455,8 +449,6 @@ public:
         unsigned _UInt_state;
         long long _Long_state;
         unsigned long long _ULong_state;
-        // __int128 _Int128_state;
-        // __uint128 _UInt128_state;
         bool _Bool_state;
         _CharType _Char_state;
         float _Float_state;
@@ -482,10 +474,6 @@ auto visit_format_arg(_Visitor&& _Vis, basic_format_arg<_Context> _Arg) -> declt
         return _Vis(_Arg._Long_state);
     case _Basic_format_arg_type::_ULong_type:
         return _Vis(_Arg._ULong_state);
-    // case _Basic_format_arg_type::_Int128_type:
-    //    return _Vis(_Arg._Int128_state);
-    // case _Basic_format_arg_type::_UInt128_type:
-    //    return _Vis(_Arg._UInt128_state);
     case _Basic_format_arg_type::_Bool_type:
         return _Vis(_Arg._Bool_state);
     case _Basic_format_arg_type::_Char_type:
@@ -523,10 +511,6 @@ static constexpr auto _Get_format_arg_storage_type() noexcept {
         return static_cast<long long>(42);
     } else if constexpr (unsigned_integral<_Ty> && sizeof(_Ty) <= sizeof(unsigned long long)) {
         return static_cast<unsigned long long>(42);
-        //} else if constexpr (signed_integral<_Ty> && sizeof(_Ty) <= sizeof(__int128)) {
-        //    return __int128{42};
-        //} else if constexpr (signed_integral<_Ty> && sizeof(_Ty) <= sizeof(__unint128)) {
-        //    return __uint128{42};
     } else if constexpr (is_same_v<_Ty, bool>) {
         return true;
     } else if constexpr (is_same_v<_Ty, _CharType>) {
@@ -658,13 +642,7 @@ public:
     }
 };
 
-// TRANSITION, Contraints missing, default _Context missing
-template <class _Context>
-_Format_arg_store<_Context> make_format_args() {
-    return _Format_arg_store<_Context>{};
-}
-
-template <class _Context, class... _Args>
+template <class _Context = format_context, class... _Args>
 _Format_arg_store<_Context, _Args...> make_format_args(const _Args&... args) {
     _Format_arg_store<_Context, _Args...> _Arg_store{};
     size_t _Arg_index = 0;
@@ -672,8 +650,7 @@ _Format_arg_store<_Context, _Args...> make_format_args(const _Args&... args) {
     return _Arg_store;
 }
 
-// TRANSITION, Contraints missing, WContext missing
-template <class _Context, class... _Args>
+template <class _Context = wformat_context, class... _Args>
 _Format_arg_store<_Context, _Args...> make_wformat_args(const _Args&... args) {
     _Format_arg_store<_Context, _Args...> _Arg_store{};
     size_t _Arg_index = 0;
@@ -716,10 +693,6 @@ public:
             return basic_format_arg<_Context>{_Get_value_from_memory<long long>(_Arg_storage)};
         case _Basic_format_arg_type::_ULong_type:
             return basic_format_arg<_Context>{_Get_value_from_memory<unsigned long long>(_Arg_storage)};
-        // case _Basic_format_arg_type::_Int128_type:
-        //    return basic_format_arg<_Context>{_Get_value_from_memory<__int128>(_Arg_storage)};
-        // case _Basic_format_arg_type::_UInt128_type:
-        //    return basic_format_arg<_Context>{_Get_value_from_memory<__uint128>(_Arg_storage)};
         case _Basic_format_arg_type::_Bool_type:
             return basic_format_arg<_Context>{_Get_value_from_memory<bool>(_Arg_storage)};
         case _Basic_format_arg_type::_Char_type:
