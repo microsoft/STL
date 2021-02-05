@@ -164,18 +164,18 @@ void test_format_arg_store() {
 
     if constexpr (is_same_v<char_type, char>) {
         test_single_format_arg<Context, char, Arg_type::char_type>(42);
-        test_single_format_arg<Context, wchar_t, Arg_type::int_type>(42);
+        test_single_format_arg<Context, wchar_t, Arg_type::unsigned_type>(42);
     } else {
-        test_single_format_arg<Context, char, Arg_type::int_type>(42);
+        test_single_format_arg<Context, char, Arg_type::char_type>(42);
         test_single_format_arg<Context, wchar_t, Arg_type::char_type>(42);
     }
-    test_single_format_arg<Context, unsigned char, Arg_type::int_type>(42);
+    test_single_format_arg<Context, unsigned char, Arg_type::unsigned_type>(42);
     test_single_format_arg<Context, signed char, Arg_type::int_type>(42);
 #ifdef __cpp_char8_t
-    test_single_format_arg<Context, char8_t, Arg_type::int_type>(42);
+    test_single_format_arg<Context, char8_t, Arg_type::unsigned_type>(42);
 #endif // __cpp_char8_t
-    test_single_format_arg<Context, char16_t, Arg_type::int_type>(42);
-    test_single_format_arg<Context, char32_t, Arg_type::int_type>(42);
+    test_single_format_arg<Context, char16_t, Arg_type::unsigned_type>(42);
+    test_single_format_arg<Context, char32_t, Arg_type::unsigned_type>(42);
 
     test_single_format_arg<Context, int, Arg_type::int_type>(42);
     test_single_format_arg<Context, int8_t, Arg_type::int_type>(42);
