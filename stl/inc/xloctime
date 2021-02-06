@@ -106,31 +106,25 @@ public:
                     while (_First != _Last && _Ctype_fac.is(_Ctype::space, *_First)) {
                         ++_First;
                     }
-                } else if (*_First != *_Fmtfirst) { // bad literal match
+                } else if (_Ctype_fac.toupper(*_First) != _Ctype_fac.toupper(*_Fmtfirst)) { // bad literal match
                     _State |= ios_base::failbit;
                     break;
                 } else {
                     ++_First;
                 }
             } else if (++_Fmtfirst == _Fmtlast) {
-                // [locale.time.get.members]/8.4: "If the number of elements in the range [fmt, fmtend) is not
-                // sufficient to unambiguously determine whether the conversion specification is complete and valid, the
-                // function evaluates err = ios_base::failbit."
+                // p8.4: "If the number of elements in the range [fmt, fmtend) is not sufficient to unambiguously
+                // determine whether the conversion specification is complete and valid, the function evaluates err =
+                // ios_base::failbit."
                 _State = ios_base::failbit;
                 break;
             } else { // get specifier after %
                 char _Specifier = _Ctype_fac.narrow(*_Fmtfirst);
                 char _Modifier  = '\0';
-                _Elem _Percent  = _Fmtfirst[-1];
 
                 if (_Specifier == 'E' || _Specifier == 'O' || _Specifier == 'Q' || _Specifier == '#') {
-                    if (++_Fmtfirst == _Fmtlast) { // no specifier, treat %[E0Q#] as literal match
-                        if (*_First != _Percent || ++_First == _Last || _Ctype_fac.narrow(*_First) != _Specifier) {
-                            _State |= ios_base::failbit;
-                        } else {
-                            ++_First;
-                        }
-
+                    if (++_Fmtfirst == _Fmtlast) { // no specifier
+                        _State = ios_base::failbit;
                         break;
                     } else { // save both qualifier and specifier
                         _Modifier  = _Specifier;

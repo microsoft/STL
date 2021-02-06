@@ -498,17 +498,33 @@ void test_990695() {
         {
             // Should fail if EOF while not parsing specifier ([locale.time.get.members]/8.4).
             tm t{};
-            stringstream ss{"4"};
-            ss >> get_time(&t, "42");
-            assert(ss.rdstate() == (ios_base::eofbit | ios_base::failbit));
+            istringstream iss("4");
+            iss >> get_time(&t, "42");
+            assert(iss.rdstate() == (ios_base::eofbit | ios_base::failbit));
         }
 
         {
             // Trailing % should not be treated as a literal (p8.4 again).
             tm t{};
-            stringstream ss{"%"};
-            ss >> get_time(&t, "%");
-            assert(ss.fail());
+            istringstream iss("%");
+            iss >> get_time(&t, "%");
+            assert(iss.fail());
+        }
+
+        {
+            // % with modifier but no specifier is also incomplete.
+            tm t{};
+            istringstream iss("%E");
+            iss >> get_time(&t, "%E");
+            assert(iss.fail());
+        }
+
+        {
+            // Literal match is case-insensitive.
+            tm t{};
+            istringstream iss("aBc");
+            iss >> get_time(&t, "AbC");
+            assert(iss);
         }
 
         {
@@ -532,7 +548,7 @@ void test_990695() {
         {
             // strptime specification: "leading zeros are permitted but not required"
             tm t{};
-            stringstream{" 7 4"} >> get_time(&t, "%m%d");
+            istringstream{" 7 4"} >> get_time(&t, "%m%d");
             assert(t.tm_mon == 6);
             assert(t.tm_mday == 4);
         }
