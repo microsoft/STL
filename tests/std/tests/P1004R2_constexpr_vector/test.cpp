@@ -9,7 +9,8 @@
 
 using namespace std;
 
-#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1270433
+#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) \
+    || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1270433, VSO-1275530
 static constexpr int input[] = {0, 1, 2, 3, 4, 5};
 #endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2
 
@@ -65,7 +66,8 @@ struct soccc_allocator {
 using vec = vector<int, soccc_allocator<int>>;
 
 _CONSTEXPR20_CONTAINER bool test_interface() {
-#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1270433
+#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) \
+    || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1270433, VSO-1275530
     { // constructors
 
         // Non allocator constructors
@@ -487,7 +489,8 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
 }
 
 _CONSTEXPR20_CONTAINER bool test_iterators() {
-#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1270433
+#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) \
+    || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1270433, VSO-1275530
     vec range_constructed(begin(input), end(input));
 
 #if !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1273381
@@ -587,7 +590,8 @@ _CONSTEXPR20_CONTAINER bool test_iterators() {
 }
 
 _CONSTEXPR20_CONTAINER bool test_growth() {
-#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1270433
+#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) \
+    || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1270433, VSO-1275530
     {
         vector<int> v(1000, 1729);
 
@@ -683,7 +687,7 @@ _CONSTEXPR20_CONTAINER bool test_growth() {
         assert(v.capacity() == 8000);
 #endif // __EDG__
     }
-#endif // defined(MSVC_INTERNAL_CHECKING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2
+#endif // defined(_MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2
     return true;
 }
 
