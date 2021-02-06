@@ -14,7 +14,7 @@ _STD_BEGIN
 // OBJECT DECLARATIONS
 struct _Mutex_count_pair {
     shared_mutex _Mutex;
-    uint64_t _Ref_count = 0;
+    size_t _Ref_count = 0;
 };
 
 template <class _Ty>
