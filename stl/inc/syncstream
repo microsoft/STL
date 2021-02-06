@@ -26,8 +26,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef emit
 
 _EXTERN_C
-_NODISCARD void* __stdcall __std_get_shared_mutex_for_instance(void* _Ptr) noexcept;
-_NODISCARD bool __stdcall __std_acquire_shared_mutex_for_instance(void* _Ptr) noexcept;
+_NODISCARD void* __stdcall __std_acquire_shared_mutex_for_instance(void* _Ptr) noexcept;
 void __stdcall __std_release_shared_mutex_for_instance(void* _Ptr) noexcept;
 _END_EXTERN_C
 
@@ -84,7 +83,8 @@ public:
 
     basic_syncbuf(streambuf_type* _Strbuf, const _Alloc& _Al_) : _Wrapped(_Strbuf), _Al(_Al_) {
         if (_Wrapped) {
-            if (!__std_acquire_shared_mutex_for_instance(_Wrapped)) {
+            _Mutex = static_cast<shared_mutex*>(__std_acquire_shared_mutex_for_instance(_Wrapped));
+            if (!_Mutex) {
                 _Xbad_alloc();
             }
         }
@@ -124,7 +124,7 @@ public:
         const _Size_type _Data_size = _Get_data_size();
         _Elem* const _Begin_seq_ptr = streambuf_type::pbase();
         if (_Data_size > 0 || _Mybase::_Sync_recorded) {
-            scoped_lock _Guard(*static_cast<shared_mutex*>(__std_get_shared_mutex_for_instance(_Wrapped)));
+            scoped_lock _Guard(*_Mutex);
 
             if (_Data_size > 0
                 && _Data_size
@@ -210,6 +210,7 @@ private:
         if (_Wrapped) {
             __std_release_shared_mutex_for_instance(_Wrapped);
             _Wrapped = nullptr;
+            _Mutex   = nullptr;
         }
     }
 
@@ -243,6 +244,7 @@ private:
             _STD swap(_Mybase::_Emit_on_sync, _Right._Emit_on_sync);
             _STD swap(_Mybase::_Sync_recorded, _Right._Sync_recorded);
             _STD swap(_Wrapped, _Right._Wrapped);
+            _STD swap(_Mutex, _Right._Mutex);
 
             _Right._Tidy();
         }
@@ -251,6 +253,7 @@ private:
     void _Swap_except_al(basic_syncbuf& _Right) noexcept {
         _Mybase::_Swap(_Right);
         _STD swap(_Wrapped, _Right._Wrapped);
+        _STD swap(_Mutex, _Right._Mutex);
     }
 
     virtual bool _Do_emit() override {
@@ -289,6 +292,7 @@ private:
     }
 
     streambuf_type* _Wrapped{nullptr};
+    shared_mutex* _Mutex{nullptr};
     allocator_type _Al{};
 };
 

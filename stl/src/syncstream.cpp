@@ -57,23 +57,15 @@ namespace {
 
 _EXTERN_C
 
-_NODISCARD void* __stdcall __std_get_shared_mutex_for_instance(void* _Ptr) noexcept {
-    _STD shared_lock _Guard(_Lookup_mutex);
-    auto _Instance_mutex_iter = _Lookup_map.find(_Ptr);
-    _ASSERT_EXPR(_Instance_mutex_iter != _Lookup_map.end(), "No mutex exists for given instance!");
-    auto _Ret = &_Instance_mutex_iter->second._Mutex;
-    static_assert(_STD is_same_v<decltype(_Ret), _STD shared_mutex*>);
-    return _Ret; // caller will restore type
-}
-
-_NODISCARD bool __stdcall __std_acquire_shared_mutex_for_instance(void* _Ptr) noexcept {
+_NODISCARD void* __stdcall __std_acquire_shared_mutex_for_instance(void* _Ptr) noexcept {
     try {
         _STD scoped_lock _Guard(_Lookup_mutex);
-        auto& _Refs = _Lookup_map.try_emplace(_Ptr).first->second._Ref_count;
+        auto& [_Mutex, _Refs] = _Lookup_map.try_emplace(_Ptr).first->second;
         ++_Refs;
-        return true;
+        static_assert(_STD is_same_v<decltype(&_Mutex), _STD shared_mutex*>);
+        return &_Mutex; // caller will restore type
     } catch (...) {
-        return false;
+        return nullptr;
     }
 }
 
