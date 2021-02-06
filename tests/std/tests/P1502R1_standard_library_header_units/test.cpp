@@ -810,6 +810,7 @@ int main() {
 
     {
         puts("Testing <syncstream>.");
+#if 0 // TRANSITION, VSO-1275701 (runtime crash with dynamic atexit destructor for syncstreams)
         syncbuf sync_buf{nullptr};
         assert(sync_buf.get_wrapped() == nullptr);
         assert(sync_buf.get_allocator() == allocator<char>{});
@@ -817,6 +818,7 @@ int main() {
         osyncstream sync_str{cout};
         sync_str << "Testing P1502R1_standard_library_header_units.\n";
         assert(sync_str.rdbuf()->get_wrapped() == cout.rdbuf());
+#endif // ^^^ no workaround ^^^
     }
 
     {
