@@ -10,6 +10,7 @@
 #include <type_traits>
 #include <variant>
 #include <vector>
+#include <functional>
 
 using namespace std;
 
