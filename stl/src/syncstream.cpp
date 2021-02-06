@@ -46,14 +46,14 @@ public:
 static map<void*, _Mutex_count_pair, less<void*>, _Crt_allocator<pair<void* const, _Mutex_count_pair>>> _Mutex_map;
 static shared_mutex _Mutex;
 
-extern "C" _NODISCARD _CRTIMP2 shared_mutex* __stdcall _Get_mutex_for_instance(void* _Ptr) noexcept {
+extern "C" _NODISCARD shared_mutex* __stdcall _Get_mutex_for_instance(void* _Ptr) noexcept {
     shared_lock _Guard(_Mutex);
     auto _Instance_mutex_iter = _Mutex_map.find(_Ptr);
     _ASSERT_EXPR(_Instance_mutex_iter != _Mutex_map.end(), "No mutex exists for given instance!");
     return &_Instance_mutex_iter->second._Mutex;
 }
 
-extern "C" _NODISCARD _CRTIMP2 bool __stdcall _Acquire_mutex_for_instance(void* _Ptr) noexcept {
+extern "C" _NODISCARD bool __stdcall _Acquire_mutex_for_instance(void* _Ptr) noexcept {
     try {
         scoped_lock _Guard(_Mutex);
         auto& _Refs = _Mutex_map.try_emplace(_Ptr).first->second._Ref_count;
@@ -64,7 +64,7 @@ extern "C" _NODISCARD _CRTIMP2 bool __stdcall _Acquire_mutex_for_instance(void* 
     }
 }
 
-extern "C" _CRTIMP2 void __stdcall _Release_mutex_for_instance(void* _Ptr) noexcept {
+extern "C" void __stdcall _Release_mutex_for_instance(void* _Ptr) noexcept {
     scoped_lock _Guard(_Mutex);
     const auto _Instance_mutex_iter = _Mutex_map.find(_Ptr);
     _ASSERT_EXPR(_Instance_mutex_iter != _Mutex_map.end(), "No mutex exists for given instance!");
