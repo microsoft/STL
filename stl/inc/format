@@ -333,11 +333,11 @@ public:
 
     // While the standard presents an exposition only enum value for
     // the indexing mode (manual, automatic, or unknown) we use _Next_arg_id to indicate it.
-    // _Next_arg_id == 0 means unknown
     // _Next_arg_id > 0 means automatic
-    // _Next_arg_id == -1 means manual
+    // _Next_arg_id == 0 means unknown
+    // _Next_arg_id < 0 means manual
     constexpr size_t next_arg_id() {
-        if (_Next_arg_id == -1) {
+        if (_Next_arg_id < 0) {
             throw format_error("Can not switch from manual to automatic indexing");
         }
 
@@ -370,13 +370,13 @@ enum class _Basic_format_arg_type : uint8_t {
     _None,
     _Int_type,
     _UInt_type,
-    _Long_type,
-    _ULong_type,
+    _LLong_type,
+    _ULLong_type,
     _Bool_type,
     _Char_type,
     _Float_type,
     _Double_type,
-    _Long_double_type,
+    _LDouble_type,
     _Pointer_type,
     _CString_type,
     _String_type,
@@ -400,9 +400,9 @@ public:
         explicit handle(const _Ty& _Val) noexcept
             : _Ptr(_STD addressof(_Val)),
               _Format([](basic_format_parse_context<_CharType>& _Parse_ctx, _Context& _Format_ctx, const void* _Ptr) {
-                  typename _Context::template formatter_type<_Ty> _Fn;
-                  _Parse_ctx.advance_to(_Fn.parse(_Parse_ctx));
-                  _Format_ctx.advance_to(_Fn.format(*static_cast<const _Ty*>(_Ptr), _Format_ctx));
+                  typename _Context::template formatter_type<_Ty> _Formatter;
+                  _Parse_ctx.advance_to(_Formatter.parse(_Parse_ctx));
+                  _Format_ctx.advance_to(_Formatter.format(*static_cast<const _Ty*>(_Ptr), _Format_ctx));
               }){};
 
         void format(basic_format_parse_context<_CharType>& _Parse_ctx, _Context& _Format_ctx) {
@@ -410,16 +410,17 @@ public:
         }
     };
 
+    // TRANSITION, LLVM-49072
     basic_format_arg() noexcept : _Active_state(_Basic_format_arg_type::_None), _No_state() {}
 
     explicit basic_format_arg(const int _Val) noexcept
         : _Active_state(_Basic_format_arg_type::_Int_type), _Int_state(_Val) {}
-    explicit basic_format_arg(const unsigned _Val) noexcept
+    explicit basic_format_arg(const unsigned int _Val) noexcept
         : _Active_state(_Basic_format_arg_type::_UInt_type), _UInt_state(_Val) {}
     explicit basic_format_arg(const long long _Val) noexcept
-        : _Active_state(_Basic_format_arg_type::_Long_type), _Long_state(_Val) {}
-    explicit basic_format_arg(const unsigned long long _Val) noexcept
-        : _Active_state(_Basic_format_arg_type::_ULong_type), _ULong_state(_Val) {}
+        : _Active_state(_Basic_format_arg_type::_LLong_type), _LLong_state(_Val) {}
+    explicit basic_format_arg(const unsigned int long long _Val) noexcept
+        : _Active_state(_Basic_format_arg_type::_ULLong_type), _ULLong_state(_Val) {}
     explicit basic_format_arg(const bool _Val) noexcept
         : _Active_state(_Basic_format_arg_type::_Bool_type), _Bool_state(_Val) {}
     explicit basic_format_arg(const _CharType _Val) noexcept
@@ -429,7 +430,7 @@ public:
     explicit basic_format_arg(const double _Val) noexcept
         : _Active_state(_Basic_format_arg_type::_Double_type), _Double_state(_Val) {}
     explicit basic_format_arg(const long double _Val) noexcept
-        : _Active_state(_Basic_format_arg_type::_Long_double_type), _LDouble_state(_Val) {}
+        : _Active_state(_Basic_format_arg_type::_LDouble_type), _LDouble_state(_Val) {}
     explicit basic_format_arg(const void* _Val) noexcept
         : _Active_state(_Basic_format_arg_type::_Pointer_type), _Pointer_state(_Val) {}
     explicit basic_format_arg(const _CharType* _Val) noexcept
@@ -446,9 +447,9 @@ public:
     union {
         monostate _No_state = monostate{};
         int _Int_state;
-        unsigned _UInt_state;
-        long long _Long_state;
-        unsigned long long _ULong_state;
+        unsigned int _UInt_state;
+        long long _LLong_state;
+        unsigned int long long _ULLong_state;
         bool _Bool_state;
         _CharType _Char_state;
         float _Float_state;
@@ -470,10 +471,10 @@ auto visit_format_arg(_Visitor&& _Vis, basic_format_arg<_Context> _Arg) -> declt
         return _Vis(_Arg._Int_state);
     case _Basic_format_arg_type::_UInt_type:
         return _Vis(_Arg._UInt_state);
-    case _Basic_format_arg_type::_Long_type:
-        return _Vis(_Arg._Long_state);
-    case _Basic_format_arg_type::_ULong_type:
-        return _Vis(_Arg._ULong_state);
+    case _Basic_format_arg_type::_LLong_type:
+        return _Vis(_Arg._LLong_state);
+    case _Basic_format_arg_type::_ULLong_type:
+        return _Vis(_Arg._ULLong_state);
     case _Basic_format_arg_type::_Bool_type:
         return _Vis(_Arg._Bool_state);
     case _Basic_format_arg_type::_Char_type:
@@ -482,7 +483,7 @@ auto visit_format_arg(_Visitor&& _Vis, basic_format_arg<_Context> _Arg) -> declt
         return _Vis(_Arg._Float_state);
     case _Basic_format_arg_type::_Double_type:
         return _Vis(_Arg._Double_state);
-    case _Basic_format_arg_type::_Long_double_type:
+    case _Basic_format_arg_type::_LDouble_type:
         return _Vis(_Arg._LDouble_state);
     case _Basic_format_arg_type::_Pointer_type:
         return _Vis(_Arg._Pointer_state);
@@ -499,22 +500,24 @@ auto visit_format_arg(_Visitor&& _Vis, basic_format_arg<_Context> _Arg) -> declt
 }
 
 template <class _Context, class _Ty>
-constexpr auto _Get_format_arg_storage_type() noexcept {
+/* consteval */ constexpr auto _Get_format_arg_storage_type() noexcept {
     using _CharType = typename _Context::char_type;
     if constexpr (is_same_v<_Ty, monostate>) {
         return monostate{};
     } else if constexpr (is_same_v<_Ty, _CharType>) {
         return _CharType{};
+    } else if constexpr (is_same_v<_Ty, char> && is_same_v<_CharType, wchar_t>) {
+        return _CharType{};
     } else if constexpr (signed_integral<_Ty> && sizeof(_Ty) <= sizeof(int)) {
         return int{};
-    } else if constexpr (unsigned_integral<_Ty> && sizeof(_Ty) <= sizeof(unsigned)) {
-        return unsigned{};
+    } else if constexpr (unsigned_integral<_Ty> && sizeof(_Ty) <= sizeof(unsigned int)) {
+        return unsigned int{};
     } else if constexpr (signed_integral<_Ty> && sizeof(_Ty) <= sizeof(long long)) {
         return static_cast<long long>(42);
-    } else if constexpr (unsigned_integral<_Ty> && sizeof(_Ty) <= sizeof(unsigned long long)) {
-        return static_cast<unsigned long long>(42);
+    } else if constexpr (unsigned_integral<_Ty> && sizeof(_Ty) <= sizeof(unsigned int long long)) {
+        return static_cast<unsigned int long long>(42);
     } else if constexpr (is_same_v<_Ty, bool>) {
-        return true;
+        return bool{};
     } else if constexpr (is_same_v<_Ty, float>) {
         return float{};
     } else if constexpr (is_same_v<_Ty, double>) {
@@ -533,7 +536,7 @@ constexpr auto _Get_format_arg_storage_type() noexcept {
 }
 
 template <class _Context, class _Ty>
-constexpr size_t _Get_format_arg_storage_size() noexcept {
+/* consteval */ constexpr size_t _Get_format_arg_storage_size() noexcept {
     return sizeof(_Get_format_arg_storage_type<_Context, _Ty>());
 }
 
@@ -542,7 +545,7 @@ struct _Format_arg_store_packed_index {
     using _Index_type = size_t;
 
     constexpr _Format_arg_store_packed_index() = default;
-    constexpr _Format_arg_store_packed_index(const size_t _Index)
+    explicit constexpr _Format_arg_store_packed_index(const size_t _Index)
         : _Index(static_cast<_Index_type>(_Index)), _Type(_Basic_format_arg_type::_None) {}
 
     _Index_type _Index : (sizeof(_Index_type) * 8 - 4);
@@ -552,8 +555,7 @@ struct _Format_arg_store_packed_index {
 template <class _Context, class... _Args>
 class _Format_arg_store {
 private:
-    template <class>
-    friend class basic_format_args;
+    friend class basic_format_args<_Context>;
 
     static constexpr size_t _Num_args       = sizeof...(_Args);
     static constexpr size_t _Storage_length = (_Get_format_arg_storage_size<_Context, _Args>() + ... + 0);
@@ -566,7 +568,7 @@ private:
         const auto _Store_index = _Index_array[_Arg_index]._Index;
         const auto _Length      = _Get_format_arg_storage_size<_Context, _Ty>();
 
-        std::memcpy(_Storage + _Store_index, _STD addressof(_Val), _Length);
+        _CSTD memcpy(_Storage + _Store_index, _STD addressof(_Val), _Length);
         _Index_array[_Arg_index]._Type = _Arg_type;
         if (_Arg_index + 1 < _Num_args) { // Set the starting index of the next arg, as that is dynamic
             _Index_array[_Arg_index + 1] = _Format_arg_store_packed_index{_Store_index + _Length};
@@ -580,21 +582,21 @@ public:
     // See [format.arg]/5
     template <class _Ty>
     void _Store(const size_t _Arg_index, const _Ty& _Val) noexcept {
-        if constexpr (_Same_impl<_Ty, bool>) {
+        if constexpr (is_same_v<_Ty, bool>) {
             _Store_impl<bool, _Basic_format_arg_type::_Bool_type>(_Arg_index, _Val);
-        } else if constexpr (_Same_impl<_Ty, _CharType>) {
+        } else if constexpr (is_same_v<_Ty, _CharType>) {
             _Store_impl<_CharType, _Basic_format_arg_type::_Char_type>(_Arg_index, _Val);
-        } else if constexpr (_Same_impl<_Ty, char> && _Same_impl<_CharType, wchar_t>) {
+        } else if constexpr (is_same_v<_Ty, char> && is_same_v<_CharType, wchar_t>) {
             _Store_impl<_CharType, _Basic_format_arg_type::_Char_type>(_Arg_index, static_cast<wchar_t>(_Val));
         } else if constexpr (signed_integral<_Ty> && sizeof(_Ty) <= sizeof(int)) {
             _Store_impl<int, _Basic_format_arg_type::_Int_type>(_Arg_index, static_cast<int>(_Val));
-        } else if constexpr (unsigned_integral<_Ty> && sizeof(_Ty) <= sizeof(unsigned)) {
-            _Store_impl<unsigned, _Basic_format_arg_type::_UInt_type>(_Arg_index, static_cast<unsigned>(_Val));
+        } else if constexpr (unsigned_integral<_Ty> && sizeof(_Ty) <= sizeof(unsigned int)) {
+            _Store_impl<unsigned int, _Basic_format_arg_type::_UInt_type>(_Arg_index, static_cast<unsigned int>(_Val));
         } else if constexpr (signed_integral<_Ty> && sizeof(_Ty) <= sizeof(long long)) {
-            _Store_impl<long long, _Basic_format_arg_type::_Long_type>(_Arg_index, static_cast<long long>(_Val));
-        } else if constexpr (unsigned_integral<_Ty> && sizeof(_Ty) <= sizeof(unsigned long long)) {
-            _Store_impl<unsigned long long, _Basic_format_arg_type::_ULong_type>(
-                _Arg_index, static_cast<unsigned long long>(_Val));
+            _Store_impl<long long, _Basic_format_arg_type::_LLong_type>(_Arg_index, static_cast<long long>(_Val));
+        } else if constexpr (unsigned_integral<_Ty> && sizeof(_Ty) <= sizeof(unsigned int long long)) {
+            _Store_impl<unsigned int long long, _Basic_format_arg_type::_ULLong_type>(
+                _Arg_index, static_cast<unsigned int long long>(_Val));
         } else {
             _Store_impl<typename basic_format_arg<_Context>::handle, _Basic_format_arg_type::_Custom_type>(
                 _Arg_index, basic_format_arg<_Context>::handle(_Val));
@@ -610,7 +612,7 @@ public:
     }
 
     void _Store(const size_t _Arg_index, long double _Val) noexcept {
-        _Store_impl<long double, _Basic_format_arg_type::_Long_double_type>(_Arg_index, _Val);
+        _Store_impl<long double, _Basic_format_arg_type::_LDouble_type>(_Arg_index, _Val);
     }
 
     void _Store(const size_t _Arg_index, const _CharType* _Val) noexcept {
@@ -669,8 +671,7 @@ private:
 
     template <class _Ty>
     _NODISCARD static constexpr auto _Get_value_from_memory(const byte* _Storage) noexcept {
-        byte _Temp[sizeof(_Ty)];
-        _Copy_unchecked(_Storage, _Storage + sizeof(_Ty), _Temp);
+        auto& _Temp = *reinterpret_cast<const byte(*)[sizeof(_Ty)]>(_Storage);
         return _Bit_cast<_Ty>(_Temp);
     }
 
@@ -692,11 +693,11 @@ public:
         case _Basic_format_arg_type::_Int_type:
             return basic_format_arg<_Context>{_Get_value_from_memory<int>(_Arg_storage)};
         case _Basic_format_arg_type::_UInt_type:
-            return basic_format_arg<_Context>{_Get_value_from_memory<unsigned>(_Arg_storage)};
-        case _Basic_format_arg_type::_Long_type:
+            return basic_format_arg<_Context>{_Get_value_from_memory<unsigned int>(_Arg_storage)};
+        case _Basic_format_arg_type::_LLong_type:
             return basic_format_arg<_Context>{_Get_value_from_memory<long long>(_Arg_storage)};
-        case _Basic_format_arg_type::_ULong_type:
-            return basic_format_arg<_Context>{_Get_value_from_memory<unsigned long long>(_Arg_storage)};
+        case _Basic_format_arg_type::_ULLong_type:
+            return basic_format_arg<_Context>{_Get_value_from_memory<unsigned int long long>(_Arg_storage)};
         case _Basic_format_arg_type::_Bool_type:
             return basic_format_arg<_Context>{_Get_value_from_memory<bool>(_Arg_storage)};
         case _Basic_format_arg_type::_Char_type:
@@ -705,7 +706,7 @@ public:
             return basic_format_arg<_Context>{_Get_value_from_memory<float>(_Arg_storage)};
         case _Basic_format_arg_type::_Double_type:
             return basic_format_arg<_Context>{_Get_value_from_memory<double>(_Arg_storage)};
-        case _Basic_format_arg_type::_Long_double_type:
+        case _Basic_format_arg_type::_LDouble_type:
             return basic_format_arg<_Context>{_Get_value_from_memory<long double>(_Arg_storage)};
         case _Basic_format_arg_type::_Pointer_type:
             return basic_format_arg<_Context>{_Get_value_from_memory<const void*>(_Arg_storage)};
