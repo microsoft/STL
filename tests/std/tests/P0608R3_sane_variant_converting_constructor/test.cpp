@@ -5,12 +5,12 @@
 
 #include <assert.h>
 #include <bitset>
+#include <functional>
 #include <optional>
 #include <string>
 #include <type_traits>
 #include <variant>
 #include <vector>
-#include <functional>
 
 using namespace std;
 
@@ -20,12 +20,14 @@ struct double_double {
     double x_;
 };
 struct convertible_bool {
-    convertible_bool(bool) {}
+    convertible_bool(bool x) : x_(x) {}
     ~convertible_bool() = default;
 
     operator bool() {
-        return true;
+        return x_;
     }
+
+    bool x_;
 };
 
 // P0608R3 examples
@@ -142,9 +144,9 @@ void test_variant_constructor_more_tests() {
     assert(e.index() == 1);
     assert(!get<1>(e));
 
-    variant<float, bool> f = convertible_bool{true}; // bool
+    variant<float, bool> f = convertible_bool{false}; // bool
     assert(f.index() == 1);
-    assert(get<1>(f));
+    assert(!get<1>(f));
 }
 
 int main() {
