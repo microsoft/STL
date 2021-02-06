@@ -361,7 +361,7 @@ private:
     basic_string_view<_CharT> _Format_string;
     size_t _Num_args;
     // The standard says this is size_t, however we use ptrdiff_t to save some space
-    // by not having to store the indexing mode. Below is a more detailed explanation
+    // by not having to store the indexing mode. Above is a more detailed explanation
     // of how this works.
     ptrdiff_t _Next_arg_id = 0;
 };
