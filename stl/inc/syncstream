@@ -83,7 +83,7 @@ public:
     basic_syncbuf(streambuf_type* _Strbuf, const _Alloc& _Al_) : _Wrapped(_Strbuf), _Al(_Al_) {
         if (_Wrapped) {
             if (!_Acquire_mutex_for_instance(_Wrapped)) {
-                throw std::bad_alloc{};
+                _Xbad_alloc();
             }
         }
         _Init();
