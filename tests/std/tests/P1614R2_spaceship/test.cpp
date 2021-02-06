@@ -15,7 +15,6 @@
 #include <iostream>
 #include <list>
 #include <map>
-#include <numeric>
 #include <queue>
 #include <ranges>
 #include <regex>
@@ -289,23 +288,6 @@ void ordering_test_cases() {
         std::forward_list<SynthOrdered> b = {10, 20, 40};
         ordered_containers_test(a, a, b);
     }
-    { // slice
-        std::valarray<int> a(20);
-        for (int i = 0; i < 12; ++i) {
-            a[i] = i;
-        }
-
-        const auto a1 = a[std::slice(2, 3, 4)];
-        const auto a2 = a[std::slice(2, 3, 4)];
-        const auto a3 = a[std::slice(3, 3, 4)];
-        const auto a4 = a[std::slice(2, 4, 4)];
-        const auto a5 = a[std::slice(2, 3, 3)];
-
-        static_assert((a1 == a2) == true);
-        static_assert((a1 == a3) == false);
-        static_assert((a1 == a4) == false);
-        static_assert((a1 == a5) == false);
-    }
     { // map
         std::map<std::string, int> a1;
         a1["hi"]   = 1;
@@ -501,6 +483,23 @@ void ordering_test_cases() {
         }
 
         spaceship_test<std::strong_ordering>(c_mem[0], c_mem[0], c_mem[1]);
+    }
+    { // slice
+        std::valarray<int> a(20);
+        for (int i = 0; i < 20; ++i) {
+            a[i] = i;
+        }
+
+        const auto a1 = a[std::slice(2, 3, 4)];
+        const auto a2 = a[std::slice(2, 3, 4)];
+        const auto a3 = a[std::slice(3, 3, 4)];
+        const auto a4 = a[std::slice(2, 4, 4)];
+        const auto a5 = a[std::slice(2, 3, 3)];
+
+        static_assert((a1 == a2) == true);
+        static_assert((a1 == a3) == false);
+        static_assert((a1 == a4) == false);
+        static_assert((a1 == a5) == false);
     }
     { // filesystem::space_info
         constexpr std::filesystem::space_info si1{4'000'000'000'000, 2'000'000'000'000, 1'000'000'000'000};

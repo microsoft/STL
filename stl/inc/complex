@@ -1519,7 +1519,7 @@ template <class _Ty>
 _NODISCARD constexpr bool operator==(const _Ty& _Left, const complex<_Ty>& _Right) {
     return _Left == _Right.real() && 0 == _Right.imag();
 }
-#endif //!_HAS_CXX20
+#endif // !_HAS_CXX20
 
 // FUNCTION TEMPLATE operator!=
 #if !_HAS_CXX20
@@ -1537,7 +1537,7 @@ template <class _Ty>
 _NODISCARD constexpr bool operator!=(const _Ty& _Left, const complex<_Ty>& _Right) {
     return !(_Left == _Right);
 }
-#endif //!_HAS_CXX20
+#endif // !_HAS_CXX20
 
 // FUNCTION TEMPLATE imag
 template <class _Ty>

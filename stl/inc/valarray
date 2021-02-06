@@ -1372,11 +1372,12 @@ public:
     _NODISCARD size_t stride() const noexcept /* strengthened */ {
         return _Stride;
     }
-#if _HAS_CXX200
-    friend bool operator==(const slice& x, const slice& y) {
-        return x.start() == y.start() && x.size() == y.size() && x.stride() == y.stride();
+
+#if _HAS_CXX20
+    _NODISCARD friend bool operator==(const slice& _Left, const slice& _Right) const noexcept /* strengthened */ {
+        return _Left.start() == _Right.start() && _Left.size() == _Right.size() && _Left.stride() == _Right.stride();
     }
-#endif
+#endif // !_HAS_CXX20
 
 protected:
     size_t _Start  = 0; // the starting offset
