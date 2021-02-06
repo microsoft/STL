@@ -511,7 +511,7 @@ template <class _Context, class _Ty>
     } else if constexpr (signed_integral<_Ty> && sizeof(_Ty) <= sizeof(int)) {
         return int{};
     } else if constexpr (unsigned_integral<_Ty> && sizeof(_Ty) <= sizeof(unsigned int)) {
-        return unsigned int{};
+        return static_cast<unsigned int>(42);
     } else if constexpr (signed_integral<_Ty> && sizeof(_Ty) <= sizeof(long long)) {
         return static_cast<long long>(42);
     } else if constexpr (unsigned_integral<_Ty> && sizeof(_Ty) <= sizeof(unsigned int long long)) {
@@ -555,7 +555,8 @@ struct _Format_arg_store_packed_index {
 template <class _Context, class... _Args>
 class _Format_arg_store {
 private:
-    friend class basic_format_args<_Context>;
+    template <class>
+    friend class basic_format_args;
 
     static constexpr size_t _Num_args       = sizeof...(_Args);
     static constexpr size_t _Storage_length = (_Get_format_arg_storage_size<_Context, _Args>() + ... + 0);
