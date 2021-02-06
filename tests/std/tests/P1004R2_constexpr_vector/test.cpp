@@ -412,6 +412,9 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         inserted.insert(inserted.cbegin(), {2, 3, 4});
         assert(inserted.size() == 22);
 
+        inserted.insert(inserted.begin(), 4, 11);
+        assert(inserted.size() == 26);
+
         vec emplaced;
         emplaced.emplace(emplaced.cbegin(), 42);
         assert(emplaced.size() == 1);
@@ -441,7 +444,13 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         emplaced.swap(inserted);
         assert(inserted.size() == 1);
         assert(inserted.front() == 42);
-        assert(emplaced.size() == 22);
+        assert(emplaced.size() == 26);
+
+        emplaced.erase(emplaced.end() - 1);
+        assert(emplaced.size() == 25);
+
+        emplaced.erase(emplaced.begin(), emplaced.begin() + 2);
+        assert(emplaced.size() == 23);
 #endif // __EDG__
     }
 

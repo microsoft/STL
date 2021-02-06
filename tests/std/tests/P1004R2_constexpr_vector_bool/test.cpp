@@ -11,7 +11,8 @@ using namespace std;
 
 #if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) \
     || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1270433, VSO-1275530
-static constexpr bool input[] = {true, false, true, true, false, true};
+static constexpr bool input[]         = {true, false, true, true, false, true};
+static constexpr bool input_flipped[] = {false, true, false, false, true, false};
 #endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2
 
 template <typename T>
@@ -379,6 +380,12 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
 #ifndef __EDG__ // TRANSITION, VSO-1274387
         vec range_constructed(begin(input), end(input));
 
+        vec flipped = range_constructed;
+        flipped.flip();
+        assert(flipped.size() == 6);
+        assert(equal(flipped.begin(), flipped.end(), begin(input_flipped), end(input_flipped)));
+        // {true, false, true, true, false, true};
+
         vec cleared = range_constructed;
         cleared.clear();
         assert(cleared.empty());
@@ -421,6 +428,9 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         inserted.insert(inserted.cbegin(), {false, true, false});
         assert(inserted.size() == 22);
 
+        inserted.insert(inserted.cbegin(), 3, true);
+        assert(inserted.size() == 25);
+
         vec emplaced;
         emplaced.emplace(emplaced.cbegin(), false);
         assert(emplaced.size() == 1);
@@ -450,6 +460,12 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         emplaced.swap(inserted);
         assert(inserted.size() == 1);
         assert(inserted.front() == false);
+        assert(emplaced.size() == 25);
+
+        emplaced.erase(emplaced.end() - 1);
+        assert(emplaced.size() == 24);
+
+        emplaced.erase(emplaced.begin(), emplaced.begin() + 2);
         assert(emplaced.size() == 22);
 #endif // __EDG__
     }
