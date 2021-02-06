@@ -361,7 +361,7 @@ std/utilities/meta/meta.unary/meta.unary.prop/is_constructible.pass.cpp:0 FAIL
 std/containers/views/span.cons/ptr_len.pass.cpp:0 FAIL
 std/containers/views/span.cons/ptr_ptr.pass.cpp:0 FAIL
 
-# VSO-1168723 "Implicit copy assignment `inc`orrectly not constexpr when subobject has explicit constexpr copy constructor"
+# VSO-1168723 "Implicit copy assignment incorrectly not constexpr when subobject has explicit constexpr copy constructor"
 std/utilities/utility/pairs/pairs.pair/assign_pair.pass.cpp:0 FAIL
 std/utilities/utility/pairs/pairs.pair/assign_rv_pair.pass.cpp:0 FAIL
 std/utilities/utility/pairs/pairs.pair/assign_rv_pair_U_V.pass.cpp:0 FAIL
@@ -389,7 +389,7 @@ std/thread/macro.pass.cpp:1 FAIL
 std/depr/depr.c.headers/tgmath_h.pass.cpp:1 FAIL
 
 # LLVM-48606 "Clang rejects creation of struct with mutable member during constant evaluation"
-language.support/support.limits/support.limits.general/vector.version.pass.cpp:1 FAIL
+std/language.support/support.limits/support.limits.general/vector.version.pass.cpp:1 FAIL
 
 
 # *** CLANG ISSUES, NOT YET ANALYZED ***
