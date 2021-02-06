@@ -25,11 +25,13 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 #undef emit
 
-_STD_BEGIN
+_EXTERN_C
+_NODISCARD void* __stdcall __std_get_shared_mutex_for_instance(void* _Ptr) noexcept;
+_NODISCARD bool __stdcall __std_acquire_shared_mutex_for_instance(void* _Ptr) noexcept;
+void __stdcall __std_release_shared_mutex_for_instance(void* _Ptr) noexcept;
+_END_EXTERN_C
 
-extern "C" _NODISCARD shared_mutex* __stdcall _Get_mutex_for_instance(void* _Ptr) noexcept;
-extern "C" _NODISCARD bool __stdcall _Acquire_mutex_for_instance(void* _Ptr) noexcept;
-extern "C" void __stdcall _Release_mutex_for_instance(void* _Ptr) noexcept;
+_STD_BEGIN
 
 // CLASS TEMPLATE _Basic_syncbuf_impl
 template <class _Elem, class _Traits>
@@ -82,7 +84,7 @@ public:
 
     basic_syncbuf(streambuf_type* _Strbuf, const _Alloc& _Al_) : _Wrapped(_Strbuf), _Al(_Al_) {
         if (_Wrapped) {
-            if (!_Acquire_mutex_for_instance(_Wrapped)) {
+            if (!__std_acquire_shared_mutex_for_instance(_Wrapped)) {
                 _Xbad_alloc();
             }
         }
@@ -122,7 +124,7 @@ public:
         const _Size_type _Data_size = _Get_data_size();
         _Elem* const _Begin_seq_ptr = streambuf_type::pbase();
         if (_Data_size > 0 || _Mybase::_Sync_recorded) {
-            scoped_lock _Guard(*_Get_mutex_for_instance(_Wrapped));
+            scoped_lock _Guard(*static_cast<shared_mutex*>(__std_get_shared_mutex_for_instance(_Wrapped)));
 
             if (_Data_size > 0
                 && _Data_size
@@ -206,7 +208,7 @@ private:
 
         streambuf_type::setp(nullptr, nullptr, nullptr);
         if (_Wrapped) {
-            _Release_mutex_for_instance(_Wrapped);
+            __std_release_shared_mutex_for_instance(_Wrapped);
             _Wrapped = nullptr;
         }
     }
