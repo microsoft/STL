@@ -12,10 +12,6 @@
 
 using namespace std;
 
-#pragma warning(push)
-#pragma warning(disable : 4582) // 'uninit_vector::storage': constructor is not implicitly called
-#pragma warning(disable : 4583) // 'uninit_vector::storage': destructor is not implicitly called
-
 template <class CharType>
 constexpr auto get_input_literal() {
     if constexpr (same_as<CharType, char>) {
@@ -69,7 +65,7 @@ auto visitor = [](auto&& arg) {
         return Arg_type::none;
     } else if constexpr (is_same_v<T, int>) {
         return Arg_type::int_type;
-    } else if constexpr (is_same_v<T, unsigned>) {
+    } else if constexpr (is_same_v<T, unsigned int>) {
         return Arg_type::unsigned_type;
     } else if constexpr (is_same_v<T, long long>) {
         return Arg_type::long_type;
@@ -190,9 +186,13 @@ void test_format_arg_store() {
     test_single_format_arg<Context, int64_t, Arg_type::long_type>(42);
     test_single_format_arg<Context, int_fast64_t, Arg_type::long_type>(42);
     test_single_format_arg<Context, int_least64_t, Arg_type::long_type>(42);
-    test_single_format_arg<Context, ptrdiff_t, Arg_type::long_type>(42);
+    if constexpr (sizeof(int) == sizeof(ptrdiff_t)) {
+        test_single_format_arg<Context, ptrdiff_t, Arg_type::int_type>(42);
+    } else {
+        test_single_format_arg<Context, ptrdiff_t, Arg_type::long_type>(42);
+    }
 
-    test_single_format_arg<Context, unsigned, Arg_type::unsigned_type>(42);
+    test_single_format_arg<Context, unsigned int, Arg_type::unsigned_type>(42);
     test_single_format_arg<Context, uint8_t, Arg_type::unsigned_type>(42);
     test_single_format_arg<Context, uint_fast8_t, Arg_type::unsigned_type>(42);
     test_single_format_arg<Context, uint_least8_t, Arg_type::unsigned_type>(42);
@@ -205,7 +205,11 @@ void test_format_arg_store() {
     test_single_format_arg<Context, uint64_t, Arg_type::unsigned_long_type>(42);
     test_single_format_arg<Context, uint_fast64_t, Arg_type::unsigned_long_type>(42);
     test_single_format_arg<Context, uint_least64_t, Arg_type::unsigned_long_type>(42);
-    test_single_format_arg<Context, size_t, Arg_type::unsigned_long_type>(42);
+    if constexpr (sizeof(unsigned int) == sizeof(size_t)) {
+        test_single_format_arg<Context, size_t, Arg_type::unsigned_type>(42);
+    } else {
+        test_single_format_arg<Context, size_t, Arg_type::unsigned_long_type>(42);
+    }
 
     test_single_format_arg<Context, float, Arg_type::float_type>(42.f);
     test_single_format_arg<Context, double, Arg_type::double_type>(42.);
@@ -223,4 +227,3 @@ int main() {
     test_format_arg_store<context>();
     test_format_arg_store<wcontext>();
 }
-#pragma warning(pop)
