@@ -174,6 +174,7 @@ void test_format_arg_store() {
     test_single_format_arg<Context, char32_t, Arg_type::unsigned_type>(42);
 
     test_single_format_arg<Context, int, Arg_type::int_type>(42);
+    test_single_format_arg<Context, long, Arg_type::int_type>(42);
     test_single_format_arg<Context, int8_t, Arg_type::int_type>(42);
     test_single_format_arg<Context, int_fast8_t, Arg_type::int_type>(42);
     test_single_format_arg<Context, int_least8_t, Arg_type::int_type>(42);
@@ -193,6 +194,7 @@ void test_format_arg_store() {
     }
 
     test_single_format_arg<Context, unsigned int, Arg_type::unsigned_type>(42);
+    test_single_format_arg<Context, unsigned long, Arg_type::unsigned_type>(42);
     test_single_format_arg<Context, uint8_t, Arg_type::unsigned_type>(42);
     test_single_format_arg<Context, uint_fast8_t, Arg_type::unsigned_type>(42);
     test_single_format_arg<Context, uint_least8_t, Arg_type::unsigned_type>(42);
