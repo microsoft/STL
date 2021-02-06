@@ -972,7 +972,7 @@ struct _Variant_type_test { // build Ti x[] = {std::forward<T>(t)};
     static constexpr auto _Construct_array(_Type(&&)[1]) -> _Meta_list<integral_constant<size_t, _Idx>, _Type>;
 
     template <size_t _Idx, class _Ty, class _Type>
-    using type = decltype(_Construct_array<_Idx, _Type>({_STD declval<_Ty&>()}));
+    using type = decltype(_Construct_array<_Idx, _Type>({_STD declval<_Ty&&>()}));
 };
 
 template <size_t _Idx, class _Ty, class _Type>
@@ -984,7 +984,7 @@ struct _Variant_init_single_overload {
     using _FTy = _Variant_type_resolver<_Idx, _Ty, _Type>;
 
     template <class _Ty>
-    auto operator()(_Ty, _Type) -> _FTy<_Ty>;
+    auto operator()(_Ty&&, _Type) -> _FTy<_Ty>;
 };
 
 template <class _Indices, class... _Types>
@@ -1002,11 +1002,11 @@ struct _Variant_init_helper {}; // failure case (has no member "type")
 
 template <class _Ty, class... _Types>
 struct _Variant_init_helper<
-    void_t<decltype(_Variant_init_overload_set<_Types...>{}(std::declval<_Ty>(), std::declval<_Ty>()))>, _Ty,
+    void_t<decltype(_Variant_init_overload_set<_Types...>{}(_STD declval<_Ty&&>(), _STD declval<_Ty>()))>, _Ty,
     _Types...> {
     // perform overload resolution to determine the unique alternative that should be initialized in
     // variant<_Types...> from an argument expression with type and value category _Ty
-    using type = decltype(_Variant_init_overload_set<_Types...>{}(std::declval<_Ty>(), std::declval<_Ty>()));
+    using type = decltype(_Variant_init_overload_set<_Types...>{}(_STD declval<_Ty&&>(), _STD declval<_Ty>()));
 };
 
 template <class _Ty, class... _Types> // extract the type from _Variant_init_helper
