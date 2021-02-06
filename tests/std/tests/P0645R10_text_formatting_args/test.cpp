@@ -196,9 +196,17 @@ void test_format_arg_store() {
     test_single_format_arg<Context, uint8_t, Arg_type::unsigned_type>(42);
     test_single_format_arg<Context, uint_fast8_t, Arg_type::unsigned_type>(42);
     test_single_format_arg<Context, uint_least8_t, Arg_type::unsigned_type>(42);
-    test_single_format_arg<Context, uint16_t, Arg_type::unsigned_type>(42);
+    if constexpr (is_same_v<char_type, uint16_t>) {
+        test_single_format_arg<Context, uint16_t, Arg_type::char_type>(42);
+    } else {
+        test_single_format_arg<Context, uint16_t, Arg_type::unsigned_type>(42);
+    }
     test_single_format_arg<Context, uint_fast16_t, Arg_type::unsigned_type>(42);
-    test_single_format_arg<Context, uint_least16_t, Arg_type::unsigned_type>(42);
+    if constexpr (is_same_v<char_type, uint_least16_t>) {
+        test_single_format_arg<Context, uint_least16_t, Arg_type::char_type>(42);
+    } else {
+        test_single_format_arg<Context, uint_least16_t, Arg_type::unsigned_type>(42);
+    }
     test_single_format_arg<Context, uint32_t, Arg_type::unsigned_type>(42);
     test_single_format_arg<Context, uint_fast32_t, Arg_type::unsigned_type>(42);
     test_single_format_arg<Context, uint_least32_t, Arg_type::unsigned_type>(42);
