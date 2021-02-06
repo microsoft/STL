@@ -43,20 +43,23 @@ public:
     }
 };
 
-static map<void*, _Mutex_count_pair, less<void*>, _Crt_allocator<pair<void* const, _Mutex_count_pair>>> _Mutex_map;
-static shared_mutex _Mutex;
+using _Map_alloc = _Crt_allocator<pair<void* const, _Mutex_count_pair>>;
+using _Map_type  = map<void*, _Mutex_count_pair, less<void*>, _Map_alloc>;
+
+static _Map_type _Lookup_map;
+static shared_mutex _Lookup_mutex;
 
 extern "C" _NODISCARD shared_mutex* __stdcall _Get_mutex_for_instance(void* _Ptr) noexcept {
-    shared_lock _Guard(_Mutex);
-    auto _Instance_mutex_iter = _Mutex_map.find(_Ptr);
-    _ASSERT_EXPR(_Instance_mutex_iter != _Mutex_map.end(), "No mutex exists for given instance!");
+    shared_lock _Guard(_Lookup_mutex);
+    auto _Instance_mutex_iter = _Lookup_map.find(_Ptr);
+    _ASSERT_EXPR(_Instance_mutex_iter != _Lookup_map.end(), "No mutex exists for given instance!");
     return &_Instance_mutex_iter->second._Mutex;
 }
 
 extern "C" _NODISCARD bool __stdcall _Acquire_mutex_for_instance(void* _Ptr) noexcept {
     try {
-        scoped_lock _Guard(_Mutex);
-        auto& _Refs = _Mutex_map.try_emplace(_Ptr).first->second._Ref_count;
+        scoped_lock _Guard(_Lookup_mutex);
+        auto& _Refs = _Lookup_map.try_emplace(_Ptr).first->second._Ref_count;
         ++_Refs;
         return true;
     } catch (...) {
@@ -65,12 +68,12 @@ extern "C" _NODISCARD bool __stdcall _Acquire_mutex_for_instance(void* _Ptr) noe
 }
 
 extern "C" void __stdcall _Release_mutex_for_instance(void* _Ptr) noexcept {
-    scoped_lock _Guard(_Mutex);
-    const auto _Instance_mutex_iter = _Mutex_map.find(_Ptr);
-    _ASSERT_EXPR(_Instance_mutex_iter != _Mutex_map.end(), "No mutex exists for given instance!");
+    scoped_lock _Guard(_Lookup_mutex);
+    const auto _Instance_mutex_iter = _Lookup_map.find(_Ptr);
+    _ASSERT_EXPR(_Instance_mutex_iter != _Lookup_map.end(), "No mutex exists for given instance!");
     auto& _Refs = _Instance_mutex_iter->second._Ref_count;
     if (--_Refs == 0) {
-        _Mutex_map.erase(_Instance_mutex_iter);
+        _Lookup_map.erase(_Instance_mutex_iter);
     }
 }
 
