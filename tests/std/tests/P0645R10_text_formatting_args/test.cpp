@@ -134,7 +134,7 @@ void test_basic_format_arg() {
     }
 }
 template <class Context>
-void test_empty_format_arg_int() {
+void test_empty_format_arg() {
     const auto store = make_format_args<Context>();
     const basic_format_args<Context> args{store};
     const same_as<basic_format_arg<Context>> auto first_arg = args.get(0);
@@ -156,7 +156,7 @@ template <class Context>
 void test_format_arg_store() {
     using char_type = typename Context::char_type;
 
-    test_empty_format_arg_int<Context>();
+    test_empty_format_arg<Context>();
 
     if constexpr (is_same_v<char_type, char>) {
         test_single_format_arg<Context, char, Arg_type::char_type>(42);
