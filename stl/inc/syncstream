@@ -81,9 +81,11 @@ public:
 
     explicit basic_syncbuf(streambuf_type* _Strbuf) : basic_syncbuf(_Strbuf, _Alloc{}) {}
 
-    basic_syncbuf(streambuf_type* _Strbuf, const _Alloc& _Al_) : _Wrapped(_Strbuf), _Al(_Al_) {
+    basic_syncbuf(streambuf_type* _Strbuf, const _Alloc& _Al_)
+        : _Wrapped(_Strbuf), _Mypair{_One_then_variadic_args_t{}, _Al_, nullptr} {
         if (_Wrapped) {
-            _Mutex = static_cast<shared_mutex*>(__std_acquire_shared_mutex_for_instance(_Wrapped));
+            auto& _Mutex = _Get_mutex();
+            _Mutex       = static_cast<shared_mutex*>(__std_acquire_shared_mutex_for_instance(_Wrapped));
             if (!_Mutex) {
                 _Xbad_alloc();
             }
@@ -91,7 +93,7 @@ public:
         _Init();
     }
 
-    basic_syncbuf(basic_syncbuf&& _Right) : _Al(_STD move(_Right._Al)) {
+    basic_syncbuf(basic_syncbuf&& _Right) : _Mypair{_One_then_variadic_args_t{}, _STD move(_Right._Getal()), nullptr} {
         _Swap_except_al(_Right);
     }
 
@@ -110,7 +112,7 @@ public:
 
     void swap(basic_syncbuf& _Right) noexcept {
         if (this != _STD addressof(_Right)) {
-            _Pocs(_Al, _Right._Al);
+            _Pocs(_Getal(), _Right._Getal());
             _Swap_except_al(_Right);
         }
     }
@@ -124,7 +126,7 @@ public:
         const _Size_type _Data_size = _Get_data_size();
         _Elem* const _Begin_seq_ptr = streambuf_type::pbase();
         if (_Data_size > 0 || _Mybase::_Sync_recorded) {
-            scoped_lock _Guard(*_Mutex);
+            scoped_lock _Guard(*_Get_mutex());
 
             if (_Data_size > 0
                 && _Data_size
@@ -149,7 +151,7 @@ public:
     }
 
     _NODISCARD allocator_type get_allocator() const noexcept {
-        return _Al;
+        return _Mypair._Get_first();
     }
 
 protected:
@@ -173,6 +175,7 @@ protected:
             return _Traits::not_eof(_Current_elem);
         }
 
+        auto& _Al                        = _Getal();
         const _Size_type _Buf_size       = _Get_buffer_size();
         const _Size_type _Max_allocation = allocator_traits<_Alloc>::max_size(_Al);
         if (_Buf_size == _Max_allocation) {
@@ -196,38 +199,39 @@ private:
     static constexpr _Size_type _Min_size = 32; // constant for minimum buffer size
 
     void _Init() {
-        _Elem* const _New_ptr = _Unfancy(_Al.allocate(_Min_size));
+        _Elem* const _New_ptr = _Unfancy(_Getal().allocate(_Min_size));
         streambuf_type::setp(_New_ptr, _New_ptr + _Min_size);
     }
 
     void _Tidy() noexcept {
         const _Size_type _Buf_size = _Get_buffer_size();
         if (0 < _Buf_size) {
-            _Al.deallocate(_Refancy<_Pointer>(streambuf_type::pbase()), _Buf_size);
+            _Getal().deallocate(_Refancy<_Pointer>(streambuf_type::pbase()), _Buf_size);
         }
 
         streambuf_type::setp(nullptr, nullptr, nullptr);
         if (_Wrapped) {
             __std_release_shared_mutex_for_instance(_Wrapped);
-            _Wrapped = nullptr;
-            _Mutex   = nullptr;
+            _Wrapped     = nullptr;
+            _Get_mutex() = nullptr;
         }
     }
 
     void _Move_assign(basic_syncbuf&& _Right, _Equal_allocators) noexcept {
         _Tidy();
-        _Pocma(_Al, _Right._Al);
+        _Pocma(_Getal(), _Right._Getal());
         _Swap_except_al(_Right);
     }
 
     void _Move_assign(basic_syncbuf&& _Right, _Propagate_allocators) noexcept {
         _Tidy();
-        _Pocma(_Al, _Right._Al);
+        _Pocma(_Getal(), _Right._Getal());
         _Swap_except_al(_Right);
     }
 
     void _Move_assign(basic_syncbuf&& _Right, _No_propagate_allocators) {
-        if (_Al == _Right._Al) {
+        auto& _Al = _Getal();
+        if (_Al == _Right._Getal()) {
             _Move_assign(_STD move(_Right), _Equal_allocators{});
         } else {
             _Tidy();
@@ -244,7 +248,7 @@ private:
             _STD swap(_Mybase::_Emit_on_sync, _Right._Emit_on_sync);
             _STD swap(_Mybase::_Sync_recorded, _Right._Sync_recorded);
             _STD swap(_Wrapped, _Right._Wrapped);
-            _STD swap(_Mutex, _Right._Mutex);
+            _STD swap(_Get_mutex(), _Right._Get_mutex());
 
             _Right._Tidy();
         }
@@ -253,7 +257,7 @@ private:
     void _Swap_except_al(basic_syncbuf& _Right) noexcept {
         _Mybase::_Swap(_Right);
         _STD swap(_Wrapped, _Right._Wrapped);
-        _STD swap(_Mutex, _Right._Mutex);
+        _STD swap(_Get_mutex(), _Right._Get_mutex());
     }
 
     virtual bool _Do_emit() override {
@@ -291,9 +295,16 @@ private:
         return static_cast<_Size_type>(streambuf_type::epptr() - streambuf_type::pbase());
     }
 
+    _NODISCARD _Alloc& _Getal() noexcept {
+        return _Mypair._Get_first();
+    }
+
+    _NODISCARD shared_mutex*& _Get_mutex() noexcept {
+        return _Mypair._Myval2;
+    }
+
     streambuf_type* _Wrapped{nullptr};
-    shared_mutex* _Mutex{nullptr};
-    allocator_type _Al{};
+    _Compressed_pair<_Alloc, shared_mutex*> _Mypair{_Zero_then_variadic_args_t{}, nullptr};
 };
 
 template <class _Elem, class _Traits, class _Alloc>
