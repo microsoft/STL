@@ -762,42 +762,13 @@ _NODISCARD constexpr common_comparison_category_t<_Synth_three_way_result<_Types
     static_assert(sizeof...(_Types1) == sizeof...(_Types2), "cannot compare tuples of different sizes");
     return _Left._Three_way_compare(_Right);
 }
-
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-900973
-// Overload resolution prefers implicit conversions over re-writes.
-// In C++20 mode the only required comparison operators should be == and <=>.
-template <class... _Types1, class... _Types2>
-_NODISCARD constexpr bool operator!=(const tuple<_Types1...>& _Left, const tuple<_Types2...>& _Right) {
-    return !(_Left == _Right);
-}
-
-template <class... _Types1, class... _Types2>
-_NODISCARD constexpr bool operator<(const tuple<_Types1...>& _Left, const tuple<_Types2...>& _Right) {
-    return (_Left <=> _Right) < 0;
-}
-
-template <class... _Types1, class... _Types2>
-_NODISCARD constexpr bool operator>=(const tuple<_Types1...>& _Left, const tuple<_Types2...>& _Right) {
-    return (_Left <=> _Right) >= 0;
-}
-
-template <class... _Types1, class... _Types2>
-_NODISCARD constexpr bool operator>(const tuple<_Types1...>& _Left, const tuple<_Types2...>& _Right) {
-    return (_Left <=> _Right) > 0;
-}
-
-template <class... _Types1, class... _Types2>
-_NODISCARD constexpr bool operator<=(const tuple<_Types1...>& _Left, const tuple<_Types2...>& _Right) {
-    return (_Left <=> _Right) <= 0;
-}
-#endif // TRANSITION, VSO-900973
 #else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
 #if !_HAS_CXX20
 template <class... _Types1, class... _Types2>
 _NODISCARD constexpr bool operator!=(const tuple<_Types1...>& _Left, const tuple<_Types2...>& _Right) {
     return !(_Left == _Right);
 }
-#endif// !_HAS_CXX20
+#endif // !_HAS_CXX20
 
 template <class... _Types1, class... _Types2>
 _NODISCARD constexpr bool operator<(const tuple<_Types1...>& _Left, const tuple<_Types2...>& _Right) {
