@@ -13,9 +13,9 @@
 #error <atomic> is not supported when compiling with /clr:pure.
 #endif // _M_CEE_PURE
 
-#include <stddef.h> // for size_t
-#include <stdint.h>
-#include <string.h>
+#include <cstddef>
+#include <cstdint>
+#include <cstring>
 #include <xatomic.h>
 #if _HAS_CXX20
 #include <xatomic_wait.h>
@@ -31,7 +31,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 #define _Compiler_barrier() _STL_DISABLE_DEPRECATED_WARNING _ReadWriteBarrier() _STL_RESTORE_DEPRECATED_WARNING
 
-#if defined(_M_ARM) || defined(_M_ARM64)
+#if defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
 #define _Memory_barrier()             __dmb(0xB) // inner shared data memory barrier
 #define _Compiler_or_memory_barrier() _Memory_barrier()
 #elif defined(_M_IX86) || defined(_M_X64)
@@ -69,18 +69,96 @@ extern "C" _NODISCARD char __stdcall __std_atomic_has_cmpxchg16b() noexcept;
 
 // MACRO _ATOMIC_HAS_DCAS
 // Controls whether atomic::is_always_lock_free triggers for sizeof(void *) or 2 * sizeof(void *)
-#if _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 || !defined(_M_X64)
+#if _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 || !defined(_M_X64) || defined(_M_ARM64EC)
 #define _ATOMIC_HAS_DCAS 1
 #else // ^^^ We always have DCAS / We only sometimes have DCAS vvv
 #define _ATOMIC_HAS_DCAS 0
-#endif // _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 || !defined(_M_X64)
+#endif // _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 || !defined(_M_X64) || defined(_M_ARM64EC)
+
+#if defined(_M_ARM64) && defined(__clang__) && __clang_major__ == 11 // TRANSITION, LLVM 12
+inline unsigned char _InterlockedCompareExchange128(
+    __int64 volatile* _Destination, __int64 _Val_high, __int64 _Val_low, __int64* _Comparand) {
+    auto _Dest = reinterpret_cast<__int128 volatile*>(_Destination);
+    auto _Cmp  = reinterpret_cast<__int128*>(_Comparand);
+    __int128 _Val;
+    reinterpret_cast<__int64*>(&_Val)[0] = _Val_low;
+    reinterpret_cast<__int64*>(&_Val)[1] = _Val_high;
+
+    __int128 _Stored;
+    do {
+        if (_Stored = __builtin_arm_ldaex(_Dest); _Stored != *_Cmp) {
+            *_Cmp = _Stored;
+            return 0;
+        }
+    } while (__builtin_arm_stlex(_Val, _Dest));
+
+    return 1;
+}
+
+inline unsigned char _InterlockedCompareExchange128_acq(
+    __int64 volatile* _Destination, __int64 _Val_high, __int64 _Val_low, __int64* _Comparand) {
+    auto _Dest = reinterpret_cast<__int128 volatile*>(_Destination);
+    auto _Cmp  = reinterpret_cast<__int128*>(_Comparand);
+    __int128 _Val;
+    reinterpret_cast<__int64*>(&_Val)[0] = _Val_low;
+    reinterpret_cast<__int64*>(&_Val)[1] = _Val_high;
+
+    __int128 _Stored;
+    do {
+        if (_Stored = __builtin_arm_ldaex(_Dest); _Stored != *_Cmp) {
+            *_Cmp = _Stored;
+            return 0;
+        }
+    } while (__builtin_arm_strex(_Val, _Dest));
+
+    return 1;
+}
+
+inline unsigned char _InterlockedCompareExchange128_nf(
+    __int64 volatile* _Destination, __int64 _Val_high, __int64 _Val_low, __int64* _Comparand) {
+    auto _Dest = reinterpret_cast<__int128 volatile*>(_Destination);
+    auto _Cmp  = reinterpret_cast<__int128*>(_Comparand);
+    __int128 _Val;
+    reinterpret_cast<__int64*>(&_Val)[0] = _Val_low;
+    reinterpret_cast<__int64*>(&_Val)[1] = _Val_high;
+
+    __int128 _Stored;
+    do {
+        if (_Stored = __builtin_arm_ldrex(_Dest); _Stored != *_Cmp) {
+            *_Cmp = _Stored;
+            return 0;
+        }
+    } while (__builtin_arm_strex(_Val, _Dest));
+
+    return 1;
+}
+
+inline unsigned char _InterlockedCompareExchange128_rel(
+    __int64 volatile* _Destination, __int64 _Val_high, __int64 _Val_low, __int64* _Comparand) {
+    auto _Dest = reinterpret_cast<__int128 volatile*>(_Destination);
+    auto _Cmp  = reinterpret_cast<__int128*>(_Comparand);
+    __int128 _Val;
+    reinterpret_cast<__int64*>(&_Val)[0] = _Val_low;
+    reinterpret_cast<__int64*>(&_Val)[1] = _Val_high;
+
+    __int128 _Stored;
+    do {
+        if (_Stored = __builtin_arm_ldaex(_Dest); _Stored != *_Cmp) {
+            *_Cmp = _Stored;
+            return 0;
+        }
+    } while (__builtin_arm_stlex(_Val, _Dest));
+
+    return 1;
+}
+#endif // ^^^ ARM64 && LLVM 11 workaround ^^^
 
 // MACRO _ATOMIC_CHOOSE_INTRINSIC
-#if defined(_M_IX86) || defined(_M_X64)
+#if defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
 #define _ATOMIC_CHOOSE_INTRINSIC(_Order, _Result, _Intrinsic, ...) \
     _Check_memory_order(_Order);                                   \
     _Result = _Intrinsic(__VA_ARGS__)
-#elif defined(_M_ARM) || defined(_M_ARM64)
+#elif defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
 #define _ATOMIC_CHOOSE_INTRINSIC(_Order, _Result, _Intrinsic, ...) \
     switch (_Order) {                                              \
     case memory_order_relaxed:                                     \
@@ -287,14 +365,11 @@ template <class _Integral, class _Ty>
 _NODISCARD _Integral _Atomic_reinterpret_as(const _Ty& _Source) noexcept {
     // interprets _Source as the supplied integral type
     static_assert(is_integral_v<_Integral>, "Tried to reinterpret memory as non-integral");
-#if _HAS_IF_CONSTEXPR
     if constexpr (is_integral_v<_Ty> && sizeof(_Integral) == sizeof(_Ty)) {
         return static_cast<_Integral>(_Source);
     } else if constexpr (is_pointer_v<_Ty> && sizeof(_Integral) == sizeof(_Ty)) {
         return reinterpret_cast<_Integral>(_Source);
-    } else
-#endif // _HAS_IF_CONSTEXPR
-    {
+    } else {
         _Integral _Result{}; // zero padding bits
         _CSTD memcpy(&_Result, _STD addressof(_Source), sizeof(_Source));
         return _Result;
@@ -330,15 +405,14 @@ struct _Atomic_padded {
 // STRUCT TEMPLATE _Atomic_storage_traits
 template <class _Ty>
 struct _Atomic_storage_traits { // properties for how _Ty is stored in an atomic
-    static constexpr size_t _Storage_size =
-        sizeof(_Ty) == 1 ? 1
-                         : sizeof(_Ty) == 2 ? 2
-                                            : sizeof(_Ty) <= 4 ? 4
-                                                               : sizeof(_Ty) <= 8 ? 8
-#if defined(_M_X64) || defined(_M_ARM64)
-                                                                                  : sizeof(_Ty) <= 16 ? 16
+    static constexpr size_t _Storage_size = sizeof(_Ty) == 1 ? 1
+                                          : sizeof(_Ty) == 2 ? 2
+                                          : sizeof(_Ty) <= 4 ? 4
+                                          : sizeof(_Ty) <= 8 ? 8
+#if defined(_M_X64) || defined(_M_ARM64) || defined(_M_ARM64EC)
+                                          : sizeof(_Ty) <= 16 ? 16
 #endif // 64 bits
-                                                                                                      : sizeof(_Ty);
+                                                              : sizeof(_Ty);
 
     static constexpr size_t _Padding_size = _Storage_size - sizeof(_Ty);
     static constexpr bool _Uses_padding   = _Padding_size != 0;
@@ -418,23 +492,44 @@ void _Atomic_wait_direct(
 }
 #endif // _HAS_CXX20
 
-#if 1 // TRANSITION, ABI
+#if 1 // TRANSITION, ABI, GH-1151
 inline void _Atomic_lock_acquire(long& _Spinlock) noexcept {
-    while (_InterlockedExchange(&_Spinlock, 1)) {
-        _YIELD_PROCESSOR();
+#if defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
+    // Algorithm from Intel(R) 64 and IA-32 Architectures Optimization Reference Manual, May 2020
+    // Example 2-4. Contended Locks with Increasing Back-off Example - Improved Version, page 2-22
+    // The code in mentioned manual is covered by the 0BSD license.
+    int _Current_backoff   = 1;
+    const int _Max_backoff = 64;
+    while (_InterlockedExchange(&_Spinlock, 1) != 0) {
+        while (__iso_volatile_load32(&reinterpret_cast<int&>(_Spinlock)) != 0) {
+            for (int _Count_down = _Current_backoff; _Count_down != 0; --_Count_down) {
+                _mm_pause();
+            }
+            _Current_backoff = _Current_backoff < _Max_backoff ? _Current_backoff << 1 : _Max_backoff;
+        }
     }
+#elif defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
+    while (_InterlockedExchange(&_Spinlock, 1) != 0) { // TRANSITION, GH-1133: _InterlockedExchange_acq
+        while (__iso_volatile_load32(&reinterpret_cast<int&>(_Spinlock)) != 0) {
+            __yield();
+        }
+    }
+#else // ^^^ defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC) ^^^
+#error Unsupported hardware
+#endif
 }
 
 inline void _Atomic_lock_release(long& _Spinlock) noexcept {
-#if defined(_M_ARM) || defined(_M_ARM64)
+#if defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
+    _InterlockedExchange(&_Spinlock, 0); // TRANSITION, GH-1133: same as ARM
+#elif defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
     _Memory_barrier();
     __iso_volatile_store32(reinterpret_cast<int*>(&_Spinlock), 0);
-    _Memory_barrier();
-#else // ^^^ ARM32/ARM64 hardware / x86/x64 hardware vvv
-    _InterlockedExchange(&_Spinlock, 0);
-#endif // hardware
+    _Memory_barrier(); // TRANSITION, GH-1133: remove
+#else // ^^^ defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC) ^^^
+#error Unsupported hardware
+#endif
 }
-
 
 inline void _Atomic_lock_acquire(_Smtx_t* _Spinlock) noexcept {
     _Smtx_lock_exclusive(_Spinlock);
@@ -445,7 +540,7 @@ inline void _Atomic_lock_release(_Smtx_t* _Spinlock) noexcept {
 }
 
 template <class _Spinlock_t>
-class _Atomic_lock_guard {
+class _NODISCARD _Atomic_lock_guard {
 public:
     explicit _Atomic_lock_guard(_Spinlock_t& _Spinlock_) noexcept : _Spinlock(_Spinlock_) {
         _Atomic_lock_acquire(_Spinlock);
@@ -639,7 +734,7 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
     void store(const _TVal _Value) noexcept { // store with sequential consistency
         const auto _Mem      = _Atomic_address_as<char>(_Storage);
         const char _As_bytes = _Atomic_reinterpret_as<char>(_Value);
-#if defined(_M_ARM) || defined(_M_ARM64)
+#if defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
         _Memory_barrier();
         __iso_volatile_store8(_Mem, _As_bytes);
         _Memory_barrier();
@@ -760,7 +855,7 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
     void store(const _TVal _Value) noexcept { // store with sequential consistency
         const auto _Mem       = _Atomic_address_as<short>(_Storage);
         const short _As_bytes = _Atomic_reinterpret_as<short>(_Value);
-#if defined(_M_ARM) || defined(_M_ARM64)
+#if defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
         _Memory_barrier();
         __iso_volatile_store16(_Mem, _As_bytes);
         _Memory_barrier();
@@ -878,7 +973,7 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
     }
 
     void store(const _TVal _Value) noexcept { // store with sequential consistency
-#if defined(_M_ARM) || defined(_M_ARM64)
+#if defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
         _Memory_barrier();
         __iso_volatile_store32(_Atomic_address_as<int>(_Storage), _Atomic_reinterpret_as<int>(_Value));
         _Memory_barrier();
@@ -1158,7 +1253,7 @@ struct _Atomic_storage<_Ty&, 16> { // lock-free using 16-byte intrinsics
     }
 
     _NODISCARD _TVal load(const memory_order _Order) const noexcept { // load with given memory order
-#ifdef _M_ARM64
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
         long long* const _Storage_ptr = const_cast<long long*>(_Atomic_address_as<const long long>(_Storage));
         _Int128 _Result{}; // atomic CAS 0 with 0
         switch (_Order) {
@@ -1218,7 +1313,7 @@ struct _Atomic_storage<_Ty&, 16> { // lock-free using 16-byte intrinsics
             _Int128 _Mask_val{};
             _CSTD memcpy(&_Mask_val, _Mask._Ptr(), sizeof(_TVal));
             for (;;) {
-#ifdef _M_ARM64
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
                 _ATOMIC_CHOOSE_INTRINSIC(_Order, _Result, _InterlockedCompareExchange128,
                     _Atomic_address_as<long long>(_Storage), _Desired_bytes._High, _Desired_bytes._Low,
                     &_Expected_temp._Low);
@@ -1244,7 +1339,7 @@ struct _Atomic_storage<_Ty&, 16> { // lock-free using 16-byte intrinsics
             }
         }
 #endif // _CMPXCHG_MASK_OUT_PADDING_BITS
-#ifdef _M_ARM64
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
         _ATOMIC_CHOOSE_INTRINSIC(_Order, _Result, _InterlockedCompareExchange128,
             _Atomic_address_as<long long>(_Storage), _Desired_bytes._High, _Desired_bytes._Low, &_Expected_temp._Low);
 #else // ^^^ _M_ARM64 / _M_X64 vvv
@@ -1365,7 +1460,7 @@ struct _Atomic_integral<_Ty, 1> : _Atomic_storage<_Ty> { // atomic integral oper
     }
 
     _TVal operator--(int) noexcept {
-        return static_cast<_Ty>(_InterlockedExchangeAdd8(_Atomic_address_as<char>(this->_Storage), -1));
+        return static_cast<_TVal>(_InterlockedExchangeAdd8(_Atomic_address_as<char>(this->_Storage), -1));
     }
 
     _TVal operator--() noexcept {
@@ -1808,6 +1903,22 @@ struct _Atomic_integral_facade<_Ty&> : _Atomic_integral<_Ty&> {
 
     _Ty fetch_sub(const _Ty _Operand, const memory_order _Order) const noexcept {
         return fetch_add(_Negate(_Operand), _Order);
+    }
+
+    _Ty operator++(int) const noexcept {
+        return const_cast<_Atomic_integral_facade*>(this)->_Base::operator++(0);
+    }
+
+    _Ty operator++() const noexcept {
+        return const_cast<_Atomic_integral_facade*>(this)->_Base::operator++();
+    }
+
+    _Ty operator--(int) const noexcept {
+        return const_cast<_Atomic_integral_facade*>(this)->_Base::operator--(0);
+    }
+
+    _Ty operator--() const noexcept {
+        return const_cast<_Atomic_integral_facade*>(this)->_Base::operator--();
     }
 
     _Ty operator+=(const _Ty _Operand) const noexcept {
@@ -2330,12 +2441,7 @@ private:
     using _Base = _Choose_atomic_base_t<_Ty, _Ty&>;
 
 public:
-    // clang-format off
-    static_assert(is_trivially_copyable_v<_Ty> && is_copy_constructible_v<_Ty> && is_move_constructible_v<_Ty>
-        && is_copy_assignable_v<_Ty> && is_move_assignable_v<_Ty>,
-        "atomic_ref<T> requires T to be trivially copyable, copy constructible, move constructible, copy assignable, "
-        "and move assignable.");
-    // clang-format on
+    static_assert(is_trivially_copyable_v<_Ty>, "atomic_ref<T> requires T to be trivially copyable.");
 
     using value_type = _Ty;
 
@@ -2450,25 +2556,6 @@ _NODISCARD bool atomic_is_lock_free(const atomic<_Ty>* _Mem) noexcept {
 }
 
 template <class _Ty>
-_CXX20_DEPRECATE_ATOMIC_INIT void atomic_init(
-    atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Value) noexcept {
-#if 1 // TRANSITION, ABI
-    _CSTD memcpy(_STD addressof(_Mem->_Storage), _STD addressof(_Value), sizeof(_Ty));
-#else // ^^^ don't break ABI / break ABI vvv
-    _CSTD memcpy(_Mem, _STD addressof(_Value), sizeof(_Ty));
-#endif // TRANSITION, ABI
-    _CSTD memset(reinterpret_cast<unsigned char*>(_Mem) + sizeof(_Ty), 0, sizeof(atomic<_Ty>) - sizeof(_Ty));
-}
-
-template <class _Ty>
-_CXX20_DEPRECATE_ATOMIC_INIT void atomic_init(
-    volatile atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Value) noexcept {
-    // NB: respecting volatility here appears unimplementable
-    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
-    _STD atomic_init(const_cast<atomic<_Ty>*>(_Mem), _Value);
-}
-
-template <class _Ty>
 void atomic_store(volatile atomic<_Ty>* const _Mem, const _Identity_t<_Ty> _Value) noexcept {
     static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     _Mem->store(_Value);
@@ -2489,6 +2576,19 @@ void atomic_store_explicit(
 template <class _Ty>
 void atomic_store_explicit(atomic<_Ty>* const _Mem, const _Identity_t<_Ty> _Value, const memory_order _Order) noexcept {
     _Mem->store(_Value, _Order);
+}
+
+template <class _Ty>
+_CXX20_DEPRECATE_ATOMIC_INIT void atomic_init(
+    volatile atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Value) noexcept {
+    static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
+    _STD atomic_store_explicit(_Mem, _Value, memory_order_relaxed);
+}
+
+template <class _Ty>
+_CXX20_DEPRECATE_ATOMIC_INIT void atomic_init(
+    atomic<_Ty>* const _Mem, const typename atomic<_Ty>::value_type _Value) noexcept {
+    _STD atomic_store_explicit(_Mem, _Value, memory_order_relaxed);
 }
 
 template <class _Ty>
@@ -2970,6 +3070,69 @@ inline void atomic_flag_notify_all(volatile atomic_flag* const _Flag) noexcept {
 inline void atomic_flag_notify_all(atomic_flag* const _Flag) noexcept {
     return _Flag->notify_all();
 }
+
+template <class _Ty>
+class _Locked_pointer {
+public:
+    static_assert(alignof(_Ty) >= (1 << 2), "2 low order bits are needed by _Locked_pointer");
+    static constexpr uintptr_t _Lock_mask                = 3;
+    static constexpr uintptr_t _Not_locked               = 0;
+    static constexpr uintptr_t _Locked_notify_not_needed = 1;
+    static constexpr uintptr_t _Locked_notify_needed     = 2;
+    static constexpr uintptr_t _Ptr_value_mask           = ~_Lock_mask;
+
+    constexpr _Locked_pointer() noexcept : _Storage{} {}
+    explicit _Locked_pointer(_Ty* const _Ptr) noexcept : _Storage{reinterpret_cast<uintptr_t>(_Ptr)} {}
+
+    _Locked_pointer(const _Locked_pointer&) = delete;
+    _Locked_pointer& operator=(const _Locked_pointer&) = delete;
+
+    _NODISCARD _Ty* _Lock_and_load() noexcept {
+        uintptr_t _Rep = _Storage.load(memory_order_relaxed);
+        for (;;) {
+            switch (_Rep & _Lock_mask) {
+            case _Not_locked: // Can try to lock now
+                if (_Storage.compare_exchange_weak(_Rep, _Rep | _Locked_notify_not_needed)) {
+                    return reinterpret_cast<_Ty*>(_Rep);
+                }
+                _YIELD_PROCESSOR();
+                break;
+
+            case _Locked_notify_not_needed: // Try to set "notify needed" and wait
+                if (!_Storage.compare_exchange_weak(_Rep, (_Rep & _Ptr_value_mask) | _Locked_notify_needed)) {
+                    // Failed to set notify needed flag, try again
+                    _YIELD_PROCESSOR();
+                    break;
+                }
+                _Rep = (_Rep & _Ptr_value_mask) | _Locked_notify_needed;
+                [[fallthrough]];
+
+            case _Locked_notify_needed: // "Notify needed" is already set, just wait
+                _Storage.wait(_Rep, memory_order_relaxed);
+                _Rep = _Storage.load(memory_order_relaxed);
+                break;
+
+            default: // Unrecognized bit pattern
+                _CSTD abort();
+            }
+        }
+    }
+
+    void _Store_and_unlock(_Ty* const _Value) noexcept {
+        const auto _Rep = _Storage.exchange(reinterpret_cast<uintptr_t>(_Value));
+        if ((_Rep & _Lock_mask) == _Locked_notify_needed) {
+            // As we don't count waiters, every waiter is notified, and then some may re-request notification
+            _Storage.notify_all();
+        }
+    }
+
+    _NODISCARD _Ty* _Unsafe_load_relaxed() const noexcept {
+        return reinterpret_cast<_Ty*>(_Storage.load(memory_order_relaxed));
+    }
+
+private:
+    atomic<uintptr_t> _Storage;
+};
 #endif // _HAS_CXX20
 
 _STD_END

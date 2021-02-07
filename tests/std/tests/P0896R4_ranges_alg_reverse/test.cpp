@@ -151,33 +151,21 @@ struct test_vector {
 };
 
 int main() {
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-938163
     STATIC_ASSERT((test_bidi<instantiator, nontrivial_int>(), true));
-#endif // TRANSITION, VSO-938163
     test_bidi<instantiator, nontrivial_int>();
 
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-938163
     STATIC_ASSERT((test_contiguous<test_vector, bytes<1>>(), true));
-#endif // TRANSITION, VSO-938163
     test_contiguous<test_vector, bytes<1>>();
 
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-938163
     STATIC_ASSERT((test_contiguous<test_vector, bytes<2>>(), true));
-#endif // TRANSITION, VSO-938163
     test_contiguous<test_vector, bytes<2>>();
 
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-938163
     STATIC_ASSERT((test_contiguous<test_vector, bytes<4>>(), true));
-#endif // TRANSITION, VSO-938163
     test_contiguous<test_vector, bytes<4>>();
 
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-938163
     STATIC_ASSERT((test_contiguous<test_vector, bytes<8>>(), true));
-#endif // TRANSITION, VSO-938163
     test_contiguous<test_vector, bytes<8>>();
 
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-938163
     STATIC_ASSERT((test_contiguous<test_vector, bytes<3>>(), true));
-#endif // TRANSITION, VSO-938163
     test_contiguous<test_vector, bytes<3>>();
 }

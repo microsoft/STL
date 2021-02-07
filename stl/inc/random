@@ -7,12 +7,14 @@
 #ifndef _RANDOM_
 #define _RANDOM_
 #include <yvals_core.h>
+
 #if _STL_COMPILER_PREPROCESSOR
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 #include <iosfwd>
-#include <stdint.h>
 #include <vector>
+#include <xbit_ops.h>
 #include <xstring>
 
 #pragma pack(push, _CRT_PACKING)
@@ -188,8 +190,16 @@ public:
             for (_Kx = 0; _Kx < _Mx; ++_Kx) { // scramble and add any vector contributions
                 result_type _Rx1 =
                     1664525 * _Xor27(_UFirst[_Kx % _Nx] ^ _UFirst[(_Kx + _Px) % _Nx] ^ _UFirst[(_Kx - 1) % _Nx]);
-                result_type _Rx2 = static_cast<result_type>(
-                    (_Rx1 + (_Kx == 0 ? _Sx : _Kx <= _Sx ? _Kx % _Nx + _Myvec[(_Kx - 1) % _Sx] : _Kx % _Nx)) & _Mask);
+
+                size_t _Off;
+                if (_Kx == 0) {
+                    _Off = _Sx;
+                } else if (_Kx <= _Sx) {
+                    _Off = _Kx % _Nx + _Myvec[_Kx - 1];
+                } else {
+                    _Off = _Kx % _Nx;
+                }
+                result_type _Rx2 = static_cast<result_type>((_Rx1 + _Off) & _Mask);
 
                 _UFirst[(_Kx + _Px) % _Nx] = (_UFirst[(_Kx + _Px) % _Nx] + _Rx1) & _Mask;
                 _UFirst[(_Kx + _Qx) % _Nx] = (_UFirst[(_Kx + _Qx) % _Nx] + _Rx2) & _Mask;
@@ -271,12 +281,6 @@ _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _MP_Add(_MP_arr, uint64_t) noexcept;
 _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _MP_Mul(_MP_arr, uint64_t, uint64_t) noexcept;
 _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _MP_Rem(_MP_arr, uint64_t) noexcept;
 
-#if !_HAS_IF_CONSTEXPR
-#pragma warning(push)
-#pragma warning(disable : 4309) // static_cast: truncation of constant value
-#pragma warning(disable : 4724) // potential mod by 0
-#endif // !_HAS_IF_CONSTEXPR
-
 template <class _Uint, _Uint _Ax, _Uint _Cx, _Uint _Mx>
 _NODISCARD _Uint _Next_linear_congruential_value(_Uint _Prev) noexcept {
     // Choose intermediate type:
@@ -288,20 +292,20 @@ _NODISCARD _Uint _Next_linear_congruential_value(_Uint _Prev) noexcept {
     // Divide by _Ax:
     //   _Cx <= numeric_limits<T>::max()
     //   && (_Mx - 1) <= (numeric_limits<T>::max() - _Cx) / _Ax
-    if _CONSTEXPR_IF (_Ax == 0) { // degenerate case; avoid divide by 0
+    if constexpr (_Ax == 0) { // degenerate case; avoid divide by 0
         return static_cast<_Uint>(_Cx); // relies on _Mx == 0 || _Cx <= _Mx, N4741 [rand.eng.lcong]/3
-    } else if _CONSTEXPR_IF (_Mx == 0) {
+    } else if constexpr (_Mx == 0) {
         // N4762 [rand.eng.lcong]/2: "If the template parameter m is 0, the modulus m
         // used throughout this subclause [rand.eng.lcong] is
         // numeric_limits<result_type>::max() plus 1." That is: Just do the multiply
         // and let normal unsigned modulo take care of it
         return static_cast<_Uint>(static_cast<_Uint>(_Ax * _Prev) + _Cx);
-    } else if _CONSTEXPR_IF (_Cx <= UINT_MAX && static_cast<_Uint>(_Mx - 1) <= (UINT_MAX - _Cx) / _Ax) {
+    } else if constexpr (_Cx <= UINT_MAX && static_cast<_Uint>(_Mx - 1) <= (UINT_MAX - _Cx) / _Ax) {
         // unsigned int is sufficient to store intermediate calculation
         const auto _Mul =
             static_cast<unsigned int>(_Prev) * static_cast<unsigned int>(_Ax) + static_cast<unsigned int>(_Cx);
         return static_cast<_Uint>(_Mul % _Mx);
-    } else if _CONSTEXPR_IF (_Cx <= ULLONG_MAX && static_cast<_Uint>(_Mx - 1) <= (ULLONG_MAX - _Cx) / _Ax) {
+    } else if constexpr (_Cx <= ULLONG_MAX && static_cast<_Uint>(_Mx - 1) <= (ULLONG_MAX - _Cx) / _Ax) {
         // unsigned long long is sufficient to store intermediate calculation
         const auto _Mul = static_cast<unsigned long long>(_Prev) * _Ax + _Cx;
         return static_cast<_Uint>(_Mul % _Mx);
@@ -313,10 +317,6 @@ _NODISCARD _Uint _Next_linear_congruential_value(_Uint _Prev) noexcept {
         return static_cast<_Uint>(_MP_Get(_Wx));
     }
 }
-
-#if !_HAS_IF_CONSTEXPR
-#pragma warning(pop)
-#endif // !_HAS_IF_CONSTEXPR
 
 template <class _Seed_seq>
 _NODISCARD constexpr unsigned int _Seed_seq_to_uint(_Seed_seq& _Seq) {
@@ -335,18 +335,13 @@ _NODISCARD constexpr unsigned long long _Seed_seq_to_ull(_Seed_seq& _Seq) {
     return _Result;
 }
 
-#if !_HAS_IF_CONSTEXPR
-#pragma warning(push)
-#pragma warning(disable : 4724) // potential mod by 0
-#endif // !_HAS_IF_CONSTEXPR
-
 template <class _Uint, _Uint _Cx, _Uint _Mx>
 _NODISCARD constexpr _Uint _Get_linear_congruential_seed(_Uint _Sx) noexcept { // N4741 [rand.eng.lcong]/5
-    if _CONSTEXPR_IF (_Mx != 0) {
+    if constexpr (_Mx != 0) {
         _Sx %= _Mx;
     }
 
-    if _CONSTEXPR_IF (_Cx == 0) {
+    if constexpr (_Cx == 0) {
         if (_Sx == 0) {
             _Sx = _Uint{1};
         }
@@ -358,13 +353,13 @@ _NODISCARD constexpr _Uint _Get_linear_congruential_seed(_Uint _Sx) noexcept { /
 template <class _Uint, _Uint _Cx, _Uint _Mx, class _Seed_seq>
 _NODISCARD _Uint _Get_linear_congruential_seed_from_seq(_Seed_seq& _Seq) { // N4741 [rand.eng.lcong]/6
     _Uint _Sx;
-    if _CONSTEXPR_IF (_Mx == 0) {
-        if _CONSTEXPR_IF (sizeof(_Uint) <= sizeof(unsigned int)) {
+    if constexpr (_Mx == 0) {
+        if constexpr (sizeof(_Uint) <= sizeof(unsigned int)) {
             _Sx = static_cast<_Uint>(_Seed_seq_to_uint(_Seq));
         } else {
             _Sx = static_cast<_Uint>(_Seed_seq_to_ull(_Seq));
         }
-    } else if _CONSTEXPR_IF (_Mx <= UINT_MAX) {
+    } else if constexpr (_Mx <= UINT_MAX) {
         _Sx = static_cast<_Uint>(_Seed_seq_to_uint(_Seq) % _Mx);
     } else {
         _Sx = static_cast<_Uint>(_Seed_seq_to_ull(_Seq) % _Mx);
@@ -372,10 +367,6 @@ _NODISCARD _Uint _Get_linear_congruential_seed_from_seq(_Seed_seq& _Seq) { // N4
 
     return _Get_linear_congruential_seed<_Uint, _Cx, _Mx>(_Sx);
 }
-
-#if !_HAS_IF_CONSTEXPR
-#pragma warning(pop)
-#endif // !_HAS_IF_CONSTEXPR
 
 template <class _Uint, _Uint _Ax, _Uint _Cx, _Uint _Mx>
 class linear_congruential_engine { // a linear congruential generator random engine
@@ -785,7 +776,7 @@ struct _Swc_traits { // traits for subtract_with_carry generator
     static int _Get_wc() { // compute number of 32-bit words per element
         int _Kx;
 
-        if _CONSTEXPR_IF (_Mx == 0) {
+        if constexpr (_Mx == 0) {
             _Kx = (8 * sizeof(_Ty) + 31) / 32;
         } else { // compute number of 32-bit words required
             unsigned long long _Val = 1ULL << 32;
@@ -821,7 +812,7 @@ struct _Swc_traits { // traits for subtract_with_carry generator
 #pragma warning(push)
 #pragma warning(disable : 4724) // potential mod by 0
     static _Cy_t _Reduce(_Ty* _Ax) { // reduce values to allowed range
-        if _CONSTEXPR_IF (_Mx != 0) {
+        if constexpr (_Mx != 0) {
             for (size_t _Ix = 0; _Ix < _Nw; ++_Ix) {
                 _Ax[_Ix] = _Ax[_Ix] % _Mx;
             }
@@ -915,7 +906,7 @@ public:
             }
 
             constexpr bool _Mod_non_zero = _Traits::_Mod != 0;
-            if _CONSTEXPR_IF (_Mod_non_zero) {
+            if constexpr (_Mod_non_zero) {
                 this->_Ax[_Ix] %= _Traits::_Mod;
             }
         }
@@ -1822,12 +1813,12 @@ private:
     result_type _Eval(_Engine& _Eng, _Ty _Min, _Ty _Max) const { // compute next value in range [_Min, _Max]
         _Rng_from_urng<_Uty, _Engine> _Generator(_Eng);
 
-        const _Uty _Umin = _Adjust(_Uty(_Min));
-        const _Uty _Umax = _Adjust(_Uty(_Max));
+        const _Uty _Umin = _Adjust(static_cast<_Uty>(_Min));
+        const _Uty _Umax = _Adjust(static_cast<_Uty>(_Max));
 
         _Uty _Uret;
 
-        if (_Umax - _Umin == _Uty(-1)) {
+        if (_Umax - _Umin == static_cast<_Uty>(-1)) {
             _Uret = static_cast<_Uty>(_Generator._Get_all_bits());
         } else {
             _Uret = static_cast<_Uty>(_Generator(static_cast<_Uty>(_Umax - _Umin + 1)));
@@ -1837,21 +1828,17 @@ private:
     }
 
     static _Uty _Adjust(_Uty _Uval) { // convert signed ranges to unsigned ranges and vice versa
-        return _Adjust(_Uval, is_signed<_Ty>{});
-    }
+        if constexpr (is_signed_v<_Ty>) {
+            const _Uty _Adjuster = (static_cast<_Uty>(-1) >> 1) + 1; // 2^(N-1)
 
-    static _Uty _Adjust(_Uty _Uval, true_type) { // convert signed ranges to unsigned ranges and vice versa
-        const _Uty _Adjuster = (_Uty(-1) >> 1) + 1; // 2^(N-1)
-
-        if (_Uval < _Adjuster) {
-            return static_cast<_Uty>(_Uval + _Adjuster);
-        } else {
-            return static_cast<_Uty>(_Uval - _Adjuster);
+            if (_Uval < _Adjuster) {
+                return static_cast<_Uty>(_Uval + _Adjuster);
+            } else {
+                return static_cast<_Uty>(_Uval - _Adjuster);
+            }
+        } else { // _Ty is already unsigned, do nothing
+            return _Uval;
         }
-    }
-
-    static _Uty _Adjust(_Uty _Uval, false_type) { // _Ty is already unsigned, do nothing
-        return _Uval;
     }
 
     param_type _Par;
@@ -2025,6 +2012,45 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
+// FUNCTION TEMPLATE _Float_upper_bound
+
+// Returns smallest _Flt such that static_cast<_Ty>(_Result) > _Val.
+// First truncate to largest _Flt <= _Val, then add ceil(ulp).
+
+template <class _Flt, class _Ty>
+_NODISCARD _Flt _Float_upper_bound(_Ty _Val) {
+    static_assert(is_unsigned_v<_Ty> && is_integral_v<_Ty> && is_floating_point_v<_Flt>,
+        "invalid template argument for _Float_upper_bound");
+    constexpr auto _Ty_digits  = numeric_limits<_Ty>::digits;
+    constexpr auto _Flt_digits = numeric_limits<_Flt>::digits;
+    using _Ty_32or64           = conditional_t<_Ty_digits <= 32, uint32_t, uint64_t>;
+
+    if constexpr (_Ty_digits <= _Flt_digits) {
+        return static_cast<_Flt>(_Val) + _Flt{1};
+    } else {
+#pragma warning(push)
+#pragma warning(disable : 4146 4293) // unary minus of unsigned, negative shift
+        constexpr auto _Mask = static_cast<_Ty>(-1) << (_Ty_digits - _Flt_digits);
+#ifdef _M_CEE_PURE
+        constexpr auto _Ty_32or64_digits = numeric_limits<_Ty_32or64>::digits;
+        const auto _Log_plus1 = _Ty_32or64_digits - _Countl_zero_fallback(static_cast<_Ty_32or64>(_Val | _Ty{1}));
+#else // _M_CEE_PURE
+        const auto _Log_plus1 = _Bit_scan_reverse(static_cast<_Ty_32or64>(_Val | _Ty{1}));
+#endif // _M_CEE_PURE
+        const auto _Shifted_mask = _Mask >> (_Ty_digits - _Log_plus1);
+        const auto _Ceil_ulp     = _Shifted_mask & -_Shifted_mask;
+        _Val &= _Shifted_mask;
+        if (_Val == _Mask) {
+            // integer add would overflow
+            constexpr auto _Big_ulp = static_cast<_Flt>(_Mask & -_Mask);
+            return static_cast<_Flt>(_Val) + _Big_ulp;
+        } else {
+            return static_cast<_Flt>(_Val + _Ceil_ulp);
+        }
+#pragma warning(pop)
+    }
+}
+
 // CLASS TEMPLATE geometric_distribution
 template <class _Ty = int>
 class geometric_distribution { // geometric distribution
@@ -2123,7 +2149,15 @@ public:
 private:
     template <class _Engine>
     result_type _Eval(_Engine& _Eng, const param_type& _Par0) const {
-        return static_cast<_Ty>(_CSTD log(_NRAND(_Eng, _Ty1)) / _Par0._Log_1_p);
+        using _Uty = make_unsigned_t<_Ty>;
+        constexpr auto _Ty_max{(numeric_limits<_Ty>::max)()};
+        const auto _Ty1_max{_Float_upper_bound<_Ty1>(static_cast<_Uty>(_Ty_max))};
+
+        _Ty1 _Val;
+        do {
+            _Val = _CSTD log(_NRAND(_Eng, _Ty1)) / _Par0._Log_1_p;
+        } while (_Val >= _Ty1_max);
+        return static_cast<_Ty>(_Val);
     }
 
     param_type _Par;
@@ -2287,12 +2321,17 @@ private:
         }
 
         for (;;) { // generate and reject
+            using _Uty = make_unsigned_t<_Ty>;
+            constexpr auto _Ty_max{(numeric_limits<_Ty>::max)()};
+            const auto _Ty1_max{_Float_upper_bound<_Ty1>(static_cast<_Uty>(_Ty_max))};
+
             _Ty _Res;
             _Ty1 _Yx;
             for (;;) { // generate a tentative value
-                _Yx  = static_cast<_Ty1>(_CSTD tan(_Pi * _NRAND(_Eng, _Ty1)));
-                _Res = static_cast<_Ty>(_Par0._Sqrt * _Yx + _Par0._Mean);
-                if (_Ty{0} <= _Res) {
+                _Yx = static_cast<_Ty1>(_CSTD tan(_Pi * _NRAND(_Eng, _Ty1)));
+                const _Ty1 _Mx{_Par0._Sqrt * _Yx + _Par0._Mean};
+                if (0.0 <= _Mx && _Mx < _Ty1_max) {
+                    _Res = static_cast<_Ty>(_Mx);
                     break;
                 }
             }
@@ -2469,12 +2508,16 @@ private:
             // events are rare, use Poisson distribution
             _Res = _Par0._Small(_Eng);
         } else { // no shortcuts
+            using _Uty = make_unsigned_t<_Ty>;
+            const auto _Ty1_Tx{_Float_upper_bound<_Ty1>(static_cast<_Uty>(_Par0._Tx))};
+
             for (;;) { // generate and reject
                 _Ty1 _Yx;
                 for (;;) { // generate a tentative value
-                    _Yx  = static_cast<_Ty1>(_CSTD tan(_Pi * _NRAND(_Eng, _Ty1)));
-                    _Res = static_cast<_Ty>(_Par0._Sqrt * _Yx + _Par0._Mean);
-                    if (_Ty{0} <= _Res && _Res <= _Par0._Tx) {
+                    _Yx = static_cast<_Ty1>(_CSTD tan(_Pi * _NRAND(_Eng, _Ty1)));
+                    const _Ty1 _Mx{_Par0._Sqrt * _Yx + _Par0._Mean};
+                    if (0.0 <= _Mx && _Mx < _Ty1_Tx) {
+                        _Res = static_cast<_Ty>(_Mx);
                         break;
                     }
                 }
@@ -2932,15 +2975,32 @@ private:
             _Ty _Vx1;
             _Ty _Vx2;
             _Ty _Sx;
-            for (;;) { // reject bad values
+            for (;;) { // reject bad values to avoid generating NaN/Inf on the next calculations
                 _Vx1 = 2 * _NRAND(_Eng, _Ty) - 1;
                 _Vx2 = 2 * _NRAND(_Eng, _Ty) - 1;
                 _Sx  = _Vx1 * _Vx1 + _Vx2 * _Vx2;
-                if (_Sx < 1) {
+                if (_Sx < _Ty{1} && _Vx1 != _Ty{0} && _Vx2 != _Ty{0}) {
+                    // good values!
                     break;
                 }
             }
-            const auto _Fx = static_cast<_Ty>(_CSTD sqrt(-2.0 * _CSTD log(_Sx) / _Sx));
+
+            _Ty _LogSx;
+            if (_Sx > _Ty{1e-4}) {
+                _LogSx = _STD log(_Sx);
+            } else {
+                // Bad _Sx value! Very small values will overflow log(_Sx) / _Sx.
+                // Generate a new value based on scaling method.
+                const _Ty _Ln2{_Ty{0.69314718055994530941723212145818}};
+                const _Ty _Maxabs{(_STD max)(_STD abs(_Vx1), _STD abs(_Vx2))};
+                const int _ExpMax{_STD ilogb(_Maxabs)};
+                _Vx1   = _STD scalbn(_Vx1, -_ExpMax);
+                _Vx2   = _STD scalbn(_Vx2, -_ExpMax);
+                _Sx    = _Vx1 * _Vx1 + _Vx2 * _Vx2;
+                _LogSx = _STD log(_Sx) + static_cast<_Ty>(_ExpMax) * (_Ln2 * 2);
+            }
+
+            const auto _Fx = _Ty{_STD sqrt(_Ty{-2} * _LogSx / _Sx)};
             if (_Keep) { // save second value for next call
                 _Xx2   = _Fx * _Vx2;
                 _Valid = true;
@@ -3122,7 +3182,7 @@ private:
             return _Par0._Beta * _Par0._Exp(_Eng);
         }
 
-        if ((_Count = static_cast<int>(_Par0._Alpha)) == _Par0._Alpha && _Count < 20) {
+        if (_Par0._Alpha < 20.0 && (_Count = static_cast<int>(_Par0._Alpha)) == _Par0._Alpha) {
             // _Alpha is small integer, compute directly
             _Yx = _NRAND(_Eng, _Ty);
             while (--_Count) { // adjust result
@@ -3864,7 +3924,7 @@ public:
                 _Px1 = _CSTD pow(_Px1, _Ty{1} / _Ax);
                 _Px2 = _CSTD pow(_Px2, _Ty{1} / _Bx);
                 _Wx  = _Px1 + _Px2;
-                if (_Wx <= _Ty{1}) {
+                if (_Wx <= _Ty{1} && _Wx != _Ty{0}) {
                     break;
                 }
             }
@@ -3872,11 +3932,21 @@ public:
         } else { // use gamma distributions instead
             _Ty _Px1;
             _Ty _Px2;
+            _Ty _PSum;
             gamma_distribution<_Ty> _Dist1(_Ax, 1);
             gamma_distribution<_Ty> _Dist2(_Bx, 1);
-            _Px1 = _Dist1(_Eng);
-            _Px2 = _Dist2(_Eng);
-            return _Px1 / (_Px1 + _Px2);
+
+            for (;;) { // reject pairs whose sum is zero
+                _Px1  = _Dist1(_Eng);
+                _Px2  = _Dist2(_Eng);
+                _PSum = _Px1 + _Px2;
+
+                if (_PSum != _Ty{0}) {
+                    break;
+                }
+            }
+
+            return _Px1 / _PSum;
         }
     }
 
@@ -4001,12 +4071,18 @@ private:
         _Ty _Px;
         _Ty _Vx1;
         _Ty _Vx2;
+        const _Ty _Vx3{1};
         _Vx1 = static_cast<_Ty>(_Par0._Mx) * static_cast<_Ty>(0.5);
         _Vx2 = static_cast<_Ty>(_Par0._Nx) * static_cast<_Ty>(0.5);
         _Beta_distribution<_Ty> _Dist(_Vx1, _Vx2);
-        _Px = _Dist(_Eng);
+        for (;;) { // reject bad values
+            _Px = _Dist(_Eng);
+            if (_Px != _Vx3) {
+                break;
+            }
+        }
 
-        return (_Vx2 / _Vx1) * (_Px / (_Ty{1} - _Px));
+        return (_Vx2 / _Vx1) * (_Px / (_Vx3 - _Px));
     }
 
     param_type _Par;
@@ -4137,13 +4213,13 @@ private:
             _Vx2 = _Dist(_Eng);
             _Rs  = _Vx1 * _Vx1 + _Vx2 * _Vx2;
 
-            if (_Rs < _Ty{1}) {
+            // very small _Rs will overflow on pow(_Rx0, -_Ty{4} / _Par0._Nx)
+            if (_Rs < _Ty{1} && _Rs > _Ty{1e-12}) {
                 break;
             }
         }
-        _Rx0 = _CSTD sqrt(_Rs);
-
-        return _Vx1 * _CSTD sqrt(_Par0._Nx * (_CSTD pow(_Rx0, -_Ty{4} / _Par0._Nx) - _Ty{1}) / _Rs);
+        _Rx0 = _STD sqrt(_Rs);
+        return _Vx1 * _STD sqrt(_Par0._Nx * (_STD pow(_Rx0, -_Ty{4} / _Par0._Nx) - _Ty{1}) / _Rs);
     }
 
     param_type _Par;
@@ -4791,7 +4867,7 @@ public:
 
         _NODISCARD double _Piece_probability(const size_t _Idx) const {
             return 0.5 * (this->_Pvec[_Idx] + this->_Pvec[_Idx + 1])
-                   * static_cast<double>(_Bvec[_Idx + 1] - _Bvec[_Idx]);
+                 * static_cast<double>(_Bvec[_Idx + 1] - _Bvec[_Idx]);
         }
 
         void _Init(bool _Renorm = true) { // initialize

@@ -34,45 +34,10 @@ STATIC_ASSERT(std::same_as<std::make_unsigned_t<std::ptrdiff_t>, std::size_t>);
 template <class T>
 concept Decayed = std::same_as<std::decay_t<T>, T>;
 
-// clang-format off
 template <class R>
-concept CanBegin = requires(R&& r) { ranges::begin(std::forward<R>(r)); };
-template <class R>
-concept CanEnd = requires(R&& r) { ranges::end(std::forward<R>(r)); };
-
-template <class R>
-concept CanCBegin = requires(R&& r) { ranges::cbegin(std::forward<R>(r)); };
-template <class R>
-concept CanCEnd = requires(R&& r) {ranges::cend(std::forward<R>(r)); };
-
-template <class R>
-concept CanRBegin = requires(R&& r) { ranges::rbegin(std::forward<R>(r)); };
-template <class R>
-concept CanREnd = requires(R&& r) { ranges::rend(std::forward<R>(r)); };
-
-template <class R>
-concept CanCRBegin = requires(R&& r) { ranges::crbegin(std::forward<R>(r)); };
-template <class R>
-concept CanCREnd = requires(R&& r) { ranges::crend(std::forward<R>(r)); };
-
-template <class R>
-concept CanEmpty = requires(R&& r) { ranges::empty(std::forward<R>(r)); };
-
-template <class R>
-concept CanSize = requires(R&& r) { ranges::size(std::forward<R>(r)); };
-
-template <class R>
-concept CanSSize = requires(R&& r) { ranges::ssize(std::forward<R>(r)); };
-
-template <class R>
-concept CanSizeType = requires { typename ranges::range_size_t<R>; };
-
-template <class R>
-concept CanData = requires(R&& r) { ranges::data(std::forward<R>(r)); };
-
-template <class R>
-concept CanCData = requires(R&& r) { ranges::cdata(std::forward<R>(r)); };
-// clang-format on
+concept CanSizeType = requires {
+    typename ranges::range_size_t<R>;
+};
 
 struct invalid_type {};
 
@@ -107,6 +72,14 @@ constexpr bool test_cpo(T const& obj) {
 
     return true;
 }
+
+STATIC_ASSERT(test_cpo(std::strong_order));
+STATIC_ASSERT(test_cpo(std::weak_order));
+STATIC_ASSERT(test_cpo(std::partial_order));
+STATIC_ASSERT(test_cpo(std::compare_strong_order_fallback));
+STATIC_ASSERT(test_cpo(std::compare_weak_order_fallback));
+STATIC_ASSERT(test_cpo(std::compare_partial_order_fallback));
+
 STATIC_ASSERT(test_cpo(ranges::swap));
 STATIC_ASSERT(test_cpo(ranges::iter_swap));
 STATIC_ASSERT(test_cpo(ranges::iter_move));
@@ -124,7 +97,20 @@ STATIC_ASSERT(test_cpo(ranges::empty));
 STATIC_ASSERT(test_cpo(ranges::data));
 STATIC_ASSERT(test_cpo(ranges::cdata));
 
+STATIC_ASSERT(test_cpo(ranges::views::all));
+STATIC_ASSERT(test_cpo(ranges::views::common));
+STATIC_ASSERT(test_cpo(ranges::views::counted));
+STATIC_ASSERT(test_cpo(ranges::views::drop));
+STATIC_ASSERT(test_cpo(ranges::views::drop_while));
+STATIC_ASSERT(test_cpo(ranges::views::elements<42>));
+STATIC_ASSERT(test_cpo(ranges::views::filter));
+STATIC_ASSERT(test_cpo(ranges::views::keys));
+STATIC_ASSERT(test_cpo(ranges::views::reverse));
 STATIC_ASSERT(test_cpo(ranges::views::single));
+STATIC_ASSERT(test_cpo(ranges::views::take));
+STATIC_ASSERT(test_cpo(ranges::views::take_while));
+STATIC_ASSERT(test_cpo(ranges::views::transform));
+STATIC_ASSERT(test_cpo(ranges::views::values));
 
 void test_cpo_ambiguity() {
     using namespace std::ranges;
@@ -1512,8 +1498,8 @@ namespace borrowed_range_testing {
     STATIC_ASSERT(test_borrowed_range<std::span<int>, std::span<int>::iterator>());
     STATIC_ASSERT(test_borrowed_range<std::span<int, 42>, std::span<int, 42>::iterator>());
     STATIC_ASSERT(test_borrowed_range<ranges::subrange<int*, int*>, int*>());
-#if 0 // TRANSITION, future
     STATIC_ASSERT(test_borrowed_range<ranges::ref_view<int[42]>, int*>());
+#if 0 // TRANSITION, future
     STATIC_ASSERT(test_borrowed_range<ranges::iota_view<int, int>, ...>());
 #endif // TRANSITION, future
 

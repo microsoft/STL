@@ -11,6 +11,8 @@
 #endif // _VCRT_ALLOW_INTERNALS
 
 #include <Unknwn.h>
+#include <cstdlib> // for abort
+#include <cstring> // for memcpy
 #include <eh.h>
 #include <ehdata.h>
 #include <exception>
@@ -18,9 +20,7 @@
 #include <malloc.h>
 #include <memory>
 #include <new>
-#include <stddef.h>
 #include <stdexcept>
-#include <string.h>
 #include <trnsctrl.h>
 #include <xcall_once.h>
 
@@ -444,7 +444,7 @@ _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrAssign(_Inout_ void* _D
 _CRTIMP2_PURE bool __CLRCALL_PURE_OR_CDECL __ExceptionPtrCompare(
     _In_ const void* _Lhs, _In_ const void* _Rhs) noexcept {
     return *static_cast<const shared_ptr<const _EXCEPTION_RECORD>*>(_Lhs)
-           == *static_cast<const shared_ptr<const _EXCEPTION_RECORD>*>(_Rhs);
+        == *static_cast<const shared_ptr<const _EXCEPTION_RECORD>*>(_Rhs);
 }
 
 _CRTIMP2_PURE bool __CLRCALL_PURE_OR_CDECL __ExceptionPtrToBool(_In_ const void* _Ptr) noexcept {
@@ -510,7 +510,7 @@ _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrCurrentException(void* 
         const auto _PType = reinterpret_cast<CatchableType*>(
             static_cast<uintptr_t>(_CatchableTypeArray->arrayOfCatchableTypes[0]) + _ThrowImageBase);
 #else // ^^^ _EH_RELATIVE_TYPEINFO // !_EH_RELATIVE_TYPEINFO vvv
-        const auto _PType              = _PThrow->pCatchableTypeArray->arrayOfCatchableTypes[0];
+        const auto _PType = _PThrow->pCatchableTypeArray->arrayOfCatchableTypes[0];
 #endif // _EH_RELATIVE_TYPEINFO
 
         // Alloc memory on stack for exception object. This might cause a stack overflow SEH exception, or another C++

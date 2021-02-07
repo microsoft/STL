@@ -10,16 +10,15 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional
 import copy
-import itertools
 import errno
+import itertools
 import os
+import re
 import shutil
-import time
 
-import lit.Test        # pylint: disable=import-error
-import lit.TestRunner  # pylint: disable=import-error
+import lit
 
-from stl.test.tests import STLTest, LibcxxTest
+from stl.test.tests import LibcxxTest, STLTest, TestType
 import stl.test.file_parsing
 import stl.util
 
@@ -27,265 +26,230 @@ import stl.util
 @dataclass
 class TestStep:
     cmd: List[str] = field(default_factory=list)
-    work_dir: os.PathLike = field(default=Path('.'))
-    file_deps: List[os.PathLike] = field(default_factory=list)
+    workDir: os.PathLike = field(default=Path('.'))
     env: Dict[str, str] = field(default_factory=dict)
-    should_fail: bool = field(default=False)
+    shouldFail: bool = field(default=False)
+
+def _mergeEnvironments(currentEnv, otherEnv):
+    """Merges two execution environments.
+
+    If both environments contain PATH variables, they are also merged
+    using the proper separator.
+    """
+    resultEnv = dict(currentEnv)
+    for k, v in otherEnv.items():
+        if k == 'PATH':
+            oldPath = currentEnv.get(k, '')
+            if oldPath != '':
+                resultEnv[k] = ';'.join((oldPath, v))
+            else:
+                resultEnv[k] = v
+        else:
+            resultEnv[k] = v
+
+    return resultEnv
+
+def _getEnvLst(sourcePath, localConfig):
+    envlstPath = getattr(localConfig, 'envlst_path', None)
+    if envlstPath is None:
+        cwd = Path(sourcePath)
+        if (cwd / 'env.lst').is_file():
+            envlstPath = cwd / 'env.lst'
+        else:
+            for parent in cwd.parents:
+                if (parent / 'env.lst').is_file():
+                    envlstPath = parent / 'env.lst'
+                    break
+
+    return envlstPath
+
+def _isLegalDirectory(sourcePath, test_subdirs):
+    for prefix in test_subdirs:
+        common = os.path.normpath(os.path.commonpath((sourcePath, prefix)))
+        if common == sourcePath or common == prefix:
+            return True
+
+    return False
 
 
 class STLTestFormat:
     """
     Custom test format handler to run MSVC tests.
     """
-
-    def __init__(self, default_cxx, execute_external,
-                 build_executor, test_executor):
-        self.cxx = default_cxx
-        self.execute_external = execute_external
-        self.build_executor = build_executor
-        self.test_executor = test_executor
-
-    def isLegalDirectory(self, source_path, litConfig):
-        found = False
-        for prefix in getattr(litConfig, 'test_subdirs', []):
-            if os.path.commonpath((source_path, prefix)) == prefix or \
-                    os.path.commonpath((prefix, source_path)) == source_path:
-                found = True
-                break
-
-        return found
-
-    def getEnvLst(self, source_path, localConfig):
-        envlst_path = getattr(localConfig, 'envlst_path', None)
-        if envlst_path is None:
-            cwd = Path(source_path)
-            if (cwd / 'env.lst').is_file():
-                envlst_path = cwd / 'env.lst'
-            else:
-                for parent in cwd.parents:
-                    if (parent / 'env.lst').is_file():
-                        envlst_path = parent / 'env.lst'
-                        break
-
-        return envlst_path
-
-    def getTestsInDirectory(self, testSuite, path_in_suite,
-                            litConfig, localConfig, test_class=STLTest):
-        source_path = testSuite.getSourcePath(path_in_suite)
-
-        if not self.isLegalDirectory(source_path, litConfig):
+    def getTestsInDirectory(self, testSuite, pathInSuite, litConfig, localConfig, testClass=STLTest):
+        sourcePath = testSuite.getSourcePath(pathInSuite)
+        if not _isLegalDirectory(sourcePath, litConfig.test_subdirs[localConfig.name]):
             return
 
-        envlst_path = self.getEnvLst(source_path, localConfig)
+        envlstPath = _getEnvLst(sourcePath, localConfig)
 
-        for filename in os.listdir(source_path):
+        envEntries = None
+        if envlstPath is not None:
+            envEntries = stl.test.file_parsing.parse_env_lst_file(envlstPath)
+            formatString = '{:0' + str(len(str(len(envEntries)))) + 'd}'
+
+        sourcePath = testSuite.getSourcePath(pathInSuite)
+        for filename in os.listdir(sourcePath):
             # Ignore dot files and excluded tests.
-            filepath = os.path.join(source_path, filename)
-            if filename.startswith('.'):
+            if filename.startswith('.') or filename in localConfig.excludes:
                 continue
 
+            filepath = os.path.join(sourcePath, filename)
             if not os.path.isdir(filepath):
-                if any([filename.endswith(ext)
-                        for ext in localConfig.suffixes]):
-
-                    if envlst_path is None:
+                if any([re.search(ext, filename) for ext in localConfig.suffixes]):
+                    if envEntries is None:
                         litConfig.fatal("Could not find an env.lst file.")
 
-                    env_entries = \
-                        stl.test.file_parsing.parse_env_lst_file(envlst_path)
-                    format_string = "{:0" + str(len(str(len(env_entries)))) + \
-                                    "d}"
-                    for env_entry, env_num \
-                            in zip(env_entries, itertools.count()):
-                        test_config = copy.deepcopy(localConfig)
-                        test_path_in_suite = path_in_suite + (filename,)
+                    for envEntry, envNum in zip(envEntries, itertools.count()):
+                        yield testClass(testSuite, pathInSuite + (filename,),
+                                        litConfig, localConfig, envEntry,
+                                        formatString.format(envNum))
 
-                        yield test_class(testSuite,
-                                         test_path_in_suite,
-                                         litConfig, test_config,
-                                         env_entry,
-                                         format_string.format(env_num),
-                                         self.cxx)
+    def getIsenseRspFileSteps(self, test, litConfig, shared):
+        if litConfig.edg_drop is not None and test.isenseRspPath is not None:
+            with open(test.isenseRspPath) as f:
+                cmd = [line.strip() for line in f]
+            cmd[0] = litConfig.edg_drop
 
-    def setup(self, test):
-        exec_dir = test.getExecDir()
-        output_dir = test.getOutputDir()
-        source_dir = Path(test.getSourcePath()).parent
-
-        shutil.rmtree(exec_dir, ignore_errors=True)
-        shutil.rmtree(output_dir, ignore_errors=True)
-        exec_dir.mkdir(parents=True, exist_ok=True)
-        output_dir.mkdir(parents=True, exist_ok=True)
-
-        # TRANSITION: This should be handled by a TestStep with a dependency
-        # on the .dat files the test requires.
-        for path in source_dir.iterdir():
-            if path.is_file() and path.name.endswith('.dat'):
-                shutil.copy2(path, exec_dir / path.name)
-
-    def cleanup(self, test):
-        shutil.rmtree(test.getExecDir(), ignore_errors=True)
-        shutil.rmtree(test.getOutputDir(), ignore_errors=True)
-
-    def getIntegratedScriptResult(self, test, lit_config):
-        if test.skipped:
-            return (lit.Test.SKIPPED, "Test was marked as skipped")
-
-        name = test.path_in_suite[-1]
-        name_root, name_ext = os.path.splitext(name)
-        is_sh_test = name_root.endswith('.sh')
-        is_objcxx_test = name.endswith('.mm')
-
-        if is_sh_test:
-            return (lit.Test.UNSUPPORTED,
-                    "Sh tests are currently unsupported")
-
-        if is_objcxx_test:
-            return (lit.Test.UNSUPPORTED,
-                    "Objective-C tests are unsupported")
-
-        if test.config.unsupported:
-            return (lit.Test.UNSUPPORTED,
-                    "A lit.local.cfg marked this unsupported")
-
-        if lit_config.noExecute:
-            return lit.Test.Result(lit.Test.PASS)
-
-        if test.expected_result is None:
-            script = lit.TestRunner.parseIntegratedTestScript(
-                test, require_script=False)
-
-            if isinstance(script, lit.Test.Result):
-                return script
-
-        return None
-
-    def execute(self, test, lit_config):
-        result = None
-        while True:
+            # cpfecl translates /Fo into --import_dir, but that is not
+            # used in the same way by upstream EDG.
             try:
-                result = self._execute(test, lit_config)
-                break
-            except OSError as oe:
-                if oe.errno != errno.ETXTBSY:
-                    raise
-                time.sleep(0.1)
+                index = cmd.index('--import_dir')
+                cmd.pop(index)
+                cmd.pop(index)
+            except ValueError:
+                pass
 
-        return result
+            # --print_diagnostics is not recognized by upstream EDG.
+            try:
+                index = cmd.index('--print_diagnostics')
+                cmd.pop(index)
+            except ValueError:
+                pass
 
-    def _execute(self, test, lit_config):
-        # TRANSITION: It is potentially wasteful that all the skipping and
-        # unsupported logic lives here when it is known at time of test
-        # discovery. Investigate
-        script_result = self.getIntegratedScriptResult(test, lit_config)
-        if script_result is not None:
-            return script_result
+            yield TestStep(cmd, shared.execDir, shared.env, False)
 
-        try:
-            self.setup(test)
-            pass_var, fail_var = test.getPassFailResultCodes()
-            buildSteps, testSteps = self.getSteps(test, lit_config)
+    def runStep(self, testStep, litConfig):
+        if str(testStep.workDir) == '.':
+            testStep.workDir = os.getcwd()
 
-            report = ""
-            for step in buildSteps:
-                cmd, out, err, rc = \
-                    self.build_executor.run(step.cmd, step.work_dir,
-                                            step.file_deps, step.env)
+        env = _mergeEnvironments(os.environ, testStep.env)
 
-                if step.should_fail and rc == 0:
-                    report += "Build step succeeded unexpectedly.\n"
-                elif rc != 0:
-                    report += "Build step failed unexpectedly.\n"
+        return testStep.cmd, *stl.util.executeCommand(testStep.cmd, cwd=testStep.workDir, env=env)
 
-                report += stl.util.makeReport(cmd, out, err, rc)
-                if (step.should_fail and rc == 0) or \
-                        (not step.should_fail and rc != 0):
-                    lit_config.note(report)
-                    return lit.Test.Result(fail_var, report)
-
-            for step in testSteps:
-                cmd, out, err, rc = \
-                    self.test_executor.run(step.cmd, step.work_dir,
-                                           step.file_deps, step.env)
-
-                if step.should_fail and rc == 0:
-                    report += "Test step succeeded unexpectedly.\n"
-                elif rc != 0:
-                    report += "Test step failed unexpectedly.\n"
-
-                report += stl.util.makeReport(cmd, out, err, rc)
-                if (step.should_fail and rc == 0) or \
-                        (not step.should_fail and rc != 0):
-                    lit_config.note(report)
-                    return lit.Test.Result(fail_var, report)
-
-            return lit.Test.Result(pass_var, report)
-
-        except Exception as e:
-            lit_config.warning(str(e))
-            raise e
-        finally:
-            self.cleanup(test)
-
-    def getSteps(self, test, lit_config):
+    def getStages(self, test, litConfig):
         @dataclass
         class SharedState:
-            exec_file: Optional[os.PathLike] = field(default=None)
-            exec_dir: os.PathLike = field(default_factory=Path)
+            execFile: Optional[os.PathLike] = field(default=None)
+            execDir: os.PathLike = field(default_factory=Path)
+            env: Dict[str, str] = field(default_factory=dict)
 
-        shared = SharedState()
-        return self.getBuildSteps(test, lit_config, shared), \
-            self.getTestSteps(test, lit_config, shared)
+        execDir, _ = test.getTempPaths()
+        shared = SharedState(None, execDir, copy.deepcopy(litConfig.test_env))
+        shared.env['TMP'] = execDir
+        shared.env['TEMP'] = execDir
+        shared.env['TMPDIR'] = execDir
+        shared.env['TEMPDIR'] = execDir
 
-    def getBuildSteps(self, test, lit_config, shared):
-        if not test.path_in_suite[-1].endswith('.fail.cpp'):
-            shared.exec_dir = test.getExecDir()
-            output_base = test.getOutputBaseName()
-            output_dir = test.getOutputDir()
-            source_path = Path(test.getSourcePath())
+        return [
+            ('Build setup', self.getBuildSetupSteps(test, litConfig, shared), True),
+            ('Build', self.getBuildSteps(test, litConfig, shared), True),
+            ('Intellisense response file', self.getIsenseRspFileSteps(test, litConfig, shared), False),
+            ('Test setup', self.getTestSetupSteps(test, litConfig, shared), False),
+            ('Test', self.getTestSteps(test, litConfig, shared), False)]
 
-            cmd, out_files, shared.exec_file = \
-                test.cxx.executeBasedOnFlagsCmd([source_path], output_dir,
-                                                shared.exec_dir, output_base,
-                                                [], [], [])
+    def getBuildSetupSteps(self, test, litConfig, shared):
+        shutil.rmtree(shared.execDir, ignore_errors=True)
+        Path(shared.execDir).mkdir(parents=True, exist_ok=True)
 
-            yield TestStep(cmd, shared.exec_dir, [source_path],
-                           test.cxx.compile_env)
+        # Makes this function a generator which yields nothing
+        yield from []
 
-    def getTestSteps(self, test, lit_config, shared):
-        if shared.exec_file is not None:
-            exec_env = test.cxx.compile_env
-            exec_env['TMP'] = str(shared.exec_dir)
+    def getBuildSteps(self, test, litConfig, shared):
+        filename = test.path_in_suite[-1]
+        _, tmpBase = test.getTempPaths()
 
-            yield TestStep([str(shared.exec_file)], shared.exec_dir,
-                           [shared.exec_file], exec_env)
-        elif test.path_in_suite[-1].endswith('.fail.cpp'):
-            exec_dir = test.getExecDir()
-            source_path = Path(test.getSourcePath())
+        shouldFail = TestType.FAIL in test.testType
+        if TestType.COMPILE in test.testType:
+            cmd = [test.cxx, '-c', test.getSourcePath(), *test.flags, *test.compileFlags]
+            yield TestStep(cmd, shared.execDir, shared.env, shouldFail)
+        elif TestType.LINK in test.testType:
+            objFile = tmpBase + '.o'
+            cmd = [test.cxx, '-c', test.getSourcePath(), *test.flags, *test.compileFlags, '-Fo' + objFile]
+            yield TestStep(cmd, shared.execDir, shared.env, False)
 
-            flags = []
-            if test.cxx.name == 'cl' and \
-                    ('/analyze' in test.cxx.flags or
-                     '/analyze' in test.cxx.compile_flags):
-                output_base = test.getOutputBaseName()
-                output_dir = test.getOutputDir()
-                analyze_path = output_dir / (output_base +
-                                             '.nativecodeanalysis.xml')
-                flags.append('/analyze:log' + str(analyze_path))
+            exeFile = tmpBase + '.exe'
+            cmd = [test.cxx, objFile, *test.flags, '-Fe' + exeFile, '-link', *test.linkFlags]
+            yield TestStep(cmd, shared.execDir, shared.env, shouldFail)
+        elif TestType.RUN in test.testType:
+            shared.execFile = tmpBase + '.exe'
+            cmd = [test.cxx, test.getSourcePath(), *test.flags, *test.compileFlags,
+                   '-Fe' + shared.execFile, '-link', *test.linkFlags]
+            yield TestStep(cmd, shared.execDir, shared.env, False)
 
-            cmd, _ = test.cxx.compileCmd([source_path], os.devnull, flags)
-            yield TestStep(cmd, exec_dir, [source_path],
-                           test.cxx.compile_env, True)
+    def getTestSetupSteps(self, test, litConfig, shared):
+        if TestType.RUN in test.testType:
+            for dependency in test.fileDependencies:
+                if not os.path.isabs(dependency):
+                    dependency = os.path.join(os.path.dirname(test.getSourcePath()), dependency)
+                shutil.copy2(dependency, os.path.join(shared.execDir, os.path.basename(dependency)))
+
+        yield from []
+
+    def getTestSteps(self, test, litConfig, shared):
+        if not TestType.RUN in test.testType:
+            yield from []
+            return
+
+        shouldFail = TestType.FAIL in test.testType
+        yield TestStep([shared.execFile], shared.execDir, shared.env, shouldFail)
+
+    def execute(self, test, litConfig):
+        try:
+            result = test.configureTest(litConfig)
+            if result:
+                return result
+
+            # This test is expected to fail at some point, but we're not sure if
+            # it should fail during the build phase or the test phase.
+            someFail = test.expectedResult and test.expectedResult.isFailure
+
+            stages = self.getStages(test, litConfig)
+
+            report = ''
+            for stageName, steps, isBuildStep in stages:
+                if not isBuildStep and litConfig.build_only:
+                    continue
+
+                report += stageName + ' steps:\n'
+                for step in steps:
+                    cmd, out, err, rc = self.runStep(step, litConfig)
+
+                    if step.shouldFail and rc == 0:
+                        report += stageName + ' step succeeded unexpectedly.\n'
+                    elif rc != 0:
+                        report += stageName + ' step failed unexpectedly.\n'
+
+                    report += stl.util.makeReport(cmd, out, err, rc)
+                    if (step.shouldFail and rc == 0) or (not step.shouldFail and rc != 0):
+                        if someFail:
+                            test.xfails = ['*']
+                        return (lit.Test.FAIL, report)
+
+            return (lit.Test.PASS, '')
+
+        except Exception as e:
+            litConfig.error(repr(e))
 
 
 class LibcxxTestFormat(STLTestFormat):
     """
     Custom test format handler to run the libcxx tests for the MSVC STL.
     """
-    def getTestsInDirectory(self, testSuite, path_in_suite,
-                            litConfig, localConfig, test_class=LibcxxTest):
-        return super().getTestsInDirectory(testSuite, path_in_suite, litConfig,
-                                           localConfig, test_class)
+    def getTestsInDirectory(self, testSuite, pathInSuite,
+                            litConfig, localConfig, testClass=LibcxxTest):
+        return super().getTestsInDirectory(testSuite, pathInSuite, litConfig,
+                                           localConfig, testClass)
 
     def addCompileFlags(self, *args):
         # For now, this is necessary to discard the value of

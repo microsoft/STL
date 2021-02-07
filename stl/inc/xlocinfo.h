@@ -9,10 +9,10 @@
 #include <yvals.h>
 #if _STL_COMPILER_PREPROCESSOR
 
-#include <ctype.h>
-#include <locale.h>
-#include <stdio.h> // TRANSITION, VSO-661721
-#include <wchar.h>
+#include <cctype>
+#include <clocale>
+#include <cstdio> // TRANSITION, VSO-661721
+#include <cwchar>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -22,19 +22,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _EXTERN_C_UNLESS_PURE
-
-// CTYPE CODE BITS
-#define _XB 0x000 // extra blank
-#define _XA 0x100 // extra alphabetic
-#define _XS 0x000 // extra space
-#define _BB _CONTROL // BEL, BS, etc.
-#define _CN _SPACE // CR, FF, HT, NL, VT
-#define _DI _DIGIT // '0'-'9'
-#define _LO _LOWER // 'a'-'z'
-#define _PU _PUNCT // punctuation
-#define _SP _BLANK // space
-#define _UP _UPPER // 'A'-'Z'
-#define _XD _HEX // '0'-'9', 'A'-'F', 'a'-'f'
 
 // SUPPLEMENTAL LOCALE MACROS AND DECLARATIONS
 #define _X_ALL      LC_ALL

@@ -9,6 +9,10 @@ set(STL_TESTED_HEADERS_DIR "${STL_BUILD_ROOT}/inc")
 
 set(LLVM_PROJECT_SOURCE_DIR "${STL_SOURCE_DIR}/llvm-project" CACHE PATH
     "Location of the llvm-project source tree")
+set(LIBCXX_SOURCE_DIR "${LLVM_PROJECT_SOURCE_DIR}/libcxx" CACHE PATH
+    "Location of the libcxx source tree")
+
+option(TESTS_BUILD_ONLY "Only run the build steps of tests" OFF)
 
 add_subdirectory(libcxx)
 add_subdirectory(std)
@@ -18,7 +22,7 @@ add_subdirectory(tr1)
 # chance to add to the config map and test directory global properties.
 add_subdirectory(utils/stl-lit)
 
-find_package(Python "3.8" REQUIRED COMPONENTS Interpreter)
+find_package(Python "3.9" REQUIRED COMPONENTS Interpreter)
 
 if(NOT DEFINED LIT_FLAGS)
     list(APPEND LIT_FLAGS "-o" "${CMAKE_CURRENT_BINARY_DIR}/test_results.json")

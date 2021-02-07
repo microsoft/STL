@@ -36,6 +36,21 @@ struct instantiator {
             assert(ranges::equal(output, expected_output));
             assert(result == ranges::begin(output));
         }
+        { // Validate int is properly converted to bool
+            bool output[] = {false, true, false};
+            fill_n(ranges::begin(output), ranges::distance(output), 5);
+            for (const bool& elem : output) {
+                assert(elem == true);
+            }
+        }
+        { // Validate zero-ing
+            int output[] = {13, 42, 1367};
+            auto result  = fill_n(ranges::begin(output), ranges::distance(output), 0);
+            for (const auto& elem : output) {
+                assert(elem == 0);
+            }
+            assert(result == ranges::end(output));
+        }
     }
 };
 

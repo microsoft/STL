@@ -9,6 +9,7 @@
 #include <compare>
 #include <concepts>
 #include <deque>
+#include <filesystem>
 #include <forward_list>
 #include <functional>
 #include <iostream>
@@ -22,6 +23,7 @@
 #include <stack>
 #include <string>
 #include <system_error>
+#include <thread>
 #include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
@@ -660,6 +662,62 @@ void ordering_test_cases() {
     }
     { // pair
         tuple_like_test<std::pair>();
+    }
+    { // filesystem::space_info
+        constexpr std::filesystem::space_info si1{4'000'000'000'000, 2'000'000'000'000, 1'000'000'000'000};
+        constexpr std::filesystem::space_info si2{4'000'000'000'000, 2'000'000'000'000, 1'000'000'000'000};
+        constexpr std::filesystem::space_info si3{4'000'000'000'000, 2'000'000'000'000, 2'000'000'000'000};
+        constexpr std::filesystem::space_info si4{4'000'000'000'000, 3'000'000'000'000, 1'000'000'000'000};
+        constexpr std::filesystem::space_info si5{3'000'000'000'000, 2'000'000'000'000, 1'000'000'000'000};
+
+        static_assert(si1 == si2);
+        static_assert(si1 != si3);
+        static_assert(si1 != si4);
+        static_assert(si1 != si5);
+
+        assert(si1 == si2);
+        assert(si1 != si3);
+        assert(si1 != si4);
+        assert(si1 != si5);
+    }
+    { // filesystem::path
+        const std::filesystem::path p1{R"(a/b/c)"};
+        const std::filesystem::path p2{LR"(a\b\c)"};
+        const std::filesystem::path p3{R"(a/b/d)"};
+
+        spaceship_test<std::strong_ordering>(p1, p2, p3);
+    }
+    { // filesystem::file_status
+        std::filesystem::file_status s1;
+        s1.type(std::filesystem::file_type::regular);
+        s1.permissions(std::filesystem::perms{0755});
+
+        std::filesystem::file_status s2 = s1;
+
+        std::filesystem::file_status s3 = s1;
+        s3.type(std::filesystem::file_type::directory);
+
+        std::filesystem::file_status s4 = s1;
+        s4.permissions(std::filesystem::perms{0600});
+
+        assert(s1 == s2);
+        assert(s1 != s3);
+        assert(s1 != s4);
+    }
+    { // filesystem::directory_entry
+        const std::filesystem::directory_entry de1{u8R"(a/b/c)"};
+        const std::filesystem::directory_entry de2{uR"(a\b\c)"};
+        const std::filesystem::directory_entry de3{u8R"(a/b/d)"};
+
+        spaceship_test<std::strong_ordering>(de1, de2, de3);
+    }
+    { // thread::id
+        std::thread::id id1;
+        std::thread::id id1_equal;
+        std::thread::id id2 = std::this_thread::get_id();
+
+        // Implementation-specific assumption: std::thread::id{} occurs first in the unspecified total ordering.
+        spaceship_test<std::strong_ordering>(id1, id1_equal, id2);
     }
 }
 

@@ -8,7 +8,7 @@
 #define _THR_XTHREADS_H
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
-#include <limits.h>
+#include <climits>
 #include <xtimec.h>
 
 #pragma pack(push, _CRT_PACKING)
