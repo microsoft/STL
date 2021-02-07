@@ -158,11 +158,10 @@ void test_format_arg_store() {
 
     test_empty_format_arg<Context>();
 
+    test_single_format_arg<Context, char, Arg_type::char_type>(42);
     if constexpr (is_same_v<char_type, char>) {
-        test_single_format_arg<Context, char, Arg_type::char_type>(42);
         test_single_format_arg<Context, wchar_t, Arg_type::unsigned_type>(42);
     } else {
-        test_single_format_arg<Context, char, Arg_type::char_type>(42);
         test_single_format_arg<Context, wchar_t, Arg_type::char_type>(42);
     }
     test_single_format_arg<Context, unsigned char, Arg_type::unsigned_type>(42);
