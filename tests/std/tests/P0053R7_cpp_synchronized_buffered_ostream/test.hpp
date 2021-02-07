@@ -42,6 +42,21 @@ public:
 };
 
 template <class Ty>
+class allocator_base {
+public:
+    using value_type = Ty;
+    using pointer    = Ty*;
+
+    _NODISCARD __declspec(allocator) pointer allocate(_CRT_GUARDOVERFLOW const size_t _Count) {
+        return static_cast<pointer>(allocator<value_type>{}.allocate(_Count));
+    }
+
+    void deallocate(pointer const _Ptr, const size_t _Count) noexcept {
+        allocator<value_type>{}.deallocate(_Ptr, _Count);
+    }
+};
+
+template <class Ty>
 class fancy_ptr {
 private:
     uint64_t ptr = 0;
@@ -67,8 +82,8 @@ template <class Ty>
 class fancy_ptr_allocator {
 public:
     using value_type                             = Ty;
-    using size_type                              = size_t;
     using pointer                                = fancy_ptr<Ty>;
+    using size_type                              = size_t;
     using propagate_on_container_move_assignment = true_type;
     using propagate_on_container_swap            = true_type;
 
@@ -116,22 +131,12 @@ _NODISCARD bool operator==(
 }
 
 template <class Ty>
-class small_size_allocator : public small_size_allocation {
+class small_size_allocator : public allocator_base<Ty>, public small_size_allocation {
 public:
-    using value_type                             = Ty;
-    using pointer                                = Ty*;
     using propagate_on_container_move_assignment = true_type;
     using propagate_on_container_swap            = true_type;
 
     constexpr small_size_allocator() noexcept = default;
-
-    _NODISCARD __declspec(allocator) pointer allocate(_CRT_GUARDOVERFLOW const size_t _Count) {
-        return static_cast<pointer>(allocator<value_type>{}.allocate(_Count));
-    }
-
-    void deallocate(pointer const _Ptr, const size_t _Count) noexcept {
-        allocator<value_type>{}.deallocate(_Ptr, _Count);
-    }
 };
 
 template <class Ty, class Other>
@@ -140,28 +145,14 @@ _NODISCARD bool operator==(const small_size_allocator<Ty>&, const small_size_all
 }
 
 template <class Ty>
-class non_move_assignable_non_equal_allocator {
+class non_move_assignable_non_equal_allocator : public allocator_base<Ty> {
 public:
-    using value_type                             = Ty;
     using size_type                              = size_t;
-    using pointer                                = Ty*;
     using propagate_on_container_move_assignment = false_type;
     using propagate_on_container_swap            = true_type;
     using is_always_equal                        = false_type;
 
     constexpr non_move_assignable_non_equal_allocator() noexcept = default;
-
-    _NODISCARD __declspec(allocator) pointer allocate(_CRT_GUARDOVERFLOW const size_t _Count) {
-        return static_cast<pointer>(allocator<value_type>{}.allocate(_Count));
-    }
-
-    void deallocate(pointer const _Ptr, const size_t _Count) noexcept {
-        allocator<value_type>{}.deallocate(_Ptr, _Count);
-    }
-
-    _NODISCARD size_type max_size() const noexcept {
-        return 50;
-    }
 };
 
 template <class Ty, class Other>
@@ -171,23 +162,13 @@ _NODISCARD bool operator==(const non_move_assignable_non_equal_allocator<Ty>&,
 }
 
 template <class Ty>
-class non_move_assignable_equal_allocator {
+class non_move_assignable_equal_allocator : public allocator_base<Ty> {
 public:
-    using value_type                             = Ty;
     using size_type                              = size_t;
-    using pointer                                = Ty*;
     using propagate_on_container_move_assignment = false_type;
     using propagate_on_container_swap            = true_type;
 
     constexpr non_move_assignable_equal_allocator() noexcept = default;
-
-    _NODISCARD __declspec(allocator) pointer allocate(_CRT_GUARDOVERFLOW const size_t _Count) {
-        return static_cast<pointer>(allocator<value_type>{}.allocate(_Count));
-    }
-
-    void deallocate(pointer const _Ptr, const size_t _Count) noexcept {
-        allocator<value_type>{}.deallocate(_Ptr, _Count);
-    }
 };
 
 template <class Ty, class Other>
@@ -197,23 +178,13 @@ _NODISCARD bool operator==(
 }
 
 template <class Ty>
-class non_swapable_equal_allocator {
+class non_swapable_equal_allocator : public allocator_base<Ty> {
 public:
-    using value_type                             = Ty;
     using size_type                              = size_t;
-    using pointer                                = Ty*;
     using propagate_on_container_move_assignment = true_type;
     using propagate_on_container_swap            = false_type;
 
     constexpr non_swapable_equal_allocator() noexcept = default;
-
-    _NODISCARD __declspec(allocator) pointer allocate(_CRT_GUARDOVERFLOW const size_t _Count) {
-        return static_cast<pointer>(allocator<value_type>{}.allocate(_Count));
-    }
-
-    void deallocate(pointer const _Ptr, const size_t _Count) noexcept {
-        allocator<value_type>{}.deallocate(_Ptr, _Count);
-    }
 };
 
 template <class Ty, class Other>
