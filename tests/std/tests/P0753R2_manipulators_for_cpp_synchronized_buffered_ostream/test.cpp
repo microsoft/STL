@@ -1,4 +1,10 @@
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
 #include <assert.h>
+#include <ios>
+#include <memory>
+#include <streambuf>
 #include <string>
 #include <syncstream>
 #include <type_traits>
@@ -11,9 +17,9 @@ public:
     string_buffer()  = default;
     ~string_buffer() = default;
 
-    streamsize xsputn(const Ty* _Ptr, streamsize _Count) override {
-        str.append(_Ptr, static_cast<string::size_type>(_Count));
-        return _Count;
+    streamsize xsputn(const Ty* ptr, streamsize n) override {
+        str.append(ptr, static_cast<string::size_type>(n));
+        return n;
     }
 
     int sync() override {
@@ -27,30 +33,21 @@ public:
     string str;
 };
 
-template <class Elem, class Traits>
-class Test_Basic_syncbuf : public _Basic_syncbuf_impl<Elem, Traits> {
-    using Mybase = _Basic_syncbuf_impl<Elem, Traits>;
-
-public:
-    Test_Basic_syncbuf()                            = default;
-    Test_Basic_syncbuf(Test_Basic_syncbuf&& _Right) = default;
-
-    using Mybase::_Emit_on_sync;
-};
 
 template <class Ty, class Alloc = void, bool ThrowOnSync = false>
-requires(is_base_of_v<basic_ostream<typename Ty::char_type, typename Ty::traits_type>,
-    Ty>) void test_osyncstream_manipulators(string_buffer<typename Ty::char_type, ThrowOnSync>* buf = nullptr) {
+void test_osyncstream_manipulators(string_buffer<typename Ty::char_type, ThrowOnSync>* buf = nullptr) {
     using char_type   = typename Ty::char_type;
     using traits_type = typename Ty::traits_type;
+
+    static_assert(is_base_of_v<basic_ostream<char_type, traits_type>, Ty>);
 
     Ty os{buf};
     os << "Some input";
 
     assert(addressof(emit_on_flush(os)) == addressof(os));
     if constexpr (is_base_of_v<basic_osyncstream<char_type, traits_type, Alloc>, Ty>) {
-        auto* aSyncbuf = reinterpret_cast<Test_Basic_syncbuf<char_type, traits_type>*>(os.rdbuf());
-        assert(aSyncbuf->_Emit_on_sync == true);
+        auto* aSyncbuf = static_cast<basic_syncbuf<char_type, traits_type, Alloc>*>(os.rdbuf());
+        assert(aSyncbuf->_Stl_internal_check_get_emit_on_sync() == true);
         if (buf) {
             assert(buf->str == "");
         }
@@ -63,6 +60,7 @@ requires(is_base_of_v<basic_ostream<typename Ty::char_type, typename Ty::traits_
         } else {
             assert(os.rdstate() == (buf ? ios::goodbit : ios::badbit));
         }
+
         if (buf) {
             assert(buf->str == "Some input");
             buf->str.clear();
@@ -73,8 +71,8 @@ requires(is_base_of_v<basic_ostream<typename Ty::char_type, typename Ty::traits_
 
     assert(addressof(noemit_on_flush(os)) == addressof(os));
     if constexpr (is_base_of_v<basic_osyncstream<char_type, traits_type, Alloc>, Ty>) {
-        auto* aSyncbuf = reinterpret_cast<Test_Basic_syncbuf<char_type, traits_type>*>(os.rdbuf());
-        assert(aSyncbuf->_Emit_on_sync == false);
+        auto* aSyncbuf = static_cast<basic_syncbuf<char_type, traits_type, Alloc>*>(os.rdbuf());
+        assert(aSyncbuf->_Stl_internal_check_get_emit_on_sync() == false);
     }
 
     assert(addressof(flush_emit(os)) == addressof(os));
@@ -94,7 +92,7 @@ requires(is_base_of_v<basic_ostream<typename Ty::char_type, typename Ty::traits_
 int main() {
     string_buffer<char> char_buffer{};
     string_buffer<char, true> no_sync_char_buffer{};
-#ifdef _CPPRTTI
+
     test_osyncstream_manipulators<basic_ostream<char>>();
     test_osyncstream_manipulators<basic_osyncstream<char, char_traits<char>, allocator<char>>, allocator<char>>();
 
@@ -105,5 +103,4 @@ int main() {
     test_osyncstream_manipulators<basic_ostream<char>>(&no_sync_char_buffer);
     test_osyncstream_manipulators<basic_osyncstream<char, char_traits<char>, allocator<char>>, allocator<char>>(
         &no_sync_char_buffer);
-#endif
 }

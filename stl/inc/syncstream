@@ -42,6 +42,12 @@ public:
 
     virtual bool _Do_emit() = 0;
 
+#ifdef _ENABLE_STL_INTERNAL_CHECK
+    _NODISCARD bool _Stl_internal_check_get_emit_on_sync() const noexcept {
+        return _Emit_on_sync;
+    }
+#endif // _ENABLE_STL_INTERNAL_CHECK
+
 protected:
     using _Mysb = basic_streambuf<_Elem, _Traits>;
 

@@ -6,10 +6,11 @@
 using namespace std;
 
 static_assert(is_default_constructible_v<syncbuf>);
-static_assert(is_constructible_v<syncbuf, typename syncbuf::streambuf_type*>);
-static_assert(is_constructible_v<syncbuf, typename syncbuf::streambuf_type*, typename syncbuf::allocator_type>);
+static_assert(is_constructible_v<syncbuf, syncbuf::streambuf_type*>);
+static_assert(is_constructible_v<syncbuf, syncbuf::streambuf_type*, syncbuf::allocator_type>);
 static_assert(is_move_constructible_v<syncbuf>);
 static_assert(is_move_assignable_v<syncbuf>);
+static_assert(is_swappable_v<syncbuf>);
 static_assert(is_destructible_v<syncbuf>);
 
 template <class Elem, class Traits, class Alloc>
@@ -17,18 +18,18 @@ class test_syncbuf : public basic_syncbuf<Elem, Traits, Alloc> {
 public:
     using size_type      = typename Alloc::size_type;
     using value_type     = typename Alloc::value_type;
-    using _Mybase        = basic_syncbuf<Elem, Traits, Alloc>;
-    using streambuf_type = typename _Mybase::streambuf_type;
+    using Mybase         = basic_syncbuf<Elem, Traits, Alloc>;
+    using streambuf_type = typename Mybase::streambuf_type;
 
-    using _Mybase::epptr;
-    using _Mybase::pbase;
-    using _Mybase::pptr;
+    using Mybase::epptr;
+    using Mybase::pbase;
+    using Mybase::pptr;
 
     test_syncbuf() = default;
 
-    explicit test_syncbuf(streambuf_type* _Strbuf) : _Mybase(_Strbuf) {}
+    explicit test_syncbuf(streambuf_type* strbuf) : Mybase(strbuf) {}
 
-    test_syncbuf(streambuf_type* _Strbuf, const Alloc& _Al) : _Mybase(_Strbuf, _Al) {}
+    test_syncbuf(streambuf_type* strbuf, const Alloc& al) : Mybase(strbuf, al) {}
 
     test_syncbuf(test_syncbuf&&) = default;
     test_syncbuf& operator=(test_syncbuf&&) = default;
@@ -60,7 +61,7 @@ void test_syncbuf_member_functions(string_buffer<typename Alloc::value_type>* bu
     assert(aSyncbuf.get_wrapped() == buf);
     assert(aSyncbuf.get_allocator() == alloc);
     assert(aSyncbuf.Test_get_data_size() == 0);
-    assert(aSyncbuf.Test_get_buffer_size() == _Min_syncbuf_size);
+    assert(aSyncbuf.Test_get_buffer_size() == Min_syncbuf_size);
 
     // check emit post-conditions with no input
     if (buf) {
@@ -89,8 +90,8 @@ void test_syncbuf_member_functions(string_buffer<typename Alloc::value_type>* bu
         assert(buf->str == "A string holds more than 32 characters");
         buf->str.clear();
     } else {
-        assert(aSyncbuf.Test_get_data_size() == _Min_syncbuf_size); // if _Wrapped is nullptr, re-allocation will not
-                                                                    // occur and will return a _Traits::eof bit
+        assert(aSyncbuf.Test_get_data_size() == Min_syncbuf_size); // if _Wrapped is nullptr, re-allocation will not
+                                                                   // occur and will return a _Traits::eof bit
         assert(os.rdstate() == ios::badbit);
         os.setstate(ios::goodbit);
         assert(aSyncbuf.emit() == false);
@@ -99,7 +100,7 @@ void test_syncbuf_member_functions(string_buffer<typename Alloc::value_type>* bu
     os << "A string that will definitely overflow the small_size_allocator"; // requires more than one re-allocation
     if (buf) {
         if constexpr (is_base_of_v<small_size_allocation, Alloc>) { // fail to allocate enough memory
-            assert(aSyncbuf.Test_get_data_size() == _Min_size_allocation);
+            assert(aSyncbuf.Test_get_data_size() == Min_size_allocation);
             assert(os.rdstate() == ios::badbit);
             os.setstate(ios::goodbit);
             assert(aSyncbuf.emit() == true);
@@ -112,7 +113,7 @@ void test_syncbuf_member_functions(string_buffer<typename Alloc::value_type>* bu
         }
         buf->str.clear();
     } else {
-        assert(aSyncbuf.Test_get_data_size() == _Min_syncbuf_size);
+        assert(aSyncbuf.Test_get_data_size() == Min_syncbuf_size);
         assert(os.rdstate() == ios::badbit);
         os.setstate(ios::goodbit);
         assert(aSyncbuf.emit() == false);
@@ -157,7 +158,7 @@ void test_syncbuf_synchronization(string_buffer<typename Alloc::value_type, Thro
             Syncbuf buf2{buf};
             buf2.set_emit_on_sync(true);
             OStream os2{&buf2};
-            os2 << "First element to by emitted by sync!\n";
+            os2 << "First element to be emitted by sync!\n";
             int syncResult = buf2.pubsync(); // trigger a sync
             if constexpr (ThrowOnSync) {
                 assert(syncResult == -1);
@@ -173,7 +174,7 @@ void test_syncbuf_synchronization(string_buffer<typename Alloc::value_type, Thro
         os1 << "to be presented!\n";
     }
     assert(buf->str
-           == "First element to by emitted by sync!\nSecond element to be presented!\nThird element to be "
+           == "First element to be emitted by sync!\nSecond element to be presented!\nThird element to be "
               "presented!\nLast element to be presented!\n");
     buf->str.clear();
 }
@@ -223,9 +224,9 @@ void test_syncbuf_move_swap_operations(string_buffer<typename Alloc::value_type>
         assert(buf1.Test_get_data_size() == 0);
 
         if constexpr (allocator_traits<Alloc>::propagate_on_container_move_assignment::value
-                      && is_same_v<typename allocator_traits<Alloc>::is_always_equal, true_type>) {
+                      && allocator_traits<Alloc>::is_always_equal::value) {
             assert(buf1.get_allocator() == buf2.get_allocator());
-        } else if constexpr (is_same_v<typename allocator_traits<Alloc>::is_always_equal, true_type>) {
+        } else if constexpr (allocator_traits<Alloc>::is_always_equal::value) {
             assert(buf1.get_allocator() == buf2.get_allocator());
         } else {
             assert(buf1.get_allocator() != buf2.get_allocator());
@@ -244,7 +245,7 @@ void test_syncbuf_move_swap_operations(string_buffer<typename Alloc::value_type>
         auto buf2BufferSize    = buf2.Test_get_buffer_size();
         auto buf2DataSize      = buf2.Test_get_data_size();
         if constexpr (allocator_traits<Alloc>::propagate_on_container_swap::value
-                      || is_same_v<typename allocator_traits<Alloc>::is_always_equal, true_type>) {
+                      || allocator_traits<Alloc>::is_always_equal::value) {
             buf1.swap(buf2);
             assert(buf2.get_wrapped() == buf1WrappedObject);
             assert(buf2.Test_get_buffer_size() == buf1BufferSize);
@@ -380,7 +381,7 @@ int main() {
     test_syncbuf_move_swap_operations<fancy_ptr_allocator<char>>(&char_buffer);
     test_syncbuf_move_swap_operations<non_move_assignable_non_equal_allocator<char>>(&char_buffer);
     test_syncbuf_move_swap_operations<non_move_assignable_equal_allocator<char>>(&char_buffer);
-    test_syncbuf_move_swap_operations<non_swapable_equal_allocator<char>>(&char_buffer);
+    test_syncbuf_move_swap_operations<non_swappable_equal_allocator<char>>(&char_buffer);
 
     // Testing basic_osyncstream
     test_osyncstream<allocator<char>>();
