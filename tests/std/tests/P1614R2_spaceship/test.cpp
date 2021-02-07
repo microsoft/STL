@@ -24,14 +24,12 @@
 #include <string>
 #include <system_error>
 #include <thread>
+#include <tuple>
 #include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
-
-template <class T>
-using SpaceshipType = std::compare_three_way_result_t<T, T>;
 
 using PartiallyOrdered = double;
 struct WeaklyOrdered {};
@@ -562,10 +560,10 @@ void ordering_test_cases() {
         using PartiallyOrderedMatch = std::sub_match<std::basic_string<PartiallyOrderedChar>::const_iterator>;
 
         // TRANSITION, std::char_traits<char> doesn't define comparison_category
-        static_assert(std::is_same_v<SpaceshipType<StronglyOrderedMatch>, std::weak_ordering>);
-        static_assert(std::is_same_v<SpaceshipType<WeaklyOrderedMatch>, std::weak_ordering>);
-        static_assert(std::is_same_v<SpaceshipType<WeaklyOrderdByOmissionMatch>, std::weak_ordering>);
-        static_assert(std::is_same_v<SpaceshipType<PartiallyOrderedMatch>, std::partial_ordering>);
+        static_assert(std::is_same_v<std::compare_three_way_result_t<StronglyOrderedMatch>, std::weak_ordering>);
+        static_assert(std::is_same_v<std::compare_three_way_result_t<WeaklyOrderedMatch>, std::weak_ordering>);
+        static_assert(std::is_same_v<std::compare_three_way_result_t<WeaklyOrderdByOmissionMatch>, std::weak_ordering>);
+        static_assert(std::is_same_v<std::compare_three_way_result_t<PartiallyOrderedMatch>, std::partial_ordering>);
     }
     { // Diagnostics Library
         diagnostics_test<std::error_code>();
@@ -599,7 +597,7 @@ void ordering_test_cases() {
     { // optional
         optional_test<0, 0, 1>();
 
-#if defined(__cpp_nontype_template_args) && __cpp_non_type_template_args >= 201911
+#if defined(__cpp_nontype_template_args) && __cpp_nontype_template_args >= 201911
         optional_test<0.0, 0.0, 1.0>();
 #endif
 
@@ -724,23 +722,23 @@ void ordering_test_cases() {
 template <class Element, class Ordering>
 void test_element_ordering() {
     if constexpr (!std::is_same_v<Element, SynthOrdered>) { // SynthOrdered inherently doesn't support <=> directly
-        static_assert(std::is_same_v<SpaceshipType<Element>, Ordering>);
+        static_assert(std::is_same_v<std::compare_three_way_result_t<Element>, Ordering>);
     }
 
     static_assert(std::is_same_v<SpaceshipType<std::array<Element, 3>>, Ordering>);
-    static_assert(std::is_same_v<SpaceshipType<std::deque<Element>>, Ordering>);
-    static_assert(std::is_same_v<SpaceshipType<std::list<Element>>, Ordering>);
-    static_assert(std::is_same_v<SpaceshipType<std::vector<Element>>, Ordering>);
+    static_assert(std::is_same_v<std::compare_three_way_result_t<std::deque<Element>>, Ordering>);
+    static_assert(std::is_same_v<std::compare_three_way_result_t<std::list<Element>>, Ordering>);
+    static_assert(std::is_same_v<std::compare_three_way_result_t<std::vector<Element>>, Ordering>);
     static_assert(std::is_same_v<SpaceshipType<std::forward_list<Element>>, Ordering>);
 
     static_assert(std::is_same_v<SpaceshipType<std::map<Element, Element>>, Ordering>);
     static_assert(std::is_same_v<SpaceshipType<std::multimap<Element, Element>>, Ordering>);
 
-    static_assert(std::is_same_v<SpaceshipType<std::set<Element>>, Ordering>);
-    static_assert(std::is_same_v<SpaceshipType<std::multiset<Element>>, Ordering>);
+    static_assert(std::is_same_v<std::compare_three_way_result_t<std::set<Element>>, Ordering>);
+    static_assert(std::is_same_v<std::compare_three_way_result_t<std::multiset<Element>>, Ordering>);
 
-    static_assert(std::is_same_v<SpaceshipType<std::queue<Element>>, Ordering>);
-    static_assert(std::is_same_v<SpaceshipType<std::stack<Element>>, Ordering>);
+    static_assert(std::is_same_v<std::compare_three_way_result_t<std::queue<Element>>, Ordering>);
+    static_assert(std::is_same_v<std::compare_three_way_result_t<std::stack<Element>>, Ordering>);
 }
 
 int main() {

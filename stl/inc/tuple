@@ -684,11 +684,10 @@ public:
     }
 
 #ifdef __cpp_lib_concepts
-    template <class _Other_first, class... _Other_rest>
-    constexpr common_comparison_category_t<_Synth_three_way_result<_This, _Other_first>,
-        decltype(declval<const tuple<_Rest...>>()._Three_way_compare(declval<const tuple<_Other_rest...>>()))>
-        _Three_way_compare(const tuple<_Other_first, _Other_rest...>& _Right) const {
-        if (auto _Result = _Synth_three_way()(_Myfirst._Val, _Right._Myfirst._Val); _Result != 0) {
+    template <class _First, class... _Other>
+    constexpr common_comparison_category_t<_Synth_three_way_result<_This_type, _First>, _Synth_three_way_result<_Rest, _Other>>
+        _Three_way_compare(const tuple<_First, _Other...>& _Right) const {
+        if (auto _Result = _Synth_three_way{}(_Myfirst._Val, _Right._Myfirst._Val); _Result != 0) {
             return _Result;
         }
         return _Mybase::_Three_way_compare(_Right._Get_rest());
@@ -757,7 +756,8 @@ _NODISCARD constexpr bool operator==(const tuple<_Types1...>& _Left, const tuple
 
 #ifdef __cpp_lib_concepts
 template <class... _Types1, class... _Types2>
-_NODISCARD constexpr auto operator<=>(const tuple<_Types1...>& _Left, const tuple<_Types2...>& _Right) {
+_NODISCARD constexpr common_comparison_category_t<_Synth_three_way_result<_Types1, _Types2>...> operator<=>(
+    const tuple<_Types1...>& _Left, const tuple<_Types2...>& _Right) {
     static_assert(sizeof...(_Types1) == sizeof...(_Types2), "cannot compare tuples of different sizes");
     return _Left._Three_way_compare(_Right);
 }
@@ -791,10 +791,12 @@ _NODISCARD constexpr bool operator<=(const tuple<_Types1...>& _Left, const tuple
 }
 #endif // TRANSITION, VSO-900973
 #else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#if !_HAS_CXX20
 template <class... _Types1, class... _Types2>
 _NODISCARD constexpr bool operator!=(const tuple<_Types1...>& _Left, const tuple<_Types2...>& _Right) {
     return !(_Left == _Right);
 }
+#endif// !_HAS_CXX20
 
 template <class... _Types1, class... _Types2>
 _NODISCARD constexpr bool operator<(const tuple<_Types1...>& _Left, const tuple<_Types2...>& _Right) {

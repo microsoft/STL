@@ -732,7 +732,7 @@ _NODISCARD auto operator<=>(const sub_match<_BidIt>& _Left, const sub_match<_Bid
 }
 
 #if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-900973
-// The compiler incorrectly performs overload resolution by preferring implicit conversions over rewrites.
+// Overload resolution prefers implicit conversions over re-writes.
 // In C++20 mode the only required comparison operators should be == and <=>.
 template <class _BidIt>
 _NODISCARD bool operator!=(const sub_match<_BidIt>& _Left, const sub_match<_BidIt>& _Right) {
@@ -1066,7 +1066,7 @@ _NODISCARD auto operator<=>(
 }
 
 #if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-900973
-// The compiler incorrectly performs overload resolution by preferring implicit conversions over rewrites.
+// Overload resolution prefers implicit conversions over re-writes.
 // In C++20 mode the only required comparison operators should be == and <=>.
 template <class _BidIt, class _Traits, class _Alloc>
 _NODISCARD auto operator<=>(
