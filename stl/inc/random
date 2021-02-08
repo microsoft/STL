@@ -1264,7 +1264,7 @@ public:
         }
 
         if (_Sum == 0) {
-            this->_Ax[0] = this->_WMSK;
+            this->_Ax[0] = _Ty{1} << (_Wx - 1);
         }
 
         this->_Idx = _Nx;
