@@ -82,23 +82,42 @@ template <class Ty, class Other>
     return true;
 }
 
+class non_move_assignable_non_equal_allocator_id {
+public:
+    non_move_assignable_non_equal_allocator_id() : id(id_gen++) {}
+    constexpr non_move_assignable_non_equal_allocator_id(size_t _id) : id(_id) {}
+    ~non_move_assignable_non_equal_allocator_id() = default;
+
+    size_t id;
+
+private:
+    static size_t id_gen;
+};
+size_t non_move_assignable_non_equal_allocator_id::id_gen = 0;
+
 template <class Ty>
-class non_move_assignable_non_equal_allocator : public allocator_base<Ty> {
+class non_move_assignable_non_equal_allocator : public non_move_assignable_non_equal_allocator_id,
+                                                public allocator_base<Ty> {
 public:
     using size_type                              = size_t;
     using propagate_on_container_move_assignment = false_type;
     using propagate_on_container_swap            = true_type;
     using is_always_equal                        = false_type;
 
-    constexpr non_move_assignable_non_equal_allocator() noexcept = default;
+    non_move_assignable_non_equal_allocator() noexcept = default;
 
     template <class Other>
-    constexpr non_move_assignable_non_equal_allocator(const non_move_assignable_non_equal_allocator<Other>&) noexcept {}
+    constexpr non_move_assignable_non_equal_allocator(
+        const non_move_assignable_non_equal_allocator<Other>& rhs) noexcept
+        : non_move_assignable_non_equal_allocator_id{rhs.id} {}
 };
 
 template <class Ty, class Other>
-[[nodiscard]] bool operator==(const non_move_assignable_non_equal_allocator<Ty>&,
-    const non_move_assignable_non_equal_allocator<Other>&) noexcept {
+[[nodiscard]] bool operator==(const non_move_assignable_non_equal_allocator<Ty>& lhs,
+    const non_move_assignable_non_equal_allocator<Other>& rhs) noexcept {
+    if (lhs.id == rhs.id) {
+        return true;
+    }
     return false;
 }
 
