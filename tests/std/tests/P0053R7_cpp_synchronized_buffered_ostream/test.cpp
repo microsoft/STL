@@ -364,21 +364,14 @@ int main() {
     // Testing basic_syncbuf
     test_syncbuf_member_functions<allocator<char>>();
     test_syncbuf_member_functions<small_size_allocator<char>>();
-    test_syncbuf_member_functions<fancy_ptr_allocator<char>>();
-    test_syncbuf_member_functions<small_size_fancy_ptr_allocator<char>>();
 
     test_syncbuf_member_functions<small_size_allocator<char>>(&char_buffer);
     test_syncbuf_member_functions<allocator<char>>(&char_buffer);
-    test_syncbuf_member_functions<fancy_ptr_allocator<char>>(&char_buffer);
-    test_syncbuf_member_functions<small_size_fancy_ptr_allocator<char>>(&char_buffer);
 
     test_syncbuf_synchronization<allocator<char>>(&char_buffer);
     test_syncbuf_synchronization<allocator<char>>(&no_sync_char_buffer);
-    test_syncbuf_synchronization<fancy_ptr_allocator<char>>(&char_buffer);
-    test_syncbuf_synchronization<fancy_ptr_allocator<char>>(&no_sync_char_buffer);
 
     test_syncbuf_move_swap_operations<allocator<char>>(&char_buffer);
-    test_syncbuf_move_swap_operations<fancy_ptr_allocator<char>>(&char_buffer);
     test_syncbuf_move_swap_operations<non_move_assignable_non_equal_allocator<char>>(&char_buffer);
     test_syncbuf_move_swap_operations<non_move_assignable_equal_allocator<char>>(&char_buffer);
     test_syncbuf_move_swap_operations<non_swappable_equal_allocator<char>>(&char_buffer);
@@ -386,11 +379,7 @@ int main() {
     // Testing basic_osyncstream
     test_osyncstream<allocator<char>>();
     test_osyncstream<small_size_allocator<char>>();
-    test_osyncstream<fancy_ptr_allocator<char>>();
-    test_osyncstream<small_size_fancy_ptr_allocator<char>>();
 
     test_osyncstream<allocator<char>>(&char_buffer);
     test_osyncstream<small_size_allocator<char>>(&char_buffer);
-    test_osyncstream<fancy_ptr_allocator<char>>(&char_buffer);
-    test_osyncstream<small_size_fancy_ptr_allocator<char>>(&char_buffer);
 }
