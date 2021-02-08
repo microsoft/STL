@@ -67,8 +67,8 @@ struct soccc_allocator {
 using vec = vector<bool, soccc_allocator<bool>>;
 
 _CONSTEXPR20_CONTAINER bool test_interface() {
-#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) \
-    || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1270433, VSO-1275530
+#if defined(__EDG__) \
+    || _ITERATOR_DEBUG_LEVEL != 2 // || defined(_MSVC_INTERNAL_TESTING) // TRANSITION, VSO-1270433, VSO-1275530
     { // constructors
 
 // Non allocator constructors
@@ -512,14 +512,14 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         assert(ne);
 #endif // __EDG__
     }
-#endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2
+#endif // defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 || defined(MSVC_INTERNAL_TESTING)
 
     return true;
 }
 
 _CONSTEXPR20_CONTAINER bool test_iterators() {
-#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) \
-    || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1270433, VSO-1275530
+#if defined(__EDG__) \
+    || _ITERATOR_DEBUG_LEVEL != 2 // || defined(_MSVC_INTERNAL_TESTING) // TRANSITION, VSO-1270433, VSO-1275530
 #ifndef __EDG__ // TRANSITION, VSO-1274387
     vec range_constructed(begin(input), end(input));
 
@@ -615,7 +615,7 @@ _CONSTEXPR20_CONTAINER bool test_iterators() {
     }
 #endif // __EDG__
 #endif // !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2
-#endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2
+#endif // defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 || defined(MSVC_INTERNAL_TESTING)
 
     return true;
 }
