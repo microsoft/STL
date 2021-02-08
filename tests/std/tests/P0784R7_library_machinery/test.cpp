@@ -138,7 +138,7 @@ _CONSTEXPR20_DYNALLOC bool test() {
             assert(equal(begin(input), end(input), begin(expected_after_move), end(expected_after_move)));
         }
     }
-#endif // _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc)
+#endif // _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc) && (defined(__clang__) || defined(__EDG__))
     return true;
 }
 
