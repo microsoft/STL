@@ -1118,7 +1118,19 @@ protected:
     _Post_satisfies_(this->_Idx == 0)
 
         void _Refill_lower() { // compute values for the lower half of the history array
-        if constexpr (_M_mod_n > 0) {
+        if constexpr (_M_mod_n == 0) {
+            for (size_t _Ix = 0; _Ix < _Nx - _One_mod_n; ++_Ix) { // fill in values
+                const _Ty _Tmp = (this->_Ax[_Ix + _Nx] & _HMSK) | (this->_Ax[_Ix + _Nx + _One_mod_n] & _LMSK);
+                this->_Ax[_Ix] = (_Tmp >> 1) ^ (_Tmp & 1 ? _Px : 0) ^ this->_Ax[_Ix + _Nx + _M_mod_n];
+            }
+
+            if constexpr (_One_mod_n == 1) { // fill in _Ax[_Nx - 1]
+                constexpr size_t _Ix = _Nx - _One_mod_n;
+
+                const _Ty _Tmp = (this->_Ax[_Ix + _Nx] & _HMSK) | (this->_Ax[_Ix - _Nx + _One_mod_n] & _LMSK);
+                this->_Ax[_Ix] = (_Tmp >> 1) ^ (_Tmp & 1 ? _Px : 0) ^ this->_Ax[_Ix + _Nx + _M_mod_n];
+            }
+        } else {
             for (size_t _Ix = 0; _Ix < _Nx - _M_mod_n; ++_Ix) { // fill in lower region
                 const _Ty _Tmp = (this->_Ax[_Ix + _Nx] & _HMSK) | (this->_Ax[_Ix + _Nx + _One_mod_n] & _LMSK);
                 this->_Ax[_Ix] = (_Tmp >> 1) ^ (_Tmp & 1 ? _Px : 0) ^ this->_Ax[_Ix + _Nx + _M_mod_n];
@@ -1135,18 +1147,6 @@ protected:
 
                 const _Ty _Tmp = (this->_Ax[_Ix + _Nx] & _HMSK) | (this->_Ax[_Ix - _Nx + _One_mod_n] & _LMSK);
                 this->_Ax[_Ix] = (_Tmp >> 1) ^ (_Tmp & 1 ? _Px : 0) ^ this->_Ax[_Ix - _Nx + _M_mod_n];
-            }
-        } else {
-            for (size_t _Ix = 0; _Ix < _Nx - _One_mod_n; ++_Ix) { // fill in values
-                const _Ty _Tmp = (this->_Ax[_Ix + _Nx] & _HMSK) | (this->_Ax[_Ix + _Nx + _One_mod_n] & _LMSK);
-                this->_Ax[_Ix] = (_Tmp >> 1) ^ (_Tmp & 1 ? _Px : 0) ^ this->_Ax[_Ix + _Nx + _M_mod_n];
-            }
-
-            if constexpr (_One_mod_n == 1) { // fill in _Ax[_Nx - 1]
-                constexpr size_t _Ix = _Nx - _One_mod_n;
-
-                const _Ty _Tmp = (this->_Ax[_Ix + _Nx] & _HMSK) | (this->_Ax[_Ix - _Nx + _One_mod_n] & _LMSK);
-                this->_Ax[_Ix] = (_Tmp >> 1) ^ (_Tmp & 1 ? _Px : 0) ^ this->_Ax[_Ix + _Nx + _M_mod_n];
             }
         }
 
