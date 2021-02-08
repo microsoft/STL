@@ -1119,31 +1119,34 @@ protected:
 
         void _Refill_lower() { // compute values for the lower half of the history array
         if constexpr (_M_mod_n > 0) {
-            size_t _Ix;
-            for (_Ix = 0; _Ix < _Nx - _M_mod_n; ++_Ix) { // fill in lower region
-                _Ty _Tmp       = (this->_Ax[_Ix + _Nx] & _HMSK) | (this->_Ax[_Ix + _Nx + _One_mod_n] & _LMSK);
+            for (size_t _Ix = 0; _Ix < _Nx - _M_mod_n; ++_Ix) { // fill in lower region
+                const _Ty _Tmp = (this->_Ax[_Ix + _Nx] & _HMSK) | (this->_Ax[_Ix + _Nx + _One_mod_n] & _LMSK);
                 this->_Ax[_Ix] = (_Tmp >> 1) ^ (_Tmp & 1 ? _Px : 0) ^ this->_Ax[_Ix + _Nx + _M_mod_n];
             }
 
-            for (; _Ix < _Nx - _One_mod_n; ++_Ix) { // fill in upper region (avoids modulus operation)
-                _Ty _Tmp       = (this->_Ax[_Ix + _Nx] & _HMSK) | (this->_Ax[_Ix + _Nx + _One_mod_n] & _LMSK);
+            for (size_t _Ix = _Nx - _M_mod_n; _Ix < _Nx - _One_mod_n; ++_Ix) {
+                // fill in upper region (avoids modulus operation)
+                const _Ty _Tmp = (this->_Ax[_Ix + _Nx] & _HMSK) | (this->_Ax[_Ix + _Nx + _One_mod_n] & _LMSK);
                 this->_Ax[_Ix] = (_Tmp >> 1) ^ (_Tmp & 1 ? _Px : 0) ^ this->_Ax[_Ix - _Nx + _M_mod_n];
             }
 
-            if constexpr (_One_mod_n > 0) { // fill in _Ax[_Nx - 1]
-                _Ty _Tmp       = (this->_Ax[_Ix + _Nx] & _HMSK) | (this->_Ax[0] & _LMSK);
-                this->_Ax[_Ix] = (_Tmp >> 1) ^ (_Tmp & 1 ? _Px : 0) ^ this->_Ax[_M_mod_n - 1];
+            if constexpr (_One_mod_n == 1) { // fill in _Ax[_Nx - 1]
+                constexpr size_t _Ix = _Nx - _One_mod_n;
+
+                const _Ty _Tmp = (this->_Ax[_Ix + _Nx] & _HMSK) | (this->_Ax[_Ix - _Nx + _One_mod_n] & _LMSK);
+                this->_Ax[_Ix] = (_Tmp >> 1) ^ (_Tmp & 1 ? _Px : 0) ^ this->_Ax[_Ix - _Nx + _M_mod_n];
             }
         } else {
-            size_t _Ix;
-            for (_Ix = 0; _Ix < _Nx - _One_mod_n; ++_Ix) { // fill in values
-                _Ty _Tmp       = (this->_Ax[_Ix + _Nx] & _HMSK) | (this->_Ax[_Ix + _Nx + _One_mod_n] & _LMSK);
-                this->_Ax[_Ix] = (_Tmp >> 1) ^ (_Tmp & 1 ? _Px : 0) ^ this->_Ax[_Ix + _Nx];
+            for (size_t _Ix = 0; _Ix < _Nx - _One_mod_n; ++_Ix) { // fill in values
+                const _Ty _Tmp = (this->_Ax[_Ix + _Nx] & _HMSK) | (this->_Ax[_Ix + _Nx + _One_mod_n] & _LMSK);
+                this->_Ax[_Ix] = (_Tmp >> 1) ^ (_Tmp & 1 ? _Px : 0) ^ this->_Ax[_Ix + _Nx + _M_mod_n];
             }
 
-            if constexpr (_One_mod_n > 0) { // fill in _Ax[_Nx - 1]
-                _Ty _Tmp       = (this->_Ax[_Ix + _Nx] & _HMSK) | (this->_Ax[0] & _LMSK);
-                this->_Ax[_Ix] = (_Tmp >> 1) ^ (_Tmp & 1 ? _Px : 0) ^ this->_Ax[_Ix + _Nx];
+            if constexpr (_One_mod_n == 1) { // fill in _Ax[_Nx - 1]
+                constexpr size_t _Ix = _Nx - _One_mod_n;
+
+                const _Ty _Tmp = (this->_Ax[_Ix + _Nx] & _HMSK) | (this->_Ax[_Ix - _Nx + _One_mod_n] & _LMSK);
+                this->_Ax[_Ix] = (_Tmp >> 1) ^ (_Tmp & 1 ? _Px : 0) ^ this->_Ax[_Ix + _Nx + _M_mod_n];
             }
         }
 
@@ -1151,9 +1154,8 @@ protected:
     }
 
     void _Refill_upper() { // compute values for the upper half of the history array
-        size_t _Ix;
-        for (_Ix = _Nx; _Ix < 2 * _Nx; ++_Ix) { // fill in values
-            _Ty _Tmp       = (this->_Ax[_Ix - _Nx] & _HMSK) | (this->_Ax[_Ix - _Nx + _One_mod_n] & _LMSK);
+        for (size_t _Ix = _Nx; _Ix < 2 * _Nx; ++_Ix) { // fill in values
+            const _Ty _Tmp = (this->_Ax[_Ix - _Nx] & _HMSK) | (this->_Ax[_Ix - _Nx + _One_mod_n] & _LMSK);
             this->_Ax[_Ix] = (_Tmp >> 1) ^ (_Tmp & 1 ? _Px : 0) ^ this->_Ax[_Ix - _Nx + _M_mod_n];
         }
     }
@@ -1164,7 +1166,7 @@ protected:
     static constexpr _Ty _HMSK = (_WMSK << _Rx) & _WMSK;
     static constexpr _Ty _LMSK = ~_HMSK & _WMSK;
 
-    static constexpr int _One_mod_n = 1 % _Nx;
+    static constexpr int _One_mod_n = 1 % _Nx; // either 0 or 1
     static constexpr int _M_mod_n   = _Mx % _Nx;
 };
 
