@@ -7,7 +7,7 @@ which ships as part of the MSVC toolset and the Visual Studio IDE.
 * Our [Status Chart][] displays our overall progress over time.
 * Join our [Discord server][].
 
-[![Build Status](https://dev.azure.com/vclibs/STL/_apis/build/status/microsoft.STL?branchName=master)][Pipelines]
+[![Build Status](https://dev.azure.com/vclibs/STL/_apis/build/status/microsoft.STL?branchName=main)][Pipelines]
 
 # What This Repo Is Useful For
 
@@ -57,12 +57,12 @@ issue. The [bug tag][] and [enhancement tag][] are being populated.
 
 # Goals
 
-We're implementing the latest C++ Working Draft, currently [N4868][], which will eventually become the next C++
-International Standard, C++20. The terms Working Draft (WD) and Working Paper (WP) are interchangeable; we often
+We're implementing the latest C++ Working Draft, currently [N4878][], which will eventually become the next C++
+International Standard. The terms Working Draft (WD) and Working Paper (WP) are interchangeable; we often
 informally refer to these drafts as "the Standard" while being aware of the difference. (There are other relevant
 Standards; for example, supporting `/std:c++14` and `/std:c++17` involves understanding how the C++14 and C++17
 Standards differ from the Working Paper, and we often need to refer to the C Standard Library and ECMAScript regular
-expression specifications.)
+expression specifications.) We're currently prioritizing C++20 features before starting any work on C++23.
 
 Our primary goals are conformance, performance, usability, and compatibility.
 
@@ -405,10 +405,10 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [LWG issues]: https://cplusplus.github.io/LWG/lwg-toc.html
 [LWG tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3ALWG
 [Microsoft Open Source Code of Conduct]: https://opensource.microsoft.com/codeofconduct/
-[N4868]: https://wg21.link/n4868
+[N4878]: https://wg21.link/n4878
 [NOTICE.txt]: NOTICE.txt
 [Ninja]: https://ninja-build.org
-[Pipelines]: https://dev.azure.com/vclibs/STL/_build/latest?definitionId=4&branchName=master
+[Pipelines]: https://dev.azure.com/vclibs/STL/_build/latest?definitionId=4&branchName=main
 [Python]: https://www.python.org/downloads/windows/
 [Roadmap]: https://github.com/microsoft/STL/wiki/Roadmap
 [Status Chart]: https://microsoft.github.io/STL/
