@@ -1076,8 +1076,10 @@ public:
 
     template <class _Elem, class _S_Traits>
     basic_ostream<_Elem, _S_Traits>& _Write(basic_ostream<_Elem, _S_Traits>& _Ostr) const { // write state to _Ostr
-        for (size_t _Ix = 0; _Ix < _Nx; ++_Ix) {
-            _Ostr << this->_At(_Ix) << ' ';
+        _Ostr << this->_At(0);
+
+        for (size_t _Ix = 1; _Ix < _Nx; ++_Ix) {
+            _Ostr << ' ' << this->_At(_Ix);
         }
 
         return _Ostr;
