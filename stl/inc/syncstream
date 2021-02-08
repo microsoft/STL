@@ -26,7 +26,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef emit
 
 _EXTERN_C
-_NODISCARD void* __stdcall __std_acquire_shared_mutex_for_instance(void* _Ptr) noexcept;
+_NODISCARD _STD shared_mutex* __stdcall __std_acquire_shared_mutex_for_instance(void* _Ptr) noexcept;
 void __stdcall __std_release_shared_mutex_for_instance(void* _Ptr) noexcept;
 _END_EXTERN_C
 
@@ -91,7 +91,7 @@ public:
         : _Wrapped(_Strbuf), _Mypair{_One_then_variadic_args_t{}, _Al_, nullptr} {
         if (_Wrapped) {
             auto& _Mutex = _Get_mutex();
-            _Mutex       = static_cast<shared_mutex*>(__std_acquire_shared_mutex_for_instance(_Wrapped));
+            _Mutex       = __std_acquire_shared_mutex_for_instance(_Wrapped);
             if (!_Mutex) {
                 _Xbad_alloc();
             }

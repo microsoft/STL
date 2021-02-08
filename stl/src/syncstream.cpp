@@ -57,13 +57,14 @@ namespace {
 
 _EXTERN_C
 
-_NODISCARD void* __stdcall __std_acquire_shared_mutex_for_instance(void* _Ptr) noexcept {
+// TRANSITION, ABI: This returns a pointer to a C++ type.
+// A flat C interface would return an opaque handle and would provide separate functions for locking and unlocking.
+_NODISCARD _STD shared_mutex* __stdcall __std_acquire_shared_mutex_for_instance(void* _Ptr) noexcept {
     try {
         _STD scoped_lock _Guard(_Lookup_mutex);
         auto& [_Mutex, _Refs] = _Lookup_map.try_emplace(_Ptr).first->second;
         ++_Refs;
-        static_assert(_STD is_same_v<decltype(&_Mutex), _STD shared_mutex*>);
-        return &_Mutex; // caller will restore type
+        return &_Mutex;
     } catch (...) {
         return nullptr;
     }
