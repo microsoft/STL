@@ -801,8 +801,6 @@ numerics\rand\rand.adapt\rand.adapt.disc\ctor_result_type.pass.cpp
 numerics\rand\rand.adapt\rand.adapt.disc\ctor_sseq.pass.cpp
 numerics\rand\rand.adapt\rand.adapt.ibits\ctor_result_type.pass.cpp
 numerics\rand\rand.adapt\rand.adapt.ibits\ctor_sseq.pass.cpp
-numerics\rand\rand.eng\rand.eng.mers\ctor_result_type.pass.cpp
-numerics\rand\rand.eng\rand.eng.mers\ctor_sseq.pass.cpp
 numerics\rand\rand.eng\rand.eng.sub\ctor_result_type.pass.cpp
 numerics\rand\rand.eng\rand.eng.sub\ctor_sseq.pass.cpp
 
@@ -817,12 +815,6 @@ thread\futures\futures.promise\set_rvalue.pass.cpp
 # Possible STL bugs in pair and tuple.
 utilities\tuple\tuple.tuple\tuple.cnstr\PR23256_constrain_UTypes_ctor.pass.cpp
 utilities\tuple\tuple.tuple\tuple.cnstr\PR31384.pass.cpp
-
-# Likely STL bugs in mersenne_twister; also fails at runtime
-# random(1186,26):  error: constexpr variable '_WMSK' must be initialized by a constant expression
-#    static constexpr _Ty _WMSK = ~((~_Ty(0) << (_Wx - 1)) << 1);
-#                         ^       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-numerics\rand\rand.eng\rand.eng.mers\ctor_sseq_all_zero.pass.cpp
 
 # Bugs/questionable choices in codecvt<char(16|32)_t, char, mbstate_t>, which we probably will not fix since
 # (1) they are deprecated, and (2) we don't want to break existing users.
