@@ -491,7 +491,7 @@ _NODISCARD constexpr compare_three_way_result_t<_Ty1, _Ty2> operator<=>(
         return *_Left <=> *_Right;
     }
 
-    return _Left.has_valu() <=> _Right.has_value();
+    return _Left.has_value() <=> _Right.has_value();
 }
 #endif // __cpp_lib_concepts
 
