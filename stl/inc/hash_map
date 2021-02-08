@@ -84,20 +84,21 @@ namespace stdext {
         };
 
         template <class _Ty1, class _Ty2>
-        static const _Kty& _Kfn(const pair<_Ty1, _Ty2>& _Val) noexcept { // extract key from element value
+        _NODISCARD static const _Kty& _Kfn(const pair<_Ty1, _Ty2>& _Val) noexcept { // extract key from element value
             return _Val.first;
         }
 
         template <class _Ty1, class _Ty2>
-        static const _Ty2& _Nonkfn(const pair<_Ty1, _Ty2>& _Val) noexcept { // extract non-key from element value
+        _NODISCARD static const _Ty2& _Nonkfn(const pair<_Ty1, _Ty2>& _Val) noexcept {
+            // extract non-key from element value
             return _Val.second;
         }
 
-        float& _Get_max_bucket_size() noexcept {
+        _NODISCARD float& _Get_max_bucket_size() noexcept {
             return _Max_buckets;
         }
 
-        const float& _Get_max_bucket_size() const noexcept {
+        _NODISCARD const float& _Get_max_bucket_size() const noexcept {
             return _Max_buckets;
         }
 
@@ -224,7 +225,7 @@ namespace stdext {
             return this->_Try_emplace(_Keyval).first->_Myval.second;
         }
 
-        mapped_type& at(const key_type& _Keyval) {
+        _NODISCARD mapped_type& at(const key_type& _Keyval) {
             const auto _Target = this->_Find_last(_Keyval, this->_Traitsobj(_Keyval));
             if (_Target._Duplicate) {
                 return _Target._Duplicate->_Myval.second;
@@ -233,7 +234,7 @@ namespace stdext {
             _Xout_of_range("invalid hash_map<K, T> key");
         }
 
-        const mapped_type& at(const key_type& _Keyval) const {
+        _NODISCARD const mapped_type& at(const key_type& _Keyval) const {
             const auto _Target = this->_Find_last(_Keyval, this->_Traitsobj(_Keyval));
             if (_Target._Duplicate) {
                 return _Target._Duplicate->_Myval.second;
@@ -245,27 +246,27 @@ namespace stdext {
         using reverse_iterator       = _STD reverse_iterator<iterator>;
         using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
 
-        reverse_iterator rbegin() noexcept {
+        _NODISCARD reverse_iterator rbegin() noexcept {
             return reverse_iterator(this->end());
         }
 
-        const_reverse_iterator rbegin() const noexcept {
+        _NODISCARD const_reverse_iterator rbegin() const noexcept {
             return const_reverse_iterator(this->end());
         }
 
-        reverse_iterator rend() noexcept {
+        _NODISCARD reverse_iterator rend() noexcept {
             return reverse_iterator(this->begin());
         }
 
-        const_reverse_iterator rend() const noexcept {
+        _NODISCARD const_reverse_iterator rend() const noexcept {
             return const_reverse_iterator(this->begin());
         }
 
-        const_reverse_iterator crbegin() const noexcept {
+        _NODISCARD const_reverse_iterator crbegin() const noexcept {
             return rbegin();
         }
 
-        const_reverse_iterator crend() const noexcept {
+        _NODISCARD const_reverse_iterator crend() const noexcept {
             return rend();
         }
 
@@ -406,27 +407,27 @@ namespace stdext {
         using reverse_iterator       = _STD reverse_iterator<iterator>;
         using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
 
-        reverse_iterator rbegin() noexcept {
+        _NODISCARD reverse_iterator rbegin() noexcept {
             return reverse_iterator(this->end());
         }
 
-        const_reverse_iterator rbegin() const noexcept {
+        _NODISCARD const_reverse_iterator rbegin() const noexcept {
             return const_reverse_iterator(this->end());
         }
 
-        reverse_iterator rend() noexcept {
+        _NODISCARD reverse_iterator rend() noexcept {
             return reverse_iterator(this->begin());
         }
 
-        const_reverse_iterator rend() const noexcept {
+        _NODISCARD const_reverse_iterator rend() const noexcept {
             return const_reverse_iterator(this->begin());
         }
 
-        const_reverse_iterator crbegin() const noexcept {
+        _NODISCARD const_reverse_iterator crbegin() const noexcept {
             return rbegin();
         }
 
-        const_reverse_iterator crend() const noexcept {
+        _NODISCARD const_reverse_iterator crend() const noexcept {
             return rend();
         }
 

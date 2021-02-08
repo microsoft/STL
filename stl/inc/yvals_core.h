@@ -138,6 +138,8 @@
 // P0318R1 unwrap_reference, unwrap_ref_decay
 // P0325R4 to_array()
 // P0339R6 polymorphic_allocator<>
+// P0355R7 <chrono> Calendars And Time Zones
+//     (partially implemented)
 // P0356R5 bind_front()
 // P0357R3 Supporting Incomplete Types In reference_wrapper
 // P0408R7 Efficient Access To basic_stringbuf's Buffer
@@ -146,6 +148,7 @@
 // P0457R2 starts_with()/ends_with() For basic_string/basic_string_view
 // P0458R2 contains() For Ordered And Unordered Associative Containers
 // P0463R1 endian
+// P0466R5 Layout-Compatibility And Pointer-Interconvertibility Traits
 // P0476R2 <bit> bit_cast
 // P0482R6 Library Support For char8_t
 //     (mbrtoc8 and c8rtomb not yet implemented)
@@ -1024,6 +1027,10 @@
 #define _HAS_DEPRECATED_ADAPTOR_TYPEDEFS (_HAS_FEATURES_REMOVED_IN_CXX20)
 #endif // _HAS_DEPRECATED_ADAPTOR_TYPEDEFS
 
+#ifndef _HAS_DEPRECATED_ALLOCATOR_MEMBERS
+#define _HAS_DEPRECATED_ALLOCATOR_MEMBERS (_HAS_FEATURES_REMOVED_IN_CXX20)
+#endif // _HAS_DEPRECATED_ALLOCATOR_MEMBERS
+
 #ifndef _HAS_DEPRECATED_IS_LITERAL_TYPE
 #define _HAS_DEPRECATED_IS_LITERAL_TYPE (_HAS_FEATURES_REMOVED_IN_CXX20)
 #endif // _HAS_DEPRECATED_IS_LITERAL_TYPE
@@ -1183,10 +1190,9 @@
 #define __cpp_lib_constexpr_algorithms 201806L
 #define __cpp_lib_constexpr_complex    201711L
 
-#if defined(__cpp_constexpr_dynamic_alloc) \
-    && defined(__clang__) // TRANSITION, MSVC support for constexpr dynamic allocation
+#ifdef __cpp_constexpr_dynamic_alloc
 #define __cpp_lib_constexpr_dynamic_alloc 201907L
-#endif // defined(__cpp_constexpr_dynamic_alloc) && defined(__clang__)
+#endif // __cpp_constexpr_dynamic_alloc
 
 #define __cpp_lib_constexpr_functional  201907L
 #define __cpp_lib_constexpr_iterator    201811L
@@ -1208,19 +1214,33 @@
 #define __cpp_lib_integer_comparison_functions 202002L
 #define __cpp_lib_interpolate                  201902L
 #define __cpp_lib_is_constant_evaluated        201811L
-#define __cpp_lib_is_nothrow_convertible       201806L
-#define __cpp_lib_jthread                      201911L
-#define __cpp_lib_latch                        201907L
-#define __cpp_lib_list_remove_return_type      201806L
-#define __cpp_lib_math_constants               201907L
-#define __cpp_lib_polymorphic_allocator        201902L
-#define __cpp_lib_remove_cvref                 201711L
-#define __cpp_lib_semaphore                    201907L
-#define __cpp_lib_shift                        201806L
-#define __cpp_lib_smart_ptr_for_overwrite      202002L
-#define __cpp_lib_span                         202002L
-#define __cpp_lib_ssize                        201902L
-#define __cpp_lib_starts_ends_with             201711L
+
+#ifndef __EDG__ // TRANSITION, VSO-1268984
+#ifndef __clang__ // TRANSITION, LLVM-48860
+#define __cpp_lib_is_layout_compatible 201907L
+#endif // __clang__
+#endif // __EDG__
+
+#define __cpp_lib_is_nothrow_convertible 201806L
+
+#ifndef __EDG__ // TRANSITION, VSO-1268984
+#ifndef __clang__ // TRANSITION, LLVM-48860
+#define __cpp_lib_is_pointer_interconvertible 201907L
+#endif // __clang__
+#endif // __EDG__
+
+#define __cpp_lib_jthread                 201911L
+#define __cpp_lib_latch                   201907L
+#define __cpp_lib_list_remove_return_type 201806L
+#define __cpp_lib_math_constants          201907L
+#define __cpp_lib_polymorphic_allocator   201902L
+#define __cpp_lib_remove_cvref            201711L
+#define __cpp_lib_semaphore               201907L
+#define __cpp_lib_shift                   201806L
+#define __cpp_lib_smart_ptr_for_overwrite 202002L
+#define __cpp_lib_span                    202002L
+#define __cpp_lib_ssize                   201902L
+#define __cpp_lib_starts_ends_with        201711L
 
 #ifdef __cpp_lib_concepts // TRANSITION, GH-395
 #define __cpp_lib_three_way_comparison 201711L
@@ -1263,6 +1283,13 @@
 #define _CONSTEXPR20_DYNALLOC inline
 #endif
 
+// Functions that became constexpr in C++20 via P0980R1 or P1004R2
+#if defined(__cpp_lib_constexpr_dynamic_alloc) && !defined(__clang__) // TRANSITION:LLVM-48606
+#define _CONSTEXPR20_CONTAINER constexpr
+#else
+#define _CONSTEXPR20_CONTAINER inline
+#endif
+
 #ifdef _RTC_CONVERSION_CHECKS_ENABLED
 #ifndef _ALLOW_RTCc_IN_STL
 #error /RTCc rejects conformant code, so it is not supported by the C++ Standard Library. Either remove this \
@@ -1278,6 +1305,7 @@ compiler option, or define _ALLOW_RTCc_IN_STL to acknowledge that you have recei
 #define _STD_BEGIN namespace std {
 #define _STD_END   }
 #define _STD       ::std::
+#define _CHRONO    ::std::chrono::
 #define _RANGES    ::std::ranges::
 
 // We use the stdext (standard extension) namespace to contain extensions that are not part of the current standard
