@@ -1118,32 +1118,35 @@ protected:
     _Post_satisfies_(this->_Idx == 0)
 
         void _Refill_lower() { // compute values for the lower half of the history array
+        constexpr size_t _Wrap_bound_one = _Nx - _One_mod_n;
+        constexpr size_t _Wrap_bound_m   = _Nx - _M_mod_n;
+
         if constexpr (_M_mod_n == 0) {
-            for (size_t _Ix = 0; _Ix < _Nx - _One_mod_n; ++_Ix) { // fill in values
+            for (size_t _Ix = 0; _Ix < _Wrap_bound_one; ++_Ix) { // fill in values
                 const _Ty _Tmp = (this->_Ax[_Ix + _Nx] & _HMSK) | (this->_Ax[_Ix + _Nx + _One_mod_n] & _LMSK);
                 this->_Ax[_Ix] = (_Tmp >> 1) ^ (_Tmp & 1 ? _Px : 0) ^ this->_Ax[_Ix + _Nx + _M_mod_n];
             }
 
             if constexpr (_One_mod_n == 1) { // fill in _Ax[_Nx - 1]
-                constexpr size_t _Ix = _Nx - _One_mod_n;
+                constexpr size_t _Ix = _Wrap_bound_one;
 
                 const _Ty _Tmp = (this->_Ax[_Ix + _Nx] & _HMSK) | (this->_Ax[_Ix - _Nx + _One_mod_n] & _LMSK);
                 this->_Ax[_Ix] = (_Tmp >> 1) ^ (_Tmp & 1 ? _Px : 0) ^ this->_Ax[_Ix + _Nx + _M_mod_n];
             }
         } else {
-            for (size_t _Ix = 0; _Ix < _Nx - _M_mod_n; ++_Ix) { // fill in lower region
+            for (size_t _Ix = 0; _Ix < _Wrap_bound_m; ++_Ix) { // fill in lower region
                 const _Ty _Tmp = (this->_Ax[_Ix + _Nx] & _HMSK) | (this->_Ax[_Ix + _Nx + _One_mod_n] & _LMSK);
                 this->_Ax[_Ix] = (_Tmp >> 1) ^ (_Tmp & 1 ? _Px : 0) ^ this->_Ax[_Ix + _Nx + _M_mod_n];
             }
 
-            for (size_t _Ix = _Nx - _M_mod_n; _Ix < _Nx - _One_mod_n; ++_Ix) {
+            for (size_t _Ix = _Wrap_bound_m; _Ix < _Wrap_bound_one; ++_Ix) {
                 // fill in upper region (avoids modulus operation)
                 const _Ty _Tmp = (this->_Ax[_Ix + _Nx] & _HMSK) | (this->_Ax[_Ix + _Nx + _One_mod_n] & _LMSK);
                 this->_Ax[_Ix] = (_Tmp >> 1) ^ (_Tmp & 1 ? _Px : 0) ^ this->_Ax[_Ix - _Nx + _M_mod_n];
             }
 
             if constexpr (_One_mod_n == 1) { // fill in _Ax[_Nx - 1]
-                constexpr size_t _Ix = _Nx - _One_mod_n;
+                constexpr size_t _Ix = _Wrap_bound_one;
 
                 const _Ty _Tmp = (this->_Ax[_Ix + _Nx] & _HMSK) | (this->_Ax[_Ix - _Nx + _One_mod_n] & _LMSK);
                 this->_Ax[_Ix] = (_Tmp >> 1) ^ (_Tmp & 1 ? _Px : 0) ^ this->_Ax[_Ix - _Nx + _M_mod_n];
