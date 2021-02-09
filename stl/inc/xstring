@@ -34,11 +34,12 @@ _STD_BEGIN
 // STRUCT TEMPLATE _Char_traits (FROM <string>)
 template <class _Elem, class _Int_type>
 struct _Char_traits { // properties of a string or stream element
-    using char_type  = _Elem;
-    using int_type   = _Int_type;
-    using pos_type   = streampos;
-    using off_type   = streamoff;
-    using state_type = _Mbstatet;
+    using char_type           = _Elem;
+    using int_type            = _Int_type;
+    using pos_type            = streampos;
+    using off_type            = streamoff;
+    using state_type          = _Mbstatet;
+    using comparison_category = strong_ordering;
 
     // For copy/move, we can uniformly call memcpy/memmove (or their builtin versions) for all element types.
 
@@ -212,11 +213,12 @@ private:
     using _Primary_char_traits = _Char_traits<_Elem, unsigned short>;
 
 public:
-    using char_type  = _Elem;
-    using int_type   = unsigned short;
-    using pos_type   = streampos;
-    using off_type   = streamoff;
-    using state_type = mbstate_t;
+    using char_type           = _Elem;
+    using int_type            = unsigned short;
+    using pos_type            = streampos;
+    using off_type            = streamoff;
+    using state_type          = mbstate_t;
+    using comparison_category = strong_ordering;
 
     using _Primary_char_traits::_Copy_s;
     using _Primary_char_traits::copy;
@@ -350,11 +352,12 @@ private:
     using _Primary_char_traits = _Char_traits<_Elem, _Int_type>;
 
 public:
-    using char_type  = _Elem;
-    using int_type   = _Int_type;
-    using pos_type   = streampos;
-    using off_type   = streamoff;
-    using state_type = mbstate_t;
+    using char_type           = _Elem;
+    using int_type            = _Int_type;
+    using pos_type            = streampos;
+    using off_type            = streamoff;
+    using state_type          = mbstate_t;
+    using comparison_category = strong_ordering;
 
     using _Primary_char_traits::_Copy_s;
     using _Primary_char_traits::copy;
@@ -4511,16 +4514,19 @@ _NODISCARD bool operator==(
     return _Left._Equal(_Right);
 }
 
+#if !_HAS_CXX20
 template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD bool operator==(_In_z_ const _Elem* const _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) {
     return _Right._Equal(_Left);
 }
+#endif // !_HAS_CXX20
 
 template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD bool operator==(const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) {
     return _Left._Equal(_Right);
 }
 
+#if !_HAS_CXX20
 template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD bool operator!=(
     const basic_string<_Elem, _Traits, _Alloc>& _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) noexcept {
@@ -4600,6 +4606,19 @@ template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD bool operator>=(const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) {
     return !(_Left < _Right);
 }
+#endif // !_HAS_CXX20
+
+#if _HAS_CXX20
+template <class _Elem, class _Traits, class _Alloc>
+_NODISCARD int operator<=>(
+    const basic_string<_Elem, _Traits, _Alloc>& _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) noexcept {
+    return _Left.compare(_Right);
+}
+template <class _Elem, class _Traits, class _Alloc>
+_NODISCARD int operator<=>(const basic_string<_Elem, _Traits, _Alloc>& _Left, const _Elem* _Right) {
+    return _Left.compare(_Right);
+}
+#endif // _HAS_CXX20
 
 using string  = basic_string<char, char_traits<char>, allocator<char>>;
 using wstring = basic_string<wchar_t, char_traits<wchar_t>, allocator<wchar_t>>;

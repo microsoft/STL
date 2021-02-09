@@ -454,6 +454,36 @@ void ordering_test_cases() {
         static_assert(std::is_same_v<SpaceshipType<WeaklyOrderdByOmissionMatch>, std::weak_ordering>);
         static_assert(std::is_same_v<SpaceshipType<PartiallyOrderedMatch>, std::partial_ordering>);
     }
+    { // Strings library
+        std::string a1 = "abcdef";
+        std::string a2 = "abcdef";
+        std::string a3 = "abcdefg";
+        std::string a4 = "abcde";
+        std::string a5 = "abddef";
+        std::string a6 = "abbdef";
+
+        assert((a1 <=> a2) == 0);
+        assert((a1 <=> a3) == -1);
+        assert((a1 <=> a4) == 1);
+        assert((a1 <=> a5) == -1);
+        assert((a1 <=> a6) == 1);
+
+        assert(a1 == a2);
+        assert(a1 >= a2);
+        assert(a1 <= a2);
+        assert(a1 < a3);
+        assert(a1 <= a3);
+        assert(a1 != a3);
+        assert(a1 > a4);
+        assert(a1 >= a4);
+        assert(a1 != a4);
+        assert(a1 < a5);
+        assert(a1 <= a5);
+        assert(a1 != a5);
+        assert(a1 > a6);
+        assert(a1 >= a6);
+        assert(a1 != a6);
+    }
     { // Diagnostics Library
         diagnostics_test<std::error_code>();
         diagnostics_test<std::error_condition>();
