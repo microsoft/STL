@@ -7,6 +7,7 @@ const cliProgress = require('cli-progress');
 const dotenv = require('dotenv');
 const { DateTime, Duration } = require('luxon');
 const { graphql } = require('@octokit/graphql');
+const yargs = require('yargs/yargs');
 
 {
     const result = dotenv.config();
@@ -20,7 +21,30 @@ const { graphql } = require('@octokit/graphql');
     }
 }
 
-async function retrieve_nodes() {
+const argv = yargs(process.argv.slice(2))
+    .option('save-file', {
+        alias: 's',
+        description: 'Save the GraphQL result to a file.',
+        requiresArg: true,
+        type: 'string',
+    })
+    .option('load-file', {
+        alias: 'l',
+        description: 'Load the GraphQL result from a file.',
+        requiresArg: true,
+        type: 'string',
+    })
+    .conflicts('save-file', 'load-file')
+    .check((argv, _options) => {
+        if (argv._.length > 0) {
+            throw new Error(`Unknown arguments: ${argv._.join(' ')}`);
+        } else {
+            return true;
+        }
+    })
+    .strict().argv;
+
+async function retrieve_nodes_from_network() {
     const progress = {
         multi_bar: new cliProgress.MultiBar(
             {
@@ -102,6 +126,20 @@ async function retrieve_nodes() {
     } finally {
         progress.multi_bar.stop();
     }
+}
+
+async function retrieve_nodes() {
+    if (argv['load-file']) {
+        return JSON.parse(fs.readFileSync(argv['load-file'], 'utf8'));
+    }
+
+    const graphql_result = await retrieve_nodes_from_network();
+
+    if (argv['save-file']) {
+        fs.writeFileSync(argv['save-file'], JSON.stringify(graphql_result));
+    }
+
+    return graphql_result;
 }
 
 function warn_if_pagination_needed(outer_nodes, field, message) {
@@ -428,8 +466,11 @@ async function async_main() {
 
         const script_finish = DateTime.local();
 
-        console.log(`Spent: ${rate_limit.spent} points`);
-        console.log(`Remaining: ${rate_limit.remaining}/${rate_limit.limit} points`);
+        if (!argv['load-file']) {
+            console.log(`Spent: ${rate_limit.spent} points`);
+            console.log(`Remaining: ${rate_limit.remaining}/${rate_limit.limit} points`);
+        }
+
         console.log(`Time: ${Number.parseFloat(script_finish.diff(script_start).as('seconds')).toFixed(3)}s`);
     } catch (error) {
         console.log(`ERROR: ${error.message}`);
