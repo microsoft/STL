@@ -44,7 +44,7 @@ struct _Char_traits { // properties of a string or stream element
     using off_type   = streamoff;
     using state_type = _Mbstatet;
 #if _HAS_CXX20
-    using comparison_category = _Comparison_category_strong;
+    using comparison_category = strong_ordering;
 #endif // _HAS_CXX20
 
     // For copy/move, we can uniformly call memcpy/memmove (or their builtin versions) for all element types.
@@ -225,7 +225,7 @@ public:
     using off_type   = streamoff;
     using state_type = mbstate_t;
 #if _HAS_CXX20
-    using comparison_category = _Comparison_category_strong;
+    using comparison_category = strong_ordering;
 #endif // _HAS_CXX20
 
     using _Primary_char_traits::_Copy_s;
@@ -366,7 +366,7 @@ public:
     using off_type   = streamoff;
     using state_type = mbstate_t;
 #if _HAS_CXX20
-    using comparison_category = _Comparison_category_strong;
+    using comparison_category = strong_ordering;
 #endif // _HAS_CXX20
 
     using _Primary_char_traits::_Copy_s;
