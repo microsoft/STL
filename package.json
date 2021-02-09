@@ -29,6 +29,7 @@
     "@octokit/graphql": "^4.6.0",
     "cli-progress": "^3.9.0",
     "dotenv": "^8.2.0",
-    "luxon": "^1.25.0"
+    "luxon": "^1.25.0",
+    "yargs": "^16.2.0"
   }
 }
