@@ -85,7 +85,7 @@ template <class Ty, class Other>
 class non_move_assignable_non_equal_allocator_id {
 public:
     non_move_assignable_non_equal_allocator_id() : id(id_gen++) {}
-    constexpr non_move_assignable_non_equal_allocator_id(size_t _id) : id(_id) {}
+    constexpr explicit non_move_assignable_non_equal_allocator_id(size_t _id) : id(_id) {}
     ~non_move_assignable_non_equal_allocator_id() = default;
 
     size_t id;
