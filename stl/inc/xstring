@@ -17,6 +17,10 @@
 #include <xpolymorphic_allocator.h>
 #endif // _HAS_CXX17
 
+#if _HAS_CXX20
+#include <compare>
+#endif // _HAS_CXX20
+
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
@@ -34,12 +38,14 @@ _STD_BEGIN
 // STRUCT TEMPLATE _Char_traits (FROM <string>)
 template <class _Elem, class _Int_type>
 struct _Char_traits { // properties of a string or stream element
-    using char_type           = _Elem;
-    using int_type            = _Int_type;
-    using pos_type            = streampos;
-    using off_type            = streamoff;
-    using state_type          = _Mbstatet;
-    using comparison_category = strong_ordering;
+    using char_type  = _Elem;
+    using int_type   = _Int_type;
+    using pos_type   = streampos;
+    using off_type   = streamoff;
+    using state_type = _Mbstatet;
+#if _HAS_CXX20
+    using comparison_category = _Comparison_category_strong;
+#endif // _HAS_CXX20
 
     // For copy/move, we can uniformly call memcpy/memmove (or their builtin versions) for all element types.
 
@@ -213,12 +219,14 @@ private:
     using _Primary_char_traits = _Char_traits<_Elem, unsigned short>;
 
 public:
-    using char_type           = _Elem;
-    using int_type            = unsigned short;
-    using pos_type            = streampos;
-    using off_type            = streamoff;
-    using state_type          = mbstate_t;
-    using comparison_category = strong_ordering;
+    using char_type  = _Elem;
+    using int_type   = unsigned short;
+    using pos_type   = streampos;
+    using off_type   = streamoff;
+    using state_type = mbstate_t;
+#if _HAS_CXX20
+    using comparison_category = _Comparison_category_strong;
+#endif // _HAS_CXX20
 
     using _Primary_char_traits::_Copy_s;
     using _Primary_char_traits::copy;
@@ -352,12 +360,14 @@ private:
     using _Primary_char_traits = _Char_traits<_Elem, _Int_type>;
 
 public:
-    using char_type           = _Elem;
-    using int_type            = _Int_type;
-    using pos_type            = streampos;
-    using off_type            = streamoff;
-    using state_type          = mbstate_t;
-    using comparison_category = strong_ordering;
+    using char_type  = _Elem;
+    using int_type   = _Int_type;
+    using pos_type   = streampos;
+    using off_type   = streamoff;
+    using state_type = mbstate_t;
+#if _HAS_CXX20
+    using comparison_category = _Comparison_category_strong;
+#endif // _HAS_CXX20
 
     using _Primary_char_traits::_Copy_s;
     using _Primary_char_traits::copy;
