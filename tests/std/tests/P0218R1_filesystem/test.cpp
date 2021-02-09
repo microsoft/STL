@@ -149,7 +149,7 @@ bool throws_filesystem_error(Lambda lambda, string_view functionName, const path
     } catch (const filesystem_error& err) {
         // Good!
         return string_view(err.what()).find(functionName) != string_view::npos && bad(err.code())
-               && err.path1().native() == p1.native() && err.path2().native() == p2.native();
+            && err.path1().native() == p1.native() && err.path2().native() == p2.native();
     }
 }
 
@@ -1224,6 +1224,12 @@ void test_directory_entry() {
     EXPECT(good(ec));
     remove(dirPath, ec);
     EXPECT(good(ec));
+
+    // LWG-3171 "LWG-2989 breaks directory_entry stream insertion"
+    const directory_entry iostreamEntry{path{R"(one\two\three)"}};
+    ostringstream oss;
+    oss << iostreamEntry;
+    EXPECT(oss.str() == R"("one\\two\\three")");
 }
 
 template <typename DirectoryIterator>
@@ -3457,7 +3463,7 @@ void test_permissions() {
     EXPECT(good(ec));
 
     constexpr auto readonlyPerms = perms::owner_read | perms::owner_exec | perms::group_read | perms::group_exec
-                                   | perms::others_read | perms::others_exec;
+                                 | perms::others_read | perms::others_exec;
     permissions(filename, readonlyPerms, perm_options::replace);
     EXPECT(status(filename, ec).permissions() == readonlyPerms);
     EXPECT(good(ec));
@@ -3838,8 +3844,13 @@ basic_ostream<Elem, Traits>& operator<<(basic_ostream<Elem, Traits>& str, const 
     return str << status.type() << L' ' << status.permissions();
 }
 
+struct directory_entry_wrapper {
+    directory_entry value;
+};
+
 template <typename Elem, typename Traits>
-basic_ostream<Elem, Traits>& operator<<(basic_ostream<Elem, Traits>& str, const directory_entry& de) {
+basic_ostream<Elem, Traits>& operator<<(basic_ostream<Elem, Traits>& str, const directory_entry_wrapper& de_wrapper) {
+    const directory_entry& de = de_wrapper.value;
     return str << L"\n    symlink_status: " << de.symlink_status() << L"\n             status: " << de.status()
                << L"\n               size: " << de.file_size() << L"\n    last_write_time: "
                << de.last_write_time().time_since_epoch().count() << L"\n    hard_link_count: " << de.hard_link_count();
@@ -3872,7 +3883,7 @@ void run_interactive_tests(int argc, wchar_t* argv[]) {
         } else if (starts_with(arg, L"-stat:"sv)) {
             wcerr << quoted(arg) << L" => " << status(the_rest) << "\n";
         } else if (starts_with(arg, L"-de:"sv)) {
-            wcerr << quoted(arg) << L" => " << directory_entry(the_rest) << "\n";
+            wcerr << quoted(arg) << L" => " << directory_entry_wrapper{directory_entry(the_rest)} << "\n";
         } else if (starts_with(arg, L"-mkdir:"sv)) {
             wcerr << L"create_directory => " << create_directory(the_rest) << "\n";
         } else if (starts_with(arg, L"-mkdirs:"sv)) {

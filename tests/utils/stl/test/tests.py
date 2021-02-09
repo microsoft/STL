@@ -7,13 +7,13 @@
 #
 #===----------------------------------------------------------------------===##
 
-from enum import Flag, auto
+from enum import auto, Flag
 from itertools import chain
 import copy
 import os
 import shutil
 
-from lit.Test import SKIPPED, Result, Test, UNRESOLVED, UNSUPPORTED
+from lit.Test import Result, SKIPPED, Test, UNRESOLVED, UNSUPPORTED
 from libcxx.test.dsl import Feature
 import lit
 
@@ -48,7 +48,10 @@ class STLTest(Test):
         if result:
             return result
 
-        self._handleEnvlst(litConfig)
+        result = self._handleEnvlst(litConfig)
+        if result:
+            return result
+
         self._parseTest()
         self._parseFlags()
 
@@ -76,6 +79,15 @@ class STLTest(Test):
             self.compileFlags.extend(['/dE--write-isense-rsp', '/dE' + self.isenseRspPath])
 
         self._configureTestType()
+
+        forceFail = self.expectedResult and self.expectedResult.isFailure
+        buildFail = forceFail and TestType.COMPILE|TestType.LINK in self.testType
+
+        if (litConfig.build_only and buildFail):
+            self.xfails = ['*']
+        elif (not litConfig.build_only and forceFail):
+            self.xfails = ['*']
+
         return None
 
     def _parseTest(self):
@@ -160,8 +172,6 @@ class STLTest(Test):
         if self.expectedResult is not None:
             if self.expectedResult == SKIPPED:
                 return Result(SKIPPED, 'This test was explicitly marked as skipped')
-            elif self.expectedResult.isFailure:
-                self.xfails = ['*']
         elif self.config.unsupported:
             return Result(UNSUPPORTED, 'This test was marked as unsupported by a lit.cfg')
 
@@ -171,18 +181,20 @@ class STLTest(Test):
         envCompiler = self.envlstEntry.getEnvVal('PM_COMPILER', 'cl')
 
         cxx = None
-        if not os.path.isfile(envCompiler):
+        if os.path.isfile(envCompiler):
+            cxx = envCompiler
+        else:
             cxx = _compilerPathCache.get(envCompiler, None)
 
-            if cxx is None:
+            if not cxx:
                 searchPaths = self.config.environment['PATH']
                 cxx = shutil.which(envCompiler, path=searchPaths)
                 _compilerPathCache[envCompiler] = cxx
-        else:
-            cxx = envCompiler
 
         if not cxx:
-            litConfig.fatal('Could not find: %r' % envCompiler)
+            litConfig.warning('Could not find: %r' % envCompiler)
+            return Result(SKIPPED, 'This test was skipped because the compiler, "' +
+                                   envCompiler + '", could not be found')
 
         self.flags = copy.deepcopy(litConfig.flags[self.config.name])
         self.compileFlags = copy.deepcopy(litConfig.compile_flags[self.config.name])
@@ -197,8 +209,22 @@ class STLTest(Test):
                 self.compileFlags.append('-m64')
             elif (targetArch == 'x86'.casefold()):
                 self.compileFlags.append('-m32')
+            elif (targetArch == 'arm'.casefold()):
+                return Result(UNSUPPORTED, 'clang targeting arm is not supported')
+            elif (targetArch == 'arm64'.casefold()):
+                self.compileFlags.append('--target=arm64-pc-windows-msvc')
+
+        if ('nvcc'.casefold() in os.path.basename(cxx).casefold()):
+            # nvcc only supports targeting x64
+            self.requires.append('x64')
 
         self.cxx = os.path.normpath(cxx)
+        return None
+
+    def _addCustomFeature(self, name):
+        actions = Feature(name).getActions(self.config)
+        for action in actions:
+            action.applyTo(self.config)
 
     def _parseFlags(self):
         foundStd = False
@@ -206,11 +232,11 @@ class STLTest(Test):
             if flag[1:5] == 'std:':
                 foundStd = True
                 if flag[5:] == 'c++latest':
-                    Feature('c++2a').enableIn(self.config)
+                    self._addCustomFeature('c++2a')
                 elif flag[5:] == 'c++17':
-                    Feature('c++17').enableIn(self.config)
+                    self._addCustomFeature('c++17')
                 elif flag[5:] == 'c++14':
-                    Feature('c++14').enableIn(self.config)
+                    self._addCustomFeature('c++14')
             elif flag[1:] == 'clr:pure':
                 self.requires.append('clr_pure') # TRANSITION, GH-798
             elif flag[1:] == 'clr':
@@ -225,7 +251,10 @@ class STLTest(Test):
                 self.requires.append('arch_vfpv4') # available for arm, see features.py
 
         if not foundStd:
-            Feature('c++14').enableIn(self.config)
+            self._addCustomFeature('c++14')
+
+        self._addCustomFeature('non-lockfree-atomics') # we always support non-lockfree-atomics
+        self._addCustomFeature('is-lockfree-runtime-function') # Ditto
 
 
 class LibcxxTest(STLTest):

@@ -19,10 +19,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-#if !_HAS_IF_CONSTEXPR
-#pragma warning(disable : 4127) // conditional expression is constant
-#endif // !_HAS_IF_CONSTEXPR
-
 namespace stdext {
     namespace cvt {
 
@@ -96,7 +92,7 @@ namespace stdext {
                     if (*_Pstate == 0) { // first time, maybe look for and consume header
                         *_Pstate = 1;
 
-                        if _CONSTEXPR_IF ((_Mode & _STD consume_header) != 0) {
+                        if constexpr ((_Mode & _STD consume_header) != 0) {
                             if (_Ch == 0xfeff) { // drop header and retry
                                 result _Ans = do_in(_State, _Mid1, _Last1, _Mid1, _First2, _Last2, _Mid2);
 
@@ -157,7 +153,7 @@ namespace stdext {
                     if (*_Pstate == 0) { // first time, maybe generate header
                         *_Pstate = 1;
 
-                        if _CONSTEXPR_IF ((_Mode & _STD generate_header) != 0) {
+                        if constexpr ((_Mode & _STD generate_header) != 0) {
                             if (_Last2 - _Mid2 < 3 + 1 + _Nextra) {
                                 return _Mybase::partial; // not enough room for both
                             }
@@ -224,7 +220,7 @@ namespace stdext {
             }
 
             virtual int do_max_length() const noexcept override { // return maximum length required for a conversion
-                if _CONSTEXPR_IF ((_Mode & (_STD consume_header | _STD generate_header)) != 0) {
+                if constexpr ((_Mode & (_STD consume_header | _STD generate_header)) != 0) {
                     return 9;
                 } else {
                     return 6;
@@ -232,7 +228,7 @@ namespace stdext {
             }
 
             virtual int do_encoding() const noexcept override { // return length of code sequence (from codecvt)
-                if _CONSTEXPR_IF ((_Mode & (_STD consume_header | _STD generate_header)) != 0) {
+                if constexpr ((_Mode & (_STD consume_header | _STD generate_header)) != 0) {
                     return -1; // -1 => state dependent
                 } else {
                     return 0; // 0 => varying length

@@ -176,12 +176,8 @@ int main() {
         const to_chars_result result = to_chars(buf, end(buf), 3.14);
         assert(result.ec == errc{});
         assert(result.ptr == end(buf));
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         const string_view sv{buf, size(buf)};
         assert(sv == "3.14");
-#else // ^^^ no workaround / workaround vvv
-        assert(buf[0] == '3' && buf[1] == '.' && buf[2] == '1' && buf[3] == '4');
-#endif // ^^^ workaround ^^^
     }
 
     {
@@ -193,13 +189,11 @@ int main() {
 
     {
         puts("Testing <codecvt>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, VSO-1236034 (error LNK2005: _Yarn)
         const string utf8_koshka_cat{"\xD0\xBA\xD0\xBE\xD1\x88\xD0\xBA\xD0\xB0_\xF0\x9F\x90\x88"};
         const wstring utf16_koshka_cat{L"\x043A\x043E\x0448\x043A\x0430_\xD83D\xDC08"};
         wstring_convert<codecvt_utf8_utf16<wchar_t>> conv;
         assert(conv.from_bytes(utf8_koshka_cat) == utf16_koshka_cat);
         assert(conv.to_bytes(utf16_koshka_cat) == utf8_koshka_cat);
-#endif // ^^^ no workaround ^^^
 
         static_assert(static_cast<int>(codecvt_mode::consume_header) == 4); // TRANSITION, DevCom-1160041 (deprecated)
     }
@@ -290,14 +284,12 @@ int main() {
 
     {
         puts("Testing <filesystem>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         constexpr wstring_view dot{L"."};
         error_code ec{};
         const filesystem::space_info info = filesystem::space(dot, ec);
         assert(!ec);
         assert(info.capacity > 0);
         assert(info.capacity != static_cast<decltype(info.capacity)>(-1));
-#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -313,10 +305,8 @@ int main() {
 
     {
         puts("Testing <fstream>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         const ifstream f{};
         assert(!f.is_open());
-#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -334,9 +324,13 @@ int main() {
         puts("Testing <future>.");
         promise<int> p{};
         future<int> f{p.get_future()};
+#if 0 // TRANSITION, VSO-1271718 (Standard Library Header Units ICE with C++20 chrono)
         assert(f.wait_for(chrono::seconds{0}) == future_status::timeout);
+#endif // ^^^ no workaround ^^^
         p.set_value(1729);
+#if 0 // TRANSITION, VSO-1271718 (Standard Library Header Units ICE with C++20 chrono)
         assert(f.wait_for(chrono::seconds{0}) == future_status::ready);
+#endif // ^^^ no workaround ^^^
         assert(f.get() == 1729);
     }
 
@@ -348,7 +342,6 @@ int main() {
 
     {
         puts("Testing <iomanip>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         ostringstream oss;
         oss << "I have " << setfill('.') << setw(7) << 9 * 9 * 9 + 10 * 10 * 10 << " cute fluffy kittens.";
         assert(oss.str() == "I have ...1729 cute fluffy kittens.");
@@ -356,18 +349,15 @@ int main() {
         oss << quoted(R"(Read "C:\Temp\Cat Names.txt" for more info.)");
         const char* const expected_quoted = R"("Read \"C:\\Temp\\Cat Names.txt\" for more info.")";
         assert(oss.str() == expected_quoted);
-#endif // ^^^ no workaround ^^^
     }
 
     {
         puts("Testing <ios>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         ios b{nullptr};
         assert(b.rdbuf() == nullptr);
         assert(b.rdstate() == ios_base::badbit);
         assert(b.precision() == 6);
         static_assert(ios_base::floatfield == (ios_base::fixed | ios_base::scientific));
-#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -378,18 +368,14 @@ int main() {
 
     {
         puts("Testing <iostream>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         cout << "Testing P1502R1_standard_library_header_units.\n";
         assert(cin.tie() == &cout);
-#endif // ^^^ no workaround ^^^
     }
 
     {
         puts("Testing <istream>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         const istream is{nullptr};
         assert(is.gcount() == 0);
-#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -538,10 +524,8 @@ int main() {
 
     {
         puts("Testing <ostream>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         const ostream os{nullptr};
         assert(os.rdbuf() == nullptr);
-#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -593,7 +577,7 @@ int main() {
 #if 0 // TRANSITION, VSO-1088552 (deduction guides)
         assert(ranges::distance(views::filter(arr, [](int x) { return x == 0; })) == 4);
         static_assert(ranges::distance(views::filter(arr, [](int x) { return x != 0; })) == 5);
-#elif defined(MSVC_INTERNAL_TESTING) // TRANSITION, VSO-1237145 (trailing requires clause)
+#else // ^^^ no workaround / workaround vvv
         auto is_zero = [](int x) { return x == 0; };
         using FV1    = ranges::filter_view<ranges::ref_view<decltype(arr)>, decltype(is_zero)>;
         assert(ranges::distance(FV1{arr, is_zero}) == 4);
@@ -610,7 +594,6 @@ int main() {
 
     {
         puts("Testing <regex>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         const regex r{R"(\w+)"};
         const string s{"cute! fluffy? kittens."};
         vector<string> v;
@@ -621,7 +604,6 @@ int main() {
 
         const vector<string> expected{"cute", "fluffy", "kittens"};
         assert(v == expected);
-#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -721,11 +703,9 @@ int main() {
 
     {
         puts("Testing <sstream>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         ostringstream oss;
         oss << "I have " << 9 * 9 * 9 + 10 * 10 * 10 << " cute fluffy kittens.";
         assert(oss.str() == "I have 1729 cute fluffy kittens.");
-#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -746,7 +726,6 @@ int main() {
 
     {
         puts("Testing <stdexcept>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         bool caught_puppies = false;
 
         try {
@@ -758,7 +737,6 @@ int main() {
         }
 
         assert(caught_puppies);
-#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -782,7 +760,9 @@ int main() {
                 }
                 l.count_down(); // tell main() that we're done
                 while (!token.stop_requested()) {
+#if 0 // TRANSITION, VSO-1271718 (Standard Library Header Units ICE with C++20 chrono)
                     this_thread::sleep_for(10ms); // not a timing assumption; avoids spinning furiously
+#endif // ^^^ no workaround ^^^
                 }
                 vec.push_back(-1000); // indicate that token.stop_requested() returned true
             }};
@@ -799,41 +779,33 @@ int main() {
 
     {
         puts("Testing <streambuf>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         istringstream iss{"kittens"};
         assert(iss.rdbuf()->in_avail() == 7);
-#endif // ^^^ no workaround ^^^
     }
 
     {
         puts("Testing <string_view>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         constexpr string_view catenary{"catenary"};
         assert(catenary.starts_with("cat"));
         assert(!catenary.starts_with("dog"));
         static_assert(catenary.starts_with("cat"));
         static_assert(!catenary.starts_with("dog"));
-#endif // ^^^ no workaround ^^^
     }
 
     {
         puts("Testing <string>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         const string small_string{"homeowner"};
         const string large_string{"Cute fluffy kittens are so adorable when they meow and purr."};
         assert(small_string.find("meow") == 2);
         assert(large_string.find("meow") == 46);
-#endif // ^^^ no workaround ^^^
     }
 
     {
         puts("Testing <strstream>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1224512 (char_traits)
         istrstream istr{"1729"};
         int n = -1;
         istr >> n;
         assert(n == 1729);
-#endif // ^^^ no workaround ^^^
     }
 
     {

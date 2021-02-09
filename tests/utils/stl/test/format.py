@@ -152,11 +152,11 @@ class STLTestFormat:
         shared.env['TEMPDIR'] = execDir
 
         return [
-            ('Build setup', self.getBuildSetupSteps(test, litConfig, shared)),
-            ('Build', self.getBuildSteps(test, litConfig, shared)),
-            ('Intellisense response file', self.getIsenseRspFileSteps(test, litConfig, shared)),
-            ('Test setup', self.getTestSetupSteps(test, litConfig, shared)),
-            ('Test', self.getTestSteps(test, litConfig, shared))]
+            ('Build setup', self.getBuildSetupSteps(test, litConfig, shared), True),
+            ('Build', self.getBuildSteps(test, litConfig, shared), True),
+            ('Intellisense response file', self.getIsenseRspFileSteps(test, litConfig, shared), False),
+            ('Test setup', self.getTestSetupSteps(test, litConfig, shared), False),
+            ('Test', self.getTestSteps(test, litConfig, shared), False)]
 
     def getBuildSetupSteps(self, test, litConfig, shared):
         shutil.rmtree(shared.execDir, ignore_errors=True)
@@ -171,20 +171,20 @@ class STLTestFormat:
 
         shouldFail = TestType.FAIL in test.testType
         if TestType.COMPILE in test.testType:
-            cmd = [test.cxx, '/c', test.getSourcePath(), *test.flags, *test.compileFlags]
+            cmd = [test.cxx, '-c', test.getSourcePath(), *test.flags, *test.compileFlags]
             yield TestStep(cmd, shared.execDir, shared.env, shouldFail)
         elif TestType.LINK in test.testType:
             objFile = tmpBase + '.o'
-            cmd = [test.cxx, '/c', test.getSourcePath(), *test.flags, *test.compileFlags, '/Fo' + objFile]
+            cmd = [test.cxx, '-c', test.getSourcePath(), *test.flags, *test.compileFlags, '-Fo' + objFile]
             yield TestStep(cmd, shared.execDir, shared.env, False)
 
             exeFile = tmpBase + '.exe'
-            cmd = [test.cxx, objFile, *test.flags, '/Fe' + exeFile, '/link', *test.linkFlags]
+            cmd = [test.cxx, objFile, *test.flags, '-Fe' + exeFile, '-link', *test.linkFlags]
             yield TestStep(cmd, shared.execDir, shared.env, shouldFail)
         elif TestType.RUN in test.testType:
             shared.execFile = tmpBase + '.exe'
             cmd = [test.cxx, test.getSourcePath(), *test.flags, *test.compileFlags,
-                   '/Fe' + shared.execFile, '/link', *test.linkFlags]
+                   '-Fe' + shared.execFile, '-link', *test.linkFlags]
             yield TestStep(cmd, shared.execDir, shared.env, False)
 
     def getTestSetupSteps(self, test, litConfig, shared):
@@ -210,17 +210,17 @@ class STLTestFormat:
             if result:
                 return result
 
-            if test.expectedResult and test.expectedResult.isFailure:
-                failVar = lit.Test.XFAIL
-                passVar = lit.Test.XPASS
-            else:
-                failVar = lit.Test.FAIL
-                passVar = lit.Test.PASS
+            # This test is expected to fail at some point, but we're not sure if
+            # it should fail during the build phase or the test phase.
+            someFail = test.expectedResult and test.expectedResult.isFailure
 
             stages = self.getStages(test, litConfig)
 
             report = ''
-            for stageName, steps in stages:
+            for stageName, steps, isBuildStep in stages:
+                if not isBuildStep and litConfig.build_only:
+                    continue
+
                 report += stageName + ' steps:\n'
                 for step in steps:
                     cmd, out, err, rc = self.runStep(step, litConfig)
@@ -232,9 +232,11 @@ class STLTestFormat:
 
                     report += stl.util.makeReport(cmd, out, err, rc)
                     if (step.shouldFail and rc == 0) or (not step.shouldFail and rc != 0):
-                        return (failVar, report)
+                        if someFail:
+                            test.xfails = ['*']
+                        return (lit.Test.FAIL, report)
 
-            return (passVar, '')
+            return (lit.Test.PASS, '')
 
         except Exception as e:
             litConfig.error(repr(e))
