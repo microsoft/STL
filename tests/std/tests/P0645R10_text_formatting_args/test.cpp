@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <concepts>
 #include <cstddef>
+#include <cstdint>
 #include <format>
 #include <memory>
 #include <string_view>
@@ -44,8 +45,8 @@ enum class Arg_type : uint8_t {
     none,
     int_type,
     unsigned_type,
-    long_type,
-    unsigned_long_type,
+    long_long_type,
+    unsigned_long_long_type,
     bool_type,
     char_type,
     float_type,
@@ -68,9 +69,9 @@ auto visitor = [](auto&& arg) {
     } else if constexpr (is_same_v<T, unsigned int>) {
         return Arg_type::unsigned_type;
     } else if constexpr (is_same_v<T, long long>) {
-        return Arg_type::long_type;
+        return Arg_type::long_long_type;
     } else if constexpr (is_same_v<T, unsigned long long>) {
-        return Arg_type::unsigned_long_type;
+        return Arg_type::unsigned_long_long_type;
     } else if constexpr (is_same_v<T, char_type>) {
         return Arg_type::char_type;
     } else if constexpr (is_same_v<T, float>) {
@@ -116,7 +117,7 @@ void test_basic_format_arg() {
         basic_format_arg<Context> from_double{5.0};
         assert(from_double);
 
-        basic_format_arg<Context> from_long_double{static_cast<long double>(5.0)};
+        basic_format_arg<Context> from_long_double{5.0L};
         assert(from_long_double);
 
         basic_format_arg<Context> from_pointer{static_cast<const void*>(nullptr)};
@@ -183,13 +184,13 @@ void test_format_arg_store() {
     test_single_format_arg<Context, int32_t, Arg_type::int_type>(42);
     test_single_format_arg<Context, int_fast32_t, Arg_type::int_type>(42);
     test_single_format_arg<Context, int_least32_t, Arg_type::int_type>(42);
-    test_single_format_arg<Context, int64_t, Arg_type::long_type>(42);
-    test_single_format_arg<Context, int_fast64_t, Arg_type::long_type>(42);
-    test_single_format_arg<Context, int_least64_t, Arg_type::long_type>(42);
+    test_single_format_arg<Context, int64_t, Arg_type::long_long_type>(42);
+    test_single_format_arg<Context, int_fast64_t, Arg_type::long_long_type>(42);
+    test_single_format_arg<Context, int_least64_t, Arg_type::long_long_type>(42);
     if constexpr (sizeof(int) == sizeof(ptrdiff_t)) {
         test_single_format_arg<Context, ptrdiff_t, Arg_type::int_type>(42);
     } else {
-        test_single_format_arg<Context, ptrdiff_t, Arg_type::long_type>(42);
+        test_single_format_arg<Context, ptrdiff_t, Arg_type::long_long_type>(42);
     }
 
     test_single_format_arg<Context, unsigned int, Arg_type::unsigned_type>(42);
@@ -211,13 +212,13 @@ void test_format_arg_store() {
     test_single_format_arg<Context, uint32_t, Arg_type::unsigned_type>(42);
     test_single_format_arg<Context, uint_fast32_t, Arg_type::unsigned_type>(42);
     test_single_format_arg<Context, uint_least32_t, Arg_type::unsigned_type>(42);
-    test_single_format_arg<Context, uint64_t, Arg_type::unsigned_long_type>(42);
-    test_single_format_arg<Context, uint_fast64_t, Arg_type::unsigned_long_type>(42);
-    test_single_format_arg<Context, uint_least64_t, Arg_type::unsigned_long_type>(42);
+    test_single_format_arg<Context, uint64_t, Arg_type::unsigned_long_long_type>(42);
+    test_single_format_arg<Context, uint_fast64_t, Arg_type::unsigned_long_long_type>(42);
+    test_single_format_arg<Context, uint_least64_t, Arg_type::unsigned_long_long_type>(42);
     if constexpr (sizeof(unsigned int) == sizeof(size_t)) {
         test_single_format_arg<Context, size_t, Arg_type::unsigned_type>(42);
     } else {
-        test_single_format_arg<Context, size_t, Arg_type::unsigned_long_type>(42);
+        test_single_format_arg<Context, size_t, Arg_type::unsigned_long_long_type>(42);
     }
 
     test_single_format_arg<Context, float, Arg_type::float_type>(42.f);
