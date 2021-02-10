@@ -417,8 +417,8 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         assert(*prev(ce2) == CharType{'s'});
 #endif // __EDG__
 
-#if defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 // TODO: need to file a new bug?
-        const auto rb = literal_constructed.rbegin(); // <--(sub-)expression error
+#if defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, 16.10p1
+        const auto rb = literal_constructed.rbegin();
         static_assert(is_same_v<remove_const_t<decltype(rb)>, reverse_iterator<typename str::iterator>>);
         assert(*rb == CharType{'s'});
 
