@@ -4622,11 +4622,23 @@ _NODISCARD bool operator>=(const basic_string<_Elem, _Traits, _Alloc>& _Left, _I
 template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD strong_ordering operator<=>(
     const basic_string<_Elem, _Traits, _Alloc>& _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) noexcept {
-    return _Left.compare(_Right);
+    int _comparison = _Left.compare(_Right);
+    if (_comparison == 0) {
+        return strong_ordering::equivalent;
+    } else if (_comparison < 0) {
+        return strong_ordering::less;
+    }
+    return strong_ordering::greater;
 }
 template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD strong_ordering operator<=>(const basic_string<_Elem, _Traits, _Alloc>& _Left, const _Elem* _Right) {
-    return _Left.compare(_Right);
+    int _comparison = _Left.compare(_Right);
+    if (_comparison == 0) {
+        return strong_ordering::equivalent;
+    } else if (_comparison < 0) {
+        return strong_ordering::less;
+    }
+    return strong_ordering::greater;
 }
 #endif // _HAS_CXX20
 

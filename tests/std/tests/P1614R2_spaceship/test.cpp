@@ -462,11 +462,11 @@ void ordering_test_cases() {
         std::string a5 = "abddef";
         std::string a6 = "abbdef";
 
-        assert((a1 <=> a2) == 0);
-        assert((a1 <=> a3) == -1);
-        assert((a1 <=> a4) == 1);
-        assert((a1 <=> a5) == -1);
-        assert((a1 <=> a6) == 1);
+        assert((a1 <=> a2) == std::strong_ordering::equivalent);
+        assert((a1 <=> a3) == std::strong_ordering::less);
+        assert((a1 <=> a4) == std::strong_ordering::greater);
+        assert((a1 <=> a5) == std::strong_ordering::less);
+        assert((a1 <=> a6) == std::strong_ordering::greater);
 
         assert(a1 == a2);
         assert(a1 >= a2);
