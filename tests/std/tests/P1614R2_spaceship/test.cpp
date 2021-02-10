@@ -485,16 +485,11 @@ void ordering_test_cases() {
         spaceship_test<std::strong_ordering>(c_mem[0], c_mem[0], c_mem[1]);
     }
     { // slice
-        std::valarray<int> a(20);
-        for (int i = 0; i < 20; ++i) {
-            a[i] = i;
-        }
-
-        const auto a1 = a[std::slice(2, 3, 4)];
-        const auto a2 = a[std::slice(2, 3, 4)];
-        const auto a3 = a[std::slice(3, 3, 4)];
-        const auto a4 = a[std::slice(2, 4, 4)];
-        const auto a5 = a[std::slice(2, 3, 3)];
+        const auto a1 = std::slice(2, 3, 4);
+        const auto a2 = std::slice(2, 3, 4);
+        const auto a3 = std::slice(3, 3, 4);
+        const auto a4 = std::slice(2, 4, 4);
+        const auto a5 = std::slice(2, 3, 3);
 
         static_assert((a1 == a2) == true);
         static_assert((a1 == a3) == false);
