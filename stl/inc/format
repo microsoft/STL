@@ -12,7 +12,6 @@
 #pragma message("The contents of <format> are available only with C++20 concepts support.")
 #else // ^^^ !defined(__cpp_lib_concepts) / defined(__cpp_lib_concepts) vvv
 
-#include <algorithm>
 #include <array>
 #include <charconv>
 #include <concepts>
@@ -22,6 +21,7 @@
 #include <string>
 #include <string_view>
 #include <variant>
+#include <xutility>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -60,7 +60,7 @@ enum class _Type {
 constexpr bool _Is_integral_fmt_type(_Type _Ty) {
     return _Ty > _Type::_None && _Ty <= _Type::_Last_integer_type;
 }
-constexpr bool _Is_numeric_fmt_type(_Type _Ty) {
+constexpr bool _Is_arithmetic_fmt_type(_Type _Ty) {
     return _Ty > _Type::_None && _Ty <= _Type::_Last_numeric_type;
 }
 struct _Auto_id_tag {};
@@ -280,16 +280,22 @@ struct _Precision_adapter {
     }
 };
 
+// _Parse_arg_id expects a handler when it finds an argument id, however
+// _Parse_replacement_field actually needs to know the value of that argument ID to pass on
+// to _Handler._On_replacement_field or _Handler._On_format_specs. This _Parse_arg_id wrapper
+// stores the value of the arg id for later use, so _Parse_replacement_field has access to it.
 template <class _CharT>
 struct _Id_adapter {
     basic_format_parse_context<_CharT>& _Parse_context;
-    size_t _Arg_id = 0;
+    size_t _Arg_id = static_cast<size_t>(-1);
     constexpr void _On_auto_id() {
         _Arg_id = _Parse_context.next_arg_id();
+        _STL_INTERNAL_CHECK(_Arg_id != static_cast<size_t>(-1));
     }
     constexpr void _On_manual_id(size_t _Id) {
         _Parse_context.check_arg_id(_Id);
         _Arg_id = _Id;
+        _STL_INTERNAL_CHECK(_Arg_id != static_cast<size_t>(-1));
     }
 };
 
@@ -446,7 +452,7 @@ constexpr void _Parse_format_string(basic_string_view<_CharT> _Format_str, _Hand
                 return;
             }
             for (;;) {
-                const _CharT* _Pt = _STD find(_Begin, _End, '}');
+                const _CharT* _Pt = _STD _Find_unchecked(_Begin, _End, '}');
                 if (_Pt == _End) {
                     return _Handler._On_text(_Begin, _End);
                 }
@@ -494,7 +500,7 @@ private:
 
     template <class _CharT>
     struct _Format_arg_type_to_enum {
-        constexpr _Type operator()(_STD monostate) {
+        constexpr _Type operator()(monostate) {
             return _Type::_None;
         }
         constexpr _Type operator()(int32_t) {
@@ -560,7 +566,7 @@ public:
     }
 };
 
-template <typename _CharT>
+template <class _CharT>
 struct _Basic_format_specs {
     unsigned int _Width, _Precision;
     char _Type;
@@ -571,7 +577,7 @@ struct _Basic_format_specs {
 };
 
 
-// _Parse_specs_callbacks that fill a _Basic_format_specs struct with the parsed data
+// Model of _Parse_specs_callbacks that fills a _Basic_format_specs with the parsed data.
 template <class _CharT>
 class _Specs_setter {
 public:
@@ -720,7 +726,7 @@ public:
     constexpr _Numeric_specs_checker(_Type _Arg_type) : _Arg_type(_Arg_type) {}
 
     constexpr void _Require_numeric_argument() {
-        if (!_Is_numeric_fmt_type(_Arg_type)) {
+        if (!_Is_arithmetic_fmt_type(_Arg_type)) {
             throw format_error("Format specifier requires numeric argument.");
         }
     }
@@ -1320,7 +1326,7 @@ struct _Default_arg_formatter {
 };
 
 // The top level set of parsing "actions".
-template <class _OutputIt, typename _CharT, typename _Context>
+template <class _OutputIt, class _CharT, class _Context>
 struct _Format_handler {
     basic_format_parse_context<_CharT> _Parse_context;
     _Context _Ctx;
