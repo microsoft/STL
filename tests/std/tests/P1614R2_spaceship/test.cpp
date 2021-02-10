@@ -485,10 +485,15 @@ void ordering_test_cases() {
         spaceship_test<std::strong_ordering>(c_mem[0], c_mem[0], c_mem[1]);
     }
     { // slice
-        static_assert((std::slice(2, 3, 4) == std::slice(2, 3, 4)) == true);
-        static_assert((std::slice(2, 3, 4) == std::slice(3, 3, 4)) == false);
-        static_assert((std::slice(2, 3, 4) == std::slice(2, 4, 4)) == false);
-        static_assert((std::slice(2, 3, 4) == std::slice(2, 3, 3)) == false);
+        std::slice a1 = std::slice(2, 3, 4);
+        std::slice a2 = std::slice(2, 3, 4);
+        std::slice a3 = std::slice(3, 3, 4);
+        std::slice a4 = std::slice(2, 4, 4);
+        std::slice a5 = std::slice(2, 3, 3);
+        static_assert(a1 == a2) == true);
+        static_assert(a1 == a3) == false);
+        static_assert(a1 == a4) == false);
+        static_assert(a1 == a5) == false);
     }
     { // filesystem::space_info
         constexpr std::filesystem::space_info si1{4'000'000'000'000, 2'000'000'000'000, 1'000'000'000'000};
