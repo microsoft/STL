@@ -571,7 +571,8 @@ private:
 
         _CSTD memcpy(_Storage + _Store_index, _STD addressof(_Val), _Length);
         _Index_array[_Arg_index]._Type = _Arg_type;
-        if (_Arg_index + 1 < _Num_args) { // Set the starting index of the next arg, as that is dynamic
+        if (_Arg_index + 1 < _Num_args) {
+            // Set the starting index of the next arg, as that is dynamic, must be called with increasing index
             _Index_array[_Arg_index + 1] = _Format_arg_store_packed_index{_Store_index + _Length};
         }
     }
