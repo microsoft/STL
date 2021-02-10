@@ -2466,7 +2466,7 @@ public:
                 _MyRe = nullptr;
 
 #if _ITERATOR_DEBUG_LEVEL == 2
-                this->_Orphan_me_unlocked();
+                this->_Orphan_me_v2();
 #endif // _ITERATOR_DEBUG_LEVEL
 
                 return *this;

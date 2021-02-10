@@ -1175,6 +1175,22 @@ public:
     _Container_proxy* _Myproxy    = nullptr;
     _Iterator_base12* _Mynextiter = nullptr;
 
+#if _ITERATOR_DEBUG_LEVEL == 2
+private:
+    _CONSTEXPR20_CONTAINER void _Adopt_unlocked(_Container_proxy* _Parent_proxy) noexcept {
+        if (_Myproxy) { // adopted, remove self from list
+            _Orphan_me_unlocked();
+        }
+        _Mynextiter                 = _Parent_proxy->_Myfirstiter;
+        _Parent_proxy->_Myfirstiter = this;
+        _Myproxy                    = _Parent_proxy;
+    }
+
+    void _Adopt_locked(_Container_proxy* _Parent_proxy) noexcept {
+        _Lockit _Lock(_LOCK_DEBUG);
+        _Adopt_unlocked(_Parent_proxy);
+    }
+
     _CONSTEXPR20_CONTAINER void _Orphan_me_unlocked() noexcept {
         _Iterator_base12** _Pnext = &_Myproxy->_Myfirstiter;
         while (*_Pnext && *_Pnext != this) {
@@ -1190,22 +1206,6 @@ public:
     void _Orphan_me_locked() noexcept {
         _Lockit _Lock(_LOCK_DEBUG);
         _Orphan_me_unlocked();
-    }
-
-#if _ITERATOR_DEBUG_LEVEL == 2
-private:
-    _CONSTEXPR20_CONTAINER void _Adopt_unlocked(_Container_proxy* _Parent_proxy) noexcept {
-        if (_Myproxy) { // adopted, remove self from list
-            _Orphan_me_unlocked();
-        }
-        _Mynextiter                 = _Parent_proxy->_Myfirstiter;
-        _Parent_proxy->_Myfirstiter = this;
-        _Myproxy                    = _Parent_proxy;
-    }
-
-    void _Adopt_locked(_Container_proxy* _Parent_proxy) noexcept {
-        _Lockit _Lock(_LOCK_DEBUG);
-        _Adopt_unlocked(_Parent_proxy);
     }
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 };
