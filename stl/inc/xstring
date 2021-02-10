@@ -1854,6 +1854,9 @@ public:
         this->_Adopt(_Pstring);
     }
 
+    // TRANSITION, DevCom-1331017
+    _CONSTEXPR20_CONTAINER _String_const_iterator& operator=(const _String_const_iterator&) = default;
+
     _NODISCARD _CONSTEXPR20_CONTAINER reference operator*() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL >= 1
 #ifdef __cpp_lib_is_constant_evaluated
@@ -2124,6 +2127,9 @@ public:
     using reference         = value_type&;
 
     using _Mybase::_Mybase;
+
+    // TRANSITION, DevCom-1331017
+    _CONSTEXPR20_CONTAINER _String_iterator& operator=(const _String_iterator&) = default;
 
     _NODISCARD _CONSTEXPR20_CONTAINER reference operator*() const noexcept {
         return const_cast<reference>(_Mybase::operator*());
