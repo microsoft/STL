@@ -536,9 +536,7 @@ template <class _Context, class _Ty>
 }
 
 template <class _Context, class _Ty>
-/* consteval */ constexpr size_t _Get_format_arg_storage_size() noexcept {
-    return sizeof(_Get_format_arg_storage_type<_Context, _Ty>());
-}
+inline constexpr size_t _Get_format_arg_storage_size = sizeof(_Get_format_arg_storage_type<_Context, _Ty>());
 
 struct _Format_arg_store_packed_index {
     // TRANSITION, Should be templated on number of arguments for even less storage
@@ -561,7 +559,7 @@ private:
     friend basic_format_args<_Context>;
 
     static constexpr size_t _Num_args       = sizeof...(_Args);
-    static constexpr size_t _Storage_length = (_Get_format_arg_storage_size<_Context, _Args>() + ... + 0);
+    static constexpr size_t _Storage_length = (_Get_format_arg_storage_size<_Context, _Args> + ... + 0);
 
     using _CharType   = typename _Context::char_type;
     using _Index_type = _Format_arg_store_packed_index;
@@ -569,7 +567,7 @@ private:
     template <class _Ty>
     void _Store_impl(const size_t _Arg_index, const _Basic_format_arg_type _Arg_type, _Ty _Val) noexcept {
         const auto _Store_index = _Index_array[_Arg_index]._Index;
-        const auto _Length      = _Get_format_arg_storage_size<_Context, _Ty>();
+        const auto _Length      = _Get_format_arg_storage_size<_Context, _Ty>;
 
         _CSTD memcpy(_Storage + _Store_index, _STD addressof(_Val), _Length);
         _Index_array[_Arg_index]._Type = _Arg_type;
