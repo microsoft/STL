@@ -4620,12 +4620,12 @@ _NODISCARD bool operator>=(const basic_string<_Elem, _Traits, _Alloc>& _Left, _I
 
 #if _HAS_CXX20
 template <class _Elem, class _Traits, class _Alloc>
-_NODISCARD int operator<=>(
+_NODISCARD strong_ordering operator<=>(
     const basic_string<_Elem, _Traits, _Alloc>& _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) noexcept {
     return _Left.compare(_Right);
 }
 template <class _Elem, class _Traits, class _Alloc>
-_NODISCARD int operator<=>(const basic_string<_Elem, _Traits, _Alloc>& _Left, const _Elem* _Right) {
+_NODISCARD strong_ordering operator<=>(const basic_string<_Elem, _Traits, _Alloc>& _Left, const _Elem* _Right) {
     return _Left.compare(_Right);
 }
 #endif // _HAS_CXX20
