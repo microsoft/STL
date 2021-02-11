@@ -366,6 +366,7 @@ std/containers/views/span.cons/ptr_ptr.pass.cpp:0 FAIL
 
 # DevCom-1336816 "cl errors on constexpr array of std::string"
 std/numerics/numeric.ops/adjacent.difference/adjacent_difference_op.pass.cpp:0 FAIL
+std/numerics/numeric.ops/partial.sum/partial_sum_op.pass.cpp:0 FAIL
 
 # DevCom-1336819 "cl constexpr temporary passing issue"
 std/numerics/numeric.ops/inner.product/inner_product_comp.pass.cpp:0 FAIL
