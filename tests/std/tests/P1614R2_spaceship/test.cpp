@@ -725,14 +725,14 @@ void test_element_ordering() {
         static_assert(std::is_same_v<std::compare_three_way_result_t<Element>, Ordering>);
     }
 
-    static_assert(std::is_same_v<SpaceshipType<std::array<Element, 3>>, Ordering>);
+    static_assert(std::is_same_v<std::compare_three_way_result_t<std::array<Element, 3>>, Ordering>);
     static_assert(std::is_same_v<std::compare_three_way_result_t<std::deque<Element>>, Ordering>);
     static_assert(std::is_same_v<std::compare_three_way_result_t<std::list<Element>>, Ordering>);
     static_assert(std::is_same_v<std::compare_three_way_result_t<std::vector<Element>>, Ordering>);
-    static_assert(std::is_same_v<SpaceshipType<std::forward_list<Element>>, Ordering>);
+    static_assert(std::is_same_v<std::compare_three_way_result_t<std::forward_list<Element>>, Ordering>);
 
-    static_assert(std::is_same_v<SpaceshipType<std::map<Element, Element>>, Ordering>);
-    static_assert(std::is_same_v<SpaceshipType<std::multimap<Element, Element>>, Ordering>);
+    static_assert(std::is_same_v<std::compare_three_way_result_t<std::map<Element, Element>>, Ordering>);
+    static_assert(std::is_same_v<std::compare_three_way_result_t<std::multimap<Element, Element>>, Ordering>);
 
     static_assert(std::is_same_v<std::compare_three_way_result_t<std::set<Element>>, Ordering>);
     static_assert(std::is_same_v<std::compare_three_way_result_t<std::multiset<Element>>, Ordering>);
