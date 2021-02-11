@@ -23,7 +23,7 @@ struct convertible_bool {
     convertible_bool(bool x) : x_(x) {}
     ~convertible_bool() = default;
 
-    operator bool() {
+    operator bool() const noexcept {
         return x_;
     }
 
@@ -46,10 +46,12 @@ static_assert(!is_constructible_v<variant<float>, int>);
 static_assert(!is_constructible_v<variant<float, vector<int>>, int>);
 static_assert(!is_constructible_v<variant<float, char>, int>);
 
-// P1957R2
+// P1957R2 examples
 static_assert(is_constructible_v<variant<bool, int>, bool>);
+static_assert(is_constructible_v<variant<bool, int>, std::bitset<4>::reference>);
+static_assert(is_constructible_v<variant<bool>, std::bitset<4>::reference>);
 
-// more examples
+// More examples
 static_assert(is_constructible_v<variant<double_double>, double>);
 static_assert(is_constructible_v<variant<vector<vector<int>>, optional<int>, int>, int>);
 static_assert(is_constructible_v<variant<vector<vector<int>>, optional<int>>, int>);
@@ -61,7 +63,9 @@ static_assert(is_constructible_v<variant<float, bool, convertible_bool>, convert
 static_assert(is_constructible_v<variant<float, bool, convertible_bool>, bool>);
 static_assert(is_constructible_v<variant<char, int>, bool>);
 
+#ifndef __clang__ // TRANSITION, ...
 static_assert(!is_constructible_v<variant<double_double>, int>);
+#endif // !__clang__
 static_assert(!is_constructible_v<variant<float>, unsigned int>);
 static_assert(!is_constructible_v<variant<float, long int, long long int>, int>);
 
@@ -147,6 +151,10 @@ void test_variant_constructor_more_tests() {
     variant<float, bool> f = convertible_bool{false}; // bool
     assert(f.index() == 1);
     assert(!get<1>(f));
+
+    variant<bool, int> g = true_type{}; // bool
+    assert(g.index() == 0);
+    assert(get<0>(g));
 }
 
 int main() {

@@ -299,6 +299,12 @@ std/utilities/time/time.clock/time.clock.file/rep_signed.pass.cpp FAIL
 # C++20 P0466R5 "Layout-Compatibility And Pointer-Interconvertibility Traits"
 std/language.support/support.limits/support.limits.general/type_traits.version.pass.cpp:1 FAIL
 
+# C++20 P0608R3 "Improving variant's Converting Constructor/Assignment"
+std/utilities/variant/variant.variant/variant.assign/conv.pass.cpp FAIL
+std/utilities/variant/variant.variant/variant.assign/T.pass.cpp FAIL
+std/utilities/variant/variant.variant/variant.ctor/conv.pass.cpp FAIL
+std/utilities/variant/variant.variant/variant.ctor/T.pass.cpp FAIL
+
 # C++20 P0645R10 "<format> Text Formatting"
 std/language.support/support.limits/support.limits.general/format.version.pass.cpp FAIL
 std/utilities/format/format.error/format.error.pass.cpp FAIL

@@ -299,6 +299,12 @@ utilities\time\time.clock\time.clock.file\rep_signed.pass.cpp
 # C++20 P0466R5 "Layout-Compatibility And Pointer-Interconvertibility Traits"
 language.support\support.limits\support.limits.general\type_traits.version.pass.cpp
 
+# C++20 P0608R3 "Improving variant's Converting Constructor/Assignment"
+utilities\variant\variant.variant\variant.assign\conv.pass.cpp
+utilities\variant\variant.variant\variant.assign\T.pass.cpp
+utilities\variant\variant.variant\variant.ctor\conv.pass.cpp
+utilities\variant\variant.variant\variant.ctor\T.pass.cpp
+
 # C++20 P0645R10 "<format> Text Formatting"
 language.support\support.limits\support.limits.general\format.version.pass.cpp
 utilities\format\format.error\format.error.pass.cpp
