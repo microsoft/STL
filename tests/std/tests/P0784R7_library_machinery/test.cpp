@@ -23,8 +23,8 @@ struct int_wrapper_copy {
         return *this;
     }
 
-    constexpr int_wrapper_copy(int_wrapper_copy&&) = delete;
-    constexpr int_wrapper_copy& operator=(int_wrapper_copy&&) = delete;
+    int_wrapper_copy(int_wrapper_copy&&) = delete;
+    int_wrapper_copy& operator=(int_wrapper_copy&&) = delete;
 
     constexpr bool operator==(const int_wrapper_copy&) const = default;
 
@@ -35,8 +35,8 @@ struct int_wrapper_move {
     constexpr int_wrapper_move() = default;
     constexpr int_wrapper_move(const int v) : _val(v) {}
 
-    constexpr int_wrapper_move(const int_wrapper_move&) = delete;
-    constexpr int_wrapper_move& operator=(const int_wrapper_move&) = delete;
+    int_wrapper_move(const int_wrapper_move&) = delete;
+    int_wrapper_move& operator=(const int_wrapper_move&) = delete;
 
     constexpr int_wrapper_move(int_wrapper_move&& other) : _val(exchange(other._val, -1)) {}
     constexpr int_wrapper_move& operator=(int_wrapper_move&& other) {
