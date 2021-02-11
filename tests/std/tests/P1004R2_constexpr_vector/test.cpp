@@ -491,6 +491,22 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         const auto ne = first != third;
         static_assert(is_same_v<remove_const_t<decltype(ne)>, bool>);
         assert(ne);
+
+        const auto l = first < third;
+        static_assert(is_same_v<remove_const_t<decltype(l)>, bool>);
+        assert(l);
+
+        const auto le = first <= third;
+        static_assert(is_same_v<remove_const_t<decltype(le)>, bool>);
+        assert(le);
+
+        const auto g = first > third;
+        static_assert(is_same_v<remove_const_t<decltype(g)>, bool>);
+        assert(!g);
+
+        const auto ge = first >= third;
+        static_assert(is_same_v<remove_const_t<decltype(ge)>, bool>);
+        assert(!ge);
     }
 #endif // defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 || defined(MSVC_INTERNAL_TESTING)
     return true;
