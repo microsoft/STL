@@ -1413,12 +1413,12 @@ namespace chrono {
         _NODISCARD constexpr days _Days_from_civil() const noexcept {
             static_assert(numeric_limits<unsigned int>::digits >= 18);
             static_assert(numeric_limits<int>::digits >= 26);
-            const unsigned int _Mo          = static_cast<unsigned int>(_Month);
-            const int _Ye                   = static_cast<int>(_Year) - (_Mo <= 2);
-            const int _Century              = (_Ye >= 0 ? _Ye : _Ye - 99) / 100;
-            const unsigned int _Mp          = _Mo + (_Mo > 2 ? static_cast<unsigned int>(-3) : 9); // [0, 11]
-            const unsigned int _Day_of_year = ((979 * _Mp + 19) >> 5) + static_cast<unsigned int>(_Day) - 1; // [0, 365]
-            return days{((_Ye * 1461) >> 2) - _Century + (_Century >> 2) + static_cast<int>(_Day_of_year) - 719468};
+            const unsigned int _Mo = static_cast<unsigned int>(_Month); // [1, 12]
+            const int _Ye          = static_cast<int>(_Year) - (_Mo <= 2);
+            const int _Century     = (_Ye >= 0 ? _Ye : _Ye - 99) / 100;
+            const unsigned int _Mp = _Mo + (_Mo > 2 ? static_cast<unsigned int>(-3) : 9); // [0, 11]
+            const int _Day_of_year = static_cast<int>(((979 * _Mp + 19) >> 5) + static_cast<unsigned int>(_Day)) - 1;
+            return days{((_Ye * 1461) >> 2) - _Century + (_Century >> 2) + _Day_of_year - 719468};
         }
     };
 

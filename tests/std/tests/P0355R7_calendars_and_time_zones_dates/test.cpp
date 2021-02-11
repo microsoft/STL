@@ -804,6 +804,57 @@ constexpr void year_month_day_test() {
         static_assert(  2100y/ 2/28 == year_month_day{sys_days{days{    47540}}});
         static_assert(-32767y/ 1/ 1 == year_month_day{sys_days{days{-12687428}}});
         static_assert( 32767y/12/31 == year_month_day{sys_days{days{ 11248737}}});
+
+        static_assert(sys_days{  2000y/ 1/  0} == sys_days{days{    10956}});
+        static_assert(sys_days{  2000y/ 1/255} == sys_days{days{    11211}});
+        static_assert(sys_days{  2000y/ 2/  0} == sys_days{days{    10987}});
+        static_assert(sys_days{  2000y/ 2/255} == sys_days{days{    11242}});
+        static_assert(sys_days{  2000y/ 3/  0} == sys_days{days{    11016}});
+        static_assert(sys_days{  2000y/ 3/255} == sys_days{days{    11271}});
+        static_assert(sys_days{  2000y/ 4/  0} == sys_days{days{    11047}});
+        static_assert(sys_days{  2000y/ 4/255} == sys_days{days{    11302}});
+        static_assert(sys_days{  2000y/ 5/  0} == sys_days{days{    11077}});
+        static_assert(sys_days{  2000y/ 5/255} == sys_days{days{    11332}});
+        static_assert(sys_days{  2000y/ 6/  0} == sys_days{days{    11108}});
+        static_assert(sys_days{  2000y/ 6/255} == sys_days{days{    11363}});
+        static_assert(sys_days{  2000y/ 7/  0} == sys_days{days{    11138}});
+        static_assert(sys_days{  2000y/ 7/255} == sys_days{days{    11393}});
+        static_assert(sys_days{  2000y/ 8/  0} == sys_days{days{    11169}});
+        static_assert(sys_days{  2000y/ 8/255} == sys_days{days{    11424}});
+        static_assert(sys_days{  2000y/ 9/  0} == sys_days{days{    11200}});
+        static_assert(sys_days{  2000y/ 9/255} == sys_days{days{    11455}});
+        static_assert(sys_days{  2000y/10/  0} == sys_days{days{    11230}});
+        static_assert(sys_days{  2000y/10/255} == sys_days{days{    11485}});
+        static_assert(sys_days{  2000y/11/  0} == sys_days{days{    11261}});
+        static_assert(sys_days{  2000y/11/255} == sys_days{days{    11516}});
+        static_assert(sys_days{  2000y/12/  0} == sys_days{days{    11291}});
+        static_assert(sys_days{  2000y/12/255} == sys_days{days{    11546}});
+        static_assert(sys_days{  -400y/ 2/255} == sys_days{days{  -865340}});
+        static_assert(sys_days{  -400y/ 3/  0} == sys_days{days{  -865566}});
+        static_assert(sys_days{    -1y/ 2/255} == sys_days{days{  -719608}});
+        static_assert(sys_days{    -1y/ 3/  0} == sys_days{days{  -719835}});
+        static_assert(sys_days{    -1y/12/255} == sys_days{days{  -719305}});
+        static_assert(sys_days{     0y/ 1/  0} == sys_days{days{  -719529}});
+        static_assert(sys_days{     0y/ 2/255} == sys_days{days{  -719243}});
+        static_assert(sys_days{     0y/ 3/  0} == sys_days{days{  -719469}});
+        static_assert(sys_days{  1900y/ 3/  0} == sys_days{days{   -25509}});
+        static_assert(sys_days{  1901y/ 2/255} == sys_days{days{   -24917}});
+        static_assert(sys_days{  1903y/ 3/  0} == sys_days{days{   -24414}});
+        static_assert(sys_days{  1904y/ 2/255} == sys_days{days{   -23822}});
+        static_assert(sys_days{  1996y/ 3/  0} == sys_days{days{     9555}});
+        static_assert(sys_days{  1997y/ 2/255} == sys_days{days{    10147}});
+        static_assert(sys_days{  1999y/ 3/  0} == sys_days{days{    10650}});
+        static_assert(sys_days{  2000y/ 2/255} == sys_days{days{    11242}});
+        static_assert(sys_days{  2000y/ 3/  0} == sys_days{days{    11016}});
+        static_assert(sys_days{  2001y/ 2/255} == sys_days{days{    11608}});
+        static_assert(sys_days{  2003y/ 3/  0} == sys_days{days{    12111}});
+        static_assert(sys_days{  2004y/ 2/255} == sys_days{days{    12703}});
+        static_assert(sys_days{  2096y/ 3/  0} == sys_days{days{    46080}});
+        static_assert(sys_days{  2097y/ 2/255} == sys_days{days{    46672}});
+        static_assert(sys_days{  2099y/ 3/  0} == sys_days{days{    47175}});
+        static_assert(sys_days{  2100y/ 2/255} == sys_days{days{    47767}});
+        static_assert(sys_days{-32767y/ 1/  0} == sys_days{days{-12687429}});
+        static_assert(sys_days{ 32767y/12/255} == sys_days{days{ 11248961}});
         // clang-format on
     } else {
         sys_days sys2{year{y_min} / 1 / 1};
@@ -818,9 +869,14 @@ constexpr void year_month_day_test() {
                 assert(sys_days{ymd_first} == sys2);
                 assert(year_month_day{sys2} == ymd_first);
 
+                const year_month_day ymd_min = y / m / 0;
+                assert(sys_days{ymd_min} == sys2 - days{1});
+
+                const year_month_day ymd_max = y / m / 255;
+                assert(sys_days{ymd_max} == sys2 + days{254});
+
                 const year_month_day ymd_last = y / m / last;
                 sys2 += (ymd_last.day() - 1d);
-
                 assert(sys_days{ymd_last} == sys2);
                 assert(year_month_day{sys2} == ymd_last);
 
