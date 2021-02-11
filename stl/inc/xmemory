@@ -1212,7 +1212,7 @@ private:
 
 // MEMBER FUNCTIONS FOR _Container_base12
 _CONSTEXPR20_CONTAINER void _Container_base12::_Orphan_all_unlocked() noexcept {
-    for (auto& _Pnext = _Myproxy->_Myfirstiter; _Pnext; _Pnext = (_Pnext)->_Mynextiter) { // TRANSITION, VSO-1269037
+    for (auto& _Pnext = _Myproxy->_Myfirstiter; _Pnext; _Pnext = _Pnext->_Mynextiter) { // TRANSITION, VSO-1269037
         _Pnext->_Myproxy = nullptr;
     }
     _Myproxy->_Myfirstiter = nullptr;
@@ -1634,6 +1634,7 @@ _CONSTEXPR20_DYNALLOC _Alloc_ptr_t<_Alloc> _Uninitialized_copy(
             return _Dest;
         }
     }
+
     _Uninitialized_backout_al<_Alloc> _Backout{_Dest, _Al};
     for (; _UFirst != _ULast; ++_UFirst) {
         _Backout._Emplace_back(*_UFirst);
