@@ -25,18 +25,22 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
     using ranges::begin, ranges::bidirectional_range, ranges::common_range, ranges::enable_borrowed_range, ranges::end,
         ranges::forward_range, ranges::input_range, ranges::iterator_t, ranges::join_view, ranges::range_value_t;
 
-    using Inner = range_value_t<Outer>;
-    static_assert(ranges::range<Inner>);
-
+    using Inner                     = range_value_t<Outer>;
     constexpr bool deref_is_glvalue = is_reference_v<ranges::range_reference_t<Outer>>;
 
-    if constexpr (deref_is_glvalue || ranges::view<Inner>) {
+    // clang-format off
+    constexpr bool can_test = ranges::viewable_range<Outer>
+        && ranges::input_range<ranges::range_reference_t<Outer>>
+        && (deref_is_glvalue || ranges::view<Inner>);
+    // clang-format on
+
+    if constexpr (can_test) {
         using V = views::all_t<Outer>;
         using R = join_view<V>;
         static_assert(ranges::view<R>);
         static_assert(input_range<R> == input_range<Inner>);
-        static_assert(forward_range<R> == forward_range<Outer> && forward_range<Inner>);
-        static_assert(bidirectional_range<R> == bidirectional_range<Outer> && bidirectional_range<Inner>);
+        static_assert(forward_range<R> == (forward_range<Outer> && forward_range<Inner>) );
+        static_assert(bidirectional_range<R> == (bidirectional_range<Outer> && bidirectional_range<Inner>) );
         static_assert(!ranges::random_access_range<R>);
         static_assert(!ranges::contiguous_range<R>);
 
@@ -125,20 +129,20 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
         same_as<R> auto r = join_view{forward<Outer>(rng)};
         assert(ranges::equal(r, expected));
 
-        // Validate join_view::size
+        // Validate lack of size
         static_assert(!CanSize<R>);
 
         // Validate view_interface::empty and operator bool
-        static_assert(CanEmpty<R> == forward_range<Outer>);
+        static_assert(CanEmpty<R> == forward_range<R>);
         static_assert(CanMemberEmpty<R> == CanEmpty<R>);
-        if (forward_range<Outer>) {
+        if constexpr (CanMemberEmpty<R>) {
             const bool is_empty = ranges::empty(expected);
             assert(r.empty() == is_empty);
             assert(static_cast<bool>(r) == !is_empty);
 
-            static_assert(CanEmpty<const R> == forward_range<const Outer>);
+            static_assert(CanEmpty<const R> == forward_range<const R>);
             static_assert(CanMemberEmpty<const R> == CanEmpty<const R>);
-            if constexpr (forward_range<const Outer>) {
+            if constexpr (CanMemberEmpty<const R>) {
                 assert(as_const(r).empty() == is_empty);
                 assert(static_cast<bool>(as_const(r)) == !is_empty);
             }
@@ -318,12 +322,12 @@ constexpr void test_nested_inout() {
     with_input_or_output_ranges<with_dependent_input_ranges<Instantiator>, Element>::call();
 }
 
-static constexpr int some_ints[]             = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-static constexpr span<const int> intervals[] = {
-    {some_ints + 0, some_ints + 3},
-    {some_ints + 3, some_ints + 7},
-    {some_ints + 7, some_ints + 7},
-    {some_ints + 7, some_ints + 10},
+constexpr int expected_ints[]         = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+constexpr span<const int> intervals[] = {
+    {expected_ints + 0, expected_ints + 3},
+    {expected_ints + 3, expected_ints + 7},
+    {expected_ints + 7, expected_ints + 7},
+    {expected_ints + 7, expected_ints + 10},
 };
 
 struct instantiator {
@@ -331,14 +335,17 @@ struct instantiator {
     static constexpr void call() {
         static_assert(ranges::size(intervals) == 4);
         array inner_ranges = {Inner{intervals[0]}, Inner{intervals[1]}, Inner{intervals[2]}, Inner{intervals[3]}};
-        test_one(Outer{inner_ranges}, some_ints);
+        test_one(Outer{inner_ranges}, expected_ints);
     }
 };
 
+using mo_inner = test::range<input_iterator_tag, const int, test::Sized::no, test::CanDifference::no, test::Common::no,
+    test::CanCompare::no, test::ProxyRef::yes, test::CanView::yes, test::Copyability::copyable>;
+
 template <class Category, test::Common IsCommon, bool is_random = derived_from<Category, random_access_iterator_tag>>
-using move_only_view = test::range<Category, const int, test::Sized{is_random}, test::CanDifference{is_random},
-    IsCommon, test::CanCompare{derived_from<Category, forward_iterator_tag>},
-    test::ProxyRef{!derived_from<Category, contiguous_iterator_tag>}, test::CanView::yes, test::Copyability::move_only>;
+using move_only_view = test::range<Category, mo_inner, test::Sized{is_random}, test::CanDifference{is_random}, IsCommon,
+    test::CanCompare{derived_from<Category, forward_iterator_tag>}, test::ProxyRef::no, test::CanView::yes,
+    test::Copyability::move_only>;
 
 int main() {
     // Validate views
@@ -349,21 +356,25 @@ int main() {
         static_assert(test_one(input, expected));
         test_one(input, expected);
     }
-#if 0 // FIXME
     { // ... move-only
-        test_one(move_only_view<bidirectional_iterator_tag, test::Common::no>{some_ints}, joined_ints);
-        test_one(move_only_view<bidirectional_iterator_tag, test::Common::yes>{some_ints}, joined_ints);
-        test_one(move_only_view<random_access_iterator_tag, test::Common::no>{some_ints}, joined_ints);
-        test_one(move_only_view<random_access_iterator_tag, test::Common::yes>{some_ints}, joined_ints);
-        test_one(move_only_view<contiguous_iterator_tag, test::Common::no>{some_ints}, joined_ints);
-        test_one(move_only_view<contiguous_iterator_tag, test::Common::yes>{some_ints}, joined_ints);
+        mo_inner data[] = {
+            mo_inner{intervals[0]}, mo_inner{intervals[1]}, mo_inner{intervals[2]}, mo_inner{intervals[3]}};
+        test_one(move_only_view<input_iterator_tag, test::Common::no>{data}, expected_ints);
+        test_one(move_only_view<forward_iterator_tag, test::Common::no>{data}, expected_ints);
+        test_one(move_only_view<forward_iterator_tag, test::Common::yes>{data}, expected_ints);
+        test_one(move_only_view<bidirectional_iterator_tag, test::Common::no>{data}, expected_ints);
+        test_one(move_only_view<bidirectional_iterator_tag, test::Common::yes>{data}, expected_ints);
     }
 
     // Validate non-views
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, FIXME
     { // ... C array
-        static_assert(test_one(some_ints, joined_ints));
-        test_one(some_ints, joined_ints);
+        static constexpr int join_me[5][2] = {{0, 1}, {2, 3}, {4, 5}, {6, 7}, {8, 9}};
+        static_assert(test_one(join_me, expected_ints));
+        test_one(join_me, expected_ints);
     }
+#endif // TRANSITION, FIXME
+#if 0 // FIXME
     { // ... contiguous container
         string str{"Hello, World!"};
         constexpr auto expected = "!dlroW ,olleH"sv;
@@ -378,14 +389,9 @@ int main() {
         assert(ranges::equal(
             views::join(ranges::subrange{counted_iterator{lst.begin(), 2}, default_sentinel}), joined_prefix));
     }
+#endif // FIXME
 
-    // Validate a non-view borrowed range
-    {
-        constexpr span s{some_ints};
-        static_assert(test_one(s, joined_ints));
-        test_one(s, joined_ints);
-    }
-
+#if defined(__clang__) || defined(__EDG__) // FIXME: C1060 "out of heap space"
     // Get full instantiation coverage
     static_assert((test_nested_inout<instantiator, const int>(), true));
     test_nested_inout<instantiator, const int>();
