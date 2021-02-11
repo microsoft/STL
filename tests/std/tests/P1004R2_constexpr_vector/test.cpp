@@ -56,7 +56,7 @@ struct soccc_allocator {
 
     template <class... Args>
     _CONSTEXPR20_CONTAINER void construct(T* const p, Args&&... args) {
-        construct_at(p, std::forward<Args>(args)...);
+        construct_at(p, forward<Args>(args)...);
     }
 
     int id               = 0;
@@ -117,7 +117,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         assert(equal(copy_assigned.begin(), copy_assigned.end(), range_constructed.begin(), range_constructed.end()));
 #endif // !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2
 
-        vec move_assigned = std::move(copy_assigned);
+        vec move_assigned = move(copy_assigned);
 #if !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1274387
         assert(equal(move_assigned.begin(), move_assigned.end(), range_constructed.begin(), range_constructed.end()));
 #endif // !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2
@@ -344,23 +344,23 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         assert(!e);
 
         const auto s = range_constructed.size();
-        static_assert(is_same_v<remove_const_t<decltype(s)>, std::size_t>);
+        static_assert(is_same_v<remove_const_t<decltype(s)>, size_t>);
         assert(s == size(input));
 
         const auto ms = range_constructed.max_size();
-        static_assert(is_same_v<remove_const_t<decltype(ms)>, std::size_t>);
+        static_assert(is_same_v<remove_const_t<decltype(ms)>, size_t>);
         assert(ms == static_cast<size_t>(-1) / 4);
 
         range_constructed.reserve(20);
 
         const auto c = range_constructed.capacity();
-        static_assert(is_same_v<remove_const_t<decltype(c)>, std::size_t>);
+        static_assert(is_same_v<remove_const_t<decltype(c)>, size_t>);
         assert(c == 20);
 
         range_constructed.shrink_to_fit();
 
         const auto c2 = range_constructed.capacity();
-        static_assert(is_same_v<remove_const_t<decltype(c2)>, std::size_t>);
+        static_assert(is_same_v<remove_const_t<decltype(c2)>, size_t>);
         assert(c2 == 6);
     }
 
@@ -585,8 +585,8 @@ _CONSTEXPR20_CONTAINER bool test_iterators() {
         const auto cit = range_constructed.cbegin() + 2;
         assert(cit[2] == 3);
 
-        std::vector<pair<int, int>> vec2 = {{1, 2}, {2, 3}};
-        const auto it2                   = vec2.begin();
+        vector<pair<int, int>> vec2 = {{1, 2}, {2, 3}};
+        const auto it2              = vec2.begin();
         assert(it2->second == 2);
 
         const auto cit2 = vec2.cbegin();
