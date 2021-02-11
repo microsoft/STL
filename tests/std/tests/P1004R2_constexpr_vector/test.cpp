@@ -29,7 +29,7 @@ struct soccc_allocator {
     _CONSTEXPR20_CONTAINER soccc_allocator(const soccc_allocator<U>& other) noexcept
         : id(other.id), soccc_generation(other.soccc_generation) {}
     _CONSTEXPR20_CONTAINER soccc_allocator(const soccc_allocator& other) noexcept
-        : id(other.id + 1), soccc_generation(other.soccc_generation){};
+        : id(other.id + 1), soccc_generation(other.soccc_generation) {}
 
     _CONSTEXPR20_CONTAINER soccc_allocator& operator=(const soccc_allocator&) noexcept {
         return *this;

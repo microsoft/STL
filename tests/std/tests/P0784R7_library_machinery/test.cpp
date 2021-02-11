@@ -15,7 +15,7 @@ using namespace std;
 
 struct int_wrapper_copy {
     constexpr int_wrapper_copy() = default;
-    constexpr int_wrapper_copy(const int v) : _val(v){};
+    constexpr int_wrapper_copy(const int v) : _val(v) {}
 
     constexpr int_wrapper_copy(const int_wrapper_copy& other) : _val(other._val) {}
     constexpr int_wrapper_copy& operator=(const int_wrapper_copy& other) {
@@ -33,7 +33,7 @@ struct int_wrapper_copy {
 
 struct int_wrapper_move {
     constexpr int_wrapper_move() = default;
-    constexpr int_wrapper_move(const int v) : _val(v){};
+    constexpr int_wrapper_move(const int v) : _val(v) {}
 
     constexpr int_wrapper_move(const int_wrapper_move&) = delete;
     constexpr int_wrapper_move& operator=(const int_wrapper_move&) = delete;
