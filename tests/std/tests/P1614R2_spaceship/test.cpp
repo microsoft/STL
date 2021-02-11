@@ -433,14 +433,13 @@ void ordering_test_cases() {
         std::ssub_match sm3       = m3[0];
         std::ssub_match sm4       = m4[0];
 
-        // TRANSITION, std::char_traits<char> doesn't define comparison_category
-        spaceship_test<std::weak_ordering>(sm1, sm1_equal, sm2);
-        spaceship_test<std::weak_ordering>(sm1, s1, s2);
-        spaceship_test<std::weak_ordering>(sm1, s1.c_str(), s2.c_str());
-        spaceship_test<std::weak_ordering>(sm3, 'c', 'm');
-        spaceship_test<std::weak_ordering>(s1, sm1, sm2);
-        spaceship_test<std::weak_ordering>(s1.c_str(), sm1, sm2);
-        spaceship_test<std::weak_ordering>('c', sm3, sm4);
+        spaceship_test<std::strong_ordering>(sm1, sm1_equal, sm2);
+        spaceship_test<std::strong_ordering>(sm1, s1, s2);
+        spaceship_test<std::strong_ordering>(sm1, s1.c_str(), s2.c_str());
+        spaceship_test<std::strong_ordering>(sm3, 'c', 'm');
+        spaceship_test<std::strong_ordering>(s1, sm1, sm2);
+        spaceship_test<std::strong_ordering>(s1.c_str(), sm1, sm2);
+        spaceship_test<std::strong_ordering>('c', sm3, sm4);
 
         using StronglyOrderedMatch = std::ssub_match;
         using WeaklyOrderedMatch   = std::sub_match<std::basic_string<WeaklyOrderedChar>::const_iterator>;
@@ -448,8 +447,7 @@ void ordering_test_cases() {
             std::sub_match<std::basic_string<WeaklyOrderedByOmissionChar>::const_iterator>;
         using PartiallyOrderedMatch = std::sub_match<std::basic_string<PartiallyOrderedChar>::const_iterator>;
 
-        // TRANSITION, std::char_traits<char> doesn't define comparison_category
-        static_assert(std::is_same_v<SpaceshipType<StronglyOrderedMatch>, std::weak_ordering>);
+        static_assert(std::is_same_v<SpaceshipType<StronglyOrderedMatch>, std::strong_ordering>);
         static_assert(std::is_same_v<SpaceshipType<WeaklyOrderedMatch>, std::weak_ordering>);
         static_assert(std::is_same_v<SpaceshipType<WeaklyOrderdByOmissionMatch>, std::weak_ordering>);
         static_assert(std::is_same_v<SpaceshipType<PartiallyOrderedMatch>, std::partial_ordering>);
