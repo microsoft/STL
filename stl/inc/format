@@ -566,7 +566,7 @@ private:
     static constexpr size_t _Storage_length = (_Get_format_arg_storage_size<_Context, _Args> + ... + 0);
 
     // we store the data in memory as _Format_arg_store_packed_index[_Index_length] + unsigned char[_Storage_length]
-    unsigned char _Storage[(_STD max)(_Index_length + _Storage_length, static_cast<size_t>(1))];
+    unsigned char _Storage[_Index_length + _Storage_length];
 
     template <class _Ty>
     void _Store_impl(const size_t _Arg_index, const _Basic_format_arg_type _Arg_type, _Ty _Val) noexcept {
@@ -650,12 +650,13 @@ private:
 
 public:
     _Format_arg_store(const _Args&... args) noexcept {
-        if constexpr (sizeof...(_Args) > 0) {
-            size_t _Arg_index = 0;
-            (_Store(_Arg_index++, args), ...);
-        }
+        size_t _Arg_index = 0;
+        (_Store(_Arg_index++, args), ...);
     }
 };
+
+template <class _Context>
+class _Format_arg_store<_Context> {};
 
 template <class _Context>
 class basic_format_args {
@@ -668,6 +669,7 @@ private:
 
 public:
     basic_format_args() noexcept;
+    basic_format_args(const _Format_arg_store<_Context>&) noexcept {}
     template <class... _Args>
     basic_format_args(const _Format_arg_store<_Context, _Args...>& _Store) noexcept
         : _Num_args(sizeof...(_Args)), _Storage(_Store._Storage) {}
