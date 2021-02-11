@@ -347,7 +347,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
 
         const auto ms = range_constructed.max_size();
         static_assert(is_same_v<remove_const_t<decltype(ms)>, size_t>);
-        assert(ms == static_cast<size_t>(-1) / 4);
+        assert(ms == static_cast<size_t>(-1) / sizeof(int));
 
         range_constructed.reserve(20);
 
