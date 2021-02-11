@@ -109,7 +109,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
             size_default_constructed.end()));
 #endif // !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2
 
-        assert(copy_constructed.empty());
+        assert(copy_constructed.empty()); // implementation-specific assumption that moved-from is empty
 
         vec copy_assigned = range_constructed;
 #if !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1274387
@@ -120,7 +120,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
 #if !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1274387
         assert(equal(move_assigned.begin(), move_assigned.end(), range_constructed.begin(), range_constructed.end()));
 #endif // !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2
-        assert(copy_assigned.empty());
+        assert(copy_assigned.empty()); // implementation-specific assumption that moved-from is empty
 
         // allocator constructors
         soccc_allocator<int> alloc(2, 3);
@@ -143,7 +143,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
 #if !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1273365
         assert(all_of(al_move_constructed.begin(), al_move_constructed.end(), [](const int val) { return val == 7; }));
 #endif // !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2
-        assert(al_copy_constructed.empty());
+        assert(al_copy_constructed.empty()); // implementation-specific assumption that moved-from is empty
         assert(al_move_constructed.get_allocator().id == 4);
         assert(al_move_constructed.get_allocator().soccc_generation == 3);
 
@@ -194,7 +194,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         move_constructed = move(copy_constructed);
         assert(equal(
             move_constructed.begin(), move_constructed.end(), range_constructed.begin(), range_constructed.end()));
-        assert(copy_constructed.empty());
+        assert(copy_constructed.empty()); // implementation-specific assumption that moved-from is empty
 
         vec initializer_list_constructed;
         initializer_list_constructed = {0, 1, 2, 3, 4, 5};
