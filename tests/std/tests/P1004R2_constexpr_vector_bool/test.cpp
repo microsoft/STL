@@ -621,13 +621,6 @@ _CONSTEXPR20_CONTAINER bool test_iterators() {
 
         const auto cit = range_constructed.cbegin() + 2;
         assert(cit[2] == false);
-
-        vector<pair<int, int>> vec2 = {{false, true}, {true, false}};
-        const auto it2              = vec2.begin();
-        assert(it2->second);
-
-        const auto cit2 = vec2.cbegin();
-        assert(cit2->first == false);
     }
 #endif // __EDG__
 #endif // !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2
