@@ -490,10 +490,10 @@ void ordering_test_cases() {
         std::slice a3 = std::slice(3, 3, 4);
         std::slice a4 = std::slice(2, 4, 4);
         std::slice a5 = std::slice(2, 3, 3);
-        static_assert(a1 == a2);
-        static_assert(a1 != a3);
-        static_assert(a1 != a4);
-        static_assert(a1 != a5);
+        assert(a1 == a2);
+        assert(a1 != a3);
+        assert(a1 != a4);
+        assert(a1 != a5);
     }
     { // filesystem::space_info
         constexpr std::filesystem::space_info si1{4'000'000'000'000, 2'000'000'000'000, 1'000'000'000'000};
