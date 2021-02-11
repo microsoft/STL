@@ -2474,10 +2474,13 @@ namespace ranges {
 
             /* [[no_unique_address]] */ sentinel_t<_Base> _Last{};
 
+            // clang-format off
             template <bool _OtherConst>
-            _NODISCARD static constexpr const _Maybe_const_iter<_OtherConst>& _Get_current(
-                const _Iterator<_OtherConst>& _It) noexcept {
-                return _It._Current;
+                requires sentinel_for<sentinel_t<_Base>, _Maybe_const_iter<_OtherConst>>
+            _NODISCARD constexpr bool _Equal(const _Iterator<_OtherConst>& _It) const noexcept(
+                    noexcept(_It._Outer == _Last)) {
+                // clang-format on
+                return _It._Outer == _Last;
             }
 
         public:
@@ -2495,9 +2498,9 @@ namespace ranges {
             template <bool _OtherConst>
                 requires sentinel_for<sentinel_t<_Base>, _Maybe_const_iter<_OtherConst>>
             _NODISCARD friend constexpr bool operator==(const _Iterator<_OtherConst>& _Left,
-                const _Sentinel& _Right) noexcept(noexcept(_Get_current(_Left) == _Right._Last)) /* strengthened */ {
+                const _Sentinel& _Right) noexcept(noexcept(_Right._Equal(_Left))) /* strengthened */ {
                 // clang-format on
-                return _Get_current(_Left) == _Right._Last;
+                return _Right._Equal(_Left);
             }
         };
 
