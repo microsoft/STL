@@ -556,23 +556,25 @@ class basic_format_args;
 template <class _Context, class... _Args>
 class _Format_arg_store {
 private:
-    friend basic_format_args<_Context>;
-
-    static constexpr size_t _Num_args       = sizeof...(_Args);
-    static constexpr size_t _Storage_length = (_Get_format_arg_storage_size<_Context, _Args> + ... + 0);
-
     using _CharType   = typename _Context::char_type;
     using _Index_type = _Format_arg_store_packed_index;
 
-    unsigned char _Storage[(_STD max)(_Storage_length, static_cast<size_t>(1))];
-    _Index_type _Index_array[(_STD max)(_Num_args, static_cast<size_t>(1))];
+    friend basic_format_args<_Context>;
+
+    static constexpr size_t _Num_args       = sizeof...(_Args);
+    static constexpr size_t _Index_length   = _Num_args * sizeof(_Index_type);
+    static constexpr size_t _Storage_length = (_Get_format_arg_storage_size<_Context, _Args> + ... + 0);
+
+    // we store the data in memory as _Format_arg_store_packed_index[_Index_length] + unsigned char[_Storage_length]
+    unsigned char _Storage[(_STD max)(_Index_length + _Storage_length, static_cast<size_t>(1))];
 
     template <class _Ty>
     void _Store_impl(const size_t _Arg_index, const _Basic_format_arg_type _Arg_type, _Ty _Val) noexcept {
+        const auto _Index_array = reinterpret_cast<_Index_type*>(_Storage);
         const auto _Store_index = _Index_array[_Arg_index]._Index;
         const auto _Length      = _Get_format_arg_storage_size<_Context, _Ty>;
 
-        _CSTD memcpy(_Storage + _Store_index, _STD addressof(_Val), _Length);
+        _CSTD memcpy(_Storage + _Index_length + _Store_index, _STD addressof(_Val), _Length);
         _Index_array[_Arg_index]._Type = _Arg_type;
         if (_Arg_index + 1 < _Num_args) {
             // Set the starting index of the next arg, as that is dynamic, must be called with increasing index
@@ -659,8 +661,8 @@ template <class _Context>
 class basic_format_args {
 private:
     template <class _Ty>
-    _NODISCARD static auto _Get_value_from_memory(const unsigned char* _Storage) noexcept {
-        auto& _Temp = *reinterpret_cast<const unsigned char(*)[sizeof(_Ty)]>(_Storage);
+    _NODISCARD static auto _Get_value_from_memory(const unsigned char* _Val) noexcept {
+        auto& _Temp = *reinterpret_cast<const unsigned char(*)[sizeof(_Ty)]>(_Val);
         return _Bit_cast<_Ty>(_Temp);
     }
 
@@ -668,7 +670,7 @@ public:
     basic_format_args() noexcept;
     template <class... _Args>
     basic_format_args(const _Format_arg_store<_Context, _Args...>& _Store) noexcept
-        : _Num_args(sizeof...(_Args)), _Storage(_Store._Storage), _Index_array(_Store._Index_array) {}
+        : _Num_args(sizeof...(_Args)), _Storage(_Store._Storage) {}
 
     basic_format_arg<_Context> get(const size_t _Index) const noexcept {
         if (_Index >= _Num_args) {
@@ -676,8 +678,11 @@ public:
         }
 
         using _CharType                   = typename _Context::char_type;
-        const unsigned char* _Arg_storage = _Storage + _Index_array[_Index]._Index;
-        switch (_Index_array[_Index]._Type) {
+        const auto _Packed_index          = reinterpret_cast<const _Format_arg_store_packed_index*>(_Storage)[_Index];
+        const auto _Index_length          = _Num_args * sizeof(_Format_arg_store_packed_index);
+        const unsigned char* _Arg_storage = _Storage + _Index_length + _Packed_index._Index;
+
+        switch (_Packed_index._Type) {
         case _Basic_format_arg_type::_None:
             return basic_format_arg<_Context>{};
         case _Basic_format_arg_type::_Int_type:
@@ -714,9 +719,8 @@ public:
     }
 
 private:
-    size_t _Num_args                                   = 0;
-    const unsigned char* _Storage                      = nullptr;
-    const _Format_arg_store_packed_index* _Index_array = nullptr;
+    size_t _Num_args              = 0;
+    const unsigned char* _Storage = nullptr;
 };
 
 // TODO: test coverage
