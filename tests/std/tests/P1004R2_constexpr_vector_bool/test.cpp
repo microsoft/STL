@@ -77,7 +77,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
 #if !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1273296
         assert(all_of(
             size_default_constructed.begin(), size_default_constructed.end(), [](const bool val) { return !val; }));
-#endif // !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL ! =2
+#endif // !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2
 #endif // __EDG__
 
 #ifndef __EDG__ // TRANSITION, VSO-1274387
@@ -107,13 +107,13 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
 #if !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1273296
         assert(equal(copy_constructed.begin(), copy_constructed.end(), size_default_constructed.begin(),
             size_default_constructed.end()));
-#endif // !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL ! =2
+#endif // !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2
 
         vec move_constructed(move(copy_constructed));
 #if !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1273296
         assert(equal(move_constructed.begin(), move_constructed.end(), size_default_constructed.begin(),
             size_default_constructed.end()));
-#endif // !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL ! =2
+#endif // !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2
         assert(copy_constructed.empty());
 #endif // __EDG__
 
