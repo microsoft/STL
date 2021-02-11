@@ -1305,7 +1305,7 @@ private:
         _Change_array(_Newvec, _Size, _Newcapacity);
     }
 
-#if _ITERATOR_DEBUG_LEVEL != 0
+#if _ITERATOR_DEBUG_LEVEL != 0 && defined(_ENABLE_STL_INTERNAL_CHECK)
     void _Check_all_orphaned_locked() const noexcept {
         _Lockit _Lock(_LOCK_DEBUG);
         auto& _My_data = _Mypair._Myval2;
@@ -1323,7 +1323,7 @@ private:
             _Check_all_orphaned_locked();
         }
     }
-#endif // _ITERATOR_DEBUG_LEVEL != 0
+#endif // _ITERATOR_DEBUG_LEVEL != 0 && defined(_ENABLE_STL_INTERNAL_CHECK)
 
     _CONSTEXPR20_CONTAINER void _Clear_and_reserve_geometric(const size_type _Newsize) {
         auto& _My_data    = _Mypair._Myval2;
