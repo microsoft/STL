@@ -42,8 +42,8 @@ struct soccc_allocator {
     }
 
     template <typename U>
-    _CONSTEXPR20_DYNALLOC bool operator==(const soccc_allocator<U>& other) const noexcept {
-        return id == other.id;
+    _CONSTEXPR20_DYNALLOC bool operator==(const soccc_allocator<U>&) const noexcept {
+        return true;
     }
 
     _CONSTEXPR20_DYNALLOC T* allocate(const size_t n) {
