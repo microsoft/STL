@@ -3,7 +3,10 @@
 
 #include <algorithm>
 #include <assert.h>
+#include <iterator>
 #include <memory>
+#include <type_traits>
+#include <utility>
 
 #pragma warning(disable : 4582) // '%s': constructor is not implicitly called
 #pragma warning(disable : 4583) // '%s': destructor is not implicitly called
