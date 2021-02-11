@@ -564,6 +564,9 @@ private:
     using _CharType   = typename _Context::char_type;
     using _Index_type = _Format_arg_store_packed_index;
 
+    unsigned char _Storage[(_STD max)(_Storage_length, static_cast<size_t>(1))];
+    _Index_type _Index_array[(_STD max)(_Num_args, static_cast<size_t>(1))];
+
     template <class _Ty>
     void _Store_impl(const size_t _Arg_index, const _Basic_format_arg_type _Arg_type, _Ty _Val) noexcept {
         const auto _Store_index = _Index_array[_Arg_index]._Index;
@@ -577,10 +580,6 @@ private:
         }
     }
 
-    unsigned char _Storage[(_STD max)(_Storage_length, static_cast<size_t>(1))];
-    _Index_type _Index_array[(_STD max)(_Num_args, static_cast<size_t>(1))];
-
-public:
     // See [format.arg]/5
     template <class _Ty>
     void _Store(const size_t _Arg_index, const _Ty& _Val) noexcept {
@@ -645,6 +644,14 @@ public:
     void _Store(const size_t _Arg_index, const _Ty* p) noexcept {
         // clang-format on
         _Store_impl<const void*>(_Arg_index, _Basic_format_arg_type::_Pointer_type, static_cast<const void*>(p));
+    }
+
+public:
+    _Format_arg_store(const _Args&... args) noexcept {
+        if constexpr (sizeof...(_Args) > 0) {
+            size_t _Arg_index = 0;
+            (_Store(_Arg_index++, args), ...);
+        }
     }
 };
 
@@ -753,22 +760,12 @@ using wformat_args    = basic_format_args<wformat_context>;
 
 template <class _Context = format_context, class... _Args>
 auto make_format_args(const _Args&... args) {
-    _Format_arg_store<_Context, _Args...> _Arg_store{};
-    if constexpr (sizeof...(_Args) > 0) {
-        size_t _Arg_index = 0;
-        (_Arg_store._Store(_Arg_index++, args), ...);
-    }
-    return _Arg_store;
+    return _Format_arg_store<_Context, _Args...>{args...};
 }
 
 template <class _Context = wformat_context, class... _Args>
 auto make_wformat_args(const _Args&... args) {
-    _Format_arg_store<_Context, _Args...> _Arg_store{};
-    if constexpr (sizeof...(_Args) > 0) {
-        size_t _Arg_index = 0;
-        (_Arg_store._Store(_Arg_index++, args), ...);
-    }
-    return _Arg_store;
+    return _Format_arg_store<_Context, _Args...>{args...};
 }
 
 // FUNCTION vformat
