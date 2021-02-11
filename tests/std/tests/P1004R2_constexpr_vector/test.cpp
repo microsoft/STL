@@ -96,6 +96,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
 
         // special member functions
         vec default_constructed;
+        assert(default_constructed.empty());
         vec copy_constructed(size_default_constructed);
 #if !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1274387
         assert(equal(copy_constructed.begin(), copy_constructed.end(), size_default_constructed.begin(),
