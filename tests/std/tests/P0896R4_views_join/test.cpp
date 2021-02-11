@@ -346,6 +346,26 @@ template <class Category, test::Common IsCommon, bool is_random = derived_from<C
 using move_only_view = test::range<Category, mo_inner, test::Sized{is_random}, test::CanDifference{is_random}, IsCommon,
     test::CanCompare{derived_from<Category, forward_iterator_tag>}, test::ProxyRef::no, test::CanView::yes,
     test::Copyability::move_only>;
+void test_move_only_views() {
+    const auto gen = [] {
+        return array{mo_inner{intervals[0]}, mo_inner{intervals[1]}, mo_inner{intervals[2]}, mo_inner{intervals[3]}};
+    };
+
+    auto data = gen();
+    test_one(move_only_view<input_iterator_tag, test::Common::no>{data}, expected_ints);
+
+    data = gen();
+    test_one(move_only_view<forward_iterator_tag, test::Common::no>{data}, expected_ints);
+
+    data = gen();
+    test_one(move_only_view<forward_iterator_tag, test::Common::yes>{data}, expected_ints);
+
+    data = gen();
+    test_one(move_only_view<bidirectional_iterator_tag, test::Common::no>{data}, expected_ints);
+
+    data = gen();
+    test_one(move_only_view<bidirectional_iterator_tag, test::Common::yes>{data}, expected_ints);
+}
 
 int main() {
     // Validate views
@@ -356,15 +376,8 @@ int main() {
         static_assert(test_one(input, expected));
         test_one(input, expected);
     }
-    { // ... move-only
-        mo_inner data[] = {
-            mo_inner{intervals[0]}, mo_inner{intervals[1]}, mo_inner{intervals[2]}, mo_inner{intervals[3]}};
-        test_one(move_only_view<input_iterator_tag, test::Common::no>{data}, expected_ints);
-        test_one(move_only_view<forward_iterator_tag, test::Common::no>{data}, expected_ints);
-        test_one(move_only_view<forward_iterator_tag, test::Common::yes>{data}, expected_ints);
-        test_one(move_only_view<bidirectional_iterator_tag, test::Common::no>{data}, expected_ints);
-        test_one(move_only_view<bidirectional_iterator_tag, test::Common::yes>{data}, expected_ints);
-    }
+    // ... move-only
+    test_move_only_views();
 
     // Validate non-views
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, FIXME
