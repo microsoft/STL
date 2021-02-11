@@ -44,7 +44,7 @@ public:
     }
 
     // TRANSITION, DevCom-1331017
-    _CONSTEXPR20_CONTAINER _Vector_const_iterator& operator=(const _Vector_const_iterator&) = default;
+    _CONSTEXPR20_CONTAINER _Vector_const_iterator& operator=(const _Vector_const_iterator&) noexcept = default;
 
     _NODISCARD _CONSTEXPR20_CONTAINER reference operator*() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -745,8 +745,8 @@ public:
         emplace_back(_Val);
     }
 
-    _CONSTEXPR20_CONTAINER void push_back(
-        _Ty&& _Val) { // insert by moving into element at end, provide strong guarantee
+    _CONSTEXPR20_CONTAINER void push_back(_Ty&& _Val) {
+        // insert by moving into element at end, provide strong guarantee
         emplace_back(_STD move(_Val));
     }
 
