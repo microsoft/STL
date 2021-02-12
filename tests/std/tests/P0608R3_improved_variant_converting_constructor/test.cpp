@@ -36,7 +36,7 @@ static_assert(is_constructible_v<variant<string, bool>, string>);
 static_assert(is_constructible_v<variant<char, optional<char16_t>>, char16_t>);
 static_assert(is_constructible_v<variant<int, reference_wrapper<double>>, double&>);
 static_assert(is_constructible_v<variant<float, int>, char>);
-#ifndef __EDG__ // TRANSITION, ...
+#ifndef __EDG__ // TRANSITION, DevCom-1337958
 static_assert(is_constructible_v<variant<float, long>, int>);
 static_assert(is_constructible_v<variant<float, long long>, int>);
 static_assert(is_constructible_v<variant<float, long, double>, int>);
@@ -44,7 +44,7 @@ static_assert(is_constructible_v<variant<float, vector<int>, long long>, int>);
 #endif // !__EDG__
 static_assert(is_constructible_v<variant<float, int, long long>, char>);
 
-#ifndef __EDG__ // TRANSITION, ...
+#ifndef __EDG__ // TRANSITION, DevCom-1337958
 static_assert(!is_constructible_v<variant<float>, int>);
 static_assert(!is_constructible_v<variant<float, vector<int>>, int>);
 #endif // !__EDG__
@@ -67,7 +67,7 @@ static_assert(is_constructible_v<variant<float, bool, convertible_bool>, convert
 static_assert(is_constructible_v<variant<float, bool, convertible_bool>, bool>);
 static_assert(is_constructible_v<variant<char, int>, bool>);
 
-#ifndef __EDG__ // TRANSITION, ...
+#ifndef __EDG__ // TRANSITION, DevCom-1337958
 #ifndef __clang__ // TRANSITION, ...
 static_assert(!is_constructible_v<variant<double_double>, int>);
 #endif // !__clang__
@@ -99,7 +99,7 @@ void test_variant_constructor_P0608R3() {
     using T2 = variant<float, long>;
     T2 e;
     assert(e.index() == 0);
-#ifndef __EDG__ // TRANSITION, ...
+#ifndef __EDG__ // TRANSITION, DevCom-1337958
     e = 0; // long
     assert(e.index() == 1);
 #endif // !__EDG__
@@ -108,7 +108,7 @@ void test_variant_constructor_P0608R3() {
     assert(f.index() == 1);
     assert(get<int>(f) == 97);
 
-#ifndef __EDG__ // TRANSITION, ...
+#ifndef __EDG__ // TRANSITION, DevCom-1337958
     variant<float, long> g = 0; // long
     assert(g.index() == 1);
 
