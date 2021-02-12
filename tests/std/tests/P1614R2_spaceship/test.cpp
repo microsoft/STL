@@ -27,6 +27,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
+#include <valarray>
 #include <vector>
 
 template <class T>
@@ -482,6 +483,17 @@ void ordering_test_cases() {
         }
 
         spaceship_test<std::strong_ordering>(c_mem[0], c_mem[0], c_mem[1]);
+    }
+    { // slice
+        std::slice a1(2, 3, 4);
+        std::slice a2(2, 3, 4);
+        std::slice a3(3, 3, 4);
+        std::slice a4(2, 4, 4);
+        std::slice a5(2, 3, 3);
+        assert(a1 == a2);
+        assert(a1 != a3);
+        assert(a1 != a4);
+        assert(a1 != a5);
     }
     { // filesystem::space_info
         constexpr std::filesystem::space_info si1{4'000'000'000'000, 2'000'000'000'000, 1'000'000'000'000};
