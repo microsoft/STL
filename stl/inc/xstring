@@ -4619,26 +4619,23 @@ _NODISCARD bool operator>=(const basic_string<_Elem, _Traits, _Alloc>& _Left, _I
 #endif // !_HAS_CXX20
 
 #if _HAS_CXX20
+template <class _Traits, class = void>
+struct _Get_comparison_category {
+    using comparison_category = weak_ordering;
+};
+template <class _Traits>
+struct _Get_comparison_category<_Traits, void_t<typename _Traits::comparison_category>> {
+    using comparison_category = typename _Traits::comparison_category;
+};
 template <class _Elem, class _Traits, class _Alloc>
-_NODISCARD strong_ordering operator<=>(
+_NODISCARD typename _Get_comparison_category<_Traits>::comparison_category operator<=>(
     const basic_string<_Elem, _Traits, _Alloc>& _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) noexcept {
-    int _comparison = _Left.compare(_Right);
-    if (_comparison == 0) {
-        return strong_ordering::equivalent;
-    } else if (_comparison < 0) {
-        return strong_ordering::less;
-    }
-    return strong_ordering::greater;
+    return static_cast<typename _Get_comparison_category<_Traits>::comparison_category>(_Left.compare(_Right) <=> 0);
 }
 template <class _Elem, class _Traits, class _Alloc>
-_NODISCARD strong_ordering operator<=>(const basic_string<_Elem, _Traits, _Alloc>& _Left, const _Elem* _Right) {
-    int _comparison = _Left.compare(_Right);
-    if (_comparison == 0) {
-        return strong_ordering::equivalent;
-    } else if (_comparison < 0) {
-        return strong_ordering::less;
-    }
-    return strong_ordering::greater;
+_NODISCARD typename _Get_comparison_category<_Traits>::comparison_category operator<=>(
+    const basic_string<_Elem, _Traits, _Alloc>& _Left, const _Elem* _Right) {
+    return static_cast<typename _Get_comparison_category<_Traits>::comparison_category>(_Left.compare(_Right) <=> 0);
 }
 #endif // _HAS_CXX20
 
