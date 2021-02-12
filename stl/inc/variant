@@ -992,7 +992,9 @@ struct _Variant_init_overload_set_;
 
 template <size_t... _Indices, class... _Types>
 struct _Variant_init_overload_set_<index_sequence<_Indices...>, _Types...>
-    : _Variant_init_single_overload<_Indices, _Types>... {};
+    : _Variant_init_single_overload<_Indices, _Types>... {
+    using _Variant_init_single_overload<_Indices, _Types>::operator()...;
+};
 
 template <class... _Types>
 using _Variant_init_overload_set = _Variant_init_overload_set_<index_sequence_for<_Types...>, _Types...>;
