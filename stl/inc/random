@@ -2428,7 +2428,7 @@ public:
         _Ty1 _Logp;
         _Ty1 _Logp1;
 
-        _Small_poisson_distribution<_Ty> _Small;
+        _Small_poisson_distribution<_Ty> _Small; // TRANSITION, ABI: unused
     };
 
     binomial_distribution() : _Par(1, _Ty1(0.5)) {}
@@ -2505,8 +2505,26 @@ private:
 
             return _Res;
         } else if (_Par0._Mean < 1.0) {
-            // events are rare, use Poisson distribution
-            _Res = _Par0._Small(_Eng);
+            // Events are rare, use waiting time method (Luc Devroye, Non-Uniform Random Variate Generation, p. 525).
+            const _Ty1 _Rand = _NRAND(_Eng, _Ty1);
+
+            // The exit condition is log(1 - _Rand)/t < log(1-p), which is equivalent to _Rand > 1 - (1-p)^t. If
+            // we have a cheap upper bound for 1-(1-p)^t, we can exit early without having to call log. We use two
+            // such bounds, one that is tight for mean ~0 and another for mean ~1. In the first case, Bernoulli's
+            // inequality gives -1+p*t >= -(1-p)^t, so 1 - (1-p)^t <= p*t = mean. For the other bound, 1-(1-p)^t =
+            // 1-(1-p)(1-mean/t)^(t-1) <= 1-(1-p)(1-1/t)^(t-1) <= 1-(1-p)/e.
+            const _Ty1 _Ub =
+                (_STD min)(_Par0._Mean, _Ty1{3.678794411714423216e-1} * _Par0._Pp + _Ty1{6.32120558828557678e-1});
+            if (_Rand > _Ub) {
+                _Res = _Ty{0};
+            } else {
+                _Ty _Denom = _Par0._Tx;
+                _Ty1 _Sum  = _CSTD log(_Ty1{1.0} - _Rand) / _Denom;
+                while (_Sum >= _Par0._Logp1 && --_Denom != 0) {
+                    _Sum += _CSTD log(_Ty1{1.0} - _NRAND(_Eng, _Ty1)) / _Denom;
+                }
+                _Res = static_cast<_Ty>(_Par0._Tx - _Denom);
+            }
         } else { // no shortcuts
             using _Uty = make_unsigned_t<_Ty>;
             const auto _Ty1_Tx{_Float_upper_bound<_Ty1>(static_cast<_Uty>(_Par0._Tx))};

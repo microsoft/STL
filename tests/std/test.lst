@@ -172,6 +172,7 @@ tests\GH_001103_countl_zero_correctness
 tests\GH_001105_custom_streambuf_throws
 tests\GH_001123_random_cast_out_of_range
 tests\GH_001411_core_headers
+tests\GH_001530_binomial_accuracy
 tests\GH_001541_case_sensitive_boolalpha
 tests\LWG2597_complex_branch_cut
 tests\LWG3018_shared_ptr_function
