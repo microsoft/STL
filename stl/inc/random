@@ -2798,7 +2798,7 @@ public:
     }
 
     _NODISCARD result_type(max)() const { // get largest possible result
-        return (numeric_limits<result_type>::max)();
+        return numeric_limits<result_type>::infinity();
     }
 
     void reset() {} // clear internal state
@@ -2935,11 +2935,11 @@ public:
     }
 
     _NODISCARD result_type(min)() const { // get smallest possible result
-        return numeric_limits<result_type>::denorm_min();
+        return -numeric_limits<result_type>::infinity();
     }
 
     _NODISCARD result_type(max)() const { // get largest possible result
-        return (numeric_limits<result_type>::max)();
+        return numeric_limits<result_type>::infinity();
     }
 
     void reset() { // clear internal state
@@ -3075,7 +3075,7 @@ public:
         }
 
         _NODISCARD bool operator==(const param_type& _Right) const {
-            return _Px == _Right._Px;
+            return _Alpha == _Right._Alpha && _Beta == _Right._Beta;
         }
 
         _NODISCARD bool operator!=(const param_type& _Right) const {
@@ -3129,11 +3129,11 @@ public:
     }
 
     _NODISCARD result_type(min)() const { // get smallest possible result
-        return numeric_limits<result_type>::denorm_min();
+        return result_type{0.0};
     }
 
     _NODISCARD result_type(max)() const { // get largest possible result
-        return (numeric_limits<result_type>::max)();
+        return numeric_limits<result_type>::infinity();
     }
 
     void reset() {} // clear internal state
@@ -3324,7 +3324,7 @@ public:
     }
 
     _NODISCARD result_type(max)() const { // get largest possible result
-        return (numeric_limits<result_type>::max)();
+        return numeric_limits<result_type>::infinity();
     }
 
     void reset() {} // clear internal state
@@ -3456,11 +3456,11 @@ public:
     }
 
     _NODISCARD result_type(min)() const { // get smallest possible result
-        return (numeric_limits<result_type>::min)();
+        return -numeric_limits<result_type>::infinity();
     }
 
     _NODISCARD result_type(max)() const { // get largest possible result
-        return (numeric_limits<result_type>::max)();
+        return numeric_limits<result_type>::infinity();
     }
 
     void reset() {} // clear internal state
@@ -3594,11 +3594,11 @@ public:
     }
 
     _NODISCARD result_type(min)() const { // get smallest possible result
-        return -(numeric_limits<result_type>::max)();
+        return result_type{0.0};
     }
 
     _NODISCARD result_type(max)() const { // get largest possible result
-        return (numeric_limits<result_type>::max)();
+        return numeric_limits<result_type>::infinity();
     }
 
     void reset() {} // clear internal state
@@ -3720,11 +3720,11 @@ public:
     }
 
     _NODISCARD result_type(min)() const { // get smallest possible result
-        return numeric_limits<result_type>::denorm_min();
+        return result_type{0.0};
     }
 
     _NODISCARD result_type(max)() const { // get largest possible result
-        return (numeric_limits<result_type>::max)();
+        return numeric_limits<result_type>::infinity();
     }
 
     void reset() {} // clear internal state
@@ -3852,11 +3852,11 @@ public:
     }
 
     _NODISCARD result_type(min)() const { // get smallest possible result
-        return -(numeric_limits<result_type>::max)();
+        return -numeric_limits<result_type>::infinity();
     }
 
     _NODISCARD result_type(max)() const { // get largest possible result
-        return (numeric_limits<result_type>::max)();
+        return numeric_limits<result_type>::infinity();
     }
 
     void reset() {} // clear internal state
@@ -4053,7 +4053,7 @@ public:
     }
 
     _NODISCARD result_type(max)() const { // get largest possible result
-        return (numeric_limits<result_type>::max)();
+        return numeric_limits<result_type>::infinity();
     }
 
     void reset() {} // clear internal state
@@ -4186,11 +4186,11 @@ public:
     }
 
     _NODISCARD result_type(min)() const { // get smallest possible result
-        return -(numeric_limits<result_type>::max)();
+        return -numeric_limits<result_type>::infinity();
     }
 
     _NODISCARD result_type(max)() const { // get largest possible result
-        return (numeric_limits<result_type>::max)();
+        return numeric_limits<result_type>::infinity();
     }
 
     void reset() {} // clear internal state
