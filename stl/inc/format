@@ -616,7 +616,7 @@ private:
         } else if constexpr (is_same_v<_Ty, long double>) {
             _Store_impl<long double>(_Arg_index, _Basic_format_arg_type::_Long_double_type, _Val);
         } else {
-            _STL_VERIFY(false, "Invalid type passed to _Format_arg_store::_Store");
+            static_assert(_Always_false<_Ty>, "Invalid type passed to _Format_arg_store::_Store");
         }
     }
 
@@ -643,15 +643,15 @@ private:
     // clang-format off
     template <class _Ty>
         requires is_void_v<_Ty>
-    void _Store(const size_t _Arg_index, const _Ty* p) noexcept {
+    void _Store(const size_t _Arg_index, const _Ty* _Ptr) noexcept {
         // clang-format on
-        _Store_impl<const void*>(_Arg_index, _Basic_format_arg_type::_Pointer_type, static_cast<const void*>(p));
+        _Store_impl<const void*>(_Arg_index, _Basic_format_arg_type::_Pointer_type, static_cast<const void*>(_Ptr));
     }
 
 public:
-    _Format_arg_store(const _Args&... args) noexcept {
+    _Format_arg_store(const _Args&... _Vals) noexcept {
         size_t _Arg_index = 0;
-        (_Store(_Arg_index++, args), ...);
+        (_Store(_Arg_index++, _Vals), ...);
     }
 };
 
@@ -765,13 +765,13 @@ using format_args     = basic_format_args<format_context>;
 using wformat_args    = basic_format_args<wformat_context>;
 
 template <class _Context = format_context, class... _Args>
-auto make_format_args(const _Args&... args) {
-    return _Format_arg_store<_Context, _Args...>{args...};
+auto make_format_args(const _Args&... _Vals) {
+    return _Format_arg_store<_Context, _Args...>{_Vals...};
 }
 
 template <class _Context = wformat_context, class... _Args>
-auto make_wformat_args(const _Args&... args) {
-    return _Format_arg_store<_Context, _Args...>{args...};
+auto make_wformat_args(const _Args&... _Vals) {
+    return _Format_arg_store<_Context, _Args...>{_Vals...};
 }
 
 // FUNCTION vformat
