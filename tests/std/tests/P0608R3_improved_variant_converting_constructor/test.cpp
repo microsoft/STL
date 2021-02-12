@@ -37,12 +37,12 @@ static_assert(is_constructible_v<variant<char, optional<char16_t>>, char16_t>);
 static_assert(is_constructible_v<variant<int, reference_wrapper<double>>, double&>);
 static_assert(is_constructible_v<variant<float, int>, char>);
 #ifndef __EDG__ // TRANSITION, ...
-static_assert(is_constructible_v<variant<float, long int>, int>);
-static_assert(is_constructible_v<variant<float, long long int>, int>);
+static_assert(is_constructible_v<variant<float, long>, int>);
+static_assert(is_constructible_v<variant<float, long long>, int>);
 static_assert(is_constructible_v<variant<float, long, double>, int>);
-static_assert(is_constructible_v<variant<float, vector<int>, long long int>, int>);
+static_assert(is_constructible_v<variant<float, vector<int>, long long>, int>);
 #endif // !__EDG__
-static_assert(is_constructible_v<variant<float, int, long long int>, char>);
+static_assert(is_constructible_v<variant<float, int, long long>, char>);
 
 #ifndef __EDG__ // TRANSITION, ...
 static_assert(!is_constructible_v<variant<float>, int>);
@@ -52,8 +52,8 @@ static_assert(!is_constructible_v<variant<float, char>, int>);
 
 // P1957R2 examples
 static_assert(is_constructible_v<variant<bool, int>, bool>);
-static_assert(is_constructible_v<variant<bool, int>, std::bitset<4>::reference>);
-static_assert(is_constructible_v<variant<bool>, std::bitset<4>::reference>);
+static_assert(is_constructible_v<variant<bool, int>, bitset<4>::reference>);
+static_assert(is_constructible_v<variant<bool>, bitset<4>::reference>);
 
 // More examples
 static_assert(is_constructible_v<variant<double_double>, double>);
@@ -73,13 +73,13 @@ static_assert(!is_constructible_v<variant<double_double>, int>);
 #endif // !__clang__
 static_assert(!is_constructible_v<variant<float>, unsigned int>);
 #endif // !__EDG__
-static_assert(!is_constructible_v<variant<float, long int, long long int>, int>);
+static_assert(!is_constructible_v<variant<float, long, long long>, int>);
 
 void test_variant_constructor_P0608R3() {
     // P0608R3 runtime checks
     variant<string, bool> a = "abc"; // string
     assert(a.index() == 0);
-    assert(get<0>(a) == string("abc"));
+    assert(get<0>(a) == "abc");
 
     variant<char, optional<char16_t>> b = u'\u2043'; // optional<char16_t>
     assert(b.index() == 1);
@@ -115,11 +115,11 @@ void test_variant_constructor_P0608R3() {
     variant<float, long, double> h = 0; // long
     assert(h.index() == 1);
 
-    variant<float, vector<int>, long long int> i = 0; // long long int
+    variant<float, vector<int>, long long> i = 0; // long long
     assert(i.index() == 2);
 #endif // !__EDG__
 
-    variant<float, int, long long int> j = 'a'; // int
+    variant<float, int, long long> j = 'a'; // int
     assert(j.index() == 1);
     assert(get<int>(j) == 97);
 }
