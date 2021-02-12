@@ -160,12 +160,8 @@ constexpr bool spaceship_test(const SmallType& smaller, const EqualType& smaller
 // TRANSITION, <=> is unimplemented for string.
 template <class T>
 inline constexpr bool has_string = false;
-template <class T>
-inline constexpr bool has_string<std::pair<T, const std::string>> = true;
-template <class T>
-inline constexpr bool has_string<std::pair<const std::string, T>> = true;
-template <>
-inline constexpr bool has_string<std::pair<const std::string, const std::string>> = true;
+template <class T, class U>
+inline constexpr bool has_string<std::pair<T, U>> = is_same_v<T, const std::string> || is_same_v<U, const std::string>;
 template <>
 inline constexpr bool has_string<const std::string> = true;
 
