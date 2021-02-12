@@ -570,9 +570,8 @@ private:
 
     template <class _Ty>
     void _Store_impl(const size_t _Arg_index, const _Basic_format_arg_type _Arg_type, _Ty _Val) noexcept {
-        // Note: _Index_array is uninitialized storage when we call it first with _Arg_index == 0
         const auto _Index_array = reinterpret_cast<_Index_type*>(_Storage);
-        const auto _Store_index = _Arg_index == 0 ? size_t{0} : _Index_array[_Arg_index]._Index;
+        const auto _Store_index = _Index_array[_Arg_index]._Index;
         const auto _Length      = _Get_format_arg_storage_size<_Context, _Ty>;
 
         _CSTD memcpy(_Storage + _Index_length + _Store_index, _STD addressof(_Val), _Length);
@@ -651,6 +650,8 @@ private:
 
 public:
     _Format_arg_store(const _Args&... _Vals) noexcept {
+        // Note: _Storage is uninitialized, so manually initialize the first index
+        _STD construct_at(reinterpret_cast<_Format_arg_store_packed_index*>(_Storage));
         size_t _Arg_index = 0;
         (_Store(_Arg_index++, _Vals), ...);
     }
