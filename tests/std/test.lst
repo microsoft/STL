@@ -251,6 +251,7 @@ tests\P0595R2_is_constant_evaluated
 tests\P0607R0_inline_variables
 tests\P0616R0_using_move_in_numeric
 tests\P0631R8_numbers_math_constants
+tests\P0645R10_text_formatting_args
 tests\P0645R10_text_formatting_death
 tests\P0645R10_text_formatting_parse_contexts
 tests\P0645R10_text_formatting_parsing
