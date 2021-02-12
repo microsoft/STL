@@ -128,6 +128,7 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
         // Validate deduction guide
         same_as<R> auto r = join_view{forward<Outer>(rng)};
         assert(ranges::equal(r, expected));
+        const bool is_empty = ranges::empty(expected);
 
         // Validate lack of size
         static_assert(!CanSize<R>);
@@ -136,7 +137,6 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
         static_assert(CanEmpty<R> == forward_range<R>);
         static_assert(CanMemberEmpty<R> == CanEmpty<R>);
         if constexpr (CanMemberEmpty<R>) {
-            const bool is_empty = ranges::empty(expected);
             assert(r.empty() == is_empty);
             assert(static_cast<bool>(r) == !is_empty);
 
@@ -148,44 +148,43 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
             }
         }
 
-#if 0 // FIXME
-      // Validate join_view::begin
+        // Validate join_view::begin
         static_assert(CanMemberBegin<R>);
-        {
-            // join_view sometimes caches begin, so let's make several extra calls // FIXME: lies
-            const same_as<join_iterator<iterator_t<V>>> auto i = r.begin();
+        if constexpr (forward_range<R>) {
+            const iterator_t<R> i = r.begin();
+            assert(r.begin() == i);
             if (!is_empty) {
                 assert(*i == *begin(expected));
             }
-            assert(r.begin() == i);
-            assert(r.begin() == i);
-            // NB: non-const begin is unconditionally noexcept(false) due to caching // FIXME: lies
-            static_assert(!noexcept(r.begin()));
 
             if constexpr (copyable<V>) {
-                auto r2                                             = r;
-                const same_as<join_iterator<iterator_t<V>>> auto i2 = r2.begin();
-                assert(r2.begin() == i2);
+                auto r2                              = r;
+                const same_as<iterator_t<R>> auto i2 = r2.begin();
                 assert(r2.begin() == i2);
                 if (!is_empty) {
                     assert(*i2 == *i);
                 }
             }
 
-            static_assert(CanMemberBegin<const R> == common_range<Outer>);
-            if constexpr (common_range<Outer>) {
-                const same_as<join_iterator<iterator_t<const V>>> auto ci = as_const(r).begin();
-                assert(as_const(r).begin() == ci);
+            static_assert(
+                CanMemberBegin<
+                    const R> == (input_range<const V> && is_reference_v<ranges::range_reference_t<const V>>) );
+            if constexpr (CanMemberBegin<const R> && !CanBegin<const R>) {
+                static_assert(input_iterator<decltype(std::declval<const R>().begin())>);
+                static_assert(
+                    sentinel_for<decltype(std::declval<const R>().end()), decltype(std::declval<const R>().begin())>);
+            }
+            static_assert(CanBegin<const R> == CanMemberBegin<const R>);
+            if constexpr (CanBegin<const R> && forward_range<R>) {
+                const iterator_t<const R> ci = as_const(r).begin();
                 assert(as_const(r).begin() == ci);
                 if (!is_empty) {
                     assert(*ci == *i);
                 }
-                static_assert(noexcept(as_const(r).begin()) == noexcept(join_iterator{end(as_const(rng))}));
 
                 if constexpr (copyable<V>) {
-                    const auto r2                                              = r;
-                    const same_as<join_iterator<iterator_t<const V>>> auto ci2 = r2.begin();
-                    assert(r2.begin() == ci2);
+                    const auto r2                               = r;
+                    const same_as<iterator_t<const V>> auto ci2 = r2.begin();
                     assert(r2.begin() == ci2);
                     if (!is_empty) {
                         assert(*ci2 == *i);
@@ -194,7 +193,8 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
             }
         }
 
-        // Validate join_view::end
+#if 0 // FIXME
+      // Validate join_view::end
         static_assert(CanMemberEnd<R>);
         if (!is_empty) {
             assert(*prev(r.end()) == *prev(end(expected)));
