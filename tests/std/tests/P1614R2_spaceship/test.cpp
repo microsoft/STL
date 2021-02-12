@@ -162,14 +162,16 @@ constexpr bool spaceship_test(const SmallType& smaller, const EqualType& smaller
 template <class T>
 inline constexpr bool has_string = false;
 template <class T, class U>
-inline constexpr bool has_string<std::pair<T, U>> = std::is_same_v<T, const std::string> || std::is_same_v<U, const std::string>;
+inline constexpr bool has_string<std::pair<T, U>> =
+    std::is_same_v<T, const std::string> || std::is_same_v<U, const std::string>;
 template <>
 inline constexpr bool has_string<const std::string> = true;
 
 template <class T>
 inline constexpr bool has_synth_ordered = false;
 template <class T, class U>
-inline constexpr bool has_synth_ordered<std::pair<T, U>> = std::is_same_v<T, const SynthOrdered> || std::is_same_v<U, const SynthOrdered>;
+inline constexpr bool has_synth_ordered<std::pair<T, U>> =
+    std::is_same_v<T, const SynthOrdered> || std::is_same_v<U, const SynthOrdered>;
 template <>
 inline constexpr bool has_synth_ordered<SynthOrdered> = true;
 
