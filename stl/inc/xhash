@@ -1841,6 +1841,7 @@ protected:
         }
     }
 
+    template <bool _Multi2 = _Traits::_Multi, enable_if_t<_Multi2, int> = 0>
     _NODISCARD bool _Multi_equal(const _Hash& _Right) const {
         static_assert(_Traits::_Multi, "This function only works with multi containers");
         _STL_INTERNAL_CHECK(this->size() == _Right.size());
