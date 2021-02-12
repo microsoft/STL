@@ -36,14 +36,18 @@ static_assert(is_constructible_v<variant<string, bool>, string>);
 static_assert(is_constructible_v<variant<char, optional<char16_t>>, char16_t>);
 static_assert(is_constructible_v<variant<int, reference_wrapper<double>>, double&>);
 static_assert(is_constructible_v<variant<float, int>, char>);
+#ifndef __EDG__ // TRANSITION, ...
 static_assert(is_constructible_v<variant<float, long int>, int>);
 static_assert(is_constructible_v<variant<float, long long int>, int>);
 static_assert(is_constructible_v<variant<float, long, double>, int>);
 static_assert(is_constructible_v<variant<float, vector<int>, long long int>, int>);
+#endif // !__EDG__
 static_assert(is_constructible_v<variant<float, int, long long int>, char>);
 
+#ifndef __EDG__ // TRANSITION, ...
 static_assert(!is_constructible_v<variant<float>, int>);
 static_assert(!is_constructible_v<variant<float, vector<int>>, int>);
+#endif // !__EDG__
 static_assert(!is_constructible_v<variant<float, char>, int>);
 
 // P1957R2 examples
@@ -63,10 +67,12 @@ static_assert(is_constructible_v<variant<float, bool, convertible_bool>, convert
 static_assert(is_constructible_v<variant<float, bool, convertible_bool>, bool>);
 static_assert(is_constructible_v<variant<char, int>, bool>);
 
+#ifndef __EDG__ // TRANSITION, ...
 #ifndef __clang__ // TRANSITION, ...
 static_assert(!is_constructible_v<variant<double_double>, int>);
 #endif // !__clang__
 static_assert(!is_constructible_v<variant<float>, unsigned int>);
+#endif // !__EDG__
 static_assert(!is_constructible_v<variant<float, long int, long long int>, int>);
 
 void test_variant_constructor_P0608R3() {
@@ -93,13 +99,16 @@ void test_variant_constructor_P0608R3() {
     using T2 = variant<float, long>;
     T2 e;
     assert(e.index() == 0);
+#ifndef __EDG__ // TRANSITION, ...
     e = 0; // long
     assert(e.index() == 1);
+#endif // !__EDG__
 
     variant<float, int> f = 'a'; // int
     assert(f.index() == 1);
     assert(get<int>(f) == 97);
 
+#ifndef __EDG__ // TRANSITION, ...
     variant<float, long> g = 0; // long
     assert(g.index() == 1);
 
@@ -108,6 +117,7 @@ void test_variant_constructor_P0608R3() {
 
     variant<float, vector<int>, long long int> i = 0; // long long int
     assert(i.index() == 2);
+#endif // !__EDG__
 
     variant<float, int, long long int> j = 'a'; // int
     assert(j.index() == 1);
