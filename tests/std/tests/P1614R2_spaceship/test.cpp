@@ -161,20 +161,14 @@ constexpr bool spaceship_test(const SmallType& smaller, const EqualType& smaller
 template <class T>
 inline constexpr bool has_string = false;
 template <class T, class U>
-inline constexpr bool has_string<std::pair<T, U>> = is_same_v<T, const std::string> || is_same_v<U, const std::string>;
+inline constexpr bool has_string<std::pair<T, U>> = std::is_same_v<T, const std::string> || std::is_same_v<U, const std::string>;
 template <>
 inline constexpr bool has_string<const std::string> = true;
 
 template <class T>
 inline constexpr bool has_synth_ordered = false;
-template <class T>
-inline constexpr bool has_synth_ordered<std::pair<T, const SynthOrdered>> = true;
-template <class T>
-inline constexpr bool has_synth_ordered<std::pair<const SynthOrdered, T>> = true;
-template <>
-inline constexpr bool has_synth_ordered<std::pair<const SynthOrdered, const SynthOrdered>> = true;
-template <>
-inline constexpr bool has_synth_ordered<const SynthOrdered> = true;
+template <class T, class U>
+inline constexpr bool has_synth_ordered<std::pair<T, U>> = std::is_same_v<T, const SynthOrdered> || std::is_same_v<U, const SynthOrdered>;
 template <>
 inline constexpr bool has_synth_ordered<SynthOrdered> = true;
 
@@ -227,7 +221,7 @@ void diagnostics_test() {
 }
 
 template <template <class...> class TupleLike>
-void tuple_like_test() {
+constexpr bool tuple_like_test() {
     {
         constexpr TupleLike<int, int> t1{1, 1};
         constexpr TupleLike<int, int> t1_equal{1, 1};
@@ -236,30 +230,18 @@ void tuple_like_test() {
         static_assert(spaceship_test<std::strong_ordering>(t1, t1_equal, t2));
     }
     {
-        TupleLike<int, int> t1{1, 1};
-        TupleLike<int, int> t1_equal{1, 1};
-        TupleLike<int, int> t2{2, 1};
-
-        spaceship_test<std::strong_ordering>(t1, t1_equal, t2);
-    }
-    {
         constexpr TupleLike<int, double> t1{1, 1.0};
         constexpr TupleLike<int, double> t1_equal{1, 1.0};
         constexpr TupleLike<int, double> t2{2, 1.0};
 
         static_assert(spaceship_test<std::partial_ordering>(t1, t1_equal, t2));
     }
-    {
-        TupleLike<int, double> t1{1, 1.0};
-        TupleLike<int, double> t1_equal{1, 1.0};
-        TupleLike<int, double> t2{2, 1.0};
 
-        spaceship_test<std::partial_ordering>(t1, t1_equal, t2);
-    }
+    return true;
 }
 
 template <auto SmallVal, decltype(SmallVal) EqualVal, decltype(EqualVal) LargeVal>
-void optional_test() {
+bool constexpr optional_test() {
     using ReturnType = std::compare_three_way_result_t<decltype(SmallVal), decltype(LargeVal)>;
 
     {
@@ -270,13 +252,6 @@ void optional_test() {
         static_assert(spaceship_test<ReturnType>(o1, o1_equal, o2));
     }
     {
-        std::optional o1(SmallVal);
-        std::optional o1_equal(EqualVal);
-        std::optional o2(LargeVal);
-
-        spaceship_test<ReturnType>(o1, o1_equal, o2);
-    }
-    {
         constexpr std::optional<decltype(SmallVal)> o1(std::nullopt);
         constexpr std::optional<decltype(EqualVal)> o1_equal(std::nullopt);
         constexpr std::optional o2(LargeVal);
@@ -284,21 +259,9 @@ void optional_test() {
         static_assert(spaceship_test<ReturnType>(o1, o1_equal, o2));
     }
     {
-        std::optional<decltype(SmallVal)> o1(std::nullopt);
-        std::optional<decltype(EqualVal)> o1_equal(std::nullopt);
-        std::optional o2(LargeVal);
-
-        spaceship_test<ReturnType>(o1, o1_equal, o2);
-    }
-    {
         constexpr std::optional o1(SmallVal);
 
         static_assert(spaceship_test<ReturnType>(o1, EqualVal, LargeVal));
-    }
-    {
-        std::optional o1(SmallVal);
-
-        spaceship_test<ReturnType>(o1, EqualVal, LargeVal);
     }
     {
         constexpr std::optional<decltype(SmallVal)> o1(std::nullopt);
@@ -306,12 +269,8 @@ void optional_test() {
 
         static_assert(spaceship_test<ReturnType>(o1, std::nullopt, o2));
     }
-    {
-        std::optional<decltype(SmallVal)> o1(std::nullopt);
-        std::optional o2(LargeVal);
 
-        spaceship_test<ReturnType>(o1, std::nullopt, o2);
-    }
+    return true;
 }
 
 void ordering_test_cases() {
@@ -592,9 +551,11 @@ void ordering_test_cases() {
     }
     { // optional
         optional_test<0, 0, 1>();
+        static_assert(optional_test<0, 0, 1>());
 
 #if defined(__cpp_nontype_template_args) && __cpp_nontype_template_args >= 201911
         optional_test<0.0, 0.0, 1.0>();
+        static_assert(optional_test<0.0, 0.0, 1.0>());
 #endif
 
         static_assert(
@@ -607,6 +568,7 @@ void ordering_test_cases() {
     }
     { // tuple
         tuple_like_test<std::tuple>();
+        static_assert(tuple_like_test<std::tuple>());
 
         {
             constexpr std::tuple<int, double> t1{1, 1.0};
@@ -656,6 +618,7 @@ void ordering_test_cases() {
     }
     { // pair
         tuple_like_test<std::pair>();
+        static_assert(tuple_like_test<std::pair>());
     }
     { // filesystem::space_info
         constexpr std::filesystem::space_info si1{4'000'000'000'000, 2'000'000'000'000, 1'000'000'000'000};

@@ -238,11 +238,11 @@ public:
     }
 
 #ifdef __cpp_lib_concepts
-    constexpr strong_ordering _Three_way_compare(const tuple&) const noexcept {
+    _NODISCARD constexpr strong_ordering _Three_way_compare(const tuple&) const noexcept {
         return strong_ordering::equal;
     }
 #else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
-    constexpr bool _Less(const tuple&) const noexcept {
+    _NODISCARD constexpr bool _Less(const tuple&) const noexcept {
         return false;
     }
 #endif // !defined(__cpp_lib_concepts)
@@ -684,10 +684,10 @@ public:
     }
 
 #ifdef __cpp_lib_concepts
-    template <class _First, class... _Other>
-    constexpr common_comparison_category_t<_Synth_three_way_result<_This, _First>,
-        _Synth_three_way_result<_Rest, _Other>...>
-        _Three_way_compare(const tuple<_First, _Other...>& _Right) const {
+    template <class _First, class... _Other,
+        class _Return = common_comparison_category_t<_Synth_three_way_result<_This, _First>,
+            _Synth_three_way_result<_Rest, _Other>...>>
+    _NODISCARD constexpr _Return _Three_way_compare(const tuple<_First, _Other...>& _Right) const {
         if (auto _Result = _Synth_three_way{}(_Myfirst._Val, _Right._Myfirst._Val); _Result != 0) {
             return _Result;
         }
@@ -695,7 +695,7 @@ public:
     }
 #else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
     template <class... _Other>
-    constexpr bool _Less(const tuple<_Other...>& _Right) const {
+    _NODISCARD constexpr bool _Less(const tuple<_Other...>& _Right) const {
         return _Myfirst._Val < _Right._Myfirst._Val
             || (!(_Right._Myfirst._Val < _Myfirst._Val) && _Mybase::_Less(_Right._Get_rest()));
     }
