@@ -173,31 +173,47 @@ struct memcopy_test {
     static constexpr int expected_input_long[]  = {13, 55, 12345, 42};
 
     static void call() {
+        using ranges::uninitialized_move_n, ranges::uninitialized_move_n_result, ranges::equal, ranges::iterator_t;
         { // Validate range overload
             int input[]  = {13, 55, 12345, 42};
             int output[] = {-1, -1, -1, -1};
+            span<int> wrapped_input{input};
+            span<int> wrapped_output{output};
 
-            ranges::uninitialized_move_n(input, 3, begin(output), end(output));
-            assert(ranges::equal(input, expected_input));
-            assert(ranges::equal(output, expected_output));
+            const same_as<uninitialized_move_n_result<iterator_t<span<int>>, iterator_t<span<int>>>> auto result =
+                uninitialized_move_n(wrapped_input.begin(), 3, begin(wrapped_output), end(wrapped_output));
+            assert(next(result.in) == end(wrapped_input));
+            assert(next(result.out) == end(wrapped_output));
+            assert(equal(input, expected_input));
+            assert(equal(output, expected_output));
         }
 
         { // Validate shorter input
             int input[]  = {13, 55};
             int output[] = {-1, -1, -1, -1};
+            span<int> wrapped_input{input};
+            span<int> wrapped_output{output};
 
-            ranges::uninitialized_move_n(input, 2, begin(output), end(output));
-            assert(ranges::equal(input, expected_input_short));
-            assert(ranges::equal(output, expected_output_long));
+            const same_as<uninitialized_move_n_result<iterator_t<span<int>>, iterator_t<span<int>>>> auto result =
+                uninitialized_move_n(wrapped_input.begin(), 2, begin(wrapped_output), end(wrapped_output));
+            assert(result.in == end(wrapped_input));
+            assert(next(result.out, 2) == end(wrapped_output));
+            assert(equal(input, expected_input_short));
+            assert(equal(output, expected_output_long));
         }
 
         { // Validate shorter output
             int input[]  = {13, 55, 12345, 42};
             int output[] = {-1, -1};
+            span<int> wrapped_input{input};
+            span<int> wrapped_output{output};
 
-            ranges::uninitialized_move_n(input, 3, begin(output), end(output));
-            assert(ranges::equal(input, expected_input));
-            assert(ranges::equal(output, expected_input_short));
+            const same_as<uninitialized_move_n_result<iterator_t<span<int>>, iterator_t<span<int>>>> auto result =
+                uninitialized_move_n(wrapped_input.begin(), 2, begin(wrapped_output), end(wrapped_output));
+            assert(next(result.in, 2) == end(wrapped_input));
+            assert(result.out == end(wrapped_output));
+            assert(equal(input, expected_input));
+            assert(equal(output, expected_input_short));
         }
     }
 };
