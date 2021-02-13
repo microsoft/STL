@@ -506,7 +506,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 142
-#define _MSVC_STL_UPDATE  202101L
+#define _MSVC_STL_UPDATE  202102L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #ifdef __CUDACC__
@@ -1190,10 +1190,9 @@
 #define __cpp_lib_constexpr_algorithms 201806L
 #define __cpp_lib_constexpr_complex    201711L
 
-#if defined(__cpp_constexpr_dynamic_alloc) \
-    && defined(__clang__) // TRANSITION, MSVC support for constexpr dynamic allocation
+#ifdef __cpp_constexpr_dynamic_alloc
 #define __cpp_lib_constexpr_dynamic_alloc 201907L
-#endif // defined(__cpp_constexpr_dynamic_alloc) && defined(__clang__)
+#endif // __cpp_constexpr_dynamic_alloc
 
 #define __cpp_lib_constexpr_functional  201907L
 #define __cpp_lib_constexpr_iterator    201811L
@@ -1282,6 +1281,13 @@
 #define _CONSTEXPR20_DYNALLOC constexpr
 #else
 #define _CONSTEXPR20_DYNALLOC inline
+#endif
+
+// Functions that became constexpr in C++20 via P0980R1 or P1004R2
+#if defined(__cpp_lib_constexpr_dynamic_alloc) && !defined(__clang__) // TRANSITION:LLVM-48606
+#define _CONSTEXPR20_CONTAINER constexpr
+#else
+#define _CONSTEXPR20_CONTAINER inline
 #endif
 
 #ifdef _RTC_CONVERSION_CHECKS_ENABLED
