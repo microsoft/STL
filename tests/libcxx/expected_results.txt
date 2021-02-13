@@ -661,6 +661,9 @@ std/utilities/memory/util.smartptr/util.smartptr.shared/libcxx.control_block_lay
 # Non-Standard assumption that std::filesystem::file_time_type::duration::period is std::nano
 std/input.output/filesystems/fs.filesystem.synopsis/file_time_type_resolution.compile.pass.cpp FAIL
 
+# P1614R2 "Adding Spaceship <=> To The Library" makes `std::operator!=(i1, i3)` an error
+std/iterators/stream.iterators/istream.iterator/istream.iterator.ops/equal.pass.cpp FAIL
+
 
 # *** LIKELY STL BUGS ***
 # Not yet analyzed, likely STL bugs. Assertions and other runtime failures.
