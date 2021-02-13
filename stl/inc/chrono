@@ -1464,7 +1464,8 @@ namespace chrono {
         // The formula above returns the same result for all _Day_of_year in [0, 365].
         // Note that 2^14 / 535 = 30.624... ~= 30.6 = 153 / 5.
 
-        // Formula 2: Compute _Zx of the first day of year _Yp
+        // Formula 2: Compute _Zx of the first day of year _Yp, where _Zx is the continuous count of days since
+        // 0000-03-01.
         //
         //   _Zx = ((1461 * _Yp) >> 2) - _Century + (_Century >> 2)
         //
@@ -1497,7 +1498,7 @@ namespace chrono {
         // Start by regular centuries of 36524 days, add one day for the long century in each calendar period. This
         // gives us 36524 * _Century + floor(_Century / 4) = floor(146097 * _Century / 4).
 
-        // Formula 2-2': Compute _Century from _Zx
+        // Formula 2-2': Compute _Century from _Zx, where _Zx is the continuous count of days since 0000-03-01.
         //
         //   _Century = floor((4 * _Zx + 3) / 146097)
         //
