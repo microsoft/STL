@@ -131,18 +131,26 @@ _NODISCARD constexpr void* _Voidify_iter(_Iter _It) noexcept {
 
 // FUNCTION TEMPLATE construct_at
 #if _HAS_CXX20
-template <class _Ty, class... _Types>
-_CONSTEXPR20_DYNALLOC auto construct_at(_Ty* const _Location, _Types&&... _Args) noexcept(
-    noexcept(::new (_Voidify_iter(_Location)) _Ty(_STD forward<_Types>(_Args)...))) // strengthened
-    -> decltype(::new (_Voidify_iter(_Location)) _Ty(_STD forward<_Types>(_Args)...)) {
+template <class _Ty, class... _Types,
+    class = void_t<decltype(::new (_STD declval<void*>()) _Ty(_STD declval<_Types>()...))>>
+_CONSTEXPR20_DYNALLOC _Ty* construct_at(_Ty* const _Location, _Types&&... _Args) noexcept(
+    noexcept(::new (_Voidify_iter(_Location)) _Ty(_STD forward<_Types>(_Args)...))) /* strengthened */ {
     return ::new (_Voidify_iter(_Location)) _Ty(_STD forward<_Types>(_Args)...);
 }
 #endif // _HAS_CXX20
 
 // FUNCTION TEMPLATE _Construct_in_place
 template <class _Ty, class... _Types>
-void _Construct_in_place(_Ty& _Obj, _Types&&... _Args) noexcept(is_nothrow_constructible_v<_Ty, _Types...>) {
-    ::new (_Voidify_iter(_STD addressof(_Obj))) _Ty(_STD forward<_Types>(_Args)...);
+_CONSTEXPR20_DYNALLOC void _Construct_in_place(_Ty& _Obj, _Types&&... _Args) noexcept(
+    is_nothrow_constructible_v<_Ty, _Types...>) {
+#ifdef __cpp_lib_constexpr_dynamic_alloc
+    if (_STD is_constant_evaluated()) {
+        _STD construct_at(_STD addressof(_Obj), _STD forward<_Types>(_Args)...);
+    } else
+#endif // __cpp_lib_constexpr_dynamic_alloc
+    {
+        ::new (_Voidify_iter(_STD addressof(_Obj))) _Ty(_STD forward<_Types>(_Args)...);
+    }
 }
 
 // FUNCTION TEMPLATE _Default_construct_in_place
