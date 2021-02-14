@@ -134,60 +134,65 @@ struct string_view_convertible {
     }
 };
 
+// TRANSITION, EDG concepts support
+template <class Range1, class Range2>
+constexpr bool equalRanges(const Range1& range1, const Range2& range2) noexcept {
+    return equal(begin(range1), end(range1), begin(range2), end(range2));
+}
+
 template <class CharType = char>
 _CONSTEXPR20_CONTAINER bool test_interface() {
     using str = basic_string<CharType>;
-    using ranges::equal;
 #if defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1269894
     { // constructors
         // range constructors
         str literal_constructed{get_literal_input<CharType>()};
-        assert(equal(literal_constructed, get_view_input<CharType>()));
+        assert(equalRanges(literal_constructed, get_view_input<CharType>()));
 
         str view_constructed(get_view_input<CharType>());
-        assert(equal(view_constructed, literal_constructed));
+        assert(equalRanges(view_constructed, literal_constructed));
 
         str initializer_list_constructed({'m', 'e', 'o', 'w'});
-        assert(equal(initializer_list_constructed, "meow"sv));
+        assert(equalRanges(initializer_list_constructed, "meow"sv));
 
         // special member functions
         str default_constructed;
         str copy_constructed(literal_constructed);
-        assert(equal(copy_constructed, literal_constructed));
+        assert(equalRanges(copy_constructed, literal_constructed));
 
         str move_constructed(move(copy_constructed));
-        assert(equal(move_constructed, literal_constructed));
+        assert(equalRanges(move_constructed, literal_constructed));
         assert(copy_constructed.empty());
 
         str copy_assigned = literal_constructed;
-        assert(equal(copy_assigned, literal_constructed));
+        assert(equalRanges(copy_assigned, literal_constructed));
 
         str move_assigned = std::move(copy_assigned);
-        assert(equal(move_assigned, literal_constructed));
+        assert(equalRanges(move_assigned, literal_constructed));
         assert(copy_constructed.empty());
 
         // Other constructors
         str size_value_constructed(5, CharType{'a'});
-        assert(equal(size_value_constructed, "aaaaa"sv));
+        assert(equalRanges(size_value_constructed, "aaaaa"sv));
 
         str copy_start_constructed(literal_constructed, 2);
-        assert(equal(copy_start_constructed, "llo fluffy kittens"sv));
+        assert(equalRanges(copy_start_constructed, "llo fluffy kittens"sv));
 
         str copy_start_length_constructed(literal_constructed, 2, 3);
-        assert(equal(copy_start_length_constructed, "llo"sv));
+        assert(equalRanges(copy_start_length_constructed, "llo"sv));
 
         str ptr_size_constructed(get_literal_input<CharType>(), 2);
-        assert(equal(ptr_size_constructed, "He"sv));
+        assert(equalRanges(ptr_size_constructed, "He"sv));
 #ifdef __EDG__ // TRANSITION, VSO-1270433
         str iterator_constructed(literal_constructed.begin(), literal_constructed.end());
-        assert(equal(iterator_constructed, literal_constructed));
+        assert(equalRanges(iterator_constructed, literal_constructed));
 #endif // __EDG__
         const string_view_convertible<CharType> convertible;
         str conversion_constructed(convertible);
-        assert(equal(conversion_constructed, literal_constructed));
+        assert(equalRanges(conversion_constructed, literal_constructed));
 
         str conversion_size_constructed(convertible, 2, 3);
-        assert(equal(conversion_size_constructed, "llo"sv));
+        assert(equalRanges(conversion_size_constructed, "llo"sv));
     }
 
     { // allocator constructors
@@ -195,45 +200,45 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
 
         // range constructors
         str literal_constructed{get_literal_input<CharType>(), alloc};
-        assert(equal(literal_constructed, get_view_input<CharType>()));
+        assert(equalRanges(literal_constructed, get_view_input<CharType>()));
 
         str view_constructed{get_view_input<CharType>(), alloc};
-        assert(equal(view_constructed, literal_constructed));
+        assert(equalRanges(view_constructed, literal_constructed));
 
         str initializer_list_constructed({'m', 'e', 'o', 'w'}, alloc);
-        assert(equal(initializer_list_constructed, "meow"sv));
+        assert(equalRanges(initializer_list_constructed, "meow"sv));
 
         // special member functions
         str default_constructed{alloc};
         str copy_constructed{literal_constructed, alloc};
-        assert(equal(copy_constructed, literal_constructed));
+        assert(equalRanges(copy_constructed, literal_constructed));
 
         str move_constructed{move(copy_constructed), alloc};
-        assert(equal(move_constructed, literal_constructed));
+        assert(equalRanges(move_constructed, literal_constructed));
         assert(copy_constructed.empty());
 
         // Other constructors
         str size_value_constructed(5, CharType{'a'}, alloc);
-        assert(equal(size_value_constructed, "aaaaa"sv));
+        assert(equalRanges(size_value_constructed, "aaaaa"sv));
 
         str copy_start_constructed(literal_constructed, 2, alloc);
-        assert(equal(copy_start_constructed, "llo fluffy kittens"sv));
+        assert(equalRanges(copy_start_constructed, "llo fluffy kittens"sv));
 
         str copy_start_length_constructed(literal_constructed, 2, 3, alloc);
-        assert(equal(copy_start_length_constructed, "llo"sv));
+        assert(equalRanges(copy_start_length_constructed, "llo"sv));
 
         str ptr_size_constructed(get_literal_input<CharType>(), 2, alloc);
-        assert(equal(ptr_size_constructed, "He"sv));
+        assert(equalRanges(ptr_size_constructed, "He"sv));
 #ifdef __EDG__ // TRANSITION, VSO-1270433
         str iterator_constructed(literal_constructed.begin(), literal_constructed.end(), alloc);
-        assert(equal(iterator_constructed, literal_constructed));
+        assert(equalRanges(iterator_constructed, literal_constructed));
 #endif // __EDG__
         const string_view_convertible<CharType> convertible;
         str conversion_constructed(convertible, alloc);
-        assert(equal(conversion_constructed, literal_constructed));
+        assert(equalRanges(conversion_constructed, literal_constructed));
 
         str conversion_size_constructed(convertible, 2, 3, alloc);
-        assert(equal(conversion_size_constructed, "llo"sv));
+        assert(equalRanges(conversion_size_constructed, "llo"sv));
     }
 
     { // assignment operator
@@ -241,29 +246,29 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
 
         str copy_assigned;
         copy_assigned = literal_constructed;
-        assert(equal(copy_assigned, literal_constructed));
+        assert(equalRanges(copy_assigned, literal_constructed));
 
         str move_assigned;
         move_assigned = move(copy_assigned);
-        assert(equal(move_assigned, literal_constructed));
+        assert(equalRanges(move_assigned, literal_constructed));
         assert(copy_assigned.empty());
 
         str literal_assigned;
         literal_assigned = get_literal_input<CharType>();
-        assert(equal(literal_assigned, literal_constructed));
+        assert(equalRanges(literal_assigned, literal_constructed));
 
         str char_assigned;
         char_assigned = CharType{'!'};
-        assert(equal(char_assigned, "!"sv));
+        assert(equalRanges(char_assigned, "!"sv));
 
         str initializer_list_constructed;
         initializer_list_constructed = {'m', 'e', 'o', 'w'};
-        assert(equal(initializer_list_constructed, "meow"sv));
+        assert(equalRanges(initializer_list_constructed, "meow"sv));
 
         const string_view_convertible<CharType> convertible;
         str conversion_assigned;
         conversion_assigned = convertible;
-        assert(equal(conversion_assigned, literal_constructed));
+        assert(equalRanges(conversion_assigned, literal_constructed));
     }
 
     { // assign
@@ -271,49 +276,49 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
 
         str assign_char_size;
         assign_char_size.assign(5, CharType{'a'});
-        assert(equal(assign_char_size, "aaaaa"sv));
+        assert(equalRanges(assign_char_size, "aaaaa"sv));
 
         str assign_str;
         assign_str.assign(literal_constructed);
-        assert(equal(assign_str, literal_constructed));
+        assert(equalRanges(assign_str, literal_constructed));
 
         str assign_str_pos;
         assign_str_pos.assign(literal_constructed, 2);
-        assert(equal(assign_str_pos, "llo fluffy kittens"sv));
+        assert(equalRanges(assign_str_pos, "llo fluffy kittens"sv));
 
         str assign_str_pos_len;
         assign_str_pos_len.assign(literal_constructed, 2, 3);
-        assert(equal(assign_str_pos_len, "llo"sv));
+        assert(equalRanges(assign_str_pos_len, "llo"sv));
 
         str assign_moved_str;
         assign_moved_str.assign(move(assign_str_pos_len));
-        assert(equal(assign_moved_str, "llo"sv));
+        assert(equalRanges(assign_moved_str, "llo"sv));
         assert(assign_str_pos_len.empty());
 
         str assign_literal;
         assign_literal.assign(get_literal_input<CharType>());
-        assert(equal(assign_literal, literal_constructed));
+        assert(equalRanges(assign_literal, literal_constructed));
 
         str assign_literal_count;
         assign_literal_count.assign(get_literal_input<CharType>(), 2);
-        assert(equal(assign_literal_count, "He"sv));
+        assert(equalRanges(assign_literal_count, "He"sv));
 
         str assign_iterator;
         assign_iterator.assign(begin(get_view_input<CharType>()), end(get_view_input<CharType>()));
-        assert(equal(assign_iterator, get_view_input<CharType>()));
+        assert(equalRanges(assign_iterator, get_view_input<CharType>()));
 
         str assign_initializer;
         assign_initializer.assign({'m', 'e', 'o', 'w'});
-        assert(equal(assign_initializer, "meow"sv));
+        assert(equalRanges(assign_initializer, "meow"sv));
 
         const string_view_convertible<CharType> convertible;
         str assign_conversion;
         assign_conversion.assign(convertible);
-        assert(equal(assign_conversion, literal_constructed));
+        assert(equalRanges(assign_conversion, literal_constructed));
 
         str assign_conversion_size;
         assign_conversion_size.assign(convertible, 2, 3);
-        assert(equal(assign_conversion_size, "llo"sv));
+        assert(equalRanges(assign_conversion_size, "llo"sv));
     }
 #endif // defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0
     { // allocator
@@ -496,73 +501,73 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         str insert_char               = get_literal_input<CharType>();
         const CharType to_be_inserted = CharType{','};
         insert_char.insert(insert_char.begin() + 5, to_be_inserted);
-        assert(equal(insert_char, "Hello, fluffy kittens"sv));
+        assert(equalRanges(insert_char, "Hello, fluffy kittens"sv));
 
         str insert_const_char = get_literal_input<CharType>();
         insert_const_char.insert(insert_const_char.cbegin() + 5, to_be_inserted);
-        assert(equal(insert_const_char, "Hello, fluffy kittens"sv));
+        assert(equalRanges(insert_const_char, "Hello, fluffy kittens"sv));
 
         str insert_char_rvalue = get_literal_input<CharType>();
         insert_char_rvalue.insert(insert_char_rvalue.begin() + 5, CharType{','});
-        assert(equal(insert_char_rvalue, "Hello, fluffy kittens"sv));
+        assert(equalRanges(insert_char_rvalue, "Hello, fluffy kittens"sv));
 
         str insert_const_char_rvalue = get_literal_input<CharType>();
         insert_const_char_rvalue.insert(insert_const_char_rvalue.cbegin() + 5, CharType{','});
-        assert(equal(insert_const_char_rvalue, "Hello, fluffy kittens"sv));
+        assert(equalRanges(insert_const_char_rvalue, "Hello, fluffy kittens"sv));
 
         str insert_range(2, CharType{'b'});
         const auto it = insert_range.insert(
             insert_range.begin() + 1, begin(get_view_input<CharType>()), end(get_view_input<CharType>()));
         assert(it == insert_range.begin() + 1);
-        assert(equal(insert_range, "bHello fluffy kittensb"sv));
+        assert(equalRanges(insert_range, "bHello fluffy kittensb"sv));
 
         str insert_const_range(2, CharType{'b'});
         const auto cit = insert_const_range.insert(
             insert_const_range.cbegin() + 1, begin(get_view_input<CharType>()), end(get_view_input<CharType>()));
         assert(cit == insert_const_range.cbegin() + 1);
-        assert(equal(insert_const_range, "bHello fluffy kittensb"sv));
+        assert(equalRanges(insert_const_range, "bHello fluffy kittensb"sv));
 
         str insert_initializer = get_literal_input<CharType>();
         const auto it_ilist    = insert_initializer.insert(insert_initializer.begin() + 6, {'c', 'u', 't', 'e', ' '});
         assert(it_ilist == insert_initializer.begin() + 6);
-        assert(equal(insert_initializer, "Hello cute fluffy kittens"sv));
+        assert(equalRanges(insert_initializer, "Hello cute fluffy kittens"sv));
 
         str insert_const_initializer = get_literal_input<CharType>();
         const auto cit_ilist =
             insert_const_initializer.insert(insert_const_initializer.cbegin() + 6, {'c', 'u', 't', 'e', ' '});
         assert(cit_ilist == insert_const_initializer.cbegin() + 6);
-        assert(equal(insert_const_initializer, "Hello cute fluffy kittens"sv));
+        assert(equalRanges(insert_const_initializer, "Hello cute fluffy kittens"sv));
 #endif // __EDG__
     }
 
     { // erase
         str erase_pos_count = get_literal_input<CharType>();
         erase_pos_count.erase(0, 6);
-        assert(equal(erase_pos_count, "fluffy kittens"sv));
+        assert(equalRanges(erase_pos_count, "fluffy kittens"sv));
 #ifdef __EDG__ // TRANSITION, VSO-1275530
         str erase_iter = get_literal_input<CharType>();
         erase_iter.erase(erase_iter.begin());
-        assert(equal(erase_iter, "ello fluffy kittens"sv));
+        assert(equalRanges(erase_iter, "ello fluffy kittens"sv));
 
         str erase_const_iter = get_literal_input<CharType>();
         erase_const_iter.erase(erase_const_iter.cbegin());
-        assert(equal(erase_const_iter, "ello fluffy kittens"sv));
+        assert(equalRanges(erase_const_iter, "ello fluffy kittens"sv));
 
         str erase_iter_iter = get_literal_input<CharType>();
         erase_iter_iter.erase(erase_iter_iter.begin(), erase_iter_iter.begin() + 6);
-        assert(equal(erase_iter_iter, "fluffy kittens"sv));
+        assert(equalRanges(erase_iter_iter, "fluffy kittens"sv));
 
         str erase_const_iter_iter = get_literal_input<CharType>();
         erase_const_iter_iter.erase(erase_const_iter_iter.cbegin(), erase_const_iter_iter.cbegin() + 6);
-        assert(equal(erase_const_iter_iter, "fluffy kittens"sv));
+        assert(equalRanges(erase_const_iter_iter, "fluffy kittens"sv));
 
         str erased_free = get_literal_input<CharType>();
         erase(erased_free, CharType{'l'});
-        assert(equal(erased_free, "Heo fuffy kittens"sv));
+        assert(equalRanges(erased_free, "Heo fuffy kittens"sv));
 
         str erased_free_if = get_literal_input<CharType>();
         erase_if(erased_free_if, [](const CharType val) { return val == CharType{'t'}; });
-        assert(equal(erased_free_if, "Hello fluffy kiens"sv));
+        assert(equalRanges(erased_free_if, "Hello fluffy kiens"sv));
 #endif // __EDG__
     }
 #endif // defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0
@@ -588,44 +593,44 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
 
         str append_char_size(2, CharType{'b'});
         append_char_size.append(5, CharType{'a'});
-        assert(equal(append_char_size, "bbaaaaa"sv));
+        assert(equalRanges(append_char_size, "bbaaaaa"sv));
 
         str append_str(2, CharType{'b'});
         append_str.append(literal_constructed);
-        assert(equal(append_str, "bbHello fluffy kittens"sv));
+        assert(equalRanges(append_str, "bbHello fluffy kittens"sv));
 
         str append_str_pos(2, CharType{'b'});
         append_str_pos.append(literal_constructed, 2);
-        assert(equal(append_str_pos, "bbllo fluffy kittens"sv));
+        assert(equalRanges(append_str_pos, "bbllo fluffy kittens"sv));
 
         str append_str_pos_len(2, CharType{'b'});
         append_str_pos_len.append(literal_constructed, 2, 3);
-        assert(equal(append_str_pos_len, "bbllo"sv));
+        assert(equalRanges(append_str_pos_len, "bbllo"sv));
 
         str append_literal(2, CharType{'b'});
         append_literal.append(get_literal_input<CharType>());
-        assert(equal(append_literal, "bbHello fluffy kittens"sv));
+        assert(equalRanges(append_literal, "bbHello fluffy kittens"sv));
 
         str append_literal_count(2, CharType{'b'});
         append_literal_count.append(get_literal_input<CharType>(), 2);
-        assert(equal(append_literal_count, "bbHe"sv));
+        assert(equalRanges(append_literal_count, "bbHe"sv));
 
         str append_iterator(2, CharType{'b'});
         append_iterator.append(begin(get_view_input<CharType>()), end(get_view_input<CharType>()));
-        assert(equal(append_iterator, "bbHello fluffy kittens"sv));
+        assert(equalRanges(append_iterator, "bbHello fluffy kittens"sv));
 
         str append_initializer(2, CharType{'b'});
         append_initializer.append({'m', 'e', 'o', 'w'});
-        assert(equal(append_initializer, "bbmeow"sv));
+        assert(equalRanges(append_initializer, "bbmeow"sv));
 
         const string_view_convertible<CharType> convertible;
         str append_conversion(2, CharType{'b'});
         append_conversion.append(convertible);
-        assert(equal(append_conversion, "bbHello fluffy kittens"sv));
+        assert(equalRanges(append_conversion, "bbHello fluffy kittens"sv));
 
         str append_conversion_size(2, CharType{'b'});
         append_conversion_size.append(convertible, 2, 3);
-        assert(equal(append_conversion_size, "bbllo"sv));
+        assert(equalRanges(append_conversion_size, "bbllo"sv));
     }
 
     { // operator+=
@@ -633,24 +638,24 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
 
         str plus_string(2, CharType{'b'});
         plus_string += literal_constructed;
-        assert(equal(plus_string, "bbHello fluffy kittens"sv));
+        assert(equalRanges(plus_string, "bbHello fluffy kittens"sv));
 
         str plus_character(2, CharType{'b'});
         plus_character += 'a';
-        assert(equal(plus_character, "bba"sv));
+        assert(equalRanges(plus_character, "bba"sv));
 
         str plus_literal(2, CharType{'b'});
         plus_literal += get_literal_input<CharType>();
-        assert(equal(plus_literal, "bbHello fluffy kittens"sv));
+        assert(equalRanges(plus_literal, "bbHello fluffy kittens"sv));
 
         str plus_initializer(2, CharType{'b'});
         plus_initializer += {'m', 'e', 'o', 'w'};
-        assert(equal(plus_initializer, "bbmeow"sv));
+        assert(equalRanges(plus_initializer, "bbmeow"sv));
 
         const string_view_convertible<CharType> convertible;
         str plus_conversion(2, CharType{'b'});
         plus_conversion += convertible;
-        assert(equal(plus_conversion, "bbHello fluffy kittens"sv));
+        assert(equalRanges(plus_conversion, "bbHello fluffy kittens"sv));
     }
 
     { // compare
@@ -802,97 +807,97 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
 
         str replaced_pos_count_str = get_literal_input<CharType>();
         replaced_pos_count_str.replace(13, 7, input);
-        assert(equal(replaced_pos_count_str, "Hello fluffy dog"sv));
+        assert(equalRanges(replaced_pos_count_str, "Hello fluffy dog"sv));
 
         str replaced_pos_count_str_shift = get_literal_input<CharType>();
         replaced_pos_count_str_shift.replace(13, 2, input);
-        assert(equal(replaced_pos_count_str_shift, "Hello fluffy dogttens"sv));
+        assert(equalRanges(replaced_pos_count_str_shift, "Hello fluffy dogttens"sv));
 #ifdef __EDG__ // TRANSITION, VSO-1275530
         str replaced_iter_str = get_literal_input<CharType>();
         replaced_iter_str.replace(replaced_iter_str.cbegin() + 13, replaced_iter_str.cend(), input);
-        assert(equal(replaced_iter_str, "Hello fluffy dog"sv));
+        assert(equalRanges(replaced_iter_str, "Hello fluffy dog"sv));
 
         str replaced_iter_str_shift = get_literal_input<CharType>();
         replaced_iter_str_shift.replace(
             replaced_iter_str_shift.cbegin() + 13, replaced_iter_str_shift.cbegin() + 15, input);
-        assert(equal(replaced_iter_str_shift, "Hello fluffy dogttens"sv));
+        assert(equalRanges(replaced_iter_str_shift, "Hello fluffy dogttens"sv));
 #endif // __EDG__
         str replaced_pos_count_str_pos_count = get_literal_input<CharType>();
         replaced_pos_count_str_pos_count.replace(13, 7, input, 1);
-        assert(equal(replaced_pos_count_str_pos_count, "Hello fluffy og"sv));
+        assert(equalRanges(replaced_pos_count_str_pos_count, "Hello fluffy og"sv));
 
         str replaced_pos_count_str_pos_count_less = get_literal_input<CharType>();
         replaced_pos_count_str_pos_count_less.replace(13, 2, input, 1, 2);
-        assert(equal(replaced_pos_count_str_pos_count_less, "Hello fluffy ogttens"sv));
+        assert(equalRanges(replaced_pos_count_str_pos_count_less, "Hello fluffy ogttens"sv));
 #ifdef __EDG__ // TRANSITION, VSO-1275530
         str replaced_iter_iter = get_literal_input<CharType>();
         replaced_iter_iter.replace(
             replaced_iter_iter.cbegin() + 13, replaced_iter_iter.cend(), input.begin(), input.end());
-        assert(equal(replaced_iter_iter, "Hello fluffy dog"sv));
+        assert(equalRanges(replaced_iter_iter, "Hello fluffy dog"sv));
 
         str replaced_iter_iter_less = get_literal_input<CharType>();
         replaced_iter_iter_less.replace(replaced_iter_iter_less.cbegin() + 13, replaced_iter_iter_less.cbegin() + 15,
             input.begin() + 1, input.end());
-        assert(equal(replaced_iter_iter_less, "Hello fluffy ogttens"sv));
+        assert(equalRanges(replaced_iter_iter_less, "Hello fluffy ogttens"sv));
 #endif // __EDG__
         str replaced_pos_count_literal = get_literal_input<CharType>();
         replaced_pos_count_literal.replace(13, 2, get_dog<CharType>());
-        assert(equal(replaced_pos_count_literal, "Hello fluffy dogttens"sv));
+        assert(equalRanges(replaced_pos_count_literal, "Hello fluffy dogttens"sv));
 
         str replaced_pos_count_literal_count = get_literal_input<CharType>();
         replaced_pos_count_literal_count.replace(13, 2, get_dog<CharType>(), 2);
-        assert(equal(replaced_pos_count_literal_count, "Hello fluffy dottens"sv));
+        assert(equalRanges(replaced_pos_count_literal_count, "Hello fluffy dottens"sv));
 #ifdef __EDG__ // TRANSITION, VSO-1275530
         str replaced_iter_literal = get_literal_input<CharType>();
         replaced_iter_literal.replace(
             replaced_iter_literal.cbegin() + 13, replaced_iter_literal.cbegin() + 15, get_dog<CharType>());
-        assert(equal(replaced_iter_literal, "Hello fluffy dogttens"sv));
+        assert(equalRanges(replaced_iter_literal, "Hello fluffy dogttens"sv));
 
         str replaced_iter_literal_count = get_literal_input<CharType>();
         replaced_iter_literal_count.replace(replaced_iter_literal_count.cbegin() + 13,
             replaced_iter_literal_count.cbegin() + 15, get_dog<CharType>(), 2);
-        assert(equal(replaced_iter_literal_count, "Hello fluffy dottens"sv));
+        assert(equalRanges(replaced_iter_literal_count, "Hello fluffy dottens"sv));
 #endif // __EDG__
         str replaced_pos_count_chars = get_literal_input<CharType>();
         replaced_pos_count_chars.replace(13, 2, 5, 'a');
-        assert(equal(replaced_pos_count_chars, "Hello fluffy aaaaattens"sv));
+        assert(equalRanges(replaced_pos_count_chars, "Hello fluffy aaaaattens"sv));
 #ifdef __EDG__ // TRANSITION, VSO-1275530
         str replaced_iter_chars = get_literal_input<CharType>();
         replaced_iter_chars.replace(replaced_iter_chars.cbegin() + 13, replaced_iter_chars.cbegin() + 15, 5, 'a');
-        assert(equal(replaced_iter_chars, "Hello fluffy aaaaattens"sv));
+        assert(equalRanges(replaced_iter_chars, "Hello fluffy aaaaattens"sv));
 
         str replaced_iter_init = get_literal_input<CharType>();
         replaced_iter_init.replace(
             replaced_iter_init.cbegin() + 13, replaced_iter_init.cbegin() + 15, {'c', 'u', 't', 'e', ' '});
-        assert(equal(replaced_iter_init, "Hello fluffy cute ttens"sv));
+        assert(equalRanges(replaced_iter_init, "Hello fluffy cute ttens"sv));
 #endif // __EDG__
         const string_view_convertible<CharType> convertible;
         str replaced_pos_count_conversion = get_dog<CharType>();
         replaced_pos_count_conversion.replace(1, 5, convertible);
-        assert(equal(replaced_pos_count_conversion, "dHello fluffy kittens"sv));
+        assert(equalRanges(replaced_pos_count_conversion, "dHello fluffy kittens"sv));
 #ifdef __EDG__ // TRANSITION, VSO-1275530
         str replaced_iter_conversion = get_dog<CharType>();
         replaced_iter_conversion.replace(
             replaced_iter_conversion.cbegin() + 1, replaced_iter_conversion.cbegin() + 2, convertible);
-        assert(equal(replaced_iter_conversion, "dHello fluffy kittensg"sv));
+        assert(equalRanges(replaced_iter_conversion, "dHello fluffy kittensg"sv));
 #endif // __EDG__
         str replaced_pos_count_conversion_pos = get_dog<CharType>();
         replaced_pos_count_conversion_pos.replace(1, 5, convertible, 6);
-        assert(equal(replaced_pos_count_conversion_pos, "dfluffy kittens"sv));
+        assert(equalRanges(replaced_pos_count_conversion_pos, "dfluffy kittens"sv));
 
         str replaced_pos_count_conversion_pos_count = get_dog<CharType>();
         replaced_pos_count_conversion_pos_count.replace(1, 5, convertible, 6, 6);
-        assert(equal(replaced_pos_count_conversion_pos_count, "dfluffy"sv));
+        assert(equalRanges(replaced_pos_count_conversion_pos_count, "dfluffy"sv));
     }
 
     { // substr
         const str input = get_literal_input<CharType>();
 
         const str substr_pos = input.substr(6);
-        assert(equal(substr_pos, "fluffy kittens"sv));
+        assert(equalRanges(substr_pos, "fluffy kittens"sv));
 
         const str substr_pos_count = input.substr(6, 6);
-        assert(equal(substr_pos_count, "fluffy"sv));
+        assert(equalRanges(substr_pos_count, "fluffy"sv));
     }
 
     { // copy
@@ -900,20 +905,20 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
 
         CharType copy_count[5];
         input.copy(copy_count, 5);
-        assert(equal(copy_count, "Hello"sv));
+        assert(equalRanges(copy_count, "Hello"sv));
 
         CharType copy_count_pos[6];
         input.copy(copy_count_pos, 6, 6);
-        assert(equal(copy_count_pos, "fluffy"sv));
+        assert(equalRanges(copy_count_pos, "fluffy"sv));
     }
 
     { // resize
         str resized = get_literal_input<CharType>();
         resized.resize(3);
-        assert(equal(resized, "Hel"sv));
+        assert(equalRanges(resized, "Hel"sv));
 
         resized.resize(6, 'a');
-        assert(equal(resized, "Helaaa"sv));
+        assert(equalRanges(resized, "Helaaa"sv));
     }
 
     { // swap
@@ -923,12 +928,12 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         str second{get_dog<CharType>()};
         swap(first, second);
 
-        assert(equal(first, expected_first));
-        assert(equal(second, expected_second));
+        assert(equalRanges(first, expected_first));
+        assert(equalRanges(second, expected_second));
 
         first.swap(second);
-        assert(equal(second, expected_first));
-        assert(equal(first, expected_second));
+        assert(equalRanges(second, expected_first));
+        assert(equalRanges(first, expected_second));
     }
 
     { // find
@@ -1280,40 +1285,40 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         const str second = get_dog<CharType>();
 
         const str op_str_str = first + second;
-        assert(equal(op_str_str, "kittendog"sv));
+        assert(equalRanges(op_str_str, "kittendog"sv));
 
         const str op_str_literal = first + get_dog<CharType>();
-        assert(equal(op_str_literal, "kittendog"sv));
+        assert(equalRanges(op_str_literal, "kittendog"sv));
 
         const str op_str_char = first + CharType{'!'};
-        assert(equal(op_str_char, "kitten!"sv));
+        assert(equalRanges(op_str_char, "kitten!"sv));
 
         const str op_literal_str = get_cat<CharType>() + second;
-        assert(equal(op_str_literal, "kittendog"sv));
+        assert(equalRanges(op_str_literal, "kittendog"sv));
 
         const str op_char_str = CharType{'!'} + second;
-        assert(equal(op_char_str, "!dog"sv));
+        assert(equalRanges(op_char_str, "!dog"sv));
 
         const str op_rstr_rstr = str{get_cat<CharType>()} + str{get_dog<CharType>()};
-        assert(equal(op_rstr_rstr, "kittendog"sv));
+        assert(equalRanges(op_rstr_rstr, "kittendog"sv));
 
         const str op_rstr_str = str{get_cat<CharType>()} + second;
-        assert(equal(op_rstr_str, "kittendog"sv));
+        assert(equalRanges(op_rstr_str, "kittendog"sv));
 
         const str op_rstr_literal = str{get_cat<CharType>()} + get_dog<CharType>();
-        assert(equal(op_rstr_literal, "kittendog"sv));
+        assert(equalRanges(op_rstr_literal, "kittendog"sv));
 
         const str op_rstr_char = str{get_cat<CharType>()} + CharType{'!'};
-        assert(equal(op_rstr_char, "kitten!"sv));
+        assert(equalRanges(op_rstr_char, "kitten!"sv));
 
         const str op_str_rstr = first + str{get_dog<CharType>()};
-        assert(equal(op_str_rstr, "kittendog"sv));
+        assert(equalRanges(op_str_rstr, "kittendog"sv));
 
         const str op_literal_rst = get_cat<CharType>() + str{get_dog<CharType>()};
-        assert(equal(op_rstr_literal, "kittendog"sv));
+        assert(equalRanges(op_rstr_literal, "kittendog"sv));
 
         const str op_char_rstr = CharType{'!'} + str{get_dog<CharType>()};
-        assert(equal(op_char_rstr, "!dog"sv));
+        assert(equalRanges(op_char_rstr, "!dog"sv));
     }
 
     { // comparison
