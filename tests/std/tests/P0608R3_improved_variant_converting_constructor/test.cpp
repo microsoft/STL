@@ -100,7 +100,6 @@ void assert_more_examples() {
     static_assert(!is_constructible_v<variant<float>, unsigned int>);
     static_assert(!is_constructible_v<variant<char, default_struct>, int>);
 #endif // !__EDG__
-    static_assert(!is_constructible_v<variant<char, default_struct>, int>);
     static_assert(!is_constructible_v<variant<float, long, long long>, int>);
 
     static_assert(is_assignable_v<variant<double_double>, double>);
@@ -118,8 +117,8 @@ void assert_more_examples() {
     static_assert(is_assignable_v<variant<double_double>, int>);
 #endif // __clang__
     static_assert(!is_assignable_v<variant<float>, unsigned int>);
-#endif // !__EDG__
     static_assert(!is_assignable_v<variant<char, default_struct>, int>);
+#endif // !__EDG__
     static_assert(!is_assignable_v<variant<float, long, long long>, int>);
 }
 
@@ -226,6 +225,7 @@ void test_assignment_operator() {
     assert(a.index() == 1);
     assert(get<bool>(a) == true);
 
+#ifndef __EDG__ // TRANSITION, DevCom-1337958
     bool b_data                         = true;
     variant<bool, int, double_double> b = b_data; // bool
     assert(b.index() == 0);
@@ -236,6 +236,7 @@ void test_assignment_operator() {
     b = 12.5; // double_double
     assert(b.index() == 2);
     assert(get<2>(b).x_ == 12.5);
+#endif // !__EDG__
 
 #ifdef __clang__ // TRANSITION, DevCom-1338628
     variant<void*, bool, double_double> c;
