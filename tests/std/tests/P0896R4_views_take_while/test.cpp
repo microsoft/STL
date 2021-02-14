@@ -23,7 +23,7 @@ using Pred = remove_const_t<decltype(is_less_than<3>)>;
 STATIC_ASSERT(is_nothrow_copy_constructible_v<Pred>&& is_nothrow_move_constructible_v<Pred>);
 
 constexpr auto pipeline = views::take_while(is_less_than<3>) | views::take_while(is_less_than<3>)
-                          | views::take_while(is_less_than<3>) | views::take_while(is_less_than<3>);
+                        | views::take_while(is_less_than<3>) | views::take_while(is_less_than<3>);
 
 template <class Rng, class V = views::all_t<Rng>>
 using pipeline_t = ranges::take_while_view<

@@ -194,7 +194,7 @@ namespace {
             return __iso_volatile_load32(static_cast<const int*>(_Storage)) == *static_cast<const int*>(_Comparand);
         case 8:
             return __iso_volatile_load64(static_cast<const long long*>(_Storage))
-                   == *static_cast<const long long*>(_Comparand);
+                == *static_cast<const long long*>(_Comparand);
         default:
             _CSTD abort();
         }

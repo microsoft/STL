@@ -169,10 +169,9 @@ namespace ranges {
         };
     } // namespace _Swap
 
-    namespace _Cpos {
+    inline namespace _Cpos {
         inline constexpr _Swap::_Cpo swap;
     }
-    using namespace _Cpos;
 } // namespace ranges
 
 // CONCEPT swappable

@@ -874,6 +874,9 @@ class future : public _State_manager<_Ty> {
     using _Mybase = _State_manager<_Ty>;
 
 public:
+    static_assert(!is_array_v<_Ty> && is_object_v<_Ty> && is_destructible_v<_Ty>,
+        "T in future<T> must meet the Cpp17Destructible requirements (N4878 [futures.unique.future]/4).");
+
     future() noexcept {}
 
     future(future&& _Other) noexcept : _Mybase(_STD move(_Other), true) {}
@@ -972,6 +975,9 @@ class shared_future : public _State_manager<_Ty> {
     using _Mybase = _State_manager<_Ty>;
 
 public:
+    static_assert(!is_array_v<_Ty> && is_object_v<_Ty> && is_destructible_v<_Ty>,
+        "T in shared_future<T> must meet the Cpp17Destructible requirements (N4878 [futures.shared.future]/4).");
+
     shared_future() noexcept {}
 
     shared_future(const shared_future& _Other) noexcept : _Mybase(_Other) {}
@@ -1139,6 +1145,9 @@ private:
 template <class _Ty>
 class promise { // class that defines an asynchronous provider that holds a value
 public:
+    static_assert(!is_array_v<_Ty> && is_object_v<_Ty> && is_destructible_v<_Ty>,
+        "T in promise<T> must meet the Cpp17Destructible requirements (N4878 [futures.promise]/1).");
+
     promise() : _MyPromise(new _Associated_state<_Ty>) {}
 
     template <class _Alloc>

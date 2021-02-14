@@ -17,7 +17,10 @@ static void __cdecl sifun(ios_base& iostr, ios_base::fmtflags mask) { // set spe
 
 // FUNCTION setbase
 static void __cdecl sbfun(ios_base& iostr, int base) { // set base
-    iostr.setf(base == 8 ? ios_base::oct : base == 10 ? ios_base::dec : base == 16 ? ios_base::hex : ios_base::_Fmtzero,
+    iostr.setf(base == 8    ? ios_base::oct
+               : base == 10 ? ios_base::dec
+               : base == 16 ? ios_base::hex
+                            : ios_base::_Fmtzero,
         ios_base::basefield);
 }
 

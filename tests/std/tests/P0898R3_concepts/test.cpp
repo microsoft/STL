@@ -150,6 +150,10 @@ struct ExplicitDefault {
     explicit ExplicitDefault() = default;
 };
 
+struct AggregatesExplicitDefault {
+    ExplicitDefault meow;
+};
+
 struct DeletedDefault {
     DeletedDefault() = delete;
 };
@@ -1488,17 +1492,17 @@ namespace test_default_initializable {
     using std::default_initializable, std::initializer_list;
 
     STATIC_ASSERT(default_initializable<int>);
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1084668
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-952724
     STATIC_ASSERT(!default_initializable<int const>);
-#else // ^^^ no workaround / workaround vvv
+#else // ^^^ no workaround / assert bug so we'll notice when it's fixed vvv
     STATIC_ASSERT(default_initializable<int const>);
-#endif // TRANSITION, VSO-1084668
+#endif // TRANSITION, DevCom-952724
     STATIC_ASSERT(default_initializable<int volatile>);
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1084668
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-952724
     STATIC_ASSERT(!default_initializable<int const volatile>);
-#else // ^^^ no workaround / workaround vvv
+#else // ^^^ no workaround / assert bug so we'll notice when it's fixed vvv
     STATIC_ASSERT(default_initializable<int const volatile>);
-#endif // TRANSITION, VSO-1084668
+#endif // TRANSITION, DevCom-952724
     STATIC_ASSERT(default_initializable<double>);
     STATIC_ASSERT(!default_initializable<void>);
 
@@ -1511,11 +1515,11 @@ namespace test_default_initializable {
     STATIC_ASSERT(!default_initializable<int[]>);
     STATIC_ASSERT(!default_initializable<char[]>);
     STATIC_ASSERT(!default_initializable<char[][3]>);
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1084668
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-952724
     STATIC_ASSERT(!default_initializable<int const[2]>);
-#else // ^^^ no workaround / workaround vvv
+#else // ^^^ no workaround / assert bug so we'll notice when it's fixed vvv
     STATIC_ASSERT(default_initializable<int const[2]>);
-#endif // TRANSITION, VSO-1084668
+#endif // TRANSITION, DevCom-952724
 
     STATIC_ASSERT(!default_initializable<int&>);
     STATIC_ASSERT(!default_initializable<int const&>);
@@ -1559,11 +1563,18 @@ namespace test_default_initializable {
         int x;
     };
     STATIC_ASSERT(default_initializable<S>);
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1084668
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-952724
     STATIC_ASSERT(!default_initializable<S const>);
-#else // ^^^ no workaround / workaround vvv
+#else // ^^^ no workaround / assert bug so we'll notice when it's fixed vvv
     STATIC_ASSERT(default_initializable<S const>);
-#endif // TRANSITION, VSO-1084668
+#endif // TRANSITION, DevCom-952724
+
+    // Also test GH-1603 "default_initializable accepts types that are not default-initializable"
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1326684
+    STATIC_ASSERT(!default_initializable<AggregatesExplicitDefault>);
+#else // ^^^ no workaround / assert bug so we'll notice when it's fixed vvv
+    STATIC_ASSERT(default_initializable<AggregatesExplicitDefault>);
+#endif // TRANSITION, DevCom-1326684
 } // namespace test_default_initializable
 
 namespace test_move_constructible {
@@ -2876,10 +2887,13 @@ namespace test_invocable_concepts {
 #define MCALLCONV __thiscall
 #include "invocable_cc.hpp"
 
+#if !defined(_M_ARM) && !defined(_M_ARM64)
 #define NAME      test_vector_vector
 #define CALLCONV  __vectorcall
 #define MCALLCONV __vectorcall
 #include "invocable_cc.hpp"
+#endif // ^^^ !ARM && !ARM64 ^^^
+
 } // namespace test_invocable_concepts
 
 namespace test_predicate {

@@ -615,7 +615,7 @@ public:
     forward_list(forward_list&& _Right, const _Alloc& _Al) noexcept(
         _Alnode_traits::is_always_equal::value) // strengthened
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        if _CONSTEXPR_IF (!_Alty_traits::is_always_equal::value) {
+        if constexpr (!_Alty_traits::is_always_equal::value) {
             if (_Getal() != _Right._Getal()) {
                 _Flist_insert_after_op2<_Alnode> _Insert_op(_Getal());
                 _Insert_op._Append_range_unchecked(
@@ -1248,7 +1248,7 @@ private:
         auto& _Right_data = _Right._Mypair._Myval2;
 #if _ITERATOR_DEBUG_LEVEL != 0
         _DEBUG_ORDER_UNWRAPPED(_Right._Unchecked_begin(), _Default_sentinel{}, _Pred);
-        if _CONSTEXPR_IF (!_Alnode_traits::is_always_equal::value) {
+        if constexpr (!_Alnode_traits::is_always_equal::value) {
             _STL_VERIFY(_Getal() == _Right._Getal(), "list allocators incompatible for merge");
         }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -1269,7 +1269,7 @@ private:
 #if _ITERATOR_DEBUG_LEVEL == 2
         constexpr bool _Noexcept =
             noexcept(_DEBUG_LT_PRED(_Pred, _My_data._Myhead->_Myval, _Right_data._Myhead->_Myval));
-        if _CONSTEXPR_IF (_Noexcept) {
+        if constexpr (_Noexcept) {
             // if the comparison is noexcept, we can take all the iterators in one go and avoid quadratic updates of
             // the iterator chain
             _Lockit _Lock(_LOCK_DEBUG);
@@ -1321,7 +1321,7 @@ private:
             }
 
 #if _ITERATOR_DEBUG_LEVEL == 2
-            if _CONSTEXPR_IF (!_Noexcept) {
+            if constexpr (!_Noexcept) {
                 _Lockit _Lock(_LOCK_DEBUG);
                 for (auto _Next = _First2; _Next != _Run_end; _Next = _Next->_Next) {
                     _Transfer_ownership(_Right, _Next);
@@ -1419,7 +1419,7 @@ private:
 #if _ITERATOR_DEBUG_LEVEL == 0
         (void) _Right;
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 // _ITERATOR_DEBUG_LEVEL != 0 vvv
-        if _CONSTEXPR_IF (!_Alnode_traits::is_always_equal::value) {
+        if constexpr (!_Alnode_traits::is_always_equal::value) {
             _STL_VERIFY(_Getal() == _Right._Getal(), "forward_list containers incompatible for splice_after");
         }
 #endif // _ITERATOR_DEBUG_LEVEL == 0
@@ -1448,7 +1448,7 @@ private:
 #if _ITERATOR_DEBUG_LEVEL == 0
         (void) _Right;
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 // _ITERATOR_DEBUG_LEVEL != 0 vvv
-        if _CONSTEXPR_IF (!_Alnode_traits::is_always_equal::value) {
+        if constexpr (!_Alnode_traits::is_always_equal::value) {
             _STL_VERIFY(_Getal() == _Right._Getal(), "forward_list containers incompatible for splice_after");
         }
 #endif // _ITERATOR_DEBUG_LEVEL == 0

@@ -2093,7 +2093,7 @@ namespace filesystem {
             // [fs.op.status]/Throws: result values of file_status(file_type::not_found) and
             // file_status(file_type::unknown) are not considered failures and do not cause an exception to be thrown.
             return _Error != __std_win_error::_Success && _Status.type() != file_type::not_found
-                   && _Status.type() != file_type::unknown;
+                && _Status.type() != file_type::unknown;
         }
     };
 
@@ -2193,7 +2193,7 @@ namespace filesystem {
             return _Path;
         }
 
-        operator const filesystem::path &() const noexcept {
+        operator const filesystem::path&() const noexcept {
             return _Path;
         }
 
@@ -2269,8 +2269,8 @@ namespace filesystem {
 
         _NODISCARD bool _Is_symlink_or_junction() const noexcept {
             return _Has_cached_attribute(__std_fs_file_attr::_Reparse_point)
-                   && (_Cached_data._Reparse_point_tag == __std_fs_reparse_tag::_Symlink
-                       || _Cached_data._Reparse_point_tag == __std_fs_reparse_tag::_Mount_point);
+                && (_Cached_data._Reparse_point_tag == __std_fs_reparse_tag::_Symlink
+                    || _Cached_data._Reparse_point_tag == __std_fs_reparse_tag::_Mount_point);
         }
 
         _NODISCARD bool is_symlink() const {
@@ -2469,6 +2469,14 @@ namespace filesystem {
             return _Path >= _Rhs._Path;
         }
 
+        // [fs.dir.entry.io], inserter
+        template <class _Elem, class _Traits>
+        friend _STD basic_ostream<_Elem, _Traits>& operator<<( // TRANSITION, VSO-570323
+            _STD basic_ostream<_Elem, _Traits>& _Ostr, const directory_entry& _Entry) { // TRANSITION, VSO-570323
+            // insert a directory_entry into a stream
+            return _Ostr << _Entry.path();
+        }
+
     private:
         void _Refresh(const __std_fs_find_data& _Data) noexcept {
             _Cached_data._Attributes        = _Data._Attributes;
@@ -2476,7 +2484,7 @@ namespace filesystem {
             _Cached_data._Available         = __std_fs_stats_flags::_Attributes | __std_fs_stats_flags::_Reparse_tag;
             if (!_Bitmask_includes(_Data._Attributes, __std_fs_file_attr::_Reparse_point)) {
                 _Cached_data._File_size = (static_cast<uintmax_t>(_Data._File_size_high) << 32)
-                                          + static_cast<uintmax_t>(_Data._File_size_low);
+                                        + static_cast<uintmax_t>(_Data._File_size_low);
                 _CSTD memcpy(
                     &_Cached_data._Last_write_time, &_Data._Last_write_time, sizeof(_Cached_data._Last_write_time));
                 _Cached_data._Available |= __std_fs_stats_flags::_File_size | __std_fs_stats_flags::_Last_write_time;
@@ -3504,7 +3512,7 @@ namespace filesystem {
     _NODISCARD inline bool is_empty(const path& _Path, error_code& _Ec) {
         // test whether _Path refers to a zero sized file or empty directory
         constexpr auto _Flags = __std_fs_stats_flags::_Attributes | __std_fs_stats_flags::_File_size
-                                | __std_fs_stats_flags::_Follow_symlinks;
+                              | __std_fs_stats_flags::_Follow_symlinks;
         __std_fs_stats _Stats;
         const auto _Error = __std_fs_get_stats(_Path.c_str(), &_Stats, _Flags);
         _Ec               = _Make_ec(_Error);
@@ -4203,7 +4211,7 @@ namespace filesystem {
         // Other parts of LWG-3057 remain under discussion in the committee and are not yet implemented.
         //  (In particular, changes to existing destination flags, and error handling).
         const bool _Flink = (_Options & (copy_options::skip_symlinks | copy_options::copy_symlinks))
-                            != copy_options::none; // create_symlinks intentionally removed by LWG-3057
+                         != copy_options::none; // create_symlinks intentionally removed by LWG-3057
         const auto _Fstat = _From._Get_any_status(_Flink ? _Symlink_status_stats_flags : _Status_stats_flags);
         if (_Fstat._Error != __std_win_error::_Success) { // report an error if exists(f) is false
             _Ec = _Make_ec(_Fstat._Error);
