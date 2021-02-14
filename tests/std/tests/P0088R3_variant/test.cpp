@@ -4688,7 +4688,7 @@ void test_T_ctor_basic() {
 #endif
 }
 
-#ifndef __clang__ // TRANSITION, ...
+#if 0 // Narrowing check occurs with P0806
 struct BoomOnAnything {
   template <class T>
   constexpr BoomOnAnything(T) { static_assert(!std::is_same<T, T>::value, ""); }
@@ -4700,7 +4700,7 @@ void test_no_narrowing_check_for_class_types() {
   assert(v.index() == 0);
   assert(std::get<0>(v) == 42);
 }
-#endif // !__clang__
+#endif // Narrowing check occurs with P0806
 
 struct Bar {};
 struct Baz {};
@@ -4717,9 +4717,9 @@ int run_test() {
   test_T_ctor_basic();
   test_T_ctor_noexcept();
   test_T_ctor_sfinae();
-#ifndef __clang__ // TRANSITION, ...
+#if 0 // Narrowing check occurs with P0806
   test_no_narrowing_check_for_class_types();
-#endif // !__clang__
+#endif // Narrowing check occurs with P0806
   test_construction_with_repeated_types();
   return 0;
 }
