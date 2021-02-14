@@ -325,7 +325,7 @@ struct output_collecting_pipe {
 
     ~output_collecting_pipe() noexcept {
         if (readIo) {
-            if (running.exchange(false)) {
+            if (running.exchange(false)) { // prevent callback() from calling read_some()
                 if (!CancelIoEx(readIo.get_file(), &overlapped)) {
                     api_failure("CancelIoEx"); // slams into noexcept
                 }
