@@ -967,6 +967,8 @@ using _Variant_destroy_layer = conditional_t<conjunction_v<is_trivially_destruct
 #pragma warning(disable : 4365) // '%s': conversion from '%s' to '%s', signed/unsigned mismatch
 #pragma warning(disable : 5215) // '%s' a function parameter with volatile qualified type is deprecated in C++20
 #endif // __clang__
+
+#if _HAS_CXX20
 struct _Variant_type_test { // build Ti x[] = {std::forward<T>(t)};
     template <size_t _Idx, class _Type>
     static constexpr auto _Construct_array(_Type(&&)[1]) -> _Meta_list<integral_constant<size_t, _Idx>, _Type>;
@@ -977,14 +979,17 @@ struct _Variant_type_test { // build Ti x[] = {std::forward<T>(t)};
 
 template <size_t _Idx, class _Type, class _Ty>
 using _Variant_type_resolver = typename _Variant_type_test::template type<_Idx, _Type, _Ty>;
+#endif // _HAS_CXX20
 
 template <size_t _Idx, class _Type>
 struct _Variant_init_single_overload {
+#if _HAS_CXX20
     template <class _Ty>
-    using _FTy = _Variant_type_resolver<_Idx, _Type, _Ty>;
-
+    auto operator()(_Type, _Ty&&) -> _Variant_type_resolver<_Idx, _Type, _Ty>;
+#else // _HAS_CXX20
     template <class _Ty>
-    auto operator()(_Type, _Ty&&) -> _FTy<_Ty>;
+    auto operator()(_Type, _Ty&&) -> _Meta_list<integral_constant<size_t, _Idx>, _Type>;
+#endif // _HAS_CXX20
 };
 
 template <class _Indices, class... _Types>
