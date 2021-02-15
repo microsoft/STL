@@ -137,14 +137,12 @@ void test_variant_constructor_P0608R3() {
     assert(c.index() == 1);
     assert(get<1>(c) == c_data);
 
-    using T1 = variant<float, int>;
-    T1 d;
+    variant<float, int> d;
     assert(d.index() == 0);
     d = 0; // int
     assert(d.index() == 1);
 
-    using T2 = variant<float, long>;
-    T2 e;
+    variant<float, long> e;
     assert(e.index() == 0);
 #ifndef __EDG__ // TRANSITION, DevCom-1337958
     e = 0; // long
