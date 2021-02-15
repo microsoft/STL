@@ -178,6 +178,27 @@ void unordered_containers_test(
     assert(something != different);
 }
 
+template <class Iter, class ConstIter>
+void ordered_iterator_test(const Iter& smaller, const Iter& smaller_equal, const Iter& larger,
+    const ConstIter& const_smaller, const ConstIter& const_smaller_equal, const ConstIter& const_larger) {
+    spaceship_test<std::strong_ordering>(smaller, smaller_equal, larger);
+    spaceship_test<std::strong_ordering>(const_smaller, const_smaller_equal, const_larger);
+    spaceship_test<std::strong_ordering>(const_smaller, smaller_equal, larger);
+}
+
+template <class Iter, class ConstIter>
+void unordered_iterator_test(const Iter& something, const Iter& something_equal, const Iter& different,
+    const ConstIter& const_something, const ConstIter& const_something_equal, const ConstIter& const_different) {
+    assert(something == something_equal);
+    assert(something != different);
+
+    assert(const_something == const_something_equal);
+    assert(const_something != const_different);
+
+    assert(something == const_something_equal);
+    assert(something != const_different);
+}
+
 template <class ErrorType>
 void diagnostics_test() {
     dummy_diagnostic c_mem[2];
@@ -218,6 +239,15 @@ void ordering_test_cases() {
         static_assert((a1 <=> a1) == 0);
         static_assert((a2 <=> a0) < 0);
         static_assert((a0 <=> a2) > 0);
+
+        constexpr auto b1 = a1.begin();
+        constexpr auto b2 = a1.begin();
+        constexpr auto e1 = a1.end();
+
+        static_assert((b1 <=> b1) == 0);
+        static_assert((b1 <=> b2) == 0);
+        static_assert((b1 <=> e1) < 0);
+        static_assert((e1 <=> b1) > 0);
     }
     { // constexpr array SynthOrdered
         constexpr std::array<SynthOrdered, 3> a = {10, 20, 30};
@@ -226,67 +256,87 @@ void ordering_test_cases() {
         static_assert((a <=> a) == 0);
         static_assert((a <=> b) < 0);
         static_assert((b <=> a) > 0);
+
+        constexpr auto b1 = a.begin();
+        constexpr auto b2 = a.begin();
+        constexpr auto e1 = a.end();
+
+        static_assert((b1 <=> b1) == 0);
+        static_assert((b1 <=> b2) == 0);
+        static_assert((b1 <=> e1) < 0);
+        static_assert((e1 <=> b1) > 0);
     }
     { // array
         std::array<int, 3> a1 = {100, 100, 100};
         std::array<int, 3> a2 = {100, 100, 100};
         std::array<int, 3> b1 = {200, 200};
         ordered_containers_test(a1, a2, b1);
+        ordered_iterator_test(a1.begin(), a1.begin(), a1.end(), a1.cbegin(), a1.cbegin(), a1.cend());
     }
     { // array SynthOrdered
         std::array<SynthOrdered, 3> a = {10, 20, 30};
         std::array<SynthOrdered, 3> b = {10, 20, 40};
         ordered_containers_test(a, a, b);
+        ordered_iterator_test(a.begin(), a.begin(), a.end(), a.cbegin(), a.cbegin(), a.cend());
     }
     { // deque
         std::deque<int> a1(3, 100);
         std::deque<int> a2(3, 100);
         std::deque<int> b1(2, 200);
         ordered_containers_test(a1, a2, b1);
+        ordered_iterator_test(a1.begin(), a1.begin(), a1.end(), a1.cbegin(), a1.cbegin(), a1.cend());
     }
     { // deque SynthOrdered
         std::deque<SynthOrdered> a = {10, 20, 30};
         std::deque<SynthOrdered> b = {10, 20, 40};
         ordered_containers_test(a, a, b);
+        ordered_iterator_test(a.begin(), a.begin(), a.end(), a.cbegin(), a.cbegin(), a.cend());
     }
     { // list
         std::list<int> a1(3, 100);
         std::list<int> a2(3, 100);
         std::list<int> b1(2, 200);
         ordered_containers_test(a1, a2, b1);
+        unordered_iterator_test(a1.begin(), a1.begin(), a1.end(), a1.cbegin(), a1.cbegin(), a1.cend());
     }
     { // list SynthOrdered
         std::list<SynthOrdered> a = {10, 20, 30};
         std::list<SynthOrdered> b = {10, 20, 40};
         ordered_containers_test(a, a, b);
+        unordered_iterator_test(a.begin(), a.begin(), a.end(), a.cbegin(), a.cbegin(), a.cend());
     }
     { // vector
         std::vector<int> a1(3, 100);
         std::vector<int> a2(3, 100);
         std::vector<int> b1(2, 200);
         ordered_containers_test(a1, a2, b1);
+        ordered_iterator_test(a1.begin(), a1.begin(), a1.end(), a1.cbegin(), a1.cbegin(), a1.cend());
     }
     { // vector SynthOrdered
         std::vector<SynthOrdered> a = {10, 20, 30};
         std::vector<SynthOrdered> b = {10, 20, 40};
         ordered_containers_test(a, a, b);
+        ordered_iterator_test(a.begin(), a.begin(), a.end(), a.cbegin(), a.cbegin(), a.cend());
     }
     { // vector<bool>
         std::vector<bool> c1 = {false, true, false};
         std::vector<bool> c2 = {false, true, false};
         std::vector<bool> d1 = {true, false};
         ordered_containers_test(c1, c2, d1);
+        ordered_iterator_test(c1.begin(), c1.begin(), c1.end(), c1.cbegin(), c1.cbegin(), c1.cend());
     }
     { // forward_list
         std::forward_list<int> a1(3, 100);
         std::forward_list<int> a2(3, 100);
         std::forward_list<int> b1(2, 200);
         ordered_containers_test(a1, a2, b1);
+        unordered_iterator_test(a1.begin(), a1.begin(), a1.end(), a1.cbegin(), a1.cbegin(), a1.cend());
     }
     { // forward_list SynthOrdered
         std::forward_list<SynthOrdered> a = {10, 20, 30};
         std::forward_list<SynthOrdered> b = {10, 20, 40};
         ordered_containers_test(a, a, b);
+        unordered_iterator_test(a.begin(), a.begin(), a.end(), a.cbegin(), a.cbegin(), a.cend());
     }
     { // map
         std::map<std::string, int> a1;
@@ -299,22 +349,26 @@ void ordering_test_cases() {
         b1["zoe"]   = 3;
         b1["koala"] = 4;
         ordered_containers_test(a1, a2, b1);
+        unordered_iterator_test(a1.begin(), a1.begin(), a1.end(), a1.cbegin(), a1.cbegin(), a1.cend());
     }
     { // map SynthOrdered
         std::map<SynthOrdered, char> a = {{10, 'z'}, {20, 'z'}, {30, 'z'}};
         std::map<SynthOrdered, char> b = {{10, 'z'}, {20, 'z'}, {40, 'z'}};
         ordered_containers_test(a, a, b);
+        unordered_iterator_test(a.begin(), a.begin(), a.end(), a.cbegin(), a.cbegin(), a.cend());
     }
     { // multimap
         std::multimap<char, int> a1 = {{'a', 1}, {'b', 2}, {'a', 3}};
         std::multimap<char, int> a2 = {{'a', 1}, {'a', 3}, {'b', 2}};
         std::multimap<char, int> b1 = {{'z', 4}, {'y', 90}, {'z', 12}};
         ordered_containers_test(a1, a2, b1);
+        unordered_iterator_test(a1.begin(), a1.begin(), a1.end(), a1.cbegin(), a1.cbegin(), a1.cend());
     }
     { // multimap SynthOrdered
         std::multimap<SynthOrdered, char> a = {{10, 'z'}, {20, 'z'}, {30, 'z'}};
         std::multimap<SynthOrdered, char> b = {{10, 'z'}, {20, 'z'}, {40, 'z'}};
         ordered_containers_test(a, a, b);
+        unordered_iterator_test(a.begin(), a.begin(), a.end(), a.cbegin(), a.cbegin(), a.cend());
     }
     { // set
         std::set<int> a1;
@@ -329,11 +383,13 @@ void ordering_test_cases() {
         b1.insert(30);
         b1.insert(40);
         ordered_containers_test(a1, a2, b1);
+        unordered_iterator_test(a1.begin(), a1.begin(), a1.end(), a1.cbegin(), a1.cbegin(), a1.cend());
     }
     { // set SynthOrdered
         std::set<SynthOrdered> a = {10, 20, 30};
         std::set<SynthOrdered> b = {10, 20, 40};
         ordered_containers_test(a, a, b);
+        unordered_iterator_test(a.begin(), a.begin(), a.end(), a.cbegin(), a.cbegin(), a.cend());
     }
     { // multiset
         std::multiset<int> a1;
@@ -351,11 +407,13 @@ void ordering_test_cases() {
         b1.insert(40);
         b1.insert(40);
         ordered_containers_test(a1, a2, b1);
+        unordered_iterator_test(a1.begin(), a1.begin(), a1.end(), a1.cbegin(), a1.cbegin(), a1.cend());
     }
     { // multiset SynthOrdered
         std::multiset<SynthOrdered> a = {10, 20, 30};
         std::multiset<SynthOrdered> b = {10, 20, 40};
         ordered_containers_test(a, a, b);
+        unordered_iterator_test(a.begin(), a.begin(), a.end(), a.cbegin(), a.cbegin(), a.cend());
     }
     { // unordered_map
         using stringmap = std::unordered_map<std::string, std::string>;
@@ -363,6 +421,7 @@ void ordering_test_cases() {
         stringmap b     = {{"dog", "poodle"}, {"bear", "grizzly"}, {"cat", "tabby"}};
         stringmap c     = {{"cat", "siamese"}, {"dog", "lab"}, {"bear", "polar"}};
         unordered_containers_test(a, b, c);
+        unordered_iterator_test(a.begin(), a.begin(), a.end(), a.cbegin(), a.cbegin(), a.cend());
     }
     { // unordered_multimap
         using stringmap = std::unordered_multimap<std::string, std::string>;
@@ -370,18 +429,21 @@ void ordering_test_cases() {
         stringmap b     = {{"dog", "poodle"}, {"cat", "siamese"}, {"cat", "tabby"}, {"dog", "poodle"}};
         stringmap c     = {{"cat", "siamese"}, {"dog", "lab"}, {"bear", "polar"}};
         unordered_containers_test(a, b, c);
+        unordered_iterator_test(a.begin(), a.begin(), a.end(), a.cbegin(), a.cbegin(), a.cend());
     }
     { // unordered_set
         std::unordered_set<std::string> a = {"cat", "dog", "bear"};
         std::unordered_set<std::string> b = {"bear", "cat", "dog"};
         std::unordered_set<std::string> c = {"mouse", "cat", "bear", "dog"};
         unordered_containers_test(a, b, c);
+        unordered_iterator_test(a.begin(), a.begin(), a.end(), a.cbegin(), a.cbegin(), a.cend());
     }
     { // unordered_multiset
         std::unordered_multiset<std::string> a = {"cat", "dog", "cat"};
         std::unordered_multiset<std::string> b = {"cat", "cat", "dog"};
         std::unordered_multiset<std::string> c = {"mouse", "cat", "bear", "dog"};
         unordered_containers_test(a, b, c);
+        unordered_iterator_test(a.begin(), a.begin(), a.end(), a.cbegin(), a.cbegin(), a.cend());
     }
     { // queue
         std::deque<int> deq1(3, 100);
@@ -390,6 +452,7 @@ void ordering_test_cases() {
         std::queue<int> b(deq1);
         std::queue<int> c(deq2);
         ordered_containers_test(a, b, c);
+        ordered_iterator_test(deq1.begin(), deq1.begin(), deq1.end(), deq1.cbegin(), deq1.cbegin(), deq1.cend());
     }
     { // queue SynthOrdered
         std::queue<SynthOrdered> a{std::deque<SynthOrdered>{10, 20, 30}};
@@ -518,6 +581,9 @@ void ordering_test_cases() {
         const std::filesystem::path p3{R"(a/b/d)"};
 
         spaceship_test<std::strong_ordering>(p1, p2, p3);
+        spaceship_test<std::strong_ordering>(p1, p2, p3);
+        spaceship_test<std::strong_ordering>(p1, p2, p3);
+        unordered_containers_test(p1.begin(), p1.begin(), p1.end());
     }
     { // filesystem::file_status
         std::filesystem::file_status s1;

@@ -149,6 +149,11 @@ public:
         return _Ptr == _Right._Ptr;
     }
 
+#if _HAS_CXX20
+    _NODISCARD strong_ordering operator<=>(const _Vector_const_iterator& _Right) const noexcept {
+        return _Ptr <=> _Right._Ptr;
+    }
+#else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
     _NODISCARD bool operator!=(const _Vector_const_iterator& _Right) const noexcept {
         return !(*this == _Right);
     }
@@ -169,6 +174,7 @@ public:
     _NODISCARD bool operator>=(const _Vector_const_iterator& _Right) const noexcept {
         return !(*this < _Right);
     }
+#endif // !_HAS_CXX20
 
     void _Compat(const _Vector_const_iterator& _Right) const noexcept { // test for compatible iterator pair
 #if _ITERATOR_DEBUG_LEVEL == 0
@@ -2124,6 +2130,14 @@ public:
         return this->_Myptr == _Right._Myptr && this->_Myoff == _Right._Myoff;
     }
 
+#if _HAS_CXX20
+    _NODISCARD strong_ordering operator<=>(const _Vb_const_iterator& _Right) const noexcept {
+        if (const auto _CmpResult = this->_Myptr <=> _Right._Myptr; _CmpResult != 0) {
+            return _CmpResult;
+        }
+        return this->_Myoff <=> _Right._Myoff;
+    }
+#else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
     _NODISCARD bool operator!=(const _Vb_const_iterator& _Right) const noexcept {
         return !(*this == _Right);
     }
@@ -2144,6 +2158,7 @@ public:
     _NODISCARD bool operator>=(const _Vb_const_iterator& _Right) const noexcept {
         return !(*this < _Right);
     }
+#endif // !_HAS_CXX20
 
     void _Compat(const _Vb_const_iterator& _Right) const noexcept { // test for compatible iterator pair
 #if _ITERATOR_DEBUG_LEVEL == 0
