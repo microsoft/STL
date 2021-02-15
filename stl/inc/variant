@@ -970,25 +970,25 @@ using _Variant_destroy_layer = conditional_t<conjunction_v<is_trivially_destruct
 
 #if _HAS_CXX20
 struct _Variant_type_test { // build Ti x[] = {std::forward<T>(t)};
-    template <size_t _Idx, class _Type>
-    static constexpr auto _Construct_array(_Type(&&)[1]) -> _Meta_list<integral_constant<size_t, _Idx>, _Type>;
+    template <size_t _Idx, class _TargetType>
+    static auto _Construct_array(_TargetType(&&)[1]) -> _Meta_list<integral_constant<size_t, _Idx>, _TargetType>;
 
-    template <size_t _Idx, class _Type, class _Ty>
-    using type = decltype(_Construct_array<_Idx, _Type>({_STD declval<_Ty>()}));
+    template <size_t _Idx, class _TargetType, class _InitializerType>
+    using type = decltype(_Construct_array<_Idx, _TargetType>({_STD declval<_InitializerType>()}));
 };
 
-template <size_t _Idx, class _Type, class _Ty>
-using _Variant_type_resolver = typename _Variant_type_test::template type<_Idx, _Type, _Ty>;
+template <size_t _Idx, class _TargetType, class _InitializerType>
+using _Variant_type_resolver = _Variant_type_test::type<_Idx, _TargetType, _InitializerType>;
 #endif // _HAS_CXX20
 
-template <size_t _Idx, class _Type>
+template <size_t _Idx, class _TargetType>
 struct _Variant_init_single_overload {
 #if _HAS_CXX20
-    template <class _Ty>
-    auto operator()(_Type, _Ty&&) -> _Variant_type_resolver<_Idx, _Type, _Ty>;
+    template <class _InitializerType>
+    auto operator()(_TargetType, _InitializerType&&) -> _Variant_type_resolver<_Idx, _TargetType, _InitializerType>;
 #else // _HAS_CXX20
-    template <class _Ty>
-    auto operator()(_Type, _Ty&&) -> _Meta_list<integral_constant<size_t, _Idx>, _Type>;
+    template <class _InitializerType>
+    auto operator()(_TargetType, _InitializerType&&) -> _Meta_list<integral_constant<size_t, _Idx>, _TargetType>;
 #endif // _HAS_CXX20
 };
 
