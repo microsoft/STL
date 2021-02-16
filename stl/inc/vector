@@ -151,6 +151,7 @@ public:
 
 #if _HAS_CXX20
     _NODISCARD strong_ordering operator<=>(const _Vector_const_iterator& _Right) const noexcept {
+        _Compat(_Right);
         return _Unwrapped() <=> _Right._Unwrapped();
     }
 #else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
@@ -2132,6 +2133,7 @@ public:
 
 #if _HAS_CXX20
     _NODISCARD strong_ordering operator<=>(const _Vb_const_iterator& _Right) const noexcept {
+        _Compat(_Right);
         if (const auto _CmpResult = this->_Myptr <=> _Right._Myptr; _CmpResult != 0) {
             return _CmpResult;
         }
