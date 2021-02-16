@@ -1115,6 +1115,17 @@ public:
 #endif // _ITERATOR_DEBUG_LEVEL
     }
 
+#if _HAS_CXX20
+    _NODISCARD strong_ordering operator<=>(const _String_view_iterator& _Right) const noexcept {
+#if _ITERATOR_DEBUG_LEVEL >= 1
+        _STL_VERIFY(_Mydata == _Right._Mydata && _Mysize == _Right._Mysize,
+            "cannot compare incompatible string_view iterators for equality");
+        return _Myoff <=> _Right._Myoff;
+#else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ // vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
+        return _Myptr <=> _Right._Myptr;
+#endif // _ITERATOR_DEBUG_LEVEL
+    }
+#else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
     _NODISCARD constexpr bool operator!=(const _String_view_iterator& _Right) const noexcept {
         return !(*this == _Right);
     }
@@ -1140,6 +1151,7 @@ public:
     _NODISCARD constexpr bool operator>=(const _String_view_iterator& _Right) const noexcept {
         return !(*this < _Right);
     }
+#endif // !_HAS_CXX20
 
 #if _ITERATOR_DEBUG_LEVEL >= 1
     friend constexpr void _Verify_range(const _String_view_iterator& _First, const _String_view_iterator& _Last) {
@@ -1968,6 +1980,12 @@ public:
         return _Ptr == _Right._Ptr;
     }
 
+#if _HAS_CXX20
+    _NODISCARD strong_ordering operator<=>(const _String_const_iterator& _Right) const noexcept {
+        _Compat(_Right);
+        return _Unfancy(_Ptr) <=> _Unfancy(_Right._Ptr);
+    }
+#else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
     _NODISCARD bool operator!=(const _String_const_iterator& _Right) const noexcept {
         return !(*this == _Right);
     }
@@ -1988,6 +2006,7 @@ public:
     _NODISCARD bool operator>=(const _String_const_iterator& _Right) const noexcept {
         return !(*this < _Right);
     }
+#endif // !_HAS_CXX20
 
     void _Compat(const _String_const_iterator& _Right) const noexcept { // test for compatible iterator pair
 #if _ITERATOR_DEBUG_LEVEL >= 1
