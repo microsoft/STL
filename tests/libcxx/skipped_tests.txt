@@ -389,7 +389,7 @@ thread\macro.pass.cpp
 depr\depr.c.headers\tgmath_h.pass.cpp
 
 # LLVM-48606 "Clang rejects creation of struct with mutable member during constant evaluation"
-language.support\support\limits\support.limits.general\vector.version.pass.cpp
+language.support\support.limits\support.limits.general\vector.version.pass.cpp
 
 
 # *** CLANG ISSUES, NOT YET ANALYZED ***
