@@ -17,10 +17,6 @@
 #include <xpolymorphic_allocator.h>
 #endif // _HAS_CXX17
 
-#if _HAS_CXX20
-#include <compare>
-#endif // _HAS_CXX20
-
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
@@ -224,9 +220,6 @@ public:
     using pos_type   = streampos;
     using off_type   = streamoff;
     using state_type = mbstate_t;
-#if _HAS_CXX20
-    using comparison_category = strong_ordering;
-#endif // _HAS_CXX20
 
     using _Primary_char_traits::_Copy_s;
     using _Primary_char_traits::copy;
@@ -365,9 +358,6 @@ public:
     using pos_type   = streampos;
     using off_type   = streamoff;
     using state_type = mbstate_t;
-#if _HAS_CXX20
-    using comparison_category = strong_ordering;
-#endif // _HAS_CXX20
 
     using _Primary_char_traits::_Copy_s;
     using _Primary_char_traits::copy;
@@ -4554,19 +4544,17 @@ _NODISCARD bool operator==(
     return _Left._Equal(_Right);
 }
 
-#if !_HAS_CXX20
-template <class _Elem, class _Traits, class _Alloc>
-_NODISCARD bool operator==(_In_z_ const _Elem* const _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) {
-    return _Right._Equal(_Left);
-}
-#endif // !_HAS_CXX20
-
 template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD bool operator==(const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) {
     return _Left._Equal(_Right);
 }
 
 #if !_HAS_CXX20
+template <class _Elem, class _Traits, class _Alloc>
+_NODISCARD bool operator==(_In_z_ const _Elem* const _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) {
+    return _Right._Equal(_Left);
+}
+
 template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD bool operator!=(
     const basic_string<_Elem, _Traits, _Alloc>& _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) noexcept {
@@ -4646,9 +4634,7 @@ template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD bool operator>=(const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) {
     return !(_Left < _Right);
 }
-#endif // !_HAS_CXX20
-
-#if _HAS_CXX20
+#else // !_HAS_CXX20
 template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD typename _Get_comparison_category<_Traits>::comparison_category operator<=>(
     const basic_string<_Elem, _Traits, _Alloc>& _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) noexcept {
@@ -4660,7 +4646,7 @@ _NODISCARD typename _Get_comparison_category<_Traits>::comparison_category opera
     const basic_string<_Elem, _Traits, _Alloc>& _Left, const _Elem* _Right) {
     return static_cast<typename _Get_comparison_category<_Traits>::comparison_category>(_Left.compare(_Right) <=> 0);
 }
-#endif // _HAS_CXX20
+#endif // !_HAS_CXX20
 
 using string  = basic_string<char, char_traits<char>, allocator<char>>;
 using wstring = basic_string<wchar_t, char_traits<wchar_t>, allocator<wchar_t>>;

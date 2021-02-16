@@ -453,12 +453,12 @@ void ordering_test_cases() {
         static_assert(std::is_same_v<SpaceshipType<PartiallyOrderedMatch>, std::partial_ordering>);
     }
     { // Strings library
-        std::string a1 = "abcdef";
-        std::string a2 = "abcdef";
-        std::string a3 = "abcdefg";
-        std::string a4 = "abcde";
-        std::string a5 = "abddef";
-        std::string a6 = "abbdef";
+        const std::string a1 = "abcdef";
+        const std::string a2 = "abcdef";
+        const std::string a3 = "abcdefg";
+        const std::string a4 = "abcde";
+        const std::string a5 = "abddef";
+        const std::string a6 = "abbdef";
 
         assert((a1 <=> a2) == std::strong_ordering::equivalent);
         assert((a1 <=> a3) == std::strong_ordering::less);
