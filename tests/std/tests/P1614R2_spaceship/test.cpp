@@ -239,15 +239,6 @@ void ordering_test_cases() {
         static_assert((a1 <=> a1) == 0);
         static_assert((a2 <=> a0) < 0);
         static_assert((a0 <=> a2) > 0);
-
-        constexpr auto b1 = a1.begin();
-        constexpr auto b2 = a1.begin();
-        constexpr auto e1 = a1.end();
-
-        static_assert((b1 <=> b1) == 0);
-        static_assert((b1 <=> b2) == 0);
-        static_assert((b1 <=> e1) < 0);
-        static_assert((e1 <=> b1) > 0);
     }
     { // constexpr array SynthOrdered
         constexpr std::array<SynthOrdered, 3> a = {10, 20, 30};
@@ -256,15 +247,6 @@ void ordering_test_cases() {
         static_assert((a <=> a) == 0);
         static_assert((a <=> b) < 0);
         static_assert((b <=> a) > 0);
-
-        constexpr auto b1 = a.begin();
-        constexpr auto b2 = a.begin();
-        constexpr auto e1 = a.end();
-
-        static_assert((b1 <=> b1) == 0);
-        static_assert((b1 <=> b2) == 0);
-        static_assert((b1 <=> e1) < 0);
-        static_assert((e1 <=> b1) > 0);
     }
     { // array
         std::array<int, 3> a1 = {100, 100, 100};
@@ -580,8 +562,6 @@ void ordering_test_cases() {
         const std::filesystem::path p2{LR"(a\b\c)"};
         const std::filesystem::path p3{R"(a/b/d)"};
 
-        spaceship_test<std::strong_ordering>(p1, p2, p3);
-        spaceship_test<std::strong_ordering>(p1, p2, p3);
         spaceship_test<std::strong_ordering>(p1, p2, p3);
         unordered_containers_test(p1.begin(), p1.begin(), p1.end());
     }
