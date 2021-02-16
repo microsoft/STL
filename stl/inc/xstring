@@ -1855,23 +1855,18 @@ public:
     }
 
     // TRANSITION, DevCom-1331017
-    _CONSTEXPR20_CONTAINER _String_const_iterator& operator=(const _String_const_iterator&) = default;
+    _CONSTEXPR20_CONTAINER _String_const_iterator& operator=(const _String_const_iterator&) noexcept = default;
 
     _NODISCARD _CONSTEXPR20_CONTAINER reference operator*() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL >= 1
-#ifdef __cpp_lib_is_constant_evaluated
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
-        {
-            _STL_VERIFY(_Ptr, "cannot dereference value-initialized string iterator");
-            const auto _Mycont = static_cast<const _Mystr*>(this->_Getcont());
-            _STL_VERIFY(_Mycont, "cannot dereference string iterator because the iterator was"
-                                 " invalidated (e.g. reallocation occurred, or the string was destroyed)");
-            const auto _Contptr = _Mycont->_Myptr();
-            const auto _Rawptr  = _Unfancy(_Ptr);
-            _STL_VERIFY(_Contptr <= _Rawptr && _Rawptr < _Contptr + _Mycont->_Mysize,
-                "cannot dereference string iterator because it is out of range (e.g. an end iterator)");
-        }
+        _STL_VERIFY(_Ptr, "cannot dereference value-initialized string iterator");
+        const auto _Mycont = static_cast<const _Mystr*>(this->_Getcont());
+        _STL_VERIFY(_Mycont, "cannot dereference string iterator because the iterator was"
+                             " invalidated (e.g. reallocation occurred, or the string was destroyed)");
+        const auto _Contptr = _Mycont->_Myptr();
+        const auto _Rawptr  = _Unfancy(_Ptr);
+        _STL_VERIFY(_Contptr <= _Rawptr && _Rawptr < _Contptr + _Mycont->_Mysize,
+            "cannot dereference string iterator because it is out of range (e.g. an end iterator)");
 #endif // _ITERATOR_DEBUG_LEVEL >= 1
 
         _Analysis_assume_(_Ptr);
@@ -1884,17 +1879,11 @@ public:
 
     _CONSTEXPR20_CONTAINER _String_const_iterator& operator++() noexcept {
 #if _ITERATOR_DEBUG_LEVEL >= 1
-#ifdef __cpp_lib_is_constant_evaluated
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
-        {
-            _STL_VERIFY(_Ptr, "cannot increment value-initialized string iterator");
-            const auto _Mycont = static_cast<const _Mystr*>(this->_Getcont());
-            _STL_VERIFY(_Mycont, "cannot increment string iterator because the iterator was"
-                                 " invalidated (e.g. reallocation occurred, or the string was destroyed)");
-            _STL_VERIFY(
-                _Unfancy(_Ptr) < _Mycont->_Myptr() + _Mycont->_Mysize, "cannot increment string iterator past end");
-        }
+        _STL_VERIFY(_Ptr, "cannot increment value-initialized string iterator");
+        const auto _Mycont = static_cast<const _Mystr*>(this->_Getcont());
+        _STL_VERIFY(_Mycont, "cannot increment string iterator because the iterator was"
+                             " invalidated (e.g. reallocation occurred, or the string was destroyed)");
+        _STL_VERIFY(_Unfancy(_Ptr) < _Mycont->_Myptr() + _Mycont->_Mysize, "cannot increment string iterator past end");
 #endif // _ITERATOR_DEBUG_LEVEL >= 1
 
         ++_Ptr;
@@ -1909,16 +1898,11 @@ public:
 
     _CONSTEXPR20_CONTAINER _String_const_iterator& operator--() noexcept {
 #if _ITERATOR_DEBUG_LEVEL >= 1
-#ifdef __cpp_lib_is_constant_evaluated
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
-        {
-            _STL_VERIFY(_Ptr, "cannot decrement value-initialized string iterator");
-            const auto _Mycont = static_cast<const _Mystr*>(this->_Getcont());
-            _STL_VERIFY(_Mycont, "cannot decrement string iterator because the iterator was"
-                                 " invalidated (e.g. reallocation occurred, or the string was destroyed)");
-            _STL_VERIFY(_Mycont->_Myptr() < _Unfancy(_Ptr), "cannot decrement string iterator before begin");
-        }
+        _STL_VERIFY(_Ptr, "cannot decrement value-initialized string iterator");
+        const auto _Mycont = static_cast<const _Mystr*>(this->_Getcont());
+        _STL_VERIFY(_Mycont, "cannot decrement string iterator because the iterator was"
+                             " invalidated (e.g. reallocation occurred, or the string was destroyed)");
+        _STL_VERIFY(_Mycont->_Myptr() < _Unfancy(_Ptr), "cannot decrement string iterator before begin");
 #endif // _ITERATOR_DEBUG_LEVEL >= 1
 
         --_Ptr;
@@ -1937,26 +1921,21 @@ public:
             return;
         }
 
-#ifdef __cpp_lib_is_constant_evaluated
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
-        {
-            _STL_ASSERT(_Ptr, "cannot seek value-initialized string iterator");
-            const auto _Mycont = static_cast<const _Mystr*>(this->_Getcont());
-            _STL_ASSERT(_Mycont, "cannot seek string iterator because the iterator was"
-                                 " invalidated (e.g. reallocation occurred, or the string was destroyed)");
-            const auto _Contptr = _Mycont->_Myptr();
-            const auto _Rawptr  = _Unfancy(_Ptr);
+        _STL_ASSERT(_Ptr, "cannot seek value-initialized string iterator");
+        const auto _Mycont = static_cast<const _Mystr*>(this->_Getcont());
+        _STL_ASSERT(_Mycont, "cannot seek string iterator because the iterator was"
+                             " invalidated (e.g. reallocation occurred, or the string was destroyed)");
+        const auto _Contptr = _Mycont->_Myptr();
+        const auto _Rawptr  = _Unfancy(_Ptr);
 
-            if (_Off < 0) {
-                _STL_VERIFY(_Contptr - _Rawptr <= _Off, "cannot seek string iterator before begin");
-            }
+        if (_Off < 0) {
+            _STL_VERIFY(_Contptr - _Rawptr <= _Off, "cannot seek string iterator before begin");
+        }
 
-            if (_Off > 0) {
-                using _Size_type = typename _Mystr::size_type;
-                const auto _Left = _Mycont->_Mysize - static_cast<_Size_type>(_Rawptr - _Contptr);
-                _STL_VERIFY(static_cast<_Size_type>(_Off) <= _Left, "cannot seek string iterator after end");
-            }
+        if (_Off > 0) {
+            using _Size_type = typename _Mystr::size_type;
+            const auto _Left = _Mycont->_Mysize - static_cast<_Size_type>(_Rawptr - _Contptr);
+            _STL_VERIFY(static_cast<_Size_type>(_Off) <= _Left, "cannot seek string iterator after end");
         }
 #else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ // vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
         (void) _Off;
@@ -2023,13 +2002,8 @@ public:
     _CONSTEXPR20_CONTAINER void _Compat(const _String_const_iterator& _Right) const noexcept {
         // test for compatible iterator pair
 #if _ITERATOR_DEBUG_LEVEL >= 1
-#ifdef __cpp_lib_is_constant_evaluated
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
-        {
-            _STL_VERIFY(this->_Getcont() == _Right._Getcont(), "string iterators incompatible (e.g."
-                                                               " point to different string instances)");
-        }
+        _STL_VERIFY(this->_Getcont() == _Right._Getcont(), "string iterators incompatible (e.g."
+                                                           " point to different string instances)");
 #else // ^^^ _ITERATOR_DEBUG_LEVEL >= 1 ^^^ // vvv _ITERATOR_DEBUG_LEVEL == 0 vvv
         (void) _Right;
 #endif // _ITERATOR_DEBUG_LEVEL
@@ -2038,14 +2012,8 @@ public:
 #if _ITERATOR_DEBUG_LEVEL >= 1
     friend _CONSTEXPR20_CONTAINER void _Verify_range(
         const _String_const_iterator& _First, const _String_const_iterator& _Last) noexcept {
-#ifdef __cpp_lib_is_constant_evaluated
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
-        {
-            _STL_VERIFY(
-                _First._Getcont() == _Last._Getcont(), "string iterators in range are from different containers");
-            _STL_VERIFY(_First._Ptr <= _Last._Ptr, "string iterator range transposed");
-        }
+        _STL_VERIFY(_First._Getcont() == _Last._Getcont(), "string iterators in range are from different containers");
+        _STL_VERIFY(_First._Ptr <= _Last._Ptr, "string iterator range transposed");
     }
 #endif // _ITERATOR_DEBUG_LEVEL >= 1
 
@@ -2077,32 +2045,21 @@ struct pointer_traits<_String_const_iterator<_Mystr>> {
 
     _NODISCARD static constexpr element_type* to_address(const pointer _Iter) noexcept {
 #if _ITERATOR_DEBUG_LEVEL >= 1
-#ifdef __cpp_lib_is_constant_evaluated
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
-        {
-            const auto _Mycont = static_cast<const _Mystr*>(_Iter._Getcont());
-            if (!_Mycont) {
-                _STL_VERIFY(!_Iter._Ptr,
-                    "cannot convert string iterator to pointer because the iterator was invalidated "
-                    "(e.g. reallocation occurred, or the string was destroyed)");
-            }
+        const auto _Mycont = static_cast<const _Mystr*>(_Iter._Getcont());
+        if (!_Mycont) {
+            _STL_VERIFY(!_Iter._Ptr, "cannot convert string iterator to pointer because the iterator was invalidated "
+                                     "(e.g. reallocation occurred, or the string was destroyed)");
         }
 #endif // _ITERATOR_DEBUG_LEVEL >= 1
 
         const auto _Rawptr = _STD to_address(_Iter._Ptr);
 
 #if _ITERATOR_DEBUG_LEVEL >= 1
-#ifdef __cpp_lib_is_constant_evaluated
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
-        {
-            const auto _Mycont = static_cast<const _Mystr*>(_Iter._Getcont());
-            if (_Mycont) {
-                const auto _Contptr = _Mycont->_Myptr();
-                _STL_VERIFY(_Contptr <= _Rawptr && _Rawptr <= _Contptr + _Mycont->_Mysize,
-                    "cannot convert string iterator to pointer because it is out of range");
-            }
+        const auto _Mycont = static_cast<const _Mystr*>(_Iter._Getcont());
+        if (_Mycont) {
+            const auto _Contptr = _Mycont->_Myptr();
+            _STL_VERIFY(_Contptr <= _Rawptr && _Rawptr <= _Contptr + _Mycont->_Mysize,
+                "cannot convert string iterator to pointer because it is out of range");
         }
 #endif // _ITERATOR_DEBUG_LEVEL >= 1
 
@@ -2129,7 +2086,7 @@ public:
     using _Mybase::_Mybase;
 
     // TRANSITION, DevCom-1331017
-    _CONSTEXPR20_CONTAINER _String_iterator& operator=(const _String_iterator&) = default;
+    _CONSTEXPR20_CONTAINER _String_iterator& operator=(const _String_iterator&) noexcept = default;
 
     _NODISCARD _CONSTEXPR20_CONTAINER reference operator*() const noexcept {
         return const_cast<reference>(_Mybase::operator*());
@@ -2284,11 +2241,11 @@ public:
     }
 
     _CONSTEXPR20_CONTAINER bool _Large_string_engaged() const noexcept {
-#ifdef __cpp_lib_is_constant_evaluated
+#ifdef __cpp_lib_constexpr_string
         if (_STD is_constant_evaluated()) {
             return true;
         }
-#endif // __cpp_lib_is_constant_evaluated
+#endif // __cpp_lib_constexpr_string
         return _BUF_SIZE <= _Myres;
     }
 
@@ -2577,11 +2534,11 @@ public:
     _CONSTEXPR20_CONTAINER basic_string(basic_string&& _Right) noexcept
         : _Mypair(_One_then_variadic_args_t{}, _STD move(_Right._Getal())) {
         _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
-#ifdef __cpp_lib_is_constant_evaluated
+#ifdef __cpp_lib_constexpr_string
         if (_STD is_constant_evaluated()) {
             _Take_contents(_Right, bool_constant<false>{});
         } else
-#endif // __cpp_lib_is_constant_evaluated
+#endif // __cpp_lib_constexpr_string
         {
             _Take_contents(_Right, bool_constant<_Can_memcpy_val>{});
         }
@@ -2600,11 +2557,11 @@ public:
             }
         }
 
-#ifdef __cpp_lib_is_constant_evaluated
+#ifdef __cpp_lib_constexpr_string
         if (_STD is_constant_evaluated()) {
             _Take_contents(_Right, bool_constant<false>{});
         } else
-#endif // __cpp_lib_is_constant_evaluated
+#endif // __cpp_lib_constexpr_string
         {
             _Take_contents(_Right, bool_constant<_Can_memcpy_val>{});
         }
@@ -2632,7 +2589,7 @@ public:
             _Ptr                    = _Unfancy(_Fancyptr);
             _Construct_in_place(_My_data._Bx._Ptr, _Fancyptr);
         }
-#ifdef __cpp_lib_is_constant_evaluated
+#ifdef __cpp_lib_constexpr_string
         else if (_STD is_constant_evaluated()) { // SSO disabled in constexpr context
             const pointer _Fancyptr = _Getal().allocate(_New_capacity + 1); // throws
             _Ptr                    = _Unfancy(_Fancyptr);
@@ -2642,7 +2599,7 @@ public:
         if (_STD is_constant_evaluated()) { // Copying into uninitialized memory is technically UB, so fill it once
             _Traits::assign(_Ptr, _New_capacity + 1, _Elem());
         }
-#endif // __cpp_lib_is_constant_evaluated
+#endif // __cpp_lib_constexpr_string
 
         _My_data._Mysize = _New_size;
         _My_data._Myres  = _New_capacity;
@@ -2670,11 +2627,11 @@ public:
         if (_Fits_in_left && _Right_capacity <= _Left_capacity) {
             // take _Left's buffer, max_size() is OK because _Fits_in_left
             _My_data._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal())); // throws, hereafter nothrow in this block
-#ifdef __cpp_lib_is_constant_evaluated
+#ifdef __cpp_lib_constexpr_string
             if (_STD is_constant_evaluated()) {
                 _Take_contents(_Left, bool_constant<false>{}); // cannot memcpy in constexpr context
             } else
-#endif // __cpp_lib_is_constant_evaluated
+#endif // __cpp_lib_constexpr_string
             {
                 _Take_contents(_Left, bool_constant<_Can_memcpy_val>{});
             }
@@ -2697,11 +2654,11 @@ public:
             // therefore: _Right must have more than the minimum capacity, so it must be _Large_string_engaged()
             _STL_INTERNAL_CHECK(_Right_data._Large_string_engaged());
             _My_data._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal())); // throws, hereafter nothrow in this block
-#ifdef __cpp_lib_is_constant_evaluated
+#ifdef __cpp_lib_constexpr_string
             if (_STD is_constant_evaluated()) {
                 _Take_contents(_Right, bool_constant<false>{});
             } else
-#endif // __cpp_lib_is_constant_evaluated
+#endif // __cpp_lib_constexpr_string
             {
                 _Take_contents(_Right, bool_constant<_Can_memcpy_val>{});
             }
@@ -2723,11 +2680,11 @@ public:
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data); // throws
         const pointer _Fancyptr = _Getal().allocate(_New_capacity + 1); // throws
         // nothrow hereafter
-#ifdef __cpp_lib_is_constant_evaluated
+#ifdef __cpp_lib_constexpr_string
         if (_STD is_constant_evaluated()) { // Copying into uninitialized memory is technically UB, so fill it once
             _Traits::assign(_Unfancy(_Fancyptr), _New_capacity + 1, _Elem());
         }
-#endif // __cpp_lib_is_constant_evaluated
+#endif // __cpp_lib_constexpr_string
         _Construct_in_place(_My_data._Bx._Ptr, _Fancyptr);
         _My_data._Mysize = _New_size;
         _My_data._Myres  = _New_capacity;
@@ -2772,11 +2729,11 @@ private:
     _CONSTEXPR20_CONTAINER void _Move_assign(basic_string& _Right, _Equal_allocators) noexcept {
         _Tidy_deallocate();
         _Pocma(_Getal(), _Right._Getal());
-#ifdef __cpp_lib_is_constant_evaluated
+#ifdef __cpp_lib_constexpr_string
         if (_STD is_constant_evaluated()) {
             _Take_contents(_Right, bool_constant<false>{});
         } else
-#endif
+#endif // __cpp_lib_constexpr_string
         {
             _Take_contents(_Right, bool_constant<_Can_memcpy_val>{});
         }
@@ -2791,11 +2748,11 @@ private:
             _Mypair._Myval2._Reload_proxy(
                 _GET_PROXY_ALLOCATOR(_Alty, _Getal()), _GET_PROXY_ALLOCATOR(_Alty, _Right._Getal()));
             _Pocma(_Getal(), _Right._Getal());
-#ifdef __cpp_lib_is_constant_evaluated
+#ifdef __cpp_lib_constexpr_string
             if (_STD is_constant_evaluated()) {
                 _Take_contents(_Right, bool_constant<false>{});
             } else
-#endif // __cpp_lib_is_constant_evaluated
+#endif // __cpp_lib_constexpr_string
             {
                 _Take_contents(_Right, bool_constant<_Can_memcpy_val>{});
             }
@@ -2943,11 +2900,11 @@ private:
         const pointer _New_array      = _Al.allocate(_New_capacity + 1); // throws
         _Construct_in_place(_My_data._Bx._Ptr, _New_array);
 
-#ifdef __cpp_lib_is_constant_evaluated
+#ifdef __cpp_lib_constexpr_string
         if (_STD is_constant_evaluated()) { // Copying into uninitialized memory is technically UB, so fill it once
             _Traits::assign(_Unfancy(_New_array), _New_capacity + 1, _Elem());
         }
-#endif // __cpp_lib_is_constant_evaluated
+#endif // __cpp_lib_constexpr_string
         _Traits::copy(_Unfancy(_New_array), _Right_ptr, _Right_size + 1);
         _My_data._Mysize = _Right_size;
         _My_data._Myres  = _New_capacity;
@@ -2981,12 +2938,7 @@ public:
 
     _CONSTEXPR20_CONTAINER iterator insert(const const_iterator _Where, const initializer_list<_Elem> _Ilist) {
 #if _ITERATOR_DEBUG_LEVEL != 0
-#ifdef __cpp_lib_is_constant_evaluated
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
-        {
-            _STL_VERIFY(_Where._Getcont() == _STD addressof(_Mypair._Myval2), "string iterator incompatible");
-        }
+        _STL_VERIFY(_Where._Getcont() == _STD addressof(_Mypair._Myval2), "string iterator incompatible");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         const auto _Off = static_cast<size_type>(_Unfancy(_Where._Ptr) - _Mypair._Myval2._Myptr());
         insert(_Off, _Ilist.begin(), _Convert_size<size_type>(_Ilist.size()));
@@ -2998,12 +2950,7 @@ public:
         // replace with initializer_list
         _Adl_verify_range(_First, _Last);
 #if _ITERATOR_DEBUG_LEVEL != 0
-#ifdef __cpp_lib_is_constant_evaluated
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
-        {
-            _STL_VERIFY(_First._Getcont() == _STD addressof(_Mypair._Myval2), "string iterators incompatible");
-        }
+        _STL_VERIFY(_First._Getcont() == _STD addressof(_Mypair._Myval2), "string iterators incompatible");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         const auto _Offset = static_cast<size_type>(_Unfancy(_First._Ptr) - _Mypair._Myval2._Myptr());
         const auto _Length = static_cast<size_type>(_Last._Ptr - _First._Ptr);
@@ -3026,9 +2973,9 @@ private:
     _CONSTEXPR20_CONTAINER void _Copy_assign_val_from_small(const basic_string& _Right) {
         // TRANSITION, VSO-761321; inline into only caller when that's fixed
         _Tidy_deallocate();
-#ifdef __cpp_lib_is_constant_evaluated
+#ifdef __cpp_lib_constexpr_string
         if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
+#endif // __cpp_lib_constexpr_string
         {
             if constexpr (_Can_memcpy_val) {
                 _Memcpy_val_from(_Right);
@@ -3298,11 +3245,11 @@ public:
             basic_string _Right(_UFirst, _ULast, get_allocator());
             if (_Mypair._Myval2._Myres < _Right._Mypair._Myval2._Myres) {
                 _Mypair._Myval2._Orphan_all();
-#ifdef __cpp_lib_is_constant_evaluated
+#ifdef __cpp_lib_constexpr_string
                 if (_STD is_constant_evaluated()) {
                     _Swap_data(_Right, bool_constant<false>{});
                 } else
-#endif // __cpp_lib_is_constant_evaluated
+#endif // __cpp_lib_constexpr_string
                 {
                     _Swap_data(_Right, bool_constant<_Can_memcpy_val>{});
                 }
@@ -3348,9 +3295,9 @@ public:
         // insert [_Ptr, _Ptr + _Count) at _Off
         _Mypair._Myval2._Check_offset(_Off);
         const size_type _Old_size = _Mypair._Myval2._Mysize;
-#ifdef __cpp_lib_is_constant_evaluated
+#ifdef __cpp_lib_constexpr_string
         if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
+#endif // __cpp_lib_constexpr_string
         { // the check for overlapping ranges is technically UB, so no constant evaluation possible
             if (_Count <= _Mypair._Myval2._Myres - _Old_size) {
                 _Mypair._Myval2._Mysize = _Old_size + _Count;
@@ -3419,12 +3366,7 @@ public:
 
     _CONSTEXPR20_CONTAINER iterator insert(const const_iterator _Where, const _Elem _Ch) { // insert _Ch at _Where
 #if _ITERATOR_DEBUG_LEVEL != 0
-#ifdef __cpp_lib_is_constant_evaluated
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
-        {
-            _STL_VERIFY(_Where._Getcont() == _STD addressof(_Mypair._Myval2), "string iterator incompatible");
-        }
+        _STL_VERIFY(_Where._Getcont() == _STD addressof(_Mypair._Myval2), "string iterator incompatible");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         const auto _Off = static_cast<size_type>(_Unfancy(_Where._Ptr) - _Mypair._Myval2._Myptr());
         insert(_Off, 1, _Ch);
@@ -3435,12 +3377,7 @@ public:
         const const_iterator _Where, _CRT_GUARDOVERFLOW const size_type _Count, const _Elem _Ch) {
         // insert _Count * _Elem at _Where
 #if _ITERATOR_DEBUG_LEVEL != 0
-#ifdef __cpp_lib_is_constant_evaluated
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
-        {
-            _STL_VERIFY(_Where._Getcont() == _STD addressof(_Mypair._Myval2), "string iterator incompatible");
-        }
+        _STL_VERIFY(_Where._Getcont() == _STD addressof(_Mypair._Myval2), "string iterator incompatible");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         const auto _Off = static_cast<size_type>(_Unfancy(_Where._Ptr) - _Mypair._Myval2._Myptr());
         insert(_Off, _Count, _Ch);
@@ -3451,12 +3388,7 @@ public:
     _CONSTEXPR20_CONTAINER iterator insert(const const_iterator _Where, const _Iter _First, const _Iter _Last) {
         // insert [_First, _Last) at _Where, input iterators
 #if _ITERATOR_DEBUG_LEVEL != 0
-#ifdef __cpp_lib_is_constant_evaluated
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
-        {
-            _STL_VERIFY(_Where._Getcont() == _STD addressof(_Mypair._Myval2), "string iterator incompatible");
-        }
+        _STL_VERIFY(_Where._Getcont() == _STD addressof(_Mypair._Myval2), "string iterator incompatible");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         const auto _Off = static_cast<size_type>(_Unfancy(_Where._Ptr) - _Mypair._Myval2._Myptr());
         _Adl_verify_range(_First, _Last);
@@ -3499,12 +3431,7 @@ public:
 
     _CONSTEXPR20_CONTAINER iterator erase(const const_iterator _Where) noexcept /* strengthened */ {
 #if _ITERATOR_DEBUG_LEVEL != 0
-#ifdef __cpp_lib_is_constant_evaluated
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
-        {
-            _STL_VERIFY(_Where._Getcont() == _STD addressof(_Mypair._Myval2), "string iterator incompatible");
-        }
+        _STL_VERIFY(_Where._Getcont() == _STD addressof(_Mypair._Myval2), "string iterator incompatible");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         const auto _Off = static_cast<size_type>(_Unfancy(_Where._Ptr) - _Mypair._Myval2._Myptr());
         _Erase_noexcept(_Off, 1);
@@ -3515,12 +3442,7 @@ public:
     /* strengthened */ {
         _Adl_verify_range(_First, _Last);
 #if _ITERATOR_DEBUG_LEVEL != 0
-#ifdef __cpp_lib_is_constant_evaluated
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
-        {
-            _STL_VERIFY(_First._Getcont() == _STD addressof(_Mypair._Myval2), "string iterators incompatible");
-        }
+        _STL_VERIFY(_First._Getcont() == _STD addressof(_Mypair._Myval2), "string iterators incompatible");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         const auto _Off = static_cast<size_type>(_Unfancy(_First._Ptr) - _Mypair._Myval2._Myptr());
         _Erase_noexcept(_Off, static_cast<size_type>(_Last._Ptr - _First._Ptr));
@@ -3585,9 +3507,9 @@ public:
         }
 
         const size_type _Growth = static_cast<size_type>(_Count - _Nx);
-#ifdef __cpp_lib_is_constant_evaluated
+#ifdef __cpp_lib_constexpr_string
         if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
+#endif // __cpp_lib_constexpr_string
         { // the check for overlapping ranges is technically UB, so no constant evaluation possible
             if (_Growth <= _Mypair._Myval2._Myres - _Old_size) { // growth fits
                 _Mypair._Myval2._Mysize = _Old_size + _Growth;
@@ -3672,12 +3594,7 @@ public:
         // replace [_First, _Last) with _Right
         _Adl_verify_range(_First, _Last);
 #if _ITERATOR_DEBUG_LEVEL != 0
-#ifdef __cpp_lib_is_constant_evaluated
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
-        {
-            _STL_VERIFY(_First._Getcont() == _STD addressof(_Mypair._Myval2), "string iterators incompatible");
-        }
+        _STL_VERIFY(_First._Getcont() == _STD addressof(_Mypair._Myval2), "string iterators incompatible");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         return replace(static_cast<size_type>(_Unfancy(_First._Ptr) - _Mypair._Myval2._Myptr()),
             static_cast<size_type>(_Last._Ptr - _First._Ptr), _Right);
@@ -3690,12 +3607,7 @@ public:
         // replace [_First, _Last) with _Right
         _Adl_verify_range(_First, _Last);
 #if _ITERATOR_DEBUG_LEVEL != 0
-#ifdef __cpp_lib_is_constant_evaluated
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
-        {
-            _STL_VERIFY(_First._Getcont() == _STD addressof(_Mypair._Myval2), "string iterators incompatible");
-        }
+        _STL_VERIFY(_First._Getcont() == _STD addressof(_Mypair._Myval2), "string iterators incompatible");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         return replace(static_cast<size_type>(_Unfancy(_First._Ptr) - _Mypair._Myval2._Myptr()),
             static_cast<size_type>(_Last._Ptr - _First._Ptr), _Right);
@@ -3707,12 +3619,7 @@ public:
         // replace [_First, _Last) with [_Ptr, _Ptr + _Count)
         _Adl_verify_range(_First, _Last);
 #if _ITERATOR_DEBUG_LEVEL != 0
-#ifdef __cpp_lib_is_constant_evaluated
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
-        {
-            _STL_VERIFY(_First._Getcont() == _STD addressof(_Mypair._Myval2), "string iterators incompatible");
-        }
+        _STL_VERIFY(_First._Getcont() == _STD addressof(_Mypair._Myval2), "string iterators incompatible");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         return replace(static_cast<size_type>(_Unfancy(_First._Ptr) - _Mypair._Myval2._Myptr()),
             static_cast<size_type>(_Last._Ptr - _First._Ptr), _Ptr, _Count);
@@ -3723,12 +3630,7 @@ public:
         // replace [_First, _Last) with [_Ptr, <null>)
         _Adl_verify_range(_First, _Last);
 #if _ITERATOR_DEBUG_LEVEL != 0
-#ifdef __cpp_lib_is_constant_evaluated
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
-        {
-            _STL_VERIFY(_First._Getcont() == _STD addressof(_Mypair._Myval2), "string iterators incompatible");
-        }
+        _STL_VERIFY(_First._Getcont() == _STD addressof(_Mypair._Myval2), "string iterators incompatible");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         return replace(static_cast<size_type>(_Unfancy(_First._Ptr) - _Mypair._Myval2._Myptr()),
             static_cast<size_type>(_Last._Ptr - _First._Ptr), _Ptr);
@@ -3739,12 +3641,7 @@ public:
         // replace [_First, _Last) with _Count * _Ch
         _Adl_verify_range(_First, _Last);
 #if _ITERATOR_DEBUG_LEVEL != 0
-#ifdef __cpp_lib_is_constant_evaluated
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
-        {
-            _STL_VERIFY(_First._Getcont() == _STD addressof(_Mypair._Myval2), "string iterators incompatible");
-        }
+        _STL_VERIFY(_First._Getcont() == _STD addressof(_Mypair._Myval2), "string iterators incompatible");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         return replace(static_cast<size_type>(_Unfancy(_First._Ptr) - _Mypair._Myval2._Myptr()),
             static_cast<size_type>(_Last._Ptr - _First._Ptr), _Count, _Ch);
@@ -3756,12 +3653,7 @@ public:
         // replace [_First, _Last) with [_First2, _Last2), input iterators
         _Adl_verify_range(_First, _Last);
 #if _ITERATOR_DEBUG_LEVEL != 0
-#ifdef __cpp_lib_is_constant_evaluated
-        if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
-        {
-            _STL_VERIFY(_First._Getcont() == _STD addressof(_Mypair._Myval2), "string iterators incompatible");
-        }
+        _STL_VERIFY(_First._Getcont() == _STD addressof(_Mypair._Myval2), "string iterators incompatible");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         const auto _Off    = static_cast<size_type>(_Unfancy(_First._Ptr) - _Mypair._Myval2._Myptr());
         const auto _Length = static_cast<size_type>(_Last._Ptr - _First._Ptr);
@@ -3849,9 +3741,9 @@ public:
         if (!_My_data._Large_string_engaged()) { // can't shrink from small mode
             return;
         }
-#ifdef __cpp_lib_is_constant_evaluated
+#ifdef __cpp_lib_constexpr_string
         if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
+#endif // __cpp_lib_constexpr_string
         {
             if (_My_data._Mysize < _BUF_SIZE) {
                 _Become_small();
@@ -3864,11 +3756,11 @@ public:
             auto& _Al              = _Getal();
             const pointer _New_ptr = _Al.allocate(_Target_capacity + 1); // throws
 
-#ifdef __cpp_lib_is_constant_evaluated
+#ifdef __cpp_lib_constexpr_string
             if (_STD is_constant_evaluated()) { // Copying into uninitialized memory is technically UB, so fill it once
                 _Traits::assign(_Unfancy(_New_ptr), _Target_capacity + 1, _Elem());
             }
-#endif // __cpp_lib_is_constant_evaluated
+#endif // __cpp_lib_constexpr_string
 
             _My_data._Orphan_all();
             _Traits::copy(_Unfancy(_New_ptr), _Unfancy(_My_data._Bx._Ptr), _My_data._Mysize + 1);
@@ -4158,11 +4050,11 @@ public:
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         }
 
-#ifdef __cpp_lib_is_constant_evaluated
+#ifdef __cpp_lib_constexpr_string
         if (_STD is_constant_evaluated()) { // cannot call memcpy in a constexpr context
             _Swap_data(_Right, bool_constant<false>{});
         } else
-#endif // __cpp_lib_is_constant_evaluated
+#endif // __cpp_lib_constexpr_string
         {
             _Swap_data(_Right, bool_constant<_Can_memcpy_val>{});
         }
@@ -4574,21 +4466,21 @@ private:
         auto& _Al                     = _Getal();
         const pointer _New_ptr        = _Al.allocate(_New_capacity + 1); // throws
 
-#ifdef __cpp_lib_is_constant_evaluated
+#ifdef __cpp_lib_constexpr_string
         if (_STD is_constant_evaluated()) { // Copying into uninitialized memory is technically UB, so fill it once
             _Traits::assign(_Unfancy(_New_ptr), _New_capacity + 1, _Elem());
         }
-#endif // __cpp_lib_is_constant_evaluated
+#endif // __cpp_lib_constexpr_string
         _Mypair._Myval2._Orphan_all();
         _Mypair._Myval2._Mysize = _New_size;
         _Mypair._Myval2._Myres  = _New_capacity;
         _Fn(_Unfancy(_New_ptr), _New_size, _Args...);
-#ifdef __cpp_lib_is_constant_evaluated
+#ifdef __cpp_lib_constexpr_string
         if (_STD is_constant_evaluated()) {
             _Al.deallocate(_Mypair._Myval2._Bx._Ptr, _Old_capacity + 1);
             _Mypair._Myval2._Bx._Ptr = _New_ptr;
         } else
-#endif // __cpp_lib_is_constant_evaluated
+#endif // __cpp_lib_constexpr_string
         {
             if (_BUF_SIZE <= _Old_capacity) {
                 _Al.deallocate(_Mypair._Myval2._Bx._Ptr, _Old_capacity + 1);
@@ -4617,23 +4509,23 @@ private:
         auto& _Al                     = _Getal();
         const pointer _New_ptr        = _Al.allocate(_New_capacity + 1); // throws
 
-#ifdef __cpp_lib_is_constant_evaluated
+#ifdef __cpp_lib_constexpr_string
         if (_STD is_constant_evaluated()) { // Copying into uninitialized memory is technically UB, so fill it once
             _Traits::assign(_Unfancy(_New_ptr), _New_capacity + 1, _Elem());
         }
-#endif // __cpp_lib_is_constant_evaluated
+#endif // __cpp_lib_constexpr_string
         _My_data._Orphan_all();
         _My_data._Mysize      = _New_size;
         _My_data._Myres       = _New_capacity;
         _Elem* const _Raw_new = _Unfancy(_New_ptr);
-#ifdef __cpp_lib_is_constant_evaluated
+#ifdef __cpp_lib_constexpr_string
         if (_STD is_constant_evaluated()) {
             const pointer _Old_ptr = _My_data._Bx._Ptr;
             _Fn(_Raw_new, _Unfancy(_Old_ptr), _Old_size, _Args...);
             _Al.deallocate(_Old_ptr, _Old_capacity + 1);
             _My_data._Bx._Ptr = _New_ptr;
         } else
-#endif // __cpp_lib_is_constant_evaluated
+#endif // __cpp_lib_constexpr_string
         {
             if (_BUF_SIZE <= _Old_capacity) {
                 const pointer _Old_ptr = _My_data._Bx._Ptr;
@@ -4652,9 +4544,9 @@ private:
         // release any held storage and return to small string mode
         // pre: *this is in large string mode
         // pre: this is small enough to return to small string mode
-#ifdef __cpp_lib_is_constant_evaluated
-        _STL_ASSERT(!_STD is_constant_evaluated(), "SSO should be disbaled in a constexpr context");
-#endif // __cpp_lib_is_constant_evaluated
+#ifdef __cpp_lib_constexpr_string
+        _STL_ASSERT(!_STD is_constant_evaluated(), "SSO should be disabled in a constexpr context");
+#endif // __cpp_lib_constexpr_string
 
         _Mypair._Myval2._Orphan_all();
         const pointer _Ptr = _Mypair._Myval2._Bx._Ptr;
@@ -4672,7 +4564,7 @@ private:
     _CONSTEXPR20_CONTAINER void _Tidy_init() noexcept { // initialize basic_string data members
         _Mypair._Myval2._Mysize = 0;
 
-#ifdef __cpp_lib_is_constant_evaluated
+#ifdef __cpp_lib_constexpr_string
         if (_STD is_constant_evaluated()) {
             auto& _My_data         = _Mypair._Myval2;
             _My_data._Myres        = _BUF_SIZE; // SSO disabled in constexpr context
@@ -4683,7 +4575,7 @@ private:
             _Elem* const _Raw_new = _Unfancy(_New_ptr);
             _Traits::assign(_Raw_new, _BUF_SIZE + 1, _Elem());
         } else
-#endif // __cpp_lib_is_constant_evaluated
+#endif // __cpp_lib_constexpr_string
         {
             _Mypair._Myval2._Myres = _BUF_SIZE - 1;
             // the _Traits::assign is last so the codegen doesn't think the char write can alias this
@@ -4693,14 +4585,14 @@ private:
 
     _CONSTEXPR20_CONTAINER void _Tidy_deallocate() noexcept { // initialize buffer, deallocating any storage
         _Mypair._Myval2._Orphan_all();
-#ifdef __cpp_lib_is_constant_evaluated
+#ifdef __cpp_lib_constexpr_string
         if (_STD is_constant_evaluated()) {
             const pointer _Ptr = _Mypair._Myval2._Bx._Ptr;
             auto& _Al          = _Getal();
             _Destroy_in_place(_Mypair._Myval2._Bx._Ptr);
             _Al.deallocate(_Ptr, _Mypair._Myval2._Myres + 1);
         } else
-#endif // __cpp_lib_is_constant_evaluated
+#endif // __cpp_lib_constexpr_string
         {
             if (_Mypair._Myval2._Large_string_engaged()) {
                 const pointer _Ptr = _Mypair._Myval2._Bx._Ptr;
