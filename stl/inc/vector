@@ -152,7 +152,7 @@ public:
 #if _HAS_CXX20
     _NODISCARD strong_ordering operator<=>(const _Vector_const_iterator& _Right) const noexcept {
         _Compat(_Right);
-        return _Unwrapped() <=> _Right._Unwrapped();
+        return _Unfancy(_Ptr) <=> _Unfancy(_Right._Ptr);
     }
 #else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
     _NODISCARD bool operator!=(const _Vector_const_iterator& _Right) const noexcept {
