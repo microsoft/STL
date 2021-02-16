@@ -481,6 +481,20 @@ STATIC_ASSERT(__cpp_lib_constexpr_numeric == 201911L);
 #endif
 #endif
 
+#if _HAS_CXX20 && !defined(__clang__) // TRANSITION, LLVM-48606
+#ifndef __cpp_lib_constexpr_string
+#error __cpp_lib_constexpr_string is not defined
+#elif __cpp_lib_constexpr_string != 201907L
+#error __cpp_lib_constexpr_string is not 201907L
+#else
+STATIC_ASSERT(__cpp_lib_constexpr_string == 201907L);
+#endif
+#else
+#ifdef __cpp_lib_constexpr_string
+#error __cpp_lib_constexpr_string is defined
+#endif
+#endif
+
 #if _HAS_CXX20
 #ifndef __cpp_lib_constexpr_string_view
 #error __cpp_lib_constexpr_string_view is not defined
