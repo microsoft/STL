@@ -40,84 +40,31 @@ enum class _Align { _None, _Left, _Right, _Center };
 
 enum class _Sign { _None, _Plus, _Minus, _Space };
 
-enum class _Type {
+enum class _Basic_format_arg_type : uint8_t {
     _None,
-    _Int32,
-    _Int64,
-    _UInt32,
-    _UInt64,
-    _Bool,
-    _Char,
-    _Last_integer_type = _Char,
-    _Float32,
-    _Float64,
-    _Last_numeric_type = _Float64,
-    _CString,
-    _String,
-    _Pointer,
-    _Custom
+    _Int_type,
+    _UInt_type,
+    _Long_long_type,
+    _ULong_long_type,
+    _Bool_type,
+    _Char_type,
+    _Float_type,
+    _Double_type,
+    _Long_double_type,
+    _Pointer_type,
+    _CString_type,
+    _String_type,
+    _Custom_type,
 };
-constexpr bool _Is_integral_fmt_type(_Type _Ty) {
-    return _Ty > _Type::_None && _Ty <= _Type::_Last_integer_type;
+static_assert(static_cast<int>(_Basic_format_arg_type::_Custom_type) <= 16);
+
+constexpr bool _Is_integral_fmt_type(_Basic_format_arg_type _Ty) {
+    return _Ty > _Basic_format_arg_type::_None && _Ty <= _Basic_format_arg_type::_ULong_long_type;
 }
-constexpr bool _Is_arithmetic_fmt_type(_Type _Ty) {
-    return _Ty > _Type::_None && _Ty <= _Type::_Last_numeric_type;
+constexpr bool _Is_arithmetic_fmt_type(_Basic_format_arg_type _Ty) {
+    return _Ty > _Basic_format_arg_type::_None && _Ty <= _Basic_format_arg_type::_Long_double_type;
 }
 struct _Auto_id_tag {};
-
-// TODO: test coverage
-template <class _CharT>
-class basic_format_parse_context {
-public:
-    using char_type      = _CharT;
-    using const_iterator = typename basic_string_view<_CharT>::const_iterator;
-    using iterator       = const_iterator;
-
-private:
-    basic_string_view<_CharT> _Format_string;
-    size_t _Num_args;
-    // The standard says this is size_t, however we use ptrdiff_t to save some space
-    // by not having to store the indexing mode. Below is a more detailed explanation
-    // of how this works.
-    ptrdiff_t _Next_arg_id = 0;
-
-public:
-    constexpr explicit basic_format_parse_context(basic_string_view<_CharT> _Fmt, size_t _Num_args_ = 0) noexcept
-        : _Format_string(_Fmt), _Num_args(_Num_args_) {}
-    basic_format_parse_context(const basic_format_parse_context&) = delete;
-    basic_format_parse_context& operator=(const basic_format_parse_context&) = delete;
-
-    _NODISCARD constexpr const_iterator begin() const noexcept {
-        return _Format_string.begin();
-    }
-    _NODISCARD constexpr const_iterator end() const noexcept {
-        return _Format_string.end();
-    }
-    constexpr void advance_to(const_iterator _It) {
-        _STL_INTERNAL_CHECK(_It - begin() >= 0);
-        using _Size_type = typename basic_string_view<_CharT>::size_type;
-        _Format_string.remove_prefix(static_cast<_Size_type>(_It - begin()));
-    }
-
-    // While the standard presents an exposition only enum value for
-    // the indexing mode (manual, automatic, or unknown) we use _Next_arg_id to indicate it.
-    // _Next_arg_id == 0 means unknown
-    // _Next_arg_id > 0 means automatic
-    // _Next_arg_id == -1 means manual
-    constexpr size_t next_arg_id() {
-        if (_Next_arg_id >= 0) {
-            return static_cast<size_t>(_Next_arg_id++);
-        }
-        throw format_error("Can not switch from manual to automatic indexing");
-    }
-    constexpr void check_arg_id(size_t _Id) {
-        (void) _Id;
-        if (_Next_arg_id > 0) {
-            throw format_error("Can not switch from automatic to manual indexing");
-        }
-        _Next_arg_id = -1;
-    }
-};
 
 // clang-format off
 template <class _Ty, class _CharT>
@@ -150,6 +97,148 @@ concept _Parse_replacement_field_callbacks = requires(_Ty _At, const _CharT* _Be
 };
 
 // clang-format on
+
+template <class _Ty, class _CharT = char>
+struct formatter;
+
+inline void _You_see_this_error_because_arg_id_is_out_of_range() noexcept {}
+
+template <class _CharT>
+class basic_format_parse_context {
+public:
+    using char_type      = _CharT;
+    using const_iterator = typename basic_string_view<_CharT>::const_iterator;
+    using iterator       = const_iterator;
+
+    constexpr explicit basic_format_parse_context(basic_string_view<_CharT> _Fmt, size_t _Num_args_ = 0) noexcept
+        : _Format_string(_Fmt), _Num_args(_Num_args_) {}
+    basic_format_parse_context(const basic_format_parse_context&) = delete;
+    basic_format_parse_context& operator=(const basic_format_parse_context&) = delete;
+
+    _NODISCARD constexpr const_iterator begin() const noexcept {
+        return _Format_string.begin();
+    }
+    _NODISCARD constexpr const_iterator end() const noexcept {
+        return _Format_string.end();
+    }
+    constexpr void advance_to(const const_iterator _It) {
+        _Adl_verify_range(_It, _Format_string.end());
+        const auto _Diff = static_cast<size_t>(_It._Unwrapped() - _Format_string._Unchecked_begin());
+        _Format_string.remove_prefix(_Diff);
+    }
+
+    // While the standard presents an exposition only enum value for
+    // the indexing mode (manual, automatic, or unknown) we use _Next_arg_id to indicate it.
+    // _Next_arg_id > 0 means automatic
+    // _Next_arg_id == 0 means unknown
+    // _Next_arg_id < 0 means manual
+    constexpr size_t next_arg_id() {
+        if (_Next_arg_id < 0) {
+            throw format_error("Can not switch from manual to automatic indexing");
+        }
+
+        return static_cast<size_t>(_Next_arg_id++);
+    }
+
+    constexpr void check_arg_id(const size_t _Id) {
+        if (_STD is_constant_evaluated()) {
+            if (_Id >= _Num_args) {
+                _You_see_this_error_because_arg_id_is_out_of_range();
+            }
+        }
+
+        if (_Next_arg_id > 0) {
+            throw format_error("Can not switch from automatic to manual indexing");
+        }
+        _Next_arg_id = -1;
+    }
+
+private:
+    basic_string_view<_CharT> _Format_string;
+    size_t _Num_args;
+    // The standard says this is size_t, however we use ptrdiff_t to save some space
+    // by not having to store the indexing mode. Above is a more detailed explanation
+    // of how this works.
+    ptrdiff_t _Next_arg_id = 0;
+};
+
+template <class _Context>
+class basic_format_arg {
+public:
+    using _CharType = typename _Context::char_type;
+
+    class handle {
+    private:
+        const void* _Ptr;
+        void (*_Format)(basic_format_parse_context<_CharType>& _Parse_ctx, _Context _Format_ctx, const void*);
+        friend basic_format_arg;
+
+    public:
+        template <class _Ty>
+        explicit handle(const _Ty& _Val) noexcept
+            : _Ptr(_STD addressof(_Val)),
+              _Format([](basic_format_parse_context<_CharType>& _Parse_ctx, _Context& _Format_ctx, const void* _Ptr) {
+                  typename _Context::template formatter_type<_Ty> _Formatter;
+                  _Parse_ctx.advance_to(_Formatter.parse(_Parse_ctx));
+                  _Format_ctx.advance_to(_Formatter.format(*static_cast<const _Ty*>(_Ptr), _Format_ctx));
+              }) {}
+
+        void format(basic_format_parse_context<_CharType>& _Parse_ctx, _Context& _Format_ctx) {
+            _Format(_Parse_ctx, _Format_ctx, _Ptr);
+        }
+    };
+
+    // TRANSITION, LLVM-49072
+    basic_format_arg() noexcept : _Active_state(_Basic_format_arg_type::_None), _No_state() {}
+
+    explicit basic_format_arg(const int _Val) noexcept
+        : _Active_state(_Basic_format_arg_type::_Int_type), _Int_state(_Val) {}
+    explicit basic_format_arg(const unsigned int _Val) noexcept
+        : _Active_state(_Basic_format_arg_type::_UInt_type), _UInt_state(_Val) {}
+    explicit basic_format_arg(const long long _Val) noexcept
+        : _Active_state(_Basic_format_arg_type::_Long_long_type), _Long_long_state(_Val) {}
+    explicit basic_format_arg(const unsigned long long _Val) noexcept
+        : _Active_state(_Basic_format_arg_type::_ULong_long_type), _ULong_long_state(_Val) {}
+    explicit basic_format_arg(const bool _Val) noexcept
+        : _Active_state(_Basic_format_arg_type::_Bool_type), _Bool_state(_Val) {}
+    explicit basic_format_arg(const _CharType _Val) noexcept
+        : _Active_state(_Basic_format_arg_type::_Char_type), _Char_state(_Val) {}
+    explicit basic_format_arg(const float _Val) noexcept
+        : _Active_state(_Basic_format_arg_type::_Float_type), _Float_state(_Val) {}
+    explicit basic_format_arg(const double _Val) noexcept
+        : _Active_state(_Basic_format_arg_type::_Double_type), _Double_state(_Val) {}
+    explicit basic_format_arg(const long double _Val) noexcept
+        : _Active_state(_Basic_format_arg_type::_Long_double_type), _Long_double_state(_Val) {}
+    explicit basic_format_arg(const void* _Val) noexcept
+        : _Active_state(_Basic_format_arg_type::_Pointer_type), _Pointer_state(_Val) {}
+    explicit basic_format_arg(const _CharType* _Val) noexcept
+        : _Active_state(_Basic_format_arg_type::_CString_type), _CString_state(_Val) {}
+    explicit basic_format_arg(const basic_string_view<_CharType> _Val) noexcept
+        : _Active_state(_Basic_format_arg_type::_String_type), _String_state(_Val) {}
+    explicit basic_format_arg(const handle _Val) noexcept
+        : _Active_state(_Basic_format_arg_type::_Custom_type), _Custom_state(_Val) {}
+    explicit operator bool() const noexcept {
+        return _Active_state != _Basic_format_arg_type::_None;
+    }
+
+    _Basic_format_arg_type _Active_state = _Basic_format_arg_type::_None;
+    union {
+        monostate _No_state = monostate{};
+        int _Int_state;
+        unsigned int _UInt_state;
+        long long _Long_long_state;
+        unsigned long long _ULong_long_state;
+        bool _Bool_state;
+        _CharType _Char_state;
+        float _Float_state;
+        double _Double_state;
+        long double _Long_double_state;
+        const void* _Pointer_state;
+        const _CharType* _CString_state;
+        basic_string_view<_CharType> _String_state;
+        handle _Custom_state;
+    };
+};
 
 // we need to implement this ourselves because from_chars does not work with wide characters
 template <class _CharT>
@@ -480,92 +569,6 @@ constexpr void _Parse_format_string(basic_string_view<_CharT> _Format_str, _Hand
 }
 
 
-// TODO: test coverage
-template <class _Context>
-class basic_format_arg {
-public:
-    class handle;
-
-private:
-    template <class _Visitor, class _Ctx>
-    friend auto visit_format_arg(_Visitor&& _Vis, basic_format_arg<_Ctx> _Arg) -> decltype(_Vis(0));
-
-    using _CharT = typename _Context::char_type;
-
-    using _Format_arg_value = variant<monostate, int, unsigned, long long, unsigned long long, bool,
-        typename _Context::char_type, float, double, long double, const void*, const typename _Context::char_type,
-        basic_string_view<typename _Context::char_type>, handle>;
-
-    _Format_arg_value _Value;
-
-    template <class _CharT>
-    struct _Format_arg_type_to_enum {
-        constexpr _Type operator()(monostate) {
-            return _Type::_None;
-        }
-        constexpr _Type operator()(int32_t) {
-            return _Type::_Int32;
-        }
-        constexpr _Type operator()(int64_t) {
-            return _Type::_Int64;
-        }
-        constexpr _Type operator()(uint32_t) {
-            return _Type::_UInt32;
-        }
-        constexpr _Type operator()(uint64_t) {
-            return _Type::_UInt64;
-        }
-        constexpr _Type operator()(bool) {
-            return _Type::_Bool;
-        }
-        constexpr _Type operator()(_CharT) {
-            return _Type::_Char;
-        }
-        constexpr _Type operator()(float) {
-            return _Type::_Float32;
-        }
-        constexpr _Type operator()(double) {
-            return _Type::_Float64;
-        }
-        constexpr _Type operator()(long double) {
-            return _Type::_Float64;
-        }
-        constexpr _Type operator()(const _CharT*) {
-            return _Type::_CString;
-        }
-        constexpr _Type operator()(const basic_string_view<_CharT>&) {
-            return _Type::_String;
-        }
-        constexpr _Type operator()(const void*) {
-            return _Type::_Pointer;
-        }
-        constexpr _Type operator()(const basic_format_arg::handle&) {
-            return _Type::_Custom;
-        }
-    };
-
-public:
-    class handle {
-    private:
-        const void* _Ptr;
-        void (*_Format)(basic_format_parse_context<_CharT>& _Parse_ctx, _Context _Format_ctx, const void*);
-        friend basic_format_arg;
-
-    public:
-        void format(basic_format_parse_context<_CharT>& _Parse_ctx, _Context& _Format_ctx) {
-            _Format(_Parse_ctx, _Format_ctx, _Ptr);
-        }
-    };
-
-    basic_format_arg() noexcept = default;
-    explicit operator bool() const noexcept {
-        return !_STD holds_alternative<monostate>(_Value);
-    }
-    constexpr _Type _Get_type() {
-        return _STD visit(_Format_arg_type_to_enum<_CharT>{}, _Value);
-    }
-};
-
 template <class _CharT>
 struct _Basic_format_specs {
     unsigned int _Width, _Precision;
@@ -720,10 +723,10 @@ private:
     }
 };
 class _Numeric_specs_checker {
-    _Type _Arg_type = _Type::_None;
+    _Basic_format_arg_type _Arg_type = _Basic_format_arg_type::_None;
 
 public:
-    constexpr _Numeric_specs_checker(_Type _Arg_type) : _Arg_type(_Arg_type) {}
+    constexpr _Numeric_specs_checker(_Basic_format_arg_type _Arg_type) : _Arg_type(_Arg_type) {}
 
     constexpr void _Require_numeric_argument() {
         if (!_Is_arithmetic_fmt_type(_Arg_type)) {
@@ -733,14 +736,15 @@ public:
 
     constexpr void _Check_sign() {
         _Require_numeric_argument();
-        if (_Is_integral_fmt_type(_Arg_type) && _Arg_type != _Type::_Int32 && _Arg_type != _Type::_Int64
-            && _Arg_type != _Type::_Char) {
+        if (_Is_integral_fmt_type(_Arg_type) && _Arg_type != _Basic_format_arg_type::_Int_type
+            && _Arg_type != _Basic_format_arg_type::_Long_long_type
+            && _Arg_type != _Basic_format_arg_type::_Char_type) {
             throw format_error("Format specifier requires signed argument.");
         }
     }
 
     constexpr void _Check_precision() {
-        if (_Is_integral_fmt_type(_Arg_type) || _Arg_type == _Type::_Pointer) {
+        if (_Is_integral_fmt_type(_Arg_type) || _Arg_type == _Basic_format_arg_type::_Pointer_type) {
             throw format_error("Precision not allowed for this argument type.");
         }
     }
@@ -755,7 +759,7 @@ class _Specs_checker : public _Handler {
     _Numeric_specs_checker _Numeric_checker;
 
 public:
-    constexpr _Specs_checker(const _Handler& _Handler_inst, _Type _Arg_type)
+    constexpr _Specs_checker(const _Handler& _Handler_inst, _Basic_format_arg_type _Arg_type)
         : _Handler(_Handler_inst), _Numeric_checker(_Arg_type) {}
 
     // _On_align has no checking, since we don't implement numeric alignments.
@@ -778,166 +782,6 @@ public:
         _Numeric_checker._Check_precision();
         _Handler::_On_precision(_Precision);
     }
-};
-
-template <class _Ty, class _CharT = char>
-struct formatter;
-
-inline void _You_see_this_error_because_arg_id_is_out_of_range() noexcept {}
-
-template <class _CharT>
-class basic_format_parse_context {
-public:
-    using char_type      = _CharT;
-    using const_iterator = typename basic_string_view<_CharT>::const_iterator;
-    using iterator       = const_iterator;
-
-    constexpr explicit basic_format_parse_context(basic_string_view<_CharT> _Fmt, size_t _Num_args_ = 0) noexcept
-        : _Format_string(_Fmt), _Num_args(_Num_args_) {}
-    basic_format_parse_context(const basic_format_parse_context&) = delete;
-    basic_format_parse_context& operator=(const basic_format_parse_context&) = delete;
-
-    _NODISCARD constexpr const_iterator begin() const noexcept {
-        return _Format_string.begin();
-    }
-    _NODISCARD constexpr const_iterator end() const noexcept {
-        return _Format_string.end();
-    }
-    constexpr void advance_to(const const_iterator _It) {
-        _Adl_verify_range(_It, _Format_string.end());
-        const auto _Diff = static_cast<size_t>(_It._Unwrapped() - _Format_string._Unchecked_begin());
-        _Format_string.remove_prefix(_Diff);
-    }
-
-    // While the standard presents an exposition only enum value for
-    // the indexing mode (manual, automatic, or unknown) we use _Next_arg_id to indicate it.
-    // _Next_arg_id > 0 means automatic
-    // _Next_arg_id == 0 means unknown
-    // _Next_arg_id < 0 means manual
-    constexpr size_t next_arg_id() {
-        if (_Next_arg_id < 0) {
-            throw format_error("Can not switch from manual to automatic indexing");
-        }
-
-        return static_cast<size_t>(_Next_arg_id++);
-    }
-
-    constexpr void check_arg_id(const size_t _Id) {
-        if (_STD is_constant_evaluated()) {
-            if (_Id >= _Num_args) {
-                _You_see_this_error_because_arg_id_is_out_of_range();
-            }
-        }
-
-        if (_Next_arg_id > 0) {
-            throw format_error("Can not switch from automatic to manual indexing");
-        }
-        _Next_arg_id = -1;
-    }
-
-private:
-    basic_string_view<_CharT> _Format_string;
-    size_t _Num_args;
-    // The standard says this is size_t, however we use ptrdiff_t to save some space
-    // by not having to store the indexing mode. Above is a more detailed explanation
-    // of how this works.
-    ptrdiff_t _Next_arg_id = 0;
-};
-
-enum class _Basic_format_arg_type : uint8_t {
-    _None,
-    _Int_type,
-    _UInt_type,
-    _Long_long_type,
-    _ULong_long_type,
-    _Bool_type,
-    _Char_type,
-    _Float_type,
-    _Double_type,
-    _Long_double_type,
-    _Pointer_type,
-    _CString_type,
-    _String_type,
-    _Custom_type,
-};
-static_assert(static_cast<int>(_Basic_format_arg_type::_Custom_type) <= 16);
-
-template <class _Context>
-class basic_format_arg {
-public:
-    using _CharType = typename _Context::char_type;
-
-    class handle {
-    private:
-        const void* _Ptr;
-        void (*_Format)(basic_format_parse_context<_CharType>& _Parse_ctx, _Context _Format_ctx, const void*);
-        friend basic_format_arg;
-
-    public:
-        template <class _Ty>
-        explicit handle(const _Ty& _Val) noexcept
-            : _Ptr(_STD addressof(_Val)),
-              _Format([](basic_format_parse_context<_CharType>& _Parse_ctx, _Context& _Format_ctx, const void* _Ptr) {
-                  typename _Context::template formatter_type<_Ty> _Formatter;
-                  _Parse_ctx.advance_to(_Formatter.parse(_Parse_ctx));
-                  _Format_ctx.advance_to(_Formatter.format(*static_cast<const _Ty*>(_Ptr), _Format_ctx));
-              }) {}
-
-        void format(basic_format_parse_context<_CharType>& _Parse_ctx, _Context& _Format_ctx) {
-            _Format(_Parse_ctx, _Format_ctx, _Ptr);
-        }
-    };
-
-    // TRANSITION, LLVM-49072
-    basic_format_arg() noexcept : _Active_state(_Basic_format_arg_type::_None), _No_state() {}
-
-    explicit basic_format_arg(const int _Val) noexcept
-        : _Active_state(_Basic_format_arg_type::_Int_type), _Int_state(_Val) {}
-    explicit basic_format_arg(const unsigned int _Val) noexcept
-        : _Active_state(_Basic_format_arg_type::_UInt_type), _UInt_state(_Val) {}
-    explicit basic_format_arg(const long long _Val) noexcept
-        : _Active_state(_Basic_format_arg_type::_Long_long_type), _Long_long_state(_Val) {}
-    explicit basic_format_arg(const unsigned long long _Val) noexcept
-        : _Active_state(_Basic_format_arg_type::_ULong_long_type), _ULong_long_state(_Val) {}
-    explicit basic_format_arg(const bool _Val) noexcept
-        : _Active_state(_Basic_format_arg_type::_Bool_type), _Bool_state(_Val) {}
-    explicit basic_format_arg(const _CharType _Val) noexcept
-        : _Active_state(_Basic_format_arg_type::_Char_type), _Char_state(_Val) {}
-    explicit basic_format_arg(const float _Val) noexcept
-        : _Active_state(_Basic_format_arg_type::_Float_type), _Float_state(_Val) {}
-    explicit basic_format_arg(const double _Val) noexcept
-        : _Active_state(_Basic_format_arg_type::_Double_type), _Double_state(_Val) {}
-    explicit basic_format_arg(const long double _Val) noexcept
-        : _Active_state(_Basic_format_arg_type::_Long_double_type), _Long_double_state(_Val) {}
-    explicit basic_format_arg(const void* _Val) noexcept
-        : _Active_state(_Basic_format_arg_type::_Pointer_type), _Pointer_state(_Val) {}
-    explicit basic_format_arg(const _CharType* _Val) noexcept
-        : _Active_state(_Basic_format_arg_type::_CString_type), _CString_state(_Val) {}
-    explicit basic_format_arg(const basic_string_view<_CharType> _Val) noexcept
-        : _Active_state(_Basic_format_arg_type::_String_type), _String_state(_Val) {}
-    explicit basic_format_arg(const handle _Val) noexcept
-        : _Active_state(_Basic_format_arg_type::_Custom_type), _Custom_state(_Val) {}
-    explicit operator bool() const noexcept {
-        return _Active_state != _Basic_format_arg_type::_None;
-    }
-
-    _Basic_format_arg_type _Active_state = _Basic_format_arg_type::_None;
-    union {
-        monostate _No_state = monostate{};
-        int _Int_state;
-        unsigned int _UInt_state;
-        long long _Long_long_state;
-        unsigned long long _ULong_long_state;
-        bool _Bool_state;
-        _CharType _Char_state;
-        float _Float_state;
-        double _Double_state;
-        long double _Long_double_state;
-        const void* _Pointer_state;
-        const _CharType* _CString_state;
-        basic_string_view<_CharType> _String_state;
-        handle _Custom_state;
-    };
 };
 
 template <class _Visitor, class _Context>
@@ -1133,9 +977,6 @@ public:
         size_t _Arg_index = 0;
         (_Store(_Arg_index++, _Vals), ...);
     }
-    constexpr _Type _Get_type() {
-        return _STD visit(_Format_arg_type_to_enum<_CharT>{}, _Value);
-    }
 };
 
 template <class _Context>
@@ -1250,11 +1091,6 @@ public:
     }
 };
 
-template <class _Visitor, class _Context>
-auto visit_format_arg(_Visitor&& _Vis, basic_format_arg<_Context> _Arg) -> decltype(_Vis(0)) {
-    return _STD visit(_STD forward<_Visitor>(_Vis), _Arg._Value);
-}
-
 template <class _CharT, class _OutputIt>
 _OutputIt _Write(_OutputIt _Out, monostate) {
     _STL_INTERNAL_CHECK(false);
@@ -1354,7 +1190,7 @@ struct _Format_handler {
         _Basic_format_specs<_CharT> _Specs;
         _Specs_checker<_Specs_handler<basic_format_parse_context<_CharT>, _Context>> _Handler(
             _Specs_handler<basic_format_parse_context<_CharT>, _Context>(_Specs, _Parse_context, _Ctx),
-            _Arg._Get_type());
+            _Arg._Active_state);
         _Begin = _Parse_format_specs(_Begin, _End, _Handler);
         if (_Begin == _End || *_Begin != '}') {
             throw format_error("Missing '}' in format string.");

@@ -290,7 +290,8 @@ constexpr bool test_specs_setter() {
 
 template <class CharT>
 constexpr bool test_specs_checker() {
-    _Specs_checker<noop_testing_callbacks<CharT>> checker(noop_testing_callbacks<CharT>{}, _Type::_Float32);
+    _Specs_checker<noop_testing_callbacks<CharT>> checker(
+        noop_testing_callbacks<CharT>{}, _Basic_format_arg_type::_Float_type);
     (void) checker;
     return true;
 }
