@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 // Generated file - DO NOT EDIT manually!
+'use strict';
 const daily_table = [
     { date: '2019-09-05', merged: 3.00, pr: 1, cxx20: 60, lwg: 7, issue: 5, bug: 0, avg_age: 0.23, avg_wait: 0.23, sum_age: 0.01, sum_wait: 0.01, },
     { date: '2019-09-06', merged: 6.00, pr: 1, cxx20: 60, lwg: 7, issue: 6, bug: 0, avg_age: 0.03, avg_wait: 0.03, sum_age: 0.00, sum_wait: 0.00, },
@@ -526,5 +527,12 @@ const daily_table = [
     { date: '2021-02-06', merged: 28.70, pr: 44, cxx20: 12, cxx23: 4, lwg: 2, issue: 319, bug: 104, avg_age: 92.32, avg_wait: 75.54, sum_age: 135.41, sum_wait: 110.79, },
     { date: '2021-02-07', merged: 28.15, pr: 45, cxx20: 12, cxx23: 4, lwg: 2, issue: 319, bug: 104, avg_age: 91.25, avg_wait: 74.84, sum_age: 136.88, sum_wait: 112.26, },
     { date: '2021-02-08', merged: 27.59, pr: 46, cxx20: 12, cxx23: 4, lwg: 2, issue: 319, bug: 104, avg_age: 90.26, avg_wait: 74.21, sum_age: 138.40, sum_wait: 113.78, },
+    { date: '2021-02-09', merged: 27.99, pr: 49, cxx20: 12, cxx23: 4, lwg: 2, issue: 319, bug: 104, avg_age: 85.70, avg_wait: 70.55, sum_age: 139.98, sum_wait: 115.22, },
+    { date: '2021-02-10', merged: 27.36, pr: 50, cxx20: 12, cxx23: 4, lwg: 2, issue: 321, bug: 105, avg_age: 84.97, avg_wait: 70.07, sum_age: 141.62, sum_wait: 116.78, },
+    { date: '2021-02-11', merged: 27.66, pr: 49, cxx20: 12, cxx23: 4, lwg: 2, issue: 324, bug: 105, avg_age: 87.60, avg_wait: 69.34, sum_age: 143.07, sum_wait: 113.26, },
+    { date: '2021-02-12', merged: 36.96, pr: 40, cxx20: 12, cxx23: 4, lwg: 2, issue: 321, bug: 103, avg_age: 105.37, avg_wait: 81.87, sum_age: 140.50, sum_wait: 109.15, },
+    { date: '2021-02-13', merged: 36.26, pr: 41, cxx20: 12, cxx23: 4, lwg: 2, issue: 322, bug: 104, avg_age: 103.80, avg_wait: 80.86, sum_age: 141.86, sum_wait: 110.51, },
+    { date: '2021-02-14', merged: 35.59, pr: 41, cxx20: 12, cxx23: 4, lwg: 2, issue: 322, bug: 104, avg_age: 104.80, avg_wait: 81.86, sum_age: 143.22, sum_wait: 111.88, },
+    { date: '2021-02-15', merged: 34.79, pr: 42, cxx20: 12, cxx23: 4, lwg: 2, issue: 322, bug: 104, avg_age: 103.29, avg_wait: 80.90, sum_age: 144.60, sum_wait: 113.26, },
 ];
 // Generated file - DO NOT EDIT manually!

@@ -35,6 +35,8 @@
     <script src="weekly_table.js"></script>
     <script src="monthly_table.js"></script>
     <script>
+        'use strict';
+
         function get_values(table, key) {
             return table.filter(row => row[key] !== undefined).map(row => ({ x: row.date, y: row[key] }));
         }
