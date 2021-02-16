@@ -4368,7 +4368,7 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20_CONTAINER int compare(size_type _Off, size_type _Nx, const basic_string& _Right) const {
-        // compare [_Off, _Off + _N0) with _Right
+        // compare [_Off, _Off + _Nx) with _Right
         _Mypair._Myval2._Check_offset(_Off);
         return _Traits_compare<_Traits>(_Mypair._Myval2._Myptr() + _Off, _Mypair._Myval2._Clamp_suffix_size(_Off, _Nx),
             _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
@@ -4376,7 +4376,7 @@ public:
 
     _NODISCARD _CONSTEXPR20_CONTAINER int compare(const size_type _Off, const size_type _Nx, const basic_string& _Right,
         const size_type _Roff, const size_type _Count = npos) const {
-        // compare [_Off, _Off + _N0) with _Right [_Roff, _Roff + _Count)
+        // compare [_Off, _Off + _Nx) with _Right [_Roff, _Roff + _Count)
         _Mypair._Myval2._Check_offset(_Off);
         _Right._Mypair._Myval2._Check_offset(_Roff);
         return _Traits_compare<_Traits>(_Mypair._Myval2._Myptr() + _Off, _Mypair._Myval2._Clamp_suffix_size(_Off, _Nx),
@@ -4390,7 +4390,7 @@ public:
 
     _NODISCARD _CONSTEXPR20_CONTAINER int compare(
         const size_type _Off, const size_type _Nx, _In_z_ const _Elem* const _Ptr) const {
-        // compare [_Off, _Off + _N0) with [_Ptr, <null>)
+        // compare [_Off, _Off + _Nx) with [_Ptr, <null>)
         _Mypair._Myval2._Check_offset(_Off);
         return _Traits_compare<_Traits>(_Mypair._Myval2._Myptr() + _Off, _Mypair._Myval2._Clamp_suffix_size(_Off, _Nx),
             _Ptr, _Traits::length(_Ptr));
@@ -4398,7 +4398,7 @@ public:
 
     _NODISCARD _CONSTEXPR20_CONTAINER int compare(const size_type _Off, const size_type _Nx,
         _In_reads_(_Count) const _Elem* const _Ptr, const size_type _Count) const {
-        // compare [_Off, _Off + _N0) with [_Ptr, _Ptr + _Count)
+        // compare [_Off, _Off + _Nx) with [_Ptr, _Ptr + _Count)
         _Mypair._Myval2._Check_offset(_Off);
         return _Traits_compare<_Traits>(
             _Mypair._Myval2._Myptr() + _Off, _Mypair._Myval2._Clamp_suffix_size(_Off, _Nx), _Ptr, _Count);
