@@ -1116,7 +1116,7 @@ public:
     }
 
 #if _HAS_CXX20
-    _NODISCARD strong_ordering operator<=>(const _String_view_iterator& _Right) const noexcept {
+    _NODISCARD constexpr strong_ordering operator<=>(const _String_view_iterator& _Right) const noexcept {
 #if _ITERATOR_DEBUG_LEVEL >= 1
         _STL_VERIFY(_Mydata == _Right._Mydata && _Mysize == _Right._Mysize,
             "cannot compare incompatible string_view iterators for equality");
