@@ -4634,7 +4634,7 @@ template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD bool operator>=(const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) {
     return !(_Left < _Right);
 }
-#else // !_HAS_CXX20
+#else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
 template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD typename _Get_comparison_category<_Traits>::comparison_category operator<=>(
     const basic_string<_Elem, _Traits, _Alloc>& _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) noexcept {
