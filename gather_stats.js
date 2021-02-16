@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+'use strict';
+
 const fs = require('fs');
 
 const cliProgress = require('cli-progress');
@@ -313,6 +315,7 @@ function write_generated_file(filename, table_str) {
     let str = '// Copyright (c) Microsoft Corporation.\n';
     str += '// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception\n\n';
     str += generated_file_warning_comment;
+    str += "'use strict';\n";
     str += table_str;
     str += generated_file_warning_comment;
 
