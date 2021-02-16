@@ -151,7 +151,7 @@ public:
 
 #if _HAS_CXX20
     _NODISCARD strong_ordering operator<=>(const _Vector_const_iterator& _Right) const noexcept {
-        return _Ptr <=> _Right._Ptr;
+        return _Unwrapped() <=> _Right._Unwrapped();
     }
 #else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
     _NODISCARD bool operator!=(const _Vector_const_iterator& _Right) const noexcept {
