@@ -299,14 +299,14 @@ void ordering_test_cases() {
         std::string a1 = "aaa";
         std::string a2 = "aaa";
         std::string b1 = "bb";
-        // ordered_containers_test(a1, a2, b1);
+        // ordered_containers_test(a1, a2, b1); // TRANSITION, GH-1635
         ordered_iterator_test(a1.begin(), a1.begin(), a1.end(), a1.cbegin(), a1.cbegin(), a1.cend());
     }
     { // string_view
         std::string_view a1 = "aaa";
         std::string_view a2 = "aaa";
         std::string_view b1 = "bb";
-        // ordered_containers_test(a1, a2, b1);
+        // ordered_containers_test(a1, a2, b1); // TRANSITION, GH-1635
         ordered_iterator_test(a1.begin(), a1.begin(), a1.end(), a1.cbegin(), a1.cbegin(), a1.cend());
     }
     { // vector SynthOrdered
