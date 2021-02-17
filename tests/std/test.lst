@@ -255,9 +255,9 @@ tests\P0616R0_using_move_in_numeric
 tests\P0631R8_numbers_math_constants
 tests\P0645R10_text_formatting_args
 tests\P0645R10_text_formatting_death
+tests\P0645R10_text_formatting_formatting
 tests\P0645R10_text_formatting_parse_contexts
 tests\P0645R10_text_formatting_parsing
-tests\P0645R10_text_formatting_formatting
 tests\P0660R10_jthread_and_cv_any
 tests\P0660R10_stop_token
 tests\P0660R10_stop_token_death
