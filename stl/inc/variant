@@ -1375,8 +1375,9 @@ struct _Variant_relop_visitor { // evaluate _Op with the contained value of two 
     const _Variant_storage<_Types...>& _Left;
 
     template <class _Ty, size_t _Idx>
-    _NODISCARD constexpr _Result operator()(_Tagged<const _Ty&, _Idx> _Right) const noexcept(
-        disjunction_v<bool_constant<_Idx == variant_npos>, is_nothrow_invocable_r<_Result, _Op, const _Ty&, const _Ty&>>) {
+    _NODISCARD constexpr _Result operator()(_Tagged<const _Ty&, _Idx> _Right) const
+        noexcept(disjunction_v<bool_constant<_Idx == variant_npos>,
+            is_nothrow_invocable_r<_Result, _Op, const _Ty&, const _Ty&>>) {
         // determine the relationship between the stored values of _Left and _Right
         // pre: _Left.index() == _Idx && _Right.index() == _Idx
         if constexpr (_Idx != variant_npos) {
