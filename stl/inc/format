@@ -92,7 +92,7 @@ template<class _Ty, class _CharT>
 concept _Parse_replacement_field_callbacks = requires(_Ty _At, const _CharT* _Begin, const _CharT* _End) {
     { _At._Parse_context };
     { _At._On_text(_Begin, _End) } -> same_as<void>;
-    { _At._On_replacement_field(size_t{}, _STD declval<const _CharT*>()) } -> same_as<void>;
+    { _At._On_replacement_field(size_t{}, static_cast<const _CharT*>(nullptr)) } -> same_as<void>;
     { _At._On_format_specs(size_t{}, _Begin, _End) } -> same_as<const _CharT*>;
 };
 
@@ -127,7 +127,7 @@ public:
         _Format_string.remove_prefix(_Diff);
     }
 
-    // While the standard presents an exposition only enum value for
+    // While the standard presents an exposition-only enum value for
     // the indexing mode (manual, automatic, or unknown) we use _Next_arg_id to indicate it.
     // _Next_arg_id > 0 means automatic
     // _Next_arg_id == 0 means unknown
@@ -240,6 +240,43 @@ public:
     };
 };
 
+template <class _Visitor, class _Context>
+auto visit_format_arg(_Visitor&& _Vis, basic_format_arg<_Context> _Arg) {
+    switch (_Arg._Active_state) {
+    case _Basic_format_arg_type::_None:
+        return _Vis(_Arg._No_state);
+    case _Basic_format_arg_type::_Int_type:
+        return _Vis(_Arg._Int_state);
+    case _Basic_format_arg_type::_UInt_type:
+        return _Vis(_Arg._UInt_state);
+    case _Basic_format_arg_type::_Long_long_type:
+        return _Vis(_Arg._Long_long_state);
+    case _Basic_format_arg_type::_ULong_long_type:
+        return _Vis(_Arg._ULong_long_state);
+    case _Basic_format_arg_type::_Bool_type:
+        return _Vis(_Arg._Bool_state);
+    case _Basic_format_arg_type::_Char_type:
+        return _Vis(_Arg._Char_state);
+    case _Basic_format_arg_type::_Float_type:
+        return _Vis(_Arg._Float_state);
+    case _Basic_format_arg_type::_Double_type:
+        return _Vis(_Arg._Double_state);
+    case _Basic_format_arg_type::_Long_double_type:
+        return _Vis(_Arg._Long_double_state);
+    case _Basic_format_arg_type::_Pointer_type:
+        return _Vis(_Arg._Pointer_state);
+    case _Basic_format_arg_type::_CString_type:
+        return _Vis(_Arg._CString_state);
+    case _Basic_format_arg_type::_String_type:
+        return _Vis(_Arg._String_state);
+    case _Basic_format_arg_type::_Custom_type:
+        return _Vis(_Arg._Custom_state);
+    default:
+        _STL_VERIFY(false, "basic_format_arg is in impossible state");
+        return _Vis(0);
+    }
+}
+
 // we need to implement this ourselves because from_chars does not work with wide characters
 template <class _CharT>
 constexpr const _CharT* _Parse_nonnegative_integer(const _CharT* _Begin, const _CharT* _End, unsigned int& _Value) {
@@ -301,7 +338,9 @@ constexpr const _CharT* _Parse_align(const _CharT* _Begin, const _CharT* _End, _
     _STL_INTERNAL_CHECK(_Begin != _End && *_Begin != '}');
     // align and fill
     auto _Parsed_align = _Align::_None;
-    auto _Align_pt     = _Begin + 1;
+
+    // TODO: should increment one code point
+    auto _Align_pt = _Begin + 1;
     if (_Align_pt == _End) {
         _Align_pt = _Begin;
     }
@@ -535,56 +574,61 @@ template <class _CharT, _Parse_replacement_field_callbacks<_CharT> _HandlerT>
 constexpr void _Parse_format_string(basic_string_view<_CharT> _Format_str, _HandlerT&& _Handler) {
     auto _Begin = _Format_str.data();
     auto _End   = _Begin + _Format_str.size();
-    struct _Writer {
-        constexpr void operator()(const _CharT* _Begin, const _CharT* _End) {
-            if (_Begin == _End) {
-                return;
-            }
+    while (_Begin != _End) {
+        const _CharT* _OpeningCurl = _Begin;
+        if (*_Begin != '{') {
+            // we didn't start at an opening curl, find the next one
+            _OpeningCurl = _STD find(_Begin + 1, _End, '{');
+            _STL_INTERNAL_CHECK(_Begin != _OpeningCurl);
             for (;;) {
-                const _CharT* _Pt = _STD _Find_unchecked(_Begin, _End, '}');
-                if (_Pt == _End) {
-                    return _Handler._On_text(_Begin, _End);
+                const _CharT* _ClosingCurl = _STD _Find_unchecked(_Begin, _End, '}');
+
+                // In this case we didn't find either a closing curl or opening curl.
+                // Write the whole thing out.
+                if (_ClosingCurl == _OpeningCurl) {
+                    return _Handler._On_text(_Begin, _OpeningCurl);
                 }
-                ++_Pt;
-                if (_Pt == _End || *_Pt != '}') {
+                // We know _ClosingCurl isn't past the end because
+                // the above condition was not met.
+                ++_ClosingCurl;
+                if (_ClosingCurl == _OpeningCurl || *_ClosingCurl != '}') {
                     throw format_error("Unmatched '}' in format string.");
                 }
-                _Handler._On_text(_Begin, _Pt);
-                _Begin = _Pt + 1;
+                // We found two closing curls, so output online one of them
+                _Handler._On_text(_Begin, _ClosingCurl);
+
+                // skip over the second closing curl
+                _Begin = _ClosingCurl + 1;
+            }
+
+            // We are done, there were no replacement fields.
+            if (_OpeningCurl == _End) {
+                return;
             }
         }
-        _HandlerT& _Handler;
-    } _Writer_loop{_Handler};
-    while (_Begin != _End) {
-        const _CharT* _Pt = _Begin;
-        if (*_Begin != '{') {
-            _Pt = _STD find(_Begin + 1, _End, '{');
-            if (_Pt == _End) {
-                return _Writer_loop(_Begin, _End);
-            }
-        }
-        _Writer_loop(_Begin, _Pt);
-        _Begin = _Parse_replacement_field(_Pt, _End, _Handler);
+        // Parse the replacement field starting at _OpeningCurl and ending sometime before _End.
+        _Begin = _Parse_replacement_field(_OpeningCurl, _End, _Handler);
     }
 }
 
 
 template <class _CharT>
 struct _Basic_format_specs {
-    unsigned int _Width, _Precision;
+    unsigned int _Width;
+    unsigned int _Precision;
     char _Type;
     _Align _Alignment;
     _Sign _Sgn;
     bool _Alt;
+    // At most one codepoint (so one char32_t or four utf-8 char8_t).
     _CharT _Fill[4];
 };
-
 
 // Model of _Parse_specs_callbacks that fills a _Basic_format_specs with the parsed data.
 template <class _CharT>
 class _Specs_setter {
 public:
-    explicit constexpr _Specs_setter(_Basic_format_specs<_CharT> _Specs) : _Specs(_Specs) {}
+    explicit constexpr _Specs_setter(_Basic_format_specs<_CharT> _Specs_) : _Specs(_Specs_) {}
 
     constexpr void _On_align(_Align _Aln) {
         _Specs._Alignment = _Aln;
@@ -592,9 +636,9 @@ public:
 
     constexpr void _On_fill(basic_string_view<_CharT> _Sv) {
         if (_Sv.size() > 4) {
-            throw format_error("Invalid fill.");
+            throw format_error("Invalid fill (too long).");
         }
-        _STD fill(_Specs._Fill, _Specs._Fill + 4, '\0');
+        _STD fill(_Specs._Fill, _Specs._Fill + 4, _CharT{});
         _STD copy(_Sv.begin(), _Sv.end(), _Specs._Fill);
     }
 
@@ -608,7 +652,7 @@ public:
 
     constexpr void _On_zero() {
         _Specs._Alignment = _Align::_None;
-        _Specs._Fill[0]   = '0';
+        _Specs._Fill[0]   = _CharT{'0'};
     }
 
     constexpr void _On_width(unsigned int _Width) {
@@ -627,18 +671,6 @@ protected:
     _Basic_format_specs<_CharT> _Specs;
 };
 
-// Actually fetch the value of an argument associated with a dynamic
-// width or precision specifier. This will be called with either
-// _Width_checker or _Precision_checker as "_Handler".
-template <class _Handler, class _FormatArg>
-constexpr unsigned int _Get_dynamic_specs(_FormatArg _Arg) {
-    unsigned long long _Val = visit_format_arg(_Handler(), _Arg);
-    if (_Val > (_STD numeric_limits<unsigned int>::max)()) {
-        throw format_error("Number is too big.");
-    }
-    return static_cast<unsigned int>(_Val);
-}
-
 template <class _Context>
 constexpr basic_format_arg<_Context> _Get_arg(_Context _Ctx, size_t _Arg_id) {
     // note: while this is parameterized on the _Arg_id type in libfmt we don't
@@ -652,7 +684,7 @@ constexpr basic_format_arg<_Context> _Get_arg(_Context _Ctx, size_t _Arg_id) {
 }
 
 // Checks that the type and value of an argument associated with a dynamic
-// width specifier is valid.
+// width specifier are valid.
 class _Width_checker {
 public:
     template <class _Ty>
@@ -664,13 +696,14 @@ public:
                 }
             }
             return static_cast<unsigned long long>(_Value);
+        } else {
+            throw format_error("Width is not an integer.");
         }
-        throw format_error("Width is not an integer.");
     }
 };
 
 // Checks that the type and value of an argument associated with a dynamic
-// precision specifier is valid.
+// precision specifier are valid.
 class _Precision_checker {
 public:
     template <class _Ty>
@@ -678,17 +711,18 @@ public:
         if constexpr (is_integral_v<_Ty>) {
             if constexpr (is_signed_v<_Ty>) {
                 if (_Value < 0) {
-                    throw format_error("Nagative precision.");
+                    throw format_error("Negative precision.");
                 }
             }
             return static_cast<unsigned long long>(_Value);
+        } else {
+            throw format_error("Precision is not an integer.");
         }
-        throw format_error("Precision is not an integer.");
     }
 };
 
 // Parses standard format specs into a _Basic_format_specs using _Specs_setter, and,
-// in addition handles dynamic width and precision. This is seperate from _Specs setter
+// in addition handles dynamic width and precision. This is separate from _Specs setter
 // because it needs to know about the current basic_format_parse_context and basic_format_context
 // in order to fetch the width from the arguments.
 template <class _ParseContext, class _Context>
@@ -696,8 +730,8 @@ class _Specs_handler : public _Specs_setter<typename _Context::char_type> {
 public:
     using _CharT = typename _Context::char_type;
 
-    constexpr _Specs_handler(_Basic_format_specs<_CharT>& _Specs, _ParseContext& _Parse_ctx, _Context& _Ctx)
-        : _Specs_setter<_CharT>(_Specs), _Parse_ctx(_Parse_ctx), _Ctx(_Ctx) {}
+    constexpr _Specs_handler(_Basic_format_specs<_CharT>& _Specs_, _ParseContext& _Parse_ctx_, _Context& _Ctx_)
+        : _Specs_setter<_CharT>(_Specs_), _Parse_ctx(_Parse_ctx_), _Ctx(_Ctx_) {}
 
     template <class _Id>
     constexpr void _On_dynamic_width(_Id _Arg_id) {
@@ -721,20 +755,34 @@ private:
         _Parse_ctx.check_arg_id(_Arg_id);
         return _STD _Get_arg(_Ctx, _Arg_id);
     }
+
+    // Fetch the value of an argument associated with a dynamic
+    // width or precision specifier. This will be called with either
+    // _Width_checker or _Precision_checker as "_Handler".
+    template <class _Handler, class _FormatArg>
+    static constexpr unsigned int _Get_dynamic_specs(_FormatArg _Arg) {
+        unsigned long long _Val = _STD visit_format_arg(_Handler(), _Arg);
+        if (_Val > (_STD numeric_limits<unsigned int>::max)()) {
+            throw format_error("Number is too big.");
+        }
+        return static_cast<unsigned int>(_Val);
+    }
 };
+
 class _Numeric_specs_checker {
+private:
     _Basic_format_arg_type _Arg_type = _Basic_format_arg_type::_None;
 
 public:
-    constexpr _Numeric_specs_checker(_Basic_format_arg_type _Arg_type) : _Arg_type(_Arg_type) {}
+    constexpr explicit _Numeric_specs_checker(_Basic_format_arg_type _Arg_type_) : _Arg_type(_Arg_type_) {}
 
-    constexpr void _Require_numeric_argument() {
+    constexpr void _Require_numeric_argument() const {
         if (!_Is_arithmetic_fmt_type(_Arg_type)) {
             throw format_error("Format specifier requires numeric argument.");
         }
     }
 
-    constexpr void _Check_sign() {
+    constexpr void _Check_sign() const {
         _Require_numeric_argument();
         if (_Is_integral_fmt_type(_Arg_type) && _Arg_type != _Basic_format_arg_type::_Int_type
             && _Arg_type != _Basic_format_arg_type::_Long_long_type
@@ -743,7 +791,7 @@ public:
         }
     }
 
-    constexpr void _Check_precision() {
+    constexpr void _Check_precision() const {
         if (_Is_integral_fmt_type(_Arg_type) || _Arg_type == _Basic_format_arg_type::_Pointer_type) {
             throw format_error("Precision not allowed for this argument type.");
         }
@@ -756,24 +804,31 @@ public:
 // handler method.
 template <class _Handler>
 class _Specs_checker : public _Handler {
+private:
     _Numeric_specs_checker _Numeric_checker;
 
 public:
-    constexpr _Specs_checker(const _Handler& _Handler_inst, _Basic_format_arg_type _Arg_type)
-        : _Handler(_Handler_inst), _Numeric_checker(_Arg_type) {}
+    constexpr explicit _Specs_checker(const _Handler& _Handler_inst, _Basic_format_arg_type _Arg_type_)
+        : _Handler(_Handler_inst), _Numeric_checker(_Arg_type_) {}
 
     // _On_align has no checking, since we don't implement numeric alignments.
+
     constexpr void _On_sign(_Sign _Sgn) {
         _Numeric_checker._Check_sign();
         _Handler::_On_sign(_Sgn);
     }
 
     constexpr void _On_hash() {
+        // Note that '#' is not valid for CharT or bool unless you
+        // pass a numeric presentation type, but we encounter '#' before
+        // the presentation type so we can not check that requirement here
         _Numeric_checker._Require_numeric_argument();
         _Handler::_On_hash();
     }
 
     constexpr void _On_zero() {
+        // Note 0 is again not valid for CharT or bool unless a numeric
+        // presentation type is uesd.
         _Numeric_checker._Require_numeric_argument();
         _Handler::_On_zero();
     }
@@ -783,43 +838,6 @@ public:
         _Handler::_On_precision(_Precision);
     }
 };
-
-template <class _Visitor, class _Context>
-auto visit_format_arg(_Visitor&& _Vis, basic_format_arg<_Context> _Arg) {
-    switch (_Arg._Active_state) {
-    case _Basic_format_arg_type::_None:
-        return _Vis(_Arg._No_state);
-    case _Basic_format_arg_type::_Int_type:
-        return _Vis(_Arg._Int_state);
-    case _Basic_format_arg_type::_UInt_type:
-        return _Vis(_Arg._UInt_state);
-    case _Basic_format_arg_type::_Long_long_type:
-        return _Vis(_Arg._Long_long_state);
-    case _Basic_format_arg_type::_ULong_long_type:
-        return _Vis(_Arg._ULong_long_state);
-    case _Basic_format_arg_type::_Bool_type:
-        return _Vis(_Arg._Bool_state);
-    case _Basic_format_arg_type::_Char_type:
-        return _Vis(_Arg._Char_state);
-    case _Basic_format_arg_type::_Float_type:
-        return _Vis(_Arg._Float_state);
-    case _Basic_format_arg_type::_Double_type:
-        return _Vis(_Arg._Double_state);
-    case _Basic_format_arg_type::_Long_double_type:
-        return _Vis(_Arg._Long_double_state);
-    case _Basic_format_arg_type::_Pointer_type:
-        return _Vis(_Arg._Pointer_state);
-    case _Basic_format_arg_type::_CString_type:
-        return _Vis(_Arg._CString_state);
-    case _Basic_format_arg_type::_String_type:
-        return _Vis(_Arg._String_state);
-    case _Basic_format_arg_type::_Custom_type:
-        return _Vis(_Arg._Custom_state);
-    default:
-        _STL_VERIFY(false, "basic_format_arg is in impossible state");
-        return _Vis(0);
-    }
-}
 
 template <class _Context, class _Ty>
 /* consteval */ constexpr auto _Get_format_arg_storage_type() noexcept {
@@ -1068,8 +1086,8 @@ public:
     using formatter_type = formatter<_Ty, _CharT>;
 
     constexpr basic_format_context(
-        _Out _OutputIt, basic_format_args<basic_format_context> _Ctx_args, const locale& _Loc)
-        : _OutputIt(_OutputIt), _Args(_Ctx_args), _Loc(_Loc) {}
+        _Out _OutputIt_, basic_format_args<basic_format_context> _Ctx_args, const locale& _Loc_)
+        : _OutputIt(_OutputIt_), _Args(_Ctx_args), _Loc(_Loc_) {}
 
     basic_format_arg<basic_format_context> arg(size_t _Id) const {
         return _Args.get(_Id);
@@ -1125,11 +1143,12 @@ private:
     _Context& _Ctx;
 
 public:
-    explicit constexpr _Custom_formatter_dispatcher(basic_format_parse_context<_Char_type>& _Parse_ctx, _Context& _Ctx)
-        : _Parse_ctx(_Parse_ctx), _Ctx(_Ctx) {}
+    explicit constexpr _Custom_formatter_dispatcher(
+        basic_format_parse_context<_Char_type>& _Parse_ctx_, _Context& _Ctx_)
+        : _Parse_ctx(_Parse_ctx_), _Ctx(_Ctx_) {}
 
-    void operator()(typename basic_format_arg<_Context>::handle h) const {
-        h.format(_Parse_ctx, _Ctx);
+    void operator()(typename basic_format_arg<_Context>::handle _Handle) const {
+        _Handle.format(_Parse_ctx, _Ctx);
     }
 
     template <class _Ty>
@@ -1174,7 +1193,7 @@ struct _Format_handler {
     void _On_text(const _CharT* _Begin, const _CharT* _End) {
         auto _Size = _End - _Begin;
         auto _Out  = _Ctx.out();
-        _STD copy_n(_Begin, _Size, _Out);
+        _Out       = _STD copy_n(_Begin, _Size, _Out);
         _Ctx.advance_to(_Out);
     }
 

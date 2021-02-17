@@ -3,12 +3,14 @@
 
 #include <assert.h>
 #include <format>
+#include <iterator>
+#include <locale>
 #include <string>
 #include <string_view>
 
 // TODO: fill in tests
-template std::back_insert_iterator<std::string> std::vformat_to(std::back_insert_iterator<std::string>, const locale&,
-    std::string_view, std::format_args_t<std::back_insert_iterator<std::string>, char>);
+template std::back_insert_iterator<std::string> std::vformat_to(std::back_insert_iterator<std::string>,
+    const std::locale&, std::string_view, std::format_args_t<std::back_insert_iterator<std::string>, char>);
 
 
 int main() {}
