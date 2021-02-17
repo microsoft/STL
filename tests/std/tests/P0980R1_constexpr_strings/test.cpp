@@ -146,6 +146,7 @@ constexpr bool equalRanges(const Range1& range1, const Range2& range2) noexcept 
 
 template <class CharType = char>
 _CONSTEXPR20_CONTAINER bool test_interface() {
+#ifndef __EDG__ // TRANSITION, VSO-1273296
     using str = basic_string<CharType>;
 #if defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1269894
     { // constructors
@@ -1384,6 +1385,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         const bool greater_eq_literal_str = get_view_input<CharType>() >= third;
         assert(!greater_eq_literal_str);
     }
+#endif // __EDG__
 #endif // defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0
     return true;
 }
@@ -1391,6 +1393,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
 template <class CharType = char>
 _CONSTEXPR20_CONTAINER bool test_iterators() {
 #if defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1269894
+#ifndef __EDG__ // TRANSITION, VSO-1273296s
     using str               = basic_string<CharType>;
     str literal_constructed = get_literal_input<CharType>();
 
@@ -1476,6 +1479,7 @@ _CONSTEXPR20_CONTAINER bool test_iterators() {
         const auto cit = literal_constructed.cbegin() + 2;
         assert(cit[2] == 'l');
     }
+#endif // __EDG__
 #endif // defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0
     return true;
 }
@@ -1484,7 +1488,7 @@ template <class CharType = char>
 _CONSTEXPR20_CONTAINER bool test_growth() {
 #if defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1269894
     using str = basic_string<CharType>;
-
+#ifndef __EDG__ // TRANSITION, VSO-1273296
     {
         str v(1007, 'a');
 
@@ -1584,6 +1588,7 @@ _CONSTEXPR20_CONTAINER bool test_growth() {
             assert(v.capacity() == 8015);
         }
     }
+#endif // __EDG__
 #endif // __EDG__
 #endif // defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0
     return true;
