@@ -523,6 +523,20 @@ STATIC_ASSERT(__cpp_lib_constexpr_utility == 201811L);
 #endif
 #endif
 
+#if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc) && !defined(__clang__) // TRANSITION, LLVM-48606
+#ifndef __cpp_lib_constexpr_vector
+#error __cpp_lib_constexpr_vector is not defined
+#elif __cpp_lib_constexpr_vector != 201907L
+#error __cpp_lib_constexpr_vector is not 201907L
+#else
+STATIC_ASSERT(__cpp_lib_constexpr_vector == 201907L);
+#endif
+#else
+#ifdef __cpp_lib_constexpr_vector
+#error __cpp_lib_constexpr_vector is defined
+#endif
+#endif
+
 #if _HAS_CXX20 && defined(__cpp_impl_coroutine) // TRANSITION, Clang coroutine support
 #ifndef __cpp_lib_coroutine
 #error __cpp_lib_coroutine is not defined
