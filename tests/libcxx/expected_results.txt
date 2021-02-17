@@ -320,9 +320,6 @@ std/language.support/support.limits/support.limits.general/functional.version.pa
 std/language.support/support.limits/support.limits.general/iterator.version.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/memory.version.pass.cpp FAIL
 
-# C++20 P1004R2 "constexpr std::vector"
-std/language.support/support.limits/support.limits.general/vector.version.pass.cpp FAIL
-
 # C++20 P1614R2 "Adding Spaceship <=> To The Library"
 std/language.support/support.limits/support.limits.general/compare.version.pass.cpp FAIL
 
@@ -373,6 +370,16 @@ std/utilities/utility/pairs/pairs.pair/assign_rv_pair_U_V.pass.cpp:0 FAIL
 std/algorithms/alg.sorting/alg.sort/partial.sort/partial_sort.pass.cpp:0 FAIL
 std/algorithms/alg.sorting/alg.sort/partial.sort/partial_sort_comp.pass.cpp:0 FAIL
 
+# VSO-1275530 "[constexpr] Temporaries created for functions do not have a ctor called (and have a redundant dtor)."
+std/numerics/numeric.ops/exclusive.scan/exclusive_scan.pass.cpp:0 FAIL
+std/numerics/numeric.ops/exclusive.scan/exclusive_scan_init_op.pass.cpp:0 FAIL
+std/numerics/numeric.ops/inclusive.scan/inclusive_scan.pass.cpp:0 FAIL
+std/numerics/numeric.ops/inclusive.scan/inclusive_scan_op.pass.cpp:0 FAIL
+std/numerics/numeric.ops/inclusive.scan/inclusive_scan_op_init.pass.cpp:0 FAIL
+std/numerics/numeric.ops/transform.exclusive.scan/transform_exclusive_scan_init_bop_uop.pass.cpp:0 FAIL
+std/numerics/numeric.ops/transform.inclusive.scan/transform_inclusive_scan_bop_uop.pass.cpp:0 FAIL
+std/numerics/numeric.ops/transform.inclusive.scan/transform_inclusive_scan_bop_uop_init.pass.cpp:0 FAIL
+
 
 # *** CLANG COMPILER BUGS ***
 # LLVM-33230 "Clang on Windows should define __STDCPP_THREADS__ to be 1"
@@ -380,6 +387,9 @@ std/thread/macro.pass.cpp:1 FAIL
 
 # LLVM-46207 Clang's tgmath.h interferes with the UCRT's tgmath.h
 std/depr/depr.c.headers/tgmath_h.pass.cpp:1 FAIL
+
+# LLVM-48606 "Clang rejects creation of struct with mutable member during constant evaluation"
+std/language.support/support.limits/support.limits.general/vector.version.pass.cpp:1 FAIL
 
 
 # *** CLANG ISSUES, NOT YET ANALYZED ***
