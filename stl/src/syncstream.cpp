@@ -14,6 +14,7 @@
 
 #pragma warning(disable : 4074)
 #pragma init_seg(compiler)
+static std::_Init_locks initlocks;
 
 namespace {
     // OBJECT DECLARATIONS
