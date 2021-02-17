@@ -28,6 +28,7 @@
 #include <unordered_set>
 #include <utility>
 #include <valarray>
+#include <variant>
 #include <vector>
 
 template <class T>
@@ -483,6 +484,22 @@ void ordering_test_cases() {
         }
 
         spaceship_test<std::strong_ordering>(c_mem[0], c_mem[0], c_mem[1]);
+    }
+    { // variant
+        using V = std::variant<int, long>;
+        constexpr V v0_0(std::in_place_index<0>, 0);
+        constexpr V v0_1(std::in_place_index<0>, 1);
+        constexpr V v1_0(std::in_place_index<1>, 0);
+        constexpr V v1_1(std::in_place_index<1>, 1);
+
+        spaceship_test<std::strong_ordering>(v0_0, v0_0, v0_1);
+        spaceship_test<std::strong_ordering>(v0_1, v0_1, v1_0);
+        spaceship_test<std::strong_ordering>(v1_0, v1_0, v1_1);
+
+        using M = std::monostate;
+        constexpr M m1{};
+        constexpr M m2{};
+        static_assert((m1 <=> m2) == 0, "");
     }
     { // slice
         std::slice a1(2, 3, 4);
