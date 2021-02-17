@@ -172,7 +172,9 @@ tests\GH_001103_countl_zero_correctness
 tests\GH_001105_custom_streambuf_throws
 tests\GH_001123_random_cast_out_of_range
 tests\GH_001411_core_headers
+tests\GH_001530_binomial_accuracy
 tests\GH_001541_case_sensitive_boolalpha
+tests\GH_001638_dllexport_derived_classes
 tests\LWG2597_complex_branch_cut
 tests\LWG3018_shared_ptr_function
 tests\P0019R8_atomic_ref
@@ -260,6 +262,7 @@ tests\P0758R1_is_nothrow_convertible
 tests\P0768R1_spaceship_cpos
 tests\P0768R1_spaceship_operator
 tests\P0769R2_shift_left_shift_right
+tests\P0784R7_library_machinery
 tests\P0784R7_library_support_for_more_constexpr_containers
 tests\P0811R3_midpoint_lerp
 tests\P0896R4_common_iterator
@@ -380,6 +383,8 @@ tests\P0912R5_coroutine
 tests\P0919R3_heterogeneous_unordered_lookup
 tests\P0966R1_string_reserve_should_not_shrink
 tests\P0980R1_constexpr_strings
+tests\P1004R2_constexpr_vector
+tests\P1004R2_constexpr_vector_bool
 tests\P1007R3_assume_aligned
 tests\P1020R1_smart_pointer_for_overwrite
 tests\P1023R0_constexpr_for_array_comparisons
