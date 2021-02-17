@@ -15,8 +15,15 @@ using namespace std;
 
 #if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) \
     || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1270433, VSO-1275530
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-const-variable" // TRANSITION, LLVM-48606
+#endif // __clang__
 static constexpr bool input[]         = {true, false, true, true, false, true};
 static constexpr bool input_flipped[] = {false, true, false, false, true, false};
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif // __clang__
 #endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2
 
 template <typename T>
@@ -67,7 +74,7 @@ using vec = vector<bool, soccc_allocator<bool>>;
 
 _CONSTEXPR20_CONTAINER bool test_interface() {
 #if defined(__EDG__) \
-    || _ITERATOR_DEBUG_LEVEL != 2 // || defined(_MSVC_INTERNAL_TESTING) // TRANSITION, VSO-1270433, VSO-1275530
+    || _ITERATOR_DEBUG_LEVEL != 2 // || defined(MSVC_INTERNAL_TESTING) // TRANSITION, VSO-1270433, VSO-1275530
     { // constructors
 
 // Non allocator constructors
@@ -535,7 +542,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
 
 _CONSTEXPR20_CONTAINER bool test_iterators() {
 #if defined(__EDG__) \
-    || _ITERATOR_DEBUG_LEVEL != 2 // || defined(_MSVC_INTERNAL_TESTING) // TRANSITION, VSO-1270433, VSO-1275530
+    || _ITERATOR_DEBUG_LEVEL != 2 // || defined(MSVC_INTERNAL_TESTING) // TRANSITION, VSO-1270433, VSO-1275530
 #ifndef __EDG__ // TRANSITION, VSO-1274387
     vec range_constructed(begin(input), end(input));
 
