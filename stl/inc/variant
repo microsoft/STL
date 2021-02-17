@@ -969,16 +969,12 @@ using _Variant_destroy_layer = conditional_t<conjunction_v<is_trivially_destruct
 #endif // __clang__
 
 #if _HAS_CXX20
-struct _Variant_type_test { // build Ti x[] = {std::forward<T>(t)};
-    template <size_t _Idx, class _TargetType>
-    static auto _Construct_array(_TargetType(&&)[1]) -> _Meta_list<integral_constant<size_t, _Idx>, _TargetType>;
-
-    template <size_t _Idx, class _TargetType, class _InitializerType>
-    using type = decltype(_Construct_array<_Idx, _TargetType>({_STD declval<_InitializerType>()}));
-};
+// build Ti x[] = {std::forward<T>(t)};
+template <size_t _Idx, class _TargetType>
+auto _Construct_array(_TargetType(&&)[1]) -> _Meta_list<integral_constant<size_t, _Idx>, _TargetType>;
 
 template <size_t _Idx, class _TargetType, class _InitializerType>
-using _Variant_type_resolver = _Variant_type_test::type<_Idx, _TargetType, _InitializerType>;
+using _Variant_type_resolver = decltype(_Construct_array<_Idx, _TargetType>({_STD declval<_InitializerType>()}));
 #endif // _HAS_CXX20
 
 template <size_t _Idx, class _TargetType>
