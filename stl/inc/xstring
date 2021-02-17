@@ -2581,7 +2581,6 @@ public:
         _Elem* _Ptr             = _My_data._Bx._Buf;
         auto&& _Alproxy         = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data); // throws
-
         if (_New_capacity < _New_size) {
             _New_capacity           = _Calculate_growth(_New_size, _BUF_SIZE - 1, max_size());
             const pointer _Fancyptr = _Getal().allocate(_New_capacity + 1); // throws
@@ -2738,7 +2737,7 @@ private:
         }
     }
 
-    void _Move_assign(basic_string& _Right, _Propagate_allocators) noexcept {
+    _CONSTEXPR20_CONTAINER void _Move_assign(basic_string& _Right, _Propagate_allocators) noexcept {
         if (_Getal() == _Right._Getal()) {
             _Move_assign(_Right, _Equal_allocators{});
         } else {
@@ -2758,7 +2757,7 @@ private:
         }
     }
 
-    void _Move_assign(basic_string& _Right, _No_propagate_allocators) {
+    _CONSTEXPR20_CONTAINER void _Move_assign(basic_string& _Right, _No_propagate_allocators) {
         if (_Getal() == _Right._Getal()) {
             _Move_assign(_Right, _Equal_allocators{});
         } else {
@@ -2971,11 +2970,12 @@ public:
 private:
     _CONSTEXPR20_CONTAINER void _Copy_assign_val_from_small(const basic_string& _Right) {
         // TRANSITION, VSO-761321; inline into only caller when that's fixed
-        _Tidy_deallocate();
 #ifdef __cpp_lib_constexpr_string
+        _STL_ASSERT(!_STD is_constant_evaluated(), "SSO should be disabled in a constexpr context");
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_constexpr_string
         {
+            _Tidy_deallocate();
             if constexpr (_Can_memcpy_val) {
                 _Memcpy_val_from(_Right);
                 return;
@@ -3009,6 +3009,12 @@ private:
             const auto _New_capacity = _Calculate_growth(_New_size, 0, _Right.max_size());
             auto _Right_al_non_const = _Right_al;
             const auto _New_ptr      = _Right_al_non_const.allocate(_New_capacity); // throws
+
+            // if (_STD is_constant_evaluated()) { // Copying into uninitialized memory is technically UB, so fill it
+            // once
+            //     _Traits::assign(_Unfancy(_New_ptr), _New_size + 1, _Elem());
+            // }
+
             _Traits::copy(_Unfancy(_New_ptr), _Unfancy(_Right._Mypair._Myval2._Bx._Ptr), _New_size + 1);
             _Tidy_deallocate();
             _Mypair._Myval2._Bx._Ptr = _New_ptr;
@@ -3995,6 +4001,10 @@ public:
 
     _CONSTEXPR20_CONTAINER void _Swap_bx_large_with_small(_Scary_val& _Starts_large, _Scary_val& _Starts_small) {
         // exchange a string in large mode with one in small mode
+
+#ifdef __cpp_lib_constexpr_string
+        _STL_ASSERT(!_STD is_constant_evaluated(), "SSO should be disabled in a constexpr context");
+#endif // __cpp_lib_constexpr_string
         const pointer _Ptr = _Starts_large._Bx._Ptr;
         _Destroy_in_place(_Starts_large._Bx._Ptr);
         _Traits::copy(_Starts_large._Bx._Buf, _Starts_small._Bx._Buf, _BUF_SIZE);
