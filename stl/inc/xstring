@@ -2055,7 +2055,6 @@ struct pointer_traits<_String_const_iterator<_Mystr>> {
         const auto _Rawptr = _STD to_address(_Iter._Ptr);
 
 #if _ITERATOR_DEBUG_LEVEL >= 1
-        const auto _Mycont = static_cast<const _Mystr*>(_Iter._Getcont());
         if (_Mycont) {
             const auto _Contptr = _Mycont->_Myptr();
             _STL_VERIFY(_Contptr <= _Rawptr && _Rawptr <= _Contptr + _Mycont->_Mysize,
