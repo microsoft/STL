@@ -134,7 +134,7 @@ struct dummy_diagnostic : std::error_category {
 };
 
 template <class ReturnType, class SmallType, class EqualType, class LargeType>
-void spaceship_test(const SmallType& smaller, const EqualType& smaller_equal, const LargeType& larger) {
+constexpr bool spaceship_test(const SmallType& smaller, const EqualType& smaller_equal, const LargeType& larger) {
     assert(smaller == smaller_equal);
     assert(smaller_equal == smaller);
     assert(smaller != larger);
@@ -152,6 +152,8 @@ void spaceship_test(const SmallType& smaller, const EqualType& smaller_equal, co
     assert((smaller <=> smaller_equal) == 0);
 
     static_assert(std::is_same_v<decltype(smaller <=> larger), ReturnType>);
+
+    return true;
 }
 
 template <class T>
@@ -615,9 +617,29 @@ void ordering_test_cases() {
         spaceship_test<std::strong_ordering>(v0_1, v0_1, v1_0);
         spaceship_test<std::strong_ordering>(v1_0, v1_0, v1_1);
 
+        static_assert(spaceship_test<std::strong_ordering>(v0_0, v0_0, v0_1));
+        static_assert(spaceship_test<std::strong_ordering>(v0_1, v0_1, v1_0));
+        static_assert(spaceship_test<std::strong_ordering>(v1_0, v1_0, v1_1));
+
+        struct ThrowException {
+            operator int() {
+                throw "woof";
+            }
+        };
+        V valueless(std::in_place_index<1>, 1729L);
+        try {
+            valueless.emplace<0>(ThrowException{});
+        } catch (...) {
+            // ignore exception
+        }
+        assert(valueless.valueless_by_exception());
+        spaceship_test<std::strong_ordering>(valueless, valueless, v0_0);
+        spaceship_test<std::strong_ordering>(valueless, valueless, v1_1);
+
         using M = std::monostate;
         constexpr M m1{};
         constexpr M m2{};
+        assert((m1 <=> m2) == 0);
         static_assert((m1 <=> m2) == 0);
     }
     { // slice
