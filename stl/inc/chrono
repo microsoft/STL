@@ -1423,35 +1423,31 @@ namespace chrono {
         // courtesy of Howard Hinnant
         // https://howardhinnant.github.io/date_algorithms.html#civil_from_days
         _NODISCARD static constexpr year_month_day _Civil_from_days(int _Tp) noexcept {
-            static_assert(numeric_limits<unsigned int>::digits >= 18);
-            static_assert(numeric_limits<int>::digits >= 20);
-            const int _Zx                  = _Tp + 719468; // Shift epoch to 0000-03-01
-            const int _Era                 = (_Zx >= 0 ? _Zx : _Zx - 146096) / 146097;
-            const unsigned int _Day_of_era = static_cast<unsigned int>(_Zx - _Era * 146097); // [0, 146096]
-            const unsigned int _Year_of_era =
-                (_Day_of_era - _Day_of_era / 1460 + _Day_of_era / 36524 - _Day_of_era / 146096) / 365; // [0, 399]
-            const int _Year = static_cast<int>(_Year_of_era) + _Era * 400; // Where March is the first month
-            const unsigned int _Day_of_year =
-                _Day_of_era - (365 * _Year_of_era + _Year_of_era / 4 - _Year_of_era / 100); // [0, 365]
-            const unsigned int _Mp    = (5 * _Day_of_year + 2) / 153; // [0, 11]
-            const unsigned int _Day   = _Day_of_year - (153 * _Mp + 2) / 5 + 1; // [1, 31]
-            const unsigned int _Month = _Mp + (_Mp < 10 ? 3 : static_cast<unsigned int>(-9)); // [1, 12]
+            static_assert(numeric_limits<unsigned int>::digits >= 32);
+            static_assert(numeric_limits<int>::digits >= 26);
+            const int _Zx      = _Tp + 719468; // Shift epoch to 0000-03-01
+            const int _Century = (_Zx >= 0 ? 4 * _Zx + 3 : 4 * _Zx - 146093) / 146097;
+            const unsigned int _Day_of_century =
+                static_cast<unsigned int>(_Zx - ((146097 * _Century) >> 2)); // [0, 36524]
+            const unsigned int _Year_of_century = (91867 * (_Day_of_century + 1)) >> 25; // [0, 99]
+            const int _Year = static_cast<int>(_Year_of_century) + _Century * 100; // Where March is the first month
+            const unsigned int _Day_of_year = _Day_of_century - ((1461 * _Year_of_century) >> 2); // [0, 365]
+            const unsigned int _Mp          = (535 * _Day_of_year + 333) >> 14; // [0, 11]
+            const unsigned int _Day         = _Day_of_year - ((979 * _Mp + 19) >> 5) + 1; // [1, 31]
+            const unsigned int _Month       = _Mp + (_Mp < 10 ? 3 : static_cast<unsigned int>(-9)); // [1, 12]
             return year_month_day{_CHRONO year{_Year + (_Month <= 2)}, _CHRONO month{_Month}, _CHRONO day{_Day}};
         }
         // courtesy of Howard Hinnant
         // https://howardhinnant.github.io/date_algorithms.html#days_from_civil
         _NODISCARD constexpr days _Days_from_civil() const noexcept {
             static_assert(numeric_limits<unsigned int>::digits >= 18);
-            static_assert(numeric_limits<int>::digits >= 20);
-            const int _Ye                   = static_cast<int>(_Year) - (_Month <= _CHRONO month{2});
-            const unsigned int _Mo          = static_cast<unsigned int>(_Month);
-            const int _Era                  = (_Ye >= 0 ? _Ye : _Ye - 399) / 400;
-            const unsigned int _Year_of_era = static_cast<unsigned int>(_Ye - _Era * 400); // [0, 399]
-            const unsigned int _Day_of_year = (153 * (_Mo + (_Mo > 2 ? static_cast<unsigned int>(-3) : 9)) + 2) / 5
-                                            + static_cast<unsigned int>(_Day) - 1; // [0, 365]
-            const unsigned int _Day_of_era =
-                _Year_of_era * 365 + _Year_of_era / 4 - _Year_of_era / 100 + _Day_of_year; // [0, 146096]
-            return days{_Era * 146097 + static_cast<int>(_Day_of_era) - 719468};
+            static_assert(numeric_limits<int>::digits >= 26);
+            const unsigned int _Mo = static_cast<unsigned int>(_Month); // [1, 12]
+            const int _Ye          = static_cast<int>(_Year) - (_Mo <= 2);
+            const int _Century     = (_Ye >= 0 ? _Ye : _Ye - 99) / 100;
+            const unsigned int _Mp = _Mo + (_Mo > 2 ? static_cast<unsigned int>(-3) : 9); // [0, 11]
+            const int _Day_of_year = static_cast<int>(((979 * _Mp + 19) >> 5) + static_cast<unsigned int>(_Day)) - 1;
+            return days{((_Ye * 1461) >> 2) - _Century + (_Century >> 2) + _Day_of_year - 719468};
         }
     };
 

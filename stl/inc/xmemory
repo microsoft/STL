@@ -1212,8 +1212,8 @@ private:
 
 // MEMBER FUNCTIONS FOR _Container_base12
 _CONSTEXPR20_CONTAINER void _Container_base12::_Orphan_all_unlocked() noexcept {
-    for (auto _Pnext = &_Myproxy->_Myfirstiter; *_Pnext; *_Pnext = (*_Pnext)->_Mynextiter) {
-        (*_Pnext)->_Myproxy = nullptr;
+    for (auto& _Pnext = _Myproxy->_Myfirstiter; _Pnext; _Pnext = _Pnext->_Mynextiter) { // TRANSITION, VSO-1269037
+        _Pnext->_Myproxy = nullptr;
     }
     _Myproxy->_Myfirstiter = nullptr;
 }
@@ -1550,6 +1550,18 @@ namespace ranges {
     concept _No_throw_forward_range = _No_throw_input_range<_Rng>
         && _No_throw_forward_iterator<iterator_t<_Rng>>;
     // clang-format on
+
+    template <class _InIt, class _OutIt>
+    in_out_result<_InIt, _OutIt> _Copy_memcpy_common(
+        _InIt _IFirst, _InIt _ILast, _OutIt _OFirst, _OutIt _OLast) noexcept {
+        const auto _IFirst_ch = const_cast<char*>(reinterpret_cast<const volatile char*>(_IFirst));
+        const auto _ILast_ch  = const_cast<const char*>(reinterpret_cast<const volatile char*>(_ILast));
+        const auto _OFirst_ch = const_cast<char*>(reinterpret_cast<volatile char*>(_OFirst));
+        const auto _OLast_ch  = const_cast<const char*>(reinterpret_cast<const volatile char*>(_OLast));
+        const auto _Count     = static_cast<size_t>((_STD min)(_ILast_ch - _IFirst_ch, _OLast_ch - _OFirst_ch));
+        _CSTD memcpy(_OFirst_ch, _IFirst_ch, _Count);
+        return {reinterpret_cast<_InIt>(_IFirst_ch + _Count), reinterpret_cast<_OutIt>(_OFirst_ch + _Count)};
+    }
 
     // ALIAS TEMPLATE uninitialized_move_result
     template <class _In, class _Out>

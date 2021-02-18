@@ -159,6 +159,7 @@
 // P0556R3 <bit> Integral Power-Of-2 Operations (renamed by P1956R1)
 // P0586R2 Integer Comparison Functions
 // P0595R2 is_constant_evaluated()
+// P0608R3 Improving variant's Converting Constructor/Assignment
 // P0616R0 Using move() In <numeric>
 // P0631R8 <numbers> Math Constants
 // P0646R1 list/forward_list remove()/remove_if()/unique() Return size_type
@@ -181,6 +182,7 @@
 // P0919R3 Heterogeneous Lookup For Unordered Containers
 // P0966R1 string::reserve() Should Not Shrink
 // P1001R2 execution::unseq
+// P1004R2 constexpr std::vector
 // P1006R1 constexpr For pointer_traits<T*>::pointer_to()
 // P1007R3 assume_aligned()
 // P1020R1 Smart Pointer Creation With Default Initialization
@@ -506,7 +508,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 142
-#define _MSVC_STL_UPDATE  202101L
+#define _MSVC_STL_UPDATE  202102L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #ifdef __CUDACC__
@@ -1202,6 +1204,10 @@
 #define __cpp_lib_constexpr_tuple       201811L
 #define __cpp_lib_constexpr_utility     201811L
 
+#if defined(__cpp_constexpr_dynamic_alloc) && !defined(__clang__) // TRANSITION, LLVM-48606
+#define __cpp_lib_constexpr_vector 201907L
+#endif // defined(__cpp_constexpr_dynamic_alloc) && !defined(__clang__)
+
 #ifdef __cpp_impl_coroutine // TRANSITION, Clang coroutine support
 #define __cpp_lib_coroutine 201902L
 #endif // __cpp_impl_coroutine
@@ -1284,7 +1290,7 @@
 #endif
 
 // Functions that became constexpr in C++20 via P0980R1 or P1004R2
-#if defined(__cpp_lib_constexpr_dynamic_alloc) && !defined(__clang__) // TRANSITION:LLVM-48606
+#if defined(__cpp_lib_constexpr_dynamic_alloc) && !defined(__clang__) // TRANSITION, LLVM-48606
 #define _CONSTEXPR20_CONTAINER constexpr
 #else
 #define _CONSTEXPR20_CONTAINER inline
