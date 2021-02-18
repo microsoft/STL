@@ -1792,6 +1792,9 @@ struct _Get_comparison_category {
 template <class _Traits>
 struct _Get_comparison_category<_Traits, void_t<typename _Traits::comparison_category>> {
     using type = typename _Traits::comparison_category;
+
+    static_assert(_Is_any_of_v<type, partial_ordering, weak_ordering, strong_ordering>,
+        "N4878 [string.view.comparison]/4: Mandates: R denotes a comparison category type.");
 };
 
 template <class _Traits>
