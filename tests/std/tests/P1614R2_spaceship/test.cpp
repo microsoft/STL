@@ -499,7 +499,7 @@ void ordering_test_cases() {
         using M = std::monostate;
         constexpr M m1{};
         constexpr M m2{};
-        static_assert((m1 <=> m2) == 0, "");
+        static_assert((m1 <=> m2) == 0);
     }
     { // slice
         std::slice a1(2, 3, 4);

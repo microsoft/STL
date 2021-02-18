@@ -20,11 +20,6 @@
 #include <xsmf_control.h>
 #include <xstddef>
 
-#ifdef _HAS_CXX20
-#include <compare>
-#include <concepts>
-#endif // _HAS_CXX20
-
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
@@ -1371,7 +1366,7 @@ _NODISCARD constexpr add_pointer_t<const _Ty> get_if(
 
 // RELATIONAL OPERATORS [variant.relops]
 template <class _Op, class _Result, class... _Types>
-struct _Variant_relop_visitor { // evaluate _Op with the contained value of two variants that hold the same alternative
+struct _Variant_relop_visitor2 { // evaluate _Op with the contained value of two variants that hold the same alternative
     const _Variant_storage<_Types...>& _Left;
 
     template <class _Ty, size_t _Idx>
@@ -1393,7 +1388,7 @@ template <class... _Types>
 _NODISCARD constexpr bool operator==(const variant<_Types...>& _Left, const variant<_Types...>& _Right) noexcept(
     conjunction_v<is_nothrow_invocable_r<bool, equal_to<>, const _Types&, const _Types&>...>) /* strengthened */ {
     // determine if the arguments are both valueless or contain equal values
-    using _Visitor            = _Variant_relop_visitor<equal_to<>, bool, _Types...>;
+    using _Visitor            = _Variant_relop_visitor2<equal_to<>, bool, _Types...>;
     const size_t _Right_index = _Right.index();
     return _Left.index() == _Right_index
         && _Variant_raw_visit(_Right_index, _Right._Storage(), _Visitor{_Left._Storage()});
@@ -1403,7 +1398,7 @@ template <class... _Types>
 _NODISCARD constexpr bool operator!=(const variant<_Types...>& _Left, const variant<_Types...>& _Right) noexcept(
     conjunction_v<is_nothrow_invocable_r<bool, not_equal_to<>, const _Types&, const _Types&>...>) /* strengthened */ {
     // determine if the arguments have different active alternatives or contain unequal values
-    using _Visitor            = _Variant_relop_visitor<not_equal_to<>, bool, _Types...>;
+    using _Visitor            = _Variant_relop_visitor2<not_equal_to<>, bool, _Types...>;
     const size_t _Right_index = _Right.index();
     return _Left.index() != _Right_index
         || _Variant_raw_visit(_Right_index, _Right._Storage(), _Visitor{_Left._Storage()});
@@ -1414,7 +1409,7 @@ _NODISCARD constexpr bool operator<(const variant<_Types...>& _Left, const varia
     conjunction_v<is_nothrow_invocable_r<bool, less<>, const _Types&, const _Types&>...>) /* strengthened */ {
     // determine if _Left has a lesser index(), or equal index() and lesser
     // contained value than _Right
-    using _Visitor             = _Variant_relop_visitor<less<>, bool, _Types...>;
+    using _Visitor             = _Variant_relop_visitor2<less<>, bool, _Types...>;
     const size_t _Left_offset  = _Left.index() + 1;
     const size_t _Right_offset = _Right.index() + 1;
     return _Left_offset < _Right_offset
@@ -1427,7 +1422,7 @@ _NODISCARD constexpr bool operator>(const variant<_Types...>& _Left, const varia
     conjunction_v<is_nothrow_invocable_r<bool, greater<>, const _Types&, const _Types&>...>) /* strengthened */ {
     // determine if _Left has a greater index(), or equal index() and
     // greater contained value than _Right
-    using _Visitor             = _Variant_relop_visitor<greater<>, bool, _Types...>;
+    using _Visitor             = _Variant_relop_visitor2<greater<>, bool, _Types...>;
     const size_t _Left_offset  = _Left.index() + 1;
     const size_t _Right_offset = _Right.index() + 1;
     return _Left_offset > _Right_offset
@@ -1440,7 +1435,7 @@ _NODISCARD constexpr bool operator<=(const variant<_Types...>& _Left, const vari
     conjunction_v<is_nothrow_invocable_r<bool, less_equal<>, const _Types&, const _Types&>...>) /* strengthened */ {
     // determine if _Left's index() is less than _Right's, or equal and
     // _Left contains a value less than or equal to _Right
-    using _Visitor             = _Variant_relop_visitor<less_equal<>, bool, _Types...>;
+    using _Visitor             = _Variant_relop_visitor2<less_equal<>, bool, _Types...>;
     const size_t _Left_offset  = _Left.index() + 1;
     const size_t _Right_offset = _Right.index() + 1;
     return _Left_offset < _Right_offset
@@ -1453,7 +1448,7 @@ _NODISCARD constexpr bool operator>=(const variant<_Types...>& _Left, const vari
     conjunction_v<is_nothrow_invocable_r<bool, greater_equal<>, const _Types&, const _Types&>...>) /* strengthened */ {
     // determine if _Left's index() is greater than _Right's, or equal and
     // _Left contains a value greater than or equal to _Right
-    using _Visitor             = _Variant_relop_visitor<greater_equal<>, bool, _Types...>;
+    using _Visitor             = _Variant_relop_visitor2<greater_equal<>, bool, _Types...>;
     const size_t _Left_offset  = _Left.index() + 1;
     const size_t _Right_offset = _Right.index() + 1;
     return _Left_offset > _Right_offset
@@ -1461,22 +1456,15 @@ _NODISCARD constexpr bool operator>=(const variant<_Types...>& _Left, const vari
             && _Variant_raw_visit(_Right_offset - 1, _Right._Storage(), _Visitor{_Left._Storage()}));
 }
 
-#ifdef _HAS_CXX20
-struct _Variant_relop_3way_comparison {
-    template <class _Ty>
-    compare_three_way_result_t<_Ty> operator()(const _Ty& _Left, const _Ty& _Right) {
-        return _Left <=> _Right;
-    }
-};
-
+#ifdef __cpp_lib_concepts
 template <class... _Types>
 _NODISCARD constexpr common_comparison_category_t<compare_three_way_result_t<_Types>...>
     operator<=>(const variant<_Types...>& _Left, const variant<_Types...>& _Right) noexcept(
         conjunction_v<is_nothrow_invocable_r<common_comparison_category_t<compare_three_way_result_t<_Types>...>,
-            _Variant_relop_3way_comparison, const _Types&, const _Types&>...>) /* strengthened */ {
-    // determine the three-way comparison of _Left's and _Right's index, if equal
-    // return the three-way comparison of the contained value of _Left and _Right.
-    using _Visitor             = _Variant_relop_visitor<_Variant_relop_3way_comparison,
+            compare_three_way, const _Types&, const _Types&>...>) /* strengthened */ {
+    // Determine the three-way comparison of _Left's and _Right's index, if equal
+    // return the three-way comparison of the contained values of _Left and _Right
+    using _Visitor             = _Variant_relop_visitor2<compare_three_way,
         common_comparison_category_t<compare_three_way_result_t<_Types>...>, _Types...>;
     const size_t _Left_offset  = _Left.index() + 1;
     const size_t _Right_offset = _Right.index() + 1;
@@ -1484,7 +1472,7 @@ _NODISCARD constexpr common_comparison_category_t<compare_three_way_result_t<_Ty
     return _Offset_order != 0 ? _Offset_order
                               : _Variant_raw_visit(_Right_offset - 1, _Right._Storage(), _Visitor{_Left._Storage()});
 }
-#endif // _HAS_CXX20
+#endif // __cpp_lib_concepts
 
 // VISITATION [variant.visit]
 template <class... _Variants>
@@ -1730,7 +1718,11 @@ _NODISCARD constexpr bool operator==(monostate, monostate) noexcept {
     return true;
 }
 
-#if !_HAS_CXX20
+#if _HAS_CXX20
+_NODISCARD constexpr strong_ordering operator<=>(monostate, monostate) noexcept {
+    return strong_ordering::equal;
+}
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 _NODISCARD constexpr bool operator!=(monostate, monostate) noexcept {
     return false;
 }
@@ -1745,11 +1737,6 @@ _NODISCARD constexpr bool operator<=(monostate, monostate) noexcept {
 }
 _NODISCARD constexpr bool operator>=(monostate, monostate) noexcept {
     return true;
-}
-#else // ^^^ _HAS_CXX20 vvv
-
-_NODISCARD constexpr strong_ordering operator<=>(monostate, monostate) noexcept {
-    return strong_ordering::equal;
 }
 #endif // !_HAS_CXX20
 
