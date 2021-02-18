@@ -1,9 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// Covers:
-// * spaceship for containers
-
 #include <array>
 #include <cassert>
 #include <compare>
