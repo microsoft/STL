@@ -39,6 +39,9 @@ struct _Char_traits { // properties of a string or stream element
     using pos_type   = streampos;
     using off_type   = streamoff;
     using state_type = _Mbstatet;
+#if _HAS_CXX20
+    using comparison_category = strong_ordering;
+#endif // _HAS_CXX20
 
     // For copy/move, we can uniformly call memcpy/memmove (or their builtin versions) for all element types.
 
@@ -217,6 +220,9 @@ public:
     using pos_type   = streampos;
     using off_type   = streamoff;
     using state_type = mbstate_t;
+#if _HAS_CXX20
+    using comparison_category = strong_ordering;
+#endif // _HAS_CXX20
 
     using _Primary_char_traits::_Copy_s;
     using _Primary_char_traits::copy;
@@ -355,6 +361,9 @@ public:
     using pos_type   = streampos;
     using off_type   = streamoff;
     using state_type = mbstate_t;
+#if _HAS_CXX20
+    using comparison_category = strong_ordering;
+#endif // _HAS_CXX20
 
     using _Primary_char_traits::_Copy_s;
     using _Primary_char_traits::copy;
@@ -1659,11 +1668,13 @@ _NODISCARD constexpr bool operator==(
     return _Lhs._Equal(_Rhs);
 }
 
+#if !_HAS_CXX20
 template <class _Elem, class _Traits, int = 1> // TRANSITION, VSO-409326
 _NODISCARD constexpr bool operator==(
     const _Identity_t<basic_string_view<_Elem, _Traits>> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
     return _Lhs._Equal(_Rhs);
 }
+#endif // !_HAS_CXX20
 
 template <class _Elem, class _Traits, int = 2> // TRANSITION, VSO-409326
 _NODISCARD constexpr bool operator==(
@@ -1671,7 +1682,7 @@ _NODISCARD constexpr bool operator==(
     return _Lhs._Equal(_Rhs);
 }
 
-
+#if !_HAS_CXX20
 // FUNCTION TEMPLATES operator!= FOR basic_string_view
 template <class _Elem, class _Traits>
 _NODISCARD constexpr bool operator!=(
@@ -1770,7 +1781,37 @@ _NODISCARD constexpr bool operator>=(
     const basic_string_view<_Elem, _Traits> _Lhs, const _Identity_t<basic_string_view<_Elem, _Traits>> _Rhs) noexcept {
     return _Lhs.compare(_Rhs) >= 0;
 }
+#endif // !_HAS_CXX20
 
+#if _HAS_CXX20
+template <class _Traits, class = void>
+struct _Get_comparison_category {
+    using type = weak_ordering;
+};
+
+template <class _Traits>
+struct _Get_comparison_category<_Traits, void_t<typename _Traits::comparison_category>> {
+    using type = typename _Traits::comparison_category;
+
+    static_assert(_Is_any_of_v<type, partial_ordering, weak_ordering, strong_ordering>,
+        "N4878 [string.view.comparison]/4: Mandates: R denotes a comparison category type.");
+};
+
+template <class _Traits>
+using _Get_comparison_category_t = typename _Get_comparison_category<_Traits>::type;
+
+template <class _Elem, class _Traits>
+_NODISCARD constexpr _Get_comparison_category_t<_Traits> operator<=>(
+    const basic_string_view<_Elem, _Traits> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
+    return static_cast<_Get_comparison_category_t<_Traits>>(_Lhs.compare(_Rhs) <=> 0);
+}
+
+template <class _Elem, class _Traits, int = 2> // TRANSITION, VSO-409326
+_NODISCARD constexpr _Get_comparison_category_t<_Traits> operator<=>(
+    const basic_string_view<_Elem, _Traits> _Lhs, const _Identity_t<basic_string_view<_Elem, _Traits>> _Rhs) noexcept {
+    return static_cast<_Get_comparison_category_t<_Traits>>(_Lhs.compare(_Rhs) <=> 0);
+}
+#endif // _HAS_CXX20
 
 // TYPEDEFS FOR basic_string_view
 using string_view = basic_string_view<char>;
@@ -4512,13 +4553,26 @@ _NODISCARD bool operator==(
 }
 
 template <class _Elem, class _Traits, class _Alloc>
-_NODISCARD bool operator==(_In_z_ const _Elem* const _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) {
-    return _Right._Equal(_Left);
+_NODISCARD bool operator==(const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) {
+    return _Left._Equal(_Right);
+}
+
+#if _HAS_CXX20
+template <class _Elem, class _Traits, class _Alloc>
+_NODISCARD _Get_comparison_category_t<_Traits> operator<=>(
+    const basic_string<_Elem, _Traits, _Alloc>& _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) noexcept {
+    return static_cast<_Get_comparison_category_t<_Traits>>(_Left.compare(_Right) <=> 0);
 }
 
 template <class _Elem, class _Traits, class _Alloc>
-_NODISCARD bool operator==(const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) {
-    return _Left._Equal(_Right);
+_NODISCARD _Get_comparison_category_t<_Traits> operator<=>(
+    const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) {
+    return static_cast<_Get_comparison_category_t<_Traits>>(_Left.compare(_Right) <=> 0);
+}
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+template <class _Elem, class _Traits, class _Alloc>
+_NODISCARD bool operator==(_In_z_ const _Elem* const _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) {
+    return _Right._Equal(_Left);
 }
 
 template <class _Elem, class _Traits, class _Alloc>
@@ -4600,6 +4654,7 @@ template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD bool operator>=(const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) {
     return !(_Left < _Right);
 }
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 using string  = basic_string<char, char_traits<char>, allocator<char>>;
 using wstring = basic_string<wchar_t, char_traits<wchar_t>, allocator<wchar_t>>;
