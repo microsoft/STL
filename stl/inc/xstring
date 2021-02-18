@@ -1796,7 +1796,7 @@ struct _Get_comparison_category<_Traits, void_t<typename _Traits::comparison_cat
 
 template <class _Elem, class _Traits>
 _NODISCARD constexpr typename _Get_comparison_category<_Traits>::comparison_category operator<=>(
-    const basic_string_view<_Elem, _Traits>& _Lhs, const basic_string_view<_Elem, _Traits>& _Rhs) noexcept {
+    const basic_string_view<_Elem, _Traits> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
     return static_cast<typename _Get_comparison_category<_Traits>::comparison_category>(_Lhs.compare(_Rhs) <=> 0);
 }
 
