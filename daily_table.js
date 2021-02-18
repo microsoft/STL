@@ -534,5 +534,9 @@ const daily_table = [
     { date: '2021-02-13', merged: 36.26, pr: 41, cxx20: 12, cxx23: 4, lwg: 2, issue: 322, bug: 104, avg_age: 103.80, avg_wait: 80.86, sum_age: 141.86, sum_wait: 110.51, },
     { date: '2021-02-14', merged: 35.59, pr: 41, cxx20: 12, cxx23: 4, lwg: 2, issue: 322, bug: 104, avg_age: 104.80, avg_wait: 81.86, sum_age: 143.22, sum_wait: 111.88, },
     { date: '2021-02-15', merged: 34.79, pr: 42, cxx20: 12, cxx23: 4, lwg: 2, issue: 322, bug: 104, avg_age: 103.29, avg_wait: 80.90, sum_age: 144.60, sum_wait: 113.26, },
+    { date: '2021-02-16', merged: 33.91, pr: 42, cxx20: 12, cxx23: 4, lwg: 2, issue: 323, bug: 104, avg_age: 104.29, avg_wait: 80.11, sum_age: 146.00, sum_wait: 112.16, },
+    { date: '2021-02-17', merged: 40.06, pr: 37, cxx20: 10, cxx23: 4, lwg: 2, issue: 324, bug: 104, avg_age: 114.11, avg_wait: 91.06, sum_age: 140.73, sum_wait: 112.31, },
+    { date: '2021-02-18', merged: 43.21, pr: 35, cxx20: 10, cxx23: 4, lwg: 2, issue: 325, bug: 105, avg_age: 120.54, avg_wait: 96.26, sum_age: 140.64, sum_wait: 112.30, },
+    { date: '2021-02-19', merged: 46.35, pr: 35, cxx20: 9, cxx23: 4, lwg: 2, issue: 325, bug: 105, avg_age: 120.39, avg_wait: 96.72, sum_age: 140.45, sum_wait: 112.84, },
 ];
 // Generated file - DO NOT EDIT manually!
