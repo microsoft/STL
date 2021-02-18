@@ -85,8 +85,8 @@ struct instantiator {
 
     template <ranges::input_range R, ranges::forward_range W>
     static void call() {
-        using ranges::destroy, ranges::uninitialized_move, ranges::uninitialized_move_result, ranges::destroy,
-            ranges::equal, ranges::equal_to, ranges::iterator_t;
+        using ranges::uninitialized_move, ranges::uninitialized_move_result, ranges::destroy, ranges::equal,
+            ranges::equal_to, ranges::iterator_t;
 
         { // Validate range overload
             int_wrapper input[3] = {13, 55, 12345};
@@ -197,7 +197,7 @@ struct throwing_test {
     }
 };
 
-struct memcopy_test {
+struct memcpy_test {
     static constexpr int expected_output[]      = {13, 55, 12345};
     static constexpr int expected_output_long[] = {13, 55, 12345, -1};
     static constexpr int expected_input[]       = {13, 55, 12345};
@@ -251,5 +251,5 @@ int main() {
     instantiator::call<test_input<test::ProxyRef::yes>, test_output>();
     throwing_test::call<test_input<test::ProxyRef::no>, test_output>();
     throwing_test::call<test_input<test::ProxyRef::yes>, test_output>();
-    memcopy_test::call();
+    memcpy_test::call();
 }

@@ -165,7 +165,7 @@ struct throwing_test {
     }
 };
 
-struct memcopy_test {
+struct memcpy_test {
     static constexpr int expected_output[]      = {13, 55, 12345, -1};
     static constexpr int expected_output_long[] = {13, 55, -1, -1};
     static constexpr int expected_input[]       = {13, 55, 12345, 42};
@@ -226,5 +226,5 @@ int main() {
     instantiator::call<test_input<test::ProxyRef::yes>, test_output>();
     throwing_test::call<test_input<test::ProxyRef::no>, test_output>();
     throwing_test::call<test_input<test::ProxyRef::yes>, test_output>();
-    memcopy_test::call();
+    memcpy_test::call();
 }
