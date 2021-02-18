@@ -2972,14 +2972,11 @@ private:
         // TRANSITION, VSO-761321; inline into only caller when that's fixed
 #ifdef __cpp_lib_constexpr_string
         _STL_ASSERT(!_STD is_constant_evaluated(), "SSO should be disabled in a constexpr context");
-        if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_constexpr_string
-        {
-            _Tidy_deallocate();
-            if constexpr (_Can_memcpy_val) {
-                _Memcpy_val_from(_Right);
-                return;
-            }
+        _Tidy_deallocate();
+        if constexpr (_Can_memcpy_val) {
+            _Memcpy_val_from(_Right);
+            return;
         }
 
         _Traits::copy(_Mypair._Myval2._Bx._Buf, _Right._Mypair._Myval2._Bx._Buf, _Right._Mypair._Myval2._Mysize + 1);
@@ -3010,10 +3007,11 @@ private:
             auto _Right_al_non_const = _Right_al;
             const auto _New_ptr      = _Right_al_non_const.allocate(_New_capacity); // throws
 
-            // if (_STD is_constant_evaluated()) { // Copying into uninitialized memory is technically UB, so fill it
-            // once
-            //     _Traits::assign(_Unfancy(_New_ptr), _New_size + 1, _Elem());
-            // }
+#ifdef __cpp_lib_constexpr_string
+            if (_STD is_constant_evaluated()) { // Copying into uninitialized memory is technically UB, so fill it
+                _Traits::assign(_Unfancy(_New_ptr), _New_size + 1, _Elem());
+            }
+#endif // __cpp_lib_constexpr_string
 
             _Traits::copy(_Unfancy(_New_ptr), _Unfancy(_Right._Mypair._Myval2._Bx._Ptr), _New_size + 1);
             _Tidy_deallocate();
