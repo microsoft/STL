@@ -18,6 +18,7 @@
 #include <set>
 #include <stack>
 #include <string>
+#include <string_view>
 #include <system_error>
 #include <thread>
 #include <type_traits>
@@ -495,6 +496,82 @@ void ordering_test_cases() {
         assert(("aardvark" <=> a1) == std::strong_ordering::less);
         assert(("abcdef" <=> a1) == std::strong_ordering::equivalent);
         assert(("zebra" <=> a1) == std::strong_ordering::greater);
+    }
+    { // string_view
+        const std::string_view a1 = "abcdef";
+        const std::string_view a2 = "abcdef";
+        const std::string_view a3 = "abcdefg";
+        const std::string_view a4 = "abcde";
+        const std::string_view a5 = "abddef";
+        const std::string_view a6 = "abbdef";
+
+        assert((a1 <=> a2) == std::strong_ordering::equivalent);
+        assert((a1 <=> a3) == std::strong_ordering::less);
+        assert((a1 <=> a4) == std::strong_ordering::greater);
+        assert((a1 <=> a5) == std::strong_ordering::less);
+        assert((a1 <=> a6) == std::strong_ordering::greater);
+
+        assert(a1 == a2);
+        assert(a1 >= a2);
+        assert(a1 <= a2);
+        assert(a1 < a3);
+        assert(a1 <= a3);
+        assert(a1 != a3);
+        assert(a1 > a4);
+        assert(a1 >= a4);
+        assert(a1 != a4);
+        assert(a1 < a5);
+        assert(a1 <= a5);
+        assert(a1 != a5);
+        assert(a1 > a6);
+        assert(a1 >= a6);
+        assert(a1 != a6);
+
+        assert((a1 <=> "aardvark") == std::strong_ordering::greater);
+        assert((a1 <=> "abcdef") == std::strong_ordering::equivalent);
+        assert((a1 <=> "zebra") == std::strong_ordering::less);
+
+        assert(("aardvark" <=> a1) == std::strong_ordering::less);
+        assert(("abcdef" <=> a1) == std::strong_ordering::equivalent);
+        assert(("zebra" <=> a1) == std::strong_ordering::greater);
+    }
+    { // constexpr string_view
+        constexpr std::string_view a1 = "abcdef";
+        constexpr std::string_view a2 = "abcdef";
+        constexpr std::string_view a3 = "abcdefg";
+        constexpr std::string_view a4 = "abcde";
+        constexpr std::string_view a5 = "abddef";
+        constexpr std::string_view a6 = "abbdef";
+
+        static_assert((a1 <=> a2) == std::strong_ordering::equivalent);
+        static_assert((a1 <=> a3) == std::strong_ordering::less);
+        static_assert((a1 <=> a4) == std::strong_ordering::greater);
+        static_assert((a1 <=> a5) == std::strong_ordering::less);
+        static_assert((a1 <=> a6) == std::strong_ordering::greater);
+
+        static_assert(a1 == a2);
+        static_assert(a1 >= a2);
+        static_assert(a1 <= a2);
+        static_assert(a1 < a3);
+        static_assert(a1 <= a3);
+        static_assert(a1 != a3);
+        static_assert(a1 > a4);
+        static_assert(a1 >= a4);
+        static_assert(a1 != a4);
+        static_assert(a1 < a5);
+        static_assert(a1 <= a5);
+        static_assert(a1 != a5);
+        static_assert(a1 > a6);
+        static_assert(a1 >= a6);
+        static_assert(a1 != a6);
+
+        static_assert((a1 <=> "aardvark") == std::strong_ordering::greater);
+        static_assert((a1 <=> "abcdef") == std::strong_ordering::equivalent);
+        static_assert((a1 <=> "zebra") == std::strong_ordering::less);
+
+        static_assert(("aardvark" <=> a1) == std::strong_ordering::less);
+        static_assert(("abcdef" <=> a1) == std::strong_ordering::equivalent);
+        static_assert(("zebra" <=> a1) == std::strong_ordering::greater);
     }
     { // Diagnostics Library
         diagnostics_test<std::error_code>();
