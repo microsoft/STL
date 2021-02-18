@@ -3,6 +3,7 @@
 
 #include <array>
 #include <cassert>
+#include <charconv>
 #include <compare>
 #include <concepts>
 #include <deque>
@@ -22,6 +23,7 @@
 #include <system_error>
 #include <thread>
 #include <type_traits>
+#include <typeindex>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -459,6 +461,36 @@ void ordering_test_cases() {
         static_assert(std::is_same_v<std::char_traits<char16_t>::comparison_category, std::strong_ordering>);
         static_assert(std::is_same_v<std::char_traits<char32_t>::comparison_category, std::strong_ordering>);
         static_assert(std::is_same_v<std::char_traits<wchar_t>::comparison_category, std::strong_ordering>);
+    }
+    { // charconv
+        char c[7] = "123456";
+        int d;
+        std::from_chars_result a1 = std::from_chars(c, c + 6, d);
+        std::from_chars_result a2 = std::from_chars(c, c + 6, d);
+        std::from_chars_result a3 = std::from_chars(c + 1, c + 5, d);
+        std::from_chars_result a4 = std::from_chars(c - 10, c + 10, d);
+
+        assert(a1 == a2);
+        assert(a1 != a3);
+        assert(a1 != a4);
+
+        std::to_chars_result b1 = std::to_chars(c, c + 6, 123456);
+        std::to_chars_result b2 = std::to_chars(c, c + 6, 123456);
+        std::to_chars_result b3 = std::to_chars(c + 1, c + 5, 2345);
+        std::to_chars_result b4 = std::to_chars(c, c + 6, NAN);
+
+        assert(b1 == b2);
+        assert(b1 != b3);
+        assert(b1 != b4);
+    }
+    { // typeindex
+        std::type_index a1 = typeid(int);
+        std::type_index a2 = typeid(char);
+        std::type_index a3 = typeid(bool);
+        std::type_index a4 = typeid(int);
+        assert((a1 <=> a4) == std::strong_ordering::equal);
+        assert((a1 <=> a2) == std::strong_ordering::greater);
+        assert((a1 <=> a3) == std::strong_ordering::less);
     }
     { // Strings library
         const std::string a1 = "abcdef";
