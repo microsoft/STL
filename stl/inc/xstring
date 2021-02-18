@@ -1668,11 +1668,13 @@ _NODISCARD constexpr bool operator==(
     return _Lhs._Equal(_Rhs);
 }
 
+#if !_HAS_CXX20
 template <class _Elem, class _Traits, int = 1> // TRANSITION, VSO-409326
 _NODISCARD constexpr bool operator==(
     const _Identity_t<basic_string_view<_Elem, _Traits>> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
     return _Lhs._Equal(_Rhs);
 }
+#endif // !_HAS_CXX20
 
 template <class _Elem, class _Traits, int = 2> // TRANSITION, VSO-409326
 _NODISCARD constexpr bool operator==(
@@ -1795,12 +1797,6 @@ struct _Get_comparison_category<_Traits, void_t<typename _Traits::comparison_cat
 template <class _Elem, class _Traits>
 _NODISCARD constexpr typename _Get_comparison_category<_Traits>::comparison_category operator<=>(
     const basic_string_view<_Elem, _Traits>& _Lhs, const basic_string_view<_Elem, _Traits>& _Rhs) noexcept {
-    return static_cast<typename _Get_comparison_category<_Traits>::comparison_category>(_Lhs.compare(_Rhs) <=> 0);
-}
-
-template <class _Elem, class _Traits, int = 1> // TRANSITION, VSO-409326
-_NODISCARD constexpr typename _Get_comparison_category<_Traits>::comparison_category operator<=>(
-    const _Identity_t<basic_string_view<_Elem, _Traits>> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
     return static_cast<typename _Get_comparison_category<_Traits>::comparison_category>(_Lhs.compare(_Rhs) <=> 0);
 }
 
