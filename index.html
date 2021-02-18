@@ -41,6 +41,20 @@
             return table.filter(row => row[key] !== undefined).map(row => ({ x: row.date, y: row[key] }));
         }
 
+        const url_search_params = new URLSearchParams(window.location.search);
+
+        function get_hidden(key, default_value = false) {
+            const value = url_search_params.get(key);
+
+            if (value === 'hide') {
+                return true;
+            } else if (value === 'show') {
+                return false;
+            } else {
+                return default_value;
+            }
+        }
+
         const status_data = {
             datasets: [
                 {
@@ -49,6 +63,7 @@
                     borderColor: '#9966FF',
                     backgroundColor: '#9966FF',
                     yAxisID: 'smallAxis',
+                    hidden: get_hidden('cxx17'),
                 },
                 {
                     data: get_values(weekly_table, 'cxx20').concat(get_values(daily_table, 'cxx20')),
@@ -56,6 +71,7 @@
                     borderColor: '#7030A0',
                     backgroundColor: '#7030A0',
                     yAxisID: 'smallAxis',
+                    hidden: get_hidden('cxx20'),
                 },
                 {
                     data: get_values(weekly_table, 'cxx23').concat(get_values(daily_table, 'cxx23')),
@@ -64,6 +80,7 @@
                     backgroundColor: '#9966FF',
                     borderDash: [10, 5],
                     yAxisID: 'smallAxis',
+                    hidden: get_hidden('cxx23'),
                 },
                 {
                     data: get_values(weekly_table, 'lwg').concat(get_values(daily_table, 'lwg')),
@@ -71,6 +88,7 @@
                     borderColor: '#0070C0',
                     backgroundColor: '#0070C0',
                     yAxisID: 'smallAxis',
+                    hidden: get_hidden('lwg'),
                 },
                 {
                     data: get_values(daily_table, 'pr'),
@@ -78,6 +96,7 @@
                     borderColor: '#00B050',
                     backgroundColor: '#00B050',
                     yAxisID: 'smallAxis',
+                    hidden: get_hidden('pr'),
                 },
                 {
                     data: get_values(weekly_table, 'vso'),
@@ -85,6 +104,7 @@
                     borderColor: '#900000',
                     backgroundColor: '#900000',
                     yAxisID: 'largeAxis',
+                    hidden: get_hidden('vso'),
                 },
                 {
                     data: get_values(daily_table, 'bug'),
@@ -92,6 +112,7 @@
                     borderColor: '#FF0000',
                     backgroundColor: '#FF0000',
                     yAxisID: 'largeAxis',
+                    hidden: get_hidden('bug'),
                 },
                 {
                     data: get_values(daily_table, 'issue'),
@@ -99,6 +120,7 @@
                     borderColor: '#909090',
                     backgroundColor: '#909090',
                     yAxisID: 'largeAxis',
+                    hidden: get_hidden('issue'),
                 },
                 {
                     data: get_values(weekly_table, 'libcxx'),
@@ -106,6 +128,7 @@
                     borderColor: '#FFC000',
                     backgroundColor: '#FFC000',
                     yAxisID: 'largeAxis',
+                    hidden: get_hidden('libcxx'),
                 },
             ],
         };
@@ -118,7 +141,7 @@
                     borderColor: '#909090',
                     backgroundColor: '#909090',
                     yAxisID: 'leftAxis',
-                    hidden: true,
+                    hidden: get_hidden('avg_age', true),
                 },
                 {
                     data: get_values(daily_table, 'avg_wait'),
@@ -126,7 +149,7 @@
                     borderColor: '#FF9090',
                     backgroundColor: '#FF9090',
                     yAxisID: 'leftAxis',
-                    hidden: true,
+                    hidden: get_hidden('avg_wait', true),
                 },
                 {
                     data: get_values(daily_table, 'sum_age'),
@@ -134,6 +157,7 @@
                     borderColor: '#000000',
                     backgroundColor: '#000000',
                     yAxisID: 'rightAxis',
+                    hidden: get_hidden('sum_age'),
                 },
                 {
                     data: get_values(daily_table, 'sum_wait'),
@@ -141,6 +165,7 @@
                     borderColor: '#FF0000',
                     backgroundColor: '#FF0000',
                     yAxisID: 'rightAxis',
+                    hidden: get_hidden('sum_wait'),
                 },
             ],
         };
@@ -153,6 +178,7 @@
                     borderColor: '#00B050',
                     backgroundColor: '#00B050',
                     yAxisID: 'mergeAxis',
+                    hidden: get_hidden('merged'),
                 },
                 {
                     type: 'bar',
@@ -160,6 +186,7 @@
                     label: 'Bars: Calendar Months',
                     borderWidth: 1,
                     yAxisID: 'mergeAxis',
+                    hidden: get_hidden('merge_bar'),
                 },
             ],
         };
