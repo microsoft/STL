@@ -123,6 +123,7 @@ public:
     }
     constexpr void advance_to(const const_iterator _It) {
         _Adl_verify_range(_It, _Format_string.end());
+        // _It must be after _Format_string.begin().
         const auto _Diff = static_cast<size_t>(_It._Unwrapped() - _Format_string._Unchecked_begin());
         _Format_string.remove_prefix(_Diff);
     }
@@ -579,9 +580,8 @@ constexpr void _Parse_format_string(basic_string_view<_CharT> _Format_str, _Hand
         if (*_Begin != '{') {
             // we didn't start at an opening curl, find the next one
             _OpeningCurl = _STD find(_Begin + 1, _End, '{');
-            _STL_INTERNAL_CHECK(_Begin != _OpeningCurl);
             for (;;) {
-                const _CharT* _ClosingCurl = _STD _Find_unchecked(_Begin, _End, '}');
+                const _CharT* _ClosingCurl = _Find_unchecked(_Begin, _OpeningCurl, '}');
 
                 // In this case we didn't find either a closing curl or opening curl.
                 // Write the whole thing out.
@@ -594,7 +594,7 @@ constexpr void _Parse_format_string(basic_string_view<_CharT> _Format_str, _Hand
                 if (_ClosingCurl == _OpeningCurl || *_ClosingCurl != '}') {
                     throw format_error("Unmatched '}' in format string.");
                 }
-                // We found two closing curls, so output online one of them
+                // We found two closing curls, so output only one of them
                 _Handler._On_text(_Begin, _ClosingCurl);
 
                 // skip over the second closing curl
@@ -762,7 +762,7 @@ private:
     template <class _Handler, class _FormatArg>
     static constexpr unsigned int _Get_dynamic_specs(_FormatArg _Arg) {
         unsigned long long _Val = _STD visit_format_arg(_Handler(), _Arg);
-        if (_Val > (_STD numeric_limits<unsigned int>::max)()) {
+        if (_Val > (numeric_limits<unsigned int>::max)()) {
             throw format_error("Number is too big.");
         }
         return static_cast<unsigned int>(_Val);
