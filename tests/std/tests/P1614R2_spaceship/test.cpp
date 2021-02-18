@@ -449,6 +449,15 @@ void ordering_test_cases() {
         static_assert(std::is_same_v<SpaceshipType<WeaklyOrderdByOmissionMatch>, std::weak_ordering>);
         static_assert(std::is_same_v<SpaceshipType<PartiallyOrderedMatch>, std::partial_ordering>);
     }
+    { // char_traits
+        static_assert(std::is_same_v<std::char_traits<char>::comparison_category, std::strong_ordering>);
+#ifdef __cpp_char8_t
+        static_assert(std::is_same_v<std::char_traits<char8_t>::comparison_category, std::strong_ordering>);
+#endif // __cpp_char8_t
+        static_assert(std::is_same_v<std::char_traits<char16_t>::comparison_category, std::strong_ordering>);
+        static_assert(std::is_same_v<std::char_traits<char32_t>::comparison_category, std::strong_ordering>);
+        static_assert(std::is_same_v<std::char_traits<wchar_t>::comparison_category, std::strong_ordering>);
+    }
     { // Strings library
         const std::string a1 = "abcdef";
         const std::string a2 = "abcdef";

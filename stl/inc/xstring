@@ -220,6 +220,9 @@ public:
     using pos_type   = streampos;
     using off_type   = streamoff;
     using state_type = mbstate_t;
+#if _HAS_CXX20
+    using comparison_category = strong_ordering;
+#endif // _HAS_CXX20
 
     using _Primary_char_traits::_Copy_s;
     using _Primary_char_traits::copy;
@@ -358,6 +361,9 @@ public:
     using pos_type   = streampos;
     using off_type   = streamoff;
     using state_type = mbstate_t;
+#if _HAS_CXX20
+    using comparison_category = strong_ordering;
+#endif // _HAS_CXX20
 
     using _Primary_char_traits::_Copy_s;
     using _Primary_char_traits::copy;
