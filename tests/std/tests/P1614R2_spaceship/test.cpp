@@ -487,6 +487,14 @@ void ordering_test_cases() {
         assert(a1 > a6);
         assert(a1 >= a6);
         assert(a1 != a6);
+
+        assert((a1 <=> "aardvark") == std::strong_ordering::greater);
+        assert((a1 <=> "abcdef") == std::strong_ordering::equivalent);
+        assert((a1 <=> "zebra") == std::strong_ordering::less);
+
+        assert(("aardvark" <=> a1) == std::strong_ordering::less);
+        assert(("abcdef" <=> a1) == std::strong_ordering::equivalent);
+        assert(("zebra" <=> a1) == std::strong_ordering::greater);
     }
     { // Diagnostics Library
         diagnostics_test<std::error_code>();
