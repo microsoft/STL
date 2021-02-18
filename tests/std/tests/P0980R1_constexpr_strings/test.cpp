@@ -148,7 +148,7 @@ template <class CharType = char>
 _CONSTEXPR20_CONTAINER bool test_interface() {
 #ifndef __EDG__ // TRANSITION, VSO-1273296
     using str = basic_string<CharType>;
-#if defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1269894
+#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1269894
     { // constructors
         // range constructors
         str literal_constructed{get_literal_input<CharType>()};
@@ -188,10 +188,10 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
 
         str ptr_size_constructed(get_literal_input<CharType>(), 2);
         assert(equalRanges(ptr_size_constructed, "He"sv));
-#ifdef __EDG__ // TRANSITION, VSO-1270433
+#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) // TRANSITION, VSO-1270433
         str iterator_constructed(literal_constructed.begin(), literal_constructed.end());
         assert(equalRanges(iterator_constructed, literal_constructed));
-#endif // __EDG__
+#endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__)
         const string_view_convertible<CharType> convertible;
         str conversion_constructed(convertible);
         assert(equalRanges(conversion_constructed, literal_constructed));
@@ -234,10 +234,10 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
 
         str ptr_size_constructed(get_literal_input<CharType>(), 2, alloc);
         assert(equalRanges(ptr_size_constructed, "He"sv));
-#ifdef __EDG__ // TRANSITION, VSO-1270433
+#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) // TRANSITION, VSO-1270433
         str iterator_constructed(literal_constructed.begin(), literal_constructed.end(), alloc);
         assert(equalRanges(iterator_constructed, literal_constructed));
-#endif // __EDG__
+#endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__)
         const string_view_convertible<CharType> convertible;
         str conversion_constructed(convertible, alloc);
         assert(equalRanges(conversion_constructed, literal_constructed));
@@ -325,13 +325,13 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         assign_conversion_size.assign(convertible, 2, 3);
         assert(equalRanges(assign_conversion_size, "llo"sv));
     }
-#endif // defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0
+#endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0
     { // allocator
         str default_constructed;
         [[maybe_unused]] const auto alloc = default_constructed.get_allocator();
         static_assert(is_same_v<remove_const_t<decltype(alloc)>, allocator<CharType>>);
     }
-#if defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1269894
+#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1269894
     { // access
         str literal_constructed             = get_literal_input<CharType>();
         const str const_literal_constructed = get_literal_input<CharType>();
@@ -411,23 +411,23 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
 
         const auto e = literal_constructed.end();
         static_assert(is_same_v<remove_const_t<decltype(e)>, typename str::iterator>);
-#ifdef __EDG__ // TRANSITION, VSO-1275530
+#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) // TRANSITION, VSO-1275530
         assert(*prev(e) == CharType{'s'});
-#endif // __EDG__
+#endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__)
 
         const auto ce = literal_constructed.cend();
         static_assert(is_same_v<remove_const_t<decltype(ce)>, typename str::const_iterator>);
-#ifdef __EDG__ // TRANSITION, VSO-1275530
+#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) // TRANSITION, VSO-1275530
         assert(*prev(ce) == CharType{'s'});
-#endif // __EDG__
+#endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__)
 
         const auto ce2 = const_literal_constructed.end();
         static_assert(is_same_v<remove_const_t<decltype(ce2)>, typename str::const_iterator>);
-#ifdef __EDG__ // TRANSITION, VSO-1275530
+#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) // TRANSITION, VSO-1275530
         assert(*prev(ce2) == CharType{'s'});
-#endif // __EDG__
+#endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__)
 
-#if defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, 16.10p1
+#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, 16.10p1
         const auto rb = literal_constructed.rbegin();
         static_assert(is_same_v<remove_const_t<decltype(rb)>, reverse_iterator<typename str::iterator>>);
         assert(*rb == CharType{'s'});
@@ -451,7 +451,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         const auto cre2 = const_literal_constructed.rend();
         static_assert(is_same_v<remove_const_t<decltype(cre2)>, reverse_iterator<typename str::const_iterator>>);
         assert(*prev(cre2) == CharType{'H'});
-#endif // defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2
+#endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2
     }
 
     { // capacity
@@ -502,7 +502,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
     }
 
     { // insert
-#ifdef __EDG__ // TRANSITION, VSO-1275530
+#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) // TRANSITION, VSO-1275530
         str insert_char               = get_literal_input<CharType>();
         const CharType to_be_inserted = CharType{','};
         insert_char.insert(insert_char.begin() + 5, to_be_inserted);
@@ -542,14 +542,14 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
             insert_const_initializer.insert(insert_const_initializer.cbegin() + 6, {'c', 'u', 't', 'e', ' '});
         assert(cit_ilist == insert_const_initializer.cbegin() + 6);
         assert(equalRanges(insert_const_initializer, "Hello cute fluffy kittens"sv));
-#endif // __EDG__
+#endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__)
     }
 
     { // erase
         str erase_pos_count = get_literal_input<CharType>();
         erase_pos_count.erase(0, 6);
         assert(equalRanges(erase_pos_count, "fluffy kittens"sv));
-#ifdef __EDG__ // TRANSITION, VSO-1275530
+#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) // TRANSITION, VSO-1275530
         str erase_iter = get_literal_input<CharType>();
         erase_iter.erase(erase_iter.begin());
         assert(equalRanges(erase_iter, "ello fluffy kittens"sv));
@@ -573,9 +573,9 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         str erased_free_if = get_literal_input<CharType>();
         erase_if(erased_free_if, [](const CharType val) { return val == CharType{'t'}; });
         assert(equalRanges(erased_free_if, "Hello fluffy kiens"sv));
-#endif // __EDG__
+#endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__)
     }
-#endif // defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0
+#endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0
 
     { // push_back / pop_back
         str pushed;
@@ -592,7 +592,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         assert(pushed.size() == 1);
         assert(pushed.back() == CharType{'y'});
     }
-#if defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1269894
+#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1269894
     { // append
         const str literal_constructed = get_literal_input<CharType>();
 
@@ -817,7 +817,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         str replaced_pos_count_str_shift = get_literal_input<CharType>();
         replaced_pos_count_str_shift.replace(13, 2, input);
         assert(equalRanges(replaced_pos_count_str_shift, "Hello fluffy dogttens"sv));
-#ifdef __EDG__ // TRANSITION, VSO-1275530
+#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) // TRANSITION, VSO-1275530
         str replaced_iter_str = get_literal_input<CharType>();
         replaced_iter_str.replace(replaced_iter_str.cbegin() + 13, replaced_iter_str.cend(), input);
         assert(equalRanges(replaced_iter_str, "Hello fluffy dog"sv));
@@ -826,7 +826,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         replaced_iter_str_shift.replace(
             replaced_iter_str_shift.cbegin() + 13, replaced_iter_str_shift.cbegin() + 15, input);
         assert(equalRanges(replaced_iter_str_shift, "Hello fluffy dogttens"sv));
-#endif // __EDG__
+#endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__)
         str replaced_pos_count_str_pos_count = get_literal_input<CharType>();
         replaced_pos_count_str_pos_count.replace(13, 7, input, 1);
         assert(equalRanges(replaced_pos_count_str_pos_count, "Hello fluffy og"sv));
@@ -834,7 +834,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         str replaced_pos_count_str_pos_count_less = get_literal_input<CharType>();
         replaced_pos_count_str_pos_count_less.replace(13, 2, input, 1, 2);
         assert(equalRanges(replaced_pos_count_str_pos_count_less, "Hello fluffy ogttens"sv));
-#ifdef __EDG__ // TRANSITION, VSO-1275530
+#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) // TRANSITION, VSO-1275530
         str replaced_iter_iter = get_literal_input<CharType>();
         replaced_iter_iter.replace(
             replaced_iter_iter.cbegin() + 13, replaced_iter_iter.cend(), input.begin(), input.end());
@@ -844,7 +844,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         replaced_iter_iter_less.replace(replaced_iter_iter_less.cbegin() + 13, replaced_iter_iter_less.cbegin() + 15,
             input.begin() + 1, input.end());
         assert(equalRanges(replaced_iter_iter_less, "Hello fluffy ogttens"sv));
-#endif // __EDG__
+#endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__)
         str replaced_pos_count_literal = get_literal_input<CharType>();
         replaced_pos_count_literal.replace(13, 2, get_dog<CharType>());
         assert(equalRanges(replaced_pos_count_literal, "Hello fluffy dogttens"sv));
@@ -852,7 +852,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         str replaced_pos_count_literal_count = get_literal_input<CharType>();
         replaced_pos_count_literal_count.replace(13, 2, get_dog<CharType>(), 2);
         assert(equalRanges(replaced_pos_count_literal_count, "Hello fluffy dottens"sv));
-#ifdef __EDG__ // TRANSITION, VSO-1275530
+#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) // TRANSITION, VSO-1275530
         str replaced_iter_literal = get_literal_input<CharType>();
         replaced_iter_literal.replace(
             replaced_iter_literal.cbegin() + 13, replaced_iter_literal.cbegin() + 15, get_dog<CharType>());
@@ -862,11 +862,11 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         replaced_iter_literal_count.replace(replaced_iter_literal_count.cbegin() + 13,
             replaced_iter_literal_count.cbegin() + 15, get_dog<CharType>(), 2);
         assert(equalRanges(replaced_iter_literal_count, "Hello fluffy dottens"sv));
-#endif // __EDG__
+#endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__)
         str replaced_pos_count_chars = get_literal_input<CharType>();
         replaced_pos_count_chars.replace(13, 2, 5, 'a');
         assert(equalRanges(replaced_pos_count_chars, "Hello fluffy aaaaattens"sv));
-#ifdef __EDG__ // TRANSITION, VSO-1275530
+#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) // TRANSITION, VSO-1275530
         str replaced_iter_chars = get_literal_input<CharType>();
         replaced_iter_chars.replace(replaced_iter_chars.cbegin() + 13, replaced_iter_chars.cbegin() + 15, 5, 'a');
         assert(equalRanges(replaced_iter_chars, "Hello fluffy aaaaattens"sv));
@@ -875,17 +875,17 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         replaced_iter_init.replace(
             replaced_iter_init.cbegin() + 13, replaced_iter_init.cbegin() + 15, {'c', 'u', 't', 'e', ' '});
         assert(equalRanges(replaced_iter_init, "Hello fluffy cute ttens"sv));
-#endif // __EDG__
+#endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__)
         const string_view_convertible<CharType> convertible;
         str replaced_pos_count_conversion = get_dog<CharType>();
         replaced_pos_count_conversion.replace(1, 5, convertible);
         assert(equalRanges(replaced_pos_count_conversion, "dHello fluffy kittens"sv));
-#ifdef __EDG__ // TRANSITION, VSO-1275530
+#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) // TRANSITION, VSO-1275530
         str replaced_iter_conversion = get_dog<CharType>();
         replaced_iter_conversion.replace(
             replaced_iter_conversion.cbegin() + 1, replaced_iter_conversion.cbegin() + 2, convertible);
         assert(equalRanges(replaced_iter_conversion, "dHello fluffy kittensg"sv));
-#endif // __EDG__
+#endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__)
         str replaced_pos_count_conversion_pos = get_dog<CharType>();
         replaced_pos_count_conversion_pos.replace(1, 5, convertible, 6);
         assert(equalRanges(replaced_pos_count_conversion_pos, "dfluffy kittens"sv));
@@ -1385,14 +1385,14 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         const bool greater_eq_literal_str = get_view_input<CharType>() >= third;
         assert(!greater_eq_literal_str);
     }
+#endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0
 #endif // __EDG__
-#endif // defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0
     return true;
 }
 
 template <class CharType = char>
 _CONSTEXPR20_CONTAINER bool test_iterators() {
-#if defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1269894
+#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1269894
 #ifndef __EDG__ // TRANSITION, VSO-1273296s
     using str               = basic_string<CharType>;
     str literal_constructed = get_literal_input<CharType>();
@@ -1480,13 +1480,13 @@ _CONSTEXPR20_CONTAINER bool test_iterators() {
         assert(cit[2] == 'l');
     }
 #endif // __EDG__
-#endif // defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0
+#endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0
     return true;
 }
 
 template <class CharType = char>
 _CONSTEXPR20_CONTAINER bool test_growth() {
-#if defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1269894
+#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1269894
     using str = basic_string<CharType>;
 #ifndef __EDG__ // TRANSITION, VSO-1273296
     {
@@ -1528,7 +1528,7 @@ _CONSTEXPR20_CONTAINER bool test_growth() {
         assert(v.size() == 1008);
         assert(v.capacity() == 1510);
     }
-#ifdef __EDG__ // TRANSITION, VSO-1275530
+#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) // TRANSITION, VSO-1275530
     {
         str v(1007, 'a');
 
@@ -1588,9 +1588,9 @@ _CONSTEXPR20_CONTAINER bool test_growth() {
             assert(v.capacity() == 8015);
         }
     }
+#endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__)
 #endif // __EDG__
-#endif // __EDG__
-#endif // defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0
+#endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0
     return true;
 }
 
