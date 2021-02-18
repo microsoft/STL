@@ -1786,24 +1786,27 @@ _NODISCARD constexpr bool operator>=(
 #if _HAS_CXX20
 template <class _Traits, class = void>
 struct _Get_comparison_category {
-    using comparison_category = weak_ordering;
+    using type = weak_ordering;
 };
 
 template <class _Traits>
 struct _Get_comparison_category<_Traits, void_t<typename _Traits::comparison_category>> {
-    using comparison_category = typename _Traits::comparison_category;
+    using type = typename _Traits::comparison_category;
 };
 
+template <class _Traits>
+using _Get_comparison_category_t = typename _Get_comparison_category<_Traits>::type;
+
 template <class _Elem, class _Traits>
-_NODISCARD constexpr typename _Get_comparison_category<_Traits>::comparison_category operator<=>(
+_NODISCARD constexpr _Get_comparison_category_t<_Traits> operator<=>(
     const basic_string_view<_Elem, _Traits> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
-    return static_cast<typename _Get_comparison_category<_Traits>::comparison_category>(_Lhs.compare(_Rhs) <=> 0);
+    return static_cast<_Get_comparison_category_t<_Traits>>(_Lhs.compare(_Rhs) <=> 0);
 }
 
 template <class _Elem, class _Traits, int = 2> // TRANSITION, VSO-409326
-_NODISCARD constexpr typename _Get_comparison_category<_Traits>::comparison_category operator<=>(
+_NODISCARD constexpr _Get_comparison_category_t<_Traits> operator<=>(
     const basic_string_view<_Elem, _Traits> _Lhs, const _Identity_t<basic_string_view<_Elem, _Traits>> _Rhs) noexcept {
-    return static_cast<typename _Get_comparison_category<_Traits>::comparison_category>(_Lhs.compare(_Rhs) <=> 0);
+    return static_cast<_Get_comparison_category_t<_Traits>>(_Lhs.compare(_Rhs) <=> 0);
 }
 #endif // _HAS_CXX20
 
@@ -4638,15 +4641,15 @@ _NODISCARD bool operator>=(const basic_string<_Elem, _Traits, _Alloc>& _Left, _I
 }
 #else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
 template <class _Elem, class _Traits, class _Alloc>
-_NODISCARD typename _Get_comparison_category<_Traits>::comparison_category operator<=>(
+_NODISCARD _Get_comparison_category_t<_Traits> operator<=>(
     const basic_string<_Elem, _Traits, _Alloc>& _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) noexcept {
-    return static_cast<typename _Get_comparison_category<_Traits>::comparison_category>(_Left.compare(_Right) <=> 0);
+    return static_cast<_Get_comparison_category_t<_Traits>>(_Left.compare(_Right) <=> 0);
 }
 
 template <class _Elem, class _Traits, class _Alloc>
-_NODISCARD typename _Get_comparison_category<_Traits>::comparison_category operator<=>(
+_NODISCARD _Get_comparison_category_t<_Traits> operator<=>(
     const basic_string<_Elem, _Traits, _Alloc>& _Left, const _Elem* _Right) {
-    return static_cast<typename _Get_comparison_category<_Traits>::comparison_category>(_Left.compare(_Right) <=> 0);
+    return static_cast<_Get_comparison_category_t<_Traits>>(_Left.compare(_Right) <=> 0);
 }
 #endif // !_HAS_CXX20
 
