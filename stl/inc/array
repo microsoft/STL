@@ -797,7 +797,7 @@ _NODISCARD _CONSTEXPR20 bool operator==(const array<_Ty, _Size>& _Left, const ar
 
 #if !_HAS_CXX20
 template <class _Ty, size_t _Size>
-_NODISCARD _CONSTEXPR20 bool operator!=(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
+_NODISCARD bool operator!=(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
     return !(_Left == _Right);
 }
 #endif // !_HAS_CXX20
