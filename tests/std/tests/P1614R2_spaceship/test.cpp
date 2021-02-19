@@ -10,6 +10,7 @@
 #include <forward_list>
 #include <functional>
 #include <iostream>
+#include <iterator>
 #include <list>
 #include <map>
 #include <queue>
@@ -457,6 +458,36 @@ void ordering_test_cases() {
         std::stack<SynthOrdered> a{std::deque<SynthOrdered>{10, 20, 30}};
         std::stack<SynthOrdered> b{std::deque<SynthOrdered>{10, 20, 40}};
         ordered_containers_test(a, a, b);
+    }
+    { // checked_array_iterator
+        int arr[]        = {11, 22, 33};
+        constexpr auto N = std::size(arr);
+
+        using I  = stdext::checked_array_iterator<int*>;
+        using CI = stdext::checked_array_iterator<int*>; // TRANSITION, GH-943, should be <const int*>
+
+        I first{arr, N};
+        I last{arr, N, N};
+
+        CI cfirst{arr, N};
+        CI clast{arr, N, N};
+
+        ordered_iterator_test(first, first, last, cfirst, cfirst, clast);
+    }
+    { // unchecked_array_iterator
+        int arr[]        = {11, 22, 33};
+        constexpr auto N = std::size(arr);
+
+        using I  = stdext::unchecked_array_iterator<int*>;
+        using CI = stdext::unchecked_array_iterator<int*>; // TRANSITION, GH-943, should be <const int*>
+
+        I first{arr};
+        I last{arr + N};
+
+        CI cfirst{arr};
+        CI clast{arr + N};
+
+        ordered_iterator_test(first, first, last, cfirst, cfirst, clast);
     }
     { // sub_match
         const std::string s1{"cats"};
