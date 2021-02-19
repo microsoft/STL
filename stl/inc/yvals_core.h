@@ -133,6 +133,7 @@
 // _HAS_CXX20 directly controls:
 // P0019R8 atomic_ref
 // P0020R6 atomic<float>, atomic<double>, atomic<long double>
+// P0053R7 <syncstream>
 // P0122R7 <span>
 // P0202R3 constexpr For <algorithm> And exchange()
 // P0318R1 unwrap_reference, unwrap_ref_decay
@@ -168,6 +169,7 @@
 // P0660R10 <stop_token> And jthread
 // P0674R1 make_shared() For Arrays
 // P0718R2 atomic<shared_ptr<T>>, atomic<weak_ptr<T>>
+// P0753R2 osyncstream Manipulators
 // P0758R1 is_nothrow_convertible
 // P0768R1 Library Support For The Spaceship Comparison Operator <=>
 // P0769R2 shift_left(), shift_right()
@@ -1247,6 +1249,7 @@
 #define __cpp_lib_span                    202002L
 #define __cpp_lib_ssize                   201902L
 #define __cpp_lib_starts_ends_with        201711L
+#define __cpp_lib_syncbuf                 201803L
 
 #ifdef __cpp_lib_concepts // TRANSITION, GH-395
 #define __cpp_lib_three_way_comparison 201711L
