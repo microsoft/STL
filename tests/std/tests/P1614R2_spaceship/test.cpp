@@ -295,20 +295,6 @@ void ordering_test_cases() {
         ordered_containers_test(a1, a2, b1);
         ordered_iterator_test(a1.begin(), a1.begin(), a1.end(), a1.cbegin(), a1.cbegin(), a1.cend());
     }
-    { // string
-        std::string a1 = "aaa";
-        std::string a2 = "aaa";
-        std::string b1 = "bb";
-        ordered_containers_test(a1, a2, b1);
-        ordered_iterator_test(a1.begin(), a1.begin(), a1.end(), a1.cbegin(), a1.cbegin(), a1.cend());
-    }
-    { // string_view
-        std::string_view a1 = "aaa";
-        std::string_view a2 = "aaa";
-        std::string_view b1 = "bb";
-        ordered_containers_test(a1, a2, b1);
-        ordered_iterator_test(a1.begin(), a1.begin(), a1.end(), a1.cbegin(), a1.cbegin(), a1.cend());
-    }
     { // vector SynthOrdered
         std::vector<SynthOrdered> a = {10, 20, 30};
         std::vector<SynthOrdered> b = {10, 20, 40};
@@ -559,6 +545,13 @@ void ordering_test_cases() {
         assert(("abcdef" <=> a1) == std::strong_ordering::equivalent);
         assert(("zebra" <=> a1) == std::strong_ordering::greater);
     }
+    { // string iterators
+        std::string a1 = "aaa";
+        std::string a2 = "aaa";
+        std::string b1 = "bb";
+        ordered_containers_test(a1, a2, b1);
+        ordered_iterator_test(a1.begin(), a1.begin(), a1.end(), a1.cbegin(), a1.cbegin(), a1.cend());
+    }
     { // string_view
         const std::string_view a1 = "abcdef";
         const std::string_view a2 = "abcdef";
@@ -634,6 +627,13 @@ void ordering_test_cases() {
         static_assert(("aardvark" <=> a1) == std::strong_ordering::less);
         static_assert(("abcdef" <=> a1) == std::strong_ordering::equivalent);
         static_assert(("zebra" <=> a1) == std::strong_ordering::greater);
+    }
+    { // string_view iterators
+        std::string_view a1 = "aaa";
+        std::string_view a2 = "aaa";
+        std::string_view b1 = "bb";
+        ordered_containers_test(a1, a2, b1);
+        ordered_iterator_test(a1.begin(), a1.begin(), a1.end(), a1.cbegin(), a1.cbegin(), a1.cend());
     }
     { // Diagnostics Library
         diagnostics_test<std::error_code>();
