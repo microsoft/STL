@@ -8,9 +8,71 @@
 #include <string>
 #include <string_view>
 
+using namespace std;
+
 // TODO: fill in tests
-template std::back_insert_iterator<std::string> std::vformat_to(std::back_insert_iterator<std::string>,
-    const std::locale&, std::string_view, std::format_args_t<std::back_insert_iterator<std::string>, char>);
+template back_insert_iterator<string> std::vformat_to(
+    back_insert_iterator<string>, const locale&, string_view, format_args_t<back_insert_iterator<string>, char>);
 
 
-int main() {}
+int main() {
+    string output_string = "";
+
+    vformat_to(back_insert_iterator(output_string), locale::classic(), "f", make_format_args());
+    assert(output_string == "f");
+
+    output_string.clear();
+    vformat_to(back_insert_iterator(output_string), locale::classic(), "format", make_format_args());
+    assert(output_string == "format");
+
+    // test escaped opening curlies
+    output_string.clear();
+    vformat_to(back_insert_iterator(output_string), locale::classic(), "{{", make_format_args());
+    assert(output_string == "{");
+
+    output_string.clear();
+    vformat_to(back_insert_iterator(output_string), locale::classic(), "{{{{", make_format_args());
+    assert(output_string == "{{");
+
+    output_string.clear();
+    vformat_to(back_insert_iterator(output_string), locale::classic(), "x{{", make_format_args());
+    assert(output_string == "x{");
+
+    output_string.clear();
+    vformat_to(back_insert_iterator(output_string), locale::classic(), "{{ {{", make_format_args());
+    assert(output_string == "{ {");
+
+    output_string.clear();
+    vformat_to(back_insert_iterator(output_string), locale::classic(), "x{{x", make_format_args());
+    assert(output_string == "x{x");
+
+    output_string.clear();
+    vformat_to(back_insert_iterator(output_string), locale::classic(), "{{x", make_format_args());
+    assert(output_string == "{x");
+
+    // tests escaped closing curlies
+    output_string.clear();
+    vformat_to(back_insert_iterator(output_string), locale::classic(), "}}", make_format_args());
+    assert(output_string == "}");
+
+    output_string.clear();
+    vformat_to(back_insert_iterator(output_string), locale::classic(), "}}}}", make_format_args());
+    assert(output_string == "}}");
+
+    output_string.clear();
+    vformat_to(back_insert_iterator(output_string), locale::classic(), "x}}", make_format_args());
+    assert(output_string == "x}");
+
+    output_string.clear();
+    vformat_to(back_insert_iterator(output_string), locale::classic(), "}} }}", make_format_args());
+    assert(output_string == "} }");
+
+    output_string.clear();
+    vformat_to(back_insert_iterator(output_string), locale::classic(), "x}}x", make_format_args());
+    assert(output_string == "x}x");
+
+    output_string.clear();
+    vformat_to(back_insert_iterator(output_string), locale::classic(), "}}x", make_format_args());
+    assert(output_string == "}x");
+    return 0;
+}
