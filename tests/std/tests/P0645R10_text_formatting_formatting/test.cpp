@@ -74,5 +74,6 @@ int main() {
     output_string.clear();
     vformat_to(back_insert_iterator(output_string), locale::classic(), "}}x", make_format_args());
     assert(output_string == "}x");
+
     return 0;
 }
