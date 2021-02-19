@@ -449,7 +449,6 @@ void ordering_test_cases() {
         std::queue<int> b(deq1);
         std::queue<int> c(deq2);
         ordered_containers_test(a, b, c);
-        ordered_iterator_test(deq1.begin(), deq1.begin(), deq1.end(), deq1.cbegin(), deq1.cbegin(), deq1.cend());
     }
     { // queue SynthOrdered
         std::queue<SynthOrdered> a{std::deque<SynthOrdered>{10, 20, 30}};
