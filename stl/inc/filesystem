@@ -1603,9 +1603,11 @@ namespace filesystem {
             return _Lhs._Position == _Rhs._Position;
         }
 
+#if !_HAS_CXX20
         _NODISCARD friend bool operator!=(const _Path_iterator& _Lhs, const _Path_iterator& _Rhs) {
             return _Lhs._Position != _Rhs._Position;
         }
+#endif // !_HAS_CXX20
 
 #if _ITERATOR_DEBUG_LEVEL != 0
         friend void _Verify_range(const _Path_iterator& _Lhs, const _Path_iterator& _Rhs) {
@@ -2728,9 +2730,11 @@ namespace filesystem {
             return _Impl == _Rhs._Impl;
         }
 
+#if !_HAS_CXX20
         _NODISCARD bool operator!=(const directory_iterator& _Rhs) const noexcept /* strengthened */ {
             return _Impl != _Rhs._Impl;
         }
+#endif // !_HAS_CXX20
 
         _Directory_entry_proxy operator++(int) {
             _Directory_entry_proxy _Proxy(**this);
@@ -2977,9 +2981,11 @@ namespace filesystem {
             return _Impl == _Rhs._Impl;
         }
 
+#if !_HAS_CXX20
         _NODISCARD bool operator!=(const recursive_directory_iterator& _Rhs) const noexcept {
             return _Impl != _Rhs._Impl;
         }
+#endif // !_HAS_CXX20
 
         _Directory_entry_proxy operator++(int) {
             _Directory_entry_proxy _Proxy(**this);

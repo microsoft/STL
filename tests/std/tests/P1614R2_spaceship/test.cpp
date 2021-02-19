@@ -11,11 +11,16 @@
 #include <forward_list>
 #include <functional>
 #include <iostream>
+#include <iterator>
 #include <list>
 #include <map>
+#include <memory>
+#include <memory_resource>
+#include <new>
 #include <queue>
 #include <ranges>
 #include <regex>
+#include <scoped_allocator>
 #include <set>
 #include <stack>
 #include <string>
@@ -28,6 +33,7 @@
 #include <unordered_set>
 #include <utility>
 #include <valarray>
+#include <variant>
 #include <vector>
 
 template <class T>
@@ -135,7 +141,7 @@ struct dummy_diagnostic : std::error_category {
 };
 
 template <class ReturnType, class SmallType, class EqualType, class LargeType>
-void spaceship_test(const SmallType& smaller, const EqualType& smaller_equal, const LargeType& larger) {
+constexpr bool spaceship_test(const SmallType& smaller, const EqualType& smaller_equal, const LargeType& larger) {
     assert(smaller == smaller_equal);
     assert(smaller_equal == smaller);
     assert(smaller != larger);
@@ -153,6 +159,8 @@ void spaceship_test(const SmallType& smaller, const EqualType& smaller_equal, co
     assert((smaller <=> smaller_equal) == 0);
 
     static_assert(std::is_same_v<decltype(smaller <=> larger), ReturnType>);
+
+    return true;
 }
 
 template <class T>
@@ -176,6 +184,27 @@ void unordered_containers_test(
     const Container& something, const Container& something_equal, const Container& different) {
     assert(something == something_equal);
     assert(something != different);
+}
+
+template <class Iter, class ConstIter>
+void ordered_iterator_test(const Iter& smaller, const Iter& smaller_equal, const Iter& larger,
+    const ConstIter& const_smaller, const ConstIter& const_smaller_equal, const ConstIter& const_larger) {
+    spaceship_test<std::strong_ordering>(smaller, smaller_equal, larger);
+    spaceship_test<std::strong_ordering>(const_smaller, const_smaller_equal, const_larger);
+    spaceship_test<std::strong_ordering>(const_smaller, smaller_equal, larger);
+}
+
+template <class Iter, class ConstIter>
+void unordered_iterator_test(const Iter& something, const Iter& something_equal, const Iter& different,
+    const ConstIter& const_something, const ConstIter& const_something_equal, const ConstIter& const_different) {
+    assert(something == something_equal);
+    assert(something != different);
+
+    assert(const_something == const_something_equal);
+    assert(const_something != const_different);
+
+    assert(something == const_something_equal);
+    assert(something != const_different);
 }
 
 template <class ErrorType>
@@ -208,6 +237,38 @@ void diagnostics_test() {
     }
 }
 
+template <bool Equal>
+struct compare_resource final : std::pmr::memory_resource {
+private:
+    void* do_allocate(size_t, size_t) override {
+        throw std::bad_alloc{};
+    }
+    void do_deallocate(void*, size_t, size_t) override {}
+    bool do_is_equal(const memory_resource&) const noexcept override {
+        return Equal;
+    }
+};
+
+template <class T, bool Equal>
+struct basic_compare_allocator : std::allocator<T> {
+    template <class U>
+    struct rebind {
+        using other = basic_compare_allocator<U, Equal>;
+    };
+
+    basic_compare_allocator() = default;
+    template <class U>
+    basic_compare_allocator(const basic_compare_allocator<U, Equal>&) {}
+};
+
+template <class T, bool Ignored, class U, bool Equal>
+bool operator==(const basic_compare_allocator<T, Ignored>&, const basic_compare_allocator<U, Equal>&) {
+    return Equal;
+}
+
+template <bool Equal>
+using compare_allocator = basic_compare_allocator<int, Equal>;
+
 void ordering_test_cases() {
     { // constexpr array
         constexpr std::array<int, 5> a0{{2, 8, 9, 1, 9}};
@@ -232,61 +293,72 @@ void ordering_test_cases() {
         std::array<int, 3> a2 = {100, 100, 100};
         std::array<int, 3> b1 = {200, 200};
         ordered_containers_test(a1, a2, b1);
+        ordered_iterator_test(a1.begin(), a1.begin(), a1.end(), a1.cbegin(), a1.cbegin(), a1.cend());
     }
     { // array SynthOrdered
         std::array<SynthOrdered, 3> a = {10, 20, 30};
         std::array<SynthOrdered, 3> b = {10, 20, 40};
         ordered_containers_test(a, a, b);
+        ordered_iterator_test(a.begin(), a.begin(), a.end(), a.cbegin(), a.cbegin(), a.cend());
     }
     { // deque
         std::deque<int> a1(3, 100);
         std::deque<int> a2(3, 100);
         std::deque<int> b1(2, 200);
         ordered_containers_test(a1, a2, b1);
+        ordered_iterator_test(a1.begin(), a1.begin(), a1.end(), a1.cbegin(), a1.cbegin(), a1.cend());
     }
     { // deque SynthOrdered
         std::deque<SynthOrdered> a = {10, 20, 30};
         std::deque<SynthOrdered> b = {10, 20, 40};
         ordered_containers_test(a, a, b);
+        ordered_iterator_test(a.begin(), a.begin(), a.end(), a.cbegin(), a.cbegin(), a.cend());
     }
     { // list
         std::list<int> a1(3, 100);
         std::list<int> a2(3, 100);
         std::list<int> b1(2, 200);
         ordered_containers_test(a1, a2, b1);
+        unordered_iterator_test(a1.begin(), a1.begin(), a1.end(), a1.cbegin(), a1.cbegin(), a1.cend());
     }
     { // list SynthOrdered
         std::list<SynthOrdered> a = {10, 20, 30};
         std::list<SynthOrdered> b = {10, 20, 40};
         ordered_containers_test(a, a, b);
+        unordered_iterator_test(a.begin(), a.begin(), a.end(), a.cbegin(), a.cbegin(), a.cend());
     }
     { // vector
         std::vector<int> a1(3, 100);
         std::vector<int> a2(3, 100);
         std::vector<int> b1(2, 200);
         ordered_containers_test(a1, a2, b1);
+        ordered_iterator_test(a1.begin(), a1.begin(), a1.end(), a1.cbegin(), a1.cbegin(), a1.cend());
     }
     { // vector SynthOrdered
         std::vector<SynthOrdered> a = {10, 20, 30};
         std::vector<SynthOrdered> b = {10, 20, 40};
         ordered_containers_test(a, a, b);
+        ordered_iterator_test(a.begin(), a.begin(), a.end(), a.cbegin(), a.cbegin(), a.cend());
     }
     { // vector<bool>
         std::vector<bool> c1 = {false, true, false};
         std::vector<bool> c2 = {false, true, false};
         std::vector<bool> d1 = {true, false};
         ordered_containers_test(c1, c2, d1);
+        ordered_iterator_test(c1.begin(), c1.begin(), c1.end(), c1.cbegin(), c1.cbegin(), c1.cend());
     }
     { // forward_list
         std::forward_list<int> a1(3, 100);
         std::forward_list<int> a2(3, 100);
         std::forward_list<int> b1(2, 200);
         ordered_containers_test(a1, a2, b1);
+        unordered_iterator_test(a1.begin(), a1.begin(), a1.end(), a1.cbegin(), a1.cbegin(), a1.cend());
     }
     { // forward_list SynthOrdered
         std::forward_list<SynthOrdered> a = {10, 20, 30};
         std::forward_list<SynthOrdered> b = {10, 20, 40};
         ordered_containers_test(a, a, b);
+        unordered_iterator_test(a.begin(), a.begin(), a.end(), a.cbegin(), a.cbegin(), a.cend());
     }
     { // map
         std::map<std::string, int> a1;
@@ -299,22 +371,26 @@ void ordering_test_cases() {
         b1["zoe"]   = 3;
         b1["koala"] = 4;
         ordered_containers_test(a1, a2, b1);
+        unordered_iterator_test(a1.begin(), a1.begin(), a1.end(), a1.cbegin(), a1.cbegin(), a1.cend());
     }
     { // map SynthOrdered
         std::map<SynthOrdered, char> a = {{10, 'z'}, {20, 'z'}, {30, 'z'}};
         std::map<SynthOrdered, char> b = {{10, 'z'}, {20, 'z'}, {40, 'z'}};
         ordered_containers_test(a, a, b);
+        unordered_iterator_test(a.begin(), a.begin(), a.end(), a.cbegin(), a.cbegin(), a.cend());
     }
     { // multimap
         std::multimap<char, int> a1 = {{'a', 1}, {'b', 2}, {'a', 3}};
         std::multimap<char, int> a2 = {{'a', 1}, {'a', 3}, {'b', 2}};
         std::multimap<char, int> b1 = {{'z', 4}, {'y', 90}, {'z', 12}};
         ordered_containers_test(a1, a2, b1);
+        unordered_iterator_test(a1.begin(), a1.begin(), a1.end(), a1.cbegin(), a1.cbegin(), a1.cend());
     }
     { // multimap SynthOrdered
         std::multimap<SynthOrdered, char> a = {{10, 'z'}, {20, 'z'}, {30, 'z'}};
         std::multimap<SynthOrdered, char> b = {{10, 'z'}, {20, 'z'}, {40, 'z'}};
         ordered_containers_test(a, a, b);
+        unordered_iterator_test(a.begin(), a.begin(), a.end(), a.cbegin(), a.cbegin(), a.cend());
     }
     { // set
         std::set<int> a1;
@@ -329,11 +405,13 @@ void ordering_test_cases() {
         b1.insert(30);
         b1.insert(40);
         ordered_containers_test(a1, a2, b1);
+        unordered_iterator_test(a1.begin(), a1.begin(), a1.end(), a1.cbegin(), a1.cbegin(), a1.cend());
     }
     { // set SynthOrdered
         std::set<SynthOrdered> a = {10, 20, 30};
         std::set<SynthOrdered> b = {10, 20, 40};
         ordered_containers_test(a, a, b);
+        unordered_iterator_test(a.begin(), a.begin(), a.end(), a.cbegin(), a.cbegin(), a.cend());
     }
     { // multiset
         std::multiset<int> a1;
@@ -351,11 +429,13 @@ void ordering_test_cases() {
         b1.insert(40);
         b1.insert(40);
         ordered_containers_test(a1, a2, b1);
+        unordered_iterator_test(a1.begin(), a1.begin(), a1.end(), a1.cbegin(), a1.cbegin(), a1.cend());
     }
     { // multiset SynthOrdered
         std::multiset<SynthOrdered> a = {10, 20, 30};
         std::multiset<SynthOrdered> b = {10, 20, 40};
         ordered_containers_test(a, a, b);
+        unordered_iterator_test(a.begin(), a.begin(), a.end(), a.cbegin(), a.cbegin(), a.cend());
     }
     { // unordered_map
         using stringmap = std::unordered_map<std::string, std::string>;
@@ -363,6 +443,7 @@ void ordering_test_cases() {
         stringmap b     = {{"dog", "poodle"}, {"bear", "grizzly"}, {"cat", "tabby"}};
         stringmap c     = {{"cat", "siamese"}, {"dog", "lab"}, {"bear", "polar"}};
         unordered_containers_test(a, b, c);
+        unordered_iterator_test(a.begin(), a.begin(), a.end(), a.cbegin(), a.cbegin(), a.cend());
     }
     { // unordered_multimap
         using stringmap = std::unordered_multimap<std::string, std::string>;
@@ -370,18 +451,21 @@ void ordering_test_cases() {
         stringmap b     = {{"dog", "poodle"}, {"cat", "siamese"}, {"cat", "tabby"}, {"dog", "poodle"}};
         stringmap c     = {{"cat", "siamese"}, {"dog", "lab"}, {"bear", "polar"}};
         unordered_containers_test(a, b, c);
+        unordered_iterator_test(a.begin(), a.begin(), a.end(), a.cbegin(), a.cbegin(), a.cend());
     }
     { // unordered_set
         std::unordered_set<std::string> a = {"cat", "dog", "bear"};
         std::unordered_set<std::string> b = {"bear", "cat", "dog"};
         std::unordered_set<std::string> c = {"mouse", "cat", "bear", "dog"};
         unordered_containers_test(a, b, c);
+        unordered_iterator_test(a.begin(), a.begin(), a.end(), a.cbegin(), a.cbegin(), a.cend());
     }
     { // unordered_multiset
         std::unordered_multiset<std::string> a = {"cat", "dog", "cat"};
         std::unordered_multiset<std::string> b = {"cat", "cat", "dog"};
         std::unordered_multiset<std::string> c = {"mouse", "cat", "bear", "dog"};
         unordered_containers_test(a, b, c);
+        unordered_iterator_test(a.begin(), a.begin(), a.end(), a.cbegin(), a.cbegin(), a.cend());
     }
     { // queue
         std::deque<int> deq1(3, 100);
@@ -412,6 +496,36 @@ void ordering_test_cases() {
         std::stack<SynthOrdered> a{std::deque<SynthOrdered>{10, 20, 30}};
         std::stack<SynthOrdered> b{std::deque<SynthOrdered>{10, 20, 40}};
         ordered_containers_test(a, a, b);
+    }
+    { // checked_array_iterator
+        int arr[]        = {11, 22, 33};
+        constexpr auto N = std::size(arr);
+
+        using I  = stdext::checked_array_iterator<int*>;
+        using CI = stdext::checked_array_iterator<int*>; // TRANSITION, GH-943, should be <const int*>
+
+        I first{arr, N};
+        I last{arr, N, N};
+
+        CI cfirst{arr, N};
+        CI clast{arr, N, N};
+
+        ordered_iterator_test(first, first, last, cfirst, cfirst, clast);
+    }
+    { // unchecked_array_iterator
+        int arr[]        = {11, 22, 33};
+        constexpr auto N = std::size(arr);
+
+        using I  = stdext::unchecked_array_iterator<int*>;
+        using CI = stdext::unchecked_array_iterator<int*>; // TRANSITION, GH-943, should be <const int*>
+
+        I first{arr};
+        I last{arr + N};
+
+        CI cfirst{arr};
+        CI clast{arr + N};
+
+        ordered_iterator_test(first, first, last, cfirst, cfirst, clast);
     }
     { // sub_match
         const std::string s1{"cats"};
@@ -530,6 +644,13 @@ void ordering_test_cases() {
         assert(("abcdef" <=> a1) == std::strong_ordering::equivalent);
         assert(("zebra" <=> a1) == std::strong_ordering::greater);
     }
+    { // string iterators
+        std::string a1 = "aaa";
+        std::string a2 = "aaa";
+        std::string b1 = "bb";
+        ordered_containers_test(a1, a2, b1);
+        ordered_iterator_test(a1.begin(), a1.begin(), a1.end(), a1.cbegin(), a1.cbegin(), a1.cend());
+    }
     { // string_view
         const std::string_view a1 = "abcdef";
         const std::string_view a2 = "abcdef";
@@ -606,6 +727,77 @@ void ordering_test_cases() {
         static_assert(("abcdef" <=> a1) == std::strong_ordering::equivalent);
         static_assert(("zebra" <=> a1) == std::strong_ordering::greater);
     }
+    { // string_view iterators
+        std::string_view a1 = "aaa";
+        std::string_view a2 = "aaa";
+        std::string_view b1 = "bb";
+        ordered_containers_test(a1, a2, b1);
+        ordered_iterator_test(a1.begin(), a1.begin(), a1.end(), a1.cbegin(), a1.cbegin(), a1.cend());
+    }
+    { // allocator
+        constexpr std::allocator<int> a1;
+        constexpr std::allocator<double> a2;
+
+        static_assert(a1 == a1);
+        static_assert(a1 == a2);
+        static_assert(!(a1 != a1));
+        static_assert(!(a1 != a2));
+    }
+    { // memory_resource
+        compare_resource<true> t1;
+        compare_resource<true>& t2 = t1;
+        compare_resource<false> f1;
+        compare_resource<false>& f2 = f1;
+
+        // same address
+        assert(t1 == t1);
+        assert(t1 == t2);
+        assert(f1 == f1);
+        assert(f1 == f2);
+
+        // dependent on is_equal(__)
+        assert(t1 == f1);
+        assert(f1 != t1);
+    }
+    { // polymorphic_allocator
+        compare_resource<false> rFalse;
+        compare_resource<true> rTrue;
+        std::pmr::polymorphic_allocator<int> p1 = &rFalse;
+        std::pmr::polymorphic_allocator<int> p2 = p1;
+        std::pmr::polymorphic_allocator<int> p3 = &rTrue;
+
+        // same resource address
+        assert(p1 == p1);
+        assert(p1 == p2);
+
+        // dependent on resource()::is_equal(__)
+        assert(p1 != p3);
+        assert(p3 == p1);
+    }
+    { // scoped_allocator_adaptor
+        // note: compare_allocator<T> equality is based on the T of the RHS
+        std::scoped_allocator_adaptor<compare_allocator<true>> s1;
+        std::scoped_allocator_adaptor<compare_allocator<true>> s2;
+        std::scoped_allocator_adaptor<compare_allocator<false>> s3;
+
+        assert(s1 == s1);
+        assert(s1 == s2);
+        assert(s1 != s3);
+
+        std::scoped_allocator_adaptor<compare_allocator<true>, compare_allocator<true>> s4{};
+        std::scoped_allocator_adaptor<compare_allocator<true>, compare_allocator<false>> s5{};
+
+        assert(s4 == s4);
+        assert(s5 != s5);
+    }
+    { // function
+        std::function<void(int)> f{};
+
+        assert(f == nullptr);
+        assert(nullptr == f);
+        assert(!(f != nullptr));
+        assert(!(nullptr != f));
+    }
     { // Diagnostics Library
         diagnostics_test<std::error_code>();
         diagnostics_test<std::error_condition>();
@@ -634,6 +826,42 @@ void ordering_test_cases() {
         }
 
         spaceship_test<std::strong_ordering>(c_mem[0], c_mem[0], c_mem[1]);
+    }
+    { // variant
+        using V = std::variant<int, long>;
+        constexpr V v0_0(std::in_place_index<0>, 0);
+        constexpr V v0_1(std::in_place_index<0>, 1);
+        constexpr V v1_0(std::in_place_index<1>, 0);
+        constexpr V v1_1(std::in_place_index<1>, 1);
+
+        spaceship_test<std::strong_ordering>(v0_0, v0_0, v0_1);
+        spaceship_test<std::strong_ordering>(v0_1, v0_1, v1_0);
+        spaceship_test<std::strong_ordering>(v1_0, v1_0, v1_1);
+
+        static_assert(spaceship_test<std::strong_ordering>(v0_0, v0_0, v0_1));
+        static_assert(spaceship_test<std::strong_ordering>(v0_1, v0_1, v1_0));
+        static_assert(spaceship_test<std::strong_ordering>(v1_0, v1_0, v1_1));
+
+        struct ThrowException {
+            operator int() {
+                throw "woof";
+            }
+        };
+        V valueless(std::in_place_index<1>, 1729L);
+        try {
+            valueless.emplace<0>(ThrowException{});
+        } catch (...) {
+            // ignore exception
+        }
+        assert(valueless.valueless_by_exception());
+        spaceship_test<std::strong_ordering>(valueless, valueless, v0_0);
+        spaceship_test<std::strong_ordering>(valueless, valueless, v1_1);
+
+        using M = std::monostate;
+        constexpr M m1{};
+        constexpr M m2{};
+        assert((m1 <=> m2) == 0);
+        static_assert((m1 <=> m2) == 0);
     }
     { // slice
         std::slice a1(2, 3, 4);
@@ -669,6 +897,7 @@ void ordering_test_cases() {
         const std::filesystem::path p3{R"(a/b/d)"};
 
         spaceship_test<std::strong_ordering>(p1, p2, p3);
+        unordered_containers_test(p1.begin(), p1.begin(), p1.end());
     }
     { // filesystem::file_status
         std::filesystem::file_status s1;
