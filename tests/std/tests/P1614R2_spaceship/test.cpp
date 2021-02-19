@@ -1,9 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// Covers:
-// * spaceship for containers
-
 #include <array>
 #include <cassert>
 #include <compare>
@@ -29,6 +26,7 @@
 #include <unordered_set>
 #include <utility>
 #include <valarray>
+#include <variant>
 #include <vector>
 
 template <class T>
@@ -136,7 +134,7 @@ struct dummy_diagnostic : std::error_category {
 };
 
 template <class ReturnType, class SmallType, class EqualType, class LargeType>
-void spaceship_test(const SmallType& smaller, const EqualType& smaller_equal, const LargeType& larger) {
+constexpr bool spaceship_test(const SmallType& smaller, const EqualType& smaller_equal, const LargeType& larger) {
     assert(smaller == smaller_equal);
     assert(smaller_equal == smaller);
     assert(smaller != larger);
@@ -154,6 +152,8 @@ void spaceship_test(const SmallType& smaller, const EqualType& smaller_equal, co
     assert((smaller <=> smaller_equal) == 0);
 
     static_assert(std::is_same_v<decltype(smaller <=> larger), ReturnType>);
+
+    return true;
 }
 
 template <class T>
@@ -498,14 +498,13 @@ void ordering_test_cases() {
         std::ssub_match sm3       = m3[0];
         std::ssub_match sm4       = m4[0];
 
-        // TRANSITION, std::char_traits<char> doesn't define comparison_category
-        spaceship_test<std::weak_ordering>(sm1, sm1_equal, sm2);
-        spaceship_test<std::weak_ordering>(sm1, s1, s2);
-        spaceship_test<std::weak_ordering>(sm1, s1.c_str(), s2.c_str());
-        spaceship_test<std::weak_ordering>(sm3, 'c', 'm');
-        spaceship_test<std::weak_ordering>(s1, sm1, sm2);
-        spaceship_test<std::weak_ordering>(s1.c_str(), sm1, sm2);
-        spaceship_test<std::weak_ordering>('c', sm3, sm4);
+        spaceship_test<std::strong_ordering>(sm1, sm1_equal, sm2);
+        spaceship_test<std::strong_ordering>(sm1, s1, s2);
+        spaceship_test<std::strong_ordering>(sm1, s1.c_str(), s2.c_str());
+        spaceship_test<std::strong_ordering>(sm3, 'c', 'm');
+        spaceship_test<std::strong_ordering>(s1, sm1, sm2);
+        spaceship_test<std::strong_ordering>(s1.c_str(), sm1, sm2);
+        spaceship_test<std::strong_ordering>('c', sm3, sm4);
 
         using StronglyOrderedMatch = std::ssub_match;
         using WeaklyOrderedMatch   = std::sub_match<std::basic_string<WeaklyOrderedChar>::const_iterator>;
@@ -513,11 +512,133 @@ void ordering_test_cases() {
             std::sub_match<std::basic_string<WeaklyOrderedByOmissionChar>::const_iterator>;
         using PartiallyOrderedMatch = std::sub_match<std::basic_string<PartiallyOrderedChar>::const_iterator>;
 
-        // TRANSITION, std::char_traits<char> doesn't define comparison_category
-        static_assert(std::is_same_v<SpaceshipType<StronglyOrderedMatch>, std::weak_ordering>);
+        static_assert(std::is_same_v<SpaceshipType<StronglyOrderedMatch>, std::strong_ordering>);
         static_assert(std::is_same_v<SpaceshipType<WeaklyOrderedMatch>, std::weak_ordering>);
         static_assert(std::is_same_v<SpaceshipType<WeaklyOrderdByOmissionMatch>, std::weak_ordering>);
         static_assert(std::is_same_v<SpaceshipType<PartiallyOrderedMatch>, std::partial_ordering>);
+    }
+    { // char_traits
+        static_assert(std::is_same_v<std::char_traits<char>::comparison_category, std::strong_ordering>);
+#ifdef __cpp_char8_t
+        static_assert(std::is_same_v<std::char_traits<char8_t>::comparison_category, std::strong_ordering>);
+#endif // __cpp_char8_t
+        static_assert(std::is_same_v<std::char_traits<char16_t>::comparison_category, std::strong_ordering>);
+        static_assert(std::is_same_v<std::char_traits<char32_t>::comparison_category, std::strong_ordering>);
+        static_assert(std::is_same_v<std::char_traits<wchar_t>::comparison_category, std::strong_ordering>);
+    }
+    { // Strings library
+        const std::string a1 = "abcdef";
+        const std::string a2 = "abcdef";
+        const std::string a3 = "abcdefg";
+        const std::string a4 = "abcde";
+        const std::string a5 = "abddef";
+        const std::string a6 = "abbdef";
+
+        assert((a1 <=> a2) == std::strong_ordering::equivalent);
+        assert((a1 <=> a3) == std::strong_ordering::less);
+        assert((a1 <=> a4) == std::strong_ordering::greater);
+        assert((a1 <=> a5) == std::strong_ordering::less);
+        assert((a1 <=> a6) == std::strong_ordering::greater);
+
+        assert(a1 == a2);
+        assert(a1 >= a2);
+        assert(a1 <= a2);
+        assert(a1 < a3);
+        assert(a1 <= a3);
+        assert(a1 != a3);
+        assert(a1 > a4);
+        assert(a1 >= a4);
+        assert(a1 != a4);
+        assert(a1 < a5);
+        assert(a1 <= a5);
+        assert(a1 != a5);
+        assert(a1 > a6);
+        assert(a1 >= a6);
+        assert(a1 != a6);
+
+        assert((a1 <=> "aardvark") == std::strong_ordering::greater);
+        assert((a1 <=> "abcdef") == std::strong_ordering::equivalent);
+        assert((a1 <=> "zebra") == std::strong_ordering::less);
+
+        assert(("aardvark" <=> a1) == std::strong_ordering::less);
+        assert(("abcdef" <=> a1) == std::strong_ordering::equivalent);
+        assert(("zebra" <=> a1) == std::strong_ordering::greater);
+    }
+    { // string_view
+        const std::string_view a1 = "abcdef";
+        const std::string_view a2 = "abcdef";
+        const std::string_view a3 = "abcdefg";
+        const std::string_view a4 = "abcde";
+        const std::string_view a5 = "abddef";
+        const std::string_view a6 = "abbdef";
+
+        assert((a1 <=> a2) == std::strong_ordering::equivalent);
+        assert((a1 <=> a3) == std::strong_ordering::less);
+        assert((a1 <=> a4) == std::strong_ordering::greater);
+        assert((a1 <=> a5) == std::strong_ordering::less);
+        assert((a1 <=> a6) == std::strong_ordering::greater);
+
+        assert(a1 == a2);
+        assert(a1 >= a2);
+        assert(a1 <= a2);
+        assert(a1 < a3);
+        assert(a1 <= a3);
+        assert(a1 != a3);
+        assert(a1 > a4);
+        assert(a1 >= a4);
+        assert(a1 != a4);
+        assert(a1 < a5);
+        assert(a1 <= a5);
+        assert(a1 != a5);
+        assert(a1 > a6);
+        assert(a1 >= a6);
+        assert(a1 != a6);
+
+        assert((a1 <=> "aardvark") == std::strong_ordering::greater);
+        assert((a1 <=> "abcdef") == std::strong_ordering::equivalent);
+        assert((a1 <=> "zebra") == std::strong_ordering::less);
+
+        assert(("aardvark" <=> a1) == std::strong_ordering::less);
+        assert(("abcdef" <=> a1) == std::strong_ordering::equivalent);
+        assert(("zebra" <=> a1) == std::strong_ordering::greater);
+    }
+    { // constexpr string_view
+        constexpr std::string_view a1 = "abcdef";
+        constexpr std::string_view a2 = "abcdef";
+        constexpr std::string_view a3 = "abcdefg";
+        constexpr std::string_view a4 = "abcde";
+        constexpr std::string_view a5 = "abddef";
+        constexpr std::string_view a6 = "abbdef";
+
+        static_assert((a1 <=> a2) == std::strong_ordering::equivalent);
+        static_assert((a1 <=> a3) == std::strong_ordering::less);
+        static_assert((a1 <=> a4) == std::strong_ordering::greater);
+        static_assert((a1 <=> a5) == std::strong_ordering::less);
+        static_assert((a1 <=> a6) == std::strong_ordering::greater);
+
+        static_assert(a1 == a2);
+        static_assert(a1 >= a2);
+        static_assert(a1 <= a2);
+        static_assert(a1 < a3);
+        static_assert(a1 <= a3);
+        static_assert(a1 != a3);
+        static_assert(a1 > a4);
+        static_assert(a1 >= a4);
+        static_assert(a1 != a4);
+        static_assert(a1 < a5);
+        static_assert(a1 <= a5);
+        static_assert(a1 != a5);
+        static_assert(a1 > a6);
+        static_assert(a1 >= a6);
+        static_assert(a1 != a6);
+
+        static_assert((a1 <=> "aardvark") == std::strong_ordering::greater);
+        static_assert((a1 <=> "abcdef") == std::strong_ordering::equivalent);
+        static_assert((a1 <=> "zebra") == std::strong_ordering::less);
+
+        static_assert(("aardvark" <=> a1) == std::strong_ordering::less);
+        static_assert(("abcdef" <=> a1) == std::strong_ordering::equivalent);
+        static_assert(("zebra" <=> a1) == std::strong_ordering::greater);
     }
     { // Diagnostics Library
         diagnostics_test<std::error_code>();
@@ -547,6 +668,42 @@ void ordering_test_cases() {
         }
 
         spaceship_test<std::strong_ordering>(c_mem[0], c_mem[0], c_mem[1]);
+    }
+    { // variant
+        using V = std::variant<int, long>;
+        constexpr V v0_0(std::in_place_index<0>, 0);
+        constexpr V v0_1(std::in_place_index<0>, 1);
+        constexpr V v1_0(std::in_place_index<1>, 0);
+        constexpr V v1_1(std::in_place_index<1>, 1);
+
+        spaceship_test<std::strong_ordering>(v0_0, v0_0, v0_1);
+        spaceship_test<std::strong_ordering>(v0_1, v0_1, v1_0);
+        spaceship_test<std::strong_ordering>(v1_0, v1_0, v1_1);
+
+        static_assert(spaceship_test<std::strong_ordering>(v0_0, v0_0, v0_1));
+        static_assert(spaceship_test<std::strong_ordering>(v0_1, v0_1, v1_0));
+        static_assert(spaceship_test<std::strong_ordering>(v1_0, v1_0, v1_1));
+
+        struct ThrowException {
+            operator int() {
+                throw "woof";
+            }
+        };
+        V valueless(std::in_place_index<1>, 1729L);
+        try {
+            valueless.emplace<0>(ThrowException{});
+        } catch (...) {
+            // ignore exception
+        }
+        assert(valueless.valueless_by_exception());
+        spaceship_test<std::strong_ordering>(valueless, valueless, v0_0);
+        spaceship_test<std::strong_ordering>(valueless, valueless, v1_1);
+
+        using M = std::monostate;
+        constexpr M m1{};
+        constexpr M m2{};
+        assert((m1 <=> m2) == 0);
+        static_assert((m1 <=> m2) == 0);
     }
     { // slice
         std::slice a1(2, 3, 4);
