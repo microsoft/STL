@@ -583,7 +583,7 @@ constexpr void _Parse_format_string(basic_string_view<_CharT> _Format_str, _Hand
             for (;;) {
                 const _CharT* _ClosingCurl = _Find_unchecked(_Begin, _OpeningCurl, '}');
 
-                // In this case we didn't find either a closing curl or opening curl.
+                // In this case there are neither closing nor opening curls in [_Begin, _OpenCurl)
                 // Write the whole thing out.
                 if (_ClosingCurl == _OpeningCurl) {
                     _Handler._On_text(_Begin, _OpeningCurl);
