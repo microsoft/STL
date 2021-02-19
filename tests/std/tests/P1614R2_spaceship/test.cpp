@@ -13,9 +13,13 @@
 #include <iterator>
 #include <list>
 #include <map>
+#include <memory>
+#include <memory_resource>
+#include <new>
 #include <queue>
 #include <ranges>
 #include <regex>
+#include <scoped_allocator>
 #include <set>
 #include <stack>
 #include <string>
@@ -230,6 +234,38 @@ void diagnostics_test() {
         assert((e_larger <=> e_smaller) > 0);
     }
 }
+
+template <bool Equal>
+struct compare_resource final : std::pmr::memory_resource {
+private:
+    void* do_allocate(size_t, size_t) override {
+        throw std::bad_alloc{};
+    }
+    void do_deallocate(void*, size_t, size_t) override {}
+    bool do_is_equal(const memory_resource&) const noexcept override {
+        return Equal;
+    }
+};
+
+template <class T, bool Equal>
+struct basic_compare_allocator : std::allocator<T> {
+    template <class U>
+    struct rebind {
+        using other = basic_compare_allocator<U, Equal>;
+    };
+
+    basic_compare_allocator() = default;
+    template <class U>
+    basic_compare_allocator(const basic_compare_allocator<U, Equal>&) {}
+};
+
+template <class T, bool Ignored, class U, bool Equal>
+bool operator==(const basic_compare_allocator<T, Ignored>&, const basic_compare_allocator<U, Equal>&) {
+    return Equal;
+}
+
+template <bool Equal>
+using compare_allocator = basic_compare_allocator<int, Equal>;
 
 void ordering_test_cases() {
     { // constexpr array
@@ -665,6 +701,70 @@ void ordering_test_cases() {
         std::string_view b1 = "bb";
         ordered_containers_test(a1, a2, b1);
         ordered_iterator_test(a1.begin(), a1.begin(), a1.end(), a1.cbegin(), a1.cbegin(), a1.cend());
+    }
+    { // allocator
+        constexpr std::allocator<int> a1;
+        constexpr std::allocator<double> a2;
+
+        static_assert(a1 == a1);
+        static_assert(a1 == a2);
+        static_assert(!(a1 != a1));
+        static_assert(!(a1 != a2));
+    }
+    { // memory_resource
+        compare_resource<true> t1;
+        compare_resource<true>& t2 = t1;
+        compare_resource<false> f1;
+        compare_resource<false>& f2 = f1;
+
+        // same address
+        assert(t1 == t1);
+        assert(t1 == t2);
+        assert(f1 == f1);
+        assert(f1 == f2);
+
+        // dependent on is_equal(__)
+        assert(t1 == f1);
+        assert(f1 != t1);
+    }
+    { // polymorphic_allocator
+        compare_resource<false> rFalse;
+        compare_resource<true> rTrue;
+        std::pmr::polymorphic_allocator<int> p1 = &rFalse;
+        std::pmr::polymorphic_allocator<int> p2 = p1;
+        std::pmr::polymorphic_allocator<int> p3 = &rTrue;
+
+        // same resource address
+        assert(p1 == p1);
+        assert(p1 == p2);
+
+        // dependent on resource()::is_equal(__)
+        assert(p1 != p3);
+        assert(p3 == p1);
+    }
+    { // scoped_allocator_adaptor
+        // note: compare_allocator<T> equality is based on the T of the RHS
+        std::scoped_allocator_adaptor<compare_allocator<true>> s1;
+        std::scoped_allocator_adaptor<compare_allocator<true>> s2;
+        std::scoped_allocator_adaptor<compare_allocator<false>> s3;
+
+        assert(s1 == s1);
+        assert(s1 == s2);
+        assert(s1 != s3);
+
+        std::scoped_allocator_adaptor<compare_allocator<true>, compare_allocator<true>> s4{};
+        std::scoped_allocator_adaptor<compare_allocator<true>, compare_allocator<false>> s5{};
+
+        assert(s4 == s4);
+        assert(s5 != s5);
+    }
+    { // function
+        std::function<void(int)> f{};
+
+        assert(f == nullptr);
+        assert(nullptr == f);
+        assert(!(f != nullptr));
+        assert(!(nullptr != f));
     }
     { // Diagnostics Library
         diagnostics_test<std::error_code>();
