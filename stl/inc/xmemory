@@ -889,7 +889,7 @@ _NODISCARD _CONSTEXPR20_DYNALLOC bool operator==(const allocator<_Ty>&, const al
 
 #if !_HAS_CXX20
 template <class _Ty, class _Other>
-_NODISCARD _CONSTEXPR20_DYNALLOC bool operator!=(const allocator<_Ty>&, const allocator<_Other>&) noexcept {
+_NODISCARD bool operator!=(const allocator<_Ty>&, const allocator<_Other>&) noexcept {
     return false;
 }
 #endif // !_HAS_CXX20
