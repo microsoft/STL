@@ -352,7 +352,7 @@ public:
     }
 
 #if _HAS_CXX20
-    _NODISCARD constexpr strong_ordering operator<=>(const _Deque_const_iterator& _Right) const noexcept {
+    _NODISCARD strong_ordering operator<=>(const _Deque_const_iterator& _Right) const noexcept {
         _Compat(_Right);
         return this->_Myoff <=> _Right._Myoff;
     }
