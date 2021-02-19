@@ -731,6 +731,26 @@ void ordering_test_cases() {
         assert((m1 <=> m2) == 0);
         static_assert((m1 <=> m2) == 0);
     }
+    { // unique_ptr
+        std::unique_ptr<int> p1{nullptr};
+        std::unique_ptr<int>& p2 = p1;
+        std::unique_ptr<int> p3{new int};
+
+        spaceship_test<std::strong_ordering>(p1, p2, p3);
+        spaceship_test<std::strong_ordering>(p1, nullptr, p3);
+    }
+    { // shared_ptr
+        std::shared_ptr<int> p1{nullptr};
+        std::shared_ptr<int>& p2 = p1; // same managed ptr
+        std::shared_ptr<int> p3  = p2; // same stored ptr
+
+        std::shared_ptr<int> p4{new int};
+        std::shared_ptr<int> p5 = p4; // same stored ptr
+
+        spaceship_test<std::strong_ordering>(p1, p2, p4);
+        spaceship_test<std::strong_ordering>(p1, p3, p5);
+        spaceship_test<std::strong_ordering>(p1, nullptr, p4);
+    }
     { // slice
         std::slice a1(2, 3, 4);
         std::slice a2(2, 3, 4);
