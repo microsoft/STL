@@ -247,13 +247,25 @@ private:
     }
 };
 
-template <bool Equal>
-struct compare_allocator : std::allocator<int> {};
+template <class T, bool Equal>
+struct basic_compare_allocator : std::allocator<T> {
+    template <class U>
+    struct rebind {
+        using other = basic_compare_allocator<U, Equal>;
+    };
 
-template <bool Ignored, bool Equal>
-bool operator==(const compare_allocator<Ignored>&, const compare_allocator<Equal>&) {
+    basic_compare_allocator() = default;
+    template <class U>
+    basic_compare_allocator(const basic_compare_allocator<U, Equal>&) {}
+};
+
+template <class T, bool Ignored, class U, bool Equal>
+bool operator==(const basic_compare_allocator<T, Ignored>&, const basic_compare_allocator<U, Equal>&) {
     return Equal;
 }
+
+template <bool Equal>
+using compare_allocator = basic_compare_allocator<int, Equal>;
 
 void ordering_test_cases() {
     { // constexpr array
