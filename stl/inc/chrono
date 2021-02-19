@@ -1331,15 +1331,15 @@ namespace chrono {
         return *this;
     }
 
-    inline constexpr day _Last_day_table[] = {
-        day{31}, day{28}, day{31}, day{30}, day{31}, day{30}, day{31}, day{31}, day{30}, day{31}, day{30}, day{31}};
+    inline constexpr day _Last_day_table[] = {day{31}, day{28}, day{31}, day{30}, day{31}, day{30}, day{31}, day{31},
+        day{30}, day{31}, day{30}, day{31}, day{42}, day{42}, day{42}, day{42}};
 
     _NODISCARD constexpr day _Last_day(const year& _Year, const month& _Month) {
         if (_Month == month{2} && _Year.is_leap()) {
             return day{29};
         }
 
-        return _Last_day_table[static_cast<unsigned int>(_Month) - 1];
+        return _Last_day_table[(static_cast<unsigned int>(_Month) - 1) & 15u];
     }
 
     class year_month_day_last;
