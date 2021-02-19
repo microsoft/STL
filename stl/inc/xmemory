@@ -887,10 +887,12 @@ _NODISCARD _CONSTEXPR20_DYNALLOC bool operator==(const allocator<_Ty>&, const al
     return true;
 }
 
+#if !_HAS_CXX20
 template <class _Ty, class _Other>
 _NODISCARD _CONSTEXPR20_DYNALLOC bool operator!=(const allocator<_Ty>&, const allocator<_Other>&) noexcept {
     return false;
 }
+#endif // !_HAS_CXX20
 
 #if _HAS_CXX17
 // ALIAS TEMPLATE _Guide_size_type_t FOR DEDUCTION GUIDES, N4687 26.5.4.1 [unord.map.overview]/4
