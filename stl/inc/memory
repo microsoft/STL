@@ -149,7 +149,9 @@ namespace ranges {
             auto _OFirst      = _Get_unwrapped(_STD move(_First2));
             const auto _OLast = _Get_unwrapped(_STD move(_Last2));
             if constexpr (_Ptr_copy_cat<_It, _Out>::_Really_trivial) {
-                _OFirst = _Copy_memcpy_common(_IFirst, _IFirst + _Count, _OFirst, _OLast);
+                auto _UResult = _Copy_memcpy_common(_IFirst, _IFirst + _Count, _OFirst, _OLast);
+                _IFirst       = _UResult.in;
+                _OFirst       = _UResult.out;
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
@@ -283,7 +285,9 @@ namespace ranges {
             auto _OFirst      = _Get_unwrapped(_STD move(_First2));
             const auto _OLast = _Get_unwrapped(_STD move(_Last2));
             if constexpr (_Ptr_move_cat<_It, _Out>::_Really_trivial) {
-                _OFirst = _Copy_memcpy_common(_IFirst, _IFirst + _Count, _OFirst, _OLast);
+                auto _UResult = _Copy_memcpy_common(_IFirst, _IFirst + _Count, _OFirst, _OLast);
+                _IFirst       = _UResult.in;
+                _OFirst       = _UResult.out;
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 

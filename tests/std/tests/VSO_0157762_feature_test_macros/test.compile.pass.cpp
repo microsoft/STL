@@ -1417,6 +1417,20 @@ STATIC_ASSERT(__cpp_lib_string_view == 201803L);
 #endif
 #endif
 
+#if _HAS_CXX20
+#ifndef __cpp_lib_syncbuf
+#error __cpp_lib_syncbuf is not defined
+#elif __cpp_lib_syncbuf != 201803L
+#error __cpp_lib_syncbuf is not 201803L
+#else
+STATIC_ASSERT(__cpp_lib_syncbuf == 201803L);
+#endif
+#else
+#ifdef __cpp_lib_syncbuf
+#error __cpp_lib_syncbuf is defined
+#endif
+#endif
+
 #if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #ifndef __cpp_lib_three_way_comparison
 #error __cpp_lib_three_way_comparison is not defined
