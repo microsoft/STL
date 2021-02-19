@@ -13,6 +13,9 @@
 #include <iterator>
 #include <list>
 #include <map>
+#include <memory>
+#include <memory_resource>
+#include <new>
 #include <queue>
 #include <ranges>
 #include <regex>
