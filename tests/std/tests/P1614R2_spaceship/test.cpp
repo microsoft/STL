@@ -248,7 +248,7 @@ private:
 };
 
 template <bool Equal>
-struct compare_allocator : public std::allocator<int> {};
+struct compare_allocator : std::allocator<int> {};
 
 template <bool Equal, bool Ignored>
 bool operator==(const compare_allocator<Ignored>&, const compare_allocator<Equal>&) {
