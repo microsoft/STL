@@ -152,26 +152,33 @@ public:
         return _Ptr == _Right._Ptr;
     }
 
-    _NODISCARD _CONSTEXPR20_CONTAINER bool operator!=(const _Vector_const_iterator& _Right) const noexcept {
+#if _HAS_CXX20
+    _NODISCARD _CONSTEXPR20_CONTAINER strong_ordering operator<=>(const _Vector_const_iterator& _Right) const noexcept {
+        _Compat(_Right);
+        return _Unfancy(_Ptr) <=> _Unfancy(_Right._Ptr);
+    }
+#else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
+    _NODISCARD bool operator!=(const _Vector_const_iterator& _Right) const noexcept {
         return !(*this == _Right);
     }
 
-    _NODISCARD _CONSTEXPR20_CONTAINER bool operator<(const _Vector_const_iterator& _Right) const noexcept {
+    _NODISCARD bool operator<(const _Vector_const_iterator& _Right) const noexcept {
         _Compat(_Right);
         return _Ptr < _Right._Ptr;
     }
 
-    _NODISCARD _CONSTEXPR20_CONTAINER bool operator>(const _Vector_const_iterator& _Right) const noexcept {
+    _NODISCARD bool operator>(const _Vector_const_iterator& _Right) const noexcept {
         return _Right < *this;
     }
 
-    _NODISCARD _CONSTEXPR20_CONTAINER bool operator<=(const _Vector_const_iterator& _Right) const noexcept {
+    _NODISCARD bool operator<=(const _Vector_const_iterator& _Right) const noexcept {
         return !(_Right < *this);
     }
 
-    _NODISCARD _CONSTEXPR20_CONTAINER bool operator>=(const _Vector_const_iterator& _Right) const noexcept {
+    _NODISCARD bool operator>=(const _Vector_const_iterator& _Right) const noexcept {
         return !(*this < _Right);
     }
+#endif // !_HAS_CXX20
 
     _CONSTEXPR20_CONTAINER void _Compat(const _Vector_const_iterator& _Right) const noexcept {
         // test for compatible iterator pair
@@ -1851,7 +1858,7 @@ _NODISCARD _CONSTEXPR20_CONTAINER bool operator==(const vector<_Ty, _Alloc>& _Le
 
 #if !_HAS_CXX20
 template <class _Ty, class _Alloc>
-_NODISCARD _CONSTEXPR20_CONTAINER bool operator!=(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
+_NODISCARD bool operator!=(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
     return !(_Left == _Right);
 }
 #endif // !_HAS_CXX20
@@ -2204,26 +2211,36 @@ public:
         return this->_Myptr == _Right._Myptr && this->_Myoff == _Right._Myoff;
     }
 
-    _NODISCARD _CONSTEXPR20_CONTAINER bool operator!=(const _Vb_const_iterator& _Right) const noexcept {
+#if _HAS_CXX20
+    _NODISCARD _CONSTEXPR20_CONTAINER strong_ordering operator<=>(const _Vb_const_iterator& _Right) const noexcept {
+        _Compat(_Right);
+        if (const auto _CmpResult = this->_Myptr <=> _Right._Myptr; _CmpResult != 0) {
+            return _CmpResult;
+        }
+        return this->_Myoff <=> _Right._Myoff;
+    }
+#else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
+    _NODISCARD bool operator!=(const _Vb_const_iterator& _Right) const noexcept {
         return !(*this == _Right);
     }
 
-    _NODISCARD _CONSTEXPR20_CONTAINER bool operator<(const _Vb_const_iterator& _Right) const noexcept {
+    _NODISCARD bool operator<(const _Vb_const_iterator& _Right) const noexcept {
         _Compat(_Right);
         return this->_Myptr < _Right._Myptr || (this->_Myptr == _Right._Myptr && this->_Myoff < _Right._Myoff);
     }
 
-    _NODISCARD _CONSTEXPR20_CONTAINER bool operator>(const _Vb_const_iterator& _Right) const noexcept {
+    _NODISCARD bool operator>(const _Vb_const_iterator& _Right) const noexcept {
         return _Right < *this;
     }
 
-    _NODISCARD _CONSTEXPR20_CONTAINER bool operator<=(const _Vb_const_iterator& _Right) const noexcept {
+    _NODISCARD bool operator<=(const _Vb_const_iterator& _Right) const noexcept {
         return !(_Right < *this);
     }
 
-    _NODISCARD _CONSTEXPR20_CONTAINER bool operator>=(const _Vb_const_iterator& _Right) const noexcept {
+    _NODISCARD bool operator>=(const _Vb_const_iterator& _Right) const noexcept {
         return !(*this < _Right);
     }
+#endif // !_HAS_CXX20
 
     _CONSTEXPR20_CONTAINER void _Compat(const _Vb_const_iterator& _Right) const noexcept {
         // test for compatible iterator pair
