@@ -579,14 +579,15 @@ constexpr void _Parse_format_string(basic_string_view<_CharT> _Format_str, _Hand
         const _CharT* _OpeningCurl = _Begin;
         if (*_Begin != '{') {
             // we didn't start at an opening curl, find the next one
-            _OpeningCurl = _STD find(_Begin + 1, _End, '{');
+            _OpeningCurl = _Find_unchecked(_Begin + 1, _End, '{');
             for (;;) {
                 const _CharT* _ClosingCurl = _Find_unchecked(_Begin, _OpeningCurl, '}');
 
-                // In this case we didn't find either a closing curl or opening curl.
+                // In this case there are neither closing nor opening curls in [_Begin, _OpenCurl)
                 // Write the whole thing out.
                 if (_ClosingCurl == _OpeningCurl) {
-                    return _Handler._On_text(_Begin, _OpeningCurl);
+                    _Handler._On_text(_Begin, _OpeningCurl);
+                    break;
                 }
                 // We know _ClosingCurl isn't past the end because
                 // the above condition was not met.
