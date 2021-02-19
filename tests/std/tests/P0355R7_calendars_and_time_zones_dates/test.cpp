@@ -976,7 +976,8 @@ constexpr void year_month_day_last_test() {
                 if (y.ok() && mdl.ok()) {
                     assert((y / mdl).ok());
                 } else {
-                    assert(!(y / static_cast<int>(m) / last).ok());
+                    assert(!(y / mdl).ok());
+                    assert((y / mdl).day().ok() || (y / mdl).day() == day{42});
                 }
             }
         }
