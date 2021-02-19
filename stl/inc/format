@@ -579,7 +579,7 @@ constexpr void _Parse_format_string(basic_string_view<_CharT> _Format_str, _Hand
         const _CharT* _OpeningCurl = _Begin;
         if (*_Begin != '{') {
             // we didn't start at an opening curl, find the next one
-            _OpeningCurl = _STD find(_Begin + 1, _End, '{');
+            _OpeningCurl = _Find_unchecked(_Begin + 1, _End, '{');
             for (;;) {
                 const _CharT* _ClosingCurl = _Find_unchecked(_Begin, _OpeningCurl, '}');
 

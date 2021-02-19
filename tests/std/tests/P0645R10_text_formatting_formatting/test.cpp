@@ -25,7 +25,7 @@ int main() {
     vformat_to(back_insert_iterator(output_string), locale::classic(), "format", make_format_args());
     assert(output_string == "format");
 
-    // test escaped opening curlies
+    // test escaped opening curls
     output_string.clear();
     vformat_to(back_insert_iterator(output_string), locale::classic(), "{{", make_format_args());
     assert(output_string == "{");
@@ -50,7 +50,7 @@ int main() {
     vformat_to(back_insert_iterator(output_string), locale::classic(), "{{x", make_format_args());
     assert(output_string == "{x");
 
-    // tests escaped closing curlies
+    // tests escaped closing curls
     output_string.clear();
     vformat_to(back_insert_iterator(output_string), locale::classic(), "}}", make_format_args());
     assert(output_string == "}");
