@@ -153,7 +153,7 @@ public:
     }
 
 #if _HAS_CXX20
-    _NODISCARD strong_ordering operator<=>(const _Vector_const_iterator& _Right) const noexcept {
+    _NODISCARD _CONSTEXPR20_CONTAINER strong_ordering operator<=>(const _Vector_const_iterator& _Right) const noexcept {
         _Compat(_Right);
         return _Unfancy(_Ptr) <=> _Unfancy(_Right._Ptr);
     }
@@ -2212,7 +2212,7 @@ public:
     }
 
 #if _HAS_CXX20
-    _NODISCARD strong_ordering operator<=>(const _Vb_const_iterator& _Right) const noexcept {
+    _NODISCARD _CONSTEXPR20_CONTAINER strong_ordering operator<=>(const _Vb_const_iterator& _Right) const noexcept {
         _Compat(_Right);
         if (const auto _CmpResult = this->_Myptr <=> _Right._Myptr; _CmpResult != 0) {
             return _CmpResult;
