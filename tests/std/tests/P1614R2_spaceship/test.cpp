@@ -3,6 +3,7 @@
 
 #include <array>
 #include <cassert>
+#include <charconv>
 #include <compare>
 #include <concepts>
 #include <deque>
@@ -27,6 +28,8 @@
 #include <system_error>
 #include <thread>
 #include <type_traits>
+#include <typeindex>
+#include <typeinfo>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -573,6 +576,36 @@ void ordering_test_cases() {
         static_assert(std::is_same_v<std::char_traits<char16_t>::comparison_category, std::strong_ordering>);
         static_assert(std::is_same_v<std::char_traits<char32_t>::comparison_category, std::strong_ordering>);
         static_assert(std::is_same_v<std::char_traits<wchar_t>::comparison_category, std::strong_ordering>);
+    }
+    { // charconv
+        char c[7] = "123456";
+
+        std::from_chars_result a1{c + 6, std::errc{}};
+        std::from_chars_result a2{c + 6, std::errc{}};
+        std::from_chars_result a3{c + 6, std::errc::result_out_of_range};
+        std::from_chars_result a4{c + 4, std::errc{}};
+
+        assert(a1 == a2);
+        assert(a1 != a3);
+        assert(a1 != a4);
+
+        std::to_chars_result b1{c + 6, std::errc{}};
+        std::to_chars_result b2{c + 6, std::errc{}};
+        std::to_chars_result b3{c + 6, std::errc::value_too_large};
+        std::to_chars_result b4{c + 4, std::errc{}};
+
+        assert(b1 == b2);
+        assert(b1 != b3);
+        assert(b1 != b4);
+    }
+    { // typeindex
+        std::type_index a1 = typeid(int);
+        std::type_index a2 = typeid(char);
+        std::type_index a3 = typeid(bool);
+        std::type_index a4 = typeid(int);
+        assert((a1 <=> a4) == std::strong_ordering::equal);
+        assert((a1 <=> a2) == std::strong_ordering::greater); // Implementation-specific assumption
+        assert((a1 <=> a3) == std::strong_ordering::less); // Implementation-specific assumption
     }
     { // Strings library
         const std::string a1 = "abcdef";
