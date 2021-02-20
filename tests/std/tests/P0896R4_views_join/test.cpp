@@ -235,8 +235,25 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
         // Validate view_interface::operator[]
         static_assert(!CanIndex<R>);
         static_assert(!CanIndex<const R>);
-#if 0 // FIXME
 
+        // Validate view_interface::front and back
+        static_assert(CanMemberFront<R> == forward_range<V>);
+        static_assert(
+            CanMemberFront<const R> == (forward_range<const V> && is_reference_v<range_reference_t<const V>>) );
+#if 0 // FIXME
+        if constexpr (CanMemberFront<R>) {
+            if (!is_empty) {
+                assert(r.front() == *begin(expected));
+            }
+        }
+
+        static_assert(CanMemberBack<R> == (bidirectional_range<R> && common_range<R>) );
+        if constexpr (CanMemberBack<R>) {
+            if (!is_empty) {
+                assert(r.back() == *prev(end(expected)));
+            }
+        }
+        static_assert(!CanMemberBack<const R>);
         if (!is_empty) {
             if constexpr (random_access_range<Outer>) {
                 assert(r[0] == *begin(expected));
@@ -246,7 +263,6 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
                 }
             }
 
-            // Validate view_interface::front and back
             assert(r.front() == *begin(expected));
             assert(r.back() == *prev(end(expected)));
 
