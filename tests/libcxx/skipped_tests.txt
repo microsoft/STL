@@ -661,8 +661,14 @@ utilities\memory\util.smartptr\util.smartptr.shared\libcxx.control_block_layout.
 # Non-Standard assumption that std::filesystem::file_time_type::duration::period is std::nano
 input.output\filesystems\fs.filesystem.synopsis\file_time_type_resolution.compile.pass.cpp
 
-# Uses-allocator class constructor wants non-const allocator ref
+# Uses-allocator class constructor wants non-const allocator ref and mismatched piecewise_construct's value category
 utilities\allocator.adaptor\allocator.adaptor.members\construct.pass.cpp
+utilities\allocator.adaptor\allocator.adaptor.members\construct_pair.pass
+utilities\allocator.adaptor\allocator.adaptor.members\construct_pair_const_lvalue_pair.pass.cpp
+utilities\allocator.adaptor\allocator.adaptor.members\construct_pair_piecewise.pass.cpp
+utilities\allocator.adaptor\allocator.adaptor.members\construct_pair_rvalue.pass.cpp
+utilities\allocator.adaptor\allocator.adaptor.members\construct_pair_values.pass.cpp
+utilities\allocator.adaptor\allocator.adaptor.members\construct_type.pass.cpp
 
 
 # *** LIKELY STL BUGS ***
