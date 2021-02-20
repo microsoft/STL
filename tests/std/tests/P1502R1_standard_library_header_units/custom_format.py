@@ -73,7 +73,7 @@ class CustomTestFormat(STLTestFormat):
             'string_view',
             'string',
             'strstream',
-            # 'syncstream',
+            'syncstream',
             'system_error',
             'thread',
             'tuple',
