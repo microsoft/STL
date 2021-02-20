@@ -1391,13 +1391,13 @@ namespace chrono {
         _CHRONO month _Month;
         _CHRONO day _Day;
 
-        // _Civil_from_days and _Days_from_civil perform conversion between the date in (proleptic) Gregorian calendar
-        // and the continuous count of days since 1970-01-01.
+        // _Civil_from_days and _Days_from_civil perform conversions between the dates in the (proleptic) Gregorian
+        // calendar and the continuous count of days since 1970-01-01.
 
-        // To simplify handling of leap days (February 29th), the algorithm below uses a modified calendar internally,
-        // in which each year begins on March 1st, while January and February belong to the previous year. We denote the
-        // modified year and month number as _Yp and _Mp. We also define modified centuries that begin on each modified
-        // year whose _Yp is a multiple of 100.
+        // To simplify the handling of leap days (February 29th), the algorithm below uses a modified calendar
+        // internally, in which each year begins on March 1st, while January and February belong to the previous year.
+        // We denote the modified year and month number as _Yp and _Mp. We also define modified centuries that begin on
+        // each modified year whose _Yp is a multiple of 100.
 
         // _Mp | Month     | Day of Year
         // --- | --------- | -----------
@@ -1448,7 +1448,7 @@ namespace chrono {
         //
         //   _Day_of_year = (979 * _Mp + 19) >> 5
         //
-        // A more well known formula is 30 * _Mp + floor((3 * _Mp + 2) / 5) or floor((153 * _Mp + 2) / 5), which is used
+        // A more well-known formula is 30 * _Mp + floor((3 * _Mp + 2) / 5) or floor((153 * _Mp + 2) / 5), which is used
         // in Howard Hinnant's paper.
         //
         // The formula above returns the same result for all _Mp in [0, 11].
@@ -1469,16 +1469,17 @@ namespace chrono {
         //
         //   _Zx = ((1461 * _Yp) >> 2) - _Century + (_Century >> 2)
         //
-        // Start by number of days in _Yp regular years, add one day for the leap year in each 4-year span, subtract one
-        // day for the short 4-year span in each century, and finally add one day for the long century in each calendar
-        // period. This gives us 365 * _Yp + floor(_Yp / 4) - _Century + floor(_Century / 4).
+        // Start with multiplying by the number of days in regular years (365), add one day for the leap year in each
+        // 4-year span, subtract one day for the short 4-year span in each century, and finally add one day for the long
+        // century in each calendar period. This gives us 365 * _Yp + floor(_Yp / 4) - _Century + floor(_Century / 4).
 
         // Formula 2-1: Compute _Day_of_century of the first day of year _Year_of_century
         //
         //   _Day_of_century = (1461 * _Year_of_century) >> 2
         //
-        // Start by regular years of 365 days, add one day for the leap year in each 4-year span. This gives us
-        // 365 * _Year_of_century + floor(_Year_of_century / 4) == floor(1461 * _Year_of_century / 4).
+        // Start with multiplying by the number of days in regular years (365), add one day for the leap year in each
+        // 4-year span. This gives us 365 * _Year_of_century + floor(_Year_of_century / 4)
+        // == floor(1461 * _Year_of_century / 4).
 
         // Formula 2-1': Compute _Year_of_century from _Day_of_century
         //
@@ -1495,8 +1496,8 @@ namespace chrono {
         //
         //   _Zx = (146097 * _Century) >> 2
         //
-        // Start by regular centuries of 36524 days, add one day for the long century in each calendar period. This
-        // gives us 36524 * _Century + floor(_Century / 4) = floor(146097 * _Century / 4).
+        // Start with multiplying by the number of days in regular centuries (36524), add one day for the long century
+        // in each calendar period. This gives us 36524 * _Century + floor(_Century / 4) = floor(146097 * _Century / 4).
 
         // Formula 2-2': Compute _Century from _Zx, where _Zx is the continuous count of days since 0000-03-01.
         //
