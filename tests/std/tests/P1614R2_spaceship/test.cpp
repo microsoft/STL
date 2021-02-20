@@ -40,20 +40,18 @@
 #include <vector>
 
 using PartiallyOrdered = double;
-struct WeaklyOrdered {};
+
+struct WeaklyOrdered {
+    [[nodiscard]] constexpr bool operator==(const WeaklyOrdered&) const {
+        return true;
+    }
+
+    [[nodiscard]] constexpr std::weak_ordering operator<=>(const WeaklyOrdered&) const {
+        return std::weak_ordering::equivalent;
+    }
+};
+
 using StronglyOrdered = int;
-
-[[nodiscard]] constexpr bool operator==(const WeaklyOrdered&, const WeaklyOrdered&) {
-    return true;
-}
-
-[[nodiscard]] constexpr std::weak_ordering operator<=>(const WeaklyOrdered&, const WeaklyOrdered&) {
-    return std::weak_ordering::equivalent;
-}
-
-[[nodiscard]] constexpr std::partial_ordering operator<=>(const WeaklyOrdered&, const PartiallyOrdered&) {
-    return std::partial_ordering::equivalent;
-}
 
 // Activates synth-three-way in N4861 16.4.2.1 [expos.only.func]/2.
 struct SynthOrdered {
@@ -940,16 +938,15 @@ void ordering_test_cases() {
             static_assert((empty1 <=> empty2) == std::strong_ordering::equal);
         }
 
-        // TRANSITION, probably a defect in the standard. Should return std::partial_ordering.
-        static_assert(std::is_same_v<std::compare_three_way_result_t<std::tuple<WeaklyOrdered, WeaklyOrdered>,
+        static_assert(std::is_same_v<std::compare_three_way_result_t<std::tuple<PartiallyOrdered, PartiallyOrdered>,
                                          std::tuple<PartiallyOrdered, PartiallyOrdered>>,
-            std::weak_ordering>);
+            std::partial_ordering>);
         static_assert(std::is_same_v<std::compare_three_way_result_t<std::tuple<WeaklyOrdered, WeaklyOrdered>,
                                          std::tuple<WeaklyOrdered, WeaklyOrdered>>,
             std::weak_ordering>);
-        static_assert(std::is_same_v<std::compare_three_way_result_t<std::tuple<WeaklyOrdered, WeaklyOrdered>,
+        static_assert(std::is_same_v<std::compare_three_way_result_t<std::tuple<StronglyOrdered, StronglyOrdered>,
                                          std::tuple<StronglyOrdered, StronglyOrdered>>,
-            std::weak_ordering>);
+            std::strong_ordering>);
     }
     { // pair
         tuple_like_test<std::pair>();
