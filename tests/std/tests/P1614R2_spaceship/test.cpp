@@ -256,6 +256,30 @@ constexpr bool tuple_like_test() {
         assert(spaceship_test<std::partial_ordering>(t1, t1_equal, t2));
     }
 
+    if constexpr (std::is_same_v<TupleLike<int, int>, std::tuple<int, int>>) {
+        {
+            constexpr TupleLike<int, double> t1{1, 1.0};
+            constexpr TupleLike<double, double> t1_equal{1.0, 1.0};
+            constexpr TupleLike<int, double> t2{2, 1.0};
+
+            assert(spaceship_test<std::partial_ordering>(t1, t1_equal, t2));
+        }
+        {
+            constexpr TupleLike<int, double> t1{1, 1.0};
+            constexpr TupleLike<int, double> t1_equal{1, 1.0};
+            constexpr TupleLike<double, double> t2{2.0, 1.0};
+
+            assert(spaceship_test<std::partial_ordering>(t1, t1_equal, t2));
+        }
+    }
+
+    static_assert(std::is_same_v<std::compare_three_way_result_t<TupleLike<PartiallyOrdered, PartiallyOrdered>>,
+        std::partial_ordering>);
+    static_assert(
+        std::is_same_v<std::compare_three_way_result_t<TupleLike<WeaklyOrdered, WeaklyOrdered>>, std::weak_ordering>);
+    static_assert(std::is_same_v<std::compare_three_way_result_t<TupleLike<StronglyOrdered, StronglyOrdered>>,
+        std::strong_ordering>);
+
     return true;
 }
 
@@ -904,49 +928,11 @@ void ordering_test_cases() {
         static_assert(tuple_like_test<std::tuple>());
 
         {
-            constexpr std::tuple<int, double> t1{1, 1.0};
-            constexpr std::tuple<double, double> t1_equal{1.0, 1.0};
-            constexpr std::tuple<int, double> t2{2, 1.0};
-
-            static_assert(spaceship_test<std::partial_ordering>(t1, t1_equal, t2));
-        }
-        {
-            std::tuple<int, double> t1{1, 1.0};
-            std::tuple<double, double> t1_equal{1.0, 1.0};
-            std::tuple<int, double> t2{2, 1.0};
-
-            spaceship_test<std::partial_ordering>(t1, t1_equal, t2);
-        }
-        {
-            constexpr std::tuple<int, double> t1{1, 1.0};
-            constexpr std::tuple<int, double> t1_equal{1, 1.0};
-            constexpr std::tuple<double, double> t2{2.0, 1.0};
-
-            static_assert(spaceship_test<std::partial_ordering>(t1, t1_equal, t2));
-        }
-        {
-            std::tuple<int, double> t1{1, 1.0};
-            std::tuple<int, double> t1_equal{1, 1.0};
-            std::tuple<double, double> t2{2.0, 1.0};
-
-            spaceship_test<std::partial_ordering>(t1, t1_equal, t2);
-        }
-        {
             constexpr std::tuple<> empty1, empty2;
 
             static_assert(std::is_same_v<decltype(empty1 <=> empty2), std::strong_ordering>);
             static_assert((empty1 <=> empty2) == std::strong_ordering::equal);
         }
-
-        static_assert(std::is_same_v<std::compare_three_way_result_t<std::tuple<PartiallyOrdered, PartiallyOrdered>,
-                                         std::tuple<PartiallyOrdered, PartiallyOrdered>>,
-            std::partial_ordering>);
-        static_assert(std::is_same_v<std::compare_three_way_result_t<std::tuple<WeaklyOrdered, WeaklyOrdered>,
-                                         std::tuple<WeaklyOrdered, WeaklyOrdered>>,
-            std::weak_ordering>);
-        static_assert(std::is_same_v<std::compare_three_way_result_t<std::tuple<StronglyOrdered, StronglyOrdered>,
-                                         std::tuple<StronglyOrdered, StronglyOrdered>>,
-            std::strong_ordering>);
     }
     { // pair
         tuple_like_test<std::pair>();
