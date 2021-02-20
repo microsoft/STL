@@ -4536,27 +4536,17 @@ private:
 
     _CONSTEXPR20_CONTAINER void _Tidy_deallocate() noexcept { // initialize buffer, deallocating any storage
         _Mypair._Myval2._Orphan_all();
-#ifdef __cpp_lib_constexpr_string
-        if (_STD is_constant_evaluated()) {
+        if (_Mypair._Myval2._Large_string_engaged()) {
             const pointer _Ptr = _Mypair._Myval2._Bx._Ptr;
             auto& _Al          = _Getal();
             _Destroy_in_place(_Mypair._Myval2._Bx._Ptr);
             _Al.deallocate(_Ptr, _Mypair._Myval2._Myres + 1);
-        } else
-#endif // __cpp_lib_constexpr_string
-        {
-            if (_Mypair._Myval2._Large_string_engaged()) {
-                const pointer _Ptr = _Mypair._Myval2._Bx._Ptr;
-                auto& _Al          = _Getal();
-                _Destroy_in_place(_Mypair._Myval2._Bx._Ptr);
-                _Al.deallocate(_Ptr, _Mypair._Myval2._Myres + 1);
-            }
-
-            _Mypair._Myval2._Mysize = 0;
-            _Mypair._Myval2._Myres  = _BUF_SIZE - 1;
-            // the _Traits::assign is last so the codegen doesn't think the char write can alias this
-            _Traits::assign(_Mypair._Myval2._Bx._Buf[0], _Elem());
         }
+
+        _Mypair._Myval2._Mysize = 0;
+        _Mypair._Myval2._Myres  = _BUF_SIZE - 1;
+        // the _Traits::assign is last so the codegen doesn't think the char write can alias this
+        _Traits::assign(_Mypair._Myval2._Bx._Buf[0], _Elem());
     }
 
 public:
