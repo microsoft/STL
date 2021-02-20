@@ -1331,6 +1331,7 @@ namespace chrono {
         return *this;
     }
 
+    // To prevent UB by going out of bounds, four extra days with an invalid day are added.
     inline constexpr day _Last_day_table[] = {day{31}, day{28}, day{31}, day{30}, day{31}, day{30}, day{31}, day{31},
         day{30}, day{31}, day{30}, day{31}, day{42}, day{42}, day{42}, day{42}};
 
