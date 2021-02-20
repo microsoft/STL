@@ -3218,14 +3218,7 @@ public:
             basic_string _Right(_UFirst, _ULast, get_allocator());
             if (_Mypair._Myval2._Myres < _Right._Mypair._Myval2._Myres) {
                 _Mypair._Myval2._Orphan_all();
-#ifdef __cpp_lib_constexpr_string
-                if (_STD is_constant_evaluated()) {
-                    _Swap_data(_Right, bool_constant<false>{});
-                } else
-#endif // __cpp_lib_constexpr_string
-                {
-                    _Swap_data(_Right, bool_constant<_Can_memcpy_val>{});
-                }
+                _Swap_data(_Right);
                 return *this;
             } else {
                 return assign(_Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
@@ -3961,18 +3954,6 @@ public:
         return _Count;
     }
 
-    void _Swap_data(basic_string& _Right, true_type) {
-        // exchange _String_val instances with _Right, memcpy optimization
-        const auto _My_data_mem =
-            reinterpret_cast<unsigned char*>(_STD addressof(_Mypair._Myval2)) + _Memcpy_val_offset;
-        const auto _Right_data_mem =
-            reinterpret_cast<unsigned char*>(_STD addressof(_Right._Mypair._Myval2)) + _Memcpy_val_offset;
-        unsigned char _Temp_mem[_Memcpy_val_size];
-        _CSTD memcpy(_Temp_mem, _My_data_mem, _Memcpy_val_size);
-        _CSTD memcpy(_My_data_mem, _Right_data_mem, _Memcpy_val_size);
-        _CSTD memcpy(_Right_data_mem, _Temp_mem, _Memcpy_val_size);
-    }
-
     _CONSTEXPR20_CONTAINER void _Swap_bx_large_with_small(_Scary_val& _Starts_large, _Scary_val& _Starts_small) {
         // exchange a string in large mode with one in small mode
 
@@ -3985,10 +3966,26 @@ public:
         _Construct_in_place(_Starts_small._Bx._Ptr, _Ptr);
     }
 
-    _CONSTEXPR20_CONTAINER void _Swap_data(basic_string& _Right, false_type) {
-        // exchange _String_val instances with _Right, general case
-        auto& _My_data          = _Mypair._Myval2;
-        auto& _Right_data       = _Right._Mypair._Myval2;
+    _CONSTEXPR20_CONTAINER void _Swap_data(basic_string& _Right) {
+        auto& _My_data    = _Mypair._Myval2;
+        auto& _Right_data = _Right._Mypair._Myval2;
+#ifdef __cpp_lib_constexpr_string
+        if (!_STD is_constant_evaluated())
+#endif // __cpp_lib_constexpr_string
+        {
+            if constexpr (_Can_memcpy_val) {
+                const auto _My_data_mem =
+                    reinterpret_cast<unsigned char*>(_STD addressof(_My_data)) + _Memcpy_val_offset;
+                const auto _Right_data_mem =
+                    reinterpret_cast<unsigned char*>(_STD addressof(_Right_data)) + _Memcpy_val_offset;
+                unsigned char _Temp_mem[_Memcpy_val_size];
+                _CSTD memcpy(_Temp_mem, _My_data_mem, _Memcpy_val_size);
+                _CSTD memcpy(_My_data_mem, _Right_data_mem, _Memcpy_val_size);
+                _CSTD memcpy(_Right_data_mem, _Temp_mem, _Memcpy_val_size);
+                return;
+            }
+        }
+
         const bool _My_large    = _My_data._Large_string_engaged();
         const bool _Right_large = _Right_data._Large_string_engaged();
         if (_My_large) {
@@ -4033,14 +4030,7 @@ public:
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         }
 
-#ifdef __cpp_lib_constexpr_string
-        if (_STD is_constant_evaluated()) { // cannot call memcpy in a constexpr context
-            _Swap_data(_Right, bool_constant<false>{});
-        } else
-#endif // __cpp_lib_constexpr_string
-        {
-            _Swap_data(_Right, bool_constant<_Can_memcpy_val>{});
-        }
+        _Swap_data(_Right);
     }
 
 #if _HAS_CXX17
