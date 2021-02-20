@@ -271,14 +271,14 @@ namespace pmr {
         template <class _Uty, class... _Types>
         void construct(_Uty* const _Ptr, _Types&&... _Args) {
             // propagate allocator *this if uses_allocator_v<_Uty, polymorphic_allocator>
-            allocator<char> _Al{};
 #if _HAS_CXX20
             _STD apply(
-                [_Al, _Ptr, this](auto&&... _New_args) {
-                    allocator_traits<allocator>::construct(_Al, _Ptr, _STD forward<decltype(_New_args)>(_New_args)...);
+                [_Ptr, this](auto&&... _New_args) {
+                    construct_at(_Ptr, _STD forward<decltype(_New_args)>(_New_args)...);
                 },
                 uses_allocator_construction_args<_Uty>(*this, _STD forward<_Types>(_Args)...));
 #else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
+            allocator<char> _Al{};
             _Uses_allocator_construct(_Ptr, _Al, *this, _STD forward<_Types>(_Args)...);
 #endif // ^^^ !_HAS_CXX20 ^^^
         }
