@@ -2585,12 +2585,12 @@ public:
         bool _Activate_large_mode = _New_capacity < _New_size;
 #ifdef __cpp_lib_constexpr_string
         _Activate_large_mode =
-            _Activate_large_mode && _STD is_constant_evaluated(); // SSO disabled in constexpr context
+            _Activate_large_mode || _STD is_constant_evaluated(); // SSO disabled in constexpr context
 #endif // __cpp_lib_constexpr_string
 
         if (_Activate_large_mode) {
             // we should never allocate less than _BUF_SIZE space (_New_size could be small if constant evaluated)
-            const size_type _Requested_size = _STD max(_New_size, _BUF_SIZE);
+            const size_type _Requested_size = (_STD max)(_New_size, _BUF_SIZE);
             _New_capacity                   = _Calculate_growth(_Requested_size, _BUF_SIZE - 1, max_size());
             const pointer _Fancyptr         = _Getal().allocate(_New_capacity + 1); // throws
             _Ptr                            = _Unfancy(_Fancyptr);
