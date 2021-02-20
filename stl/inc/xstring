@@ -4441,20 +4441,13 @@ private:
         _Mypair._Myval2._Mysize = _New_size;
         _Mypair._Myval2._Myres  = _New_capacity;
         _Fn(_Unfancy(_New_ptr), _New_size, _Args...);
-#ifdef __cpp_lib_constexpr_string
-        if (_STD is_constant_evaluated()) {
+        if (_BUF_SIZE <= _Old_capacity) {
             _Al.deallocate(_Mypair._Myval2._Bx._Ptr, _Old_capacity + 1);
             _Mypair._Myval2._Bx._Ptr = _New_ptr;
-        } else
-#endif // __cpp_lib_constexpr_string
-        {
-            if (_BUF_SIZE <= _Old_capacity) {
-                _Al.deallocate(_Mypair._Myval2._Bx._Ptr, _Old_capacity + 1);
-                _Mypair._Myval2._Bx._Ptr = _New_ptr;
-            } else {
-                _Construct_in_place(_Mypair._Myval2._Bx._Ptr, _New_ptr);
-            }
+        } else {
+            _Construct_in_place(_Mypair._Myval2._Bx._Ptr, _New_ptr);
         }
+
         return *this;
     }
 
@@ -4484,24 +4477,14 @@ private:
         _My_data._Mysize      = _New_size;
         _My_data._Myres       = _New_capacity;
         _Elem* const _Raw_new = _Unfancy(_New_ptr);
-#ifdef __cpp_lib_constexpr_string
-        if (_STD is_constant_evaluated()) {
+        if (_BUF_SIZE <= _Old_capacity) {
             const pointer _Old_ptr = _My_data._Bx._Ptr;
             _Fn(_Raw_new, _Unfancy(_Old_ptr), _Old_size, _Args...);
             _Al.deallocate(_Old_ptr, _Old_capacity + 1);
             _My_data._Bx._Ptr = _New_ptr;
-        } else
-#endif // __cpp_lib_constexpr_string
-        {
-            if (_BUF_SIZE <= _Old_capacity) {
-                const pointer _Old_ptr = _My_data._Bx._Ptr;
-                _Fn(_Raw_new, _Unfancy(_Old_ptr), _Old_size, _Args...);
-                _Al.deallocate(_Old_ptr, _Old_capacity + 1);
-                _My_data._Bx._Ptr = _New_ptr;
-            } else {
-                _Fn(_Raw_new, _My_data._Bx._Buf, _Old_size, _Args...);
-                _Construct_in_place(_My_data._Bx._Ptr, _New_ptr);
-            }
+        } else {
+            _Fn(_Raw_new, _My_data._Bx._Buf, _Old_size, _Args...);
+            _Construct_in_place(_My_data._Bx._Ptr, _New_ptr);
         }
 
         return *this;
