@@ -107,6 +107,11 @@ public:
         return _Myoff == _Right._Myoff;
     }
 
+#if _HAS_CXX20
+    _NODISCARD strong_ordering operator<=>(const _Deque_unchecked_const_iterator& _Right) const noexcept {
+        return _Myoff <=> _Right._Myoff;
+    }
+#else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
     _NODISCARD bool operator!=(const _Deque_unchecked_const_iterator& _Right) const noexcept {
         return !(*this == _Right);
     }
@@ -126,6 +131,7 @@ public:
     _NODISCARD bool operator>=(const _Deque_unchecked_const_iterator& _Right) const noexcept {
         return !(*this < _Right);
     }
+#endif // !_HAS_CXX20
 
     const _Container_base12* _Getcont() const noexcept { // get container pointer
         return _Mycont;
@@ -345,6 +351,12 @@ public:
         return this->_Myoff == _Right._Myoff;
     }
 
+#if _HAS_CXX20
+    _NODISCARD strong_ordering operator<=>(const _Deque_const_iterator& _Right) const noexcept {
+        _Compat(_Right);
+        return this->_Myoff <=> _Right._Myoff;
+    }
+#else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
     _NODISCARD bool operator!=(const _Deque_const_iterator& _Right) const noexcept {
         return !(*this == _Right);
     }
@@ -365,6 +377,7 @@ public:
     _NODISCARD bool operator>=(const _Deque_const_iterator& _Right) const noexcept {
         return !(*this < _Right);
     }
+#endif // !_HAS_CXX20
 
     void _Compat(const _Deque_const_iterator& _Right) const noexcept { // test for compatible iterator pair
 #if _ITERATOR_DEBUG_LEVEL == 0
