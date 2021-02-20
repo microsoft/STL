@@ -262,7 +262,7 @@ constexpr bool tuple_like_test() {
 }
 
 template <auto SmallVal, decltype(SmallVal) EqualVal, decltype(EqualVal) LargeVal>
-bool constexpr optional_test() {
+constexpr bool optional_test() {
     using ReturnType = std::compare_three_way_result_t<decltype(SmallVal), decltype(LargeVal)>;
 
     {
