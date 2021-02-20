@@ -66,15 +66,15 @@ constexpr bool test_P0591R4() {
         constexpr DefaultConstructible() {}
     };
 
-    using AllocatorArgConstructArgs = tuple<allocator_arg_t, const allocator<int>&, int&>;
-    using AllocatorConstructArgs = tuple<int&, const allocator<int>&>;
+    using AllocatorArgConstructArgs      = tuple<allocator_arg_t, const allocator<int>&, int&>;
+    using AllocatorConstructArgs         = tuple<int&, const allocator<int>&>;
     using ConstAllocatorArgConstructArgs = tuple<allocator_arg_t, const allocator<int>&, const int&>;
-    using ConstAllocatorConstructArgs = tuple<const int&, const allocator<int>&>;
+    using ConstAllocatorConstructArgs    = tuple<const int&, const allocator<int>&>;
     using MovedAllocatorArgConstructArgs = tuple<allocator_arg_t, const allocator<int>&, int&&>;
-    using MovedAllocatorConstructArgs = tuple<int&&, const allocator<int>&>;
-    using OnlyAllocatorArgConstructArgs = tuple<allocator_arg_t, const allocator<int>&>;
-    using OnlyAllocatorConstructArgs = tuple<const allocator<int>&>;
-    using DefaultConstructArgs = tuple<>;
+    using MovedAllocatorConstructArgs    = tuple<int&&, const allocator<int>&>;
+    using OnlyAllocatorArgConstructArgs  = tuple<allocator_arg_t, const allocator<int>&>;
+    using OnlyAllocatorConstructArgs     = tuple<const allocator<int>&>;
+    using DefaultConstructArgs           = tuple<>;
 
     { // non-pair overload
         auto tuple1 = uses_allocator_construction_args<int>(alloc, i);
@@ -121,11 +121,12 @@ constexpr bool test_P0591R4() {
 
     { // pair(const pair&) overload
         auto tuple4 = uses_allocator_construction_args<pair<int, AllocatorArgConstructible>>(alloc, p);
-        static_assert(
-            is_same_v<decltype(tuple4), tuple<piecewise_construct_t, tuple<const int&>, ConstAllocatorArgConstructArgs>>);
+        static_assert(is_same_v<decltype(tuple4),
+            tuple<piecewise_construct_t, tuple<const int&>, ConstAllocatorArgConstructArgs>>);
 
         auto tuple5 = uses_allocator_construction_args<pair<AllocatorConstructible, int>>(alloc, p);
-        static_assert(is_same_v<decltype(tuple5), tuple<piecewise_construct_t, ConstAllocatorConstructArgs, tuple<const int&>>>);
+        static_assert(
+            is_same_v<decltype(tuple5), tuple<piecewise_construct_t, ConstAllocatorConstructArgs, tuple<const int&>>>);
     }
 
     { // pair(pair&&) overload
@@ -134,7 +135,8 @@ constexpr bool test_P0591R4() {
             is_same_v<decltype(tuple4), tuple<piecewise_construct_t, tuple<int&&>, MovedAllocatorArgConstructArgs>>);
 
         auto tuple5 = uses_allocator_construction_args<pair<AllocatorConstructible, int>>(alloc, move(p));
-        static_assert(is_same_v<decltype(tuple5), tuple<piecewise_construct_t, MovedAllocatorConstructArgs, tuple<int&&>>>);
+        static_assert(
+            is_same_v<decltype(tuple5), tuple<piecewise_construct_t, MovedAllocatorConstructArgs, tuple<int&&>>>);
     }
 
     {
