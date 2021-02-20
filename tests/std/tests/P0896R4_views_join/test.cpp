@@ -237,44 +237,34 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
         static_assert(!CanIndex<const R>);
 
         // Validate view_interface::front and back
-        static_assert(CanMemberFront<R> == forward_range<V>);
-        static_assert(
-            CanMemberFront<const R> == (forward_range<const V> && is_reference_v<range_reference_t<const V>>) );
-#if 0 // FIXME
-        if constexpr (CanMemberFront<R>) {
-            if (!is_empty) {
+        static_assert(CanMemberFront<R> == forward_range<R>);
+        static_assert(CanMemberFront<const R> == forward_range<const R>);
+        if (!is_empty) {
+            if constexpr (CanMemberFront<R>) {
                 assert(r.front() == *begin(expected));
+            }
+
+            if constexpr (CanMemberFront<const R>) {
+                assert(as_const(r).front() == *begin(expected));
             }
         }
 
         static_assert(CanMemberBack<R> == (bidirectional_range<R> && common_range<R>) );
-        if constexpr (CanMemberBack<R>) {
-            if (!is_empty) {
+        // clang-format off
+        static_assert(CanMemberBack<const R> == (bidirectional_range<const R> && common_range<const R>
+                                                 && is_reference_v<range_reference_t<const V>>) );
+        // clang-format on
+        if (!is_empty) {
+            if constexpr (CanMemberBack<R>) {
                 assert(r.back() == *prev(end(expected)));
             }
-        }
-        static_assert(!CanMemberBack<const R>);
-        if (!is_empty) {
-            if constexpr (random_access_range<Outer>) {
-                assert(r[0] == *begin(expected));
 
-                if constexpr (common_range<Outer>) {
-                    assert(as_const(r)[0] == *begin(expected));
-                }
-            }
-
-            assert(r.front() == *begin(expected));
-            assert(r.back() == *prev(end(expected)));
-
-            static_assert(CanMemberFront<const R> == common_range<Outer>);
-            static_assert(CanMemberBack<const R> == common_range<Outer>);
-            if constexpr (common_range<Outer>) {
-                assert(as_const(r).front() == *begin(expected));
+            if constexpr (CanMemberBack<const R>) {
                 assert(as_const(r).back() == *prev(end(expected)));
             }
         }
-
-        // Validate join_view::base() const&
+#if 0 // FIXME
+      // Validate join_view::base() const&
         static_assert(CanMemberBase<const R&> == copy_constructible<V>);
         if constexpr (copy_constructible<V>) {
             same_as<V> auto b1 = as_const(r).base();
