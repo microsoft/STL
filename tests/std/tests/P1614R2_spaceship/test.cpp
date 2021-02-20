@@ -928,7 +928,8 @@ void ordering_test_cases() {
         static_assert(tuple_like_test<std::tuple>());
 
         {
-            constexpr std::tuple<> empty1, empty2;
+            constexpr std::tuple<> empty1;
+            constexpr std::tuple<> empty2;
 
             static_assert(std::is_same_v<decltype(empty1 <=> empty2), std::strong_ordering>);
             static_assert((empty1 <=> empty2) == std::strong_ordering::equal);
