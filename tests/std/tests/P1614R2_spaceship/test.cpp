@@ -248,14 +248,14 @@ constexpr bool tuple_like_test() {
         constexpr TupleLike<int, int> t1_equal{1, 1};
         constexpr TupleLike<int, int> t2{2, 1};
 
-        static_assert(spaceship_test<std::strong_ordering>(t1, t1_equal, t2));
+        assert(spaceship_test<std::strong_ordering>(t1, t1_equal, t2));
     }
     {
         constexpr TupleLike<int, double> t1{1, 1.0};
         constexpr TupleLike<int, double> t1_equal{1, 1.0};
         constexpr TupleLike<int, double> t2{2, 1.0};
 
-        static_assert(spaceship_test<std::partial_ordering>(t1, t1_equal, t2));
+        assert(spaceship_test<std::partial_ordering>(t1, t1_equal, t2));
     }
 
     return true;
@@ -270,25 +270,25 @@ bool constexpr optional_test() {
         constexpr std::optional o1_equal(EqualVal);
         constexpr std::optional o2(LargeVal);
 
-        static_assert(spaceship_test<ReturnType>(o1, o1_equal, o2));
+        assert(spaceship_test<ReturnType>(o1, o1_equal, o2));
     }
     {
         constexpr std::optional<decltype(SmallVal)> o1(std::nullopt);
         constexpr std::optional<decltype(EqualVal)> o1_equal(std::nullopt);
         constexpr std::optional o2(LargeVal);
 
-        static_assert(spaceship_test<ReturnType>(o1, o1_equal, o2));
+        assert(spaceship_test<ReturnType>(o1, o1_equal, o2));
     }
     {
         constexpr std::optional o1(SmallVal);
 
-        static_assert(spaceship_test<ReturnType>(o1, EqualVal, LargeVal));
+        assert(spaceship_test<ReturnType>(o1, EqualVal, LargeVal));
     }
     {
         constexpr std::optional<decltype(SmallVal)> o1(std::nullopt);
         constexpr std::optional o2(LargeVal);
 
-        static_assert(spaceship_test<ReturnType>(o1, std::nullopt, o2));
+        assert(spaceship_test<ReturnType>(o1, std::nullopt, o2));
     }
 
     return true;
