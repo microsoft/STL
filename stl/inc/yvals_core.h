@@ -149,6 +149,7 @@
 // P0458R2 contains() For Ordered And Unordered Associative Containers
 // P0463R1 endian
 // P0466R5 Layout-Compatibility And Pointer-Interconvertibility Traits
+// P0475R1 Guaranteed Copy Elision For Piecewise Construction
 // P0476R2 <bit> bit_cast
 // P0482R6 Library Support For char8_t
 //     (mbrtoc8 and c8rtomb not yet implemented)
@@ -158,6 +159,7 @@
 // P0553R4 <bit> Rotating And Counting Functions
 // P0556R3 <bit> Integral Power-Of-2 Operations (renamed by P1956R1)
 // P0586R2 Integer Comparison Functions
+// P0591R4 Utility Functions For Uses-Allocator Construction
 // P0595R2 is_constant_evaluated()
 // P0616R0 Using move() In <numeric>
 // P0631R8 <numbers> Math Constants
