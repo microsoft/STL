@@ -604,8 +604,8 @@ void ordering_test_cases() {
         std::type_index a3 = typeid(bool);
         std::type_index a4 = typeid(int);
         assert((a1 <=> a4) == std::strong_ordering::equal);
-        assert((a1 <=> a2) == std::strong_ordering::greater);
-        assert((a1 <=> a3) == std::strong_ordering::less);
+        assert((a1 <=> a2) == std::strong_ordering::greater); // Implementation-specific assumption
+        assert((a1 <=> a3) == std::strong_ordering::less); // Implementation-specific assumption
     }
     { // Strings library
         const std::string a1 = "abcdef";
