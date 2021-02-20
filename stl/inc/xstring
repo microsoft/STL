@@ -2031,7 +2031,7 @@ public:
 };
 
 template <class _Mystr>
-_NODISCARD _String_const_iterator<_Mystr> operator+(
+_NODISCARD _CONSTEXPR20_CONTAINER _String_const_iterator<_Mystr> operator+(
     typename _String_const_iterator<_Mystr>::difference_type _Off, _String_const_iterator<_Mystr> _Next) noexcept {
     return _Next += _Off;
 }
@@ -2210,7 +2210,7 @@ public:
     using reference       = value_type&;
     using const_reference = const value_type&;
 
-    _CONSTEXPR20_CONTAINER _String_val() noexcept : _Bx(), _Mysize{0}, _Myres{0} {}
+    _CONSTEXPR20_CONTAINER _String_val() noexcept : _Bx() {}
 
     // length of internal buffer, [1, 16]:
     static constexpr size_type _BUF_SIZE = 16 / sizeof(value_type) < 1 ? 1 : 16 / sizeof(value_type);
@@ -2281,8 +2281,8 @@ public:
         char _Alias[_BUF_SIZE]; // TRANSITION, ABI: _Alias is preserved for binary compatibility (especially /clr)
     } _Bx;
 
-    size_type _Mysize; // current length of string
-    size_type _Myres; // current storage reserved for string
+    size_type _Mysize = 0; // current length of string
+    size_type _Myres  = 0; // current storage reserved for string
 };
 
 // CLASS TEMPLATE basic_string
@@ -2589,6 +2589,7 @@ public:
         }
 #ifdef __cpp_lib_constexpr_string
         else if (_STD is_constant_evaluated()) { // SSO disabled in constexpr context
+            _New_capacity           = _Calculate_growth(_BUF_SIZE, _BUF_SIZE - 1, max_size());
             const pointer _Fancyptr = _Getal().allocate(_New_capacity + 1); // throws
             _Ptr                    = _Unfancy(_Fancyptr);
             _Construct_in_place(_My_data._Bx._Ptr, _Fancyptr);
@@ -2718,6 +2719,7 @@ public:
 #if _HAS_CXX20
     basic_string(_String_constructor_rvalue_allocator_tag, _Alloc&& _Al)
         : _Mypair(_One_then_variadic_args_t{}, _STD move(_Al)) {
+        // Used exclusively by basic_stringbuf
         _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
         _Tidy_init();
     }
@@ -2767,9 +2769,8 @@ private:
 
 public:
 #if _HAS_CXX20
-    _NODISCARD _CONSTEXPR20_CONTAINER bool _Move_assign_from_buffer(
-        _Elem* const _Right, const size_type _Size, const size_type _Res) {
-        // Move assign from a buffer, used by basic_stringbuf; returns _Large_string_engaged()
+    _NODISCARD bool _Move_assign_from_buffer(_Elem* const _Right, const size_type _Size, const size_type _Res) {
+        // Move assign from a buffer, used exclusively by basic_stringbuf; returns _Large_string_engaged()
         _Tidy_deallocate();
         pointer _Fancy_right = _Refancy<pointer>(_Right);
         auto& _My_data       = _Mypair._Myval2;
@@ -2793,7 +2794,7 @@ public:
     };
 
     _NODISCARD _CONSTEXPR20_CONTAINER _Released_buffer _Release_to_buffer(_Alloc& _Al) {
-        // Release to a buffer, or allocate a new one if in small string mode
+        // Release to a buffer, or allocate a new one if in small string mode; used exclusively by basic_stringbuf
         _Released_buffer _Result;
         auto& _My_data = _Mypair._Myval2;
         _Result._Size  = _My_data._Mysize;
@@ -3298,10 +3299,13 @@ public:
         // insert [_Ptr, _Ptr + _Count) at _Off
         _Mypair._Myval2._Check_offset(_Off);
         const size_type _Old_size = _Mypair._Myval2._Mysize;
+
+        // checking for overlapping ranges is technically UB (considering string literals), so just always reallocate
+        // and copy to the new buffer if constant evaluated
 #ifdef __cpp_lib_constexpr_string
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_constexpr_string
-        { // the check for overlapping ranges is technically UB, so no constant evaluation possible
+        {
             if (_Count <= _Mypair._Myval2._Myres - _Old_size) {
                 _Mypair._Myval2._Mysize = _Old_size + _Count;
                 _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
@@ -3510,10 +3514,13 @@ public:
         }
 
         const size_type _Growth = static_cast<size_type>(_Count - _Nx);
+
+        // checking for overlapping ranges is technically UB (considering string literals), so just always reallocate
+        // and copy to the new buffer if constant evaluated
 #ifdef __cpp_lib_constexpr_string
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_constexpr_string
-        { // the check for overlapping ranges is technically UB, so no constant evaluation possible
+        {
             if (_Growth <= _Mypair._Myval2._Myres - _Old_size) { // growth fits
                 _Mypair._Myval2._Mysize = _Old_size + _Growth;
                 _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
@@ -4131,8 +4138,7 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20_CONTAINER size_type rfind(
-        _In_z_ const _Elem* const _Ptr, const size_type _Off = npos) const noexcept
-    /* strengthened */ {
+        _In_z_ const _Elem* const _Ptr, const size_type _Off = npos) const noexcept /* strengthened */ {
         // look for [_Ptr, <null>) beginning before _Off
         return static_cast<size_type>(_Traits_rfind<_Traits>(
             _Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ptr, _Traits::length(_Ptr)));
@@ -4172,8 +4178,7 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20_CONTAINER size_type find_first_of(
-        _In_z_ const _Elem* const _Ptr, const size_type _Off = 0) const noexcept
-    /* strengthened */ {
+        _In_z_ const _Elem* const _Ptr, const size_type _Off = 0) const noexcept /* strengthened */ {
         // look for one of [_Ptr, <null>) at or after _Off
         return static_cast<size_type>(_Traits_find_first_of<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize,
             _Off, _Ptr, _Traits::length(_Ptr), _Is_specialization<_Traits, char_traits>{}));
@@ -4213,16 +4218,14 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20_CONTAINER size_type find_last_of(
-        _In_z_ const _Elem* const _Ptr, const size_type _Off = npos) const noexcept
-    /* strengthened */ {
+        _In_z_ const _Elem* const _Ptr, const size_type _Off = npos) const noexcept /* strengthened */ {
         // look for one of [_Ptr, <null>) before _Off
         return static_cast<size_type>(_Traits_find_last_of<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize,
             _Off, _Ptr, _Traits::length(_Ptr), _Is_specialization<_Traits, char_traits>{}));
     }
 
     _NODISCARD _CONSTEXPR20_CONTAINER size_type find_last_of(
-        const _Elem _Ch, const size_type _Off = npos) const noexcept
-    /* strengthened */ {
+        const _Elem _Ch, const size_type _Off = npos) const noexcept /* strengthened */ {
         // look for _Ch before _Off
         return static_cast<size_type>(
             _Traits_rfind_ch<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ch));
@@ -4256,16 +4259,14 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20_CONTAINER size_type find_first_not_of(
-        _In_z_ const _Elem* const _Ptr, size_type _Off = 0) const noexcept
-    /* strengthened */ {
+        _In_z_ const _Elem* const _Ptr, size_type _Off = 0) const noexcept /* strengthened */ {
         // look for one of [_Ptr, <null>) at or after _Off
         return static_cast<size_type>(_Traits_find_first_not_of<_Traits>(_Mypair._Myval2._Myptr(),
             _Mypair._Myval2._Mysize, _Off, _Ptr, _Traits::length(_Ptr), _Is_specialization<_Traits, char_traits>{}));
     }
 
     _NODISCARD _CONSTEXPR20_CONTAINER size_type find_first_not_of(
-        const _Elem _Ch, const size_type _Off = 0) const noexcept
-    /* strengthened */ {
+        const _Elem _Ch, const size_type _Off = 0) const noexcept /* strengthened */ {
         // look for non-_Ch at or after _Off
         return static_cast<size_type>(
             _Traits_find_not_ch<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ch));
@@ -4299,16 +4300,14 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20_CONTAINER size_type find_last_not_of(
-        _In_z_ const _Elem* const _Ptr, const size_type _Off = npos) const noexcept
-    /* strengthened */ {
+        _In_z_ const _Elem* const _Ptr, const size_type _Off = npos) const noexcept /* strengthened */ {
         // look for none of [_Ptr, <null>) before _Off
         return static_cast<size_type>(_Traits_find_last_not_of<_Traits>(_Mypair._Myval2._Myptr(),
             _Mypair._Myval2._Mysize, _Off, _Ptr, _Traits::length(_Ptr), _Is_specialization<_Traits, char_traits>{}));
     }
 
     _NODISCARD _CONSTEXPR20_CONTAINER size_type find_last_not_of(
-        const _Elem _Ch, const size_type _Off = npos) const noexcept
-    /* strengthened */ {
+        const _Elem _Ch, const size_type _Off = npos) const noexcept /* strengthened */ {
         // look for non-_Ch before _Off
         return static_cast<size_type>(
             _Traits_rfind_not_ch<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ch));
@@ -4316,6 +4315,7 @@ public:
 
 #if _HAS_CXX17
     _NODISCARD bool _Starts_with(const basic_string_view<_Elem, _Traits> _Right) const noexcept {
+        // Used exclusively by filesystem
         return basic_string_view<_Elem, _Traits>(*this)._Starts_with(_Right);
     }
 #endif // _HAS_CXX17
@@ -4544,6 +4544,7 @@ private:
                 _Construct_in_place(_My_data._Bx._Ptr, _New_ptr);
             }
         }
+
         return *this;
     }
 
@@ -4654,9 +4655,8 @@ basic_string(basic_string_view<_Elem, _Traits>, _Guide_size_type_t<_Alloc>, _Gui
 #endif // _HAS_CXX17
 
 template <class _Elem, class _Traits, class _Alloc>
-_CONSTEXPR20_CONTAINER void swap(
-    basic_string<_Elem, _Traits, _Alloc>& _Left, basic_string<_Elem, _Traits, _Alloc>& _Right) noexcept
-/* strengthened */ {
+_CONSTEXPR20_CONTAINER void swap(basic_string<_Elem, _Traits, _Alloc>& _Left,
+    basic_string<_Elem, _Traits, _Alloc>& _Right) noexcept /* strengthened */ {
     _Left.swap(_Right);
 }
 
@@ -4965,7 +4965,9 @@ inline namespace literals {
         _NODISCARD
 #ifndef __EDG__ // TRANSITION, VSO-1273381
         _CONSTEXPR20_CONTAINER
-#endif // __EDG__
+#else // ^^ __EDG__ / !__EDG__ vv
+        inline
+#endif // ^^ !__EDG__
         string operator"" s(const char* _Str, size_t _Len) {
             return string(_Str, _Len);
         }
@@ -4973,7 +4975,9 @@ inline namespace literals {
         _NODISCARD
 #ifndef __EDG__ // TRANSITION, VSO-1273381
         _CONSTEXPR20_CONTAINER
-#endif // __EDG__
+#else // ^^ __EDG__ / !__EDG__ vv
+        inline
+#endif // ^^ !__EDG__
         wstring operator"" s(const wchar_t* _Str, size_t _Len) {
             return wstring(_Str, _Len);
         }
@@ -4982,7 +4986,9 @@ inline namespace literals {
         _NODISCARD
 #ifndef __EDG__ // TRANSITION, VSO-1273381
         _CONSTEXPR20_CONTAINER
-#endif // __EDG__
+#else // ^^ __EDG__ / !__EDG__ vv
+        inline
+#endif // ^^ !__EDG__
         basic_string<char8_t> operator"" s(const char8_t* _Str, size_t _Len) {
             return basic_string<char8_t>(_Str, _Len);
         }
@@ -4991,7 +4997,9 @@ inline namespace literals {
         _NODISCARD
 #ifndef __EDG__ // TRANSITION, VSO-1273381
         _CONSTEXPR20_CONTAINER
-#endif // __EDG__
+#else // ^^ __EDG__ / !__EDG__ vv
+        inline
+#endif // ^^ !__EDG__
         u16string operator"" s(const char16_t* _Str, size_t _Len) {
             return u16string(_Str, _Len);
         }
@@ -4999,7 +5007,9 @@ inline namespace literals {
         _NODISCARD
 #ifndef __EDG__ // TRANSITION, VSO-1273381
         _CONSTEXPR20_CONTAINER
-#endif // __EDG__
+#else // ^^ __EDG__ / !__EDG__ vv
+        inline
+#endif // ^^ !__EDG__
         u32string operator"" s(const char32_t* _Str, size_t _Len) {
             return u32string(_Str, _Len);
         }
