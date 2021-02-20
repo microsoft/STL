@@ -23,8 +23,8 @@ concept CanViewJoin = requires(Rng&& r) {
 template <ranges::input_range Outer, ranges::random_access_range Expected>
 constexpr bool test_one(Outer&& rng, Expected&& expected) {
     using ranges::begin, ranges::bidirectional_range, ranges::common_range, ranges::enable_borrowed_range, ranges::end,
-        ranges::forward_range, ranges::input_range, ranges::iterator_t, ranges::join_view, ranges::range_value_t,
-        ranges::range_reference_t;
+        ranges::forward_range, ranges::input_range, ranges::iterator_t, ranges::join_view, ranges::random_access_range,
+        ranges::range_value_t, ranges::range_reference_t;
 
     using Inner                     = range_value_t<Outer>;
     constexpr bool deref_is_glvalue = is_reference_v<range_reference_t<Outer>>;
@@ -228,16 +228,16 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
                 }
             }
         }
-#if 0 // FIXME
-
         // Validate view_interface::data
         static_assert(!CanData<R>);
         static_assert(!CanData<const R>);
 
+        // Validate view_interface::operator[]
+        static_assert(!CanIndex<R>);
+        static_assert(!CanIndex<const R>);
+#if 0 // FIXME
+
         if (!is_empty) {
-            // Validate view_interface::operator[]
-            static_assert(CanIndex<R> == random_access_range<Outer>);
-            static_assert(CanIndex<const R> == (random_access_range<Outer> && common_range<Outer>) );
             if constexpr (random_access_range<Outer>) {
                 assert(r[0] == *begin(expected));
 
