@@ -2019,7 +2019,7 @@ constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Types&&... _
     } else {
         if constexpr (is_constructible_v<_Ty, allocator_arg_t, const _Alloc&, _Types...>) {
             using _ReturnType = tuple<allocator_arg_t, const _Alloc&, _Types&&...>;
-            return _ReturnType(allocator_arg, _Al, _STD forward<_Types>(_Args)...);
+            return _ReturnType{allocator_arg, _Al, _STD forward<_Types>(_Args)...};
         } else if constexpr (is_constructible_v<_Ty, _Types..., const _Alloc&>) {
             return _STD forward_as_tuple(_STD forward<_Types>(_Args)..., _Al);
         } else {

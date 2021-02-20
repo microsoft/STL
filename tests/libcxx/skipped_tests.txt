@@ -661,6 +661,9 @@ utilities\memory\util.smartptr\util.smartptr.shared\libcxx.control_block_layout.
 # Non-Standard assumption that std::filesystem::file_time_type::duration::period is std::nano
 input.output\filesystems\fs.filesystem.synopsis\file_time_type_resolution.compile.pass.cpp
 
+# Uses-allocator class constructor wants non-const allocator ref
+utilities\allocator.adaptor\allocator.adaptor.members\construct.pass.cpp
+
 
 # *** LIKELY STL BUGS ***
 # Not yet analyzed, likely STL bugs. Assertions and other runtime failures.
