@@ -2533,14 +2533,7 @@ public:
     _CONSTEXPR20_CONTAINER basic_string(basic_string&& _Right) noexcept
         : _Mypair(_One_then_variadic_args_t{}, _STD move(_Right._Getal())) {
         _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
-#ifdef __cpp_lib_constexpr_string
-        if (_STD is_constant_evaluated()) {
-            _Take_contents(_Right, bool_constant<false>{});
-        } else
-#endif // __cpp_lib_constexpr_string
-        {
-            _Take_contents(_Right, bool_constant<_Can_memcpy_val>{});
-        }
+        _Take_contents(_Right);
     }
 
     _CONSTEXPR20_CONTAINER basic_string(basic_string&& _Right, const _Alloc& _Al) noexcept(
@@ -2556,14 +2549,7 @@ public:
             }
         }
 
-#ifdef __cpp_lib_constexpr_string
-        if (_STD is_constant_evaluated()) {
-            _Take_contents(_Right, bool_constant<false>{});
-        } else
-#endif // __cpp_lib_constexpr_string
-        {
-            _Take_contents(_Right, bool_constant<_Can_memcpy_val>{});
-        }
+        _Take_contents(_Right);
         _Proxy._Release();
     }
 
@@ -2629,14 +2615,7 @@ public:
         if (_Fits_in_left && _Right_capacity <= _Left_capacity) {
             // take _Left's buffer, max_size() is OK because _Fits_in_left
             _My_data._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal())); // throws, hereafter nothrow in this block
-#ifdef __cpp_lib_constexpr_string
-            if (_STD is_constant_evaluated()) {
-                _Take_contents(_Left, bool_constant<false>{}); // cannot memcpy in constexpr context
-            } else
-#endif // __cpp_lib_constexpr_string
-            {
-                _Take_contents(_Left, bool_constant<_Can_memcpy_val>{});
-            }
+            _Take_contents(_Left);
             const auto _Ptr = _My_data._Myptr();
             _Traits::copy(_Ptr + _Left_size, _Right_data._Myptr(), _Right_size + 1);
             _My_data._Mysize = _New_size;
@@ -2656,14 +2635,7 @@ public:
             // therefore: _Right must have more than the minimum capacity, so it must be _Large_string_engaged()
             _STL_INTERNAL_CHECK(_Right_data._Large_string_engaged());
             _My_data._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal())); // throws, hereafter nothrow in this block
-#ifdef __cpp_lib_constexpr_string
-            if (_STD is_constant_evaluated()) {
-                _Take_contents(_Right, bool_constant<false>{});
-            } else
-#endif // __cpp_lib_constexpr_string
-            {
-                _Take_contents(_Right, bool_constant<_Can_memcpy_val>{});
-            }
+            _Take_contents(_Right);
             const auto _Ptr = _Unfancy(_My_data._Bx._Ptr);
             _Traits::move(_Ptr + _Left_size, _Ptr, _Right_size + 1);
             _Traits::copy(_Ptr, _Left_data._Myptr(), _Left_size);
@@ -2732,14 +2704,7 @@ private:
     _CONSTEXPR20_CONTAINER void _Move_assign(basic_string& _Right, _Equal_allocators) noexcept {
         _Tidy_deallocate();
         _Pocma(_Getal(), _Right._Getal());
-#ifdef __cpp_lib_constexpr_string
-        if (_STD is_constant_evaluated()) {
-            _Take_contents(_Right, bool_constant<false>{});
-        } else
-#endif // __cpp_lib_constexpr_string
-        {
-            _Take_contents(_Right, bool_constant<_Can_memcpy_val>{});
-        }
+        _Take_contents(_Right);
     }
 
     _CONSTEXPR20_CONTAINER void _Move_assign(basic_string& _Right, _Propagate_allocators) noexcept {
@@ -2751,14 +2716,7 @@ private:
             _Mypair._Myval2._Reload_proxy(
                 _GET_PROXY_ALLOCATOR(_Alty, _Getal()), _GET_PROXY_ALLOCATOR(_Alty, _Right._Getal()));
             _Pocma(_Getal(), _Right._Getal());
-#ifdef __cpp_lib_constexpr_string
-            if (_STD is_constant_evaluated()) {
-                _Take_contents(_Right, bool_constant<false>{});
-            } else
-#endif // __cpp_lib_constexpr_string
-            {
-                _Take_contents(_Right, bool_constant<_Can_memcpy_val>{});
-            }
+            _Take_contents(_Right);
         }
     }
 
@@ -2840,33 +2798,34 @@ private:
         _CSTD memcpy(_My_data_mem, _Right_data_mem, _Memcpy_val_size);
     }
 
-    void _Take_contents(basic_string& _Right, true_type) noexcept {
-        // assign by stealing _Right's buffer, memcpy optimization
-        // pre: this != &_Right
-        // pre: allocator propagation (POCMA) from _Right, if necessary, is complete
-        // pre: *this owns no memory, iterators orphaned (note:
-        // _Buf/_Ptr/_Mysize/_Myres may be garbage init)
-#if _ITERATOR_DEBUG_LEVEL != 0
-        if (_Right._Mypair._Myval2._Large_string_engaged()) {
-            // take ownership of _Right's iterators along with its buffer
-            _Swap_proxy_and_iterators(_Right);
-        } else {
-            _Right._Mypair._Myval2._Orphan_all();
-        }
-#endif // _ITERATOR_DEBUG_LEVEL != 0
-
-        _Memcpy_val_from(_Right);
-        _Right._Tidy_init();
-    }
-
-    _CONSTEXPR20_CONTAINER void _Take_contents(basic_string& _Right, false_type) noexcept {
-        // assign by stealing _Right's buffer, general case
+    _CONSTEXPR20_CONTAINER void _Take_contents(basic_string& _Right) noexcept {
+        // assign by stealing _Right's buffer
         // pre: this != &_Right
         // pre: allocator propagation (POCMA) from _Right, if necessary, is complete
         // pre: *this owns no memory, iterators orphaned
         // (note: _Buf/_Ptr/_Mysize/_Myres may be garbage init)
         auto& _My_data    = _Mypair._Myval2;
         auto& _Right_data = _Right._Mypair._Myval2;
+#ifdef __cpp_lib_constexpr_string
+        if (!_STD is_constant_evaluated())
+#endif // __cpp_lib_constexpr_string
+        {
+            if constexpr (_Can_memcpy_val) {
+#if _ITERATOR_DEBUG_LEVEL != 0
+                if (_Right_data._Large_string_engaged()) {
+                    // take ownership of _Right's iterators along with its buffer
+                    _Swap_proxy_and_iterators(_Right);
+                } else {
+                    _Right_data._Orphan_all();
+                }
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+
+                _Memcpy_val_from(_Right);
+                _Right._Tidy_init();
+                return;
+            }
+        }
+
         if (_Right_data._Large_string_engaged()) { // steal buffer
             _Construct_in_place(_My_data._Bx._Ptr, _Right_data._Bx._Ptr);
             _Right_data._Bx._Ptr = nullptr;
