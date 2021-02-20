@@ -29,6 +29,7 @@
 #include <thread>
 #include <type_traits>
 #include <typeindex>
+#include <typeinfo>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
