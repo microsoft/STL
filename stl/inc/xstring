@@ -3723,7 +3723,8 @@ public:
             }
         }
 
-        const size_type _Target_capacity = (_STD min)(_My_data._Mysize | _ALLOC_MASK, max_size());
+        size_type _Target_capacity = (_STD min)(_My_data._Mysize | _ALLOC_MASK, max_size());
+        _Target_capacity           = (_STD max)(_Target_capacity, _BUF_SIZE); // must allocate at least _BUF_SIZE space
         if (_Target_capacity < _My_data._Myres) { // worth shrinking, do it
             auto& _Al              = _Getal();
             const pointer _New_ptr = _Al.allocate(_Target_capacity + 1); // throws
