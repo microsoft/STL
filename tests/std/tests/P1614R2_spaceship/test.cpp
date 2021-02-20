@@ -579,20 +579,20 @@ void ordering_test_cases() {
     }
     { // charconv
         char c[7] = "123456";
-        int d;
-        std::from_chars_result a1 = std::from_chars(c, c + 6, d);
-        std::from_chars_result a2 = std::from_chars(c, c + 6, d);
-        std::from_chars_result a3 = std::from_chars(c + 1, c + 5, d);
-        std::from_chars_result a4 = std::from_chars(c - 10, c + 10, d);
+
+        std::from_chars_result a1{c + 6, std::errc{}};
+        std::from_chars_result a2{c + 6, std::errc{}};
+        std::from_chars_result a3{c + 6, std::errc::result_out_of_range};
+        std::from_chars_result a4{c + 4, std::errc{}};
 
         assert(a1 == a2);
         assert(a1 != a3);
         assert(a1 != a4);
 
-        std::to_chars_result b1 = std::to_chars(c, c + 6, 123456);
-        std::to_chars_result b2 = std::to_chars(c, c + 6, 123456);
-        std::to_chars_result b3 = std::to_chars(c + 1, c + 5, 2345);
-        std::to_chars_result b4 = std::to_chars(c, c + 6, NAN);
+        std::to_chars_result b1{c + 6, std::errc{}};
+        std::to_chars_result b2{c + 6, std::errc{}};
+        std::to_chars_result b3{c + 6, std::errc::value_too_large};
+        std::to_chars_result b4{c + 4, std::errc{}};
 
         assert(b1 == b2);
         assert(b1 != b3);
