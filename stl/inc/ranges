@@ -2236,7 +2236,7 @@ namespace ranges {
     template <input_range _Vw>
         requires view<_Vw>&& input_range<range_reference_t<_Vw>>
             && (is_reference_v<range_reference_t<_Vw>> || view<range_value_t<_Vw>>)
-    class join_view : public view_interface<join_view<_Vw>> {
+    class join_view : public _Join_view_base<_Vw> {
         // clang-format on
     private:
         using _InnerRng = range_reference_t<_Vw>;
