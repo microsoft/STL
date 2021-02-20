@@ -167,9 +167,8 @@ constexpr bool spaceship_test(const SmallType& smaller, const EqualType& smaller
 
 template <class T>
 inline constexpr bool has_synth_ordered = false;
-template <class T, class U>
-inline constexpr bool has_synth_ordered<std::pair<T, U>> =
-    std::is_same_v<T, const SynthOrdered> || std::is_same_v<U, const SynthOrdered>;
+template <class V>
+inline constexpr bool has_synth_ordered<std::pair<const SynthOrdered, V>> = true;
 template <>
 inline constexpr bool has_synth_ordered<SynthOrdered> = true;
 
