@@ -65,6 +65,7 @@ void test_leap_second() {
     static_assert(noexcept(equal >= leap));
     static_assert(noexcept(leap >= equal));
 
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
     static_assert(is_eq(leap <=> equal));
     static_assert(is_lt(leap <=> larger));
     static_assert(is_gt(leap <=> smaller));
@@ -73,6 +74,16 @@ void test_leap_second() {
     static_assert(is_lteq(leap <=> equal));
     static_assert(is_gteq(leap <=> equal));
     static_assert(noexcept(leap <=> equal));
+
+    static_assert(is_eq(leap <=> leap_second{equal, true}));
+    static_assert(is_lt(leap <=> leap_second{larger, true}));
+    static_assert(is_gt(leap <=> leap_second{smaller, true}));
+    static_assert(is_lteq(leap <=> leap_second{larger, true}));
+    static_assert(is_gteq(leap <=> leap_second{smaller, true}));
+    static_assert(is_lteq(leap <=> leap_second{equal, true}));
+    static_assert(is_gteq(leap <=> leap_second{equal, true}));
+    static_assert(noexcept(leap <=> leap_second{equal, true}));
+#endif // __cpp_lib_concepts
 
     static_assert(noexcept(leap.date()));
     static_assert(noexcept(leap.value()));
@@ -90,7 +101,7 @@ void test_leap_second_info(const leap_second& leap, seconds accum) {
     // First UTC time when leap is counted, before insertion of a positive leap, after insertion of a negative one.
     const utc_seconds utc_leap{leap.date().time_since_epoch() + accum + (is_positive ? 0s : -1s)};
 
-    auto lsi  = get_leap_second_info(utc_leap - 1s);
+    auto lsi = get_leap_second_info(utc_leap - 1s);
     assert(lsi == (leap_second_info{false, accum}));
 
     lsi = get_leap_second_info(utc_leap - 500ms);

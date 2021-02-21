@@ -2159,6 +2159,7 @@ namespace chrono {
         return !(_Left < _Right.date());
     }
 
+#ifdef __cpp_lib_concepts
     template <class _Duration>
     requires three_way_comparable_with<sys_seconds, sys_time<_Duration>> constexpr auto operator<=>(
         const leap_second& _Left, const sys_time<_Duration>& _Right) noexcept {
@@ -2167,6 +2168,7 @@ namespace chrono {
     constexpr inline strong_ordering operator<=>(const leap_second& _Left, const leap_second& _Right) noexcept {
         return _Left.date() <=> _Right.date();
     }
+#endif // __cpp_lib_concepts
 
     inline pair<vector<leap_second>, bool> _Xtzdb_generate_leap_seconds(const size_t _Current_size) {
         // Returns empty vector if no new leap seconds are found.
@@ -2405,7 +2407,13 @@ namespace chrono {
             // Convert to the last leap second before or equal to _Time (except for the special case described above).
             const auto _Last_leap       = &*(--_It);
             const auto _Utc_leap_second = --utc_seconds{_Last_leap->date().time_since_epoch() + _Offset};
-            const auto _Leap_cmp        = _Utc_leap_second <=> _Time_floor;
+#ifdef __cpp_lib_concepts
+            const auto _Leap_cmp = _Utc_leap_second <=> _Time_floor;
+#else // ^^^ __cpp_lib_concepts / TRANSITION, GH-395 workaround vvv
+            const auto _Leap_cmp = _Utc_leap_second > _Time_floor  ? strong_ordering::greater
+                                 : _Utc_leap_second == _Time_floor ? strong_ordering::equal
+                                                                   : strong_ordering::less;
+#endif // ^^^ workaround
             if (_Tzdb._All_ls_positive && _STD is_gt(_Leap_cmp)) {
                 --_Offset;
             }
@@ -2642,21 +2650,22 @@ namespace chrono {
 
     // [time.clock.cast.sys]
 
+    // TRANSITION, GH-395 workaround, is_same_v -> same_as
     template <class _Ty, class _Clock>
     concept _Is_time_point = requires {
         typename _Ty::duration;
-        requires same_as<time_point<_Clock, typename _Ty::duration>, _Ty>;
+        requires is_same_v<time_point<_Clock, typename _Ty::duration>, _Ty>;
     };
 
     template <class _Clock, class _Duration>
     concept _Convertable_to_sys_time =
-        same_as<_Clock, system_clock> || requires(const time_point<_Clock, _Duration>& _Time) {
+        is_same_v<_Clock, system_clock> || requires(const time_point<_Clock, _Duration>& _Time) {
         { _Clock::to_sys(_Time) }
         ->_Is_time_point<system_clock>;
     };
 
     template <class _Clock, class _Duration>
-    concept _Convertable_from_sys_time = same_as<_Clock, system_clock> || requires(const sys_time<_Duration>& _Time) {
+    concept _Convertable_from_sys_time = is_same_v<_Clock, system_clock> || requires(const sys_time<_Duration>& _Time) {
         { _Clock::from_sys(_Time) }
         ->_Is_time_point<_Clock>;
     };
@@ -2685,13 +2694,13 @@ namespace chrono {
 
     template <class _Clock, class _Duration>
     concept _Convertable_to_utc_time =
-        same_as<_Clock, utc_clock> || requires(const time_point<_Clock, _Duration>& _Time) {
+        is_same_v<_Clock, utc_clock> || requires(const time_point<_Clock, _Duration>& _Time) {
         { _Clock::to_utc(_Time) }
         ->_Is_time_point<utc_clock>;
     };
 
     template <class _Clock, class _Duration>
-    concept _Convertable_from_utc_time = same_as<_Clock, utc_clock> || requires(const utc_time<_Duration>& _Time) {
+    concept _Convertable_from_utc_time = is_same_v<_Clock, utc_clock> || requires(const utc_time<_Duration>& _Time) {
         { _Clock::from_utc(_Time) }
         ->_Is_time_point<_Clock>;
     };
