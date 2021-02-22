@@ -6,16 +6,13 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 -->
 
     <ItemGroup>
-        <!-- special_math.cpp includes lots of Boost headers and takes >6s
-             to compile. Put it at the beginning of the file list to avoid
-             long pole when /MP is used -->
-
         <!-- Objs that exist only in libcpmt[d][01].lib. -->
         <BuildFiles Include="
             $(CrtRoot)\github\stl\src\atomic_wait.cpp;
             $(CrtRoot)\github\stl\src\memory_resource.cpp;
             $(CrtRoot)\github\stl\src\parallel_algorithms.cpp;
             $(CrtRoot)\github\stl\src\special_math.cpp;
+            $(CrtRoot)\github\stl\src\syncstream.cpp;
             $(CrtRoot)\github\stl\src\ulocale.cpp;
             ">
             <BuildAs>nativecpp</BuildAs>

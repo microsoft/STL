@@ -120,6 +120,7 @@
 #include <string>
 #include <string_view>
 #include <strstream>
+#include <syncstream>
 #include <system_error>
 #include <tuple>
 #include <typeindex>

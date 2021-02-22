@@ -4,6 +4,7 @@
 #include <array>
 #include <cassert>
 #include <charconv>
+#include <chrono>
 #include <compare>
 #include <concepts>
 #include <deque>
@@ -12,6 +13,7 @@
 #include <functional>
 #include <iostream>
 #include <iterator>
+#include <limits>
 #include <list>
 #include <map>
 #include <memory>
@@ -20,6 +22,7 @@
 #include <optional>
 #include <queue>
 #include <ranges>
+#include <ratio>
 #include <regex>
 #include <scoped_allocator>
 #include <set>
@@ -38,6 +41,11 @@
 #include <valarray>
 #include <variant>
 #include <vector>
+
+template <class T, class U>
+concept HasSpaceshipWith = requires {
+    std::declval<T>() <=> std::declval<U>();
+};
 
 using PartiallyOrdered = double;
 
@@ -975,6 +983,26 @@ void ordering_test_cases() {
         assert((m1 <=> m2) == 0);
         static_assert((m1 <=> m2) == 0);
     }
+    { // unique_ptr
+        std::unique_ptr<int> p1{nullptr};
+        std::unique_ptr<int>& p2 = p1;
+        std::unique_ptr<int> p3{new int};
+
+        spaceship_test<std::strong_ordering>(p1, p2, p3);
+        spaceship_test<std::strong_ordering>(p1, nullptr, p3);
+    }
+    { // shared_ptr
+        std::shared_ptr<int> p1{nullptr};
+        std::shared_ptr<int>& p2 = p1; // same managed ptr
+        std::shared_ptr<int> p3  = p2; // same stored ptr
+
+        std::shared_ptr<int> p4{new int};
+        std::shared_ptr<int> p5 = p4; // same stored ptr
+
+        spaceship_test<std::strong_ordering>(p1, p2, p4);
+        spaceship_test<std::strong_ordering>(p1, p3, p5);
+        spaceship_test<std::strong_ordering>(p1, nullptr, p4);
+    }
     { // slice
         std::slice a1(2, 3, 4);
         std::slice a2(2, 3, 4);
@@ -985,6 +1013,45 @@ void ordering_test_cases() {
         assert(a1 != a3);
         assert(a1 != a4);
         assert(a1 != a5);
+    }
+    { // chrono::duration
+        using std::chrono::hours;
+        using std::chrono::minutes;
+        using std::chrono::seconds;
+
+        spaceship_test<std::strong_ordering>(seconds{1}, seconds{1}, seconds{2});
+        spaceship_test<std::strong_ordering>(seconds{3600}, hours{1}, minutes{61});
+
+        using double_seconds     = std::chrono::duration<double>;
+        using float_milliseconds = std::chrono::duration<float, std::milli>;
+        using ntsc_fields        = std::chrono::duration<long long, std::ratio<1001, 60000>>;
+
+        spaceship_test<std::partial_ordering>(double_seconds{1}, float_milliseconds{1000}, ntsc_fields{60});
+
+        constexpr double_seconds nan_s{std::numeric_limits<double>::quiet_NaN()};
+#ifdef __clang__ // TRANSITION, DevCom-445462
+        static_assert(nan_s <=> nan_s == std::partial_ordering::unordered);
+#endif // defined(__clang__)
+        assert(nan_s <=> nan_s == std::partial_ordering::unordered);
+    }
+    { // chrono::time_point
+        using std::chrono::milliseconds;
+        using double_seconds = std::chrono::duration<double>;
+        using sys_tp         = std::chrono::system_clock::time_point;
+        using sys_ms         = std::chrono::time_point<std::chrono::system_clock, milliseconds>;
+        using sys_double_s   = std::chrono::time_point<std::chrono::system_clock, double_seconds>;
+
+        spaceship_test<std::strong_ordering>(sys_tp{}, sys_ms{}, sys_ms{milliseconds{1}});
+        spaceship_test<std::partial_ordering>(sys_tp{}, sys_double_s{}, sys_double_s{double_seconds{1}});
+
+        constexpr sys_double_s nan_tp{double_seconds{std::numeric_limits<double>::quiet_NaN()}};
+#ifdef __clang__ // TRANSITION, DevCom-445462
+        static_assert(nan_tp <=> nan_tp == std::partial_ordering::unordered);
+#endif // defined(__clang__)
+        assert(nan_tp <=> nan_tp == std::partial_ordering::unordered);
+
+        using steady_tp = std::chrono::steady_clock::time_point;
+        static_assert(!HasSpaceshipWith<sys_tp, steady_tp>);
     }
     { // filesystem::space_info
         constexpr std::filesystem::space_info si1{4'000'000'000'000, 2'000'000'000'000, 1'000'000'000'000};
