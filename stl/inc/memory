@@ -3545,7 +3545,7 @@ template <class _Ty, class _Dx>
 _NODISCARD compare_three_way_result_t<typename unique_ptr<_Ty, _Dx>::pointer> operator<=>(
     const unique_ptr<_Ty, _Dx>& _Left, nullptr_t) {
     // clang-format on
-    return compare_three_way()(_Left.get(), static_cast<typename unique_ptr<_Ty, _Dx>::pointer>(nullptr));
+    return _Left.get() <=> static_cast<typename unique_ptr<_Ty, _Dx>::pointer>(nullptr);
 }
 #endif // __cpp_lib_concepts
 
