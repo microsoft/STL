@@ -13,6 +13,7 @@
 #include <iterator>
 #include <list>
 #include <map>
+#include <memory>
 #include <queue>
 #include <ranges>
 #include <regex>
