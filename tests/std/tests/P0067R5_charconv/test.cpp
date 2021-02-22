@@ -1100,8 +1100,8 @@ int main(int argc, char** argv) {
     printf("Total time: %lld ms\n", ms);
 
     if (ms < 3'000) {
-        puts("That was fast. Consider retuning PrefixesToTest and FractionBits.");
+        puts("That was fast. Consider tuning PrefixesToTest and FractionBits to test more cases.");
     } else if (ms > 30'000) {
-        puts("That was slow. Consider retuning PrefixesToTest and FractionBits.");
+        puts("That was slow. Consider tuning PrefixesToTest and FractionBits to test fewer cases.");
     }
 }
