@@ -320,9 +320,6 @@ std/language.support/support.limits/support.limits.general/functional.version.pa
 std/language.support/support.limits/support.limits.general/iterator.version.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/memory.version.pass.cpp FAIL
 
-# C++20 P1614R2 "Adding Spaceship <=> To The Library"
-std/language.support/support.limits/support.limits.general/compare.version.pass.cpp FAIL
-
 # C++23 P1048R1 "is_scoped_enum"
 std/utilities/meta/meta.unary/meta.unary.prop/is_scoped_enum.pass.cpp FAIL
 
