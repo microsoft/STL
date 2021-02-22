@@ -1152,7 +1152,7 @@ _NODISCARD inline __floating_decimal_32 __f2d(const uint32_t __ieeeMantissa, con
       __lastRemovedDigit = 4;
     }
     // We need to take __vr + 1 if __vr is outside bounds or we need to round up.
-     _Output = __vr + ((__vr == __vm && (!__acceptBounds || !__vmIsTrailingZeros)) || __lastRemovedDigit >= 5);
+    _Output = __vr + ((__vr == __vm && (!__acceptBounds || !__vmIsTrailingZeros)) || __lastRemovedDigit >= 5);
   } else {
     // Specialized for the common case (~96.0%). Percentages below are relative to this.
     // Loop iterations below (approximately):
