@@ -259,12 +259,14 @@ _NODISCARD bool operator==(const scoped_allocator_adaptor<_Outer1>& _Left,
     return _Left.outer_allocator() == _Right.outer_allocator();
 }
 
+#if !_HAS_CXX20
 template <class _Outer1, class _Outer2, class... _Inner>
 _NODISCARD bool operator!=(const scoped_allocator_adaptor<_Outer1, _Inner...>& _Left,
     const scoped_allocator_adaptor<_Outer2, _Inner...>&
         _Right) noexcept { // compare scoped_allocator_adaptors for equality
     return !(_Left == _Right);
 }
+#endif // !_HAS_CXX20
 
 _STD_END
 #pragma pop_macro("new")
