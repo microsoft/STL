@@ -19,6 +19,7 @@
 #include <memory>
 #include <memory_resource>
 #include <new>
+#include <optional>
 #include <queue>
 #include <ranges>
 #include <ratio>
@@ -30,6 +31,7 @@
 #include <string_view>
 #include <system_error>
 #include <thread>
+#include <tuple>
 #include <type_traits>
 #include <typeindex>
 #include <typeinfo>
@@ -39,9 +41,6 @@
 #include <valarray>
 #include <variant>
 #include <vector>
-
-template <class T>
-using SpaceshipType = decltype(std::declval<T>() <=> std::declval<T>());
 
 template <class T, class U>
 concept HasSpaceshipWith = requires {
@@ -173,15 +172,17 @@ constexpr bool spaceship_test(const SmallType& smaller, const EqualType& smaller
 }
 
 template <class T>
-inline constexpr bool is_pair = false;
-template <class A, class B>
-inline constexpr bool is_pair<std::pair<A, B>> = true; // TRANSITION, std::pair spaceship not yet implemented
+inline constexpr bool has_synth_ordered = false;
+template <class V>
+inline constexpr bool has_synth_ordered<std::pair<const SynthOrdered, V>> = true;
+template <>
+inline constexpr bool has_synth_ordered<SynthOrdered> = true;
 
 template <class Container>
 void ordered_containers_test(const Container& smaller, const Container& smaller_equal, const Container& larger) {
     using Elem = typename Container::value_type;
-    if constexpr (is_pair<Elem> // TRANSITION, std::pair spaceship not yet implemented
-                  || std::is_same_v<Elem, SynthOrdered>) {
+
+    if constexpr (has_synth_ordered<Elem>) {
         spaceship_test<std::weak_ordering>(smaller, smaller_equal, larger);
     } else {
         spaceship_test<std::strong_ordering>(smaller, smaller_equal, larger);
@@ -244,6 +245,83 @@ void diagnostics_test() {
         assert((e_smaller <=> e_larger) < 0);
         assert((e_larger <=> e_smaller) > 0);
     }
+}
+
+template <template <class...> class TupleLike>
+constexpr bool tuple_like_test() {
+    {
+        constexpr TupleLike<int, int> t1{1, 1};
+        constexpr TupleLike<int, int> t1_equal{1, 1};
+        constexpr TupleLike<int, int> t2{2, 1};
+
+        assert(spaceship_test<std::strong_ordering>(t1, t1_equal, t2));
+    }
+    {
+        constexpr TupleLike<int, double> t1{1, 1.0};
+        constexpr TupleLike<int, double> t1_equal{1, 1.0};
+        constexpr TupleLike<int, double> t2{2, 1.0};
+
+        assert(spaceship_test<std::partial_ordering>(t1, t1_equal, t2));
+    }
+
+    if constexpr (std::is_same_v<TupleLike<int, int>, std::tuple<int, int>>) {
+        {
+            constexpr TupleLike<int, double> t1{1, 1.0};
+            constexpr TupleLike<double, double> t1_equal{1.0, 1.0};
+            constexpr TupleLike<int, double> t2{2, 1.0};
+
+            assert(spaceship_test<std::partial_ordering>(t1, t1_equal, t2));
+        }
+        {
+            constexpr TupleLike<int, double> t1{1, 1.0};
+            constexpr TupleLike<int, double> t1_equal{1, 1.0};
+            constexpr TupleLike<double, double> t2{2.0, 1.0};
+
+            assert(spaceship_test<std::partial_ordering>(t1, t1_equal, t2));
+        }
+    }
+
+    static_assert(std::is_same_v<std::compare_three_way_result_t<TupleLike<PartiallyOrdered, PartiallyOrdered>>,
+        std::partial_ordering>);
+    static_assert(
+        std::is_same_v<std::compare_three_way_result_t<TupleLike<WeaklyOrdered, WeaklyOrdered>>, std::weak_ordering>);
+    static_assert(std::is_same_v<std::compare_three_way_result_t<TupleLike<StronglyOrdered, StronglyOrdered>>,
+        std::strong_ordering>);
+
+    return true;
+}
+
+template <auto SmallVal, decltype(SmallVal) EqualVal, decltype(EqualVal) LargeVal>
+constexpr bool optional_test() {
+    using ReturnType = std::compare_three_way_result_t<decltype(SmallVal)>;
+
+    {
+        constexpr std::optional o1(SmallVal);
+        constexpr std::optional o1_equal(EqualVal);
+        constexpr std::optional o2(LargeVal);
+
+        assert(spaceship_test<ReturnType>(o1, o1_equal, o2));
+    }
+    {
+        constexpr std::optional<decltype(SmallVal)> o1(std::nullopt);
+        constexpr std::optional<decltype(EqualVal)> o1_equal(std::nullopt);
+        constexpr std::optional o2(LargeVal);
+
+        assert(spaceship_test<ReturnType>(o1, o1_equal, o2));
+    }
+    {
+        constexpr std::optional o1(SmallVal);
+
+        assert(spaceship_test<ReturnType>(o1, EqualVal, LargeVal));
+    }
+    {
+        constexpr std::optional<decltype(SmallVal)> o1(std::nullopt);
+        constexpr std::optional o2(LargeVal);
+
+        assert(spaceship_test<ReturnType>(o1, std::nullopt, o2));
+    }
+
+    return true;
 }
 
 template <bool Equal>
@@ -571,10 +649,10 @@ void ordering_test_cases() {
             std::sub_match<std::basic_string<WeaklyOrderedByOmissionChar>::const_iterator>;
         using PartiallyOrderedMatch = std::sub_match<std::basic_string<PartiallyOrderedChar>::const_iterator>;
 
-        static_assert(std::is_same_v<SpaceshipType<StronglyOrderedMatch>, std::strong_ordering>);
-        static_assert(std::is_same_v<SpaceshipType<WeaklyOrderedMatch>, std::weak_ordering>);
-        static_assert(std::is_same_v<SpaceshipType<WeaklyOrderdByOmissionMatch>, std::weak_ordering>);
-        static_assert(std::is_same_v<SpaceshipType<PartiallyOrderedMatch>, std::partial_ordering>);
+        static_assert(std::is_same_v<std::compare_three_way_result_t<StronglyOrderedMatch>, std::strong_ordering>);
+        static_assert(std::is_same_v<std::compare_three_way_result_t<WeaklyOrderedMatch>, std::weak_ordering>);
+        static_assert(std::is_same_v<std::compare_three_way_result_t<WeaklyOrderdByOmissionMatch>, std::weak_ordering>);
+        static_assert(std::is_same_v<std::compare_three_way_result_t<PartiallyOrderedMatch>, std::partial_ordering>);
     }
     { // char_traits
         static_assert(std::is_same_v<std::char_traits<char>::comparison_category, std::strong_ordering>);
@@ -836,6 +914,39 @@ void ordering_test_cases() {
 
         spaceship_test<std::strong_ordering>(c_mem[0], c_mem[0], c_mem[1]);
     }
+    { // optional
+        optional_test<0, 0, 1>();
+        static_assert(optional_test<0, 0, 1>());
+
+#if defined(__cpp_nontype_template_args) && __cpp_nontype_template_args >= 201911
+        optional_test<0.0, 0.0, 1.0>();
+        static_assert(optional_test<0.0, 0.0, 1.0>());
+#endif
+
+        static_assert(
+            std::is_same_v<std::compare_three_way_result_t<std::optional<WeaklyOrdered>, std::optional<WeaklyOrdered>>,
+                std::weak_ordering>);
+        static_assert(std::is_same_v<std::compare_three_way_result_t<std::optional<WeaklyOrdered>, WeaklyOrdered>,
+            std::weak_ordering>);
+        static_assert(std::is_same_v<std::compare_three_way_result_t<std::optional<WeaklyOrdered>, std::nullopt_t>,
+            std::strong_ordering>);
+    }
+    { // tuple
+        tuple_like_test<std::tuple>();
+        static_assert(tuple_like_test<std::tuple>());
+
+        {
+            constexpr std::tuple<> empty1;
+            constexpr std::tuple<> empty2;
+
+            static_assert(std::is_same_v<decltype(empty1 <=> empty2), std::strong_ordering>);
+            static_assert((empty1 <=> empty2) == std::strong_ordering::equal);
+        }
+    }
+    { // pair
+        tuple_like_test<std::pair>();
+        static_assert(tuple_like_test<std::pair>());
+    }
     { // variant
         using V = std::variant<int, long>;
         constexpr V v0_0(std::in_place_index<0>, 0);
@@ -1004,24 +1115,23 @@ void ordering_test_cases() {
 template <class Element, class Ordering>
 void test_element_ordering() {
     if constexpr (!std::is_same_v<Element, SynthOrdered>) { // SynthOrdered inherently doesn't support <=> directly
-        static_assert(std::is_same_v<SpaceshipType<Element>, Ordering>);
+        static_assert(std::is_same_v<std::compare_three_way_result_t<Element>, Ordering>);
     }
 
-    static_assert(std::is_same_v<SpaceshipType<std::array<Element, 3>>, Ordering>);
-    static_assert(std::is_same_v<SpaceshipType<std::deque<Element>>, Ordering>);
-    static_assert(std::is_same_v<SpaceshipType<std::list<Element>>, Ordering>);
-    static_assert(std::is_same_v<SpaceshipType<std::vector<Element>>, Ordering>);
-    static_assert(std::is_same_v<SpaceshipType<std::forward_list<Element>>, Ordering>);
+    static_assert(std::is_same_v<std::compare_three_way_result_t<std::array<Element, 3>>, Ordering>);
+    static_assert(std::is_same_v<std::compare_three_way_result_t<std::deque<Element>>, Ordering>);
+    static_assert(std::is_same_v<std::compare_three_way_result_t<std::list<Element>>, Ordering>);
+    static_assert(std::is_same_v<std::compare_three_way_result_t<std::vector<Element>>, Ordering>);
+    static_assert(std::is_same_v<std::compare_three_way_result_t<std::forward_list<Element>>, Ordering>);
 
-    // TRANSITION, std::pair spaceship not yet implemented
-    static_assert(std::is_same_v<SpaceshipType<std::map<Element, Element>>, std::weak_ordering>);
-    static_assert(std::is_same_v<SpaceshipType<std::multimap<Element, Element>>, std::weak_ordering>);
+    static_assert(std::is_same_v<std::compare_three_way_result_t<std::map<Element, Element>>, Ordering>);
+    static_assert(std::is_same_v<std::compare_three_way_result_t<std::multimap<Element, Element>>, Ordering>);
 
-    static_assert(std::is_same_v<SpaceshipType<std::set<Element>>, Ordering>);
-    static_assert(std::is_same_v<SpaceshipType<std::multiset<Element>>, Ordering>);
+    static_assert(std::is_same_v<std::compare_three_way_result_t<std::set<Element>>, Ordering>);
+    static_assert(std::is_same_v<std::compare_three_way_result_t<std::multiset<Element>>, Ordering>);
 
-    static_assert(std::is_same_v<SpaceshipType<std::queue<Element>>, Ordering>);
-    static_assert(std::is_same_v<SpaceshipType<std::stack<Element>>, Ordering>);
+    static_assert(std::is_same_v<std::compare_three_way_result_t<std::queue<Element>>, Ordering>);
+    static_assert(std::is_same_v<std::compare_three_way_result_t<std::stack<Element>>, Ordering>);
 }
 
 int main() {
