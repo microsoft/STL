@@ -320,9 +320,6 @@ language.support\support.limits\support.limits.general\functional.version.pass.c
 language.support\support.limits\support.limits.general\iterator.version.pass.cpp
 language.support\support.limits\support.limits.general\memory.version.pass.cpp
 
-# C++20 P1614R2 "Adding Spaceship <=> To The Library"
-language.support\support.limits\support.limits.general\compare.version.pass.cpp
-
 # C++23 P1048R1 "is_scoped_enum"
 utilities\meta\meta.unary\meta.unary.prop\is_scoped_enum.pass.cpp
 
