@@ -1952,7 +1952,8 @@ public:
 
     _NODISCARD _CONSTEXPR20_CONTAINER _String_const_iterator operator+(const difference_type _Off) const noexcept {
         _String_const_iterator _Tmp = *this;
-        return _Tmp += _Off;
+        _Tmp += _Off; // TRANSITION, LLVM-XXXX
+        return _Tmp;
     }
 
     _CONSTEXPR20_CONTAINER _String_const_iterator& operator-=(const difference_type _Off) noexcept {
@@ -1961,7 +1962,8 @@ public:
 
     _NODISCARD _CONSTEXPR20_CONTAINER _String_const_iterator operator-(const difference_type _Off) const noexcept {
         _String_const_iterator _Tmp = *this;
-        return _Tmp -= _Off;
+        _Tmp -= _Off; // TRANSITION, LLVM-XXXX
+        return _Tmp;
     }
 
     _NODISCARD _CONSTEXPR20_CONTAINER difference_type operator-(const _String_const_iterator& _Right) const noexcept {
@@ -2124,7 +2126,8 @@ public:
 
     _NODISCARD _CONSTEXPR20_CONTAINER _String_iterator operator+(const difference_type _Off) const noexcept {
         _String_iterator _Tmp = *this;
-        return _Tmp += _Off;
+        _Tmp += _Off; // TRANSITION, LLVM-XXXX
+        return _Tmp;
     }
 
     _CONSTEXPR20_CONTAINER _String_iterator& operator-=(const difference_type _Off) noexcept {
@@ -2136,7 +2139,8 @@ public:
 
     _NODISCARD _CONSTEXPR20_CONTAINER _String_iterator operator-(const difference_type _Off) const noexcept {
         _String_iterator _Tmp = *this;
-        return _Tmp -= _Off;
+        _Tmp -= _Off; // TRANSITION, LLVM-XXXX
+        return _Tmp;
     }
 
     _NODISCARD _CONSTEXPR20_CONTAINER reference operator[](const difference_type _Off) const noexcept {
@@ -4543,10 +4547,17 @@ private:
             _Al.deallocate(_Ptr, _Mypair._Myval2._Myres + 1);
         }
 
-        _Mypair._Myval2._Mysize = 0;
-        _Mypair._Myval2._Myres  = _BUF_SIZE - 1;
-        // the _Traits::assign is last so the codegen doesn't think the char write can alias this
-        _Traits::assign(_Mypair._Myval2._Bx._Buf[0], _Elem());
+#ifdef __cpp_lib_constexpr_string
+        if (_STD is_constant_evaluated()) {
+            _Mypair._Myval2._Bx._Ptr = nullptr;
+        } else
+#endif // __cpp_lib_constexpr_string
+        {
+            _Mypair._Myval2._Mysize = 0;
+            _Mypair._Myval2._Myres  = _BUF_SIZE - 1;
+            // the _Traits::assign is last so the codegen doesn't think the char write can alias this
+            _Traits::assign(_Mypair._Myval2._Bx._Buf[0], _Elem());
+        }
     }
 
 public:
