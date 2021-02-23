@@ -1080,7 +1080,7 @@ public:
     }
 
     // [counted.iter.access]
-    _NODISCARD constexpr const _Iter& base() const& noexcept /* strengthened */ { // Per LWG-3391
+    _NODISCARD constexpr const _Iter& base() const& noexcept /* strengthened */ {
         return _Current;
     }
 
