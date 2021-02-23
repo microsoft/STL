@@ -177,6 +177,7 @@ public:
 
     template <class _Clock, class _Duration>
     _NODISCARD bool try_acquire_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
+        static_assert(is_clock_v<_Clock>, "Clock type required");
         ptrdiff_t _Current = _Counter.load(memory_order_relaxed);
         for (;;) {
             while (_Current == 0) {
@@ -274,6 +275,7 @@ public:
 
     template <class _Clock, class _Duration>
     _NODISCARD bool try_acquire_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
+        static_assert(is_clock_v<_Clock>, "Clock type required");
         for (;;) {
             // "happens after release" ordering is provided by this exchange, so loads and waits can be relaxed
             // TRANSITION, GH-1133: should be memory_order_acquire
