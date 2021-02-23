@@ -15,19 +15,19 @@
 
 using namespace std;
 
-static constexpr auto literal_input     = "Hello fluffy kittens";
-static constexpr auto literal_input_u16 = u"Hello fluffy kittens";
-static constexpr auto literal_input_u32 = U"Hello fluffy kittens";
-static constexpr auto literal_input_w   = L"Hello fluffy kittens";
+constexpr auto literal_input     = "Hello fluffy kittens";
+constexpr auto literal_input_u16 = u"Hello fluffy kittens";
+constexpr auto literal_input_u32 = U"Hello fluffy kittens";
+constexpr auto literal_input_w   = L"Hello fluffy kittens";
 
-static constexpr auto view_input     = "Hello fluffy kittens"sv;
-static constexpr auto view_input_u16 = u"Hello fluffy kittens"sv;
-static constexpr auto view_input_u32 = U"Hello fluffy kittens"sv;
-static constexpr auto view_input_w   = L"Hello fluffy kittens"sv;
+constexpr auto view_input     = "Hello fluffy kittens"sv;
+constexpr auto view_input_u16 = u"Hello fluffy kittens"sv;
+constexpr auto view_input_u32 = U"Hello fluffy kittens"sv;
+constexpr auto view_input_w   = L"Hello fluffy kittens"sv;
 
 #ifdef __cpp_char8_t
-static constexpr auto literal_input_u8 = u8"Hello fluffy kittens";
-static constexpr auto view_input_u8    = u8"Hello fluffy kittens"sv;
+constexpr auto literal_input_u8 = u8"Hello fluffy kittens";
+constexpr auto view_input_u8    = u8"Hello fluffy kittens"sv;
 #endif // __cpp_char8_t
 
 template <class CharType = char>
@@ -172,7 +172,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         str copy_assigned = literal_constructed;
         assert(equalRanges(copy_assigned, literal_constructed));
 
-        str move_assigned = std::move(copy_assigned);
+        str move_assigned = move(copy_assigned);
         assert(equalRanges(move_assigned, literal_constructed));
         assert(copy_constructed.empty());
 
@@ -341,8 +341,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         assert(at == CharType{'l'});
 
         literal_constructed.at(2) = CharType{'v'};
-
-        const auto at2 = literal_constructed.at(2);
+        const auto at2            = literal_constructed.at(2);
         static_assert(is_same_v<remove_const_t<decltype(at2)>, CharType>);
         assert(at2 == CharType{'v'});
 
@@ -462,11 +461,11 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         assert(!e);
 
         const auto s = literal_constructed.size();
-        static_assert(is_same_v<remove_const_t<decltype(s)>, std::size_t>);
+        static_assert(is_same_v<remove_const_t<decltype(s)>, size_t>);
         assert(s == size(get_view_input<CharType>()));
 
         const auto ms = literal_constructed.max_size();
-        static_assert(is_same_v<remove_const_t<decltype(ms)>, std::size_t>);
+        static_assert(is_same_v<remove_const_t<decltype(ms)>, size_t>);
         if constexpr (is_same_v<CharType, char16_t> || is_same_v<CharType, char32_t> || is_same_v<CharType, wchar_t>) {
             assert(ms == static_cast<size_t>(-1) / sizeof(CharType) - 1);
         } else {
@@ -476,7 +475,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         literal_constructed.reserve(20);
 
         const auto c = literal_constructed.capacity();
-        static_assert(is_same_v<remove_const_t<decltype(c)>, std::size_t>);
+        static_assert(is_same_v<remove_const_t<decltype(c)>, size_t>);
         if constexpr (is_same_v<CharType, char16_t> || is_same_v<CharType, char32_t> || is_same_v<CharType, wchar_t>) {
             assert(c == 23);
         } else {
@@ -486,7 +485,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         literal_constructed.shrink_to_fit();
 
         const auto c2 = literal_constructed.capacity();
-        static_assert(is_same_v<remove_const_t<decltype(c2)>, std::size_t>);
+        static_assert(is_same_v<remove_const_t<decltype(c2)>, size_t>);
         if constexpr (is_same_v<CharType, char16_t> || is_same_v<CharType, char32_t> || is_same_v<CharType, wchar_t>) {
             assert(c2 == 23);
         } else {
