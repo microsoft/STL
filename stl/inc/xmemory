@@ -1172,8 +1172,8 @@ public:
 
     static constexpr bool _Unwrap_when_unverified = _ITERATOR_DEBUG_LEVEL == 0;
 
-    _Container_proxy* _Myproxy    = nullptr;
-    _Iterator_base12* _Mynextiter = nullptr;
+    mutable _Container_proxy* _Myproxy    = nullptr;
+    mutable _Iterator_base12* _Mynextiter = nullptr;
 
 #if _ITERATOR_DEBUG_LEVEL == 2
 private:
