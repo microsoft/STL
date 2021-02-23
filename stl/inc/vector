@@ -1776,8 +1776,9 @@ private:
                 const auto _Temp = *_Pnext; // TRANSITION, VSO-1269037
                 _Pnext           = &_Temp->_Mynextiter;
             } else { // orphan the iterator
-                (*_Pnext)->_Myproxy = nullptr;
-                *_Pnext             = (*_Pnext)->_Mynextiter;
+                const auto _Temp = *_Pnext; // TRANSITION, VSO-1269037
+                _Temp->_Myproxy  = nullptr;
+                *_Pnext          = _Temp->_Mynextiter;
             }
         }
     }
