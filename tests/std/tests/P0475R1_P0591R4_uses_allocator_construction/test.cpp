@@ -32,7 +32,7 @@ void test_P0475R1() {
 
 constexpr bool test_P0591R4() {
     allocator<int> alloc;
-    int i  = 5;
+    int i = 5;
     pair p(i, i);
 
     struct AllocatorArgConstructible {
