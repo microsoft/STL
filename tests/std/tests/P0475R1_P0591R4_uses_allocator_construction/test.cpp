@@ -6,6 +6,7 @@
 #include <scoped_allocator>
 #include <tuple>
 #include <type_traits>
+#include <utility>
 
 using namespace std;
 
@@ -32,7 +33,7 @@ void test_P0475R1() {
 constexpr bool test_P0591R4() {
     allocator<int> alloc;
     int i  = 5;
-    pair p = pair<int, int>(i, i);
+    pair p(i, i);
 
     struct AllocatorArgConstructible {
         using allocator_type = allocator<int>;
