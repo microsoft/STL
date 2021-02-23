@@ -482,14 +482,41 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
             assert(c == 31);
         }
 
+        // make reserve actually do work
+        literal_constructed.reserve(35);
+        const auto c2 = literal_constructed.capacity();
+        if constexpr (is_same_v<CharType, char16_t> || is_same_v<CharType, wchar_t>) {
+            assert(c2 == 39);
+        } else if constexpr (is_same_v<CharType, char32_t>) {
+            assert(c2 == 35);
+        } else {
+            assert(c2 == 47);
+        }
+
+        // shrink back to previous size
         literal_constructed.shrink_to_fit();
 
-        const auto c2 = literal_constructed.capacity();
-        static_assert(is_same_v<remove_const_t<decltype(c2)>, size_t>);
+        const auto c3 = literal_constructed.capacity();
         if constexpr (is_same_v<CharType, char16_t> || is_same_v<CharType, char32_t> || is_same_v<CharType, wchar_t>) {
-            assert(c2 == 23);
+            assert(c3 == 23);
         } else {
-            assert(c2 == 31);
+            assert(c3 == 31);
+        }
+
+        literal_constructed.erase(3);
+        literal_constructed.shrink_to_fit();
+
+        const auto c4 = literal_constructed.capacity();
+        if (is_constant_evaluated()) { // check minimum allocation of _BUF_SIZE when constant evaluated
+            assert(c4 == 16 / sizeof(CharType));
+        } else {
+            if constexpr (is_same_v<CharType, char16_t> || is_same_v<CharType, wchar_t>) {
+                assert(c4 == 7);
+            } else if constexpr (is_same_v<CharType, char32_t>) {
+                assert(c4 == 3);
+            } else {
+                assert(c4 == 15);
+            }
         }
     }
 
