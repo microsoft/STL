@@ -158,7 +158,7 @@ public:
 #if _HAS_CXX20
         static_assert(is_clock_v<_Clock>, "Clock type required");
 #endif // _HAS_CXX20
-        }
+    }
 
     _NODISCARD_CTOR unique_lock(_Mutex& _Mtx, const xtime* _Abs_time)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(false) { // try to lock until _Abs_time
