@@ -464,6 +464,10 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         static_assert(is_same_v<remove_const_t<decltype(s)>, size_t>);
         assert(s == size(get_view_input<CharType>()));
 
+        const auto l = literal_constructed.length();
+        static_assert(is_same_v<remove_const_t<decltype(l)>, size_t>);
+        assert(l == s);
+
         const auto ms = literal_constructed.max_size();
         static_assert(is_same_v<remove_const_t<decltype(ms)>, size_t>);
         if constexpr (is_same_v<CharType, char16_t> || is_same_v<CharType, char32_t> || is_same_v<CharType, wchar_t>) {
@@ -568,6 +572,40 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
             insert_const_initializer.insert(insert_const_initializer.cbegin() + 6, {'c', 'u', 't', 'e', ' '});
         assert(cit_ilist == insert_const_initializer.cbegin() + 6);
         assert(equalRanges(insert_const_initializer, "Hello cute fluffy kittens"sv));
+
+        str insert_pos_str  = get_literal_input<CharType>();
+        const str to_insert = "cute and scratchy ";
+        insert_pos_str.insert(6, to_insert);
+        assert(equalRanges(insert_pos_str, "Hello cute and scratchy fluffy kittens"sv));
+
+        str insert_pos_substr = get_literal_input<CharType>();
+        insert_pos_substr.insert(6, to_insert, 0, 5);
+        assert(equalRanges(insert_pos_substr, "Hello cute fluffy kittens"sv));
+
+        const string_view_convertible<CharType> convertible;
+        str insert_pos_conversion = get_literal_input<CharType>();
+        insert_pos_conversion.insert(6, convertible);
+        assert(equalRanges(insert_pos_conversion, "Hello Hello fluffy kittensfluffy kittens"sv));
+
+        str insert_pos_conversion_substr = get_literal_input<CharType>();
+        insert_pos_conversion_substr.insert(6, convertible, 6, 7);
+        assert(equalRanges(insert_pos_conversion, "Hello fluffy fluffy kittens"));
+
+        str insert_pos_literal = get_literal_input<CharType>();
+        insert_pos_literal.insert(6, get_literal_input<CharType>());
+        assert(equalRanges(insert_pos_literal, "Hello Hello fluffy kittensfluffy kittens"sv));
+
+        str insert_pos_literal_substr = get_literal_input<CharType>();
+        insert_pos_literal_substr.insert(6, get_literal_input<CharType>(), 6);
+        assert(equalRanges(insert_pos_literal_substr, "Hello Hello fluffy kittens"sv));
+
+        str insert_pos_char_count = get_literal_input<CharType>();
+        insert_pos_char_count.insert(6, 3, CharType{'b'});
+        assert(equalRanges(insert_pos_char_count, "Hello bbbfluffy kittens"sv));
+
+        str insert_iter_char_count = get_literal_input<CharType>();
+        insert_iter_char_count.insert(begin(insert_iter_char_count) + 5, 4, CharType{'o'});
+        assert(equalRanges(insert_iter_char_count, "Hellooooo fluffy kittens"sv));
 #endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__)
     }
 
@@ -1411,10 +1449,28 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         const bool greater_eq_literal_str = get_view_input<CharType>() >= third;
         assert(!greater_eq_literal_str);
     }
+
+    { // literals
+        auto res = "purr purr"s;
+        assert(equalRanges(res, "purr purr"sv));
+    }
+
+    { // basic_string_view conversion
+        str s                          = get_literal_input<CharType>();
+        basic_string_view<CharType> sv = s;
+        assert(equalRanges(sv, "Hello fluffy kittens"sv));
+    }
 #endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0
 #endif // __EDG__
     return true;
 }
+
+template <class CharType = char>
+struct CharLikeType {
+    constexpr CharLikeType() = default;
+    constexpr CharLikeType(CharType cc) : c(cc) {}
+    CharType c;
+};
 
 template <class CharType = char>
 _CONSTEXPR20_CONTAINER bool test_iterators() {
@@ -1422,6 +1478,27 @@ _CONSTEXPR20_CONTAINER bool test_iterators() {
 #ifndef __EDG__ // TRANSITION, VSO-1273296s
     using str               = basic_string<CharType>;
     str literal_constructed = get_literal_input<CharType>();
+
+    { // assignment
+        auto it   = literal_constructed.begin();
+        auto it2  = literal_constructed.end();
+        auto cit  = literal_constructed.cbegin();
+        auto cit2 = literal_constructed.cend();
+
+        it  = it2;
+        cit = cit2;
+    }
+
+    { // op->
+        basic_string<CharLikeType<CharType>> bs{'x'};
+        auto it = bs.begin();
+        auto c  = it->c;
+        assert(c == CharType{'x'});
+
+        auto cit = bs.cbegin();
+        auto cc  = cit->c;
+        assert(cc == CharType{'x'});
+    }
 
     { // increment
         auto it = literal_constructed.begin();
@@ -1440,11 +1517,19 @@ _CONSTEXPR20_CONTAINER bool test_iterators() {
         assert(*it == 'l');
         it += 2;
         assert(*it == 'o');
+#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) // TRANSITION, 16.10p1
+        it = 2 + it;
+        assert(*it == 'f');
+#endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__)
 
         auto cit = literal_constructed.cbegin() + 2;
         assert(*cit == 'l');
         cit += 2;
         assert(*cit == 'o');
+#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) // TRANSITION, 16.10p1
+        cit = 2 + cit;
+        assert(*cit == 'f');
+#endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__)
     }
 
     { // decrement
