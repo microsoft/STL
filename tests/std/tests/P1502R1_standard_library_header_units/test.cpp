@@ -73,7 +73,7 @@ import <streambuf>;
 import <string>;
 import <string_view>;
 import <strstream>;
-// import <syncstream>;
+import <syncstream>;
 import <system_error>;
 import <thread>;
 import <tuple>;
@@ -324,9 +324,13 @@ int main() {
         puts("Testing <future>.");
         promise<int> p{};
         future<int> f{p.get_future()};
+#ifdef MSVC_INTERNAL_TESTING // TRANSITION, VSO-1271718 (Standard Library Header Units ICE with C++20 chrono)
         assert(f.wait_for(chrono::seconds{0}) == future_status::timeout);
+#endif // ^^^ no workaround ^^^
         p.set_value(1729);
+#ifdef MSVC_INTERNAL_TESTING // TRANSITION, VSO-1271718 (Standard Library Header Units ICE with C++20 chrono)
         assert(f.wait_for(chrono::seconds{0}) == future_status::ready);
+#endif // ^^^ no workaround ^^^
         assert(f.get() == 1729);
     }
 
@@ -756,7 +760,9 @@ int main() {
                 }
                 l.count_down(); // tell main() that we're done
                 while (!token.stop_requested()) {
+#ifdef MSVC_INTERNAL_TESTING // TRANSITION, VSO-1271718 (Standard Library Header Units ICE with C++20 chrono)
                     this_thread::sleep_for(10ms); // not a timing assumption; avoids spinning furiously
+#endif // ^^^ no workaround ^^^
                 }
                 vec.push_back(-1000); // indicate that token.stop_requested() returned true
             }};
@@ -804,7 +810,13 @@ int main() {
 
     {
         puts("Testing <syncstream>.");
-        puts("(TRANSITION, not yet implemented.)");
+        syncbuf sync_buf{nullptr};
+        assert(sync_buf.get_wrapped() == nullptr);
+        assert(sync_buf.get_allocator() == allocator<char>{});
+        assert(sync_buf.emit() == false);
+        osyncstream sync_str{cout};
+        sync_str << "Testing P1502R1_standard_library_header_units.\n";
+        assert(sync_str.rdbuf()->get_wrapped() == cout.rdbuf());
     }
 
     {

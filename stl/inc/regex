@@ -936,7 +936,7 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, 
 }
 
 // FORWARD DECLARATIONS
-template <class _BidIt, class _Allocator = allocator<sub_match<_BidIt>>>
+template <class _BidIt, class _Alloc = allocator<sub_match<_BidIt>>>
 class match_results;
 
 template <class _BidIt, class _Alloc, class _InIt, class _OutIt>
@@ -2466,7 +2466,7 @@ public:
                 _MyRe = nullptr;
 
 #if _ITERATOR_DEBUG_LEVEL == 2
-                this->_Orphan_me();
+                this->_Orphan_me_v2();
 #endif // _ITERATOR_DEBUG_LEVEL
 
                 return *this;

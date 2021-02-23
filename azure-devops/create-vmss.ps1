@@ -17,7 +17,10 @@ or are running from Azure Cloud Shell.
 
 $ErrorActionPreference = 'Stop'
 
-$Location = 'westus2'
+# https://aka.ms/azps-changewarnings
+$Env:SuppressAzurePowerShellBreakingChangeWarnings = 'true'
+
+$Location = 'northeurope'
 $Prefix = 'StlBuild-' + (Get-Date -Format 'yyyy-MM-dd')
 $VMSize = 'Standard_D32as_v4'
 $ProtoVMName = 'PROTOTYPE'
