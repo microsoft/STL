@@ -117,7 +117,7 @@ public:
     _NODISCARD bool try_lock_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
         // try to lock until time point
 #if _HAS_CXX20
-        static_assert(is_clock_v<_Clock>, "Clock type required");
+        static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
 #endif // _HAS_CXX20
         auto _Not_writing  = [this] { return !_Writing; };
         auto _Zero_readers = [this] { return _Readers == 0; };
@@ -192,7 +192,7 @@ public:
     _NODISCARD bool try_lock_shared_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
         // try to lock non-exclusive until absolute time
 #if _HAS_CXX20
-        static_assert(is_clock_v<_Clock>, "Clock type required");
+        static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
 #endif // _HAS_CXX20
         return _Try_lock_shared_until(_Abs_time);
     }
@@ -264,7 +264,7 @@ public:
         : _Pmtx(_STD addressof(_Mtx)), _Owns(_Mtx.try_lock_shared_until(_Abs_time)) {
         // construct with mutex and try to lock until absolute time
 #if _HAS_CXX20
-        static_assert(is_clock_v<_Clock>, "Clock type required");
+        static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
 #endif // _HAS_CXX20
     }
 
@@ -318,7 +318,7 @@ public:
     _NODISCARD bool try_lock_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
         // try to lock the mutex until _Abs_time
 #if _HAS_CXX20
-        static_assert(is_clock_v<_Clock>, "Clock type required");
+        static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
 #endif // _HAS_CXX20
         _Validate();
         _Owns = _Pmtx->try_lock_shared_until(_Abs_time);

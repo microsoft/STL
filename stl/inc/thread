@@ -186,7 +186,7 @@ namespace this_thread {
     template <class _Clock, class _Duration>
     void sleep_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
 #if _HAS_CXX20
-        static_assert(is_clock_v<_Clock>, "Clock type required");
+        static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
 #endif // _HAS_CXX20
         for (;;) {
             const auto _Now = _Clock::now();

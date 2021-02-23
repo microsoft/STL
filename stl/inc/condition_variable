@@ -93,7 +93,7 @@ public:
     cv_status wait_until(_Lock& _Lck, const chrono::time_point<_Clock, _Duration>& _Abs_time) {
         // wait until time point
 #if _HAS_CXX20
-        static_assert(is_clock_v<_Clock>, "Clock type required");
+        static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
 #endif // _HAS_CXX20
         return wait_for(_Lck, _Abs_time - _Clock::now());
     }
@@ -102,7 +102,7 @@ public:
     bool wait_until(_Lock& _Lck, const chrono::time_point<_Clock, _Duration>& _Abs_time, _Predicate _Pred) {
         // wait for signal with timeout and check predicate
 #if _HAS_CXX20
-        static_assert(is_clock_v<_Clock>, "Clock type required");
+        static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
 #endif // _HAS_CXX20
         while (!_Pred()) {
             if (wait_until(_Lck, _Abs_time) == cv_status::timeout) {
@@ -200,7 +200,7 @@ public:
     bool wait_until(
         _Lock& _Lck, stop_token _Stoken, const chrono::time_point<_Clock, _Duration>& _Abs_time, _Predicate _Pred) {
 #if _HAS_CXX20
-        static_assert(is_clock_v<_Clock>, "Clock type required");
+        static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
 #endif // _HAS_CXX20
         stop_callback<_Cv_any_notify_all> _Cb{_Stoken, this};
         for (;;) {
