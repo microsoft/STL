@@ -663,7 +663,7 @@ input.output\filesystems\fs.filesystem.synopsis\file_time_type_resolution.compil
 
 # Uses-allocator class constructor wants non-const allocator ref and mismatched piecewise_construct's value category
 utilities\allocator.adaptor\allocator.adaptor.members\construct.pass.cpp
-utilities\allocator.adaptor\allocator.adaptor.members\construct_pair.pass
+utilities\allocator.adaptor\allocator.adaptor.members\construct_pair.pass.cpp
 utilities\allocator.adaptor\allocator.adaptor.members\construct_pair_const_lvalue_pair.pass.cpp
 utilities\allocator.adaptor\allocator.adaptor.members\construct_pair_piecewise.pass.cpp
 utilities\allocator.adaptor\allocator.adaptor.members\construct_pair_rvalue.pass.cpp

@@ -2010,85 +2010,84 @@ typename _Container::size_type _Erase_nodes_if(_Container& _Cont, _Pr _Pred) {
 
 #if _HAS_CXX20
 template <class _Ty, class _Alloc, class... _Types, enable_if_t<!_Is_specialization_v<_Ty, pair>, int> = 0>
-constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Types&&... _Args) noexcept {
+_NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Types&&... _Args) noexcept {
     if constexpr (!uses_allocator_v<_Ty, _Alloc>) {
         static_assert(is_constructible_v<_Ty, _Types...>,
-            "If uses_allocator_v<T, Alloc> does not hold, T must be constructible from Types... ");
+            "If uses_allocator_v<T, Alloc> does not hold, T must be constructible from Types...");
         (void) _Al;
         return _STD forward_as_tuple(_STD forward<_Types>(_Args)...);
+    } else if constexpr (is_constructible_v<_Ty, allocator_arg_t, const _Alloc&, _Types...>) {
+        using _ReturnType = tuple<allocator_arg_t, const _Alloc&, _Types&&...>;
+        return _ReturnType{allocator_arg, _Al, _STD forward<_Types>(_Args)...};
+    } else if constexpr (is_constructible_v<_Ty, _Types..., const _Alloc&>) {
+        return _STD forward_as_tuple(_STD forward<_Types>(_Args)..., _Al);
     } else {
-        if constexpr (is_constructible_v<_Ty, allocator_arg_t, const _Alloc&, _Types...>) {
-            using _ReturnType = tuple<allocator_arg_t, const _Alloc&, _Types&&...>;
-            return _ReturnType{allocator_arg, _Al, _STD forward<_Types>(_Args)...};
-        } else if constexpr (is_constructible_v<_Ty, _Types..., const _Alloc&>) {
-            return _STD forward_as_tuple(_STD forward<_Types>(_Args)..., _Al);
-        } else {
-            static_assert(_Always_false<_Ty>,
-                "T must be constructible from either (allocator_arg_t, const Alloc&, Types...) "
-                "or (Types..., const Alloc&) if uses_allocator_v<T, Alloc> is true");
-        }
+        static_assert(_Always_false<_Ty>,
+            "T must be constructible from either (allocator_arg_t, const Alloc&, Types...) "
+            "or (Types..., const Alloc&) if uses_allocator_v<T, Alloc> is true");
     }
 }
 
 template <class _Ty, class _Alloc, class _Tuple1, class _Tuple2, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
-constexpr auto uses_allocator_construction_args(
+_NODISCARD constexpr auto uses_allocator_construction_args(
     const _Alloc& _Al, piecewise_construct_t, _Tuple1&& _Tup1, _Tuple2&& _Tup2) noexcept {
     return _STD make_tuple(piecewise_construct,
         _STD apply(
             [&_Al](auto&&... _Tuple_args) {
-                return uses_allocator_construction_args<typename _Ty::first_type>(
+                return _STD uses_allocator_construction_args<typename _Ty::first_type>(
                     _Al, _STD forward<decltype(_Tuple_args)>(_Tuple_args)...);
             },
             _STD forward<_Tuple1>(_Tup1)),
         _STD apply(
             [&_Al](auto&&... _Tuple_args) {
-                return uses_allocator_construction_args<typename _Ty::second_type>(
+                return _STD uses_allocator_construction_args<typename _Ty::second_type>(
                     _Al, _STD forward<decltype(_Tuple_args)>(_Tuple_args)...);
             },
             _STD forward<_Tuple2>(_Tup2)));
 }
 
 template <class _Ty, class _Alloc, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
-constexpr auto uses_allocator_construction_args(const _Alloc& _Al) noexcept {
+_NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al) noexcept {
     // equivalent to
-    // return uses_allocator_construction_args<_Ty>(_Al, piecewise_construct, tuple<>(), tuple<>());
-    return _STD make_tuple(piecewise_construct, uses_allocator_construction_args<typename _Ty::first_type>(_Al),
-        uses_allocator_construction_args<typename _Ty::second_type>(_Al));
+    // return _STD uses_allocator_construction_args<_Ty>(_Al, piecewise_construct, tuple<>(), tuple<>());
+    return _STD make_tuple(piecewise_construct, _STD uses_allocator_construction_args<typename _Ty::first_type>(_Al),
+        _STD uses_allocator_construction_args<typename _Ty::second_type>(_Al));
 }
 
 template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
-constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Uty1&& _Val1, _Uty2&& _Val2) noexcept {
+_NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Uty1&& _Val1, _Uty2&& _Val2) noexcept {
     // equivalent to
-    // return uses_allocator_construction_args<_Ty>(_Al, piecewise_construct,
+    // return _STD uses_allocator_construction_args<_Ty>(_Al, piecewise_construct,
     //     _STD forward_as_tuple(_STD forward<_Uty1>(_Val1)), _STD forward_as_tuple(_STD forward<_Uty2>(_Val2)));
     return _STD make_tuple(piecewise_construct,
-        uses_allocator_construction_args<typename _Ty::first_type>(_Al, _STD forward<_Uty1>(_Val1)),
-        uses_allocator_construction_args<typename _Ty::second_type>(_Al, _STD forward<_Uty2>(_Val2)));
+        _STD uses_allocator_construction_args<typename _Ty::first_type>(_Al, _STD forward<_Uty1>(_Val1)),
+        _STD uses_allocator_construction_args<typename _Ty::second_type>(_Al, _STD forward<_Uty2>(_Val2)));
 }
 
 template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
-constexpr auto uses_allocator_construction_args(const _Alloc& _Al, const pair<_Uty1, _Uty2>& _Pair) noexcept {
+_NODISCARD constexpr auto uses_allocator_construction_args(
+    const _Alloc& _Al, const pair<_Uty1, _Uty2>& _Pair) noexcept {
     // equivalent to
-    // return uses_allocator_construction_args<_Ty>(_Al, piecewise_construct,
+    // return _STD uses_allocator_construction_args<_Ty>(_Al, piecewise_construct,
     //     _STD forward_as_tuple(pr.first), _STD forward_as_tuple(pr.second));
     return _STD make_tuple(piecewise_construct,
-        uses_allocator_construction_args<typename _Ty::first_type>(_Al, _Pair.first),
-        uses_allocator_construction_args<typename _Ty::second_type>(_Al, _Pair.second));
+        _STD uses_allocator_construction_args<typename _Ty::first_type>(_Al, _Pair.first),
+        _STD uses_allocator_construction_args<typename _Ty::second_type>(_Al, _Pair.second));
 }
 
 template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
-constexpr auto uses_allocator_construction_args(const _Alloc& _Al, pair<_Uty1, _Uty2>&& _Pair) noexcept {
+_NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, pair<_Uty1, _Uty2>&& _Pair) noexcept {
     // equivalent to
-    // return uses_allocator_construction_args<_Ty>(_Al, piecewise_construct,
+    // return _STD uses_allocator_construction_args<_Ty>(_Al, piecewise_construct,
     //     _STD forward_as_tuple(_STD move(pr).first), _STD forward_as_tuple(_STD move(pr).second));
     return _STD make_tuple(piecewise_construct,
-        uses_allocator_construction_args<typename _Ty::first_type>(_Al, _STD move(_Pair).first),
-        uses_allocator_construction_args<typename _Ty::second_type>(_Al, _STD move(_Pair).second));
+        _STD uses_allocator_construction_args<typename _Ty::first_type>(_Al, _STD move(_Pair).first),
+        _STD uses_allocator_construction_args<typename _Ty::second_type>(_Al, _STD move(_Pair).second));
 }
 
 template <class _Ty, class _Alloc, class... _Types>
-constexpr _Ty make_obj_using_allocator(const _Alloc& _Al, _Types&&... _Args) {
-    return _STD make_from_tuple<_Ty>(uses_allocator_construction_args<_Ty>(_Al, _STD forward<_Types>(_Args)...));
+_NODISCARD constexpr _Ty make_obj_using_allocator(const _Alloc& _Al, _Types&&... _Args) {
+    return _STD make_from_tuple<_Ty>(_STD uses_allocator_construction_args<_Ty>(_Al, _STD forward<_Types>(_Args)...));
 }
 
 template <class _Ty, class _Alloc, class... _Types>
@@ -2097,7 +2096,7 @@ constexpr _Ty* uninitialized_construct_using_allocator(_Ty* _Ptr, const _Alloc& 
         [&](auto&&... _Construct_args) {
             return _STD construct_at(_Ptr, _STD forward<decltype(_Construct_args)>(_Construct_args)...);
         },
-        uses_allocator_construction_args<_Ty>(_Al, _STD forward<_Types>(_Args)...));
+        _STD uses_allocator_construction_args<_Ty>(_Al, _STD forward<_Types>(_Args)...));
 }
 #endif // _HAS_CXX20
 _STD_END

@@ -236,7 +236,7 @@ public:
                 _Scoped_outermost_traits<scoped_allocator_adaptor>::construct(
                     _Scoped_outermost(*this), _Ptr, _STD forward<decltype(_New_args)>(_New_args)...);
             },
-            uses_allocator_construction_args<_Ty>(inner_allocator(), _STD forward<_Types>(_Args)...));
+            _STD uses_allocator_construction_args<_Ty>(inner_allocator(), _STD forward<_Types>(_Args)...));
 #else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
         _Uses_allocator_construct(_Ptr, _Scoped_outermost(*this), inner_allocator(), _STD forward<_Types>(_Args)...);
 #endif // ^^^ !_HAS_CXX20 ^^^
