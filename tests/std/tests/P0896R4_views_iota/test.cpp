@@ -3,7 +3,10 @@
 
 #include <algorithm>
 #include <cassert>
+#include <functional>
 #include <ranges>
+#include <type_traits>
+#include <utility>
 
 using namespace std;
 
@@ -98,13 +101,13 @@ constexpr void test_integral() {
             I tmp = first;
             static_assert(is_nothrow_copy_constructible_v<I>);
 
-            I i = std::move(tmp);
+            I i = move(tmp);
             static_assert(is_nothrow_move_constructible_v<I>);
 
             tmp = i;
             static_assert(is_nothrow_copy_assignable_v<I>);
 
-            i = std::move(tmp);
+            i = move(tmp);
             static_assert(is_nothrow_move_assignable_v<I>);
         }
 
@@ -216,7 +219,7 @@ constexpr void test_integral() {
             const same_as<R> auto rng = views::iota(low);
 
             auto i = low;
-            for (auto const& e : rng) {
+            for (const auto& e : rng) {
                 assert(e == i);
                 if (++i == high) {
                     break;
@@ -259,6 +262,8 @@ int main() {
 #endif // TRANSITION, LLVM-48173
     static_assert((test_integral<char>(), true));
     test_integral<char>();
+    static_assert((test_integral<wchar_t>(), true));
+    test_integral<wchar_t>();
 #ifdef __cpp_char8_t
     static_assert((test_integral<char8_t>(), true));
     test_integral<char8_t>();
