@@ -291,10 +291,6 @@ utilities\time\time.cal\time.cal.ymd\time.cal.ymd.nonmembers\streaming.pass.cpp
 utilities\time\time.cal\time.cal.ymdlast\time.cal.ymdlast.nonmembers\streaming.pass.cpp
 utilities\time\time.cal\time.cal.ymwd\time.cal.ymwd.nonmembers\streaming.pass.cpp
 utilities\time\time.cal\time.cal.ymwdlast\time.cal.ymwdlast.nonmembers\streaming.pass.cpp
-utilities\time\time.clock\time.clock.file\consistency.pass.cpp
-utilities\time\time.clock\time.clock.file\file_time.pass.cpp
-utilities\time\time.clock\time.clock.file\now.pass.cpp
-utilities\time\time.clock\time.clock.file\rep_signed.pass.cpp
 
 # C++20 P0466R5 "Layout-Compatibility And Pointer-Interconvertibility Traits"
 language.support\support.limits\support.limits.general\type_traits.version.pass.cpp
