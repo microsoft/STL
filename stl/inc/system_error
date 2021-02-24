@@ -109,7 +109,7 @@ public:
     _NODISCARD bool operator<(const error_category& _Right) const noexcept {
         return _Addr < _Right._Addr;
     }
-#endif // !defined(__cpp_lib_concepts)
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
     error_category(const error_category&) = delete;
     error_category& operator=(const error_category&) = delete;
@@ -199,7 +199,7 @@ public:
         return _Left.category() < _Right.category()
             || (_Left.category() == _Right.category() && _Left.value() < _Right.value());
     }
-#endif // !defined(__cpp_lib_concepts)
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 #if !_HAS_CXX20
     _NODISCARD friend bool operator==(const error_condition& _Left, const error_code& _Right) noexcept {
         return _System_error_equal(_Right, _Left);
@@ -287,7 +287,7 @@ public:
         return _Left.category() < _Right.category()
             || (_Left.category() == _Right.category() && _Left.value() < _Right.value());
     }
-#endif // !defined(__cpp_lib_concepts)
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 #if !_HAS_CXX20
     _NODISCARD friend bool operator!=(const error_condition& _Left, const error_condition& _Right) noexcept {
         return !(_Left == _Right);
@@ -352,7 +352,7 @@ _NODISCARD inline bool operator<(const error_condition& _Left, const error_condi
     return _Left.category() < _Right.category()
         || (_Left.category() == _Right.category() && _Left.value() < _Right.value());
 }
-#endif // !defined(__cpp_lib_concepts)
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
 #if !_HAS_CXX20
 _NODISCARD inline bool operator==(const error_condition& _Left, const error_code& _Right) noexcept {

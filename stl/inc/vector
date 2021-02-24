@@ -1886,9 +1886,9 @@ struct _Vbase_compare_three_way {
         if (_Differing_bits == 0) { // improves _Countr_zero codegen below
 #ifdef __cpp_lib_concepts
             return strong_ordering::equal;
-#else // __cpp_lib_concepts
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
             return 0;
-#endif // __cpp_lib_concepts
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
         }
 
         const int _Bit_index = _Countr_zero(_Differing_bits); // number of least significant bits that match
@@ -1899,9 +1899,9 @@ struct _Vbase_compare_three_way {
         // Instead of comparing (_Left & _Mask) to (_Right & _Mask), we know that exactly one side will be zero.
 #ifdef __cpp_lib_concepts
         return (_Left & _Mask) == 0 ? strong_ordering::less : strong_ordering::greater;
-#else // __cpp_lib_concepts
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
         return (_Left & _Mask) == 0 ? -1 : 1;
-#endif // __cpp_lib_concepts
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
     }
 };
 
@@ -1930,7 +1930,7 @@ _NODISCARD _CONSTEXPR20_CONTAINER _Synth_three_way_result<_Ty> operator<=>(
             _Right._Unchecked_begin(), _Right._Unchecked_end(), _Synth_three_way{});
     }
 }
-#else // __cpp_lib_concepts
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
 template <class _Ty, class _Alloc>
 _NODISCARD _CONSTEXPR20_CONTAINER bool operator<(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
     if constexpr (is_same_v<_Ty, bool>) {
@@ -1972,7 +1972,7 @@ template <class _Ty, class _Alloc>
 _NODISCARD _CONSTEXPR20_CONTAINER bool operator>=(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
     return !(_Left < _Right);
 }
-#endif // __cpp_lib_concepts
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
 template <class _Ty, class _Alloc>
 _CONSTEXPR20_CONTAINER void swap(vector<_Ty, _Alloc>& _Left, vector<_Ty, _Alloc>& _Right) noexcept /* strengthened */ {

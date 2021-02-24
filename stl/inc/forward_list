@@ -1546,7 +1546,7 @@ _NODISCARD _Synth_three_way_result<_Ty> operator<=>(
     return _STD lexicographical_compare_three_way(_Left._Unchecked_begin(), _Left._Unchecked_end_iter(),
         _Right._Unchecked_begin(), _Right._Unchecked_end_iter(), _Synth_three_way{});
 }
-#else // __cpp_lib_concepts
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
 template <class _Ty, class _Alloc>
 _NODISCARD bool operator<(const forward_list<_Ty, _Alloc>& _Left, const forward_list<_Ty, _Alloc>& _Right) {
     return _STD lexicographical_compare(
@@ -1567,7 +1567,7 @@ template <class _Ty, class _Alloc>
 _NODISCARD bool operator>=(const forward_list<_Ty, _Alloc>& _Left, const forward_list<_Ty, _Alloc>& _Right) {
     return !(_Left < _Right);
 }
-#endif // __cpp_lib_concepts
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
 #if _HAS_CXX20
 template <class _Ty, class _Alloc, class _Uty>

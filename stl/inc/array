@@ -814,7 +814,7 @@ _NODISCARD constexpr _Synth_three_way_result<_Ty> operator<=>(
         _Right._Unchecked_begin(), _Right._Unchecked_end(), _Synth_three_way{});
 #endif // ^^^ no workaround ^^^
 }
-#else // __cpp_lib_concepts
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
 template <class _Ty, size_t _Size>
 _NODISCARD _CONSTEXPR20 bool operator<(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
 #ifdef __EDG__ // TRANSITION, VSO-1161663
@@ -839,7 +839,7 @@ template <class _Ty, size_t _Size>
 _NODISCARD _CONSTEXPR20 bool operator>=(const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
     return !(_Left < _Right);
 }
-#endif // __cpp_lib_concepts
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
 #if _HAS_CXX20
 // FUNCTION TEMPLATE to_array

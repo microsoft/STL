@@ -244,7 +244,7 @@ public:
     _NODISCARD constexpr bool _Less(const tuple&) const noexcept {
         return false;
     }
-#endif // !defined(__cpp_lib_concepts)
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 };
 
 template <class _This, class... _Rest>
@@ -698,7 +698,7 @@ public:
         return _Myfirst._Val < _Right._Myfirst._Val
             || (!(_Right._Myfirst._Val < _Myfirst._Val) && _Mybase::_Less(_Right._Get_rest()));
     }
-#endif // !defined(__cpp_lib_concepts)
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
     template <size_t _Index, class... _Types>
     friend constexpr tuple_element_t<_Index, tuple<_Types...>>& get(tuple<_Types...>& _Tuple) noexcept;
@@ -789,7 +789,7 @@ template <class... _Types1, class... _Types2>
 _NODISCARD constexpr bool operator<=(const tuple<_Types1...>& _Left, const tuple<_Types2...>& _Right) {
     return !(_Right < _Left);
 }
-#endif // !defined(__cpp_lib_concepts)
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
 template <class... _Types, enable_if_t<conjunction_v<_STD _Is_swappable<_Types>...>, int> = 0>
 _CONSTEXPR20 void swap(tuple<_Types...>& _Left, tuple<_Types...>& _Right) noexcept(noexcept(_Left.swap(_Right))) {
