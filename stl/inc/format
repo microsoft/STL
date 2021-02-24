@@ -665,7 +665,7 @@ public:
     }
 
     constexpr void _On_type(_CharT _Type) {
-        _Specs._Type = static_cast<_CharT>(_Type);
+        _Specs._Type = static_cast<char>(_Type);
     }
 
 protected:
@@ -1116,6 +1116,41 @@ _OutputIt _Write(_OutputIt _Out, monostate) {
     return _Out;
 }
 
+// clang-format off
+template <class _CharT, class _OutputIt, class _Arithmetic>
+    requires is_arithmetic_v<_Arithmetic> && !same_as<_Arithmetic, bool> && !same_as<_Arithmetic, _CharT>
+_OutputIt _Write(_OutputIt _Out, _Arithmetic _Value) {
+    // clang-format on
+    // TODO: Reusable buffer
+    array<char, 24> _Buffer;
+    auto [_End, _Ec] = _STD to_chars(_Buffer.data(), _Buffer.data() + _Buffer.size(), _Value);
+    _STL_ASSERT(_Ec == errc{}, "to_chars failed");
+    return _STD copy(_Buffer.data(), _End, _Out);
+}
+
+template <class _CharT, class _OutputIt>
+_OutputIt _Write(_OutputIt _Out, bool _Value) {
+    return _Write(_Out, _Value ? "true" : "false");
+}
+
+template <class _CharT, class _OutputIt>
+_OutputIt _Write(_OutputIt _Out, _CharT _Value) {
+    *_Out++ = _Value;
+    return _Out;
+}
+
+template <class _CharT, class _OutputIt>
+_OutputIt _Write(_OutputIt _Out, const void* _Value) {
+    // TODO: Reusable buffer
+    array<char, 16> _Buffer;
+    auto [_End, _Ec] =
+        _STD to_chars(_Buffer.data(), _Buffer.data() + _Buffer.size(), reinterpret_cast<uintptr_t>(_Value), 16);
+    _STL_ASSERT(_Ec == errc{}, "to_chars failed");
+    *_Out++ = '0';
+    *_Out++ = 'x';
+    return _STD copy(_Buffer.data(), _End, _Out);
+}
+
 template <class _CharT, class _OutputIt>
 _OutputIt _Write(_OutputIt _Out, const _CharT* _Value) {
     if (!_Value) {
@@ -1127,11 +1162,9 @@ _OutputIt _Write(_OutputIt _Out, const _CharT* _Value) {
     return _Out;
 }
 
-template <class _CharT, class _OutputIt, class _Ty>
-_OutputIt _Write(_OutputIt _Out, _Ty _Val) {
-    (void) _Val;
-    _STL_INTERNAL_CHECK(false);
-    return _Out;
+template <class _CharT, class _OutputIt>
+_OutputIt _Write(_OutputIt _Out, basic_string_view<_CharT> _Value) {
+    return _STD copy(_Value.begin(), _Value.end(), _Out);
 }
 
 // Dispatcher to call enabled custom formatters, and do nothing otherwise.
@@ -1243,6 +1276,14 @@ template <class _Out>
 _Out vformat_to(
     _Out _OutputIt, const locale& _Loc, string_view _Fmt, format_args_t<type_identity_t<_Out>, char> _Args) {
     _Format_handler<_Out, char, basic_format_context<_Out, char>> _Handler(_OutputIt, _Fmt, _Args, _Loc);
+    _Parse_format_string(_Fmt, _Handler);
+    return _Handler._Ctx.out();
+}
+
+template <class _Out>
+_Out vformat_to(
+    _Out _OutputIt, const locale& _Loc, wstring_view _Fmt, format_args_t<type_identity_t<_Out>, wchar_t> _Args) {
+    _Format_handler<_Out, wchar_t, basic_format_context<_Out, wchar_t>> _Handler(_OutputIt, _Fmt, _Args, _Loc);
     _Parse_format_string(_Fmt, _Handler);
     return _Handler._Ctx.out();
 }
