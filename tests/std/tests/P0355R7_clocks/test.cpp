@@ -9,7 +9,6 @@
 
 using namespace std;
 using namespace std::chrono;
-using namespace std::chrono_literals;
 
 void test_is_leap_second(const year_month_day& ymd) {
     const auto ls            = sys_days{ymd};
@@ -31,7 +30,7 @@ void test_leap_second() {
         test_is_leap_second(31d / December / year{ls_year});
     }
 
-    constexpr leap_second leap{sys_seconds{42s}, true};
+    constexpr leap_second leap{sys_seconds{42s}, true, 0s};
     constexpr sys_seconds smaller{41s};
     constexpr sys_seconds equal{42s};
     constexpr sys_seconds larger{43s};
@@ -75,21 +74,21 @@ void test_leap_second() {
     static_assert(is_gteq(leap <=> equal));
     static_assert(noexcept(leap <=> equal));
 
-    static_assert(is_eq(leap <=> leap_second{equal, true}));
-    static_assert(is_lt(leap <=> leap_second{larger, true}));
-    static_assert(is_gt(leap <=> leap_second{smaller, true}));
-    static_assert(is_lteq(leap <=> leap_second{larger, true}));
-    static_assert(is_gteq(leap <=> leap_second{smaller, true}));
-    static_assert(is_lteq(leap <=> leap_second{equal, true}));
-    static_assert(is_gteq(leap <=> leap_second{equal, true}));
-    static_assert(noexcept(leap <=> leap_second{equal, true}));
+    static_assert(is_eq(leap <=> leap_second{equal, true, 0s}));
+    static_assert(is_lt(leap <=> leap_second{larger, true, 0s}));
+    static_assert(is_gt(leap <=> leap_second{smaller, true, 0s}));
+    static_assert(is_lteq(leap <=> leap_second{larger, true, 0s}));
+    static_assert(is_gteq(leap <=> leap_second{smaller, true, 0s}));
+    static_assert(is_lteq(leap <=> leap_second{equal, true, 0s}));
+    static_assert(is_gteq(leap <=> leap_second{equal, true, 0s}));
+    static_assert(noexcept(leap <=> leap_second{equal, true, 0s}));
 #endif // __cpp_lib_concepts
 
     static_assert(noexcept(leap.date()));
     static_assert(noexcept(leap.value()));
-    static_assert(leap_second{sys_seconds{42s}, true}.date() == sys_seconds{42s});
-    static_assert(leap_second{sys_seconds{42s}, true}.value() == 1s);
-    static_assert(leap_second{sys_seconds{42s}, false}.value() == -1s);
+    static_assert(leap_second{sys_seconds{42s}, true, 0s}.date() == sys_seconds{42s});
+    static_assert(leap_second{sys_seconds{42s}, true, 0s}.value() == 1s);
+    static_assert(leap_second{sys_seconds{42s}, false, 0s}.value() == -1s);
 }
 
 constexpr bool operator==(const leap_second_info& lhs, const leap_second_info& rhs) {
@@ -231,7 +230,7 @@ void test_file_clock_to_utc(const leap_second& leap, seconds offset) {
     if (leap > file_time_cutoff) {
         offset = 27s;
     }
-    offset -= duration_cast<seconds>(file_clock::duration{__std_fs_file_time_epoch_adjustment});
+    offset -= duration_cast<seconds>(file_clock::duration{filesystem::__std_fs_file_time_epoch_adjustment});
 
     auto u = file_clock::to_utc(t);
     assert(u.time_since_epoch() - t.time_since_epoch() == offset);
@@ -275,6 +274,7 @@ int main() {
         test_utc_clock_from_sys(leap, offset);
         test_file_clock_to_utc(leap, offset);
         offset += leap.value();
+        assert(leap._Elapsed() == offset);
     }
     test_gps_tai_clocks_utc();
     test_file_clock_utc();
@@ -285,8 +285,8 @@ int main() {
         auto my_tzdb   = get_tzdb_list().front();
         auto& leap_vec = my_tzdb.leap_seconds;
         leap_vec.erase(leap_vec.begin() + 27, leap_vec.end());
-        leap_vec.emplace_back(sys_days{1d / January / 2020y}, false);
-        leap_vec.emplace_back(sys_days{1d / January / 2021y}, true);
+        leap_vec.emplace_back(sys_days{1d / January / 2020y}, false, leap_vec.back()._Elapsed());
+        leap_vec.emplace_back(sys_days{1d / January / 2021y}, true, leap_vec.back()._Elapsed());
         my_tzdb._All_ls_positive = false;
         get_tzdb_list()._Emplace_front(move(my_tzdb));
     }
@@ -301,6 +301,7 @@ int main() {
         test_utc_clock_from_sys(leap, offset);
         test_file_clock_to_utc(leap, offset);
         offset += leap.value();
+        assert(leap._Elapsed() == offset);
     }
 
     // positive and negative leap seconds when the accumulated offset is negative
@@ -309,9 +310,9 @@ int main() {
         auto& leap_vec = my_tzdb.leap_seconds;
         leap_vec.erase(leap_vec.begin() + 27, leap_vec.end());
         for (int i = 0; i < 30; ++i) {
-            leap_vec.emplace_back(sys_days{1d / January / year{i + 2020}}, false);
+            leap_vec.emplace_back(sys_days{1d / January / year{i + 2020}}, false, leap_vec.back()._Elapsed());
         }
-        leap_vec.emplace_back(sys_days{1d / January / 2060y}, true);
+        leap_vec.emplace_back(sys_days{1d / January / 2060y}, true, leap_vec.back()._Elapsed());
         get_tzdb_list()._Emplace_front(move(my_tzdb));
     }
 
@@ -325,6 +326,7 @@ int main() {
         test_utc_clock_from_sys(leap, offset);
         test_file_clock_to_utc(leap, offset);
         offset += leap.value();
+        assert(leap._Elapsed() == offset);
     }
 
     return 0;

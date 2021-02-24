@@ -8,6 +8,8 @@
 #if _STL_COMPILER_PREPROCESSOR
 #include <cstddef>
 #include <cstdint>
+#include <type_traits>
+#include <xutility>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -30,7 +32,42 @@ _EXTERN_C
 _RegistryLeapSecondInfo* __stdcall __std_tzdb_get_reg_leap_seconds(
     size_t _Prev_reg_ls_size, size_t* _Current_reg_ls_size);
 
+void __stdcall __std_decalloc_reg_leap_seconds(_RegistryLeapSecondInfo* _Rlsi);
+
+_NODISCARD void* __stdcall __std_calloc_crt(size_t _Count, size_t _Size);
+void __stdcall __std_free_crt(void* _Ptr);
+
 _END_EXTERN_C
+
+_STD_BEGIN
+
+template <class _Ty>
+class _Crt_allocator {
+public:
+    using value_type                             = _Ty;
+    using propagate_on_container_move_assignment = _STD true_type;
+    using is_always_equal                        = _STD true_type;
+
+    constexpr _Crt_allocator() noexcept = default;
+
+    constexpr _Crt_allocator(const _Crt_allocator&) noexcept = default;
+    template <class _Other>
+    constexpr _Crt_allocator(const _Crt_allocator<_Other>&) noexcept {}
+
+    _NODISCARD __declspec(allocator) _Ty* allocate(_CRT_GUARDOVERFLOW const size_t _Count) {
+        const auto _Ptr = __std_calloc_crt(_Count, sizeof(_Ty));
+        if (!_Ptr) {
+            _Xbad_alloc();
+        }
+        return static_cast<_Ty*>(_Ptr);
+    }
+
+    void deallocate(_Ty* const _Ptr, size_t) noexcept {
+        __std_free_crt(_Ptr);
+    }
+};
+
+_STD_END
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

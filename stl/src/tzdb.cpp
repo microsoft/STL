@@ -1,11 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// This must be as small as possible, because its contents are
-// injected into the msvcprt.lib and msvcprtd.lib import libraries.
-// Do not include or define anything else here.
-// In particular, basic_string must not be included here.
-
+#include <internal_shared.h>
 #include <xtzdb.h>
 
 #include <Windows.h>
@@ -58,6 +54,18 @@ _RegistryLeapSecondInfo* __stdcall __std_tzdb_get_reg_leap_seconds(
     }
 
     return reg_ls_data;
+}
+
+void __stdcall __std_decalloc_reg_leap_seconds(_RegistryLeapSecondInfo* _Rlsi) {
+    delete[] _Rlsi;
+}
+
+_NODISCARD void* __std_calloc_crt(const size_t count, const size_t size) {
+    return _calloc_crt(count, size);
+}
+
+void __std_free_crt(void* p) {
+    _free_crt(p);
 }
 
 _END_EXTERN_C

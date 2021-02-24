@@ -17,9 +17,12 @@
 
 #if _HAS_CXX20
 #include <algorithm>
+#include <atomic>
 #include <compare>
 #include <forward_list>
+#include <memory>
 #include <vector>
+#include <xthreads.h>
 #include <xtzdb.h>
 #endif // _HAS_CXX20
 
@@ -415,8 +418,8 @@ namespace chrono {
 #ifdef __cpp_lib_concepts
     // clang-format off
     template <class _Rep1, class _Period1, class _Rep2, class _Period2>
-        requires three_way_comparable<typename common_type_t<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>::rep>
-    _NODISCARD constexpr auto
+    requires three_way_comparable<typename common_type_t<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>::rep>
+        _NODISCARD constexpr auto
         operator<=>(const duration<_Rep1, _Period1>& _Left, const duration<_Rep2, _Period2>& _Right) noexcept(
             is_arithmetic_v<_Rep1>&& is_arithmetic_v<_Rep2>) /* strengthened */ {
         // clang-format on
@@ -2095,8 +2098,11 @@ namespace chrono {
         leap_second(const leap_second&) = default;
         leap_second& operator=(const leap_second&) = default;
 
-        constexpr leap_second(const sys_seconds& _Date_, bool _Is_positive_) noexcept
-            : _Date{_Date_}, _Is_positive{_Is_positive_} {}
+        constexpr leap_second(
+            const sys_seconds& _Date_, const bool _Is_positive_, const seconds& _Prev_elapsed) noexcept
+            : _Date{_Date_}, _Is_positive{_Is_positive_} {
+            _Elapsed_offset = _Prev_elapsed + value();
+        }
 
         _NODISCARD constexpr sys_seconds date() const noexcept {
             return _Date;
@@ -2110,9 +2116,14 @@ namespace chrono {
             return _Is_positive;
         }
 
+        _NODISCARD constexpr seconds _Elapsed() const noexcept {
+            return _Elapsed_offset;
+        }
+
     private:
         sys_seconds _Date;
         bool _Is_positive;
+        seconds _Elapsed_offset;
     };
 
     _NODISCARD inline bool operator==(const leap_second& _Left, const leap_second& _Right) noexcept {
@@ -2161,51 +2172,62 @@ namespace chrono {
 
 #ifdef __cpp_lib_concepts
     template <class _Duration>
-    requires three_way_comparable_with<sys_seconds, sys_time<_Duration>> constexpr auto operator<=>(
+    requires three_way_comparable_with<sys_seconds, sys_time<_Duration>> _NODISCARD constexpr auto operator<=>(
         const leap_second& _Left, const sys_time<_Duration>& _Right) noexcept {
         return _Left.date() <=> _Right;
     }
-    constexpr inline strong_ordering operator<=>(const leap_second& _Left, const leap_second& _Right) noexcept {
+    _NODISCARD constexpr strong_ordering operator<=>(const leap_second& _Left, const leap_second& _Right) noexcept {
         return _Left.date() <=> _Right.date();
     }
 #endif // __cpp_lib_concepts
 
-    inline pair<vector<leap_second>, bool> _Xtzdb_generate_leap_seconds(const size_t _Current_size) {
+    // [time.zone.db]
+
+    // TRANSITION: work in progress
+    struct tzdb {
+        vector<leap_second, _Crt_allocator<leap_second>> leap_seconds;
+        bool _All_ls_positive;
+    };
+
+    _NODISCARD inline pair<decltype(tzdb::leap_seconds), bool> _Xtzdb_generate_leap_seconds(
+        const size_t _Current_size) {
         // Returns empty vector if no new leap seconds are found.
-        constexpr static leap_second _Pre_2018_leap_seconds[]{
-            {sys_seconds{seconds{78796800}}, true},
-            {sys_seconds{seconds{94694400}}, true},
-            {sys_seconds{seconds{126230400}}, true},
-            {sys_seconds{seconds{157766400}}, true},
-            {sys_seconds{seconds{189302400}}, true},
-            {sys_seconds{seconds{220924800}}, true},
-            {sys_seconds{seconds{252460800}}, true},
-            {sys_seconds{seconds{283996800}}, true},
-            {sys_seconds{seconds{315532800}}, true},
-            {sys_seconds{seconds{362793600}}, true},
-            {sys_seconds{seconds{394329600}}, true},
-            {sys_seconds{seconds{425865600}}, true},
-            {sys_seconds{seconds{489024000}}, true},
-            {sys_seconds{seconds{567993600}}, true},
-            {sys_seconds{seconds{631152000}}, true},
-            {sys_seconds{seconds{662688000}}, true},
-            {sys_seconds{seconds{709948800}}, true},
-            {sys_seconds{seconds{741484800}}, true},
-            {sys_seconds{seconds{773020800}}, true},
-            {sys_seconds{seconds{820454400}}, true},
-            {sys_seconds{seconds{867715200}}, true},
-            {sys_seconds{seconds{915148800}}, true},
-            {sys_seconds{seconds{1136073600}}, true},
-            {sys_seconds{seconds{1230768000}}, true},
-            {sys_seconds{seconds{1341100800}}, true},
-            {sys_seconds{seconds{1435708800}}, true},
-            {sys_seconds{seconds{1483228800}}, true},
+        static constexpr leap_second _Known_leap_seconds[]{
+            {sys_seconds{seconds{78796800}}, true, seconds{0}},
+            {sys_seconds{seconds{94694400}}, true, seconds{1}},
+            {sys_seconds{seconds{126230400}}, true, seconds{2}},
+            {sys_seconds{seconds{157766400}}, true, seconds{3}},
+            {sys_seconds{seconds{189302400}}, true, seconds{4}},
+            {sys_seconds{seconds{220924800}}, true, seconds{5}},
+            {sys_seconds{seconds{252460800}}, true, seconds{6}},
+            {sys_seconds{seconds{283996800}}, true, seconds{7}},
+            {sys_seconds{seconds{315532800}}, true, seconds{8}},
+            {sys_seconds{seconds{362793600}}, true, seconds{9}},
+            {sys_seconds{seconds{394329600}}, true, seconds{10}},
+            {sys_seconds{seconds{425865600}}, true, seconds{11}},
+            {sys_seconds{seconds{489024000}}, true, seconds{12}},
+            {sys_seconds{seconds{567993600}}, true, seconds{13}},
+            {sys_seconds{seconds{631152000}}, true, seconds{14}},
+            {sys_seconds{seconds{662688000}}, true, seconds{15}},
+            {sys_seconds{seconds{709948800}}, true, seconds{16}},
+            {sys_seconds{seconds{741484800}}, true, seconds{17}},
+            {sys_seconds{seconds{773020800}}, true, seconds{18}},
+            {sys_seconds{seconds{820454400}}, true, seconds{19}},
+            {sys_seconds{seconds{867715200}}, true, seconds{20}},
+            {sys_seconds{seconds{915148800}}, true, seconds{21}},
+            {sys_seconds{seconds{1136073600}}, true, seconds{22}},
+            {sys_seconds{seconds{1230768000}}, true, seconds{23}},
+            {sys_seconds{seconds{1341100800}}, true, seconds{24}},
+            {sys_seconds{seconds{1435708800}}, true, seconds{25}},
+            {sys_seconds{seconds{1483228800}}, true, seconds{26}},
         };
-        constexpr size_t _Pre_2018_count = _STD size(_Pre_2018_leap_seconds);
+        constexpr size_t _Pre_2018_count = 27;
 
         size_t _New_reg_ls_size;
-        auto _Reg_ls_data = unique_ptr<_RegistryLeapSecondInfo[]>{__std_tzdb_get_reg_leap_seconds(
-            (_STD max)(_Current_size, _Pre_2018_count) - _Pre_2018_count, &_New_reg_ls_size)};
+        unique_ptr<_RegistryLeapSecondInfo[], decltype(&__std_decalloc_reg_leap_seconds)> _Reg_ls_data(
+            __std_tzdb_get_reg_leap_seconds(
+                (_STD max)(_Current_size, _STD size(_Known_leap_seconds)) - _Pre_2018_count, &_New_reg_ls_size),
+            &__std_decalloc_reg_leap_seconds);
 
         const size_t _New_size = _Pre_2018_count + _New_reg_ls_size;
         if (_New_reg_ls_size > _Current_size && !_Reg_ls_data) {
@@ -2214,13 +2236,13 @@ namespace chrono {
             _XGetLastError();
         }
 
-        vector<leap_second> _Leap_sec_info;
+        decltype(tzdb::leap_seconds) _Leap_sec_info;
         bool _All_ls_positive = true;
 
         if (_New_size > _Current_size) {
             _Leap_sec_info.reserve(_New_size);
             _Leap_sec_info.insert(
-                _Leap_sec_info.begin(), _STD cbegin(_Pre_2018_leap_seconds), _STD cend(_Pre_2018_leap_seconds));
+                _Leap_sec_info.begin(), _STD cbegin(_Known_leap_seconds), _STD cend(_Known_leap_seconds));
 
             for (size_t _Idx = 0; _Idx < _New_reg_ls_size; ++_Idx) {
                 // Leap second happens at ls._Hour:59:59. We store the next second after, so add a whole hour.
@@ -2228,7 +2250,7 @@ namespace chrono {
                 const auto _Date =
                     static_cast<sys_days>(year_month_day{year{_Ls._Year}, month{_Ls._Month}, day{_Ls._Day}})
                     + hours{_Ls._Hour + 1};
-                _Leap_sec_info.emplace_back(_Date, !_Ls._Negative);
+                _Leap_sec_info.emplace_back(_Date, !_Ls._Negative, _Leap_sec_info.back()._Elapsed());
                 _All_ls_positive = _All_ls_positive && !_Ls._Negative;
             }
         }
@@ -2236,27 +2258,23 @@ namespace chrono {
         return {_Leap_sec_info, _All_ls_positive};
     }
 
-    // [time.zone.db]
-
-    // TRANSITION: work in progress
-    struct tzdb {
-        vector<leap_second> leap_seconds;
-        bool _All_ls_positive;
-    };
-
     // TRANSITION: work in progress
     class tzdb_list {
     private:
-        using _ListType = forward_list<tzdb>;
+        using _ListType = forward_list<tzdb, _Crt_allocator<tzdb>>;
 
     public:
         using const_iterator = _ListType::const_iterator;
 
         tzdb_list(const tzdb_list&) = delete;
         tzdb_list& operator=(const tzdb_list&) = delete;
-        tzdb_list()                            = default;
 
-        const tzdb& front() const noexcept {
+        tzdb_list() {
+            auto [_Leap_sec, _All_ls_positive] = _Xtzdb_generate_leap_seconds(0);
+            _Tzdb_list.emplace_front(tzdb{_STD move(_Leap_sec), _All_ls_positive});
+        }
+
+        _NODISCARD const tzdb& front() const noexcept {
             _Shared_lock _Lk(_Tzdb_mutex);
             return _Tzdb_list.front();
         }
@@ -2273,19 +2291,7 @@ namespace chrono {
             if (!_Leap_sec.empty()) {
                 _Emplace_front(tzdb{_STD move(_Leap_sec), _All_ls_positive});
             }
-            return front();
-        }
-
-        void _Initialize() {
-            _Shared_lock _Shr_lk(_Tzdb_mutex);
-            if (_Tzdb_list.empty()) {
-                _Shr_lk._Unlock();
-                _Unique_lock _Lk(_Tzdb_mutex);
-                if (_Tzdb_list.empty()) {
-                    auto _Leap_sec = _Xtzdb_generate_leap_seconds(0);
-                    _Tzdb_list.emplace_front(tzdb{_STD move(_Leap_sec.first), _Leap_sec.second});
-                }
-            }
+            return _Tzdb_list.front();
         }
 
     private:
@@ -2297,27 +2303,33 @@ namespace chrono {
                 _Smtx_lock_shared(_Mtx);
             }
 
+            _Shared_lock(const _Shared_lock&) = delete;
+            _Shared_lock& operator=(const _Shared_lock&) = delete;
+
             void _Unlock() {
-                if (owns) {
+                if (_Owns) {
                     _Smtx_unlock_shared(_Mtx);
                 }
-                owns = false;
+                _Owns = false;
             }
 
             ~_Shared_lock() {
-                if (owns) {
+                if (_Owns) {
                     _Smtx_unlock_shared(_Mtx);
                 }
             }
 
             _Smtx_t* _Mtx;
-            bool owns = true;
+            bool _Owns = true;
         };
 
         struct _NODISCARD _Unique_lock {
             explicit _Unique_lock(_Smtx_t& _Mtx_) : _Mtx{&_Mtx_} {
                 _Smtx_lock_exclusive(_Mtx);
             }
+
+            _Unique_lock(const _Unique_lock&) = delete;
+            _Unique_lock& operator=(const _Unique_lock&) = delete;
 
             ~_Unique_lock() {
                 _Smtx_unlock_exclusive(_Mtx);
@@ -2327,14 +2339,25 @@ namespace chrono {
         };
     };
 
-    _INLINE_VAR tzdb_list _Global_tzdb_list;
+    inline atomic<tzdb_list*> _Global_tzdb_list;
 
-    inline tzdb_list& get_tzdb_list() {
-        _Global_tzdb_list._Initialize();
-        return _Global_tzdb_list;
+    _NODISCARD inline tzdb_list& get_tzdb_list() {
+        auto* _Tzdb_ptr = _Global_tzdb_list.load();
+        if (_Tzdb_ptr == nullptr) {
+            auto _My_tzdb = static_cast<tzdb_list*>(__std_calloc_crt(1, sizeof(tzdb_list)));
+            _STD construct_at(_My_tzdb);
+            if (_Global_tzdb_list.compare_exchange_strong(_Tzdb_ptr, _My_tzdb)) {
+                _Tzdb_ptr = _My_tzdb;
+            } else {
+                _STD destroy_at(_My_tzdb);
+                __std_free_crt(_My_tzdb);
+            }
+        }
+
+        return *_Tzdb_ptr;
     }
 
-    inline const tzdb& get_tzdb() {
+    _NODISCARD inline const tzdb& get_tzdb() {
         return _CHRONO get_tzdb_list().front();
     }
 
@@ -2360,53 +2383,50 @@ namespace chrono {
         const auto& _Tzdb             = _CHRONO get_tzdb();
         const auto& _Ls_vector        = _Tzdb.leap_seconds;
 
-        // Find first leap second after _Time and the accumulated offset of all *prior* leap seconds.
-        seconds _Offset;
+        // Find first leap second after _Time.
         vector<leap_second>::const_iterator _It;
         if (_Tzdb._All_ls_positive) {
-            // _It here is actually the *2nd* leap second after _Time for the _Offset-1 seconds before the next leap
+            // _It here is actually the *2nd* leap second after _Time for the _Elapsed()-1 seconds before the next leap
             // second insertion. This doesn't overlap with the actual leap second insertion period, so prev(_It) can
-            // always be used to detect if _Time is during an insertion. _Offset, however, needs to be corrected later.
-            // For example, if leap seconds are {100, 200, 300, 400}, we have
+            // always be used to detect if _Time is during an insertion. But an additional decrement is needed to get
+            // the correct eleapsed offset. For example, if leap seconds are {100, 200, 300, 400}, we have
             //
-            //  UTC   sys   *_It   _Offset
-            //   99    99    100         0
-            //  100     X    200         1
-            //  101   100    200         1
-            //  102   101    200         1
+            //  UTC   sys   *_It
+            //   99    99    100
+            //  100     X    200
+            //  101   100    200
+            //  102   101    200
             //  ...
-            //  199   198    200         1
-            //  200   199    300         2^
-            //  201     X    300         2
-            //  202   200    300         2
+            //  199   198    200
+            //  200   199    300^
+            //  201     X    300
+            //  202   200    300
             //  ...
-            //  299   297    300         2
-            //  300   298    400         3^
-            //  301   299    400         3^
-            //  302     X    400         3
-            //  303   300    400         3
+            //  299   297    300
+            //  300   298    400^
+            //  301   299    400^
+            //  302     X    400
+            //  303   300    400
             //
-            //  ^_It points to 2nd leap second and _Offset value is wrong.
+            //  ^_It points to 2nd leap second
 
             _It = _STD upper_bound(_Ls_vector.begin(), _Ls_vector.end(), sys_seconds{_Time_floor.time_since_epoch()});
-            _Offset = seconds{_It - _Ls_vector.begin()};
         } else {
-            _Offset = seconds{0};
+            seconds _Prev_elapsed{0};
             for (_It = _Ls_vector.begin(); _It != _Ls_vector.end(); ++_It) {
-                const auto _New_offset = _Offset + _It->value();
                 // Positive leap seconds are counted one second earlier, when insertion begins.
-                if (utc_seconds{_It->date().time_since_epoch()} + (_It->_Positive() ? _Offset : _New_offset)
+                if (utc_seconds{_It->date().time_since_epoch()} + (_It->_Positive() ? _Prev_elapsed : _It->_Elapsed())
                     > _Time_floor) {
                     break;
                 }
-                _Offset = _New_offset;
+                _Prev_elapsed = _It->_Elapsed();
             }
         }
 
         if (_It != _Ls_vector.begin()) {
-            // Convert to the last leap second before or equal to _Time (except for the special case described above).
-            const auto _Last_leap       = &*(--_It);
-            const auto _Utc_leap_second = --utc_seconds{_Last_leap->date().time_since_epoch() + _Offset};
+            // Convert to the last leap second before or equal to _Time.
+            const auto& _Last_leap = *--_It;
+            const utc_seconds _Utc_leap_second{_Last_leap.date().time_since_epoch() + _It->_Elapsed() - seconds{1}};
 #ifdef __cpp_lib_concepts
             const auto _Leap_cmp = _Utc_leap_second <=> _Time_floor;
 #else // ^^^ __cpp_lib_concepts / TRANSITION, GH-395 workaround vvv
@@ -2415,11 +2435,11 @@ namespace chrono {
                                                                    : strong_ordering::less;
 #endif // ^^^ workaround
             if (_Tzdb._All_ls_positive && _STD is_gt(_Leap_cmp)) {
-                --_Offset;
+                --_It;
             }
-            return {_Last_leap->_Positive() && _STD is_eq(_Leap_cmp), _Offset};
+            return {_Last_leap._Positive() && _STD is_eq(_Leap_cmp), _It->_Elapsed()};
         } else {
-            return {false, _Offset};
+            return {false, seconds{0}};
         }
     }
 
@@ -2535,17 +2555,24 @@ namespace chrono {
             return gps_time<common_type_t<_Duration, seconds>>{_Time.time_since_epoch()} + _Gps_epoch_adjust;
         }
     };
+} // namespace chrono
 
-    // [time.clock.file]
+// [time.clock.file]
 
+namespace filesystem {
     struct _File_time_clock;
-    using file_clock = _File_time_clock;
+} // namespace filesystem
+
+namespace chrono {
+    using file_clock = filesystem::_File_time_clock;
 
     template <class _Duration>
     using file_time = time_point<file_clock, _Duration>;
+} // namespace chrono
 #endif // ^^^ _HAS_CXX20
 
 #if _HAS_CXX17
+namespace filesystem {
     inline constexpr long long __std_fs_file_time_epoch_adjustment = 0x19DB1DED53E8000LL; // TRANSITION, ABI
 
     struct _File_time_clock { // Implementation of trivial-clock
@@ -2560,13 +2587,16 @@ namespace chrono {
         }
 
 #if _HAS_CXX20
-        // Assumes that FILETIME counts leaps seconds only after the first 27 (i.e., after 1 January 2017), even though
+        // Assumes that FILETIME counts leap seconds only after the first 27 (i.e., after 1 January 2017), even though
         // systems can opt out of this behavior.
-        static constexpr seconds _Skipped_filetime_leap_seconds{27};
-        static constexpr sys_days _Cutoff{year_month_day{year{2017}, January, day{1}}};
+        static constexpr chrono::seconds _Skipped_filetime_leap_seconds{27};
+        static constexpr chrono::sys_days _Cutoff{
+            chrono::year_month_day{chrono::year{2017}, chrono::January, chrono::day{1}}};
 
         template <class _Duration>
-        _NODISCARD static utc_time<common_type_t<_Duration, seconds>> to_utc(const file_time<_Duration>& _File_time) {
+        _NODISCARD static chrono::utc_time<common_type_t<_Duration, chrono::seconds>> to_utc(
+            const chrono::file_time<_Duration>& _File_time) {
+            using namespace chrono;
             using _CT = common_type_t<_Duration, seconds>;
             const auto _Ticks =
                 _File_time.time_since_epoch() - duration_cast<seconds>(duration{__std_fs_file_time_epoch_adjustment});
@@ -2579,7 +2609,9 @@ namespace chrono {
         }
 
         template <class _Duration>
-        _NODISCARD static file_time<common_type_t<_Duration, seconds>> from_utc(const utc_time<_Duration>& _Utc_time) {
+        _NODISCARD static chrono::file_time<common_type_t<_Duration, chrono::seconds>> from_utc(
+            const chrono::utc_time<_Duration>& _Utc_time) {
+            using namespace chrono;
             using _CT = common_type_t<_Duration, seconds>;
             file_time<_CT> _File_time{duration_cast<seconds>(duration{__std_fs_file_time_epoch_adjustment})};
 
@@ -2593,12 +2625,14 @@ namespace chrono {
         }
 #endif // _HAS_CXX20
     };
+} // namespace filesystem
 #endif // _HAS_CXX17
 
+namespace chrono {
 #if _HAS_CXX20
     // [time.clock.conv]
 
-    template <class _Dest_Clock, class _Source_Clock>
+    template <class _DestClock, class _SourceClock>
     struct clock_time_conversion;
 
     // [time.clock.cast.id]
@@ -2658,115 +2692,114 @@ namespace chrono {
     };
 
     template <class _Clock, class _Duration>
-    concept _Convertable_to_sys_time =
+    concept _Convertible_to_sys_time =
         is_same_v<_Clock, system_clock> || requires(const time_point<_Clock, _Duration>& _Time) {
         { _Clock::to_sys(_Time) }
         ->_Is_time_point<system_clock>;
     };
 
     template <class _Clock, class _Duration>
-    concept _Convertable_from_sys_time = is_same_v<_Clock, system_clock> || requires(const sys_time<_Duration>& _Time) {
+    concept _Convertible_from_sys_time = is_same_v<_Clock, system_clock> || requires(const sys_time<_Duration>& _Time) {
         { _Clock::from_sys(_Time) }
         ->_Is_time_point<_Clock>;
     };
 
-    template <class _Source_Clock>
-    struct clock_time_conversion<system_clock, _Source_Clock> {
+    template <class _SourceClock>
+    struct clock_time_conversion<system_clock, _SourceClock> {
         template <class _Duration>
-        _NODISCARD auto operator()(const time_point<_Source_Clock, _Duration>& _Time) const
-            noexcept(noexcept(_Source_Clock::to_sys(_Time))) /* strengthened */
-            requires _Convertable_to_sys_time<_Source_Clock, _Duration> {
-            return _Source_Clock::to_sys(_Time);
+        _NODISCARD auto operator()(const time_point<_SourceClock, _Duration>& _Time) const
+            noexcept(noexcept(_SourceClock::to_sys(_Time))) /* strengthened */
+            requires _Convertible_to_sys_time<_SourceClock, _Duration> {
+            return _SourceClock::to_sys(_Time);
         }
     };
 
-    template <class _Dest_Clock>
-    struct clock_time_conversion<_Dest_Clock, system_clock> {
+    template <class _DestClock>
+    struct clock_time_conversion<_DestClock, system_clock> {
         template <class _Duration>
         _NODISCARD auto operator()(const sys_time<_Duration>& _Time) const
-            noexcept(noexcept(_Dest_Clock::from_sys(_Time))) /* strengthened */
-            requires _Convertable_from_sys_time<_Dest_Clock, _Duration> {
-            return _Dest_Clock::from_sys(_Time);
+            noexcept(noexcept(_DestClock::from_sys(_Time))) /* strengthened */
+            requires _Convertible_from_sys_time<_DestClock, _Duration> {
+            return _DestClock::from_sys(_Time);
         }
     };
 
     // [time.clock.cast.utc]
 
     template <class _Clock, class _Duration>
-    concept _Convertable_to_utc_time =
+    concept _Convertible_to_utc_time =
         is_same_v<_Clock, utc_clock> || requires(const time_point<_Clock, _Duration>& _Time) {
         { _Clock::to_utc(_Time) }
         ->_Is_time_point<utc_clock>;
     };
 
     template <class _Clock, class _Duration>
-    concept _Convertable_from_utc_time = is_same_v<_Clock, utc_clock> || requires(const utc_time<_Duration>& _Time) {
+    concept _Convertible_from_utc_time = is_same_v<_Clock, utc_clock> || requires(const utc_time<_Duration>& _Time) {
         { _Clock::from_utc(_Time) }
         ->_Is_time_point<_Clock>;
     };
 
-    template <class _Source_Clock>
-    struct clock_time_conversion<utc_clock, _Source_Clock> {
+    template <class _SourceClock>
+    struct clock_time_conversion<utc_clock, _SourceClock> {
         template <class _Duration>
-        _NODISCARD auto operator()(const time_point<_Source_Clock, _Duration>& _Time) const
-            noexcept(noexcept(_Source_Clock::to_utc(_Time))) /* strengthened */
-            requires _Convertable_to_utc_time<_Source_Clock, _Duration> {
-            return _Source_Clock::to_utc(_Time);
+        _NODISCARD auto operator()(const time_point<_SourceClock, _Duration>& _Time) const
+            noexcept(noexcept(_SourceClock::to_utc(_Time))) /* strengthened */
+            requires _Convertible_to_utc_time<_SourceClock, _Duration> {
+            return _SourceClock::to_utc(_Time);
         }
     };
 
-    template <class _Dest_Clock>
-    struct clock_time_conversion<_Dest_Clock, utc_clock> {
+    template <class _DestClock>
+    struct clock_time_conversion<_DestClock, utc_clock> {
         template <class _Duration>
         _NODISCARD auto operator()(const utc_time<_Duration>& _Time) const
-            noexcept(noexcept(_Dest_Clock::from_utc(_Time))) /* strengthened */
-            requires _Convertable_from_utc_time<_Dest_Clock, _Duration> {
-            return _Dest_Clock::from_utc(_Time);
+            noexcept(noexcept(_DestClock::from_utc(_Time))) /* strengthened */
+            requires _Convertible_from_utc_time<_DestClock, _Duration> {
+            return _DestClock::from_utc(_Time);
         }
     };
 
     // [time.clock.cast.fn]
 
-    template <class _Dest_Clock, class _Source_Clock, class _Duration>
-    _NODISCARD auto clock_cast(const time_point<_Source_Clock, _Duration>& _Time) {
+    template <class _DestClock, class _SourceClock, class _Duration>
+    _NODISCARD auto clock_cast(const time_point<_SourceClock, _Duration>& _Time) {
         constexpr bool _Has_direct_conversion =
-            is_invocable_v<clock_time_conversion<_Dest_Clock, _Source_Clock>, decltype(_Time)>;
+            is_invocable_v<clock_time_conversion<_DestClock, _SourceClock>, decltype(_Time)>;
 
-        constexpr bool _Utc_from_src  = _Convertable_to_utc_time<_Source_Clock, _Duration>;
-        constexpr bool _Sys_from_src  = _Convertable_to_sys_time<_Source_Clock, _Duration>;
-        constexpr bool _Dest_from_utc = _Convertable_from_utc_time<_Dest_Clock, _Duration>;
-        constexpr bool _Dest_from_sys = _Convertable_from_sys_time<_Dest_Clock, _Duration>;
+        constexpr bool _Utc_from_src  = _Convertible_to_utc_time<_SourceClock, _Duration>;
+        constexpr bool _Sys_from_src  = _Convertible_to_sys_time<_SourceClock, _Duration>;
+        constexpr bool _Dest_from_utc = _Convertible_from_utc_time<_DestClock, _Duration>;
+        constexpr bool _Dest_from_sys = _Convertible_from_sys_time<_DestClock, _Duration>;
 
         constexpr bool _Has_utc_conversion = _Dest_from_utc && _Utc_from_src;
         constexpr bool _Has_sys_conversion = _Dest_from_sys && _Sys_from_src;
         static_assert(_Has_direct_conversion || !(_Has_utc_conversion && _Has_sys_conversion),
             "A two-step clock time conversion is required to be unique, either through utc_clock or system_clock, but "
-            "not both.");
+            "not both [time.clock.cast.fn]/2.");
 
         constexpr bool _Has_sys_utc_conversion = _Dest_from_sys && _Utc_from_src;
         constexpr bool _Has_utc_sys_conversion = _Dest_from_utc && _Sys_from_src;
         static_assert(_Has_direct_conversion || _Has_utc_conversion || _Has_sys_conversion
                           || !(_Has_utc_sys_conversion && _Has_sys_utc_conversion),
             "A three-step clock time conversion is required to be unique, either utc-to-system or system-to-utc, but "
-            "not both.");
+            "not both [time.clock.cast.fn]/2.");
 
         if constexpr (_Has_direct_conversion) {
-            return clock_time_conversion<_Dest_Clock, _Source_Clock>{}(_Time);
+            return clock_time_conversion<_DestClock, _SourceClock>{}(_Time);
         } else if constexpr (_Has_utc_conversion) {
-            return clock_time_conversion<_Dest_Clock, utc_clock>{}(
-                clock_time_conversion<utc_clock, _Source_Clock>{}(_Time));
+            return clock_time_conversion<_DestClock, utc_clock>{}(
+                clock_time_conversion<utc_clock, _SourceClock>{}(_Time));
         } else if constexpr (_Has_sys_conversion) {
-            return clock_time_conversion<_Dest_Clock, system_clock>{}(
-                clock_time_conversion<system_clock, _Source_Clock>{}(_Time));
+            return clock_time_conversion<_DestClock, system_clock>{}(
+                clock_time_conversion<system_clock, _SourceClock>{}(_Time));
         } else if constexpr (_Has_sys_utc_conversion) {
-            return clock_time_conversion<_Dest_Clock, system_clock>{}(clock_time_conversion<system_clock, utc_clock>{}(
-                clock_time_conversion<utc_clock, _Source_Clock>{}(_Time)));
+            return clock_time_conversion<_DestClock, system_clock>{}(clock_time_conversion<system_clock, utc_clock>{}(
+                clock_time_conversion<utc_clock, _SourceClock>{}(_Time)));
         } else if constexpr (_Has_utc_sys_conversion) {
-            return clock_time_conversion<_Dest_Clock, utc_clock>{}(clock_time_conversion<utc_clock, system_clock>{}(
-                clock_time_conversion<system_clock, _Source_Clock>{}(_Time)));
+            return clock_time_conversion<_DestClock, utc_clock>{}(clock_time_conversion<utc_clock, system_clock>{}(
+                clock_time_conversion<system_clock, _SourceClock>{}(_Time)));
         } else {
-            static_assert(!_Has_direct_conversion && !_Has_utc_conversion && !_Has_sys_conversion
-                              && !_Has_sys_utc_conversion && !_Has_utc_sys_conversion,
+            static_assert(_Always_false<_Duration>,
                 "No clock time conversion exists from source clock type to destination clock type.");
         }
     }

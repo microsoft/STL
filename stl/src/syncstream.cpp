@@ -4,13 +4,12 @@
 // initialize syncstream mutex map
 
 #include <functional>
-#include <internal_shared.h>
 #include <map>
 #include <mutex>
 #include <new>
 #include <shared_mutex>
-#include <type_traits>
 #include <utility>
+#include <xtzdb.h>
 
 #pragma warning(disable : 4074)
 #pragma init_seg(compiler)
@@ -23,33 +22,7 @@ namespace {
         size_t _Ref_count = 0;
     };
 
-    template <class _Ty>
-    class _Crt_allocator {
-    public:
-        using value_type                             = _Ty;
-        using propagate_on_container_move_assignment = _STD true_type;
-        using is_always_equal                        = _STD true_type;
-
-        constexpr _Crt_allocator() noexcept = default;
-
-        constexpr _Crt_allocator(const _Crt_allocator&) noexcept = default;
-        template <class _Other>
-        constexpr _Crt_allocator(const _Crt_allocator<_Other>&) noexcept {}
-
-        _NODISCARD __declspec(allocator) _Ty* allocate(_CRT_GUARDOVERFLOW const size_t _Count) {
-            const auto _Ptr = _calloc_crt(_Count, sizeof(_Ty));
-            if (!_Ptr) {
-                throw _STD bad_alloc{};
-            }
-            return static_cast<_Ty*>(_Ptr);
-        }
-
-        void deallocate(_Ty* const _Ptr, size_t) noexcept {
-            _free_crt(_Ptr);
-        }
-    };
-
-    using _Map_alloc = _Crt_allocator<_STD pair<void* const, _Mutex_count_pair>>;
+    using _Map_alloc = _STD _Crt_allocator<_STD pair<void* const, _Mutex_count_pair>>;
     using _Map_type  = _STD map<void*, _Mutex_count_pair, _STD less<void*>, _Map_alloc>;
 
     _Map_type _Lookup_map;
