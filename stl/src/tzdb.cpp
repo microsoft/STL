@@ -60,11 +60,11 @@ void __stdcall __std_decalloc_reg_leap_seconds(_RegistryLeapSecondInfo* _Rlsi) {
     delete[] _Rlsi;
 }
 
-_NODISCARD void* __std_calloc_crt(const size_t count, const size_t size) {
+_NODISCARD void* __stdcall __std_calloc_crt(const size_t count, const size_t size) {
     return _calloc_crt(count, size);
 }
 
-void __std_free_crt(void* p) {
+void __stdcall __std_free_crt(void* p) {
     _free_crt(p);
 }
 
