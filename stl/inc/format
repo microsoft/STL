@@ -840,10 +840,20 @@ public:
     }
 };
 
+// clang-format off
+template<class _Context, class _Ty>
+concept _Has_formatter = requires(const _Ty& _Val, _Context& _Ctx) {
+    _STD declval<typename _Context::template formatter_type<_Ty>>().format(_Val, _Ctx);
+};
+// clang-format on
+
 // See [format.arg]/5
+// clang-format off
 template <class _Context, class _Ty>
-/* consteval */ constexpr auto _Get_format_arg_storage_type(const _Ty&) noexcept {
-    return _STD declval<typename basic_format_arg<_Context>::handle>();
+    requires _Has_formatter<_Context, _Ty>
+/* consteval */ constexpr auto _Get_format_arg_storage_type(const _Ty& _Val) noexcept {
+    // clang-format on
+    return typename basic_format_arg<_Context>::handle(_Val);
 }
 
 // clang-format off
@@ -907,6 +917,10 @@ template <class _Ty>
     return static_cast<void*>(nullptr);
 }
 
+template <class _Context, class _Ty>
+inline constexpr size_t _Get_format_arg_storage_size = sizeof(
+    _Get_format_arg_storage_type<_Context>(_STD declval<_Ty>()));
+
 struct _Format_arg_store_packed_index {
     // TRANSITION, Should be templated on number of arguments for even less storage
     using _Index_type = size_t;
@@ -930,10 +944,9 @@ private:
 
     friend basic_format_args<_Context>;
 
-    static constexpr size_t _Num_args     = sizeof...(_Args);
-    static constexpr size_t _Index_length = _Num_args * sizeof(_Index_type);
-    static constexpr size_t _Storage_length =
-        (sizeof(_Get_format_arg_storage_type<_Context>(_STD declval<_Args>())) + ... + 0);
+    static constexpr size_t _Num_args       = sizeof...(_Args);
+    static constexpr size_t _Index_length   = _Num_args * sizeof(_Index_type);
+    static constexpr size_t _Storage_length = (_Get_format_arg_storage_size<_Context, _Args> + ... + 0);
 
     // we store the data in memory as _Format_arg_store_packed_index[_Index_length] + unsigned char[_Storage_length]
     unsigned char _Storage[_Index_length + _Storage_length];
