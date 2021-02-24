@@ -851,14 +851,14 @@ template <class _Context, class _Ty>
     requires integral<_Ty> || floating_point<_Ty>
 /* consteval */ constexpr size_t _Get_format_arg_storage_size(_Ty) noexcept {
     // clang-format on
-    using _CharType = typename _Context::char_type;
+    using _Char_type = typename _Context::char_type;
     if constexpr (is_same_v<_Ty, monostate>) {
         return sizeof(monostate);
     } else if constexpr (is_same_v<_Ty, bool>) {
-        sizeof(bool);
-    } else if constexpr (is_same_v<_Ty, _Context::_CharType>) {
+        return sizeof(bool);
+    } else if constexpr (is_same_v<_Ty, _Char_type>) {
         return sizeof(_Char_type);
-    } else if constexpr (is_same_v<_Ty, char> && is_same_v<_CharType, wchar_t>) {
+    } else if constexpr (is_same_v<_Ty, char> && is_same_v<_Char_type, wchar_t>) {
         return sizeof(_Char_type);
     } else if constexpr (signed_integral<_Ty> && sizeof(_Ty) <= sizeof(int)) {
         return sizeof(int);
@@ -886,14 +886,14 @@ template <class _Context, class _Char_type = typename _Context::char_type>
 }
 
 template <class _Context, class _Traits, class _Char_type = typename _Context::char_type>
-/* consteval */ constexpr size_t _Get_format_arg_storage_size(basic_string_view<_CharType, _Traits>) noexcept {
-    return sizeof(basic_string_view<_CharType>);
+/* consteval */ constexpr size_t _Get_format_arg_storage_size(basic_string_view<_Char_type, _Traits>) noexcept {
+    return sizeof(basic_string_view<_Char_type>);
 }
 
 template <class _Context, class _Traits, class _Alloc, class _Char_type = typename _Context::char_type>
 /* consteval */ constexpr size_t _Get_format_arg_storage_size(
-    const basic_string<_CharType, _Traits, _Alloc>&) noexcept {
-    return sizeof(basic_string_view<_CharType>);
+    const basic_string<_Char_type, _Traits, _Alloc>&) noexcept {
+    return sizeof(basic_string_view<_Char_type>);
 }
 
 /* consteval */ constexpr size_t _Get_format_arg_storage_size(nullptr_t) noexcept {
@@ -942,7 +942,7 @@ private:
     void _Store_impl(const size_t _Arg_index, const _Basic_format_arg_type _Arg_type, _Ty _Val) noexcept {
         const auto _Index_array = reinterpret_cast<_Index_type*>(_Storage);
         const auto _Store_index = _Index_array[_Arg_index]._Index;
-        const auto _Length      = _Get_format_arg_storage_size<_Context>(_Ty);
+        const auto _Length      = _Get_format_arg_storage_size<_Context>(_Val);
 
         _CSTD memcpy(_Storage + _Index_length + _Store_index, _STD addressof(_Val), _Length);
         _Index_array[_Arg_index]._Type = _Arg_type;
