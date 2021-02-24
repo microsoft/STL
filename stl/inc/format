@@ -905,12 +905,13 @@ template <class _Context, class _Traits, class _Alloc, class _Char_type = typena
     return basic_string_view<_Char_type>{};
 }
 
+template <class _Context>
 /* consteval */ constexpr auto _Get_format_arg_storage_type(nullptr_t) noexcept {
     return nullptr_t{};
 }
 
 // clang-format off
-template <class _Ty>
+template <class _Context, class _Ty>
     requires is_void_v<_Ty>
 /* consteval */ constexpr auto _Get_format_arg_storage_type(const _Ty*) noexcept {
     // clang-format on
