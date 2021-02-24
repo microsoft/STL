@@ -842,38 +842,38 @@ public:
 
 // See [format.arg]/5
 template <class _Context, class _Ty>
-/* consteval */ constexpr size_t _Get_format_arg_storage_size(const _Ty&) noexcept {
-    return sizeof(basic_format_arg<_Context>::handle);
+/* consteval */ constexpr auto _Get_format_arg_storage_type(const _Ty&) noexcept {
+    return _STD declval<typename basic_format_arg<_Context>::handle>();
 }
 
 // clang-format off
 template <class _Context, class _Ty>
     requires integral<_Ty> || floating_point<_Ty>
-/* consteval */ constexpr size_t _Get_format_arg_storage_size(_Ty) noexcept {
+/* consteval */ constexpr auto _Get_format_arg_storage_type(_Ty) noexcept {
     // clang-format on
     using _Char_type = typename _Context::char_type;
     if constexpr (is_same_v<_Ty, monostate>) {
-        return sizeof(monostate);
+        return monostate{};
     } else if constexpr (is_same_v<_Ty, bool>) {
-        return sizeof(bool);
+        return bool{};
     } else if constexpr (is_same_v<_Ty, _Char_type>) {
-        return sizeof(_Char_type);
+        return _Char_type{};
     } else if constexpr (is_same_v<_Ty, char> && is_same_v<_Char_type, wchar_t>) {
-        return sizeof(_Char_type);
+        return _Char_type{};
     } else if constexpr (signed_integral<_Ty> && sizeof(_Ty) <= sizeof(int)) {
-        return sizeof(int);
+        return int{};
     } else if constexpr (unsigned_integral<_Ty> && sizeof(_Ty) <= sizeof(unsigned int)) {
-        return sizeof(unsigned int);
+        return static_cast<unsigned int>(42);
     } else if constexpr (signed_integral<_Ty> && sizeof(_Ty) <= sizeof(long long)) {
-        return sizeof(long long);
+        return static_cast<long long>(42);
     } else if constexpr (unsigned_integral<_Ty> && sizeof(_Ty) <= sizeof(unsigned long long)) {
-        return sizeof(unsigned long long);
+        return static_cast<unsigned long long>(42);
     } else if constexpr (is_same_v<_Ty, float>) {
-        return sizeof(float);
+        return float{};
     } else if constexpr (is_same_v<_Ty, double>) {
-        return sizeof(double);
+        return double{};
     } else if constexpr (is_same_v<_Ty, long double>) {
-        return sizeof(long double);
+        return static_cast<long double>(42);
     } else {
         static_assert(_Always_false<_Ty>, "Invalid type passed to _Get_format_arg_storage_type");
         return static_cast<size_t>(-1);
@@ -881,31 +881,30 @@ template <class _Context, class _Ty>
 }
 
 template <class _Context, class _Char_type = typename _Context::char_type>
-/* consteval */ constexpr size_t _Get_format_arg_storage_size(const _Char_type*) noexcept {
-    return sizeof(nullptr);
+/* consteval */ constexpr auto _Get_format_arg_storage_type(const _Char_type*) noexcept {
+    return static_cast<const _Char_type*>(nullptr);
 }
 
 template <class _Context, class _Traits, class _Char_type = typename _Context::char_type>
-/* consteval */ constexpr size_t _Get_format_arg_storage_size(basic_string_view<_Char_type, _Traits>) noexcept {
-    return sizeof(basic_string_view<_Char_type>);
+/* consteval */ constexpr auto _Get_format_arg_storage_type(basic_string_view<_Char_type, _Traits>) noexcept {
+    return basic_string_view<_Char_type>{};
 }
 
 template <class _Context, class _Traits, class _Alloc, class _Char_type = typename _Context::char_type>
-/* consteval */ constexpr size_t _Get_format_arg_storage_size(
-    const basic_string<_Char_type, _Traits, _Alloc>&) noexcept {
-    return sizeof(basic_string_view<_Char_type>);
+/* consteval */ constexpr auto _Get_format_arg_storage_type(const basic_string<_Char_type, _Traits, _Alloc>&) noexcept {
+    return basic_string_view<_Char_type>{};
 }
 
-/* consteval */ constexpr size_t _Get_format_arg_storage_size(nullptr_t) noexcept {
-    return sizeof(nullptr_t);
+/* consteval */ constexpr auto _Get_format_arg_storage_type(nullptr_t) noexcept {
+    return nullptr_t{};
 }
 
 // clang-format off
 template <class _Ty>
     requires is_void_v<_Ty>
-/* consteval */ constexpr size_t _Get_format_arg_storage_size(const _Ty*) noexcept {
+/* consteval */ constexpr auto _Get_format_arg_storage_type(const _Ty*) noexcept {
     // clang-format on
-    return sizeof(nullptr_t);
+    return static_cast<void*>(nullptr);
 }
 
 struct _Format_arg_store_packed_index {
@@ -931,9 +930,10 @@ private:
 
     friend basic_format_args<_Context>;
 
-    static constexpr size_t _Num_args       = sizeof...(_Args);
-    static constexpr size_t _Index_length   = _Num_args * sizeof(_Index_type);
-    static constexpr size_t _Storage_length = (_Get_format_arg_storage_size<_Context>(_STD declval<_Args>()) + ... + 0);
+    static constexpr size_t _Num_args     = sizeof...(_Args);
+    static constexpr size_t _Index_length = _Num_args * sizeof(_Index_type);
+    static constexpr size_t _Storage_length =
+        (sizeof(_Get_format_arg_storage_type<_Context>(_STD declval<_Args>())) + ... + 0);
 
     // we store the data in memory as _Format_arg_store_packed_index[_Index_length] + unsigned char[_Storage_length]
     unsigned char _Storage[_Index_length + _Storage_length];
@@ -942,7 +942,7 @@ private:
     void _Store_impl(const size_t _Arg_index, const _Basic_format_arg_type _Arg_type, _Ty _Val) noexcept {
         const auto _Index_array = reinterpret_cast<_Index_type*>(_Storage);
         const auto _Store_index = _Index_array[_Arg_index]._Index;
-        const auto _Length      = _Get_format_arg_storage_size<_Context>(_Val);
+        const auto _Length      = sizeof(_Get_format_arg_storage_type<_Context>(_Val));
 
         _CSTD memcpy(_Storage + _Index_length + _Store_index, _STD addressof(_Val), _Length);
         _Index_array[_Arg_index]._Type = _Arg_type;
