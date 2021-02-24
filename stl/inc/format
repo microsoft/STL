@@ -907,7 +907,7 @@ template <class _Context, class _Traits, class _Alloc, class _Char_type = typena
 
 template <class _Context>
 /* consteval */ constexpr auto _Get_format_arg_storage_type(nullptr_t) noexcept {
-    return nullptr_t{};
+    return static_cast<const void*>(nullptr);
 }
 
 // clang-format off
