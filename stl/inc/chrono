@@ -2555,10 +2555,12 @@ namespace chrono {
             return gps_time<common_type_t<_Duration, seconds>>{_Time.time_since_epoch()} + _Gps_epoch_adjust;
         }
     };
+#endif // ^^^ _HAS_CXX20
 } // namespace chrono
 
 // [time.clock.file]
 
+#if _HAS_CXX20
 namespace filesystem {
     struct _File_time_clock;
 } // namespace filesystem
@@ -2623,10 +2625,10 @@ namespace filesystem {
 
             return _File_time;
         }
-#endif // _HAS_CXX20
+#endif // ^^^ _HAS_CXX20
     };
 } // namespace filesystem
-#endif // _HAS_CXX17
+#endif // ^^^ _HAS_CXX17
 
 namespace chrono {
 #if _HAS_CXX20
