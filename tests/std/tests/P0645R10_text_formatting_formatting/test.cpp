@@ -9,7 +9,6 @@
 #include <string_view>
 
 using namespace std;
-using namespace std::string_view_literals;
 // TODO: fill in tests
 template back_insert_iterator<string> std::vformat_to(
     back_insert_iterator<string>, const locale&, string_view, format_args_t<back_insert_iterator<string>, char>);
