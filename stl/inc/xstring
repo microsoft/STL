@@ -3012,7 +3012,7 @@ public:
     static constexpr auto npos{static_cast<size_type>(-1)};
 
 private:
-    _CONSTEXPR20_CONTAINER void _Copy_assign_val_from_small(const basic_string& _Right) {
+    void _Copy_assign_val_from_small(const basic_string& _Right) {
         // TRANSITION, VSO-761321; inline into only caller when that's fixed
 #ifdef __cpp_lib_constexpr_string
         _STL_ASSERT(!_STD is_constant_evaluated(), "SSO should be disabled in a constexpr context");
@@ -4038,12 +4038,10 @@ public:
         return _Count;
     }
 
-    _CONSTEXPR20_CONTAINER void _Swap_bx_large_with_small(_Scary_val& _Starts_large, _Scary_val& _Starts_small) {
+    void _Swap_bx_large_with_small(_Scary_val& _Starts_large, _Scary_val& _Starts_small) {
         // exchange a string in large mode with one in small mode
+        // (not _CONSTEXPR20_CONTAINER; SSO should be disabled in a constexpr context)
 
-#ifdef __cpp_lib_constexpr_string
-        _STL_ASSERT(!_STD is_constant_evaluated(), "SSO should be disabled in a constexpr context");
-#endif // __cpp_lib_constexpr_string
         const pointer _Ptr = _Starts_large._Bx._Ptr;
         _Destroy_in_place(_Starts_large._Bx._Ptr);
         _Traits::copy(_Starts_large._Bx._Buf, _Starts_small._Bx._Buf, _BUF_SIZE);
@@ -4574,13 +4572,11 @@ private:
         return *this;
     }
 
-    _CONSTEXPR20_CONTAINER void _Become_small() {
+    void _Become_small() {
         // release any held storage and return to small string mode
         // pre: *this is in large string mode
         // pre: this is small enough to return to small string mode
-#ifdef __cpp_lib_constexpr_string
-        _STL_ASSERT(!_STD is_constant_evaluated(), "SSO should be disabled in a constexpr context");
-#endif // __cpp_lib_constexpr_string
+        // (not _CONSTEXPR20_CONTAINER; SSO should be disabled in a constexpr context)
 
         _Mypair._Myval2._Orphan_all();
         const pointer _Ptr = _Mypair._Myval2._Bx._Ptr;
