@@ -3031,12 +3031,18 @@ public:
         _Iterator_base12** _Pnext = &this->_Myproxy->_Myfirstiter;
         while (*_Pnext) { // test offset from beginning of vector
             const auto& _Pnextiter = static_cast<const_iterator&>(**_Pnext);
-            const auto _Off        = static_cast<size_type>(_VBITS * (_Pnextiter._Myptr - _Base)) + _Pnextiter._Myoff;
+            const auto _Temp       = *_Pnext; // TRANSITION, VSO-1269037
+            if (!_Pnextiter._Myptr) { // orphan the iterator
+                _Temp->_Myproxy = nullptr;
+                *_Pnext         = _Temp->_Mynextiter;
+                continue;
+            }
+            const auto _Off = static_cast<size_type>(_VBITS * (_Pnextiter._Myptr - _Base)) + _Pnextiter._Myoff;
             if (_Off < _Offlo || _Offhi < _Off) {
-                _Pnext = &(*_Pnext)->_Mynextiter;
+                _Pnext = &_Temp->_Mynextiter;
             } else { // orphan the iterator
-                (*_Pnext)->_Myproxy = nullptr;
-                *_Pnext             = (*_Pnext)->_Mynextiter;
+                _Temp->_Myproxy = nullptr;
+                *_Pnext         = _Temp->_Mynextiter;
             }
         }
     }
