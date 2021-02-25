@@ -168,9 +168,11 @@ namespace pmr {
         return &_Left == &_Right || _Left.is_equal(_Right);
     }
 
+#if !_HAS_CXX20
     _NODISCARD inline bool operator!=(const memory_resource& _Left, const memory_resource& _Right) noexcept {
         return !(_Left == _Right);
     }
+#endif // !_HAS_CXX20
 
     // FUNCTION get_default_resource
     extern "C" _CRT_SATELLITE_1 memory_resource* __cdecl _Aligned_get_default_resource() noexcept;
@@ -299,11 +301,13 @@ namespace pmr {
         return *_Left.resource() == *_Right.resource();
     }
 
+#if !_HAS_CXX20
     template <class _Ty1, class _Ty2>
     _NODISCARD bool operator!=(
         const polymorphic_allocator<_Ty1>& _Left, const polymorphic_allocator<_Ty2>& _Right) noexcept {
         return !(_Left == _Right);
     }
+#endif // !_HAS_CXX20
 
 } // namespace pmr
 
