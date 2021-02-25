@@ -4592,11 +4592,11 @@ private:
     }
 
     _CONSTEXPR20_CONTAINER void _Tidy_init() noexcept { // initialize basic_string data members
-        _Mypair._Myval2._Mysize = 0;
+        auto& _My_data   = _Mypair._Myval2;
+        _My_data._Mysize = 0;
 
 #ifdef __cpp_lib_constexpr_string
         if (_STD is_constant_evaluated()) {
-            auto& _My_data         = _Mypair._Myval2;
             _My_data._Myres        = _BUF_SIZE; // SSO disabled in constexpr context
             auto& _Al              = _Getal();
             const pointer _New_ptr = _Al.allocate(_BUF_SIZE + 1); // throws
@@ -4607,9 +4607,9 @@ private:
         } else
 #endif // __cpp_lib_constexpr_string
         {
-            _Mypair._Myval2._Myres = _BUF_SIZE - 1;
+            _My_data._Myres = _BUF_SIZE - 1;
             // the _Traits::assign is last so the codegen doesn't think the char write can alias this
-            _Traits::assign(_Mypair._Myval2._Bx._Buf[0], _Elem());
+            _Traits::assign(_My_data._Bx._Buf[0], _Elem());
         }
     }
 
