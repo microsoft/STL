@@ -3908,9 +3908,9 @@ void run_interactive_tests(int argc, wchar_t* argv[]) {
 // mode.
 void test_devcom_953628() { // COMPILE-ONLY
     struct S : wstring {};
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1270432
+#if defined(MSVC_INTERNAL_TESTING) || defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1270432
     path{S{}};
-#endif // defined(__clang__) || defined(__EDG__)
+#endif // defined(MSVC_INTERNAL_TESTING) || defined(__clang__) || defined(__EDG__)
 }
 
 int wmain(int argc, wchar_t* argv[]) {
