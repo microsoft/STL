@@ -99,7 +99,7 @@ tests\Dev11_0000000_user_defined_literals
 tests\Dev11_0019127_singular_iterators
 tests\Dev11_0091392_string_erase_resize_perf
 tests\Dev11_0133625_locale0_implib_cpp
-tests\Dev11_0135139_vector_bool_equality_perf
+tests\Dev11_0135139_vector_bool_comparisons
 tests\Dev11_0235721_async_and_packaged_task
 tests\Dev11_0253803_debug_pointer
 tests\Dev11_0272959_make_signed
@@ -209,6 +209,7 @@ tests\P0024R2_parallel_algorithms_transform_inclusive_scan
 tests\P0024R2_parallel_algorithms_transform_reduce
 tests\P0035R4_over_aligned_allocation
 tests\P0040R3_extending_memory_management_tools
+tests\P0053R7_cpp_synchronized_buffered_ostream
 tests\P0067R5_charconv
 tests\P0083R3_splicing_maps_and_sets
 tests\P0088R3_variant
@@ -252,6 +253,7 @@ tests\P0556R3_bit_integral_power_of_two_operations
 tests\P0586R2_integer_comparison
 tests\P0595R2_is_constant_evaluated
 tests\P0607R0_inline_variables
+tests\P0608R3_improved_variant_converting_constructor
 tests\P0616R0_using_move_in_numeric
 tests\P0631R8_numbers_math_constants
 tests\P0660R10_jthread_and_cv_any
@@ -259,10 +261,12 @@ tests\P0660R10_stop_token
 tests\P0660R10_stop_token_death
 tests\P0674R1_make_shared_for_arrays
 tests\P0718R2_atomic_smart_ptrs
+tests\P0753R2_manipulators_for_cpp_synchronized_buffered_ostream
 tests\P0758R1_is_nothrow_convertible
 tests\P0768R1_spaceship_cpos
 tests\P0768R1_spaceship_operator
 tests\P0769R2_shift_left_shift_right
+tests\P0784R7_library_machinery
 tests\P0784R7_library_support_for_more_constexpr_containers
 tests\P0811R3_midpoint_lerp
 tests\P0896R4_common_iterator
@@ -382,6 +386,8 @@ tests\P0898R3_identity
 tests\P0912R5_coroutine
 tests\P0919R3_heterogeneous_unordered_lookup
 tests\P0966R1_string_reserve_should_not_shrink
+tests\P1004R2_constexpr_vector
+tests\P1004R2_constexpr_vector_bool
 tests\P1007R3_assume_aligned
 tests\P1020R1_smart_pointer_for_overwrite
 tests\P1023R0_constexpr_for_array_comparisons
@@ -395,6 +401,7 @@ tests\P1135R6_semaphore
 tests\P1165R1_consistently_propagating_stateful_allocators
 tests\P1423R3_char8_t_remediation
 tests\P1502R1_standard_library_header_units
+tests\P1614R2_spaceship
 tests\P1645R1_constexpr_numeric
 tests\VSO_0000000_allocator_propagation
 tests\VSO_0000000_any_calling_conventions

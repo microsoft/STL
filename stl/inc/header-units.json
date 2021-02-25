@@ -96,6 +96,7 @@
         "string",
         "string_view",
         "strstream",
+        "syncstream",
         "system_error",
         "thread",
         "tuple",
