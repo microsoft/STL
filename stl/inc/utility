@@ -347,10 +347,22 @@ _NODISCARD constexpr bool operator==(const pair<_Ty1, _Ty2>& _Left, const pair<_
     return _Left.first == _Right.first && _Left.second == _Right.second;
 }
 
+#ifdef __cpp_lib_concepts
+template <class _Ty1, class _Ty2>
+_NODISCARD constexpr common_comparison_category_t<_Synth_three_way_result<_Ty1>, _Synth_three_way_result<_Ty2>>
+    operator<=>(const pair<_Ty1, _Ty2>& _Left, const pair<_Ty1, _Ty2>& _Right) {
+    if (auto _Result = _Synth_three_way{}(_Left.first, _Right.first); _Result != 0) {
+        return _Result;
+    }
+    return _Synth_three_way{}(_Left.second, _Right.second);
+}
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#if !_HAS_CXX20
 template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool operator!=(const pair<_Ty1, _Ty2>& _Left, const pair<_Ty1, _Ty2>& _Right) {
     return !(_Left == _Right);
 }
+#endif // !_HAS_CXX20
 
 template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool operator<(const pair<_Ty1, _Ty2>& _Left, const pair<_Ty1, _Ty2>& _Right) {
@@ -371,6 +383,7 @@ template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool operator>=(const pair<_Ty1, _Ty2>& _Left, const pair<_Ty1, _Ty2>& _Right) {
     return !(_Left < _Right);
 }
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
 // ALIAS TEMPLATE _Unrefwrap_t
 template <class _Ty>

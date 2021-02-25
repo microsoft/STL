@@ -1434,10 +1434,10 @@ STATIC_ASSERT(__cpp_lib_syncbuf == 201803L);
 #if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #ifndef __cpp_lib_three_way_comparison
 #error __cpp_lib_three_way_comparison is not defined
-#elif __cpp_lib_three_way_comparison != 201711L
-#error __cpp_lib_three_way_comparison is not 201711L
+#elif __cpp_lib_three_way_comparison != 201907L
+#error __cpp_lib_three_way_comparison is not 201907L
 #else
-STATIC_ASSERT(__cpp_lib_three_way_comparison == 201711L);
+STATIC_ASSERT(__cpp_lib_three_way_comparison == 201907L);
 #endif
 #else
 #ifdef __cpp_lib_three_way_comparison

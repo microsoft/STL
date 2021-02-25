@@ -1548,7 +1548,7 @@ namespace ranges {
             }
 
             // clang-format off
-            template <bool _OtherConst = _Const>
+            template <bool _OtherConst = !_Const>
                 requires sentinel_for<_Base_sentinel, _Base_iterator<_OtherConst>>
             _NODISCARD friend constexpr bool operator==(
                 const _Counted_iter<_OtherConst>& _Left, const _Sentinel& _Right) {
