@@ -841,19 +841,19 @@ public:
 };
 
 // clang-format off
-template<class _Context, class _Ty>
+template <class _Context, class _Ty>
 concept _Has_formatter = requires(const _Ty& _Val, _Context& _Ctx) {
     _STD declval<typename _Context::template formatter_type<_Ty>>().format(_Val, _Ctx);
 };
 // clang-format on
 
-// See [format.arg]/5
+// See N4878 [format.arg]/5
 // clang-format off
 template <class _Context, class _Ty>
     requires _Has_formatter<_Context, _Ty>
 /* consteval */ constexpr auto _Get_format_arg_storage_type(const _Ty& _Val) noexcept {
     // clang-format on
-    return typename basic_format_arg<_Context>::handle(_Val);
+    return typename basic_format_arg<_Context>::handle{_Val};
 }
 
 // clang-format off
