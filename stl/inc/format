@@ -1118,7 +1118,7 @@ _OutputIt _Write(_OutputIt _Out, monostate) {
 
 // clang-format off
 template <class _CharT, class _OutputIt, class _Arithmetic>
-    requires is_arithmetic_v<_Arithmetic> && !same_as<_Arithmetic, bool> && !same_as<_Arithmetic, _CharT>
+    requires (is_arithmetic_v<_Arithmetic> && !same_as<_Arithmetic, bool> && !same_as<_Arithmetic, _CharT>)
 _OutputIt _Write(_OutputIt _Out, _Arithmetic _Value) {
     // clang-format on
     // TODO: Reusable buffer
