@@ -1634,7 +1634,7 @@ namespace ranges {
             }
 
             friend constexpr void iter_swap(const _Iterator& _Left, const _Iterator& _Right) _NOEXCEPT_IDL0(noexcept(
-                ranges::iter_swap(_Left._Current, _Right._Current))) requires indirectly_swappable<iterator_t<_Base>> {
+                _RANGES iter_swap(_Left._Current, _Right._Current))) requires indirectly_swappable<iterator_t<_Base>> {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _Left._Check_dereference();
                 _Right._Check_dereference();
@@ -2490,6 +2490,410 @@ namespace ranges {
         };
 
         inline constexpr _Drop_fn drop;
+    } // namespace views
+
+    // CLASS TEMPLATE ranges::split_view
+    // clang-format off
+    template <class _Ty>
+    concept _Tiny_range = sized_range<_Ty>
+        && requires { typename _Require_constant<remove_reference_t<_Ty>::size()>; }
+        && (remove_reference_t<_Ty>::size() <= 1);
+
+    template <input_range _Vw, forward_range _Pat>
+        requires view<_Vw> && view<_Pat>
+            && indirectly_comparable<iterator_t<_Vw>, iterator_t<_Pat>, _RANGES equal_to>
+            && (forward_range<_Vw> || _Tiny_range<_Pat>)
+    class split_view;
+    // clang-format on
+
+    template <class _Vw, class _Pat>
+    class _Split_view_base : public view_interface<split_view<_Vw, _Pat>> {
+    protected:
+        /* [[no_unique_address]] */ iterator_t<_Vw> _Current{};
+    };
+    template <forward_range _Vw, class _Pat>
+    class _Split_view_base<_Vw, _Pat> : public view_interface<split_view<_Vw, _Pat>> {};
+
+    // clang-format off
+    template <input_range _Vw, forward_range _Pat>
+        requires view<_Vw> && view<_Pat>
+            && indirectly_comparable<iterator_t<_Vw>, iterator_t<_Pat>, _RANGES equal_to>
+            && (forward_range<_Vw> || _Tiny_range<_Pat>)
+    class split_view : public _Split_view_base<_Vw, _Pat> {
+        // clang-format on
+    private:
+        /* [[no_unique_address]] */ _Vw _Range{};
+        /* [[no_unique_address]] */ _Pat _Pattern{};
+
+        template <class>
+        struct _Outer_iter_base {};
+
+        // clang-format off
+        template <forward_iterator _Iter>
+        struct _Outer_iter_base<_Iter> {
+            // clang-format on
+            _Iter _Current{};
+        };
+
+        template <bool _Const>
+        class _Inner_iter;
+
+        template <bool _Const>
+        class _Outer_iter : private _Outer_iter_base<iterator_t<_Maybe_const<_Const, _Vw>>> {
+        private:
+            template <bool>
+            friend class _Inner_iter;
+            friend _Outer_iter<true>;
+
+            using _MyBase   = _Outer_iter_base<iterator_t<_Maybe_const<_Const, _Vw>>>;
+            using _ParentTy = _Maybe_const<_Const, split_view>;
+            using _BaseTy   = _Maybe_const<_Const, _Vw>;
+
+            _ParentTy* _Parent = nullptr;
+
+            _NODISCARD constexpr iterator_t<_BaseTy>& _Get_current() noexcept {
+                if constexpr (forward_range<_BaseTy>) {
+                    return this->_Current;
+                } else {
+                    return _Parent->_Current;
+                }
+            }
+
+            _NODISCARD constexpr const iterator_t<_BaseTy>& _Get_current() const noexcept {
+                if constexpr (forward_range<_BaseTy>) {
+                    return this->_Current;
+                } else {
+                    return _Parent->_Current;
+                }
+            }
+
+            _NODISCARD constexpr bool _At_end() const
+                noexcept(noexcept(_Implicitly_convert_to<bool>(_Get_current() == _RANGES end(_Parent->_Range)))) {
+                return _Get_current() == _RANGES end(_Parent->_Range);
+            }
+
+        public:
+            using iterator_concept  = conditional_t<forward_range<_BaseTy>, forward_iterator_tag, input_iterator_tag>;
+            using iterator_category = input_iterator_tag;
+            using difference_type   = range_difference_t<_BaseTy>;
+
+            class value_type : public view_interface<value_type> {
+            private:
+                /* [[no_unique_address]] */ _Outer_iter _It{};
+
+            public:
+                value_type() = default;
+                constexpr explicit value_type(_Outer_iter _It_) noexcept(
+                    is_nothrow_move_constructible_v<_Outer_iter>) // strengthened
+                    : _It{_STD move(_It_)} {}
+
+                _NODISCARD constexpr _Inner_iter<_Const> begin() const requires copyable<_Outer_iter> {
+                    return _Inner_iter<_Const>{_It};
+                }
+
+                // clang-format off
+                _NODISCARD constexpr _Inner_iter<_Const> begin() requires (!copyable<_Outer_iter>) {
+                    return _Inner_iter<_Const>{_STD move(_It)};
+                }
+                // clang-format on
+
+                _NODISCARD constexpr default_sentinel_t end() const noexcept {
+                    return default_sentinel;
+                }
+            };
+
+            _Outer_iter() = default;
+
+            // clang-format off
+            constexpr explicit _Outer_iter(_ParentTy& _Parent_) noexcept // strengthened
+                requires (!forward_range<_BaseTy>) : _Parent{_STD addressof(_Parent_)} {}
+            // clang-format on
+
+            constexpr _Outer_iter(_ParentTy& _Parent_, iterator_t<_BaseTy> _Current_) noexcept(
+                is_nothrow_move_constructible_v<iterator_t<_BaseTy>>) // strengthened
+                requires forward_range<_BaseTy>
+                : _MyBase{_STD move(_Current_)}, _Parent{_STD addressof(_Parent_)} {}
+
+            // clang-format off
+            constexpr _Outer_iter(
+                _Outer_iter<!_Const> _It) requires _Const && convertible_to<iterator_t<_Vw>, iterator_t<_BaseTy>>
+                : _MyBase{_STD move(_It._Current)}, _Parent{_It._Parent} {}
+            // clang-format on
+
+            _NODISCARD constexpr value_type operator*() const noexcept(noexcept(value_type{*this})) /* strengthened */ {
+                return value_type{*this};
+            }
+
+            constexpr _Outer_iter& operator++() {
+                const auto _End = _RANGES end(_Parent->_Range);
+                auto& _Cur      = _Get_current();
+                if (_Cur == _End) {
+                    return *this;
+                }
+
+                const auto _Pat_first = _RANGES begin(_Parent->_Pattern);
+                const auto _Pat_last  = _RANGES end(_Parent->_Pattern);
+                if (_Pat_first == _Pat_last) {
+                    ++_Cur;
+                } else if constexpr (_Tiny_range<_Pat>) { // Per LWG-3505
+                    _Cur = _RANGES _Find_unchecked(_STD move(_Cur), _End, *_Pat_first);
+                    if (_Cur != _End) {
+                        ++_Cur;
+                    }
+                } else {
+                    do {
+                        auto _Result = _RANGES mismatch(_Cur, _End, _Pat_first, _Pat_last);
+                        if (_Result.in2 == _Pat_last) { // pattern matches
+                            _Cur = _STD move(_Result.in1);
+                            break;
+                        }
+                    } while (++_Cur != _End);
+                }
+                return *this;
+            }
+
+            constexpr decltype(auto) operator++(int) {
+                if constexpr (forward_range<_BaseTy>) {
+                    auto _Tmp = *this;
+                    ++*this;
+                    return _Tmp;
+                } else {
+                    ++*this;
+                }
+            }
+
+            _NODISCARD friend constexpr bool operator==(const _Outer_iter& _Left, const _Outer_iter& _Right) noexcept(
+                noexcept(_Left._Current == _Right._Current)) /* strengthened */ requires forward_range<_BaseTy> {
+                return _Left._Current == _Right._Current;
+            }
+            _NODISCARD friend constexpr bool operator==(const _Outer_iter& _Left, default_sentinel_t) noexcept(
+                noexcept(_Left._At_end())) /* strenghtened */ {
+                return _Left._At_end();
+            }
+        };
+
+        template <bool _Const>
+        class _Inner_iter {
+        private:
+            using _BaseTy = _Maybe_const<_Const, _Vw>;
+
+            _Outer_iter<_Const> _It{};
+            bool _Incremented = false;
+
+            _NODISCARD constexpr bool _Equal(const _Inner_iter& _Right) const {
+                return _It._Get_current() == _Right._It._Get_current();
+            }
+
+            _NODISCARD constexpr iterator_t<_BaseTy>& _Get_current() noexcept {
+                return _It._Get_current();
+            }
+
+            _NODISCARD constexpr const iterator_t<_BaseTy>& _Get_current() const noexcept {
+                return _It._Get_current();
+            }
+
+            _NODISCARD constexpr bool _At_end() const {
+                auto _Pat_pos       = _RANGES begin(_It._Parent->_Pattern);
+                const auto _Pat_end = _RANGES end(_It._Parent->_Pattern);
+                auto _Last          = _RANGES end(_It._Parent->_Range);
+                if constexpr (_Tiny_range<_Pat>) {
+                    const auto& _Cur = _It._Get_current();
+                    if (_Cur == _Last) {
+                        return true;
+                    }
+
+                    if (_Pat_pos == _Pat_end) {
+                        return _Incremented;
+                    }
+                    return *_Cur == *_Pat_pos;
+                } else {
+                    auto _Cur = _It._Get_current();
+                    if (_Cur == _Last) {
+                        return true;
+                    }
+
+                    if (_Pat_pos == _Pat_end) {
+                        return _Incremented;
+                    }
+
+                    do {
+                        if (*_Cur != *_Pat_pos) {
+                            return false;
+                        }
+
+                        if (++_Pat_pos == _Pat_end) {
+                            return true;
+                        }
+                    } while (++_Cur != _Last);
+                    return false;
+                }
+            }
+
+        public:
+            using iterator_concept  = typename _Outer_iter<_Const>::iterator_concept;
+            using iterator_category = conditional_t<
+                derived_from<typename iterator_traits<iterator_t<_BaseTy>>::iterator_category, forward_iterator_tag>,
+                forward_iterator_tag, typename iterator_traits<iterator_t<_BaseTy>>::iterator_category>;
+            using value_type      = range_value_t<_BaseTy>;
+            using difference_type = range_difference_t<_BaseTy>;
+
+            _Inner_iter() = default;
+            constexpr explicit _Inner_iter(_Outer_iter<_Const> _It_) noexcept(
+                is_nothrow_move_constructible_v<_Outer_iter<_Const>>) // strengthened
+                : _It{_STD move(_It_)} {}
+
+            _NODISCARD constexpr decltype(auto) operator*() const {
+                return *_It._Get_current();
+            }
+
+            constexpr _Inner_iter& operator++() {
+                _Incremented = true;
+                if constexpr (!forward_range<_BaseTy>) {
+                    if constexpr (_Pat::size() == 0) {
+                        return *this;
+                    }
+                }
+                ++_It._Get_current();
+                return *this;
+            }
+
+            constexpr decltype(auto) operator++(int) {
+                if constexpr (forward_range<_BaseTy>) { // per LWG issue unnumbered as of 2021-03-11
+                    auto _Tmp = *this;
+                    ++*this;
+                    return _Tmp;
+                } else {
+                    ++*this;
+                }
+            }
+
+            _NODISCARD friend constexpr bool operator==(
+                const _Inner_iter& _Left, const _Inner_iter& _Right) requires forward_range<_BaseTy> {
+                return _Left._Equal(_Right);
+            }
+
+            _NODISCARD friend constexpr bool operator==(const _Inner_iter& _Left, default_sentinel_t) {
+                return _Left._At_end();
+            }
+
+            _NODISCARD friend constexpr decltype(auto) iter_move(const _Inner_iter& _Iter) noexcept(
+                noexcept(_RANGES iter_move(_Iter._Get_current()))) {
+                return _RANGES iter_move(_Iter._Get_current());
+            }
+
+            // clang-format off
+            friend constexpr void iter_swap(const _Inner_iter& _Left, const _Inner_iter& _Right)
+                noexcept(noexcept(_RANGES iter_swap(_Left._Get_current(), _Right._Get_current())))
+                requires indirectly_swappable<iterator_t<_BaseTy>> {
+                // clang-format on
+                _RANGES iter_swap(_Left._Get_current(), _Right._Get_current());
+            }
+        };
+
+    public:
+        split_view() = default;
+        constexpr split_view(_Vw _Range_, _Pat _Pattern_) noexcept(
+            is_nothrow_move_constructible_v<_Vw>&& is_nothrow_move_constructible_v<_Pat>) // strengthened
+            : _Range(_STD move(_Range_)), _Pattern(_STD move(_Pattern_)) {}
+
+        // clang-format off
+        template <input_range _Rng>
+            requires constructible_from<_Vw, views::all_t<_Rng>>
+                && constructible_from<_Pat, single_view<range_value_t<_Rng>>>
+        constexpr split_view(_Rng&& _Range_, range_value_t<_Rng> _Elem)
+            noexcept(noexcept(_Vw(views::all(_STD forward<_Rng>(_Range_)))) && noexcept(_Pat(single_view{_STD move(_Elem)}))) // strengthened
+            : _Range(views::all(_STD forward<_Rng>(_Range_))), _Pattern(single_view{_STD move(_Elem)}) {}
+        // clang-format on
+
+        _NODISCARD constexpr _Vw base() const& noexcept(is_nothrow_copy_constructible_v<_Vw>) /* strengthened */
+            requires copy_constructible<_Vw> {
+            return _Range;
+        }
+        _NODISCARD constexpr _Vw base() && noexcept(is_nothrow_move_constructible_v<_Vw>) /* strengthened */ {
+            return _STD move(_Range);
+        }
+
+        _NODISCARD constexpr auto begin() {
+            if constexpr (forward_range<_Vw>) {
+                return _Outer_iter<_Simple_view<_Vw>>{*this, _RANGES begin(_Range)};
+            } else {
+                this->_Current = _RANGES begin(_Range);
+                return _Outer_iter<false>{*this};
+            }
+        }
+
+        // clang-format off
+        _NODISCARD constexpr auto begin() const requires forward_range<_Vw> && forward_range<const _Vw> {
+            // clang-format on
+            return _Outer_iter<true>{*this, _RANGES begin(_Range)};
+        }
+
+        // clang-format off
+        _NODISCARD constexpr auto end() requires forward_range<_Vw> && common_range<_Vw> {
+            // clang-format on
+            return _Outer_iter<_Simple_view<_Vw>>{*this, _RANGES end(_Range)};
+        }
+
+        _NODISCARD constexpr auto end() const {
+            if constexpr (forward_range<_Vw> && forward_range<const _Vw> && common_range<const _Vw>) {
+                return _Outer_iter<true>{*this, _RANGES end(_Range)};
+            } else {
+                return default_sentinel;
+            }
+        }
+    };
+
+    template <class _Rng, class _Pat>
+    split_view(_Rng&&, _Pat&&) -> split_view<views::all_t<_Rng>, views::all_t<_Pat>>;
+
+    template <input_range _Rng>
+    split_view(_Rng&&, range_value_t<_Rng>) -> split_view<views::all_t<_Rng>, single_view<range_value_t<_Rng>>>;
+
+    namespace views {
+        // VARIABLE views::split
+        class _Split_fn {
+        private:
+            template <class _Delim>
+            struct _Partial : _Pipe::_Base<_Partial<_Delim>> {
+                /* [[no_unique_address]] */ _Delim _Delimiter;
+
+                template <viewable_range _Rng>
+                _NODISCARD constexpr auto operator()(_Rng&& _Range) const& noexcept(
+                    noexcept(split_view{_STD forward<_Rng>(_Range), _Delimiter})) requires requires {
+                    split_view{static_cast<_Rng&&>(_Range), _Delimiter};
+                }
+                { return split_view{_STD forward<_Rng>(_Range), _Delimiter}; }
+
+                template <viewable_range _Rng>
+                _NODISCARD constexpr auto operator()(_Rng&& _Range) && noexcept(noexcept(
+                    split_view{_STD forward<_Rng>(_Range), _STD forward<_Delim>(_Delimiter)})) requires requires {
+                    split_view{static_cast<_Rng&&>(_Range), static_cast<_Delim&&>(_Delimiter)};
+                }
+                { return split_view{_STD forward<_Rng>(_Range), _STD forward<_Delim>(_Delimiter)}; }
+            };
+
+        public:
+            // clang-format off
+            template <viewable_range _Rng, class _Pat>
+            _NODISCARD constexpr auto operator()(_Rng&& _Range, _Pat&& _Pattern) const noexcept(noexcept(
+                split_view{_STD forward<_Rng>(_Range), _STD forward<_Pat>(_Pattern)})) requires requires {
+                split_view{static_cast<_Rng&&>(_Range), static_cast<_Pat&&>(_Pattern)};
+            } {
+                // clang-format on
+                return split_view{_STD forward<_Rng>(_Range), _STD forward<_Pat>(_Pattern)};
+            }
+
+            // clang-format off
+            template <class _Delim>
+                requires is_lvalue_reference_v<_Delim> || move_constructible<_Delim>
+            _NODISCARD constexpr auto operator()(_Delim&& _Delimiter) const
+                noexcept(is_lvalue_reference_v<_Delim> || is_nothrow_move_constructible_v<_Delim>) {
+                // clang-format on
+                return _Partial<_Delim>{._Delimiter = _STD forward<_Delim>(_Delimiter)};
+            }
+        };
+
+        inline constexpr _Split_fn split;
 
         // VARIABLE views::counted
         class _Counted_fn {
