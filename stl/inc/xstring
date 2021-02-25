@@ -166,13 +166,15 @@ struct _Char_traits { // properties of a string or stream element
     static _CONSTEXPR20 _Elem* assign(
         _Out_writes_all_(_Count) _Elem* const _First, size_t _Count, const _Elem _Ch) noexcept /* strengthened */ {
         // assign _Count * _Ch to [_First, ...)
-        for (_Elem* _Next = _First; _Count > 0; --_Count, ++_Next) {
 #ifdef __cpp_lib_constexpr_string
-            if (_STD is_constant_evaluated()) {
+        if (_STD is_constant_evaluated()) {
+            for (_Elem* _Next = _First; _Count > 0; --_Count, ++_Next) {
                 _STD construct_at(_Next, _Ch);
-            } else
+            }
+        } else
 #endif // __cpp_lib_constexpr_string
-            {
+        {
+            for (_Elem* _Next = _First; _Count > 0; --_Count, ++_Next) {
                 *_Next = _Ch;
             }
         }
