@@ -404,7 +404,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         assert(*cd == CharType{'H'});
 
         const auto cs = literal_constructed.c_str();
-        static_assert(is_same_v<decltype(d), CharType* const>);
+        static_assert(is_same_v<decltype(cs), const CharType* const>);
         assert(cs == literal_constructed.data());
         assert(char_traits<CharType>::length(cs) == literal_constructed.size());
     }
@@ -457,7 +457,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         assert(*crb2 == CharType{'s'});
 
         const auto re = literal_constructed.rend();
-        static_assert(is_same_v<remove_const_t<decltype(rb)>, reverse_iterator<typename str::iterator>>);
+        static_assert(is_same_v<remove_const_t<decltype(re)>, reverse_iterator<typename str::iterator>>);
         assert(*prev(re) == CharType{'H'});
 
         const auto cre = literal_constructed.crend();
@@ -606,7 +606,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
 
         str insert_pos_conversion_substr = get_literal_input<CharType>();
         insert_pos_conversion_substr.insert(6, convertible, 6, 7);
-        assert(equalRanges(insert_pos_conversion, "Hello fluffy fluffy kittens"));
+        assert(equalRanges(insert_pos_conversion_substr, "Hello fluffy fluffy kittens"sv));
 
         str insert_pos_literal = get_literal_input<CharType>();
         insert_pos_literal.insert(6, get_literal_input<CharType>());
@@ -1380,7 +1380,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         assert(equalRanges(op_str_char, "kitten!"sv));
 
         const str op_literal_str = get_cat<CharType>() + second;
-        assert(equalRanges(op_str_literal, "kittendog"sv));
+        assert(equalRanges(op_literal_str, "kittendog"sv));
 
         const str op_char_str = CharType{'!'} + second;
         assert(equalRanges(op_char_str, "!dog"sv));
@@ -1400,8 +1400,8 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         const str op_str_rstr = first + str{get_dog<CharType>()};
         assert(equalRanges(op_str_rstr, "kittendog"sv));
 
-        const str op_literal_rst = get_cat<CharType>() + str{get_dog<CharType>()};
-        assert(equalRanges(op_rstr_literal, "kittendog"sv));
+        const str op_literal_rstr = get_cat<CharType>() + str{get_dog<CharType>()};
+        assert(equalRanges(op_literal_rstr, "kittendog"sv));
 
         const str op_char_rstr = CharType{'!'} + str{get_dog<CharType>()};
         assert(equalRanges(op_char_rstr, "!dog"sv));
