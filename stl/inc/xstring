@@ -178,7 +178,14 @@ struct _Char_traits { // properties of a string or stream element
     }
 
     static _CONSTEXPR17 void assign(_Elem& _Left, const _Elem& _Right) noexcept {
-        _Left = _Right;
+#ifdef __cpp_lib_constexpr_string
+        if (_STD is_constant_evaluated()) {
+            _STD construct_at(_STD addressof(_Left), _Right);
+        } else
+#endif // __cpp_lib_constexpr_string
+        {
+            _Left = _Right;
+        }
     }
 
     _NODISCARD static constexpr bool eq(const _Elem& _Left, const _Elem& _Right) noexcept {
@@ -2588,7 +2595,7 @@ public:
         }
 
 #ifdef __cpp_lib_constexpr_string
-        if (_STD is_constant_evaluated()) { // Copying into uninitialized memory is technically UB, so fill it once
+        if (_STD is_constant_evaluated()) { // Begin the lifetimes of the objects before copying to avoid UB
             _Traits::assign(_Ptr, _New_capacity + 1, _Elem());
         }
 #endif // __cpp_lib_constexpr_string
@@ -2659,7 +2666,7 @@ public:
         const pointer _Fancyptr = _Getal().allocate(_New_capacity + 1); // throws
         // nothrow hereafter
 #ifdef __cpp_lib_constexpr_string
-        if (_STD is_constant_evaluated()) { // Copying into uninitialized memory is technically UB, so fill it once
+        if (_STD is_constant_evaluated()) { // Begin the lifetimes of the objects before copying to avoid UB
             _Traits::assign(_Unfancy(_Fancyptr), _New_capacity + 1, _Elem());
         }
 #endif // __cpp_lib_constexpr_string
@@ -2855,7 +2862,6 @@ private:
         const _Elem* const _Right_ptr = _Right_data._Myptr();
         auto& _My_data                = _Mypair._Myval2;
 
-
 #ifdef __cpp_lib_constexpr_string
         const bool _Stay_small = _Right_size < _BUF_SIZE && !_STD is_constant_evaluated();
 #else // ^^^ __cpp_lib_constexpr_string / !__cpp_lib_constexpr_string vvv
@@ -2877,7 +2883,7 @@ private:
         _Construct_in_place(_My_data._Bx._Ptr, _New_array);
 
 #ifdef __cpp_lib_constexpr_string
-        if (_STD is_constant_evaluated()) { // Copying into uninitialized memory is technically UB, so fill it once
+        if (_STD is_constant_evaluated()) { // Begin the lifetimes of the objects before copying to avoid UB
             _Traits::assign(_Unfancy(_New_array), _New_capacity + 1, _Elem());
         }
 #endif // __cpp_lib_constexpr_string
@@ -2986,7 +2992,7 @@ private:
             const auto _New_ptr      = _Right_al_non_const.allocate(_New_capacity); // throws
 
 #ifdef __cpp_lib_constexpr_string
-            if (_STD is_constant_evaluated()) { // Copying into uninitialized memory is technically UB, so fill it
+            if (_STD is_constant_evaluated()) { // Begin the lifetimes of the objects before copying to avoid UB
                 _Traits::assign(_Unfancy(_New_ptr), _New_size + 1, _Elem());
             }
 #endif // __cpp_lib_constexpr_string
@@ -3743,7 +3749,7 @@ public:
             const pointer _New_ptr = _Al.allocate(_Target_capacity + 1); // throws
 
 #ifdef __cpp_lib_constexpr_string
-            if (_STD is_constant_evaluated()) { // Copying into uninitialized memory is technically UB, so fill it once
+            if (_STD is_constant_evaluated()) { // Begin the lifetimes of the objects before copying to avoid UB
                 _Traits::assign(_Unfancy(_New_ptr), _Target_capacity + 1, _Elem());
             }
 #endif // __cpp_lib_constexpr_string
@@ -4448,7 +4454,7 @@ private:
         const pointer _New_ptr        = _Al.allocate(_New_capacity + 1); // throws
 
 #ifdef __cpp_lib_constexpr_string
-        if (_STD is_constant_evaluated()) { // Copying into uninitialized memory is technically UB, so fill it once
+        if (_STD is_constant_evaluated()) { // Begin the lifetimes of the objects before copying to avoid UB
             _Traits::assign(_Unfancy(_New_ptr), _New_capacity + 1, _Elem());
         }
 #endif // __cpp_lib_constexpr_string
@@ -4484,7 +4490,7 @@ private:
         const pointer _New_ptr        = _Al.allocate(_New_capacity + 1); // throws
 
 #ifdef __cpp_lib_constexpr_string
-        if (_STD is_constant_evaluated()) { // Copying into uninitialized memory is technically UB, so fill it once
+        if (_STD is_constant_evaluated()) { // Begin the lifetimes of the objects before copying to avoid UB
             _Traits::assign(_Unfancy(_New_ptr), _New_capacity + 1, _Elem());
         }
 #endif // __cpp_lib_constexpr_string
