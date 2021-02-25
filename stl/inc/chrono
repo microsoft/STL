@@ -418,8 +418,8 @@ namespace chrono {
 #ifdef __cpp_lib_concepts
     // clang-format off
     template <class _Rep1, class _Period1, class _Rep2, class _Period2>
-    requires three_way_comparable<typename common_type_t<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>::rep>
-        _NODISCARD constexpr auto
+        requires three_way_comparable<typename common_type_t<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>::rep>
+    _NODISCARD constexpr auto
         operator<=>(const duration<_Rep1, _Period1>& _Left, const duration<_Rep2, _Period2>& _Right) noexcept(
             is_arithmetic_v<_Rep1>&& is_arithmetic_v<_Rep2>) /* strengthened */ {
         // clang-format on
@@ -2289,7 +2289,7 @@ namespace chrono {
             _Unique_lock _Lk(_Tzdb_mutex);
             auto [_Leap_sec, _All_ls_positive] = _Xtzdb_generate_leap_seconds(_Tzdb_list.front().leap_seconds.size());
             if (!_Leap_sec.empty()) {
-                _Emplace_front(tzdb{_STD move(_Leap_sec), _All_ls_positive});
+                _Tzdb_list.emplace_front(tzdb{_STD move(_Leap_sec), _All_ls_positive});
             }
             return _Tzdb_list.front();
         }
@@ -2470,18 +2470,8 @@ namespace chrono {
         _NODISCARD static utc_time<common_type_t<_Duration, seconds>> from_sys(const sys_time<_Duration>& _Sys_time) {
             const auto& _Tzdb      = _CHRONO get_tzdb();
             const auto& _Ls_vector = _Tzdb.leap_seconds;
-            const auto _It = _STD upper_bound(_Ls_vector.begin(), _Ls_vector.end(), _CHRONO floor<seconds>(_Sys_time));
-
-            seconds _Offset;
-            if (_Tzdb._All_ls_positive) {
-                _Offset = seconds{_It - _Ls_vector.begin()};
-            } else {
-                _Offset = seconds{0};
-                for (auto _Ls = _Tzdb.leap_seconds.begin(); _Ls != _It; ++_Ls) {
-                    _Offset += _Ls->value();
-                }
-            }
-
+            auto _It = _STD upper_bound(_Ls_vector.begin(), _Ls_vector.end(), _CHRONO floor<seconds>(_Sys_time));
+            const auto _Offset = _It == _Ls_vector.begin() ? seconds{0} : (--_It)->_Elapsed();
             return utc_time<common_type_t<_Duration, seconds>>{_Sys_time.time_since_epoch() + _Offset};
         }
     };
