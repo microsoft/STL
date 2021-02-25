@@ -76,7 +76,7 @@ using expected_table_t = vector<test_info>;
 #pragma warning(disable : 4640) // 'variable': construction of local static object is not thread-safe
 #if _ITERATOR_DEBUG_LEVEL == 0
 
-#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) // TRANSITION, 16.10p1
+#if defined(MSVC_INTERNAL_TESTING) || defined(__clang__) || defined(__EDG__) // TRANSITION, 16.10p1
 const expected_table_t& get_expected_moves_table() {
     static const expected_table_t s_expected_moves{
         {"*", "*", 1},
@@ -97,7 +97,7 @@ const expected_table_t& get_expected_copies_table() {
 
     return s_expected_copies;
 }
-#endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__)
+#endif // defined(MSVC_INTERNAL_TESTING) || defined(__clang__) || defined(__EDG__)
 
 #else // _ITERATOR_DEBUG_LEVEL == 0
 
@@ -132,7 +132,8 @@ const expected_table_t& get_expected_copies_table() {
 #endif // _ITERATOR_DEBUG_LEVEL == 0
 #pragma warning(pop)
 
-#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, 16.10p1
+#if defined(MSVC_INTERNAL_TESTING) || defined(__clang__) || defined(__EDG__) \
+    || _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, 16.10p1
 int query_expected_table(const expected_table_t& table, const string& type_name, const string& test_name) {
     auto exact_match = find_if(begin(table), end(table),
         [&](const test_info& other) { return type_name == other.type_name && test_name == other.test_name; });
@@ -186,7 +187,7 @@ void move_test(T val, const string& type_name, const string& test_name) {
     // no copying of the allocator should occur, only moves.
     assert(passed);
 }
-#endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0
+#endif // defined(MSVC_INTERNAL_TESTING) || defined(__clang__) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0
 
 template <typename T>
 class Alloc {
@@ -366,7 +367,8 @@ using container_t = typename bind_alloc_container<T, Container>::type;
 template <typename Key, typename Value, template <typename...> class Dictionary>
 using dictionary_t = typename bind_alloc_dictionary<Key, Value, Dictionary>::type;
 
-#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, 16.10p1
+#if defined(MSVC_INTERNAL_TESTING) || defined(__clang__) || defined(__EDG__) \
+    || _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, 16.10p1
 template <template <typename...> class Container>
 void container_test() {
     container_t<int, Container> empty_container;
@@ -421,7 +423,7 @@ void match_results_char_test() {
 
     move_test(mrc, type_name, "matched");
 }
-#endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0
+#endif // defined(MSVC_INTERNAL_TESTING) || defined(__clang__) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0
 
 // This test also checks to ensure that unordered containers that are moved from are still in a valid state.
 void test_moved_unordered_set_valid() {
@@ -432,7 +434,8 @@ void test_moved_unordered_set_valid() {
 
     function<bool(int, int)> key_equal([](int lhs, int rhs) { return equal_to<int>()(lhs, rhs); });
 
-#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, 16.10p1
+#if defined(MSVC_INTERNAL_TESTING) || defined(__clang__) || defined(__EDG__) \
+    || _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, 16.10p1
     using my_set = unordered_set<int, function<size_t(int)>, function<bool(int, int)>>;
 
     my_set my_data(500, hasher, key_equal);
@@ -456,13 +459,14 @@ void test_moved_unordered_set_valid() {
 
     my_data.erase(5);
     assert(my_data.size() == nums.size() - 1);
-#endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0
+#endif // defined(MSVC_INTERNAL_TESTING) || defined(__clang__) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0
 }
 
 int main() {
     print_report_header();
 
-#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, 16.10p1
+#if defined(MSVC_INTERNAL_TESTING) || defined(__clang__) || defined(__EDG__) \
+    || _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, 16.10p1
     container_test<vector>();
     container_test<list>();
     container_test<deque>();
@@ -480,7 +484,7 @@ int main() {
     string_test();
 
     match_results_char_test();
-#endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0
+#endif // defined(MSVC_INTERNAL_TESTING) || defined(__clang__) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0
 
     test_moved_unordered_set_valid();
 }
