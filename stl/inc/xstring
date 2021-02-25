@@ -2825,7 +2825,7 @@ public:
         size_type _Res;
     };
 
-    _NODISCARD _CONSTEXPR20_CONTAINER _Released_buffer _Release_to_buffer(_Alloc& _Al) {
+    _NODISCARD _Released_buffer _Release_to_buffer(_Alloc& _Al) {
         // Release to a buffer, or allocate a new one if in small string mode; used exclusively by basic_stringbuf
         _Released_buffer _Result;
         auto& _My_data = _Mypair._Myval2;
