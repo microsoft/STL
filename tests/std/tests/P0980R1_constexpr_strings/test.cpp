@@ -116,6 +116,23 @@ constexpr auto get_no_needle() {
 }
 
 template <class CharType = char>
+constexpr auto get_cute_and_scratchy() {
+    if constexpr (is_same_v<CharType, char>) {
+        return "cute and scratchy ";
+#ifdef __cpp_char8_t
+    } else if constexpr (is_same_v<CharType, char8_t>) {
+        return u8"cute and scratchy ";
+#endif // __cpp_char8_t
+    } else if constexpr (is_same_v<CharType, char16_t>) {
+        return u"cute and scratchy ";
+    } else if constexpr (is_same_v<CharType, char32_t>) {
+        return U"cute and scratchy ";
+    } else {
+        return L"cute and scratchy ";
+    }
+}
+
+template <class CharType = char>
 struct string_view_convertible {
     _CONSTEXPR20_CONTAINER operator basic_string_view<CharType>() const {
         if constexpr (is_same_v<CharType, char>) {
@@ -574,7 +591,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         assert(equalRanges(insert_const_initializer, "Hello cute fluffy kittens"sv));
 
         str insert_pos_str  = get_literal_input<CharType>();
-        const str to_insert = "cute and scratchy ";
+        const str to_insert = get_cute_and_scratchy<CharType>();
         insert_pos_str.insert(6, to_insert);
         assert(equalRanges(insert_pos_str, "Hello cute and scratchy fluffy kittens"sv));
 
