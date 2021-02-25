@@ -284,8 +284,7 @@ public:
     }
 
     static _CONSTEXPR20 _Elem* assign(
-        _Out_writes_all_(_Count) _Elem* const _First, size_t _Count, const _Elem _Ch) noexcept
-    /* strengthened */ {
+        _Out_writes_all_(_Count) _Elem* const _First, size_t _Count, const _Elem _Ch) noexcept /* strengthened */ {
         // assign _Count * _Ch to [_First, ...)
 #ifdef __cpp_lib_is_constant_evaluated
         if (_STD is_constant_evaluated()) {
@@ -434,8 +433,7 @@ public:
     }
 
     static _CONSTEXPR20 _Elem* assign(
-        _Out_writes_all_(_Count) _Elem* const _First, size_t _Count, const _Elem _Ch) noexcept
-    /* strengthened */ {
+        _Out_writes_all_(_Count) _Elem* const _First, size_t _Count, const _Elem _Ch) noexcept /* strengthened */ {
         // assign _Count * _Ch to [_First, ...)
 #ifdef __cpp_lib_is_constant_evaluated
         if (_STD is_constant_evaluated()) {
@@ -2928,7 +2926,7 @@ private:
         const bool _Stay_small = _Right_size < _BUF_SIZE;
 #endif // __cpp_lib_constexpr_string
 
-        // NOTE: even if _Right is in large mode, we only go into large mode itself if the actual size of _Right
+        // NOTE: even if _Right is in large mode, we only go into large mode ourselves if the actual size of _Right
         // requires it
         if (_Stay_small) { // stay small, don't allocate
             _Traits::copy(_My_data._Bx._Buf, _Right_ptr, _BUF_SIZE);
@@ -3340,7 +3338,7 @@ public:
         // and copy to the new buffer if constant evaluated
 #ifdef __cpp_lib_constexpr_string
         const bool _Check_overlap = _Count <= _Mypair._Myval2._Myres - _Old_size && !_STD is_constant_evaluated();
-#else // ^^^ __cpp_lib_constexpr_string / !__cpp_lib_constexpr_string
+#else // ^^^ __cpp_lib_constexpr_string / !__cpp_lib_constexpr_string vvv
         const bool _Check_overlap = _Count <= _Mypair._Myval2._Myres - _Old_size;
 #endif // __cpp_lib_constexpr_string
 
@@ -4139,8 +4137,7 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20_CONTAINER size_type find(
-        _In_z_ const _Elem* const _Ptr, const size_type _Off = 0) const noexcept
-    /* strengthened */ {
+        _In_z_ const _Elem* const _Ptr, const size_type _Off = 0) const noexcept /* strengthened */ {
         // look for [_Ptr, <null>) beginning at or after _Off
         return static_cast<size_type>(_Traits_find<_Traits>(
             _Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ptr, _Traits::length(_Ptr)));
