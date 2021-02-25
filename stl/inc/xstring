@@ -4625,6 +4625,8 @@ private:
 #ifdef __cpp_lib_constexpr_string
         if (_STD is_constant_evaluated()) {
             _Mypair._Myval2._Bx._Ptr = nullptr;
+            _Mypair._Myval2._Mysize  = 0;
+            _Mypair._Myval2._Myres   = 0;
         } else
 #endif // __cpp_lib_constexpr_string
         {
