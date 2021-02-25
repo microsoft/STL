@@ -3787,13 +3787,15 @@ public:
 
     _CONSTEXPR20_CONTAINER void shrink_to_fit() { // reduce capacity
         auto& _My_data = _Mypair._Myval2;
-        if (!_My_data._Large_string_engaged()) { // can't shrink from small mode
-            return;
-        }
+
 #ifdef __cpp_lib_constexpr_string
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_constexpr_string
         {
+            if (!_My_data._Large_string_engaged()) { // can't shrink from small mode
+                return;
+            }
+
             if (_My_data._Mysize < _BUF_SIZE) {
                 _Become_small();
                 return;
