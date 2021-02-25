@@ -3020,12 +3020,14 @@ private:
         _Tidy_deallocate();
         if constexpr (_Can_memcpy_val) {
             _Memcpy_val_from(_Right);
-            return;
-        }
+        } else {
+            auto& _My_data    = _Mypair._Myval2;
+            auto& _Right_data = _Right._Mypair._Myval2;
 
-        _Traits::copy(_Mypair._Myval2._Bx._Buf, _Right._Mypair._Myval2._Bx._Buf, _Right._Mypair._Myval2._Mysize + 1);
-        _Mypair._Myval2._Mysize = _Right._Mypair._Myval2._Mysize;
-        _Mypair._Myval2._Myres  = _Right._Mypair._Myval2._Myres;
+            _Traits::copy(_My_data._Bx._Buf, _Right_data._Bx._Buf, _Right_data._Mysize + 1);
+            _My_data._Mysize = _Right_data._Mysize;
+            _My_data._Myres  = _Right_data._Myres;
+        }
     }
 
     _CONSTEXPR20_CONTAINER void _Copy_assign(const basic_string& _Right, false_type) {
