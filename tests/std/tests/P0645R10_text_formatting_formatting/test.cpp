@@ -101,18 +101,22 @@ int main() {
     vformat_to(back_insert_iterator(output_string), locale::classic(), "{}", make_format_args('a'));
     assert(output_string == "a");
 
-    // Test void*
+    // Test const void*
     output_string.clear();
-    vformat_to(back_insert_iterator(output_string), locale::classic(), "{}", make_format_args((const void*) 0));
+    vformat_to(back_insert_iterator(output_string), locale::classic(), "{}",
+        make_format_args(static_cast<const void*>(nullptr)));
     assert(output_string == "0x0");
 
     /* TODO: Doesn't properly overload on void* and nullptr
+    // Test void*
     output_string.clear();
-    vformat_to(back_insert_iterator(output_string), locale::classic(), "{}", make_format_args(nullptr));
+    vformat_to(
+        back_insert_iterator(output_string), locale::classic(), "{}", make_format_args(static_cast<void*>(nullptr)));
     assert(output_string == "0x0");
 
+    // Test nullptr
     output_string.clear();
-    vformat_to(back_insert_iterator(output_string), locale::classic(), "{}", make_format_args((void*)0));
+    vformat_to(back_insert_iterator(output_string), locale::classic(), "{}", make_format_args(nullptr));
     assert(output_string == "0x0");
     */
 
