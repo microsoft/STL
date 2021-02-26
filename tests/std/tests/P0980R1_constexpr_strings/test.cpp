@@ -1476,6 +1476,24 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
 
         const bool greater_eq_literal_str = get_view_input<CharType>() >= third;
         assert(!greater_eq_literal_str);
+
+        const strong_ordering spaceship_str_str_eq = first <=> second;
+        assert(spaceship_str_str_eq == strong_ordering::equal);
+
+        const strong_ordering spaceship_str_str_less = first <=> third;
+        assert(spaceship_str_str_less == strong_ordering::less);
+
+        const strong_ordering spaceship_str_str_greater = third <=> first;
+        assert(spaceship_str_str_greater == strong_ordering::greater);
+
+        const strong_ordering spaceship_str_literal_eq = first <=> get_view_input<CharType>();
+        assert(spaceship_str_literal_eq == strong_ordering::equal);
+
+        const strong_ordering spaceship_str_literal_less = first <=> get_cat<CharType>();
+        assert(spaceship_str_literal_less == strong_ordering::less);
+
+        const strong_ordering spaceship_str_literal_greater = third <=> get_dog<CharType>();
+        assert(spaceship_str_literal_greater == strong_ordering::greater);
     }
 
     { // basic_string_view conversion
@@ -1620,6 +1638,10 @@ _CONSTEXPR20_CONTAINER bool test_iterators() {
         assert(it1 <= it3);
         assert(it3 > it1);
         assert(it3 >= it1);
+
+        assert((it1 <=> it2) == strong_ordering::equal);
+        assert((it1 <=> it3) == strong_ordering::less);
+        assert((it3 <=> it1) == strong_ordering::greater);
     }
 
     { // access
