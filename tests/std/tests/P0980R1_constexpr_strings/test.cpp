@@ -34,7 +34,7 @@ constexpr auto literal_input_u8 = u8"Hello fluffy kittens";
 constexpr auto view_input_u8    = u8"Hello fluffy kittens"sv;
 #endif // __cpp_char8_t
 
-template <class CharType = char>
+template <class CharType>
 constexpr auto get_literal_input() {
     if constexpr (is_same_v<CharType, char>) {
         return literal_input;
@@ -51,7 +51,7 @@ constexpr auto get_literal_input() {
     }
 }
 
-template <class CharType = char>
+template <class CharType>
 constexpr auto get_view_input() {
     if constexpr (is_same_v<CharType, char>) {
         return view_input;
@@ -68,7 +68,7 @@ constexpr auto get_view_input() {
     }
 }
 
-template <class CharType = char>
+template <class CharType>
 constexpr auto get_cat() {
     if constexpr (is_same_v<CharType, char>) {
         return "kitten";
@@ -85,7 +85,7 @@ constexpr auto get_cat() {
     }
 }
 
-template <class CharType = char>
+template <class CharType>
 constexpr auto get_dog() {
     if constexpr (is_same_v<CharType, char>) {
         return "dog";
@@ -102,7 +102,7 @@ constexpr auto get_dog() {
     }
 }
 
-template <class CharType = char>
+template <class CharType>
 constexpr auto get_no_needle() {
     if constexpr (is_same_v<CharType, char>) {
         return "vxz";
@@ -119,7 +119,7 @@ constexpr auto get_no_needle() {
     }
 }
 
-template <class CharType = char>
+template <class CharType>
 constexpr auto get_cute_and_scratchy() {
     if constexpr (is_same_v<CharType, char>) {
         return "cute and scratchy ";
@@ -136,7 +136,7 @@ constexpr auto get_cute_and_scratchy() {
     }
 }
 
-template <class CharType = char>
+template <class CharType>
 struct string_view_convertible {
     _CONSTEXPR20_CONTAINER operator basic_string_view<CharType>() const {
         if constexpr (is_same_v<CharType, char>) {
@@ -165,7 +165,7 @@ constexpr bool equalRanges(const Range1& range1, const Range2& range2) noexcept 
 #endif // !__cpp_lib_concepts
 }
 
-template <class CharType = char>
+template <class CharType>
 _CONSTEXPR20_CONTAINER bool test_interface() {
 #ifndef __EDG__ // TRANSITION, VSO-1273296
     using str = basic_string<CharType>;
@@ -1486,14 +1486,14 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
     return true;
 }
 
-template <class CharType = char>
+template <class CharType>
 struct CharLikeType {
     constexpr CharLikeType() = default;
     constexpr CharLikeType(CharType cc) : c(cc) {}
     CharType c;
 };
 
-template <class CharType = char>
+template <class CharType>
 _CONSTEXPR20_CONTAINER bool test_iterators() {
 #if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1269894
 #ifndef __EDG__ // TRANSITION, VSO-1273296
@@ -1616,7 +1616,7 @@ _CONSTEXPR20_CONTAINER bool test_iterators() {
     return true;
 }
 
-template <class CharType = char>
+template <class CharType>
 _CONSTEXPR20_CONTAINER bool test_growth() {
 #if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1269894
     using str = basic_string<CharType>;
