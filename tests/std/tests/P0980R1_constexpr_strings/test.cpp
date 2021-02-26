@@ -1478,16 +1478,28 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         assert(!greater_eq_literal_str);
     }
 
-    { // literals
-        auto res = "purr purr"s;
-        assert(equalRanges(res, "purr purr"sv));
-    }
-
     { // basic_string_view conversion
         str s                          = get_literal_input<CharType>();
         basic_string_view<CharType> sv = s;
         assert(equalRanges(sv, "Hello fluffy kittens"sv));
     }
+#endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0
+#endif // __EDG__
+    return true;
+}
+
+_CONSTEXPR20_CONTAINER bool test_udls() {
+#ifndef __EDG__ // TRANSITION, VSO-1273296
+#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1269894
+
+    assert(equalRanges("purr purr"s, "purr purr"sv));
+#ifdef __cpp_char8_t
+    assert(equalRanges(u8"purr purr"s, "purr purr"sv));
+#endif // __cpp_char8_t
+    assert(equalRanges(u"purr purr"s, "purr purr"sv));
+    assert(equalRanges(U"purr purr"s, "purr purr"sv));
+    assert(equalRanges(L"purr purr"s, "purr purr"sv));
+
 #endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0
 #endif // __EDG__
     return true;
@@ -1742,6 +1754,8 @@ int main() {
     test_interface<char32_t>();
     test_interface<wchar_t>();
 
+    test_udls();
+
     test_iterators<char>();
 #ifdef __cpp_char8_t
     test_iterators<char8_t>();
@@ -1766,6 +1780,8 @@ int main() {
     static_assert(test_interface<char16_t>());
     static_assert(test_interface<char32_t>());
     static_assert(test_interface<wchar_t>());
+
+    static_assert(test_udls());
 
     static_assert(test_iterators<char>());
 #ifdef __cpp_char8_t
