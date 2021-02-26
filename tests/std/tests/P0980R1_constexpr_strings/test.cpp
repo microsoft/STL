@@ -178,7 +178,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         str view_constructed(get_view_input<CharType>());
         assert(equalRanges(view_constructed, literal_constructed));
 
-        str initializer_list_constructed({'m', 'e', 'o', 'w'});
+        str initializer_list_constructed({CharType{'m'}, CharType{'e'}, CharType{'o'}, CharType{'w'}});
         assert(equalRanges(initializer_list_constructed, "meow"sv));
 
         // special member functions
@@ -235,7 +235,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         str view_constructed{get_view_input<CharType>(), alloc};
         assert(equalRanges(view_constructed, literal_constructed));
 
-        str initializer_list_constructed({'m', 'e', 'o', 'w'}, alloc);
+        str initializer_list_constructed({CharType{'m'}, CharType{'e'}, CharType{'o'}, CharType{'w'}}, alloc);
         assert(equalRanges(initializer_list_constructed, "meow"sv));
 
         // special member functions
@@ -294,7 +294,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         assert(equalRanges(char_assigned, "!"sv));
 
         str initializer_list_assigned;
-        initializer_list_assigned = {'m', 'e', 'o', 'w'};
+        initializer_list_assigned = {CharType{'m'}, CharType{'e'}, CharType{'o'}, CharType{'w'}};
         assert(equalRanges(initializer_list_assigned, "meow"sv));
 
         const string_view_convertible<CharType> convertible;
@@ -340,7 +340,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         assert(equalRanges(assign_iterator, get_view_input<CharType>()));
 
         str assign_initializer_list;
-        assign_initializer_list.assign({'m', 'e', 'o', 'w'});
+        assign_initializer_list.assign({CharType{'m'}, CharType{'e'}, CharType{'o'}, CharType{'w'}});
         assert(equalRanges(assign_initializer_list, "meow"sv));
 
         const string_view_convertible<CharType> convertible;
@@ -590,14 +590,14 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         assert(equalRanges(insert_const_range, "bHello fluffy kittensb"sv));
 
         str insert_initializer_list = get_literal_input<CharType>();
-        const auto it_ilist =
-            insert_initializer_list.insert(insert_initializer_list.begin() + 6, {'c', 'u', 't', 'e', ' '});
+        const auto it_ilist         = insert_initializer_list.insert(insert_initializer_list.begin() + 6,
+            {CharType{'c'}, CharType{'u'}, CharType{'t'}, CharType{'e'}, CharType{' '}});
         assert(it_ilist == insert_initializer_list.begin() + 6);
         assert(equalRanges(insert_initializer_list, "Hello cute fluffy kittens"sv));
 
         str insert_const_initializer_list = get_literal_input<CharType>();
-        const auto cit_ilist =
-            insert_const_initializer_list.insert(insert_const_initializer_list.cbegin() + 6, {'c', 'u', 't', 'e', ' '});
+        const auto cit_ilist = insert_const_initializer_list.insert(insert_const_initializer_list.cbegin() + 6,
+            {CharType{'c'}, CharType{'u'}, CharType{'t'}, CharType{'e'}, CharType{' '}});
         assert(cit_ilist == insert_const_initializer_list.cbegin() + 6);
         assert(equalRanges(insert_const_initializer_list, "Hello cute fluffy kittens"sv));
 
@@ -671,7 +671,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
 
     { // push_back / pop_back
         str pushed;
-        pushed.push_back('y');
+        pushed.push_back(CharType{'y'});
         assert(pushed.size() == 1);
         assert(pushed.back() == CharType{'y'});
 
@@ -717,7 +717,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         assert(equalRanges(append_iterator, "bbHello fluffy kittens"sv));
 
         str append_initializer_list(2, CharType{'b'});
-        append_initializer_list.append({'m', 'e', 'o', 'w'});
+        append_initializer_list.append({CharType{'m'}, CharType{'e'}, CharType{'o'}, CharType{'w'}});
         assert(equalRanges(append_initializer_list, "bbmeow"sv));
 
         const string_view_convertible<CharType> convertible;
@@ -738,7 +738,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         assert(equalRanges(plus_string, "bbHello fluffy kittens"sv));
 
         str plus_character(2, CharType{'b'});
-        plus_character += 'a';
+        plus_character += CharType{'a'};
         assert(equalRanges(plus_character, "bba"sv));
 
         str plus_literal(2, CharType{'b'});
@@ -746,7 +746,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         assert(equalRanges(plus_literal, "bbHello fluffy kittens"sv));
 
         str plus_initializer_list(2, CharType{'b'});
-        plus_initializer_list += {'m', 'e', 'o', 'w'};
+        plus_initializer_list += {CharType{'m'}, CharType{'e'}, CharType{'o'}, CharType{'w'}};
         assert(equalRanges(plus_initializer_list, "bbmeow"sv));
 
         const string_view_convertible<CharType> convertible;
@@ -877,8 +877,8 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         const str input_string_false = get_cat<CharType>();
         assert(!starts.starts_with(input_string_false));
 
-        assert(starts.starts_with('H'));
-        assert(!starts.starts_with('h'));
+        assert(starts.starts_with(CharType{'H'}));
+        assert(!starts.starts_with(CharType{'h'}));
 
         assert(starts.starts_with(get_literal_input<CharType>()));
         assert(!input_string_false.starts_with(get_literal_input<CharType>()));
@@ -892,8 +892,8 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         const str input_string_false = get_cat<CharType>();
         assert(!ends.ends_with(input_string_false));
 
-        assert(ends.ends_with('s'));
-        assert(!ends.ends_with('S'));
+        assert(ends.ends_with(CharType{'s'}));
+        assert(!ends.ends_with(CharType{'S'}));
 
         assert(ends.ends_with(get_literal_input<CharType>()));
         assert(!input_string_false.ends_with(get_literal_input<CharType>()));
@@ -956,16 +956,17 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         assert(equalRanges(replaced_iter_literal_count, "Hello fluffy dottens"sv));
 #endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__)
         str replaced_pos_count_chars = get_literal_input<CharType>();
-        replaced_pos_count_chars.replace(13, 2, 5, 'a');
+        replaced_pos_count_chars.replace(13, 2, 5, CharType{'a'});
         assert(equalRanges(replaced_pos_count_chars, "Hello fluffy aaaaattens"sv));
 #if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) // TRANSITION, VSO-1275530
         str replaced_iter_chars = get_literal_input<CharType>();
-        replaced_iter_chars.replace(replaced_iter_chars.cbegin() + 13, replaced_iter_chars.cbegin() + 15, 5, 'a');
+        replaced_iter_chars.replace(
+            replaced_iter_chars.cbegin() + 13, replaced_iter_chars.cbegin() + 15, 5, CharType{'a'});
         assert(equalRanges(replaced_iter_chars, "Hello fluffy aaaaattens"sv));
 
         str replaced_iter_init = get_literal_input<CharType>();
-        replaced_iter_init.replace(
-            replaced_iter_init.cbegin() + 13, replaced_iter_init.cbegin() + 15, {'c', 'u', 't', 'e', ' '});
+        replaced_iter_init.replace(replaced_iter_init.cbegin() + 13, replaced_iter_init.cbegin() + 15,
+            {CharType{'c'}, CharType{'u'}, CharType{'t'}, CharType{'e'}, CharType{' '}});
         assert(equalRanges(replaced_iter_init, "Hello fluffy cute ttens"sv));
 #endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__)
         const string_view_convertible<CharType> convertible;
@@ -1014,7 +1015,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         resized.resize(3);
         assert(equalRanges(resized, "Hel"sv));
 
-        resized.resize(6, 'a');
+        resized.resize(6, CharType{'a'});
         assert(equalRanges(resized, "Helaaa"sv));
     }
 
@@ -1074,13 +1075,13 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         const auto find_literal_pos_count_none = input.find(get_dog<CharType>(), 14, 4);
         assert(find_literal_pos_count_none == str::npos);
 
-        const auto find_char = input.find('e');
+        const auto find_char = input.find(CharType{'e'});
         assert(find_char == 1u);
 
-        const auto find_char_none = input.find('x');
+        const auto find_char_none = input.find(CharType{'x'});
         assert(find_char_none == str::npos);
 
-        const auto find_char_pos = input.find('e', 4);
+        const auto find_char_pos = input.find(CharType{'e'}, 4);
         assert(find_char_pos == 17u);
 
         const string_view_convertible<CharType> convertible;
@@ -1132,13 +1133,13 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         const auto rfind_literal_pos_count_none = input.rfind(get_dog<CharType>(), 6, 4);
         assert(rfind_literal_pos_count_none == str::npos);
 
-        const auto rfind_char = input.rfind('e');
+        const auto rfind_char = input.rfind(CharType{'e'});
         assert(rfind_char == 17u);
 
-        const auto rfind_char_none = input.rfind('x');
+        const auto rfind_char_none = input.rfind(CharType{'x'});
         assert(rfind_char_none == str::npos);
 
-        const auto rfind_char_pos = input.rfind('e', 4);
+        const auto rfind_char_pos = input.rfind(CharType{'e'}, 4);
         assert(rfind_char_pos == 1u);
 
         const string_view_convertible<CharType> convertible;
@@ -1190,13 +1191,13 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         const auto find_first_of_literal_pos_count_none = input.find_first_of(get_no_needle<CharType>(), 14, 4);
         assert(find_first_of_literal_pos_count_none == str::npos);
 
-        const auto find_first_of_char = input.find_first_of('e');
+        const auto find_first_of_char = input.find_first_of(CharType{'e'});
         assert(find_first_of_char == 1u);
 
-        const auto find_first_of_char_none = input.find_first_of('x');
+        const auto find_first_of_char_none = input.find_first_of(CharType{'x'});
         assert(find_first_of_char_none == str::npos);
 
-        const auto find_first_of_char_pos = input.find_first_of('e', 4);
+        const auto find_first_of_char_pos = input.find_first_of(CharType{'e'}, 4);
         assert(find_first_of_char_pos == 17u);
 
         const string_view_convertible<CharType> convertible;
@@ -1249,10 +1250,10 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
             input.find_first_not_of(get_literal_input<CharType>(), 14, 20);
         assert(find_first_not_of_literal_pos_count_none == str::npos);
 
-        const auto find_first_not_of_char = input.find_first_not_of('H');
+        const auto find_first_not_of_char = input.find_first_not_of(CharType{'H'});
         assert(find_first_not_of_char == 1u);
 
-        const auto find_first_not_of_char_pos = input.find_first_not_of('e', 1);
+        const auto find_first_not_of_char_pos = input.find_first_not_of(CharType{'e'}, 1);
         assert(find_first_not_of_char_pos == 2u);
 
         const string_view_convertible<CharType> convertible;
@@ -1304,13 +1305,13 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         const auto find_last_of_literal_pos_count_none = input.find_last_of(get_no_needle<CharType>(), 14, 4);
         assert(find_last_of_literal_pos_count_none == str::npos);
 
-        const auto find_last_of_char = input.find_last_of('e');
+        const auto find_last_of_char = input.find_last_of(CharType{'e'});
         assert(find_last_of_char == 17u);
 
-        const auto find_last_of_char_none = input.find_last_of('x');
+        const auto find_last_of_char_none = input.find_last_of(CharType{'x'});
         assert(find_last_of_char_none == str::npos);
 
-        const auto find_last_of_char_pos = input.find_last_of('e', 4);
+        const auto find_last_of_char_pos = input.find_last_of(CharType{'e'}, 4);
         assert(find_last_of_char_pos == 1u);
 
         const string_view_convertible<CharType> convertible;
@@ -1363,10 +1364,10 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
             input.find_last_not_of(get_literal_input<CharType>(), 14, 20);
         assert(find_last_not_of_literal_pos_count_none == str::npos);
 
-        const auto find_last_not_of_char = input.find_last_not_of('H');
+        const auto find_last_not_of_char = input.find_last_not_of(CharType{'H'});
         assert(find_last_not_of_char == 19u);
 
-        const auto find_last_not_of_char_pos = input.find_last_not_of('e', 2);
+        const auto find_last_not_of_char_pos = input.find_last_not_of(CharType{'e'}, 2);
         assert(find_last_not_of_char_pos == 2u);
 
         const string_view_convertible<CharType> convertible;
@@ -1548,7 +1549,7 @@ _CONSTEXPR20_CONTAINER bool test_iterators() {
     }
 
     { // op->
-        basic_string<CharLikeType<CharType>> bs{'x'};
+        basic_string<CharLikeType<CharType>> bs{CharType{'x'}};
         auto it = bs.begin();
         auto c  = it->c;
         assert(c == CharType{'x'});
@@ -1560,58 +1561,58 @@ _CONSTEXPR20_CONTAINER bool test_iterators() {
 
     { // increment
         auto it = literal_constructed.begin();
-        assert(*++it == 'e');
-        assert(*it++ == 'e');
-        assert(*it == 'l');
+        assert(*++it == CharType{'e'});
+        assert(*it++ == CharType{'e'});
+        assert(*it == CharType{'l'});
 
         auto cit = literal_constructed.cbegin();
-        assert(*++cit == 'e');
-        assert(*cit++ == 'e');
-        assert(*cit == 'l');
+        assert(*++cit == CharType{'e'});
+        assert(*cit++ == CharType{'e'});
+        assert(*cit == CharType{'l'});
     }
 
     { // advance
         auto it = literal_constructed.begin() + 2;
-        assert(*it == 'l');
+        assert(*it == CharType{'l'});
         it += 2;
-        assert(*it == 'o');
+        assert(*it == CharType{'o'});
 #if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) // TRANSITION, 16.10p1
         it = 2 + it;
-        assert(*it == 'f');
+        assert(*it == CharType{'f'});
 #endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__)
 
         auto cit = literal_constructed.cbegin() + 2;
-        assert(*cit == 'l');
+        assert(*cit == CharType{'l'});
         cit += 2;
-        assert(*cit == 'o');
+        assert(*cit == CharType{'o'});
 #if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) // TRANSITION, 16.10p1
         cit = 2 + cit;
-        assert(*cit == 'f');
+        assert(*cit == CharType{'f'});
 #endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__)
     }
 
     { // decrement
         auto it = literal_constructed.end();
-        assert(*--it == 's');
-        assert(*it-- == 's');
-        assert(*it == 'n');
+        assert(*--it == CharType{'s'});
+        assert(*it-- == CharType{'s'});
+        assert(*it == CharType{'n'});
 
         auto cit = literal_constructed.cend();
-        assert(*--cit == 's');
-        assert(*cit-- == 's');
-        assert(*cit == 'n');
+        assert(*--cit == CharType{'s'});
+        assert(*cit-- == CharType{'s'});
+        assert(*cit == CharType{'n'});
     }
 
     { // advance back
         auto it = literal_constructed.end() - 2;
-        assert(*it == 'n');
+        assert(*it == CharType{'n'});
         it -= 2;
-        assert(*it == 't');
+        assert(*it == CharType{'t'});
 
         auto cit = literal_constructed.cend() - 2;
-        assert(*cit == 'n');
+        assert(*cit == CharType{'n'});
         cit -= 2;
-        assert(*cit == 't');
+        assert(*cit == CharType{'t'});
     }
 
     { // difference
@@ -1646,11 +1647,11 @@ _CONSTEXPR20_CONTAINER bool test_iterators() {
 
     { // access
         const auto it = literal_constructed.begin() + 2;
-        it[2]         = 'l';
-        assert(literal_constructed[4] == 'l');
+        it[2]         = CharType{'l'};
+        assert(literal_constructed[4] == CharType{'l'});
 
         const auto cit = literal_constructed.cbegin() + 2;
-        assert(cit[2] == 'l');
+        assert(cit[2] == CharType{'l'});
     }
 #endif // __EDG__
 #endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0
@@ -1663,7 +1664,7 @@ _CONSTEXPR20_CONTAINER bool test_growth() {
     using str = basic_string<CharType>;
 #ifndef __EDG__ // TRANSITION, VSO-1273296
     {
-        str v(1007, 'a');
+        str v(1007, CharType{'a'});
 
         assert(v.size() == 1007);
         assert(v.capacity() == 1007);
@@ -1675,7 +1676,7 @@ _CONSTEXPR20_CONTAINER bool test_growth() {
     }
 
     {
-        str v(1007, 'a');
+        str v(1007, CharType{'a'});
 
         assert(v.size() == 1007);
         assert(v.capacity() == 1007);
@@ -1691,24 +1692,24 @@ _CONSTEXPR20_CONTAINER bool test_growth() {
     }
 
     {
-        str v(1007, 'a');
+        str v(1007, CharType{'a'});
 
         assert(v.size() == 1007);
         assert(v.capacity() == 1007);
 
-        v.push_back('b');
+        v.push_back(CharType{'b'});
 
         assert(v.size() == 1008);
         assert(v.capacity() == 1510);
     }
 #if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) // TRANSITION, VSO-1275530
     {
-        str v(1007, 'a');
+        str v(1007, CharType{'a'});
 
         assert(v.size() == 1007);
         assert(v.capacity() == 1007);
 
-        str l(3, 'b');
+        str l(3, CharType{'b'});
 
         v.insert(v.end(), l.begin(), l.end());
 
@@ -1717,12 +1718,12 @@ _CONSTEXPR20_CONTAINER bool test_growth() {
     }
 
     {
-        str v(1007, 'a');
+        str v(1007, CharType{'a'});
 
         assert(v.size() == 1007);
         assert(v.capacity() == 1007);
 
-        str l(7000, 'b');
+        str l(7000, CharType{'b'});
 
         v.insert(v.end(), l.begin(), l.end());
 
@@ -1735,24 +1736,24 @@ _CONSTEXPR20_CONTAINER bool test_growth() {
     }
 
     {
-        str v(1007, 'a');
+        str v(1007, CharType{'a'});
 
         assert(v.size() == 1007);
         assert(v.capacity() == 1007);
 
-        v.insert(v.end(), 3, 'b');
+        v.insert(v.end(), 3, CharType{'b'});
 
         assert(v.size() == 1010);
         assert(v.capacity() == 1510);
     }
 
     {
-        str v(1007, 'a');
+        str v(1007, CharType{'a'});
 
         assert(v.size() == 1007);
         assert(v.capacity() == 1007);
 
-        v.insert(v.end(), 7000, 'b');
+        v.insert(v.end(), 7000, CharType{'b'});
 
         assert(v.size() == 8007);
         if constexpr (is_same_v<CharType, char16_t> || is_same_v<CharType, char32_t> || is_same_v<CharType, wchar_t>) {
