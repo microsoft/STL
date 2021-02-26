@@ -798,10 +798,7 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(default_initializable<iter_value_t<_It>>);
 
             if constexpr (_Use_memset_value_construct_v<_It>) {
-                const auto _OFinal = _RANGES next(_OFirst, _STD move(_OLast));
-                const auto _Count  = static_cast<size_t>(_OFinal - _OFirst);
-                _CSTD memset(_OFirst, 0, _Count);
-                return _OFinal;
+                return _Zero_range(_OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
@@ -850,8 +847,7 @@ namespace ranges {
 
             auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
             if constexpr (_Use_memset_value_construct_v<_It>) {
-                _CSTD memset(_UFirst, 0, static_cast<size_t>(_Count));
-                _Seek_wrapped(_First, _UFirst + _Count);
+                _Seek_wrapped(_First, _Zero_range(_UFirst, _UFirst + _Count));
             } else {
                 _Uninitialized_backout _Backout{_STD move(_UFirst)};
 
