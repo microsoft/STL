@@ -192,10 +192,12 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         assert(equalRanges(move_constructed, literal_constructed));
         assert(copy_constructed.empty());
 
-        str copy_assigned = literal_constructed;
+        str copy_assigned(get_dog<CharType>());
+        copy_assigned = literal_constructed;
         assert(equalRanges(copy_assigned, literal_constructed));
 
-        str move_assigned = move(copy_assigned);
+        str move_assigned(get_dog<CharType>());
+        move_assigned = move(copy_assigned);
         assert(equalRanges(move_assigned, literal_constructed));
         assert(copy_assigned.empty());
 
