@@ -197,7 +197,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
 
         str move_assigned = move(copy_assigned);
         assert(equalRanges(move_assigned, literal_constructed));
-        assert(copy_constructed.empty());
+        assert(copy_assigned.empty());
 
         // Other constructors
         str size_value_constructed(5, CharType{'a'});
