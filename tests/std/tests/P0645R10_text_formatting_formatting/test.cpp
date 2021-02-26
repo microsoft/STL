@@ -203,11 +203,6 @@ int main() {
     assert(output_string == "nan");
 
     output_string.clear();
-    vformat_to(back_insert_iterator(output_string), locale::classic(), "{}",
-        make_format_args(-numeric_limits<float>::quiet_NaN()));
-    assert(output_string == "-nan");
-
-    output_string.clear();
     vformat_to(back_insert_iterator(output_string), locale::classic(), "{}", make_format_args(0.f));
     assert(output_string == "0");
 
@@ -254,11 +249,6 @@ int main() {
     vformat_to(back_insert_iterator(output_string), locale::classic(), "{}",
         make_format_args(numeric_limits<double>::quiet_NaN()));
     assert(output_string == "nan");
-
-    output_string.clear();
-    vformat_to(back_insert_iterator(output_string), locale::classic(), "{}",
-        make_format_args(-numeric_limits<double>::quiet_NaN()));
-    assert(output_string == "-nan");
 
     output_string.clear();
     vformat_to(back_insert_iterator(output_string), locale::classic(), "{}", make_format_args(0.0));
