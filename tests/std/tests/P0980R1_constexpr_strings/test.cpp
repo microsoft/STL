@@ -221,8 +221,8 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         str conversion_constructed(convertible);
         assert(equalRanges(conversion_constructed, literal_constructed));
 
-        str conversion_size_constructed(convertible, 2, 3);
-        assert(equalRanges(conversion_size_constructed, "llo"sv));
+        str conversion_start_length_constructed(convertible, 2, 3);
+        assert(equalRanges(conversion_start_length_constructed, "llo"sv));
     }
 
     { // allocator constructors
@@ -269,8 +269,8 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         str conversion_constructed(convertible, alloc);
         assert(equalRanges(conversion_constructed, literal_constructed));
 
-        str conversion_size_constructed(convertible, 2, 3, alloc);
-        assert(equalRanges(conversion_size_constructed, "llo"sv));
+        str conversion_start_length_constructed(convertible, 2, 3, alloc);
+        assert(equalRanges(conversion_start_length_constructed, "llo"sv));
     }
 
     { // assignment operator
@@ -293,9 +293,9 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         char_assigned = CharType{'!'};
         assert(equalRanges(char_assigned, "!"sv));
 
-        str initializer_list_constructed;
-        initializer_list_constructed = {'m', 'e', 'o', 'w'};
-        assert(equalRanges(initializer_list_constructed, "meow"sv));
+        str initializer_list_assigned;
+        initializer_list_assigned = {'m', 'e', 'o', 'w'};
+        assert(equalRanges(initializer_list_assigned, "meow"sv));
 
         const string_view_convertible<CharType> convertible;
         str conversion_assigned;
@@ -306,9 +306,9 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
     { // assign
         str literal_constructed = get_literal_input<CharType>();
 
-        str assign_char_size;
-        assign_char_size.assign(5, CharType{'a'});
-        assert(equalRanges(assign_char_size, "aaaaa"sv));
+        str assign_size_char;
+        assign_size_char.assign(5, CharType{'a'});
+        assert(equalRanges(assign_size_char, "aaaaa"sv));
 
         str assign_str;
         assign_str.assign(literal_constructed);
@@ -339,18 +339,18 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         assign_iterator.assign(begin(get_view_input<CharType>()), end(get_view_input<CharType>()));
         assert(equalRanges(assign_iterator, get_view_input<CharType>()));
 
-        str assign_initializer;
-        assign_initializer.assign({'m', 'e', 'o', 'w'});
-        assert(equalRanges(assign_initializer, "meow"sv));
+        str assign_initializer_list;
+        assign_initializer_list.assign({'m', 'e', 'o', 'w'});
+        assert(equalRanges(assign_initializer_list, "meow"sv));
 
         const string_view_convertible<CharType> convertible;
         str assign_conversion;
         assign_conversion.assign(convertible);
         assert(equalRanges(assign_conversion, literal_constructed));
 
-        str assign_conversion_size;
-        assign_conversion_size.assign(convertible, 2, 3);
-        assert(equalRanges(assign_conversion_size, "llo"sv));
+        str assign_conversion_start_length;
+        assign_conversion_start_length.assign(convertible, 2, 3);
+        assert(equalRanges(assign_conversion_start_length, "llo"sv));
     }
 #endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0
     { // allocator
@@ -589,16 +589,17 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         assert(cit == insert_const_range.cbegin() + 1);
         assert(equalRanges(insert_const_range, "bHello fluffy kittensb"sv));
 
-        str insert_initializer = get_literal_input<CharType>();
-        const auto it_ilist    = insert_initializer.insert(insert_initializer.begin() + 6, {'c', 'u', 't', 'e', ' '});
-        assert(it_ilist == insert_initializer.begin() + 6);
-        assert(equalRanges(insert_initializer, "Hello cute fluffy kittens"sv));
+        str insert_initializer_list = get_literal_input<CharType>();
+        const auto it_ilist =
+            insert_initializer_list.insert(insert_initializer_list.begin() + 6, {'c', 'u', 't', 'e', ' '});
+        assert(it_ilist == insert_initializer_list.begin() + 6);
+        assert(equalRanges(insert_initializer_list, "Hello cute fluffy kittens"sv));
 
-        str insert_const_initializer = get_literal_input<CharType>();
+        str insert_const_initializer_list = get_literal_input<CharType>();
         const auto cit_ilist =
-            insert_const_initializer.insert(insert_const_initializer.cbegin() + 6, {'c', 'u', 't', 'e', ' '});
-        assert(cit_ilist == insert_const_initializer.cbegin() + 6);
-        assert(equalRanges(insert_const_initializer, "Hello cute fluffy kittens"sv));
+            insert_const_initializer_list.insert(insert_const_initializer_list.cbegin() + 6, {'c', 'u', 't', 'e', ' '});
+        assert(cit_ilist == insert_const_initializer_list.cbegin() + 6);
+        assert(equalRanges(insert_const_initializer_list, "Hello cute fluffy kittens"sv));
 
         str insert_pos_str  = get_literal_input<CharType>();
         const str to_insert = get_cute_and_scratchy<CharType>();
@@ -626,13 +627,13 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         insert_pos_literal_substr.insert(6, get_literal_input<CharType>(), 6);
         assert(equalRanges(insert_pos_literal_substr, "Hello Hello fluffy kittens"sv));
 
-        str insert_pos_char_count = get_literal_input<CharType>();
-        insert_pos_char_count.insert(6, 3, CharType{'b'});
-        assert(equalRanges(insert_pos_char_count, "Hello bbbfluffy kittens"sv));
+        str insert_pos_count_char = get_literal_input<CharType>();
+        insert_pos_count_char.insert(6, 3, CharType{'b'});
+        assert(equalRanges(insert_pos_count_char, "Hello bbbfluffy kittens"sv));
 
-        str insert_iter_char_count = get_literal_input<CharType>();
-        insert_iter_char_count.insert(begin(insert_iter_char_count) + 5, 4, CharType{'o'});
-        assert(equalRanges(insert_iter_char_count, "Hellooooo fluffy kittens"sv));
+        str insert_iter_count_char = get_literal_input<CharType>();
+        insert_iter_count_char.insert(begin(insert_iter_count_char) + 5, 4, CharType{'o'});
+        assert(equalRanges(insert_iter_count_char, "Hellooooo fluffy kittens"sv));
 #endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__)
     }
 
@@ -687,9 +688,9 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
     { // append
         const str literal_constructed = get_literal_input<CharType>();
 
-        str append_char_size(2, CharType{'b'});
-        append_char_size.append(5, CharType{'a'});
-        assert(equalRanges(append_char_size, "bbaaaaa"sv));
+        str append_size_char(2, CharType{'b'});
+        append_size_char.append(5, CharType{'a'});
+        assert(equalRanges(append_size_char, "bbaaaaa"sv));
 
         str append_str(2, CharType{'b'});
         append_str.append(literal_constructed);
@@ -715,18 +716,18 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         append_iterator.append(begin(get_view_input<CharType>()), end(get_view_input<CharType>()));
         assert(equalRanges(append_iterator, "bbHello fluffy kittens"sv));
 
-        str append_initializer(2, CharType{'b'});
-        append_initializer.append({'m', 'e', 'o', 'w'});
-        assert(equalRanges(append_initializer, "bbmeow"sv));
+        str append_initializer_list(2, CharType{'b'});
+        append_initializer_list.append({'m', 'e', 'o', 'w'});
+        assert(equalRanges(append_initializer_list, "bbmeow"sv));
 
         const string_view_convertible<CharType> convertible;
         str append_conversion(2, CharType{'b'});
         append_conversion.append(convertible);
         assert(equalRanges(append_conversion, "bbHello fluffy kittens"sv));
 
-        str append_conversion_size(2, CharType{'b'});
-        append_conversion_size.append(convertible, 2, 3);
-        assert(equalRanges(append_conversion_size, "bbllo"sv));
+        str append_conversion_start_length(2, CharType{'b'});
+        append_conversion_start_length.append(convertible, 2, 3);
+        assert(equalRanges(append_conversion_start_length, "bbllo"sv));
     }
 
     { // operator+=
@@ -744,9 +745,9 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         plus_literal += get_literal_input<CharType>();
         assert(equalRanges(plus_literal, "bbHello fluffy kittens"sv));
 
-        str plus_initializer(2, CharType{'b'});
-        plus_initializer += {'m', 'e', 'o', 'w'};
-        assert(equalRanges(plus_initializer, "bbmeow"sv));
+        str plus_initializer_list(2, CharType{'b'});
+        plus_initializer_list += {'m', 'e', 'o', 'w'};
+        assert(equalRanges(plus_initializer_list, "bbmeow"sv));
 
         const string_view_convertible<CharType> convertible;
         str plus_conversion(2, CharType{'b'});
