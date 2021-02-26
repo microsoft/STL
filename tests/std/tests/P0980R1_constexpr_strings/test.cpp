@@ -183,6 +183,8 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
 
         // special member functions
         str default_constructed;
+        assert(default_constructed.empty());
+
         str copy_constructed(literal_constructed);
         assert(equalRanges(copy_constructed, literal_constructed));
 
@@ -236,6 +238,8 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
 
         // special member functions
         str default_constructed{alloc};
+        assert(default_constructed.empty());
+
         str copy_constructed{literal_constructed, alloc};
         assert(equalRanges(copy_constructed, literal_constructed));
 
