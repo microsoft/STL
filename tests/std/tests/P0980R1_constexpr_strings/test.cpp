@@ -1674,7 +1674,7 @@ _CONSTEXPR20_CONTAINER bool test_growth() {
         assert(v.size() == 1007);
         assert(v.capacity() == 1007);
 
-        v.push_back(47);
+        v.push_back('b');
 
         assert(v.size() == 1008);
         assert(v.capacity() == 1510);
@@ -1686,7 +1686,7 @@ _CONSTEXPR20_CONTAINER bool test_growth() {
         assert(v.size() == 1007);
         assert(v.capacity() == 1007);
 
-        str l(3, 47);
+        str l(3, 'b');
 
         v.insert(v.end(), l.begin(), l.end());
 
