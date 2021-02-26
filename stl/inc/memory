@@ -1800,7 +1800,6 @@ template <class _Ty1, class _Ty2>
 _NODISCARD strong_ordering operator<=>(const shared_ptr<_Ty1>& _Left, const shared_ptr<_Ty2>& _Right) noexcept {
     return _Left.get() <=> _Right.get();
 }
-
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _Ty1, class _Ty2>
 _NODISCARD bool operator!=(const shared_ptr<_Ty1>& _Left, const shared_ptr<_Ty2>& _Right) noexcept {
@@ -1838,7 +1837,6 @@ template <class _Ty>
 _NODISCARD strong_ordering operator<=>(const shared_ptr<_Ty>& _Left, nullptr_t) noexcept {
     return _Left.get() <=> static_cast<typename shared_ptr<_Ty>::element_type*>(nullptr);
 }
-
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _Ty>
 _NODISCARD bool operator==(nullptr_t, const shared_ptr<_Ty>& _Right) noexcept {
