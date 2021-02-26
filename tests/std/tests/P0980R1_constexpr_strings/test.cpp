@@ -555,7 +555,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         str cleared = get_literal_input<CharType>();
         cleared.clear();
         assert(cleared.empty());
-        assert(cleared.capacity() == str(get_literal_input<CharType>()).capacity());
+        assert(cleared.capacity() == str{get_literal_input<CharType>()}.capacity());
     }
 
     { // insert
