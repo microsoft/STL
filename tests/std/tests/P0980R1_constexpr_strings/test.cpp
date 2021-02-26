@@ -10,8 +10,12 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <iterator>
+#include <memory>
 #include <string>
 #include <string_view>
+#include <type_traits>
+#include <utility>
 
 using namespace std;
 
