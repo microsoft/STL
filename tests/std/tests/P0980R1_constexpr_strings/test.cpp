@@ -1492,7 +1492,7 @@ struct CharLikeType {
 template <class CharType = char>
 _CONSTEXPR20_CONTAINER bool test_iterators() {
 #if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1269894
-#ifndef __EDG__ // TRANSITION, VSO-1273296s
+#ifndef __EDG__ // TRANSITION, VSO-1273296
     using str               = basic_string<CharType>;
     str literal_constructed = get_literal_input<CharType>();
 
