@@ -75,11 +75,11 @@ int main() {
     assert(output_string == "}x");
 
     output_string.clear();
-    vformat_to(back_insert_iterator(output_string), locale::classic(), "{}", make_format_args((const char*) "f"));
+    vformat_to(back_insert_iterator(output_string), locale::classic(), "{}", make_format_args("f"));
     assert(output_string == "f");
 
     output_string.clear();
-    vformat_to(back_insert_iterator(output_string), locale::classic(), "{0} {0}", make_format_args((const char*) "f"));
+    vformat_to(back_insert_iterator(output_string), locale::classic(), "{0} {0}", make_format_args("f"));
     assert(output_string == "f f");
 
     // TODO: enable these in _Write function PR for sv and bool
