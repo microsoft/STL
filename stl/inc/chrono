@@ -1420,22 +1420,142 @@ namespace chrono {
         _CHRONO month _Month;
         _CHRONO day _Day;
 
+        // _Civil_from_days and _Days_from_civil perform conversions between the dates in the (proleptic) Gregorian
+        // calendar and the continuous count of days since 1970-01-01.
+
+        // To simplify the handling of leap days (February 29th), the algorithm below uses a modified calendar
+        // internally, in which each year begins on March 1st, while January and February belong to the previous year.
+        // We denote the modified year and month number as _Yp and _Mp. We also define modified centuries that begin on
+        // each modified year whose _Yp is a multiple of 100.
+
+        // _Mp | Month     | Day of Year
+        // --- | --------- | -----------
+        //  0  | March     | [  0,  30]
+        //  1  | April     | [ 31,  60]
+        //  2  | May       | [ 61,  91]
+        //  3  | June      | [ 92, 121]
+        //  4  | July      | [122, 152]
+        //  5  | August    | [153, 183]
+        //  6  | September | [184, 213]
+        //  7  | October   | [214, 244]
+        //  8  | November  | [245, 274]
+        //  9  | December  | [275, 305]
+        // 10  | January   | [306, 336]
+        // 11  | February  | [337, 365] on leap years, [337, 364] on regular years
+
+        // _Yp |  First Day  | Last Day (inclusive) | Leap Year?
+        // --- | ----------- | -------------------- | ----------
+        //  -4 | -0004-03-01 |     -0003-02-28      |     No
+        //  -3 | -0003-03-01 |     -0002-02-28      |     No
+        //  -2 | -0002-03-01 |     -0001-02-28      |     No
+        //  -1 | -0001-03-01 |      0000-02-29      |     Yes
+        //   0 |  0000-03-01 |      0001-02-28      |     No
+        //   1 |  0001-03-01 |      0002-02-28      |     No
+        //   2 |  0002-03-01 |      0003-02-28      |     No
+        //   3 |  0003-03-01 |      0004-02-29      |     Yes
+
+        // _Century |  First Day  | Last Day (inclusive) | Long Century?
+        // -------- | ----------- | -------------------- | -------------
+        //    -4    | -0400-03-01 |     -0300-02-28      |      No
+        //    -3    | -0300-03-01 |     -0200-02-28      |      No
+        //    -2    | -0200-03-01 |     -0100-02-28      |      No
+        //    -1    | -0100-03-01 |      0000-02-29      |      Yes
+        //     0    |  0000-03-01 |      0100-02-28      |      No
+        //     1    |  0100-03-01 |      0200-02-28      |      No
+        //     2    |  0200-03-01 |      0300-02-28      |      No
+        //     3    |  0300-03-01 |      0400-02-29      |      Yes
+
+        // The structure of the modified calendar:
+        // 1 ) It has a period of 4 centuries.
+        // 2 ) Each calendar period (146097 days) contains 3 regular centuries followed by a long century (36525 days).
+        // 3 ) Each regular century (36524 days) contains 24 regular 4-year spans followed by a short 4-year span.
+        // 3') Each long century (36525 days) contains 25 regular 4-year spans.
+        // 4 ) Each regular 4-year span (1461 days) contains 3 regular years followed by a leap year.
+        // 4') Each short 4-year span (1460 days) contains 4 regular years.
+
+        // Formula 1: Compute _Day_of_year of the first day of month _Mp
+        //
+        //   _Day_of_year = (979 * _Mp + 19) >> 5
+        //
+        // A more well-known formula is 30 * _Mp + floor((3 * _Mp + 2) / 5) or floor((153 * _Mp + 2) / 5), which is used
+        // in Howard Hinnant's paper.
+        //
+        // The formula above returns the same result for all _Mp in [0, 11].
+        // Note that 979 / 2^5 = 30.59375 ~= 30.6 = 153 / 5.
+
+        // Formula 1': Compute _Mp from _Day_of_year
+        //
+        //   _Mp = (535 * _Day_of_year + 333) >> 14
+        //
+        // Howard Hinnant's paper uses floor((5 * _Day_of_year + 2) / 153), the inverse of floor((153 * _Mp + 2) / 5) or
+        // ceil((153 * _Mp - 2) / 5).
+        //
+        // The formula above returns the same result for all _Day_of_year in [0, 365].
+        // Note that 2^14 / 535 = 30.624... ~= 30.6 = 153 / 5.
+
+        // Formula 2: Compute _Zx of the first day of year _Yp, where _Zx is the continuous count of days since
+        // 0000-03-01.
+        //
+        //   _Zx = ((1461 * _Yp) >> 2) - _Century + (_Century >> 2)
+        //
+        // Start with multiplying by the number of days in regular years (365), add one day for the leap year in each
+        // 4-year span, subtract one day for the short 4-year span in each century, and finally add one day for the long
+        // century in each calendar period. This gives us 365 * _Yp + floor(_Yp / 4) - _Century + floor(_Century / 4).
+
+        // Formula 2-1: Compute _Day_of_century of the first day of year _Year_of_century
+        //
+        //   _Day_of_century = (1461 * _Year_of_century) >> 2
+        //
+        // Start with multiplying by the number of days in regular years (365), add one day for the leap year in each
+        // 4-year span. This gives us 365 * _Year_of_century + floor(_Year_of_century / 4)
+        // == floor(1461 * _Year_of_century / 4).
+
+        // Formula 2-1': Compute _Year_of_century from _Day_of_century
+        //
+        //   _Year_of_century = (91867 * (_Day_of_century + 1)) >> 25
+        //
+        // The inverse of floor(1461 * _Year_of_century / 4) or ceil((1461 * _Year_of_century - 3) / 4) is
+        // floor((4 * _Day_of_century + 3) / 1461).
+        //
+        // The formula above returns the same result for all _Day_of_century in [0, 36524].
+        // Note that 2^25 / 91867 = 365.2501... ~= 365.25 = 1461 / 4.
+
+        // Formula 2-2: Compute _Zx of the first day of century _Century, where _Zx is the continuous count of days
+        // since 0000-03-01.
+        //
+        //   _Zx = (146097 * _Century) >> 2
+        //
+        // Start with multiplying by the number of days in regular centuries (36524), add one day for the long century
+        // in each calendar period. This gives us 36524 * _Century + floor(_Century / 4) = floor(146097 * _Century / 4).
+
+        // Formula 2-2': Compute _Century from _Zx, where _Zx is the continuous count of days since 0000-03-01.
+        //
+        //   _Century = floor((4 * _Zx + 3) / 146097)
+        //
+        // This is the inverse of floor(146097 * _Year_of_century / 4) or ceil((146097 * _Year_of_century - 3) / 4)
+
         // courtesy of Howard Hinnant
         // https://howardhinnant.github.io/date_algorithms.html#civil_from_days
         _NODISCARD static constexpr year_month_day _Civil_from_days(int _Tp) noexcept {
             static_assert(numeric_limits<unsigned int>::digits >= 32);
             static_assert(numeric_limits<int>::digits >= 26);
-            const int _Zx      = _Tp + 719468; // Shift epoch to 0000-03-01
+            const int _Zx = _Tp + 719468; // Shift epoch to 0000-03-01
+            // Formula 2-2'
             const int _Century = (_Zx >= 0 ? 4 * _Zx + 3 : 4 * _Zx - 146093) / 146097;
+            // Formula 2-2
             const unsigned int _Day_of_century =
                 static_cast<unsigned int>(_Zx - ((146097 * _Century) >> 2)); // [0, 36524]
+            // Formula 2-1'
             const unsigned int _Year_of_century = (91867 * (_Day_of_century + 1)) >> 25; // [0, 99]
-            const int _Year = static_cast<int>(_Year_of_century) + _Century * 100; // Where March is the first month
+            const int _Yp = static_cast<int>(_Year_of_century) + _Century * 100; // Where March is the first month
+            // Formula 2-1
             const unsigned int _Day_of_year = _Day_of_century - ((1461 * _Year_of_century) >> 2); // [0, 365]
-            const unsigned int _Mp          = (535 * _Day_of_year + 333) >> 14; // [0, 11]
-            const unsigned int _Day         = _Day_of_year - ((979 * _Mp + 19) >> 5) + 1; // [1, 31]
-            const unsigned int _Month       = _Mp + (_Mp < 10 ? 3 : static_cast<unsigned int>(-9)); // [1, 12]
-            return year_month_day{_CHRONO year{_Year + (_Month <= 2)}, _CHRONO month{_Month}, _CHRONO day{_Day}};
+            // Formula 1'
+            const unsigned int _Mp = (535 * _Day_of_year + 333) >> 14; // [0, 11]
+            // Formula 1
+            const unsigned int _Day   = _Day_of_year - ((979 * _Mp + 19) >> 5) + 1; // [1, 31]
+            const unsigned int _Month = _Mp + (_Mp < 10 ? 3 : static_cast<unsigned int>(-9)); // [1, 12]
+            return year_month_day{_CHRONO year{_Yp + (_Month <= 2)}, _CHRONO month{_Month}, _CHRONO day{_Day}};
         }
         // courtesy of Howard Hinnant
         // https://howardhinnant.github.io/date_algorithms.html#days_from_civil
@@ -1443,11 +1563,13 @@ namespace chrono {
             static_assert(numeric_limits<unsigned int>::digits >= 18);
             static_assert(numeric_limits<int>::digits >= 26);
             const unsigned int _Mo = static_cast<unsigned int>(_Month); // [1, 12]
-            const int _Ye          = static_cast<int>(_Year) - (_Mo <= 2);
-            const int _Century     = (_Ye >= 0 ? _Ye : _Ye - 99) / 100;
+            const int _Yp          = static_cast<int>(_Year) - (_Mo <= 2);
+            const int _Century     = (_Yp >= 0 ? _Yp : _Yp - 99) / 100;
             const unsigned int _Mp = _Mo + (_Mo > 2 ? static_cast<unsigned int>(-3) : 9); // [0, 11]
+            // Formula 1
             const int _Day_of_year = static_cast<int>(((979 * _Mp + 19) >> 5) + static_cast<unsigned int>(_Day)) - 1;
-            return days{((_Ye * 1461) >> 2) - _Century + (_Century >> 2) + _Day_of_year - 719468};
+            // Formula 2
+            return days{((1461 * _Yp) >> 2) - _Century + (_Century >> 2) + _Day_of_year - 719468};
         }
     };
 
