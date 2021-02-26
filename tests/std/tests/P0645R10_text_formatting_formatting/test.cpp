@@ -187,6 +187,34 @@ int main() {
     vformat_to(back_insert_iterator(output_string), locale::classic(), "{}", make_format_args(FLT_TRUE_MIN));
     assert(output_string == "1e-45");
 
+    output_string.clear();
+    vformat_to(back_insert_iterator(output_string), locale::classic(), "{}",
+        make_format_args(numeric_limits<float>::infinity()));
+    assert(output_string == "inf");
+
+    output_string.clear();
+    vformat_to(back_insert_iterator(output_string), locale::classic(), "{}",
+        make_format_args(-numeric_limits<float>::infinity()));
+    assert(output_string == "-inf");
+
+    output_string.clear();
+    vformat_to(back_insert_iterator(output_string), locale::classic(), "{}",
+        make_format_args(numeric_limits<float>::quiet_NaN()));
+    assert(output_string == "nan");
+
+    output_string.clear();
+    vformat_to(back_insert_iterator(output_string), locale::classic(), "{}",
+        make_format_args(-numeric_limits<float>::quiet_NaN()));
+    assert(output_string == "-nan");
+
+    output_string.clear();
+    vformat_to(back_insert_iterator(output_string), locale::classic(), "{}", make_format_args(0.f));
+    assert(output_string == "0");
+
+    output_string.clear();
+    vformat_to(back_insert_iterator(output_string), locale::classic(), "{}", make_format_args(-0.f));
+    assert(output_string == "-0");
+
     // Test double
     output_string.clear();
     vformat_to(back_insert_iterator(output_string), locale::classic(), "{}", make_format_args(12.34));
@@ -212,5 +240,32 @@ int main() {
     vformat_to(back_insert_iterator(output_string), locale::classic(), "{}", make_format_args(DBL_TRUE_MIN));
     assert(output_string == "5e-324");
 
+    output_string.clear();
+    vformat_to(back_insert_iterator(output_string), locale::classic(), "{}",
+        make_format_args(numeric_limits<double>::infinity()));
+    assert(output_string == "inf");
+
+    output_string.clear();
+    vformat_to(back_insert_iterator(output_string), locale::classic(), "{}",
+        make_format_args(-numeric_limits<double>::infinity()));
+    assert(output_string == "-inf");
+
+    output_string.clear();
+    vformat_to(back_insert_iterator(output_string), locale::classic(), "{}",
+        make_format_args(numeric_limits<double>::quiet_NaN()));
+    assert(output_string == "nan");
+
+    output_string.clear();
+    vformat_to(back_insert_iterator(output_string), locale::classic(), "{}",
+        make_format_args(-numeric_limits<double>::quiet_NaN()));
+    assert(output_string == "-nan");
+
+    output_string.clear();
+    vformat_to(back_insert_iterator(output_string), locale::classic(), "{}", make_format_args(0.0));
+    assert(output_string == "0");
+
+    output_string.clear();
+    vformat_to(back_insert_iterator(output_string), locale::classic(), "{}", make_format_args(-0.0));
+    assert(output_string == "-0");
     return 0;
 }
