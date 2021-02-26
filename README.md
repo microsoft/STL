@@ -354,7 +354,7 @@ those features first the tests will begin passing unexpectedly for us and return
 this it is necessary to add a `PASS` entry to the `expected_results.txt` of the testsuite in question.
 
 The `UNSUPPORTED` result code means that the requirements for a test are not met and so it will not be run. Currently
-all tests which use the `/BE` or `/clr:pure` options are unsupported.
+all tests which use the `/clr` or `/clr:pure` options are unsupported. Also, the `/BE` option is unsupported for x64.
 
 The `SKIPPED` result code indicates that a given test was explicitly skipped by adding a `SKIPPED` entry to the
 `expected_results.txt`. A test may be skipped for a number of reasons, which include, but are not limited to:

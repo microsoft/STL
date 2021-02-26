@@ -22,6 +22,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 
+#if !_HAS_CXX20
 // FUNCTION TEMPLATE _Uses_allocator_construct
 template <class _Ty, class _Outer_alloc, class _Inner_alloc, class... _Types>
 void _Uses_allocator_construct2(
@@ -133,6 +134,7 @@ void _Uses_allocator_construct(
     _Uses_allocator_construct_pair(_Ptr, _Outer, _Inner, _STD forward_as_tuple(_STD forward<_Uty>(_Pair.first)),
         _STD forward_as_tuple(_STD forward<_Vty>(_Pair.second)));
 }
+#endif // !_HAS_CXX20
 
 #if _HAS_CXX17
 namespace pmr {
@@ -271,8 +273,12 @@ namespace pmr {
         template <class _Uty, class... _Types>
         void construct(_Uty* const _Ptr, _Types&&... _Args) {
             // propagate allocator *this if uses_allocator_v<_Uty, polymorphic_allocator>
+#if _HAS_CXX20
+            _STD uninitialized_construct_using_allocator(_Ptr, *this, _STD forward<_Types>(_Args)...);
+#else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
             allocator<char> _Al{};
             _Uses_allocator_construct(_Ptr, _Al, *this, _STD forward<_Types>(_Args)...);
+#endif // ^^^ !_HAS_CXX20 ^^^
         }
 
         template <class _Uty>

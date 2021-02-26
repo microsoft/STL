@@ -679,6 +679,15 @@ std/input.output/filesystems/fs.filesystem.synopsis/file_time_type_resolution.co
 # P1614R2 "Adding Spaceship <=> To The Library" makes `std::operator!=(i1, i3)` an error
 std/iterators/stream.iterators/istream.iterator/istream.iterator.ops/equal.pass.cpp FAIL
 
+# Uses-allocator class constructor wants non-const allocator ref and mismatched piecewise_construct's value category
+std/utilities/allocator.adaptor/allocator.adaptor.members/construct.pass.cpp FAIL
+std/utilities/allocator.adaptor/allocator.adaptor.members/construct_pair.pass.cpp FAIL
+std/utilities/allocator.adaptor/allocator.adaptor.members/construct_pair_const_lvalue_pair.pass.cpp FAIL
+std/utilities/allocator.adaptor/allocator.adaptor.members/construct_pair_piecewise.pass.cpp FAIL
+std/utilities/allocator.adaptor/allocator.adaptor.members/construct_pair_rvalue.pass.cpp FAIL
+std/utilities/allocator.adaptor/allocator.adaptor.members/construct_pair_values.pass.cpp FAIL
+std/utilities/allocator.adaptor/allocator.adaptor.members/construct_type.pass.cpp FAIL
+
 
 # *** LIKELY STL BUGS ***
 # Not yet analyzed, likely STL bugs. Assertions and other runtime failures.

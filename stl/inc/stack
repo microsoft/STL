@@ -146,12 +146,13 @@ public:
     friend bool operator>  <>(const stack&, const stack&);
     friend bool operator<= <>(const stack&, const stack&);
     friend bool operator>= <>(const stack&, const stack&);
+    // clang-format on
+
 #ifdef __cpp_lib_concepts
     template <class _Ty2, three_way_comparable _Container2>
     friend compare_three_way_result_t<_Container2> operator<=>(
         const stack<_Ty2, _Container2>&, const stack<_Ty2, _Container2>&);
 #endif // __cpp_lib_concepts
-    // clang-format on
 
 protected:
     _Container c{};
