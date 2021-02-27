@@ -121,13 +121,13 @@ struct throwing_test {
 };
 
 struct memset_test {
-    static constexpr int expected[] = {42, 42, 42};
+    static constexpr unsigned char expected[] = {42, 42, 42};
 
     static void call() {
         { // Validate only range overload
-            int input[3];
+            unsigned char input[3];
 
-            const auto result = ranges::uninitialized_fill_n(input, 3, 42);
+            const auto result = ranges::uninitialized_fill_n(input, 3, static_cast<unsigned char>(42));
             assert(result == end(input));
             assert(ranges::equal(input, expected));
         }
