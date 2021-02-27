@@ -8,7 +8,7 @@
 #define _RATIO_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
-#include <stdint.h>
+#include <cstdint>
 #include <type_traits>
 
 #pragma pack(push, _CRT_PACKING)
@@ -230,12 +230,12 @@ constexpr _Big_uint128 _Big_multiply(const uint64_t _Lfactor,
 constexpr bool _Ratio_less(const int64_t _Nx1, const int64_t _Dx1, const int64_t _Nx2, const int64_t _Dx2) noexcept {
     if (_Nx1 >= 0 && _Nx2 >= 0) {
         return _Big_multiply(static_cast<uint64_t>(_Nx1), static_cast<uint64_t>(_Dx2))
-               < _Big_multiply(static_cast<uint64_t>(_Nx2), static_cast<uint64_t>(_Dx1));
+             < _Big_multiply(static_cast<uint64_t>(_Nx2), static_cast<uint64_t>(_Dx1));
     }
 
     if (_Nx1 < 0 && _Nx2 < 0) {
         return _Big_multiply(static_cast<uint64_t>(-_Nx2), static_cast<uint64_t>(_Dx1))
-               < _Big_multiply(static_cast<uint64_t>(-_Nx1), static_cast<uint64_t>(_Dx2));
+             < _Big_multiply(static_cast<uint64_t>(-_Nx1), static_cast<uint64_t>(_Dx2));
     }
 
     return _Nx1 < _Nx2;

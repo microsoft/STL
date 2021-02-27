@@ -38,7 +38,7 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
-#include <string.h>
+#include <cstring>
 #include <xcharconv.h>
 #include <xcharconv_ryu_tables.h>
 
@@ -1121,7 +1121,7 @@ _NODISCARD inline __floating_decimal_32 __f2d(const uint32_t __ieeeMantissa, con
 
   // Step 4: Find the shortest decimal representation in the interval of valid representations.
   int32_t __removed = 0;
-  uint32_t __output;
+  uint32_t _Output;
   if (__vmIsTrailingZeros || __vrIsTrailingZeros) {
     // General case, which happens rarely (~4.0%).
     while (__vp / 10 > __vm / 10) {
@@ -1152,7 +1152,7 @@ _NODISCARD inline __floating_decimal_32 __f2d(const uint32_t __ieeeMantissa, con
       __lastRemovedDigit = 4;
     }
     // We need to take __vr + 1 if __vr is outside bounds or we need to round up.
-    __output = __vr + ((__vr == __vm && (!__acceptBounds || !__vmIsTrailingZeros)) || __lastRemovedDigit >= 5);
+    _Output = __vr + ((__vr == __vm && (!__acceptBounds || !__vmIsTrailingZeros)) || __lastRemovedDigit >= 5);
   } else {
     // Specialized for the common case (~96.0%). Percentages below are relative to this.
     // Loop iterations below (approximately):
@@ -1165,13 +1165,13 @@ _NODISCARD inline __floating_decimal_32 __f2d(const uint32_t __ieeeMantissa, con
       ++__removed;
     }
     // We need to take __vr + 1 if __vr is outside bounds or we need to round up.
-    __output = __vr + (__vr == __vm || __lastRemovedDigit >= 5);
+    _Output = __vr + (__vr == __vm || __lastRemovedDigit >= 5);
   }
   const int32_t __exp = __e10 + __removed;
 
   __floating_decimal_32 __fd;
   __fd.__exponent = __exp;
-  __fd.__mantissa = __output;
+  __fd.__mantissa = _Output;
   return __fd;
 }
 
@@ -1302,9 +1302,9 @@ _NODISCARD inline to_chars_result _Large_integer_to_chars(char* const _First, ch
 _NODISCARD inline to_chars_result __to_chars(char* const _First, char* const _Last, const __floating_decimal_32 __v,
   chars_format _Fmt, const uint32_t __ieeeMantissa, const uint32_t __ieeeExponent) {
   // Step 5: Print the decimal representation.
-  uint32_t __output = __v.__mantissa;
+  uint32_t _Output = __v.__mantissa;
   int32_t _Ryu_exponent = __v.__exponent;
-  const uint32_t __olength = __decimalLength9(__output);
+  const uint32_t __olength = __decimalLength9(_Output);
   int32_t _Scientific_exponent = _Ryu_exponent + static_cast<int32_t>(__olength) - 1;
 
   if (_Fmt == chars_format{}) {
@@ -1344,7 +1344,7 @@ _NODISCARD inline to_chars_result __to_chars(char* const _First, char* const _La
   }
 
   if (_Fmt == chars_format::fixed) {
-    // Example: __output == 1729, __olength == 4
+    // Example: _Output == 1729, __olength == 4
 
     // _Ryu_exponent | Printed  | _Whole_digits | _Total_fixed_length  | Notes
     // --------------|----------|---------------|----------------------|---------------------------------------
@@ -1366,7 +1366,7 @@ _NODISCARD inline to_chars_result __to_chars(char* const _First, char* const _La
     uint32_t _Total_fixed_length;
     if (_Ryu_exponent >= 0) { // cases "172900" and "1729"
       _Total_fixed_length = static_cast<uint32_t>(_Whole_digits);
-      if (__output == 1) {
+      if (_Output == 1) {
         // Rounding can affect the number of digits.
         // For example, 1e11f is exactly "99999997952" which is 11 digits instead of 12.
         // We can use a lookup table to detect this and adjust the total length.
@@ -1439,28 +1439,28 @@ _NODISCARD inline to_chars_result __to_chars(char* const _First, char* const _La
       _Mid = _First + _Total_fixed_length;
     }
 
-    while (__output >= 10000) {
+    while (_Output >= 10000) {
 #ifdef __clang__ // TRANSITION, LLVM-38217
-      const uint32_t __c = __output - 10000 * (__output / 10000);
+      const uint32_t __c = _Output - 10000 * (_Output / 10000);
 #else
-      const uint32_t __c = __output % 10000;
+      const uint32_t __c = _Output % 10000;
 #endif
-      __output /= 10000;
+      _Output /= 10000;
       const uint32_t __c0 = (__c % 100) << 1;
       const uint32_t __c1 = (__c / 100) << 1;
       _CSTD memcpy(_Mid -= 2, __DIGIT_TABLE + __c0, 2);
       _CSTD memcpy(_Mid -= 2, __DIGIT_TABLE + __c1, 2);
     }
-    if (__output >= 100) {
-      const uint32_t __c = (__output % 100) << 1;
-      __output /= 100;
+    if (_Output >= 100) {
+      const uint32_t __c = (_Output % 100) << 1;
+      _Output /= 100;
       _CSTD memcpy(_Mid -= 2, __DIGIT_TABLE + __c, 2);
     }
-    if (__output >= 10) {
-      const uint32_t __c = __output << 1;
+    if (_Output >= 10) {
+      const uint32_t __c = _Output << 1;
       _CSTD memcpy(_Mid -= 2, __DIGIT_TABLE + __c, 2);
     } else {
-      *--_Mid = static_cast<char>('0' + __output);
+      *--_Mid = static_cast<char>('0' + _Output);
     }
 
     if (_Ryu_exponent > 0) { // case "172900" with _Can_use_ryu
@@ -1491,32 +1491,32 @@ _NODISCARD inline to_chars_result __to_chars(char* const _First, char* const _La
 
   // Print the decimal digits.
   uint32_t __i = 0;
-  while (__output >= 10000) {
+  while (_Output >= 10000) {
 #ifdef __clang__ // TRANSITION, LLVM-38217
-    const uint32_t __c = __output - 10000 * (__output / 10000);
+    const uint32_t __c = _Output - 10000 * (_Output / 10000);
 #else
-    const uint32_t __c = __output % 10000;
+    const uint32_t __c = _Output % 10000;
 #endif
-    __output /= 10000;
+    _Output /= 10000;
     const uint32_t __c0 = (__c % 100) << 1;
     const uint32_t __c1 = (__c / 100) << 1;
     _CSTD memcpy(__result + __olength - __i - 1, __DIGIT_TABLE + __c0, 2);
     _CSTD memcpy(__result + __olength - __i - 3, __DIGIT_TABLE + __c1, 2);
     __i += 4;
   }
-  if (__output >= 100) {
-    const uint32_t __c = (__output % 100) << 1;
-    __output /= 100;
+  if (_Output >= 100) {
+    const uint32_t __c = (_Output % 100) << 1;
+    _Output /= 100;
     _CSTD memcpy(__result + __olength - __i - 1, __DIGIT_TABLE + __c, 2);
     __i += 2;
   }
-  if (__output >= 10) {
-    const uint32_t __c = __output << 1;
+  if (_Output >= 10) {
+    const uint32_t __c = _Output << 1;
     // We can't use memcpy here: the decimal dot goes between these two digits.
     __result[2] = __DIGIT_TABLE[__c + 1];
     __result[0] = __DIGIT_TABLE[__c];
   } else {
-    __result[0] = static_cast<char>('0' + __output);
+    __result[0] = static_cast<char>('0' + _Output);
   }
 
   // Print decimal point if needed.
@@ -1809,7 +1809,7 @@ _NODISCARD inline __floating_decimal_64 __d2d(const uint64_t __ieeeMantissa, con
   // Step 4: Find the shortest decimal representation in the interval of valid representations.
   int32_t __removed = 0;
   uint8_t __lastRemovedDigit = 0;
-  uint64_t __output;
+  uint64_t _Output;
   // On average, we remove ~2 digits.
   if (__vmIsTrailingZeros || __vrIsTrailingZeros) {
     // General case, which happens rarely (~0.7%).
@@ -1853,7 +1853,7 @@ _NODISCARD inline __floating_decimal_64 __d2d(const uint64_t __ieeeMantissa, con
       __lastRemovedDigit = 4;
     }
     // We need to take __vr + 1 if __vr is outside bounds or we need to round up.
-    __output = __vr + ((__vr == __vm && (!__acceptBounds || !__vmIsTrailingZeros)) || __lastRemovedDigit >= 5);
+    _Output = __vr + ((__vr == __vm && (!__acceptBounds || !__vmIsTrailingZeros)) || __lastRemovedDigit >= 5);
   } else {
     // Specialized for the common case (~99.3%). Percentages below are relative to this.
     bool __roundUp = false;
@@ -1887,22 +1887,22 @@ _NODISCARD inline __floating_decimal_64 __d2d(const uint64_t __ieeeMantissa, con
       ++__removed;
     }
     // We need to take __vr + 1 if __vr is outside bounds or we need to round up.
-    __output = __vr + (__vr == __vm || __roundUp);
+    _Output = __vr + (__vr == __vm || __roundUp);
   }
   const int32_t __exp = __e10 + __removed;
 
   __floating_decimal_64 __fd;
   __fd.__exponent = __exp;
-  __fd.__mantissa = __output;
+  __fd.__mantissa = _Output;
   return __fd;
 }
 
 _NODISCARD inline to_chars_result __to_chars(char* const _First, char* const _Last, const __floating_decimal_64 __v,
   chars_format _Fmt, const double __f) {
   // Step 5: Print the decimal representation.
-  uint64_t __output = __v.__mantissa;
+  uint64_t _Output = __v.__mantissa;
   int32_t _Ryu_exponent = __v.__exponent;
-  const uint32_t __olength = __decimalLength17(__output);
+  const uint32_t __olength = __decimalLength17(_Output);
   int32_t _Scientific_exponent = _Ryu_exponent + static_cast<int32_t>(__olength) - 1;
 
   if (_Fmt == chars_format{}) {
@@ -1942,7 +1942,7 @@ _NODISCARD inline to_chars_result __to_chars(char* const _First, char* const _La
   }
 
   if (_Fmt == chars_format::fixed) {
-    // Example: __output == 1729, __olength == 4
+    // Example: _Output == 1729, __olength == 4
 
     // _Ryu_exponent | Printed  | _Whole_digits | _Total_fixed_length  | Notes
     // --------------|----------|---------------|----------------------|---------------------------------------
@@ -1964,7 +1964,7 @@ _NODISCARD inline to_chars_result __to_chars(char* const _First, char* const _La
     uint32_t _Total_fixed_length;
     if (_Ryu_exponent >= 0) { // cases "172900" and "1729"
       _Total_fixed_length = static_cast<uint32_t>(_Whole_digits);
-      if (__output == 1) {
+      if (_Output == 1) {
         // Rounding can affect the number of digits.
         // For example, 1e23 is exactly "99999999999999991611392" which is 23 digits instead of 24.
         // We can use a lookup table to detect this and adjust the total length.
@@ -2056,13 +2056,13 @@ _NODISCARD inline to_chars_result __to_chars(char* const _First, char* const _La
 
     // We prefer 32-bit operations, even on 64-bit platforms.
     // We have at most 17 digits, and uint32_t can store 9 digits.
-    // If __output doesn't fit into uint32_t, we cut off 8 digits,
+    // If _Output doesn't fit into uint32_t, we cut off 8 digits,
     // so the rest will fit into uint32_t.
-    if ((__output >> 32) != 0) {
+    if ((_Output >> 32) != 0) {
       // Expensive 64-bit division.
-      const uint64_t __q = __div1e8(__output);
-      uint32_t __output2 = static_cast<uint32_t>(__output - 100000000 * __q);
-      __output = __q;
+      const uint64_t __q = __div1e8(_Output);
+      uint32_t __output2 = static_cast<uint32_t>(_Output - 100000000 * __q);
+      _Output = __q;
 
       const uint32_t __c = __output2 % 10000;
       __output2 /= 10000;
@@ -2077,7 +2077,7 @@ _NODISCARD inline to_chars_result __to_chars(char* const _First, char* const _La
       _CSTD memcpy(_Mid -= 2, __DIGIT_TABLE + __d0, 2);
       _CSTD memcpy(_Mid -= 2, __DIGIT_TABLE + __d1, 2);
     }
-    uint32_t __output2 = static_cast<uint32_t>(__output);
+    uint32_t __output2 = static_cast<uint32_t>(_Output);
     while (__output2 >= 10000) {
 #ifdef __clang__ // TRANSITION, LLVM-38217
       const uint32_t __c = __output2 - 10000 * (__output2 / 10000);
@@ -2132,13 +2132,13 @@ _NODISCARD inline to_chars_result __to_chars(char* const _First, char* const _La
   uint32_t __i = 0;
   // We prefer 32-bit operations, even on 64-bit platforms.
   // We have at most 17 digits, and uint32_t can store 9 digits.
-  // If __output doesn't fit into uint32_t, we cut off 8 digits,
+  // If _Output doesn't fit into uint32_t, we cut off 8 digits,
   // so the rest will fit into uint32_t.
-  if ((__output >> 32) != 0) {
+  if ((_Output >> 32) != 0) {
     // Expensive 64-bit division.
-    const uint64_t __q = __div1e8(__output);
-    uint32_t __output2 = static_cast<uint32_t>(__output) - 100000000 * static_cast<uint32_t>(__q);
-    __output = __q;
+    const uint64_t __q = __div1e8(_Output);
+    uint32_t __output2 = static_cast<uint32_t>(_Output) - 100000000 * static_cast<uint32_t>(__q);
+    _Output = __q;
 
     const uint32_t __c = __output2 % 10000;
     __output2 /= 10000;
@@ -2153,7 +2153,7 @@ _NODISCARD inline to_chars_result __to_chars(char* const _First, char* const _La
     _CSTD memcpy(__result + __olength - __i - 7, __DIGIT_TABLE + __d1, 2);
     __i += 8;
   }
-  uint32_t __output2 = static_cast<uint32_t>(__output);
+  uint32_t __output2 = static_cast<uint32_t>(_Output);
   while (__output2 >= 10000) {
 #ifdef __clang__ // TRANSITION, LLVM-38217
     const uint32_t __c = __output2 - 10000 * (__output2 / 10000);

@@ -282,12 +282,12 @@ public:
         constexpr bool _Bits_zero  = _Bits == 0;
         constexpr bool _Bits_small = _Bits <= 32;
         constexpr bool _Bits_large = _Bits > 64;
-        if _CONSTEXPR_IF (_Bits_zero) {
+        if constexpr (_Bits_zero) {
             return 0;
-        } else if _CONSTEXPR_IF (_Bits_small) {
+        } else if constexpr (_Bits_small) {
             return static_cast<unsigned long>(_Array[0]);
         } else {
-            if _CONSTEXPR_IF (_Bits_large) {
+            if constexpr (_Bits_large) {
                 for (size_t _Idx = 1; _Idx <= _Words; ++_Idx) {
                     if (_Array[_Idx] != 0) {
                         _Xoflo(); // fail if any high-order words are nonzero
@@ -306,10 +306,10 @@ public:
     _NODISCARD unsigned long long to_ullong() const {
         constexpr bool _Bits_zero  = _Bits == 0;
         constexpr bool _Bits_large = _Bits > 64;
-        if _CONSTEXPR_IF (_Bits_zero) {
+        if constexpr (_Bits_zero) {
             return 0;
         } else {
-            if _CONSTEXPR_IF (_Bits_large) {
+            if constexpr (_Bits_large) {
                 for (size_t _Idx = 1; _Idx <= _Words; ++_Idx) {
                     if (_Array[_Idx] != 0) {
                         _Xoflo(); // fail if any high-order words are nonzero
@@ -370,9 +370,11 @@ public:
         return _CSTD memcmp(&_Array[0], &_Right._Array[0], sizeof(_Array)) == 0;
     }
 
+#if !_HAS_CXX20
     _NODISCARD bool operator!=(const bitset& _Right) const noexcept {
         return !(*this == _Right);
     }
+#endif // !_HAS_CXX20
 
     _NODISCARD bool test(size_t _Pos) const {
         if (_Bits <= _Pos) {
@@ -398,7 +400,7 @@ public:
 
     _NODISCARD bool all() const noexcept {
         constexpr bool _Zero_length = _Bits == 0;
-        if _CONSTEXPR_IF (_Zero_length) { // must test for this, otherwise would count one full word
+        if constexpr (_Zero_length) { // must test for this, otherwise would count one full word
             return true;
         }
 
@@ -432,7 +434,7 @@ private:
 
     void _Trim() noexcept { // clear any trailing bits in last word
         constexpr bool _Work_to_do = _Bits == 0 || _Bits % _Bitsperword != 0;
-        if _CONSTEXPR_IF (_Work_to_do) {
+        if constexpr (_Work_to_do) {
             _Array[_Words] &= (_Ty{1} << _Bits % _Bitsperword) - 1;
         }
     }
@@ -534,7 +536,7 @@ basic_istream<_Elem, _Tr>& operator>>(basic_istream<_Elem, _Tr>& _Istr, bitset<_
 
     constexpr bool _Has_bits = _Bits > 0;
 
-    if _CONSTEXPR_IF (_Has_bits) {
+    if constexpr (_Has_bits) {
         if (!_Changed) {
             _State |= _Istr_t::failbit;
         }

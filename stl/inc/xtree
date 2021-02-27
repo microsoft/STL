@@ -40,15 +40,15 @@ public:
         this->_Adopt(_Plist);
     }
 
-    _NODISCARD reference operator*() const {
+    _NODISCARD reference operator*() const noexcept {
         return _Ptr->_Myval;
     }
 
-    _NODISCARD pointer operator->() const {
+    _NODISCARD pointer operator->() const noexcept {
         return pointer_traits<pointer>::pointer_to(**this);
     }
 
-    _Tree_unchecked_const_iterator& operator++() {
+    _Tree_unchecked_const_iterator& operator++() noexcept {
         if (_Ptr->_Right->_Isnil) { // climb looking for right subtree
             _Nodeptr _Pnode;
             while (!(_Pnode = _Ptr->_Parent)->_Isnil && _Ptr == _Pnode->_Right) {
@@ -63,13 +63,13 @@ public:
         return *this;
     }
 
-    _Tree_unchecked_const_iterator operator++(int) {
+    _Tree_unchecked_const_iterator operator++(int) noexcept {
         _Tree_unchecked_const_iterator _Tmp = *this;
         ++*this;
         return _Tmp;
     }
 
-    _Tree_unchecked_const_iterator& operator--() {
+    _Tree_unchecked_const_iterator& operator--() noexcept {
         if (_Ptr->_Isnil) {
             _Ptr = _Ptr->_Right; // end() ==> rightmost
         } else if (_Ptr->_Left->_Isnil) { // climb looking for left subtree
@@ -88,28 +88,32 @@ public:
         return *this;
     }
 
-    _Tree_unchecked_const_iterator operator--(int) {
+    _Tree_unchecked_const_iterator operator--(int) noexcept {
         _Tree_unchecked_const_iterator _Tmp = *this;
         --*this;
         return _Tmp;
     }
 
-    _NODISCARD bool operator==(const _Tree_unchecked_const_iterator& _Right) const {
+    _NODISCARD bool operator==(const _Tree_unchecked_const_iterator& _Right) const noexcept {
         return _Ptr == _Right._Ptr;
     }
 
-    _NODISCARD bool operator!=(const _Tree_unchecked_const_iterator& _Right) const {
+#if !_HAS_CXX20
+    _NODISCARD bool operator!=(const _Tree_unchecked_const_iterator& _Right) const noexcept {
         return !(*this == _Right);
     }
+#endif // !_HAS_CXX20
 
     _NODISCARD bool operator==(_Default_sentinel) const noexcept {
         return !!_Ptr->_Isnil; // TRANSITION, avoid warning C4800:
                                // "Implicit conversion from 'char' to bool. Possible information loss" (/Wall)
     }
 
+#if !_HAS_CXX20
     _NODISCARD bool operator!=(_Default_sentinel) const noexcept {
         return !_Ptr->_Isnil;
     }
+#endif // !_HAS_CXX20
 
     _Nodeptr _Ptr; // pointer to node
 };
@@ -129,31 +133,31 @@ public:
 
     using _Mybase::_Mybase;
 
-    _NODISCARD reference operator*() const {
+    _NODISCARD reference operator*() const noexcept {
         return const_cast<reference>(_Mybase::operator*());
     }
 
-    _NODISCARD pointer operator->() const {
+    _NODISCARD pointer operator->() const noexcept {
         return pointer_traits<pointer>::pointer_to(**this);
     }
 
-    _Tree_unchecked_iterator& operator++() {
+    _Tree_unchecked_iterator& operator++() noexcept {
         _Mybase::operator++();
         return *this;
     }
 
-    _Tree_unchecked_iterator operator++(int) {
+    _Tree_unchecked_iterator operator++(int) noexcept {
         _Tree_unchecked_iterator _Tmp = *this;
         _Mybase::operator++();
         return _Tmp;
     }
 
-    _Tree_unchecked_iterator& operator--() {
+    _Tree_unchecked_iterator& operator--() noexcept {
         _Mybase::operator--();
         return *this;
     }
 
-    _Tree_unchecked_iterator operator--(int) {
+    _Tree_unchecked_iterator operator--(int) noexcept {
         _Tree_unchecked_iterator _Tmp = *this;
         _Mybase::operator--();
         return _Tmp;
@@ -175,7 +179,7 @@ public:
 
     using _Mybase::_Mybase;
 
-    _NODISCARD reference operator*() const {
+    _NODISCARD reference operator*() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL == 2
         const auto _Mycont = static_cast<const _Mytree*>(this->_Getcont());
         _STL_ASSERT(_Mycont, "cannot dereference value-initialized map/set iterator");
@@ -185,11 +189,11 @@ public:
         return this->_Ptr->_Myval;
     }
 
-    _NODISCARD pointer operator->() const {
+    _NODISCARD pointer operator->() const noexcept {
         return pointer_traits<pointer>::pointer_to(**this);
     }
 
-    _Tree_const_iterator& operator++() {
+    _Tree_const_iterator& operator++() noexcept {
 #if _ITERATOR_DEBUG_LEVEL == 2
         _STL_VERIFY(this->_Getcont(), "cannot increment value-initialized map/set iterator");
         _STL_VERIFY(!this->_Ptr->_Isnil, "cannot increment end map/set iterator");
@@ -199,13 +203,13 @@ public:
         return *this;
     }
 
-    _Tree_const_iterator operator++(int) {
+    _Tree_const_iterator operator++(int) noexcept {
         _Tree_const_iterator _Tmp = *this;
         ++*this;
         return _Tmp;
     }
 
-    _Tree_const_iterator& operator--() {
+    _Tree_const_iterator& operator--() noexcept {
 #if _ITERATOR_DEBUG_LEVEL == 2
         _STL_ASSERT(this->_Getcont(), "cannot decrement value-initialized map/set iterator");
         _Nodeptr _Ptrsav = this->_Ptr;
@@ -218,13 +222,13 @@ public:
         return *this;
     }
 
-    _Tree_const_iterator operator--(int) {
+    _Tree_const_iterator operator--(int) noexcept {
         _Tree_const_iterator _Tmp = *this;
         --*this;
         return _Tmp;
     }
 
-    _NODISCARD bool operator==(const _Tree_const_iterator& _Right) const {
+    _NODISCARD bool operator==(const _Tree_const_iterator& _Right) const noexcept {
 #if _ITERATOR_DEBUG_LEVEL == 2
         _STL_VERIFY(this->_Getcont() == _Right._Getcont(), "map/set iterators incompatible");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
@@ -232,23 +236,25 @@ public:
         return this->_Ptr == _Right._Ptr;
     }
 
-    _NODISCARD bool operator!=(const _Tree_const_iterator& _Right) const {
+#if !_HAS_CXX20
+    _NODISCARD bool operator!=(const _Tree_const_iterator& _Right) const noexcept {
         return !(*this == _Right);
     }
+#endif // !_HAS_CXX20
 
 #if _ITERATOR_DEBUG_LEVEL == 2
-    friend void _Verify_range(const _Tree_const_iterator& _First, const _Tree_const_iterator& _Last) {
+    friend void _Verify_range(const _Tree_const_iterator& _First, const _Tree_const_iterator& _Last) noexcept {
         _STL_VERIFY(_First._Getcont() == _Last._Getcont(), "map/set iterators in range are from different containers");
     }
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
     using _Prevent_inheriting_unwrap = _Tree_const_iterator;
 
-    _NODISCARD _Tree_unchecked_const_iterator<_Mytree> _Unwrapped() const {
+    _NODISCARD _Tree_unchecked_const_iterator<_Mytree> _Unwrapped() const noexcept {
         return _Tree_unchecked_const_iterator<_Mytree>(this->_Ptr, static_cast<const _Mytree*>(this->_Getcont()));
     }
 
-    void _Seek_to(const _Tree_unchecked_const_iterator<_Mytree> _It) {
+    void _Seek_to(const _Tree_unchecked_const_iterator<_Mytree> _It) noexcept {
         this->_Ptr = _It._Ptr;
     }
 };
@@ -269,31 +275,31 @@ public:
 
     using _Mybase::_Mybase;
 
-    _NODISCARD reference operator*() const {
+    _NODISCARD reference operator*() const noexcept {
         return const_cast<reference>(_Mybase::operator*());
     }
 
-    _NODISCARD pointer operator->() const {
+    _NODISCARD pointer operator->() const noexcept {
         return pointer_traits<pointer>::pointer_to(**this);
     }
 
-    _Tree_iterator& operator++() {
+    _Tree_iterator& operator++() noexcept {
         _Mybase::operator++();
         return *this;
     }
 
-    _Tree_iterator operator++(int) {
+    _Tree_iterator operator++(int) noexcept {
         _Tree_iterator _Tmp = *this;
         _Mybase::operator++();
         return _Tmp;
     }
 
-    _Tree_iterator& operator--() {
+    _Tree_iterator& operator--() noexcept {
         _Mybase::operator--();
         return *this;
     }
 
-    _Tree_iterator operator--(int) {
+    _Tree_iterator operator--(int) noexcept {
         _Tree_iterator _Tmp = *this;
         _Mybase::operator--();
         return _Tmp;
@@ -301,7 +307,7 @@ public:
 
     using _Prevent_inheriting_unwrap = _Tree_iterator;
 
-    _NODISCARD _Tree_unchecked_iterator<_Mytree> _Unwrapped() const {
+    _NODISCARD _Tree_unchecked_iterator<_Mytree> _Unwrapped() const noexcept {
         return _Tree_unchecked_iterator<_Mytree>(this->_Ptr, static_cast<const _Mytree*>(this->_Getcont()));
     }
 };
@@ -905,10 +911,10 @@ public:
     }
 
     _Tree(_Tree&& _Right)
-        : _Mypair(
-            _One_then_variadic_args_t{}, _Right.key_comp(), _One_then_variadic_args_t{}, _STD move(_Right._Getal())) {
+        : _Mypair(_One_then_variadic_args_t{}, _Right.key_comp(), // intentionally copy comparator, see LWG-2227
+            _One_then_variadic_args_t{}, _STD move(_Right._Getal())) {
         _Alloc_sentinel_and_proxy();
-        _Swap_val(_Right);
+        _Swap_val_excluding_comp(_Right);
     }
 
 private:
@@ -925,8 +931,9 @@ private:
 
 public:
     _Tree(_Tree&& _Right, const allocator_type& _Al)
-        : _Mypair(_One_then_variadic_args_t{}, _Right.key_comp(), _One_then_variadic_args_t{}, _Al) {
-        if _CONSTEXPR_IF (!_Alnode_traits::is_always_equal::value) {
+        : _Mypair(_One_then_variadic_args_t{}, _Right.key_comp(), // intentionally copy comparator, see LWG-2227
+            _One_then_variadic_args_t{}, _Al) {
+        if constexpr (!_Alnode_traits::is_always_equal::value) {
             if (_Getal() != _Right._Getal()) {
                 _Different_allocator_move_construct(_STD move(_Right));
                 return;
@@ -934,15 +941,15 @@ public:
         }
 
         _Alloc_sentinel_and_proxy();
-        _Swap_val(_Right);
+        _Swap_val_excluding_comp(_Right);
     }
 
 private:
     void _Move_assign(_Tree& _Right, _Equal_allocators) noexcept(is_nothrow_move_assignable_v<key_compare>) {
         clear();
-        _Getcomp() = _Right._Getcomp();
+        _Getcomp() = _Right._Getcomp(); // intentionally copy comparator, see LWG-2227
         _Pocma(_Getal(), _Right._Getal());
-        _Swap_val(_Right);
+        _Swap_val_excluding_comp(_Right);
     }
 
     void _Move_assign(_Tree& _Right, _Propagate_allocators) {
@@ -950,14 +957,14 @@ private:
             _Move_assign(_Right, _Equal_allocators{});
         } else {
             clear();
-            _Getcomp()            = _Right._Getcomp();
+            _Getcomp()            = _Right._Getcomp(); // intentionally copy comparator, see LWG-2227
             auto&& _Alproxy       = _GET_PROXY_ALLOCATOR(_Alnode, _Getal());
             auto&& _Right_alproxy = _GET_PROXY_ALLOCATOR(_Alnode, _Right._Getal());
             _Container_proxy_ptr<_Alty> _Proxy(_Right_alproxy, _Leave_proxy_unbound{});
-            const auto _Scary   = _Get_scary();
-            auto _Right_scary   = _Right._Get_scary();
-            const auto _Newhead = _STD exchange(_Right_scary->_Myhead, _Node::_Buyheadnode(_Right._Getal()));
-            const auto _Newsize = _STD exchange(_Right_scary->_Mysize, size_type{0});
+            const auto _Scary       = _Get_scary();
+            const auto _Right_scary = _Right._Get_scary();
+            const auto _Newhead     = _STD exchange(_Right_scary->_Myhead, _Node::_Buyheadnode(_Right._Getal()));
+            const auto _Newsize     = _STD exchange(_Right_scary->_Mysize, size_type{0});
             _Scary->_Erase_head(_Getal());
             _Pocma(_Getal(), _Right._Getal());
             _Scary->_Myhead = _Newhead;
@@ -972,7 +979,7 @@ private:
             _Move_assign(_Right, _Equal_allocators{});
         } else {
             clear();
-            _Getcomp() = _Right._Getcomp();
+            _Getcomp() = _Right._Getcomp(); // intentionally copy comparator, see LWG-2227
             _Copy(_Right, _Move_tag{});
         }
     }
@@ -987,17 +994,15 @@ public:
     }
 
 private:
-    void _Swap_val(_Tree& _Right) { // swap contents with _Right, equal allocators
-        const auto _Scary = _Get_scary();
-        auto _Right_scary = _Right._Get_scary();
+    void _Swap_val_excluding_comp(_Tree& _Right) { // swap contents (except comparator) with _Right, equal allocators
+        const auto _Scary       = _Get_scary();
+        const auto _Right_scary = _Right._Get_scary();
         _Scary->_Swap_proxy_and_iterators(*_Right_scary);
-        _Swap_adl(_Getcomp(), _Right._Getcomp());
         _Swap_adl(_Scary->_Myhead, _Right_scary->_Myhead);
         _STD swap(_Scary->_Mysize, _Right_scary->_Mysize);
     }
 
 protected:
-#if _HAS_IF_CONSTEXPR
     template <class... _Valtys>
     pair<_Nodeptr, bool> _Emplace(_Valtys&&... _Vals) {
         using _In_place_key_extractor = typename _Traits::template _In_place_key_extractor<_Remove_cvref_t<_Valtys>...>;
@@ -1033,61 +1038,6 @@ protected:
 
         return {_Scary->_Insert_node(_Loc._Location, _Inserted), true};
     }
-#else // ^^^ _HAS_IF_CONSTEXPR // !_HAS_IF_CONSTEXPR vvv
-
-    template <class... _Valtys>
-    pair<_Nodeptr, bool> _Emplace1(true_type, _Valtys&&... _Vals) { // _Emplace for extractable
-        using _In_place_key_extractor = typename _Traits::template _In_place_key_extractor<_Remove_cvref_t<_Valtys>...>;
-        const auto _Scary = _Get_scary();
-        _Tree_find_result<_Nodeptr> _Loc;
-        _Nodeptr _Inserted;
-        const auto& _Keyval = _In_place_key_extractor::_Extract(_Vals...);
-        _Loc = _Find_lower_bound(_Keyval);
-        if (_Lower_bound_duplicate(_Loc._Bound, _Keyval)) {
-            return {_Loc._Bound, false};
-        }
-
-        _Check_grow_by_1();
-        _Inserted = _Tree_temp_node<_Alnode>(_Getal(), _Scary->_Myhead, _STD forward<_Valtys>(_Vals)...)._Release();
-
-        // nothrow hereafter
-        return {_Scary->_Insert_node(_Loc._Location, _Inserted), true};
-    }
-
-    template <class... _Valtys>
-    pair<_Nodeptr, bool> _Emplace1(false_type, _Valtys&&... _Vals) { // _Emplace for unextractable
-        const auto _Scary = _Get_scary();
-        _Tree_find_result<_Nodeptr> _Loc;
-        _Nodeptr _Inserted;
-        {
-            _Tree_temp_node<_Alnode> _Newnode(_Getal(), _Scary->_Myhead, _STD forward<_Valtys>(_Vals)...);
-            const auto& _Keyval = _Traits::_Kfn(_Newnode._Ptr->_Myval);
-            if _CONSTEXPR_IF (_Multi) { // duplicate check if unique
-                _Loc = _Find_upper_bound(_Keyval);
-            } else {
-                _Loc = _Find_lower_bound(_Keyval);
-                if (_Lower_bound_duplicate(_Loc._Bound, _Keyval)) {
-                    return {_Loc._Bound, false};
-                }
-            }
-
-            _Check_grow_by_1();
-            // nothrow hereafter
-            _Inserted = _Newnode._Release();
-        }
-
-        return {_Scary->_Insert_node(_Loc._Location, _Inserted), true};
-    }
-
-    template <class... _Valtys>
-    pair<_Nodeptr, bool> _Emplace(_Valtys&&... _Vals) {
-        return _Emplace1(
-            bool_constant < !_Multi
-                && _Traits::template _In_place_key_extractor<_Remove_cvref_t<_Valtys>...>::_Extractable > {},
-            _STD forward<_Valtys>(_Vals)...);
-    }
-
-#endif // _HAS_IF_CONSTEXPR
 
 public:
     template <class... _Valtys>
@@ -1097,7 +1047,6 @@ public:
     }
 
 protected:
-#if _HAS_IF_CONSTEXPR
     template <class... _Valtys>
     _Nodeptr _Emplace_hint(const _Nodeptr _Hint, _Valtys&&... _Vals) {
         using _In_place_key_extractor = typename _Traits::template _In_place_key_extractor<_Remove_cvref_t<_Valtys>...>;
@@ -1129,52 +1078,6 @@ protected:
 
         return _Scary->_Insert_node(_Loc._Location, _Inserted);
     }
-#else // ^^^ _HAS_IF_CONSTEXPR // !_HAS_IF_CONSTEXPR vvv
-    template <class... _Valtys>
-    _Nodeptr _Emplace_hint1(true_type, const _Nodeptr _Hint, _Valtys&&... _Vals) {
-        using _In_place_key_extractor = typename _Traits::template _In_place_key_extractor<_Remove_cvref_t<_Valtys>...>;
-        const auto _Scary = _Get_scary();
-        const auto _Loc = _Find_hint(_Hint, _In_place_key_extractor::_Extract(_Vals...));
-        if (_Loc._Duplicate) {
-            return _Loc._Location._Parent;
-        }
-
-        _Check_grow_by_1();
-        const auto _Inserted =
-            _Tree_temp_node<_Alnode>(_Getal(), _Scary->_Myhead, _STD forward<_Valtys>(_Vals)...)._Release();
-        // nothrow hereafter
-
-        return _Scary->_Insert_node(_Loc._Location, _Inserted);
-    }
-
-    template <class... _Valtys>
-    _Nodeptr _Emplace_hint1(false_type, const _Nodeptr _Hint, _Valtys&&... _Vals) {
-        const auto _Scary = _Get_scary();
-        _Tree_find_hint_result<_Nodeptr> _Loc;
-        _Nodeptr _Inserted;
-        {
-            _Tree_temp_node<_Alnode> _Newnode(_Getal(), _Scary->_Myhead, _STD forward<_Valtys>(_Vals)...);
-            _Loc = _Find_hint(_Hint, _Traits::_Kfn(_Newnode._Ptr->_Myval));
-            if (_Loc._Duplicate) {
-                return _Loc._Location._Parent;
-            }
-
-            _Check_grow_by_1();
-            // nothrow hereafter
-            _Inserted = _Newnode._Release();
-        }
-
-        return _Scary->_Insert_node(_Loc._Location, _Inserted);
-    }
-
-    template <class... _Valtys>
-    _Nodeptr _Emplace_hint(const _Nodeptr _Hint, _Valtys&&... _Vals) {
-        return _Emplace_hint1(
-            bool_constant < !_Multi
-                && _Traits::template _In_place_key_extractor<_Remove_cvref_t<_Valtys>...>::_Extractable > {},
-            _Hint, _STD forward<_Valtys>(_Vals)...);
-    }
-#endif // _HAS_IF_CONSTEXPR
 
 public:
     template <class... _Valtys>
@@ -1494,7 +1397,7 @@ public:
 #endif // _HAS_CXX20
 
     _NODISCARD size_type count(const key_type& _Keyval) const {
-        if _CONSTEXPR_IF (_Multi) {
+        if constexpr (_Multi) {
             const auto _Ans = _Eqrange(_Keyval);
             return static_cast<size_type>(_STD distance(
                 _Unchecked_const_iterator(_Ans.first, nullptr), _Unchecked_const_iterator(_Ans.second, nullptr)));
@@ -1575,7 +1478,8 @@ public:
     void swap(_Tree& _Right) noexcept(_Is_nothrow_swappable<key_compare>::value) /* strengthened */ {
         if (this != _STD addressof(_Right)) {
             _Pocs(_Getal(), _Right._Getal());
-            _Swap_val(_Right);
+            _Swap_val_excluding_comp(_Right);
+            _Swap_adl(_Getcomp(), _Right._Getcomp());
         }
     }
 
@@ -1584,7 +1488,7 @@ protected:
     _Tree_find_hint_result<_Nodeptr> _Find_hint(const _Nodeptr _Hint, const _Keyty& _Keyval) const {
         const auto& _Comp = _Getcomp();
         const auto _Head  = _Get_scary()->_Myhead;
-        if _CONSTEXPR_IF (_Multi) { // insert even if duplicate
+        if constexpr (_Multi) { // insert even if duplicate
             if (_Hint->_Isnil) {
                 // insert at end if greater than or equal to last element
                 if (_Head->_Parent->_Isnil || !_DEBUG_LT_PRED(_Comp, _Keyval, _Traits::_Kfn(_Head->_Right->_Myval))) {
@@ -1758,7 +1662,7 @@ protected:
         _Nodeptr _Newroot = _Scary->_Myhead; // point at nil node
 
         if (!_Rootnode->_Isnil) { // copy or move a node, then any subtrees
-            typename is_same<key_type, value_type>::type _Is_set;
+            bool_constant<is_same_v<key_type, value_type>> _Is_set;
             _Nodeptr _Pnode = _Copy_or_move(_Rootnode->_Myval, _Movefl, _Is_set);
             _Pnode->_Parent = _Wherenode;
             _Pnode->_Color  = _Rootnode->_Color;

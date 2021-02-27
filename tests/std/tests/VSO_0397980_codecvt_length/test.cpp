@@ -19,7 +19,7 @@ using namespace std;
 // Also validate deleted stream inserters for char8_t and pointer-to-char8_t, speculatively implemented from P1423R1.
 #ifdef __cpp_char8_t
 template <class T>
-constexpr auto f(int) -> decltype(std::declval<std::ostream&>() << std::declval<T&>(), true) {
+constexpr auto f(int) -> decltype(declval<ostream&>() << declval<T&>(), true) {
     return true;
 }
 template <class T>

@@ -34,7 +34,6 @@ namespace stdext {
     using _STD size_t;
 
     // FUNCTION TEMPLATE hash_value
-#if _HAS_IF_CONSTEXPR
     template <class _Kty>
     _NODISCARD size_t hash_value(const _Kty& _Keyval) noexcept {
         if constexpr (_STD is_pointer_v<_Kty> || _STD is_null_pointer_v<_Kty>) {
@@ -43,22 +42,6 @@ namespace stdext {
             return static_cast<size_t>(_Keyval) ^ 0xdeadbeefu;
         }
     }
-#else // ^^^ _HAS_IF_CONSTEXPR / !_HAS_IF_CONSTEXPR vvv
-    template <class _Kty>
-    _NODISCARD size_t _Hash_value(_STD true_type, const _Kty& _Keyval) noexcept {
-        return reinterpret_cast<size_t>(_Keyval) ^ 0xdeadbeefu;
-    }
-
-    template <class _Kty>
-    _NODISCARD size_t _Hash_value(_STD false_type, const _Kty& _Keyval) noexcept {
-        return static_cast<size_t>(_Keyval) ^ 0xdeadbeefu;
-    }
-
-    template <class _Kty>
-    _NODISCARD size_t hash_value(const _Kty& _Keyval) noexcept {
-        return _Hash_value(_STD disjunction<_STD is_pointer<_Kty>, _STD is_null_pointer<_Kty>>{}, _Keyval);
-    }
-#endif // _HAS_IF_CONSTEXPR
 
     template <class _Elem, class _Traits, class _Alloc>
     _NODISCARD size_t hash_value(const basic_string<_Elem, _Traits, _Alloc>& _Str) noexcept {
@@ -213,12 +196,14 @@ struct _Reinterpret_move_iter {
         return _Lhs._Base == _Rhs._Base;
     }
 
+#if !_HAS_CXX20
 #ifndef __CUDACC__ // TRANSITION, VSO-568006
     _NODISCARD
 #endif // TRANSITION, VSO-568006
     friend bool operator!=(const _Reinterpret_move_iter& _Lhs, const _Reinterpret_move_iter& _Rhs) {
         return _Lhs._Base != _Rhs._Base;
     }
+#endif // !_HAS_CXX20
 };
 
 // STRUCT TEMPLATE _List_head_construct_ptr
@@ -319,9 +304,9 @@ struct _Hash_vec {
     void _Tidy() noexcept {
         _Destroy_range(_Mypair._Myval2._Myfirst, _Mypair._Myval2._Mylast);
         _Mypair._Get_first().deallocate(_Mypair._Myval2._Myfirst, size());
-        _Mypair._Myval2._Myfirst = pointer();
-        _Mypair._Myval2._Mylast  = pointer();
-        _Mypair._Myval2._Myend   = pointer();
+        _Mypair._Myval2._Myfirst = nullptr;
+        _Mypair._Myval2._Mylast  = nullptr;
+        _Mypair._Myval2._Myend   = nullptr;
     }
 
     ~_Hash_vec() {
@@ -374,14 +359,6 @@ public:
     static constexpr size_type _Bucket_size = _Key_compare::bucket_size;
     static constexpr size_type _Min_buckets = 8; // must be a positive power of 2
     static constexpr bool _Multi            = _Traits::_Multi;
-
-#if !_HAS_IF_CONSTEXPR
-    template <class _TraitsT>
-    friend bool _Hash_equal_elements(const _Hash<_TraitsT>& _Left, const _Hash<_TraitsT>& _Right, false_type);
-
-    template <class _TraitsT>
-    friend bool _Hash_equal_elements(const _Hash<_TraitsT>& _Left, const _Hash<_TraitsT>& _Right, true_type);
-#endif // !_HAS_IF_CONSTEXPR
 
     template <class _TraitsT>
     friend bool _Hash_equal(const _Hash<_TraitsT>& _Left, const _Hash<_TraitsT>& _Right);
@@ -436,7 +413,7 @@ private:
 public:
     _Hash(_Hash&& _Right, const allocator_type& _Al) : _Traitsobj(_Right._Traitsobj), _List(_Al), _Vec(_Al) {
         // construct hash table by moving _Right, allocator
-        if _CONSTEXPR_IF (_Alnode_traits::is_always_equal::value) {
+        if constexpr (_Alnode_traits::is_always_equal::value) {
             _Move_construct_equal_alloc(_Right);
         } else if (_List._Getal() == _Right._List._Getal()) {
             _Move_construct_equal_alloc(_Right);
@@ -472,7 +449,7 @@ private:
         _Min_buckets_construct_ptr(const _Min_buckets_construct_ptr&) = delete;
         _NODISCARD pointer _Release(_Unchecked_iterator _Newend) noexcept {
             _STD uninitialized_fill(_Base, _Base + _Min_buckets * 2, _Newend);
-            return _STD exchange(_Base, pointer());
+            return _STD exchange(_Base, nullptr);
         }
         ~_Min_buckets_construct_ptr() {
             if (_Base) {
@@ -486,7 +463,7 @@ private:
         _Pocma(_Vec._Mypair._Get_first(), _Right._Vec._Mypair._Get_first());
     }
 
-    struct _Clear_guard {
+    struct _NODISCARD _Clear_guard {
         _Hash* _Target;
 
         explicit _Clear_guard(_Hash* const _Target_) : _Target(_Target_) {}
@@ -587,7 +564,6 @@ public:
         return *this;
     }
 
-#if _HAS_IF_CONSTEXPR
     template <class... _Valtys>
     conditional_t<_Multi, iterator, pair<iterator, bool>> emplace(_Valtys&&... _Vals) {
         // try to insert value_type(_Vals...)
@@ -640,70 +616,7 @@ public:
                 _List._Make_iter(_Insert_new_node_before(_Hashval, _Target._Insert_before, _Newnode._Release())), true};
         }
     }
-#else // ^^^ _HAS_IF_CONSTEXPR // !_HAS_IF_CONSTEXPR vvv
-    template <class... _Valtys>
-    iterator _Choose_emplace(integral_constant<int, 2>, _Valtys&&... _Vals) {
-        _Check_max_size();
-        _List_node_emplace_op2<_Alnode> _Newnode(_List._Getal(), _STD forward<_Valtys>(_Vals)...);
-        const auto& _Keyval = _Traits::_Kfn(_Newnode._Ptr->_Myval);
-        const auto _Hashval = _Traitsobj(_Keyval);
-        if (_Check_rehash_required_1()) {
-            _Rehash_for_1();
-        }
 
-        const auto _Target = _Find_last(_Keyval, _Hashval);
-        return _List._Make_iter(_Insert_new_node_before(_Hashval, _Target._Insert_before, _Newnode._Release()));
-    }
-
-    template <class... _Valtys>
-    pair<iterator, bool> _Choose_emplace(integral_constant<int, 1>, _Valtys&&... _Vals) {
-        using _In_place_key_extractor = typename _Traits::template _In_place_key_extractor<_Remove_cvref_t<_Valtys>...>;
-        const auto& _Keyval           = _In_place_key_extractor::_Extract(_Vals...);
-        const auto _Hashval           = _Traitsobj(_Keyval);
-        auto _Target                  = _Find_last(_Keyval, _Hashval);
-        if (_Target._Duplicate) {
-            return {_List._Make_iter(_Target._Duplicate), false};
-        }
-
-        _Check_max_size();
-        // invalidates _Keyval:
-        _List_node_emplace_op2<_Alnode> _Newnode(_List._Getal(), _STD forward<_Valtys>(_Vals)...);
-        if (_Check_rehash_required_1()) {
-            _Rehash_for_1();
-            _Target = _Find_last(_Traits::_Kfn(_Newnode._Ptr->_Myval), _Hashval);
-        }
-
-        return {_List._Make_iter(_Insert_new_node_before(_Hashval, _Target._Insert_before, _Newnode._Release())), true};
-    }
-
-    template <class... _Valtys>
-    pair<iterator, bool> _Choose_emplace(integral_constant<int, 0>, _Valtys&&... _Vals) {
-        _List_node_emplace_op2<_Alnode> _Newnode(_List._Getal(), _STD forward<_Valtys>(_Vals)...);
-        const auto& _Keyval = _Traits::_Kfn(_Newnode._Ptr->_Myval);
-        const auto _Hashval = _Traitsobj(_Keyval);
-        auto _Target        = _Find_last(_Keyval, _Hashval);
-        if (_Target._Duplicate) {
-            return {_List._Make_iter(_Target._Duplicate), false};
-        }
-
-        _Check_max_size();
-        if (_Check_rehash_required_1()) {
-            _Rehash_for_1();
-            _Target = _Find_last(_Traits::_Kfn(_Newnode._Ptr->_Myval), _Hashval);
-        }
-
-        return {_List._Make_iter(_Insert_new_node_before(_Hashval, _Target._Insert_before, _Newnode._Release())), true};
-    }
-
-    template <class... _Valtys>
-    conditional_t<_Multi, iterator, pair<iterator, bool>> emplace(_Valtys&&... _Vals) {
-        constexpr int _Choice =
-            _Multi ? 2 : _Traits::template _In_place_key_extractor<_Remove_cvref_t<_Valtys>...>::_Extractable;
-        return _Choose_emplace(integral_constant<int, _Choice>{}, _STD forward<_Valtys>(_Vals)...);
-    }
-#endif // _HAS_IF_CONSTEXPR
-
-#if _HAS_IF_CONSTEXPR
     template <class... _Valtys>
     iterator emplace_hint(const_iterator _Hint, _Valtys&&... _Vals) { // try to insert value_type(_Vals...)
         using _In_place_key_extractor = typename _Traits::template _In_place_key_extractor<_Remove_cvref_t<_Valtys>...>;
@@ -753,68 +666,6 @@ public:
             return _List._Make_iter(_Insert_new_node_before(_Hashval, _Target._Insert_before, _Newnode._Release()));
         }
     }
-#else // ^^^ _HAS_IF_CONSTEXPR // !_HAS_IF_CONSTEXPR vvv
-    template <class... _Valtys>
-    iterator _Choose_emplace_hint(integral_constant<int, 2>, const _Nodeptr _Hint, _Valtys&&... _Vals) {
-        _Check_max_size();
-        _List_node_emplace_op2<_Alnode> _Newnode(_List._Getal(), _STD forward<_Valtys>(_Vals)...);
-        const auto& _Keyval = _Traits::_Kfn(_Newnode._Ptr->_Myval);
-        const auto _Hashval = _Traitsobj(_Keyval);
-        if (_Check_rehash_required_1()) {
-            _Rehash_for_1();
-        }
-
-        const auto _Target = _Find_hint(_Hint, _Keyval, _Hashval);
-        return _List._Make_iter(_Insert_new_node_before(_Hashval, _Target._Insert_before, _Newnode._Release()));
-    }
-
-    template <class... _Valtys>
-    iterator _Choose_emplace_hint(integral_constant<int, 1>, const _Nodeptr _Hint, _Valtys&&... _Vals) {
-        using _In_place_key_extractor = typename _Traits::template _In_place_key_extractor<_Remove_cvref_t<_Valtys>...>;
-        const auto& _Keyval           = _In_place_key_extractor::_Extract(_Vals...);
-        const auto _Hashval           = _Traitsobj(_Keyval);
-        auto _Target                  = _Find_hint(_Hint, _Keyval, _Hashval);
-        if (_Target._Duplicate) {
-            return _List._Make_iter(_Target._Duplicate);
-        }
-
-        _Check_max_size();
-        // invalidates _Keyval:
-        _List_node_emplace_op2<_Alnode> _Newnode(_List._Getal(), _STD forward<_Valtys>(_Vals)...);
-        if (_Check_rehash_required_1()) {
-            _Rehash_for_1();
-            _Target = _Find_hint(_Hint, _Traits::_Kfn(_Newnode._Ptr->_Myval), _Hashval);
-        }
-
-        return _List._Make_iter(_Insert_new_node_before(_Hashval, _Target._Insert_before, _Newnode._Release()));
-    }
-
-    template <class... _Valtys>
-    iterator _Choose_emplace_hint(integral_constant<int, 0>, const _Nodeptr _Hint, _Valtys&&... _Vals) {
-        _List_node_emplace_op2<_Alnode> _Newnode(_List._Getal(), _STD forward<_Valtys>(_Vals)...);
-        const auto& _Keyval = _Traits::_Kfn(_Newnode._Ptr->_Myval);
-        const auto _Hashval = _Traitsobj(_Keyval);
-        auto _Target        = _Find_hint(_Hint, _Keyval, _Hashval);
-        if (_Target._Duplicate) {
-            return _List._Make_iter(_Target._Duplicate);
-        }
-
-        _Check_max_size();
-        if (_Check_rehash_required_1()) {
-            _Rehash_for_1();
-            _Target = _Find_hint(_Hint, _Traits::_Kfn(_Newnode._Ptr->_Myval), _Hashval);
-        }
-
-        return _List._Make_iter(_Insert_new_node_before(_Hashval, _Target._Insert_before, _Newnode._Release()));
-    }
-
-    template <class... _Valtys>
-    iterator emplace_hint(const_iterator _Hint, _Valtys&&... _Vals) {
-        constexpr int _Choice =
-            _Multi ? 2 : _Traits::template _In_place_key_extractor<_Remove_cvref_t<_Valtys>...>::_Extractable;
-        return _Choose_emplace_hint(integral_constant<int, _Choice>{}, _Hint._Ptr, _STD forward<_Valtys>(_Vals)...);
-    }
-#endif // _HAS_IF_CONSTEXPR
 
 protected:
     template <class _Keyty, class... _Mappedty>
@@ -1232,7 +1083,7 @@ public:
         _Nothrow_hash<_Traits, key_type> //
         && (!_Multi || _Nothrow_compare<_Traits, key_type, key_type>) ) /* strengthened */ {
         const size_t _Hashval = _Traitsobj(_Keyval);
-        if _CONSTEXPR_IF (_Multi) {
+        if constexpr (_Multi) {
             const auto _Where = _Equal_range(_Keyval, _Hashval);
             _Unchecked_erase(_Where._First._Ptr, _Where._Last._Ptr);
             return _Where._Distance;
@@ -1261,7 +1112,7 @@ public:
             return;
         }
 
-        if _CONSTEXPR_IF (_Nothrow_hash<_Traits, key_type>) {
+        if constexpr (_Nothrow_hash<_Traits, key_type>) {
             // In testing, hash<size_t>{}(size_t{}) takes about 14 times as much time as assigning a pointer, or
             // ~7-8 times as much as clearing a bucket. Therefore, if we would need to assign over more than 8 times
             // as many buckets as elements, remove element-by-element.
@@ -1291,7 +1142,7 @@ private:
         const _Nodeptr _Bucket_hi = _Vec._Mypair._Myval2._Myfirst[(_Bucket << 1) + 1]._Ptr;
         for (;;) {
             if (!_Traitsobj(_Traits::_Kfn(_Where->_Myval), _Keyval)) {
-                if _CONSTEXPR_IF (!_Traits::_Standard) {
+                if constexpr (!_Traits::_Standard) {
                     if (_Traitsobj(_Keyval, _Traits::_Kfn(_Where->_Myval))) {
                         return _End;
                     }
@@ -1310,7 +1161,7 @@ private:
 
     template <class _Keyty>
     _Nodeptr _Find(const _Keyty& _Keyval, const size_t _Hashval) const {
-        if _CONSTEXPR_IF (_Traits::_Multi) {
+        if constexpr (_Traits::_Multi) {
             return _Find_first(_Keyval, _Hashval);
         } else {
             // use _Find_last for unique containers to avoid increase in code size of instantiating _Find_first
@@ -1344,7 +1195,7 @@ public:
     template <class _Keyty = void>
     _NODISCARD size_type count(typename _Traits::template _Deduce_key<_Keyty> _Keyval) const {
         const size_t _Hashval = _Traitsobj(_Keyval);
-        if _CONSTEXPR_IF (_Multi) {
+        if constexpr (_Multi) {
             return _Equal_range(_Keyval, _Hashval)._Distance;
         } else {
             return static_cast<bool>(_Find_last(_Keyval, _Hashval)._Duplicate);
@@ -1405,14 +1256,14 @@ private:
             }
         }
 
-        if _CONSTEXPR_IF (!_Traits::_Standard) {
+        if constexpr (!_Traits::_Standard) {
             if (_Traitsobj(_Keyval, _Traits::_Kfn(*_Where))) {
                 return {_End, _End, 0};
             }
         }
 
         const _Unchecked_const_iterator _First = _Where;
-        if _CONSTEXPR_IF (_Multi) {
+        if constexpr (_Multi) {
             size_type _Distance = 0;
             for (;;) {
                 ++_Distance;
@@ -1662,7 +1513,7 @@ protected:
         for (;;) {
             // Search backwards to maintain sorted [_Bucket_lo, _Bucket_hi] when !_Standard
             if (!_Traitsobj(_Keyval, _Traits::_Kfn(_Where->_Myval))) {
-                if _CONSTEXPR_IF (!_Traits::_Standard) {
+                if constexpr (!_Traits::_Standard) {
                     if (_Traitsobj(_Traits::_Kfn(_Where->_Myval), _Keyval)) {
                         return {_Where->_Next, _Nodeptr{}};
                     }
@@ -1685,7 +1536,7 @@ protected:
         // if _Hint points to an element equivalent to _Keyval, returns _Hint; otherwise,
         // returns _Find_last(_Keyval, _Hashval)
         if (_Hint != _List._Mypair._Myval2._Myhead && !_Traitsobj(_Traits::_Kfn(_Hint->_Myval), _Keyval)) {
-            if _CONSTEXPR_IF (!_Traits::_Standard) {
+            if constexpr (!_Traits::_Standard) {
                 if (_Traitsobj(_Keyval, _Traits::_Kfn(_Hint->_Myval))) {
                     return _Find_last(_Keyval, _Hashval);
                 }
@@ -1928,7 +1779,7 @@ protected:
         }
 
         _Unchecked_const_iterator _Left_stop_at;
-        if _CONSTEXPR_IF (_Traits::_Standard) {
+        if constexpr (_Traits::_Standard) {
             _Left_stop_at = _Unchecked_end();
         } else {
             // check the first elements for equivalence when !_Standard
@@ -1992,6 +1843,7 @@ protected:
         }
     }
 
+    template <bool _Multi2 = _Traits::_Multi, enable_if_t<_Multi2, int> = 0>
     _NODISCARD bool _Multi_equal(const _Hash& _Right) const {
         static_assert(_Traits::_Multi, "This function only works with multi containers");
         _STL_INTERNAL_CHECK(this->size() == _Right.size());
@@ -2036,13 +1888,13 @@ public:
             const _Unchecked_const_iterator _Bucket_hi = _Vec._Mypair._Myval2._Myfirst[(_Bucket << 1) + 1];
             if (_Where != _End) {
                 // check that the bucket is sorted for legacy hash_meow:
-                if _CONSTEXPR_IF (!_Traits::_Standard) {
+                if constexpr (!_Traits::_Standard) {
                     if (_Where != _Bucket_hi) {
                         auto _SFirst = _Where;
                         auto _SNext  = _Where;
                         for (;;) {
                             ++_SNext;
-                            if _CONSTEXPR_IF (_Traits::_Multi) {
+                            if constexpr (_Traits::_Multi) {
                                 _STL_INTERNAL_CHECK(!_Traitsobj(_Traits::_Kfn(*_SNext), _Traits::_Kfn(*_SFirst)));
                             } else {
                                 _STL_INTERNAL_CHECK(_Traitsobj(_Traits::_Kfn(*_SFirst), _Traits::_Kfn(*_SNext)));
@@ -2091,34 +1943,12 @@ template <class _Hasher>
 using _Is_hasher = negation<disjunction<is_integral<_Hasher>, _Is_allocator<_Hasher>>>;
 #endif // _HAS_CXX17
 
-#if !_HAS_IF_CONSTEXPR
-template <class _Traits>
-_NODISCARD bool _Hash_equal_elements(const _Hash<_Traits>& _Left, const _Hash<_Traits>& _Right, false_type) {
-    for (const auto& _LVal : _Left) {
-        // look for element with equivalent key
-        const auto& _Keyval = _Traits::_Kfn(_LVal);
-        const auto _Next2   = _Right._Find_last(_Keyval, _Right._Traitsobj(_Keyval))._Duplicate;
-        if (!(static_cast<bool>(_Next2) && _Traits::_Nonkfn(_LVal) == _Traits::_Nonkfn(_Next2->_Myval))) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-template <class _Traits>
-_NODISCARD bool _Hash_equal_elements(const _Hash<_Traits>& _Left, const _Hash<_Traits>& _Right, true_type) {
-    return _Left._Multi_equal(_Right);
-}
-#endif // !_HAS_IF_CONSTEXPR
-
 template <class _Traits>
 _NODISCARD bool _Hash_equal(const _Hash<_Traits>& _Left, const _Hash<_Traits>& _Right) {
     if (_Left.size() != _Right.size()) {
         return false;
     }
 
-#if _HAS_IF_CONSTEXPR
     if constexpr (_Traits::_Multi) {
         return _Left._Multi_equal(_Right);
     } else {
@@ -2133,9 +1963,6 @@ _NODISCARD bool _Hash_equal(const _Hash<_Traits>& _Left, const _Hash<_Traits>& _
     }
 
     return true;
-#else // ^^^ _HAS_IF_CONSTEXPR ^^^ / vvv !_HAS_IF_CONSTEXPR vvv
-    return _Hash_equal_elements(_Left, _Right, bool_constant<_Traits::_Multi>{});
-#endif // _HAS_IF_CONSTEXPR
 }
 _STD_END
 

@@ -123,6 +123,9 @@ _INLINE_VAR constexpr piecewise_construct_t piecewise_construct{};
 template <class...>
 class tuple;
 
+template <size_t _Index, class... _Types>
+_NODISCARD constexpr auto&& _Tuple_get(tuple<_Types...>&& _Tuple) noexcept;
+
 template <class _Ty1, class _Ty2>
 struct pair { // store a pair of values
     using first_type  = _Ty1;
@@ -132,7 +135,7 @@ struct pair { // store a pair of values
     template <class _Uty1 = _Ty1, class _Uty2 = _Ty2,
         enable_if_t<conjunction_v<is_default_constructible<_Uty1>, is_default_constructible<_Uty2>>, int> = 0>
     constexpr explicit(
-        !_Is_implicitly_default_constructible<_Uty1>::value || !_Is_implicitly_default_constructible<_Uty2>::value)
+        !conjunction_v<_Is_implicitly_default_constructible<_Uty1>, _Is_implicitly_default_constructible<_Uty2>>)
         pair() noexcept(
             is_nothrow_default_constructible_v<_Uty1>&& is_nothrow_default_constructible_v<_Uty2>) // strengthened
         : first(), second() {}
@@ -158,7 +161,7 @@ struct pair { // store a pair of values
 #if _HAS_CONDITIONAL_EXPLICIT
     template <class _Uty1 = _Ty1, class _Uty2 = _Ty2,
         enable_if_t<conjunction_v<is_copy_constructible<_Uty1>, is_copy_constructible<_Uty2>>, int> = 0>
-    constexpr explicit(!is_convertible_v<const _Uty1&, _Uty1> || !is_convertible_v<const _Uty2&, _Uty2>)
+    constexpr explicit(!conjunction_v<is_convertible<const _Uty1&, _Uty1>, is_convertible<const _Uty2&, _Uty2>>)
         pair(const _Ty1& _Val1, const _Ty2& _Val2) noexcept(
             is_nothrow_copy_constructible_v<_Uty1>&& is_nothrow_copy_constructible_v<_Uty2>) // strengthened
         : first(_Val1), second(_Val2) {}
@@ -184,7 +187,7 @@ struct pair { // store a pair of values
 #if _HAS_CONDITIONAL_EXPLICIT
     template <class _Other1, class _Other2,
         enable_if_t<conjunction_v<is_constructible<_Ty1, _Other1>, is_constructible<_Ty2, _Other2>>, int> = 0>
-    constexpr explicit(!is_convertible_v<_Other1, _Ty1> || !is_convertible_v<_Other2, _Ty2>)
+    constexpr explicit(!conjunction_v<is_convertible<_Other1, _Ty1>, is_convertible<_Other2, _Ty2>>)
         pair(_Other1&& _Val1, _Other2&& _Val2) noexcept(
             is_nothrow_constructible_v<_Ty1, _Other1>&& is_nothrow_constructible_v<_Ty2, _Other2>) // strengthened
         : first(_STD forward<_Other1>(_Val1)), second(_STD forward<_Other2>(_Val2)) {}
@@ -213,7 +216,7 @@ struct pair { // store a pair of values
     template <class _Other1, class _Other2,
         enable_if_t<conjunction_v<is_constructible<_Ty1, const _Other1&>, is_constructible<_Ty2, const _Other2&>>,
             int> = 0>
-    constexpr explicit(!is_convertible_v<const _Other1&, _Ty1> || !is_convertible_v<const _Other2&, _Ty2>)
+    constexpr explicit(!conjunction_v<is_convertible<const _Other1&, _Ty1>, is_convertible<const _Other2&, _Ty2>>)
         pair(const pair<_Other1, _Other2>& _Right) noexcept(is_nothrow_constructible_v<_Ty1, const _Other1&>&&
                 is_nothrow_constructible_v<_Ty2, const _Other2&>) // strengthened
         : first(_Right.first), second(_Right.second) {}
@@ -240,7 +243,7 @@ struct pair { // store a pair of values
 #if _HAS_CONDITIONAL_EXPLICIT
     template <class _Other1, class _Other2,
         enable_if_t<conjunction_v<is_constructible<_Ty1, _Other1>, is_constructible<_Ty2, _Other2>>, int> = 0>
-    constexpr explicit(!is_convertible_v<_Other1, _Ty1> || !is_convertible_v<_Other2, _Ty2>)
+    constexpr explicit(!conjunction_v<is_convertible<_Other1, _Ty1>, is_convertible<_Other2, _Ty2>>)
         pair(pair<_Other1, _Other2>&& _Right) noexcept(
             is_nothrow_constructible_v<_Ty1, _Other1>&& is_nothrow_constructible_v<_Ty2, _Other2>) // strengthened
         : first(_STD forward<_Other1>(_Right.first)), second(_STD forward<_Other2>(_Right.second)) {}
@@ -263,10 +266,12 @@ struct pair { // store a pair of values
 #endif // ^^^ !_HAS_CONDITIONAL_EXPLICIT ^^^
 
     template <class _Tuple1, class _Tuple2, size_t... _Indexes1, size_t... _Indexes2>
-    constexpr pair(_Tuple1& _Val1, _Tuple2& _Val2, index_sequence<_Indexes1...>, index_sequence<_Indexes2...>);
+    constexpr pair(_Tuple1& _Val1, _Tuple2& _Val2, index_sequence<_Indexes1...>, index_sequence<_Indexes2...>)
+        : first(_Tuple_get<_Indexes1>(_STD move(_Val1))...), second(_Tuple_get<_Indexes2>(_STD move(_Val2))...) {}
 
     template <class... _Types1, class... _Types2>
-    _CONSTEXPR20 pair(piecewise_construct_t, tuple<_Types1...> _Val1, tuple<_Types2...> _Val2);
+    _CONSTEXPR20 pair(piecewise_construct_t, tuple<_Types1...> _Val1, tuple<_Types2...> _Val2)
+        : pair(_Val1, _Val2, index_sequence_for<_Types1...>{}, index_sequence_for<_Types2...>{}) {}
 
     pair& operator=(const volatile pair&) = delete;
 
@@ -342,10 +347,22 @@ _NODISCARD constexpr bool operator==(const pair<_Ty1, _Ty2>& _Left, const pair<_
     return _Left.first == _Right.first && _Left.second == _Right.second;
 }
 
+#ifdef __cpp_lib_concepts
+template <class _Ty1, class _Ty2>
+_NODISCARD constexpr common_comparison_category_t<_Synth_three_way_result<_Ty1>, _Synth_three_way_result<_Ty2>>
+    operator<=>(const pair<_Ty1, _Ty2>& _Left, const pair<_Ty1, _Ty2>& _Right) {
+    if (auto _Result = _Synth_three_way{}(_Left.first, _Right.first); _Result != 0) {
+        return _Result;
+    }
+    return _Synth_three_way{}(_Left.second, _Right.second);
+}
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
+#if !_HAS_CXX20
 template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool operator!=(const pair<_Ty1, _Ty2>& _Left, const pair<_Ty1, _Ty2>& _Right) {
     return !(_Left == _Right);
 }
+#endif // !_HAS_CXX20
 
 template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool operator<(const pair<_Ty1, _Ty2>& _Left, const pair<_Ty1, _Ty2>& _Right) {
@@ -366,6 +383,7 @@ template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool operator>=(const pair<_Ty1, _Ty2>& _Left, const pair<_Ty1, _Ty2>& _Right) {
     return !(_Left < _Right);
 }
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
 // ALIAS TEMPLATE _Unrefwrap_t
 template <class _Ty>
@@ -697,7 +715,7 @@ _NODISCARD constexpr bool cmp_greater_equal(const _Ty1 _Left, const _Ty2 _Right)
 
 // FUNCTION TEMPLATE in_range
 template <class _Ty>
-_NODISCARD constexpr _Ty _Min_limit() noexcept { // same as (numeric_limits<_Ty>::min)(), less throughput cost
+_NODISCARD _CONSTEVAL _Ty _Min_limit() noexcept { // same as (numeric_limits<_Ty>::min)(), less throughput cost
     static_assert(_Is_standard_integer<_Ty>); // doesn't attempt to handle all types
     if constexpr (is_signed_v<_Ty>) {
         constexpr auto _Unsigned_max = static_cast<make_unsigned_t<_Ty>>(-1);
@@ -708,7 +726,7 @@ _NODISCARD constexpr _Ty _Min_limit() noexcept { // same as (numeric_limits<_Ty>
 }
 
 template <class _Ty>
-_NODISCARD constexpr _Ty _Max_limit() noexcept { // same as (numeric_limits<_Ty>::max)(), less throughput cost
+_NODISCARD _CONSTEVAL _Ty _Max_limit() noexcept { // same as (numeric_limits<_Ty>::max)(), less throughput cost
     static_assert(_Is_standard_integer<_Ty>); // doesn't attempt to handle all types
     if constexpr (is_signed_v<_Ty>) {
         constexpr auto _Unsigned_max = static_cast<make_unsigned_t<_Ty>>(-1);

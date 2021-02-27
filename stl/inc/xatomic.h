@@ -23,14 +23,21 @@ _STL_DISABLE_CLANG_WARNINGS
 #define _CONCAT(x, y)  _CONCATX(x, y)
 
 // Interlocked intrinsic mapping for _nf/_acq/_rel
-#if defined(_M_CEE_PURE) || defined(_M_IX86) || defined(_M_X64)
+#if defined(_M_CEE_PURE) || defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
 #define _INTRIN_RELAXED(x) x
 #define _INTRIN_ACQUIRE(x) x
 #define _INTRIN_RELEASE(x) x
 #define _INTRIN_ACQ_REL(x) x
+#ifdef _M_CEE_PURE
 #define _YIELD_PROCESSOR()
+#else // ^^^ _M_CEE_PURE / !_M_CEE_PURE vvv
+#if 1 // TRANSITION, VS 2019 16.10
+extern "C" void _mm_pause(void);
+#endif // TRANSITION, VS 2019 16.10
+#define _YIELD_PROCESSOR() _mm_pause()
+#endif // ^^^ !_M_CEE_PURE ^^^
 
-#elif defined(_M_ARM) || defined(_M_ARM64)
+#elif defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
 #define _INTRIN_RELAXED(x) _CONCAT(x, _nf)
 #define _INTRIN_ACQUIRE(x) _CONCAT(x, _acq)
 #define _INTRIN_RELEASE(x) _CONCAT(x, _rel)

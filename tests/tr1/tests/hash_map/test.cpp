@@ -295,7 +295,7 @@ void test_hash_map() { // test hash_map
     }
 
     {
-        STD initializer_list<Myval> init(xarr, xarr + 3);
+        STD initializer_list<Myval> init{xarr[0], xarr[1], xarr[2]};
         Mycont v11(init);
         CHECK_INT(v11.size(), 3);
         CHECK_INT(v11.find('a')->second, 1);
@@ -583,7 +583,7 @@ void test_hash_multimap() { // test hash_multimap
     }
 
     {
-        STD initializer_list<Myval> init(xarr, xarr + 3);
+        STD initializer_list<Myval> init{xarr[0], xarr[1], xarr[2]};
         Mycont v11(init);
         CHECK_INT(v11.size(), 3);
         CHECK_INT(v11.begin()->first, 'a');

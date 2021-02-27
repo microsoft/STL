@@ -16,7 +16,7 @@
 
 using namespace std;
 
-// Dev10#766948 "STL: insert() ambiguity in all associative containers except map and set"
+// Dev10-766948 "STL: insert() ambiguity in all associative containers except map and set"
 // LWG-2005 "unordered_map::insert(T&&) protection should apply to map too"
 // LWG-2354 "Unnecessary copying when inserting into maps with braced-init syntax"
 

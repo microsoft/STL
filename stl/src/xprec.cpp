@@ -3,6 +3,5 @@
 
 // _Xp* functions
 
-#include "xmath.hpp"
 #include "xxdftype.hpp"
 #include "xxxprec.hpp"

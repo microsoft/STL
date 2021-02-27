@@ -12,13 +12,11 @@
 #if !_HAS_CXX20
 #pragma message("The contents of <span> are available only with C++20 or later.")
 #else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
+#include <compare>
 #include <cstddef>
 #include <type_traits>
 #include <xutility>
 
-#if defined(__cpp_impl_three_way_comparison) && __cpp_impl_three_way_comparison >= 201902L
-#include <compare>
-#endif // defined(__cpp_impl_three_way_comparison) && __cpp_impl_three_way_comparison >= 201902L
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -35,7 +33,7 @@ inline constexpr size_t dynamic_extent = static_cast<size_t>(-1);
 template <class _Ty>
 struct _Span_iterator {
 #ifdef __cpp_lib_concepts
-    using iterator_concept  = contiguous_iterator_tag;
+    using iterator_concept = contiguous_iterator_tag;
 #endif // __cpp_lib_concepts
     using iterator_category = random_access_iterator_tag;
     using value_type        = remove_cv_t<_Ty>;
@@ -153,7 +151,6 @@ struct _Span_iterator {
         return _Myptr == _Right._Myptr;
     }
 
-#if defined(__cpp_impl_three_way_comparison) && __cpp_impl_three_way_comparison >= 201902L
     _NODISCARD constexpr strong_ordering operator<=>(const _Span_iterator& _Right) const noexcept {
 #if _ITERATOR_DEBUG_LEVEL >= 1
         _STL_VERIFY(
@@ -161,31 +158,6 @@ struct _Span_iterator {
 #endif // _ITERATOR_DEBUG_LEVEL >= 1
         return _Myptr <=> _Right._Myptr;
     }
-#else // ^^^ use spaceship / no spaceship vvv
-    _NODISCARD constexpr bool operator!=(const _Span_iterator& _Right) const noexcept {
-        return !(*this == _Right);
-    }
-
-    _NODISCARD constexpr bool operator<(const _Span_iterator& _Right) const noexcept {
-#if _ITERATOR_DEBUG_LEVEL >= 1
-        _STL_VERIFY(
-            _Mybegin == _Right._Mybegin && _Myend == _Right._Myend, "cannot compare incompatible span iterators");
-#endif // _ITERATOR_DEBUG_LEVEL >= 1
-        return _Myptr < _Right._Myptr;
-    }
-
-    _NODISCARD constexpr bool operator>(const _Span_iterator& _Right) const noexcept {
-        return _Right < *this;
-    }
-
-    _NODISCARD constexpr bool operator<=(const _Span_iterator& _Right) const noexcept {
-        return !(_Right < *this);
-    }
-
-    _NODISCARD constexpr bool operator>=(const _Span_iterator& _Right) const noexcept {
-        return !(*this < _Right);
-    }
-#endif // defined(__cpp_impl_three_way_comparison) && __cpp_impl_three_way_comparison >= 201902L
 
 #if _ITERATOR_DEBUG_LEVEL >= 1
     friend constexpr void _Verify_range(const _Span_iterator& _First, const _Span_iterator& _Last) noexcept {
@@ -207,7 +179,7 @@ struct _Span_iterator {
         _Myptr = _It;
     }
 
-    pointer _Myptr   = nullptr;
+    pointer _Myptr = nullptr;
 #if _ITERATOR_DEBUG_LEVEL >= 1
     pointer _Mybegin = nullptr;
     pointer _Myend   = nullptr;
@@ -688,7 +660,7 @@ template <contiguous_iterator _It, class _End>
 span(_It, _End) -> span<remove_reference_t<iter_reference_t<_It>>>;
 
 template <_RANGES contiguous_range _Rng>
-span(_Rng &&) -> span<remove_reference_t<_RANGES range_reference_t<_Rng>>>;
+span(_Rng&&) -> span<remove_reference_t<_RANGES range_reference_t<_Rng>>>;
 
 #else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
 

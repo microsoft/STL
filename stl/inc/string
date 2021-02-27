@@ -448,7 +448,7 @@ inline long double stold(const wstring& _Str, size_t* _Idx = nullptr) { // conve
     return _Ans;
 }
 
-// HELPERS FOR to_string AND to_wstring
+// HELPERS FOR to_string AND to_wstring AND operator<<(duration)
 template <class _Elem, class _UTy>
 _Elem* _UIntegral_to_buff(_Elem* _RNext, _UTy _UVal) { // format _UVal into buffer *ending at* _RNext
     static_assert(is_unsigned_v<_UTy>, "_UTy must be unsigned");
@@ -458,7 +458,7 @@ _Elem* _UIntegral_to_buff(_Elem* _RNext, _UTy _UVal) { // format _UVal into buff
 #else // ^^^ _WIN64 ^^^ // vvv !_WIN64 vvv
 
     constexpr bool _Big_uty = sizeof(_UTy) > 4;
-    if _CONSTEXPR_IF (_Big_uty) { // For 64-bit numbers, work in chunks to avoid 64-bit divisions.
+    if constexpr (_Big_uty) { // For 64-bit numbers, work in chunks to avoid 64-bit divisions.
         while (_UVal > 0xFFFFFFFFU) {
             auto _UVal_chunk = static_cast<unsigned long>(_UVal % 1000000000);
             _UVal /= 1000000000;

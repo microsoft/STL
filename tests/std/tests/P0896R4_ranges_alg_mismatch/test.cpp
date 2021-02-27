@@ -71,12 +71,11 @@ constexpr void smoke_test() {
 }
 
 int main() {
-#ifndef _PREFAST_ // TRANSITION, GH-1030
     STATIC_ASSERT((smoke_test(), true));
-#endif // TRANSITION, GH-1030
     smoke_test();
 }
 
+#ifndef _PREFAST_ // TRANSITION, GH-1030
 struct instantiator {
     template <class In1, class In2>
     static void call(In1&& in1 = {}, In2&& in2 = {}) {
@@ -105,3 +104,4 @@ struct instantiator {
 };
 
 template void test_in_in<instantiator, const int, const int>();
+#endif // TRANSITION, GH-1030

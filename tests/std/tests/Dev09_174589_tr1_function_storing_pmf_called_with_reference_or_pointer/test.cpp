@@ -28,7 +28,7 @@ void test_orig() {
 }
 
 
-// DevDiv#294051 "<functional>: std::function has lost the ability to invoke PMFs/PMDs on various things"
+// DevDiv-294051 "<functional>: std::function has lost the ability to invoke PMFs/PMDs on various things"
 
 // FDIS 20.8.11.2 [func.wrap.func] specifies:
 //     template<class R, class... ArgTypes> class function<R(ArgTypes...)>

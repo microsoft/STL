@@ -206,6 +206,13 @@ private:
         return *this;
     }
 
+    template <class = void>
+    void _Increment_gcount() {
+        if (_Chcount != (numeric_limits<streamsize>::max)()) {
+            ++_Chcount;
+        }
+    }
+
 public:
     basic_istream& __CLR_OR_THIS_CALL operator>>(bool& _Val) { // extract a boolean
         return _Common_extract_with_num_get(_Val);
@@ -312,7 +319,7 @@ public:
                 break;
                 _CATCH_END
 
-                ++_Chcount;
+                _Increment_gcount();
             }
             _CATCH_IO_END
         }
@@ -341,7 +348,7 @@ public:
                 _State |= ios_base::eofbit | ios_base::failbit; // end of file
             } else { // got a character, count it
                 _Myios::rdbuf()->sbumpc();
-                ++_Chcount;
+                _Chcount = 1;
             }
             _CATCH_IO_END
         }
@@ -372,7 +379,7 @@ public:
                     break; // got a delimiter, quit
                 } else { // got a character, add it to string
                     *_Str++ = _Traits::to_char_type(_Meta);
-                    ++_Chcount;
+                    _Increment_gcount();
                 }
             }
             _CATCH_IO_END
@@ -419,7 +426,7 @@ public:
                     _CATCH_ALL
                     break;
                     _CATCH_END
-                    ++_Chcount;
+                    _Increment_gcount();
                 }
             }
             _CATCH_IO_END
@@ -454,7 +461,7 @@ public:
                     _State |= ios_base::eofbit;
                     break;
                 } else if (_Meta == _Metadelim) { // got a delimiter, discard it and quit
-                    ++_Chcount;
+                    _Increment_gcount();
                     _Myios::rdbuf()->sbumpc();
                     break;
                 } else if (--_Count <= 0) { // buffer full, quit
@@ -462,7 +469,7 @@ public:
                     break;
                 } else { // got a character, add it to string
                     *_Str++ = _Traits::to_char_type(_Meta);
-                    ++_Chcount;
+                    _Increment_gcount();
                 }
             }
             _CATCH_IO_END
@@ -490,7 +497,7 @@ public:
                     _State |= ios_base::eofbit;
                     break;
                 } else { // got a character, count it
-                    ++_Chcount;
+                    _Increment_gcount();
                     if (_Meta == _Metadelim) {
                         break; // got a delimiter, quit
                     }
@@ -511,7 +518,8 @@ public:
         if (_Ok && 0 < _Count) { // state okay, use facet to extract
             _TRY_IO_BEGIN
             const streamsize _Num = _Myios::rdbuf()->sgetn(_Str, _Count);
-            _Chcount += _Num;
+            _Chcount              = _Num;
+
             if (_Num != _Count) {
                 _State |= ios_base::eofbit | ios_base::failbit; // short read
             }
@@ -876,9 +884,7 @@ template <class _Istr, class _Ty>
 struct _Can_stream_in<_Istr, _Ty, void_t<decltype(_STD declval<_Istr&>() >> _STD declval<_Ty>())>> : true_type {};
 
 template <class _Istr, class _Ty,
-    enable_if_t<conjunction_v< // avoid infinite recursion
-                    negation<is_lvalue_reference<_Istr>>, is_base_of<ios_base, _Istr>, _Can_stream_in<_Istr, _Ty>>,
-        int> = 0>
+    enable_if_t<conjunction_v<is_convertible<_Istr*, ios_base*>, _Can_stream_in<_Istr, _Ty>>, int> = 0>
 _Istr&& operator>>(_Istr&& _Is, _Ty&& _Val) { // extract from rvalue stream
     _Is >> _STD forward<_Ty>(_Val);
     return _STD move(_Is);

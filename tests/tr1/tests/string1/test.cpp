@@ -557,8 +557,7 @@ void test_main() { // test basic workings of string definitions
     }
 
     {
-        const char* data = "abc";
-        STD initializer_list<char> init(data, data + CSTD strlen(data));
+        STD initializer_list<char> init{'a', 'b', 'c'};
         STD string s11(init);
         CHECK_SIZE_T(s11.size(), 3);
         CHECK_INT(s11[2], 'c');
@@ -583,7 +582,7 @@ void test_main() { // test basic workings of string definitions
         CHECK_SIZE_T(s11.size(), 3);
         CHECK_INT(s11[2], 'c');
 
-        CHECK_INT(*s11.insert(s11.begin() + 1, init), data[0]);
+        CHECK_INT(*s11.insert(s11.begin() + 1, init), *init.begin());
         CHECK_SIZE_T(s11.size(), 6);
         CHECK_INT(s11[2], 'b');
 

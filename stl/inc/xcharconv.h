@@ -9,7 +9,7 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
-#include <stdint.h>
+#include <cstdint>
 #include <type_traits>
 #include <xerrc.h>
 
@@ -39,6 +39,9 @@ _BITMASK_OPS(chars_format)
 struct to_chars_result {
     char* ptr;
     errc ec;
+#if _HAS_CXX20
+    _NODISCARD friend bool operator==(const to_chars_result&, const to_chars_result&) = default;
+#endif // _HAS_CXX20
 };
 
 _STD_END

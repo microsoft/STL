@@ -1,4 +1,4 @@
-// ctime standard header
+// ctime standard header (core)
 
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
@@ -6,7 +6,7 @@
 #pragma once
 #ifndef _CTIME_
 #define _CTIME_
-#include <yvals.h>
+#include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
 #include <time.h>

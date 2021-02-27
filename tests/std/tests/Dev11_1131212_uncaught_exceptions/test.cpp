@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// DevDiv2 #1131212:  std::uncaught_exceptions is not implemented
+// DevDiv-1131212:  std::uncaught_exceptions is not implemented
 //
 // This test validates the implementation of std::uncaught_exceptions by recursively
 // throwing exceptions from a destructor.
