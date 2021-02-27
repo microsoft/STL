@@ -334,7 +334,7 @@ namespace ranges {
 
     private:
         template <class _It, class _Se, class _Ty>
-        _NODISCARD static _It _Uninitialized_fill_unchecked(_It _OFirst, const _Se _OLast, const _Ty& _Val) {
+        _NODISCARD static _It _Uninitialized_fill_unchecked(_It _OFirst, _Se _OLast, const _Ty& _Val) {
             _STL_INTERNAL_STATIC_ASSERT(_No_throw_forward_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(_No_throw_sentinel_for<_Se, _It>);
             _STL_INTERNAL_STATIC_ASSERT(constructible_from<iter_value_t<_It>, const _Ty&>);
@@ -792,7 +792,7 @@ namespace ranges {
 
     private:
         template <class _It, class _Se>
-        _NODISCARD static _It _Uninitialized_value_construct_unchecked(_It _OFirst, const _Se _OLast) {
+        _NODISCARD static _It _Uninitialized_value_construct_unchecked(_It _OFirst, _Se _OLast) {
             _STL_INTERNAL_STATIC_ASSERT(_No_throw_forward_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(_No_throw_sentinel_for<_Se, _It>);
             _STL_INTERNAL_STATIC_ASSERT(default_initializable<iter_value_t<_It>>);
