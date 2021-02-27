@@ -358,6 +358,14 @@ std/utilities/meta/meta.unary/meta.unary.prop/is_constructible.pass.cpp:0 FAIL
 std/containers/views/span.cons/ptr_len.pass.cpp:0 FAIL
 std/containers/views/span.cons/ptr_ptr.pass.cpp:0 FAIL
 
+# DevCom-1336816 "cl errors on constexpr array of std::string"
+std/numerics/numeric.ops/adjacent.difference/adjacent_difference_op.pass.cpp:0 FAIL
+std/numerics/numeric.ops/partial.sum/partial_sum_op.pass.cpp:0 FAIL
+
+# DevCom-1336819 "cl constexpr temporary passing issue"
+std/numerics/numeric.ops/inner.product/inner_product_comp.pass.cpp:0 FAIL
+std/numerics/numeric.ops/accumulate/accumulate_op.pass.cpp:0 FAIL
+
 # VSO-1168723 "Implicit copy assignment incorrectly not constexpr when subobject has explicit constexpr copy constructor"
 std/utilities/utility/pairs/pairs.pair/assign_pair.pass.cpp:0 FAIL
 std/utilities/utility/pairs/pairs.pair/assign_rv_pair.pass.cpp:0 FAIL

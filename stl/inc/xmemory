@@ -1178,8 +1178,8 @@ public:
 
     static constexpr bool _Unwrap_when_unverified = _ITERATOR_DEBUG_LEVEL == 0;
 
-    _Container_proxy* _Myproxy    = nullptr;
-    _Iterator_base12* _Mynextiter = nullptr;
+    mutable _Container_proxy* _Myproxy    = nullptr;
+    mutable _Iterator_base12* _Mynextiter = nullptr;
 
 #if _ITERATOR_DEBUG_LEVEL == 2
 private:
@@ -1338,7 +1338,8 @@ struct _Container_proxy_ptr12 : _Basic_container_proxy_ptr12 {
 };
 
 #if _ITERATOR_DEBUG_LEVEL == 0
-#define _GET_PROXY_ALLOCATOR(_Alty, _Al) _Fake_allocator()
+_INLINE_VAR constexpr _Fake_allocator _Fake_alloc{};
+#define _GET_PROXY_ALLOCATOR(_Alty, _Al) _Fake_alloc // TRANSITION, VSO-1284799, should be _Fake_allocator{}
 template <class _Alloc>
 using _Container_proxy_ptr = _Fake_proxy_ptr_impl;
 #else // _ITERATOR_DEBUG_LEVEL == 0

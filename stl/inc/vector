@@ -126,7 +126,8 @@ public:
 
     _NODISCARD _CONSTEXPR20_CONTAINER _Vector_const_iterator operator+(const difference_type _Off) const noexcept {
         _Vector_const_iterator _Tmp = *this;
-        return _Tmp += _Off;
+        _Tmp += _Off; // TRANSITION, LLVM-49342
+        return _Tmp;
     }
 
     _CONSTEXPR20_CONTAINER _Vector_const_iterator& operator-=(const difference_type _Off) noexcept {
@@ -135,7 +136,8 @@ public:
 
     _NODISCARD _CONSTEXPR20_CONTAINER _Vector_const_iterator operator-(const difference_type _Off) const noexcept {
         _Vector_const_iterator _Tmp = *this;
-        return _Tmp -= _Off;
+        _Tmp -= _Off; // TRANSITION, LLVM-49342
+        return _Tmp;
     }
 
     _NODISCARD _CONSTEXPR20_CONTAINER difference_type operator-(const _Vector_const_iterator& _Right) const noexcept {
@@ -307,7 +309,8 @@ public:
 
     _NODISCARD _CONSTEXPR20_CONTAINER _Vector_iterator operator+(const difference_type _Off) const noexcept {
         _Vector_iterator _Tmp = *this;
-        return _Tmp += _Off;
+        _Tmp += _Off; // TRANSITION, LLVM-49342
+        return _Tmp;
     }
 
     _CONSTEXPR20_CONTAINER _Vector_iterator& operator-=(const difference_type _Off) noexcept {
@@ -319,7 +322,8 @@ public:
 
     _NODISCARD _CONSTEXPR20_CONTAINER _Vector_iterator operator-(const difference_type _Off) const noexcept {
         _Vector_iterator _Tmp = *this;
-        return _Tmp -= _Off;
+        _Tmp -= _Off; // TRANSITION, LLVM-49342
+        return _Tmp;
     }
 
     _NODISCARD _CONSTEXPR20_CONTAINER reference operator[](const difference_type _Off) const noexcept {
@@ -2185,7 +2189,8 @@ public:
 
     _NODISCARD _CONSTEXPR20_CONTAINER _Vb_const_iterator operator+(const difference_type _Off) const noexcept {
         _Vb_const_iterator _Tmp = *this;
-        return _Tmp += _Off;
+        _Tmp += _Off; // TRANSITION, LLVM-49342
+        return _Tmp;
     }
 
     _CONSTEXPR20_CONTAINER _Vb_const_iterator& operator-=(const difference_type _Off) noexcept {
@@ -2194,7 +2199,8 @@ public:
 
     _NODISCARD _CONSTEXPR20_CONTAINER _Vb_const_iterator operator-(const difference_type _Off) const noexcept {
         _Vb_const_iterator _Tmp = *this;
-        return _Tmp -= _Off;
+        _Tmp -= _Off; // TRANSITION, LLVM-49342
+        return _Tmp;
     }
 
     _NODISCARD _CONSTEXPR20_CONTAINER difference_type operator-(const _Vb_const_iterator& _Right) const noexcept {
@@ -2363,7 +2369,8 @@ public:
 
     _NODISCARD _CONSTEXPR20_CONTAINER _Vb_iterator operator+(const difference_type _Off) const noexcept {
         _Vb_iterator _Tmp = *this;
-        return _Tmp += _Off;
+        _Tmp += _Off; // TRANSITION, LLVM-49342
+        return _Tmp;
     }
 
     _CONSTEXPR20_CONTAINER _Vb_iterator& operator-=(const difference_type _Off) noexcept {
@@ -2375,7 +2382,8 @@ public:
 
     _NODISCARD _CONSTEXPR20_CONTAINER _Vb_iterator operator-(const difference_type _Off) const noexcept {
         _Vb_iterator _Tmp = *this;
-        return _Tmp -= _Off;
+        _Tmp -= _Off; // TRANSITION, LLVM-49342
+        return _Tmp;
     }
 
     _NODISCARD _CONSTEXPR20_CONTAINER reference operator[](const difference_type _Off) const noexcept {
