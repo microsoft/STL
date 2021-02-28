@@ -63,7 +63,7 @@ import <scoped_allocator>;
 import <semaphore>;
 import <set>;
 import <shared_mutex>;
-// import <source_location>;
+import <source_location>;
 import <span>;
 import <sstream>;
 import <stack>;
@@ -689,7 +689,7 @@ int main() {
 
     {
         puts("Testing <source_location>.");
-        puts("(TRANSITION, not yet implemented.)");
+        // FIXME
     }
 
     {
