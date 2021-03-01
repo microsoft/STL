@@ -9,6 +9,7 @@
 #include <type_traits>
 using namespace std;
 
+static_assert(is_nothrow_default_constructible_v<source_location>);
 static_assert(is_nothrow_move_constructible_v<source_location>);
 static_assert(is_nothrow_move_assignable_v<source_location>);
 static_assert(is_nothrow_swappable_v<source_location>);
