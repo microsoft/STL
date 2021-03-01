@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#ifdef __cpp_consteval
+#if defined(__cpp_consteval) && !defined(__EDG__) // TRANSITION, VSO-1285779
 #include "header.h"
 #include <type_traits>
 
@@ -142,6 +142,6 @@ int main() {
     static_assert(test());
     return 0;
 }
-#else // ^^^ defined(__cpp_consteval) / !defined(__cpp_consteval) vvv
+#else // ^^^ defined(__cpp_consteval) && !defined(__EDG__) / !defined(__cpp_consteval) || defined(__EDG__) vvv
 int main() {}
-#endif
+#endif // ^^^ !defined(__cpp_consteval) || defined(__EDG__) ^^^
