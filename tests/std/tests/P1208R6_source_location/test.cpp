@@ -9,9 +9,9 @@
 #include <type_traits>
 using namespace std;
 
-static_assert(is_nothrow_move_constructible_v<source_location>, "source_location is not nothrow move constructible.");
-static_assert(is_nothrow_move_assignable_v<source_location>, "source_location is not nothrow move assignable.");
-static_assert(is_nothrow_swappable_v<source_location>, "source_location is not nothrow swappable.");
+static_assert(is_nothrow_move_constructible_v<source_location>);
+static_assert(is_nothrow_move_assignable_v<source_location>);
+static_assert(is_nothrow_swappable_v<source_location>);
 
 constexpr auto test_cpp = "test.cpp"sv;
 
