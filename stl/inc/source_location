@@ -23,17 +23,19 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 struct source_location {
-    _NODISCARD static consteval source_location current(uint_least32_t _InLine = __builtin_LINE(),
-        uint_least32_t _InColumn = __builtin_COLUMN(), const char* _InFile = __builtin_FILE(),
-        const char* _InFunction = __builtin_FUNCTION()) noexcept {
+    _NODISCARD static consteval source_location current(const uint_least32_t _Line_ = __builtin_LINE(),
+        const uint_least32_t _Column_ = __builtin_COLUMN(), const char* const _File_ = __builtin_FILE(),
+        const char* const _Function_ = __builtin_FUNCTION()) noexcept {
         source_location _Result;
-        _Result._Line     = _InLine;
-        _Result._Column   = _InColumn;
-        _Result._File     = _InFile;
-        _Result._Function = _InFunction;
+        _Result._Line     = _Line_;
+        _Result._Column   = _Column_;
+        _Result._File     = _File_;
+        _Result._Function = _Function_;
         return _Result;
     }
-    _NODISCARD constexpr source_location() noexcept = default;
+
+    _NODISCARD_CTOR constexpr source_location() noexcept = default;
+
     _NODISCARD constexpr uint_least32_t line() const noexcept {
         return _Line;
     }
