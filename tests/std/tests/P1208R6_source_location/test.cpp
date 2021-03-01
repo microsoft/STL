@@ -61,7 +61,7 @@ constexpr void sloc_constructor_test() {
     assert(x.loc.line() == __LINE__ - 1);
     assert(x.loc.column() == 13);
     if (is_constant_evaluated()) {
-        assert(x.loc.function_name() == "main"sv); // FIXME BUG? ORIGINALLY WAS: "sloc_constructor_test"sv
+        assert(x.loc.function_name() == "main"sv); // TRANSITION, VSO-1285783
     } else {
         assert(x.loc.function_name() == "sloc_constructor_test"sv);
     }
@@ -81,7 +81,7 @@ constexpr void sub_member_test() {
     assert(s.x.loc.line() == __LINE__ - 1);
     assert(s.x.loc.column() == 14);
     if (is_constant_evaluated()) {
-        assert(s.x.loc.function_name() == "main"sv); // FIXME BUG? ORIGINALLY WAS: "sub_member_test"sv
+        assert(s.x.loc.function_name() == "main"sv); // TRANSITION, VSO-1285783
     } else {
         assert(s.x.loc.function_name() == "sub_member_test"sv);
     }
