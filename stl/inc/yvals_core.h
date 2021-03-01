@@ -1259,7 +1259,7 @@
 
 #ifdef __cpp_consteval
 #define __cpp_lib_source_location 201907L
-#endif
+#endif // __cpp_consteval
 
 #define __cpp_lib_span             202002L
 #define __cpp_lib_ssize            201902L
