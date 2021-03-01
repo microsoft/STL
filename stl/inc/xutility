@@ -3767,7 +3767,7 @@ public:
 #endif // __cpp_lib_concepts
     }
 
-    _NODISCARD _CXX20_DEPRECATE_MOVE_ITERATOR_ARROW _CONSTEXPR17 pointer operator->() const {
+    _CXX20_DEPRECATE_MOVE_ITERATOR_ARROW _NODISCARD _CONSTEXPR17 pointer operator->() const {
         return _Current;
     }
 
