@@ -18,6 +18,7 @@
 #if _HAS_CXX20
 #include <algorithm>
 #include <atomic>
+#include <cmath>
 #include <compare>
 #include <forward_list>
 #include <memory>
@@ -2457,13 +2458,22 @@ namespace chrono {
 
         template <class _Duration>
         _NODISCARD static sys_time<common_type_t<_Duration, seconds>> to_sys(const utc_time<_Duration>& _Utc_time) {
+            using _CT = common_type_t<_Duration, seconds>;
             const auto _Lsi{get_leap_second_info(_Utc_time)};
-            sys_time<common_type_t<_Duration, seconds>> _Sys_time{_Utc_time.time_since_epoch() - _Lsi.elapsed};
+            _CT _Ticks;
             if (_Lsi.is_leap_second) {
-                constexpr auto _Delta{seconds{1} - common_type_t<_Duration, seconds>{1}};
-                _Sys_time = _CHRONO floor<seconds>(_Sys_time) + _Delta;
+                const auto _Leap_sec_minus_one = _CHRONO floor<seconds>(_Utc_time.time_since_epoch()) - _Lsi.elapsed;
+                if constexpr (is_integral_v<typename _Duration::rep>) {
+                    constexpr auto _Delta{seconds{1} - _CT{1}};
+                    _Ticks = _Leap_sec_minus_one + _Delta;
+                } else {
+                    const auto _Leap_sec_begin = _CHRONO ceil<_CT>(_Leap_sec_minus_one + seconds{1});
+                    _Ticks                     = _CT{_STD nextafter(_Leap_sec_begin.count(), typename _CT::rep{0})};
+                }
+            } else {
+                _Ticks = _Utc_time.time_since_epoch() - _Lsi.elapsed;
             }
-            return _Sys_time;
+            return sys_time<_CT>{_Ticks};
         }
 
         template <class _Duration>

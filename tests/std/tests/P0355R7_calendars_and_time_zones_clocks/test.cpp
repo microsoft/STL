@@ -3,6 +3,7 @@
 
 #include <cassert>
 #include <chrono>
+#include <cmath>
 #include <compare>
 #include <iterator>
 #include <utility>
@@ -173,10 +174,11 @@ constexpr bool operator==(const leap_second_info& lhs, const leap_second_info& r
     return lhs.is_leap_second == rhs.is_leap_second && lhs.elapsed == rhs.elapsed;
 }
 
+template <class DurationRep>
 void test_leap_second_info(const leap_second& leap, seconds accum) {
     const bool is_positive = (leap.value() == 1s);
     // First UTC time when leap is counted, before insertion of a positive leap, after insertion of a negative one.
-    const utc_seconds utc_leap{leap.date().time_since_epoch() + accum + (is_positive ? 0s : -1s)};
+    const utc_time<duration<DurationRep>> utc_leap{leap.date().time_since_epoch() + accum + (is_positive ? 0s : -1s)};
 
     auto lsi = get_leap_second_info(utc_leap - 1s);
     assert(lsi == (leap_second_info{false, accum}));
@@ -197,11 +199,19 @@ void test_leap_second_info(const leap_second& leap, seconds accum) {
 
 template <class Duration>
 void test_utc_clock_to_sys(const leap_second& leap) {
-    auto u = utc_clock::from_sys(leap.date() - Duration{1}); // just before leap second
+    sys_time<Duration> before_leap;
+    if constexpr (is_integral_v<typename Duration::rep>) {
+        before_leap = leap.date() - Duration{1};
+    } else {
+        before_leap =
+            sys_time<Duration>{Duration{nextafter(leap.date().time_since_epoch().count(), typename Duration::rep{0})}};
+    }
+
+    auto u = utc_clock::from_sys(before_leap); // just before leap second
     assert(utc_clock::from_sys(utc_clock::to_sys(u)) == u);
     if (leap.value() == 1s) {
         u += Duration{1};
-        assert(utc_clock::to_sys(u) == leap.date() - Duration{1}); // during
+        assert(utc_clock::to_sys(u) == before_leap); // during
     } else {
         assert(utc_clock::from_sys(utc_clock::to_sys(u)) == u);
     }
@@ -342,11 +352,17 @@ void test_gps_tai_clocks_utc() {
 int main() {
     test_leap_second();
 
+    // This is the only time duration a leap second insertion that can be represented by a duration<float>.
+    assert(utc_clock::to_sys(utc_time<duration<float>>{duration<float>{78796800.0f}}).time_since_epoch().count()
+           == nextafter(78796800.0f, 0.0f));
+
     seconds offset{0};
     for (const auto& leap : get_tzdb().leap_seconds) {
-        test_leap_second_info(leap, offset);
+        test_leap_second_info<long long>(leap, offset);
+        test_leap_second_info<double>(leap, offset);
         test_utc_clock_to_sys<seconds>(leap);
         test_utc_clock_to_sys<milliseconds>(leap);
+        test_utc_clock_to_sys<duration<double>>(leap);
         test_file_clock_from_utc<seconds>(leap);
         test_file_clock_from_utc<milliseconds>(leap);
         test_utc_clock_from_sys(leap, offset);
@@ -371,9 +387,11 @@ int main() {
 
     offset = 0s;
     for (const auto& leap : get_tzdb().leap_seconds) {
-        test_leap_second_info(leap, offset);
+        test_leap_second_info<long long>(leap, offset);
+        test_leap_second_info<double>(leap, offset);
         test_utc_clock_to_sys<seconds>(leap);
         test_utc_clock_to_sys<milliseconds>(leap);
+        test_utc_clock_to_sys<duration<double>>(leap);
         test_file_clock_from_utc<seconds>(leap);
         test_file_clock_from_utc<milliseconds>(leap);
         test_utc_clock_from_sys(leap, offset);
@@ -396,9 +414,11 @@ int main() {
 
     offset = 0s;
     for (const auto& leap : get_tzdb().leap_seconds) {
-        test_leap_second_info(leap, offset);
+        test_leap_second_info<long long>(leap, offset);
+        test_leap_second_info<double>(leap, offset);
         test_utc_clock_to_sys<seconds>(leap);
         test_utc_clock_to_sys<milliseconds>(leap);
+        test_utc_clock_to_sys<duration<double>>(leap);
         test_file_clock_from_utc<seconds>(leap);
         test_file_clock_from_utc<milliseconds>(leap);
         test_utc_clock_from_sys(leap, offset);
