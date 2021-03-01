@@ -845,7 +845,7 @@ enum _Codecvt_mode { _Consume_header = 4, _Generate_header = 2 };
 
 // CLASS codecvt<char16_t, char, mbstate_t>
 template <>
-class _CRTIMP2_PURE_IMPORT_UNLESS_CODECVT_ID_SATELLITE _CXX20_DEPRECATE_CODECVT_FACETS
+class _CXX20_DEPRECATE_CODECVT_FACETS _CRTIMP2_PURE_IMPORT_UNLESS_CODECVT_ID_SATELLITE
     codecvt<char16_t, char, mbstate_t> : public codecvt_base {
     // facet for converting between char16_t and UTF-8 byte sequences
 public:
@@ -1144,7 +1144,7 @@ private:
 
 // CLASS codecvt<char32_t, char, mbstate_t>
 template <>
-class _CRTIMP2_PURE_IMPORT_UNLESS_CODECVT_ID_SATELLITE _CXX20_DEPRECATE_CODECVT_FACETS
+class _CXX20_DEPRECATE_CODECVT_FACETS _CRTIMP2_PURE_IMPORT_UNLESS_CODECVT_ID_SATELLITE
     codecvt<char32_t, char, mbstate_t> : public codecvt_base {
     // facet for converting between char32_t and UTF-8 byte sequences
 public:
