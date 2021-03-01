@@ -107,7 +107,6 @@ int main() {
         make_format_args(static_cast<const void*>(nullptr)));
     assert(output_string == "0x0");
 
-    /* TODO: Doesn't properly overload on void* and nullptr
     // Test void*
     output_string.clear();
     vformat_to(
@@ -118,7 +117,6 @@ int main() {
     output_string.clear();
     vformat_to(back_insert_iterator(output_string), locale::classic(), "{}", make_format_args(nullptr));
     assert(output_string == "0x0");
-    */
 
     // Test signed integers
     output_string.clear();

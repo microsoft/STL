@@ -915,7 +915,7 @@ template <class _Context, class _Ty>
     requires is_void_v<_Ty>
 /* consteval */ constexpr auto _Get_format_arg_storage_type(const _Ty*) noexcept {
     // clang-format on
-    return static_cast<void*>(nullptr);
+    return static_cast<const void*>(nullptr);
 }
 
 template <class _Context, class _Ty>
@@ -967,8 +967,11 @@ private:
     }
 
     // See [format.arg]/5
+    // clang-format off
     template <class _Ty>
+        requires _Has_formatter<_Context, _Ty>
     void _Store(const size_t _Arg_index, const _Ty& _Val) noexcept {
+        // clang-format on
         _Store_impl<typename basic_format_arg<_Context>::handle>(
             _Arg_index, _Basic_format_arg_type::_Custom_type, basic_format_arg<_Context>::handle(_Val));
     }
