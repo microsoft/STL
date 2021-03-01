@@ -3,7 +3,11 @@
 
 #if defined(__cpp_consteval) && !defined(__EDG__) // TRANSITION, VSO-1285779
 #include "header.h"
+#include <cassert>
+#include <source_location>
+#include <string_view>
 #include <type_traits>
+using namespace std;
 
 static_assert(is_nothrow_move_constructible_v<source_location>, "source_location is not nothrow move constructible.");
 static_assert(is_nothrow_move_assignable_v<source_location>, "source_location is not nothrow move assignable.");

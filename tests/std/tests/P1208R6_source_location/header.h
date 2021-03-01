@@ -6,9 +6,8 @@
 #include <source_location>
 #include <string_view>
 
-using namespace std;
-
 constexpr void header_test() {
+    using namespace std;
     const auto x = source_location::current();
     assert(x.line() == __LINE__ - 1);
     assert(x.column() == 37);
