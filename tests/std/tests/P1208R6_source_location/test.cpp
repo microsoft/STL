@@ -9,7 +9,7 @@ static_assert(is_nothrow_move_constructible_v<source_location>, "source_location
 static_assert(is_nothrow_move_assignable_v<source_location>, "source_location is not nothrow move assignable.");
 static_assert(is_nothrow_swappable_v<source_location>, "source_location is not nothrow swappable.");
 
-constexpr auto test_cpp = R"(tests\std\tests\P1208R6_source_location\test.cpp)"sv;
+constexpr auto test_cpp = "test.cpp"sv;
 
 constexpr auto g = source_location::current();
 static_assert(g.line() == __LINE__ - 1);

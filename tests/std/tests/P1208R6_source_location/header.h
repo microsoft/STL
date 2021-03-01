@@ -13,5 +13,5 @@ constexpr void header_test() {
     assert(x.line() == __LINE__ - 1);
     assert(x.column() == 37);
     assert(x.function_name() == "header_test"sv);
-    assert(string_view{x.file_name()}.ends_with("header.h"sv)); // TRANSITION, LLVM-45731
+    assert(string_view{x.file_name()}.ends_with("header.h"sv));
 }

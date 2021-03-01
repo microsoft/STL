@@ -100,8 +100,7 @@ constexpr bool test_source_location() {
     assert(sl.line() == __LINE__ - 1);
     assert(sl.column() == 1);
     assert(sl.function_name() == "test_source_location"sv);
-    constexpr string_view test_cpp = R"(tests\std\tests\P1502R1_standard_library_header_units\test.cpp)"sv;
-    assert(string_view{sl.file_name()}.ends_with(test_cpp));
+    assert(string_view{sl.file_name()}.ends_with("test.cpp"sv));
 #endif // __cpp_lib_source_location
     return true;
 }
