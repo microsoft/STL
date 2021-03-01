@@ -94,6 +94,18 @@ import <version>;
 #include <force_include.hpp>
 using namespace std;
 
+constexpr bool test_source_location() {
+#ifdef __cpp_lib_source_location
+    const auto sl = source_location::current();
+    assert(sl.line() == __LINE__ - 1);
+    assert(sl.column() == 1);
+    assert(sl.function_name() == "test_source_location"sv);
+    constexpr string_view test_cpp = R"(tests\std\tests\P1502R1_standard_library_header_units\test.cpp)"sv;
+    assert(string_view{sl.file_name()}.ends_with(test_cpp));
+#endif // __cpp_lib_source_location
+    return true;
+}
+
 int main() {
     {
         puts("Testing <algorithm>.");
@@ -689,7 +701,8 @@ int main() {
 
     {
         puts("Testing <source_location>.");
-        // FIXME
+        assert(test_source_location());
+        static_assert(test_source_location());
     }
 
     {
