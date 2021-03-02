@@ -8,21 +8,56 @@
 #include <string>
 #include <string_view>
 
+// copied from the string_view tests
+template <typename CharT>
+struct choose_literal; // not defined
+
+template <>
+struct choose_literal<char> {
+    static constexpr const char* choose(const char* s, const wchar_t*) {
+        return s;
+    }
+};
+
+template <>
+struct choose_literal<wchar_t> {
+    static constexpr const wchar_t* choose(const char*, const wchar_t* s) {
+        return s;
+    }
+};
+
+#define TYPED_LITERAL(CharT, Literal) (choose_literal<CharT>::choose(Literal, L##Literal))
+
+
 using namespace std;
 // TODO: fill in tests
 template back_insert_iterator<string> std::vformat_to(
     back_insert_iterator<string>, const locale&, string_view, format_args_t<back_insert_iterator<string>, char>);
 
 
-int main() {
-    string output_string = "";
+// tests for format with no format args or replacement fields
+template <class charT>
+void test_simple_formatting() {
+    basic_string<charT> output_string;
 
-    vformat_to(back_insert_iterator(output_string), locale::classic(), "f", make_format_args());
-    assert(output_string == "f");
+    vformat_to(back_insert_iterator(output_string), locale::classic(), TYPED_LITERAL(charT, "f"),
+        _Format_arg_store<basic_format_context<back_insert_iterator<basic_string<charT>>, charT>>());
+    assert(output_string == TYPED_LITERAL(charT, "f"));
 
     output_string.clear();
-    vformat_to(back_insert_iterator(output_string), locale::classic(), "format", make_format_args());
-    assert(output_string == "format");
+    vformat_to(back_insert_iterator(output_string), locale::classic(), TYPED_LITERAL(charT, "format"),
+        _Format_arg_store<basic_format_context<back_insert_iterator<basic_string<charT>>, charT>>());
+    assert(output_string == TYPED_LITERAL(charT, "format"));
+}
+
+
+int main() {
+
+    test_simple_formatting<char>();
+    test_simple_formatting<wchar_t>();
+
+    string output_string = "";
+
 
     // test escaped opening curls
     output_string.clear();
