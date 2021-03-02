@@ -676,6 +676,9 @@ public:
     }
 
     constexpr void _On_type(_CharT _Type) {
+        if (_Type < 0 || _Type > (numeric_limits<signed char>::max)()) {
+            throw format_error("Invalid type specification.");
+        }
         _Specs._Type = static_cast<char>(_Type);
     }
 
