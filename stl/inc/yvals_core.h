@@ -133,6 +133,7 @@
 // _HAS_CXX20 directly controls:
 // P0019R8 atomic_ref
 // P0020R6 atomic<float>, atomic<double>, atomic<long double>
+// P0053R7 <syncstream>
 // P0122R7 <span>
 // P0202R3 constexpr For <algorithm> And exchange()
 // P0318R1 unwrap_reference, unwrap_ref_decay
@@ -149,6 +150,7 @@
 // P0458R2 contains() For Ordered And Unordered Associative Containers
 // P0463R1 endian
 // P0466R5 Layout-Compatibility And Pointer-Interconvertibility Traits
+// P0475R1 Guaranteed Copy Elision For Piecewise Construction
 // P0476R2 <bit> bit_cast
 // P0482R6 Library Support For char8_t
 //     (mbrtoc8 and c8rtomb not yet implemented)
@@ -158,7 +160,9 @@
 // P0553R4 <bit> Rotating And Counting Functions
 // P0556R3 <bit> Integral Power-Of-2 Operations (renamed by P1956R1)
 // P0586R2 Integer Comparison Functions
+// P0591R4 Utility Functions For Uses-Allocator Construction
 // P0595R2 is_constant_evaluated()
+// P0608R3 Improving variant's Converting Constructor/Assignment
 // P0616R0 Using move() In <numeric>
 // P0631R8 <numbers> Math Constants
 // P0646R1 list/forward_list remove()/remove_if()/unique() Return size_type
@@ -167,6 +171,7 @@
 // P0660R10 <stop_token> And jthread
 // P0674R1 make_shared() For Arrays
 // P0718R2 atomic<shared_ptr<T>>, atomic<weak_ptr<T>>
+// P0753R2 osyncstream Manipulators
 // P0758R1 is_nothrow_convertible
 // P0768R1 Library Support For The Spaceship Comparison Operator <=>
 // P0769R2 shift_left(), shift_right()
@@ -180,7 +185,9 @@
 // P0912R5 Library Support For Coroutines
 // P0919R3 Heterogeneous Lookup For Unordered Containers
 // P0966R1 string::reserve() Should Not Shrink
+// P0980R1 constexpr std::string
 // P1001R2 execution::unseq
+// P1004R2 constexpr std::vector
 // P1006R1 constexpr For pointer_traits<T*>::pointer_to()
 // P1007R3 assume_aligned()
 // P1020R1 Smart Pointer Creation With Default Initialization
@@ -195,6 +202,7 @@
 // P1135R6 The C++20 Synchronization Library
 // P1207R4 Movability Of Single-Pass Iterators
 //     (partially implemented)
+// P1208R6 <source_location>
 // P1209R0 erase_if(), erase()
 // P1227R2 Signed std::ssize(), Unsigned span::size()
 // P1243R4 Rangify New Algorithms
@@ -207,6 +215,7 @@
 // P1456R1 Move-Only Views
 // P1474R1 Helpful Pointers For contiguous_iterator
 // P1612R1 Relocating endian To <bit>
+// P1614R2 Adding Spaceship <=> To The Library
 // P1645R1 constexpr For <numeric> Algorithms
 // P1651R0 bind_front() Should Not Unwrap reference_wrapper
 // P1690R1 Refining Heterogeneous Lookup For Unordered Containers
@@ -506,7 +515,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 142
-#define _MSVC_STL_UPDATE  202101L
+#define _MSVC_STL_UPDATE  202102L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #ifdef __CUDACC__
@@ -1194,13 +1203,22 @@
 #define __cpp_lib_constexpr_dynamic_alloc 201907L
 #endif // __cpp_constexpr_dynamic_alloc
 
-#define __cpp_lib_constexpr_functional  201907L
-#define __cpp_lib_constexpr_iterator    201811L
-#define __cpp_lib_constexpr_memory      201811L
-#define __cpp_lib_constexpr_numeric     201911L
+#define __cpp_lib_constexpr_functional 201907L
+#define __cpp_lib_constexpr_iterator   201811L
+#define __cpp_lib_constexpr_memory     201811L
+#define __cpp_lib_constexpr_numeric    201911L
+
+#if defined(__cpp_constexpr_dynamic_alloc) && !defined(__clang__) // TRANSITION, LLVM-48606
+#define __cpp_lib_constexpr_string 201907L
+#endif // defined(__cpp_constexpr_dynamic_alloc) && !defined(__clang__)
+
 #define __cpp_lib_constexpr_string_view 201811L
 #define __cpp_lib_constexpr_tuple       201811L
 #define __cpp_lib_constexpr_utility     201811L
+
+#if defined(__cpp_constexpr_dynamic_alloc) && !defined(__clang__) // TRANSITION, LLVM-48606
+#define __cpp_lib_constexpr_vector 201907L
+#endif // defined(__cpp_constexpr_dynamic_alloc) && !defined(__clang__)
 
 #ifdef __cpp_impl_coroutine // TRANSITION, Clang coroutine support
 #define __cpp_lib_coroutine 201902L
@@ -1238,12 +1256,18 @@
 #define __cpp_lib_semaphore               201907L
 #define __cpp_lib_shift                   201806L
 #define __cpp_lib_smart_ptr_for_overwrite 202002L
-#define __cpp_lib_span                    202002L
-#define __cpp_lib_ssize                   201902L
-#define __cpp_lib_starts_ends_with        201711L
+
+#ifdef __cpp_consteval
+#define __cpp_lib_source_location 201907L
+#endif // __cpp_consteval
+
+#define __cpp_lib_span             202002L
+#define __cpp_lib_ssize            201902L
+#define __cpp_lib_starts_ends_with 201711L
+#define __cpp_lib_syncbuf          201803L
 
 #ifdef __cpp_lib_concepts // TRANSITION, GH-395
-#define __cpp_lib_three_way_comparison 201711L
+#define __cpp_lib_three_way_comparison 201907L
 #endif // __cpp_lib_concepts
 
 #define __cpp_lib_to_address    201711L
@@ -1284,7 +1308,7 @@
 #endif
 
 // Functions that became constexpr in C++20 via P0980R1 or P1004R2
-#if defined(__cpp_lib_constexpr_dynamic_alloc) && !defined(__clang__) // TRANSITION:LLVM-48606
+#if defined(__cpp_lib_constexpr_dynamic_alloc) && !defined(__clang__) // TRANSITION, LLVM-48606
 #define _CONSTEXPR20_CONTAINER constexpr
 #else
 #define _CONSTEXPR20_CONTAINER inline

@@ -149,7 +149,9 @@ namespace ranges {
             auto _OFirst      = _Get_unwrapped(_STD move(_First2));
             const auto _OLast = _Get_unwrapped(_STD move(_Last2));
             if constexpr (_Ptr_copy_cat<_It, _Out>::_Really_trivial) {
-                _OFirst = _Copy_memcpy_common(_IFirst, _IFirst + _Count, _OFirst, _OLast);
+                auto _UResult = _Copy_memcpy_common(_IFirst, _IFirst + _Count, _OFirst, _OLast);
+                _IFirst       = _UResult.in;
+                _OFirst       = _UResult.out;
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
@@ -283,7 +285,9 @@ namespace ranges {
             auto _OFirst      = _Get_unwrapped(_STD move(_First2));
             const auto _OLast = _Get_unwrapped(_STD move(_Last2));
             if constexpr (_Ptr_move_cat<_It, _Out>::_Really_trivial) {
-                _OFirst = _Copy_memcpy_common(_IFirst, _IFirst + _Count, _OFirst, _OLast);
+                auto _UResult = _Copy_memcpy_common(_IFirst, _IFirst + _Count, _OFirst, _OLast);
+                _IFirst       = _UResult.in;
+                _OFirst       = _UResult.out;
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
@@ -1791,6 +1795,12 @@ _NODISCARD bool operator==(const shared_ptr<_Ty1>& _Left, const shared_ptr<_Ty2>
     return _Left.get() == _Right.get();
 }
 
+#if _HAS_CXX20
+template <class _Ty1, class _Ty2>
+_NODISCARD strong_ordering operator<=>(const shared_ptr<_Ty1>& _Left, const shared_ptr<_Ty2>& _Right) noexcept {
+    return _Left.get() <=> _Right.get();
+}
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _Ty1, class _Ty2>
 _NODISCARD bool operator!=(const shared_ptr<_Ty1>& _Left, const shared_ptr<_Ty2>& _Right) noexcept {
     return _Left.get() != _Right.get();
@@ -1815,12 +1825,19 @@ template <class _Ty1, class _Ty2>
 _NODISCARD bool operator<=(const shared_ptr<_Ty1>& _Left, const shared_ptr<_Ty2>& _Right) noexcept {
     return _Left.get() <= _Right.get();
 }
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 template <class _Ty>
 _NODISCARD bool operator==(const shared_ptr<_Ty>& _Left, nullptr_t) noexcept {
     return _Left.get() == nullptr;
 }
 
+#if _HAS_CXX20
+template <class _Ty>
+_NODISCARD strong_ordering operator<=>(const shared_ptr<_Ty>& _Left, nullptr_t) noexcept {
+    return _Left.get() <=> static_cast<typename shared_ptr<_Ty>::element_type*>(nullptr);
+}
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _Ty>
 _NODISCARD bool operator==(nullptr_t, const shared_ptr<_Ty>& _Right) noexcept {
     return nullptr == _Right.get();
@@ -1875,6 +1892,7 @@ template <class _Ty>
 _NODISCARD bool operator<=(nullptr_t, const shared_ptr<_Ty>& _Right) noexcept {
     return static_cast<typename shared_ptr<_Ty>::element_type*>(nullptr) <= _Right.get();
 }
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 template <class _Elem, class _Traits, class _Ty>
 basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Out, const shared_ptr<_Ty>& _Px) {
@@ -2066,20 +2084,26 @@ template <class _Refc>
 _NODISCARD _Refc* _Allocate_flexible_array(const size_t _Count) {
     const size_t _Bytes     = _Calculate_bytes_for_flexible_array<_Refc, _Check_overflow::_Yes>(_Count);
     constexpr size_t _Align = alignof(_Refc);
-    if constexpr (_Align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
-        return static_cast<_Refc*>(::operator new(_Bytes));
-    } else {
+#ifdef __cpp_aligned_new
+    if constexpr (_Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
         return static_cast<_Refc*>(::operator new (_Bytes, align_val_t{_Align}));
+    } else
+#endif // __cpp_aligned_new
+    {
+        return static_cast<_Refc*>(::operator new(_Bytes));
     }
 }
 
 template <class _Refc>
 void _Deallocate_flexible_array(_Refc* const _Ptr) noexcept {
     constexpr size_t _Align = alignof(_Refc);
-    if constexpr (_Align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
-        ::operator delete(static_cast<void*>(_Ptr));
-    } else {
+#ifdef __cpp_aligned_new
+    if constexpr (_Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
         ::operator delete (static_cast<void*>(_Ptr), align_val_t{_Align});
+    } else
+#endif // __cpp_aligned_new
+    {
+        ::operator delete(static_cast<void*>(_Ptr));
     }
 }
 
@@ -3415,10 +3439,12 @@ _NODISCARD bool operator==(const unique_ptr<_Ty1, _Dx1>& _Left, const unique_ptr
     return _Left.get() == _Right.get();
 }
 
+#if !_HAS_CXX20
 template <class _Ty1, class _Dx1, class _Ty2, class _Dx2>
 _NODISCARD bool operator!=(const unique_ptr<_Ty1, _Dx1>& _Left, const unique_ptr<_Ty2, _Dx2>& _Right) {
     return !(_Left == _Right);
 }
+#endif // !_HAS_CXX20
 
 template <class _Ty1, class _Dx1, class _Ty2, class _Dx2>
 _NODISCARD bool operator<(const unique_ptr<_Ty1, _Dx1>& _Left, const unique_ptr<_Ty2, _Dx2>& _Right) {
@@ -3443,11 +3469,25 @@ _NODISCARD bool operator<=(const unique_ptr<_Ty1, _Dx1>& _Left, const unique_ptr
     return !(_Right < _Left);
 }
 
+#ifdef __cpp_lib_concepts
+// clang-format off
+template <class _Ty1, class _Dx1, class _Ty2, class _Dx2>
+    requires three_way_comparable_with<typename unique_ptr<_Ty1, _Dx1>::pointer,
+        typename unique_ptr<_Ty2, _Dx2>::pointer>
+_NODISCARD compare_three_way_result_t<typename unique_ptr<_Ty1, _Dx1>::pointer,
+        typename unique_ptr<_Ty2, _Dx2>::pointer>
+    operator<=>(const unique_ptr<_Ty1, _Dx1>& _Left, const unique_ptr<_Ty2, _Dx2>& _Right) {
+    // clang-format on
+    return _Left.get() <=> _Right.get();
+}
+#endif // __cpp_lib_concepts
+
 template <class _Ty, class _Dx>
 _NODISCARD bool operator==(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t) noexcept {
     return !_Left;
 }
 
+#if !_HAS_CXX20
 template <class _Ty, class _Dx>
 _NODISCARD bool operator==(nullptr_t, const unique_ptr<_Ty, _Dx>& _Right) noexcept {
     return !_Right;
@@ -3462,6 +3502,7 @@ template <class _Ty, class _Dx>
 _NODISCARD bool operator!=(nullptr_t _Left, const unique_ptr<_Ty, _Dx>& _Right) noexcept {
     return !(_Left == _Right);
 }
+#endif // !_HAS_CXX20
 
 template <class _Ty, class _Dx>
 _NODISCARD bool operator<(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t _Right) {
@@ -3504,6 +3545,17 @@ template <class _Ty, class _Dx>
 _NODISCARD bool operator<=(nullptr_t _Left, const unique_ptr<_Ty, _Dx>& _Right) {
     return !(_Right < _Left);
 }
+
+#ifdef __cpp_lib_concepts
+// clang-format off
+template <class _Ty, class _Dx>
+    requires three_way_comparable<typename unique_ptr<_Ty, _Dx>::pointer>
+_NODISCARD compare_three_way_result_t<typename unique_ptr<_Ty, _Dx>::pointer> operator<=>(
+    const unique_ptr<_Ty, _Dx>& _Left, nullptr_t) {
+    // clang-format on
+    return _Left.get() <=> static_cast<typename unique_ptr<_Ty, _Dx>::pointer>(nullptr);
+}
+#endif // __cpp_lib_concepts
 
 template <class _OutTy, class _PxTy, class = void>
 struct _Can_stream_unique_ptr : false_type {};

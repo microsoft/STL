@@ -143,7 +143,7 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 The STL uses boost-math headers to provide P0226R1 Mathematical Special Functions. We recommend using [vcpkg][] to
 acquire this dependency.
 
-1. Install Visual Studio 2019 16.9 Preview 3 or later.
+1. Install Visual Studio 2019 16.9 Preview 4 or later.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
     * Otherwise, install [CMake][] 3.19 or later, and [Ninja][] 1.10.2 or later.
@@ -158,7 +158,7 @@ acquire this dependency.
 
 # How To Build With A Native Tools Command Prompt
 
-1. Install Visual Studio 2019 16.9 Preview 3 or later.
+1. Install Visual Studio 2019 16.9 Preview 4 or later.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
     * Otherwise, install [CMake][] 3.19 or later, and [Ninja][] 1.10.2 or later.
@@ -354,7 +354,7 @@ those features first the tests will begin passing unexpectedly for us and return
 this it is necessary to add a `PASS` entry to the `expected_results.txt` of the testsuite in question.
 
 The `UNSUPPORTED` result code means that the requirements for a test are not met and so it will not be run. Currently
-all tests which use the `/BE` or `/clr:pure` options are unsupported.
+all tests which use the `/clr` or `/clr:pure` options are unsupported. Also, the `/BE` option is unsupported for x64.
 
 The `SKIPPED` result code indicates that a given test was explicitly skipped by adding a `SKIPPED` entry to the
 `expected_results.txt`. A test may be skipped for a number of reasons, which include, but are not limited to:
