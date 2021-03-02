@@ -106,7 +106,7 @@ public:
                     while (_First != _Last && _Ctype_fac.is(_Ctype::space, *_First)) {
                         ++_First;
                     }
-                } else if (_Ctype_fac.toupper(*_First) != _Ctype_fac.toupper(*_Fmtfirst)) { // bad literal match
+                } else if (_Ctype_fac.tolower(*_First) != _Ctype_fac.tolower(*_Fmtfirst)) { // bad literal match
                     _State |= ios_base::failbit;
                     break;
                 } else {
