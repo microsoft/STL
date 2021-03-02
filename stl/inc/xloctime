@@ -94,11 +94,11 @@ public:
 
         for (; _Fmtfirst != _Fmtlast; ++_Fmtfirst) {
             if (_State != ios_base::goodbit) {
-                // [locale.time.get.members] p8.2
+                // N4878 [locale.time.get.members]/8.2
                 // _State is fail, eof, or bad. Do not proceed to the next fields. Return with current _State.
                 break;
             } else if (_First == _Last) {
-                // p8.3
+                // N4878 [locale.time.get.members]/8.3
                 _State = ios_base::eofbit | ios_base::failbit;
                 break;
             } else if (_Ctype_fac.narrow(*_Fmtfirst) != '%') { // match literal element
@@ -113,9 +113,9 @@ public:
                     ++_First;
                 }
             } else if (++_Fmtfirst == _Fmtlast) {
-                // p8.4: "If the number of elements in the range [fmt, fmtend) is not sufficient to unambiguously
-                // determine whether the conversion specification is complete and valid, the function evaluates err =
-                // ios_base::failbit."
+                // N4878 [locale.time.get.members]/8.4: "If the number of elements in the range [fmt, fmtend) is not
+                // sufficient to unambiguously determine whether the conversion specification is complete and valid,
+                // the function evaluates err = ios_base::failbit."
                 _State = ios_base::failbit;
                 break;
             } else { // get specifier after %

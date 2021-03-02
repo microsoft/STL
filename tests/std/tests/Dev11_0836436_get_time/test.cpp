@@ -496,7 +496,7 @@ void test_990695() {
         }
 
         {
-            // Should fail if EOF while not parsing specifier ([locale.time.get.members]/8.4).
+            // Should fail if EOF while not parsing specifier (N4878 [locale.time.get.members]/8.4).
             tm t{};
             istringstream iss("4");
             iss >> get_time(&t, "42");
@@ -504,7 +504,7 @@ void test_990695() {
         }
 
         {
-            // Trailing % should not be treated as a literal (p8.4 again).
+            // Trailing % should not be treated as a literal (N4878 [locale.time.get.members]/8.4 again).
             tm t{};
             istringstream iss("%");
             iss >> get_time(&t, "%");
