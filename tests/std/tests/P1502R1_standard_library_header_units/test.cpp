@@ -63,7 +63,7 @@ import <scoped_allocator>;
 import <semaphore>;
 import <set>;
 import <shared_mutex>;
-// import <source_location>;
+import <source_location>;
 import <span>;
 import <sstream>;
 import <stack>;
@@ -93,6 +93,17 @@ import <version>;
 #include <stdio.h>
 #include <force_include.hpp>
 using namespace std;
+
+constexpr bool test_source_location() {
+#ifdef __cpp_lib_source_location
+    const auto sl = source_location::current();
+    assert(sl.line() == __LINE__ - 1);
+    assert(sl.column() == 1);
+    assert(sl.function_name() == "test_source_location"sv);
+    assert(string_view{sl.file_name()}.ends_with("test.cpp"sv));
+#endif // __cpp_lib_source_location
+    return true;
+}
 
 int main() {
     {
@@ -689,7 +700,8 @@ int main() {
 
     {
         puts("Testing <source_location>.");
-        puts("(TRANSITION, not yet implemented.)");
+        assert(test_source_location());
+        static_assert(test_source_location());
     }
 
     {

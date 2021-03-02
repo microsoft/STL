@@ -1353,6 +1353,20 @@ STATIC_ASSERT(__cpp_lib_smart_ptr_for_overwrite == 202002L);
 #endif
 #endif
 
+#if _HAS_CXX20 && defined(__cpp_consteval)
+#ifndef __cpp_lib_source_location
+#error __cpp_lib_source_location is not defined
+#elif __cpp_lib_source_location != 201907L
+#error __cpp_lib_source_location is not 201907L
+#else
+STATIC_ASSERT(__cpp_lib_source_location == 201907L);
+#endif
+#else
+#ifdef __cpp_lib_source_location
+#error __cpp_lib_source_location is defined
+#endif
+#endif
+
 #if _HAS_CXX20
 #ifndef __cpp_lib_span
 #error __cpp_lib_span is not defined

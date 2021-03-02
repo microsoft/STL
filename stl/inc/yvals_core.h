@@ -202,6 +202,7 @@
 // P1135R6 The C++20 Synchronization Library
 // P1207R4 Movability Of Single-Pass Iterators
 //     (partially implemented)
+// P1208R6 <source_location>
 // P1209R0 erase_if(), erase()
 // P1227R2 Signed std::ssize(), Unsigned span::size()
 // P1243R4 Rangify New Algorithms
@@ -1255,10 +1256,15 @@
 #define __cpp_lib_semaphore               201907L
 #define __cpp_lib_shift                   201806L
 #define __cpp_lib_smart_ptr_for_overwrite 202002L
-#define __cpp_lib_span                    202002L
-#define __cpp_lib_ssize                   201902L
-#define __cpp_lib_starts_ends_with        201711L
-#define __cpp_lib_syncbuf                 201803L
+
+#ifdef __cpp_consteval
+#define __cpp_lib_source_location 201907L
+#endif // __cpp_consteval
+
+#define __cpp_lib_span             202002L
+#define __cpp_lib_ssize            201902L
+#define __cpp_lib_starts_ends_with 201711L
+#define __cpp_lib_syncbuf          201803L
 
 #ifdef __cpp_lib_concepts // TRANSITION, GH-395
 #define __cpp_lib_three_way_comparison 201907L
