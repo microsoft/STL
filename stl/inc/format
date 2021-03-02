@@ -71,10 +71,10 @@ template <class _Ty, class _CharT>
 concept _Parse_spec_callbacks = requires(_Ty _At, basic_string_view<_CharT> _Sv, _Align _Aln, _Sign _Sgn) {
     { _At._On_align(_Aln) } -> same_as<void>;
     { _At._On_fill(_Sv) } -> same_as<void>;
-    { _At._On_width(static_cast<unsigned int>(0)) } -> same_as<void>;
+    { _At._On_width(int{}) } -> same_as<void>;
     { _At._On_dynamic_width(size_t{}) } -> same_as<void>;
     { _At._On_dynamic_width(_Auto_id_tag{}) } -> same_as<void>;
-    { _At._On_precision(static_cast<unsigned int>(0)) } -> same_as<void>;
+    { _At._On_precision(int{}) } -> same_as<void>;
     { _At._On_dynamic_precision(size_t{}) } -> same_as<void>;
     { _At._On_dynamic_precision(_Auto_id_tag{}) } -> same_as<void>;
     { _At._On_sign(_Sgn) } -> same_as<void>;
@@ -278,7 +278,7 @@ auto visit_format_arg(_Visitor&& _Vis, basic_format_arg<_Context> _Arg) {
     }
 }
 
-// we need to implement this ourselves because from_chars does not work with wide characters
+// we need to implement this ourselves because from_chars does not work with wide characters and isn't constexpr
 template <class _CharT>
 constexpr const _CharT* _Parse_nonnegative_integer(const _CharT* _Begin, const _CharT* _End, unsigned int& _Value) {
     _STL_INTERNAL_CHECK(_Begin != _End && '0' <= *_Begin && *_Begin <= '9');
@@ -297,6 +297,16 @@ constexpr const _CharT* _Parse_nonnegative_integer(const _CharT* _Begin, const _
     if (_Value > _Max_int) {
         throw format_error("Number is too big");
     }
+    return _Begin;
+}
+
+template <class _CharT>
+constexpr const _CharT* _Parse_nonnegative_integer(const _CharT* _Begin, const _CharT* _End, int& _Value) {
+    unsigned int _Val_unsigned = 0;
+
+    _Begin = _Parse_nonnegative_integer(_Begin, _End, _Val_unsigned);
+    // Never invalid because _Parse_nonnegative_integer throws an error for values that don't fit in signed integers
+    _Value = static_cast<int>(_Val_unsigned);
     return _Begin;
 }
 
@@ -432,8 +442,8 @@ template <class _CharT, _Parse_spec_callbacks<_CharT> _Callbacks_type>
 constexpr const _CharT* _Parse_width(const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
     _STL_INTERNAL_CHECK(_Begin != _End);
     if ('1' <= *_Begin && *_Begin <= '9') {
-        unsigned int _Value = 0;
-        _Begin              = _Parse_nonnegative_integer(_Begin, _End, _Value);
+        int _Value = 0;
+        _Begin     = _Parse_nonnegative_integer(_Begin, _End, _Value);
         _Callbacks._On_width(_Value);
     } else if (*_Begin == '{') {
         ++_Begin;
@@ -457,8 +467,8 @@ constexpr const _CharT* _Parse_precision(const _CharT* _Begin, const _CharT* _En
     }
 
     if ('0' <= _Ch && _Ch <= '9') {
-        unsigned int _Precision = 0;
-        _Begin                  = _Parse_nonnegative_integer(_Begin, _End, _Precision);
+        int _Precision = 0;
+        _Begin         = _Parse_nonnegative_integer(_Begin, _End, _Precision);
         _Callbacks._On_precision(_Precision);
     } else if (_Ch == '{') {
         ++_Begin;
@@ -615,13 +625,13 @@ constexpr void _Parse_format_string(basic_string_view<_CharT> _Format_str, _Hand
 
 template <class _CharT>
 struct _Basic_format_specs {
-    unsigned int _Width     = 0;
-    unsigned int _Precision = 0;
-    char _Type              = '\0';
-    _Align _Alignment       = _Align::_None;
-    _Sign _Sgn              = _Sign::_None;
-    bool _Alt               = false;
-    bool _Localized         = false;
+    int _Width        = 0;
+    int _Precision    = -1;
+    char _Type        = '\0';
+    _Align _Alignment = _Align::_None;
+    _Sign _Sgn        = _Sign::_None;
+    bool _Alt         = false;
+    bool _Localized   = false;
     // At most one codepoint (so one char32_t or four utf-8 char8_t).
     _CharT _Fill[4] = {' ', _CharT{0}, _CharT{0}, _CharT{0}};
 };
@@ -657,11 +667,11 @@ public:
         _Specs._Fill[0]   = _CharT{'0'};
     }
 
-    constexpr void _On_width(unsigned int _Width) {
+    constexpr void _On_width(int _Width) {
         _Specs._Width = _Width;
     }
 
-    constexpr void _On_precision(unsigned int _Precision) {
+    constexpr void _On_precision(int _Precision) {
         _Specs._Precision = _Precision;
     }
 
@@ -762,12 +772,12 @@ private:
     // width or precision specifier. This will be called with either
     // _Width_checker or _Precision_checker as "_Handler".
     template <class _Handler, class _FormatArg>
-    static constexpr unsigned int _Get_dynamic_specs(_FormatArg _Arg) {
+    static constexpr int _Get_dynamic_specs(_FormatArg _Arg) {
         unsigned long long _Val = _STD visit_format_arg(_Handler(), _Arg);
-        if (_Val > (numeric_limits<unsigned int>::max)()) {
+        if (_Val > (numeric_limits<int>::max)()) {
             throw format_error("Number is too big.");
         }
-        return static_cast<unsigned int>(_Val);
+        return static_cast<int>(_Val);
     }
 };
 
@@ -835,7 +845,7 @@ public:
         _Handler::_On_zero();
     }
 
-    constexpr void _On_precision(unsigned int _Precision) {
+    constexpr void _On_precision(int _Precision) {
         _Numeric_checker._Check_precision();
         _Handler::_On_precision(_Precision);
     }
