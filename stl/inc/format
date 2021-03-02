@@ -615,14 +615,15 @@ constexpr void _Parse_format_string(basic_string_view<_CharT> _Format_str, _Hand
 
 template <class _CharT>
 struct _Basic_format_specs {
-    unsigned int _Width;
-    unsigned int _Precision;
-    char _Type;
-    _Align _Alignment;
-    _Sign _Sgn;
-    bool _Alt;
+    unsigned int _Width     = 0;
+    unsigned int _Precision = 0;
+    char _Type              = '\0';
+    _Align _Alignment       = _Align::_None;
+    _Sign _Sgn              = _Sign::_None;
+    bool _Alt               = false;
+    bool _Localized         = false;
     // At most one codepoint (so one char32_t or four utf-8 char8_t).
-    _CharT _Fill[4];
+    _CharT _Fill[4] = {' ', _CharT{0}, _CharT{0}, _CharT{0}};
 };
 
 // Model of _Parse_specs_callbacks that fills a _Basic_format_specs with the parsed data.
@@ -665,7 +666,7 @@ public:
     }
 
     constexpr void _On_type(_CharT _Type) {
-        _Specs._Type = static_cast<_CharT>(_Type);
+        _Specs._Type = static_cast<char>(_Type);
     }
 
 protected:
@@ -1219,27 +1220,14 @@ _OutputIt _Write(_OutputIt _Out, basic_string_view<_CharT> _Value) {
     return _STD copy(_Value.begin(), _Value.end(), _Out);
 }
 
-// Dispatcher to call enabled custom formatters, and do nothing otherwise.
-template <class _Context>
-class _Custom_formatter_dispatcher {
-private:
-    using _Char_type = typename _Context::char_type;
-
-    basic_format_parse_context<_Char_type>& _Parse_ctx;
-    _Context& _Ctx;
-
-public:
-    explicit constexpr _Custom_formatter_dispatcher(
-        basic_format_parse_context<_Char_type>& _Parse_ctx_, _Context& _Ctx_)
-        : _Parse_ctx(_Parse_ctx_), _Ctx(_Ctx_) {}
-
-    void operator()(typename basic_format_arg<_Context>::handle _Handle) const {
-        _Handle.format(_Parse_ctx, _Ctx);
-    }
-
-    template <class _Ty>
-    void operator()(_Ty) const {}
-};
+// TODO: placeholder write
+template <class _CharT, class _OutputIt, class _Ty>
+_OutputIt _Write(_OutputIt _Out, _Ty _Val, _Basic_format_specs<_CharT>& _Specs) {
+    _STL_INTERNAL_CHECK(false);
+    (void) _Val;
+    (void) _Specs;
+    return _Out;
+}
 
 // This is the visitor that's used for "simple" replacement fields,
 // it could be a generic lambda (with overloaded), but that's
@@ -1263,6 +1251,31 @@ struct _Default_arg_formatter {
         basic_format_context<_OutputIt, _CharT> _Format_ctx(_Out, _Args, _Loc);
         _Handle.format(_Parse_ctx, _Format_ctx);
         return _Format_ctx.out();
+    }
+};
+
+// Visitor used for replacement fields that contain specs
+template <class _OutputIt, class _CharT>
+struct _Arg_formatter {
+    using _Context = basic_format_context<_OutputIt, _CharT>;
+
+    _Context* _Ctx                                 = nullptr;
+    _Basic_format_specs<_CharT>* _Specs            = nullptr;
+    basic_format_parse_context<_CharT>* _Parse_ctx = nullptr;
+
+    _OutputIt operator()(typename basic_format_arg<_Context>::handle _Handle) {
+        _STL_ASSERT(false, "The custom handler should be structurally unreachable for _Arg_formatter");
+        _STL_INTERNAL_CHECK(_Parse_ctx);
+        _STL_INTERNAL_CHECK(_Ctx);
+        _Handle.format(*_Parse_ctx, *_Ctx);
+        return _Ctx->out();
+    }
+
+    template <class _Ty>
+    _OutputIt operator()(_Ty _Val) {
+        _STL_INTERNAL_CHECK(_Specs);
+        _STL_INTERNAL_CHECK(_Ctx);
+        return _Write(_Ctx->out(), _Val, *_Specs);
     }
 };
 
@@ -1300,8 +1313,13 @@ struct _Format_handler {
         if (_Begin == _End || *_Begin != '}') {
             throw format_error("Missing '}' in format string.");
         }
-        // TODO: implement format spec dispatching.
-        _STL_INTERNAL_CHECK(false);
+        _Ctx.advance_to(visit_format_arg(
+            _Arg_formatter<_OutputIt, _CharT>{
+                ._Ctx       = &_Ctx,
+                ._Specs     = &_Specs,
+                ._Parse_ctx = &_Parse_context,
+            },
+            _Arg));
         return _Begin;
     }
 };
