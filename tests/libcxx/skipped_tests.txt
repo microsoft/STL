@@ -358,10 +358,6 @@ utilities\meta\meta.unary\meta.unary.prop\is_constructible.pass.cpp
 containers\views\span.cons\ptr_len.pass.cpp
 containers\views\span.cons\ptr_ptr.pass.cpp
 
-# DevCom-1336819 "cl constexpr temporary passing issue"
-numerics\numeric.ops\inner.product\inner_product_comp.pass.cpp
-numerics\numeric.ops\accumulate\accumulate_op.pass.cpp
-
 # VSO-1168723 "Implicit copy assignment incorrectly not constexpr when subobject has explicit constexpr copy constructor"
 utilities\utility\pairs\pairs.pair\assign_pair.pass.cpp
 utilities\utility\pairs\pairs.pair\assign_rv_pair.pass.cpp
