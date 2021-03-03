@@ -496,7 +496,7 @@ void test_990695() {
         }
 
         {
-            // Should fail if EOF while not parsing specifier (N4878 [locale.time.get.members]/8.4).
+            // Should fail if EOF while not parsing specifier (N4878 [locale.time.get.members]/8.3).
             tm t{};
             istringstream iss("4");
             iss >> get_time(&t, "42");
@@ -504,7 +504,7 @@ void test_990695() {
         }
 
         {
-            // Trailing % should not be treated as a literal (N4878 [locale.time.get.members]/8.4 again).
+            // Trailing % should not be treated as a literal (N4878 [locale.time.get.members]/8.4).
             tm t{};
             istringstream iss("%");
             iss >> get_time(&t, "%");
@@ -520,7 +520,7 @@ void test_990695() {
         }
 
         {
-            // Literal match is case-insensitive.
+            // Literal match is case-insensitive (N4878 [locale.time.get.members]/8.6).
             tm t{};
             istringstream iss("aBc");
             iss >> get_time(&t, "AbC");
