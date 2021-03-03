@@ -375,16 +375,6 @@ utilities\utility\pairs\pairs.pair\assign_rv_pair_U_V.pass.cpp
 algorithms\alg.sorting\alg.sort\partial.sort\partial_sort.pass.cpp
 algorithms\alg.sorting\alg.sort\partial.sort\partial_sort_comp.pass.cpp
 
-# VSO-1275530 "[constexpr] Temporaries created for functions do not have a ctor called (and have a redundant dtor)."
-numerics\numeric.ops\exclusive.scan\exclusive_scan.pass.cpp
-numerics\numeric.ops\exclusive.scan\exclusive_scan_init_op.pass.cpp
-numerics\numeric.ops\inclusive.scan\inclusive_scan.pass.cpp
-numerics\numeric.ops\inclusive.scan\inclusive_scan_op.pass.cpp
-numerics\numeric.ops\inclusive.scan\inclusive_scan_op_init.pass.cpp
-numerics\numeric.ops\transform.exclusive.scan\transform_exclusive_scan_init_bop_uop.pass.cpp
-numerics\numeric.ops\transform.inclusive.scan\transform_inclusive_scan_bop_uop.pass.cpp
-numerics\numeric.ops\transform.inclusive.scan\transform_inclusive_scan_bop_uop_init.pass.cpp
-
 
 # *** CLANG COMPILER BUGS ***
 # LLVM-33230 "Clang on Windows should define __STDCPP_THREADS__ to be 1"
