@@ -1175,6 +1175,14 @@ public:
     }
 };
 
+template <class _CharT, output_iterator<_CharT> _OutputIt>
+_OutputIt _Copy_and_widen(const char* _Begin, const char* _End, _OutputIt _Out) {
+    while (_Begin != _End) {
+        *_Out++ = static_cast<_CharT>(*_Begin++);
+    }
+    return _Out;
+}
+
 template <class _CharT, class _OutputIt>
 _OutputIt _Write(_OutputIt _Out, monostate) {
     _STL_INTERNAL_CHECK(false);
@@ -1196,12 +1204,16 @@ _OutputIt _Write(_OutputIt _Out, _Arithmetic _Value) {
     array<char, _Format_min_buffer_length> _Buffer;
     const auto [_End, _Ec] = _STD to_chars(_Buffer.data(), _Buffer.data() + _Buffer.size(), _Value);
     _STL_ASSERT(_Ec == errc{}, "to_chars failed");
-    return _STD copy(_Buffer.data(), _End, _Out);
+    return _STD _Copy_and_widen<_CharT>(_Buffer.data(), _End, _Out);
 }
 
 template <class _CharT, class _OutputIt>
 _OutputIt _Write(_OutputIt _Out, bool _Value) {
-    return _Write(_Out, _Value ? "true" : "false");
+    if constexpr (is_same_v<_CharT, wchar_t>) {
+        return _Write(_Out, _Value ? L"true" : L"false");
+    } else {
+        return _Write(_Out, _Value ? "true" : "false");
+    }
 }
 
 template <class _CharT, class _OutputIt>
@@ -1219,7 +1231,7 @@ _OutputIt _Write(_OutputIt _Out, const void* _Value) {
     _STL_ASSERT(_Ec == errc{}, "to_chars failed");
     *_Out++ = '0';
     *_Out++ = 'x';
-    return _STD copy(_Buffer.data(), _End, _Out);
+    return _STD _Copy_and_widen<_CharT>(_Buffer.data(), _End, _Out);
 }
 
 template <class _CharT, class _OutputIt>
