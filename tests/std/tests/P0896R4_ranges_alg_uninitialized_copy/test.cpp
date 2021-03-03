@@ -204,8 +204,8 @@ struct memcpy_test {
 
     static void call() {
         { // Validate matching ranges
-            int input[] = {13, 55, 12345};
-            int output[3];
+            int input[]  = {13, 55, 12345};
+            int output[] = {-1, -1, -1};
 
             const auto result = ranges::uninitialized_copy(input, output);
             assert(result.in == end(input));
@@ -215,11 +215,10 @@ struct memcpy_test {
         }
 
         { // Validate input shorter
-            int input[] = {13, 55, 12345};
-            int output[4];
+            int input[]  = {13, 55, 12345};
+            int output[] = {-1, -1, -1, -1};
 
             auto result = ranges::uninitialized_copy(input, output);
-            construct_at(addressof(*result.out), -1); // Need to construct non written element for comparison
             assert(result.in == end(input));
             assert(++result.out == end(output));
             assert(ranges::equal(input, expected_input));
@@ -227,8 +226,8 @@ struct memcpy_test {
         }
 
         { // Validate output shorter
-            int input[] = {13, 55, 12345, 42};
-            int output[3];
+            int input[]  = {13, 55, 12345, 42};
+            int output[] = {-1, -1, -1};
 
             auto result = ranges::uninitialized_copy(input, output);
             assert(++result.in == end(input));
@@ -238,8 +237,8 @@ struct memcpy_test {
         }
 
         { // Validate non-common input range
-            int input[] = {13, 55, 12345};
-            int output[3];
+            int input[]  = {13, 55, 12345};
+            int output[] = {-1, -1, -1};
 
             const auto result =
                 ranges::uninitialized_copy(begin(input), unreachable_sentinel, begin(output), end(output));
@@ -250,8 +249,8 @@ struct memcpy_test {
         }
 
         { // Validate non-common output range
-            int input[] = {13, 55, 12345};
-            int output[3];
+            int input[]  = {13, 55, 12345};
+            int output[] = {-1, -1, -1};
 
             const auto result =
                 ranges::uninitialized_copy(begin(input), end(input), begin(output), unreachable_sentinel);
