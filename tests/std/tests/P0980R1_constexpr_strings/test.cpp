@@ -447,7 +447,6 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         static_assert(is_same_v<remove_const_t<decltype(ce2)>, typename str::const_iterator>);
         assert(*prev(ce2) == CharType{'s'});
 
-#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, 16.10p1
         const auto rb = literal_constructed.rbegin();
         static_assert(is_same_v<remove_const_t<decltype(rb)>, reverse_iterator<typename str::iterator>>);
         assert(*rb == CharType{'s'});
@@ -471,7 +470,6 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         const auto cre2 = const_literal_constructed.rend();
         static_assert(is_same_v<remove_const_t<decltype(cre2)>, reverse_iterator<typename str::const_iterator>>);
         assert(*prev(cre2) == CharType{'H'});
-#endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2
     }
 
     { // capacity
@@ -1560,19 +1558,15 @@ _CONSTEXPR20_CONTAINER bool test_iterators() {
         assert(*it == CharType{'l'});
         it += 2;
         assert(*it == CharType{'o'});
-#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) // TRANSITION, 16.10p1
         it = 2 + it;
         assert(*it == CharType{'f'});
-#endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__)
 
         auto cit = literal_constructed.cbegin() + 2;
         assert(*cit == CharType{'l'});
         cit += 2;
         assert(*cit == CharType{'o'});
-#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) // TRANSITION, 16.10p1
         cit = 2 + cit;
         assert(*cit == CharType{'f'});
-#endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__)
     }
 
     { // decrement
