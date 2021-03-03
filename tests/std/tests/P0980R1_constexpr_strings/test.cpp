@@ -169,7 +169,7 @@ template <class CharType>
 _CONSTEXPR20_CONTAINER bool test_interface() {
 #ifndef __EDG__ // TRANSITION, VSO-1273296
     using str = basic_string<CharType>;
-#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1269894
+
     { // constructors
         // range constructors
         str literal_constructed{get_literal_input<CharType>()};
@@ -352,13 +352,13 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         assign_conversion_start_length.assign(convertible, 2, 3);
         assert(equalRanges(assign_conversion_start_length, "llo"sv));
     }
-#endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0
+
     { // allocator
         str default_constructed;
         [[maybe_unused]] const auto alloc = default_constructed.get_allocator();
         static_assert(is_same_v<remove_const_t<decltype(alloc)>, allocator<CharType>>);
     }
-#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1269894
+
     { // access
         str literal_constructed             = get_literal_input<CharType>();
         const str const_literal_constructed = get_literal_input<CharType>();
@@ -667,7 +667,6 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         assert(equalRanges(erased_free_if, "Hello fluffy kiens"sv));
 #endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__)
     }
-#endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0
 
     { // push_back / pop_back
         str pushed;
@@ -684,7 +683,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         assert(pushed.size() == 1);
         assert(pushed.back() == CharType{'y'});
     }
-#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1269894
+
     { // append
         const str literal_constructed = get_literal_input<CharType>();
 
@@ -1502,15 +1501,12 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         basic_string_view<CharType> sv = s;
         assert(equalRanges(sv, "Hello fluffy kittens"sv));
     }
-#endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0
 #endif // __EDG__
     return true;
 }
 
 _CONSTEXPR20_CONTAINER bool test_udls() {
 #ifndef __EDG__ // TRANSITION, VSO-1273296
-#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1269894
-
     assert(equalRanges("purr purr"s, "purr purr"sv));
 #ifdef __cpp_char8_t
     assert(equalRanges(u8"purr purr"s, "purr purr"sv));
@@ -1518,8 +1514,6 @@ _CONSTEXPR20_CONTAINER bool test_udls() {
     assert(equalRanges(u"purr purr"s, "purr purr"sv));
     assert(equalRanges(U"purr purr"s, "purr purr"sv));
     assert(equalRanges(L"purr purr"s, "purr purr"sv));
-
-#endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0
 #endif // __EDG__
     return true;
 }
@@ -1533,7 +1527,6 @@ struct CharLikeType {
 
 template <class CharType>
 _CONSTEXPR20_CONTAINER bool test_iterators() {
-#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1269894
 #ifndef __EDG__ // TRANSITION, VSO-1273296
     using str               = basic_string<CharType>;
     str literal_constructed = get_literal_input<CharType>();
@@ -1654,13 +1647,11 @@ _CONSTEXPR20_CONTAINER bool test_iterators() {
         assert(cit[2] == CharType{'l'});
     }
 #endif // __EDG__
-#endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0
     return true;
 }
 
 template <class CharType>
 _CONSTEXPR20_CONTAINER bool test_growth() {
-#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1269894
     using str = basic_string<CharType>;
 #ifndef __EDG__ // TRANSITION, VSO-1273296
     {
@@ -1764,7 +1755,6 @@ _CONSTEXPR20_CONTAINER bool test_growth() {
     }
 #endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__)
 #endif // __EDG__
-#endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 0
     return true;
 }
 
