@@ -208,7 +208,9 @@ struct memcpy_test {
             int input[]  = {13, 55, 12345};
             int output[] = {-1, -1, -1};
 
-            ranges::uninitialized_move(input, output);
+            const auto result = ranges::uninitialized_move(input, output);
+            assert(result.in == end(input));
+            assert(result.out == end(output));
             assert(ranges::equal(input, expected_input));
             assert(ranges::equal(output, expected_output));
         }
