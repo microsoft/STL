@@ -94,8 +94,8 @@ sub CustomBuildHook()
     foreach (@stl_headers) {
         $export_header_options .= " $stl_include_dir/$_";
 
-        $header_unit_options .= " /headerUnit:angle";
-        $header_unit_options .= " $_=$_.ifc";
+        $header_unit_options .= " /headerUnit";
+        $header_unit_options .= " $stl_include_dir/$_=$_.ifc";
         $header_unit_options .= " $_.obj";
     }
 

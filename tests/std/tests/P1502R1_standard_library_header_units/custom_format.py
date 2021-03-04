@@ -108,8 +108,8 @@ class CustomTestFormat(STLTestFormat):
 
             exportHeaderOptions.append(headerAbsolutePath)
 
-            headerUnitOptions.append('/headerUnit:angle')
-            headerUnitOptions.append('{0}={0}.ifc'.format(header))
+            headerUnitOptions.append('/headerUnit')
+            headerUnitOptions.append('{0}={1}.ifc'.format(headerAbsolutePath, header))
 
             if not compileTestCppWithEdg:
                 headerUnitOptions.append(os.path.join(outputDir, header + '.obj'))
