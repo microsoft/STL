@@ -423,10 +423,8 @@ int main() {
 
     {
         puts("Testing <list>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, VS 2019 16.10 Preview 2
         const list<int> l{10, 20, 30, 40, 50};
         assert(*next(l.begin(), 2) == 30);
-#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -554,7 +552,6 @@ int main() {
         q.pop();
         assert(q.empty());
 
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, VS 2019 16.10 Preview 2
         priority_queue<int> pq;
         pq.push(50);
         pq.push(10);
@@ -570,7 +567,6 @@ int main() {
         assert(pq.top() == 10);
         pq.pop();
         assert(pq.empty());
-#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -901,12 +897,10 @@ int main() {
 
     {
         puts("Testing <unordered_map>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, VS 2019 16.10 Preview 2
         unordered_map<int, int> um{{1, 1}, {2, 4}, {3, 9}, {4, 16}, {5, 25}};
         for (const auto& p : um) {
             assert(p.first * p.first == p.second);
         }
-#endif // ^^^ no workaround ^^^
     }
 
     {
