@@ -2127,47 +2127,47 @@ namespace chrono {
         seconds _Elapsed_offset;
     };
 
-    _NODISCARD inline bool operator==(const leap_second& _Left, const leap_second& _Right) noexcept {
+    _NODISCARD constexpr bool operator==(const leap_second& _Left, const leap_second& _Right) noexcept {
         return _Left.date() == _Right.date();
     }
     template <class _Duration>
-    _NODISCARD bool operator==(const leap_second& _Left, const sys_time<_Duration>& _Right) noexcept {
+    _NODISCARD constexpr bool operator==(const leap_second& _Left, const sys_time<_Duration>& _Right) noexcept {
         return _Left.date() == _Right;
     }
 
     template <class _Duration>
-    _NODISCARD bool operator<(const leap_second& _Left, const sys_time<_Duration>& _Right) noexcept {
+    _NODISCARD constexpr bool operator<(const leap_second& _Left, const sys_time<_Duration>& _Right) noexcept {
         return _Left.date() < _Right;
     }
     template <class _Duration>
-    _NODISCARD bool operator<(const sys_time<_Duration>& _Left, const leap_second& _Right) noexcept {
+    _NODISCARD constexpr bool operator<(const sys_time<_Duration>& _Left, const leap_second& _Right) noexcept {
         return _Left < _Right.date();
     }
 
     template <class _Duration>
-    _NODISCARD bool operator>(const leap_second& _Left, const sys_time<_Duration>& _Right) noexcept {
+    _NODISCARD constexpr bool operator>(const leap_second& _Left, const sys_time<_Duration>& _Right) noexcept {
         return _Right < _Left.date();
     }
     template <class _Duration>
-    _NODISCARD bool operator>(const sys_time<_Duration>& _Left, const leap_second& _Right) noexcept {
+    _NODISCARD constexpr bool operator>(const sys_time<_Duration>& _Left, const leap_second& _Right) noexcept {
         return _Right.date() < _Left;
     }
 
     template <class _Duration>
-    _NODISCARD bool operator<=(const leap_second& _Left, const sys_time<_Duration>& _Right) noexcept {
+    _NODISCARD constexpr bool operator<=(const leap_second& _Left, const sys_time<_Duration>& _Right) noexcept {
         return !(_Right < _Left.date());
     }
     template <class _Duration>
-    _NODISCARD bool operator<=(const sys_time<_Duration>& _Left, const leap_second& _Right) noexcept {
+    _NODISCARD constexpr bool operator<=(const sys_time<_Duration>& _Left, const leap_second& _Right) noexcept {
         return !(_Right.date() < _Left);
     }
 
     template <class _Duration>
-    _NODISCARD bool operator>=(const leap_second& _Left, const sys_time<_Duration>& _Right) noexcept {
+    _NODISCARD constexpr bool operator>=(const leap_second& _Left, const sys_time<_Duration>& _Right) noexcept {
         return !(_Left.date() < _Right);
     }
     template <class _Duration>
-    _NODISCARD bool operator>=(const sys_time<_Duration>& _Left, const leap_second& _Right) noexcept {
+    _NODISCARD constexpr bool operator>=(const sys_time<_Duration>& _Left, const leap_second& _Right) noexcept {
         return !(_Left < _Right.date());
     }
 
