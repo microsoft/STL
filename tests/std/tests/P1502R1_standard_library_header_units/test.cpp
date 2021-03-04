@@ -231,7 +231,6 @@ int main() {
 
     {
         puts("Testing <condition_variable>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, VS 2019 16.10 Preview 2
         condition_variable cv;
         mutex mut;
         vector<int> vec = {5};
@@ -266,7 +265,6 @@ int main() {
 
         static_assert(static_cast<int>(cv_status::no_timeout) == 0);
         static_assert(static_cast<int>(cv_status::timeout) == 1);
-#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -617,14 +615,12 @@ int main() {
 
     {
         puts("Testing <scoped_allocator>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, VS 2019 16.10 Preview 2
         vector<int, scoped_allocator_adaptor<allocator<int>>> v;
         v.push_back(11);
         v.push_back(22);
         v.push_back(33);
         constexpr int expected[]{11, 22, 33};
         assert(equal(v.begin(), v.end(), begin(expected), end(expected)));
-#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -753,7 +749,6 @@ int main() {
 
     {
         puts("Testing <stop_token>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, VS 2019 16.10 Preview 2
         vector<int> vec;
         {
             latch l{1};
@@ -786,7 +781,6 @@ int main() {
             1154, 577, 1732, 866, 433, 1300, 650, 325, 976, 488, 244, 122, 61, 184, 92, 46, 23, 70, 35, 106, 53, 160,
             80, 40, 20, 10, 5, 16, 8, 4, 2, 1, -1000};
         assert(equal(vec.begin(), vec.end(), begin(expected), end(expected)));
-#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -847,7 +841,6 @@ int main() {
 
     {
         puts("Testing <tuple>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, VS 2019 16.10 Preview 2
         constexpr tuple<int, char, double> t{1729, 'c', 1.25};
         assert(get<int>(t) == 1729);
         assert(get<char>(t) == 'c');
@@ -855,7 +848,6 @@ int main() {
         static_assert(get<int>(t) == 1729);
         static_assert(get<char>(t) == 'c');
         static_assert(get<double>(t) == 1.25);
-#endif // ^^^ no workaround ^^^
     }
 
     {
