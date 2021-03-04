@@ -209,6 +209,9 @@ to_chars_result to_chars(char* _First, char* _Last, bool _Value, int _Base = 10)
 struct from_chars_result {
     const char* ptr;
     errc ec;
+#if _HAS_CXX20
+    _NODISCARD friend bool operator==(const from_chars_result&, const from_chars_result&) = default;
+#endif // _HAS_CXX20
 };
 
 // FUNCTION from_chars (STRING TO INTEGER)

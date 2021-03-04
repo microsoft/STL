@@ -196,12 +196,14 @@ struct _Reinterpret_move_iter {
         return _Lhs._Base == _Rhs._Base;
     }
 
+#if !_HAS_CXX20
 #ifndef __CUDACC__ // TRANSITION, VSO-568006
     _NODISCARD
 #endif // TRANSITION, VSO-568006
     friend bool operator!=(const _Reinterpret_move_iter& _Lhs, const _Reinterpret_move_iter& _Rhs) {
         return _Lhs._Base != _Rhs._Base;
     }
+#endif // !_HAS_CXX20
 };
 
 // STRUCT TEMPLATE _List_head_construct_ptr
