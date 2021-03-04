@@ -358,14 +358,6 @@ std/utilities/meta/meta.unary/meta.unary.prop/is_constructible.pass.cpp:0 FAIL
 std/containers/views/span.cons/ptr_len.pass.cpp:0 FAIL
 std/containers/views/span.cons/ptr_ptr.pass.cpp:0 FAIL
 
-# DevCom-1336816 "cl errors on constexpr array of std::string"
-std/numerics/numeric.ops/adjacent.difference/adjacent_difference_op.pass.cpp:0 FAIL
-std/numerics/numeric.ops/partial.sum/partial_sum_op.pass.cpp:0 FAIL
-
-# DevCom-1336819 "cl constexpr temporary passing issue"
-std/numerics/numeric.ops/inner.product/inner_product_comp.pass.cpp:0 FAIL
-std/numerics/numeric.ops/accumulate/accumulate_op.pass.cpp:0 FAIL
-
 # VSO-1168723 "Implicit copy assignment incorrectly not constexpr when subobject has explicit constexpr copy constructor"
 std/utilities/utility/pairs/pairs.pair/assign_pair.pass.cpp:0 FAIL
 std/utilities/utility/pairs/pairs.pair/assign_rv_pair.pass.cpp:0 FAIL
@@ -374,16 +366,6 @@ std/utilities/utility/pairs/pairs.pair/assign_rv_pair_U_V.pass.cpp:0 FAIL
 # VSO-1271673 "static analyzer doesn't know about short-circuiting"
 std/algorithms/alg.sorting/alg.sort/partial.sort/partial_sort.pass.cpp:0 FAIL
 std/algorithms/alg.sorting/alg.sort/partial.sort/partial_sort_comp.pass.cpp:0 FAIL
-
-# VSO-1275530 "[constexpr] Temporaries created for functions do not have a ctor called (and have a redundant dtor)."
-std/numerics/numeric.ops/exclusive.scan/exclusive_scan.pass.cpp:0 FAIL
-std/numerics/numeric.ops/exclusive.scan/exclusive_scan_init_op.pass.cpp:0 FAIL
-std/numerics/numeric.ops/inclusive.scan/inclusive_scan.pass.cpp:0 FAIL
-std/numerics/numeric.ops/inclusive.scan/inclusive_scan_op.pass.cpp:0 FAIL
-std/numerics/numeric.ops/inclusive.scan/inclusive_scan_op_init.pass.cpp:0 FAIL
-std/numerics/numeric.ops/transform.exclusive.scan/transform_exclusive_scan_init_bop_uop.pass.cpp:0 FAIL
-std/numerics/numeric.ops/transform.inclusive.scan/transform_inclusive_scan_bop_uop.pass.cpp:0 FAIL
-std/numerics/numeric.ops/transform.inclusive.scan/transform_inclusive_scan_bop_uop_init.pass.cpp:0 FAIL
 
 
 # *** CLANG COMPILER BUGS ***
