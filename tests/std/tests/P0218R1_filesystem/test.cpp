@@ -3924,7 +3924,7 @@ int wmain(int argc, wchar_t* argv[]) {
 
     if (argc > 1) {
         run_interactive_tests(argc, argv);
-        return 0; // not a PM_ constant because the caller isn't run.pl here
+        return 0;
     }
 
     for (const auto& testCase : decompTestCases) {

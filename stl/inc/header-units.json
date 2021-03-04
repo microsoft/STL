@@ -87,6 +87,7 @@
         "semaphore",
         "set",
         "shared_mutex",
+        "source_location",
         "span",
         "sstream",
         "stack",

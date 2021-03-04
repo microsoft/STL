@@ -203,7 +203,7 @@ struct memcpy_test {
     static constexpr int expected_input_long[]  = {13, 55, 12345, 42};
 
     static void call() {
-        { // Validate only range overload
+        { // Validate matching ranges
             int input[]  = {13, 55, 12345};
             int output[] = {-1, -1, -1};
 
@@ -233,6 +233,30 @@ struct memcpy_test {
             assert(++result.in == end(input));
             assert(result.out == end(output));
             assert(ranges::equal(input, expected_input_long));
+            assert(ranges::equal(output, expected_output));
+        }
+
+        { // Validate non-common input range
+            int input[]  = {13, 55, 12345};
+            int output[] = {-1, -1, -1};
+
+            const auto result =
+                ranges::uninitialized_copy(begin(input), unreachable_sentinel, begin(output), end(output));
+            assert(result.in == end(input));
+            assert(result.out == end(output));
+            assert(ranges::equal(input, expected_input));
+            assert(ranges::equal(output, expected_output));
+        }
+
+        { // Validate non-common output range
+            int input[]  = {13, 55, 12345};
+            int output[] = {-1, -1, -1};
+
+            const auto result =
+                ranges::uninitialized_copy(begin(input), end(input), begin(output), unreachable_sentinel);
+            assert(result.in == end(input));
+            assert(result.out == end(output));
+            assert(ranges::equal(input, expected_input));
             assert(ranges::equal(output, expected_output));
         }
     }

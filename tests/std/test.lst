@@ -99,7 +99,7 @@ tests\Dev11_0000000_user_defined_literals
 tests\Dev11_0019127_singular_iterators
 tests\Dev11_0091392_string_erase_resize_perf
 tests\Dev11_0133625_locale0_implib_cpp
-tests\Dev11_0135139_vector_bool_equality_perf
+tests\Dev11_0135139_vector_bool_comparisons
 tests\Dev11_0235721_async_and_packaged_task
 tests\Dev11_0253803_debug_pointer
 tests\Dev11_0272959_make_signed
@@ -243,6 +243,7 @@ tests\P0415R1_constexpr_complex
 tests\P0426R1_constexpr_char_traits
 tests\P0433R2_deduction_guides
 tests\P0466R5_layout_compatibility_and_pointer_interconvertibility_traits
+tests\P0475R1_P0591R4_uses_allocator_construction
 tests\P0476R2_bit_cast
 tests\P0487R1_fixing_operator_shl_basic_istream_char_pointer
 tests\P0513R0_poisoning_the_hash
@@ -373,6 +374,7 @@ tests\P0896R4_views_elements
 tests\P0896R4_views_empty
 tests\P0896R4_views_filter
 tests\P0896R4_views_filter_death
+tests\P0896R4_views_iota
 tests\P0896R4_views_reverse
 tests\P0896R4_views_single
 tests\P0896R4_views_take
@@ -385,6 +387,7 @@ tests\P0898R3_identity
 tests\P0912R5_coroutine
 tests\P0919R3_heterogeneous_unordered_lookup
 tests\P0966R1_string_reserve_should_not_shrink
+tests\P0980R1_constexpr_strings
 tests\P1004R2_constexpr_vector
 tests\P1004R2_constexpr_vector_bool
 tests\P1007R3_assume_aligned
@@ -398,6 +401,7 @@ tests\P1135R6_barrier
 tests\P1135R6_latch
 tests\P1135R6_semaphore
 tests\P1165R1_consistently_propagating_stateful_allocators
+tests\P1208R6_source_location
 tests\P1423R3_char8_t_remediation
 tests\P1502R1_standard_library_header_units
 tests\P1614R2_spaceship

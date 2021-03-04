@@ -774,11 +774,11 @@ concept indirectly_writable = requires(_It&& __i, _Ty&& __t) {
 };
 
 // CONCEPT _Integer_like
-// clang-format off
 template <class _Ty>
-concept _Integer_like = _Is_nonbool_integral<_Ty>;
+concept _Integer_like = _Is_nonbool_integral<remove_cv_t<_Ty>>;
 
 // CONCEPT _Signed_integer_like
+// clang-format off
 template <class _Ty>
 concept _Signed_integer_like = _Integer_like<_Ty> && static_cast<_Ty>(-1) < static_cast<_Ty>(0);
 // clang-format on
@@ -787,9 +787,19 @@ concept _Signed_integer_like = _Integer_like<_Ty> && static_cast<_Ty>(-1) < stat
 template <class _Ty>
 using _Make_unsigned_like_t = make_unsigned_t<_Ty>;
 
+template <_Integer_like _Ty>
+_NODISCARD constexpr auto _To_unsigned_like(const _Ty _Value) noexcept {
+    return static_cast<_Make_unsigned_like_t<_Ty>>(_Value);
+}
+
 // ALIAS TEMPLATE _Make_signed_like_t
 template <class _Ty>
 using _Make_signed_like_t = make_signed_t<_Ty>;
+
+template <_Integer_like _Ty>
+_NODISCARD constexpr auto _To_signed_like(const _Ty _Value) noexcept {
+    return static_cast<_Make_signed_like_t<_Ty>>(_Value);
+}
 
 // CONCEPT weakly_incrementable
 // clang-format off
@@ -3757,7 +3767,7 @@ public:
 #endif // __cpp_lib_concepts
     }
 
-    _NODISCARD _CXX20_DEPRECATE_MOVE_ITERATOR_ARROW _CONSTEXPR17 pointer operator->() const {
+    _CXX20_DEPRECATE_MOVE_ITERATOR_ARROW _NODISCARD _CONSTEXPR17 pointer operator->() const {
         return _Current;
     }
 
