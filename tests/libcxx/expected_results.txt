@@ -320,12 +320,6 @@ std/language.support/support.limits/support.limits.general/functional.version.pa
 std/language.support/support.limits/support.limits.general/iterator.version.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/memory.version.pass.cpp FAIL
 
-# C++20 P1004R2 "constexpr std::vector"
-std/language.support/support.limits/support.limits.general/vector.version.pass.cpp FAIL
-
-# C++20 P1614R2 "Adding Spaceship <=> To The Library"
-std/language.support/support.limits/support.limits.general/compare.version.pass.cpp FAIL
-
 # C++23 P1048R1 "is_scoped_enum"
 std/utilities/meta/meta.unary/meta.unary.prop/is_scoped_enum.pass.cpp FAIL
 
@@ -380,6 +374,9 @@ std/thread/macro.pass.cpp:1 FAIL
 
 # LLVM-46207 Clang's tgmath.h interferes with the UCRT's tgmath.h
 std/depr/depr.c.headers/tgmath_h.pass.cpp:1 FAIL
+
+# LLVM-48606 "Clang rejects creation of struct with mutable member during constant evaluation"
+std/language.support/support.limits/support.limits.general/vector.version.pass.cpp:1 FAIL
 
 
 # *** CLANG ISSUES, NOT YET ANALYZED ***
@@ -660,6 +657,18 @@ std/utilities/memory/util.smartptr/util.smartptr.shared/libcxx.control_block_lay
 
 # Non-Standard assumption that std::filesystem::file_time_type::duration::period is std::nano
 std/input.output/filesystems/fs.filesystem.synopsis/file_time_type_resolution.compile.pass.cpp FAIL
+
+# P1614R2 "Adding Spaceship <=> To The Library" makes `std::operator!=(i1, i3)` an error
+std/iterators/stream.iterators/istream.iterator/istream.iterator.ops/equal.pass.cpp FAIL
+
+# Uses-allocator class constructor wants non-const allocator ref and mismatched piecewise_construct's value category
+std/utilities/allocator.adaptor/allocator.adaptor.members/construct.pass.cpp FAIL
+std/utilities/allocator.adaptor/allocator.adaptor.members/construct_pair.pass.cpp FAIL
+std/utilities/allocator.adaptor/allocator.adaptor.members/construct_pair_const_lvalue_pair.pass.cpp FAIL
+std/utilities/allocator.adaptor/allocator.adaptor.members/construct_pair_piecewise.pass.cpp FAIL
+std/utilities/allocator.adaptor/allocator.adaptor.members/construct_pair_rvalue.pass.cpp FAIL
+std/utilities/allocator.adaptor/allocator.adaptor.members/construct_pair_values.pass.cpp FAIL
+std/utilities/allocator.adaptor/allocator.adaptor.members/construct_type.pass.cpp FAIL
 
 
 # *** LIKELY STL BUGS ***

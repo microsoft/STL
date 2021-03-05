@@ -770,6 +770,9 @@ public:
 
     template <class _Clock, class _Dur>
     future_status wait_until(const chrono::time_point<_Clock, _Dur>& _Abs_time) const { // wait until time point
+#if _HAS_CXX20
+        static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
+#endif // _HAS_CXX20
         if (!valid()) {
             _Throw_future_error(make_error_code(future_errc::no_state));
         }

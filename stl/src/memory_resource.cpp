@@ -59,7 +59,7 @@ namespace pmr {
     }
 
     // FUNCTION null_memory_resource
-    extern "C" _CRT_SATELLITE_1 _NODISCARD memory_resource* __cdecl null_memory_resource() noexcept {
+    extern "C" _NODISCARD _CRT_SATELLITE_1 memory_resource* __cdecl null_memory_resource() noexcept {
         class _Null_resource final : public _Identity_equal_resource {
             virtual void* do_allocate(size_t, size_t) override { // Sorry, OOM!
                 _Xbad_alloc();

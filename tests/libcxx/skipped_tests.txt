@@ -320,12 +320,6 @@ language.support\support.limits\support.limits.general\functional.version.pass.c
 language.support\support.limits\support.limits.general\iterator.version.pass.cpp
 language.support\support.limits\support.limits.general\memory.version.pass.cpp
 
-# C++20 P1004R2 "constexpr std::vector"
-language.support\support.limits\support.limits.general\vector.version.pass.cpp
-
-# C++20 P1614R2 "Adding Spaceship <=> To The Library"
-language.support\support.limits\support.limits.general\compare.version.pass.cpp
-
 # C++23 P1048R1 "is_scoped_enum"
 utilities\meta\meta.unary\meta.unary.prop\is_scoped_enum.pass.cpp
 
@@ -380,6 +374,9 @@ thread\macro.pass.cpp
 
 # LLVM-46207 Clang's tgmath.h interferes with the UCRT's tgmath.h
 depr\depr.c.headers\tgmath_h.pass.cpp
+
+# LLVM-48606 "Clang rejects creation of struct with mutable member during constant evaluation"
+language.support\support.limits\support.limits.general\vector.version.pass.cpp
 
 
 # *** CLANG ISSUES, NOT YET ANALYZED ***
@@ -660,6 +657,18 @@ utilities\memory\util.smartptr\util.smartptr.shared\libcxx.control_block_layout.
 
 # Non-Standard assumption that std::filesystem::file_time_type::duration::period is std::nano
 input.output\filesystems\fs.filesystem.synopsis\file_time_type_resolution.compile.pass.cpp
+
+# P1614R2 "Adding Spaceship <=> To The Library" makes `std::operator!=(i1, i3)` an error
+iterators\stream.iterators\istream.iterator\istream.iterator.ops\equal.pass.cpp
+
+# Uses-allocator class constructor wants non-const allocator ref and mismatched piecewise_construct's value category
+utilities\allocator.adaptor\allocator.adaptor.members\construct.pass.cpp
+utilities\allocator.adaptor\allocator.adaptor.members\construct_pair.pass.cpp
+utilities\allocator.adaptor\allocator.adaptor.members\construct_pair_const_lvalue_pair.pass.cpp
+utilities\allocator.adaptor\allocator.adaptor.members\construct_pair_piecewise.pass.cpp
+utilities\allocator.adaptor\allocator.adaptor.members\construct_pair_rvalue.pass.cpp
+utilities\allocator.adaptor\allocator.adaptor.members\construct_pair_values.pass.cpp
+utilities\allocator.adaptor\allocator.adaptor.members\construct_type.pass.cpp
 
 
 # *** LIKELY STL BUGS ***
