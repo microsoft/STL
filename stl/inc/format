@@ -625,13 +625,14 @@ constexpr void _Parse_format_string(basic_string_view<_CharT> _Format_str, _Hand
 
 template <class _CharT>
 struct _Basic_format_specs {
-    int _Width        = 0;
-    int _Precision    = -1;
-    char _Type        = '\0';
-    _Align _Alignment = _Align::_None;
-    _Sign _Sgn        = _Sign::_None;
-    bool _Alt         = false;
-    bool _Localized   = false;
+    int _Width         = 0;
+    int _Precision     = -1;
+    char _Type         = '\0';
+    _Align _Alignment  = _Align::_None;
+    _Sign _Sgn         = _Sign::_None;
+    bool _Alt          = false;
+    bool _Localized    = false;
+    bool _Leading_zero = false;
     // At most one codepoint (so one char32_t or four utf-8 char8_t).
     _CharT _Fill[4] = {' ', _CharT{0}, _CharT{0}, _CharT{0}};
 };
@@ -663,8 +664,10 @@ public:
     }
 
     constexpr void _On_zero() {
-        _Specs._Alignment = _Align::_None;
-        _Specs._Fill[0]   = _CharT{'0'};
+        _Specs._Leading_zero = true;
+        if (_Specs._Alignment == _Align::_None) {
+            _Specs._Fill[0] = _CharT{'0'};
+        }
     }
 
     constexpr void _On_width(int _Width) {
