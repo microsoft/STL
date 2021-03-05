@@ -2222,21 +2222,27 @@ namespace chrono {
             {sys_seconds{seconds{1435708800}}, true, seconds{25}},
             {sys_seconds{seconds{1483228800}}, true, seconds{26}},
         };
-        constexpr size_t _Pre_2018_count = 27;
 
-        size_t _New_reg_ls_size;
+        // __std_tzdb_get_reg_leap_seconds gets leap second (LS) data from the registry, but only if it contains more
+        // LSs than we already know about. The registry only contains LSs after 2018, so we need to tell it how many of
+        // *those* we already know about. The *total* number of LSs known at this point is a combination of what the
+        // caller knows (_Current_size, 0 on first call) and the _Known_leap_seconds entries.
+        constexpr size_t _Pre_2018_count = 27;
+        const size_t _Known_post_2018_ls_size =
+            (_STD max)(_Current_size, _STD size(_Known_leap_seconds)) - _Pre_2018_count;
+
+        size_t _Reg_post_2018_ls_size; // number of post-2018 LSs found in the registry
         unique_ptr<_RegistryLeapSecondInfo[], decltype(&__std_decalloc_reg_leap_seconds)> _Reg_ls_data(
-            __std_tzdb_get_reg_leap_seconds(
-                (_STD max)(_Current_size, _STD size(_Known_leap_seconds)) - _Pre_2018_count, &_New_reg_ls_size),
+            __std_tzdb_get_reg_leap_seconds(_Known_post_2018_ls_size, &_Reg_post_2018_ls_size),
             &__std_decalloc_reg_leap_seconds);
 
-        const size_t _New_size = _Pre_2018_count + _New_reg_ls_size;
-        if (_New_reg_ls_size > _Current_size && !_Reg_ls_data) {
-            _Xbad_alloc();
-        } else if (_New_reg_ls_size == 0 && _Reg_ls_data) {
-            _XGetLastError();
+        if (_Reg_post_2018_ls_size > _Known_post_2018_ls_size && !_Reg_ls_data) {
+            _Xbad_alloc(); // registry has new data, but failed to allocate storage
+        } else if (_Reg_post_2018_ls_size == 0 && _Reg_ls_data) {
+            _XGetLastError(); // allocated storage for registry data, but failed to read
         }
 
+        const size_t _New_size = _Pre_2018_count + _Reg_post_2018_ls_size; // total size with registry data
         decltype(tzdb::leap_seconds) _Leap_sec_info;
         bool _All_ls_positive = true;
 
@@ -2245,8 +2251,9 @@ namespace chrono {
             _Leap_sec_info.insert(
                 _Leap_sec_info.begin(), _STD cbegin(_Known_leap_seconds), _STD cend(_Known_leap_seconds));
 
-            for (size_t _Idx = 0; _Idx < _New_reg_ls_size; ++_Idx) {
-                // Leap second happens at ls._Hour:59:59. We store the next second after, so add a whole hour.
+            for (size_t _Idx = 0; _Idx < _Reg_post_2018_ls_size; ++_Idx) {
+                // Leap seconds occur at _Ls._Hour:59:59. We store the next second after, so we need to add an entire
+                // hour.
                 const auto& _Ls = _Reg_ls_data[_Idx];
                 const auto _Date =
                     static_cast<sys_days>(year_month_day{year{_Ls._Year}, month{_Ls._Month}, day{_Ls._Day}})
@@ -2387,10 +2394,14 @@ namespace chrono {
         // Find first leap second after _Time.
         vector<leap_second>::const_iterator _It;
         if (_Tzdb._All_ls_positive) {
-            // _It here is actually the *2nd* leap second after _Time for the _Elapsed()-1 seconds before the next leap
-            // second insertion. This doesn't overlap with the actual leap second insertion period, so prev(_It) can
-            // always be used to detect if _Time is during an insertion. But an additional decrement is needed to get
-            // the correct eleapsed offset. For example, if leap seconds are {100, 200, 300, 400}, we have
+            // Where "target_ls" is the next leap second at or after _Time, _It either points to:
+            //    (1) The 2nd leap second after _Time if _Time_floor is in the range [target_ls - _Elapsed() - 1,
+            //    target_ls), or
+            //    (2) The leap second just after _Time otherwise.
+            // Note that we can always use prev(_It) to determine whether _Time is *during* a leap second insertion,
+            // since that falls under case (2) above. However, when we fall under case (1), we need to execute an
+            // additional decrement to get the correct elapsed offset. For example, if leap seconds are inserted at
+            // seconds {100, 200, 300, 400}, we have:
             //
             //  UTC   sys   *_It
             //   99    99    100
@@ -2415,9 +2426,12 @@ namespace chrono {
         } else {
             seconds _Prev_elapsed{0};
             for (_It = _Ls_vector.begin(); _It != _Ls_vector.end(); ++_It) {
-                // Positive leap seconds are counted one second earlier, when insertion begins.
-                if (utc_seconds{_It->date().time_since_epoch()} + (_It->_Positive() ? _Prev_elapsed : _It->_Elapsed())
-                    > _Time_floor) {
+                // UTC time when leap second insertion begins. In all cases, _It->date() + _It->_Elapsed() is the *end*
+                // of the insertion. For a negative leap that's also the beginning, but for a positive one, insertion
+                // begins 1 second earlier.
+                const utc_seconds _This_ls_begin{
+                    _It->date().time_since_epoch() + (_It->_Positive() ? _Prev_elapsed : _It->_Elapsed())};
+                if (_This_ls_begin > _Time_floor) {
                     break;
                 }
                 _Prev_elapsed = _It->_Elapsed();
@@ -2435,7 +2449,7 @@ namespace chrono {
                                  : _Utc_leap_second == _Time_floor ? strong_ordering::equal
                                                                    : strong_ordering::less;
 #endif // ^^^ workaround
-            if (_Tzdb._All_ls_positive && _STD is_gt(_Leap_cmp)) {
+            if (_Tzdb._All_ls_positive && _STD is_gt(_Leap_cmp)) { // Case (1)
                 --_It;
             }
             return {_Last_leap._Positive() && _STD is_eq(_Leap_cmp), _It->_Elapsed()};
