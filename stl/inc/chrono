@@ -2685,7 +2685,7 @@ namespace chrono {
     template <class _Clock>
     struct clock_time_conversion<_Clock, _Clock> {
         template <class _Duration>
-        _NODISCARD auto operator()(const time_point<_Clock, _Duration>& _Time) const
+        _NODISCARD time_point<_Clock, _Duration> operator()(const time_point<_Clock, _Duration>& _Time) const
             noexcept(is_arithmetic_v<typename _Duration::rep>) /* strengthened */ {
             return _Time;
         }
@@ -2694,7 +2694,7 @@ namespace chrono {
     template <>
     struct clock_time_conversion<system_clock, system_clock> {
         template <class _Duration>
-        _NODISCARD auto operator()(const sys_time<_Duration>& _Time) const
+        _NODISCARD sys_time<_Duration> operator()(const sys_time<_Duration>& _Time) const
             noexcept(is_arithmetic_v<typename _Duration::rep>) /* strengthened */ {
             return _Time;
         }
@@ -2703,7 +2703,7 @@ namespace chrono {
     template <>
     struct clock_time_conversion<utc_clock, utc_clock> {
         template <class _Duration>
-        _NODISCARD auto operator()(const utc_time<_Duration>& _Time) const
+        _NODISCARD utc_time<_Duration> operator()(const utc_time<_Duration>& _Time) const
             noexcept(is_arithmetic_v<typename _Duration::rep>) /* strengthened */ {
             return _Time;
         }
@@ -2714,7 +2714,7 @@ namespace chrono {
     template <>
     struct clock_time_conversion<utc_clock, system_clock> {
         template <class _Duration>
-        _NODISCARD auto operator()(const sys_time<_Duration>& _Sys_time) const {
+        _NODISCARD utc_time<common_type_t<_Duration, seconds>> operator()(const sys_time<_Duration>& _Sys_time) const {
             return utc_clock::from_sys(_Sys_time);
         }
     };
@@ -2722,7 +2722,7 @@ namespace chrono {
     template <>
     struct clock_time_conversion<system_clock, utc_clock> {
         template <class _Duration>
-        _NODISCARD auto operator()(const utc_time<_Duration>& _Utc_time) const {
+        _NODISCARD sys_time<common_type_t<_Duration, seconds>> operator()(const utc_time<_Duration>& _Utc_time) const {
             return utc_clock::to_sys(_Utc_time);
         }
     };
