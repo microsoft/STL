@@ -2094,6 +2094,7 @@ namespace chrono {
 
     // [time.zone.leap]
 
+    // CLASS leap_second
     class leap_second {
     public:
         leap_second(const leap_second&) = default;
@@ -2185,6 +2186,7 @@ namespace chrono {
     // [time.zone.db]
 
     // TRANSITION: work in progress
+    // STRUCT tzdb
     struct tzdb {
         vector<leap_second, _Crt_allocator<leap_second>> leap_seconds;
         bool _All_ls_positive;
@@ -2267,6 +2269,7 @@ namespace chrono {
     }
 
     // TRANSITION: work in progress
+    // CLASS tzdb_list
     class tzdb_list {
     private:
         using _ListType = forward_list<tzdb, _Crt_allocator<tzdb>>;
@@ -2349,6 +2352,7 @@ namespace chrono {
 
     inline atomic<tzdb_list*> _Global_tzdb_list;
 
+    // FUNCTION get_tzdb_list
     _NODISCARD inline tzdb_list& get_tzdb_list() {
         auto* _Tzdb_ptr = _Global_tzdb_list.load();
         if (_Tzdb_ptr == nullptr) {
@@ -2365,10 +2369,12 @@ namespace chrono {
         return *_Tzdb_ptr;
     }
 
+    // FUNCTION get_tzdb
     _NODISCARD inline const tzdb& get_tzdb() {
         return _CHRONO get_tzdb_list().front();
     }
 
+    // FUNCTION reload_tzdb
     inline const tzdb& reload_tzdb() {
         return _CHRONO get_tzdb_list()._Reload();
     }
@@ -2380,11 +2386,13 @@ namespace chrono {
     using utc_time    = time_point<utc_clock, _Duration>;
     using utc_seconds = utc_time<seconds>;
 
+    // STRUCT leap_second_info
     struct leap_second_info {
         bool is_leap_second;
         seconds elapsed;
     };
 
+    // FUNCTION TEMPLATE get_leap_second_info
     template <class _Duration>
     _NODISCARD leap_second_info get_leap_second_info(const utc_time<_Duration>& _Time) {
         const utc_seconds _Time_floor = _CHRONO floor<seconds>(_Time);
@@ -2458,6 +2466,7 @@ namespace chrono {
         }
     }
 
+    // CLASS utc_clock
     class utc_clock {
     public:
         using rep                       = system_clock::rep;
@@ -2508,6 +2517,7 @@ namespace chrono {
     using tai_time    = time_point<tai_clock, _Duration>;
     using tai_seconds = tai_time<seconds>;
 
+    // CLASS tai_clock
     class tai_clock {
     public:
         using rep                       = system_clock::rep;
@@ -2543,6 +2553,7 @@ namespace chrono {
     using gps_time    = time_point<gps_clock, _Duration>;
     using gps_seconds = gps_time<seconds>;
 
+    // CLASS gps_clock
     class gps_clock {
     public:
         using rep                       = system_clock::rep;
@@ -2580,6 +2591,7 @@ namespace filesystem {
 } // namespace filesystem
 
 namespace chrono {
+    // ALIAS file_clock
     using file_clock = filesystem::_File_time_clock;
 
     template <class _Duration>
@@ -2648,6 +2660,7 @@ namespace chrono {
 #if _HAS_CXX20
     // [time.clock.conv]
 
+    // STRUCT TEMPLATE clock_time_conversion
     template <class _DestClock, class _SourceClock>
     struct clock_time_conversion;
 
@@ -2777,6 +2790,7 @@ namespace chrono {
 
     // [time.clock.cast.fn]
 
+    // FUNCTION TEMPLATE clock_cast
     template <class _DestClock, class _SourceClock, class _Duration>
     _NODISCARD auto clock_cast(const time_point<_SourceClock, _Duration>& _Time) {
         constexpr bool _Has_direct_conversion =
