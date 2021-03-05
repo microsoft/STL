@@ -2462,7 +2462,9 @@ namespace chrono {
             }
         }
 
-        if (_It != _Ls_vector.begin()) {
+        if (_It == _Ls_vector.begin()) {
+            return {false, seconds{0}};
+        } else {
             // Convert to the last leap second before or equal to _Time.
             const auto& _Last_leap = *--_It;
             const utc_seconds _Utc_leap_second{_Last_leap.date().time_since_epoch() + _It->_Elapsed() - seconds{1}};
@@ -2477,8 +2479,6 @@ namespace chrono {
                 --_It;
             }
             return {_Last_leap._Positive() && _STD is_eq(_Leap_cmp), _It->_Elapsed()};
-        } else {
-            return {false, seconds{0}};
         }
     }
 
