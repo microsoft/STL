@@ -2237,9 +2237,9 @@ namespace chrono {
             (_STD max)(_Current_size, _STD size(_Known_leap_seconds)) - _Pre_2018_count;
 
         size_t _Reg_post_2018_ls_size; // number of post-2018 LSs found in the registry
-        unique_ptr<_RegistryLeapSecondInfo[], decltype(&__std_decalloc_reg_leap_seconds)> _Reg_ls_data(
+        unique_ptr<__std_tzdb_registry_leap_info[], decltype(&__std_tzdb_delete_reg_leap_seconds)> _Reg_ls_data{
             __std_tzdb_get_reg_leap_seconds(_Known_post_2018_ls_size, &_Reg_post_2018_ls_size),
-            &__std_decalloc_reg_leap_seconds);
+            &__std_tzdb_delete_reg_leap_seconds};
 
         if (_Reg_post_2018_ls_size > _Known_post_2018_ls_size && !_Reg_ls_data) {
             _Xbad_alloc(); // registry has new data, but failed to allocate storage

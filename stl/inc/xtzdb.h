@@ -18,7 +18,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-struct _RegistryLeapSecondInfo {
+struct __std_tzdb_registry_leap_info {
     uint16_t _Year;
     uint16_t _Month;
     uint16_t _Day;
@@ -29,13 +29,13 @@ struct _RegistryLeapSecondInfo {
 
 _EXTERN_C
 
-_RegistryLeapSecondInfo* __stdcall __std_tzdb_get_reg_leap_seconds(
-    size_t _Prev_reg_ls_size, size_t* _Current_reg_ls_size);
+__std_tzdb_registry_leap_info* __stdcall __std_tzdb_get_reg_leap_seconds(
+    size_t _Prev_reg_ls_size, size_t* _Current_reg_ls_size) noexcept;
 
-void __stdcall __std_decalloc_reg_leap_seconds(_RegistryLeapSecondInfo* _Rlsi);
+void __stdcall __std_tzdb_delete_reg_leap_seconds(__std_tzdb_registry_leap_info* _Rlsi) noexcept;
 
-_NODISCARD void* __stdcall __std_calloc_crt(size_t _Count, size_t _Size);
-void __stdcall __std_free_crt(void* _Ptr);
+_NODISCARD void* __stdcall __std_calloc_crt(size_t _Count, size_t _Size) noexcept;
+void __stdcall __std_free_crt(void* _Ptr) noexcept;
 
 _END_EXTERN_C
 

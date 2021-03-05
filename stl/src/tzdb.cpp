@@ -10,8 +10,8 @@
 
 _EXTERN_C
 
-_RegistryLeapSecondInfo* __stdcall __std_tzdb_get_reg_leap_seconds(
-    const size_t prev_reg_ls_size, size_t* current_reg_ls_size) {
+__std_tzdb_registry_leap_info* __stdcall __std_tzdb_get_reg_leap_seconds(
+    const size_t prev_reg_ls_size, size_t* const current_reg_ls_size) noexcept {
     // On exit---
     //    *current_reg_ls_size <= prev_reg_ls_size, *reg_ls_data == nullptr --> no new data
     //    *current_reg_ls_size >  prev_reg_ls_size, *reg_ls_data != nullptr --> new data, successfully read
@@ -31,14 +31,14 @@ _RegistryLeapSecondInfo* __stdcall __std_tzdb_get_reg_leap_seconds(
 
     DWORD byte_size = 0;
     status          = RegQueryValueExW(leap_sec_key, reg_subkey_name, nullptr, nullptr, nullptr, &byte_size);
-    static_assert(sizeof(_RegistryLeapSecondInfo) == 12);
+    static_assert(sizeof(__std_tzdb_registry_leap_info) == 12);
     const auto ls_size   = byte_size / 12;
     *current_reg_ls_size = ls_size;
 
-    _RegistryLeapSecondInfo* reg_ls_data = nullptr;
+    __std_tzdb_registry_leap_info* reg_ls_data = nullptr;
     if ((status == ERROR_SUCCESS || status == ERROR_MORE_DATA) && ls_size > prev_reg_ls_size) {
         try {
-            reg_ls_data = new _RegistryLeapSecondInfo[ls_size];
+            reg_ls_data = new __std_tzdb_registry_leap_info[ls_size];
             status      = RegQueryValueExW(
                 leap_sec_key, reg_subkey_name, nullptr, nullptr, reinterpret_cast<LPBYTE>(reg_ls_data), &byte_size);
             if (status != ERROR_SUCCESS) {
@@ -56,15 +56,15 @@ _RegistryLeapSecondInfo* __stdcall __std_tzdb_get_reg_leap_seconds(
     return reg_ls_data;
 }
 
-void __stdcall __std_decalloc_reg_leap_seconds(_RegistryLeapSecondInfo* _Rlsi) {
+void __stdcall __std_tzdb_delete_reg_leap_seconds(__std_tzdb_registry_leap_info* _Rlsi) noexcept {
     delete[] _Rlsi;
 }
 
-_NODISCARD void* __stdcall __std_calloc_crt(const size_t count, const size_t size) {
+_NODISCARD void* __stdcall __std_calloc_crt(const size_t count, const size_t size) noexcept {
     return _calloc_crt(count, size);
 }
 
-void __stdcall __std_free_crt(void* p) {
+void __stdcall __std_free_crt(void* p) noexcept {
     _free_crt(p);
 }
 
