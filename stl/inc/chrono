@@ -2808,14 +2808,14 @@ namespace chrono {
         constexpr bool _Has_sys_conversion = _Dest_from_sys && _Sys_from_src;
         static_assert(_Has_direct_conversion || !(_Has_utc_conversion && _Has_sys_conversion),
             "A two-step clock time conversion is required to be unique, either through utc_clock or system_clock, but "
-            "not both [time.clock.cast.fn]/2.");
+            "not both (N4878 [time.clock.cast.fn]/2.)");
 
         constexpr bool _Has_sys_utc_conversion = _Dest_from_sys && _Utc_from_src;
         constexpr bool _Has_utc_sys_conversion = _Dest_from_utc && _Sys_from_src;
         static_assert(_Has_direct_conversion || _Has_utc_conversion || _Has_sys_conversion
                           || !(_Has_utc_sys_conversion && _Has_sys_utc_conversion),
             "A three-step clock time conversion is required to be unique, either utc-to-system or system-to-utc, but "
-            "not both [time.clock.cast.fn]/2.");
+            "not both (N4878 [time.clock.cast.fn]/2).");
 
         // clang-format off
         if constexpr (_Has_direct_conversion) {
@@ -2835,8 +2835,8 @@ namespace chrono {
                      clock_time_conversion<utc_clock, system_clock>{}(
                        clock_time_conversion<system_clock, _SourceClock>{}(_Time)));
         } else {
-            static_assert(_Always_false<_Duration>,
-                "No clock time conversion exists from source clock type to destination clock type.");
+            static_assert(_Always_false<_Duration>, "No clock time conversion exists from source clock type to "
+                                                    "destination clock type (N4878 [time.clock.cast.fn]/1).");
         }
         // clang-format on
     }
