@@ -267,30 +267,31 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
         // Validate join_view::base() const&
         static_assert(CanMemberBase<const R&> == copy_constructible<V>);
         if constexpr (copy_constructible<V> && forward_range<V>) {
-            same_as<V> auto b1 = as_const(r).base();
+            [[maybe_unused]] same_as<V> auto b1 = as_const(r).base();
             static_assert(noexcept(as_const(r).base()) == is_nothrow_copy_constructible_v<V>);
             if (!is_empty) {
-                [[maybe_unused]] same_as<Inner> auto i1 = *b1.begin();
-#if 0 // FIXME
-                if (size(i1) != 0) {
-                    assert(*begin(i1) == *begin(expected));
+                auto bi1 = b1.begin();
+                while (ranges::empty(*bi1)) {
+                    ++bi1;
                 }
-#endif // FIXME
+                const same_as<Inner> auto inner_first = *bi1;
+                assert(*ranges::begin(inner_first) == *begin(expected));
+
+                if constexpr (bidirectional_range<V> && common_range<V>) {
+                    auto ei1 = prev(b1.end());
+                    while (ranges::empty(*ei1)) {
+                        --ei1;
+                    }
+                    const same_as<Inner> auto inner_last = *ei1;
+                    assert(*prev(ranges::end(inner_last)) == *prev(end(expected)));
+                }
             }
         }
 
         // Validate join_view::base() && (NB: do this last since it leaves r moved-from)
         if (forward_range<V>) { // intentionally not if constexpr
-            same_as<V> auto b2 = move(r).base();
+            [[maybe_unused]] same_as<V> auto b2 = move(r).base();
             static_assert(noexcept(move(r).base()) == is_nothrow_move_constructible_v<V>);
-            if (!is_empty) {
-                [[maybe_unused]] same_as<Inner> auto i2 = *b2.begin();
-#if 0 // FIXME
-            if (size(i2) != 0) {
-                assert(*begin(i2) == *begin(expected));
-            }
-#endif // FIXME
-            }
         }
     }
     return true;
