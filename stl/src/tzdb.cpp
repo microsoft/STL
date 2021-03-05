@@ -13,15 +13,15 @@ _EXTERN_C
 __std_tzdb_registry_leap_info* __stdcall __std_tzdb_get_reg_leap_seconds(
     const size_t prev_reg_ls_size, size_t* const current_reg_ls_size) noexcept {
     // On exit---
-    //    *current_reg_ls_size <= prev_reg_ls_size, *reg_ls_data == nullptr --> no new data
-    //    *current_reg_ls_size >  prev_reg_ls_size, *reg_ls_data != nullptr --> new data, successfully read
-    //    *current_reg_ls_size == 0,                *reg_ls_data != nullptr --> new data, failed reading
-    //    *current_reg_ls_size >  prev_reg_ls_size, *reg_ls_data == nullptr --> new data, failed allocation
+    //    *current_reg_ls_size <= prev_reg_ls_size, reg_ls_data == nullptr --> no new data
+    //    *current_reg_ls_size >  prev_reg_ls_size, reg_ls_data != nullptr --> new data, successfully read
+    //    *current_reg_ls_size == 0,                reg_ls_data != nullptr --> new data, failed reading
+    //    *current_reg_ls_size >  prev_reg_ls_size, reg_ls_data == nullptr --> new data, failed allocation
 
     constexpr auto reg_key_name    = LR"(SYSTEM\CurrentControlSet\Control\LeapSecondInformation)";
     constexpr auto reg_subkey_name = L"LeapSeconds";
     *current_reg_ls_size           = 0;
-    HKEY leap_sec_key              = 0;
+    HKEY leap_sec_key              = nullptr;
 
     LSTATUS status = RegOpenKeyExW(HKEY_LOCAL_MACHINE, reg_key_name, 0, KEY_READ, &leap_sec_key);
     if (status != ERROR_SUCCESS) {

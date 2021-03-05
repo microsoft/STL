@@ -2678,7 +2678,7 @@ namespace chrono {
 
     // STRUCT TEMPLATE clock_time_conversion
     template <class _DestClock, class _SourceClock>
-    struct clock_time_conversion;
+    struct clock_time_conversion {};
 
     // [time.clock.cast.id]
 
