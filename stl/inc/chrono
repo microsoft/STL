@@ -2173,9 +2173,12 @@ namespace chrono {
     }
 
 #ifdef __cpp_lib_concepts
+    // clang-format off
     template <class _Duration>
-    requires three_way_comparable_with<sys_seconds, sys_time<_Duration>> _NODISCARD constexpr auto operator<=>(
+        requires three_way_comparable_with<sys_seconds, sys_time<_Duration>> 
+    _NODISCARD constexpr auto operator<=>(
         const leap_second& _Left, const sys_time<_Duration>& _Right) noexcept {
+        // clang-format on
         return _Left.date() <=> _Right;
     }
     _NODISCARD constexpr strong_ordering operator<=>(const leap_second& _Left, const leap_second& _Right) noexcept {
@@ -2814,24 +2817,28 @@ namespace chrono {
             "A three-step clock time conversion is required to be unique, either utc-to-system or system-to-utc, but "
             "not both [time.clock.cast.fn]/2.");
 
+        // clang-format off
         if constexpr (_Has_direct_conversion) {
             return clock_time_conversion<_DestClock, _SourceClock>{}(_Time);
         } else if constexpr (_Has_utc_conversion) {
             return clock_time_conversion<_DestClock, utc_clock>{}(
-                clock_time_conversion<utc_clock, _SourceClock>{}(_Time));
+                     clock_time_conversion<utc_clock, _SourceClock>{}(_Time));
         } else if constexpr (_Has_sys_conversion) {
             return clock_time_conversion<_DestClock, system_clock>{}(
-                clock_time_conversion<system_clock, _SourceClock>{}(_Time));
+                     clock_time_conversion<system_clock, _SourceClock>{}(_Time));
         } else if constexpr (_Has_sys_utc_conversion) {
-            return clock_time_conversion<_DestClock, system_clock>{}(clock_time_conversion<system_clock, utc_clock>{}(
-                clock_time_conversion<utc_clock, _SourceClock>{}(_Time)));
+            return clock_time_conversion<_DestClock, system_clock>{}(
+                     clock_time_conversion<system_clock, utc_clock>{}(
+                       clock_time_conversion<utc_clock, _SourceClock>{}(_Time)));
         } else if constexpr (_Has_utc_sys_conversion) {
-            return clock_time_conversion<_DestClock, utc_clock>{}(clock_time_conversion<utc_clock, system_clock>{}(
-                clock_time_conversion<system_clock, _SourceClock>{}(_Time)));
+            return clock_time_conversion<_DestClock, utc_clock>{}(
+                     clock_time_conversion<utc_clock, system_clock>{}(
+                       clock_time_conversion<system_clock, _SourceClock>{}(_Time)));
         } else {
             static_assert(_Always_false<_Duration>,
                 "No clock time conversion exists from source clock type to destination clock type.");
         }
+        // clang-format on
     }
 #endif // _HAS_CXX20
 } // namespace chrono
