@@ -2175,7 +2175,7 @@ namespace chrono {
 #ifdef __cpp_lib_concepts
     // clang-format off
     template <class _Duration>
-        requires three_way_comparable_with<sys_seconds, sys_time<_Duration>> 
+        requires three_way_comparable_with<sys_seconds, sys_time<_Duration>>
     _NODISCARD constexpr auto operator<=>(
         const leap_second& _Left, const sys_time<_Duration>& _Right) noexcept {
         // clang-format on
