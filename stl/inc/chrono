@@ -2497,22 +2497,22 @@ namespace chrono {
 
         template <class _Duration>
         _NODISCARD static sys_time<common_type_t<_Duration, seconds>> to_sys(const utc_time<_Duration>& _Utc_time) {
-            using _CT = common_type_t<_Duration, seconds>;
+            using _CommonType = common_type_t<_Duration, seconds>;
             const auto _Lsi{get_leap_second_info(_Utc_time)};
-            _CT _Ticks;
+            _CommonType _Ticks;
             if (_Lsi.is_leap_second) {
                 const auto _Leap_sec_minus_one = _CHRONO floor<seconds>(_Utc_time.time_since_epoch()) - _Lsi.elapsed;
                 if constexpr (is_integral_v<typename _Duration::rep>) {
-                    constexpr auto _Delta{seconds{1} - _CT{1}};
+                    constexpr auto _Delta{seconds{1} - _CommonType{1}};
                     _Ticks = _Leap_sec_minus_one + _Delta;
                 } else {
-                    const auto _Leap_sec_begin = _CHRONO ceil<_CT>(_Leap_sec_minus_one + seconds{1});
-                    _Ticks                     = _CT{_STD nextafter(_Leap_sec_begin.count(), typename _CT::rep{0})};
+                    const auto _Leap_sec_begin = _CHRONO ceil<_CommonType>(_Leap_sec_minus_one + seconds{1});
+                    _Ticks = _CommonType{_STD nextafter(_Leap_sec_begin.count(), typename _CommonType::rep{0})};
                 }
             } else {
                 _Ticks = _Utc_time.time_since_epoch() - _Lsi.elapsed;
             }
-            return sys_time<_CT>{_Ticks};
+            return sys_time<_CommonType>{_Ticks};
         }
 
         template <class _Duration>
@@ -2641,14 +2641,14 @@ namespace filesystem {
         _NODISCARD static chrono::utc_time<common_type_t<_Duration, chrono::seconds>> to_utc(
             const chrono::file_time<_Duration>& _File_time) {
             using namespace chrono;
-            using _CT = common_type_t<_Duration, seconds>;
+            using _CommonType = common_type_t<_Duration, seconds>;
             const auto _Ticks =
                 _File_time.time_since_epoch() - duration_cast<seconds>(duration{__std_fs_file_time_epoch_adjustment});
 
             if (_Ticks < _Cutoff.time_since_epoch()) {
-                return utc_clock::from_sys(sys_time<_CT>{_Ticks});
+                return utc_clock::from_sys(sys_time<_CommonType>{_Ticks});
             } else {
-                return utc_time<_CT>{_Ticks + _Skipped_filetime_leap_seconds};
+                return utc_time<_CommonType>{_Ticks + _Skipped_filetime_leap_seconds};
             }
         }
 
@@ -2656,8 +2656,8 @@ namespace filesystem {
         _NODISCARD static chrono::file_time<common_type_t<_Duration, chrono::seconds>> from_utc(
             const chrono::utc_time<_Duration>& _Utc_time) {
             using namespace chrono;
-            using _CT = common_type_t<_Duration, seconds>;
-            file_time<_CT> _File_time{duration_cast<seconds>(duration{__std_fs_file_time_epoch_adjustment})};
+            file_time<common_type_t<_Duration, seconds>> _File_time{
+                duration_cast<seconds>(duration{__std_fs_file_time_epoch_adjustment})};
 
             if (_Utc_time < utc_seconds{_Cutoff.time_since_epoch()} + _Skipped_filetime_leap_seconds) {
                 _File_time += utc_clock::to_sys(_Utc_time).time_since_epoch();
