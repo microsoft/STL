@@ -266,8 +266,8 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
 
         // Validate join_view::base() const&
         static_assert(CanMemberBase<const R&> == copy_constructible<V>);
-        if constexpr (copy_constructible<V>) {
-            same_as<Outer> auto b1 = as_const(r).base();
+        if constexpr (copy_constructible<V> && forward_range<V>) {
+            same_as<V> auto b1 = as_const(r).base();
             static_assert(noexcept(as_const(r).base()) == is_nothrow_copy_constructible_v<V>);
             if (!is_empty) {
                 [[maybe_unused]] same_as<Inner> auto i1 = *b1.begin();
@@ -280,15 +280,17 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
         }
 
         // Validate join_view::base() && (NB: do this last since it leaves r moved-from)
-        same_as<Outer> auto b2 = move(r).base();
-        static_assert(noexcept(move(r).base()) == is_nothrow_move_constructible_v<V>);
-        if (!is_empty) {
-            [[maybe_unused]] same_as<Inner> auto i2 = *b2.begin();
+        if (forward_range<V>) { // intentionally not if constexpr
+            same_as<V> auto b2 = move(r).base();
+            static_assert(noexcept(move(r).base()) == is_nothrow_move_constructible_v<V>);
+            if (!is_empty) {
+                [[maybe_unused]] same_as<Inner> auto i2 = *b2.begin();
 #if 0 // FIXME
             if (size(i2) != 0) {
                 assert(*begin(i2) == *begin(expected));
             }
 #endif // FIXME
+            }
         }
     }
     return true;

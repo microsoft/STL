@@ -2743,9 +2743,8 @@ namespace ranges {
             }
 
             // clang-format off
-            _NODISCARD constexpr _InnerIter operator->() const // Per resolution of LWG-3500
-                noexcept(is_nothrow_copy_constructible_v<_InnerIter>) /* strengthened */
-                requires _Has_arrow<_InnerIter> && copyable<_InnerIter> {
+            _NODISCARD constexpr _InnerIter operator->() const noexcept(is_nothrow_copy_constructible_v<_InnerIter>)
+                /* strengthened */ requires _Has_arrow<_InnerIter> && copyable<_InnerIter> {
                 // clang-format on
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _Check_dereference();
