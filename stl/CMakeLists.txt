@@ -177,6 +177,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/semaphore
     ${CMAKE_CURRENT_LIST_DIR}/inc/set
     ${CMAKE_CURRENT_LIST_DIR}/inc/shared_mutex
+    ${CMAKE_CURRENT_LIST_DIR}/inc/source_location
     ${CMAKE_CURRENT_LIST_DIR}/inc/span
     ${CMAKE_CURRENT_LIST_DIR}/inc/sstream
     ${CMAKE_CURRENT_LIST_DIR}/inc/stack

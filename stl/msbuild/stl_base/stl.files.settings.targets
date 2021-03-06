@@ -58,6 +58,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
             $(CrtRoot)\github\stl\src\cthread.cpp;
             $(CrtRoot)\github\stl\src\mutex.cpp;
             $(CrtRoot)\github\stl\src\pplerror.cpp;
+            $(CrtRoot)\github\stl\src\ppltasks.cpp;
             $(CrtRoot)\github\stl\src\taskscheduler.cpp;
             $(CrtRoot)\github\stl\src\xnotify.cpp;
             $(CrtRoot)\github\stl\src\xtime.cpp;
@@ -147,14 +148,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
             $(CrtRoot)\github\stl\src\xwstoxfl.cpp;
             ">
             <BuildAs>nativecpp</BuildAs>
-        </BuildFiles>
-
-        <BuildFiles Include="
-            $(CrtRoot)\github\stl\src\ppltasks.cpp;
-            ">
-            <BuildAs>nativecpp</BuildAs>
-            <!-- ppltasks.cpp uses WRL, which is incompatible with /permissive- as of May 24, 2019 -->
-            <NeedsPermissiveMode>true</NeedsPermissiveMode>
         </BuildFiles>
 
         <BuildFiles Include="

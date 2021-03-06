@@ -494,6 +494,64 @@ void test_990695() {
             assert(t.tm_min == 8);
             assert(t.tm_sec == 0);
         }
+
+        {
+            // Should fail if EOF while not parsing specifier (N4878 [locale.time.get.members]/8.3).
+            tm t{};
+            istringstream iss("4");
+            iss >> get_time(&t, "42");
+            assert(iss.rdstate() == (ios_base::eofbit | ios_base::failbit));
+        }
+
+        {
+            // Trailing % should not be treated as a literal (N4878 [locale.time.get.members]/8.4).
+            tm t{};
+            istringstream iss("%");
+            iss >> get_time(&t, "%");
+            assert(iss.fail());
+        }
+
+        {
+            // % with modifier but no specifier is also incomplete.
+            tm t{};
+            istringstream iss("%E");
+            iss >> get_time(&t, "%E");
+            assert(iss.fail());
+        }
+
+        {
+            // Literal match is case-insensitive (N4878 [locale.time.get.members]/8.6).
+            tm t{};
+            istringstream iss("aBc");
+            iss >> get_time(&t, "AbC");
+            assert(iss);
+        }
+
+        {
+            // GH-1606: reads too many leading zeros
+            istringstream iss("19700405T000006");
+            tm t{};
+            iss >> get_time(&t, "%Y%m%dT%H%M%S");
+            assert(iss);
+
+            printf("Expected hour 0, min 0, sec 6\n");
+            printf("     Got hour %d, min %d, sec %d\n", t.tm_hour, t.tm_min, t.tm_sec);
+
+            assert(t.tm_year == 70);
+            assert(t.tm_mon == 3);
+            assert(t.tm_mday == 5);
+            assert(t.tm_hour == 0);
+            assert(t.tm_min == 0);
+            assert(t.tm_sec == 6);
+        }
+
+        {
+            // strptime specification: "leading zeros are permitted but not required"
+            tm t{};
+            istringstream{" 7 4"} >> get_time(&t, "%m%d");
+            assert(t.tm_mon == 6);
+            assert(t.tm_mday == 4);
+        }
     }
 }
 

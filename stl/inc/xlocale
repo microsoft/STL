@@ -389,9 +389,11 @@ public:
         return _Ptr == _Loc._Ptr || (name().compare("*") != 0 && name().compare(_Loc.name()) == 0);
     }
 
+#if !_HAS_CXX20
     _NODISCARD bool operator!=(const locale& _Right) const {
         return !(*this == _Right);
     }
+#endif // !_HAS_CXX20
 
     static _MRTIMP2_PURE const locale& __CLRCALL_PURE_OR_CDECL classic(); // classic "C" locale
 

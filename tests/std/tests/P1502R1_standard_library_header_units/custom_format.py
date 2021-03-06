@@ -63,7 +63,7 @@ class CustomTestFormat(STLTestFormat):
             'semaphore',
             'set',
             'shared_mutex',
-            # 'source_location',
+            'source_location',
             'span',
             'sstream',
             'stack',
