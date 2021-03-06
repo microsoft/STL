@@ -362,6 +362,16 @@ The `SKIPPED` result code indicates that a given test was explicitly skipped by 
 * taking a very long time to run
 * failing or passing for the incorrect reason
 
+# Editing And Testing The Debugger Visualizer
+
+### Modify The Visualizer
+
+To modify how elements look on the debugger open the file STL\stl\STL.natvis. For more information on how to modify this file check the [natvis documantation][].
+
+### Test your changes.
+
+After making your changes overwrithe the file under %Visual Studio instalation path%\Common7\Packages\Debugger\Visualizers\stl.natvis (is remcomended to make a backup of the file). After overwriting the file you should be able to see your chanes in a Visual Studio debugging sesion.
+
 # Block Diagram
 
 The STL is built atop other compiler support libraries that ship with Windows and Visual Studio, like the UCRT,
@@ -423,3 +433,4 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [opencode@microsoft.com]: mailto:opencode@microsoft.com
 [redistributables]: https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads
 [vcpkg]: https://github.com/microsoft/vcpkg
+[natvis documantation]: https://docs.microsoft.com/en-us/visualstudio/debugger/create-custom-views-of-native-objects?view=vs-2019
