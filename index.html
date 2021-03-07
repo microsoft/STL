@@ -42,17 +42,39 @@
         }
 
         const url_search_params = new URLSearchParams(window.location.search);
+        const hide_string = 'n';
+        const show_string = 'y';
 
-        function get_hidden(key, default_value = false) {
+        function get_hidden(key, default_hidden = false) {
+            let hidden = null;
+
             const value = url_search_params.get(key);
 
-            if (value === 'hide') {
-                return true;
-            } else if (value === 'show') {
-                return false;
+            if (value === hide_string) {
+                hidden = true;
+            } else if (value === show_string) {
+                hidden = false;
             } else {
-                return default_value;
+                hidden = default_hidden;
             }
+
+            return {
+                hidden: hidden,
+                stl_default_hidden: default_hidden,
+                stl_key: key,
+            };
+        }
+
+        function update_url() {
+            let url = window.location.pathname;
+
+            const params_string = `${url_search_params}`;
+
+            if (params_string.length > 0) {
+                url += `?${params_string}`;
+            }
+
+            window.history.replaceState({}, '', url);
         }
 
         const status_data = {
@@ -63,7 +85,7 @@
                     borderColor: '#9966FF',
                     backgroundColor: '#9966FF',
                     yAxisID: 'smallAxis',
-                    hidden: get_hidden('cxx17'),
+                    ...get_hidden('cxx17'),
                 },
                 {
                     data: get_values(weekly_table, 'cxx20').concat(get_values(daily_table, 'cxx20')),
@@ -71,7 +93,7 @@
                     borderColor: '#7030A0',
                     backgroundColor: '#7030A0',
                     yAxisID: 'smallAxis',
-                    hidden: get_hidden('cxx20'),
+                    ...get_hidden('cxx20'),
                 },
                 {
                     data: get_values(weekly_table, 'cxx23').concat(get_values(daily_table, 'cxx23')),
@@ -80,7 +102,7 @@
                     backgroundColor: '#9966FF',
                     borderDash: [10, 5],
                     yAxisID: 'smallAxis',
-                    hidden: get_hidden('cxx23'),
+                    ...get_hidden('cxx23'),
                 },
                 {
                     data: get_values(weekly_table, 'lwg').concat(get_values(daily_table, 'lwg')),
@@ -88,7 +110,7 @@
                     borderColor: '#0070C0',
                     backgroundColor: '#0070C0',
                     yAxisID: 'smallAxis',
-                    hidden: get_hidden('lwg'),
+                    ...get_hidden('lwg'),
                 },
                 {
                     data: get_values(daily_table, 'pr'),
@@ -96,7 +118,7 @@
                     borderColor: '#00B050',
                     backgroundColor: '#00B050',
                     yAxisID: 'smallAxis',
-                    hidden: get_hidden('pr'),
+                    ...get_hidden('pr'),
                 },
                 {
                     data: get_values(weekly_table, 'vso'),
@@ -104,7 +126,7 @@
                     borderColor: '#900000',
                     backgroundColor: '#900000',
                     yAxisID: 'largeAxis',
-                    hidden: get_hidden('vso'),
+                    ...get_hidden('vso'),
                 },
                 {
                     data: get_values(daily_table, 'bug'),
@@ -112,7 +134,7 @@
                     borderColor: '#FF0000',
                     backgroundColor: '#FF0000',
                     yAxisID: 'largeAxis',
-                    hidden: get_hidden('bug'),
+                    ...get_hidden('bug'),
                 },
                 {
                     data: get_values(daily_table, 'issue'),
@@ -120,7 +142,7 @@
                     borderColor: '#909090',
                     backgroundColor: '#909090',
                     yAxisID: 'largeAxis',
-                    hidden: get_hidden('issue'),
+                    ...get_hidden('issue'),
                 },
                 {
                     data: get_values(weekly_table, 'libcxx'),
@@ -128,7 +150,7 @@
                     borderColor: '#FFC000',
                     backgroundColor: '#FFC000',
                     yAxisID: 'largeAxis',
-                    hidden: get_hidden('libcxx'),
+                    ...get_hidden('libcxx'),
                 },
             ],
         };
@@ -141,7 +163,7 @@
                     borderColor: '#909090',
                     backgroundColor: '#909090',
                     yAxisID: 'leftAxis',
-                    hidden: get_hidden('avg_age', true),
+                    ...get_hidden('avg_age', true),
                 },
                 {
                     data: get_values(daily_table, 'avg_wait'),
@@ -149,7 +171,7 @@
                     borderColor: '#FF9090',
                     backgroundColor: '#FF9090',
                     yAxisID: 'leftAxis',
-                    hidden: get_hidden('avg_wait', true),
+                    ...get_hidden('avg_wait', true),
                 },
                 {
                     data: get_values(daily_table, 'sum_age'),
@@ -157,7 +179,7 @@
                     borderColor: '#000000',
                     backgroundColor: '#000000',
                     yAxisID: 'rightAxis',
-                    hidden: get_hidden('sum_age'),
+                    ...get_hidden('sum_age'),
                 },
                 {
                     data: get_values(daily_table, 'sum_wait'),
@@ -165,7 +187,7 @@
                     borderColor: '#FF0000',
                     backgroundColor: '#FF0000',
                     yAxisID: 'rightAxis',
-                    hidden: get_hidden('sum_wait'),
+                    ...get_hidden('sum_wait'),
                 },
             ],
         };
@@ -178,7 +200,7 @@
                     borderColor: '#00B050',
                     backgroundColor: '#00B050',
                     yAxisID: 'mergeAxis',
-                    hidden: get_hidden('merged'),
+                    ...get_hidden('merged'),
                 },
                 {
                     type: 'bar',
@@ -187,7 +209,7 @@
                     borderColor: '#CCCCCC',
                     borderWidth: 1,
                     yAxisID: 'mergeAxis',
-                    hidden: get_hidden('merge_bar'),
+                    ...get_hidden('merge_bar'),
                 },
             ],
         };
@@ -225,7 +247,36 @@
             },
         };
 
+        function legend_click_handler(_event, legend_item, legend) {
+            const ch = legend.chart;
+            const index = legend_item.datasetIndex;
+
+            const { stl_default_hidden, stl_key } = ch.data.datasets[index];
+
+            const becoming_hidden = ch.isDatasetVisible(index);
+
+            if (becoming_hidden) {
+                ch.hide(index);
+            } else {
+                ch.show(index);
+            }
+
+            legend_item.hidden = becoming_hidden;
+
+            if (becoming_hidden === stl_default_hidden) {
+                url_search_params.delete(stl_key);
+            } else {
+                url_search_params.set(stl_key, becoming_hidden ? hide_string : show_string);
+                url_search_params.sort();
+            }
+
+            update_url();
+        }
+
         const common_plugins = {
+            legend: {
+                onClick: legend_click_handler,
+            },
             tooltip: {
                 mode: 'nearest',
                 intersect: false,
