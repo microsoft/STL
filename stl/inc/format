@@ -1329,7 +1329,7 @@ struct _Format_handler {
         if (_Begin == _End || *_Begin != '}') {
             throw format_error("Missing '}' in format string.");
         }
-        _Ctx.advance_to(visit_format_arg(
+        _Ctx.advance_to(_STD visit_format_arg(
             _Arg_formatter<_OutputIt, _CharT>{
                 ._Ctx       = &_Ctx,
                 ._Specs     = &_Specs,
