@@ -481,6 +481,20 @@ STATIC_ASSERT(__cpp_lib_constexpr_numeric == 201911L);
 #endif
 #endif
 
+#if _HAS_CXX20 && !defined(__clang__) // TRANSITION, LLVM-48606
+#ifndef __cpp_lib_constexpr_string
+#error __cpp_lib_constexpr_string is not defined
+#elif __cpp_lib_constexpr_string != 201907L
+#error __cpp_lib_constexpr_string is not 201907L
+#else
+STATIC_ASSERT(__cpp_lib_constexpr_string == 201907L);
+#endif
+#else
+#ifdef __cpp_lib_constexpr_string
+#error __cpp_lib_constexpr_string is defined
+#endif
+#endif
+
 #if _HAS_CXX20
 #ifndef __cpp_lib_constexpr_string_view
 #error __cpp_lib_constexpr_string_view is not defined
@@ -520,6 +534,20 @@ STATIC_ASSERT(__cpp_lib_constexpr_utility == 201811L);
 #else
 #ifdef __cpp_lib_constexpr_utility
 #error __cpp_lib_constexpr_utility is defined
+#endif
+#endif
+
+#if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc) && !defined(__clang__) // TRANSITION, LLVM-48606
+#ifndef __cpp_lib_constexpr_vector
+#error __cpp_lib_constexpr_vector is not defined
+#elif __cpp_lib_constexpr_vector != 201907L
+#error __cpp_lib_constexpr_vector is not 201907L
+#else
+STATIC_ASSERT(__cpp_lib_constexpr_vector == 201907L);
+#endif
+#else
+#ifdef __cpp_lib_constexpr_vector
+#error __cpp_lib_constexpr_vector is defined
 #endif
 #endif
 
@@ -1325,6 +1353,20 @@ STATIC_ASSERT(__cpp_lib_smart_ptr_for_overwrite == 202002L);
 #endif
 #endif
 
+#if _HAS_CXX20 && defined(__cpp_consteval)
+#ifndef __cpp_lib_source_location
+#error __cpp_lib_source_location is not defined
+#elif __cpp_lib_source_location != 201907L
+#error __cpp_lib_source_location is not 201907L
+#else
+STATIC_ASSERT(__cpp_lib_source_location == 201907L);
+#endif
+#else
+#ifdef __cpp_lib_source_location
+#error __cpp_lib_source_location is defined
+#endif
+#endif
+
 #if _HAS_CXX20
 #ifndef __cpp_lib_span
 #error __cpp_lib_span is not defined
@@ -1389,13 +1431,27 @@ STATIC_ASSERT(__cpp_lib_string_view == 201803L);
 #endif
 #endif
 
+#if _HAS_CXX20
+#ifndef __cpp_lib_syncbuf
+#error __cpp_lib_syncbuf is not defined
+#elif __cpp_lib_syncbuf != 201803L
+#error __cpp_lib_syncbuf is not 201803L
+#else
+STATIC_ASSERT(__cpp_lib_syncbuf == 201803L);
+#endif
+#else
+#ifdef __cpp_lib_syncbuf
+#error __cpp_lib_syncbuf is defined
+#endif
+#endif
+
 #if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #ifndef __cpp_lib_three_way_comparison
 #error __cpp_lib_three_way_comparison is not defined
-#elif __cpp_lib_three_way_comparison != 201711L
-#error __cpp_lib_three_way_comparison is not 201711L
+#elif __cpp_lib_three_way_comparison != 201907L
+#error __cpp_lib_three_way_comparison is not 201907L
 #else
-STATIC_ASSERT(__cpp_lib_three_way_comparison == 201711L);
+STATIC_ASSERT(__cpp_lib_three_way_comparison == 201907L);
 #endif
 #else
 #ifdef __cpp_lib_three_way_comparison

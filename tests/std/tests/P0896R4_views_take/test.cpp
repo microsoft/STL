@@ -20,41 +20,58 @@ using namespace std;
 constexpr auto pipeline = views::take(7) | views::take(6) | views::take(5) | views::take(4);
 
 template <class>
-inline constexpr bool is_empty_view = false;
-template <class T>
-inline constexpr bool is_empty_view<ranges::empty_view<T>> = true;
-
-template <class>
-inline constexpr bool is_dynamic_span = false;
-template <class T>
-inline constexpr bool is_dynamic_span<span<T>> = true;
-
-template <class>
-inline constexpr bool is_string_view = false;
-template <class CharT, class Traits>
-inline constexpr bool is_string_view<basic_string_view<CharT, Traits>> = true;
+inline constexpr bool is_span = false;
+template <class T, size_t N>
+inline constexpr bool is_span<span<T, N>> = true;
 
 template <class>
 inline constexpr bool is_subrange = false;
 template <class I, class S, ranges::subrange_kind K>
 inline constexpr bool is_subrange<ranges::subrange<I, S, K>> = true;
 
+template <class>
+struct mapped {
+    template <class Rng>
+    using apply = ranges::take_view<views::all_t<Rng>>;
+};
+template <class T>
+struct mapped<ranges::empty_view<T>> {
+    template <class>
+    using apply = ranges::empty_view<T>;
+};
+template <class T, size_t N>
+struct mapped<span<T, N>> {
+    template <class>
+    using apply = span<T>;
+};
+template <class CharT, class Traits>
+struct mapped<basic_string_view<CharT, Traits>> {
+    template <class>
+    using apply = basic_string_view<CharT, Traits>;
+};
 // clang-format off
-template <class V>
-concept reconstructible = ranges::random_access_range<V>
-    && ranges::sized_range<V>
-    && (is_empty_view<V>
-        || is_dynamic_span<V>
-        || is_string_view<V>
-     // || is_iota_view<V> // TRANSITION, iota_view
-        || is_subrange<V>);
-// clang-format on
-
-template <ranges::view V>
-using mapped_t = conditional_t<reconstructible<V>, V, ranges::take_view<V>>;
+template <class W, class B>
+    requires ranges::random_access_range<ranges::iota_view<W, B>>
+        && ranges::sized_range<ranges::iota_view<W, B>>
+struct mapped<ranges::iota_view<W, B>> {
+    // clang-format on
+    template <class>
+    using apply = ranges::iota_view<W, W>;
+};
+// clang-format off
+template <class I, class S>
+    requires random_access_iterator<I>
+struct mapped<ranges::subrange<I, S, ranges::subrange_kind::sized>> {
+    // clang-format on
+    template <class>
+    using apply = ranges::subrange<I, I, ranges::subrange_kind::sized>;
+};
 
 template <ranges::viewable_range Rng>
-using pipeline_t = mapped_t<mapped_t<mapped_t<mapped_t<views::all_t<Rng>>>>>;
+using mapped_t = typename mapped<remove_cvref_t<Rng>>::template apply<Rng>;
+
+template <ranges::viewable_range Rng>
+using pipeline_t = mapped_t<mapped_t<mapped_t<mapped_t<Rng>>>>;
 
 template <class Rng>
 concept CanViewTake = requires(Rng&& r) {
@@ -71,7 +88,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     constexpr bool is_view = ranges::view<remove_cvref_t<Rng>>;
 
     using V = views::all_t<Rng>;
-    using M = mapped_t<V>;
+    using M = mapped_t<Rng>;
     STATIC_ASSERT(ranges::view<M>);
     STATIC_ASSERT(input_range<M> == input_range<Rng>);
     STATIC_ASSERT(forward_range<M> == forward_range<Rng>);
@@ -80,7 +97,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     STATIC_ASSERT(contiguous_range<M> == contiguous_range<Rng>);
 
     // Validate range adaptor object and range adaptor closure
-    constexpr auto take_four = views::take(4);
+    constexpr auto closure = views::take(4);
 
     // ... with lvalue argument
     STATIC_ASSERT(CanViewTake<Rng&> == (!is_view || copyable<V>) );
@@ -90,8 +107,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         STATIC_ASSERT(same_as<decltype(views::take(rng, 4)), M>);
         STATIC_ASSERT(noexcept(views::take(rng, 4)) == is_noexcept);
 
-        STATIC_ASSERT(same_as<decltype(rng | take_four), M>);
-        STATIC_ASSERT(noexcept(rng | take_four) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(rng | closure), M>);
+        STATIC_ASSERT(noexcept(rng | closure) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(rng | pipeline), pipeline_t<Rng&>>);
         STATIC_ASSERT(noexcept(rng | pipeline) == is_noexcept);
@@ -99,40 +116,40 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 
     // ... with const lvalue argument
     STATIC_ASSERT(CanViewTake<const remove_reference_t<Rng>&> == (!is_view || copyable<V>) );
-    if constexpr (is_view && copyable<V>) {
-        constexpr bool is_noexcept = (is_nothrow_copy_constructible_v<V> && !is_subrange<V>);
+    if constexpr (is_span<remove_cvref_t<Rng>> || (is_view && copyable<V>) ) {
+        constexpr bool is_noexcept = is_nothrow_copy_constructible_v<V> && !is_subrange<V>;
 
         STATIC_ASSERT(same_as<decltype(views::take(as_const(rng), 4)), M>);
         STATIC_ASSERT(noexcept(views::take(as_const(rng), 4)) == is_noexcept);
 
-        STATIC_ASSERT(same_as<decltype(as_const(rng) | take_four), M>);
-        STATIC_ASSERT(noexcept(as_const(rng) | take_four) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(as_const(rng) | closure), M>);
+        STATIC_ASSERT(noexcept(as_const(rng) | closure) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(as_const(rng) | pipeline), pipeline_t<const remove_reference_t<Rng>&>>);
         STATIC_ASSERT(noexcept(as_const(rng) | pipeline) == is_noexcept);
     } else if constexpr (!is_view) {
-        using RC                   = mapped_t<views::all_t<const remove_reference_t<Rng>&>>;
+        using RC                   = mapped_t<const remove_reference_t<Rng>&>;
         constexpr bool is_noexcept = is_nothrow_constructible_v<RC, const remove_reference_t<Rng>&, int>;
 
         STATIC_ASSERT(same_as<decltype(views::take(as_const(rng), 4)), RC>);
         STATIC_ASSERT(noexcept(views::take(as_const(rng), 4)) == is_noexcept);
 
-        STATIC_ASSERT(same_as<decltype(as_const(rng) | take_four), RC>);
-        STATIC_ASSERT(noexcept(as_const(rng) | take_four) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(as_const(rng) | closure), RC>);
+        STATIC_ASSERT(noexcept(as_const(rng) | closure) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(as_const(rng) | pipeline), pipeline_t<const remove_reference_t<Rng>&>>);
         STATIC_ASSERT(noexcept(as_const(rng) | pipeline) == is_noexcept);
     }
 
     // ... with rvalue argument
-    STATIC_ASSERT(CanViewTake<remove_reference_t<Rng>> == is_view || enable_borrowed_range<remove_cvref_t<Rng>>);
-    if constexpr (is_view) {
+    STATIC_ASSERT(CanViewTake<remove_reference_t<Rng>> == (is_view || enable_borrowed_range<remove_cvref_t<Rng>>) );
+    if constexpr (is_span<remove_cvref_t<Rng>> || is_view) {
         constexpr bool is_noexcept = is_nothrow_move_constructible_v<V> && !is_subrange<V>;
         STATIC_ASSERT(same_as<decltype(views::take(move(rng), 4)), M>);
         STATIC_ASSERT(noexcept(views::take(move(rng), 4)) == is_noexcept);
 
-        STATIC_ASSERT(same_as<decltype(move(rng) | take_four), M>);
-        STATIC_ASSERT(noexcept(move(rng) | take_four) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(move(rng) | closure), M>);
+        STATIC_ASSERT(noexcept(move(rng) | closure) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(rng) | pipeline), pipeline_t<remove_reference_t<Rng>>>);
         STATIC_ASSERT(noexcept(move(rng) | pipeline) == is_noexcept);
@@ -144,8 +161,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         STATIC_ASSERT(same_as<decltype(views::take(move(rng), 4)), RS>);
         STATIC_ASSERT(noexcept(views::take(move(rng), 4)) == is_noexcept);
 
-        STATIC_ASSERT(same_as<decltype(move(rng) | take_four), RS>);
-        STATIC_ASSERT(noexcept(move(rng) | take_four) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(move(rng) | closure), RS>);
+        STATIC_ASSERT(noexcept(move(rng) | closure) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(rng) | pipeline), mapped_t<mapped_t<mapped_t<RS>>>>);
         STATIC_ASSERT(noexcept(move(rng) | pipeline) == is_noexcept);
@@ -154,14 +171,14 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     // ... with const rvalue argument
     STATIC_ASSERT(CanViewTake<const remove_reference_t<Rng>> == (is_view && copyable<V>)
                   || (!is_view && enable_borrowed_range<remove_cvref_t<Rng>>) );
-    if constexpr (is_view && copyable<V>) {
+    if constexpr (is_span<remove_cvref_t<Rng>> || (is_view && copyable<V>) ) {
         constexpr bool is_noexcept = is_nothrow_copy_constructible_v<V> && !is_subrange<V>;
 
         STATIC_ASSERT(same_as<decltype(views::take(move(as_const(rng)), 4)), M>);
         STATIC_ASSERT(noexcept(views::take(move(as_const(rng)), 4)) == is_noexcept);
 
-        STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | take_four), M>);
-        STATIC_ASSERT(noexcept(move(as_const(rng)) | take_four) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | closure), M>);
+        STATIC_ASSERT(noexcept(move(as_const(rng)) | closure) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | pipeline), pipeline_t<const remove_reference_t<Rng>>>);
         STATIC_ASSERT(noexcept(move(as_const(rng)) | pipeline) == is_noexcept);
@@ -173,8 +190,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         STATIC_ASSERT(same_as<decltype(views::take(move(as_const(rng)), 4)), RS>);
         STATIC_ASSERT(noexcept(views::take(move(as_const(rng)), 4)) == is_noexcept);
 
-        STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | take_four), RS>);
-        STATIC_ASSERT(noexcept(move(as_const(rng)) | take_four) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | closure), RS>);
+        STATIC_ASSERT(noexcept(move(as_const(rng)) | closure) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | pipeline), mapped_t<mapped_t<mapped_t<RS>>>>);
         STATIC_ASSERT(noexcept(move(as_const(rng)) | pipeline) == is_noexcept);
@@ -496,10 +513,14 @@ constexpr void output_range_test() {
 int main() {
     // Validate views
     { // ... copyable
-        // Test all of the "reconstructible range" types: span, empty_view, subrange, basic_string_view, iota_view
-        constexpr span<const int> s{some_ints};
-        STATIC_ASSERT(test_one(s, only_four_ints));
-        test_one(s, only_four_ints);
+      // Test all of the "reconstructible range" types: span, empty_view, subrange, basic_string_view, iota_view
+        constexpr span s0{some_ints};
+        STATIC_ASSERT(test_one(s0, only_four_ints));
+        test_one(s0, only_four_ints);
+
+        constexpr span<const int> s1{some_ints};
+        STATIC_ASSERT(test_one(s1, only_four_ints));
+        test_one(s1, only_four_ints);
 
         STATIC_ASSERT(test_one(ranges::subrange{some_ints}, only_four_ints));
         test_one(ranges::subrange{some_ints}, only_four_ints);
@@ -510,9 +531,8 @@ int main() {
         STATIC_ASSERT(test_one(basic_string_view{ranges::begin(some_ints), ranges::end(some_ints)}, only_four_ints));
         test_one(basic_string_view{ranges::begin(some_ints), ranges::end(some_ints)}, only_four_ints);
 
-        // TRANSITION, iota_view
-        // STATIC_ASSERT(test_one(ranges::iota_view{0, 8}, only_four_ints));
-        // test_one(ranges::iota_view{0, 8}, only_four_ints);
+        STATIC_ASSERT(test_one(ranges::iota_view{0, 8}, only_four_ints));
+        test_one(ranges::iota_view{0, 8}, only_four_ints);
     }
     // ... move-only
     STATIC_ASSERT((move_only_test(), true));
@@ -530,13 +550,6 @@ int main() {
     {
         forward_list lst(ranges::begin(some_ints), ranges::end(some_ints));
         test_one(lst, only_four_ints);
-    }
-
-    // Validate a non-view borrowed range
-    {
-        constexpr span s{some_ints};
-        STATIC_ASSERT(test_one(s, only_four_ints));
-        test_one(s, only_four_ints);
     }
 
     // Validate an output range

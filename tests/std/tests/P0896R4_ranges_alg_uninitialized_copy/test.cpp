@@ -76,21 +76,16 @@ struct holder {
     }
 };
 
-template <class R>
-void not_ranges_destroy(R&& r) { // TRANSITION, ranges::destroy
-    for (auto& e : r) {
-        destroy_at(&e);
-    }
-}
-
 struct instantiator {
-    static constexpr int expected_output[] = {13, 55, 12345};
-    static constexpr int expected_input[]  = {13, 55, 12345};
+    static constexpr int expected_output[]      = {13, 55, 12345};
+    static constexpr int expected_output_long[] = {13, 55, 12345, -1};
+    static constexpr int expected_input[]       = {13, 55, 12345};
+    static constexpr int expected_input_long[]  = {13, 55, 12345, 42};
 
     template <ranges::input_range R, ranges::forward_range W>
     static void call() {
-        using ranges::uninitialized_copy, ranges::uninitialized_copy_result, ranges::equal, ranges::equal_to,
-            ranges::iterator_t;
+        using ranges::destroy, ranges::uninitialized_copy, ranges::uninitialized_copy_result, ranges::equal,
+            ranges::equal_to, ranges::iterator_t;
 
         { // Validate range overload
             int_wrapper input[3] = {13, 55, 12345};
@@ -107,7 +102,7 @@ struct instantiator {
             assert(result.out == wrapped_output.end());
             assert(equal(wrapped_output, expected_output, equal_to{}, &int_wrapper::val));
             assert(equal(input, expected_input, equal_to{}, &int_wrapper::val));
-            not_ranges_destroy(wrapped_output);
+            destroy(wrapped_output);
             assert(int_wrapper::constructions == 3);
             assert(int_wrapper::destructions == 3);
         }
@@ -127,9 +122,50 @@ struct instantiator {
             assert(result.out == wrapped_output.end());
             assert(equal(wrapped_output, expected_output, equal_to{}, &int_wrapper::val));
             assert(equal(input, expected_input, equal_to{}, &int_wrapper::val));
-            not_ranges_destroy(wrapped_output);
+            destroy(wrapped_output);
             assert(int_wrapper::constructions == 3);
             assert(int_wrapper::destructions == 3);
+        }
+
+        { // Validate range overload shorter output
+            int_wrapper input[4] = {13, 55, 12345, 42};
+            R wrapped_input{input};
+            holder<int_wrapper, 3> mem;
+            W wrapped_output{mem.as_span()};
+
+            int_wrapper::clear_counts();
+            same_as<uninitialized_copy_result<iterator_t<R>, iterator_t<W>>> auto result =
+                uninitialized_copy(wrapped_input, wrapped_output);
+            assert(int_wrapper::constructions == 3);
+            assert(int_wrapper::destructions == 0);
+            assert(++result.in == wrapped_input.end());
+            assert(result.out == wrapped_output.end());
+            assert(equal(wrapped_output, expected_output, equal_to{}, &int_wrapper::val));
+            assert(equal(input, expected_input_long, equal_to{}, &int_wrapper::val));
+            destroy(wrapped_output);
+            assert(int_wrapper::constructions == 3);
+            assert(int_wrapper::destructions == 3);
+        }
+
+        { // Validate range overload shorter input
+            int_wrapper input[3] = {13, 55, 12345};
+            R wrapped_input{input};
+            holder<int_wrapper, 4> mem;
+            W wrapped_output{mem.as_span()};
+
+            int_wrapper::clear_counts();
+            same_as<uninitialized_copy_result<iterator_t<R>, iterator_t<W>>> auto result =
+                uninitialized_copy(wrapped_input, wrapped_output);
+            assert(int_wrapper::constructions == 3);
+            assert(int_wrapper::destructions == 0);
+            assert(result.in == wrapped_input.end());
+            construct_at(addressof(*result.out), -1); // Need to construct non written element for comparison
+            assert(++result.out == wrapped_output.end());
+            assert(equal(wrapped_output, expected_output_long, equal_to{}, &int_wrapper::val));
+            assert(equal(input, expected_input, equal_to{}, &int_wrapper::val));
+            destroy(wrapped_output);
+            assert(int_wrapper::constructions == 4);
+            assert(int_wrapper::destructions == 4);
         }
     }
 };
@@ -160,6 +196,72 @@ struct throwing_test {
     }
 };
 
+struct memcpy_test {
+    static constexpr int expected_output[]      = {13, 55, 12345};
+    static constexpr int expected_output_long[] = {13, 55, 12345, -1};
+    static constexpr int expected_input[]       = {13, 55, 12345};
+    static constexpr int expected_input_long[]  = {13, 55, 12345, 42};
+
+    static void call() {
+        { // Validate matching ranges
+            int input[]  = {13, 55, 12345};
+            int output[] = {-1, -1, -1};
+
+            const auto result = ranges::uninitialized_copy(input, output);
+            assert(result.in == end(input));
+            assert(result.out == end(output));
+            assert(ranges::equal(input, expected_input));
+            assert(ranges::equal(output, expected_output));
+        }
+
+        { // Validate input shorter
+            int input[]  = {13, 55, 12345};
+            int output[] = {-1, -1, -1, -1};
+
+            auto result = ranges::uninitialized_copy(input, output);
+            assert(result.in == end(input));
+            assert(++result.out == end(output));
+            assert(ranges::equal(input, expected_input));
+            assert(ranges::equal(output, expected_output_long));
+        }
+
+        { // Validate output shorter
+            int input[]  = {13, 55, 12345, 42};
+            int output[] = {-1, -1, -1};
+
+            auto result = ranges::uninitialized_copy(input, output);
+            assert(++result.in == end(input));
+            assert(result.out == end(output));
+            assert(ranges::equal(input, expected_input_long));
+            assert(ranges::equal(output, expected_output));
+        }
+
+        { // Validate non-common input range
+            int input[]  = {13, 55, 12345};
+            int output[] = {-1, -1, -1};
+
+            const auto result =
+                ranges::uninitialized_copy(begin(input), unreachable_sentinel, begin(output), end(output));
+            assert(result.in == end(input));
+            assert(result.out == end(output));
+            assert(ranges::equal(input, expected_input));
+            assert(ranges::equal(output, expected_output));
+        }
+
+        { // Validate non-common output range
+            int input[]  = {13, 55, 12345};
+            int output[] = {-1, -1, -1};
+
+            const auto result =
+                ranges::uninitialized_copy(begin(input), end(input), begin(output), unreachable_sentinel);
+            assert(result.in == end(input));
+            assert(result.out == end(output));
+            assert(ranges::equal(input, expected_input));
+            assert(ranges::equal(output, expected_output));
+        }
+    }
+};
+
 template <test::ProxyRef IsProxy>
 using test_input  = test::range<test::input, int_wrapper, test::Sized::no, test::CanDifference::no, test::Common::no,
     test::CanCompare::yes, IsProxy>;
@@ -174,4 +276,5 @@ int main() {
     instantiator::call<test_input<test::ProxyRef::yes>, test_output>();
     throwing_test::call<test_input<test::ProxyRef::no>, test_output>();
     throwing_test::call<test_input<test::ProxyRef::yes>, test_output>();
+    memcpy_test::call();
 }

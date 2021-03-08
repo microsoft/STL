@@ -8,7 +8,7 @@ variables:
   buildOutputLocation: 'D:\build'
   vcpkgLocation: '$(Build.SourcesDirectory)/vcpkg'
 
-pool: 'StlBuild-2021-01-20-2'
+pool: 'StlBuild-2021-03-02'
 
 stages:
   - stage: Code_Format
@@ -69,7 +69,7 @@ stages:
           vsDevCmdArch: x86
 
   - stage: Build_And_Test_x64
-    dependsOn: Code_Format
+    dependsOn: Build_And_Test_x86
     displayName: 'Build and Test'
     jobs:
       - template: azure-devops/native-build-test.yml
@@ -78,7 +78,7 @@ stages:
           vsDevCmdArch: amd64
 
   - stage: Build_ARM
-    dependsOn: Code_Format
+    dependsOn: Build_And_Test_x86
     displayName: 'Build'
     jobs:
       - template: azure-devops/cross-build.yml
@@ -87,7 +87,7 @@ stages:
           vsDevCmdArch: arm
 
   - stage: Build_ARM64
-    dependsOn: Code_Format
+    dependsOn: Build_And_Test_x86
     displayName: 'Build'
     jobs:
       - template: azure-devops/cross-build.yml
