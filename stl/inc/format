@@ -1331,9 +1331,9 @@ struct _Format_handler {
         }
         _Ctx.advance_to(_STD visit_format_arg(
             _Arg_formatter<_OutputIt, _CharT>{
-                ._Ctx       = &_Ctx,
-                ._Specs     = &_Specs,
-                ._Parse_ctx = &_Parse_context,
+                ._Ctx       = _STD addressof(_Ctx),
+                ._Specs     = _STD addressof(_Specs),
+                ._Parse_ctx = _STD addressof(_Parse_context),
             },
             _Arg));
         return _Begin;
