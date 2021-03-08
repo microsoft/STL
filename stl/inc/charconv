@@ -127,6 +127,17 @@ _NODISCARD to_chars_result _Integer_to_chars(
         } while (_Value != 0);
         break;
 
+    case 3:
+    case 5:
+    case 6:
+    case 7:
+    case 9:
+        do {
+            *--_RNext = static_cast<char>('0' + _Value % _Base);
+            _Value    = static_cast<_Unsigned>(_Value / _Base);
+        } while (_Value != 0);
+        break;
+
     default:
         do {
             *--_RNext = _Charconv_digits[_Value % _Base];
@@ -198,6 +209,9 @@ to_chars_result to_chars(char* _First, char* _Last, bool _Value, int _Base = 10)
 struct from_chars_result {
     const char* ptr;
     errc ec;
+#if _HAS_CXX20
+    _NODISCARD friend bool operator==(const from_chars_result&, const from_chars_result&) = default;
+#endif // _HAS_CXX20
 };
 
 // FUNCTION from_chars (STRING TO INTEGER)

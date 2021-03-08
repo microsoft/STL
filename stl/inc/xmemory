@@ -15,6 +15,10 @@
 #include <xatomic.h>
 #include <xutility>
 
+#if _HAS_CXX20
+#include <tuple>
+#endif // _HAS_CXX20
+
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
@@ -27,7 +31,7 @@ _STD_BEGIN
 template <class _Ty>
 struct _NODISCARD _Tidy_guard { // class with destructor that calls _Tidy
     _Ty* _Target;
-    ~_Tidy_guard() {
+    _CONSTEXPR20_DYNALLOC ~_Tidy_guard() {
         if (_Target) {
             _Target->_Tidy();
         }
@@ -38,7 +42,7 @@ struct _NODISCARD _Tidy_guard { // class with destructor that calls _Tidy
 template <class _Ty>
 struct _NODISCARD _Tidy_deallocate_guard { // class with destructor that calls _Tidy_deallocate
     _Ty* _Target;
-    ~_Tidy_deallocate_guard() {
+    _CONSTEXPR20_DYNALLOC ~_Tidy_deallocate_guard() {
         if (_Target) {
             _Target->_Tidy_deallocate();
         }
@@ -286,12 +290,12 @@ using _Rebind_pointer_t = typename pointer_traits<_Ptr>::template rebind<_Ty>;
 
 // FUNCTION TEMPLATE _Refancy
 template <class _Pointer, enable_if_t<!is_pointer_v<_Pointer>, int> = 0>
-_Pointer _Refancy(typename pointer_traits<_Pointer>::element_type* _Ptr) noexcept {
+_CONSTEXPR20 _Pointer _Refancy(typename pointer_traits<_Pointer>::element_type* _Ptr) noexcept {
     return pointer_traits<_Pointer>::pointer_to(*_Ptr);
 }
 
 template <class _Pointer, enable_if_t<is_pointer_v<_Pointer>, int> = 0>
-_Pointer _Refancy(_Pointer _Ptr) noexcept {
+_CONSTEXPR20 _Pointer _Refancy(_Pointer _Ptr) noexcept {
     return _Ptr;
 }
 
@@ -788,16 +792,20 @@ public:
 
     using value_type = _Ty;
 
+#if _HAS_DEPRECATED_ALLOCATOR_MEMBERS
     _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS typedef _Ty* pointer;
     _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS typedef const _Ty* const_pointer;
 
     _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS typedef _Ty& reference;
     _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS typedef const _Ty& const_reference;
+#endif // _HAS_DEPRECATED_ALLOCATOR_MEMBERS
 
     using size_type       = size_t;
     using difference_type = ptrdiff_t;
 
-    using propagate_on_container_move_assignment                 = true_type;
+    using propagate_on_container_move_assignment = true_type;
+
+#if _HAS_DEPRECATED_ALLOCATOR_MEMBERS
     using is_always_equal _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS = true_type;
 
     template <class _Other>
@@ -812,6 +820,7 @@ public:
     _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS _NODISCARD const _Ty* address(const _Ty& _Val) const noexcept {
         return _STD addressof(_Val);
     }
+#endif // _HAS_DEPRECATED_ALLOCATOR_MEMBERS
 
     constexpr allocator() noexcept {}
 
@@ -830,6 +839,7 @@ public:
         return static_cast<_Ty*>(_Allocate<_New_alignof<_Ty>>(_Get_size_of_n<sizeof(_Ty)>(_Count)));
     }
 
+#if _HAS_DEPRECATED_ALLOCATOR_MEMBERS
     _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS _NODISCARD __declspec(allocator) _Ty* allocate(
         _CRT_GUARDOVERFLOW const size_t _Count, const void*) {
         return allocate(_Count);
@@ -837,7 +847,7 @@ public:
 
     template <class _Objty, class... _Types>
     _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS void construct(_Objty* const _Ptr, _Types&&... _Args) {
-        ::new (const_cast<void*>(static_cast<const volatile void*>(_Ptr))) _Objty(_STD forward<_Types>(_Args)...);
+        ::new (_Voidify_iter(_Ptr)) _Objty(_STD forward<_Types>(_Args)...);
     }
 
     template <class _Uty>
@@ -848,6 +858,7 @@ public:
     _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS _NODISCARD size_t max_size() const noexcept {
         return static_cast<size_t>(-1) / sizeof(_Ty);
     }
+#endif // _HAS_DEPRECATED_ALLOCATOR_MEMBERS
 };
 
 // CLASS allocator<void>
@@ -855,19 +866,24 @@ template <>
 class allocator<void> {
 public:
     using value_type = void;
+#if _HAS_DEPRECATED_ALLOCATOR_MEMBERS
     _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS typedef void* pointer;
     _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS typedef const void* const_pointer;
+#endif // _HAS_DEPRECATED_ALLOCATOR_MEMBERS
 
     using size_type       = size_t;
     using difference_type = ptrdiff_t;
 
-    using propagate_on_container_move_assignment                 = true_type;
+    using propagate_on_container_move_assignment = true_type;
+
+#if _HAS_DEPRECATED_ALLOCATOR_MEMBERS
     using is_always_equal _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS = true_type;
 
     template <class _Other>
     struct _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS rebind {
         using other = allocator<_Other>;
     };
+#endif // _HAS_DEPRECATED_ALLOCATOR_MEMBERS
 };
 
 template <class _Ty, class _Other>
@@ -875,10 +891,12 @@ _NODISCARD _CONSTEXPR20_DYNALLOC bool operator==(const allocator<_Ty>&, const al
     return true;
 }
 
+#if !_HAS_CXX20
 template <class _Ty, class _Other>
-_NODISCARD _CONSTEXPR20_DYNALLOC bool operator!=(const allocator<_Ty>&, const allocator<_Other>&) noexcept {
+_NODISCARD bool operator!=(const allocator<_Ty>&, const allocator<_Other>&) noexcept {
     return false;
 }
+#endif // !_HAS_CXX20
 
 #if _HAS_CXX17
 // ALIAS TEMPLATE _Guide_size_type_t FOR DEDUCTION GUIDES, N4687 26.5.4.1 [unord.map.overview]/4
@@ -897,7 +915,7 @@ using _Alloc_size_t = typename allocator_traits<_Alloc>::size_type;
 
 // FUNCTION TEMPLATE _Pocca
 template <class _Alloc>
-void _Pocca(_Alloc& _Left, const _Alloc& _Right) noexcept {
+_CONSTEXPR20 void _Pocca(_Alloc& _Left, const _Alloc& _Right) noexcept {
     if constexpr (allocator_traits<_Alloc>::propagate_on_container_copy_assignment::value) {
         _Left = _Right;
     }
@@ -905,7 +923,7 @@ void _Pocca(_Alloc& _Left, const _Alloc& _Right) noexcept {
 
 // FUNCTION TEMPLATE _Pocma
 template <class _Alloc>
-void _Pocma(_Alloc& _Left, _Alloc& _Right) noexcept { // (maybe) propagate on container move assignment
+_CONSTEXPR20 void _Pocma(_Alloc& _Left, _Alloc& _Right) noexcept { // (maybe) propagate on container move assignment
     if constexpr (allocator_traits<_Alloc>::propagate_on_container_move_assignment::value) {
         _Left = _STD move(_Right);
     }
@@ -913,7 +931,7 @@ void _Pocma(_Alloc& _Left, _Alloc& _Right) noexcept { // (maybe) propagate on co
 
 // FUNCTION TEMPLATE _Pocs
 template <class _Alloc>
-void _Pocs(_Alloc& _Left, _Alloc& _Right) noexcept {
+_CONSTEXPR20 void _Pocs(_Alloc& _Left, _Alloc& _Right) noexcept {
     if constexpr (allocator_traits<_Alloc>::propagate_on_container_swap::value) {
         _Swap_adl(_Left, _Right);
     } else {
@@ -923,7 +941,8 @@ void _Pocs(_Alloc& _Left, _Alloc& _Right) noexcept {
 
 // FUNCTION TEMPLATE _Destroy_range WITH ALLOC
 template <class _Alloc>
-void _Destroy_range(_Alloc_ptr_t<_Alloc> _First, const _Alloc_ptr_t<_Alloc> _Last, _Alloc& _Al) noexcept {
+_CONSTEXPR20_DYNALLOC void _Destroy_range(
+    _Alloc_ptr_t<_Alloc> _First, const _Alloc_ptr_t<_Alloc> _Last, _Alloc& _Al) noexcept {
     // note that this is an optimization for debug mode codegen; in release mode the BE removes all of this
     using _Ty = typename _Alloc::value_type;
     if constexpr (!conjunction_v<is_trivially_destructible<_Ty>, _Uses_default_destroy<_Alloc, _Ty*>>) {
@@ -963,7 +982,7 @@ _NODISCARD constexpr size_t _Convert_size<size_t>(const size_t _Len) noexcept {
 
 // FUNCTION TEMPLATE _Deallocate_plain
 template <class _Alloc>
-void _Deallocate_plain(_Alloc& _Al, typename _Alloc::value_type* const _Ptr) noexcept {
+_CONSTEXPR20_DYNALLOC void _Deallocate_plain(_Alloc& _Al, typename _Alloc::value_type* const _Ptr) noexcept {
     // deallocate a plain pointer using an allocator
     using _Alloc_traits = allocator_traits<_Alloc>;
     if constexpr (is_same_v<_Alloc_ptr_t<_Alloc>, typename _Alloc::value_type*>) {
@@ -976,7 +995,7 @@ void _Deallocate_plain(_Alloc& _Al, typename _Alloc::value_type* const _Ptr) noe
 
 // FUNCTION TEMPLATE _Delete_plain_internal
 template <class _Alloc>
-void _Delete_plain_internal(_Alloc& _Al, typename _Alloc::value_type* const _Ptr) noexcept {
+_CONSTEXPR20_DYNALLOC void _Delete_plain_internal(_Alloc& _Al, typename _Alloc::value_type* const _Ptr) noexcept {
     // destroy *_Ptr in place, then deallocate _Ptr using _Al; used for internal container types the user didn't name
     using _Ty = typename _Alloc::value_type;
     _Ptr->~_Ty();
@@ -990,18 +1009,18 @@ struct _Alloc_construct_ptr { // pointer used to help construct 1 _Alloc::value_
     _Alloc& _Al;
     pointer _Ptr;
 
-    explicit _Alloc_construct_ptr(_Alloc& _Al_) : _Al(_Al_), _Ptr(nullptr) {}
+    _CONSTEXPR20_DYNALLOC explicit _Alloc_construct_ptr(_Alloc& _Al_) : _Al(_Al_), _Ptr(nullptr) {}
 
-    _NODISCARD pointer _Release() noexcept { // disengage *this and return contained pointer
+    _NODISCARD _CONSTEXPR20_DYNALLOC pointer _Release() noexcept { // disengage *this and return contained pointer
         return _STD exchange(_Ptr, nullptr);
     }
 
-    void _Allocate() { // disengage *this, then allocate a new memory block
+    _CONSTEXPR20_DYNALLOC void _Allocate() { // disengage *this, then allocate a new memory block
         _Ptr = nullptr; // if allocate throws, prevents double-free
         _Ptr = _Al.allocate(1);
     }
 
-    ~_Alloc_construct_ptr() { // if this instance is engaged, deallocate storage
+    _CONSTEXPR20_DYNALLOC ~_Alloc_construct_ptr() { // if this instance is engaged, deallocate storage
         if (_Ptr) {
             _Al.deallocate(_Ptr, 1);
         }
@@ -1015,15 +1034,15 @@ struct _Alloc_construct_ptr { // pointer used to help construct 1 _Alloc::value_
 struct _Fake_allocator {};
 
 struct _Container_base0 {
-    void _Orphan_all() noexcept {}
-    void _Swap_proxy_and_iterators(_Container_base0&) noexcept {}
-    void _Alloc_proxy(const _Fake_allocator&) noexcept {}
-    void _Reload_proxy(const _Fake_allocator&, const _Fake_allocator&) noexcept {}
+    _CONSTEXPR20_CONTAINER void _Orphan_all() noexcept {}
+    _CONSTEXPR20_CONTAINER void _Swap_proxy_and_iterators(_Container_base0&) noexcept {}
+    _CONSTEXPR20_CONTAINER void _Alloc_proxy(const _Fake_allocator&) noexcept {}
+    _CONSTEXPR20_CONTAINER void _Reload_proxy(const _Fake_allocator&, const _Fake_allocator&) noexcept {}
 };
 
 struct _Iterator_base0 {
-    void _Adopt(const void*) noexcept {}
-    const _Container_base0* _Getcont() const noexcept {
+    _CONSTEXPR20_CONTAINER void _Adopt(const void*) noexcept {}
+    _CONSTEXPR20_CONTAINER const _Container_base0* _Getcont() const noexcept {
         return nullptr;
     }
 
@@ -1033,25 +1052,25 @@ struct _Iterator_base0 {
 // CLASS _Container_proxy
 struct _Container_base12;
 struct _Container_proxy { // store head of iterator chain and back pointer
-    _Container_proxy() noexcept : _Mycont(nullptr), _Myfirstiter(nullptr) {}
-    _Container_proxy(_Container_base12* _Mycont_) noexcept : _Mycont(_Mycont_), _Myfirstiter(nullptr) {}
+    _CONSTEXPR20_CONTAINER _Container_proxy() noexcept = default;
+    _CONSTEXPR20_CONTAINER _Container_proxy(_Container_base12* _Mycont_) noexcept : _Mycont(_Mycont_) {}
 
-    const _Container_base12* _Mycont;
-    _Iterator_base12* _Myfirstiter;
+    const _Container_base12* _Mycont       = nullptr;
+    mutable _Iterator_base12* _Myfirstiter = nullptr;
 };
 
 struct _Container_base12 {
 public:
-    _Container_base12() noexcept : _Myproxy(nullptr) {}
+    _CONSTEXPR20_CONTAINER _Container_base12() noexcept = default;
 
     _Container_base12(const _Container_base12&) = delete;
     _Container_base12& operator=(const _Container_base12&) = delete;
 
-    void _Orphan_all() noexcept;
-    void _Swap_proxy_and_iterators(_Container_base12&) noexcept;
+    _CONSTEXPR20_CONTAINER void _Orphan_all() noexcept;
+    _CONSTEXPR20_CONTAINER void _Swap_proxy_and_iterators(_Container_base12&) noexcept;
 
     template <class _Alloc>
-    void _Alloc_proxy(_Alloc&& _Al) {
+    _CONSTEXPR20_CONTAINER void _Alloc_proxy(_Alloc&& _Al) {
         _Container_proxy* const _New_proxy = _Unfancy(_Al.allocate(1));
         _Construct_in_place(*_New_proxy, this);
         _Myproxy            = _New_proxy;
@@ -1059,7 +1078,7 @@ public:
     }
 
     template <class _Alloc>
-    void _Reload_proxy(_Alloc&& _Old_alloc, _Alloc&& _New_alloc) {
+    _CONSTEXPR20_CONTAINER void _Reload_proxy(_Alloc&& _Old_alloc, _Alloc&& _New_alloc) {
         // pre: no iterators refer to the existing proxy
         _Container_proxy* const _New_proxy = _Unfancy(_New_alloc.allocate(1));
         _Construct_in_place(*_New_proxy, this);
@@ -1067,113 +1086,160 @@ public:
         _Delete_plain_internal(_Old_alloc, _STD exchange(_Myproxy, _New_proxy));
     }
 
-    _Container_proxy* _Myproxy;
+    _Container_proxy* _Myproxy = nullptr;
+
+private:
+    _CONSTEXPR20_CONTAINER void _Orphan_all_unlocked() noexcept;
+    _CONSTEXPR20_CONTAINER void _Swap_proxy_and_iterators_unlocked(_Container_base12&) noexcept;
+
+    void _Orphan_all_locked() noexcept {
+        _Lockit _Lock(_LOCK_DEBUG);
+        _Orphan_all_unlocked();
+    }
+
+    void _Swap_proxy_and_iterators_locked(_Container_base12& _Right) noexcept {
+        _Lockit _Lock(_LOCK_DEBUG);
+        _Swap_proxy_and_iterators_unlocked(_Right);
+    }
 };
 
 struct _Iterator_base12 { // store links to container proxy, next iterator
-    _Iterator_base12() noexcept : _Myproxy(nullptr), _Mynextiter(nullptr) {} // construct orphaned iterator
+public:
+    _CONSTEXPR20_CONTAINER _Iterator_base12() noexcept = default; // construct orphaned iterator
 
-    _Iterator_base12(const _Iterator_base12& _Right) noexcept : _Myproxy(nullptr), _Mynextiter(nullptr) {
+    _CONSTEXPR20_CONTAINER _Iterator_base12(const _Iterator_base12& _Right) noexcept {
         *this = _Right;
     }
 
-    _Iterator_base12& operator=(const _Iterator_base12& _Right) noexcept {
+    _CONSTEXPR20_CONTAINER _Iterator_base12& operator=(const _Iterator_base12& _Right) noexcept {
         if (_Myproxy != _Right._Myproxy) {
             if (_Right._Myproxy) {
                 _Adopt(_Right._Myproxy->_Mycont);
             } else { // becoming invalid, disown current parent
 #if _ITERATOR_DEBUG_LEVEL == 2
-                _Lockit _Lock(_LOCK_DEBUG);
-                _Orphan_me();
+                _Orphan_me_v2();
 #else // _ITERATOR_DEBUG_LEVEL == 2
                 _Myproxy = nullptr;
 #endif // _ITERATOR_DEBUG_LEVEL == 2
             }
         }
-
         return *this;
     }
 
-    ~_Iterator_base12() noexcept {
 #if _ITERATOR_DEBUG_LEVEL == 2
-        _Lockit _Lock(_LOCK_DEBUG);
-        _Orphan_me();
-#endif // _ITERATOR_DEBUG_LEVEL == 2
+    _CONSTEXPR20_CONTAINER ~_Iterator_base12() noexcept {
+        _Orphan_me_v2();
     }
 
-    void _Adopt(const _Container_base12* _Parent) noexcept {
-        if (_Parent) {
-            // have a parent, do adoption
+    _CONSTEXPR20_CONTAINER void _Adopt(const _Container_base12* _Parent) noexcept {
+        if (_Parent) { // have a parent, do adoption
             _Container_proxy* _Parent_proxy = _Parent->_Myproxy;
-
-#if _ITERATOR_DEBUG_LEVEL == 2
             if (_Myproxy != _Parent_proxy) { // change parentage
-                _Lockit _Lock(_LOCK_DEBUG);
-                _Orphan_me();
-                _Mynextiter                 = _Parent_proxy->_Myfirstiter;
-                _Parent_proxy->_Myfirstiter = this;
-                _Myproxy                    = _Parent_proxy;
+#ifdef __cpp_lib_constexpr_dynamic_alloc
+                if (_STD is_constant_evaluated()) {
+                    _Adopt_unlocked(_Parent_proxy);
+                } else
+#endif // __cpp_lib_constexpr_dynamic_alloc
+                {
+                    _Adopt_locked(_Parent_proxy);
+                }
             }
-
-#else // _ITERATOR_DEBUG_LEVEL == 2
-            _Myproxy = _Parent_proxy;
-#endif // _ITERATOR_DEBUG_LEVEL == 2
-        } else {
-            // no future parent, just disown current parent
-#if _ITERATOR_DEBUG_LEVEL == 2
-            _Lockit _Lock(_LOCK_DEBUG);
-            _Orphan_me();
-#else // _ITERATOR_DEBUG_LEVEL == 2
-            _Myproxy = nullptr;
-#endif // _ITERATOR_DEBUG_LEVEL == 2
+        } else { // no future parent, just disown current parent
+            _Orphan_me_v2();
         }
     }
 
-    const _Container_base12* _Getcont() const noexcept {
+    _CONSTEXPR20_CONTAINER void _Orphan_me_v2() noexcept {
+        if (_Myproxy) { // adopted, remove self from list
+#ifdef __cpp_lib_constexpr_dynamic_alloc
+            if (_STD is_constant_evaluated()) {
+                _Orphan_me_unlocked();
+            } else
+#endif // __cpp_lib_constexpr_dynamic_alloc
+            {
+                _Orphan_me_locked();
+            }
+        }
+    }
+
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 ^^^ / vvv _ITERATOR_DEBUG_LEVEL != 2 vvv
+    _CONSTEXPR20_CONTAINER void _Adopt(const _Container_base12* _Parent) noexcept {
+        if (_Parent) { // have a parent, do adoption
+            _Myproxy = _Parent->_Myproxy;
+        } else { // no future parent, just disown current parent
+            _Myproxy = nullptr;
+        }
+    }
+#endif // _ITERATOR_DEBUG_LEVEL != 2
+
+    _CONSTEXPR20_CONTAINER const _Container_base12* _Getcont() const noexcept {
         return _Myproxy ? _Myproxy->_Mycont : nullptr;
     }
 
-#if _ITERATOR_DEBUG_LEVEL == 2
-    void _Orphan_me() noexcept {
-        if (_Myproxy) { // adopted, remove self from list
-            _Iterator_base12** _Pnext = &_Myproxy->_Myfirstiter;
-            while (*_Pnext && *_Pnext != this) {
-                _Pnext = &(*_Pnext)->_Mynextiter;
-            }
-
-            _STL_VERIFY(*_Pnext, "ITERATOR LIST CORRUPTED!");
-            *_Pnext  = _Mynextiter;
-            _Myproxy = nullptr;
-        }
-    }
-#endif // _ITERATOR_DEBUG_LEVEL == 2
-
     static constexpr bool _Unwrap_when_unverified = _ITERATOR_DEBUG_LEVEL == 0;
 
-    _Container_proxy* _Myproxy;
-    _Iterator_base12* _Mynextiter;
+    mutable _Container_proxy* _Myproxy    = nullptr;
+    mutable _Iterator_base12* _Mynextiter = nullptr;
+
+#if _ITERATOR_DEBUG_LEVEL == 2
+private:
+    _CONSTEXPR20_CONTAINER void _Adopt_unlocked(_Container_proxy* _Parent_proxy) noexcept {
+        if (_Myproxy) { // adopted, remove self from list
+            _Orphan_me_unlocked();
+        }
+        _Mynextiter                 = _Parent_proxy->_Myfirstiter;
+        _Parent_proxy->_Myfirstiter = this;
+        _Myproxy                    = _Parent_proxy;
+    }
+
+    void _Adopt_locked(_Container_proxy* _Parent_proxy) noexcept {
+        _Lockit _Lock(_LOCK_DEBUG);
+        _Adopt_unlocked(_Parent_proxy);
+    }
+
+    _CONSTEXPR20_CONTAINER void _Orphan_me_unlocked() noexcept {
+        _Iterator_base12** _Pnext = &_Myproxy->_Myfirstiter;
+        while (*_Pnext && *_Pnext != this) {
+            const auto _Temp = *_Pnext; // TRANSITION, VSO-1269037
+            _Pnext           = &_Temp->_Mynextiter;
+        }
+
+        _STL_VERIFY(*_Pnext, "ITERATOR LIST CORRUPTED!");
+        *_Pnext  = _Mynextiter;
+        _Myproxy = nullptr;
+    }
+
+    void _Orphan_me_locked() noexcept {
+        _Lockit _Lock(_LOCK_DEBUG);
+        _Orphan_me_unlocked();
+    }
+#endif // _ITERATOR_DEBUG_LEVEL == 2
 };
 
 // MEMBER FUNCTIONS FOR _Container_base12
-inline void _Container_base12::_Orphan_all() noexcept {
+_CONSTEXPR20_CONTAINER void _Container_base12::_Orphan_all_unlocked() noexcept {
+    for (auto& _Pnext = _Myproxy->_Myfirstiter; _Pnext; _Pnext = _Pnext->_Mynextiter) { // TRANSITION, VSO-1269037
+        _Pnext->_Myproxy = nullptr;
+    }
+    _Myproxy->_Myfirstiter = nullptr;
+}
+
+_CONSTEXPR20_CONTAINER void _Container_base12::_Orphan_all() noexcept {
 #if _ITERATOR_DEBUG_LEVEL == 2
     if (_Myproxy) { // proxy allocated, drain it
-        _Lockit _Lock(_LOCK_DEBUG);
-
-        for (auto _Pnext = &_Myproxy->_Myfirstiter; *_Pnext; *_Pnext = (*_Pnext)->_Mynextiter) {
-            (*_Pnext)->_Myproxy = nullptr;
+#ifdef __cpp_lib_constexpr_dynamic_alloc
+        if (_STD is_constant_evaluated()) {
+            _Orphan_all_unlocked();
+        } else
+#endif // __cpp_lib_constexpr_dynamic_alloc
+        {
+            _Orphan_all_locked();
         }
-
-        _Myproxy->_Myfirstiter = nullptr;
     }
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 }
 
-inline void _Container_base12::_Swap_proxy_and_iterators(_Container_base12& _Right) noexcept {
-#if _ITERATOR_DEBUG_LEVEL == 2
-    _Lockit _Lock(_LOCK_DEBUG);
-#endif // _ITERATOR_DEBUG_LEVEL == 2
-
+_CONSTEXPR20_CONTAINER void _Container_base12::_Swap_proxy_and_iterators_unlocked(_Container_base12& _Right) noexcept {
     _Container_proxy* _Temp = _Myproxy;
     _Myproxy                = _Right._Myproxy;
     _Right._Myproxy         = _Temp;
@@ -1185,6 +1251,21 @@ inline void _Container_base12::_Swap_proxy_and_iterators(_Container_base12& _Rig
     if (_Right._Myproxy) {
         _Right._Myproxy->_Mycont = &_Right;
     }
+}
+
+_CONSTEXPR20_CONTAINER void _Container_base12::_Swap_proxy_and_iterators(_Container_base12& _Right) noexcept {
+#if _ITERATOR_DEBUG_LEVEL == 2
+#ifdef __cpp_lib_constexpr_dynamic_alloc
+    if (_STD is_constant_evaluated()) {
+        _Swap_proxy_and_iterators_unlocked(_Right);
+    } else
+#endif // __cpp_lib_constexpr_dynamic_alloc
+    {
+        _Swap_proxy_and_iterators_locked(_Right);
+    }
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 ^^^ / vvv _ITERATOR_DEBUG_LEVEL != 2 vvv
+    _Swap_proxy_and_iterators_unlocked(_Right);
+#endif // _ITERATOR_DEBUG_LEVEL != 2
 }
 
 #if _ITERATOR_DEBUG_LEVEL == 0
@@ -1203,23 +1284,23 @@ struct _Leave_proxy_unbound {
 struct _Fake_proxy_ptr_impl { // fake replacement for a container proxy smart pointer when no container proxy is in use
     _Fake_proxy_ptr_impl(const _Fake_proxy_ptr_impl&) = delete;
     _Fake_proxy_ptr_impl& operator=(const _Fake_proxy_ptr_impl&) = delete;
-    _Fake_proxy_ptr_impl(const _Fake_allocator&, _Leave_proxy_unbound) noexcept {}
-    _Fake_proxy_ptr_impl(const _Fake_allocator&, const _Container_base0&) noexcept {}
+    _CONSTEXPR20_CONTAINER _Fake_proxy_ptr_impl(const _Fake_allocator&, _Leave_proxy_unbound) noexcept {}
+    _CONSTEXPR20_CONTAINER _Fake_proxy_ptr_impl(const _Fake_allocator&, const _Container_base0&) noexcept {}
 
-    void _Bind(const _Fake_allocator&, _Container_base0*) noexcept {}
-    void _Release() noexcept {}
+    _CONSTEXPR20_CONTAINER void _Bind(const _Fake_allocator&, _Container_base0*) noexcept {}
+    _CONSTEXPR20_CONTAINER void _Release() noexcept {}
 };
 
 struct _Basic_container_proxy_ptr12 {
     // smart pointer components for a _Container_proxy * that don't depend on the allocator
-    _Container_proxy* _Ptr;
+    _Container_proxy* _Ptr = nullptr;
 
-    void _Release() noexcept { // disengage this _Basic_container_proxy_ptr12
+    constexpr void _Release() noexcept { // disengage this _Basic_container_proxy_ptr12
         _Ptr = nullptr;
     }
 
 protected:
-    _Basic_container_proxy_ptr12()                                    = default;
+    _CONSTEXPR20_CONTAINER _Basic_container_proxy_ptr12()             = default;
     _Basic_container_proxy_ptr12(const _Basic_container_proxy_ptr12&) = delete;
     _Basic_container_proxy_ptr12(_Basic_container_proxy_ptr12&&)      = delete;
 };
@@ -1229,26 +1310,27 @@ struct _Container_proxy_ptr12 : _Basic_container_proxy_ptr12 {
     // smart pointer components for a _Container_proxy * for an allocator family
     _Alloc& _Al;
 
-    _Container_proxy_ptr12(_Alloc& _Al_, _Leave_proxy_unbound) : _Al(_Al_) { // create a new unbound _Container_proxy
+    _CONSTEXPR20_CONTAINER _Container_proxy_ptr12(_Alloc& _Al_, _Leave_proxy_unbound) : _Al(_Al_) {
+        // create a new unbound _Container_proxy
         _Ptr = _Unfancy(_Al_.allocate(1));
         _Construct_in_place(*_Ptr);
     }
 
-    _Container_proxy_ptr12(_Alloc& _Al_, _Container_base12& _Mycont)
-        : _Al(_Al_) { // create a new _Container_proxy pointing at _Mycont
+    _CONSTEXPR20_CONTAINER _Container_proxy_ptr12(_Alloc& _Al_, _Container_base12& _Mycont) : _Al(_Al_) {
+        // create a new _Container_proxy pointing at _Mycont
         _Ptr = _Unfancy(_Al_.allocate(1));
         _Construct_in_place(*_Ptr, _STD addressof(_Mycont));
         _Mycont._Myproxy = _Ptr;
     }
 
-    void _Bind(_Alloc& _Old_alloc, _Container_base12* _Mycont) noexcept {
+    _CONSTEXPR20_CONTAINER void _Bind(_Alloc& _Old_alloc, _Container_base12* _Mycont) noexcept {
         // Attach the proxy stored in *this to _Mycont, and destroy _Mycont's existing proxy
         // with _Old_alloc. Requires that no iterators are alive referring to _Mycont.
         _Ptr->_Mycont = _Mycont;
         _Delete_plain_internal(_Old_alloc, _STD exchange(_Mycont->_Myproxy, _STD exchange(_Ptr, nullptr)));
     }
 
-    ~_Container_proxy_ptr12() {
+    _CONSTEXPR20_CONTAINER ~_Container_proxy_ptr12() {
         if (_Ptr) {
             _Delete_plain_internal(_Al, _Ptr);
         }
@@ -1256,7 +1338,8 @@ struct _Container_proxy_ptr12 : _Basic_container_proxy_ptr12 {
 };
 
 #if _ITERATOR_DEBUG_LEVEL == 0
-#define _GET_PROXY_ALLOCATOR(_Alty, _Al) _Fake_allocator()
+_INLINE_VAR constexpr _Fake_allocator _Fake_alloc{};
+#define _GET_PROXY_ALLOCATOR(_Alty, _Al) _Fake_alloc // TRANSITION, VSO-1284799, should be _Fake_allocator{}
 template <class _Alloc>
 using _Container_proxy_ptr = _Fake_proxy_ptr_impl;
 #else // _ITERATOR_DEBUG_LEVEL == 0
@@ -1381,18 +1464,18 @@ struct _NODISCARD _Uninitialized_backout {
     _Uninitialized_backout(const _Uninitialized_backout&) = delete;
     _Uninitialized_backout& operator=(const _Uninitialized_backout&) = delete;
 
-    ~_Uninitialized_backout() {
+    _CONSTEXPR20_DYNALLOC ~_Uninitialized_backout() {
         _Destroy_range(_First, _Last);
     }
 
     template <class... _Types>
-    void _Emplace_back(_Types&&... _Vals) {
+    _CONSTEXPR20_DYNALLOC void _Emplace_back(_Types&&... _Vals) {
         // construct a new element at *_Last and increment
         _Construct_in_place(*_Last, _STD forward<_Types>(_Vals)...);
         ++_Last;
     }
 
-    _NoThrowFwdIt _Release() { // suppress any exception handling backout and return _Last
+    constexpr _NoThrowFwdIt _Release() { // suppress any exception handling backout and return _Last
         _First = _Last;
         return _Last;
     }
@@ -1425,19 +1508,94 @@ namespace ranges {
 
 // FUNCTION TEMPLATE _Uninitialized_move_unchecked
 template <class _InIt, class _NoThrowFwdIt>
-_NoThrowFwdIt _Uninitialized_move_unchecked(_InIt _First, const _InIt _Last, _NoThrowFwdIt _Dest) {
+_CONSTEXPR20_DYNALLOC _NoThrowFwdIt _Uninitialized_move_unchecked(
+    _InIt _First, const _InIt _Last, _NoThrowFwdIt _Dest) {
     // move [_First, _Last) to raw [_Dest, ...)
     if constexpr (_Ptr_move_cat<_InIt, _NoThrowFwdIt>::_Really_trivial) {
-        return _Copy_memmove(_First, _Last, _Dest);
-    } else {
-        _Uninitialized_backout<_NoThrowFwdIt> _Backout{_Dest};
-        for (; _First != _Last; ++_First) {
-            _Backout._Emplace_back(_STD move(*_First));
+#ifdef __cpp_lib_constexpr_dynamic_alloc
+        if (!_STD is_constant_evaluated())
+#endif // __cpp_lib_constexpr_dynamic_alloc
+        {
+            return _Copy_memmove(_First, _Last, _Dest);
         }
-
-        return _Backout._Release();
     }
+    _Uninitialized_backout<_NoThrowFwdIt> _Backout{_Dest};
+    for (; _First != _Last; ++_First) {
+        _Backout._Emplace_back(_STD move(*_First));
+    }
+
+    return _Backout._Release();
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    // clang-format off
+    // CONCEPT _No_throw_input_iterator
+    template <class _It>
+    concept _No_throw_input_iterator = input_iterator<_It>
+        && is_lvalue_reference_v<iter_reference_t<_It>>
+        && same_as<remove_cvref_t<iter_reference_t<_It>>, iter_value_t<_It>>;
+
+    // CONCEPT _No_throw_sentinel_for
+    template <class _Se, class _It>
+    concept _No_throw_sentinel_for = sentinel_for<_Se, _It>;
+
+    // CONCEPT _No_throw_forward_iterator
+    template <class _It>
+    concept _No_throw_forward_iterator = _No_throw_input_iterator<_It>
+        && forward_iterator<_It>
+        && _No_throw_sentinel_for<_It, _It>;
+
+    // CONCEPT _No_throw_input_range
+    template <class _Rng>
+    concept _No_throw_input_range = range<_Rng>
+        && _No_throw_input_iterator<iterator_t<_Rng>>
+        && _No_throw_sentinel_for<sentinel_t<_Rng>, iterator_t<_Rng>>;
+
+    // CONCEPT _No_throw_forward_range
+    template <class _Rng>
+    concept _No_throw_forward_range = _No_throw_input_range<_Rng>
+        && _No_throw_forward_iterator<iterator_t<_Rng>>;
+    // clang-format on
+
+    template <class _InIt, class _OutIt>
+    in_out_result<_InIt, _OutIt> _Copy_memcpy_common(
+        _InIt _IFirst, _InIt _ILast, _OutIt _OFirst, _OutIt _OLast) noexcept {
+        const auto _IFirst_ch = const_cast<char*>(reinterpret_cast<const volatile char*>(_IFirst));
+        const auto _ILast_ch  = const_cast<const char*>(reinterpret_cast<const volatile char*>(_ILast));
+        const auto _OFirst_ch = const_cast<char*>(reinterpret_cast<volatile char*>(_OFirst));
+        const auto _OLast_ch  = const_cast<const char*>(reinterpret_cast<const volatile char*>(_OLast));
+        const auto _Count     = static_cast<size_t>((_STD min)(_ILast_ch - _IFirst_ch, _OLast_ch - _OFirst_ch));
+        _CSTD memcpy(_OFirst_ch, _IFirst_ch, _Count);
+        return {reinterpret_cast<_InIt>(_IFirst_ch + _Count), reinterpret_cast<_OutIt>(_OFirst_ch + _Count)};
+    }
+
+    // ALIAS TEMPLATE uninitialized_move_result
+    template <class _In, class _Out>
+    using uninitialized_move_result = in_out_result<_In, _Out>;
+
+    // FUNCTION TEMPLATE _Uninitialized_move_unchecked
+    // clang-format off
+    template <input_iterator _It, sentinel_for<_It> _Se, _No_throw_forward_iterator _Out,
+        _No_throw_sentinel_for<_Out> _OSe>
+        requires constructible_from<iter_value_t<_Out>, iter_rvalue_reference_t<_It>>
+    uninitialized_move_result<_It, _Out> _Uninitialized_move_unchecked(
+            _It _IFirst, const _Se _ILast, _Out _OFirst, const _OSe _OLast) {
+        // clang-format on
+        if constexpr (is_same_v<_Se, _It> && is_same_v<_OSe, _Out> && _Ptr_move_cat<_It, _Out>::_Really_trivial) {
+            return _Copy_memcpy_common(_IFirst, _ILast, _OFirst, _OLast);
+        } else {
+            _Uninitialized_backout _Backout{_STD move(_OFirst)};
+
+            for (; _IFirst != _ILast && _Backout._Last != _OLast; ++_IFirst) {
+                _Backout._Emplace_back(_RANGES iter_move(_IFirst));
+            }
+
+            return {_STD move(_IFirst), _Backout._Release()};
+        }
+    }
+} // namespace ranges
+#endif // __cpp_lib_concepts
 
 // STRUCT TEMPLATE _Uninitialized_backout_al
 template <class _Alloc>
@@ -1446,22 +1604,23 @@ class _NODISCARD _Uninitialized_backout_al {
     using pointer = _Alloc_ptr_t<_Alloc>;
 
 public:
-    _Uninitialized_backout_al(pointer _Dest, _Alloc& _Al_) : _First(_Dest), _Last(_Dest), _Al(_Al_) {}
+    _CONSTEXPR20_DYNALLOC _Uninitialized_backout_al(pointer _Dest, _Alloc& _Al_)
+        : _First(_Dest), _Last(_Dest), _Al(_Al_) {}
 
     _Uninitialized_backout_al(const _Uninitialized_backout_al&) = delete;
     _Uninitialized_backout_al& operator=(const _Uninitialized_backout_al&) = delete;
 
-    ~_Uninitialized_backout_al() {
+    _CONSTEXPR20_DYNALLOC ~_Uninitialized_backout_al() {
         _Destroy_range(_First, _Last, _Al);
     }
 
     template <class... _Types>
-    void _Emplace_back(_Types&&... _Vals) { // construct a new element at *_Last and increment
+    _CONSTEXPR20_DYNALLOC void _Emplace_back(_Types&&... _Vals) { // construct a new element at *_Last and increment
         allocator_traits<_Alloc>::construct(_Al, _Unfancy(_Last), _STD forward<_Types>(_Vals)...);
         ++_Last;
     }
 
-    pointer _Release() { // suppress any exception handling backout and return _Last
+    constexpr pointer _Release() { // suppress any exception handling backout and return _Last
         _First = _Last;
         return _Last;
     }
@@ -1474,7 +1633,7 @@ private:
 
 // FUNCTION TEMPLATE _Uninitialized_copy WITH ALLOCATOR
 template <class _InIt, class _Alloc>
-_Alloc_ptr_t<_Alloc> _Uninitialized_copy(
+_CONSTEXPR20_DYNALLOC _Alloc_ptr_t<_Alloc> _Uninitialized_copy(
     const _InIt _First, const _InIt _Last, _Alloc_ptr_t<_Alloc> _Dest, _Alloc& _Al) {
     // copy [_First, _Last) to raw _Dest, using _Al
     // note: only called internally from elsewhere in the STL
@@ -1485,21 +1644,46 @@ _Alloc_ptr_t<_Alloc> _Uninitialized_copy(
 
     if constexpr (conjunction_v<bool_constant<_Ptr_copy_cat<decltype(_UFirst), _Ptrval>::_Really_trivial>,
                       _Uses_default_construct<_Alloc, _Ptrval, decltype(*_UFirst)>>) {
-        _Copy_memmove(_UFirst, _ULast, _Unfancy(_Dest));
-        _Dest += _ULast - _UFirst;
-    } else {
-        _Uninitialized_backout_al<_Alloc> _Backout{_Dest, _Al};
-        for (; _UFirst != _ULast; ++_UFirst) {
-            _Backout._Emplace_back(*_UFirst);
+#ifdef __cpp_lib_constexpr_dynamic_alloc
+        if (!_STD is_constant_evaluated())
+#endif // __cpp_lib_constexpr_dynamic_alloc
+        {
+            _Copy_memmove(_UFirst, _ULast, _Unfancy(_Dest));
+            _Dest += _ULast - _UFirst;
+            return _Dest;
         }
-
-        _Dest = _Backout._Release();
     }
 
-    return _Dest;
+    _Uninitialized_backout_al<_Alloc> _Backout{_Dest, _Al};
+    for (; _UFirst != _ULast; ++_UFirst) {
+        _Backout._Emplace_back(*_UFirst);
+    }
+
+    return _Backout._Release();
 }
 
 // FUNCTION TEMPLATE uninitialized_copy
+template <class _InIt, class _NoThrowFwdIt>
+_CONSTEXPR20_DYNALLOC _NoThrowFwdIt _Uninitialized_copy_unchecked(
+    _InIt _First, const _InIt _Last, _NoThrowFwdIt _Dest) {
+    // copy [_First, _Last) to raw [_Dest, ...)
+    if constexpr (_Ptr_copy_cat<_InIt, _NoThrowFwdIt>::_Really_trivial) {
+#ifdef __cpp_lib_constexpr_dynamic_alloc
+        if (!_STD is_constant_evaluated())
+#endif // __cpp_lib_constexpr_dynamic_alloc
+        {
+            return _Copy_memmove(_First, _Last, _Dest);
+        }
+    }
+
+    _Uninitialized_backout<_NoThrowFwdIt> _Backout{_Dest};
+    for (; _First != _Last; ++_First) {
+        _Backout._Emplace_back(*_First);
+    }
+
+    return _Backout._Release();
+}
+
 template <class _InIt, class _NoThrowFwdIt>
 _NoThrowFwdIt uninitialized_copy(const _InIt _First, const _InIt _Last, _NoThrowFwdIt _Dest) {
     // copy [_First, _Last) to raw [_Dest, ...)
@@ -1507,24 +1691,13 @@ _NoThrowFwdIt uninitialized_copy(const _InIt _First, const _InIt _Last, _NoThrow
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
     auto _UDest       = _Get_unwrapped_n(_Dest, _Idl_distance<_InIt>(_UFirst, _ULast));
-    if constexpr (_Ptr_copy_cat<decltype(_UFirst), decltype(_UDest)>::_Really_trivial) {
-        _UDest = _Copy_memmove(_UFirst, _ULast, _UDest);
-    } else {
-        _Uninitialized_backout<decltype(_UDest)> _Backout{_UDest};
-        for (; _UFirst != _ULast; ++_UFirst) {
-            _Backout._Emplace_back(*_UFirst);
-        }
-
-        _UDest = _Backout._Release();
-    }
-
-    _Seek_wrapped(_Dest, _UDest);
+    _Seek_wrapped(_Dest, _Uninitialized_copy_unchecked(_UFirst, _ULast, _UDest));
     return _Dest;
 }
 
 // FUNCTION TEMPLATE _Uninitialized_move WITH ALLOCATOR
 template <class _InIt, class _Alloc>
-_Alloc_ptr_t<_Alloc> _Uninitialized_move(
+_CONSTEXPR20_DYNALLOC _Alloc_ptr_t<_Alloc> _Uninitialized_move(
     const _InIt _First, const _InIt _Last, _Alloc_ptr_t<_Alloc> _Dest, _Alloc& _Al) {
     // move [_First, _Last) to raw _Dest, using _Al
     // note: only called internally from elsewhere in the STL
@@ -1533,41 +1706,55 @@ _Alloc_ptr_t<_Alloc> _Uninitialized_move(
     const auto _ULast = _Get_unwrapped(_Last);
     if constexpr (conjunction_v<bool_constant<_Ptr_move_cat<decltype(_UFirst), _Ptrval>::_Really_trivial>,
                       _Uses_default_construct<_Alloc, _Ptrval, decltype(_STD move(*_UFirst))>>) {
-        _Copy_memmove(_UFirst, _ULast, _Unfancy(_Dest));
-        return _Dest + (_ULast - _UFirst);
-    } else {
-        _Uninitialized_backout_al<_Alloc> _Backout{_Dest, _Al};
-        for (; _UFirst != _ULast; ++_UFirst) {
-            _Backout._Emplace_back(_STD move(*_UFirst));
+#ifdef __cpp_lib_constexpr_dynamic_alloc
+        if (!_STD is_constant_evaluated())
+#endif // __cpp_lib_constexpr_dynamic_alloc
+        {
+            _Copy_memmove(_UFirst, _ULast, _Unfancy(_Dest));
+            return _Dest + (_ULast - _UFirst);
         }
-
-        return _Backout._Release();
     }
+
+    _Uninitialized_backout_al<_Alloc> _Backout{_Dest, _Al};
+    for (; _UFirst != _ULast; ++_UFirst) {
+        _Backout._Emplace_back(_STD move(*_UFirst));
+    }
+
+    return _Backout._Release();
 }
 
 // FUNCTION TEMPLATE _Uninitialized_fill_n WITH ALLOCATOR
 template <class _Alloc>
-_Alloc_ptr_t<_Alloc> _Uninitialized_fill_n(
+_CONSTEXPR20_DYNALLOC _Alloc_ptr_t<_Alloc> _Uninitialized_fill_n(
     _Alloc_ptr_t<_Alloc> _First, _Alloc_size_t<_Alloc> _Count, const typename _Alloc::value_type& _Val, _Alloc& _Al) {
     // copy _Count copies of _Val to raw _First, using _Al
     using _Ty = typename _Alloc::value_type;
     if constexpr (_Fill_memset_is_safe<_Ty*, _Ty> && _Uses_default_construct<_Alloc, _Ty*, _Ty>::value) {
-        _Fill_memset(_Unfancy(_First), _Val, static_cast<size_t>(_Count));
-        return _First + _Count;
-    } else {
-        if constexpr (_Fill_zero_memset_is_safe<_Ty*, _Ty> && _Uses_default_construct<_Alloc, _Ty*, _Ty>::value) {
+#ifdef __cpp_lib_constexpr_dynamic_alloc
+        if (!_STD is_constant_evaluated())
+#endif // __cpp_lib_constexpr_dynamic_alloc
+        {
+            _Fill_memset(_Unfancy(_First), _Val, static_cast<size_t>(_Count));
+            return _First + _Count;
+        }
+    } else if constexpr (_Fill_zero_memset_is_safe<_Ty*, _Ty> && _Uses_default_construct<_Alloc, _Ty*, _Ty>::value) {
+#ifdef __cpp_lib_constexpr_dynamic_alloc
+        if (!_STD is_constant_evaluated())
+#endif // __cpp_lib_constexpr_dynamic_alloc
+        {
             if (_Is_all_bits_zero(_Val)) {
                 _Fill_zero_memset(_Unfancy(_First), static_cast<size_t>(_Count));
                 return _First + _Count;
             }
         }
-        _Uninitialized_backout_al<_Alloc> _Backout{_First, _Al};
-        for (; 0 < _Count; --_Count) {
-            _Backout._Emplace_back(_Val);
-        }
-
-        return _Backout._Release();
     }
+
+    _Uninitialized_backout_al<_Alloc> _Backout{_First, _Al};
+    for (; 0 < _Count; --_Count) {
+        _Backout._Emplace_back(_Val);
+    }
+
+    return _Backout._Release();
 }
 
 // FUNCTION TEMPLATE uninitialized_fill
@@ -1586,6 +1773,7 @@ void uninitialized_fill(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last, c
                 return;
             }
         }
+
         _Uninitialized_backout<_Unwrapped_t<const _NoThrowFwdIt&>> _Backout{_UFirst};
         while (_Backout._Last != _ULast) {
             _Backout._Emplace_back(_Val);
@@ -1610,22 +1798,27 @@ _Ptr _Zero_range(const _Ptr _First, const _Ptr _Last) { // fill [_First, _Last) 
 }
 
 template <class _Alloc>
-_Alloc_ptr_t<_Alloc> _Uninitialized_value_construct_n(
+_CONSTEXPR20_DYNALLOC _Alloc_ptr_t<_Alloc> _Uninitialized_value_construct_n(
     _Alloc_ptr_t<_Alloc> _First, _Alloc_size_t<_Alloc> _Count, _Alloc& _Al) {
     // value-initialize _Count objects to raw _First, using _Al
     using _Ptrty = typename _Alloc::value_type*;
     if constexpr (_Use_memset_value_construct_v<_Ptrty> && _Uses_default_construct<_Alloc, _Ptrty>::value) {
-        auto _PFirst = _Unfancy(_First);
-        _Zero_range(_PFirst, _PFirst + _Count);
-        return _First + _Count;
-    } else {
-        _Uninitialized_backout_al<_Alloc> _Backout{_First, _Al};
-        for (; 0 < _Count; --_Count) {
-            _Backout._Emplace_back();
+#ifdef __cpp_lib_constexpr_dynamic_alloc
+        if (!_STD is_constant_evaluated())
+#endif // __cpp_lib_constexpr_dynamic_alloc
+        {
+            auto _PFirst = _Unfancy(_First);
+            _Zero_range(_PFirst, _PFirst + _Count);
+            return _First + _Count;
         }
-
-        return _Backout._Release();
     }
+
+    _Uninitialized_backout_al<_Alloc> _Backout{_First, _Al};
+    for (; 0 < _Count; --_Count) {
+        _Backout._Emplace_back();
+    }
+
+    return _Backout._Release();
 }
 
 template <class _NoThrowFwdIt, class _Diff>
@@ -1702,10 +1895,13 @@ struct _In_place_key_extract_map<_Key, pair<_First, _Second>> {
 };
 
 // STRUCT TEMPLATE _Wrap
+#pragma warning(push)
+#pragma warning(disable : 4624) // '%s': destructor was implicitly defined as deleted
 template <class _Ty>
 struct _Wrap {
     _Ty _Value; // workaround for "T^ is not allowed in a union"
 };
+#pragma warning(pop)
 
 // STRUCT TEMPLATE _Alloc_temporary
 template <class _Alloc>
@@ -1788,7 +1984,8 @@ _NODISCARD _CONSTEXPR20 _FwdIt remove_if(_FwdIt _First, const _FwdIt _Last, _Pr 
 
 // FUNCTION TEMPLATE _Erase_remove
 template <class _Container, class _Uty>
-typename _Container::size_type _Erase_remove(_Container& _Cont, const _Uty& _Val) { // erase each element matching _Val
+_CONSTEXPR20_DYNALLOC typename _Container::size_type _Erase_remove(_Container& _Cont, const _Uty& _Val) {
+    // erase each element matching _Val
     auto _First          = _Cont.begin();
     const auto _Last     = _Cont.end();
     const auto _Old_size = _Cont.size();
@@ -1799,7 +1996,8 @@ typename _Container::size_type _Erase_remove(_Container& _Cont, const _Uty& _Val
 
 // FUNCTION TEMPLATE _Erase_remove_if
 template <class _Container, class _Pr>
-typename _Container::size_type _Erase_remove_if(_Container& _Cont, _Pr _Pred) { // erase each element satisfying _Pred
+_CONSTEXPR20_DYNALLOC typename _Container::size_type _Erase_remove_if(_Container& _Cont, _Pr _Pred) {
+    // erase each element satisfying _Pred
     auto _First          = _Cont.begin();
     const auto _Last     = _Cont.end();
     const auto _Old_size = _Cont.size();
@@ -1810,7 +2008,8 @@ typename _Container::size_type _Erase_remove_if(_Container& _Cont, _Pr _Pred) { 
 
 // FUNCTION TEMPLATE _Erase_nodes_if
 template <class _Container, class _Pr>
-typename _Container::size_type _Erase_nodes_if(_Container& _Cont, _Pr _Pred) { // erase each element satisfying _Pred
+typename _Container::size_type _Erase_nodes_if(_Container& _Cont, _Pr _Pred) {
+    // erase each element satisfying _Pred
     auto _First          = _Cont.begin();
     const auto _Last     = _Cont.end();
     const auto _Old_size = _Cont.size();
@@ -1823,6 +2022,98 @@ typename _Container::size_type _Erase_nodes_if(_Container& _Cont, _Pr _Pred) { /
     }
     return _Old_size - _Cont.size();
 }
+
+#if _HAS_CXX20
+template <class _Ty, class _Alloc, class... _Types, enable_if_t<!_Is_specialization_v<_Ty, pair>, int> = 0>
+_NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Types&&... _Args) noexcept {
+    if constexpr (!uses_allocator_v<_Ty, _Alloc>) {
+        static_assert(is_constructible_v<_Ty, _Types...>,
+            "If uses_allocator_v<T, Alloc> does not hold, T must be constructible from Types...");
+        (void) _Al;
+        return _STD forward_as_tuple(_STD forward<_Types>(_Args)...);
+    } else if constexpr (is_constructible_v<_Ty, allocator_arg_t, const _Alloc&, _Types...>) {
+        using _ReturnType = tuple<allocator_arg_t, const _Alloc&, _Types&&...>;
+        return _ReturnType{allocator_arg, _Al, _STD forward<_Types>(_Args)...};
+    } else if constexpr (is_constructible_v<_Ty, _Types..., const _Alloc&>) {
+        return _STD forward_as_tuple(_STD forward<_Types>(_Args)..., _Al);
+    } else {
+        static_assert(_Always_false<_Ty>,
+            "T must be constructible from either (allocator_arg_t, const Alloc&, Types...) "
+            "or (Types..., const Alloc&) if uses_allocator_v<T, Alloc> is true");
+    }
+}
+
+template <class _Ty, class _Alloc, class _Tuple1, class _Tuple2, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
+_NODISCARD constexpr auto uses_allocator_construction_args(
+    const _Alloc& _Al, piecewise_construct_t, _Tuple1&& _Tup1, _Tuple2&& _Tup2) noexcept {
+    return _STD make_tuple(piecewise_construct,
+        _STD apply(
+            [&_Al](auto&&... _Tuple_args) {
+                return _STD uses_allocator_construction_args<typename _Ty::first_type>(
+                    _Al, _STD forward<decltype(_Tuple_args)>(_Tuple_args)...);
+            },
+            _STD forward<_Tuple1>(_Tup1)),
+        _STD apply(
+            [&_Al](auto&&... _Tuple_args) {
+                return _STD uses_allocator_construction_args<typename _Ty::second_type>(
+                    _Al, _STD forward<decltype(_Tuple_args)>(_Tuple_args)...);
+            },
+            _STD forward<_Tuple2>(_Tup2)));
+}
+
+template <class _Ty, class _Alloc, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
+_NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al) noexcept {
+    // equivalent to
+    // return _STD uses_allocator_construction_args<_Ty>(_Al, piecewise_construct, tuple<>{}, tuple<>{});
+    return _STD make_tuple(piecewise_construct, _STD uses_allocator_construction_args<typename _Ty::first_type>(_Al),
+        _STD uses_allocator_construction_args<typename _Ty::second_type>(_Al));
+}
+
+template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
+_NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Uty1&& _Val1, _Uty2&& _Val2) noexcept {
+    // equivalent to
+    // return _STD uses_allocator_construction_args<_Ty>(_Al, piecewise_construct,
+    //     _STD forward_as_tuple(_STD forward<_Uty1>(_Val1)), _STD forward_as_tuple(_STD forward<_Uty2>(_Val2)));
+    return _STD make_tuple(piecewise_construct,
+        _STD uses_allocator_construction_args<typename _Ty::first_type>(_Al, _STD forward<_Uty1>(_Val1)),
+        _STD uses_allocator_construction_args<typename _Ty::second_type>(_Al, _STD forward<_Uty2>(_Val2)));
+}
+
+template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
+_NODISCARD constexpr auto uses_allocator_construction_args(
+    const _Alloc& _Al, const pair<_Uty1, _Uty2>& _Pair) noexcept {
+    // equivalent to
+    // return _STD uses_allocator_construction_args<_Ty>(_Al, piecewise_construct,
+    //     _STD forward_as_tuple(_Pair.first), _STD forward_as_tuple(_Pair.second));
+    return _STD make_tuple(piecewise_construct,
+        _STD uses_allocator_construction_args<typename _Ty::first_type>(_Al, _Pair.first),
+        _STD uses_allocator_construction_args<typename _Ty::second_type>(_Al, _Pair.second));
+}
+
+template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
+_NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, pair<_Uty1, _Uty2>&& _Pair) noexcept {
+    // equivalent to
+    // return _STD uses_allocator_construction_args<_Ty>(_Al, piecewise_construct,
+    //     _STD forward_as_tuple(_STD move(_Pair).first), _STD forward_as_tuple(_STD move(_Pair).second));
+    return _STD make_tuple(piecewise_construct,
+        _STD uses_allocator_construction_args<typename _Ty::first_type>(_Al, _STD move(_Pair).first),
+        _STD uses_allocator_construction_args<typename _Ty::second_type>(_Al, _STD move(_Pair).second));
+}
+
+template <class _Ty, class _Alloc, class... _Types>
+_NODISCARD constexpr _Ty make_obj_using_allocator(const _Alloc& _Al, _Types&&... _Args) {
+    return _STD make_from_tuple<_Ty>(_STD uses_allocator_construction_args<_Ty>(_Al, _STD forward<_Types>(_Args)...));
+}
+
+template <class _Ty, class _Alloc, class... _Types>
+constexpr _Ty* uninitialized_construct_using_allocator(_Ty* _Ptr, const _Alloc& _Al, _Types&&... _Args) {
+    return _STD apply(
+        [&](auto&&... _Construct_args) {
+            return _STD construct_at(_Ptr, _STD forward<decltype(_Construct_args)>(_Construct_args)...);
+        },
+        _STD uses_allocator_construction_args<_Ty>(_Al, _STD forward<_Types>(_Args)...));
+}
+#endif // _HAS_CXX20
 _STD_END
 
 #pragma pop_macro("new")

@@ -131,18 +131,26 @@ _NODISCARD constexpr void* _Voidify_iter(_Iter _It) noexcept {
 
 // FUNCTION TEMPLATE construct_at
 #if _HAS_CXX20
-template <class _Ty, class... _Types>
-_CONSTEXPR20_DYNALLOC auto construct_at(_Ty* const _Location, _Types&&... _Args) noexcept(
-    noexcept(::new (_Voidify_iter(_Location)) _Ty(_STD forward<_Types>(_Args)...))) // strengthened
-    -> decltype(::new (_Voidify_iter(_Location)) _Ty(_STD forward<_Types>(_Args)...)) {
+template <class _Ty, class... _Types,
+    class = void_t<decltype(::new (_STD declval<void*>()) _Ty(_STD declval<_Types>()...))>>
+_CONSTEXPR20_DYNALLOC _Ty* construct_at(_Ty* const _Location, _Types&&... _Args) noexcept(
+    noexcept(::new (_Voidify_iter(_Location)) _Ty(_STD forward<_Types>(_Args)...))) /* strengthened */ {
     return ::new (_Voidify_iter(_Location)) _Ty(_STD forward<_Types>(_Args)...);
 }
 #endif // _HAS_CXX20
 
 // FUNCTION TEMPLATE _Construct_in_place
 template <class _Ty, class... _Types>
-void _Construct_in_place(_Ty& _Obj, _Types&&... _Args) noexcept(is_nothrow_constructible_v<_Ty, _Types...>) {
-    ::new (_Voidify_iter(_STD addressof(_Obj))) _Ty(_STD forward<_Types>(_Args)...);
+_CONSTEXPR20_DYNALLOC void _Construct_in_place(_Ty& _Obj, _Types&&... _Args) noexcept(
+    is_nothrow_constructible_v<_Ty, _Types...>) {
+#ifdef __cpp_lib_constexpr_dynamic_alloc
+    if (_STD is_constant_evaluated()) {
+        _STD construct_at(_STD addressof(_Obj), _STD forward<_Types>(_Args)...);
+    } else
+#endif // __cpp_lib_constexpr_dynamic_alloc
+    {
+        ::new (_Voidify_iter(_STD addressof(_Obj))) _Ty(_STD forward<_Types>(_Args)...);
+    }
 }
 
 // FUNCTION TEMPLATE _Default_construct_in_place
@@ -766,11 +774,11 @@ concept indirectly_writable = requires(_It&& __i, _Ty&& __t) {
 };
 
 // CONCEPT _Integer_like
-// clang-format off
 template <class _Ty>
-concept _Integer_like = _Is_nonbool_integral<_Ty>;
+concept _Integer_like = _Is_nonbool_integral<remove_cv_t<_Ty>>;
 
 // CONCEPT _Signed_integer_like
+// clang-format off
 template <class _Ty>
 concept _Signed_integer_like = _Integer_like<_Ty> && static_cast<_Ty>(-1) < static_cast<_Ty>(0);
 // clang-format on
@@ -779,9 +787,19 @@ concept _Signed_integer_like = _Integer_like<_Ty> && static_cast<_Ty>(-1) < stat
 template <class _Ty>
 using _Make_unsigned_like_t = make_unsigned_t<_Ty>;
 
+template <_Integer_like _Ty>
+_NODISCARD constexpr auto _To_unsigned_like(const _Ty _Value) noexcept {
+    return static_cast<_Make_unsigned_like_t<_Ty>>(_Value);
+}
+
 // ALIAS TEMPLATE _Make_signed_like_t
 template <class _Ty>
 using _Make_signed_like_t = make_signed_t<_Ty>;
+
+template <_Integer_like _Ty>
+_NODISCARD constexpr auto _To_signed_like(const _Ty _Value) noexcept {
+    return static_cast<_Make_signed_like_t<_Ty>>(_Value);
+}
 
 // CONCEPT weakly_incrementable
 // clang-format off
@@ -3749,7 +3767,7 @@ public:
 #endif // __cpp_lib_concepts
     }
 
-    _NODISCARD _CXX20_DEPRECATE_MOVE_ITERATOR_ARROW _CONSTEXPR17 pointer operator->() const {
+    _CXX20_DEPRECATE_MOVE_ITERATOR_ARROW _NODISCARD _CONSTEXPR17 pointer operator->() const {
         return _Current;
     }
 
@@ -4092,17 +4110,6 @@ _OutIt _Copy_memmove(_InIt _First, _InIt _Last, _OutIt _Dest) {
 template <class _InIt, class _OutIt>
 _OutIt _Copy_memmove(move_iterator<_InIt> _First, move_iterator<_InIt> _Last, _OutIt _Dest) {
     return _Copy_memmove(_First.base(), _Last.base(), _Dest);
-}
-
-template <class _InIt, class _OutIt>
-_OutIt _Copy_memcpy_common(_InIt _IFirst, _InIt _ILast, _OutIt _OFirst, _OutIt _OLast) noexcept {
-    const auto _IFirst_ch = const_cast<const char*>(reinterpret_cast<const volatile char*>(_IFirst));
-    const auto _ILast_ch  = const_cast<const char*>(reinterpret_cast<const volatile char*>(_ILast));
-    const auto _OFirst_ch = const_cast<char*>(reinterpret_cast<volatile char*>(_OFirst));
-    const auto _OLast_ch  = const_cast<const char*>(reinterpret_cast<const volatile char*>(_OLast));
-    const auto _Count     = static_cast<size_t>((_STD min)(_ILast_ch - _IFirst_ch, _OLast_ch - _OFirst_ch));
-    _CSTD memcpy(_OFirst_ch, _IFirst_ch, _Count);
-    return reinterpret_cast<_OutIt>(_OFirst_ch + _Count);
 }
 
 // VARIABLE TEMPLATE _Is_vb_iterator
