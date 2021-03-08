@@ -366,7 +366,7 @@ The `SKIPPED` result code indicates that a given test was explicitly skipped by 
 
 ### Modify The Visualizer
 
-To modify how components are visualized in the debugger open the file STL\stl\STL.natvis. For more information on how to modify this file check the [natvis documantation][].
+To modify how components are visualized in the debugger edit the file STL\stl\STL.natvis. For more information on how to modify this file check the [natvis documentation][].
 
 ### Test your changes.
 
@@ -434,4 +434,4 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [opencode@microsoft.com]: mailto:opencode@microsoft.com
 [redistributables]: https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads
 [vcpkg]: https://github.com/microsoft/vcpkg
-[natvis documantation]: https://docs.microsoft.com/en-us/visualstudio/debugger/create-custom-views-of-native-objects
+[natvis documentation]: https://docs.microsoft.com/en-us/visualstudio/debugger/create-custom-views-of-native-objects
