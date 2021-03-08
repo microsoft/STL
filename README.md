@@ -366,7 +366,7 @@ The `SKIPPED` result code indicates that a given test was explicitly skipped by 
 
 ### Modify The Visualizer
 
-To modify how elements look on the debugger open the file STL\stl\STL.natvis. For more information on how to modify this file check the [natvis documantation][].
+To modify how components are visualized in the debugger open the file STL\stl\STL.natvis. For more information on how to modify this file check the [natvis documantation][].
 
 ### Test your changes.
 
