@@ -370,7 +370,8 @@ To modify how elements look on the debugger open the file STL\stl\STL.natvis. Fo
 
 ### Test your changes.
 
-After making your changes overwrithe the file under %Visual Studio instalation path%\Common7\Packages\Debugger\Visualizers\stl.natvis (is remcomended to make a backup of the file). After overwriting the file you should be able to see your chanes in a Visual Studio debugging sesion.
+After making your changes overwrite the file under %Visual Studio instalation path%\Common7\Packages\Debugger\Visualizers\stl.natvis (is recommended to make a backup of the file). After overwriting the file you should be able to see your changes in a Visual Studio debugging session.
+
 
 # Block Diagram
 
