@@ -51,10 +51,10 @@ struct testing_callbacks {
     _Align expected_alignment = _Align::_None;
     _Sign expected_sign       = _Sign::_None;
     basic_string_view<CharT> expected_fill;
-    unsigned int expected_width          = static_cast<unsigned int>(-1);
+    int expected_width                   = -1;
     size_t expected_dynamic_width        = static_cast<size_t>(-1);
     bool expected_auto_dynamic_width     = false;
-    unsigned int expected_precision      = static_cast<unsigned int>(-1);
+    int expected_precision               = -1;
     size_t expected_dynamic_precision    = static_cast<size_t>(-1);
     bool expected_auto_dynamic_precision = false;
     bool expected_hash                   = false;
@@ -66,7 +66,7 @@ struct testing_callbacks {
     constexpr void _On_fill(basic_string_view<CharT> str_view) {
         assert(str_view == expected_fill);
     }
-    constexpr void _On_width(unsigned int width) {
+    constexpr void _On_width(int width) {
         assert(width == expected_width);
     }
     constexpr void _On_dynamic_width(size_t id) {
@@ -75,7 +75,7 @@ struct testing_callbacks {
     constexpr void _On_dynamic_width(_Auto_id_tag) {
         assert(expected_auto_dynamic_width);
     }
-    constexpr void _On_precision(unsigned int pre) {
+    constexpr void _On_precision(int pre) {
         assert(pre == expected_precision);
     }
     constexpr void _On_dynamic_precision(size_t id) {
