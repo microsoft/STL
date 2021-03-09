@@ -19,9 +19,8 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-inline constexpr size_t __std_fs_max_path                      = 260; // #define MAX_PATH          260
-inline constexpr size_t __std_fs_temp_path_max                 = __std_fs_max_path + 1;
-inline constexpr long long __std_fs_file_time_epoch_adjustment = 0x19DB1DED53E8000LL; // TRANSITION, ABI
+inline constexpr size_t __std_fs_max_path      = 260; // #define MAX_PATH          260
+inline constexpr size_t __std_fs_temp_path_max = __std_fs_max_path + 1;
 
 enum class __std_win_error : unsigned long {
     _Success                   = 0, // #define ERROR_SUCCESS                    0L

@@ -143,6 +143,7 @@
         "xtimec.h",
         "xtr1common",
         "xtree",
+        "xtzdb.h",
         "xutility",
         "ymath.h",
         "yvals.h",
