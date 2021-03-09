@@ -151,7 +151,8 @@ void all_timezone_names() {
     validate_time_zone("Africa/Lome",                     Tz_status::Time_zone_link,  Tz_status::Canonical);
     validate_time_zone("Africa/Luanda",                   Tz_status::Time_zone_link,  Tz_status::Canonical);
     validate_time_zone("Africa/Lubumbashi",               Tz_status::Time_zone_link,  Tz_status::Canonical);
-    validate_time_zone("Africa/Lusaka",                   Tz_status::Time_zone_link,  Tz_status::Time_zone_link); // Tz_status::Canonical. Changed for testing
+    // vvv Tz_status::Canonical. Changed for testing vvv
+    validate_time_zone("Africa/Lusaka",                   Tz_status::Time_zone_link,  Tz_status::Time_zone_link);
     validate_time_zone("Africa/Malabo",                   Tz_status::Time_zone_link,  Tz_status::Canonical);
     validate_time_zone("Africa/Maputo",                   Tz_status::Time_zone,       Tz_status::Canonical);
     validate_time_zone("Africa/Maseru",                   Tz_status::Time_zone_link,  Tz_status::Canonical);
@@ -341,7 +342,8 @@ void all_timezone_names() {
     validate_time_zone("Antarctica/DumontDUrville",       Tz_status::Time_zone,       Tz_status::Canonical);
     validate_time_zone("Antarctica/Macquarie",            Tz_status::Time_zone,       Tz_status::Canonical);
     validate_time_zone("Antarctica/Mawson",               Tz_status::Time_zone,       Tz_status::Canonical);
-    validate_time_zone("Antarctica/McMurdo",              Tz_status::Time_zone_link,  Tz_status::Time_zone_link);; // Tz_status::Canonical. Changed for testing
+    // vvv Tz_status::Canonical. Changed for testing vvv
+    validate_time_zone("Antarctica/McMurdo",              Tz_status::Time_zone_link,  Tz_status::Time_zone_link);
     validate_time_zone("Antarctica/Palmer",               Tz_status::Time_zone,       Tz_status::Canonical);
     validate_time_zone("Antarctica/Rothera",              Tz_status::Time_zone,       Tz_status::Canonical);
     validate_time_zone("Antarctica/South_Pole",           Tz_status::Time_zone_link,  Tz_status::Any);
