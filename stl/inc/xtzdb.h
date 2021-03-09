@@ -38,9 +38,9 @@ enum class __std_tzdb_error {
 struct __std_tzdb_time_zones_info {
     __std_tzdb_error _Err;
     size_t _Num_time_zones;
-    // ordered list of nullterminated time_zone/time_zone_link names
+    // ordered list of null-terminated time_zone/time_zone_link names
     const char** _Names;
-    // contains corrosponding entry for every name, if:
+    // contains corresponding entry for every name, if:
     //    (_Link[i] == nullptr) then _Names[i] is a time_zone
     //    (_Link[i] != nullptr) then _Names[i] is a time_zone_link to time_zone with name _Link[i]
     const char** _Links;

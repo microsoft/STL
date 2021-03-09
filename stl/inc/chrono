@@ -2220,19 +2220,17 @@ namespace chrono {
     // TRANSITION: work in progress
     class time_zone {
     public:
-        time_zone(std::string_view _Name) : _Name(_Name) {}
+        explicit time_zone(string_view _Name_) : _Name(_Name_) {}
 
-        // FIXME: The standard denotes move semantics are required. Is is valid to add
-        //        copy semantics as well to make interacting with the CRT allocator easier.
-        // time_zone(time_zone&&) = default;
-        // time_zone& operator=(time_zone&&) = default;
+        time_zone(time_zone&&) = default;
+        time_zone& operator=(time_zone&&) = default;
 
         _NODISCARD string_view name() const noexcept {
             return _Name;
         }
 
     private:
-        std::string _Name;
+        string _Name;
     };
 
     _NODISCARD inline bool operator==(const time_zone& _Left, const time_zone& _Right) noexcept {
@@ -2343,23 +2341,22 @@ namespace chrono {
 
     class time_zone_link {
     public:
-        time_zone_link(std::string_view _Name, std::string_view _Target) : _Name(_Name), _Target(_Target) {}
+        explicit time_zone_link(string_view _Name_, string_view _Target_) : _Name(_Name_), _Target(_Target_) {}
 
-        // FIXME: see comment in time_zone...
-        // time_zone_link(time_zone_link&&) = default;
-        // time_zone_link& operator=(time_zone_link&&) = default;
+        time_zone_link(time_zone_link&&) = default;
+        time_zone_link& operator=(time_zone_link&&) = default;
 
-        string_view name() const noexcept {
+        _NODISCARD string_view name() const noexcept {
             return _Name;
         }
 
-        string_view target() const noexcept {
+        _NODISCARD string_view target() const noexcept {
             return _Target;
         }
 
     private:
-        std::string _Name;
-        std::string _Target;
+        string _Name;
+        string _Target;
     };
 
     _NODISCARD inline bool operator==(const time_zone_link& _Left, const time_zone_link& _Right) noexcept {
@@ -2382,22 +2379,22 @@ namespace chrono {
         } else if (_Info->_Err == __std_tzdb_error::_Win_error) {
             _XGetLastError();
         } else if (_Info->_Err == __std_tzdb_error::_Icu_error) {
-            _Xruntime_error("FIXME: what generic message should I use here?");
+            _Xruntime_error("Internal error loading IANA database information");
         }
 
         return {_Info->_Tz_name};
     }
 
     template <class _Ty>
-    _NODISCARD const _Ty* _Locate_zone_impl(const std::vector<_Ty, _Crt_allocator<_Ty>>& _Vec, string_view _Name) {
-        const auto _Result = find_if(_Vec.begin(), _Vec.end(), [&](auto& _Tz) { return _Tz.name() == _Name; });
-        return _Result != _Vec.end() ? &(*_Result) : nullptr;
+    _NODISCARD const _Ty* _Locate_zone_impl(const vector<_Ty>& _Vec, string_view _Name) {
+        const auto _Result = _STD find_if(_Vec.begin(), _Vec.end(), [&](auto& _Tz) { return _Tz.name() == _Name; });
+        return _Result != _Vec.end() ? &*_Result : nullptr;
     }
 
     struct tzdb {
-        vector<time_zone, _Crt_allocator<time_zone>> time_zones;
-        vector<time_zone_link, _Crt_allocator<time_zone_link>> links;
-        vector<leap_second, _Crt_allocator<leap_second>> leap_seconds;
+        vector<time_zone> time_zones;
+        vector<time_zone_link> links;
+        vector<leap_second> leap_seconds;
         bool _All_ls_positive;
 
         _NODISCARD const time_zone* locate_zone(string_view _Tz_name) const {
@@ -2425,22 +2422,22 @@ namespace chrono {
         } else if (_Info->_Err == __std_tzdb_error::_Win_error) {
             _XGetLastError();
         } else if (_Info->_Err == __std_tzdb_error::_Icu_error) {
-            _Xruntime_error("FIXME: what generic message should I use here?");
+            _Xruntime_error("Internal error loading IANA database information");
         }
 
         decltype(tzdb::time_zones) _Time_zones;
         decltype(tzdb::links) _Time_zone_links;
         for (size_t _Idx = 0; _Idx < _Info->_Num_time_zones; ++_Idx) {
-            const std::string_view _Name{_Info->_Names[_Idx], strlen(_Info->_Names[_Idx])};
+            const string_view _Name{_Info->_Names[_Idx]};
             if (_Info->_Links[_Idx] == nullptr) {
-                _Time_zones.push_back(time_zone{_Name});
+                _Time_zones.emplace_back(_Name);
             } else {
-                const std::string_view _Target{_Info->_Links[_Idx], strlen(_Info->_Links[_Idx])};
-                _Time_zone_links.push_back(time_zone_link{_Name, _Target});
+                const string_view _Target{_Info->_Links[_Idx]};
+                _Time_zone_links.emplace_back(_Name, _Target);
             }
         }
 
-        return {_Time_zones, _Time_zone_links};
+        return {_STD move(_Time_zones), _STD move(_Time_zone_links)};
     }
 
     _NODISCARD inline pair<decltype(tzdb::leap_seconds), bool> _Xtzdb_generate_leap_seconds(
@@ -2516,7 +2513,7 @@ namespace chrono {
             }
         }
 
-        return {_Leap_sec_info, _All_ls_positive};
+        return {_STD move(_Leap_sec_info), _All_ls_positive};
     }
 
     // TRANSITION: work in progress
@@ -2553,8 +2550,15 @@ namespace chrono {
             _Unique_lock _Lk(_Tzdb_mutex);
             auto [_Leap_sec, _All_ls_positive] = _Xtzdb_generate_leap_seconds(_Tzdb_list.front().leap_seconds.size());
             if (!_Leap_sec.empty()) {
-                decltype(tzdb::time_zones) _Time_zones{_Tzdb_list.front().time_zones};
-                decltype(tzdb::links) _Links{_Tzdb_list.front().links};
+                const auto& _Tzdb = _Tzdb_list.front();
+                vector<time_zone> _Time_zones;
+                _STD transform(_Tzdb.time_zones.begin(), _Tzdb.time_zones.end(), _STD back_inserter(_Time_zones),
+                    [](const auto& _Tz) { return time_zone{_Tz.name()}; });
+                vector<time_zone_link> _Links;
+                _STD transform(
+                    _Tzdb.links.begin(), _Tzdb.links.end(), _STD back_inserter(_Links), [](const auto& _Link) {
+                        return time_zone_link{_Link.name(), _Link.target()};
+                    });
                 _Tzdb_list.emplace_front(
                     tzdb{_STD move(_Time_zones), _STD move(_Links), _STD move(_Leap_sec), _All_ls_positive});
             }

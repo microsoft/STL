@@ -3,10 +3,11 @@
 
 #include <atomic>
 #include <memory>
+#include <string_view>
 #include <xfilesystem_abi.h>
 #include <xtzdb.h>
 
-#define NOMINMAX
+#define NOMINMAX // TODO: remove
 #include <icu.h>
 #include <internal_shared.h>
 
@@ -16,10 +17,10 @@
 
 namespace {
     enum class _Icu_api_level : unsigned long {
-        __not_set,
-        __detecting,
-        __has_failed,
-        __has_icu_addresses,
+        _Not_set,
+        _Detecting,
+        _Has_failed,
+        _Has_icu_addresses,
     };
 
     struct _Icu_functions_table {
@@ -28,7 +29,7 @@ namespace {
         _STD atomic<decltype(&::uenum_close)> _Pfn_uenum_close{nullptr};
         _STD atomic<decltype(&::uenum_count)> _Pfn_uenum_count{nullptr};
         _STD atomic<decltype(&::uenum_unext)> _Pfn_uenum_unext{nullptr};
-        _STD atomic<_Icu_api_level> _Api_level{_Icu_api_level::__not_set};
+        _STD atomic<_Icu_api_level> _Api_level{_Icu_api_level::_Not_set};
     };
 
     _Icu_functions_table _Icu_functions;
@@ -46,13 +47,13 @@ namespace {
     // FIXME: Inspired from what I found in atomic.cpp. Is this overkill, I wasn't sure what to do
     //        with race conditions and static state. I didn't want to LoadLibraryExW twice.
     _NODISCARD _Icu_api_level _Init_icu_functions(_Icu_api_level _Level) noexcept {
-        while (!_Icu_functions._Api_level.compare_exchange_weak(_Level, _Icu_api_level::__detecting)) {
-            if (_Level > _Icu_api_level::__detecting) {
+        while (!_Icu_functions._Api_level.compare_exchange_weak(_Level, _Icu_api_level::_Detecting)) {
+            if (_Level > _Icu_api_level::_Detecting) {
                 return _Level;
             }
         }
 
-        _Level = _Icu_api_level::__has_failed;
+        _Level = _Icu_api_level::_Has_failed;
 
         const HMODULE _Icu_module = LoadLibraryExW(L"icu.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
         if (_Icu_module != nullptr) {
@@ -66,7 +67,7 @@ namespace {
             _Load_address(_Icu_module, _Icu_functions._Pfn_uenum_count, "uenum_count", _Last_error);
             _Load_address(_Icu_module, _Icu_functions._Pfn_uenum_unext, "uenum_unext", _Last_error);
             if (_Last_error == ERROR_SUCCESS) {
-                _Level = _Icu_api_level::__has_icu_addresses;
+                _Level = _Icu_api_level::_Has_icu_addresses;
             } else {
                 // reset last-error in-case a later GetProcAddress resets it
                 SetLastError(_Last_error);
@@ -79,7 +80,7 @@ namespace {
 
     _NODISCARD _Icu_api_level _Acquire_icu_functions() noexcept {
         auto _Level = _Icu_functions._Api_level.load(_STD memory_order_acquire);
-        if (_Level <= _Icu_api_level::__detecting) {
+        if (_Level <= _Icu_api_level::_Detecting) {
             _Level = _Init_icu_functions(_Level);
         }
 
@@ -114,16 +115,16 @@ namespace {
 
     struct _Tz_link {
         const char* _Target;
-        const char* _Name;
+        _STD string_view _Name;
     };
 
     // FIXME: Likely not the final implementation just here to open a design discussion on
     //        how to handle time_zone_link. See test.cpp for further details on the issue.
-    static const _Tz_link _Known_links[] = {
+    constexpr _Tz_link _Known_links[] = {
         // clang-format off
         // Target                   // Name
         {"Pacific/Auckland",        "Antarctica/McMurdo"},
-        {"Africa/Maputo",           "Africa/Lusaka"}
+        {"Africa/Maputo",           "Africa/Lusaka"},
         // clang-format on
     };
 
@@ -138,7 +139,7 @@ namespace {
             return nullptr;
         }
 
-        auto* _Data = new (_STD nothrow) char[_Count_result._Len + 1];
+        _STD unique_ptr<char[]> _Data{new (_STD nothrow) char[_Count_result._Len + 1]};
         if (_Data == nullptr) {
             return nullptr;
         }
@@ -146,14 +147,13 @@ namespace {
         _Data[_Count_result._Len] = '\0';
 
         const auto _Result =
-            __std_fs_convert_wide_to_narrow(_Code_page, _Input_as_wchar, _Input_len, _Data, _Count_result._Len);
+            __std_fs_convert_wide_to_narrow(_Code_page, _Input_as_wchar, _Input_len, _Data.get(), _Count_result._Len);
         if (_Result._Err != __std_win_error::_Success) {
             _Err = __std_tzdb_error::_Win_error;
-            delete[] _Data;
             return nullptr;
         }
 
-        return _Data;
+        return _Data.release();
     }
 
 } // namespace
@@ -171,7 +171,7 @@ _NODISCARD __std_tzdb_time_zones_info* __stdcall __std_tzdb_get_time_zones() noe
         return nullptr;
     }
 
-    if (_Acquire_icu_functions() < _Icu_api_level::__has_icu_addresses) {
+    if (_Acquire_icu_functions() < _Icu_api_level::_Has_icu_addresses) {
         _Info->_Err = __std_tzdb_error::_Win_error;
         return _Info.release();
     }
@@ -199,7 +199,7 @@ _NODISCARD __std_tzdb_time_zones_info* __stdcall __std_tzdb_get_time_zones() noe
     }
 
     // init to ensure __std_tzdb_delete_init_info cleanup is valid
-    _STD fill_n(_Info->_Names, (ptrdiff_t) _Info->_Num_time_zones, nullptr);
+    _STD fill_n(_Info->_Names, static_cast<ptrdiff_t>(_Info->_Num_time_zones), nullptr);
 
     _Info->_Links = new (_STD nothrow) const char*[_Info->_Num_time_zones];
     if (_Info->_Links == nullptr) {
@@ -207,7 +207,7 @@ _NODISCARD __std_tzdb_time_zones_info* __stdcall __std_tzdb_get_time_zones() noe
     }
 
     // init to ensure __std_tzdb_delete_init_info cleanup is valid
-    _STD fill_n(_Info->_Links, _Info->_Num_time_zones, nullptr);
+    _STD fill_n(_Info->_Links, static_cast<ptrdiff_t>(_Info->_Num_time_zones), nullptr);
 
     for (size_t _Name_idx = 0; _Name_idx < _Info->_Num_time_zones; ++_Name_idx) {
         int32_t _Elem_len{};
@@ -224,7 +224,7 @@ _NODISCARD __std_tzdb_time_zones_info* __stdcall __std_tzdb_get_time_zones() noe
 
         // ensure time_zone is not a known time_zone_link
         for (const auto& _Link : _Known_links) {
-            if (strcmp(_Info->_Names[_Name_idx], _Link._Name) == 0) {
+            if (_Link._Name == _Info->_Names[_Name_idx]) {
                 _Info->_Links[_Name_idx] = _Link._Target; // no need to allocate a string
             }
         }
@@ -236,20 +236,16 @@ _NODISCARD __std_tzdb_time_zones_info* __stdcall __std_tzdb_get_time_zones() noe
 void __stdcall __std_tzdb_delete_time_zones(__std_tzdb_time_zones_info* _Info) noexcept {
     if (_Info != nullptr) {
         if (_Info->_Names != nullptr) {
-            for (size_t _Idx = 0; _Idx < _Info->_Num_time_zones; _Idx++) {
-                if (_Info->_Names[_Idx] != nullptr) {
-                    delete[] _Info->_Names[_Idx];
-                }
+            for (size_t _Idx = 0; _Idx < _Info->_Num_time_zones; ++_Idx) {
+                delete[] _Info->_Names[_Idx];
             }
 
             delete[] _Info->_Names;
             _Info->_Names = nullptr;
         }
 
-        if (_Info->_Links != nullptr) {
-            delete[] _Info->_Links;
-            _Info->_Links = nullptr;
-        }
+        delete[] _Info->_Links;
+        _Info->_Links = nullptr;
     }
 }
 
@@ -264,7 +260,7 @@ _NODISCARD __std_tzdb_current_zone_info* __stdcall __std_tzdb_get_current_zone()
         return nullptr;
     }
 
-    if (_Acquire_icu_functions() < _Icu_api_level::__has_icu_addresses) {
+    if (_Acquire_icu_functions() < _Icu_api_level::_Has_icu_addresses) {
         _Info->_Err = __std_tzdb_error::_Win_error;
         return _Info.release();
     }
