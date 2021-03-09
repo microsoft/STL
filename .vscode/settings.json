@@ -5,8 +5,8 @@
     "editor.formatOnSave": true,
     "files.eol": "\r\n",
     "files.exclude": {
-        "llvm-project": true,
-        "vcpkg": true
+        "node_modules": true,
+        ".env": true
     },
     "files.insertFinalNewline": true,
     "files.trimFinalNewlines": true,
