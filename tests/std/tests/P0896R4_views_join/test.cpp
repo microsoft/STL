@@ -274,7 +274,7 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
                 while (ranges::empty(*bi1)) {
                     ++bi1;
                 }
-                const same_as<Inner> auto inner_first = *bi1;
+                auto&& inner_first = *bi1;
                 assert(*ranges::begin(inner_first) == *begin(expected));
 
                 if constexpr (bidirectional_range<V> && common_range<V>) {
@@ -282,7 +282,7 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
                     while (ranges::empty(*ei1)) {
                         --ei1;
                     }
-                    const same_as<Inner> auto inner_last = *ei1;
+                    auto&& inner_last = *ei1;
                     assert(*prev(ranges::end(inner_last)) == *prev(end(expected)));
                 }
             }
