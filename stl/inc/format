@@ -1187,6 +1187,8 @@ _OutputIt _Write(_OutputIt _Out, monostate) {
 // = 17 + 1 + 1 + 1 + 3 = 24. An example is DBL_MAX which is "-1.7976931348623158e+308".
 inline constexpr size_t _Format_min_buffer_length = 24;
 
+#pragma warning(push)
+#pragma warning(disable : 4365) // 'argument': conversion from 'char' to 'const wchar_t', signed/unsigned mismatch
 // clang-format off
 template <class _CharT, class _OutputIt, class _Arithmetic>
     requires (is_arithmetic_v<_Arithmetic> && !same_as<_Arithmetic, bool> && !same_as<_Arithmetic, _CharT>)
@@ -1198,10 +1200,15 @@ _OutputIt _Write(_OutputIt _Out, _Arithmetic _Value) {
     _STL_ASSERT(_Ec == errc{}, "to_chars failed");
     return _STD copy(_Buffer.data(), _End, _Out);
 }
+#pragma warning(pop)
 
 template <class _CharT, class _OutputIt>
 _OutputIt _Write(_OutputIt _Out, bool _Value) {
-    return _Write(_Out, _Value ? "true" : "false");
+    if constexpr (is_same_v<_CharT, wchar_t>) {
+        return _Write(_Out, _Value ? L"true" : L"false");
+    } else {
+        return _Write(_Out, _Value ? "true" : "false");
+    }
 }
 
 template <class _CharT, class _OutputIt>
@@ -1210,6 +1217,8 @@ _OutputIt _Write(_OutputIt _Out, _CharT _Value) {
     return ++_Out;
 }
 
+#pragma warning(push)
+#pragma warning(disable : 4365) // 'argument': conversion from 'char' to 'const wchar_t', signed/unsigned mismatch
 template <class _CharT, class _OutputIt>
 _OutputIt _Write(_OutputIt _Out, const void* _Value) {
     // TRANSITION, Reusable buffer
@@ -1221,6 +1230,7 @@ _OutputIt _Write(_OutputIt _Out, const void* _Value) {
     *_Out++ = 'x';
     return _STD copy(_Buffer.data(), _End, _Out);
 }
+#pragma warning(pop)
 
 template <class _CharT, class _OutputIt>
 _OutputIt _Write(_OutputIt _Out, const _CharT* _Value) {
