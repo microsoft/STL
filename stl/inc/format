@@ -1175,14 +1175,6 @@ public:
     }
 };
 
-template <class _CharT, output_iterator<_CharT> _OutputIt>
-_OutputIt _Copy_and_widen(const char* _Begin, const char* _End, _OutputIt _Out) {
-    while (_Begin != _End) {
-        *_Out++ = static_cast<_CharT>(*_Begin++);
-    }
-    return _Out;
-}
-
 template <class _CharT, class _OutputIt>
 _OutputIt _Write(_OutputIt _Out, monostate) {
     _STL_INTERNAL_CHECK(false);
@@ -1195,6 +1187,8 @@ _OutputIt _Write(_OutputIt _Out, monostate) {
 // = 17 + 1 + 1 + 1 + 3 = 24. An example is DBL_MAX which is "-1.7976931348623158e+308".
 inline constexpr size_t _Format_min_buffer_length = 24;
 
+#pragma warning(push)
+#pragma warning(disable : 4365) // 'argument': conversion from 'char' to 'const wchar_t', signed/unsigned mismatch
 // clang-format off
 template <class _CharT, class _OutputIt, class _Arithmetic>
     requires (is_arithmetic_v<_Arithmetic> && !same_as<_Arithmetic, bool> && !same_as<_Arithmetic, _CharT>)
@@ -1204,8 +1198,9 @@ _OutputIt _Write(_OutputIt _Out, _Arithmetic _Value) {
     array<char, _Format_min_buffer_length> _Buffer;
     const auto [_End, _Ec] = _STD to_chars(_Buffer.data(), _Buffer.data() + _Buffer.size(), _Value);
     _STL_ASSERT(_Ec == errc{}, "to_chars failed");
-    return _STD _Copy_and_widen<_CharT>(_Buffer.data(), _End, _Out);
+    return _STD copy(_Buffer.data(), _End, _Out);
 }
+#pragma warning(pop)
 
 template <class _CharT, class _OutputIt>
 _OutputIt _Write(_OutputIt _Out, bool _Value) {
@@ -1222,6 +1217,8 @@ _OutputIt _Write(_OutputIt _Out, _CharT _Value) {
     return ++_Out;
 }
 
+#pragma warning(push)
+#pragma warning(disable : 4365) // 'argument': conversion from 'char' to 'const wchar_t', signed/unsigned mismatch
 template <class _CharT, class _OutputIt>
 _OutputIt _Write(_OutputIt _Out, const void* _Value) {
     // TRANSITION, Reusable buffer
@@ -1231,8 +1228,9 @@ _OutputIt _Write(_OutputIt _Out, const void* _Value) {
     _STL_ASSERT(_Ec == errc{}, "to_chars failed");
     *_Out++ = '0';
     *_Out++ = 'x';
-    return _STD _Copy_and_widen<_CharT>(_Buffer.data(), _End, _Out);
+    return _STD copy(_Buffer.data(), _End, _Out);
 }
+#pragma warning(pop)
 
 template <class _CharT, class _OutputIt>
 _OutputIt _Write(_OutputIt _Out, const _CharT* _Value) {
