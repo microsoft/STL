@@ -847,6 +847,7 @@
     <Intrinsic Name="size" Expression="_Mysize" />
     <Intrinsic Name="data" Expression="_Mydata" />
     <DisplayString>{_Mydata,[_Mysize]}</DisplayString>
+    <StringView>_Mydata,[_Mysize]</StringView>
     <Expand>
       <Item Name="[size]" ExcludeView="simple">size()</Item>
       <ArrayItems>
@@ -1059,8 +1060,8 @@
 
   <!-- VC 2015 -->
   <Type Name="std::vector&lt;*&gt;">
-    <Intrinsic Name="size" Expression="_Mypair._Myval2._Mylast - _Mypair._Myval2._Myfirst" />
-    <Intrinsic Name="capacity" Expression="_Mypair._Myval2._Myend - _Mypair._Myval2._Myfirst" />
+    <Intrinsic Name="size" Expression="(size_t)(_Mypair._Myval2._Mylast - _Mypair._Myval2._Myfirst)" />
+    <Intrinsic Name="capacity" Expression="(size_t)(_Mypair._Myval2._Myend - _Mypair._Myval2._Myfirst)" />
     <DisplayString>{{ size={size()} }}</DisplayString>
     <Expand>
       <Item Name="[capacity]" ExcludeView="simple">capacity()</Item>

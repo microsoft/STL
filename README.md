@@ -370,7 +370,7 @@ To modify how components are visualized in the debugger edit the file STL\stl\ST
 
 ### Test your changes.
 
-After making your changes overwrite the file under %Visual Studio instalation path%\Common7\Packages\Debugger\Visualizers\stl.natvis (is recommended to make a backup of the file). After overwriting the file you should be able to see your changes in a Visual Studio debugging session.
+After making your changes copy the file to any c++ Visual Studio project, after that select your right click your project > Add > Existing Item and select the stl.natvis file. After doing this you should be able to see your changes in a Visual Studio debugging session.
 
 
 # Block Diagram
