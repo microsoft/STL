@@ -30,5 +30,9 @@ EXPORTS
     __std_parallel_algorithms_hw_threads
     __std_release_shared_mutex_for_instance
     __std_submit_threadpool_work
+    __std_tzdb_delete_current_zone
+    __std_tzdb_delete_time_zones
+    __std_tzdb_get_current_zone
     __std_tzdb_get_reg_leap_seconds
+    __std_tzdb_get_time_zones
     __std_wait_for_threadpool_work_callbacks
