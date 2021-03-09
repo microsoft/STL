@@ -1402,25 +1402,25 @@ _OutputIt vformat_to(
     return _Handler._Ctx.out();
 }
 
-string vformat(string_view _Fmt, format_args _Args) {
+inline string vformat(string_view _Fmt, format_args _Args) {
     string _Str;
     _STD vformat_to(_STD back_inserter(_Str), _Fmt, _Args);
     return _Str;
 }
 
-wstring vformat(wstring_view _Fmt, wformat_args _Args) {
+inline wstring vformat(wstring_view _Fmt, wformat_args _Args) {
     wstring _Str;
     _STD vformat_to(_STD back_inserter(_Str), _Fmt, _Args);
     return _Str;
 }
 
-string vformat(const locale& _Loc, string_view _Fmt, format_args _Args) {
+inline string vformat(const locale& _Loc, string_view _Fmt, format_args _Args) {
     string _Str;
     _STD vformat_to(_STD back_inserter(_Str), _Loc, _Fmt, _Args);
     return _Str;
 }
 
-wstring vformat(const locale& _Loc, wstring_view _Fmt, wformat_args _Args) {
+inline wstring vformat(const locale& _Loc, wstring_view _Fmt, wformat_args _Args) {
     wstring _Str;
     _STD vformat_to(_STD back_inserter(_Str), _Loc, _Fmt, _Args);
     return _Str;
