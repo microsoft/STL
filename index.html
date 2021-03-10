@@ -26,11 +26,11 @@
             font-weight: bold;
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"
-        integrity="sha256-t9UJPrESBeG2ojKTIcFLPGF7nHi2vEc7f5A2KpH/UBU=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.0.0-beta.13/dist/chart.min.js"
+        integrity="sha256-rBihtMecSw9uWNza7O9RziOpBAhlqIkGneLIuLbQHsY=" crossorigin="anonymous"></script>
     <script
-        src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@1.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"
-        integrity="sha256-OrN9od558nPowCwU4e475a5CCwTfCwSrk7TF7KYUoXk=" crossorigin="anonymous"></script>
+        src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@1.1.0-alpha.3/dist/chartjs-adapter-date-fns.bundle.min.js"
+        integrity="sha256-e/RmSwhc3bLOQa/F0V0yzlODvJXdNSyLpzd6yI93EU8=" crossorigin="anonymous"></script>
     <script src="daily_table.js"></script>
     <script src="weekly_table.js"></script>
     <script src="monthly_table.js"></script>
@@ -42,17 +42,39 @@
         }
 
         const url_search_params = new URLSearchParams(window.location.search);
+        const hide_string = 'n';
+        const show_string = 'y';
 
-        function get_hidden(key, default_value = false) {
+        function get_hidden(key, default_hidden = false) {
+            let hidden = null;
+
             const value = url_search_params.get(key);
 
-            if (value === 'hide') {
-                return true;
-            } else if (value === 'show') {
-                return false;
+            if (value === hide_string) {
+                hidden = true;
+            } else if (value === show_string) {
+                hidden = false;
             } else {
-                return default_value;
+                hidden = default_hidden;
             }
+
+            return {
+                hidden: hidden,
+                stl_default_hidden: default_hidden,
+                stl_key: key,
+            };
+        }
+
+        function update_url() {
+            let url = window.location.pathname;
+
+            const params_string = `${url_search_params}`;
+
+            if (params_string.length > 0) {
+                url += `?${params_string}`;
+            }
+
+            window.history.replaceState({}, '', url);
         }
 
         const status_data = {
@@ -63,7 +85,7 @@
                     borderColor: '#9966FF',
                     backgroundColor: '#9966FF',
                     yAxisID: 'smallAxis',
-                    hidden: get_hidden('cxx17'),
+                    ...get_hidden('cxx17'),
                 },
                 {
                     data: get_values(weekly_table, 'cxx20').concat(get_values(daily_table, 'cxx20')),
@@ -71,7 +93,7 @@
                     borderColor: '#7030A0',
                     backgroundColor: '#7030A0',
                     yAxisID: 'smallAxis',
-                    hidden: get_hidden('cxx20'),
+                    ...get_hidden('cxx20'),
                 },
                 {
                     data: get_values(weekly_table, 'cxx23').concat(get_values(daily_table, 'cxx23')),
@@ -80,7 +102,7 @@
                     backgroundColor: '#9966FF',
                     borderDash: [10, 5],
                     yAxisID: 'smallAxis',
-                    hidden: get_hidden('cxx23'),
+                    ...get_hidden('cxx23'),
                 },
                 {
                     data: get_values(weekly_table, 'lwg').concat(get_values(daily_table, 'lwg')),
@@ -88,7 +110,7 @@
                     borderColor: '#0070C0',
                     backgroundColor: '#0070C0',
                     yAxisID: 'smallAxis',
-                    hidden: get_hidden('lwg'),
+                    ...get_hidden('lwg'),
                 },
                 {
                     data: get_values(daily_table, 'pr'),
@@ -96,7 +118,7 @@
                     borderColor: '#00B050',
                     backgroundColor: '#00B050',
                     yAxisID: 'smallAxis',
-                    hidden: get_hidden('pr'),
+                    ...get_hidden('pr'),
                 },
                 {
                     data: get_values(weekly_table, 'vso'),
@@ -104,7 +126,7 @@
                     borderColor: '#900000',
                     backgroundColor: '#900000',
                     yAxisID: 'largeAxis',
-                    hidden: get_hidden('vso'),
+                    ...get_hidden('vso'),
                 },
                 {
                     data: get_values(daily_table, 'bug'),
@@ -112,7 +134,7 @@
                     borderColor: '#FF0000',
                     backgroundColor: '#FF0000',
                     yAxisID: 'largeAxis',
-                    hidden: get_hidden('bug'),
+                    ...get_hidden('bug'),
                 },
                 {
                     data: get_values(daily_table, 'issue'),
@@ -120,7 +142,7 @@
                     borderColor: '#909090',
                     backgroundColor: '#909090',
                     yAxisID: 'largeAxis',
-                    hidden: get_hidden('issue'),
+                    ...get_hidden('issue'),
                 },
                 {
                     data: get_values(weekly_table, 'libcxx'),
@@ -128,7 +150,7 @@
                     borderColor: '#FFC000',
                     backgroundColor: '#FFC000',
                     yAxisID: 'largeAxis',
-                    hidden: get_hidden('libcxx'),
+                    ...get_hidden('libcxx'),
                 },
             ],
         };
@@ -141,7 +163,7 @@
                     borderColor: '#909090',
                     backgroundColor: '#909090',
                     yAxisID: 'leftAxis',
-                    hidden: get_hidden('avg_age', true),
+                    ...get_hidden('avg_age', true),
                 },
                 {
                     data: get_values(daily_table, 'avg_wait'),
@@ -149,7 +171,7 @@
                     borderColor: '#FF9090',
                     backgroundColor: '#FF9090',
                     yAxisID: 'leftAxis',
-                    hidden: get_hidden('avg_wait', true),
+                    ...get_hidden('avg_wait', true),
                 },
                 {
                     data: get_values(daily_table, 'sum_age'),
@@ -157,7 +179,7 @@
                     borderColor: '#000000',
                     backgroundColor: '#000000',
                     yAxisID: 'rightAxis',
-                    hidden: get_hidden('sum_age'),
+                    ...get_hidden('sum_age'),
                 },
                 {
                     data: get_values(daily_table, 'sum_wait'),
@@ -165,7 +187,7 @@
                     borderColor: '#FF0000',
                     backgroundColor: '#FF0000',
                     yAxisID: 'rightAxis',
-                    hidden: get_hidden('sum_wait'),
+                    ...get_hidden('sum_wait'),
                 },
             ],
         };
@@ -178,25 +200,26 @@
                     borderColor: '#00B050',
                     backgroundColor: '#00B050',
                     yAxisID: 'mergeAxis',
-                    hidden: get_hidden('merged'),
+                    ...get_hidden('merged'),
                 },
                 {
                     type: 'bar',
                     data: get_values(monthly_table, 'merge_bar'),
                     label: 'Bars: Calendar Months',
+                    borderColor: '#CCCCCC',
                     borderWidth: 1,
                     yAxisID: 'mergeAxis',
-                    hidden: get_hidden('merge_bar'),
+                    ...get_hidden('merge_bar'),
                 },
             ],
         };
 
         const timeframe_all = {
-            ticks: { min: '2017-06-09' },
+            min: '2017-06-09',
             time: { unit: 'quarter' },
         };
         const timeframe_github = {
-            ticks: { min: '2019-09-20' }, // first Friday after 2019-09-16
+            min: '2019-09-20', // first Friday after 2019-09-16
             time: { unit: 'month' },
         };
         const timeframes = [
@@ -214,7 +237,6 @@
                     borderCapStyle: 'round',
                     borderJoinStyle: 'round',
                     fill: false,
-                    tension: 0,
                 },
                 point: {
                     radius: 0,
@@ -223,7 +245,39 @@
             hover: {
                 mode: 'nearest',
             },
-            tooltips: {
+        };
+
+        function legend_click_handler(_event, legend_item, legend) {
+            const ch = legend.chart;
+            const index = legend_item.datasetIndex;
+
+            const { stl_default_hidden, stl_key } = ch.data.datasets[index];
+
+            const becoming_hidden = ch.isDatasetVisible(index);
+
+            if (becoming_hidden) {
+                ch.hide(index);
+            } else {
+                ch.show(index);
+            }
+
+            legend_item.hidden = becoming_hidden;
+
+            if (becoming_hidden === stl_default_hidden) {
+                url_search_params.delete(stl_key);
+            } else {
+                url_search_params.set(stl_key, becoming_hidden ? hide_string : show_string);
+                url_search_params.sort();
+            }
+
+            update_url();
+        }
+
+        const common_plugins = {
+            legend: {
+                onClick: legend_click_handler,
+            },
+            tooltip: {
                 mode: 'nearest',
                 intersect: false,
             },
@@ -231,16 +285,20 @@
 
         const common_title = {
             display: true,
-            fontSize: 24,
+            font: {
+                size: 24,
+            },
         };
 
-        function make_xAxes(timeframe) {
-            return [{
+        function make_xAxis(timeframe) {
+            return {
                 type: 'time',
-                ticks: {
-                    min: timeframe.ticks.min,
-                    max: daily_table[daily_table.length - 1].date,
+                min: timeframe.min,
+                max: daily_table[daily_table.length - 1].date,
+                gridLines: {
+                    offsetGridLines: false,
                 },
+                offset: false,
                 time: {
                     parser: 'yyyy-MM-dd',
                     tooltipFormat: 'MMM d, yyyy',
@@ -249,120 +307,118 @@
                         quarter: 'MMM yyyy',
                     },
                 },
-            }];
+            };
         }
 
         const status_options = {
             ...common_options,
-            title: {
-                ...common_title,
-                text: 'STL Status Chart',
+            plugins: {
+                ...common_plugins,
+                title: {
+                    ...common_title,
+                    text: 'STL Status Chart',
+                },
             },
             scales: {
-                xAxes: make_xAxes(timeframes[timeframe_idx]),
-                yAxes: [
-                    {
-                        type: 'linear',
-                        display: 'auto',
-                        id: 'largeAxis',
-                        position: 'left',
-                        scaleLabel: {
-                            display: true,
-                            labelString: 'Bugs, Issues, Skipped Libcxx Tests',
-                        },
-                        ticks: {
-                            min: 0,
-                            max: 650,
-                            stepSize: 100,
-                        },
+                x: make_xAxis(timeframes[timeframe_idx]),
+                largeAxis: {
+                    type: 'linear',
+                    display: 'auto',
+                    position: 'left',
+                    title: {
+                        display: true,
+                        text: 'Bugs, Issues, Skipped Libcxx Tests',
                     },
-                    {
-                        type: 'linear',
-                        display: 'auto',
-                        id: 'smallAxis',
-                        position: 'right',
-                        scaleLabel: {
-                            display: true,
-                            labelString: 'Features, LWG Resolutions, Pull Requests',
-                        },
-                        ticks: {
-                            min: 0,
-                            max: 65,
-                            stepSize: 10,
-                        },
+                    min: 0,
+                    max: 650,
+                    ticks: {
+                        stepSize: 100,
                     },
-                ],
+                },
+                smallAxis: {
+                    type: 'linear',
+                    display: 'auto',
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: 'Features, LWG Resolutions, Pull Requests',
+                    },
+                    min: 0,
+                    max: 65,
+                    ticks: {
+                        stepSize: 10,
+                    },
+                },
             },
         };
 
         const age_options = {
             ...common_options,
-            title: {
-                ...common_title,
-                text: 'Pull Request Age',
+            plugins: {
+                ...common_plugins,
+                title: {
+                    ...common_title,
+                    text: 'Pull Request Age',
+                },
             },
             scales: {
-                xAxes: make_xAxes(timeframe_github),
-                yAxes: [
-                    {
-                        type: 'linear',
-                        display: 'auto',
-                        id: 'leftAxis',
-                        position: 'left',
-                        scaleLabel: {
-                            display: true,
-                            labelString: 'Average Age, Average Wait (days)',
-                        },
-                        ticks: {
-                            min: 0,
-                            max: 150,
-                            stepSize: 10,
-                        },
+                x: make_xAxis(timeframe_github),
+                leftAxis: {
+                    type: 'linear',
+                    display: 'auto',
+                    position: 'left',
+                    title: {
+                        display: true,
+                        text: 'Average Age, Average Wait (days)',
                     },
-                    {
-                        type: 'linear',
-                        display: 'auto',
-                        id: 'rightAxis',
-                        position: 'right',
-                        scaleLabel: {
-                            display: true,
-                            labelString: 'Combined Age, Combined Wait (PR-months)',
-                        },
-                        ticks: {
-                            min: 0,
-                            max: 150,
-                            stepSize: 10,
-                        },
+                    min: 0,
+                    max: 150,
+                    ticks: {
+                        stepSize: 10,
                     },
-                ],
+                },
+                rightAxis: {
+                    type: 'linear',
+                    display: 'auto',
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: 'Combined Age, Combined Wait (PR-months)',
+                    },
+                    min: 0,
+                    max: 150,
+                    ticks: {
+                        stepSize: 10,
+                    },
+                },
             },
         };
 
         const merge_options = {
             ...common_options,
-            title: {
-                ...common_title,
-                text: 'Monthly Merged PRs',
+            plugins: {
+                ...common_plugins,
+                title: {
+                    ...common_title,
+                    text: 'Monthly Merged PRs',
+                },
             },
             scales: {
-                xAxes: make_xAxes(timeframe_github),
-                yAxes: [
-                    {
-                        type: 'linear',
-                        display: 'auto',
-                        id: 'mergeAxis',
-                        position: 'right',
-                        scaleLabel: {
-                            display: true,
-                            labelString: 'PRs / month',
-                        },
-                        ticks: {
-                            min: 0,
-                            max: 80,
-                            stepSize: 10,
-                        },
+                x: make_xAxis(timeframe_github),
+                mergeAxis: {
+                    type: 'linear',
+                    display: 'auto',
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: 'PRs / month',
                     },
-                ],
+                    min: 0,
+                    max: 80,
+                    ticks: {
+                        stepSize: 10,
+                    },
+                },
             },
         };
 
@@ -388,10 +444,10 @@
             document.getElementById('toggleTimeframe').addEventListener('click', function () {
                 timeframe_idx = (timeframe_idx + 1) % timeframes.length;
 
-                const xAxis = window.status_chart.options.scales.xAxes[0];
+                const xAxis = window.status_chart.options.scales.x;
                 const new_timeframe = timeframes[timeframe_idx];
 
-                xAxis.ticks.min = new_timeframe.ticks.min;
+                xAxis.min = new_timeframe.min;
                 xAxis.time.unit = new_timeframe.time.unit;
 
                 window.status_chart.update();
