@@ -2,14 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <atomic>
+#include <icu.h>
+#include <internal_shared.h>
 #include <memory>
 #include <string_view>
 #include <xfilesystem_abi.h>
 #include <xtzdb.h>
-
-#define NOMINMAX // TODO: remove
-#include <icu.h>
-#include <internal_shared.h>
 
 #include <Windows.h>
 
@@ -24,6 +22,7 @@ namespace {
     };
 
     struct _Icu_functions_table {
+        _STD atomic<decltype(&::ucal_getCanonicalTimeZoneID)> _Pfn_ucal_getCanonicalTimeZoneID{nullptr};
         _STD atomic<decltype(&::ucal_getDefaultTimeZone)> _Pfn_ucal_getDefaultTimeZone{nullptr};
         _STD atomic<decltype(&::ucal_openTimeZoneIDEnumeration)> _Pfn_ucal_openTimeZoneIDEnumeration{nullptr};
         _STD atomic<decltype(&::uenum_close)> _Pfn_uenum_close{nullptr};
@@ -59,6 +58,8 @@ namespace {
         if (_Icu_module != nullptr) {
             // collect at least one error if any GetProcAddress call fails
             DWORD _Last_error{0};
+            _Load_address(_Icu_module, _Icu_functions._Pfn_ucal_getCanonicalTimeZoneID, "ucal_getCanonicalTimeZoneID",
+                _Last_error);
             _Load_address(
                 _Icu_module, _Icu_functions._Pfn_ucal_getDefaultTimeZone, "ucal_getDefaultTimeZone", _Last_error);
             _Load_address(_Icu_module, _Icu_functions._Pfn_ucal_openTimeZoneIDEnumeration,
@@ -87,6 +88,12 @@ namespace {
         return _Level;
     }
 
+    _NODISCARD int32_t __icu_ucal_getCanonicalTimeZoneID(const UChar* id, int32_t len, UChar* result,
+        int32_t resultCapacity, UBool* isSystemID, UErrorCode* status) noexcept {
+        const auto _Fun = _Icu_functions._Pfn_ucal_getCanonicalTimeZoneID.load(_STD memory_order_relaxed);
+        return _Fun(id, len, result, resultCapacity, isSystemID, status);
+    }
+
     _NODISCARD int32_t __icu_ucal_getDefaultTimeZone(UChar* result, int32_t resultCapacity, UErrorCode* ec) noexcept {
         const auto _Fun = _Icu_functions._Pfn_ucal_getDefaultTimeZone.load(_STD memory_order_relaxed);
         return _Fun(result, resultCapacity, ec);
@@ -112,21 +119,6 @@ namespace {
         const auto _Fun = _Icu_functions._Pfn_uenum_unext.load(_STD memory_order_relaxed);
         return _Fun(en, resultLength, status);
     }
-
-    struct _Tz_link {
-        const char* _Target;
-        _STD string_view _Name;
-    };
-
-    // FIXME: Likely not the final implementation just here to open a design discussion on
-    //        how to handle time_zone_link. See test.cpp for further details on the issue.
-    constexpr _Tz_link _Known_links[] = {
-        // clang-format off
-        // Target                   // Name
-        {"Pacific/Auckland",        "Antarctica/McMurdo"},
-        {"Africa/Maputo",           "Africa/Lusaka"},
-        // clang-format on
-    };
 
     _NODISCARD const char* _Allocate_wide_to_narrow(
         const char16_t* _Input, int _Input_len, __std_tzdb_error& _Err) noexcept {
@@ -176,18 +168,18 @@ _NODISCARD __std_tzdb_time_zones_info* __stdcall __std_tzdb_get_time_zones() noe
         return _Info.release();
     }
 
-    UErrorCode _Err{};
+    UErrorCode _UErr{};
     _STD unique_ptr<UEnumeration, decltype(&__icu_uenum_close)> _Enum{
-        __icu_ucal_openTimeZoneIDEnumeration(USystemTimeZoneType::UCAL_ZONE_TYPE_CANONICAL, nullptr, nullptr, &_Err),
+        __icu_ucal_openTimeZoneIDEnumeration(USystemTimeZoneType::UCAL_ZONE_TYPE_ANY, nullptr, nullptr, &_UErr),
         &__icu_uenum_close};
-    if (U_FAILURE(_Err)) {
+    if (U_FAILURE(_UErr)) {
         _Info->_Err = __std_tzdb_error::_Icu_error;
         return _Info.release();
     }
 
     // uenum_count may be expensive but is required to pre allocated arrays.
-    int32_t _Num_time_zones = __icu_uenum_count(_Enum.get(), &_Err);
-    if (U_FAILURE(_Err)) {
+    int32_t _Num_time_zones = __icu_uenum_count(_Enum.get(), &_UErr);
+    if (U_FAILURE(_UErr)) {
         _Info->_Err = __std_tzdb_error::_Icu_error;
         return _Info.release();
     }
@@ -211,8 +203,8 @@ _NODISCARD __std_tzdb_time_zones_info* __stdcall __std_tzdb_get_time_zones() noe
 
     for (size_t _Name_idx = 0; _Name_idx < _Info->_Num_time_zones; ++_Name_idx) {
         int32_t _Elem_len{};
-        const auto* _Elem = __icu_uenum_unext(_Enum.get(), &_Elem_len, &_Err);
-        if (U_FAILURE(_Err) || _Elem == nullptr) {
+        const auto* _Elem = __icu_uenum_unext(_Enum.get(), &_Elem_len, &_UErr);
+        if (U_FAILURE(_UErr) || _Elem == nullptr) {
             _Info->_Err = __std_tzdb_error::_Icu_error;
             return _Info.release();
         }
@@ -222,10 +214,21 @@ _NODISCARD __std_tzdb_time_zones_info* __stdcall __std_tzdb_get_time_zones() noe
             return _Info->_Err != __std_tzdb_error::_Success ? _Info.release() : nullptr;
         }
 
-        // ensure time_zone is not a known time_zone_link
-        for (const auto& _Link : _Known_links) {
-            if (_Link._Name == _Info->_Names[_Name_idx]) {
-                _Info->_Links[_Name_idx] = _Link._Target; // no need to allocate a string
+        UBool _Is_system{};
+        // FIXME: what is the right size here and is it ok to stack allocate.
+        char16_t _Link_buf[256];
+        const auto _Link_buf_len =
+            __icu_ucal_getCanonicalTimeZoneID(_Elem, _Elem_len, _Link_buf, sizeof(_Link_buf), &_Is_system, &_UErr);
+        if (U_FAILURE(_UErr) || _Link_buf_len == 0) {
+            _Info->_Err = __std_tzdb_error::_Icu_error;
+            return _Info.release();
+        }
+
+        if (_STD u16string_view{_Elem, static_cast<size_t>(_Elem_len)}
+            != _STD u16string_view{_Link_buf, static_cast<size_t>(_Link_buf_len)}) {
+            _Info->_Links[_Name_idx] = _Allocate_wide_to_narrow(_Link_buf, _Link_buf_len, _Info->_Err);
+            if (_Info->_Links[_Name_idx] == nullptr) {
+                return _Info->_Err != __std_tzdb_error::_Success ? _Info.release() : nullptr;
             }
         }
     }
@@ -244,8 +247,14 @@ void __stdcall __std_tzdb_delete_time_zones(__std_tzdb_time_zones_info* _Info) n
             _Info->_Names = nullptr;
         }
 
-        delete[] _Info->_Links;
-        _Info->_Links = nullptr;
+        if (_Info->_Links != nullptr) {
+            for (size_t _Idx = 0; _Idx < _Info->_Num_time_zones; ++_Idx) {
+                delete[] _Info->_Links[_Idx];
+            }
+
+            delete[] _Info->_Names;
+            _Info->_Names = nullptr;
+        }
     }
 }
 

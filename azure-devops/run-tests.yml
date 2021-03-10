@@ -27,7 +27,7 @@ steps:
     script: |
       call "%PROGRAMFILES(X86)%\Microsoft Visual Studio\2019\Preview\Common7\Tools\VsDevCmd.bat" ^
       -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
-      ctest -V
+      python tests\utils\stl-lit\stl-lit.py ..\..\..\tests\std --filter P0355R7_calendars_and_time_zones_time_zones:00 -v
   env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
 - task: PublishTestResults@2
   displayName: 'Publish Tests'
