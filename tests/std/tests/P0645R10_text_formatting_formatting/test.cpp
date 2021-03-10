@@ -31,6 +31,7 @@ struct choose_literal<wchar_t> {
 };
 
 #define TYPED_LITERAL(CharT, Literal) (choose_literal<CharT>::choose(Literal, L##Literal))
+#define STR(Str)                      TYPED_LITERAL(charT, Str)
 
 template <class charT, class... Args>
 auto make_testing_format_args(Args&&... vals) {
@@ -55,6 +56,11 @@ void test_simple_formatting() {
     vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "format"),
         make_testing_format_args<charT>());
     assert(output_string == TYPED_LITERAL(charT, "format"));
+
+    assert(format(STR("f")) == STR("f"));
+    assert(format(STR("format")) == STR("format"));
+    assert(format(locale::classic(), STR("f")) == STR("f"));
+    assert(format(locale::classic(), STR("format")) == STR("format"));
 }
 
 template <class charT>
@@ -130,6 +136,10 @@ void test_simple_replacement_field() {
     vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{}"),
         make_testing_format_args<charT>(TYPED_LITERAL(charT, "f")));
     assert(output_string == TYPED_LITERAL(charT, "f"));
+
+
+    assert(format(STR("{}"), STR("f")) == STR("f"));
+    assert(format(locale::classic(), STR("{}"), STR("f")) == STR("f"));
 
     // Test string_view
     output_string.clear();
