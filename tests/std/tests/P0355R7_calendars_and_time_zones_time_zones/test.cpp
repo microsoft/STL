@@ -85,7 +85,7 @@ bool test() {
     try {
         timezone_names_test();
     } catch (exception& ex) {
-        std::cout << "Test threw exception: " << ex.what() << "\n";
+        std::cerr << "Test threw exception: " << ex.what() << "\n";
         assert(false);
     }
 

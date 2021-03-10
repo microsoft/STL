@@ -32,6 +32,7 @@ get_property(STL_LIT_TEST_DIRS GLOBAL PROPERTY STL_LIT_TEST_DIRS)
 list(APPEND STL_LIT_COMMAND "${STL_LIT_OUTPUT}"
                             "${LIT_FLAGS}"
                             "${STL_LIT_TEST_DIRS}"
+                            "-v"
                             "--filter"
                             "P0355R7_calendars_and_time_zones_time_zones:00")
 
