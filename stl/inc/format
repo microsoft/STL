@@ -641,7 +641,7 @@ struct _Basic_format_specs {
 template <class _CharT>
 class _Specs_setter {
 public:
-    explicit constexpr _Specs_setter(_Basic_format_specs<_CharT> _Specs_) : _Specs(_Specs_) {}
+    explicit constexpr _Specs_setter(_Basic_format_specs<_CharT>& _Specs_) : _Specs(_Specs_) {}
 
     constexpr void _On_align(_Align _Aln) {
         _Specs._Alignment = _Aln;
@@ -688,7 +688,7 @@ public:
     }
 
 protected:
-    _Basic_format_specs<_CharT> _Specs;
+    _Basic_format_specs<_CharT>& _Specs;
 };
 
 template <class _Context>
