@@ -1371,6 +1371,22 @@ template <class _Out, class _CharT>
 using format_args_t = basic_format_args<basic_format_context<_Out, _CharT>>;
 
 template <class _OutputIt>
+_OutputIt vformat_to(_OutputIt _Out, string_view _Fmt, format_args_t<type_identity_t<_OutputIt>, char> _Args) {
+    _Format_handler<_OutputIt, char, basic_format_context<_OutputIt, char>> _Handler(
+        _Out, _Fmt, _Args, locale::classic());
+    _Parse_format_string(_Fmt, _Handler);
+    return _Handler._Ctx.out();
+}
+
+template <class _OutputIt>
+_OutputIt vformat_to(_OutputIt _Out, wstring_view _Fmt, format_args_t<type_identity_t<_OutputIt>, wchar_t> _Args) {
+    _Format_handler<_OutputIt, wchar_t, basic_format_context<_OutputIt, wchar_t>> _Handler(
+        _Out, _Fmt, _Args, locale::classic());
+    _Parse_format_string(_Fmt, _Handler);
+    return _Handler._Ctx.out();
+}
+
+template <class _OutputIt>
 _OutputIt vformat_to(
     _OutputIt _Out, const locale& _Loc, string_view _Fmt, format_args_t<type_identity_t<_OutputIt>, char> _Args) {
     _Format_handler<_OutputIt, char, basic_format_context<_OutputIt, char>> _Handler(_Out, _Fmt, _Args, _Loc);
@@ -1386,11 +1402,49 @@ _OutputIt vformat_to(
     return _Handler._Ctx.out();
 }
 
-// FUNCTION vformat
-string vformat(string_view _Fmt, format_args _Args);
-wstring vformat(wstring_view _Fmt, wformat_args _Args);
-string vformat(const locale& _Loc, string_view _Fmt, format_args _Args);
-wstring vformat(const locale& _Loc, wstring_view _Fmt, wformat_args _Args);
+inline string vformat(string_view _Fmt, format_args _Args) {
+    string _Str;
+    _STD vformat_to(_STD back_inserter(_Str), _Fmt, _Args);
+    return _Str;
+}
+
+inline wstring vformat(wstring_view _Fmt, wformat_args _Args) {
+    wstring _Str;
+    _STD vformat_to(_STD back_inserter(_Str), _Fmt, _Args);
+    return _Str;
+}
+
+inline string vformat(const locale& _Loc, string_view _Fmt, format_args _Args) {
+    string _Str;
+    _STD vformat_to(_STD back_inserter(_Str), _Loc, _Fmt, _Args);
+    return _Str;
+}
+
+inline wstring vformat(const locale& _Loc, wstring_view _Fmt, wformat_args _Args) {
+    wstring _Str;
+    _STD vformat_to(_STD back_inserter(_Str), _Loc, _Fmt, _Args);
+    return _Str;
+}
+
+template <class... _Types>
+string format(string_view _Fmt, const _Types&... _Args) {
+    return _STD vformat(_Fmt, _STD make_format_args(_Args...));
+}
+
+template <class... _Types>
+wstring format(wstring_view _Fmt, const _Types&... _Args) {
+    return _STD vformat(_Fmt, _STD make_wformat_args(_Args...));
+}
+
+template <class... _Types>
+string format(const locale& _Loc, string_view _Fmt, const _Types&... _Args) {
+    return _STD vformat(_Loc, _Fmt, _STD make_format_args(_Args...));
+}
+
+template <class... _Types>
+wstring format(const locale& _Loc, wstring_view _Fmt, const _Types&... _Args) {
+    return _STD vformat(_Loc, _Fmt, _STD make_wformat_args(_Args...));
+}
 
 _STD_END
 
