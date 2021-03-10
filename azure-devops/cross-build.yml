@@ -14,7 +14,7 @@ parameters:
   default: buildOutputLocation
 - name: numShards
   type: number
-  default: 8
+  default: 1
 jobs:
 - job: '${{ parameters.targetPlatform }}'
   variables:
