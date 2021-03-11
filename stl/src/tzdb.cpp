@@ -43,8 +43,6 @@ namespace {
         }
     }
 
-    // FIXME: Inspired from what I found in atomic.cpp. Is this overkill, I wasn't sure what to do
-    //        with race conditions and static state. I didn't want to LoadLibraryExW twice.
     _NODISCARD _Icu_api_level _Init_icu_functions(_Icu_api_level _Level) noexcept {
         while (!_Icu_functions._Api_level.compare_exchange_weak(_Level, _Icu_api_level::_Detecting)) {
             if (_Level > _Icu_api_level::_Detecting) {
@@ -57,7 +55,7 @@ namespace {
         const HMODULE _Icu_module = LoadLibraryExW(L"icu.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
         if (_Icu_module != nullptr) {
             // collect at least one error if any GetProcAddress call fails
-            DWORD _Last_error{0};
+            DWORD _Last_error{ERROR_SUCCESS};
             _Load_address(_Icu_module, _Icu_functions._Pfn_ucal_getCanonicalTimeZoneID, "ucal_getCanonicalTimeZoneID",
                 _Last_error);
             _Load_address(
@@ -70,7 +68,7 @@ namespace {
             if (_Last_error == ERROR_SUCCESS) {
                 _Level = _Icu_api_level::_Has_icu_addresses;
             } else {
-                // reset last-error in-case a later GetProcAddress resets it
+                // reset last error code for thread in-case a later GetProcAddress resets it
                 SetLastError(_Last_error);
             }
         }
@@ -124,7 +122,6 @@ namespace {
         const char16_t* _Input, int _Input_len, __std_tzdb_error& _Err) noexcept {
         const auto _Code_page      = __std_fs_code_page();
         const auto _Input_as_wchar = reinterpret_cast<const wchar_t*>(_Input);
-        // FIXME: Is is ok to pull in xfilesystem_abi.h and use these here?
         const auto _Count_result = __std_fs_convert_wide_to_narrow(_Code_page, _Input_as_wchar, _Input_len, nullptr, 0);
         if (_Count_result._Err != __std_win_error::_Success) {
             _Err = __std_tzdb_error::_Win_error;
@@ -148,13 +145,25 @@ namespace {
         return _Data.release();
     }
 
+    template <class _Ty, class _Dtor>
+    _NODISCARD constexpr _Ty* _Report_error(_STD unique_ptr<_Ty, _Dtor>& _Info, __std_tzdb_error _Err) {
+        _Info->_Err = _Err;
+        return _Info.release();
+    }
+
+    template <class _Ty, class _Dtor>
+    _NODISCARD constexpr _Ty* _Propagate_error(_STD unique_ptr<_Ty, _Dtor>& _Info) {
+        // a bad_alloc() returns nullptr and does not set __std_tzdb_error
+        return _Info->_Err != __std_tzdb_error::_Success ? _Info.release() : nullptr;
+    }
+
 } // namespace
 
 _EXTERN_C
 
 _NODISCARD __std_tzdb_time_zones_info* __stdcall __std_tzdb_get_time_zones() noexcept {
     // On exit---
-    //    *_Info == nullptr         --> bad_alloc()
+    //    _Info == nullptr          --> bad_alloc()
     //    _Info->_Err == _Win_error --> failed, call GetLastError()
     //    _Info->_Err == _Icu_error --> runtime_error interacting with ICU
     _STD unique_ptr<__std_tzdb_time_zones_info, decltype(&__std_tzdb_delete_time_zones)> _Info{
@@ -164,8 +173,7 @@ _NODISCARD __std_tzdb_time_zones_info* __stdcall __std_tzdb_get_time_zones() noe
     }
 
     if (_Acquire_icu_functions() < _Icu_api_level::_Has_icu_addresses) {
-        _Info->_Err = __std_tzdb_error::_Win_error;
-        return _Info.release();
+        return _Report_error(_Info, __std_tzdb_error::_Win_error);
     }
 
     UErrorCode _UErr{};
@@ -173,15 +181,13 @@ _NODISCARD __std_tzdb_time_zones_info* __stdcall __std_tzdb_get_time_zones() noe
         __icu_ucal_openTimeZoneIDEnumeration(USystemTimeZoneType::UCAL_ZONE_TYPE_ANY, nullptr, nullptr, &_UErr),
         &__icu_uenum_close};
     if (U_FAILURE(_UErr)) {
-        _Info->_Err = __std_tzdb_error::_Icu_error;
-        return _Info.release();
+        return _Report_error(_Info, __std_tzdb_error::_Icu_error);
     }
 
-    // uenum_count may be expensive but is required to pre allocated arrays.
+    // uenum_count may be expensive but is required to pre-allocate arrays.
     int32_t _Num_time_zones = __icu_uenum_count(_Enum.get(), &_UErr);
     if (U_FAILURE(_UErr)) {
-        _Info->_Err = __std_tzdb_error::_Icu_error;
-        return _Info.release();
+        return _Report_error(_Info, __std_tzdb_error::_Icu_error);
     }
 
     _Info->_Num_time_zones = static_cast<size_t>(_Num_time_zones);
@@ -190,7 +196,7 @@ _NODISCARD __std_tzdb_time_zones_info* __stdcall __std_tzdb_get_time_zones() noe
         return nullptr;
     }
 
-    // init to ensure __std_tzdb_delete_init_info cleanup is valid
+    // init to ensure __std_tzdb_delete_time_zones() cleanup is valid
     _STD fill_n(_Info->_Names, static_cast<ptrdiff_t>(_Info->_Num_time_zones), nullptr);
 
     _Info->_Links = new (_STD nothrow) const char*[_Info->_Num_time_zones];
@@ -198,37 +204,34 @@ _NODISCARD __std_tzdb_time_zones_info* __stdcall __std_tzdb_get_time_zones() noe
         return nullptr;
     }
 
-    // init to ensure __std_tzdb_delete_init_info cleanup is valid
+    // init to ensure __std_tzdb_delete_time_zones() cleanup is valid
     _STD fill_n(_Info->_Links, static_cast<ptrdiff_t>(_Info->_Num_time_zones), nullptr);
 
     for (size_t _Name_idx = 0; _Name_idx < _Info->_Num_time_zones; ++_Name_idx) {
         int32_t _Elem_len{};
         const auto* _Elem = __icu_uenum_unext(_Enum.get(), &_Elem_len, &_UErr);
         if (U_FAILURE(_UErr) || _Elem == nullptr) {
-            _Info->_Err = __std_tzdb_error::_Icu_error;
-            return _Info.release();
+            return _Report_error(_Info, __std_tzdb_error::_Icu_error);
         }
 
         _Info->_Names[_Name_idx] = _Allocate_wide_to_narrow(_Elem, _Elem_len, _Info->_Err);
         if (_Info->_Names[_Name_idx] == nullptr) {
-            return _Info->_Err != __std_tzdb_error::_Success ? _Info.release() : nullptr;
+            return _Propagate_error(_Info);
         }
 
         UBool _Is_system{};
-        // FIXME: what is the right size here and is it ok to stack allocate.
         char16_t _Link_buf[256];
         const auto _Link_buf_len =
             __icu_ucal_getCanonicalTimeZoneID(_Elem, _Elem_len, _Link_buf, sizeof(_Link_buf), &_Is_system, &_UErr);
         if (U_FAILURE(_UErr) || _Link_buf_len == 0) {
-            _Info->_Err = __std_tzdb_error::_Icu_error;
-            return _Info.release();
+            return _Report_error(_Info, __std_tzdb_error::_Icu_error);
         }
 
         if (_STD u16string_view{_Elem, static_cast<size_t>(_Elem_len)}
             != _STD u16string_view{_Link_buf, static_cast<size_t>(_Link_buf_len)}) {
             _Info->_Links[_Name_idx] = _Allocate_wide_to_narrow(_Link_buf, _Link_buf_len, _Info->_Err);
             if (_Info->_Links[_Name_idx] == nullptr) {
-                return _Info->_Err != __std_tzdb_error::_Success ? _Info.release() : nullptr;
+                return _Propagate_error(_Info);
             }
         }
     }
@@ -260,7 +263,7 @@ void __stdcall __std_tzdb_delete_time_zones(__std_tzdb_time_zones_info* _Info) n
 
 _NODISCARD __std_tzdb_current_zone_info* __stdcall __std_tzdb_get_current_zone() noexcept {
     // On exit---
-    //    *_Info == nullptr         --> bad_alloc()
+    //    _Info == nullptr          --> bad_alloc()
     //    _Info->_Err == _Win_error --> failed, call GetLastError()
     //    _Info->_Err == _Icu_error --> runtime_error interacting with ICU
     _STD unique_ptr<__std_tzdb_current_zone_info, decltype(&__std_tzdb_delete_current_zone)> _Info{
@@ -270,21 +273,19 @@ _NODISCARD __std_tzdb_current_zone_info* __stdcall __std_tzdb_get_current_zone()
     }
 
     if (_Acquire_icu_functions() < _Icu_api_level::_Has_icu_addresses) {
-        _Info->_Err = __std_tzdb_error::_Win_error;
-        return _Info.release();
+        return _Report_error(_Info, __std_tzdb_error::_Win_error);
     }
 
     UErrorCode _Err{};
     char16_t _Id_buf[256];
     const auto _Id_buf_len = __icu_ucal_getDefaultTimeZone(_Id_buf, sizeof(_Id_buf), &_Err);
     if (U_FAILURE(_Err) || _Id_buf_len == 0) {
-        _Info->_Err = __std_tzdb_error::_Icu_error;
-        return _Info.release();
+        return _Report_error(_Info, __std_tzdb_error::_Icu_error);
     }
 
     _Info->_Tz_name = _Allocate_wide_to_narrow(_Id_buf, static_cast<size_t>(_Id_buf_len), _Info->_Err);
     if (_Info->_Tz_name == nullptr) {
-        return _Info->_Err != __std_tzdb_error::_Success ? _Info.release() : nullptr;
+        return _Propagate_error(_Info);
     }
 
     return _Info.release();
