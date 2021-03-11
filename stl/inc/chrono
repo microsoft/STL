@@ -2217,7 +2217,7 @@ namespace chrono {
 
     // [time.zone.timezone]
 
-    // TRANSITION: work in progress
+    // CLASS time_zone
     class time_zone {
     public:
         explicit time_zone(string_view _Name_) : _Name(_Name_) {}
@@ -2339,6 +2339,7 @@ namespace chrono {
 
     // [time.zone.link]
 
+    // CLASS time_zone_link
     class time_zone_link {
     public:
         explicit time_zone_link(string_view _Name_, string_view _Target_) : _Name(_Name_), _Target(_Target_) {}
@@ -2388,22 +2389,28 @@ namespace chrono {
     template <class _Ty>
     _NODISCARD const _Ty* _Locate_zone_impl(const vector<_Ty>& _Vec, string_view _Name) {
         const auto _Result = _STD find_if(_Vec.begin(), _Vec.end(), [&](auto& _Tz) { return _Tz.name() == _Name; });
-        return _Result != _Vec.end() ? &*_Result : nullptr;
+        return _Result == _Vec.end() ? nullptr : &*_Result;
     }
 
+    // STRUCT  tzdb
     struct tzdb {
-        vector<time_zone> time_zones;
+        string version;
+        vector<time_zone> zones;
         vector<time_zone_link> links;
         vector<leap_second> leap_seconds;
         bool _All_ls_positive;
 
         _NODISCARD const time_zone* locate_zone(string_view _Tz_name) const {
-            auto _Tz = _Locate_zone_impl(time_zones, _Tz_name);
+            auto _Tz = _Locate_zone_impl(zones, _Tz_name);
             if (_Tz == nullptr) {
                 const auto _Link = _Locate_zone_impl(links, _Tz_name);
                 if (_Link != nullptr) {
-                    _Tz = _Locate_zone_impl(time_zones, _Link->target());
+                    _Tz = _Locate_zone_impl(zones, _Link->target());
                 }
+            }
+
+            if (_Tz == nullptr) {
+                _Xruntime_error("unable to locate time_zone with given name");
             }
 
             return _Tz;
@@ -2414,7 +2421,7 @@ namespace chrono {
         }
     };
 
-    _NODISCARD inline pair<decltype(tzdb::time_zones), decltype(tzdb::links)> _Xtzdb_generate_time_zones() {
+    _NODISCARD inline tuple<string, decltype(tzdb::zones), decltype(tzdb::links)> _Xtzdb_generate_time_zones() {
         unique_ptr<__std_tzdb_time_zones_info, decltype(&__std_tzdb_delete_time_zones)> _Info{
             __std_tzdb_get_time_zones(), &__std_tzdb_delete_time_zones};
         if (_Info == nullptr) {
@@ -2425,7 +2432,7 @@ namespace chrono {
             _Xruntime_error("Internal error loading IANA database information");
         }
 
-        decltype(tzdb::time_zones) _Time_zones;
+        decltype(tzdb::zones) _Time_zones;
         decltype(tzdb::links) _Time_zone_links;
         for (size_t _Idx = 0; _Idx < _Info->_Num_time_zones; ++_Idx) {
             const string_view _Name{_Info->_Names[_Idx]};
@@ -2437,7 +2444,7 @@ namespace chrono {
             }
         }
 
-        return {_STD move(_Time_zones), _STD move(_Time_zone_links)};
+        return {_Info->_Version, _STD move(_Time_zones), _STD move(_Time_zone_links)};
     }
 
     _NODISCARD inline pair<decltype(tzdb::leap_seconds), bool> _Xtzdb_generate_leap_seconds(
@@ -2529,10 +2536,10 @@ namespace chrono {
         tzdb_list& operator=(const tzdb_list&) = delete;
 
         tzdb_list() {
-            auto [_Time_zones, _Links]         = _Xtzdb_generate_time_zones();
+            auto [_Version, _Zones, _Links]    = _Xtzdb_generate_time_zones();
             auto [_Leap_sec, _All_ls_positive] = _Xtzdb_generate_leap_seconds(0);
-            _Tzdb_list.emplace_front(
-                tzdb{_STD move(_Time_zones), _STD move(_Links), _STD move(_Leap_sec), _All_ls_positive});
+            _Tzdb_list.emplace_front(tzdb{
+                _STD move(_Version), _STD move(_Zones), _STD move(_Links), _STD move(_Leap_sec), _All_ls_positive});
         }
 
         _NODISCARD const tzdb& front() const noexcept {
@@ -2551,8 +2558,8 @@ namespace chrono {
             auto [_Leap_sec, _All_ls_positive] = _Xtzdb_generate_leap_seconds(_Tzdb_list.front().leap_seconds.size());
             if (!_Leap_sec.empty()) {
                 const auto& _Tzdb = _Tzdb_list.front();
-                vector<time_zone> _Time_zones;
-                _STD transform(_Tzdb.time_zones.begin(), _Tzdb.time_zones.end(), _STD back_inserter(_Time_zones),
+                vector<time_zone> _Zones;
+                _STD transform(_Tzdb.zones.begin(), _Tzdb.zones.end(), _STD back_inserter(_Zones),
                     [](const auto& _Tz) { return time_zone{_Tz.name()}; });
                 vector<time_zone_link> _Links;
                 _STD transform(
@@ -2560,7 +2567,7 @@ namespace chrono {
                         return time_zone_link{_Link.name(), _Link.target()};
                     });
                 _Tzdb_list.emplace_front(
-                    tzdb{_STD move(_Time_zones), _STD move(_Links), _STD move(_Leap_sec), _All_ls_positive});
+                    tzdb{_Tzdb.version, _STD move(_Zones), _STD move(_Links), _STD move(_Leap_sec), _All_ls_positive});
             }
             return _Tzdb_list.front();
         }

@@ -37,6 +37,8 @@ enum class __std_tzdb_error {
 
 struct __std_tzdb_time_zones_info {
     __std_tzdb_error _Err;
+    // timezone data version currently being used
+    const char* _Version;
     size_t _Num_time_zones;
     // ordered list of null-terminated time_zone/time_zone_link names
     const char** _Names;

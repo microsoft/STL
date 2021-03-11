@@ -26,13 +26,23 @@ void test_time_zone_and_link(const tzdb& tzdb, string_view tz_name, string_view 
     assert(tz_link->target() == tz_name);
     assert(tzdb.locate_zone(tz_link->target()) == orginal_tz);
 
-    assert(_Locate_zone_impl(tzdb.time_zones, tz_name) != nullptr);
-    assert(_Locate_zone_impl(tzdb.time_zones, tz_link_name) == nullptr);
+    assert(_Locate_zone_impl(tzdb.zones, tz_name) != nullptr);
+    assert(_Locate_zone_impl(tzdb.zones, tz_link_name) == nullptr);
     assert(_Locate_zone_impl(tzdb.links, tz_name) == nullptr);
+}
+
+void try_locate_invalid_zone(const tzdb& tzdb, string_view name) {
+    try {
+        (void) tzdb.locate_zone(name);
+        assert(false);
+    } catch (runtime_error) {
+    }
 }
 
 void timezone_names_test() {
     const auto& tzdb = get_tzdb();
+
+    assert(tzdb.version.empty() == false);
 
     test_time_zone_and_link(tzdb, "Asia/Thimphu", "Asia/Thimbu");
     test_time_zone_and_link(tzdb, "America/Tijuana", "America/Ensenada");
@@ -41,11 +51,11 @@ void timezone_names_test() {
     assert(current_zone != nullptr);
     assert(current_zone->name().empty() == false);
 
-    assert(tzdb.locate_zone("Non/Existent") == nullptr);
+    try_locate_invalid_zone(tzdb, "Non/Existent");
 
     // Abbreviations should not be time_zones or time_zone_links
-    assert(tzdb.locate_zone("PDT") == nullptr);
-    assert(tzdb.locate_zone("AEST") == nullptr);
+    try_locate_invalid_zone(tzdb, "PDT");
+    try_locate_invalid_zone(tzdb, "AEST");
 
     // Comparison operators
     const time_zone tz1{"Earlier"};
@@ -74,18 +84,18 @@ void timezone_names_test() {
 
     // these are some example in which the ICU.dll and IANA database diverge in what they consider a zone or a link
     assert(_Locate_zone_impl(tzdb.links, "Atlantic/Faroe") != nullptr); // is a time_zone in IANA
-    assert(_Locate_zone_impl(tzdb.time_zones, "Africa/Addis_Ababa") != nullptr); // is a time_zone_link in IANA
+    assert(_Locate_zone_impl(tzdb.zones, "Africa/Addis_Ababa") != nullptr); // is a time_zone_link in IANA
     assert(_Locate_zone_impl(tzdb.links, "PST") != nullptr); // time_zone_link does not exist in IANA
     assert(_Locate_zone_impl(tzdb.links, "Africa/Asmara") != nullptr); // matches IANA but target is wrong
     assert(_Locate_zone_impl(tzdb.links, "Africa/Asmara")->target() == "Africa/Asmera"); // target == Africa/Nairobi
-    assert(_Locate_zone_impl(tzdb.time_zones, "America/Nuuk") == nullptr); // does not exist in ICU (very rare)
+    assert(_Locate_zone_impl(tzdb.zones, "America/Nuuk") == nullptr); // does not exist in ICU (very rare)
 }
 
 bool test() {
     try {
         timezone_names_test();
     } catch (exception& ex) {
-        std::cerr << "Test threw exception: " << ex.what() << "\n";
+        cerr << "Test threw exception: " << ex.what() << "\n";
         assert(false);
     }
 

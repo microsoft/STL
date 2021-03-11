@@ -24,6 +24,7 @@ namespace {
     struct _Icu_functions_table {
         _STD atomic<decltype(&::ucal_getCanonicalTimeZoneID)> _Pfn_ucal_getCanonicalTimeZoneID{nullptr};
         _STD atomic<decltype(&::ucal_getDefaultTimeZone)> _Pfn_ucal_getDefaultTimeZone{nullptr};
+        _STD atomic<decltype(&::ucal_getTZDataVersion)> _Pfn_ucal_getTZDataVersion{nullptr};
         _STD atomic<decltype(&::ucal_openTimeZoneIDEnumeration)> _Pfn_ucal_openTimeZoneIDEnumeration{nullptr};
         _STD atomic<decltype(&::uenum_close)> _Pfn_uenum_close{nullptr};
         _STD atomic<decltype(&::uenum_count)> _Pfn_uenum_count{nullptr};
@@ -62,6 +63,7 @@ namespace {
                 _Icu_module, _Icu_functions._Pfn_ucal_getDefaultTimeZone, "ucal_getDefaultTimeZone", _Last_error);
             _Load_address(_Icu_module, _Icu_functions._Pfn_ucal_openTimeZoneIDEnumeration,
                 "ucal_openTimeZoneIDEnumeration", _Last_error);
+            _Load_address(_Icu_module, _Icu_functions._Pfn_ucal_getTZDataVersion, "ucal_getTZDataVersion", _Last_error);
             _Load_address(_Icu_module, _Icu_functions._Pfn_uenum_close, "uenum_close", _Last_error);
             _Load_address(_Icu_module, _Icu_functions._Pfn_uenum_count, "uenum_count", _Last_error);
             _Load_address(_Icu_module, _Icu_functions._Pfn_uenum_unext, "uenum_unext", _Last_error);
@@ -101,6 +103,11 @@ namespace {
         USystemTimeZoneType zoneType, const char* region, const int32_t* rawOffset, UErrorCode* ec) {
         const auto _Fun = _Icu_functions._Pfn_ucal_openTimeZoneIDEnumeration.load(_STD memory_order_relaxed);
         return _Fun(zoneType, region, rawOffset, ec);
+    }
+
+    _NODISCARD const char* __icu_ucal_getTZDataVersion(UErrorCode* status) {
+        const auto _Fun = _Icu_functions._Pfn_ucal_getTZDataVersion.load(_STD memory_order_relaxed);
+        return _Fun(status);
     }
 
     _NODISCARD void __icu_uenum_close(UEnumeration* en) {
@@ -145,6 +152,38 @@ namespace {
         return _Data.release();
     }
 
+    _NODISCARD _STD unique_ptr<char16_t[]> _Get_canonical_id(
+        const char16_t* _Id, int32_t _Len, int32_t& _Result_len, __std_tzdb_error& _Err) {
+        static constexpr int32_t _Link_buf_len = 32;
+        _STD unique_ptr<char16_t[]> _Link_buf{new (_STD nothrow) char16_t[_Link_buf_len]};
+        if (_Link_buf == nullptr) {
+            return nullptr;
+        }
+
+        UErrorCode _UErr{U_ZERO_ERROR};
+        UBool _Is_system{};
+        _Result_len = __icu_ucal_getCanonicalTimeZoneID(_Id, _Len, _Link_buf.get(), _Link_buf_len, &_Is_system, &_UErr);
+        if (_UErr == U_BUFFER_OVERFLOW_ERROR && _Result_len > 0) {
+            _Link_buf.reset(new (_STD nothrow) char16_t[_Result_len + 1]);
+            if (_Link_buf == nullptr) {
+                return nullptr;
+            }
+
+            _UErr = U_ZERO_ERROR; // reset error.
+            _Result_len =
+                __icu_ucal_getCanonicalTimeZoneID(_Id, _Len, _Link_buf.get(), _Result_len, &_Is_system, &_UErr);
+            if (U_FAILURE(_UErr)) {
+                _Err = __std_tzdb_error::_Icu_error;
+                return nullptr;
+            }
+        } else if (U_FAILURE(_UErr) || _Result_len <= 0) {
+            _Err = __std_tzdb_error::_Icu_error;
+            return nullptr;
+        }
+
+        return _Link_buf;
+    }
+
     template <class _Ty, class _Dtor>
     _NODISCARD constexpr _Ty* _Report_error(_STD unique_ptr<_Ty, _Dtor>& _Info, __std_tzdb_error _Err) {
         _Info->_Err = _Err;
@@ -176,7 +215,12 @@ _NODISCARD __std_tzdb_time_zones_info* __stdcall __std_tzdb_get_time_zones() noe
         return _Report_error(_Info, __std_tzdb_error::_Win_error);
     }
 
-    UErrorCode _UErr{};
+    UErrorCode _UErr{U_ZERO_ERROR};
+    _Info->_Version = __icu_ucal_getTZDataVersion(&_UErr);
+    if (U_FAILURE(_UErr)) {
+        return _Report_error(_Info, __std_tzdb_error::_Icu_error);
+    }
+
     _STD unique_ptr<UEnumeration, decltype(&__icu_uenum_close)> _Enum{
         __icu_ucal_openTimeZoneIDEnumeration(USystemTimeZoneType::UCAL_ZONE_TYPE_ANY, nullptr, nullptr, &_UErr),
         &__icu_uenum_close};
@@ -219,17 +263,15 @@ _NODISCARD __std_tzdb_time_zones_info* __stdcall __std_tzdb_get_time_zones() noe
             return _Propagate_error(_Info);
         }
 
-        UBool _Is_system{};
-        char16_t _Link_buf[256];
-        const auto _Link_buf_len =
-            __icu_ucal_getCanonicalTimeZoneID(_Elem, _Elem_len, _Link_buf, sizeof(_Link_buf), &_Is_system, &_UErr);
-        if (U_FAILURE(_UErr) || _Link_buf_len == 0) {
-            return _Report_error(_Info, __std_tzdb_error::_Icu_error);
+        int32_t _Link_len{};
+        const auto _Link = _Get_canonical_id(_Elem, _Elem_len, _Link_len, _Info->_Err);
+        if (_Link == nullptr) {
+            return _Propagate_error(_Info);
         }
 
         if (_STD u16string_view{_Elem, static_cast<size_t>(_Elem_len)}
-            != _STD u16string_view{_Link_buf, static_cast<size_t>(_Link_buf_len)}) {
-            _Info->_Links[_Name_idx] = _Allocate_wide_to_narrow(_Link_buf, _Link_buf_len, _Info->_Err);
+            != _STD u16string_view{_Link.get(), static_cast<size_t>(_Link_len)}) {
+            _Info->_Links[_Name_idx] = _Allocate_wide_to_narrow(_Link.get(), _Link_len, _Info->_Err);
             if (_Info->_Links[_Name_idx] == nullptr) {
                 return _Propagate_error(_Info);
             }
