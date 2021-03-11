@@ -11,16 +11,18 @@
 
 #ifdef _RESUMABLE_FUNCTIONS_SUPPORTED
 #pragma message("The contents of <coroutine> are not available with /await.")
-#pragma message("Remove /await for standard coroutines or use <experimental/coroutine> for legacy /await support.")
+#pragma message("Remove /await or use /await:strict for standard coroutines. Use <experimental/coroutine> for legacy /await support.")
 #else // ^^^ /await ^^^ / vvv no /await vvv
-#ifndef __cpp_lib_coroutine
-#pragma message("The contents of <coroutine> are available only with C++20 or later.")
-#else // ^^^ __cpp_lib_coroutine not defined / __cpp_lib_coroutine defined vvv
+#if !defined(__cpp_lib_coroutine) && !defined(_DOWNLEVEL_COROUTINES_SUPPORTED)
+#pragma message("The contents of <coroutine> are available only with C++20 or later or /await:strict.")
+#else // ^^^ <coroutine> is not available / <coroutine> is available vvv
 #ifndef _ALLOW_COROUTINE_ABI_MISMATCH
 #pragma detect_mismatch("_COROUTINE_ABI", "2")
 #endif // _ALLOW_COROUTINE_ABI_MISMATCH
 
+#ifdef __cpp_lib_coroutine
 #include <compare>
+#endif // __cpp_lib_coroutine
 #include <type_traits>
 
 #pragma pack(push, _CRT_PACKING)
@@ -156,6 +158,7 @@ _NODISCARD constexpr bool operator==(const coroutine_handle<> _Left, const corou
     return _Left.address() == _Right.address();
 }
 
+#ifdef __cpp_lib_coroutine
 _NODISCARD constexpr strong_ordering operator<=>(
     const coroutine_handle<> _Left, const coroutine_handle<> _Right) noexcept {
 #ifdef __cpp_lib_concepts
@@ -164,6 +167,27 @@ _NODISCARD constexpr strong_ordering operator<=>(
     return _Left.address() <=> _Right.address();
 #endif // __cpp_lib_concepts
 }
+#else // ^^^ __cpp_lib_coroutine defined / __cpp_lib_coroutine not defined vvv
+_NODISCARD constexpr bool operator!=(const coroutine_handle<> _Left, const coroutine_handle<> _Right) noexcept {
+    return !(_Left == _Right);
+}
+
+_NODISCARD constexpr bool operator<(const coroutine_handle<> _Left, const coroutine_handle<> _Right) noexcept {
+    return less<void*>{}(_Left.address(), _Right.address());
+}
+
+_NODISCARD constexpr bool operator>(const coroutine_handle<> _Left, const coroutine_handle<> _Right) noexcept {
+    return _Right < _Left;
+}
+
+_NODISCARD constexpr bool operator<=(const coroutine_handle<> _Left, const coroutine_handle<> _Right) noexcept {
+    return !(_Left > _Right);
+}
+
+_NODISCARD constexpr bool operator>=(const coroutine_handle<> _Left, const coroutine_handle<> _Right) noexcept {
+    return !(_Left < _Right);
+}
+#endif // __cpp_lib_coroutine
 
 template <class _Promise>
 struct hash<coroutine_handle<_Promise>> {
@@ -246,7 +270,7 @@ _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
 
-#endif // __cpp_lib_coroutine
+#endif // <coroutine> is available
 #endif // _RESUMABLE_FUNCTIONS_SUPPORTED
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _COROUTINE_
