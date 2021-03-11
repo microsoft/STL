@@ -48,14 +48,13 @@ template <class charT>
 void test_simple_formatting() {
     basic_string<charT> output_string;
 
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "f"),
-        make_testing_format_args<charT>());
-    assert(output_string == TYPED_LITERAL(charT, "f"));
+    vformat_to(back_insert_iterator{output_string}, locale::classic(), STR("f"), make_testing_format_args<charT>());
+    assert(output_string == STR("f"));
 
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "format"),
-        make_testing_format_args<charT>());
-    assert(output_string == TYPED_LITERAL(charT, "format"));
+    vformat_to(
+        back_insert_iterator{output_string}, locale::classic(), STR("format"), make_testing_format_args<charT>());
+    assert(output_string == STR("format"));
 
     assert(format(STR("f")) == STR("f"));
     assert(format(STR("format")) == STR("format"));
@@ -68,74 +67,62 @@ void test_escaped_curls() {
     basic_string<charT> output_string;
 
     // test escaped opening curls
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{{"),
-        make_testing_format_args<charT>());
-    assert(output_string == TYPED_LITERAL(charT, "{"));
+    vformat_to(back_insert_iterator{output_string}, locale::classic(), STR("{{"), make_testing_format_args<charT>());
+    assert(output_string == STR("{"));
 
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{{{{"),
-        make_testing_format_args<charT>());
-    assert(output_string == TYPED_LITERAL(charT, "{{"));
+    vformat_to(back_insert_iterator{output_string}, locale::classic(), STR("{{{{"), make_testing_format_args<charT>());
+    assert(output_string == STR("{{"));
 
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "x{{"),
-        make_testing_format_args<charT>());
-    assert(output_string == TYPED_LITERAL(charT, "x{"));
+    vformat_to(back_insert_iterator{output_string}, locale::classic(), STR("x{{"), make_testing_format_args<charT>());
+    assert(output_string == STR("x{"));
 
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{{ {{"),
-        make_testing_format_args<charT>());
-    assert(output_string == TYPED_LITERAL(charT, "{ {"));
+    vformat_to(back_insert_iterator{output_string}, locale::classic(), STR("{{ {{"), make_testing_format_args<charT>());
+    assert(output_string == STR("{ {"));
 
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "x{{x"),
-        make_testing_format_args<charT>());
-    assert(output_string == TYPED_LITERAL(charT, "x{x"));
+    vformat_to(back_insert_iterator{output_string}, locale::classic(), STR("x{{x"), make_testing_format_args<charT>());
+    assert(output_string == STR("x{x"));
 
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{{x"),
-        make_testing_format_args<charT>());
-    assert(output_string == TYPED_LITERAL(charT, "{x"));
+    vformat_to(back_insert_iterator{output_string}, locale::classic(), STR("{{x"), make_testing_format_args<charT>());
+    assert(output_string == STR("{x"));
 
     // tests escaped closing curls
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "}}"),
-        make_testing_format_args<charT>());
-    assert(output_string == TYPED_LITERAL(charT, "}"));
+    vformat_to(back_insert_iterator{output_string}, locale::classic(), STR("}}"), make_testing_format_args<charT>());
+    assert(output_string == STR("}"));
 
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "}}}}"),
-        make_testing_format_args<charT>());
-    assert(output_string == TYPED_LITERAL(charT, "}}"));
+    vformat_to(back_insert_iterator{output_string}, locale::classic(), STR("}}}}"), make_testing_format_args<charT>());
+    assert(output_string == STR("}}"));
 
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "x}}"),
-        make_testing_format_args<charT>());
-    assert(output_string == TYPED_LITERAL(charT, "x}"));
+    vformat_to(back_insert_iterator{output_string}, locale::classic(), STR("x}}"), make_testing_format_args<charT>());
+    assert(output_string == STR("x}"));
 
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "}} }}"),
-        make_testing_format_args<charT>());
-    assert(output_string == TYPED_LITERAL(charT, "} }"));
+    vformat_to(back_insert_iterator{output_string}, locale::classic(), STR("}} }}"), make_testing_format_args<charT>());
+    assert(output_string == STR("} }"));
 
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "x}}x"),
-        make_testing_format_args<charT>());
-    assert(output_string == TYPED_LITERAL(charT, "x}x"));
+    vformat_to(back_insert_iterator{output_string}, locale::classic(), STR("x}}x"), make_testing_format_args<charT>());
+    assert(output_string == STR("x}x"));
 
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "}}x"),
-        make_testing_format_args<charT>());
-    assert(output_string == TYPED_LITERAL(charT, "}x"));
+    vformat_to(back_insert_iterator{output_string}, locale::classic(), STR("}}x"), make_testing_format_args<charT>());
+    assert(output_string == STR("}x"));
 }
 
 template <class charT>
 void test_simple_replacement_field() {
     basic_string<charT> output_string;
 
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{}"),
-        make_testing_format_args<charT>(TYPED_LITERAL(charT, "f")));
-    assert(output_string == TYPED_LITERAL(charT, "f"));
+    vformat_to(
+        back_insert_iterator{output_string}, locale::classic(), STR("{}"), make_testing_format_args<charT>(STR("f")));
+    assert(output_string == STR("f"));
 
 
     assert(format(STR("{}"), STR("f")) == STR("f"));
@@ -143,217 +130,214 @@ void test_simple_replacement_field() {
 
     // Test string_view
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{}"),
-        make_testing_format_args<charT>(basic_string_view<charT>{TYPED_LITERAL(charT, "f")}));
-    assert(output_string == TYPED_LITERAL(charT, "f"));
+    vformat_to(back_insert_iterator{output_string}, locale::classic(), STR("{}"),
+        make_testing_format_args<charT>(basic_string_view<charT>{STR("f")}));
+    assert(output_string == STR("f"));
 
     // Test bool
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{}"),
-        make_testing_format_args<charT>(true));
-    assert(output_string == TYPED_LITERAL(charT, "true"));
+    vformat_to(
+        back_insert_iterator{output_string}, locale::classic(), STR("{}"), make_testing_format_args<charT>(true));
+    assert(output_string == STR("true"));
 
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{}"),
-        make_testing_format_args<charT>(false));
-    assert(output_string == TYPED_LITERAL(charT, "false"));
+    vformat_to(
+        back_insert_iterator{output_string}, locale::classic(), STR("{}"), make_testing_format_args<charT>(false));
+    assert(output_string == STR("false"));
 
     // Test char
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{}"),
-        make_testing_format_args<charT>('a'));
-    assert(output_string == TYPED_LITERAL(charT, "a"));
+    vformat_to(back_insert_iterator{output_string}, locale::classic(), STR("{}"), make_testing_format_args<charT>('a'));
+    assert(output_string == STR("a"));
 
     // Test const void*
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{}"),
+    vformat_to(back_insert_iterator{output_string}, locale::classic(), STR("{}"),
         make_testing_format_args<charT>(static_cast<const void*>(nullptr)));
-    assert(output_string == TYPED_LITERAL(charT, "0x0"));
+    assert(output_string == STR("0x0"));
 
     // Test void*
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{}"),
+    vformat_to(back_insert_iterator{output_string}, locale::classic(), STR("{}"),
         make_testing_format_args<charT>(static_cast<void*>(nullptr)));
-    assert(output_string == TYPED_LITERAL(charT, "0x0"));
+    assert(output_string == STR("0x0"));
 
     // Test nullptr
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{}"),
-        make_testing_format_args<charT>(nullptr));
-    assert(output_string == TYPED_LITERAL(charT, "0x0"));
+    vformat_to(
+        back_insert_iterator{output_string}, locale::classic(), STR("{}"), make_testing_format_args<charT>(nullptr));
+    assert(output_string == STR("0x0"));
 
     // Test signed integers
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{}"),
-        make_testing_format_args<charT>(1234));
-    assert(output_string == TYPED_LITERAL(charT, "1234"));
+    vformat_to(
+        back_insert_iterator{output_string}, locale::classic(), STR("{}"), make_testing_format_args<charT>(1234));
+    assert(output_string == STR("1234"));
 
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{}"),
-        make_testing_format_args<charT>(1234ll));
-    assert(output_string == TYPED_LITERAL(charT, "1234"));
+    vformat_to(
+        back_insert_iterator{output_string}, locale::classic(), STR("{}"), make_testing_format_args<charT>(1234ll));
+    assert(output_string == STR("1234"));
 
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{}"),
-        make_testing_format_args<charT>(INT_MIN));
-    assert(output_string == TYPED_LITERAL(charT, "-2147483648"));
+    vformat_to(
+        back_insert_iterator{output_string}, locale::classic(), STR("{}"), make_testing_format_args<charT>(INT_MIN));
+    assert(output_string == STR("-2147483648"));
 
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{}"),
-        make_testing_format_args<charT>(INT_MAX));
-    assert(output_string == TYPED_LITERAL(charT, "2147483647"));
+    vformat_to(
+        back_insert_iterator{output_string}, locale::classic(), STR("{}"), make_testing_format_args<charT>(INT_MAX));
+    assert(output_string == STR("2147483647"));
 
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{}"),
-        make_testing_format_args<charT>(LLONG_MAX));
-    assert(output_string == TYPED_LITERAL(charT, "9223372036854775807"));
+    vformat_to(
+        back_insert_iterator{output_string}, locale::classic(), STR("{}"), make_testing_format_args<charT>(LLONG_MAX));
+    assert(output_string == STR("9223372036854775807"));
 
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{}"),
-        make_testing_format_args<charT>(LLONG_MIN));
-    assert(output_string == TYPED_LITERAL(charT, "-9223372036854775808"));
+    vformat_to(
+        back_insert_iterator{output_string}, locale::classic(), STR("{}"), make_testing_format_args<charT>(LLONG_MIN));
+    assert(output_string == STR("-9223372036854775808"));
 
     // Test unsigned integers
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{}"),
-        make_testing_format_args<charT>(1234u));
-    assert(output_string == TYPED_LITERAL(charT, "1234"));
+    vformat_to(
+        back_insert_iterator{output_string}, locale::classic(), STR("{}"), make_testing_format_args<charT>(1234u));
+    assert(output_string == STR("1234"));
 
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{}"),
-        make_testing_format_args<charT>(1234ull));
-    assert(output_string == TYPED_LITERAL(charT, "1234"));
+    vformat_to(
+        back_insert_iterator{output_string}, locale::classic(), STR("{}"), make_testing_format_args<charT>(1234ull));
+    assert(output_string == STR("1234"));
 
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{}"),
-        make_testing_format_args<charT>(UINT_MAX));
-    assert(output_string == TYPED_LITERAL(charT, "4294967295"));
+    vformat_to(
+        back_insert_iterator{output_string}, locale::classic(), STR("{}"), make_testing_format_args<charT>(UINT_MAX));
+    assert(output_string == STR("4294967295"));
 
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{}"),
-        make_testing_format_args<charT>(ULLONG_MAX));
-    assert(output_string == TYPED_LITERAL(charT, "18446744073709551615"));
+    vformat_to(
+        back_insert_iterator{output_string}, locale::classic(), STR("{}"), make_testing_format_args<charT>(ULLONG_MAX));
+    assert(output_string == STR("18446744073709551615"));
 
     // Test float
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{}"),
-        make_testing_format_args<charT>(12.34f));
-    assert(output_string == TYPED_LITERAL(charT, "12.34"));
+    vformat_to(
+        back_insert_iterator{output_string}, locale::classic(), STR("{}"), make_testing_format_args<charT>(12.34f));
+    assert(output_string == STR("12.34"));
 
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{}"),
-        make_testing_format_args<charT>(FLT_MAX));
-    assert(output_string == TYPED_LITERAL(charT, "3.4028235e+38"));
+    vformat_to(
+        back_insert_iterator{output_string}, locale::classic(), STR("{}"), make_testing_format_args<charT>(FLT_MAX));
+    assert(output_string == STR("3.4028235e+38"));
 
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{}"),
-        make_testing_format_args<charT>(-FLT_MAX));
-    assert(output_string == TYPED_LITERAL(charT, "-3.4028235e+38"));
+    vformat_to(
+        back_insert_iterator{output_string}, locale::classic(), STR("{}"), make_testing_format_args<charT>(-FLT_MAX));
+    assert(output_string == STR("-3.4028235e+38"));
 
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{}"),
-        make_testing_format_args<charT>(FLT_MIN));
-    assert(output_string == TYPED_LITERAL(charT, "1.1754944e-38"));
+    vformat_to(
+        back_insert_iterator{output_string}, locale::classic(), STR("{}"), make_testing_format_args<charT>(FLT_MIN));
+    assert(output_string == STR("1.1754944e-38"));
 
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{}"),
+    vformat_to(back_insert_iterator{output_string}, locale::classic(), STR("{}"),
         make_testing_format_args<charT>(FLT_EPSILON));
-    assert(output_string == TYPED_LITERAL(charT, "1.1920929e-07"));
+    assert(output_string == STR("1.1920929e-07"));
 
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{}"),
+    vformat_to(back_insert_iterator{output_string}, locale::classic(), STR("{}"),
         make_testing_format_args<charT>(FLT_TRUE_MIN));
-    assert(output_string == TYPED_LITERAL(charT, "1e-45"));
+    assert(output_string == STR("1e-45"));
 
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{}"),
+    vformat_to(back_insert_iterator{output_string}, locale::classic(), STR("{}"),
         make_testing_format_args<charT>(numeric_limits<float>::infinity()));
-    assert(output_string == TYPED_LITERAL(charT, "inf"));
+    assert(output_string == STR("inf"));
 
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{}"),
+    vformat_to(back_insert_iterator{output_string}, locale::classic(), STR("{}"),
         make_testing_format_args<charT>(-numeric_limits<float>::infinity()));
-    assert(output_string == TYPED_LITERAL(charT, "-inf"));
+    assert(output_string == STR("-inf"));
 
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{}"),
+    vformat_to(back_insert_iterator{output_string}, locale::classic(), STR("{}"),
         make_testing_format_args<charT>(numeric_limits<float>::quiet_NaN()));
-    assert(output_string == TYPED_LITERAL(charT, "nan"));
+    assert(output_string == STR("nan"));
 
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{}"),
-        make_testing_format_args<charT>(0.f));
-    assert(output_string == TYPED_LITERAL(charT, "0"));
+    vformat_to(back_insert_iterator{output_string}, locale::classic(), STR("{}"), make_testing_format_args<charT>(0.f));
+    assert(output_string == STR("0"));
 
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{}"),
-        make_testing_format_args<charT>(-0.f));
-    assert(output_string == TYPED_LITERAL(charT, "-0"));
+    vformat_to(
+        back_insert_iterator{output_string}, locale::classic(), STR("{}"), make_testing_format_args<charT>(-0.f));
+    assert(output_string == STR("-0"));
 
     // Test double
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{}"),
-        make_testing_format_args<charT>(12.34));
-    assert(output_string == TYPED_LITERAL(charT, "12.34"));
+    vformat_to(
+        back_insert_iterator{output_string}, locale::classic(), STR("{}"), make_testing_format_args<charT>(12.34));
+    assert(output_string == STR("12.34"));
 
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{}"),
-        make_testing_format_args<charT>(DBL_MAX));
-    assert(output_string == TYPED_LITERAL(charT, "1.7976931348623157e+308"));
+    vformat_to(
+        back_insert_iterator{output_string}, locale::classic(), STR("{}"), make_testing_format_args<charT>(DBL_MAX));
+    assert(output_string == STR("1.7976931348623157e+308"));
 
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{}"),
-        make_testing_format_args<charT>(-DBL_MAX));
-    assert(output_string == TYPED_LITERAL(charT, "-1.7976931348623157e+308"));
+    vformat_to(
+        back_insert_iterator{output_string}, locale::classic(), STR("{}"), make_testing_format_args<charT>(-DBL_MAX));
+    assert(output_string == STR("-1.7976931348623157e+308"));
 
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{}"),
-        make_testing_format_args<charT>(DBL_MIN));
-    assert(output_string == TYPED_LITERAL(charT, "2.2250738585072014e-308"));
+    vformat_to(
+        back_insert_iterator{output_string}, locale::classic(), STR("{}"), make_testing_format_args<charT>(DBL_MIN));
+    assert(output_string == STR("2.2250738585072014e-308"));
 
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{}"),
+    vformat_to(back_insert_iterator{output_string}, locale::classic(), STR("{}"),
         make_testing_format_args<charT>(DBL_EPSILON));
-    assert(output_string == TYPED_LITERAL(charT, "2.220446049250313e-16"));
+    assert(output_string == STR("2.220446049250313e-16"));
 
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{}"),
+    vformat_to(back_insert_iterator{output_string}, locale::classic(), STR("{}"),
         make_testing_format_args<charT>(DBL_TRUE_MIN));
-    assert(output_string == TYPED_LITERAL(charT, "5e-324"));
+    assert(output_string == STR("5e-324"));
 
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{}"),
+    vformat_to(back_insert_iterator{output_string}, locale::classic(), STR("{}"),
         make_testing_format_args<charT>(numeric_limits<double>::infinity()));
-    assert(output_string == TYPED_LITERAL(charT, "inf"));
+    assert(output_string == STR("inf"));
 
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{}"),
+    vformat_to(back_insert_iterator{output_string}, locale::classic(), STR("{}"),
         make_testing_format_args<charT>(-numeric_limits<double>::infinity()));
-    assert(output_string == TYPED_LITERAL(charT, "-inf"));
+    assert(output_string == STR("-inf"));
 
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{}"),
+    vformat_to(back_insert_iterator{output_string}, locale::classic(), STR("{}"),
         make_testing_format_args<charT>(numeric_limits<double>::quiet_NaN()));
-    assert(output_string == TYPED_LITERAL(charT, "nan"));
+    assert(output_string == STR("nan"));
 
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{}"),
-        make_testing_format_args<charT>(0.0));
-    assert(output_string == TYPED_LITERAL(charT, "0"));
+    vformat_to(back_insert_iterator{output_string}, locale::classic(), STR("{}"), make_testing_format_args<charT>(0.0));
+    assert(output_string == STR("0"));
 
     output_string.clear();
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{}"),
-        make_testing_format_args<charT>(-0.0));
-    assert(output_string == TYPED_LITERAL(charT, "-0"));
+    vformat_to(
+        back_insert_iterator{output_string}, locale::classic(), STR("{}"), make_testing_format_args<charT>(-0.0));
+    assert(output_string == STR("-0"));
 }
 
 template <class charT>
 void test_multiple_replacement_fields() {
     basic_string<charT> output_string;
 
-    vformat_to(back_insert_iterator{output_string}, locale::classic(), TYPED_LITERAL(charT, "{0} {0}"),
-        make_testing_format_args<charT>(TYPED_LITERAL(charT, "f")));
-    assert(output_string == TYPED_LITERAL(charT, "f f"));
+    vformat_to(back_insert_iterator{output_string}, locale::classic(), STR("{0} {0}"),
+        make_testing_format_args<charT>(STR("f")));
+    assert(output_string == STR("f f"));
 }
 
 int main() {
