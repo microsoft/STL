@@ -11,7 +11,8 @@
 
 #ifdef _RESUMABLE_FUNCTIONS_SUPPORTED
 #pragma message("The contents of <coroutine> are not available with /await.")
-#pragma message("Remove /await or use /await:strict for standard coroutines. Use <experimental/coroutine> for legacy /await support.")
+#pragma message("Remove /await or use /await:strict for standard coroutines.")
+#pragma message("Use <experimental/coroutine> for legacy /await support.")
 #else // ^^^ /await ^^^ / vvv no /await vvv
 #if !defined(__cpp_lib_coroutine) && !defined(_DOWNLEVEL_COROUTINES_SUPPORTED)
 #pragma message("The contents of <coroutine> are available only with C++20 or later or /await:strict.")
