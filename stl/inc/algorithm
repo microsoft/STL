@@ -4771,6 +4771,20 @@ _SampleIt sample(_PopIt _First, _PopIt _Last, _SampleIt _Dest, _Diff _Count,
 }
 
 #ifdef __cpp_lib_concepts
+// CONCEPT uniform_random_bit_generator
+// clang-format off
+template <class _Ty>
+concept uniform_random_bit_generator = invocable<_Ty&>
+    && unsigned_integral<invoke_result_t<_Ty&>>
+    && requires {
+        { (_Ty::min)() } -> same_as<invoke_result_t<_Ty&>>;
+        { (_Ty::max)() } -> same_as<invoke_result_t<_Ty&>>;
+        typename _Require_constant<(_Ty::min)()>;
+        typename _Require_constant<(_Ty::max)()>;
+        requires (_Ty::min)() < (_Ty::max)();
+    };
+// clang-format on
+
 namespace ranges {
     // VARIABLE ranges::sample
     class _Sample_fn : private _Not_quite_object {

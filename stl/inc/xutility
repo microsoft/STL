@@ -5443,22 +5443,10 @@ namespace ranges {
     inline constexpr _Find_if_not_fn find_if_not{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 
-// CONCEPT uniform_random_bit_generator
+// STRUCT TEMPLATE _Require_constant
 template <auto>
-struct _Require_constant; // not defined; _Require_constant<E> is a valid type if E is a constant expression
-
-// clang-format off
-template <class _Ty>
-concept uniform_random_bit_generator = invocable<_Ty&>
-    && unsigned_integral<invoke_result_t<_Ty&>>
-    && requires {
-        { (_Ty::min)() } -> same_as<invoke_result_t<_Ty&>>;
-        { (_Ty::max)() } -> same_as<invoke_result_t<_Ty&>>;
-        typename _Require_constant<(_Ty::min)()>;
-        typename _Require_constant<(_Ty::max)()>;
-        requires (_Ty::min)() < (_Ty::max)();
-    };
-// clang-format on
+struct _Require_constant; // not defined; _Require_constant<E> is a valid type if E is a constant expression of
+                          // structural type
 #endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE lower_bound
