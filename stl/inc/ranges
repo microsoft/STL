@@ -2801,7 +2801,8 @@ namespace ranges {
             requires constructible_from<_Vw, views::all_t<_Rng>>
                 && constructible_from<_Pat, single_view<range_value_t<_Rng>>>
         constexpr split_view(_Rng&& _Range_, range_value_t<_Rng> _Elem)
-            noexcept(noexcept(_Vw(views::all(_STD forward<_Rng>(_Range_)))) && noexcept(_Pat(single_view{_STD move(_Elem)}))) // strengthened
+            noexcept(noexcept(_Vw(views::all(_STD forward<_Rng>(_Range_))))
+                && noexcept(_Pat(single_view{_STD move(_Elem)}))) // strengthened
             : _Range(views::all(_STD forward<_Rng>(_Range_))), _Pattern(single_view{_STD move(_Elem)}) {}
         // clang-format on
 

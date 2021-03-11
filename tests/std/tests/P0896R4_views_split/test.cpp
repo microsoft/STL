@@ -197,9 +197,10 @@ constexpr void test_one(Base&& base, Delimiter&& delimiter, Expected&& expected)
     }
 
     STATIC_ASSERT(CanMemberEnd<const R>);
-    constexpr bool should_be_const_common =
-        ranges::forward_range<
-            Base> && ranges::forward_range<const remove_cvref_t<Base>> && ranges::common_range<const remove_cvref_t<Base>>;
+    // clang-format off
+    constexpr bool should_be_const_common = ranges::forward_range<Base>
+        && ranges::forward_range<const remove_cvref_t<Base>> && ranges::common_range<const remove_cvref_t<Base>>;
+    // clang-format on
     STATIC_ASSERT(ranges::common_range<const R> == should_be_const_common);
     const auto sc = as_const(r).end();
     if constexpr (ranges::forward_range<Base> && ranges::forward_range<const remove_cvref_t<Base>>) {
