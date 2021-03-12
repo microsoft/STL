@@ -20,6 +20,8 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+typedef double __std_tzdb_epoch_milli;
+
 struct __std_tzdb_registry_leap_info {
     uint16_t _Year;
     uint16_t _Month;
@@ -53,6 +55,15 @@ struct __std_tzdb_current_zone_info {
     const char* _Tz_name;
 };
 
+struct __std_tzdb_sys_info {
+    __std_tzdb_error _Err;
+    __std_tzdb_epoch_milli _Begin;
+    __std_tzdb_epoch_milli _End;
+    int32_t _Offset;
+    int32_t _Save;
+    const char* _Abbrev;
+};
+
 _EXTERN_C
 
 _NODISCARD __std_tzdb_time_zones_info* __stdcall __std_tzdb_get_time_zones() noexcept;
@@ -60,6 +71,10 @@ void __stdcall __std_tzdb_delete_time_zones(__std_tzdb_time_zones_info* _Info) n
 
 _NODISCARD __std_tzdb_current_zone_info* __stdcall __std_tzdb_get_current_zone() noexcept;
 void __stdcall __std_tzdb_delete_current_zone(__std_tzdb_current_zone_info* _Info) noexcept;
+
+_NODISCARD __std_tzdb_sys_info* __stdcall __std_tzdb_get_sys_info(
+    const char* _Tz, size_t _Tz_len, __std_tzdb_epoch_milli _Local) noexcept;
+void __stdcall __std_tzdb_delete_sys_info(__std_tzdb_sys_info* _Info) noexcept;
 
 __std_tzdb_registry_leap_info* __stdcall __std_tzdb_get_reg_leap_seconds(
     size_t _Prev_reg_ls_size, size_t* _Current_reg_ls_size) noexcept;
