@@ -2545,7 +2545,7 @@ namespace ranges {
             friend class _Inner_iter;
             friend _Outer_iter<true>;
 
-            using _MyBase   = _Outer_iter_base<iterator_t<_Maybe_const<_Const, _Vw>>>;
+            using _Mybase   = _Outer_iter_base<iterator_t<_Maybe_const<_Const, _Vw>>>;
             using _ParentTy = _Maybe_const<_Const, split_view>;
             using _BaseTy   = _Maybe_const<_Const, _Vw>;
 
@@ -2612,12 +2612,12 @@ namespace ranges {
             constexpr _Outer_iter(_ParentTy& _Parent_, iterator_t<_BaseTy> _Current_) noexcept(
                 is_nothrow_move_constructible_v<iterator_t<_BaseTy>>) // strengthened
                 requires forward_range<_BaseTy>
-                : _MyBase{_STD move(_Current_)}, _Parent{_STD addressof(_Parent_)} {}
+                : _Mybase{_STD move(_Current_)}, _Parent{_STD addressof(_Parent_)} {}
 
             // clang-format off
             constexpr _Outer_iter(
                 _Outer_iter<!_Const> _It) requires _Const && convertible_to<iterator_t<_Vw>, iterator_t<_BaseTy>>
-                : _MyBase{_STD move(_It._Current)}, _Parent{_It._Parent} {}
+                : _Mybase{_STD move(_It._Current)}, _Parent{_It._Parent} {}
             // clang-format on
 
             _NODISCARD constexpr value_type operator*() const noexcept(noexcept(value_type{*this})) /* strengthened */ {
@@ -2635,7 +2635,7 @@ namespace ranges {
                 const auto _Pat_last  = _RANGES end(_Parent->_Pattern);
                 if (_Pat_first == _Pat_last) {
                     ++_Cur;
-                } else if constexpr (_Tiny_range<_Pat>) { // Per LWG-3505
+                } else if constexpr (_Tiny_range<_Pat>) {
                     _Cur = _RANGES _Find_unchecked(_STD move(_Cur), _End, *_Pat_first);
                     if (_Cur != _End) {
                         ++_Cur;
@@ -2667,7 +2667,7 @@ namespace ranges {
                 return _Left._Current == _Right._Current;
             }
             _NODISCARD friend constexpr bool operator==(const _Outer_iter& _Left, default_sentinel_t) noexcept(
-                noexcept(_Left._At_end())) /* strenghtened */ {
+                noexcept(_Left._At_end())) /* strengthened */ {
                 return _Left._At_end();
             }
         };
@@ -2729,11 +2729,12 @@ namespace ranges {
                 }
             }
 
+            using _BaseCategory = typename iterator_traits<iterator_t<_BaseTy>>::iterator_category;
+
         public:
-            using iterator_concept  = typename _Outer_iter<_Const>::iterator_concept;
-            using iterator_category = conditional_t<
-                derived_from<typename iterator_traits<iterator_t<_BaseTy>>::iterator_category, forward_iterator_tag>,
-                forward_iterator_tag, typename iterator_traits<iterator_t<_BaseTy>>::iterator_category>;
+            using iterator_concept = typename _Outer_iter<_Const>::iterator_concept;
+            using iterator_category =
+                conditional_t<derived_from<_BaseCategory, forward_iterator_tag>, forward_iterator_tag, _BaseCategory>;
             using value_type      = range_value_t<_BaseTy>;
             using difference_type = range_difference_t<_BaseTy>;
 

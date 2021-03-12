@@ -5445,8 +5445,8 @@ namespace ranges {
 
 // STRUCT TEMPLATE _Require_constant
 template <auto>
-struct _Require_constant; // not defined; _Require_constant<E> is a valid type if E is a constant expression of
-                          // structural type
+struct _Require_constant; // _Require_constant<E> is a valid template-id iff E is a constant expression of structural
+                          // type
 #endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE lower_bound
