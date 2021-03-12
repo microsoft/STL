@@ -382,13 +382,13 @@ tzdb copy_tzdb() {
     const auto& my_tzdb = get_tzdb_list().front();
     vector<time_zone> zones;
     vector<time_zone_link> links;
-    _STD transform(my_tzdb.zones.begin(), my_tzdb.zones.end(), _STD back_inserter(zones),
+    transform(my_tzdb.zones.begin(), my_tzdb.zones.end(), back_inserter(zones),
         [](const auto& _Tz) { return time_zone{_Tz.name()}; });
-    _STD transform(my_tzdb.links.begin(), my_tzdb.links.end(), _STD back_inserter(links), [](const auto& link) {
+    transform(my_tzdb.links.begin(), my_tzdb.links.end(), back_inserter(links), [](const auto& link) {
         return time_zone_link{link.name(), link.target()};
     });
 
-    return {my_tzdb.version, _STD move(zones), _STD move(links), my_tzdb.leap_seconds, my_tzdb._All_ls_positive};
+    return {my_tzdb.version, move(zones), move(links), my_tzdb.leap_seconds, my_tzdb._All_ls_positive};
 }
 
 int main() {
