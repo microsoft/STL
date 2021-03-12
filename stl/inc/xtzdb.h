@@ -29,7 +29,37 @@ struct __std_tzdb_registry_leap_info {
     uint16_t _Reserved;
 };
 
+enum class __std_tzdb_error {
+    _Success   = 0,
+    _Win_error = 1,
+    _Icu_error = 2,
+};
+
+struct __std_tzdb_time_zones_info {
+    __std_tzdb_error _Err;
+    // timezone data version currently being used
+    const char* _Version;
+    size_t _Num_time_zones;
+    // ordered list of null-terminated time_zone/time_zone_link names
+    const char** _Names;
+    // contains corresponding entry for every name, if:
+    //    (_Links[i] == nullptr) then _Names[i] is a time_zone
+    //    (_Links[i] != nullptr) then _Names[i] is a time_zone_link to time_zone with name _Links[i]
+    const char** _Links;
+};
+
+struct __std_tzdb_current_zone_info {
+    __std_tzdb_error _Err;
+    const char* _Tz_name;
+};
+
 _EXTERN_C
+
+_NODISCARD __std_tzdb_time_zones_info* __stdcall __std_tzdb_get_time_zones() noexcept;
+void __stdcall __std_tzdb_delete_time_zones(__std_tzdb_time_zones_info* _Info) noexcept;
+
+_NODISCARD __std_tzdb_current_zone_info* __stdcall __std_tzdb_get_current_zone() noexcept;
+void __stdcall __std_tzdb_delete_current_zone(__std_tzdb_current_zone_info* _Info) noexcept;
 
 __std_tzdb_registry_leap_info* __stdcall __std_tzdb_get_reg_leap_seconds(
     size_t _Prev_reg_ls_size, size_t* _Current_reg_ls_size) noexcept;

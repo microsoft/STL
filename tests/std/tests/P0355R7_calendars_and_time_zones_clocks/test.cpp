@@ -378,6 +378,19 @@ static_assert(is_clock_v<tai_clock>);
 static_assert(is_clock_v<gps_clock>);
 static_assert(is_clock_v<file_clock>);
 
+tzdb copy_tzdb() {
+    const auto& my_tzdb = get_tzdb_list().front();
+    vector<time_zone> zones;
+    vector<time_zone_link> links;
+    transform(my_tzdb.zones.begin(), my_tzdb.zones.end(), back_inserter(zones),
+        [](const auto& _Tz) { return time_zone{_Tz.name()}; });
+    transform(my_tzdb.links.begin(), my_tzdb.links.end(), back_inserter(links), [](const auto& link) {
+        return time_zone_link{link.name(), link.target()};
+    });
+
+    return {my_tzdb.version, move(zones), move(links), my_tzdb.leap_seconds, my_tzdb._All_ls_positive};
+}
+
 int main() {
     assert(test_leap_second());
     static_assert(test_leap_second());
@@ -408,7 +421,7 @@ int main() {
 
     // a negative leap second when the accumulated offset is positive
     {
-        auto my_tzdb   = get_tzdb_list().front();
+        auto my_tzdb   = copy_tzdb();
         auto& leap_vec = my_tzdb.leap_seconds;
         leap_vec.erase(leap_vec.begin() + 27, leap_vec.end());
         leap_vec.emplace_back(sys_days{1d / January / 2020y}, false, leap_vec.back()._Elapsed());
@@ -434,7 +447,7 @@ int main() {
 
     // positive and negative leap seconds when the accumulated offset is negative
     {
-        auto my_tzdb   = get_tzdb_list().front();
+        auto my_tzdb   = copy_tzdb();
         auto& leap_vec = my_tzdb.leap_seconds;
         leap_vec.erase(leap_vec.begin() + 27, leap_vec.end());
         for (int i = 0; i < 30; ++i) {
