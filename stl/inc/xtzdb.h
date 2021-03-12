@@ -43,8 +43,8 @@ struct __std_tzdb_time_zones_info {
     // ordered list of null-terminated time_zone/time_zone_link names
     const char** _Names;
     // contains corresponding entry for every name, if:
-    //    (_Link[i] == nullptr) then _Names[i] is a time_zone
-    //    (_Link[i] != nullptr) then _Names[i] is a time_zone_link to time_zone with name _Link[i]
+    //    (_Links[i] == nullptr) then _Names[i] is a time_zone
+    //    (_Links[i] != nullptr) then _Names[i] is a time_zone_link to time_zone with name _Links[i]
     const char** _Links;
 };
 
