@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <array>
 #include <cassert>
+#include <forward_list>
 #include <list>
 #include <ranges>
 #include <span>
@@ -418,10 +419,11 @@ void test_move_only_views() {
 
 int main() {
     // Validate views
+    constexpr string_view expected = "Hello World!"sv;
+
     { // ...copyable
         static constexpr array<string_view, 5> data = {{{}, "Hello "sv, {}, "World!"sv, {}}};
         constexpr span<const string_view, 5> input{data};
-        constexpr string_view expected = "Hello World!"sv;
         static_assert(test_one(input, expected));
         test_one(input, expected);
     }
@@ -436,22 +438,18 @@ int main() {
         test_one(join_me, expected_ints);
     }
 #endif // TRANSITION, FIXME
-#if 0 // FIXME
-    { // ... contiguous container
-        string str{"Hello, World!"};
-        constexpr auto expected = "!dlroW ,olleH"sv;
-        test_one(str, expected);
+    { // ... fwd container
+        forward_list<string_view> lst = {{{}, "Hello "sv, {}, "World!"sv, {}}};
+        test_one(lst, expected);
     }
     { // ... bidi container
-        list<int> lst{3, 4, 5};
-        static constexpr int joined[] = {5, 4, 3};
-        test_one(lst, joined);
-
-        static constexpr int joined_prefix[] = {4, 3};
-        assert(ranges::equal(
-            views::join(ranges::subrange{counted_iterator{lst.begin(), 2}, default_sentinel}), joined_prefix));
+        list<string_view> lst = {{{}, "Hello "sv, {}, "World!"sv, {}}};
+        test_one(lst, expected);
     }
-#endif // FIXME
+    { // ... random container
+        vector<string_view> lst = {{{}, "Hello "sv, {}, "World!"sv, {}}};
+        test_one(lst, expected);
+    }
 
 #if defined(__clang__) || defined(__EDG__) // FIXME: C1060 "out of heap space"
     // Get full instantiation coverage
