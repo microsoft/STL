@@ -267,7 +267,7 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
         // Validate join_view::base() const&
         static_assert(CanMemberBase<const R&> == copy_constructible<V>);
         if constexpr (copy_constructible<V> && forward_range<V>) {
-            [[maybe_unused]] same_as<V> auto b1 = as_const(r).base();
+            same_as<V> auto b1 = as_const(r).base();
             static_assert(noexcept(as_const(r).base()) == is_nothrow_copy_constructible_v<V>);
             if (!is_empty) {
                 auto bi1 = b1.begin();
@@ -290,8 +290,27 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
 
         // Validate join_view::base() && (NB: do this last since it leaves r moved-from)
         if (forward_range<V>) { // intentionally not if constexpr
-            [[maybe_unused]] same_as<V> auto b2 = move(r).base();
+            same_as<V> auto b2 = move(r).base();
             static_assert(noexcept(move(r).base()) == is_nothrow_move_constructible_v<V>);
+            if constexpr (CanEmpty<Inner>) {
+                if (!is_empty) {
+                    auto bi2 = b2.begin();
+                    while (ranges::empty(*bi2)) {
+                        ++bi2;
+                    }
+                    auto&& inner_first = *bi2;
+                    assert(*ranges::begin(inner_first) == *begin(expected));
+
+                    if constexpr (bidirectional_range<V> && common_range<V>) {
+                        auto ei2 = prev(b2.end());
+                        while (ranges::empty(*ei2)) {
+                            --ei2;
+                        }
+                        auto&& inner_last = *ei2;
+                        assert(*prev(ranges::end(inner_last)) == *prev(end(expected)));
+                    }
+                }
+            }
         }
     }
     return true;
