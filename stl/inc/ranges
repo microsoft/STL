@@ -2525,21 +2525,29 @@ namespace ranges {
         /* [[no_unique_address]] */ _Vw _Range{};
         /* [[no_unique_address]] */ _Pat _Pattern{};
 
+        template <bool>
+        class _Inner_iter;
+
         template <class>
-        struct _Outer_iter_base {};
+        class _Outer_iter_base {};
 
         // clang-format off
         template <forward_iterator _Iter>
-        struct _Outer_iter_base<_Iter> {
+        class _Outer_iter_base<_Iter> {
             // clang-format on
+        protected:
             _Iter _Current{};
+
+        public:
+            using iterator_category = input_iterator_tag;
+
+            _Outer_iter_base() = default;
+            constexpr _Outer_iter_base(_Iter _Current_) noexcept(is_nothrow_move_constructible_v<_Iter>)
+                : _Current{_STD move(_Current_)} {}
         };
 
         template <bool _Const>
-        class _Inner_iter;
-
-        template <bool _Const>
-        class _Outer_iter : private _Outer_iter_base<iterator_t<_Maybe_const<_Const, _Vw>>> {
+        class _Outer_iter : public _Outer_iter_base<iterator_t<_Maybe_const<_Const, _Vw>>> {
         private:
             template <bool>
             friend class _Inner_iter;
@@ -2573,9 +2581,8 @@ namespace ranges {
             }
 
         public:
-            using iterator_concept  = conditional_t<forward_range<_BaseTy>, forward_iterator_tag, input_iterator_tag>;
-            using iterator_category = input_iterator_tag;
-            using difference_type   = range_difference_t<_BaseTy>;
+            using iterator_concept = conditional_t<forward_range<_BaseTy>, forward_iterator_tag, input_iterator_tag>;
+            using difference_type  = range_difference_t<_BaseTy>;
 
             class value_type : public view_interface<value_type> {
             private:
@@ -2672,8 +2679,20 @@ namespace ranges {
             }
         };
 
+        template <class _BaseTy>
+        class _Inner_iter_base {};
+        template <forward_range _BaseTy>
+        class _Inner_iter_base<_BaseTy> {
+        private:
+            using _BaseCategory = typename iterator_traits<iterator_t<_BaseTy>>::iterator_category;
+
+        public:
+            using iterator_category =
+                conditional_t<derived_from<_BaseCategory, forward_iterator_tag>, forward_iterator_tag, _BaseCategory>;
+        };
+
         template <bool _Const>
-        class _Inner_iter {
+        class _Inner_iter : public _Inner_iter_base<_Maybe_const<_Const, _Vw>> {
         private:
             using _BaseTy = _Maybe_const<_Const, _Vw>;
 
@@ -2729,14 +2748,11 @@ namespace ranges {
                 }
             }
 
-            using _BaseCategory = typename iterator_traits<iterator_t<_BaseTy>>::iterator_category;
 
         public:
             using iterator_concept = typename _Outer_iter<_Const>::iterator_concept;
-            using iterator_category =
-                conditional_t<derived_from<_BaseCategory, forward_iterator_tag>, forward_iterator_tag, _BaseCategory>;
-            using value_type      = range_value_t<_BaseTy>;
-            using difference_type = range_difference_t<_BaseTy>;
+            using value_type       = range_value_t<_BaseTy>;
+            using difference_type  = range_difference_t<_BaseTy>;
 
             _Inner_iter() = default;
             constexpr explicit _Inner_iter(_Outer_iter<_Const> _It_) noexcept(
