@@ -2511,6 +2511,7 @@ namespace ranges {
     protected:
         /* [[no_unique_address]] */ iterator_t<_Vw> _Current{};
     };
+
     template <forward_range _Vw, class _Pat>
     class _Split_view_base<_Vw, _Pat> : public view_interface<split_view<_Vw, _Pat>> {};
 
@@ -2542,7 +2543,7 @@ namespace ranges {
             using iterator_category = input_iterator_tag;
 
             _Outer_iter_base() = default;
-            constexpr _Outer_iter_base(_Iter _Current_) noexcept(is_nothrow_move_constructible_v<_Iter>)
+            constexpr explicit _Outer_iter_base(_Iter _Current_) noexcept(is_nothrow_move_constructible_v<_Iter>)
                 : _Current{_STD move(_Current_)} {}
         };
 
@@ -2586,21 +2587,21 @@ namespace ranges {
 
             class value_type : public view_interface<value_type> {
             private:
-                /* [[no_unique_address]] */ _Outer_iter _It{};
+                /* [[no_unique_address]] */ _Outer_iter _First{};
 
             public:
                 value_type() = default;
-                constexpr explicit value_type(_Outer_iter _It_) noexcept(
+                constexpr explicit value_type(_Outer_iter _First_) noexcept(
                     is_nothrow_move_constructible_v<_Outer_iter>) // strengthened
-                    : _It{_STD move(_It_)} {}
+                    : _First{_STD move(_First_)} {}
 
-                _NODISCARD constexpr _Inner_iter<_Const> begin() const requires copyable<_Outer_iter> {
-                    return _Inner_iter<_Const>{_It};
+                _NODISCARD constexpr auto begin() const requires copyable<_Outer_iter> {
+                    return _Inner_iter<_Const>{_First};
                 }
 
                 // clang-format off
-                _NODISCARD constexpr _Inner_iter<_Const> begin() requires (!copyable<_Outer_iter>) {
-                    return _Inner_iter<_Const>{_STD move(_It)};
+                _NODISCARD constexpr auto begin() requires (!copyable<_Outer_iter>) {
+                    return _Inner_iter<_Const>{_STD move(_First)};
                 }
                 // clang-format on
 
@@ -2622,12 +2623,12 @@ namespace ranges {
                 : _Mybase{_STD move(_Current_)}, _Parent{_STD addressof(_Parent_)} {}
 
             // clang-format off
-            constexpr _Outer_iter(
-                _Outer_iter<!_Const> _It) requires _Const && convertible_to<iterator_t<_Vw>, iterator_t<_BaseTy>>
+            constexpr _Outer_iter(_Outer_iter<!_Const> _It)
+                requires _Const && convertible_to<iterator_t<_Vw>, iterator_t<_BaseTy>>
                 : _Mybase{_STD move(_It._Current)}, _Parent{_It._Parent} {}
             // clang-format on
 
-            _NODISCARD constexpr value_type operator*() const noexcept(noexcept(value_type{*this})) /* strengthened */ {
+            _NODISCARD constexpr auto operator*() const noexcept(noexcept(value_type{*this})) /* strengthened */ {
                 return value_type{*this};
             }
 
@@ -2681,6 +2682,7 @@ namespace ranges {
 
         template <class _BaseTy>
         class _Inner_iter_base {};
+
         template <forward_range _BaseTy>
         class _Inner_iter_base<_BaseTy> {
         private:
@@ -2765,7 +2767,7 @@ namespace ranges {
 
             constexpr _Inner_iter& operator++() {
                 _Incremented = true;
-                if constexpr (!forward_range<_BaseTy>) {
+                if constexpr (_Tiny_range<_Pat>) {
                     if constexpr (_Pat::size() == 0) {
                         return *this;
                     }
