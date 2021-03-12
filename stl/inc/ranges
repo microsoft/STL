@@ -2718,7 +2718,8 @@ namespace ranges {
                 const auto _Pat_end = _RANGES end(_It._Parent->_Pattern);
                 auto _Last          = _RANGES end(_It._Parent->_Range);
                 if constexpr (_Tiny_range<_Pat>) {
-                    const auto& _Cur = _It._Get_current();
+                    const auto& _Cur = _It._Get_current(); // Intentionally a reference. Since _Pat is tiny, this could
+                                                           // be a move-only iterator type.
                     if (_Cur == _Last) {
                         return true;
                     }
@@ -2728,7 +2729,8 @@ namespace ranges {
                     }
                     return *_Cur == *_Pat_pos;
                 } else {
-                    auto _Cur = _It._Get_current();
+                    auto _Cur = _It._Get_current(); // Intentionally not a reference. _Pat is not tiny, so this is a
+                                                    // forward (copyable) iterator.
                     if (_Cur == _Last) {
                         return true;
                     }
