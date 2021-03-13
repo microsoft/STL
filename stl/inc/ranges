@@ -2609,7 +2609,7 @@ namespace ranges {
     class _Join_view_base<_Vw> : public view_interface<join_view<_Vw>> {};
 
     template <input_range _Vw>
-        requires view<_Vw>&& input_range<range_reference_t<_Vw>>
+        requires view<_Vw> && input_range<range_reference_t<_Vw>>
             && (is_reference_v<range_reference_t<_Vw>> || view<range_value_t<_Vw>>)
     class join_view : public _Join_view_base<_Vw> {
         // clang-format on
@@ -2625,7 +2625,7 @@ namespace ranges {
 
         // clang-format off
         template <class _OuterTraits, class _InnerTraits, bool _Deref_is_glvalue>
-            requires _Has_member_iterator_category<_InnerTraits> && _Has_member_iterator_category<_OuterTraits>
+            requires _Has_member_iterator_category<_OuterTraits> && _Has_member_iterator_category<_InnerTraits>
         struct _Category_base<_OuterTraits, _InnerTraits, _Deref_is_glvalue> {
             using iterator_category =
                 conditional_t<_Deref_is_glvalue
@@ -2672,11 +2672,13 @@ namespace ranges {
                         (void) this; // Suppress Clang "unused capture" warning
                         return _Range;
                     } else {
-                        return (_Parent->_Inner = views::all(_STD move(_Range)));
+                        _Parent->_Inner = views::all(_STD move(_Range));
+                        return _Parent->_Inner;
                     }
                 };
 
-                for (; _Outer != _RANGES end(_Parent->_Range); ++_Outer) {
+                const auto _Last = _RANGES end(_Parent->_Range);
+                for (; _Outer != _Last; ++_Outer) {
                     auto& _Tmp = _Update_inner(*_Outer);
                     _Inner     = _RANGES begin(_Tmp);
                     if (_Inner != _RANGES end(_Tmp)) {

@@ -400,20 +400,20 @@ void test_move_only_views() {
         return array{mo_inner{intervals[0]}, mo_inner{intervals[1]}, mo_inner{intervals[2]}, mo_inner{intervals[3]}};
     };
 
-    auto data = gen();
-    test_one(move_only_view<input_iterator_tag, test::Common::no>{data}, expected_ints);
+    auto input = gen();
+    test_one(move_only_view<input_iterator_tag, test::Common::no>{input}, expected_ints);
 
-    data = gen();
-    test_one(move_only_view<forward_iterator_tag, test::Common::no>{data}, expected_ints);
+    input = gen();
+    test_one(move_only_view<forward_iterator_tag, test::Common::no>{input}, expected_ints);
 
-    data = gen();
-    test_one(move_only_view<forward_iterator_tag, test::Common::yes>{data}, expected_ints);
+    input = gen();
+    test_one(move_only_view<forward_iterator_tag, test::Common::yes>{input}, expected_ints);
 
-    data = gen();
-    test_one(move_only_view<bidirectional_iterator_tag, test::Common::no>{data}, expected_ints);
+    input = gen();
+    test_one(move_only_view<bidirectional_iterator_tag, test::Common::no>{input}, expected_ints);
 
-    data = gen();
-    test_one(move_only_view<bidirectional_iterator_tag, test::Common::yes>{data}, expected_ints);
+    input = gen();
+    test_one(move_only_view<bidirectional_iterator_tag, test::Common::yes>{input}, expected_ints);
 }
 
 int main() {
@@ -421,10 +421,10 @@ int main() {
     constexpr string_view expected = "Hello World!"sv;
 
     { // ...copyable
-        static constexpr array<string_view, 5> data = {{{}, "Hello "sv, {}, "World!"sv, {}}};
-        constexpr span<const string_view, 5> input{data};
-        static_assert(test_one(input, expected));
-        test_one(input, expected);
+        static constexpr array<string_view, 5> input = {{{}, "Hello "sv, {}, "World!"sv, {}}};
+        constexpr span<const string_view, 5> sp{input};
+        static_assert(test_one(sp, expected));
+        test_one(sp, expected);
     }
     // ... move-only
     test_move_only_views();
