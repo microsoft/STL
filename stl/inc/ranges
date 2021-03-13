@@ -2895,23 +2895,20 @@ namespace ranges {
             return _STD move(_Range);
         }
 
-        _NODISCARD constexpr auto begin() noexcept(
-            noexcept(_RANGES begin(_Range)) && is_nothrow_move_constructible_v<iterator_t<_Vw>>) /* strengthened */ {
+        _NODISCARD constexpr auto begin() {
             constexpr bool _Use_const = _Simple_view<_Vw> && is_reference_v<range_reference_t<_Vw>>;
             return _Iterator<_Use_const>{*this, _RANGES begin(_Range)};
         }
 
         // clang-format off
-        _NODISCARD constexpr _Iterator<true> begin() const noexcept(noexcept(
-            _RANGES begin(_Range)) && is_nothrow_move_constructible_v<iterator_t<const _Vw>>) /* strengthened */
+        _NODISCARD constexpr _Iterator<true> begin() const
             requires input_range<const _Vw> && is_reference_v<range_reference_t<const _Vw>> {
             // clang-format on
             return _Iterator<true>{*this, _RANGES begin(_Range)};
         }
 
         // clang-format off
-        _NODISCARD constexpr auto end() noexcept(noexcept(
-            _RANGES end(_Range)) && is_nothrow_move_constructible_v<sentinel_t<_Vw>>) /* strengthened */ {
+        _NODISCARD constexpr auto end() {
             if constexpr (forward_range<_Vw> && is_reference_v<range_reference_t<_Vw>>
                     && forward_range<_InnerRng> && common_range<_Vw> && common_range<_InnerRng>) {
                 // clang-format on
@@ -2922,8 +2919,7 @@ namespace ranges {
         }
 
         // clang-format off
-        _NODISCARD constexpr auto end() const noexcept(noexcept(
-            _RANGES end(_Range)) && is_nothrow_move_constructible_v<sentinel_t<_Vw>>) /* strengthened */
+        _NODISCARD constexpr auto end() const
             requires input_range<const _Vw> && is_reference_v<range_reference_t<const _Vw>> {
             if constexpr (forward_range<const _Vw> && is_reference_v<range_reference_t<const _Vw>>
                     && forward_range<range_reference_t<const _Vw>> && common_range<const _Vw>
