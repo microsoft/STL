@@ -170,9 +170,8 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
             }
 
             if constexpr (CanMemberBegin<const R> && !CanBegin<const R>) {
-                static_assert(input_iterator<decltype(std::declval<const R>().begin())>);
-                static_assert(
-                    sentinel_for<decltype(std::declval<const R>().end()), decltype(std::declval<const R>().begin())>);
+                static_assert(input_iterator<decltype(declval<const R>().begin())>);
+                static_assert(sentinel_for<decltype(declval<const R>().end()), decltype(declval<const R>().begin())>);
             }
 
             if constexpr (CanBegin<const R> && forward_range<R>) {
