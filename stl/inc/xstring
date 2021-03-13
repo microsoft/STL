@@ -2279,11 +2279,6 @@ public:
     }
 
     _CONSTEXPR20 bool _Large_string_engaged() const noexcept {
-#if _HAS_CXX20
-        if (_STD is_constant_evaluated()) {
-            return true;
-        }
-#endif // _HAS_CXX20
         return _BUF_SIZE <= _Myres;
     }
 
@@ -2311,7 +2306,7 @@ public:
     }
 
     union _Bxty { // storage for small buffer or pointer to larger one
-        _CONSTEXPR20 _Bxty() noexcept : _Ptr() {} // user-provided, for fancy pointers
+        _CONSTEXPR20 _Bxty() noexcept : _Buf() {} // user-provided, for fancy pointers
 
         _CONSTEXPR20 ~_Bxty() noexcept {} // user-provided, for fancy pointers
 
@@ -2689,19 +2684,8 @@ private:
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Al);
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data);
 
+        if (_Count < _BUF_SIZE) {
 #if _HAS_CXX20
-        if (_STD is_constant_evaluated()) {
-            _My_data._Myres = _BUF_SIZE; // TRANSITION: constexpr SSO
-        }
-
-        const bool _Stay_small = _Count < _BUF_SIZE && !_STD is_constant_evaluated();
-#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-        const bool _Stay_small = _Count < _BUF_SIZE;
-#endif // _HAS_CXX20
-
-        if (_Stay_small) {
-#if _HAS_CXX20
-            // TRANSITION: This is currently unused until SSO support is merged
             if (_STD is_constant_evaluated()) {
                 _Construct_in_place(_My_data._Bx);
             }
@@ -2767,7 +2751,6 @@ private:
 #if _HAS_CXX20
         if (_STD is_constant_evaluated()) {
             _Construct_in_place(_My_data._Bx);
-            _My_data._Myres = _BUF_SIZE; // TRANSITION: constexpr SSO
         }
 #endif // _HAS_CXX20
 
@@ -2777,12 +2760,7 @@ private:
                 _Xlen_string(); // result too long
             }
 
-#if _HAS_CXX20
-            const bool _Become_large = _Count >= _BUF_SIZE || _STD is_constant_evaluated();
-#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-            const bool _Become_large = _Count >= _BUF_SIZE;
-#endif // _HAS_CXX20
-            if (_Become_large) {
+            if (_Count >= _BUF_SIZE) {
                 const size_type _New_capacity = _Calculate_growth(_Count);
                 const pointer _New_ptr        = _Al.allocate(_New_capacity + 1); // throws
                 _Construct_in_place(_My_data._Bx._Ptr, _New_ptr);
@@ -2873,13 +2851,7 @@ public:
         auto&& _Alproxy         = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data); // throws
 
-#if _HAS_CXX20
-        const bool _Activate_large_mode = _New_capacity < _New_size || _STD is_constant_evaluated();
-#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-        const bool _Activate_large_mode = _New_capacity < _New_size;
-#endif // _HAS_CXX20
-
-        if (_Activate_large_mode) {
+        if (_New_capacity < _New_size) {
             // we should never allocate less than _BUF_SIZE space (_New_size could be small if constant evaluated)
             const size_type _Requested_size = (_STD max)(_New_size, _BUF_SIZE);
             _New_capacity                   = _Calculate_growth(_Requested_size, _BUF_SIZE - 1, max_size());
@@ -3222,9 +3194,6 @@ public:
 private:
     _CONSTEXPR20 void _Copy_assign_val_from_small(const basic_string& _Right) {
         // TRANSITION, VSO-761321; inline into only caller when that's fixed
-#if _HAS_CXX20
-        _STL_ASSERT(!_STD is_constant_evaluated(), "SSO should be disabled in a constexpr context");
-#endif // _HAS_CXX20
         _Tidy_deallocate();
         if constexpr (_Can_memcpy_val) {
 #if _HAS_CXX20
@@ -4007,22 +3976,12 @@ public:
             return;
         }
 
-#if _HAS_CXX20
-        const bool _Do_become_small = _My_data._Mysize < _BUF_SIZE && !_STD is_constant_evaluated();
-#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-        const bool _Do_become_small = _My_data._Mysize < _BUF_SIZE;
-#endif // _HAS_CXX20
-        if (_Do_become_small) {
+        if (_My_data._Mysize < _BUF_SIZE) {
             _Become_small();
             return;
         }
 
-        size_type _Target_capacity = (_STD min)(_My_data._Mysize | _ALLOC_MASK, max_size());
-#if _HAS_CXX20
-        // must allocate at least _BUF_SIZE space
-        _Target_capacity = (_STD max)(_Target_capacity, _BUF_SIZE);
-#endif // _HAS_CXX20
-
+        const size_type _Target_capacity = (_STD min)(_My_data._Mysize | _ALLOC_MASK, max_size());
         if (_Target_capacity < _My_data._Myres) { // worth shrinking, do it
             auto& _Al              = _Getal();
             const pointer _New_ptr = _Al.allocate(_Target_capacity + 1); // throws
@@ -4872,24 +4831,15 @@ private:
     _CONSTEXPR20 void _Tidy_init() noexcept { // initialize basic_string data members
         auto& _My_data   = _Mypair._Myval2;
         _My_data._Mysize = 0;
-
+        _My_data._Myres  = _BUF_SIZE - 1;
 #if _HAS_CXX20
-        if (_STD is_constant_evaluated()) {
-            _My_data._Myres        = _BUF_SIZE; // SSO disabled in constexpr context
-            auto& _Al              = _Getal();
-            const pointer _New_ptr = _Al.allocate(_BUF_SIZE + 1); // throws
-            _My_data._Bx._Ptr      = _New_ptr;
-
-            _Elem* const _Raw_new = _Unfancy(_New_ptr);
-            _Traits::assign(_Raw_new, _BUF_SIZE + 1, _Elem());
-        } else
-#endif // _HAS_CXX20
-        {
-            _My_data._Myres = _BUF_SIZE - 1;
-            // the _Traits::assign is last so the codegen doesn't think the char write can alias this
-            _Traits::assign(_My_data._Bx._Buf[0], _Elem());
+        if (_STD is_constant_evaluated()) { // begin the lifetime of the array elements before copying into them
+            _Construct_in_place(_My_data._Bx);
         }
+#endif // _HAS_CXX20
 
+        // the _Traits::assign is last so the codegen doesn't think the char write can alias this
+        _Traits::assign(_My_data._Bx._Buf[0], _Elem());
         _ASAN_STRING_CREATE(*this);
     }
 
@@ -4910,16 +4860,9 @@ private:
         }
 
         _My_data._Mysize = 0;
-#if _HAS_CXX20
-        if (_STD is_constant_evaluated()) {
-            _My_data._Myres = 0;
-        } else
-#endif // _HAS_CXX20
-        {
-            _My_data._Myres = _BUF_SIZE - 1;
-            // the _Traits::assign is last so the codegen doesn't think the char write can alias this
-            _Traits::assign(_My_data._Bx._Buf[0], _Elem());
-        }
+        _My_data._Myres  = _BUF_SIZE - 1;
+        // the _Traits::assign is last so the codegen doesn't think the char write can alias this
+        _Traits::assign(_My_data._Bx._Buf[0], _Elem());
     }
 
 public:
