@@ -1145,6 +1145,12 @@ public:
     _Ref_count_resource(_Resource _Px, _Dx _Dt)
         : _Ref_count_base(), _Mypair(_One_then_variadic_args_t{}, _STD move(_Dt), _Px) {}
 
+#ifdef __EDG__ // TRANSITION, VSO-1292293
+    virtual ~_Ref_count_resource() noexcept override {} // TRANSITION, should be non-virtual
+#else // ^^^ workaround / no workaround vvv
+    virtual ~_Ref_count_resource() noexcept override = default; // TRANSITION, should be non-virtual
+#endif // ^^^ no workaround ^^^
+
     virtual void* _Get_deleter(const type_info& _Typeid) const noexcept override {
 #if _HAS_STATIC_RTTI
         if (_Typeid == typeid(_Dx)) {
@@ -1177,6 +1183,12 @@ public:
     _Ref_count_resource_alloc(_Resource _Px, _Dx _Dt, const _Alloc& _Ax)
         : _Ref_count_base(),
           _Mypair(_One_then_variadic_args_t{}, _STD move(_Dt), _One_then_variadic_args_t{}, _Ax, _Px) {}
+
+#ifdef __EDG__ // TRANSITION, VSO-1292293
+    virtual ~_Ref_count_resource_alloc() noexcept override {} // TRANSITION, should be non-virtual
+#else // ^^^ workaround / no workaround vvv
+    virtual ~_Ref_count_resource_alloc() noexcept override = default; // TRANSITION, should be non-virtual
+#endif // ^^^ no workaround ^^^
 
     virtual void* _Get_deleter(const type_info& _Typeid) const noexcept override {
 #if _HAS_STATIC_RTTI
@@ -2012,7 +2024,7 @@ public:
         }
     }
 
-    ~_Ref_count_obj2() {
+    virtual ~_Ref_count_obj2() noexcept override { // TRANSITION, should be non-virtual
         // nothing to do, _Storage._Value was already destroyed in _Destroy
 
         // N4849 [class.dtor]/7:
@@ -2276,7 +2288,7 @@ private:
         _Wrap<_Element_type> _Storage; // flexible array must be last member
     };
 
-    ~_Ref_count_unbounded_array() {
+    virtual ~_Ref_count_unbounded_array() noexcept override { // TRANSITION, should be non-virtual
         // nothing to do, _Ty is trivially destructible
 
         // See N4849 [class.dtor]/7.
@@ -2324,7 +2336,7 @@ private:
         _Wrap<_Element_type> _Storage; // flexible array must be last member
     };
 
-    ~_Ref_count_unbounded_array() {
+    virtual ~_Ref_count_unbounded_array() noexcept override { // TRANSITION, should be non-virtual
         // nothing to do, _Storage was already destroyed in _Destroy
 
         // See N4849 [class.dtor]/7.
@@ -2363,7 +2375,7 @@ public:
     };
 
 private:
-    ~_Ref_count_bounded_array() {
+    virtual ~_Ref_count_bounded_array() noexcept override { // TRANSITION, should be non-virtual
         // nothing to do, _Storage was already destroyed in _Destroy
 
         // See N4849 [class.dtor]/7.
@@ -2449,7 +2461,7 @@ public:
     };
 
 private:
-    ~_Ref_count_obj_alloc3() {
+    virtual ~_Ref_count_obj_alloc3() noexcept override { // TRANSITION, should be non-virtual
         // nothing to do; _Storage._Value already destroyed by _Destroy()
 
         // See N4849 [class.dtor]/7.
@@ -2637,7 +2649,7 @@ private:
         _Wrap<_Element_type> _Storage; // flexible array must be last member
     };
 
-    ~_Ref_count_unbounded_array_alloc() {
+    virtual ~_Ref_count_unbounded_array_alloc() noexcept override { // TRANSITION, should be non-virtual
         // nothing to do; _Storage._Value already destroyed by _Destroy()
 
         // See N4849 [class.dtor]/7.
@@ -2698,7 +2710,7 @@ public:
     };
 
 private:
-    ~_Ref_count_bounded_array_alloc() {
+    virtual ~_Ref_count_bounded_array_alloc() noexcept override { // TRANSITION, should be non-virtual
         // nothing to do; _Storage._Value already destroyed by _Destroy()
 
         // See N4849 [class.dtor]/7.
