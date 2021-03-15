@@ -373,13 +373,15 @@ constexpr span<const int> intervals[] = {
     {expected_ints + 3, expected_ints + 7},
     {expected_ints + 7, expected_ints + 7},
     {expected_ints + 7, expected_ints + 10},
+    {expected_ints + 10, expected_ints + 10},
 };
 
 struct instantiator {
     template <ranges::range Inner, ranges::input_range Outer>
     static constexpr void call() {
-        static_assert(ranges::size(intervals) == 4);
-        array inner_ranges = {Inner{intervals[0]}, Inner{intervals[1]}, Inner{intervals[2]}, Inner{intervals[3]}};
+        static_assert(ranges::size(intervals) == 5);
+        Inner inner_ranges[] = {
+            Inner{intervals[0]}, Inner{intervals[1]}, Inner{intervals[2]}, Inner{intervals[3]}, Inner{intervals[4]}};
         test_one(Outer{inner_ranges}, expected_ints);
     }
 };
