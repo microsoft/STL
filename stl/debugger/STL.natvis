@@ -1569,7 +1569,7 @@
   </Type>
 
 
-  <!--Visualizer for coroutines-->
+  <!-- Visualizer for experimental coroutines (/await) -->
   <Type Name="std::experimental::coroutine_handle&lt;*&gt;">
     <DisplayString Condition="_Ptr-&gt;_Index == 2">{_Ptr-&gt;_Fn,na}, #initial suspend</DisplayString>
     <DisplayString Condition="_Ptr-&gt;_Index == 0">{_Ptr-&gt;_Fn,na}, #final suspend</DisplayString>
@@ -1583,15 +1583,36 @@
     </Expand>
   </Type>
 
-  <!--Do not display the promise when promise type is void-->
+  <!-- Do not display the promise when promise type is void -->
   <Type Name="std::experimental::coroutine_handle&lt;void&gt;" IncludeView="ViewPromise">
     <Expand/>
   </Type>
 
-  <!--Evaluate and display the promise-->
+  <!-- Evaluate and display the promise -->
   <Type Name="std::experimental::coroutine_handle&lt;*&gt;" IncludeView="ViewPromise">
     <Expand>
       <Item Name="Promise">*reinterpret_cast&lt;$T1 *&gt;(reinterpret_cast&lt;char*&gt;(_Ptr) - _ALIGNED_SIZE)</Item>
     </Expand>
   </Type>
+
+  <!-- Visualizer for standard coroutines (/std:c++20) -->
+  <Type Name="std::coroutine_handle&lt;*&gt;" IncludeView="ViewPromise">
+    <Expand>
+      <Item Name="Promise">*reinterpret_cast&lt;$T1 *&gt;(reinterpret_cast&lt;char*&gt;(_Ptr) + 2*sizeof(void*))</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="std::coroutine_handle&lt;*&gt;">
+    <DisplayString Condition="*reinterpret_cast&lt;void(__cdecl**)(void*)&gt;(_Ptr) != nullptr">{*reinterpret_cast&lt;void(__cdecl**)(void*)&gt;(_Ptr),na}</DisplayString>
+    <DisplayString Condition="*reinterpret_cast&lt;void(__cdecl**)(void*)&gt;(_Ptr) == nullptr">{*(reinterpret_cast&lt;void(__cdecl**)(void*)&gt;(_Ptr) + 1),na}</DisplayString>
+    <Expand>
+      <ExpandedItem>this,view(ViewPromise)</ExpandedItem>
+    </Expand>
+  </Type>
+
+  <!-- Do not display the promise when promise type is void -->
+  <Type Name="std::coroutine_handle&lt;void&gt;" IncludeView="ViewPromise">
+    <Expand/>
+  </Type>
+
 </AutoVisualizer>
