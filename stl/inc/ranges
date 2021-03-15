@@ -2769,7 +2769,7 @@ namespace ranges {
 
             constexpr _Inner_iter& operator++() {
                 _Incremented = true;
-                if constexpr (_Tiny_range<_Pat>) {
+                if constexpr (!forward_range<_BaseTy>) {
                     if constexpr (_Pat::size() == 0) {
                         return *this;
                     }
@@ -2779,7 +2779,7 @@ namespace ranges {
             }
 
             constexpr decltype(auto) operator++(int) {
-                if constexpr (forward_range<_BaseTy>) { // per LWG issue unnumbered as of 2021-03-11
+                if constexpr (forward_range<_BaseTy>) { // per LWG-3532
                     auto _Tmp = *this;
                     ++*this;
                     return _Tmp;
