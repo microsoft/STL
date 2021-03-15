@@ -833,10 +833,6 @@ public:
 
     // _On_align has no checking, since we don't implement numeric alignments.
 
-    constexpr void _On_sign(_Sign _Sgn) {
-        _Handler::_On_sign(_Sgn);
-    }
-
     constexpr void _On_hash() {
         // Note that '#' is not valid for CharT or bool unless you
         // pass a numeric presentation type, but we encounter '#' before
@@ -1315,7 +1311,7 @@ _OutputIt _Write_sign(_OutputIt _Out, _Sign _Sgn, bool _Is_negative) {
     return ++_Out;
 }
 
-void _Fmt_buffer_to_uppercase(char* _Begin, const char* _End) {
+inline void _Fmt_buffer_to_uppercase(char* _Begin, const char* _End) {
     for (auto _It = _Begin; _It < _End; ++_It) {
         *_It = static_cast<char>(_CSTD toupper(*_It));
     }
