@@ -98,22 +98,18 @@ public:
         return _Ptr == _Right._Ptr;
     }
 
-#if !_HAS_CXX20
     _NODISCARD bool operator!=(const _Tree_unchecked_const_iterator& _Right) const noexcept {
         return !(*this == _Right);
     }
-#endif // !_HAS_CXX20
 
     _NODISCARD bool operator==(_Default_sentinel) const noexcept {
         return !!_Ptr->_Isnil; // TRANSITION, avoid warning C4800:
                                // "Implicit conversion from 'char' to bool. Possible information loss" (/Wall)
     }
 
-#if !_HAS_CXX20
     _NODISCARD bool operator!=(_Default_sentinel) const noexcept {
         return !_Ptr->_Isnil;
     }
-#endif // !_HAS_CXX20
 
     _Nodeptr _Ptr; // pointer to node
 };
@@ -236,11 +232,9 @@ public:
         return this->_Ptr == _Right._Ptr;
     }
 
-#if !_HAS_CXX20
     _NODISCARD bool operator!=(const _Tree_const_iterator& _Right) const noexcept {
         return !(*this == _Right);
     }
-#endif // !_HAS_CXX20
 
 #if _ITERATOR_DEBUG_LEVEL == 2
     friend void _Verify_range(const _Tree_const_iterator& _First, const _Tree_const_iterator& _Last) noexcept {

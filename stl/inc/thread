@@ -14,7 +14,6 @@
 #include <tuple>
 #include <xthreads.h>
 #if _HAS_CXX20
-#include <compare>
 #include <stop_token>
 #endif // _HAS_CXX20
 
@@ -186,9 +185,6 @@ namespace this_thread {
 
     template <class _Clock, class _Duration>
     void sleep_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
-#if _HAS_CXX20
-        static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
-#endif // _HAS_CXX20
         for (;;) {
             const auto _Now = _Clock::now();
             if (_Abs_time <= _Now) {
@@ -219,11 +215,7 @@ private:
     friend thread::id thread::get_id() const noexcept;
     friend thread::id this_thread::get_id() noexcept;
     friend bool operator==(thread::id _Left, thread::id _Right) noexcept;
-#if _HAS_CXX20
-    friend strong_ordering operator<=>(thread::id _Left, thread::id _Right) noexcept;
-#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     friend bool operator<(thread::id _Left, thread::id _Right) noexcept;
-#endif // !_HAS_CXX20
     template <class _Ch, class _Tr>
     friend basic_ostream<_Ch, _Tr>& operator<<(basic_ostream<_Ch, _Tr>& _Str, thread::id _Id);
     friend hash<thread::id>;
@@ -245,11 +237,6 @@ _NODISCARD inline bool operator==(thread::id _Left, thread::id _Right) noexcept 
     return _Left._Id == _Right._Id;
 }
 
-#if _HAS_CXX20
-_NODISCARD inline strong_ordering operator<=>(thread::id _Left, thread::id _Right) noexcept {
-    return _Left._Id <=> _Right._Id;
-}
-#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 _NODISCARD inline bool operator!=(thread::id _Left, thread::id _Right) noexcept {
     return !(_Left == _Right);
 }
@@ -269,7 +256,6 @@ _NODISCARD inline bool operator>(thread::id _Left, thread::id _Right) noexcept {
 _NODISCARD inline bool operator>=(thread::id _Left, thread::id _Right) noexcept {
     return !(_Left < _Right);
 }
-#endif // !_HAS_CXX20
 
 template <class _Ch, class _Tr>
 basic_ostream<_Ch, _Tr>& operator<<(basic_ostream<_Ch, _Tr>& _Str, thread::id _Id) {

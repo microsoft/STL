@@ -211,24 +211,6 @@ _NODISCARD int _Checked_x86_x64_popcount(const _Ty _Val) noexcept {
 
 
 #if defined(_M_ARM) || defined(_M_ARM64)
-#ifdef __clang__ // TRANSITION, GH-1586
-_NODISCARD constexpr int _Clang_arm_arm64_countl_zero(const unsigned short _Val) {
-    return __builtin_clzs(_Val);
-}
-
-_NODISCARD constexpr int _Clang_arm_arm64_countl_zero(const unsigned int _Val) {
-    return __builtin_clz(_Val);
-}
-
-_NODISCARD constexpr int _Clang_arm_arm64_countl_zero(const unsigned long _Val) {
-    return __builtin_clzl(_Val);
-}
-
-_NODISCARD constexpr int _Clang_arm_arm64_countl_zero(const unsigned long long _Val) {
-    return __builtin_clzll(_Val);
-}
-#endif // TRANSITION, GH-1586
-
 template <class _Ty>
 _NODISCARD int _Checked_arm_arm64_countl_zero(const _Ty _Val) noexcept {
     constexpr int _Digits = numeric_limits<_Ty>::digits;
@@ -236,20 +218,11 @@ _NODISCARD int _Checked_arm_arm64_countl_zero(const _Ty _Val) noexcept {
         return _Digits;
     }
 
-#ifdef __clang__ // TRANSITION, GH-1586
-    if constexpr (is_same_v<remove_cv_t<_Ty>, unsigned char>) {
-        return _Clang_arm_arm64_countl_zero(static_cast<unsigned short>(_Val))
-             - (numeric_limits<unsigned short>::digits - _Digits);
-    } else {
-        return _Clang_arm_arm64_countl_zero(_Val);
-    }
-#else // ^^^ workaround / no workaround vvv
     if constexpr (_Digits <= 32) {
-        return static_cast<int>(_CountLeadingZeros(_Val));
+        return _CountLeadingZeros(_Val);
     } else {
-        return static_cast<int>(_CountLeadingZeros64(_Val));
+        return _CountLeadingZeros64(_Val);
     }
-#endif // TRANSITION, GH-1586
 }
 #endif // defined(_M_ARM) || defined(_M_ARM64)
 

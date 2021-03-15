@@ -1281,7 +1281,6 @@ _NODISCARD bool operator==(const function<_Fty>& _Other, nullptr_t) noexcept {
     return !_Other;
 }
 
-#if !_HAS_CXX20
 template <class _Fty>
 _NODISCARD bool operator==(nullptr_t, const function<_Fty>& _Other) noexcept {
     return !_Other;
@@ -1296,7 +1295,6 @@ template <class _Fty>
 _NODISCARD bool operator!=(nullptr_t, const function<_Fty>& _Other) noexcept {
     return static_cast<bool>(_Other);
 }
-#endif // !_HAS_CXX20
 
 // PLACEHOLDERS
 template <int _Nx>

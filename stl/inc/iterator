@@ -302,13 +302,11 @@ _NODISCARD bool operator==(const istream_iterator<_Ty, _Elem, _Traits, _Diff>& _
     return _Left._Equal(_Right);
 }
 
-#if !_HAS_CXX20
 template <class _Ty, class _Elem, class _Traits, class _Diff>
 _NODISCARD bool operator!=(const istream_iterator<_Ty, _Elem, _Traits, _Diff>& _Left,
     const istream_iterator<_Ty, _Elem, _Traits, _Diff>& _Right) noexcept /* strengthened */ {
     return !(_Left == _Right);
 }
-#endif // !_HAS_CXX20
 
 // CLASS TEMPLATE ostream_iterator
 template <class _Ty, class _Elem = char, class _Traits = char_traits<_Elem>>
@@ -490,13 +488,11 @@ _NODISCARD bool operator==(
     return _Left.equal(_Right);
 }
 
-#if !_HAS_CXX20
 template <class _Elem, class _Traits>
 _NODISCARD bool operator!=(
     const istreambuf_iterator<_Elem, _Traits>& _Left, const istreambuf_iterator<_Elem, _Traits>& _Right) {
     return !(_Left == _Right);
 }
-#endif // !_HAS_CXX20
 
 // CLASS TEMPLATE ostreambuf_iterator
 template <class _Elem, class _Traits>
@@ -1496,13 +1492,6 @@ public:
         return _Myindex == _Right._Myindex;
     }
 
-#if _HAS_CXX20
-    _NODISCARD constexpr _STD strong_ordering operator<=>(const checked_array_iterator& _Right) const noexcept {
-        _STL_VERIFY(_Myarray == _Right._Myarray && _Mysize == _Right._Mysize,
-            "cannot compare incompatible checked_array_iterators");
-        return _Myindex <=> _Right._Myindex;
-    }
-#else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
     _NODISCARD constexpr bool operator!=(const checked_array_iterator& _Right) const noexcept {
         return !(*this == _Right);
     }
@@ -1524,7 +1513,6 @@ public:
     _NODISCARD constexpr bool operator>=(const checked_array_iterator& _Right) const noexcept {
         return !(*this < _Right);
     }
-#endif // !_HAS_CXX20
 
     friend constexpr void _Verify_range(
         const checked_array_iterator& _First, const checked_array_iterator& _Last) noexcept {
@@ -1658,11 +1646,6 @@ public:
         return _Myptr == _Right._Myptr;
     }
 
-#if _HAS_CXX20
-    _NODISCARD constexpr _STD strong_ordering operator<=>(const unchecked_array_iterator& _Right) const noexcept {
-        return _Myptr <=> _Right._Myptr;
-    }
-#else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
     _NODISCARD constexpr bool operator!=(const unchecked_array_iterator& _Right) const noexcept {
         return !(*this == _Right);
     }
@@ -1682,7 +1665,6 @@ public:
     _NODISCARD constexpr bool operator>=(const unchecked_array_iterator& _Right) const noexcept {
         return !(*this < _Right);
     }
-#endif // !_HAS_CXX20
 
 #if _ITERATOR_DEBUG_LEVEL != 0
     friend constexpr void _Verify_range(

@@ -9,8 +9,6 @@
 #include <exception>
 using namespace std;
 
-#define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
-
 int g_tasks_destroyed{0};
 
 struct Task {
@@ -35,8 +33,7 @@ struct Task {
                 void await_resume() noexcept {}
 
                 coroutine_handle<> await_suspend(coroutine_handle<Promise> h) noexcept {
-                    auto& pre = h.promise().previous;
-                    if (pre) {
+                    if (auto& pre = h.promise().previous; pre) {
                         return pre; // resume awaiting coroutine
                     }
 
@@ -100,50 +97,50 @@ Task triangular_number(const int n) {
 
 void test_noop_handle() { // Validate noop_coroutine_handle
     const noop_coroutine_handle noop = noop_coroutine();
-    STATIC_ASSERT(noexcept(noop_coroutine()));
+    static_assert(noexcept(noop_coroutine()));
 
     const coroutine_handle<> as_void = noop;
-    STATIC_ASSERT(noexcept(static_cast<coroutine_handle<>>(noop_coroutine())));
+    static_assert(noexcept(static_cast<coroutine_handle<>>(noop_coroutine())));
 
     assert(noop);
     assert(as_void);
-    STATIC_ASSERT(noexcept(static_cast<bool>(noop)));
-    STATIC_ASSERT(noexcept(static_cast<bool>(as_void)));
+    static_assert(noexcept(static_cast<bool>(noop)));
+    static_assert(noexcept(static_cast<bool>(as_void)));
 
     assert(!noop.done());
     assert(!as_void.done());
-    STATIC_ASSERT(noexcept(noop.done()));
-    STATIC_ASSERT(noexcept(as_void.done()));
+    static_assert(noexcept(noop.done()));
+    static_assert(noexcept(as_void.done()));
 
     assert(noop);
     assert(as_void);
     noop();
     as_void();
-    STATIC_ASSERT(noexcept(noop()));
+    static_assert(noexcept(noop()));
 
     assert(noop);
     assert(as_void);
     noop.resume();
     as_void.resume();
-    STATIC_ASSERT(noexcept(noop.resume()));
+    static_assert(noexcept(noop.resume()));
 
     assert(noop);
     assert(as_void);
     noop.destroy();
     as_void.destroy();
-    STATIC_ASSERT(noexcept(noop.destroy()));
+    static_assert(noexcept(noop.destroy()));
 
     assert(noop);
     assert(as_void);
     assert(&noop.promise() != nullptr);
-    STATIC_ASSERT(noexcept(noop.promise()));
+    static_assert(noexcept(noop.promise()));
 
     assert(noop);
     assert(as_void);
     assert(noop.address() != nullptr);
     assert(noop.address() == as_void.address());
-    STATIC_ASSERT(noexcept(noop.address()));
-    STATIC_ASSERT(noexcept(as_void.address()));
+    static_assert(noexcept(noop.address()));
+    static_assert(noexcept(as_void.address()));
 }
 
 int main() {

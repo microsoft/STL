@@ -12,7 +12,7 @@ def getDefaultParameters(config, litConfig):
     DEFAULT_PARAMETERS = [
       Parameter(name='long_tests', choices=[True, False], type=bool, default=True,
                 help="Whether to run tests that take a long time. This can be useful when running on a slow device.",
-                actions=lambda enabled: [AddFeature(name='long_tests')] if enabled else []),
+                feature=lambda enabled: Feature(name='long_tests') if enabled else None),
     ]
 
     return DEFAULT_PARAMETERS

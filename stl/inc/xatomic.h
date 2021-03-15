@@ -28,11 +28,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #define _INTRIN_ACQUIRE(x) x
 #define _INTRIN_RELEASE(x) x
 #define _INTRIN_ACQ_REL(x) x
-#ifdef _M_CEE_PURE
 #define _YIELD_PROCESSOR()
-#else // ^^^ _M_CEE_PURE / !_M_CEE_PURE vvv
-#define _YIELD_PROCESSOR() _mm_pause()
-#endif // ^^^ !_M_CEE_PURE ^^^
 
 #elif defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
 #define _INTRIN_RELAXED(x) _CONCAT(x, _nf)

@@ -44,7 +44,7 @@ namespace pmr {
 #endif // __cpp_aligned_new
     }
 
-    extern "C" _NODISCARD _CRT_SATELLITE_1 memory_resource* __cdecl null_memory_resource() noexcept;
+    extern "C" _CRT_SATELLITE_1 _NODISCARD memory_resource* __cdecl null_memory_resource() noexcept;
 
     // FUNCTION new_delete_resource
     class _Identity_equal_resource : public memory_resource {

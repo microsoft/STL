@@ -65,50 +65,72 @@ void trigger_alloc_copied() {
 }
 
 struct test_info {
-    const char* type_name;
-    const char* test_name;
+    string type_name;
+    string test_name;
     int count;
 };
 
+using expected_table_t = vector<test_info>;
+
+#pragma warning(push)
+#pragma warning(disable : 4640) // 'variable': construction of local static object is not thread-safe
 #if _ITERATOR_DEBUG_LEVEL == 0
-constexpr array<test_info, 5> expected_moves_table{{
-    {"*", "*", 1},
-    {"unordered_set", "*", 2}, // unordered_* moves two allocators, one for list, and one for vector of list iterators.
-    {"unordered_multiset", "*", 2},
-    {"unordered_map", "*", 2},
-    {"unordered_multimap", "*", 2},
-}};
 
-constexpr array<test_info, 2> expected_copies_table{{
-    {"*", "*", 0}, //
-    {"deque", "*", 1}, // deque always causes an additional copy due to creating the proxy allocator
-}};
+const expected_table_t& get_expected_moves_table() {
+    static const expected_table_t s_expected_moves{
+        {"*", "*", 1},
+        {"unordered_set", "*",
+            2}, // unordered_* moves two allocators, one for list, and one for vector of list iterators.
+        {"unordered_multiset", "*", 2},
+        {"unordered_map", "*", 2},
+        {"unordered_multimap", "*", 2},
+    };
+
+    return s_expected_moves;
+}
+
+const expected_table_t& get_expected_copies_table() {
+    static const expected_table_t s_expected_copies{
+        {"*", "*", 0}, {"deque", "*", 1}, // deque always causes an additional copy due to creating the proxy allocator
+    };
+
+    return s_expected_copies;
+}
+
 #else // _ITERATOR_DEBUG_LEVEL == 0
-constexpr array<test_info, 5> expected_moves_table{{
-    {"*", "*", 1},
-    {"unordered_set", "*", 2}, // unordered_* have two allocators,
-                               // so copy two proxy allocators and have two move operations
-    {"unordered_multiset", "*", 2},
-    {"unordered_map", "*", 2},
-    {"unordered_multimap", "*", 2},
-}};
 
-constexpr array<test_info, 6> expected_copies_table{{
-    {"*", "*", 1}, // IDL causes an additional copy due to a proxy allocator being created.
-    {"vector", "bool", 2}, // with IDL>0, _Vb_val also allocates a proxy,
-                           // so the extra copy is copying the allocator for that purpose
-    {"unordered_set", "*", 2}, // unordered_* have two allocators,
-                               // so copy two proxy allocators and have two move operations
-    {"unordered_multiset", "*", 2},
-    {"unordered_map", "*", 2},
-    {"unordered_multimap", "*", 2},
-}};
+const expected_table_t& get_expected_moves_table() {
+    static const expected_table_t s_expected_moves{
+        {"*", "*", 1},
+        {"unordered_set", "*",
+            2}, // unordered_* have two allocators, so copy two proxy allocators and have two move operations
+        {"unordered_multiset", "*", 2},
+        {"unordered_map", "*", 2},
+        {"unordered_multimap", "*", 2},
+    };
+
+    return s_expected_moves;
+}
+
+const expected_table_t& get_expected_copies_table() {
+    static const expected_table_t s_expected_copies{
+        {"*", "*", 1}, // IDL causes an additional copy due to a proxy allocator being created.
+        {"vector", "bool", 2}, // with IDL>0, _Vb_val also allocates a proxy, so the extra copy is copying the allocator
+                               // for that purpose
+        {"unordered_set", "*",
+            2}, // unordered_* have two allocators, so copy two proxy allocators and have two move operations
+        {"unordered_multiset", "*", 2},
+        {"unordered_map", "*", 2},
+        {"unordered_multimap", "*", 2},
+    };
+
+    return s_expected_copies;
+}
+
 #endif // _ITERATOR_DEBUG_LEVEL == 0
+#pragma warning(pop)
 
-template <typename ExpectedTable>
-int query_expected_table(const ExpectedTable& table, const string& type_name, const string& test_name) {
-    const string star{"*"};
-
+int query_expected_table(const expected_table_t& table, const string& type_name, const string& test_name) {
     auto exact_match = find_if(begin(table), end(table),
         [&](const test_info& other) { return type_name == other.type_name && test_name == other.test_name; });
 
@@ -117,14 +139,14 @@ int query_expected_table(const ExpectedTable& table, const string& type_name, co
     }
 
     auto fuzzy_match = find_if(begin(table), end(table),
-        [&](const test_info& other) { return type_name == other.type_name && star == other.test_name; });
+        [&](const test_info& other) { return type_name == other.type_name && "*" == other.test_name; });
 
     if (fuzzy_match != end(table)) {
         return fuzzy_match->count;
     }
 
     auto fuzziest_match = find_if(begin(table), end(table),
-        [&](const test_info& other) { return star == other.type_name && star == other.test_name; });
+        [](const test_info& other) { return "*" == other.type_name && "*" == other.test_name; });
 
     if (fuzziest_match != end(table)) {
         return fuzziest_match->count;
@@ -134,11 +156,11 @@ int query_expected_table(const ExpectedTable& table, const string& type_name, co
 }
 
 int get_expected_copies(const string& type_name, const string& test_name) {
-    return query_expected_table(expected_copies_table, type_name, test_name);
+    return query_expected_table(get_expected_copies_table(), type_name, test_name);
 }
 
 int get_expected_moves(const string& type_name, const string& test_name) {
-    return query_expected_table(expected_moves_table, type_name, test_name);
+    return query_expected_table(get_expected_moves_table(), type_name, test_name);
 }
 
 template <typename T>

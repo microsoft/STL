@@ -123,16 +123,6 @@ inline handle<invalid_handle_value_policy> create_file(LPCWSTR lpFileName, DWORD
     return result;
 }
 
-inline handle<null_handle_policy> create_event(
-    LPSECURITY_ATTRIBUTES lpEventAttributes, BOOL bManualReset, BOOL bInitialState, LPCWSTR lpName) {
-    handle<null_handle_policy> result{CreateEventW(lpEventAttributes, bManualReset, bInitialState, lpName)};
-    if (!result) {
-        api_failure("CreateEventW");
-    }
-
-    return result;
-}
-
 inline handle<invalid_handle_value_policy> create_named_pipe(LPCWSTR lpName, DWORD dwOpenMode, DWORD dwPipeMode,
     DWORD nMaxInstances, DWORD nOutBufferSize, DWORD nInBufferSize, DWORD nDefaultTimeOut,
     LPSECURITY_ATTRIBUTES lpSecurityAttributes) {
@@ -315,9 +305,6 @@ struct output_collecting_pipe {
         writeHandle = create_file(pipeNameBuffer, GENERIC_WRITE | FILE_READ_ATTRIBUTES, 0, &inheritSa, OPEN_EXISTING,
             FILE_FLAG_OVERLAPPED, HANDLE{});
 
-        readEvent         = create_event(nullptr, TRUE, FALSE, nullptr);
-        overlapped.hEvent = readEvent.get();
-
         readIo = tp_io{std::move(readHandle), callback, this, nullptr};
 
         start();
@@ -325,7 +312,7 @@ struct output_collecting_pipe {
 
     ~output_collecting_pipe() noexcept {
         if (readIo) {
-            if (running.exchange(false)) { // prevent callback() from calling read_some()
+            if (running.load()) {
                 if (!CancelIoEx(readIo.get_file(), &overlapped)) {
                     api_failure("CancelIoEx"); // slams into noexcept
                 }
@@ -426,7 +413,6 @@ private:
     std::string targetBuffer; // if running, owned by a threadpool thread, otherwise owned by the calling thread
     size_t validTill{};
     handle<invalid_handle_value_policy> writeHandle;
-    handle<null_handle_policy> readEvent;
     tp_io readIo;
     OVERLAPPED overlapped{};
 };

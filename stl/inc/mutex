@@ -153,12 +153,7 @@ public:
 
     template <class _Clock, class _Duration>
     _NODISCARD_CTOR unique_lock(_Mutex& _Mtx, const chrono::time_point<_Clock, _Duration>& _Abs_time)
-        : _Pmtx(_STD addressof(_Mtx)), _Owns(_Pmtx->try_lock_until(_Abs_time)) {
-        // construct and lock with timeout
-#if _HAS_CXX20
-        static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
-#endif // _HAS_CXX20
-    }
+        : _Pmtx(_STD addressof(_Mtx)), _Owns(_Pmtx->try_lock_until(_Abs_time)) {} // construct and lock with timeout
 
     _NODISCARD_CTOR unique_lock(_Mutex& _Mtx, const xtime* _Abs_time)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(false) { // try to lock until _Abs_time
@@ -214,9 +209,6 @@ public:
 
     template <class _Clock, class _Duration>
     _NODISCARD bool try_lock_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
-#if _HAS_CXX20
-        static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
-#endif // _HAS_CXX20
         _Validate();
         _Owns = _Pmtx->try_lock_until(_Abs_time);
         return _Owns;
@@ -643,9 +635,6 @@ public:
     template <class _Clock, class _Duration>
     cv_status wait_until(unique_lock<mutex>& _Lck, const chrono::time_point<_Clock, _Duration>& _Abs_time) {
         // wait until time point
-#if _HAS_CXX20
-        static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
-#endif // _HAS_CXX20
         for (;;) {
             const auto _Now = _Clock::now();
             if (_Abs_time <= _Now) {
@@ -665,9 +654,6 @@ public:
     bool wait_until(
         unique_lock<mutex>& _Lck, const chrono::time_point<_Clock, _Duration>& _Abs_time, _Predicate _Pred) {
         // wait for signal with timeout and check predicate
-#if _HAS_CXX20
-        static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
-#endif // _HAS_CXX20
         return _Wait_until1(_Lck, _Abs_time, _Pred);
     }
 
@@ -806,11 +792,8 @@ public:
     }
 
     template <class _Clock, class _Duration>
-    _NODISCARD bool try_lock_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
-        // try to lock the mutex with timeout
-#if _HAS_CXX20
-        static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
-#endif // _HAS_CXX20
+    _NODISCARD bool try_lock_until(
+        const chrono::time_point<_Clock, _Duration>& _Abs_time) { // try to lock the mutex with timeout
         return _Try_lock_until(_Abs_time);
     }
 
@@ -920,11 +903,8 @@ public:
     }
 
     template <class _Clock, class _Duration>
-    _NODISCARD bool try_lock_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
-        // try to lock the mutex with timeout
-#if _HAS_CXX20
-        static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
-#endif // _HAS_CXX20
+    _NODISCARD bool try_lock_until(
+        const chrono::time_point<_Clock, _Duration>& _Abs_time) { // try to lock the mutex with timeout
         return _Try_lock_until(_Abs_time);
     }
 

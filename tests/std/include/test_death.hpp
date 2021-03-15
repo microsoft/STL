@@ -79,16 +79,9 @@ namespace std_testing {
                     // buffer was not big enough
                     const size_t str_max_size    = result.max_size();
                     const size_t result_max_size = str_max_size - str_max_size / 2;
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wtautological-constant-out-of-range-compare"
-#endif // __clang__
                     if (result_size >= result_max_size) {
                         api_unexpected("GetModuleFileNameW");
                     }
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif // __clang__
 
                     result.resize(result_size + result_size / 2);
                 } else if (result_size == 0) {

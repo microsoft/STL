@@ -107,11 +107,6 @@ public:
         return _Myoff == _Right._Myoff;
     }
 
-#if _HAS_CXX20
-    _NODISCARD strong_ordering operator<=>(const _Deque_unchecked_const_iterator& _Right) const noexcept {
-        return _Myoff <=> _Right._Myoff;
-    }
-#else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
     _NODISCARD bool operator!=(const _Deque_unchecked_const_iterator& _Right) const noexcept {
         return !(*this == _Right);
     }
@@ -131,7 +126,6 @@ public:
     _NODISCARD bool operator>=(const _Deque_unchecked_const_iterator& _Right) const noexcept {
         return !(*this < _Right);
     }
-#endif // !_HAS_CXX20
 
     const _Container_base12* _Getcont() const noexcept { // get container pointer
         return _Mycont;
@@ -351,12 +345,6 @@ public:
         return this->_Myoff == _Right._Myoff;
     }
 
-#if _HAS_CXX20
-    _NODISCARD strong_ordering operator<=>(const _Deque_const_iterator& _Right) const noexcept {
-        _Compat(_Right);
-        return this->_Myoff <=> _Right._Myoff;
-    }
-#else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
     _NODISCARD bool operator!=(const _Deque_const_iterator& _Right) const noexcept {
         return !(*this == _Right);
     }
@@ -377,7 +365,6 @@ public:
     _NODISCARD bool operator>=(const _Deque_const_iterator& _Right) const noexcept {
         return !(*this < _Right);
     }
-#endif // !_HAS_CXX20
 
     void _Compat(const _Deque_const_iterator& _Right) const noexcept { // test for compatible iterator pair
 #if _ITERATOR_DEBUG_LEVEL == 0
@@ -1595,20 +1582,11 @@ _NODISCARD bool operator==(const deque<_Ty, _Alloc>& _Left, const deque<_Ty, _Al
         && _STD equal(_Left._Unchecked_begin(), _Left._Unchecked_end(), _Right._Unchecked_begin());
 }
 
-#if !_HAS_CXX20
 template <class _Ty, class _Alloc>
 _NODISCARD bool operator!=(const deque<_Ty, _Alloc>& _Left, const deque<_Ty, _Alloc>& _Right) {
     return !(_Left == _Right);
 }
-#endif // !_HAS_CXX20
 
-#ifdef __cpp_lib_concepts
-template <class _Ty, class _Alloc>
-_NODISCARD _Synth_three_way_result<_Ty> operator<=>(const deque<_Ty, _Alloc>& _Left, const deque<_Ty, _Alloc>& _Right) {
-    return _STD lexicographical_compare_three_way(_Left._Unchecked_begin(), _Left._Unchecked_end(),
-        _Right._Unchecked_begin(), _Right._Unchecked_end(), _Synth_three_way{});
-}
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
 template <class _Ty, class _Alloc>
 _NODISCARD bool operator<(const deque<_Ty, _Alloc>& _Left, const deque<_Ty, _Alloc>& _Right) {
     return _STD lexicographical_compare(
@@ -1629,7 +1607,6 @@ template <class _Ty, class _Alloc>
 _NODISCARD bool operator>=(const deque<_Ty, _Alloc>& _Left, const deque<_Ty, _Alloc>& _Right) {
     return !(_Left < _Right);
 }
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
 #if _HAS_CXX20
 template <class _Ty, class _Alloc, class _Uty>

@@ -101,8 +101,7 @@ void initialize_randomness(mt19937_64& mt64, const int argc, char** const argv) 
 
     puts("Successfully seeded mt64. First three values:");
     for (int i = 0; i < 3; ++i) {
-        // libc++ uses long for 64-bit values.
-        printf("0x%016llX\n", static_cast<unsigned long long>(mt64()));
+        printf("0x%016llX\n", mt64());
     }
 }
 
@@ -576,8 +575,7 @@ void assert_message_bits(const bool b, const char* const msg, const uint32_t bit
 
 void assert_message_bits(const bool b, const char* const msg, const uint64_t bits) {
     if (!b) {
-        // libc++ uses long for 64-bit values.
-        fprintf(stderr, "%s failed for 0x%016llX\n", msg, static_cast<unsigned long long>(bits));
+        fprintf(stderr, "%s failed for 0x%016llX\n", msg, bits);
         fprintf(stderr, "This is a randomized test.\n");
         fprintf(stderr, "DO NOT IGNORE/RERUN THIS FAILURE.\n");
         fprintf(stderr, "You must report it to the STL maintainers.\n");
@@ -1100,8 +1098,8 @@ int main(int argc, char** argv) {
     printf("Total time: %lld ms\n", ms);
 
     if (ms < 3'000) {
-        puts("That was fast. Consider tuning PrefixesToTest and FractionBits to test more cases.");
+        puts("That was fast. Consider retuning PrefixesToTest and FractionBits.");
     } else if (ms > 30'000) {
-        puts("That was slow. Consider tuning PrefixesToTest and FractionBits to test fewer cases.");
+        puts("That was slow. Consider retuning PrefixesToTest and FractionBits.");
     }
 }

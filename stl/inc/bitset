@@ -370,11 +370,9 @@ public:
         return _CSTD memcmp(&_Array[0], &_Right._Array[0], sizeof(_Array)) == 0;
     }
 
-#if !_HAS_CXX20
     _NODISCARD bool operator!=(const bitset& _Right) const noexcept {
         return !(*this == _Right);
     }
-#endif // !_HAS_CXX20
 
     _NODISCARD bool test(size_t _Pos) const {
         if (_Bits <= _Pos) {

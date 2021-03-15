@@ -63,21 +63,17 @@ public:
         return _Ptr == _Right._Ptr;
     }
 
-#if !_HAS_CXX20
     _NODISCARD bool operator!=(const _Flist_unchecked_const_iterator& _Right) const noexcept {
         return !(*this == _Right);
     }
-#endif // !_HAS_CXX20
 
     _NODISCARD bool operator==(_Default_sentinel) const noexcept {
         return _Ptr == nullptr;
     }
 
-#if !_HAS_CXX20
     _NODISCARD bool operator!=(_Default_sentinel) const noexcept {
         return _Ptr != nullptr;
     }
-#endif // !_HAS_CXX20
 
     _Nodeptr _Ptr; // pointer to node
 };
@@ -165,11 +161,9 @@ public:
         return this->_Ptr == _Right._Ptr;
     }
 
-#if !_HAS_CXX20
     _NODISCARD bool operator!=(const _Flist_const_iterator& _Right) const noexcept {
         return !(*this == _Right);
     }
-#endif // !_HAS_CXX20
 
 #if _ITERATOR_DEBUG_LEVEL == 2
     friend void _Verify_range(const _Flist_const_iterator& _First, const _Flist_const_iterator& _Last) noexcept {
@@ -818,10 +812,6 @@ public:
 
     _Default_sentinel _Unchecked_end() const noexcept {
         return {};
-    }
-
-    _Unchecked_const_iterator _Unchecked_end_iter() const noexcept {
-        return _Unchecked_const_iterator(nullptr, nullptr);
     }
 
     iterator _Make_iter(_Nodeptr _Where) const noexcept {
@@ -1528,29 +1518,17 @@ void swap(forward_list<_Ty, _Alloc>& _Left, forward_list<_Ty, _Alloc>& _Right) n
 
 template <class _Ty, class _Alloc>
 _NODISCARD bool operator==(const forward_list<_Ty, _Alloc>& _Left, const forward_list<_Ty, _Alloc>& _Right) {
-    return _STD equal(
-        _Left._Unchecked_begin(), _Left._Unchecked_end_iter(), _Right._Unchecked_begin(), _Right._Unchecked_end_iter());
+    return _STD equal(_Left.begin(), _Left.end(), _Right.begin(), _Right.end());
 }
 
-#if !_HAS_CXX20
 template <class _Ty, class _Alloc>
 _NODISCARD bool operator!=(const forward_list<_Ty, _Alloc>& _Left, const forward_list<_Ty, _Alloc>& _Right) {
     return !(_Left == _Right);
 }
-#endif // !_HAS_CXX20
 
-#ifdef __cpp_lib_concepts
-template <class _Ty, class _Alloc>
-_NODISCARD _Synth_three_way_result<_Ty> operator<=>(
-    const forward_list<_Ty, _Alloc>& _Left, const forward_list<_Ty, _Alloc>& _Right) {
-    return _STD lexicographical_compare_three_way(_Left._Unchecked_begin(), _Left._Unchecked_end_iter(),
-        _Right._Unchecked_begin(), _Right._Unchecked_end_iter(), _Synth_three_way{});
-}
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
 template <class _Ty, class _Alloc>
 _NODISCARD bool operator<(const forward_list<_Ty, _Alloc>& _Left, const forward_list<_Ty, _Alloc>& _Right) {
-    return _STD lexicographical_compare(
-        _Left._Unchecked_begin(), _Left._Unchecked_end_iter(), _Right._Unchecked_begin(), _Right._Unchecked_end_iter());
+    return _STD lexicographical_compare(_Left.begin(), _Left.end(), _Right.begin(), _Right.end());
 }
 
 template <class _Ty, class _Alloc>
@@ -1567,7 +1545,6 @@ template <class _Ty, class _Alloc>
 _NODISCARD bool operator>=(const forward_list<_Ty, _Alloc>& _Left, const forward_list<_Ty, _Alloc>& _Right) {
     return !(_Left < _Right);
 }
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
 #if _HAS_CXX20
 template <class _Ty, class _Alloc, class _Uty>

@@ -9,7 +9,6 @@
 #include <ranges>
 #include <span>
 #include <utility>
-#include <vector>
 
 #include <range_algorithm_support.hpp>
 
@@ -67,77 +66,39 @@ struct holder {
     }
 };
 
+template <class R>
+void not_ranges_destroy(R&& r) { // TRANSITION, ranges::destroy
+    for (auto& e : r) {
+        destroy_at(&e);
+    }
+}
+
 struct instantiator {
-    static constexpr int expected_output[]      = {13, 55, 12345};
-    static constexpr int expected_output_long[] = {13, 55, 12345, -1};
-    static constexpr int expected_input[]       = {13, 55, 12345};
-    static constexpr int expected_input_long[]  = {13, 55, 12345, 42};
+    static constexpr int expected_output[] = {13, 55, 12345};
+    static constexpr int expected_input[]  = {13, 55, 12345};
 
     template <ranges::input_range Read, ranges::forward_range Write>
     static void call() {
-        using ranges::destroy, ranges::uninitialized_copy_n, ranges::uninitialized_copy_n_result, ranges::equal,
-            ranges::equal_to, ranges::iterator_t;
+        using ranges::uninitialized_copy_n, ranges::uninitialized_copy_n_result, ranges::equal, ranges::equal_to,
+            ranges::iterator_t;
 
-        { // Validate equal ranges
-            int_wrapper input[3] = {13, 55, 12345};
-            Read wrapped_input{input};
-            holder<int_wrapper, 3> mem;
-            Write wrapped_output{mem.as_span()};
+        int_wrapper input[3] = {13, 55, 12345};
+        Read wrapped_input{input};
+        holder<int_wrapper, 3> mem;
+        Write wrapped_output{mem.as_span()};
 
-            int_wrapper::clear_counts();
-            const same_as<uninitialized_copy_n_result<iterator_t<Read>, iterator_t<Write>>> auto result =
-                uninitialized_copy_n(wrapped_input.begin(), 3, wrapped_output.begin(), wrapped_output.end());
-            assert(int_wrapper::constructions == 3);
-            assert(int_wrapper::destructions == 0);
-            assert(result.in == wrapped_input.end());
-            assert(result.out == wrapped_output.end());
-            assert(equal(wrapped_output, expected_output, equal_to{}, &int_wrapper::val));
-            assert(equal(input, expected_input, equal_to{}, &int_wrapper::val));
-            destroy(wrapped_output);
-            assert(int_wrapper::constructions == 3);
-            assert(int_wrapper::destructions == 3);
-        }
-
-        { // Validate shorter output
-            int_wrapper input[4] = {13, 55, 12345, 42};
-            Read wrapped_input{input};
-            holder<int_wrapper, 3> mem;
-            Write wrapped_output{mem.as_span()};
-
-            int_wrapper::clear_counts();
-            same_as<uninitialized_copy_n_result<iterator_t<Read>, iterator_t<Write>>> auto result =
-                uninitialized_copy_n(wrapped_input.begin(), 3, wrapped_output.begin(), wrapped_output.end());
-            assert(int_wrapper::constructions == 3);
-            assert(int_wrapper::destructions == 0);
-            assert(++result.in == wrapped_input.end());
-            assert(result.out == wrapped_output.end());
-            assert(equal(wrapped_output, expected_output, equal_to{}, &int_wrapper::val));
-            assert(equal(input, expected_input_long, equal_to{}, &int_wrapper::val));
-            destroy(wrapped_output);
-            assert(int_wrapper::constructions == 3);
-            assert(int_wrapper::destructions == 3);
-        }
-
-        { // Validate shorter input
-            int_wrapper input[3] = {13, 55, 12345};
-            Read wrapped_input{input};
-            holder<int_wrapper, 4> mem;
-            Write wrapped_output{mem.as_span()};
-
-            int_wrapper::clear_counts();
-            same_as<uninitialized_copy_n_result<iterator_t<Read>, iterator_t<Write>>> auto result =
-                uninitialized_copy_n(wrapped_input.begin(), 3, wrapped_output.begin(), wrapped_output.end());
-            assert(int_wrapper::constructions == 3);
-            assert(int_wrapper::destructions == 0);
-            assert(result.in == wrapped_input.end());
-            construct_at(addressof(*result.out), -1); // Need to construct non written element for comparison
-            assert(++result.out == wrapped_output.end());
-            assert(equal(wrapped_output, expected_output_long, equal_to{}, &int_wrapper::val));
-            assert(equal(input, expected_input, equal_to{}, &int_wrapper::val));
-            destroy(wrapped_output);
-            assert(int_wrapper::constructions == 4);
-            assert(int_wrapper::destructions == 4);
-        }
+        int_wrapper::clear_counts();
+        const same_as<uninitialized_copy_n_result<iterator_t<Read>, iterator_t<Write>>> auto result =
+            uninitialized_copy_n(wrapped_input.begin(), 3, wrapped_output.begin(), wrapped_output.end());
+        assert(int_wrapper::constructions == 3);
+        assert(int_wrapper::destructions == 0);
+        assert(result.in == wrapped_input.end());
+        assert(result.out == wrapped_output.end());
+        assert(equal(wrapped_output, expected_output, equal_to{}, &int_wrapper::val));
+        assert(equal(input, expected_input, equal_to{}, &int_wrapper::val));
+        not_ranges_destroy(wrapped_output);
+        assert(int_wrapper::constructions == 3);
+        assert(int_wrapper::destructions == 3);
     }
 };
 
@@ -165,53 +126,6 @@ struct throwing_test {
     }
 };
 
-struct memcpy_test {
-    static constexpr int expected_output[]      = {13, 55, 12345, -1};
-    static constexpr int expected_output_long[] = {13, 55, -1, -1};
-    static constexpr int expected_input[]       = {13, 55, 12345, 42};
-    static constexpr int expected_input_short[] = {13, 55};
-    static constexpr int expected_input_long[]  = {13, 55, 12345, 42};
-
-    static void call() {
-        using ranges::uninitialized_copy_n, ranges::uninitialized_copy_n_result, ranges::equal, ranges::iterator_t;
-        { // Validate range overload
-            vector<int> input  = {13, 55, 12345, 42};
-            vector<int> output = {-1, -1, -1, -1};
-
-            const same_as<uninitialized_copy_n_result<iterator_t<vector<int>>, iterator_t<vector<int>>>> auto result =
-                uninitialized_copy_n(input.begin(), 3, output.begin(), output.end());
-            assert(next(result.in) == input.end());
-            assert(next(result.out) == output.end());
-            assert(equal(input, expected_input));
-            assert(equal(output, expected_output));
-        }
-
-        { // Validate shorter input
-            vector<int> input  = {13, 55};
-            vector<int> output = {-1, -1, -1, -1};
-
-            const same_as<uninitialized_copy_n_result<iterator_t<vector<int>>, iterator_t<vector<int>>>> auto result =
-                uninitialized_copy_n(input.begin(), 2, output.begin(), output.end());
-            assert(result.in == input.end());
-            assert(next(result.out, 2) == output.end());
-            assert(equal(input, expected_input_short));
-            assert(equal(output, expected_output_long));
-        }
-
-        { // Validate shorter output
-            vector<int> input  = {13, 55, 12345, 42};
-            vector<int> output = {-1, -1};
-
-            const same_as<uninitialized_copy_n_result<iterator_t<vector<int>>, iterator_t<vector<int>>>> auto result =
-                uninitialized_copy_n(input.begin(), 2, output.begin(), output.end());
-            assert(next(result.in, 2) == input.end());
-            assert(result.out == output.end());
-            assert(equal(input, expected_input));
-            assert(equal(output, expected_input_short));
-        }
-    }
-};
-
 template <test::ProxyRef IsProxy>
 using test_input  = test::range<test::input, int_wrapper, test::Sized::no, test::CanDifference::no, test::Common::no,
     test::CanCompare::yes, IsProxy>;
@@ -226,5 +140,4 @@ int main() {
     instantiator::call<test_input<test::ProxyRef::yes>, test_output>();
     throwing_test::call<test_input<test::ProxyRef::no>, test_output>();
     throwing_test::call<test_input<test::ProxyRef::yes>, test_output>();
-    memcpy_test::call();
 }

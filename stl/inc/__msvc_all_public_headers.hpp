@@ -46,7 +46,6 @@
 #include <limits>
 #include <numbers>
 #include <ratio>
-#include <source_location>
 #include <type_traits>
 #include <utility>
 #include <version>
@@ -121,7 +120,6 @@
 #include <string>
 #include <string_view>
 #include <strstream>
-#include <syncstream>
 #include <system_error>
 #include <tuple>
 #include <typeindex>

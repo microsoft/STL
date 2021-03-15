@@ -3,7 +3,6 @@
 
 RUNALL_INCLUDE .\prefix.lst
 RUNALL_CROSSLIST
-PM_CL="/DNO_TEST_ENVIRONMENT_PREPARER /EHsc /MTd /std:c++latest /permissive- /fp:strict /w14640 /Zc:threadSafeInit-"
 PM_COMPILER="clang-cl" PM_CL="/DNO_TEST_ENVIRONMENT_PREPARER -fno-ms-compatibility -fno-delayed-template-parsing /EHsc /MTd /std:c++latest /permissive- /fp:strict /w14640 /Zc:threadSafeInit-"
 RUNALL_CROSSLIST
 PM_CL="/DMEOW_HEADER=algorithm"
@@ -59,7 +58,6 @@ PM_CL="/DMEOW_HEADER=scoped_allocator"
 PM_CL="/DMEOW_HEADER=semaphore"
 PM_CL="/DMEOW_HEADER=set"
 PM_CL="/DMEOW_HEADER=shared_mutex"
-PM_CL="/DMEOW_HEADER=source_location"
 PM_CL="/DMEOW_HEADER=span"
 PM_CL="/DMEOW_HEADER=sstream"
 PM_CL="/DMEOW_HEADER=stack"
@@ -69,7 +67,6 @@ PM_CL="/DMEOW_HEADER=streambuf"
 PM_CL="/DMEOW_HEADER=string"
 PM_CL="/DMEOW_HEADER=string_view"
 PM_CL="/DMEOW_HEADER=strstream /D_SILENCE_CXX17_STRSTREAM_DEPRECATION_WARNING"
-PM_CL="/DMEOW_HEADER=syncstream"
 PM_CL="/DMEOW_HEADER=system_error"
 PM_CL="/DMEOW_HEADER=thread"
 PM_CL="/DMEOW_HEADER=tuple"

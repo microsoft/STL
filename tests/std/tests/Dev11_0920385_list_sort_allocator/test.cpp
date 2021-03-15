@@ -3,7 +3,6 @@
 
 // Test DevDiv-920385 "<list>: list::sort shouldn't default-construct allocators".
 
-#define _HAS_DEPRECATED_ALLOCATOR_MEMBERS 1
 #define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING
 
 #include <algorithm>

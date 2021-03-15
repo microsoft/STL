@@ -104,7 +104,6 @@ STATIC_ASSERT(test_cpo(ranges::views::drop));
 STATIC_ASSERT(test_cpo(ranges::views::drop_while));
 STATIC_ASSERT(test_cpo(ranges::views::elements<42>));
 STATIC_ASSERT(test_cpo(ranges::views::filter));
-STATIC_ASSERT(test_cpo(ranges::views::iota));
 STATIC_ASSERT(test_cpo(ranges::views::keys));
 STATIC_ASSERT(test_cpo(ranges::views::reverse));
 STATIC_ASSERT(test_cpo(ranges::views::single));
@@ -1500,7 +1499,9 @@ namespace borrowed_range_testing {
     STATIC_ASSERT(test_borrowed_range<std::span<int, 42>, std::span<int, 42>::iterator>());
     STATIC_ASSERT(test_borrowed_range<ranges::subrange<int*, int*>, int*>());
     STATIC_ASSERT(test_borrowed_range<ranges::ref_view<int[42]>, int*>());
-    STATIC_ASSERT(test_borrowed_range<ranges::iota_view<int, int>, ranges::iterator_t<ranges::iota_view<int, int>>>());
+#if 0 // TRANSITION, future
+    STATIC_ASSERT(test_borrowed_range<ranges::iota_view<int, int>, ...>());
+#endif // TRANSITION, future
 
     struct simple_borrowed_range {
         int* begin() const {

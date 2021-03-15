@@ -8,9 +8,6 @@
 #define _TUPLE_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
-#ifdef __cpp_lib_concepts
-#include <compare>
-#endif // __cpp_lib_concepts
 #include <type_traits>
 #include <xutility>
 
@@ -236,15 +233,9 @@ public:
         return true;
     }
 
-#ifdef __cpp_lib_concepts
-    _NODISCARD constexpr strong_ordering _Three_way_compare(const tuple&) const noexcept {
-        return strong_ordering::equal;
-    }
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
-    _NODISCARD constexpr bool _Less(const tuple&) const noexcept {
+    constexpr bool _Less(const tuple&) const noexcept {
         return false;
     }
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 };
 
 template <class _This, class... _Rest>
@@ -682,23 +673,11 @@ public:
         return _Myfirst._Val == _Right._Myfirst._Val && _Mybase::_Equals(_Right._Get_rest());
     }
 
-#ifdef __cpp_lib_concepts
-    template <class _First, class... _Other,
-        class _Ret = common_comparison_category_t<_Synth_three_way_result<_This, _First>, // TRANSITION, DevCom-1344701
-            _Synth_three_way_result<_Rest, _Other>...>> // (should be a normal or trailing return type)
-    _NODISCARD constexpr _Ret _Three_way_compare(const tuple<_First, _Other...>& _Right) const {
-        if (auto _Result = _Synth_three_way{}(_Myfirst._Val, _Right._Myfirst._Val); _Result != 0) {
-            return _Result;
-        }
-        return _Mybase::_Three_way_compare(_Right._Get_rest());
-    }
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
     template <class... _Other>
-    _NODISCARD constexpr bool _Less(const tuple<_Other...>& _Right) const {
+    constexpr bool _Less(const tuple<_Other...>& _Right) const {
         return _Myfirst._Val < _Right._Myfirst._Val
             || (!(_Right._Myfirst._Val < _Myfirst._Val) && _Mybase::_Less(_Right._Get_rest()));
     }
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
     template <size_t _Index, class... _Types>
     friend constexpr tuple_element_t<_Index, tuple<_Types...>>& get(tuple<_Types...>& _Tuple) noexcept;
@@ -754,20 +733,10 @@ _NODISCARD constexpr bool operator==(const tuple<_Types1...>& _Left, const tuple
     return _Left._Equals(_Right);
 }
 
-#ifdef __cpp_lib_concepts
-template <class... _Types1, class... _Types2>
-_NODISCARD constexpr common_comparison_category_t<_Synth_three_way_result<_Types1, _Types2>...> operator<=>(
-    const tuple<_Types1...>& _Left, const tuple<_Types2...>& _Right) {
-    static_assert(sizeof...(_Types1) == sizeof...(_Types2), "cannot compare tuples of different sizes");
-    return _Left._Three_way_compare(_Right);
-}
-#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
-#if !_HAS_CXX20
 template <class... _Types1, class... _Types2>
 _NODISCARD constexpr bool operator!=(const tuple<_Types1...>& _Left, const tuple<_Types2...>& _Right) {
     return !(_Left == _Right);
 }
-#endif // !_HAS_CXX20
 
 template <class... _Types1, class... _Types2>
 _NODISCARD constexpr bool operator<(const tuple<_Types1...>& _Left, const tuple<_Types2...>& _Right) {
@@ -789,7 +758,6 @@ template <class... _Types1, class... _Types2>
 _NODISCARD constexpr bool operator<=(const tuple<_Types1...>& _Left, const tuple<_Types2...>& _Right) {
     return !(_Right < _Left);
 }
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
 template <class... _Types, enable_if_t<conjunction_v<_STD _Is_swappable<_Types>...>, int> = 0>
 _CONSTEXPR20 void swap(tuple<_Types...>& _Left, tuple<_Types...>& _Right) noexcept(noexcept(_Left.swap(_Right))) {

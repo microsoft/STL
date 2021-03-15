@@ -152,11 +152,11 @@ class STLTestFormat:
         shared.env['TEMPDIR'] = execDir
 
         return [
-            ('Build setup', self.getBuildSetupSteps(test, litConfig, shared), True),
-            ('Build', self.getBuildSteps(test, litConfig, shared), True),
-            ('Intellisense response file', self.getIsenseRspFileSteps(test, litConfig, shared), False),
-            ('Test setup', self.getTestSetupSteps(test, litConfig, shared), False),
-            ('Test', self.getTestSteps(test, litConfig, shared), False)]
+            ('Build setup', self.getBuildSetupSteps(test, litConfig, shared)),
+            ('Build', self.getBuildSteps(test, litConfig, shared)),
+            ('Intellisense response file', self.getIsenseRspFileSteps(test, litConfig, shared)),
+            ('Test setup', self.getTestSetupSteps(test, litConfig, shared)),
+            ('Test', self.getTestSteps(test, litConfig, shared))]
 
     def getBuildSetupSteps(self, test, litConfig, shared):
         shutil.rmtree(shared.execDir, ignore_errors=True)
@@ -210,17 +210,17 @@ class STLTestFormat:
             if result:
                 return result
 
-            # This test is expected to fail at some point, but we're not sure if
-            # it should fail during the build phase or the test phase.
-            someFail = test.expectedResult and test.expectedResult.isFailure
+            if test.expectedResult and test.expectedResult.isFailure:
+                failVar = lit.Test.XFAIL
+                passVar = lit.Test.XPASS
+            else:
+                failVar = lit.Test.FAIL
+                passVar = lit.Test.PASS
 
             stages = self.getStages(test, litConfig)
 
             report = ''
-            for stageName, steps, isBuildStep in stages:
-                if not isBuildStep and litConfig.build_only:
-                    continue
-
+            for stageName, steps in stages:
                 report += stageName + ' steps:\n'
                 for step in steps:
                     cmd, out, err, rc = self.runStep(step, litConfig)
@@ -232,11 +232,9 @@ class STLTestFormat:
 
                     report += stl.util.makeReport(cmd, out, err, rc)
                     if (step.shouldFail and rc == 0) or (not step.shouldFail and rc != 0):
-                        if someFail:
-                            test.xfails = ['*']
-                        return (lit.Test.FAIL, report)
+                        return (failVar, report)
 
-            return (lit.Test.PASS, '')
+            return (passVar, '')
 
         except Exception as e:
             litConfig.error(repr(e))
