@@ -1264,6 +1264,7 @@ _OutputIt _Write_aligned(
             _Fill_left  = (_Specs._Width - _Width) / 2;
             _Fill_right = _Specs._Width - _Width - _Fill_left;
             break;
+        case _Align::_None:
         default:
             _STL_ASSERT(false, "Invalid alignment");
         }
