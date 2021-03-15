@@ -1249,8 +1249,9 @@ _OutputIt _Write_aligned(
     int _Fill_left  = 0;
     int _Fill_right = 0;
 
-    if (_Specs._Alignment == _Align::_None)
+    if (_Specs._Alignment == _Align::_None) {
         _Specs._Alignment = _Default_align;
+    }
 
     if (_Width < _Specs._Width) {
         switch (_Specs._Alignment) {
@@ -1265,7 +1266,6 @@ _OutputIt _Write_aligned(
             _Fill_right = _Specs._Width - _Width - _Fill_left;
             break;
         case _Align::_None:
-        default:
             _STL_ASSERT(false, "Invalid alignment");
         }
     }
@@ -1277,7 +1277,7 @@ _OutputIt _Write_aligned(
 }
 
 template <integral _Integral>
-string_view _Get_integral_prefix(char _Type, _Integral _Value) {
+_NODISCARD constexpr string_view _Get_integral_prefix(char _Type, _Integral _Value) {
     switch (_Type) {
     case 'b':
         return "0b"sv;
@@ -1288,8 +1288,9 @@ string_view _Get_integral_prefix(char _Type, _Integral _Value) {
     case 'X':
         return "0X"sv;
     case 'o':
-        if (_Value != _Integral{0})
+        if (_Value != _Integral{0}) {
             return "0"sv;
+        }
     }
     return {};
 }
@@ -1297,17 +1298,15 @@ string_view _Get_integral_prefix(char _Type, _Integral _Value) {
 template <class _OutputIt>
 _OutputIt _Write_sign(_OutputIt _Out, _Sign _Sgn, bool _Is_negative) {
     if (_Is_negative) {
-        _Out = '-';
+        *_Out = '-';
     } else {
         switch (_Sgn) {
         case _Sign::_Plus:
-            _Out = '+';
+            *_Out = '+';
             break;
-
         case _Sign::_Space:
-            _Out = ' ';
+            *_Out = ' ';
             break;
-
         case _Sign::_None:
         case _Sign::_Minus:
             break;
@@ -1317,13 +1316,13 @@ _OutputIt _Write_sign(_OutputIt _Out, _Sign _Sgn, bool _Is_negative) {
 }
 
 inline void _Fmt_buffer_to_uppercase(char* _Begin, const char* _End) {
-    for (auto _It = _Begin; _It < _End; ++_It) {
-        *_It = static_cast<char>(_CSTD toupper(*_It));
+    for (; _Begin != _End; ++_Begin) {
+        *_Begin = static_cast<char>(_CSTD toupper(*_Begin));
     }
 }
 
-template <class _CharT, class _Ty>
-bool _In_bounds(_Ty _Value) {
+template <class _CharT, integral _Ty>
+_NODISCARD constexpr bool _In_bounds(_Ty _Value) {
     if constexpr (is_unsigned_v<_CharT> && is_unsigned_v<_Ty>) {
         return _Value <= (numeric_limits<_CharT>::max)();
     } else if constexpr (is_unsigned_v<_CharT>) {
@@ -1346,17 +1345,20 @@ _OutputIt _Write(_OutputIt _Out, monostate, _Basic_format_specs<_CharT>&) {
 template <class _CharT, class _OutputIt, integral _Integral>
 _OutputIt _Write_integral(_OutputIt _Out, _Integral _Value, _Basic_format_specs<_CharT>& _Specs) {
     if (_Specs._Type && _Specs._Type == 'c') {
-        if (!_In_bounds<_CharT>(_Value))
+        if (!_In_bounds<_CharT>(_Value)) {
             throw format_error("integral cannot be stored in charT");
+        }
         _Specs._Alt = false;
         return _Write(_Out, static_cast<_CharT>(_Value), _Specs);
     }
 
-    if (_Specs._Precision != -1)
+    if (_Specs._Precision != -1) {
         throw format_error("integral cannot have a precision");
+    }
 
-    if (_Specs._Sgn == _Sign::_None)
+    if (_Specs._Sgn == _Sign::_None) {
         _Specs._Sgn = _Sign::_Minus;
+    }
 
     int _Base      = 10;
     bool _To_upper = false;
@@ -1365,23 +1367,21 @@ _OutputIt _Write_integral(_OutputIt _Out, _Integral _Value, _Basic_format_specs<
     case 0:
     case 'd':
         break;
-
     case 'B':
         _To_upper = true;
+        [[fallthrough]];
     case 'b':
         _Base = 2;
         break;
-
     case 'X':
         _To_upper = true;
+        [[fallthrough]];
     case 'x':
         _Base = 16;
         break;
-
     case 'o':
         _Base = 8;
         break;
-
     default:
         throw format_error("invalid integral type");
     }
@@ -1413,9 +1413,8 @@ _OutputIt _Write_integral(_OutputIt _Out, _Integral _Value, _Basic_format_specs<
         _Width += static_cast<int>(_Prefix.size());
     }
 
-    bool _Write_leading_zeroes = _Specs._Leading_zero && _Specs._Alignment == _Align::_None;
-
-    auto _Writer = [&, _End = _End](_OutputIt _Out) {
+    const bool _Write_leading_zeroes = _Specs._Leading_zero && _Specs._Alignment == _Align::_None;
+    auto _Writer                     = [&, _End = _End](_OutputIt _Out) {
         _Out = _Write_sign(_Out, _Specs._Sgn, _Value < _Integral{0});
         _Out = _STD copy(_Prefix.begin(), _Prefix.end(), _Out);
         if (_Write_leading_zeroes && _Width < _Specs._Width) {
@@ -1424,8 +1423,9 @@ _OutputIt _Write_integral(_OutputIt _Out, _Integral _Value, _Basic_format_specs<
         return _STD copy(_Buffer_start, _End, _Out);
     };
 
-    if (_Write_leading_zeroes)
+    if (_Write_leading_zeroes) {
         return _Writer(_Out);
+    }
 
     return _Write_aligned(_Out, _Width, _Specs, _Align::_Right, _Writer);
 }
@@ -1447,8 +1447,9 @@ _OutputIt _Write(_OutputIt _Out, bool _Value, _Basic_format_specs<_CharT>& _Spec
         return _Write_integral(_Out, static_cast<unsigned int>(_Value), _Specs);
     }
 
-    if (_Specs._Precision != -1)
+    if (_Specs._Precision != -1) {
         throw format_error("bool cannot have a precision");
+    }
 
     if constexpr (is_same_v<_CharT, wchar_t>) {
         return _Write(_Out, _Value ? L"true" : L"false", _Specs);
@@ -1459,11 +1460,13 @@ _OutputIt _Write(_OutputIt _Out, bool _Value, _Basic_format_specs<_CharT>& _Spec
 
 template <class _CharT, class _OutputIt>
 _OutputIt _Write(_OutputIt _Out, _CharT _Value, _Basic_format_specs<_CharT>& _Specs) {
-    if (_Specs._Type && _Specs._Type != 'c')
+    if (_Specs._Type && _Specs._Type != 'c') {
         return _Write_integral(_Out, _Value, _Specs);
+    }
 
-    if (_Specs._Precision != -1)
+    if (_Specs._Precision != -1) {
         throw format_error("charT cannot have a precision");
+    }
 
     // Clear the type so that the string_view writer doesn't fail on 'c'.
     _Specs._Type = 0;
@@ -1474,8 +1477,9 @@ _OutputIt _Write(_OutputIt _Out, _CharT _Value, _Basic_format_specs<_CharT>& _Sp
 #pragma warning(disable : 4365) // 'argument': conversion from 'char' to 'const wchar_t', signed/unsigned mismatch
 template <class _CharT, class _OutputIt, floating_point _Float>
 _OutputIt _Write(_OutputIt _Out, _Float _Value, _Basic_format_specs<_CharT>& _Specs) {
-    if (_Specs._Sgn == _Sign::_None)
+    if (_Specs._Sgn == _Sign::_None) {
         _Specs._Sgn = _Sign::_Minus;
+    }
 
     auto _To_upper = false;
     auto _Format   = chars_format::general;
@@ -1484,39 +1488,40 @@ _OutputIt _Write(_OutputIt _Out, _Float _Value, _Basic_format_specs<_CharT>& _Sp
     switch (_Specs._Type) {
     case 0:
         break;
-
     case 'A':
         _To_upper = true;
+        [[fallthrough]];
     case 'a':
         _Format   = chars_format::hex;
         _Exponent = 'p';
         break;
-
     case 'E':
         _To_upper = true;
+        [[fallthrough]];
     case 'e':
-        if (_Specs._Precision == -1)
+        if (_Specs._Precision == -1) {
             _Specs._Precision = 6;
+        }
         _Format   = chars_format::scientific;
         _Exponent = 'e';
         break;
-
     case 'F':
     case 'f':
-        if (_Specs._Precision == -1)
+        if (_Specs._Precision == -1) {
             _Specs._Precision = 6;
+        }
         _Format = chars_format::fixed;
         break;
-
     case 'G':
         _To_upper = true;
+        [[fallthrough]];
     case 'g':
-        if (_Specs._Precision == -1)
+        if (_Specs._Precision == -1) {
             _Specs._Precision = 6;
+        }
         _Format   = chars_format::general;
         _Exponent = 'e';
         break;
-
     default:
         throw format_error("invalid floating point type");
     }
@@ -1535,7 +1540,7 @@ _OutputIt _Write(_OutputIt _Out, _Float _Value, _Basic_format_specs<_CharT>& _Sp
     auto _Buffer_start = _Buffer.data();
     auto _Width        = static_cast<int>(_Result.ptr - _Buffer_start);
 
-    auto _Is_negative = signbit(_Value);
+    const auto _Is_negative = signbit(_Value);
 
     if (_Is_negative) {
         // Remove the '-', it will be dealt with directly
@@ -1551,7 +1556,7 @@ _OutputIt _Write(_OutputIt _Out, _Float _Value, _Basic_format_specs<_CharT>& _Sp
         _Exponent = static_cast<char>(_CSTD toupper(_Exponent));
     }
 
-    auto _Is_finite = !_STD isnan(_Value) && !_STD isinf(_Value);
+    const auto _Is_finite = !_STD isnan(_Value) && !_STD isinf(_Value);
 
     auto _Append_decimal   = false;
     auto _Exponent_start   = _Result.ptr;
@@ -1573,15 +1578,15 @@ _OutputIt _Write(_OutputIt _Out, _Float _Value, _Basic_format_specs<_CharT>& _Sp
 
         if (_Specs._Type == 'g' || _Specs._Type == 'G') {
             _Zeroes_to_append = _Specs._Precision - static_cast<int>(_Exponent_start - _Buffer_start);
-            if (!_Append_decimal)
+            if (!_Append_decimal) {
                 _Zeroes_to_append += 1;
+            }
             _Width += _Zeroes_to_append;
         }
     }
 
-    bool _Write_leading_zeroes = _Specs._Leading_zero && _Specs._Alignment == _Align::_None;
-
-    auto _Writer = [&](_OutputIt _Out) {
+    const bool _Write_leading_zeroes = _Specs._Leading_zero && _Specs._Alignment == _Align::_None;
+    auto _Writer                     = [&](_OutputIt _Out) {
         _Out = _Write_sign(_Out, _Specs._Sgn, _Is_negative);
 
         if (_Write_leading_zeroes && _Width < _Specs._Width && _Is_finite) {
@@ -1592,17 +1597,20 @@ _OutputIt _Write(_OutputIt _Out, _Float _Value, _Basic_format_specs<_CharT>& _Sp
             _Out          = _STD copy(_Buffer_start, _Exponent_start, _Out);
             _Buffer_start = _Exponent_start;
 
-            if (_Append_decimal)
-                _Out++ = '.';
-            while (_Zeroes_to_append-- > 0)
-                _Out++ = '0';
+            if (_Append_decimal) {
+                *_Out++ = '.';
+            }
+            while (_Zeroes_to_append-- > 0) {
+                *_Out++ = '0';
+            }
         }
 
         return _STD copy(_Buffer_start, _Result.ptr, _Out);
     };
 
-    if (_Write_leading_zeroes && _Is_finite)
+    if (_Write_leading_zeroes && _Is_finite) {
         return _Writer(_Out);
+    }
 
     return _Write_aligned(_Out, _Width, _Specs, _Align::_Right, _Writer);
 }
@@ -1610,20 +1618,25 @@ _OutputIt _Write(_OutputIt _Out, _Float _Value, _Basic_format_specs<_CharT>& _Sp
 
 template <class _CharT, class _OutputIt>
 _OutputIt _Write(_OutputIt _Out, const void* _Value, _Basic_format_specs<_CharT>& _Specs) {
-    if (_Specs._Type && _Specs._Type != 'p')
+    if (_Specs._Type && _Specs._Type != 'p') {
         throw format_error("invalid const void* type");
+    }
 
-    if (_Specs._Sgn != _Sign::_None)
+    if (_Specs._Sgn != _Sign::_None) {
         throw format_error("const void* cannot have a sign");
+    }
 
-    if (_Specs._Alt)
+    if (_Specs._Alt) {
         throw format_error("const void* cannot have an alternative representation");
+    }
 
-    if (_Specs._Precision != -1)
+    if (_Specs._Precision != -1) {
         throw format_error("const void* cannot have a precision");
+    }
 
-    if (_Specs._Leading_zero)
+    if (_Specs._Leading_zero) {
         throw format_error("const void* cannot have a leading zero");
+    }
 
     // Compute the bit width of the pointer (i.e. how many bits it takes to be represented).
     // Add 3 to the bit width so we always round up on the division.
@@ -1632,8 +1645,9 @@ _OutputIt _Write(_OutputIt _Out, const void* _Value, _Basic_format_specs<_CharT>
     auto _Width = 2 + static_cast<int>(bit_width(reinterpret_cast<uintptr_t>(_Value)) + 3) / 4;
 
     // Since the bit width of 0 is 0, special case it instead of complicating the math even more.
-    if (_Value == nullptr)
+    if (_Value == nullptr) {
         _Width = 3;
+    }
 
     return _Write_aligned(
         _Out, _Width, _Specs, _Align::_Left, [=](_OutputIt _Out) { return _Write<_CharT>(_Out, _Value); });
@@ -1646,22 +1660,27 @@ _OutputIt _Write(_OutputIt _Out, const _CharT* _Value, _Basic_format_specs<_Char
 
 template <class _CharT, class _OutputIt>
 _OutputIt _Write(_OutputIt _Out, basic_string_view<_CharT> _Value, _Basic_format_specs<_CharT>& _Specs) {
-    if (_Specs._Type && _Specs._Type != 's')
+    if (_Specs._Type && _Specs._Type != 's') {
         throw format_error("invalid string type");
+    }
 
-    if (_Specs._Sgn != _Sign::_None)
+    if (_Specs._Sgn != _Sign::_None) {
         throw format_error("string cannot have a sign");
+    }
 
-    if (_Specs._Alt)
+    if (_Specs._Alt) {
         throw format_error("string cannot have an alternative representation");
+    }
 
-    if (_Specs._Leading_zero)
+    if (_Specs._Leading_zero) {
         throw format_error("string cannot have a leading zero");
+    }
 
     auto _Printed_size = static_cast<int>(_Value.size());
 
-    if (_Specs._Precision != -1 && _Printed_size > _Specs._Precision)
+    if (_Specs._Precision != -1 && _Printed_size > _Specs._Precision) {
         _Printed_size = _Specs._Precision;
+    }
 
     return _Write_aligned(_Out, _Printed_size, _Specs, _Align::_Left,
         [=](_OutputIt _Out) { return _Write(_Out, _Value.substr(size_t{0}, static_cast<size_t>(_Printed_size))); });
