@@ -62,20 +62,20 @@ namespace stdext {
 
         using value_compare = key_compare;
 
-        static const _Kty& _Kfn(const value_type& _Val) noexcept {
+        _NODISCARD static const _Kty& _Kfn(const value_type& _Val) noexcept {
             return _Val;
         }
 
-        static int _Nonkfn(const value_type&) noexcept {
+        _NODISCARD static int _Nonkfn(const value_type&) noexcept {
             // extract "non-key" from element value (for container equality)
             return 0;
         }
 
-        float& _Get_max_bucket_size() noexcept {
+        _NODISCARD float& _Get_max_bucket_size() noexcept {
             return _Max_buckets;
         }
 
-        const float& _Get_max_bucket_size() const noexcept {
+        _NODISCARD const float& _Get_max_bucket_size() const noexcept {
             return _Max_buckets;
         }
 
@@ -181,27 +181,27 @@ namespace stdext {
         using reverse_iterator       = _STD reverse_iterator<iterator>;
         using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
 
-        reverse_iterator rbegin() noexcept {
+        _NODISCARD reverse_iterator rbegin() noexcept {
             return reverse_iterator(this->end());
         }
 
-        const_reverse_iterator rbegin() const noexcept {
+        _NODISCARD const_reverse_iterator rbegin() const noexcept {
             return const_reverse_iterator(this->end());
         }
 
-        reverse_iterator rend() noexcept {
+        _NODISCARD reverse_iterator rend() noexcept {
             return reverse_iterator(this->begin());
         }
 
-        const_reverse_iterator rend() const noexcept {
+        _NODISCARD const_reverse_iterator rend() const noexcept {
             return const_reverse_iterator(this->begin());
         }
 
-        const_reverse_iterator crbegin() const noexcept {
+        _NODISCARD const_reverse_iterator crbegin() const noexcept {
             return rbegin();
         }
 
-        const_reverse_iterator crend() const noexcept {
+        _NODISCARD const_reverse_iterator crend() const noexcept {
             return rend();
         }
 
@@ -325,27 +325,27 @@ namespace stdext {
         using reverse_iterator       = _STD reverse_iterator<iterator>;
         using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
 
-        reverse_iterator rbegin() noexcept {
+        _NODISCARD reverse_iterator rbegin() noexcept {
             return reverse_iterator(this->end());
         }
 
-        const_reverse_iterator rbegin() const noexcept {
+        _NODISCARD const_reverse_iterator rbegin() const noexcept {
             return const_reverse_iterator(this->end());
         }
 
-        reverse_iterator rend() noexcept {
+        _NODISCARD reverse_iterator rend() noexcept {
             return reverse_iterator(this->begin());
         }
 
-        const_reverse_iterator rend() const noexcept {
+        _NODISCARD const_reverse_iterator rend() const noexcept {
             return const_reverse_iterator(this->begin());
         }
 
-        const_reverse_iterator crbegin() const noexcept {
+        _NODISCARD const_reverse_iterator crbegin() const noexcept {
             return rbegin();
         }
 
-        const_reverse_iterator crend() const noexcept {
+        _NODISCARD const_reverse_iterator crend() const noexcept {
             return rend();
         }
 
