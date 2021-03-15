@@ -28,35 +28,6 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // clang-format off
-    // CONCEPT _No_throw_input_iterator
-    template <class _It>
-    concept _No_throw_input_iterator = input_iterator<_It>
-        && is_lvalue_reference_v<iter_reference_t<_It>>
-        && same_as<remove_cvref_t<iter_reference_t<_It>>, iter_value_t<_It>>;
-
-    // CONCEPT _No_throw_sentinel_for
-    template <class _Se, class _It>
-    concept _No_throw_sentinel_for = sentinel_for<_Se, _It>;
-
-    // CONCEPT _No_throw_forward_iterator
-    template <class _It>
-    concept _No_throw_forward_iterator = _No_throw_input_iterator<_It>
-        && forward_iterator<_It>
-        && _No_throw_sentinel_for<_It, _It>;
-
-    // CONCEPT _No_throw_input_range
-    template <class _Rng>
-    concept _No_throw_input_range = range<_Rng>
-        && _No_throw_input_iterator<iterator_t<_Rng>>
-        && _No_throw_sentinel_for<sentinel_t<_Rng>, iterator_t<_Rng>>;
-
-    // CONCEPT _No_throw_forward_range
-    template <class _Rng>
-    concept _No_throw_forward_range = _No_throw_input_range<_Rng>
-        && _No_throw_forward_iterator<iterator_t<_Rng>>;
-    // clang-format on
-
     // ALIAS TEMPLATE uninitialized_copy_result
     template <class _In, class _Out>
     using uninitialized_copy_result = in_out_result<_In, _Out>;
@@ -107,7 +78,7 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(_No_throw_sentinel_for<_OSe, _Out>);
             _STL_INTERNAL_STATIC_ASSERT(constructible_from<iter_value_t<_Out>, iter_reference_t<_It>>);
 
-            if constexpr (is_same_v<_Se, _It> && _Ptr_copy_cat<_It, _Out>::_Really_trivial) {
+            if constexpr (is_same_v<_Se, _It> && is_same_v<_OSe, _Out> && _Ptr_copy_cat<_It, _Out>::_Really_trivial) {
                 return _Copy_memcpy_common(_IFirst, _ILast, _OFirst, _OLast);
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
@@ -178,7 +149,9 @@ namespace ranges {
             auto _OFirst      = _Get_unwrapped(_STD move(_First2));
             const auto _OLast = _Get_unwrapped(_STD move(_Last2));
             if constexpr (_Ptr_copy_cat<_It, _Out>::_Really_trivial) {
-                _OFirst = _Copy_memcpy_common(_IFirst, _IFirst + _Count, _OFirst, _OLast);
+                auto _UResult = _Copy_memcpy_common(_IFirst, _IFirst + _Count, _OFirst, _OLast);
+                _IFirst       = _UResult.in;
+                _OFirst       = _UResult.out;
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
@@ -214,10 +187,6 @@ _NoThrowFwdIt uninitialized_move(const _InIt _First, const _InIt _Last, _NoThrow
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE uninitialized_move_result
-    template <class _In, class _Out>
-    using uninitialized_move_result = in_out_result<_In, _Out>;
-
     // VARIABLE ranges::uninitialized_move
     class _Uninitialized_move_fn : private _Not_quite_object {
     public:
@@ -231,9 +200,9 @@ namespace ranges {
             // clang-format on
             _Adl_verify_range(_First1, _Last1);
             _Adl_verify_range(_First2, _Last2);
-            auto _UResult =
-                _Uninitialized_move_unchecked(_Get_unwrapped(_STD move(_First1)), _Get_unwrapped(_STD move(_Last1)),
-                    _Get_unwrapped(_STD move(_First2)), _Get_unwrapped(_STD move(_Last2)));
+            auto _UResult = _RANGES _Uninitialized_move_unchecked(_Get_unwrapped(_STD move(_First1)),
+                _Get_unwrapped(_STD move(_Last1)), _Get_unwrapped(_STD move(_First2)),
+                _Get_unwrapped(_STD move(_Last2)));
 
             _Seek_wrapped(_First1, _STD move(_UResult.in));
             _Seek_wrapped(_First2, _STD move(_UResult.out));
@@ -247,34 +216,11 @@ namespace ranges {
             _Rng1&& _Range1, _Rng2&& _Range2) const {
             // clang-format on
             auto _First1  = _RANGES begin(_Range1);
-            auto _UResult = _Uninitialized_move_unchecked(
+            auto _UResult = _RANGES _Uninitialized_move_unchecked(
                 _Get_unwrapped(_STD move(_First1)), _Uend(_Range1), _Ubegin(_Range2), _Uend(_Range2));
 
             _Seek_wrapped(_First1, _STD move(_UResult.in));
             return {_STD move(_First1), _Rewrap_iterator(_Range2, _STD move(_UResult.out))};
-        }
-
-    private:
-        template <class _It, class _Se, class _Out, class _OSe>
-        _NODISCARD static uninitialized_move_result<_It, _Out> _Uninitialized_move_unchecked(
-            _It _IFirst, const _Se _ILast, _Out _OFirst, const _OSe _OLast) {
-            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
-            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
-            _STL_INTERNAL_STATIC_ASSERT(_No_throw_forward_iterator<_Out>);
-            _STL_INTERNAL_STATIC_ASSERT(_No_throw_sentinel_for<_OSe, _Out>);
-            _STL_INTERNAL_STATIC_ASSERT(constructible_from<iter_value_t<_Out>, iter_rvalue_reference_t<_It>>);
-
-            if constexpr (is_same_v<_Se, _It> && _Ptr_move_cat<_It, _Out>::_Really_trivial) {
-                return _Copy_memcpy_common(_IFirst, _ILast, _OFirst, _OLast);
-            } else {
-                _Uninitialized_backout _Backout{_STD move(_OFirst)};
-
-                for (; _IFirst != _ILast && _Backout._Last != _OLast; ++_IFirst) {
-                    _Backout._Emplace_back(_RANGES iter_move(_IFirst));
-                }
-
-                return {_STD move(_IFirst), _Backout._Release()};
-            }
         }
     };
 
@@ -339,7 +285,9 @@ namespace ranges {
             auto _OFirst      = _Get_unwrapped(_STD move(_First2));
             const auto _OLast = _Get_unwrapped(_STD move(_Last2));
             if constexpr (_Ptr_move_cat<_It, _Out>::_Really_trivial) {
-                _OFirst = _Copy_memcpy_common(_IFirst, _IFirst + _Count, _OFirst, _OLast);
+                auto _UResult = _Copy_memcpy_common(_IFirst, _IFirst + _Count, _OFirst, _OLast);
+                _IFirst       = _UResult.in;
+                _OFirst       = _UResult.out;
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
@@ -386,7 +334,7 @@ namespace ranges {
 
     private:
         template <class _It, class _Se, class _Ty>
-        _NODISCARD static _It _Uninitialized_fill_unchecked(_It _OFirst, const _Se _OLast, const _Ty& _Val) {
+        _NODISCARD static _It _Uninitialized_fill_unchecked(_It _OFirst, _Se _OLast, const _Ty& _Val) {
             _STL_INTERNAL_STATIC_ASSERT(_No_throw_forward_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(_No_throw_sentinel_for<_Se, _It>);
             _STL_INTERNAL_STATIC_ASSERT(constructible_from<iter_value_t<_It>, const _Ty&>);
@@ -844,16 +792,13 @@ namespace ranges {
 
     private:
         template <class _It, class _Se>
-        _NODISCARD static _It _Uninitialized_value_construct_unchecked(_It _OFirst, const _Se _OLast) {
+        _NODISCARD static _It _Uninitialized_value_construct_unchecked(_It _OFirst, _Se _OLast) {
             _STL_INTERNAL_STATIC_ASSERT(_No_throw_forward_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(_No_throw_sentinel_for<_Se, _It>);
             _STL_INTERNAL_STATIC_ASSERT(default_initializable<iter_value_t<_It>>);
 
             if constexpr (_Use_memset_value_construct_v<_It>) {
-                const auto _OFinal = _RANGES next(_OFirst, _STD move(_OLast));
-                const auto _Count  = static_cast<size_t>(_OFinal - _OFirst);
-                _CSTD memset(_STD to_address(_OFirst), 0, _Count);
-                return _OFinal;
+                return _Zero_range(_OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
@@ -902,8 +847,7 @@ namespace ranges {
 
             auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
             if constexpr (_Use_memset_value_construct_v<_It>) {
-                _CSTD memset(_STD to_address(_UFirst), 0, static_cast<size_t>(_Count));
-                _Seek_wrapped(_First, _UFirst + _Count);
+                _Seek_wrapped(_First, _Zero_range(_UFirst, _UFirst + _Count));
             } else {
                 _Uninitialized_backout _Backout{_STD move(_UFirst)};
 
@@ -1847,6 +1791,12 @@ _NODISCARD bool operator==(const shared_ptr<_Ty1>& _Left, const shared_ptr<_Ty2>
     return _Left.get() == _Right.get();
 }
 
+#if _HAS_CXX20
+template <class _Ty1, class _Ty2>
+_NODISCARD strong_ordering operator<=>(const shared_ptr<_Ty1>& _Left, const shared_ptr<_Ty2>& _Right) noexcept {
+    return _Left.get() <=> _Right.get();
+}
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _Ty1, class _Ty2>
 _NODISCARD bool operator!=(const shared_ptr<_Ty1>& _Left, const shared_ptr<_Ty2>& _Right) noexcept {
     return _Left.get() != _Right.get();
@@ -1871,12 +1821,19 @@ template <class _Ty1, class _Ty2>
 _NODISCARD bool operator<=(const shared_ptr<_Ty1>& _Left, const shared_ptr<_Ty2>& _Right) noexcept {
     return _Left.get() <= _Right.get();
 }
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 template <class _Ty>
 _NODISCARD bool operator==(const shared_ptr<_Ty>& _Left, nullptr_t) noexcept {
     return _Left.get() == nullptr;
 }
 
+#if _HAS_CXX20
+template <class _Ty>
+_NODISCARD strong_ordering operator<=>(const shared_ptr<_Ty>& _Left, nullptr_t) noexcept {
+    return _Left.get() <=> static_cast<typename shared_ptr<_Ty>::element_type*>(nullptr);
+}
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _Ty>
 _NODISCARD bool operator==(nullptr_t, const shared_ptr<_Ty>& _Right) noexcept {
     return nullptr == _Right.get();
@@ -1931,6 +1888,7 @@ template <class _Ty>
 _NODISCARD bool operator<=(nullptr_t, const shared_ptr<_Ty>& _Right) noexcept {
     return static_cast<typename shared_ptr<_Ty>::element_type*>(nullptr) <= _Right.get();
 }
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 template <class _Elem, class _Traits, class _Ty>
 basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Out, const shared_ptr<_Ty>& _Px) {
@@ -2082,10 +2040,10 @@ struct _Alignas_storage_unit {
     alignas(_Align) char _Space[_Align];
 };
 
-enum class _Check_overflow : bool { _No, _Yes };
+enum class _Check_overflow : bool { _Nope, _Yes };
 
 template <class _Refc, _Check_overflow _Check>
-_NODISCARD size_t _Calculate_bytes_for_flexible_array(const size_t _Count) noexcept(_Check == _Check_overflow::_No) {
+_NODISCARD size_t _Calculate_bytes_for_flexible_array(const size_t _Count) noexcept(_Check == _Check_overflow::_Nope) {
     constexpr size_t _Align = alignof(_Refc);
 
     size_t _Bytes = sizeof(_Refc); // contains storage for one element
@@ -2122,20 +2080,26 @@ template <class _Refc>
 _NODISCARD _Refc* _Allocate_flexible_array(const size_t _Count) {
     const size_t _Bytes     = _Calculate_bytes_for_flexible_array<_Refc, _Check_overflow::_Yes>(_Count);
     constexpr size_t _Align = alignof(_Refc);
-    if constexpr (_Align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
-        return static_cast<_Refc*>(::operator new(_Bytes));
-    } else {
+#ifdef __cpp_aligned_new
+    if constexpr (_Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
         return static_cast<_Refc*>(::operator new (_Bytes, align_val_t{_Align}));
+    } else
+#endif // __cpp_aligned_new
+    {
+        return static_cast<_Refc*>(::operator new(_Bytes));
     }
 }
 
 template <class _Refc>
 void _Deallocate_flexible_array(_Refc* const _Ptr) noexcept {
     constexpr size_t _Align = alignof(_Refc);
-    if constexpr (_Align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
-        ::operator delete(static_cast<void*>(_Ptr));
-    } else {
+#ifdef __cpp_aligned_new
+    if constexpr (_Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
         ::operator delete (static_cast<void*>(_Ptr), align_val_t{_Align});
+    } else
+#endif // __cpp_aligned_new
+    {
+        ::operator delete(static_cast<void*>(_Ptr));
     }
 }
 
@@ -2691,7 +2655,7 @@ private:
 
         _Rebind_alloc_t<_Alloc, _Storage> _Al(this->_Get_val());
         const size_t _Bytes =
-            _Calculate_bytes_for_flexible_array<_Ref_count_unbounded_array_alloc, _Check_overflow::_No>(_Size);
+            _Calculate_bytes_for_flexible_array<_Ref_count_unbounded_array_alloc, _Check_overflow::_Nope>(_Size);
         const size_t _Storage_units = _Bytes / sizeof(_Storage);
 
         this->~_Ref_count_unbounded_array_alloc();
@@ -3471,10 +3435,12 @@ _NODISCARD bool operator==(const unique_ptr<_Ty1, _Dx1>& _Left, const unique_ptr
     return _Left.get() == _Right.get();
 }
 
+#if !_HAS_CXX20
 template <class _Ty1, class _Dx1, class _Ty2, class _Dx2>
 _NODISCARD bool operator!=(const unique_ptr<_Ty1, _Dx1>& _Left, const unique_ptr<_Ty2, _Dx2>& _Right) {
     return !(_Left == _Right);
 }
+#endif // !_HAS_CXX20
 
 template <class _Ty1, class _Dx1, class _Ty2, class _Dx2>
 _NODISCARD bool operator<(const unique_ptr<_Ty1, _Dx1>& _Left, const unique_ptr<_Ty2, _Dx2>& _Right) {
@@ -3499,11 +3465,25 @@ _NODISCARD bool operator<=(const unique_ptr<_Ty1, _Dx1>& _Left, const unique_ptr
     return !(_Right < _Left);
 }
 
+#ifdef __cpp_lib_concepts
+// clang-format off
+template <class _Ty1, class _Dx1, class _Ty2, class _Dx2>
+    requires three_way_comparable_with<typename unique_ptr<_Ty1, _Dx1>::pointer,
+        typename unique_ptr<_Ty2, _Dx2>::pointer>
+_NODISCARD compare_three_way_result_t<typename unique_ptr<_Ty1, _Dx1>::pointer,
+        typename unique_ptr<_Ty2, _Dx2>::pointer>
+    operator<=>(const unique_ptr<_Ty1, _Dx1>& _Left, const unique_ptr<_Ty2, _Dx2>& _Right) {
+    // clang-format on
+    return _Left.get() <=> _Right.get();
+}
+#endif // __cpp_lib_concepts
+
 template <class _Ty, class _Dx>
 _NODISCARD bool operator==(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t) noexcept {
     return !_Left;
 }
 
+#if !_HAS_CXX20
 template <class _Ty, class _Dx>
 _NODISCARD bool operator==(nullptr_t, const unique_ptr<_Ty, _Dx>& _Right) noexcept {
     return !_Right;
@@ -3518,6 +3498,7 @@ template <class _Ty, class _Dx>
 _NODISCARD bool operator!=(nullptr_t _Left, const unique_ptr<_Ty, _Dx>& _Right) noexcept {
     return !(_Left == _Right);
 }
+#endif // !_HAS_CXX20
 
 template <class _Ty, class _Dx>
 _NODISCARD bool operator<(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t _Right) {
@@ -3560,6 +3541,17 @@ template <class _Ty, class _Dx>
 _NODISCARD bool operator<=(nullptr_t _Left, const unique_ptr<_Ty, _Dx>& _Right) {
     return !(_Right < _Left);
 }
+
+#ifdef __cpp_lib_concepts
+// clang-format off
+template <class _Ty, class _Dx>
+    requires three_way_comparable<typename unique_ptr<_Ty, _Dx>::pointer>
+_NODISCARD compare_three_way_result_t<typename unique_ptr<_Ty, _Dx>::pointer> operator<=>(
+    const unique_ptr<_Ty, _Dx>& _Left, nullptr_t) {
+    // clang-format on
+    return _Left.get() <=> static_cast<typename unique_ptr<_Ty, _Dx>::pointer>(nullptr);
+}
+#endif // __cpp_lib_concepts
 
 template <class _OutTy, class _PxTy, class = void>
 struct _Can_stream_unique_ptr : false_type {};

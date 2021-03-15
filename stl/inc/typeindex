@@ -38,9 +38,17 @@ public:
         return *_Tptr == *_Right._Tptr;
     }
 
+#if _HAS_CXX20
+    _NODISCARD strong_ordering operator<=>(const type_index& _Right) const noexcept {
+        return *_Tptr == *_Right._Tptr      ? strong_ordering::equal
+             : _Tptr->before(*_Right._Tptr) ? strong_ordering::less
+                                            : strong_ordering::greater;
+    }
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     _NODISCARD bool operator!=(const type_index& _Right) const noexcept {
         return !(*this == _Right);
     }
+#endif // ^^^ !_HAS_CXX20 ^^^
 
     _NODISCARD bool operator<(const type_index& _Right) const noexcept {
         return _Tptr->before(*_Right._Tptr);
