@@ -1307,6 +1307,10 @@ _OutputIt _Write_sign(_OutputIt _Out, _Sign _Sgn, bool _Is_negative) {
         case _Sign::_Space:
             _Out = ' ';
             break;
+
+        case _Sign::_None:
+        case _Sign::_Minus:
+            break;
         }
     }
     return ++_Out;
@@ -1411,7 +1415,7 @@ _OutputIt _Write_integral(_OutputIt _Out, _Integral _Value, _Basic_format_specs<
 
     bool _Write_leading_zeroes = _Specs._Leading_zero && _Specs._Alignment == _Align::_None;
 
-    auto _Writer = [&](_OutputIt _Out) {
+    auto _Writer = [&, _End = _End](_OutputIt _Out) {
         _Out = _Write_sign(_Out, _Specs._Sgn, _Value < _Integral{0});
         _Out = _STD copy(_Prefix.begin(), _Prefix.end(), _Out);
         if (_Write_leading_zeroes && _Width < _Specs._Width) {
