@@ -155,7 +155,6 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
         static_assert(CanMemberBegin<const R> == (input_range<const V> && is_reference_v<range_reference_t<const V>>) );
         if constexpr (forward_range<R>) {
             const iterator_t<R> i = r.begin();
-            assert(r.begin() == i);
             if (!is_empty) {
                 assert(*i == *begin(expected));
             }
@@ -163,7 +162,6 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
             if constexpr (copyable<V>) {
                 auto r2                              = r;
                 const same_as<iterator_t<R>> auto i2 = r2.begin();
-                assert(r2.begin() == i2);
                 if (!is_empty) {
                     assert(*i2 == *i);
                 }
@@ -176,7 +174,6 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
 
             if constexpr (CanBegin<const R> && forward_range<R>) {
                 const iterator_t<const R> ci = as_const(r).begin();
-                assert(as_const(r).begin() == ci);
                 if (!is_empty) {
                     assert(*ci == *i);
                 }
@@ -184,7 +181,6 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
                 if constexpr (copyable<V>) {
                     const auto r2                               = r;
                     const same_as<iterator_t<const V>> auto ci2 = r2.begin();
-                    assert(r2.begin() == ci2);
                     if (!is_empty) {
                         assert(*ci2 == *i);
                     }
