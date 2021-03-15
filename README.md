@@ -366,11 +366,14 @@ The `SKIPPED` result code indicates that a given test was explicitly skipped by 
 
 ### Modify The Visualizer
 
-To modify how components are visualized in the debugger edit the file stl\debugger\STL.natvis. For more information on how to modify this file check the [natvis documentation][].
+To modify how components are visualized in the debugger edit the file stl\debugger\STL.natvis. For more information on
+how to modify this file check the [natvis documentation][].
 
 ### Test your changes.
 
-You can add the natvis file to any Visual Studio C++ project if you right click your project > Add > Existing Item and select the stl.natvis file. After doing this you should be able to see your changes in a Visual Studio debugging session.
+You can add the natvis file to any Visual Studio C++ project if you right click your project > Add > Existing Item and
+select the stl.natvis file. After doing this you should be able to see your changes in a Visual Studio debugging
+session.
 
 
 # Block Diagram
