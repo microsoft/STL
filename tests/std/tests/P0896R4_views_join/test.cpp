@@ -428,13 +428,13 @@ int main() {
     test_move_only_views();
 
     // Validate non-views
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, FIXME
     { // ... C array
         static constexpr int join_me[5][2] = {{0, 1}, {2, 3}, {4, 5}, {6, 7}, {8, 9}};
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, Unfiled MSVC bug
         static_assert(test_one(join_me, expected_ints));
+#endif // TRANSITION, Unfiled MSVC bug
         test_one(join_me, expected_ints);
     }
-#endif // TRANSITION, FIXME
     { // ... fwd container
         forward_list<string_view> lst = {{{}, "Hello "sv, {}, "World!"sv, {}}};
         test_one(lst, expected);

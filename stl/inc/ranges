@@ -2785,10 +2785,12 @@ namespace ranges {
                       && common_range<_SubRng> {
                 // clang-format on
                 if (_Outer == _RANGES end(_Parent->_Range)) {
-                    _Inner = _RANGES end(*--_Outer);
+                    --_Outer;
+                    _Inner = _RANGES end(*_Outer);
                 }
                 while (_Inner == _RANGES begin(*_Outer)) {
-                    _Inner = _RANGES end(*--_Outer);
+                    --_Outer;
+                    _Inner = _RANGES end(*_Outer);
                 }
                 --_Inner;
                 return *this;
