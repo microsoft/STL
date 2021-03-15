@@ -20,7 +20,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-typedef double __std_tzdb_epoch_milli;
+using __std_tzdb_epoch_milli = double;
 
 struct __std_tzdb_registry_leap_info {
     uint16_t _Year;

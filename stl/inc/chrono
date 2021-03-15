@@ -2240,16 +2240,16 @@ namespace chrono {
     // CLASS nonexistent_local_time
     class nonexistent_local_time : public runtime_error {
     public:
-        template <class Duration>
-        explicit nonexistent_local_time(const local_time<Duration>&, const local_info&)
+        template <class _Duration>
+        nonexistent_local_time(const local_time<_Duration>&, const local_info&)
             : runtime_error("TRANSITION: work in progress") {}
     };
 
     // CLASS ambiguous_local_time
     class ambiguous_local_time : public runtime_error {
     public:
-        template <class Duration>
-        explicit ambiguous_local_time(const local_time<Duration>&, const local_info&)
+        template <class _Duration>
+        ambiguous_local_time(const local_time<_Duration>&, const local_info&)
             : runtime_error("TRANSITION: work in progress") {}
     };
 
@@ -2280,7 +2280,7 @@ namespace chrono {
             local_info _Info{};
             _Info.first = _Get_info(_Local.time_since_epoch());
 
-            const sys_seconds _Local_sys{duration_cast<sys_seconds::duration>(_Local.time_since_epoch())};
+            const sys_seconds _Local_sys{_CHRONO duration_cast<sys_seconds::duration>(_Local.time_since_epoch())};
             const auto _Curr_sys = _Local_sys - _Info.first.offset;
             if (_Info.first.begin != _Min_seconds && _Curr_sys < _Info.first.begin + days{1}) {
                 // get previous transition information
@@ -2291,7 +2291,7 @@ namespace chrono {
                 if (_Curr_sys >= _Transition) {
                     if (_Prev_sys < _Transition) {
                         _Info.result = local_info::ambiguous;
-                        std::swap(_Info.first, _Info.second);
+                        _STD swap(_Info.first, _Info.second);
                     } else {
                         _Info.result = local_info::unique;
                         _Info.second = {};
@@ -2299,10 +2299,10 @@ namespace chrono {
                 } else {
                     if (_Prev_sys >= _Transition) {
                         _Info.result = local_info::nonexistent;
-                        std::swap(_Info.first, _Info.second);
+                        _STD swap(_Info.first, _Info.second);
                     } else {
                         _Info.result = local_info::unique;
-                        _Info.first  = std::move(_Info.second);
+                        _Info.first  = _STD move(_Info.second);
                         _Info.second = {};
                     }
                 }
@@ -2324,7 +2324,7 @@ namespace chrono {
                         _Info.result = local_info::nonexistent;
                     } else {
                         _Info.result = local_info::unique;
-                        _Info.first  = std::move(_Info.second);
+                        _Info.first  = _STD move(_Info.second);
                         _Info.second = {};
                     }
                 }
@@ -2339,11 +2339,11 @@ namespace chrono {
 
         template <class _Duration>
         _NODISCARD sys_time<common_type_t<_Duration, seconds>> to_sys(const local_time<_Duration>& _Local) const {
-            auto _Info = get_info(_Local);
+            const auto _Info = get_info(_Local);
             if (_Info.result == local_info::nonexistent) {
-                throw nonexistent_local_time(_Local, _Info);
+                _THROW(nonexistent_local_time(_Local, _Info));
             } else if (_Info.result == local_info::ambiguous) {
-                throw ambiguous_local_time(_Local, _Info);
+                _THROW(ambiguous_local_time(_Local, _Info));
             }
 
             return sys_time<common_type_t<_Duration, seconds>>{_Local.time_since_epoch()} - _Info.first.offset;
@@ -2351,21 +2351,21 @@ namespace chrono {
 
         template <class _Duration>
         _NODISCARD sys_time<common_type_t<_Duration, seconds>> to_sys(
-            const local_time<_Duration>& _Local, choose _Choose) const {
-            auto _Info   = get_info(_Local);
-            auto _Result = sys_time<_Duration>{_Local.time_since_epoch()};
+            const local_time<_Duration>& _Local, const choose _Choose) const {
+            const auto _Info = get_info(_Local);
             if (_Info.result == local_info::nonexistent) {
                 return _Info.first.end;
             }
 
-            auto _Offset = (_Info.result == local_info::unique || _Choose == choose::earliest) ? _Info.first.offset
-                                                                                               : _Info.second.offset;
+            const auto _Offset = (_Info.result == local_info::unique || _Choose == choose::earliest)
+                                   ? _Info.first.offset
+                                   : _Info.second.offset;
             return sys_time<common_type_t<_Duration, seconds>>{_Local.time_since_epoch()} - _Offset;
         }
 
         template <class _Duration>
         _NODISCARD local_time<common_type_t<_Duration, seconds>> to_local(const sys_time<_Duration>& _Sys) const {
-            auto _Info = get_info(_Sys);
+            const auto _Info = get_info(_Sys);
             return local_time<common_type_t<_Duration, seconds>>{(_Sys + _Info.offset).time_since_epoch()};
         }
 
@@ -2376,9 +2376,9 @@ namespace chrono {
     private:
         template <class _Duration>
         _NODISCARD sys_info _Get_info(const _Duration& _Dur) const {
-            using _Internal_duration = duration<__std_tzdb_epoch_milli, std::milli>;
-            auto _Internal_dur       = duration_cast<_Internal_duration>(_Dur);
-            std::unique_ptr<__std_tzdb_sys_info, decltype(&__std_tzdb_delete_sys_info)> _Info(
+            using _Internal_duration = duration<__std_tzdb_epoch_milli, milli>;
+            const auto _Internal_dur = _CHRONO duration_cast<_Internal_duration>(_Dur);
+            const unique_ptr<__std_tzdb_sys_info, decltype(&__std_tzdb_delete_sys_info)> _Info(
                 __std_tzdb_get_sys_info(_Name.c_str(), _Name.length(), _Internal_dur.count()),
                 &__std_tzdb_delete_sys_info);
             if (_Info == nullptr) {
@@ -2389,19 +2389,23 @@ namespace chrono {
                 _Xruntime_error("Internal error loading IANA database information");
             }
 
-            static constexpr auto _Min_internal =
-                duration_cast<_Internal_duration>(_Min_seconds.time_since_epoch()).count();
-            static constexpr auto _Max_internal =
-                duration_cast<_Internal_duration>(_Max_seconds.time_since_epoch()).count();
-            return {.begin = _Info->_Begin <= _Min_internal
-                               ? _Min_seconds
-                               : sys_seconds{duration_cast<sys_seconds::duration>(_Internal_duration{_Info->_Begin})},
-                .end       = _Info->_End >= _Max_internal
-                               ? _Max_seconds
-                               : sys_seconds{duration_cast<sys_seconds::duration>(_Internal_duration{_Info->_End})},
-                .offset    = duration_cast<seconds>(_Internal_duration{_Info->_Offset}),
-                .save      = duration_cast<minutes>(_Internal_duration{_Info->_Save}),
-                .abbrev    = std::string{_Info->_Abbrev}};
+            constexpr auto _Min_internal =
+                _CHRONO duration_cast<_Internal_duration>(_Min_seconds.time_since_epoch()).count();
+            constexpr auto _Max_internal =
+                _CHRONO duration_cast<_Internal_duration>(_Max_seconds.time_since_epoch()).count();
+            const auto _Begin =
+                _Info->_Begin <= _Min_internal
+                    ? _Min_seconds
+                    : sys_seconds{_CHRONO duration_cast<sys_seconds::duration>(_Internal_duration{_Info->_Begin})};
+            const auto _End =
+                _Info->_End >= _Max_internal
+                    ? _Max_seconds
+                    : sys_seconds{_CHRONO duration_cast<sys_seconds::duration>(_Internal_duration{_Info->_End})};
+            return {.begin = _Begin,
+                .end       = _End,
+                .offset    = _CHRONO duration_cast<seconds>(_Internal_duration{_Info->_Offset}),
+                .save      = _CHRONO duration_cast<minutes>(_Internal_duration{_Info->_Save}),
+                .abbrev    = _Info->_Abbrev};
         }
 
         string _Name;
