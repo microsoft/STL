@@ -23,16 +23,16 @@ concept CanViewJoin = requires(Rng&& r) {
 
 template <ranges::input_range Outer, ranges::random_access_range Expected>
 constexpr bool test_one(Outer&& rng, Expected&& expected) {
-    using ranges::begin, ranges::bidirectional_range, ranges::common_range, ranges::enable_borrowed_range, ranges::end,
-        ranges::forward_range, ranges::input_range, ranges::iterator_t, ranges::join_view, ranges::random_access_range,
-        ranges::range_value_t, ranges::range_reference_t;
+    using ranges::join_view, ranges::begin, ranges::end, ranges::next, ranges::prev, ranges::input_range,
+        ranges::forward_range, ranges::bidirectional_range, ranges::common_range, ranges::borrowed_range,
+        ranges::iterator_t, ranges::range_value_t, ranges::range_reference_t;
 
     using Inner                     = range_value_t<Outer>;
     constexpr bool deref_is_glvalue = is_reference_v<range_reference_t<Outer>>;
 
     // clang-format off
     constexpr bool can_test = ranges::viewable_range<Outer>
-        && ranges::input_range<range_reference_t<Outer>>
+        && input_range<range_reference_t<Outer>>
         && (deref_is_glvalue || ranges::view<Inner>);
     // clang-format on
 
@@ -41,8 +41,10 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
         using R = join_view<V>;
         static_assert(ranges::view<R>);
         static_assert(input_range<R> == input_range<Inner>);
-        static_assert(forward_range<R> == (forward_range<Outer> && forward_range<Inner>) );
-        static_assert(bidirectional_range<R> == (bidirectional_range<Outer> && bidirectional_range<Inner>) );
+        static_assert(forward_range<R> == (deref_is_glvalue && forward_range<Outer> && forward_range<Inner>) );
+        static_assert(
+            bidirectional_range<
+                R> == (deref_is_glvalue && bidirectional_range<Outer> && bidirectional_range<Inner> && common_range<Inner>) );
         static_assert(!ranges::random_access_range<R>);
         static_assert(!ranges::contiguous_range<R>);
 
@@ -83,8 +85,7 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
         }
 
         // ... with rvalue argument
-        static_assert(
-            CanViewJoin<remove_reference_t<Outer>> == is_view || enable_borrowed_range<remove_cvref_t<Outer>>);
+        static_assert(CanViewJoin<remove_reference_t<Outer>> == (is_view || borrowed_range<remove_cvref_t<Outer>>) );
         if constexpr (is_view) {
             constexpr bool is_noexcept = is_nothrow_move_constructible_v<V>;
             static_assert(same_as<decltype(views::join(move(rng))), R>);
@@ -92,7 +93,7 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
 
             static_assert(same_as<decltype(move(rng) | views::join), R>);
             static_assert(noexcept(move(rng) | views::join) == is_noexcept);
-        } else if constexpr (enable_borrowed_range<Outer>) {
+        } else if constexpr (borrowed_range<remove_cvref_t<Outer>>) {
             using S                    = decltype(ranges::subrange{move(rng)});
             using RS                   = join_view<S>;
             constexpr bool is_noexcept = noexcept(S{move(rng)});
@@ -106,7 +107,7 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
 
         // ... with const rvalue argument
         static_assert(CanViewJoin<const remove_reference_t<Outer>> == (is_view && copyable<V>)
-                      || (!is_view && enable_borrowed_range<remove_cvref_t<Outer>>) );
+                      || (!is_view && borrowed_range<remove_cvref_t<Outer>>) );
         if constexpr (is_view && copyable<V>) {
             constexpr bool is_noexcept = is_nothrow_copy_constructible_v<V>;
 
@@ -115,7 +116,7 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
 
             static_assert(same_as<decltype(move(as_const(rng)) | views::join), R>);
             static_assert(noexcept(move(as_const(rng)) | views::join) == is_noexcept);
-        } else if constexpr (!is_view && enable_borrowed_range<const remove_cvref_t<Outer>>) {
+        } else if constexpr (!is_view && borrowed_range<const remove_cvref_t<Outer>>) {
             using S                    = decltype(ranges::subrange{as_const(rng)});
             using RS                   = join_view<S>;
             constexpr bool is_noexcept = noexcept(S{as_const(rng)});
@@ -202,23 +203,21 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
             const ranges::sentinel_t<R> s = r.end();
             if constexpr (bidirectional_range<R> && common_range<R>) {
                 assert(*prev(s) == *prev(end(expected)));
-            }
 
-            if constexpr (bidirectional_range<R> && common_range<V> && copyable<V>) {
-                auto r2 = r;
-                assert(*prev(r2.end()) == *prev(end(expected)));
+                if constexpr (copyable<V>) {
+                    auto r2 = r;
+                    assert(*prev(r2.end()) == *prev(end(expected)));
+                }
             }
 
             if constexpr (CanMemberEnd<const R>) {
                 const ranges::sentinel_t<const R> cs = as_const(r).end();
-                if constexpr (bidirectional_range<R>) {
+                if constexpr (bidirectional_range<R> && common_range<R>) {
                     assert(*prev(cs) == *prev(end(expected)));
-                }
 
-                if constexpr (copyable<V>) {
-                    const auto r2                   = r;
-                    const ranges::sentinel_t<R> cs2 = r2.end();
-                    if constexpr (bidirectional_range<R>) {
+                    if constexpr (copyable<V>) {
+                        const auto r2                   = r;
+                        const ranges::sentinel_t<R> cs2 = r2.end();
                         assert(*prev(cs2) == *prev(end(expected)));
                     }
                 }
@@ -271,15 +270,15 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
                     ++bi1;
                 }
                 auto&& inner_first = *bi1;
-                assert(*ranges::begin(inner_first) == *begin(expected));
+                assert(*begin(inner_first) == *begin(expected));
 
-                if constexpr (bidirectional_range<V> && common_range<V>) {
+                if constexpr (bidirectional_range<R> && common_range<R>) {
                     auto ei1 = prev(b1.end());
                     while (ranges::empty(*ei1)) {
                         --ei1;
                     }
                     auto&& inner_last = *ei1;
-                    assert(*prev(ranges::end(inner_last)) == *prev(end(expected)));
+                    assert(*prev(end(inner_last)) == *prev(end(expected)));
                 }
             }
         }
@@ -295,76 +294,21 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
                         ++bi2;
                     }
                     auto&& inner_first = *bi2;
-                    assert(*ranges::begin(inner_first) == *begin(expected));
+                    assert(*begin(inner_first) == *begin(expected));
 
-                    if constexpr (bidirectional_range<V> && common_range<V>) {
+                    if constexpr (bidirectional_range<R> && common_range<R>) {
                         auto ei2 = prev(b2.end());
                         while (ranges::empty(*ei2)) {
                             --ei2;
                         }
                         auto&& inner_last = *ei2;
-                        assert(*prev(ranges::end(inner_last)) == *prev(end(expected)));
+                        assert(*prev(end(inner_last)) == *prev(end(expected)));
                     }
                 }
             }
         }
     }
     return true;
-}
-
-template <class Continuation>
-struct with_dependent_input_ranges {
-    template <class Inner>
-    static constexpr void call() {
-        using namespace test;
-        using test::range;
-
-        // For all ranges, IsCommon implies Eq.
-        // For single-pass ranges, Eq is uninteresting without IsCommon (there's only one valid iterator
-        // value at a time, and no reason to compare it with itself for equality).
-        Continuation::template call<Inner,
-            range<input, Inner, Sized::no, CanDifference::no, Common::no, CanCompare::no, ProxyRef::no>>();
-        Continuation::template call<Inner,
-            range<input, Inner, Sized::no, CanDifference::no, Common::no, CanCompare::no, ProxyRef::yes>>();
-        Continuation::template call<Inner,
-            range<input, Inner, Sized::no, CanDifference::no, Common::yes, CanCompare::yes, ProxyRef::no>>();
-        Continuation::template call<Inner,
-            range<input, Inner, Sized::no, CanDifference::no, Common::yes, CanCompare::yes, ProxyRef::yes>>();
-
-        Continuation::template call<Inner,
-            range<input, Inner, Sized::no, CanDifference::yes, Common::no, CanCompare::no, ProxyRef::no>>();
-        Continuation::template call<Inner,
-            range<input, Inner, Sized::no, CanDifference::yes, Common::no, CanCompare::no, ProxyRef::yes>>();
-        Continuation::template call<Inner,
-            range<input, Inner, Sized::no, CanDifference::yes, Common::yes, CanCompare::yes, ProxyRef::no>>();
-        Continuation::template call<Inner,
-            range<input, Inner, Sized::no, CanDifference::yes, Common::yes, CanCompare::yes, ProxyRef::yes>>();
-
-        Continuation::template call<Inner,
-            range<input, Inner, Sized::yes, CanDifference::no, Common::no, CanCompare::no, ProxyRef::no>>();
-        Continuation::template call<Inner,
-            range<input, Inner, Sized::yes, CanDifference::no, Common::no, CanCompare::no, ProxyRef::yes>>();
-        Continuation::template call<Inner,
-            range<input, Inner, Sized::yes, CanDifference::no, Common::yes, CanCompare::yes, ProxyRef::no>>();
-        Continuation::template call<Inner,
-            range<input, Inner, Sized::yes, CanDifference::no, Common::yes, CanCompare::yes, ProxyRef::yes>>();
-
-        Continuation::template call<Inner,
-            range<input, Inner, Sized::yes, CanDifference::yes, Common::no, CanCompare::no, ProxyRef::no>>();
-        Continuation::template call<Inner,
-            range<input, Inner, Sized::yes, CanDifference::yes, Common::no, CanCompare::no, ProxyRef::yes>>();
-        Continuation::template call<Inner,
-            range<input, Inner, Sized::yes, CanDifference::yes, Common::yes, CanCompare::yes, ProxyRef::no>>();
-        Continuation::template call<Inner,
-            range<input, Inner, Sized::yes, CanDifference::yes, Common::yes, CanCompare::yes, ProxyRef::yes>>();
-
-        with_forward_ranges<Continuation, Inner>::template call<Inner>();
-    }
-};
-
-template <class Instantiator, class Element>
-constexpr void test_nested_inout() {
-    with_input_or_output_ranges<with_dependent_input_ranges<Instantiator>, Element>::call();
 }
 
 constexpr int expected_ints[]         = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
@@ -385,6 +329,111 @@ struct instantiator {
         test_one(Outer{inner_ranges}, expected_ints);
     }
 };
+
+enum class RefOrView { reference, view };
+
+template <class Category, test::CanView IsView, test::Common IsCommon,
+    bool is_random = derived_from<Category, random_access_iterator_tag>>
+using inner_test_range = test::range<Category, const int, test::Sized{is_random}, test::CanDifference{is_random},
+    IsCommon, test::CanCompare{derived_from<Category, forward_iterator_tag> || IsCommon == test::Common::yes},
+    test::ProxyRef::no, IsView, test::Copyability::copyable>;
+
+template <class Category, class Element, RefOrView RV, test::Common IsCommon,
+    bool is_random = derived_from<Category, random_access_iterator_tag>>
+using outer_test_range = test::range<Category, Element, test::Sized{is_random}, test::CanDifference{is_random},
+    IsCommon, test::CanCompare{derived_from<Category, forward_iterator_tag> || IsCommon == test::Common::yes},
+    (RV == RefOrView::view ? test::ProxyRef::prvalue : test::ProxyRef::no), test::CanView::yes,
+    test::Copyability::copyable>;
+
+constexpr bool instantiation_test() {
+    // The adaptor is sensitive to:
+    // * inner and outer range common category (input, forward, bidi)
+    // * outer range's reference type referenceness vs. value type viewness
+    // * if the inner range models common_range
+    // * if the outer range models common_range
+    // * if both inner and outer iterators are equality_comparable (the defaults for input-non-common and forward
+    // suffice to get coverage here)
+    // * if the inner range has -> (Ditto defaults)
+    using test::CanView, test::Common;
+
+    instantiator::call<inner_test_range<input_iterator_tag, CanView::no, Common::no>,
+        outer_test_range<input_iterator_tag, inner_test_range<input_iterator_tag, CanView::no, Common::no>,
+            RefOrView::reference, Common::no>>();
+    instantiator::call<inner_test_range<input_iterator_tag, CanView::no, Common::no>,
+        outer_test_range<input_iterator_tag, inner_test_range<input_iterator_tag, CanView::no, Common::no>,
+            RefOrView::reference, Common::yes>>();
+    instantiator::call<inner_test_range<input_iterator_tag, CanView::no, Common::yes>,
+        outer_test_range<input_iterator_tag, inner_test_range<input_iterator_tag, CanView::no, Common::yes>,
+            RefOrView::reference, Common::no>>();
+    instantiator::call<inner_test_range<input_iterator_tag, CanView::no, Common::yes>,
+        outer_test_range<input_iterator_tag, inner_test_range<input_iterator_tag, CanView::no, Common::yes>,
+            RefOrView::reference, Common::yes>>();
+    instantiator::call<inner_test_range<input_iterator_tag, CanView::yes, Common::no>,
+        outer_test_range<input_iterator_tag, inner_test_range<input_iterator_tag, CanView::yes, Common::no>,
+            RefOrView::view, Common::no>>();
+    instantiator::call<inner_test_range<input_iterator_tag, CanView::yes, Common::no>,
+        outer_test_range<input_iterator_tag, inner_test_range<input_iterator_tag, CanView::yes, Common::no>,
+            RefOrView::view, Common::yes>>();
+    instantiator::call<inner_test_range<input_iterator_tag, CanView::yes, Common::yes>,
+        outer_test_range<input_iterator_tag, inner_test_range<input_iterator_tag, CanView::yes, Common::yes>,
+            RefOrView::view, Common::no>>();
+    instantiator::call<inner_test_range<input_iterator_tag, CanView::yes, Common::yes>,
+        outer_test_range<input_iterator_tag, inner_test_range<input_iterator_tag, CanView::yes, Common::yes>,
+            RefOrView::view, Common::yes>>();
+    instantiator::call<inner_test_range<forward_iterator_tag, CanView::no, Common::no>,
+        outer_test_range<forward_iterator_tag, inner_test_range<forward_iterator_tag, CanView::no, Common::no>,
+            RefOrView::reference, Common::no>>();
+    instantiator::call<inner_test_range<forward_iterator_tag, CanView::no, Common::no>,
+        outer_test_range<forward_iterator_tag, inner_test_range<forward_iterator_tag, CanView::no, Common::no>,
+            RefOrView::reference, Common::yes>>();
+    instantiator::call<inner_test_range<forward_iterator_tag, CanView::no, Common::yes>,
+        outer_test_range<forward_iterator_tag, inner_test_range<forward_iterator_tag, CanView::no, Common::yes>,
+            RefOrView::reference, Common::no>>();
+    instantiator::call<inner_test_range<forward_iterator_tag, CanView::no, Common::yes>,
+        outer_test_range<forward_iterator_tag, inner_test_range<forward_iterator_tag, CanView::no, Common::yes>,
+            RefOrView::reference, Common::yes>>();
+    instantiator::call<inner_test_range<forward_iterator_tag, CanView::yes, Common::no>,
+        outer_test_range<forward_iterator_tag, inner_test_range<forward_iterator_tag, CanView::yes, Common::no>,
+            RefOrView::view, Common::no>>();
+    instantiator::call<inner_test_range<forward_iterator_tag, CanView::yes, Common::no>,
+        outer_test_range<forward_iterator_tag, inner_test_range<forward_iterator_tag, CanView::yes, Common::no>,
+            RefOrView::view, Common::yes>>();
+    instantiator::call<inner_test_range<forward_iterator_tag, CanView::yes, Common::yes>,
+        outer_test_range<forward_iterator_tag, inner_test_range<forward_iterator_tag, CanView::yes, Common::yes>,
+            RefOrView::view, Common::no>>();
+    instantiator::call<inner_test_range<forward_iterator_tag, CanView::yes, Common::yes>,
+        outer_test_range<forward_iterator_tag, inner_test_range<forward_iterator_tag, CanView::yes, Common::yes>,
+            RefOrView::view, Common::yes>>();
+    instantiator::call<inner_test_range<bidirectional_iterator_tag, CanView::no, Common::no>,
+        outer_test_range<bidirectional_iterator_tag,
+            inner_test_range<bidirectional_iterator_tag, CanView::no, Common::no>, RefOrView::reference, Common::no>>();
+    instantiator::call<inner_test_range<bidirectional_iterator_tag, CanView::no, Common::no>,
+        outer_test_range<bidirectional_iterator_tag,
+            inner_test_range<bidirectional_iterator_tag, CanView::no, Common::no>, RefOrView::reference,
+            Common::yes>>();
+    instantiator::call<inner_test_range<bidirectional_iterator_tag, CanView::no, Common::yes>,
+        outer_test_range<bidirectional_iterator_tag,
+            inner_test_range<bidirectional_iterator_tag, CanView::no, Common::yes>, RefOrView::reference,
+            Common::no>>();
+    instantiator::call<inner_test_range<bidirectional_iterator_tag, CanView::no, Common::yes>,
+        outer_test_range<bidirectional_iterator_tag,
+            inner_test_range<bidirectional_iterator_tag, CanView::no, Common::yes>, RefOrView::reference,
+            Common::yes>>();
+    instantiator::call<inner_test_range<bidirectional_iterator_tag, CanView::yes, Common::no>,
+        outer_test_range<bidirectional_iterator_tag,
+            inner_test_range<bidirectional_iterator_tag, CanView::yes, Common::no>, RefOrView::view, Common::no>>();
+    instantiator::call<inner_test_range<bidirectional_iterator_tag, CanView::yes, Common::no>,
+        outer_test_range<bidirectional_iterator_tag,
+            inner_test_range<bidirectional_iterator_tag, CanView::yes, Common::no>, RefOrView::view, Common::yes>>();
+    instantiator::call<inner_test_range<bidirectional_iterator_tag, CanView::yes, Common::yes>,
+        outer_test_range<bidirectional_iterator_tag,
+            inner_test_range<bidirectional_iterator_tag, CanView::yes, Common::yes>, RefOrView::view, Common::no>>();
+    instantiator::call<inner_test_range<bidirectional_iterator_tag, CanView::yes, Common::yes>,
+        outer_test_range<bidirectional_iterator_tag,
+            inner_test_range<bidirectional_iterator_tag, CanView::yes, Common::yes>, RefOrView::view, Common::yes>>();
+
+    return true;
+}
 
 using mo_inner = test::range<input_iterator_tag, const int, test::Sized::no, test::CanDifference::no, test::Common::no,
     test::CanCompare::no, test::ProxyRef::yes, test::CanView::yes, test::Copyability::copyable>;
@@ -448,9 +497,8 @@ int main() {
         test_one(lst, expected);
     }
 
-#if defined(__clang__) || defined(__EDG__) // FIXME: C1060 "out of heap space"
-    // Get full instantiation coverage
-    static_assert((test_nested_inout<instantiator, const int>(), true));
-    test_nested_inout<instantiator, const int>();
-#endif // FIXME
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, Unfiled MSVC bug
+    STATIC_ASSERT(instantiation_test());
+#endif // TRANSITION, Unfiled MSVC bug
+    instantiation_test();
 }
