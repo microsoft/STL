@@ -80,6 +80,7 @@ concept _Parse_spec_callbacks = requires(_Ty _At, basic_string_view<_CharT> _Sv,
     { _At._On_sign(_Sgn) } -> same_as<void>;
     { _At._On_hash() } -> same_as<void>;
     { _At._On_zero() } -> same_as<void>;
+    { _At._On_localized() } -> same_as<void>;
     { _At._On_type(_CharT{}) } -> same_as<void>;
 };
 template <class _Ty, class _CharT>
@@ -541,10 +542,20 @@ constexpr const _CharT* _Parse_format_specs(const _CharT* _Begin, const _CharT* 
 
     if (*_Begin == '.') {
         _Begin = _Parse_precision(_Begin, _End, _Callbacks);
+        if (++_Begin == _End) {
+            return _Begin;
+        }
+    }
+
+    if (*_Begin == 'L') {
+        _Callbacks._On_localized();
+        if (++_Begin == _End) {
+            return _Begin;
+        }
     }
 
     // If there's anything remaining we assume it's a type.
-    if (_Begin != _End && *_Begin != '}') {
+    if (*_Begin != '}') {
         _Callbacks._On_type(*_Begin++);
     }
     return _Begin;
@@ -676,6 +687,10 @@ public:
 
     constexpr void _On_precision(int _Precision) {
         _Specs._Precision = _Precision;
+    }
+
+    constexpr void _On_localized() {
+        _Specs._Localized = true;
     }
 
     constexpr void _On_type(_CharT _Type) {
