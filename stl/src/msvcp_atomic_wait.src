@@ -23,7 +23,6 @@ EXPORTS
     __std_calloc_crt
     __std_close_threadpool_work
     __std_create_threadpool_work
-    __std_tzdb_delete_reg_leap_seconds
     __std_execution_wait_on_uchar
     __std_execution_wake_by_address_all
     __std_free_crt
@@ -31,8 +30,11 @@ EXPORTS
     __std_release_shared_mutex_for_instance
     __std_submit_threadpool_work
     __std_tzdb_delete_current_zone
+    __std_tzdb_delete_reg_leap_seconds
+    __std_tzdb_delete_sys_info
     __std_tzdb_delete_time_zones
     __std_tzdb_get_current_zone
     __std_tzdb_get_reg_leap_seconds
+    __std_tzdb_get_sys_info
     __std_tzdb_get_time_zones
     __std_wait_for_threadpool_work_callbacks
