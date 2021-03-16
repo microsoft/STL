@@ -2346,7 +2346,7 @@ namespace chrono {
                 _THROW(ambiguous_local_time(_Local, _Info));
             }
 
-            return sys_time<common_type_t<_Duration, seconds>>{_Local.time_since_epoch()} - _Info.first.offset;
+            return sys_time<common_type_t<_Duration, seconds>>{_Local.time_since_epoch() - _Info.first.offset};
         }
 
         template <class _Duration>
@@ -2360,27 +2360,26 @@ namespace chrono {
             const auto _Offset = (_Info.result == local_info::unique || _Choose == choose::earliest)
                                    ? _Info.first.offset
                                    : _Info.second.offset;
-            return sys_time<common_type_t<_Duration, seconds>>{_Local.time_since_epoch()} - _Offset;
+            return sys_time<common_type_t<_Duration, seconds>>{_Local.time_since_epoch() - _Offset};
         }
 
         template <class _Duration>
         _NODISCARD local_time<common_type_t<_Duration, seconds>> to_local(const sys_time<_Duration>& _Sys) const {
             const auto _Info = get_info(_Sys);
-            return local_time<common_type_t<_Duration, seconds>>{(_Sys + _Info.offset).time_since_epoch()};
+            return local_time<common_type_t<_Duration, seconds>>{_Sys.time_since_epoch() + _Info.offset};
         }
 
-        // FIXME: year::max() + year::min()
-        static constexpr sys_seconds _Min_seconds{sys_days{year{-32767} / January / 1}};
-        static constexpr sys_seconds _Max_seconds{sys_days{year{32767} / December / 31}};
+        static constexpr sys_seconds _Min_seconds{sys_days{(year::min)() / January / 1}};
+        static constexpr sys_seconds _Max_seconds{sys_seconds{sys_days{(year::max)() / December / 32}} - seconds{1}};
 
     private:
         template <class _Duration>
         _NODISCARD sys_info _Get_info(const _Duration& _Dur) const {
             using _Internal_duration = duration<__std_tzdb_epoch_milli, milli>;
             const auto _Internal_dur = _CHRONO duration_cast<_Internal_duration>(_Dur);
-            const unique_ptr<__std_tzdb_sys_info, decltype(&__std_tzdb_delete_sys_info)> _Info(
+            const unique_ptr<__std_tzdb_sys_info, decltype(&__std_tzdb_delete_sys_info)> _Info{
                 __std_tzdb_get_sys_info(_Name.c_str(), _Name.length(), _Internal_dur.count()),
-                &__std_tzdb_delete_sys_info);
+                &__std_tzdb_delete_sys_info};
             if (_Info == nullptr) {
                 _Xbad_alloc();
             } else if (_Info->_Err == __std_tzdb_error::_Win_error) {

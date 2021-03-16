@@ -463,7 +463,7 @@ void __stdcall __std_tzdb_delete_current_zone(__std_tzdb_current_zone_info* cons
 _NODISCARD __std_tzdb_sys_info* __stdcall __std_tzdb_get_sys_info(
     const char* _Tz, const size_t _Tz_len, __std_tzdb_epoch_milli _Sys) noexcept {
     // On exit---
-    //    _Info == nullptr          --> bad_alloc()
+    //    _Info == nullptr          --> bad_alloc
     //    _Info->_Err == _Win_error --> failed, call GetLastError()
     //    _Info->_Err == _Icu_error --> runtime_error interacting with ICU
     _STD unique_ptr<__std_tzdb_sys_info, decltype(&__std_tzdb_delete_sys_info)> _Info{

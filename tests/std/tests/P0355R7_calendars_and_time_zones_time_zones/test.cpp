@@ -26,20 +26,20 @@ constexpr bool sys_equal(const sys_info& left, const sys_info& right) {
 }
 
 void test_time_zone_and_link(const tzdb& my_tzdb, string_view tz_name, string_view tz_link_name) {
-    const auto orginal_tz = my_tzdb.locate_zone(tz_name);
-    assert(orginal_tz != nullptr);
-    assert(orginal_tz->name() == tz_name);
+    const auto original_tz = my_tzdb.locate_zone(tz_name);
+    assert(original_tz != nullptr);
+    assert(original_tz->name() == tz_name);
 
     const auto linked_tz = my_tzdb.locate_zone(tz_link_name);
     assert(linked_tz != nullptr);
     assert(linked_tz->name() == tz_name);
-    assert(orginal_tz == linked_tz);
+    assert(original_tz == linked_tz);
 
     const auto tz_link = _Locate_zone_impl(my_tzdb.links, tz_link_name);
     assert(tz_link != nullptr);
     assert(tz_link->name() == tz_link_name);
     assert(tz_link->target() == tz_name);
-    assert(my_tzdb.locate_zone(tz_link->target()) == orginal_tz);
+    assert(my_tzdb.locate_zone(tz_link->target()) == original_tz);
 
     assert(_Locate_zone_impl(my_tzdb.zones, tz_name) != nullptr);
     assert(_Locate_zone_impl(my_tzdb.zones, tz_link_name) == nullptr);
@@ -247,7 +247,6 @@ void validate_get_local_info(const time_zone* tz, const pair<Transition, Transit
     // Get the local time for the beginning of the ambiguous/nonexistent section
     const auto danger_begin = get_danger_begin(transition.first, transition.second);
     const auto danger_end   = get_danger_end(transition.first, transition.second);
-    (void) result;
     assert_local(tz, danger_begin - days{2}, local_info::unique, first, default_info); // two days before
     assert_local(tz, danger_begin - hours{1}, local_info::unique, first, default_info); // one hour before
     assert_local(tz, danger_begin, result, first, second); // danger begin
@@ -339,17 +338,14 @@ void timezone_precision_test() {
         validate_precision(tz, Std_to_Day, MilliDur{0.005});
         validate_precision(tz, Std_to_Day, MilliDur{0.0005});
         // precision limit...
-        // validate_precision(tz, Std_to_Day, MilliDur{0.00005});
-        // validate_precision(tz, Std_to_Day, MicroDur{(numeric_limits<double>::min)()});
 
         validate_precision(tz, Std_to_Day, MicroDur{1});
         validate_precision(tz, Std_to_Day, MicroDur{0.5});
         // precision limit...
-        // validate_precision(tz, Std_to_Day, MicroDur{0.05});
-        // validate_precision(tz, Std_to_Day, MicroDur{(numeric_limits<double>::min)()});
 
-        validate_precision(tz, Day_to_Std, MilliDur{0.0005});
+        // validate opposite transition
         validate_precision(tz, Day_to_Std, MicroDur{0.5});
+        validate_precision(tz, Day_to_Std, MilliDur{0.0005});
     }
     {
         using namespace LA;
@@ -361,17 +357,14 @@ void timezone_precision_test() {
         validate_precision(tz, Std_to_Day, MilliDur{0.005});
         validate_precision(tz, Std_to_Day, MilliDur{0.0005});
         // precision limit...
-        // validate_precision(tz, Std_to_Day, MilliDur{0.00005});
-        // validate_precision(tz, Std_to_Day, MicroDur{(numeric_limits<double>::min)()});
 
         validate_precision(tz, Std_to_Day, MicroDur{1});
         validate_precision(tz, Std_to_Day, MicroDur{0.5});
         // precision limit...
-        // validate_precision(tz, Std_to_Day, MicroDur{0.05});
-        // validate_precision(tz, Std_to_Day, MicroDur{(numeric_limits<double>::min)()});
 
-        validate_precision(tz, Day_to_Std, MilliDur{0.0005});
+        // validate opposite transition
         validate_precision(tz, Day_to_Std, MicroDur{0.5});
+        validate_precision(tz, Day_to_Std, MilliDur{0.0005});
     }
 }
 
