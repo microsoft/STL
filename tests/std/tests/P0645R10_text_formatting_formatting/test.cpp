@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <format>
 #include <iterator>
+#include <limits>
 #include <locale>
 #include <string>
 #include <string_view>
@@ -39,6 +40,15 @@ auto make_testing_format_args(Args&&... vals) {
         return make_wformat_args(forward<Args>(vals)...);
     } else {
         return make_format_args(forward<Args>(vals)...);
+    }
+}
+
+template <class charT, class... Args>
+void throw_helper(const charT* fmt, const Args&... vals) {
+    try {
+        format(fmt, vals...);
+        assert(false);
+    } catch (const format_error&) {
     }
 }
 
@@ -340,8 +350,398 @@ void test_multiple_replacement_fields() {
     assert(output_string == STR("f f"));
 }
 
-int main() {
+template <class charT>
+void test_fill_and_align() {
+    auto writer = [](auto out) {
+        out++ = 'A';
+        out++ = 'B';
+        return out;
+    };
 
+    _Basic_format_specs<charT> specs;
+
+    auto tester = [&] {
+        basic_string<charT> output_string;
+        _Write_aligned(back_inserter(output_string), 2, specs, _Align::_Left, writer);
+        return output_string;
+    };
+
+    assert(tester() == STR("AB"));
+
+    specs._Width = 1;
+    assert(tester() == STR("AB"));
+
+
+    specs._Width     = 5;
+    specs._Alignment = _Align::_Left;
+    assert(tester() == STR("AB   "));
+
+    specs._Alignment = _Align::_Right;
+    assert(tester() == STR("   AB"));
+
+    specs._Alignment = _Align::_Center;
+    assert(tester() == STR(" AB  "));
+
+
+    specs._Alignment = _Align::_Left;
+    specs._Fill[0]   = {'*'};
+    assert(tester() == STR("AB***"));
+
+    specs._Alignment = _Align::_Right;
+    assert(tester() == STR("***AB"));
+
+    specs._Alignment = _Align::_Center;
+    assert(tester() == STR("*AB**"));
+}
+
+template <class charT, class integral>
+void test_intergal_specs() {
+    assert(format(STR("{:}"), integral{0}) == STR("0"));
+
+    // Sign
+    assert(format(STR("{: }"), integral{0}) == STR(" 0"));
+    assert(format(STR("{:+}"), integral{0}) == STR("+0"));
+    assert(format(STR("{:-}"), integral{0}) == STR("0"));
+
+    if constexpr (is_signed_v<integral>) {
+        assert(format(STR("{: }"), integral{-1}) == STR("-1"));
+        assert(format(STR("{:+}"), integral{-1}) == STR("-1"));
+        assert(format(STR("{:-}"), integral{-1}) == STR("-1"));
+    }
+
+    assert(format(STR("{: 3}"), integral{1}) == STR("  1"));
+    assert(format(STR("{:+3}"), integral{1}) == STR(" +1"));
+    assert(format(STR("{:-3}"), integral{1}) == STR("  1"));
+
+    // Alternate form
+    assert(format(STR("{:#}"), integral{0}) == STR("0"));
+    assert(format(STR("{:#d}"), integral{0}) == STR("0"));
+    assert(format(STR("{:#c}"), integral{'a'}) == STR("a"));
+
+    assert(format(STR("{:#b}"), integral{0}) == STR("0b0"));
+    assert(format(STR("{:#B}"), integral{0}) == STR("0B0"));
+
+    assert(format(STR("{:#o}"), integral{0}) == STR("0"));
+    assert(format(STR("{:#o}"), integral{1}) == STR("01"));
+
+    assert(format(STR("{:#x}"), integral{0}) == STR("0x0"));
+    assert(format(STR("{:#X}"), integral{0}) == STR("0X0"));
+    assert(format(STR("{:#x}"), integral{255}) == STR("0xff"));
+    assert(format(STR("{:#X}"), integral{255}) == STR("0XFF"));
+
+    assert(format(STR("{:+#6x}"), integral{255}) == STR(" +0xff"));
+
+    if constexpr (is_signed_v<integral>) {
+        assert(format(STR("{:#o}"), integral{-1}) == STR("-01"));
+        assert(format(STR("{:#x}"), integral{-255}) == STR("-0xff"));
+        assert(format(STR("{:#X}"), integral{-255}) == STR("-0XFF"));
+    }
+
+    // Leading zero
+    assert(format(STR("{:0}"), integral{0}) == STR("0"));
+    assert(format(STR("{:03}"), integral{0}) == STR("000"));
+    assert(format(STR("{:+03}"), integral{0}) == STR("+00"));
+    assert(format(STR("{:<03}"), integral{0}) == STR("0  "));
+    assert(format(STR("{:>03}"), integral{0}) == STR("  0"));
+    assert(format(STR("{:+#06X}"), integral{5}) == STR("+0X005"));
+
+    // Width
+    assert(format(STR("{:3}"), integral{0}) == STR("  0"));
+
+    // Precision
+    throw_helper(STR("{:.1}"), integral{0});
+
+    // Type
+    assert(format(STR("{:b}"), integral{0}) == STR("0"));
+    assert(format(STR("{:b}"), integral{100}) == STR("1100100"));
+
+    assert(format(STR("{:d}"), integral{100}) == STR("100"));
+
+    throw_helper(STR("{:c}"), integral{numeric_limits<charT>::max()} + 1);
+    if constexpr (is_signed_v<integral>) {
+        throw_helper(STR("{:c}"), integral{numeric_limits<charT>::min()} - 1);
+    }
+}
+
+template <class charT, class T>
+void test_type(const charT* fmt, T val) {
+    assert(format(fmt, val) == format(fmt, static_cast<int>(val)));
+}
+
+template <class charT>
+void test_bool_specs() {
+    assert(format(STR("{:}"), true) == STR("true"));
+    assert(format(STR("{:}"), false) == STR("false"));
+
+    // Sign
+    throw_helper(STR("{: }"), true);
+    throw_helper(STR("{:+}"), true);
+    throw_helper(STR("{:-}"), true);
+
+    // Alternate form
+    throw_helper(STR("{:#}"), true);
+
+    // Leading zero
+    throw_helper(STR("{:0}"), true);
+
+    // Width
+    assert(format(STR("{:6}"), true) == STR("true  "));
+    assert(format(STR("{:6}"), false) == STR("false "));
+
+    // Precision
+    throw_helper(STR("{:.5}"), true);
+
+    // Type
+    assert(format(STR("{:s}"), true) == STR("true"));
+    throw_helper(STR("{:a}"), true);
+
+    test_type(STR("{:b}"), true);
+    test_type(STR("{:B}"), true);
+    test_type(STR("{:c}"), true);
+    test_type(STR("{:d}"), true);
+    test_type(STR("{:o}"), true);
+    test_type(STR("{:x}"), true);
+    test_type(STR("{:X}"), true);
+
+    test_type(STR("{:b}"), false);
+    test_type(STR("{:B}"), false);
+    test_type(STR("{:c}"), false);
+    test_type(STR("{:d}"), false);
+    test_type(STR("{:o}"), false);
+    test_type(STR("{:x}"), false);
+    test_type(STR("{:X}"), false);
+}
+
+template <class charT>
+void test_char_specs() {
+    assert(format(STR("{:}"), charT{'X'}) == STR("X"));
+
+    // Sign
+    throw_helper(STR("{: }"), charT{'X'});
+    throw_helper(STR("{:+}"), charT{'X'});
+    throw_helper(STR("{:-}"), charT{'X'});
+
+    // Alternate form
+    throw_helper(STR("{:#}"), charT{'X'});
+
+    // Leading zero
+    throw_helper(STR("{:0}"), charT{'X'});
+
+    // Width
+    assert(format(STR("{:3}"), charT{'X'}) == STR("X  "));
+
+    // Precision
+    throw_helper(STR("{:.5}"), charT{'X'});
+
+    // Types
+    assert(format(STR("{:c}"), charT{'X'}) == STR("X"));
+    throw_helper(STR("{:a}"), charT{'X'});
+
+    test_type(STR("{:b}"), charT{'X'});
+    test_type(STR("{:B}"), charT{'X'});
+    test_type(STR("{:c}"), charT{'X'});
+    test_type(STR("{:d}"), charT{'X'});
+    test_type(STR("{:o}"), charT{'X'});
+    test_type(STR("{:x}"), charT{'X'});
+    test_type(STR("{:X}"), charT{'X'});
+
+    test_type(STR("{:+d}"), charT{'X'});
+}
+
+template <class charT, class Float>
+void test_float_specs() {
+    const Float inf = numeric_limits<Float>::infinity();
+    const Float nan = numeric_limits<Float>::quiet_NaN();
+
+    assert(format(STR("{:}"), Float{0}) == STR("0"));
+    assert(format(STR("{:}"), inf) == STR("inf"));
+    assert(format(STR("{:}"), nan) == STR("nan"));
+
+    // Sign
+    assert(format(STR("{: }"), Float{0}) == STR(" 0"));
+    assert(format(STR("{:+}"), Float{0}) == STR("+0"));
+    assert(format(STR("{:-}"), Float{0}) == STR("0"));
+
+    assert(format(STR("{: }"), Float{-1}) == STR("-1"));
+    assert(format(STR("{:+}"), Float{-1}) == STR("-1"));
+    assert(format(STR("{:-}"), Float{-1}) == STR("-1"));
+
+    assert(format(STR("{: 3}"), Float{1}) == STR("  1"));
+    assert(format(STR("{:+3}"), Float{1}) == STR(" +1"));
+    assert(format(STR("{:-3}"), Float{1}) == STR("  1"));
+
+    assert(format(STR("{: }"), inf) == STR(" inf"));
+    assert(format(STR("{:+}"), inf) == STR("+inf"));
+    assert(format(STR("{:-}"), inf) == STR("inf"));
+
+    assert(format(STR("{: }"), -inf) == STR("-inf"));
+    assert(format(STR("{:+}"), -inf) == STR("-inf"));
+    assert(format(STR("{:-}"), -inf) == STR("-inf"));
+
+    assert(format(STR("{: }"), nan) == STR(" nan"));
+    assert(format(STR("{:+}"), nan) == STR("+nan"));
+    assert(format(STR("{:-}"), nan) == STR("nan"));
+
+    // Alternate form
+    assert(format(STR("{:#}"), Float{0}) == STR("0."));
+    assert(format(STR("{:#a}"), Float{0}) == STR("0.p+0"));
+    assert(format(STR("{:#A}"), Float{0}) == STR("0.P+0"));
+    assert(format(STR("{:#.0e}"), Float{0}) == STR("0.e+00"));
+    assert(format(STR("{:#.0E}"), Float{0}) == STR("0.E+00"));
+    assert(format(STR("{:#.0f}"), Float{0}) == STR("0."));
+    assert(format(STR("{:#.0F}"), Float{0}) == STR("0."));
+    assert(format(STR("{:#g}"), Float{0}) == STR("0.00000"));
+    assert(format(STR("{:#G}"), Float{0}) == STR("0.00000"));
+    assert(format(STR("{:#g}"), Float{1.2}) == STR("1.20000"));
+    assert(format(STR("{:#G}"), Float{1.2}) == STR("1.20000"));
+    assert(format(STR("{:#g}"), Float{1'000'000}) == STR("1.00000e+06"));
+    assert(format(STR("{:#g}"), Float{12.2}) == STR("12.2000"));
+    assert(format(STR("{:#.0g}"), Float{0}) == STR("0."));
+    assert(format(STR("{:#.0G}"), Float{0}) == STR("0."));
+
+    assert(format(STR("{:#} {:#}"), inf, nan) == STR("inf nan"));
+    assert(format(STR("{:#a} {:#a}"), inf, nan) == STR("inf nan"));
+    assert(format(STR("{:#A} {:#A}"), inf, nan) == STR("INF NAN"));
+    assert(format(STR("{:#e} {:#e}"), inf, nan) == STR("inf nan"));
+    assert(format(STR("{:#E} {:#E}"), inf, nan) == STR("INF NAN"));
+    assert(format(STR("{:#f} {:#f}"), inf, nan) == STR("inf nan"));
+    assert(format(STR("{:#F} {:#F}"), inf, nan) == STR("inf nan"));
+    assert(format(STR("{:#g} {:#g}"), inf, nan) == STR("inf nan"));
+    assert(format(STR("{:#G} {:#G}"), inf, nan) == STR("INF NAN"));
+
+    // Width
+    assert(format(STR("{:3}"), Float{0}) == STR("  0"));
+    assert(format(STR("{:#9G}"), Float{12.2}) == STR("  12.2000"));
+    assert(format(STR("{:#12g}"), Float{1'000'000}) == STR(" 1.00000e+06"));
+
+    // Precision
+    Float value = 1234.52734375;
+    assert(format(STR("{:.4}"), value) == STR("1235"));
+    assert(format(STR("{:.1}"), inf) == STR("inf"));
+    assert(format(STR("{:.1}"), nan) == STR("nan"));
+
+    assert(format(STR("{:.4a}"), value) == STR("1.34a2p+10"));
+    assert(format(STR("{:.4A}"), value) == STR("1.34A2P+10"));
+
+    assert(format(STR("{:.4e}"), value) == STR("1.2345e+03"));
+    assert(format(STR("{:.4E}"), value) == STR("1.2345E+03"));
+
+    assert(format(STR("{:.4f}"), value) == STR("1234.5273"));
+    assert(format(STR("{:.4F}"), value) == STR("1234.5273"));
+
+    assert(format(STR("{:.4g}"), value) == STR("1235"));
+    assert(format(STR("{:.4G}"), value) == STR("1235"));
+
+    // Leading zero
+    assert(format(STR("{:06}"), Float{0}) == STR("000000"));
+    assert(format(STR("{:06}"), Float{1.2}) == STR("0001.2"));
+    assert(format(STR("{:06}"), nan) == STR("   nan"));
+    assert(format(STR("{:06}"), inf) == STR("   inf"));
+
+    // Type
+    assert(format(STR("{:a}"), value) == STR("1.34a1cp+10"));
+    assert(format(STR("{:A}"), value) == STR("1.34A1CP+10"));
+
+    assert(format(STR("{:e}"), value) == STR("1.234527e+03"));
+    assert(format(STR("{:E}"), value) == STR("1.234527E+03"));
+
+    assert(format(STR("{:f}"), value) == STR("1234.527344"));
+    assert(format(STR("{:F}"), value) == STR("1234.527344"));
+
+    assert(format(STR("{:g}"), value) == STR("1234.53"));
+    assert(format(STR("{:G}"), value) == STR("1234.53"));
+}
+
+template <class charT>
+void test_pointer_specs() {
+    assert(format(STR("{:}"), nullptr) == STR("0x0"));
+
+    // Sign
+    throw_helper(STR("{: }"), nullptr);
+    throw_helper(STR("{:+}"), nullptr);
+    throw_helper(STR("{:-}"), nullptr);
+
+    // Alternate form
+    throw_helper(STR("{:#}"), nullptr);
+
+    // Leading zero
+    throw_helper(STR("{:0}"), nullptr);
+
+    // Width
+    assert(format(STR("{:5}"), nullptr) == STR("0x0  "));
+
+    // Precision
+    throw_helper(STR("{:.5}"), nullptr);
+
+    // Types
+    assert(format(STR("{:p}"), nullptr) == STR("0x0"));
+    throw_helper(STR("{:a}"), nullptr);
+}
+
+template <class charT>
+void test_string_specs() {
+    auto cstr = STR("scully");
+    auto view = basic_string_view{cstr};
+
+    assert(format(STR("{:}"), cstr) == cstr);
+    assert(format(STR("{:}"), view) == cstr);
+
+    // Sign
+    throw_helper(STR("{: }"), cstr);
+    throw_helper(STR("{:+}"), cstr);
+    throw_helper(STR("{:-}"), cstr);
+
+    throw_helper(STR("{: }"), view);
+    throw_helper(STR("{:+}"), view);
+    throw_helper(STR("{:-}"), view);
+
+    // Alternate form
+    throw_helper(STR("{:#}"), cstr);
+    throw_helper(STR("{:#}"), view);
+
+    // Leading zero
+    throw_helper(STR("{:0}"), cstr);
+    throw_helper(STR("{:0}"), view);
+
+    // Width
+    assert(format(STR("{:8}"), cstr) == STR("scully  "));
+    assert(format(STR("{:8}"), view) == STR("scully  "));
+
+    // Precision
+    assert(format(STR("{:.2}"), cstr) == STR("sc"));
+    assert(format(STR("{:5.2}"), cstr) == STR("sc   "));
+    assert(format(STR("{:5.2}"), cstr) == STR("sc   "));
+    assert(format(STR("{:>5.2}"), cstr) == STR("   sc"));
+
+    assert(format(STR("{:.2}"), view) == STR("sc"));
+    assert(format(STR("{:5.2}"), view) == STR("sc   "));
+    assert(format(STR("{:5.2}"), view) == STR("sc   "));
+    assert(format(STR("{:>5.2}"), view) == STR("   sc"));
+
+    // Types
+    assert(format(STR("{:s}"), cstr) == cstr);
+    throw_helper(STR("{:a}"), cstr);
+
+    assert(format(STR("{:s}"), view) == cstr);
+    throw_helper(STR("{:a}"), view);
+}
+
+template <class charT>
+void test_spec_replacement_field() {
+    test_intergal_specs<charT, int>();
+    test_intergal_specs<charT, unsigned int>();
+    test_intergal_specs<charT, long long>();
+    test_intergal_specs<charT, unsigned long long>();
+    test_bool_specs<charT>();
+    test_char_specs<charT>();
+    test_float_specs<charT, float>();
+    test_float_specs<charT, double>();
+    test_float_specs<charT, long double>();
+    test_pointer_specs<charT>();
+    test_string_specs<charT>();
+}
+
+int main() {
     test_simple_formatting<char>();
     test_simple_formatting<wchar_t>();
 
@@ -353,6 +753,12 @@ int main() {
 
     test_multiple_replacement_fields<char>();
     test_multiple_replacement_fields<wchar_t>();
+
+    test_fill_and_align<char>();
+    test_fill_and_align<wchar_t>();
+
+    test_spec_replacement_field<char>();
+    test_spec_replacement_field<wchar_t>();
 
     return 0;
 }
