@@ -436,15 +436,15 @@ int main() {
         test_one(join_me, expected_ints);
     }
     { // ... fwd container
-        forward_list<string_view> lst = {{{}, "Hello "sv, {}, "World!"sv, {}}};
+        forward_list<string_view> lst = {{}, "Hello "sv, {}, "World!"sv, {}};
         test_one(lst, expected);
     }
     { // ... bidi container
-        list<string_view> lst = {{{}, "Hello "sv, {}, "World!"sv, {}}};
+        list<string_view> lst = {{}, "Hello "sv, {}, "World!"sv, {}};
         test_one(lst, expected);
     }
     { // ... random container
-        vector<string_view> lst = {{{}, "Hello "sv, {}, "World!"sv, {}}};
+        vector<string_view> lst = {{}, "Hello "sv, {}, "World!"sv, {}};
         test_one(lst, expected);
     }
 
