@@ -12,6 +12,7 @@
 #include <string_view>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 #include <range_algorithm_support.hpp>
 using namespace std;
@@ -496,6 +497,13 @@ int main() {
     { // ... random container
         vector<string_view> lst = {{}, "Hello "sv, {}, "World!"sv, {}};
         test_one(lst, expected);
+    }
+
+    { // From example in LWG-3474
+        vector<vector<vector<int>>> nested_vectors = {{{1, 2, 3}, {4, 5}, {6}}, {{7}, {8, 9}, {10, 11, 12}}, {{13}}};
+        auto joined                                = nested_vectors | views::join | views::join;
+        static constexpr int result[]              = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13};
+        assert(ranges::equal(joined, result));
     }
 
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-934264
