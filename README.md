@@ -372,7 +372,7 @@ how to modify this file check the [natvis documentation][].
 ### Test Your Changes
 
 You can add the natvis file to any Visual Studio C++ project if you right click your project > Add > Existing Item and
-select the stl.natvis file. After doing this you should be able to see your changes in a Visual Studio debugging
+select the STL.natvis file. After doing this you should be able to see your changes in a Visual Studio debugging
 session.
 
 
