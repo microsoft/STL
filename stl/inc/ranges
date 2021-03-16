@@ -2614,7 +2614,8 @@ namespace ranges {
     class join_view : public _Join_view_base<_Vw> {
         // clang-format on
     private:
-        using _InnerRng = range_reference_t<_Vw>;
+        template <bool _Const>
+        using _InnerRng = range_reference_t<_Maybe_const<_Const, _Vw>>;
         /* [[no_unique_address]] */ _Vw _Range{};
 
         template <bool _Const>
@@ -2646,9 +2647,8 @@ namespace ranges {
 
         template <bool _Const>
         class _Iterator : public _Category_base<iterator_traits<iterator_t<_Maybe_const<_Const, _Vw>>>,
-                              iterator_traits<iterator_t<range_reference_t<_Maybe_const<_Const, _Vw>>>>,
-                              is_reference_v<range_reference_t<_Maybe_const<_Const, _Vw>>>,
-                              common_range<range_reference_t<_Maybe_const<_Const, _Vw>>>> {
+                              iterator_traits<iterator_t<_InnerRng<_Const>>>, is_reference_v<_InnerRng<_Const>>,
+                              common_range<_InnerRng<_Const>>> {
         private:
             template <bool>
             friend class _Iterator;
@@ -2657,18 +2657,17 @@ namespace ranges {
 
             using _Parent_t  = _Maybe_const<_Const, join_view>;
             using _Base      = _Maybe_const<_Const, _Vw>;
-            using _SubRng    = range_reference_t<_Base>;
             using _OuterIter = iterator_t<_Base>;
-            using _InnerIter = iterator_t<_SubRng>;
+            using _InnerIter = iterator_t<_InnerRng<_Const>>;
 
             // True if and only if the expression *i, where i is an iterator from the outer range, is a glvalue:
-            static constexpr bool _Deref_is_glvalue = is_reference_v<_SubRng>;
+            static constexpr bool _Deref_is_glvalue = is_reference_v<_InnerRng<_Const>>;
 
             /* [[no_unique_address]] */ _OuterIter _Outer{};
             /* [[no_unique_address]] */ _InnerIter _Inner{};
             _Parent_t* _Parent{};
 
-            constexpr auto& _Update_inner(_SubRng _Range) {
+            constexpr auto& _Update_inner(_InnerRng<_Const> _Range) {
                 if constexpr (_Deref_is_glvalue) {
                     return _Range;
                 } else {
@@ -2694,14 +2693,14 @@ namespace ranges {
 #if _ITERATOR_DEBUG_LEVEL != 0
             constexpr void _Check_dereference() const noexcept {
                 _STL_VERIFY(_Parent != nullptr, "cannot dereference value-initialized join_view iterator");
-                _STL_VERIFY(_Outer != _RANGES end(_Parent->_Range), "cannot dereference end join_view iterator");
-                sentinel_t<_InnerRng> _Last;
+                _STL_VERIFY(_Outer != _RANGES end(_Parent->_Range), "cannot dereference join_view end iterator");
+                sentinel_t<_InnerRng<false>> _Last;
                 if constexpr (_Deref_is_glvalue) {
                     _Last = _RANGES end(*_Outer);
                 } else {
                     _Last = _RANGES end(_Parent->_Inner);
                 }
-                _STL_VERIFY(_Inner != _Last, "cannot dereference end join_view iterator");
+                _STL_VERIFY(_Inner != _Last, "cannot dereference join_view end iterator");
             }
 
             constexpr void _Same_range(const _Iterator& _Right) const noexcept {
@@ -2712,13 +2711,14 @@ namespace ranges {
         public:
             // clang-format off
              // Per LWG issue unnumbered as of 2021-03-16
-            using iterator_concept = conditional_t<_Deref_is_glvalue && bidirectional_range<_Base>
-                && bidirectional_range<_SubRng> && common_range<_SubRng>, bidirectional_iterator_tag,
-                conditional_t<_Deref_is_glvalue && forward_range<_Base> && forward_range<_SubRng>,
+            using iterator_concept = conditional_t<_Deref_is_glvalue
+                && bidirectional_range<_Base> && bidirectional_range<_InnerRng<_Const>>
+                && common_range<_InnerRng<_Const>>, bidirectional_iterator_tag,
+                conditional_t<_Deref_is_glvalue && forward_range<_Base> && forward_range<_InnerRng<_Const>>,
                     forward_iterator_tag, input_iterator_tag>>;
             // clang-format on
-            using value_type      = range_value_t<_SubRng>;
-            using difference_type = common_type_t<range_difference_t<_Base>, range_difference_t<_SubRng>>;
+            using value_type      = range_value_t<_InnerRng<_Const>>;
+            using difference_type = common_type_t<range_difference_t<_Base>, range_difference_t<_InnerRng<_Const>>>;
 
             _Iterator() = default;
 
@@ -2736,7 +2736,7 @@ namespace ranges {
             // clang-format off
             constexpr _Iterator(_Iterator<!_Const> _It)
                 requires _Const && convertible_to<iterator_t<_Vw>, _OuterIter>
-                      && convertible_to<iterator_t<_InnerRng>, _InnerIter>
+                      && convertible_to<iterator_t<_InnerRng<false>>, _InnerIter>
                 : _Outer{_STD move(_It._Outer)}, _Inner{_STD move(_It._Inner)}, _Parent{_It._Parent} {}
             // clang-format on
 
@@ -2773,7 +2773,7 @@ namespace ranges {
             }
 
             constexpr decltype(auto) operator++(int) {
-                if constexpr (_Deref_is_glvalue && forward_range<_Base> && forward_range<_SubRng>) {
+                if constexpr (_Deref_is_glvalue && forward_range<_Base> && forward_range<_InnerRng<_Const>>) {
                     auto _Tmp = *this;
                     ++*this;
                     return _Tmp;
@@ -2784,8 +2784,8 @@ namespace ranges {
 
             // clang-format off
             constexpr _Iterator& operator--()
-                requires _Deref_is_glvalue && bidirectional_range<_Base> && bidirectional_range<_SubRng>
-                      && common_range<_SubRng> {
+                requires _Deref_is_glvalue && bidirectional_range<_Base> && bidirectional_range<_InnerRng<_Const>>
+                      && common_range<_InnerRng<_Const>> {
                 // clang-format on
                 if (_Outer == _RANGES end(_Parent->_Range)) {
                     --_Outer;
@@ -2801,8 +2801,8 @@ namespace ranges {
 
             // clang-format off
             constexpr _Iterator operator--(int)
-                requires _Deref_is_glvalue && bidirectional_range<_Base> && bidirectional_range<_SubRng>
-                      && common_range<_SubRng> {
+                requires _Deref_is_glvalue && bidirectional_range<_Base> && bidirectional_range<_InnerRng<_Const>>
+                      && common_range<_InnerRng<_Const>> {
                 // clang-format on
                 auto _Tmp = *this;
                 --*this;
@@ -2811,7 +2811,8 @@ namespace ranges {
 
             // clang-format off
             _NODISCARD friend constexpr bool operator==(const _Iterator& _Left, const _Iterator& _Right) noexcept(
-                noexcept(_Left._Outer == _Right._Outer && _Left._Inner == _Right._Inner)) /* strengthened */
+                noexcept(_Implicitly_convert_to<bool>(_Left._Outer == _Right._Outer &&
+                    _Left._Inner == _Right._Inner))) /* strengthened */
                 requires _Deref_is_glvalue && equality_comparable<_OuterIter> && equality_comparable<_InnerIter> {
                 // clang-format on
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -2861,7 +2862,7 @@ namespace ranges {
             template <bool _OtherConst>
                 requires sentinel_for<sentinel_t<_Base>, _Maybe_const_iter<_OtherConst>>
             _NODISCARD constexpr bool _Equal(const _Iterator<_OtherConst>& _It) const noexcept(
-                    noexcept(_It._Outer == _Last)) {
+                    noexcept(_Implicitly_convert_to<bool>(_It._Outer == _Last))) {
                 // clang-format on
                 return _It._Outer == _Last;
             }
@@ -2902,21 +2903,21 @@ namespace ranges {
         }
 
         _NODISCARD constexpr auto begin() {
-            constexpr bool _Use_const = _Simple_view<_Vw> && is_reference_v<range_reference_t<_Vw>>;
+            constexpr bool _Use_const = _Simple_view<_Vw> && is_reference_v<_InnerRng<false>>;
             return _Iterator<_Use_const>{*this, _RANGES begin(_Range)};
         }
 
         // clang-format off
         _NODISCARD constexpr _Iterator<true> begin() const
-            requires input_range<const _Vw> && is_reference_v<range_reference_t<const _Vw>> {
+            requires input_range<const _Vw> && is_reference_v<_InnerRng<true>> {
             // clang-format on
             return _Iterator<true>{*this, _RANGES begin(_Range)};
         }
 
         // clang-format off
         _NODISCARD constexpr auto end() {
-            if constexpr (forward_range<_Vw> && is_reference_v<range_reference_t<_Vw>>
-                    && forward_range<_InnerRng> && common_range<_Vw> && common_range<_InnerRng>) {
+            if constexpr (forward_range<_Vw> && is_reference_v<_InnerRng<false>>
+                    && forward_range<_InnerRng<false>> && common_range<_Vw> && common_range<_InnerRng<false>>) {
                 // clang-format on
                 return _Iterator<_Simple_view<_Vw>>{*this, _RANGES end(_Range)};
             } else {
@@ -2926,10 +2927,10 @@ namespace ranges {
 
         // clang-format off
         _NODISCARD constexpr auto end() const
-            requires input_range<const _Vw> && is_reference_v<range_reference_t<const _Vw>> {
-            if constexpr (forward_range<const _Vw> && is_reference_v<range_reference_t<const _Vw>>
-                    && forward_range<range_reference_t<const _Vw>> && common_range<const _Vw>
-                    && common_range<range_reference_t<const _Vw>>) {
+            requires input_range<const _Vw> && is_reference_v<_InnerRng<true>> {
+            if constexpr (forward_range<const _Vw> && is_reference_v<_InnerRng<true>>
+                    && forward_range<_InnerRng<true>> && common_range<const _Vw>
+                    && common_range<_InnerRng<true>>) {
                 // clang-format on
                 return _Iterator<true>{*this, _RANGES end(_Range)};
             } else {

@@ -156,7 +156,7 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
         // Validate join_view::begin
         static_assert(CanMemberBegin<R>);
         static_assert(CanMemberBegin<const R> == (input_range<const V> && is_reference_v<range_reference_t<const V>>) );
-        if constexpr (forward_range<R>) {
+        if (forward_range<R>) {
             const iterator_t<R> i = r.begin();
             if (!is_empty) {
                 assert(*i == *begin(expected));
@@ -170,12 +170,8 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
                 }
             }
 
-            if constexpr (CanMemberBegin<const R> && !CanBegin<const R>) {
-                static_assert(input_iterator<decltype(declval<const R>().begin())>);
-                static_assert(sentinel_for<decltype(declval<const R>().end()), decltype(declval<const R>().begin())>);
-            }
-
-            if constexpr (CanBegin<const R> && forward_range<R>) {
+            static_assert(CanMemberBegin<const R> == CanBegin<const R&>);
+            if constexpr (CanMemberBegin<const R>) {
                 const iterator_t<const R> ci = as_const(r).begin();
                 if (!is_empty) {
                     assert(*ci == *i);
@@ -183,7 +179,7 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
 
                 if constexpr (copyable<V>) {
                     const auto r2                               = r;
-                    const same_as<iterator_t<const V>> auto ci2 = r2.begin();
+                    const same_as<iterator_t<const R>> auto ci2 = r2.begin();
                     if (!is_empty) {
                         assert(*ci2 == *i);
                     }
@@ -201,8 +197,8 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
                                                 && common_range<const V> && forward_range<range_reference_t<const V>>
                                                 && common_range<range_reference_t<const V>>) );
         // clang-format on
+        const ranges::sentinel_t<R> s = r.end();
         if (!is_empty) {
-            const ranges::sentinel_t<R> s = r.end();
             if constexpr (bidirectional_range<R> && common_range<R>) {
                 assert(*prev(s) == *prev(end(expected)));
 
@@ -212,6 +208,7 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
                 }
             }
 
+            static_assert(CanMemberEnd<const R> == CanEnd<const R&>);
             if constexpr (CanMemberEnd<const R>) {
                 const ranges::sentinel_t<const R> cs = as_const(r).end();
                 if constexpr (bidirectional_range<R> && common_range<R>) {
@@ -225,6 +222,7 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
                 }
             }
         }
+
         // Validate view_interface::data
         static_assert(!CanData<R>);
         static_assert(!CanData<const R>);
