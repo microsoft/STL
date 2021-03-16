@@ -651,6 +651,15 @@ struct _Basic_format_specs {
     _CharT _Fill[4] = {' ', _CharT{0}, _CharT{0}, _CharT{0}};
 };
 
+// Adds width and precision references to _Basic_format_specs.
+// this is required for std::formatter implementations because we must
+// parse the format specs without having access to the format args (via a format context)
+template <class _CharT>
+struct _Dynamic_format_specs : _Basic_format_specs<_CharT> {
+    int _Dynamic_width_index     = -1;
+    int _Dynamic_precision_index = -1;
+};
+
 // Model of _Parse_specs_callbacks that fills a _Basic_format_specs with the parsed data.
 template <class _CharT>
 class _Specs_setter {
@@ -802,6 +811,37 @@ private:
         }
         return static_cast<int>(_Val);
     }
+};
+
+template <class _ParseContext>
+class _Dynamic_specs_handler : public _Specs_setter<typename _ParseContext::char_type> {
+public:
+    using _CharT = typename _ParseContext::char_type;
+
+    constexpr _Dynamic_specs_handler(_Dynamic_format_specs<_CharT>& _Specs_, _ParseContext& _Parse_ctx_)
+        : _Specs_setter<_CharT>(_Specs_), _Dynamic_specs(_Specs_), _Parse_ctx(_Parse_ctx_) {}
+
+    constexpr void _On_dynamic_width(size_t _Arg_id) {
+        _Parse_ctx.check_arg_id(_Arg_id);
+        _Dynamic_specs._Dynamic_width_index = _Arg_id;
+    }
+
+    constexpr void _On_dynamic_width(_Auto_id_tag) {
+        _Dynamic_specs._Dynamic_width_index = _Parse_ctx.next_arg_id();
+    }
+
+    constexpr void _On_dynamic_precision(size_t _Arg_id) {
+        _Parse_ctx.check_arg_id(_Arg_id);
+        _Dynamic_specs._Dynamic_precision_index = _Arg_id;
+    }
+
+    constexpr void _On_dynamic_precision(_Auto_id_tag) {
+        _Dynamic_specs._Dynamic_precision_index = _Parse_ctx.next_arg_id();
+    }
+
+private:
+    _Dynamic_format_specs<_CharT>& _Dynamic_specs;
+    _ParseContext& _Parse_ctx;
 };
 
 class _Numeric_specs_checker {
@@ -1846,6 +1886,21 @@ struct formatter {
     formatter()                 = delete;
     formatter(const formatter&) = delete;
     formatter operator=(const formatter&) = delete;
+};
+
+// clang-format off
+template <class _Ty, class _CharT>
+    requires _Is_any_of_v<_Ty, char, wchar_t>
+struct formatter<_Ty, _CharT> {
+    // clang-format on
+
+    formatter() = default;
+
+    template <class _ParseContext>
+    typename _ParseContext::iterator parse(_ParseContext& _ParseCtx) {}
+
+private:
+    _Dynamic_format_specs<_CharT> _Specs;
 };
 
 using format_context  = basic_format_context<back_insert_iterator<string>, string::value_type>;
