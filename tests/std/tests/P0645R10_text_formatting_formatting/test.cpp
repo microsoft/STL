@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <format>
 #include <iterator>
+#include <limits>
 #include <locale>
 #include <string>
 #include <string_view>
@@ -47,7 +48,7 @@ void throw_helper(const charT* fmt, const Args&... vals) {
     try {
         format(fmt, vals...);
         assert(false);
-    } catch (format_error) {
+    } catch (const format_error&) {
     }
 }
 
@@ -679,7 +680,7 @@ void test_pointer_specs() {
 
 template <class charT>
 void test_string_specs() {
-    auto cstr = STR("foo");
+    auto cstr = STR("scully");
     auto view = basic_string_view{cstr};
 
     assert(format(STR("{:}"), cstr) == cstr);
@@ -703,19 +704,19 @@ void test_string_specs() {
     throw_helper(STR("{:0}"), view);
 
     // Width
-    assert(format(STR("{:5}"), cstr) == STR("foo  "));
-    assert(format(STR("{:5}"), view) == STR("foo  "));
+    assert(format(STR("{:8}"), cstr) == STR("scully  "));
+    assert(format(STR("{:8}"), view) == STR("scully  "));
 
     // Precision
-    assert(format(STR("{:.2}"), cstr) == STR("fo"));
-    assert(format(STR("{:5.2}"), cstr) == STR("fo   "));
-    assert(format(STR("{:5.2}"), cstr) == STR("fo   "));
-    assert(format(STR("{:>5.2}"), cstr) == STR("   fo"));
+    assert(format(STR("{:.2}"), cstr) == STR("sc"));
+    assert(format(STR("{:5.2}"), cstr) == STR("sc   "));
+    assert(format(STR("{:5.2}"), cstr) == STR("sc   "));
+    assert(format(STR("{:>5.2}"), cstr) == STR("   sc"));
 
-    assert(format(STR("{:.2}"), view) == STR("fo"));
-    assert(format(STR("{:5.2}"), view) == STR("fo   "));
-    assert(format(STR("{:5.2}"), view) == STR("fo   "));
-    assert(format(STR("{:>5.2}"), view) == STR("   fo"));
+    assert(format(STR("{:.2}"), view) == STR("sc"));
+    assert(format(STR("{:5.2}"), view) == STR("sc   "));
+    assert(format(STR("{:5.2}"), view) == STR("sc   "));
+    assert(format(STR("{:>5.2}"), view) == STR("   sc"));
 
     // Types
     assert(format(STR("{:s}"), cstr) == cstr);
