@@ -4376,12 +4376,12 @@ private:
     template <class _Engine>
     result_type _Eval(_Engine& _Eng, const param_type& _Par0) const {
         double _Vx1;
-        gamma_distribution<double> dist1(
+        gamma_distribution<double> _Dist1(
             static_cast<double>(_Par0._Kx), static_cast<double>((_Ty{1} - _Par0._Px) / _Par0._Px));
-        _Vx1 = dist1(_Eng);
-        poisson_distribution<_Ty> dist2(_Vx1);
+        _Vx1 = _Dist1(_Eng);
+        poisson_distribution<_Ty> _Dist2(_Vx1);
 
-        return dist2(_Eng);
+        return _Dist2(_Eng);
     }
 
     param_type _Par;
