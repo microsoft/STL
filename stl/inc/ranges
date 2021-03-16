@@ -2620,15 +2620,16 @@ namespace ranges {
         template <bool _Const>
         class _Sentinel;
 
-        template <class _OuterTraits, class _InnerTraits, bool _Deref_is_glvalue> // TRANSITION, LWG-3289
+        template <class _OuterTraits, class _InnerTraits, bool _Deref_is_glvalue,
+            bool _Inner_common> // TRANSITION, LWG-3289
         struct _Category_base {};
 
         // clang-format off
-        template <class _OuterTraits, class _InnerTraits, bool _Deref_is_glvalue>
+        template <class _OuterTraits, class _InnerTraits, bool _Deref_is_glvalue, bool _Inner_common>
             requires _Has_member_iterator_category<_OuterTraits> && _Has_member_iterator_category<_InnerTraits>
-        struct _Category_base<_OuterTraits, _InnerTraits, _Deref_is_glvalue> {
+        struct _Category_base<_OuterTraits, _InnerTraits, _Deref_is_glvalue, _Inner_common> {
             using iterator_category =
-                conditional_t<_Deref_is_glvalue
+                conditional_t<_Deref_is_glvalue && _Inner_common // per LWG issue unnumbered as of 2021-03-16
                            && derived_from<typename _OuterTraits::iterator_category, bidirectional_iterator_tag>
                            && derived_from<typename _InnerTraits::iterator_category, bidirectional_iterator_tag>,
                     bidirectional_iterator_tag,
@@ -2646,7 +2647,8 @@ namespace ranges {
         template <bool _Const>
         class _Iterator : public _Category_base<iterator_traits<iterator_t<_Maybe_const<_Const, _Vw>>>,
                               iterator_traits<iterator_t<range_reference_t<_Maybe_const<_Const, _Vw>>>>,
-                              is_reference_v<range_reference_t<_Maybe_const<_Const, _Vw>>>> {
+                              is_reference_v<range_reference_t<_Maybe_const<_Const, _Vw>>>,
+                              common_range<range_reference_t<_Maybe_const<_Const, _Vw>>>> {
         private:
             template <bool>
             friend class _Iterator;
@@ -2709,11 +2711,13 @@ namespace ranges {
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
         public:
-            using iterator_concept =
-                conditional_t<_Deref_is_glvalue && bidirectional_range<_Base> && bidirectional_range<_SubRng>,
-                    bidirectional_iterator_tag,
-                    conditional_t<_Deref_is_glvalue && forward_range<_Base> && forward_range<_SubRng>,
-                        forward_iterator_tag, input_iterator_tag>>;
+            // clang-format off
+             // Per LWG issue unnumbered as of 2021-03-16
+            using iterator_concept = conditional_t<_Deref_is_glvalue && bidirectional_range<_Base>
+                && bidirectional_range<_SubRng> && common_range<_SubRng>, bidirectional_iterator_tag,
+                conditional_t<_Deref_is_glvalue && forward_range<_Base> && forward_range<_SubRng>,
+                    forward_iterator_tag, input_iterator_tag>>;
+            // clang-format on
             using value_type      = range_value_t<_SubRng>;
             using difference_type = common_type_t<range_difference_t<_Base>, range_difference_t<_SubRng>>;
 
@@ -2865,11 +2869,12 @@ namespace ranges {
 
         public:
             _Sentinel() = default;
-            // clang-format off
-            constexpr explicit _Sentinel(_Parent_t& _Parent) noexcept(noexcept(_RANGES end(_Parent._Range))
+            constexpr explicit _Sentinel(_Parent_t& _Parent) noexcept(
+                noexcept(_RANGES end(_Parent._Range))
                 && is_nothrow_move_constructible_v<sentinel_t<_Base>>) // strengthened
                 : _Last(_RANGES end(_Parent._Range)) {}
 
+            // clang-format off
             constexpr _Sentinel(_Sentinel<!_Const> _Se)
                 noexcept(is_nothrow_constructible_v<sentinel_t<_Base>, sentinel_t<_Vw>>) // strengthened
                 requires _Const && convertible_to<sentinel_t<_Vw>, sentinel_t<_Base>>
