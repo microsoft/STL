@@ -172,14 +172,14 @@ acquire this dependency.
 
 To build the x86 target:
 
-1. Open an "x86 Native Tools Command Prompt for VS 2019".
+1. Open an "x86 Native Tools Command Prompt for VS 2019 Preview".
 2. Change directories to the previously cloned `STL` directory.
 3. `cmake -G Ninja -S . -B out\build\x86`
 4. `ninja -C out\build\x86`
 
 To build the x64 target:
 
-1. Open an "x64 Native Tools Command Prompt for VS 2019".
+1. Open an "x64 Native Tools Command Prompt for VS 2019 Preview".
 2. Change directories to the previously cloned `STL` directory.
 3. `cmake -G Ninja -S . -B out\build\x64`
 4. `ninja -C out\build\x64`
@@ -205,7 +205,7 @@ your .exe would "win" over the versions in System32.
 The compiler looks for include directories according to the `INCLUDE` environment variable, and the linker looks for
 import library directories according to the `LIB` environment variable, and the Windows loader will (eventually) look
 for DLL dependencies according to directories in the `PATH` environment variable. From an
-"x64 Native Tools Command Prompt for VS 2019":
+"x64 Native Tools Command Prompt for VS 2019 Preview":
 
 ```
 C:\Users\username\Desktop>set INCLUDE=C:\Dev\STL\out\build\x64\out\inc;%INCLUDE%
