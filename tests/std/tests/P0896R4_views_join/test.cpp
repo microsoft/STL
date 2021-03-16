@@ -42,9 +42,10 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
         static_assert(ranges::view<R>);
         static_assert(input_range<R> == input_range<Inner>);
         static_assert(forward_range<R> == (deref_is_glvalue && forward_range<Outer> && forward_range<Inner>) );
-        static_assert(
-            bidirectional_range<
-                R> == (deref_is_glvalue && bidirectional_range<Outer> && bidirectional_range<Inner> && common_range<Inner>) );
+        // clang-format off
+        static_assert(bidirectional_range<R> ==
+            (deref_is_glvalue && bidirectional_range<Outer> && bidirectional_range<Inner> && common_range<Inner>));
+        // clang-format on
         static_assert(!ranges::random_access_range<R>);
         static_assert(!ranges::contiguous_range<R>);
 
@@ -479,9 +480,9 @@ int main() {
     // Validate non-views
     { // ... C array
         static constexpr int join_me[5][2] = {{0, 1}, {2, 3}, {4, 5}, {6, 7}, {8, 9}};
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, Unfiled MSVC bug
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-934264
         static_assert(test_one(join_me, expected_ints));
-#endif // TRANSITION, Unfiled MSVC bug
+#endif // TRANSITION, VSO-934264
         test_one(join_me, expected_ints);
     }
     { // ... fwd container
@@ -497,8 +498,8 @@ int main() {
         test_one(lst, expected);
     }
 
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, Unfiled MSVC bug
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-934264
     STATIC_ASSERT(instantiation_test());
-#endif // TRANSITION, Unfiled MSVC bug
+#endif // TRANSITION, VSO-934264
     instantiation_test();
 }

@@ -2668,17 +2668,16 @@ namespace ranges {
             /* [[no_unique_address]] */ _InnerIter _Inner{};
             _Parent_t* _Parent{};
 
-            constexpr void _Satisfy() {
-                auto _Update_inner = [this](_SubRng _Range) -> auto& {
-                    if constexpr (_Deref_is_glvalue) {
-                        (void) this; // Suppress Clang "unused capture" warning
-                        return _Range;
-                    } else {
-                        _Parent->_Inner = views::all(_STD move(_Range));
-                        return _Parent->_Inner;
-                    }
-                };
+            constexpr auto& _Update_inner(_SubRng _Range) {
+                if constexpr (_Deref_is_glvalue) {
+                    return _Range;
+                } else {
+                    _Parent->_Inner = views::all(_STD move(_Range));
+                    return _Parent->_Inner;
+                }
+            }
 
+            constexpr void _Satisfy() {
                 const auto _Last = _RANGES end(_Parent->_Range);
                 for (; _Outer != _Last; ++_Outer) {
                     auto& _Tmp = _Update_inner(*_Outer);

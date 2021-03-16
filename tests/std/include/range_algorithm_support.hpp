@@ -348,7 +348,8 @@ namespace test {
         template <class T>
         static constexpr bool at_least = derived_from<Category, T>;
 
-        using ReferenceType = conditional_t<Proxy == ProxyRef::yes, proxy_reference<Category, Element>, conditional_t<Proxy == ProxyRef::prvalue, std::remove_cv_t<Element>, Element&>>;
+        using ReferenceType = conditional_t<Proxy == ProxyRef::yes, proxy_reference<Category, Element>,
+            conditional_t<Proxy == ProxyRef::prvalue, std::remove_cv_t<Element>, Element&>>;
 
         struct post_increment_proxy {
             Element* ptr_;
