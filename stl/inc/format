@@ -542,7 +542,7 @@ constexpr const _CharT* _Parse_format_specs(const _CharT* _Begin, const _CharT* 
 
     if (*_Begin == '.') {
         _Begin = _Parse_precision(_Begin, _End, _Callbacks);
-        if (++_Begin == _End) {
+        if (_Begin == _End) {
             return _Begin;
         }
     }
