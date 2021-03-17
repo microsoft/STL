@@ -2710,7 +2710,7 @@ namespace ranges {
 
         public:
             // clang-format off
-             // Per LWG issue unnumbered as of 2021-03-16
+            // Per LWG issue unnumbered as of 2021-03-16
             using iterator_concept = conditional_t<_Deref_is_glvalue
                 && bidirectional_range<_Base> && bidirectional_range<_InnerRng<_Const>>
                 && common_range<_InnerRng<_Const>>, bidirectional_iterator_tag,
@@ -2811,8 +2811,8 @@ namespace ranges {
 
             // clang-format off
             _NODISCARD friend constexpr bool operator==(const _Iterator& _Left, const _Iterator& _Right) noexcept(
-                noexcept(_Implicitly_convert_to<bool>(_Left._Outer == _Right._Outer &&
-                    _Left._Inner == _Right._Inner))) /* strengthened */
+                noexcept(_Implicitly_convert_to<bool>(_Left._Outer == _Right._Outer
+                    && _Left._Inner == _Right._Inner))) /* strengthened */
                 requires _Deref_is_glvalue && equality_comparable<_OuterIter> && equality_comparable<_InnerIter> {
                 // clang-format on
 #if _ITERATOR_DEBUG_LEVEL != 0
