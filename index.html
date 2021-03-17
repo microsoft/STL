@@ -26,11 +26,11 @@
             font-weight: bold;
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.0.0-beta.13/dist/chart.min.js"
-        integrity="sha256-rBihtMecSw9uWNza7O9RziOpBAhlqIkGneLIuLbQHsY=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.0.0-rc.2/dist/chart.min.js"
+        integrity="sha256-xssPdG71cJqlfhI1MVo3ZdtAV6m7LWoSEUw8/i6R3JM=" crossorigin="anonymous"></script>
     <script
-        src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@1.1.0-alpha.3/dist/chartjs-adapter-date-fns.bundle.min.js"
-        integrity="sha256-e/RmSwhc3bLOQa/F0V0yzlODvJXdNSyLpzd6yI93EU8=" crossorigin="anonymous"></script>
+        src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@1.1.0-beta.1/dist/chartjs-adapter-date-fns.bundle.min.js"
+        integrity="sha256-q2odrNqvxEPo98TjGMel7woN8/eHWcw89eSpepVSEZc=" crossorigin="anonymous"></script>
     <script src="daily_table.js"></script>
     <script src="weekly_table.js"></script>
     <script src="monthly_table.js"></script>
@@ -295,8 +295,8 @@
                 type: 'time',
                 min: timeframe.min,
                 max: daily_table[daily_table.length - 1].date,
-                gridLines: {
-                    offsetGridLines: false,
+                grid: {
+                    offset: false,
                 },
                 offset: false,
                 time: {
