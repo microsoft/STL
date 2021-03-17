@@ -393,9 +393,10 @@ devenv "C:\STL\out\build\x64\tests\std\tests\GH_XXXX_meow\Output\02\GH_XXXX_meow
        "C:\STL\tests\std\tests\GH_XXXX_meow\test.cpp"
 ```
 
-However, this will not work right away, as Visual Studio will complain about a missing `msvcp140_oss.dll`. The reason is
-that the STL builds those and other DLLs itself and we should under no circumstances overwrite the installed ones.
-The easiest solution for manual testing is to add the respective build folder to your path
+However, this might not work right away, as Visual Studio may complain about a missing `msvcp140_oss.dll`. The reason
+is that the STL builds those and other DLLs itself and we should under no circumstances overwrite the installed ones.
+If you are testing one of the configurations with dynamic linkage (/MD or /MDd) the easiest solution is to add the
+build folder to your path
 ```
 set PATH=C:\STL\out\build\x64\out\bin\amd64;%PATH%
 ```
