@@ -7,9 +7,10 @@
 #include <thread>
 
 #ifdef EXHAUSTIVE
-const size_t max_parallel_test_case_n = 1000;
+const size_t max_parallel_test_case_n = 4096;
 #else // ^^^ EXHAUSTIVE ^^^ // vvv !EXHAUSTIVE vvv
-const size_t max_parallel_test_case_n = std::max(4u, std::thread::hardware_concurrency()) + 1;
+// The constant 32 comes from std::_Oversubscription_multiplier
+const size_t max_parallel_test_case_n = std::max(4u, std::thread::hardware_concurrency() * 32) + 1;
 #endif // EXHAUSTIVE
 
 #pragma warning(push)
