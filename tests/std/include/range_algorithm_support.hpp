@@ -591,7 +591,7 @@ template <class Category, class Element, ::test::CanDifference Diff, ::test::Can
 struct std::iterator_traits<::test::iterator<Category, Element, Diff, Eq, Proxy, Wrapped>> {
     using iterator_concept  = Category;
     using iterator_category = conditional_t<derived_from<Category, forward_iterator_tag>, //
-        conditional_t<Proxy != ::test::ProxyRef::no, input_iterator_tag, Category>, //
+        conditional_t<Proxy == ::test::ProxyRef::no, Category, input_iterator_tag>, //
         conditional_t<static_cast<bool>(Eq), Category, void>>; // TRANSITION, LWG-3289
     using value_type        = remove_cv_t<Element>;
     using difference_type   = ptrdiff_t;
