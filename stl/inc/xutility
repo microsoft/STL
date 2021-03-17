@@ -27,7 +27,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #else
 #define _USE_STD_VECTOR_ALGORITHMS 0
 #endif
-#endif
+#endif // _USE_STD_VECTOR_ALGORITHMS
 
 #ifdef __CUDACC__
 #define _CONSTEXPR_BIT_CAST inline
