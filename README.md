@@ -382,13 +382,15 @@ You can replace `bark` with any descriptive name you like. Add these before the 
 and recompile.
 Example:
 ```
-C:\STL\out\build\x64>"C:\Program Files (x86)\Microsoft Visual Studio\2019\Preview\VC\Tools\MSVC\14.29.29917\bin\HostX64\x64\cl.EXE" "C:\STL\tests\std\tests\GH_XXXX_meow\test.cpp" "-IC:\STL\out\build\x64\out\inc" "-IC:\STL\llvm-project\libcxx\test\support" "-IC:\STL\tests\std\include" "/nologo" *SUPER_IMPORTANT_BUILD_CONFIGURATIONS*"
-"-FeC:\STL\out\build\x64\tests\std\tests\GH_XXXX_meow\Output\02\GH_XXXX_meow.exe" /Zi /Fdbark.pdb "-link" "-LIBPATH:C:\STL\out\build\x64\out\lib\amd64" "-LIBPATH:C:\Program Files (x86)\Microsoft Visual Studio\2019\Preview\VC\Tools\MSVC\14.29.29917\lib\x64" "/MANIFEST:EMBED"
+C:\STL\out\build\x64>cl "C:\STL\tests\std\tests\GH_XXXX_meow\test.cpp" [... more arguments ...]
+"-FeC:\STL\out\build\x64\tests\std\tests\GH_XXXX_meow\Output\02\GH_XXXX_meow.exe" /Zi /Fdbark.pdb "-link"
+[... more arguments ...]
 ```
 
 You can now start debugging the test via
 ```
-devenv "C:\STL\out\build\x64\tests\std\tests\GH_XXXX_meow\Output\02\GH_XXXX_meow.exe" "C:\STL\tests\std\tests\GH_XXXX_meow\test.cpp"
+devenv "C:\STL\out\build\x64\tests\std\tests\GH_XXXX_meow\Output\02\GH_XXXX_meow.exe"
+       "C:\STL\tests\std\tests\GH_XXXX_meow\test.cpp"
 ```
 
 However, this will not work right away, as Visual Studio will complain about a missing `msvcp140_oss.dll`. The reason is
