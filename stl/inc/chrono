@@ -58,20 +58,18 @@ namespace chrono {
     };
 
 #if _HAS_CXX20
-    template <class _Clock>
-    concept _Is_clock = requires {
-        typename _Clock::rep;
-        typename _Clock::period;
-        typename _Clock::duration;
-        typename _Clock::time_point;
-        _Clock::is_steady;
-        _Clock::now();
-    };
+    template <class _Clock, class = void>
+    struct _Is_clock : false_type {};
 
     template <class _Clock>
-    struct is_clock : bool_constant<_Is_clock<_Clock>> {};
+    struct _Is_clock<_Clock, void_t<typename _Clock::rep, typename _Clock::period, typename _Clock::duration,
+                                 typename _Clock::time_point, decltype(_Clock::is_steady), decltype(_Clock::now())>>
+        : true_type {}; // TRANSITION, GH-602
+
     template <class _Clock>
-    inline constexpr bool is_clock_v = _Is_clock<_Clock>;
+    struct is_clock : _Is_clock<_Clock>::type {};
+    template <class _Clock>
+    inline constexpr bool is_clock_v = _Is_clock<_Clock>::value;
 #endif // _HAS_CXX20
 
     // CLASS TEMPLATE duration
