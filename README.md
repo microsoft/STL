@@ -362,6 +362,42 @@ The `SKIPPED` result code indicates that a given test was explicitly skipped by 
 * taking a very long time to run
 * failing or passing for the incorrect reason
 
+### Debugging individual tests
+
+While `stl-lit` is super awesome in finding out that *something* is wrong or not even compiling, it is not really
+helpfull in debugging *what* is going wrong. However, debugging individual tests is rather simple given some additional
+steps. Lets assume we want to debug a new feature where the tests are located in `tests\std\tests\GH_XXXX_meow`
+
+As always build the STL from your branch and run the tests
+```
+C:\STL\out\build\x64> ninja
+C:\STL\out\build\x64> python tests\utils\stl-lit\stl-lit.py -v C:\STL\tests\std\tests\GH_XXXX_meow
+```
+
+Lets assume one of the test fails an assert and we want to debug that configuration. `stl-lit` will conveniently
+the build command, which is far to long to provide here in full. The important part is to add the following option to
+provide debug symbols: `/Zi /Fdbark.pdb`.
+
+You can replace `bark` with any descriptive name you like. Add these before the `"-link"` option in the command line
+and recompile.
+Example:
+```
+C:\STL\out\build\x64>"C:\Program Files (x86)\Microsoft Visual Studio\2019\Preview\VC\Tools\MSVC\14.29.29917\bin\HostX64\x64\cl.EXE" "C:\STL\tests\std\tests\GH_XXXX_meow\test.cpp" "-IC:\STL\out\build\x64\out\inc" "-IC:\STL\llvm-project\libcxx\test\support" "-IC:\STL\tests\std\include" "/nologo" *SUPER_IMPORTANT_BUILD_CONFIGURATIONS*"
+"-FeC:\STL\out\build\x64\tests\std\tests\GH_XXXX_meow\Output\02\GH_XXXX_meow.exe" /Zi /Fdbark.pdb "-link" "-LIBPATH:C:\STL\out\build\x64\out\lib\amd64" "-LIBPATH:C:\Program Files (x86)\Microsoft Visual Studio\2019\Preview\VC\Tools\MSVC\14.29.29917\lib\x64" "/MANIFEST:EMBED"
+```
+
+You can now start debugging the test via
+```
+devenv "C:\STL\out\build\x64\tests\std\tests\GH_XXXX_meow\Output\02\GH_XXXX_meow.exe" "C:\STL\tests\std\tests\GH_XXXX_meow\test.cpp"
+```
+
+However, this will not work right away, as Visual Studio will complain about a missing `msvcp140_oss.dll`. The reason is
+that the STL builds those and other dlls itself and we should under no circumstances overwrite the installed ones.
+The easiest solution for manual testing is to add the respective build folder to your path
+```
+set PATH=C:\STL\out\build\x64\out\bin\amd64;%PATH%
+```
+
 # Block Diagram
 
 The STL is built atop other compiler support libraries that ship with Windows and Visual Studio, like the UCRT,
