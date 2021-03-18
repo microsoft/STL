@@ -1492,16 +1492,12 @@ namespace test_default_initializable {
     using std::default_initializable, std::initializer_list;
 
     STATIC_ASSERT(default_initializable<int>);
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-952724
+#if defined(MSVC_INTERNAL_TESTING) || defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-952724
     STATIC_ASSERT(!default_initializable<int const>);
-#else // ^^^ no workaround / assert bug so we'll notice when it's fixed vvv
-    STATIC_ASSERT(default_initializable<int const>);
 #endif // TRANSITION, DevCom-952724
     STATIC_ASSERT(default_initializable<int volatile>);
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-952724
+#if defined(MSVC_INTERNAL_TESTING) || defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-952724
     STATIC_ASSERT(!default_initializable<int const volatile>);
-#else // ^^^ no workaround / assert bug so we'll notice when it's fixed vvv
-    STATIC_ASSERT(default_initializable<int const volatile>);
 #endif // TRANSITION, DevCom-952724
     STATIC_ASSERT(default_initializable<double>);
     STATIC_ASSERT(!default_initializable<void>);
@@ -1515,10 +1511,8 @@ namespace test_default_initializable {
     STATIC_ASSERT(!default_initializable<int[]>);
     STATIC_ASSERT(!default_initializable<char[]>);
     STATIC_ASSERT(!default_initializable<char[][3]>);
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-952724
+#if defined(MSVC_INTERNAL_TESTING) || defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-952724
     STATIC_ASSERT(!default_initializable<int const[2]>);
-#else // ^^^ no workaround / assert bug so we'll notice when it's fixed vvv
-    STATIC_ASSERT(default_initializable<int const[2]>);
 #endif // TRANSITION, DevCom-952724
 
     STATIC_ASSERT(!default_initializable<int&>);
