@@ -1004,8 +1004,8 @@ private:
         requires _Has_formatter<_Context, _Ty>
     void _Store(const size_t _Arg_index, const _Ty& _Val) noexcept {
         // clang-format on
-        _Store_impl<typename basic_format_arg<_Context>::handle>(
-            _Arg_index, _Basic_format_arg_type::_Custom_type, typename basic_format_arg<_Context>::handle(_Val));
+        using _Handle_type = typename basic_format_arg<_Context>::handle;
+        _Store_impl<_Handle_type>(_Arg_index, _Basic_format_arg_type::_Custom_type, _Handle_type{_Val});
     }
 
     // clang-format off
@@ -1191,8 +1191,6 @@ public:
 template <class _CharT>
 constexpr size_t _Get_format_arg_type_storage_size(_Basic_format_arg_type _Type) {
     switch (_Type) {
-    case _Basic_format_arg_type::_None:
-        throw format_error("_None type has no size.");
     case _Basic_format_arg_type::_Int_type:
         return sizeof(int);
     case _Basic_format_arg_type::_UInt_type:
@@ -1218,8 +1216,8 @@ constexpr size_t _Get_format_arg_type_storage_size(_Basic_format_arg_type _Type)
     case _Basic_format_arg_type::_String_type:
         return sizeof(basic_string_view<_CharT>);
     case _Basic_format_arg_type::_Custom_type:
-        return sizeof(typename basic_format_arg<basic_format_context<back_insert_iterator<basic_string<_CharT>>,
-                typename basic_string<_CharT>::value_type>>::handle);
+        return sizeof(void*) + sizeof(void (*)());
+    case _Basic_format_arg_type::_None:
     default:
         _STL_INTERNAL_CHECK(false);
         return 0;
@@ -1842,10 +1840,12 @@ struct _Format_handler {
 };
 
 // Generic formatter definition, the deleted default constructor
-// makes it "disabled" as per [formatter.requirements]/1.1.1
+// makes it "disabled" as per N4868 [formatter.requirements]/1.1.1
 template <class _Ty, class _CharT>
 struct formatter {
-    formatter() = delete;
+    formatter()                 = delete;
+    formatter(const formatter&) = delete;
+    formatter operator=(const formatter&) = delete;
 };
 
 using format_context  = basic_format_context<back_insert_iterator<string>, string::value_type>;

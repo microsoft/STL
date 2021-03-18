@@ -4,7 +4,9 @@
 #include <algorithm>
 #include <assert.h>
 #include <format>
+#include <string>
 #include <string_view>
+#include <type_traits>
 using namespace std;
 
 struct custom_formattable_type {
@@ -24,6 +26,15 @@ struct std::formatter<custom_formattable_type, char> {
         return ctx.out();
     }
 };
+
+constexpr void test_disabled_formatter_is_disabled() {
+    using F = formatter<void, void>;
+    static_assert(!is_default_constructible_v<F>);
+    static_assert(!is_copy_constructible_v<F>);
+    static_assert(!is_move_constructible_v<F>);
+    static_assert(!is_copy_assignable_v<F>);
+    static_assert(!is_move_assignable_v<F>);
+}
 
 int main() {
     assert(format("{}", custom_formattable_type{"f"}) == "f"s);
