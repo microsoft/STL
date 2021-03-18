@@ -43,6 +43,7 @@ struct noop_testing_callbacks {
     constexpr void _On_sign(_Sign) {}
     constexpr void _On_hash() {}
     constexpr void _On_zero() {}
+    constexpr void _On_localized() {}
     constexpr void _On_type(CharT) {}
 };
 
@@ -59,6 +60,7 @@ struct testing_callbacks {
     bool expected_auto_dynamic_precision = false;
     bool expected_hash                   = false;
     bool expected_zero                   = false;
+    bool expected_localized              = false;
     CharT expected_type                  = '\0';
     constexpr void _On_align(_Align aln) {
         assert(aln == expected_alignment);
@@ -92,6 +94,9 @@ struct testing_callbacks {
     }
     constexpr void _On_zero() {
         assert(expected_zero);
+    }
+    constexpr void _On_localized() {
+        assert(expected_localized);
     }
     constexpr void _On_type(CharT type) {
         assert(type == expected_type);
@@ -244,7 +249,7 @@ constexpr bool test_parse_format_specs() {
     view_typ s3(TYPED_LITERAL(CharT, "*^6}"));
     view_typ s4(TYPED_LITERAL(CharT, "6d}"));
     view_typ s5(TYPED_LITERAL(CharT, "*^+4.4a}"));
-    view_typ s6(TYPED_LITERAL(CharT, "*^+#04.4a}"));
+    view_typ s6(TYPED_LITERAL(CharT, "*^+#04.4La}"));
     test_parse_helper(parse_format_specs_fn, s0, false, s0.size() - 1, {.expected_width = 6});
     test_parse_helper(parse_format_specs_fn, s1, false, s1.size(),
         {.expected_alignment = _Align::_Left,
@@ -274,6 +279,7 @@ constexpr bool test_parse_format_specs() {
             .expected_precision = 4,
             .expected_hash      = true,
             .expected_zero      = true,
+            .expected_localized = true,
             .expected_type      = 'a'});
     return true;
 }
