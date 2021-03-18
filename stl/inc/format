@@ -1840,7 +1840,7 @@ struct _Format_handler {
 };
 
 // Generic formatter definition, the deleted default constructor
-// makes it "disabled" as per N4868 [formatter.requirements]/1.1.1
+// makes it "disabled" as per N4868 [formatter.formatter.spec]/5
 template <class _Ty, class _CharT>
 struct formatter {
     formatter()                 = delete;
