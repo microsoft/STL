@@ -1220,10 +1220,6 @@
 #define __cpp_lib_constexpr_vector 201907L
 #endif // defined(__cpp_constexpr_dynamic_alloc) && !defined(__clang__)
 
-#ifdef __cpp_impl_coroutine // TRANSITION, Clang coroutine support
-#define __cpp_lib_coroutine 201902L
-#endif // __cpp_impl_coroutine
-
 #define __cpp_lib_destroying_delete            201806L
 #define __cpp_lib_endian                       201907L
 #define __cpp_lib_erase_if                     202002L
@@ -1295,6 +1291,10 @@
 #else // _HAS_CXX20
 #define __cpp_lib_shared_ptr_arrays 201611L // P0497R0 Fixing shared_ptr For Arrays
 #endif // _HAS_CXX20
+
+#if defined(__cpp_impl_coroutine) || defined(_DOWNLEVEL_COROUTINES_SUPPORTED) // TRANSITION, Clang coroutine support
+#define __cpp_lib_coroutine 201902L
+#endif // __cpp_impl_coroutine
 
 // EXPERIMENTAL
 #define __cpp_lib_experimental_erase_if   201411L
