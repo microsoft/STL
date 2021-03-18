@@ -14,11 +14,8 @@ const yargs = require('yargs/yargs');
 {
     const result = dotenv.config();
 
-    if (result.error) {
-        throw result.error;
-    }
-
-    if (process.env.SECRET_GITHUB_PERSONAL_ACCESS_TOKEN === undefined) {
+    if (result.error && process.env.SECRET_GITHUB_PERSONAL_ACCESS_TOKEN === undefined) {
+        console.error(result.error);
         throw 'Missing SECRET_GITHUB_PERSONAL_ACCESS_TOKEN key in .env file.';
     }
 }
