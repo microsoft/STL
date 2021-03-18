@@ -50,6 +50,7 @@ async function retrieve_nodes_from_network() {
                 format: '{bar} {percentage}% | ETA: {eta}s | {value}/{total} {name}',
                 autopadding: true,
                 hideCursor: true,
+                noTTYOutput: process.env.NO_TTY === 'TRUE',
             },
             cliProgress.Presets.shades_classic
         ),
