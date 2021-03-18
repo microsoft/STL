@@ -3,7 +3,7 @@ query total_counts {
         cost
         limit
     }
-    repository(owner: "microsoft", name: "STL") {
+    repository(owner: "Azure", name: "azure-powershell") {
         pullRequests(first: 0) {
             totalCount
         }
