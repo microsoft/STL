@@ -21,13 +21,18 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) \
+    && !defined(_M_HYBRID) && !defined(_M_ARM64EC)
 #ifndef _USE_STD_VECTOR_ALGORITHMS
-#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID) && !defined(_M_ARM64EC)
 #define _USE_STD_VECTOR_ALGORITHMS 1
-#else
-#define _USE_STD_VECTOR_ALGORITHMS 0
 #endif
+#else // ^^^ arch supports vector algorithms / no support for vector algorithms vvv
+#ifndef _USE_STD_VECTOR_ALGORITHMS
+#define _USE_STD_VECTOR_ALGORITHMS 0
+#elif _USE_STD_VECTOR_ALGORITHMS
+#error Vector algorithms are not supported on this architecture, but _USE_STD_VECTOR_ALGORITHMS is set.
 #endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ no support for vector algorithms ^^^
 
 #ifdef __CUDACC__
 #define _CONSTEXPR_BIT_CAST inline
