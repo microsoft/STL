@@ -1187,7 +1187,7 @@ inline constexpr size_t _Format_min_buffer_length = 24;
 // clang-format off
 template <class _CharT, class _OutputIt, class _Arithmetic>
     requires (is_arithmetic_v<_Arithmetic> && !_CharT_or_bool<_Arithmetic, _CharT>)
-_OutputIt _Write(_OutputIt _Out, _Arithmetic _Value) {
+_OutputIt _Write(_OutputIt _Out, const _Arithmetic _Value) {
     // clang-format on
     // TRANSITION, Reusable buffer
     array<char, _Format_min_buffer_length> _Buffer;
@@ -1198,7 +1198,7 @@ _OutputIt _Write(_OutputIt _Out, _Arithmetic _Value) {
 #pragma warning(pop)
 
 template <class _CharT, class _OutputIt>
-_OutputIt _Write(_OutputIt _Out, bool _Value) {
+_OutputIt _Write(_OutputIt _Out, const bool _Value) {
     if constexpr (is_same_v<_CharT, wchar_t>) {
         return _Write(_Out, _Value ? L"true" : L"false");
     } else {
@@ -1207,7 +1207,7 @@ _OutputIt _Write(_OutputIt _Out, bool _Value) {
 }
 
 template <class _CharT, class _OutputIt>
-_OutputIt _Write(_OutputIt _Out, _CharT _Value) {
+_OutputIt _Write(_OutputIt _Out, const _CharT _Value) {
     *_Out = _Value;
     return ++_Out;
 }
@@ -1215,7 +1215,7 @@ _OutputIt _Write(_OutputIt _Out, _CharT _Value) {
 #pragma warning(push)
 #pragma warning(disable : 4365) // 'argument': conversion from 'char' to 'const wchar_t', signed/unsigned mismatch
 template <class _CharT, class _OutputIt>
-_OutputIt _Write(_OutputIt _Out, const void* _Value) {
+_OutputIt _Write(_OutputIt _Out, const void* const _Value) {
     // TRANSITION, Reusable buffer
     array<char, _Format_min_buffer_length> _Buffer;
     const auto [_End, _Ec] =
@@ -1239,13 +1239,13 @@ _OutputIt _Write(_OutputIt _Out, const _CharT* _Value) {
 }
 
 template <class _CharT, class _OutputIt>
-_OutputIt _Write(_OutputIt _Out, basic_string_view<_CharT> _Value) {
+_OutputIt _Write(_OutputIt _Out, const basic_string_view<_CharT> _Value) {
     return _STD copy(_Value.begin(), _Value.end(), _Out);
 }
 
 template <class _CharT, class _OutputIt, class _Func>
-_OutputIt _Write_aligned(
-    _OutputIt _Out, int _Width, const _Basic_format_specs<_CharT>& _Specs, _Align _Default_align, _Func&& _Fn) {
+_OutputIt _Write_aligned(_OutputIt _Out, const int _Width, const _Basic_format_specs<_CharT>& _Specs,
+    const _Align _Default_align, _Func&& _Fn) {
     int _Fill_left  = 0;
     int _Fill_right = 0;
     auto _Alignment = _Specs._Alignment;
@@ -1279,7 +1279,7 @@ _OutputIt _Write_aligned(
 }
 
 template <integral _Integral>
-_NODISCARD constexpr string_view _Get_integral_prefix(char _Type, _Integral _Value) {
+_NODISCARD constexpr string_view _Get_integral_prefix(const char _Type, const _Integral _Value) {
     switch (_Type) {
     case 'b':
         return "0b"sv;
@@ -1300,7 +1300,7 @@ _NODISCARD constexpr string_view _Get_integral_prefix(char _Type, _Integral _Val
 }
 
 template <class _OutputIt>
-_OutputIt _Write_sign(_OutputIt _Out, _Sign _Sgn, bool _Is_negative) {
+_OutputIt _Write_sign(_OutputIt _Out, const _Sign _Sgn, const bool _Is_negative) {
     if (_Is_negative) {
         *_Out = '-';
     } else {
@@ -1326,7 +1326,7 @@ inline void _Buffer_to_uppercase(char* _Begin, const char* _End) {
 }
 
 template <class _CharT, integral _Ty>
-_NODISCARD constexpr bool _In_bounds(_Ty _Value) {
+_NODISCARD constexpr bool _In_bounds(const _Ty _Value) {
     if constexpr (is_unsigned_v<_CharT> && is_unsigned_v<_Ty>) {
         return _Value <= (numeric_limits<_CharT>::max)();
     } else if constexpr (is_unsigned_v<_CharT>) {
@@ -1347,7 +1347,7 @@ _OutputIt _Write(_OutputIt _Out, monostate, const _Basic_format_specs<_CharT>&) 
 #pragma warning(push)
 #pragma warning(disable : 4365) // 'argument': conversion from 'char' to 'const wchar_t', signed/unsigned mismatch
 template <class _CharT, class _OutputIt, integral _Integral>
-_OutputIt _Write_integral(_OutputIt _Out, _Integral _Value, _Basic_format_specs<_CharT> _Specs) {
+_OutputIt _Write_integral(_OutputIt _Out, const _Integral _Value, _Basic_format_specs<_CharT> _Specs) {
     if (_Specs._Type == 'c') {
         if (!_In_bounds<_CharT>(_Value)) {
             throw format_error("integral cannot be stored in charT");
@@ -1438,13 +1438,13 @@ _OutputIt _Write_integral(_OutputIt _Out, _Integral _Value, _Basic_format_specs<
 // clang-format off
 template <class _CharT, class _OutputIt, integral _Integral>
     requires (!_CharT_or_bool<_Integral, _CharT>)
-_OutputIt _Write(_OutputIt _Out, _Integral _Value, const _Basic_format_specs<_CharT>& _Specs) {
+_OutputIt _Write(_OutputIt _Out, const _Integral _Value, const _Basic_format_specs<_CharT>& _Specs) {
     // clang-format on
     return _Write_integral(_Out, _Value, _Specs);
 }
 
 template <class _CharT, class _OutputIt>
-_OutputIt _Write(_OutputIt _Out, bool _Value, const _Basic_format_specs<_CharT>& _Specs) {
+_OutputIt _Write(_OutputIt _Out, const bool _Value, const _Basic_format_specs<_CharT>& _Specs) {
     if (_Specs._Type != '\0' && _Specs._Type != 's') {
         return _Write_integral(_Out, static_cast<unsigned char>(_Value), _Specs);
     }
@@ -1461,7 +1461,7 @@ _OutputIt _Write(_OutputIt _Out, bool _Value, const _Basic_format_specs<_CharT>&
 }
 
 template <class _CharT, class _OutputIt>
-_OutputIt _Write(_OutputIt _Out, _CharT _Value, _Basic_format_specs<_CharT> _Specs) {
+_OutputIt _Write(_OutputIt _Out, const _CharT _Value, _Basic_format_specs<_CharT> _Specs) {
     if (_Specs._Type != '\0' && _Specs._Type != 'c') {
         return _Write_integral(_Out, _Value, _Specs);
     }
@@ -1478,7 +1478,7 @@ _OutputIt _Write(_OutputIt _Out, _CharT _Value, _Basic_format_specs<_CharT> _Spe
 #pragma warning(push)
 #pragma warning(disable : 4365) // 'argument': conversion from 'char' to 'const wchar_t', signed/unsigned mismatch
 template <class _CharT, class _OutputIt, floating_point _Float>
-_OutputIt _Write(_OutputIt _Out, _Float _Value, const _Basic_format_specs<_CharT>& _Specs) {
+_OutputIt _Write(_OutputIt _Out, const _Float _Value, const _Basic_format_specs<_CharT>& _Specs) {
     auto _Sgn = _Specs._Sgn;
     if (_Sgn == _Sign::_None) {
         _Sgn = _Sign::_Minus;
@@ -1621,7 +1621,7 @@ _OutputIt _Write(_OutputIt _Out, _Float _Value, const _Basic_format_specs<_CharT
 #pragma warning(pop)
 
 template <class _CharT, class _OutputIt>
-_OutputIt _Write(_OutputIt _Out, const void* _Value, const _Basic_format_specs<_CharT>& _Specs) {
+_OutputIt _Write(_OutputIt _Out, const void* const _Value, const _Basic_format_specs<_CharT>& _Specs) {
     if (_Specs._Type != '\0' && _Specs._Type != 'p') {
         throw format_error("invalid const void* type");
     }
@@ -1663,7 +1663,7 @@ _OutputIt _Write(_OutputIt _Out, const _CharT* _Value, const _Basic_format_specs
 }
 
 template <class _CharT, class _OutputIt>
-_OutputIt _Write(_OutputIt _Out, basic_string_view<_CharT> _Value, const _Basic_format_specs<_CharT>& _Specs) {
+_OutputIt _Write(_OutputIt _Out, const basic_string_view<_CharT> _Value, const _Basic_format_specs<_CharT>& _Specs) {
     if (_Specs._Type != '\0' && _Specs._Type != 's') {
         throw format_error("invalid string type");
     }
