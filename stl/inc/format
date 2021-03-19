@@ -1264,6 +1264,72 @@ constexpr size_t _Get_format_arg_type_storage_size(_Basic_format_arg_type _Type)
     }
 }
 
+template <class _Ty, class _CharT>
+constexpr _Basic_format_arg_type _Format_arg_storage_type_direct = _Basic_format_arg_type::_None;
+
+template <class _CharT>
+constexpr _Basic_format_arg_type _Format_arg_storage_type_direct<int, _CharT> = _Basic_format_arg_type::_Int_type;
+
+template <class _CharT>
+constexpr _Basic_format_arg_type _Format_arg_storage_type_direct<unsigned int, _CharT> =
+    _Basic_format_arg_type::_UInt_type;
+
+template <class _CharT>
+constexpr _Basic_format_arg_type _Format_arg_storage_type_direct<long long, _CharT> =
+    _Basic_format_arg_type::_Long_long_type;
+
+template <class _CharT>
+constexpr _Basic_format_arg_type _Format_arg_storage_type_direct<unsigned long long, _CharT> =
+    _Basic_format_arg_type::_ULong_long_type;
+
+template <class _CharT>
+constexpr _Basic_format_arg_type _Format_arg_storage_type_direct<bool, _CharT> = _Basic_format_arg_type::_Bool_type;
+
+template <class _CharT>
+constexpr _Basic_format_arg_type _Format_arg_storage_type_direct<_CharT, _CharT> = _Basic_format_arg_type::_Char_type;
+
+template <class _CharT>
+constexpr _Basic_format_arg_type _Format_arg_storage_type_direct<float, _CharT> = _Basic_format_arg_type::_Float_type;
+
+template <class _CharT>
+constexpr _Basic_format_arg_type _Format_arg_storage_type_direct<double, _CharT> = _Basic_format_arg_type::_Double_type;
+
+template <class _CharT>
+constexpr _Basic_format_arg_type _Format_arg_storage_type_direct<long double, _CharT> =
+    _Basic_format_arg_type::_Long_double_type;
+
+template <class _CharT>
+constexpr _Basic_format_arg_type _Format_arg_storage_type_direct<nullptr_t, _CharT> =
+    _Basic_format_arg_type::_Pointer_type;
+
+template <class _CharT>
+constexpr _Basic_format_arg_type _Format_arg_storage_type_direct<void*, _CharT> = _Basic_format_arg_type::_Pointer_type;
+
+template <class _CharT>
+constexpr _Basic_format_arg_type _Format_arg_storage_type_direct<const void*, _CharT> =
+    _Basic_format_arg_type::_Pointer_type;
+
+template <class _CharT>
+constexpr _Basic_format_arg_type _Format_arg_storage_type_direct<_CharT*, _CharT> =
+    _Basic_format_arg_type::_CString_type;
+
+template <class _CharT>
+constexpr _Basic_format_arg_type _Format_arg_storage_type_direct<const _CharT*, _CharT> =
+    _Basic_format_arg_type::_CString_type;
+
+template <class _CharT, size_t _Nty>
+constexpr _Basic_format_arg_type _Format_arg_storage_type_direct<const _CharT[_Nty], _CharT> =
+    _Basic_format_arg_type::_CString_type;
+
+template <class _CharT>
+constexpr _Basic_format_arg_type _Format_arg_storage_type_direct<basic_string_view<_CharT>, _CharT> =
+    _Basic_format_arg_type::_String_type;
+
+template <class _CharT>
+constexpr _Basic_format_arg_type _Format_arg_storage_type_direct<basic_string<_CharT>, _CharT> =
+    _Basic_format_arg_type::_String_type;
+
+
 template <class _CharT, class _OutputIt>
 _OutputIt _Write(_OutputIt _Out, monostate) {
     _STL_INTERNAL_CHECK(false);
@@ -1897,7 +1963,11 @@ struct formatter<_Ty, _CharT> {
     formatter() = default;
 
     template <class _ParseContext>
-    typename _ParseContext::iterator parse(_ParseContext& _ParseCtx) {}
+    typename _ParseContext::iterator parse(_ParseContext& _ParseCtx) {
+        auto _Type = _Format_arg_storage_type_direct<_Ty, _CharT>;
+        _Specs_checker<_Dynamic_specs_handler<_ParseContext>> _Handler(
+            _Dynamic_specs_handler<_ParseContext>(_Specs, _ParseCtx), _Type);
+    }
 
 private:
     _Dynamic_format_specs<_CharT> _Specs;
