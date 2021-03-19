@@ -2836,6 +2836,190 @@ namespace chrono {
         }
     }
 
+    // [time.zone.zonedtraits]
+
+    // STRUCT TEMPLATE zoned_traits
+    template <class _Ty>
+    struct zoned_traits {};
+
+    // STRUCT zoned_traits<const time_zone*>
+    template <>
+    struct zoned_traits<const time_zone*> {
+        _NODISCARD static const time_zone* default_zone() {
+            return _CHRONO get_tzdb().locate_zone("UTC");
+        }
+
+        _NODISCARD static const time_zone* locate_zone(string_view _Name) {
+            return _CHRONO get_tzdb().locate_zone(_Name);
+        }
+    };
+
+    // [time.zone.zonedtime]
+
+    // CLASS TEMPLATE zoned_time
+    template <class _Duration, class _TimeZonePtr = const time_zone*>
+    class zoned_time {
+    private:
+        static_assert(_Is_duration_v<_Duration>,
+            "N4878 [time.zone.zonedtime.overview]/2 requires Duration to be a specialization of chrono::duration.");
+
+        using _Traits = zoned_traits<_TimeZonePtr>;
+
+    public:
+        using duration = common_type_t<_Duration, seconds>;
+
+        template <class _Traits2 = _Traits, class = decltype(_Traits2::default_zone())>
+        zoned_time() : _Zone{_Traits::default_zone()} {}
+        zoned_time(const zoned_time&) = default;
+        zoned_time& operator=(const zoned_time&) = default;
+
+        template <class _Traits2 = _Traits, class = decltype(_Traits2::default_zone())>
+        zoned_time(const sys_time<_Duration>& _Sys) : _Zone{_Traits::default_zone()}, _Tp{_Sys} {}
+
+        explicit zoned_time(_TimeZonePtr _Tz) noexcept /* strengthened */ : _Zone{_STD move(_Tz)} {}
+
+        template <class _Traits2                                                                             = _Traits,
+            enable_if_t<is_constructible_v<zoned_time, decltype(_Traits2::locate_zone(string_view{}))>, int> = 0>
+        explicit zoned_time(string_view _Name) : _Zone{_Traits::locate_zone(_Name)} {}
+
+        template <class _Duration2, enable_if_t<is_convertible_v<sys_time<_Duration2>, sys_time<_Duration>>, int> = 0>
+        zoned_time(const zoned_time<_Duration2, _TimeZonePtr>& _Zt) noexcept /* strengthened */
+            : _Zone{_Zt.get_time_zone()}, _Tp{_Zt.get_sys_time()} {}
+
+        zoned_time(_TimeZonePtr _Tz, const sys_time<_Duration>& _Sys) : _Zone{_STD move(_Tz)}, _Tp{_Sys} {}
+
+        template <class _Traits2 = _Traits,
+            enable_if_t<is_constructible_v<zoned_time, decltype(_Traits2::locate_zone(string_view{})),
+                            const sys_time<_Duration>&>,
+                int>             = 0>
+        zoned_time(string_view _Name, type_identity_t<const sys_time<_Duration>&> _Sys)
+            : zoned_time{_Traits::locate_zone(_Name), _Sys} {}
+
+        template <class _Ptr = _TimeZonePtr,
+            enable_if_t<
+                is_convertible_v<decltype(_STD declval<_Ptr&>()->to_sys(local_time<_Duration>{})), sys_time<duration>>,
+                int> = 0>
+        zoned_time(_TimeZonePtr _Tz, const local_time<_Duration>& _Local)
+            : _Zone{_STD move(_Tz)}, _Tp{_Zone->to_sys(_Local)} {}
+
+        template <class _Traits2 = _Traits,
+            enable_if_t<is_constructible_v<zoned_time, decltype(_Traits2::locate_zone(string_view{})),
+                            const local_time<_Duration>&>,
+                int>             = 0>
+        zoned_time(string_view _Name, type_identity_t<const local_time<_Duration>>& _Local)
+            : zoned_time{_Traits::locate_zone(_Name), _Local} {}
+
+        template <class _Ptr = _TimeZonePtr,
+            enable_if_t<
+                is_convertible_v<decltype(_STD declval<_Ptr&>()->to_sys(local_time<_Duration>{}, choose::earliest)),
+                    sys_time<duration>>,
+                int> = 0>
+        zoned_time(_TimeZonePtr _Tz, const local_time<_Duration>& _Local, choose _Choose)
+            : _Zone{_STD move(_Tz)}, _Tp{_Zone->to_sys(_Local, _Choose)} {}
+
+        template <class _Traits2 = _Traits,
+            enable_if_t<is_constructible_v<zoned_time, decltype(_Traits2::locate_zone(string_view{})),
+                            const local_time<_Duration>&, choose>,
+                int>             = 0>
+        zoned_time(string_view _Name, type_identity_t<const local_time<_Duration>&> _Local, choose _Choose)
+            : zoned_time{_Traits::locate_zone(_Name), _Local, _Choose} {}
+
+        template <class _Duration2, class _TimeZonePtr2,
+            enable_if_t<is_convertible_v<sys_time<_Duration2>, sys_time<_Duration>>, int> = 0>
+        zoned_time(_TimeZonePtr _Tz, const zoned_time<_Duration2, _TimeZonePtr2>& _Zt) noexcept /* strengthened */
+            : _Zone{_STD move(_Tz)}, _Tp{_Zt.get_sys_time()} {}
+
+        template <class _Duration2, class _TimeZonePtr2,
+            enable_if_t<is_convertible_v<sys_time<_Duration2>, sys_time<_Duration>>, int> = 0>
+        zoned_time(
+            _TimeZonePtr _Tz, const zoned_time<_Duration2, _TimeZonePtr2>& _Zt, choose) noexcept /* strengthened */
+            : zoned_time{_Tz, _Zt} {}
+
+        template <class _Duration2, class _TimeZonePtr2, class _Traits2 = _Traits,
+            enable_if_t<is_constructible_v<zoned_time, decltype(_Traits2::locate_zone(string_view{})),
+                            const zoned_time<_Duration2, _TimeZonePtr2>&>,
+                int> = 0>
+        zoned_time(string_view _Name, const zoned_time<_Duration2, _TimeZonePtr2>& _Zt)
+            : zoned_time{_Traits::locate_zone(_Name), _Zt} {}
+
+        template <class _Duration2, class _TimeZonePtr2, class _Traits2 = _Traits,
+            enable_if_t<is_constructible_v<zoned_time, decltype(_Traits2::locate_zone(string_view{})),
+                            const zoned_time<_Duration2, _TimeZonePtr2>&, choose>,
+                int> = 0>
+        zoned_time(string_view _Name, const zoned_time<_Duration2, _TimeZonePtr2>& _Zt, choose _Choose)
+            : zoned_time{_Traits::locate_zone(_Name), _Zt, _Choose} {}
+
+        zoned_time& operator=(const sys_time<_Duration>& _Sys) noexcept /* strengthened */ {
+            _Tp = _Sys;
+            return *this;
+        }
+
+        zoned_time& operator=(const local_time<_Duration>& _Local) {
+            _Tp = _Zone->to_sys(_Local);
+            return *this;
+        }
+
+        operator sys_time<duration>() const noexcept /* strengthened */ {
+            return get_sys_time();
+        }
+
+        explicit operator local_time<duration>() const {
+            return get_local_time();
+        }
+
+        _NODISCARD _TimeZonePtr get_time_zone() const noexcept /* strengthened */ {
+            return _Zone;
+        }
+
+        _NODISCARD local_time<duration> get_local_time() const {
+            return _Zone->to_local(_Tp);
+        }
+
+        _NODISCARD sys_time<duration> get_sys_time() const noexcept /* strengthened */ {
+            return _Tp;
+        }
+
+        _NODISCARD sys_info get_info() const {
+            return _Zone->get_info(_Tp);
+        }
+
+    private:
+        _TimeZonePtr _Zone;
+        sys_time<duration> _Tp{};
+    };
+
+    zoned_time()->zoned_time<seconds>;
+
+    template <class _Duration>
+    zoned_time(sys_time<_Duration>) -> zoned_time<common_type_t<_Duration, seconds>>;
+
+    template <class _TimeZonePtrOrName>
+    using _Time_zone_representation = conditional_t<is_convertible_v<_TimeZonePtrOrName, string_view>, const time_zone*,
+        remove_cvref_t<_TimeZonePtrOrName>>;
+
+    template <class _TimeZonePtrOrName>
+    zoned_time(_TimeZonePtrOrName&&) -> zoned_time<seconds, _Time_zone_representation<_TimeZonePtrOrName>>;
+
+    template <class _TimeZonePtrOrName, class _Duration>
+    zoned_time(_TimeZonePtrOrName&&, sys_time<_Duration>)
+        -> zoned_time<common_type_t<_Duration, seconds>, _Time_zone_representation<_TimeZonePtrOrName>>;
+
+    template <class _TimeZonePtrOrName, class _Duration>
+    zoned_time(_TimeZonePtrOrName&&, local_time<_Duration>, choose = choose::earliest)
+        -> zoned_time<common_type_t<_Duration, seconds>, _Time_zone_representation<_TimeZonePtrOrName>>;
+
+    template <class _Duration, class _TimeZonePtrOrName, class _TimeZonePtr2>
+    zoned_time(_TimeZonePtrOrName&&, zoned_time<_Duration, _TimeZonePtr2>, choose = choose::earliest)
+        -> zoned_time<common_type_t<_Duration, seconds>, _Time_zone_representation<_TimeZonePtrOrName>>;
+
+    using zoned_seconds = zoned_time<seconds>;
+
+    template <class _Duration1, class _Duration2, class _TimeZonePtr>
+    _NODISCARD bool operator==(
+        const zoned_time<_Duration1, _TimeZonePtr>& _Left, const zoned_time<_Duration2, _TimeZonePtr>& _Right) {
+        return _Left.get_time_zone() == _Right.get_time_zone() && _Left.get_sys_time() == _Right.get_sys_time();
+    }
+
     // [time.clock.utc]
 
     class utc_clock;

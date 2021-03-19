@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include "timezone_data.h"
 #include <algorithm>
 #include <cassert>
 #include <chrono>
@@ -10,6 +9,8 @@
 #include <stdexcept>
 #include <string_view>
 #include <utility>
+
+#include <timezone_data.hpp>
 
 using namespace std;
 using namespace std::chrono;
