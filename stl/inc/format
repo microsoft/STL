@@ -765,6 +765,18 @@ public:
     }
 };
 
+// Fetch the value of an argument associated with a dynamic
+// width or precision specifier. This will be called with either
+// _Width_checker or _Precision_checker as "_Handler".
+template <class _Handler, class _FormatArg>
+static constexpr int _Get_dynamic_specs(_FormatArg _Arg) {
+    unsigned long long _Val = _STD visit_format_arg(_Handler(), _Arg);
+    if (_Val > (numeric_limits<int>::max)()) {
+        throw format_error("Number is too big.");
+    }
+    return static_cast<int>(_Val);
+}
+
 // Parses standard format specs into a _Basic_format_specs using _Specs_setter, and,
 // in addition handles dynamic width and precision. This is separate from _Specs setter
 // because it needs to know about the current basic_format_parse_context and basic_format_context
@@ -798,18 +810,6 @@ private:
     constexpr basic_format_arg<_Context> _Get_arg(size_t _Arg_id) {
         _Parse_ctx.check_arg_id(_Arg_id);
         return _STD _Get_arg(_Ctx, _Arg_id);
-    }
-
-    // Fetch the value of an argument associated with a dynamic
-    // width or precision specifier. This will be called with either
-    // _Width_checker or _Precision_checker as "_Handler".
-    template <class _Handler, class _FormatArg>
-    static constexpr int _Get_dynamic_specs(_FormatArg _Arg) {
-        unsigned long long _Val = _STD visit_format_arg(_Handler(), _Arg);
-        if (_Val > (numeric_limits<int>::max)()) {
-            throw format_error("Number is too big.");
-        }
-        return static_cast<int>(_Val);
     }
 };
 
@@ -1956,18 +1956,36 @@ struct formatter {
 
 // clang-format off
 template <class _Ty, class _CharT>
-    requires _Is_any_of_v<_Ty, char, wchar_t>
+    requires (_Format_arg_storage_type_direct<_Ty, _CharT> != _Basic_format_arg_type::_None)
 struct formatter<_Ty, _CharT> {
     // clang-format on
 
     formatter() = default;
 
-    template <class _ParseContext>
-    typename _ParseContext::iterator parse(_ParseContext& _ParseCtx) {
+    using _Pc = basic_format_parse_context<_CharT>;
+
+    _Pc::iterator parse(_Pc& _ParseCtx) {
         auto _Type = _Format_arg_storage_type_direct<_Ty, _CharT>;
         _Specs_checker<_Dynamic_specs_handler<_ParseContext>> _Handler(
             _Dynamic_specs_handler<_ParseContext>(_Specs, _ParseCtx), _Type);
+        auto _It = _Parse_format_specs(_ParseCtx.begin(), _ParseCtx.end(), _Handler);
+        if (_It == _ParseCtx.end() || *_It != '}') {
+            throw format_error("Mising '}' in format string.");
+        }
+        return _It;
     }
+
+    template <class _FormatContext>
+    typename _FormatContext::iterator format(const _Ty& _Val, _FormatContext& _FormatCtx) {
+        if (_Specs._Dynamic_width_index != -1) {
+            _Specs._Width = _Get_dynamic_specs<_Width_checker>(_FormatCtx.arg(_Specs._Dynamic_width_index));
+        }
+        if (_Specs._Dynamic_precision_index != -1) {
+            _Specs._Precision = _Get_dynamic_specs<_Precision_checker>(_FormatCtx.arg(_Specs._Dynamic_precision_index));
+        }
+        return visit_format_arg(_Arg_formatter<typename _FormatContext::iterator, _CharT>(_FormatCtx))
+    }
+
 
 private:
     _Dynamic_format_specs<_CharT> _Specs;
