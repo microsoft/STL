@@ -175,7 +175,7 @@ public:
     class handle {
     private:
         const void* _Ptr;
-        void (*_Format)(basic_format_parse_context<_CharType>& _Parse_ctx, _Context _Format_ctx, const void*);
+        void (*_Format)(basic_format_parse_context<_CharType>& _Parse_ctx, _Context& _Format_ctx, const void*);
         friend basic_format_arg;
 
     public:
@@ -876,6 +876,9 @@ concept _Has_formatter = requires(const _Ty& _Val, _Context& _Ctx) {
 };
 // clang-format on
 
+template <class _CharT>
+constexpr size_t _Get_format_arg_type_storage_size(_Basic_format_arg_type _Type);
+
 // See N4878 [format.arg]/5
 // clang-format off
 template <class _Context, class _Ty>
@@ -985,7 +988,7 @@ private:
     void _Store_impl(const size_t _Arg_index, const _Basic_format_arg_type _Arg_type, _Ty _Val) noexcept {
         const auto _Index_array = reinterpret_cast<_Index_type*>(_Storage);
         const auto _Store_index = _Index_array[_Arg_index]._Index;
-        const auto _Length      = sizeof(_Get_format_arg_storage_type<_Context>(_Val));
+        const auto _Length      = _Get_format_arg_type_storage_size<_CharType>(_Arg_type);
 
         _CSTD memcpy(_Storage + _Index_length + _Store_index, _STD addressof(_Val), _Length);
         _Index_array[_Arg_index]._Type = _Arg_type;
@@ -1001,8 +1004,8 @@ private:
         requires _Has_formatter<_Context, _Ty>
     void _Store(const size_t _Arg_index, const _Ty& _Val) noexcept {
         // clang-format on
-        _Store_impl<typename basic_format_arg<_Context>::handle>(
-            _Arg_index, _Basic_format_arg_type::_Custom_type, basic_format_arg<_Context>::handle(_Val));
+        using _Handle_type = typename basic_format_arg<_Context>::handle;
+        _Store_impl<_Handle_type>(_Arg_index, _Basic_format_arg_type::_Custom_type, _Handle_type{_Val});
     }
 
     // clang-format off
@@ -1184,6 +1187,42 @@ public:
         return _Args;
     }
 };
+
+template <class _CharT>
+constexpr size_t _Get_format_arg_type_storage_size(_Basic_format_arg_type _Type) {
+    switch (_Type) {
+    case _Basic_format_arg_type::_Int_type:
+        return sizeof(int);
+    case _Basic_format_arg_type::_UInt_type:
+        return sizeof(unsigned int);
+    case _Basic_format_arg_type::_Long_long_type:
+        return sizeof(long long);
+    case _Basic_format_arg_type::_ULong_long_type:
+        return sizeof(unsigned long long);
+    case _Basic_format_arg_type::_Bool_type:
+        return sizeof(bool);
+    case _Basic_format_arg_type::_Char_type:
+        return sizeof(_CharT);
+    case _Basic_format_arg_type::_Float_type:
+        return sizeof(float);
+    case _Basic_format_arg_type::_Double_type:
+        return sizeof(double);
+    case _Basic_format_arg_type::_Long_double_type:
+        return sizeof(long double);
+    case _Basic_format_arg_type::_Pointer_type:
+        return sizeof(void*);
+    case _Basic_format_arg_type::_CString_type:
+        return sizeof(const _CharT*);
+    case _Basic_format_arg_type::_String_type:
+        return sizeof(basic_string_view<_CharT>);
+    case _Basic_format_arg_type::_Custom_type:
+        return sizeof(void*) + sizeof(void (*)());
+    case _Basic_format_arg_type::_None:
+    default:
+        _STL_INTERNAL_CHECK(false);
+        return 0;
+    }
+}
 
 template <class _CharT, class _OutputIt>
 _OutputIt _Write(_OutputIt _Out, monostate) {
@@ -1798,6 +1837,15 @@ struct _Format_handler {
             _Arg));
         return _Begin;
     }
+};
+
+// Generic formatter definition, the deleted default constructor
+// makes it "disabled" as per N4868 [formatter.formatter.spec]/5
+template <class _Ty, class _CharT>
+struct formatter {
+    formatter()                 = delete;
+    formatter(const formatter&) = delete;
+    formatter operator=(const formatter&) = delete;
 };
 
 using format_context  = basic_format_context<back_insert_iterator<string>, string::value_type>;
