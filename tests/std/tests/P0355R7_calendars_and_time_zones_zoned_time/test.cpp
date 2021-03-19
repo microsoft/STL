@@ -1,29 +1,30 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include "..\P0355R7_calendars_and_time_zones_time_zones\timezone_data.h"
-#include <algorithm>
 #include <cassert>
 #include <chrono>
+#include <exception>
 #include <iostream>
 #include <string_view>
+#include <type_traits>
+
+#include <timezone_data.hpp>
 
 using namespace std;
 using namespace std::chrono;
 using ZT = zoned_traits<const time_zone*>;
 
 struct time_zone_info {
-    time_zone_info(std::string_view _name_, const time_zone* _tz_, seconds _sys_)
-        : name(_name_), tz(_tz_), sys(_sys_) {}
+    time_zone_info(string_view _name_, const time_zone* _tz_, seconds _sys_) : name(_name_), tz(_tz_), sys(_sys_) {}
 
-    std::string_view name;
+    string_view name;
     const time_zone* tz;
     sys_seconds sys;
     local_seconds local{tz->to_local(sys)};
     zoned_time<seconds> zone{tz, sys};
 };
 
-void zonetime_constructor_test() {
+void zonedtime_constructor_test() {
     const time_zone_info utc{"Etc/UTC", ZT::default_zone(), seconds{42}};
     const time_zone_info syd{Sydney::Tz_name, ZT::locate_zone(Sydney::Tz_name), seconds{20}};
 
@@ -129,7 +130,7 @@ void zonetime_constructor_test() {
     }
 }
 
-void zonetime_operator_test() {
+void zonedtime_operator_test() {
     const auto utc_tz = ZT::default_zone();
     const zoned_time<seconds> utc_zone{};
     assert(utc_zone.get_time_zone() == utc_tz);
@@ -163,7 +164,7 @@ void zonetime_operator_test() {
     assert(zone.get_info().begin == sys);
 }
 
-void zonetime_exception_tests() {
+void zonedtime_exception_tests() {
     const auto syd_tz          = ZT::locate_zone(Sydney::Tz_name);
     const auto ambiguous_local = syd_tz->to_local(Sydney::Standard_begin_2020 - minutes{1});
     assert(syd_tz->get_info(ambiguous_local).result == local_info::ambiguous);
@@ -205,33 +206,33 @@ void zonetime_exception_tests() {
 }
 
 struct Always_zero {
-    _NODISCARD string_view name() const noexcept {
+    [[nodiscard]] string_view name() const noexcept {
         return "Zero";
     }
 
-    template <class _Duration>
-    _NODISCARD sys_info get_info(const sys_time<_Duration>&) const {
+    template <class Duration>
+    [[nodiscard]] sys_info get_info(const sys_time<Duration>&) const {
         return {};
     }
 
-    template <class _Duration>
-    _NODISCARD local_info get_info(const local_time<_Duration>&) const {
+    template <class Duration>
+    [[nodiscard]] local_info get_info(const local_time<Duration>&) const {
         return {};
     }
 
-    template <class _Duration>
-    _NODISCARD sys_time<common_type_t<_Duration, seconds>> to_sys(const local_time<_Duration>&) const {
-        return sys_time<common_type_t<_Duration, seconds>>{};
+    template <class Duration>
+    [[nodiscard]] sys_time<common_type_t<Duration, seconds>> to_sys(const local_time<Duration>&) const {
+        return sys_time<common_type_t<Duration, seconds>>{};
     }
 
-    template <class _Duration>
-    _NODISCARD sys_time<common_type_t<_Duration, seconds>> to_sys(const local_time<_Duration>&, const choose) const {
-        return sys_time<common_type_t<_Duration, seconds>>{};
+    template <class Duration>
+    [[nodiscard]] sys_time<common_type_t<Duration, seconds>> to_sys(const local_time<Duration>&, const choose) const {
+        return sys_time<common_type_t<Duration, seconds>>{};
     }
 
-    template <class _Duration>
-    _NODISCARD local_time<common_type_t<_Duration, seconds>> to_local(const sys_time<_Duration>&) const {
-        return local_time<common_type_t<_Duration, seconds>>{};
+    template <class Duration>
+    [[nodiscard]] local_time<common_type_t<Duration, seconds>> to_local(const sys_time<Duration>&) const {
+        return local_time<common_type_t<Duration, seconds>>{};
     }
 };
 
@@ -244,47 +245,47 @@ Has_locate has_locate_zone{};
 
 template <>
 struct zoned_traits<const Has_default*> {
-    _NODISCARD static const Has_default* default_zone() {
+    [[nodiscard]] static const Has_default* default_zone() {
         return &has_default_zone;
     }
 
     // missing string_view parameter...
-    _NODISCARD static const Has_locate* locate_zone() {
+    [[nodiscard]] static const Has_locate* locate_zone() {
         return &has_locate_zone;
     }
 };
 
 template <>
 struct zoned_traits<const Has_locate*> {
-    _NODISCARD static const Has_locate* locate_zone(string_view) {
+    [[nodiscard]] static const Has_locate* locate_zone(string_view) {
         return &has_locate_zone;
     }
 };
 
-void zonetime_traits_test() {
+void zonedtime_traits_test() {
     // operation using timezone should always result in zero
     using Always_zero_ptr = const Always_zero*;
 
     zoned_time<seconds, Always_zero_ptr> zone{&zero_zone, sys_seconds{seconds{1}}};
     assert(zone.get_time_zone() == &zero_zone);
     assert(zone.get_sys_time() == sys_seconds{seconds{1}});
-    assert((sys_seconds) zone == sys_seconds{seconds{1}});
+    assert(sys_seconds{zone} == sys_seconds{seconds{1}});
     assert(zone.get_local_time() == local_seconds{});
-    assert((local_seconds) zone == local_seconds{});
+    assert(local_seconds{zone} == local_seconds{});
     assert(zone.get_info().begin == sys_seconds{});
 
     zone = sys_seconds{seconds{2}};
     assert(zone.get_sys_time() == sys_seconds{seconds{2}});
-    assert((sys_seconds) zone == sys_seconds{seconds{2}});
+    assert(sys_seconds{zone} == sys_seconds{seconds{2}});
     assert(zone.get_local_time() == local_seconds{});
-    assert((local_seconds) zone == local_seconds{});
+    assert(local_seconds{zone} == local_seconds{});
     assert(zone.get_info().begin == sys_seconds{});
 
     zone = local_seconds{seconds{3}};
     assert(zone.get_sys_time() == sys_seconds{}); // zero because timezone is used to compute sys_seconds
-    assert((sys_seconds) zone == sys_seconds{});
+    assert(sys_seconds{zone} == sys_seconds{});
     assert(zone.get_local_time() == local_seconds{});
-    assert((local_seconds) zone == local_seconds{});
+    assert(local_seconds{zone} == local_seconds{});
     assert(zone.get_info().begin == sys_seconds{});
 }
 
@@ -329,7 +330,7 @@ constexpr void assert_constructible() {
     assert_constructible_durations<TimeZonePtr, milliseconds, Has_locate_zone, false>();
 }
 
-constexpr void zonetime_constraints_test() {
+constexpr void zonedtime_constraints_test() {
     assert_constructible<const time_zone*, true, true>();
     assert_constructible<const Always_zero*, false, false>();
     assert_constructible<const Has_default*, true, false>();
@@ -338,13 +339,13 @@ constexpr void zonetime_constraints_test() {
 
 void test() {
     try {
-        zonetime_constructor_test();
-        zonetime_operator_test();
-        zonetime_exception_tests();
-        zonetime_traits_test();
-        zonetime_constraints_test();
-    } catch (exception& ex) {
-        std::cerr << "Test threw exception: " << ex.what() << "\n";
+        zonedtime_constructor_test();
+        zonedtime_operator_test();
+        zonedtime_exception_tests();
+        zonedtime_traits_test();
+        zonedtime_constraints_test();
+    } catch (const exception& ex) {
+        cerr << "Test threw exception: " << ex.what() << "\n";
         assert(false);
     }
 }
