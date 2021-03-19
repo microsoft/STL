@@ -169,7 +169,6 @@ void zonetime_exception_tests() {
     assert(syd_tz->get_info(ambiguous_local).result == local_info::ambiguous);
 
     // unsafe constructors
-
     try {
         (void) zoned_time<seconds>{ZT::locate_zone(Sydney::Tz_name), ambiguous_local};
         assert(false);
@@ -185,7 +184,6 @@ void zonetime_exception_tests() {
     }
 
     // safe constructors
-
     try {
         (void) zoned_time<seconds>{ZT::locate_zone(Sydney::Tz_name), ambiguous_local, choose::earliest};
         (void) zoned_time<seconds>{Sydney::Tz_name, ambiguous_local, choose::earliest};
@@ -196,7 +194,6 @@ void zonetime_exception_tests() {
     }
 
     // unsafe operator
-
     try {
         zoned_time<seconds> zone{Sydney::Tz_name};
         zone = ambiguous_local;
@@ -271,17 +268,23 @@ void zonetime_traits_test() {
     zoned_time<seconds, Always_zero_ptr> zone{&zero_zone, sys_seconds{seconds{1}}};
     assert(zone.get_time_zone() == &zero_zone);
     assert(zone.get_sys_time() == sys_seconds{seconds{1}});
+    assert((sys_seconds) zone == sys_seconds{seconds{1}});
     assert(zone.get_local_time() == local_seconds{});
+    assert((local_seconds) zone == local_seconds{});
     assert(zone.get_info().begin == sys_seconds{});
 
     zone = sys_seconds{seconds{2}};
     assert(zone.get_sys_time() == sys_seconds{seconds{2}});
+    assert((sys_seconds) zone == sys_seconds{seconds{2}});
     assert(zone.get_local_time() == local_seconds{});
+    assert((local_seconds) zone == local_seconds{});
     assert(zone.get_info().begin == sys_seconds{});
 
     zone = local_seconds{seconds{3}};
     assert(zone.get_sys_time() == sys_seconds{}); // zero because timezone is used to compute sys_seconds
+    assert((sys_seconds) zone == sys_seconds{});
     assert(zone.get_local_time() == local_seconds{});
+    assert((local_seconds) zone == local_seconds{});
     assert(zone.get_info().begin == sys_seconds{});
 }
 
