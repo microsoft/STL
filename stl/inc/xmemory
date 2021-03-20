@@ -1483,10 +1483,6 @@ struct _NODISCARD _Uninitialized_backout {
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // CONCEPT _Convertible_from
-    template <class _To, class _From>
-    concept _Convertible_from = convertible_to<_From, _To>;
-
     // STRUCT TEMPLATE in_out_result
     template <class _In, class _Out>
     struct in_out_result {
