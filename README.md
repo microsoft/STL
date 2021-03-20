@@ -362,11 +362,11 @@ The `SKIPPED` result code indicates that a given test was explicitly skipped by 
 * taking a very long time to run
 * failing or passing for the incorrect reason
 
-### Debugging individual tests
+### Debugging Individual Tests
 
 While `stl-lit` is super awesome in finding out that *something* is wrong or not even compiling, it is not really
 helpful in debugging *what* is going wrong. However, debugging individual tests is rather simple given some additional
-steps. Let's assume we want to debug a new feature with tests located in `tests\std\tests\GH_XXXX_meow`
+steps. Let's assume we want to debug a new feature with tests located in `tests\std\tests\GH_XXXX_meow`.
 
 As always, build the STL from your branch and run the tests:
 ```
@@ -375,19 +375,18 @@ C:\STL\out\build\x64> python tests\utils\stl-lit\stl-lit.py -v C:\STL\tests\std\
 ```
 
 Let's assume one of the tests fails an assert and we want to debug that configuration. `stl-lit` will conveniently print
-the build command, which is far too long to provide here in full. The important part is to add the following option to
+the build command, which is far too long to provide here in full. The important part is to add the following options to
 provide debug symbols: `/Zi /Fdbark.pdb`.
 
 You can replace `bark` with any descriptive name you like. Add these before the `"-link"` option in the command line
-and recompile.
-Example:
+and recompile. Example:
 ```
 C:\STL\out\build\x64>cl "C:\STL\tests\std\tests\GH_XXXX_meow\test.cpp" [... more arguments ...]
 "-FeC:\STL\out\build\x64\tests\std\tests\GH_XXXX_meow\Output\02\GH_XXXX_meow.exe" /Zi /Fdbark.pdb "-link"
 [... more arguments ...]
 ```
 
-You can now start debugging the test via
+You can now start debugging the test via:
 ```
 devenv "C:\STL\out\build\x64\tests\std\tests\GH_XXXX_meow\Output\02\GH_XXXX_meow.exe"
        "C:\STL\tests\std\tests\GH_XXXX_meow\test.cpp"
@@ -395,8 +394,8 @@ devenv "C:\STL\out\build\x64\tests\std\tests\GH_XXXX_meow\Output\02\GH_XXXX_meow
 
 However, this might not work right away, as Visual Studio may complain about a missing `msvcp140_oss.dll`. The reason
 is that the STL builds those and other DLLs itself and we should under no circumstances overwrite the installed ones.
-If you are testing one of the configurations with dynamic linkage (/MD or /MDd) the easiest solution is to add the
-build folder to your path
+If you are testing one of the configurations with dynamic linkage (`/MD` or `/MDd`) the easiest solution is to add the
+build folder to your path:
 ```
 set PATH=C:\STL\out\build\x64\out\bin\amd64;%PATH%
 ```
