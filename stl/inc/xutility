@@ -4422,7 +4422,7 @@ template <>
 struct _Is_character_or_byte_or_bool<byte> : true_type {};
 #endif // __cpp_lib_byte
 
-// _Fill_memset_is_safe determines if _FwdIt and _Ty are eligible for memset optimization in fill
+// _Fill_memset_is_safe determines if _FwdIt and _Ty are eligible for memset optimization in fill.
 // Need to explicitly test for volatile because _Unwrap_enum_t discards qualifiers.
 template <class _FwdIt, class _Ty, bool = _Iterator_is_contiguous<_FwdIt>>
 _INLINE_VAR constexpr bool _Fill_memset_is_safe = conjunction_v<is_scalar<_Ty>,
@@ -4629,6 +4629,7 @@ _INLINE_VAR constexpr bool _Equal_memcmp_is_safe =
 
 template <class _CtgIt1, class _CtgIt2>
 _NODISCARD int _Memcmp_ranges(_CtgIt1 _First1, _CtgIt1 _Last1, _CtgIt2 _First2) {
+    _STL_INTERNAL_STATIC_ASSERT(sizeof(_Iter_value_t<_CtgIt1>) == sizeof(_Iter_value_t<_CtgIt2>));
     const auto _First1_ch = reinterpret_cast<const char*>(_To_address(_First1));
     const auto _Last1_ch  = reinterpret_cast<const char*>(_To_address(_Last1));
     const auto _First2_ch = reinterpret_cast<const char*>(_To_address(_First2));
@@ -4637,6 +4638,7 @@ _NODISCARD int _Memcmp_ranges(_CtgIt1 _First1, _CtgIt1 _Last1, _CtgIt2 _First2) 
 
 template <class _CtgIt1, class _CtgIt2>
 _NODISCARD int _Memcmp_count(_CtgIt1 _First1, _CtgIt2 _First2, const size_t _Count) {
+    _STL_INTERNAL_STATIC_ASSERT(sizeof(_Iter_value_t<_CtgIt1>) == sizeof(_Iter_value_t<_CtgIt2>));
     const auto _First1_ch = reinterpret_cast<const char*>(_To_address(_First1));
     const auto _First2_ch = reinterpret_cast<const char*>(_To_address(_First2));
     return _CSTD memcmp(_First1_ch, _First2_ch, _Count * sizeof(_Iter_value_t<_CtgIt1>));
@@ -5076,8 +5078,8 @@ _NODISCARD constexpr auto lexicographical_compare_three_way(
 
 // FUNCTION TEMPLATE find
 template <class _Ty>
-_NODISCARD constexpr bool _Within_limits(
-    const _Ty& _Val, true_type, true_type, _Any_tag, false_type) { // signed _Elem, signed _Ty
+_NODISCARD constexpr bool _Within_limits(const _Ty& _Val, true_type, true_type, _Any_tag, false_type) {
+    // signed _Elem, signed _Ty
     return SCHAR_MIN <= _Val && _Val <= SCHAR_MAX;
 }
 
@@ -5112,11 +5114,11 @@ _NODISCARD constexpr bool _Within_limits(const _Ty& _Val, _Any_tag, _Any_tag, _A
 }
 
 template <class _InIt, class _Ty>
-_NODISCARD constexpr bool _Within_limits(
-    const _InIt&, const _Ty& _Val) { // check whether _Val is within the limits of _Elem
+_NODISCARD constexpr bool _Within_limits(const _InIt&, const _Ty& _Val) {
+    // check whether _Val is within the limits of _Elem
     using _Elem = _Iter_value_t<_InIt>;
-    return _Within_limits(_Val, is_signed<_Elem>{}, is_signed<_Ty>{}, bool_constant<-1 == static_cast<_Ty>(-1)>{},
-        is_same<_Elem, bool>{});
+    return _Within_limits(_Val, bool_constant<is_signed_v<_Elem>>{}, bool_constant<is_signed_v<_Ty>>{},
+        bool_constant<-1 == static_cast<_Ty>(-1)>{}, bool_constant<is_same_v<_Elem, bool>>{});
 }
 
 template <class _InIt>
@@ -5209,7 +5211,7 @@ namespace ranges {
                 }
 
                 const auto _First_ptr = _STD to_address(_First);
-                const auto _Result = static_cast<iter_value_t<_It>*>(_CSTD memchr(_First_ptr,
+                const auto _Result = static_cast<remove_reference_t<_Iter_ref_t<_It>>*>(_CSTD memchr(_First_ptr,
                     static_cast<unsigned char>(_Val), static_cast<size_t>(_Last - _First)));
                 if (_Result) {
                     if constexpr (is_pointer_v<_It>) {
