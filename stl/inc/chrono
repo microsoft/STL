@@ -2867,7 +2867,7 @@ namespace chrono {
     }
 
     // FUNCTION reload_tzdb
-    _NODISCARD inline const tzdb& reload_tzdb() {
+    inline const tzdb& reload_tzdb() {
         try {
             return _CHRONO get_tzdb_list()._Reload();
         } catch (const exception& _Except) {
@@ -2875,10 +2875,11 @@ namespace chrono {
         }
     }
 
+    // FUNCTION remote_version
     _NODISCARD inline string remote_version() {
         const auto& _Version            = get_tzdb().version;
         const auto [_Leap_sec, _Ignore] = _Xtzdb_generate_leap_seconds(get_tzdb().leap_seconds.size());
-        return _Leap_sec.empty() ? string{_Version} : _Xtzdb_update_version(_Version, _Leap_sec.size());
+        return _Leap_sec.empty() ? _Version : _Xtzdb_update_version(_Version, _Leap_sec.size());
     }
 
     // [time.zone.zonedtraits]
