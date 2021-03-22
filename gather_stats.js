@@ -7,11 +7,15 @@ const fs = require('fs');
 
 const cliProgress = require('cli-progress');
 const dotenv = require('dotenv');
-const { DateTime, Duration } = require('luxon');
+const { DateTime, Duration, Settings } = require('luxon');
 const { graphql } = require('@octokit/graphql');
 const yargs = require('yargs/yargs');
 
-{
+Settings.defaultZoneName = 'America/Los_Angeles';
+
+if (process.env.SECRET_GITHUB_PERSONAL_ACCESS_TOKEN === undefined) {
+    // GitHub Actions will provide the PAT as an environment variable. Otherwise, we need to load the .env file.
+
     const result = dotenv.config();
 
     if (result.error) {
@@ -53,6 +57,7 @@ async function retrieve_nodes_from_network() {
                 format: '{bar} {percentage}% | ETA: {eta}s | {value}/{total} {name}',
                 autopadding: true,
                 hideCursor: true,
+                noTTYOutput: process.stderr.isTTY !== true,
             },
             cliProgress.Presets.shades_classic
         ),
@@ -328,6 +333,7 @@ function write_daily_table(script_start, all_prs, all_issues) {
             format: '{bar} {percentage}% | ETA: {eta}s | {value}/{total} days analyzed',
             autopadding: true,
             hideCursor: true,
+            noTTYOutput: process.stderr.isTTY !== true,
         },
         cliProgress.Presets.shades_classic
     );
@@ -335,7 +341,7 @@ function write_daily_table(script_start, all_prs, all_issues) {
     try {
         let str = 'const daily_table = [\n';
 
-        const begin = DateTime.fromISO('2019-09-05' + 'T23:00:00-07');
+        const begin = DateTime.fromISO('2019-09-05' + 'T23:00:00');
         const begin_cxx23 = DateTime.fromISO('2020-11-10');
 
         progress_bar.start(Math.ceil(script_start.diff(begin).as('days')), 0);
