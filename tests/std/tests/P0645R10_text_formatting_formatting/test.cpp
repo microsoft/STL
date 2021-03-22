@@ -438,6 +438,11 @@ void test_intergal_specs() {
         assert(format(STR("{:#X}"), integral{-255}) == STR("-0XFF"));
     }
 
+    if constexpr (is_same_v<integral, long long>) {
+        assert(format(STR("{:b}"), std::numeric_limits<long long>::min())
+               == STR("-1000000000000000000000000000000000000000000000000000000000000000"));
+    }
+
     // Leading zero
     assert(format(STR("{:0}"), integral{0}) == STR("0"));
     assert(format(STR("{:03}"), integral{0}) == STR("000"));
@@ -451,6 +456,24 @@ void test_intergal_specs() {
 
     // Precision
     throw_helper(STR("{:.1}"), integral{0});
+
+    // Locale
+    assert(format(std::locale{"en-US"}, STR("{:L}"), integral{0}) == STR("0"));
+    assert(format(std::locale{"en-US"}, STR("{:L}"), integral{100}) == STR("100"));
+    assert(format(std::locale{"en-US"}, STR("{:L}"), integral{1'000}) == STR("1,000"));
+    assert(format(std::locale{"en-US"}, STR("{:L}"), integral{10'000}) == STR("10,000"));
+    assert(format(std::locale{"en-US"}, STR("{:L}"), integral{100'000}) == STR("100,000"));
+    assert(format(std::locale{"en-US"}, STR("{:L}"), integral{1'000'000}) == STR("1,000,000"));
+    assert(format(std::locale{"en-US"}, STR("{:L}"), integral{10'000'000}) == STR("10,000,000"));
+    assert(format(std::locale{"en-US"}, STR("{:L}"), integral{100'000'000}) == STR("100,000,000"));
+
+    assert(format(std::locale{"en-US"}, STR("{:Lx}"), integral{0x123'abc}) == STR("123,abc"));
+    assert(format(std::locale{"en-US"}, STR("{:6L}"), integral{1'000}) == STR(" 1,000"));
+
+    assert(format(std::locale{"hi-IN"}, STR("{:L}"), integral{10'000'000}) == STR("1,00,00,000"));
+    assert(format(std::locale{"hi-IN"}, STR("{:L}"), integral{100'000'000}) == STR("10,00,00,000"));
+
+    assert(format(std::locale{"hi-IN"}, STR("{:Lx}"), integral{0x123'abc}) == STR("1,23,abc"));
 
     // Type
     assert(format(STR("{:b}"), integral{0}) == STR("0"));
@@ -491,6 +514,10 @@ void test_bool_specs() {
 
     // Precision
     throw_helper(STR("{:.5}"), true);
+
+    // Locale
+    assert(format(STR("{:L}"), true) == STR("true"));
+    assert(format(STR("{:L}"), false) == STR("false"));
 
     // Type
     assert(format(STR("{:s}"), true) == STR("true"));
@@ -662,6 +689,18 @@ void test_float_specs() {
     assert(format(STR("{:06}"), nan) == STR("   nan"));
     assert(format(STR("{:06}"), inf) == STR("   inf"));
 
+    // Locale
+    assert(format(std::locale{"en-US"}, STR("{:L}"), Float{0}) == STR("0"));
+    assert(format(std::locale{"en-US"}, STR("{:Lf}"), Float{0}) == STR("0.000000"));
+    assert(format(std::locale{"en-US"}, STR("{:L}"), Float{100}) == STR("100"));
+    assert(format(std::locale{"en-US"}, STR("{:L}"), Float{100.2345}) == STR("100.2345"));
+    assert(format(std::locale{"en-US"}, STR("{:.4Lf}"), value) == STR("1,234.5273"));
+    assert(format(std::locale{"en-US"}, STR("{:#.4Lg}"), Float{0}) == STR("0.000"));
+    assert(format(std::locale{"en-US"}, STR("{:L}"), nan) == STR("nan"));
+    assert(format(std::locale{"en-US"}, STR("{:L}"), inf) == STR("inf"));
+
+    assert(format(std::locale{"de_DE"}, STR("{:Lf}"), Float{0}) == STR("0,000000"));
+
     // Type
     assert(format(STR("{:a}"), value) == STR("1.34a1cp+10"));
     assert(format(STR("{:A}"), value) == STR("1.34A1CP+10"));
@@ -696,6 +735,9 @@ void test_pointer_specs() {
 
     // Precision
     throw_helper(STR("{:.5}"), nullptr);
+
+    // Locale
+    throw_helper(STR("{:L}"), nullptr);
 
     // Types
     assert(format(STR("{:p}"), nullptr) == STR("0x0"));
@@ -741,6 +783,10 @@ void test_string_specs() {
     assert(format(STR("{:5.2}"), view) == STR("sc   "));
     assert(format(STR("{:5.2}"), view) == STR("sc   "));
     assert(format(STR("{:>5.2}"), view) == STR("   sc"));
+
+    // Locale
+    throw_helper(STR("{:L}"), cstr);
+    throw_helper(STR("{:L}"), view);
 
     // Types
     assert(format(STR("{:s}"), cstr) == cstr);
