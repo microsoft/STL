@@ -1880,15 +1880,13 @@ template <class _OutputIt, class _CharT>
 struct _Arg_formatter {
     using _Context = basic_format_context<_OutputIt, _CharT>;
 
-    _Context* _Ctx                                 = nullptr;
-    _Basic_format_specs<_CharT>* _Specs            = nullptr;
-    basic_format_parse_context<_CharT>* _Parse_ctx = nullptr;
+    _Context* _Ctx                      = nullptr;
+    _Basic_format_specs<_CharT>* _Specs = nullptr;
 
     _OutputIt operator()(typename basic_format_arg<_Context>::handle _Handle) {
-        _STL_ASSERT(false, "The custom handler should be structurally unreachable for _Arg_formatter");
+        _STL_VERIFY(false, "The custom handler should be structurally unreachable for _Arg_formatter");
         _STL_INTERNAL_CHECK(_Parse_ctx);
         _STL_INTERNAL_CHECK(_Ctx);
-        _Handle.format(*_Parse_ctx, *_Ctx);
         return _Ctx->out();
     }
 
@@ -1935,12 +1933,7 @@ struct _Format_handler {
             throw format_error("Missing '}' in format string.");
         }
         _Ctx.advance_to(_STD visit_format_arg(
-            _Arg_formatter<_OutputIt, _CharT>{
-                ._Ctx       = _STD addressof(_Ctx),
-                ._Specs     = _STD addressof(_Specs),
-                ._Parse_ctx = _STD addressof(_Parse_context),
-            },
-            _Arg));
+            _Arg_formatter<_OutputIt, _CharT>{._Ctx = _STD addressof(_Ctx), ._Specs = _STD addressof(_Specs)}, _Arg));
         return _Begin;
     }
 };
@@ -1983,7 +1976,10 @@ struct formatter<_Ty, _CharT> {
         if (_Specs._Dynamic_precision_index != -1) {
             _Specs._Precision = _Get_dynamic_specs<_Precision_checker>(_FormatCtx.arg(_Specs._Dynamic_precision_index));
         }
-        return visit_format_arg(_Arg_formatter<typename _FormatContext::iterator, _CharT>(_FormatCtx))
+        return visit_format_arg(
+            _Arg_formatter<typename _FormatContext::iterator, _CharT>{
+                ._Ctx = _STD addressof(_FormatCtx), ._Specs = _STD addressof(_Specs)},
+            basic_format_arg<_FormatContext>{_Val});
     }
 
 
