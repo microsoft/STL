@@ -11,7 +11,9 @@ const { DateTime, Duration } = require('luxon');
 const { graphql } = require('@octokit/graphql');
 const yargs = require('yargs/yargs');
 
-{
+if (process.env.SECRET_GITHUB_PERSONAL_ACCESS_TOKEN === undefined) {
+    // GitHub Actions will provide the PAT as an environment variable. Otherwise, we need to load the .env file.
+
     const result = dotenv.config();
 
     if (result.error) {
@@ -53,6 +55,7 @@ async function retrieve_nodes_from_network() {
                 format: '{bar} {percentage}% | ETA: {eta}s | {value}/{total} {name}',
                 autopadding: true,
                 hideCursor: true,
+                noTTYOutput: process.stderr.isTTY !== true,
             },
             cliProgress.Presets.shades_classic
         ),
@@ -328,6 +331,7 @@ function write_daily_table(script_start, all_prs, all_issues) {
             format: '{bar} {percentage}% | ETA: {eta}s | {value}/{total} days analyzed',
             autopadding: true,
             hideCursor: true,
+            noTTYOutput: process.stderr.isTTY !== true,
         },
         cliProgress.Presets.shades_classic
     );
