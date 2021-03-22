@@ -182,6 +182,20 @@ namespace {
         return _Fun(en, resultLength, status);
     }
 
+    template <>
+    struct _Tzdb_deleter<UEnumeration> {
+        void operator()(UEnumeration* _En) const noexcept {
+            __icu_uenum_close(_En);
+        }
+    };
+
+    template <>
+    struct _Tzdb_deleter<UCalendar> {
+        void operator()(UCalendar* _Cal) const noexcept {
+            __icu_ucal_close(_Cal);
+        }
+    };
+
     _NODISCARD const char* _Allocate_wide_to_narrow(
         const char16_t* const _Input, const int _Input_len, __std_tzdb_error& _Err) noexcept {
         const auto _Code_page      = __std_fs_code_page();
@@ -293,16 +307,16 @@ namespace {
         return _Get_icu_string_impl(_Icu_fn, 12, _Result_len, _Err);
     }
 
-    _NODISCARD _STD unique_ptr<UCalendar, decltype(&__icu_ucal_close)> _Get_cal(
+    _NODISCARD _STD unique_ptr<UCalendar, _Tzdb_deleter<UCalendar>> _Get_cal(
         const char* _Tz, const size_t _Tz_len, __std_tzdb_error& _Err) noexcept {
         const auto _Tz_name = _Allocate_narrow_to_wide(_Tz, static_cast<int>(_Tz_len), _Err);
         if (_Tz_name == nullptr) {
-            return {nullptr, &__icu_ucal_close};
+            return nullptr;
         }
 
         UErrorCode _UErr{U_ZERO_ERROR};
-        _STD unique_ptr<UCalendar, decltype(&__icu_ucal_close)> _Cal{
-            __icu_ucal_open(_Tz_name.get(), -1, nullptr, UCalendarType::UCAL_DEFAULT, &_UErr), &__icu_ucal_close};
+        _STD unique_ptr<UCalendar, _Tzdb_deleter<UCalendar>> _Cal{
+            __icu_ucal_open(_Tz_name.get(), -1, nullptr, UCalendarType::UCAL_DEFAULT, &_UErr)};
         if (U_FAILURE(_UErr)) {
             _Err = __std_tzdb_error::_Icu_error;
         }
@@ -330,8 +344,8 @@ _NODISCARD __std_tzdb_time_zones_info* __stdcall __std_tzdb_get_time_zones() noe
     //    _Info == nullptr          --> bad_alloc
     //    _Info->_Err == _Win_error --> failed, call GetLastError()
     //    _Info->_Err == _Icu_error --> runtime_error interacting with ICU
-    _STD unique_ptr<__std_tzdb_time_zones_info, decltype(&__std_tzdb_delete_time_zones)> _Info{
-        new (_STD nothrow) __std_tzdb_time_zones_info{}, &__std_tzdb_delete_time_zones};
+    _STD unique_ptr<__std_tzdb_time_zones_info, _Tzdb_deleter<__std_tzdb_time_zones_info>> _Info{
+        new (_STD nothrow) __std_tzdb_time_zones_info{}};
     if (_Info == nullptr) {
         return nullptr;
     }
@@ -346,9 +360,8 @@ _NODISCARD __std_tzdb_time_zones_info* __stdcall __std_tzdb_get_time_zones() noe
         return _Report_error(_Info, __std_tzdb_error::_Icu_error);
     }
 
-    _STD unique_ptr<UEnumeration, decltype(&__icu_uenum_close)> _Enum{
-        __icu_ucal_openTimeZoneIDEnumeration(USystemTimeZoneType::UCAL_ZONE_TYPE_ANY, nullptr, nullptr, &_UErr),
-        &__icu_uenum_close};
+    _STD unique_ptr<UEnumeration, _Tzdb_deleter<UEnumeration>> _Enum{
+        __icu_ucal_openTimeZoneIDEnumeration(USystemTimeZoneType::UCAL_ZONE_TYPE_ANY, nullptr, nullptr, &_UErr)};
     if (U_FAILURE(_UErr)) {
         return _Report_error(_Info, __std_tzdb_error::_Icu_error);
     }
@@ -429,8 +442,8 @@ _NODISCARD __std_tzdb_current_zone_info* __stdcall __std_tzdb_get_current_zone()
     //    _Info == nullptr          --> bad_alloc
     //    _Info->_Err == _Win_error --> failed, call GetLastError()
     //    _Info->_Err == _Icu_error --> runtime_error interacting with ICU
-    _STD unique_ptr<__std_tzdb_current_zone_info, decltype(&__std_tzdb_delete_current_zone)> _Info{
-        new (_STD nothrow) __std_tzdb_current_zone_info{}, &__std_tzdb_delete_current_zone};
+    _STD unique_ptr<__std_tzdb_current_zone_info, _Tzdb_deleter<__std_tzdb_current_zone_info>> _Info{
+        new (_STD nothrow) __std_tzdb_current_zone_info{}};
     if (_Info == nullptr) {
         return nullptr;
     }
@@ -466,8 +479,8 @@ _NODISCARD __std_tzdb_sys_info* __stdcall __std_tzdb_get_sys_info(
     //    _Info == nullptr          --> bad_alloc
     //    _Info->_Err == _Win_error --> failed, call GetLastError()
     //    _Info->_Err == _Icu_error --> runtime_error interacting with ICU
-    _STD unique_ptr<__std_tzdb_sys_info, decltype(&__std_tzdb_delete_sys_info)> _Info{
-        new (_STD nothrow) __std_tzdb_sys_info{}, &__std_tzdb_delete_sys_info};
+    _STD unique_ptr<__std_tzdb_sys_info, _Tzdb_deleter<__std_tzdb_sys_info>> _Info{
+        new (_STD nothrow) __std_tzdb_sys_info{}};
     if (_Info == nullptr) {
         return nullptr;
     }
