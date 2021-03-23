@@ -745,8 +745,8 @@ void parse_iso_week_date() {
     fail_parse("99-W53-5 16 00", "%g-W%V-%u %C %y", ymd); // inconsistent %C+%y year (== 1600)
     fail_parse("99-W53-5 17 00", "%g-W%V-%u %C %y", ymd); // inconsistent %C+%g ISO year (== 1700)
 
-    // This is expected to parse successfully. Even though %C+%g would give the wrong year, as above we don't try to
-    // use that for the ISO year when %G is present.
+    // This is expected to parse successfully. Even though %C+%g would give the wrong year,
+    // as above we don't try to use that for the ISO year when %G is present.
     test_parse("1699 99-W53-5 17 00", "%G %g-W%V-%u %C %y", ymd);
     assert(ymd == 1d / January / 1700y);
     fail_parse("1699 98-W53-5 17 00", "%G %g-W%V-%u %C %y", ymd);
@@ -863,7 +863,7 @@ void parse_timepoints() {
     assert(st == ref - (4h + 30min));
 
     // N4878 [time.clock.tai]/1:
-    // The clock tai_­clock measures seconds since 1958-01-01 00:00:00 and is offset 10s ahead of UTC at this date.
+    // The clock tai_clock measures seconds since 1958-01-01 00:00:00 and is offset 10s ahead of UTC at this date.
     // That is, 1958-01-01 00:00:00 TAI is equivalent to 1957-12-31 23:59:50 UTC. Leap seconds are not inserted into
     // TAI. Therefore every time a leap second is inserted into UTC, UTC shifts another second with respect to TAI.
     // For example by 2000-01-01 there had been 22 positive and 0 negative leap seconds inserted so 2000-01-01
@@ -879,7 +879,7 @@ void parse_timepoints() {
     assert(tt == clock_cast<tai_clock>(ref));
 
     // N4878 [time.clock.gps]/1:
-    // The clock gps_­clock measures seconds since the first Sunday of January, 1980 00:00:00 UTC. Leap seconds are
+    // The clock gps_clock measures seconds since the first Sunday of January, 1980 00:00:00 UTC. Leap seconds are
     // not inserted into GPS. Therefore every time a leap second is inserted into UTC, UTC shifts another second
     // with respect to GPS. Aside from the offset from 1958y/January/1 to 1980y/January/Sunday[1], GPS is behind TAI
     // by 19s due to the 10s offset between 1958 and 1970 and the additional 9 leap seconds inserted between 1970
