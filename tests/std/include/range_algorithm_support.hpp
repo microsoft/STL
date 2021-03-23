@@ -87,7 +87,7 @@ namespace test {
 
     enum class CanDifference : bool { no, yes };
     enum class CanCompare : bool { no, yes };
-    enum class ProxyRef : bool { no, yes };
+    enum class ProxyRef { no, yes, prvalue };
     enum class IsWrapped : bool { no, yes };
 
     template <class T>
@@ -341,14 +341,15 @@ namespace test {
         // Interact with the STL's iterator unwrapping machinery?
         IsWrapped Wrapped = IsWrapped::yes>
         requires (to_bool(Eq) || !derived_from<Category, fwd>)
-            && (!to_bool(Proxy) || !derived_from<Category, contiguous>)
+            && (Proxy == ProxyRef::no || !derived_from<Category, contiguous>)
     class iterator {
         Element* ptr_;
 
         template <class T>
         static constexpr bool at_least = derived_from<Category, T>;
 
-        using ReferenceType = conditional_t<to_bool(Proxy), proxy_reference<Category, Element>, Element&>;
+        using ReferenceType = conditional_t<Proxy == ProxyRef::yes, proxy_reference<Category, Element>,
+            conditional_t<Proxy == ProxyRef::prvalue, std::remove_cv_t<Element>, Element&>>;
 
         struct post_increment_proxy {
             Element* ptr_;
@@ -590,7 +591,7 @@ template <class Category, class Element, ::test::CanDifference Diff, ::test::Can
 struct std::iterator_traits<::test::iterator<Category, Element, Diff, Eq, Proxy, Wrapped>> {
     using iterator_concept  = Category;
     using iterator_category = conditional_t<derived_from<Category, forward_iterator_tag>, //
-        conditional_t<static_cast<bool>(Proxy), input_iterator_tag, Category>, //
+        conditional_t<Proxy == ::test::ProxyRef::no, Category, input_iterator_tag>, //
         conditional_t<static_cast<bool>(Eq), Category, void>>; // TRANSITION, LWG-3289
     using value_type        = remove_cv_t<Element>;
     using difference_type   = ptrdiff_t;
@@ -670,11 +671,11 @@ namespace test {
         template <class Element>
         class range_base<Element, Copyability::copyable> {
         public:
-            range_base() = default;
+            constexpr range_base() = default;
             constexpr explicit range_base(span<Element> elements) noexcept : elements_{elements} {}
 
-            range_base(const range_base&) = default;
-            range_base& operator=(const range_base&) = default;
+            constexpr range_base(const range_base&) = default;
+            constexpr range_base& operator=(const range_base&) = default;
 
             constexpr range_base(range_base&& that) noexcept
                 : elements_{that.elements_}, moved_from_{that.moved_from_} {
@@ -720,7 +721,7 @@ namespace test {
         Copyability Copy = IsView == CanView::yes ? Copyability::move_only : Copyability::immobile>
         requires (!to_bool(IsCommon) || to_bool(Eq))
             && (to_bool(Eq) || !derived_from<Category, fwd>)
-            && (!to_bool(Proxy) || !derived_from<Category, contiguous>)
+            && (Proxy == ProxyRef::no || !derived_from<Category, contiguous>)
             && (!to_bool(IsView) || Copy != Copyability::immobile)
     class range : public detail::range_base<Element, Copy> {
     private:

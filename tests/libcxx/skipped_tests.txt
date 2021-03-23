@@ -320,9 +320,6 @@ language.support\support.limits\support.limits.general\functional.version.pass.c
 language.support\support.limits\support.limits.general\iterator.version.pass.cpp
 language.support\support.limits\support.limits.general\memory.version.pass.cpp
 
-# C++20 P1614R2 "Adding Spaceship <=> To The Library"
-language.support\support.limits\support.limits.general\compare.version.pass.cpp
-
 # C++23 P1048R1 "is_scoped_enum"
 utilities\meta\meta.unary\meta.unary.prop\is_scoped_enum.pass.cpp
 
@@ -369,16 +366,6 @@ utilities\utility\pairs\pairs.pair\assign_rv_pair_U_V.pass.cpp
 # VSO-1271673 "static analyzer doesn't know about short-circuiting"
 algorithms\alg.sorting\alg.sort\partial.sort\partial_sort.pass.cpp
 algorithms\alg.sorting\alg.sort\partial.sort\partial_sort_comp.pass.cpp
-
-# VSO-1275530 "[constexpr] Temporaries created for functions do not have a ctor called (and have a redundant dtor)."
-numerics\numeric.ops\exclusive.scan\exclusive_scan.pass.cpp
-numerics\numeric.ops\exclusive.scan\exclusive_scan_init_op.pass.cpp
-numerics\numeric.ops\inclusive.scan\inclusive_scan.pass.cpp
-numerics\numeric.ops\inclusive.scan\inclusive_scan_op.pass.cpp
-numerics\numeric.ops\inclusive.scan\inclusive_scan_op_init.pass.cpp
-numerics\numeric.ops\transform.exclusive.scan\transform_exclusive_scan_init_bop_uop.pass.cpp
-numerics\numeric.ops\transform.inclusive.scan\transform_inclusive_scan_bop_uop.pass.cpp
-numerics\numeric.ops\transform.inclusive.scan\transform_inclusive_scan_bop_uop_init.pass.cpp
 
 
 # *** CLANG COMPILER BUGS ***
@@ -670,6 +657,18 @@ utilities\memory\util.smartptr\util.smartptr.shared\libcxx.control_block_layout.
 
 # Non-Standard assumption that std::filesystem::file_time_type::duration::period is std::nano
 input.output\filesystems\fs.filesystem.synopsis\file_time_type_resolution.compile.pass.cpp
+
+# P1614R2 "Adding Spaceship <=> To The Library" makes `std::operator!=(i1, i3)` an error
+iterators\stream.iterators\istream.iterator\istream.iterator.ops\equal.pass.cpp
+
+# Uses-allocator class constructor wants non-const allocator ref and mismatched piecewise_construct's value category
+utilities\allocator.adaptor\allocator.adaptor.members\construct.pass.cpp
+utilities\allocator.adaptor\allocator.adaptor.members\construct_pair.pass.cpp
+utilities\allocator.adaptor\allocator.adaptor.members\construct_pair_const_lvalue_pair.pass.cpp
+utilities\allocator.adaptor\allocator.adaptor.members\construct_pair_piecewise.pass.cpp
+utilities\allocator.adaptor\allocator.adaptor.members\construct_pair_rvalue.pass.cpp
+utilities\allocator.adaptor\allocator.adaptor.members\construct_pair_values.pass.cpp
+utilities\allocator.adaptor\allocator.adaptor.members\construct_type.pass.cpp
 
 
 # *** LIKELY STL BUGS ***

@@ -127,7 +127,7 @@ _CONSTEXPR20_DYNALLOC bool test() {
     }
 #endif // __cpp_lib_concepts
 
-#if defined(__cpp_constexpr_dynamic_alloc) && (defined(__clang__) || defined(__EDG__)) // TRANSITION, DevCom-1333853
+#if defined(__cpp_constexpr_dynamic_alloc)
     { // _Uninitialized_move_unchecked
         int_wrapper_move input[] = {1, 2, 3, 4};
         int_wrapper_move output[4];
@@ -140,7 +140,7 @@ _CONSTEXPR20_DYNALLOC bool test() {
             assert(equal(begin(input), end(input), begin(expected_after_move), end(expected_after_move)));
         }
     }
-#endif // defined(__cpp_constexpr_dynamic_alloc) && (defined(__clang__) || defined(__EDG__))
+#endif // defined(__cpp_constexpr_dynamic_alloc)
     return true;
 }
 

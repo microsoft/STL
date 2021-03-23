@@ -20,9 +20,9 @@ $ErrorActionPreference = 'Stop'
 # https://aka.ms/azps-changewarnings
 $Env:SuppressAzurePowerShellBreakingChangeWarnings = 'true'
 
-$Location = 'northeurope'
+$Location = 'westus2'
 $Prefix = 'StlBuild-' + (Get-Date -Format 'yyyy-MM-dd')
-$VMSize = 'Standard_D32as_v4'
+$VMSize = 'Standard_D32ds_v4'
 $ProtoVMName = 'PROTOTYPE'
 $LiveVMPrefix = 'BUILD'
 $WindowsServerSku = '2019-Datacenter'
