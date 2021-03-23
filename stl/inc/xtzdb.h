@@ -85,10 +85,10 @@ void __stdcall __std_free_crt(void* _Ptr) noexcept;
 
 _END_EXTERN_C
 
+_STD_BEGIN
+
 template <class _Ty>
-struct _Tzdb_deleter {
-    void operator()(_Ty*) const noexcept {}
-};
+struct _Tzdb_deleter;
 
 template <>
 struct _Tzdb_deleter<__std_tzdb_time_zones_info> {
@@ -117,8 +117,6 @@ struct _Tzdb_deleter<__std_tzdb_registry_leap_info[]> {
         __std_tzdb_delete_reg_leap_seconds(_Info);
     }
 };
-
-_STD_BEGIN
 
 template <class _Ty>
 class _Crt_allocator {

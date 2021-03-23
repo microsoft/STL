@@ -2699,12 +2699,8 @@ namespace chrono {
     }
 
     _NODISCARD inline string _Xtzdb_update_version(const string_view _Version, const size_t _Num_leap_seconds) {
-        const auto _Icu_end     = _Version.find_last_of('.');
-        const auto _Icu_version = _Icu_end == decltype(_Version)::npos
-                                    ? string{_Version}
-                                    : string{_Version.begin(),
-                                        _Version.begin() + static_cast<decltype(_Version)::difference_type>(_Icu_end)};
-        return _Icu_version + "." + _STD to_string(_Num_leap_seconds);
+        string _Icu_version{_Version.substr(0, _Version.find_last_of('.'))};
+        return _STD move(_Icu_version) + "." + _STD to_string(_Num_leap_seconds);
     }
 
     // TRANSITION: work in progress
@@ -2732,7 +2728,7 @@ namespace chrono {
             return _Tzdb_list.front();
         }
 
-        _NODISCARD const_iterator erase_after(const_iterator _Where) noexcept {
+        const_iterator erase_after(const_iterator _Where) noexcept /* strengthened */ {
             return _Tzdb_list.erase_after(_Where);
         }
 
@@ -2771,9 +2767,9 @@ namespace chrono {
                     _Tzdb.links.begin(), _Tzdb.links.end(), _STD back_inserter(_Links), [](const auto& _Link) {
                         return time_zone_link{_Link.name(), _Link.target()};
                     });
-                const auto _Version = _Xtzdb_update_version(_Tzdb.version, _Leap_sec.size());
-                _Tzdb_list.emplace_front(
-                    tzdb{_Tzdb.version, _STD move(_Zones), _STD move(_Links), _STD move(_Leap_sec), _All_ls_positive});
+                auto _Version = _Xtzdb_update_version(_Tzdb.version, _Leap_sec.size());
+                _Tzdb_list.emplace_front(tzdb{
+                    _STD move(_Version), _STD move(_Zones), _STD move(_Links), _STD move(_Leap_sec), _All_ls_positive});
             }
             return _Tzdb_list.front();
         }
@@ -2877,8 +2873,9 @@ namespace chrono {
 
     // FUNCTION remote_version
     _NODISCARD inline string remote_version() {
-        const auto& _Version            = get_tzdb().version;
-        const auto [_Leap_sec, _Ignore] = _Xtzdb_generate_leap_seconds(get_tzdb().leap_seconds.size());
+        const auto& _Tzdb                = _CHRONO get_tzdb();
+        const auto& _Version             = _Tzdb.version;
+        const auto [_Leap_sec, _Ignored] = _Xtzdb_generate_leap_seconds(_Tzdb.leap_seconds.size());
         return _Leap_sec.empty() ? _Version : _Xtzdb_update_version(_Version, _Leap_sec.size());
     }
 

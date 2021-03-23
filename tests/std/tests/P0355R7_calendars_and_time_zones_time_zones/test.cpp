@@ -7,6 +7,7 @@
 #include <iostream>
 #include <ratio>
 #include <stdexcept>
+#include <string>
 #include <string_view>
 #include <utility>
 
@@ -69,12 +70,12 @@ void timezone_version_test() {
     const auto& my_tzdb = get_tzdb();
     assert(my_tzdb.version.empty() == false);
 
-    // version should end in .X where X == number leap seconds
+    // version should end in .X where X == number of leap seconds
     const auto pos = my_tzdb.version.find_last_of('.');
     assert(pos != decltype(my_tzdb.version)::npos);
     const string leap_seconds{my_tzdb.version, pos + 1};
     assert(leap_seconds.empty() == false);
-    assert(leap_seconds == std::to_string(my_tzdb.leap_seconds.size()));
+    assert(leap_seconds == to_string(my_tzdb.leap_seconds.size()));
 
     // remote version will only differ if leap seconds info changes, will not occur in tests
     const auto& reloaded_tzdb = reload_tzdb();
