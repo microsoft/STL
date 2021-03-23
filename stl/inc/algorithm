@@ -766,6 +766,13 @@ namespace ranges {
         template <class _It1, class _It2, class _Size, class _Pr, class _Pj1, class _Pj2>
         _NODISCARD static constexpr bool _Equal_count(
             _It1 _First1, _It2 _First2, _Size _Count, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            if constexpr (_Equal_memcmp_is_safe<_It1, _It2,
+                              _Pr> && same_as<_Pj1, identity> && same_as<_Pj2, identity>) {
+                if (!_STD is_constant_evaluated()) {
+                    return _Memcmp_count(_First1, _First2, static_cast<size_t>(_Count)) == 0;
+                }
+            }
+
             for (; _Count != 0; ++_First1, (void) ++_First2, --_Count) {
                 if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_First2))) {
                     return false;
@@ -2000,10 +2007,7 @@ _NODISCARD _CONSTEXPR20 bool _Equal_rev_pred_unchecked(_InIt1 _First1, _InIt2 _F
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
         {
-            const auto _First1_ch = _To_pointer<const char>(_First1);
-            const auto _First2_ch = _To_pointer<const char>(_First2);
-            const auto _Count     = static_cast<size_t>(_To_pointer<const char>(_Last2) - _First2_ch);
-            return _CSTD memcmp(_First1_ch, _First2_ch, _Count) == 0;
+            return _Memcmp_ranges(_First2, _Last2, _First1) == 0;
         }
     }
 
@@ -2095,7 +2099,7 @@ namespace ranges {
     // clang-format off
     template <class _It1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
     concept _Equal_rev_pred_can_memcmp = is_same_v<_Pj1, identity> && is_same_v<_Pj2, identity>
-        && is_same_v<_Se2, _It2> && _Equal_memcmp_is_safe<_It1, _It2, _Pr>;
+        && sized_sentinel_for<_Se2, _It2> && _Equal_memcmp_is_safe<_It1, _It2, _Pr>;
 
     template <input_iterator _It1, input_iterator _It2, sentinel_for<_It2> _Se2, class _Pr, class _Pj1, class _Pj2>
         requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
@@ -2106,12 +2110,14 @@ namespace ranges {
         constexpr bool _Optimize = _Equal_rev_pred_can_memcmp<_It1, _It2, _Se2, _Pr, _Pj1, _Pj2>;
         if constexpr (_Optimize) {
             if (!_STD is_constant_evaluated()) {
-                const auto _First1_ch = reinterpret_cast<const char*>(_STD to_address(_First1));
-                const auto _First2_ch = reinterpret_cast<const char*>(_STD to_address(_First2));
-                const auto _Count =
-                    static_cast<size_t>(reinterpret_cast<const char*>(_STD to_address(_Last2)) - _First2_ch);
-                const bool _Eq = _CSTD memcmp(_First1_ch, _First2_ch, _Count) == 0;
-                if (_Eq) {
+                bool _Ans;
+                if constexpr (same_as<_It2, _Se2>) {
+                    _Ans = _Memcmp_ranges(_First2, _Last2, _First1) == 0;
+                } else {
+                    _Ans = _Memcmp_count(_First1, _First2, static_cast<size_t>(_Last2 - _First2)) == 0;
+                }
+
+                if (_Ans) {
                     _First1 += (_Last2 - _First2);
                     return {true, _STD move(_First1)};
                 } else {
@@ -3469,17 +3475,19 @@ namespace ranges {
             auto _UFirst      = _Get_unwrapped(_STD move(_First));
             const auto _ULast = _Get_unwrapped(_STD move(_Last));
             if (!_STD is_constant_evaluated()) {
-                if constexpr (_Fill_memset_is_safe<decltype(_UFirst), _Ty>) {
-                    const auto _Distance = static_cast<size_t>(_ULast - _UFirst);
-                    _Fill_memset(_UFirst, _Value, _Distance);
-                    _Seek_wrapped(_First, _UFirst + _Distance);
-                    return _First;
-                } else if constexpr (_Fill_zero_memset_is_safe<decltype(_UFirst), _Ty>) {
-                    if (_Is_all_bits_zero(_Value)) {
+                if constexpr (sized_sentinel_for<decltype(_ULast), decltype(_UFirst)>) {
+                    if constexpr (_Fill_memset_is_safe<decltype(_UFirst), _Ty>) {
                         const auto _Distance = static_cast<size_t>(_ULast - _UFirst);
-                        _Fill_zero_memset(_UFirst, _Distance);
+                        _Fill_memset(_UFirst, _Value, _Distance);
                         _Seek_wrapped(_First, _UFirst + _Distance);
                         return _First;
+                    } else if constexpr (_Fill_zero_memset_is_safe<decltype(_UFirst), _Ty>) {
+                        if (_Is_all_bits_zero(_Value)) {
+                            const auto _Distance = static_cast<size_t>(_ULast - _UFirst);
+                            _Fill_zero_memset(_UFirst, _Distance);
+                            _Seek_wrapped(_First, _UFirst + _Distance);
+                            return _First;
+                        }
                     }
                 }
             }
@@ -4355,10 +4363,11 @@ _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
     auto _UDest        = _Get_unwrapped_n(_Dest, _Idl_distance<_BidIt>(_UFirst, _ULast));
 
 #if _USE_STD_VECTOR_ALGORITHMS
-    using _Elem                         = remove_pointer_t<decltype(_UFirst)>;
-    using _DestElem                     = remove_pointer_t<decltype(_UDest)>;
+    using _Elem                         = remove_reference_t<_Iter_ref_t<remove_const_t<decltype(_UFirst)>>>;
+    using _DestElem                     = remove_reference_t<_Iter_ref_t<decltype(_UDest)>>;
     constexpr bool _Allow_vectorization = conjunction_v<is_same<remove_const_t<_Elem>, _DestElem>,
-        is_pointer<decltype(_UFirst)>, is_trivially_copyable<_Elem>, negation<is_volatile<_Elem>>>;
+        bool_constant<_Iterators_are_contiguous<decltype(_UFirst), decltype(_UDest)>>, is_trivially_copyable<_Elem>,
+        negation<is_volatile<_Elem>>>;
     constexpr size_t _Nx                = sizeof(_Elem);
 
 #pragma warning(suppress : 6326) // Potential comparison of a constant with another constant
@@ -4368,13 +4377,13 @@ _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
 #endif // __cpp_lib_is_constant_evaluated
         {
             if constexpr (_Nx == 1) {
-                __std_reverse_copy_trivially_copyable_1(_UFirst, _ULast, _UDest);
+                __std_reverse_copy_trivially_copyable_1(_To_address(_UFirst), _To_address(_ULast), _To_address(_UDest));
             } else if constexpr (_Nx == 2) {
-                __std_reverse_copy_trivially_copyable_2(_UFirst, _ULast, _UDest);
+                __std_reverse_copy_trivially_copyable_2(_To_address(_UFirst), _To_address(_ULast), _To_address(_UDest));
             } else if constexpr (_Nx == 4) {
-                __std_reverse_copy_trivially_copyable_4(_UFirst, _ULast, _UDest);
+                __std_reverse_copy_trivially_copyable_4(_To_address(_UFirst), _To_address(_ULast), _To_address(_UDest));
             } else {
-                __std_reverse_copy_trivially_copyable_8(_UFirst, _ULast, _UDest);
+                __std_reverse_copy_trivially_copyable_8(_To_address(_UFirst), _To_address(_ULast), _To_address(_UDest));
             }
 
             _UDest += _ULast - _UFirst;
@@ -10358,6 +10367,18 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It2>);
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se2, _It2>);
             _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, projected<_It1, _Pj1>, projected<_It2, _Pj2>>);
+
+            using _Memcmp_classification_pred =
+                typename decltype(_Lex_compare_memcmp_classify(_First1, _First2, _Pred))::_Pred;
+            if constexpr (!is_void_v<_Memcmp_classification_pred> && sized_sentinel_for<_Se1, _It1> //
+                          && sized_sentinel_for<_Se2, _It2> && same_as<_Pj1, identity> && same_as<_Pj2, identity>) {
+                if (!_STD is_constant_evaluated()) {
+                    const auto _Num1 = static_cast<size_t>(_Last1 - _First1);
+                    const auto _Num2 = static_cast<size_t>(_Last2 - _First2);
+                    const int _Ans   = _Memcmp_count(_First1, _First2, (_STD min)(_Num1, _Num2));
+                    return _Memcmp_classification_pred{}(_Ans, 0) || (_Ans == 0 && _Num1 < _Num2);
+                }
+            }
 
             for (;; ++_First1, (void) ++_First2) {
                 if (_First2 == _Last2) {
