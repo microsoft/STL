@@ -100,6 +100,9 @@ concept _Parse_replacement_field_callbacks = requires(_Ty _At, const _CharT* _Be
 template <class _Ty, class _CharT>
 concept _CharT_or_bool = same_as<_Ty, _CharT> || same_as<_Ty, bool>;
 
+template <class _CharT>
+concept _Format_supported_charT = _Is_any_of_v<_CharT, char, wchar_t>;
+
 // clang-format on
 
 template <class _Ty, class _CharT = char>
@@ -1264,6 +1267,7 @@ constexpr size_t _Get_format_arg_type_storage_size(_Basic_format_arg_type _Type)
     }
 }
 
+
 template <class _Ty, class _CharT>
 constexpr _Basic_format_arg_type _Format_arg_storage_type_direct = _Basic_format_arg_type::_None;
 
@@ -1885,8 +1889,8 @@ struct _Arg_formatter {
 
     _OutputIt operator()(typename basic_format_arg<_Context>::handle _Handle) {
         _STL_VERIFY(false, "The custom handler should be structurally unreachable for _Arg_formatter");
-        _STL_INTERNAL_CHECK(_Parse_ctx);
         _STL_INTERNAL_CHECK(_Ctx);
+        (void) _Handle;
         return _Ctx->out();
     }
 
@@ -1947,20 +1951,13 @@ struct formatter {
     formatter operator=(const formatter&) = delete;
 };
 
-// clang-format off
-template <class _Ty, class _CharT>
-    requires (_Format_arg_storage_type_direct<_Ty, _CharT> != _Basic_format_arg_type::_None)
-struct formatter<_Ty, _CharT> {
-    // clang-format on
-
-    formatter() = default;
+template <class _Ty, class _CharT, _Basic_format_arg_type _ArgType>
+struct _Formatter_base {
 
     using _Pc = basic_format_parse_context<_CharT>;
 
-    _Pc::iterator parse(_Pc& _ParseCtx) {
-        auto _Type = _Format_arg_storage_type_direct<_Ty, _CharT>;
-        _Specs_checker<_Dynamic_specs_handler<_ParseContext>> _Handler(
-            _Dynamic_specs_handler<_ParseContext>(_Specs, _ParseCtx), _Type);
+    typename _Pc::iterator parse(_Pc& _ParseCtx) {
+        _Specs_checker<_Dynamic_specs_handler<_Pc>> _Handler(_Dynamic_specs_handler<_Pc>(_Specs, _ParseCtx), _ArgType);
         auto _It = _Parse_format_specs(_ParseCtx.begin(), _ParseCtx.end(), _Handler);
         if (_It == _ParseCtx.end() || *_It != '}') {
             throw format_error("Mising '}' in format string.");
@@ -1986,6 +1983,9 @@ struct formatter<_Ty, _CharT> {
 private:
     _Dynamic_format_specs<_CharT> _Specs;
 };
+
+template <_Format_supported_charT _CharT>
+struct formatter<int, _CharT> : _Formatter_base<int, _CharT, _Basic_format_arg_type::_Int_type> {};
 
 using format_context  = basic_format_context<back_insert_iterator<string>, string::value_type>;
 using wformat_context = basic_format_context<back_insert_iterator<wstring>, wstring::value_type>;

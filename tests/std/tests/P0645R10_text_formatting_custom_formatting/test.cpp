@@ -13,6 +13,10 @@ struct custom_formattable_type {
     string_view string_content;
 };
 
+struct custom_int_formattable_type {
+    int value;
+};
+
 template <>
 struct std::formatter<custom_formattable_type, char> {
     basic_format_parse_context<char>::iterator parse(basic_format_parse_context<char>& parse_ctx) {
@@ -27,8 +31,17 @@ struct std::formatter<custom_formattable_type, char> {
     }
 };
 
+template <>
+struct std::formatter<custom_int_formattable_type> : std::formatter<int> {
+    template <class FormatContext>
+    auto format(const custom_int_formattable_type& val, FormatContext& ctx) {
+        return std::formatter<int>::format(val.value, ctx);
+    }
+};
+
 constexpr void test_disabled_formatter_is_disabled() {
     using F = formatter<void, void>;
+
     static_assert(!is_default_constructible_v<F>);
     static_assert(!is_copy_constructible_v<F>);
     static_assert(!is_move_constructible_v<F>);
@@ -38,5 +51,6 @@ constexpr void test_disabled_formatter_is_disabled() {
 
 int main() {
     assert(format("{}", custom_formattable_type{"f"}) == "f"s);
+    assert(format("{:+}", 0) == format("{:+}", custom_int_formattable_type{0}));
     return 0;
 }
