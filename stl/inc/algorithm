@@ -1605,7 +1605,7 @@ namespace ranges {
         if constexpr (_Ptr_move_cat<_It, _Out>::_Trivially_copyable) {
             if (!_STD is_constant_evaluated()) {
                 auto _LastIt = _RANGES next(_First, _Last);
-                _Result = _Copy_memmove(_STD move(_First), _LastIt, _STD move(_Result));
+                _Result      = _Copy_memmove(_STD move(_First), _LastIt, _STD move(_Result));
                 return {_STD move(_LastIt), _STD move(_Result)};
             }
         }

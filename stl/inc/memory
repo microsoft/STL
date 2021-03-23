@@ -78,9 +78,10 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(_No_throw_sentinel_for<_OSe, _Out>);
             _STL_INTERNAL_STATIC_ASSERT(constructible_from<iter_value_t<_Out>, iter_reference_t<_It>>);
 
-            if constexpr (_Ptr_copy_cat<_It, _Out>::_Really_trivial && sized_sentinel_for<_Se, _It>
-                && sized_sentinel_for<_OSe, _Out>) {
-                return _Copy_memcpy_common(_IFirst, _RANGES next(_IFirst, _ILast), _OFirst, _RANGES next(_OFirst, _OLast));
+            if constexpr (_Ptr_copy_cat<_It, _Out>::_Really_trivial
+                          && sized_sentinel_for<_Se, _It> && sized_sentinel_for<_OSe, _Out>) {
+                return _Copy_memcpy_common(
+                    _IFirst, _RANGES next(_IFirst, _ILast), _OFirst, _RANGES next(_OFirst, _OLast));
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
