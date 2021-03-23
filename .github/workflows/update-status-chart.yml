@@ -20,9 +20,8 @@ jobs:
           node-version: ">=15.12.0"
       - name: Run gather_stats.js
         run: |
-          export SECRET_GITHUB_PERSONAL_ACCESS_TOKEN=${{ github.token }}
           npm ci
-          node gather_stats.js
+          SECRET_GITHUB_PERSONAL_ACCESS_TOKEN="${{ github.token }}" node gather_stats.js
       - name: Commit Changes
         run: |
           git config user.name "github-actions[bot]"
