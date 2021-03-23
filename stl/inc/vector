@@ -607,7 +607,7 @@ private:
                     _Buy_raw(static_cast<size_type>(_Rightlast - _Rightfirst));
                     _Tidy_guard<vector> _Guard{this};
                     auto& _My_data   = _Mypair._Myval2;
-                    _My_data._Mylast = _Umove(_Rightfirst, _Rightlast, _My_data._Myfirst);
+                    _My_data._Mylast = _Uninitialized_move(_Rightfirst, _Rightlast, _My_data._Myfirst, _Getal());
                     _Guard._Target   = nullptr;
                 }
                 return;
@@ -691,7 +691,7 @@ private:
 
                     const pointer _Mid = _First + _Oldsize;
                     _Move_unchecked(_First, _Mid, _Myfirst);
-                    _Mylast = _Umove(_Mid, _Last, _Mylast);
+                    _Mylast = _Uninitialized_move(_Mid, _Last, _Mylast, _Getal());
                 } else {
                     const pointer _Newlast = _Myfirst + _Newsize;
                     _Move_unchecked(_First, _Last, _Myfirst);
@@ -796,9 +796,9 @@ public:
         if (_Whereptr == _Mylast) { // at back, provide strong guarantee
             _Umove_if_noexcept(_Myfirst, _Mylast, _Newvec);
         } else { // provide basic guarantee
-            _Umove(_Myfirst, _Whereptr, _Newvec);
+            _Uninitialized_move(_Myfirst, _Whereptr, _Newvec, _Getal());
             _Constructed_first = _Newvec;
-            _Umove(_Whereptr, _Mylast, _Newvec + _Whereoff + 1);
+            _Uninitialized_move(_Whereptr, _Mylast, _Newvec + _Whereoff + 1, _Getal());
         }
         _CATCH_ALL
         _Destroy(_Constructed_first, _Constructed_last);
@@ -890,9 +890,9 @@ public:
             if (_One_at_back) { // provide strong guarantee
                 _Umove_if_noexcept(_Oldfirst, _Oldlast, _Newvec);
             } else { // provide basic guarantee
-                _Umove(_Oldfirst, _Whereptr, _Newvec);
+                _Uninitialized_move(_Oldfirst, _Whereptr, _Newvec, _Getal());
                 _Constructed_first = _Newvec;
-                _Umove(_Whereptr, _Oldlast, _Newvec + _Whereoff + _Count);
+                _Uninitialized_move(_Whereptr, _Oldlast, _Newvec + _Whereoff + _Count, _Getal());
             }
             _CATCH_ALL
             _Destroy(_Constructed_first, _Constructed_last);
@@ -911,10 +911,10 @@ public:
 
             if (_Count > _Affected_elements) { // new stuff spills off end
                 _Mylast = _Uninitialized_fill_n(_Oldlast, _Count - _Affected_elements, _Tmp, _Getal());
-                _Mylast = _Umove(_Whereptr, _Oldlast, _Mylast);
+                _Mylast = _Uninitialized_move(_Whereptr, _Oldlast, _Mylast, _Getal());
                 _STD fill(_Whereptr, _Oldlast, _Tmp);
             } else { // new stuff can all be assigned
-                _Mylast = _Umove(_Oldlast - _Count, _Oldlast, _Oldlast);
+                _Mylast = _Uninitialized_move(_Oldlast - _Count, _Oldlast, _Oldlast, _Getal());
                 _Move_backward_unchecked(_Whereptr, _Oldlast - _Count, _Oldlast);
                 _STD fill(_Whereptr, _Whereptr + _Count, _Tmp);
             }
@@ -986,9 +986,9 @@ private:
             if (_Count == 1 && _Whereptr == _Oldlast) { // one at back, provide strong guarantee
                 _Umove_if_noexcept(_Oldfirst, _Oldlast, _Newvec);
             } else { // provide basic guarantee
-                _Umove(_Oldfirst, _Whereptr, _Newvec);
+                _Uninitialized_move(_Oldfirst, _Whereptr, _Newvec, _Getal());
                 _Constructed_first = _Newvec;
-                _Umove(_Whereptr, _Oldlast, _Newvec + _Whereoff + _Count);
+                _Uninitialized_move(_Whereptr, _Oldlast, _Newvec + _Whereoff + _Count, _Getal());
             }
             _CATCH_ALL
             _Destroy(_Constructed_first, _Constructed_last);
@@ -1004,7 +1004,7 @@ private:
             const auto _Affected_elements = static_cast<size_type>(_Oldlast - _Whereptr);
 
             if (_Count < _Affected_elements) { // some affected elements must be assigned
-                _Mylast = _Umove(_Oldlast - _Count, _Oldlast, _Oldlast);
+                _Mylast = _Uninitialized_move(_Oldlast - _Count, _Oldlast, _Oldlast, _Getal());
                 _Move_backward_unchecked(_Whereptr, _Oldlast - _Count, _Oldlast);
                 _Destroy(_Whereptr, _Whereptr + _Count);
 
@@ -1014,7 +1014,7 @@ private:
                 // glue the broken pieces back together
 
                 _TRY_BEGIN
-                _Umove(_Whereptr + _Count, _Whereptr + 2 * _Count, _Whereptr);
+                _Uninitialized_move(_Whereptr + _Count, _Whereptr + 2 * _Count, _Whereptr, _Getal());
                 _CATCH_ALL
                 // vaporize the detached piece
                 _Orphan_range(_Whereptr, _Oldlast);
@@ -1030,7 +1030,7 @@ private:
                 _CATCH_END
             } else { // affected elements don't overlap before/after
                 const pointer _Relocated = _Whereptr + _Count;
-                _Mylast                  = _Umove(_Whereptr, _Oldlast, _Relocated);
+                _Mylast                  = _Uninitialized_move(_Whereptr, _Oldlast, _Relocated, _Getal());
                 _Destroy(_Whereptr, _Oldlast);
 
                 _TRY_BEGIN
@@ -1039,7 +1039,7 @@ private:
                 // glue the broken pieces back together
 
                 _TRY_BEGIN
-                _Umove(_Relocated, _Mylast, _Whereptr);
+                _Uninitialized_move(_Relocated, _Mylast, _Whereptr, _Getal());
                 _CATCH_ALL
                 // vaporize the detached piece
                 _Orphan_range(_Whereptr, _Oldlast);
@@ -1650,11 +1650,6 @@ public:
     }
 
 private:
-    _CONSTEXPR20_CONTAINER pointer _Umove(pointer _First, pointer _Last, pointer _Dest) {
-        // move [_First, _Last) to raw _Dest, using allocator
-        return _Uninitialized_move(_First, _Last, _Dest, _Getal());
-    }
-
     _CONSTEXPR20_CONTAINER void _Umove_if_noexcept1(pointer _First, pointer _Last, pointer _Dest, true_type) {
         // move [_First, _Last) to raw _Dest, using allocator
         _Uninitialized_move(_First, _Last, _Dest, _Getal());
