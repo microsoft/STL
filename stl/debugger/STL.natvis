@@ -1619,4 +1619,24 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     <Expand/>
   </Type>
 
+  <Type Name="std::span&lt;*&gt;">
+    <Intrinsic Name="data" Expression="_Mydata" />
+    <Intrinsic Name="size" Expression="_Mysize" />
+    <Intrinsic Name="size_bytes" Expression="_Mysize * sizeof(element_type)" />
+    <DisplayString>{{ size={size()} }}</DisplayString>
+    <Expand>
+      <ArrayItems>
+        <Size>size()</Size>
+        <ValuePointer>data()</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+
+  <Type Name="std::_Span_iterator&lt;*&gt;">
+    <SmartPointer Usage="Indexable">_Myptr,na</SmartPointer>
+    <Expand>
+      <Item Name="[ptr]">_Myptr</Item>
+    </Expand>
+  </Type>
+
 </AutoVisualizer>
