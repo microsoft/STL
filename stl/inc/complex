@@ -20,16 +20,16 @@
 // no intrinsics for /clr:pure
 #elif defined(__clang__)
 // TRANSITION, not using FMA intrinsics for Clang yet
-#elif defined(_M_IX86) || defined(_M_X64)
+#elif defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
 #define _FMP_USING_X86_X64_INTRINSICS
 #include <emmintrin.h>
 #include <isa_availability.h>
 extern "C" int __isa_available;
 extern "C" __m128d __cdecl _mm_fmsub_sd(__m128d, __m128d, __m128d);
-#elif defined(_M_ARM64)
+#elif defined(_M_ARM64) || defined(_M_ARM64EC)
 #define _FMP_USING_ARM64_INTRINSICS
 #include <arm64_neon.h>
-#endif // ^^^ defined(_M_ARM64) ^^^
+#endif // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) ^^^
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -342,7 +342,8 @@ namespace _Math_algorithms {
             const _Ty _Bv_scaled_sqr = _Bv_scaled * _Bv_scaled;
             const _Ty _Norm_scaled   = _Av_scaled * _Av_scaled + _Bv_scaled_sqr;
             const _Ty _Real_shifted  = _STD log(_Norm_scaled) * _Ty{0.5};
-            return (_Real_shifted + _Exponent * _Cl) + _Exponent * _Cm;
+            const auto _Fexponent    = static_cast<_Ty>(_Exponent);
+            return (_Real_shifted + _Fexponent * _Cl) + _Fexponent * _Cm;
         }
     }
 } // namespace _Math_algorithms

@@ -400,6 +400,19 @@ build folder to your path:
 set PATH=C:\STL\out\build\x64\out\bin\amd64;%PATH%
 ```
 
+# Editing And Testing The Debugger Visualizer
+
+### Modify The Visualizer
+
+To modify how components are visualized in the debugger edit the file `stl\debugger\STL.natvis`. For more information on
+how to modify this file check the [natvis documentation][].
+
+### Test Your Changes
+
+You can add the natvis file to any Visual Studio C++ project if you right click your project > Add > Existing Item and
+select the STL.natvis file. After doing this you should be able to see your changes in a Visual Studio debugging
+session.
+
 # Block Diagram
 
 The STL is built atop other compiler support libraries that ship with Windows and Visual Studio, like the UCRT,
@@ -461,3 +474,4 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [opencode@microsoft.com]: mailto:opencode@microsoft.com
 [redistributables]: https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads
 [vcpkg]: https://github.com/microsoft/vcpkg
+[natvis documentation]: https://docs.microsoft.com/en-us/visualstudio/debugger/create-custom-views-of-native-objects
