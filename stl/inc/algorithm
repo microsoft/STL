@@ -2111,7 +2111,7 @@ namespace ranges {
         if constexpr (_Optimize) {
             if (!_STD is_constant_evaluated()) {
                 bool _Ans;
-                if constexpr (contiguous_iterator<_Se2>) {
+                if constexpr (same_as<_It2, _Se2>) {
                     _Ans = _Memcmp_ranges(_First2, _Last2, _First1) == 0;
                 } else {
                     _Ans = _Memcmp_count(_First1, _First2, static_cast<size_t>(_Last2 - _First2)) == 0;
