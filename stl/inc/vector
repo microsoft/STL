@@ -531,7 +531,7 @@ private:
             _Buy_nonzero(_Count);
             _Tidy_guard<vector> _Guard{this};
             auto& _My_data   = _Mypair._Myval2;
-            _My_data._Mylast = _Ucopy(_First, _Last, _My_data._Myfirst);
+            _My_data._Mylast = _Uninitialized_copy(_First, _Last, _My_data._Myfirst, _Getal());
             _Guard._Target   = nullptr;
         }
     }
@@ -566,7 +566,7 @@ public:
         if (_Rightfirst != _Rightlast) {
             _Buy_raw(static_cast<size_type>(_Rightlast - _Rightfirst));
             _Tidy_guard<vector> _Guard{this};
-            _My_data._Mylast = _Ucopy(_Rightfirst, _Rightlast, _My_data._Myfirst);
+            _My_data._Mylast = _Uninitialized_copy(_Rightfirst, _Rightlast, _My_data._Myfirst, _Getal());
             _Guard._Target   = nullptr;
         }
 
@@ -583,7 +583,7 @@ public:
         if (_Rightfirst != _Rightlast) {
             _Buy_raw(static_cast<size_type>(_Rightlast - _Rightfirst));
             _Tidy_guard<vector> _Guard{this};
-            _My_data._Mylast = _Ucopy(_Rightfirst, _Rightlast, _My_data._Myfirst);
+            _My_data._Mylast = _Uninitialized_copy(_Rightfirst, _Rightlast, _My_data._Myfirst, _Getal());
             _Guard._Target   = nullptr;
         }
 
@@ -980,7 +980,7 @@ private:
             pointer _Constructed_first      = _Constructed_last;
 
             _TRY_BEGIN
-            _Ucopy(_First, _Last, _Newvec + _Whereoff);
+            _Uninitialized_copy(_First, _Last, _Newvec + _Whereoff, _Getal());
             _Constructed_first = _Newvec + _Whereoff;
 
             if (_Count == 1 && _Whereptr == _Oldlast) { // one at back, provide strong guarantee
@@ -1009,7 +1009,7 @@ private:
                 _Destroy(_Whereptr, _Whereptr + _Count);
 
                 _TRY_BEGIN
-                _Ucopy(_First, _Last, _Whereptr);
+                _Uninitialized_copy(_First, _Last, _Whereptr, _Getal());
                 _CATCH_ALL
                 // glue the broken pieces back together
 
@@ -1034,7 +1034,7 @@ private:
                 _Destroy(_Whereptr, _Oldlast);
 
                 _TRY_BEGIN
-                _Ucopy(_First, _Last, _Whereptr);
+                _Uninitialized_copy(_First, _Last, _Whereptr, _Getal());
                 _CATCH_ALL
                 // glue the broken pieces back together
 
@@ -1177,7 +1177,7 @@ private:
             // performance note: traversing [_First, _Mid) twice
             const _Iter _Mid = _STD next(_First, static_cast<difference_type>(_Oldsize));
             _Copy_unchecked(_First, _Mid, _Myfirst);
-            _Mylast = _Ucopy(_Mid, _Last, _Mylast);
+            _Mylast = _Uninitialized_copy(_Mid, _Last, _Mylast, _Getal());
         } else {
             const pointer _Newlast = _Myfirst + _Newsize;
             _Copy_unchecked(_First, _Last, _Myfirst);
@@ -1650,12 +1650,6 @@ public:
     }
 
 private:
-    template <class _Iter>
-    _CONSTEXPR20_CONTAINER pointer _Ucopy(_Iter _First, _Iter _Last, pointer _Dest) {
-        // copy [_First, _Last) to raw _Dest, using allocator
-        return _Uninitialized_copy(_First, _Last, _Dest, _Getal());
-    }
-
     _CONSTEXPR20_CONTAINER pointer _Umove(pointer _First, pointer _Last, pointer _Dest) {
         // move [_First, _Last) to raw _Dest, using allocator
         return _Uninitialized_move(_First, _Last, _Dest, _Getal());
