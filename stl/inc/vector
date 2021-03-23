@@ -485,15 +485,16 @@ private:
     template <class _Ty2>
     _CONSTEXPR20_CONTAINER void _Construct_n_copies_of_ty(_CRT_GUARDOVERFLOW const size_type _Count, const _Ty2& _Val) {
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
+        auto& _Al       = _Getal();
         auto& _My_data  = _Mypair._Myval2;
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data);
         if (_Count != 0) {
             _Buy_nonzero(_Count);
             _Tidy_guard<vector> _Guard{this};
             if constexpr (is_same_v<_Ty2, _Ty>) {
-                _My_data._Mylast = _Uninitialized_fill_n(_My_data._Myfirst, _Count, _Val, _Getal());
+                _My_data._Mylast = _Uninitialized_fill_n(_My_data._Myfirst, _Count, _Val, _Al);
             } else {
-                _My_data._Mylast = _Uninitialized_value_construct_n(_My_data._Myfirst, _Count, _Getal());
+                _My_data._Mylast = _Uninitialized_value_construct_n(_My_data._Myfirst, _Count, _Al);
             }
             _Guard._Target = nullptr;
         }
@@ -859,6 +860,7 @@ public:
         // insert _Count * _Val at _Where
         const pointer _Whereptr = _Where._Ptr;
 
+        auto& _Al        = _Getal();
         auto& _My_data   = _Mypair._Myval2;
         pointer& _Mylast = _My_data._Mylast;
 
@@ -883,28 +885,28 @@ public:
             const size_type _Newsize     = _Oldsize + _Count;
             const size_type _Newcapacity = _Calculate_growth(_Newsize);
 
-            const pointer _Newvec           = _Getal().allocate(_Newcapacity);
+            const pointer _Newvec           = _Al.allocate(_Newcapacity);
             const pointer _Constructed_last = _Newvec + _Whereoff + _Count;
             pointer _Constructed_first      = _Constructed_last;
 
             _TRY_BEGIN
-            _Uninitialized_fill_n(_Newvec + _Whereoff, _Count, _Val, _Getal());
+            _Uninitialized_fill_n(_Newvec + _Whereoff, _Count, _Val, _Al);
             _Constructed_first = _Newvec + _Whereoff;
 
             if (_One_at_back) { // provide strong guarantee
                 if constexpr (is_nothrow_move_constructible_v<_Ty> || !is_copy_constructible_v<_Ty>) {
-                    _Uninitialized_move(_Oldfirst, _Oldlast, _Newvec, _Getal());
+                    _Uninitialized_move(_Oldfirst, _Oldlast, _Newvec, _Al);
                 } else {
-                    _Uninitialized_copy(_Oldfirst, _Oldlast, _Newvec, _Getal());
+                    _Uninitialized_copy(_Oldfirst, _Oldlast, _Newvec, _Al);
                 }
             } else { // provide basic guarantee
-                _Uninitialized_move(_Oldfirst, _Whereptr, _Newvec, _Getal());
+                _Uninitialized_move(_Oldfirst, _Whereptr, _Newvec, _Al);
                 _Constructed_first = _Newvec;
-                _Uninitialized_move(_Whereptr, _Oldlast, _Newvec + _Whereoff + _Count, _Getal());
+                _Uninitialized_move(_Whereptr, _Oldlast, _Newvec + _Whereoff + _Count, _Al);
             }
             _CATCH_ALL
-            _Destroy_range(_Constructed_first, _Constructed_last, _Getal());
-            _Getal().deallocate(_Newvec, _Newcapacity);
+            _Destroy_range(_Constructed_first, _Constructed_last, _Al);
+            _Al.deallocate(_Newvec, _Newcapacity);
             _RERAISE;
             _CATCH_END
 
@@ -912,17 +914,17 @@ public:
         } else if (_One_at_back) { // provide strong guarantee
             _Emplace_back_with_unused_capacity(_Val);
         } else { // provide basic guarantee
-            const _Alloc_temporary<_Alty> _Tmp_storage(_Getal(), _Val); // handle aliasing
+            const _Alloc_temporary<_Alty> _Tmp_storage(_Al, _Val); // handle aliasing
             const auto& _Tmp              = _Tmp_storage._Storage._Value;
             const auto _Affected_elements = static_cast<size_type>(_Oldlast - _Whereptr);
             _Orphan_range(_Whereptr, _Oldlast);
 
             if (_Count > _Affected_elements) { // new stuff spills off end
-                _Mylast = _Uninitialized_fill_n(_Oldlast, _Count - _Affected_elements, _Tmp, _Getal());
-                _Mylast = _Uninitialized_move(_Whereptr, _Oldlast, _Mylast, _Getal());
+                _Mylast = _Uninitialized_fill_n(_Oldlast, _Count - _Affected_elements, _Tmp, _Al);
+                _Mylast = _Uninitialized_move(_Whereptr, _Oldlast, _Mylast, _Al);
                 _STD fill(_Whereptr, _Oldlast, _Tmp);
             } else { // new stuff can all be assigned
-                _Mylast = _Uninitialized_move(_Oldlast - _Count, _Oldlast, _Oldlast, _Getal());
+                _Mylast = _Uninitialized_move(_Oldlast - _Count, _Oldlast, _Oldlast, _Al);
                 _Move_backward_unchecked(_Whereptr, _Oldlast - _Count, _Oldlast);
                 _STD fill(_Whereptr, _Whereptr + _Count, _Tmp);
             }
@@ -964,6 +966,7 @@ private:
         const pointer _Whereptr = _Where._Ptr;
         const auto _Count       = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_First, _Last)));
 
+        auto& _Al        = _Getal();
         auto& _My_data   = _Mypair._Myval2;
         pointer& _Mylast = _My_data._Mylast;
 
@@ -982,29 +985,29 @@ private:
             const size_type _Newsize     = _Oldsize + _Count;
             const size_type _Newcapacity = _Calculate_growth(_Newsize);
 
-            const pointer _Newvec           = _Getal().allocate(_Newcapacity);
+            const pointer _Newvec           = _Al.allocate(_Newcapacity);
             const auto _Whereoff            = static_cast<size_type>(_Whereptr - _Oldfirst);
             const pointer _Constructed_last = _Newvec + _Whereoff + _Count;
             pointer _Constructed_first      = _Constructed_last;
 
             _TRY_BEGIN
-            _Uninitialized_copy(_First, _Last, _Newvec + _Whereoff, _Getal());
+            _Uninitialized_copy(_First, _Last, _Newvec + _Whereoff, _Al);
             _Constructed_first = _Newvec + _Whereoff;
 
             if (_Count == 1 && _Whereptr == _Oldlast) { // one at back, provide strong guarantee
                 if constexpr (is_nothrow_move_constructible_v<_Ty> || !is_copy_constructible_v<_Ty>) {
-                    _Uninitialized_move(_Oldfirst, _Oldlast, _Newvec, _Getal());
+                    _Uninitialized_move(_Oldfirst, _Oldlast, _Newvec, _Al);
                 } else {
-                    _Uninitialized_copy(_Oldfirst, _Oldlast, _Newvec, _Getal());
+                    _Uninitialized_copy(_Oldfirst, _Oldlast, _Newvec, _Al);
                 }
             } else { // provide basic guarantee
-                _Uninitialized_move(_Oldfirst, _Whereptr, _Newvec, _Getal());
+                _Uninitialized_move(_Oldfirst, _Whereptr, _Newvec, _Al);
                 _Constructed_first = _Newvec;
-                _Uninitialized_move(_Whereptr, _Oldlast, _Newvec + _Whereoff + _Count, _Getal());
+                _Uninitialized_move(_Whereptr, _Oldlast, _Newvec + _Whereoff + _Count, _Al);
             }
             _CATCH_ALL
-            _Destroy_range(_Constructed_first, _Constructed_last, _Getal());
-            _Getal().deallocate(_Newvec, _Newcapacity);
+            _Destroy_range(_Constructed_first, _Constructed_last, _Al);
+            _Al.deallocate(_Newvec, _Newcapacity);
             _RERAISE;
             _CATCH_END
 
@@ -1016,51 +1019,51 @@ private:
             const auto _Affected_elements = static_cast<size_type>(_Oldlast - _Whereptr);
 
             if (_Count < _Affected_elements) { // some affected elements must be assigned
-                _Mylast = _Uninitialized_move(_Oldlast - _Count, _Oldlast, _Oldlast, _Getal());
+                _Mylast = _Uninitialized_move(_Oldlast - _Count, _Oldlast, _Oldlast, _Al);
                 _Move_backward_unchecked(_Whereptr, _Oldlast - _Count, _Oldlast);
-                _Destroy_range(_Whereptr, _Whereptr + _Count, _Getal());
+                _Destroy_range(_Whereptr, _Whereptr + _Count, _Al);
 
                 _TRY_BEGIN
-                _Uninitialized_copy(_First, _Last, _Whereptr, _Getal());
+                _Uninitialized_copy(_First, _Last, _Whereptr, _Al);
                 _CATCH_ALL
                 // glue the broken pieces back together
 
                 _TRY_BEGIN
-                _Uninitialized_move(_Whereptr + _Count, _Whereptr + 2 * _Count, _Whereptr, _Getal());
+                _Uninitialized_move(_Whereptr + _Count, _Whereptr + 2 * _Count, _Whereptr, _Al);
                 _CATCH_ALL
                 // vaporize the detached piece
                 _Orphan_range(_Whereptr, _Oldlast);
-                _Destroy_range(_Whereptr + _Count, _Mylast, _Getal());
+                _Destroy_range(_Whereptr + _Count, _Mylast, _Al);
                 _Mylast = _Whereptr;
                 _RERAISE;
                 _CATCH_END
 
                 _Move_unchecked(_Whereptr + 2 * _Count, _Mylast, _Whereptr + _Count);
-                _Destroy_range(_Oldlast, _Mylast, _Getal());
+                _Destroy_range(_Oldlast, _Mylast, _Al);
                 _Mylast = _Oldlast;
                 _RERAISE;
                 _CATCH_END
             } else { // affected elements don't overlap before/after
                 const pointer _Relocated = _Whereptr + _Count;
-                _Mylast                  = _Uninitialized_move(_Whereptr, _Oldlast, _Relocated, _Getal());
-                _Destroy_range(_Whereptr, _Oldlast, _Getal());
+                _Mylast                  = _Uninitialized_move(_Whereptr, _Oldlast, _Relocated, _Al);
+                _Destroy_range(_Whereptr, _Oldlast, _Al);
 
                 _TRY_BEGIN
-                _Uninitialized_copy(_First, _Last, _Whereptr, _Getal());
+                _Uninitialized_copy(_First, _Last, _Whereptr, _Al);
                 _CATCH_ALL
                 // glue the broken pieces back together
 
                 _TRY_BEGIN
-                _Uninitialized_move(_Relocated, _Mylast, _Whereptr, _Getal());
+                _Uninitialized_move(_Relocated, _Mylast, _Whereptr, _Al);
                 _CATCH_ALL
                 // vaporize the detached piece
                 _Orphan_range(_Whereptr, _Oldlast);
-                _Destroy_range(_Relocated, _Mylast, _Getal());
+                _Destroy_range(_Relocated, _Mylast, _Al);
                 _Mylast = _Whereptr;
                 _RERAISE;
                 _CATCH_END
 
-                _Destroy_range(_Relocated, _Mylast, _Getal());
+                _Destroy_range(_Relocated, _Mylast, _Al);
                 _Mylast = _Oldlast;
                 _RERAISE;
                 _CATCH_END
@@ -1094,6 +1097,7 @@ public:
 
     _CONSTEXPR20_CONTAINER void assign(_CRT_GUARDOVERFLOW const size_type _Newsize, const _Ty& _Val) {
         // assign _Newsize * _Val
+        auto& _Al         = _Getal();
         auto& _My_data    = _Mypair._Myval2;
         pointer& _Myfirst = _My_data._Myfirst;
         pointer& _Mylast  = _My_data._Mylast;
@@ -1110,11 +1114,11 @@ public:
                 _STD fill(_Myfirst, _Mylast, _Val);
             }
 
-            _Mylast = _Uninitialized_fill_n(_Mylast, _Newsize - _Oldsize, _Val, _Getal());
+            _Mylast = _Uninitialized_fill_n(_Mylast, _Newsize - _Oldsize, _Val, _Al);
         } else {
             const pointer _Newlast = _Myfirst + _Newsize;
             _STD fill(_Myfirst, _Newlast, _Val);
-            _Destroy_range(_Newlast, _Mylast, _Getal());
+            _Destroy_range(_Newlast, _Mylast, _Al);
             _Mylast = _Newlast;
         }
     }
@@ -1154,6 +1158,7 @@ private:
     _CONSTEXPR20_CONTAINER void _Assign_range(_Iter _First, _Iter _Last, forward_iterator_tag) {
         // assign forward range [_First, _Last)
         const auto _Newsize = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_First, _Last)));
+        auto& _Al           = _Getal();
         auto& _My_data      = _Mypair._Myval2;
         pointer& _Myfirst   = _My_data._Myfirst;
         pointer& _Mylast    = _My_data._Mylast;
@@ -1189,11 +1194,11 @@ private:
             // performance note: traversing [_First, _Mid) twice
             const _Iter _Mid = _STD next(_First, static_cast<difference_type>(_Oldsize));
             _Copy_unchecked(_First, _Mid, _Myfirst);
-            _Mylast = _Uninitialized_copy(_Mid, _Last, _Mylast, _Getal());
+            _Mylast = _Uninitialized_copy(_Mid, _Last, _Mylast, _Al);
         } else {
             const pointer _Newlast = _Myfirst + _Newsize;
             _Copy_unchecked(_First, _Last, _Myfirst);
-            _Destroy_range(_Newlast, _Mylast, _Getal());
+            _Destroy_range(_Newlast, _Mylast, _Al);
             _Mylast = _Newlast;
         }
     }
@@ -1247,6 +1252,7 @@ private:
             _Xlength();
         }
 
+        auto& _Al         = _Getal();
         auto& _My_data    = _Mypair._Myval2;
         pointer& _Myfirst = _My_data._Myfirst;
         pointer& _Mylast  = _My_data._Mylast;
@@ -1254,24 +1260,24 @@ private:
         const auto _Oldsize          = static_cast<size_type>(_Mylast - _Myfirst);
         const size_type _Newcapacity = _Calculate_growth(_Newsize);
 
-        const pointer _Newvec         = _Getal().allocate(_Newcapacity);
+        const pointer _Newvec         = _Al.allocate(_Newcapacity);
         const pointer _Appended_first = _Newvec + _Oldsize;
         pointer _Appended_last        = _Appended_first;
 
         _TRY_BEGIN
         if constexpr (is_same_v<_Ty2, _Ty>) {
-            _Appended_last = _Uninitialized_fill_n(_Appended_first, _Newsize - _Oldsize, _Val, _Getal());
+            _Appended_last = _Uninitialized_fill_n(_Appended_first, _Newsize - _Oldsize, _Val, _Al);
         } else {
-            _Appended_last = _Uninitialized_value_construct_n(_Appended_first, _Newsize - _Oldsize, _Getal());
+            _Appended_last = _Uninitialized_value_construct_n(_Appended_first, _Newsize - _Oldsize, _Al);
         }
         if constexpr (is_nothrow_move_constructible_v<_Ty> || !is_copy_constructible_v<_Ty>) {
-            _Uninitialized_move(_Myfirst, _Mylast, _Newvec, _Getal());
+            _Uninitialized_move(_Myfirst, _Mylast, _Newvec, _Al);
         } else {
-            _Uninitialized_copy(_Myfirst, _Mylast, _Newvec, _Getal());
+            _Uninitialized_copy(_Myfirst, _Mylast, _Newvec, _Al);
         }
         _CATCH_ALL
-        _Destroy_range(_Appended_first, _Appended_last, _Getal());
-        _Getal().deallocate(_Newvec, _Newcapacity);
+        _Destroy_range(_Appended_first, _Appended_last, _Al);
+        _Al.deallocate(_Newvec, _Newcapacity);
         _RERAISE;
         _CATCH_END
 
@@ -1281,6 +1287,7 @@ private:
     template <class _Ty2>
     _CONSTEXPR20_CONTAINER void _Resize(const size_type _Newsize, const _Ty2& _Val) {
         // trim or append elements, provide strong guarantee
+        auto& _Al           = _Getal();
         auto& _My_data      = _Mypair._Myval2;
         pointer& _Myfirst   = _My_data._Myfirst;
         pointer& _Mylast    = _My_data._Mylast;
@@ -1288,7 +1295,7 @@ private:
         if (_Newsize < _Oldsize) { // trim
             const pointer _Newlast = _Myfirst + _Newsize;
             _Orphan_range(_Newlast, _Mylast);
-            _Destroy_range(_Newlast, _Mylast, _Getal());
+            _Destroy_range(_Newlast, _Mylast, _Al);
             _Mylast = _Newlast;
             return;
         }
@@ -1302,9 +1309,9 @@ private:
 
             const pointer _Oldlast = _Mylast;
             if constexpr (is_same_v<_Ty2, _Ty>) {
-                _Mylast = _Uninitialized_fill_n(_Oldlast, _Newsize - _Oldsize, _Val, _Getal());
+                _Mylast = _Uninitialized_fill_n(_Oldlast, _Newsize - _Oldsize, _Val, _Al);
             } else {
-                _Mylast = _Uninitialized_value_construct_n(_Oldlast, _Newsize - _Oldsize, _Getal());
+                _Mylast = _Uninitialized_value_construct_n(_Oldlast, _Newsize - _Oldsize, _Al);
             }
             _Orphan_range(_Oldlast, _Oldlast);
         }
@@ -1326,22 +1333,23 @@ public:
 private:
     _CONSTEXPR20_CONTAINER void _Reallocate_exactly(const size_type _Newcapacity) {
         // set capacity to _Newcapacity (without geometric growth), provide strong guarantee
+        auto& _Al         = _Getal();
         auto& _My_data    = _Mypair._Myval2;
         pointer& _Myfirst = _My_data._Myfirst;
         pointer& _Mylast  = _My_data._Mylast;
 
         const auto _Size = static_cast<size_type>(_Mylast - _Myfirst);
 
-        const pointer _Newvec = _Getal().allocate(_Newcapacity);
+        const pointer _Newvec = _Al.allocate(_Newcapacity);
 
         _TRY_BEGIN
         if constexpr (is_nothrow_move_constructible_v<_Ty> || !is_copy_constructible_v<_Ty>) {
-            _Uninitialized_move(_Myfirst, _Mylast, _Newvec, _Getal());
+            _Uninitialized_move(_Myfirst, _Mylast, _Newvec, _Al);
         } else {
-            _Uninitialized_copy(_Myfirst, _Mylast, _Newvec, _Getal());
+            _Uninitialized_copy(_Myfirst, _Mylast, _Newvec, _Al);
         }
         _CATCH_ALL
-        _Getal().deallocate(_Newvec, _Newcapacity);
+        _Al.deallocate(_Newvec, _Newcapacity);
         _RERAISE;
         _CATCH_END
 
@@ -1369,6 +1377,7 @@ private:
 #endif // _ITERATOR_DEBUG_LEVEL != 0 && defined(_ENABLE_STL_INTERNAL_CHECK)
 
     _CONSTEXPR20_CONTAINER void _Clear_and_reserve_geometric(const size_type _Newsize) {
+        auto& _Al         = _Getal();
         auto& _My_data    = _Mypair._Myval2;
         pointer& _Myfirst = _My_data._Myfirst;
         pointer& _Mylast  = _My_data._Mylast;
@@ -1386,8 +1395,8 @@ private:
         const size_type _Newcapacity = _Calculate_growth(_Newsize);
 
         if (_Myfirst) { // destroy and deallocate old array
-            _Destroy_range(_Myfirst, _Mylast, _Getal());
-            _Getal().deallocate(_Myfirst, static_cast<size_type>(_Myend - _Myfirst));
+            _Destroy_range(_Myfirst, _Mylast, _Al);
+            _Al.deallocate(_Myfirst, static_cast<size_type>(_Myend - _Myfirst));
 
             _Myfirst = nullptr;
             _Mylast  = nullptr;
@@ -1725,6 +1734,7 @@ private:
     _CONSTEXPR20_CONTAINER void _Change_array(
         const pointer _Newvec, const size_type _Newsize, const size_type _Newcapacity) {
         // orphan all iterators, discard old array, acquire new array
+        auto& _Al         = _Getal();
         auto& _My_data    = _Mypair._Myval2;
         pointer& _Myfirst = _My_data._Myfirst;
         pointer& _Mylast  = _My_data._Mylast;
@@ -1733,8 +1743,8 @@ private:
         _My_data._Orphan_all();
 
         if (_Myfirst) { // destroy and deallocate old array
-            _Destroy_range(_Myfirst, _Mylast, _Getal());
-            _Getal().deallocate(_Myfirst, static_cast<size_type>(_Myend - _Myfirst));
+            _Destroy_range(_Myfirst, _Mylast, _Al);
+            _Al.deallocate(_Myfirst, static_cast<size_type>(_Myend - _Myfirst));
         }
 
         _Myfirst = _Newvec;
@@ -1743,6 +1753,7 @@ private:
     }
 
     _CONSTEXPR20_CONTAINER void _Tidy() noexcept { // free all storage
+        auto& _Al         = _Getal();
         auto& _My_data    = _Mypair._Myval2;
         pointer& _Myfirst = _My_data._Myfirst;
         pointer& _Mylast  = _My_data._Mylast;
@@ -1751,8 +1762,8 @@ private:
         _My_data._Orphan_all();
 
         if (_Myfirst) { // destroy and deallocate old array
-            _Destroy_range(_Myfirst, _Mylast, _Getal());
-            _Getal().deallocate(_Myfirst, static_cast<size_type>(_Myend - _Myfirst));
+            _Destroy_range(_Myfirst, _Mylast, _Al);
+            _Al.deallocate(_Myfirst, static_cast<size_type>(_Myend - _Myfirst));
 
             _Myfirst = nullptr;
             _Mylast  = nullptr;
