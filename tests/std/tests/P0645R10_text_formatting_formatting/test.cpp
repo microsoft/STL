@@ -35,6 +35,12 @@ struct choose_literal<wchar_t> {
 #define TYPED_LITERAL(CharT, Literal) (choose_literal<CharT>::choose(Literal, L##Literal))
 #define STR(Str)                      TYPED_LITERAL(charT, Str)
 
+#ifdef _DEBUG
+#define DEFAULT_IDL_SETTING 2
+#else
+#define DEFAULT_IDL_SETTING 0
+#endif
+
 template <class charT, class... Args>
 auto make_testing_format_args(Args&&... vals) {
     if constexpr (is_same_v<charT, wchar_t>) {
@@ -458,6 +464,7 @@ void test_intergal_specs() {
     throw_helper(STR("{:.1}"), integral{0});
 
     // Locale
+#if !defined(_DLL) || _ITERATOR_DEBUG_LEVEL == DEFAULT_IDL_SETTING
     assert(format(std::locale{"en-US"}, STR("{:L}"), integral{0}) == STR("0"));
     assert(format(std::locale{"en-US"}, STR("{:L}"), integral{100}) == STR("100"));
     assert(format(std::locale{"en-US"}, STR("{:L}"), integral{1'000}) == STR("1,000"));
@@ -474,6 +481,7 @@ void test_intergal_specs() {
     assert(format(std::locale{"hi-IN"}, STR("{:L}"), integral{100'000'000}) == STR("10,00,00,000"));
 
     assert(format(std::locale{"hi-IN"}, STR("{:Lx}"), integral{0x123'abc}) == STR("1,23,abc"));
+#endif // !defined(_DLL) || _ITERATOR_DEBUG_LEVEL == DEFAULT_IDL_SETTING
 
     // Type
     assert(format(STR("{:b}"), integral{0}) == STR("0"));
@@ -690,6 +698,7 @@ void test_float_specs() {
     assert(format(STR("{:06}"), inf) == STR("   inf"));
 
     // Locale
+#if !defined(_DLL) || _ITERATOR_DEBUG_LEVEL == DEFAULT_IDL_SETTING
     assert(format(std::locale{"en-US"}, STR("{:L}"), Float{0}) == STR("0"));
     assert(format(std::locale{"en-US"}, STR("{:Lf}"), Float{0}) == STR("0.000000"));
     assert(format(std::locale{"en-US"}, STR("{:L}"), Float{100}) == STR("100"));
@@ -700,6 +709,7 @@ void test_float_specs() {
     assert(format(std::locale{"en-US"}, STR("{:L}"), inf) == STR("inf"));
 
     assert(format(std::locale{"de_DE"}, STR("{:Lf}"), Float{0}) == STR("0,000000"));
+#endif // !defined(_DLL) || _ITERATOR_DEBUG_LEVEL == DEFAULT_IDL_SETTING
 
     // Type
     assert(format(STR("{:a}"), value) == STR("1.34a1cp+10"));
