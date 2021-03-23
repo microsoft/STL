@@ -342,7 +342,8 @@ namespace _Math_algorithms {
             const _Ty _Bv_scaled_sqr = _Bv_scaled * _Bv_scaled;
             const _Ty _Norm_scaled   = _Av_scaled * _Av_scaled + _Bv_scaled_sqr;
             const _Ty _Real_shifted  = _STD log(_Norm_scaled) * _Ty{0.5};
-            return (_Real_shifted + _Exponent * _Cl) + _Exponent * _Cm;
+            const auto _Fexponent    = static_cast<_Ty>(_Exponent);
+            return (_Real_shifted + _Fexponent * _Cl) + _Fexponent * _Cm;
         }
     }
 } // namespace _Math_algorithms
