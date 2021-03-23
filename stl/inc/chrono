@@ -3942,8 +3942,11 @@ namespace chrono {
                 // Must have _Period1 <= _Period2 and numeric_limits<_Rep1>::max() >= _Period2 / _Period1. For example,
                 // std::days can't represent std::seconds, and duration<int,atto>::max() is ~9.2 seconds.
                 constexpr auto _Max_tick = static_cast<intmax_t>((numeric_limits<make_signed_t<_Rep1>>::max)());
-                return ratio_less_equal_v<_Period1,
-                           _Period2> && ratio_greater_equal_v<ratio<_Max_tick, _Period2::num>, ratio_divide<ratio<1>, _Period1>>;
+
+                // clang-format off
+                return ratio_less_equal_v<_Period1,_Period2>
+                    && ratio_greater_equal_v<ratio<_Max_tick, _Period2::num>, ratio_divide<ratio<1>, _Period1>>;
+                // clang-format on
             } else if (is_floating_point_v<_Rep1>) {
                 // With the smallest possible _Period1, ratio<1,INTMAX_MAX>, one day has a tick count of
                 // 86,400*INTMAX_MAX ~= 7.97e23. This is representable by float and double, so they can always represent
