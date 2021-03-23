@@ -3601,11 +3601,11 @@ namespace chrono {
         }
 
 
-        template <class _T>
-        static constexpr _T _Invalid_time_field{numeric_limits<_T>::lowest()};
+        template <class _Ty>
+        static constexpr _Ty _Invalid_time_field{numeric_limits<_Ty>::lowest()};
         static constexpr const char* _Invalid_time_string = "!";
 
-        constexpr static void _InitializeTimePoint(tm& _Tp) {
+        static void _Initialize_time_point(tm& _Tp) {
             _Tp.tm_sec  = _Invalid_time_field<int>;
             _Tp.tm_min  = _Invalid_time_field<int>;
             _Tp.tm_hour = _Invalid_time_field<int>;
@@ -3616,14 +3616,22 @@ namespace chrono {
             _Tp.tm_year = _Invalid_time_field<int>;
         }
 
-
-        template <class T>
-        constexpr bool _Update(optional<T>& _Val, const T& _New) {
+        template <class _Ty>
+        static bool _Update(optional<_Ty>& _Val, const _Ty& _New) {
             // Update a field. Ignores invalid values. If _Val already has a value, returns true or false according to
             // whether the new value matches the current one or not, so that inconsistencies can be detected.
-            if (_New == _Invalid_time_field<T>) {
-                return true;
-            } else if (!_Val.has_value()) {
+
+            if constexpr (is_same_v<_Ty, string>) {
+                if (_New == _Invalid_time_string) {
+                    return true;
+                }
+            } else {
+                if (_New == _Invalid_time_field<_Ty>) {
+                    return true;
+                }
+            }
+
+            if (!_Val.has_value()) {
                 _Val = _New;
                 return true;
             } else {
@@ -3631,19 +3639,7 @@ namespace chrono {
             }
         }
 
-        template <>
-        bool _Update(optional<string>& _Val, const string& _New) {
-            if (_New == _Invalid_time_string) {
-                return true;
-            } else if (!_Val.has_value()) {
-                _Val = _New;
-                return true;
-            } else {
-                return _STD exchange(_Val, _New) == _New;
-            }
-        }
-
-        pair<int, int> _Decompose_year(const int _Year) {
+        _NODISCARD static pair<int, int> _Decompose_year(const int _Year) {
             int _Two_d_year = _Year % 100;
             if (_Two_d_year < 0) {
                 _Two_d_year += 100;
@@ -3651,12 +3647,12 @@ namespace chrono {
             return {_Year - _Two_d_year, _Two_d_year};
         }
 
-        bool _Update_if_valid(const tm& _Tp, const bool _Full_year) {
+        _NODISCARD bool _Update_if_valid(const tm& _Tp, const bool _Full_year) {
             bool _No_err{true};
             if (_Tp.tm_hour != _Invalid_time_field<int>) {
                 _No_err &= _Update(_Hour_24, _Tp.tm_hour);
                 _No_err &= _Update(_Ampm, _Hour_24 >= 12 ? 1 : 0);
-                _No_err &= _Update(_Hour_12, make12(hours{*_Hour_24}).count());
+                _No_err &= _Update(_Hour_12, _CHRONO make12(hours{*_Hour_24}).count());
             }
 
             _No_err &= _Update(_Minute, _Tp.tm_min);
@@ -3684,7 +3680,7 @@ namespace chrono {
             return _No_err;
         }
 
-        bool _Yday_to_month_day(const int _Yday, const int _Year) {
+        _NODISCARD bool _Yday_to_month_day(const int _Yday, const int _Year) {
             if (_Day_of_year <= 31) {
                 return _Update(_Day, _Yday) && _Update(_Month, 1);
             }
@@ -3692,18 +3688,18 @@ namespace chrono {
             const int _Feb_end{_Is_leap(_Year) ? 60 : 59};
             if (_Day_of_year <= _Feb_end) {
                 return _Update(_Day, _Yday - 31) && _Update(_Month, 2);
-            } else {
-                // Shift day-of-year so that 1 == March 1. This is the same as year_month_day::_Civil_from_days, except
-                // _Day_of_year --> _Shifted_yday-1 and _Mp --> _Month - 3.
-                const int _Shifted_yday{*_Day_of_year - _Feb_end};
-                return _Update(_Month, (535 * _Shifted_yday + 48950) >> 14)
-                    && _Update(_Day, _Shifted_yday - ((979 * *_Month - 2918) >> 5));
             }
+
+            // Shift day-of-year so that 1 == March 1. This is the same as year_month_day::_Civil_from_days, except
+            // _Day_of_year --> _Shifted_yday-1 and _Mp --> _Month - 3.
+            const int _Shifted_yday{*_Day_of_year - _Feb_end};
+            return _Update(_Month, (535 * _Shifted_yday + 48950) >> 14)
+                && _Update(_Day, _Shifted_yday - ((979 * *_Month - 2918) >> 5));
         }
 
         static constexpr int _Era_begin_wday{3}; // Wednesday
 
-        _NODISCARD constexpr static int _Jan1_weekday(int _Year) {
+        _NODISCARD static constexpr int _Jan1_weekday(int _Year) {
             --_Year;
             const int _Era = (_Year >= 0 ? _Year : _Year - 399) / 400;
             const int _Yoe = _Year - _Era * 400;
@@ -3712,14 +3708,14 @@ namespace chrono {
             return (_Doe + _Era_begin_wday) % 7;
         }
 
-        _NODISCARD constexpr static int _Iso8601_weeks(int _Year) {
+        _NODISCARD static constexpr int _Iso8601_weeks(int _Year) {
             const int _P_y = (_Year + _Year / 4 - _Year / 100 + _Year / 400) % 7;
             --_Year;
             const int _P_ym1 = (_Year + _Year / 4 - _Year / 100 + _Year / 400) % 7;
             return 52 + (_P_y == 4 || _P_ym1 == 3);
         }
 
-        _NODISCARD constexpr static int _Iso8601_week(const int _Day_of_year, const int _Weekday, const int _Year) {
+        _NODISCARD static constexpr int _Iso8601_week(const int _Day_of_year, const int _Weekday, const int _Year) {
             // Jan. 4 is always week 1; rollover to next week always happens on Monday.
             const auto _Week{(_Day_of_year + 9 - _Prev_weekday(_Weekday, 1)) / 7};
             if (_Week < 1) {
@@ -3731,15 +3727,15 @@ namespace chrono {
             }
         }
 
-        _NODISCARD constexpr static bool _Is_leap(const int _Year) {
+        _NODISCARD static constexpr bool _Is_leap(const int _Year) {
             return _Year % 4 == 0 && (_Year % 100 != 0 || _Year % 400 == 0);
         }
 
-        _NODISCARD constexpr static int _Days_in_year(const int _Year) {
+        _NODISCARD static constexpr int _Days_in_year(const int _Year) {
             return _Is_leap(_Year) ? 366 : 365;
         }
 
-        _NODISCARD constexpr static int _Next_weekday(int _Wday, int _Shift) {
+        _NODISCARD static constexpr int _Next_weekday(const int _Wday, const int _Shift) {
             // 0 <= _Shift <= 6
             int _Result = _Wday + _Shift;
             if (_Result >= 7) {
@@ -3748,12 +3744,12 @@ namespace chrono {
             return _Result;
         }
 
-        _NODISCARD constexpr static int _Prev_weekday(int _Wday, int _Shift) {
+        _NODISCARD static constexpr int _Prev_weekday(const int _Wday, const int _Shift) {
             // 0 <= _Shift <= 6
             return (_Wday >= _Shift ? 0 : 7) + (_Wday - _Shift);
         }
 
-        bool _Calculate_ymd_from_week_date(int _Starting_wday, const int _Week, const int _Year) {
+        _NODISCARD bool _Calculate_ymd_from_week_date(const int _Starting_wday, const int _Week, const int _Year) {
             // (a) Calculate day-of-year of first _Starting_wday in January.
             // (b) Shift *_Weekday so that it's relative to _Starting_wday.
             // (c) Offset to desired week.
@@ -3765,10 +3761,10 @@ namespace chrono {
                 && _Yday_to_month_day(*_Day_of_year, _Year);
         }
 
-        bool _Calculate_ymd() {
+        _NODISCARD bool _Calculate_ymd() {
             bool _No_err = true;
             // Flags to indicate if a field should be checked for consistency with other data. Set to false when the
-            // field is used to calcuate the date, as it's necessarily self-consistent in that case (barring a bug).
+            // field is used to calculate the date, as it's necessarily self-consistent in that case (barring a bug).
             bool _Check_u    = true;
             bool _Check_w    = true;
             bool _Check_iso  = true;
@@ -3805,7 +3801,7 @@ namespace chrono {
                 _Have_year  = true;
 
                 // Shift weekdays to Monday-based. Jan. 4 is the anchor of week 1, so calculate where the parsed weekday
-                // is realtive to that point.
+                // is relative to that point.
                 const int _Jan4_wday        = _Next_weekday(_Jan1_weekday(_Year), 3 - 1);
                 const int _Offset_from_jan4 = _Prev_weekday(*_Weekday, 1) - _Jan4_wday;
                 int _Trial_yday             = 4 + 7 * (*_Iso_week - 1) + _Offset_from_jan4;
@@ -3853,7 +3849,7 @@ namespace chrono {
             return _No_err;
         }
 
-        bool _Calculate_hour24() {
+        _NODISCARD bool _Calculate_hour24() {
             if (_Hour_12) {
                 return _Update(_Hour_24, _CHRONO make24(hours{*_Hour_12}, _Ampm.value_or(0)).count());
             } else {
@@ -3861,10 +3857,10 @@ namespace chrono {
             }
         }
 
-        bool _Calculate_year_fields() {
+        _NODISCARD bool _Calculate_year_fields() {
             bool _No_err = true;
             // The order of these updates is significant. Updating the ISO date second allows
-            // formats with %g and %y, but not %C, to get the century implicity from %y.
+            // formats with %g and %y, but not %C, to get the century implicitly from %y.
             if (_Two_dig_year && !_Century) {
                 _No_err &= _Update(_Century, _Two_dig_year >= 69 ? 1900 : 2000);
             }
@@ -3878,15 +3874,15 @@ namespace chrono {
             return _No_err;
         }
 
-        _NODISCARD static bool _Out_of_range(const optional<int>& _Field, int _Min, int _Max) {
+        _NODISCARD static bool _Out_of_range(const optional<int>& _Field, const int _Min, const int _Max) {
             return _Field && (_Field < _Min || _Max < _Field);
         }
 
-        _NODISCARD bool _Is_Complete() const {
+        _NODISCARD bool _Is_complete() const {
             // Check for data that is incomplete, ambiguous, or obviously out-of-range. The exception is 12-hour time
-            // without am/pm. Most strptime implementions will assume am in this case, so we'll do that too. Don't check
-            // for consistency yet, because the data might not even be representable by the type being parsed, and
-            // calender computations are relatively expensive.
+            // without am/pm. Most strptime implementations will assume am in this case, so we'll do that too. Don't
+            // check for consistency yet, because the data might not even be representable by the type being parsed,
+            // and calendar computations are relatively expensive.
 
             if (_Out_of_range(_Second, 0, 60) || _Out_of_range(_Minute, 0, 59)) {
                 return false;
@@ -3901,7 +3897,7 @@ namespace chrono {
             }
 
             if (_Iso_year || _Two_dig_iso_year || _Iso_week) {
-                // Need to have %G or %C+%g. The century can be parsed explictly, or derived implictly from %y.
+                // Need to have %G or %C+%g. The century can be parsed explicitly, or derived implicitly from %y.
                 const bool _Has_complete_year{_Iso_year || ((_Century || _Two_dig_year) && _Two_dig_iso_year)};
                 if (!_Has_complete_year || !_Iso_week || !_Weekday || _Out_of_range(_Iso_week, 1, 53)) {
                     return false;
@@ -3931,7 +3927,7 @@ namespace chrono {
         }
 
         template <class _Duration1, class _Duration2>
-        constexpr static bool _Can_represent() {
+        _NODISCARD static constexpr bool _Can_represent() {
             using _Rep1    = typename _Duration1::rep;
             using _Period1 = typename _Duration1::period;
             using _Period2 = typename _Duration2::period;
@@ -3940,11 +3936,11 @@ namespace chrono {
             // 86,400, i.e., we're interested in time periods between seconds and days.
             if constexpr (is_integral_v<_Rep1>) {
                 // Must have _Period1 <= _Period2 and numeric_limits<_Rep1>::max() >= _Period2 / _Period1. For example,
-                // std::days can't represent std::seconds, and duration<int,atto>::max() is ~9.2 seconds.
+                // std::days can't represent std::seconds, and duration<int, atto>::max() is ~9.2 seconds.
                 constexpr auto _Max_tick = static_cast<intmax_t>((numeric_limits<make_signed_t<_Rep1>>::max)());
 
                 // clang-format off
-                return ratio_less_equal_v<_Period1,_Period2>
+                return ratio_less_equal_v<_Period1, _Period2>
                     && ratio_greater_equal_v<ratio<_Max_tick, _Period2::num>, ratio_divide<ratio<1>, _Period1>>;
                 // clang-format on
             } else if (is_floating_point_v<_Rep1>) {
@@ -3961,7 +3957,7 @@ namespace chrono {
         }
 
         template <class _DurationType>
-        bool _Apply_duration_fields(_DurationType& _Result, const bool _For_time_point) {
+        _NODISCARD bool _Apply_duration_fields(_DurationType& _Result, const bool _For_time_point) {
             constexpr bool _Can_rep_sec = _Can_represent<_DurationType, seconds>();
             constexpr bool _Can_rep_min = _Can_represent<_DurationType, minutes>();
             constexpr bool _Can_rep_hr  = _Can_represent<_DurationType, hours>();
@@ -3973,7 +3969,7 @@ namespace chrono {
                                  | (_Can_rep_day ? _F_doy : 0)};
 
             const auto _Used{_Used_fields()};
-            if (!_Test_bits(_Used_fields(), _Required, _Optional)) {
+            if (!_Test_bits(_Used, _Required, _Optional)) {
                 return false;
             }
 
@@ -3994,6 +3990,7 @@ namespace chrono {
                 if (_Used & _F_min) {
                     _Result += _CHRONO duration_cast<_DurationType>(minutes{*_Minute});
                 }
+
                 if (_Utc_offset) {
                     _Result -= _CHRONO duration_cast<_DurationType>(minutes{*_Utc_offset});
                 }
@@ -4022,17 +4019,13 @@ namespace chrono {
         }
 
         template <class _Rep, class _Period>
-        bool _Make_duration(duration<_Rep, _Period>& _Duration_result) {
+        _NODISCARD bool _Make_duration(duration<_Rep, _Period>& _Duration_result) {
             const bool _Consistent = _Calculate_hour24();
             if (_Consistent) {
                 _Duration_result = duration<_Rep, _Period>::zero(); // TRANSITION: LWG-3536 & GH-1740
             }
 
-            if (_Consistent && _Apply_duration_fields(_Duration_result, false)) {
-                return true;
-            } else {
-                return false;
-            }
+            return _Consistent && _Apply_duration_fields(_Duration_result, false);
         }
 
         enum class _LeapSecondRep : unsigned int {
@@ -4043,7 +4036,7 @@ namespace chrono {
         };
 
         template <class _DurationType>
-        bool _Make_time_point(_DurationType& _Dur, _LeapSecondRep _Leap) {
+        _NODISCARD bool _Make_time_point(_DurationType& _Dur, _LeapSecondRep _Leap) {
 
             const bool _Consistent{_Calculate_hour24() && _Calculate_year_fields()};
             if (!_Consistent || !_Apply_duration_fields(_Dur, true)) {
@@ -4064,11 +4057,11 @@ namespace chrono {
             // second (everything except system_clock) and ones that have a special representation for leap seconds
             // (utc_clock and, for negative leap seconds, system_clock). gps_clock and tai_clock, in particular, always
             // monotonically count 86,400 seconds/day. The correct tick count, therefore, can be determined without
-            // knowing whether any leap seconds have occured, and there aren't any invalid times due to negative leap
+            // knowing whether any leap seconds have occurred, and there aren't any invalid times due to negative leap
             // second deletions.
             //
             // system_clock also has 86,400 seconds/day, but observes negative leap seconds by skipping them in its tick
-            // count. So leap second data are needed to check for a valid time, but not to calculate the tick count.
+            // count. So leap second data is needed to check for a valid time, but not to calculate the tick count.
 
             if (_Leap != _LeapSecondRep::_None) {
                 if (_Hour_24 == 23 && _Minute == 59 && _Second >= 59) {
@@ -4076,7 +4069,7 @@ namespace chrono {
                     // leap second insertion or (b) _Seconds == 59 and there *is* a leap second subtraction.
 
                     // Check for quick exit.
-                    const auto& _Tzdb{get_tzdb()};
+                    const auto& _Tzdb{_CHRONO get_tzdb()};
                     if (_Leap == _LeapSecondRep::_Negative && _Tzdb._All_ls_positive) {
                         return true;
                     }
@@ -4089,7 +4082,7 @@ namespace chrono {
                     const bool _Match_leap{_It != _Ls_vector.end() && *_It == _Target_sys_time};
 
                     // Condition for a good parse: (_Seconds == 59 && !_Match_leap) || (_Match_leap &&
-                    // _It->_Is_positive()). Below is inverse of this.
+                    // _It->_Is_positive()). Below is the inverse of this.
                     if ((_Possible_insertion || _Match_leap) && (!_Match_leap || !_It->_Positive())) {
                         return false;
                     }
@@ -4119,7 +4112,7 @@ namespace chrono {
             return true;
         }
 
-        bool _Make_day(day& _Day_result) {
+        _NODISCARD bool _Make_day(day& _Day_result) {
             if (_Used_fields() == _F_day) {
                 _Day_result = day{static_cast<unsigned int>(*_Day)};
                 return true;
@@ -4128,7 +4121,7 @@ namespace chrono {
             }
         }
 
-        bool _Make_weekday(weekday& _Weekday_result) {
+        _NODISCARD bool _Make_weekday(weekday& _Weekday_result) {
             if (_Used_fields() == _F_wkday) {
                 _Weekday_result = weekday{static_cast<unsigned int>(*_Weekday)};
                 return true;
@@ -4137,7 +4130,7 @@ namespace chrono {
             }
         }
 
-        bool _Make_month(month& _Month_result) {
+        _NODISCARD bool _Make_month(month& _Month_result) {
             if (_Used_fields() == _F_mon) {
                 _Month_result = month{static_cast<unsigned int>(*_Month)};
                 return true;
@@ -4146,7 +4139,7 @@ namespace chrono {
             }
         }
 
-        bool _Make_month_day(month_day& _Month_day_result) {
+        _NODISCARD bool _Make_month_day(month_day& _Month_day_result) {
             if (_Day_of_year && !_Yday_to_month_day(*_Day_of_year, 0)) {
                 return false;
             }
@@ -4162,7 +4155,7 @@ namespace chrono {
             }
         }
 
-        bool _Make_year(year& _Year_result) {
+        _NODISCARD bool _Make_year(year& _Year_result) {
             if (_Calculate_year_fields() && _Used_fields() == _F_year) {
                 _Year_result = year{*_Century + *_Two_dig_year};
                 return true;
@@ -4171,7 +4164,7 @@ namespace chrono {
             }
         }
 
-        bool _Make_year_month(year_month& _Year_month_result) {
+        _NODISCARD bool _Make_year_month(year_month& _Year_month_result) {
             if (_Calculate_year_fields() && _Used_fields() == (_F_mon | _F_year)) {
                 _Year_month_result =
                     year_month{year{*_Century + *_Two_dig_year}, month{static_cast<unsigned int>(*_Month)}};
@@ -4181,14 +4174,16 @@ namespace chrono {
             }
         }
 
-        bool _Make_year_month_day(year_month_day& _Year_month_day_result, const bool _For_time_point = false) {
+        _NODISCARD bool _Make_year_month_day(
+            year_month_day& _Year_month_day_result, const bool _For_time_point = false) {
             const bool _Consistent   = _Calculate_year_fields() && _Calculate_ymd();
             constexpr auto _Required = _F_day | _F_mon | _F_year;
             auto _Optional           = _F_wkday | _F_doy;
             if (_For_time_point) {
-                // These field aren't used here, but they might be used later if converting to a time_point.
+                // These fields aren't used here, but they might be used later if converting to a time_point.
                 _Optional |= _F_sec | _F_min | _F_hr;
             }
+
             if (_Consistent && _Test_bits(_Used_fields(), _Required, _Optional)) {
                 _Year_month_day_result = year_month_day{year{*_Century + *_Two_dig_year},
                     month{static_cast<unsigned int>(*_Month)}, day{static_cast<unsigned int>(*_Day)}};
@@ -4199,8 +4194,9 @@ namespace chrono {
         }
 
         template <class _InIt>
-        _InIt _Parse_time_field(_InIt _First, ios_base& _Iosbase, ios_base::iostate& _State, char _Flag, char _Modifier,
-            unsigned int _Width, unsigned int _Subsecond_precision) {
+        _NODISCARD _InIt _Parse_time_field(_InIt _First, ios_base& _Iosbase, ios_base::iostate& _State,
+            const char _Flag, const char _Modifier, const unsigned int _Width,
+            const unsigned int _Subsecond_precision) {
             using _CharT = typename _InIt::value_type;
 
             const auto& _Ctype_fac = _STD use_facet<ctype<_CharT>>(_Iosbase.getloc());
@@ -4247,6 +4243,7 @@ namespace chrono {
                         _Val += 1900;
                     }
                 }
+
                 if (!_Update(_Century, _Val)) {
                     _State |= ios_base::failbit;
                 }
@@ -4262,6 +4259,7 @@ namespace chrono {
                     _First      = _Time_fac.get(_First, _Last, _Iosbase, _State, &_Tp, 'd', 'O');
                     _Val        = _Tp.tm_mday;
                 }
+
                 if (!_Update(_Day, _Val)) {
                     _State |= ios_base::failbit;
                 }
@@ -4310,6 +4308,7 @@ namespace chrono {
                     _First      = _Time_fac.get(_First, _Last, _Iosbase, _State, &_Tp, 'H', 'O');
                     _Val        = _Tp.tm_hour;
                 }
+
                 if (!_Update(_Hour_24, _Val) || !_Update(_Ampm, _Val >= 12 ? 1 : 0)
                     || !_Update(_Hour_12, _CHRONO make12(hours{*_Hour_24}).count())) {
                     _State |= ios_base::failbit;
@@ -4348,6 +4347,7 @@ namespace chrono {
                     _First     = _Time_fac.get(_First, _Last, _Iosbase, _State, &_Tp, 'M', 'O');
                     _Val       = _Tp.tm_min;
                 }
+
                 if (!_Update(_Minute, _Val)) {
                     _State |= ios_base::failbit;
                 }
@@ -4358,13 +4358,14 @@ namespace chrono {
                     _State |= _Get_int(_First, _Width == 0 ? 2u : _Width, _Val, _Ctype_fac);
                 } else {
                     tm _Tp;
-                    _Time_parse_fields::_InitializeTimePoint(_Tp);
+                    _Initialize_time_point(_Tp);
                     _First = _Time_fac.get(_First, _Last, _Iosbase, _State, &_Tp, 'm', 'O');
                     _Val   = _Tp.tm_mon;
                     if (_Tp.tm_mon != _Invalid_time_field<int>) {
                         ++_Val;
                     }
                 }
+
                 if (!_Update(_Month, _Val)) {
                     _State |= ios_base::failbit;
                 }
@@ -4387,7 +4388,7 @@ namespace chrono {
             case 'X':
                 {
                     tm _Tp;
-                    _Time_parse_fields::_InitializeTimePoint(_Tp);
+                    _Initialize_time_point(_Tp);
                     const bool _Full_year = (_Flag == 'c'); // 'x' reads two-digit year, 'r' and 'x' read times
                     _First                = _Time_fac.get(_First, _Last, _Iosbase, _State, &_Tp, _Flag, _Modifier);
                     if (!_Update_if_valid(_Tp, _Full_year)) {
@@ -4405,19 +4406,17 @@ namespace chrono {
                 break;
 
             case 'S':
-                {
-                    if (_Subsecond_precision == 0) {
-                        _State |= _Get_int(_First, _Width == 0 ? 2u : _Width, _Val, _Ctype_fac);
-                        if (!_Update(_Second, _Val)) {
-                            _State |= ios_base::failbit;
-                        }
-                    } else {
-                        const auto& _Numpunct_fac = _STD use_facet<numpunct<_CharT>>(_Iosbase.getloc());
-                        _State |= _Get_fixed(
-                            _First, _Width == 0 ? 3 + _Subsecond_precision : _Width, _Ctype_fac, _Numpunct_fac);
+                if (_Subsecond_precision == 0) {
+                    _State |= _Get_int(_First, _Width == 0 ? 2u : _Width, _Val, _Ctype_fac);
+                    if (!_Update(_Second, _Val)) {
+                        _State |= ios_base::failbit;
                     }
-                    break;
+                } else {
+                    const auto& _Numpunct_fac = _STD use_facet<numpunct<_CharT>>(_Iosbase.getloc());
+                    _State |=
+                        _Get_fixed(_First, _Width == 0 ? 3 + _Subsecond_precision : _Width, _Ctype_fac, _Numpunct_fac);
                 }
+                break;
 
             case 'u':
             case 'w':
@@ -4437,6 +4436,7 @@ namespace chrono {
                         }
                     }
                 }
+
                 if (!_Update(_Weekday, _Val)) {
                     _State |= ios_base::failbit;
                 }
@@ -4468,6 +4468,7 @@ namespace chrono {
                         _Val                   = _Year_parts.second;
                     }
                 }
+
                 if (!_Update(_Two_dig_year, _Val)) {
                     _State |= ios_base::failbit;
                 }
@@ -4492,7 +4493,7 @@ namespace chrono {
                 }
 
             case 'z':
-                _State |= _Get_Tz_Offset(_First, _Ctype_fac, _Modifier == 'E' || _Modifier == 'O', _Val);
+                _State |= _Get_tz_offset(_First, _Ctype_fac, _Modifier == 'E' || _Modifier == 'O', _Val);
                 if (!_Update(_Utc_offset, _Val)) {
                     _State |= ios_base::failbit;
                 }
@@ -4501,7 +4502,7 @@ namespace chrono {
             case 'Z':
                 {
                     string _Name;
-                    _State |= _Get_Tz_Name(_First, _Ctype_fac, _Name);
+                    _State |= _Get_tz_name(_First, _Ctype_fac, _Name);
                     if (!_Update(_Tz_name, _Name)) {
                         _State |= ios_base::failbit;
                     }
@@ -4509,18 +4510,17 @@ namespace chrono {
                 }
 
             default:
-                {
-                    // Invalid flag
-                    _State |= ios_base::failbit;
-                }
+                // Invalid flag
+                _State |= ios_base::failbit;
+                break;
             }
 
             return _First;
         }
 
         template <class _InIt>
-        _InIt _Parse_time_field_restricted(_InIt _First, ios_base& _Iosbase, ios_base::iostate& _State,
-            const char* _Fmt, unsigned int _Subsecond_precision = 0) {
+        _NODISCARD _InIt _Parse_time_field_restricted(_InIt _First, ios_base& _Iosbase, ios_base::iostate& _State,
+            const char* _Fmt, const unsigned int _Subsecond_precision = 0) {
             using _Ctype = ctype<typename _InIt::value_type>;
             // Parses a restricted format string. It generally doesn't handle anything parsed outside of
             // _Parse_time_field:
@@ -4544,7 +4544,7 @@ namespace chrono {
         }
 
         template <class _InIt>
-        ios_base::iostate _Get_fixed(_InIt& _First, unsigned int _Width,
+        _NODISCARD ios_base::iostate _Get_fixed(_InIt& _First, unsigned int _Width,
             const ctype<typename _InIt::value_type>& _Ctype_fac,
             const numpunct<typename _InIt::value_type>& _Numpunct_fac) {
             constexpr _InIt _Last{};
@@ -4577,6 +4577,7 @@ namespace chrono {
             if (_First == _Last) {
                 _State |= ios_base::eofbit;
             }
+
             if (!_Found_digit) {
                 _State |= ios_base::failbit;
             } else {
@@ -4588,7 +4589,7 @@ namespace chrono {
         }
 
         template <class _InIt>
-        ios_base::iostate _Get_int(
+        _NODISCARD ios_base::iostate _Get_int(
             _InIt& _First, unsigned int _Width, int& _Val, const ctype<typename _InIt::value_type>& _Ctype_fac) {
             constexpr _InIt _Last{};
 
@@ -4653,7 +4654,7 @@ namespace chrono {
         }
 
         template <class _InIt>
-        ios_base::iostate _Get_Tz_Offset(
+        _NODISCARD ios_base::iostate _Get_tz_offset(
             _InIt& _First, const ctype<typename _InIt::value_type>& _Ctype_fac, const bool _Is_modified, int& _Offset) {
             constexpr _InIt _Last{};
             if (_First == _Last) {
@@ -4667,6 +4668,7 @@ namespace chrono {
                 [[fallthrough]];
             case '+':
                 ++_First;
+                break;
             }
 
             // For a regular offset hh[mm], simply read four digits, with the option of an EOF or non-digit after
@@ -4725,7 +4727,7 @@ namespace chrono {
         }
 
         template <class _InIt>
-        ios_base::iostate __CLRCALL_OR_CDECL _Get_Tz_Name(
+        _NODISCARD ios_base::iostate _Get_tz_name(
             _InIt& _First, const ctype<typename _InIt::value_type>& _Ctype_fac, string& _Tz_name) {
             constexpr _InIt _Last{};
             _Tz_name.clear();
@@ -4835,6 +4837,7 @@ namespace chrono {
                         default:
                             _First = _Parse_time_field(_First, _Istr, _State, _Flag, _Modifier, _Width,
                                 _Subsecond_precision); // convert a single field
+                            break;
                         }
                     }
                 }
@@ -4842,7 +4845,7 @@ namespace chrono {
                 _CATCH_IO_(_Myis, _Istr)
             }
 
-            if (!_Is_Complete()) {
+            if (!_Is_complete()) {
                 _State |= ios_base::failbit;
             }
 
@@ -4861,8 +4864,8 @@ namespace chrono {
     };
 
     // FUNCTION TEMPLATE from_stream
-    template <class _CharT, class _Traits, class _Rep, class _Period, class _Alloc = std::allocator<_CharT>>
-    basic_istream<_CharT, _Traits>& from_stream(std::basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt,
+    template <class _CharT, class _Traits, class _Rep, class _Period, class _Alloc = allocator<_CharT>>
+    basic_istream<_CharT, _Traits>& from_stream(basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt,
         duration<_Rep, _Period>& _Duration, basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr,
         minutes* _Offset = nullptr) {
         _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset, hh_mm_ss<duration<_Rep, _Period>>::fractional_width};
@@ -4872,10 +4875,9 @@ namespace chrono {
         return _Istr;
     }
 
-    template <class _CharT, class _Traits, class _Alloc = std::allocator<_CharT>>
-    basic_istream<_CharT, _Traits>& from_stream(std::basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt,
-        weekday& _Wd, std::basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr,
-        std::chrono::minutes* _Offset = nullptr) {
+    template <class _CharT, class _Traits, class _Alloc = allocator<_CharT>>
+    basic_istream<_CharT, _Traits>& from_stream(basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt, weekday& _Wd,
+        basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr, minutes* _Offset = nullptr) {
         _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset};
         if (_Istr && !_Time._Make_weekday(_Wd)) {
             _Istr.setstate(ios_base::failbit);
@@ -4883,10 +4885,9 @@ namespace chrono {
         return _Istr;
     }
 
-    template <class _CharT, class _Traits, class _Alloc = std::allocator<_CharT>>
-    basic_istream<_CharT, _Traits>& from_stream(std::basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt,
-        day& _Day, std::basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr,
-        std::chrono::minutes* _Offset = nullptr) {
+    template <class _CharT, class _Traits, class _Alloc = allocator<_CharT>>
+    basic_istream<_CharT, _Traits>& from_stream(basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt, day& _Day,
+        basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr, minutes* _Offset = nullptr) {
         _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset};
         if (_Istr && !_Time._Make_day(_Day)) {
             _Istr.setstate(ios_base::failbit);
@@ -4894,10 +4895,9 @@ namespace chrono {
         return _Istr;
     }
 
-    template <class _CharT, class _Traits, class _Alloc = std::allocator<_CharT>>
-    basic_istream<_CharT, _Traits>& from_stream(std::basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt,
-        month& _Month, std::basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr,
-        std::chrono::minutes* _Offset = nullptr) {
+    template <class _CharT, class _Traits, class _Alloc = allocator<_CharT>>
+    basic_istream<_CharT, _Traits>& from_stream(basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt,
+        month& _Month, basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr, minutes* _Offset = nullptr) {
         _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset};
         if (_Istr && !_Time._Make_month(_Month)) {
             _Istr.setstate(ios_base::failbit);
@@ -4905,10 +4905,9 @@ namespace chrono {
         return _Istr;
     }
 
-    template <class _CharT, class _Traits, class _Alloc = std::allocator<_CharT>>
-    basic_istream<_CharT, _Traits>& from_stream(std::basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt,
-        month_day& _Md, std::basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr,
-        std::chrono::minutes* _Offset = nullptr) {
+    template <class _CharT, class _Traits, class _Alloc = allocator<_CharT>>
+    basic_istream<_CharT, _Traits>& from_stream(basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt,
+        month_day& _Md, basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr, minutes* _Offset = nullptr) {
         _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset};
         if (_Istr && !_Time._Make_month_day(_Md)) {
             _Istr.setstate(ios_base::failbit);
@@ -4916,10 +4915,9 @@ namespace chrono {
         return _Istr;
     }
 
-    template <class _CharT, class _Traits, class _Alloc = std::allocator<_CharT>>
-    basic_istream<_CharT, _Traits>& from_stream(std::basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt,
-        year& _Year, std::basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr,
-        std::chrono::minutes* _Offset = nullptr) {
+    template <class _CharT, class _Traits, class _Alloc = allocator<_CharT>>
+    basic_istream<_CharT, _Traits>& from_stream(basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt, year& _Year,
+        basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr, minutes* _Offset = nullptr) {
         _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset};
         if (_Istr && !_Time._Make_year(_Year)) {
             _Istr.setstate(ios_base::failbit);
@@ -4927,10 +4925,9 @@ namespace chrono {
         return _Istr;
     }
 
-    template <class _CharT, class _Traits, class _Alloc = std::allocator<_CharT>>
-    basic_istream<_CharT, _Traits>& from_stream(std::basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt,
-        year_month& _Ym, std::basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr,
-        std::chrono::minutes* _Offset = nullptr) {
+    template <class _CharT, class _Traits, class _Alloc = allocator<_CharT>>
+    basic_istream<_CharT, _Traits>& from_stream(basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt,
+        year_month& _Ym, basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr, minutes* _Offset = nullptr) {
         _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset};
         if (_Istr && !_Time._Make_year_month(_Ym)) {
             _Istr.setstate(ios_base::failbit);
@@ -4938,17 +4935,15 @@ namespace chrono {
         return _Istr;
     }
 
-    template <class _CharT, class _Traits, class _Alloc = std::allocator<_CharT>>
-    basic_istream<_CharT, _Traits>& from_stream(std::basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt,
-        year_month_day& _Ymd, std::basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr,
-        std::chrono::minutes* _Offset = nullptr) {
+    template <class _CharT, class _Traits, class _Alloc = allocator<_CharT>>
+    basic_istream<_CharT, _Traits>& from_stream(basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt,
+        year_month_day& _Ymd, basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr, minutes* _Offset = nullptr) {
         _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset};
         if (_Istr && !_Time._Make_year_month_day(_Ymd)) {
             _Istr.setstate(ios_base::failbit);
         }
         return _Istr;
     }
-
 
     template <class _CharT, class _Traits, class _Duration, class _Alloc = allocator<_CharT>>
     basic_istream<_CharT, _Traits>& from_stream(basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt,
@@ -5052,9 +5047,9 @@ namespace chrono {
     template <class _CharT, class _Traits, class _Alloc, class _Parsable>
     auto parse(const basic_string<_CharT, _Traits, _Alloc>& _Fmt, _Parsable& _Tp)
         // clang-format off
-        -> decltype(from_stream(declval<basic_istream<_CharT, _Traits>&>(), _Fmt.c_str(), _Tp),
+        -> decltype(_CHRONO from_stream(_STD declval<basic_istream<_CharT, _Traits>&>(), _Fmt.c_str(), _Tp),
            _Time_parse_iomanip{_Fmt, _Tp})
-        //clang-format on
+    // clang-format on
     {
         return _Time_parse_iomanip{_Fmt, _Tp};
     }
@@ -5063,7 +5058,7 @@ namespace chrono {
     auto parse(const basic_string<_CharT, _Traits, _Alloc>& _Fmt, _Parsable& _Tp,
         basic_string<_CharT, _Traits, _Alloc>& _Abbrev)
         // clang-format off
-        -> decltype(from_stream(declval<basic_istream<_CharT, _Traits>&>(), _Fmt.c_str(), _Tp,
+        -> decltype(_CHRONO from_stream(_STD declval<basic_istream<_CharT, _Traits>&>(), _Fmt.c_str(), _Tp,
                                 _STD addressof(_Abbrev)),
            _Time_parse_iomanip{_Fmt, _Tp, _STD addressof(_Abbrev)})
     // clang-format on
@@ -5074,8 +5069,8 @@ namespace chrono {
     template <class _CharT, class _Traits, class _Alloc, class _Parsable>
     auto parse(const basic_string<_CharT, _Traits, _Alloc>& _Fmt, _Parsable& _Tp, minutes& _Offset)
         // clang-format off
-        -> decltype(from_stream(declval<basic_istream<_CharT, _Traits>&>(), _Fmt.c_str(), _Tp,
-                                declval<basic_string<_CharT, _Traits, _Alloc>*>(), &_Offset),
+        -> decltype(_CHRONO from_stream(_STD declval<basic_istream<_CharT, _Traits>&>(), _Fmt.c_str(), _Tp,
+                                _STD declval<basic_string<_CharT, _Traits, _Alloc>*>(), &_Offset),
            _Time_parse_iomanip{_Fmt, _Tp, static_cast<basic_string<_CharT, _Traits, _Alloc>*>(nullptr), &_Offset})
     // clang-format on
     {
@@ -5086,7 +5081,7 @@ namespace chrono {
     auto parse(const basic_string<_CharT, _Traits, _Alloc>& _Fmt, _Parsable& _Tp,
         basic_string<_CharT, _Traits, _Alloc>& _Abbrev, minutes& _Offset)
         // clang-format off
-        -> decltype(from_stream(declval<basic_istream<_CharT, _Traits>&>(), _Fmt.c_str(), _Tp,
+        -> decltype(_CHRONO from_stream(_STD declval<basic_istream<_CharT, _Traits>&>(), _Fmt.c_str(), _Tp,
                                 _STD addressof(_Abbrev), &_Offset),
            _Time_parse_iomanip{_Fmt, _Tp, _STD addressof(_Abbrev), &_Offset})
     // clang-format on
@@ -5097,7 +5092,7 @@ namespace chrono {
     template <class _CharT, class _Traits, class _Alloc, class _Parsable>
     basic_istream<_CharT, _Traits>& operator>>(
         basic_istream<_CharT, _Traits>& _Is, const _Time_parse_iomanip<_CharT, _Traits, _Alloc, _Parsable>& _Tpi) {
-        return from_stream(_Is, _Tpi._Fmt.c_str(), _Tpi._Tp, _Tpi._Abbrev, _Tpi._Offset);
+        return _CHRONO from_stream(_Is, _Tpi._Fmt.c_str(), _Tpi._Tp, _Tpi._Abbrev, _Tpi._Offset);
     }
 #endif // _HAS_CXX20
 } // namespace chrono
