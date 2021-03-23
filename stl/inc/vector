@@ -794,7 +794,11 @@ public:
         _Constructed_first = _Newvec + _Whereoff;
 
         if (_Whereptr == _Mylast) { // at back, provide strong guarantee
-            _Umove_if_noexcept(_Myfirst, _Mylast, _Newvec);
+            if constexpr (is_nothrow_move_constructible_v<_Ty> || !is_copy_constructible_v<_Ty>) {
+                _Uninitialized_move(_Myfirst, _Mylast, _Newvec, _Getal());
+            } else {
+                _Uninitialized_copy(_Myfirst, _Mylast, _Newvec, _Getal());
+            }
         } else { // provide basic guarantee
             _Uninitialized_move(_Myfirst, _Whereptr, _Newvec, _Getal());
             _Constructed_first = _Newvec;
@@ -888,7 +892,11 @@ public:
             _Constructed_first = _Newvec + _Whereoff;
 
             if (_One_at_back) { // provide strong guarantee
-                _Umove_if_noexcept(_Oldfirst, _Oldlast, _Newvec);
+                if constexpr (is_nothrow_move_constructible_v<_Ty> || !is_copy_constructible_v<_Ty>) {
+                    _Uninitialized_move(_Oldfirst, _Oldlast, _Newvec, _Getal());
+                } else {
+                    _Uninitialized_copy(_Oldfirst, _Oldlast, _Newvec, _Getal());
+                }
             } else { // provide basic guarantee
                 _Uninitialized_move(_Oldfirst, _Whereptr, _Newvec, _Getal());
                 _Constructed_first = _Newvec;
@@ -984,7 +992,11 @@ private:
             _Constructed_first = _Newvec + _Whereoff;
 
             if (_Count == 1 && _Whereptr == _Oldlast) { // one at back, provide strong guarantee
-                _Umove_if_noexcept(_Oldfirst, _Oldlast, _Newvec);
+                if constexpr (is_nothrow_move_constructible_v<_Ty> || !is_copy_constructible_v<_Ty>) {
+                    _Uninitialized_move(_Oldfirst, _Oldlast, _Newvec, _Getal());
+                } else {
+                    _Uninitialized_copy(_Oldfirst, _Oldlast, _Newvec, _Getal());
+                }
             } else { // provide basic guarantee
                 _Uninitialized_move(_Oldfirst, _Whereptr, _Newvec, _Getal());
                 _Constructed_first = _Newvec;
@@ -1252,7 +1264,11 @@ private:
         } else {
             _Appended_last = _Uninitialized_value_construct_n(_Appended_first, _Newsize - _Oldsize, _Getal());
         }
-        _Umove_if_noexcept(_Myfirst, _Mylast, _Newvec);
+        if constexpr (is_nothrow_move_constructible_v<_Ty> || !is_copy_constructible_v<_Ty>) {
+            _Uninitialized_move(_Myfirst, _Mylast, _Newvec, _Getal());
+        } else {
+            _Uninitialized_copy(_Myfirst, _Mylast, _Newvec, _Getal());
+        }
         _CATCH_ALL
         _Destroy(_Appended_first, _Appended_last);
         _Getal().deallocate(_Newvec, _Newcapacity);
@@ -1319,7 +1335,11 @@ private:
         const pointer _Newvec = _Getal().allocate(_Newcapacity);
 
         _TRY_BEGIN
-        _Umove_if_noexcept(_Myfirst, _Mylast, _Newvec);
+        if constexpr (is_nothrow_move_constructible_v<_Ty> || !is_copy_constructible_v<_Ty>) {
+            _Uninitialized_move(_Myfirst, _Mylast, _Newvec, _Getal());
+        } else {
+            _Uninitialized_copy(_Myfirst, _Mylast, _Newvec, _Getal());
+        }
         _CATCH_ALL
         _Getal().deallocate(_Newvec, _Newcapacity);
         _RERAISE;
@@ -1650,22 +1670,6 @@ public:
     }
 
 private:
-    _CONSTEXPR20_CONTAINER void _Umove_if_noexcept1(pointer _First, pointer _Last, pointer _Dest, true_type) {
-        // move [_First, _Last) to raw _Dest, using allocator
-        _Uninitialized_move(_First, _Last, _Dest, _Getal());
-    }
-
-    _CONSTEXPR20_CONTAINER void _Umove_if_noexcept1(pointer _First, pointer _Last, pointer _Dest, false_type) {
-        // copy [_First, _Last) to raw _Dest, using allocator
-        _Uninitialized_copy(_First, _Last, _Dest, _Getal());
-    }
-
-    _CONSTEXPR20_CONTAINER void _Umove_if_noexcept(pointer _First, pointer _Last, pointer _Dest) {
-        // move_if_noexcept [_First, _Last) to raw _Dest, using allocator
-        _Umove_if_noexcept1(_First, _Last, _Dest,
-            bool_constant<disjunction_v<is_nothrow_move_constructible<_Ty>, negation<is_copy_constructible<_Ty>>>>{});
-    }
-
     _CONSTEXPR20_CONTAINER void _Destroy(pointer _First, pointer _Last) {
         // destroy [_First, _Last) using allocator
         _Destroy_range(_First, _Last, _Getal());
