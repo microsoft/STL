@@ -490,8 +490,12 @@ private:
         if (_Count != 0) {
             _Buy_nonzero(_Count);
             _Tidy_guard<vector> _Guard{this};
-            _My_data._Mylast = _Ufill(_My_data._Myfirst, _Count, _Val);
-            _Guard._Target   = nullptr;
+            if constexpr (is_same_v<_Ty2, _Ty>) {
+                _My_data._Mylast = _Uninitialized_fill_n(_My_data._Myfirst, _Count, _Val, _Getal());
+            } else {
+                _My_data._Mylast = _Uninitialized_value_construct_n(_My_data._Myfirst, _Count, _Getal());
+            }
+            _Guard._Target = nullptr;
         }
 
         _Proxy._Release();
@@ -880,7 +884,7 @@ public:
             pointer _Constructed_first      = _Constructed_last;
 
             _TRY_BEGIN
-            _Ufill(_Newvec + _Whereoff, _Count, _Val);
+            _Uninitialized_fill_n(_Newvec + _Whereoff, _Count, _Val, _Getal());
             _Constructed_first = _Newvec + _Whereoff;
 
             if (_One_at_back) { // provide strong guarantee
@@ -906,7 +910,7 @@ public:
             _Orphan_range(_Whereptr, _Oldlast);
 
             if (_Count > _Affected_elements) { // new stuff spills off end
-                _Mylast = _Ufill(_Oldlast, _Count - _Affected_elements, _Tmp);
+                _Mylast = _Uninitialized_fill_n(_Oldlast, _Count - _Affected_elements, _Tmp, _Getal());
                 _Mylast = _Umove(_Whereptr, _Oldlast, _Mylast);
                 _STD fill(_Whereptr, _Oldlast, _Tmp);
             } else { // new stuff can all be assigned
@@ -1094,7 +1098,7 @@ public:
                 _STD fill(_Myfirst, _Mylast, _Val);
             }
 
-            _Mylast = _Ufill(_Mylast, _Newsize - _Oldsize, _Val);
+            _Mylast = _Uninitialized_fill_n(_Mylast, _Newsize - _Oldsize, _Val, _Getal());
         } else {
             const pointer _Newlast = _Myfirst + _Newsize;
             _STD fill(_Myfirst, _Newlast, _Val);
@@ -1243,7 +1247,11 @@ private:
         pointer _Appended_last        = _Appended_first;
 
         _TRY_BEGIN
-        _Appended_last = _Ufill(_Appended_first, _Newsize - _Oldsize, _Val);
+        if constexpr (is_same_v<_Ty2, _Ty>) {
+            _Appended_last = _Uninitialized_fill_n(_Appended_first, _Newsize - _Oldsize, _Val, _Getal());
+        } else {
+            _Appended_last = _Uninitialized_value_construct_n(_Appended_first, _Newsize - _Oldsize, _Getal());
+        }
         _Umove_if_noexcept(_Myfirst, _Mylast, _Newvec);
         _CATCH_ALL
         _Destroy(_Appended_first, _Appended_last);
@@ -1277,7 +1285,11 @@ private:
             }
 
             const pointer _Oldlast = _Mylast;
-            _Mylast                = _Ufill(_Oldlast, _Newsize - _Oldsize, _Val);
+            if constexpr (is_same_v<_Ty2, _Ty>) {
+                _Mylast = _Uninitialized_fill_n(_Oldlast, _Newsize - _Oldsize, _Val, _Getal());
+            } else {
+                _Mylast = _Uninitialized_value_construct_n(_Oldlast, _Newsize - _Oldsize, _Getal());
+            }
             _Orphan_range(_Oldlast, _Oldlast);
         }
 
@@ -1638,16 +1650,6 @@ public:
     }
 
 private:
-    _CONSTEXPR20_CONTAINER pointer _Ufill(pointer _Dest, const size_type _Count, const _Ty& _Val) {
-        // fill raw _Dest with _Count copies of _Val, using allocator
-        return _Uninitialized_fill_n(_Dest, _Count, _Val, _Getal());
-    }
-
-    _CONSTEXPR20_CONTAINER pointer _Ufill(pointer _Dest, const size_type _Count, _Value_init_tag) {
-        // fill raw _Dest with _Count value-initialized objects, using allocator
-        return _Uninitialized_value_construct_n(_Dest, _Count, _Getal());
-    }
-
     template <class _Iter>
     _CONSTEXPR20_CONTAINER pointer _Ucopy(_Iter _First, _Iter _Last, pointer _Dest) {
         // copy [_First, _Last) to raw _Dest, using allocator
