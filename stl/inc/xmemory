@@ -1866,7 +1866,7 @@ struct _In_place_key_extract_set<_Key, _Key> {
 
 // STRUCT TEMPLATE _In_place_key_extract_map
 // assumes _Args have already been _Remove_cvref_t'd
-template <class _Key, class... Args>
+template <class _Key, class... _Args>
 struct _In_place_key_extract_map {
     // by default we can't extract the key in the emplace family and must construct a node we might not use
     static constexpr bool _Extractable = false;
