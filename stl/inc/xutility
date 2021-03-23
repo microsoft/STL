@@ -3592,7 +3592,6 @@ namespace ranges {
         }
 
         constexpr subrange& advance(const iter_difference_t<_It> _Count) {
-            // Per [range.subrange.access], this has defined behavior when _Count < 0.
             if constexpr (bidirectional_iterator<_It>) {
                 if (_Count < 0) {
                     _RANGES advance(_First, _Count);
