@@ -880,7 +880,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       </Expand>
   </Type>
 
-    <!-- VC 2013 -->
+  <!-- VC 2013 -->
   <Type Name="std::basic_string&lt;char,*&gt;" Priority="MediumLow">
       <DisplayString Condition="_Myres &lt; _BUF_SIZE">{_Bx._Buf,na}</DisplayString>
       <DisplayString Condition="_Myres &gt;= _BUF_SIZE">{_Bx._Ptr,na}</DisplayString>
