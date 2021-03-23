@@ -1389,6 +1389,14 @@ namespace ranges {
     template <input_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out>
         requires indirectly_copyable<_It, _Out>
     _NODISCARD constexpr copy_result<_It, _Out> _Copy_unchecked(_It _First, const _Se _Last, _Out _Result) {
+        if constexpr (_Ptr_copy_cat<_It, _Out>::_Trivially_copyable) {
+            if (!_STD is_constant_evaluated()) {
+                auto _LastIt = _RANGES next(_First, _Last);
+                _Result = _Copy_memmove(_STD move(_First), _LastIt, _STD move(_Result));
+                return {_STD move(_LastIt), _STD move(_Result)};
+            }
+        }
+
         for (; _First != _Last; ++_First, (void) ++_Result) {
             *_Result = *_First;
         }
@@ -1440,6 +1448,15 @@ namespace ranges {
             requires indirectly_copyable<_It, _Out>
         constexpr copy_n_result<_It, _Out> operator()(_It _First, iter_difference_t<_It> _Count, _Out _Result) const {
             auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
+            if constexpr (_Ptr_copy_cat<decltype(_UFirst), _Out>::_Trivially_copyable) {
+                if (!_STD is_constant_evaluated()) {
+                    auto _LastIt = _UFirst + _Count;
+                    _Result = _Copy_memmove(_STD move(_UFirst), _LastIt, _STD move(_Result));
+                    _Seek_wrapped(_First, _STD move(_LastIt));
+                    return {_STD move(_First), _STD move(_Result)};
+                }
+            }
+
             for (; _Count > 0; ++_UFirst, (void) ++_Result, --_Count) {
                 *_Result = *_UFirst;
             }
@@ -1585,6 +1602,13 @@ namespace ranges {
         requires indirectly_movable<_It, _Out>
     constexpr move_result<_It, _Out> _Move_unchecked(_It _First, const _Se _Last, _Out _Result) {
         // clang-format on
+        if constexpr (_Ptr_move_cat<_It, _Out>::_Trivially_copyable) {
+            if (!_STD is_constant_evaluated()) {
+                auto _LastIt = _RANGES next(_First, _Last);
+                _Result = _Copy_memmove(_STD move(_First), _LastIt, _STD move(_Result));
+                return {_STD move(_LastIt), _STD move(_Result)};
+            }
+        }
 
         for (; _First != _Last; ++_First, (void) ++_Result) {
             *_Result = _RANGES iter_move(_First);

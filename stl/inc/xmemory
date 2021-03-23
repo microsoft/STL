@@ -1557,13 +1557,27 @@ namespace ranges {
     template <class _InIt, class _OutIt>
     in_out_result<_InIt, _OutIt> _Copy_memcpy_common(
         _InIt _IFirst, _InIt _ILast, _OutIt _OFirst, _OutIt _OLast) noexcept {
-        const auto _IFirst_ch = const_cast<char*>(reinterpret_cast<const volatile char*>(_IFirst));
-        const auto _ILast_ch  = const_cast<const char*>(reinterpret_cast<const volatile char*>(_ILast));
-        const auto _OFirst_ch = const_cast<char*>(reinterpret_cast<volatile char*>(_OFirst));
-        const auto _OLast_ch  = const_cast<const char*>(reinterpret_cast<const volatile char*>(_OLast));
+        const auto _IFirstPtr = _To_address(_IFirst);
+        const auto _ILastPtr  = _To_address(_ILast);
+        const auto _OFirstPtr = _To_address(_OFirst);
+        const auto _OLastPtr  = _To_address(_OLast);
+        const auto _IFirst_ch = const_cast<char*>(reinterpret_cast<const volatile char*>(_IFirstPtr));
+        const auto _ILast_ch  = const_cast<const char*>(reinterpret_cast<const volatile char*>(_ILastPtr));
+        const auto _OFirst_ch = const_cast<char*>(reinterpret_cast<volatile char*>(_OFirstPtr));
+        const auto _OLast_ch  = const_cast<const char*>(reinterpret_cast<const volatile char*>(_OLastPtr));
         const auto _Count     = static_cast<size_t>((_STD min)(_ILast_ch - _IFirst_ch, _OLast_ch - _OFirst_ch));
         _CSTD memcpy(_OFirst_ch, _IFirst_ch, _Count);
-        return {reinterpret_cast<_InIt>(_IFirst_ch + _Count), reinterpret_cast<_OutIt>(_OFirst_ch + _Count)};
+        if constexpr (is_pointer_v<_InIt>) {
+            _IFirst = reinterpret_cast<_InIt>(_IFirst_ch + _Count);
+        } else {
+            _IFirst += reinterpret_cast<decltype(_IFirstPtr)>(_IFirst_ch + _Count) - _IFirstPtr;
+        }
+        if constexpr (is_pointer_v<_OutIt>) {
+            _OFirst = reinterpret_cast<_OutIt>(_OFirst_ch + _Count);
+        } else {
+            _OFirst += reinterpret_cast<decltype(_OFirstPtr)>(_OFirst_ch + _Count) - _OFirstPtr;
+        }
+        return {_IFirst, _OFirst};
     }
 
     // ALIAS TEMPLATE uninitialized_move_result
@@ -1578,8 +1592,9 @@ namespace ranges {
     uninitialized_move_result<_It, _Out> _Uninitialized_move_unchecked(
             _It _IFirst, const _Se _ILast, _Out _OFirst, const _OSe _OLast) {
         // clang-format on
-        if constexpr (is_same_v<_Se, _It> && is_same_v<_OSe, _Out> && _Ptr_move_cat<_It, _Out>::_Really_trivial) {
-            return _Copy_memcpy_common(_IFirst, _ILast, _OFirst, _OLast);
+        if constexpr (_Ptr_move_cat<_It, _Out>::_Really_trivial && sized_sentinel_for<_Se, _It>
+            && sized_sentinel_for<_OSe, _Out>) {
+            return _Copy_memcpy_common(_IFirst, _RANGES next(_IFirst, _ILast), _OFirst, _RANGES next(_OFirst,  _OLast));
         } else {
             _Uninitialized_backout _Backout{_STD move(_OFirst)};
 

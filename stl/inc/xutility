@@ -4041,6 +4041,37 @@ struct unreachable_sentinel_t : _Unreachable_sentinel_detail::_Base {}; // TRANS
 inline constexpr unreachable_sentinel_t unreachable_sentinel{};
 #endif // __cpp_lib_concepts
 
+// _Iterator_is_contiguous<_Iter> reports whether an iterator is known to be contiguous.
+// (Without concepts, this detection is limited, which will limit when we can activate optimizations.)
+
+#ifdef __cpp_lib_concepts
+// When concepts are available, we can detect arbitrary contiguous iterators.
+template <class _Iter>
+inline constexpr bool _Iterator_is_contiguous = contiguous_iterator<_Iter>;
+
+template <class _Iter>
+_NODISCARD constexpr auto _To_address(const _Iter& _Val) noexcept {
+    _STL_INTERNAL_STATIC_ASSERT(contiguous_iterator<_Iter>);
+    return _STD to_address(_Val);
+}
+#else // ^^^ defined(__cpp_lib_concepts) ^^^ / vvv !defined(__cpp_lib_concepts) vvv
+// When concepts aren't available, we can detect pointers. (Iterators should be unwrapped before using this.)
+template <class _Iter>
+_INLINE_VAR constexpr bool _Iterator_is_contiguous = is_pointer_v<_Iter>;
+
+template <class _Iter>
+_NODISCARD constexpr auto _To_address(const _Iter& _Val) noexcept {
+    _STL_INTERNAL_STATIC_ASSERT(is_pointer_v<_Iter>);
+    return _Val;
+}
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
+
+// _Iterators_are_contiguous<_Iter1, _Iter2> reports whether both iterators are known to be contiguous.
+
+template <class _Iter1, class _Iter2>
+_INLINE_VAR constexpr bool _Iterators_are_contiguous =
+    _Iterator_is_contiguous<_Iter1>&& _Iterator_is_contiguous<_Iter2>;
+
 // FUNCTION TEMPLATE copy
 template <class _Source, class _Dest>
 struct _Ptr_cat_helper {
@@ -4084,36 +4115,48 @@ struct _False_copy_cat {
     static constexpr bool _Trivially_copyable = false;
 };
 
-template <class _Source, class _Dest>
-struct _Ptr_copy_cat : _False_copy_cat {}; // unwrap the pointer-like type and dispatch to _Ptr_cat_helper for copy
+// NOTE: pointer is not a contiguous iterator if it points to volatile type
+template <class _Source, class _Dest,
+    bool = (_Iterator_is_contiguous<_Source> || is_pointer_v<_Source>) &&(
+        _Iterator_is_contiguous<_Dest> || is_pointer_v<_Dest>)>
+struct _Ptr_move_cat : _False_copy_cat {};
 
 template <class _Source, class _Dest>
-struct _Ptr_copy_cat<_Source*, _Dest*>
-    : conditional_t<is_trivially_assignable_v<_Dest&, _Source&>,
-          _Ptr_cat_helper<remove_cv_t<_Source>, remove_cv_t<_Dest>>, _False_copy_cat> {};
+struct _Ptr_move_cat<_Source, _Dest, true>
+    : conditional_t<is_trivially_assignable_v<_Iter_ref_t<_Dest>, remove_reference_t<_Iter_ref_t<_Source>>>,
+          _Ptr_cat_helper<_Iter_value_t<_Source>, _Iter_value_t<_Dest>>, _False_copy_cat> {};
 
 template <class _Source, class _Dest>
-struct _Ptr_copy_cat<move_iterator<_Source*>, _Dest*> : _Ptr_copy_cat<_Source*, _Dest*> {};
+struct _Ptr_move_cat<move_iterator<_Source>, _Dest, false> : _Ptr_move_cat<_Source, _Dest> {};
+
+template <class _Source, class _Dest,
+    bool = (_Iterator_is_contiguous<_Source> || is_pointer_v<_Source>) &&(
+        _Iterator_is_contiguous<_Dest> || is_pointer_v<_Dest>)>
+struct _Ptr_copy_cat : _False_copy_cat {};
 
 template <class _Source, class _Dest>
-struct _Ptr_move_cat : _False_copy_cat {}; // unwrap the pointer-like type and dispatch to _Ptr_cat_helper for move
+struct _Ptr_copy_cat<_Source, _Dest, true>
+    : conditional_t<is_trivially_assignable_v<_Iter_ref_t<_Dest>, _Iter_ref_t<_Source>>,
+          _Ptr_cat_helper<_Iter_value_t<_Source>, _Iter_value_t<_Dest>>, _False_copy_cat> {};
 
 template <class _Source, class _Dest>
-struct _Ptr_move_cat<_Source*, _Dest*>
-    : conditional_t<is_trivially_assignable_v<_Dest&, _Source>,
-          _Ptr_cat_helper<remove_cv_t<_Source>, remove_cv_t<_Dest>>, _False_copy_cat> {};
+struct _Ptr_copy_cat<move_iterator<_Source>, _Dest, false> : _Ptr_move_cat<_Source, _Dest> {};
 
-template <class _Source, class _Dest>
-struct _Ptr_move_cat<move_iterator<_Source*>, _Dest*> : _Ptr_move_cat<_Source*, _Dest*> {};
-
-template <class _InIt, class _OutIt>
-_OutIt _Copy_memmove(_InIt _First, _InIt _Last, _OutIt _Dest) {
-    const char* const _First_ch = const_cast<const char*>(reinterpret_cast<const volatile char*>(_First));
-    const char* const _Last_ch  = const_cast<const char*>(reinterpret_cast<const volatile char*>(_Last));
-    char* const _Dest_ch        = const_cast<char*>(reinterpret_cast<volatile char*>(_Dest));
+template <class _CtgIt, class _OutCtgIt>
+_OutCtgIt _Copy_memmove(_CtgIt _First, _CtgIt _Last, _OutCtgIt _Dest) {
+    auto _FirstPtr              = _To_address(_First);
+    auto _LastPtr               = _To_address(_Last);
+    auto _DestPtr               = _To_address(_Dest);
+    const char* const _First_ch = const_cast<const char*>(reinterpret_cast<const volatile char*>(_FirstPtr));
+    const char* const _Last_ch  = const_cast<const char*>(reinterpret_cast<const volatile char*>(_LastPtr));
+    char* const _Dest_ch        = const_cast<char*>(reinterpret_cast<volatile char*>(_DestPtr));
     const auto _Count           = static_cast<size_t>(_Last_ch - _First_ch);
     _CSTD memmove(_Dest_ch, _First_ch, _Count);
-    return reinterpret_cast<_OutIt>(_Dest_ch + _Count);
+    if constexpr (is_pointer_v<_OutCtgIt>) {
+        return reinterpret_cast<_OutCtgIt>(_Dest_ch + _Count);
+    } else {
+        return _Dest + (_LastPtr - _FirstPtr);
+    }
 }
 
 template <class _InIt, class _OutIt>
@@ -4215,14 +4258,22 @@ _FwdIt2 copy_n(_ExPo&&, _FwdIt1 _First, _Diff _Count_raw, _FwdIt2 _Dest) noexcep
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE copy_backward
-template <class _BidIt1, class _BidIt2>
-_BidIt2 _Copy_backward_memmove(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) {
+template <class _CtgIt1, class _CtgIt2>
+_CtgIt2 _Copy_backward_memmove(_CtgIt1 _First, _CtgIt1 _Last, _CtgIt2 _Dest) {
     // implement copy_backward-like function as memmove
-    const char* const _First_ch = const_cast<const char*>(reinterpret_cast<const volatile char*>(_First));
-    const char* const _Last_ch  = const_cast<const char*>(reinterpret_cast<const volatile char*>(_Last));
-    char* const _Dest_ch        = const_cast<char*>(reinterpret_cast<volatile char*>(_Dest));
+    auto _FirstPtr              = _To_address(_First);
+    auto _LastPtr               = _To_address(_Last);
+    auto _DestPtr               = _To_address(_Dest);
+    const char* const _First_ch = const_cast<const char*>(reinterpret_cast<const volatile char*>(_FirstPtr));
+    const char* const _Last_ch  = const_cast<const char*>(reinterpret_cast<const volatile char*>(_LastPtr));
+    char* const _Dest_ch        = const_cast<char*>(reinterpret_cast<volatile char*>(_DestPtr));
     const auto _Count           = static_cast<size_t>(_Last_ch - _First_ch);
-    return static_cast<_BidIt2>(_CSTD memmove(_Dest_ch - _Count, _First_ch, _Count));
+    auto _Result                = _CSTD memmove(_Dest_ch - _Count, _First_ch, _Count);
+    if constexpr (is_pointer_v<_CtgIt2>) {
+        return static_cast<_CtgIt2>(_Result);
+    } else {
+        return _Dest - (_LastPtr - _FirstPtr);
+    }
 }
 
 template <class _BidIt1, class _BidIt2>
@@ -4354,37 +4405,6 @@ _BidIt2 move_backward(_ExPo&&, _BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) noe
 #endif // _HAS_CXX17
 
 // FUNCTION TEMPLATE fill
-
-// _Iterator_is_contiguous<_Iter> reports whether an iterator is known to be contiguous.
-// (Without concepts, this detection is limited, which will limit when we can activate optimizations.)
-
-#ifdef __cpp_lib_concepts
-// When concepts are available, we can detect arbitrary contiguous iterators.
-template <class _Iter>
-inline constexpr bool _Iterator_is_contiguous = contiguous_iterator<_Iter>;
-
-template <class _Iter>
-_NODISCARD constexpr auto _To_address(const _Iter& _Val) noexcept {
-    _STL_INTERNAL_STATIC_ASSERT(contiguous_iterator<_Iter>);
-    return _STD to_address(_Val);
-}
-#else // ^^^ defined(__cpp_lib_concepts) ^^^ / vvv !defined(__cpp_lib_concepts) vvv
-// When concepts aren't available, we can detect pointers. (Iterators should be unwrapped before using this.)
-template <class _Iter>
-_INLINE_VAR constexpr bool _Iterator_is_contiguous = is_pointer_v<_Iter>;
-
-template <class _Iter>
-_NODISCARD constexpr auto _To_address(const _Iter& _Val) noexcept {
-    _STL_INTERNAL_STATIC_ASSERT(is_pointer_v<_Iter>);
-    return _Val;
-}
-#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
-
-// _Iterators_are_contiguous<_Iter1, _Iter2> reports whether both iterators are known to be contiguous.
-
-template <class _Iter1, class _Iter2>
-_INLINE_VAR constexpr bool _Iterators_are_contiguous =
-    _Iterator_is_contiguous<_Iter1>&& _Iterator_is_contiguous<_Iter2>;
 
 template <class _Ty>
 struct _Is_character : false_type {}; // by default, not a character type

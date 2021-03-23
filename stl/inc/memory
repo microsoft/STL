@@ -78,8 +78,9 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(_No_throw_sentinel_for<_OSe, _Out>);
             _STL_INTERNAL_STATIC_ASSERT(constructible_from<iter_value_t<_Out>, iter_reference_t<_It>>);
 
-            if constexpr (is_same_v<_Se, _It> && is_same_v<_OSe, _Out> && _Ptr_copy_cat<_It, _Out>::_Really_trivial) {
-                return _Copy_memcpy_common(_IFirst, _ILast, _OFirst, _OLast);
+            if constexpr (_Ptr_copy_cat<_It, _Out>::_Really_trivial && sized_sentinel_for<_Se, _It>
+                && sized_sentinel_for<_OSe, _Out>) {
+                return _Copy_memcpy_common(_IFirst, _RANGES next(_IFirst, _ILast), _OFirst, _RANGES next(_OFirst, _OLast));
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
@@ -508,8 +509,12 @@ namespace ranges {
         requires destructible<iter_value_t<_It>>
     _NODISCARD _CONSTEXPR20_DYNALLOC _It _Destroy_unchecked(_It _First, const _Se _Last) noexcept {
         // clang-format on
-        for (; _First != _Last; ++_First) {
-            _RANGES destroy_at(_STD addressof(*_First));
+        if constexpr (is_trivially_destructible_v<iter_value_t<_It>>) {
+            _RANGES advance(_First, _Last);
+        } else {
+            for (; _First != _Last; ++_First) {
+                _RANGES destroy_at(_STD addressof(*_First));
+            }
         }
 
         return _First;
