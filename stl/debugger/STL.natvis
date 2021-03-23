@@ -742,45 +742,45 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
   <Type Name="std::chrono::month">
-	  <DisplayString Condition="_Month == 1">January</DisplayString>
-	  <DisplayString Condition="_Month == 2">February</DisplayString>
-	  <DisplayString Condition="_Month == 3">March</DisplayString>
-	  <DisplayString Condition="_Month == 4">April</DisplayString>
-	  <DisplayString Condition="_Month == 5">May</DisplayString>
-	  <DisplayString Condition="_Month == 6">June</DisplayString>
-	  <DisplayString Condition="_Month == 7">July</DisplayString>
-	  <DisplayString Condition="_Month == 8">August</DisplayString>
-	  <DisplayString Condition="_Month == 9">September</DisplayString>
-	  <DisplayString Condition="_Month == 10">October</DisplayString>
-	  <DisplayString Condition="_Month == 11">November</DisplayString>
-	  <DisplayString Condition="_Month == 12">December</DisplayString>
-	  <DisplayString>{_Month}</DisplayString>
+      <DisplayString Condition="_Month == 1">January</DisplayString>
+      <DisplayString Condition="_Month == 2">February</DisplayString>
+      <DisplayString Condition="_Month == 3">March</DisplayString>
+      <DisplayString Condition="_Month == 4">April</DisplayString>
+      <DisplayString Condition="_Month == 5">May</DisplayString>
+      <DisplayString Condition="_Month == 6">June</DisplayString>
+      <DisplayString Condition="_Month == 7">July</DisplayString>
+      <DisplayString Condition="_Month == 8">August</DisplayString>
+      <DisplayString Condition="_Month == 9">September</DisplayString>
+      <DisplayString Condition="_Month == 10">October</DisplayString>
+      <DisplayString Condition="_Month == 11">November</DisplayString>
+      <DisplayString Condition="_Month == 12">December</DisplayString>
+      <DisplayString>{_Month}</DisplayString>
       <Expand/>
   </Type>
 
   <Type Name="std::chrono::year">
-	  <DisplayString>{_Year}</DisplayString>
+      <DisplayString>{_Year}</DisplayString>
       <Expand/>
   </Type>
 
   <Type Name="std::chrono::weekday">
-	  <DisplayString Condition="_Weekday == 0">Sunday</DisplayString>
-	  <DisplayString Condition="_Weekday == 1">Monday</DisplayString>
-	  <DisplayString Condition="_Weekday == 2">Tuesday</DisplayString>
-	  <DisplayString Condition="_Weekday == 3">Wednesday</DisplayString>
-	  <DisplayString Condition="_Weekday == 4">Thursday</DisplayString>
-	  <DisplayString Condition="_Weekday == 5">Friday</DisplayString>
-	  <DisplayString Condition="_Weekday == 6">Saturday</DisplayString>
-	  <DisplayString>{_Weekday}</DisplayString>
+      <DisplayString Condition="_Weekday == 0">Sunday</DisplayString>
+      <DisplayString Condition="_Weekday == 1">Monday</DisplayString>
+      <DisplayString Condition="_Weekday == 2">Tuesday</DisplayString>
+      <DisplayString Condition="_Weekday == 3">Wednesday</DisplayString>
+      <DisplayString Condition="_Weekday == 4">Thursday</DisplayString>
+      <DisplayString Condition="_Weekday == 5">Friday</DisplayString>
+      <DisplayString Condition="_Weekday == 6">Saturday</DisplayString>
+      <DisplayString>{_Weekday}</DisplayString>
       <Expand/>
   </Type>
 
   <Type Name="std::chrono::weekday_indexed">
-	  <DisplayString Condition="_Index == 1">{(int)_Index}st {_Weekday}</DisplayString>
-	  <DisplayString Condition="_Index == 2">{(int)_Index}nd {_Weekday}</DisplayString>
-	  <DisplayString Condition="_Index == 3">{(int)_Index}rd {_Weekday}</DisplayString>
-	  <DisplayString Condition="_Index == 4 || _Index == 5">{(int)_Index}th {_Weekday}</DisplayString>
-	  <DisplayString>{(int)_Index}, {_Weekday}</DisplayString>
+      <DisplayString Condition="_Index == 1">{(int)_Index}st {_Weekday}</DisplayString>
+      <DisplayString Condition="_Index == 2">{(int)_Index}nd {_Weekday}</DisplayString>
+      <DisplayString Condition="_Index == 3">{(int)_Index}rd {_Weekday}</DisplayString>
+      <DisplayString Condition="_Index == 4 || _Index == 5">{(int)_Index}th {_Weekday}</DisplayString>
+      <DisplayString>{(int)_Index}, {_Weekday}</DisplayString>
       <Expand>
         <Item Name="[weekday]">_Weekday</Item>
         <Item Name="[index]">(int)_Index</Item>
@@ -880,7 +880,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       </Expand>
   </Type>
 
-	<!-- VC 2013 -->
+    <!-- VC 2013 -->
   <Type Name="std::basic_string&lt;char,*&gt;" Priority="MediumLow">
       <DisplayString Condition="_Myres &lt; _BUF_SIZE">{_Bx._Buf,na}</DisplayString>
       <DisplayString Condition="_Myres &gt;= _BUF_SIZE">{_Bx._Ptr,na}</DisplayString>
