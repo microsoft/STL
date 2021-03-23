@@ -7,6 +7,7 @@
 #include <iostream>
 #include <ratio>
 #include <stdexcept>
+#include <string>
 #include <string_view>
 #include <utility>
 
@@ -55,17 +56,52 @@ void try_locate_invalid_zone(const tzdb& my_tzdb, string_view name) {
     }
 }
 
+void timezone_tzdb_list_test() {
+    const auto& my_tzdb_list = get_tzdb_list();
+
+    // only one entry in the list unless leap seconds were to change
+    assert(&my_tzdb_list.front() == &get_tzdb());
+    assert(&my_tzdb_list.front() == &reload_tzdb());
+    assert(++my_tzdb_list.begin() == my_tzdb_list.end());
+    assert(++my_tzdb_list.cbegin() == my_tzdb_list.cend());
+}
+
+void timezone_version_test() {
+    const auto& my_tzdb = get_tzdb();
+    assert(my_tzdb.version.empty() == false);
+
+    // version should end in .X where X == number of leap seconds
+    const auto pos = my_tzdb.version.find_last_of('.');
+    assert(pos != decltype(my_tzdb.version)::npos);
+    const string leap_seconds{my_tzdb.version, pos + 1};
+    assert(leap_seconds.empty() == false);
+    assert(leap_seconds == to_string(my_tzdb.leap_seconds.size()));
+
+    // remote version will only differ if leap seconds info changes, will not occur in tests
+    const auto& reloaded_tzdb = reload_tzdb();
+    assert(reloaded_tzdb.version.empty() == false);
+    assert(&reloaded_tzdb == &my_tzdb);
+
+    const auto& remote_ver = remote_version();
+    assert(remote_ver.empty() == false);
+    assert(remote_ver == my_tzdb.version);
+}
+
 void timezone_names_test() {
     const auto& my_tzdb = get_tzdb();
-
-    assert(my_tzdb.version.empty() == false);
 
     test_time_zone_and_link(my_tzdb, "Asia/Thimphu", "Asia/Thimbu");
     test_time_zone_and_link(my_tzdb, "America/Tijuana", "America/Ensenada");
 
-    const auto current_zone = my_tzdb.current_zone();
-    assert(current_zone != nullptr);
-    assert(current_zone->name().empty() == false);
+    const auto curr_zone = current_zone();
+    assert(curr_zone != nullptr);
+    assert(curr_zone->name().empty() == false);
+    assert(curr_zone == my_tzdb.current_zone());
+
+    const auto located_zone = locate_zone("UTC");
+    assert(located_zone != nullptr);
+    assert(located_zone->name() == "Etc/UTC");
+    assert(located_zone == my_tzdb.locate_zone("UTC"));
 
     try_locate_invalid_zone(my_tzdb, "Non/Existent");
 
@@ -371,6 +407,8 @@ void timezone_precision_test() {
 
 bool test() {
     try {
+        timezone_tzdb_list_test();
+        timezone_version_test();
         timezone_names_test();
         timezone_sys_info_test();
         timezone_to_local_test();

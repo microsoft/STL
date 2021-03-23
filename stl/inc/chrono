@@ -2377,9 +2377,8 @@ namespace chrono {
         _NODISCARD sys_info _Get_info(const _Duration& _Dur) const {
             using _Internal_duration = duration<__std_tzdb_epoch_milli, milli>;
             const auto _Internal_dur = _CHRONO duration_cast<_Internal_duration>(_Dur);
-            const unique_ptr<__std_tzdb_sys_info, decltype(&__std_tzdb_delete_sys_info)> _Info{
-                __std_tzdb_get_sys_info(_Name.c_str(), _Name.length(), _Internal_dur.count()),
-                &__std_tzdb_delete_sys_info};
+            const unique_ptr<__std_tzdb_sys_info, _Tzdb_deleter<__std_tzdb_sys_info>> _Info{
+                __std_tzdb_get_sys_info(_Name.c_str(), _Name.length(), _Internal_dur.count())};
             if (_Info == nullptr) {
                 _Xbad_alloc();
             } else if (_Info->_Err == __std_tzdb_error::_Win_error) {
@@ -2550,8 +2549,8 @@ namespace chrono {
     // [time.zone.db]
 
     _NODISCARD inline string _Xtzdb_generate_current_zone() {
-        unique_ptr<__std_tzdb_current_zone_info, decltype(&__std_tzdb_delete_current_zone)> _Info{
-            __std_tzdb_get_current_zone(), &__std_tzdb_delete_current_zone};
+        unique_ptr<__std_tzdb_current_zone_info, _Tzdb_deleter<__std_tzdb_current_zone_info>> _Info{
+            __std_tzdb_get_current_zone()};
         if (_Info == nullptr) {
             _Xbad_alloc();
         } else if (_Info->_Err == __std_tzdb_error::_Win_error) {
@@ -2599,8 +2598,8 @@ namespace chrono {
     };
 
     _NODISCARD inline tuple<string, decltype(tzdb::zones), decltype(tzdb::links)> _Xtzdb_generate_time_zones() {
-        unique_ptr<__std_tzdb_time_zones_info, decltype(&__std_tzdb_delete_time_zones)> _Info{
-            __std_tzdb_get_time_zones(), &__std_tzdb_delete_time_zones};
+        unique_ptr<__std_tzdb_time_zones_info, _Tzdb_deleter<__std_tzdb_time_zones_info>> _Info{
+            __std_tzdb_get_time_zones()};
         if (_Info == nullptr) {
             _Xbad_alloc();
         } else if (_Info->_Err == __std_tzdb_error::_Win_error) {
@@ -2666,9 +2665,8 @@ namespace chrono {
             (_STD max)(_Current_size, _STD size(_Known_leap_seconds)) - _Pre_2018_count;
 
         size_t _Reg_post_2018_ls_size; // number of post-2018 LSs found in the registry
-        unique_ptr<__std_tzdb_registry_leap_info[], decltype(&__std_tzdb_delete_reg_leap_seconds)> _Reg_ls_data{
-            __std_tzdb_get_reg_leap_seconds(_Known_post_2018_ls_size, &_Reg_post_2018_ls_size),
-            &__std_tzdb_delete_reg_leap_seconds};
+        unique_ptr<__std_tzdb_registry_leap_info[], _Tzdb_deleter<__std_tzdb_registry_leap_info[]>> _Reg_ls_data{
+            __std_tzdb_get_reg_leap_seconds(_Known_post_2018_ls_size, &_Reg_post_2018_ls_size)};
 
         if (_Reg_post_2018_ls_size > _Known_post_2018_ls_size && !_Reg_ls_data) {
             _Xbad_alloc(); // registry has new data, but failed to allocate storage
@@ -2700,6 +2698,11 @@ namespace chrono {
         return {_STD move(_Leap_sec_info), _All_ls_positive};
     }
 
+    _NODISCARD inline string _Xtzdb_update_version(const string_view _Version, const size_t _Num_leap_seconds) {
+        string _Icu_version{_Version.substr(0, _Version.find_last_of('.'))};
+        return _STD move(_Icu_version) + "." + _STD to_string(_Num_leap_seconds);
+    }
+
     // TRANSITION: work in progress
     // CLASS tzdb_list
     class tzdb_list {
@@ -2713,8 +2716,9 @@ namespace chrono {
         tzdb_list& operator=(const tzdb_list&) = delete;
 
         tzdb_list() {
-            auto [_Version, _Zones, _Links]    = _Xtzdb_generate_time_zones();
-            auto [_Leap_sec, _All_ls_positive] = _Xtzdb_generate_leap_seconds(0);
+            auto [_Icu_version, _Zones, _Links] = _Xtzdb_generate_time_zones();
+            auto [_Leap_sec, _All_ls_positive]  = _Xtzdb_generate_leap_seconds(0);
+            auto _Version                       = _Icu_version + "." + _STD to_string(_Leap_sec.size());
             _Tzdb_list.emplace_front(tzdb{
                 _STD move(_Version), _STD move(_Zones), _STD move(_Links), _STD move(_Leap_sec), _All_ls_positive});
         }
@@ -2722,6 +2726,26 @@ namespace chrono {
         _NODISCARD const tzdb& front() const noexcept {
             _Shared_lock _Lk(_Tzdb_mutex);
             return _Tzdb_list.front();
+        }
+
+        const_iterator erase_after(const_iterator _Where) noexcept /* strengthened */ {
+            return _Tzdb_list.erase_after(_Where);
+        }
+
+        _NODISCARD const_iterator begin() const noexcept {
+            return _Tzdb_list.begin();
+        }
+
+        _NODISCARD const_iterator end() const noexcept {
+            return _Tzdb_list.end();
+        }
+
+        _NODISCARD const_iterator cbegin() const noexcept {
+            return _Tzdb_list.cbegin();
+        }
+
+        _NODISCARD const_iterator cend() const noexcept {
+            return _Tzdb_list.cend();
         }
 
         template <class... _ArgsTy>
@@ -2743,8 +2767,9 @@ namespace chrono {
                     _Tzdb.links.begin(), _Tzdb.links.end(), _STD back_inserter(_Links), [](const auto& _Link) {
                         return time_zone_link{_Link.name(), _Link.target()};
                     });
-                _Tzdb_list.emplace_front(
-                    tzdb{_Tzdb.version, _STD move(_Zones), _STD move(_Links), _STD move(_Leap_sec), _All_ls_positive});
+                auto _Version = _Xtzdb_update_version(_Tzdb.version, _Leap_sec.size());
+                _Tzdb_list.emplace_front(tzdb{
+                    _STD move(_Version), _STD move(_Zones), _STD move(_Links), _STD move(_Leap_sec), _All_ls_positive});
             }
             return _Tzdb_list.front();
         }
@@ -2827,6 +2852,16 @@ namespace chrono {
         return _CHRONO get_tzdb_list().front();
     }
 
+    // FUNCTION locate_zone
+    _NODISCARD inline const time_zone* locate_zone(string_view _Tz_name) {
+        return _CHRONO get_tzdb().locate_zone(_Tz_name);
+    }
+
+    // FUNCTION current_zone
+    _NODISCARD inline const time_zone* current_zone() {
+        return _CHRONO get_tzdb().current_zone();
+    }
+
     // FUNCTION reload_tzdb
     inline const tzdb& reload_tzdb() {
         try {
@@ -2834,6 +2869,14 @@ namespace chrono {
         } catch (const exception& _Except) {
             _Xruntime_error(_Except.what());
         }
+    }
+
+    // FUNCTION remote_version
+    _NODISCARD inline string remote_version() {
+        const auto& _Tzdb                = _CHRONO get_tzdb();
+        const auto& _Version             = _Tzdb.version;
+        const auto [_Leap_sec, _Ignored] = _Xtzdb_generate_leap_seconds(_Tzdb.leap_seconds.size());
+        return _Leap_sec.empty() ? _Version : _Xtzdb_update_version(_Version, _Leap_sec.size());
     }
 
     // [time.zone.zonedtraits]

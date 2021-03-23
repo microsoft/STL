@@ -78,7 +78,6 @@ void __stdcall __std_tzdb_delete_sys_info(__std_tzdb_sys_info* _Info) noexcept;
 
 __std_tzdb_registry_leap_info* __stdcall __std_tzdb_get_reg_leap_seconds(
     size_t _Prev_reg_ls_size, size_t* _Current_reg_ls_size) noexcept;
-
 void __stdcall __std_tzdb_delete_reg_leap_seconds(__std_tzdb_registry_leap_info* _Rlsi) noexcept;
 
 _NODISCARD void* __stdcall __std_calloc_crt(size_t _Count, size_t _Size) noexcept;
@@ -87,6 +86,37 @@ void __stdcall __std_free_crt(void* _Ptr) noexcept;
 _END_EXTERN_C
 
 _STD_BEGIN
+
+template <class _Ty>
+struct _Tzdb_deleter;
+
+template <>
+struct _Tzdb_deleter<__std_tzdb_time_zones_info> {
+    void operator()(__std_tzdb_time_zones_info* _Info) const noexcept {
+        __std_tzdb_delete_time_zones(_Info);
+    }
+};
+
+template <>
+struct _Tzdb_deleter<__std_tzdb_current_zone_info> {
+    void operator()(__std_tzdb_current_zone_info* _Info) const noexcept {
+        __std_tzdb_delete_current_zone(_Info);
+    }
+};
+
+template <>
+struct _Tzdb_deleter<__std_tzdb_sys_info> {
+    void operator()(__std_tzdb_sys_info* _Info) const noexcept {
+        __std_tzdb_delete_sys_info(_Info);
+    }
+};
+
+template <>
+struct _Tzdb_deleter<__std_tzdb_registry_leap_info[]> {
+    void operator()(__std_tzdb_registry_leap_info* _Info) const noexcept {
+        __std_tzdb_delete_reg_leap_seconds(_Info);
+    }
+};
 
 template <class _Ty>
 class _Crt_allocator {
