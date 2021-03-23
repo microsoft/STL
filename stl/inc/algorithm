@@ -1389,7 +1389,7 @@ namespace ranges {
     template <input_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out>
         requires indirectly_copyable<_It, _Out>
     _NODISCARD constexpr copy_result<_It, _Out> _Copy_unchecked(_It _First, _Se _Last, _Out _Result) {
-        if constexpr (_Ptr_copy_cat<_It, _Out>::_Trivially_copyable) {
+        if constexpr (_Ptr_copy_cat<_It, _Out>::_Trivially_copyable && sized_sentinel_for<_Se, _It>) {
             if (!_STD is_constant_evaluated()) {
                 auto _Final = _RANGES next(_First, _STD move(_Last));
                 _Result = _Copy_memmove(_STD move(_First), _Final, _STD move(_Result));

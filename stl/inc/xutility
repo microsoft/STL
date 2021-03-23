@@ -4116,27 +4116,27 @@ struct _False_copy_cat {
 };
 
 // NOTE: pointer is not a contiguous iterator if it points to volatile type
-template <class _Source, class _Dest, bool _Both_contiguous = _Iterators_are_contiguous<_Source, _Dest>>
+template <class _Source, class _Dest, bool _Non_contiguous = !_Iterators_are_contiguous<_Source, _Dest>>
 struct _Ptr_move_cat : _False_copy_cat {};
 
 template <class _Source, class _Dest>
-struct _Ptr_move_cat<_Source, _Dest, true>
+struct _Ptr_move_cat<_Source, _Dest, false>
     : conditional_t<is_trivially_assignable_v<_Iter_ref_t<_Dest>, remove_reference_t<_Iter_ref_t<_Source>>>,
           _Ptr_cat_helper<_Iter_value_t<_Source>, _Iter_value_t<_Dest>>, _False_copy_cat> {};
 
 template <class _Source, class _Dest>
-struct _Ptr_move_cat<move_iterator<_Source>, _Dest, false> : _Ptr_move_cat<_Source, _Dest> {};
+struct _Ptr_move_cat<move_iterator<_Source>, _Dest, true> : _Ptr_move_cat<_Source, _Dest> {};
 
-template <class _Source, class _Dest, bool _Both_contiguous = _Iterators_are_contiguous<_Source, _Dest>>
+template <class _Source, class _Dest, bool _Non_contiguous = !_Iterators_are_contiguous<_Source, _Dest>>
 struct _Ptr_copy_cat : _False_copy_cat {};
 
 template <class _Source, class _Dest>
-struct _Ptr_copy_cat<_Source, _Dest, true>
+struct _Ptr_copy_cat<_Source, _Dest, false>
     : conditional_t<is_trivially_assignable_v<_Iter_ref_t<_Dest>, _Iter_ref_t<_Source>>,
           _Ptr_cat_helper<_Iter_value_t<_Source>, _Iter_value_t<_Dest>>, _False_copy_cat> {};
 
 template <class _Source, class _Dest>
-struct _Ptr_copy_cat<move_iterator<_Source>, _Dest, false> : _Ptr_move_cat<_Source, _Dest> {};
+struct _Ptr_copy_cat<move_iterator<_Source>, _Dest, true> : _Ptr_move_cat<_Source, _Dest> {};
 
 template <class _CtgIt, class _OutCtgIt>
 _OutCtgIt _Copy_memmove(_CtgIt _First, _CtgIt _Last, _OutCtgIt _Dest) {
