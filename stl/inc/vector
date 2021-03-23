@@ -695,7 +695,7 @@ private:
                 } else {
                     const pointer _Newlast = _Myfirst + _Newsize;
                     _Move_unchecked(_First, _Last, _Myfirst);
-                    _Destroy(_Newlast, _Mylast);
+                    _Destroy_range(_Newlast, _Mylast, _Getal());
                     _Mylast = _Newlast;
                 }
             }
@@ -805,7 +805,7 @@ public:
             _Uninitialized_move(_Whereptr, _Mylast, _Newvec + _Whereoff + 1, _Getal());
         }
         _CATCH_ALL
-        _Destroy(_Constructed_first, _Constructed_last);
+        _Destroy_range(_Constructed_first, _Constructed_last, _Getal());
         _Al.deallocate(_Newvec, _Newcapacity);
         _RERAISE;
         _CATCH_END
@@ -903,7 +903,7 @@ public:
                 _Uninitialized_move(_Whereptr, _Oldlast, _Newvec + _Whereoff + _Count, _Getal());
             }
             _CATCH_ALL
-            _Destroy(_Constructed_first, _Constructed_last);
+            _Destroy_range(_Constructed_first, _Constructed_last, _Getal());
             _Getal().deallocate(_Newvec, _Newcapacity);
             _RERAISE;
             _CATCH_END
@@ -1003,7 +1003,7 @@ private:
                 _Uninitialized_move(_Whereptr, _Oldlast, _Newvec + _Whereoff + _Count, _Getal());
             }
             _CATCH_ALL
-            _Destroy(_Constructed_first, _Constructed_last);
+            _Destroy_range(_Constructed_first, _Constructed_last, _Getal());
             _Getal().deallocate(_Newvec, _Newcapacity);
             _RERAISE;
             _CATCH_END
@@ -1018,7 +1018,7 @@ private:
             if (_Count < _Affected_elements) { // some affected elements must be assigned
                 _Mylast = _Uninitialized_move(_Oldlast - _Count, _Oldlast, _Oldlast, _Getal());
                 _Move_backward_unchecked(_Whereptr, _Oldlast - _Count, _Oldlast);
-                _Destroy(_Whereptr, _Whereptr + _Count);
+                _Destroy_range(_Whereptr, _Whereptr + _Count, _Getal());
 
                 _TRY_BEGIN
                 _Uninitialized_copy(_First, _Last, _Whereptr, _Getal());
@@ -1030,20 +1030,20 @@ private:
                 _CATCH_ALL
                 // vaporize the detached piece
                 _Orphan_range(_Whereptr, _Oldlast);
-                _Destroy(_Whereptr + _Count, _Mylast);
+                _Destroy_range(_Whereptr + _Count, _Mylast, _Getal());
                 _Mylast = _Whereptr;
                 _RERAISE;
                 _CATCH_END
 
                 _Move_unchecked(_Whereptr + 2 * _Count, _Mylast, _Whereptr + _Count);
-                _Destroy(_Oldlast, _Mylast);
+                _Destroy_range(_Oldlast, _Mylast, _Getal());
                 _Mylast = _Oldlast;
                 _RERAISE;
                 _CATCH_END
             } else { // affected elements don't overlap before/after
                 const pointer _Relocated = _Whereptr + _Count;
                 _Mylast                  = _Uninitialized_move(_Whereptr, _Oldlast, _Relocated, _Getal());
-                _Destroy(_Whereptr, _Oldlast);
+                _Destroy_range(_Whereptr, _Oldlast, _Getal());
 
                 _TRY_BEGIN
                 _Uninitialized_copy(_First, _Last, _Whereptr, _Getal());
@@ -1055,12 +1055,12 @@ private:
                 _CATCH_ALL
                 // vaporize the detached piece
                 _Orphan_range(_Whereptr, _Oldlast);
-                _Destroy(_Relocated, _Mylast);
+                _Destroy_range(_Relocated, _Mylast, _Getal());
                 _Mylast = _Whereptr;
                 _RERAISE;
                 _CATCH_END
 
-                _Destroy(_Relocated, _Mylast);
+                _Destroy_range(_Relocated, _Mylast, _Getal());
                 _Mylast = _Oldlast;
                 _RERAISE;
                 _CATCH_END
@@ -1114,7 +1114,7 @@ public:
         } else {
             const pointer _Newlast = _Myfirst + _Newsize;
             _STD fill(_Myfirst, _Newlast, _Val);
-            _Destroy(_Newlast, _Mylast);
+            _Destroy_range(_Newlast, _Mylast, _Getal());
             _Mylast = _Newlast;
         }
     }
@@ -1141,7 +1141,7 @@ private:
         // If we've exhausted both: Trim does nothing, then Append does nothing.
 
         // Trim.
-        _Destroy(_Next, _Mylast);
+        _Destroy_range(_Next, _Mylast, _Getal());
         _Mylast = _Next;
 
         // Append.
@@ -1193,7 +1193,7 @@ private:
         } else {
             const pointer _Newlast = _Myfirst + _Newsize;
             _Copy_unchecked(_First, _Last, _Myfirst);
-            _Destroy(_Newlast, _Mylast);
+            _Destroy_range(_Newlast, _Mylast, _Getal());
             _Mylast = _Newlast;
         }
     }
@@ -1270,7 +1270,7 @@ private:
             _Uninitialized_copy(_Myfirst, _Mylast, _Newvec, _Getal());
         }
         _CATCH_ALL
-        _Destroy(_Appended_first, _Appended_last);
+        _Destroy_range(_Appended_first, _Appended_last, _Getal());
         _Getal().deallocate(_Newvec, _Newcapacity);
         _RERAISE;
         _CATCH_END
@@ -1288,7 +1288,7 @@ private:
         if (_Newsize < _Oldsize) { // trim
             const pointer _Newlast = _Myfirst + _Newsize;
             _Orphan_range(_Newlast, _Mylast);
-            _Destroy(_Newlast, _Mylast);
+            _Destroy_range(_Newlast, _Mylast, _Getal());
             _Mylast = _Newlast;
             return;
         }
@@ -1386,7 +1386,7 @@ private:
         const size_type _Newcapacity = _Calculate_growth(_Newsize);
 
         if (_Myfirst) { // destroy and deallocate old array
-            _Destroy(_Myfirst, _Mylast);
+            _Destroy_range(_Myfirst, _Mylast, _Getal());
             _Getal().deallocate(_Myfirst, static_cast<size_type>(_Myend - _Myfirst));
 
             _Myfirst = nullptr;
@@ -1471,7 +1471,7 @@ public:
             _Orphan_range(_Firstptr, _Mylast);
 
             const pointer _Newlast = _Move_unchecked(_Lastptr, _Mylast, _Firstptr);
-            _Destroy(_Newlast, _Mylast);
+            _Destroy_range(_Newlast, _Mylast, _Getal());
             _Mylast = _Newlast;
         }
 
@@ -1484,7 +1484,7 @@ public:
         pointer& _Mylast  = _My_data._Mylast;
 
         _My_data._Orphan_all();
-        _Destroy(_Myfirst, _Mylast);
+        _Destroy_range(_Myfirst, _Mylast, _Getal());
         _Mylast = _Myfirst;
     }
 
@@ -1670,11 +1670,6 @@ public:
     }
 
 private:
-    _CONSTEXPR20_CONTAINER void _Destroy(pointer _First, pointer _Last) {
-        // destroy [_First, _Last) using allocator
-        _Destroy_range(_First, _Last, _Getal());
-    }
-
     _CONSTEXPR20_CONTAINER size_type _Calculate_growth(const size_type _Newsize) const {
         // given _Oldcapacity and _Newsize, calculate geometric growth
         const size_type _Oldcapacity = capacity();
@@ -1738,7 +1733,7 @@ private:
         _My_data._Orphan_all();
 
         if (_Myfirst) { // destroy and deallocate old array
-            _Destroy(_Myfirst, _Mylast);
+            _Destroy_range(_Myfirst, _Mylast, _Getal());
             _Getal().deallocate(_Myfirst, static_cast<size_type>(_Myend - _Myfirst));
         }
 
@@ -1756,7 +1751,7 @@ private:
         _My_data._Orphan_all();
 
         if (_Myfirst) { // destroy and deallocate old array
-            _Destroy(_Myfirst, _Mylast);
+            _Destroy_range(_Myfirst, _Mylast, _Getal());
             _Getal().deallocate(_Myfirst, static_cast<size_type>(_Myend - _Myfirst));
 
             _Myfirst = nullptr;
