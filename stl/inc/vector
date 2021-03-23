@@ -569,79 +569,19 @@ public:
         _Proxy._Release();
     }
 
-private:
-    _CONSTEXPR20_CONTAINER void _Move_assign(vector& _Right, _Equal_allocators) noexcept {
-        _Tidy();
-        _Pocma(_Getal(), _Right._Getal());
-        _Mypair._Myval2._Take_contents(_Right._Mypair._Myval2);
-    }
-
-    _CONSTEXPR20_CONTAINER void _Move_assign(vector& _Right, _Propagate_allocators) noexcept /* terminates */ {
-        _Tidy();
-#if _ITERATOR_DEBUG_LEVEL != 0
-        if (_Getal() != _Right._Getal()) {
-            // intentionally slams into noexcept on OOM, TRANSITION, VSO-466800
-            _Mypair._Myval2._Reload_proxy(
-                _GET_PROXY_ALLOCATOR(_Alty, _Getal()), _GET_PROXY_ALLOCATOR(_Alty, _Right._Getal()));
-        }
-#endif
-
-        _Pocma(_Getal(), _Right._Getal());
-        _Mypair._Myval2._Take_contents(_Right._Mypair._Myval2);
-    }
-
-    _CONSTEXPR20_CONTAINER void _Move_assign(vector& _Right, _No_propagate_allocators) {
-        if (_Getal() == _Right._Getal()) {
-            _Move_assign(_Right, _Equal_allocators{});
-        } else {
-            auto& _Right_data    = _Right._Mypair._Myval2;
-            const pointer _First = _Right_data._Myfirst;
-            const pointer _Last  = _Right_data._Mylast;
-            const auto _Newsize  = static_cast<size_type>(_Last - _First);
-
-            auto& _My_data    = _Mypair._Myval2;
-            pointer& _Myfirst = _My_data._Myfirst;
-            pointer& _Mylast  = _My_data._Mylast;
-
-            _My_data._Orphan_all();
-
-            const auto _Oldcapacity = static_cast<size_type>(_My_data._Myend - _Myfirst);
-            if constexpr (conjunction_v<bool_constant<_Ptr_copy_cat<_Ty*, _Ty*>::_Trivially_copyable>,
-                              _Uses_default_construct<_Alty, _Ty*, _Ty>, _Uses_default_destroy<_Alty, _Ty*>>) {
-                if (_Newsize > _Oldcapacity) {
-                    _Clear_and_reserve_geometric(_Newsize);
-                }
-
-                _Mylast = _Refancy<pointer>(_Copy_memmove(_Unfancy(_First), _Unfancy(_Last), _Unfancy(_Myfirst)));
-            } else {
-                auto _Oldsize = static_cast<size_type>(_Mylast - _Myfirst);
-
-                if (_Newsize > _Oldsize) {
-                    if (_Newsize > _Oldcapacity) { // reallocate
-                        _Clear_and_reserve_geometric(_Newsize);
-                        _Oldsize = 0;
-                    }
-
-                    const pointer _Mid = _First + _Oldsize;
-                    _Move_unchecked(_First, _Mid, _Myfirst);
-                    _Mylast = _Uninitialized_move(_Mid, _Last, _Mylast, _Getal());
-                } else {
-                    const pointer _Newlast = _Myfirst + _Newsize;
-                    _Move_unchecked(_First, _Last, _Myfirst);
-                    _Destroy_range(_Newlast, _Mylast, _Getal());
-                    _Mylast = _Newlast;
-                }
-            }
-        }
-    }
-
-public:
     _CONSTEXPR20_CONTAINER vector& operator=(vector&& _Right) noexcept(
-        noexcept(_Move_assign(_Right, _Choose_pocma<_Alty>{}))) {
-        if (this != _STD addressof(_Right)) {
-            _Move_assign(_Right, _Choose_pocma<_Alty>{});
+        !is_same_v<_Choose_pocma<_Alty>, _No_propagate_allocators>) {
+        if (this == _STD addressof(_Right)) {
+            return *this;
         }
 
+        if (_Getal() == _Right._Getal()) {
+            _Tidy();
+            _Pocma(_Getal(), _Right._Getal());
+            _Mypair._Myval2._Take_contents(_Right._Mypair._Myval2);
+        } else {
+            _Move_assign_unequal_alloc(_Right);
+        }
         return *this;
     }
 
@@ -1726,6 +1666,60 @@ private:
         }
 
         _Proxy._Release();
+    }
+
+    _CONSTEXPR20_CONTAINER void _Move_assign_unequal_alloc(vector& _Right) noexcept(
+        !is_same_v<_Choose_pocma<_Alty>, _No_propagate_allocators>) {
+        auto& _Al = _Getal();
+        if constexpr (is_same_v<_Choose_pocma<_Alty>, _Propagate_allocators>) {
+            _Tidy();
+#if _ITERATOR_DEBUG_LEVEL != 0
+            // intentionally slams into noexcept on OOM, TRANSITION, VSO-466800
+            _Mypair._Myval2._Reload_proxy(
+                _GET_PROXY_ALLOCATOR(_Alty, _Al), _GET_PROXY_ALLOCATOR(_Alty, _Right._Getal()));
+#endif
+            _Pocma(_Al, _Right._Getal());
+            _Mypair._Myval2._Take_contents(_Right._Mypair._Myval2);
+        } else {
+            auto& _Right_data    = _Right._Mypair._Myval2;
+            const pointer _First = _Right_data._Myfirst;
+            const pointer _Last  = _Right_data._Mylast;
+            const auto _Newsize  = static_cast<size_type>(_Last - _First);
+
+            auto& _My_data    = _Mypair._Myval2;
+            pointer& _Myfirst = _My_data._Myfirst;
+            pointer& _Mylast  = _My_data._Mylast;
+
+            _My_data._Orphan_all();
+
+            const auto _Oldcapacity = static_cast<size_type>(_My_data._Myend - _Myfirst);
+            if constexpr (conjunction_v<bool_constant<_Ptr_copy_cat<_Ty*, _Ty*>::_Trivially_copyable>,
+                              _Uses_default_construct<_Alty, _Ty*, _Ty>, _Uses_default_destroy<_Alty, _Ty*>>) {
+                if (_Newsize > _Oldcapacity) {
+                    _Clear_and_reserve_geometric(_Newsize);
+                }
+
+                _Mylast = _Refancy<pointer>(_Copy_memmove(_Unfancy(_First), _Unfancy(_Last), _Unfancy(_Myfirst)));
+            } else {
+                auto _Oldsize = static_cast<size_type>(_Mylast - _Myfirst);
+
+                if (_Newsize > _Oldsize) {
+                    if (_Newsize > _Oldcapacity) { // reallocate
+                        _Clear_and_reserve_geometric(_Newsize);
+                        _Oldsize = 0;
+                    }
+
+                    const pointer _Mid = _First + _Oldsize;
+                    _Move_unchecked(_First, _Mid, _Myfirst);
+                    _Mylast = _Uninitialized_move(_Mid, _Last, _Mylast, _Al);
+                } else {
+                    const pointer _Newlast = _Myfirst + _Newsize;
+                    _Move_unchecked(_First, _Last, _Myfirst);
+                    _Destroy_range(_Newlast, _Mylast, _Al);
+                    _Mylast = _Newlast;
+                }
+            }
+        }
     }
 
     [[noreturn]] static void _Xlength() {
