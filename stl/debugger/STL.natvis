@@ -673,37 +673,214 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 
   <Type Name="std::chrono::duration&lt;*,std::ratio&lt;1,1000000000&gt; &gt;">
+      <DisplayString Condition="_MyRep == 1">{_MyRep} nanosecond</DisplayString>
       <DisplayString>{_MyRep} nanoseconds</DisplayString>
       <Expand/>
   </Type>
 
   <Type Name="std::chrono::duration&lt;*,std::ratio&lt;1,1000000&gt; &gt;">
+      <DisplayString Condition="_MyRep == 1">{_MyRep} microsecond</DisplayString>
       <DisplayString>{_MyRep} microseconds</DisplayString>
       <Expand/>
   </Type>
 
   <Type Name="std::chrono::duration&lt;*,std::ratio&lt;1,1000&gt; &gt;">
       <DisplayString>{_MyRep} milliseconds</DisplayString>
+      <DisplayString>{_MyRep} milliseconds</DisplayString>
       <Expand/>
   </Type>
 
   <Type Name="std::chrono::duration&lt;*,std::ratio&lt;1,1&gt; &gt;">
+      <DisplayString Condition="_MyRep == 1">{_MyRep} second</DisplayString>
       <DisplayString>{_MyRep} seconds</DisplayString>
       <Expand/>
   </Type>
 
   <Type Name="std::chrono::duration&lt;*,std::ratio&lt;60,1&gt; &gt;">
+      <DisplayString Condition="_MyRep == 1">{_MyRep} minute</DisplayString>
       <DisplayString>{_MyRep} minutes</DisplayString>
       <Expand/>
   </Type>
 
   <Type Name="std::chrono::duration&lt;*,std::ratio&lt;3600,1&gt; &gt;">
+      <DisplayString Condition="_MyRep == 1">{_MyRep} hour</DisplayString>
       <DisplayString>{_MyRep} hours</DisplayString>
       <Expand/>
   </Type>
 
+  <Type Name="std::chrono::duration&lt;*,std::ratio&lt;86400,1&gt; &gt;">
+      <DisplayString Condition="_MyRep == 1">{_MyRep} day</DisplayString>
+      <DisplayString>{_MyRep} days</DisplayString>
+      <Expand/>
+  </Type>
 
-  <!-- VC 2013 -->
+  <Type Name="std::chrono::duration&lt;*,std::ratio&lt;604800,1&gt; &gt;">
+      <DisplayString Condition="_MyRep == 1">{_MyRep} week</DisplayString>
+      <DisplayString>{_MyRep} weeks</DisplayString>
+      <Expand/>
+  </Type>
+
+  <Type Name="std::chrono::duration&lt;*,std::ratio&lt;2629746,1&gt; &gt;">
+      <DisplayString Condition="_MyRep == 1">{_MyRep} month</DisplayString>
+      <DisplayString>{_MyRep} months</DisplayString>
+      <Expand/>
+  </Type>
+
+  <Type Name="std::chrono::duration&lt;*,std::ratio&lt;31556952,1&gt; &gt;">
+      <DisplayString Condition="_MyRep == 1">{_MyRep} year</DisplayString>
+      <DisplayString>{_MyRep} years</DisplayString>
+      <Expand/>
+  </Type>
+
+  <Type Name="std::chrono::day">
+      <DisplayString Condition="_Day == 11 || _Day == 12 || _Day == 13">{(int)_Day}th</DisplayString>
+      <DisplayString Condition="_Day % 10 == 1">{(int)_Day}st</DisplayString>
+      <DisplayString Condition="_Day % 10 == 2">{(int)_Day}nd</DisplayString>
+      <DisplayString Condition="_Day % 10 == 3">{(int)_Day}rd</DisplayString>
+      <DisplayString>{(int)_Day}th</DisplayString>
+      <Expand/>
+  </Type>
+
+  <Type Name="std::chrono::month">
+	  <DisplayString Condition="_Month == 1">January</DisplayString>
+	  <DisplayString Condition="_Month == 2">February</DisplayString>
+	  <DisplayString Condition="_Month == 3">March</DisplayString>
+	  <DisplayString Condition="_Month == 4">April</DisplayString>
+	  <DisplayString Condition="_Month == 5">May</DisplayString>
+	  <DisplayString Condition="_Month == 6">June</DisplayString>
+	  <DisplayString Condition="_Month == 7">July</DisplayString>
+	  <DisplayString Condition="_Month == 8">August</DisplayString>
+	  <DisplayString Condition="_Month == 9">September</DisplayString>
+	  <DisplayString Condition="_Month == 10">October</DisplayString>
+	  <DisplayString Condition="_Month == 11">November</DisplayString>
+	  <DisplayString Condition="_Month == 12">December</DisplayString>
+	  <DisplayString>{_Month}</DisplayString>
+      <Expand/>
+  </Type>
+
+  <Type Name="std::chrono::year">
+	  <DisplayString>{_Year}</DisplayString>
+      <Expand/>
+  </Type>
+
+  <Type Name="std::chrono::weekday">
+	  <DisplayString Condition="_Weekday == 0">Sunday</DisplayString>
+	  <DisplayString Condition="_Weekday == 1">Monday</DisplayString>
+	  <DisplayString Condition="_Weekday == 2">Tuesday</DisplayString>
+	  <DisplayString Condition="_Weekday == 3">Wednesday</DisplayString>
+	  <DisplayString Condition="_Weekday == 4">Thursday</DisplayString>
+	  <DisplayString Condition="_Weekday == 5">Friday</DisplayString>
+	  <DisplayString Condition="_Weekday == 6">Saturday</DisplayString>
+	  <DisplayString>{_Weekday}</DisplayString>
+      <Expand/>
+  </Type>
+
+  <Type Name="std::chrono::weekday_indexed">
+	  <DisplayString Condition="_Index == 1">{(int)_Index}st {_Weekday}</DisplayString>
+	  <DisplayString Condition="_Index == 2">{(int)_Index}nd {_Weekday}</DisplayString>
+	  <DisplayString Condition="_Index == 3">{(int)_Index}rd {_Weekday}</DisplayString>
+	  <DisplayString Condition="_Index == 4 || _Index == 5">{(int)_Index}th {_Weekday}</DisplayString>
+	  <DisplayString>{(int)_Index}, {_Weekday}</DisplayString>
+      <Expand>
+        <Item Name="[weekday]">_Weekday</Item>
+        <Item Name="[index]">(int)_Index</Item>
+      </Expand>
+  </Type>
+
+  <Type Name="std::chrono::weekday_last">
+      <DisplayString>Last {_Weekday}</DisplayString>
+      <Expand>
+        <Item Name="[weekday]">_Weekday</Item>
+      </Expand>
+  </Type>
+
+  <Type Name="std::chrono::month_day">
+      <DisplayString>{_Month} {_Day}</DisplayString>
+        <Expand>
+          <Item Name="[month]">_Month</Item>
+          <Item Name="[day]">_Day</Item>
+      </Expand>
+  </Type>
+
+  <Type Name="std::chrono::month_day_last">
+      <DisplayString>Last {_Month}</DisplayString>
+      <Expand>
+        <Item Name="[month]">_Month</Item>
+      </Expand>
+  </Type>
+
+  <Type Name="std::chrono::month_weekday">
+      <DisplayString>{_Weekday_index} of {_Month}</DisplayString>
+        <Expand>
+          <Item Name="[month]">_Month</Item>
+          <Item Name="[weekday_indexed]">_Weekday_index</Item>
+      </Expand>
+  </Type>
+
+  <Type Name="std::chrono::month_weekday_last">
+      <DisplayString>Last {_Weekday_last._Weekday} of {_Month}</DisplayString>
+      <Expand>
+        <Item Name="[month]">_Month</Item>
+        <Item Name="[weekday]">_Weekday_last._Weekday</Item>
+      </Expand>
+  </Type>
+
+  <Type Name="std::chrono::year_month">
+      <DisplayString>{_Year} {_Month}</DisplayString>
+        <Expand>
+          <Item Name="[year]">_Year</Item>
+          <Item Name="[month]">_Month</Item>
+      </Expand>
+  </Type>
+
+  <Type Name="std::chrono::year_month_day">
+      <DisplayString>{_Year} {_Month} {_Day}</DisplayString>
+        <Expand>
+          <Item Name="[year]">_Year</Item>
+          <Item Name="[month]">_Month</Item>
+          <Item Name="[day]">_Day</Item>
+      </Expand>
+  </Type>
+
+  <Type Name="std::chrono::year_month_day_last">
+      <DisplayString>Last day of {_Month_day_last._Month}, {_Year}</DisplayString>
+      <Expand>
+        <Item Name="[year]">_Year</Item>
+        <Item Name="[month]">_Month_day_last._Month</Item>
+      </Expand>
+  </Type>
+
+  <Type Name="std::chrono::year_month_weekday">
+      <DisplayString>{_Weekday_index} of {_Month}, {_Year}</DisplayString>
+        <Expand>
+          <Item Name="[year]">_Year</Item>
+          <Item Name="[month]">_Month</Item>
+          <Item Name="[weekday_indexed]">_Weekday_index</Item>
+      </Expand>
+  </Type>
+
+  <Type Name="std::chrono::year_month_weekday_last">
+      <DisplayString>{_Weekday_last} of {_Month}, {_Year}</DisplayString>
+      <Expand>
+        <Item Name="[year]">_Year</Item>
+        <Item Name="[month]">_Month</Item>
+        <Item Name="[weekday]">_Weekday_last._Weekday</Item>
+      </Expand>
+  </Type>
+
+  <Type Name="std::chrono::hh_mm_ss&lt;*&gt;">
+      <DisplayString Condition="_Is_neg">-{_Hours._MyRep / 10}{_Hours._MyRep % 10}:{_Mins._MyRep / 10}{_Mins._MyRep % 10}:{_Secs._MyRep / 10}{_Secs._MyRep % 10}:{_Sub_secs._MyRep / 10}{_Sub_secs._MyRep % 10}</DisplayString>
+      <DisplayString>{_Hours._MyRep}h {_Mins._MyRep}m {_Secs._MyRep}s {_Sub_secs._MyRep}ss</DisplayString>
+      <Expand>
+        <Item Name="[hours]">_Hours</Item>
+        <Item Name="[minutes]">_Mins</Item>
+        <Item Name="[seconds]">_Secs</Item>
+        <Item Name="[subseconds]">_Sub_secs</Item>
+        <Item Name="[is_negative]">_Is_neg</Item>
+      </Expand>
+  </Type>
+
+	<!-- VC 2013 -->
   <Type Name="std::basic_string&lt;char,*&gt;" Priority="MediumLow">
       <DisplayString Condition="_Myres &lt; _BUF_SIZE">{_Bx._Buf,na}</DisplayString>
       <DisplayString Condition="_Myres &gt;= _BUF_SIZE">{_Bx._Ptr,na}</DisplayString>
