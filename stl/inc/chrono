@@ -3884,15 +3884,13 @@ namespace chrono {
             // check for consistency yet, because the data might not even be representable by the type being parsed,
             // and calendar computations are relatively expensive.
 
-            if (_Out_of_range(_Second, 0, 60) || _Out_of_range(_Minute, 0, 59)) {
-                return false;
-            }
-
-            if (_Out_of_range(_Hour_12, 1, 12) || _Out_of_range(_Hour_24, 0, 23)) {
-                return false;
-            }
-
-            if (_Out_of_range(_Weekday, 0, 6) || _Out_of_range(_Day, 1, 31) || _Out_of_range(_Month, 1, 12)) {
+            if (_Out_of_range(_Second, 0, 60) //
+                || _Out_of_range(_Minute, 0, 59) //
+                || _Out_of_range(_Hour_12, 1, 12) //
+                || _Out_of_range(_Hour_24, 0, 23) //
+                || _Out_of_range(_Weekday, 0, 6) //
+                || _Out_of_range(_Day, 1, 31) //
+                || _Out_of_range(_Month, 1, 12)) {
                 return false;
             }
 
