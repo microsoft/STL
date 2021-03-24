@@ -3650,30 +3650,30 @@ namespace chrono {
         _NODISCARD bool _Update_if_valid(const tm& _Tp, const bool _Full_year) {
             bool _No_err{true};
             if (_Tp.tm_hour != _Invalid_time_field<int>) {
-                _No_err &= _Update(_Hour_24, _Tp.tm_hour);
-                _No_err &= _Update(_Ampm, _Hour_24 >= 12 ? 1 : 0);
-                _No_err &= _Update(_Hour_12, _CHRONO make12(hours{*_Hour_24}).count());
+                _No_err = _No_err && _Update(_Hour_24, _Tp.tm_hour);
+                _No_err = _No_err && _Update(_Ampm, _Hour_24 >= 12 ? 1 : 0);
+                _No_err = _No_err && _Update(_Hour_12, _CHRONO make12(hours{*_Hour_24}).count());
             }
 
-            _No_err &= _Update(_Minute, _Tp.tm_min);
-            _No_err &= _Update(_Second, _Tp.tm_sec);
-            _No_err &= _Update(_Day, _Tp.tm_mday);
-            _No_err &= _Update(_Weekday, _Tp.tm_wday);
+            _No_err = _No_err && _Update(_Minute, _Tp.tm_min);
+            _No_err = _No_err && _Update(_Second, _Tp.tm_sec);
+            _No_err = _No_err && _Update(_Day, _Tp.tm_mday);
+            _No_err = _No_err && _Update(_Weekday, _Tp.tm_wday);
 
             if (_Tp.tm_mon != _Invalid_time_field<int>) {
-                _No_err &= _Update(_Month, _Tp.tm_mon + 1);
+                _No_err = _No_err && _Update(_Month, _Tp.tm_mon + 1);
             }
 
             if (_Tp.tm_yday != _Invalid_time_field<int>) {
-                _No_err &= _Update(_Day_of_year, _Tp.tm_yday + 1);
+                _No_err = _No_err && _Update(_Day_of_year, _Tp.tm_yday + 1);
             }
 
             if (_Tp.tm_year != _Invalid_time_field<int>) {
                 // Sometimes we expect only the last two digits.
                 const auto _Year_parts = _Decompose_year(_Tp.tm_year + 1900);
-                _No_err &= _Update(_Two_dig_year, _Year_parts.second);
+                _No_err                = _No_err && _Update(_Two_dig_year, _Year_parts.second);
                 if (_Full_year) {
-                    _No_err &= _Update(_Century, _Year_parts.first);
+                    _No_err = _No_err && _Update(_Century, _Year_parts.first);
                 }
             }
 
@@ -3776,17 +3776,17 @@ namespace chrono {
                 _Year      = *_Century + *_Two_dig_year;
                 _Have_year = true;
                 if (_Day_of_year) {
-                    _No_err &= _Yday_to_month_day(*_Day_of_year, _Year);
+                    _No_err = _No_err && _Yday_to_month_day(*_Day_of_year, _Year);
                 } else if (_Week_u || _Week_w) {
                     _Check_wday = false;
                     if (_Week_u) {
                         _Check_u = false;
-                        _No_err &= _Calculate_ymd_from_week_date(0 /*Sunday*/, *_Week_u, _Year);
+                        _No_err  = _No_err && _Calculate_ymd_from_week_date(0 /*Sunday*/, *_Week_u, _Year);
                     }
 
                     if (_Week_w) {
                         _Check_w = false;
-                        _No_err &= _Calculate_ymd_from_week_date(1 /*Monday*/, *_Week_w, _Year);
+                        _No_err  = _No_err && _Calculate_ymd_from_week_date(1 /*Monday*/, *_Week_w, _Year);
                     }
                 }
             }
@@ -3815,8 +3815,8 @@ namespace chrono {
                 }
 
                 const auto _Year_parts = _Decompose_year(_Year);
-                _No_err &= _Update(_Day_of_year, _Trial_yday) && _Yday_to_month_day(*_Day_of_year, _Year)
-                        && _Update(_Century, _Year_parts.first) && _Update(_Two_dig_year, _Year_parts.second);
+                _No_err = _No_err && _Update(_Day_of_year, _Trial_yday) && _Yday_to_month_day(*_Day_of_year, _Year)
+                       && _Update(_Century, _Year_parts.first) && _Update(_Two_dig_year, _Year_parts.second);
             }
 
             // Must have YMD by this point, either parsed directly or calculated above.
@@ -3831,19 +3831,19 @@ namespace chrono {
                 const int _Yoe       = _Era_year - _Era * 400;
                 const int _Yday_era  = ((979 * (*_Month + (*_Month > 2 ? -3 : 9)) + 19) >> 5) + *_Day - 1;
                 const int _Doe       = ((1461 * _Yoe) >> 2) - _Yoe / 100 + _Yday_era;
-                _No_err &= _Update(_Weekday, (_Doe + _Era_begin_wday) % 7);
+                _No_err              = _No_err && _Update(_Weekday, (_Doe + _Era_begin_wday) % 7);
             }
 
             if (_Check_u && _Week_u) {
-                _No_err &= _Update(_Week_u, (*_Day_of_year + 6 - *_Weekday) / 7);
+                _No_err = _No_err && _Update(_Week_u, (*_Day_of_year + 6 - *_Weekday) / 7);
             }
 
             if (_Check_w && _Week_w) {
-                _No_err &= _Update(_Week_w, (*_Day_of_year + 6 - _Prev_weekday(*_Weekday, 1)) / 7);
+                _No_err = _No_err && _Update(_Week_w, (*_Day_of_year + 6 - _Prev_weekday(*_Weekday, 1)) / 7);
             }
 
             if (_Check_iso && _Iso_week) {
-                _No_err &= _Update(_Iso_week, _Iso8601_week(*_Day_of_year, *_Weekday, _Year));
+                _No_err = _No_err && _Update(_Iso_week, _Iso8601_week(*_Day_of_year, *_Weekday, _Year));
             }
 
             return _No_err;
@@ -3862,13 +3862,13 @@ namespace chrono {
             // The order of these updates is significant. Updating the ISO date second allows
             // formats with %g and %y, but not %C, to get the century implicitly from %y.
             if (_Two_dig_year && !_Century) {
-                _No_err &= _Update(_Century, _Two_dig_year >= 69 ? 1900 : 2000);
+                _No_err = _No_err && _Update(_Century, _Two_dig_year >= 69 ? 1900 : 2000);
             }
 
             // %C is only combined with %g if %G is missing, to avoid an unnecessary parse failure when the ISO and
             // Gregorian years are in different centuries.
             if (_Two_dig_iso_year && _Century && !_Iso_year) {
-                _No_err &= _Update(_Iso_year, *_Century + *_Two_dig_iso_year);
+                _No_err = _No_err && _Update(_Iso_year, *_Century + *_Two_dig_iso_year);
             }
 
             return _No_err;
