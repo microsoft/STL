@@ -579,7 +579,7 @@ public:
             _Tidy();
             _Pocma(_Getal(), _Right._Getal());
             _Mypair._Myval2._Take_contents(_Right._Mypair._Myval2);
-        } else {
+        } else if constexpr (!is_same_v<_Choose_pocma<_Alty>, _Equal_allocators>) {
             _Move_assign_unequal_alloc(_Right);
         }
         return *this;
