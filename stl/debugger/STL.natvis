@@ -685,7 +685,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
   <Type Name="std::chrono::duration&lt;*,std::ratio&lt;1,1000&gt; &gt;">
-      <DisplayString>{_MyRep} milliseconds</DisplayString>
+      <DisplayString Condition="_MyRep == 1">{_MyRep} millisecond</DisplayString>
       <DisplayString>{_MyRep} milliseconds</DisplayString>
       <Expand/>
   </Type>
@@ -733,10 +733,9 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
   <Type Name="std::chrono::day">
-      <DisplayString Condition="_Day == 11 || _Day == 12 || _Day == 13">{(int)_Day}th</DisplayString>
-      <DisplayString Condition="_Day % 10 == 1">{(int)_Day}st</DisplayString>
-      <DisplayString Condition="_Day % 10 == 2">{(int)_Day}nd</DisplayString>
-      <DisplayString Condition="_Day % 10 == 3">{(int)_Day}rd</DisplayString>
+      <DisplayString Condition="_Day % 10 == 1 &amp;&amp; _Day % 100 != 11">{(int)_Day}st</DisplayString>
+      <DisplayString Condition="_Day % 10 == 2 &amp;&amp; _Day % 100 != 12">{(int)_Day}nd</DisplayString>
+      <DisplayString Condition="_Day % 10 == 3 &amp;&amp; _Day % 100 != 13">{(int)_Day}rd</DisplayString>
       <DisplayString>{(int)_Day}th</DisplayString>
       <Expand/>
   </Type>
