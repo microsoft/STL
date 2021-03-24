@@ -5043,7 +5043,7 @@ namespace chrono {
 
     // FUNCTION TEMPLATE parse
     template <class _CharT, class _Traits, class _Alloc, class _Parsable>
-    auto parse(const basic_string<_CharT, _Traits, _Alloc>& _Fmt, _Parsable& _Tp)
+    _NODISCARD auto parse(const basic_string<_CharT, _Traits, _Alloc>& _Fmt, _Parsable& _Tp)
         // clang-format off
         -> decltype(_CHRONO from_stream(_STD declval<basic_istream<_CharT, _Traits>&>(), _Fmt.c_str(), _Tp),
            _Time_parse_iomanip{_Fmt, _Tp})
@@ -5053,7 +5053,7 @@ namespace chrono {
     }
 
     template <class _CharT, class _Traits, class _Alloc, class _Parsable>
-    auto parse(const basic_string<_CharT, _Traits, _Alloc>& _Fmt, _Parsable& _Tp,
+    _NODISCARD auto parse(const basic_string<_CharT, _Traits, _Alloc>& _Fmt, _Parsable& _Tp,
         basic_string<_CharT, _Traits, _Alloc>& _Abbrev)
         // clang-format off
         -> decltype(_CHRONO from_stream(_STD declval<basic_istream<_CharT, _Traits>&>(), _Fmt.c_str(), _Tp,
@@ -5065,7 +5065,7 @@ namespace chrono {
     }
 
     template <class _CharT, class _Traits, class _Alloc, class _Parsable>
-    auto parse(const basic_string<_CharT, _Traits, _Alloc>& _Fmt, _Parsable& _Tp, minutes& _Offset)
+    _NODISCARD auto parse(const basic_string<_CharT, _Traits, _Alloc>& _Fmt, _Parsable& _Tp, minutes& _Offset)
         // clang-format off
         -> decltype(_CHRONO from_stream(_STD declval<basic_istream<_CharT, _Traits>&>(), _Fmt.c_str(), _Tp,
                                 _STD declval<basic_string<_CharT, _Traits, _Alloc>*>(), &_Offset),
@@ -5076,7 +5076,7 @@ namespace chrono {
     }
 
     template <class _CharT, class _Traits, class _Alloc, class _Parsable>
-    auto parse(const basic_string<_CharT, _Traits, _Alloc>& _Fmt, _Parsable& _Tp,
+    _NODISCARD auto parse(const basic_string<_CharT, _Traits, _Alloc>& _Fmt, _Parsable& _Tp,
         basic_string<_CharT, _Traits, _Alloc>& _Abbrev, minutes& _Offset)
         // clang-format off
         -> decltype(_CHRONO from_stream(_STD declval<basic_istream<_CharT, _Traits>&>(), _Fmt.c_str(), _Tp,
