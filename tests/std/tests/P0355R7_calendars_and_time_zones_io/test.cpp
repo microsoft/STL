@@ -9,6 +9,7 @@
 #include <ratio>
 #include <sstream>
 #include <string>
+#include <system_error>
 #include <utility>
 
 using namespace std;
@@ -182,17 +183,21 @@ void test_limits(const char* flag, const IntType min, const IntType max) {
     char buffer[24];
     TimeType value;
     auto conv_result = to_chars(begin(buffer), end(buffer), static_cast<make_signed_t<IntType>>(min) - 1);
+    assert(conv_result.ec == errc{} && conv_result.ptr != end(buffer));
     *conv_result.ptr = '\0';
     fail_parse(buffer, flag, value);
-    conv_result      = to_chars(begin(buffer), end(buffer), max + 1);
+    conv_result = to_chars(begin(buffer), end(buffer), max + 1);
+    assert(conv_result.ec == errc{} && conv_result.ptr != end(buffer));
     *conv_result.ptr = '\0';
     fail_parse(buffer, flag, value);
 
-    conv_result      = to_chars(begin(buffer), end(buffer), min);
+    conv_result = to_chars(begin(buffer), end(buffer), min);
+    assert(conv_result.ec == errc{} && conv_result.ptr != end(buffer));
     *conv_result.ptr = '\0';
     test_parse(buffer, flag, value);
     assert(value == TimeType{min});
-    conv_result      = to_chars(begin(buffer), end(buffer), max);
+    conv_result = to_chars(begin(buffer), end(buffer), max);
+    assert(conv_result.ec == errc{} && conv_result.ptr != end(buffer));
     *conv_result.ptr = '\0';
     test_parse(buffer, flag, value);
     assert(value == TimeType{max});
