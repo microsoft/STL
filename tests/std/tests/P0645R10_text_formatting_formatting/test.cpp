@@ -446,7 +446,7 @@ void test_intergal_specs() {
     }
 
     if constexpr (is_same_v<integral, long long>) {
-        assert(format(STR("{:b}"), std::numeric_limits<long long>::min())
+        assert(format(STR("{:b}"), numeric_limits<long long>::min())
                == STR("-1000000000000000000000000000000000000000000000000000000000000000"));
     }
 
