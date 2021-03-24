@@ -162,15 +162,15 @@ void fail_parse(
     basic_stringstream<CharT> sstr{str};
     if (abbrev) {
         if (offset) {
-            sstr >> parse(string{fmt}, p, *abbrev, *offset);
+            sstr >> parse(basic_string<CharT>{fmt}, p, *abbrev, *offset);
         } else {
-            sstr >> parse(string{fmt}, p, *abbrev);
+            sstr >> parse(basic_string<CharT>{fmt}, p, *abbrev);
         }
     } else {
         if (offset) {
-            sstr >> parse(string{fmt}, p, *offset);
+            sstr >> parse(basic_string<CharT>{fmt}, p, *offset);
         } else {
-            sstr >> parse(string{fmt}, p);
+            sstr >> parse(basic_string<CharT>{fmt}, p);
         }
     }
 
