@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <algorithm>
 #include <assert.h>
 #include <format>
 #include <iterator>
@@ -631,6 +632,29 @@ void test_float_specs() {
 
     assert(format(STR("{:.4g}"), value) == STR("1235"));
     assert(format(STR("{:.4G}"), value) == STR("1235"));
+
+    assert(format(STR("{:.3000f}"), -numeric_limits<Float>::max()).size()
+           == 3002 + numeric_limits<Float>::max_exponent10 + 1);
+    assert(format(STR("{:.3000f}"), -numeric_limits<Float>::denorm_min()).size() == 3003);
+    assert(format(STR("{:#.3000g}"), -numeric_limits<Float>::max()).size() == 3002);
+    assert(format(STR("{:#.3000g}"), -numeric_limits<Float>::denorm_min()).size()
+           == 3007 - static_cast<int>(is_same_v<Float, float>));
+
+    for (auto limits : {-numeric_limits<Float>::max(), -numeric_limits<Float>::denorm_min()}) {
+        auto fixed3000 = format(STR("{:.3000f}"), limits);
+        auto fixed1500 = format(STR("{:.1500f}"), limits);
+        assert(fixed1500 == fixed3000.substr(0, fixed1500.size()));
+        assert(all_of(fixed3000.begin() + static_cast<int>(fixed1500.size()), fixed3000.end(),
+            [](auto ch) { return ch == charT{'0'}; }));
+    }
+
+    for (auto limits : {-numeric_limits<Float>::max(), -numeric_limits<Float>::denorm_min()}) {
+        auto general3000 = format(STR("{:#.3000g}"), limits);
+        auto general1500 = format(STR("{:#.3000g}"), limits);
+        assert(general1500 == general3000.substr(0, general1500.size()));
+        assert(all_of(general3000.begin() + static_cast<int>(general1500.size()), general3000.end(),
+            [](auto ch) { return ch == charT{'0'}; }));
+    }
 
     // Leading zero
     assert(format(STR("{:06}"), Float{0}) == STR("000000"));

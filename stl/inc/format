@@ -1584,8 +1584,31 @@ _OutputIt _Write(_OutputIt _Out, const _Float _Value, const _Basic_format_specs<
         throw format_error("invalid floating point type");
     }
 
-    array<char, _Format_min_buffer_length> _Buffer;
+    // Consider the powers of 2 in decimal:
+    // 2^-1 = 0.5
+    // 2^-2 = 0.25
+    // 2^-3 = 0.125
+    // 2^-4 = 0.0625
+    // Each power of 2 consumes one more decimal digit. This is because:
+    // 2^-N * 5^-N = 10^-N
+    // 2^-N = 10^-N * 5^N
+    // Example: 2^-4 = 10^-4 * 5^4 = 0.0001 * 625
+    // Therefore, the min subnormal 2^-1074 consumes 1074 digits of precision (digits after the decimal point).
+    // We need 3 more characters for a potential negative sign, the zero integer part, and the decimal point.
+    // Therefore, the precision can be clamped to 1074.
+    // The largest number consumes 309 digits before the decimal point. With a precision of 1074, and it being negative,
+    // it would use a buffer of size 1074+309+2.
+    // We need to add an additional number to the max exponent to accommodate the ones place.
+    constexpr auto _Max_precision = 1074;
+    constexpr auto _Buffer_size   = _Max_precision + DBL_MAX_10_EXP + 3;
+    array<char, _Buffer_size> _Buffer;
     to_chars_result _Result;
+
+    auto _Extra_precision = 0;
+    if (_Precision > _Max_precision) {
+        _Extra_precision = _Precision - _Max_precision;
+        _Precision       = _Max_precision;
+    }
 
     if (_Precision == -1) {
         _Result = _STD to_chars(_Buffer.data(), _Buffer.data() + _Buffer.size(), _Value, _Format);
@@ -1635,13 +1658,17 @@ _OutputIt _Write(_OutputIt _Out, const _Float _Value, const _Basic_format_specs<
         }
 
         if (_Specs._Type == 'g' || _Specs._Type == 'G') {
-            _Zeroes_to_append = _Precision - static_cast<int>(_Exponent_start - _Buffer_start);
+            _Zeroes_to_append = _Extra_precision + _Precision - static_cast<int>(_Exponent_start - _Buffer_start);
             if (!_Append_decimal) {
                 _Zeroes_to_append += 1;
             }
-            _Width += _Zeroes_to_append;
         }
     }
+
+    if (_Is_finite && (_Specs._Type == 'f' || _Specs._Type == 'F')) {
+        _Zeroes_to_append = _Extra_precision;
+    }
+    _Width += _Zeroes_to_append;
 
     const bool _Write_leading_zeroes = _Specs._Leading_zero && _Specs._Alignment == _Align::_None;
     auto _Writer                     = [&](_OutputIt _Out) {
@@ -1651,16 +1678,15 @@ _OutputIt _Write(_OutputIt _Out, const _Float _Value, const _Basic_format_specs<
             _Out = _STD fill_n(_Out, _Specs._Width - _Width, '0');
         }
 
-        if (_Specs._Alt) {
-            _Out          = _STD copy(_Buffer_start, _Exponent_start, _Out);
-            _Buffer_start = _Exponent_start;
+        _Out          = _STD copy(_Buffer_start, _Exponent_start, _Out);
+        _Buffer_start = _Exponent_start;
 
-            if (_Append_decimal) {
-                *_Out++ = '.';
-            }
-            for (; _Zeroes_to_append > 0; --_Zeroes_to_append) {
-                *_Out++ = '0';
-            }
+        if (_Specs._Alt && _Append_decimal) {
+            *_Out++ = '.';
+        }
+
+        for (; _Zeroes_to_append > 0; --_Zeroes_to_append) {
+            *_Out++ = '0';
         }
 
         return _STD copy(_Buffer_start, _Result.ptr, _Out);
