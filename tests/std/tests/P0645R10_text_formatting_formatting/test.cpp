@@ -35,6 +35,7 @@ struct choose_literal<wchar_t> {
 #define TYPED_LITERAL(CharT, Literal) (choose_literal<CharT>::choose(Literal, L##Literal))
 #define STR(Str)                      TYPED_LITERAL(charT, Str)
 
+// Test against IDL mismatch between the DLL which stores the locale and the code which uses it.
 #ifdef _DEBUG
 #define DEFAULT_IDL_SETTING 2
 #else
@@ -465,22 +466,22 @@ void test_intergal_specs() {
 
     // Locale
 #if !defined(_DLL) || _ITERATOR_DEBUG_LEVEL == DEFAULT_IDL_SETTING
-    assert(format(std::locale{"en-US"}, STR("{:L}"), integral{0}) == STR("0"));
-    assert(format(std::locale{"en-US"}, STR("{:L}"), integral{100}) == STR("100"));
-    assert(format(std::locale{"en-US"}, STR("{:L}"), integral{1'000}) == STR("1,000"));
-    assert(format(std::locale{"en-US"}, STR("{:L}"), integral{10'000}) == STR("10,000"));
-    assert(format(std::locale{"en-US"}, STR("{:L}"), integral{100'000}) == STR("100,000"));
-    assert(format(std::locale{"en-US"}, STR("{:L}"), integral{1'000'000}) == STR("1,000,000"));
-    assert(format(std::locale{"en-US"}, STR("{:L}"), integral{10'000'000}) == STR("10,000,000"));
-    assert(format(std::locale{"en-US"}, STR("{:L}"), integral{100'000'000}) == STR("100,000,000"));
+    assert(format(locale{"en-US"}, STR("{:L}"), integral{0}) == STR("0"));
+    assert(format(locale{"en-US"}, STR("{:L}"), integral{100}) == STR("100"));
+    assert(format(locale{"en-US"}, STR("{:L}"), integral{1'000}) == STR("1,000"));
+    assert(format(locale{"en-US"}, STR("{:L}"), integral{10'000}) == STR("10,000"));
+    assert(format(locale{"en-US"}, STR("{:L}"), integral{100'000}) == STR("100,000"));
+    assert(format(locale{"en-US"}, STR("{:L}"), integral{1'000'000}) == STR("1,000,000"));
+    assert(format(locale{"en-US"}, STR("{:L}"), integral{10'000'000}) == STR("10,000,000"));
+    assert(format(locale{"en-US"}, STR("{:L}"), integral{100'000'000}) == STR("100,000,000"));
 
-    assert(format(std::locale{"en-US"}, STR("{:Lx}"), integral{0x123'abc}) == STR("123,abc"));
-    assert(format(std::locale{"en-US"}, STR("{:6L}"), integral{1'000}) == STR(" 1,000"));
+    assert(format(locale{"en-US"}, STR("{:Lx}"), integral{0x123'abc}) == STR("123,abc"));
+    assert(format(locale{"en-US"}, STR("{:6L}"), integral{1'000}) == STR(" 1,000"));
 
-    assert(format(std::locale{"hi-IN"}, STR("{:L}"), integral{10'000'000}) == STR("1,00,00,000"));
-    assert(format(std::locale{"hi-IN"}, STR("{:L}"), integral{100'000'000}) == STR("10,00,00,000"));
+    assert(format(locale{"hi-IN"}, STR("{:L}"), integral{10'000'000}) == STR("1,00,00,000"));
+    assert(format(locale{"hi-IN"}, STR("{:L}"), integral{100'000'000}) == STR("10,00,00,000"));
 
-    assert(format(std::locale{"hi-IN"}, STR("{:Lx}"), integral{0x123'abc}) == STR("1,23,abc"));
+    assert(format(locale{"hi-IN"}, STR("{:Lx}"), integral{0x123'abc}) == STR("1,23,abc"));
 #endif // !defined(_DLL) || _ITERATOR_DEBUG_LEVEL == DEFAULT_IDL_SETTING
 
     // Type
@@ -526,6 +527,25 @@ void test_bool_specs() {
     // Locale
     assert(format(STR("{:L}"), true) == STR("true"));
     assert(format(STR("{:L}"), false) == STR("false"));
+#if !defined(_DLL) || _ITERATOR_DEBUG_LEVEL == DEFAULT_IDL_SETTING
+    assert(format(locale{"en-US"}, STR("{:L}"), true) == STR("true"));
+    assert(format(locale{"en-US"}, STR("{:L}"), false) == STR("false"));
+
+    struct my_bool : numpunct<charT> {
+        virtual basic_string<charT> do_truename() const {
+            return STR("yes");
+        }
+
+        virtual basic_string<charT> do_falsename() const {
+            return STR("no");
+        }
+    };
+
+    locale loc{locale::classic(), new my_bool};
+
+    assert(format(loc, STR("{:L}"), true) == STR("yes"));
+    assert(format(loc, STR("{:L}"), false) == STR("no"));
+#endif // !defined(_DLL) || _ITERATOR_DEBUG_LEVEL == DEFAULT_IDL_SETTING
 
     // Type
     assert(format(STR("{:s}"), true) == STR("true"));
@@ -699,16 +719,16 @@ void test_float_specs() {
 
     // Locale
 #if !defined(_DLL) || _ITERATOR_DEBUG_LEVEL == DEFAULT_IDL_SETTING
-    assert(format(std::locale{"en-US"}, STR("{:L}"), Float{0}) == STR("0"));
-    assert(format(std::locale{"en-US"}, STR("{:Lf}"), Float{0}) == STR("0.000000"));
-    assert(format(std::locale{"en-US"}, STR("{:L}"), Float{100}) == STR("100"));
-    assert(format(std::locale{"en-US"}, STR("{:L}"), Float{100.2345}) == STR("100.2345"));
-    assert(format(std::locale{"en-US"}, STR("{:.4Lf}"), value) == STR("1,234.5273"));
-    assert(format(std::locale{"en-US"}, STR("{:#.4Lg}"), Float{0}) == STR("0.000"));
-    assert(format(std::locale{"en-US"}, STR("{:L}"), nan) == STR("nan"));
-    assert(format(std::locale{"en-US"}, STR("{:L}"), inf) == STR("inf"));
+    assert(format(locale{"en-US"}, STR("{:L}"), Float{0}) == STR("0"));
+    assert(format(locale{"en-US"}, STR("{:Lf}"), Float{0}) == STR("0.000000"));
+    assert(format(locale{"en-US"}, STR("{:L}"), Float{100}) == STR("100"));
+    assert(format(locale{"en-US"}, STR("{:L}"), Float{100.2345}) == STR("100.2345"));
+    assert(format(locale{"en-US"}, STR("{:.4Lf}"), value) == STR("1,234.5273"));
+    assert(format(locale{"en-US"}, STR("{:#.4Lg}"), Float{0}) == STR("0.000"));
+    assert(format(locale{"en-US"}, STR("{:L}"), nan) == STR("nan"));
+    assert(format(locale{"en-US"}, STR("{:L}"), inf) == STR("inf"));
 
-    assert(format(std::locale{"de_DE"}, STR("{:Lf}"), Float{0}) == STR("0,000000"));
+    assert(format(locale{"de_DE"}, STR("{:Lf}"), Float{0}) == STR("0,000000"));
 #endif // !defined(_DLL) || _ITERATOR_DEBUG_LEVEL == DEFAULT_IDL_SETTING
 
     // Type

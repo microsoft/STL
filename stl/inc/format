@@ -1437,7 +1437,7 @@ _OutputIt _Write_separated_integer(const char* _Start, const char* const _End, c
         _Out    = _STD copy(_Start, _Start + *_Group_it, _Out);
         _Start += *_Group_it;
     }
-    _STL_ASSERT(_Start == _End, "separator writing failed");
+    _STL_INTERNAL_CHECK(_Start == _End);
     return _Out;
 }
 
@@ -1521,7 +1521,7 @@ _OutputIt _Write_integral(_OutputIt _Out, const _Integral _Value, _Basic_format_
     }
 
     auto _Separators = 0;
-    std::string _Groups;
+    string _Groups;
     if (_Specs._Localized) {
         _Groups     = _STD use_facet<numpunct<_CharT>>(_Locale).grouping();
         _Separators = _Count_separators(_End - _Buffer_start, _Groups);
@@ -1715,7 +1715,7 @@ _OutputIt _Write(_OutputIt _Out, const _Float _Value, const _Basic_format_specs<
     auto _Integral_end     = _Result.ptr;
     auto _Zeroes_to_append = 0;
     auto _Separators       = 0;
-    std::string _Groups;
+    string _Groups;
 
     if ((_Specs._Alt || _Specs._Localized) && _Is_finite) {
         for (auto _It = _Buffer_start; _It < _Result.ptr; ++_It) {
@@ -1762,9 +1762,6 @@ _OutputIt _Write(_OutputIt _Out, const _Float _Value, const _Basic_format_specs<
             _Out = _STD fill_n(_Out, _Specs._Width - _Width, '0');
         }
 
-        _Out          = _STD copy(_Buffer_start, _Exponent_start, _Out);
-        _Buffer_start = _Exponent_start;
-
         if (_Specs._Localized) {
             _Out = _Write_separated_integer(_Buffer_start, _Integral_end, _Groups,
                 _STD use_facet<numpunct<_CharT>>(_Locale).thousands_sep(), _Separators, _Out);
@@ -1777,6 +1774,9 @@ _OutputIt _Write(_OutputIt _Out, const _Float _Value, const _Basic_format_specs<
                 ++_Buffer_start;
             }
         }
+
+        _Out          = _STD copy(_Buffer_start, _Exponent_start, _Out);
+        _Buffer_start = _Exponent_start;
 
         if (_Specs._Alt && _Append_decimal) {
             *_Out++ = '.';
