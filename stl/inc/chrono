@@ -5042,48 +5042,36 @@ namespace chrono {
     };
 
     // FUNCTION TEMPLATE parse
-    template <class _CharT, class _Traits, class _Alloc, class _Parsable>
-    _NODISCARD auto parse(const basic_string<_CharT, _Traits, _Alloc>& _Fmt, _Parsable& _Tp)
-        // clang-format off
-        -> decltype(_CHRONO from_stream(_STD declval<basic_istream<_CharT, _Traits>&>(), _Fmt.c_str(), _Tp),
-           _Time_parse_iomanip{_Fmt, _Tp})
-    // clang-format on
-    {
+    template <class _CharT, class _Traits, class _Alloc, class _Parsable,
+        class = void_t<decltype(_CHRONO from_stream(_STD declval<basic_istream<_CharT, _Traits>&>(),
+            _STD declval<const _CharT*>(), _STD declval<_Parsable&>()))>>
+    _NODISCARD auto parse(const basic_string<_CharT, _Traits, _Alloc>& _Fmt, _Parsable& _Tp) {
         return _Time_parse_iomanip{_Fmt, _Tp};
     }
 
-    template <class _CharT, class _Traits, class _Alloc, class _Parsable>
+    template <class _CharT, class _Traits, class _Alloc, class _Parsable,
+        class = void_t<decltype(
+            _CHRONO from_stream(_STD declval<basic_istream<_CharT, _Traits>&>(), _STD declval<const _CharT*>(),
+                _STD declval<_Parsable&>(), _STD declval<basic_string<_CharT, _Traits, _Alloc>*>()))>>
     _NODISCARD auto parse(const basic_string<_CharT, _Traits, _Alloc>& _Fmt, _Parsable& _Tp,
-        basic_string<_CharT, _Traits, _Alloc>& _Abbrev)
-        // clang-format off
-        -> decltype(_CHRONO from_stream(_STD declval<basic_istream<_CharT, _Traits>&>(), _Fmt.c_str(), _Tp,
-                                _STD addressof(_Abbrev)),
-           _Time_parse_iomanip{_Fmt, _Tp, _STD addressof(_Abbrev)})
-    // clang-format on
-    {
+        basic_string<_CharT, _Traits, _Alloc>& _Abbrev) {
         return _Time_parse_iomanip{_Fmt, _Tp, _STD addressof(_Abbrev)};
     }
 
-    template <class _CharT, class _Traits, class _Alloc, class _Parsable>
-    _NODISCARD auto parse(const basic_string<_CharT, _Traits, _Alloc>& _Fmt, _Parsable& _Tp, minutes& _Offset)
-        // clang-format off
-        -> decltype(_CHRONO from_stream(_STD declval<basic_istream<_CharT, _Traits>&>(), _Fmt.c_str(), _Tp,
-                                _STD declval<basic_string<_CharT, _Traits, _Alloc>*>(), &_Offset),
-           _Time_parse_iomanip{_Fmt, _Tp, static_cast<basic_string<_CharT, _Traits, _Alloc>*>(nullptr), &_Offset})
-    // clang-format on
-    {
+    template <class _CharT, class _Traits, class _Alloc, class _Parsable,
+        class = void_t<decltype(_CHRONO from_stream(_STD declval<basic_istream<_CharT, _Traits>&>(),
+            _STD declval<const _CharT*>(), _STD declval<_Parsable&>(),
+            _STD declval<basic_string<_CharT, _Traits, _Alloc>*>(), _STD declval<minutes*>()))>>
+    _NODISCARD auto parse(const basic_string<_CharT, _Traits, _Alloc>& _Fmt, _Parsable& _Tp, minutes& _Offset) {
         return _Time_parse_iomanip{_Fmt, _Tp, static_cast<basic_string<_CharT, _Traits, _Alloc>*>(nullptr), &_Offset};
     }
 
-    template <class _CharT, class _Traits, class _Alloc, class _Parsable>
+    template <class _CharT, class _Traits, class _Alloc, class _Parsable,
+        class = void_t<decltype(_CHRONO from_stream(_STD declval<basic_istream<_CharT, _Traits>&>(),
+            _STD declval<const _CharT*>(), _STD declval<_Parsable&>(),
+            _STD declval<basic_string<_CharT, _Traits, _Alloc>*>(), _STD declval<minutes*>()))>>
     _NODISCARD auto parse(const basic_string<_CharT, _Traits, _Alloc>& _Fmt, _Parsable& _Tp,
-        basic_string<_CharT, _Traits, _Alloc>& _Abbrev, minutes& _Offset)
-        // clang-format off
-        -> decltype(_CHRONO from_stream(_STD declval<basic_istream<_CharT, _Traits>&>(), _Fmt.c_str(), _Tp,
-                                _STD addressof(_Abbrev), &_Offset),
-           _Time_parse_iomanip{_Fmt, _Tp, _STD addressof(_Abbrev), &_Offset})
-    // clang-format on
-    {
+        basic_string<_CharT, _Traits, _Alloc>& _Abbrev, minutes& _Offset) {
         return _Time_parse_iomanip{_Fmt, _Tp, _STD addressof(_Abbrev), &_Offset};
     }
 
