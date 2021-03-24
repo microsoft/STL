@@ -4041,10 +4041,10 @@ namespace chrono {
                 return false;
             }
 
-            _LeapSecondRep _Original_leap{_Leap};
+            const _LeapSecondRep _Original_leap{_Leap};
             if (_Leap == _LeapSecondRep::_File_time) {
                 const int _Year{*_Century + *_Two_dig_year};
-                _Original_leap = _STD exchange(_Leap, _Year <= 2016 ? _LeapSecondRep::_Negative : _LeapSecondRep::_All);
+                _Leap = _Year <= 2016 ? _LeapSecondRep::_Negative : _LeapSecondRep::_All;
             }
 
             if (_Second > (_Leap == _LeapSecondRep::_All ? 60 : 59)) {
