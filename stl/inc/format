@@ -1392,8 +1392,57 @@ _NODISCARD constexpr bool _In_bounds(const _Ty _Value) {
     }
 }
 
+_NODISCARD inline int _Count_separators(size_t _Digits, const string_view _Groups) {
+    int _Separators = 0;
+    if (!_Groups.empty()) {
+        // Calculate the amount of separators that are going to be inserted based on the groupings of the locale.
+        auto _Group_it = _Groups.begin();
+        while (_Digits > static_cast<size_t>(*_Group_it)) {
+            _Digits -= static_cast<size_t>(*_Group_it);
+            ++_Separators;
+            if (_Group_it + 1 != _Groups.end()) {
+                ++_Group_it;
+            }
+        }
+    }
+    return _Separators;
+}
+
 template <class _CharT, class _OutputIt>
-_OutputIt _Write(_OutputIt _Out, monostate, const _Basic_format_specs<_CharT>&) {
+_OutputIt _Write_separated_integer(const char* _Start, const char* const _End, const string_view _Groups,
+    const _CharT _Separator, int _Separators, _OutputIt _Out) {
+    auto _Group_it = _Groups.begin();
+    auto _Repeats  = 0;
+    auto _Grouped  = 0;
+
+    for (int _Section = 0; _Section < _Separators; ++_Section) {
+        _Grouped += *_Group_it;
+        if (_Group_it + 1 != _Groups.end()) {
+            ++_Group_it;
+        } else {
+            ++_Repeats;
+        }
+    }
+    _Out   = _STD copy(_Start, _End - _Grouped, _Out);
+    _Start = _End - _Grouped;
+
+    for (; _Separators > 0; --_Separators) {
+        if (_Repeats > 0) {
+            --_Repeats;
+        } else {
+            --_Group_it;
+        }
+
+        *_Out++ = _Separator;
+        _Out    = _STD copy(_Start, _Start + *_Group_it, _Out);
+        _Start += *_Group_it;
+    }
+    _STL_INTERNAL_CHECK(_Start == _End);
+    return _Out;
+}
+
+template <class _CharT, class _OutputIt>
+_OutputIt _Write(_OutputIt _Out, monostate, const _Basic_format_specs<_CharT>&, locale) {
     _STL_INTERNAL_CHECK(false);
     return _Out;
 }
@@ -1401,13 +1450,13 @@ _OutputIt _Write(_OutputIt _Out, monostate, const _Basic_format_specs<_CharT>&) 
 #pragma warning(push)
 #pragma warning(disable : 4365) // 'argument': conversion from 'char' to 'const wchar_t', signed/unsigned mismatch
 template <class _CharT, class _OutputIt, integral _Integral>
-_OutputIt _Write_integral(_OutputIt _Out, const _Integral _Value, _Basic_format_specs<_CharT> _Specs) {
+_OutputIt _Write_integral(_OutputIt _Out, const _Integral _Value, _Basic_format_specs<_CharT> _Specs, locale _Locale) {
     if (_Specs._Type == 'c') {
         if (!_In_bounds<_CharT>(_Value)) {
             throw format_error("integral cannot be stored in charT");
         }
         _Specs._Alt = false;
-        return _Write(_Out, static_cast<_CharT>(_Value), _Specs);
+        return _Write(_Out, static_cast<_CharT>(_Value), _Specs, _Locale);
     }
 
     if (_Specs._Precision != -1) {
@@ -1471,12 +1520,25 @@ _OutputIt _Write_integral(_OutputIt _Out, const _Integral _Value, _Basic_format_
         _Width += static_cast<int>(_Prefix.size());
     }
 
+    auto _Separators = 0;
+    string _Groups;
+    if (_Specs._Localized) {
+        _Groups     = _STD use_facet<numpunct<_CharT>>(_Locale).grouping();
+        _Separators = _Count_separators(_End - _Buffer_start, _Groups);
+        // TRANSITION, separators may be wider for wide chars
+        _Width += _Separators;
+    }
+
     const bool _Write_leading_zeroes = _Specs._Leading_zero && _Specs._Alignment == _Align::_None;
     auto _Writer                     = [&, _End = _End](_OutputIt _Out) {
         _Out = _Write_sign(_Out, _Specs._Sgn, _Value < _Integral{0});
         _Out = _STD copy(_Prefix.begin(), _Prefix.end(), _Out);
         if (_Write_leading_zeroes && _Width < _Specs._Width) {
             _Out = _STD fill_n(_Out, _Specs._Width - _Width, '0');
+        }
+        if (_Separators > 0) {
+            return _Write_separated_integer(_Buffer_start, _End, _Groups,
+                _STD use_facet<numpunct<_CharT>>(_Locale).thousands_sep(), _Separators, _Out);
         }
         return _STD copy(_Buffer_start, _End, _Out);
     };
@@ -1492,32 +1554,40 @@ _OutputIt _Write_integral(_OutputIt _Out, const _Integral _Value, _Basic_format_
 // clang-format off
 template <class _CharT, class _OutputIt, integral _Integral>
     requires (!_CharT_or_bool<_Integral, _CharT>)
-_OutputIt _Write(_OutputIt _Out, const _Integral _Value, const _Basic_format_specs<_CharT>& _Specs) {
+_OutputIt _Write(_OutputIt _Out, const _Integral _Value, const _Basic_format_specs<_CharT>& _Specs, locale _Locale) {
     // clang-format on
-    return _Write_integral(_Out, _Value, _Specs);
+    return _Write_integral(_Out, _Value, _Specs, _Locale);
 }
 
 template <class _CharT, class _OutputIt>
-_OutputIt _Write(_OutputIt _Out, const bool _Value, const _Basic_format_specs<_CharT>& _Specs) {
+_OutputIt _Write(_OutputIt _Out, const bool _Value, _Basic_format_specs<_CharT> _Specs, locale _Locale) {
     if (_Specs._Type != '\0' && _Specs._Type != 's') {
-        return _Write_integral(_Out, static_cast<unsigned char>(_Value), _Specs);
+        return _Write_integral(_Out, static_cast<unsigned char>(_Value), _Specs, _Locale);
     }
 
     if (_Specs._Precision != -1) {
         throw format_error("bool cannot have a precision");
     }
 
+    if (_Specs._Localized) {
+        _Specs._Localized = false;
+        return _Write(_Out,
+            _Value ? static_cast<basic_string_view<_CharT>>(_STD use_facet<numpunct<_CharT>>(_Locale).truename())
+                   : static_cast<basic_string_view<_CharT>>(_STD use_facet<numpunct<_CharT>>(_Locale).falsename()),
+            _Specs, _Locale);
+    }
+
     if constexpr (is_same_v<_CharT, wchar_t>) {
-        return _Write(_Out, _Value ? L"true" : L"false", _Specs);
+        return _Write(_Out, _Value ? L"true" : L"false", _Specs, _Locale);
     } else {
-        return _Write(_Out, _Value ? "true" : "false", _Specs);
+        return _Write(_Out, _Value ? "true" : "false", _Specs, _Locale);
     }
 }
 
 template <class _CharT, class _OutputIt>
-_OutputIt _Write(_OutputIt _Out, const _CharT _Value, _Basic_format_specs<_CharT> _Specs) {
+_OutputIt _Write(_OutputIt _Out, const _CharT _Value, _Basic_format_specs<_CharT> _Specs, locale _Locale) {
     if (_Specs._Type != '\0' && _Specs._Type != 'c') {
-        return _Write_integral(_Out, _Value, _Specs);
+        return _Write_integral(_Out, _Value, _Specs, _Locale);
     }
 
     if (_Specs._Precision != -1) {
@@ -1526,13 +1596,13 @@ _OutputIt _Write(_OutputIt _Out, const _CharT _Value, _Basic_format_specs<_CharT
 
     // Clear the type so that the string_view writer doesn't fail on 'c'.
     _Specs._Type = '\0';
-    return _Write(_Out, basic_string_view<_CharT>{&_Value, 1}, _Specs);
+    return _Write(_Out, basic_string_view<_CharT>{&_Value, 1}, _Specs, _Locale);
 }
 
 #pragma warning(push)
 #pragma warning(disable : 4365) // 'argument': conversion from 'char' to 'const wchar_t', signed/unsigned mismatch
 template <class _CharT, class _OutputIt, floating_point _Float>
-_OutputIt _Write(_OutputIt _Out, const _Float _Value, const _Basic_format_specs<_CharT>& _Specs) {
+_OutputIt _Write(_OutputIt _Out, const _Float _Value, const _Basic_format_specs<_CharT>& _Specs, locale _Locale) {
     auto _Sgn = _Specs._Sgn;
     if (_Sgn == _Sign::_None) {
         _Sgn = _Sign::_Minus;
@@ -1641,10 +1711,13 @@ _OutputIt _Write(_OutputIt _Out, const _Float _Value, const _Basic_format_specs<
 
     auto _Append_decimal   = false;
     auto _Exponent_start   = _Result.ptr;
+    auto _Radix_point      = _Result.ptr;
+    auto _Integral_end     = _Result.ptr;
     auto _Zeroes_to_append = 0;
+    auto _Separators       = 0;
+    string _Groups;
 
-    if (_Specs._Alt && _Is_finite) {
-        auto _Radix_point = _Result.ptr;
+    if ((_Specs._Alt || _Specs._Localized) && _Is_finite) {
         for (auto _It = _Buffer_start; _It < _Result.ptr; ++_It) {
             if (*_It == '.') {
                 _Radix_point = _It;
@@ -1652,30 +1725,54 @@ _OutputIt _Write(_OutputIt _Out, const _Float _Value, const _Basic_format_specs<
                 _Exponent_start = _It;
             }
         }
-        if (_Radix_point == _Result.ptr) {
-            ++_Width;
-            _Append_decimal = true;
+        _Integral_end = (_STD min)(_Radix_point, _Exponent_start);
+
+        if (_Specs._Alt) {
+            if (_Radix_point == _Result.ptr) {
+                // TRANSITION, decimal point may be wider
+                ++_Width;
+                _Append_decimal = true;
+            }
+            if (_Specs._Type == 'g' || _Specs._Type == 'G') {
+                _Zeroes_to_append = _Extra_precision + _Precision - static_cast<int>(_Exponent_start - _Buffer_start);
+                if (!_Append_decimal) {
+                    _Zeroes_to_append += 1;
+                }
+            }
         }
 
-        if (_Specs._Type == 'g' || _Specs._Type == 'G') {
-            _Zeroes_to_append = _Extra_precision + _Precision - static_cast<int>(_Exponent_start - _Buffer_start);
-            if (!_Append_decimal) {
-                _Zeroes_to_append += 1;
-            }
+        if (_Specs._Localized) {
+            _Groups     = _STD use_facet<numpunct<_CharT>>(_Locale).grouping();
+            _Separators = _Count_separators(_Integral_end - _Buffer_start, _Groups);
         }
     }
 
     if (_Is_finite && (_Specs._Type == 'f' || _Specs._Type == 'F')) {
         _Zeroes_to_append = _Extra_precision;
     }
+
     _Width += _Zeroes_to_append;
 
-    const bool _Write_leading_zeroes = _Specs._Leading_zero && _Specs._Alignment == _Align::_None;
-    auto _Writer                     = [&](_OutputIt _Out) {
+    const bool _Write_leading_zeroes = _Specs._Leading_zero && _Specs._Alignment == _Align::_None && _Is_finite;
+
+    auto _Writer = [&](_OutputIt _Out) {
         _Out = _Write_sign(_Out, _Sgn, _Is_negative);
 
-        if (_Write_leading_zeroes && _Width < _Specs._Width && _Is_finite) {
+        if (_Write_leading_zeroes && _Width < _Specs._Width) {
             _Out = _STD fill_n(_Out, _Specs._Width - _Width, '0');
+        }
+
+        if (_Specs._Localized) {
+            _Out = _Write_separated_integer(_Buffer_start, _Integral_end, _Groups,
+                _STD use_facet<numpunct<_CharT>>(_Locale).thousands_sep(), _Separators, _Out);
+            if (_Radix_point != _Result.ptr || _Append_decimal) {
+                *_Out++         = _STD use_facet<numpunct<_CharT>>(_Locale).decimal_point();
+                _Append_decimal = false;
+            }
+            _Buffer_start = _Integral_end;
+            if (_Radix_point != _Result.ptr) {
+                ++_Buffer_start;
+            }
         }
 
         _Out          = _STD copy(_Buffer_start, _Exponent_start, _Out);
@@ -1692,7 +1789,7 @@ _OutputIt _Write(_OutputIt _Out, const _Float _Value, const _Basic_format_specs<
         return _STD copy(_Buffer_start, _Result.ptr, _Out);
     };
 
-    if (_Write_leading_zeroes && _Is_finite) {
+    if (_Write_leading_zeroes) {
         return _Writer(_Out);
     }
 
@@ -1701,7 +1798,7 @@ _OutputIt _Write(_OutputIt _Out, const _Float _Value, const _Basic_format_specs<
 #pragma warning(pop)
 
 template <class _CharT, class _OutputIt>
-_OutputIt _Write(_OutputIt _Out, const void* const _Value, const _Basic_format_specs<_CharT>& _Specs) {
+_OutputIt _Write(_OutputIt _Out, const void* const _Value, const _Basic_format_specs<_CharT>& _Specs, locale) {
     if (_Specs._Type != '\0' && _Specs._Type != 'p') {
         throw format_error("invalid const void* type");
     }
@@ -1722,6 +1819,10 @@ _OutputIt _Write(_OutputIt _Out, const void* const _Value, const _Basic_format_s
         throw format_error("const void* cannot have a leading zero");
     }
 
+    if (_Specs._Localized) {
+        throw format_error("const void* cannot be localized");
+    }
+
     // Compute the bit width of the pointer (i.e. how many bits it takes to be represented).
     // Add 3 to the bit width so we always round up on the division.
     // Divide that by the amount of bits a hex number represents (log2(16) = log2(2^4) = 4).
@@ -1738,12 +1839,13 @@ _OutputIt _Write(_OutputIt _Out, const void* const _Value, const _Basic_format_s
 }
 
 template <class _CharT, class _OutputIt>
-_OutputIt _Write(_OutputIt _Out, const _CharT* _Value, const _Basic_format_specs<_CharT>& _Specs) {
-    return _Write(_Out, basic_string_view<_CharT>{_Value}, _Specs);
+_OutputIt _Write(_OutputIt _Out, const _CharT* _Value, const _Basic_format_specs<_CharT>& _Specs, locale _Locale) {
+    return _Write(_Out, basic_string_view<_CharT>{_Value}, _Specs, _Locale);
 }
 
 template <class _CharT, class _OutputIt>
-_OutputIt _Write(_OutputIt _Out, const basic_string_view<_CharT> _Value, const _Basic_format_specs<_CharT>& _Specs) {
+_OutputIt _Write(
+    _OutputIt _Out, const basic_string_view<_CharT> _Value, const _Basic_format_specs<_CharT>& _Specs, locale) {
     if (_Specs._Type != '\0' && _Specs._Type != 's') {
         throw format_error("invalid string type");
     }
@@ -1758,6 +1860,10 @@ _OutputIt _Write(_OutputIt _Out, const basic_string_view<_CharT> _Value, const _
 
     if (_Specs._Leading_zero) {
         throw format_error("string cannot have a leading zero");
+    }
+
+    if (_Specs._Localized) {
+        throw format_error("string cannot be localized");
     }
 
     auto _Printed_size = static_cast<int>(_Value.size());
@@ -1816,7 +1922,7 @@ struct _Arg_formatter {
     _OutputIt operator()(_Ty _Val) {
         _STL_INTERNAL_CHECK(_Specs);
         _STL_INTERNAL_CHECK(_Ctx);
-        return _Write(_Ctx->out(), _Val, *_Specs);
+        return _Write(_Ctx->out(), _Val, *_Specs, _Ctx->locale());
     }
 };
 
