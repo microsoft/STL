@@ -561,6 +561,7 @@ public:
                         _Uninitialized_move(_Right_data._Myfirst, _Right_data._Mylast, _My_data._Myfirst, _Al);
                     _Guard._Target = nullptr;
                 }
+                _Proxy._Release();
                 return;
             }
         }
