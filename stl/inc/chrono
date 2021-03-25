@@ -4081,7 +4081,7 @@ namespace chrono {
 
                     // Condition for a good parse: (_Seconds == 59 && !_Match_leap) || (_Match_leap &&
                     // _It->_Is_positive()). Below is the inverse of this.
-                    if ((_Possible_insertion || _Match_leap) && (!_Match_leap || !_It->_Positive())) {
+                    if (!(_Match_leap ? _It->_Positive() : !_Possible_insertion)) {
                         return false;
                     }
                 }
@@ -4595,14 +4595,10 @@ namespace chrono {
 
             char _Ac[_MAX_INT_DIG];
             char* _Ptr = _Ac;
-            char _Ch;
             if (_First != _Last && _Width > 0) {
-                if ((_Ch = _Ctype_fac.narrow(*_First)) == '+') { // copy plus sign
-                    *_Ptr++ = '+';
-                    ++_First;
-                    --_Width;
-                } else if (_Ch == '-') { // copy minus sign
-                    *_Ptr++ = '-';
+                const char _Ch = _Ctype_fac.narrow(*_First);
+                if (_Ch == '+' || _Ch == '-') { // copy sign
+                    *_Ptr++ = _Ch;
                     ++_First;
                     --_Width;
                 }
@@ -4619,6 +4615,7 @@ namespace chrono {
                 *_Ptr++ = '0';
             }
 
+            char _Ch;
             while (_First != _Last && _Width > 0 && '0' <= (_Ch = _Ctype_fac.narrow(*_First))
                    && _Ch <= '9') { // copy digits
                 *_Ptr = _Ch;
@@ -4676,7 +4673,7 @@ namespace chrono {
             int _Tz_minutes      = 0;
             int _Optional_digits = 1;
             for (int _Count = 0; _Count < 4; ++_Count) {
-                const bool _Allow_match_fail{(_Is_modified && _Count == 1) || (!_Is_modified && _Count == 2)};
+                const bool _Allow_match_fail{_Count == (_Is_modified ? 1 : 2)};
 
                 if (_First == _Last) {
                     if (_Allow_match_fail) {
