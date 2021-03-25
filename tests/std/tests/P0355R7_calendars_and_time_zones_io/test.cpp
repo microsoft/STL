@@ -226,9 +226,22 @@ void parse_seconds() {
     milliseconds time_ms;
     test_parse("12.543", "%S", time_ms);
     assert(time_ms == 12s + 543ms);
+    assert(time_ms == seconds{12} + milliseconds{543});
+    test_parse("01.234", "%S", time_ms);
+    assert(time_ms == 1'234ms);
+    test_parse(" 1.234", "%S", time_ms);
+    assert(time_ms == 1'234ms);
+    test_parse("1.234", "%S", time_ms);
+    assert(time_ms == 1'234ms);
+    test_parse("1. 234", "%S 234", time_ms); // Flag should consume "1.".
+    assert(time_ms == 1s);
+    test_parse("1 .234", "%S .234", time_ms); // Flag should consume "1".
+    assert(time_ms == 1s);
+    test_parse("12..345", "%S.345", time_ms); // Flag should consume "12.".
+    assert(time_ms == 12s);
 
     duration<int64_t, atto> time_atto;
-    test_parse("00.400000000000000002", "%S", time_atto);
+    test_parse("0.400000000000000002", "%S", time_atto);
     assert((time_atto == duration<int64_t, deci>{4} + duration<int64_t, atto>{2}));
 
     fail_parse("1.2 1.3", "%S %S", time_ms);

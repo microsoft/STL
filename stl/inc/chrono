@@ -4548,6 +4548,12 @@ namespace chrono {
             const ctype<typename _InIt::value_type>& _Ctype_fac,
             const numpunct<typename _InIt::value_type>& _Numpunct_fac) {
             constexpr _InIt _Last{};
+
+            while (_First != _Last && _Ctype_fac.is(ctype_base::space, *_First) && _Width > 0) {
+                ++_First;
+                --_Width;
+            }
+
             int _Second_        = 0;
             int64_t _Subsecond_ = 0;
             int64_t _Multiplier = _SubsecondType::period::den;
