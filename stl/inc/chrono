@@ -2680,8 +2680,7 @@ namespace chrono {
 
         if (_New_size > _Current_size) {
             _Leap_sec_info.reserve(_New_size);
-            _Leap_sec_info.insert(
-                _Leap_sec_info.begin(), _STD cbegin(_Known_leap_seconds), _STD cend(_Known_leap_seconds));
+            _Leap_sec_info.assign(_STD cbegin(_Known_leap_seconds), _STD cend(_Known_leap_seconds));
 
             for (size_t _Idx = 0; _Idx < _Reg_post_2018_ls_size; ++_Idx) {
                 // Leap seconds occur at _Ls._Hour:59:59. We store the next second after, so we need to add an entire
@@ -2703,7 +2702,6 @@ namespace chrono {
         return _STD move(_Icu_version) + "." + _STD to_string(_Num_leap_seconds);
     }
 
-    // TRANSITION: work in progress
     // CLASS tzdb_list
     class tzdb_list {
     private:
@@ -2827,14 +2825,20 @@ namespace chrono {
         if (_Tzdb_ptr == nullptr) {
             auto _My_tzdb = static_cast<tzdb_list*>(__std_calloc_crt(1, sizeof(tzdb_list)));
             if (_My_tzdb == nullptr) {
-                _Xruntime_error("bad allocation");
+                _Xruntime_error("bad allocation"); // not bad_alloc, see N4878 [time.zone.db.access]/4
             }
 
-            try {
-                _STD construct_at(_My_tzdb);
-            } catch (const exception& _Except) {
-                _Xruntime_error(_Except.what());
-            }
+            _TRY_BEGIN
+            _STD construct_at(_My_tzdb);
+            _CATCH(const runtime_error&)
+            __std_free_crt(_My_tzdb);
+            _RERAISE;
+            _CATCH(const exception& _Except)
+#if _HAS_EXCEPTIONS
+            __std_free_crt(_My_tzdb);
+            _Xruntime_error(_Except.what());
+#endif // _HAS_EXCEPTIONS
+            _CATCH_END
 
             if (_Global_tzdb_list.compare_exchange_strong(_Tzdb_ptr, _My_tzdb)) {
                 _Tzdb_ptr = _My_tzdb;
@@ -2864,11 +2868,15 @@ namespace chrono {
 
     // FUNCTION reload_tzdb
     inline const tzdb& reload_tzdb() {
-        try {
-            return _CHRONO get_tzdb_list()._Reload();
-        } catch (const exception& _Except) {
-            _Xruntime_error(_Except.what());
-        }
+        _TRY_BEGIN
+        return _CHRONO get_tzdb_list()._Reload();
+        _CATCH(const runtime_error&)
+        _RERAISE;
+        _CATCH(const exception& _Except)
+#if _HAS_EXCEPTIONS
+        _Xruntime_error(_Except.what());
+#endif // _HAS_EXCEPTIONS
+        _CATCH_END
     }
 
     // FUNCTION remote_version
@@ -3166,7 +3174,7 @@ namespace chrono {
         template <class _Duration>
         _NODISCARD static sys_time<common_type_t<_Duration, seconds>> to_sys(const utc_time<_Duration>& _Utc_time) {
             using _CommonType = common_type_t<_Duration, seconds>;
-            const auto _Lsi{get_leap_second_info(_Utc_time)};
+            const auto _Lsi{_CHRONO get_leap_second_info(_Utc_time)};
             _CommonType _Ticks;
             if (_Lsi.is_leap_second) {
                 const auto _Leap_sec_minus_one = _CHRONO floor<seconds>(_Utc_time.time_since_epoch()) - _Lsi.elapsed;
@@ -3310,8 +3318,8 @@ namespace filesystem {
             const chrono::file_time<_Duration>& _File_time) {
             using namespace chrono;
             using _CommonType = common_type_t<_Duration, seconds>;
-            const auto _Ticks =
-                _File_time.time_since_epoch() - duration_cast<seconds>(duration{__std_fs_file_time_epoch_adjustment});
+            const auto _Ticks = _File_time.time_since_epoch()
+                              - _CHRONO duration_cast<seconds>(duration{__std_fs_file_time_epoch_adjustment});
 
             if (_Ticks < _Cutoff.time_since_epoch()) {
                 return utc_clock::from_sys(sys_time<_CommonType>{_Ticks});
@@ -3325,7 +3333,7 @@ namespace filesystem {
             const chrono::utc_time<_Duration>& _Utc_time) {
             using namespace chrono;
             file_time<common_type_t<_Duration, seconds>> _File_time{
-                duration_cast<seconds>(duration{__std_fs_file_time_epoch_adjustment})};
+                _CHRONO duration_cast<seconds>(duration{__std_fs_file_time_epoch_adjustment})};
 
             if (_Utc_time < utc_seconds{_Cutoff.time_since_epoch()} + _Skipped_filetime_leap_seconds) {
                 _File_time += utc_clock::to_sys(_Utc_time).time_since_epoch();

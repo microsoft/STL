@@ -76,7 +76,7 @@ _NODISCARD __std_tzdb_sys_info* __stdcall __std_tzdb_get_sys_info(
     const char* _Tz, size_t _Tz_len, __std_tzdb_epoch_milli _Local) noexcept;
 void __stdcall __std_tzdb_delete_sys_info(__std_tzdb_sys_info* _Info) noexcept;
 
-__std_tzdb_registry_leap_info* __stdcall __std_tzdb_get_reg_leap_seconds(
+_NODISCARD __std_tzdb_registry_leap_info* __stdcall __std_tzdb_get_reg_leap_seconds(
     size_t _Prev_reg_ls_size, size_t* _Current_reg_ls_size) noexcept;
 void __stdcall __std_tzdb_delete_reg_leap_seconds(__std_tzdb_registry_leap_info* _Rlsi) noexcept;
 

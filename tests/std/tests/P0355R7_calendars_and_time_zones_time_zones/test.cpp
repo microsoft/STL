@@ -146,9 +146,9 @@ void timezone_names_test() {
         assert(false);
     }
 
-    // FIXME: add a link to an issue. These may change overtime and might have to be removed from tests.
+    // FIXME: add a link to an issue. These may change over time and might have to be removed from tests.
 
-    // these are some example in which the ICU.dll and IANA database diverge in what they consider a zone or a link
+    // these are some examples in which the ICU.dll and IANA database diverge in what they consider a zone or a link
     assert(_Locate_zone_impl(my_tzdb.links, "Atlantic/Faroe") != nullptr); // is a time_zone in IANA
     assert(_Locate_zone_impl(my_tzdb.zones, "Africa/Addis_Ababa") != nullptr); // is a time_zone_link in IANA
     assert(_Locate_zone_impl(my_tzdb.links, "PST") != nullptr); // time_zone_link does not exist in IANA

@@ -551,7 +551,7 @@ void __stdcall __std_tzdb_delete_sys_info(__std_tzdb_sys_info* const _Info) noex
     }
 }
 
-__std_tzdb_registry_leap_info* __stdcall __std_tzdb_get_reg_leap_seconds(
+_NODISCARD __std_tzdb_registry_leap_info* __stdcall __std_tzdb_get_reg_leap_seconds(
     const size_t prev_reg_ls_size, size_t* const current_reg_ls_size) noexcept {
     // On exit---
     //    *current_reg_ls_size <= prev_reg_ls_size, reg_ls_data == nullptr --> no new data
