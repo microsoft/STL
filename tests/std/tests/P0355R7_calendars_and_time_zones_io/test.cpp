@@ -1,16 +1,21 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <algorithm>
 #include <cassert>
 #include <charconv>
 #include <chrono>
 #include <climits>
+#include <cstdint>
+#include <iterator>
 #include <locale>
 #include <ratio>
 #include <sstream>
 #include <string>
 #include <system_error>
+#include <type_traits>
 #include <utility>
+#include <vector>
 
 using namespace std;
 using namespace std::chrono;
@@ -218,7 +223,7 @@ void parse_seconds() {
 
     milliseconds time_ms;
     test_parse("12.543", "%S", time_ms);
-    assert(time_ms == seconds{12} + milliseconds{543});
+    assert(time_ms == 12s + 543ms);
 
     duration<int64_t, atto> time_atto;
     test_parse("00.400000000000000002", "%S", time_atto);
@@ -341,7 +346,7 @@ void parse_other_duration() {
     test_parse("12:34:04", "%X", time);
     assert(time == 12h + 34min + 4s);
 
-    // float point representations, parsing precision controlled by duration::period
+    // floating-point representations, parsing precision controlled by duration::period
     duration<float, milli> df;
     test_parse("9.125", "%S", df);
     assert(df.count() == 9125.0f);
@@ -382,7 +387,7 @@ void parse_time_zone() {
 
     fail_parse<char>("!4", "%Ez", time, nullptr, &offset);
     // %Ez matches "04", leaving "30" in the stream.
-    fail_parse<char>("0430 foo", "%Ez foo", time, nullptr, &offset);
+    fail_parse<char>("0430 meow", "%Ez meow", time, nullptr, &offset);
     fail_parse<char>("04:", "%Ez", time, nullptr, &offset);
     fail_parse<char>("04:3", "%Ez", time, nullptr, &offset);
 
@@ -424,7 +429,7 @@ void parse_calendar_types_basic() {
     test_parse(" 23", "%e3", d);
     assert(d == day{2});
 
-    // basic weekdayday tests
+    // basic weekday tests
     weekday wd;
 
     test_parse("Mon", "%a", wd);
@@ -434,7 +439,7 @@ void parse_calendar_types_basic() {
 
     test_parse("1", "%w", wd); // 0-based, Sunday=0
     assert(wd == Monday);
-    test_parse("1", "%u", wd); // ISO 1-based, Monday=1;
+    test_parse("1", "%u", wd); // ISO 1-based, Monday=1
     assert(wd == Monday);
     test_parse("7", "%u", wd);
     assert(wd == Sunday);
@@ -687,7 +692,7 @@ void parse_calendar_types_basic() {
     test_parse("Wed 2000-03-01", "%a %F", ymd);
     fail_parse("Mon 2000-03-01", "%a %F", ymd);
 
-    // For %F, width is applies only to the year
+    // For %F, width is applied only to the year
     test_parse("12345-06-07", "%5F", ymd);
     assert(ymd == 7d / June / 12345y);
     fail_parse("12345-00006-07", "%5F", ymd);
@@ -772,7 +777,7 @@ void parse_other_week_date() {
     fail_parse("2017-54-0", "%Y-%W-%w", ymd);
     fail_parse("2017-54-0", "%Y-%U-%w", ymd);
     fail_parse("2018-00-0", "%Y-%U-%w", ymd); // refers to 31 Dec. 2017
-    fail_parse("2017-53-1", "%Y-%U-%w", ymd); // refers to 01 Jan. 218
+    fail_parse("2017-53-1", "%Y-%U-%w", ymd); // refers to 01 Jan. 2018
 
     // Year begins on Monday.
     test_parse("2018-00-1", "%Y-%U-%w", ymd);
@@ -839,7 +844,7 @@ void insert_leap_second(const sys_days& date, const seconds& value) {
     vector<time_zone> zones;
     vector<time_zone_link> links;
     transform(my_tzdb.zones.begin(), my_tzdb.zones.end(), back_inserter(zones),
-        [](const auto& _Tz) { return time_zone{_Tz.name()}; });
+        [](const auto& tz) { return time_zone{tz.name()}; });
     transform(my_tzdb.links.begin(), my_tzdb.links.end(), back_inserter(links), [](const auto& link) {
         return time_zone_link{link.name(), link.target()};
     });
@@ -929,8 +934,8 @@ void parse_timepoints() {
     test_parse("12:42 2000-01-02", "%R %F", st);
     assert(st == sys_days{2000y / January / 2d} + (12h + 42min));
 
-    // Historical leap seconds dont' allow complete testing, because they've all been positive and there haven't been
-    // any since 2016.
+    // Historical leap seconds don't allow complete testing, because they've all been positive and there haven't been
+    // any since 2016 (as of 2021).
     insert_leap_second(1d / January / 2020y, -1s);
     insert_leap_second(1d / January / 2022y, 1s);
 
