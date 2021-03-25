@@ -3617,7 +3617,7 @@ namespace chrono {
         }
 
         template <class _Ty>
-        static bool _Update(optional<_Ty>& _Val, const _Ty& _New) {
+        _NODISCARD static bool _Update(optional<_Ty>& _Val, const _Ty& _New) {
             // Update a field. Ignores invalid values. If _Val already has a value, returns true or false according to
             // whether the new value matches the current one or not, so that inconsistencies can be detected.
 
@@ -4576,11 +4576,8 @@ namespace chrono {
                 _State |= ios_base::eofbit;
             }
 
-            if (!_Found_digit) {
+            if (!(_Found_digit && _Update(_Second, _Second_) && _Update(_Subsecond, _Subsecond_))) {
                 _State |= ios_base::failbit;
-            } else {
-                _Update(_Second, _Second_);
-                _Update(_Subsecond, _Subsecond_);
             }
 
             return _State;

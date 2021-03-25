@@ -229,7 +229,8 @@ void parse_seconds() {
     test_parse("00.400000000000000002", "%S", time_atto);
     assert((time_atto == duration<int64_t, deci>{4} + duration<int64_t, atto>{2}));
 
-    test_limits<seconds>("%S", 0, 60);
+    fail_parse("1.2 1.3", "%S %S", time_ms);
+    fail_parse("1.2 2.2", "%S %S", time_ms);
 }
 
 void parse_minutes() {
