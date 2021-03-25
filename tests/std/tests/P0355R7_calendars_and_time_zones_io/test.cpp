@@ -239,6 +239,9 @@ void parse_seconds() {
     assert(time_ms == 1s);
     test_parse("12..345", "%S.345", time_ms); // Flag should consume "12.".
     assert(time_ms == 12s);
+    fail_parse("1.2345", "%6S", time_ms); // would truncate
+    test_parse("1.2340", "%6S", time_ms);
+    assert(time_ms == 1'234ms);
 
     duration<int64_t, atto> time_atto;
     test_parse("0.400000000000000002", "%S", time_atto);

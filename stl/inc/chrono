@@ -3977,7 +3977,14 @@ namespace chrono {
             if constexpr (_Can_rep_sec) {
                 if (_Used & _F_sec) {
                     if (_Subsecond) {
-                        _Result += _CHRONO duration_cast<_DurationType>(_SubsecondType{*_Subsecond});
+                        using _CastedType = duration<int64_t, typename _DurationType::period>;
+                        const _SubsecondType _Sub{*_Subsecond};
+                        if (treat_as_floating_point_v<_DurationType> //
+                            || _CHRONO duration_cast<_CastedType>(_Sub) == _Sub) {
+                            _Result += _CHRONO duration_cast<_DurationType>(_Sub);
+                        } else {
+                            return false;
+                        }
                     }
 
                     if (_Second) {
