@@ -826,25 +826,31 @@ public:
 
     constexpr void _On_dynamic_width(size_t _Arg_id) {
         _Parse_ctx.check_arg_id(_Arg_id);
-        _Dynamic_specs._Dynamic_width_index = _Arg_id;
+        _Dynamic_specs._Dynamic_width_index = _Verify_dynamic_arg_index_in_range(_Arg_id);
     }
 
     constexpr void _On_dynamic_width(_Auto_id_tag) {
-        _Dynamic_specs._Dynamic_width_index = _Parse_ctx.next_arg_id();
+        _Dynamic_specs._Dynamic_width_index = _Verify_dynamic_arg_index_in_range(_Parse_ctx.next_arg_id());
     }
 
     constexpr void _On_dynamic_precision(size_t _Arg_id) {
         _Parse_ctx.check_arg_id(_Arg_id);
-        _Dynamic_specs._Dynamic_precision_index = _Arg_id;
+        _Dynamic_specs._Dynamic_precision_index = _Verify_dynamic_arg_index_in_range(_Arg_id);
     }
-
     constexpr void _On_dynamic_precision(_Auto_id_tag) {
-        _Dynamic_specs._Dynamic_precision_index = _Parse_ctx.next_arg_id();
+        _Dynamic_specs._Dynamic_precision_index = _Verify_dynamic_arg_index_in_range(_Parse_ctx.next_arg_id());
     }
 
 private:
     _Dynamic_format_specs<_CharT>& _Dynamic_specs;
     _ParseContext& _Parse_ctx;
+
+    int _Verify_dynamic_arg_index_in_range(size_t _Idx) {
+        if (_Idx > static_cast<size_t>((numeric_limits<int>::max)())) {
+            throw format_error("Dynamic width or precision index too large.");
+        }
+        return static_cast<int>(_Idx);
+    }
 };
 
 class _Numeric_specs_checker {
@@ -926,15 +932,7 @@ constexpr size_t _Get_format_arg_type_storage_size(_Basic_format_arg_type _Type)
 // clang-format off
 template <class _Context, class _Ty>
     requires _Has_formatter<_Context, _Ty>
-/* consteval */ constexpr auto _Get_format_arg_storage_type(const _Ty& _Val) noexcept {
-    // clang-format on
-    return typename basic_format_arg<_Context>::handle{_Val};
-}
-
-// clang-format off
-template <class _Context, class _Ty>
-    requires integral<_Ty> || floating_point<_Ty>
-/* consteval */ constexpr auto _Get_format_arg_storage_type(_Ty) noexcept {
+/* consteval */ constexpr auto _Get_format_arg_storage_type(const _Ty&) noexcept {
     // clang-format on
     using _Char_type = typename _Context::char_type;
     if constexpr (is_same_v<_Ty, monostate>) {
@@ -960,8 +958,7 @@ template <class _Context, class _Ty>
     } else if constexpr (is_same_v<_Ty, long double>) {
         return static_cast<long double>(42);
     } else {
-        static_assert(_Always_false<_Ty>, "Invalid type passed to _Get_format_arg_storage_type");
-        return static_cast<size_t>(-1);
+        return typename basic_format_arg<_Context>::handle{42};
     }
 }
 
@@ -1047,15 +1044,6 @@ private:
         requires _Has_formatter<_Context, _Ty>
     void _Store(const size_t _Arg_index, const _Ty& _Val) noexcept {
         // clang-format on
-        using _Handle_type = typename basic_format_arg<_Context>::handle;
-        _Store_impl<_Handle_type>(_Arg_index, _Basic_format_arg_type::_Custom_type, _Handle_type{_Val});
-    }
-
-    // clang-format off
-    template <class _Ty>
-        requires integral<_Ty> || floating_point<_Ty>
-    void _Store(const size_t _Arg_index, _Ty _Val) noexcept {
-        // clang-format on
         if constexpr (is_same_v<_Ty, bool>) {
             _Store_impl<bool>(_Arg_index, _Basic_format_arg_type::_Bool_type, _Val);
         } else if constexpr (is_same_v<_Ty, _CharType>) {
@@ -1078,7 +1066,8 @@ private:
         } else if constexpr (is_same_v<_Ty, long double>) {
             _Store_impl<long double>(_Arg_index, _Basic_format_arg_type::_Long_double_type, _Val);
         } else {
-            static_assert(_Always_false<_Ty>, "Invalid type passed to _Format_arg_store::_Store");
+            using _Handle_type = typename basic_format_arg<_Context>::handle;
+            _Store_impl<_Handle_type>(_Arg_index, _Basic_format_arg_type::_Custom_type, _Handle_type{_Val});
         }
     }
 
@@ -1266,73 +1255,6 @@ constexpr size_t _Get_format_arg_type_storage_size(_Basic_format_arg_type _Type)
         return 0;
     }
 }
-
-
-template <class _Ty, class _CharT>
-constexpr _Basic_format_arg_type _Format_arg_storage_type_direct = _Basic_format_arg_type::_None;
-
-template <class _CharT>
-constexpr _Basic_format_arg_type _Format_arg_storage_type_direct<int, _CharT> = _Basic_format_arg_type::_Int_type;
-
-template <class _CharT>
-constexpr _Basic_format_arg_type _Format_arg_storage_type_direct<unsigned int, _CharT> =
-    _Basic_format_arg_type::_UInt_type;
-
-template <class _CharT>
-constexpr _Basic_format_arg_type _Format_arg_storage_type_direct<long long, _CharT> =
-    _Basic_format_arg_type::_Long_long_type;
-
-template <class _CharT>
-constexpr _Basic_format_arg_type _Format_arg_storage_type_direct<unsigned long long, _CharT> =
-    _Basic_format_arg_type::_ULong_long_type;
-
-template <class _CharT>
-constexpr _Basic_format_arg_type _Format_arg_storage_type_direct<bool, _CharT> = _Basic_format_arg_type::_Bool_type;
-
-template <class _CharT>
-constexpr _Basic_format_arg_type _Format_arg_storage_type_direct<_CharT, _CharT> = _Basic_format_arg_type::_Char_type;
-
-template <class _CharT>
-constexpr _Basic_format_arg_type _Format_arg_storage_type_direct<float, _CharT> = _Basic_format_arg_type::_Float_type;
-
-template <class _CharT>
-constexpr _Basic_format_arg_type _Format_arg_storage_type_direct<double, _CharT> = _Basic_format_arg_type::_Double_type;
-
-template <class _CharT>
-constexpr _Basic_format_arg_type _Format_arg_storage_type_direct<long double, _CharT> =
-    _Basic_format_arg_type::_Long_double_type;
-
-template <class _CharT>
-constexpr _Basic_format_arg_type _Format_arg_storage_type_direct<nullptr_t, _CharT> =
-    _Basic_format_arg_type::_Pointer_type;
-
-template <class _CharT>
-constexpr _Basic_format_arg_type _Format_arg_storage_type_direct<void*, _CharT> = _Basic_format_arg_type::_Pointer_type;
-
-template <class _CharT>
-constexpr _Basic_format_arg_type _Format_arg_storage_type_direct<const void*, _CharT> =
-    _Basic_format_arg_type::_Pointer_type;
-
-template <class _CharT>
-constexpr _Basic_format_arg_type _Format_arg_storage_type_direct<_CharT*, _CharT> =
-    _Basic_format_arg_type::_CString_type;
-
-template <class _CharT>
-constexpr _Basic_format_arg_type _Format_arg_storage_type_direct<const _CharT*, _CharT> =
-    _Basic_format_arg_type::_CString_type;
-
-template <class _CharT, size_t _Nty>
-constexpr _Basic_format_arg_type _Format_arg_storage_type_direct<const _CharT[_Nty], _CharT> =
-    _Basic_format_arg_type::_CString_type;
-
-template <class _CharT>
-constexpr _Basic_format_arg_type _Format_arg_storage_type_direct<basic_string_view<_CharT>, _CharT> =
-    _Basic_format_arg_type::_String_type;
-
-template <class _CharT>
-constexpr _Basic_format_arg_type _Format_arg_storage_type_direct<basic_string<_CharT>, _CharT> =
-    _Basic_format_arg_type::_String_type;
-
 
 template <class _CharT, class _OutputIt>
 _OutputIt _Write(_OutputIt _Out, monostate) {
@@ -1928,6 +1850,10 @@ struct _Format_handler {
     const _CharT* _On_format_specs(size_t _Id, const _CharT* _Begin, const _CharT* _End) {
         _Parse_context.advance_to(_Parse_context.begin() + (_Begin - &*_Parse_context.begin()));
         auto _Arg = _Ctx.arg(_Id);
+        if (_Arg._Active_state == _Basic_format_arg_type::_Custom_type) {
+            _Arg._Custom_state.format(_Parse_context, _Ctx);
+            return _Parse_context.begin()._Unwrapped();
+        }
         _Basic_format_specs<_CharT> _Specs;
         _Specs_checker<_Specs_handler<basic_format_parse_context<_CharT>, _Context>> _Handler(
             _Specs_handler<basic_format_parse_context<_CharT>, _Context>(_Specs, _Parse_context, _Ctx),
@@ -1958,8 +1884,9 @@ struct _Formatter_base {
 
     typename _Pc::iterator parse(_Pc& _ParseCtx) {
         _Specs_checker<_Dynamic_specs_handler<_Pc>> _Handler(_Dynamic_specs_handler<_Pc>(_Specs, _ParseCtx), _ArgType);
-        auto _It = _Parse_format_specs(_ParseCtx.begin(), _ParseCtx.end(), _Handler);
-        if (_It == _ParseCtx.end() || *_It != '}') {
+        auto _It = _ParseCtx.begin();
+        _It._Seek_to(_Parse_format_specs(_ParseCtx.begin()._Unwrapped(), _ParseCtx.end()._Unwrapped(), _Handler));
+        if (_It != _ParseCtx.end() && *_It != '}') {
             throw format_error("Mising '}' in format string.");
         }
         return _It;
@@ -1967,11 +1894,13 @@ struct _Formatter_base {
 
     template <class _FormatContext>
     typename _FormatContext::iterator format(const _Ty& _Val, _FormatContext& _FormatCtx) {
-        if (_Specs._Dynamic_width_index != -1) {
-            _Specs._Width = _Get_dynamic_specs<_Width_checker>(_FormatCtx.arg(_Specs._Dynamic_width_index));
+        if (_Specs._Dynamic_width_index >= 0) {
+            _Specs._Width =
+                _Get_dynamic_specs<_Width_checker>(_FormatCtx.arg(static_cast<size_t>(_Specs._Dynamic_width_index)));
         }
-        if (_Specs._Dynamic_precision_index != -1) {
-            _Specs._Precision = _Get_dynamic_specs<_Precision_checker>(_FormatCtx.arg(_Specs._Dynamic_precision_index));
+        if (_Specs._Dynamic_precision_index >= 0) {
+            _Specs._Precision = _Get_dynamic_specs<_Precision_checker>(
+                _FormatCtx.arg(static_cast<size_t>(_Specs._Dynamic_precision_index)));
         }
         return visit_format_arg(
             _Arg_formatter<typename _FormatContext::iterator, _CharT>{
@@ -1984,8 +1913,53 @@ private:
     _Dynamic_format_specs<_CharT> _Specs;
 };
 
+#define _FORMAT_SPECIALIZE_FOR(_Type, _ArgType) \
+    template <_Format_supported_charT _CharT>   \
+    struct formatter<_Type, _CharT> : _Formatter_base<_Type, _CharT, _ArgType> {}
+
+_FORMAT_SPECIALIZE_FOR(int, _Basic_format_arg_type::_Int_type);
+_FORMAT_SPECIALIZE_FOR(unsigned int, _Basic_format_arg_type::_UInt_type);
+_FORMAT_SPECIALIZE_FOR(long long, _Basic_format_arg_type::_Long_long_type);
+_FORMAT_SPECIALIZE_FOR(unsigned long long, _Basic_format_arg_type::_ULong_long_type);
+_FORMAT_SPECIALIZE_FOR(bool, _Basic_format_arg_type::_Bool_type);
+_FORMAT_SPECIALIZE_FOR(float, _Basic_format_arg_type::_Float_type);
+_FORMAT_SPECIALIZE_FOR(double, _Basic_format_arg_type::_Double_type);
+_FORMAT_SPECIALIZE_FOR(long double, _Basic_format_arg_type::_Long_double_type);
+_FORMAT_SPECIALIZE_FOR(nullptr_t, _Basic_format_arg_type::_Pointer_type);
+_FORMAT_SPECIALIZE_FOR(void*, _Basic_format_arg_type::_Pointer_type);
+_FORMAT_SPECIALIZE_FOR(const void*, _Basic_format_arg_type::_Pointer_type);
+_FORMAT_SPECIALIZE_FOR(short, _Basic_format_arg_type::_Int_type);
+_FORMAT_SPECIALIZE_FOR(unsigned short, _Basic_format_arg_type::_UInt_type);
+_FORMAT_SPECIALIZE_FOR(long, _Basic_format_arg_type::_Int_type);
+_FORMAT_SPECIALIZE_FOR(unsigned long, _Basic_format_arg_type::_UInt_type);
+_FORMAT_SPECIALIZE_FOR(char, _Basic_format_arg_type::_Char_type);
+
+// not using the macro because we'd like to avoid the formatter<wchar_t, char> specialization
+template <>
+struct formatter<wchar_t, wchar_t> : _Formatter_base<wchar_t, wchar_t, _Basic_format_arg_type::_Char_type> {};
+
+// We could use the macros for these specializations, but it's confusing to refer to symbols that are defined inside the
+// macro in the macro's "call".
 template <_Format_supported_charT _CharT>
-struct formatter<int, _CharT> : _Formatter_base<int, _CharT, _Basic_format_arg_type::_Int_type> {};
+struct formatter<_CharT*, _CharT> : _Formatter_base<_CharT*, _CharT, _Basic_format_arg_type::_CString_type> {};
+
+template <_Format_supported_charT _CharT>
+struct formatter<const _CharT*, _CharT>
+    : _Formatter_base<const _CharT*, _CharT, _Basic_format_arg_type::_CString_type> {};
+
+template <_Format_supported_charT _CharT, size_t _Nty>
+struct formatter<const _CharT[_Nty], _CharT>
+    : _Formatter_base<const _CharT[_Nty], _CharT, _Basic_format_arg_type::_CString_type> {};
+
+template <_Format_supported_charT _CharT, class _Traits, class _Allocator>
+struct formatter<basic_string<_CharT, _Traits, _Allocator>, _CharT>
+    : _Formatter_base<basic_string<_CharT, _Traits, _Allocator>, _CharT, _Basic_format_arg_type::_String_type> {};
+
+template <_Format_supported_charT _CharT, class _Traits>
+struct formatter<basic_string_view<_CharT, _Traits>, _CharT>
+    : _Formatter_base<basic_string_view<_CharT, _Traits>, _CharT, _Basic_format_arg_type::_String_type> {};
+
+#undef _FORMAT_SPECIALIZE_FOR
 
 using format_context  = basic_format_context<back_insert_iterator<string>, string::value_type>;
 using wformat_context = basic_format_context<back_insert_iterator<wstring>, wstring::value_type>;
