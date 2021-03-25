@@ -2727,23 +2727,26 @@ namespace chrono {
         }
 
         const_iterator erase_after(const_iterator _Where) noexcept /* strengthened */ {
+            _Unique_lock _Lk(_Tzdb_mutex);
             return _Tzdb_list.erase_after(_Where);
         }
 
         _NODISCARD const_iterator begin() const noexcept {
+            _Shared_lock _Lk(_Tzdb_mutex);
             return _Tzdb_list.begin();
         }
 
         _NODISCARD const_iterator end() const noexcept {
-            return _Tzdb_list.end();
+            return _Tzdb_list.end(); // no lock necessary for forward_list::end()
         }
 
         _NODISCARD const_iterator cbegin() const noexcept {
+            _Shared_lock _Lk(_Tzdb_mutex);
             return _Tzdb_list.cbegin();
         }
 
         _NODISCARD const_iterator cend() const noexcept {
-            return _Tzdb_list.cend();
+            return _Tzdb_list.cend(); // no lock necessary for forward_list::cend()
         }
 
         template <class... _ArgsTy>
@@ -2784,21 +2787,11 @@ namespace chrono {
             _Shared_lock(const _Shared_lock&) = delete;
             _Shared_lock& operator=(const _Shared_lock&) = delete;
 
-            void _Unlock() {
-                if (_Owns) {
-                    _Smtx_unlock_shared(_Mtx);
-                }
-                _Owns = false;
-            }
-
             ~_Shared_lock() {
-                if (_Owns) {
-                    _Smtx_unlock_shared(_Mtx);
-                }
+                _Smtx_unlock_shared(_Mtx);
             }
 
             _Smtx_t* _Mtx;
-            bool _Owns = true;
         };
 
         struct _NODISCARD _Unique_lock {
