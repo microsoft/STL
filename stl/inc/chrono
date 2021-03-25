@@ -3681,6 +3681,12 @@ namespace chrono {
         }
 
         _NODISCARD bool _Yday_to_month_day(const int _Yday, const int _Year) {
+            // A day-of-year that's February 28 or earlier, by itself, is a valid month_day. Any later day is
+            // ambiguous without a year.
+            if (_Out_of_range(_Day_of_year, 1, _Two_dig_year || _Iso_year ? _Days_in_year(_Year) : 59)) {
+                return false;
+            }
+
             if (_Day_of_year <= 31) {
                 return _Update(_Day, _Yday) && _Update(_Month, 1);
             }
@@ -3769,6 +3775,10 @@ namespace chrono {
             bool _Check_w    = true;
             bool _Check_iso  = true;
             bool _Check_wday = true;
+
+            if (_Day_of_year && _Out_of_range(_Day_of_year, 1, 366)) {
+                return false;
+            }
 
             bool _Have_year = false;
             int _Year{0};
@@ -3907,14 +3917,6 @@ namespace chrono {
                 }
 
                 if (_Out_of_range(_Week_u, 0, 53) || _Out_of_range(_Week_w, 0, 53)) {
-                    return false;
-                }
-            }
-
-            if (_Day_of_year) {
-                // A day-of-year that's February 28 or earlier, by itself, is a valid month_day. Any later day is
-                // ambiguous without a year.
-                if (_Out_of_range(_Day_of_year, 1, 366) || (!_Two_dig_year && _Day_of_year > 59)) {
                     return false;
                 }
             }

@@ -339,6 +339,8 @@ void parse_other_duration() {
     assert(time == days{42});
     duration<int32_t, micro> time_micro; // maximum ~35.8 minutes
     fail_parse("1", "%j", time_micro);
+    test_parse("400", "%j", time);
+    assert(time == days{400}); // not out-of-range for duration
 
     test_parse(" 1:23:42", "%T", time);
     assert(time == 1h + 23min + 42s);
@@ -705,7 +707,8 @@ void parse_calendar_types_basic() {
     test_parse("366 2004-12-31", "%j %F", ymd);
     assert(ymd == 2004y / December / last);
 
-    fail_parse("367 2004-12-31", "%j %F", ymd);
+    fail_parse("366 2001", "%j %Y", ymd);
+    fail_parse("367 2004", "%j %Y", ymd);
 
     // Check consistency between date and day-of-week
     test_parse("Wed 2000-03-01", "%a %F", ymd);
