@@ -3884,10 +3884,8 @@ namespace chrono {
             // check for consistency yet, because the data might not even be representable by the type being parsed,
             // and calendar computations are relatively expensive.
 
-            if (_Out_of_range(_Second, 0, 60) //
-                || _Out_of_range(_Minute, 0, 59) //
-                || _Out_of_range(_Hour_12, 1, 12) //
-                || _Out_of_range(_Hour_24, 0, 23) //
+            // Most time-of-day fields are deferred until we know if we're parsing a time_point.
+            if (_Out_of_range(_Hour_12, 1, 12) //
                 || _Out_of_range(_Weekday, 0, 6) //
                 || _Out_of_range(_Day, 1, 31) //
                 || _Out_of_range(_Month, 1, 12)) {
@@ -3967,7 +3965,11 @@ namespace chrono {
                                  | (_Can_rep_day ? _F_doy : 0)};
 
             const auto _Used{_Used_fields()};
-            if (!_Test_bits(_Used, _Required, _Optional)) {
+            const auto _Time_out_of_range{
+                _For_time_point
+                && (_Out_of_range(_Second, 0, 60) || _Out_of_range(_Minute, 0, 59) || _Out_of_range(_Hour_24, 0, 23))};
+
+            if (_Time_out_of_range || !_Test_bits(_Used, _Required, _Optional)) {
                 return false;
             }
 
@@ -4307,8 +4309,8 @@ namespace chrono {
                     _Val        = _Tp.tm_hour;
                 }
 
-                if (!_Update(_Hour_24, _Val) || !_Update(_Ampm, _Val >= 12 ? 1 : 0)
-                    || !_Update(_Hour_12, _CHRONO make12(hours{*_Hour_24}).count())) {
+                if (!_Update(_Hour_24, _Val) || (_Val < 24 && (!_Update(_Ampm, _Val >= 12 ? 1 : 0)
+                        || !_Update(_Hour_12, _CHRONO make12(hours{*_Hour_24}).count())))) {
                     _State |= ios_base::failbit;
                 }
 

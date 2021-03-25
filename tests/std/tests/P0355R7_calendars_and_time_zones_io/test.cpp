@@ -220,6 +220,8 @@ void parse_seconds() {
     assert(time == 34s);
     test_parse(" 456", "%3S6", time);
     assert(time == 45s);
+    test_parse("99", "%S", time); // not out-of-range for duration
+    assert(time == 99s);
 
     milliseconds time_ms;
     test_parse("12.543", "%S", time_ms);
@@ -245,8 +247,8 @@ void parse_minutes() {
     assert(time == 34min);
     test_parse(" 456", "%3M6", time);
     assert(time == 45min);
-
-    test_limits<minutes>("%M", 0, 59);
+    test_parse("99", "%M", time); // not out-of-range for duration
+    assert(time == 99min);
 }
 
 void parse_hours() {
@@ -289,6 +291,8 @@ void parse_hours() {
     assert(time == 12h);
     test_parse(" 234", "%3H4", time);
     assert(time == 23h);
+    test_parse("30", "%H", time); // not out-of-range for duration
+    assert(time == 30h);
 
     // any permutation of %I, %p, and %H should be valid, as long as they're consistent
     test_parse("8 pm 20", "%I %p %H", time);
@@ -311,8 +315,6 @@ void parse_hours() {
     fail_parse("am 20 8", "%p %H %I", time);
     fail_parse("20 am 8", "%H %p %I", time);
     fail_parse("20 8 am", "%H %I %p", time);
-
-    test_limits<hours>("%H", 0, 23);
 }
 
 void parse_other_duration() {
@@ -1035,6 +1037,19 @@ void parse_timepoints() {
 
     fail_parse("202000000000000923", "%Y%m%d", ymd);
     fail_parse("202000000000000923", "%Y%m%d", ymd);
+
+    // time_point out-of-range tests
+    fail_parse("1887-12-22 00:00:-1", "%F %T", st);
+    fail_parse("1887-12-22 00:00:60", "%F %T", st);
+    fail_parse("1887-12-22 00:-1:00", "%F %T", st);
+    fail_parse("1887-12-22 00:60:00", "%F %T", st);
+    fail_parse("1887-12-22 -1:00:00", "%F %T", st);
+    fail_parse("1887-12-22 24:00:00", "%F %T", st);
+
+    test_parse("1912-06-23 00:00:00", "%F %T", st);
+    assert(st == sys_days{23d / June / 1912y});
+    test_parse("1912-06-23 23:59:59", "%F %T", st);
+    assert(st == sys_days{23d / June / 1912y} + 23h + 59min + 59s);
 }
 
 void test_parse() {
