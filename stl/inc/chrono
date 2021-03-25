@@ -4387,7 +4387,7 @@ namespace chrono {
                 {
                     tm _Tp;
                     _Initialize_time_point(_Tp);
-                    const bool _Full_year = (_Flag == 'c'); // 'x' reads two-digit year, 'r' and 'x' read times
+                    const bool _Full_year = (_Flag == 'c'); // 'x' reads two-digit year, 'r' and 'X' read times
                     _First                = _Time_fac.get(_First, _Last, _Iosbase, _State, &_Tp, _Flag, _Modifier);
                     if (!_Update_if_valid(_Tp, _Full_year)) {
                         _State |= ios_base::failbit;
