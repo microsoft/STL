@@ -4553,22 +4553,27 @@ namespace chrono {
             bool _Found_digit   = false;
 
             while (_First != _Last && _Width > 0 && _Multiplier >= 10) {
-                const auto _Ch = *_First++;
-                --_Width;
-                if (_Ch == _Numpunct_fac.decimal_point()) {
+                const auto _Ch = *_First;
+                if (_Ch == _Numpunct_fac.decimal_point() && !_Found_point) {
                     _Found_point = true;
                 } else if (_Ctype_fac.is(ctype_base::digit, _Ch)) {
                     _Found_digit      = true;
-                    const char _Digit = _Ctype_fac.narrow(_Ch);
+                    const auto _Digit = _Ctype_fac.narrow(_Ch) - '0';
                     if (_Found_point) {
                         _Multiplier /= 10;
-                        _Subsecond_ += (_Digit - '0') * _Multiplier;
+                        _Subsecond_ += _Digit * _Multiplier;
                     } else {
-                        _Second_ = _Second_ * 10 + (_Digit - '0');
+                        if (_Second_ > ((std::numeric_limits<int>::max)() - _Digit) / 10) {
+                            return ios_base::failbit;
+                        }
+
+                        _Second_ = _Second_ * 10 + _Digit;
                     }
                 } else {
                     break;
                 }
+                ++_First;
+                --_Width;
             }
 
             ios_base::iostate _State = ios_base::goodbit;
@@ -4798,7 +4803,12 @@ namespace chrono {
                         } else if ('0' <= _Flag && _Flag <= '9') {
                             _Width = static_cast<unsigned int>(_Flag - '0');
                             while (++_FmtFirst != _FmtLast && _Ctype_fac.is(ctype_base::digit, *_FmtFirst)) {
-                                _Width = 10 * _Width + static_cast<unsigned int>(_Ctype_fac.narrow(*_FmtFirst) - '0');
+                                const auto _Digit = static_cast<unsigned int>(_Ctype_fac.narrow(*_FmtFirst) - '0');
+                                if (_Width > ((numeric_limits<unsigned int>::max)() - _Digit) / 10) {
+                                    _State |= ios_base::failbit;
+                                    break;
+                                }
+                                _Width = 10 * _Width + _Digit;
                             }
                             if (_FmtFirst == _FmtLast) {
                                 _State |= ios_base::failbit;
