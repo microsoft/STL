@@ -128,8 +128,8 @@ void test_duration_output() {
 
 
 template <class CharT, class Parsable>
-void test_parse(
-    const CharT* str, const CharT* fmt, Parsable& p, basic_string<CharT>* abbrev = nullptr, minutes* offset = nullptr) {
+void test_parse(const CharT* str, const CharT* fmt, Parsable& p, type_identity_t<basic_string<CharT>*> abbrev = nullptr,
+    minutes* offset = nullptr) {
     p = Parsable{};
     if (abbrev) {
         *abbrev = _Time_parse_fields::_Invalid_time_string;
@@ -154,8 +154,8 @@ void test_parse(
 }
 
 template <class CharT, class Parsable>
-void fail_parse(
-    const CharT* str, const CharT* fmt, Parsable& p, basic_string<CharT>* abbrev = nullptr, minutes* offset = nullptr) {
+void fail_parse(const CharT* str, const CharT* fmt, Parsable& p, type_identity_t<basic_string<CharT>*> abbrev = nullptr,
+    minutes* offset = nullptr) {
     p = Parsable{};
     if (abbrev) {
         *abbrev = _Time_parse_fields::_Invalid_time_string;
@@ -359,37 +359,37 @@ void parse_other_duration() {
 void parse_time_zone() {
     seconds time;
     minutes offset;
-    test_parse<char>("-0430", "%z", time, nullptr, &offset);
+    test_parse("-0430", "%z", time, nullptr, &offset);
     assert(offset == -(4h + 30min));
-    test_parse<char>("+0430", "%z", time, nullptr, &offset);
+    test_parse("+0430", "%z", time, nullptr, &offset);
     assert(offset == (4h + 30min));
-    test_parse<char>("0430", "%z", time, nullptr, &offset);
+    test_parse("0430", "%z", time, nullptr, &offset);
     assert(offset == (4h + 30min));
-    test_parse<char>("11", "%z", time, nullptr, &offset);
+    test_parse("11", "%z", time, nullptr, &offset);
     assert(offset == 11h);
 
-    fail_parse<char>("4", "%z", time, nullptr, &offset);
-    fail_parse<char>("043", "%z", time, nullptr, &offset);
-    fail_parse<char>("!0430", "%z", time, nullptr, &offset);
+    fail_parse("4", "%z", time, nullptr, &offset);
+    fail_parse("043", "%z", time, nullptr, &offset);
+    fail_parse("!0430", "%z", time, nullptr, &offset);
 
-    test_parse<char>("-04:30", "%Ez", time, nullptr, &offset);
+    test_parse("-04:30", "%Ez", time, nullptr, &offset);
     assert(offset == -(4h + 30min));
-    test_parse<char>("+04:30", "%Ez", time, nullptr, &offset);
+    test_parse("+04:30", "%Ez", time, nullptr, &offset);
     assert(offset == (4h + 30min));
-    test_parse<char>("04:30", "%Ez", time, nullptr, &offset);
+    test_parse("04:30", "%Ez", time, nullptr, &offset);
     assert(offset == (4h + 30min));
-    test_parse<char>("4:30", "%Ez", time, nullptr, &offset);
+    test_parse("4:30", "%Ez", time, nullptr, &offset);
     assert(offset == (4h + 30min));
-    test_parse<char>("11", "%Ez", time, nullptr, &offset);
+    test_parse("11", "%Ez", time, nullptr, &offset);
     assert(offset == 11h);
-    test_parse<char>("4", "%Ez", time, nullptr, &offset);
+    test_parse("4", "%Ez", time, nullptr, &offset);
     assert(offset == 4h);
 
-    fail_parse<char>("!4", "%Ez", time, nullptr, &offset);
+    fail_parse("!4", "%Ez", time, nullptr, &offset);
     // %Ez matches "04", leaving "30" in the stream.
-    fail_parse<char>("0430 meow", "%Ez meow", time, nullptr, &offset);
-    fail_parse<char>("04:", "%Ez", time, nullptr, &offset);
-    fail_parse<char>("04:3", "%Ez", time, nullptr, &offset);
+    fail_parse("0430 meow", "%Ez meow", time, nullptr, &offset);
+    fail_parse("04:", "%Ez", time, nullptr, &offset);
+    fail_parse("04:3", "%Ez", time, nullptr, &offset);
 
     string tz_name;
     test_parse("UTC", "%Z", time, &tz_name);
