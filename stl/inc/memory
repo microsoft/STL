@@ -508,10 +508,10 @@ namespace ranges {
     // clang-format off
     template <_No_throw_input_iterator _It, _No_throw_sentinel_for<_It> _Se>
         requires destructible<iter_value_t<_It>>
-    _NODISCARD _CONSTEXPR20_DYNALLOC _It _Destroy_unchecked(_It _First, const _Se _Last) noexcept {
+    _NODISCARD _CONSTEXPR20_DYNALLOC _It _Destroy_unchecked(_It _First, _Se _Last) noexcept {
         // clang-format on
         if constexpr (is_trivially_destructible_v<iter_value_t<_It>>) {
-            _RANGES advance(_First, _Last);
+            _RANGES advance(_First, _STD move(_Last));
         } else {
             for (; _First != _Last; ++_First) {
                 _RANGES destroy_at(_STD addressof(*_First));
