@@ -4874,7 +4874,14 @@ namespace chrono {
                 }
 
                 if (_Abbrev != nullptr && _Tz_name) {
-                    *_Abbrev = _STD move(*_Tz_name);
+                    if constexpr (is_same_v<decltype(_Abbrev), string*>) {
+                        *_Abbrev = _STD move(*_Tz_name);
+                    } else {
+                        _Abbrev->clear();
+                        for (const char& _Ch : *_Tz_name) {
+                            _Abbrev->push_back(_Ctype_fac.widen(_Ch));
+                        }
+                    }
                 }
             }
 

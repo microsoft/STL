@@ -132,7 +132,11 @@ void test_parse(const CharT* str, const CharT* fmt, Parsable& p, type_identity_t
     minutes* offset = nullptr) {
     p = Parsable{};
     if (abbrev) {
-        *abbrev = _Time_parse_fields::_Invalid_time_string;
+        if constexpr (is_same_v<CharT, char>) {
+            *abbrev = _Time_parse_fields::_Invalid_time_string;
+        } else {
+            *abbrev = L"!";       
+        }
     }
 
     basic_stringstream<CharT> sstr{str};
@@ -158,7 +162,11 @@ void fail_parse(const CharT* str, const CharT* fmt, Parsable& p, type_identity_t
     minutes* offset = nullptr) {
     p = Parsable{};
     if (abbrev) {
-        *abbrev = _Time_parse_fields::_Invalid_time_string;
+        if constexpr (is_same_v<CharT, char>) {
+            *abbrev = _Time_parse_fields::_Invalid_time_string;
+        } else {
+            *abbrev = L"!";
+        }
     }
 
     if (offset) {
@@ -472,6 +480,8 @@ void parse_calendar_types_basic() {
     month m;
     test_parse("Apr", "%b", m);
     assert(m == April);
+    test_parse("deCeMbeR", "%b", m);
+    assert(m == December);
     test_parse("September", "%B", m);
     assert(m == September);
     test_parse("February", "%h", m);
@@ -1071,6 +1081,38 @@ void parse_timepoints() {
     assert(st == sys_days{23d / June / 1912y} + 23h + 59min + 59s);
 }
 
+void parse_wchar() {
+    seconds time;
+    test_parse(L"12", L"%S", time);
+    assert(time == 12s);
+    test_parse(L"12", L"%M", time);
+    assert(time == 12min);
+    test_parse(L"30", L"%H", time);
+    assert(time == 30h);
+    test_parse(L" 1:23:42", L"%T", time);
+    assert(time == 1h + 23min + 42s);
+    wstring tz_name;
+    test_parse(L"Etc/GMT+11", L"%Z", time, &tz_name);
+    assert(tz_name == L"Etc/GMT+11");
+    fail_parse(L"Not_valid! 00", L"%Z %H", time, &tz_name);
+
+    weekday wd;
+    test_parse(L"wedNesday", L"%A", wd);
+    assert(wd == Wednesday);
+
+    month m;
+    test_parse(L"deCeMbeR", L"%b", m);
+    assert(m == December);
+
+    sys_seconds st;
+    test_parse(L"oct 29 19:01:42 2020", L"%c", st);
+    assert(st == sys_days{2020y / October / 29d} + 19h + 1min + 42s);
+
+    fail_parse(L"ab", L"a%nb", time);
+    test_parse(L"a b", L"a%nb", time);
+    fail_parse(L"a  b", L"a%nb", time);
+}
+
 void test_parse() {
     parse_seconds();
     parse_minutes();
@@ -1082,6 +1124,7 @@ void test_parse() {
     parse_other_week_date();
     parse_whitespace();
     parse_timepoints();
+    parse_wchar();
 }
 
 
