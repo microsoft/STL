@@ -551,7 +551,7 @@ void __stdcall __std_tzdb_delete_sys_info(__std_tzdb_sys_info* const _Info) noex
     }
 }
 
-_NODISCARD __std_tzdb_registry_leap_info* __stdcall __std_tzdb_get_reg_leap_seconds(
+_NODISCARD __std_tzdb_leap_info* __stdcall __std_tzdb_get_reg_leap_seconds(
     const size_t prev_reg_ls_size, size_t* const current_reg_ls_size) noexcept {
     // On exit---
     //    *current_reg_ls_size <= prev_reg_ls_size, reg_ls_data == nullptr --> no new data
@@ -572,14 +572,14 @@ _NODISCARD __std_tzdb_registry_leap_info* __stdcall __std_tzdb_get_reg_leap_seco
 
     DWORD byte_size = 0;
     status          = RegQueryValueExW(leap_sec_key, reg_subkey_name, nullptr, nullptr, nullptr, &byte_size);
-    static_assert(sizeof(__std_tzdb_registry_leap_info) == 12);
+    static_assert(sizeof(__std_tzdb_leap_info) == 12);
     const auto ls_size   = byte_size / 12;
     *current_reg_ls_size = ls_size;
 
-    __std_tzdb_registry_leap_info* reg_ls_data = nullptr;
+    __std_tzdb_leap_info* reg_ls_data = nullptr;
     if ((status == ERROR_SUCCESS || status == ERROR_MORE_DATA) && ls_size > prev_reg_ls_size) {
         try {
-            reg_ls_data = new __std_tzdb_registry_leap_info[ls_size];
+            reg_ls_data = new __std_tzdb_leap_info[ls_size];
             status      = RegQueryValueExW(
                 leap_sec_key, reg_subkey_name, nullptr, nullptr, reinterpret_cast<LPBYTE>(reg_ls_data), &byte_size);
             if (status != ERROR_SUCCESS) {
@@ -597,8 +597,8 @@ _NODISCARD __std_tzdb_registry_leap_info* __stdcall __std_tzdb_get_reg_leap_seco
     return reg_ls_data;
 }
 
-void __stdcall __std_tzdb_delete_reg_leap_seconds(__std_tzdb_registry_leap_info* _Rlsi) noexcept {
-    delete[] _Rlsi;
+void __stdcall __std_tzdb_delete_reg_leap_seconds(__std_tzdb_leap_info* _Info) noexcept {
+    delete[] _Info;
 }
 
 _NODISCARD void* __stdcall __std_calloc_crt(const size_t count, const size_t size) noexcept {
