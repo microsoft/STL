@@ -146,7 +146,7 @@ void timezone_names_test() {
         assert(false);
     }
 
-    // FIXME: add a link to an issue. These may change over time and might have to be removed from tests.
+    // See GH-1786. These may change over time and might have to be removed from this test.
 
     // these are some examples in which the ICU.dll and IANA database diverge in what they consider a zone or a link
     assert(_Locate_zone_impl(my_tzdb.links, "Atlantic/Faroe") != nullptr); // is a time_zone in IANA
