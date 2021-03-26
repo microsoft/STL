@@ -4581,7 +4581,7 @@ namespace chrono {
                         _Multiplier /= 10;
                         _Subsecond_ += _Digit * _Multiplier;
                     } else {
-                        if (_Second_ > ((std::numeric_limits<int>::max)() - _Digit) / 10) {
+                        if (_Second_ > ((numeric_limits<int>::max)() - _Digit) / 10) {
                             return ios_base::failbit;
                         }
 
