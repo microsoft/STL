@@ -76,9 +76,9 @@ _NODISCARD __std_tzdb_sys_info* __stdcall __std_tzdb_get_sys_info(
     const char* _Tz, size_t _Tz_len, __std_tzdb_epoch_milli _Local) noexcept;
 void __stdcall __std_tzdb_delete_sys_info(__std_tzdb_sys_info* _Info) noexcept;
 
-_NODISCARD __std_tzdb_leap_info* __stdcall __std_tzdb_get_reg_leap_seconds(
-    size_t _Prev_reg_ls_size, size_t* _Current_reg_ls_size) noexcept;
-void __stdcall __std_tzdb_delete_reg_leap_seconds(__std_tzdb_leap_info* _Info) noexcept;
+_NODISCARD __std_tzdb_leap_info* __stdcall __std_tzdb_get_leap_seconds(
+    size_t _Prev_ls_size, size_t* _Current_ls_size) noexcept;
+void __stdcall __std_tzdb_delete_leap_seconds(__std_tzdb_leap_info* _Info) noexcept;
 
 _NODISCARD void* __stdcall __std_calloc_crt(size_t _Count, size_t _Size) noexcept;
 void __stdcall __std_free_crt(void* _Ptr) noexcept;
@@ -114,7 +114,7 @@ struct _Tzdb_deleter<__std_tzdb_sys_info> {
 template <>
 struct _Tzdb_deleter<__std_tzdb_leap_info[]> {
     void operator()(__std_tzdb_leap_info* _Info) const noexcept {
-        __std_tzdb_delete_reg_leap_seconds(_Info);
+        __std_tzdb_delete_leap_seconds(_Info);
     }
 };
 

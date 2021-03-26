@@ -2658,7 +2658,7 @@ namespace chrono {
             {sys_seconds{seconds{1483228800}}, true, seconds{26}},
         };
 
-        // __std_tzdb_get_reg_leap_seconds gets leap second (LS) data from the registry, but only if it contains more
+        // __std_tzdb_get_leap_seconds gets leap second (LS) data from the registry, but only if it contains more
         // LSs than we already know about. The registry only contains LSs after 2018, so we need to tell it how many of
         // *those* we already know about. The *total* number of LSs known at this point is a combination of what the
         // caller knows (_Current_size, 0 on first call) and the _Known_leap_seconds entries.
@@ -2668,7 +2668,7 @@ namespace chrono {
 
         size_t _Reg_post_2018_ls_size; // number of post-2018 LSs found in the registry
         unique_ptr<__std_tzdb_leap_info[], _Tzdb_deleter<__std_tzdb_leap_info[]>> _Reg_ls_data{
-            __std_tzdb_get_reg_leap_seconds(_Known_post_2018_ls_size, &_Reg_post_2018_ls_size)};
+            __std_tzdb_get_leap_seconds(_Known_post_2018_ls_size, &_Reg_post_2018_ls_size)};
 
         if (_Reg_post_2018_ls_size > _Known_post_2018_ls_size && !_Reg_ls_data) {
             _Xbad_alloc(); // registry has new data, but failed to allocate storage
