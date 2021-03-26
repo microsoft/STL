@@ -2551,7 +2551,7 @@ namespace chrono {
 
     // [time.zone.db]
 
-    _NODISCARD inline string _Xtzdb_generate_current_zone() {
+    _NODISCARD inline string _Tzdb_generate_current_zone() {
         unique_ptr<__std_tzdb_current_zone_info, _Tzdb_deleter<__std_tzdb_current_zone_info>> _Info{
             __std_tzdb_get_current_zone()};
         if (_Info == nullptr) {
@@ -2596,11 +2596,11 @@ namespace chrono {
         }
 
         _NODISCARD const time_zone* current_zone() const {
-            return locate_zone(_Xtzdb_generate_current_zone());
+            return locate_zone(_Tzdb_generate_current_zone());
         }
     };
 
-    _NODISCARD inline tuple<string, decltype(tzdb::zones), decltype(tzdb::links)> _Xtzdb_generate_time_zones() {
+    _NODISCARD inline tuple<string, decltype(tzdb::zones), decltype(tzdb::links)> _Tzdb_generate_time_zones() {
         unique_ptr<__std_tzdb_time_zones_info, _Tzdb_deleter<__std_tzdb_time_zones_info>> _Info{
             __std_tzdb_get_time_zones()};
         if (_Info == nullptr) {
@@ -2626,8 +2626,7 @@ namespace chrono {
         return {_Info->_Version, _STD move(_Time_zones), _STD move(_Time_zone_links)};
     }
 
-    _NODISCARD inline pair<decltype(tzdb::leap_seconds), bool> _Xtzdb_generate_leap_seconds(
-        const size_t _Current_size) {
+    _NODISCARD inline pair<decltype(tzdb::leap_seconds), bool> _Tzdb_generate_leap_seconds(const size_t _Current_size) {
         // Returns empty vector if no new leap seconds are found.
         static constexpr leap_second _Known_leap_seconds[]{
             {sys_seconds{seconds{78796800}}, true, seconds{0}},
@@ -2700,7 +2699,7 @@ namespace chrono {
         return {_STD move(_Leap_sec_info), _All_ls_positive};
     }
 
-    _NODISCARD inline string _Xtzdb_update_version(const string_view _Version, const size_t _Num_leap_seconds) {
+    _NODISCARD inline string _Tzdb_update_version(const string_view _Version, const size_t _Num_leap_seconds) {
         string _Icu_version{_Version.substr(0, _Version.find_last_of('.'))};
         return _STD move(_Icu_version) + "." + _STD to_string(_Num_leap_seconds);
     }
@@ -2717,8 +2716,8 @@ namespace chrono {
         tzdb_list& operator=(const tzdb_list&) = delete;
 
         tzdb_list() {
-            auto [_Icu_version, _Zones, _Links] = _Xtzdb_generate_time_zones();
-            auto [_Leap_sec, _All_ls_positive]  = _Xtzdb_generate_leap_seconds(0);
+            auto [_Icu_version, _Zones, _Links] = _Tzdb_generate_time_zones();
+            auto [_Leap_sec, _All_ls_positive]  = _Tzdb_generate_leap_seconds(0);
             auto _Version                       = _Icu_version + "." + _STD to_string(_Leap_sec.size());
             _Tzdb_list.emplace_front(tzdb{
                 _STD move(_Version), _STD move(_Zones), _STD move(_Links), _STD move(_Leap_sec), _All_ls_positive});
@@ -2760,7 +2759,7 @@ namespace chrono {
 
         const tzdb& _Reload() {
             _Unique_lock _Lk(_Tzdb_mutex);
-            auto [_Leap_sec, _All_ls_positive] = _Xtzdb_generate_leap_seconds(_Tzdb_list.front().leap_seconds.size());
+            auto [_Leap_sec, _All_ls_positive] = _Tzdb_generate_leap_seconds(_Tzdb_list.front().leap_seconds.size());
             if (!_Leap_sec.empty()) {
                 const auto& _Tzdb = _Tzdb_list.front();
                 vector<time_zone> _Zones;
@@ -2771,7 +2770,7 @@ namespace chrono {
                     _Tzdb.links.begin(), _Tzdb.links.end(), _STD back_inserter(_Links), [](const auto& _Link) {
                         return time_zone_link{_Link.name(), _Link.target()};
                     });
-                auto _Version = _Xtzdb_update_version(_Tzdb.version, _Leap_sec.size());
+                auto _Version = _Tzdb_update_version(_Tzdb.version, _Leap_sec.size());
                 _Tzdb_list.emplace_front(tzdb{
                     _STD move(_Version), _STD move(_Zones), _STD move(_Links), _STD move(_Leap_sec), _All_ls_positive});
             }
@@ -2879,8 +2878,8 @@ namespace chrono {
     _NODISCARD inline string remote_version() {
         const auto& _Tzdb                = _CHRONO get_tzdb();
         const auto& _Version             = _Tzdb.version;
-        const auto [_Leap_sec, _Ignored] = _Xtzdb_generate_leap_seconds(_Tzdb.leap_seconds.size());
-        return _Leap_sec.empty() ? _Version : _Xtzdb_update_version(_Version, _Leap_sec.size());
+        const auto [_Leap_sec, _Ignored] = _Tzdb_generate_leap_seconds(_Tzdb.leap_seconds.size());
+        return _Leap_sec.empty() ? _Version : _Tzdb_update_version(_Version, _Leap_sec.size());
     }
 
     // [time.zone.zonedtraits]
