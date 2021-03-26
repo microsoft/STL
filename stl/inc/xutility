@@ -4145,7 +4145,7 @@ _OutCtgIt _Copy_memmove(_CtgIt _First, _CtgIt _Last, _OutCtgIt _Dest) {
     auto _DestPtr               = _To_address(_Dest);
     const char* const _First_ch = const_cast<const char*>(reinterpret_cast<const volatile char*>(_FirstPtr));
     const char* const _Last_ch  = const_cast<const char*>(reinterpret_cast<const volatile char*>(_LastPtr));
-    char* const _Dest_ch        = const_cast<char*>(reinterpret_cast<volatile char*>(_DestPtr));
+    char* const _Dest_ch        = const_cast<char*>(reinterpret_cast<const volatile char*>(_DestPtr));
     const auto _Count           = static_cast<size_t>(_Last_ch - _First_ch);
     _CSTD memmove(_Dest_ch, _First_ch, _Count);
     if constexpr (is_pointer_v<_OutCtgIt>) {
@@ -4262,7 +4262,7 @@ _CtgIt2 _Copy_backward_memmove(_CtgIt1 _First, _CtgIt1 _Last, _CtgIt2 _Dest) {
     auto _DestPtr               = _To_address(_Dest);
     const char* const _First_ch = const_cast<const char*>(reinterpret_cast<const volatile char*>(_FirstPtr));
     const char* const _Last_ch  = const_cast<const char*>(reinterpret_cast<const volatile char*>(_LastPtr));
-    char* const _Dest_ch        = const_cast<char*>(reinterpret_cast<volatile char*>(_DestPtr));
+    char* const _Dest_ch        = const_cast<char*>(reinterpret_cast<const volatile char*>(_DestPtr));
     const auto _Count           = static_cast<size_t>(_Last_ch - _First_ch);
     auto _Result                = _CSTD memmove(_Dest_ch - _Count, _First_ch, _Count);
     if constexpr (is_pointer_v<_CtgIt2>) {

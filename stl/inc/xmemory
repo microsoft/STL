@@ -1563,21 +1563,22 @@ namespace ranges {
         const auto _OLastPtr  = _To_address(_OLast);
         const auto _IFirst_ch = const_cast<char*>(reinterpret_cast<const volatile char*>(_IFirstPtr));
         const auto _ILast_ch  = const_cast<const char*>(reinterpret_cast<const volatile char*>(_ILastPtr));
-        const auto _OFirst_ch = const_cast<char*>(reinterpret_cast<volatile char*>(_OFirstPtr));
+        const auto _OFirst_ch = const_cast<char*>(reinterpret_cast<const volatile char*>(_OFirstPtr));
         const auto _OLast_ch  = const_cast<const char*>(reinterpret_cast<const volatile char*>(_OLastPtr));
         const auto _Count     = static_cast<size_t>((_STD min)(_ILast_ch - _IFirst_ch, _OLast_ch - _OFirst_ch));
         _CSTD memcpy(_OFirst_ch, _IFirst_ch, _Count);
         if constexpr (is_pointer_v<_InIt>) {
             _IFirst = reinterpret_cast<_InIt>(_IFirst_ch + _Count);
         } else {
-            _IFirst += reinterpret_cast<decltype(_IFirstPtr)>(_IFirst_ch + _Count) - _IFirstPtr;
+            _IFirst += _Count / sizeof(iter_value_t<_InIt>);
         }
+
         if constexpr (is_pointer_v<_OutIt>) {
             _OFirst = reinterpret_cast<_OutIt>(_OFirst_ch + _Count);
         } else {
-            _OFirst += reinterpret_cast<decltype(_OFirstPtr)>(_OFirst_ch + _Count) - _OFirstPtr;
+            _OFirst += _Count / sizeof(iter_value_t<_OutIt>);
         }
-        return {_IFirst, _OFirst};
+        return {_STD move(_IFirst), _STD move(_OFirst)};
     }
 
     // ALIAS TEMPLATE uninitialized_move_result
@@ -1590,11 +1591,12 @@ namespace ranges {
         _No_throw_sentinel_for<_Out> _OSe>
         requires constructible_from<iter_value_t<_Out>, iter_rvalue_reference_t<_It>>
     uninitialized_move_result<_It, _Out> _Uninitialized_move_unchecked(
-            _It _IFirst, const _Se _ILast, _Out _OFirst, const _OSe _OLast) {
+            _It _IFirst, _Se _ILast, _Out _OFirst, _OSe _OLast) {
         // clang-format on
         if constexpr (_Ptr_move_cat<_It, _Out>::_Really_trivial
                       && sized_sentinel_for<_Se, _It> && sized_sentinel_for<_OSe, _Out>) {
-            return _Copy_memcpy_common(_IFirst, _RANGES next(_IFirst, _ILast), _OFirst, _RANGES next(_OFirst, _OLast));
+            return _Copy_memcpy_common(
+                _IFirst, _RANGES next(_IFirst, _STD move(_ILast)), _OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
         } else {
             _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
