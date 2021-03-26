@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <__msvc_tzdb.hpp>
 #include <atomic>
 #include <functional>
 #include <icu.h>
@@ -8,7 +9,6 @@
 #include <memory>
 #include <string_view>
 #include <xfilesystem_abi.h>
-#include <xtzdb.h>
 
 #include <Windows.h>
 

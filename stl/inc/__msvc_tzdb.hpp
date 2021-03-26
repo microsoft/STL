@@ -1,11 +1,11 @@
-// xtzdb.h internal header
+// __msvc_tzdb.hpp internal header
 
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #pragma once
-#ifndef _XTZDB_H
-#define _XTZDB_H
+#ifndef __MSVC_TZDB_HPP
+#define __MSVC_TZDB_HPP
 #include <yvals.h>
 #if _STL_COMPILER_PREPROCESSOR
 #include <cstddef>
@@ -151,4 +151,4 @@ _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
 #endif // _STL_COMPILER_PREPROCESSOR
-#endif // _XTZDB_H
+#endif // __MSVC_TZDB_HPP

@@ -16,6 +16,7 @@
 #include <xtimec.h>
 
 #if _HAS_CXX20
+#include <__msvc_tzdb.hpp>
 #include <algorithm>
 #include <atomic>
 #include <cmath>
@@ -27,7 +28,6 @@
 #include <vector>
 #include <xloctime>
 #include <xthreads.h>
-#include <xtzdb.h>
 #endif // _HAS_CXX20
 
 #pragma pack(push, _CRT_PACKING)
