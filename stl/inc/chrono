@@ -4318,11 +4318,12 @@ namespace chrono {
                     _Val        = _Tp.tm_hour;
                 }
 
-                if (!_Update(_Hour_24, _Val) || (_Val < 24 && (!_Update(_Ampm, _Val >= 12 ? 1 : 0)
-                        || !_Update(_Hour_12, _CHRONO make12(hours{*_Hour_24}).count())))) {
+                if (!_Update(_Hour_24, _Val)
+                    || (_Val < 24
+                        && (!_Update(_Ampm, _Val >= 12 ? 1 : 0)
+                            || !_Update(_Hour_12, _CHRONO make12(hours{_Val}).count())))) {
                     _State |= ios_base::failbit;
                 }
-
                 break;
 
             case 'I':

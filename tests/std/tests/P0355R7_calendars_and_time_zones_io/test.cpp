@@ -135,7 +135,7 @@ void test_parse(const CharT* str, const CharT* fmt, Parsable& p, type_identity_t
         if constexpr (is_same_v<CharT, char>) {
             *abbrev = _Time_parse_fields::_Invalid_time_string;
         } else {
-            *abbrev = L"!";       
+            *abbrev = L"!";
         }
     }
 
