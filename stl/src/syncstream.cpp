@@ -3,13 +3,13 @@
 
 // initialize syncstream mutex map
 
+#include <__msvc_tzdb.hpp>
 #include <functional>
 #include <map>
 #include <mutex>
 #include <new>
 #include <shared_mutex>
 #include <utility>
-#include <xtzdb.h>
 
 #pragma warning(disable : 4074)
 #pragma init_seg(compiler)

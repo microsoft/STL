@@ -1,11 +1,11 @@
-// xtzdb.h internal header
+// __msvc_tzdb.hpp internal header
 
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #pragma once
-#ifndef _XTZDB_H
-#define _XTZDB_H
+#ifndef __MSVC_TZDB_HPP
+#define __MSVC_TZDB_HPP
 #include <yvals.h>
 #if _STL_COMPILER_PREPROCESSOR
 #include <cstddef>
@@ -22,7 +22,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 using __std_tzdb_epoch_milli = double;
 
-struct __std_tzdb_registry_leap_info {
+struct __std_tzdb_leap_info {
     uint16_t _Year;
     uint16_t _Month;
     uint16_t _Day;
@@ -76,9 +76,9 @@ _NODISCARD __std_tzdb_sys_info* __stdcall __std_tzdb_get_sys_info(
     const char* _Tz, size_t _Tz_len, __std_tzdb_epoch_milli _Local) noexcept;
 void __stdcall __std_tzdb_delete_sys_info(__std_tzdb_sys_info* _Info) noexcept;
 
-__std_tzdb_registry_leap_info* __stdcall __std_tzdb_get_reg_leap_seconds(
-    size_t _Prev_reg_ls_size, size_t* _Current_reg_ls_size) noexcept;
-void __stdcall __std_tzdb_delete_reg_leap_seconds(__std_tzdb_registry_leap_info* _Rlsi) noexcept;
+_NODISCARD __std_tzdb_leap_info* __stdcall __std_tzdb_get_leap_seconds(
+    size_t _Prev_ls_size, size_t* _Current_ls_size) noexcept;
+void __stdcall __std_tzdb_delete_leap_seconds(__std_tzdb_leap_info* _Info) noexcept;
 
 _NODISCARD void* __stdcall __std_calloc_crt(size_t _Count, size_t _Size) noexcept;
 void __stdcall __std_free_crt(void* _Ptr) noexcept;
@@ -112,9 +112,9 @@ struct _Tzdb_deleter<__std_tzdb_sys_info> {
 };
 
 template <>
-struct _Tzdb_deleter<__std_tzdb_registry_leap_info[]> {
-    void operator()(__std_tzdb_registry_leap_info* _Info) const noexcept {
-        __std_tzdb_delete_reg_leap_seconds(_Info);
+struct _Tzdb_deleter<__std_tzdb_leap_info[]> {
+    void operator()(__std_tzdb_leap_info* _Info) const noexcept {
+        __std_tzdb_delete_leap_seconds(_Info);
     }
 };
 
@@ -151,4 +151,4 @@ _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
 #endif // _STL_COMPILER_PREPROCESSOR
-#endif // _XTZDB_H
+#endif // __MSVC_TZDB_HPP

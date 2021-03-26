@@ -28,7 +28,7 @@ bool test_duration_basic_out(const duration<Rep, Period>& d, const CharT* expect
     return ss.str() == expected;
 }
 
-#define WIDEN(TYPE, STR) get<const TYPE*>(make_pair(STR, L##STR));
+#define WIDEN(TYPE, STR) get<const TYPE*>(pair{STR, L##STR});
 
 template <class CharT>
 bool test_duration_locale_out() {

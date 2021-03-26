@@ -4,6 +4,7 @@
 set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_all_public_headers.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_system_error_abi.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_tzdb.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/algorithm
     ${CMAKE_CURRENT_LIST_DIR}/inc/any
     ${CMAKE_CURRENT_LIST_DIR}/inc/array
@@ -233,7 +234,6 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/xtimec.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xtr1common
     ${CMAKE_CURRENT_LIST_DIR}/inc/xtree
-    ${CMAKE_CURRENT_LIST_DIR}/inc/xtzdb.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xutility
     ${CMAKE_CURRENT_LIST_DIR}/inc/ymath.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/yvals.h

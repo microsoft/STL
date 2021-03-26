@@ -16,6 +16,7 @@
 #include <xtimec.h>
 
 #if _HAS_CXX20
+#include <__msvc_tzdb.hpp>
 #include <algorithm>
 #include <atomic>
 #include <cmath>
@@ -27,7 +28,6 @@
 #include <vector>
 #include <xloctime>
 #include <xthreads.h>
-#include <xtzdb.h>
 #endif // _HAS_CXX20
 
 #pragma pack(push, _CRT_PACKING)
@@ -2551,7 +2551,7 @@ namespace chrono {
 
     // [time.zone.db]
 
-    _NODISCARD inline string _Xtzdb_generate_current_zone() {
+    _NODISCARD inline string _Tzdb_generate_current_zone() {
         unique_ptr<__std_tzdb_current_zone_info, _Tzdb_deleter<__std_tzdb_current_zone_info>> _Info{
             __std_tzdb_get_current_zone()};
         if (_Info == nullptr) {
@@ -2596,11 +2596,11 @@ namespace chrono {
         }
 
         _NODISCARD const time_zone* current_zone() const {
-            return locate_zone(_Xtzdb_generate_current_zone());
+            return locate_zone(_Tzdb_generate_current_zone());
         }
     };
 
-    _NODISCARD inline tuple<string, decltype(tzdb::zones), decltype(tzdb::links)> _Xtzdb_generate_time_zones() {
+    _NODISCARD inline tuple<string, decltype(tzdb::zones), decltype(tzdb::links)> _Tzdb_generate_time_zones() {
         unique_ptr<__std_tzdb_time_zones_info, _Tzdb_deleter<__std_tzdb_time_zones_info>> _Info{
             __std_tzdb_get_time_zones()};
         if (_Info == nullptr) {
@@ -2626,8 +2626,7 @@ namespace chrono {
         return {_Info->_Version, _STD move(_Time_zones), _STD move(_Time_zone_links)};
     }
 
-    _NODISCARD inline pair<decltype(tzdb::leap_seconds), bool> _Xtzdb_generate_leap_seconds(
-        const size_t _Current_size) {
+    _NODISCARD inline pair<decltype(tzdb::leap_seconds), bool> _Tzdb_generate_leap_seconds(const size_t _Current_size) {
         // Returns empty vector if no new leap seconds are found.
         static constexpr leap_second _Known_leap_seconds[]{
             {sys_seconds{seconds{78796800}}, true, seconds{0}},
@@ -2659,7 +2658,7 @@ namespace chrono {
             {sys_seconds{seconds{1483228800}}, true, seconds{26}},
         };
 
-        // __std_tzdb_get_reg_leap_seconds gets leap second (LS) data from the registry, but only if it contains more
+        // __std_tzdb_get_leap_seconds gets leap second (LS) data from the registry, but only if it contains more
         // LSs than we already know about. The registry only contains LSs after 2018, so we need to tell it how many of
         // *those* we already know about. The *total* number of LSs known at this point is a combination of what the
         // caller knows (_Current_size, 0 on first call) and the _Known_leap_seconds entries.
@@ -2668,8 +2667,8 @@ namespace chrono {
             (_STD max)(_Current_size, _STD size(_Known_leap_seconds)) - _Pre_2018_count;
 
         size_t _Reg_post_2018_ls_size; // number of post-2018 LSs found in the registry
-        unique_ptr<__std_tzdb_registry_leap_info[], _Tzdb_deleter<__std_tzdb_registry_leap_info[]>> _Reg_ls_data{
-            __std_tzdb_get_reg_leap_seconds(_Known_post_2018_ls_size, &_Reg_post_2018_ls_size)};
+        unique_ptr<__std_tzdb_leap_info[], _Tzdb_deleter<__std_tzdb_leap_info[]>> _Reg_ls_data{
+            __std_tzdb_get_leap_seconds(_Known_post_2018_ls_size, &_Reg_post_2018_ls_size)};
 
         if (_Reg_post_2018_ls_size > _Known_post_2018_ls_size && !_Reg_ls_data) {
             _Xbad_alloc(); // registry has new data, but failed to allocate storage
@@ -2683,8 +2682,7 @@ namespace chrono {
 
         if (_New_size > _Current_size) {
             _Leap_sec_info.reserve(_New_size);
-            _Leap_sec_info.insert(
-                _Leap_sec_info.begin(), _STD cbegin(_Known_leap_seconds), _STD cend(_Known_leap_seconds));
+            _Leap_sec_info.assign(_STD cbegin(_Known_leap_seconds), _STD cend(_Known_leap_seconds));
 
             for (size_t _Idx = 0; _Idx < _Reg_post_2018_ls_size; ++_Idx) {
                 // Leap seconds occur at _Ls._Hour:59:59. We store the next second after, so we need to add an entire
@@ -2701,12 +2699,11 @@ namespace chrono {
         return {_STD move(_Leap_sec_info), _All_ls_positive};
     }
 
-    _NODISCARD inline string _Xtzdb_update_version(const string_view _Version, const size_t _Num_leap_seconds) {
+    _NODISCARD inline string _Tzdb_update_version(const string_view _Version, const size_t _Num_leap_seconds) {
         string _Icu_version{_Version.substr(0, _Version.find_last_of('.'))};
         return _STD move(_Icu_version) + "." + _STD to_string(_Num_leap_seconds);
     }
 
-    // TRANSITION: work in progress
     // CLASS tzdb_list
     class tzdb_list {
     private:
@@ -2719,8 +2716,8 @@ namespace chrono {
         tzdb_list& operator=(const tzdb_list&) = delete;
 
         tzdb_list() {
-            auto [_Icu_version, _Zones, _Links] = _Xtzdb_generate_time_zones();
-            auto [_Leap_sec, _All_ls_positive]  = _Xtzdb_generate_leap_seconds(0);
+            auto [_Icu_version, _Zones, _Links] = _Tzdb_generate_time_zones();
+            auto [_Leap_sec, _All_ls_positive]  = _Tzdb_generate_leap_seconds(0);
             auto _Version                       = _Icu_version + "." + _STD to_string(_Leap_sec.size());
             _Tzdb_list.emplace_front(tzdb{
                 _STD move(_Version), _STD move(_Zones), _STD move(_Links), _STD move(_Leap_sec), _All_ls_positive});
@@ -2732,23 +2729,26 @@ namespace chrono {
         }
 
         const_iterator erase_after(const_iterator _Where) noexcept /* strengthened */ {
+            _Unique_lock _Lk(_Tzdb_mutex);
             return _Tzdb_list.erase_after(_Where);
         }
 
         _NODISCARD const_iterator begin() const noexcept {
+            _Shared_lock _Lk(_Tzdb_mutex);
             return _Tzdb_list.begin();
         }
 
         _NODISCARD const_iterator end() const noexcept {
-            return _Tzdb_list.end();
+            return _Tzdb_list.end(); // no lock necessary for forward_list::end()
         }
 
         _NODISCARD const_iterator cbegin() const noexcept {
+            _Shared_lock _Lk(_Tzdb_mutex);
             return _Tzdb_list.cbegin();
         }
 
         _NODISCARD const_iterator cend() const noexcept {
-            return _Tzdb_list.cend();
+            return _Tzdb_list.cend(); // no lock necessary for forward_list::cend()
         }
 
         template <class... _ArgsTy>
@@ -2759,7 +2759,7 @@ namespace chrono {
 
         const tzdb& _Reload() {
             _Unique_lock _Lk(_Tzdb_mutex);
-            auto [_Leap_sec, _All_ls_positive] = _Xtzdb_generate_leap_seconds(_Tzdb_list.front().leap_seconds.size());
+            auto [_Leap_sec, _All_ls_positive] = _Tzdb_generate_leap_seconds(_Tzdb_list.front().leap_seconds.size());
             if (!_Leap_sec.empty()) {
                 const auto& _Tzdb = _Tzdb_list.front();
                 vector<time_zone> _Zones;
@@ -2770,7 +2770,7 @@ namespace chrono {
                     _Tzdb.links.begin(), _Tzdb.links.end(), _STD back_inserter(_Links), [](const auto& _Link) {
                         return time_zone_link{_Link.name(), _Link.target()};
                     });
-                auto _Version = _Xtzdb_update_version(_Tzdb.version, _Leap_sec.size());
+                auto _Version = _Tzdb_update_version(_Tzdb.version, _Leap_sec.size());
                 _Tzdb_list.emplace_front(tzdb{
                     _STD move(_Version), _STD move(_Zones), _STD move(_Links), _STD move(_Leap_sec), _All_ls_positive});
             }
@@ -2789,21 +2789,11 @@ namespace chrono {
             _Shared_lock(const _Shared_lock&) = delete;
             _Shared_lock& operator=(const _Shared_lock&) = delete;
 
-            void _Unlock() {
-                if (_Owns) {
-                    _Smtx_unlock_shared(_Mtx);
-                }
-                _Owns = false;
-            }
-
             ~_Shared_lock() {
-                if (_Owns) {
-                    _Smtx_unlock_shared(_Mtx);
-                }
+                _Smtx_unlock_shared(_Mtx);
             }
 
             _Smtx_t* _Mtx;
-            bool _Owns = true;
         };
 
         struct _NODISCARD _Unique_lock {
@@ -2830,14 +2820,20 @@ namespace chrono {
         if (_Tzdb_ptr == nullptr) {
             auto _My_tzdb = static_cast<tzdb_list*>(__std_calloc_crt(1, sizeof(tzdb_list)));
             if (_My_tzdb == nullptr) {
-                _Xruntime_error("bad allocation");
+                _Xruntime_error("bad allocation"); // not bad_alloc, see N4878 [time.zone.db.access]/4
             }
 
-            try {
-                _STD construct_at(_My_tzdb);
-            } catch (const exception& _Except) {
-                _Xruntime_error(_Except.what());
-            }
+            _TRY_BEGIN
+            _STD construct_at(_My_tzdb);
+            _CATCH(const runtime_error&)
+            __std_free_crt(_My_tzdb);
+            _RERAISE;
+            _CATCH(const exception& _Except)
+#if _HAS_EXCEPTIONS
+            __std_free_crt(_My_tzdb);
+            _Xruntime_error(_Except.what());
+#endif // _HAS_EXCEPTIONS
+            _CATCH_END
 
             if (_Global_tzdb_list.compare_exchange_strong(_Tzdb_ptr, _My_tzdb)) {
                 _Tzdb_ptr = _My_tzdb;
@@ -2867,19 +2863,23 @@ namespace chrono {
 
     // FUNCTION reload_tzdb
     inline const tzdb& reload_tzdb() {
-        try {
-            return _CHRONO get_tzdb_list()._Reload();
-        } catch (const exception& _Except) {
-            _Xruntime_error(_Except.what());
-        }
+        _TRY_BEGIN
+        return _CHRONO get_tzdb_list()._Reload();
+        _CATCH(const runtime_error&)
+        _RERAISE;
+        _CATCH(const exception& _Except)
+#if _HAS_EXCEPTIONS
+        _Xruntime_error(_Except.what());
+#endif // _HAS_EXCEPTIONS
+        _CATCH_END
     }
 
     // FUNCTION remote_version
     _NODISCARD inline string remote_version() {
         const auto& _Tzdb                = _CHRONO get_tzdb();
         const auto& _Version             = _Tzdb.version;
-        const auto [_Leap_sec, _Ignored] = _Xtzdb_generate_leap_seconds(_Tzdb.leap_seconds.size());
-        return _Leap_sec.empty() ? _Version : _Xtzdb_update_version(_Version, _Leap_sec.size());
+        const auto [_Leap_sec, _Ignored] = _Tzdb_generate_leap_seconds(_Tzdb.leap_seconds.size());
+        return _Leap_sec.empty() ? _Version : _Tzdb_update_version(_Version, _Leap_sec.size());
     }
 
     // [time.zone.zonedtraits]
@@ -2924,8 +2924,10 @@ namespace chrono {
 
         explicit zoned_time(_TimeZonePtr _Tz) noexcept /* strengthened */ : _Zone{_STD move(_Tz)} {}
 
-        template <class _Traits2                                                                             = _Traits,
+        // clang-format off
+        template <class _Traits2 = _Traits,
             enable_if_t<is_constructible_v<zoned_time, decltype(_Traits2::locate_zone(string_view{}))>, int> = 0>
+        // clang-format on
         explicit zoned_time(string_view _Name) : _Zone{_Traits::locate_zone(_Name)} {}
 
         template <class _Duration2, enable_if_t<is_convertible_v<sys_time<_Duration2>, sys_time<_Duration>>, int> = 0>
@@ -2934,10 +2936,11 @@ namespace chrono {
 
         zoned_time(_TimeZonePtr _Tz, const sys_time<_Duration>& _Sys) : _Zone{_STD move(_Tz)}, _Tp{_Sys} {}
 
-        template <class _Traits2 = _Traits,
-            enable_if_t<is_constructible_v<zoned_time, decltype(_Traits2::locate_zone(string_view{})),
-                            const sys_time<_Duration>&>,
-                int>             = 0>
+        // clang-format off
+        template <class _Traits2 = _Traits, enable_if_t<is_constructible_v<
+            zoned_time, decltype(_Traits2::locate_zone(string_view{})), const sys_time<_Duration>&>,
+            int> = 0>
+        // clang-format on
         zoned_time(string_view _Name, type_identity_t<const sys_time<_Duration>&> _Sys)
             : zoned_time{_Traits::locate_zone(_Name), _Sys} {}
 
@@ -2948,10 +2951,11 @@ namespace chrono {
         zoned_time(_TimeZonePtr _Tz, const local_time<_Duration>& _Local)
             : _Zone{_STD move(_Tz)}, _Tp{_Zone->to_sys(_Local)} {}
 
-        template <class _Traits2 = _Traits,
-            enable_if_t<is_constructible_v<zoned_time, decltype(_Traits2::locate_zone(string_view{})),
-                            const local_time<_Duration>&>,
-                int>             = 0>
+        // clang-format off
+        template <class _Traits2 = _Traits, enable_if_t<is_constructible_v<
+            zoned_time, decltype(_Traits2::locate_zone(string_view{})), const local_time<_Duration>&>,
+            int> = 0>
+        // clang-format on
         zoned_time(string_view _Name, type_identity_t<const local_time<_Duration>>& _Local)
             : zoned_time{_Traits::locate_zone(_Name), _Local} {}
 
@@ -2963,10 +2967,11 @@ namespace chrono {
         zoned_time(_TimeZonePtr _Tz, const local_time<_Duration>& _Local, choose _Choose)
             : _Zone{_STD move(_Tz)}, _Tp{_Zone->to_sys(_Local, _Choose)} {}
 
-        template <class _Traits2 = _Traits,
-            enable_if_t<is_constructible_v<zoned_time, decltype(_Traits2::locate_zone(string_view{})),
-                            const local_time<_Duration>&, choose>,
-                int>             = 0>
+        // clang-format off
+        template <class _Traits2 = _Traits, enable_if_t<is_constructible_v<
+            zoned_time, decltype(_Traits2::locate_zone(string_view{})), const local_time<_Duration>&, choose>,
+            int> = 0>
+        // clang-format on
         zoned_time(string_view _Name, type_identity_t<const local_time<_Duration>&> _Local, choose _Choose)
             : zoned_time{_Traits::locate_zone(_Name), _Local, _Choose} {}
 
@@ -3169,7 +3174,7 @@ namespace chrono {
         template <class _Duration>
         _NODISCARD static sys_time<common_type_t<_Duration, seconds>> to_sys(const utc_time<_Duration>& _Utc_time) {
             using _CommonType = common_type_t<_Duration, seconds>;
-            const auto _Lsi{get_leap_second_info(_Utc_time)};
+            const auto _Lsi{_CHRONO get_leap_second_info(_Utc_time)};
             _CommonType _Ticks;
             if (_Lsi.is_leap_second) {
                 const auto _Leap_sec_minus_one = _CHRONO floor<seconds>(_Utc_time.time_since_epoch()) - _Lsi.elapsed;
@@ -3313,8 +3318,8 @@ namespace filesystem {
             const chrono::file_time<_Duration>& _File_time) {
             using namespace chrono;
             using _CommonType = common_type_t<_Duration, seconds>;
-            const auto _Ticks =
-                _File_time.time_since_epoch() - duration_cast<seconds>(duration{__std_fs_file_time_epoch_adjustment});
+            const auto _Ticks = _File_time.time_since_epoch()
+                              - _CHRONO duration_cast<seconds>(duration{__std_fs_file_time_epoch_adjustment});
 
             if (_Ticks < _Cutoff.time_since_epoch()) {
                 return utc_clock::from_sys(sys_time<_CommonType>{_Ticks});
@@ -3328,7 +3333,7 @@ namespace filesystem {
             const chrono::utc_time<_Duration>& _Utc_time) {
             using namespace chrono;
             file_time<common_type_t<_Duration, seconds>> _File_time{
-                duration_cast<seconds>(duration{__std_fs_file_time_epoch_adjustment})};
+                _CHRONO duration_cast<seconds>(duration{__std_fs_file_time_epoch_adjustment})};
 
             if (_Utc_time < utc_seconds{_Cutoff.time_since_epoch()} + _Skipped_filetime_leap_seconds) {
                 _File_time += utc_clock::to_sys(_Utc_time).time_since_epoch();

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <algorithm>
 #include <cassert>
 #include <chrono>
 #include <cmath>
@@ -92,7 +93,7 @@ static_assert(!is_clock_v<no_steady>, "no_steady is a clock");
 static_assert(!is_clock_v<no_now>, "no_now is a clock");
 
 void test_is_leap_second(const year_month_day& ymd) {
-    const auto ls            = sys_days{ymd};
+    const sys_days ls{ymd};
     const auto& leap_seconds = get_tzdb().leap_seconds;
     assert(find(leap_seconds.begin(), leap_seconds.end(), ls + days{1}) != leap_seconds.end());
     assert(get_leap_second_info(utc_clock::from_sys<seconds>(ls) + days{1}).is_leap_second);
@@ -383,7 +384,7 @@ tzdb copy_tzdb() {
     vector<time_zone> zones;
     vector<time_zone_link> links;
     transform(my_tzdb.zones.begin(), my_tzdb.zones.end(), back_inserter(zones),
-        [](const auto& _Tz) { return time_zone{_Tz.name()}; });
+        [](const auto& tz) { return time_zone{tz.name()}; });
     transform(my_tzdb.links.begin(), my_tzdb.links.end(), back_inserter(links), [](const auto& link) {
         return time_zone_link{link.name(), link.target()};
     });
