@@ -2914,12 +2914,12 @@ namespace chrono {
     public:
         using duration = common_type_t<_Duration, seconds>;
 
-        template <class _Traits2 = _Traits, class = decltype(_Traits2::default_zone())>
+        template <class _Traits2 = _Traits, class = void_t<decltype(_Traits2::default_zone())>>
         zoned_time() : _Zone{_Traits::default_zone()} {}
         zoned_time(const zoned_time&) = default;
         zoned_time& operator=(const zoned_time&) = default;
 
-        template <class _Traits2 = _Traits, class = decltype(_Traits2::default_zone())>
+        template <class _Traits2 = _Traits, class = void_t<decltype(_Traits2::default_zone())>>
         zoned_time(const sys_time<_Duration>& _Sys) : _Zone{_Traits::default_zone()}, _Tp{_Sys} {}
 
         explicit zoned_time(_TimeZonePtr _Tz) noexcept /* strengthened */ : _Zone{_STD move(_Tz)} {}
