@@ -3470,52 +3470,112 @@ namespace chrono {
 
     // [time.clock.cast.fn]
 
-    // FUNCTION TEMPLATE clock_cast
+    enum class _Clock_cast_strategy {
+        _Direct,
+        _Via_sys,
+        _Via_utc,
+        _Via_utc_from_sys,
+        _Via_sys_from_utc,
+        _Two_step_ambiguous,
+        _Three_step_ambiguous,
+        _None,
+    };
+
+    template <class _Conv1, class _Conv2, class _Tp, class = void>
+    inline constexpr bool _Has_two_step_conversion = false;
+
+    template <class _Conv1, class _Conv2, class _Tp>
+    inline constexpr bool
+        _Has_two_step_conversion<_Conv1, _Conv2, _Tp, void_t<decltype(_Conv1{}(_Conv2{}(_STD declval<_Tp>())))>> = true;
+
+    template <class _Conv1, class _Conv2, class _Conv3, class _Tp, class = void>
+    inline constexpr bool _Has_three_step_conversion = false;
+
+    template <class _Conv1, class _Conv2, class _Conv3, class _Tp>
+    inline constexpr bool _Has_three_step_conversion<_Conv1, _Conv2, _Conv3, _Tp,
+        void_t<decltype(_Conv1{}(_Conv2{}(_Conv3{}(_STD declval<_Tp>()))))>> = true;
+
     template <class _DestClock, class _SourceClock, class _Duration>
-    _NODISCARD auto clock_cast(const time_point<_SourceClock, _Duration>& _Time) {
-        constexpr bool _Has_direct_conversion =
-            is_invocable_v<clock_time_conversion<_DestClock, _SourceClock>, decltype(_Time)>;
+    _NODISCARD _CONSTEVAL _Clock_cast_strategy _Choose_clock_cast() noexcept {
+        using _Tp = const time_point<_SourceClock, _Duration>&;
 
-        constexpr bool _Utc_from_src  = _Convertible_to_utc_time<_SourceClock, _Duration>;
-        constexpr bool _Sys_from_src  = _Convertible_to_sys_time<_SourceClock, _Duration>;
-        constexpr bool _Dest_from_utc = _Convertible_from_utc_time<_DestClock, _Duration>;
-        constexpr bool _Dest_from_sys = _Convertible_from_sys_time<_DestClock, _Duration>;
-
-        constexpr bool _Has_utc_conversion = _Dest_from_utc && _Utc_from_src;
-        constexpr bool _Has_sys_conversion = _Dest_from_sys && _Sys_from_src;
-        static_assert(_Has_direct_conversion || !(_Has_utc_conversion && _Has_sys_conversion),
-            "A two-step clock time conversion is required to be unique, either through utc_clock or system_clock, but "
-            "not both (N4878 [time.clock.cast.fn]/2.)");
-
-        constexpr bool _Has_sys_utc_conversion = _Dest_from_sys && _Utc_from_src;
-        constexpr bool _Has_utc_sys_conversion = _Dest_from_utc && _Sys_from_src;
-        static_assert(_Has_direct_conversion || _Has_utc_conversion || _Has_sys_conversion
-                          || !(_Has_utc_sys_conversion && _Has_sys_utc_conversion),
-            "A three-step clock time conversion is required to be unique, either utc-to-system or system-to-utc, but "
-            "not both (N4878 [time.clock.cast.fn]/2).");
-
-        // clang-format off
-        if constexpr (_Has_direct_conversion) {
-            return clock_time_conversion<_DestClock, _SourceClock>{}(_Time);
-        } else if constexpr (_Has_utc_conversion) {
-            return clock_time_conversion<_DestClock, utc_clock>{}(
-                     clock_time_conversion<utc_clock, _SourceClock>{}(_Time));
-        } else if constexpr (_Has_sys_conversion) {
-            return clock_time_conversion<_DestClock, system_clock>{}(
-                     clock_time_conversion<system_clock, _SourceClock>{}(_Time));
-        } else if constexpr (_Has_sys_utc_conversion) {
-            return clock_time_conversion<_DestClock, system_clock>{}(
-                     clock_time_conversion<system_clock, utc_clock>{}(
-                       clock_time_conversion<utc_clock, _SourceClock>{}(_Time)));
-        } else if constexpr (_Has_utc_sys_conversion) {
-            return clock_time_conversion<_DestClock, utc_clock>{}(
-                     clock_time_conversion<utc_clock, system_clock>{}(
-                       clock_time_conversion<system_clock, _SourceClock>{}(_Time)));
+        if constexpr (is_invocable_v<clock_time_conversion<_DestClock, _SourceClock>, _Tp>) {
+            return _Clock_cast_strategy::_Direct;
         } else {
-            static_assert(_Always_false<_Duration>, "No clock time conversion exists from source clock type to "
-                                                    "destination clock type (N4878 [time.clock.cast.fn]/1).");
+            constexpr bool _Has_sys = _Has_two_step_conversion< //
+                clock_time_conversion<_DestClock, system_clock>, //
+                clock_time_conversion<system_clock, _SourceClock>, _Tp>;
+
+            constexpr bool _Has_utc = _Has_two_step_conversion< //
+                clock_time_conversion<_DestClock, utc_clock>, //
+                clock_time_conversion<utc_clock, _SourceClock>, _Tp>;
+
+            if constexpr (_Has_sys && _Has_utc) {
+                return _Clock_cast_strategy::_Two_step_ambiguous;
+            } else if constexpr (_Has_sys) {
+                return _Clock_cast_strategy::_Via_sys;
+            } else if constexpr (_Has_utc) {
+                return _Clock_cast_strategy::_Via_utc;
+            } else {
+                constexpr bool _Has_utc_from_sys = _Has_three_step_conversion< //
+                    clock_time_conversion<_DestClock, utc_clock>, //
+                    clock_time_conversion<utc_clock, system_clock>, //
+                    clock_time_conversion<system_clock, _SourceClock>, _Tp>;
+
+                constexpr bool _Has_sys_from_utc = _Has_three_step_conversion< //
+                    clock_time_conversion<_DestClock, system_clock>, //
+                    clock_time_conversion<system_clock, utc_clock>, //
+                    clock_time_conversion<utc_clock, _SourceClock>, _Tp>;
+
+                if constexpr (_Has_utc_from_sys && _Has_sys_from_utc) {
+                    return _Clock_cast_strategy::_Three_step_ambiguous;
+                } else if constexpr (_Has_utc_from_sys) {
+                    return _Clock_cast_strategy::_Via_utc_from_sys;
+                } else if constexpr (_Has_sys_from_utc) {
+                    return _Clock_cast_strategy::_Via_sys_from_utc;
+                } else {
+                    return _Clock_cast_strategy::_None;
+                }
+            }
         }
-        // clang-format on
+    }
+
+    template <class _DestClock, class _SourceClock, class _Duration>
+    inline constexpr auto _Clock_cast_choice = _Choose_clock_cast<_DestClock, _SourceClock, _Duration>();
+
+    // FUNCTION TEMPLATE clock_cast
+    template <class _DestClock, class _SourceClock, class _Duration,
+        enable_if_t<_Clock_cast_choice<_DestClock, _SourceClock, _Duration> != _Clock_cast_strategy::_None, int> = 0>
+    _NODISCARD auto clock_cast(const time_point<_SourceClock, _Duration>& _Time) {
+        constexpr auto _Strat = _Clock_cast_choice<_DestClock, _SourceClock, _Duration>;
+
+        if constexpr (_Strat == _Clock_cast_strategy::_Direct) {
+            return clock_time_conversion<_DestClock, _SourceClock>{}(_Time);
+        } else if constexpr (_Strat == _Clock_cast_strategy::_Via_sys) {
+            return clock_time_conversion<_DestClock, system_clock>{}(
+                clock_time_conversion<system_clock, _SourceClock>{}(_Time));
+        } else if constexpr (_Strat == _Clock_cast_strategy::_Via_utc) {
+            return clock_time_conversion<_DestClock, utc_clock>{}(
+                clock_time_conversion<utc_clock, _SourceClock>{}(_Time));
+        } else if constexpr (_Strat == _Clock_cast_strategy::_Via_utc_from_sys) {
+            return clock_time_conversion<_DestClock, utc_clock>{}( //
+                clock_time_conversion<utc_clock, system_clock>{}(
+                    clock_time_conversion<system_clock, _SourceClock>{}(_Time)));
+        } else if constexpr (_Strat == _Clock_cast_strategy::_Via_sys_from_utc) {
+            return clock_time_conversion<_DestClock, system_clock>{}( //
+                clock_time_conversion<system_clock, utc_clock>{}(
+                    clock_time_conversion<utc_clock, _SourceClock>{}(_Time)));
+        } else if constexpr (_Strat == _Clock_cast_strategy::_Two_step_ambiguous) {
+            static_assert(_Always_false<_Duration>,
+                "A two-step clock time conversion is required to be unique, "
+                "either through utc_clock or system_clock, but not both (N4878 [time.clock.cast.fn]/2).");
+        } else if constexpr (_Strat == _Clock_cast_strategy::_Three_step_ambiguous) {
+            static_assert(_Always_false<_Duration>,
+                "A three-step clock time conversion is required to be unique, "
+                "either utc-to-system or system-to-utc, but not both (N4878 [time.clock.cast.fn]/2).");
+        } else {
+            static_assert(_Always_false<_Duration>, "should be unreachable");
+        }
     }
 
     // [time.parse]
