@@ -845,7 +845,7 @@ private:
     _Dynamic_format_specs<_CharT>& _Dynamic_specs;
     _ParseContext& _Parse_ctx;
 
-    int _Verify_dynamic_arg_index_in_range(size_t _Idx) {
+    static int _Verify_dynamic_arg_index_in_range(size_t _Idx) {
         if (_Idx > static_cast<size_t>((numeric_limits<int>::max)())) {
             throw format_error("Dynamic width or precision index too large.");
         }
@@ -1934,11 +1934,13 @@ _FORMAT_SPECIALIZE_FOR(long, _Basic_format_arg_type::_Int_type);
 _FORMAT_SPECIALIZE_FOR(unsigned long, _Basic_format_arg_type::_UInt_type);
 _FORMAT_SPECIALIZE_FOR(char, _Basic_format_arg_type::_Char_type);
 
+#undef _FORMAT_SPECIALIZE_FOR
+
 // not using the macro because we'd like to avoid the formatter<wchar_t, char> specialization
 template <>
 struct formatter<wchar_t, wchar_t> : _Formatter_base<wchar_t, wchar_t, _Basic_format_arg_type::_Char_type> {};
 
-// We could use the macros for these specializations, but it's confusing to refer to symbols that are defined inside the
+// We could use the macro for these specializations, but it's confusing to refer to symbols that are defined inside the
 // macro in the macro's "call".
 template <_Format_supported_charT _CharT>
 struct formatter<_CharT*, _CharT> : _Formatter_base<_CharT*, _CharT, _Basic_format_arg_type::_CString_type> {};
@@ -1958,8 +1960,6 @@ struct formatter<basic_string<_CharT, _Traits, _Allocator>, _CharT>
 template <_Format_supported_charT _CharT, class _Traits>
 struct formatter<basic_string_view<_CharT, _Traits>, _CharT>
     : _Formatter_base<basic_string_view<_CharT, _Traits>, _CharT, _Basic_format_arg_type::_String_type> {};
-
-#undef _FORMAT_SPECIALIZE_FOR
 
 using format_context  = basic_format_context<back_insert_iterator<string>, string::value_type>;
 using wformat_context = basic_format_context<back_insert_iterator<wstring>, wstring::value_type>;
