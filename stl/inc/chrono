@@ -2128,8 +2128,11 @@ namespace chrono {
     }
 
     template <class _Duration>
-    requires _Is_duration_v<_Duration> class hh_mm_ss {
+    class hh_mm_ss {
     public:
+        static_assert(_Is_duration_v<_Duration>,
+            "N4885 [time.hms.overview]/2 requires Duration to be a specialization of chrono::duration.");
+
         static constexpr unsigned int fractional_width = [] {
             auto _Num           = _Duration::period::num;
             constexpr auto _Den = _Duration::period::den;
