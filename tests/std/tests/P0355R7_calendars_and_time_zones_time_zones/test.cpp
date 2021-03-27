@@ -147,14 +147,13 @@ void timezone_names_test() {
     }
 
     // See GH-1786. These may change over time and might have to be removed from this test.
-
-    // these are some examples in which the ICU.dll and IANA database diverge in what they consider a zone or a link
+    // These are some examples in which the ICU.dll and IANA database diverge in what they consider a zone or a link.
     assert(_Locate_zone_impl(my_tzdb.links, "Atlantic/Faroe") != nullptr); // is a time_zone in IANA
     assert(_Locate_zone_impl(my_tzdb.zones, "Africa/Addis_Ababa") != nullptr); // is a time_zone_link in IANA
     assert(_Locate_zone_impl(my_tzdb.links, "PST") != nullptr); // time_zone_link does not exist in IANA
-    assert(_Locate_zone_impl(my_tzdb.links, "Africa/Asmara") != nullptr); // matches IANA but target is wrong
+    assert(_Locate_zone_impl(my_tzdb.links, "Africa/Asmara") != nullptr); // matches IANA but target is different
     assert(_Locate_zone_impl(my_tzdb.links, "Africa/Asmara")->target() == "Africa/Asmera"); // target == Africa/Nairobi
-    assert(_Locate_zone_impl(my_tzdb.zones, "America/Nuuk") == nullptr); // does not exist in ICU (very rare)
+    assert(_Locate_zone_impl(my_tzdb.zones, "America/Nuuk") == nullptr); // added in ICU 68, update test when it arrives
 }
 
 void validate_timezone_transitions(const time_zone* tz, const Transition& transition) {
