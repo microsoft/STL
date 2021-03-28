@@ -212,7 +212,8 @@ namespace chrono {
         using rep      = typename _Duration::rep;
         using period   = typename _Duration::period;
 
-        static_assert(_Is_duration_v<_Duration>, "duration must be an instance of std::duration");
+        static_assert(_Is_duration_v<_Duration>,
+            "N4885 [time.point.general]/1 mandates Duration to be a specialization of chrono::duration.");
 
         constexpr time_point() = default;
 
@@ -2131,7 +2132,7 @@ namespace chrono {
     class hh_mm_ss {
     public:
         static_assert(_Is_duration_v<_Duration>,
-            "N4885 [time.hms.overview]/2 requires Duration to be a specialization of chrono::duration.");
+            "N4885 [time.hms.overview]/2 mandates Duration to be a specialization of chrono::duration.");
 
         static constexpr unsigned int fractional_width = [] {
             auto _Num           = _Duration::period::num;
@@ -2910,7 +2911,7 @@ namespace chrono {
     class zoned_time {
     private:
         static_assert(_Is_duration_v<_Duration>,
-            "N4878 [time.zone.zonedtime.overview]/2 requires Duration to be a specialization of chrono::duration.");
+            "N4885 [time.zone.zonedtime.overview]/2 mandates Duration to be a specialization of chrono::duration.");
 
         using _Traits = zoned_traits<_TimeZonePtr>;
 
