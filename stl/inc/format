@@ -1933,7 +1933,8 @@ _FORMAT_SPECIALIZE_FOR(unsigned short, _Basic_format_arg_type::_UInt_type);
 _FORMAT_SPECIALIZE_FOR(long, _Basic_format_arg_type::_Int_type);
 _FORMAT_SPECIALIZE_FOR(unsigned long, _Basic_format_arg_type::_UInt_type);
 _FORMAT_SPECIALIZE_FOR(char, _Basic_format_arg_type::_Char_type);
-
+_FORMAT_SPECIALIZE_FOR(signed char, _Basic_format_arg_type::_Int_type);
+_FORMAT_SPECIALIZE_FOR(unsigned char, _Basic_format_arg_type::_UInt_type);
 #undef _FORMAT_SPECIALIZE_FOR
 
 // not using the macro because we'd like to avoid the formatter<wchar_t, char> specialization
