@@ -842,30 +842,33 @@ void test_spec_replacement_field() {
 }
 
 template <class charT, class... Args>
-void test_size_helper(size_t expected_size, basic_string_view<charT> fmt, const Args&... args) {
+void test_size_helper(const size_t expected_size, const basic_string_view<charT> fmt, const Args&... args) {
     assert(formatted_size(fmt, args...) == expected_size);
     assert(formatted_size(locale::classic(), fmt, args...) == expected_size);
+
+    const auto signed_size = static_cast<ptrdiff_t>(expected_size);
     basic_string<charT> str;
     {
         str.resize(expected_size);
-        auto res = format_to_n(str.begin(), expected_size, fmt, args...);
-        assert(res.size == expected_size);
-        assert(res.out - str.begin() == expected_size);
+        const auto res = format_to_n(str.begin(), signed_size, fmt, args...);
+        assert(res.size == signed_size);
+        assert(res.out - str.begin() == signed_size);
         assert(res.out == str.end());
+        assert(format(fmt, args...) == str);
 
         basic_string<charT> locale_str;
         locale_str.resize(expected_size);
-        auto locale_res = format_to_n(locale_str.begin(), expected_size, locale::classic(), fmt, args...);
+        format_to_n(locale_str.begin(), signed_size, locale::classic(), fmt, args...);
         assert(str == locale_str);
         assert(locale_str.size() == expected_size);
     }
     basic_string<charT> half_str;
     {
-        auto half_size = expected_size / 2;
+        const auto half_size = expected_size / 2;
         half_str.resize(half_size);
-        auto res = format_to_n(half_str.begin(), half_size, fmt, args...);
-        assert(res.size == expected_size);
-        assert(res.out - half_str.begin() == half_size);
+        const auto res = format_to_n(half_str.begin(), static_cast<ptrdiff_t>(half_size), fmt, args...);
+        assert(res.size == signed_size);
+        assert(static_cast<size_t>(res.out - half_str.begin()) == half_size);
         assert(res.out == half_str.end());
     }
     assert(str.starts_with(half_str));
