@@ -851,7 +851,7 @@ private:
     _Dynamic_format_specs<_CharT>& _Dynamic_specs;
     _ParseContext& _Parse_ctx;
 
-    _NODISCARD constexpr static int _Verify_dynamic_arg_index_in_range(const size_t _Idx) {
+    _NODISCARD static constexpr int _Verify_dynamic_arg_index_in_range(const size_t _Idx) {
         if (_Idx > static_cast<size_t>((numeric_limits<int>::max)())) {
             throw format_error("Dynamic width or precision index too large.");
         }
