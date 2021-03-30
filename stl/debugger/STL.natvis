@@ -1599,7 +1599,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     </Expand>
   </Type>
 
-  <!-- Visualizer for standard coroutines (/std:c++20) -->
+  <!-- Visualizer for standard coroutines (/std:c++20, /await:strict) -->
   <Type Name="std::coroutine_handle&lt;*&gt;" IncludeView="ViewPromise">
     <Expand>
       <Item Name="Promise">*reinterpret_cast&lt;$T1 *&gt;(reinterpret_cast&lt;char*&gt;(_Ptr) + 2*sizeof(void*))</Item>
@@ -1607,8 +1607,20 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
   <Type Name="std::coroutine_handle&lt;*&gt;">
-    <DisplayString Condition="*reinterpret_cast&lt;void(__cdecl**)(void*)&gt;(_Ptr) != nullptr">{*reinterpret_cast&lt;void(__cdecl**)(void*)&gt;(_Ptr),na}</DisplayString>
-    <DisplayString Condition="*reinterpret_cast&lt;void(__cdecl**)(void*)&gt;(_Ptr) == nullptr">{*(reinterpret_cast&lt;void(__cdecl**)(void*)&gt;(_Ptr) + 1),na}</DisplayString>
+    <Intrinsic Name="suspend_point" SourceId="FA88A41F-A641-47C8-8373-4889B7564FCF" LanguageId="3A12D0B7-C26C-11D0-B442-00A0244A1DD2" Id="1" ReturnType="int">
+        <Parameter Type="void*" />
+    </Intrinsic>
+    <Intrinsic Name="suspend_point_line" SourceId="FA88A41F-A641-47C8-8373-4889B7564FCF" LanguageId="3A12D0B7-C26C-11D0-B442-00A0244A1DD2" Id="2" ReturnType="unsigned int">
+        <Parameter Type="void*" />
+    </Intrinsic>
+    <Intrinsic Name="primary_function" SourceId="FA88A41F-A641-47C8-8373-4889B7564FCF" LanguageId="3A12D0B7-C26C-11D0-B442-00A0244A1DD2" Id="3" ReturnType="void*">
+        <Parameter Type="void*" />
+    </Intrinsic>
+    <DisplayString Condition="_Ptr == nullptr">empty</DisplayString>
+    <DisplayString Condition="_Ptr != nullptr &amp;&amp; suspend_point(_Ptr) &lt; 1">{primary_function(_Ptr),na} #final suspend</DisplayString>
+    <DisplayString Condition="_Ptr != nullptr &amp;&amp; suspend_point(_Ptr) == 1">{primary_function(_Ptr),na} #initial suspend</DisplayString>
+    <DisplayString Condition="_Ptr != nullptr &amp;&amp; suspend_point(_Ptr) &gt; 1 &amp;&amp; suspend_point_line(_Ptr) == 0">{primary_function(_Ptr),na} #suspend point {suspend_point(_Ptr)}</DisplayString>
+    <DisplayString Condition="_Ptr != nullptr &amp;&amp; suspend_point(_Ptr) &gt; 1 &amp;&amp; suspend_point_line(_Ptr) != 0">{primary_function(_Ptr),na} #suspend point {suspend_point(_Ptr)}, line {suspend_point_line(_Ptr)}</DisplayString>
     <Expand>
       <ExpandedItem>this,view(ViewPromise)</ExpandedItem>
     </Expand>
