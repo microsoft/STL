@@ -1356,21 +1356,21 @@ _NODISCARD constexpr string_view _Get_integral_prefix(const char _Type, const _I
 template <class _OutputIt>
 _OutputIt _Write_sign(_OutputIt _Out, const _Sign _Sgn, const bool _Is_negative) {
     if (_Is_negative) {
-        *_Out = '-';
+        *_Out++ = '-';
     } else {
         switch (_Sgn) {
         case _Sign::_Plus:
-            *_Out = '+';
+            *_Out++ = '+';
             break;
         case _Sign::_Space:
-            *_Out = ' ';
+            *_Out++ = ' ';
             break;
         case _Sign::_None:
         case _Sign::_Minus:
             break;
         }
     }
-    return ++_Out;
+    return _Out;
 }
 
 inline void _Buffer_to_uppercase(char* _Begin, const char* _End) {
@@ -2072,6 +2072,145 @@ string format(const locale& _Loc, string_view _Fmt, const _Types&... _Args) {
 template <class... _Types>
 wstring format(const locale& _Loc, wstring_view _Fmt, const _Types&... _Args) {
     return _STD vformat(_Loc, _Fmt, _STD make_wformat_args(_Args...));
+}
+
+template <class _OutputIt, class _CharT>
+struct _Format_to_n_iterator {
+    _OutputIt _Out;
+    iter_difference_t<_OutputIt> _Max;
+    iter_difference_t<_OutputIt> _Count = 0;
+
+    using iterator_category = output_iterator_tag;
+    using value_type        = void;
+    using difference_type   = iter_difference_t<_OutputIt>;
+    using pointer           = void;
+    using reference         = void;
+
+    _Format_to_n_iterator& operator=(_CharT _Ch) {
+        if (_Count < _Max) {
+            *_Out++ = _Ch;
+        }
+        ++_Count;
+        return *this;
+    }
+
+    _Format_to_n_iterator& operator*() {
+        return *this;
+    }
+
+    _Format_to_n_iterator& operator++() {
+        return *this;
+    }
+
+    _Format_to_n_iterator& operator++(int) {
+        return *this;
+    }
+};
+
+template <class _OutputIt>
+struct format_to_n_result {
+    _OutputIt out;
+    iter_difference_t<_OutputIt> size;
+};
+
+template <class _OutputIt, class... _Types>
+format_to_n_result<_OutputIt> format_to_n(
+    _OutputIt _Out, iter_difference_t<_OutputIt> _Max, string_view _Fmt, const _Types&... _Args) {
+    _Format_to_n_iterator<_OutputIt, char> _It{._Out = _Out, ._Max = _Max};
+
+    using _Context  = basic_format_context<decltype(_It), char>;
+    auto _Arg_store = _Format_arg_store<_Context, _Types...>{_Args...};
+    _It             = _STD vformat_to(_It, _Fmt, _STD move(_Arg_store));
+    return {.out = _It._Out, .size = _It._Count};
+}
+
+template <class _OutputIt, class... _Types>
+format_to_n_result<_OutputIt> format_to_n(
+    _OutputIt _Out, iter_difference_t<_OutputIt> _Max, wstring_view _Fmt, const _Types&... _Args) {
+    _Format_to_n_iterator<_OutputIt, wchar_t> _It{._Out = _Out, ._Max = _Max};
+
+    using _Context  = basic_format_context<decltype(_It), wchar_t>;
+    auto _Arg_store = _Format_arg_store<_Context, _Types...>{_Args...};
+    _It             = _STD vformat_to(_It, _Fmt, _STD move(_Arg_store));
+    return {.out = _It._Out, .size = _It._Count};
+}
+
+template <class _OutputIt, class... _Types>
+format_to_n_result<_OutputIt> format_to_n(
+    _OutputIt _Out, iter_difference_t<_OutputIt> _Max, const locale& _Loc, string_view _Fmt, const _Types&... _Args) {
+    _Format_to_n_iterator<_OutputIt, char> _It{._Out = _Out, ._Max = _Max};
+
+    using _Context  = basic_format_context<decltype(_It), char>;
+    auto _Arg_store = _Format_arg_store<_Context, _Types...>{_Args...};
+    _It             = _STD vformat_to(_It, _Loc, _Fmt, _STD move(_Arg_store));
+    return {.out = _It._Out, .size = _It._Count};
+}
+
+template <class _OutputIt, class... _Types>
+format_to_n_result<_OutputIt> format_to_n(
+    _OutputIt _Out, iter_difference_t<_OutputIt> _Max, const locale& _Loc, wstring_view _Fmt, const _Types&... _Args) {
+    _Format_to_n_iterator<_OutputIt, wchar_t> _It{._Out = _Out, ._Max = _Max};
+
+    using _Context  = basic_format_context<decltype(_It), wchar_t>;
+    auto _Arg_store = _Format_arg_store<_Context, _Types...>{_Args...};
+    _It             = _STD vformat_to(_It, _Loc, _Fmt, _STD move(_Arg_store));
+    return {.out = _It._Out, .size = _It._Count};
+}
+
+template <class _CharT>
+struct _Counting_iterator {
+    size_t _Count = 0;
+
+    using iterator_category = output_iterator_tag;
+    using value_type        = void;
+    using difference_type   = ptrdiff_t;
+    using pointer           = void;
+    using reference         = void;
+
+    _Counting_iterator& operator=(_CharT) {
+        ++_Count;
+        return *this;
+    }
+
+    _Counting_iterator& operator*() {
+        return *this;
+    }
+
+    _Counting_iterator& operator++() {
+        return *this;
+    }
+
+    _Counting_iterator& operator++(int) {
+        return *this;
+    }
+};
+
+template <class... _Types>
+size_t formatted_size(string_view _Fmt, const _Types&... _Args) {
+    using _Context  = basic_format_context<_Counting_iterator<char>, char>;
+    auto _Arg_store = _Format_arg_store<_Context, _Types...>{_Args...};
+    return _STD vformat_to(_Counting_iterator<char>{}, _Fmt, _STD move(_Arg_store))._Count;
+}
+
+template <class... _Types>
+size_t formatted_size(wstring_view _Fmt, const _Types&... _Args) {
+    using _Context  = basic_format_context<_Counting_iterator<wchar_t>, wchar_t>;
+    auto _Arg_store = _Format_arg_store<_Context, _Types...>{_Args...};
+    return _STD vformat_to(_Counting_iterator<wchar_t>{}, _Fmt, _STD move(_Arg_store))._Count;
+}
+
+template <class... _Types>
+size_t formatted_size(const locale& _Loc, string_view _Fmt, const _Types&... _Args) {
+    using _Context  = basic_format_context<_Counting_iterator<char>, char>;
+    auto _Arg_store = _Format_arg_store<_Context, _Types...>{_Args...};
+    return _STD vformat_to(_Counting_iterator<char>{}, _Loc, _Fmt, _STD move(_Arg_store))._Count;
+}
+
+template <class... _Types>
+size_t formatted_size(const locale& _Loc, wstring_view _Fmt, const _Types&... _Args) {
+    using _Context  = basic_format_context<_Counting_iterator<wchar_t>, wchar_t>;
+    auto _Arg_store = _Format_arg_store<_Context, _Types...>{_Args...};
+    return _STD vformat_to(_Counting_iterator<wchar_t>{}, _Loc, _Fmt, _STD move(_Arg_store))._Count;
 }
 
 _STD_END
