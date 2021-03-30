@@ -128,6 +128,12 @@ public:
     _NODISCARD constexpr const_iterator end() const noexcept {
         return _Format_string.end();
     }
+    _NODISCARD constexpr const _CharT* _Unchecked_begin() const noexcept {
+        return _Format_string._Unchecked_begin();
+    }
+    _NODISCARD constexpr const _CharT* _Unchecked_end() const noexcept {
+        return _Format_string._Unchecked_end();
+    }
     constexpr void advance_to(const const_iterator _It) {
         _Adl_verify_range(_It, _Format_string.end());
         // _It must be after _Format_string.begin().
@@ -845,7 +851,7 @@ private:
     _Dynamic_format_specs<_CharT>& _Dynamic_specs;
     _ParseContext& _Parse_ctx;
 
-    static int _Verify_dynamic_arg_index_in_range(const size_t _Idx) {
+    _NODISCARD constexpr static int _Verify_dynamic_arg_index_in_range(const size_t _Idx) {
         if (_Idx > static_cast<size_t>((numeric_limits<int>::max)())) {
             throw format_error("Dynamic width or precision index too large.");
         }
@@ -1879,17 +1885,15 @@ struct formatter {
 
 template <class _Ty, class _CharT, _Basic_format_arg_type _ArgType>
 struct _Formatter_base {
-
     using _Pc = basic_format_parse_context<_CharT>;
 
     typename _Pc::iterator parse(_Pc& _ParseCtx) {
         _Specs_checker<_Dynamic_specs_handler<_Pc>> _Handler(_Dynamic_specs_handler<_Pc>(_Specs, _ParseCtx), _ArgType);
-        auto _It = _ParseCtx.begin();
-        _It._Seek_to(_Parse_format_specs(_ParseCtx.begin()._Unwrapped(), _ParseCtx.end()._Unwrapped(), _Handler));
-        if (_It != _ParseCtx.end() && *_It != '}') {
+        auto _It = _Parse_format_specs(_ParseCtx._Unchecked_begin(), _ParseCtx._Unchecked_end(), _Handler);
+        if (_It != _ParseCtx._Unchecked_end() && *_It != '}') {
             throw format_error("Mising '}' in format string.");
         }
-        return _It;
+        return _ParseCtx.begin() + (_It - _ParseCtx._Unchecked_begin());
     }
 
     template <class _FormatContext>
@@ -1902,12 +1906,11 @@ struct _Formatter_base {
             _Specs._Precision = _Get_dynamic_specs<_Precision_checker>(
                 _FormatCtx.arg(static_cast<size_t>(_Specs._Dynamic_precision_index)));
         }
-        return visit_format_arg(
+        return _STD visit_format_arg(
             _Arg_formatter<typename _FormatContext::iterator, _CharT>{
                 ._Ctx = _STD addressof(_FormatCtx), ._Specs = _STD addressof(_Specs)},
             basic_format_arg<_FormatContext>{_Val});
     }
-
 
 private:
     _Dynamic_format_specs<_CharT> _Specs;
