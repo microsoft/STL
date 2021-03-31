@@ -1356,21 +1356,21 @@ _NODISCARD constexpr string_view _Get_integral_prefix(const char _Type, const _I
 template <class _OutputIt>
 _OutputIt _Write_sign(_OutputIt _Out, const _Sign _Sgn, const bool _Is_negative) {
     if (_Is_negative) {
-        *_Out = '-';
+        *_Out++ = '-';
     } else {
         switch (_Sgn) {
         case _Sign::_Plus:
-            *_Out = '+';
+            *_Out++ = '+';
             break;
         case _Sign::_Space:
-            *_Out = ' ';
+            *_Out++ = ' ';
             break;
         case _Sign::_None:
         case _Sign::_Minus:
             break;
         }
     }
-    return ++_Out;
+    return _Out;
 }
 
 inline void _Buffer_to_uppercase(char* _Begin, const char* _End) {
@@ -1998,7 +1998,7 @@ auto make_wformat_args(const _Args&... _Vals) {
 template <class _Out, class _CharT>
 using format_args_t = basic_format_args<basic_format_context<_Out, _CharT>>;
 
-template <class _OutputIt>
+template <output_iterator<const char&> _OutputIt>
 _OutputIt vformat_to(_OutputIt _Out, string_view _Fmt, format_args_t<type_identity_t<_OutputIt>, char> _Args) {
     _Format_handler<_OutputIt, char, basic_format_context<_OutputIt, char>> _Handler(
         _Out, _Fmt, _Args, locale::classic());
@@ -2006,7 +2006,7 @@ _OutputIt vformat_to(_OutputIt _Out, string_view _Fmt, format_args_t<type_identi
     return _Handler._Ctx.out();
 }
 
-template <class _OutputIt>
+template <output_iterator<const wchar_t&> _OutputIt>
 _OutputIt vformat_to(_OutputIt _Out, wstring_view _Fmt, format_args_t<type_identity_t<_OutputIt>, wchar_t> _Args) {
     _Format_handler<_OutputIt, wchar_t, basic_format_context<_OutputIt, wchar_t>> _Handler(
         _Out, _Fmt, _Args, locale::classic());
@@ -2014,7 +2014,7 @@ _OutputIt vformat_to(_OutputIt _Out, wstring_view _Fmt, format_args_t<type_ident
     return _Handler._Ctx.out();
 }
 
-template <class _OutputIt>
+template <output_iterator<const char&> _OutputIt>
 _OutputIt vformat_to(
     _OutputIt _Out, const locale& _Loc, string_view _Fmt, format_args_t<type_identity_t<_OutputIt>, char> _Args) {
     _Format_handler<_OutputIt, char, basic_format_context<_OutputIt, char>> _Handler(_Out, _Fmt, _Args, _Loc);
@@ -2022,7 +2022,7 @@ _OutputIt vformat_to(
     return _Handler._Ctx.out();
 }
 
-template <class _OutputIt>
+template <output_iterator<const wchar_t&> _OutputIt>
 _OutputIt vformat_to(
     _OutputIt _Out, const locale& _Loc, wstring_view _Fmt, format_args_t<type_identity_t<_OutputIt>, wchar_t> _Args) {
     _Format_handler<_OutputIt, wchar_t, basic_format_context<_OutputIt, wchar_t>> _Handler(_Out, _Fmt, _Args, _Loc);
@@ -2072,6 +2072,137 @@ string format(const locale& _Loc, string_view _Fmt, const _Types&... _Args) {
 template <class... _Types>
 wstring format(const locale& _Loc, wstring_view _Fmt, const _Types&... _Args) {
     return _STD vformat(_Loc, _Fmt, _STD make_wformat_args(_Args...));
+}
+
+template <class _OutputIt, class _CharT>
+struct _Format_to_n_iterator {
+    _OutputIt _Out;
+    iter_difference_t<_OutputIt> _Max;
+    iter_difference_t<_OutputIt> _Count = 0;
+
+    using difference_type = iter_difference_t<_OutputIt>;
+
+    _Format_to_n_iterator& operator=(_CharT _Ch) {
+        if (_Count < _Max) {
+            *_Out++ = _Ch;
+        }
+        ++_Count;
+        return *this;
+    }
+
+    _Format_to_n_iterator& operator*() {
+        return *this;
+    }
+
+    _Format_to_n_iterator& operator++() {
+        return *this;
+    }
+
+    _Format_to_n_iterator& operator++(int) {
+        return *this;
+    }
+};
+
+template <class _OutputIt>
+struct format_to_n_result {
+    _OutputIt out;
+    iter_difference_t<_OutputIt> size;
+};
+
+template <output_iterator<const char&> _OutputIt, class... _Types>
+format_to_n_result<_OutputIt> format_to_n(
+    _OutputIt _Out, const iter_difference_t<_OutputIt> _Max, const string_view _Fmt, const _Types&... _Args) {
+    _Format_to_n_iterator<_OutputIt, char> _It{._Out = _STD move(_Out), ._Max = _Max};
+
+    using _Context  = basic_format_context<decltype(_It), char>;
+    auto _Arg_store = _STD make_format_args<_Context>(_Args...);
+    _It             = _STD vformat_to(_STD move(_It), _Fmt, _STD move(_Arg_store));
+    return {.out = _STD move(_It._Out), .size = _It._Count};
+}
+
+template <output_iterator<const wchar_t&> _OutputIt, class... _Types>
+format_to_n_result<_OutputIt> format_to_n(
+    _OutputIt _Out, const iter_difference_t<_OutputIt> _Max, const wstring_view _Fmt, const _Types&... _Args) {
+    _Format_to_n_iterator<_OutputIt, wchar_t> _It{._Out = _STD move(_Out), ._Max = _Max};
+
+    using _Context  = basic_format_context<decltype(_It), wchar_t>;
+    auto _Arg_store = _STD make_format_args<_Context>(_Args...);
+    _It             = _STD vformat_to(_STD move(_It), _Fmt, _STD move(_Arg_store));
+    return {.out = _STD move(_It._Out), .size = _It._Count};
+}
+
+template <output_iterator<const char&> _OutputIt, class... _Types>
+format_to_n_result<_OutputIt> format_to_n(_OutputIt _Out, const iter_difference_t<_OutputIt> _Max, const locale& _Loc,
+    const string_view _Fmt, const _Types&... _Args) {
+    _Format_to_n_iterator<_OutputIt, char> _It{._Out = _STD move(_Out), ._Max = _Max};
+
+    using _Context  = basic_format_context<decltype(_It), char>;
+    auto _Arg_store = _STD make_format_args<_Context>(_Args...);
+    _It             = _STD vformat_to(_STD move(_It), _Loc, _Fmt, _STD move(_Arg_store));
+    return {.out = _STD move(_It._Out), .size = _It._Count};
+}
+
+template <output_iterator<const wchar_t&> _OutputIt, class... _Types>
+format_to_n_result<_OutputIt> format_to_n(_OutputIt _Out, const iter_difference_t<_OutputIt> _Max, const locale& _Loc,
+    const wstring_view _Fmt, const _Types&... _Args) {
+    _Format_to_n_iterator<_OutputIt, wchar_t> _It{._Out = _STD move(_Out), ._Max = _Max};
+
+    using _Context  = basic_format_context<decltype(_It), wchar_t>;
+    auto _Arg_store = _STD make_format_args<_Context>(_Args...);
+    _It             = _STD vformat_to(_STD move(_It), _Loc, _Fmt, _STD move(_Arg_store));
+    return {.out = _STD move(_It._Out), .size = _It._Count};
+}
+
+struct _Counting_iterator {
+    size_t _Count = 0;
+
+    using difference_type = ptrdiff_t;
+
+    template <class _CharT>
+    _Counting_iterator& operator=(_CharT) {
+        ++_Count;
+        return *this;
+    }
+
+    _Counting_iterator& operator*() {
+        return *this;
+    }
+
+    _Counting_iterator& operator++() {
+        return *this;
+    }
+
+    _Counting_iterator& operator++(int) {
+        return *this;
+    }
+};
+
+template <class... _Types>
+size_t formatted_size(const string_view _Fmt, const _Types&... _Args) {
+    using _Context  = basic_format_context<_Counting_iterator, char>;
+    auto _Arg_store = _STD make_format_args<_Context>(_Args...);
+    return _STD vformat_to(_Counting_iterator{}, _Fmt, _STD move(_Arg_store))._Count;
+}
+
+template <class... _Types>
+size_t formatted_size(const wstring_view _Fmt, const _Types&... _Args) {
+    using _Context  = basic_format_context<_Counting_iterator, wchar_t>;
+    auto _Arg_store = _STD make_format_args<_Context>(_Args...);
+    return _STD vformat_to(_Counting_iterator{}, _Fmt, _STD move(_Arg_store))._Count;
+}
+
+template <class... _Types>
+size_t formatted_size(const locale& _Loc, const string_view _Fmt, const _Types&... _Args) {
+    using _Context  = basic_format_context<_Counting_iterator, char>;
+    auto _Arg_store = _STD make_format_args<_Context>(_Args...);
+    return _STD vformat_to(_Counting_iterator{}, _Loc, _Fmt, _STD move(_Arg_store))._Count;
+}
+
+template <class... _Types>
+size_t formatted_size(const locale& _Loc, const wstring_view _Fmt, const _Types&... _Args) {
+    using _Context  = basic_format_context<_Counting_iterator, wchar_t>;
+    auto _Arg_store = _STD make_format_args<_Context>(_Args...);
+    return _STD vformat_to(_Counting_iterator{}, _Loc, _Fmt, _STD move(_Arg_store))._Count;
 }
 
 _STD_END

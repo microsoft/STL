@@ -841,6 +841,46 @@ void test_spec_replacement_field() {
     test_string_specs<charT>();
 }
 
+template <class charT, class... Args>
+void test_size_helper(const size_t expected_size, const basic_string_view<charT> fmt, const Args&... args) {
+    assert(formatted_size(fmt, args...) == expected_size);
+    assert(formatted_size(locale::classic(), fmt, args...) == expected_size);
+
+    const auto signed_size = static_cast<ptrdiff_t>(expected_size);
+    basic_string<charT> str;
+    {
+        str.resize(expected_size);
+        const auto res = format_to_n(str.begin(), signed_size, fmt, args...);
+        assert(res.size == signed_size);
+        assert(res.out - str.begin() == signed_size);
+        assert(res.out == str.end());
+        assert(format(fmt, args...) == str);
+
+        basic_string<charT> locale_str;
+        locale_str.resize(expected_size);
+        format_to_n(locale_str.begin(), signed_size, locale::classic(), fmt, args...);
+        assert(str == locale_str);
+        assert(locale_str.size() == expected_size);
+    }
+    basic_string<charT> half_str;
+    {
+        const auto half_size = expected_size / 2;
+        half_str.resize(half_size);
+        const auto res = format_to_n(half_str.begin(), static_cast<ptrdiff_t>(half_size), fmt, args...);
+        assert(res.size == signed_size);
+        assert(static_cast<size_t>(res.out - half_str.begin()) == half_size);
+        assert(res.out == half_str.end());
+    }
+    assert(str.starts_with(half_str));
+}
+
+template <class charT>
+void test_size() {
+    test_size_helper<charT>(3, STR("{}"), 123);
+    test_size_helper<charT>(6, STR("{}"), 3.1415);
+    test_size_helper<charT>(8, STR("{:8}"), STR("scully"));
+}
+
 int main() {
     test_simple_formatting<char>();
     test_simple_formatting<wchar_t>();
@@ -859,6 +899,9 @@ int main() {
 
     test_spec_replacement_field<char>();
     test_spec_replacement_field<wchar_t>();
+
+    test_size<char>();
+    test_size<wchar_t>();
 
     return 0;
 }
