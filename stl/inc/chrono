@@ -3655,7 +3655,6 @@ namespace chrono {
 
         template <class _Ty>
         static constexpr _Ty _Invalid_time_field{numeric_limits<_Ty>::lowest()};
-        static constexpr const char* _Invalid_time_string = "!";
 
         static void _Initialize_time_point(tm& _Tp) {
             _Tp.tm_sec  = _Invalid_time_field<int>;
@@ -3673,11 +3672,7 @@ namespace chrono {
             // Update a field. Ignores invalid values. If _Val already has a value, returns true or false according to
             // whether the new value matches the current one or not, so that inconsistencies can be detected.
 
-            if constexpr (is_same_v<_Ty, string>) {
-                if (_New == _Invalid_time_string) {
-                    return true;
-                }
-            } else {
+            if constexpr (!is_same_v<_Ty, string>) {
                 if (_New == _Invalid_time_field<_Ty>) {
                     return true;
                 }
