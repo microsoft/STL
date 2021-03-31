@@ -3913,7 +3913,8 @@ namespace chrono {
 
         _NODISCARD bool _Calculate_hour24() {
             if (_Hour_12) {
-                return _Update(_Hour_24, _CHRONO make24(hours{*_Hour_12}, _Ampm.value_or(0)).count());
+                return _Update(
+                    _Hour_24, _CHRONO make24(hours{*_Hour_12}, static_cast<bool>(_Ampm.value_or(0))).count());
             } else {
                 return true;
             }
