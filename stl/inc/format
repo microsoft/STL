@@ -2080,11 +2080,7 @@ struct _Format_to_n_iterator {
     iter_difference_t<_OutputIt> _Max;
     iter_difference_t<_OutputIt> _Count = 0;
 
-    using iterator_category = output_iterator_tag;
-    using value_type        = void;
-    using difference_type   = iter_difference_t<_OutputIt>;
-    using pointer           = void;
-    using reference         = void;
+    using difference_type = iter_difference_t<_OutputIt>;
 
     _Format_to_n_iterator& operator=(_CharT _Ch) {
         if (_Count < _Max) {
@@ -2119,7 +2115,7 @@ format_to_n_result<_OutputIt> format_to_n(
     _Format_to_n_iterator<_OutputIt, char> _It{._Out = _STD move(_Out), ._Max = _Max};
 
     using _Context  = basic_format_context<decltype(_It), char>;
-    auto _Arg_store = _Format_arg_store<_Context, _Types...>{_Args...};
+    auto _Arg_store = _STD make_format_args<_Context>(_Args...);
     _It             = _STD vformat_to(_STD move(_It), _Fmt, _STD move(_Arg_store));
     return {.out = _STD move(_It._Out), .size = _It._Count};
 }
@@ -2130,7 +2126,7 @@ format_to_n_result<_OutputIt> format_to_n(
     _Format_to_n_iterator<_OutputIt, wchar_t> _It{._Out = _STD move(_Out), ._Max = _Max};
 
     using _Context  = basic_format_context<decltype(_It), wchar_t>;
-    auto _Arg_store = _Format_arg_store<_Context, _Types...>{_Args...};
+    auto _Arg_store = _STD make_format_args<_Context>(_Args...);
     _It             = _STD vformat_to(_STD move(_It), _Fmt, _STD move(_Arg_store));
     return {.out = _STD move(_It._Out), .size = _It._Count};
 }
@@ -2141,7 +2137,7 @@ format_to_n_result<_OutputIt> format_to_n(_OutputIt _Out, const iter_difference_
     _Format_to_n_iterator<_OutputIt, char> _It{._Out = _STD move(_Out), ._Max = _Max};
 
     using _Context  = basic_format_context<decltype(_It), char>;
-    auto _Arg_store = _Format_arg_store<_Context, _Types...>{_Args...};
+    auto _Arg_store = _STD make_format_args<_Context>(_Args...);
     _It             = _STD vformat_to(_STD move(_It), _Loc, _Fmt, _STD move(_Arg_store));
     return {.out = _STD move(_It._Out), .size = _It._Count};
 }
@@ -2152,7 +2148,7 @@ format_to_n_result<_OutputIt> format_to_n(_OutputIt _Out, const iter_difference_
     _Format_to_n_iterator<_OutputIt, wchar_t> _It{._Out = _STD move(_Out), ._Max = _Max};
 
     using _Context  = basic_format_context<decltype(_It), wchar_t>;
-    auto _Arg_store = _Format_arg_store<_Context, _Types...>{_Args...};
+    auto _Arg_store = _STD make_format_args<_Context>(_Args...);
     _It             = _STD vformat_to(_STD move(_It), _Loc, _Fmt, _STD move(_Arg_store));
     return {.out = _STD move(_It._Out), .size = _It._Count};
 }
@@ -2160,11 +2156,7 @@ format_to_n_result<_OutputIt> format_to_n(_OutputIt _Out, const iter_difference_
 struct _Counting_iterator {
     size_t _Count = 0;
 
-    using iterator_category = output_iterator_tag;
-    using value_type        = void;
-    using difference_type   = ptrdiff_t;
-    using pointer           = void;
-    using reference         = void;
+    using difference_type = ptrdiff_t;
 
     template <class _CharT>
     _Counting_iterator& operator=(_CharT) {
@@ -2188,28 +2180,28 @@ struct _Counting_iterator {
 template <class... _Types>
 size_t formatted_size(const string_view _Fmt, const _Types&... _Args) {
     using _Context  = basic_format_context<_Counting_iterator, char>;
-    auto _Arg_store = _Format_arg_store<_Context, _Types...>{_Args...};
+    auto _Arg_store = _STD make_format_args<_Context>(_Args...);
     return _STD vformat_to(_Counting_iterator{}, _Fmt, _STD move(_Arg_store))._Count;
 }
 
 template <class... _Types>
 size_t formatted_size(const wstring_view _Fmt, const _Types&... _Args) {
     using _Context  = basic_format_context<_Counting_iterator, wchar_t>;
-    auto _Arg_store = _Format_arg_store<_Context, _Types...>{_Args...};
+    auto _Arg_store = _STD make_format_args<_Context>(_Args...);
     return _STD vformat_to(_Counting_iterator{}, _Fmt, _STD move(_Arg_store))._Count;
 }
 
 template <class... _Types>
 size_t formatted_size(const locale& _Loc, const string_view _Fmt, const _Types&... _Args) {
     using _Context  = basic_format_context<_Counting_iterator, char>;
-    auto _Arg_store = _Format_arg_store<_Context, _Types...>{_Args...};
+    auto _Arg_store = _STD make_format_args<_Context>(_Args...);
     return _STD vformat_to(_Counting_iterator{}, _Loc, _Fmt, _STD move(_Arg_store))._Count;
 }
 
 template <class... _Types>
 size_t formatted_size(const locale& _Loc, const wstring_view _Fmt, const _Types&... _Args) {
     using _Context  = basic_format_context<_Counting_iterator, wchar_t>;
-    auto _Arg_store = _Format_arg_store<_Context, _Types...>{_Args...};
+    auto _Arg_store = _STD make_format_args<_Context>(_Args...);
     return _STD vformat_to(_Counting_iterator{}, _Loc, _Fmt, _STD move(_Arg_store))._Count;
 }
 
