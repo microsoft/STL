@@ -2575,7 +2575,7 @@ namespace chrono {
         return _Result == _Vec.end() ? nullptr : &*_Result;
     }
 
-    // STRUCT  tzdb
+    // STRUCT tzdb
     struct tzdb {
         string version;
         vector<time_zone> zones;
@@ -3174,8 +3174,8 @@ namespace chrono {
     public:
         using rep                       = system_clock::rep;
         using period                    = system_clock::period;
-        using duration                  = duration<rep, period>;
-        using time_point                = time_point<utc_clock>;
+        using duration                  = _CHRONO duration<rep, period>;
+        using time_point                = _CHRONO time_point<utc_clock>;
         static constexpr bool is_steady = system_clock::is_steady;
 
         _NODISCARD static time_point now() {
@@ -3225,13 +3225,13 @@ namespace chrono {
     public:
         using rep                       = system_clock::rep;
         using period                    = system_clock::period;
-        using duration                  = duration<rep, period>;
-        using time_point                = time_point<tai_clock>;
+        using duration                  = _CHRONO duration<rep, period>;
+        using time_point                = _CHRONO time_point<tai_clock>;
         static constexpr bool is_steady = system_clock::is_steady;
 
         static constexpr seconds _Tai_epoch_adjust{378691210};
 
-        _NODISCARD static time_point now() noexcept(noexcept(utc_clock::now())) {
+        _NODISCARD static time_point now() {
             return from_utc(utc_clock::now());
         }
 
@@ -3261,13 +3261,13 @@ namespace chrono {
     public:
         using rep                       = system_clock::rep;
         using period                    = system_clock::period;
-        using duration                  = chrono::duration<rep, period>;
-        using time_point                = chrono::time_point<gps_clock>;
+        using duration                  = _CHRONO duration<rep, period>;
+        using time_point                = _CHRONO time_point<gps_clock>;
         static constexpr bool is_steady = system_clock::is_steady;
 
         static constexpr seconds _Gps_epoch_adjust{-315964809};
 
-        _NODISCARD static time_point now() noexcept(noexcept(utc_clock::now())) {
+        _NODISCARD static time_point now() {
             return from_utc(utc_clock::now());
         }
 

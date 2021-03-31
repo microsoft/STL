@@ -254,7 +254,7 @@ void test_file_clock_from_utc(const leap_second& leap) {
 }
 
 void test_utc_clock_from_sys(const leap_second& leap, seconds offset) {
-    // Generalized from [time.clock.utc.members]/3 Example 1.
+    // Generalized from N4885 [time.clock.utc.members]/3 Example 1.
     auto t = leap.date() - 2ns;
     auto u = utc_clock::from_sys(t);
     assert(u.time_since_epoch() - t.time_since_epoch() == offset);
@@ -371,7 +371,7 @@ void test_clock_cast() {
     assert(clock_cast<file_clock>(gt) == ft);
     assert(clock_cast<file_clock>(ft) == ft);
 
-    // [time.clock.utc.overview]/1 Example 1
+    // N4885 [time.clock.utc.overview]/1 Example 1
     assert(clock_cast<utc_clock>(sys_seconds{sys_days{1970y / January / 1}}).time_since_epoch() == 0s);
     assert(clock_cast<utc_clock>(sys_seconds{sys_days{2000y / January / 1}}).time_since_epoch() == 946'684'822s);
 }
