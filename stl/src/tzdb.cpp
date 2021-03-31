@@ -421,7 +421,6 @@ void __stdcall __std_tzdb_delete_time_zones(__std_tzdb_time_zones_info* const _I
             }
 
             delete[] _Info->_Names;
-            _Info->_Names = nullptr;
         }
 
         if (_Info->_Links != nullptr) {
@@ -430,8 +429,9 @@ void __stdcall __std_tzdb_delete_time_zones(__std_tzdb_time_zones_info* const _I
             }
 
             delete[] _Info->_Links;
-            _Info->_Links = nullptr;
         }
+
+        delete _Info;
     }
 }
 
@@ -467,7 +467,8 @@ _NODISCARD __std_tzdb_current_zone_info* __stdcall __std_tzdb_get_current_zone()
 void __stdcall __std_tzdb_delete_current_zone(__std_tzdb_current_zone_info* const _Info) noexcept {
     if (_Info) {
         delete[] _Info->_Tz_name;
-        _Info->_Tz_name = nullptr;
+
+        delete _Info;
     }
 }
 
@@ -547,7 +548,8 @@ _NODISCARD __std_tzdb_sys_info* __stdcall __std_tzdb_get_sys_info(
 void __stdcall __std_tzdb_delete_sys_info(__std_tzdb_sys_info* const _Info) noexcept {
     if (_Info) {
         delete[] _Info->_Abbrev;
-        _Info->_Abbrev = nullptr;
+
+        delete _Info;
     }
 }
 
