@@ -82,14 +82,22 @@ public:
         return *this;
     }
 
-    void operator++(int) = delete; // avoid postincrement
+    fancy_pointer operator++(int) {
+        fancy_pointer result = *this;
+        ++rep;
+        return result;
+    }
 
     fancy_pointer& operator--() {
         --rep;
         return *this;
     }
 
-    void operator--(int) = delete; // avoid postdecrement
+    fancy_pointer operator--(int) {
+        fancy_pointer result = *this;
+        --rep;
+        return result;
+    }
 
 #ifdef _WIN64
     fancy_pointer& operator+=(int rhs) {

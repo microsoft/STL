@@ -523,12 +523,7 @@ private:
     template <class _Iter>
     _CONSTEXPR20_CONTAINER void _Range_construct_or_tidy(_Iter _First, _Iter _Last, forward_iterator_tag) {
 #ifdef __cpp_lib_concepts
-        size_type _Count;
-        if constexpr (forward_iterator<_Iter>) {
-            _Count = _Convert_size<size_type>(static_cast<size_t>(_RANGES distance(_First, _Last)));
-        } else {
-            _Count = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_First, _Last)));
-        }
+        const auto _Count = _Convert_size<size_type>(static_cast<size_t>(_RANGES distance(_First, _Last)));
 #else // ^^^ __cpp_lib_concepts ^^^ / vvv !__cpp_lib_concepts vvv
         const auto _Count = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_First, _Last)));
 #endif // ^^^ !__cpp_lib_concepts ^^^
@@ -1155,12 +1150,7 @@ private:
     _CONSTEXPR20_CONTAINER void _Assign_range(_Iter _First, _Iter _Last, forward_iterator_tag) {
         // assign forward range [_First, _Last)
 #ifdef __cpp_lib_concepts
-        size_type _Newsize;
-        if constexpr (forward_iterator<_Iter>) {
-            _Newsize = _Convert_size<size_type>(static_cast<size_t>(_RANGES distance(_First, _Last)));
-        } else {
-            _Newsize = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_First, _Last)));
-        }
+        const auto _Newsize = _Convert_size<size_type>(static_cast<size_t>(_RANGES distance(_First, _Last)));
 #else // ^^^ __cpp_lib_concepts ^^^ / vvv !__cpp_lib_concepts vvv
         const auto _Newsize = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_First, _Last)));
 #endif // ^^^ !__cpp_lib_concepts ^^^
