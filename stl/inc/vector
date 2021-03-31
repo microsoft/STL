@@ -1202,7 +1202,6 @@ public:
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     _CONSTEXPR20_CONTAINER void assign(_Iter _First, _Iter _Last) {
         _Adl_verify_range(_First, _Last);
-        _Assign_range(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Iter_cat_t<_Iter>{});
 #ifdef __cpp_lib_concepts
         if constexpr (derived_from<_Iter_concept<_Iter>, _Iter_cat_t<_Iter>>) {
             _Assign_range(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Iter_concept<_Iter>{});
