@@ -58,10 +58,10 @@ enum class _Basic_format_arg_type : uint8_t {
 };
 static_assert(static_cast<int>(_Basic_format_arg_type::_Custom_type) <= 16);
 
-constexpr bool _Is_integral_fmt_type(_Basic_format_arg_type _Ty) {
+_NODISCARD constexpr bool _Is_integral_fmt_type(_Basic_format_arg_type _Ty) {
     return _Ty > _Basic_format_arg_type::_None && _Ty <= _Basic_format_arg_type::_ULong_long_type;
 }
-constexpr bool _Is_arithmetic_fmt_type(_Basic_format_arg_type _Ty) {
+_NODISCARD constexpr bool _Is_arithmetic_fmt_type(_Basic_format_arg_type _Ty) {
     return _Ty > _Basic_format_arg_type::_None && _Ty <= _Basic_format_arg_type::_Long_double_type;
 }
 struct _Auto_id_tag {};
@@ -146,7 +146,7 @@ public:
     // _Next_arg_id > 0 means automatic
     // _Next_arg_id == 0 means unknown
     // _Next_arg_id < 0 means manual
-    constexpr size_t next_arg_id() {
+    _NODISCARD constexpr size_t next_arg_id() {
         if (_Next_arg_id < 0) {
             throw format_error("Can not switch from manual to automatic indexing");
         }
@@ -154,7 +154,7 @@ public:
         return static_cast<size_t>(_Next_arg_id++);
     }
 
-    constexpr void check_arg_id(const size_t _Id) {
+    _NODISCARD constexpr void check_arg_id(const size_t _Id) {
         if (_STD is_constant_evaluated()) {
             if (_Id >= _Num_args) {
                 _You_see_this_error_because_arg_id_is_out_of_range();
@@ -255,7 +255,7 @@ public:
 };
 
 template <class _Visitor, class _Context>
-auto visit_format_arg(_Visitor&& _Vis, basic_format_arg<_Context> _Arg) {
+_NODISCARD auto visit_format_arg(_Visitor&& _Vis, basic_format_arg<_Context> _Arg) {
     switch (_Arg._Active_state) {
     case _Basic_format_arg_type::_None:
         return _Vis(_Arg._No_state);
@@ -293,7 +293,8 @@ auto visit_format_arg(_Visitor&& _Vis, basic_format_arg<_Context> _Arg) {
 
 // we need to implement this ourselves because from_chars does not work with wide characters and isn't constexpr
 template <class _CharT>
-constexpr const _CharT* _Parse_nonnegative_integer(const _CharT* _Begin, const _CharT* _End, unsigned int& _Value) {
+_NODISCARD constexpr const _CharT* _Parse_nonnegative_integer(
+    const _CharT* _Begin, const _CharT* _End, unsigned int& _Value) {
     _STL_INTERNAL_CHECK(_Begin != _End && '0' <= *_Begin && *_Begin <= '9');
     _Value                          = 0;
     constexpr unsigned int _Max_int = static_cast<unsigned int>((numeric_limits<int>::max)());
@@ -314,7 +315,7 @@ constexpr const _CharT* _Parse_nonnegative_integer(const _CharT* _Begin, const _
 }
 
 template <class _CharT>
-constexpr const _CharT* _Parse_nonnegative_integer(const _CharT* _Begin, const _CharT* _End, int& _Value) {
+_NODISCARD constexpr const _CharT* _Parse_nonnegative_integer(const _CharT* _Begin, const _CharT* _End, int& _Value) {
     unsigned int _Val_unsigned = 0;
 
     _Begin = _Parse_nonnegative_integer(_Begin, _End, _Val_unsigned);
@@ -324,7 +325,8 @@ constexpr const _CharT* _Parse_nonnegative_integer(const _CharT* _Begin, const _
 }
 
 template <class _CharT, _Parse_arg_id_callbacks<_CharT> _Callbacks_type>
-constexpr const _CharT* _Parse_arg_id(const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
+_NODISCARD constexpr const _CharT* _Parse_arg_id(
+    const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
     _STL_INTERNAL_CHECK(_Begin != _End);
     _CharT _Ch = *_Begin;
     // No id provided, format string is using automatic indexing.
@@ -358,7 +360,8 @@ constexpr const _CharT* _Parse_arg_id(const _CharT* _Begin, const _CharT* _End, 
 }
 
 template <class _CharT, _Parse_spec_callbacks<_CharT> _Callbacks_type>
-constexpr const _CharT* _Parse_align(const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
+_NODISCARD constexpr const _CharT* _Parse_align(
+    const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
     _STL_INTERNAL_CHECK(_Begin != _End && *_Begin != '}');
     // align and fill
     auto _Parsed_align = _Align::_None;
@@ -452,7 +455,8 @@ struct _Id_adapter {
 };
 
 template <class _CharT, _Parse_spec_callbacks<_CharT> _Callbacks_type>
-constexpr const _CharT* _Parse_width(const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
+_NODISCARD constexpr const _CharT* _Parse_width(
+    const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
     _STL_INTERNAL_CHECK(_Begin != _End);
     if ('1' <= *_Begin && *_Begin <= '9') {
         int _Value = 0;
@@ -472,7 +476,8 @@ constexpr const _CharT* _Parse_width(const _CharT* _Begin, const _CharT* _End, _
 }
 
 template <class _CharT, _Parse_spec_callbacks<_CharT> _Callbacks_type>
-constexpr const _CharT* _Parse_precision(const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
+_NODISCARD constexpr const _CharT* _Parse_precision(
+    const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
     ++_Begin;
     _CharT _Ch = '\0';
     if (_Begin != _End) {
@@ -499,7 +504,8 @@ constexpr const _CharT* _Parse_precision(const _CharT* _Begin, const _CharT* _En
 }
 
 template <class _CharT, _Parse_spec_callbacks<_CharT> _Callbacks_type>
-constexpr const _CharT* _Parse_format_specs(const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
+_NODISCARD constexpr const _CharT* _Parse_format_specs(
+    const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
     if (_Begin == _End || *_Begin == '}') {
         return _Begin;
     }
@@ -571,7 +577,8 @@ constexpr const _CharT* _Parse_format_specs(const _CharT* _Begin, const _CharT* 
 }
 
 template <class _CharT, _Parse_replacement_field_callbacks<_CharT> _HandlerT>
-constexpr const _CharT* _Parse_replacement_field(const _CharT* _Begin, const _CharT* _End, _HandlerT&& _Handler) {
+_NODISCARD constexpr const _CharT* _Parse_replacement_field(
+    const _CharT* _Begin, const _CharT* _End, _HandlerT&& _Handler) {
     ++_Begin;
     if (_Begin == _End) {
         throw format_error("Invalid format string.");
@@ -725,7 +732,7 @@ protected:
 };
 
 template <class _Context>
-constexpr basic_format_arg<_Context> _Get_arg(_Context _Ctx, size_t _Arg_id) {
+_NODISCARD constexpr basic_format_arg<_Context> _Get_arg(_Context _Ctx, size_t _Arg_id) {
     // note: while this is parameterized on the _Arg_id type in libfmt we don't
     // need to do that in std::format because it's only called with either an integer
     // id or a named id (which we do not support in std::format)
@@ -741,7 +748,7 @@ constexpr basic_format_arg<_Context> _Get_arg(_Context _Ctx, size_t _Arg_id) {
 class _Width_checker {
 public:
     template <class _Ty>
-    constexpr unsigned long long operator()(_Ty _Value) {
+    _NODISCARD constexpr unsigned long long operator()(_Ty _Value) {
         if constexpr (is_integral_v<_Ty>) {
             if constexpr (is_signed_v<_Ty>) {
                 if (_Value < 0) {
@@ -760,7 +767,7 @@ public:
 class _Precision_checker {
 public:
     template <class _Ty>
-    constexpr unsigned long long operator()(_Ty _Value) {
+    _NODISCARD constexpr unsigned long long operator()(_Ty _Value) {
         if constexpr (is_integral_v<_Ty>) {
             if constexpr (is_signed_v<_Ty>) {
                 if (_Value < 0) {
@@ -813,11 +820,11 @@ private:
     _ParseContext& _Parse_ctx;
     _Context& _Ctx;
 
-    constexpr basic_format_arg<_Context> _Get_arg(_Auto_id_tag) {
+    _NODISCARD constexpr basic_format_arg<_Context> _Get_arg(_Auto_id_tag) {
         return _STD _Get_arg(_Ctx, _Parse_ctx.next_arg_id());
     }
 
-    constexpr basic_format_arg<_Context> _Get_arg(const size_t _Arg_id) {
+    _NODISCARD constexpr basic_format_arg<_Context> _Get_arg(const size_t _Arg_id) {
         _Parse_ctx.check_arg_id(_Arg_id);
         return _STD _Get_arg(_Ctx, _Arg_id);
     }
@@ -933,7 +940,7 @@ concept _Has_formatter = requires(const _Ty& _Val, _Context& _Ctx) {
 // clang-format on
 
 template <class _CharT>
-constexpr size_t _Get_format_arg_type_storage_size(_Basic_format_arg_type _Type);
+_NODISCARD constexpr size_t _Get_format_arg_type_storage_size(_Basic_format_arg_type _Type);
 
 // See N4878 [format.arg]/5
 // clang-format off
@@ -1134,7 +1141,7 @@ public:
     basic_format_args(const _Format_arg_store<_Context, _Args...>& _Store) noexcept
         : _Num_args(sizeof...(_Args)), _Storage(_Store._Storage) {}
 
-    basic_format_arg<_Context> get(const size_t _Index) const noexcept {
+    _NODISCARD basic_format_arg<_Context> get(const size_t _Index) const noexcept {
         if (_Index >= _Num_args) {
             return basic_format_arg<_Context>{};
         }
@@ -1207,14 +1214,14 @@ public:
         _Out _OutputIt_, basic_format_args<basic_format_context> _Ctx_args, const locale& _Loc_)
         : _OutputIt(_OutputIt_), _Args(_Ctx_args), _Loc(_Loc_) {}
 
-    basic_format_arg<basic_format_context> arg(size_t _Id) const {
+    _NODISCARD basic_format_arg<basic_format_context> arg(size_t _Id) const {
         return _Args.get(_Id);
     }
-    locale locale() {
+    _NODISCARD locale locale() {
         return _Loc;
     }
 
-    iterator out() {
+    _NODISCARD iterator out() {
         return _OutputIt;
     }
     void advance_to(iterator _It) {
@@ -1222,7 +1229,7 @@ public:
         _OutputIt = _It;
     }
 
-    const basic_format_args<basic_format_context>& _Get_args() const {
+    _NODISCARD const basic_format_args<basic_format_context>& _Get_args() const {
         return _Args;
     }
 };
@@ -1264,7 +1271,7 @@ constexpr size_t _Get_format_arg_type_storage_size(_Basic_format_arg_type _Type)
 }
 
 template <class _CharT, class _OutputIt>
-_OutputIt _Write(_OutputIt _Out, monostate) {
+_NODISCARD _OutputIt _Write(_OutputIt _Out, monostate) {
     _STL_INTERNAL_CHECK(false);
     return _Out;
 }
@@ -1280,7 +1287,7 @@ inline constexpr size_t _Format_min_buffer_length = 24;
 // clang-format off
 template <class _CharT, class _OutputIt, class _Arithmetic>
     requires (is_arithmetic_v<_Arithmetic> && !_CharT_or_bool<_Arithmetic, _CharT>)
-_OutputIt _Write(_OutputIt _Out, const _Arithmetic _Value) {
+_NODISCARD _OutputIt _Write(_OutputIt _Out, const _Arithmetic _Value) {
     // clang-format on
     // TRANSITION, Reusable buffer
     array<char, _Format_min_buffer_length> _Buffer;
@@ -1291,7 +1298,7 @@ _OutputIt _Write(_OutputIt _Out, const _Arithmetic _Value) {
 #pragma warning(pop)
 
 template <class _CharT, class _OutputIt>
-_OutputIt _Write(_OutputIt _Out, const bool _Value) {
+_NODISCARD _OutputIt _Write(_OutputIt _Out, const bool _Value) {
     if constexpr (is_same_v<_CharT, wchar_t>) {
         return _Write(_Out, _Value ? L"true" : L"false");
     } else {
@@ -1300,7 +1307,7 @@ _OutputIt _Write(_OutputIt _Out, const bool _Value) {
 }
 
 template <class _CharT, class _OutputIt>
-_OutputIt _Write(_OutputIt _Out, const _CharT _Value) {
+_NODISCARD _OutputIt _Write(_OutputIt _Out, const _CharT _Value) {
     *_Out = _Value;
     return ++_Out;
 }
@@ -1308,7 +1315,7 @@ _OutputIt _Write(_OutputIt _Out, const _CharT _Value) {
 #pragma warning(push)
 #pragma warning(disable : 4365) // 'argument': conversion from 'char' to 'const wchar_t', signed/unsigned mismatch
 template <class _CharT, class _OutputIt>
-_OutputIt _Write(_OutputIt _Out, const void* const _Value) {
+_NODISCARD _OutputIt _Write(_OutputIt _Out, const void* const _Value) {
     // TRANSITION, Reusable buffer
     array<char, _Format_min_buffer_length> _Buffer;
     const auto [_End, _Ec] =
@@ -1321,7 +1328,7 @@ _OutputIt _Write(_OutputIt _Out, const void* const _Value) {
 #pragma warning(pop)
 
 template <class _CharT, class _OutputIt>
-_OutputIt _Write(_OutputIt _Out, const _CharT* _Value) {
+_NODISCARD _OutputIt _Write(_OutputIt _Out, const _CharT* _Value) {
     if (!_Value) {
         throw format_error("String pointer is null.");
     }
@@ -1332,12 +1339,12 @@ _OutputIt _Write(_OutputIt _Out, const _CharT* _Value) {
 }
 
 template <class _CharT, class _OutputIt>
-_OutputIt _Write(_OutputIt _Out, const basic_string_view<_CharT> _Value) {
+_NODISCARD _OutputIt _Write(_OutputIt _Out, const basic_string_view<_CharT> _Value) {
     return _STD copy(_Value.begin(), _Value.end(), _Out);
 }
 
 template <class _CharT, class _OutputIt, class _Func>
-_OutputIt _Write_aligned(_OutputIt _Out, const int _Width, const _Basic_format_specs<_CharT>& _Specs,
+_NODISCARD _OutputIt _Write_aligned(_OutputIt _Out, const int _Width, const _Basic_format_specs<_CharT>& _Specs,
     const _Align _Default_align, _Func&& _Fn) {
     int _Fill_left  = 0;
     int _Fill_right = 0;
@@ -1393,7 +1400,7 @@ _NODISCARD constexpr string_view _Get_integral_prefix(const char _Type, const _I
 }
 
 template <class _OutputIt>
-_OutputIt _Write_sign(_OutputIt _Out, const _Sign _Sgn, const bool _Is_negative) {
+_NODISCARD _OutputIt _Write_sign(_OutputIt _Out, const _Sign _Sgn, const bool _Is_negative) {
     if (_Is_negative) {
         *_Out++ = '-';
     } else {
@@ -1448,7 +1455,7 @@ _NODISCARD inline int _Count_separators(size_t _Digits, const string_view _Group
 }
 
 template <class _CharT, class _OutputIt>
-_OutputIt _Write_separated_integer(const char* _Start, const char* const _End, const string_view _Groups,
+_NODISCARD _OutputIt _Write_separated_integer(const char* _Start, const char* const _End, const string_view _Groups,
     const _CharT _Separator, int _Separators, _OutputIt _Out) {
     auto _Group_it = _Groups.begin();
     auto _Repeats  = 0;
@@ -1481,7 +1488,7 @@ _OutputIt _Write_separated_integer(const char* _Start, const char* const _End, c
 }
 
 template <class _CharT, class _OutputIt>
-_OutputIt _Write(_OutputIt _Out, monostate, const _Basic_format_specs<_CharT>&, locale) {
+_NODISCARD _OutputIt _Write(_OutputIt _Out, monostate, const _Basic_format_specs<_CharT>&, locale) {
     _STL_INTERNAL_CHECK(false);
     return _Out;
 }
@@ -1489,7 +1496,8 @@ _OutputIt _Write(_OutputIt _Out, monostate, const _Basic_format_specs<_CharT>&, 
 #pragma warning(push)
 #pragma warning(disable : 4365) // 'argument': conversion from 'char' to 'const wchar_t', signed/unsigned mismatch
 template <class _CharT, class _OutputIt, integral _Integral>
-_OutputIt _Write_integral(_OutputIt _Out, const _Integral _Value, _Basic_format_specs<_CharT> _Specs, locale _Locale) {
+_NODISCARD _OutputIt _Write_integral(
+    _OutputIt _Out, const _Integral _Value, _Basic_format_specs<_CharT> _Specs, locale _Locale) {
     if (_Specs._Type == 'c') {
         if (!_In_bounds<_CharT>(_Value)) {
             throw format_error("integral cannot be stored in charT");
@@ -1593,13 +1601,14 @@ _OutputIt _Write_integral(_OutputIt _Out, const _Integral _Value, _Basic_format_
 // clang-format off
 template <class _CharT, class _OutputIt, integral _Integral>
     requires (!_CharT_or_bool<_Integral, _CharT>)
-_OutputIt _Write(_OutputIt _Out, const _Integral _Value, const _Basic_format_specs<_CharT>& _Specs, locale _Locale) {
+_NODISCARD _OutputIt _Write(
+    _OutputIt _Out, const _Integral _Value, const _Basic_format_specs<_CharT>& _Specs, locale _Locale) {
     // clang-format on
     return _Write_integral(_Out, _Value, _Specs, _Locale);
 }
 
 template <class _CharT, class _OutputIt>
-_OutputIt _Write(_OutputIt _Out, const bool _Value, _Basic_format_specs<_CharT> _Specs, locale _Locale) {
+_NODISCARD _OutputIt _Write(_OutputIt _Out, const bool _Value, _Basic_format_specs<_CharT> _Specs, locale _Locale) {
     if (_Specs._Type != '\0' && _Specs._Type != 's') {
         return _Write_integral(_Out, static_cast<unsigned char>(_Value), _Specs, _Locale);
     }
@@ -1624,7 +1633,7 @@ _OutputIt _Write(_OutputIt _Out, const bool _Value, _Basic_format_specs<_CharT> 
 }
 
 template <class _CharT, class _OutputIt>
-_OutputIt _Write(_OutputIt _Out, const _CharT _Value, _Basic_format_specs<_CharT> _Specs, locale _Locale) {
+_NODISCARD _OutputIt _Write(_OutputIt _Out, const _CharT _Value, _Basic_format_specs<_CharT> _Specs, locale _Locale) {
     if (_Specs._Type != '\0' && _Specs._Type != 'c') {
         return _Write_integral(_Out, _Value, _Specs, _Locale);
     }
@@ -1641,7 +1650,8 @@ _OutputIt _Write(_OutputIt _Out, const _CharT _Value, _Basic_format_specs<_CharT
 #pragma warning(push)
 #pragma warning(disable : 4365) // 'argument': conversion from 'char' to 'const wchar_t', signed/unsigned mismatch
 template <class _CharT, class _OutputIt, floating_point _Float>
-_OutputIt _Write(_OutputIt _Out, const _Float _Value, const _Basic_format_specs<_CharT>& _Specs, locale _Locale) {
+_NODISCARD _OutputIt _Write(
+    _OutputIt _Out, const _Float _Value, const _Basic_format_specs<_CharT>& _Specs, locale _Locale) {
     auto _Sgn = _Specs._Sgn;
     if (_Sgn == _Sign::_None) {
         _Sgn = _Sign::_Minus;
@@ -1837,7 +1847,8 @@ _OutputIt _Write(_OutputIt _Out, const _Float _Value, const _Basic_format_specs<
 #pragma warning(pop)
 
 template <class _CharT, class _OutputIt>
-_OutputIt _Write(_OutputIt _Out, const void* const _Value, const _Basic_format_specs<_CharT>& _Specs, locale) {
+_NODISCARD _OutputIt _Write(
+    _OutputIt _Out, const void* const _Value, const _Basic_format_specs<_CharT>& _Specs, locale) {
     if (_Specs._Type != '\0' && _Specs._Type != 'p') {
         throw format_error("invalid const void* type");
     }
@@ -1878,12 +1889,13 @@ _OutputIt _Write(_OutputIt _Out, const void* const _Value, const _Basic_format_s
 }
 
 template <class _CharT, class _OutputIt>
-_OutputIt _Write(_OutputIt _Out, const _CharT* _Value, const _Basic_format_specs<_CharT>& _Specs, locale _Locale) {
+_NODISCARD _OutputIt _Write(
+    _OutputIt _Out, const _CharT* _Value, const _Basic_format_specs<_CharT>& _Specs, locale _Locale) {
     return _Write(_Out, basic_string_view<_CharT>{_Value}, _Specs, _Locale);
 }
 
 template <class _CharT, class _OutputIt>
-_OutputIt _Write(
+_NODISCARD _OutputIt _Write(
     _OutputIt _Out, const basic_string_view<_CharT> _Value, const _Basic_format_specs<_CharT>& _Specs, locale) {
     if (_Specs._Type != '\0' && _Specs._Type != 's') {
         throw format_error("invalid string type");
@@ -2104,12 +2116,12 @@ using format_args     = basic_format_args<format_context>;
 using wformat_args    = basic_format_args<wformat_context>;
 
 template <class _Context = format_context, class... _Args>
-auto make_format_args(const _Args&... _Vals) {
+_NODISCARD auto make_format_args(const _Args&... _Vals) {
     return _Format_arg_store<_Context, _Args...>{_Vals...};
 }
 
 template <class _Context = wformat_context, class... _Args>
-auto make_wformat_args(const _Args&... _Vals) {
+_NODISCARD auto make_wformat_args(const _Args&... _Vals) {
     return _Format_arg_store<_Context, _Args...>{_Vals...};
 }
 
@@ -2117,7 +2129,8 @@ template <class _Out, class _CharT>
 using format_args_t = basic_format_args<basic_format_context<_Out, _CharT>>;
 
 template <output_iterator<const char&> _OutputIt>
-_OutputIt vformat_to(_OutputIt _Out, string_view _Fmt, format_args_t<type_identity_t<_OutputIt>, char> _Args) {
+_OutputIt vformat_to(
+    _OutputIt _Out, const string_view _Fmt, const format_args_t<type_identity_t<_OutputIt>, char> _Args) {
     _Format_handler<_OutputIt, char, basic_format_context<_OutputIt, char>> _Handler(
         _Out, _Fmt, _Args, locale::classic());
     _Parse_format_string(_Fmt, _Handler);
@@ -2125,7 +2138,8 @@ _OutputIt vformat_to(_OutputIt _Out, string_view _Fmt, format_args_t<type_identi
 }
 
 template <output_iterator<const wchar_t&> _OutputIt>
-_OutputIt vformat_to(_OutputIt _Out, wstring_view _Fmt, format_args_t<type_identity_t<_OutputIt>, wchar_t> _Args) {
+_OutputIt vformat_to(
+    _OutputIt _Out, const wstring_view _Fmt, const format_args_t<type_identity_t<_OutputIt>, wchar_t> _Args) {
     _Format_handler<_OutputIt, wchar_t, basic_format_context<_OutputIt, wchar_t>> _Handler(
         _Out, _Fmt, _Args, locale::classic());
     _Parse_format_string(_Fmt, _Handler);
@@ -2133,86 +2147,86 @@ _OutputIt vformat_to(_OutputIt _Out, wstring_view _Fmt, format_args_t<type_ident
 }
 
 template <output_iterator<const char&> _OutputIt>
-_OutputIt vformat_to(
-    _OutputIt _Out, const locale& _Loc, string_view _Fmt, format_args_t<type_identity_t<_OutputIt>, char> _Args) {
+_OutputIt vformat_to(_OutputIt _Out, const locale& _Loc, const string_view _Fmt,
+    const format_args_t<type_identity_t<_OutputIt>, char> _Args) {
     _Format_handler<_OutputIt, char, basic_format_context<_OutputIt, char>> _Handler(_Out, _Fmt, _Args, _Loc);
     _Parse_format_string(_Fmt, _Handler);
     return _Handler._Ctx.out();
 }
 
 template <output_iterator<const wchar_t&> _OutputIt>
-_OutputIt vformat_to(
-    _OutputIt _Out, const locale& _Loc, wstring_view _Fmt, format_args_t<type_identity_t<_OutputIt>, wchar_t> _Args) {
+_OutputIt vformat_to(_OutputIt _Out, const locale& _Loc, const wstring_view _Fmt,
+    const format_args_t<type_identity_t<_OutputIt>, wchar_t> _Args) {
     _Format_handler<_OutputIt, wchar_t, basic_format_context<_OutputIt, wchar_t>> _Handler(_Out, _Fmt, _Args, _Loc);
     _Parse_format_string(_Fmt, _Handler);
     return _Handler._Ctx.out();
 }
 
 template <class _OutputIt, class... _Types>
-_OutputIt format_to(_OutputIt _Out, string_view _Fmt, const _Types&... _Args) {
+_OutputIt format_to(_OutputIt _Out, const string_view _Fmt, const _Types&... _Args) {
     using _Context = basic_format_context<_OutputIt, char>;
     return _STD vformat_to(_STD move(_Out), _Fmt, _STD make_format_args<_Context>(_Args...));
 }
 
 template <class _OutputIt, class... _Types>
-_OutputIt format_to(_OutputIt _Out, wstring_view _Fmt, const _Types&... _Args) {
+_OutputIt format_to(_OutputIt _Out, const wstring_view _Fmt, const _Types&... _Args) {
     using _Context = basic_format_context<_OutputIt, wchar_t>;
     return _STD vformat_to(_STD move(_Out), _Fmt, _STD make_format_args<_Context>(_Args...));
 }
 
 template <class _OutputIt, class... _Types>
-_OutputIt format_to(_OutputIt _Out, const locale& _Loc, string_view _Fmt, const _Types&... _Args) {
+_OutputIt format_to(_OutputIt _Out, const locale& _Loc, const string_view _Fmt, const _Types&... _Args) {
     using _Context = basic_format_context<_OutputIt, char>;
     return _STD vformat_to(_STD move(_Out), _Loc, _Fmt, _STD make_format_args<_Context>(_Args...));
 }
 
 template <class _OutputIt, class... _Types>
-_OutputIt format_to(_OutputIt _Out, const locale& _Loc, wstring_view _Fmt, const _Types&... _Args) {
+_OutputIt format_to(_OutputIt _Out, const locale& _Loc, const wstring_view _Fmt, const _Types&... _Args) {
     using _Context = basic_format_context<_OutputIt, wchar_t>;
     return _STD vformat_to(_STD move(_Out), _Loc, _Fmt, _STD make_format_args<_Context>(_Args...));
 }
 
-inline string vformat(string_view _Fmt, format_args _Args) {
+_NODISCARD inline string vformat(const string_view _Fmt, const format_args _Args) {
     string _Str;
     _STD vformat_to(_STD back_inserter(_Str), _Fmt, _Args);
     return _Str;
 }
 
-inline wstring vformat(wstring_view _Fmt, wformat_args _Args) {
+_NODISCARD inline wstring vformat(const wstring_view _Fmt, const wformat_args _Args) {
     wstring _Str;
     _STD vformat_to(_STD back_inserter(_Str), _Fmt, _Args);
     return _Str;
 }
 
-inline string vformat(const locale& _Loc, string_view _Fmt, format_args _Args) {
+_NODISCARD inline string vformat(const locale& _Loc, const string_view _Fmt, const format_args _Args) {
     string _Str;
     _STD vformat_to(_STD back_inserter(_Str), _Loc, _Fmt, _Args);
     return _Str;
 }
 
-inline wstring vformat(const locale& _Loc, wstring_view _Fmt, wformat_args _Args) {
+_NODISCARD inline wstring vformat(const locale& _Loc, const wstring_view _Fmt, const wformat_args _Args) {
     wstring _Str;
     _STD vformat_to(_STD back_inserter(_Str), _Loc, _Fmt, _Args);
     return _Str;
 }
 
 template <class... _Types>
-string format(string_view _Fmt, const _Types&... _Args) {
+_NODISCARD string format(const string_view _Fmt, const _Types&... _Args) {
     return _STD vformat(_Fmt, _STD make_format_args(_Args...));
 }
 
 template <class... _Types>
-wstring format(wstring_view _Fmt, const _Types&... _Args) {
+_NODISCARD wstring format(const wstring_view _Fmt, const _Types&... _Args) {
     return _STD vformat(_Fmt, _STD make_wformat_args(_Args...));
 }
 
 template <class... _Types>
-string format(const locale& _Loc, string_view _Fmt, const _Types&... _Args) {
+_NODISCARD string format(const locale& _Loc, const string_view _Fmt, const _Types&... _Args) {
     return _STD vformat(_Loc, _Fmt, _STD make_format_args(_Args...));
 }
 
 template <class... _Types>
-wstring format(const locale& _Loc, wstring_view _Fmt, const _Types&... _Args) {
+_NODISCARD wstring format(const locale& _Loc, const wstring_view _Fmt, const _Types&... _Args) {
     return _STD vformat(_Loc, _Fmt, _STD make_wformat_args(_Args...));
 }
 
@@ -2232,7 +2246,7 @@ struct _Format_to_n_iterator {
         return *this;
     }
 
-    _Format_to_n_iterator& operator*() {
+    _NODISCARD _Format_to_n_iterator& operator*() {
         return *this;
     }
 
@@ -2306,7 +2320,7 @@ struct _Counting_iterator {
         return *this;
     }
 
-    _Counting_iterator& operator*() {
+    _NODISCARD _Counting_iterator& operator*() {
         return *this;
     }
 
@@ -2320,28 +2334,28 @@ struct _Counting_iterator {
 };
 
 template <class... _Types>
-size_t formatted_size(const string_view _Fmt, const _Types&... _Args) {
+_NODISCARD size_t formatted_size(const string_view _Fmt, const _Types&... _Args) {
     using _Context  = basic_format_context<_Counting_iterator, char>;
     auto _Arg_store = _STD make_format_args<_Context>(_Args...);
     return _STD vformat_to(_Counting_iterator{}, _Fmt, _STD move(_Arg_store))._Count;
 }
 
 template <class... _Types>
-size_t formatted_size(const wstring_view _Fmt, const _Types&... _Args) {
+_NODISCARD size_t formatted_size(const wstring_view _Fmt, const _Types&... _Args) {
     using _Context  = basic_format_context<_Counting_iterator, wchar_t>;
     auto _Arg_store = _STD make_format_args<_Context>(_Args...);
     return _STD vformat_to(_Counting_iterator{}, _Fmt, _STD move(_Arg_store))._Count;
 }
 
 template <class... _Types>
-size_t formatted_size(const locale& _Loc, const string_view _Fmt, const _Types&... _Args) {
+_NODISCARD size_t formatted_size(const locale& _Loc, const string_view _Fmt, const _Types&... _Args) {
     using _Context  = basic_format_context<_Counting_iterator, char>;
     auto _Arg_store = _STD make_format_args<_Context>(_Args...);
     return _STD vformat_to(_Counting_iterator{}, _Loc, _Fmt, _STD move(_Arg_store))._Count;
 }
 
 template <class... _Types>
-size_t formatted_size(const locale& _Loc, const wstring_view _Fmt, const _Types&... _Args) {
+_NODISCARD size_t formatted_size(const locale& _Loc, const wstring_view _Fmt, const _Types&... _Args) {
     using _Context  = basic_format_context<_Counting_iterator, wchar_t>;
     auto _Arg_store = _STD make_format_args<_Context>(_Args...);
     return _STD vformat_to(_Counting_iterator{}, _Loc, _Fmt, _STD move(_Arg_store))._Count;
