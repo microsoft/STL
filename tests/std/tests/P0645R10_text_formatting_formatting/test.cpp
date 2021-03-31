@@ -74,6 +74,14 @@ void test_simple_formatting() {
         back_insert_iterator{output_string}, locale::classic(), STR("format"), make_testing_format_args<charT>());
     assert(output_string == STR("format"));
 
+    output_string.clear();
+    format_to(back_insert_iterator{output_string}, STR("format"));
+    assert(output_string == STR("format"));
+
+    output_string.clear();
+    format_to(back_insert_iterator{output_string}, locale::classic(), STR("format"));
+    assert(output_string == STR("format"));
+
     assert(format(STR("f")) == STR("f"));
     assert(format(STR("format")) == STR("format"));
     assert(format(locale::classic(), STR("f")) == STR("f"));
@@ -142,6 +150,13 @@ void test_simple_replacement_field() {
         back_insert_iterator{output_string}, locale::classic(), STR("{}"), make_testing_format_args<charT>(STR("f")));
     assert(output_string == STR("f"));
 
+    output_string.clear();
+    format_to(back_insert_iterator{output_string}, STR("{}"), STR("f"));
+    assert(output_string == STR("f"));
+
+    output_string.clear();
+    format_to(back_insert_iterator{output_string}, locale::classic(), STR("{}"), STR("f"));
+    assert(output_string == STR("f"));
 
     assert(format(STR("{}"), STR("f")) == STR("f"));
     assert(format(locale::classic(), STR("{}"), STR("f")) == STR("f"));

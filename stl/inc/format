@@ -2030,6 +2030,30 @@ _OutputIt vformat_to(
     return _Handler._Ctx.out();
 }
 
+template <class _OutputIt, class... _Types>
+_OutputIt format_to(_OutputIt _Out, string_view _Fmt, const _Types&... _Args) {
+    using _Context = _STD basic_format_context<_OutputIt, char>;
+    return vformat_to(_STD move(_Out), _Fmt, make_format_args<_Context>(_Args...));
+}
+
+template <class _OutputIt, class... _Types>
+_OutputIt format_to(_OutputIt _Out, wstring_view _Fmt, const _Types&... _Args) {
+    using _Context = _STD basic_format_context<_OutputIt, wchar_t>;
+    return vformat_to(_STD move(_Out), _Fmt, make_format_args<_Context>(_Args...));
+}
+
+template <class _OutputIt, class... _Types>
+_OutputIt format_to(_OutputIt _Out, const locale& _Loc, string_view _Fmt, const _Types&... _Args) {
+    using _Context = _STD basic_format_context<_OutputIt, char>;
+    return vformat_to(_STD move(_Out), _Loc, _Fmt, make_format_args<_Context>(_Args...));
+}
+
+template <class _OutputIt, class... _Types>
+_OutputIt format_to(_OutputIt _Out, const locale& _Loc, wstring_view _Fmt, const _Types&... _Args) {
+    using _Context = _STD basic_format_context<_OutputIt, wchar_t>;
+    return vformat_to(_STD move(_Out), _Loc, _Fmt, make_format_args<_Context>(_Args...));
+}
+
 inline string vformat(string_view _Fmt, format_args _Args) {
     string _Str;
     _STD vformat_to(_STD back_inserter(_Str), _Fmt, _Args);
