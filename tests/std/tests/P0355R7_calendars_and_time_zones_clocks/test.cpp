@@ -11,6 +11,8 @@
 #include <type_traits>
 #include <utility>
 
+#include <timezone_data.hpp>
+
 using namespace std;
 using namespace std::chrono;
 
@@ -392,7 +394,7 @@ tzdb copy_tzdb() {
     return {my_tzdb.version, move(zones), move(links), my_tzdb.leap_seconds, my_tzdb._All_ls_positive};
 }
 
-int main() {
+void test() {
     assert(test_leap_second());
     static_assert(test_leap_second());
 
@@ -472,6 +474,8 @@ int main() {
         offset += leap.value();
         assert(leap._Elapsed() == offset);
     }
+}
 
-    return 0;
+int main() {
+    run_tz_test([] { test(); });
 }

@@ -3,8 +3,6 @@
 
 #include <cassert>
 #include <chrono>
-#include <exception>
-#include <iostream>
 #include <string_view>
 #include <type_traits>
 
@@ -338,18 +336,13 @@ constexpr void zonedtime_constraints_test() {
 }
 
 void test() {
-    try {
-        zonedtime_constructor_test();
-        zonedtime_operator_test();
-        zonedtime_exception_tests();
-        zonedtime_traits_test();
-        zonedtime_constraints_test();
-    } catch (const exception& ex) {
-        cerr << "Test threw exception: " << ex.what() << "\n";
-        assert(false);
-    }
+    zonedtime_constructor_test();
+    zonedtime_operator_test();
+    zonedtime_exception_tests();
+    zonedtime_traits_test();
+    zonedtime_constraints_test();
 }
 
 int main() {
-    test();
+    run_tz_test([] { test(); });
 }

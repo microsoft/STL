@@ -12,10 +12,11 @@
 #include <ratio>
 #include <sstream>
 #include <string>
-#include <system_error>
 #include <type_traits>
 #include <utility>
 #include <vector>
+
+#include <timezone_data.hpp>
 
 using namespace std;
 using namespace std::chrono;
@@ -1127,9 +1128,11 @@ void test_parse() {
     parse_wchar();
 }
 
-
-int main() {
+void test() {
     test_duration_output();
     test_parse();
-    return 0;
+}
+
+int main() {
+    run_tz_test([] { test(); });
 }

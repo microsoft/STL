@@ -4,7 +4,12 @@
 #pragma once
 #include <cassert>
 #include <chrono>
+#include <cstdlib>
+#include <exception>
+#include <iostream>
+#include <stdexcept>
 #include <string_view>
+#include <system_error>
 #include <utility>
 
 using namespace std;
@@ -138,3 +143,34 @@ namespace LA {
     inline constexpr pair<Transition, Transition> Std_to_Day{Std_1, Day_2};
 
 } // namespace LA
+
+template <class TestFunction>
+void run_tz_test(TestFunction test_function) {
+    try {
+#ifdef MSVC_INTERNAL_TESTING
+        try {
+            (void) get_tzdb();
+        } catch (const system_error& ex) {
+            if (ex.code() == error_code{126 /* ERROR_MOD_NOT_FOUND */, system_category()}) {
+                // Skip testing when we can't load icu.dll on an internal test machine running an older OS.
+                exit(EXIT_SUCCESS);
+            }
+
+            throw; // Report any other errors.
+        }
+#endif // MSVC_INTERNAL_TESTING
+
+        test_function();
+
+    } catch (const system_error& ex) {
+        cerr << "Test threw system_error: " << ex.what() << "\n";
+        cerr << "With error_code: " << ex.code() << "\n";
+        assert(false);
+    } catch (const runtime_error& ex) {
+        cerr << "Test threw runtime_error: " << ex.what() << "\n";
+        assert(false);
+    } catch (const exception& ex) {
+        cerr << "Test threw exception: " << ex.what() << "\n";
+        assert(false);
+    }
+}

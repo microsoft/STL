@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <cassert>
 #include <chrono>
-#include <iostream>
 #include <ratio>
 #include <stdexcept>
 #include <string>
@@ -404,23 +403,16 @@ void timezone_precision_test() {
     }
 }
 
-bool test() {
-    try {
-        timezone_tzdb_list_test();
-        timezone_version_test();
-        timezone_names_test();
-        timezone_sys_info_test();
-        timezone_to_local_test();
-        timezone_local_info_test();
-        timezone_precision_test();
-    } catch (const exception& ex) {
-        cerr << "Test threw exception: " << ex.what() << "\n";
-        assert(false);
-    }
-
-    return true;
+void test() {
+    timezone_tzdb_list_test();
+    timezone_version_test();
+    timezone_names_test();
+    timezone_sys_info_test();
+    timezone_to_local_test();
+    timezone_local_info_test();
+    timezone_precision_test();
 }
 
 int main() {
-    test();
+    run_tz_test([] { test(); });
 }
