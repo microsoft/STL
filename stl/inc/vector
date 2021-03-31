@@ -1154,10 +1154,10 @@ private:
 #else // ^^^ __cpp_lib_concepts ^^^ / vvv !__cpp_lib_concepts vvv
         const auto _Newsize = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_First, _Last)));
 #endif // ^^^ !__cpp_lib_concepts ^^^
-        auto& _My_data      = _Mypair._Myval2;
-        pointer& _Myfirst   = _My_data._Myfirst;
-        pointer& _Mylast    = _My_data._Mylast;
-        pointer& _Myend     = _My_data._Myend;
+        auto& _My_data    = _Mypair._Myval2;
+        pointer& _Myfirst = _My_data._Myfirst;
+        pointer& _Mylast  = _My_data._Mylast;
+        pointer& _Myend   = _My_data._Myend;
 
         _My_data._Orphan_all();
 
