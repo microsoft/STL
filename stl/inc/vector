@@ -544,7 +544,11 @@ public:
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
         _Adl_verify_range(_First, _Last);
 #ifdef __cpp_lib_concepts
-        _Range_construct_or_tidy(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Iter_concept<_Iter>{});
+        if constexpr (derived_from<_Iter_concept<_Iter>, _Iter_cat_t<_Iter>>) {
+            _Range_construct_or_tidy(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Iter_concept<_Iter>{});
+        } else {
+            _Range_construct_or_tidy(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Iter_cat_t<_Iter>{});
+        }
 #else // ^^^ __cpp_lib_concepts ^^^ / vvv !__cpp_lib_concepts vvv
         _Range_construct_or_tidy(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Iter_cat_t<_Iter>{});
 #endif // ^^^ !__cpp_lib_concepts ^^^
@@ -1145,7 +1149,11 @@ private:
     template <class _Iter>
     _CONSTEXPR20_CONTAINER void _Assign_range(_Iter _First, _Iter _Last, forward_iterator_tag) {
         // assign forward range [_First, _Last)
+#ifdef __cpp_lib_concepts
+        const auto _Newsize = _Convert_size<size_type>(static_cast<size_t>(_RANGES distance(_First, _Last)));
+#else // ^^^ __cpp_lib_concepts ^^^ / vvv !__cpp_lib_concepts vvv
         const auto _Newsize = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_First, _Last)));
+#endif // ^^^ !__cpp_lib_concepts ^^^
         auto& _My_data      = _Mypair._Myval2;
         pointer& _Myfirst   = _My_data._Myfirst;
         pointer& _Mylast    = _My_data._Mylast;
@@ -1195,6 +1203,15 @@ public:
     _CONSTEXPR20_CONTAINER void assign(_Iter _First, _Iter _Last) {
         _Adl_verify_range(_First, _Last);
         _Assign_range(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Iter_cat_t<_Iter>{});
+#ifdef __cpp_lib_concepts
+        if constexpr (derived_from<_Iter_concept<_Iter>, _Iter_cat_t<_Iter>>) {
+            _Assign_range(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Iter_concept<_Iter>{});
+        } else {
+            _Assign_range(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Iter_cat_t<_Iter>{});
+        }
+#else // ^^^ __cpp_lib_concepts ^^^ / vvv !__cpp_lib_concepts vvv
+        _Assign_range(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Iter_cat_t<_Iter>{});
+#endif // ^^^ !__cpp_lib_concepts ^^^
     }
 
     _CONSTEXPR20_CONTAINER void assign(initializer_list<_Ty> _Ilist) {
