@@ -255,7 +255,7 @@ public:
 };
 
 template <class _Visitor, class _Context>
-_NODISCARD auto visit_format_arg(_Visitor&& _Vis, basic_format_arg<_Context> _Arg) {
+auto visit_format_arg(_Visitor&& _Vis, basic_format_arg<_Context> _Arg) {
     switch (_Arg._Active_state) {
     case _Basic_format_arg_type::_None:
         return _Vis(_Arg._No_state);
@@ -1235,7 +1235,7 @@ public:
 };
 
 template <class _CharT>
-constexpr size_t _Get_format_arg_type_storage_size(_Basic_format_arg_type _Type) {
+_NODISCARD constexpr size_t _Get_format_arg_type_storage_size(_Basic_format_arg_type _Type) {
     switch (_Type) {
     case _Basic_format_arg_type::_Int_type:
         return sizeof(int);
