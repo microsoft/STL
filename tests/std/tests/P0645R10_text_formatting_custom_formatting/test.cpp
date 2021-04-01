@@ -58,7 +58,7 @@ struct std::formatter<custom_formattable_type<T>, charT> : std::formatter<T, cha
     template <class FC>
     auto format(const custom_formattable_type<T>& val, FC& format_ctx) {
         return std::formatter<T, charT>::format(val.val, format_ctx);
-    };
+    }
 };
 
 constexpr void test_disabled_formatter_is_disabled() {
@@ -72,13 +72,13 @@ constexpr void test_disabled_formatter_is_disabled() {
 }
 
 template <class T, class charT>
-void test_custom_equiv_with_format(const charT* fmt_string, T&& val) {
-    assert(format(fmt_string, custom_formattable_type<T>{forward<T>(val)}) == format(fmt_string, val));
+void test_custom_equiv_with_format(const charT* fmt_string, const T& val) {
+    assert(format(fmt_string, custom_formattable_type<T>{val}) == format(fmt_string, val));
 }
 
 template <class T, class charT>
-void test_custom_equiv_with_format_mixed(const charT* fmt_string, T&& val) {
-    assert(format(fmt_string, custom_formattable_type<T>{forward<T>(val)}, val) == format(fmt_string, val, val));
+void test_custom_equiv_with_format_mixed(const charT* fmt_string, const T& val) {
+    assert(format(fmt_string, custom_formattable_type<T>{val}, val) == format(fmt_string, val, val));
 }
 
 template <class T, class charT>
