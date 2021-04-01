@@ -54,7 +54,7 @@ auto make_testing_format_args(Args&&... vals) {
 template <class charT, class... Args>
 void throw_helper(const charT* fmt, const Args&... vals) {
     try {
-        format(fmt, vals...);
+        (void) format(fmt, vals...);
         assert(false);
     } catch (const format_error&) {
     }
@@ -385,7 +385,7 @@ void test_fill_and_align() {
 
     auto tester = [&] {
         basic_string<charT> output_string;
-        _Write_aligned(back_inserter(output_string), 2, specs, _Align::_Left, writer);
+        (void) _Write_aligned(back_inserter(output_string), 2, specs, _Align::_Left, writer);
         return output_string;
     };
 

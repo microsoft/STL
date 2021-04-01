@@ -86,7 +86,7 @@ constexpr bool test_basic_format_parse_context() {
 
         if (!is_constant_evaluated()) {
             try {
-                context.next_arg_id();
+                (void) context.next_arg_id();
             } catch (const format_error& e) {
                 assert(e.what() == "Can not switch from manual to automatic indexing"sv);
             }
