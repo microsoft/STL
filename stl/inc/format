@@ -831,20 +831,20 @@ public:
     constexpr _Dynamic_specs_handler(_Dynamic_format_specs<_CharT>& _Specs_, _ParseContext& _Parse_ctx_)
         : _Specs_setter<_CharT>(_Specs_), _Dynamic_specs(_Specs_), _Parse_ctx(_Parse_ctx_) {}
 
-    constexpr void _On_dynamic_width(size_t _Arg_id) {
+    constexpr void _On_dynamic_width(const size_t _Arg_id) {
         _Parse_ctx.check_arg_id(_Arg_id);
         _Dynamic_specs._Dynamic_width_index = _Verify_dynamic_arg_index_in_range(_Arg_id);
     }
 
-    constexpr void _On_dynamic_width(_Auto_id_tag) {
+    constexpr void _On_dynamic_width(const _Auto_id_tag) {
         _Dynamic_specs._Dynamic_width_index = _Verify_dynamic_arg_index_in_range(_Parse_ctx.next_arg_id());
     }
 
-    constexpr void _On_dynamic_precision(size_t _Arg_id) {
+    constexpr void _On_dynamic_precision(const size_t _Arg_id) {
         _Parse_ctx.check_arg_id(_Arg_id);
         _Dynamic_specs._Dynamic_precision_index = _Verify_dynamic_arg_index_in_range(_Arg_id);
     }
-    constexpr void _On_dynamic_precision(_Auto_id_tag) {
+    constexpr void _On_dynamic_precision(const _Auto_id_tag) {
         _Dynamic_specs._Dynamic_precision_index = _Verify_dynamic_arg_index_in_range(_Parse_ctx.next_arg_id());
     }
 
