@@ -154,7 +154,7 @@ public:
         return static_cast<size_t>(_Next_arg_id++);
     }
 
-    _NODISCARD constexpr void check_arg_id(const size_t _Id) {
+    constexpr void check_arg_id(const size_t _Id) {
         if (_STD is_constant_evaluated()) {
             if (_Id >= _Num_args) {
                 _You_see_this_error_because_arg_id_is_out_of_range();
