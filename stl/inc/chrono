@@ -2586,11 +2586,13 @@ namespace chrono {
 
         _NODISCARD const time_zone* locate_zone(string_view _Tz_name) const {
             auto _Tz = _Locate_zone_impl(zones, _Tz_name);
-            if (_Tz == nullptr) {
-                const auto _Link = _Locate_zone_impl(links, _Tz_name);
-                if (_Link != nullptr) {
-                    _Tz = _Locate_zone_impl(zones, _Link->target());
-                }
+            if (_Tz != nullptr) {
+                return _Tz;
+            }
+
+            const auto _Link = _Locate_zone_impl(links, _Tz_name);
+            if (_Link != nullptr) {
+                _Tz = _Locate_zone_impl(zones, _Link->target());
             }
 
             if (_Tz == nullptr) {
@@ -2822,30 +2824,32 @@ namespace chrono {
     // FUNCTION get_tzdb_list
     _NODISCARD inline tzdb_list& get_tzdb_list() {
         auto* _Tzdb_ptr = _Global_tzdb_list.load();
-        if (_Tzdb_ptr == nullptr) {
-            auto _My_tzdb = static_cast<tzdb_list*>(__std_calloc_crt(1, sizeof(tzdb_list)));
-            if (_My_tzdb == nullptr) {
-                _Xruntime_error("bad allocation"); // not bad_alloc, see N4878 [time.zone.db.access]/4
-            }
+        if (_Tzdb_ptr != nullptr) {
+            return *_Tzdb_ptr;
+        }
 
-            _TRY_BEGIN
-            _STD construct_at(_My_tzdb);
-            _CATCH(const runtime_error&)
-            __std_free_crt(_My_tzdb);
-            _RERAISE;
-            _CATCH(const exception& _Except)
+        auto _My_tzdb = static_cast<tzdb_list*>(__std_calloc_crt(1, sizeof(tzdb_list)));
+        if (_My_tzdb == nullptr) {
+            _Xruntime_error("bad allocation"); // not bad_alloc, see N4878 [time.zone.db.access]/4
+        }
+
+        _TRY_BEGIN
+        _STD construct_at(_My_tzdb);
+        _CATCH(const runtime_error&)
+        __std_free_crt(_My_tzdb);
+        _RERAISE;
+        _CATCH(const exception& _Except)
 #if _HAS_EXCEPTIONS
-            __std_free_crt(_My_tzdb);
-            _Xruntime_error(_Except.what());
+        __std_free_crt(_My_tzdb);
+        _Xruntime_error(_Except.what());
 #endif // _HAS_EXCEPTIONS
-            _CATCH_END
+        _CATCH_END
 
-            if (_Global_tzdb_list.compare_exchange_strong(_Tzdb_ptr, _My_tzdb)) {
-                _Tzdb_ptr = _My_tzdb;
-            } else {
-                _STD destroy_at(_My_tzdb);
-                __std_free_crt(_My_tzdb);
-            }
+        if (_Global_tzdb_list.compare_exchange_strong(_Tzdb_ptr, _My_tzdb)) {
+            _Tzdb_ptr = _My_tzdb;
+        } else {
+            _STD destroy_at(_My_tzdb);
+            __std_free_crt(_My_tzdb);
         }
 
         return *_Tzdb_ptr;
