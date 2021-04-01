@@ -793,6 +793,81 @@ namespace chrono {
     };
     inline constexpr last_spec last{};
 
+    // [time.format]
+
+    template <class _CharT, _Parse_spec_callback<_CharT> _Callbacks_type>
+    constexpr const _CharT* _Parse_conversion_spec(
+        const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
+        _STL_INTERNAL_CHECK(_Begin != _End);
+
+        ++_Begin; // move past %
+        if (_Begin == 'E' || _Begin == '0') { // modifier (optional)
+            // store modifier somehow
+        }
+
+        _Begin = _Parse_type(_Begin, _End, ...);
+    }
+
+    template <class _CharT, _Parse_spec_callbacks<_CharT> _Callbacks_type>
+    constexpr const _CharT* _Parse_chrono_specs_tail(const _CharT*, const _CharT*, _Callbacks_type&&);)
+
+    template <class _CharT, _Parse_spec_callbacks<_CharT> _Callbacks_type>
+    constexpr const _CharT* _Parse_chrono_specs(const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
+        _STL_INTERNAL_CHECK(_Begin != _End);
+
+        if (*_Begin == '%') {
+            _Begin = _Parse_conversion_spec(_Begin, _End, ...);
+        }
+
+        _Begin = _Parse_chrono_specs_tail(_Begin, _End, _Callbacks);
+
+        return _Begin;
+    }
+
+    template <class _CharT, _Parse_spec_callbacks<_CharT> _Callbacks_type>
+    constexpr const _CharT* _Parse_chrono_specs_tail(
+        const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
+        if (_Begin == _End) { // empty case
+            return _Begin;
+        }
+
+        if (*_Begin == '%') { // conversion-spec
+            _Begin = _Parse_conversion_spec(_Begin, _End, ...);
+
+        } else { // literal-char
+            _Begin = _Parse_literal_char(_Begin, _End, ...);
+        }
+
+        return _Begin;
+    }
+
+    template <class _CharT, _Parse_spec_callbacks<_CharT> _Callbacks_type>
+    constexpr const _CharT* _Parse_chrono_format_specs(
+        const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
+        if (_Begin == _End || *_Begin == '}') {
+            return _Begin;
+        }
+
+        _Begin = _Parse_align(_Begin, _End, _Callbacks);
+        if (_Begin == _End) {
+            return _Begin;
+        }
+
+        _Begin = _Parse_width(_Begin, _End, _Callbacks);
+        if (_Begin == _End) {
+            return _Begin;
+        }
+
+        if (*_Begin == '.') {
+            _Begin = _Parse_precision(_Begin, _End, _Callbacks);
+            if (_Begin == _End) {
+                return _Begin;
+            }
+        }
+
+        _Begin = _Parse_chrono_specs(_Begin, _End, _Callbacks);
+    }
+
     class day {
     public:
         day() = default;
