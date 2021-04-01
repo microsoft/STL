@@ -4011,12 +4011,15 @@ namespace chrono {
             }
         }
 
-        template <class _DurationType>
-        _NODISCARD bool _Apply_duration_fields(_DurationType& _Result, const bool _For_time_point) {
-            constexpr bool _Can_rep_sec = _Can_represent<_DurationType, seconds>();
-            constexpr bool _Can_rep_min = _Can_represent<_DurationType, minutes>();
-            constexpr bool _Can_rep_hr  = _Can_represent<_DurationType, hours>();
-            constexpr bool _Can_rep_day = _Can_represent<_DurationType, days>();
+        enum class _Parse_tp_or_duration { _Time_point, _Duration };
+
+        template <class _DurationType, _Parse_tp_or_duration _Parse_type>
+        _NODISCARD bool _Apply_duration_fields(_DurationType& _Result) {
+            constexpr bool _Can_rep_sec    = _Can_represent<_DurationType, seconds>();
+            constexpr bool _Can_rep_min    = _Can_represent<_DurationType, minutes>();
+            constexpr bool _Can_rep_hr     = _Can_represent<_DurationType, hours>();
+            constexpr bool _Can_rep_day    = _Can_represent<_DurationType, days>();
+            constexpr bool _For_time_point = _Parse_type == _Parse_tp_or_duration::_Time_point;
 
             const auto _Required{(_For_time_point ? _F_day | _F_mon | _F_year : 0)};
             const auto _Optional{(_For_time_point ? _F_wkday : 0) | (_Can_rep_sec ? _F_sec : 0)
@@ -4089,7 +4092,8 @@ namespace chrono {
             const bool _Consistent = _Calculate_hour24();
             if (_Consistent) {
                 _Duration_result = duration<_Rep, _Period>::zero(); // TRANSITION: LWG-3536 & GH-1740
-                return _Apply_duration_fields(_Duration_result, false);
+                return _Apply_duration_fields<duration<_Rep, _Period>, _Parse_tp_or_duration::_Duration>(
+                    _Duration_result);
             }
 
             return false;
@@ -4106,7 +4110,7 @@ namespace chrono {
         _NODISCARD bool _Make_time_point(_DurationType& _Dur, _LeapSecondRep _Leap) {
 
             const bool _Consistent{_Calculate_hour24() && _Calculate_year_fields()};
-            if (!_Consistent || !_Apply_duration_fields(_Dur, true)) {
+            if (!_Consistent || !_Apply_duration_fields<_DurationType, _Parse_tp_or_duration::_Time_point>(_Dur)) {
                 return false;
             }
 
