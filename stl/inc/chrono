@@ -2285,9 +2285,10 @@ namespace chrono {
         template <class _Duration>
         _NODISCARD local_info get_info(const local_time<_Duration>& _Local) const {
             local_info _Info{};
-            _Info.first = _Get_info(_Local.time_since_epoch());
+            const auto _Time_since_ep = _Local.time_since_epoch();
+            _Info.first               = _Get_info(_Time_since_ep);
 
-            const sys_seconds _Local_sys{_CHRONO duration_cast<sys_seconds::duration>(_Local.time_since_epoch())};
+            const sys_seconds _Local_sys{_CHRONO duration_cast<sys_seconds::duration>(_Time_since_ep)};
             const auto _Curr_sys = _Local_sys - _Info.first.offset;
             if (_Info.first.begin != _Min_seconds && _Curr_sys < _Info.first.begin + days{1}) {
                 // get previous transition information
