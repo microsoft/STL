@@ -69,6 +69,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <TargetLib Include="$(CrtLibPath)\msvcrt$(BuildSuffix)$(ClrLibSuffix).lib"/>
         <TargetLib Include="$(CrtLibPath)\vcruntime$(BuildSuffix)$(ClrLibSuffix).lib"/>
         <TargetLib Include="$(UniversalCRTLib)"/>
+        <TargetLib Condition="'$(MsvcpFlavor)' == 'kernel32' or '$(MsvcpFlavor)' == 'netfx'" Include="$(SdkLibPath)\advapi32.lib"/>
     </ItemGroup>
 
     <!-- Copy the output dll and pdb to various destinations -->

@@ -2576,7 +2576,7 @@ namespace chrono {
         return _Result == _Vec.end() ? nullptr : &*_Result;
     }
 
-    // STRUCT  tzdb
+    // STRUCT tzdb
     struct tzdb {
         string version;
         vector<time_zone> zones;
@@ -2934,8 +2934,9 @@ namespace chrono {
         explicit zoned_time(_TimeZonePtr _Tz) noexcept /* strengthened */ : _Zone{_STD move(_Tz)} {}
 
         // clang-format off
-        template <class _Traits2 = _Traits,
-            enable_if_t<is_constructible_v<zoned_time, decltype(_Traits2::locate_zone(string_view{}))>, int> = 0>
+        template <class _Traits2 = _Traits, enable_if_t<is_constructible< // TRANSITION, VSO-1303556
+            zoned_time, decltype(_Traits2::locate_zone(string_view{}))>::value,
+            int> = 0>
         // clang-format on
         explicit zoned_time(string_view _Name) : _Zone{_Traits::locate_zone(_Name)} {}
 
@@ -2946,8 +2947,8 @@ namespace chrono {
         zoned_time(_TimeZonePtr _Tz, const sys_time<_Duration>& _Sys) : _Zone{_STD move(_Tz)}, _Tp{_Sys} {}
 
         // clang-format off
-        template <class _Traits2 = _Traits, enable_if_t<is_constructible_v<
-            zoned_time, decltype(_Traits2::locate_zone(string_view{})), const sys_time<_Duration>&>,
+        template <class _Traits2 = _Traits, enable_if_t<is_constructible< // TRANSITION, VSO-1303556
+            zoned_time, decltype(_Traits2::locate_zone(string_view{})), const sys_time<_Duration>&>::value,
             int> = 0>
         // clang-format on
         zoned_time(string_view _Name, type_identity_t<const sys_time<_Duration>&> _Sys)
@@ -2961,8 +2962,8 @@ namespace chrono {
             : _Zone{_STD move(_Tz)}, _Tp{_Zone->to_sys(_Local)} {}
 
         // clang-format off
-        template <class _Traits2 = _Traits, enable_if_t<is_constructible_v<
-            zoned_time, decltype(_Traits2::locate_zone(string_view{})), const local_time<_Duration>&>,
+        template <class _Traits2 = _Traits, enable_if_t<is_constructible< // TRANSITION, VSO-1303556
+            zoned_time, decltype(_Traits2::locate_zone(string_view{})), const local_time<_Duration>&>::value,
             int> = 0>
         // clang-format on
         zoned_time(string_view _Name, type_identity_t<const local_time<_Duration>>& _Local)
@@ -2977,8 +2978,8 @@ namespace chrono {
             : _Zone{_STD move(_Tz)}, _Tp{_Zone->to_sys(_Local, _Choose)} {}
 
         // clang-format off
-        template <class _Traits2 = _Traits, enable_if_t<is_constructible_v<
-            zoned_time, decltype(_Traits2::locate_zone(string_view{})), const local_time<_Duration>&, choose>,
+        template <class _Traits2 = _Traits, enable_if_t<is_constructible< // TRANSITION, VSO-1303556
+            zoned_time, decltype(_Traits2::locate_zone(string_view{})), const local_time<_Duration>&, choose>::value,
             int> = 0>
         // clang-format on
         zoned_time(string_view _Name, type_identity_t<const local_time<_Duration>&> _Local, choose _Choose)
@@ -2995,17 +2996,23 @@ namespace chrono {
             _TimeZonePtr _Tz, const zoned_time<_Duration2, _TimeZonePtr2>& _Zt, choose) noexcept /* strengthened */
             : zoned_time{_Tz, _Zt} {}
 
-        template <class _Duration2, class _TimeZonePtr2, class _Traits2 = _Traits,
-            enable_if_t<is_constructible_v<zoned_time, decltype(_Traits2::locate_zone(string_view{})),
-                            const zoned_time<_Duration2, _TimeZonePtr2>&>,
-                int> = 0>
+        // clang-format off
+        template <class _Duration2, class _TimeZonePtr2,
+            class _Traits2 = _Traits, enable_if_t<is_constructible< // TRANSITION, VSO-1303556
+            zoned_time, decltype(_Traits2::locate_zone(string_view{})),
+            const zoned_time<_Duration2, _TimeZonePtr2>&>::value,
+            int> = 0>
+        // clang-format on
         zoned_time(string_view _Name, const zoned_time<_Duration2, _TimeZonePtr2>& _Zt)
             : zoned_time{_Traits::locate_zone(_Name), _Zt} {}
 
-        template <class _Duration2, class _TimeZonePtr2, class _Traits2 = _Traits,
-            enable_if_t<is_constructible_v<zoned_time, decltype(_Traits2::locate_zone(string_view{})),
-                            const zoned_time<_Duration2, _TimeZonePtr2>&, choose>,
-                int> = 0>
+        // clang-format off
+        template <class _Duration2, class _TimeZonePtr2,
+            class _Traits2 = _Traits, enable_if_t<is_constructible< // TRANSITION, VSO-1303556
+            zoned_time, decltype(_Traits2::locate_zone(string_view{})),
+            const zoned_time<_Duration2, _TimeZonePtr2>&, choose>::value,
+            int> = 0>
+        // clang-format on
         zoned_time(string_view _Name, const zoned_time<_Duration2, _TimeZonePtr2>& _Zt, choose _Choose)
             : zoned_time{_Traits::locate_zone(_Name), _Zt, _Choose} {}
 
@@ -3172,8 +3179,8 @@ namespace chrono {
     public:
         using rep                       = system_clock::rep;
         using period                    = system_clock::period;
-        using duration                  = duration<rep, period>;
-        using time_point                = time_point<utc_clock>;
+        using duration                  = _CHRONO duration<rep, period>;
+        using time_point                = _CHRONO time_point<utc_clock>;
         static constexpr bool is_steady = system_clock::is_steady;
 
         _NODISCARD static time_point now() {
@@ -3223,13 +3230,13 @@ namespace chrono {
     public:
         using rep                       = system_clock::rep;
         using period                    = system_clock::period;
-        using duration                  = duration<rep, period>;
-        using time_point                = time_point<tai_clock>;
+        using duration                  = _CHRONO duration<rep, period>;
+        using time_point                = _CHRONO time_point<tai_clock>;
         static constexpr bool is_steady = system_clock::is_steady;
 
         static constexpr seconds _Tai_epoch_adjust{378691210};
 
-        _NODISCARD static time_point now() noexcept(noexcept(utc_clock::now())) {
+        _NODISCARD static time_point now() {
             return from_utc(utc_clock::now());
         }
 
@@ -3259,13 +3266,13 @@ namespace chrono {
     public:
         using rep                       = system_clock::rep;
         using period                    = system_clock::period;
-        using duration                  = chrono::duration<rep, period>;
-        using time_point                = chrono::time_point<gps_clock>;
+        using duration                  = _CHRONO duration<rep, period>;
+        using time_point                = _CHRONO time_point<gps_clock>;
         static constexpr bool is_steady = system_clock::is_steady;
 
         static constexpr seconds _Gps_epoch_adjust{-315964809};
 
-        _NODISCARD static time_point now() noexcept(noexcept(utc_clock::now())) {
+        _NODISCARD static time_point now() {
             return from_utc(utc_clock::now());
         }
 
@@ -3660,7 +3667,6 @@ namespace chrono {
 
         template <class _Ty>
         static constexpr _Ty _Invalid_time_field{numeric_limits<_Ty>::lowest()};
-        static constexpr const char* _Invalid_time_string = "!";
 
         static void _Initialize_time_point(tm& _Tp) {
             _Tp.tm_sec  = _Invalid_time_field<int>;
@@ -3678,11 +3684,7 @@ namespace chrono {
             // Update a field. Ignores invalid values. If _Val already has a value, returns true or false according to
             // whether the new value matches the current one or not, so that inconsistencies can be detected.
 
-            if constexpr (is_same_v<_Ty, string>) {
-                if (_New == _Invalid_time_string) {
-                    return true;
-                }
-            } else {
+            if constexpr (!is_same_v<_Ty, string>) {
                 if (_New == _Invalid_time_field<_Ty>) {
                     return true;
                 }
@@ -3918,7 +3920,8 @@ namespace chrono {
 
         _NODISCARD bool _Calculate_hour24() {
             if (_Hour_12) {
-                return _Update(_Hour_24, _CHRONO make24(hours{*_Hour_12}, _Ampm.value_or(0)).count());
+                return _Update(
+                    _Hour_24, _CHRONO make24(hours{*_Hour_12}, static_cast<bool>(_Ampm.value_or(0))).count());
             } else {
                 return true;
             }

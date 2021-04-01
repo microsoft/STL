@@ -12,10 +12,11 @@
 #include <ratio>
 #include <sstream>
 #include <string>
-#include <system_error>
 #include <type_traits>
 #include <utility>
 #include <vector>
+
+#include <timezone_data.hpp>
 
 using namespace std;
 using namespace std::chrono;
@@ -133,7 +134,7 @@ void test_parse(const CharT* str, const CharT* fmt, Parsable& p, type_identity_t
     p = Parsable{};
     if (abbrev) {
         if constexpr (is_same_v<CharT, char>) {
-            *abbrev = _Time_parse_fields::_Invalid_time_string;
+            *abbrev = "!";
         } else {
             *abbrev = L"!";
         }
@@ -163,7 +164,7 @@ void fail_parse(const CharT* str, const CharT* fmt, Parsable& p, type_identity_t
     p = Parsable{};
     if (abbrev) {
         if constexpr (is_same_v<CharT, char>) {
-            *abbrev = _Time_parse_fields::_Invalid_time_string;
+            *abbrev = "!";
         } else {
             *abbrev = L"!";
         }
@@ -1127,9 +1128,11 @@ void test_parse() {
     parse_wchar();
 }
 
-
-int main() {
+void test() {
     test_duration_output();
     test_parse();
-    return 0;
+}
+
+int main() {
+    run_tz_test([] { test(); });
 }

@@ -11,6 +11,8 @@
 #include <type_traits>
 #include <utility>
 
+#include <timezone_data.hpp>
+
 using namespace std;
 using namespace std::chrono;
 
@@ -252,7 +254,7 @@ void test_file_clock_from_utc(const leap_second& leap) {
 }
 
 void test_utc_clock_from_sys(const leap_second& leap, seconds offset) {
-    // Generalized from [time.clock.utc.members]/3 Example 1.
+    // Generalized from N4885 [time.clock.utc.members]/3 Example 1.
     auto t = leap.date() - 2ns;
     auto u = utc_clock::from_sys(t);
     assert(u.time_since_epoch() - t.time_since_epoch() == offset);
@@ -369,7 +371,7 @@ void test_clock_cast() {
     assert(clock_cast<file_clock>(gt) == ft);
     assert(clock_cast<file_clock>(ft) == ft);
 
-    // [time.clock.utc.overview]/1 Example 1
+    // N4885 [time.clock.utc.overview]/1 Example 1
     assert(clock_cast<utc_clock>(sys_seconds{sys_days{1970y / January / 1}}).time_since_epoch() == 0s);
     assert(clock_cast<utc_clock>(sys_seconds{sys_days{2000y / January / 1}}).time_since_epoch() == 946'684'822s);
 }
@@ -392,7 +394,7 @@ tzdb copy_tzdb() {
     return {my_tzdb.version, move(zones), move(links), my_tzdb.leap_seconds, my_tzdb._All_ls_positive};
 }
 
-int main() {
+void test() {
     assert(test_leap_second());
     static_assert(test_leap_second());
 
@@ -472,6 +474,8 @@ int main() {
         offset += leap.value();
         assert(leap._Elapsed() == offset);
     }
+}
 
-    return 0;
+int main() {
+    run_tz_test([] { test(); });
 }
