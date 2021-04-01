@@ -779,6 +779,7 @@ public:
 // _Width_checker or _Precision_checker as "_Handler".
 template <class _Handler, class _FormatArg>
 _NODISCARD constexpr int _Get_dynamic_specs(const _FormatArg _Arg) {
+    _STL_INTERNAL_STATIC_ASSERT(_Is_any_of_v<_Handler, _Width_checker, _Precision_checker>);
     const unsigned long long _Val = _STD visit_format_arg(_Handler(), _Arg);
     if (_Val > (numeric_limits<int>::max)()) {
         throw format_error("Number is too big.");
@@ -1815,10 +1816,9 @@ struct _Arg_formatter {
     _Context* _Ctx                      = nullptr;
     _Basic_format_specs<_CharT>* _Specs = nullptr;
 
-    _OutputIt operator()(typename basic_format_arg<_Context>::handle _Handle) {
+    _OutputIt operator()(typename basic_format_arg<_Context>::handle) {
         _STL_VERIFY(false, "The custom handler should be structurally unreachable for _Arg_formatter");
         _STL_INTERNAL_CHECK(_Ctx);
-        (void) _Handle;
         return _Ctx->out();
     }
 
