@@ -4089,9 +4089,10 @@ namespace chrono {
             const bool _Consistent = _Calculate_hour24();
             if (_Consistent) {
                 _Duration_result = duration<_Rep, _Period>::zero(); // TRANSITION: LWG-3536 & GH-1740
+                return _Apply_duration_fields(_Duration_result, false);
             }
 
-            return _Consistent && _Apply_duration_fields(_Duration_result, false);
+            return false;
         }
 
         enum class _LeapSecondRep : unsigned int {
