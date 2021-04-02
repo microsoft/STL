@@ -975,6 +975,12 @@ void parse_timepoints() {
     utc_seconds ut_ref = utc_clock::from_sys(sys_days{1d / July / 1972y}) - 1s; // leap second insertion
     test_parse("june 30 23:59:60 1972", "%c", ut);
     assert(ut == ut_ref);
+
+    // Test a later leap second, where the accumulated offset is greater than 1s.
+    ut_ref = utc_clock::from_sys(sys_days{1d / July / 1992y}) - 1s;
+    test_parse("june 30 23:59:60 1992", "%c", ut);
+    assert(ut == ut_ref);
+
     // not leap-second aware
     fail_parse("june 30 23:59:60 1972", "%c", st);
     fail_parse("june 30 23:59:60 1972", "%c", tt);
