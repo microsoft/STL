@@ -2593,13 +2593,12 @@ namespace chrono {
             const auto _Link = _Locate_zone_impl(links, _Tz_name);
             if (_Link != nullptr) {
                 _Tz = _Locate_zone_impl(zones, _Link->target());
+                if (_Tz != nullptr) {
+                    return _Tz;
+                }
             }
 
-            if (_Tz == nullptr) {
-                _Xruntime_error("unable to locate time_zone with given name");
-            }
-
-            return _Tz;
+            _Xruntime_error("unable to locate time_zone with given name");
         }
 
         _NODISCARD const time_zone* current_zone() const {
