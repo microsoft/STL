@@ -4015,7 +4015,7 @@ namespace chrono {
 
         enum class _Parse_tp_or_duration { _Time_point, _Duration };
 
-        template <class _DurationType, _Parse_tp_or_duration _Parse_type>
+        template <_Parse_tp_or_duration _Parse_type, class _DurationType>
         _NODISCARD bool _Apply_duration_fields(_DurationType& _Result) {
             constexpr bool _Can_rep_sec    = _Can_represent<_DurationType, seconds>();
             constexpr bool _Can_rep_min    = _Can_represent<_DurationType, minutes>();
@@ -4094,8 +4094,7 @@ namespace chrono {
             const bool _Consistent = _Calculate_hour24();
             if (_Consistent) {
                 _Duration_result = duration<_Rep, _Period>::zero(); // TRANSITION: LWG-3536 & GH-1740
-                return _Apply_duration_fields<duration<_Rep, _Period>, _Parse_tp_or_duration::_Duration>(
-                    _Duration_result);
+                return _Apply_duration_fields<_Parse_tp_or_duration::_Duration>(_Duration_result);
             }
 
             return false;
@@ -4112,7 +4111,7 @@ namespace chrono {
         _NODISCARD bool _Make_time_point(_DurationType& _Dur, _LeapSecondRep _Leap) {
 
             const bool _Consistent{_Calculate_hour24() && _Calculate_year_fields()};
-            if (!_Consistent || !_Apply_duration_fields<_DurationType, _Parse_tp_or_duration::_Time_point>(_Dur)) {
+            if (!_Consistent || !_Apply_duration_fields<_Parse_tp_or_duration::_Time_point>(_Dur)) {
                 return false;
             }
 
