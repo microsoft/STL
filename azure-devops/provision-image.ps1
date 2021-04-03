@@ -91,7 +91,7 @@ if ([string]::IsNullOrEmpty($AdminUserPassword)) {
   $PsExecPath = Join-Path $ExtractedPsToolsPath 'PsExec64.exe'
 
   # https://github.com/PowerShell/PowerShell/releases/latest
-  $PowerShellZipUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.1.2/PowerShell-7.1.2-win-x64.zip'
+  $PowerShellZipUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.1.3/PowerShell-7.1.3-win-x64.zip'
   Write-Host "Downloading: $PowerShellZipUrl"
   $ExtractedPowerShellPath = DownloadAndExtractZip -Url $PowerShellZipUrl
   $PwshPath = Join-Path $ExtractedPowerShellPath 'pwsh.exe'
@@ -139,7 +139,7 @@ $Workloads = @(
 $ReleaseInPath = 'Preview'
 $Sku = 'Enterprise'
 $VisualStudioBootstrapperUrl = 'https://aka.ms/vs/16/pre/vs_enterprise.exe'
-$PythonUrl = 'https://www.python.org/ftp/python/3.9.2/python-3.9.2-amd64.exe'
+$PythonUrl = 'https://www.python.org/ftp/python/3.9.4/python-3.9.4-amd64.exe'
 
 # https://docs.microsoft.com/en-us/windows-hardware/drivers/download-the-wdk
 $WindowsDriverKitUrl = 'https://go.microsoft.com/fwlink/?linkid=2128854'
