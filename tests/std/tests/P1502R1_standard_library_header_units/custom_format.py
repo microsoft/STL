@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-import itertools
 import os
 
 from stl.test.format import STLTestFormat, TestStep
@@ -64,7 +63,7 @@ class CustomTestFormat(STLTestFormat):
             'semaphore',
             'set',
             'shared_mutex',
-            # 'source_location',
+            'source_location',
             'span',
             'sstream',
             'stack',
@@ -74,7 +73,7 @@ class CustomTestFormat(STLTestFormat):
             'string_view',
             'string',
             'strstream',
-            # 'syncstream',
+            'syncstream',
             'system_error',
             'thread',
             'tuple',
@@ -93,9 +92,13 @@ class CustomTestFormat(STLTestFormat):
         outputDir, outputBase = test.getTempPaths()
         sourcePath = test.getSourcePath()
 
-        compileTestCppWithEdg = '/BE' in itertools.chain(test.flags, test.compileFlags)
-        if compileTestCppWithEdg:
+        compileTestCppWithEdg = False
+        if '/BE' in test.flags:
+            compileTestCppWithEdg = True
             test.flags.remove('/BE')
+
+        if '/BE' in test.compileFlags:
+            compileTestCppWithEdg = True
             test.compileFlags.remove('/BE')
 
         exportHeaderOptions = ['/exportHeader', '/Fo', '/MP']

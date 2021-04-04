@@ -180,7 +180,7 @@ tests\string2
 tests\strstream
 tests\system_error
 
-# TRANSITION, flaky test
+# TRANSITION, flaky test (see GH-1642 and GH-718)
 # tests\thread
 
 tests\tuple

@@ -45,6 +45,15 @@ struct instantiator {
             assert(comparisonCounter == size(input) - 1);
         }
 
+        { // Validate already unique range returns empty subrange
+            P input[4] = {{0, 99}, {1, 47}, {3, 99}, {4, 47}};
+            ReadWrite wrapped_input{input};
+
+            auto result = unique(wrapped_input.begin(), wrapped_input.end(), countedEq, get_second);
+            STATIC_ASSERT(same_as<decltype(result), subrange<iterator_t<ReadWrite>>>);
+            assert(result.empty());
+        }
+
         comparisonCounter = 0;
 
         { // Validate range overload
@@ -57,6 +66,15 @@ struct instantiator {
             assert(result.end() == wrapped_input.end());
             assert(equal(expected, span{input}.first<4>()));
             assert(comparisonCounter == size(input) - 1);
+        }
+
+        { // Validate already unique range returns empty subrange
+            P input[4] = {{0, 99}, {1, 47}, {3, 99}, {4, 47}};
+            ReadWrite wrapped_input{input};
+
+            auto result = unique(wrapped_input, countedEq, get_second);
+            STATIC_ASSERT(same_as<decltype(result), subrange<iterator_t<ReadWrite>>>);
+            assert(result.empty());
         }
     }
 };
