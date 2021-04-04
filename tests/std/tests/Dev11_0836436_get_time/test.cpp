@@ -10,6 +10,8 @@
 #include <string>
 #include <time.h>
 #include <tuple>
+#include <cstdlib>
+#include <cstdio>
 
 using namespace std;
 
@@ -712,11 +714,10 @@ void test_invalid_parameter_handler(const wchar_t* const expression, const wchar
     (void) expression;
     (void) reserved;
 
-    // Stop test early. Without this,
     static int num_called = 0;
     if (num_called++ > 10) {
         wprintf(L"Test Failed: Invalid parameter handler was called over 10 times by %s in %s:%u\n", function, file,
-            line); // These arguments are only populated in debug mode.
+            line);
         exit(1);
     }
 }
@@ -730,21 +731,18 @@ void test_invalid_argument() {
 
     {
         wstringstream wss;
-        const wstring fmt(L"%Y-%m-%d-%H-%M-%s");
-        wss << put_time(&currentTime, fmt.c_str());
+        wss << put_time(&currentTime, L"%Y-%m-%d-%H-%M-%s");
         assert(wss.rdstate() == ios_base::badbit);
     }
 
     {
         stringstream ss;
-        const string fmt("%Y-%m-%d-%H-%M-%s");
-        ss << put_time(&currentTime, fmt.c_str());
+        ss << put_time(&currentTime, "%Y-%m-%d-%H-%M-%s");
         assert(ss.rdstate() == ios_base::badbit);
     }
 }
 
 void test_buffer_resizing() {
-
     time_t t = time(nullptr);
     tm currentTime;
     localtime_s(&currentTime, &t);
@@ -752,16 +750,14 @@ void test_buffer_resizing() {
     {
         wstringstream wss;
         wss.imbue(locale("ja_JP"));
-        const wstring fmt(L"%c");
-        wss << put_time(&currentTime, fmt.c_str());
+        wss << put_time(&currentTime, L"%c");
         assert(wss.rdstate() == ios_base::goodbit);
     }
 
     {
         stringstream ss;
         ss.imbue(locale("ja_JP"));
-        const string fmt("%c");
-        ss << put_time(&currentTime, fmt.c_str());
+        ss << put_time(&currentTime, "%c");
         assert(ss.rdstate() == ios_base::goodbit);
     }
 }
