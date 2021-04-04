@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <assert.h>
-#include <cstdlib>
 #include <cstdio>
+#include <cstdlib>
 #include <iomanip>
 #include <ios>
 #include <locale>
@@ -775,7 +775,7 @@ void test_invalid_parameter_handler(const wchar_t* const expression, const wchar
     static int num_called = 0;
     if (num_called++ > 10) {
         wprintf(
-        L"Test Failed: Invalid parameter handler was called over 10 times by %s in %s:%u\n", function, file, line);
+            L"Test Failed: Invalid parameter handler was called over 10 times by %s in %s:%u\n", function, file, line);
         exit(1);
     }
 }
