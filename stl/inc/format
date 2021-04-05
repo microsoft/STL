@@ -1451,8 +1451,22 @@ public:
         }
     }
 
-    _NODISCARD size_t _Get_count() const noexcept {
-        return _Num_args;
+    _NODISCARD size_t _Calculate_reserve_size() const noexcept {
+        using _CharT        = typename _Context::char_type;
+        size_t _Result      = 0;
+        const auto _Visitor = [&_Result]<class _ArgTy>(const _ArgTy _Arg) noexcept {
+            if constexpr (is_same_v<_ArgTy, basic_string_view<_CharT>>) {
+                _Result += _Arg.size();
+            } else if constexpr (is_same_v<_ArgTy, const _CharT*>) {
+                _Result += char_traits<_CharT>::length(_Arg);
+            } else {
+                _Result += 8;
+            }
+        };
+        for (size_t _Idx = 0; _Idx < _Num_args; ++_Idx) {
+            _STD visit_format_arg(_Visitor, get(_Idx));
+        }
+        return _Result;
     }
 
 private:
@@ -2639,49 +2653,30 @@ _OutputIt format_to(_OutputIt _Out, const locale& _Loc, const wstring_view _Fmt,
     return _STD vformat_to(_STD move(_Out), _Loc, _Fmt, _STD make_format_args<_Context>(_Args...));
 }
 
-template <class _Context>
-_NODISCARD size_t _Calculate_format_reserve_size(const basic_format_args<_Context> _Args) {
-    using _CharT = typename _Context::char_type;
-    size_t _Result = 0;
-    const auto _Visitor = [&_Result]<class _ArgTy>(const _ArgTy _Arg) {
-        if constexpr (is_same_v<_ArgTy, basic_string_view<_CharT>>) {
-            _Result += _Arg.size();
-        } else if constexpr (is_same_v<_ArgTy, const _CharT*>) {
-            _Result += char_traits<_CharT>::length(_Arg);
-        } else {
-            _Result += 8;
-        }
-    };
-    for (size_t _Idx = 0; _Idx < _Args._Get_count(); ++_Idx) {
-        _STD visit_format_arg(_Visitor, _Args.get(_Idx));
-    }
-    return _Result;
-}
-
 _NODISCARD inline string vformat(const string_view _Fmt, const format_args _Args) {
     string _Str;
-    _Str.reserve(_Fmt.size() + _Calculate_format_reserve_size(_Args));
+    _Str.reserve(_Fmt.size() + _Args._Calculate_reserve_size());
     _STD vformat_to(_STD back_inserter(_Str), _Fmt, _Args);
     return _Str;
 }
 
 _NODISCARD inline wstring vformat(const wstring_view _Fmt, const wformat_args _Args) {
     wstring _Str;
-    _Str.reserve(_Fmt.size() + _Calculate_format_reserve_size(_Args));
+    _Str.reserve(_Fmt.size() + _Args._Calculate_reserve_size());
     _STD vformat_to(_STD back_inserter(_Str), _Fmt, _Args);
     return _Str;
 }
 
 _NODISCARD inline string vformat(const locale& _Loc, const string_view _Fmt, const format_args _Args) {
     string _Str;
-    _Str.reserve(_Fmt.size() + _Calculate_format_reserve_size(_Args));
+    _Str.reserve(_Fmt.size() + _Args._Calculate_reserve_size());
     _STD vformat_to(_STD back_inserter(_Str), _Loc, _Fmt, _Args);
     return _Str;
 }
 
 _NODISCARD inline wstring vformat(const locale& _Loc, const wstring_view _Fmt, const wformat_args _Args) {
     wstring _Str;
-    _Str.reserve(_Fmt.size() + _Calculate_format_reserve_size(_Args));
+    _Str.reserve(_Fmt.size() + _Args._Calculate_reserve_size());
     _STD vformat_to(_STD back_inserter(_Str), _Loc, _Fmt, _Args);
     return _Str;
 }
