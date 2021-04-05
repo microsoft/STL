@@ -213,6 +213,8 @@ void test_format_arg_store() {
     test_single_format_arg<Context, basic_string_view<char_type>, Arg_type::string_type>(get_input_sv<char_type>());
 }
 
+static_assert(sizeof(_Format_arg_store_packed_index) == sizeof(_Format_arg_store_packed_index::_Index_type));
+
 int main() {
     test_basic_format_arg<format_context>();
     test_basic_format_arg<wformat_context>();
