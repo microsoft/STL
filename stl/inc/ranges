@@ -2525,7 +2525,8 @@ namespace ranges {
 
         _NODISCARD constexpr auto begin() {
 #if _CONTAINER_DEBUG_LEVEL > 0
-            _STL_VERIFY(_Pred, "LWG-3490 forbids calling begin on a drop_while_view with no predicate");
+            _STL_VERIFY(
+                _Pred, "N4885 [range.drop.while.view] forbids calling begin on a drop_while_view with no predicate");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
             if constexpr (forward_range<_Vw>) {
                 if (this->_Has_cache()) {
@@ -3776,7 +3777,6 @@ namespace ranges {
             }
 
             constexpr void operator++(int) noexcept(noexcept(++_Current)) /* strengthened */ {
-                // Constraint removed per LWG-3492
                 ++_Current;
             }
 
