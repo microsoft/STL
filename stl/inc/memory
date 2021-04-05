@@ -71,15 +71,17 @@ namespace ranges {
     private:
         template <class _It, class _Se, class _Out, class _OSe>
         _NODISCARD static uninitialized_copy_result<_It, _Out> _Uninitialized_copy_unchecked(
-            _It _IFirst, const _Se _ILast, _Out _OFirst, const _OSe _OLast) {
+            _It _IFirst, _Se _ILast, _Out _OFirst, _OSe _OLast) {
             _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
             _STL_INTERNAL_STATIC_ASSERT(_No_throw_forward_iterator<_Out>);
             _STL_INTERNAL_STATIC_ASSERT(_No_throw_sentinel_for<_OSe, _Out>);
             _STL_INTERNAL_STATIC_ASSERT(constructible_from<iter_value_t<_Out>, iter_reference_t<_It>>);
 
-            if constexpr (is_same_v<_Se, _It> && is_same_v<_OSe, _Out> && _Ptr_copy_cat<_It, _Out>::_Really_trivial) {
-                return _Copy_memcpy_common(_IFirst, _ILast, _OFirst, _OLast);
+            if constexpr (_Ptr_copy_cat<_It, _Out>::_Really_trivial
+                          && sized_sentinel_for<_Se, _It> && sized_sentinel_for<_OSe, _Out>) {
+                return _Copy_memcpy_common(_IFirst, _RANGES next(_IFirst, _STD move(_ILast)), _OFirst,
+                    _RANGES next(_OFirst, _STD move(_OLast)));
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
@@ -506,10 +508,14 @@ namespace ranges {
     // clang-format off
     template <_No_throw_input_iterator _It, _No_throw_sentinel_for<_It> _Se>
         requires destructible<iter_value_t<_It>>
-    _NODISCARD _CONSTEXPR20_DYNALLOC _It _Destroy_unchecked(_It _First, const _Se _Last) noexcept {
+    _NODISCARD _CONSTEXPR20_DYNALLOC _It _Destroy_unchecked(_It _First, _Se _Last) noexcept {
         // clang-format on
-        for (; _First != _Last; ++_First) {
-            _RANGES destroy_at(_STD addressof(*_First));
+        if constexpr (is_trivially_destructible_v<iter_value_t<_It>>) {
+            _RANGES advance(_First, _STD move(_Last));
+        } else {
+            for (; _First != _Last; ++_First) {
+                _RANGES destroy_at(_STD addressof(*_First));
+            }
         }
 
         return _First;
