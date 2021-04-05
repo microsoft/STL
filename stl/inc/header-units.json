@@ -111,7 +111,7 @@
         "valarray",
         "variant",
         "vector",
-        "version",
+        // "version", // importable, but provides feature-test macros only, which can control header inclusion
         "xatomic.h",
         "xatomic_wait.h",
         "xbit_ops.h",
@@ -144,8 +144,8 @@
         "xtr1common",
         "xtree",
         "xutility",
-        "ymath.h",
-        "yvals.h",
-        "yvals_core.h"
+        "ymath.h"
+        // "yvals.h", // internal header, provides macros that control header inclusion
+        // "yvals_core.h" // internal header, provides macros that control header inclusion
     ]
 }
