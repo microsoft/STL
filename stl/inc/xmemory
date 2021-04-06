@@ -1575,7 +1575,7 @@ namespace ranges {
         }
         return {_STD move(_IFirst), _STD move(_OFirst)};
     }
-    
+
     template <class _InIt, class _OutIt, typename _DistIt>
     in_out_result<_InIt, _OutIt> _Copy_memcpy_distance(
         _InIt _IFirst, _OutIt _OFirst, _DistIt _DFirst, _DistIt _DLast) noexcept {
@@ -1647,7 +1647,7 @@ namespace ranges {
         if constexpr (_Ptr_move_cat<_It, _Out>::_Really_trivial
                       && (_Is_sized1 || same_as<_Se, unreachable_sentinel_t>)
 #pragma warning(suppress : 6287) // Redundant code: the left and right subexpressions are identical
-                      && (_Is_sized2 || same_as<_OSe, unreachable_sentinel_t>)) {
+                      &&(_Is_sized2 || same_as<_OSe, unreachable_sentinel_t>) ) {
             if constexpr (_Is_sized1 && _Is_sized2) {
                 return _Copy_memcpy_common(_IFirst, _RANGES next(_IFirst, _STD move(_ILast)), _OFirst,
                     _RANGES next(_OFirst, _STD move(_OLast)));
