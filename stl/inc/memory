@@ -71,15 +71,17 @@ namespace ranges {
     private:
         template <class _It, class _Se, class _Out, class _OSe>
         _NODISCARD static uninitialized_copy_result<_It, _Out> _Uninitialized_copy_unchecked(
-            _It _IFirst, const _Se _ILast, _Out _OFirst, const _OSe _OLast) {
+            _It _IFirst, _Se _ILast, _Out _OFirst, _OSe _OLast) {
             _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
             _STL_INTERNAL_STATIC_ASSERT(_No_throw_forward_iterator<_Out>);
             _STL_INTERNAL_STATIC_ASSERT(_No_throw_sentinel_for<_OSe, _Out>);
             _STL_INTERNAL_STATIC_ASSERT(constructible_from<iter_value_t<_Out>, iter_reference_t<_It>>);
 
-            if constexpr (is_same_v<_Se, _It> && is_same_v<_OSe, _Out> && _Ptr_copy_cat<_It, _Out>::_Really_trivial) {
-                return _Copy_memcpy_common(_IFirst, _ILast, _OFirst, _OLast);
+            if constexpr (_Ptr_copy_cat<_It, _Out>::_Really_trivial
+                          && sized_sentinel_for<_Se, _It> && sized_sentinel_for<_OSe, _Out>) {
+                return _Copy_memcpy_common(_IFirst, _RANGES next(_IFirst, _STD move(_ILast)), _OFirst,
+                    _RANGES next(_OFirst, _STD move(_OLast)));
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
@@ -506,10 +508,14 @@ namespace ranges {
     // clang-format off
     template <_No_throw_input_iterator _It, _No_throw_sentinel_for<_It> _Se>
         requires destructible<iter_value_t<_It>>
-    _NODISCARD _CONSTEXPR20_DYNALLOC _It _Destroy_unchecked(_It _First, const _Se _Last) noexcept {
+    _NODISCARD _CONSTEXPR20_DYNALLOC _It _Destroy_unchecked(_It _First, _Se _Last) noexcept {
         // clang-format on
-        for (; _First != _Last; ++_First) {
-            _RANGES destroy_at(_STD addressof(*_First));
+        if constexpr (is_trivially_destructible_v<iter_value_t<_It>>) {
+            _RANGES advance(_First, _STD move(_Last));
+        } else {
+            for (; _First != _Last; ++_First) {
+                _RANGES destroy_at(_STD addressof(*_First));
+            }
         }
 
         return _First;
@@ -1145,6 +1151,12 @@ public:
     _Ref_count_resource(_Resource _Px, _Dx _Dt)
         : _Ref_count_base(), _Mypair(_One_then_variadic_args_t{}, _STD move(_Dt), _Px) {}
 
+#ifdef __EDG__ // TRANSITION, VSO-1292293
+    virtual ~_Ref_count_resource() noexcept override {} // TRANSITION, should be non-virtual
+#else // ^^^ workaround / no workaround vvv
+    virtual ~_Ref_count_resource() noexcept override = default; // TRANSITION, should be non-virtual
+#endif // ^^^ no workaround ^^^
+
     virtual void* _Get_deleter(const type_info& _Typeid) const noexcept override {
 #if _HAS_STATIC_RTTI
         if (_Typeid == typeid(_Dx)) {
@@ -1177,6 +1189,12 @@ public:
     _Ref_count_resource_alloc(_Resource _Px, _Dx _Dt, const _Alloc& _Ax)
         : _Ref_count_base(),
           _Mypair(_One_then_variadic_args_t{}, _STD move(_Dt), _One_then_variadic_args_t{}, _Ax, _Px) {}
+
+#ifdef __EDG__ // TRANSITION, VSO-1292293
+    virtual ~_Ref_count_resource_alloc() noexcept override {} // TRANSITION, should be non-virtual
+#else // ^^^ workaround / no workaround vvv
+    virtual ~_Ref_count_resource_alloc() noexcept override = default; // TRANSITION, should be non-virtual
+#endif // ^^^ no workaround ^^^
 
     virtual void* _Get_deleter(const type_info& _Typeid) const noexcept override {
 #if _HAS_STATIC_RTTI
@@ -2012,7 +2030,7 @@ public:
         }
     }
 
-    ~_Ref_count_obj2() {
+    virtual ~_Ref_count_obj2() noexcept override { // TRANSITION, should be non-virtual
         // nothing to do, _Storage._Value was already destroyed in _Destroy
 
         // N4849 [class.dtor]/7:
@@ -2276,7 +2294,7 @@ private:
         _Wrap<_Element_type> _Storage; // flexible array must be last member
     };
 
-    ~_Ref_count_unbounded_array() {
+    virtual ~_Ref_count_unbounded_array() noexcept override { // TRANSITION, should be non-virtual
         // nothing to do, _Ty is trivially destructible
 
         // See N4849 [class.dtor]/7.
@@ -2324,7 +2342,7 @@ private:
         _Wrap<_Element_type> _Storage; // flexible array must be last member
     };
 
-    ~_Ref_count_unbounded_array() {
+    virtual ~_Ref_count_unbounded_array() noexcept override { // TRANSITION, should be non-virtual
         // nothing to do, _Storage was already destroyed in _Destroy
 
         // See N4849 [class.dtor]/7.
@@ -2363,7 +2381,7 @@ public:
     };
 
 private:
-    ~_Ref_count_bounded_array() {
+    virtual ~_Ref_count_bounded_array() noexcept override { // TRANSITION, should be non-virtual
         // nothing to do, _Storage was already destroyed in _Destroy
 
         // See N4849 [class.dtor]/7.
@@ -2449,7 +2467,7 @@ public:
     };
 
 private:
-    ~_Ref_count_obj_alloc3() {
+    virtual ~_Ref_count_obj_alloc3() noexcept override { // TRANSITION, should be non-virtual
         // nothing to do; _Storage._Value already destroyed by _Destroy()
 
         // See N4849 [class.dtor]/7.
@@ -2637,7 +2655,7 @@ private:
         _Wrap<_Element_type> _Storage; // flexible array must be last member
     };
 
-    ~_Ref_count_unbounded_array_alloc() {
+    virtual ~_Ref_count_unbounded_array_alloc() noexcept override { // TRANSITION, should be non-virtual
         // nothing to do; _Storage._Value already destroyed by _Destroy()
 
         // See N4849 [class.dtor]/7.
@@ -2698,7 +2716,7 @@ public:
     };
 
 private:
-    ~_Ref_count_bounded_array_alloc() {
+    virtual ~_Ref_count_bounded_array_alloc() noexcept override { // TRANSITION, should be non-virtual
         // nothing to do; _Storage._Value already destroyed by _Destroy()
 
         // See N4849 [class.dtor]/7.

@@ -57,7 +57,7 @@ issue. The [bug tag][] and [enhancement tag][] are being populated.
 
 # Goals
 
-We're implementing the latest C++ Working Draft, currently [N4878][], which will eventually become the next C++
+We're implementing the latest C++ Working Draft, currently [N4885][], which will eventually become the next C++
 International Standard. The terms Working Draft (WD) and Working Paper (WP) are interchangeable; we often
 informally refer to these drafts as "the Standard" while being aware of the difference. (There are other relevant
 Standards; for example, supporting `/std:c++14` and `/std:c++17` involves understanding how the C++14 and C++17
@@ -172,14 +172,14 @@ acquire this dependency.
 
 To build the x86 target:
 
-1. Open an "x86 Native Tools Command Prompt for VS 2019".
+1. Open an "x86 Native Tools Command Prompt for VS 2019 Preview".
 2. Change directories to the previously cloned `STL` directory.
 3. `cmake -G Ninja -S . -B out\build\x86`
 4. `ninja -C out\build\x86`
 
 To build the x64 target:
 
-1. Open an "x64 Native Tools Command Prompt for VS 2019".
+1. Open an "x64 Native Tools Command Prompt for VS 2019 Preview".
 2. Change directories to the previously cloned `STL` directory.
 3. `cmake -G Ninja -S . -B out\build\x64`
 4. `ninja -C out\build\x64`
@@ -205,7 +205,7 @@ your .exe would "win" over the versions in System32.
 The compiler looks for include directories according to the `INCLUDE` environment variable, and the linker looks for
 import library directories according to the `LIB` environment variable, and the Windows loader will (eventually) look
 for DLL dependencies according to directories in the `PATH` environment variable. From an
-"x64 Native Tools Command Prompt for VS 2019":
+"x64 Native Tools Command Prompt for VS 2019 Preview":
 
 ```
 C:\Users\username\Desktop>set INCLUDE=C:\Dev\STL\out\build\x64\out\inc;%INCLUDE%
@@ -362,6 +362,57 @@ The `SKIPPED` result code indicates that a given test was explicitly skipped by 
 * taking a very long time to run
 * failing or passing for the incorrect reason
 
+### Debugging Individual Tests
+
+While `stl-lit` is super awesome in finding out that *something* is wrong or not even compiling, it is not really
+helpful in debugging *what* is going wrong. However, debugging individual tests is rather simple given some additional
+steps. Let's assume we want to debug a new feature with tests located in `tests\std\tests\GH_XXXX_meow`.
+
+As always, build the STL from your branch and run the tests:
+```
+C:\STL\out\build\x64> ninja
+C:\STL\out\build\x64> python tests\utils\stl-lit\stl-lit.py -v C:\STL\tests\std\tests\GH_XXXX_meow
+```
+
+Let's assume one of the tests fails an assert and we want to debug that configuration. `stl-lit` will conveniently print
+the build command, which is far too long to provide here in full. The important part is to add the following options to
+provide debug symbols: `/Zi /Fdbark.pdb`.
+
+You can replace `bark` with any descriptive name you like. Add these before the `"-link"` option in the command line
+and recompile. Example:
+```
+C:\STL\out\build\x64>cl "C:\STL\tests\std\tests\GH_XXXX_meow\test.cpp" [... more arguments ...]
+"-FeC:\STL\out\build\x64\tests\std\tests\GH_XXXX_meow\Output\02\GH_XXXX_meow.exe" /Zi /Fdbark.pdb "-link"
+[... more arguments ...]
+```
+
+You can now start debugging the test via:
+```
+devenv "C:\STL\out\build\x64\tests\std\tests\GH_XXXX_meow\Output\02\GH_XXXX_meow.exe"
+       "C:\STL\tests\std\tests\GH_XXXX_meow\test.cpp"
+```
+
+However, this might not work right away, as Visual Studio may complain about a missing `msvcp140_oss.dll`. The reason
+is that the STL builds those and other DLLs itself and we should under no circumstances overwrite the installed ones.
+If you are testing one of the configurations with dynamic linkage (`/MD` or `/MDd`) the easiest solution is to add the
+build folder to your path:
+```
+set PATH=C:\STL\out\build\x64\out\bin\amd64;%PATH%
+```
+
+# Editing And Testing The Debugger Visualizer
+
+### Modify The Visualizer
+
+To modify how components are visualized in the debugger edit the file `stl\debugger\STL.natvis`. For more information on
+how to modify this file check the [natvis documentation][].
+
+### Test Your Changes
+
+You can add the natvis file to any Visual Studio C++ project if you right click your project > Add > Existing Item and
+select the STL.natvis file. After doing this you should be able to see your changes in a Visual Studio debugging
+session.
+
 # Block Diagram
 
 The STL is built atop other compiler support libraries that ship with Windows and Visual Studio, like the UCRT,
@@ -405,7 +456,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [LWG issues]: https://cplusplus.github.io/LWG/lwg-toc.html
 [LWG tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3ALWG
 [Microsoft Open Source Code of Conduct]: https://opensource.microsoft.com/codeofconduct/
-[N4878]: https://wg21.link/n4878
+[N4885]: https://wg21.link/n4885
 [NOTICE.txt]: NOTICE.txt
 [Ninja]: https://ninja-build.org
 [Pipelines]: https://dev.azure.com/vclibs/STL/_build/latest?definitionId=4&branchName=main
@@ -423,3 +474,4 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [opencode@microsoft.com]: mailto:opencode@microsoft.com
 [redistributables]: https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads
 [vcpkg]: https://github.com/microsoft/vcpkg
+[natvis documentation]: https://docs.microsoft.com/en-us/visualstudio/debugger/create-custom-views-of-native-objects

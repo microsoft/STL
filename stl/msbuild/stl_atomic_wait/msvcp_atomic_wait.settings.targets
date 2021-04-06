@@ -33,8 +33,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <UseMsvcrt>false</UseMsvcrt>
         <GenerateImportLib>true</GenerateImportLib>
         <RCIntermediateOutputDirectory>$(IntermediateOutputDirectory)</RCIntermediateOutputDirectory>
-        <IntermediateImportLibOutput>$(CrtBuildDirNative)\msvcprt_atomic_wait$(BuildSuffix).$(MsvcpFlavor).import_only.lib</IntermediateImportLibOutput>
-        <IntermediateImportLibOutputA64X>$(CrtBuildDir)\msvcprt_atomic_wait$(BuildSuffix).$(MsvcpFlavor).import_only.lib</IntermediateImportLibOutputA64X>
+        <IntermediateImportLibOutput>$(CrtBuildDir)\msvcprt_atomic_wait$(BuildSuffix).$(MsvcpFlavor).import_only.lib</IntermediateImportLibOutput>
         <DllDefName>$(LibOutputFileName).$(MsvcpFlavor)</DllDefName>
         <DllDef>$(IntermediateOutputDirectory)\$(DllDefName).def</DllDef>
 
@@ -69,6 +68,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <TargetLib Include="$(CrtLibPath)\msvcrt$(BuildSuffix)$(ClrLibSuffix).lib"/>
         <TargetLib Include="$(CrtLibPath)\vcruntime$(BuildSuffix)$(ClrLibSuffix).lib"/>
         <TargetLib Include="$(UniversalCRTLib)"/>
+        <TargetLib Condition="'$(MsvcpFlavor)' == 'kernel32' or '$(MsvcpFlavor)' == 'netfx'" Include="$(SdkLibPath)\advapi32.lib"/>
     </ItemGroup>
 
     <!-- Copy the output dll and pdb to various destinations -->

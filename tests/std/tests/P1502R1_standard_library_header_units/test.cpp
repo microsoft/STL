@@ -206,7 +206,7 @@ int main() {
         assert(conv.from_bytes(utf8_koshka_cat) == utf16_koshka_cat);
         assert(conv.to_bytes(utf16_koshka_cat) == utf8_koshka_cat);
 
-        static_assert(static_cast<int>(codecvt_mode::consume_header) == 4); // TRANSITION, DevCom-1160041 (deprecated)
+        static_assert(static_cast<int>(codecvt_mode::consume_header) == 4);
     }
 
     {

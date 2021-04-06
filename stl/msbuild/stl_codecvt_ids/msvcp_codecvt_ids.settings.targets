@@ -33,8 +33,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <UseMsvcrt>false</UseMsvcrt>
         <GenerateImportLib>true</GenerateImportLib>
         <RCIntermediateOutputDirectory>$(IntermediateOutputDirectory)</RCIntermediateOutputDirectory>
-        <IntermediateImportLibOutput>$(CrtBuildDirNative)\msvcprt$(BuildSuffix)_codecvt_ids.$(MsvcpFlavor).import_only.lib</IntermediateImportLibOutput>
-        <IntermediateImportLibOutputA64X>$(CrtBuildDir)\msvcprt$(BuildSuffix)_codecvt_ids.$(MsvcpFlavor).import_only.lib</IntermediateImportLibOutputA64X>
+        <IntermediateImportLibOutput>$(CrtBuildDir)\msvcprt$(BuildSuffix)_codecvt_ids.$(MsvcpFlavor).import_only.lib</IntermediateImportLibOutput>
         <DllDefName>$(LibOutputFileName).$(MsvcpFlavor)</DllDefName>
         <DllDef>$(IntermediateOutputDirectory)\$(DllDefName).def</DllDef>
 
