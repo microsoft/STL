@@ -1555,6 +1555,55 @@ namespace ranges {
     // clang-format on
 
     template <class _InIt, class _OutIt>
+    in_out_result<_InIt, _OutIt> _Copy_memcpy_count(_InIt _IFirst, _OutIt _OFirst, const size_t _Count) noexcept {
+        const auto _IFirstPtr     = _To_address(_IFirst);
+        const auto _OFirstPtr     = _To_address(_OFirst);
+        const auto _IFirst_ch     = const_cast<char*>(reinterpret_cast<const volatile char*>(_IFirstPtr));
+        const auto _OFirst_ch     = const_cast<char*>(reinterpret_cast<const volatile char*>(_OFirstPtr));
+        const size_t _Count_bytes = _Count * sizeof(iter_value_t<_InIt>);
+        _CSTD memcpy(_OFirst_ch, _IFirst_ch, _Count_bytes);
+        if constexpr (is_pointer_v<_InIt>) {
+            _IFirst = reinterpret_cast<_InIt>(_IFirst_ch + _Count_bytes);
+        } else {
+            _IFirst += _Count;
+        }
+
+        if constexpr (is_pointer_v<_OutIt>) {
+            _OFirst = reinterpret_cast<_OutIt>(_OFirst_ch + _Count_bytes);
+        } else {
+            _OFirst += _Count;
+        }
+        return {_STD move(_IFirst), _STD move(_OFirst)};
+    }
+    
+    template <class _InIt, class _OutIt, typename _DistIt>
+    in_out_result<_InIt, _OutIt> _Copy_memcpy_distance(
+        _InIt _IFirst, _OutIt _OFirst, _DistIt _DFirst, _DistIt _DLast) noexcept {
+        const auto _IFirstPtr = _To_address(_IFirst);
+        const auto _OFirstPtr = _To_address(_OFirst);
+        const auto _DFirstPtr = _To_address(_DFirst);
+        const auto _DLastPtr  = _To_address(_DLast);
+        const auto _IFirst_ch = const_cast<char*>(reinterpret_cast<const volatile char*>(_IFirstPtr));
+        const auto _OFirst_ch = const_cast<char*>(reinterpret_cast<const volatile char*>(_OFirstPtr));
+        const auto _DFirst_ch = const_cast<char*>(reinterpret_cast<const volatile char*>(_DFirstPtr));
+        const auto _DLast_ch  = const_cast<char*>(reinterpret_cast<const volatile char*>(_DLastPtr));
+        const auto _Count     = static_cast<size_t>(_DLast_ch - _DFirst_ch);
+        _CSTD memcpy(_OFirst_ch, _IFirst_ch, _Count);
+        if constexpr (is_pointer_v<_InIt>) {
+            _IFirst = reinterpret_cast<_InIt>(_IFirst_ch + _Count);
+        } else {
+            _IFirst += _Count / sizeof(iter_value_t<_InIt>);
+        }
+
+        if constexpr (is_pointer_v<_OutIt>) {
+            _OFirst = reinterpret_cast<_OutIt>(_OFirst_ch + _Count);
+        } else {
+            _OFirst += _Count / sizeof(iter_value_t<_OutIt>);
+        }
+        return {_STD move(_IFirst), _STD move(_OFirst)};
+    }
+
+    template <class _InIt, class _OutIt>
     in_out_result<_InIt, _OutIt> _Copy_memcpy_common(
         _InIt _IFirst, _InIt _ILast, _OutIt _OFirst, _OutIt _OLast) noexcept {
         const auto _IFirstPtr = _To_address(_IFirst);
@@ -1593,10 +1642,22 @@ namespace ranges {
     uninitialized_move_result<_It, _Out> _Uninitialized_move_unchecked(
             _It _IFirst, _Se _ILast, _Out _OFirst, _OSe _OLast) {
         // clang-format on
+        constexpr bool _Is_sized1 = sized_sentinel_for<_Se, _It>;
+        constexpr bool _Is_sized2 = sized_sentinel_for<_OSe, _Out>;
         if constexpr (_Ptr_move_cat<_It, _Out>::_Really_trivial
-                      && sized_sentinel_for<_Se, _It> && sized_sentinel_for<_OSe, _Out>) {
-            return _Copy_memcpy_common(
-                _IFirst, _RANGES next(_IFirst, _STD move(_ILast)), _OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
+                      && (_Is_sized1 || same_as<_Se, unreachable_sentinel_t>)
+#pragma warning(suppress : 6287) // Redundant code: the left and right subexpressions are identical
+                      && (_Is_sized2 || same_as<_OSe, unreachable_sentinel_t>)) {
+            if constexpr (_Is_sized1 && _Is_sized2) {
+                return _Copy_memcpy_common(_IFirst, _RANGES next(_IFirst, _STD move(_ILast)), _OFirst,
+                    _RANGES next(_OFirst, _STD move(_OLast)));
+            } else if constexpr (_Is_sized1) {
+                return _Copy_memcpy_distance(_IFirst, _OFirst, _IFirst, _RANGES next(_IFirst, _STD move(_ILast)));
+            } else if constexpr (_Is_sized2) {
+                return _Copy_memcpy_distance(_IFirst, _OFirst, _OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
+            } else {
+                _STL_ASSERT(false, "Tried to uninitialized move two ranges with unreachable sentinels");
+            }
         } else {
             _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
