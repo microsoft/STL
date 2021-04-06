@@ -1451,7 +1451,7 @@ public:
         }
     }
 
-    _NODISCARD size_t _Calculate_reserve_size() const noexcept {
+    _NODISCARD size_t _Estimate_required_capacity() const noexcept {
         using _CharT        = typename _Context::char_type;
         size_t _Result      = 0;
         const auto _Visitor = [&_Result]<class _ArgTy>(const _ArgTy _Arg) noexcept {
@@ -2655,28 +2655,28 @@ _OutputIt format_to(_OutputIt _Out, const locale& _Loc, const wstring_view _Fmt,
 
 _NODISCARD inline string vformat(const string_view _Fmt, const format_args _Args) {
     string _Str;
-    _Str.reserve(_Fmt.size() + _Args._Calculate_reserve_size());
+    _Str.reserve(_Fmt.size() + _Args._Estimate_required_capacity());
     _STD vformat_to(_STD back_inserter(_Str), _Fmt, _Args);
     return _Str;
 }
 
 _NODISCARD inline wstring vformat(const wstring_view _Fmt, const wformat_args _Args) {
     wstring _Str;
-    _Str.reserve(_Fmt.size() + _Args._Calculate_reserve_size());
+    _Str.reserve(_Fmt.size() + _Args._Estimate_required_capacity());
     _STD vformat_to(_STD back_inserter(_Str), _Fmt, _Args);
     return _Str;
 }
 
 _NODISCARD inline string vformat(const locale& _Loc, const string_view _Fmt, const format_args _Args) {
     string _Str;
-    _Str.reserve(_Fmt.size() + _Args._Calculate_reserve_size());
+    _Str.reserve(_Fmt.size() + _Args._Estimate_required_capacity());
     _STD vformat_to(_STD back_inserter(_Str), _Loc, _Fmt, _Args);
     return _Str;
 }
 
 _NODISCARD inline wstring vformat(const locale& _Loc, const wstring_view _Fmt, const wformat_args _Args) {
     wstring _Str;
-    _Str.reserve(_Fmt.size() + _Args._Calculate_reserve_size());
+    _Str.reserve(_Fmt.size() + _Args._Estimate_required_capacity());
     _STD vformat_to(_STD back_inserter(_Str), _Loc, _Fmt, _Args);
     return _Str;
 }
