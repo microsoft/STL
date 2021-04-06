@@ -5721,6 +5721,7 @@ _INLINE_VAR constexpr allocator_arg_t allocator_arg{};
 [[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Xout_of_range(_In_z_ const char*);
 [[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Xoverflow_error(_In_z_ const char*);
 [[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Xruntime_error(_In_z_ const char*);
+[[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _XGetLastError();
 
 // STRUCT TEMPLATE uses_allocator
 template <class _Ty, class _Alloc>

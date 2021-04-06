@@ -25,7 +25,9 @@ $Prefix = 'StlBuild-' + (Get-Date -Format 'yyyy-MM-dd')
 $VMSize = 'Standard_D32ds_v4'
 $ProtoVMName = 'PROTOTYPE'
 $LiveVMPrefix = 'BUILD'
-$WindowsServerSku = '2019-Datacenter'
+$ImagePublisher = 'MicrosoftWindowsDesktop'
+$ImageOffer = 'Windows-10'
+$ImageSku = '20h2-ent-g2'
 
 $ProgressActivity = 'Creating Scale Set'
 $TotalProgress = 12
@@ -268,9 +270,9 @@ $VM = Set-AzVMOperatingSystem `
 $VM = Add-AzVMNetworkInterface -VM $VM -Id $Nic.Id
 $VM = Set-AzVMSourceImage `
   -VM $VM `
-  -PublisherName 'MicrosoftWindowsServer' `
-  -Offer 'WindowsServer' `
-  -Skus $WindowsServerSku `
+  -PublisherName $ImagePublisher `
+  -Offer $ImageOffer `
+  -Skus $ImageSku `
   -Version latest
 
 $VM = Set-AzVMBootDiagnostic -VM $VM -Disable
@@ -340,7 +342,7 @@ Set-AzVM `
 
 $VM = Get-AzVM -ResourceGroupName $ResourceGroupName -Name $ProtoVMName
 $PrototypeOSDiskName = $VM.StorageProfile.OsDisk.Name
-$ImageConfig = New-AzImageConfig -Location $Location -SourceVirtualMachineId $VM.ID
+$ImageConfig = New-AzImageConfig -Location $Location -SourceVirtualMachineId $VM.ID -HyperVGeneration 'V2'
 $Image = New-AzImage -Image $ImageConfig -ImageName $ProtoVMName -ResourceGroupName $ResourceGroupName
 
 ####################################################################################################
