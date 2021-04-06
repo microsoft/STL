@@ -46,3 +46,6 @@ def configure(parameters, features, config, lit_config):
     ['-LIBPATH:' + os.path.normpath(dir) for dir in lit_config.library_dirs[config.name]]
 
   lit_config.test_env = {'PATH' : os.path.normpath(lit_config.cxx_runtime)}
+
+  # Add a parallelism group that multi-threaded tests can be marked as a part of.
+  lit_config.parallelism_groups['multi-threaded'] = 1
