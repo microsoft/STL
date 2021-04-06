@@ -67,19 +67,19 @@ basic_istream<_Elem, _Traits>& getline(basic_istream<_Elem, _Traits>&& _Istr,
 }
 
 template <class _Elem, class _Traits, class _Alloc>
- basic_istream<_Elem, _Traits>& getline(basic_istream<_Elem, _Traits>&& _Istr,
+basic_istream<_Elem, _Traits>& getline(basic_istream<_Elem, _Traits>&& _Istr,
     basic_string<_Elem, _Traits, _Alloc>& _Str) { // get characters into string, discard newline
     return getline(_Istr, _Str, _Istr.widen('\n'));
 }
 
 template <class _Elem, class _Traits, class _Alloc>
- basic_istream<_Elem, _Traits>& getline(basic_istream<_Elem, _Traits>& _Istr, basic_string<_Elem, _Traits, _Alloc>& _Str,
+basic_istream<_Elem, _Traits>& getline(basic_istream<_Elem, _Traits>& _Istr, basic_string<_Elem, _Traits, _Alloc>& _Str,
     const _Elem _Delim) { // get characters into string, discard delimiter
     return getline(_STD move(_Istr), _Str, _Delim);
 }
 
 template <class _Elem, class _Traits, class _Alloc>
- basic_istream<_Elem, _Traits>& getline(basic_istream<_Elem, _Traits>& _Istr,
+basic_istream<_Elem, _Traits>& getline(basic_istream<_Elem, _Traits>& _Istr,
     basic_string<_Elem, _Traits, _Alloc>& _Str) { // get characters into string, discard newline
     return getline(_STD move(_Istr), _Str, _Istr.widen('\n'));
 }
