@@ -114,23 +114,6 @@ namespace ranges {
         }
     };
 
-    // STRUCT TEMPLATE in_in_result
-    template <class _In1, class _In2>
-    struct in_in_result {
-        /* [[no_unique_address]] */ _In1 in1;
-        /* [[no_unique_address]] */ _In2 in2;
-
-        template <_Convertible_from<const _In1&> _IIn1, _Convertible_from<const _In2&> _IIn2>
-        constexpr operator in_in_result<_IIn1, _IIn2>() const& {
-            return {in1, in2};
-        }
-
-        template <_Convertible_from<_In1> _IIn1, _Convertible_from<_In2> _IIn2>
-        constexpr operator in_in_result<_IIn1, _IIn2>() && {
-            return {_STD move(in1), _STD move(in2)};
-        }
-    };
-
     // STRUCT TEMPLATE in_in_out_result
     template <class _In1, class _In2, class _Out>
     struct in_in_out_result {
@@ -416,21 +399,6 @@ namespace ranges {
     inline constexpr _For_each_n_fn for_each_n{_Not_quite_object::_Construct_tag{}};
 
     // VARIABLE ranges::find
-    // clang-format off
-    // concept-constrained for strict enforcement as it is used by several algorithms
-    template <input_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pj>
-        requires indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>
-    _NODISCARD constexpr _It _Find_unchecked(_It _First, const _Se _Last, const _Ty& _Val, _Pj _Proj) {
-        for (; _First != _Last; ++_First) {
-            if (_STD invoke(_Proj, *_First) == _Val) {
-                break;
-            }
-        }
-
-        return _First;
-    }
-    // clang-format on
-
     class _Find_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -792,107 +760,19 @@ _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE mismatch_result
-    template <class _In1, class _In2>
-    using mismatch_result = in_in_result<_In1, _In2>;
-
-    // VARIABLE ranges::mismatch
-    class _Mismatch_fn : private _Not_quite_object {
-    private:
-        template <class _It1, class _It2, class _Pr, class _Pj1, class _Pj2>
-        _NODISCARD static constexpr mismatch_result<_It1, _It2> _Mismatch_n(
-            _It1 _First1, _It2 _First2, iter_difference_t<_It1> _Count, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
-            auto _UFirst1 = _Get_unwrapped(_STD move(_First1));
-            auto _UFirst2 = _Get_unwrapped(_STD move(_First2));
-
-            for (; _Count != 0; ++_UFirst1, (void) ++_UFirst2, --_Count) {
-                if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_UFirst1), _STD invoke(_Proj2, *_UFirst2))) {
-                    break;
-                }
-            }
-
-            _Seek_wrapped(_First1, _STD move(_UFirst1));
-            _Seek_wrapped(_First2, _STD move(_UFirst2));
-            return {_STD move(_First1), _STD move(_First2)};
-        }
-
-        template <class _It1, class _Se1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
-        _NODISCARD static constexpr mismatch_result<_It1, _It2> _Mismatch_4(
-            _It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
-            auto _UFirst1      = _Get_unwrapped(_STD move(_First1));
-            const auto _ULast1 = _Get_unwrapped(_STD move(_Last1));
-            auto _UFirst2      = _Get_unwrapped(_STD move(_First2));
-            const auto _ULast2 = _Get_unwrapped(_STD move(_Last2));
-
-            for (; _UFirst1 != _ULast1 && _UFirst2 != _ULast2; ++_UFirst1, (void) ++_UFirst2) {
-                if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_UFirst1), _STD invoke(_Proj2, *_UFirst2))) {
-                    break;
-                }
-            }
-
-            _Seek_wrapped(_First1, _STD move(_UFirst1));
-            _Seek_wrapped(_First2, _STD move(_UFirst2));
-            return {_STD move(_First1), _STD move(_First2)};
-        }
-
-    public:
-        using _Not_quite_object::_Not_quite_object;
-
-        // clang-format off
-        template <input_iterator _It1, sentinel_for<_It1> _Se1, input_iterator _It2, sentinel_for<_It2> _Se2,
-            class _Pr = ranges::equal_to, class _Pj1 = identity, class _Pj2 = identity>
-            requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
-        _NODISCARD constexpr mismatch_result<_It1, _It2> operator()(_It1 _First1, _Se1 _Last1,
-            _It2 _First2, _Se2 _Last2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
-            _Adl_verify_range(_First1, _Last1);
-            _Adl_verify_range(_First2, _Last2);
-
-            if constexpr (sized_sentinel_for<_Se1, _It1> && sized_sentinel_for<_Se2, _It2>) {
-                iter_difference_t<_It1> _Count1 = _Last1 - _First1;
-                const iter_difference_t<_It2> _Count2 = _Last2 - _First2;
-                if (_Count1 > _Count2) {
-                    _Count1 = static_cast<decltype(_Count1)>(_Count2);
-                }
-
-                return _Mismatch_n(_STD move(_First1), _STD move(_First2), _Count1,
-                    _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
-            } else {
-                return _Mismatch_4(_STD move(_First1), _STD move(_Last1), _STD move(_First2), _STD move(_Last2),
-                    _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
-            }
-        }
-
-        template <input_range _Rng1, input_range _Rng2, class _Pr = ranges::equal_to, class _Pj1 = identity,
-            class _Pj2 = identity>
-            requires indirectly_comparable<iterator_t<_Rng1>, iterator_t<_Rng2>, _Pr, _Pj1, _Pj2>
-        _NODISCARD constexpr mismatch_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>> operator()(
-            _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
-            if constexpr (sized_range<_Rng1> && sized_range<_Rng2>) {
-                range_difference_t<_Rng1> _Count1 = _RANGES distance(_Range1);
-                const range_difference_t<_Rng2> _Count2 = _RANGES distance(_Range2);
-                if (_Count1 > _Count2) {
-                    _Count1 = static_cast<range_difference_t<_Rng1>>(_Count2);
-                }
-
-                return _Mismatch_n(_RANGES begin(_Range1), _RANGES begin(_Range2), _Count1,
-                    _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
-            } else {
-                return _Mismatch_4(_RANGES begin(_Range1), _RANGES end(_Range1),
-                    _RANGES begin(_Range2), _RANGES end(_Range2),
-                    _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
-            }
-        }
-        // clang-format on
-    };
-
-    inline constexpr _Mismatch_fn mismatch{_Not_quite_object::_Construct_tag{}};
-
     // VARIABLE ranges::equal
     class _Equal_fn : private _Not_quite_object {
     private:
         template <class _It1, class _It2, class _Size, class _Pr, class _Pj1, class _Pj2>
         _NODISCARD static constexpr bool _Equal_count(
             _It1 _First1, _It2 _First2, _Size _Count, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            if constexpr (_Equal_memcmp_is_safe<_It1, _It2,
+                              _Pr> && same_as<_Pj1, identity> && same_as<_Pj2, identity>) {
+                if (!_STD is_constant_evaluated()) {
+                    return _Memcmp_count(_First1, _First2, static_cast<size_t>(_Count)) == 0;
+                }
+            }
+
             for (; _Count != 0; ++_First1, (void) ++_First2, --_Count) {
                 if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_First2))) {
                     return false;
@@ -1508,7 +1388,15 @@ namespace ranges {
     // clang-format off
     template <input_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out>
         requires indirectly_copyable<_It, _Out>
-    _NODISCARD constexpr copy_result<_It, _Out> _Copy_unchecked(_It _First, const _Se _Last, _Out _Result) {
+    _NODISCARD constexpr copy_result<_It, _Out> _Copy_unchecked(_It _First, _Se _Last, _Out _Result) {
+        if constexpr (_Ptr_copy_cat<_It, _Out>::_Trivially_copyable && sized_sentinel_for<_Se, _It>) {
+            if (!_STD is_constant_evaluated()) {
+                auto _Final = _RANGES next(_First, _STD move(_Last));
+                _Result = _Copy_memmove(_STD move(_First), _Final, _STD move(_Result));
+                return {_STD move(_Final), _STD move(_Result)};
+            }
+        }
+
         for (; _First != _Last; ++_First, (void) ++_Result) {
             *_Result = *_First;
         }
@@ -1560,6 +1448,15 @@ namespace ranges {
             requires indirectly_copyable<_It, _Out>
         constexpr copy_n_result<_It, _Out> operator()(_It _First, iter_difference_t<_It> _Count, _Out _Result) const {
             auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
+            if constexpr (_Ptr_copy_cat<decltype(_UFirst), _Out>::_Trivially_copyable) {
+                if (!_STD is_constant_evaluated()) {
+                    auto _Final = _UFirst + _Count;
+                    _Result = _Copy_memmove(_STD move(_UFirst), _Final, _STD move(_Result));
+                    _Seek_wrapped(_First, _STD move(_Final));
+                    return {_STD move(_First), _STD move(_Result)};
+                }
+            }
+
             for (; _Count > 0; ++_UFirst, (void) ++_Result, --_Count) {
                 *_Result = *_UFirst;
             }
@@ -1703,8 +1600,15 @@ namespace ranges {
     // clang-format off
     template <input_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out>
         requires indirectly_movable<_It, _Out>
-    constexpr move_result<_It, _Out> _Move_unchecked(_It _First, const _Se _Last, _Out _Result) {
+    constexpr move_result<_It, _Out> _Move_unchecked(_It _First, _Se _Last, _Out _Result) {
         // clang-format on
+        if constexpr (_Ptr_move_cat<_It, _Out>::_Trivially_copyable) {
+            if (!_STD is_constant_evaluated()) {
+                auto _Final = _RANGES next(_First, _STD move(_Last));
+                _Result     = _Copy_memmove(_STD move(_First), _Final, _STD move(_Result));
+                return {_STD move(_Final), _STD move(_Result)};
+            }
+        }
 
         for (; _First != _Last; ++_First, (void) ++_Result) {
             *_Result = _RANGES iter_move(_First);
@@ -2127,10 +2031,7 @@ _NODISCARD _CONSTEXPR20 bool _Equal_rev_pred_unchecked(_InIt1 _First1, _InIt2 _F
         if (!_STD is_constant_evaluated())
 #endif // __cpp_lib_is_constant_evaluated
         {
-            const auto _First1_ch = _To_pointer<const char>(_First1);
-            const auto _First2_ch = _To_pointer<const char>(_First2);
-            const auto _Count     = static_cast<size_t>(_To_pointer<const char>(_Last2) - _First2_ch);
-            return _CSTD memcmp(_First1_ch, _First2_ch, _Count) == 0;
+            return _Memcmp_ranges(_First2, _Last2, _First1) == 0;
         }
     }
 
@@ -2222,7 +2123,7 @@ namespace ranges {
     // clang-format off
     template <class _It1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
     concept _Equal_rev_pred_can_memcmp = is_same_v<_Pj1, identity> && is_same_v<_Pj2, identity>
-        && is_same_v<_Se2, _It2> && _Equal_memcmp_is_safe<_It1, _It2, _Pr>;
+        && sized_sentinel_for<_Se2, _It2> && _Equal_memcmp_is_safe<_It1, _It2, _Pr>;
 
     template <input_iterator _It1, input_iterator _It2, sentinel_for<_It2> _Se2, class _Pr, class _Pj1, class _Pj2>
         requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
@@ -2233,12 +2134,14 @@ namespace ranges {
         constexpr bool _Optimize = _Equal_rev_pred_can_memcmp<_It1, _It2, _Se2, _Pr, _Pj1, _Pj2>;
         if constexpr (_Optimize) {
             if (!_STD is_constant_evaluated()) {
-                const auto _First1_ch = reinterpret_cast<const char*>(_STD to_address(_First1));
-                const auto _First2_ch = reinterpret_cast<const char*>(_STD to_address(_First2));
-                const auto _Count =
-                    static_cast<size_t>(reinterpret_cast<const char*>(_STD to_address(_Last2)) - _First2_ch);
-                const bool _Eq = _CSTD memcmp(_First1_ch, _First2_ch, _Count) == 0;
-                if (_Eq) {
+                bool _Ans;
+                if constexpr (same_as<_It2, _Se2>) {
+                    _Ans = _Memcmp_ranges(_First2, _Last2, _First1) == 0;
+                } else {
+                    _Ans = _Memcmp_count(_First1, _First2, static_cast<size_t>(_Last2 - _First2)) == 0;
+                }
+
+                if (_Ans) {
                     _First1 += (_Last2 - _First2);
                     return {true, _STD move(_First1)};
                 } else {
@@ -3596,17 +3499,19 @@ namespace ranges {
             auto _UFirst      = _Get_unwrapped(_STD move(_First));
             const auto _ULast = _Get_unwrapped(_STD move(_Last));
             if (!_STD is_constant_evaluated()) {
-                if constexpr (_Fill_memset_is_safe<decltype(_UFirst), _Ty>) {
-                    const auto _Distance = static_cast<size_t>(_ULast - _UFirst);
-                    _Fill_memset(_UFirst, _Value, _Distance);
-                    _Seek_wrapped(_First, _UFirst + _Distance);
-                    return _First;
-                } else if constexpr (_Fill_zero_memset_is_safe<decltype(_UFirst), _Ty>) {
-                    if (_Is_all_bits_zero(_Value)) {
+                if constexpr (sized_sentinel_for<decltype(_ULast), decltype(_UFirst)>) {
+                    if constexpr (_Fill_memset_is_safe<decltype(_UFirst), _Ty>) {
                         const auto _Distance = static_cast<size_t>(_ULast - _UFirst);
-                        _Fill_zero_memset(_UFirst, _Distance);
+                        _Fill_memset(_UFirst, _Value, _Distance);
                         _Seek_wrapped(_First, _UFirst + _Distance);
                         return _First;
+                    } else if constexpr (_Fill_zero_memset_is_safe<decltype(_UFirst), _Ty>) {
+                        if (_Is_all_bits_zero(_Value)) {
+                            const auto _Distance = static_cast<size_t>(_ULast - _UFirst);
+                            _Fill_zero_memset(_UFirst, _Distance);
+                            _Seek_wrapped(_First, _UFirst + _Distance);
+                            return _First;
+                        }
                     }
                 }
             }
@@ -4482,10 +4387,11 @@ _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
     auto _UDest        = _Get_unwrapped_n(_Dest, _Idl_distance<_BidIt>(_UFirst, _ULast));
 
 #if _USE_STD_VECTOR_ALGORITHMS
-    using _Elem                         = remove_pointer_t<decltype(_UFirst)>;
-    using _DestElem                     = remove_pointer_t<decltype(_UDest)>;
+    using _Elem                         = remove_reference_t<_Iter_ref_t<remove_const_t<decltype(_UFirst)>>>;
+    using _DestElem                     = remove_reference_t<_Iter_ref_t<decltype(_UDest)>>;
     constexpr bool _Allow_vectorization = conjunction_v<is_same<remove_const_t<_Elem>, _DestElem>,
-        is_pointer<decltype(_UFirst)>, is_trivially_copyable<_Elem>, negation<is_volatile<_Elem>>>;
+        bool_constant<_Iterators_are_contiguous<decltype(_UFirst), decltype(_UDest)>>, is_trivially_copyable<_Elem>,
+        negation<is_volatile<_Elem>>>;
     constexpr size_t _Nx                = sizeof(_Elem);
 
 #pragma warning(suppress : 6326) // Potential comparison of a constant with another constant
@@ -4495,13 +4401,13 @@ _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
 #endif // __cpp_lib_is_constant_evaluated
         {
             if constexpr (_Nx == 1) {
-                __std_reverse_copy_trivially_copyable_1(_UFirst, _ULast, _UDest);
+                __std_reverse_copy_trivially_copyable_1(_To_address(_UFirst), _To_address(_ULast), _To_address(_UDest));
             } else if constexpr (_Nx == 2) {
-                __std_reverse_copy_trivially_copyable_2(_UFirst, _ULast, _UDest);
+                __std_reverse_copy_trivially_copyable_2(_To_address(_UFirst), _To_address(_ULast), _To_address(_UDest));
             } else if constexpr (_Nx == 4) {
-                __std_reverse_copy_trivially_copyable_4(_UFirst, _ULast, _UDest);
+                __std_reverse_copy_trivially_copyable_4(_To_address(_UFirst), _To_address(_ULast), _To_address(_UDest));
             } else {
-                __std_reverse_copy_trivially_copyable_8(_UFirst, _ULast, _UDest);
+                __std_reverse_copy_trivially_copyable_8(_To_address(_UFirst), _To_address(_ULast), _To_address(_UDest));
             }
 
             _UDest += _ULast - _UFirst;
@@ -4898,20 +4804,18 @@ _SampleIt sample(_PopIt _First, _PopIt _Last, _SampleIt _Dest, _Diff _Count,
 }
 
 #ifdef __cpp_lib_concepts
-// STRUCT TEMPLATE _Require_constant
-template <auto>
-struct _Require_constant; // not defined; _Require_constant<E> is a valid type if E is a constant expression
-
 // CONCEPT uniform_random_bit_generator
 // clang-format off
 template <class _Ty>
-concept uniform_random_bit_generator = invocable<_Ty&> && unsigned_integral<invoke_result_t<_Ty&>> && requires {
-    { (_Ty::min)() } -> same_as<invoke_result_t<_Ty&>>;
-    { (_Ty::max)() } -> same_as<invoke_result_t<_Ty&>>;
-    typename _Require_constant<(_Ty::min)()>;
-    typename _Require_constant<(_Ty::max)()>;
-    requires (_Ty::min)() < (_Ty::max)();
-};
+concept uniform_random_bit_generator = invocable<_Ty&>
+    && unsigned_integral<invoke_result_t<_Ty&>>
+    && requires {
+        { (_Ty::min)() } -> same_as<invoke_result_t<_Ty&>>;
+        { (_Ty::max)() } -> same_as<invoke_result_t<_Ty&>>;
+        typename _Require_constant<(_Ty::min)()>;
+        typename _Require_constant<(_Ty::max)()>;
+        requires (_Ty::min)() < (_Ty::max)();
+    };
 // clang-format on
 
 namespace ranges {
@@ -10487,6 +10391,18 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It2>);
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se2, _It2>);
             _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, projected<_It1, _Pj1>, projected<_It2, _Pj2>>);
+
+            using _Memcmp_classification_pred =
+                typename decltype(_Lex_compare_memcmp_classify(_First1, _First2, _Pred))::_Pred;
+            if constexpr (!is_void_v<_Memcmp_classification_pred> && sized_sentinel_for<_Se1, _It1> //
+                          && sized_sentinel_for<_Se2, _It2> && same_as<_Pj1, identity> && same_as<_Pj2, identity>) {
+                if (!_STD is_constant_evaluated()) {
+                    const auto _Num1 = static_cast<size_t>(_Last1 - _First1);
+                    const auto _Num2 = static_cast<size_t>(_Last2 - _First2);
+                    const int _Ans   = _Memcmp_count(_First1, _First2, (_STD min)(_Num1, _Num2));
+                    return _Memcmp_classification_pred{}(_Ans, 0) || (_Ans == 0 && _Num1 < _Num2);
+                }
+            }
 
             for (;; ++_First1, (void) ++_First2) {
                 if (_First2 == _Last2) {

@@ -235,6 +235,8 @@ tests\P0355R7_calendars_and_time_zones_dates_literals
 tests\P0355R7_calendars_and_time_zones_hms
 tests\P0355R7_calendars_and_time_zones_io
 tests\P0355R7_calendars_and_time_zones_time_point_and_durations
+tests\P0355R7_calendars_and_time_zones_time_zones
+tests\P0355R7_calendars_and_time_zones_zoned_time
 tests\P0356R5_bind_front
 tests\P0357R3_supporting_incomplete_types_in_reference_wrapper
 tests\P0408R7_efficient_access_to_stringbuf_buffer
@@ -381,8 +383,10 @@ tests\P0896R4_views_empty
 tests\P0896R4_views_filter
 tests\P0896R4_views_filter_death
 tests\P0896R4_views_iota
+tests\P0896R4_views_join
 tests\P0896R4_views_reverse
 tests\P0896R4_views_single
+tests\P0896R4_views_split
 tests\P0896R4_views_take
 tests\P0896R4_views_take_while
 tests\P0896R4_views_take_while_death
