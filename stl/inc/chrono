@@ -2217,8 +2217,7 @@ namespace chrono {
 
     // clang-format off
     template <class _Ty, class _CharT>
-    concept _Chrono_parse_spec_callbacks = requires(_Ty _At, basic_string_view<_CharT> _Sv, _Align _Aln, _Version _Vsn,
-        _Us_or_iso _Cal_ver) {
+    concept _Chrono_parse_spec_callbacks = requires(_Ty _At, basic_string_view<_CharT> _Sv, _Align _Aln) {
         { _At._On_align(_Aln) } -> same_as<void>;
         { _At._On_fill(_Sv) } -> same_as<void>;
         { _At._On_width(int{}) } -> same_as<void>;
