@@ -60,6 +60,48 @@ void throw_helper(const charT* fmt, const Args&... vals) {
     }
 }
 
+template <class charT>
+struct move_only_back_inserter {
+    back_insert_iterator<basic_string<charT>> it;
+    using difference_type = ptrdiff_t;
+
+    bool moved_from = false;
+
+    move_only_back_inserter() = default;
+    explicit move_only_back_inserter(basic_string<charT>& str) : it{str} {}
+
+    move_only_back_inserter(const move_only_back_inserter&) = delete;
+    move_only_back_inserter& operator=(const move_only_back_inserter&) = delete;
+
+    move_only_back_inserter(move_only_back_inserter&& other) : it(other.it) {
+        assert(!exchange(other.moved_from, true));
+    }
+    move_only_back_inserter& operator=(move_only_back_inserter&& other) {
+        assert(!exchange(other.moved_from, true));
+        it         = other.it;
+        moved_from = false;
+        return *this;
+    }
+
+    move_only_back_inserter& operator++() {
+        assert(!moved_from);
+        ++it;
+        return *this;
+    }
+
+    decltype(auto) operator++(int) {
+        assert(!moved_from);
+        return it++;
+    }
+
+    decltype(auto) operator*() {
+        assert(!moved_from);
+        return *it;
+    }
+};
+
+template <class charT>
+move_only_back_inserter(basic_string<charT>&) -> move_only_back_inserter<charT>;
 
 // tests for format with no format args or replacement fields
 template <class charT>
@@ -68,6 +110,21 @@ void test_simple_formatting() {
 
     vformat_to(back_insert_iterator{output_string}, locale::classic(), STR("f"), make_testing_format_args<charT>());
     assert(output_string == STR("f"));
+
+    output_string.clear();
+    format_to(move_only_back_inserter{output_string}, STR("{} {} {} {} {} {} {} {} {}"), true, charT{'a'}, 0, 0u, 0.0,
+        STR("s"), basic_string_view{STR("sv")}, nullptr, static_cast<void*>(nullptr));
+    assert(output_string == STR("true a 0 0 0 s sv 0x0 0x0"));
+
+    output_string.clear();
+    format_to(move_only_back_inserter{output_string}, STR("{:} {:} {:} {:} {:} {:} {:} {:} {:}"), true, charT{'a'}, 0,
+        0u, 0.0, STR("s"), basic_string_view{STR("sv")}, nullptr, static_cast<void*>(nullptr));
+    assert(output_string == STR("true a 0 0 0 s sv 0x0 0x0"));
+
+    output_string.clear();
+    format_to_n(move_only_back_inserter{output_string}, 300, STR("{} {} {} {} {} {} {} {} {}"), true, charT{'a'}, 0, 0u,
+        0.0, STR("s"), basic_string_view{STR("sv")}, nullptr, static_cast<void*>(nullptr));
+    assert(output_string == STR("true a 0 0 0 s sv 0x0 0x0"));
 
     output_string.clear();
     vformat_to(
