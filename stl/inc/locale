@@ -42,7 +42,7 @@ public:
         return do_transform(_First, _Last);
     }
 
-  _NODISCARD  long hash(const _Elem* _First, const _Elem* _Last) const { // compute hash code for [_First, _Last)
+  _NODISCARD long hash(const _Elem* _First, const _Elem* _Last) const { // compute hash code for [_First, _Last)
         return do_hash(_First, _Last);
     }
 
