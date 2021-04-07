@@ -98,6 +98,22 @@ concept _Parse_replacement_field_callbacks = requires(_Ty _At, const _CharT* _Be
 };
 
 template <class _Ty, class _CharT>
+concept _Parse_align_callbacks = requires(_Ty _At, basic_string_view<_CharT> _Sv, _Align _Aln) {
+    { _At._On_fill(_Sv) } -> same_as<void>;
+    { _At._On_align(_Aln) } -> same_as<void>;
+};
+
+template <class _Ty, class _CharT>
+concept _Parse_width_callbacks = requires(_Ty _At) {
+    { _At._On_width(int{}) } -> same_as<void>;
+};
+
+template <class _Ty, class _CharT>
+concept _Parse_precision_callbacks = requires(_Ty _At) {
+    { _At._On_precision(int{}) } -> same_as<void>;
+};
+
+template <class _Ty, class _CharT>
 concept _CharT_or_bool = same_as<_Ty, _CharT> || same_as<_Ty, bool>;
 
 template <class _CharT>
@@ -359,7 +375,7 @@ _NODISCARD constexpr const _CharT* _Parse_arg_id(
     throw format_error("Invalid format string.");
 }
 
-template <class _CharT, _Parse_spec_callbacks<_CharT> _Callbacks_type>
+template <class _CharT, _Parse_align_callbacks<_CharT> _Callbacks_type>
 _NODISCARD constexpr const _CharT* _Parse_align(
     const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
     _STL_INTERNAL_CHECK(_Begin != _End && *_Begin != '}');
@@ -454,7 +470,7 @@ struct _Id_adapter {
     }
 };
 
-template <class _CharT, _Parse_spec_callbacks<_CharT> _Callbacks_type>
+template <class _CharT, _Parse_width_callbacks<_CharT> _Callbacks_type>
 _NODISCARD constexpr const _CharT* _Parse_width(
     const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
     _STL_INTERNAL_CHECK(_Begin != _End);
@@ -475,7 +491,7 @@ _NODISCARD constexpr const _CharT* _Parse_width(
     return _Begin;
 }
 
-template <class _CharT, _Parse_spec_callbacks<_CharT> _Callbacks_type>
+template <class _CharT, _Parse_precision_callbacks<_CharT> _Callbacks_type>
 _NODISCARD constexpr const _CharT* _Parse_precision(
     const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
     ++_Begin;

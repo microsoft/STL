@@ -19,6 +19,8 @@
 #include <compare>
 #ifdef __cpp_lib_concepts
 #include <concepts>
+#include <format>
+#include <vector>
 #endif // defined(__cpp_lib_concepts)
 #endif // _HAS_CXX20
 
@@ -795,55 +797,126 @@ namespace chrono {
 
     // [time.format]
 
-    template <class _CharT, _Parse_spec_callback<_CharT> _Callbacks_type>
-    constexpr const _CharT* _Parse_conversion_spec(
-        const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
-        _STL_INTERNAL_CHECK(_Begin != _End);
+    enum class _Version { _Abbrev, _Full, _Standard, _Emodifier, _Omodifier, _Us, _Iso };
+    enum class _Us_or_iso { _Us, _Iso };
 
+    // clang-format off
+    template <class _Ty, class _CharT>
+    concept _Chrono_parse_spec_callbacks = requires(_Ty _At, basic_string_view<_CharT> _Sv, _Align _Aln, _Version _Vsn,
+        _Us_or_iso _Cal_ver) {
+        { _At._On_align(_Aln) } -> same_as<void>;
+        { _At._On_fill(_Sv) } -> same_as<void>;
+        { _At._On_width(int{}) } -> same_as<void>;
+        { _At._On_dynamic_width(size_t{}) } -> same_as<void>;
+        { _At._On_dynamic_width(_Auto_id_tag{}) } -> same_as<void>;
+        { _At._On_precision(int{}) } -> same_as<void>;
+        { _At._On_dynamic_precision(size_t{}) } -> same_as<void>;
+        { _At._On_dynamic_precision(_Auto_id_tag{}) } -> same_as<void>;
+        { _At._On_type(_CharT{}) } -> same_as<void>;
+    };
+    // clang-format on
+
+    template <class _CharT>
+    struct _Chrono_specs {
+        char _Modifier   = '\0'; // either E or O
+        char _Type       = '\0';
+        _CharT _Lit_char = _CharT{0}; // any char other than {, }, %
+
+        explicit constexpr _Chrono_specs(char _Modifier_, char _Type_) : _Modifier(_Modifier_), _Type(_Type_) {}
+
+        explicit constexpr _Chrono_specs(_CharT _Lit_char_) : _Lit_char(_Lit_char_) {}
+    };
+
+    template <class _CharT>
+    struct _Chrono_format_specs {
+        int _Width        = 0;
+        int _Precision    = -1;
+        _Align _Alignment = _Align::_None;
+        // At most one codepoint (so one char32_t or four utf-8 char8_t)
+        _CharT _Fill[4] = {' ', _CharT{0}, _CharT{0}, _CharT{0}};
+        // recursive definition in grammar, so could have anu number of these with literal chars
+        vector<_Chrono_specs<_CharT>> _Chrono_specs_list;
+    };
+
+    // Model of _Chrono_parse_spec_callbacks that fills a _Chrono_format_specs with the parsed data
+    template <class _CharT>
+    class _Chrono_specs_setter {
+    public:
+        explicit constexpr _Chrono_specs_setter(_Chrono_format_specs<_CharT>& _Specs_) : _Specs(_Specs_) {}
+
+        // same as _Specs_setter
+        constexpr void _On_align(_Align _Aln) {
+            _Specs._Alignment = _Aln;
+        }
+
+        // same as _Specs_setter
+        constexpr void _On_fill(basic_string_view<_CharT> _Sv) {
+            if (_Sv.size() > 4) {
+                throw format_error("Invalid fill (too long).");
+            }
+
+            _STD fill(_Specs._Fill, _Specs._Fill + 4, _CharT{});
+            _STD copy(_Sv.begin(), _Sv.end(), _Specs._Fill);
+        }
+
+        constexpr void _On_width(int _Width) {
+            _Specs._Width = _Width;
+        }
+
+        constexpr void _On_precision(int _Prec) {
+            _Specs._Precision = _Prec;
+        }
+
+        constexpr void _On_conversion_spec(_CharT _Modifier, _CharT _Type) {
+            // NOTE: same performance note from _Basic_format_specs also applies here
+            char _Char_mod  = static_cast<char>(_Modifier);
+            char _Char_type = static_cast<char>(_Type);
+            if (_Char_mod != 'E' && _Char_mod != 'O') {
+                throw format_error("Invalid modifier specification.");
+            }
+
+            if (_Type < 0 || _Type > (numeric_limits<signed char>::max)()) {
+                throw format_error("Invalid type specification.");
+            }
+
+            _Chrono_specs _Conv_spec{_Char_mod, _Char_type};
+            _Specs._Chrono_specs_list.push_back(_Conv_spec);
+        }
+
+        constexpr void _On_lit_char(_CharT _Lit_ch) {
+            _Chrono_specs _Lit_char_spec{_Lit_ch};
+            _Specs._Chrono_specs_list.push_back(_Lit_char_spec);
+        }
+
+    protected:
+        _Chrono_format_specs<_CharT>& _Specs;
+    };
+
+    template <class _CharT, _Chrono_parse_spec_callbacks<_CharT> _Callbacks_type>
+    _NODISCARD constexpr const _CharT* _Parse_conversion_spec(
+        const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
         ++_Begin; // move past %
-        if (_Begin == 'E' || _Begin == '0') { // modifier (optional)
-            // store modifier somehow
+        _CharT _Mod = '\0';
+        _CharT _Type;
+        _CharT _Ch = '\0';
+        if (_Begin != _End) {
+            _Ch = *_Begin;
         }
 
-        _Begin = _Parse_type(_Begin, _End, ...);
+        if (_Ch == 'E' || _Ch == 'O') { // includes modifier
+            _Mod = _Ch;
+            ++_Begin;
+            if (_Begin == _End) {
+                throw format_error("Invalid format string - missing type after modifier.");
+            }
+        }
+
+        _Type = *_Begin;
+        return ++_Begin;
     }
 
-    template <class _CharT, _Parse_spec_callbacks<_CharT> _Callbacks_type>
-    constexpr const _CharT* _Parse_chrono_specs_tail(const _CharT*, const _CharT*, _Callbacks_type&&);)
-
-    template <class _CharT, _Parse_spec_callbacks<_CharT> _Callbacks_type>
-    constexpr const _CharT* _Parse_chrono_specs(const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
-        _STL_INTERNAL_CHECK(_Begin != _End);
-
-        if (*_Begin == '%') {
-            _Begin = _Parse_conversion_spec(_Begin, _End, ...);
-        }
-
-        _Begin = _Parse_chrono_specs_tail(_Begin, _End, _Callbacks);
-
-        return _Begin;
-    }
-
-    template <class _CharT, _Parse_spec_callbacks<_CharT> _Callbacks_type>
-    constexpr const _CharT* _Parse_chrono_specs_tail(
-        const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
-        if (_Begin == _End) { // empty case
-            return _Begin;
-        }
-
-        if (*_Begin == '%') { // conversion-spec
-            _Begin = _Parse_conversion_spec(_Begin, _End, ...);
-
-        } else { // literal-char
-            _Begin = _Parse_literal_char(_Begin, _End, ...);
-        }
-
-        return _Begin;
-    }
-
-    template <class _CharT, _Parse_spec_callbacks<_CharT> _Callbacks_type>
-    constexpr const _CharT* _Parse_chrono_format_specs(
-        const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
+    template <class _CharT, _Chrono_parse_spec_callbacks<_CharT> _Callbacks_type>
+    constexpr const _CharT* _Parse_chrono_specs(_CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
         if (_Begin == _End || *_Begin == '}') {
             return _Begin;
         }
@@ -865,7 +938,14 @@ namespace chrono {
             }
         }
 
-        _Begin = _Parse_chrono_specs(_Begin, _End, _Callbacks);
+        while (_Begin != _End) {
+            if (*_Begin == '%') { // conversion-spec
+                _Begin = _Parse_conversion_spec(_Begin, _End, _Callbacks);
+            } else { // literal-char
+                _Callbacks._On_lit_char(*_Begin);
+                ++_Begin;
+            }
+        }
     }
 
     class day {
@@ -1500,9 +1580,9 @@ namespace chrono {
         // calendar and the continuous count of days since 1970-01-01.
 
         // To simplify the handling of leap days (February 29th), the algorithm below uses a modified calendar
-        // internally, in which each year begins on March 1st, while January and February belong to the previous year.
-        // We denote the modified year and month number as _Yp and _Mp. We also define modified centuries that begin on
-        // each modified year whose _Yp is a multiple of 100.
+        // internally, in which each year begins on March 1st, while January and February belong to the previous
+        // year. We denote the modified year and month number as _Yp and _Mp. We also define modified centuries that
+        // begin on each modified year whose _Yp is a multiple of 100.
 
         // _Mp | Month     | Day of Year
         // --- | --------- | -----------
@@ -1543,18 +1623,18 @@ namespace chrono {
 
         // The structure of the modified calendar:
         // 1 ) It has a period of 4 centuries.
-        // 2 ) Each calendar period (146097 days) contains 3 regular centuries followed by a long century (36525 days).
-        // 3 ) Each regular century (36524 days) contains 24 regular 4-year spans followed by a short 4-year span.
-        // 3') Each long century (36525 days) contains 25 regular 4-year spans.
-        // 4 ) Each regular 4-year span (1461 days) contains 3 regular years followed by a leap year.
-        // 4') Each short 4-year span (1460 days) contains 4 regular years.
+        // 2 ) Each calendar period (146097 days) contains 3 regular centuries followed by a long century (36525
+        // days). 3 ) Each regular century (36524 days) contains 24 regular 4-year spans followed by a short 4-year
+        // span. 3') Each long century (36525 days) contains 25 regular 4-year spans. 4 ) Each regular 4-year span
+        // (1461 days) contains 3 regular years followed by a leap year. 4') Each short 4-year span (1460 days)
+        // contains 4 regular years.
 
         // Formula 1: Compute _Day_of_year of the first day of month _Mp
         //
         //   _Day_of_year = (979 * _Mp + 19) >> 5
         //
-        // A more well-known formula is 30 * _Mp + floor((3 * _Mp + 2) / 5) or floor((153 * _Mp + 2) / 5), which is used
-        // in Howard Hinnant's paper.
+        // A more well-known formula is 30 * _Mp + floor((3 * _Mp + 2) / 5) or floor((153 * _Mp + 2) / 5), which is
+        // used in Howard Hinnant's paper.
         //
         // The formula above returns the same result for all _Mp in [0, 11].
         // Note that 979 / 2^5 = 30.59375 ~= 30.6 = 153 / 5.
@@ -1563,8 +1643,8 @@ namespace chrono {
         //
         //   _Mp = (535 * _Day_of_year + 333) >> 14
         //
-        // Howard Hinnant's paper uses floor((5 * _Day_of_year + 2) / 153), the inverse of floor((153 * _Mp + 2) / 5) or
-        // ceil((153 * _Mp - 2) / 5).
+        // Howard Hinnant's paper uses floor((5 * _Day_of_year + 2) / 153), the inverse of floor((153 * _Mp + 2) /
+        // 5) or ceil((153 * _Mp - 2) / 5).
         //
         // The formula above returns the same result for all _Day_of_year in [0, 365].
         // Note that 2^14 / 535 = 30.624... ~= 30.6 = 153 / 5.
@@ -1574,16 +1654,17 @@ namespace chrono {
         //
         //   _Zx = ((1461 * _Yp) >> 2) - _Century + (_Century >> 2)
         //
-        // Start with multiplying by the number of days in regular years (365), add one day for the leap year in each
-        // 4-year span, subtract one day for the short 4-year span in each century, and finally add one day for the long
-        // century in each calendar period. This gives us 365 * _Yp + floor(_Yp / 4) - _Century + floor(_Century / 4).
+        // Start with multiplying by the number of days in regular years (365), add one day for the leap year in
+        // each 4-year span, subtract one day for the short 4-year span in each century, and finally add one day for
+        // the long century in each calendar period. This gives us 365 * _Yp + floor(_Yp / 4) - _Century +
+        // floor(_Century / 4).
 
         // Formula 2-1: Compute _Day_of_century of the first day of year _Year_of_century
         //
         //   _Day_of_century = (1461 * _Year_of_century) >> 2
         //
-        // Start with multiplying by the number of days in regular years (365), add one day for the leap year in each
-        // 4-year span. This gives us 365 * _Year_of_century + floor(_Year_of_century / 4)
+        // Start with multiplying by the number of days in regular years (365), add one day for the leap year in
+        // each 4-year span. This gives us 365 * _Year_of_century + floor(_Year_of_century / 4)
         // == floor(1461 * _Year_of_century / 4).
 
         // Formula 2-1': Compute _Year_of_century from _Day_of_century
@@ -1601,8 +1682,9 @@ namespace chrono {
         //
         //   _Zx = (146097 * _Century) >> 2
         //
-        // Start with multiplying by the number of days in regular centuries (36524), add one day for the long century
-        // in each calendar period. This gives us 36524 * _Century + floor(_Century / 4) = floor(146097 * _Century / 4).
+        // Start with multiplying by the number of days in regular centuries (36524), add one day for the long
+        // century in each calendar period. This gives us 36524 * _Century + floor(_Century / 4) = floor(146097 *
+        // _Century / 4).
 
         // Formula 2-2': Compute _Century from _Zx, where _Zx is the continuous count of days since 0000-03-01.
         //
@@ -2341,7 +2423,8 @@ inline namespace literals {
             return _CHRONO duration<double>(_Val);
         }
 
-        _NODISCARD constexpr _CHRONO milliseconds operator"" ms(unsigned long long _Val) noexcept /* strengthened */ {
+        _NODISCARD constexpr _CHRONO milliseconds operator"" ms(unsigned long long _Val) noexcept
+        /* strengthened */ {
             return _CHRONO milliseconds(_Val);
         }
 
@@ -2350,7 +2433,8 @@ inline namespace literals {
             return _CHRONO duration<double, milli>(_Val);
         }
 
-        _NODISCARD constexpr _CHRONO microseconds operator"" us(unsigned long long _Val) noexcept /* strengthened */ {
+        _NODISCARD constexpr _CHRONO microseconds operator"" us(unsigned long long _Val) noexcept
+        /* strengthened */ {
             return _CHRONO microseconds(_Val);
         }
 
@@ -2359,7 +2443,8 @@ inline namespace literals {
             return _CHRONO duration<double, micro>(_Val);
         }
 
-        _NODISCARD constexpr _CHRONO nanoseconds operator"" ns(unsigned long long _Val) noexcept /* strengthened */ {
+        _NODISCARD constexpr _CHRONO nanoseconds operator"" ns(unsigned long long _Val) noexcept
+        /* strengthened */ {
             return _CHRONO nanoseconds(_Val);
         }
 
