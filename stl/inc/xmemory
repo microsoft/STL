@@ -1644,10 +1644,9 @@ namespace ranges {
         // clang-format on
         constexpr bool _Is_sized1 = sized_sentinel_for<_Se, _It>;
         constexpr bool _Is_sized2 = sized_sentinel_for<_OSe, _Out>;
-        if constexpr (_Ptr_move_cat<_It, _Out>::_Really_trivial
-                      && (_Is_sized1 || same_as<_Se, unreachable_sentinel_t>)
+        if constexpr (_Ptr_move_cat<_It, _Out>::_Really_trivial && _Sized_or_unreachable_sentinel_for<_Se, _It>
 #pragma warning(suppress : 6287) // Redundant code: the left and right subexpressions are identical
-                      &&(_Is_sized2 || same_as<_OSe, unreachable_sentinel_t>) ) {
+                      && _Sized_or_unreachable_sentinel_for<_OSe, _Out>) {
             if constexpr (_Is_sized1 && _Is_sized2) {
                 return _Copy_memcpy_common(_IFirst, _RANGES next(_IFirst, _STD move(_ILast)), _OFirst,
                     _RANGES next(_OFirst, _STD move(_OLast)));
