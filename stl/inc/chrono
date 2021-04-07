@@ -1580,9 +1580,9 @@ namespace chrono {
         // calendar and the continuous count of days since 1970-01-01.
 
         // To simplify the handling of leap days (February 29th), the algorithm below uses a modified calendar
-        // internally, in which each year begins on March 1st, while January and February belong to the previous
-        // year. We denote the modified year and month number as _Yp and _Mp. We also define modified centuries that
-        // begin on each modified year whose _Yp is a multiple of 100.
+        // internally, in which each year begins on March 1st, while January and February belong to the previous year.
+        // We denote the modified year and month number as _Yp and _Mp. We also define modified centuries that begin on
+        // each modified year whose _Yp is a multiple of 100.
 
         // _Mp | Month     | Day of Year
         // --- | --------- | -----------
@@ -1623,18 +1623,18 @@ namespace chrono {
 
         // The structure of the modified calendar:
         // 1 ) It has a period of 4 centuries.
-        // 2 ) Each calendar period (146097 days) contains 3 regular centuries followed by a long century (36525
-        // days). 3 ) Each regular century (36524 days) contains 24 regular 4-year spans followed by a short 4-year
-        // span. 3') Each long century (36525 days) contains 25 regular 4-year spans. 4 ) Each regular 4-year span
-        // (1461 days) contains 3 regular years followed by a leap year. 4') Each short 4-year span (1460 days)
-        // contains 4 regular years.
+        // 2 ) Each calendar period (146097 days) contains 3 regular centuries followed by a long century (36525 days).
+        // 3 ) Each regular century (36524 days) contains 24 regular 4-year spans followed by a short 4-year span.
+        // 3') Each long century (36525 days) contains 25 regular 4-year spans.
+        // 4 ) Each regular 4-year span (1461 days) contains 3 regular years followed by a leap year.
+        // 4') Each short 4-year span (1460 days) contains 4 regular years.
 
         // Formula 1: Compute _Day_of_year of the first day of month _Mp
         //
         //   _Day_of_year = (979 * _Mp + 19) >> 5
         //
-        // A more well-known formula is 30 * _Mp + floor((3 * _Mp + 2) / 5) or floor((153 * _Mp + 2) / 5), which is
-        // used in Howard Hinnant's paper.
+        // A more well-known formula is 30 * _Mp + floor((3 * _Mp + 2) / 5) or floor((153 * _Mp + 2) / 5), which is used
+        // in Howard Hinnant's paper.
         //
         // The formula above returns the same result for all _Mp in [0, 11].
         // Note that 979 / 2^5 = 30.59375 ~= 30.6 = 153 / 5.
@@ -1643,8 +1643,8 @@ namespace chrono {
         //
         //   _Mp = (535 * _Day_of_year + 333) >> 14
         //
-        // Howard Hinnant's paper uses floor((5 * _Day_of_year + 2) / 153), the inverse of floor((153 * _Mp + 2) /
-        // 5) or ceil((153 * _Mp - 2) / 5).
+        // Howard Hinnant's paper uses floor((5 * _Day_of_year + 2) / 153), the inverse of floor((153 * _Mp + 2) / 5) or
+        // ceil((153 * _Mp - 2) / 5).
         //
         // The formula above returns the same result for all _Day_of_year in [0, 365].
         // Note that 2^14 / 535 = 30.624... ~= 30.6 = 153 / 5.
@@ -1654,17 +1654,16 @@ namespace chrono {
         //
         //   _Zx = ((1461 * _Yp) >> 2) - _Century + (_Century >> 2)
         //
-        // Start with multiplying by the number of days in regular years (365), add one day for the leap year in
-        // each 4-year span, subtract one day for the short 4-year span in each century, and finally add one day for
-        // the long century in each calendar period. This gives us 365 * _Yp + floor(_Yp / 4) - _Century +
-        // floor(_Century / 4).
+        // Start with multiplying by the number of days in regular years (365), add one day for the leap year in each
+        // 4-year span, subtract one day for the short 4-year span in each century, and finally add one day for the long
+        // century in each calendar period. This gives us 365 * _Yp + floor(_Yp / 4) - _Century + floor(_Century / 4).
 
         // Formula 2-1: Compute _Day_of_century of the first day of year _Year_of_century
         //
         //   _Day_of_century = (1461 * _Year_of_century) >> 2
         //
-        // Start with multiplying by the number of days in regular years (365), add one day for the leap year in
-        // each 4-year span. This gives us 365 * _Year_of_century + floor(_Year_of_century / 4)
+        // Start with multiplying by the number of days in regular years (365), add one day for the leap year in each
+        // 4-year span. This gives us 365 * _Year_of_century + floor(_Year_of_century / 4)
         // == floor(1461 * _Year_of_century / 4).
 
         // Formula 2-1': Compute _Year_of_century from _Day_of_century
@@ -1682,9 +1681,8 @@ namespace chrono {
         //
         //   _Zx = (146097 * _Century) >> 2
         //
-        // Start with multiplying by the number of days in regular centuries (36524), add one day for the long
-        // century in each calendar period. This gives us 36524 * _Century + floor(_Century / 4) = floor(146097 *
-        // _Century / 4).
+        // Start with multiplying by the number of days in regular centuries (36524), add one day for the long century
+        // in each calendar period. This gives us 36524 * _Century + floor(_Century / 4) = floor(146097 * _Century / 4).
 
         // Formula 2-2': Compute _Century from _Zx, where _Zx is the continuous count of days since 0000-03-01.
         //
@@ -2423,8 +2421,7 @@ inline namespace literals {
             return _CHRONO duration<double>(_Val);
         }
 
-        _NODISCARD constexpr _CHRONO milliseconds operator"" ms(unsigned long long _Val) noexcept
-        /* strengthened */ {
+        _NODISCARD constexpr _CHRONO milliseconds operator"" ms(unsigned long long _Val) noexcept /* strengthened */ {
             return _CHRONO milliseconds(_Val);
         }
 
@@ -2433,8 +2430,7 @@ inline namespace literals {
             return _CHRONO duration<double, milli>(_Val);
         }
 
-        _NODISCARD constexpr _CHRONO microseconds operator"" us(unsigned long long _Val) noexcept
-        /* strengthened */ {
+        _NODISCARD constexpr _CHRONO microseconds operator"" us(unsigned long long _Val) noexcept /* strengthened */ {
             return _CHRONO microseconds(_Val);
         }
 
@@ -2443,8 +2439,7 @@ inline namespace literals {
             return _CHRONO duration<double, micro>(_Val);
         }
 
-        _NODISCARD constexpr _CHRONO nanoseconds operator"" ns(unsigned long long _Val) noexcept
-        /* strengthened */ {
+        _NODISCARD constexpr _CHRONO nanoseconds operator"" ns(unsigned long long _Val) noexcept /* strengthened */ {
             return _CHRONO nanoseconds(_Val);
         }
 
