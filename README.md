@@ -4,7 +4,7 @@ This branch generates the STL's [Status Chart][].
 
 # Getting Started: Repo
 
-1. Install [Node.js][] 15.12.0 or newer.
+1. Install [Node.js][] 15.14.0 or newer.
     + You can accept all of the installer's default options.
 2. Open a new Command Prompt.
     + You can run `node --version` to verify that Node.js was successfully installed.
@@ -39,14 +39,15 @@ GitHub's GraphQL API requires authentication:
 1. Go to your [Personal Access Tokens][] on GitHub.
 2. Click "Generate new token".
 3. Name it "STL Status Chart" or anything else you'd like.
-4. Select `repo` scope.
+4. Don't select any scopes. (This will be a "public access" token.)
 5. Click "Generate token". Keep this page open.
 6. In your `chart` repo, create a file named `.env` containing:
     ```
-    SECRET_GITHUB_PERSONAL_ACCESS_TOKEN=12ab34cd
+    SECRET_GITHUB_PERSONAL_ACCESS_TOKEN=ghp_abcdABCD0123wxyzWXYZ6789
     ```
-7. Replace `12ab34cd` with the hexadecimal personal access token that you just generated.
+7. Replace `ghp_abcdABCD0123wxyzWXYZ6789` with the personal access token that you just generated.
     + The token is unique, so it's used without your username.
+    + The [prefix](https://github.blog/2021-04-05-behind-githubs-new-authentication-token-formats/) will be `ghp_`.
 8. Save the `.env` file.
 9. Close the page displaying your personal access token.
 10. Clear your clipboard.
