@@ -976,19 +976,21 @@ template <class _Context, class _Ty>
     }
 }
 
-template <class _Context, class _Char_type = typename _Context::char_type>
-/* consteval */ constexpr auto _Get_format_arg_storage_type(const _Char_type*) noexcept {
-    return static_cast<const _Char_type*>(nullptr);
+template <class _Context>
+/* consteval */ constexpr auto _Get_format_arg_storage_type(const typename _Context::char_type*) noexcept {
+    return static_cast<const typename _Context::char_type*>(nullptr);
 }
 
-template <class _Context, class _Traits, class _Char_type = typename _Context::char_type>
-/* consteval */ constexpr auto _Get_format_arg_storage_type(basic_string_view<_Char_type, _Traits>) noexcept {
-    return basic_string_view<_Char_type>{};
+template <class _Context, class _Traits>
+/* consteval */ constexpr auto _Get_format_arg_storage_type(
+    basic_string_view<typename _Context::char_type, _Traits>) noexcept {
+    return basic_string_view<typename _Context::char_type>{};
 }
 
-template <class _Context, class _Traits, class _Alloc, class _Char_type = typename _Context::char_type>
-/* consteval */ constexpr auto _Get_format_arg_storage_type(const basic_string<_Char_type, _Traits, _Alloc>&) noexcept {
-    return basic_string_view<_Char_type>{};
+template <class _Context, class _Traits, class _Alloc>
+/* consteval */ constexpr auto _Get_format_arg_storage_type(
+    const basic_string<typename _Context::char_type, _Traits, _Alloc>&) noexcept {
+    return basic_string_view<typename _Context::char_type>{};
 }
 
 template <class _Context>
@@ -1006,18 +1008,27 @@ template <class _Context, class _Ty>
 
 template <class _Context, class _Ty>
 inline constexpr size_t _Get_format_arg_storage_size = sizeof(
-    _Get_format_arg_storage_type<_Context>(_STD declval<_Ty>()));
+    _Get_format_arg_storage_type<_Context>(_STD declval<const _Ty&>()));
 
 struct _Format_arg_store_packed_index {
     // TRANSITION, Should be templated on number of arguments for even less storage
     using _Index_type = size_t;
 
     constexpr _Format_arg_store_packed_index() = default;
-    constexpr explicit _Format_arg_store_packed_index(const size_t _Index)
-        : _Index(static_cast<_Index_type>(_Index)), _Type(_Basic_format_arg_type::_None) {}
+    constexpr explicit _Format_arg_store_packed_index(const size_t _Index) : _Index(static_cast<_Index_type>(_Index)) {
+        _Type(_Basic_format_arg_type::_None);
+    }
+
+    _NODISCARD constexpr _Basic_format_arg_type _Type() const noexcept {
+        return static_cast<_Basic_format_arg_type>(_Type_);
+    }
+
+    constexpr void _Type(_Basic_format_arg_type _Val) noexcept {
+        _Type_ = static_cast<_Index_type>(_Val);
+    }
 
     _Index_type _Index : (sizeof(_Index_type) * 8 - 4);
-    _Basic_format_arg_type _Type : 4;
+    _Index_type _Type_ : 4;
 };
 
 template <class _Context>
@@ -1045,7 +1056,7 @@ private:
         const auto _Length      = _Get_format_arg_type_storage_size<_CharType>(_Arg_type);
 
         _CSTD memcpy(_Storage + _Index_length + _Store_index, _STD addressof(_Val), _Length);
-        _Index_array[_Arg_index]._Type = _Arg_type;
+        _Index_array[_Arg_index]._Type(_Arg_type);
         if (_Arg_index + 1 < _Num_args) {
             // Set the starting index of the next arg, as that is dynamic, must be called with increasing index
             _Index_array[_Arg_index + 1] = _Format_arg_store_packed_index{_Store_index + _Length};
@@ -1151,7 +1162,7 @@ public:
         const auto _Index_length          = _Num_args * sizeof(_Format_arg_store_packed_index);
         const unsigned char* _Arg_storage = _Storage + _Index_length + _Packed_index._Index;
 
-        switch (_Packed_index._Type) {
+        switch (_Packed_index._Type()) {
         case _Basic_format_arg_type::_None:
             return basic_format_arg<_Context>{};
         case _Basic_format_arg_type::_Int_type:
