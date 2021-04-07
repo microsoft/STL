@@ -615,20 +615,6 @@ STATIC_ASSERT(__cpp_lib_erase_if == 202002L);
 #endif
 #endif
 
-#if _HAS_CXX20 && !defined(__EDG__)
-#ifndef __cpp_lib_format
-#error __cpp_lib_format is not defined
-#elif __cpp_lib_format != 201907L
-#error __cpp_lib_format is not 201907L
-#else
-STATIC_ASSERT(__cpp_lib_format == 201907L);
-#endif
-#else
-#ifdef __cpp_lib_format
-#error __cpp_lib_format is defined
-#endif
-#endif
-
 #ifndef __cpp_lib_exchange_function
 #error __cpp_lib_exchange_function is not defined
 #elif __cpp_lib_exchange_function != 201304L
@@ -686,6 +672,20 @@ STATIC_ASSERT(__cpp_lib_filesystem == 201703L);
 #else
 #ifdef __cpp_lib_filesystem
 #error __cpp_lib_filesystem is defined
+#endif
+#endif
+
+#if _HAS_CXX20 && !defined(__EDG__)
+#ifndef __cpp_lib_format
+#error __cpp_lib_format is not defined
+#elif __cpp_lib_format != 201907L
+#error __cpp_lib_format is not 201907L
+#else
+STATIC_ASSERT(__cpp_lib_format == 201907L);
+#endif
+#else
+#ifdef __cpp_lib_format
+#error __cpp_lib_format is defined
 #endif
 #endif
 

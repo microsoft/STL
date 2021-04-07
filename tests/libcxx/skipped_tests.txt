@@ -301,9 +301,6 @@ utilities\variant\variant.variant\variant.assign\T.pass.cpp
 utilities\variant\variant.variant\variant.ctor\conv.pass.cpp
 utilities\variant\variant.variant\variant.ctor\T.pass.cpp
 
-# C++20 P0645R10 "<format> Text Formatting"
-language.support\support.limits\support.limits.general\format.version.pass.cpp
-
 # C++20 P0784R7 "More constexpr containers"
 utilities\memory\allocator.traits\allocator.traits.members\construct.pass.cpp
 utilities\memory\allocator.traits\allocator.traits.members\destroy.pass.cpp
