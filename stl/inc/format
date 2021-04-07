@@ -1458,7 +1458,7 @@ public:
             if constexpr (is_same_v<_ArgTy, basic_string_view<_CharT>>) {
                 _Result += _Arg.size();
             } else if constexpr (is_same_v<_ArgTy, const _CharT*>) {
-                _Result += char_traits<_CharT>::length(_Arg);
+                _Result += 32;
             } else {
                 _Result += 8;
             }
