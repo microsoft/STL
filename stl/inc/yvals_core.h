@@ -180,7 +180,6 @@
 // P0879R0 constexpr For Swapping Functions
 // P0887R1 type_identity
 // P0896R4 Ranges
-//     (partially implemented)
 // P0898R3 Standard Library Concepts
 // P0912R5 Library Support For Coroutines
 // P0919R3 Heterogeneous Lookup For Unordered Containers
@@ -194,6 +193,7 @@
 // P1023R0 constexpr For std::array Comparisons
 // P1024R3 Enhancing span Usability
 // P1032R1 Miscellaneous constexpr
+// P1035R7 Input Range Adaptors
 // P1065R2 constexpr INVOKE
 //     (except the std::invoke function which is implemented in C++17)
 // P1085R2 Removing span Comparisons
@@ -201,28 +201,31 @@
 // P1123R0 Atomic Compare-And-Exchange With Padding Bits For atomic_ref
 // P1135R6 The C++20 Synchronization Library
 // P1207R4 Movability Of Single-Pass Iterators
-//     (partially implemented)
 // P1208R6 <source_location>
 // P1209R0 erase_if(), erase()
 // P1227R2 Signed std::ssize(), Unsigned span::size()
 // P1243R4 Rangify New Algorithms
-//     (partially implemented)
 // P1248R1 Fixing Relations
+// P1252R2 Ranges Design Cleanup
 // P1357R1 is_bounded_array, is_unbounded_array
 // P1391R4 Range Constructor For string_view
 // P1394R4 Range Constructor For span
 // P1423R3 char8_t Backward Compatibility Remediation
 // P1456R1 Move-Only Views
 // P1474R1 Helpful Pointers For contiguous_iterator
+// P1522R1 Iterator Difference Type And Integer Overflow
+//     (technically conforming, but it would be nice to implement a 65-bit integer-like type)
+// P1523R1 Views And Size Types
 // P1612R1 Relocating endian To <bit>
 // P1614R2 Adding Spaceship <=> To The Library
+// P1638R1 basic_istream_view::iterator Should Not Be Copyable
 // P1645R1 constexpr For <numeric> Algorithms
 // P1651R0 bind_front() Should Not Unwrap reference_wrapper
 // P1690R1 Refining Heterogeneous Lookup For Unordered Containers
 // P1716R3 Range Comparison Algorithms Are Over-Constrained
 // P1739R4 Avoiding Template Bloat For Ranges
-//     (partially implemented)
 // P1754R1 Rename Concepts To standard_case
+// P1862R1 Range Adaptors For Non-Copyable Iterators
 // P1865R1 Adding max() To latch And barrier
 // P1870R1 Rename forwarding-range To borrowed_range (Was safe_range before LWG-3379)
 // P1871R1 disable_sized_sentinel_for
@@ -235,8 +238,11 @@
 // P1964R2 Replacing boolean With boolean-testable
 // P1973R1 Renaming default_init To for_overwrite
 // P1976R2 Explicit Constructors For Fixed-Extent span From Dynamic-Extent Ranges
+// P1983R0 Fixing Minor Ranges Issues
+// P1994R1 elements_view Needs Its Own sentinel
 // P2091R0 Fixing Issues With Range Access CPOs
 // P2102R0 Making "Implicit Expression Variations" More Explicit
+// P2106R0 Range Algorithm Result Types
 // P2116R0 Removing tuple-Like Protocol Support From Fixed-Extent span
 // P????R? directory_entry::clear_cache()
 
@@ -515,7 +521,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 142
-#define _MSVC_STL_UPDATE  202103L
+#define _MSVC_STL_UPDATE  202104L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #ifdef __CUDACC__
@@ -1220,10 +1226,6 @@
 #define __cpp_lib_constexpr_vector 201907L
 #endif // defined(__cpp_constexpr_dynamic_alloc) && !defined(__clang__)
 
-#ifdef __cpp_impl_coroutine // TRANSITION, Clang coroutine support
-#define __cpp_lib_coroutine 201902L
-#endif // __cpp_impl_coroutine
-
 #define __cpp_lib_destroying_delete            201806L
 #define __cpp_lib_endian                       201907L
 #define __cpp_lib_erase_if                     202002L
@@ -1252,6 +1254,11 @@
 #define __cpp_lib_list_remove_return_type 201806L
 #define __cpp_lib_math_constants          201907L
 #define __cpp_lib_polymorphic_allocator   201902L
+
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#define __cpp_lib_ranges 201911L
+#endif // __cpp_lib_concepts
+
 #define __cpp_lib_remove_cvref            201711L
 #define __cpp_lib_semaphore               201907L
 #define __cpp_lib_shift                   201806L
@@ -1295,6 +1302,10 @@
 #else // _HAS_CXX20
 #define __cpp_lib_shared_ptr_arrays 201611L // P0497R0 Fixing shared_ptr For Arrays
 #endif // _HAS_CXX20
+
+#if defined(__cpp_impl_coroutine) || defined(_DOWNLEVEL_COROUTINES_SUPPORTED) // TRANSITION, Clang coroutine support
+#define __cpp_lib_coroutine 201902L
+#endif // __cpp_impl_coroutine
 
 // EXPERIMENTAL
 #define __cpp_lib_experimental_erase_if   201411L

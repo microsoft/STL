@@ -42,7 +42,7 @@ struct test_ptr_cat_helper {
     STATIC_ASSERT(!MoveReallyTrivial || MoveTriviallyCopyable);
 };
 
-template <int Expected, class Source, class Dest, int Volatile = Expected>
+template <int Expected, class Source, class Dest>
 void test_ptr_cat() {
     (void) test_ptr_cat_helper<Expected, Source*, Dest*>{};
     // Also make sure that the source being const doesn't change the answer
@@ -59,16 +59,6 @@ void test_ptr_cat() {
     (void) test_ptr_cat_helper<0, const volatile Source*, const Dest*>{};
     (void) test_ptr_cat_helper<0, const Source*, const volatile Dest*>{};
     (void) test_ptr_cat_helper<0, const volatile Source*, const volatile Dest*>{};
-    // volatile anywhere should go to the trivial implementation for builtin types, but
-    // the general implementation for PODs, since the compiler-generated copy assign has signature:
-    // Meow& operator=(const Meow&);
-    // which hates volatile on both the source and the target
-    (void) test_ptr_cat_helper<Volatile, volatile Source*, Dest*>{};
-    (void) test_ptr_cat_helper<Volatile, Source*, volatile Dest*>{};
-    (void) test_ptr_cat_helper<Volatile, volatile Source*, volatile Dest*>{};
-    (void) test_ptr_cat_helper<Volatile, const volatile Source*, Dest*>{};
-    (void) test_ptr_cat_helper<Volatile, const Source*, volatile Dest*>{};
-    (void) test_ptr_cat_helper<Volatile, const volatile Source*, volatile Dest*>{};
 
     // Also make sure _Ptr_cat listens to the iterator type
     (void) test_ptr_cat_helper<0, typename list<Source>::iterator, typename list<Dest>::iterator>{};
@@ -131,8 +121,8 @@ void ptr_cat_test_cases() {
     // Identity cases:
     test_ptr_cat<2, int, int>();
     test_ptr_cat<2, bool, bool>();
-    test_ptr_cat<2, pod_struct, pod_struct, 0>();
-    test_ptr_cat<1, trivially_copyable_struct, trivially_copyable_struct, 0>();
+    test_ptr_cat<2, pod_struct, pod_struct>();
+    test_ptr_cat<1, trivially_copyable_struct, trivially_copyable_struct>();
     test_ptr_cat<0, custom_copy_struct, custom_copy_struct>();
     test_ptr_cat<2, int_enum, int_enum>();
     test_ptr_cat<2, short_enum, short_enum>();

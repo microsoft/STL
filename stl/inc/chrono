@@ -16,7 +16,19 @@
 #include <xtimec.h>
 
 #if _HAS_CXX20
+#include <__msvc_tzdb.hpp>
+#include <algorithm>
+#include <atomic>
+#include <cmath>
 #include <compare>
+#include <forward_list>
+#include <istream>
+#include <memory>
+#include <optional>
+#include <vector>
+#include <xloctime>
+#include <xthreads.h>
+
 #ifdef __cpp_lib_concepts
 #include <concepts>
 #include <format>
@@ -60,20 +72,19 @@ namespace chrono {
     };
 
 #if _HAS_CXX20
-    template <class _Clock>
-    concept _Is_clock = requires {
-        typename _Clock::rep;
-        typename _Clock::period;
-        typename _Clock::duration;
-        typename _Clock::time_point;
-        _Clock::is_steady;
-        _Clock::now();
-    };
+    template <class _Clock, class = void>
+    inline constexpr bool _Is_clock_v = false;
 
     template <class _Clock>
-    struct is_clock : bool_constant<_Is_clock<_Clock>> {};
+    inline constexpr bool
+        _Is_clock_v<_Clock, void_t<typename _Clock::rep, typename _Clock::period, typename _Clock::duration,
+                                typename _Clock::time_point, decltype(_Clock::is_steady), decltype(_Clock::now())>> =
+            true; // TRANSITION, GH-602
+
     template <class _Clock>
-    inline constexpr bool is_clock_v = _Is_clock<_Clock>;
+    struct is_clock : bool_constant<_Is_clock_v<_Clock>> {};
+    template <class _Clock>
+    inline constexpr bool is_clock_v = _Is_clock_v<_Clock>;
 #endif // _HAS_CXX20
 
     // CLASS TEMPLATE duration
@@ -206,7 +217,8 @@ namespace chrono {
         using rep      = typename _Duration::rep;
         using period   = typename _Duration::period;
 
-        static_assert(_Is_duration_v<_Duration>, "duration must be an instance of std::duration");
+        static_assert(_Is_duration_v<_Duration>,
+            "N4885 [time.point.general]/1 mandates Duration to be a specialization of chrono::duration.");
 
         constexpr time_point() = default;
 
@@ -2122,8 +2134,11 @@ namespace chrono {
     }
 
     template <class _Duration>
-    requires _Is_duration_v<_Duration> class hh_mm_ss {
+    class hh_mm_ss {
     public:
+        static_assert(_Is_duration_v<_Duration>,
+            "N4885 [time.hms.overview]/2 mandates Duration to be a specialization of chrono::duration.");
+
         static constexpr unsigned int fractional_width = [] {
             auto _Num           = _Duration::period::num;
             constexpr auto _Den = _Duration::period::den;
@@ -2210,6 +2225,2957 @@ namespace chrono {
         }
 
         return hours{_Ret};
+    }
+
+    // [time.zone.info]
+
+    // STRUCT sys_info
+    struct sys_info {
+        sys_seconds begin;
+        sys_seconds end;
+        seconds offset;
+        minutes save;
+        string abbrev;
+    };
+
+    // STRUCT local_info
+    struct local_info {
+        static constexpr int unique      = 0;
+        static constexpr int nonexistent = 1;
+        static constexpr int ambiguous   = 2;
+
+        int result;
+        sys_info first;
+        sys_info second;
+    };
+
+    // CLASS nonexistent_local_time
+    class nonexistent_local_time : public runtime_error {
+    public:
+        template <class _Duration>
+        nonexistent_local_time(const local_time<_Duration>&, const local_info&)
+            : runtime_error("TRANSITION: work in progress") {}
+    };
+
+    // CLASS ambiguous_local_time
+    class ambiguous_local_time : public runtime_error {
+    public:
+        template <class _Duration>
+        ambiguous_local_time(const local_time<_Duration>&, const local_info&)
+            : runtime_error("TRANSITION: work in progress") {}
+    };
+
+    // [time.zone.timezone]
+
+    // ENUM CLASS choose
+    enum class choose { earliest, latest };
+
+    // CLASS time_zone
+    class time_zone {
+    public:
+        explicit time_zone(string_view _Name_) : _Name(_Name_) {}
+
+        time_zone(time_zone&&) = default;
+        time_zone& operator=(time_zone&&) = default;
+
+        _NODISCARD string_view name() const noexcept {
+            return _Name;
+        }
+
+        template <class _Duration>
+        _NODISCARD sys_info get_info(const sys_time<_Duration>& _Sys) const {
+            return _Get_info(_Sys.time_since_epoch());
+        }
+
+        template <class _Duration>
+        _NODISCARD local_info get_info(const local_time<_Duration>& _Local) const {
+            local_info _Info{};
+            const auto _Time_since_ep = _Local.time_since_epoch();
+            _Info.first               = _Get_info(_Time_since_ep);
+
+            const sys_seconds _Local_sys{_CHRONO duration_cast<sys_seconds::duration>(_Time_since_ep)};
+            const auto _Curr_sys = _Local_sys - _Info.first.offset;
+            if (_Info.first.begin != _Min_seconds && _Curr_sys < _Info.first.begin + days{1}) {
+                // get previous transition information
+                _Info.second = get_info(_Info.first.begin - seconds{1});
+
+                const auto _Transition = _Info.first.begin;
+                const auto _Prev_sys   = _Local_sys - _Info.second.offset;
+                if (_Curr_sys >= _Transition) {
+                    if (_Prev_sys < _Transition) {
+                        _Info.result = local_info::ambiguous;
+                        _STD swap(_Info.first, _Info.second);
+                    } else {
+                        _Info.result = local_info::unique;
+                        _Info.second = {};
+                    }
+                } else {
+                    if (_Prev_sys >= _Transition) {
+                        _Info.result = local_info::nonexistent;
+                        _STD swap(_Info.first, _Info.second);
+                    } else {
+                        _Info.result = local_info::unique;
+                        _Info.first  = _STD move(_Info.second);
+                        _Info.second = {};
+                    }
+                }
+            } else if (_Info.first.end != _Max_seconds && _Curr_sys > _Info.first.end - days{1}) {
+                // get next transition information
+                _Info.second = get_info(_Info.first.end + seconds{1});
+
+                const auto _Transition = _Info.first.end;
+                const auto _Next_sys   = _Local_sys - _Info.second.offset;
+                if (_Curr_sys < _Transition) {
+                    if (_Next_sys >= _Transition) {
+                        _Info.result = local_info::ambiguous;
+                    } else {
+                        _Info.result = local_info::unique;
+                        _Info.second = {};
+                    }
+                } else {
+                    if (_Next_sys < _Transition) {
+                        _Info.result = local_info::nonexistent;
+                    } else {
+                        _Info.result = local_info::unique;
+                        _Info.first  = _STD move(_Info.second);
+                        _Info.second = {};
+                    }
+                }
+            } else {
+                // local time is contained inside of first transition boundaries by at least 1 day
+                _Info.result = local_info::unique;
+                _Info.second = {};
+            }
+
+            return _Info;
+        }
+
+        template <class _Duration>
+        _NODISCARD sys_time<common_type_t<_Duration, seconds>> to_sys(const local_time<_Duration>& _Local) const {
+            const auto _Info = get_info(_Local);
+            if (_Info.result == local_info::nonexistent) {
+                _THROW(nonexistent_local_time(_Local, _Info));
+            } else if (_Info.result == local_info::ambiguous) {
+                _THROW(ambiguous_local_time(_Local, _Info));
+            }
+
+            return sys_time<common_type_t<_Duration, seconds>>{_Local.time_since_epoch() - _Info.first.offset};
+        }
+
+        template <class _Duration>
+        _NODISCARD sys_time<common_type_t<_Duration, seconds>> to_sys(
+            const local_time<_Duration>& _Local, const choose _Choose) const {
+            const auto _Info = get_info(_Local);
+            if (_Info.result == local_info::nonexistent) {
+                return _Info.first.end;
+            }
+
+            const auto _Offset = (_Info.result == local_info::unique || _Choose == choose::earliest)
+                                   ? _Info.first.offset
+                                   : _Info.second.offset;
+            return sys_time<common_type_t<_Duration, seconds>>{_Local.time_since_epoch() - _Offset};
+        }
+
+        template <class _Duration>
+        _NODISCARD local_time<common_type_t<_Duration, seconds>> to_local(const sys_time<_Duration>& _Sys) const {
+            const auto _Info = get_info(_Sys);
+            return local_time<common_type_t<_Duration, seconds>>{_Sys.time_since_epoch() + _Info.offset};
+        }
+
+        static constexpr sys_seconds _Min_seconds{sys_days{(year::min)() / January / 1}};
+        static constexpr sys_seconds _Max_seconds{sys_seconds{sys_days{(year::max)() / December / 32}} - seconds{1}};
+
+    private:
+        template <class _Duration>
+        _NODISCARD sys_info _Get_info(const _Duration& _Dur) const {
+            using _Internal_duration = duration<__std_tzdb_epoch_milli, milli>;
+            const auto _Internal_dur = _CHRONO duration_cast<_Internal_duration>(_Dur);
+            const unique_ptr<__std_tzdb_sys_info, _Tzdb_deleter<__std_tzdb_sys_info>> _Info{
+                __std_tzdb_get_sys_info(_Name.c_str(), _Name.length(), _Internal_dur.count())};
+            if (_Info == nullptr) {
+                _Xbad_alloc();
+            } else if (_Info->_Err == __std_tzdb_error::_Win_error) {
+                _XGetLastError();
+            } else if (_Info->_Err == __std_tzdb_error::_Icu_error) {
+                _Xruntime_error("Internal error loading IANA database information");
+            }
+
+            constexpr auto _Min_internal =
+                _CHRONO duration_cast<_Internal_duration>(_Min_seconds.time_since_epoch()).count();
+            constexpr auto _Max_internal =
+                _CHRONO duration_cast<_Internal_duration>(_Max_seconds.time_since_epoch()).count();
+            const auto _Begin =
+                _Info->_Begin <= _Min_internal
+                    ? _Min_seconds
+                    : sys_seconds{_CHRONO duration_cast<sys_seconds::duration>(_Internal_duration{_Info->_Begin})};
+            const auto _End =
+                _Info->_End >= _Max_internal
+                    ? _Max_seconds
+                    : sys_seconds{_CHRONO duration_cast<sys_seconds::duration>(_Internal_duration{_Info->_End})};
+            return {.begin = _Begin,
+                .end       = _End,
+                .offset    = _CHRONO duration_cast<seconds>(_Internal_duration{_Info->_Offset}),
+                .save      = _CHRONO duration_cast<minutes>(_Internal_duration{_Info->_Save}),
+                .abbrev    = _Info->_Abbrev};
+        }
+
+        string _Name;
+    };
+
+    _NODISCARD inline bool operator==(const time_zone& _Left, const time_zone& _Right) noexcept {
+        return _Left.name() == _Right.name();
+    }
+
+#ifdef __cpp_lib_concepts
+    _NODISCARD inline strong_ordering operator<=>(const time_zone& _Left, const time_zone& _Right) noexcept {
+        return _Left.name() <=> _Right.name();
+    }
+#endif // __cpp_lib_concepts
+
+    // [time.zone.leap]
+
+    // CLASS leap_second
+    class leap_second {
+    public:
+        leap_second(const leap_second&) = default;
+        leap_second& operator=(const leap_second&) = default;
+
+        constexpr leap_second(
+            const sys_seconds& _Date_, const bool _Is_positive_, const seconds& _Prev_elapsed) noexcept
+            : _Date{_Date_}, _Is_positive{_Is_positive_} {
+            _Elapsed_offset = _Prev_elapsed + value();
+        }
+
+        _NODISCARD constexpr sys_seconds date() const noexcept {
+            return _Date;
+        }
+
+        _NODISCARD constexpr seconds value() const noexcept {
+            return _Is_positive ? seconds{1} : seconds{-1};
+        }
+
+        _NODISCARD constexpr bool _Positive() const noexcept {
+            return _Is_positive;
+        }
+
+        _NODISCARD constexpr seconds _Elapsed() const noexcept {
+            return _Elapsed_offset;
+        }
+
+    private:
+        sys_seconds _Date;
+        bool _Is_positive;
+        seconds _Elapsed_offset;
+    };
+
+    _NODISCARD constexpr bool operator==(const leap_second& _Left, const leap_second& _Right) noexcept {
+        return _Left.date() == _Right.date();
+    }
+    template <class _Duration>
+    _NODISCARD constexpr bool operator==(const leap_second& _Left, const sys_time<_Duration>& _Right) noexcept {
+        return _Left.date() == _Right;
+    }
+
+    template <class _Duration>
+    _NODISCARD constexpr bool operator<(const leap_second& _Left, const sys_time<_Duration>& _Right) noexcept {
+        return _Left.date() < _Right;
+    }
+    template <class _Duration>
+    _NODISCARD constexpr bool operator<(const sys_time<_Duration>& _Left, const leap_second& _Right) noexcept {
+        return _Left < _Right.date();
+    }
+
+    template <class _Duration>
+    _NODISCARD constexpr bool operator>(const leap_second& _Left, const sys_time<_Duration>& _Right) noexcept {
+        return _Right < _Left.date();
+    }
+    template <class _Duration>
+    _NODISCARD constexpr bool operator>(const sys_time<_Duration>& _Left, const leap_second& _Right) noexcept {
+        return _Right.date() < _Left;
+    }
+
+    template <class _Duration>
+    _NODISCARD constexpr bool operator<=(const leap_second& _Left, const sys_time<_Duration>& _Right) noexcept {
+        return !(_Right < _Left.date());
+    }
+    template <class _Duration>
+    _NODISCARD constexpr bool operator<=(const sys_time<_Duration>& _Left, const leap_second& _Right) noexcept {
+        return !(_Right.date() < _Left);
+    }
+
+    template <class _Duration>
+    _NODISCARD constexpr bool operator>=(const leap_second& _Left, const sys_time<_Duration>& _Right) noexcept {
+        return !(_Left.date() < _Right);
+    }
+    template <class _Duration>
+    _NODISCARD constexpr bool operator>=(const sys_time<_Duration>& _Left, const leap_second& _Right) noexcept {
+        return !(_Left < _Right.date());
+    }
+
+#ifdef __cpp_lib_concepts
+    // clang-format off
+    template <class _Duration>
+        requires three_way_comparable_with<sys_seconds, sys_time<_Duration>>
+    _NODISCARD constexpr auto operator<=>(
+        const leap_second& _Left, const sys_time<_Duration>& _Right) noexcept {
+        // clang-format on
+        return _Left.date() <=> _Right;
+    }
+    _NODISCARD constexpr strong_ordering operator<=>(const leap_second& _Left, const leap_second& _Right) noexcept {
+        return _Left.date() <=> _Right.date();
+    }
+#endif // __cpp_lib_concepts
+
+    // [time.zone.link]
+
+    // CLASS time_zone_link
+    class time_zone_link {
+    public:
+        explicit time_zone_link(string_view _Name_, string_view _Target_) : _Name(_Name_), _Target(_Target_) {}
+
+        time_zone_link(time_zone_link&&) = default;
+        time_zone_link& operator=(time_zone_link&&) = default;
+
+        _NODISCARD string_view name() const noexcept {
+            return _Name;
+        }
+
+        _NODISCARD string_view target() const noexcept {
+            return _Target;
+        }
+
+    private:
+        string _Name;
+        string _Target;
+    };
+
+    _NODISCARD inline bool operator==(const time_zone_link& _Left, const time_zone_link& _Right) noexcept {
+        return _Left.name() == _Right.name();
+    }
+
+#ifdef __cpp_lib_concepts
+    _NODISCARD inline strong_ordering operator<=>(const time_zone_link& _Left, const time_zone_link& _Right) noexcept {
+        return _Left.name() <=> _Right.name();
+    }
+#endif // __cpp_lib_concepts
+
+    // [time.zone.db]
+
+    _NODISCARD inline string _Tzdb_generate_current_zone() {
+        unique_ptr<__std_tzdb_current_zone_info, _Tzdb_deleter<__std_tzdb_current_zone_info>> _Info{
+            __std_tzdb_get_current_zone()};
+        if (_Info == nullptr) {
+            _Xbad_alloc();
+        } else if (_Info->_Err == __std_tzdb_error::_Win_error) {
+            _XGetLastError();
+        } else if (_Info->_Err == __std_tzdb_error::_Icu_error) {
+            _Xruntime_error("Internal error loading IANA database information");
+        }
+
+        return {_Info->_Tz_name};
+    }
+
+    template <class _Ty>
+    _NODISCARD const _Ty* _Locate_zone_impl(const vector<_Ty>& _Vec, string_view _Name) {
+        const auto _Result = _STD find_if(_Vec.begin(), _Vec.end(), [&](auto& _Tz) { return _Tz.name() == _Name; });
+        return _Result == _Vec.end() ? nullptr : &*_Result;
+    }
+
+    // STRUCT tzdb
+    struct tzdb {
+        string version;
+        vector<time_zone> zones;
+        vector<time_zone_link> links;
+        vector<leap_second> leap_seconds;
+        bool _All_ls_positive;
+
+        _NODISCARD const time_zone* locate_zone(string_view _Tz_name) const {
+            auto _Tz = _Locate_zone_impl(zones, _Tz_name);
+            if (_Tz != nullptr) {
+                return _Tz;
+            }
+
+            const auto _Link = _Locate_zone_impl(links, _Tz_name);
+            if (_Link != nullptr) {
+                _Tz = _Locate_zone_impl(zones, _Link->target());
+                if (_Tz != nullptr) {
+                    return _Tz;
+                }
+            }
+
+            _Xruntime_error("unable to locate time_zone with given name");
+        }
+
+        _NODISCARD const time_zone* current_zone() const {
+            return locate_zone(_Tzdb_generate_current_zone());
+        }
+    };
+
+    _NODISCARD inline tuple<string, decltype(tzdb::zones), decltype(tzdb::links)> _Tzdb_generate_time_zones() {
+        unique_ptr<__std_tzdb_time_zones_info, _Tzdb_deleter<__std_tzdb_time_zones_info>> _Info{
+            __std_tzdb_get_time_zones()};
+        if (_Info == nullptr) {
+            _Xbad_alloc();
+        } else if (_Info->_Err == __std_tzdb_error::_Win_error) {
+            _XGetLastError();
+        } else if (_Info->_Err == __std_tzdb_error::_Icu_error) {
+            _Xruntime_error("Internal error loading IANA database information");
+        }
+
+        decltype(tzdb::zones) _Time_zones;
+        decltype(tzdb::links) _Time_zone_links;
+        for (size_t _Idx = 0; _Idx < _Info->_Num_time_zones; ++_Idx) {
+            const string_view _Name{_Info->_Names[_Idx]};
+            if (_Info->_Links[_Idx] == nullptr) {
+                _Time_zones.emplace_back(_Name);
+            } else {
+                const string_view _Target{_Info->_Links[_Idx]};
+                _Time_zone_links.emplace_back(_Name, _Target);
+            }
+        }
+
+        return {_Info->_Version, _STD move(_Time_zones), _STD move(_Time_zone_links)};
+    }
+
+    _NODISCARD inline pair<decltype(tzdb::leap_seconds), bool> _Tzdb_generate_leap_seconds(const size_t _Current_size) {
+        // Returns empty vector if no new leap seconds are found.
+        static constexpr leap_second _Known_leap_seconds[]{
+            {sys_seconds{seconds{78796800}}, true, seconds{0}},
+            {sys_seconds{seconds{94694400}}, true, seconds{1}},
+            {sys_seconds{seconds{126230400}}, true, seconds{2}},
+            {sys_seconds{seconds{157766400}}, true, seconds{3}},
+            {sys_seconds{seconds{189302400}}, true, seconds{4}},
+            {sys_seconds{seconds{220924800}}, true, seconds{5}},
+            {sys_seconds{seconds{252460800}}, true, seconds{6}},
+            {sys_seconds{seconds{283996800}}, true, seconds{7}},
+            {sys_seconds{seconds{315532800}}, true, seconds{8}},
+            {sys_seconds{seconds{362793600}}, true, seconds{9}},
+            {sys_seconds{seconds{394329600}}, true, seconds{10}},
+            {sys_seconds{seconds{425865600}}, true, seconds{11}},
+            {sys_seconds{seconds{489024000}}, true, seconds{12}},
+            {sys_seconds{seconds{567993600}}, true, seconds{13}},
+            {sys_seconds{seconds{631152000}}, true, seconds{14}},
+            {sys_seconds{seconds{662688000}}, true, seconds{15}},
+            {sys_seconds{seconds{709948800}}, true, seconds{16}},
+            {sys_seconds{seconds{741484800}}, true, seconds{17}},
+            {sys_seconds{seconds{773020800}}, true, seconds{18}},
+            {sys_seconds{seconds{820454400}}, true, seconds{19}},
+            {sys_seconds{seconds{867715200}}, true, seconds{20}},
+            {sys_seconds{seconds{915148800}}, true, seconds{21}},
+            {sys_seconds{seconds{1136073600}}, true, seconds{22}},
+            {sys_seconds{seconds{1230768000}}, true, seconds{23}},
+            {sys_seconds{seconds{1341100800}}, true, seconds{24}},
+            {sys_seconds{seconds{1435708800}}, true, seconds{25}},
+            {sys_seconds{seconds{1483228800}}, true, seconds{26}},
+        };
+
+        // __std_tzdb_get_leap_seconds gets leap second (LS) data from the registry, but only if it contains more
+        // LSs than we already know about. The registry only contains LSs after 2018, so we need to tell it how many of
+        // *those* we already know about. The *total* number of LSs known at this point is a combination of what the
+        // caller knows (_Current_size, 0 on first call) and the _Known_leap_seconds entries.
+        constexpr size_t _Pre_2018_count = 27;
+        const size_t _Known_post_2018_ls_size =
+            (_STD max)(_Current_size, _STD size(_Known_leap_seconds)) - _Pre_2018_count;
+
+        size_t _Reg_post_2018_ls_size; // number of post-2018 LSs found in the registry
+        unique_ptr<__std_tzdb_leap_info[], _Tzdb_deleter<__std_tzdb_leap_info[]>> _Reg_ls_data{
+            __std_tzdb_get_leap_seconds(_Known_post_2018_ls_size, &_Reg_post_2018_ls_size)};
+
+        if (_Reg_post_2018_ls_size > _Known_post_2018_ls_size && !_Reg_ls_data) {
+            _Xbad_alloc(); // registry has new data, but failed to allocate storage
+        } else if (_Reg_post_2018_ls_size == 0 && _Reg_ls_data) {
+            _XGetLastError(); // allocated storage for registry data, but failed to read
+        }
+
+        const size_t _New_size = _Pre_2018_count + _Reg_post_2018_ls_size; // total size with registry data
+        decltype(tzdb::leap_seconds) _Leap_sec_info;
+        bool _All_ls_positive = true;
+
+        if (_New_size > _Current_size) {
+            _Leap_sec_info.reserve(_New_size);
+            _Leap_sec_info.assign(_STD cbegin(_Known_leap_seconds), _STD cend(_Known_leap_seconds));
+
+            for (size_t _Idx = 0; _Idx < _Reg_post_2018_ls_size; ++_Idx) {
+                // Leap seconds occur at _Ls._Hour:59:59. We store the next second after, so we need to add an entire
+                // hour.
+                const auto& _Ls = _Reg_ls_data[_Idx];
+                const auto _Date =
+                    static_cast<sys_days>(year_month_day{year{_Ls._Year}, month{_Ls._Month}, day{_Ls._Day}})
+                    + hours{_Ls._Hour + 1};
+                _Leap_sec_info.emplace_back(_Date, !_Ls._Negative, _Leap_sec_info.back()._Elapsed());
+                _All_ls_positive = _All_ls_positive && !_Ls._Negative;
+            }
+        }
+
+        return {_STD move(_Leap_sec_info), _All_ls_positive};
+    }
+
+    _NODISCARD inline string _Tzdb_update_version(const string_view _Version, const size_t _Num_leap_seconds) {
+        string _Icu_version{_Version.substr(0, _Version.find_last_of('.'))};
+        return _STD move(_Icu_version) + "." + _STD to_string(_Num_leap_seconds);
+    }
+
+    // CLASS tzdb_list
+    class tzdb_list {
+    private:
+        using _ListType = forward_list<tzdb, _Crt_allocator<tzdb>>;
+
+    public:
+        using const_iterator = _ListType::const_iterator;
+
+        tzdb_list(const tzdb_list&) = delete;
+        tzdb_list& operator=(const tzdb_list&) = delete;
+
+        tzdb_list() {
+            auto [_Icu_version, _Zones, _Links] = _Tzdb_generate_time_zones();
+            auto [_Leap_sec, _All_ls_positive]  = _Tzdb_generate_leap_seconds(0);
+            auto _Version                       = _Icu_version + "." + _STD to_string(_Leap_sec.size());
+            _Tzdb_list.emplace_front(tzdb{
+                _STD move(_Version), _STD move(_Zones), _STD move(_Links), _STD move(_Leap_sec), _All_ls_positive});
+        }
+
+        _NODISCARD const tzdb& front() const noexcept {
+            _Shared_lock _Lk(_Tzdb_mutex);
+            return _Tzdb_list.front();
+        }
+
+        const_iterator erase_after(const_iterator _Where) noexcept /* strengthened */ {
+            _Unique_lock _Lk(_Tzdb_mutex);
+            return _Tzdb_list.erase_after(_Where);
+        }
+
+        _NODISCARD const_iterator begin() const noexcept {
+            _Shared_lock _Lk(_Tzdb_mutex);
+            return _Tzdb_list.begin();
+        }
+
+        _NODISCARD const_iterator end() const noexcept {
+            return _Tzdb_list.end(); // no lock necessary for forward_list::end()
+        }
+
+        _NODISCARD const_iterator cbegin() const noexcept {
+            _Shared_lock _Lk(_Tzdb_mutex);
+            return _Tzdb_list.cbegin();
+        }
+
+        _NODISCARD const_iterator cend() const noexcept {
+            return _Tzdb_list.cend(); // no lock necessary for forward_list::cend()
+        }
+
+        template <class... _ArgsTy>
+        void _Emplace_front(_ArgsTy&&... _Args) {
+            _Unique_lock _Lk(_Tzdb_mutex);
+            _Tzdb_list.emplace_front(_STD forward<_ArgsTy>(_Args)...);
+        }
+
+        const tzdb& _Reload() {
+            _Unique_lock _Lk(_Tzdb_mutex);
+            auto [_Leap_sec, _All_ls_positive] = _Tzdb_generate_leap_seconds(_Tzdb_list.front().leap_seconds.size());
+            if (!_Leap_sec.empty()) {
+                const auto& _Tzdb = _Tzdb_list.front();
+                vector<time_zone> _Zones;
+                _STD transform(_Tzdb.zones.begin(), _Tzdb.zones.end(), _STD back_inserter(_Zones),
+                    [](const auto& _Tz) { return time_zone{_Tz.name()}; });
+                vector<time_zone_link> _Links;
+                _STD transform(
+                    _Tzdb.links.begin(), _Tzdb.links.end(), _STD back_inserter(_Links), [](const auto& _Link) {
+                        return time_zone_link{_Link.name(), _Link.target()};
+                    });
+                auto _Version = _Tzdb_update_version(_Tzdb.version, _Leap_sec.size());
+                _Tzdb_list.emplace_front(tzdb{
+                    _STD move(_Version), _STD move(_Zones), _STD move(_Links), _STD move(_Leap_sec), _All_ls_positive});
+            }
+            return _Tzdb_list.front();
+        }
+
+    private:
+        _ListType _Tzdb_list;
+        mutable _Smtx_t _Tzdb_mutex = {};
+
+        struct _NODISCARD _Shared_lock {
+            explicit _Shared_lock(_Smtx_t& _Mtx_) : _Mtx{&_Mtx_} {
+                _Smtx_lock_shared(_Mtx);
+            }
+
+            _Shared_lock(const _Shared_lock&) = delete;
+            _Shared_lock& operator=(const _Shared_lock&) = delete;
+
+            ~_Shared_lock() {
+                _Smtx_unlock_shared(_Mtx);
+            }
+
+            _Smtx_t* _Mtx;
+        };
+
+        struct _NODISCARD _Unique_lock {
+            explicit _Unique_lock(_Smtx_t& _Mtx_) : _Mtx{&_Mtx_} {
+                _Smtx_lock_exclusive(_Mtx);
+            }
+
+            _Unique_lock(const _Unique_lock&) = delete;
+            _Unique_lock& operator=(const _Unique_lock&) = delete;
+
+            ~_Unique_lock() {
+                _Smtx_unlock_exclusive(_Mtx);
+            }
+
+            _Smtx_t* _Mtx;
+        };
+    };
+
+    inline atomic<tzdb_list*> _Global_tzdb_list;
+
+    // FUNCTION get_tzdb_list
+    _NODISCARD inline tzdb_list& get_tzdb_list() {
+        auto* _Tzdb_ptr = _Global_tzdb_list.load();
+        if (_Tzdb_ptr != nullptr) {
+            return *_Tzdb_ptr;
+        }
+
+        auto _My_tzdb = static_cast<tzdb_list*>(__std_calloc_crt(1, sizeof(tzdb_list)));
+        if (_My_tzdb == nullptr) {
+            _Xruntime_error("bad allocation"); // not bad_alloc, see N4878 [time.zone.db.access]/4
+        }
+
+        _TRY_BEGIN
+        _STD construct_at(_My_tzdb);
+        _CATCH(const runtime_error&)
+        __std_free_crt(_My_tzdb);
+        _RERAISE;
+        _CATCH(const exception& _Except)
+#if _HAS_EXCEPTIONS
+        __std_free_crt(_My_tzdb);
+        _Xruntime_error(_Except.what());
+#endif // _HAS_EXCEPTIONS
+        _CATCH_END
+
+        if (_Global_tzdb_list.compare_exchange_strong(_Tzdb_ptr, _My_tzdb)) {
+            _Tzdb_ptr = _My_tzdb;
+        } else {
+            _STD destroy_at(_My_tzdb);
+            __std_free_crt(_My_tzdb);
+        }
+
+        return *_Tzdb_ptr;
+    }
+
+    // FUNCTION get_tzdb
+    _NODISCARD inline const tzdb& get_tzdb() {
+        return _CHRONO get_tzdb_list().front();
+    }
+
+    // FUNCTION locate_zone
+    _NODISCARD inline const time_zone* locate_zone(string_view _Tz_name) {
+        return _CHRONO get_tzdb().locate_zone(_Tz_name);
+    }
+
+    // FUNCTION current_zone
+    _NODISCARD inline const time_zone* current_zone() {
+        return _CHRONO get_tzdb().current_zone();
+    }
+
+    // FUNCTION reload_tzdb
+    inline const tzdb& reload_tzdb() {
+        _TRY_BEGIN
+        return _CHRONO get_tzdb_list()._Reload();
+        _CATCH(const runtime_error&)
+        _RERAISE;
+        _CATCH(const exception& _Except)
+#if _HAS_EXCEPTIONS
+        _Xruntime_error(_Except.what());
+#endif // _HAS_EXCEPTIONS
+        _CATCH_END
+    }
+
+    // FUNCTION remote_version
+    _NODISCARD inline string remote_version() {
+        const auto& _Tzdb                = _CHRONO get_tzdb();
+        const auto& _Version             = _Tzdb.version;
+        const auto [_Leap_sec, _Ignored] = _Tzdb_generate_leap_seconds(_Tzdb.leap_seconds.size());
+        return _Leap_sec.empty() ? _Version : _Tzdb_update_version(_Version, _Leap_sec.size());
+    }
+
+    // [time.zone.zonedtraits]
+
+    // STRUCT TEMPLATE zoned_traits
+    template <class _Ty>
+    struct zoned_traits {};
+
+    // STRUCT zoned_traits<const time_zone*>
+    template <>
+    struct zoned_traits<const time_zone*> {
+        _NODISCARD static const time_zone* default_zone() {
+            return _CHRONO get_tzdb().locate_zone("UTC");
+        }
+
+        _NODISCARD static const time_zone* locate_zone(string_view _Name) {
+            return _CHRONO get_tzdb().locate_zone(_Name);
+        }
+    };
+
+    // [time.zone.zonedtime]
+
+    // CLASS TEMPLATE zoned_time
+    template <class _Duration, class _TimeZonePtr = const time_zone*>
+    class zoned_time {
+    private:
+        static_assert(_Is_duration_v<_Duration>,
+            "N4885 [time.zone.zonedtime.overview]/2 mandates Duration to be a specialization of chrono::duration.");
+
+        using _Traits = zoned_traits<_TimeZonePtr>;
+
+    public:
+        using duration = common_type_t<_Duration, seconds>;
+
+        template <class _Traits2 = _Traits, class = void_t<decltype(_Traits2::default_zone())>>
+        zoned_time() : _Zone{_Traits::default_zone()} {}
+        zoned_time(const zoned_time&) = default;
+        zoned_time& operator=(const zoned_time&) = default;
+
+        template <class _Traits2 = _Traits, class = void_t<decltype(_Traits2::default_zone())>>
+        zoned_time(const sys_time<_Duration>& _Sys) : _Zone{_Traits::default_zone()}, _Tp{_Sys} {}
+
+        explicit zoned_time(_TimeZonePtr _Tz) noexcept /* strengthened */ : _Zone{_STD move(_Tz)} {}
+
+        // clang-format off
+        template <class _Traits2 = _Traits, enable_if_t<is_constructible< // TRANSITION, VSO-1303556
+            zoned_time, decltype(_Traits2::locate_zone(string_view{}))>::value,
+            int> = 0>
+        // clang-format on
+        explicit zoned_time(string_view _Name) : _Zone{_Traits::locate_zone(_Name)} {}
+
+        template <class _Duration2, enable_if_t<is_convertible_v<sys_time<_Duration2>, sys_time<_Duration>>, int> = 0>
+        zoned_time(const zoned_time<_Duration2, _TimeZonePtr>& _Zt) noexcept /* strengthened */
+            : _Zone{_Zt.get_time_zone()}, _Tp{_Zt.get_sys_time()} {}
+
+        zoned_time(_TimeZonePtr _Tz, const sys_time<_Duration>& _Sys) : _Zone{_STD move(_Tz)}, _Tp{_Sys} {}
+
+        // clang-format off
+        template <class _Traits2 = _Traits, enable_if_t<is_constructible< // TRANSITION, VSO-1303556
+            zoned_time, decltype(_Traits2::locate_zone(string_view{})), const sys_time<_Duration>&>::value,
+            int> = 0>
+        // clang-format on
+        zoned_time(string_view _Name, type_identity_t<const sys_time<_Duration>&> _Sys)
+            : zoned_time{_Traits::locate_zone(_Name), _Sys} {}
+
+        template <class _Ptr = _TimeZonePtr,
+            enable_if_t<
+                is_convertible_v<decltype(_STD declval<_Ptr&>()->to_sys(local_time<_Duration>{})), sys_time<duration>>,
+                int> = 0>
+        zoned_time(_TimeZonePtr _Tz, const local_time<_Duration>& _Local)
+            : _Zone{_STD move(_Tz)}, _Tp{_Zone->to_sys(_Local)} {}
+
+        // clang-format off
+        template <class _Traits2 = _Traits, enable_if_t<is_constructible< // TRANSITION, VSO-1303556
+            zoned_time, decltype(_Traits2::locate_zone(string_view{})), const local_time<_Duration>&>::value,
+            int> = 0>
+        // clang-format on
+        zoned_time(string_view _Name, type_identity_t<const local_time<_Duration>>& _Local)
+            : zoned_time{_Traits::locate_zone(_Name), _Local} {}
+
+        template <class _Ptr = _TimeZonePtr,
+            enable_if_t<
+                is_convertible_v<decltype(_STD declval<_Ptr&>()->to_sys(local_time<_Duration>{}, choose::earliest)),
+                    sys_time<duration>>,
+                int> = 0>
+        zoned_time(_TimeZonePtr _Tz, const local_time<_Duration>& _Local, choose _Choose)
+            : _Zone{_STD move(_Tz)}, _Tp{_Zone->to_sys(_Local, _Choose)} {}
+
+        // clang-format off
+        template <class _Traits2 = _Traits, enable_if_t<is_constructible< // TRANSITION, VSO-1303556
+            zoned_time, decltype(_Traits2::locate_zone(string_view{})), const local_time<_Duration>&, choose>::value,
+            int> = 0>
+        // clang-format on
+        zoned_time(string_view _Name, type_identity_t<const local_time<_Duration>&> _Local, choose _Choose)
+            : zoned_time{_Traits::locate_zone(_Name), _Local, _Choose} {}
+
+        template <class _Duration2, class _TimeZonePtr2,
+            enable_if_t<is_convertible_v<sys_time<_Duration2>, sys_time<_Duration>>, int> = 0>
+        zoned_time(_TimeZonePtr _Tz, const zoned_time<_Duration2, _TimeZonePtr2>& _Zt) noexcept /* strengthened */
+            : _Zone{_STD move(_Tz)}, _Tp{_Zt.get_sys_time()} {}
+
+        template <class _Duration2, class _TimeZonePtr2,
+            enable_if_t<is_convertible_v<sys_time<_Duration2>, sys_time<_Duration>>, int> = 0>
+        zoned_time(
+            _TimeZonePtr _Tz, const zoned_time<_Duration2, _TimeZonePtr2>& _Zt, choose) noexcept /* strengthened */
+            : zoned_time{_Tz, _Zt} {}
+
+        // clang-format off
+        template <class _Duration2, class _TimeZonePtr2,
+            class _Traits2 = _Traits, enable_if_t<is_constructible< // TRANSITION, VSO-1303556
+            zoned_time, decltype(_Traits2::locate_zone(string_view{})),
+            const zoned_time<_Duration2, _TimeZonePtr2>&>::value,
+            int> = 0>
+        // clang-format on
+        zoned_time(string_view _Name, const zoned_time<_Duration2, _TimeZonePtr2>& _Zt)
+            : zoned_time{_Traits::locate_zone(_Name), _Zt} {}
+
+        // clang-format off
+        template <class _Duration2, class _TimeZonePtr2,
+            class _Traits2 = _Traits, enable_if_t<is_constructible< // TRANSITION, VSO-1303556
+            zoned_time, decltype(_Traits2::locate_zone(string_view{})),
+            const zoned_time<_Duration2, _TimeZonePtr2>&, choose>::value,
+            int> = 0>
+        // clang-format on
+        zoned_time(string_view _Name, const zoned_time<_Duration2, _TimeZonePtr2>& _Zt, choose _Choose)
+            : zoned_time{_Traits::locate_zone(_Name), _Zt, _Choose} {}
+
+        zoned_time& operator=(const sys_time<_Duration>& _Sys) noexcept /* strengthened */ {
+            _Tp = _Sys;
+            return *this;
+        }
+
+        zoned_time& operator=(const local_time<_Duration>& _Local) {
+            _Tp = _Zone->to_sys(_Local);
+            return *this;
+        }
+
+        operator sys_time<duration>() const noexcept /* strengthened */ {
+            return get_sys_time();
+        }
+
+        explicit operator local_time<duration>() const {
+            return get_local_time();
+        }
+
+        _NODISCARD _TimeZonePtr get_time_zone() const noexcept /* strengthened */ {
+            return _Zone;
+        }
+
+        _NODISCARD local_time<duration> get_local_time() const {
+            return _Zone->to_local(_Tp);
+        }
+
+        _NODISCARD sys_time<duration> get_sys_time() const noexcept /* strengthened */ {
+            return _Tp;
+        }
+
+        _NODISCARD sys_info get_info() const {
+            return _Zone->get_info(_Tp);
+        }
+
+    private:
+        _TimeZonePtr _Zone;
+        sys_time<duration> _Tp{};
+    };
+
+    zoned_time()->zoned_time<seconds>;
+
+    template <class _Duration>
+    zoned_time(sys_time<_Duration>) -> zoned_time<common_type_t<_Duration, seconds>>;
+
+    template <class _TimeZonePtrOrName>
+    using _Time_zone_representation = conditional_t<is_convertible_v<_TimeZonePtrOrName, string_view>, const time_zone*,
+        remove_cvref_t<_TimeZonePtrOrName>>;
+
+    template <class _TimeZonePtrOrName>
+    zoned_time(_TimeZonePtrOrName&&) -> zoned_time<seconds, _Time_zone_representation<_TimeZonePtrOrName>>;
+
+    template <class _TimeZonePtrOrName, class _Duration>
+    zoned_time(_TimeZonePtrOrName&&, sys_time<_Duration>)
+        -> zoned_time<common_type_t<_Duration, seconds>, _Time_zone_representation<_TimeZonePtrOrName>>;
+
+    template <class _TimeZonePtrOrName, class _Duration>
+    zoned_time(_TimeZonePtrOrName&&, local_time<_Duration>, choose = choose::earliest)
+        -> zoned_time<common_type_t<_Duration, seconds>, _Time_zone_representation<_TimeZonePtrOrName>>;
+
+    template <class _Duration, class _TimeZonePtrOrName, class _TimeZonePtr2>
+    zoned_time(_TimeZonePtrOrName&&, zoned_time<_Duration, _TimeZonePtr2>, choose = choose::earliest)
+        -> zoned_time<common_type_t<_Duration, seconds>, _Time_zone_representation<_TimeZonePtrOrName>>;
+
+    using zoned_seconds = zoned_time<seconds>;
+
+    template <class _Duration1, class _Duration2, class _TimeZonePtr>
+    _NODISCARD bool operator==(
+        const zoned_time<_Duration1, _TimeZonePtr>& _Left, const zoned_time<_Duration2, _TimeZonePtr>& _Right) {
+        return _Left.get_time_zone() == _Right.get_time_zone() && _Left.get_sys_time() == _Right.get_sys_time();
+    }
+
+    // [time.clock.utc]
+
+    class utc_clock;
+    template <class _Duration>
+    using utc_time    = time_point<utc_clock, _Duration>;
+    using utc_seconds = utc_time<seconds>;
+
+    // STRUCT leap_second_info
+    struct leap_second_info {
+        bool is_leap_second;
+        seconds elapsed;
+    };
+
+    // FUNCTION TEMPLATE get_leap_second_info
+    template <class _Duration>
+    _NODISCARD leap_second_info get_leap_second_info(const utc_time<_Duration>& _Time) {
+        const utc_seconds _Time_floor = _CHRONO floor<seconds>(_Time);
+        const auto& _Tzdb             = _CHRONO get_tzdb();
+        const auto& _Ls_vector        = _Tzdb.leap_seconds;
+
+        // Find first leap second after _Time.
+        vector<leap_second>::const_iterator _It;
+        if (_Tzdb._All_ls_positive) {
+            // Where "target_ls" is the next leap second at or after _Time, _It either points to:
+            //    (1) The 2nd leap second after _Time if _Time_floor is in the range [target_ls - _Elapsed() - 1,
+            //    target_ls), or
+            //    (2) The leap second just after _Time otherwise.
+            // Note that we can always use prev(_It) to determine whether _Time is *during* a leap second insertion,
+            // since that falls under case (2) above. However, when we fall under case (1), we need to execute an
+            // additional decrement to get the correct elapsed offset. For example, if leap seconds are inserted at
+            // seconds {100, 200, 300, 400}, we have:
+            //
+            //  UTC   sys   *_It
+            //   99    99    100
+            //  100     X    200
+            //  101   100    200
+            //  102   101    200
+            //  ...
+            //  199   198    200
+            //  200   199    300^
+            //  201     X    300
+            //  202   200    300
+            //  ...
+            //  299   297    300
+            //  300   298    400^
+            //  301   299    400^
+            //  302     X    400
+            //  303   300    400
+            //
+            //  ^_It points to 2nd leap second
+
+            _It = _STD upper_bound(_Ls_vector.begin(), _Ls_vector.end(), sys_seconds{_Time_floor.time_since_epoch()});
+        } else {
+            seconds _Prev_elapsed{0};
+            for (_It = _Ls_vector.begin(); _It != _Ls_vector.end(); ++_It) {
+                // UTC time when leap second insertion begins. In all cases, _It->date() + _It->_Elapsed() is the *end*
+                // of the insertion. For a negative leap that's also the beginning, but for a positive one, insertion
+                // begins 1 second earlier.
+                const utc_seconds _This_ls_begin{
+                    _It->date().time_since_epoch() + (_It->_Positive() ? _Prev_elapsed : _It->_Elapsed())};
+                if (_This_ls_begin > _Time_floor) {
+                    break;
+                }
+                _Prev_elapsed = _It->_Elapsed();
+            }
+        }
+
+        if (_It == _Ls_vector.begin()) {
+            return {false, seconds{0}};
+        } else {
+            // Convert to the last leap second before or equal to _Time.
+            const auto& _Last_leap = *--_It;
+            const utc_seconds _Utc_leap_second{_Last_leap.date().time_since_epoch() + _It->_Elapsed() - seconds{1}};
+#ifdef __cpp_lib_concepts
+            const auto _Leap_cmp = _Utc_leap_second <=> _Time_floor;
+#else // ^^^ __cpp_lib_concepts / TRANSITION, GH-395 workaround vvv
+            const auto _Leap_cmp = _Utc_leap_second > _Time_floor  ? strong_ordering::greater
+                                 : _Utc_leap_second == _Time_floor ? strong_ordering::equal
+                                                                   : strong_ordering::less;
+#endif // ^^^ workaround
+            if (_Tzdb._All_ls_positive && _STD is_gt(_Leap_cmp)) { // Case (1)
+                --_It;
+            }
+            return {_Last_leap._Positive() && _STD is_eq(_Leap_cmp), _It->_Elapsed()};
+        }
+    }
+
+    // CLASS utc_clock
+    class utc_clock {
+    public:
+        using rep                       = system_clock::rep;
+        using period                    = system_clock::period;
+        using duration                  = _CHRONO duration<rep, period>;
+        using time_point                = _CHRONO time_point<utc_clock>;
+        static constexpr bool is_steady = system_clock::is_steady;
+
+        _NODISCARD static time_point now() {
+            return from_sys(system_clock::now());
+        }
+
+        template <class _Duration>
+        _NODISCARD static sys_time<common_type_t<_Duration, seconds>> to_sys(const utc_time<_Duration>& _Utc_time) {
+            using _CommonType = common_type_t<_Duration, seconds>;
+            const auto _Lsi{_CHRONO get_leap_second_info(_Utc_time)};
+            _CommonType _Ticks;
+            if (_Lsi.is_leap_second) {
+                const auto _Leap_sec_minus_one = _CHRONO floor<seconds>(_Utc_time.time_since_epoch()) - _Lsi.elapsed;
+                if constexpr (is_integral_v<typename _Duration::rep>) {
+                    constexpr auto _Delta{seconds{1} - _CommonType{1}};
+                    _Ticks = _Leap_sec_minus_one + _Delta;
+                } else {
+                    const auto _Leap_sec_begin = _CHRONO ceil<_CommonType>(_Leap_sec_minus_one + seconds{1});
+                    _Ticks = _CommonType{_STD nextafter(_Leap_sec_begin.count(), typename _CommonType::rep{0})};
+                }
+            } else {
+                _Ticks = _Utc_time.time_since_epoch() - _Lsi.elapsed;
+            }
+            return sys_time<_CommonType>{_Ticks};
+        }
+
+        template <class _Duration>
+        _NODISCARD static utc_time<common_type_t<_Duration, seconds>> from_sys(const sys_time<_Duration>& _Sys_time) {
+            const auto& _Tzdb      = _CHRONO get_tzdb();
+            const auto& _Ls_vector = _Tzdb.leap_seconds;
+            auto _It = _STD upper_bound(_Ls_vector.begin(), _Ls_vector.end(), _CHRONO floor<seconds>(_Sys_time));
+            const auto _Offset = _It == _Ls_vector.begin() ? seconds{0} : (--_It)->_Elapsed();
+            return utc_time<common_type_t<_Duration, seconds>>{_Sys_time.time_since_epoch() + _Offset};
+        }
+    };
+
+    // [time.clock.tai]
+
+    class tai_clock;
+
+    template <class _Duration>
+    using tai_time    = time_point<tai_clock, _Duration>;
+    using tai_seconds = tai_time<seconds>;
+
+    // CLASS tai_clock
+    class tai_clock {
+    public:
+        using rep                       = system_clock::rep;
+        using period                    = system_clock::period;
+        using duration                  = _CHRONO duration<rep, period>;
+        using time_point                = _CHRONO time_point<tai_clock>;
+        static constexpr bool is_steady = system_clock::is_steady;
+
+        static constexpr seconds _Tai_epoch_adjust{378691210};
+
+        _NODISCARD static time_point now() {
+            return from_utc(utc_clock::now());
+        }
+
+        template <class _Duration>
+        _NODISCARD static utc_time<common_type_t<_Duration, seconds>> to_utc(
+            const tai_time<_Duration>& _Time) noexcept {
+            return utc_time<common_type_t<_Duration, seconds>>{_Time.time_since_epoch()} - _Tai_epoch_adjust;
+        }
+
+        template <class _Duration>
+        _NODISCARD static tai_time<common_type_t<_Duration, seconds>> from_utc(
+            const utc_time<_Duration>& _Time) noexcept {
+            return tai_time<common_type_t<_Duration, seconds>>{_Time.time_since_epoch()} + _Tai_epoch_adjust;
+        }
+    };
+
+    // [time.clock.gps]
+
+    class gps_clock;
+
+    template <class _Duration>
+    using gps_time    = time_point<gps_clock, _Duration>;
+    using gps_seconds = gps_time<seconds>;
+
+    // CLASS gps_clock
+    class gps_clock {
+    public:
+        using rep                       = system_clock::rep;
+        using period                    = system_clock::period;
+        using duration                  = _CHRONO duration<rep, period>;
+        using time_point                = _CHRONO time_point<gps_clock>;
+        static constexpr bool is_steady = system_clock::is_steady;
+
+        static constexpr seconds _Gps_epoch_adjust{-315964809};
+
+        _NODISCARD static time_point now() {
+            return from_utc(utc_clock::now());
+        }
+
+        template <class _Duration>
+        _NODISCARD static utc_time<common_type_t<_Duration, seconds>> to_utc(
+            const gps_time<_Duration>& _Time) noexcept {
+            return utc_time<common_type_t<_Duration, seconds>>{_Time.time_since_epoch()} - _Gps_epoch_adjust;
+        }
+
+        template <class _Duration>
+        _NODISCARD static gps_time<common_type_t<_Duration, seconds>> from_utc(
+            const utc_time<_Duration>& _Time) noexcept {
+            return gps_time<common_type_t<_Duration, seconds>>{_Time.time_since_epoch()} + _Gps_epoch_adjust;
+        }
+    };
+#endif // ^^^ _HAS_CXX20
+} // namespace chrono
+
+// [time.clock.file]
+
+#if _HAS_CXX20
+namespace filesystem {
+    struct _File_time_clock;
+} // namespace filesystem
+
+namespace chrono {
+    // ALIAS file_clock
+    using file_clock = filesystem::_File_time_clock;
+
+    template <class _Duration>
+    using file_time = time_point<file_clock, _Duration>;
+} // namespace chrono
+#endif // ^^^ _HAS_CXX20
+
+#if _HAS_CXX17
+namespace filesystem {
+    inline constexpr long long __std_fs_file_time_epoch_adjustment = 0x19DB1DED53E8000LL; // TRANSITION, ABI
+
+    struct _File_time_clock { // Implementation of trivial-clock
+        using rep                       = long long;
+        using period                    = chrono::system_clock::period;
+        using duration                  = chrono::duration<rep, period>;
+        using time_point                = chrono::time_point<_File_time_clock>;
+        static constexpr bool is_steady = false;
+
+        _NODISCARD static time_point now() noexcept { // get current time; undo epoch adjustment
+            return time_point(duration(_Xtime_get_ticks() + __std_fs_file_time_epoch_adjustment)); // TRANSITION, ABI
+        }
+
+#if _HAS_CXX20
+        // Assumes that FILETIME counts leap seconds only after the first 27 (i.e., after 1 January 2017), even though
+        // systems can opt out of this behavior.
+        static constexpr chrono::seconds _Skipped_filetime_leap_seconds{27};
+        static constexpr chrono::sys_days _Cutoff{
+            chrono::year_month_day{chrono::year{2017}, chrono::January, chrono::day{1}}};
+
+        template <class _Duration>
+        _NODISCARD static chrono::utc_time<common_type_t<_Duration, chrono::seconds>> to_utc(
+            const chrono::file_time<_Duration>& _File_time) {
+            using namespace chrono;
+            using _CommonType = common_type_t<_Duration, seconds>;
+            const auto _Ticks = _File_time.time_since_epoch()
+                              - _CHRONO duration_cast<seconds>(duration{__std_fs_file_time_epoch_adjustment});
+
+            if (_Ticks < _Cutoff.time_since_epoch()) {
+                return utc_clock::from_sys(sys_time<_CommonType>{_Ticks});
+            } else {
+                return utc_time<_CommonType>{_Ticks + _Skipped_filetime_leap_seconds};
+            }
+        }
+
+        template <class _Duration>
+        _NODISCARD static chrono::file_time<common_type_t<_Duration, chrono::seconds>> from_utc(
+            const chrono::utc_time<_Duration>& _Utc_time) {
+            using namespace chrono;
+            file_time<common_type_t<_Duration, seconds>> _File_time{
+                _CHRONO duration_cast<seconds>(duration{__std_fs_file_time_epoch_adjustment})};
+
+            if (_Utc_time < utc_seconds{_Cutoff.time_since_epoch()} + _Skipped_filetime_leap_seconds) {
+                _File_time += utc_clock::to_sys(_Utc_time).time_since_epoch();
+            } else {
+                _File_time += _Utc_time.time_since_epoch() - _Skipped_filetime_leap_seconds;
+            }
+
+            return _File_time;
+        }
+#endif // ^^^ _HAS_CXX20
+    };
+} // namespace filesystem
+#endif // ^^^ _HAS_CXX17
+
+namespace chrono {
+#if _HAS_CXX20
+    // [time.clock.conv]
+
+    // STRUCT TEMPLATE clock_time_conversion
+    template <class _DestClock, class _SourceClock>
+    struct clock_time_conversion {};
+
+    // [time.clock.cast.id]
+
+    template <class _Clock>
+    struct clock_time_conversion<_Clock, _Clock> {
+        template <class _Duration>
+        _NODISCARD time_point<_Clock, _Duration> operator()(const time_point<_Clock, _Duration>& _Time) const
+            noexcept(is_arithmetic_v<typename _Duration::rep>) /* strengthened */ {
+            return _Time;
+        }
+    };
+
+    template <>
+    struct clock_time_conversion<system_clock, system_clock> {
+        template <class _Duration>
+        _NODISCARD sys_time<_Duration> operator()(const sys_time<_Duration>& _Time) const
+            noexcept(is_arithmetic_v<typename _Duration::rep>) /* strengthened */ {
+            return _Time;
+        }
+    };
+
+    template <>
+    struct clock_time_conversion<utc_clock, utc_clock> {
+        template <class _Duration>
+        _NODISCARD utc_time<_Duration> operator()(const utc_time<_Duration>& _Time) const
+            noexcept(is_arithmetic_v<typename _Duration::rep>) /* strengthened */ {
+            return _Time;
+        }
+    };
+
+    // [time.clock.cast.sys.utc]
+
+    template <>
+    struct clock_time_conversion<utc_clock, system_clock> {
+        template <class _Duration>
+        _NODISCARD utc_time<common_type_t<_Duration, seconds>> operator()(const sys_time<_Duration>& _Sys_time) const {
+            return utc_clock::from_sys(_Sys_time);
+        }
+    };
+
+    template <>
+    struct clock_time_conversion<system_clock, utc_clock> {
+        template <class _Duration>
+        _NODISCARD sys_time<common_type_t<_Duration, seconds>> operator()(const utc_time<_Duration>& _Utc_time) const {
+            return utc_clock::to_sys(_Utc_time);
+        }
+    };
+
+    // [time.clock.cast.sys]
+
+    template <class _TimePoint, class _Clock>
+    inline constexpr bool _Is_time_point_for_clock = false;
+
+    template <class _Clock, class _Duration>
+    inline constexpr bool _Is_time_point_for_clock<time_point<_Clock, _Duration>, _Clock> = true;
+
+    template <class _SourceClock>
+    struct clock_time_conversion<system_clock, _SourceClock> {
+        template <class _Duration, class _SourceClock2 = _SourceClock,
+            class =
+                void_t<decltype(_SourceClock2::to_sys(_STD declval<const time_point<_SourceClock2, _Duration>&>()))>>
+        _NODISCARD auto operator()(const time_point<_SourceClock, _Duration>& _Time) const
+            noexcept(noexcept(_SourceClock::to_sys(_Time))) /* strengthened */ {
+            static_assert(_Is_time_point_for_clock<decltype(_SourceClock::to_sys(_Time)), system_clock>,
+                "N4885 [time.clock.cast.sys]/2: Mandates: SourceClock::to_sys(t) returns a sys_time<Duration>");
+            return _SourceClock::to_sys(_Time);
+        }
+    };
+
+    template <class _DestClock>
+    struct clock_time_conversion<_DestClock, system_clock> {
+        template <class _Duration, class _DestClock2 = _DestClock,
+            class = void_t<decltype(_DestClock2::from_sys(_STD declval<const sys_time<_Duration>&>()))>>
+        _NODISCARD auto operator()(const sys_time<_Duration>& _Time) const
+            noexcept(noexcept(_DestClock::from_sys(_Time))) /* strengthened */ {
+            static_assert(_Is_time_point_for_clock<decltype(_DestClock::from_sys(_Time)), _DestClock>,
+                "N4885 [time.clock.cast.sys]/5: Mandates: DestClock::from_sys(t) returns a "
+                "time_point<DestClock, Duration>");
+            return _DestClock::from_sys(_Time);
+        }
+    };
+
+    // [time.clock.cast.utc]
+
+    template <class _SourceClock>
+    struct clock_time_conversion<utc_clock, _SourceClock> {
+        template <class _Duration, class _SourceClock2 = _SourceClock,
+            class =
+                void_t<decltype(_SourceClock2::to_utc(_STD declval<const time_point<_SourceClock2, _Duration>&>()))>>
+        _NODISCARD auto operator()(const time_point<_SourceClock, _Duration>& _Time) const
+            noexcept(noexcept(_SourceClock::to_utc(_Time))) /* strengthened */ {
+            static_assert(_Is_time_point_for_clock<decltype(_SourceClock::to_utc(_Time)), utc_clock>,
+                "N4885 [time.clock.cast.utc]/2: Mandates: SourceClock::to_utc(t) returns a utc_time<Duration>");
+            return _SourceClock::to_utc(_Time);
+        }
+    };
+
+    template <class _DestClock>
+    struct clock_time_conversion<_DestClock, utc_clock> {
+        template <class _Duration, class _DestClock2 = _DestClock,
+            class = void_t<decltype(_DestClock2::from_utc(_STD declval<const utc_time<_Duration>&>()))>>
+        _NODISCARD auto operator()(const utc_time<_Duration>& _Time) const
+            noexcept(noexcept(_DestClock::from_utc(_Time))) /* strengthened */ {
+            static_assert(_Is_time_point_for_clock<decltype(_DestClock::from_utc(_Time)), _DestClock>,
+                "N4885 [time.clock.cast.utc]/5: Mandates: DestClock::from_utc(t) returns a "
+                "time_point<DestClock, Duration>");
+            return _DestClock::from_utc(_Time);
+        }
+    };
+
+    // [time.clock.cast.fn]
+
+    enum class _Clock_cast_strategy {
+        _Direct,
+        _Via_sys,
+        _Via_utc,
+        _Via_utc_from_sys,
+        _Via_sys_from_utc,
+        _Two_step_ambiguous,
+        _Three_step_ambiguous,
+        _None,
+    };
+
+    template <class _Conv1, class _Conv2, class _Tp, class = void>
+    inline constexpr bool _Has_two_step_conversion = false;
+
+    template <class _Conv1, class _Conv2, class _Tp>
+    inline constexpr bool
+        _Has_two_step_conversion<_Conv1, _Conv2, _Tp, void_t<decltype(_Conv1{}(_Conv2{}(_STD declval<_Tp>())))>> = true;
+
+    template <class _Conv1, class _Conv2, class _Conv3, class _Tp, class = void>
+    inline constexpr bool _Has_three_step_conversion = false;
+
+    template <class _Conv1, class _Conv2, class _Conv3, class _Tp>
+    inline constexpr bool _Has_three_step_conversion<_Conv1, _Conv2, _Conv3, _Tp,
+        void_t<decltype(_Conv1{}(_Conv2{}(_Conv3{}(_STD declval<_Tp>()))))>> = true;
+
+    template <class _DestClock, class _SourceClock, class _Duration>
+    _NODISCARD _CONSTEVAL _Clock_cast_strategy _Choose_clock_cast() noexcept {
+        using _Tp = const time_point<_SourceClock, _Duration>&;
+
+        if constexpr (is_invocable_v<clock_time_conversion<_DestClock, _SourceClock>, _Tp>) {
+            return _Clock_cast_strategy::_Direct;
+        } else {
+            constexpr bool _Has_sys = _Has_two_step_conversion< //
+                clock_time_conversion<_DestClock, system_clock>, //
+                clock_time_conversion<system_clock, _SourceClock>, _Tp>;
+
+            constexpr bool _Has_utc = _Has_two_step_conversion< //
+                clock_time_conversion<_DestClock, utc_clock>, //
+                clock_time_conversion<utc_clock, _SourceClock>, _Tp>;
+
+            if constexpr (_Has_sys && _Has_utc) {
+                return _Clock_cast_strategy::_Two_step_ambiguous;
+            } else if constexpr (_Has_sys) {
+                return _Clock_cast_strategy::_Via_sys;
+            } else if constexpr (_Has_utc) {
+                return _Clock_cast_strategy::_Via_utc;
+            } else {
+                constexpr bool _Has_utc_from_sys = _Has_three_step_conversion< //
+                    clock_time_conversion<_DestClock, utc_clock>, //
+                    clock_time_conversion<utc_clock, system_clock>, //
+                    clock_time_conversion<system_clock, _SourceClock>, _Tp>;
+
+                constexpr bool _Has_sys_from_utc = _Has_three_step_conversion< //
+                    clock_time_conversion<_DestClock, system_clock>, //
+                    clock_time_conversion<system_clock, utc_clock>, //
+                    clock_time_conversion<utc_clock, _SourceClock>, _Tp>;
+
+                if constexpr (_Has_utc_from_sys && _Has_sys_from_utc) {
+                    return _Clock_cast_strategy::_Three_step_ambiguous;
+                } else if constexpr (_Has_utc_from_sys) {
+                    return _Clock_cast_strategy::_Via_utc_from_sys;
+                } else if constexpr (_Has_sys_from_utc) {
+                    return _Clock_cast_strategy::_Via_sys_from_utc;
+                } else {
+                    return _Clock_cast_strategy::_None;
+                }
+            }
+        }
+    }
+
+    template <class _DestClock, class _SourceClock, class _Duration>
+    inline constexpr auto _Clock_cast_choice = _Choose_clock_cast<_DestClock, _SourceClock, _Duration>();
+
+    // FUNCTION TEMPLATE clock_cast
+    template <class _DestClock, class _SourceClock, class _Duration,
+        enable_if_t<_Clock_cast_choice<_DestClock, _SourceClock, _Duration> != _Clock_cast_strategy::_None, int> = 0>
+    _NODISCARD auto clock_cast(const time_point<_SourceClock, _Duration>& _Time) {
+        constexpr auto _Strat = _Clock_cast_choice<_DestClock, _SourceClock, _Duration>;
+
+        if constexpr (_Strat == _Clock_cast_strategy::_Direct) {
+            return clock_time_conversion<_DestClock, _SourceClock>{}(_Time);
+        } else if constexpr (_Strat == _Clock_cast_strategy::_Via_sys) {
+            return clock_time_conversion<_DestClock, system_clock>{}(
+                clock_time_conversion<system_clock, _SourceClock>{}(_Time));
+        } else if constexpr (_Strat == _Clock_cast_strategy::_Via_utc) {
+            return clock_time_conversion<_DestClock, utc_clock>{}(
+                clock_time_conversion<utc_clock, _SourceClock>{}(_Time));
+        } else if constexpr (_Strat == _Clock_cast_strategy::_Via_utc_from_sys) {
+            return clock_time_conversion<_DestClock, utc_clock>{}( //
+                clock_time_conversion<utc_clock, system_clock>{}(
+                    clock_time_conversion<system_clock, _SourceClock>{}(_Time)));
+        } else if constexpr (_Strat == _Clock_cast_strategy::_Via_sys_from_utc) {
+            return clock_time_conversion<_DestClock, system_clock>{}( //
+                clock_time_conversion<system_clock, utc_clock>{}(
+                    clock_time_conversion<utc_clock, _SourceClock>{}(_Time)));
+        } else if constexpr (_Strat == _Clock_cast_strategy::_Two_step_ambiguous) {
+            static_assert(_Always_false<_Duration>,
+                "A two-step clock time conversion is required to be unique, "
+                "either through utc_clock or system_clock, but not both (N4878 [time.clock.cast.fn]/2).");
+        } else if constexpr (_Strat == _Clock_cast_strategy::_Three_step_ambiguous) {
+            static_assert(_Always_false<_Duration>,
+                "A three-step clock time conversion is required to be unique, "
+                "either utc-to-system or system-to-utc, but not both (N4878 [time.clock.cast.fn]/2).");
+        } else {
+            static_assert(_Always_false<_Duration>, "should be unreachable");
+        }
+    }
+
+    // [time.parse]
+    struct _Time_parse_fields {
+        using _SubsecondType = duration<int64_t, atto>;
+
+        // These are the primary fields, used to set the chrono type being parsed.
+        optional<int64_t> _Subsecond;
+        optional<int> _Second;
+        optional<int> _Minute;
+        optional<int> _Hour_24;
+        optional<int> _Weekday; // 0-based, starts Sunday
+        optional<int> _Day; // 1-based
+        optional<int> _Month; // 1-based
+        optional<int> _Day_of_year; // 1-based
+        optional<int> _Two_dig_year;
+        optional<int> _Century;
+        optional<int> _Utc_offset; // in minutes
+        optional<string> _Tz_name;
+
+        // These are the secondary fields, used to store parsed data. They must be converted to primary fields and
+        // checked for consistency.
+        optional<int> _Hour_12;
+        optional<int> _Ampm;
+        optional<int> _Iso_year;
+        optional<int> _Two_dig_iso_year;
+        optional<int> _Iso_week; // 1-based
+        optional<int> _Week_u; // week number, W01 begins on first Sunday
+        optional<int> _Week_w; // week number, W01 begins on first Monday
+
+        enum _FieldFlags : unsigned int {
+            _F_sec   = 0x01,
+            _F_min   = 0x02,
+            _F_hr    = 0x04,
+            _F_day   = 0x08,
+            _F_wkday = 0x10,
+            _F_mon   = 0x20,
+            _F_doy   = 0x40,
+            _F_year  = 0x80,
+        };
+
+        _NODISCARD unsigned int _Used_fields() const {
+            unsigned int _Ret{0};
+            if (_Second || _Subsecond) {
+                _Ret |= _F_sec;
+            }
+            if (_Minute) {
+                _Ret |= _F_min;
+            }
+            if (_Hour_24) {
+                _Ret |= _F_hr;
+            }
+            if (_Day) {
+                _Ret |= _F_day;
+            }
+            if (_Weekday) {
+                _Ret |= _F_wkday;
+            }
+            if (_Month) {
+                _Ret |= _F_mon;
+            }
+            if (_Day_of_year) {
+                _Ret |= _F_doy;
+            }
+            if (_Two_dig_year && _Century) {
+                _Ret |= _F_year;
+            }
+            return _Ret;
+        }
+
+        _NODISCARD static bool _Test_bits(
+            const unsigned int _Bits, const unsigned int _Must_set, const unsigned int _Optional = 0) {
+            return (_Bits & ~_Optional) == _Must_set;
+        }
+
+
+        template <class _Ty>
+        static constexpr _Ty _Invalid_time_field{numeric_limits<_Ty>::lowest()};
+
+        static void _Initialize_time_point(tm& _Tp) {
+            _Tp.tm_sec  = _Invalid_time_field<int>;
+            _Tp.tm_min  = _Invalid_time_field<int>;
+            _Tp.tm_hour = _Invalid_time_field<int>;
+            _Tp.tm_wday = _Invalid_time_field<int>;
+            _Tp.tm_mday = _Invalid_time_field<int>;
+            _Tp.tm_mon  = _Invalid_time_field<int>;
+            _Tp.tm_yday = _Invalid_time_field<int>;
+            _Tp.tm_year = _Invalid_time_field<int>;
+        }
+
+        template <class _Ty>
+        _NODISCARD static bool _Update(optional<_Ty>& _Val, const _Ty& _New) {
+            // Update a field. Ignores invalid values. If _Val already has a value, returns true or false according to
+            // whether the new value matches the current one or not, so that inconsistencies can be detected.
+
+            if constexpr (!is_same_v<_Ty, string>) {
+                if (_New == _Invalid_time_field<_Ty>) {
+                    return true;
+                }
+            }
+
+            if (!_Val.has_value()) {
+                _Val = _New;
+                return true;
+            } else {
+                return _STD exchange(_Val, _New) == _New;
+            }
+        }
+
+        _NODISCARD static pair<int, int> _Decompose_year(const int _Year) {
+            int _Two_d_year = _Year % 100;
+            if (_Two_d_year < 0) {
+                _Two_d_year += 100;
+            }
+            return {_Year - _Two_d_year, _Two_d_year};
+        }
+
+        _NODISCARD bool _Update_if_valid(const tm& _Tp, const bool _Full_year) {
+            bool _No_err{true};
+            if (_Tp.tm_hour != _Invalid_time_field<int>) {
+                _No_err = _No_err && _Update(_Hour_24, _Tp.tm_hour);
+                _No_err = _No_err && _Update(_Ampm, _Hour_24 >= 12 ? 1 : 0);
+                _No_err = _No_err && _Update(_Hour_12, _CHRONO make12(hours{*_Hour_24}).count());
+            }
+
+            _No_err = _No_err && _Update(_Minute, _Tp.tm_min);
+            _No_err = _No_err && _Update(_Second, _Tp.tm_sec);
+            _No_err = _No_err && _Update(_Day, _Tp.tm_mday);
+            _No_err = _No_err && _Update(_Weekday, _Tp.tm_wday);
+
+            if (_Tp.tm_mon != _Invalid_time_field<int>) {
+                _No_err = _No_err && _Update(_Month, _Tp.tm_mon + 1);
+            }
+
+            if (_Tp.tm_yday != _Invalid_time_field<int>) {
+                _No_err = _No_err && _Update(_Day_of_year, _Tp.tm_yday + 1);
+            }
+
+            if (_Tp.tm_year != _Invalid_time_field<int>) {
+                // Sometimes we expect only the last two digits.
+                const auto _Year_parts = _Decompose_year(_Tp.tm_year + 1900);
+                _No_err                = _No_err && _Update(_Two_dig_year, _Year_parts.second);
+                if (_Full_year) {
+                    _No_err = _No_err && _Update(_Century, _Year_parts.first);
+                }
+            }
+
+            return _No_err;
+        }
+
+        _NODISCARD bool _Yday_to_month_day(const int _Yday, const int _Year) {
+            // A day-of-year that's February 28 or earlier, by itself, is a valid month_day. Any later day is
+            // ambiguous without a year.
+            if (_Out_of_range(_Day_of_year, 1, _Two_dig_year || _Iso_year ? _Days_in_year(_Year) : 59)) {
+                return false;
+            }
+
+            if (_Day_of_year <= 31) {
+                return _Update(_Day, _Yday) && _Update(_Month, 1);
+            }
+
+            const int _Feb_end{_Is_leap(_Year) ? 60 : 59};
+            if (_Day_of_year <= _Feb_end) {
+                return _Update(_Day, _Yday - 31) && _Update(_Month, 2);
+            }
+
+            // Shift day-of-year so that 1 == March 1. This is the same as year_month_day::_Civil_from_days, except
+            // _Day_of_year --> _Shifted_yday-1 and _Mp --> _Month - 3.
+            const int _Shifted_yday{*_Day_of_year - _Feb_end};
+            return _Update(_Month, (535 * _Shifted_yday + 48950) >> 14)
+                && _Update(_Day, _Shifted_yday - ((979 * *_Month - 2918) >> 5));
+        }
+
+        static constexpr int _Era_begin_wday{3}; // Wednesday
+
+        _NODISCARD static constexpr int _Jan1_weekday(int _Year) {
+            --_Year;
+            const int _Era = (_Year >= 0 ? _Year : _Year - 399) / 400;
+            const int _Yoe = _Year - _Era * 400;
+            // Jan. 1 is always day 306 of the shifted [Mar, ..., Dec, Jan, Feb] year.
+            const int _Doe = ((1461 * _Yoe) >> 2) - _Yoe / 100 + 306;
+            return (_Doe + _Era_begin_wday) % 7;
+        }
+
+        _NODISCARD static constexpr int _Iso8601_weeks(int _Year) {
+            const int _P_y = (_Year + _Year / 4 - _Year / 100 + _Year / 400) % 7;
+            --_Year;
+            const int _P_ym1 = (_Year + _Year / 4 - _Year / 100 + _Year / 400) % 7;
+            return 52 + (_P_y == 4 || _P_ym1 == 3);
+        }
+
+        _NODISCARD static constexpr int _Iso8601_week(const int _Day_of_year, const int _Weekday, const int _Year) {
+            // Jan. 4 is always week 1; rollover to next week always happens on Monday.
+            const auto _Week{(_Day_of_year + 9 - _Prev_weekday(_Weekday, 1)) / 7};
+            if (_Week < 1) {
+                return _Iso8601_weeks(_Year - 1);
+            } else if (_Week > _Iso8601_weeks(_Year)) {
+                return 1;
+            } else {
+                return _Week;
+            }
+        }
+
+        _NODISCARD static constexpr bool _Is_leap(const int _Year) {
+            return _Year % 4 == 0 && (_Year % 100 != 0 || _Year % 400 == 0);
+        }
+
+        _NODISCARD static constexpr int _Days_in_year(const int _Year) {
+            return _Is_leap(_Year) ? 366 : 365;
+        }
+
+        _NODISCARD static constexpr int _Next_weekday(const int _Wday, const int _Shift) {
+            // 0 <= _Shift <= 6
+            int _Result = _Wday + _Shift;
+            if (_Result >= 7) {
+                _Result -= 7;
+            }
+            return _Result;
+        }
+
+        _NODISCARD static constexpr int _Prev_weekday(const int _Wday, const int _Shift) {
+            // 0 <= _Shift <= 6
+            return (_Wday >= _Shift ? 0 : 7) + (_Wday - _Shift);
+        }
+
+        _NODISCARD bool _Calculate_ymd_from_week_date(const int _Starting_wday, const int _Week, const int _Year) {
+            // (a) Calculate day-of-year of first _Starting_wday in January.
+            // (b) Shift *_Weekday so that it's relative to _Starting_wday.
+            // (c) Offset to desired week.
+            const int _Jan1_wday = _Jan1_weekday(_Year);
+            const int _Yday      = 1 + _Prev_weekday(_Starting_wday, _Jan1_wday) // (a)
+                            + _Prev_weekday(*_Weekday, _Starting_wday) // (b)
+                            + 7 * (_Week - 1); // (c)
+            return _Update(_Day_of_year, _Yday) && !_Out_of_range(_Day_of_year, 1, _Days_in_year(_Year))
+                && _Yday_to_month_day(*_Day_of_year, _Year);
+        }
+
+        _NODISCARD bool _Calculate_ymd() {
+            bool _No_err = true;
+            // Flags to indicate if a field should be checked for consistency with other data. Set to false when the
+            // field is used to calculate the date, as it's necessarily self-consistent in that case (barring a bug).
+            bool _Check_u    = true;
+            bool _Check_w    = true;
+            bool _Check_iso  = true;
+            bool _Check_wday = true;
+
+            if (_Day_of_year && _Out_of_range(_Day_of_year, 1, 366)) {
+                return false;
+            }
+
+            bool _Have_year = false;
+            int _Year{0};
+            if (_Two_dig_year) {
+                _Year      = *_Century + *_Two_dig_year;
+                _Have_year = true;
+                if (_Day_of_year) {
+                    _No_err = _No_err && _Yday_to_month_day(*_Day_of_year, _Year);
+                } else if (_Week_u || _Week_w) {
+                    _Check_wday = false;
+                    if (_Week_u) {
+                        _Check_u = false;
+                        _No_err  = _No_err && _Calculate_ymd_from_week_date(0 /*Sunday*/, *_Week_u, _Year);
+                    }
+
+                    if (_Week_w) {
+                        _Check_w = false;
+                        _No_err  = _No_err && _Calculate_ymd_from_week_date(1 /*Monday*/, *_Week_w, _Year);
+                    }
+                }
+            }
+
+            if (_Iso_year) {
+                // ISO weeks begin on Monday. W01 always contains January 4. There is no W00, so the beginning of
+                // January can be in W52 or W53 of the previous year. Likewise, the end of December can occur at the
+                // beginning of W01 of the following year, depending on where in the week Jan. 4 falls.
+                _Check_wday = false;
+                _Check_iso  = false;
+                _Year       = *_Iso_year;
+                _Have_year  = true;
+
+                // Shift weekdays to Monday-based. Jan. 4 is the anchor of week 1, so calculate where the parsed weekday
+                // is relative to that point.
+                const int _Jan4_wday        = _Next_weekday(_Jan1_weekday(_Year), 3 - 1);
+                const int _Offset_from_jan4 = _Prev_weekday(*_Weekday, 1) - _Jan4_wday;
+                int _Trial_yday             = 4 + 7 * (*_Iso_week - 1) + _Offset_from_jan4;
+                const int _Ref_num_days     = _Trial_yday < 1 ? _Days_in_year(_Year - 1) : _Days_in_year(_Year);
+                if (_Trial_yday < 1) {
+                    _Trial_yday += _Ref_num_days;
+                    --_Year;
+                } else if (_Trial_yday > _Ref_num_days) {
+                    _Trial_yday -= _Ref_num_days;
+                    ++_Year;
+                }
+
+                const auto _Year_parts = _Decompose_year(_Year);
+                _No_err = _No_err && _Update(_Day_of_year, _Trial_yday) && _Yday_to_month_day(*_Day_of_year, _Year)
+                       && _Update(_Century, _Year_parts.first) && _Update(_Two_dig_year, _Year_parts.second);
+            }
+
+            // Must have YMD by this point, either parsed directly or calculated above.
+            if (!_Have_year || !_Month || !_Day || !_No_err) {
+                return false;
+            }
+
+            // consistency checks
+            if (_Check_wday && _Weekday) {
+                const auto _Era_year = _Year - (*_Month <= 2);
+                const int _Era       = (_Era_year >= 0 ? _Era_year : _Era_year - 399) / 400;
+                const int _Yoe       = _Era_year - _Era * 400;
+                const int _Yday_era  = ((979 * (*_Month + (*_Month > 2 ? -3 : 9)) + 19) >> 5) + *_Day - 1;
+                const int _Doe       = ((1461 * _Yoe) >> 2) - _Yoe / 100 + _Yday_era;
+                _No_err              = _No_err && _Update(_Weekday, (_Doe + _Era_begin_wday) % 7);
+            }
+
+            if (_Check_u && _Week_u) {
+                _No_err = _No_err && _Update(_Week_u, (*_Day_of_year + 6 - *_Weekday) / 7);
+            }
+
+            if (_Check_w && _Week_w) {
+                _No_err = _No_err && _Update(_Week_w, (*_Day_of_year + 6 - _Prev_weekday(*_Weekday, 1)) / 7);
+            }
+
+            if (_Check_iso && _Iso_week) {
+                _No_err = _No_err && _Update(_Iso_week, _Iso8601_week(*_Day_of_year, *_Weekday, _Year));
+            }
+
+            return _No_err;
+        }
+
+        _NODISCARD bool _Calculate_hour24() {
+            if (_Hour_12) {
+                return _Update(
+                    _Hour_24, _CHRONO make24(hours{*_Hour_12}, static_cast<bool>(_Ampm.value_or(0))).count());
+            } else {
+                return true;
+            }
+        }
+
+        _NODISCARD bool _Calculate_year_fields() {
+            bool _No_err = true;
+            // The order of these updates is significant. Updating the ISO date second allows
+            // formats with %g and %y, but not %C, to get the century implicitly from %y.
+            if (_Two_dig_year && !_Century) {
+                _No_err = _No_err && _Update(_Century, _Two_dig_year >= 69 ? 1900 : 2000);
+            }
+
+            // %C is only combined with %g if %G is missing, to avoid an unnecessary parse failure when the ISO and
+            // Gregorian years are in different centuries.
+            if (_Two_dig_iso_year && _Century && !_Iso_year) {
+                _No_err = _No_err && _Update(_Iso_year, *_Century + *_Two_dig_iso_year);
+            }
+
+            return _No_err;
+        }
+
+        _NODISCARD static bool _Out_of_range(const optional<int>& _Field, const int _Min, const int _Max) {
+            return _Field && (_Field < _Min || _Max < _Field);
+        }
+
+        _NODISCARD bool _Is_complete() const {
+            // Check for data that is incomplete, ambiguous, or obviously out-of-range. The exception is 12-hour time
+            // without am/pm. Most strptime implementations will assume am in this case, so we'll do that too. Don't
+            // check for consistency yet, because the data might not even be representable by the type being parsed,
+            // and calendar computations are relatively expensive.
+
+            // Most time-of-day fields are deferred until we know if we're parsing a time_point.
+            if (_Out_of_range(_Hour_12, 1, 12) //
+                || _Out_of_range(_Weekday, 0, 6) //
+                || _Out_of_range(_Day, 1, 31) //
+                || _Out_of_range(_Month, 1, 12)) {
+                return false;
+            }
+
+            if (_Iso_year || _Two_dig_iso_year || _Iso_week) {
+                // Need to have %G or %C+%g. The century can be parsed explicitly, or derived implicitly from %y.
+                const bool _Has_complete_year{_Iso_year || ((_Century || _Two_dig_year) && _Two_dig_iso_year)};
+                if (!_Has_complete_year || !_Iso_week || !_Weekday || _Out_of_range(_Iso_week, 1, 53)) {
+                    return false;
+                }
+            }
+
+            if (_Week_u || _Week_w) {
+                // Need a weekday and year to be complete.
+                if (!_Weekday || !_Two_dig_year) {
+                    return false;
+                }
+
+                if (_Out_of_range(_Week_u, 0, 53) || _Out_of_range(_Week_w, 0, 53)) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        template <class _Duration1, class _Duration2>
+        _NODISCARD static constexpr bool _Can_represent() {
+            using _Rep1    = typename _Duration1::rep;
+            using _Period1 = typename _Duration1::period;
+            using _Period2 = typename _Duration2::period;
+
+            // Returns whether _Duration1 can represent _Duration2{1}. Assumes 1 <= _Period2 <=
+            // 86,400, i.e., we're interested in time periods between seconds and days.
+            if constexpr (is_integral_v<_Rep1>) {
+                // Must have _Period1 <= _Period2 and numeric_limits<_Rep1>::max() >= _Period2 / _Period1. For example,
+                // std::days can't represent std::seconds, and duration<int, atto>::max() is ~9.2 seconds.
+                constexpr auto _Max_tick = static_cast<intmax_t>((numeric_limits<make_signed_t<_Rep1>>::max)());
+
+                // clang-format off
+                return ratio_less_equal_v<_Period1, _Period2>
+                    && ratio_greater_equal_v<ratio<_Max_tick, _Period2::num>, ratio_divide<ratio<1>, _Period1>>;
+                // clang-format on
+            } else if (is_floating_point_v<_Rep1>) {
+                // With the smallest possible _Period1, ratio<1,INTMAX_MAX>, one day has a tick count of
+                // 86,400*INTMAX_MAX ~= 7.97e23. This is representable by float and double, so they can always represent
+                // at least one day. On the other hand, one second with the largest possible _Period1 needs a tick count
+                // of 1/(INTMAX_MAX) ~= 1.08e-19, which is also representable in both float and double. So, both
+                // floating point types can represent durations between one second and one day, regardless of _Period1.
+                return true;
+            } else {
+                // TRANSITION: user-defined arithmetic-like types
+                return true;
+            }
+        }
+
+        enum class _Parse_tp_or_duration { _Time_point, _Duration };
+
+        template <_Parse_tp_or_duration _Parse_type, class _DurationType>
+        _NODISCARD bool _Apply_duration_fields(_DurationType& _Result) {
+            constexpr bool _Can_rep_sec    = _Can_represent<_DurationType, seconds>();
+            constexpr bool _Can_rep_min    = _Can_represent<_DurationType, minutes>();
+            constexpr bool _Can_rep_hr     = _Can_represent<_DurationType, hours>();
+            constexpr bool _Can_rep_day    = _Can_represent<_DurationType, days>();
+            constexpr bool _For_time_point = _Parse_type == _Parse_tp_or_duration::_Time_point;
+
+            const auto _Required{(_For_time_point ? _F_day | _F_mon | _F_year : 0)};
+            const auto _Optional{(_For_time_point ? _F_wkday : 0) | (_Can_rep_sec ? _F_sec : 0)
+                                 | (_Can_rep_min ? _F_min : 0) | (_Can_rep_hr ? _F_hr : 0)
+                                 | (_Can_rep_day ? _F_doy : 0)};
+
+            const auto _Used{_Used_fields()};
+            const auto _Time_out_of_range{
+                _For_time_point
+                && (_Out_of_range(_Second, 0, 60) || _Out_of_range(_Minute, 0, 59) || _Out_of_range(_Hour_24, 0, 23))};
+
+            if (_Time_out_of_range || !_Test_bits(_Used, _Required, _Optional)) {
+                return false;
+            }
+
+            _Result = _DurationType::zero();
+            if constexpr (_Can_rep_sec) {
+                if (_Used & _F_sec) {
+                    if (_Subsecond) {
+                        using _CastedType = duration<int64_t, typename _DurationType::period>;
+                        const _SubsecondType _Sub{*_Subsecond};
+                        if (treat_as_floating_point_v<_DurationType> //
+                            || _CHRONO duration_cast<_CastedType>(_Sub) == _Sub) {
+                            _Result += _CHRONO duration_cast<_DurationType>(_Sub);
+                        } else {
+                            return false;
+                        }
+                    }
+
+                    if (_Second) {
+                        _Result += _CHRONO duration_cast<_DurationType>(seconds{*_Second});
+                    }
+                }
+            }
+
+            if constexpr (_Can_rep_min) {
+                if (_Used & _F_min) {
+                    _Result += _CHRONO duration_cast<_DurationType>(minutes{*_Minute});
+                }
+
+                if (_Utc_offset) {
+                    _Result -= _CHRONO duration_cast<_DurationType>(minutes{*_Utc_offset});
+                }
+            }
+
+            if constexpr (_Can_rep_hr) {
+                if (_Used & _F_hr) {
+                    _Result += _CHRONO duration_cast<_DurationType>(hours{*_Hour_24});
+                }
+            }
+
+            if constexpr (_Can_rep_day) {
+                if (_For_time_point) {
+                    year_month_day _Ymd;
+                    if (_Make_year_month_day(_Ymd, true)) {
+                        _Result += _CHRONO duration_cast<_DurationType>(static_cast<sys_days>(_Ymd).time_since_epoch());
+                    } else {
+                        return false;
+                    }
+                } else if (_Used & _F_doy) {
+                    _Result += _CHRONO duration_cast<_DurationType>(days{*_Day_of_year});
+                }
+            }
+
+            return true;
+        }
+
+        template <class _Rep, class _Period>
+        _NODISCARD bool _Make_duration(duration<_Rep, _Period>& _Duration_result) {
+            const bool _Consistent = _Calculate_hour24();
+            if (_Consistent) {
+                _Duration_result = duration<_Rep, _Period>::zero(); // TRANSITION: LWG-3536 & GH-1740
+                return _Apply_duration_fields<_Parse_tp_or_duration::_Duration>(_Duration_result);
+            }
+
+            return false;
+        }
+
+        enum class _LeapSecondRep : unsigned int {
+            _None, // tai_clock, gps_clock; oblivious to leap seconds
+            _Negative, // system_clock, observes negative, but not positive, leap seconds
+            _All, // utc_clock
+            _File_time // _Negative before 1 January 2017, _All afterwards.
+        };
+
+        template <class _DurationType>
+        _NODISCARD bool _Make_time_point(_DurationType& _Dur, _LeapSecondRep _Leap) {
+
+            const bool _Consistent{_Calculate_hour24() && _Calculate_year_fields()};
+            if (!_Consistent || !_Apply_duration_fields<_Parse_tp_or_duration::_Time_point>(_Dur)) {
+                return false;
+            }
+
+            const _LeapSecondRep _Original_leap{_Leap};
+            if (_Leap == _LeapSecondRep::_File_time) {
+                const int _Year{*_Century + *_Two_dig_year};
+                _Leap = _Year <= 2016 ? _LeapSecondRep::_Negative : _LeapSecondRep::_All;
+            }
+
+            if (_Second > (_Leap == _LeapSecondRep::_All ? 60 : 59)) {
+                return false;
+            }
+
+            // A distinction has to be made here between clocks that tick monotonically, even around a positive leap
+            // second (everything except system_clock) and ones that have a special representation for leap seconds
+            // (utc_clock and, for negative leap seconds, system_clock). gps_clock and tai_clock, in particular, always
+            // monotonically count 86,400 seconds/day. The correct tick count, therefore, can be determined without
+            // knowing whether any leap seconds have occurred, and there aren't any invalid times due to negative leap
+            // second deletions.
+            //
+            // system_clock also has 86,400 seconds/day, but observes negative leap seconds by skipping them in its tick
+            // count. So leap second data is needed to check for a valid time, but not to calculate the tick count.
+
+            if (_Leap != _LeapSecondRep::_None) {
+                if (_Hour_24 == 23 && _Minute == 59 && _Second >= 59) {
+                    // It's possible that the parsed time doesn't exist because (a) _Seconds == 60 and there *isn't* a
+                    // leap second insertion or (b) _Seconds == 59 and there *is* a leap second subtraction.
+
+                    // Check for quick exit.
+                    const auto& _Tzdb{_CHRONO get_tzdb()};
+                    if (_Leap == _LeapSecondRep::_Negative && _Tzdb._All_ls_positive) {
+                        return true;
+                    }
+
+                    const bool _Possible_insertion{_Second == 60};
+                    const sys_seconds _Target_sys_time{
+                        _CHRONO floor<seconds>(_Dur) + (_Possible_insertion ? seconds{0} : seconds{1})};
+                    const auto& _Ls_vector{_Tzdb.leap_seconds};
+                    const auto _It{_STD lower_bound(_Ls_vector.begin(), _Ls_vector.end(), _Target_sys_time)};
+                    const bool _Match_leap{_It != _Ls_vector.end() && *_It == _Target_sys_time};
+
+                    // Condition for a good parse: (_Seconds == 59 && !_Match_leap) || (_Match_leap &&
+                    // _It->_Is_positive()). Below is the inverse of this.
+                    if (!(_Match_leap ? _It->_Positive() : !_Possible_insertion)) {
+                        return false;
+                    }
+                }
+
+                if (_Leap == _LeapSecondRep::_All) {
+                    constexpr bool _Can_rep_sec = _Can_represent<_DurationType, seconds>();
+                    if constexpr (_Can_rep_sec) {
+                        _Dur = utc_clock::from_sys(sys_time<_DurationType>{_Dur}).time_since_epoch();
+                        // If we parsed a positive leap second, then _Dur, interpreted as a system time, refers to the
+                        // second *after* insertion. Need to back up one second in this case.
+                        if (_Second == 60) {
+                            _Dur -= _CHRONO duration_cast<_DurationType>(seconds{1});
+                        }
+
+                        if (_Original_leap == _LeapSecondRep::_File_time) {
+                            _Dur -= _CHRONO duration_cast<_DurationType>(
+                                filesystem::_File_time_clock::_Skipped_filetime_leap_seconds);
+                        }
+                    } else {
+                        // Error if _Dur can't represent the above adjustment.
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        _NODISCARD bool _Make_day(day& _Day_result) {
+            if (_Used_fields() == _F_day) {
+                _Day_result = day{static_cast<unsigned int>(*_Day)};
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        _NODISCARD bool _Make_weekday(weekday& _Weekday_result) {
+            if (_Used_fields() == _F_wkday) {
+                _Weekday_result = weekday{static_cast<unsigned int>(*_Weekday)};
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        _NODISCARD bool _Make_month(month& _Month_result) {
+            if (_Used_fields() == _F_mon) {
+                _Month_result = month{static_cast<unsigned int>(*_Month)};
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        _NODISCARD bool _Make_month_day(month_day& _Month_day_result) {
+            if (_Day_of_year && !_Yday_to_month_day(*_Day_of_year, 0)) {
+                return false;
+            }
+
+            constexpr auto _Required = _F_mon | _F_day;
+            constexpr auto _Optional = _F_doy;
+            if (_Test_bits(_Used_fields(), _Required, _Optional)) {
+                _Month_day_result =
+                    month_day{month{static_cast<unsigned int>(*_Month)}, day{static_cast<unsigned int>(*_Day)}};
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        _NODISCARD bool _Make_year(year& _Year_result) {
+            if (_Calculate_year_fields() && _Used_fields() == _F_year) {
+                _Year_result = year{*_Century + *_Two_dig_year};
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        _NODISCARD bool _Make_year_month(year_month& _Year_month_result) {
+            if (_Calculate_year_fields() && _Used_fields() == (_F_mon | _F_year)) {
+                _Year_month_result =
+                    year_month{year{*_Century + *_Two_dig_year}, month{static_cast<unsigned int>(*_Month)}};
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        _NODISCARD bool _Make_year_month_day(
+            year_month_day& _Year_month_day_result, const bool _For_time_point = false) {
+            const bool _Consistent   = _Calculate_year_fields() && _Calculate_ymd();
+            constexpr auto _Required = _F_day | _F_mon | _F_year;
+            auto _Optional           = _F_wkday | _F_doy;
+            if (_For_time_point) {
+                // These fields aren't used here, but they might be used later if converting to a time_point.
+                _Optional |= _F_sec | _F_min | _F_hr;
+            }
+
+            if (_Consistent && _Test_bits(_Used_fields(), _Required, _Optional)) {
+                _Year_month_day_result = year_month_day{year{*_Century + *_Two_dig_year},
+                    month{static_cast<unsigned int>(*_Month)}, day{static_cast<unsigned int>(*_Day)}};
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        template <class _InIt>
+        _NODISCARD _InIt _Parse_time_field(_InIt _First, ios_base& _Iosbase, ios_base::iostate& _State,
+            const char _Flag, const char _Modifier, const unsigned int _Width,
+            const unsigned int _Subsecond_precision) {
+            using _CharT = typename _InIt::value_type;
+
+            const auto& _Ctype_fac = _STD use_facet<ctype<_CharT>>(_Iosbase.getloc());
+            const auto& _Time_fac  = _STD use_facet<time_get<_CharT>>(_Iosbase.getloc());
+            constexpr _InIt _Last{};
+
+            int _Val{0};
+            switch (_Flag) {
+            case 'a':
+            case 'A':
+                {
+                    tm _Tp;
+                    _Tp.tm_wday = _Invalid_time_field<int>;
+                    _First      = _Time_fac.get(_First, _Last, _Iosbase, _State, &_Tp, 'a');
+                    if (!_Update(_Weekday, _Tp.tm_wday)) {
+                        _State |= ios_base::failbit;
+                    }
+                    break;
+                }
+
+            case 'b':
+            case 'B':
+            case 'h':
+                {
+                    tm _Tp;
+                    _Tp.tm_mon = _Invalid_time_field<int>;
+                    _First     = _Time_fac.get(_First, _Last, _Iosbase, _State, &_Tp, 'b');
+                    if (_Tp.tm_mon == _Invalid_time_field<int> || !_Update(_Month, ++_Tp.tm_mon)) {
+                        _State |= ios_base::failbit;
+                    }
+                    break;
+                }
+
+            case 'C':
+                if (_Modifier != 'E') {
+                    _State |= _Get_int(_First, _Width == 0 ? 2u : _Width, _Val, _Ctype_fac);
+                    _Val *= 100;
+                } else {
+                    tm _Tp;
+                    _Tp.tm_year = _Invalid_time_field<int>;
+                    _First      = _Time_fac.get(_First, _Last, _Iosbase, _State, &_Tp, 'C', 'E');
+                    _Val        = _Tp.tm_year;
+                    if (_Tp.tm_year != _Invalid_time_field<int>) {
+                        _Val += 1900;
+                    }
+                }
+
+                if (!_Update(_Century, _Val)) {
+                    _State |= ios_base::failbit;
+                }
+                break;
+
+            case 'd':
+            case 'e':
+                if (_Modifier != 'O') {
+                    _State |= _Get_int(_First, _Width == 0 ? 2u : _Width, _Val, _Ctype_fac);
+                } else {
+                    tm _Tp;
+                    _Tp.tm_mday = _Invalid_time_field<int>;
+                    _First      = _Time_fac.get(_First, _Last, _Iosbase, _State, &_Tp, 'd', 'O');
+                    _Val        = _Tp.tm_mday;
+                }
+
+                if (!_Update(_Day, _Val)) {
+                    _State |= ios_base::failbit;
+                }
+                break;
+
+            case 'D':
+                _First = _Parse_time_field_restricted(_First, _Iosbase, _State, "%m/%d/%y");
+                break;
+
+            case 'F':
+                {
+                    // If modified with a width N, the width is applied to only %Y.
+                    _State |= _Get_int(_First, _Width == 0 ? 4u : _Width, _Val, _Ctype_fac);
+                    const auto _Year_parts = _Decompose_year(_Val);
+                    if (_Update(_Century, _Year_parts.first) && _Update(_Two_dig_year, _Year_parts.second)) {
+                        _First = _Parse_time_field_restricted(_First, _Iosbase, _State, "-%m-%d");
+                    } else {
+                        _State |= ios_base::failbit;
+                    }
+                    break;
+                }
+
+            case 'g':
+                _State |= _Get_int(_First, _Width == 0 ? 2u : _Width, _Val, _Ctype_fac);
+                if (!_Update(_Two_dig_iso_year, _Val)) {
+                    _State |= ios_base::failbit;
+                }
+                break;
+
+            case 'G':
+                {
+                    _State |= _Get_int(_First, _Width == 0 ? 4u : _Width, _Val, _Ctype_fac);
+                    const auto _Year_parts = _Decompose_year(_Val);
+                    if (!_Update(_Iso_year, _Val) || !_Update(_Two_dig_iso_year, _Year_parts.second)) {
+                        _State |= ios_base::failbit;
+                    }
+                    break;
+                }
+
+            case 'H':
+                if (_Modifier != 'O') {
+                    _State |= _Get_int(_First, _Width == 0 ? 2u : _Width, _Val, _Ctype_fac);
+                } else {
+                    tm _Tp;
+                    _Tp.tm_hour = _Invalid_time_field<int>;
+                    _First      = _Time_fac.get(_First, _Last, _Iosbase, _State, &_Tp, 'H', 'O');
+                    _Val        = _Tp.tm_hour;
+                }
+
+                if (!_Update(_Hour_24, _Val)
+                    || (_Val < 24
+                        && (!_Update(_Ampm, _Val >= 12 ? 1 : 0)
+                            || !_Update(_Hour_12, _CHRONO make12(hours{_Val}).count())))) {
+                    _State |= ios_base::failbit;
+                }
+                break;
+
+            case 'I':
+                if (_Modifier != 'O') {
+                    _State |= _Get_int(_First, _Width == 0 ? 2u : _Width, _Val, _Ctype_fac);
+                } else {
+                    tm _Tp;
+                    _Tp.tm_hour = _Invalid_time_field<int>;
+                    _First      = _Time_fac.get(_First, _Last, _Iosbase, _State, &_Tp, 'I', 'O');
+                    _Val        = (_Tp.tm_hour == 0) ? 12 : _Tp.tm_hour;
+                }
+
+                if (!_Update(_Hour_12, _Val)) {
+                    _State |= ios_base::failbit;
+                }
+                break;
+
+            case 'j':
+                _State |= _Get_int(_First, _Width == 0 ? 3u : _Width, _Val, _Ctype_fac);
+                if (!_Update(_Day_of_year, _Val)) {
+                    _State |= ios_base::failbit;
+                }
+                break;
+
+            case 'M':
+                if (_Modifier != 'O') {
+                    _State |= _Get_int(_First, _Width == 0 ? 2u : _Width, _Val, _Ctype_fac);
+                } else {
+                    tm _Tp;
+                    _Tp.tm_min = _Invalid_time_field<int>;
+                    _First     = _Time_fac.get(_First, _Last, _Iosbase, _State, &_Tp, 'M', 'O');
+                    _Val       = _Tp.tm_min;
+                }
+
+                if (!_Update(_Minute, _Val)) {
+                    _State |= ios_base::failbit;
+                }
+                break;
+
+            case 'm':
+                if (_Modifier != 'O') {
+                    _State |= _Get_int(_First, _Width == 0 ? 2u : _Width, _Val, _Ctype_fac);
+                } else {
+                    tm _Tp;
+                    _Initialize_time_point(_Tp);
+                    _First = _Time_fac.get(_First, _Last, _Iosbase, _State, &_Tp, 'm', 'O');
+                    _Val   = _Tp.tm_mon;
+                    if (_Tp.tm_mon != _Invalid_time_field<int>) {
+                        ++_Val;
+                    }
+                }
+
+                if (!_Update(_Month, _Val)) {
+                    _State |= ios_base::failbit;
+                }
+                break;
+
+            case 'p':
+                {
+                    tm _Tp;
+                    _Tp.tm_hour = 0;
+                    _First      = _Time_fac.get(_First, _Last, _Iosbase, _State, &_Tp, 'p');
+                    if (!_Update(_Ampm, _Tp.tm_hour == 0 ? 0 : 1)) {
+                        _State |= ios_base::failbit;
+                    }
+                    break;
+                }
+
+            case 'c':
+            case 'r':
+            case 'x':
+            case 'X':
+                {
+                    tm _Tp;
+                    _Initialize_time_point(_Tp);
+                    const bool _Full_year = (_Flag == 'c'); // 'x' reads two-digit year, 'r' and 'X' read times
+                    _First                = _Time_fac.get(_First, _Last, _Iosbase, _State, &_Tp, _Flag, _Modifier);
+                    if (!_Update_if_valid(_Tp, _Full_year)) {
+                        _State |= ios_base::failbit;
+                    }
+                    break;
+                }
+
+            case 'R':
+                _First = _Parse_time_field_restricted(_First, _Iosbase, _State, "%H:%M");
+                break;
+
+            case 'T':
+                _First = _Parse_time_field_restricted(_First, _Iosbase, _State, "%H:%M:%S", _Subsecond_precision);
+                break;
+
+            case 'S':
+                if (_Subsecond_precision == 0) {
+                    _State |= _Get_int(_First, _Width == 0 ? 2u : _Width, _Val, _Ctype_fac);
+                    if (!_Update(_Second, _Val)) {
+                        _State |= ios_base::failbit;
+                    }
+                } else {
+                    const auto& _Numpunct_fac = _STD use_facet<numpunct<_CharT>>(_Iosbase.getloc());
+                    _State |=
+                        _Get_fixed(_First, _Width == 0 ? 3 + _Subsecond_precision : _Width, _Ctype_fac, _Numpunct_fac);
+                }
+                break;
+
+            case 'u':
+            case 'w':
+                if (_Flag == 'w' && _Modifier == 'O') {
+                    tm _Tp;
+                    _Tp.tm_wday = _Invalid_time_field<int>;
+                    _First      = _Time_fac.get(_First, _Last, _Iosbase, _State, &_Tp, 'w', 'O');
+                    _Val        = _Tp.tm_wday;
+                } else {
+                    _State |= _Get_int(_First, _Width == 0 ? 1u : _Width, _Val, _Ctype_fac);
+                    if (_Flag == 'u') {
+                        // ISO weekday: [1,7], 7 == Sunday
+                        if (_Val == 7) {
+                            _Val = 0;
+                        } else if (_Val == 0) {
+                            _Val = 7; // out of range
+                        }
+                    }
+                }
+
+                if (!_Update(_Weekday, _Val)) {
+                    _State |= ios_base::failbit;
+                }
+                break;
+
+            case 'U':
+            case 'V':
+            case 'W':
+                {
+                    _State |= _Get_int(_First, _Width == 0 ? 2u : _Width, _Val, _Ctype_fac);
+                    auto& _Field{(_Flag == 'U') ? _Week_u : (_Flag == 'W' ? _Week_w : _Iso_week)};
+                    if (!_Update(_Field, _Val)) {
+                        _State |= ios_base::failbit;
+                    }
+                    break;
+                }
+
+            case 'y':
+                if (_Modifier == '\0') {
+                    _State |= _Get_int(_First, _Width == 0 ? 2u : _Width, _Val, _Ctype_fac);
+                } else {
+                    tm _Tp;
+                    _Tp.tm_year = _Invalid_time_field<int>;
+                    _First      = _Time_fac.get(_First, _Last, _Iosbase, _State, &_Tp, 'y', _Modifier);
+                    if (_Modifier == 'E') {
+                        _Val = _Tp.tm_year + 1900; // offset from %EC base year
+                    } else {
+                        const auto _Year_parts = _Decompose_year(_Tp.tm_year);
+                        _Val                   = _Year_parts.second;
+                    }
+                }
+
+                if (!_Update(_Two_dig_year, _Val)) {
+                    _State |= ios_base::failbit;
+                }
+                break;
+
+            case 'Y':
+                {
+                    if (_Modifier == 'E') {
+                        tm _Tp;
+                        _Tp.tm_year = _Invalid_time_field<int>;
+                        _First      = _Time_fac.get(_First, _Last, _Iosbase, _State, &_Tp, 'Y', 'E');
+                        _Val        = _Tp.tm_year + 1900;
+                    } else {
+                        _State |= _Get_int(_First, _Width == 0 ? 4u : _Width, _Val, _Ctype_fac);
+                    }
+
+                    const auto _Year_parts = _Decompose_year(_Val);
+                    if (!_Update(_Century, _Year_parts.first) || !_Update(_Two_dig_year, _Year_parts.second)) {
+                        _State |= ios_base::failbit;
+                    }
+                    break;
+                }
+
+            case 'z':
+                _State |= _Get_tz_offset(_First, _Ctype_fac, _Modifier == 'E' || _Modifier == 'O', _Val);
+                if (!_Update(_Utc_offset, _Val)) {
+                    _State |= ios_base::failbit;
+                }
+                break;
+
+            case 'Z':
+                {
+                    string _Name;
+                    _State |= _Get_tz_name(_First, _Ctype_fac, _Name);
+                    if (!_Update(_Tz_name, _Name)) {
+                        _State |= ios_base::failbit;
+                    }
+                    break;
+                }
+
+            default:
+                // Invalid flag
+                _State |= ios_base::failbit;
+                break;
+            }
+
+            return _First;
+        }
+
+        template <class _InIt>
+        _NODISCARD _InIt _Parse_time_field_restricted(_InIt _First, ios_base& _Iosbase, ios_base::iostate& _State,
+            const char* _Fmt, const unsigned int _Subsecond_precision = 0) {
+            using _Ctype = ctype<typename _InIt::value_type>;
+            // Parses a restricted format string. It generally doesn't handle anything parsed outside of
+            // _Parse_time_field:
+            //   (a) any whitespace (' ', %n, %t)
+            //   (b) %% literal (other literals are parsed, however)
+            //   (c) E or O modifiers
+            //   (d) width parameter
+            // It also assumes a valid format string, specifically that '%' is always followed by a flag.
+            const _Ctype& _Ctype_fac{_STD use_facet<_Ctype>(_Iosbase.getloc())};
+            constexpr _InIt _Last{};
+
+            while (*_Fmt != '\0' && _First != _Last && _State == ios_base::goodbit) {
+                if (*_Fmt == '%') {
+                    _First = _Parse_time_field(_First, _Iosbase, _State, *++_Fmt, '\0', 0, _Subsecond_precision);
+                } else if (_Ctype_fac.narrow(*_First++) != *_Fmt) {
+                    _State |= ios_base::failbit;
+                }
+                ++_Fmt;
+            }
+            return _First;
+        }
+
+        template <class _InIt>
+        _NODISCARD ios_base::iostate _Get_fixed(_InIt& _First, unsigned int _Width,
+            const ctype<typename _InIt::value_type>& _Ctype_fac,
+            const numpunct<typename _InIt::value_type>& _Numpunct_fac) {
+            constexpr _InIt _Last{};
+
+            while (_First != _Last && _Ctype_fac.is(ctype_base::space, *_First) && _Width > 0) {
+                ++_First;
+                --_Width;
+            }
+
+            int _Second_        = 0;
+            int64_t _Subsecond_ = 0;
+            int64_t _Multiplier = _SubsecondType::period::den;
+            bool _Found_point   = false;
+            bool _Found_digit   = false;
+
+            while (_First != _Last && _Width > 0 && _Multiplier >= 10) {
+                const auto _Ch = *_First;
+                if (_Ch == _Numpunct_fac.decimal_point() && !_Found_point) {
+                    _Found_point = true;
+                } else if (_Ctype_fac.is(ctype_base::digit, _Ch)) {
+                    _Found_digit      = true;
+                    const auto _Digit = _Ctype_fac.narrow(_Ch) - '0';
+                    if (_Found_point) {
+                        _Multiplier /= 10;
+                        _Subsecond_ += _Digit * _Multiplier;
+                    } else {
+                        if (_Second_ > ((numeric_limits<int>::max)() - _Digit) / 10) {
+                            return ios_base::failbit;
+                        }
+
+                        _Second_ = _Second_ * 10 + _Digit;
+                    }
+                } else {
+                    break;
+                }
+                ++_First;
+                --_Width;
+            }
+
+            ios_base::iostate _State = ios_base::goodbit;
+            if (_First == _Last) {
+                _State |= ios_base::eofbit;
+            }
+
+            if (!(_Found_digit && _Update(_Second, _Second_) && _Update(_Subsecond, _Subsecond_))) {
+                _State |= ios_base::failbit;
+            }
+
+            return _State;
+        }
+
+        template <class _InIt>
+        _NODISCARD ios_base::iostate _Get_int(
+            _InIt& _First, unsigned int _Width, int& _Val, const ctype<typename _InIt::value_type>& _Ctype_fac) {
+            constexpr _InIt _Last{};
+
+            while (_First != _Last && _Ctype_fac.is(ctype_base::space, *_First) && _Width > 0) {
+                ++_First;
+                --_Width;
+            }
+
+            char _Ac[_MAX_INT_DIG];
+            char* _Ptr = _Ac;
+            if (_First != _Last && _Width > 0) {
+                const char _Ch = _Ctype_fac.narrow(*_First);
+                if (_Ch == '+' || _Ch == '-') { // copy sign
+                    *_Ptr++ = _Ch;
+                    ++_First;
+                    --_Width;
+                }
+            }
+
+            bool _Has_leading_zero = false;
+            while (_First != _Last && _Width > 0 && _Ctype_fac.narrow(*_First) == '0') { // strip leading zeros
+                ++_First;
+                --_Width;
+                _Has_leading_zero = true;
+            }
+
+            if (_Has_leading_zero) {
+                *_Ptr++ = '0';
+            }
+
+            char _Ch;
+            while (_First != _Last && _Width > 0 && '0' <= (_Ch = _Ctype_fac.narrow(*_First))
+                   && _Ch <= '9') { // copy digits
+                *_Ptr = _Ch;
+                if (_Ptr < _STD cend(_Ac)) {
+                    ++_Ptr; // drop trailing digits if already too large
+                }
+                ++_First;
+                --_Width;
+            }
+
+            *_Ptr      = '\0';
+            int _Errno = 0;
+            char* _Ep;
+            const long _Ans          = _CSTD _Stolx(_Ac, &_Ep, 10, &_Errno);
+            ios_base::iostate _State = ios_base::goodbit;
+
+            if (_First == _Last) {
+                _State |= ios_base::eofbit;
+            }
+
+            if (_Ep == _Ac || _Errno != 0) {
+                _State |= ios_base::failbit; // bad conversion
+            } else {
+                _Val = _Ans; // store valid result
+            }
+
+            return _State;
+        }
+
+        template <class _InIt>
+        _NODISCARD ios_base::iostate _Get_tz_offset(
+            _InIt& _First, const ctype<typename _InIt::value_type>& _Ctype_fac, const bool _Is_modified, int& _Offset) {
+            constexpr _InIt _Last{};
+            if (_First == _Last) {
+                return ios_base::eofbit;
+            }
+
+            bool _Negative = false;
+            switch (_Ctype_fac.narrow(*_First)) {
+            case '-':
+                _Negative = true;
+                [[fallthrough]];
+            case '+':
+                ++_First;
+                break;
+            }
+
+            // For a regular offset hh[mm], simply read four digits, with the option of an EOF or non-digit after
+            // reading two. The modified form h[h][:mm] is similar, except for the following points:
+            //  (a) an EOF or non-digit is allowable after reading *one* digit, not two.
+            //  (b) after reading one digit, another optional digit keeps us in the same state, except for decrementing
+            //      the number of optional digits allowed. In this state, reading a ':' allows parsing to continue.
+
+            int _Tz_hours        = 0;
+            int _Tz_minutes      = 0;
+            int _Optional_digits = 1;
+            for (int _Count = 0; _Count < 4; ++_Count) {
+                const bool _Allow_match_fail{_Count == (_Is_modified ? 1 : 2)};
+
+                if (_First == _Last) {
+                    if (_Allow_match_fail) {
+                        break;
+                    } else {
+                        return ios_base::eofbit | ios_base::failbit;
+                    }
+                }
+
+                const char _Ch       = _Ctype_fac.narrow(*_First++);
+                const bool _Is_digit = ('0' <= _Ch && _Ch <= '9');
+                if (_Is_modified && _Count == 1) {
+                    if (_Ch == ':') {
+                        continue;
+                    } else if (_Is_digit && _Optional_digits > 0) {
+                        _Tz_hours = 10 * _Tz_hours + (_Ch - '0');
+                        --_Optional_digits;
+                        --_Count;
+                    } else {
+                        if (_Allow_match_fail) {
+                            break;
+                        } else {
+                            return ios_base::failbit;
+                        }
+                    }
+                } else if (_Is_digit) {
+                    auto& _Part = _Count < 2 ? _Tz_hours : _Tz_minutes;
+                    _Part       = 10 * _Part + (_Ch - '0');
+                } else {
+                    if (_Allow_match_fail) {
+                        break;
+                    } else {
+                        return ios_base::failbit;
+                    }
+                }
+            }
+
+            _Offset = 60 * _Tz_hours + _Tz_minutes;
+            if (_Negative) {
+                _Offset = -_Offset;
+            }
+            return ios_base::goodbit;
+        }
+
+        template <class _InIt>
+        _NODISCARD ios_base::iostate _Get_tz_name(
+            _InIt& _First, const ctype<typename _InIt::value_type>& _Ctype_fac, string& _Tz_name) {
+            constexpr _InIt _Last{};
+            _Tz_name.clear();
+            while (_First != _Last) {
+                const char _Ch{_Ctype_fac.narrow(*_First)};
+                if (_STD isalnum(static_cast<unsigned char>(_Ch)) || _Ch == '_' || _Ch == '/' || _Ch == '-'
+                    || _Ch == '+') {
+                    _Tz_name.push_back(_Ch);
+                    ++_First;
+                } else {
+                    break;
+                }
+            }
+            return _First == _Last ? ios_base::eofbit : ios_base::goodbit;
+        }
+
+        template <class _CharT, class _Traits, class _Alloc = allocator<_CharT>>
+        _Time_parse_fields(basic_istream<_CharT, _Traits>& _Istr, const _CharT* _FmtFirst,
+            basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr, minutes* _Offset = nullptr,
+            unsigned int _Subsecond_precision = 0) {
+
+            using _Myis = basic_istream<_CharT, _Traits>;
+
+            const auto& _Ctype_fac       = _STD use_facet<ctype<_CharT>>(_Istr.getloc());
+            ios_base::iostate _State     = ios_base::goodbit;
+            const _CharT* const _FmtLast = _FmtFirst + _Traits::length(_FmtFirst);
+            const typename _Myis::sentry _Ok{_Istr, true};
+
+            istreambuf_iterator _First{_Istr};
+            constexpr decltype(_First) _Last{};
+
+            if (_Ok) {
+                _TRY_IO_BEGIN
+                for (; _FmtFirst != _FmtLast && _State == ios_base::goodbit; ++_FmtFirst) {
+                    if (_First == _Last) {
+                        // EOF is not an error if the remaining flags can match zero characters.
+                        for (; _FmtFirst != _FmtLast; ++_FmtFirst) {
+                            char _Flag{};
+                            if (_Ctype_fac.is(ctype_base::space, *_FmtFirst)) {
+                                _Flag = ' ';
+                            } else {
+                                if (_Ctype_fac.narrow(*_FmtFirst) == '%' && ++_FmtFirst != _FmtLast) {
+                                    _Flag = _Ctype_fac.narrow(*_FmtFirst);
+                                }
+                            }
+
+                            if (_Flag != ' ' && _Flag != 't') {
+                                _State |= ios_base::failbit | ios_base::eofbit;
+                                break;
+                            }
+                        }
+                        break;
+                    } else if (_Ctype_fac.narrow(*_FmtFirst) != '%') { // match literal element
+                        if (_Ctype_fac.is(ctype_base::space, *_FmtFirst)) {
+                            while (_First != _Last && _Ctype_fac.is(ctype_base::space, *_First)) {
+                                ++_First;
+                            }
+                        } else if (*_First == *_FmtFirst) {
+                            ++_First;
+                        } else {
+                            _State |= ios_base::failbit; // bad literal match
+                        }
+                    } else if (++_FmtFirst == _FmtLast) { // not enough for a valid flag
+                        _State |= ios_base::failbit;
+                    } else { // get flag after %
+                        char _Flag          = _Ctype_fac.narrow(*_FmtFirst);
+                        char _Modifier      = '\0';
+                        unsigned int _Width = 0;
+
+                        if (_Flag == 'E' || _Flag == 'O') {
+                            if (++_FmtFirst == _FmtLast) {
+                                _State |= ios_base::failbit;
+                                break;
+                            }
+                            _Modifier = _STD exchange(_Flag, _Ctype_fac.narrow(*_FmtFirst));
+                        } else if ('0' <= _Flag && _Flag <= '9') {
+                            _Width = static_cast<unsigned int>(_Flag - '0');
+                            while (++_FmtFirst != _FmtLast && _Ctype_fac.is(ctype_base::digit, *_FmtFirst)) {
+                                const auto _Digit = static_cast<unsigned int>(_Ctype_fac.narrow(*_FmtFirst) - '0');
+                                if (_Width > ((numeric_limits<unsigned int>::max)() - _Digit) / 10) {
+                                    _State |= ios_base::failbit;
+                                    break;
+                                }
+                                _Width = 10 * _Width + _Digit;
+                            }
+                            if (_FmtFirst == _FmtLast) {
+                                _State |= ios_base::failbit;
+                                break;
+                            }
+                            _Flag = _Ctype_fac.narrow(*_FmtFirst);
+                        }
+
+                        switch (_Flag) {
+                        case 'n': // exactly one space
+                            if (!_Ctype_fac.is(ctype_base::space, *_First++)) {
+                                _State |= ios_base::failbit;
+                            }
+                            break;
+
+                        case 't': // zero or one space
+                            if (_Ctype_fac.is(ctype_base::space, *_First)) {
+                                ++_First;
+                            }
+                            break;
+
+                        case '%':
+                            if (_Ctype_fac.narrow(*_First++) != '%') {
+                                _State |= ios_base::failbit;
+                            }
+                            break;
+
+                        default:
+                            _First = _Parse_time_field(_First, _Istr, _State, _Flag, _Modifier, _Width,
+                                _Subsecond_precision); // convert a single field
+                            break;
+                        }
+                    }
+                }
+
+                _CATCH_IO_(_Myis, _Istr)
+            }
+
+            if (!_Is_complete()) {
+                _State |= ios_base::failbit;
+            }
+
+            if (!(_State & ios_base::failbit)) {
+                if (_Offset != nullptr && _Utc_offset) {
+                    *_Offset = minutes{*_Utc_offset};
+                }
+
+                if (_Abbrev != nullptr && _Tz_name) {
+                    if constexpr (is_same_v<decltype(_Abbrev), string*>) {
+                        *_Abbrev = _STD move(*_Tz_name);
+                    } else {
+                        _Abbrev->clear();
+                        for (const char& _Ch : *_Tz_name) {
+                            _Abbrev->push_back(_Ctype_fac.widen(_Ch));
+                        }
+                    }
+                }
+            }
+
+            _Istr.setstate(_State);
+        }
+    };
+
+    // FUNCTION TEMPLATE from_stream
+    template <class _CharT, class _Traits, class _Rep, class _Period, class _Alloc = allocator<_CharT>>
+    basic_istream<_CharT, _Traits>& from_stream(basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt,
+        duration<_Rep, _Period>& _Duration, basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr,
+        minutes* _Offset = nullptr) {
+        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset, hh_mm_ss<duration<_Rep, _Period>>::fractional_width};
+        if (_Istr && !_Time._Make_duration(_Duration)) {
+            _Istr.setstate(ios_base::failbit);
+        }
+        return _Istr;
+    }
+
+    template <class _CharT, class _Traits, class _Alloc = allocator<_CharT>>
+    basic_istream<_CharT, _Traits>& from_stream(basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt, weekday& _Wd,
+        basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr, minutes* _Offset = nullptr) {
+        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset};
+        if (_Istr && !_Time._Make_weekday(_Wd)) {
+            _Istr.setstate(ios_base::failbit);
+        }
+        return _Istr;
+    }
+
+    template <class _CharT, class _Traits, class _Alloc = allocator<_CharT>>
+    basic_istream<_CharT, _Traits>& from_stream(basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt, day& _Day,
+        basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr, minutes* _Offset = nullptr) {
+        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset};
+        if (_Istr && !_Time._Make_day(_Day)) {
+            _Istr.setstate(ios_base::failbit);
+        }
+        return _Istr;
+    }
+
+    template <class _CharT, class _Traits, class _Alloc = allocator<_CharT>>
+    basic_istream<_CharT, _Traits>& from_stream(basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt,
+        month& _Month, basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr, minutes* _Offset = nullptr) {
+        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset};
+        if (_Istr && !_Time._Make_month(_Month)) {
+            _Istr.setstate(ios_base::failbit);
+        }
+        return _Istr;
+    }
+
+    template <class _CharT, class _Traits, class _Alloc = allocator<_CharT>>
+    basic_istream<_CharT, _Traits>& from_stream(basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt,
+        month_day& _Md, basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr, minutes* _Offset = nullptr) {
+        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset};
+        if (_Istr && !_Time._Make_month_day(_Md)) {
+            _Istr.setstate(ios_base::failbit);
+        }
+        return _Istr;
+    }
+
+    template <class _CharT, class _Traits, class _Alloc = allocator<_CharT>>
+    basic_istream<_CharT, _Traits>& from_stream(basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt, year& _Year,
+        basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr, minutes* _Offset = nullptr) {
+        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset};
+        if (_Istr && !_Time._Make_year(_Year)) {
+            _Istr.setstate(ios_base::failbit);
+        }
+        return _Istr;
+    }
+
+    template <class _CharT, class _Traits, class _Alloc = allocator<_CharT>>
+    basic_istream<_CharT, _Traits>& from_stream(basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt,
+        year_month& _Ym, basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr, minutes* _Offset = nullptr) {
+        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset};
+        if (_Istr && !_Time._Make_year_month(_Ym)) {
+            _Istr.setstate(ios_base::failbit);
+        }
+        return _Istr;
+    }
+
+    template <class _CharT, class _Traits, class _Alloc = allocator<_CharT>>
+    basic_istream<_CharT, _Traits>& from_stream(basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt,
+        year_month_day& _Ymd, basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr, minutes* _Offset = nullptr) {
+        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset};
+        if (_Istr && !_Time._Make_year_month_day(_Ymd)) {
+            _Istr.setstate(ios_base::failbit);
+        }
+        return _Istr;
+    }
+
+    template <class _CharT, class _Traits, class _Duration, class _Alloc = allocator<_CharT>>
+    basic_istream<_CharT, _Traits>& from_stream(basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt,
+        utc_time<_Duration>& _Tp, basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr,
+        minutes* _Offset = nullptr) {
+        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset};
+        _Duration _Dur;
+        if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_LeapSecondRep::_All)) {
+            _Tp = utc_time<_Duration>{_Dur};
+        } else {
+            _Istr.setstate(ios_base::failbit);
+        }
+        return _Istr;
+    }
+
+    template <class _CharT, class _Traits, class _Duration, class _Alloc = allocator<_CharT>>
+    basic_istream<_CharT, _Traits>& from_stream(basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt,
+        sys_time<_Duration>& _Tp, basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr,
+        minutes* _Offset = nullptr) {
+        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset};
+        _Duration _Dur;
+        if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_LeapSecondRep::_Negative)) {
+            _Tp = sys_time<_Duration>{_Dur};
+        } else {
+            _Istr.setstate(ios_base::failbit);
+        }
+        return _Istr;
+    }
+
+    template <class _CharT, class _Traits, class _Duration, class _Alloc = allocator<_CharT>>
+    basic_istream<_CharT, _Traits>& from_stream(basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt,
+        tai_time<_Duration>& _Tp, basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr,
+        minutes* _Offset = nullptr) {
+        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset};
+        _Duration _Dur;
+        if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_LeapSecondRep::_None)) {
+            _Tp = tai_time<_Duration>{_Dur + _CHRONO duration_cast<_Duration>(days{4383})};
+        } else {
+            _Istr.setstate(ios_base::failbit);
+        }
+        return _Istr;
+    }
+
+    template <class _CharT, class _Traits, class _Duration, class _Alloc = allocator<_CharT>>
+    basic_istream<_CharT, _Traits>& from_stream(basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt,
+        gps_time<_Duration>& _Tp, basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr,
+        chrono::minutes* _Offset = nullptr) {
+        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset};
+        _Duration _Dur;
+        if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_LeapSecondRep::_None)) {
+            _Tp = gps_time<_Duration>{_Dur - _CHRONO duration_cast<_Duration>(days{3657})};
+        } else {
+            _Istr.setstate(ios_base::failbit);
+        }
+        return _Istr;
+    }
+
+    template <class _CharT, class _Traits, class _Duration, class _Alloc = allocator<_CharT>>
+    basic_istream<_CharT, _Traits>& from_stream(basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt,
+        file_time<_Duration>& _Tp, basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr,
+        chrono::minutes* _Offset = nullptr) {
+        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset};
+        _Duration _Dur;
+        if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_LeapSecondRep::_File_time)) {
+            constexpr auto _File_clock_adj{_CHRONO duration_cast<_Duration>(
+                filesystem::_File_time_clock::duration{filesystem::__std_fs_file_time_epoch_adjustment})};
+            _Tp = file_time<_Duration>{_Dur} + _File_clock_adj;
+        } else {
+            _Istr.setstate(ios_base::failbit);
+        }
+        return _Istr;
+    }
+
+    template <class _CharT, class _Traits, class _Duration, class _Alloc = allocator<_CharT>>
+    basic_istream<_CharT, _Traits>& from_stream(basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt,
+        local_time<_Duration>& _Tp, basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr,
+        minutes* _Offset = nullptr) {
+        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset};
+        _Duration _Dur;
+        if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_LeapSecondRep::_None)) {
+            _Tp = local_time<_Duration>{_Dur};
+        } else {
+            _Istr.setstate(ios_base::failbit);
+        }
+        return _Istr;
+    }
+
+    template <class _CharT, class _Traits, class _Alloc, class _Parsable>
+    struct _Time_parse_iomanip {
+        _Time_parse_iomanip(const basic_string<_CharT, _Traits, _Alloc>& _Fmt_, _Parsable& _Tp_,
+            basic_string<_CharT, _Traits, _Alloc>* _Abbrev_ = nullptr, minutes* _Offset_ = nullptr)
+            : _Fmt{_Fmt_}, _Tp{_Tp_}, _Abbrev{_Abbrev_}, _Offset{_Offset_} {}
+
+        const basic_string<_CharT, _Traits, _Alloc>& _Fmt;
+        _Parsable& _Tp;
+        basic_string<_CharT, _Traits, _Alloc>* _Abbrev;
+        minutes* _Offset;
+    };
+
+    // FUNCTION TEMPLATE parse
+    template <class _CharT, class _Traits, class _Alloc, class _Parsable,
+        class = void_t<decltype(_CHRONO from_stream(_STD declval<basic_istream<_CharT, _Traits>&>(),
+            _STD declval<const _CharT*>(), _STD declval<_Parsable&>()))>>
+    _NODISCARD auto parse(const basic_string<_CharT, _Traits, _Alloc>& _Fmt, _Parsable& _Tp) {
+        return _Time_parse_iomanip{_Fmt, _Tp};
+    }
+
+    template <class _CharT, class _Traits, class _Alloc, class _Parsable,
+        class = void_t<decltype(
+            _CHRONO from_stream(_STD declval<basic_istream<_CharT, _Traits>&>(), _STD declval<const _CharT*>(),
+                _STD declval<_Parsable&>(), _STD declval<basic_string<_CharT, _Traits, _Alloc>*>()))>>
+    _NODISCARD auto parse(const basic_string<_CharT, _Traits, _Alloc>& _Fmt, _Parsable& _Tp,
+        basic_string<_CharT, _Traits, _Alloc>& _Abbrev) {
+        return _Time_parse_iomanip{_Fmt, _Tp, _STD addressof(_Abbrev)};
+    }
+
+    template <class _CharT, class _Traits, class _Alloc, class _Parsable,
+        class = void_t<decltype(_CHRONO from_stream(_STD declval<basic_istream<_CharT, _Traits>&>(),
+            _STD declval<const _CharT*>(), _STD declval<_Parsable&>(),
+            _STD declval<basic_string<_CharT, _Traits, _Alloc>*>(), _STD declval<minutes*>()))>>
+    _NODISCARD auto parse(const basic_string<_CharT, _Traits, _Alloc>& _Fmt, _Parsable& _Tp, minutes& _Offset) {
+        return _Time_parse_iomanip{_Fmt, _Tp, static_cast<basic_string<_CharT, _Traits, _Alloc>*>(nullptr), &_Offset};
+    }
+
+    template <class _CharT, class _Traits, class _Alloc, class _Parsable,
+        class = void_t<decltype(_CHRONO from_stream(_STD declval<basic_istream<_CharT, _Traits>&>(),
+            _STD declval<const _CharT*>(), _STD declval<_Parsable&>(),
+            _STD declval<basic_string<_CharT, _Traits, _Alloc>*>(), _STD declval<minutes*>()))>>
+    _NODISCARD auto parse(const basic_string<_CharT, _Traits, _Alloc>& _Fmt, _Parsable& _Tp,
+        basic_string<_CharT, _Traits, _Alloc>& _Abbrev, minutes& _Offset) {
+        return _Time_parse_iomanip{_Fmt, _Tp, _STD addressof(_Abbrev), &_Offset};
+    }
+
+    template <class _CharT, class _Traits, class _Alloc, class _Parsable>
+    basic_istream<_CharT, _Traits>& operator>>(
+        basic_istream<_CharT, _Traits>& _Is, const _Time_parse_iomanip<_CharT, _Traits, _Alloc, _Parsable>& _Tpi) {
+        return _CHRONO from_stream(_Is, _Tpi._Fmt.c_str(), _Tpi._Tp, _Tpi._Abbrev, _Tpi._Offset);
     }
 
 #ifdef __cpp_lib_concepts

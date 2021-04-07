@@ -1,0 +1,31 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+name: Update Status Chart
+on:
+  schedule:
+    - cron: "0 7 * * *"
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout gh-pages
+        uses: actions/checkout@v2
+        with:
+          ref: gh-pages
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: ">=15.12.0"
+      - name: Run gather_stats.js
+        run: |
+          npm ci
+          SECRET_GITHUB_PERSONAL_ACCESS_TOKEN="${{ github.token }}" node gather_stats.js
+      - name: Commit Changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add daily_table.js monthly_table.js
+          git diff-index --quiet HEAD || git commit -m "Automated update."
+          git push origin gh-pages
