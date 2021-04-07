@@ -2215,9 +2215,6 @@ namespace chrono {
 #ifdef __cpp_lib_concepts
     // [time.format]
 
-    enum class _Version { _Abbrev, _Full, _Standard, _Emodifier, _Omodifier, _Us, _Iso };
-    enum class _Us_or_iso { _Us, _Iso };
-
     // clang-format off
     template <class _Ty, class _CharT>
     concept _Chrono_parse_spec_callbacks = requires(_Ty _At, basic_string_view<_CharT> _Sv, _Align _Aln, _Version _Vsn,
