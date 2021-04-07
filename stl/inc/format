@@ -1203,7 +1203,6 @@ private:
     const unsigned char* _Storage = nullptr;
 };
 
-// TODO: test coverage
 // clang-format off
 template <class _Out, class _CharT>
     requires output_iterator<_Out, const _CharT&>
@@ -1236,7 +1235,6 @@ public:
         return _STD move(_OutputIt);
     }
     void advance_to(iterator _It) {
-        // TODO: IDL support probably required
         _OutputIt = _STD move(_It);
     }
 

@@ -1226,9 +1226,14 @@
 #define __cpp_lib_constexpr_vector 201907L
 #endif // defined(__cpp_constexpr_dynamic_alloc) && !defined(__clang__)
 
-#define __cpp_lib_destroying_delete            201806L
-#define __cpp_lib_endian                       201907L
-#define __cpp_lib_erase_if                     202002L
+#define __cpp_lib_destroying_delete 201806L
+#define __cpp_lib_endian            201907L
+#define __cpp_lib_erase_if          202002L
+
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#define __cpp_lib_format 201907L
+#endif // __cpp_lib_format
+
 #define __cpp_lib_generic_unordered_lookup     201811L
 #define __cpp_lib_int_pow2                     202002L
 #define __cpp_lib_integer_comparison_functions 202002L
