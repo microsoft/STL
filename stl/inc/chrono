@@ -2226,7 +2226,8 @@ namespace chrono {
         { _At._On_precision(int{}) } -> same_as<void>;
         { _At._On_dynamic_precision(size_t{}) } -> same_as<void>;
         { _At._On_dynamic_precision(_Auto_id_tag{}) } -> same_as<void>;
-        { _At._On_type(_CharT{}) } -> same_as<void>;
+        { _At._On_conversion_spec(_CharT{}, _CharT{}) } -> same_as<void>;
+        { _At._On_lit_char(_CharT{}) } -> same_as<void>;
     };
     // clang-format on
 
@@ -2293,12 +2294,12 @@ namespace chrono {
                 throw format_error("Invalid type specification.");
             }
 
-            _Chrono_specs _Conv_spec{_Char_mod, _Char_type};
+            _Chrono_specs<_CharT> _Conv_spec{_Char_mod, _Char_type};
             _Specs._Chrono_specs_list.push_back(_Conv_spec);
         }
 
         constexpr void _On_lit_char(_CharT _Lit_ch) {
-            _Chrono_specs _Lit_char_spec{_Lit_ch};
+            _Chrono_specs<_CharT> _Lit_char_spec{_Lit_ch};
             _Specs._Chrono_specs_list.push_back(_Lit_char_spec);
         }
 
@@ -2307,15 +2308,16 @@ namespace chrono {
     };
 
     template <class _CharT, _Chrono_parse_spec_callbacks<_CharT> _Callbacks_type>
-    _NODISCARD constexpr const _CharT* _Parse_conversion_spec(
+    _NODISCARD constexpr const _CharT* _Parse_conversion_specs(
         const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
         ++_Begin; // move past %
+        if (_Begin == _End) {
+            throw format_error("Invalid format string.");
+        }
+
         _CharT _Mod = '\0';
         _CharT _Type;
-        _CharT _Ch = '\0';
-        if (_Begin != _End) {
-            _Ch = *_Begin;
-        }
+        _CharT _Ch = *_Begin;
 
         if (_Ch == 'E' || _Ch == 'O') { // includes modifier
             _Mod = _Ch;
@@ -2326,11 +2328,14 @@ namespace chrono {
         }
 
         _Type = *_Begin;
+        _Callbacks._On_conversion_spec(_Mod, _Type);
+
         return ++_Begin;
     }
 
     template <class _CharT, _Chrono_parse_spec_callbacks<_CharT> _Callbacks_type>
-    constexpr const _CharT* _Parse_chrono_specs(_CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
+    constexpr const _CharT* _Parse_chrono_format_specs(
+        const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
         if (_Begin == _End || *_Begin == '}') {
             return _Begin;
         }
@@ -2352,14 +2357,17 @@ namespace chrono {
             }
         }
 
-        while (_Begin != _End) {
+        // chrono-spec
+        while (_Begin != _End && *_Begin != '}') {
             if (*_Begin == '%') { // conversion-spec
-                _Begin = _Parse_conversion_spec(_Begin, _End, _Callbacks);
+                _Begin = _Parse_conversion_specs(_Begin, _End, _Callbacks);
             } else { // literal-char
                 _Callbacks._On_lit_char(*_Begin);
                 ++_Begin;
             }
         }
+
+        return _Begin;
     }
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX20
