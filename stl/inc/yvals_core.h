@@ -165,7 +165,7 @@
 // P0608R3 Improving variant's Converting Constructor/Assignment
 // P0616R0 Using move() In <numeric>
 // P0631R8 <numbers> Math Constants
-// P0645R10 <format> text formatting
+// P0645R10 <format> Text Formatting
 // P0646R1 list/forward_list remove()/remove_if()/unique() Return size_type
 // P0653R2 to_address()
 // P0655R1 visit<R>()
