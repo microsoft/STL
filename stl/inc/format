@@ -1302,7 +1302,7 @@ _NODISCARD constexpr size_t _Get_format_arg_type_storage_size(_Basic_format_arg_
 }
 
 template <class _CharT, class _OutputIt>
-_NODISCARD _OutputIt _Write(_OutputIt _Out, monostate) {
+_NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, monostate) {
     _STL_INTERNAL_CHECK(false);
     return _Out;
 }
@@ -1316,30 +1316,30 @@ inline constexpr size_t _Format_min_buffer_length = 24;
 // clang-format off
 template <class _CharT, class _OutputIt, class _Arithmetic>
     requires(is_arithmetic_v<_Arithmetic> && !_CharT_or_bool<_Arithmetic, _CharT>)
-_NODISCARD _OutputIt _Write(_OutputIt _Out, const _Arithmetic _Value);
+_NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const _Arithmetic _Value);
 // clang-format on
 
 template <class _CharT, class _OutputIt>
-_NODISCARD _OutputIt _Write(_OutputIt _Out, const bool _Value);
+_NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const bool _Value);
 
 template <class _CharT, class _OutputIt>
-_NODISCARD _OutputIt _Write(_OutputIt _Out, const _CharT _Value);
+_NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const _CharT _Value);
 
 template <class _CharT, class _OutputIt>
-_NODISCARD _OutputIt _Write(_OutputIt _Out, const void* const _Value);
+_NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const void* const _Value);
 
 template <class _CharT, class _OutputIt>
-_NODISCARD _OutputIt _Write(_OutputIt _Out, const _CharT* _Value);
+_NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const _CharT* _Value);
 
 template <class _CharT, class _OutputIt>
-_NODISCARD _OutputIt _Write(_OutputIt _Out, const basic_string_view<_CharT> _Value);
+_NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const basic_string_view<_CharT> _Value);
 
 #pragma warning(push)
 #pragma warning(disable : 4365) // 'argument': conversion from 'char' to 'const wchar_t', signed/unsigned mismatch
 // clang-format off
 template <class _CharT, class _OutputIt, class _Arithmetic>
     requires (is_arithmetic_v<_Arithmetic> && !_CharT_or_bool<_Arithmetic, _CharT>)
-_NODISCARD _OutputIt _Write(_OutputIt _Out, const _Arithmetic _Value) {
+_NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const _Arithmetic _Value) {
     // clang-format on
     // TRANSITION, Reusable buffer
     array<char, _Format_min_buffer_length> _Buffer;
@@ -1350,16 +1350,16 @@ _NODISCARD _OutputIt _Write(_OutputIt _Out, const _Arithmetic _Value) {
 #pragma warning(pop)
 
 template <class _CharT, class _OutputIt>
-_NODISCARD _OutputIt _Write(_OutputIt _Out, const bool _Value) {
+_NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const bool _Value) {
     if constexpr (is_same_v<_CharT, wchar_t>) {
-        return _Write(_STD move(_Out), _Value ? L"true" : L"false");
+        return _Fmt_write(_STD move(_Out), _Value ? L"true" : L"false");
     } else {
-        return _Write(_STD move(_Out), _Value ? "true" : "false");
+        return _Fmt_write(_STD move(_Out), _Value ? "true" : "false");
     }
 }
 
 template <class _CharT, class _OutputIt>
-_NODISCARD _OutputIt _Write(_OutputIt _Out, const _CharT _Value) {
+_NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const _CharT _Value) {
     *_Out++ = _Value;
     return _Out;
 }
@@ -1367,7 +1367,7 @@ _NODISCARD _OutputIt _Write(_OutputIt _Out, const _CharT _Value) {
 #pragma warning(push)
 #pragma warning(disable : 4365) // 'argument': conversion from 'char' to 'const wchar_t', signed/unsigned mismatch
 template <class _CharT, class _OutputIt>
-_NODISCARD _OutputIt _Write(_OutputIt _Out, const void* const _Value) {
+_NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const void* const _Value) {
     // TRANSITION, Reusable buffer
     array<char, _Format_min_buffer_length> _Buffer;
     const auto [_End, _Ec] =
@@ -1380,7 +1380,7 @@ _NODISCARD _OutputIt _Write(_OutputIt _Out, const void* const _Value) {
 #pragma warning(pop)
 
 template <class _CharT, class _OutputIt>
-_NODISCARD _OutputIt _Write(_OutputIt _Out, const _CharT* _Value) {
+_NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const _CharT* _Value) {
     if (!_Value) {
         throw format_error("String pointer is null.");
     }
@@ -1391,7 +1391,7 @@ _NODISCARD _OutputIt _Write(_OutputIt _Out, const _CharT* _Value) {
 }
 
 template <class _CharT, class _OutputIt>
-_NODISCARD _OutputIt _Write(_OutputIt _Out, const basic_string_view<_CharT> _Value) {
+_NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const basic_string_view<_CharT> _Value) {
     return _RANGES _Copy_unchecked(_Value.begin(), _Value.end(), _STD move(_Out)).out;
 }
 
@@ -1540,7 +1540,7 @@ _NODISCARD _OutputIt _Write_separated_integer(const char* _Start, const char* co
 }
 
 template <class _CharT, class _OutputIt>
-_NODISCARD _OutputIt _Write(_OutputIt _Out, monostate, const _Basic_format_specs<_CharT>&, locale) {
+_NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, monostate, const _Basic_format_specs<_CharT>&, locale) {
     _STL_INTERNAL_CHECK(false);
     return _Out;
 }
@@ -1552,30 +1552,31 @@ _NODISCARD _OutputIt _Write_integral(
 // clang-format off
 template <class _CharT, class _OutputIt, integral _Integral>
         requires(!_CharT_or_bool<_Integral, _CharT>)
-_NODISCARD _OutputIt _Write(
+_NODISCARD _OutputIt _Fmt_write(
     _OutputIt _Out, const _Integral _Value, const _Basic_format_specs<_CharT>& _Specs, locale _Locale);
 // clang-format on
 
 template <class _CharT, class _OutputIt>
-_NODISCARD _OutputIt _Write(_OutputIt _Out, const bool _Value, _Basic_format_specs<_CharT> _Specs, locale _Locale);
+_NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const bool _Value, _Basic_format_specs<_CharT> _Specs, locale _Locale);
 
 template <class _CharT, class _OutputIt>
-_NODISCARD _OutputIt _Write(_OutputIt _Out, const _CharT _Value, _Basic_format_specs<_CharT> _Specs, locale _Locale);
+_NODISCARD _OutputIt _Fmt_write(
+    _OutputIt _Out, const _CharT _Value, _Basic_format_specs<_CharT> _Specs, locale _Locale);
 
 template <class _CharT, class _OutputIt, floating_point _Float>
-_NODISCARD _OutputIt _Write(
+_NODISCARD _OutputIt _Fmt_write(
     _OutputIt _Out, const _Float _Value, const _Basic_format_specs<_CharT>& _Specs, locale _Locale);
 
 template <class _CharT, class _OutputIt>
-_NODISCARD _OutputIt _Write(
+_NODISCARD _OutputIt _Fmt_write(
     _OutputIt _Out, const void* const _Value, const _Basic_format_specs<_CharT>& _Specs, locale);
 
 template <class _CharT, class _OutputIt>
-_NODISCARD _OutputIt _Write(
+_NODISCARD _OutputIt _Fmt_write(
     _OutputIt _Out, const _CharT* _Value, const _Basic_format_specs<_CharT>& _Specs, locale _Locale);
 
 template <class _CharT, class _OutputIt>
-_NODISCARD _OutputIt _Write(
+_NODISCARD _OutputIt _Fmt_write(
     _OutputIt _Out, const basic_string_view<_CharT> _Value, const _Basic_format_specs<_CharT>& _Specs, locale);
 
 #pragma warning(push)
@@ -1588,7 +1589,7 @@ _NODISCARD _OutputIt _Write_integral(
             throw format_error("integral cannot be stored in charT");
         }
         _Specs._Alt = false;
-        return _Write(_STD move(_Out), static_cast<_CharT>(_Value), _Specs, _Locale);
+        return _Fmt_write(_STD move(_Out), static_cast<_CharT>(_Value), _Specs, _Locale);
     }
 
     if (_Specs._Precision != -1) {
@@ -1686,14 +1687,14 @@ _NODISCARD _OutputIt _Write_integral(
 // clang-format off
 template <class _CharT, class _OutputIt, integral _Integral>
     requires (!_CharT_or_bool<_Integral, _CharT>)
-_NODISCARD _OutputIt _Write(
+_NODISCARD _OutputIt _Fmt_write(
     _OutputIt _Out, const _Integral _Value, const _Basic_format_specs<_CharT>& _Specs, locale _Locale) {
     // clang-format on
     return _Write_integral(_STD move(_Out), _Value, _Specs, _Locale);
 }
 
 template <class _CharT, class _OutputIt>
-_NODISCARD _OutputIt _Write(_OutputIt _Out, const bool _Value, _Basic_format_specs<_CharT> _Specs, locale _Locale) {
+_NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const bool _Value, _Basic_format_specs<_CharT> _Specs, locale _Locale) {
     if (_Specs._Type != '\0' && _Specs._Type != 's') {
         return _Write_integral(_STD move(_Out), static_cast<unsigned char>(_Value), _Specs, _Locale);
     }
@@ -1704,21 +1705,22 @@ _NODISCARD _OutputIt _Write(_OutputIt _Out, const bool _Value, _Basic_format_spe
 
     if (_Specs._Localized) {
         _Specs._Localized = false;
-        return _Write(_STD move(_Out),
+        return _Fmt_write(_STD move(_Out),
             _Value ? static_cast<basic_string_view<_CharT>>(_STD use_facet<numpunct<_CharT>>(_Locale).truename())
                    : static_cast<basic_string_view<_CharT>>(_STD use_facet<numpunct<_CharT>>(_Locale).falsename()),
             _Specs, _Locale);
     }
 
     if constexpr (is_same_v<_CharT, wchar_t>) {
-        return _Write(_STD move(_Out), _Value ? L"true" : L"false", _Specs, _Locale);
+        return _Fmt_write(_STD move(_Out), _Value ? L"true" : L"false", _Specs, _Locale);
     } else {
-        return _Write(_STD move(_Out), _Value ? "true" : "false", _Specs, _Locale);
+        return _Fmt_write(_STD move(_Out), _Value ? "true" : "false", _Specs, _Locale);
     }
 }
 
 template <class _CharT, class _OutputIt>
-_NODISCARD _OutputIt _Write(_OutputIt _Out, const _CharT _Value, _Basic_format_specs<_CharT> _Specs, locale _Locale) {
+_NODISCARD _OutputIt _Fmt_write(
+    _OutputIt _Out, const _CharT _Value, _Basic_format_specs<_CharT> _Specs, locale _Locale) {
     if (_Specs._Type != '\0' && _Specs._Type != 'c') {
         return _Write_integral(_STD move(_Out), _Value, _Specs, _Locale);
     }
@@ -1729,13 +1731,13 @@ _NODISCARD _OutputIt _Write(_OutputIt _Out, const _CharT _Value, _Basic_format_s
 
     // Clear the type so that the string_view writer doesn't fail on 'c'.
     _Specs._Type = '\0';
-    return _Write(_STD move(_Out), basic_string_view<_CharT>{&_Value, 1}, _Specs, _Locale);
+    return _Fmt_write(_STD move(_Out), basic_string_view<_CharT>{&_Value, 1}, _Specs, _Locale);
 }
 
 #pragma warning(push)
 #pragma warning(disable : 4365) // 'argument': conversion from 'char' to 'const wchar_t', signed/unsigned mismatch
 template <class _CharT, class _OutputIt, floating_point _Float>
-_NODISCARD _OutputIt _Write(
+_NODISCARD _OutputIt _Fmt_write(
     _OutputIt _Out, const _Float _Value, const _Basic_format_specs<_CharT>& _Specs, locale _Locale) {
     auto _Sgn = _Specs._Sgn;
     if (_Sgn == _Sign::_None) {
@@ -1932,7 +1934,7 @@ _NODISCARD _OutputIt _Write(
 #pragma warning(pop)
 
 template <class _CharT, class _OutputIt>
-_NODISCARD _OutputIt _Write(
+_NODISCARD _OutputIt _Fmt_write(
     _OutputIt _Out, const void* const _Value, const _Basic_format_specs<_CharT>& _Specs, locale) {
     if (_Specs._Type != '\0' && _Specs._Type != 'p') {
         throw format_error("invalid const void* type");
@@ -1970,17 +1972,17 @@ _NODISCARD _OutputIt _Write(
     }
 
     return _Write_aligned(_STD move(_Out), _Width, _Specs, _Align::_Left,
-        [=](_OutputIt _Out) { return _Write<_CharT>(_STD move(_Out), _Value); });
+        [=](_OutputIt _Out) { return _Fmt_write<_CharT>(_STD move(_Out), _Value); });
 }
 
 template <class _CharT, class _OutputIt>
-_NODISCARD _OutputIt _Write(
+_NODISCARD _OutputIt _Fmt_write(
     _OutputIt _Out, const _CharT* _Value, const _Basic_format_specs<_CharT>& _Specs, locale _Locale) {
-    return _Write(_STD move(_Out), basic_string_view<_CharT>{_Value}, _Specs, _Locale);
+    return _Fmt_write(_STD move(_Out), basic_string_view<_CharT>{_Value}, _Specs, _Locale);
 }
 
 template <class _CharT, class _OutputIt>
-_NODISCARD _OutputIt _Write(
+_NODISCARD _OutputIt _Fmt_write(
     _OutputIt _Out, const basic_string_view<_CharT> _Value, const _Basic_format_specs<_CharT>& _Specs, locale) {
     if (_Specs._Type != '\0' && _Specs._Type != 's') {
         throw format_error("invalid string type");
@@ -2009,7 +2011,7 @@ _NODISCARD _OutputIt _Write(
     }
 
     return _Write_aligned(_STD move(_Out), _Printed_size, _Specs, _Align::_Left, [=](_OutputIt _Out) {
-        return _Write(_STD move(_Out), _Value.substr(size_t{0}, static_cast<size_t>(_Printed_size)));
+        return _Fmt_write(_STD move(_Out), _Value.substr(size_t{0}, static_cast<size_t>(_Printed_size)));
     });
 }
 
@@ -2027,7 +2029,7 @@ struct _Default_arg_formatter {
 
     template <class _Ty>
     _OutputIt operator()(_Ty _Val) && {
-        return _Write<_CharT>(_STD move(_Out), _Val);
+        return _Fmt_write<_CharT>(_STD move(_Out), _Val);
     }
 
     _OutputIt operator()(typename basic_format_arg<_Context>::handle _Handle) && {
@@ -2056,7 +2058,7 @@ struct _Arg_formatter {
     _OutputIt operator()(_Ty _Val) {
         _STL_INTERNAL_CHECK(_Specs);
         _STL_INTERNAL_CHECK(_Ctx);
-        return _Write(_Ctx->out(), _Val, *_Specs, _Ctx->locale());
+        return _Fmt_write(_Ctx->out(), _Val, *_Specs, _Ctx->locale());
     }
 };
 
