@@ -132,13 +132,13 @@ constexpr bool test_parse_conversion_spec() {
     view_typ s2(TYPED_LITERAL(CharT, "%Od"));
     view_typ s3(TYPED_LITERAL(CharT, "%E"));
 
-    vector<_Chrono_specs<CharT>> v0{_Chrono_specs<CharT>{'\0', 'B'}};
+    vector<_Chrono_specs<CharT>> v0{{._Type = 'B'}};
     test_parse_helper(parse_conv_spec_fn, s0, false, view_typ::npos, {.expected_chrono_specs = v0});
 
-    vector<_Chrono_specs<CharT>> v1{_Chrono_specs<CharT>{'E', 'c'}};
+    vector<_Chrono_specs<CharT>> v1{{._Modifier = 'E', ._Type = 'c'}};
     test_parse_helper(parse_conv_spec_fn, s1, false, view_typ::npos, {.expected_chrono_specs = v1});
 
-    vector<_Chrono_specs<CharT>> v2{_Chrono_specs<CharT>{'O', 'd'}};
+    vector<_Chrono_specs<CharT>> v2{{._Modifier = 'O', ._Type = 'd'}};
     test_parse_helper(parse_conv_spec_fn, s2, false, view_typ::npos, {.expected_chrono_specs = v2});
 
     if (!is_constant_evaluated()) {
@@ -161,29 +161,27 @@ constexpr bool test_parse_chrono_format_specs() {
     view_typ s4(TYPED_LITERAL(CharT, "*<6hi"));
     view_typ s5(TYPED_LITERAL(CharT, "*^4.4%ymm"));
 
-    vector<_Chrono_specs<CharT>> v0{_Chrono_specs<CharT>{'O', 'e'}};
+    vector<_Chrono_specs<CharT>> v0{{._Modifier = 'O', ._Type = 'e'}};
     test_parse_helper(parse_chrono_format_specs, s0, false, s0.size(), {.expected_chrono_specs = v0});
 
-    vector<_Chrono_specs<CharT>> v1{_Chrono_specs<CharT>{'l'}, _Chrono_specs<CharT>{'i'}, _Chrono_specs<CharT>{'t'}};
+    vector<_Chrono_specs<CharT>> v1{{._Lit_char = 'l'}, {._Lit_char = 'i'}, {._Lit_char = 't'}};
     test_parse_helper(parse_chrono_format_specs, s1, false, s1.size(), {.expected_chrono_specs = v1});
 
-    vector<_Chrono_specs<CharT>> v2{
-        _Chrono_specs<CharT>{'\0', 'H'}, _Chrono_specs<CharT>{':'}, _Chrono_specs<CharT>{'\0', 'M'}};
+    vector<_Chrono_specs<CharT>> v2{{._Type = 'H'}, {._Lit_char = ':'}, {._Type = 'M'}};
     test_parse_helper(parse_chrono_format_specs, s2, false, s2.size() - 1, {.expected_chrono_specs = v2});
 
-    vector<_Chrono_specs<CharT>> v3{_Chrono_specs<CharT>{'\0', 'H'}};
+    vector<_Chrono_specs<CharT>> v3{{._Type = 'H'}};
     test_parse_helper(
         parse_chrono_format_specs, s3, false, s3.size() - 1, {.expected_width = 6, .expected_chrono_specs = v3});
 
-    vector<_Chrono_specs<CharT>> v4{_Chrono_specs<CharT>{'h'}, _Chrono_specs<CharT>{'i'}};
+    vector<_Chrono_specs<CharT>> v4{{._Lit_char = 'h'}, {._Lit_char = 'i'}};
     test_parse_helper(parse_chrono_format_specs, s4, false, s4.size(),
         {.expected_alignment       = _Align::_Left,
             .expected_fill         = view_typ(TYPED_LITERAL(CharT, "*")),
             .expected_width        = 6,
             .expected_chrono_specs = v4});
 
-    vector<_Chrono_specs<CharT>> v5{
-        _Chrono_specs<CharT>{'\0', 'y'}, _Chrono_specs<CharT>{'m'}, _Chrono_specs<CharT>{'m'}};
+    vector<_Chrono_specs<CharT>> v5{{._Type = 'y'}, {._Lit_char = 'm'}, {._Lit_char = 'm'}};
     test_parse_helper(parse_chrono_format_specs, s5, false, s5.size(),
         {.expected_alignment       = _Align::_Center,
             .expected_fill         = view_typ(TYPED_LITERAL(CharT, "*")),

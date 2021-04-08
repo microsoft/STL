@@ -5201,10 +5201,6 @@ namespace chrono {
         _CharT _Lit_char = _CharT{0}; // any char other than {, }, %
         char _Modifier   = '\0'; // either E or O
         char _Type       = '\0';
-
-        // explicit constexpr _Chrono_specs(char _Modifier_, char _Type_) : _Modifier(_Modifier_), _Type(_Type_) {}
-
-        // explicit constexpr _Chrono_specs(_CharT _Lit_char_) : _Lit_char(_Lit_char_) {}
     };
 
     template <class _CharT>
