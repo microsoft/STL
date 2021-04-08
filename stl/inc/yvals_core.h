@@ -165,6 +165,7 @@
 // P0608R3 Improving variant's Converting Constructor/Assignment
 // P0616R0 Using move() In <numeric>
 // P0631R8 <numbers> Math Constants
+// P0645R10 <format> text formatting
 // P0646R1 list/forward_list remove()/remove_if()/unique() Return size_type
 // P0653R2 to_address()
 // P0655R1 visit<R>()
@@ -1232,7 +1233,7 @@
 
 #ifdef __cpp_lib_concepts // TRANSITION, GH-395
 #define __cpp_lib_format 201907L
-#endif // __cpp_lib_format
+#endif // __cpp_lib_concepts
 
 #define __cpp_lib_generic_unordered_lookup     201811L
 #define __cpp_lib_int_pow2                     202002L
