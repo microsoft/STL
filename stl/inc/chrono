@@ -5205,9 +5205,11 @@ namespace chrono {
 
     template <class _CharT>
     struct _Chrono_format_specs {
-        int _Width        = 0;
-        int _Precision    = -1;
-        _Align _Alignment = _Align::_None;
+        int _Width                   = 0;
+        int _Precision               = -1;
+        int _Dynamic_width_index     = -1;
+        int _Dynamic_precision_index = -1;
+        _Align _Alignment            = _Align::_None;
         // At most one codepoint (so one char32_t or four utf-8 char8_t)
         _CharT _Fill[4] = {' ', _CharT{0}, _CharT{0}, _CharT{0}};
         // recursive definition in grammar, so could have anu number of these with literal chars
