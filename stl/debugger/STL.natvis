@@ -802,7 +802,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
   <Type Name="std::chrono::month_day_last">
-      <DisplayString>Last {_Month}</DisplayString>
+      <DisplayString>Last day of {_Month}</DisplayString>
       <Expand>
         <Item Name="[month]">_Month</Item>
       </Expand>
@@ -842,7 +842,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
   <Type Name="std::chrono::year_month_day_last">
-      <DisplayString>Last day of {_Month_day_last._Month}, {_Year}</DisplayString>
+      <DisplayString>{_Month_day_last}, {_Year}</DisplayString>
       <Expand>
         <Item Name="[year]">_Year</Item>
         <Item Name="[month]">_Month_day_last._Month</Item>
