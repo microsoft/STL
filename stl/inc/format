@@ -68,14 +68,6 @@ struct _Auto_id_tag {};
 
 // clang-format off
 template <class _Ty, class _CharT>
-concept _Parse_spec_callbacks = requires(_Ty _At, basic_string_view<_CharT> _Sv, _Align _Aln, _Sign _Sgn) {
-    { _At._On_sign(_Sgn) } -> same_as<void>;
-    { _At._On_hash() } -> same_as<void>;
-    { _At._On_zero() } -> same_as<void>;
-    { _At._On_localized() } -> same_as<void>;
-    { _At._On_type(_CharT{}) } -> same_as<void>;
-};
-template <class _Ty, class _CharT>
 concept _Parse_arg_id_callbacks = requires(_Ty _At) {
     { _At._On_auto_id() } -> same_as<void>;
     { _At._On_manual_id(size_t{}) } -> same_as<void>;
@@ -115,6 +107,20 @@ template <class _Ty, class _CharT>
 concept _Precision_adapter_callbacks = requires(_Ty _At) {
     { _At._On_dynamic_precision(_Auto_id_tag{}) } -> same_as<void>;
     { _At._On_dynamic_precision(size_t{}) } -> same_as<void>;
+};
+
+template <class _Ty, class _CharT>
+concept _Parse_spec_callbacks = _Parse_align_callbacks<_Ty, _CharT> &&
+                                _Parse_width_callbacks<_Ty, _CharT> &&
+                                _Parse_precision_callbacks<_Ty, _CharT> &&
+                                _Width_adapter_callbacks<_Ty, _CharT> &&
+                                _Precision_adapter_callbacks<_Ty, _CharT> &&
+                                requires(_Ty _At, basic_string_view<_CharT> _Sv, _Align _Aln, _Sign _Sgn) {
+                                    { _At._On_sign(_Sgn) } -> same_as<void>;
+                                    { _At._On_hash() } -> same_as<void>;
+                                    { _At._On_zero() } -> same_as<void>;
+                                    { _At._On_localized() } -> same_as<void>;
+                                    { _At._On_type(_CharT{}) } -> same_as<void>;
 };
 
 template <class _Ty, class _CharT>

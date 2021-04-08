@@ -37,20 +37,6 @@ struct choose_literal<wchar_t> {
 #define TYPED_LITERAL(CharT, Literal) (choose_literal<CharT>::choose(Literal, L##Literal))
 
 template <typename CharT>
-struct noop_testing_callbacks {
-    constexpr void _On_align(_Align) {}
-    constexpr void _On_fill(basic_string_view<CharT>) {}
-    constexpr void _On_width(unsigned int) {}
-    constexpr void _On_dynamic_width(size_t) {}
-    constexpr void _On_dynamic_width(_Auto_id_tag) {}
-    constexpr void _On_precision(unsigned int) {}
-    constexpr void _On_dynamic_precision(size_t) {}
-    constexpr void _On_dynamic_precision(_Auto_id_tag) {}
-    constexpr void _On_conversion_spec(CharT) {}
-    constexpr void _On_lit_char(CharT) {}
-};
-
-template <typename CharT>
 struct testing_callbacks {
     _Align expected_alignment = _Align::_None;
     basic_string_view<CharT> expected_fill;
