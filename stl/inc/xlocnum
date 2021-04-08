@@ -267,7 +267,7 @@ __PURE_APPDOMAIN_GLOBAL locale::id numpunct<_Elem>::id;
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif // __clang__
-#endif // !(defined _CRTBLD && (defined _BUILDING_SATELLITE_2 || defined _BUILDING_SATELLITE_1 || defined
+#endif // !(defined _CRTBLD && (defined _BUILDING_SATELLITE_ATOMIC_WAIT || defined _BUILDING_SATELLITE_1 || defined
        // _BUILDING_SATELLITE_2))
 
 // CLASS TEMPLATE num_get

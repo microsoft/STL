@@ -423,7 +423,7 @@ _NODISCARD constexpr const _CharT* _Parse_align(
     return _Begin;
 }
 
-// Adapts a type modeling _Parse_spec_callbacks to model _Parse_arg_id_callbacks.
+// Adapts a type modeling _Width_adapter_callbacks to model _Parse_arg_id_callbacks.
 // Used in _Parse_width so that _Parse_arg_id can be used to parse dynamic widths.
 template <class _CharT, _Width_adapter_callbacks<_CharT> _Callbacks_type>
 struct _Width_adapter {
@@ -439,7 +439,7 @@ struct _Width_adapter {
     }
 };
 
-// Adapts a type modeling _Parse_spec_callbacks to model _Parse_arg_id_callbacks.
+// Adapts a type modeling _Precision_adapter_callbacks to model _Parse_arg_id_callbacks.
 // Used in _Parse_precision so that _Parse_arg_id can be used to parse dynamic precisions.
 template <class _CharT, _Precision_adapter_callbacks<_CharT> _Callbacks_type>
 struct _Precision_adapter {
