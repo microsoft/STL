@@ -475,7 +475,7 @@ void test_fill_and_align() {
 }
 
 template <class charT, class integral>
-void test_intergal_specs() {
+void test_integral_specs() {
     assert(format(STR("{:}"), integral{0}) == STR("0"));
 
     // Sign
@@ -900,10 +900,10 @@ void test_string_specs() {
 
 template <class charT>
 void test_spec_replacement_field() {
-    test_intergal_specs<charT, int>();
-    test_intergal_specs<charT, unsigned int>();
-    test_intergal_specs<charT, long long>();
-    test_intergal_specs<charT, unsigned long long>();
+    test_integral_specs<charT, int>();
+    test_integral_specs<charT, unsigned int>();
+    test_integral_specs<charT, long long>();
+    test_integral_specs<charT, unsigned long long>();
     test_bool_specs<charT>();
     test_char_specs<charT>();
     test_float_specs<charT, float>();
@@ -953,6 +953,34 @@ void test_size() {
     test_size_helper<charT>(8, STR("{:8}"), STR("scully"));
 }
 
+void test_multibyte_format_strings() {
+    {
+        setlocale(LC_ALL, ".932");
+        const auto s =
+            "\x93\xfa\x96{\x92\x6e\x90}"sv; // Note the use of `{` and `}` as continuation bytes (from GH-1576)
+        assert(format(s) == s);
+    }
+
+#ifndef MSVC_INTERNAL_TESTING // TRANSITION, Windows on Contest VMs understand ".UTF-8" codepage
+    {
+        setlocale(LC_ALL, ".UTF-8");
+        // Filling with footballs:
+        assert(format("{:\xf0\x9f\x8f\x88>4}"sv, 42) == "\xf0\x9f\x8f\x88\xf0\x9f\x8f\x88\x34\x32");
+    }
+
+    {
+        setlocale(LC_ALL, ".UTF-8");
+        try {
+            (void) format("{:\x9f\x8f\x88<10}"sv, 42); // Bad fill character encoding: missing lead byte before \x9f
+            assert(false);
+        } catch (const format_error&) {
+        }
+    }
+#endif // MSVC_INTERNAL_TESTING
+
+    setlocale(LC_ALL, nullptr);
+}
+
 int main() {
     test_simple_formatting<char>();
     test_simple_formatting<wchar_t>();
@@ -974,6 +1002,8 @@ int main() {
 
     test_size<char>();
     test_size<wchar_t>();
+
+    test_multibyte_format_strings();
 
     return 0;
 }

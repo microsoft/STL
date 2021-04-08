@@ -21,24 +21,7 @@ constexpr auto get_input() {
 }
 
 template <class CharType>
-constexpr bool ensure_is_constant_expression(const bool should_be_constant_expression) {
-    basic_format_parse_context<CharType> context{get_input<CharType>(), 1};
-    if (should_be_constant_expression) {
-        context.check_arg_id(0);
-    } else {
-        context.check_arg_id(1);
-    }
-
-    return is_constant_evaluated();
-}
-
-const bool check_arg_id_is_constexpr_char   = ensure_is_constant_expression<char>(true);
-const bool check_arg_id_not_constexpr_char  = !ensure_is_constant_expression<char>(false);
-const bool check_arg_id_is_constexpr_wchar  = ensure_is_constant_expression<wchar_t>(true);
-const bool check_arg_id_not_constexpr_wchar = !ensure_is_constant_expression<wchar_t>(false);
-
-template <class CharType>
-constexpr bool test_basic_format_parse_context() {
+bool test_basic_format_parse_context() {
     static_assert(!is_copy_constructible_v<basic_format_parse_context<CharType>>);
     static_assert(!is_copy_assignable_v<basic_format_parse_context<CharType>>);
 
@@ -99,11 +82,4 @@ constexpr bool test_basic_format_parse_context() {
 int main() {
     test_basic_format_parse_context<char>();
     test_basic_format_parse_context<wchar_t>();
-    static_assert(test_basic_format_parse_context<char>());
-    static_assert(test_basic_format_parse_context<wchar_t>());
-
-    assert(check_arg_id_is_constexpr_char);
-    assert(check_arg_id_not_constexpr_char);
-    assert(check_arg_id_is_constexpr_wchar);
-    assert(check_arg_id_not_constexpr_wchar);
 }

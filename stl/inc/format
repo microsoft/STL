@@ -117,24 +117,25 @@ public:
     using const_iterator = typename basic_string_view<_CharT>::const_iterator;
     using iterator       = const_iterator;
 
-    constexpr explicit basic_format_parse_context(basic_string_view<_CharT> _Fmt, size_t _Num_args_ = 0) noexcept
+    explicit basic_format_parse_context(basic_string_view<_CharT> _Fmt, size_t _Num_args_ = 0) noexcept
         : _Format_string(_Fmt), _Num_args(_Num_args_) {}
+
     basic_format_parse_context(const basic_format_parse_context&) = delete;
     basic_format_parse_context& operator=(const basic_format_parse_context&) = delete;
 
-    _NODISCARD constexpr const_iterator begin() const noexcept {
+    _NODISCARD const_iterator begin() const noexcept {
         return _Format_string.begin();
     }
-    _NODISCARD constexpr const_iterator end() const noexcept {
+    _NODISCARD const_iterator end() const noexcept {
         return _Format_string.end();
     }
-    _NODISCARD constexpr const _CharT* _Unchecked_begin() const noexcept {
+    _NODISCARD const _CharT* _Unchecked_begin() const noexcept {
         return _Format_string._Unchecked_begin();
     }
-    _NODISCARD constexpr const _CharT* _Unchecked_end() const noexcept {
+    _NODISCARD const _CharT* _Unchecked_end() const noexcept {
         return _Format_string._Unchecked_end();
     }
-    constexpr void advance_to(const const_iterator _It) {
+    void advance_to(const const_iterator _It) {
         _Adl_verify_range(_It, _Format_string.end());
         // _It must be after _Format_string.begin().
         const auto _Diff = static_cast<size_t>(_It._Unwrapped() - _Format_string._Unchecked_begin());
@@ -146,7 +147,7 @@ public:
     // _Next_arg_id > 0 means automatic
     // _Next_arg_id == 0 means unknown
     // _Next_arg_id < 0 means manual
-    _NODISCARD constexpr size_t next_arg_id() {
+    _NODISCARD size_t next_arg_id() {
         if (_Next_arg_id < 0) {
             throw format_error("Can not switch from manual to automatic indexing");
         }
@@ -154,7 +155,7 @@ public:
         return static_cast<size_t>(_Next_arg_id++);
     }
 
-    constexpr void check_arg_id(const size_t _Id) {
+    void check_arg_id(const size_t _Id) {
         if (_STD is_constant_evaluated()) {
             if (_Id >= _Num_args) {
                 _You_see_this_error_because_arg_id_is_out_of_range();
@@ -359,15 +360,98 @@ _NODISCARD constexpr const _CharT* _Parse_arg_id(
     throw format_error("Invalid format string.");
 }
 
+inline int _Code_units_in_next_character(const char* _First, const char* _Last, const _Cvtvec& _Cvt) {
+    _STL_INTERNAL_CHECK(_First < _Last);
+
+    switch (_Cvt._Mbcurmax) {
+    default:
+        _ASSERTE(!"Bad number of encoding units for this code page");
+        [[fallthrough]];
+    case 1:
+        return 1;
+
+    case 2:
+        {
+            wchar_t _Wide;
+            mbstate_t _St{};
+            const auto _Len   = static_cast<size_t>(_Last - _First);
+            const int _Result = _Mbrtowc(&_Wide, _First, _Len, &_St, &_Cvt);
+            if (_Result > 0) {
+                return _Result;
+            } else if (_Result < 0) { // invalid or incomplete encoded character
+                return -1;
+            } else { // next code unit is '\0'
+                return 1;
+            }
+        }
+
+    case 4: // Assume UTF-8 (as does _Mbrtowc)
+        {
+            const auto _Ch = static_cast<unsigned char>(*_First);
+            if (_Ch < 0b1000'0000) {
+                return 1;
+            }
+
+            const auto _Len = static_cast<size_t>(_Last - _First);
+
+            if (_Ch < 0b1110'0000) {
+                if (_Ch >= 0b1100'0000 && _Len >= 2) {
+                    return 2;
+                }
+
+                // non-lead byte or partial code unit
+                return -1;
+            }
+
+            if (_Ch < 0b1111'0000) {
+                if (_Len >= 3) {
+                    return 3;
+                }
+
+                // partial code unit
+                return -1;
+            }
+
+            if (_Len >= 4) {
+                return 4;
+            }
+
+            // partial code unit
+            return -1;
+        }
+    }
+}
+
+inline int _Code_units_in_next_character(const wchar_t* _First, const wchar_t* _Last, const _Cvtvec&) {
+    _STL_INTERNAL_CHECK(_First < _Last);
+
+    if (*_First < 0xD800u || *_First >= 0xE000u) {
+        return 1;
+    }
+
+    if (*_First >= 0xDC00u) { // unpaired low surrogate
+        return -1;
+    }
+
+    if (++_First == _Last || *_First < 0xDC00u || *_First >= 0xE000u) { // unpaired high surrogate
+        return -1;
+    }
+
+    return 2; // surrogate pair
+}
+
 template <class _CharT, _Parse_spec_callbacks<_CharT> _Callbacks_type>
-_NODISCARD constexpr const _CharT* _Parse_align(
-    const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
+_NODISCARD const _CharT* _Parse_align(const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
     _STL_INTERNAL_CHECK(_Begin != _End && *_Begin != '}');
     // align and fill
     auto _Parsed_align = _Align::_None;
 
-    // TODO: should increment one code point
-    auto _Align_pt = _Begin + 1;
+    const _Cvtvec& _Cvt = ::_Getcvt();
+    const int _Units    = _Code_units_in_next_character(_Begin, _End, _Cvt);
+    if (_Units < 0) { // invalid fill character encoding
+        throw format_error("Invalid format string.");
+    }
+    auto _Align_pt = _Begin + _Units;
     if (_Align_pt == _End) {
         _Align_pt = _Begin;
     }
@@ -443,6 +527,7 @@ template <class _CharT>
 struct _Id_adapter {
     basic_format_parse_context<_CharT>& _Parse_context;
     size_t _Arg_id = static_cast<size_t>(-1);
+
     constexpr void _On_auto_id() {
         _Arg_id = _Parse_context.next_arg_id();
         _STL_INTERNAL_CHECK(_Arg_id != static_cast<size_t>(-1));
@@ -611,17 +696,35 @@ _NODISCARD constexpr const _CharT* _Parse_replacement_field(
     return _Begin + 1;
 }
 
+template <class _CharT>
+const _CharT* _Scan_format_string(const _CharT* _First, const _CharT* _Last, const _CharT _Val, const _Cvtvec& _Cvt) {
+    if (_Cvt._Mbcurmax == 1 || _Cvt._Mbcurmax == 4) {
+        return _Find_unchecked(_First, _Last, _Val);
+    }
+
+    while (_First != _Last && *_First != _Val) {
+        const int _Units = _Code_units_in_next_character(_First, _Last, _Cvt);
+        if (_Units < 0) {
+            throw format_error("Invalid encoded character in format string.");
+        }
+        _First += _Units;
+    }
+
+    return _First;
+}
+
 template <class _CharT, _Parse_replacement_field_callbacks<_CharT> _HandlerT>
-constexpr void _Parse_format_string(basic_string_view<_CharT> _Format_str, _HandlerT&& _Handler) {
-    auto _Begin = _Format_str.data();
-    auto _End   = _Begin + _Format_str.size();
+void _Parse_format_string(basic_string_view<_CharT> _Format_str, _HandlerT&& _Handler) {
+    auto _Begin         = _Format_str.data();
+    auto _End           = _Begin + _Format_str.size();
+    const _Cvtvec& _Cvt = ::_Getcvt();
+
     while (_Begin != _End) {
-        const _CharT* _OpeningCurl = _Begin;
-        if (*_Begin != '{') {
-            // we didn't start at an opening curl, find the next one
-            _OpeningCurl = _Find_unchecked(_Begin + 1, _End, '{');
+        const _CharT* _OpeningCurl = _Scan_format_string(_Begin, _End, _CharT{'{'}, _Cvt);
+        if (_Begin != _OpeningCurl) {
+            // we didn't start at an opening curl
             for (;;) {
-                const _CharT* _ClosingCurl = _Find_unchecked(_Begin, _OpeningCurl, '}');
+                const _CharT* _ClosingCurl = _Scan_format_string(_Begin, _OpeningCurl, _CharT{'}'}, _Cvt);
 
                 // In this case there are neither closing nor opening curls in [_Begin, _OpenCurl)
                 // Write the whole thing out.
@@ -652,7 +755,6 @@ constexpr void _Parse_format_string(basic_string_view<_CharT> _Format_str, _Hand
     }
 }
 
-
 template <class _CharT>
 struct _Basic_format_specs {
     int _Width         = 0;
@@ -664,7 +766,7 @@ struct _Basic_format_specs {
     bool _Localized    = false;
     bool _Leading_zero = false;
     // At most one codepoint (so one char32_t or four utf-8 char8_t).
-    _CharT _Fill[4] = {' ', _CharT{0}, _CharT{0}, _CharT{0}};
+    _CharT _Fill[4 / sizeof(_CharT)] = {_CharT{' '}};
 };
 
 // Adds width and precision references to _Basic_format_specs.
@@ -676,7 +778,7 @@ struct _Dynamic_format_specs : _Basic_format_specs<_CharT> {
     int _Dynamic_precision_index = -1;
 };
 
-// Model of _Parse_specs_callbacks that fills a _Basic_format_specs with the parsed data.
+// Model of _Parse_spec_callbacks that fills a _Basic_format_specs with the parsed data.
 template <class _CharT>
 class _Specs_setter {
 public:
@@ -690,8 +792,7 @@ public:
         if (_Sv.size() > 4) {
             throw format_error("Invalid fill (too long).");
         }
-        _STD fill(_Specs._Fill, _Specs._Fill + 4, _CharT{});
-        _STD copy(_Sv.begin(), _Sv.end(), _Specs._Fill);
+        _STD fill(_STD copy(_Sv.begin(), _Sv.end(), _Specs._Fill), _STD end(_Specs._Fill), _CharT{});
     }
 
     constexpr void _On_sign(_Sign _Sgn) {
@@ -1370,7 +1471,7 @@ _NODISCARD _OutputIt _Write(_OutputIt _Out, const _CharT* _Value) {
 
 template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Write(_OutputIt _Out, const basic_string_view<_CharT> _Value) {
-    return _RANGES _Copy_unchecked(_Value.begin(), _Value.end(), _STD move(_Out)).out;
+    return _RANGES copy(_Value, _STD move(_Out)).out;
 }
 
 template <class _CharT, class _OutputIt, class _Func>
@@ -1402,10 +1503,18 @@ _NODISCARD _OutputIt _Write_aligned(_OutputIt _Out, const int _Width, const _Bas
         }
     }
 
-    // TRANSITION, add support for unicode/wide formats
-    _Out = _RANGES fill_n(_STD move(_Out), _Fill_left, _Specs._Fill[0]);
+    const basic_string_view<_CharT> _Fill_char{_Specs._Fill, _RANGES find(_Specs._Fill, '\0')};
+    for (; _Fill_left > 0; --_Fill_left) {
+        _Out = _RANGES copy(_Fill_char, _STD move(_Out)).out;
+    }
+
     _Out = _Fn(_STD move(_Out));
-    return _RANGES fill_n(_STD move(_Out), _Fill_right, _Specs._Fill[0]);
+
+    for (; _Fill_right > 0; --_Fill_right) {
+        _Out = _RANGES copy(_Fill_char, _STD move(_Out)).out;
+    }
+
+    return _Out;
 }
 
 template <integral _Integral>
@@ -1546,7 +1655,7 @@ _NODISCARD _OutputIt _Write(
 
 template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Write(
-    _OutputIt _Out, const void* const _Value, const _Basic_format_specs<_CharT>& _Specs, locale);
+    _OutputIt _Out, const void* const _Value, const _Basic_format_specs<_CharT>& _Specs, locale _Locale);
 
 template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Write(
@@ -1554,7 +1663,7 @@ _NODISCARD _OutputIt _Write(
 
 template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Write(
-    _OutputIt _Out, const basic_string_view<_CharT> _Value, const _Basic_format_specs<_CharT>& _Specs, locale);
+    _OutputIt _Out, const basic_string_view<_CharT> _Value, const _Basic_format_specs<_CharT>& _Spec, locale _Locale);
 
 #pragma warning(push)
 #pragma warning(disable : 4365) // 'argument': conversion from 'char' to 'const wchar_t', signed/unsigned mismatch
@@ -1957,6 +2066,74 @@ _NODISCARD _OutputIt _Write(
     return _Write(_STD move(_Out), basic_string_view<_CharT>{_Value}, _Specs, _Locale);
 }
 
+inline constexpr char16_t _U16_width_estimate_bounds[] = { // Per N4885 [format.string.std]/11
+    0x1100u, 0x1160u, 0x2329u, 0x232Bu, 0x2E80u, 0x303Fu, 0x3040u, 0xA4D0u, 0xAC00u, 0xD7A4u, 0xF900u, 0xFB00u, 0xFE10u,
+    0xFE1Au, 0xFE30u, 0xFE70u, 0xFF00u, 0xFF61u, 0xFFE0u, 0xFFE7u};
+
+inline constexpr char32_t _U20_width_estimate_bounds[] = { // Per N4885 [format.string.std]/11
+    0x1F300u, 0x1F650u, 0x1F900u, 0x1FA00u, 0x20000u, 0x2FFFEu, 0x30000u, 0x3FFFEu};
+
+template <auto& _Bounds>
+_NODISCARD inline int _Unicode_width_estimate(const char32_t _Ch) noexcept {
+    int _Result = 1;
+    for (auto const& _Bound : _Bounds) {
+        if (_Ch < _Bound) {
+            return _Result;
+        }
+        _Result ^= 1;
+    }
+    return 1;
+}
+
+_NODISCARD inline int _Estimate_character_width(const char* _Ptr, const int _Units, const _Cvtvec& _Cvt) {
+    // Return an estimate for the width of the character composed of _Units code units,
+    // whose first code unit is denoted by _Ptr.
+    auto _Ch = static_cast<char32_t>(*_Ptr);
+    if (_Cvt._Mbcurmax != 4) {
+        // not a Unicode encoding; estimate width as 1
+        return 1;
+    }
+
+    // assume UTF-8
+    switch (_Units) {
+    default:
+    case 1:
+    case 2:
+        return 1;
+    case 3:
+        _Ch &= 0b1111u;
+        break;
+    case 4:
+        _Ch &= 0b111u;
+        break;
+    }
+
+    for (int _Shift = 0; ++_Shift < _Units;) {
+        _Ch = _Ch << 6 | (_Ptr[_Shift] & 0b11'1111u);
+    }
+
+    if (_Units == 3) {
+        return _Unicode_width_estimate<_U16_width_estimate_bounds>(_Ch);
+    }
+
+    return _Unicode_width_estimate<_U20_width_estimate_bounds>(_Ch);
+}
+
+_NODISCARD inline int _Estimate_character_width(const wchar_t* _Ptr, const int _Units, const _Cvtvec&) {
+    // Return an estimate for the width of the character composed of _Units code units,
+    // whose first code unit is denoted by _Ptr.
+    auto _Ch = static_cast<char32_t>(*_Ptr);
+    if (_Units == 1) {
+        return _Unicode_width_estimate<_U16_width_estimate_bounds>(_Ch);
+    }
+
+    // surrogate pair
+    _Ch = (_Ch - 0xD8000u) << 10;
+    _Ch += static_cast<char32_t>(_Ptr[1]) - 0xDC00u;
+    _Ch += 0x10000u;
+    return _Unicode_width_estimate<_U20_width_estimate_bounds>(_Ch);
+}
+
 template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Write(
     _OutputIt _Out, const basic_string_view<_CharT> _Value, const _Basic_format_specs<_CharT>& _Specs, locale) {
@@ -1980,14 +2157,37 @@ _NODISCARD _OutputIt _Write(
         throw format_error("string cannot be localized");
     }
 
-    auto _Printed_size = static_cast<int>(_Value.size());
-
-    if (_Specs._Precision != -1 && _Printed_size > _Specs._Precision) {
-        _Printed_size = _Specs._Precision;
+    if (_Specs._Precision < 0 && _Specs._Width <= 0) {
+        return _Write(_STD move(_Out), _Value);
     }
 
-    return _Write_aligned(_STD move(_Out), _Printed_size, _Specs, _Align::_Left, [=](_OutputIt _Out) {
-        return _Write(_STD move(_Out), _Value.substr(size_t{0}, static_cast<size_t>(_Printed_size)));
+    auto _Pos                  = _Value.data();
+    const auto _Last           = _Pos + _Value.size();
+    ptrdiff_t _Estimated_width = 0; // the estimated width of [_Value.data(), _Pos)
+    const auto& _Cvt           = ::_Getcvt();
+
+    while (_Pos != _Last) {
+        if (_Specs._Precision >= 0 && _Estimated_width == _Specs._Precision) {
+            // We're at our maximum length
+            break;
+        }
+
+        // TRANSITION, extended grapheme clustering
+        const int _Units           = _Code_units_in_next_character(_Pos, _Last, _Cvt);
+        const int _Character_width = _Estimate_character_width(_Pos, _Units, _Cvt);
+
+        _Estimated_width += _Character_width;
+        if (_Specs._Precision >= 0 && _Estimated_width > _Specs._Precision) {
+            // with this character, we exceed the maximum length
+            _Estimated_width -= _Character_width;
+            break;
+        }
+
+        _Pos += _Units;
+    }
+
+    return _Write_aligned(_STD move(_Out), _Estimated_width, _Specs, _Align::_Left, [=](_OutputIt _Out) {
+        return _Write(_STD move(_Out), basic_string_view<_CharT>{_Value.data(), _Pos});
     });
 }
 
@@ -2096,7 +2296,7 @@ struct _Formatter_base {
         _Specs_checker<_Dynamic_specs_handler<_Pc>> _Handler(_Dynamic_specs_handler<_Pc>(_Specs, _ParseCtx), _ArgType);
         const auto _It = _Parse_format_specs(_ParseCtx._Unchecked_begin(), _ParseCtx._Unchecked_end(), _Handler);
         if (_It != _ParseCtx._Unchecked_end() && *_It != '}') {
-            throw format_error("Mising '}' in format string.");
+            throw format_error("Missing '}' in format string.");
         }
         return _ParseCtx.begin() + (_It - _ParseCtx._Unchecked_begin());
     }
