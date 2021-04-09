@@ -5195,7 +5195,7 @@ namespace chrono {
 
     template <class _CharT>
     struct _Chrono_specs {
-        _CharT _Lit_char = _CharT{0}; // any char other than {, }, %
+        _CharT _Lit_char = _CharT{0}; // any char other than '{', '}', '%'
         char _Modifier   = '\0'; // either E or O
         char _Type       = '\0';
     };
@@ -5267,10 +5267,10 @@ namespace chrono {
         _Chrono_format_specs<_CharT>& _Specs;
     };
 
+    // assumes that the required '%' at the beginning of a conversion-spec has already been consumed
     template <class _CharT, _Chrono_parse_spec_callbacks<_CharT> _Callbacks_type>
     _NODISCARD constexpr const _CharT* _Parse_conversion_specs(
         const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
-        ++_Begin; // move past %
         if (_Begin == _End || *_Begin == '}') {
             _THROW(format_error("Invalid format string."));
         }
@@ -5319,23 +5319,23 @@ namespace chrono {
         // chrono-spec
         while (_Begin != _End && *_Begin != '}') {
             if (*_Begin == '%') { // conversion-spec
-                if (_Begin + 1 == _End) {
+                if (++_Begin == _End) {
                     _THROW(format_error("Invalid format string - missing type after %"));
                 }
 
-                _CharT _Next_ch = *(_Begin + 1);
+                _CharT _Next_ch = *_Begin;
                 switch (_Next_ch) {
                 case 'n':
                     _Callbacks._On_lit_char('\n');
-                    _Begin += 2;
+                    ++_Begin;
                     break;
                 case 't':
                     _Callbacks._On_lit_char('\t');
-                    _Begin += 2;
+                    ++_Begin;
                     break;
                 case '%':
                     _Callbacks._On_lit_char('%');
-                    _Begin += 2;
+                    ++_Begin;
                     break;
                 default: // some other type
                     _Begin = _Parse_conversion_specs(_Begin, _End, _Callbacks);
