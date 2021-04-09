@@ -175,7 +175,7 @@ bool test_parse_align() {
 #ifndef MSVC_INTERNAL_TESTING // TRANSITION, Windows on Contest VMs understand ".UTF-8" codepage
         {
             setlocale(LC_ALL, ".UTF-8");
-            // "\xf0\x9f\x8f\x88" is U+1F3C8 AMERICAN FOOTBALL in UTF-8
+            // "\xf0\x9f\x8f\x88" is U+1F3C8 AMERICAN FOOTBALL
             test_parse_helper(parse_align_fn, "\xf0\x9f\x8f\x88<X"sv, false, 5,
                 {.expected_alignment = _Align::_Left, .expected_fill = "\xf0\x9f\x8f\x88"sv});
             test_parse_helper(parse_align_fn, "\xf0\x9f\x8f\x88>X"sv, false, 5,
