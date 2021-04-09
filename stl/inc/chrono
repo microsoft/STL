@@ -5320,22 +5320,25 @@ namespace chrono {
         while (_Begin != _End && *_Begin != '}') {
             if (*_Begin == '%') { // conversion-spec
                 if (_Begin + 1 == _End) {
-                    _THROW(format_error("Invalid format string- missing type after %"));
+                    _THROW(format_error("Invalid format string - missing type after %"));
                 }
 
                 _CharT _Next_ch = *(_Begin + 1);
                 switch (_Next_ch) {
                 case 'n':
                     _Callbacks._On_lit_char('\n');
-                    ++_Begin;
+                    // ++_Begin;
+                    _Begin += 2;
                     break;
                 case 't':
                     _Callbacks._On_lit_char('\t');
-                    ++_Begin;
+                    // ++_Begin;
+                    _Begin += 2;
                     break;
                 case '%':
                     _Callbacks._On_lit_char('%');
-                    ++_Begin;
+                    // ++_Begin;
+                    _Begin += 2;
                     break;
                 default: // some other type
                     _Begin = _Parse_conversion_specs(_Begin, _End, _Callbacks);

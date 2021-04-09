@@ -118,6 +118,7 @@ constexpr bool test_parse_conversion_spec() {
     view_typ s3(TYPED_LITERAL(CharT, "%E"));
     view_typ s4(TYPED_LITERAL(CharT, "%"));
     view_typ s5(TYPED_LITERAL(CharT, "%}"));
+    view_typ s6(TYPED_LITERAL(CharT, "%E}"));
 
     vector<chrono_spec> v0{{._Type = 'B'}};
     test_parse_helper(parse_conv_spec_fn, s0, false, view_typ::npos, {.expected_chrono_specs = v0});
@@ -133,6 +134,7 @@ constexpr bool test_parse_conversion_spec() {
         test_parse_helper(parse_conv_spec_fn, s3, true, view_typ::npos, {.expected_chrono_specs = v});
         test_parse_helper(parse_conv_spec_fn, s4, true, view_typ::npos, {.expected_chrono_specs = v});
         test_parse_helper(parse_conv_spec_fn, s5, true, view_typ::npos, {.expected_chrono_specs = v});
+        test_parse_helper(parse_conv_spec_fn, s6, true, view_typ::npos, {.expected_chrono_specs = v});
     }
 
     return true;
@@ -152,6 +154,7 @@ constexpr bool test_parse_chrono_format_specs() {
     view_typ s5(TYPED_LITERAL(CharT, "*^4.4%ymm"));
     view_typ s6(TYPED_LITERAL(CharT, "%H%"));
     view_typ s7(TYPED_LITERAL(CharT, "%H%}"));
+    view_typ s8(TYPED_LITERAL(CharT, "A%nB%tC%%D"));
 
     vector<chrono_spec> v0{{._Modifier = 'O', ._Type = 'e'}};
     test_parse_helper(parse_chrono_format_specs_fn, s0, false, s0.size(), {.expected_chrono_specs = v0});
@@ -165,6 +168,10 @@ constexpr bool test_parse_chrono_format_specs() {
     vector<chrono_spec> v3{{._Type = 'H'}};
     test_parse_helper(
         parse_chrono_format_specs_fn, s3, false, s3.size() - 1, {.expected_width = 6, .expected_chrono_specs = v3});
+
+    vector<chrono_spec> v8{{._Lit_char = 'A'}, {._Lit_char = '\n'}, {._Lit_char = 'B'}, {._Lit_char = '\t'},
+        {._Lit_char = 'C'}, {._Lit_char = '%'}, {._Lit_char = 'D'}};
+    test_parse_helper(parse_chrono_format_specs_fn, s8, false, s8.size(), {.expected_chrono_specs = v8});
 
     vector<chrono_spec> v4{{._Lit_char = 'h'}, {._Lit_char = 'i'}};
     test_parse_helper(parse_chrono_format_specs_fn, s4, false, s4.size(),
@@ -202,7 +209,7 @@ int main() {
     static_assert(test_parse_chrono_format_specs<wchar_t>());
 }
 
-#else // ^^^ __clang__ / !__clang__ vvv
+#else // ^^^ !__clang__ / __clang__ vvv
 
 int main() {}
 
