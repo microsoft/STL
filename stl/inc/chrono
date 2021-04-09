@@ -5327,17 +5327,14 @@ namespace chrono {
                 switch (_Next_ch) {
                 case 'n':
                     _Callbacks._On_lit_char('\n');
-                    // ++_Begin;
                     _Begin += 2;
                     break;
                 case 't':
                     _Callbacks._On_lit_char('\t');
-                    // ++_Begin;
                     _Begin += 2;
                     break;
                 case '%':
                     _Callbacks._On_lit_char('%');
-                    // ++_Begin;
                     _Begin += 2;
                     break;
                 default: // some other type
