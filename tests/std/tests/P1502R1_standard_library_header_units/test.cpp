@@ -29,7 +29,7 @@ import <deque>;
 import <exception>;
 import <execution>;
 import <filesystem>;
-// import <format>;
+import <format>;
 import <forward_list>;
 import <fstream>;
 import <functional>;
@@ -305,7 +305,7 @@ int main() {
 
     {
         puts("Testing <format>.");
-        puts("(TRANSITION, not yet implemented.)");
+        assert(format("{} {}", "testing", "format") == "testing format");
     }
 
     {
