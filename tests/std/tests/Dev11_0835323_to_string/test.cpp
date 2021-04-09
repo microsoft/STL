@@ -154,7 +154,7 @@ int main() {
         assert(3.13f < f && f < 3.15f);
     }
 
-     (void) assert_out_of_range([] { stof("-1.3e61"); });
+    (void) assert_out_of_range([] { stof("-1.3e61"); });
 
     (void) assert_out_of_range([] { stof(L"1.4e62"); });
 
