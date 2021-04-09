@@ -14,8 +14,6 @@
 using namespace std;
 using namespace chrono;
 
-#ifndef __clang__ // TRANSITION, LLVM-48606
-
 // copied from the string_view tests
 template <typename CharT>
 struct choose_literal; // not defined
@@ -49,37 +47,37 @@ struct testing_callbacks {
     vector<_Chrono_specs<CharT>>& expected_chrono_specs;
     size_t curr_index = 0;
 
-    constexpr void _On_align(_Align aln) {
+    void _On_align(_Align aln) {
         assert(aln == expected_alignment);
     }
-    constexpr void _On_fill(basic_string_view<CharT> str_view) {
+    void _On_fill(basic_string_view<CharT> str_view) {
         assert(str_view == expected_fill);
     }
-    constexpr void _On_width(int width) {
+    void _On_width(int width) {
         assert(width == expected_width);
     }
-    constexpr void _On_dynamic_width(size_t id) {
+    void _On_dynamic_width(size_t id) {
         assert(id == expected_dynamic_width);
     }
-    constexpr void _On_dynamic_width(_Auto_id_tag) {
+    void _On_dynamic_width(_Auto_id_tag) {
         assert(expected_auto_dynamic_width);
     }
-    constexpr void _On_precision(int pre) {
+    void _On_precision(int pre) {
         assert(pre == expected_precision);
     }
-    constexpr void _On_dynamic_precision(size_t id) {
+    void _On_dynamic_precision(size_t id) {
         assert(id == expected_dynamic_precision);
     }
-    constexpr void _On_dynamic_precision(_Auto_id_tag) {
+    void _On_dynamic_precision(_Auto_id_tag) {
         assert(expected_auto_dynamic_precision);
     }
-    constexpr void _On_conversion_spec(CharT mod, CharT type) {
+    void _On_conversion_spec(CharT mod, CharT type) {
         assert(static_cast<char>(mod) == expected_chrono_specs[curr_index]._Modifier);
         assert(static_cast<char>(type) == expected_chrono_specs[curr_index]._Type);
         assert(expected_chrono_specs[curr_index]._Lit_char == CharT{0}); // not set
         ++curr_index;
     }
-    constexpr void _On_lit_char(CharT ch) {
+    void _On_lit_char(CharT ch) {
         assert(ch == expected_chrono_specs[curr_index]._Lit_char);
         assert(expected_chrono_specs[curr_index]._Modifier == '\0'); // not set
         assert(expected_chrono_specs[curr_index]._Type == '\0'); // not set
@@ -88,8 +86,8 @@ struct testing_callbacks {
 };
 
 template <typename CharT, typename callback_type>
-constexpr void test_parse_helper(const CharT* (*func)(const CharT*, const CharT*, callback_type&&),
-    basic_string_view<CharT> view, bool err_expected = false,
+void test_parse_helper(const CharT* (*func)(const CharT*, const CharT*, callback_type&&), basic_string_view<CharT> view,
+    bool err_expected                                                  = false,
     typename basic_string_view<CharT>::size_type expected_end_position = basic_string_view<CharT>::npos,
     callback_type&& callbacks                                          = {}) {
     try {
@@ -104,7 +102,7 @@ constexpr void test_parse_helper(const CharT* (*func)(const CharT*, const CharT*
 }
 
 template <typename CharT>
-constexpr bool test_parse_conversion_spec() {
+bool test_parse_conversion_spec() {
     auto parse_conv_spec_fn = _Parse_conversion_specs<CharT, testing_callbacks<CharT>>;
     using view_typ          = basic_string_view<CharT>;
     using chrono_spec       = _Chrono_specs<CharT>;
@@ -126,19 +124,17 @@ constexpr bool test_parse_conversion_spec() {
     vector<chrono_spec> v2{{._Modifier = 'O', ._Type = 'd'}};
     test_parse_helper(parse_conv_spec_fn, s2, false, view_typ::npos, {.expected_chrono_specs = v2});
 
-    if (!is_constant_evaluated()) {
-        vector<chrono_spec> v{};
-        test_parse_helper(parse_conv_spec_fn, s3, true, view_typ::npos, {.expected_chrono_specs = v});
-        test_parse_helper(parse_conv_spec_fn, s4, true, view_typ::npos, {.expected_chrono_specs = v});
-        test_parse_helper(parse_conv_spec_fn, s5, true, view_typ::npos, {.expected_chrono_specs = v});
-        test_parse_helper(parse_conv_spec_fn, s6, true, view_typ::npos, {.expected_chrono_specs = v});
-    }
+    vector<chrono_spec> v{};
+    test_parse_helper(parse_conv_spec_fn, s3, true, view_typ::npos, {.expected_chrono_specs = v});
+    test_parse_helper(parse_conv_spec_fn, s4, true, view_typ::npos, {.expected_chrono_specs = v});
+    test_parse_helper(parse_conv_spec_fn, s5, true, view_typ::npos, {.expected_chrono_specs = v});
+    test_parse_helper(parse_conv_spec_fn, s6, true, view_typ::npos, {.expected_chrono_specs = v});
 
     return true;
 }
 
 template <typename CharT>
-constexpr bool test_parse_chrono_format_specs() {
+bool test_parse_chrono_format_specs() {
     auto parse_chrono_format_specs_fn = _Parse_chrono_format_specs<CharT, testing_callbacks<CharT>>;
     using view_typ                    = basic_string_view<CharT>;
     using chrono_spec                 = _Chrono_specs<CharT>;
@@ -185,11 +181,9 @@ constexpr bool test_parse_chrono_format_specs() {
             .expected_precision    = 4,
             .expected_chrono_specs = v5});
 
-    if (!is_constant_evaluated()) {
-        vector<chrono_spec> v{{._Type = 'H'}}; // we don't throw a format_error until we parse the %H
-        test_parse_helper(parse_chrono_format_specs_fn, s6, true, view_typ::npos, {.expected_chrono_specs = v});
-        test_parse_helper(parse_chrono_format_specs_fn, s7, true, view_typ::npos, {.expected_chrono_specs = v});
-    }
+    vector<chrono_spec> v{{._Type = 'H'}}; // we don't throw a format_error until we parse the %H
+    test_parse_helper(parse_chrono_format_specs_fn, s6, true, view_typ::npos, {.expected_chrono_specs = v});
+    test_parse_helper(parse_chrono_format_specs_fn, s7, true, view_typ::npos, {.expected_chrono_specs = v});
 
     return true;
 }
@@ -197,17 +191,7 @@ constexpr bool test_parse_chrono_format_specs() {
 int main() {
     test_parse_conversion_spec<char>();
     test_parse_conversion_spec<wchar_t>();
-    static_assert(test_parse_conversion_spec<char>());
-    static_assert(test_parse_conversion_spec<wchar_t>());
 
     test_parse_chrono_format_specs<char>();
     test_parse_chrono_format_specs<wchar_t>();
-    static_assert(test_parse_chrono_format_specs<char>());
-    static_assert(test_parse_chrono_format_specs<wchar_t>());
 }
-
-#else // ^^^ !__clang__ / __clang__ vvv
-
-int main() {}
-
-#endif // __clang__
