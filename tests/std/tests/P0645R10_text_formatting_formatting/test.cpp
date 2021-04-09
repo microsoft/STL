@@ -1103,7 +1103,6 @@ void libfmt_formatter_test_fill() {
     assert(format(STR("{0:*>8}"), reinterpret_cast<void*>(0xface)) == STR("**0xface"));
     assert(format(STR("{:}="), STR("foo")) == STR("foo="));
     assert(format(basic_string_view<charT>(STR("{:\0>4}"), 6), '*') == basic_string<charT>(STR("\0\0\0*"), 4));
-    // assert(format(STR("{0:ж>4}"), 42) == STR("жж42"));
     throw_helper(STR("{:\x80\x80\x80\x80\x80>}"), 0);
 }
 
