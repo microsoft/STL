@@ -821,12 +821,12 @@ void locale_test() {
     (void) isgraph(c, loc);
     (void) islower(c, loc);
     (void) isprint(c, loc);
-    ispunct(c, loc);
-    isspace(c, loc);
-    isupper(c, loc);
-    isxdigit(c, loc);
-    tolower(c, loc);
-    toupper(c, loc);
+    (Void) ispunct(c, loc);
+    (Void) isspace(c, loc);
+    (Void) isupper(c, loc);
+    (Void) isxdigit(c, loc);
+    (Void) tolower(c, loc);
+    (Void) toupper(c, loc);
 
     (void) cc;
     (void) cw;
