@@ -386,7 +386,7 @@ _NODISCARD constexpr const _CharT* _Parse_arg_id(
     throw format_error("Invalid format string.");
 }
 
-inline int _Code_units_in_next_character(const char* _First, const char* _Last, const _Cvtvec& _Cvt) {
+_NODISCARD inline int _Code_units_in_next_character(const char* _First, const char* _Last, const _Cvtvec& _Cvt) {
     // Returns a count of the number of code units that compose the first encoded character in
     // [_First, _Last), or -1 if [_First, _Last) doesn't contain an entire encoded character or
     // *_First is not a valid lead byte.
@@ -439,7 +439,7 @@ inline int _Code_units_in_next_character(const char* _First, const char* _Last, 
     }
 }
 
-inline int _Code_units_in_next_character(const wchar_t* _First, const wchar_t* _Last, const _Cvtvec&) {
+_NODISCARD inline int _Code_units_in_next_character(const wchar_t* _First, const wchar_t* _Last, const _Cvtvec&) {
     // Returns a count of the number of code units that compose the first encoded character in
     // [_First, _Last), or -1 if [_First, _Last) doesn't contain an entire encoded character or
     // *_First is an unpaired surrogate.
@@ -817,8 +817,8 @@ public:
             throw format_error("Invalid fill (too long).");
         }
 
-        auto _Pos = _STD _Copy_unchecked(_Sv._Unchecked_begin(), _Sv._Unchecked_end(), _Specs._Fill);
-        _STD fill(_STD move(_Pos), _STD end(_Specs._Fill), _CharT{});
+        const auto _Pos = _STD _Copy_unchecked(_Sv._Unchecked_begin(), _Sv._Unchecked_end(), _Specs._Fill);
+        _STD fill(_Pos, _STD end(_Specs._Fill), _CharT{});
     }
 
     constexpr void _On_sign(_Sign _Sgn) {

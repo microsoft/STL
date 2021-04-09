@@ -5230,8 +5230,8 @@ namespace chrono {
                 _THROW(format_error("Invalid fill (too long)."));
             }
 
-            auto _Pos = _STD _Copy_unchecked(_Sv._Unchecked_begin(), _Sv._Unchecked_end(), _Specs._Fill);
-            _STD fill(_STD move(_Pos), _STD end(_Specs._Fill), _CharT{});
+            const auto _Pos = _STD _Copy_unchecked(_Sv._Unchecked_begin(), _Sv._Unchecked_end(), _Specs._Fill);
+            _STD fill(_Pos, _STD end(_Specs._Fill), _CharT{});
         }
 
         constexpr void _On_width(int _Width) {
