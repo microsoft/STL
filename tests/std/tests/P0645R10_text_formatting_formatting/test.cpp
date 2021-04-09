@@ -953,19 +953,36 @@ void test_size() {
     test_size_helper<charT>(8, STR("{:8}"), STR("scully"));
 }
 
+#include <iostream> // FIXME
+
 void test_multibyte_format_strings() {
     {
         setlocale(LC_ALL, ".932");
         const auto s =
             "\x93\xfa\x96{\x92\x6e\x90}"sv; // Note the use of `{` and `}` as continuation bytes (from GH-1576)
         assert(format(s) == s);
+
+        assert(format("{:.2}", s) == "\x93\xfa\x96{"sv);
+        assert(format("{:4.2}", s) == "\x93\xfa\x96{  "sv);
+
+        assert(format("{:<4.2}", s) == "\x93\xfa\x96{  "sv);
+        assert(format("{:^4.2}", s) == " \x93\xfa\x96{ "sv);
+        assert(format("{:>4.2}", s) == "  \x93\xfa\x96{"sv);
+
+        assert(format("{:\x90}<4.2}", s) == "\x93\xfa\x96{\x90}\x90}"sv);
+        assert(format("{:\x90}^4.2}", s) == "\x90}\x93\xfa\x96{\x90}"sv);
+        assert(format("{:\x90}>4.2}", s) == "\x90}\x90}\x93\xfa\x96{"sv);
     }
 
 #ifndef MSVC_INTERNAL_TESTING // TRANSITION, Windows on Contest VMs understand ".UTF-8" codepage
     {
         setlocale(LC_ALL, ".UTF-8");
-        // Filling with footballs:
+        // Filling with footballs ("\xf0\x9f\x8f\x88" is U+1F3C8 AMERICAN FOOTBALL)
         assert(format("{:\xf0\x9f\x8f\x88>4}"sv, 42) == "\xf0\x9f\x8f\x88\xf0\x9f\x8f\x88\x34\x32");
+
+        assert(format("{:\xf0\x9f\x8f\x88<4.2}", "1") == "\x31\xf0\x9f\x8f\x88\xf0\x9f\x8f\x88\xf0\x9f\x8f\x88"sv);
+        assert(format("{:\xf0\x9f\x8f\x88^4.2}", "1") == "\xf0\x9f\x8f\x88\x31\xf0\x9f\x8f\x88\xf0\x9f\x8f\x88"sv);
+        assert(format("{:\xf0\x9f\x8f\x88>4.2}", "1") == "\xf0\x9f\x8f\x88\xf0\x9f\x8f\x88\xf0\x9f\x8f\x88\x31"sv);
     }
 
     {

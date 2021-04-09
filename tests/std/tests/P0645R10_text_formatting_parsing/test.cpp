@@ -32,25 +32,19 @@ struct choose_literal<wchar_t> {
 
 template <typename CharT>
 struct noop_testing_callbacks {
-    void _On_align(_Align) {}
-    void _On_fill(basic_string_view<CharT>) {}
-    void _On_width(unsigned int) {}
-    void _On_dynamic_width(size_t) {}
-    void _On_dynamic_width(_Auto_id_tag) {}
-    void _On_precision(unsigned int) {}
-    void _On_dynamic_precision(size_t) {}
-    void _On_dynamic_precision(_Auto_id_tag) {}
-    void _On_sign(_Sign) {}
-    void _On_hash() {}
-    void _On_zero() {}
-    void _On_localized() {}
-    void _On_type(CharT) {}
-
-    const _Cvtvec& _Getcvt() const {
-        return _Cvt;
-    }
-
-    _Cvtvec _Cvt = ::_Getcvt();
+    constexpr void _On_align(_Align) {}
+    constexpr void _On_fill(basic_string_view<CharT>) {}
+    constexpr void _On_width(unsigned int) {}
+    constexpr void _On_dynamic_width(size_t) {}
+    constexpr void _On_dynamic_width(_Auto_id_tag) {}
+    constexpr void _On_precision(unsigned int) {}
+    constexpr void _On_dynamic_precision(size_t) {}
+    constexpr void _On_dynamic_precision(_Auto_id_tag) {}
+    constexpr void _On_sign(_Sign) {}
+    constexpr void _On_hash() {}
+    constexpr void _On_zero() {}
+    constexpr void _On_localized() {}
+    constexpr void _On_type(CharT) {}
 };
 
 template <typename CharT>
@@ -68,50 +62,45 @@ struct testing_callbacks {
     bool expected_zero                   = false;
     bool expected_localized              = false;
     CharT expected_type                  = '\0';
-    ::_Cvtvec _Cvt                       = ::_Getcvt();
 
-    void _On_align(_Align aln) {
+    constexpr void _On_align(_Align aln) {
         assert(aln == expected_alignment);
     }
-    void _On_fill(basic_string_view<CharT> str_view) {
+    constexpr void _On_fill(basic_string_view<CharT> str_view) {
         assert(str_view == expected_fill);
     }
-    void _On_width(int width) {
+    constexpr void _On_width(int width) {
         assert(width == expected_width);
     }
-    void _On_dynamic_width(size_t id) {
+    constexpr void _On_dynamic_width(size_t id) {
         assert(id == expected_dynamic_width);
     }
-    void _On_dynamic_width(_Auto_id_tag) {
+    constexpr void _On_dynamic_width(_Auto_id_tag) {
         assert(expected_auto_dynamic_width);
     }
-    void _On_precision(int pre) {
+    constexpr void _On_precision(int pre) {
         assert(pre == expected_precision);
     }
-    void _On_dynamic_precision(size_t id) {
+    constexpr void _On_dynamic_precision(size_t id) {
         assert(id == expected_dynamic_precision);
     }
-    void _On_dynamic_precision(_Auto_id_tag) {
+    constexpr void _On_dynamic_precision(_Auto_id_tag) {
         assert(expected_auto_dynamic_precision);
     }
-    void _On_sign(_Sign sgn) {
+    constexpr void _On_sign(_Sign sgn) {
         assert(sgn == expected_sign);
     }
-    void _On_hash() {
+    constexpr void _On_hash() {
         assert(expected_hash);
     }
-    void _On_zero() {
+    constexpr void _On_zero() {
         assert(expected_zero);
     }
-    void _On_localized() {
+    constexpr void _On_localized() {
         assert(expected_localized);
     }
-    void _On_type(CharT type) {
+    constexpr void _On_type(CharT type) {
         assert(type == expected_type);
-    }
-
-    const _Cvtvec& _Getcvt() const {
-        return _Cvt;
     }
 };
 template <typename CharT>
@@ -334,7 +323,7 @@ bool test_parse_format_specs() {
 }
 
 template <class CharT>
-bool test_specs_setter() {
+constexpr bool test_specs_setter() {
     // just instantiate for now.
     _Basic_format_specs<CharT> specs = {};
     _Specs_setter<CharT> setter(specs);
@@ -344,7 +333,7 @@ bool test_specs_setter() {
 }
 
 template <class CharT>
-bool test_specs_checker() {
+constexpr bool test_specs_checker() {
     _Specs_checker<noop_testing_callbacks<CharT>> checker(
         noop_testing_callbacks<CharT>{}, _Basic_format_arg_type::_Float_type);
     (void) checker;
@@ -369,9 +358,13 @@ int main() {
 
     test_specs_setter<char>();
     test_specs_setter<wchar_t>();
+    static_assert(test_specs_setter<char>());
+    static_assert(test_specs_setter<wchar_t>());
 
     test_specs_checker<char>();
     test_specs_checker<wchar_t>();
+    static_assert(test_specs_checker<char>());
+    static_assert(test_specs_checker<wchar_t>());
 
     return 0;
 }

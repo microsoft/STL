@@ -143,25 +143,25 @@ public:
     using const_iterator = typename basic_string_view<_CharT>::const_iterator;
     using iterator       = const_iterator;
 
-    explicit basic_format_parse_context(basic_string_view<_CharT> _Fmt, size_t _Num_args_ = 0) noexcept
+    constexpr explicit basic_format_parse_context(basic_string_view<_CharT> _Fmt, size_t _Num_args_ = 0) noexcept
         : _Format_string(_Fmt), _Num_args(_Num_args_) {}
 
     basic_format_parse_context(const basic_format_parse_context&) = delete;
     basic_format_parse_context& operator=(const basic_format_parse_context&) = delete;
 
-    _NODISCARD const_iterator begin() const noexcept {
+    _NODISCARD constexpr const_iterator begin() const noexcept {
         return _Format_string.begin();
     }
-    _NODISCARD const_iterator end() const noexcept {
+    _NODISCARD constexpr const_iterator end() const noexcept {
         return _Format_string.end();
     }
-    _NODISCARD const _CharT* _Unchecked_begin() const noexcept {
+    _NODISCARD constexpr const _CharT* _Unchecked_begin() const noexcept {
         return _Format_string._Unchecked_begin();
     }
-    _NODISCARD const _CharT* _Unchecked_end() const noexcept {
+    _NODISCARD constexpr const _CharT* _Unchecked_end() const noexcept {
         return _Format_string._Unchecked_end();
     }
-    void advance_to(const const_iterator _It) {
+    constexpr void advance_to(const const_iterator _It) {
         _Adl_verify_range(_It, _Format_string.end());
         // _It must be after _Format_string.begin().
         const auto _Diff = static_cast<size_t>(_It._Unwrapped() - _Format_string._Unchecked_begin());
@@ -173,7 +173,7 @@ public:
     // _Next_arg_id > 0 means automatic
     // _Next_arg_id == 0 means unknown
     // _Next_arg_id < 0 means manual
-    _NODISCARD size_t next_arg_id() {
+    _NODISCARD constexpr size_t next_arg_id() {
         if (_Next_arg_id < 0) {
             throw format_error("Can not switch from manual to automatic indexing");
         }
@@ -181,7 +181,7 @@ public:
         return static_cast<size_t>(_Next_arg_id++);
     }
 
-    void check_arg_id(const size_t _Id) {
+    constexpr void check_arg_id(const size_t _Id) {
         if (_STD is_constant_evaluated()) {
             if (_Id >= _Num_args) {
                 _You_see_this_error_because_arg_id_is_out_of_range();
@@ -387,6 +387,9 @@ _NODISCARD constexpr const _CharT* _Parse_arg_id(
 }
 
 inline int _Code_units_in_next_character(const char* _First, const char* _Last, const _Cvtvec& _Cvt) {
+    // Returns a count of the number of code units (characters) that compose the first multibyte
+    // character in [_First, _Last), or -1 if [_First, _Last) doesn't contain an entire encoded
+    // character or *_First is not a valid lead byte.
     _STL_INTERNAL_CHECK(_First < _Last);
 
     switch (_Cvt._Mbcurmax) {
@@ -394,7 +397,7 @@ inline int _Code_units_in_next_character(const char* _First, const char* _Last, 
         _ASSERTE(!"Bad number of encoding units for this code page");
         [[fallthrough]];
     case 1:
-        return 1;
+        return 1; // all characters have only one code unit
 
     case 2:
         {
@@ -449,6 +452,11 @@ inline int _Code_units_in_next_character(const char* _First, const char* _Last, 
 }
 
 inline int _Code_units_in_next_character(const wchar_t* _First, const wchar_t* _Last, const _Cvtvec&) {
+    // Returns a count of the number of code units (wide characters, which encode UTF-16 on our
+    // implementation) that compose the encoded character in [_First, _Last), or -1 if
+    // [_First, _Last) doesn't contain an entire encoded character or *_First is an unpaired
+    // surrogate.
+
     _STL_INTERNAL_CHECK(_First < _Last);
 
     if (*_First < 0xD800u || *_First >= 0xE000u) {
@@ -472,7 +480,7 @@ _NODISCARD const _CharT* _Parse_align(const _CharT* _Begin, const _CharT* _End, 
     // align and fill
     auto _Parsed_align = _Align::_None;
 
-    const _Cvtvec& _Cvt = ::_Getcvt();
+    const _Cvtvec& _Cvt = _Getcvt();
     const int _Units    = _Code_units_in_next_character(_Begin, _End, _Cvt);
     if (_Units < 0) { // invalid fill character encoding
         throw format_error("Invalid format string.");
@@ -724,6 +732,7 @@ _NODISCARD constexpr const _CharT* _Parse_replacement_field(
 
 template <class _CharT>
 const _CharT* _Scan_format_string(const _CharT* _First, const _CharT* _Last, const _CharT _Val, const _Cvtvec& _Cvt) {
+    // Returns the first occurrence of _Val as an encoded character in [_First, _Last).
     if (_Cvt._Mbcurmax == 1 || _Cvt._Mbcurmax == 4) {
         return _Find_unchecked(_First, _Last, _Val);
     }
@@ -743,7 +752,7 @@ template <class _CharT, _Parse_replacement_field_callbacks<_CharT> _HandlerT>
 void _Parse_format_string(basic_string_view<_CharT> _Format_str, _HandlerT&& _Handler) {
     auto _Begin         = _Format_str.data();
     auto _End           = _Begin + _Format_str.size();
-    const _Cvtvec& _Cvt = ::_Getcvt();
+    const _Cvtvec& _Cvt = _Getcvt();
 
     while (_Begin != _End) {
         const _CharT* _OpeningCurl = _Scan_format_string(_Begin, _End, _CharT{'{'}, _Cvt);
@@ -2102,7 +2111,8 @@ inline constexpr char32_t _U20_width_estimate_bounds[] = { // Per N4885 [format.
     0x1F300u, 0x1F650u, 0x1F900u, 0x1FA00u, 0x20000u, 0x2FFFEu, 0x30000u, 0x3FFFEu};
 
 template <auto& _Bounds>
-_NODISCARD inline int _Unicode_width_estimate(const char32_t _Ch) noexcept {
+_NODISCARD constexpr int _Unicode_width_estimate(const char32_t _Ch) noexcept {
+    // Computes the width estimation for unicode characters from N4885 [format.string.std]/11
     int _Result = 1;
     for (auto const& _Bound : _Bounds) {
         if (_Ch < _Bound) {
@@ -2136,8 +2146,8 @@ _NODISCARD inline int _Estimate_character_width(const char* _Ptr, const int _Uni
         break;
     }
 
-    for (int _Shift = 0; ++_Shift < _Units;) {
-        _Ch = _Ch << 6 | (_Ptr[_Shift] & 0b11'1111u);
+    for (int _Idx = 1; _Idx < _Units; ++_Idx) {
+        _Ch = _Ch << 6 | (_Ptr[_Idx] & 0b11'1111u);
     }
 
     if (_Units == 3) {
@@ -2160,6 +2170,40 @@ _NODISCARD inline int _Estimate_character_width(const wchar_t* _Ptr, const int _
     _Ch += static_cast<char32_t>(_Ptr[1]) - 0xDC00u;
     _Ch += 0x10000u;
     return _Unicode_width_estimate<_U20_width_estimate_bounds>(_Ch);
+}
+
+template <class _CharT>
+_NODISCARD const _CharT* _Measure_string_prefix(const basic_string_view<_CharT> _Value, ptrdiff_t& _Width) {
+    // Returns a pointer past-the-end of the largest prefix of _Value that fits in _Width, or all
+    // of _Value if _Width is negative. Updates _Width to the estimated width of that prefix.
+    const ptrdiff_t _Max_width = _Width;
+    auto _Pos                  = _Value.data();
+    const auto _Last           = _Pos + _Value.size();
+    ptrdiff_t _Estimated_width = 0; // the estimated width of [_Value.data(), _Pos)
+    const _Cvtvec& _Cvt        = _Getcvt();
+
+    while (_Pos != _Last) {
+        if (_Estimated_width == _Max_width && _Max_width >= 0) {
+            // We're at our maximum length
+            break;
+        }
+
+        // TRANSITION, extended grapheme clustering
+        const int _Units           = _Code_units_in_next_character(_Pos, _Last, _Cvt);
+        const int _Character_width = _Estimate_character_width(_Pos, _Units, _Cvt);
+
+        _Estimated_width += _Character_width;
+        if (_Estimated_width > _Max_width && _Max_width >= 0) {
+            // with this character, we exceed the maximum length
+            _Estimated_width -= _Character_width;
+            break;
+        }
+
+        _Pos += _Units;
+    }
+
+    _Width = _Estimated_width;
+    return _Pos;
 }
 
 template <class _CharT, class _OutputIt>
@@ -2189,33 +2233,11 @@ _NODISCARD _OutputIt _Fmt_write(
         return _Fmt_write(_STD move(_Out), _Value);
     }
 
-    auto _Pos                  = _Value.data();
-    const auto _Last           = _Pos + _Value.size();
-    ptrdiff_t _Estimated_width = 0; // the estimated width of [_Value.data(), _Pos)
-    const auto& _Cvt           = ::_Getcvt();
+    ptrdiff_t _Width    = _Specs._Precision;
+    const _CharT* _Last = _Measure_string_prefix(_Value, _Width);
 
-    while (_Pos != _Last) {
-        if (_Specs._Precision >= 0 && _Estimated_width == _Specs._Precision) {
-            // We're at our maximum length
-            break;
-        }
-
-        // TRANSITION, extended grapheme clustering
-        const int _Units           = _Code_units_in_next_character(_Pos, _Last, _Cvt);
-        const int _Character_width = _Estimate_character_width(_Pos, _Units, _Cvt);
-
-        _Estimated_width += _Character_width;
-        if (_Specs._Precision >= 0 && _Estimated_width > _Specs._Precision) {
-            // with this character, we exceed the maximum length
-            _Estimated_width -= _Character_width;
-            break;
-        }
-
-        _Pos += _Units;
-    }
-
-    return _Write_aligned(_STD move(_Out), _Estimated_width, _Specs, _Align::_Left, [=](_OutputIt _Out) {
-        return _Fmt_write(_STD move(_Out), basic_string_view<_CharT>{_Value.data(), _Pos});
+    return _Write_aligned(_STD move(_Out), _Width, _Specs, _Align::_Left, [=](_OutputIt _Out) {
+        return _Fmt_write(_STD move(_Out), basic_string_view<_CharT>{_Value.data(), _Last});
     });
 }
 
