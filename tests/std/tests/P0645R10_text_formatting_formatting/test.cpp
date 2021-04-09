@@ -1007,6 +1007,236 @@ void test_multibyte_format_strings() {
     setlocale(LC_ALL, nullptr);
 }
 
+template <class charT>
+void libfmt_formatter_test_escape() {
+    assert(format(STR("{{")) == STR("{"));
+    assert(format(STR("before {{")) == STR("before {"));
+    assert(format(STR("{{ after")) == STR("{ after"));
+    assert(format(STR("before {{ after")) == STR("before { after"));
+    assert(format(STR("}}")) == STR("}"));
+    assert(format(STR("before }}")) == STR("before }"));
+    assert(format(STR("}} after")) == STR("} after"));
+    assert(format(STR("before }} after")) == STR("before } after"));
+    assert(format(STR("{{}}")) == STR("{}"));
+    assert(format(STR("{{{0}}}"), 42) == STR("{42}"));
+}
+
+template <class charT>
+void libfmt_formatter_test_args_in_different_position() {
+    assert(format(STR("{0}"), 42) == STR("42"));
+    assert(format(STR("before {0}"), 42) == STR("before 42"));
+    assert(format(STR("{0} after"), 42) == STR("42 after"));
+    assert(format(STR("before {0} after"), 42) == STR("before 42 after"));
+    assert(format(STR("{0} = {1}"), STR("answer"), 42) == STR("answer = 42"));
+    assert(format(STR("{1} is the {0}"), STR("answer"), 42) == STR("42 is the answer"));
+    assert(format(STR("{0}{1}{0}"), STR("abra"), STR("cad")) == STR("abracadabra"));
+}
+template <class charT>
+void libfmt_formatter_test_left_align() {
+    assert(format(STR("{0:<4}"), 42) == STR("42  "));
+    assert(format(STR("{0:<4o}"), 042) == STR("42  "));
+    assert(format(STR("{0:<4x}"), 0x42) == STR("42  "));
+    assert(format(STR("{0:<5}"), -42) == STR("-42  "));
+    assert(format(STR("{0:<5}"), 42u) == STR("42   "));
+    assert(format(STR("{0:<5}"), -42l) == STR("-42  "));
+    assert(format(STR("{0:<5}"), 42ul) == STR("42   "));
+    assert(format(STR("{0:<5}"), -42ll) == STR("-42  "));
+    assert(format(STR("{0:<5}"), 42ull) == STR("42   "));
+    assert(format(STR("{0:<5}"), -42.0) == STR("-42  "));
+    assert(format(STR("{0:<5}"), -42.0l) == STR("-42  "));
+    assert(format(STR("{0:<5}"), 'c') == STR("c    "));
+    assert(format(STR("{0:<5}"), STR("abc")) == STR("abc  "));
+    assert(format(STR("{0:<8}"), reinterpret_cast<void*>(0xface)) == STR("0xface  "));
+}
+
+template <class charT>
+void libfmt_formatter_test_right_align() {
+    assert(format(STR("{0:>4}"), 42) == STR("  42"));
+    assert(format(STR("{0:>4o}"), 042) == STR("  42"));
+    assert(format(STR("{0:>4x}"), 0x42) == STR("  42"));
+    assert(format(STR("{0:>5}"), -42) == STR("  -42"));
+    assert(format(STR("{0:>5}"), 42u) == STR("   42"));
+    assert(format(STR("{0:>5}"), -42l) == STR("  -42"));
+    assert(format(STR("{0:>5}"), 42ul) == STR("   42"));
+    assert(format(STR("{0:>5}"), -42ll) == STR("  -42"));
+    assert(format(STR("{0:>5}"), 42ull) == STR("   42"));
+    assert(format(STR("{0:>5}"), -42.0) == STR("  -42"));
+    assert(format(STR("{0:>5}"), -42.0l) == STR("  -42"));
+    assert(format(STR("{0:>5}"), 'c') == STR("    c"));
+    assert(format(STR("{0:>5}"), STR("abc")) == STR("  abc"));
+    assert(format(STR("{0:>8}"), reinterpret_cast<void*>(0xface)) == STR("  0xface"));
+}
+
+template <class charT>
+void libfmt_formatter_test_center_align() {
+    assert(format(STR("{0:^5}"), 42) == STR(" 42  "));
+    assert(format(STR("{0:^5o}"), 042) == STR(" 42  "));
+    assert(format(STR("{0:^5x}"), 0x42) == STR(" 42  "));
+    assert(format(STR("{0:^5}"), -42) == STR(" -42 "));
+    assert(format(STR("{0:^5}"), 42u) == STR(" 42  "));
+    assert(format(STR("{0:^5}"), -42l) == STR(" -42 "));
+    assert(format(STR("{0:^5}"), 42ul) == STR(" 42  "));
+    assert(format(STR("{0:^5}"), -42ll) == STR(" -42 "));
+    assert(format(STR("{0:^5}"), 42ull) == STR(" 42  "));
+    assert(format(STR("{0:^5}"), -42.0) == STR(" -42 "));
+    assert(format(STR("{0:^5}"), -42.0l) == STR(" -42 "));
+    assert(format(STR("{0:^5}"), 'c') == STR("  c  "));
+    assert(format(STR("{0:^6}"), STR("abc")) == STR(" abc  "));
+    assert(format(STR("{0:^8}"), reinterpret_cast<void*>(0xface)) == STR(" 0xface "));
+}
+
+template <class charT>
+void libfmt_formatter_test_fill() {
+    throw_helper(STR("{0:{<5}"), 'c');
+    throw_helper(STR("{0:{<5}}"), 'c');
+    assert(format(STR("{0:*>4}"), 42) == STR("**42"));
+    assert(format(STR("{0:*>5}"), -42) == STR("**-42"));
+    assert(format(STR("{0:*>5}"), 42u) == STR("***42"));
+    assert(format(STR("{0:*>5}"), -42l) == STR("**-42"));
+    assert(format(STR("{0:*>5}"), 42ul) == STR("***42"));
+    assert(format(STR("{0:*>5}"), -42ll) == STR("**-42"));
+    assert(format(STR("{0:*>5}"), 42ull) == STR("***42"));
+    assert(format(STR("{0:*>5}"), -42.0) == STR("**-42"));
+    assert(format(STR("{0:*>5}"), -42.0l) == STR("**-42"));
+    assert(format(STR("{0:*<5}"), 'c') == STR("c****"));
+    assert(format(STR("{0:*<5}"), STR("abc")) == STR("abc**"));
+    assert(format(STR("{0:*>8}"), reinterpret_cast<void*>(0xface)) == STR("**0xface"));
+    assert(format(STR("{:}="), STR("foo")) == STR("foo="));
+    assert(format(basic_string_view<charT>(STR("{:\0>4}"), 6), '*') == basic_string<charT>(STR("\0\0\0*"), 4));
+    // assert(format(STR("{0:ж>4}"), 42) == STR("жж42"));
+    throw_helper(STR("{:\x80\x80\x80\x80\x80>}"), 0);
+}
+
+template <class charT>
+void libfmt_formatter_test_plus_sign() {
+    assert(format(STR("{0:+}"), 42) == STR("+42"));
+    assert(format(STR("{0:+}"), -42) == STR("-42"));
+    assert(format(STR("{0:+}"), 42) == STR("+42"));
+    // behavior differs from libfmt, but conforms
+    assert(format(STR("{0:+}"), 42u) == STR("+42"));
+    assert(format(STR("{0:+}"), 42l) == STR("+42"));
+    // behavior differs from libfmt, but conforms
+    assert(format(STR("{0:+}"), 42ul) == STR("+42"));
+    assert(format(STR("{0:+}"), 42ll) == STR("+42"));
+    // behavior differs from libfmt, but conforms
+    assert(format(STR("{0:+}"), 42ull) == STR("+42"));
+    assert(format(STR("{0:+}"), 42.0) == STR("+42"));
+    assert(format(STR("{0:+}"), 42.0l) == STR("+42"));
+    throw_helper(STR("{0:+"), 'c');
+    throw_helper(STR("{0:+}"), 'c');
+    throw_helper(STR("{0:+}"), STR("abc"));
+    throw_helper(STR("{0:+}"), reinterpret_cast<void*>(0x42));
+}
+
+template <class charT>
+void libfmt_formatter_test_minus_sign() {
+    assert(format(STR("{0:-}"), 42) == STR("42"));
+    assert(format(STR("{0:-}"), -42) == STR("-42"));
+    assert(format(STR("{0:-}"), 42) == STR("42"));
+    // behavior differs from libfmt, but conforms
+    assert(format(STR("{0:-}"), 42u) == STR("42"));
+    assert(format(STR("{0:-}"), 42l) == STR("42"));
+    // behavior differs from libfmt, but conforms
+    assert(format(STR("{0:-}"), 42ul) == STR("42"));
+    assert(format(STR("{0:-}"), 42ll) == STR("42"));
+    // behavior differs from libfmt, but conforms
+    assert(format(STR("{0:-}"), 42ull) == STR("42"));
+    assert(format(STR("{0:-}"), 42.0) == STR("42"));
+    assert(format(STR("{0:-}"), 42.0l) == STR("42"));
+    throw_helper(STR("{0:-"), 'c');
+    throw_helper(STR("{0:-}"), 'c');
+    throw_helper(STR("{0:-}"), STR("abc"));
+    throw_helper(STR("{0:-}"), reinterpret_cast<void*>(0x42));
+}
+
+template <class charT>
+void libfmt_formatter_test_space_sign() {
+    assert(format(STR("{0: }"), 42) == STR(" 42"));
+    assert(format(STR("{0: }"), -42) == STR("-42"));
+    assert(format(STR("{0: }"), 42) == STR(" 42"));
+    // behavior differs from libfmt, but conforms
+    assert(format(STR("{0: }"), 42u) == STR(" 42"));
+    assert(format(STR("{0: }"), 42l) == STR(" 42"));
+    // behavior differs from libfmt, but conforms
+    assert(format(STR("{0: }"), 42ul) == STR(" 42"));
+    assert(format(STR("{0: }"), 42ll) == STR(" 42"));
+    // behavior differs from libfmt, but conforms
+    assert(format(STR("{0: }"), 42ull) == STR(" 42"));
+    assert(format(STR("{0: }"), 42.0) == STR(" 42"));
+    assert(format(STR("{0: }"), 42.0l) == STR(" 42"));
+    throw_helper(STR("{0: "), 'c');
+    throw_helper(STR("{0: }"), 'c');
+    throw_helper(STR("{0: }"), STR("abc"));
+    throw_helper(STR("{0: }"), reinterpret_cast<void*>(0x42));
+}
+
+template <class charT>
+void libfmt_formatter_test_hash_flag() {
+    assert(format(STR("{0:#}"), 42) == STR("42"));
+    assert(format(STR("{0:#}"), -42) == STR("-42"));
+    assert(format(STR("{0:#b}"), 42) == STR("0b101010"));
+    assert(format(STR("{0:#B}"), 42) == STR("0B101010"));
+    assert(format(STR("{0:#b}"), -42) == STR("-0b101010"));
+    assert(format(STR("{0:#x}"), 0x42) == STR("0x42"));
+    assert(format(STR("{0:#X}"), 0x42) == STR("0X42"));
+    assert(format(STR("{0:#x}"), -0x42) == STR("-0x42"));
+    assert(format(STR("{0:#o}"), 0) == STR("0"));
+    assert(format(STR("{0:#o}"), 042) == STR("042"));
+    assert(format(STR("{0:#o}"), -042) == STR("-042"));
+    assert(format(STR("{0:#}"), 42u) == STR("42"));
+    assert(format(STR("{0:#x}"), 0x42u) == STR("0x42"));
+    assert(format(STR("{0:#o}"), 042u) == STR("042"));
+
+    assert(format(STR("{0:#}"), -42l) == STR("-42"));
+    assert(format(STR("{0:#x}"), 0x42l) == STR("0x42"));
+    assert(format(STR("{0:#x}"), -0x42l) == STR("-0x42"));
+    assert(format(STR("{0:#o}"), 042l) == STR("042"));
+    assert(format(STR("{0:#o}"), -042l) == STR("-042"));
+    assert(format(STR("{0:#}"), 42ul) == STR("42"));
+    assert(format(STR("{0:#x}"), 0x42ul) == STR("0x42"));
+    assert(format(STR("{0:#o}"), 042ul) == STR("042"));
+
+    assert(format(STR("{0:#}"), -42ll) == STR("-42"));
+    assert(format(STR("{0:#x}"), 0x42ll) == STR("0x42"));
+    assert(format(STR("{0:#x}"), -0x42ll) == STR("-0x42"));
+    assert(format(STR("{0:#o}"), 042ll) == STR("042"));
+    assert(format(STR("{0:#o}"), -042ll) == STR("-042"));
+    assert(format(STR("{0:#}"), 42ull) == STR("42"));
+    assert(format(STR("{0:#x}"), 0x42ull) == STR("0x42"));
+    assert(format(STR("{0:#o}"), 042ull) == STR("042"));
+
+    // differs from libfmt, but conforms
+    assert(format(STR("{0:#}"), -42.0) == STR("-42."));
+    // differs from libfmt, but conforms
+    assert(format(STR("{0:#}"), -42.0l) == STR("-42."));
+    assert(format(STR("{:#.0e}"), 42.0) == STR("4.e+01"));
+    assert(format(STR("{:#.0f}"), 0.01) == STR("0."));
+    // differs from libfmt, but conforms
+    assert(format(STR("{:#.2g}"), 0.5) == STR("0.5"));
+    assert(format(STR("{:#.0f}"), 0.5) == STR("0."));
+    throw_helper(STR("{0:#"), 'c');
+    throw_helper(STR("{0:#}"), 'c');
+    throw_helper(STR("{0:#}"), STR("abc"));
+    throw_helper(STR("{0:#}"), reinterpret_cast<void*>(0x42));
+}
+
+template <class charT>
+void libfmt_formatter_test_zero_flag() {
+    assert(format(STR("{0:0}"), 42) == STR("42"));
+    assert(format(STR("{0:05}"), -42) == STR("-0042"));
+    assert(format(STR("{0:05}"), 42u) == STR("00042"));
+    assert(format(STR("{0:05}"), -42l) == STR("-0042"));
+    assert(format(STR("{0:05}"), 42ul) == STR("00042"));
+    assert(format(STR("{0:05}"), -42ll) == STR("-0042"));
+    assert(format(STR("{0:05}"), 42ull) == STR("00042"));
+    assert(format(STR("{0:07}"), -42.0) == STR("-000042"));
+    assert(format(STR("{0:07}"), -42.0l) == STR("-000042"));
+    throw_helper(STR("{0:0"), 'c');
+    throw_helper(STR("{0:05}"), 'c');
+    throw_helper(STR("{0:05}"), STR("abc"));
+    throw_helper(STR("{0:05}"), reinterpret_cast<void*>(0x42));
+}
+
 int main() {
     test_simple_formatting<char>();
     test_simple_formatting<wchar_t>();
@@ -1030,6 +1260,36 @@ int main() {
     test_size<wchar_t>();
 
     test_multibyte_format_strings();
+
+    libfmt_formatter_test_escape<char>();
+    libfmt_formatter_test_escape<wchar_t>();
+
+    libfmt_formatter_test_args_in_different_position<char>();
+    libfmt_formatter_test_args_in_different_position<wchar_t>();
+
+    libfmt_formatter_test_left_align<char>();
+    libfmt_formatter_test_left_align<wchar_t>();
+
+    libfmt_formatter_test_right_align<char>();
+    libfmt_formatter_test_right_align<wchar_t>();
+
+    libfmt_formatter_test_fill<char>();
+    libfmt_formatter_test_fill<wchar_t>();
+
+    libfmt_formatter_test_plus_sign<char>();
+    libfmt_formatter_test_plus_sign<wchar_t>();
+
+    libfmt_formatter_test_minus_sign<char>();
+    libfmt_formatter_test_minus_sign<wchar_t>();
+
+    libfmt_formatter_test_space_sign<char>();
+    libfmt_formatter_test_space_sign<wchar_t>();
+
+    libfmt_formatter_test_hash_flag<char>();
+    libfmt_formatter_test_hash_flag<wchar_t>();
+
+    libfmt_formatter_test_zero_flag<char>();
+    libfmt_formatter_test_zero_flag<wchar_t>();
 
     return 0;
 }
