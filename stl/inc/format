@@ -2173,14 +2173,15 @@ _NODISCARD inline int _Estimate_character_width(const wchar_t* _Ptr, const int _
 }
 
 template <class _CharT>
-_NODISCARD const _CharT* _Measure_string_prefix(const basic_string_view<_CharT> _Value, ptrdiff_t& _Width) {
+_NODISCARD const _CharT* _Measure_string_prefix(const basic_string_view<_CharT> _Value, int& _Width) {
     // Returns a pointer past-the-end of the largest prefix of _Value that fits in _Width, or all
     // of _Value if _Width is negative. Updates _Width to the estimated width of that prefix.
-    const ptrdiff_t _Max_width = _Width;
-    auto _Pos                  = _Value.data();
-    const auto _Last           = _Pos + _Value.size();
-    ptrdiff_t _Estimated_width = 0; // the estimated width of [_Value.data(), _Pos)
-    const _Cvtvec& _Cvt        = _Getcvt();
+    const int _Max_width    = _Width;
+    auto _Pos               = _Value.data();
+    const auto _Last        = _Pos + _Value.size();
+    int _Estimated_width    = 0; // the estimated width of [_Value.data(), _Pos)
+    const _Cvtvec& _Cvt     = _Getcvt();
+    constexpr auto _Max_int = (numeric_limits<int>::max)();
 
     while (_Pos != _Last) {
         if (_Estimated_width == _Max_width && _Max_width >= 0) {
@@ -2191,6 +2192,15 @@ _NODISCARD const _CharT* _Measure_string_prefix(const basic_string_view<_CharT> 
         // TRANSITION, extended grapheme clustering
         const int _Units           = _Code_units_in_next_character(_Pos, _Last, _Cvt);
         const int _Character_width = _Estimate_character_width(_Pos, _Units, _Cvt);
+
+        if (_Max_int - _Character_width < _Estimated_width) { // avoid overflow
+            // Either _Max_width isn't set, or adding this character will exceed it.
+            if (_Max_width < 0) { // unset; saturate width estimate and take all characters
+                _Estimated_width = _Max_int;
+                _Pos             = _Last;
+            }
+            break;
+        }
 
         _Estimated_width += _Character_width;
         if (_Estimated_width > _Max_width && _Max_width >= 0) {
@@ -2233,7 +2243,7 @@ _NODISCARD _OutputIt _Fmt_write(
         return _Fmt_write(_STD move(_Out), _Value);
     }
 
-    ptrdiff_t _Width    = _Specs._Precision;
+    int _Width          = _Specs._Precision;
     const _CharT* _Last = _Measure_string_prefix(_Value, _Width);
 
     return _Write_aligned(_STD move(_Out), _Width, _Specs, _Align::_Left, [=](_OutputIt _Out) {
