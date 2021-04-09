@@ -5195,8 +5195,8 @@ namespace chrono {
 
     template <class _CharT>
     struct _Chrono_specs {
-        _CharT _Lit_char = _CharT{0}; // any char other than {, }, %
-        char _Modifier   = '\0'; // either E or O
+        _CharT _Lit_char = _CharT{0}; // any character other than '{', '}', or '%'
+        char _Modifier   = '\0'; // either 'E' or 'O'
         char _Type       = '\0';
     };
 
@@ -5208,7 +5208,7 @@ namespace chrono {
         int _Dynamic_precision_index = -1;
         _Align _Alignment            = _Align::_None;
         // At most one codepoint (so one char32_t or four utf-8 char8_t)
-        _CharT _Fill[4] = {' ', _CharT{0}, _CharT{0}, _CharT{0}};
+        _CharT _Fill[4 / sizeof(_CharT)] = {_CharT{' '}};
         // recursive definition in grammar, so could have any number of these with literal chars
         vector<_Chrono_specs<_CharT>> _Chrono_specs_list;
     };
@@ -5226,12 +5226,12 @@ namespace chrono {
 
         // same as _Specs_setter
         constexpr void _On_fill(basic_string_view<_CharT> _Sv) {
-            if (_Sv.size() > 4) {
+            if (_Sv.size() > _STD size(_Specs._Fill)) {
                 _THROW(format_error("Invalid fill (too long)."));
             }
 
-            _STD fill(_Specs._Fill, _Specs._Fill + 4, _CharT{});
-            _STD copy(_Sv.begin(), _Sv.end(), _Specs._Fill);
+            const auto _Pos = _STD _Copy_unchecked(_Sv._Unchecked_begin(), _Sv._Unchecked_end(), _Specs._Fill);
+            _STD fill(_Pos, _STD end(_Specs._Fill), _CharT{});
         }
 
         constexpr void _On_width(int _Width) {
@@ -5270,7 +5270,8 @@ namespace chrono {
     template <class _CharT, _Chrono_parse_spec_callbacks<_CharT> _Callbacks_type>
     _NODISCARD constexpr const _CharT* _Parse_conversion_specs(
         const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
-        ++_Begin; // move past %
+        _STL_INTERNAL_CHECK(*_Begin == '%');
+        ++_Begin;
         if (_Begin == _End || *_Begin == '}') {
             _THROW(format_error("Invalid format string."));
         }

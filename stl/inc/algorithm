@@ -397,39 +397,6 @@ namespace ranges {
     };
 
     inline constexpr _For_each_n_fn for_each_n{_Not_quite_object::_Construct_tag{}};
-
-    // VARIABLE ranges::find
-    class _Find_fn : private _Not_quite_object {
-    public:
-        using _Not_quite_object::_Not_quite_object;
-
-        // clang-format off
-        template <input_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pj = identity>
-            requires indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>
-        _NODISCARD constexpr _It operator()(_It _First, _Se _Last, const _Ty& _Val, _Pj _Proj = {}) const {
-            _Adl_verify_range(_First, _Last);
-            auto _UResult = _RANGES _Find_unchecked(
-                _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _Val, _Pass_fn(_Proj));
-
-            _Seek_wrapped(_First, _STD move(_UResult));
-            return _First;
-        }
-
-        template <input_range _Rng, class _Ty, class _Pj = identity>
-            requires indirect_binary_predicate<ranges::equal_to, projected<iterator_t<_Rng>, _Pj>, const _Ty*>
-        _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(
-            _Rng&& _Range, const _Ty& _Val, _Pj _Proj = {}) const {
-            auto _First = _RANGES begin(_Range);
-            auto _UResult =
-                _RANGES _Find_unchecked(_Get_unwrapped(_STD move(_First)), _Uend(_Range), _Val, _Pass_fn(_Proj));
-
-            _Seek_wrapped(_First, _STD move(_UResult));
-            return _First;
-        }
-        // clang-format on
-    };
-
-    inline constexpr _Find_fn find{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
@@ -1379,36 +1346,6 @@ namespace ranges {
     };
 
     inline constexpr _None_of_fn none_of{_Not_quite_object::_Construct_tag{}};
-
-    // VARIABLE ranges::copy
-    class _Copy_fn : private _Not_quite_object {
-    public:
-        using _Not_quite_object::_Not_quite_object;
-
-        // clang-format off
-        template <input_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out>
-            requires indirectly_copyable<_It, _Out>
-        constexpr copy_result<_It, _Out> operator()(_It _First, _Se _Last, _Out _Result) const {
-            _Adl_verify_range(_First, _Last);
-            auto _UResult = _RANGES _Copy_unchecked(
-                _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _STD move(_Result));
-            _Seek_wrapped(_First, _STD move(_UResult.in));
-            return {_STD move(_First), _STD move(_UResult.out)};
-        }
-
-        template <input_range _Rng, weakly_incrementable _Out>
-            requires indirectly_copyable<iterator_t<_Rng>, _Out>
-        constexpr copy_result<borrowed_iterator_t<_Rng>, _Out> operator()(_Rng&& _Range, _Out _Result) const {
-            auto _First = _RANGES begin(_Range);
-            auto _UResult =
-                _RANGES _Copy_unchecked(_Get_unwrapped(_STD move(_First)), _Uend(_Range), _STD move(_Result));
-            _Seek_wrapped(_First, _STD move(_UResult.in));
-            return {_STD move(_First), _STD move(_UResult.out)};
-        }
-        // clang-format on
-    };
-
-    inline constexpr _Copy_fn copy{_Not_quite_object::_Construct_tag{}};
 
     // ALIAS TEMPLATE copy_n_result
     template <class _In, class _Out>

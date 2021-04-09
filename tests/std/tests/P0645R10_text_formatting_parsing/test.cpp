@@ -62,6 +62,7 @@ struct testing_callbacks {
     bool expected_zero                   = false;
     bool expected_localized              = false;
     CharT expected_type                  = '\0';
+
     constexpr void _On_align(_Align aln) {
         assert(aln == expected_alignment);
     }
@@ -111,8 +112,8 @@ struct testing_arg_id_callbacks {
 };
 
 template <typename CharT, typename callback_type>
-constexpr void test_parse_helper(const CharT* (*func)(const CharT*, const CharT*, callback_type&&),
-    basic_string_view<CharT> view, bool err_expected = false,
+void test_parse_helper(const CharT* (*func)(const CharT*, const CharT*, callback_type&&), basic_string_view<CharT> view,
+    bool err_expected                                                  = false,
     typename basic_string_view<CharT>::size_type expected_end_position = basic_string_view<CharT>::npos,
     callback_type&& callbacks                                          = {}) {
     try {
@@ -127,7 +128,7 @@ constexpr void test_parse_helper(const CharT* (*func)(const CharT*, const CharT*
 }
 
 template <typename CharT>
-constexpr bool test_parse_align() {
+bool test_parse_align() {
     auto parse_align_fn = _Parse_align<CharT, testing_callbacks<CharT>>;
     using view_typ      = basic_string_view<CharT>;
 
@@ -141,6 +142,7 @@ constexpr bool test_parse_align() {
         {.expected_alignment = _Align::_Right, .expected_fill = view_typ(TYPED_LITERAL(CharT, "*"))});
     test_parse_helper(parse_align_fn, s3, false, view_typ::npos,
         {.expected_alignment = _Align::_Center, .expected_fill = view_typ(TYPED_LITERAL(CharT, "*"))});
+
     if constexpr (same_as<CharT, wchar_t>) {
         // This is a CJK character where the least significant byte is the same as ascii '>',
         // libfmt and initial drafts of <format> narrowed characters when parsing alignments, causing
@@ -148,13 +150,49 @@ constexpr bool test_parse_align() {
         // an alignment specifier.
         auto s4 = L"*\x343E"sv;
         test_parse_helper(parse_align_fn, s4, false, view_typ::npos, {.expected_fill = L"*"sv});
+
+        // test multi-code-unit fill characters
+        {
+            test_parse_helper(parse_align_fn, L"\U0001F3C8<X"sv, false, 3,
+                {.expected_alignment = _Align::_Left, .expected_fill = L"\U0001F3C8"sv});
+            test_parse_helper(parse_align_fn, L"\U0001F3C8>X"sv, false, 3,
+                {.expected_alignment = _Align::_Right, .expected_fill = L"\U0001F3C8"sv});
+            test_parse_helper(parse_align_fn, L"\U0001F3C8^X"sv, false, 3,
+                {.expected_alignment = _Align::_Center, .expected_fill = L"\U0001F3C8"sv});
+        }
+    } else {
+        // test multibyte fill characters
+        {
+            setlocale(LC_ALL, ".932");
+            test_parse_helper(parse_align_fn, "\x93\xfa<X"sv, false, 3,
+                {.expected_alignment = _Align::_Left, .expected_fill = "\x93\xfa"sv});
+            test_parse_helper(parse_align_fn, "\x96\x7b>X"sv, false, 3,
+                {.expected_alignment = _Align::_Right, .expected_fill = "\x96\x7b"sv});
+            test_parse_helper(parse_align_fn, "\x92\x6e^X"sv, false, 3,
+                {.expected_alignment = _Align::_Center, .expected_fill = "\x92\x6e"sv});
+        }
+
+#ifndef MSVC_INTERNAL_TESTING // TRANSITION, Windows on Contest VMs understand ".UTF-8" codepage
+        {
+            setlocale(LC_ALL, ".UTF-8");
+            // "\xf0\x9f\x8f\x88" is U+1F3C8 AMERICAN FOOTBALL
+            test_parse_helper(parse_align_fn, "\xf0\x9f\x8f\x88<X"sv, false, 5,
+                {.expected_alignment = _Align::_Left, .expected_fill = "\xf0\x9f\x8f\x88"sv});
+            test_parse_helper(parse_align_fn, "\xf0\x9f\x8f\x88>X"sv, false, 5,
+                {.expected_alignment = _Align::_Right, .expected_fill = "\xf0\x9f\x8f\x88"sv});
+            test_parse_helper(parse_align_fn, "\xf0\x9f\x8f\x88^X"sv, false, 5,
+                {.expected_alignment = _Align::_Center, .expected_fill = "\xf0\x9f\x8f\x88"sv});
+        }
+#endif // MSVC_INTERNAL_TESTING
+
+        setlocale(LC_ALL, nullptr);
     }
 
     return true;
 }
 
 template <typename CharT>
-constexpr bool test_parse_width() {
+bool test_parse_width() {
     auto parse_width_fn = _Parse_width<CharT, testing_callbacks<CharT>>;
     using view_typ      = basic_string_view<CharT>;
 
@@ -175,7 +213,7 @@ constexpr bool test_parse_width() {
 }
 
 template <typename CharT>
-constexpr bool test_parse_arg_id() {
+bool test_parse_arg_id() {
     auto parse_arg_id_fn = _Parse_arg_id<CharT, testing_arg_id_callbacks>;
     using view_typ       = basic_string_view<CharT>;
     // note that parse arg id starts with the arg id itself, not the { beginning of the
@@ -207,7 +245,7 @@ constexpr bool test_parse_arg_id() {
 }
 
 template <typename CharT>
-constexpr bool test_parse_precision() {
+bool test_parse_precision() {
     auto parse_pre_fn = _Parse_precision<CharT, testing_callbacks<CharT>>;
     using view_typ    = basic_string_view<CharT>;
 
@@ -239,7 +277,7 @@ constexpr bool test_parse_precision() {
 }
 
 template <typename CharT>
-constexpr bool test_parse_format_specs() {
+bool test_parse_format_specs() {
     auto parse_format_specs_fn = _Parse_format_specs<CharT, testing_callbacks<CharT>>;
     using view_typ             = basic_string_view<CharT>;
 
@@ -305,28 +343,18 @@ constexpr bool test_specs_checker() {
 int main() {
     test_parse_align<char>();
     test_parse_align<wchar_t>();
-    static_assert(test_parse_align<char>());
-    static_assert(test_parse_align<wchar_t>());
 
     test_parse_arg_id<char>();
     test_parse_arg_id<wchar_t>();
-    static_assert(test_parse_arg_id<char>());
-    static_assert(test_parse_arg_id<wchar_t>());
 
     test_parse_width<char>();
     test_parse_width<wchar_t>();
-    static_assert(test_parse_width<char>());
-    static_assert(test_parse_width<wchar_t>());
 
     test_parse_precision<char>();
     test_parse_precision<wchar_t>();
-    static_assert(test_parse_precision<char>());
-    static_assert(test_parse_precision<wchar_t>());
 
     test_parse_format_specs<char>();
     test_parse_format_specs<wchar_t>();
-    static_assert(test_parse_format_specs<char>());
-    static_assert(test_parse_format_specs<wchar_t>());
 
     test_specs_setter<char>();
     test_specs_setter<wchar_t>();
