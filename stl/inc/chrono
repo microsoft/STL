@@ -5182,12 +5182,12 @@ namespace chrono {
 
     // clang-format off
     template <class _Ty, class _CharT>
-    concept _Chrono_parse_spec_callbacks = _Parse_align_callbacks<_Ty, _CharT> &&
-                                           _Parse_width_callbacks<_Ty, _CharT> &&
-                                           _Parse_precision_callbacks<_Ty, _CharT> &&
-                                           _Width_adapter_callbacks<_Ty, _CharT> &&
-                                           _Precision_adapter_callbacks<_Ty, _CharT> &&
-                                           requires(_Ty _At, basic_string_view<_CharT> _Sv, _Align _Aln) {
+    concept _Chrono_parse_spec_callbacks = _Parse_align_callbacks<_Ty, _CharT>
+                                           && _Parse_width_callbacks<_Ty, _CharT>
+                                           && _Parse_precision_callbacks<_Ty, _CharT>
+                                           && _Width_adapter_callbacks<_Ty, _CharT>
+                                           && _Precision_adapter_callbacks<_Ty, _CharT>
+                                           && requires(_Ty _At, basic_string_view<_CharT> _Sv, _Align _Aln) {
         { _At._On_conversion_spec(_CharT{}, _CharT{}) } -> same_as<void>;
         { _At._On_lit_char(_CharT{}) } -> same_as<void>;
     };
@@ -5246,7 +5246,7 @@ namespace chrono {
             // NOTE: same performance note from _Basic_format_specs also applies here
             const char _Char_mod  = static_cast<char>(_Modifier);
             const char _Char_type = static_cast<char>(_Type);
-            if (_Char_mod != 'E' && _Char_mod != 'O') {
+            if (_Char_mod != '\0' && _Char_mod != 'E' && _Char_mod != 'O') {
                 _THROW(format_error("Invalid modifier specification."));
             }
 
@@ -5271,7 +5271,7 @@ namespace chrono {
     _NODISCARD constexpr const _CharT* _Parse_conversion_specs(
         const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
         ++_Begin; // move past %
-        if (_Begin == _End) {
+        if (_Begin == _End || *_Begin == '}') {
             _THROW(format_error("Invalid format string."));
         }
 
@@ -5319,6 +5319,10 @@ namespace chrono {
         // chrono-spec
         while (_Begin != _End && *_Begin != '}') {
             if (*_Begin == '%') { // conversion-spec
+                if (_Begin + 1 == _End) {
+                    _THROW(format_error("Invalid format string- missing type after %"));
+                }
+
                 _CharT _Next_ch = *(_Begin + 1);
                 switch (_Next_ch) {
                 case 'n':
@@ -5335,6 +5339,7 @@ namespace chrono {
                     break;
                 default: // some other type
                     _Begin = _Parse_conversion_specs(_Begin, _End, _Callbacks);
+                    break;
                 }
             } else { // literal-char
                 _Callbacks._On_lit_char(*_Begin);

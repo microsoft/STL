@@ -14,7 +14,7 @@
 using namespace std;
 using namespace chrono;
 
-#if defined(__cpp_lib_concepts) && !defined(__clang__) // TRANSITION, LLVM-48606
+#ifndef __clang__ // TRANSITION, LLVM-48606
 
 // copied from the string_view tests
 template <typename CharT>
@@ -116,6 +116,8 @@ constexpr bool test_parse_conversion_spec() {
     view_typ s1(TYPED_LITERAL(CharT, "%Ec"));
     view_typ s2(TYPED_LITERAL(CharT, "%Od"));
     view_typ s3(TYPED_LITERAL(CharT, "%E"));
+    view_typ s4(TYPED_LITERAL(CharT, "%"));
+    view_typ s5(TYPED_LITERAL(CharT, "%}"));
 
     vector<chrono_spec> v0{{._Type = 'B'}};
     test_parse_helper(parse_conv_spec_fn, s0, false, view_typ::npos, {.expected_chrono_specs = v0});
@@ -129,6 +131,8 @@ constexpr bool test_parse_conversion_spec() {
     if (!is_constant_evaluated()) {
         vector<chrono_spec> v{};
         test_parse_helper(parse_conv_spec_fn, s3, true, view_typ::npos, {.expected_chrono_specs = v});
+        test_parse_helper(parse_conv_spec_fn, s4, true, view_typ::npos, {.expected_chrono_specs = v});
+        test_parse_helper(parse_conv_spec_fn, s5, true, view_typ::npos, {.expected_chrono_specs = v});
     }
 
     return true;
@@ -136,9 +140,9 @@ constexpr bool test_parse_conversion_spec() {
 
 template <typename CharT>
 constexpr bool test_parse_chrono_format_specs() {
-    auto parse_chrono_format_specs = _Parse_chrono_format_specs<CharT, testing_callbacks<CharT>>;
-    using view_typ                 = basic_string_view<CharT>;
-    using chrono_spec              = _Chrono_specs<CharT>;
+    auto parse_chrono_format_specs_fn = _Parse_chrono_format_specs<CharT, testing_callbacks<CharT>>;
+    using view_typ                    = basic_string_view<CharT>;
+    using chrono_spec                 = _Chrono_specs<CharT>;
 
     view_typ s0(TYPED_LITERAL(CharT, "%Oe"));
     view_typ s1(TYPED_LITERAL(CharT, "lit"));
@@ -146,34 +150,42 @@ constexpr bool test_parse_chrono_format_specs() {
     view_typ s3(TYPED_LITERAL(CharT, "6%H}"));
     view_typ s4(TYPED_LITERAL(CharT, "*<6hi"));
     view_typ s5(TYPED_LITERAL(CharT, "*^4.4%ymm"));
+    view_typ s6(TYPED_LITERAL(CharT, "%H%"));
+    view_typ s7(TYPED_LITERAL(CharT, "%H%}"));
 
     vector<chrono_spec> v0{{._Modifier = 'O', ._Type = 'e'}};
-    test_parse_helper(parse_chrono_format_specs, s0, false, s0.size(), {.expected_chrono_specs = v0});
+    test_parse_helper(parse_chrono_format_specs_fn, s0, false, s0.size(), {.expected_chrono_specs = v0});
 
     vector<chrono_spec> v1{{._Lit_char = 'l'}, {._Lit_char = 'i'}, {._Lit_char = 't'}};
-    test_parse_helper(parse_chrono_format_specs, s1, false, s1.size(), {.expected_chrono_specs = v1});
+    test_parse_helper(parse_chrono_format_specs_fn, s1, false, s1.size(), {.expected_chrono_specs = v1});
 
     vector<chrono_spec> v2{{._Type = 'H'}, {._Lit_char = ':'}, {._Type = 'M'}};
-    test_parse_helper(parse_chrono_format_specs, s2, false, s2.size() - 1, {.expected_chrono_specs = v2});
+    test_parse_helper(parse_chrono_format_specs_fn, s2, false, s2.size() - 1, {.expected_chrono_specs = v2});
 
     vector<chrono_spec> v3{{._Type = 'H'}};
     test_parse_helper(
-        parse_chrono_format_specs, s3, false, s3.size() - 1, {.expected_width = 6, .expected_chrono_specs = v3});
+        parse_chrono_format_specs_fn, s3, false, s3.size() - 1, {.expected_width = 6, .expected_chrono_specs = v3});
 
     vector<chrono_spec> v4{{._Lit_char = 'h'}, {._Lit_char = 'i'}};
-    test_parse_helper(parse_chrono_format_specs, s4, false, s4.size(),
+    test_parse_helper(parse_chrono_format_specs_fn, s4, false, s4.size(),
         {.expected_alignment       = _Align::_Left,
             .expected_fill         = view_typ(TYPED_LITERAL(CharT, "*")),
             .expected_width        = 6,
             .expected_chrono_specs = v4});
 
     vector<chrono_spec> v5{{._Type = 'y'}, {._Lit_char = 'm'}, {._Lit_char = 'm'}};
-    test_parse_helper(parse_chrono_format_specs, s5, false, s5.size(),
+    test_parse_helper(parse_chrono_format_specs_fn, s5, false, s5.size(),
         {.expected_alignment       = _Align::_Center,
             .expected_fill         = view_typ(TYPED_LITERAL(CharT, "*")),
             .expected_width        = 4,
             .expected_precision    = 4,
             .expected_chrono_specs = v5});
+
+    if (!is_constant_evaluated()) {
+        vector<chrono_spec> v{{._Type = 'H'}}; // we don't throw a format_error until we parse the %H
+        test_parse_helper(parse_chrono_format_specs_fn, s6, true, view_typ::npos, {.expected_chrono_specs = v});
+        test_parse_helper(parse_chrono_format_specs_fn, s7, true, view_typ::npos, {.expected_chrono_specs = v});
+    }
 
     return true;
 }
@@ -190,8 +202,8 @@ int main() {
     static_assert(test_parse_chrono_format_specs<wchar_t>());
 }
 
-#else // ^^^ defined(__cpp_lib_concepts) && !defined(__clang__) / !defined(__cpp_lib_concepts) || defined(__clang__) vvv
+#else // ^^^ __clang__ / !__clang__ vvv
 
 int main() {}
 
-#endif // defined(__cpp_lib_concepts) && !defined(__clang__)
+#endif // __clang__
