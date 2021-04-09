@@ -5349,6 +5349,80 @@ namespace chrono {
 
         return _Begin;
     }
+
+    template <_CharT>
+    struct formatter<day, _CharT> {
+        basic_format_parse_context<_CharT>::iterator parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
+            _Chrono_format_specs _Specs{};
+            _Chrono_specs_setter _Callback{_Specs};
+            const auto _End = _Parse_chrono_format_specs(_Parse_ctx.begin(), _Parse_ctx.end(), _Callback);
+            if (_Specs._Precision != -1) {
+                _THROW(format_error("Precision specification invalid for type day."));
+            }
+
+            const auto _Chrono_specs = _Specs._Chrono_specs_list;
+            if (!_Chrono_specs.empty()) {
+                _THROW(format_error("day requires at least one chrono-spec."));
+            }
+
+            _Chrono_specs* _Target_conv_spec_ptr = _STD find_if(_Chrono_specs.begin(), _Chrono_specs.end(),
+                [](const _Chrono_spec<_CharT> _Cs) { return _Cs._Type != '\0'; });
+            _Chrono_specs _Target_conv_spec      = *_Target_conv_spec_ptr;
+
+            if (_Target_conv_spec_ptr == _Chrono_specs.end()) {
+                _THROW(format_error("day requires one conversion-spec."));
+            }
+
+            _Conv_spec_ptr = _Target_conv_spec_ptr;
+            // only 'd' and 'e' acceptable types for day
+            if (_Target_conv_spec._Type != 'd' && _Target_conv_spec._Type != 'e') {
+                _THROW(format_error("Invalid type for type day."));
+            }
+
+            if (_Target_conv_spec._Modifier != '\0' && _Target_conv_spec._Modifier != 'O') {
+                _THROW(format_error("Invalid modifier for type day."));
+            }
+
+            _Target_conv_spec_ptr = _STD find_if(_Target_conv_spec_ptr, _Chrono_specs.end(),
+                [](const _Chrono_spec<_CharT> _Cs) { return _Cs._Type != '\0'; });
+
+            if (_Target_conv_spec_ptr == _Chrono_specs.end()) {
+                _THROW(format_error("day requires one conversion-spec."))
+            }
+
+            _Stored_specs = _Specs;
+            return _Parse_ctx.end();
+        }
+
+        format_context::iterator format(const day& _Val, format_context& _Fmt_ctx) {
+            /*
+            if O modifier
+                figure out locale deal
+            if _Val's number is < 10
+                if d prefix with 0
+                elif e prefix with ' '
+            else
+                just the plain _Val's number
+
+            return std::formatter's format function(...)
+            */
+            _Chrono_specs<_CharT> _Target = *_Conv_spec_ptr;
+            _CharT _Spacer                = '\0';
+            if (static_cast<unsigned int>(_Val) < 10) {
+                if (_Target._Type == 'd') {
+                    _Spacer = '0';
+                } else { // e
+                    _Spacer = ' ';
+                }
+            }
+            if (_Target._Modifier == 'O') {
+            }
+        }
+
+    private:
+        _Chrono_specs<_CharT>* _Conv_spec_ptr;
+        _Chrono_format_specs<_CharT> _Stored_specs;
+    };
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX20
 } // namespace chrono
