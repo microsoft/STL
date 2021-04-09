@@ -953,8 +953,6 @@ void test_size() {
     test_size_helper<charT>(8, STR("{:8}"), STR("scully"));
 }
 
-#include <iostream> // FIXME
-
 void test_multibyte_format_strings() {
     {
         setlocale(LC_ALL, ".932");

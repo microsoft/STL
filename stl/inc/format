@@ -387,14 +387,14 @@ _NODISCARD constexpr const _CharT* _Parse_arg_id(
 }
 
 inline int _Code_units_in_next_character(const char* _First, const char* _Last, const _Cvtvec& _Cvt) {
-    // Returns a count of the number of code units (characters) that compose the first multibyte
-    // character in [_First, _Last), or -1 if [_First, _Last) doesn't contain an entire encoded
-    // character or *_First is not a valid lead byte.
+    // Returns a count of the number of code units that compose the first encoded character in
+    // [_First, _Last), or -1 if [_First, _Last) doesn't contain an entire encoded character or
+    // *_First is not a valid lead byte.
     _STL_INTERNAL_CHECK(_First < _Last);
 
     switch (_Cvt._Mbcurmax) {
     default:
-        _ASSERTE(!"Bad number of encoding units for this code page");
+        _STL_INTERNAL_CHECK(!"Bad number of encoding units for this code page");
         [[fallthrough]];
     case 1:
         return 1; // all characters have only one code unit
@@ -417,45 +417,32 @@ inline int _Code_units_in_next_character(const char* _First, const char* _Last, 
     case 4: // Assume UTF-8 (as does _Mbrtowc)
         {
             const auto _Ch = static_cast<unsigned char>(*_First);
-            if (_Ch < 0b1000'0000) {
+            if (_Ch < 0b1000'0000u) {
                 return 1;
             }
 
             const auto _Len = static_cast<size_t>(_Last - _First);
 
-            if (_Ch < 0b1110'0000) {
-                if (_Ch >= 0b1100'0000 && _Len >= 2) {
-                    return 2;
-                }
-
-                // non-lead byte or partial code unit
-                return -1;
+            if (_Ch < 0b1110'0000u) {
+                // check for non-lead byte or partial 2-byte encoded character
+                return (_Ch >= 0b1100'0000u && _Len >= 2) ? 2 : -1;
             }
 
-            if (_Ch < 0b1111'0000) {
-                if (_Len >= 3) {
-                    return 3;
-                }
-
-                // partial code unit
-                return -1;
+            if (_Ch < 0b1111'0000u) {
+                // check for partial 3-byte encoded character
+                return (_Len >= 3) ? 3 : -1;
             }
 
-            if (_Len >= 4) {
-                return 4;
-            }
-
-            // partial code unit
-            return -1;
+            // check for partial 4-byte encoded character
+            return (_Len >= 4) ? 4 : -1;
         }
     }
 }
 
 inline int _Code_units_in_next_character(const wchar_t* _First, const wchar_t* _Last, const _Cvtvec&) {
-    // Returns a count of the number of code units (wide characters, which encode UTF-16 on our
-    // implementation) that compose the encoded character in [_First, _Last), or -1 if
-    // [_First, _Last) doesn't contain an entire encoded character or *_First is an unpaired
-    // surrogate.
+    // Returns a count of the number of code units that compose the first encoded character in
+    // [_First, _Last), or -1 if [_First, _Last) doesn't contain an entire encoded character or
+    // *_First is an unpaired surrogate.
 
     _STL_INTERNAL_CHECK(_First < _Last);
 
@@ -480,8 +467,7 @@ _NODISCARD const _CharT* _Parse_align(const _CharT* _Begin, const _CharT* _End, 
     // align and fill
     auto _Parsed_align = _Align::_None;
 
-    const _Cvtvec& _Cvt = _Getcvt();
-    const int _Units    = _Code_units_in_next_character(_Begin, _End, _Cvt);
+    const int _Units = _Code_units_in_next_character(_Begin, _End, _Getcvt());
     if (_Units < 0) { // invalid fill character encoding
         throw format_error("Invalid format string.");
     }
@@ -731,9 +717,11 @@ _NODISCARD constexpr const _CharT* _Parse_replacement_field(
 }
 
 template <class _CharT>
-const _CharT* _Scan_format_string(const _CharT* _First, const _CharT* _Last, const _CharT _Val, const _Cvtvec& _Cvt) {
-    // Returns the first occurrence of _Val as an encoded character in [_First, _Last).
+const _CharT* _Find_encoded(const _CharT* _First, const _CharT* _Last, const _CharT _Val, const _Cvtvec& _Cvt) {
+    // Returns the first occurrence of _Val as an encoded character (and not, for example, as a
+    // continuation byte) in [_First, _Last).
     if (_Cvt._Mbcurmax == 1 || _Cvt._Mbcurmax == 4) {
+        // As above and in _Mbrtowc, assume 4-byte encodings are UTF-8
         return _Find_unchecked(_First, _Last, _Val);
     }
 
@@ -755,11 +743,12 @@ void _Parse_format_string(basic_string_view<_CharT> _Format_str, _HandlerT&& _Ha
     const _Cvtvec& _Cvt = _Getcvt();
 
     while (_Begin != _End) {
-        const _CharT* _OpeningCurl = _Scan_format_string(_Begin, _End, _CharT{'{'}, _Cvt);
-        if (_Begin != _OpeningCurl) {
-            // we didn't start at an opening curl
+        const _CharT* _OpeningCurl = _Begin;
+        if (*_Begin != '{') {
+            _OpeningCurl = _Find_encoded(_Begin, _End, _CharT{'{'}, _Cvt);
+
             for (;;) {
-                const _CharT* _ClosingCurl = _Scan_format_string(_Begin, _OpeningCurl, _CharT{'}'}, _Cvt);
+                const _CharT* _ClosingCurl = _Find_encoded(_Begin, _OpeningCurl, _CharT{'}'}, _Cvt);
 
                 // In this case there are neither closing nor opening curls in [_Begin, _OpenCurl)
                 // Write the whole thing out.
@@ -824,10 +813,12 @@ public:
     }
 
     constexpr void _On_fill(basic_string_view<_CharT> _Sv) {
-        if (_Sv.size() > 4) {
+        if (_Sv.size() > _STD size(_Specs._Fill)) {
             throw format_error("Invalid fill (too long).");
         }
-        _STD fill(_STD copy(_Sv.begin(), _Sv.end(), _Specs._Fill), _STD end(_Specs._Fill), _CharT{});
+
+        auto _Pos = _STD _Copy_unchecked(_Sv._Unchecked_begin(), _Sv._Unchecked_end(), _Specs._Fill);
+        _STD fill(_STD move(_Pos), _STD end(_Specs._Fill), _CharT{});
     }
 
     constexpr void _On_sign(_Sign _Sgn) {
@@ -2103,18 +2094,18 @@ _NODISCARD _OutputIt _Fmt_write(
     return _Fmt_write(_STD move(_Out), basic_string_view<_CharT>{_Value}, _Specs, _Locale);
 }
 
-inline constexpr char16_t _U16_width_estimate_bounds[] = { // Per N4885 [format.string.std]/11
+inline constexpr char16_t _Width_estimate_low_intervals[] = { // Per N4885 [format.string.std]/11
     0x1100u, 0x1160u, 0x2329u, 0x232Bu, 0x2E80u, 0x303Fu, 0x3040u, 0xA4D0u, 0xAC00u, 0xD7A4u, 0xF900u, 0xFB00u, 0xFE10u,
     0xFE1Au, 0xFE30u, 0xFE70u, 0xFF00u, 0xFF61u, 0xFFE0u, 0xFFE7u};
 
-inline constexpr char32_t _U20_width_estimate_bounds[] = { // Per N4885 [format.string.std]/11
+inline constexpr char32_t _Width_estimate_high_intervals[] = { // Per N4885 [format.string.std]/11
     0x1F300u, 0x1F650u, 0x1F900u, 0x1FA00u, 0x20000u, 0x2FFFEu, 0x30000u, 0x3FFFEu};
 
 template <auto& _Bounds>
 _NODISCARD constexpr int _Unicode_width_estimate(const char32_t _Ch) noexcept {
-    // Computes the width estimation for unicode characters from N4885 [format.string.std]/11
+    // Computes the width estimation for Unicode characters from N4885 [format.string.std]/11
     int _Result = 1;
-    for (auto const& _Bound : _Bounds) {
+    for (const auto& _Bound : _Bounds) {
         if (_Ch < _Bound) {
             return _Result;
         }
@@ -2126,13 +2117,13 @@ _NODISCARD constexpr int _Unicode_width_estimate(const char32_t _Ch) noexcept {
 _NODISCARD inline int _Estimate_character_width(const char* _Ptr, const int _Units, const _Cvtvec& _Cvt) {
     // Return an estimate for the width of the character composed of _Units code units,
     // whose first code unit is denoted by _Ptr.
-    auto _Ch = static_cast<char32_t>(*_Ptr);
     if (_Cvt._Mbcurmax != 4) {
-        // not a Unicode encoding; estimate width as 1
-        return 1;
+        // not a Unicode encoding; estimate width == number of code units
+        return _Units;
     }
 
     // assume UTF-8
+    auto _Ch = static_cast<char32_t>(*_Ptr);
     switch (_Units) {
     default:
     case 1:
@@ -2151,10 +2142,10 @@ _NODISCARD inline int _Estimate_character_width(const char* _Ptr, const int _Uni
     }
 
     if (_Units == 3) {
-        return _Unicode_width_estimate<_U16_width_estimate_bounds>(_Ch);
+        return _Unicode_width_estimate<_Width_estimate_low_intervals>(_Ch);
     }
 
-    return _Unicode_width_estimate<_U20_width_estimate_bounds>(_Ch);
+    return _Unicode_width_estimate<_Width_estimate_high_intervals>(_Ch);
 }
 
 _NODISCARD inline int _Estimate_character_width(const wchar_t* _Ptr, const int _Units, const _Cvtvec&) {
@@ -2162,14 +2153,14 @@ _NODISCARD inline int _Estimate_character_width(const wchar_t* _Ptr, const int _
     // whose first code unit is denoted by _Ptr.
     auto _Ch = static_cast<char32_t>(*_Ptr);
     if (_Units == 1) {
-        return _Unicode_width_estimate<_U16_width_estimate_bounds>(_Ch);
+        return _Unicode_width_estimate<_Width_estimate_low_intervals>(_Ch);
     }
 
     // surrogate pair
     _Ch = (_Ch - 0xD8000u) << 10;
     _Ch += static_cast<char32_t>(_Ptr[1]) - 0xDC00u;
     _Ch += 0x10000u;
-    return _Unicode_width_estimate<_U20_width_estimate_bounds>(_Ch);
+    return _Unicode_width_estimate<_Width_estimate_high_intervals>(_Ch);
 }
 
 template <class _CharT>
