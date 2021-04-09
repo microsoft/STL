@@ -1013,7 +1013,13 @@ using indirect_result_t = invoke_result_t<_Fn, iter_reference_t<_Its>...>;
 template <indirectly_readable _It, indirectly_regular_unary_invocable<_It> _Proj>
 struct projected {
     using value_type = remove_cvref_t<indirect_result_t<_Proj&, _It>>;
+#if defined(__clang__) || defined(__EDG__)
     indirect_result_t<_Proj&, _It> operator*() const;
+#else // ^^^ no workaround / workaround vvv
+    indirect_result_t<_Proj&, _It> operator*() const {
+        _CSTD abort(); // TRANSITION, VSO-1308657
+    }
+#endif // ^^^ workaround ^^^
 };
 
 #ifdef __clang__
