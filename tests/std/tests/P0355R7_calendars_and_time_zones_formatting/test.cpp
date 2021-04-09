@@ -74,11 +74,8 @@ struct testing_callbacks {
         assert(expected_auto_dynamic_precision);
     }
     constexpr void _On_conversion_spec(CharT mod, CharT type) {
-        char _Char_mod  = static_cast<char>(expected_chrono_specs[curr_index]._Modifier);
-        char _Char_type = static_cast<char>(expected_chrono_specs[curr_index]._Type);
-
-        assert(mod == _Char_mod);
-        assert(type == _Char_type);
+        assert(static_cast<char>(mod) == expected_chrono_specs[curr_index]._Modifier);
+        assert(static_cast<char>(type) == expected_chrono_specs[curr_index]._Type);
         assert(expected_chrono_specs[curr_index]._Lit_char == CharT{0}); // not set
         ++curr_index;
     }
