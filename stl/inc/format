@@ -1399,9 +1399,9 @@ _NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const basic_string_view<_CharT> 
     return _RANGES _Copy_unchecked(_Value.begin(), _Value.end(), _STD move(_Out)).out;
 }
 
-template <class _CharT, class _OutputIt, class _Func>
-_NODISCARD _OutputIt _Write_aligned(_OutputIt _Out, const int _Width, const _Basic_format_specs<_CharT>& _Specs,
-    const _Align _Default_align, _Func&& _Fn) {
+template <class _OutputIt, class _Func, class _Specs_type>
+_NODISCARD _OutputIt _Write_aligned(
+    _OutputIt _Out, const int _Width, const _Specs_type& _Specs, const _Align _Default_align, _Func&& _Fn) {
     int _Fill_left  = 0;
     int _Fill_right = 0;
     auto _Alignment = _Specs._Alignment;
