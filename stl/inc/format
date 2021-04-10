@@ -2020,6 +2020,21 @@ _NODISCARD _OutputIt _Fmt_write(
                 if (!_Append_decimal) {
                     _Zeroes_to_append += 1;
                 }
+
+                // Leading zeroes are not significant if we used fixed point notation.
+                // Fixed point notation is only used if the exponent in scientific notation would be >= -4.
+                if (_Exponent_start == _Result.ptr && _Value != _Float{}) {
+                    auto _Abs_value = _STD abs(_Value);
+                    if (_Abs_value < 0.001) {
+                        _Zeroes_to_append += 4;
+                    } else if (_Abs_value < 0.01) {
+                        _Zeroes_to_append += 3;
+                    } else if (_Abs_value < 0.1) {
+                        _Zeroes_to_append += 2;
+                    } else if (_Abs_value < 1.0) {
+                        _Zeroes_to_append += 1;
+                    }
+                }
             }
         }
 

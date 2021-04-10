@@ -727,6 +727,14 @@ void test_float_specs() {
     assert(format(STR("{:#.0g}"), Float{0}) == STR("0."));
     assert(format(STR("{:#.0G}"), Float{0}) == STR("0."));
 
+
+    assert(format(STR("{:#.2g}"), 0.5) == STR("0.50"));
+    assert(format(STR("{:#.1g}"), 0.5) == STR("0.5"));
+    assert(format(STR("{:#.3g}"), 0.5) == STR("0.500"));
+    assert(format(STR("{:#.3g}"), 0.05) == STR("0.0500"));
+    assert(format(STR("{:#.3g}"), 0.0005) == STR("0.000500"));
+    assert(format(STR("{:#.3g}"), 0.00005) == STR("5.00e-05"));
+
     assert(format(STR("{:#} {:#}"), inf, nan) == STR("inf nan"));
     assert(format(STR("{:#a} {:#a}"), inf, nan) == STR("inf nan"));
     assert(format(STR("{:#A} {:#A}"), inf, nan) == STR("INF NAN"));
