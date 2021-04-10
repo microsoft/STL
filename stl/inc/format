@@ -3,6 +3,37 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+// NOTE:
+// The contents of this header are derived in part from libfmt under the following license:
+
+// Copyright (c) 2012 - present, Victor Zverovich
+//
+// Permission is hereby granted, free of charge, to any person obtaining
+// a copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject to
+// the following conditions:
+//
+// The above copyright notice and this permission notice shall be
+// included in all copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
+// --- Optional exception to the license ---
+//
+// As an exception, if, as a result of your compiling your source code, portions
+// of this Software are embedded into a machine-executable object form of such
+// source code, you may redistribute such embedded portions in such object form
+// without including the above copyright and permission notices.
+
 #pragma once
 #ifndef _FORMAT_
 #define _FORMAT_
@@ -781,14 +812,15 @@ void _Parse_format_string(basic_string_view<_CharT> _Format_str, _HandlerT&& _Ha
 
 template <class _CharT>
 struct _Basic_format_specs {
-    int _Width         = 0;
-    int _Precision     = -1;
-    char _Type         = '\0';
-    _Align _Alignment  = _Align::_None;
-    _Sign _Sgn         = _Sign::_None;
-    bool _Alt          = false;
-    bool _Localized    = false;
-    bool _Leading_zero = false;
+    int _Width           = 0;
+    int _Precision       = -1;
+    char _Type           = '\0';
+    _Align _Alignment    = _Align::_None;
+    _Sign _Sgn           = _Sign::_None;
+    bool _Alt            = false;
+    bool _Localized      = false;
+    bool _Leading_zero   = false;
+    uint8_t _Fill_length = 1;
     // At most one codepoint (so one char32_t or four utf-8 char8_t).
     _CharT _Fill[4 / sizeof(_CharT)] = {_CharT{' '}};
 };
@@ -819,6 +851,7 @@ public:
 
         const auto _Pos = _STD _Copy_unchecked(_Sv._Unchecked_begin(), _Sv._Unchecked_end(), _Specs._Fill);
         _STD fill(_Pos, _STD end(_Specs._Fill), _CharT{});
+        _Specs._Fill_length = static_cast<uint8_t>(_Sv.size());
     }
 
     constexpr void _On_sign(_Sign _Sgn) {
@@ -1529,7 +1562,7 @@ _NODISCARD _OutputIt _Write_aligned(_OutputIt _Out, const int _Width, const _Bas
         }
     }
 
-    const basic_string_view<_CharT> _Fill_char{_Specs._Fill, _RANGES find(_Specs._Fill, '\0')};
+    const basic_string_view<_CharT> _Fill_char{_Specs._Fill, _Specs._Fill_length};
     for (; _Fill_left > 0; --_Fill_left) {
         _Out = _RANGES copy(_Fill_char, _STD move(_Out)).out;
     }
