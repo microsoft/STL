@@ -174,7 +174,8 @@ public:
     using const_iterator = typename basic_string_view<_CharT>::const_iterator;
     using iterator       = const_iterator;
 
-    constexpr explicit basic_format_parse_context(basic_string_view<_CharT> _Fmt, size_t _Num_args_ = 0) noexcept
+    constexpr explicit basic_format_parse_context(
+        const basic_string_view<_CharT> _Fmt, const size_t _Num_args_ = 0) noexcept
         : _Format_string(_Fmt), _Num_args(_Num_args_) {}
 
     basic_format_parse_context(const basic_format_parse_context&) = delete;
@@ -556,7 +557,7 @@ struct _Width_adapter {
     constexpr void _On_auto_id() {
         _Callbacks._On_dynamic_width(_Auto_id_tag{});
     }
-    constexpr void _On_manual_id(size_t _Id) {
+    constexpr void _On_manual_id(const size_t _Id) {
         _Callbacks._On_dynamic_width(_Id);
     }
 };
@@ -572,7 +573,7 @@ struct _Precision_adapter {
     constexpr void _On_auto_id() {
         _Callbacks._On_dynamic_precision(_Auto_id_tag{});
     }
-    constexpr void _On_manual_id(size_t _Id) {
+    constexpr void _On_manual_id(const size_t _Id) {
         _Callbacks._On_dynamic_precision(_Id);
     }
 };
@@ -590,7 +591,7 @@ struct _Id_adapter {
         _Arg_id = _Parse_context.next_arg_id();
         _STL_INTERNAL_CHECK(_Arg_id != static_cast<size_t>(-1));
     }
-    constexpr void _On_manual_id(size_t _Id) {
+    constexpr void _On_manual_id(const size_t _Id) {
         _Parse_context.check_arg_id(_Id);
         _Arg_id = _Id;
         _STL_INTERNAL_CHECK(_Arg_id != static_cast<size_t>(-1));
@@ -852,11 +853,11 @@ class _Specs_setter {
 public:
     explicit constexpr _Specs_setter(_Basic_format_specs<_CharT>& _Specs_) : _Specs(_Specs_) {}
 
-    constexpr void _On_align(_Align _Aln) {
+    constexpr void _On_align(const _Align _Aln) {
         _Specs._Alignment = _Aln;
     }
 
-    constexpr void _On_fill(basic_string_view<_CharT> _Sv) {
+    constexpr void _On_fill(const basic_string_view<_CharT> _Sv) {
         if (_Sv.size() > _STD size(_Specs._Fill)) {
             throw format_error("Invalid fill (too long).");
         }
@@ -866,7 +867,7 @@ public:
         _Specs._Fill_length = static_cast<uint8_t>(_Sv.size());
     }
 
-    constexpr void _On_sign(_Sign _Sgn) {
+    constexpr void _On_sign(const _Sign _Sgn) {
         _Specs._Sgn = _Sgn;
     }
 
@@ -878,11 +879,11 @@ public:
         _Specs._Leading_zero = true;
     }
 
-    constexpr void _On_width(int _Width) {
+    constexpr void _On_width(const int _Width) {
         _Specs._Width = _Width;
     }
 
-    constexpr void _On_precision(int _Precision) {
+    constexpr void _On_precision(const int _Precision) {
         _Specs._Precision = _Precision;
     }
 
@@ -890,7 +891,7 @@ public:
         _Specs._Localized = true;
     }
 
-    constexpr void _On_type(_CharT _Type) {
+    constexpr void _On_type(const _CharT _Type) {
         // performance note: this could be optimized to one comparison by
         // first casting to unsigned int (the negative values will be 128-255)
         if (_Type < 0 || _Type > (numeric_limits<signed char>::max)()) {
@@ -904,7 +905,7 @@ protected:
 };
 
 template <class _Context>
-_NODISCARD constexpr basic_format_arg<_Context> _Get_arg(const _Context& _Ctx, size_t _Arg_id) {
+_NODISCARD constexpr basic_format_arg<_Context> _Get_arg(const _Context& _Ctx, const size_t _Arg_id) {
     // note: while this is parameterized on the _Arg_id type in libfmt we don't
     // need to do that in std::format because it's only called with either an integer
     // id or a named id (which we do not support in std::format)
@@ -921,7 +922,7 @@ _NODISCARD constexpr basic_format_arg<_Context> _Get_arg(const _Context& _Ctx, s
 class _Width_checker {
 public:
     template <class _Ty>
-    _NODISCARD constexpr unsigned long long operator()(_Ty _Value) {
+    _NODISCARD constexpr unsigned long long operator()(const _Ty _Value) const {
         if constexpr (is_integral_v<_Ty>) {
             if constexpr (is_signed_v<_Ty>) {
                 if (_Value < 0) {
@@ -940,7 +941,7 @@ public:
 class _Precision_checker {
 public:
     template <class _Ty>
-    _NODISCARD constexpr unsigned long long operator()(_Ty _Value) {
+    _NODISCARD constexpr unsigned long long operator()(const _Ty _Value) const {
         if constexpr (is_integral_v<_Ty>) {
             if constexpr (is_signed_v<_Ty>) {
                 if (_Value < 0) {
@@ -1081,7 +1082,7 @@ private:
     _Numeric_specs_checker _Numeric_checker;
 
 public:
-    constexpr explicit _Specs_checker(const _Handler& _Handler_inst, _Basic_format_arg_type _Arg_type_)
+    constexpr explicit _Specs_checker(const _Handler& _Handler_inst, const _Basic_format_arg_type _Arg_type_)
         : _Handler(_Handler_inst), _Numeric_checker(_Arg_type_) {}
 
     // _On_align has no checking, since we don't implement numeric alignments.
@@ -2370,13 +2371,13 @@ struct _Format_handler {
         _Ctx.advance_to(_RANGES _Copy_unchecked(_Begin, _End, _Ctx.out()).out);
     }
 
-    void _On_replacement_field(size_t _Id, const _CharT*) {
+    void _On_replacement_field(const size_t _Id, const _CharT*) {
         auto _Arg = _Ctx.arg(_Id);
         _Ctx.advance_to(_STD visit_format_arg(
             _Default_arg_formatter<_OutputIt, _CharT>{_Ctx.out(), _Ctx._Get_args(), _Ctx.locale()}, _Arg));
     }
 
-    const _CharT* _On_format_specs(size_t _Id, const _CharT* _Begin, const _CharT* _End) {
+    const _CharT* _On_format_specs(const size_t _Id, const _CharT* _Begin, const _CharT* _End) {
         _Parse_context.advance_to(_Parse_context.begin() + (_Begin - &*_Parse_context.begin()));
         auto _Arg = _Ctx.arg(_Id);
         if (_Arg._Active_state == _Basic_format_arg_type::_Custom_type) {
