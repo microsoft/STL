@@ -716,7 +716,8 @@ _NODISCARD constexpr const _CharT* _Parse_format_specs(
 
     // If there's anything remaining we assume it's a type.
     if (*_Begin != '}') {
-        _Callbacks._On_type(*_Begin++);
+        _Callbacks._On_type(*_Begin);
+        ++_Begin;
     }
 
     return _Begin;
