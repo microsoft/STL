@@ -5207,7 +5207,7 @@ namespace chrono {
         int _Dynamic_width_index     = -1;
         int _Dynamic_precision_index = -1;
         _Align _Alignment            = _Align::_None;
-        uint8_t _Fill_length         = 0;
+        uint8_t _Fill_length         = 1;
         // At most one codepoint (so one char32_t or four utf-8 char8_t)
         _CharT _Fill[4 / sizeof(_CharT)] = {_CharT{' '}};
         // recursive definition in grammar, so could have any number of these with literal chars
