@@ -1097,7 +1097,7 @@ public:
 
     constexpr void _On_zero() {
         // Note 0 is again not valid for CharT or bool unless a numeric
-        // presentation type is uesd.
+        // presentation type is used.
         _Numeric_checker._Require_numeric_argument();
         _Handler::_On_zero();
     }
