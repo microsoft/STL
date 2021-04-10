@@ -5177,10 +5177,14 @@ namespace chrono {
         return _CHRONO from_stream(_Is, _Tpi._Fmt.c_str(), _Tpi._Tp, _Tpi._Abbrev, _Tpi._Offset);
     }
 
-#ifdef __cpp_lib_concepts
-    // [time.format]
+#endif // _HAS_CXX20
+} // namespace chrono
 
-    // clang-format off
+#if _HAS_CXX20
+#ifdef __cpp_lib_concepts
+  // [time.format]
+
+// clang-format off
     template <class _Ty, class _CharT>
     concept _Chrono_parse_spec_callbacks = _Parse_align_callbacks<_Ty, _CharT>
                                            && _Parse_width_callbacks<_Ty, _CharT>
@@ -5191,241 +5195,242 @@ namespace chrono {
         { _At._On_conversion_spec(_CharT{}, _CharT{}) } -> same_as<void>;
         { _At._On_lit_char(_CharT{}) } -> same_as<void>;
     };
-    // clang-format on
+// clang-format on
 
-    template <class _CharT>
-    struct _Chrono_specs {
-        _CharT _Lit_char = _CharT{0}; // any char other than '{', '}', '%'
-        char _Modifier   = '\0'; // either E or O
-        char _Type       = '\0';
-    };
+template <class _CharT>
+struct _Chrono_specs {
+    _CharT _Lit_char = _CharT{0}; // any char other than '{', '}', '%'
+    char _Modifier   = '\0'; // either E or O
+    char _Type       = '\0';
+};
 
-    template <class _CharT>
-    struct _Chrono_format_specs {
-        int _Width                   = 0;
-        int _Precision               = -1;
-        int _Dynamic_width_index     = -1;
-        int _Dynamic_precision_index = -1;
-        _Align _Alignment            = _Align::_None;
-        // At most one codepoint (so one char32_t or four utf-8 char8_t)
-        _CharT _Fill[4] = {' ', _CharT{0}, _CharT{0}, _CharT{0}};
-        // recursive definition in grammar, so could have any number of these with literal chars
-        vector<_Chrono_specs<_CharT>> _Chrono_specs_list;
-    };
+template <class _CharT>
+struct _Chrono_format_specs {
+    int _Width                   = 0;
+    int _Precision               = -1;
+    int _Dynamic_width_index     = -1;
+    int _Dynamic_precision_index = -1;
+    _Align _Alignment            = _Align::_None;
+    // At most one codepoint (so one char32_t or four utf-8 char8_t)
+    _CharT _Fill[4] = {' ', _CharT{0}, _CharT{0}, _CharT{0}};
+    // recursive definition in grammar, so could have any number of these with literal chars
+    vector<_Chrono_specs<_CharT>> _Chrono_specs_list;
+};
 
-    // Model of _Chrono_parse_spec_callbacks that fills a _Chrono_format_specs with the parsed data
-    template <class _CharT>
-    class _Chrono_specs_setter {
-    public:
-        constexpr explicit _Chrono_specs_setter(_Chrono_format_specs<_CharT>& _Specs_) : _Specs(_Specs_) {}
+// Model of _Chrono_parse_spec_callbacks that fills a _Chrono_format_specs with the parsed data
+template <class _CharT>
+class _Chrono_specs_setter {
+public:
+    constexpr explicit _Chrono_specs_setter(_Chrono_format_specs<_CharT>& _Specs_) : _Specs(_Specs_) {}
 
-        // same as _Specs_setter
-        constexpr void _On_align(_Align _Aln) {
-            _Specs._Alignment = _Aln;
-        }
-
-        // same as _Specs_setter
-        constexpr void _On_fill(basic_string_view<_CharT> _Sv) {
-            if (_Sv.size() > 4) {
-                _THROW(format_error("Invalid fill (too long)."));
-            }
-
-            _STD fill(_Specs._Fill, _Specs._Fill + 4, _CharT{});
-            _STD copy(_Sv.begin(), _Sv.end(), _Specs._Fill);
-        }
-
-        constexpr void _On_width(int _Width) {
-            _Specs._Width = _Width;
-        }
-
-        constexpr void _On_precision(int _Prec) {
-            _Specs._Precision = _Prec;
-        }
-
-        constexpr void _On_conversion_spec(_CharT _Modifier, _CharT _Type) {
-            // NOTE: same performance note from _Basic_format_specs also applies here
-            const char _Char_mod  = static_cast<char>(_Modifier);
-            const char _Char_type = static_cast<char>(_Type);
-            if (_Char_mod != '\0' && _Char_mod != 'E' && _Char_mod != 'O') {
-                _THROW(format_error("Invalid modifier specification."));
-            }
-
-            if (_Type < 0 || _Type > (numeric_limits<signed char>::max)()) {
-                _THROW(format_error("Invalid type specification."));
-            }
-
-            _Chrono_specs<_CharT> _Conv_spec{._Modifier = _Char_mod, ._Type = _Char_type};
-            _Specs._Chrono_specs_list.push_back(_Conv_spec);
-        }
-
-        constexpr void _On_lit_char(_CharT _Lit_ch) {
-            _Chrono_specs<_CharT> _Lit_char_spec{._Lit_char = _Lit_ch};
-            _Specs._Chrono_specs_list.push_back(_Lit_char_spec);
-        }
-
-    protected:
-        _Chrono_format_specs<_CharT>& _Specs;
-    };
-
-    // assumes that the required '%' at the beginning of a conversion-spec has already been consumed
-    template <class _CharT, _Chrono_parse_spec_callbacks<_CharT> _Callbacks_type>
-    _NODISCARD constexpr const _CharT* _Parse_conversion_specs(
-        const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
-        if (_Begin == _End || *_Begin == '}') {
-            _THROW(format_error("Invalid format string."));
-        }
-
-        _CharT _Mod = '\0';
-        _CharT _Ch  = *_Begin;
-
-        if (_Ch == 'E' || _Ch == 'O') { // includes modifier
-            _Mod = _Ch;
-            ++_Begin;
-            if (_Begin == _End || *_Begin == '}') {
-                _THROW(format_error("Invalid format string - missing type after modifier."));
-            }
-        }
-
-        _CharT _Type = *_Begin;
-        _Callbacks._On_conversion_spec(_Mod, _Type);
-
-        return ++_Begin;
+    // same as _Specs_setter
+    constexpr void _On_align(_Align _Aln) {
+        _Specs._Alignment = _Aln;
     }
 
-    template <class _CharT, _Chrono_parse_spec_callbacks<_CharT> _Callbacks_type>
-    _NODISCARD constexpr const _CharT* _Parse_chrono_format_specs(
-        const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
+    // same as _Specs_setter
+    constexpr void _On_fill(basic_string_view<_CharT> _Sv) {
+        if (_Sv.size() > 4) {
+            _THROW(format_error("Invalid fill (too long)."));
+        }
+
+        _STD fill(_Specs._Fill, _Specs._Fill + 4, _CharT{});
+        _STD copy(_Sv.begin(), _Sv.end(), _Specs._Fill);
+    }
+
+    constexpr void _On_width(int _Width) {
+        _Specs._Width = _Width;
+    }
+
+    constexpr void _On_precision(int _Prec) {
+        _Specs._Precision = _Prec;
+    }
+
+    constexpr void _On_conversion_spec(_CharT _Modifier, _CharT _Type) {
+        // NOTE: same performance note from _Basic_format_specs also applies here
+        const char _Char_mod  = static_cast<char>(_Modifier);
+        const char _Char_type = static_cast<char>(_Type);
+        if (_Char_mod != '\0' && _Char_mod != 'E' && _Char_mod != 'O') {
+            _THROW(format_error("Invalid modifier specification."));
+        }
+
+        if (_Type < 0 || _Type > (numeric_limits<signed char>::max)()) {
+            _THROW(format_error("Invalid type specification."));
+        }
+
+        _Chrono_specs<_CharT> _Conv_spec{._Modifier = _Char_mod, ._Type = _Char_type};
+        _Specs._Chrono_specs_list.push_back(_Conv_spec);
+    }
+
+    constexpr void _On_lit_char(_CharT _Lit_ch) {
+        _Chrono_specs<_CharT> _Lit_char_spec{._Lit_char = _Lit_ch};
+        _Specs._Chrono_specs_list.push_back(_Lit_char_spec);
+    }
+
+protected:
+    _Chrono_format_specs<_CharT>& _Specs;
+};
+
+// assumes that the required '%' at the beginning of a conversion-spec has already been consumed
+template <class _CharT, _Chrono_parse_spec_callbacks<_CharT> _Callbacks_type>
+_NODISCARD constexpr const _CharT* _Parse_conversion_specs(
+    const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
+    if (_Begin == _End || *_Begin == '}') {
+        _THROW(format_error("Invalid format string."));
+    }
+
+    _CharT _Mod = '\0';
+    _CharT _Ch  = *_Begin;
+
+    if (_Ch == 'E' || _Ch == 'O') { // includes modifier
+        _Mod = _Ch;
+        ++_Begin;
         if (_Begin == _End || *_Begin == '}') {
-            return _Begin;
+            _THROW(format_error("Invalid format string - missing type after modifier."));
         }
+    }
 
-        _Begin = _Parse_align(_Begin, _End, _Callbacks);
-        if (_Begin == _End) {
-            return _Begin;
-        }
+    _CharT _Type = *_Begin;
+    _Callbacks._On_conversion_spec(_Mod, _Type);
 
-        _Begin = _Parse_width(_Begin, _End, _Callbacks);
-        if (_Begin == _End) {
-            return _Begin;
-        }
+    return ++_Begin;
+}
 
-        if (*_Begin == '.') {
-            _Begin = _Parse_precision(_Begin, _End, _Callbacks);
-            if (_Begin == _End) {
-                return _Begin;
-            }
-        }
-
-        // chrono-spec
-        while (_Begin != _End && *_Begin != '}') {
-            if (*_Begin == '%') { // conversion-spec
-                if (++_Begin == _End) {
-                    _THROW(format_error("Invalid format string - missing type after %"));
-                }
-
-                _CharT _Next_ch = *_Begin;
-                switch (_Next_ch) {
-                case 'n':
-                    _Callbacks._On_lit_char('\n');
-                    ++_Begin;
-                    break;
-                case 't':
-                    _Callbacks._On_lit_char('\t');
-                    ++_Begin;
-                    break;
-                case '%':
-                    _Callbacks._On_lit_char('%');
-                    ++_Begin;
-                    break;
-                default: // some other type
-                    _Begin = _Parse_conversion_specs(_Begin, _End, _Callbacks);
-                    break;
-                }
-            } else { // literal-char
-                _Callbacks._On_lit_char(*_Begin);
-                ++_Begin;
-            }
-        }
-
+template <class _CharT, _Chrono_parse_spec_callbacks<_CharT> _Callbacks_type>
+_NODISCARD constexpr const _CharT* _Parse_chrono_format_specs(
+    const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
+    if (_Begin == _End || *_Begin == '}') {
         return _Begin;
     }
 
-    template <_CharT>
-    struct formatter<day, _CharT> {
-        basic_format_parse_context<_CharT>::iterator parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
-            _Chrono_format_specs _Specs{};
-            _Chrono_specs_setter _Callback{_Specs};
-            const auto _End = _Parse_chrono_format_specs(_Parse_ctx.begin(), _Parse_ctx.end(), _Callback);
-            if (_Specs._Precision != -1) {
-                _THROW(format_error("Precision specification invalid for type day."));
+    _Begin = _Parse_align(_Begin, _End, _Callbacks);
+    if (_Begin == _End) {
+        return _Begin;
+    }
+
+    _Begin = _Parse_width(_Begin, _End, _Callbacks);
+    if (_Begin == _End) {
+        return _Begin;
+    }
+
+    if (*_Begin == '.') {
+        _Begin = _Parse_precision(_Begin, _End, _Callbacks);
+        if (_Begin == _End) {
+            return _Begin;
+        }
+    }
+
+    // chrono-spec
+    while (_Begin != _End && *_Begin != '}') {
+        if (*_Begin == '%') { // conversion-spec
+            if (++_Begin == _End) {
+                _THROW(format_error("Invalid format string - missing type after %"));
             }
 
-            const auto _Chrono_specs = _Specs._Chrono_specs_list;
-            if (!_Chrono_specs.empty()) {
-                _THROW(format_error("day requires at least one chrono-spec."));
+            _CharT _Next_ch = *_Begin;
+            switch (_Next_ch) {
+            case 'n':
+                _Callbacks._On_lit_char('\n');
+                ++_Begin;
+                break;
+            case 't':
+                _Callbacks._On_lit_char('\t');
+                ++_Begin;
+                break;
+            case '%':
+                _Callbacks._On_lit_char('%');
+                ++_Begin;
+                break;
+            default: // some other type
+                _Begin = _Parse_conversion_specs(_Begin, _End, _Callbacks);
+                break;
             }
+        } else { // literal-char
+            _Callbacks._On_lit_char(*_Begin);
+            ++_Begin;
+        }
+    }
 
-            _Chrono_specs* _Target_conv_spec_ptr = _STD find_if(_Chrono_specs.begin(), _Chrono_specs.end(),
-                [](const _Chrono_spec<_CharT> _Cs) { return _Cs._Type != '\0'; });
-            _Chrono_specs _Target_conv_spec      = *_Target_conv_spec_ptr;
+    return _Begin;
+}
 
-            if (_Target_conv_spec_ptr == _Chrono_specs.end()) {
-                _THROW(format_error("day requires one conversion-spec."));
-            }
-
-            _Conv_spec_ptr = _Target_conv_spec_ptr;
-            // only 'd' and 'e' acceptable types for day
-            if (_Target_conv_spec._Type != 'd' && _Target_conv_spec._Type != 'e') {
-                _THROW(format_error("Invalid type for type day."));
-            }
-
-            if (_Target_conv_spec._Modifier != '\0' && _Target_conv_spec._Modifier != 'O') {
-                _THROW(format_error("Invalid modifier for type day."));
-            }
-
-            _Target_conv_spec_ptr = _STD find_if(_Target_conv_spec_ptr, _Chrono_specs.end(),
-                [](const _Chrono_spec<_CharT> _Cs) { return _Cs._Type != '\0'; });
-
-            if (_Target_conv_spec_ptr == _Chrono_specs.end()) {
-                _THROW(format_error("day requires one conversion-spec."))
-            }
-
-            _Stored_specs = _Specs;
-            return _Parse_ctx.end();
+template <class _CharT>
+struct formatter<_CHRONO day, _CharT> {
+    basic_format_parse_context<_CharT>::iterator parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
+        _Chrono_format_specs<_CharT> _Specs{};
+        _Chrono_specs_setter<_CharT> _Callback{_Specs};
+        const auto _End = _Parse_chrono_format_specs(_Parse_ctx.begin(), _Parse_ctx.end(), _Callback);
+        if (_Specs._Precision != -1) {
+            _THROW(format_error("Precision specification invalid for type day."));
         }
 
-        format_context::iterator format(const day& _Val, format_context& _Fmt_ctx) {
-            /*
-            if O modifier
-                figure out locale deal
-            if _Val's number is < 10
-                if d prefix with 0
-                elif e prefix with ' '
-            else
-                just the plain _Val's number
-
-            return std::formatter's format function(...)
-            */
-            _Chrono_specs<_CharT> _Target = *_Conv_spec_ptr;
-            _CharT _Spacer                = '\0';
-            if (static_cast<unsigned int>(_Val) < 10) {
-                if (_Target._Type == 'd') {
-                    _Spacer = '0';
-                } else { // e
-                    _Spacer = ' ';
-                }
-            }
-            if (_Target._Modifier == 'O') {
-            }
+        const auto _List = _Specs._Chrono_specs_list;
+        if (!_List.empty()) {
+            _THROW(format_error("day requires at least one chrono-spec."));
         }
 
-    private:
-        _Chrono_specs<_CharT>* _Conv_spec_ptr;
-        _Chrono_format_specs<_CharT> _Stored_specs;
-    };
+        _Chrono_specs<_CharT>* _Target_conv_spec_ptr =
+            _STD find_if(_List.begin(), _List.end(), [](const _Chrono_spec<_CharT> _Cs) { return _Cs._Type != '\0'; });
+
+        if (_Target_conv_spec_ptr == _List.end()) {
+            _THROW(format_error("day requires one conversion-spec."));
+        }
+
+        _Chrono_specs<_CharT> _Target_conv_spec = *_Target_conv_spec_ptr;
+        _Conv_spec_ptr                          = _Target_conv_spec_ptr;
+        // only 'd' and 'e' acceptable types for day
+        if (_Target_conv_spec._Type != 'd' && _Target_conv_spec._Type != 'e') {
+            _THROW(format_error("Invalid type for type day."));
+        }
+
+        if (_Target_conv_spec._Modifier != '\0' && _Target_conv_spec._Modifier != 'O') {
+            _THROW(format_error("Invalid modifier for type day."));
+        }
+
+        _Target_conv_spec_ptr = _STD find_if(
+            _Target_conv_spec_ptr, _List.end(), [](const _Chrono_specs<_CharT> _Cs) { return _Cs._Type != '\0'; });
+
+        if (_Target_conv_spec_ptr == _List.end()) {
+            _THROW(format_error("day requires one conversion-spec."));
+        }
+
+        _Stored_specs = _Specs;
+        return _Parse_ctx.end();
+    }
+
+    // format_context::iterator format(const day& _Val, format_context& _Fmt_ctx) {
+    //     /*
+    //     if O modifier
+    //         figure out locale deal
+    //     if _Val's number is < 10
+    //         if d prefix with 0
+    //         elif e prefix with ' '
+    //     else
+    //         just the plain _Val's number
+
+    //     return std::formatter's format function(...)
+    //     */
+    //     _Chrono_specs<_CharT> _Target = *_Conv_spec_ptr;
+    //     _CharT _Spacer                = '\0';
+    //     if (static_cast<unsigned int>(_Val) < 10) {
+    //         if (_Target._Type == 'd') {
+    //             _Spacer = '0';
+    //         } else { // e
+    //             _Spacer = ' ';
+    //         }
+    //     }
+    //     if (_Target._Modifier == 'O') {
+    //         // locale
+    //     }
+    // return nullptr;
+    // }
+
+private:
+    _Chrono_specs<_CharT> _Conv_spec_ptr;
+    _Chrono_format_specs<_CharT> _Stored_specs{};
+};
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX20
-} // namespace chrono
 
 // HELPERS
 template <class _Rep, class _Period>
