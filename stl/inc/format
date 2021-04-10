@@ -153,14 +153,13 @@ concept _Parse_spec_callbacks = _Parse_align_callbacks<_Ty, _CharT>
                                     { _At._On_localized() } -> same_as<void>;
                                     { _At._On_type(_CharT{}) } -> same_as<void>;
 };
+// clang-format on
 
 template <class _Ty, class _CharT>
 concept _CharT_or_bool = same_as<_Ty, _CharT> || same_as<_Ty, bool>;
 
 template <class _CharT>
 concept _Format_supported_charT = _Is_any_of_v<_CharT, char, wchar_t>;
-
-// clang-format on
 
 template <class _Ty, class _CharT = char>
 struct formatter;
