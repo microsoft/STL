@@ -1105,7 +1105,7 @@ void libfmt_formatter_test_fill() {
     assert(format(STR("{0:*<5}"), 'c') == STR("c****"));
     assert(format(STR("{0:*<5}"), STR("abc")) == STR("abc**"));
     assert(format(STR("{0:*>8}"), reinterpret_cast<void*>(0xface)) == STR("**0xface"));
-    assert(format(STR("{:}="), STR("foo")) == STR("foo="));
+    assert(format(STR("{:}="), STR("meow")) == STR("meow="));
     assert(format(basic_string_view<charT>(STR("{:\0>4}"), 6), '*') == basic_string<charT>(STR("\0\0\0*"), 4));
     throw_helper(STR("{:\x80\x80\x80\x80\x80>}"), 0);
 }
@@ -1208,13 +1208,13 @@ void libfmt_formatter_test_hash_flag() {
     assert(format(STR("{0:#x}"), 0x42ull) == STR("0x42"));
     assert(format(STR("{0:#o}"), 042ull) == STR("042"));
 
-    // differs from libfmt, but conforms
+    // behavior differs from libfmt, but conforms
     assert(format(STR("{0:#}"), -42.0) == STR("-42."));
-    // differs from libfmt, but conforms
+    // behavior differs from libfmt, but conforms
     assert(format(STR("{0:#}"), -42.0l) == STR("-42."));
     assert(format(STR("{:#.0e}"), 42.0) == STR("4.e+01"));
     assert(format(STR("{:#.0f}"), 0.01) == STR("0."));
-    // differs from libfmt, but conforms
+    // behavior differs from libfmt, but conforms
     assert(format(STR("{:#.2g}"), 0.5) == STR("0.5"));
     assert(format(STR("{:#.0f}"), 0.5) == STR("0."));
     throw_helper(STR("{0:#"), 'c');
