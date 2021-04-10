@@ -366,9 +366,11 @@ _NODISCARD constexpr const _CharT* _Parse_nonnegative_integer(
         _Value = _Value * 10 + static_cast<unsigned int>(*_Begin - '0');
         ++_Begin;
     } while (_Begin != _End && '0' <= *_Begin && *_Begin <= '9');
+
     if (_Value > _Max_int) {
         throw format_error("Number is too big");
     }
+
     return _Begin;
 }
 
@@ -404,12 +406,14 @@ _NODISCARD constexpr const _CharT* _Parse_arg_id(
         } else {
             ++_Begin;
         }
+
         // The format string shouldn't end right after the index number.
         // The only things permitted after the index are the end of the replacement field ('}')
         // or the beginning of the format spec (':').
         if (_Begin == _End || (*_Begin != '}' && *_Begin != ':')) {
             throw format_error("Invalid format string.");
         }
+
         _Callbacks._On_manual_id(_Index);
         return _Begin;
     }
@@ -474,7 +478,6 @@ _NODISCARD inline int _Code_units_in_next_character(const wchar_t* _First, const
     // Returns a count of the number of code units that compose the first encoded character in
     // [_First, _Last), or -1 if [_First, _Last) doesn't contain an entire encoded character or
     // *_First is an unpaired surrogate.
-
     _STL_INTERNAL_CHECK(_First < _Last);
 
     if (*_First < 0xD800u || *_First >= 0xE000u) {
@@ -503,9 +506,11 @@ _NODISCARD const _CharT* _Parse_align(const _CharT* _Begin, const _CharT* _End, 
         throw format_error("Invalid format string.");
     }
     auto _Align_pt = _Begin + _Units;
+
     if (_Align_pt == _End) {
         _Align_pt = _Begin;
     }
+
     for (;;) {
         switch (*_Align_pt) {
         case '<':
@@ -518,6 +523,7 @@ _NODISCARD const _CharT* _Parse_align(const _CharT* _Begin, const _CharT* _End, 
             _Parsed_align = _Align::_Center;
             break;
         }
+
         if (_Parsed_align != _Align::_None) {
             if (_Align_pt != _Begin) {
                 if (*_Begin == '{') {
@@ -535,6 +541,7 @@ _NODISCARD const _CharT* _Parse_align(const _CharT* _Begin, const _CharT* _End, 
         }
         _Align_pt = _Begin;
     }
+
     return _Begin;
 }
 
@@ -603,6 +610,7 @@ _NODISCARD constexpr const _CharT* _Parse_width(
         if (_Begin != _End) {
             _Begin = _Parse_arg_id(_Begin, _End, _Width_adapter<_CharT, _Callbacks_type>{_Callbacks});
         }
+
         if (_Begin == _End || *_Begin != '}') {
             throw format_error("Invalid format string.");
         }
@@ -636,6 +644,7 @@ _NODISCARD constexpr const _CharT* _Parse_precision(
     } else {
         throw format_error("Missing precision specifier.");
     }
+
     return _Begin;
 }
 
@@ -709,6 +718,7 @@ _NODISCARD constexpr const _CharT* _Parse_format_specs(
     if (*_Begin != '}') {
         _Callbacks._On_type(*_Begin++);
     }
+
     return _Begin;
 }
 
@@ -733,6 +743,7 @@ _NODISCARD constexpr const _CharT* _Parse_replacement_field(
         if (_Begin != _End) {
             _Ch = *_Begin;
         }
+
         if (_Ch == '}') {
             _Handler._On_replacement_field(_Adapter._Arg_id, _Begin);
         } else if (_Ch == ':') {
@@ -744,6 +755,7 @@ _NODISCARD constexpr const _CharT* _Parse_replacement_field(
             throw format_error("Missing '}' in format string.");
         }
     }
+
     return _Begin + 1;
 }
 
@@ -900,6 +912,7 @@ _NODISCARD constexpr basic_format_arg<_Context> _Get_arg(const _Context& _Ctx, s
     if (!_Arg) {
         throw format_error("Argument not found.");
     }
+
     return _Arg;
 }
 
@@ -951,6 +964,7 @@ _NODISCARD constexpr int _Get_dynamic_specs(const _FormatArg _Arg) {
     if (_Val > (numeric_limits<int>::max)()) {
         throw format_error("Number is too big.");
     }
+
     return static_cast<int>(_Val);
 }
 
@@ -1023,6 +1037,7 @@ private:
         if (_Idx > static_cast<size_t>((numeric_limits<int>::max)())) {
             throw format_error("Dynamic width or precision index too large.");
         }
+
         return static_cast<int>(_Idx);
     }
 };
@@ -1522,9 +1537,11 @@ _NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const _CharT* _Value) {
     if (!_Value) {
         throw format_error("String pointer is null.");
     }
+
     while (*_Value) {
         *_Out++ = *_Value++;
     }
+
     return _Out;
 }
 
@@ -2160,6 +2177,7 @@ _NODISCARD constexpr int _Unicode_width_estimate(const char32_t _Ch) noexcept {
         }
         _Result ^= 1;
     }
+
     return 1;
 }
 
@@ -2365,6 +2383,7 @@ struct _Format_handler {
             _Arg._Custom_state.format(_Parse_context, _Ctx);
             return _Parse_context.begin()._Unwrapped();
         }
+
         _Basic_format_specs<_CharT> _Specs;
         _Specs_checker<_Specs_handler<basic_format_parse_context<_CharT>, _Context>> _Handler(
             _Specs_handler<basic_format_parse_context<_CharT>, _Context>(_Specs, _Parse_context, _Ctx),
@@ -2373,6 +2392,7 @@ struct _Format_handler {
         if (_Begin == _End || *_Begin != '}') {
             throw format_error("Missing '}' in format string.");
         }
+
         _Ctx.advance_to(_STD visit_format_arg(
             _Arg_formatter<_OutputIt, _CharT>{._Ctx = _STD addressof(_Ctx), ._Specs = _STD addressof(_Specs)}, _Arg));
         return _Begin;
@@ -2407,10 +2427,12 @@ struct _Formatter_base {
             _Specs._Width =
                 _Get_dynamic_specs<_Width_checker>(_FormatCtx.arg(static_cast<size_t>(_Specs._Dynamic_width_index)));
         }
+
         if (_Specs._Dynamic_precision_index >= 0) {
             _Specs._Precision = _Get_dynamic_specs<_Precision_checker>(
                 _FormatCtx.arg(static_cast<size_t>(_Specs._Dynamic_precision_index)));
         }
+
         return _STD visit_format_arg(
             _Arg_formatter<typename _FormatContext::iterator, _CharT>{
                 ._Ctx = _STD addressof(_FormatCtx), ._Specs = _STD addressof(_Specs)},
