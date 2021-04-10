@@ -2016,9 +2016,23 @@ _NODISCARD _OutputIt _Fmt_write(
                 _Append_decimal = true;
             }
             if (_Specs._Type == 'g' || _Specs._Type == 'G') {
-                _Zeroes_to_append = _Extra_precision + _Precision - static_cast<int>(_Exponent_start - _Buffer_start);
+                auto _Digits = static_cast<int>(_Exponent_start - _Buffer_start);
+
                 if (!_Append_decimal) {
-                    _Zeroes_to_append += 1;
+                    --_Digits;
+                }
+
+                _Zeroes_to_append = _Extra_precision + _Precision - _Digits;
+
+                // Leading zeroes are not significant if we used fixed point notation.
+                if (_Exponent_start == _Result.ptr && _STD abs(_Value) < 1.0 && _Value != 0.0) {
+                    for (auto _It = _Buffer_start; _It < _Result.ptr; ++_It) {
+                        if (*_It == '0') {
+                            ++_Zeroes_to_append;
+                        } else if (*_It != '.') {
+                            break;
+                        }
+                    }
                 }
             }
         }

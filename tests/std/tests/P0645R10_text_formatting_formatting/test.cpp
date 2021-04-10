@@ -727,6 +727,16 @@ void test_float_specs() {
     assert(format(STR("{:#.0g}"), Float{0}) == STR("0."));
     assert(format(STR("{:#.0G}"), Float{0}) == STR("0."));
 
+
+    assert(format(STR("{:#.2g}"), 0.5) == STR("0.50"));
+    assert(format(STR("{:#.1g}"), 0.5) == STR("0.5"));
+    assert(format(STR("{:#.3g}"), 0.5) == STR("0.500"));
+    assert(format(STR("{:#.3g}"), 0.05) == STR("0.0500"));
+    assert(format(STR("{:#.3g}"), 0.0005) == STR("0.000500"));
+    assert(format(STR("{:#.3g}"), 0.00005) == STR("5.00e-05"));
+    assert(format(STR("{:#.2g}"), 0.0999) == STR("0.10"));
+    assert(format(STR("{:#.3g}"), 0.000470) == STR("0.000470"));
+
     assert(format(STR("{:#} {:#}"), inf, nan) == STR("inf nan"));
     assert(format(STR("{:#a} {:#a}"), inf, nan) == STR("inf nan"));
     assert(format(STR("{:#A} {:#A}"), inf, nan) == STR("INF NAN"));
@@ -1203,8 +1213,7 @@ void libfmt_formatter_test_hash_flag() {
     assert(format(STR("{0:#}"), -42.0l) == STR("-42.")); // behavior differs from libfmt, but conforms
     assert(format(STR("{:#.0e}"), 42.0) == STR("4.e+01"));
     assert(format(STR("{:#.0f}"), 0.01) == STR("0."));
-    // TRANSITION, GH-1818
-    // assert(format(STR("{:#.2g}"), 0.5) == STR("0.50"));
+    assert(format(STR("{:#.2g}"), 0.5) == STR("0.50"));
     assert(format(STR("{:#.0f}"), 0.5) == STR("0."));
     throw_helper(STR("{0:#"), 'c');
     throw_helper(STR("{0:#}"), 'c');
