@@ -1115,14 +1115,11 @@ void libfmt_formatter_test_plus_sign() {
     assert(format(STR("{0:+}"), 42) == STR("+42"));
     assert(format(STR("{0:+}"), -42) == STR("-42"));
     assert(format(STR("{0:+}"), 42) == STR("+42"));
-    // behavior differs from libfmt, but conforms
-    assert(format(STR("{0:+}"), 42u) == STR("+42"));
+    assert(format(STR("{0:+}"), 42u) == STR("+42")); // behavior differs from libfmt, but conforms
     assert(format(STR("{0:+}"), 42l) == STR("+42"));
-    // behavior differs from libfmt, but conforms
-    assert(format(STR("{0:+}"), 42ul) == STR("+42"));
+    assert(format(STR("{0:+}"), 42ul) == STR("+42")); // behavior differs from libfmt, but conforms
     assert(format(STR("{0:+}"), 42ll) == STR("+42"));
-    // behavior differs from libfmt, but conforms
-    assert(format(STR("{0:+}"), 42ull) == STR("+42"));
+    assert(format(STR("{0:+}"), 42ull) == STR("+42")); // behavior differs from libfmt, but conforms
     assert(format(STR("{0:+}"), 42.0) == STR("+42"));
     assert(format(STR("{0:+}"), 42.0l) == STR("+42"));
     throw_helper(STR("{0:+"), 'c');
@@ -1136,14 +1133,11 @@ void libfmt_formatter_test_minus_sign() {
     assert(format(STR("{0:-}"), 42) == STR("42"));
     assert(format(STR("{0:-}"), -42) == STR("-42"));
     assert(format(STR("{0:-}"), 42) == STR("42"));
-    // behavior differs from libfmt, but conforms
-    assert(format(STR("{0:-}"), 42u) == STR("42"));
+    assert(format(STR("{0:-}"), 42u) == STR("42")); // behavior differs from libfmt, but conforms
     assert(format(STR("{0:-}"), 42l) == STR("42"));
-    // behavior differs from libfmt, but conforms
-    assert(format(STR("{0:-}"), 42ul) == STR("42"));
+    assert(format(STR("{0:-}"), 42ul) == STR("42")); // behavior differs from libfmt, but conforms
     assert(format(STR("{0:-}"), 42ll) == STR("42"));
-    // behavior differs from libfmt, but conforms
-    assert(format(STR("{0:-}"), 42ull) == STR("42"));
+    assert(format(STR("{0:-}"), 42ull) == STR("42")); // behavior differs from libfmt, but conforms
     assert(format(STR("{0:-}"), 42.0) == STR("42"));
     assert(format(STR("{0:-}"), 42.0l) == STR("42"));
     throw_helper(STR("{0:-"), 'c');
@@ -1157,14 +1151,11 @@ void libfmt_formatter_test_space_sign() {
     assert(format(STR("{0: }"), 42) == STR(" 42"));
     assert(format(STR("{0: }"), -42) == STR("-42"));
     assert(format(STR("{0: }"), 42) == STR(" 42"));
-    // behavior differs from libfmt, but conforms
-    assert(format(STR("{0: }"), 42u) == STR(" 42"));
+    assert(format(STR("{0: }"), 42u) == STR(" 42")); // behavior differs from libfmt, but conforms
     assert(format(STR("{0: }"), 42l) == STR(" 42"));
-    // behavior differs from libfmt, but conforms
-    assert(format(STR("{0: }"), 42ul) == STR(" 42"));
+    assert(format(STR("{0: }"), 42ul) == STR(" 42")); // behavior differs from libfmt, but conforms
     assert(format(STR("{0: }"), 42ll) == STR(" 42"));
-    // behavior differs from libfmt, but conforms
-    assert(format(STR("{0: }"), 42ull) == STR(" 42"));
+    assert(format(STR("{0: }"), 42ull) == STR(" 42")); // behavior differs from libfmt, but conforms
     assert(format(STR("{0: }"), 42.0) == STR(" 42"));
     assert(format(STR("{0: }"), 42.0l) == STR(" 42"));
     throw_helper(STR("{0: "), 'c');
@@ -1208,14 +1199,11 @@ void libfmt_formatter_test_hash_flag() {
     assert(format(STR("{0:#x}"), 0x42ull) == STR("0x42"));
     assert(format(STR("{0:#o}"), 042ull) == STR("042"));
 
-    // behavior differs from libfmt, but conforms
-    assert(format(STR("{0:#}"), -42.0) == STR("-42."));
-    // behavior differs from libfmt, but conforms
-    assert(format(STR("{0:#}"), -42.0l) == STR("-42."));
+    assert(format(STR("{0:#}"), -42.0) == STR("-42.")); // behavior differs from libfmt, but conforms
+    assert(format(STR("{0:#}"), -42.0l) == STR("-42.")); // behavior differs from libfmt, but conforms
     assert(format(STR("{:#.0e}"), 42.0) == STR("4.e+01"));
     assert(format(STR("{:#.0f}"), 0.01) == STR("0."));
-    // behavior differs from libfmt, but conforms
-    assert(format(STR("{:#.2g}"), 0.5) == STR("0.5"));
+    assert(format(STR("{:#.2g}"), 0.5) == STR("0.5")); // behavior differs from libfmt, but conforms
     assert(format(STR("{:#.0f}"), 0.5) == STR("0."));
     throw_helper(STR("{0:#"), 'c');
     throw_helper(STR("{0:#}"), 'c');
