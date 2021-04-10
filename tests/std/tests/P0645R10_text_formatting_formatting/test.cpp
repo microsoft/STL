@@ -743,7 +743,7 @@ void test_float_specs() {
     assert(format(STR("{:#e} {:#e}"), inf, nan) == STR("inf nan"));
     assert(format(STR("{:#E} {:#E}"), inf, nan) == STR("INF NAN"));
     assert(format(STR("{:#f} {:#f}"), inf, nan) == STR("inf nan"));
-    assert(format(STR("{:#F} {:#F}"), inf, nan) == STR("inf nan"));
+    assert(format(STR("{:#F} {:#F}"), inf, nan) == STR("INF NAN"));
     assert(format(STR("{:#g} {:#g}"), inf, nan) == STR("inf nan"));
     assert(format(STR("{:#G} {:#G}"), inf, nan) == STR("INF NAN"));
 
@@ -825,6 +825,15 @@ void test_float_specs() {
 
     assert(format(STR("{:g}"), value) == STR("1234.53"));
     assert(format(STR("{:G}"), value) == STR("1234.53"));
+
+    assert(format(STR("{:a} {:a}"), inf, nan) == STR("inf nan"));
+    assert(format(STR("{:A} {:A}"), inf, nan) == STR("INF NAN"));
+    assert(format(STR("{:e} {:e}"), inf, nan) == STR("inf nan"));
+    assert(format(STR("{:E} {:E}"), inf, nan) == STR("INF NAN"));
+    assert(format(STR("{:f} {:f}"), inf, nan) == STR("inf nan"));
+    assert(format(STR("{:F} {:F}"), inf, nan) == STR("INF NAN"));
+    assert(format(STR("{:g} {:g}"), inf, nan) == STR("inf nan"));
+    assert(format(STR("{:G} {:G}"), inf, nan) == STR("INF NAN"));
 }
 
 template <class charT>
