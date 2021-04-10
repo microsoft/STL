@@ -5207,6 +5207,7 @@ namespace chrono {
         int _Dynamic_width_index     = -1;
         int _Dynamic_precision_index = -1;
         _Align _Alignment            = _Align::_None;
+        uint8_t _Fill_length         = 0;
         // At most one codepoint (so one char32_t or four utf-8 char8_t)
         _CharT _Fill[4 / sizeof(_CharT)] = {_CharT{' '}};
         // recursive definition in grammar, so could have any number of these with literal chars
@@ -5232,6 +5233,7 @@ namespace chrono {
 
             const auto _Pos = _STD _Copy_unchecked(_Sv._Unchecked_begin(), _Sv._Unchecked_end(), _Specs._Fill);
             _STD fill(_Pos, _STD end(_Specs._Fill), _CharT{});
+            _Specs._Fill_length = static_cast<uint8_t>(_Sv.size());
         }
 
         constexpr void _On_width(int _Width) {

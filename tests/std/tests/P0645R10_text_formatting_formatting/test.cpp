@@ -1276,6 +1276,9 @@ int main() {
     libfmt_formatter_test_right_align<char>();
     libfmt_formatter_test_right_align<wchar_t>();
 
+    libfmt_formatter_test_center_align<char>();
+    libfmt_formatter_test_center_align<wchar_t>();
+
     libfmt_formatter_test_fill<char>();
     libfmt_formatter_test_fill<wchar_t>();
 
