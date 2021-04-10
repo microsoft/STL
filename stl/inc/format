@@ -1916,6 +1916,8 @@ _NODISCARD _OutputIt _Fmt_write(
         _Exponent = 'e';
         break;
     case 'F':
+        _To_upper = true;
+        [[fallthrough]];
     case 'f':
         if (_Precision == -1) {
             _Precision = 6;
