@@ -1007,9 +1007,9 @@ void test_multibyte_format_strings() {
     setlocale(LC_ALL, nullptr);
 }
 
-// the libfmt_ tests are derived from tests in
+// The libfmt_ tests are derived from tests in
 // libfmt, Copyright (c) 2012 - present, Victor Zverovich
-// see NOTICE.txt for more information.
+// See NOTICE.txt for more information.
 
 template <class charT>
 void libfmt_formatter_test_escape() {
