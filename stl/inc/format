@@ -401,10 +401,10 @@ _NODISCARD constexpr const _CharT* _Parse_arg_id(
         // equal to zero (but not '00'). So if _Ch is zero we skip the parsing, leave
         // _Index set to zero and let the validity checks below ensure that the arg_id
         // wasn't something like "00", or "023".
-        if (_Ch != '0') {
-            _Begin = _Parse_nonnegative_integer(_Begin, _End, _Index);
-        } else {
+        if (_Ch == '0') {
             ++_Begin;
+        } else {
+            _Begin = _Parse_nonnegative_integer(_Begin, _End, _Index);
         }
 
         // The format string shouldn't end right after the index number.
