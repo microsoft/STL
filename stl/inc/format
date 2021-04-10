@@ -1116,7 +1116,7 @@ concept _Has_formatter = requires(const _Ty& _Val, _Context& _Ctx) {
 // clang-format on
 
 template <class _CharT>
-_NODISCARD constexpr size_t _Get_format_arg_type_storage_size(_Basic_format_arg_type _Type);
+_NODISCARD constexpr size_t _Get_format_arg_type_storage_size(_Basic_format_arg_type _Type) noexcept;
 
 // See N4878 [format.arg]/5
 // clang-format off
@@ -1414,13 +1414,13 @@ public:
         _OutputIt = _STD move(_It);
     }
 
-    _NODISCARD const basic_format_args<basic_format_context>& _Get_args() const {
+    _NODISCARD const basic_format_args<basic_format_context>& _Get_args() const noexcept {
         return _Args;
     }
 };
 
 template <class _CharT>
-_NODISCARD constexpr size_t _Get_format_arg_type_storage_size(_Basic_format_arg_type _Type) {
+_NODISCARD constexpr size_t _Get_format_arg_type_storage_size(_Basic_format_arg_type _Type) noexcept {
     switch (_Type) {
     case _Basic_format_arg_type::_Int_type:
         return sizeof(int);
@@ -1595,7 +1595,7 @@ _NODISCARD _OutputIt _Write_aligned(_OutputIt _Out, const int _Width, const _Bas
 }
 
 template <integral _Integral>
-_NODISCARD constexpr string_view _Get_integral_prefix(const char _Type, const _Integral _Value) {
+_NODISCARD constexpr string_view _Get_integral_prefix(const char _Type, const _Integral _Value) noexcept {
     switch (_Type) {
     case 'b':
         return "0b"sv;
