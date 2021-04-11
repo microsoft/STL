@@ -962,7 +962,7 @@ template <class _Handler, class _FormatArg>
 _NODISCARD constexpr int _Get_dynamic_specs(const _FormatArg _Arg) {
     _STL_INTERNAL_STATIC_ASSERT(_Is_any_of_v<_Handler, _Width_checker, _Precision_checker>);
     const unsigned long long _Val = _STD visit_format_arg(_Handler(), _Arg);
-    if (_Val > (numeric_limits<int>::max)()) {
+    if (_Val > static_cast<unsigned long long>((numeric_limits<int>::max)())) {
         throw format_error("Number is too big.");
     }
 
