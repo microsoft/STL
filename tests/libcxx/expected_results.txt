@@ -672,7 +672,7 @@ std\strings\string.conversions\stoi.pass.cpp FAIL
 std\strings\string.conversions\stof.pass.cpp FAIL
 std\strings\string.conversions\stod.pass.cpp FAIL
 std\strings\string.conversions\stol.pass.cpp FAIL
-std\strings\string.conversions\stoull.pass.cpp FAIL2
+std\strings\string.conversions\stoull.pass.cpp FAIL
 
 
 # *** LIKELY STL BUGS ***
