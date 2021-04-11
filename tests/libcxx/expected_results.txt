@@ -674,6 +674,7 @@ std\strings\string.conversions\stod.pass.cpp FAIL
 std\strings\string.conversions\stol.pass.cpp FAIL
 std\strings\string.conversions\stoull.pass.cpp FAIL
 std\strings\string.conversions\stold.pass.cpp FAIL
+std\strings\string.conversions\stoul.pass.cpp FAIL
 
 
 # *** LIKELY STL BUGS ***
