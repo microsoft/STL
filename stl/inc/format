@@ -1655,18 +1655,21 @@ _NODISCARD constexpr bool _In_bounds(const _Ty _Value) {
 }
 
 _NODISCARD inline int _Count_separators(size_t _Digits, const string_view _Groups) {
+    if (_Groups.empty()) {
+        return 0;
+    }
+
+    // Calculate the amount of separators that are going to be inserted based on the groupings of the locale.
     int _Separators = 0;
-    if (!_Groups.empty()) {
-        // Calculate the amount of separators that are going to be inserted based on the groupings of the locale.
-        auto _Group_it = _Groups.begin();
-        while (_Digits > static_cast<size_t>(*_Group_it)) {
-            _Digits -= static_cast<size_t>(*_Group_it);
-            ++_Separators;
-            if (_Group_it + 1 != _Groups.end()) {
-                ++_Group_it;
-            }
+    auto _Group_it  = _Groups.begin();
+    while (_Digits > static_cast<size_t>(*_Group_it)) {
+        _Digits -= static_cast<size_t>(*_Group_it);
+        ++_Separators;
+        if (_Group_it + 1 != _Groups.end()) {
+            ++_Group_it;
         }
     }
+
     return _Separators;
 }
 
