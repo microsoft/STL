@@ -666,6 +666,9 @@ std/utilities/allocator.adaptor/allocator.adaptor.members/construct_pair_rvalue.
 std/utilities/allocator.adaptor/allocator.adaptor.members/construct_pair_values.pass.cpp FAIL
 std/utilities/allocator.adaptor/allocator.adaptor.members/construct_type.pass.cpp FAIL
 
+# Tests ignore the return value of sto{meow}, triggering nodiscard warnings
+std\strings\string.conversions\stoll.pass.cpp FAIL
+std\strings\string.conversions\stoi.pass.cpp FAIL
 
 # *** LIKELY STL BUGS ***
 # Not yet analyzed, likely STL bugs. Assertions and other runtime failures.
