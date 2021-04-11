@@ -513,7 +513,7 @@ void test_main() { // test basic workings of string definitions
         CHECK_SIZE_T(idx, 0);
 
         try {
-            (void) STD stoi("0xfffffffff", &idx, 0);
+             (void) STD stoi("0xfffffffff", &idx, 0);
         } catch (STD out_of_range) {
             ok = true;
         } catch (...) {
