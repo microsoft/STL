@@ -1116,7 +1116,40 @@ concept _Has_formatter = requires(const _Ty& _Val, _Context& _Ctx) {
 // clang-format on
 
 template <class _CharT>
-_NODISCARD constexpr size_t _Get_format_arg_type_storage_size(_Basic_format_arg_type _Type) noexcept;
+_NODISCARD constexpr size_t _Get_format_arg_type_storage_size(_Basic_format_arg_type _Type) noexcept {
+    switch (_Type) {
+    case _Basic_format_arg_type::_Int_type:
+        return sizeof(int);
+    case _Basic_format_arg_type::_UInt_type:
+        return sizeof(unsigned int);
+    case _Basic_format_arg_type::_Long_long_type:
+        return sizeof(long long);
+    case _Basic_format_arg_type::_ULong_long_type:
+        return sizeof(unsigned long long);
+    case _Basic_format_arg_type::_Bool_type:
+        return sizeof(bool);
+    case _Basic_format_arg_type::_Char_type:
+        return sizeof(_CharT);
+    case _Basic_format_arg_type::_Float_type:
+        return sizeof(float);
+    case _Basic_format_arg_type::_Double_type:
+        return sizeof(double);
+    case _Basic_format_arg_type::_Long_double_type:
+        return sizeof(long double);
+    case _Basic_format_arg_type::_Pointer_type:
+        return sizeof(void*);
+    case _Basic_format_arg_type::_CString_type:
+        return sizeof(const _CharT*);
+    case _Basic_format_arg_type::_String_type:
+        return sizeof(basic_string_view<_CharT>);
+    case _Basic_format_arg_type::_Custom_type:
+        return sizeof(void*) + sizeof(void (*)());
+    case _Basic_format_arg_type::_None:
+    default:
+        _STL_INTERNAL_CHECK(false);
+        return 0;
+    }
+}
 
 // See N4878 [format.arg]/5
 // clang-format off
@@ -1418,42 +1451,6 @@ public:
         return _Args;
     }
 };
-
-template <class _CharT>
-_NODISCARD constexpr size_t _Get_format_arg_type_storage_size(_Basic_format_arg_type _Type) noexcept {
-    switch (_Type) {
-    case _Basic_format_arg_type::_Int_type:
-        return sizeof(int);
-    case _Basic_format_arg_type::_UInt_type:
-        return sizeof(unsigned int);
-    case _Basic_format_arg_type::_Long_long_type:
-        return sizeof(long long);
-    case _Basic_format_arg_type::_ULong_long_type:
-        return sizeof(unsigned long long);
-    case _Basic_format_arg_type::_Bool_type:
-        return sizeof(bool);
-    case _Basic_format_arg_type::_Char_type:
-        return sizeof(_CharT);
-    case _Basic_format_arg_type::_Float_type:
-        return sizeof(float);
-    case _Basic_format_arg_type::_Double_type:
-        return sizeof(double);
-    case _Basic_format_arg_type::_Long_double_type:
-        return sizeof(long double);
-    case _Basic_format_arg_type::_Pointer_type:
-        return sizeof(void*);
-    case _Basic_format_arg_type::_CString_type:
-        return sizeof(const _CharT*);
-    case _Basic_format_arg_type::_String_type:
-        return sizeof(basic_string_view<_CharT>);
-    case _Basic_format_arg_type::_Custom_type:
-        return sizeof(void*) + sizeof(void (*)());
-    case _Basic_format_arg_type::_None:
-    default:
-        _STL_INTERNAL_CHECK(false);
-        return 0;
-    }
-}
 
 template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, monostate) {
