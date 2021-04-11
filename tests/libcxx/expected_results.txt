@@ -671,6 +671,9 @@ std\strings\string.conversions\stoll.pass.cpp FAIL
 std\strings\string.conversions\stoi.pass.cpp FAIL
 std\strings\string.conversions\stof.pass.cpp FAIL
 std\strings\string.conversions\stod.pass.cpp FAIL
+std\strings\string.conversions\stol.pass.cpp FAIL
+std\strings\string.conversions\stoull.pass.cpp FAIL2
+
 
 # *** LIKELY STL BUGS ***
 # Not yet analyzed, likely STL bugs. Assertions and other runtime failures.
