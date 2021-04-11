@@ -676,7 +676,6 @@ std\strings\string.conversions\stoull.pass.cpp FAIL
 std\strings\string.conversions\stold.pass.cpp FAIL
 std\strings\string.conversions\stoul.pass.cpp FAIL
 
-
 # *** LIKELY STL BUGS ***
 # Not yet analyzed, likely STL bugs. Assertions and other runtime failures.
 std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.bin/eval_param.pass.cpp FAIL
