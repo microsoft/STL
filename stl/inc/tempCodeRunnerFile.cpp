@@ -1,1 +1,1 @@
-    _Iterator_base12* _Mynextiter{};
+_Iterator_base12* _Mynextiter{};
