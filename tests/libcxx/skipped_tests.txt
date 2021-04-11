@@ -674,6 +674,7 @@ strings/string.conversions/stof.pass.cpp
 strings/string.conversions/stod.pass.cpp
 strings/string.conversions/stol.pass.cpp
 strings/string.conversions/stoull.pass.cpp
+strings/string.conversions/stold.pass.cpp
 
 # *** LIKELY STL BUGS ***
 # Not yet analyzed, likely STL bugs. Assertions and other runtime failures.
