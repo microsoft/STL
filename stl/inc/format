@@ -499,8 +499,8 @@ _NODISCARD inline int _Code_units_in_next_character(const wchar_t* _First, const
 
 template <class _CharT, _Parse_align_callbacks<_CharT> _Callbacks_type>
 _NODISCARD const _CharT* _Parse_align(const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
-    _STL_INTERNAL_CHECK(_Begin != _End && *_Begin != '}');
     // align and fill
+    _STL_INTERNAL_CHECK(_Begin != _End && *_Begin != '}');
     auto _Parsed_align = _Align::_None;
 
     const int _Units = _Code_units_in_next_character(_Begin, _End, _Getcvt());
