@@ -354,9 +354,11 @@ template <class _CharT>
 _NODISCARD constexpr const _CharT* _Parse_nonnegative_integer(
     const _CharT* _Begin, const _CharT* _End, unsigned int& _Value) {
     _STL_INTERNAL_CHECK(_Begin != _End && '0' <= *_Begin && *_Begin <= '9');
-    _Value                          = 0;
-    constexpr unsigned int _Max_int = static_cast<unsigned int>((numeric_limits<int>::max)());
-    constexpr unsigned int _Big_int = _Max_int / 10;
+
+    constexpr auto _Max_int = static_cast<unsigned int>((numeric_limits<int>::max)());
+    constexpr auto _Big_int = _Max_int / 10u;
+
+    _Value = 0;
 
     do {
         if (_Value > _Big_int) {
