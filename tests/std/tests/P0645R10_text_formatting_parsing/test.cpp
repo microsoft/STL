@@ -1,11 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <assert.h>
+#include <cassert>
 #include <concepts>
+#include <cstdio>
+#include <exception>
 #include <format>
 #include <optional>
-#include <stdio.h>
 #include <string_view>
 
 using namespace std;
@@ -163,7 +164,7 @@ bool test_parse_align() {
     } else {
         // test multibyte fill characters
         {
-            setlocale(LC_ALL, ".932");
+            assert(setlocale(LC_ALL, "ja-JP") != nullptr);
             test_parse_helper(parse_align_fn, "\x93\xfa<X"sv, false, 3,
                 {.expected_alignment = _Align::_Left, .expected_fill = "\x93\xfa"sv});
             test_parse_helper(parse_align_fn, "\x96\x7b>X"sv, false, 3,
@@ -172,9 +173,9 @@ bool test_parse_align() {
                 {.expected_alignment = _Align::_Center, .expected_fill = "\x92\x6e"sv});
         }
 
-#ifndef MSVC_INTERNAL_TESTING // TRANSITION, Windows on Contest VMs understand ".UTF-8" codepage
+#ifndef MSVC_INTERNAL_TESTING // TRANSITION, the Windows version on Contest VMs doesn't always understand ".UTF-8"
         {
-            setlocale(LC_ALL, ".UTF-8");
+            assert(setlocale(LC_ALL, ".UTF-8") != nullptr);
             // "\xf0\x9f\x8f\x88" is U+1F3C8 AMERICAN FOOTBALL
             test_parse_helper(parse_align_fn, "\xf0\x9f\x8f\x88<X"sv, false, 5,
                 {.expected_alignment = _Align::_Left, .expected_fill = "\xf0\x9f\x8f\x88"sv});
@@ -185,7 +186,7 @@ bool test_parse_align() {
         }
 #endif // MSVC_INTERNAL_TESTING
 
-        setlocale(LC_ALL, nullptr);
+        assert(setlocale(LC_ALL, "C") != nullptr);
     }
 
     return true;
@@ -340,7 +341,7 @@ constexpr bool test_specs_checker() {
     return true;
 }
 
-int main() {
+void test() {
     test_parse_align<char>();
     test_parse_align<wchar_t>();
 
@@ -365,6 +366,16 @@ int main() {
     test_specs_checker<wchar_t>();
     static_assert(test_specs_checker<char>());
     static_assert(test_specs_checker<wchar_t>());
+}
 
-    return 0;
+int main() {
+    try {
+        test();
+    } catch (const format_error& e) {
+        printf("format_error: %s\n", e.what());
+        assert(false);
+    } catch (const exception& e) {
+        printf("exception: %s\n", e.what());
+        assert(false);
+    }
 }

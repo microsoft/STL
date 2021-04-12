@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
+#include <cstdio>
+#include <exception>
 #include <format>
 #include <iterator>
 #include <limits>
@@ -810,7 +812,7 @@ void test_float_specs() {
     assert(format(locale{"en-US"}, STR("{:L}"), nan) == STR("nan"));
     assert(format(locale{"en-US"}, STR("{:L}"), inf) == STR("inf"));
 
-    assert(format(locale{"de_DE"}, STR("{:Lf}"), Float{0}) == STR("0,000000"));
+    assert(format(locale{"de-DE"}, STR("{:Lf}"), Float{0}) == STR("0,000000"));
 #endif // !defined(_DLL) || _ITERATOR_DEBUG_LEVEL == DEFAULT_IDL_SETTING
 
     // Type
@@ -974,7 +976,7 @@ void test_size() {
 
 void test_multibyte_format_strings() {
     {
-        setlocale(LC_ALL, ".932");
+        assert(setlocale(LC_ALL, "ja-JP") != nullptr);
         const auto s =
             "\x93\xfa\x96{\x92\x6e\x90}"sv; // Note the use of `{` and `}` as continuation bytes (from GH-1576)
         assert(format(s) == s);
@@ -1002,9 +1004,9 @@ void test_multibyte_format_strings() {
         assert(format("{:\x90}>4.3}", s) == "\x90}\x90}\x93\xfa"sv);
     }
 
-#ifndef MSVC_INTERNAL_TESTING // TRANSITION, Windows on Contest VMs understand ".UTF-8" codepage
+#ifndef MSVC_INTERNAL_TESTING // TRANSITION, the Windows version on Contest VMs doesn't always understand ".UTF-8"
     {
-        setlocale(LC_ALL, ".UTF-8");
+        assert(setlocale(LC_ALL, ".UTF-8") != nullptr);
         // Filling with footballs ("\xf0\x9f\x8f\x88" is U+1F3C8 AMERICAN FOOTBALL)
         assert(format("{:\xf0\x9f\x8f\x88>4}"sv, 42) == "\xf0\x9f\x8f\x88\xf0\x9f\x8f\x88\x34\x32");
 
@@ -1014,7 +1016,7 @@ void test_multibyte_format_strings() {
     }
 
     {
-        setlocale(LC_ALL, ".UTF-8");
+        assert(setlocale(LC_ALL, ".UTF-8") != nullptr);
         try {
             (void) format("{:\x9f\x8f\x88<10}"sv, 42); // Bad fill character encoding: missing lead byte before \x9f
             assert(false);
@@ -1023,7 +1025,7 @@ void test_multibyte_format_strings() {
     }
 #endif // MSVC_INTERNAL_TESTING
 
-    setlocale(LC_ALL, nullptr);
+    assert(setlocale(LC_ALL, "C") != nullptr);
 }
 
 // The libfmt_ tests are derived from tests in
@@ -1247,7 +1249,7 @@ void libfmt_formatter_test_zero_flag() {
     throw_helper(STR("{0:05}"), reinterpret_cast<void*>(0x42));
 }
 
-int main() {
+void test() {
     test_simple_formatting<char>();
     test_simple_formatting<wchar_t>();
 
@@ -1303,6 +1305,16 @@ int main() {
 
     libfmt_formatter_test_zero_flag<char>();
     libfmt_formatter_test_zero_flag<wchar_t>();
+}
 
-    return 0;
+int main() {
+    try {
+        test();
+    } catch (const format_error& e) {
+        printf("format_error: %s\n", e.what());
+        assert(false);
+    } catch (const exception& e) {
+        printf("exception: %s\n", e.what());
+        assert(false);
+    }
 }
