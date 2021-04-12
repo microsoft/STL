@@ -673,7 +673,7 @@ _NODISCARD pair<_CharT*, errc> __d2fixed_buffered_n(_CharT* _First, _CharT* cons
         }
         --_Round;
         const _CharT __c = _Round[0];
-        if (__c == '.') {
+        if (__c == _WIDEN(_CharT, '.')) {
           _Dot = _Round;
         } else if (__c == _WIDEN(_CharT, '9')) {
           _Round[0] = _WIDEN(_CharT, '0');
@@ -1482,7 +1482,7 @@ _NODISCARD pair<_CharT*, errc> __to_chars(_CharT* const _First, _CharT* const _L
     } else if (_Whole_digits > 0) { // case "17.29"
       // Performance note: moving digits might not be optimal.
       _CSTD memmove(_First, _First + 1, static_cast<size_t>(_Whole_digits) * sizeof(_CharT));
-      _First[_Whole_digits] = '.';
+      _First[_Whole_digits] = _WIDEN(_CharT, '.');
     } else { // case "0.001729"
       // Performance note: a larger memset() followed by overwriting '.' might be more efficient.
       _First[0] = _WIDEN(_CharT, '0');
