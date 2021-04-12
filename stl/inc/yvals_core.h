@@ -355,10 +355,6 @@
 #include <vcruntime.h>
 #include <xkeycheck.h> // The _HAS_CXX tags must be defined before including this.
 
-#ifndef _HAS_CXX23 // only exists to run the tests at least once
-#define _HAS_CXX23 _HAS_CXX20
-#endif // _HAS_CXX23
-
 #ifndef _STL_WARNING_LEVEL
 #if defined(_MSVC_WARNING_LEVEL) && _MSVC_WARNING_LEVEL >= 4
 #define _STL_WARNING_LEVEL 4
