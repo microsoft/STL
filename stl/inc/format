@@ -1828,7 +1828,10 @@ _NODISCARD _OutputIt _Write_integral(
 
     const bool _Write_leading_zeroes = _Specs._Leading_zero && _Specs._Alignment == _Align::_None;
     auto _Writer                     = [&, _End = _End](_OutputIt _Out) {
+#pragma warning(push)
+#pragma warning(disable : 4296) // '<': expression is always false
         _Out = _Write_sign(_STD move(_Out), _Specs._Sgn, _Value < _Integral{0});
+#pragma warning(pop)
         _Out = _RANGES _Copy_unchecked(_Prefix.begin(), _Prefix.end(), _STD move(_Out)).out;
         if (_Write_leading_zeroes && _Width < _Specs._Width) {
             _Out = _RANGES fill_n(_STD move(_Out), _Specs._Width - _Width, '0');
