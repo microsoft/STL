@@ -254,6 +254,9 @@
 // P1831R1 Deprecating volatile In The Standard Library
 // Other C++20 deprecation warnings
 
+// _HAS_CXX23 directly controls:
+// P1682R2 to_underlying() For Enumerations
+
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
 // This implementation parallelizes several common algorithm calls, but not all.
@@ -351,6 +354,10 @@
 
 #include <vcruntime.h>
 #include <xkeycheck.h> // The _HAS_CXX tags must be defined before including this.
+
+#ifndef _HAS_CXX23 // only exists to run the tests at least once
+#define _HAS_CXX23 _HAS_CXX20
+#endif // _HAS_CXX23
 
 #ifndef _STL_WARNING_LEVEL
 #if defined(_MSVC_WARNING_LEVEL) && _MSVC_WARNING_LEVEL >= 4
@@ -1277,8 +1284,13 @@
 #define __cpp_lib_three_way_comparison 201907L
 #endif // __cpp_lib_concepts
 
-#define __cpp_lib_to_address    201711L
-#define __cpp_lib_to_array      201907L
+#define __cpp_lib_to_address 201711L
+#define __cpp_lib_to_array   201907L
+
+#if _HAS_CXX23
+#define __cpp_lib_to_underlying 202102L
+#endif // _HAS_CXX23
+
 #define __cpp_lib_type_identity 201806L
 #define __cpp_lib_unwrap_ref    201811L
 #endif // _HAS_CXX20

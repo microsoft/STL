@@ -1501,6 +1501,20 @@ STATIC_ASSERT(__cpp_lib_to_array == 201907L);
 #endif
 #endif
 
+#if _HAS_CXX23
+#ifndef __cpp_lib_to_underlying
+#error __cpp_lib_to_underlying is not defined
+#elif __cpp_lib_to_underlying != 202102L
+#error __cpp_lib_to_underlying is not 202102L
+#else
+STATIC_ASSERT(__cpp_lib_to_underlying == 202102L);
+#endif
+#else
+#ifdef __cpp_lib_to_underlying
+#error __cpp_lib_to_underlying is defined
+#endif
+#endif
+
 #if _HAS_CXX17
 #ifndef __cpp_lib_to_chars
 #error __cpp_lib_to_chars is not defined
