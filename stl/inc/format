@@ -206,7 +206,7 @@ public:
     // _Next_arg_id < 0 means manual
     _NODISCARD constexpr size_t next_arg_id() {
         if (_Next_arg_id < 0) {
-            throw format_error("Can not switch from manual to automatic indexing");
+            _THROW(format_error("Can not switch from manual to automatic indexing"));
         }
 
         return static_cast<size_t>(_Next_arg_id++);
@@ -220,7 +220,7 @@ public:
         }
 
         if (_Next_arg_id > 0) {
-            throw format_error("Can not switch from automatic to manual indexing");
+            _THROW(format_error("Can not switch from automatic to manual indexing"));
         }
         _Next_arg_id = -1;
     }
@@ -370,7 +370,7 @@ _NODISCARD constexpr const _CharT* _Parse_nonnegative_integer(
     } while (_Begin != _End && '0' <= *_Begin && *_Begin <= '9');
 
     if (_Value > _Max_int) {
-        throw format_error("Number is too big");
+        _THROW(format_error("Number is too big"));
     }
 
     return _Begin;
@@ -413,14 +413,14 @@ _NODISCARD constexpr const _CharT* _Parse_arg_id(
         // The only things permitted after the index are the end of the replacement field ('}')
         // or the beginning of the format spec (':').
         if (_Begin == _End || (*_Begin != '}' && *_Begin != ':')) {
-            throw format_error("Invalid format string.");
+            _THROW(format_error("Invalid format string."));
         }
 
         _Callbacks._On_manual_id(_Index);
         return _Begin;
     }
     // This is where we would parse named arg ids if std::format were to support them.
-    throw format_error("Invalid format string.");
+    _THROW(format_error("Invalid format string."));
 }
 
 _NODISCARD inline int _Code_units_in_next_character(const char* _First, const char* _Last, const _Cvtvec& _Cvt) {
@@ -505,7 +505,7 @@ _NODISCARD const _CharT* _Parse_align(const _CharT* _Begin, const _CharT* _End, 
 
     const int _Units = _Code_units_in_next_character(_Begin, _End, _Getcvt());
     if (_Units < 0) { // invalid fill character encoding
-        throw format_error("Invalid format string.");
+        _THROW(format_error("Invalid format string."));
     }
     auto _Align_pt = _Begin + _Units;
 
@@ -529,7 +529,7 @@ _NODISCARD const _CharT* _Parse_align(const _CharT* _Begin, const _CharT* _End, 
         if (_Parsed_align != _Align::_None) {
             if (_Align_pt != _Begin) {
                 if (*_Begin == '{') {
-                    throw format_error("invalid fill character '{'");
+                    _THROW(format_error("invalid fill character '{'"));
                 }
                 _Callbacks._On_fill({_Begin, static_cast<size_t>(_Align_pt - _Begin)});
                 _Begin = _Align_pt + 1;
@@ -614,7 +614,7 @@ _NODISCARD constexpr const _CharT* _Parse_width(
         }
 
         if (_Begin == _End || *_Begin != '}') {
-            throw format_error("Invalid format string.");
+            _THROW(format_error("Invalid format string."));
         }
         ++_Begin;
     }
@@ -641,10 +641,10 @@ _NODISCARD constexpr const _CharT* _Parse_precision(
         }
 
         if (_Begin == _End || *_Begin != '}') {
-            throw format_error("Invalid format string.");
+            _THROW(format_error("Invalid format string."));
         }
     } else {
-        throw format_error("Missing precision specifier.");
+        _THROW(format_error("Missing precision specifier."));
     }
 
     return _Begin;
@@ -730,7 +730,7 @@ _NODISCARD constexpr const _CharT* _Parse_replacement_field(
     const _CharT* _Begin, const _CharT* _End, _HandlerT&& _Handler) {
     ++_Begin;
     if (_Begin == _End) {
-        throw format_error("Invalid format string.");
+        _THROW(format_error("Invalid format string."));
     }
 
     if (*_Begin == '}') {
@@ -752,10 +752,10 @@ _NODISCARD constexpr const _CharT* _Parse_replacement_field(
         } else if (_Ch == ':') {
             _Begin = _Handler._On_format_specs(_Adapter._Arg_id, _Begin + 1, _End);
             if (_Begin == _End || *_Begin != '}') {
-                throw format_error("Unknown format specifier.");
+                _THROW(format_error("Unknown format specifier."));
             }
         } else {
-            throw format_error("Missing '}' in format string.");
+            _THROW(format_error("Missing '}' in format string."));
         }
     }
 
@@ -774,7 +774,7 @@ const _CharT* _Find_encoded(const _CharT* _First, const _CharT* _Last, const _Ch
     while (_First != _Last && *_First != _Val) {
         const int _Units = _Code_units_in_next_character(_First, _Last, _Cvt);
         if (_Units < 0) {
-            throw format_error("Invalid encoded character in format string.");
+            _THROW(format_error("Invalid encoded character in format string."));
         }
         _First += _Units;
     }
@@ -806,7 +806,7 @@ void _Parse_format_string(basic_string_view<_CharT> _Format_str, _HandlerT&& _Ha
                 // the above condition was not met.
                 ++_ClosingCurl;
                 if (_ClosingCurl == _OpeningCurl || *_ClosingCurl != '}') {
-                    throw format_error("Unmatched '}' in format string.");
+                    _THROW(format_error("Unmatched '}' in format string."));
                 }
                 // We found two closing curls, so output only one of them
                 _Handler._On_text(_Begin, _ClosingCurl);
@@ -861,7 +861,7 @@ public:
 
     constexpr void _On_fill(const basic_string_view<_CharT> _Sv) {
         if (_Sv.size() > _STD size(_Specs._Fill)) {
-            throw format_error("Invalid fill (too long).");
+            _THROW(format_error("Invalid fill (too long)."));
         }
 
         const auto _Pos = _STD _Copy_unchecked(_Sv._Unchecked_begin(), _Sv._Unchecked_end(), _Specs._Fill);
@@ -895,7 +895,7 @@ public:
 
     constexpr void _On_type(const _CharT _Type) {
         if (_Type < 0 || _Type > (numeric_limits<signed char>::max)()) {
-            throw format_error("Invalid type specification.");
+            _THROW(format_error("Invalid type specification."));
         }
         _Specs._Type = static_cast<char>(_Type);
     }
@@ -911,7 +911,7 @@ _NODISCARD constexpr basic_format_arg<_Context> _Get_arg(const _Context& _Ctx, c
     // id or a named id (which we do not support in std::format)
     auto _Arg = _Ctx.arg(_Arg_id);
     if (!_Arg) {
-        throw format_error("Argument not found.");
+        _THROW(format_error("Argument not found."));
     }
 
     return _Arg;
@@ -926,12 +926,12 @@ public:
         if constexpr (is_integral_v<_Ty>) {
             if constexpr (is_signed_v<_Ty>) {
                 if (_Value < 0) {
-                    throw format_error("Negative width.");
+                    _THROW(format_error("Negative width."));
                 }
             }
             return static_cast<unsigned long long>(_Value);
         } else {
-            throw format_error("Width is not an integer.");
+            _THROW(format_error("Width is not an integer."));
         }
     }
 };
@@ -945,12 +945,12 @@ public:
         if constexpr (is_integral_v<_Ty>) {
             if constexpr (is_signed_v<_Ty>) {
                 if (_Value < 0) {
-                    throw format_error("Negative precision.");
+                    _THROW(format_error("Negative precision."));
                 }
             }
             return static_cast<unsigned long long>(_Value);
         } else {
-            throw format_error("Precision is not an integer.");
+            _THROW(format_error("Precision is not an integer."));
         }
     }
 };
@@ -963,7 +963,7 @@ _NODISCARD constexpr int _Get_dynamic_specs(const _FormatArg _Arg) {
     _STL_INTERNAL_STATIC_ASSERT(_Is_any_of_v<_Handler, _Width_checker, _Precision_checker>);
     const unsigned long long _Val = _STD visit_format_arg(_Handler(), _Arg);
     if (_Val > static_cast<unsigned long long>((numeric_limits<int>::max)())) {
-        throw format_error("Number is too big.");
+        _THROW(format_error("Number is too big."));
     }
 
     return static_cast<int>(_Val);
@@ -1036,7 +1036,7 @@ private:
 
     _NODISCARD static constexpr int _Verify_dynamic_arg_index_in_range(const size_t _Idx) {
         if (_Idx > static_cast<size_t>((numeric_limits<int>::max)())) {
-            throw format_error("Dynamic width or precision index too large.");
+            _THROW(format_error("Dynamic width or precision index too large."));
         }
 
         return static_cast<int>(_Idx);
@@ -1052,7 +1052,7 @@ public:
 
     constexpr void _Require_numeric_argument() const {
         if (!_Is_arithmetic_fmt_type(_Arg_type)) {
-            throw format_error("Format specifier requires numeric argument.");
+            _THROW(format_error("Format specifier requires numeric argument."));
         }
     }
 
@@ -1061,13 +1061,13 @@ public:
         if (_Is_integral_fmt_type(_Arg_type) && _Arg_type != _Basic_format_arg_type::_Int_type
             && _Arg_type != _Basic_format_arg_type::_Long_long_type
             && _Arg_type != _Basic_format_arg_type::_Char_type) {
-            throw format_error("Format specifier requires signed argument.");
+            _THROW(format_error("Format specifier requires signed argument."));
         }
     }
 
     constexpr void _Check_precision() const {
         if (_Is_integral_fmt_type(_Arg_type) || _Arg_type == _Basic_format_arg_type::_Pointer_type) {
-            throw format_error("Precision not allowed for this argument type.");
+            _THROW(format_error("Precision not allowed for this argument type."));
         }
     }
 };
@@ -1533,7 +1533,7 @@ _NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const void* const _Value) {
 template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const _CharT* _Value) {
     if (!_Value) {
-        throw format_error("String pointer is null.");
+        _THROW(format_error("String pointer is null."));
     }
 
     while (*_Value) {
@@ -1750,14 +1750,14 @@ _NODISCARD _OutputIt _Write_integral(
     _OutputIt _Out, const _Integral _Value, _Basic_format_specs<_CharT> _Specs, locale _Locale) {
     if (_Specs._Type == 'c') {
         if (!_In_bounds<_CharT>(_Value)) {
-            throw format_error("integral cannot be stored in charT");
+            _THROW(format_error("integral cannot be stored in charT"));
         }
         _Specs._Alt = false;
         return _Fmt_write(_STD move(_Out), static_cast<_CharT>(_Value), _Specs, _Locale);
     }
 
     if (_Specs._Precision != -1) {
-        throw format_error("integral cannot have a precision");
+        _THROW(format_error("integral cannot have a precision"));
     }
 
     if (_Specs._Sgn == _Sign::_None) {
@@ -1787,7 +1787,7 @@ _NODISCARD _OutputIt _Write_integral(
         _Base = 8;
         break;
     default:
-        throw format_error("invalid integral type");
+        _THROW(format_error("invalid integral type"));
     }
 
     // long long -1 representation in binary is 64 bits + sign
@@ -1867,7 +1867,7 @@ _NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const bool _Value, _Basic_format
     }
 
     if (_Specs._Precision != -1) {
-        throw format_error("bool cannot have a precision");
+        _THROW(format_error("bool cannot have a precision"));
     }
 
     if (_Specs._Localized) {
@@ -1893,7 +1893,7 @@ _NODISCARD _OutputIt _Fmt_write(
     }
 
     if (_Specs._Precision != -1) {
-        throw format_error("charT cannot have a precision");
+        _THROW(format_error("charT cannot have a precision"));
     }
 
     // Clear the type so that the string_view writer doesn't fail on 'c'.
@@ -1956,7 +1956,7 @@ _NODISCARD _OutputIt _Fmt_write(
         _Exponent = 'e';
         break;
     default:
-        throw format_error("invalid floating point type");
+        _THROW(format_error("invalid floating point type"));
     }
 
     // Consider the powers of 2 in decimal:
@@ -2120,27 +2120,27 @@ template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Fmt_write(
     _OutputIt _Out, const void* const _Value, const _Basic_format_specs<_CharT>& _Specs, locale) {
     if (_Specs._Type != '\0' && _Specs._Type != 'p') {
-        throw format_error("invalid const void* type");
+        _THROW(format_error("invalid const void* type"));
     }
 
     if (_Specs._Sgn != _Sign::_None) {
-        throw format_error("const void* cannot have a sign");
+        _THROW(format_error("const void* cannot have a sign"));
     }
 
     if (_Specs._Alt) {
-        throw format_error("const void* cannot have an alternative representation");
+        _THROW(format_error("const void* cannot have an alternative representation"));
     }
 
     if (_Specs._Precision != -1) {
-        throw format_error("const void* cannot have a precision");
+        _THROW(format_error("const void* cannot have a precision"));
     }
 
     if (_Specs._Leading_zero) {
-        throw format_error("const void* cannot have a leading zero");
+        _THROW(format_error("const void* cannot have a leading zero"));
     }
 
     if (_Specs._Localized) {
-        throw format_error("const void* cannot be localized");
+        _THROW(format_error("const void* cannot be localized"));
     }
 
     // Compute the bit width of the pointer (i.e. how many bits it takes to be represented).
@@ -2282,23 +2282,23 @@ template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Fmt_write(
     _OutputIt _Out, const basic_string_view<_CharT> _Value, const _Basic_format_specs<_CharT>& _Specs, locale) {
     if (_Specs._Type != '\0' && _Specs._Type != 's') {
-        throw format_error("invalid string type");
+        _THROW(format_error("invalid string type"));
     }
 
     if (_Specs._Sgn != _Sign::_None) {
-        throw format_error("string cannot have a sign");
+        _THROW(format_error("string cannot have a sign"));
     }
 
     if (_Specs._Alt) {
-        throw format_error("string cannot have an alternative representation");
+        _THROW(format_error("string cannot have an alternative representation"));
     }
 
     if (_Specs._Leading_zero) {
-        throw format_error("string cannot have a leading zero");
+        _THROW(format_error("string cannot have a leading zero"));
     }
 
     if (_Specs._Localized) {
-        throw format_error("string cannot be localized");
+        _THROW(format_error("string cannot be localized"));
     }
 
     if (_Specs._Precision < 0 && _Specs._Width <= 0) {
@@ -2394,7 +2394,7 @@ struct _Format_handler {
             _Arg._Active_state);
         _Begin = _Parse_format_specs(_Begin, _End, _Handler);
         if (_Begin == _End || *_Begin != '}') {
-            throw format_error("Missing '}' in format string.");
+            _THROW(format_error("Missing '}' in format string."));
         }
 
         _Ctx.advance_to(_STD visit_format_arg(
@@ -2420,7 +2420,7 @@ struct _Formatter_base {
         _Specs_checker<_Dynamic_specs_handler<_Pc>> _Handler(_Dynamic_specs_handler<_Pc>(_Specs, _ParseCtx), _ArgType);
         const auto _It = _Parse_format_specs(_ParseCtx._Unchecked_begin(), _ParseCtx._Unchecked_end(), _Handler);
         if (_It != _ParseCtx._Unchecked_end() && *_It != '}') {
-            throw format_error("Missing '}' in format string.");
+            _THROW(format_error("Missing '}' in format string."));
         }
         return _ParseCtx.begin() + (_It - _ParseCtx._Unchecked_begin());
     }
