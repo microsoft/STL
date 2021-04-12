@@ -22,9 +22,11 @@
 #include <cmath>
 #include <compare>
 #include <forward_list>
+#include <iomanip>
 #include <istream>
 #include <memory>
 #include <optional>
+#include <string>
 #include <vector>
 #include <xloctime>
 #include <xthreads.h>
@@ -5189,8 +5191,8 @@ namespace chrono {
     concept _Chrono_parse_spec_callbacks = _Parse_align_callbacks<_Ty, _CharT>
                                            && _Parse_width_callbacks<_Ty, _CharT>
                                            && _Parse_precision_callbacks<_Ty, _CharT>
-                                           && _Width_adapter_callbacks<_Ty, _CharT>
-                                           && _Precision_adapter_callbacks<_Ty, _CharT>
+                                        //    && _Width_adapter_callbacks<_Ty, _CharT>
+                                        //    && _Precision_adapter_callbacks<_Ty, _CharT>
                                            && requires(_Ty _At, basic_string_view<_CharT> _Sv, _Align _Aln) {
         { _At._On_conversion_spec(_CharT{}, _CharT{}) } -> same_as<void>;
         { _At._On_lit_char(_CharT{}) } -> same_as<void>;
@@ -5356,10 +5358,12 @@ _NODISCARD constexpr const _CharT* _Parse_chrono_format_specs(
 
 template <class _CharT>
 struct formatter<_CHRONO day, _CharT> {
-    basic_format_parse_context<_CharT>::iterator parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
+    typename basic_format_parse_context<_CharT>::iterator parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
+        using namespace chrono;
         _Chrono_format_specs<_CharT> _Specs{};
         _Chrono_specs_setter<_CharT> _Callback{_Specs};
-        const auto _End = _Parse_chrono_format_specs(_Parse_ctx.begin(), _Parse_ctx.end(), _Callback);
+        const auto _End =
+            _Parse_chrono_format_specs(_Parse_ctx._Unchecked_begin(), _Parse_ctx._Unchecked_end(), _Callback);
         if (_Specs._Precision != -1) {
             _THROW(format_error("Precision specification invalid for type day."));
         }
@@ -5369,15 +5373,15 @@ struct formatter<_CHRONO day, _CharT> {
             _THROW(format_error("day requires at least one chrono-spec."));
         }
 
-        _Chrono_specs<_CharT>* _Target_conv_spec_ptr =
-            _STD find_if(_List.begin(), _List.end(), [](const _Chrono_spec<_CharT> _Cs) { return _Cs._Type != '\0'; });
+        auto _Target_conv_spec_ptr =
+            _STD find_if(_List.begin(), _List.end(), [](const _Chrono_specs<_CharT> _Cs) { return _Cs._Type != '\0'; });
 
         if (_Target_conv_spec_ptr == _List.end()) {
             _THROW(format_error("day requires one conversion-spec."));
         }
 
         _Chrono_specs<_CharT> _Target_conv_spec = *_Target_conv_spec_ptr;
-        _Conv_spec_ptr                          = _Target_conv_spec_ptr;
+        _Conv_spec_ptr                          = &_Target_conv_spec;
         // only 'd' and 'e' acceptable types for day
         if (_Target_conv_spec._Type != 'd' && _Target_conv_spec._Type != 'e') {
             _THROW(format_error("Invalid type for type day."));
@@ -5398,35 +5402,47 @@ struct formatter<_CHRONO day, _CharT> {
         return _Parse_ctx.end();
     }
 
-    // format_context::iterator format(const day& _Val, format_context& _Fmt_ctx) {
-    //     /*
-    //     if O modifier
-    //         figure out locale deal
-    //     if _Val's number is < 10
-    //         if d prefix with 0
-    //         elif e prefix with ' '
-    //     else
-    //         just the plain _Val's number
+    template <class _FormatContext>
+    typename _FormatContext::iterator format(const _CHRONO day& _Val, _FormatContext& _FormatCtx) {
+        using _Ctx_iter = typename _FormatContext::iterator;
+        using namespace chrono;
+        /*
+        if O modifier
+            figure out locale deal
+        if _Val's number is < 10
+            if d prefix with 0
+            elif e prefix with ' '
+        else
+            just the plain _Val's number
 
-    //     return std::formatter's format function(...)
-    //     */
-    //     _Chrono_specs<_CharT> _Target = *_Conv_spec_ptr;
-    //     _CharT _Spacer                = '\0';
-    //     if (static_cast<unsigned int>(_Val) < 10) {
-    //         if (_Target._Type == 'd') {
-    //             _Spacer = '0';
-    //         } else { // e
-    //             _Spacer = ' ';
-    //         }
-    //     }
-    //     if (_Target._Modifier == 'O') {
-    //         // locale
-    //     }
-    // return nullptr;
-    // }
+        Func writes the spacer + result of locale-specific daynum (using std::time_put?)
+
+        return _Write_align(...) passing func
+        */
+        _Chrono_specs<_CharT> _Target = *_Conv_spec_ptr;
+        tm _Time                      = {.tm_mday = static_cast<int>(static_cast<unsigned int>(_Val))};
+        // there's a better way to do this vv
+        _CharT _Fmt_str[4];
+        _Fmt_str[0] = '%';
+        if (_Target._Modifier != '\0') {
+            _Fmt_str[1] = _Target._Modifier;
+            _Fmt_str[2] = _Target._Type;
+        } else {
+            _Fmt_str[1] = _Target._Type;
+            _Fmt_str[2] = '\0';
+        }
+
+        basic_stringstream<_CharT> _Stream;
+        _Stream.imbue(_FormatCtx.locale());
+        _Stream << _STD put_time<_CharT>(&_Time, _Fmt_str);
+        basic_string<_CharT> _Str = _Stream.str();
+
+        return _Write_aligned(_STD move(_FormatCtx.out()), _Stored_specs._Width, _Stored_specs, _Align::_Left,
+            [=](_Ctx_iter _Out) { return _Fmt_write<_CharT>(_STD move(_Out), _Str._Unchecked_begin()); });
+    }
 
 private:
-    _Chrono_specs<_CharT> _Conv_spec_ptr;
+    _Chrono_specs<_CharT>* _Conv_spec_ptr;
     _Chrono_format_specs<_CharT> _Stored_specs{};
 };
 #endif // __cpp_lib_concepts

@@ -194,6 +194,16 @@ constexpr bool test_parse_chrono_format_specs() {
     return true;
 }
 
+template <typename CharT>
+constexpr bool test_day_formatter() {
+    day d{27};
+    string res = format("%d", d);
+    std::cout << res << "\n";
+    assert(res == "27");
+
+    return true;
+}
+
 int main() {
     test_parse_conversion_spec<char>();
     test_parse_conversion_spec<wchar_t>();
@@ -204,6 +214,9 @@ int main() {
     test_parse_chrono_format_specs<wchar_t>();
     static_assert(test_parse_chrono_format_specs<char>());
     static_assert(test_parse_chrono_format_specs<wchar_t>());
+
+    test_day_formatter<char>();
+    test_day_formatter<wchar_t>();
 }
 
 #else // ^^^ !__clang__ / __clang__ vvv
