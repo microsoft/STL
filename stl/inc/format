@@ -417,7 +417,7 @@ _NODISCARD constexpr const _CharT* _Parse_arg_id(
     throw format_error("Invalid format string.");
 }
 
-inline constexpr bool _Execution_charset_is_utf8 = [] {
+_NODISCARD constexpr bool _Is_execution_charset_utf8() {
 #pragma warning(push)
 #pragma warning(disable : 4309) // 'initializing' : truncation of constant value
 #pragma warning(disable : 4566) // character represented by universal-character-name '\u4E00' cannot be represented in
@@ -429,9 +429,12 @@ inline constexpr bool _Execution_charset_is_utf8 = [] {
     constexpr char _Test_char[] = "\u4e00";
     return sizeof(_Test_char) == 4 && _Test_char[0] == '\xe4' && _Test_char[1] == '\xb8' && _Test_char[2] == '\x80';
 #pragma warning(pop)
-}();
+}
 
-_NODISCARD inline int _Utf8_code_units_in_next_character(const char* const _First, const char* const _Last) noexcept {
+inline constexpr bool _Is_execution_charset_utf8_v = _Is_execution_charset_utf8();
+
+_NODISCARD inline constexpr int _Utf8_code_units_in_next_character(
+    const char* const _First, const char* const _Last) noexcept {
     // Returns a count of the number of UTF-8 code units that compose the first encoded character in [_First, _Last),
     // or -1 if [_First, _Last) doesn't contain an entire encoded character or *_First is not a valid lead byte.
     const auto _Ch = static_cast<unsigned char>(*_First);
@@ -455,13 +458,30 @@ _NODISCARD inline int _Utf8_code_units_in_next_character(const char* const _Firs
     return (_Len >= 4) ? 4 : -1;
 }
 
+_NODISCARD inline int _Double_byte_encoding_code_units_in_next_character(
+    const char* const _First, const char* const _Last, const _Cvtvec& _Cvt) {
+    // Returns a count of the number of code units that compose the first encoded character in [_First, _Last),
+    // or -1 if [_First, _Last) doesn't contain an entire encoded character or *_First is not a valid lead byte.
+    wchar_t _Wide;
+    mbstate_t _St{};
+    const auto _Len   = static_cast<size_t>(_Last - _First);
+    const int _Result = _Mbrtowc(&_Wide, _First, _Len, &_St, &_Cvt);
+    if (_Result > 0) {
+        return _Result;
+    } else if (_Result < 0) { // invalid or incomplete encoded character
+        return -1;
+    } else { // next code unit is '\0'
+        return 1;
+    }
+}
+
 _NODISCARD inline int _Code_units_in_next_character(const char* _First, const char* _Last, const _Cvtvec& _Cvt) {
     // Returns a count of the number of code units that compose the first encoded character in
     // [_First, _Last), or -1 if [_First, _Last) doesn't contain an entire encoded character or
     // *_First is not a valid lead byte.
     _STL_INTERNAL_CHECK(_First < _Last);
 
-    if constexpr (_Execution_charset_is_utf8) {
+    if constexpr (_Is_execution_charset_utf8_v) {
         return _Utf8_code_units_in_next_character(_First, _Last);
     } else {
         switch (_Cvt._Mbcurmax) {
@@ -472,24 +492,10 @@ _NODISCARD inline int _Code_units_in_next_character(const char* _First, const ch
             return 1; // all characters have only one code unit
 
         case 2:
-            {
-                wchar_t _Wide;
-                mbstate_t _St{};
-                const auto _Len   = static_cast<size_t>(_Last - _First);
-                const int _Result = _Mbrtowc(&_Wide, _First, _Len, &_St, &_Cvt);
-                if (_Result > 0) {
-                    return _Result;
-                } else if (_Result < 0) { // invalid or incomplete encoded character
-                    return -1;
-                } else { // next code unit is '\0'
-                    return 1;
-                }
-            }
+            return _Double_byte_encoding_code_units_in_next_character(_First, _Last, _Cvt);
 
         case 4: // Assume UTF-8 (as does _Mbrtowc)
-            {
-                return _Utf8_code_units_in_next_character(_First, _Last);
-            }
+            return _Utf8_code_units_in_next_character(_First, _Last);
         }
     }
 }
@@ -775,7 +781,7 @@ template <class _CharT>
 const _CharT* _Find_encoded(const _CharT* _First, const _CharT* _Last, const _CharT _Val, const _Cvtvec& _Cvt) {
     // Returns the first occurrence of _Val as an encoded character (and not, for example, as a
     // continuation byte) in [_First, _Last).
-    if constexpr (_Execution_charset_is_utf8) {
+    if constexpr (_Is_execution_charset_utf8_v) {
         return _Find_unchecked(_First, _Last, _Val);
     } else {
         if (_Cvt._Mbcurmax == 1 || _Cvt._Mbcurmax == 4) {
@@ -2222,7 +2228,7 @@ _NODISCARD inline int _Estimate_utf8_character_width(const char* const _Ptr, con
 _NODISCARD inline int _Estimate_character_width(const char* _Ptr, const int _Units, const _Cvtvec& _Cvt) {
     // Return an estimate for the width of the character composed of _Units code units,
     // whose first code unit is denoted by _Ptr.
-    if constexpr (_Execution_charset_is_utf8) {
+    if constexpr (_Is_execution_charset_utf8_v) {
         return _Estimate_utf8_character_width(_Ptr, _Units);
     } else {
         if (_Cvt._Mbcurmax != 4) {
