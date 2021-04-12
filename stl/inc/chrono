@@ -5326,7 +5326,7 @@ namespace chrono {
                     _THROW(format_error("Invalid format string - missing type after %"));
                 }
 
-                _CharT _Next_ch = *(_Begin + 1);
+                const _CharT _Next_ch = *(_Begin + 1);
                 switch (_Next_ch) {
                 case 'n':
                     _Callbacks._On_lit_char('\n');
