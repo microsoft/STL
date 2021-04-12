@@ -433,7 +433,7 @@ _NODISCARD constexpr bool _Is_execution_charset_utf8() {
 
 inline constexpr bool _Is_execution_charset_utf8_v = _Is_execution_charset_utf8();
 
-_NODISCARD inline constexpr int _Utf8_code_units_in_next_character(
+_NODISCARD constexpr int _Utf8_code_units_in_next_character(
     const char* const _First, const char* const _Last) noexcept {
     // Returns a count of the number of UTF-8 code units that compose the first encoded character in [_First, _Last),
     // or -1 if [_First, _Last) doesn't contain an entire encoded character or *_First is not a valid lead byte.
