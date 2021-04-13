@@ -107,13 +107,13 @@ bool test_parse_conversion_spec() {
     using view_typ          = basic_string_view<CharT>;
     using chrono_spec       = _Chrono_specs<CharT>;
 
-    view_typ s0(TYPED_LITERAL(CharT, "%B"));
-    view_typ s1(TYPED_LITERAL(CharT, "%Ec"));
-    view_typ s2(TYPED_LITERAL(CharT, "%Od"));
-    view_typ s3(TYPED_LITERAL(CharT, "%E"));
-    view_typ s4(TYPED_LITERAL(CharT, "%"));
-    view_typ s5(TYPED_LITERAL(CharT, "%}"));
-    view_typ s6(TYPED_LITERAL(CharT, "%E}"));
+    view_typ s0(TYPED_LITERAL(CharT, "B"));
+    view_typ s1(TYPED_LITERAL(CharT, "Ec"));
+    view_typ s2(TYPED_LITERAL(CharT, "Od"));
+    view_typ s3(TYPED_LITERAL(CharT, "E"));
+    view_typ s4(TYPED_LITERAL(CharT, ""));
+    view_typ s5(TYPED_LITERAL(CharT, "}"));
+    view_typ s6(TYPED_LITERAL(CharT, "E}"));
 
     vector<chrono_spec> v0{{._Type = 'B'}};
     test_parse_helper(parse_conv_spec_fn, s0, false, view_typ::npos, {.expected_chrono_specs = v0});
@@ -188,10 +188,31 @@ bool test_parse_chrono_format_specs() {
     return true;
 }
 
+template <typename CharT>
+constexpr bool test_day_formatter() {
+    day d{27};
+    string res = format("%d", d);
+    std::cout << res << "\n";
+    assert(res == "27");
+
+    return true;
+}
+
 int main() {
     test_parse_conversion_spec<char>();
     test_parse_conversion_spec<wchar_t>();
 
     test_parse_chrono_format_specs<char>();
     test_parse_chrono_format_specs<wchar_t>();
+<<<<<<< HEAD
+||||||| 970bff2b
+    static_assert(test_parse_chrono_format_specs<char>());
+    static_assert(test_parse_chrono_format_specs<wchar_t>());
+=======
+    static_assert(test_parse_chrono_format_specs<char>());
+    static_assert(test_parse_chrono_format_specs<wchar_t>());
+
+    test_day_formatter<char>();
+    test_day_formatter<wchar_t>();
+>>>>>>> 0509ca32df6d89fc0b68aea6b93889e0e64f3f38
 }
