@@ -1299,8 +1299,8 @@ private:
     static constexpr size_t _Index_length   = _Num_args * sizeof(_Index_type);
     static constexpr size_t _Storage_length = (_Get_format_arg_storage_size<_Context, _Args> + ... + 0);
 
-    // we store the data in memory as _Format_arg_store_packed_index[_Index_length] + unsigned char[_Storage_length]
-    unsigned char _Storage[_Index_length + _Storage_length];
+    // we store the data in memory as _Format_arg_store_packed_index[_Num_args] + unsigned char[_Storage_length]
+    alignas(_Index_type) unsigned char _Storage[_Index_length + _Storage_length];
 
     template <class _Ty>
     void _Store_impl(const size_t _Arg_index, const _Basic_format_arg_type _Arg_type, _Ty _Val) noexcept {
