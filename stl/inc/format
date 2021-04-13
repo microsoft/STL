@@ -895,7 +895,7 @@ struct _Dynamic_format_specs : _Basic_format_specs<_CharT> {
 template <class _CharT>
 class _Specs_setter {
 public:
-    explicit constexpr _Specs_setter(_Basic_format_specs<_CharT>& _Specs_) : _Specs(_Specs_) {}
+    constexpr explicit _Specs_setter(_Basic_format_specs<_CharT>& _Specs_) : _Specs(_Specs_) {}
 
     constexpr void _On_align(const _Align _Aln) {
         _Specs._Alignment = _Aln;
