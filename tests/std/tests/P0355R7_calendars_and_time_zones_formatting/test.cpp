@@ -188,6 +188,7 @@ bool test_parse_chrono_format_specs() {
     return true;
 }
 
+#ifndef __clang__ // TRANSITION, LLVM-48606
 template <typename CharT>
 constexpr bool test_day_formatter() {
     day d{27};
@@ -197,6 +198,7 @@ constexpr bool test_day_formatter() {
 
     return true;
 }
+#endif // __clang__
 
 int main() {
     test_parse_conversion_spec<char>();
@@ -204,15 +206,7 @@ int main() {
 
     test_parse_chrono_format_specs<char>();
     test_parse_chrono_format_specs<wchar_t>();
-<<<<<<< HEAD
-||||||| 970bff2b
-    static_assert(test_parse_chrono_format_specs<char>());
-    static_assert(test_parse_chrono_format_specs<wchar_t>());
-=======
-    static_assert(test_parse_chrono_format_specs<char>());
-    static_assert(test_parse_chrono_format_specs<wchar_t>());
 
-    test_day_formatter<char>();
-    test_day_formatter<wchar_t>();
->>>>>>> 0509ca32df6d89fc0b68aea6b93889e0e64f3f38
+    // test_day_formatter<char>();
+    // test_day_formatter<wchar_t>();
 }

@@ -1577,7 +1577,7 @@ _NODISCARD _OutputIt _Write_aligned(
         }
     }
 
-    const basic_string_view<_CharT> _Fill_char{_Specs._Fill, _Specs._Fill_length};
+    const basic_string_view _Fill_char{_Specs._Fill, _Specs._Fill_length};
     for (; _Fill_left > 0; --_Fill_left) {
         _Out = _RANGES copy(_Fill_char, _STD move(_Out)).out;
     }
