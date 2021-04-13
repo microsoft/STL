@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <cassert>
+#include <clocale>
 #include <format>
-#include <locale>
 #include <string_view>
 
 #include "test_format_support.hpp"

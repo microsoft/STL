@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <format>
 #include <string_view>
+#include <utility>
 
 // copied from the string_view tests
 template <typename CharT>
