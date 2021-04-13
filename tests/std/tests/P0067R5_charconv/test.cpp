@@ -1090,19 +1090,23 @@ void wchar_tests() {
 
     wchar_t buffer[32];
     for (const auto& t : double_to_wide_test_cases) {
-        auto result = __d2s_buffered_n(begin(buffer), end(buffer), t.value, t.fmt);
+        const auto result = __d2s_buffered_n(begin(buffer), end(buffer), t.value, t.fmt);
+        assert(result.second == errc{});
         const wstring_view sv(t.correct);
         assert(equal(buffer, result.first, sv.begin(), sv.end()));
     }
 
     for (const auto& t : float_to_wide_test_cases) {
-        auto result = __f2s_buffered_n(begin(buffer), end(buffer), t.value, t.fmt);
+        const auto result = __f2s_buffered_n(begin(buffer), end(buffer), t.value, t.fmt);
+        assert(result.second == errc{});
         const wstring_view sv(t.correct);
         assert(equal(buffer, result.first, sv.begin(), sv.end()));
     }
 
     for (const auto& t : wide_digit_pairs_test_cases) {
-        auto result = __d2fixed_buffered_n(begin(buffer), end(buffer), t.value, static_cast<uint32_t>(t.precision));
+        const auto result =
+            __d2fixed_buffered_n(begin(buffer), end(buffer), t.value, static_cast<uint32_t>(t.precision));
+        assert(result.second == errc{});
         const wstring_view sv(t.correct);
         assert(equal(buffer, result.first, sv.begin(), sv.end()));
     }
