@@ -190,11 +190,16 @@ bool test_parse_chrono_format_specs() {
 
 #ifndef __clang__ // TRANSITION, LLVM-48606
 template <typename CharT>
-constexpr bool test_day_formatter() {
+bool test_day_formatter() {
+    using view_typ = basic_string_view<CharT>;
+    using str_typ  = basic_string<CharT>;
+
+    view_typ s0(TYPED_LITERAL(CharT, "%d"));
+    str_typ a0(TYPED_LITERAL(CharT, "27"));
+
     day d{27};
-    string res = format("%d", d);
-    std::cout << res << "\n";
-    assert(res == "27");
+    auto res = format(s0, d);
+    assert(res == a0);
 
     return true;
 }
@@ -207,6 +212,8 @@ int main() {
     test_parse_chrono_format_specs<char>();
     test_parse_chrono_format_specs<wchar_t>();
 
-    // test_day_formatter<char>();
-    // test_day_formatter<wchar_t>();
+#ifndef __clang__ // TRANSITION, LLVM-48606
+    test_day_formatter<char>();
+    test_day_formatter<wchar_t>();
+#endif // __clang__
 }

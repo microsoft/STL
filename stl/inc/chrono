@@ -5242,6 +5242,14 @@ public:
         _Specs._Fill_length = static_cast<uint8_t>(_Sv.size());
     }
 
+    constexpr void _On_width(int _Width) {
+        _Specs._Width = _Width;
+    }
+
+    constexpr void _On_precision(int _Prec) {
+        _Specs._Precision = _Prec;
+    }
+
     constexpr void _On_conversion_spec(_CharT _Modifier, _CharT _Type) {
         // NOTE: same performance note from _Basic_format_specs also applies here
         const char _Char_mod  = static_cast<char>(_Modifier);
@@ -5353,7 +5361,6 @@ _NODISCARD constexpr const _CharT* _Parse_chrono_format_specs(
 template <class _CharT>
 struct formatter<_CHRONO day, _CharT> {
     typename basic_format_parse_context<_CharT>::iterator parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
-        using namespace chrono;
         _Chrono_format_specs<_CharT> _Specs{};
         _Chrono_specs_setter<_CharT> _Callback{_Specs};
         const auto _End =
@@ -5362,20 +5369,20 @@ struct formatter<_CHRONO day, _CharT> {
             _THROW(format_error("Precision specification invalid for type day."));
         }
 
-        const auto _List = _Specs._Chrono_specs_list;
-        if (!_List.empty()) {
+        const auto& _List = _Specs._Chrono_specs_list;
+        if (_List.empty()) {
             _THROW(format_error("day requires at least one chrono-spec."));
         }
 
-        auto _Target_conv_spec_ptr =
-            _STD find_if(_List.begin(), _List.end(), [](const _Chrono_specs<_CharT> _Cs) { return _Cs._Type != '\0'; });
+        auto _Target_conv_spec_iter =
+            _STD find_if(_List.begin(), _List.end(), [](const auto& _Cs) { return _Cs._Type != '\0'; });
 
-        if (_Target_conv_spec_ptr == _List.end()) {
+        if (_Target_conv_spec_iter == _List.end()) {
             _THROW(format_error("day requires one conversion-spec."));
         }
 
-        _Chrono_specs<_CharT> _Target_conv_spec = *_Target_conv_spec_ptr;
-        _Conv_spec_ptr                          = &_Target_conv_spec;
+        _Chrono_specs<_CharT> _Target_conv_spec = *_Target_conv_spec_iter;
+        _Conv_spec_ptr                          = _Get_unwrapped(_Target_conv_spec_iter);
         // only 'd' and 'e' acceptable types for day
         if (_Target_conv_spec._Type != 'd' && _Target_conv_spec._Type != 'e') {
             _THROW(format_error("Invalid type for type day."));
@@ -5385,10 +5392,10 @@ struct formatter<_CHRONO day, _CharT> {
             _THROW(format_error("Invalid modifier for type day."));
         }
 
-        _Target_conv_spec_ptr = _STD find_if(
-            _Target_conv_spec_ptr, _List.end(), [](const _Chrono_specs<_CharT> _Cs) { return _Cs._Type != '\0'; });
+        _Target_conv_spec_iter =
+            _STD find_if(_Target_conv_spec_iter + 1, _List.end(), [](const auto& _Cs) { return _Cs._Type != '\0'; });
 
-        if (_Target_conv_spec_ptr == _List.end()) {
+        if (_Target_conv_spec_iter != _List.end()) {
             _THROW(format_error("day requires one conversion-spec."));
         }
 
@@ -5399,7 +5406,6 @@ struct formatter<_CHRONO day, _CharT> {
     template <class _FormatContext>
     typename _FormatContext::iterator format(const _CHRONO day& _Val, _FormatContext& _FormatCtx) {
         using _Ctx_iter = typename _FormatContext::iterator;
-        using namespace chrono;
         /*
         if O modifier
             figure out locale deal
@@ -5421,6 +5427,7 @@ struct formatter<_CHRONO day, _CharT> {
         if (_Target._Modifier != '\0') {
             _Fmt_str[1] = _Target._Modifier;
             _Fmt_str[2] = _Target._Type;
+            _Fmt_str[3] = '\0';
         } else {
             _Fmt_str[1] = _Target._Type;
             _Fmt_str[2] = '\0';
@@ -5436,7 +5443,7 @@ struct formatter<_CHRONO day, _CharT> {
     }
 
 private:
-    _Chrono_specs<_CharT>* _Conv_spec_ptr;
+    const _Chrono_specs<_CharT>* _Conv_spec_ptr;
     _Chrono_format_specs<_CharT> _Stored_specs{};
 };
 #endif // __cpp_lib_concepts

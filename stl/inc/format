@@ -1548,7 +1548,7 @@ _NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const basic_string_view<_CharT> 
     return _RANGES copy(_Value, _STD move(_Out)).out;
 }
 
-template <class _OutputIt, class _Func, class _Specs_type>
+template <class _OutputIt, class _Specs_type, class _Func>
 _NODISCARD _OutputIt _Write_aligned(
     _OutputIt _Out, const int _Width, const _Specs_type& _Specs, const _Align _Default_align, _Func&& _Fn) {
     int _Fill_left  = 0;
