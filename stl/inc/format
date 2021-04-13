@@ -238,6 +238,9 @@ private:
     ptrdiff_t _Next_arg_id = 0;
 };
 
+using format_parse_context  = basic_format_parse_context<char>;
+using wformat_parse_context = basic_format_parse_context<wchar_t>;
+
 template <class _Context>
 class basic_format_arg {
 public:
