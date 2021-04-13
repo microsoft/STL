@@ -2061,7 +2061,7 @@ _NODISCARD _OutputIt _Fmt_write(
         _Exponent = static_cast<char>(_CSTD toupper(_Exponent));
     }
 
-    const auto _Is_finite = !(_STD isnan)(_Value) && !(_STD isinf)(_Value);
+    const auto _Is_finite = (_STD isfinite)(_Value);
 
     auto _Append_decimal   = false;
     auto _Exponent_start   = _Result.ptr;
