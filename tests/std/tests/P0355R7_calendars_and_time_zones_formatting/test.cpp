@@ -72,8 +72,8 @@ struct testing_callbacks {
         assert(expected_auto_dynamic_precision);
     }
     void _On_conversion_spec(CharT mod, CharT type) {
-        assert(static_cast<char>(mod) == expected_chrono_specs[curr_index]._Modifier);
-        assert(static_cast<char>(type) == expected_chrono_specs[curr_index]._Type);
+        assert(mod == expected_chrono_specs[curr_index]._Modifier);
+        assert(type == expected_chrono_specs[curr_index]._Type);
         assert(expected_chrono_specs[curr_index]._Lit_char == CharT{0}); // not set
         ++curr_index;
     }
@@ -188,6 +188,15 @@ bool test_parse_chrono_format_specs() {
     return true;
 }
 
+template <class Str>
+constexpr void print(Str str) {
+    if constexpr (is_same_v<Str, string>) {
+        cout << "res: " << str << "\n";
+    } else {
+        wcout << "res: " << str << "\n";
+    }
+}
+
 #ifndef __clang__ // TRANSITION, LLVM-48606
 template <typename CharT>
 bool test_day_formatter() {
@@ -195,11 +204,27 @@ bool test_day_formatter() {
     using str_typ  = basic_string<CharT>;
 
     view_typ s0(TYPED_LITERAL(CharT, "%d"));
-    str_typ a0(TYPED_LITERAL(CharT, "27"));
+    view_typ s1(TYPED_LITERAL(CharT, "%e"));
 
-    day d{27};
-    auto res = format(s0, d);
+    str_typ a0(TYPED_LITERAL(CharT, "27"));
+    str_typ a1(TYPED_LITERAL(CharT, "05"));
+    str_typ a2(TYPED_LITERAL(CharT, " 5"));
+
+    day d0{27};
+    auto res = format(s0, d0);
+    print(res);
     assert(res == a0);
+    res = format(s1, d0);
+    print(res);
+    assert(res == a0);
+
+    day d1{5};
+    res = format(s0, d1);
+    print(res);
+    assert(res == a1);
+    res = format(s1, d1);
+    print(res);
+    assert(res == a2);
 
     return true;
 }

@@ -34,6 +34,7 @@
 #ifdef __cpp_lib_concepts
 #include <concepts>
 #include <format>
+#include <iostream>
 #endif // defined(__cpp_lib_concepts)
 #endif // _HAS_CXX20
 
@@ -5202,8 +5203,8 @@ namespace chrono {
 template <class _CharT>
 struct _Chrono_specs {
     _CharT _Lit_char = _CharT{0}; // any character other than '{', '}', or '%'
-    char _Modifier   = '\0'; // either 'E' or 'O'
-    char _Type       = '\0';
+    _CharT _Modifier = '\0'; // either 'E' or 'O'
+    _CharT _Type     = '\0';
 };
 
 template <class _CharT>
@@ -5221,10 +5222,11 @@ struct _Chrono_format_specs {
 };
 
 // Model of _Chrono_parse_spec_callbacks that fills a _Chrono_format_specs with the parsed data
-template <class _CharT>
+template <class _CharT, class _ParseContext>
 class _Chrono_specs_setter {
 public:
-    constexpr explicit _Chrono_specs_setter(_Chrono_format_specs<_CharT>& _Specs_) : _Specs(_Specs_) {}
+    constexpr explicit _Chrono_specs_setter(_Chrono_format_specs<_CharT>& _Specs_, _ParseContext& _Parse_ctx_)
+        : _Specs(_Specs_), _Parse_ctx(_Parse_ctx_) {}
 
     // same as _Specs_setter
     constexpr void _On_align(_Align _Aln) {
@@ -5250,11 +5252,27 @@ public:
         _Specs._Precision = _Prec;
     }
 
+    constexpr void _On_dynamic_width(const size_t _Arg_id) {
+        _Parse_ctx.check_arg_id(_Arg_id);
+        _Specs._Dynamic_width_index = _Verify_dynamic_arg_index_in_range(_Arg_id);
+    }
+
+    constexpr void _On_dynamic_width(const _Auto_id_tag) {
+        _Specs._Dynamic_width_index = _Verify_dynamic_arg_index_in_range(_Parse_ctx.next_arg_id());
+    }
+
+    constexpr void _On_dynamic_precision(const size_t _Arg_id) {
+        _Parse_ctx.check_arg_id(_Arg_id);
+        _Specs._Dynamic_precision_index = _Verify_dynamic_arg_index_in_range(_Arg_id);
+    }
+
+    constexpr void _On_dynamic_precision(const _Auto_id_tag) {
+        _Specs._Dynamic_precision_index = _Verify_dynamic_arg_index_in_range(_Parse_ctx.next_arg_id());
+    }
+
     constexpr void _On_conversion_spec(_CharT _Modifier, _CharT _Type) {
         // NOTE: same performance note from _Basic_format_specs also applies here
-        const char _Char_mod  = static_cast<char>(_Modifier);
-        const char _Char_type = static_cast<char>(_Type);
-        if (_Char_mod != '\0' && _Char_mod != 'E' && _Char_mod != 'O') {
+        if (_Modifier != '\0' && _Modifier != 'E' && _Modifier != 'O') {
             _THROW(format_error("Invalid modifier specification."));
         }
 
@@ -5262,7 +5280,7 @@ public:
             _THROW(format_error("Invalid type specification."));
         }
 
-        _Chrono_specs<_CharT> _Conv_spec{._Modifier = _Char_mod, ._Type = _Char_type};
+        _Chrono_specs<_CharT> _Conv_spec{._Modifier = _Modifier, ._Type = _Type};
         _Specs._Chrono_specs_list.push_back(_Conv_spec);
     }
 
@@ -5273,6 +5291,17 @@ public:
 
 protected:
     _Chrono_format_specs<_CharT>& _Specs;
+
+private:
+    _ParseContext& _Parse_ctx;
+
+    _NODISCARD static constexpr int _Verify_dynamic_arg_index_in_range(const size_t _Idx) {
+        if (_Idx > static_cast<size_t>((numeric_limits<int>::max)())) {
+            _THROW(format_error("Dynamic width or precision index too large."));
+        }
+
+        return static_cast<int>(_Idx);
+    }
 };
 
 // assumes that the required '%' at the beginning of a conversion-spec has already been consumed
@@ -5362,9 +5391,14 @@ template <class _CharT>
 struct formatter<_CHRONO day, _CharT> {
     typename basic_format_parse_context<_CharT>::iterator parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
         _Chrono_format_specs<_CharT> _Specs{};
-        _Chrono_specs_setter<_CharT> _Callback{_Specs};
-        const auto _End =
+        _Chrono_specs_setter<_CharT, basic_format_parse_context<_CharT>> _Callback{_Specs, _Parse_ctx};
+        const auto _It =
             _Parse_chrono_format_specs(_Parse_ctx._Unchecked_begin(), _Parse_ctx._Unchecked_end(), _Callback);
+
+        if (_It != _Parse_ctx._Unchecked_end() && *_It != '}') {
+            _THROW(format_error("Missing '}' in format string."));
+        }
+
         if (_Specs._Precision != -1) {
             _THROW(format_error("Precision specification invalid for type day."));
         }
@@ -5419,27 +5453,29 @@ struct formatter<_CHRONO day, _CharT> {
 
         return _Write_align(...) passing func
         */
+
         _Chrono_specs<_CharT> _Target = *_Conv_spec_ptr;
         tm _Time                      = {.tm_mday = static_cast<int>(static_cast<unsigned int>(_Val))};
-        // there's a better way to do this vv
         _CharT _Fmt_str[4];
-        _Fmt_str[0] = '%';
+        _Fmt_str[0]      = _CharT{'%'};
+        size_t _Next_idx = 1;
         if (_Target._Modifier != '\0') {
-            _Fmt_str[1] = _Target._Modifier;
-            _Fmt_str[2] = _Target._Type;
-            _Fmt_str[3] = '\0';
-        } else {
-            _Fmt_str[1] = _Target._Type;
-            _Fmt_str[2] = '\0';
+            _Fmt_str[_Next_idx++] = _Target._Modifier;
         }
+
+        _Fmt_str[_Next_idx++] = _Target._Type;
+        _Fmt_str[_Next_idx]   = _CharT{'\0'};
 
         basic_stringstream<_CharT> _Stream;
         _Stream.imbue(_FormatCtx.locale());
         _Stream << _STD put_time<_CharT>(&_Time, _Fmt_str);
         basic_string<_CharT> _Str = _Stream.str();
+        const int _Num_dig        = 2;
 
-        return _Write_aligned(_STD move(_FormatCtx.out()), _Stored_specs._Width, _Stored_specs, _Align::_Left,
-            [=](_Ctx_iter _Out) { return _Fmt_write<_CharT>(_STD move(_Out), _Str._Unchecked_begin()); });
+        // TODO: deal with dynamic width (there should not be precision here)
+
+        return _Write_aligned(_STD move(_FormatCtx.out()), _Num_dig, _Stored_specs, _Align::_Left,
+            [=](_Ctx_iter _Out) { return _Fmt_write(_STD move(_Out), basic_string_view<_CharT>{_Str}); });
     }
 
 private:
