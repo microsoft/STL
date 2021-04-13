@@ -46,9 +46,11 @@
 #include <array>
 #include <charconv>
 #include <concepts>
+#include <cstdint>
 #include <exception>
 #include <iterator>
 #include <locale>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <variant>

@@ -8,6 +8,7 @@
 #include <format>
 #include <optional>
 #include <string_view>
+#include <type_traits>
 
 #include "test_format_support.hpp"
 

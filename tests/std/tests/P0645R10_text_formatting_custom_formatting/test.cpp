@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <assert.h>
 #include <format>
+#include <limits>
 #include <string>
 #include <string_view>
 #include <type_traits>
