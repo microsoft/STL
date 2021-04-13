@@ -1004,7 +1004,7 @@ public:
 template <class _Handler, class _FormatArg>
 _NODISCARD constexpr int _Get_dynamic_specs(const _FormatArg _Arg) {
     _STL_INTERNAL_STATIC_ASSERT(_Is_any_of_v<_Handler, _Width_checker, _Precision_checker>);
-    const unsigned long long _Val = _STD visit_format_arg(_Handler(), _Arg);
+    const unsigned long long _Val = _STD visit_format_arg(_Handler{}, _Arg);
     if (_Val > static_cast<unsigned long long>((numeric_limits<int>::max)())) {
         _THROW(format_error("Number is too big."));
     }
@@ -2446,7 +2446,7 @@ struct _Format_handler {
 
         _Basic_format_specs<_CharT> _Specs;
         _Specs_checker<_Specs_handler<basic_format_parse_context<_CharT>, _Context>> _Handler(
-            _Specs_handler<basic_format_parse_context<_CharT>, _Context>(_Specs, _Parse_context, _Ctx),
+            _Specs_handler<basic_format_parse_context<_CharT>, _Context>{_Specs, _Parse_context, _Ctx},
             _Arg._Active_state);
         _Begin = _Parse_format_specs(_Begin, _End, _Handler);
         if (_Begin == _End || *_Begin != '}') {
@@ -2473,7 +2473,7 @@ struct _Formatter_base {
     using _Pc = basic_format_parse_context<_CharT>;
 
     typename _Pc::iterator parse(_Pc& _ParseCtx) {
-        _Specs_checker<_Dynamic_specs_handler<_Pc>> _Handler(_Dynamic_specs_handler<_Pc>(_Specs, _ParseCtx), _ArgType);
+        _Specs_checker<_Dynamic_specs_handler<_Pc>> _Handler(_Dynamic_specs_handler<_Pc>{_Specs, _ParseCtx}, _ArgType);
         const auto _It = _Parse_format_specs(_ParseCtx._Unchecked_begin(), _ParseCtx._Unchecked_end(), _Handler);
         if (_It != _ParseCtx._Unchecked_end() && *_It != '}') {
             _THROW(format_error("Missing '}' in format string."));
