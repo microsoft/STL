@@ -801,7 +801,8 @@ _NODISCARD constexpr const _CharT* _Parse_replacement_field(
 }
 
 template <class _CharT>
-const _CharT* _Find_encoded(const _CharT* _First, const _CharT* _Last, const _CharT _Val, const _Cvtvec& _Cvt) {
+_NODISCARD const _CharT* _Find_encoded(
+    const _CharT* _First, const _CharT* _Last, const _CharT _Val, const _Cvtvec& _Cvt) {
     // Returns the first occurrence of _Val as an encoded character (and not, for example, as a
     // continuation byte) in [_First, _Last).
     if constexpr (_Is_execution_charset_utf8_v) {
