@@ -792,7 +792,7 @@ const _CharT* _Find_encoded(const _CharT* _First, const _CharT* _Last, const _Ch
         while (_First != _Last && *_First != _Val) {
             const int _Units = _Code_units_in_next_character(_First, _Last, _Cvt);
             if (_Units < 0) {
-                throw format_error("Invalid encoded character in format string.");
+                _THROW(format_error("Invalid encoded character in format string."));
             }
             _First += _Units;
         }
