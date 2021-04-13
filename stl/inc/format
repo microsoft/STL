@@ -53,7 +53,6 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
-#include <variant>
 #include <xutility>
 
 #pragma pack(push, _CRT_PACKING)

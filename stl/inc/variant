@@ -1187,7 +1187,7 @@ public:
                         {
                             constexpr size_t _That_idx = decltype(_That_ref)::_Idx;
 #ifdef __EDG__ // TRANSITION, VSO-657455
-                            constexpr size_t _My_idx = decltype(_My_ref)::_Idx + 0 * _That_idx;
+                            constexpr size_t _My_idx   = decltype(_My_ref)::_Idx + 0 * _That_idx;
 #else // ^^^ workaround ^^^ / vvv no workaround vvv
                             constexpr size_t _My_idx = decltype(_My_ref)::_Idx;
 #endif // TRANSITION, VSO-657455
@@ -1730,9 +1730,6 @@ constexpr _Ret visit(_Callable&& _Obj, _Variants&&... _Args) {
         static_cast<_Callable&&>(_Obj), static_cast<_Variants&&>(_Args)...);
 }
 #endif // _HAS_CXX20
-
-// CLASS monostate [variant.monostate]
-struct monostate {};
 
 // monostate RELATIONAL OPERATORS [variant.monostate.relops]
 _NODISCARD constexpr bool operator==(monostate, monostate) noexcept {
