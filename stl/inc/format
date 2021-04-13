@@ -89,7 +89,7 @@ enum class _Basic_format_arg_type : uint8_t {
     _String_type,
     _Custom_type,
 };
-static_assert(static_cast<int>(_Basic_format_arg_type::_Custom_type) <= 16);
+static_assert(static_cast<int>(_Basic_format_arg_type::_Custom_type) < 16, "must fit in 4-bit bitfield");
 
 _NODISCARD constexpr bool _Is_integral_fmt_type(_Basic_format_arg_type _Ty) {
     return _Ty > _Basic_format_arg_type::_None && _Ty <= _Basic_format_arg_type::_ULong_long_type;
