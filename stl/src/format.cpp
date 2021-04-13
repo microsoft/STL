@@ -1,0 +1,41 @@
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#include <xfilesystem_abi.h>
+#include <xlocinfo.h>
+
+#include <Windows.h>
+
+static_assert(__std_code_page::_Acp == __std_code_page{CP_ACP});
+
+// CODEPAGE is conditionally defined so tests can override it.
+#ifndef CODEPAGE
+#define CODEPAGE(x) static_cast<UINT>(x)
+#endif
+
+extern "C" [[nodiscard]] __std_win_error __stdcall __std_get_cvt(
+    const __std_code_page _Codepage, _Cvtvec* const _Pcvt) noexcept {
+    // get conversion info for an arbitrary codepage
+    *_Pcvt = {};
+
+    CPINFOEXW _Info{};
+    const DWORD _Flags = 0; // reserved, must be zero
+    if (GetCPInfoExW(CODEPAGE(_Codepage), _Flags, &_Info) == 0) {
+        return __std_win_error{GetLastError()};
+    }
+
+    _Pcvt->_Page     = _Info.CodePage;
+    _Pcvt->_Mbcurmax = _Info.MaxCharSize;
+
+    for (int _Idx = 0; _Idx < MAX_LEADBYTES; _Idx += 2) {
+        if (_Info.LeadByte[_Idx] == 0 && _Info.LeadByte[_Idx + 1] == 0) {
+            break;
+        }
+
+        for (unsigned char _First = _Info.LeadByte[_Idx], _Last = _Info.LeadByte[_Idx + 1]; _First != _Last; ++_First) {
+            _Pcvt->_Isleadbyte[_First >> 3] |= 1u << (_First & 0b111u);
+        }
+    }
+
+    return __std_win_error::_Success;
+}

@@ -8,6 +8,10 @@
 
 #include "test_format_support.hpp"
 
+#pragma warning(disable : 5105) // macro expansion producing 'defined' has undefined behavior
+#define CODEPAGE(x) (static_cast<unsigned int>(x) ? static_cast<unsigned int>(x) : 65001u)
+#include "../../../../stl/src/format.cpp"
+
 using namespace std;
 
 void test_multibyte_format_strings() {

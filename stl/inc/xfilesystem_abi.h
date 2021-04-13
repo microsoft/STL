@@ -205,7 +205,7 @@ _BITMASK_OPS(__std_fs_file_flags)
 
 enum class __std_fs_file_handle : intptr_t { _Invalid = -1 };
 
-enum class __std_code_page : unsigned int { _Utf8 = 65001 };
+enum class __std_code_page : unsigned int { _Acp = 0, _Utf8 = 65001 };
 
 struct __std_fs_convert_result {
     int _Len;

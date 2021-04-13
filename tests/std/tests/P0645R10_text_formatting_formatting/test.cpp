@@ -975,31 +975,6 @@ void test_size() {
     test_size_helper<charT>(8, STR("{:8}"), STR("scully"));
 }
 
-void test_multibyte_format_strings() {
-#ifndef MSVC_INTERNAL_TESTING // TRANSITION, the Windows version on Contest VMs doesn't always understand ".UTF-8"
-    {
-        assert(setlocale(LC_ALL, ".UTF-8") != nullptr);
-        // Filling with footballs ("\xf0\x9f\x8f\x88" is U+1F3C8 AMERICAN FOOTBALL)
-        assert(format("{:\xf0\x9f\x8f\x88>4}"sv, 42) == "\xf0\x9f\x8f\x88\xf0\x9f\x8f\x88\x34\x32");
-
-        assert(format("{:\xf0\x9f\x8f\x88<4.2}", "1") == "\x31\xf0\x9f\x8f\x88\xf0\x9f\x8f\x88\xf0\x9f\x8f\x88"sv);
-        assert(format("{:\xf0\x9f\x8f\x88^4.2}", "1") == "\xf0\x9f\x8f\x88\x31\xf0\x9f\x8f\x88\xf0\x9f\x8f\x88"sv);
-        assert(format("{:\xf0\x9f\x8f\x88>4.2}", "1") == "\xf0\x9f\x8f\x88\xf0\x9f\x8f\x88\xf0\x9f\x8f\x88\x31"sv);
-    }
-
-    {
-        assert(setlocale(LC_ALL, ".UTF-8") != nullptr);
-        try {
-            (void) format("{:\x9f\x8f\x88<10}"sv, 42); // Bad fill character encoding: missing lead byte before \x9f
-            assert(false);
-        } catch (const format_error&) {
-        }
-    }
-#endif // MSVC_INTERNAL_TESTING
-
-    assert(setlocale(LC_ALL, "C") != nullptr);
-}
-
 // The libfmt_ tests are derived from tests in
 // libfmt, Copyright (c) 2012 - present, Victor Zverovich
 // See NOTICE.txt for more information.
@@ -1317,8 +1292,6 @@ void test() {
 
     test_size<char>();
     test_size<wchar_t>();
-
-    test_multibyte_format_strings();
 
     libfmt_formatter_test_escape<char>();
     libfmt_formatter_test_escape<wchar_t>();
