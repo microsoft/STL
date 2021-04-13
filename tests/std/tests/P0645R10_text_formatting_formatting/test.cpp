@@ -477,97 +477,97 @@ void test_fill_and_align() {
     assert(tester() == STR("*AB**"));
 }
 
-template <class charT, class integral>
+template <class charT, class Integral>
 void test_integral_specs() {
-    assert(format(STR("{:}"), integral{0}) == STR("0"));
+    assert(format(STR("{:}"), Integral{0}) == STR("0"));
 
     // Sign
-    assert(format(STR("{: }"), integral{0}) == STR(" 0"));
-    assert(format(STR("{:+}"), integral{0}) == STR("+0"));
-    assert(format(STR("{:-}"), integral{0}) == STR("0"));
+    assert(format(STR("{: }"), Integral{0}) == STR(" 0"));
+    assert(format(STR("{:+}"), Integral{0}) == STR("+0"));
+    assert(format(STR("{:-}"), Integral{0}) == STR("0"));
 
-    if constexpr (is_signed_v<integral>) {
-        assert(format(STR("{: }"), integral{-1}) == STR("-1"));
-        assert(format(STR("{:+}"), integral{-1}) == STR("-1"));
-        assert(format(STR("{:-}"), integral{-1}) == STR("-1"));
+    if constexpr (is_signed_v<Integral>) {
+        assert(format(STR("{: }"), Integral{-1}) == STR("-1"));
+        assert(format(STR("{:+}"), Integral{-1}) == STR("-1"));
+        assert(format(STR("{:-}"), Integral{-1}) == STR("-1"));
     }
 
-    assert(format(STR("{: 3}"), integral{1}) == STR("  1"));
-    assert(format(STR("{:+3}"), integral{1}) == STR(" +1"));
-    assert(format(STR("{:-3}"), integral{1}) == STR("  1"));
+    assert(format(STR("{: 3}"), Integral{1}) == STR("  1"));
+    assert(format(STR("{:+3}"), Integral{1}) == STR(" +1"));
+    assert(format(STR("{:-3}"), Integral{1}) == STR("  1"));
 
     // Alternate form
-    assert(format(STR("{:#}"), integral{0}) == STR("0"));
-    assert(format(STR("{:#d}"), integral{0}) == STR("0"));
-    assert(format(STR("{:#c}"), integral{'a'}) == STR("a"));
+    assert(format(STR("{:#}"), Integral{0}) == STR("0"));
+    assert(format(STR("{:#d}"), Integral{0}) == STR("0"));
+    assert(format(STR("{:#c}"), Integral{'a'}) == STR("a"));
 
-    assert(format(STR("{:#b}"), integral{0}) == STR("0b0"));
-    assert(format(STR("{:#B}"), integral{0}) == STR("0B0"));
+    assert(format(STR("{:#b}"), Integral{0}) == STR("0b0"));
+    assert(format(STR("{:#B}"), Integral{0}) == STR("0B0"));
 
-    assert(format(STR("{:#o}"), integral{0}) == STR("0"));
-    assert(format(STR("{:#o}"), integral{1}) == STR("01"));
+    assert(format(STR("{:#o}"), Integral{0}) == STR("0"));
+    assert(format(STR("{:#o}"), Integral{1}) == STR("01"));
 
-    assert(format(STR("{:#x}"), integral{0}) == STR("0x0"));
-    assert(format(STR("{:#X}"), integral{0}) == STR("0X0"));
-    assert(format(STR("{:#x}"), integral{255}) == STR("0xff"));
-    assert(format(STR("{:#X}"), integral{255}) == STR("0XFF"));
+    assert(format(STR("{:#x}"), Integral{0}) == STR("0x0"));
+    assert(format(STR("{:#X}"), Integral{0}) == STR("0X0"));
+    assert(format(STR("{:#x}"), Integral{255}) == STR("0xff"));
+    assert(format(STR("{:#X}"), Integral{255}) == STR("0XFF"));
 
-    assert(format(STR("{:+#6x}"), integral{255}) == STR(" +0xff"));
+    assert(format(STR("{:+#6x}"), Integral{255}) == STR(" +0xff"));
 
-    if constexpr (is_signed_v<integral>) {
-        assert(format(STR("{:#o}"), integral{-1}) == STR("-01"));
-        assert(format(STR("{:#x}"), integral{-255}) == STR("-0xff"));
-        assert(format(STR("{:#X}"), integral{-255}) == STR("-0XFF"));
+    if constexpr (is_signed_v<Integral>) {
+        assert(format(STR("{:#o}"), Integral{-1}) == STR("-01"));
+        assert(format(STR("{:#x}"), Integral{-255}) == STR("-0xff"));
+        assert(format(STR("{:#X}"), Integral{-255}) == STR("-0XFF"));
     }
 
-    if constexpr (is_same_v<integral, long long>) {
+    if constexpr (is_same_v<Integral, long long>) {
         assert(format(STR("{:b}"), numeric_limits<long long>::min())
                == STR("-1000000000000000000000000000000000000000000000000000000000000000"));
     }
 
     // Leading zero
-    assert(format(STR("{:0}"), integral{0}) == STR("0"));
-    assert(format(STR("{:03}"), integral{0}) == STR("000"));
-    assert(format(STR("{:+03}"), integral{0}) == STR("+00"));
-    assert(format(STR("{:<03}"), integral{0}) == STR("0  "));
-    assert(format(STR("{:>03}"), integral{0}) == STR("  0"));
-    assert(format(STR("{:+#06X}"), integral{5}) == STR("+0X005"));
+    assert(format(STR("{:0}"), Integral{0}) == STR("0"));
+    assert(format(STR("{:03}"), Integral{0}) == STR("000"));
+    assert(format(STR("{:+03}"), Integral{0}) == STR("+00"));
+    assert(format(STR("{:<03}"), Integral{0}) == STR("0  "));
+    assert(format(STR("{:>03}"), Integral{0}) == STR("  0"));
+    assert(format(STR("{:+#06X}"), Integral{5}) == STR("+0X005"));
 
     // Width
-    assert(format(STR("{:3}"), integral{0}) == STR("  0"));
+    assert(format(STR("{:3}"), Integral{0}) == STR("  0"));
 
     // Precision
-    throw_helper(STR("{:.1}"), integral{0});
+    throw_helper(STR("{:.1}"), Integral{0});
 
     // Locale
 #if !defined(_DLL) || _ITERATOR_DEBUG_LEVEL == DEFAULT_IDL_SETTING
-    assert(format(locale{"en-US"}, STR("{:L}"), integral{0}) == STR("0"));
-    assert(format(locale{"en-US"}, STR("{:L}"), integral{100}) == STR("100"));
-    assert(format(locale{"en-US"}, STR("{:L}"), integral{1'000}) == STR("1,000"));
-    assert(format(locale{"en-US"}, STR("{:L}"), integral{10'000}) == STR("10,000"));
-    assert(format(locale{"en-US"}, STR("{:L}"), integral{100'000}) == STR("100,000"));
-    assert(format(locale{"en-US"}, STR("{:L}"), integral{1'000'000}) == STR("1,000,000"));
-    assert(format(locale{"en-US"}, STR("{:L}"), integral{10'000'000}) == STR("10,000,000"));
-    assert(format(locale{"en-US"}, STR("{:L}"), integral{100'000'000}) == STR("100,000,000"));
+    assert(format(locale{"en-US"}, STR("{:L}"), Integral{0}) == STR("0"));
+    assert(format(locale{"en-US"}, STR("{:L}"), Integral{100}) == STR("100"));
+    assert(format(locale{"en-US"}, STR("{:L}"), Integral{1'000}) == STR("1,000"));
+    assert(format(locale{"en-US"}, STR("{:L}"), Integral{10'000}) == STR("10,000"));
+    assert(format(locale{"en-US"}, STR("{:L}"), Integral{100'000}) == STR("100,000"));
+    assert(format(locale{"en-US"}, STR("{:L}"), Integral{1'000'000}) == STR("1,000,000"));
+    assert(format(locale{"en-US"}, STR("{:L}"), Integral{10'000'000}) == STR("10,000,000"));
+    assert(format(locale{"en-US"}, STR("{:L}"), Integral{100'000'000}) == STR("100,000,000"));
 
-    assert(format(locale{"en-US"}, STR("{:Lx}"), integral{0x123'abc}) == STR("123,abc"));
-    assert(format(locale{"en-US"}, STR("{:6L}"), integral{1'000}) == STR(" 1,000"));
+    assert(format(locale{"en-US"}, STR("{:Lx}"), Integral{0x123'abc}) == STR("123,abc"));
+    assert(format(locale{"en-US"}, STR("{:6L}"), Integral{1'000}) == STR(" 1,000"));
 
-    assert(format(locale{"hi-IN"}, STR("{:L}"), integral{10'000'000}) == STR("1,00,00,000"));
-    assert(format(locale{"hi-IN"}, STR("{:L}"), integral{100'000'000}) == STR("10,00,00,000"));
+    assert(format(locale{"hi-IN"}, STR("{:L}"), Integral{10'000'000}) == STR("1,00,00,000"));
+    assert(format(locale{"hi-IN"}, STR("{:L}"), Integral{100'000'000}) == STR("10,00,00,000"));
 
-    assert(format(locale{"hi-IN"}, STR("{:Lx}"), integral{0x123'abc}) == STR("1,23,abc"));
+    assert(format(locale{"hi-IN"}, STR("{:Lx}"), Integral{0x123'abc}) == STR("1,23,abc"));
 #endif // !defined(_DLL) || _ITERATOR_DEBUG_LEVEL == DEFAULT_IDL_SETTING
 
     // Type
-    assert(format(STR("{:b}"), integral{0}) == STR("0"));
-    assert(format(STR("{:b}"), integral{100}) == STR("1100100"));
+    assert(format(STR("{:b}"), Integral{0}) == STR("0"));
+    assert(format(STR("{:b}"), Integral{100}) == STR("1100100"));
 
-    assert(format(STR("{:d}"), integral{100}) == STR("100"));
+    assert(format(STR("{:d}"), Integral{100}) == STR("100"));
 
-    throw_helper(STR("{:c}"), integral{numeric_limits<charT>::max()} + 1);
-    if constexpr (is_signed_v<integral>) {
-        throw_helper(STR("{:c}"), integral{numeric_limits<charT>::min()} - 1);
+    throw_helper(STR("{:c}"), Integral{numeric_limits<charT>::max()} + 1);
+    if constexpr (is_signed_v<Integral>) {
+        throw_helper(STR("{:c}"), Integral{numeric_limits<charT>::min()} - 1);
     }
 }
 
