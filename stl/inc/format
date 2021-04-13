@@ -69,9 +69,9 @@ class format_error : public runtime_error {
     using runtime_error::runtime_error;
 };
 
-enum class _Align { _None, _Left, _Right, _Center };
+enum class _Align : uint8_t { _None, _Left, _Right, _Center };
 
-enum class _Sign { _None, _Plus, _Minus, _Space };
+enum class _Sign : uint8_t { _None, _Plus, _Minus, _Space };
 
 enum class _Basic_format_arg_type : uint8_t {
     _None,
