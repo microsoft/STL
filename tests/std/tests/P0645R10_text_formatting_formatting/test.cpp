@@ -975,35 +975,6 @@ void test_size() {
 }
 
 void test_multibyte_format_strings() {
-    {
-        assert(setlocale(LC_ALL, "ja-JP") != nullptr);
-        const auto s =
-            "\x93\xfa\x96{\x92\x6e\x90}"sv; // Note the use of `{` and `}` as continuation bytes (from GH-1576)
-        assert(format(s) == s);
-
-        assert(format("{:.2}", s) == "\x93\xfa"sv);
-        assert(format("{:4.2}", s) == "\x93\xfa  "sv);
-
-        assert(format("{:<4.2}", s) == "\x93\xfa  "sv);
-        assert(format("{:^4.2}", s) == " \x93\xfa "sv);
-        assert(format("{:>4.2}", s) == "  \x93\xfa"sv);
-
-        assert(format("{:\x90}<4.2}", s) == "\x93\xfa\x90}\x90}"sv);
-        assert(format("{:\x90}^4.2}", s) == "\x90}\x93\xfa\x90}"sv);
-        assert(format("{:\x90}>4.2}", s) == "\x90}\x90}\x93\xfa"sv);
-
-        assert(format("{:.3}", s) == "\x93\xfa"sv);
-        assert(format("{:4.3}", s) == "\x93\xfa  "sv);
-
-        assert(format("{:<4.3}", s) == "\x93\xfa  "sv);
-        assert(format("{:^4.3}", s) == " \x93\xfa "sv);
-        assert(format("{:>4.3}", s) == "  \x93\xfa"sv);
-
-        assert(format("{:\x90}<4.3}", s) == "\x93\xfa\x90}\x90}"sv);
-        assert(format("{:\x90}^4.3}", s) == "\x90}\x93\xfa\x90}"sv);
-        assert(format("{:\x90}>4.3}", s) == "\x90}\x90}\x93\xfa"sv);
-    }
-
 #ifndef MSVC_INTERNAL_TESTING // TRANSITION, the Windows version on Contest VMs doesn't always understand ".UTF-8"
     {
         assert(setlocale(LC_ALL, ".UTF-8") != nullptr);
