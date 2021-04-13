@@ -97,6 +97,7 @@ _NODISCARD constexpr bool _Is_integral_fmt_type(_Basic_format_arg_type _Ty) {
 _NODISCARD constexpr bool _Is_arithmetic_fmt_type(_Basic_format_arg_type _Ty) {
     return _Ty > _Basic_format_arg_type::_None && _Ty <= _Basic_format_arg_type::_Long_double_type;
 }
+
 struct _Auto_id_tag {};
 
 // clang-format off
@@ -194,6 +195,7 @@ public:
     _NODISCARD constexpr const _CharT* _Unchecked_end() const noexcept {
         return _Format_string._Unchecked_end();
     }
+
     constexpr void advance_to(const const_iterator _It) {
         _Adl_verify_range(_It, _Format_string.end());
         // _It must be after _Format_string.begin().
@@ -291,6 +293,7 @@ public:
         : _Active_state(_Basic_format_arg_type::_String_type), _String_state(_Val) {}
     explicit basic_format_arg(const handle _Val) noexcept
         : _Active_state(_Basic_format_arg_type::_Custom_type), _Custom_state(_Val) {}
+
     explicit operator bool() const noexcept {
         return _Active_state != _Basic_format_arg_type::_None;
     }
@@ -1062,6 +1065,7 @@ public:
         _Parse_ctx.check_arg_id(_Arg_id);
         _Dynamic_specs._Dynamic_precision_index = _Verify_dynamic_arg_index_in_range(_Arg_id);
     }
+
     constexpr void _On_dynamic_precision(const _Auto_id_tag) {
         _Dynamic_specs._Dynamic_precision_index = _Verify_dynamic_arg_index_in_range(_Parse_ctx.next_arg_id());
     }
@@ -1872,6 +1876,7 @@ _NODISCARD _OutputIt _Write_integral(
         if (_Write_leading_zeroes && _Width < _Specs._Width) {
             _Out = _RANGES fill_n(_STD move(_Out), _Specs._Width - _Width, '0');
         }
+
         if (_Separators > 0) {
             return _Write_separated_integer(_Buffer_start, _End, _Groups,
                 _STD use_facet<numpunct<_CharT>>(_Locale).thousands_sep(), _Separators, _STD move(_Out));
@@ -2074,6 +2079,7 @@ _NODISCARD _OutputIt _Fmt_write(
                 ++_Width;
                 _Append_decimal = true;
             }
+
             if (_Specs._Type == 'g' || _Specs._Type == 'G') {
                 auto _Digits = static_cast<int>(_Exponent_start - _Buffer_start);
 
