@@ -839,7 +839,7 @@ void _Parse_format_string(basic_string_view<_CharT> _Format_str, _HandlerT&& _Ha
             for (;;) {
                 const _CharT* _ClosingCurl = _Find_encoded(_Begin, _OpeningCurl, _CharT{'}'}, _Cvt);
 
-                // In this case there are neither closing nor opening curls in [_Begin, _OpenCurl)
+                // In this case there are neither closing nor opening curls in [_Begin, _OpeningCurl)
                 // Write the whole thing out.
                 if (_ClosingCurl == _OpeningCurl) {
                     _Handler._On_text(_Begin, _OpeningCurl);
@@ -884,8 +884,8 @@ struct _Basic_format_specs {
 };
 
 // Adds width and precision references to _Basic_format_specs.
-// this is required for std::formatter implementations because we must
-// parse the format specs without having access to the format args (via a format context)
+// This is required for std::formatter implementations because we must
+// parse the format specs without having access to the format args (via a format context).
 template <class _CharT>
 struct _Dynamic_format_specs : _Basic_format_specs<_CharT> {
     int _Dynamic_width_index     = -1;
@@ -1012,8 +1012,8 @@ _NODISCARD constexpr int _Get_dynamic_specs(const _FormatArg _Arg) {
     return static_cast<int>(_Val);
 }
 
-// Parses standard format specs into a _Basic_format_specs using _Specs_setter, and,
-// in addition handles dynamic width and precision. This is separate from _Specs setter
+// Parses standard format specs into a _Basic_format_specs using _Specs_setter, and
+// additionally handles dynamic width and precision. This is separate from _Specs_setter
 // because it needs to know about the current basic_format_parse_context and basic_format_context
 // in order to fetch the width from the arguments.
 template <class _ParseContext, class _Context>
@@ -1316,7 +1316,7 @@ private:
         }
     }
 
-    // See [format.arg]/5
+    // See N4885 [format.arg]/5
     // clang-format off
     template <class _Ty>
         requires _Has_formatter<_Context, _Ty>
@@ -1502,10 +1502,16 @@ _NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, monostate) {
     return _Out;
 }
 
-// This size is derived from the maximum length of an arithmetic type. The two contenders for widest are double and long
-// long. long long has a max length of ceil(log_10(2^64)) = 20 characters. double has a max length of
-// limits<double>::max_digits10 + the decimal + the sign + e + the exponent's sign + ceil(log_10(DBL_MAX_10_EXP))
-// = 17 + 1 + 1 + 1 + 3 = 24. An example is DBL_MAX which is "-1.7976931348623158e+308".
+// This size is derived from the maximum length of an arithmetic type. The contenders for widest are:
+// (a) long long has a max length of 20 characters: LLONG_MIN is "-9223372036854775807".
+// (b) unsigned long long has a max length of 20 characters: ULLONG_MAX is "18446744073709551615".
+// (c) double has a max length of 24 characters: -DBL_MAX is "-1.7976931348623158e+308".
+// That's 17 characters for numeric_limits<double>::max_digits10,
+// plus 1 character for the sign,
+// plus 1 character for the decimal point,
+// plus 1 character for 'e',
+// plus 1 character for the exponent's sign,
+// plus 3 characters for the max exponent.
 inline constexpr size_t _Format_min_buffer_length = 24;
 
 // clang-format off
@@ -2191,7 +2197,7 @@ _NODISCARD _OutputIt _Fmt_write(
 
     // Compute the bit width of the pointer (i.e. how many bits it takes to be represented).
     // Add 3 to the bit width so we always round up on the division.
-    // Divide that by the amount of bits a hex number represents (log2(16) = log2(2^4) = 4).
+    // Divide that by the amount of bits a hexit represents (log2(16) = log2(2^4) = 4).
     // Add 2 for the 0x prefix.
     auto _Width = 2 + static_cast<int>(_STD bit_width(reinterpret_cast<uintptr_t>(_Value)) + 3) / 4;
 
@@ -2369,10 +2375,10 @@ _NODISCARD _OutputIt _Fmt_write(
     });
 }
 
-// This is the visitor that's used for "simple" replacement fields,
-// it could be a generic lambda (with overloaded), but that's
-// bad for throughput. A simple replacement field is a replacement field
-// that's just "{}", without any format specs.
+// This is the visitor that's used for "simple" replacement fields.
+// It could be a generic lambda, but that's bad for throughput.
+// A simple replacement field is a replacement field that's just "{}",
+// without any format specs.
 template <class _OutputIt, class _CharT>
 struct _Default_arg_formatter {
     using _Context = basic_format_context<_OutputIt, _CharT>;

@@ -31,7 +31,7 @@ bool test_parse_align() {
         {.expected_alignment = _Align::_Center, .expected_fill = view_typ(TYPED_LITERAL(CharT, "*"))});
 
     if constexpr (same_as<CharT, wchar_t>) {
-        // This is a CJK character where the least significant byte is the same as ascii '>',
+        // This is a CJK character where the least significant byte is the same as ASCII '>',
         // libfmt and initial drafts of <format> narrowed characters when parsing alignments, causing
         // \x343E (which is from CJK unified ideographs extension A) and similar characters to parse as
         // an alignment specifier.
