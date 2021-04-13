@@ -4766,6 +4766,20 @@ _NODISCARD bool equal(_ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
+    // FUNCTION TEMPLATE _Rewrap_iterator
+    template <forward_range _Rng, class _It>
+    _NODISCARD constexpr iterator_t<_Rng> _Rewrap_iterator(_Rng&& _Range, _It&& _Val) {
+        _STL_INTERNAL_STATIC_ASSERT(is_same_v<remove_cvref_t<_It>, _Unwrapped_t<iterator_t<_Rng>>>);
+
+        if constexpr (is_same_v<remove_cvref_t<_It>, iterator_t<_Rng>>) {
+            return _STD forward<_It>(_Val);
+        } else {
+            auto _Result = _RANGES begin(_Range);
+            _Result._Seek_to(_STD forward<_It>(_Val));
+            return _Result;
+        }
+    }
+
     // CONCEPT _Convertible_from
     template <class _To, class _From>
     concept _Convertible_from = convertible_to<_From, _To>;
