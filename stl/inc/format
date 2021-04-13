@@ -1268,7 +1268,7 @@ struct _Format_arg_store_packed_index {
     using _Index_type = size_t;
 
     constexpr _Format_arg_store_packed_index() = default;
-    constexpr explicit _Format_arg_store_packed_index(const size_t _Index) : _Index(static_cast<_Index_type>(_Index)) {
+    constexpr explicit _Format_arg_store_packed_index(const size_t _Index_) : _Index(_Index_) {
         _Type(_Basic_format_arg_type::_None);
     }
 
