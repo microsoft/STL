@@ -1516,7 +1516,7 @@ inline constexpr size_t _Format_min_buffer_length = 24;
 
 // clang-format off
 template <class _CharT, class _OutputIt, class _Arithmetic>
-    requires(is_arithmetic_v<_Arithmetic> && !_CharT_or_bool<_Arithmetic, _CharT>)
+    requires (is_arithmetic_v<_Arithmetic> && !_CharT_or_bool<_Arithmetic, _CharT>)
 _NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const _Arithmetic _Value);
 // clang-format on
 
@@ -1765,7 +1765,7 @@ _NODISCARD _OutputIt _Write_integral(
 
 // clang-format off
 template <class _CharT, class _OutputIt, integral _Integral>
-        requires(!_CharT_or_bool<_Integral, _CharT>)
+    requires (!_CharT_or_bool<_Integral, _CharT>)
 _NODISCARD _OutputIt _Fmt_write(
     _OutputIt _Out, const _Integral _Value, const _Basic_format_specs<_CharT>& _Specs, locale _Locale);
 // clang-format on
