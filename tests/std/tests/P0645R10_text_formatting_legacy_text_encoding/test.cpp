@@ -49,11 +49,11 @@ void test_parse_align() {
     {
         assert(setlocale(LC_ALL, ".932") != nullptr);
         test_parse_helper(parse_align_fn, "\x93\xfa<X"sv, false, 3,
-            {.expected_alignment = _Align::_Left, .expected_fill = "\x93\xfa"sv});
+            {.expected_alignment = _Fmt_align::_Left, .expected_fill = "\x93\xfa"sv});
         test_parse_helper(parse_align_fn, "\x96\x7b>X"sv, false, 3,
-            {.expected_alignment = _Align::_Right, .expected_fill = "\x96\x7b"sv});
+            {.expected_alignment = _Fmt_align::_Right, .expected_fill = "\x96\x7b"sv});
         test_parse_helper(parse_align_fn, "\x92\x6e^X"sv, false, 3,
-            {.expected_alignment = _Align::_Center, .expected_fill = "\x92\x6e"sv});
+            {.expected_alignment = _Fmt_align::_Center, .expected_fill = "\x92\x6e"sv});
     }
 
     assert(setlocale(LC_ALL, "C") != nullptr);

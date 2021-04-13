@@ -445,7 +445,7 @@ void test_fill_and_align() {
 
     auto tester = [&] {
         basic_string<charT> output_string;
-        (void) _Write_aligned(back_inserter(output_string), 2, specs, _Align::_Left, writer);
+        (void) _Write_aligned(back_inserter(output_string), 2, specs, _Fmt_align::_Left, writer);
         return output_string;
     };
 
@@ -456,24 +456,24 @@ void test_fill_and_align() {
 
 
     specs._Width     = 5;
-    specs._Alignment = _Align::_Left;
+    specs._Alignment = _Fmt_align::_Left;
     assert(tester() == STR("AB   "));
 
-    specs._Alignment = _Align::_Right;
+    specs._Alignment = _Fmt_align::_Right;
     assert(tester() == STR("   AB"));
 
-    specs._Alignment = _Align::_Center;
+    specs._Alignment = _Fmt_align::_Center;
     assert(tester() == STR(" AB  "));
 
 
-    specs._Alignment = _Align::_Left;
+    specs._Alignment = _Fmt_align::_Left;
     specs._Fill[0]   = {'*'};
     assert(tester() == STR("AB***"));
 
-    specs._Alignment = _Align::_Right;
+    specs._Alignment = _Fmt_align::_Right;
     assert(tester() == STR("***AB"));
 
-    specs._Alignment = _Align::_Center;
+    specs._Alignment = _Fmt_align::_Center;
     assert(tester() == STR("*AB**"));
 }
 

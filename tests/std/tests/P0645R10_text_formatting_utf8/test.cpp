@@ -35,11 +35,11 @@ void test_parse_align() {
     {
         // "\xf0\x9f\x8f\x88" is U+1F3C8 AMERICAN FOOTBALL
         test_parse_helper(parse_align_fn, "\xf0\x9f\x8f\x88<X"sv, false, 5,
-            {.expected_alignment = _Align::_Left, .expected_fill = "\xf0\x9f\x8f\x88"sv});
+            {.expected_alignment = _Fmt_align::_Left, .expected_fill = "\xf0\x9f\x8f\x88"sv});
         test_parse_helper(parse_align_fn, "\xf0\x9f\x8f\x88>X"sv, false, 5,
-            {.expected_alignment = _Align::_Right, .expected_fill = "\xf0\x9f\x8f\x88"sv});
+            {.expected_alignment = _Fmt_align::_Right, .expected_fill = "\xf0\x9f\x8f\x88"sv});
         test_parse_helper(parse_align_fn, "\xf0\x9f\x8f\x88^X"sv, false, 5,
-            {.expected_alignment = _Align::_Center, .expected_fill = "\xf0\x9f\x8f\x88"sv});
+            {.expected_alignment = _Fmt_align::_Center, .expected_fill = "\xf0\x9f\x8f\x88"sv});
     }
 }
 

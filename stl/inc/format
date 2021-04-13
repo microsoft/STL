@@ -69,7 +69,7 @@ class format_error : public runtime_error {
     using runtime_error::runtime_error;
 };
 
-enum class _Align : uint8_t { _None, _Left, _Right, _Center };
+enum class _Fmt_align : uint8_t { _None, _Left, _Right, _Center };
 
 enum class _Sign : uint8_t { _None, _Plus, _Minus, _Space };
 
@@ -116,7 +116,7 @@ concept _Parse_replacement_field_callbacks = requires(_Ty _At, const _CharT* _Be
 };
 
 template <class _Ty, class _CharT>
-concept _Parse_align_callbacks = requires(_Ty _At, basic_string_view<_CharT> _Sv, _Align _Aln) {
+concept _Parse_align_callbacks = requires(_Ty _At, basic_string_view<_CharT> _Sv, _Fmt_align _Aln) {
     { _At._On_fill(_Sv) } -> same_as<void>;
     { _At._On_align(_Aln) } -> same_as<void>;
 };
@@ -149,7 +149,7 @@ concept _Parse_spec_callbacks = _Parse_align_callbacks<_Ty, _CharT>
                                 && _Parse_precision_callbacks<_Ty, _CharT>
                                 && _Width_adapter_callbacks<_Ty, _CharT>
                                 && _Precision_adapter_callbacks<_Ty, _CharT>
-                                && requires(_Ty _At, basic_string_view<_CharT> _Sv, _Align _Aln, _Sign _Sgn) {
+                                && requires(_Ty _At, basic_string_view<_CharT> _Sv, _Fmt_align _Aln, _Sign _Sgn) {
                                     { _At._On_sign(_Sgn) } -> same_as<void>;
                                     { _At._On_hash() } -> same_as<void>;
                                     { _At._On_zero() } -> same_as<void>;
@@ -539,7 +539,7 @@ template <class _CharT, _Parse_align_callbacks<_CharT> _Callbacks_type>
 _NODISCARD const _CharT* _Parse_align(const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
     // align and fill
     _STL_INTERNAL_CHECK(_Begin != _End && *_Begin != '}');
-    auto _Parsed_align = _Align::_None;
+    auto _Parsed_align = _Fmt_align::_None;
 
     const int _Units = _Code_units_in_next_character(_Begin, _End, _Getcvt());
     if (_Units < 0) { // invalid fill character encoding
@@ -554,17 +554,17 @@ _NODISCARD const _CharT* _Parse_align(const _CharT* _Begin, const _CharT* _End, 
     for (;;) {
         switch (*_Align_pt) {
         case '<':
-            _Parsed_align = _Align::_Left;
+            _Parsed_align = _Fmt_align::_Left;
             break;
         case '>':
-            _Parsed_align = _Align::_Right;
+            _Parsed_align = _Fmt_align::_Right;
             break;
         case '^':
-            _Parsed_align = _Align::_Center;
+            _Parsed_align = _Fmt_align::_Center;
             break;
         }
 
-        if (_Parsed_align != _Align::_None) {
+        if (_Parsed_align != _Fmt_align::_None) {
             if (_Align_pt != _Begin) {
                 if (*_Begin == '{') {
                     _THROW(format_error("invalid fill character '{'"));
@@ -870,15 +870,15 @@ void _Parse_format_string(basic_string_view<_CharT> _Format_str, _HandlerT&& _Ha
 
 template <class _CharT>
 struct _Basic_format_specs {
-    int _Width           = 0;
-    int _Precision       = -1;
-    char _Type           = '\0';
-    _Align _Alignment    = _Align::_None;
-    _Sign _Sgn           = _Sign::_None;
-    bool _Alt            = false;
-    bool _Localized      = false;
-    bool _Leading_zero   = false;
-    uint8_t _Fill_length = 1;
+    int _Width            = 0;
+    int _Precision        = -1;
+    char _Type            = '\0';
+    _Fmt_align _Alignment = _Fmt_align::_None;
+    _Sign _Sgn            = _Sign::_None;
+    bool _Alt             = false;
+    bool _Localized       = false;
+    bool _Leading_zero    = false;
+    uint8_t _Fill_length  = 1;
     // At most one codepoint (so one char32_t or four utf-8 char8_t).
     _CharT _Fill[4 / sizeof(_CharT)] = {_CharT{' '}};
 };
@@ -898,7 +898,7 @@ class _Specs_setter {
 public:
     constexpr explicit _Specs_setter(_Basic_format_specs<_CharT>& _Specs_) : _Specs(_Specs_) {}
 
-    constexpr void _On_align(const _Align _Aln) {
+    constexpr void _On_align(const _Fmt_align _Aln) {
         _Specs._Alignment = _Aln;
     }
 
@@ -1600,28 +1600,28 @@ _NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const basic_string_view<_CharT> 
 
 template <class _CharT, class _OutputIt, class _Func>
 _NODISCARD _OutputIt _Write_aligned(_OutputIt _Out, const int _Width, const _Basic_format_specs<_CharT>& _Specs,
-    const _Align _Default_align, _Func&& _Fn) {
+    const _Fmt_align _Default_align, _Func&& _Fn) {
     int _Fill_left  = 0;
     int _Fill_right = 0;
     auto _Alignment = _Specs._Alignment;
 
-    if (_Alignment == _Align::_None) {
+    if (_Alignment == _Fmt_align::_None) {
         _Alignment = _Default_align;
     }
 
     if (_Width < _Specs._Width) {
         switch (_Alignment) {
-        case _Align::_Left:
+        case _Fmt_align::_Left:
             _Fill_right = _Specs._Width - _Width;
             break;
-        case _Align::_Right:
+        case _Fmt_align::_Right:
             _Fill_left = _Specs._Width - _Width;
             break;
-        case _Align::_Center:
+        case _Fmt_align::_Center:
             _Fill_left  = (_Specs._Width - _Width) / 2;
             _Fill_right = _Specs._Width - _Width - _Fill_left;
             break;
-        case _Align::_None:
+        case _Fmt_align::_None:
             _STL_ASSERT(false, "Invalid alignment");
             break;
         }
@@ -1874,7 +1874,7 @@ _NODISCARD _OutputIt _Write_integral(
         _Width += _Separators;
     }
 
-    const bool _Write_leading_zeroes = _Specs._Leading_zero && _Specs._Alignment == _Align::_None;
+    const bool _Write_leading_zeroes = _Specs._Leading_zero && _Specs._Alignment == _Fmt_align::_None;
     auto _Writer                     = [&, _End = _End](_OutputIt _Out) {
 #pragma warning(push)
 #pragma warning(disable : 4296) // '<': expression is always false
@@ -1896,7 +1896,7 @@ _NODISCARD _OutputIt _Write_integral(
         return _Writer(_STD move(_Out));
     }
 
-    return _Write_aligned(_STD move(_Out), _Width, _Specs, _Align::_Right, _Writer);
+    return _Write_aligned(_STD move(_Out), _Width, _Specs, _Fmt_align::_Right, _Writer);
 }
 #pragma warning(pop)
 
@@ -2122,7 +2122,7 @@ _NODISCARD _OutputIt _Fmt_write(
 
     _Width += _Zeroes_to_append;
 
-    const bool _Write_leading_zeroes = _Specs._Leading_zero && _Specs._Alignment == _Align::_None && _Is_finite;
+    const bool _Write_leading_zeroes = _Specs._Leading_zero && _Specs._Alignment == _Fmt_align::_None && _Is_finite;
 
     auto _Writer = [&](_OutputIt _Out) {
         _Out = _Write_sign(_STD move(_Out), _Sgn, _Is_negative);
@@ -2162,7 +2162,7 @@ _NODISCARD _OutputIt _Fmt_write(
         return _Writer(_STD move(_Out));
     }
 
-    return _Write_aligned(_STD move(_Out), _Width, _Specs, _Align::_Right, _Writer);
+    return _Write_aligned(_STD move(_Out), _Width, _Specs, _Fmt_align::_Right, _Writer);
 }
 #pragma warning(pop)
 
@@ -2204,7 +2204,7 @@ _NODISCARD _OutputIt _Fmt_write(
         _Width = 3;
     }
 
-    return _Write_aligned(_STD move(_Out), _Width, _Specs, _Align::_Left,
+    return _Write_aligned(_STD move(_Out), _Width, _Specs, _Fmt_align::_Left,
         [=](_OutputIt _Out) { return _Fmt_write<_CharT>(_STD move(_Out), _Value); });
 }
 
@@ -2368,7 +2368,7 @@ _NODISCARD _OutputIt _Fmt_write(
     int _Width          = _Specs._Precision;
     const _CharT* _Last = _Measure_string_prefix(_Value, _Width);
 
-    return _Write_aligned(_STD move(_Out), _Width, _Specs, _Align::_Left, [=](_OutputIt _Out) {
+    return _Write_aligned(_STD move(_Out), _Width, _Specs, _Fmt_align::_Left, [=](_OutputIt _Out) {
         return _Fmt_write(_STD move(_Out), basic_string_view<_CharT>{_Value.data(), _Last});
     });
 }

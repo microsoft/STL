@@ -5187,7 +5187,7 @@ namespace chrono {
                                            && _Parse_precision_callbacks<_Ty, _CharT>
                                            && _Width_adapter_callbacks<_Ty, _CharT>
                                            && _Precision_adapter_callbacks<_Ty, _CharT>
-                                           && requires(_Ty _At, basic_string_view<_CharT> _Sv, _Align _Aln) {
+                                           && requires(_Ty _At, basic_string_view<_CharT> _Sv, _Fmt_align _Aln) {
         { _At._On_conversion_spec(_CharT{}, _CharT{}) } -> same_as<void>;
         { _At._On_lit_char(_CharT{}) } -> same_as<void>;
     };
@@ -5206,7 +5206,7 @@ namespace chrono {
         int _Precision               = -1;
         int _Dynamic_width_index     = -1;
         int _Dynamic_precision_index = -1;
-        _Align _Alignment            = _Align::_None;
+        _Fmt_align _Alignment        = _Fmt_align::_None;
         uint8_t _Fill_length         = 1;
         // At most one codepoint (so one char32_t or four utf-8 char8_t)
         _CharT _Fill[4 / sizeof(_CharT)] = {_CharT{' '}};
@@ -5221,7 +5221,7 @@ namespace chrono {
         constexpr explicit _Chrono_specs_setter(_Chrono_format_specs<_CharT>& _Specs_) : _Specs(_Specs_) {}
 
         // same as _Specs_setter
-        constexpr void _On_align(_Align _Aln) {
+        constexpr void _On_align(_Fmt_align _Aln) {
             _Specs._Alignment = _Aln;
         }
 

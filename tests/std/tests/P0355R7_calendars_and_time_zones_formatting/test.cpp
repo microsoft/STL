@@ -36,7 +36,7 @@ struct choose_literal<wchar_t> {
 
 template <typename CharT>
 struct testing_callbacks {
-    _Align expected_alignment = _Align::_None;
+    _Fmt_align expected_alignment = _Fmt_align::_None;
     basic_string_view<CharT> expected_fill;
     int expected_width                   = -1;
     size_t expected_dynamic_width        = static_cast<size_t>(-1);
@@ -47,7 +47,7 @@ struct testing_callbacks {
     vector<_Chrono_specs<CharT>>& expected_chrono_specs;
     size_t curr_index = 0;
 
-    void _On_align(_Align aln) {
+    void _On_align(_Fmt_align aln) {
         assert(aln == expected_alignment);
     }
     void _On_fill(basic_string_view<CharT> str_view) {
@@ -168,14 +168,14 @@ bool test_parse_chrono_format_specs() {
 
     vector<chrono_spec> v4{{._Lit_char = 'h'}, {._Lit_char = 'i'}};
     test_parse_helper(parse_chrono_format_specs_fn, s4, false, s4.size(),
-        {.expected_alignment       = _Align::_Left,
+        {.expected_alignment       = _Fmt_align::_Left,
             .expected_fill         = view_typ(TYPED_LITERAL(CharT, "*")),
             .expected_width        = 6,
             .expected_chrono_specs = v4});
 
     vector<chrono_spec> v5{{._Type = 'y'}, {._Lit_char = 'm'}, {._Lit_char = 'm'}};
     test_parse_helper(parse_chrono_format_specs_fn, s5, false, s5.size(),
-        {.expected_alignment       = _Align::_Center,
+        {.expected_alignment       = _Fmt_align::_Center,
             .expected_fill         = view_typ(TYPED_LITERAL(CharT, "*")),
             .expected_width        = 4,
             .expected_precision    = 4,
