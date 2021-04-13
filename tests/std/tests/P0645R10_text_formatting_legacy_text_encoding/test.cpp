@@ -12,7 +12,7 @@ using namespace std;
 
 void test_multibyte_format_strings() {
     {
-        setlocale(LC_ALL, ".932");
+        assert(setlocale(LC_ALL, ".932") != nullptr);
         const auto s =
             "\x93\xfa\x96{\x92\x6e\x90}"sv; // Note the use of `{` and `}` as continuation bytes (from GH-1576)
         assert(format(s) == s);
@@ -40,14 +40,14 @@ void test_multibyte_format_strings() {
         assert(format("{:\x90}>4.3}", s) == "\x90}\x90}\x93\xfa"sv);
     }
 
-    setlocale(LC_ALL, nullptr);
+    assert(setlocale(LC_ALL, "C") != nullptr);
 }
 
 void test_parse_align() {
     auto parse_align_fn = _Parse_align<char, testing_callbacks<char>>;
 
     {
-        setlocale(LC_ALL, ".932");
+        assert(setlocale(LC_ALL, ".932") != nullptr);
         test_parse_helper(parse_align_fn, "\x93\xfa<X"sv, false, 3,
             {.expected_alignment = _Align::_Left, .expected_fill = "\x93\xfa"sv});
         test_parse_helper(parse_align_fn, "\x96\x7b>X"sv, false, 3,
@@ -56,7 +56,7 @@ void test_parse_align() {
             {.expected_alignment = _Align::_Center, .expected_fill = "\x92\x6e"sv});
     }
 
-    setlocale(LC_ALL, nullptr);
+    assert(setlocale(LC_ALL, "C") != nullptr);
 }
 
 int main() {

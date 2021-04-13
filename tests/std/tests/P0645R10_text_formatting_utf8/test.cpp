@@ -51,14 +51,14 @@ void run_tests() {
 int main() {
     run_tests();
 
-    setlocale(LC_ALL, ".1252");
+    assert(setlocale(LC_ALL, ".1252") != nullptr);
     run_tests();
 
-    setlocale(LC_ALL, ".932");
+    assert(setlocale(LC_ALL, ".932") != nullptr);
     run_tests();
 
 #ifndef MSVC_INTERNAL_TESTING // TRANSITION, Windows on Contest VMs understand ".UTF-8" codepage
-    setlocale(LC_ALL, ".UTF-8");
+    assert(setlocale(LC_ALL, ".UTF-8") != nullptr);
     run_tests();
 #endif
 }
