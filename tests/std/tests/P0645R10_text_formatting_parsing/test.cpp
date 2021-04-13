@@ -181,14 +181,14 @@ bool test_parse_format_specs() {
     test_parse_helper(parse_format_specs_fn, s4, false, s4.size() - 1, {.expected_width = 6, .expected_type = 'd'});
     test_parse_helper(parse_format_specs_fn, s5, false, s5.size() - 1,
         {.expected_alignment    = _Fmt_align::_Center,
-            .expected_sign      = _Sign::_Plus,
+            .expected_sign      = _Fmt_sign::_Plus,
             .expected_fill      = view_typ(TYPED_LITERAL(CharT, "*")),
             .expected_width     = 4,
             .expected_precision = 4,
             .expected_type      = 'a'});
     test_parse_helper(parse_format_specs_fn, s6, false, s6.size() - 1,
         {.expected_alignment    = _Fmt_align::_Center,
-            .expected_sign      = _Sign::_Plus,
+            .expected_sign      = _Fmt_sign::_Plus,
             .expected_fill      = view_typ(TYPED_LITERAL(CharT, "*")),
             .expected_width     = 4,
             .expected_precision = 4,
