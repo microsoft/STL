@@ -8,7 +8,6 @@
 #include <exception>
 #include <format>
 #include <iterator>
-#include <limits.h>
 #include <limits>
 #include <locale>
 #include <string>
@@ -1035,7 +1034,7 @@ void libfmt_formatter_test_auto_arg_index() {
     assert(format(STR("{}{}{}"), 'a', 'b', 'c') == STR("abc"));
     throw_helper(STR("{0}{}"), 'a', 'b');
     throw_helper(STR("{}{0}"), 'a', 'b');
-    // assert(format(STR("{:.{}}"), 1.2345, 2) == STR("1.2"));
+    assert(format(STR("{:.{}}"), 1.2345, 2) == STR("1.2"));
     throw_helper(STR("{0}:.{}"), 1.2345, 2);
     throw_helper(STR("{:.{0}}"), 1.2345, 2);
     throw_helper(STR("{}"));
