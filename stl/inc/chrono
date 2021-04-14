@@ -35,6 +35,7 @@
 #include <concepts>
 #include <format>
 #include <iostream>
+#include <sstream>
 #endif // defined(__cpp_lib_concepts)
 #endif // _HAS_CXX20
 
@@ -5187,13 +5188,27 @@ namespace chrono {
 #ifdef __cpp_lib_concepts
   // [time.format]
 
+template <class _CharT>
+struct _Choose_literal {
+    static constexpr const _CharT* _Choose(const char* _Str, const wchar_t* _WStr) {
+        if constexpr (is_same_v<_CharT, char>) {
+            return _Str;
+        } else {
+            return _WStr;
+        }
+    }
+};
+
+#define _STATICALLY_WIDEN(_CharT, _Literal) (_Choose_literal<_CharT>::_Choose(_Literal, L##_Literal))
+
+
 // clang-format off
     template <class _Ty, class _CharT>
     concept _Chrono_parse_spec_callbacks = _Parse_align_callbacks<_Ty, _CharT>
                                            && _Parse_width_callbacks<_Ty, _CharT>
                                            && _Parse_precision_callbacks<_Ty, _CharT>
-                                        //    && _Width_adapter_callbacks<_Ty, _CharT>
-                                        //    && _Precision_adapter_callbacks<_Ty, _CharT>
+                                           && _Width_adapter_callbacks<_Ty, _CharT>
+                                           && _Precision_adapter_callbacks<_Ty, _CharT>
                                            && requires(_Ty _At, basic_string_view<_CharT> _Sv, _Align _Aln) {
         { _At._On_conversion_spec(_CharT{}, _CharT{}) } -> same_as<void>;
         { _At._On_lit_char(_CharT{}) } -> same_as<void>;
@@ -5394,6 +5409,7 @@ struct formatter<_CHRONO day, _CharT> {
         _Chrono_specs_setter<_CharT, basic_format_parse_context<_CharT>> _Callback{_Specs, _Parse_ctx};
         const auto _It =
             _Parse_chrono_format_specs(_Parse_ctx._Unchecked_begin(), _Parse_ctx._Unchecked_end(), _Callback);
+        const auto _Res_iter = _Parse_ctx.begin() + (_It - _Parse_ctx._Unchecked_begin());
 
         if (_It != _Parse_ctx._Unchecked_end() && *_It != '}') {
             _THROW(format_error("Missing '}' in format string."));
@@ -5404,8 +5420,12 @@ struct formatter<_CHRONO day, _CharT> {
         }
 
         const auto& _List = _Specs._Chrono_specs_list;
+
+        // [time.format]/6
         if (_List.empty()) {
-            _THROW(format_error("day requires at least one chrono-spec."));
+            _No_chrono_specs = true;
+            _Conv_spec       = _Chrono_specs{._Type = _CharT{'d'}};
+            return _Res_iter;
         }
 
         auto _Target_conv_spec_iter =
@@ -5416,7 +5436,7 @@ struct formatter<_CHRONO day, _CharT> {
         }
 
         _Chrono_specs<_CharT> _Target_conv_spec = *_Target_conv_spec_iter;
-        _Conv_spec_ptr                          = _Get_unwrapped(_Target_conv_spec_iter);
+        _Conv_spec                              = _Target_conv_spec;
         // only 'd' and 'e' acceptable types for day
         if (_Target_conv_spec._Type != 'd' && _Target_conv_spec._Type != 'e') {
             _THROW(format_error("Invalid type for type day."));
@@ -5434,43 +5454,44 @@ struct formatter<_CHRONO day, _CharT> {
         }
 
         _Stored_specs = _Specs;
-        return _Parse_ctx.end();
+        return _Res_iter;
     }
 
     template <class _FormatContext>
     typename _FormatContext::iterator format(const _CHRONO day& _Val, _FormatContext& _FormatCtx) {
         using _Ctx_iter = typename _FormatContext::iterator;
-        /*
-        if O modifier
-            figure out locale deal
-        if _Val's number is < 10
-            if d prefix with 0
-            elif e prefix with ' '
-        else
-            just the plain _Val's number
 
-        Func writes the spacer + result of locale-specific daynum (using std::time_put?)
-
-        return _Write_align(...) passing func
-        */
-
-        _Chrono_specs<_CharT> _Target = *_Conv_spec_ptr;
-        tm _Time                      = {.tm_mday = static_cast<int>(static_cast<unsigned int>(_Val))};
-        _CharT _Fmt_str[4];
-        _Fmt_str[0]      = _CharT{'%'};
-        size_t _Next_idx = 1;
-        if (_Target._Modifier != '\0') {
-            _Fmt_str[_Next_idx++] = _Target._Modifier;
-        }
-
-        _Fmt_str[_Next_idx++] = _Target._Type;
-        _Fmt_str[_Next_idx]   = _CharT{'\0'};
-
+        const basic_string<_CharT> _Invalid_msg = _STATICALLY_WIDEN(_CharT, " is not a valid day");
         basic_stringstream<_CharT> _Stream;
         _Stream.imbue(_FormatCtx.locale());
-        _Stream << _STD put_time<_CharT>(&_Time, _Fmt_str);
-        basic_string<_CharT> _Str = _Stream.str();
-        const int _Num_dig        = 2;
+        basic_string<_CharT> _Str;
+        int _Num_dig = 2;
+        if (_No_chrono_specs && !_Val.ok()) {
+            _Stream << static_cast<unsigned int>(_Val);
+            if (static_cast<unsigned int>(_Val) < 10) { // _Val == 0
+                if (_Conv_spec._Type == 'd') {
+                    _Str = _CharT{'0'} + _Stream.str();
+                } else { // e
+                    _Str = _CharT{' '} + _Stream.str();
+                }
+            } else {
+                _Str = _Stream.str();
+            }
+            _Str = _Str + _Invalid_msg _Num_dig += length(_Invalid_msg);
+        } else {
+            tm _Time = {.tm_mday = static_cast<int>(static_cast<unsigned int>(_Val))};
+            _CharT _Fmt_str[4];
+            _Fmt_str[0]      = _CharT{'%'};
+            size_t _Next_idx = 1;
+            if (_Conv_spec._Modifier != '\0') {
+                _Fmt_str[_Next_idx++] = _Conv_spec._Modifier;
+            }
+
+            _Fmt_str[_Next_idx++] = _Conv_spec._Type;
+            _Fmt_str[_Next_idx]   = _CharT{'\0'};
+            _Stream << _STD put_time<_CharT>(&_Time, _Fmt_str);
+            _Str = _Stream.str();
+        }
 
         // TODO: deal with dynamic width (there should not be precision here)
 
@@ -5479,8 +5500,9 @@ struct formatter<_CHRONO day, _CharT> {
     }
 
 private:
-    const _Chrono_specs<_CharT>* _Conv_spec_ptr;
+    _Chrono_specs<_CharT> _Conv_spec;
     _Chrono_format_specs<_CharT> _Stored_specs{};
+    bool _No_chrono_specs = false;
 };
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX20

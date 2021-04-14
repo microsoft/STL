@@ -203,13 +203,21 @@ bool test_day_formatter() {
     using view_typ = basic_string_view<CharT>;
     using str_typ  = basic_string<CharT>;
 
-    view_typ s0(TYPED_LITERAL(CharT, "%d"));
-    view_typ s1(TYPED_LITERAL(CharT, "%e"));
+    view_typ s0(TYPED_LITERAL(CharT, "{:%d}"));
+    view_typ s1(TYPED_LITERAL(CharT, "{:%e}"));
+    view_typ s2(TYPED_LITERAL(CharT, "{:%Od}"));
+    view_typ s3(TYPED_LITERAL(CharT, "{:%Oe}"));
+    view_typ s4(TYPED_LITERAL(CharT, "{}"));
+    view_typ s5(TYPED_LITERAL(CharT, "{:=>8}"));
 
     str_typ a0(TYPED_LITERAL(CharT, "27"));
     str_typ a1(TYPED_LITERAL(CharT, "05"));
     str_typ a2(TYPED_LITERAL(CharT, " 5"));
+    str_typ a3(TYPED_LITERAL(CharT, "50 is not a valid day"));
+    str_typ a4(TYPED_LITERAL(CharT, "======27"));
+    str_typ a5(TYPED_LITERAL(CharT, "======05"));
 
+    // 2 digits
     day d0{27};
     auto res = format(s0, d0);
     print(res);
@@ -218,6 +226,7 @@ bool test_day_formatter() {
     print(res);
     assert(res == a0);
 
+    // 1 digit
     day d1{5};
     res = format(s0, d1);
     print(res);
@@ -225,6 +234,36 @@ bool test_day_formatter() {
     res = format(s1, d1);
     print(res);
     assert(res == a2);
+
+    // O modifier
+    res = format(s2, d0);
+    assert(res == a0);
+    res = format(s3, d0);
+    assert(res == a0);
+    res = format(s2, d1);
+    assert(res == a1);
+    res = format(s3, d1);
+    assert(res == a2);
+
+    // [time.format]/6
+    day d2{50};
+    res = format(s4, d0);
+    print(res);
+    assert(res == a0);
+    res = format(s4, d2);
+    print(res);
+    assert(res == a3);
+
+    // width/align
+    // res = format(s5, d0);
+    // print(res);
+    // assert(res == a4);
+    // res = format(s5, d1);
+    // print(res);
+    // assert(res == a5);
+    // res = format(s5, d2);
+    // print(res);
+    // assert(res == a3);
 
     return true;
 }
