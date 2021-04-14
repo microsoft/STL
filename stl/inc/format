@@ -197,7 +197,7 @@ public:
 
     constexpr void advance_to(const const_iterator _It) {
         _Adl_verify_range(_It, _Format_string.end());
-        // _It must be after _Format_string.begin().
+        _Adl_verify_range(_Format_string.begin() + 1, _It);
         const auto _Diff = static_cast<size_t>(_It._Unwrapped() - _Format_string._Unchecked_begin());
         _Format_string.remove_prefix(_Diff);
     }
