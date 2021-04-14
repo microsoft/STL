@@ -118,10 +118,6 @@ void test_basic_format_arg() {
 
         basic_format_arg<Context> from_string_view{get_input_sv<char_type>()};
         assert(from_string_view);
-
-        // TRANSITION, implement handle
-        // basic_format_arg<context> from_handle{};
-        // assert(from_handle);
     }
 }
 template <class Context>

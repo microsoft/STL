@@ -680,6 +680,7 @@ _NODISCARD constexpr const _CharT* _Parse_precision(
         if (_Begin == _End || *_Begin != '}') {
             _THROW(format_error("Invalid format string."));
         }
+        ++_Begin;
     } else {
         _THROW(format_error("Missing precision specifier."));
     }
@@ -2434,14 +2435,14 @@ struct _Format_handler {
     }
 
     void _On_replacement_field(const size_t _Id, const _CharT*) {
-        auto _Arg = _Ctx.arg(_Id);
+        auto _Arg = _Get_arg(_Ctx, _Id);
         _Ctx.advance_to(_STD visit_format_arg(
             _Default_arg_formatter<_OutputIt, _CharT>{_Ctx.out(), _Ctx._Get_args(), _Ctx.locale()}, _Arg));
     }
 
     const _CharT* _On_format_specs(const size_t _Id, const _CharT* _Begin, const _CharT* _End) {
         _Parse_context.advance_to(_Parse_context.begin() + (_Begin - &*_Parse_context.begin()));
-        auto _Arg = _Ctx.arg(_Id);
+        auto _Arg = _Get_arg(_Ctx, _Id);
         if (_Arg._Active_state == _Basic_format_arg_type::_Custom_type) {
             _Arg._Custom_state.format(_Parse_context, _Ctx);
             return _Parse_context.begin()._Unwrapped();

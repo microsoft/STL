@@ -8,6 +8,7 @@
 #include <exception>
 #include <format>
 #include <iterator>
+#include <limits.h>
 #include <limits>
 #include <locale>
 #include <string>
@@ -1028,6 +1029,18 @@ void libfmt_formatter_test_args_in_different_position() {
     assert(format(STR("{1} is the {0}"), STR("answer"), 42) == STR("42 is the answer"));
     assert(format(STR("{0}{1}{0}"), STR("abra"), STR("cad")) == STR("abracadabra"));
 }
+
+template <class charT>
+void libfmt_formatter_test_auto_arg_index() {
+    assert(format(STR("{}{}{}"), 'a', 'b', 'c') == STR("abc"));
+    throw_helper(STR("{0}{}"), 'a', 'b');
+    throw_helper(STR("{}{0}"), 'a', 'b');
+    // assert(format(STR("{:.{}}"), 1.2345, 2) == STR("1.2"));
+    throw_helper(STR("{0}:.{}"), 1.2345, 2);
+    throw_helper(STR("{:.{0}}"), 1.2345, 2);
+    throw_helper(STR("{}"));
+}
+
 template <class charT>
 void libfmt_formatter_test_left_align() {
     assert(format(STR("{0:<4}"), 42) == STR("42  "));
@@ -1221,6 +1234,69 @@ void libfmt_formatter_test_zero_flag() {
     throw_helper(STR("{0:05}"), reinterpret_cast<void*>(0x42));
 }
 
+template <class charT>
+void libfmt_formatter_test_runtime_width() {
+    throw_helper(STR("{0:{"), 0);
+    throw_helper(STR("{0:{}"), 0);
+    throw_helper(STR("{0:{?}}"), 0);
+    throw_helper(STR("{0:{1}}"), 0);
+    throw_helper(STR("{0:{0:}}"), 0);
+    throw_helper(STR("{0:{1}}"), 0, -1);
+    throw_helper(STR("{0:{1}}"), 0, (INT_MAX + 1u));
+    throw_helper(STR("{0:{1}}"), 0, -1l);
+    throw_helper(STR("{0:{1}}"), 0, (INT_MAX + 1ul));
+    assert(format(STR("{0:{1}}"), 0, '0')
+           == STR("                                               0")); // behavior differs from libfmt, but conforms
+    throw_helper(STR("{0:{1}}"), 0, 0.0);
+
+    assert(format(STR("{0:{1}}"), -42, 4) == STR(" -42"));
+    assert(format(STR("{0:{1}}"), 42u, 5) == STR("   42"));
+    assert(format(STR("{0:{1}}"), -42l, 6) == STR("   -42"));
+    assert(format(STR("{0:{1}}"), 42ul, 7) == STR("     42"));
+    assert(format(STR("{0:{1}}"), -42ll, 6) == STR("   -42"));
+    assert(format(STR("{0:{1}}"), 42ull, 7) == STR("     42"));
+    assert(format(STR("{0:{1}}"), -1.23, 8) == STR("   -1.23"));
+    assert(format(STR("{0:{1}}"), -1.23l, 9) == STR("    -1.23"));
+    assert(format(STR("{0:{1}}"), reinterpret_cast<void*>(0xcafe), 10)
+           == STR("0xcafe    ")); // behavior differs from libfmt, but conforms
+    assert(format(STR("{0:{1}}"), 'x', 11) == STR("x          "));
+    assert(format(STR("{0:{1}}"), STR("str"), 12) == STR("str         "));
+}
+
+template <class charT>
+void libfmt_formatter_test_runtime_precision() {
+    throw_helper(STR("{0:.{"), 0);
+    throw_helper(STR("{0:.{}"), 0);
+    throw_helper(STR("{0:.{?}}"), 0);
+    throw_helper(STR("{0:.{1}"), 0, 0);
+    throw_helper(STR("{0:.{1}}"), 0);
+    throw_helper(STR("{0:.{0:}}"), 0);
+    throw_helper(STR("{0:.{1}}"), 0, -1);
+    throw_helper(STR("{0:.{1}}"), 0, (INT_MAX + 1u));
+    throw_helper(STR("{0:.{1}}"), 0, -1l);
+    throw_helper(STR("{0:.{1}}"), 0, (INT_MAX + 1ul));
+    throw_helper(STR("{0:.{1}}"), 0, '0');
+    throw_helper(STR("{0:.{1}}"), 0, 0.0);
+    throw_helper(STR("{0:.{1}}"), 42, 2);
+    throw_helper(STR("{0:.{1}f}"), 42, 2);
+    throw_helper(STR("{0:.{1}}"), 42u, 2);
+    throw_helper(STR("{0:.{1}f}"), 42u, 2);
+    throw_helper(STR("{0:.{1}}"), 42l, 2);
+    throw_helper(STR("{0:.{1}f}"), 42l, 2);
+    throw_helper(STR("{0:.{1}}"), 42ul, 2);
+    throw_helper(STR("{0:.{1}f}"), 42ul, 2);
+    throw_helper(STR("{0:.{1}}"), 42ll, 2);
+    throw_helper(STR("{0:.{1}f}"), 42ll, 2);
+    throw_helper(STR("{0:.{1}}"), 42ull, 2);
+    throw_helper(STR("{0:.{1}f}"), 42ull, 2);
+    throw_helper(STR("{0:3.{1}}"), 'x', 0);
+    assert(format(STR("{0:.{1}}"), 1.2345, 2) == STR("1.2"));
+    assert(format(STR("{1:.{0}}"), 2, 1.2345l) == STR("1.2"));
+    throw_helper(STR("{0:.{1}}"), reinterpret_cast<void*>(0xcafe), 2);
+    throw_helper(STR("{0:.{1}f}"), reinterpret_cast<void*>(0xcafe), 2);
+    assert(format(STR("{0:.{1}}"), STR("str"), 2) == STR("st"));
+}
+
 void test() {
     test_simple_formatting<char>();
     test_simple_formatting<wchar_t>();
@@ -1251,6 +1327,9 @@ void test() {
     libfmt_formatter_test_args_in_different_position<char>();
     libfmt_formatter_test_args_in_different_position<wchar_t>();
 
+    libfmt_formatter_test_auto_arg_index<char>();
+    libfmt_formatter_test_auto_arg_index<wchar_t>();
+
     libfmt_formatter_test_left_align<char>();
     libfmt_formatter_test_left_align<wchar_t>();
 
@@ -1277,16 +1356,14 @@ void test() {
 
     libfmt_formatter_test_zero_flag<char>();
     libfmt_formatter_test_zero_flag<wchar_t>();
+
+    libfmt_formatter_test_runtime_width<char>();
+    libfmt_formatter_test_runtime_width<wchar_t>();
+
+    libfmt_formatter_test_runtime_precision<char>();
+    libfmt_formatter_test_runtime_precision<wchar_t>();
 }
 
 int main() {
-    try {
-        test();
-    } catch (const format_error& e) {
-        printf("format_error: %s\n", e.what());
-        assert(false);
-    } catch (const exception& e) {
-        printf("exception: %s\n", e.what());
-        assert(false);
-    }
+    test();
 }
