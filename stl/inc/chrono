@@ -5471,7 +5471,7 @@ struct formatter<_CHRONO day, _CharT> {
         basic_stringstream<_CharT> _Stream;
         _Stream.imbue(_FormatCtx.locale());
         basic_string<_CharT> _Str;
-        int _Num_dig = 2;
+        int _Num_char = 2;
         if (_No_chrono_specs && !_Val.ok()) {
             _Stream << static_cast<unsigned int>(_Val);
             if (static_cast<unsigned int>(_Val) < 10) { // _Val == 0
@@ -5484,7 +5484,7 @@ struct formatter<_CHRONO day, _CharT> {
                 _Str = _Stream.str();
             }
             _Str = _Str + _Invalid_msg;
-            _Num_dig += static_cast<int>(_Invalid_msg.length());
+            _Num_char += static_cast<int>(_Invalid_msg.length());
         } else {
             tm _Time = {.tm_mday = static_cast<int>(static_cast<unsigned int>(_Val))};
             _CharT _Fmt_str[4];
@@ -5499,11 +5499,33 @@ struct formatter<_CHRONO day, _CharT> {
             _Stream << _STD put_time<_CharT>(&_Time, _Fmt_str);
             _Str = _Stream.str();
         }
+        _Num_char += static_cast<int>(_Stored_specs._Chrono_specs_list.size()) - 1;
+
+        // copy literal chars to output
+        auto _Writer = [&](_Ctx_iter _Out) {
+            auto& _List = _Stored_specs._Chrono_specs_list;
+            auto _Iter  = _List._Unchecked_begin();
+            basic_string<_CharT> _Write_str{};
+            while (_Iter != _List._Unchecked_end() && _Iter->_Type == _CharT{'\0'}) {
+                _STL_ASSERT(_Iter->_Lit_char != '\0', "if chrono-spec doesn't have type, it must be a literal char");
+                _Write_str += _Iter->_Lit_char;
+                ++_Iter;
+            }
+            _Write_str += _Str;
+            ++_Iter; // move past the conversion-spec
+            while (_Iter != _List._Unchecked_end()) {
+                _STL_ASSERT(_Iter->_Lit_char != '\0', "if chrono-spec doesn't have type, it must be a literal char");
+                _Write_str += _Iter->_Lit_char;
+                ++_Iter;
+            }
+            return _Fmt_write(_STD move(_Out), basic_string_view<_CharT>{_Write_str});
+        };
 
         // TODO: deal with dynamic width (there should not be precision here)
 
-        return _Write_aligned(_STD move(_FormatCtx.out()), _Num_dig, _Stored_specs, _Align::_Left,
-            [=](_Ctx_iter _Out) { return _Fmt_write(_STD move(_Out), basic_string_view<_CharT>{_Str}); });
+        // return _Write_aligned(_STD move(_FormatCtx.out()), _Num_dig, _Stored_specs, _Align::_Left,
+        //     [=](_Ctx_iter _Out) { return _Fmt_write(_STD move(_Out), basic_string_view<_CharT>{_Str}); });
+        return _Write_aligned(_STD move(_FormatCtx.out()), _Num_char, _Stored_specs, _Align::_Left, _Writer);
     }
 
 private:

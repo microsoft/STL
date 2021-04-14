@@ -209,6 +209,9 @@ bool test_day_formatter() {
     view_typ s3(TYPED_LITERAL(CharT, "{:%Oe}"));
     view_typ s4(TYPED_LITERAL(CharT, "{}"));
     view_typ s5(TYPED_LITERAL(CharT, "{:=>8}"));
+    view_typ s6(TYPED_LITERAL(CharT, "{:lit}"));
+    view_typ s7(TYPED_LITERAL(CharT, "{:%d days}"));
+    view_typ s8(TYPED_LITERAL(CharT, "{:*^6%dmm}"));
 
     str_typ a0(TYPED_LITERAL(CharT, "27"));
     str_typ a1(TYPED_LITERAL(CharT, "05"));
@@ -216,6 +219,9 @@ bool test_day_formatter() {
     str_typ a3(TYPED_LITERAL(CharT, "50 is not a valid day"));
     str_typ a4(TYPED_LITERAL(CharT, "======27"));
     str_typ a5(TYPED_LITERAL(CharT, "======05"));
+    str_typ a6(TYPED_LITERAL(CharT, "lit27"));
+    str_typ a7(TYPED_LITERAL(CharT, "27 days"));
+    str_typ a8(TYPED_LITERAL(CharT, "*27mm*"));
 
     // 2 digits
     day d0{27};
@@ -266,6 +272,15 @@ bool test_day_formatter() {
     assert(res == a3);
 
     // lit chars
+    res = format(s6, d0);
+    print(res);
+    assert(res == a6);
+    res = format(s7, d0);
+    print(res);
+    assert(res == a7);
+    res = format(s8, d0);
+    print(res);
+    assert(res == a8);
 
     return true;
 }
