@@ -215,20 +215,6 @@ namespace ranges {
         }
     }
 
-    // FUNCTION TEMPLATE _Rewrap_iterator
-    template <forward_range _Rng, class _It>
-    _NODISCARD constexpr iterator_t<_Rng> _Rewrap_iterator(_Rng&& _Range, _It&& _Val) {
-        _STL_INTERNAL_STATIC_ASSERT(is_same_v<remove_cvref_t<_It>, _Unwrapped_t<iterator_t<_Rng>>>);
-
-        if constexpr (is_same_v<remove_cvref_t<_It>, iterator_t<_Rng>>) {
-            return _STD forward<_It>(_Val);
-        } else {
-            auto _Result = _RANGES begin(_Range);
-            _Result._Seek_to(_STD forward<_It>(_Val));
-            return _Result;
-        }
-    }
-
     // FUNCTION TEMPLATE _Get_final_iterator_unwrapped
     template <forward_iterator _Wrapped, sentinel_for<_Wrapped> _Se>
     _NODISCARD constexpr auto _Get_final_iterator_unwrapped(const _Unwrapped_t<_Wrapped>& _UFirst, _Se&& _Last) {
