@@ -255,15 +255,17 @@ bool test_day_formatter() {
     assert(res == a3);
 
     // width/align
-    // res = format(s5, d0);
-    // print(res);
-    // assert(res == a4);
-    // res = format(s5, d1);
-    // print(res);
-    // assert(res == a5);
-    // res = format(s5, d2);
-    // print(res);
-    // assert(res == a3);
+    res = format(s5, d0);
+    print(res);
+    assert(res == a4);
+    res = format(s5, d1);
+    print(res);
+    assert(res == a5);
+    res = format(s5, d2);
+    print(res);
+    assert(res == a3);
+
+    // lit chars
 
     return true;
 }

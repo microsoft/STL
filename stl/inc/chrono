@@ -5424,15 +5424,21 @@ struct formatter<_CHRONO day, _CharT> {
         // [time.format]/6
         if (_List.empty()) {
             _No_chrono_specs = true;
-            _Conv_spec       = _Chrono_specs{._Type = _CharT{'d'}};
+            _Conv_spec       = _Chrono_specs<_CharT>{._Type = _CharT{'d'}};
+            _Specs._Chrono_specs_list.push_back(_Conv_spec);
+            _Stored_specs = _Specs;
             return _Res_iter;
         }
 
         auto _Target_conv_spec_iter =
             _STD find_if(_List.begin(), _List.end(), [](const auto& _Cs) { return _Cs._Type != '\0'; });
 
-        if (_Target_conv_spec_iter == _List.end()) {
-            _THROW(format_error("day requires one conversion-spec."));
+        if (_Target_conv_spec_iter == _List.end()) { // no conversion-spec, but has literal chars
+            _No_chrono_specs = true;
+            _Conv_spec       = _Chrono_specs<_CharT>{._Type = _CharT{'d'}};
+            _Specs._Chrono_specs_list.push_back(_Conv_spec);
+            _Stored_specs = _Specs;
+            return _Res_iter;
         }
 
         _Chrono_specs<_CharT> _Target_conv_spec = *_Target_conv_spec_iter;
@@ -5477,7 +5483,8 @@ struct formatter<_CHRONO day, _CharT> {
             } else {
                 _Str = _Stream.str();
             }
-            _Str = _Str + _Invalid_msg _Num_dig += length(_Invalid_msg);
+            _Str = _Str + _Invalid_msg;
+            _Num_dig += static_cast<int>(_Invalid_msg.length());
         } else {
             tm _Time = {.tm_mday = static_cast<int>(static_cast<unsigned int>(_Val))};
             _CharT _Fmt_str[4];
