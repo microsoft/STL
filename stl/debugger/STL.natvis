@@ -1827,4 +1827,14 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     </Expand>
   </Type>
 
+  <Type Name="std::source_location">
+    <DisplayString>line: {_Line}, column: {_Column}</DisplayString>
+    <Expand>
+      <Item Name="[line]">_Line</Item>
+      <Item Name="[column]">_Column</Item>
+      <Item Name="[file]">_File,s</Item>
+      <Item Name="[function]">_Function,s</Item>
+    </Expand>
+  </Type>
+
 </AutoVisualizer>
