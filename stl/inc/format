@@ -498,9 +498,13 @@ protected:
     }
 
     _Fmt_codec_base() {
-        if (__std_get_cvt(__std_code_page::_Acp, &_Cvt) != __std_win_error::_Success) {
-            _THROW(format_error("FIXME"));
+#ifndef _FORMAT_CODEPAGE
+#define _FORMAT_CODEPAGE __std_code_page::_Acp
+#endif // _FORMAT_CODEPAGE
+        if (__std_get_cvt(_FORMAT_CODEPAGE, &_Cvt) != __std_win_error::_Success) {
+            _THROW(format_error("failed to retrieve codepage info"));
         }
+#undef _FORMAT_CODEPAGE
     }
 };
 

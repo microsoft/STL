@@ -21,6 +21,8 @@ extern "C" [[nodiscard]] __std_win_error __stdcall __std_get_cvt(
     CPINFOEXW _Info{};
     const DWORD _Flags = 0; // reserved, must be zero
     if (GetCPInfoExW(CODEPAGE(_Codepage), _Flags, &_Info) == 0) {
+        // NB: the only documented failure mode for GetCPInfoExW is ERROR_INVALID_PARAMETER,
+        // so in practice it should never fail for CP_ACP.
         return __std_win_error{GetLastError()};
     }
 

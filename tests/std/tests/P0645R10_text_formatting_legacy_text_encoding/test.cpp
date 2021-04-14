@@ -1,16 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#define _FORMAT_CODEPAGE (__std_code_page{932})
+
 #include <cassert>
 #include <clocale>
 #include <format>
 #include <string_view>
 
 #include "test_format_support.hpp"
-
-#pragma warning(disable : 5105) // macro expansion producing 'defined' has undefined behavior
-#define CODEPAGE(x) (static_cast<unsigned int>(x) ? static_cast<unsigned int>(x) : 932u)
-#include "../../../../stl/src/format.cpp"
 
 using namespace std;
 
