@@ -1,17 +1,19 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+// Implements a win32 API wrapper for <format>
+
+// This must be as small as possible, because its contents are
+// injected into the msvcprt.lib and msvcprtd.lib import libraries.
+// Do not include or define anything else here.
+// In particular, basic_string must not be included here.
+
 #include <xfilesystem_abi.h>
 #include <xlocinfo.h>
 
 #include <Windows.h>
 
 static_assert(__std_code_page::_Acp == __std_code_page{CP_ACP});
-
-// CODEPAGE is conditionally defined so tests can override it.
-#ifndef CODEPAGE
-#define CODEPAGE(x) static_cast<UINT>(x)
-#endif
 
 extern "C" [[nodiscard]] __std_win_error __stdcall __std_get_cvt(
     const __std_code_page _Codepage, _Cvtvec* const _Pcvt) noexcept {
@@ -20,7 +22,7 @@ extern "C" [[nodiscard]] __std_win_error __stdcall __std_get_cvt(
 
     CPINFOEXW _Info{};
     const DWORD _Flags = 0; // reserved, must be zero
-    if (GetCPInfoExW(CODEPAGE(_Codepage), _Flags, &_Info) == 0) {
+    if (GetCPInfoExW(static_cast<UINT>(_Codepage), _Flags, &_Info) == 0) {
         // NB: the only documented failure mode for GetCPInfoExW is ERROR_INVALID_PARAMETER,
         // so in practice it should never fail for CP_ACP.
         return __std_win_error{GetLastError()};

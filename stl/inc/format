@@ -63,8 +63,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-extern "C" _NODISCARD __std_win_error __stdcall __std_get_cvt(
-    const __std_code_page _Codepage, _Cvtvec* const _Pcvt) noexcept;
+extern "C" _NODISCARD __std_win_error __stdcall __std_get_cvt(__std_code_page _Codepage, _Cvtvec* _Pcvt) noexcept;
 
 _STD_BEGIN
 
@@ -501,9 +500,8 @@ protected:
 #ifndef _FORMAT_CODEPAGE
 #define _FORMAT_CODEPAGE __std_code_page::_Acp
 #endif // _FORMAT_CODEPAGE
-        if (__std_get_cvt(_FORMAT_CODEPAGE, &_Cvt) != __std_win_error::_Success) {
-            _THROW(format_error("failed to retrieve codepage info"));
-        }
+        [[maybe_unused]] const __std_win_error _Result = __std_get_cvt(_FORMAT_CODEPAGE, &_Cvt);
+        _STL_INTERNAL_CHECK(_Result == __std_win_error::_Success);
 #undef _FORMAT_CODEPAGE
     }
 };
@@ -537,7 +535,7 @@ private:
         return (_Len >= 4) ? 4 : -1;
     }
 
-    _NODISCARD static constexpr int _Estimate_utf8_character_width(const char* const _Ptr, const int _Units) noexcept {
+    _NODISCARD static int _Estimate_utf8_character_width(const char* const _Ptr, const int _Units) noexcept {
         // Return an estimate for the width of the character composed of _Units code units,
         // whose first code unit is denoted by _Ptr.
         auto _Ch = static_cast<char32_t>(*_Ptr);
@@ -633,7 +631,6 @@ public:
 
 template <bool _Statically_Utf8>
 class _Fmt_codec<wchar_t, _Statically_Utf8> {
-private:
 public:
     _NODISCARD int _Units_in_next_character(const wchar_t* _First, const wchar_t* _Last) const noexcept {
         // Returns a count of the number of code units that compose the first encoded character in
@@ -948,15 +945,15 @@ template <class _CharT, _Parse_replacement_field_callbacks<_CharT> _HandlerT>
 void _Parse_format_string(basic_string_view<_CharT> _Format_str, _HandlerT&& _Handler) {
     auto _Begin = _Format_str.data();
     auto _End   = _Begin + _Format_str.size();
-    const _Fmt_codec<_CharT> _Counter{};
+    const _Fmt_codec<_CharT> _Codec;
 
     while (_Begin != _End) {
         const _CharT* _OpeningCurl = _Begin;
         if (*_Begin != '{') {
-            _OpeningCurl = _Counter._Find_encoded(_Begin, _End, _CharT{'{'});
+            _OpeningCurl = _Codec._Find_encoded(_Begin, _End, _CharT{'{'});
 
             for (;;) {
-                const _CharT* _ClosingCurl = _Counter._Find_encoded(_Begin, _OpeningCurl, _CharT{'}'});
+                const _CharT* _ClosingCurl = _Codec._Find_encoded(_Begin, _OpeningCurl, _CharT{'}'});
 
                 // In this case there are neither closing nor opening curls in [_Begin, _OpeningCurl)
                 // Write the whole thing out.
