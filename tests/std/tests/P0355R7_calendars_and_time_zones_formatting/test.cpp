@@ -293,11 +293,41 @@ bool test_day_formatter() {
     assert(format(STR("{:*5%}"), day{200}) == STR("**200"));
     assert(format(STR("{}"), day{0}) == STR("00 is not a valid day"));
 
+    // Op <<
     stream_helper(STR("00 is not a valid day"), day{0});
     stream_helper(STR("27"), day{27});
     stream_helper(STR("200 is not a valid day"), day{200});
 
     return true;
+}
+
+
+template <typename CharT>
+bool test_month_formatter() {
+    assert(format(STR("{}"), month{1}) == STR("Jan"));
+    assert(format(STR("{}"), month{12}) == STR("Dec"));
+    assert(format(STR("{}"), month{0}) == STR("0 is not a valid month"));
+    assert(format(STR("{}"), month{20}) == STR("20 is not a valid month"));
+
+    // Specs
+    assert(format(STR("{%b %h %B}"), month{1}) == STR("Jan Jan January"));
+    assert(format(STR("{%m Om}"), month{1}) == STR("1 1"));
+
+    // Out of bounds month
+    assert(format(STR("{%m}"), month{0}) == STR("0"));
+    throw_helper(STR("{%b}"), month{0});
+    throw_helper(STR("{%h}"), month{0});
+    throw_helper(STR("{%B}"), month{0});
+
+    // Invalid specs
+    throw_helper(STR("{%A}"), month{1});
+    throw_helper(STR("{%.4}"), month{1});
+
+    // Op <<
+    stream_helper(STR("Jan"), month{1});
+    stream_helper(STR("Dec"), month{12});
+    stream_helper(STR("0 is not a valid month"), month{0});
+    stream_helper(STR("20 is not a valid month"), month{20});
 }
 #endif // __clang__
 

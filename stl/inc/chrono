@@ -5442,6 +5442,16 @@ namespace chrono {
 
         return _Os;
     }
+
+    template <class _CharT, class _Traits>
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const month& _Val) {
+        if (_Val.ok()) {
+            // tm_mon is [0-11] while month is [1-12]
+            const tm _Time = {.tm_mon = static_cast<int>(static_cast<unsigned int>(_Val)) + 1};
+            return _Os << _STD time_put<_CharT>(&_Time, "%b");
+        }
+        return _Os << static_cast<unsigned int>(_Val) << _STATICALLY_WIDEN(_CharT, " is not a valid month");
+    }
 } // namespace chrono
 
 /*
@@ -5461,9 +5471,10 @@ struct formatter<_CHRONO sys_time<_Duration>, _CharT> {
 };
 */
 
-template <class _CharT>
-struct formatter<_CHRONO day, _CharT> {
-    typename basic_format_parse_context<_CharT>::iterator parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
+template <class _CharT, bool _Allow_precision>
+struct _Chrono_formatter {
+    typename basic_format_parse_context<_CharT>::iterator _Parse(
+        basic_format_parse_context<_CharT>& _Parse_ctx, string_view _Legal_types) {
         _Chrono_specs_setter<_CharT, basic_format_parse_context<_CharT>> _Callback{_Specs, _Parse_ctx};
         const auto _It =
             _Parse_chrono_format_specs(_Parse_ctx._Unchecked_begin(), _Parse_ctx._Unchecked_end(), _Callback);
@@ -5473,8 +5484,8 @@ struct formatter<_CHRONO day, _CharT> {
             _THROW(format_error("Missing '}' in format string."));
         }
 
-        if (_Specs._Precision != -1) {
-            _THROW(format_error("Precision specification invalid for type day."));
+        if (!_Allow_precision && _Specs._Precision != -1) {
+            _THROW(format_error("Precision specification invalid for type."));
         }
 
         const auto& _List = _Specs._Chrono_specs_list;
@@ -5486,32 +5497,77 @@ struct formatter<_CHRONO day, _CharT> {
         }
 
         for (const auto& _Spec : _List) {
-            if (_Spec._Type != '\0' && _Spec._Type != 'd' && _Spec._Type != 'e') {
-                _THROW(format_error("Invalid type for type day."));
+            if (_Spec._Type != '\0' && _RANGES find(_Legal_types, _Spec._Type) != _Legal_types.end()) {
+                _THROW(format_error("Invalid type."));
             }
-            if (_Spec._Modifier != '\0' && _Spec._Modifier != 'O') {
-                _THROW(format_error("Invalid modifier for type day."));
-            }
+            _Check_modifier(_Spec._Type, _Spec._Modifier);
         }
 
         return _Res_iter;
     }
 
-    template <class _FormatContext>
-    typename _FormatContext::iterator format(const _CHRONO day& _Val, _FormatContext& _FormatCtx) {
-        using _Ctx_iter = typename _FormatContext::iterator;
+    void _Check_modifier(const _CharT _Type, const _CharT _Modifier) {
+        if (_Modifier == _CharT{'\0'}) {
+            return;
+        }
 
+        const bool _O_mod = _Modifier == _CharT{'O'};
+        const bool _E_mod = _Modifier == _CharT{'E'};
+        (void) _E_mod;
+
+        switch (static_cast<char>(_Type)) {
+        case 'd':
+            if (_O_mod) {
+                return;
+            }
+            break;
+        case 'e':
+            if (_O_mod) {
+                return;
+            }
+            break;
+        case 'm':
+            if (_O_mod) {
+                return;
+            }
+            break;
+        default:
+            break;
+        }
+
+        _THROW(format_error("Incompatible modifier for type"));
+    }
+
+    template <class _FormatContext, typename _Ty>
+    typename _FormatContext::iterator _Write(_FormatContext& _FormatCtx, const _Ty& _Val, const tm& _Time) {
         basic_stringstream<_CharT> _Stream;
 
         if (_No_chrono_specs) {
             _Stream << _Val;
         } else {
             _Stream.imbue(_FormatCtx.locale());
-            tm _Time = {.tm_mday = static_cast<int>(static_cast<unsigned int>(_Val))};
             for (const auto& _Spec : _Specs._Chrono_specs_list) {
                 if (_Spec._Lit_char != _CharT{'\0'}) {
                     _Stream << _Spec._Lit_char;
                     continue;
+                }
+
+                switch (static_cast<char>(_Spec._Type)) {
+                case 'a':
+                case 'A':
+                case 'b':
+                case 'B':
+                    /* TRANSITION, Figure out when these throw
+                    case 'z':
+                    case 'Z':
+                    */
+                    if (_Val.ok()) {
+                        _THROW(format_error("Cannot localize out-of-bounds time point."));
+                    }
+                    break;
+
+                default:
+                    break;
                 }
 
                 _CharT _Fmt_str[4];
@@ -5528,12 +5584,44 @@ struct formatter<_CHRONO day, _CharT> {
         }
 
         return _Write_aligned(_STD move(_FormatCtx.out()), static_cast<int>(_Stream.view().size()), _Specs,
-            _Align::_Left, [&](_Ctx_iter _Out) { return _Fmt_write(_STD move(_Out), _Stream.view()); });
+            _Align::_Left, [&](auto _Out) { return _Fmt_write(_STD move(_Out), _Stream.view()); });
+    }
+
+    _Chrono_format_specs<_CharT> _Specs{};
+    bool _No_chrono_specs = false;
+};
+
+template <class _CharT>
+struct formatter<_CHRONO day, _CharT> {
+    typename basic_format_parse_context<_CharT>::iterator parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
+        return _Base._Parse(_Parse_ctx, "de");
+    }
+
+    template <class _FormatContext>
+    typename _FormatContext::iterator format(const _CHRONO day& _Val, _FormatContext& _FormatCtx) {
+        const tm _Time = {.tm_mday = static_cast<int>(static_cast<unsigned int>(_Val))};
+        return _Base._Write(_FormatCtx, _Val, _Time);
     }
 
 private:
-    _Chrono_format_specs<_CharT> _Specs{};
-    bool _No_chrono_specs = false;
+    _Chrono_formatter<_CharT, false> _Base;
+};
+
+template <class _CharT>
+struct formatter<_CHRONO month, _CharT> {
+    typename basic_format_parse_context<_CharT>::iterator parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
+        return _Base._Parse(_Parse_ctx, "bBhm");
+    }
+
+    template <class _FormatContext>
+    typename _FormatContext::iterator format(const _CHRONO month& _Val, _FormatContext& _FormatCtx) {
+        // tm_mon is [0-11] while month is [1-12]
+        const tm _Time = {.tm_mon = static_cast<int>(static_cast<unsigned int>(_Val)) + 1};
+        return _Base._Write(_FormatCtx.locale(), _Val, _Time);
+    }
+
+private:
+    _Chrono_formatter<_CharT, false> _Base;
 };
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX20
