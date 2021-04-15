@@ -198,6 +198,14 @@ void throw_helper(const basic_string_view<charT> fmt, const Args&... vals) {
     }
 }
 
+template <class charT, class... Args>
+void stream_helper(const basic_string_view<charT> expect, const Args&... vals) {
+    basic_stringstream<charT> stream;
+    (stream << ... << vals);
+    assert(stream.str() == expect);
+    assert(stream);
+}
+
 template <class Str>
 constexpr void print(Str str) {
     if constexpr (is_same_v<Str, string>) {
@@ -284,6 +292,10 @@ bool test_day_formatter() {
     assert(format(STR("{:%d %d %d}"), day{27}) == STR("27 27 27"));
     assert(format(STR("{:*5%}"), day{200}) == STR("**200"));
     assert(format(STR("{}"), day{0}) == STR("00 is not a valid day"));
+
+    stream_helper(STR("00 is not a valid day"), day{0});
+    stream_helper(STR("27"), day{27});
+    stream_helper(STR("200 is not a valid day"), day{200});
 
     return true;
 }

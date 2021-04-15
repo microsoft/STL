@@ -5203,16 +5203,16 @@ struct _Choose_literal {
 
 
 // clang-format off
-    template <class _Ty, class _CharT>
-    concept _Chrono_parse_spec_callbacks = _Parse_align_callbacks<_Ty, _CharT>
-                                           && _Parse_width_callbacks<_Ty, _CharT>
-                                           && _Parse_precision_callbacks<_Ty, _CharT>
-                                           && _Width_adapter_callbacks<_Ty, _CharT>
-                                           && _Precision_adapter_callbacks<_Ty, _CharT>
-                                           && requires(_Ty _At, basic_string_view<_CharT> _Sv, _Align _Aln) {
-        { _At._On_conversion_spec(_CharT{}, _CharT{}) } -> same_as<void>;
-        { _At._On_lit_char(_CharT{}) } -> same_as<void>;
-    };
+template <class _Ty, class _CharT>
+concept _Chrono_parse_spec_callbacks = _Parse_align_callbacks<_Ty, _CharT>
+                                        && _Parse_width_callbacks<_Ty, _CharT>
+                                        && _Parse_precision_callbacks<_Ty, _CharT>
+                                        && _Width_adapter_callbacks<_Ty, _CharT>
+                                        && _Precision_adapter_callbacks<_Ty, _CharT>
+                                        && requires(_Ty _At, basic_string_view<_CharT> _Sv, _Align _Aln) {
+    { _At._On_conversion_spec(_CharT{}, _CharT{}) } -> same_as<void>;
+    { _At._On_lit_char(_CharT{}) } -> same_as<void>;
+};
 // clang-format on
 
 // A chrono spec is either a type (with an optional modifier), OR a literal character, never both.
@@ -5406,8 +5406,9 @@ _NODISCARD constexpr const _CharT* _Parse_chrono_format_specs(
 
     return _Begin;
 }
-/*
+
 namespace chrono {
+    /*
     template <class _CharT, class _Traits, class _Duration>
     // clang-format off
         requires (!treat_as_floating_point_v<typename _Duration::rep> && (_Duration{1} < days{1}))
@@ -5427,10 +5428,23 @@ namespace chrono {
     basic_ostream<_CharT, _Traits>& operator<<(
         basic_ostream<_CharT, _Traits>& _Os, const utc_clock<_Duration>& _Clock) {
         return _Os << format(_STATICALLY_WIDEN(_CharT, "{:%F %T}"), _Clock);
+    }*/
+
+    template <class _CharT, class _Traits>
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const day& _Val) {
+        if (static_cast<unsigned int>(_Val) < 10) {
+            _Os << _CharT{'0'};
+        }
+        _Os << static_cast<unsigned int>(_Val);
+        if (!_Val.ok()) {
+            _Os << _STATICALLY_WIDEN(_CharT, " is not a valid day");
+        }
+
+        return _Os;
     }
 } // namespace chrono
-*/
 
+/*
 template <class _Duration, class _CharT>
 struct formatter<_CHRONO sys_time<_Duration>, _CharT> {
     typename basic_format_parse_context<_CharT>::iterator parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
@@ -5445,6 +5459,7 @@ struct formatter<_CHRONO sys_time<_Duration>, _CharT> {
         }
     }
 };
+*/
 
 template <class _CharT>
 struct formatter<_CHRONO day, _CharT> {
@@ -5489,13 +5504,7 @@ struct formatter<_CHRONO day, _CharT> {
         basic_stringstream<_CharT> _Stream;
 
         if (_No_chrono_specs) {
-            if (static_cast<unsigned int>(_Val) < 10) {
-                _Stream << _CharT{'0'};
-            }
-            _Stream << static_cast<unsigned int>(_Val);
-            if (!_Val.ok()) {
-                _Stream << _STATICALLY_WIDEN(_CharT, " is not a valid day");
-            }
+            _Stream << _Val;
         } else {
             _Stream.imbue(_FormatCtx.locale());
             tm _Time = {.tm_mday = static_cast<int>(static_cast<unsigned int>(_Val))};
