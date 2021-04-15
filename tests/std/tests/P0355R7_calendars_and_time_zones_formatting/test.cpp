@@ -358,6 +358,14 @@ void test_year_month_day_formatter() {
     assert(format(STR("{:%F %D}"), invalid) == STR("1234-00-31 00/31/34"));
 }
 
+template <typename CharT>
+void test_hh_mm_ss_formatter() {
+    stream_helper(STR("-01:08:03.007"), hh_mm_ss{-4083007ms});
+    stream_helper(STR("01:08:03.007"), hh_mm_ss{4083007ms});
+    stream_helper(STR("18:15:45.123"), hh_mm_ss{65745123ms});
+    stream_helper(STR("18:15:45"), hh_mm_ss{65745s});
+}
+
 int main() {
     test_parse_conversion_spec<char>();
     test_parse_conversion_spec<wchar_t>();
@@ -376,4 +384,7 @@ int main() {
 
     test_year_month_day_formatter<char>();
     test_year_month_day_formatter<wchar_t>();
+
+    test_hh_mm_ss_formatter<char>();
+    test_hh_mm_ss_formatter<wchar_t>();
 }

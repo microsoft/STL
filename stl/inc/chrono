@@ -2204,6 +2204,12 @@ namespace chrono {
         precision _Sub_secs;
     };
 
+    template <class _Ty>
+    constexpr inline bool _Is_hh_mm_ss = false;
+
+    template <class _Duration>
+    constexpr inline bool _Is_hh_mm_ss<hh_mm_ss<_Duration>> = true;
+
     _NODISCARD constexpr bool is_am(const hours& _Hours) noexcept {
         return _Hours >= hours{0} && _Hours <= hours{11};
     }
@@ -5464,6 +5470,16 @@ namespace chrono {
         }
     }
 
+    template <class _CharT, class _Traits, class _Duration>
+    void _Write_seconds(basic_ostream<_CharT, _Traits>& _Os, const hh_mm_ss<_Duration>& _Val) {
+        _Os << format(_STATICALLY_WIDEN(_CharT, "{:02}"), _Val.seconds().count());
+        if constexpr (_Val.fractional_width > 0) {
+            _Os << format(_STATICALLY_WIDEN(_CharT, "{0}{1:0{2}}"),
+                _STD use_facet<numpunct<_CharT>>(_Os.getloc()).decimal_point(), _Val.subseconds().count(),
+                _Val.fractional_width);
+        }
+    }
+
     /*
     template <class _CharT, class _Traits, class _Duration>
     // clang-format off
@@ -5525,6 +5541,18 @@ namespace chrono {
         if (!_Val.ok()) {
             _Os << _STATICALLY_WIDEN(_CharT, " is not a valid date");
         }
+        return _Os;
+    }
+
+    template <class _CharT, class _Traits, class _Duration>
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const hh_mm_ss<_Duration>& _Val) {
+        const tm _Time = {
+            .tm_min = static_cast<int>(_Val.minutes().count()), .tm_hour = static_cast<int>(_Val.hours().count())};
+        if (_Val.is_negative()) {
+            _Os << _CharT{'-'};
+        }
+        _Os << _STD put_time(&_Time, _STATICALLY_WIDEN(_CharT, "%H:%M:"));
+        _Write_seconds(_Os, _Val);
         return _Os;
     }
 } // namespace chrono
@@ -5632,6 +5660,12 @@ struct _Chrono_formatter {
             _Stream << _Val;
         } else {
             _Stream.imbue(_FormatCtx.locale());
+            if constexpr (_Is_hh_mm_ss<_Ty>) {
+                if (_Val.is_negative()) {
+                    _Stream << _CharT{'-'};
+                }
+            }
+
             for (const auto& _Spec : _Specs._Chrono_specs_list) {
                 if (_Spec._Lit_char != _CharT{'\0'}) {
                     _Stream << _Spec._Lit_char;
@@ -5642,8 +5676,15 @@ struct _Chrono_formatter {
                     if (!_Val.ok()) {
                         _THROW(format_error("Cannot localize out-of-bounds time point."));
                     }
-                } else if (_Spec._Modifier == '\0' && _CHRONO _Try_simple_write(_Stream, _Spec._Type, _Time)) {
-                    continue;
+                } else if (_Spec._Modifier == '\0') {
+                    if (_CHRONO _Try_simple_write(_Stream, _Spec._Type, _Time)) {
+                        continue;
+                    } else if constexpr (_Is_hh_mm_ss<_Ty>) {
+                        if (_Spec._Type == 'S') {
+                            _CHRONO _Write_seconds(_Stream, _Val);
+                            continue;
+                        }
+                    }
                 }
 
                 _CharT _Fmt_str[4];
