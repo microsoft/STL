@@ -5215,11 +5215,12 @@ struct _Choose_literal {
     };
 // clang-format on
 
+// A chrono spec is either a type (with an optional modifier), OR a literal character, never both.
 template <class _CharT>
 struct _Chrono_specs {
-    _CharT _Lit_char = _CharT{0}; // any character other than '{', '}', or '%'
-    _CharT _Modifier = '\0'; // either 'E' or 'O'
-    _CharT _Type     = '\0';
+    _CharT _Lit_char = _CharT{'\0'}; // any character other than '{', '}', or '%'
+    _CharT _Modifier = _CharT{'\0'}; // either 'E' or 'O'
+    _CharT _Type     = _CharT{'\0'};
 };
 
 template <class _CharT>
@@ -5488,7 +5489,7 @@ struct formatter<_CHRONO day, _CharT> {
         basic_stringstream<_CharT> _Stream;
 
         if (_No_chrono_specs) {
-            if (static_cast<unsigned int>(_Val) < 10) { // _Val == 0
+            if (static_cast<unsigned int>(_Val) < 10) {
                 _Stream << _CharT{'0'};
             }
             _Stream << static_cast<unsigned int>(_Val);
@@ -5498,26 +5499,23 @@ struct formatter<_CHRONO day, _CharT> {
         } else {
             _Stream.imbue(_FormatCtx.locale());
             tm _Time = {.tm_mday = static_cast<int>(static_cast<unsigned int>(_Val))};
-            for (auto _Spec_it = _Specs._Chrono_specs_list.begin(); _Spec_it != _Specs._Chrono_specs_list.end();) {
+            for (auto _Spec_it = _Specs._Chrono_specs_list.begin(); _Spec_it != _Specs._Chrono_specs_list.end();
+                 ++_Spec_it) {
+                if (_Spec_it->_Lit_char != _CharT{'\0'}) {
+                    _Stream << _Spec_it->_Lit_char;
+                    continue;
+                };
+
                 _CharT _Fmt_str[4];
                 size_t _Next_idx      = 0;
                 _Fmt_str[_Next_idx++] = _CharT{'%'};
-                if (_Spec_it->_Modifier != '\0') {
+                if (_Spec_it->_Modifier != _CharT{'\0'}) {
                     _Fmt_str[_Next_idx++] = _Spec_it->_Modifier;
                 }
                 _Fmt_str[_Next_idx++] = _Spec_it->_Type;
                 _Fmt_str[_Next_idx]   = _CharT{'\0'};
 
                 _Stream << _STD put_time<_CharT>(&_Time, _Fmt_str);
-
-                if (_Spec_it->_Lit_char != _CharT{'\0'}) {
-                    _Stream << _Spec_it->_Lit_char;
-                }
-                ++_Spec_it;
-
-                for (; _Spec_it != _Specs._Chrono_specs_list.end() && _Spec_it->_Type == _CharT{'\0'}; ++_Spec_it) {
-                    _Stream << _Spec_it->_Lit_char;
-                }
             }
         }
 
