@@ -33,6 +33,7 @@ struct choose_literal<wchar_t> {
 };
 
 #define TYPED_LITERAL(CharT, Literal) (choose_literal<CharT>::choose(Literal, L##Literal))
+#define STR(Literal)                  TYPED_LITERAL(CharT, Literal)
 
 template <typename CharT>
 struct testing_callbacks {
@@ -188,6 +189,15 @@ bool test_parse_chrono_format_specs() {
     return true;
 }
 
+template <class charT, class... Args>
+void throw_helper(const basic_string_view<charT> fmt, const Args&... vals) {
+    try {
+        (void) format(fmt, vals...);
+        assert(false);
+    } catch (const format_error&) {
+    }
+}
+
 template <class Str>
 constexpr void print(Str str) {
     if constexpr (is_same_v<Str, string>) {
@@ -263,17 +273,16 @@ bool test_day_formatter() {
     assert(res == a3);
 
     // chrono-spec must begin with conversion-spec
-    try {
-        res = format(s6, d0);
-        assert(false);
-    } catch (format_error e) {
-    }
+    throw_helper(s6, d0);
 
     // lit chars
     res = format(s7, d0);
     assert(res == a7);
     res = format(s8, d0);
     assert(res == a8);
+
+    assert(format(STR("{:%d %d %d}"), day{27}) == STR("27 27 27"));
+    assert(format(STR("{:*5%}"), day{200}) == STR("**200"));
 
     return true;
 }

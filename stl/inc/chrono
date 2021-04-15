@@ -5405,11 +5405,49 @@ _NODISCARD constexpr const _CharT* _Parse_chrono_format_specs(
 
     return _Begin;
 }
+/*
+namespace chrono {
+    template <class _CharT, class _Traits, class _Duration>
+    // clang-format off
+        requires (!treat_as_floating_point_v<typename _Duration::rep> && (_Duration{1} < days{1}))
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const sys_time<_Duration>& _Clock) {
+        // clang-format on
+        auto const _Dp = floor<days>(_Clock);
+        return _Os << format(
+                   _Os.getloc(), _STATICALLY_WIDEN(_CharT, "{} {}"), year_month_day{_Dp}, hh_mm_ss{_Clock - _Dp});
+    }
+
+    template <class _CharT, class _Traits>
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const sys_days& _Clock) {
+        return _Os << year_month_day{_Clock};
+    }
+
+    template <class _CharT, class _Traits, class _Duration>
+    basic_ostream<_CharT, _Traits>& operator<<(
+        basic_ostream<_CharT, _Traits>& _Os, const utc_clock<_Duration>& _Clock) {
+        return _Os << format(_STATICALLY_WIDEN(_CharT, "{:%F %T}"), _Clock);
+    }
+} // namespace chrono
+*/
+
+template <class _Duration, class _CharT>
+struct formatter<_CHRONO sys_time<_Duration>, _CharT> {
+    typename basic_format_parse_context<_CharT>::iterator parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
+        _Chrono_format_specs<_CharT> _Specs{};
+        _Chrono_specs_setter<_CharT, basic_format_parse_context<_CharT>> _Callback{_Specs, _Parse_ctx};
+        const auto _It =
+            _Parse_chrono_format_specs(_Parse_ctx._Unchecked_begin(), _Parse_ctx._Unchecked_end(), _Callback);
+        const auto _Res_iter = _Parse_ctx.begin() + (_It - _Parse_ctx._Unchecked_begin());
+
+        if (_It != _Parse_ctx._Unchecked_end() && *_It != '}') {
+            _THROW(format_error("Missing '}' in format string."));
+        }
+    }
+};
 
 template <class _CharT>
 struct formatter<_CHRONO day, _CharT> {
     typename basic_format_parse_context<_CharT>::iterator parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
-        _Chrono_format_specs<_CharT> _Specs{};
         _Chrono_specs_setter<_CharT, basic_format_parse_context<_CharT>> _Callback{_Specs, _Parse_ctx};
         const auto _It =
             _Parse_chrono_format_specs(_Parse_ctx._Unchecked_begin(), _Parse_ctx._Unchecked_end(), _Callback);
@@ -5428,42 +5466,18 @@ struct formatter<_CHRONO day, _CharT> {
         // [time.format]/6
         if (_List.empty()) {
             _No_chrono_specs = true;
-            _Conv_spec       = _Chrono_specs<_CharT>{._Type = _CharT{'d'}};
-            _Specs._Chrono_specs_list.push_back(_Conv_spec);
-            _Stored_specs = _Specs;
             return _Res_iter;
         }
 
-        auto _Target_conv_spec_iter =
-            _STD find_if(_List.begin(), _List.end(), [](const auto& _Cs) { return _Cs._Type != '\0'; });
-
-        if (_Target_conv_spec_iter == _List.end()) { // no conversion-spec, but has literal chars
-            _No_chrono_specs = true;
-            _Conv_spec       = _Chrono_specs<_CharT>{._Type = _CharT{'d'}};
-            _Specs._Chrono_specs_list.push_back(_Conv_spec);
-            _Stored_specs = _Specs;
-            return _Res_iter;
+        for (const auto& _Spec : _List) {
+            if (_Spec._Type != '\0' && _Spec._Type != 'd' && _Spec._Type != 'e') {
+                _THROW(format_error("Invalid type for type day."));
+            }
+            if (_Spec._Modifier != '\0' && _Spec._Modifier != 'O') {
+                _THROW(format_error("Invalid modifier for type day."));
+            }
         }
 
-        _Chrono_specs<_CharT> _Target_conv_spec = *_Target_conv_spec_iter;
-        _Conv_spec                              = _Target_conv_spec;
-        // only 'd' and 'e' acceptable types for day
-        if (_Target_conv_spec._Type != 'd' && _Target_conv_spec._Type != 'e') {
-            _THROW(format_error("Invalid type for type day."));
-        }
-
-        if (_Target_conv_spec._Modifier != '\0' && _Target_conv_spec._Modifier != 'O') {
-            _THROW(format_error("Invalid modifier for type day."));
-        }
-
-        _Target_conv_spec_iter =
-            _STD find_if(_Target_conv_spec_iter + 1, _List.end(), [](const auto& _Cs) { return _Cs._Type != '\0'; });
-
-        if (_Target_conv_spec_iter != _List.end()) {
-            _THROW(format_error("day requires one conversion-spec."));
-        }
-
-        _Stored_specs = _Specs;
         return _Res_iter;
     }
 
@@ -5471,70 +5485,48 @@ struct formatter<_CHRONO day, _CharT> {
     typename _FormatContext::iterator format(const _CHRONO day& _Val, _FormatContext& _FormatCtx) {
         using _Ctx_iter = typename _FormatContext::iterator;
 
-        const basic_string<_CharT> _Invalid_msg = _STATICALLY_WIDEN(_CharT, " is not a valid day");
         basic_stringstream<_CharT> _Stream;
-        _Stream.imbue(_FormatCtx.locale());
-        basic_string<_CharT> _Str;
-        int _Num_char = 2;
-        if (_No_chrono_specs && !_Val.ok()) {
-            _Stream << static_cast<unsigned int>(_Val);
+
+        if (_No_chrono_specs) {
             if (static_cast<unsigned int>(_Val) < 10) { // _Val == 0
-                if (_Conv_spec._Type == 'd') {
-                    _Str = _CharT{'0'} + _Stream.str();
-                } else { // e
-                    _Str = _CharT{' '} + _Stream.str();
-                }
-            } else {
-                _Str = _Stream.str();
+                _Stream << _CharT{'0'};
             }
-            _Str = _Str + _Invalid_msg;
-            _Num_char += static_cast<int>(_Invalid_msg.length());
+            _Stream << static_cast<unsigned int>(_Val);
+            if (!_Val.ok()) {
+                _Stream << _STATICALLY_WIDEN(_CharT, " is not a valid day");
+            }
         } else {
+            _Stream.imbue(_FormatCtx.locale());
             tm _Time = {.tm_mday = static_cast<int>(static_cast<unsigned int>(_Val))};
-            _CharT _Fmt_str[4];
-            _Fmt_str[0]      = _CharT{'%'};
-            size_t _Next_idx = 1;
-            if (_Conv_spec._Modifier != '\0') {
-                _Fmt_str[_Next_idx++] = _Conv_spec._Modifier;
-            }
+            for (auto _Spec_it = _Specs._Chrono_specs_list.begin(); _Spec_it != _Specs._Chrono_specs_list.end();) {
+                _CharT _Fmt_str[4];
+                size_t _Next_idx      = 0;
+                _Fmt_str[_Next_idx++] = _CharT{'%'};
+                if (_Spec_it->_Modifier != '\0') {
+                    _Fmt_str[_Next_idx++] = _Spec_it->_Modifier;
+                }
+                _Fmt_str[_Next_idx++] = _Spec_it->_Type;
+                _Fmt_str[_Next_idx]   = _CharT{'\0'};
 
-            _Fmt_str[_Next_idx++] = _Conv_spec._Type;
-            _Fmt_str[_Next_idx]   = _CharT{'\0'};
-            _Stream << _STD put_time<_CharT>(&_Time, _Fmt_str);
-            _Str = _Stream.str();
+                _Stream << _STD put_time<_CharT>(&_Time, _Fmt_str);
+
+                if (_Spec_it->_Lit_char != _CharT{'\0'}) {
+                    _Stream << _Spec_it->_Lit_char;
+                }
+                ++_Spec_it;
+
+                for (; _Spec_it != _Specs._Chrono_specs_list.end() && _Spec_it->_Type == _CharT{'\0'}; ++_Spec_it) {
+                    _Stream << _Spec_it->_Lit_char;
+                }
+            }
         }
-        _Num_char += static_cast<int>(_Stored_specs._Chrono_specs_list.size()) - 1;
 
-        // copy literal chars to output
-        auto _Writer = [&](_Ctx_iter _Out) {
-            auto& _List = _Stored_specs._Chrono_specs_list;
-            auto _Iter  = _List._Unchecked_begin();
-            basic_string<_CharT> _Write_str{};
-            while (_Iter != _List._Unchecked_end() && _Iter->_Type == _CharT{'\0'}) {
-                _STL_ASSERT(_Iter->_Lit_char != '\0', "if chrono-spec doesn't have type, it must be a literal char");
-                _Write_str += _Iter->_Lit_char;
-                ++_Iter;
-            }
-            _Write_str += _Str;
-            ++_Iter; // move past the conversion-spec
-            while (_Iter != _List._Unchecked_end()) {
-                _STL_ASSERT(_Iter->_Lit_char != '\0', "if chrono-spec doesn't have type, it must be a literal char");
-                _Write_str += _Iter->_Lit_char;
-                ++_Iter;
-            }
-            return _Fmt_write(_STD move(_Out), basic_string_view<_CharT>{_Write_str});
-        };
-
-        // TODO: deal with dynamic width (there should not be precision here)
-
-        // return _Write_aligned(_STD move(_FormatCtx.out()), _Num_dig, _Stored_specs, _Align::_Left,
-        //     [=](_Ctx_iter _Out) { return _Fmt_write(_STD move(_Out), basic_string_view<_CharT>{_Str}); });
-        return _Write_aligned(_STD move(_FormatCtx.out()), _Num_char, _Stored_specs, _Align::_Left, _Writer);
+        return _Write_aligned(_STD move(_FormatCtx.out()), static_cast<int>(_Stream.view().size()), _Specs,
+            _Align::_Left, [&](_Ctx_iter _Out) { return _Fmt_write(_STD move(_Out), _Stream.view()); });
     }
 
 private:
-    _Chrono_specs<_CharT> _Conv_spec;
-    _Chrono_format_specs<_CharT> _Stored_specs{};
+    _Chrono_format_specs<_CharT> _Specs{};
     bool _No_chrono_specs = false;
 };
 #endif // __cpp_lib_concepts
