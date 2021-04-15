@@ -5548,6 +5548,8 @@ struct _Chrono_formatter {
                     continue;
                 }
 
+                // TRANSITION, out of bounds may be legal for non-localized decimal printing, but it isn't very
+                // consistent.
                 if (!_Val.ok()) {
                     _THROW(format_error("Cannot print out-of-bounds time point."));
                 }
