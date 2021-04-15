@@ -5473,7 +5473,7 @@ namespace chrono {
     template <class _CharT, class _Traits, class _Duration>
     void _Write_seconds(basic_ostream<_CharT, _Traits>& _Os, const hh_mm_ss<_Duration>& _Val) {
         _Os << format(_STATICALLY_WIDEN(_CharT, "{:02}"), _Val.seconds().count());
-        if constexpr (_Val.fractional_width > 0) {
+        if constexpr (hh_mm_ss<_Duration>::fractional_width > 0) {
             _Os << format(_STATICALLY_WIDEN(_CharT, "{0}{1:0{2}}"),
                 _STD use_facet<numpunct<_CharT>>(_Os.getloc()).decimal_point(), _Val.subseconds().count(),
                 _Val.fractional_width);
@@ -5660,7 +5660,7 @@ struct _Chrono_formatter {
             _Stream << _Val;
         } else {
             _Stream.imbue(_FormatCtx.locale());
-            if constexpr (_Is_hh_mm_ss<_Ty>) {
+            if constexpr (_CHRONO _Is_hh_mm_ss<_Ty>) {
                 if (_Val.is_negative()) {
                     _Stream << _CharT{'-'};
                 }
@@ -5679,7 +5679,7 @@ struct _Chrono_formatter {
                 } else if (_Spec._Modifier == '\0') {
                     if (_CHRONO _Try_simple_write(_Stream, _Spec._Type, _Time)) {
                         continue;
-                    } else if constexpr (_Is_hh_mm_ss<_Ty>) {
+                    } else if constexpr (_CHRONO _Is_hh_mm_ss<_Ty>) {
                         if (_Spec._Type == 'S') {
                             _CHRONO _Write_seconds(_Stream, _Val);
                             continue;
