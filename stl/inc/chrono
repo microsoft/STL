@@ -5413,57 +5413,47 @@ namespace chrono {
     // printed properly and treated specially. For example, consider operator<< for day. If day is 40, put_time asserts
     // but the standard requires that it prints "40 is not a valid day".
     template <class _CharT>
-    bool _Try_simple_write(basic_ostream<_CharT>& _Os, char _Type, const tm& _Time) {
-        if (_Type == 'd' || _Type == 'e') {
+    bool _Try_simple_write(basic_ostream<_CharT>& _Os, const char _Type, const tm& _Time) {
+        switch (_Type) {
+        case 'd':
+        case 'e':
             if (_Time.tm_mday < 10) {
                 _Os << (_Type == 'd' ? _CharT{'0'} : _CharT{' '});
             }
             _Os << _Time.tm_mday;
             return true;
-        }
-
-        if (_Type == 'm') {
+        case 'm':
             if (_Time.tm_mon + 1 < 10) {
                 _Os << _CharT{'0'};
             }
             _Os << _Time.tm_mon + 1;
             return true;
-        }
-
-        if (_Type == 'Y') {
+        case 'Y':
             _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{:04}"), _Time.tm_year + 1900);
             return true;
-        }
-
-        if (_Type == 'y') {
+        case 'y':
             _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{:02}"), (_Time.tm_year + 1900) % 100);
             return true;
-        }
-
-        if (_Type == 'C') {
+        case 'C':
             _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{:02}"), (_Time.tm_year + 1900) / 100);
             return true;
-        }
-
-        if (_Type == 'F') {
+        case 'F':
             _Try_simple_write(_Os, 'Y', _Time);
             _Os << _CharT{'-'};
             _Try_simple_write(_Os, 'm', _Time);
             _Os << _CharT{'-'};
             _Try_simple_write(_Os, 'd', _Time);
             return true;
-        }
-
-        if (_Type == 'D') {
+        case 'D':
             _Try_simple_write(_Os, 'm', _Time);
             _Os << _CharT{'/'};
             _Try_simple_write(_Os, 'd', _Time);
             _Os << _CharT{'/'};
             _Try_simple_write(_Os, 'y', _Time);
             return true;
+        default:
+            return false;
         }
-
-        return false;
     }
 
     /*
@@ -5574,7 +5564,7 @@ struct _Chrono_formatter {
         }
 
         for (const auto& _Spec : _List) {
-            if (_Spec._Type != '\0' && !_Is_type_valid<_Type>(_Spec._Type)) {
+            if (_Spec._Type != '\0' && !_Is_valid_type<_Type>(_Spec._Type)) {
                 _THROW(format_error("Invalid type."));
             }
             _Check_modifier(_Spec._Type, _Spec._Modifier);
@@ -5610,7 +5600,7 @@ struct _Chrono_formatter {
     }
 
     template <class _Ty>
-    _NODISCARD constexpr bool _Is_type_valid(char _Type) {
+    _NODISCARD constexpr bool _Is_valid_type(const char _Type) noexcept {
         if constexpr (is_same_v<_Ty, _CHRONO day>) {
             return _Type == 'd' || _Type == 'e';
         } else if constexpr (is_same_v<_Ty, _CHRONO month>) {
@@ -5618,8 +5608,8 @@ struct _Chrono_formatter {
         } else if constexpr (is_same_v<_Ty, _CHRONO year>) {
             return _Type == 'Y' || _Type == 'y' || _Type == 'C';
         } else if constexpr (is_same_v<_Ty, _CHRONO year_month_day>) {
-            return _Type == 'D' || _Type == 'F' || _Is_type_valid<_CHRONO year>(_Type)
-                || _Is_type_valid<_CHRONO month>(_Type) || _Is_type_valid<_CHRONO day>(_Type);
+            return _Type == 'D' || _Type == 'F' || _Is_valid_type<_CHRONO year>(_Type)
+                || _Is_valid_type<_CHRONO month>(_Type) || _Is_valid_type<_CHRONO day>(_Type);
         } else {
             // TRANSITION, remove when all types are added
             static_assert(_Always_false<_Ty>, "unsupported type");
@@ -5665,11 +5655,12 @@ struct _Chrono_formatter {
             _Fmt_align::_Left, [&](auto _Out) { return _Fmt_write(_STD move(_Out), _Stream.view()); });
     }
 
-    _NODISCARD bool _Needs_localization(const _Chrono_specs<_CharT>& _Spec) {
+    _NODISCARD bool _Needs_localization(const _Chrono_specs<_CharT>& _Spec) noexcept {
         if (_Spec._Modifier != '\0') {
             return true;
         }
 
+        // [tab:time.format.spec]
         switch (_Spec._Type) {
         case 'a':
         case 'A':
