@@ -654,8 +654,6 @@ public:
     }
 
     _NODISCARD const wchar_t* _Find_encoded(const wchar_t* _First, const wchar_t* _Last, const wchar_t _Val) const {
-        // Returns the first occurrence of _Val as an encoded character (and not, for example, as a
-        // continuation byte) in [_First, _Last).
         return _Find_unchecked(_First, _Last, _Val);
     }
 
