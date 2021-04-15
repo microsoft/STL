@@ -33,6 +33,7 @@ struct choose_literal<wchar_t> {
 };
 
 #define TYPED_LITERAL(CharT, Literal) (choose_literal<CharT>::choose(Literal, L##Literal))
+#define STR(Literal)                  TYPED_LITERAL(CharT, Literal)
 
 template <typename CharT>
 struct testing_callbacks {
@@ -72,8 +73,8 @@ struct testing_callbacks {
         assert(expected_auto_dynamic_precision);
     }
     void _On_conversion_spec(CharT mod, CharT type) {
-        assert(static_cast<char>(mod) == expected_chrono_specs[curr_index]._Modifier);
-        assert(static_cast<char>(type) == expected_chrono_specs[curr_index]._Type);
+        assert(mod == expected_chrono_specs[curr_index]._Modifier);
+        assert(type == expected_chrono_specs[curr_index]._Type);
         assert(expected_chrono_specs[curr_index]._Lit_char == CharT{0}); // not set
         ++curr_index;
     }
@@ -107,13 +108,13 @@ bool test_parse_conversion_spec() {
     using view_typ          = basic_string_view<CharT>;
     using chrono_spec       = _Chrono_specs<CharT>;
 
-    view_typ s0(TYPED_LITERAL(CharT, "%B"));
-    view_typ s1(TYPED_LITERAL(CharT, "%Ec"));
-    view_typ s2(TYPED_LITERAL(CharT, "%Od"));
-    view_typ s3(TYPED_LITERAL(CharT, "%E"));
-    view_typ s4(TYPED_LITERAL(CharT, "%"));
-    view_typ s5(TYPED_LITERAL(CharT, "%}"));
-    view_typ s6(TYPED_LITERAL(CharT, "%E}"));
+    view_typ s0(TYPED_LITERAL(CharT, "B"));
+    view_typ s1(TYPED_LITERAL(CharT, "Ec"));
+    view_typ s2(TYPED_LITERAL(CharT, "Od"));
+    view_typ s3(TYPED_LITERAL(CharT, "E"));
+    view_typ s4(TYPED_LITERAL(CharT, ""));
+    view_typ s5(TYPED_LITERAL(CharT, "}"));
+    view_typ s6(TYPED_LITERAL(CharT, "E}"));
 
     vector<chrono_spec> v0{{._Type = 'B'}};
     test_parse_helper(parse_conv_spec_fn, s0, false, view_typ::npos, {.expected_chrono_specs = v0});
@@ -147,13 +148,13 @@ bool test_parse_chrono_format_specs() {
     view_typ s5(TYPED_LITERAL(CharT, "*^4.4%ymm"));
     view_typ s6(TYPED_LITERAL(CharT, "%H%"));
     view_typ s7(TYPED_LITERAL(CharT, "%H%}"));
-    view_typ s8(TYPED_LITERAL(CharT, "A%nB%tC%%D"));
+    view_typ s8(TYPED_LITERAL(CharT, "%nB%tC%%D"));
 
     vector<chrono_spec> v0{{._Modifier = 'O', ._Type = 'e'}};
     test_parse_helper(parse_chrono_format_specs_fn, s0, false, s0.size(), {.expected_chrono_specs = v0});
 
     vector<chrono_spec> v1{{._Lit_char = 'l'}, {._Lit_char = 'i'}, {._Lit_char = 't'}};
-    test_parse_helper(parse_chrono_format_specs_fn, s1, false, s1.size(), {.expected_chrono_specs = v1});
+    test_parse_helper(parse_chrono_format_specs_fn, s1, true, s1.size(), {.expected_chrono_specs = v1});
 
     vector<chrono_spec> v2{{._Type = 'H'}, {._Lit_char = ':'}, {._Type = 'M'}};
     test_parse_helper(parse_chrono_format_specs_fn, s2, false, s2.size() - 1, {.expected_chrono_specs = v2});
@@ -162,12 +163,12 @@ bool test_parse_chrono_format_specs() {
     test_parse_helper(
         parse_chrono_format_specs_fn, s3, false, s3.size() - 1, {.expected_width = 6, .expected_chrono_specs = v3});
 
-    vector<chrono_spec> v8{{._Lit_char = 'A'}, {._Lit_char = '\n'}, {._Lit_char = 'B'}, {._Lit_char = '\t'},
-        {._Lit_char = 'C'}, {._Lit_char = '%'}, {._Lit_char = 'D'}};
+    vector<chrono_spec> v8{{._Lit_char = '\n'}, {._Lit_char = 'B'}, {._Lit_char = '\t'}, {._Lit_char = 'C'},
+        {._Lit_char = '%'}, {._Lit_char = 'D'}};
     test_parse_helper(parse_chrono_format_specs_fn, s8, false, s8.size(), {.expected_chrono_specs = v8});
 
     vector<chrono_spec> v4{{._Lit_char = 'h'}, {._Lit_char = 'i'}};
-    test_parse_helper(parse_chrono_format_specs_fn, s4, false, s4.size(),
+    test_parse_helper(parse_chrono_format_specs_fn, s4, true, s4.size(),
         {.expected_alignment       = _Fmt_align::_Left,
             .expected_fill         = view_typ(TYPED_LITERAL(CharT, "*")),
             .expected_width        = 6,
@@ -188,10 +189,161 @@ bool test_parse_chrono_format_specs() {
     return true;
 }
 
+template <class charT, class... Args>
+void throw_helper(const basic_string_view<charT> fmt, const Args&... vals) {
+    try {
+        (void) format(fmt, vals...);
+        assert(false);
+    } catch (const format_error&) {
+    }
+}
+
+template <class charT, class... Args>
+void throw_helper(const charT* fmt, const Args&... vals) {
+    throw_helper(basic_string_view<charT>{fmt}, vals...);
+}
+
+template <class charT, class... Args>
+void stream_helper(const charT* expect, const Args&... vals) {
+    basic_stringstream<charT> stream;
+    (stream << ... << vals);
+    assert(stream.str() == expect);
+    assert(stream);
+}
+
+template <class Str>
+constexpr void print(Str str) {
+    if constexpr (is_same_v<Str, string>) {
+        cout << "res: " << str << "\n";
+    } else {
+        wcout << "res: " << str << "\n";
+    }
+}
+
+#ifndef __clang__ // TRANSITION, LLVM-48606
+template <typename CharT>
+void test_day_formatter() {
+    using view_typ = basic_string_view<CharT>;
+    using str_typ  = basic_string<CharT>;
+
+    view_typ s0(TYPED_LITERAL(CharT, "{:%d}"));
+    view_typ s1(TYPED_LITERAL(CharT, "{:%e}"));
+    view_typ s2(TYPED_LITERAL(CharT, "{:%Od}"));
+    view_typ s3(TYPED_LITERAL(CharT, "{:%Oe}"));
+    view_typ s4(TYPED_LITERAL(CharT, "{}"));
+    view_typ s5(TYPED_LITERAL(CharT, "{:=>8}"));
+    view_typ s6(TYPED_LITERAL(CharT, "{:lit}"));
+    view_typ s7(TYPED_LITERAL(CharT, "{:%d days}"));
+    view_typ s8(TYPED_LITERAL(CharT, "{:*^6%dmm}"));
+
+    str_typ a0(TYPED_LITERAL(CharT, "27"));
+    str_typ a1(TYPED_LITERAL(CharT, "05"));
+    str_typ a2(TYPED_LITERAL(CharT, " 5"));
+    str_typ a3(TYPED_LITERAL(CharT, "50 is not a valid day"));
+    str_typ a4(TYPED_LITERAL(CharT, "======27"));
+    str_typ a5(TYPED_LITERAL(CharT, "======05"));
+    str_typ a6(TYPED_LITERAL(CharT, "lit27"));
+    str_typ a7(TYPED_LITERAL(CharT, "27 days"));
+    str_typ a8(TYPED_LITERAL(CharT, "*27mm*"));
+
+    // 2 digits
+    day d0{27};
+    auto res = format(s0, d0);
+    assert(res == a0);
+    res = format(s1, d0);
+    assert(res == a0);
+
+    // 1 digit
+    day d1{5};
+    res = format(s0, d1);
+    assert(res == a1);
+    res = format(s1, d1);
+    assert(res == a2);
+
+    // O modifier
+    res = format(s2, d0);
+    assert(res == a0);
+    res = format(s3, d0);
+    assert(res == a0);
+    res = format(s2, d1);
+    assert(res == a1);
+    res = format(s3, d1);
+    assert(res == a2);
+
+    // [time.format]/6
+    day d2{50};
+    res = format(s4, d0);
+    assert(res == a0);
+    res = format(s4, d2);
+    assert(res == a3);
+
+    // width/align
+    res = format(s5, d0);
+    assert(res == a4);
+    res = format(s5, d1);
+    assert(res == a5);
+    res = format(s5, d2);
+    assert(res == a3);
+
+    // chrono-spec must begin with conversion-spec
+    throw_helper(s6, d0);
+
+    // lit chars
+    res = format(s7, d0);
+    assert(res == a7);
+    res = format(s8, d0);
+    assert(res == a8);
+
+    assert(format(STR("{:%d %d %d}"), day{27}) == STR("27 27 27"));
+    throw_helper(STR("{:%d}"), day{200});
+    throw_helper(STR("{:%Ed}"), day{10});
+    assert(format(STR("{}"), day{0}) == STR("00 is not a valid day"));
+
+    // Op <<
+    stream_helper(STR("00 is not a valid day"), day{0});
+    stream_helper(STR("27"), day{27});
+    stream_helper(STR("200 is not a valid day"), day{200});
+}
+
+template <typename CharT>
+void test_month_formatter() {
+    assert(format(STR("{}"), month{1}) == STR("Jan"));
+    assert(format(STR("{}"), month{12}) == STR("Dec"));
+    assert(format(STR("{}"), month{0}) == STR("00 is not a valid month"));
+    assert(format(STR("{}"), month{20}) == STR("20 is not a valid month"));
+
+    // Specs
+    assert(format(STR("{:%b %h %B}"), month{1}) == STR("Jan Jan January"));
+    assert(format(STR("{:%m %Om}"), month{1}) == STR("01 01"));
+
+    // Out of bounds month
+    throw_helper(STR("{:%m}"), month{0});
+    throw_helper(STR("{:%b}"), month{0});
+    throw_helper(STR("{:%h}"), month{0});
+    throw_helper(STR("{::%B}"), month{0});
+
+    // Invalid specs
+    throw_helper(STR("{:%A}"), month{1});
+    throw_helper(STR("{:%.4}"), month{1});
+
+    // Op <<
+    stream_helper(STR("Jan"), month{1});
+    stream_helper(STR("Dec"), month{12});
+    stream_helper(STR("00 is not a valid month"), month{0});
+    stream_helper(STR("20 is not a valid month"), month{20});
+}
+#endif // __clang__
+
 int main() {
     test_parse_conversion_spec<char>();
     test_parse_conversion_spec<wchar_t>();
 
     test_parse_chrono_format_specs<char>();
     test_parse_chrono_format_specs<wchar_t>();
+
+    test_day_formatter<char>();
+    test_day_formatter<wchar_t>();
+
+    test_month_formatter<char>();
+    test_month_formatter<wchar_t>();
 }

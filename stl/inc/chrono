@@ -22,9 +22,11 @@
 #include <cmath>
 #include <compare>
 #include <forward_list>
+#include <iomanip>
 #include <istream>
 #include <memory>
 #include <optional>
+#include <string>
 #include <vector>
 #include <xloctime>
 #include <xthreads.h>
@@ -32,6 +34,8 @@
 #ifdef __cpp_lib_concepts
 #include <concepts>
 #include <format>
+#include <iostream>
+#include <sstream>
 #endif // defined(__cpp_lib_concepts)
 #endif // _HAS_CXX20
 
@@ -5177,184 +5181,434 @@ namespace chrono {
         return _CHRONO from_stream(_Is, _Tpi._Fmt.c_str(), _Tpi._Tp, _Tpi._Abbrev, _Tpi._Offset);
     }
 
-#ifdef __cpp_lib_concepts
-    // [time.format]
-
-    // clang-format off
-    template <class _Ty, class _CharT>
-    concept _Chrono_parse_spec_callbacks = _Parse_align_callbacks<_Ty, _CharT>
-                                           && _Parse_width_callbacks<_Ty, _CharT>
-                                           && _Parse_precision_callbacks<_Ty, _CharT>
-                                           && _Width_adapter_callbacks<_Ty, _CharT>
-                                           && _Precision_adapter_callbacks<_Ty, _CharT>
-                                           && requires(_Ty _At, basic_string_view<_CharT> _Sv, _Fmt_align _Aln) {
-        { _At._On_conversion_spec(_CharT{}, _CharT{}) } -> same_as<void>;
-        { _At._On_lit_char(_CharT{}) } -> same_as<void>;
-    };
-    // clang-format on
-
-    template <class _CharT>
-    struct _Chrono_specs {
-        _CharT _Lit_char = _CharT{0}; // any character other than '{', '}', or '%'
-        char _Modifier   = '\0'; // either 'E' or 'O'
-        char _Type       = '\0';
-    };
-
-    template <class _CharT>
-    struct _Chrono_format_specs {
-        int _Width                   = 0;
-        int _Precision               = -1;
-        int _Dynamic_width_index     = -1;
-        int _Dynamic_precision_index = -1;
-        _Fmt_align _Alignment        = _Fmt_align::_None;
-        uint8_t _Fill_length         = 1;
-        // At most one codepoint (so one char32_t or four utf-8 char8_t)
-        _CharT _Fill[4 / sizeof(_CharT)] = {_CharT{' '}};
-        // recursive definition in grammar, so could have any number of these with literal chars
-        vector<_Chrono_specs<_CharT>> _Chrono_specs_list;
-    };
-
-    // Model of _Chrono_parse_spec_callbacks that fills a _Chrono_format_specs with the parsed data
-    template <class _CharT>
-    class _Chrono_specs_setter {
-    public:
-        constexpr explicit _Chrono_specs_setter(_Chrono_format_specs<_CharT>& _Specs_) : _Specs(_Specs_) {}
-
-        // same as _Specs_setter
-        constexpr void _On_align(_Fmt_align _Aln) {
-            _Specs._Alignment = _Aln;
-        }
-
-        // same as _Specs_setter
-        constexpr void _On_fill(basic_string_view<_CharT> _Sv) {
-            if (_Sv.size() > _STD size(_Specs._Fill)) {
-                _THROW(format_error("Invalid fill (too long)."));
-            }
-
-            const auto _Pos = _STD _Copy_unchecked(_Sv._Unchecked_begin(), _Sv._Unchecked_end(), _Specs._Fill);
-            _STD fill(_Pos, _STD end(_Specs._Fill), _CharT{});
-            _Specs._Fill_length = static_cast<uint8_t>(_Sv.size());
-        }
-
-        constexpr void _On_width(int _Width) {
-            _Specs._Width = _Width;
-        }
-
-        constexpr void _On_precision(int _Prec) {
-            _Specs._Precision = _Prec;
-        }
-
-        constexpr void _On_conversion_spec(_CharT _Modifier, _CharT _Type) {
-            // NOTE: same performance note from _Basic_format_specs also applies here
-            const char _Char_mod  = static_cast<char>(_Modifier);
-            const char _Char_type = static_cast<char>(_Type);
-            if (_Char_mod != '\0' && _Char_mod != 'E' && _Char_mod != 'O') {
-                _THROW(format_error("Invalid modifier specification."));
-            }
-
-            if (_Type < 0 || _Type > (numeric_limits<signed char>::max)()) {
-                _THROW(format_error("Invalid type specification."));
-            }
-
-            _Chrono_specs<_CharT> _Conv_spec{._Modifier = _Char_mod, ._Type = _Char_type};
-            _Specs._Chrono_specs_list.push_back(_Conv_spec);
-        }
-
-        constexpr void _On_lit_char(_CharT _Lit_ch) {
-            _Chrono_specs<_CharT> _Lit_char_spec{._Lit_char = _Lit_ch};
-            _Specs._Chrono_specs_list.push_back(_Lit_char_spec);
-        }
-
-    protected:
-        _Chrono_format_specs<_CharT>& _Specs;
-    };
-
-    template <class _CharT, _Chrono_parse_spec_callbacks<_CharT> _Callbacks_type>
-    _NODISCARD constexpr const _CharT* _Parse_conversion_specs(
-        const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
-        _STL_INTERNAL_CHECK(*_Begin == '%');
-        ++_Begin;
-        if (_Begin == _End || *_Begin == '}') {
-            _THROW(format_error("Invalid format string."));
-        }
-
-        _CharT _Mod = '\0';
-        _CharT _Ch  = *_Begin;
-
-        if (_Ch == 'E' || _Ch == 'O') { // includes modifier
-            _Mod = _Ch;
-            ++_Begin;
-            if (_Begin == _End || *_Begin == '}') {
-                _THROW(format_error("Invalid format string - missing type after modifier."));
-            }
-        }
-
-        _CharT _Type = *_Begin;
-        _Callbacks._On_conversion_spec(_Mod, _Type);
-
-        return ++_Begin;
-    }
-
-    template <class _CharT, _Chrono_parse_spec_callbacks<_CharT> _Callbacks_type>
-    _NODISCARD constexpr const _CharT* _Parse_chrono_format_specs(
-        const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
-        if (_Begin == _End || *_Begin == '}') {
-            return _Begin;
-        }
-
-        _Begin = _Parse_align(_Begin, _End, _Callbacks);
-        if (_Begin == _End) {
-            return _Begin;
-        }
-
-        _Begin = _Parse_width(_Begin, _End, _Callbacks);
-        if (_Begin == _End) {
-            return _Begin;
-        }
-
-        if (*_Begin == '.') {
-            _Begin = _Parse_precision(_Begin, _End, _Callbacks);
-            if (_Begin == _End) {
-                return _Begin;
-            }
-        }
-
-        // chrono-spec
-        while (_Begin != _End && *_Begin != '}') {
-            if (*_Begin == '%') { // conversion-spec
-                if (_Begin + 1 == _End) {
-                    _THROW(format_error("Invalid format string - missing type after %"));
-                }
-
-                const _CharT _Next_ch = *(_Begin + 1);
-                switch (_Next_ch) {
-                case 'n':
-                    _Callbacks._On_lit_char('\n');
-                    _Begin += 2;
-                    break;
-                case 't':
-                    _Callbacks._On_lit_char('\t');
-                    _Begin += 2;
-                    break;
-                case '%':
-                    _Callbacks._On_lit_char('%');
-                    _Begin += 2;
-                    break;
-                default: // some other type
-                    _Begin = _Parse_conversion_specs(_Begin, _End, _Callbacks);
-                    break;
-                }
-            } else { // literal-char
-                _Callbacks._On_lit_char(*_Begin);
-                ++_Begin;
-            }
-        }
-
-        return _Begin;
-    }
-#endif // __cpp_lib_concepts
 #endif // _HAS_CXX20
 } // namespace chrono
+
+#if _HAS_CXX20
+#ifdef __cpp_lib_concepts
+  // [time.format]
+
+template <class _CharT>
+struct _Choose_literal {
+    static constexpr const _CharT* _Choose(const char* _Str, const wchar_t* _WStr) {
+        if constexpr (is_same_v<_CharT, char>) {
+            return _Str;
+        } else {
+            return _WStr;
+        }
+    }
+};
+
+#define _STATICALLY_WIDEN(_CharT, _Literal) (_Choose_literal<_CharT>::_Choose(_Literal, L##_Literal))
+
+
+// clang-format off
+template <class _Ty, class _CharT>
+concept _Chrono_parse_spec_callbacks = _Parse_align_callbacks<_Ty, _CharT>
+                                        && _Parse_width_callbacks<_Ty, _CharT>
+                                        && _Parse_precision_callbacks<_Ty, _CharT>
+                                        && _Width_adapter_callbacks<_Ty, _CharT>
+                                        && _Precision_adapter_callbacks<_Ty, _CharT>
+                                        && requires(_Ty _At, basic_string_view<_CharT> _Sv, _Fmt_align _Aln) {
+    { _At._On_conversion_spec(_CharT{}, _CharT{}) } -> same_as<void>;
+    { _At._On_lit_char(_CharT{}) } -> same_as<void>;
+};
+// clang-format on
+
+// A chrono spec is either a type (with an optional modifier), OR a literal character, never both.
+template <class _CharT>
+struct _Chrono_specs {
+    _CharT _Lit_char = _CharT{'\0'}; // any character other than '{', '}', or '%'
+    _CharT _Modifier = _CharT{'\0'}; // either 'E' or 'O'
+    _CharT _Type     = _CharT{'\0'};
+};
+
+template <class _CharT>
+struct _Chrono_format_specs {
+    int _Width                   = 0;
+    int _Precision               = -1;
+    int _Dynamic_width_index     = -1;
+    int _Dynamic_precision_index = -1;
+    _Fmt_align _Alignment        = _Fmt_align::_None;
+    uint8_t _Fill_length         = 1;
+    // At most one codepoint (so one char32_t or four utf-8 char8_t)
+    _CharT _Fill[4 / sizeof(_CharT)] = {_CharT{' '}};
+    // recursive definition in grammar, so could have any number of these with literal chars
+    vector<_Chrono_specs<_CharT>> _Chrono_specs_list;
+};
+
+// Model of _Chrono_parse_spec_callbacks that fills a _Chrono_format_specs with the parsed data
+template <class _CharT, class _ParseContext>
+class _Chrono_specs_setter {
+public:
+    constexpr explicit _Chrono_specs_setter(_Chrono_format_specs<_CharT>& _Specs_, _ParseContext& _Parse_ctx_)
+        : _Specs(_Specs_), _Parse_ctx(_Parse_ctx_) {}
+
+    // same as _Specs_setter
+    constexpr void _On_align(_Fmt_align _Aln) {
+        _Specs._Alignment = _Aln;
+    }
+
+    // same as _Specs_setter
+    constexpr void _On_fill(basic_string_view<_CharT> _Sv) {
+        if (_Sv.size() > _STD size(_Specs._Fill)) {
+            _THROW(format_error("Invalid fill (too long)."));
+        }
+
+        const auto _Pos = _STD _Copy_unchecked(_Sv._Unchecked_begin(), _Sv._Unchecked_end(), _Specs._Fill);
+        _STD fill(_Pos, _STD end(_Specs._Fill), _CharT{});
+        _Specs._Fill_length = static_cast<uint8_t>(_Sv.size());
+    }
+
+    constexpr void _On_width(int _Width) {
+        _Specs._Width = _Width;
+    }
+
+    constexpr void _On_precision(int _Prec) {
+        _Specs._Precision = _Prec;
+    }
+
+    constexpr void _On_dynamic_width(const size_t _Arg_id) {
+        _Parse_ctx.check_arg_id(_Arg_id);
+        _Specs._Dynamic_width_index = _Verify_dynamic_arg_index_in_range(_Arg_id);
+    }
+
+    constexpr void _On_dynamic_width(const _Auto_id_tag) {
+        _Specs._Dynamic_width_index = _Verify_dynamic_arg_index_in_range(_Parse_ctx.next_arg_id());
+    }
+
+    constexpr void _On_dynamic_precision(const size_t _Arg_id) {
+        _Parse_ctx.check_arg_id(_Arg_id);
+        _Specs._Dynamic_precision_index = _Verify_dynamic_arg_index_in_range(_Arg_id);
+    }
+
+    constexpr void _On_dynamic_precision(const _Auto_id_tag) {
+        _Specs._Dynamic_precision_index = _Verify_dynamic_arg_index_in_range(_Parse_ctx.next_arg_id());
+    }
+
+    constexpr void _On_conversion_spec(_CharT _Modifier, _CharT _Type) {
+        // NOTE: same performance note from _Basic_format_specs also applies here
+        if (_Modifier != '\0' && _Modifier != 'E' && _Modifier != 'O') {
+            _THROW(format_error("Invalid modifier specification."));
+        }
+
+        if (_Type < 0 || _Type > (numeric_limits<signed char>::max)()) {
+            _THROW(format_error("Invalid type specification."));
+        }
+
+        _Chrono_specs<_CharT> _Conv_spec{._Modifier = _Modifier, ._Type = _Type};
+        _Specs._Chrono_specs_list.push_back(_Conv_spec);
+    }
+
+    constexpr void _On_lit_char(_CharT _Lit_ch) {
+        _Chrono_specs<_CharT> _Lit_char_spec{._Lit_char = _Lit_ch};
+        _Specs._Chrono_specs_list.push_back(_Lit_char_spec);
+    }
+
+protected:
+    _Chrono_format_specs<_CharT>& _Specs;
+
+private:
+    _ParseContext& _Parse_ctx;
+
+    _NODISCARD static constexpr int _Verify_dynamic_arg_index_in_range(const size_t _Idx) {
+        if (_Idx > static_cast<size_t>((numeric_limits<int>::max)())) {
+            _THROW(format_error("Dynamic width or precision index too large."));
+        }
+
+        return static_cast<int>(_Idx);
+    }
+};
+
+// assumes that the required '%' at the beginning of a conversion-spec has already been consumed
+template <class _CharT, _Chrono_parse_spec_callbacks<_CharT> _Callbacks_type>
+_NODISCARD constexpr const _CharT* _Parse_conversion_specs(
+    const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
+    if (_Begin == _End || *_Begin == '}') {
+        _THROW(format_error("Invalid format string."));
+    }
+
+    _CharT _Mod = '\0';
+    _CharT _Ch  = *_Begin;
+
+    if (_Ch == 'E' || _Ch == 'O') { // includes modifier
+        _Mod = _Ch;
+        ++_Begin;
+        if (_Begin == _End || *_Begin == '}') {
+            _THROW(format_error("Invalid format string - missing type after modifier."));
+        }
+    }
+
+    _CharT _Type = *_Begin;
+    _Callbacks._On_conversion_spec(_Mod, _Type);
+
+    return ++_Begin;
+}
+
+template <class _CharT, _Chrono_parse_spec_callbacks<_CharT> _Callbacks_type>
+_NODISCARD constexpr const _CharT* _Parse_chrono_format_specs(
+    const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
+    if (_Begin == _End || *_Begin == '}') {
+        return _Begin;
+    }
+
+    _Begin = _Parse_align(_Begin, _End, _Callbacks);
+    if (_Begin == _End) {
+        return _Begin;
+    }
+
+    _Begin = _Parse_width(_Begin, _End, _Callbacks);
+    if (_Begin == _End) {
+        return _Begin;
+    }
+
+    if (*_Begin == '.') {
+        _Begin = _Parse_precision(_Begin, _End, _Callbacks);
+        if (_Begin == _End) {
+            return _Begin;
+        }
+    }
+
+    if (_Begin != _End && *_Begin != '}' && *_Begin != '%') {
+        _THROW(format_error("Invalid format string - chrono-specs must begin with conversion-specs"));
+    }
+
+    // chrono-spec
+    while (_Begin != _End && *_Begin != '}') {
+        if (*_Begin == '%') { // conversion-spec
+            if (++_Begin == _End) {
+                _THROW(format_error("Invalid format string - missing type after %"));
+            }
+
+            _CharT _Next_ch = *_Begin;
+            switch (_Next_ch) {
+            case 'n':
+                _Callbacks._On_lit_char('\n');
+                ++_Begin;
+                break;
+            case 't':
+                _Callbacks._On_lit_char('\t');
+                ++_Begin;
+                break;
+            case '%':
+                _Callbacks._On_lit_char('%');
+                ++_Begin;
+                break;
+            default: // some other type
+                _Begin = _Parse_conversion_specs(_Begin, _End, _Callbacks);
+                break;
+            }
+        } else { // literal-char
+            _Callbacks._On_lit_char(*_Begin);
+            ++_Begin;
+        }
+    }
+
+    return _Begin;
+}
+
+namespace chrono {
+    /*
+    template <class _CharT, class _Traits, class _Duration>
+    // clang-format off
+        requires (!treat_as_floating_point_v<typename _Duration::rep> && (_Duration{1} < days{1}))
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const sys_time<_Duration>& _Clock) {
+        // clang-format on
+        const auto _Dp = floor<days>(_Clock);
+        return _Os << year_month_day{_Dp} << _STATICALLY_WIDEN(_CharT, " ") << hh_mm_ss{_Clock - _Dp};
+    }
+
+    template <class _CharT, class _Traits>
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const sys_days& _Clock) {
+        return _Os << year_month_day{_Clock};
+    }
+
+    template <class _CharT, class _Traits, class _Duration>
+    basic_ostream<_CharT, _Traits>& operator<<(
+        basic_ostream<_CharT, _Traits>& _Os, const utc_clock<_Duration>& _Clock) {
+        return _Os << format(_STATICALLY_WIDEN(_CharT, "{:%F %T}"), _Clock);
+    }*/
+
+    template <class _CharT, class _Traits>
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const day& _Val) {
+        if (static_cast<unsigned int>(_Val) < 10) {
+            _Os << _CharT{'0'};
+        }
+        _Os << static_cast<unsigned int>(_Val);
+        if (!_Val.ok()) {
+            _Os << _STATICALLY_WIDEN(_CharT, " is not a valid day");
+        }
+
+        return _Os;
+    }
+
+    template <class _CharT, class _Traits>
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const month& _Val) {
+        if (_Val.ok()) {
+            // tm_mon is [0, 11] while month is [1, 12]
+            const tm _Time = {.tm_mon = static_cast<int>(static_cast<unsigned int>(_Val)) - 1};
+            return _Os << _STD put_time(&_Time, _STATICALLY_WIDEN(_CharT, "%b"));
+        }
+
+        if (static_cast<unsigned int>(_Val) < 10) {
+            _Os << _CharT{'0'};
+        }
+        return _Os << static_cast<unsigned int>(_Val) << _STATICALLY_WIDEN(_CharT, " is not a valid month");
+    }
+} // namespace chrono
+
+/*
+template <class _Duration, class _CharT>
+struct formatter<_CHRONO sys_time<_Duration>, _CharT> {
+    typename basic_format_parse_context<_CharT>::iterator parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
+        _Chrono_format_specs<_CharT> _Specs{};
+        _Chrono_specs_setter<_CharT, basic_format_parse_context<_CharT>> _Callback{_Specs, _Parse_ctx};
+        const auto _It =
+            _Parse_chrono_format_specs(_Parse_ctx._Unchecked_begin(), _Parse_ctx._Unchecked_end(), _Callback);
+        const auto _Res_iter = _Parse_ctx.begin() + (_It - _Parse_ctx._Unchecked_begin());
+
+        if (_It != _Parse_ctx._Unchecked_end() && *_It != '}') {
+            _THROW(format_error("Missing '}' in format string."));
+        }
+    }
+};
+*/
+
+template <class _CharT, bool _Allow_precision>
+struct _Chrono_formatter {
+    typename basic_format_parse_context<_CharT>::iterator _Parse(
+        basic_format_parse_context<_CharT>& _Parse_ctx, string_view _Valid_types) {
+        _Chrono_specs_setter<_CharT, basic_format_parse_context<_CharT>> _Callback{_Specs, _Parse_ctx};
+        const auto _It =
+            _Parse_chrono_format_specs(_Parse_ctx._Unchecked_begin(), _Parse_ctx._Unchecked_end(), _Callback);
+        const auto _Res_iter = _Parse_ctx.begin() + (_It - _Parse_ctx._Unchecked_begin());
+
+        if (_It != _Parse_ctx._Unchecked_end() && *_It != '}') {
+            _THROW(format_error("Missing '}' in format string."));
+        }
+
+        if (!_Allow_precision && _Specs._Precision != -1) {
+            _THROW(format_error("Precision specification invalid for type."));
+        }
+
+        const auto& _List = _Specs._Chrono_specs_list;
+
+        // [time.format]/6
+        if (_List.empty()) {
+            _No_chrono_specs = true;
+            return _Res_iter;
+        }
+
+        for (const auto& _Spec : _List) {
+            if (_Spec._Type != '\0' && _RANGES find(_Valid_types, _Spec._Type) == _Valid_types.end()) {
+                _THROW(format_error("Invalid type."));
+            }
+            _Check_modifier(_Spec._Type, _Spec._Modifier);
+        }
+
+        return _Res_iter;
+    }
+
+    void _Check_modifier(const _CharT _Type, const _CharT _Modifier) {
+        if (_Modifier == _CharT{'\0'}) {
+            return;
+        }
+
+        enum _Allowed_bit { _E_mod = 1, _O_mod = 2, _EO_mod = _E_mod | _O_mod };
+
+        struct _Table_entry {
+            char _Type;
+            _Allowed_bit _Allowed;
+        };
+
+        const _Allowed_bit _Mod = _Modifier == _CharT{'E'} ? _E_mod : _O_mod;
+
+        static const _Table_entry _Table[] = {{'d', _O_mod}, {'e', _O_mod}, {'m', _O_mod}};
+
+        if (auto _It = _RANGES find(_Table, static_cast<char>(_Type), &_Table_entry::_Type); _It != _STD end(_Table)) {
+            if (_It->_Allowed & _Mod) {
+                return;
+            }
+        }
+
+        _THROW(format_error("Incompatible modifier for type"));
+    }
+
+    template <class _FormatContext, class _Ty>
+    typename _FormatContext::iterator _Write(_FormatContext& _FormatCtx, const _Ty& _Val, const tm& _Time) {
+        basic_stringstream<_CharT> _Stream;
+
+        if (_No_chrono_specs) {
+            _Stream << _Val;
+        } else {
+            _Stream.imbue(_FormatCtx.locale());
+            for (const auto& _Spec : _Specs._Chrono_specs_list) {
+                if (_Spec._Lit_char != _CharT{'\0'}) {
+                    _Stream << _Spec._Lit_char;
+                    continue;
+                }
+
+                // TRANSITION, out of bounds may be legal for non-localized decimal printing, but it isn't very
+                // consistent.
+                if (!_Val.ok()) {
+                    _THROW(format_error("Cannot print out-of-bounds time point."));
+                }
+
+                _CharT _Fmt_str[4];
+                size_t _Next_idx      = 0;
+                _Fmt_str[_Next_idx++] = _CharT{'%'};
+                if (_Spec._Modifier != _CharT{'\0'}) {
+                    _Fmt_str[_Next_idx++] = _Spec._Modifier;
+                }
+                _Fmt_str[_Next_idx++] = _Spec._Type;
+                _Fmt_str[_Next_idx]   = _CharT{'\0'};
+
+                _Stream << _STD put_time<_CharT>(&_Time, _Fmt_str);
+            }
+        }
+
+        return _Write_aligned(_STD move(_FormatCtx.out()), static_cast<int>(_Stream.view().size()), _Specs,
+            _Fmt_align::_Left, [&](auto _Out) { return _Fmt_write(_STD move(_Out), _Stream.view()); });
+    }
+
+    _Chrono_format_specs<_CharT> _Specs{};
+    bool _No_chrono_specs = false;
+};
+
+template <class _CharT>
+struct formatter<_CHRONO day, _CharT> {
+    typename basic_format_parse_context<_CharT>::iterator parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
+        return _Impl._Parse(_Parse_ctx, "de");
+    }
+
+    template <class _FormatContext>
+    typename _FormatContext::iterator format(const _CHRONO day& _Val, _FormatContext& _FormatCtx) {
+        const tm _Time = {.tm_mday = static_cast<int>(static_cast<unsigned int>(_Val))};
+        return _Impl._Write(_FormatCtx, _Val, _Time);
+    }
+
+private:
+    _Chrono_formatter<_CharT, false> _Impl;
+};
+
+template <class _CharT>
+struct formatter<_CHRONO month, _CharT> {
+    typename basic_format_parse_context<_CharT>::iterator parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
+        return _Impl._Parse(_Parse_ctx, "bBhm");
+    }
+
+    template <class _FormatContext>
+    typename _FormatContext::iterator format(const _CHRONO month& _Val, _FormatContext& _FormatCtx) {
+        // tm_mon is [0, 11] while month is [1, 12]
+        const tm _Time = {.tm_mon = static_cast<int>(static_cast<unsigned int>(_Val)) - 1};
+        return _Impl._Write(_FormatCtx, _Val, _Time);
+    }
+
+private:
+    _Chrono_formatter<_CharT, false> _Impl;
+};
+#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 
 // HELPERS
 template <class _Rep, class _Period>
@@ -5410,7 +5664,8 @@ inline namespace literals {
             return _CHRONO duration<double>(_Val);
         }
 
-        _NODISCARD constexpr _CHRONO milliseconds operator"" ms(unsigned long long _Val) noexcept /* strengthened */ {
+        _NODISCARD constexpr _CHRONO milliseconds operator"" ms(unsigned long long _Val) noexcept
+        /* strengthened */ {
             return _CHRONO milliseconds(_Val);
         }
 
@@ -5419,7 +5674,8 @@ inline namespace literals {
             return _CHRONO duration<double, milli>(_Val);
         }
 
-        _NODISCARD constexpr _CHRONO microseconds operator"" us(unsigned long long _Val) noexcept /* strengthened */ {
+        _NODISCARD constexpr _CHRONO microseconds operator"" us(unsigned long long _Val) noexcept
+        /* strengthened */ {
             return _CHRONO microseconds(_Val);
         }
 
@@ -5428,7 +5684,8 @@ inline namespace literals {
             return _CHRONO duration<double, micro>(_Val);
         }
 
-        _NODISCARD constexpr _CHRONO nanoseconds operator"" ns(unsigned long long _Val) noexcept /* strengthened */ {
+        _NODISCARD constexpr _CHRONO nanoseconds operator"" ns(unsigned long long _Val) noexcept
+        /* strengthened */ {
             return _CHRONO nanoseconds(_Val);
         }
 
