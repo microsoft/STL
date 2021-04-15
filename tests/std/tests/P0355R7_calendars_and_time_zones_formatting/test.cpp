@@ -349,13 +349,13 @@ void test_year_formatter() {
 
 template <typename CharT>
 void test_year_month_day_formatter() {
-    auto invalid = year_month_day{year{1900}, month{0}, day{1}};
-    assert(format(STR("{}"), year_month_day{year{1900}, month{1}, day{1}}) == STR("1900-01-01"));
-    stream_helper(STR("1900-01-01"), year_month_day{year{1900}, month{1}, day{1}});
-    stream_helper(STR("1900-00-01 is not a valid date"), invalid);
+    year_month_day invalid{year{1234}, month{0}, day{31}};
+    assert(format(STR("{}"), year_month_day{year{1900}, month{2}, day{1}}) == STR("1900-02-01"));
+    stream_helper(STR("1900-02-01"), year_month_day{year{1900}, month{2}, day{1}});
+    stream_helper(STR("1234-00-31 is not a valid date"), invalid);
 
-    assert(format(STR("{:%Y %b %d}"), year_month_day{year{1900}, month{1}, day{1}}) == STR("1900 Jan 01"));
-    assert(format(STR("{:%F %D}"), invalid) == STR("1900-00-01 00/01/00"));
+    assert(format(STR("{:%Y %b %d}"), year_month_day{year{1234}, month{5}, day{6}}) == STR("1234 May 06"));
+    assert(format(STR("{:%F %D}"), invalid) == STR("1234-00-31 00/31/34"));
 }
 
 int main() {

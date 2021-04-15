@@ -5548,7 +5548,7 @@ struct formatter<_CHRONO sys_time<_Duration>, _CharT> {
 
 template <class _CharT, bool _Allow_precision>
 struct _Chrono_formatter {
-    template <class _Type>
+    template <class _Ty>
     _NODISCARD auto _Parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
         _Chrono_specs_setter<_CharT, basic_format_parse_context<_CharT>> _Callback{_Specs, _Parse_ctx};
         const auto _It =
@@ -5572,7 +5572,7 @@ struct _Chrono_formatter {
         }
 
         for (const auto& _Spec : _List) {
-            if (_Spec._Type != '\0' && !_Is_valid_type<_Type>(_Spec._Type)) {
+            if (_Spec._Type != '\0' && !_Is_valid_type<_Ty>(_Spec._Type)) {
                 _THROW(format_error("Invalid type."));
             }
             _Check_modifier(_Spec._Type, _Spec._Modifier);
