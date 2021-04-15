@@ -1433,6 +1433,18 @@ namespace chrono {
             return _Day >= _CHRONO day{1} && _Day <= _Last_day(_Year, _Month);
         }
 
+        _NODISCARD constexpr int _Calculate_weekday() const noexcept {
+            const int _Day_int   = static_cast<int>(static_cast<unsigned int>(_Day));
+            const int _Month_int = static_cast<int>(static_cast<unsigned int>(_Month));
+
+            const int _Era_year = static_cast<int>(_Year) - (_Month_int <= 2);
+            const int _Era      = (_Era_year >= 0 ? _Era_year : _Era_year - 399) / 400;
+            const int _Yoe      = _Era_year - _Era * 400;
+            const int _Yday_era = ((979 * (_Month_int + (_Month_int > 2 ? -3 : 9)) + 19) >> 5) + _Day_int - 1;
+            const int _Doe      = ((1461 * _Yoe) >> 2) - _Yoe / 100 + _Yday_era;
+            return (_Doe + 3) % 7; // the era began on a Wednesday
+        }
+
     private:
         _CHRONO year _Year;
         _CHRONO month _Month;
@@ -5643,9 +5655,12 @@ struct _Chrono_formatter {
             return _Type == 'b' || _Type == 'B' || _Type == 'h' || _Type == 'm';
         } else if constexpr (is_same_v<_Ty, _CHRONO year>) {
             return _Type == 'Y' || _Type == 'y' || _Type == 'C';
+        } else if constexpr (is_same_v<_Ty, _CHRONO weekday>) {
+            return _Type == 'a' || _Type == 'A' || _Type == 'u' || _Type == 'w';
         } else if constexpr (is_same_v<_Ty, _CHRONO year_month_day>) {
             return _Type == 'D' || _Type == 'F' || _Is_valid_type<_CHRONO year>(_Type)
-                || _Is_valid_type<_CHRONO month>(_Type) || _Is_valid_type<_CHRONO day>(_Type);
+                || _Is_valid_type<_CHRONO month>(_Type) || _Is_valid_type<_CHRONO day>(_Type)
+                || _Is_valid_type<_CHRONO weekday>(_Type);
         } else {
             // TRANSITION, remove when all types are added
             static_assert(_Always_false<_Ty>, "unsupported type");
@@ -5784,7 +5799,8 @@ struct formatter<_CHRONO year_month_day, _CharT> {
     auto format(const _CHRONO year_month_day& _Val, _FormatContext& _FormatCtx) {
         const tm _Time = {.tm_mday = static_cast<int>(static_cast<unsigned int>(_Val.day())),
             .tm_mon                = static_cast<int>(static_cast<unsigned int>(_Val.month())) - 1,
-            .tm_year               = static_cast<int>(_Val.year()) - 1900};
+            .tm_year               = static_cast<int>(_Val.year()) - 1900,
+            .tm_wday               = _Val._Calculate_weekday()};
         return _Impl._Write(_FormatCtx, _Val, _Time);
     }
 
