@@ -5408,10 +5408,9 @@ _NODISCARD constexpr const _CharT* _Parse_chrono_format_specs(
 }
 
 namespace chrono {
-    // This functionality already exists in put_time, so why is it duplicated here?
-    // Unfortunately, put_time does not like to work with illogical dates, but the standard mandates that these are
-    // printed properly and treated specially. For example, consider operator<< for day. If day is 40, put_time asserts
-    // but the standard requires that it prints "40 is not a valid day".
+    // This echoes the functionality of put_time, but is able to handle invalid dates (when !ok()) since the Standard
+    // mandates that invalid dates still be formatted properly.  For example, put_time isn't able to handle a tm_mday of 
+    // 40, but format("{:%d}", day{40}) should return "40" and operator<< for day prints "40 is not a valid day". 
     template <class _CharT>
     bool _Try_simple_write(basic_ostream<_CharT>& _Os, const char _Type, const tm& _Time) {
         switch (_Type) {
