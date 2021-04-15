@@ -283,7 +283,7 @@ bool test_day_formatter() {
 
     assert(format(STR("{:%d %d %d}"), day{27}) == STR("27 27 27"));
     assert(format(STR("{:*5%}"), day{200}) == STR("**200"));
-    assert(format(STR("{}"), day{00}) == STR("00 is not a valid day"));
+    assert(format(STR("{}"), day{0}) == STR("00 is not a valid day"));
 
     return true;
 }

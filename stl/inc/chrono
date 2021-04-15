@@ -5499,20 +5499,19 @@ struct formatter<_CHRONO day, _CharT> {
         } else {
             _Stream.imbue(_FormatCtx.locale());
             tm _Time = {.tm_mday = static_cast<int>(static_cast<unsigned int>(_Val))};
-            for (auto _Spec_it = _Specs._Chrono_specs_list.begin(); _Spec_it != _Specs._Chrono_specs_list.end();
-                 ++_Spec_it) {
-                if (_Spec_it->_Lit_char != _CharT{'\0'}) {
-                    _Stream << _Spec_it->_Lit_char;
+            for (const auto& _Spec : _Specs._Chrono_specs_list) {
+                if (_Spec._Lit_char != _CharT{'\0'}) {
+                    _Stream << _Spec._Lit_char;
                     continue;
-                };
+                }
 
                 _CharT _Fmt_str[4];
                 size_t _Next_idx      = 0;
                 _Fmt_str[_Next_idx++] = _CharT{'%'};
-                if (_Spec_it->_Modifier != _CharT{'\0'}) {
-                    _Fmt_str[_Next_idx++] = _Spec_it->_Modifier;
+                if (_Spec._Modifier != _CharT{'\0'}) {
+                    _Fmt_str[_Next_idx++] = _Spec._Modifier;
                 }
-                _Fmt_str[_Next_idx++] = _Spec_it->_Type;
+                _Fmt_str[_Next_idx++] = _Spec._Type;
                 _Fmt_str[_Next_idx]   = _CharT{'\0'};
 
                 _Stream << _STD put_time<_CharT>(&_Time, _Fmt_str);
