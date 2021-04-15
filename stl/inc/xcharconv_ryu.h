@@ -45,9 +45,15 @@
 #include <xcharconv_ryu_tables.h>
 #include <xutility>
 
-#ifdef _M_X64
+#if defined(_M_X64) && !defined(_M_ARM64EC)
+#define _HAS_CHARCONV_INTRINSICS 1
+#else // ^^^ intrinsics available ^^^ / vvv intrinsics unavailable vvv
+#define _HAS_CHARCONV_INTRINSICS 0
+#endif // ^^^ intrinsics unavailable ^^^
+
+#if _HAS_CHARCONV_INTRINSICS
 #include <intrin0.h> // for _umul128() and __shiftright128()
-#endif // _M_X64
+#endif // ^^^ intrinsics available ^^^
 
 #if !_HAS_CXX17
 #error The contents of <charconv> are only available with C++17. (Also, you should not include this internal header.)
@@ -138,7 +144,7 @@ inline constexpr int __DOUBLE_POW5_BITCOUNT = 121;
 
 // vvvvvvvvvv DERIVED FROM d2s_intrinsics.h vvvvvvvvvv
 
-#ifdef _M_X64
+#if _HAS_CHARCONV_INTRINSICS
 
 _NODISCARD inline uint64_t __ryu_umul128(const uint64_t __a, const uint64_t __b, uint64_t* const __productHi) {
   return _umul128(__a, __b, __productHi);
@@ -324,7 +330,7 @@ _NODISCARD inline bool __multipleOfPowerOf2(const uint64_t __value, const uint32
 
 inline constexpr int __POW10_ADDITIONAL_BITS = 120;
 
-#ifdef _M_X64
+#if _HAS_CHARCONV_INTRINSICS
 // Returns the low 64 bits of the high 128 bits of the 256-bit product of a and b.
 _NODISCARD inline uint64_t __umul256_hi128_lo64(
   const uint64_t __aHi, const uint64_t __aLo, const uint64_t __bHi, const uint64_t __bLo) {
@@ -373,7 +379,7 @@ _NODISCARD inline uint32_t __mulShift_mod1e9(const uint64_t __m, const uint64_t*
   const uint64_t __s1high = __high2 + __c2;         // 192
   _STL_INTERNAL_CHECK(__j >= 128);
   _STL_INTERNAL_CHECK(__j <= 180);
-#ifdef _M_X64
+#if _HAS_CHARCONV_INTRINSICS
   const uint32_t __dist = static_cast<uint32_t>(__j - 128); // __dist: [0, 52]
   const uint64_t __shiftedhigh = __s1high >> __dist;
   const uint64_t __shiftedlow = __ryu_shiftright128(__s1low, __s1high, __dist);
@@ -1655,7 +1661,7 @@ _NODISCARD pair<_CharT*, errc> __f2s_buffered_n(_CharT* const _First, _CharT* co
 //    c. Split only the first factor into 31-bit pieces, which also guarantees
 //       no internal overflow, but requires extra work since the intermediate
 //       results are not perfectly aligned.
-#ifdef _M_X64
+#if _HAS_CHARCONV_INTRINSICS
 
 _NODISCARD inline uint64_t __mulShift(const uint64_t __m, const uint64_t* const __mul, const int32_t __j) {
   // __m is maximum 55 bits
@@ -2407,6 +2413,7 @@ _NODISCARD to_chars_result _Floating_to_chars_fixed_precision(
 
 _STD_END
 
+#undef _HAS_CHARCONV_INTRINSICS
 #undef _WIDEN
 
 #pragma pop_macro("new")
