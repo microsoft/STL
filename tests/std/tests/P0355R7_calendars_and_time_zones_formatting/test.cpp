@@ -294,7 +294,7 @@ void test_day_formatter() {
     assert(res == a8);
 
     assert(format(STR("{:%d %d %d}"), day{27}) == STR("27 27 27"));
-    throw_helper(STR("{:%d}"), day{200});
+    assert(format(STR("{:%d}"), day{200}) == STR("200"));
     throw_helper(STR("{:%Ed}"), day{10});
     assert(format(STR("{}"), day{0}) == STR("00 is not a valid day"));
 
@@ -316,10 +316,10 @@ void test_month_formatter() {
     assert(format(STR("{:%m %Om}"), month{1}) == STR("01 01"));
 
     // Out of bounds month
-    throw_helper(STR("{:%m}"), month{0});
+    assert(format(STR("{:%m}"), month{0}) == STR("00"));
     throw_helper(STR("{:%b}"), month{0});
     throw_helper(STR("{:%h}"), month{0});
-    throw_helper(STR("{::%B}"), month{0});
+    throw_helper(STR("{:%B}"), month{0});
 
     // Invalid specs
     throw_helper(STR("{:%A}"), month{1});
@@ -330,6 +330,32 @@ void test_month_formatter() {
     stream_helper(STR("Dec"), month{12});
     stream_helper(STR("0 is not a valid month"), month{0});
     stream_helper(STR("20 is not a valid month"), month{20});
+}
+
+template <typename CharT>
+void test_year_formatter() {
+    assert(format(STR("{}"), year{0}) == STR("0000"));
+    assert(format(STR("{}"), year{-200}) == STR("-0200"));
+    assert(format(STR("{}"), year{121}) == STR("0121"));
+
+    assert(format(STR("{:%Y %y%C}"), year{1912}) == STR("1912 1219"));
+    assert(format(STR("{:%Y %y%C}"), year{-1912}) == STR("-1912 88-20"));
+    // TRANSITION, add tests for EY Oy Ey EC
+
+    stream_helper(STR("1900"), year{1900});
+    stream_helper(STR("2000"), year{2000});
+    stream_helper(STR("-32768 is not a valid year"), year{-32768});
+}
+
+template <typename CharT>
+void test_year_month_day_formatter() {
+    year_month_day invalid{year{1234}, month{0}, day{31}};
+    assert(format(STR("{}"), year_month_day{year{1900}, month{2}, day{1}}) == STR("1900-02-01"));
+    stream_helper(STR("1900-02-01"), year_month_day{year{1900}, month{2}, day{1}});
+    stream_helper(STR("1234-00-31 is not a valid date"), invalid);
+
+    assert(format(STR("{:%Y %b %d}"), year_month_day{year{1234}, month{5}, day{6}}) == STR("1234 May 06"));
+    assert(format(STR("{:%F %D}"), invalid) == STR("1234-00-31 00/31/34"));
 }
 
 int main() {
@@ -344,4 +370,10 @@ int main() {
 
     test_month_formatter<char>();
     test_month_formatter<wchar_t>();
+
+    test_year_formatter<char>();
+    test_year_formatter<wchar_t>();
+
+    test_year_month_day_formatter<char>();
+    test_year_month_day_formatter<wchar_t>();
 }
