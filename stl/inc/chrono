@@ -5414,9 +5414,8 @@ namespace chrono {
         requires (!treat_as_floating_point_v<typename _Duration::rep> && (_Duration{1} < days{1}))
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const sys_time<_Duration>& _Clock) {
         // clang-format on
-        auto const _Dp = floor<days>(_Clock);
-        return _Os << format(
-                   _Os.getloc(), _STATICALLY_WIDEN(_CharT, "{} {}"), year_month_day{_Dp}, hh_mm_ss{_Clock - _Dp});
+        const auto _Dp = floor<days>(_Clock);
+        return _Os << year_month_day{_Dp} << _STATICALLY_WIDEN(_CharT, " ") << hh_mm_ss{_Clock - _Dp};
     }
 
     template <class _CharT, class _Traits>
@@ -5446,9 +5445,12 @@ namespace chrono {
     template <class _CharT, class _Traits>
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const month& _Val) {
         if (_Val.ok()) {
-            // tm_mon is [0-11] while month is [1-12]
-            const tm _Time = {.tm_mon = static_cast<int>(static_cast<unsigned int>(_Val)) + 1};
-            return _Os << _STD time_put<_CharT>(&_Time, "%b");
+            // tm_mon is [0, 11] while month is [1, 12]
+            const tm _Time = {.tm_mon = static_cast<int>(static_cast<unsigned int>(_Val)) - 1};
+            return _Os << _STD put_time(&_Time, _STATICALLY_WIDEN(_CharT, "%b"));
+        }
+        if (static_cast<unsigned int>(_Val) < 10) {
+            _Os << _CharT{'0'};
         }
         return _Os << static_cast<unsigned int>(_Val) << _STATICALLY_WIDEN(_CharT, " is not a valid month");
     }
@@ -5474,7 +5476,7 @@ struct formatter<_CHRONO sys_time<_Duration>, _CharT> {
 template <class _CharT, bool _Allow_precision>
 struct _Chrono_formatter {
     typename basic_format_parse_context<_CharT>::iterator _Parse(
-        basic_format_parse_context<_CharT>& _Parse_ctx, string_view _Legal_types) {
+        basic_format_parse_context<_CharT>& _Parse_ctx, string_view _Valid_types) {
         _Chrono_specs_setter<_CharT, basic_format_parse_context<_CharT>> _Callback{_Specs, _Parse_ctx};
         const auto _It =
             _Parse_chrono_format_specs(_Parse_ctx._Unchecked_begin(), _Parse_ctx._Unchecked_end(), _Callback);
@@ -5497,7 +5499,7 @@ struct _Chrono_formatter {
         }
 
         for (const auto& _Spec : _List) {
-            if (_Spec._Type != '\0' && _RANGES find(_Legal_types, _Spec._Type) != _Legal_types.end()) {
+            if (_Spec._Type != '\0' && _RANGES find(_Valid_types, _Spec._Type) == _Valid_types.end()) {
                 _THROW(format_error("Invalid type."));
             }
             _Check_modifier(_Spec._Type, _Spec._Modifier);
@@ -5511,34 +5513,28 @@ struct _Chrono_formatter {
             return;
         }
 
-        const bool _O_mod = _Modifier == _CharT{'O'};
-        const bool _E_mod = _Modifier == _CharT{'E'};
-        (void) _E_mod;
+        enum _Allowed_bit { _E = 1, _O = 2, _EO = _E | _O };
 
-        switch (static_cast<char>(_Type)) {
-        case 'd':
-            if (_O_mod) {
+        struct _Table_entry {
+            char _Type;
+            _Allowed_bit _Allowed;
+        };
+
+        const _Allowed_bit _Mod = _Modifier == _CharT{'E'} ? _E : _O;
+
+        static const _Table_entry _Table[] = {{'d', _O}, {'e', _O}, {'m', _O}};
+
+        if (auto _It = _RANGES find(_Table, static_cast<_CharT>(_Type), &_Table_entry::_Type);
+            _It != _STD end(_Table)) {
+            if (_It->_Allowed & _Mod) {
                 return;
             }
-            break;
-        case 'e':
-            if (_O_mod) {
-                return;
-            }
-            break;
-        case 'm':
-            if (_O_mod) {
-                return;
-            }
-            break;
-        default:
-            break;
         }
 
         _THROW(format_error("Incompatible modifier for type"));
     }
 
-    template <class _FormatContext, typename _Ty>
+    template <class _FormatContext, class _Ty>
     typename _FormatContext::iterator _Write(_FormatContext& _FormatCtx, const _Ty& _Val, const tm& _Time) {
         basic_stringstream<_CharT> _Stream;
 
@@ -5552,22 +5548,8 @@ struct _Chrono_formatter {
                     continue;
                 }
 
-                switch (static_cast<char>(_Spec._Type)) {
-                case 'a':
-                case 'A':
-                case 'b':
-                case 'B':
-                    /* TRANSITION, Figure out when these throw
-                    case 'z':
-                    case 'Z':
-                    */
-                    if (_Val.ok()) {
-                        _THROW(format_error("Cannot localize out-of-bounds time point."));
-                    }
-                    break;
-
-                default:
-                    break;
+                if (!_Val.ok()) {
+                    _THROW(format_error("Cannot print out-of-bounds time point."));
                 }
 
                 _CharT _Fmt_str[4];
@@ -5594,34 +5576,34 @@ struct _Chrono_formatter {
 template <class _CharT>
 struct formatter<_CHRONO day, _CharT> {
     typename basic_format_parse_context<_CharT>::iterator parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
-        return _Base._Parse(_Parse_ctx, "de");
+        return _Impl._Parse(_Parse_ctx, "de");
     }
 
     template <class _FormatContext>
     typename _FormatContext::iterator format(const _CHRONO day& _Val, _FormatContext& _FormatCtx) {
         const tm _Time = {.tm_mday = static_cast<int>(static_cast<unsigned int>(_Val))};
-        return _Base._Write(_FormatCtx, _Val, _Time);
+        return _Impl._Write(_FormatCtx, _Val, _Time);
     }
 
 private:
-    _Chrono_formatter<_CharT, false> _Base;
+    _Chrono_formatter<_CharT, false> _Impl;
 };
 
 template <class _CharT>
 struct formatter<_CHRONO month, _CharT> {
     typename basic_format_parse_context<_CharT>::iterator parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
-        return _Base._Parse(_Parse_ctx, "bBhm");
+        return _Impl._Parse(_Parse_ctx, "bBhm");
     }
 
     template <class _FormatContext>
     typename _FormatContext::iterator format(const _CHRONO month& _Val, _FormatContext& _FormatCtx) {
-        // tm_mon is [0-11] while month is [1-12]
-        const tm _Time = {.tm_mon = static_cast<int>(static_cast<unsigned int>(_Val)) + 1};
-        return _Base._Write(_FormatCtx.locale(), _Val, _Time);
+        // tm_mon is [0, 11] while month is [1, 12]
+        const tm _Time = {.tm_mon = static_cast<int>(static_cast<unsigned int>(_Val)) - 1};
+        return _Impl._Write(_FormatCtx, _Val, _Time);
     }
 
 private:
-    _Chrono_formatter<_CharT, false> _Base;
+    _Chrono_formatter<_CharT, false> _Impl;
 };
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX20

@@ -199,7 +199,12 @@ void throw_helper(const basic_string_view<charT> fmt, const Args&... vals) {
 }
 
 template <class charT, class... Args>
-void stream_helper(const basic_string_view<charT> expect, const Args&... vals) {
+void throw_helper(const charT* fmt, const Args&... vals) {
+    throw_helper(basic_string_view<charT>(fmt), vals...);
+}
+
+template <class charT, class... Args>
+void stream_helper(const charT* expect, const Args&... vals) {
     basic_stringstream<charT> stream;
     (stream << ... << vals);
     assert(stream.str() == expect);
@@ -217,7 +222,7 @@ constexpr void print(Str str) {
 
 #ifndef __clang__ // TRANSITION, LLVM-48606
 template <typename CharT>
-bool test_day_formatter() {
+void test_day_formatter() {
     using view_typ = basic_string_view<CharT>;
     using str_typ  = basic_string<CharT>;
 
@@ -290,43 +295,40 @@ bool test_day_formatter() {
     assert(res == a8);
 
     assert(format(STR("{:%d %d %d}"), day{27}) == STR("27 27 27"));
-    assert(format(STR("{:*5%}"), day{200}) == STR("**200"));
+    throw_helper(STR("{:%d}"), day{200});
     assert(format(STR("{}"), day{0}) == STR("00 is not a valid day"));
 
     // Op <<
     stream_helper(STR("00 is not a valid day"), day{0});
     stream_helper(STR("27"), day{27});
     stream_helper(STR("200 is not a valid day"), day{200});
-
-    return true;
 }
 
-
 template <typename CharT>
-bool test_month_formatter() {
+void test_month_formatter() {
     assert(format(STR("{}"), month{1}) == STR("Jan"));
     assert(format(STR("{}"), month{12}) == STR("Dec"));
-    assert(format(STR("{}"), month{0}) == STR("0 is not a valid month"));
+    assert(format(STR("{}"), month{0}) == STR("00 is not a valid month"));
     assert(format(STR("{}"), month{20}) == STR("20 is not a valid month"));
 
     // Specs
-    assert(format(STR("{%b %h %B}"), month{1}) == STR("Jan Jan January"));
-    assert(format(STR("{%m Om}"), month{1}) == STR("1 1"));
+    assert(format(STR("{:%b %h %B}"), month{1}) == STR("Jan Jan January"));
+    assert(format(STR("{:%m %Om}"), month{1}) == STR("01 01"));
 
     // Out of bounds month
-    assert(format(STR("{%m}"), month{0}) == STR("0"));
-    throw_helper(STR("{%b}"), month{0});
-    throw_helper(STR("{%h}"), month{0});
-    throw_helper(STR("{%B}"), month{0});
+    throw_helper(STR("{:%m}"), month{0});
+    throw_helper(STR("{:%b}"), month{0});
+    throw_helper(STR("{:%h}"), month{0});
+    throw_helper(STR("{::%B}"), month{0});
 
     // Invalid specs
-    throw_helper(STR("{%A}"), month{1});
-    throw_helper(STR("{%.4}"), month{1});
+    throw_helper(STR("{:%A}"), month{1});
+    throw_helper(STR("{:%.4}"), month{1});
 
     // Op <<
     stream_helper(STR("Jan"), month{1});
     stream_helper(STR("Dec"), month{12});
-    stream_helper(STR("0 is not a valid month"), month{0});
+    stream_helper(STR("00 is not a valid month"), month{0});
     stream_helper(STR("20 is not a valid month"), month{20});
 }
 #endif // __clang__
@@ -338,8 +340,11 @@ int main() {
     test_parse_chrono_format_specs<char>();
     test_parse_chrono_format_specs<wchar_t>();
 
-    // #ifndef __clang__ // TRANSITION, LLVM-48606
-    //     test_day_formatter<char>();
-    //     test_day_formatter<wchar_t>();
-    // #endif // __clang__
+#ifndef __clang__ // TRANSITION, LLVM-48606
+    test_day_formatter<char>();
+    test_day_formatter<wchar_t>();
+
+    test_month_formatter<char>();
+    test_month_formatter<wchar_t>();
+#endif // __clang__
 }
