@@ -220,7 +220,6 @@ constexpr void print(Str str) {
     }
 }
 
-#ifndef __clang__ // TRANSITION, LLVM-48606
 template <typename CharT>
 void test_day_formatter() {
     using view_typ = basic_string_view<CharT>;
@@ -332,7 +331,6 @@ void test_month_formatter() {
     stream_helper(STR("00 is not a valid month"), month{0});
     stream_helper(STR("20 is not a valid month"), month{20});
 }
-#endif // __clang__
 
 int main() {
     test_parse_conversion_spec<char>();
