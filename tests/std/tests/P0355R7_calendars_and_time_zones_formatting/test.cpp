@@ -72,9 +72,9 @@ struct testing_callbacks {
     void _On_dynamic_precision(_Auto_id_tag) {
         assert(expected_auto_dynamic_precision);
     }
-    void _On_conversion_spec(CharT mod, CharT type) {
+    void _On_conversion_spec(char mod, CharT type) {
         assert(mod == expected_chrono_specs[curr_index]._Modifier);
-        assert(type == expected_chrono_specs[curr_index]._Type);
+        assert(static_cast<char>(type) == expected_chrono_specs[curr_index]._Type);
         assert(expected_chrono_specs[curr_index]._Lit_char == CharT{0}); // not set
         ++curr_index;
     }
@@ -308,7 +308,7 @@ template <typename CharT>
 void test_month_formatter() {
     assert(format(STR("{}"), month{1}) == STR("Jan"));
     assert(format(STR("{}"), month{12}) == STR("Dec"));
-    assert(format(STR("{}"), month{0}) == STR("00 is not a valid month"));
+    assert(format(STR("{}"), month{0}) == STR("0 is not a valid month"));
     assert(format(STR("{}"), month{20}) == STR("20 is not a valid month"));
 
     // Specs
@@ -328,7 +328,7 @@ void test_month_formatter() {
     // Op <<
     stream_helper(STR("Jan"), month{1});
     stream_helper(STR("Dec"), month{12});
-    stream_helper(STR("00 is not a valid month"), month{0});
+    stream_helper(STR("0 is not a valid month"), month{0});
     stream_helper(STR("20 is not a valid month"), month{20});
 }
 
