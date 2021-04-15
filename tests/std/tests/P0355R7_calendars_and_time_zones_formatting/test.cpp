@@ -357,6 +357,7 @@ void test_year_month_day_formatter() {
     assert(format(STR("{:%Y %b %d}"), year_month_day{year{1234}, month{5}, day{6}}) == STR("1234 May 06"));
     assert(format(STR("{:%F %D}"), invalid) == STR("1234-00-31 00/31/34"));
     assert(format(STR("{:%a %A}"), year_month_day{year{1900}, month{1}, day{4}}) == STR("Thu Thursday"));
+    assert(format(STR("{:%u %w}"), year_month_day{year{1900}, month{1}, day{4}}) == STR("4 4"));
 }
 
 template <typename CharT>
