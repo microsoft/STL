@@ -5368,6 +5368,10 @@ _NODISCARD constexpr const _CharT* _Parse_chrono_format_specs(
         }
     }
 
+    if (_Begin != _End && *_Begin != '}' && *_Begin != '%') {
+        _THROW(format_error("Invalid format string - chrono-specs must begin with conversion-specs"));
+    }
+
     // chrono-spec
     while (_Begin != _End && *_Begin != '}') {
         if (*_Begin == '%') { // conversion-spec
