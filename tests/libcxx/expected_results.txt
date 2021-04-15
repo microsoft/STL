@@ -301,10 +301,6 @@ std/utilities/variant/variant.variant/variant.assign/T.pass.cpp FAIL
 std/utilities/variant/variant.variant/variant.ctor/conv.pass.cpp FAIL
 std/utilities/variant/variant.variant/variant.ctor/T.pass.cpp FAIL
 
-# C++20 P0645R10 "<format> Text Formatting"
-std/language.support/support.limits/support.limits.general/format.version.pass.cpp FAIL
-std/utilities/format/format.error/format.error.pass.cpp FAIL
-
 # C++20 P0784R7 "More constexpr containers"
 std/utilities/memory/allocator.traits/allocator.traits.members/construct.pass.cpp FAIL
 std/utilities/memory/allocator.traits/allocator.traits.members/destroy.pass.cpp FAIL

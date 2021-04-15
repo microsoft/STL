@@ -22,6 +22,15 @@
             "component": {
                 "type": "git",
                 "git": {
+                    "repositoryUrl": "https://github.com/fmtlib/fmt",
+                    "commitHash": "273d8865e31659f69528623754c1742b2819ad26"
+                }
+            }
+        },
+        {
+            "component": {
+                "type": "git",
+                "git": {
                     "repositoryUrl": "https://github.com/ulfjack/ryu.git",
                     "commitHash": "59661c3f883dfd39cef6dc8eaf2fcbaae53597e8"
                 }
