@@ -5449,6 +5449,7 @@ namespace chrono {
             const tm _Time = {.tm_mon = static_cast<int>(static_cast<unsigned int>(_Val)) - 1};
             return _Os << _STD put_time(&_Time, _STATICALLY_WIDEN(_CharT, "%b"));
         }
+
         if (static_cast<unsigned int>(_Val) < 10) {
             _Os << _CharT{'0'};
         }
@@ -5513,19 +5514,18 @@ struct _Chrono_formatter {
             return;
         }
 
-        enum _Allowed_bit { _E = 1, _O = 2, _EO = _E | _O };
+        enum _Allowed_bit { _E_mod = 1, _O_mod = 2, _EO_mod = _E_mod | _O_mod };
 
         struct _Table_entry {
             char _Type;
             _Allowed_bit _Allowed;
         };
 
-        const _Allowed_bit _Mod = _Modifier == _CharT{'E'} ? _E : _O;
+        const _Allowed_bit _Mod = _Modifier == _CharT{'E'} ? _E_mod : _O_mod;
 
-        static const _Table_entry _Table[] = {{'d', _O}, {'e', _O}, {'m', _O}};
+        static const _Table_entry _Table[] = {{'d', _O_mod}, {'e', _O_mod}, {'m', _O_mod}};
 
-        if (auto _It = _RANGES find(_Table, static_cast<_CharT>(_Type), &_Table_entry::_Type);
-            _It != _STD end(_Table)) {
+        if (auto _It = _RANGES find(_Table, static_cast<char>(_Type), &_Table_entry::_Type); _It != _STD end(_Table)) {
             if (_It->_Allowed & _Mod) {
                 return;
             }

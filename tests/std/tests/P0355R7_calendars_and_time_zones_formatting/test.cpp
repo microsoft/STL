@@ -200,7 +200,7 @@ void throw_helper(const basic_string_view<charT> fmt, const Args&... vals) {
 
 template <class charT, class... Args>
 void throw_helper(const charT* fmt, const Args&... vals) {
-    throw_helper(basic_string_view<charT>(fmt), vals...);
+    throw_helper(basic_string_view<charT>{fmt}, vals...);
 }
 
 template <class charT, class... Args>
@@ -296,6 +296,7 @@ void test_day_formatter() {
 
     assert(format(STR("{:%d %d %d}"), day{27}) == STR("27 27 27"));
     throw_helper(STR("{:%d}"), day{200});
+    throw_helper(STR("{:%Ed}"), day{10});
     assert(format(STR("{}"), day{0}) == STR("00 is not a valid day"));
 
     // Op <<
@@ -340,11 +341,9 @@ int main() {
     test_parse_chrono_format_specs<char>();
     test_parse_chrono_format_specs<wchar_t>();
 
-#ifndef __clang__ // TRANSITION, LLVM-48606
     test_day_formatter<char>();
     test_day_formatter<wchar_t>();
 
     test_month_formatter<char>();
     test_month_formatter<wchar_t>();
-#endif // __clang__
 }
