@@ -5621,7 +5621,25 @@ struct _Chrono_formatter {
         };
 
         static constexpr _Table_entry _Table[] = {
-            {'d', _O_mod}, {'e', _O_mod}, {'m', _O_mod}, {'Y', _E_mod}, {'y', _EO_mod}, {'C', _E_mod}};
+            {'Y', _E_mod},
+            {'y', _EO_mod},
+            {'C', _E_mod},
+            {'m', _O_mod},
+            {'U', _O_mod},
+            {'W', _O_mod},
+            {'V', _O_mod},
+            {'d', _O_mod},
+            {'e', _O_mod},
+            {'w', _O_mod},
+            {'u', _O_mod},
+            {'H', _O_mod},
+            {'I', _O_mod},
+            {'M', _O_mod},
+            {'S', _O_mod},
+            {'c', _E_mod},
+            {'x', _E_mod},
+            {'X', _E_mod},
+        };
 
         const _Allowed_bit _Mod = _Modifier == 'E' ? _E_mod : _O_mod;
 
