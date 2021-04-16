@@ -5500,10 +5500,65 @@ namespace chrono {
         return _Os << format(_STATICALLY_WIDEN(_CharT, "{:%F %T}"), _Clock);
     }*/
 
+    template <class _Ty>
+    concept _Has_day = requires(const _Ty& _At) {
+        { _At.day() }
+        ->same_as<day>;
+    };
+
+    template <class _Ty>
+    concept _Has_month = requires(const _Ty& _At) {
+        { _At.month() }
+        ->same_as<month>;
+    };
+
+    template <class _Ty>
+    concept _Has_year = requires(const _Ty& _At) {
+        { _At.year() }
+        ->same_as<year>;
+    };
+
+    template <class _Ty>
+    tm _Fill_tm(const _Ty& _Val) {
+        unsigned int _Day   = 0;
+        unsigned int _Month = 0;
+        int _Year           = 0;
+        int _Weekday        = 0;
+        int _Hours          = 0;
+        int _Minutes        = 0;
+        int _Seconds        = 0;
+
+        if constexpr (is_same_v<_Ty, day>) {
+            _Day = static_cast<unsigned int>(_Val);
+        } else if constexpr (is_same_v<_Ty, month>) {
+            _Month = static_cast<unsigned int>(_Val);
+        } else if constexpr (is_same_v<_Ty, year>) {
+            _Year = static_cast<int>(_Val);
+        } else if constexpr (is_same_v<_Ty, year_month_day>) {
+            _Day     = static_cast<unsigned int>(_Val.day());
+            _Month   = static_cast<unsigned int>(_Val.month());
+            _Year    = static_cast<int>(_Val.year());
+            _Weekday = _Val._Calculate_weekday();
+        } else if constexpr (_Is_specialization_v<_Ty, hh_mm_ss>) {
+            _Hours   = _Val.hours().count();
+            _Minutes = _Val.minutes().count();
+            _Seconds = static_cast<int>(_Val.seconds().count());
+        }
+
+        tm _Time;
+        _Time.tm_sec  = _Seconds;
+        _Time.tm_min  = _Minutes;
+        _Time.tm_hour = _Hours;
+        _Time.tm_mday = static_cast<int>(_Day);
+        _Time.tm_mon  = static_cast<int>(_Month) - 1;
+        _Time.tm_year = _Year - 1900;
+        _Time.tm_wday = _Weekday;
+        return _Time;
+    }
+
     template <class _CharT, class _Traits>
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const day& _Val) {
-        const tm _Time = {.tm_mday = static_cast<int>(static_cast<unsigned int>(_Val))};
-        _Try_simple_write(_Os, 'd', _Time);
+        _Try_simple_write(_Os, 'd', _Fill_tm(_Val));
         if (!_Val.ok()) {
             _Os << _STATICALLY_WIDEN(_CharT, " is not a valid day");
         }
@@ -5514,8 +5569,7 @@ namespace chrono {
     template <class _CharT, class _Traits>
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const month& _Val) {
         if (_Val.ok()) {
-            // tm_mon is [0, 11] while month is [1, 12]
-            const tm _Time = {.tm_mon = static_cast<int>(static_cast<unsigned int>(_Val)) - 1};
+            const tm _Time = _Fill_tm(_Val);
             return _Os << _STD put_time(&_Time, _STATICALLY_WIDEN(_CharT, "%b"));
         }
         return _Os << static_cast<unsigned int>(_Val) << _STATICALLY_WIDEN(_CharT, " is not a valid month");
@@ -5523,8 +5577,7 @@ namespace chrono {
 
     template <class _CharT, class _Traits>
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const year& _Val) {
-        const tm _Time = {.tm_year = static_cast<int>(_Val) - 1900};
-        _Try_simple_write(_Os, 'Y', _Time);
+        _Try_simple_write(_Os, 'Y', _Fill_tm(_Val));
         if (!_Val.ok()) {
             _Os << _STATICALLY_WIDEN(_CharT, " is not a valid year");
         }
@@ -5533,10 +5586,7 @@ namespace chrono {
 
     template <class _CharT, class _Traits>
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const year_month_day& _Val) {
-        const tm _Time = {.tm_mday = static_cast<int>(static_cast<unsigned int>(_Val.day())),
-            .tm_mon                = static_cast<int>(static_cast<unsigned int>(_Val.month())) - 1,
-            .tm_year               = static_cast<int>(_Val.year()) - 1900};
-        _Try_simple_write(_Os, 'F', _Time);
+        _Try_simple_write(_Os, 'F', _Fill_tm(_Val));
         if (!_Val.ok()) {
             _Os << _STATICALLY_WIDEN(_CharT, " is not a valid date");
         }
@@ -5545,8 +5595,7 @@ namespace chrono {
 
     template <class _CharT, class _Traits, class _Duration>
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const hh_mm_ss<_Duration>& _Val) {
-        const tm _Time = {
-            .tm_min = static_cast<int>(_Val.minutes().count()), .tm_hour = static_cast<int>(_Val.hours().count())};
+        const tm _Time = _Fill_tm(_Val);
         if (_Val.is_negative()) {
             _Os << _CharT{'-'};
         }
@@ -5738,8 +5787,7 @@ struct formatter<_CHRONO day, _CharT> {
 
     template <class _FormatContext>
     auto format(const _CHRONO day& _Val, _FormatContext& _FormatCtx) {
-        const tm _Time = {.tm_mday = static_cast<int>(static_cast<unsigned int>(_Val))};
-        return _Impl._Write(_FormatCtx, _Val, _Time);
+        return _Impl._Write(_FormatCtx, _Val, _Fill_tm(_Val));
     }
 
 private:
@@ -5754,9 +5802,7 @@ struct formatter<_CHRONO month, _CharT> {
 
     template <class _FormatContext>
     auto format(const _CHRONO month& _Val, _FormatContext& _FormatCtx) {
-        // tm_mon is [0, 11] while month is [1, 12]
-        const tm _Time = {.tm_mon = static_cast<int>(static_cast<unsigned int>(_Val)) - 1};
-        return _Impl._Write(_FormatCtx, _Val, _Time);
+        return _Impl._Write(_FormatCtx, _Val, _Fill_tm(_Val));
     }
 
 private:
@@ -5771,8 +5817,7 @@ struct formatter<_CHRONO year, _CharT> {
 
     template <class _FormatContext>
     auto format(const _CHRONO year& _Val, _FormatContext& _FormatCtx) {
-        const tm _Time = {.tm_year = static_cast<int>(_Val) - 1900};
-        return _Impl._Write(_FormatCtx, _Val, _Time);
+        return _Impl._Write(_FormatCtx, _Val, _Fill_tm(_Val));
     }
 
 private:
@@ -5787,11 +5832,7 @@ struct formatter<_CHRONO year_month_day, _CharT> {
 
     template <class _FormatContext>
     auto format(const _CHRONO year_month_day& _Val, _FormatContext& _FormatCtx) {
-        const tm _Time = {.tm_mday = static_cast<int>(static_cast<unsigned int>(_Val.day())),
-            .tm_mon                = static_cast<int>(static_cast<unsigned int>(_Val.month())) - 1,
-            .tm_year               = static_cast<int>(_Val.year()) - 1900,
-            .tm_wday               = _Val._Calculate_weekday()};
-        return _Impl._Write(_FormatCtx, _Val, _Time);
+        return _Impl._Write(_FormatCtx, _Val, _Fill_tm(_Val));
     }
 
 private:
