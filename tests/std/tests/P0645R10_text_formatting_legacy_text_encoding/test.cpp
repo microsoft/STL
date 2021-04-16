@@ -58,9 +58,12 @@ void test_width_estimation() {
         int width;
     };
     constexpr test_case test_cases[] = {
-        // Pick a "short" and "long" codepoints (\x20 and \x96\x7b), then form
-        // all permutations of 3-codepoint prefixes. This gives us coverage of
-        // all transitions (e.g. short-to-long, long-to-long).
+        {"\x58", 1},
+        {"x\x58", 2},
+
+        // Pick "short" and "long" codepoints (\x20 and \x96\x7b), then form all permutations of
+        // 3-codepoint prefixes with the same fixed delimiter as above. This gives us coverage of
+        // all adjacent pairings (short/short, short/long, long/short, long/long).
         {"\x20\x20\x20\x58", 4},
         {"\x20\x20\x96\x7b\x58", 5},
         {"\x20\x96\x7b\x20\x58", 5},
@@ -72,7 +75,7 @@ void test_width_estimation() {
     };
 
     for (const auto& test : test_cases) {
-        basic_string_view sv{test.str};
+        string_view sv{test.str};
         sv = sv.substr(0, sv.size() - 1);
         assert(format("{:.{}}", test.str, test.width - 1) == sv);
     }

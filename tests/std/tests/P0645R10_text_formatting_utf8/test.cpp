@@ -53,7 +53,8 @@ void test_width_estimation() {
     constexpr test_case test_cases[] = {
         {TYPED_LITERAL(CharT, "\x58"), 1},
         {TYPED_LITERAL(CharT, "x\x58"), 2},
-        // test the boundaries of the intervals defined in n4885 [format.str.std]/11
+
+        // test the boundaries of the intervals defined in n4885 [format.string.std]/11
         {TYPED_LITERAL(CharT, "\u10ff\x58"), 2},
         {TYPED_LITERAL(CharT, "\u1100\x58"), 3},
         {TYPED_LITERAL(CharT, "\u115f\x58"), 3},
@@ -74,7 +75,9 @@ void test_width_estimation() {
         {TYPED_LITERAL(CharT, "\ud7a3\x58"), 3},
         {TYPED_LITERAL(CharT, "\ud7a4\x58"), 2},
         {TYPED_LITERAL(CharT, "\ud7ff\x58"), 2},
+
         // skip over the surrogate pair range (\ud800-\udfff)
+
         {TYPED_LITERAL(CharT, "\ue000\x58"), 2},
         {TYPED_LITERAL(CharT, "\uf8ff\x58"), 2},
         {TYPED_LITERAL(CharT, "\uf900\x58"), 3},
@@ -114,9 +117,9 @@ void test_width_estimation() {
         {TYPED_LITERAL(CharT, "\U0003fffe\x58"), 2},
         {TYPED_LITERAL(CharT, "\U0010ffff\x58"), 2},
 
-        // Pick a "short" and "long" codepoints (\u2000 and \ufe40), then form
-        // all permutations of 3-codepoint prefixes. This gives us coverage of
-        // all transitions (e.g. short-to-long, long-to-long).
+        // Pick "short" and "long" codepoints (\u2000 and \ufe40), then form all permutations of
+        // 3-codepoint prefixes with the same fixed delimiter as above. This gives us coverage of
+        // all adjacent pairings (short/short, short/long, long/short, long/long).
         {TYPED_LITERAL(CharT, "\u2000\u2000\u2000\x58"), 4},
         {TYPED_LITERAL(CharT, "\u2000\u2000\ufe40\x58"), 5},
         {TYPED_LITERAL(CharT, "\u2000\ufe40\u2000\x58"), 5},
