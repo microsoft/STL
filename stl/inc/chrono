@@ -11,7 +11,6 @@
 #include <ctime>
 #include <limits>
 #include <ratio>
-#include <sstream>
 #include <utility>
 #include <xtimec.h>
 
@@ -22,10 +21,10 @@
 #include <cmath>
 #include <compare>
 #include <forward_list>
-#include <iomanip>
 #include <istream>
 #include <memory>
 #include <optional>
+#include <sstream>
 #include <string>
 #include <vector>
 #include <xloctime>
@@ -34,8 +33,7 @@
 #ifdef __cpp_lib_concepts
 #include <concepts>
 #include <format>
-#include <iostream>
-#include <sstream>
+#include <iomanip>
 #endif // defined(__cpp_lib_concepts)
 #endif // _HAS_CXX20
 
@@ -2203,12 +2201,6 @@ namespace chrono {
         _CHRONO seconds _Secs;
         precision _Sub_secs;
     };
-
-    template <class _Ty>
-    constexpr inline bool _Is_hh_mm_ss = false;
-
-    template <class _Duration>
-    constexpr inline bool _Is_hh_mm_ss<hh_mm_ss<_Duration>> = true;
 
     _NODISCARD constexpr bool is_am(const hours& _Hours) noexcept {
         return _Hours >= hours{0} && _Hours <= hours{11};
@@ -5195,17 +5187,15 @@ namespace chrono {
   // [time.format]
 
 template <class _CharT>
-struct _Choose_literal {
-    static constexpr const _CharT* _Choose(const char* _Str, const wchar_t* _WStr) {
-        if constexpr (is_same_v<_CharT, char>) {
-            return _Str;
-        } else {
-            return _WStr;
-        }
+_NODISCARD constexpr const _CharT* _Choose_literal(const char* const _Str, const wchar_t* const _WStr) noexcept {
+    if constexpr (is_same_v<_CharT, char>) {
+        return _Str;
+    } else {
+        return _WStr;
     }
-};
+}
 
-#define _STATICALLY_WIDEN(_CharT, _Literal) (_Choose_literal<_CharT>::_Choose(_Literal, L##_Literal))
+#define _STATICALLY_WIDEN(_CharT, _Literal) (_Choose_literal<_CharT>(_Literal, L##_Literal))
 
 
 // clang-format off
@@ -5279,7 +5269,7 @@ public:
         _Specs._Dynamic_width_index = _Verify_dynamic_arg_index_in_range(_Arg_id);
     }
 
-    constexpr void _On_dynamic_width(const _Auto_id_tag) {
+    constexpr void _On_dynamic_width(_Auto_id_tag) {
         _Specs._Dynamic_width_index = _Verify_dynamic_arg_index_in_range(_Parse_ctx.next_arg_id());
     }
 
@@ -5288,7 +5278,7 @@ public:
         _Specs._Dynamic_precision_index = _Verify_dynamic_arg_index_in_range(_Arg_id);
     }
 
-    constexpr void _On_dynamic_precision(const _Auto_id_tag) {
+    constexpr void _On_dynamic_precision(_Auto_id_tag) {
         _Specs._Dynamic_precision_index = _Verify_dynamic_arg_index_in_range(_Parse_ctx.next_arg_id());
     }
 
@@ -5311,10 +5301,8 @@ public:
         _Specs._Chrono_specs_list.push_back(_Lit_char_spec);
     }
 
-protected:
-    _Chrono_format_specs<_CharT>& _Specs;
-
 private:
+    _Chrono_format_specs<_CharT>& _Specs;
     _ParseContext& _Parse_ctx;
 
     _NODISCARD static constexpr int _Verify_dynamic_arg_index_in_range(const size_t _Idx) {
@@ -5375,8 +5363,8 @@ _NODISCARD constexpr const _CharT* _Parse_chrono_format_specs(
         }
     }
 
-    if (_Begin != _End && *_Begin != '}' && *_Begin != '%') {
-        _THROW(format_error("Invalid format string - chrono-specs must begin with conversion-specs"));
+    if (*_Begin != '}' && *_Begin != '%') {
+        _THROW(format_error("Invalid format string - chrono-specs must begin with conversion-spec"));
     }
 
     // chrono-spec
@@ -5386,8 +5374,7 @@ _NODISCARD constexpr const _CharT* _Parse_chrono_format_specs(
                 _THROW(format_error("Invalid format string - missing type after %"));
             }
 
-            _CharT _Next_ch = *_Begin;
-            switch (_Next_ch) {
+            switch (*_Begin) {
             case 'n':
                 _Callbacks._On_lit_char('\n');
                 ++_Begin;
@@ -5472,9 +5459,9 @@ namespace chrono {
 
     template <class _CharT, class _Traits, class _Duration>
     void _Write_seconds(basic_ostream<_CharT, _Traits>& _Os, const hh_mm_ss<_Duration>& _Val) {
-        _Os << format(_STATICALLY_WIDEN(_CharT, "{:02}"), _Val.seconds().count());
+        _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{:02}"), _Val.seconds().count());
         if constexpr (hh_mm_ss<_Duration>::fractional_width > 0) {
-            _Os << format(_STATICALLY_WIDEN(_CharT, "{0}{1:0{2}}"),
+            _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{0}{1:0{2}}"),
                 _STD use_facet<numpunct<_CharT>>(_Os.getloc()).decimal_point(), _Val.subseconds().count(),
                 _Val.fractional_width);
         }
@@ -5621,7 +5608,7 @@ struct _Chrono_formatter {
             _Allowed_bit _Allowed;
         };
 
-        static const _Table_entry _Table[] = {
+        static constexpr _Table_entry _Table[] = {
             {'d', _O_mod}, {'e', _O_mod}, {'m', _O_mod}, {'Y', _E_mod}, {'y', _EO_mod}, {'C', _E_mod}};
 
         const _Allowed_bit _Mod = _Modifier == 'E' ? _E_mod : _O_mod;
@@ -5654,13 +5641,13 @@ struct _Chrono_formatter {
 
     template <class _FormatContext, class _Ty>
     _NODISCARD auto _Write(_FormatContext& _FormatCtx, const _Ty& _Val, const tm& _Time) {
-        basic_stringstream<_CharT> _Stream;
+        basic_ostringstream<_CharT> _Stream;
 
         if (_No_chrono_specs) {
             _Stream << _Val;
         } else {
             _Stream.imbue(_FormatCtx.locale());
-            if constexpr (_CHRONO _Is_hh_mm_ss<_Ty>) {
+            if constexpr (_Is_specialization_v<_Ty, _CHRONO hh_mm_ss>) {
                 if (_Val.is_negative()) {
                     _Stream << _CharT{'-'};
                 }
@@ -5679,7 +5666,7 @@ struct _Chrono_formatter {
                 } else if (_Spec._Modifier == '\0') {
                     if (_CHRONO _Try_simple_write(_Stream, _Spec._Type, _Time)) {
                         continue;
-                    } else if constexpr (_CHRONO _Is_hh_mm_ss<_Ty>) {
+                    } else if constexpr (_Is_specialization_v<_Ty, _CHRONO hh_mm_ss>) {
                         if (_Spec._Type == 'S') {
                             _CHRONO _Write_seconds(_Stream, _Val);
                             continue;
@@ -5848,8 +5835,7 @@ inline namespace literals {
             return _CHRONO duration<double>(_Val);
         }
 
-        _NODISCARD constexpr _CHRONO milliseconds operator"" ms(unsigned long long _Val) noexcept
-        /* strengthened */ {
+        _NODISCARD constexpr _CHRONO milliseconds operator"" ms(unsigned long long _Val) noexcept /* strengthened */ {
             return _CHRONO milliseconds(_Val);
         }
 
@@ -5858,8 +5844,7 @@ inline namespace literals {
             return _CHRONO duration<double, milli>(_Val);
         }
 
-        _NODISCARD constexpr _CHRONO microseconds operator"" us(unsigned long long _Val) noexcept
-        /* strengthened */ {
+        _NODISCARD constexpr _CHRONO microseconds operator"" us(unsigned long long _Val) noexcept /* strengthened */ {
             return _CHRONO microseconds(_Val);
         }
 
@@ -5868,8 +5853,7 @@ inline namespace literals {
             return _CHRONO duration<double, micro>(_Val);
         }
 
-        _NODISCARD constexpr _CHRONO nanoseconds operator"" ns(unsigned long long _Val) noexcept
-        /* strengthened */ {
+        _NODISCARD constexpr _CHRONO nanoseconds operator"" ns(unsigned long long _Val) noexcept /* strengthened */ {
             return _CHRONO nanoseconds(_Val);
         }
 
@@ -5891,6 +5875,8 @@ inline namespace literals {
 namespace chrono {
     using namespace literals::chrono_literals;
 } // namespace chrono
+
+#undef _STATICALLY_WIDEN
 
 _STD_END
 #pragma pop_macro("new")
