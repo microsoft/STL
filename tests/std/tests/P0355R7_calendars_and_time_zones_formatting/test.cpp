@@ -6,6 +6,7 @@
 #include <concepts>
 #include <format>
 #include <iostream>
+#include <sstream>
 #include <stdio.h>
 #include <string_view>
 #include <type_traits>
@@ -205,12 +206,13 @@ void throw_helper(const charT* fmt, const Args&... vals) {
 
 template <class charT, class... Args>
 void stream_helper(const charT* expect, const Args&... vals) {
-    basic_stringstream<charT> stream;
+    basic_ostringstream<charT> stream;
     (stream << ... << vals);
     assert(stream.str() == expect);
     assert(stream);
 }
 
+// FIXME: TEMPORARY CODE FOR WRITING TESTS, REMOVE BEFORE MERGING
 template <class Str>
 constexpr void print(Str str) {
     if constexpr (is_same_v<Str, string>) {
