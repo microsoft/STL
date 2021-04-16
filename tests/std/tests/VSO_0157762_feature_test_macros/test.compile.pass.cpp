@@ -675,6 +675,20 @@ STATIC_ASSERT(__cpp_lib_filesystem == 201703L);
 #endif
 #endif
 
+#if _HAS_CXX20 && !defined(__EDG__)
+#ifndef __cpp_lib_format
+#error __cpp_lib_format is not defined
+#elif __cpp_lib_format != 201907L
+#error __cpp_lib_format is not 201907L
+#else
+STATIC_ASSERT(__cpp_lib_format == 201907L);
+#endif
+#else
+#ifdef __cpp_lib_format
+#error __cpp_lib_format is defined
+#endif
+#endif
+
 #if _HAS_CXX17
 #ifndef __cpp_lib_gcd_lcm
 #error __cpp_lib_gcd_lcm is not defined

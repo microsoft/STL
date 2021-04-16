@@ -12,6 +12,7 @@
 #include <fstream>
 #include <functional>
 #include <limits>
+#include <locale>
 #include <optional>
 #include <random>
 #include <set>
@@ -44,6 +45,7 @@
 #include "float_hex_precision_to_chars_test_cases.hpp"
 #include "float_scientific_precision_to_chars_test_cases.hpp"
 #include "float_to_chars_test_cases.hpp"
+#include "wchar_test_cases.hpp"
 #include <floating_point_test_cases.hpp>
 
 using namespace std;
@@ -1079,6 +1081,44 @@ void test_right_shift_64_bits_with_rounding() {
     assert(_Right_shift_with_rounding(0xffff'ffff'ffff'ffffULL, 64, false) == 1);
 }
 
+void wchar_tests() {
+    static_assert(size(__DIGIT_TABLE<char>) == size(__DIGIT_TABLE<wchar_t>));
+    auto& fac = use_facet<ctype<wchar_t>>(locale{});
+    for (size_t i = 0; i < size(__DIGIT_TABLE<char>); ++i) {
+        assert(fac.widen(__DIGIT_TABLE<char>[i]) == __DIGIT_TABLE<wchar_t>[i]);
+    }
+
+    wchar_t buffer[32];
+    for (const auto& t : double_to_wide_test_cases) {
+        const auto result = __d2s_buffered_n(begin(buffer), end(buffer), t.value, t.fmt);
+        assert(result.second == errc{});
+        const wstring_view sv(t.correct);
+        assert(equal(buffer, result.first, sv.begin(), sv.end()));
+    }
+
+    for (const auto& t : float_to_wide_test_cases) {
+        const auto result = __f2s_buffered_n(begin(buffer), end(buffer), t.value, t.fmt);
+        assert(result.second == errc{});
+        const wstring_view sv(t.correct);
+        assert(equal(buffer, result.first, sv.begin(), sv.end()));
+    }
+
+    for (const auto& t : wide_digit_pairs_test_cases) {
+        const auto result =
+            __d2fixed_buffered_n(begin(buffer), end(buffer), t.value, static_cast<uint32_t>(t.precision));
+        assert(result.second == errc{});
+        const wstring_view sv(t.correct);
+        assert(equal(buffer, result.first, sv.begin(), sv.end()));
+    }
+}
+
+// GH-1569 - Test instantiation of wchar_t helpers.
+template pair<wchar_t*, errc> std::__to_chars(
+    wchar_t* const, wchar_t* const, const __floating_decimal_32, chars_format, const uint32_t, const uint32_t);
+template pair<wchar_t*, errc> std::__to_chars(
+    wchar_t* const, wchar_t* const, const __floating_decimal_64, chars_format, const double);
+template pair<wchar_t*, errc> std::__d2fixed_buffered_n(wchar_t*, wchar_t* const, const double, const uint32_t);
+
 int main(int argc, char** argv) {
     const auto start = chrono::steady_clock::now();
 
@@ -1091,6 +1131,8 @@ int main(int argc, char** argv) {
     all_floating_tests(mt64);
 
     test_right_shift_64_bits_with_rounding();
+
+    wchar_tests();
 
     const auto finish  = chrono::steady_clock::now();
     const long long ms = chrono::duration_cast<chrono::milliseconds>(finish - start).count();

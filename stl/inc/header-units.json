@@ -6,6 +6,7 @@
     "BuildAsHeaderUnits": [
         // "__msvc_all_public_headers.hpp", // for testing, not production
         "__msvc_system_error_abi.hpp",
+        "__msvc_tzdb.hpp",
         "algorithm",
         "any",
         "array",
@@ -51,6 +52,7 @@
         "exception",
         "execution",
         "filesystem",
+        "format",
         "forward_list",
         "fstream",
         "functional",
@@ -111,7 +113,7 @@
         "valarray",
         "variant",
         "vector",
-        "version",
+        // "version", // importable, but provides feature-test macros only, which can control header inclusion
         "xatomic.h",
         "xatomic_wait.h",
         "xbit_ops.h",
@@ -144,8 +146,8 @@
         "xtr1common",
         "xtree",
         "xutility",
-        "ymath.h",
-        "yvals.h",
-        "yvals_core.h"
+        "ymath.h"
+        // "yvals.h", // internal header, provides macros that control header inclusion
+        // "yvals_core.h" // internal header, provides macros that control header inclusion
     ]
 }

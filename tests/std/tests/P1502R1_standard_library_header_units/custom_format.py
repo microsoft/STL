@@ -29,7 +29,7 @@ class CustomTestFormat(STLTestFormat):
             'exception',
             'execution',
             'filesystem',
-            # 'format',
+            'format',
             'forward_list',
             'fstream',
             'functional',
