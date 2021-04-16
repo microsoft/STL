@@ -126,7 +126,7 @@ int main() {
 
     {
         puts("Testing <array>.");
-#if 0 // TRANSITION, VSO-1088552 (deduction guides), VSO-1309454 (duplicated deduction guides)
+#ifdef MSVC_INTERNAL_TESTING // TRANSITION, VSO-1309454 (duplicated deduction guides)
         constexpr array arr{10, 20, 30, 40, 50};
 #else // ^^^ no workaround / workaround vvv
         constexpr array<int, 5> arr{10, 20, 30, 40, 50};
@@ -581,7 +581,7 @@ int main() {
     {
         puts("Testing <ranges>.");
         constexpr int arr[]{11, 0, 22, 0, 33, 0, 44, 0, 55};
-#if 0 // TRANSITION, VSO-1088552 (deduction guides), VSO-1309454 (duplicated deduction guides)
+#ifdef MSVC_INTERNAL_TESTING // TRANSITION, VSO-1309454 (duplicated deduction guides)
         assert(ranges::distance(views::filter(arr, [](int x) { return x == 0; })) == 4);
         static_assert(ranges::distance(views::filter(arr, [](int x) { return x != 0; })) == 5);
 #else // ^^^ no workaround / workaround vvv
