@@ -5464,6 +5464,10 @@ namespace chrono {
             _Month = static_cast<unsigned int>(_Val);
         } else if constexpr (is_same_v<_Ty, year>) {
             _Year = static_cast<int>(_Val);
+        } else if constexpr (is_same_v<_Ty, weekday>) {
+            _Weekday = static_cast<int>(_Val.c_encoding());
+        } else if constexpr (is_same_v<_Ty, weekday_indexed>) {
+            _Weekday = static_cast<int>(_Val.weekday().c_encoding());
         } else if constexpr (is_same_v<_Ty, month_day>) {
             _Day   = static_cast<unsigned int>(_Val.day());
             _Month = static_cast<unsigned int>(_Val.month());
@@ -5744,7 +5748,7 @@ struct _Chrono_formatter {
             return _Type == 'b' || _Type == 'B' || _Type == 'h' || _Type == 'm';
         } else if constexpr (is_same_v<_Ty, _CHRONO year>) {
             return _Type == 'Y' || _Type == 'y' || _Type == 'C';
-        } else if constexpr (is_same_v<_Ty, _CHRONO weekday>) {
+        } else if constexpr (_Is_any_of_v<_Ty, _CHRONO weekday, _CHRONO weekday_indexed>) {
             return _Type == 'a' || _Type == 'A' || _Type == 'u' || _Type == 'w';
         } else if constexpr (_Is_any_of_v<_Ty, _CHRONO month_day, _CHRONO month_day_last>) {
             return _Is_valid_type<_CHRONO month>(_Type) || _Is_valid_type<_CHRONO day>(_Type);
@@ -6106,7 +6110,13 @@ template <class _Duration, class _CharT>
 struct formatter<_CHRONO local_time<_Duration>, _CharT> //
     : _Fill_tm_formatter<_CHRONO local_time<_Duration>, _CharT> {};
 
+template <class _CharT>
+struct formatter<_CHRONO weekday, _CharT> //
+    : _Fill_tm_formatter<_CHRONO weekday, _CharT> {};
 
+template <class _CharT>
+struct formatter<_CHRONO weekday_indexed, _CharT> //
+    : _Fill_tm_formatter<_CHRONO weekday_indexed, _CharT> {};
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX20
 

@@ -352,6 +352,34 @@ void test_year_formatter() {
 }
 
 template <typename CharT>
+void test_weekday_formatter() {
+    weekday invalid{10};
+    assert(format(STR("{}"), weekday{3}) == STR("Wed"));
+    stream_helper(STR("Wed"), weekday{3});
+    stream_helper(STR("10 is not a valid weekday"), invalid);
+
+    assert(format(STR("{:%a %A}"), weekday{6}) == STR("Sat Saturday"));
+    assert(format(STR("{:%u %w}"), weekday{6}) == STR("6 6"));
+    assert(format(STR("{:%u %w}"), weekday{0}) == STR("7 0"));
+}
+
+template <typename CharT>
+void test_weekday_indexed_formatter() {
+    weekday_indexed invalid1{Tuesday, 10};
+    weekday_indexed invalid2{weekday{10}, 3};
+    weekday_indexed invalid3{weekday{14}, 9};
+    assert(format(STR("{}"), weekday_indexed{Monday, 1}) == STR("Mon[1]"));
+    stream_helper(STR("Mon[1]"), weekday_indexed{Monday, 1});
+    stream_helper(STR("Tue[10 is not a valid index]"), invalid1);
+    stream_helper(STR("10 is not a valid weekday[3]"), invalid2);
+    stream_helper(STR("14 is not a valid weekday[9 is not a valid index]"), invalid3);
+
+    assert(format(STR("{:%a %A}"), weekday_indexed{Monday, 2}) == STR("Mon Monday"));
+    assert(format(STR("{:%u %w}"), weekday_indexed{Tuesday, 3}) == STR("2 2"));
+    assert(format(STR("{:%u %w}"), weekday_indexed{Sunday, 4}) == STR("7 0"));
+}
+
+template <typename CharT>
 void test_year_month_day_formatter() {
     year_month_day invalid{year{1234}, month{0}, day{31}};
     assert(format(STR("{}"), year_month_day{year{1900}, month{2}, day{1}}) == STR("1900-02-01"));
@@ -459,6 +487,12 @@ int main() {
 
     test_year_formatter<char>();
     test_year_formatter<wchar_t>();
+
+    test_weekday_formatter<char>();
+    test_weekday_formatter<wchar_t>();
+
+    test_weekday_indexed_formatter<char>();
+    test_weekday_indexed_formatter<wchar_t>();
 
     test_year_month_day_formatter<char>();
     test_year_month_day_formatter<wchar_t>();
