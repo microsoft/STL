@@ -5446,33 +5446,50 @@ namespace chrono {
     // mandates that invalid dates still be formatted properly.  For example, put_time isn't able to handle a tm_mday of
     // 40, but format("{:%d}", day{40}) should return "40" and operator<< for day prints "40 is not a valid day".
     template <class _CharT, class _Ty>
-    bool _Try_simple_write(basic_ostream<_CharT>& _Os, const char _Type, const tm& _Time, const _Ty& _Val) {
-        const auto _Year  = _Time.tm_year + 1900;
-        const auto _Month = _Time.tm_mon + 1;
-        switch (_Type) {
+    bool _Custom_write(
+        basic_ostream<_CharT>& _Os, const _Chrono_specs<_CharT>& _Specs, const tm& _Time, const _Ty& _Val) {
+        const auto _Year         = _Time.tm_year + 1900;
+        const auto _Month        = _Time.tm_mon + 1;
+        const bool _Has_modifier = _Specs._Modifier != '\0';
+        switch (_Specs._Type) {
         case 'd':
         case 'e':
+            if (_Has_modifier) {
+                return false;
+            }
             if (_Time.tm_mday < 10) {
-                _Os << (_Type == 'd' ? _CharT{'0'} : _CharT{' '});
+                _Os << (_Specs._Type == 'd' ? _CharT{'0'} : _CharT{' '});
             }
             _Os << _Time.tm_mday;
             return true;
         case 'm':
+            if (_Has_modifier) {
+                return false;
+            }
             if (_Month < 10) {
                 _Os << _CharT{'0'};
             }
             _Os << _Month;
             return true;
         case 'Y':
+            if (_Has_modifier) {
+                return false;
+            }
             if (_Year < 0) {
                 _Os << _CharT{'-'};
             }
             _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{:04}"), _STD abs(_Year));
             return true;
         case 'y':
+            if (_Has_modifier) {
+                return false;
+            }
             _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{:02}"), _Year < 0 ? 100 + (_Year % 100) : _Year % 100);
             return true;
         case 'C':
+            if (_Has_modifier) {
+                return false;
+            }
             if (_Year < 0) {
                 _Os << _CharT{'-'};
             }
@@ -5480,24 +5497,27 @@ namespace chrono {
                 _STATICALLY_WIDEN(_CharT, "{:02}"), _STD abs(_Time_parse_fields::_Decompose_year(_Year).first) / 100);
             return true;
         case 'F':
-            _Try_simple_write(_Os, 'Y', _Time, _Val);
+            _Custom_write(_Os, {._Type = 'Y'}, _Time, _Val);
             _Os << _CharT{'-'};
-            _Try_simple_write(_Os, 'm', _Time, _Val);
+            _Custom_write(_Os, {._Type = 'm'}, _Time, _Val);
             _Os << _CharT{'-'};
-            _Try_simple_write(_Os, 'd', _Time, _Val);
+            _Custom_write(_Os, {._Type = 'd'}, _Time, _Val);
             return true;
         case 'D':
-            _Try_simple_write(_Os, 'm', _Time, _Val);
+            _Custom_write(_Os, {._Type = 'm'}, _Time, _Val);
             _Os << _CharT{'/'};
-            _Try_simple_write(_Os, 'd', _Time, _Val);
+            _Custom_write(_Os, {._Type = 'd'}, _Time, _Val);
             _Os << _CharT{'/'};
-            _Try_simple_write(_Os, 'y', _Time, _Val);
+            _Custom_write(_Os, {._Type = 'y'}, _Time, _Val);
             return true;
         case 'T':
             // Alias for %H:%M:%S but we need to rewrite %S to display fractions of a second.
             _Os << _STD put_time(&_Time, _STATICALLY_WIDEN(_CharT, "%H:%M:"));
             [[fallthrough]];
         case 'S':
+            if (_Has_modifier) {
+                return false;
+            }
             _Write_seconds(_Os, _Val);
             return true;
         default:
@@ -5790,11 +5810,12 @@ struct _Chrono_formatter {
                     continue;
                 }
 
-                // For non-localized writes, we can sometimes avoid calling put_time.
-                if (_Spec._Modifier == '\0' && _CHRONO _Try_simple_write(_Stream, _Spec._Type, _Time, _Val)) {
+                // We need to manually do certain writes, either because the specification is different from put_time or
+                // custom logic is needed.
+                if (_CHRONO _Custom_write(_Stream, _Spec, _Time, _Val)) {
                     continue;
                 }
-                // Otherwise, we should throw to avoid triggering asserts within put_time machinery.
+                // Otherwise, we should throw on out-of-bounds to avoid triggering asserts within put_time machinery.
                 if constexpr (_Has_ok<_Ty>) {
                     if (!_Val.ok()) {
                         _THROW(format_error("Cannot localize out-of-bounds time point."));
