@@ -5759,7 +5759,7 @@ struct _Chrono_formatter {
             return _Type == 'H' || _Type == 'I' || _Type == 'M' || _Type == 'S' || _Type == 'r' || _Type == 'R'
                 || _Type == 'T' || _Type == 'p';
         } else if constexpr (_Is_specialization_v<_Ty, _CHRONO time_point>) {
-            if constexpr (!is_same_v<_Ty::clock, _CHRONO local_t>) {
+            if constexpr (!is_same_v<typename _Ty::clock, _CHRONO local_t>) {
                 if (_Type == 'z' || _Type == 'Z') {
                     return true;
                 }
