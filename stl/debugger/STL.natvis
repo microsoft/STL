@@ -1828,7 +1828,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
   <Type Name="std::source_location">
-    <DisplayString>line: {_Line}, column: {_Column}</DisplayString>
+    <DisplayString>{_Function,sb}: ({_Line}, {_Column})</DisplayString>
     <Expand>
       <Item Name="[line]">_Line</Item>
       <Item Name="[column]">_Column</Item>
