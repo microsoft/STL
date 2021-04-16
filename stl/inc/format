@@ -667,7 +667,7 @@ public:
         }
 
         // surrogate pair
-        _Ch = (_Ch - 0xD8000u) << 10;
+        _Ch = (_Ch - 0xD800u) << 10;
         _Ch += static_cast<char32_t>(_Ptr[1]) - 0xDC00u;
         _Ch += 0x10000u;
         return _Unicode_width_estimate<_Width_estimate_high_intervals>(_Ch);
