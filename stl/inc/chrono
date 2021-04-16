@@ -5501,24 +5501,6 @@ namespace chrono {
     }*/
 
     template <class _Ty>
-    concept _Has_day = requires(const _Ty& _At) {
-        { _At.day() }
-        ->same_as<day>;
-    };
-
-    template <class _Ty>
-    concept _Has_month = requires(const _Ty& _At) {
-        { _At.month() }
-        ->same_as<month>;
-    };
-
-    template <class _Ty>
-    concept _Has_year = requires(const _Ty& _At) {
-        { _At.year() }
-        ->same_as<year>;
-    };
-
-    template <class _Ty>
     tm _Fill_tm(const _Ty& _Val) {
         unsigned int _Day   = 0;
         unsigned int _Month = 0;
