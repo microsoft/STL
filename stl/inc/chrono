@@ -5521,6 +5521,14 @@ namespace chrono {
             _Month = static_cast<unsigned int>(_Val);
         } else if constexpr (is_same_v<_Ty, year>) {
             _Year = static_cast<int>(_Val);
+        } else if constexpr (is_same_v<_Ty, month_day>) {
+            _Day   = static_cast<unsigned int>(_Val.day());
+            _Month = static_cast<unsigned int>(_Val.month());
+        } else if constexpr (is_same_v<_Ty, month_day_last>) {
+            _Month = static_cast<unsigned int>(_Val.month());
+        } else if constexpr (is_same_v<_Ty, year_month>) {
+            _Month = static_cast<unsigned int>(_Val.month());
+            _Year  = static_cast<int>(_Val.year());
         } else if constexpr (is_same_v<_Ty, year_month_day>) {
             _Day     = static_cast<unsigned int>(_Val.day());
             _Month   = static_cast<unsigned int>(_Val.month());
@@ -5738,12 +5746,16 @@ struct _Chrono_formatter {
     _NODISCARD constexpr bool _Is_valid_type(const char _Type) noexcept {
         if constexpr (is_same_v<_Ty, _CHRONO day>) {
             return _Type == 'd' || _Type == 'e';
-        } else if constexpr (is_same_v<_Ty, _CHRONO month>) {
+        } else if constexpr (_Is_any_of_v<_Ty, _CHRONO month, _CHRONO month_day_last>) {
             return _Type == 'b' || _Type == 'B' || _Type == 'h' || _Type == 'm';
         } else if constexpr (is_same_v<_Ty, _CHRONO year>) {
             return _Type == 'Y' || _Type == 'y' || _Type == 'C';
         } else if constexpr (is_same_v<_Ty, _CHRONO weekday>) {
             return _Type == 'a' || _Type == 'A' || _Type == 'u' || _Type == 'w';
+        } else if constexpr (is_same_v<_Ty, _CHRONO month_day>) {
+            return _Is_valid_type<_CHRONO month>(_Type) || _Is_valid_type<_CHRONO day>(_Type);
+        } else if constexpr (is_same_v<_Ty, _CHRONO year_month>) {
+            return _Is_valid_type<_CHRONO year>(_Type) || _Is_valid_type<_CHRONO month>(_Type);
         } else if constexpr (_Is_any_of_v<_Ty, _CHRONO year_month_day, _CHRONO year_month_day_last,
                                  _CHRONO year_month_weekday, _CHRONO year_month_weekday_last>) {
             return _Type == 'D' || _Type == 'F' || _Is_valid_type<_CHRONO year>(_Type)
@@ -5836,6 +5848,18 @@ struct formatter<_CHRONO month, _CharT> //
 template <class _CharT>
 struct formatter<_CHRONO year, _CharT> //
     : _Fill_tm_formatter<_CHRONO year, _CharT> {};
+
+template <class _CharT>
+struct formatter<_CHRONO month_day, _CharT> //
+    : _Fill_tm_formatter<_CHRONO month_day, _CharT> {};
+
+template <class _CharT>
+struct formatter<_CHRONO month_day_last, _CharT> //
+    : _Fill_tm_formatter<_CHRONO month_day_last, _CharT> {};
+
+template <class _CharT>
+struct formatter<_CHRONO year_month, _CharT> //
+    : _Fill_tm_formatter<_CHRONO year_month, _CharT> {};
 
 template <class _CharT>
 struct formatter<_CHRONO year_month_day, _CharT> //

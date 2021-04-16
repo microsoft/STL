@@ -397,6 +397,31 @@ void test_hh_mm_ss_formatter() {
     throw_helper(STR("{}"), hh_mm_ss{-24h});
 }
 
+template <typename CharT>
+void test_month_day_formatter() {
+    stream_helper(STR("Jan/16"), January / 16);
+    stream_helper(STR("13 is not a valid month/40 is not a valid day"), month{13} / day{40});
+
+    assert(format(STR("{:%B %d}"), June / 17) == STR("June 17"));
+    throw_helper(STR("{:%Y}"), June / 17);
+}
+
+template <typename CharT>
+void test_month_day_last_formatter() {
+    stream_helper(STR("Feb/last"), February / last);
+
+    assert(format(STR("{:%B}"), June / last) == STR("June"));
+    throw_helper(STR("{:%d}"), June / last);
+}
+
+template <typename CharT>
+void test_year_month_formatter() {
+    stream_helper(STR("1444/Oct"), 1444y / October);
+
+    assert(format(STR("{:%Y %B}"), 2000y / July) == STR("2000 July"));
+    throw_helper(STR("{:%d}"), 2000y / July);
+}
+
 int main() {
     test_parse_conversion_spec<char>();
     test_parse_conversion_spec<wchar_t>();
@@ -427,4 +452,13 @@ int main() {
 
     test_hh_mm_ss_formatter<char>();
     test_hh_mm_ss_formatter<wchar_t>();
+
+    test_month_day_formatter<char>();
+    test_month_day_formatter<wchar_t>();
+
+    test_month_day_last_formatter<char>();
+    test_month_day_last_formatter<wchar_t>();
+
+    test_year_month_formatter<char>();
+    test_year_month_formatter<wchar_t>();
 }
