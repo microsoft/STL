@@ -423,6 +423,7 @@ void test_hh_mm_ss_formatter() {
 
     throw_helper(STR("{}"), hh_mm_ss{24h});
     throw_helper(STR("{}"), hh_mm_ss{-24h});
+    assert(format(STR("{:%M %S}"), hh_mm_ss{27h + 12min + 30s}) == STR("12 30"));
 }
 
 template <typename CharT>

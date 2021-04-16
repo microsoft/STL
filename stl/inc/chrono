@@ -5899,8 +5899,16 @@ struct _Chrono_formatter {
             _Os << _CharT{'/'};
             _Custom_write(_Os, {._Type = 'y'}, _Time, _Val);
             return true;
+        case 'H':
+            if constexpr (_Is_specialization_v<_Ty, _CHRONO hh_mm_ss>) {
+                if (-_CHRONO hours{24} >= _Val.hours() || _Val.hours() >= _CHRONO hours{24}) {
+                    _THROW(format_error("Cannot localize hh_mm_ss longer than 24 hours."));
+                }
+            }
+            return false;
         case 'T':
             // Alias for %H:%M:%S but we need to rewrite %S to display fractions of a second.
+            _Custom_write(_Os, {._Type = 'H'}, _Time, _Val);
             _Os << _STD put_time(&_Time, _STATICALLY_WIDEN(_CharT, "%H:%M:"));
             [[fallthrough]];
         case 'S':
@@ -5993,24 +6001,8 @@ struct formatter<_CHRONO year_month_weekday_last, _CharT>
     : _Fill_tm_formatter<_CHRONO year_month_weekday_last, _CharT> {};
 
 template <class _Rep, class _Period, class _CharT>
-struct formatter<_CHRONO hh_mm_ss<_CHRONO duration<_Rep, _Period>>, _CharT> {
-    using _Ty = _CHRONO hh_mm_ss<_CHRONO duration<_Rep, _Period>>;
-
-    auto parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
-        return _Impl.template _Parse<_Ty>(_Parse_ctx);
-    }
-
-    template <class _FormatContext>
-    auto format(const _Ty& _Val, _FormatContext& _FormatCtx) {
-        if (-_CHRONO hours{24} >= _Val.hours() || _Val.hours() >= _CHRONO hours{24}) {
-            _THROW(format_error("Cannot localize hh_mm_ss longer than 24 hours."));
-        }
-        return _Impl._Write(_FormatCtx, _Val, _Fill_tm(_Val));
-    }
-
-private:
-    _Chrono_formatter<_CharT, false> _Impl;
-};
+struct formatter<_CHRONO hh_mm_ss<_CHRONO duration<_Rep, _Period>>, _CharT>
+    : _Fill_tm_formatter<_CHRONO hh_mm_ss<_CHRONO duration<_Rep, _Period>>, _CharT> {};
 
 template <class _Duration, class _CharT>
 struct formatter<_CHRONO sys_time<_Duration>, _CharT> {
