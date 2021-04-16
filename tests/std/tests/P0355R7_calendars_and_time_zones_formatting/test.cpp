@@ -423,6 +423,27 @@ void test_year_month_formatter() {
     throw_helper(STR("{:%d}"), 2000y / July);
 }
 
+template <typename CharT>
+void test_clock_formatter() {
+    stream_helper(STR("1970-01-01 00:00:00"), sys_seconds{});
+    stream_helper(STR("1970-01-01"), sys_days{});
+    stream_helper(STR("1970-01-01 00:00:00"), utc_seconds{});
+    stream_helper(STR("1958-01-01 00:00:00"), tai_seconds{});
+    stream_helper(STR("1980-01-06 00:00:00"), gps_seconds{});
+    stream_helper(STR("1601-01-01 00:00:00"), file_time<seconds>{});
+    stream_helper(STR("1970-01-01 00:00:00"), local_seconds{});
+
+    assert(format(STR("{:%Z %z %Oz %Ez}"), sys_seconds{}) == STR("UTC +0000 +00:00 +00:00"));
+    assert(format(STR("{:%Z %z %Oz %Ez}"), sys_days{}) == STR("UTC +0000 +00:00 +00:00"));
+    assert(format(STR("{:%Z %z %Oz %Ez}"), utc_seconds{}) == STR("UTC +0000 +00:00 +00:00"));
+    assert(format(STR("{:%Z %z %Oz %Ez}"), tai_seconds{}) == STR("TAI +0000 +00:00 +00:00"));
+    assert(format(STR("{:%Z %z %Oz %Ez}"), gps_seconds{}) == STR("GPS +0000 +00:00 +00:00"));
+    assert(format(STR("{:%Z %z %Oz %Ez}"), file_time<seconds>{}) == STR("UTC +0000 +00:00 +00:00"));
+    throw_helper(STR("{:%Z %z %Oz %Ez}"), local_seconds{});
+
+    assert(format(STR("{:%S}"), utc_clock::from_sys(get_tzdb().leap_seconds.front().date()) - 1s) == STR("60"));
+}
+
 int main() {
     test_parse_conversion_spec<char>();
     test_parse_conversion_spec<wchar_t>();
@@ -462,4 +483,7 @@ int main() {
 
     test_year_month_formatter<char>();
     test_year_month_formatter<wchar_t>();
+
+    test_clock_formatter<char>();
+    test_clock_formatter<wchar_t>();
 }
