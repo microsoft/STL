@@ -50,7 +50,36 @@ void test_parse_align() {
         {.expected_alignment = _Fmt_align::_Center, .expected_fill = "\x92\x6e"sv});
 }
 
+void test_width_estimation() {
+    // Format strings of known width with a trailing delimiter using a precision large enough to
+    // include all but the delimiter to validate the width estimation code.
+    struct test_case {
+        const char* str;
+        int width;
+    };
+    constexpr test_case test_cases[] = {
+        // Pick a "short" and "long" codepoints (\x20 and \x96\x7b), then form
+        // all permutations of 3-codepoint prefixes. This gives us coverage of
+        // all transitions (e.g. short-to-long, long-to-long).
+        {"\x20\x20\x20\x58", 4},
+        {"\x20\x20\x96\x7b\x58", 5},
+        {"\x20\x96\x7b\x20\x58", 5},
+        {"\x96\x7b\x20\x20\x58", 5},
+        {"\x20\x96\x7b\x96\x7b\x58", 6},
+        {"\x96\x7b\x20\x96\x7b\x58", 6},
+        {"\x96\x7b\x96\x7b\x20\x58", 6},
+        {"\x96\x7b\x96\x7b\x96\x7b\x58", 7},
+    };
+
+    for (const auto& test : test_cases) {
+        basic_string_view sv{test.str};
+        sv = sv.substr(0, sv.size() - 1);
+        assert(format("{:.{}}", test.str, test.width - 1) == sv);
+    }
+}
+
 int main() {
     test_multibyte_format_strings();
     test_parse_align();
+    test_width_estimation();
 }

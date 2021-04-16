@@ -462,7 +462,7 @@ _NODISCARD constexpr int _Unicode_width_estimate(const char32_t _Ch) noexcept {
         if (_Ch < _Bound) {
             return _Result;
         }
-        _Result ^= 1;
+        _Result ^= 0b11u; // Flip between 1 and 2 on each iteration
     }
 
     return 1;
@@ -564,7 +564,7 @@ private:
     }
 
 public:
-    _NODISCARD int _Units_in_next_character(const char* _First, const char* _Last) const noexcept {
+    _NODISCARD int _Units_in_next_character(const char* const _First, const char* const _Last) const noexcept {
         // Returns a count of the number of code units that compose the first encoded character in
         // [_First, _Last), or -1 if [_First, _Last) doesn't contain an entire encoded character or
         // *_First is not a valid lead byte.
@@ -589,7 +589,7 @@ public:
         }
     }
 
-    _NODISCARD const char* _Find_encoded(const char* _First, const char* _Last, const char _Val) const {
+    _NODISCARD const char* _Find_encoded(const char* _First, const char* const _Last, const char _Val) const {
         // Returns the first occurrence of _Val as an encoded character (and not, for example, as a
         // continuation byte) in [_First, _Last).
         if constexpr (_Statically_Utf8) {
@@ -632,7 +632,7 @@ public:
 template <bool _Statically_Utf8>
 class _Fmt_codec<wchar_t, _Statically_Utf8> {
 public:
-    _NODISCARD int _Units_in_next_character(const wchar_t* _First, const wchar_t* _Last) const noexcept {
+    _NODISCARD int _Units_in_next_character(const wchar_t* _First, const wchar_t* const _Last) const noexcept {
         // Returns a count of the number of code units that compose the first encoded character in
         // [_First, _Last), or -1 if [_First, _Last) doesn't contain an entire encoded character or
         // *_First is an unpaired surrogate.
@@ -653,7 +653,8 @@ public:
         return 2; // surrogate pair
     }
 
-    _NODISCARD const wchar_t* _Find_encoded(const wchar_t* _First, const wchar_t* _Last, const wchar_t _Val) const {
+    _NODISCARD const wchar_t* _Find_encoded(
+        const wchar_t* const _First, const wchar_t* const _Last, const wchar_t _Val) const {
         return _Find_unchecked(_First, _Last, _Val);
     }
 
