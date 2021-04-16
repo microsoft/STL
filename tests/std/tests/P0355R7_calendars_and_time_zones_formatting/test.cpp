@@ -411,7 +411,8 @@ void test_month_day_last_formatter() {
     stream_helper(STR("Feb/last"), February / last);
 
     assert(format(STR("{:%B}"), June / last) == STR("June"));
-    throw_helper(STR("{:%d}"), June / last);
+    assert(format(STR("{:%d}"), June / last) == STR("30"));
+    throw_helper(STR("{:%d}"), February / last);
 }
 
 template <typename CharT>
