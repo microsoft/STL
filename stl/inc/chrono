@@ -5693,11 +5693,8 @@ struct _Chrono_formatter {
                     continue;
                 }
 
-                if (_Type_needs_bounds_checking(_Spec)) {
-                    if (!_Val.ok()) {
-                        _THROW(format_error("Cannot localize out-of-bounds time point."));
-                    }
-                } else if (_Spec._Modifier == '\0') {
+                // For non-localized writes, we can sometimes avoid calling put_time.
+                if (_Spec._Modifier == '\0') {
                     if (_CHRONO _Try_simple_write(_Stream, _Spec._Type, _Time)) {
                         continue;
                     } else if constexpr (_Is_specialization_v<_Ty, _CHRONO hh_mm_ss>) {
@@ -5706,6 +5703,10 @@ struct _Chrono_formatter {
                             continue;
                         }
                     }
+                }
+                // Otherwise, we should throw to avoid triggering asserts within put_time machinery.
+                if (!_Val.ok()) {
+                    _THROW(format_error("Cannot localize out-of-bounds time point."));
                 }
 
                 _CharT _Fmt_str[4];
@@ -5723,23 +5724,6 @@ struct _Chrono_formatter {
 
         return _Write_aligned(_STD move(_FormatCtx.out()), static_cast<int>(_Stream.view().size()), _Specs,
             _Fmt_align::_Left, [&](auto _Out) { return _Fmt_write(_STD move(_Out), _Stream.view()); });
-    }
-
-    _NODISCARD bool _Type_needs_bounds_checking(const _Chrono_specs<_CharT>& _Spec) noexcept {
-        // [tab:time.format.spec]
-        switch (_Spec._Type) {
-        case 'a':
-        case 'A':
-        case 'b':
-        case 'B':
-        case 'h':
-        case 'z':
-        case 'Z':
-            return true;
-
-        default:
-            return false;
-        }
     }
 
     _Chrono_format_specs<_CharT> _Specs{};

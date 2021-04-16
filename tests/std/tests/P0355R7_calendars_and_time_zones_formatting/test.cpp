@@ -298,6 +298,7 @@ void test_day_formatter() {
     assert(format(STR("{:%d %d %d}"), day{27}) == STR("27 27 27"));
     assert(format(STR("{:%d}"), day{200}) == STR("200"));
     throw_helper(STR("{:%Ed}"), day{10});
+    throw_helper(STR("{:%Od}"), day{40});
     assert(format(STR("{}"), day{0}) == STR("00 is not a valid day"));
 
     // Op <<
