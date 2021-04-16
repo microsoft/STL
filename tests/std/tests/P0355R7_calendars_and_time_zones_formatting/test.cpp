@@ -299,6 +299,7 @@ void test_day_formatter() {
     assert(format(STR("{:%d}"), day{200}) == STR("200"));
     throw_helper(STR("{:%Ed}"), day{10});
     throw_helper(STR("{:%Od}"), day{40});
+    throw_helper(STR("{:%Ed}"), day{40});
     assert(format(STR("{}"), day{0}) == STR("00 is not a valid day"));
 
     // Op <<
@@ -381,12 +382,19 @@ void test_year_month_weekday_last_formatter() {
 
 template <typename CharT>
 void test_hh_mm_ss_formatter() {
-#if 0 // FIXME, TEST format() AND operator<< WHEN formatter FOR hh_mm_ss IS IMPLEMENTED
     stream_helper(STR("-01:08:03.007"), hh_mm_ss{-4083007ms});
     stream_helper(STR("01:08:03.007"), hh_mm_ss{4083007ms});
     stream_helper(STR("18:15:45.123"), hh_mm_ss{65745123ms});
     stream_helper(STR("18:15:45"), hh_mm_ss{65745s});
-#endif // FIXME
+
+    assert(format(STR("{:%H %I %M %S %r %R %T %p}"), hh_mm_ss{13h + 14min + 15351ms})
+           == STR("13 01 14 15.351 13:14:15 13:14 13:14:15.351 PM"));
+
+    assert(format(STR("{:%H %I %M %S %r %R %T %p}"), hh_mm_ss{-13h - 14min - 15351ms})
+           == STR("-13 01 14 15.351 13:14:15 13:14 13:14:15.351 PM"));
+
+    throw_helper(STR("{}"), hh_mm_ss{24h});
+    throw_helper(STR("{}"), hh_mm_ss{-24h});
 }
 
 int main() {

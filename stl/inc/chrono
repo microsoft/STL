@@ -5223,6 +5223,13 @@ concept _Chrono_parse_spec_callbacks = _Parse_align_callbacks<_Ty, _CharT>
 };
 // clang-format on
 
+// clang-format off
+template <class _Ty>
+concept _Has_ok = requires (_Ty _At) {
+    {_At.ok()} -> same_as<bool>;
+};
+// clang-format on
+
 // A chrono spec is either a type (with an optional modifier), OR a literal character, never both.
 template <class _CharT>
 struct _Chrono_specs {
@@ -5413,11 +5420,33 @@ _NODISCARD constexpr const _CharT* _Parse_chrono_format_specs(
 }
 
 namespace chrono {
+    // Replacement for %S, as put_time does not honor writing fractional seconds.
+    template <class _CharT, class _Traits, class _Ty>
+    void _Write_seconds(basic_ostream<_CharT, _Traits>&, const _Ty&) {
+        _STL_INTERNAL_CHECK(false);
+    }
+
+    template <class _CharT, class _Traits, class _Duration>
+    void _Write_seconds(basic_ostream<_CharT, _Traits>& _Os, const hh_mm_ss<_Duration>& _Val) {
+        _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{:02}"), _Val.seconds().count());
+        if constexpr (hh_mm_ss<_Duration>::fractional_width > 0) {
+            _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{0}{1:0{2}}"),
+                _STD use_facet<numpunct<_CharT>>(_Os.getloc()).decimal_point(), _Val.subseconds().count(),
+                _Val.fractional_width);
+        }
+    }
+
+    template <class _CharT, class _Traits, class _Clock, class _Duration>
+    void _Write_seconds(basic_ostream<_CharT, _Traits>& _Os, const time_point<_Clock, _Duration>& _Val) {
+        const auto _Dp = _CHRONO floor<days>(_Val);
+        _Write_seconds(_Os, hh_mm_ss{_Val - _Dp});
+    }
+
     // This echoes the functionality of put_time, but is able to handle invalid dates (when !ok()) since the Standard
     // mandates that invalid dates still be formatted properly.  For example, put_time isn't able to handle a tm_mday of
     // 40, but format("{:%d}", day{40}) should return "40" and operator<< for day prints "40 is not a valid day".
-    template <class _CharT>
-    bool _Try_simple_write(basic_ostream<_CharT>& _Os, const char _Type, const tm& _Time) {
+    template <class _CharT, class _Ty>
+    bool _Try_simple_write(basic_ostream<_CharT>& _Os, const char _Type, const tm& _Time, const _Ty& _Val) {
         const auto _Year  = _Time.tm_year + 1900;
         const auto _Month = _Time.tm_mon + 1;
         switch (_Type) {
@@ -5451,54 +5480,30 @@ namespace chrono {
                 _STATICALLY_WIDEN(_CharT, "{:02}"), _STD abs(_Time_parse_fields::_Decompose_year(_Year).first) / 100);
             return true;
         case 'F':
-            _Try_simple_write(_Os, 'Y', _Time);
+            _Try_simple_write(_Os, 'Y', _Time, _Val);
             _Os << _CharT{'-'};
-            _Try_simple_write(_Os, 'm', _Time);
+            _Try_simple_write(_Os, 'm', _Time, _Val);
             _Os << _CharT{'-'};
-            _Try_simple_write(_Os, 'd', _Time);
+            _Try_simple_write(_Os, 'd', _Time, _Val);
             return true;
         case 'D':
-            _Try_simple_write(_Os, 'm', _Time);
+            _Try_simple_write(_Os, 'm', _Time, _Val);
             _Os << _CharT{'/'};
-            _Try_simple_write(_Os, 'd', _Time);
+            _Try_simple_write(_Os, 'd', _Time, _Val);
             _Os << _CharT{'/'};
-            _Try_simple_write(_Os, 'y', _Time);
+            _Try_simple_write(_Os, 'y', _Time, _Val);
+            return true;
+        case 'T':
+            // Alias for %H:%M:%S but we need to rewrite %S to display fractions of a second.
+            _Os << _STD put_time(&_Time, _STATICALLY_WIDEN(_CharT, "%H:%M:"));
+            [[fallthrough]];
+        case 'S':
+            _Write_seconds(_Os, _Val);
             return true;
         default:
             return false;
         }
     }
-
-    template <class _CharT, class _Traits, class _Duration>
-    void _Write_seconds(basic_ostream<_CharT, _Traits>& _Os, const hh_mm_ss<_Duration>& _Val) {
-        _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{:02}"), _Val.seconds().count());
-        if constexpr (hh_mm_ss<_Duration>::fractional_width > 0) {
-            _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{0}{1:0{2}}"),
-                _STD use_facet<numpunct<_CharT>>(_Os.getloc()).decimal_point(), _Val.subseconds().count(),
-                _Val.fractional_width);
-        }
-    }
-
-    /*
-    template <class _CharT, class _Traits, class _Duration>
-    // clang-format off
-        requires (!treat_as_floating_point_v<typename _Duration::rep> && (_Duration{1} < days{1}))
-    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const sys_time<_Duration>& _Clock) {
-        // clang-format on
-        const auto _Dp = floor<days>(_Clock);
-        return _Os << year_month_day{_Dp} << _STATICALLY_WIDEN(_CharT, " ") << hh_mm_ss{_Clock - _Dp};
-    }
-
-    template <class _CharT, class _Traits>
-    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const sys_days& _Clock) {
-        return _Os << year_month_day{_Clock};
-    }
-
-    template <class _CharT, class _Traits, class _Duration>
-    basic_ostream<_CharT, _Traits>& operator<<(
-        basic_ostream<_CharT, _Traits>& _Os, const utc_clock<_Duration>& _Clock) {
-        return _Os << format(_STATICALLY_WIDEN(_CharT, "{:%F %T}"), _Clock);
-    }*/
 
     template <class _Ty>
     _NODISCARD tm _Fill_tm(const _Ty& _Val) {
@@ -5649,23 +5654,6 @@ namespace chrono {
     }
 } // namespace chrono
 
-/*
-template <class _Duration, class _CharT>
-struct formatter<_CHRONO sys_time<_Duration>, _CharT> {
-    typename basic_format_parse_context<_CharT>::iterator parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
-        _Chrono_format_specs<_CharT> _Specs{};
-        _Chrono_specs_setter<_CharT, basic_format_parse_context<_CharT>> _Callback{_Specs, _Parse_ctx};
-        const auto _It =
-            _Parse_chrono_format_specs(_Parse_ctx._Unchecked_begin(), _Parse_ctx._Unchecked_end(), _Callback);
-        const auto _Res_iter = _Parse_ctx.begin() + (_It - _Parse_ctx._Unchecked_begin());
-
-        if (_It != _Parse_ctx._Unchecked_end() && *_It != '}') {
-            _THROW(format_error("Missing '}' in format string."));
-        }
-    }
-};
-*/
-
 template <class _CharT, bool _Allow_precision>
 struct _Chrono_formatter {
     template <class _Ty>
@@ -5761,6 +5749,9 @@ struct _Chrono_formatter {
             return _Type == 'D' || _Type == 'F' || _Is_valid_type<_CHRONO year>(_Type)
                 || _Is_valid_type<_CHRONO month>(_Type) || _Is_valid_type<_CHRONO day>(_Type)
                 || _Is_valid_type<_CHRONO weekday>(_Type);
+        } else if constexpr (_Is_specialization_v<_Ty, _CHRONO hh_mm_ss>) {
+            return _Type == 'H' || _Type == 'I' || _Type == 'M' || _Type == 'S' || _Type == 'r' || _Type == 'R'
+                || _Type == 'T' || _Type == 'p';
         } else {
             // TRANSITION, remove when all types are added
             static_assert(_Always_false<_Ty>, "unsupported type");
@@ -5788,19 +5779,14 @@ struct _Chrono_formatter {
                 }
 
                 // For non-localized writes, we can sometimes avoid calling put_time.
-                if (_Spec._Modifier == '\0') {
-                    if (_CHRONO _Try_simple_write(_Stream, _Spec._Type, _Time)) {
-                        continue;
-                    } else if constexpr (_Is_specialization_v<_Ty, _CHRONO hh_mm_ss>) {
-                        if (_Spec._Type == 'S') {
-                            _CHRONO _Write_seconds(_Stream, _Val);
-                            continue;
-                        }
-                    }
+                if (_Spec._Modifier == '\0' && _CHRONO _Try_simple_write(_Stream, _Spec._Type, _Time, _Val)) {
+                    continue;
                 }
                 // Otherwise, we should throw to avoid triggering asserts within put_time machinery.
-                if (!_Val.ok()) {
-                    _THROW(format_error("Cannot localize out-of-bounds time point."));
+                if constexpr (_Has_ok<_Ty>) {
+                    if (!_Val.ok()) {
+                        _THROW(format_error("Cannot localize out-of-bounds time point."));
+                    }
                 }
 
                 _CharT _Fmt_str[4];
@@ -5866,6 +5852,27 @@ struct formatter<_CHRONO year_month_weekday, _CharT> //
 template <class _CharT>
 struct formatter<_CHRONO year_month_weekday_last, _CharT>
     : _Fill_tm_formatter<_CHRONO year_month_weekday_last, _CharT> {};
+
+template <class _Rep, class _Period, class _CharT>
+struct formatter<_CHRONO hh_mm_ss<_CHRONO duration<_Rep, _Period>>, _CharT> {
+    using _Ty = _CHRONO hh_mm_ss<_CHRONO duration<_Rep, _Period>>;
+
+    auto parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
+        return _Impl.template _Parse<_Ty>(_Parse_ctx);
+    }
+
+    template <class _FormatContext>
+    auto format(const _Ty& _Val, _FormatContext& _FormatCtx) {
+        if (-_CHRONO hours{24} >= _Val.hours() || _Val.hours() >= _CHRONO hours{24}) {
+            _THROW(format_error("Cannot localize hh_mm_ss longer than 24 hours."));
+        }
+        return _Impl._Write(_FormatCtx, _Val, _Fill_tm(_Val));
+    }
+
+private:
+    _Chrono_formatter<_CharT, false> _Impl;
+};
+
 
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX20
