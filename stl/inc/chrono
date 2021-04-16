@@ -5824,7 +5824,7 @@ struct _Chrono_formatter {
     // This echoes the functionality of put_time, but is able to handle invalid dates (when !ok()) since the Standard
     // mandates that invalid dates still be formatted properly.  For example, put_time isn't able to handle a tm_mday of
     // 40, but format("{:%d}", day{40}) should return "40" and operator<< for day prints "40 is not a valid day".
-    template <class _CharT, class _Ty>
+    template <class _Ty>
     bool _Custom_write(
         basic_ostream<_CharT>& _Os, const _Chrono_specs<_CharT>& _Specs, const tm& _Time, const _Ty& _Val) {
         const auto _Year         = _Time.tm_year + 1900;
