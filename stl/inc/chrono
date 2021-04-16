@@ -5501,7 +5501,7 @@ namespace chrono {
     }*/
 
     template <class _Ty>
-    tm _Fill_tm(const _Ty& _Val) {
+    _NODISCARD tm _Fill_tm(const _Ty& _Val) {
         unsigned int _Day   = 0;
         unsigned int _Month = 0;
         int _Year           = 0;
@@ -5521,6 +5521,21 @@ namespace chrono {
             _Month   = static_cast<unsigned int>(_Val.month());
             _Year    = static_cast<int>(_Val.year());
             _Weekday = _Val._Calculate_weekday();
+        } else if constexpr (is_same_v<_Ty, year_month_day_last>) {
+            _Day     = static_cast<unsigned int>(_Val.day());
+            _Month   = static_cast<unsigned int>(_Val.month());
+            _Year    = static_cast<int>(_Val.year());
+            _Weekday = year_month_day{_Val}._Calculate_weekday();
+        } else if constexpr (is_same_v<_Ty, year_month_weekday>) {
+            _Day     = static_cast<unsigned int>(year_month_day{_Val}.day());
+            _Month   = static_cast<unsigned int>(_Val.month());
+            _Year    = static_cast<int>(_Val.year());
+            _Weekday = static_cast<int>(_Val.weekday().c_encoding());
+        } else if constexpr (is_same_v<_Ty, year_month_weekday_last>) {
+            _Day     = static_cast<unsigned int>(year_month_day{_Val}.day());
+            _Month   = static_cast<unsigned int>(_Val.month());
+            _Year    = static_cast<int>(_Val.year());
+            _Weekday = static_cast<int>(_Val.weekday().c_encoding());
         } else if constexpr (_Is_specialization_v<_Ty, hh_mm_ss>) {
             _Hours   = _Val.hours().count();
             _Minutes = _Val.minutes().count();
@@ -5540,50 +5555,97 @@ namespace chrono {
 
     template <class _CharT, class _Traits>
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const day& _Val) {
-        _Try_simple_write(_Os, 'd', _Fill_tm(_Val));
-        if (!_Val.ok()) {
-            _Os << _STATICALLY_WIDEN(_CharT, " is not a valid day");
-        }
-
-        return _Os;
+        return _Os << (_Val.ok() ? _STD format(_STATICALLY_WIDEN(_CharT, "{:%d}"), _Val)
+                                 : _STD format(_STATICALLY_WIDEN(_CharT, "{:%d} is not a valid day"), _Val));
     }
 
     template <class _CharT, class _Traits>
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const month& _Val) {
-        if (_Val.ok()) {
-            const tm _Time = _Fill_tm(_Val);
-            return _Os << _STD put_time(&_Time, _STATICALLY_WIDEN(_CharT, "%b"));
-        }
-        return _Os << static_cast<unsigned int>(_Val) << _STATICALLY_WIDEN(_CharT, " is not a valid month");
+        return _Os << (_Val.ok() ? _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:%b}"), _Val)
+                                 : _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{} is not a valid month"),
+                                     static_cast<unsigned int>(_Val)));
     }
 
     template <class _CharT, class _Traits>
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const year& _Val) {
-        _Try_simple_write(_Os, 'Y', _Fill_tm(_Val));
-        if (!_Val.ok()) {
-            _Os << _STATICALLY_WIDEN(_CharT, " is not a valid year");
-        }
-        return _Os;
+        return _Os << (_Val.ok() ? _STD format(_STATICALLY_WIDEN(_CharT, "{:%Y}"), _Val)
+                                 : _STD format(_STATICALLY_WIDEN(_CharT, "{:%Y} is not a valid year"), _Val));
+    }
+
+    template <class _CharT, class _Traits>
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const weekday& _Val) {
+        return _Os << (_Val.ok() ? _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:%a}"), _Val)
+                                 : _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{} is not a valid weekday"),
+                                     _Val.c_encoding()));
+    }
+
+    template <class _CharT, class _Traits>
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const weekday_indexed& _Val) {
+        const auto _Idx = _Val.index();
+        return _Os << (_Idx >= 1 && _Idx <= 5
+                           ? _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{}[{}]"), _Val.weekday(), _Idx)
+                           : _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{}[{} is not a valid index]"),
+                               _Val.weekday(), _Idx));
+    }
+
+    template <class _CharT, class _Traits>
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const weekday_last& _Val) {
+        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{}[last]"), _Val.weekday());
+    }
+
+    template <class _CharT, class _Traits>
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const month_day& _Val) {
+        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{}/{}"), _Val.month(), _Val.day());
+    }
+
+    template <class _CharT, class _Traits>
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const month_day_last& _Val) {
+        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{}/last"), _Val.month());
+    }
+
+    template <class _CharT, class _Traits>
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const month_weekday& _Val) {
+        return _Os << _STD format(
+                   _Os.getloc(), _STATICALLY_WIDEN(_CharT, "{}/{}"), _Val.month(), _Val.weekday_indexed());
+    }
+
+    template <class _CharT, class _Traits>
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const month_weekday_last& _Val) {
+        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{}/{}"), _Val.month(), _Val.weekday_last());
+    }
+
+    template <class _CharT, class _Traits>
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const year_month& _Val) {
+        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{}/{}"), _Val.year(), _Val.month());
     }
 
     template <class _CharT, class _Traits>
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const year_month_day& _Val) {
-        _Try_simple_write(_Os, 'F', _Fill_tm(_Val));
-        if (!_Val.ok()) {
-            _Os << _STATICALLY_WIDEN(_CharT, " is not a valid date");
-        }
-        return _Os;
+        return _Os << (_Val.ok() ? _STD format(_STATICALLY_WIDEN(_CharT, "{:%F}"), _Val)
+                                 : _STD format(_STATICALLY_WIDEN(_CharT, "{:%F} is not a valid date"), _Val));
+    }
+
+    template <class _CharT, class _Traits>
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const year_month_day_last& _Val) {
+        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{}/{}"), _Val.year(), _Val.month_day_last());
+    }
+
+    template <class _CharT, class _Traits>
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const year_month_weekday& _Val) {
+        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{}/{}/{}"), _Val.year(), _Val.month(),
+                   _Val.weekday_indexed());
+    }
+
+    template <class _CharT, class _Traits>
+    basic_ostream<_CharT, _Traits>& operator<<(
+        basic_ostream<_CharT, _Traits>& _Os, const year_month_weekday_last& _Val) {
+        return _Os << _STD format(
+                   _Os.getloc(), _STATICALLY_WIDEN(_CharT, "{}/{}/{}"), _Val.year(), _Val.month(), _Val.weekday_last());
     }
 
     template <class _CharT, class _Traits, class _Duration>
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const hh_mm_ss<_Duration>& _Val) {
-        const tm _Time = _Fill_tm(_Val);
-        if (_Val.is_negative()) {
-            _Os << _CharT{'-'};
-        }
-        _Os << _STD put_time(&_Time, _STATICALLY_WIDEN(_CharT, "%H:%M:"));
-        _Write_seconds(_Os, _Val);
-        return _Os;
+        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:%T}"), _Val);
     }
 } // namespace chrono
 
@@ -5694,7 +5756,8 @@ struct _Chrono_formatter {
             return _Type == 'Y' || _Type == 'y' || _Type == 'C';
         } else if constexpr (is_same_v<_Ty, _CHRONO weekday>) {
             return _Type == 'a' || _Type == 'A' || _Type == 'u' || _Type == 'w';
-        } else if constexpr (is_same_v<_Ty, _CHRONO year_month_day>) {
+        } else if constexpr (_Is_any_of_v<_Ty, _CHRONO year_month_day, _CHRONO year_month_day_last,
+                                 _CHRONO year_month_weekday, _CHRONO year_month_weekday_last>) {
             return _Type == 'D' || _Type == 'F' || _Is_valid_type<_CHRONO year>(_Type)
                 || _Is_valid_type<_CHRONO month>(_Type) || _Is_valid_type<_CHRONO day>(_Type)
                 || _Is_valid_type<_CHRONO weekday>(_Type);
@@ -5761,14 +5824,14 @@ struct _Chrono_formatter {
     bool _No_chrono_specs = false;
 };
 
-template <class _CharT>
-struct formatter<_CHRONO day, _CharT> {
+template <class _Ty, class _CharT>
+struct _Fill_tm_formatter {
     auto parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
-        return _Impl.template _Parse<_CHRONO day>(_Parse_ctx);
+        return _Impl.template _Parse<_Ty>(_Parse_ctx);
     }
 
     template <class _FormatContext>
-    auto format(const _CHRONO day& _Val, _FormatContext& _FormatCtx) {
+    auto format(const _Ty& _Val, _FormatContext& _FormatCtx) {
         return _Impl._Write(_FormatCtx, _Val, _Fill_tm(_Val));
     }
 
@@ -5777,49 +5840,33 @@ private:
 };
 
 template <class _CharT>
-struct formatter<_CHRONO month, _CharT> {
-    auto parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
-        return _Impl.template _Parse<_CHRONO month>(_Parse_ctx);
-    }
-
-    template <class _FormatContext>
-    auto format(const _CHRONO month& _Val, _FormatContext& _FormatCtx) {
-        return _Impl._Write(_FormatCtx, _Val, _Fill_tm(_Val));
-    }
-
-private:
-    _Chrono_formatter<_CharT, false> _Impl;
-};
+struct formatter<_CHRONO day, _CharT> //
+    : _Fill_tm_formatter<_CHRONO day, _CharT> {};
 
 template <class _CharT>
-struct formatter<_CHRONO year, _CharT> {
-    auto parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
-        return _Impl.template _Parse<_CHRONO year>(_Parse_ctx);
-    }
-
-    template <class _FormatContext>
-    auto format(const _CHRONO year& _Val, _FormatContext& _FormatCtx) {
-        return _Impl._Write(_FormatCtx, _Val, _Fill_tm(_Val));
-    }
-
-private:
-    _Chrono_formatter<_CharT, false> _Impl;
-};
+struct formatter<_CHRONO month, _CharT> //
+    : _Fill_tm_formatter<_CHRONO month, _CharT> {};
 
 template <class _CharT>
-struct formatter<_CHRONO year_month_day, _CharT> {
-    auto parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
-        return _Impl.template _Parse<_CHRONO year_month_day>(_Parse_ctx);
-    }
+struct formatter<_CHRONO year, _CharT> //
+    : _Fill_tm_formatter<_CHRONO year, _CharT> {};
 
-    template <class _FormatContext>
-    auto format(const _CHRONO year_month_day& _Val, _FormatContext& _FormatCtx) {
-        return _Impl._Write(_FormatCtx, _Val, _Fill_tm(_Val));
-    }
+template <class _CharT>
+struct formatter<_CHRONO year_month_day, _CharT> //
+    : _Fill_tm_formatter<_CHRONO year_month_day, _CharT> {};
 
-private:
-    _Chrono_formatter<_CharT, false> _Impl;
-};
+template <class _CharT>
+struct formatter<_CHRONO year_month_day_last, _CharT> //
+    : _Fill_tm_formatter<_CHRONO year_month_day_last, _CharT> {};
+
+template <class _CharT>
+struct formatter<_CHRONO year_month_weekday, _CharT> //
+    : _Fill_tm_formatter<_CHRONO year_month_weekday, _CharT> {};
+
+template <class _CharT>
+struct formatter<_CHRONO year_month_weekday_last, _CharT>
+    : _Fill_tm_formatter<_CHRONO year_month_weekday_last, _CharT> {};
+
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX20
 

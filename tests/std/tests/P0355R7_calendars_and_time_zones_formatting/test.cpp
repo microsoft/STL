@@ -364,11 +364,29 @@ void test_year_month_day_formatter() {
 }
 
 template <typename CharT>
+void test_year_month_day_last_formatter() {
+    // FIXME, TEST format() AND operator<< WHEN formatter FOR month_day_last IS IMPLEMENTED
+    // assert(format(STR("{:%F}"), 2021y / April / last) == STR("2021-04-30"));
+}
+
+template <typename CharT>
+void test_year_month_weekday_formatter() {
+    // FIXME, TEST format() AND operator<< WHEN formatter FOR weekday_indexed IS IMPLEMENTED
+}
+
+template <typename CharT>
+void test_year_month_weekday_last_formatter() {
+    // FIXME, TEST format() AND operator<< WHEN formatter FOR weekday_last IS IMPLEMENTED
+}
+
+template <typename CharT>
 void test_hh_mm_ss_formatter() {
+#if 0 // FIXME, TEST format() AND operator<< WHEN formatter FOR hh_mm_ss IS IMPLEMENTED
     stream_helper(STR("-01:08:03.007"), hh_mm_ss{-4083007ms});
     stream_helper(STR("01:08:03.007"), hh_mm_ss{4083007ms});
     stream_helper(STR("18:15:45.123"), hh_mm_ss{65745123ms});
     stream_helper(STR("18:15:45"), hh_mm_ss{65745s});
+#endif // FIXME
 }
 
 int main() {
@@ -389,6 +407,15 @@ int main() {
 
     test_year_month_day_formatter<char>();
     test_year_month_day_formatter<wchar_t>();
+
+    test_year_month_day_last_formatter<char>();
+    test_year_month_day_last_formatter<wchar_t>();
+
+    test_year_month_weekday_formatter<char>();
+    test_year_month_weekday_formatter<wchar_t>();
+
+    test_year_month_weekday_last_formatter<char>();
+    test_year_month_weekday_last_formatter<wchar_t>();
 
     test_hh_mm_ss_formatter<char>();
     test_hh_mm_ss_formatter<wchar_t>();
