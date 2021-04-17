@@ -6064,8 +6064,9 @@ struct formatter<_CHRONO tai_time<_Duration>, _CharT> {
     template <class _FormatContext>
     auto format(const _CHRONO tai_time<_Duration>& _Val, _FormatContext& _FormatCtx) {
         using namespace chrono;
-        constexpr auto _Offset = sys_days{year{1970} / January / 1} - sys_days{year{1958} / January / 1};
-        const auto _Sys        = sys_time<_Duration>{_Val.time_since_epoch()} - _Offset;
+        using _Common = common_type_t<_Duration, days>; // slightly optimize by performing conversion at compile time
+        constexpr _Common _Offset{sys_days{year{1970} / January / 1} - sys_days{year{1958} / January / 1}};
+        const auto _Sys = sys_time<_Duration>{_Val.time_since_epoch()} - _Offset;
         return _Impl._Write(_FormatCtx, _Val, _Fill_tm(_Sys));
     }
 
@@ -6082,8 +6083,9 @@ struct formatter<_CHRONO gps_time<_Duration>, _CharT> {
     template <class _FormatContext>
     auto format(const _CHRONO gps_time<_Duration>& _Val, _FormatContext& _FormatCtx) {
         using namespace chrono;
-        constexpr auto _Offset = sys_days{year{1980} / January / Sunday[1]} - sys_days{year{1970} / January / 1};
-        const auto _Sys        = sys_time<_Duration>{_Val.time_since_epoch()} + _Offset;
+        using _Common = common_type_t<_Duration, days>; // slightly optimize by performing conversion at compile time
+        constexpr _Common _Offset{sys_days{year{1980} / January / Sunday[1]} - sys_days{year{1970} / January / 1}};
+        const auto _Sys = sys_time<_Duration>{_Val.time_since_epoch()} + _Offset;
         return _Impl._Write(_FormatCtx, _Val, _Fill_tm(_Sys));
     }
 
