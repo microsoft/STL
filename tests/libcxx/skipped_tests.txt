@@ -276,11 +276,8 @@ utilities\memory\default.allocator\allocator.members\allocate.verify.cpp
 
 # *** MISSING STL FEATURES ***
 # C++20 P0355R7 "<chrono> Calendars And Time Zones"
-utilities\time\time.cal\time.cal.mwd\time.cal.mwd.nonmembers\streaming.pass.cpp
 utilities\time\time.cal\time.cal.mwdlast\time.cal.mwdlast.nonmembers\streaming.pass.cpp
 utilities\time\time.cal\time.cal.wdidx\time.cal.wdidx.nonmembers\streaming.pass.cpp
-utilities\time\time.cal\time.cal.wdlast\time.cal.wdlast.nonmembers\streaming.pass.cpp
-utilities\time\time.cal\time.cal.weekday\time.cal.weekday.nonmembers\streaming.pass.cpp
 utilities\time\time.cal\time.cal.ymwd\time.cal.ymwd.nonmembers\streaming.pass.cpp
 utilities\time\time.cal\time.cal.ymwdlast\time.cal.ymwdlast.nonmembers\streaming.pass.cpp
 
