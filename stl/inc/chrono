@@ -2266,16 +2266,38 @@ namespace chrono {
     class nonexistent_local_time : public runtime_error {
     public:
         template <class _Duration>
-        nonexistent_local_time(const local_time<_Duration>&, const local_info&)
-            : runtime_error("TRANSITION: work in progress") {}
+        nonexistent_local_time(const local_time<_Duration>& _Tp, const local_info& _Info)
+            : runtime_error(_Make_string(_Tp, _Info)) {}
+
+    private:
+#ifdef __cpp_lib_concepts
+        template <class _Duration>
+        _NODISCARD static string _Make_string(const local_time<_Duration>& _Tp, const local_info& _Info);
+#else // ^^^ no workaround / workaround vvv
+        template <class _Duration>
+        _NODISCARD static string _Make_string(const local_time<_Duration>&, const local_info&) {
+            return "nonexistent_local_time";
+        }
+#endif // ^^^ workaround ^^^
     };
 
     // CLASS ambiguous_local_time
     class ambiguous_local_time : public runtime_error {
     public:
         template <class _Duration>
-        ambiguous_local_time(const local_time<_Duration>&, const local_info&)
-            : runtime_error("TRANSITION: work in progress") {}
+        ambiguous_local_time(const local_time<_Duration>& _Tp, const local_info& _Info)
+            : runtime_error(_Make_string(_Tp, _Info)) {}
+
+    private:
+#ifdef __cpp_lib_concepts
+        template <class _Duration>
+        _NODISCARD static string _Make_string(const local_time<_Duration>& _Tp, const local_info& _Info);
+#else // ^^^ no workaround / workaround vvv
+        template <class _Duration>
+        _NODISCARD static string _Make_string(const local_time<_Duration>&, const local_info&) {
+            return "ambiguous_local_time";
+        }
+#endif // ^^^ workaround ^^^
     };
 
     // [time.zone.timezone]
@@ -3180,7 +3202,7 @@ namespace chrono {
 #ifdef __cpp_lib_concepts
             const auto _Leap_cmp = _Utc_leap_second <=> _Time_floor;
 #else // ^^^ __cpp_lib_concepts / TRANSITION, GH-395 workaround vvv
-            const auto _Leap_cmp = _Utc_leap_second > _Time_floor  ? strong_ordering::greater
+            const auto _Leap_cmp = _Utc_leap_second > _Time_floor ? strong_ordering::greater
                                  : _Utc_leap_second == _Time_floor ? strong_ordering::equal
                                                                    : strong_ordering::less;
 #endif // ^^^ workaround
@@ -6112,6 +6134,29 @@ private:
 template <class _Duration, class _CharT>
 struct formatter<_CHRONO local_time<_Duration>, _CharT> //
     : _Fill_tm_formatter<_CHRONO local_time<_Duration>, _CharT> {};
+
+namespace chrono {
+    template <class _Duration>
+    _NODISCARD string nonexistent_local_time::_Make_string(const local_time<_Duration>& _Tp, const local_info& _Info) {
+        ostringstream _Os;
+        _Os << _Tp << " is in a gap between\n"
+            << local_seconds{_Info.first.end.time_since_epoch()} + _Info.first.offset << ' ' << _Info.first.abbrev
+            << " and\n"
+            << local_seconds{_Info.second.begin.time_since_epoch()} + _Info.second.offset << ' ' << _Info.second.abbrev
+            << " which are both equivalent to\n"
+            << _Info.first.end << " UTC";
+        return _STD move(_Os).str();
+    }
+
+    template <class _Duration>
+    _NODISCARD string ambiguous_local_time::_Make_string(const local_time<_Duration>& _Tp, const local_info& _Info) {
+        ostringstream _Os;
+        _Os << _Tp << " is ambiguous. It could be\n"
+            << _Tp << ' ' << _Info.first.abbrev << " == " << _Tp - _Info.first.offset << " UTC or\n"
+            << _Tp << ' ' << _Info.second.abbrev << " == " << _Tp - _Info.second.offset << " UTC";
+        return _STD move(_Os).str();
+    }
+} // namespace chrono
 
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX20
