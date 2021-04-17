@@ -5225,8 +5225,8 @@ concept _Chrono_parse_spec_callbacks = _Parse_align_callbacks<_Ty, _CharT>
 
 // clang-format off
 template <class _Ty>
-concept _Has_ok = requires (_Ty _At) {
-    {_At.ok()} -> same_as<bool>;
+concept _Has_ok = requires(_Ty _At) {
+    { _At.ok() } -> same_as<bool>;
 };
 // clang-format on
 
@@ -5473,7 +5473,7 @@ namespace chrono {
             _Month = static_cast<unsigned int>(_Val.month());
         } else if constexpr (is_same_v<_Ty, month_day_last>) {
             _Month = static_cast<unsigned int>(_Val.month());
-            _Day   = static_cast<unsigned int>(_Last_day_table[_Month - 1]);
+            _Day   = static_cast<unsigned int>(_Last_day_table[(_Month - 1) & 0xF]);
         } else if constexpr (is_same_v<_Ty, year_month>) {
             _Month = static_cast<unsigned int>(_Val.month());
             _Year  = static_cast<int>(_Val.year());
@@ -5621,7 +5621,7 @@ namespace chrono {
 
     template <class _CharT, class _Traits, class _Duration>
     // clang-format off
-        requires (!treat_as_floating_point_v<typename _Duration::rep> && (_Duration{1} < days{1}))
+        requires (!treat_as_floating_point_v<typename _Duration::rep> && _Duration{1} < days{1})
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const sys_time<_Duration>& _Val) {
         // clang-format on
         const auto _Dp = _CHRONO floor<days>(_Val);
@@ -5660,8 +5660,13 @@ namespace chrono {
     }
 } // namespace chrono
 
-template <class _CharT, bool _Allow_precision>
+template <class _CharT>
 struct _Chrono_formatter {
+    _Chrono_formatter() = default;
+
+    explicit _Chrono_formatter(const basic_string_view<_CharT> _Time_zone_abbreviation_)
+        : _Time_zone_abbreviation{_Time_zone_abbreviation_} {}
+
     template <class _Ty>
     _NODISCARD auto _Parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
         _Chrono_specs_setter<_CharT, basic_format_parse_context<_CharT>> _Callback{_Specs, _Parse_ctx};
@@ -5673,8 +5678,18 @@ struct _Chrono_formatter {
             _THROW(format_error("Missing '}' in format string."));
         }
 
-        if (!_Allow_precision && _Specs._Precision != -1) {
-            _THROW(format_error("Precision specification invalid for type."));
+        if constexpr (_Is_specialization_v<_Ty, _CHRONO duration>) {
+            if constexpr (!_CHRONO treat_as_floating_point_v<typename _Ty::rep>) {
+                if (_Specs._Precision != -1) {
+                    _THROW(format_error("Precision specification invalid for chrono::duration type with "
+                                        "integral representation type, see N4885 [time.format]/1."));
+                }
+            }
+        } else {
+            if (_Specs._Precision != -1) {
+                _THROW(format_error("Precision specification invalid for non-chrono::duration type, "
+                                    "see N4885 [time.format]/1."));
+            }
         }
 
         const auto& _List = _Specs._Chrono_specs_list;
@@ -5843,9 +5858,11 @@ struct _Chrono_formatter {
                     _THROW(format_error("Cannot print the last day of February without a year"));
                 }
             }
+
             if (_Has_modifier) {
                 return false;
             }
+
             if (_Time.tm_mday < 10) {
                 _Os << (_Specs._Type == 'd' ? _CharT{'0'} : _CharT{' '});
             }
@@ -5855,6 +5872,7 @@ struct _Chrono_formatter {
             if (_Has_modifier) {
                 return false;
             }
+
             if (_Month < 10) {
                 _Os << _CharT{'0'};
             }
@@ -5864,6 +5882,7 @@ struct _Chrono_formatter {
             if (_Has_modifier) {
                 return false;
             }
+
             if (_Year < 0) {
                 _Os << _CharT{'-'};
             }
@@ -5879,6 +5898,7 @@ struct _Chrono_formatter {
             if (_Has_modifier) {
                 return false;
             }
+
             if (_Year < 0) {
                 _Os << _CharT{'-'};
             }
@@ -5901,8 +5921,8 @@ struct _Chrono_formatter {
             return true;
         case 'H':
             if constexpr (_Is_specialization_v<_Ty, _CHRONO hh_mm_ss>) {
-                if (-_CHRONO hours{24} >= _Val.hours() || _Val.hours() >= _CHRONO hours{24}) {
-                    _THROW(format_error("Cannot localize hh_mm_ss longer than 24 hours."));
+                if (_Val.hours() <= -_CHRONO hours{24} || _CHRONO hours{24} <= _Val.hours()) {
+                    _THROW(format_error("Cannot localize hh_mm_ss with an absolute value of 24 hours or more."));
                 }
             }
             return false;
@@ -5934,7 +5954,7 @@ struct _Chrono_formatter {
 
     _Chrono_format_specs<_CharT> _Specs{};
     bool _No_chrono_specs = false;
-    basic_string_view<_CharT> _Time_zone_abbreviation;
+    basic_string_view<_CharT> _Time_zone_abbreviation{};
 };
 
 template <class _Ty, class _CharT>
@@ -5949,7 +5969,7 @@ struct _Fill_tm_formatter {
     }
 
 private:
-    _Chrono_formatter<_CharT, false> _Impl;
+    _Chrono_formatter<_CharT> _Impl;
 };
 
 template <class _CharT>
@@ -6006,10 +6026,6 @@ struct formatter<_CHRONO hh_mm_ss<_CHRONO duration<_Rep, _Period>>, _CharT>
 
 template <class _Duration, class _CharT>
 struct formatter<_CHRONO sys_time<_Duration>, _CharT> {
-    formatter() {
-        _Impl._Time_zone_abbreviation = _STATICALLY_WIDEN(_CharT, "UTC");
-    }
-
     auto parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
         return _Impl.template _Parse<_CHRONO sys_time<_Duration>>(_Parse_ctx);
     }
@@ -6020,15 +6036,11 @@ struct formatter<_CHRONO sys_time<_Duration>, _CharT> {
     }
 
 private:
-    _Chrono_formatter<_CharT, false> _Impl;
+    _Chrono_formatter<_CharT> _Impl{_STATICALLY_WIDEN(_CharT, "UTC")};
 };
 
 template <class _Duration, class _CharT>
 struct formatter<_CHRONO utc_time<_Duration>, _CharT> {
-    formatter() {
-        _Impl._Time_zone_abbreviation = _STATICALLY_WIDEN(_CharT, "UTC");
-    }
-
     auto parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
         return _Impl.template _Parse<_CHRONO utc_time<_Duration>>(_Parse_ctx);
     }
@@ -6040,58 +6052,49 @@ struct formatter<_CHRONO utc_time<_Duration>, _CharT> {
     }
 
 private:
-    _Chrono_formatter<_CharT, false> _Impl;
+    _Chrono_formatter<_CharT> _Impl{_STATICALLY_WIDEN(_CharT, "UTC")};
 };
 
 template <class _Duration, class _CharT>
 struct formatter<_CHRONO tai_time<_Duration>, _CharT> {
-    formatter() {
-        _Impl._Time_zone_abbreviation = _STATICALLY_WIDEN(_CharT, "TAI");
-    }
-
     auto parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
         return _Impl.template _Parse<_CHRONO tai_time<_Duration>>(_Parse_ctx);
     }
 
     template <class _FormatContext>
     auto format(const _CHRONO tai_time<_Duration>& _Val, _FormatContext& _FormatCtx) {
-        const auto _Sys = _CHRONO sys_time<_Duration>{_Val.time_since_epoch()}
-                        - (_CHRONO sys_days{_CHRONO year{1970} / 1 / 1} - _CHRONO sys_days{_CHRONO year{1958} / 1 / 1});
+        using namespace chrono;
+        using _Common = common_type_t<_Duration, days>; // slightly optimize by performing conversion at compile time
+        constexpr _Common _Offset{sys_days{year{1970} / January / 1} - sys_days{year{1958} / January / 1}};
+        const auto _Sys = sys_time<_Duration>{_Val.time_since_epoch()} - _Offset;
         return _Impl._Write(_FormatCtx, _Val, _Fill_tm(_Sys));
     }
 
 private:
-    _Chrono_formatter<_CharT, false> _Impl;
+    _Chrono_formatter<_CharT> _Impl{_STATICALLY_WIDEN(_CharT, "TAI")};
 };
 
 template <class _Duration, class _CharT>
 struct formatter<_CHRONO gps_time<_Duration>, _CharT> {
-    formatter() {
-        _Impl._Time_zone_abbreviation = _STATICALLY_WIDEN(_CharT, "GPS");
-    }
-
     auto parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
         return _Impl.template _Parse<_CHRONO gps_time<_Duration>>(_Parse_ctx);
     }
 
     template <class _FormatContext>
     auto format(const _CHRONO gps_time<_Duration>& _Val, _FormatContext& _FormatCtx) {
-        const auto _Sys = _CHRONO sys_time<_Duration>{_Val.time_since_epoch()}
-                        + (_CHRONO sys_days{_CHRONO year{1980} / 1 / _CHRONO Sunday[1]}
-                            - _CHRONO sys_days{_CHRONO year{1970} / 1 / 1});
+        using namespace chrono;
+        using _Common = common_type_t<_Duration, days>; // slightly optimize by performing conversion at compile time
+        constexpr _Common _Offset{sys_days{year{1980} / January / Sunday[1]} - sys_days{year{1970} / January / 1}};
+        const auto _Sys = sys_time<_Duration>{_Val.time_since_epoch()} + _Offset;
         return _Impl._Write(_FormatCtx, _Val, _Fill_tm(_Sys));
     }
 
 private:
-    _Chrono_formatter<_CharT, false> _Impl;
+    _Chrono_formatter<_CharT> _Impl{_STATICALLY_WIDEN(_CharT, "GPS")};
 };
 
 template <class _Duration, class _CharT>
 struct formatter<_CHRONO file_time<_Duration>, _CharT> {
-    formatter() {
-        _Impl._Time_zone_abbreviation = _STATICALLY_WIDEN(_CharT, "UTC");
-    }
-
     auto parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
         return _Impl.template _Parse<_CHRONO file_time<_Duration>>(_Parse_ctx);
     }
@@ -6103,7 +6106,7 @@ struct formatter<_CHRONO file_time<_Duration>, _CharT> {
     }
 
 private:
-    _Chrono_formatter<_CharT, false> _Impl;
+    _Chrono_formatter<_CharT> _Impl{_STATICALLY_WIDEN(_CharT, "UTC")};
 };
 
 template <class _Duration, class _CharT>
