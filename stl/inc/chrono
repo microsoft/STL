@@ -5921,7 +5921,7 @@ struct _Chrono_formatter {
             return true;
         case 'H':
             if constexpr (_Is_specialization_v<_Ty, _CHRONO hh_mm_ss>) {
-                if (_Val.hours() <= -_CHRONO hours{24} || _CHRONO hours{24} <= _Val.hours()) {
+                if (_Val.hours() >= _CHRONO hours{24}) {
                     _THROW(format_error("Cannot localize hh_mm_ss with an absolute value of 24 hours or more."));
                 }
             }
