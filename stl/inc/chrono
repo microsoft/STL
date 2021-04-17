@@ -5957,6 +5957,14 @@ struct formatter<_CHRONO year, _CharT> //
     : _Fill_tm_formatter<_CHRONO year, _CharT> {};
 
 template <class _CharT>
+struct formatter<_CHRONO weekday, _CharT> //
+    : _Fill_tm_formatter<_CHRONO weekday, _CharT> {};
+
+template <class _CharT>
+struct formatter<_CHRONO weekday_indexed, _CharT> //
+    : _Fill_tm_formatter<_CHRONO weekday_indexed, _CharT> {};
+
+template <class _CharT>
 struct formatter<_CHRONO month_day, _CharT> //
     : _Fill_tm_formatter<_CHRONO month_day, _CharT> {};
 
@@ -6110,13 +6118,6 @@ template <class _Duration, class _CharT>
 struct formatter<_CHRONO local_time<_Duration>, _CharT> //
     : _Fill_tm_formatter<_CHRONO local_time<_Duration>, _CharT> {};
 
-template <class _CharT>
-struct formatter<_CHRONO weekday, _CharT> //
-    : _Fill_tm_formatter<_CHRONO weekday, _CharT> {};
-
-template <class _CharT>
-struct formatter<_CHRONO weekday_indexed, _CharT> //
-    : _Fill_tm_formatter<_CHRONO weekday_indexed, _CharT> {};
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX20
 
