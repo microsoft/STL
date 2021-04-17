@@ -8,6 +8,7 @@
 #include <iostream>
 #include <sstream>
 #include <stdio.h>
+#include <string>
 #include <string_view>
 #include <type_traits>
 #include <utility>
@@ -473,6 +474,39 @@ void test_clock_formatter() {
     assert(format(STR("{:%S}"), utc_clock::from_sys(get_tzdb().leap_seconds.front().date()) - 1s) == STR("60"));
 }
 
+void test_exception_classes() {
+    { // N4885 [time.zone.exception.nonexist]/4
+        string s;
+
+        try {
+            (void) zoned_time{"America/New_York", local_days{Sunday[2] / March / 2016} + 2h + 30min};
+        } catch (const nonexistent_local_time& e) {
+            s = e.what();
+        }
+
+        assert(s
+               == "2016-03-13 02:30:00 is in a gap between\n"
+                  "2016-03-13 02:00:00 EST and\n"
+                  "2016-03-13 03:00:00 EDT which are both equivalent to\n"
+                  "2016-03-13 07:00:00 UTC");
+    }
+
+    { // N4885 [time.zone.exception.ambig]/4
+        string s;
+
+        try {
+            (void) zoned_time{"America/New_York", local_days{Sunday[1] / November / 2016} + 1h + 30min};
+        } catch (const ambiguous_local_time& e) {
+            s = e.what();
+        }
+
+        assert(s
+               == "2016-11-06 01:30:00 is ambiguous. It could be\n"
+                  "2016-11-06 01:30:00 EDT == 2016-11-06 05:30:00 UTC or\n"
+                  "2016-11-06 01:30:00 EST == 2016-11-06 06:30:00 UTC");
+    }
+}
+
 int main() {
     test_parse_conversion_spec<char>();
     test_parse_conversion_spec<wchar_t>();
@@ -521,4 +555,6 @@ int main() {
 
     test_clock_formatter<char>();
     test_clock_formatter<wchar_t>();
+
+    test_exception_classes();
 }
