@@ -2630,16 +2630,16 @@ struct _Fmt_buffer_traits {
 
 class _Fmt_fixed_buffer_traits {
 private:
-    size_t _Count = 0;
-    size_t _Limit;
+    ptrdiff_t _Count = 0;
+    ptrdiff_t _Limit;
 
 public:
-    explicit _Fmt_fixed_buffer_traits(const ptrdiff_t _Lim) noexcept : _Limit(static_cast<size_t>(_Lim)) {}
+    explicit _Fmt_fixed_buffer_traits(const ptrdiff_t _Lim) noexcept : _Limit(_Lim) {}
     _NODISCARD size_t count() const noexcept {
-        return _Count;
+        return static_cast<size_t>(_Count);
     }
     _NODISCARD size_t limit(const size_t _Size) noexcept {
-        size_t _Avail = _Limit > _Count ? _Limit - _Count : 0;
+        size_t _Avail = static_cast<size_t>(_Limit > _Count ? _Limit - _Count : 0);
         _Count += _Size;
         return _Size < _Avail ? _Size : _Avail;
     }
