@@ -2567,9 +2567,9 @@ _NODISCARD auto make_format_args(const _Args&... _Vals) {
     return _Format_arg_store<_Context, _Args...>{_Vals...};
 }
 
-template <class _Context = wformat_context, class... _Args>
+template <class... _Args>
 _NODISCARD auto make_wformat_args(const _Args&... _Vals) {
-    return _Format_arg_store<_Context, _Args...>{_Vals...};
+    return _Format_arg_store<wformat_context, _Args...>{_Vals...};
 }
 
 template <class _Out, class _CharT>
