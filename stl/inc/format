@@ -2566,6 +2566,7 @@ private:
 
 protected:
     explicit _Fmt_buffer(const size_t _Sz) noexcept : _Size(_Sz), _Capacity(_Sz) {}
+
     _Fmt_buffer(_Ty* _Data, const size_t _Sz, const size_t _Cap) noexcept : _Ptr(_Data), _Size(_Sz), _Capacity(_Cap) {}
 
     void _Set(_Ty* _Buf_data, const size_t _Buf_capacity) noexcept {
@@ -2585,6 +2586,7 @@ public:
     _NODISCARD _Ty* begin() noexcept {
         return _Ptr;
     }
+
     _NODISCARD _Ty* end() noexcept {
         return _Ptr + _Size;
     }
@@ -2620,9 +2622,11 @@ public:
 
 struct _Fmt_buffer_traits {
     explicit _Fmt_buffer_traits(ptrdiff_t) {}
+
     _NODISCARD size_t count() const noexcept {
         return 0;
     }
+
     _NODISCARD size_t limit(const size_t _Size) noexcept {
         return _Size;
     }
@@ -2635,9 +2639,11 @@ private:
 
 public:
     explicit _Fmt_fixed_buffer_traits(const ptrdiff_t _Lim) noexcept : _Limit(_Lim) {}
+
     _NODISCARD size_t count() const noexcept {
         return static_cast<size_t>(_Count);
     }
+
     _NODISCARD size_t limit(const size_t _Size) noexcept {
         size_t _Avail = static_cast<size_t>(_Limit > _Count ? _Limit - _Count : 0);
         _Count += _Size;
@@ -2654,11 +2660,12 @@ private:
     _Ty _Data[_Fmt_buffer_size];
 
 protected:
-    void _Grow(size_t) final override {
+    void _Grow(size_t) final {
         if (this->size() == _Fmt_buffer_size) {
             _Flush();
         }
     }
+
     void _Flush() {
         auto _Size = this->size();
         this->clear();
@@ -2668,6 +2675,7 @@ protected:
 public:
     explicit _Fmt_iterator_buffer(_OutputIt _Output, ptrdiff_t _Size = _Fmt_buffer_size)
         : _Traits(_Size), _Fmt_buffer<_Ty>(_Data, 0, _Fmt_buffer_size), _Out(_STD move(_Output)) {}
+
     ~_Fmt_iterator_buffer() {
         if (this->size() != 0) {
             _Flush();
@@ -2678,6 +2686,7 @@ public:
         _Flush();
         return _STD move(_Out);
     }
+
     _NODISCARD ptrdiff_t count() const noexcept {
         return static_cast<ptrdiff_t>(_Traits::count() + this->size());
     }
@@ -2686,7 +2695,7 @@ public:
 template <class _Ty>
 class _Fmt_iterator_buffer<_Ty*, _Ty> final : public _Fmt_buffer<_Ty> {
 protected:
-    void _Grow(size_t) final override {}
+    void _Grow(size_t) final {}
 
 public:
     explicit _Fmt_iterator_buffer(_Ty* _Out, ptrdiff_t = 0) : _Fmt_buffer<_Ty>(_Out, 0, ~size_t()) {}
@@ -2705,11 +2714,12 @@ private:
 
     struct _Accessor : _STD back_insert_iterator<_Container> {
         _Accessor(_STD back_insert_iterator<_Container> _Iter) : back_insert_iterator<_Container>(_Iter) {}
+
         using _STD back_insert_iterator<_Container>::container;
     };
 
 protected:
-    void _Grow(size_t _Capacity) final override {
+    void _Grow(size_t _Capacity) final {
         _Cont.resize(_Capacity);
         this->_Set(&_Cont[0], _Capacity);
     }
@@ -2717,10 +2727,11 @@ protected:
 public:
     explicit _Fmt_iterator_buffer(_Container& _C)
         : _Fmt_buffer<typename _Container::value_type>(_C.size()), _Cont(_C) {}
+
     explicit _Fmt_iterator_buffer(_STD back_insert_iterator<_Container> _Out, ptrdiff_t = 0)
         : _Fmt_iterator_buffer(*_Accessor(_STD move(_Out)).container) {}
 
-    _NODISCARD auto out() {
+    _NODISCARD auto out() noexcept {
         return _STD back_inserter(_Cont);
     }
 };
@@ -2732,7 +2743,7 @@ private:
     size_t _Count = 0;
 
 protected:
-    void _Grow(size_t) final override {
+    void _Grow(size_t) final {
         if (this->size() != _Fmt_buffer_size) {
             return;
         }
