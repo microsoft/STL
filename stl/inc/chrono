@@ -5254,7 +5254,7 @@ concept _Has_ok = requires(_Ty _At) {
 
 // A chrono spec is either a type (with an optional modifier), OR a literal character, never both.
 template <class _CharT>
-struct _Chrono_specs {
+struct _Chrono_spec {
     _CharT _Lit_char = _CharT{'\0'}; // any character other than '{', '}', or '%'
     char _Modifier   = '\0'; // either 'E' or 'O'
     char _Type       = '\0';
@@ -5270,8 +5270,8 @@ struct _Chrono_format_specs {
     uint8_t _Fill_length         = 1;
     // At most one codepoint (so one char32_t or four utf-8 char8_t)
     _CharT _Fill[4 / sizeof(_CharT)] = {_CharT{' '}};
-    // recursive definition in grammar, so could have any number of these with literal chars
-    vector<_Chrono_specs<_CharT>> _Chrono_specs_list;
+    // recursive definition in grammar, so could have any number of these
+    vector<_Chrono_spec<_CharT>> _Chrono_specs_list;
 };
 
 // Model of _Chrono_parse_spec_callbacks that fills a _Chrono_format_specs with the parsed data
@@ -5333,12 +5333,12 @@ public:
             _THROW(format_error("Invalid type specification."));
         }
 
-        _Chrono_specs<_CharT> _Conv_spec{._Modifier = _Modifier, ._Type = static_cast<char>(_Type)};
+        _Chrono_spec<_CharT> _Conv_spec{._Modifier = _Modifier, ._Type = static_cast<char>(_Type)};
         _Specs._Chrono_specs_list.push_back(_Conv_spec);
     }
 
     constexpr void _On_lit_char(_CharT _Lit_ch) {
-        _Chrono_specs<_CharT> _Lit_char_spec{._Lit_char = _Lit_ch};
+        _Chrono_spec<_CharT> _Lit_char_spec{._Lit_char = _Lit_ch};
         _Specs._Chrono_specs_list.push_back(_Lit_char_spec);
     }
 
@@ -5681,305 +5681,306 @@ namespace chrono {
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const local_time<_Duration>& _Val) {
         return _Os << sys_time<_Duration>{_Val.time_since_epoch()};
     }
-} // namespace chrono
 
-template <class _CharT>
-struct _Chrono_formatter {
-    _Chrono_formatter() = default;
+    template <class _CharT>
+    struct _Chrono_formatter {
+        _Chrono_formatter() = default;
 
-    explicit _Chrono_formatter(const basic_string_view<_CharT> _Time_zone_abbreviation_)
-        : _Time_zone_abbreviation{_Time_zone_abbreviation_} {}
+        explicit _Chrono_formatter(const basic_string_view<_CharT> _Time_zone_abbreviation_)
+            : _Time_zone_abbreviation{_Time_zone_abbreviation_} {}
 
-    template <class _Ty>
-    _NODISCARD auto _Parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
-        _Chrono_specs_setter<_CharT, basic_format_parse_context<_CharT>> _Callback{_Specs, _Parse_ctx};
-        const auto _It =
-            _Parse_chrono_format_specs(_Parse_ctx._Unchecked_begin(), _Parse_ctx._Unchecked_end(), _Callback);
-        const auto _Res_iter = _Parse_ctx.begin() + (_It - _Parse_ctx._Unchecked_begin());
+        template <class _Ty>
+        _NODISCARD auto _Parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
+            _Chrono_specs_setter<_CharT, basic_format_parse_context<_CharT>> _Callback{_Specs, _Parse_ctx};
+            const auto _It =
+                _Parse_chrono_format_specs(_Parse_ctx._Unchecked_begin(), _Parse_ctx._Unchecked_end(), _Callback);
+            const auto _Res_iter = _Parse_ctx.begin() + (_It - _Parse_ctx._Unchecked_begin());
 
-        if (_It != _Parse_ctx._Unchecked_end() && *_It != '}') {
-            _THROW(format_error("Missing '}' in format string."));
-        }
+            if (_It != _Parse_ctx._Unchecked_end() && *_It != '}') {
+                _THROW(format_error("Missing '}' in format string."));
+            }
 
-        if constexpr (_Is_specialization_v<_Ty, _CHRONO duration>) {
-            if constexpr (!_CHRONO treat_as_floating_point_v<typename _Ty::rep>) {
+            if constexpr (_Is_specialization_v<_Ty, duration>) {
+                if constexpr (!treat_as_floating_point_v<typename _Ty::rep>) {
+                    if (_Specs._Precision != -1) {
+                        _THROW(format_error("Precision specification invalid for chrono::duration type with "
+                                            "integral representation type, see N4885 [time.format]/1."));
+                    }
+                }
+            } else {
                 if (_Specs._Precision != -1) {
-                    _THROW(format_error("Precision specification invalid for chrono::duration type with "
-                                        "integral representation type, see N4885 [time.format]/1."));
+                    _THROW(format_error("Precision specification invalid for non-chrono::duration type, "
+                                        "see N4885 [time.format]/1."));
                 }
             }
-        } else {
-            if (_Specs._Precision != -1) {
-                _THROW(format_error("Precision specification invalid for non-chrono::duration type, "
-                                    "see N4885 [time.format]/1."));
+
+            const auto& _List = _Specs._Chrono_specs_list;
+
+            // [time.format]/6
+            if (_List.empty()) {
+                _No_chrono_specs = true;
+                return _Res_iter;
             }
-        }
 
-        const auto& _List = _Specs._Chrono_specs_list;
+            for (const auto& _Spec : _List) {
+                if (_Spec._Type != '\0' && !_Is_valid_type<_Ty>(_Spec._Type)) {
+                    _THROW(format_error("Invalid type."));
+                }
+                _Check_modifier(_Spec._Type, _Spec._Modifier);
+            }
 
-        // [time.format]/6
-        if (_List.empty()) {
-            _No_chrono_specs = true;
             return _Res_iter;
         }
 
-        for (const auto& _Spec : _List) {
-            if (_Spec._Type != '\0' && !_Is_valid_type<_Ty>(_Spec._Type)) {
-                _THROW(format_error("Invalid type."));
-            }
-            _Check_modifier(_Spec._Type, _Spec._Modifier);
-        }
-
-        return _Res_iter;
-    }
-
-    void _Check_modifier(const char _Type, const char _Modifier) {
-        if (_Modifier == '\0') {
-            return;
-        }
-
-        enum _Allowed_bit : uint8_t { _E_mod = 1, _O_mod = 2, _EO_mod = _E_mod | _O_mod };
-
-        struct _Table_entry {
-            char _Type;
-            _Allowed_bit _Allowed;
-        };
-
-        static constexpr _Table_entry _Table[] = {
-            {'c', _E_mod},
-            {'C', _E_mod},
-            {'d', _O_mod},
-            {'e', _O_mod},
-            {'H', _O_mod},
-            {'I', _O_mod},
-            {'m', _O_mod},
-            {'M', _O_mod},
-            {'S', _O_mod},
-            {'u', _O_mod},
-            {'U', _O_mod},
-            {'V', _O_mod},
-            {'w', _O_mod},
-            {'W', _O_mod},
-            {'x', _E_mod},
-            {'X', _E_mod},
-            {'y', _EO_mod},
-            {'Y', _E_mod},
-            {'z', _EO_mod},
-        };
-
-        const _Allowed_bit _Mod = _Modifier == 'E' ? _E_mod : _O_mod;
-
-        if (auto _It = _RANGES find(_Table, _Type, &_Table_entry::_Type); _It != _STD end(_Table)) {
-            if (_It->_Allowed & _Mod) {
+        void _Check_modifier(const char _Type, const char _Modifier) {
+            if (_Modifier == '\0') {
                 return;
             }
-        }
 
-        _THROW(format_error("Incompatible modifier for type"));
-    }
+            enum _Allowed_bit : uint8_t { _E_mod = 1, _O_mod = 2, _EO_mod = _E_mod | _O_mod };
 
-    template <class _Ty>
-    _NODISCARD constexpr bool _Is_valid_type(const char _Type) noexcept {
-        if constexpr (is_same_v<_Ty, _CHRONO day>) {
-            return _Type == 'd' || _Type == 'e';
-        } else if constexpr (is_same_v<_Ty, _CHRONO month>) {
-            return _Type == 'b' || _Type == 'B' || _Type == 'h' || _Type == 'm';
-        } else if constexpr (is_same_v<_Ty, _CHRONO year>) {
-            return _Type == 'Y' || _Type == 'y' || _Type == 'C';
-        } else if constexpr (_Is_any_of_v<_Ty, _CHRONO weekday, _CHRONO weekday_indexed, _CHRONO weekday_last>) {
-            return _Type == 'a' || _Type == 'A' || _Type == 'u' || _Type == 'w';
-        } else if constexpr (_Is_any_of_v<_Ty, _CHRONO month_day, _CHRONO month_day_last>) {
-            return _Is_valid_type<_CHRONO month>(_Type) || _Is_valid_type<_CHRONO day>(_Type);
-        } else if constexpr (_Is_any_of_v<_Ty, _CHRONO month_weekday, _CHRONO month_weekday_last>) {
-            return _Is_valid_type<_CHRONO month>(_Type) || _Is_valid_type<_CHRONO weekday>(_Type);
-        } else if constexpr (is_same_v<_Ty, _CHRONO year_month>) {
-            return _Is_valid_type<_CHRONO year>(_Type) || _Is_valid_type<_CHRONO month>(_Type);
-        } else if constexpr (_Is_any_of_v<_Ty, _CHRONO year_month_day, _CHRONO year_month_day_last,
-                                 _CHRONO year_month_weekday, _CHRONO year_month_weekday_last>) {
-            return _Type == 'D' || _Type == 'F' || _Is_valid_type<_CHRONO year>(_Type)
-                || _Is_valid_type<_CHRONO month>(_Type) || _Is_valid_type<_CHRONO day>(_Type)
-                || _Is_valid_type<_CHRONO weekday>(_Type);
-        } else if constexpr (_Is_specialization_v<_Ty, _CHRONO hh_mm_ss>) {
-            return _Type == 'H' || _Type == 'I' || _Type == 'M' || _Type == 'S' || _Type == 'r' || _Type == 'R'
-                || _Type == 'T' || _Type == 'p';
-        } else if constexpr (_Is_specialization_v<_Ty, _CHRONO time_point>) {
-            if constexpr (!is_same_v<typename _Ty::clock, _CHRONO local_t>) {
-                if (_Type == 'z' || _Type == 'Z') {
-                    return true;
-                }
-            }
-            return _Type == 'c' || _Type == 'x' || _Type == 'X' || _Is_valid_type<_CHRONO year_month_day>(_Type)
-                || _Is_valid_type<_CHRONO hh_mm_ss<_CHRONO seconds>>(_Type);
-        } else {
-            static_assert(_Always_false<_Ty>, "should be unreachable");
-        }
-    }
+            struct _Table_entry {
+                char _Type;
+                _Allowed_bit _Allowed;
+            };
 
-    template <class _FormatContext, class _Ty>
-    _NODISCARD auto _Write(_FormatContext& _FormatCtx, const _Ty& _Val, const tm& _Time) {
-        basic_ostringstream<_CharT> _Stream;
+            static constexpr _Table_entry _Table[] = {
+                {'c', _E_mod},
+                {'C', _E_mod},
+                {'d', _O_mod},
+                {'e', _O_mod},
+                {'H', _O_mod},
+                {'I', _O_mod},
+                {'m', _O_mod},
+                {'M', _O_mod},
+                {'S', _O_mod},
+                {'u', _O_mod},
+                {'U', _O_mod},
+                {'V', _O_mod},
+                {'w', _O_mod},
+                {'W', _O_mod},
+                {'x', _E_mod},
+                {'X', _E_mod},
+                {'y', _EO_mod},
+                {'Y', _E_mod},
+                {'z', _EO_mod},
+            };
 
-        if (_No_chrono_specs) {
-            _Stream << _Val;
-        } else {
-            _Stream.imbue(_FormatCtx.locale());
-            if constexpr (_Is_specialization_v<_Ty, _CHRONO hh_mm_ss>) {
-                if (_Val.is_negative()) {
-                    _Stream << _CharT{'-'};
+            const _Allowed_bit _Mod = _Modifier == 'E' ? _E_mod : _O_mod;
+
+            if (auto _It = _RANGES find(_Table, _Type, &_Table_entry::_Type); _It != _STD end(_Table)) {
+                if (_It->_Allowed & _Mod) {
+                    return;
                 }
             }
 
-            for (const auto& _Spec : _Specs._Chrono_specs_list) {
-                if (_Spec._Lit_char != _CharT{'\0'}) {
-                    _Stream << _Spec._Lit_char;
-                    continue;
-                }
+            _THROW(format_error("Incompatible modifier for type"));
+        }
 
-                // We need to manually do certain writes, either because the specification is different from put_time or
-                // custom logic is needed.
-                if (_Custom_write(_Stream, _Spec, _Time, _Val)) {
-                    continue;
+        template <class _Ty>
+        _NODISCARD constexpr bool _Is_valid_type(const char _Type) noexcept {
+            if constexpr (is_same_v<_Ty, day>) {
+                return _Type == 'd' || _Type == 'e';
+            } else if constexpr (is_same_v<_Ty, month>) {
+                return _Type == 'b' || _Type == 'B' || _Type == 'h' || _Type == 'm';
+            } else if constexpr (is_same_v<_Ty, year>) {
+                return _Type == 'Y' || _Type == 'y' || _Type == 'C';
+            } else if constexpr (_Is_any_of_v<_Ty, weekday, weekday_indexed, weekday_last>) {
+                return _Type == 'a' || _Type == 'A' || _Type == 'u' || _Type == 'w';
+            } else if constexpr (_Is_any_of_v<_Ty, month_day, month_day_last>) {
+                return _Is_valid_type<month>(_Type) || _Is_valid_type<day>(_Type);
+            } else if constexpr (_Is_any_of_v<_Ty, month_weekday, month_weekday_last>) {
+                return _Is_valid_type<month>(_Type) || _Is_valid_type<weekday>(_Type);
+            } else if constexpr (is_same_v<_Ty, year_month>) {
+                return _Is_valid_type<year>(_Type) || _Is_valid_type<month>(_Type);
+            } else if constexpr (_Is_any_of_v<_Ty, year_month_day, year_month_day_last, year_month_weekday,
+                                     year_month_weekday_last>) {
+                return _Type == 'D' || _Type == 'F' || _Is_valid_type<year>(_Type) || _Is_valid_type<month>(_Type)
+                    || _Is_valid_type<day>(_Type) || _Is_valid_type<weekday>(_Type);
+            } else if constexpr (_Is_specialization_v<_Ty, hh_mm_ss>) {
+                return _Type == 'H' || _Type == 'I' || _Type == 'M' || _Type == 'S' || _Type == 'r' || _Type == 'R'
+                    || _Type == 'T' || _Type == 'p';
+            } else if constexpr (_Is_specialization_v<_Ty, time_point>) {
+                if constexpr (!is_same_v<typename _Ty::clock, local_t>) {
+                    if (_Type == 'z' || _Type == 'Z') {
+                        return true;
+                    }
                 }
-                // Otherwise, we should throw on out-of-bounds to avoid triggering asserts within put_time machinery.
-                if constexpr (_Has_ok<_Ty>) {
-                    if (!_Val.ok()) {
-                        _THROW(format_error("Cannot localize out-of-bounds time point."));
+                return _Type == 'c' || _Type == 'x' || _Type == 'X' || _Is_valid_type<year_month_day>(_Type)
+                    || _Is_valid_type<hh_mm_ss<seconds>>(_Type);
+            } else {
+                static_assert(_Always_false<_Ty>, "should be unreachable");
+            }
+        }
+
+        template <class _FormatContext, class _Ty>
+        _NODISCARD auto _Write(_FormatContext& _FormatCtx, const _Ty& _Val, const tm& _Time) {
+            basic_ostringstream<_CharT> _Stream;
+
+            if (_No_chrono_specs) {
+                _Stream << _Val;
+            } else {
+                _Stream.imbue(_FormatCtx.locale());
+                if constexpr (_Is_specialization_v<_Ty, hh_mm_ss>) {
+                    if (_Val.is_negative()) {
+                        _Stream << _CharT{'-'};
                     }
                 }
 
-                _CharT _Fmt_str[4];
-                size_t _Next_idx      = 0;
-                _Fmt_str[_Next_idx++] = _CharT{'%'};
-                if (_Spec._Modifier != '\0') {
-                    _Fmt_str[_Next_idx++] = static_cast<_CharT>(_Spec._Modifier);
-                }
-                _Fmt_str[_Next_idx++] = static_cast<_CharT>(_Spec._Type);
-                _Fmt_str[_Next_idx]   = _CharT{'\0'};
+                for (const auto& _Spec : _Specs._Chrono_specs_list) {
+                    if (_Spec._Lit_char != _CharT{'\0'}) {
+                        _Stream << _Spec._Lit_char;
+                        continue;
+                    }
 
-                _Stream << _STD put_time<_CharT>(&_Time, _Fmt_str);
+                    // We need to manually do certain writes, either because the specification is different from
+                    // put_time or custom logic is needed.
+                    if (_Custom_write(_Stream, _Spec, _Time, _Val)) {
+                        continue;
+                    }
+                    // Otherwise, we should throw on out-of-bounds to avoid triggering asserts within put_time
+                    // machinery.
+                    if constexpr (_Has_ok<_Ty>) {
+                        if (!_Val.ok()) {
+                            _THROW(format_error("Cannot localize out-of-bounds time point."));
+                        }
+                    }
+
+                    _CharT _Fmt_str[4];
+                    size_t _Next_idx      = 0;
+                    _Fmt_str[_Next_idx++] = _CharT{'%'};
+                    if (_Spec._Modifier != '\0') {
+                        _Fmt_str[_Next_idx++] = static_cast<_CharT>(_Spec._Modifier);
+                    }
+                    _Fmt_str[_Next_idx++] = static_cast<_CharT>(_Spec._Type);
+                    _Fmt_str[_Next_idx]   = _CharT{'\0'};
+
+                    _Stream << _STD put_time<_CharT>(&_Time, _Fmt_str);
+                }
+            }
+
+            return _Write_aligned(_STD move(_FormatCtx.out()), static_cast<int>(_Stream.view().size()), _Specs,
+                _Fmt_align::_Left, [&](auto _Out) { return _Fmt_write(_STD move(_Out), _Stream.view()); });
+        }
+
+        // This echoes the functionality of put_time, but is able to handle invalid dates (when !ok()) since the
+        // Standard mandates that invalid dates still be formatted properly.  For example, put_time isn't able to handle
+        // a tm_mday of 40, but format("{:%d}", day{40}) should return "40" and operator<< for day prints
+        // "40 is not a valid day".
+        template <class _Ty>
+        bool _Custom_write(
+            basic_ostream<_CharT>& _Os, const _Chrono_spec<_CharT>& _Spec, const tm& _Time, const _Ty& _Val) {
+            const auto _Year         = _Time.tm_year + 1900;
+            const auto _Month        = _Time.tm_mon + 1;
+            const bool _Has_modifier = _Spec._Modifier != '\0';
+            switch (_Spec._Type) {
+            case 'd':
+            case 'e':
+                // Most months have a proper last day, but February depends on the year.
+                if constexpr (is_same_v<_Ty, month_day_last>) {
+                    if (_Val.month() == February) {
+                        _THROW(format_error("Cannot print the last day of February without a year"));
+                    }
+                }
+
+                if (_Has_modifier) {
+                    return false;
+                }
+
+                if (_Time.tm_mday < 10) {
+                    _Os << (_Spec._Type == 'd' ? _CharT{'0'} : _CharT{' '});
+                }
+                _Os << _Time.tm_mday;
+                return true;
+            case 'm':
+                if (_Has_modifier) {
+                    return false;
+                }
+
+                if (_Month < 10) {
+                    _Os << _CharT{'0'};
+                }
+                _Os << _Month;
+                return true;
+            case 'Y':
+                if (_Has_modifier) {
+                    return false;
+                }
+
+                if (_Year < 0) {
+                    _Os << _CharT{'-'};
+                }
+                _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{:04}"), _STD abs(_Year));
+                return true;
+            case 'y':
+                if (_Has_modifier) {
+                    return false;
+                }
+                _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{:02}"), _Year < 0 ? 100 + (_Year % 100) : _Year % 100);
+                return true;
+            case 'C':
+                if (_Has_modifier) {
+                    return false;
+                }
+
+                if (_Year < 0) {
+                    _Os << _CharT{'-'};
+                }
+                _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{:02}"),
+                    _STD abs(_Time_parse_fields::_Decompose_year(_Year).first) / 100);
+                return true;
+            case 'F':
+                _Custom_write(_Os, {._Type = 'Y'}, _Time, _Val);
+                _Os << _CharT{'-'};
+                _Custom_write(_Os, {._Type = 'm'}, _Time, _Val);
+                _Os << _CharT{'-'};
+                _Custom_write(_Os, {._Type = 'd'}, _Time, _Val);
+                return true;
+            case 'D':
+                _Custom_write(_Os, {._Type = 'm'}, _Time, _Val);
+                _Os << _CharT{'/'};
+                _Custom_write(_Os, {._Type = 'd'}, _Time, _Val);
+                _Os << _CharT{'/'};
+                _Custom_write(_Os, {._Type = 'y'}, _Time, _Val);
+                return true;
+            case 'H':
+                if constexpr (_Is_specialization_v<_Ty, hh_mm_ss>) {
+                    if (_Val.hours() >= hours{24}) {
+                        _THROW(format_error("Cannot localize hh_mm_ss with an absolute value of 24 hours or more."));
+                    }
+                }
+                return false;
+            case 'T':
+                // Alias for %H:%M:%S but we need to rewrite %S to display fractions of a second.
+                _Custom_write(_Os, {._Type = 'H'}, _Time, _Val);
+                _Os << _STD put_time(&_Time, _STATICALLY_WIDEN(_CharT, "%H:%M:"));
+                [[fallthrough]];
+            case 'S':
+                if (_Has_modifier) {
+                    return false;
+                }
+                _Write_seconds(_Os, _Val);
+                return true;
+            case 'Z':
+                _Os << _Time_zone_abbreviation;
+                return true;
+            case 'z':
+                _Os << _STATICALLY_WIDEN(_CharT, "+00");
+                if (_Has_modifier) {
+                    _Os << _CharT{':'};
+                }
+                _Os << _STATICALLY_WIDEN(_CharT, "00");
+                return true;
+            default:
+                return false;
             }
         }
 
-        return _Write_aligned(_STD move(_FormatCtx.out()), static_cast<int>(_Stream.view().size()), _Specs,
-            _Fmt_align::_Left, [&](auto _Out) { return _Fmt_write(_STD move(_Out), _Stream.view()); });
-    }
-
-    // This echoes the functionality of put_time, but is able to handle invalid dates (when !ok()) since the Standard
-    // mandates that invalid dates still be formatted properly.  For example, put_time isn't able to handle a tm_mday of
-    // 40, but format("{:%d}", day{40}) should return "40" and operator<< for day prints "40 is not a valid day".
-    template <class _Ty>
-    bool _Custom_write(
-        basic_ostream<_CharT>& _Os, const _Chrono_specs<_CharT>& _Specs, const tm& _Time, const _Ty& _Val) {
-        const auto _Year         = _Time.tm_year + 1900;
-        const auto _Month        = _Time.tm_mon + 1;
-        const bool _Has_modifier = _Specs._Modifier != '\0';
-        switch (_Specs._Type) {
-        case 'd':
-        case 'e':
-            // Most months have a proper last day, but February depends on the year.
-            if constexpr (is_same_v<_Ty, _CHRONO month_day_last>) {
-                if (_Val.month() == _CHRONO February) {
-                    _THROW(format_error("Cannot print the last day of February without a year"));
-                }
-            }
-
-            if (_Has_modifier) {
-                return false;
-            }
-
-            if (_Time.tm_mday < 10) {
-                _Os << (_Specs._Type == 'd' ? _CharT{'0'} : _CharT{' '});
-            }
-            _Os << _Time.tm_mday;
-            return true;
-        case 'm':
-            if (_Has_modifier) {
-                return false;
-            }
-
-            if (_Month < 10) {
-                _Os << _CharT{'0'};
-            }
-            _Os << _Month;
-            return true;
-        case 'Y':
-            if (_Has_modifier) {
-                return false;
-            }
-
-            if (_Year < 0) {
-                _Os << _CharT{'-'};
-            }
-            _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{:04}"), _STD abs(_Year));
-            return true;
-        case 'y':
-            if (_Has_modifier) {
-                return false;
-            }
-            _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{:02}"), _Year < 0 ? 100 + (_Year % 100) : _Year % 100);
-            return true;
-        case 'C':
-            if (_Has_modifier) {
-                return false;
-            }
-
-            if (_Year < 0) {
-                _Os << _CharT{'-'};
-            }
-            _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{:02}"),
-                _STD abs(_CHRONO _Time_parse_fields::_Decompose_year(_Year).first) / 100);
-            return true;
-        case 'F':
-            _Custom_write(_Os, {._Type = 'Y'}, _Time, _Val);
-            _Os << _CharT{'-'};
-            _Custom_write(_Os, {._Type = 'm'}, _Time, _Val);
-            _Os << _CharT{'-'};
-            _Custom_write(_Os, {._Type = 'd'}, _Time, _Val);
-            return true;
-        case 'D':
-            _Custom_write(_Os, {._Type = 'm'}, _Time, _Val);
-            _Os << _CharT{'/'};
-            _Custom_write(_Os, {._Type = 'd'}, _Time, _Val);
-            _Os << _CharT{'/'};
-            _Custom_write(_Os, {._Type = 'y'}, _Time, _Val);
-            return true;
-        case 'H':
-            if constexpr (_Is_specialization_v<_Ty, _CHRONO hh_mm_ss>) {
-                if (_Val.hours() >= _CHRONO hours{24}) {
-                    _THROW(format_error("Cannot localize hh_mm_ss with an absolute value of 24 hours or more."));
-                }
-            }
-            return false;
-        case 'T':
-            // Alias for %H:%M:%S but we need to rewrite %S to display fractions of a second.
-            _Custom_write(_Os, {._Type = 'H'}, _Time, _Val);
-            _Os << _STD put_time(&_Time, _STATICALLY_WIDEN(_CharT, "%H:%M:"));
-            [[fallthrough]];
-        case 'S':
-            if (_Has_modifier) {
-                return false;
-            }
-            _Write_seconds(_Os, _Val);
-            return true;
-        case 'Z':
-            _Os << _Time_zone_abbreviation;
-            return true;
-        case 'z':
-            _Os << _STATICALLY_WIDEN(_CharT, "+00");
-            if (_Has_modifier) {
-                _Os << _CharT{':'};
-            }
-            _Os << _STATICALLY_WIDEN(_CharT, "00");
-            return true;
-        default:
-            return false;
-        }
-    }
-
-    _Chrono_format_specs<_CharT> _Specs{};
-    bool _No_chrono_specs = false;
-    basic_string_view<_CharT> _Time_zone_abbreviation{};
-};
+        _Chrono_format_specs<_CharT> _Specs{};
+        bool _No_chrono_specs = false;
+        basic_string_view<_CharT> _Time_zone_abbreviation{};
+    };
+} // namespace chrono
 
 template <class _Ty, class _CharT>
 struct _Fill_tm_formatter {
@@ -5993,7 +5994,7 @@ struct _Fill_tm_formatter {
     }
 
 private:
-    _Chrono_formatter<_CharT> _Impl;
+    _CHRONO _Chrono_formatter<_CharT> _Impl;
 };
 
 template <class _CharT>
@@ -6072,7 +6073,7 @@ struct formatter<_CHRONO sys_time<_Duration>, _CharT> {
     }
 
 private:
-    _Chrono_formatter<_CharT> _Impl{_STATICALLY_WIDEN(_CharT, "UTC")};
+    _CHRONO _Chrono_formatter<_CharT> _Impl{_STATICALLY_WIDEN(_CharT, "UTC")};
 };
 
 template <class _Duration, class _CharT>
@@ -6088,7 +6089,7 @@ struct formatter<_CHRONO utc_time<_Duration>, _CharT> {
     }
 
 private:
-    _Chrono_formatter<_CharT> _Impl{_STATICALLY_WIDEN(_CharT, "UTC")};
+    _CHRONO _Chrono_formatter<_CharT> _Impl{_STATICALLY_WIDEN(_CharT, "UTC")};
 };
 
 template <class _Duration, class _CharT>
@@ -6107,7 +6108,7 @@ struct formatter<_CHRONO tai_time<_Duration>, _CharT> {
     }
 
 private:
-    _Chrono_formatter<_CharT> _Impl{_STATICALLY_WIDEN(_CharT, "TAI")};
+    _CHRONO _Chrono_formatter<_CharT> _Impl{_STATICALLY_WIDEN(_CharT, "TAI")};
 };
 
 template <class _Duration, class _CharT>
@@ -6126,7 +6127,7 @@ struct formatter<_CHRONO gps_time<_Duration>, _CharT> {
     }
 
 private:
-    _Chrono_formatter<_CharT> _Impl{_STATICALLY_WIDEN(_CharT, "GPS")};
+    _CHRONO _Chrono_formatter<_CharT> _Impl{_STATICALLY_WIDEN(_CharT, "GPS")};
 };
 
 template <class _Duration, class _CharT>
@@ -6142,7 +6143,7 @@ struct formatter<_CHRONO file_time<_Duration>, _CharT> {
     }
 
 private:
-    _Chrono_formatter<_CharT> _Impl{_STATICALLY_WIDEN(_CharT, "UTC")};
+    _CHRONO _Chrono_formatter<_CharT> _Impl{_STATICALLY_WIDEN(_CharT, "UTC")};
 };
 
 template <class _Duration, class _CharT>

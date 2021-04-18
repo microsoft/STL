@@ -47,7 +47,7 @@ struct testing_callbacks {
     int expected_precision               = -1;
     size_t expected_dynamic_precision    = static_cast<size_t>(-1);
     bool expected_auto_dynamic_precision = false;
-    vector<_Chrono_specs<CharT>>& expected_chrono_specs;
+    vector<_Chrono_spec<CharT>>& expected_chrono_specs;
     size_t curr_index = 0;
 
     void _On_align(_Fmt_align aln) {
@@ -108,7 +108,7 @@ template <typename CharT>
 bool test_parse_conversion_spec() {
     auto parse_conv_spec_fn = _Parse_conversion_specs<CharT, testing_callbacks<CharT>>;
     using view_typ          = basic_string_view<CharT>;
-    using chrono_spec       = _Chrono_specs<CharT>;
+    using chrono_spec       = _Chrono_spec<CharT>;
 
     view_typ s0(TYPED_LITERAL(CharT, "B"));
     view_typ s1(TYPED_LITERAL(CharT, "Ec"));
@@ -140,7 +140,7 @@ template <typename CharT>
 bool test_parse_chrono_format_specs() {
     auto parse_chrono_format_specs_fn = _Parse_chrono_format_specs<CharT, testing_callbacks<CharT>>;
     using view_typ                    = basic_string_view<CharT>;
-    using chrono_spec                 = _Chrono_specs<CharT>;
+    using chrono_spec                 = _Chrono_spec<CharT>;
 
     view_typ s0(TYPED_LITERAL(CharT, "%Oe"));
     view_typ s1(TYPED_LITERAL(CharT, "lit"));
@@ -231,6 +231,27 @@ constexpr void print(Str str) {
     } else {
         wcout << "res: " << str << "\n";
     }
+}
+
+template <typename CharT>
+void test_clock_formatter() {
+    stream_helper(STR("1970-01-01 00:00:00"), sys_seconds{});
+    stream_helper(STR("1970-01-01"), sys_days{});
+    stream_helper(STR("1970-01-01 00:00:00"), utc_seconds{});
+    stream_helper(STR("1958-01-01 00:00:00"), tai_seconds{});
+    stream_helper(STR("1980-01-06 00:00:00"), gps_seconds{});
+    stream_helper(STR("1601-01-01 00:00:00"), file_time<seconds>{});
+    stream_helper(STR("1970-01-01 00:00:00"), local_seconds{});
+
+    assert(format(STR("{:%Z %z %Oz %Ez}"), sys_seconds{}) == STR("UTC +0000 +00:00 +00:00"));
+    assert(format(STR("{:%Z %z %Oz %Ez}"), sys_days{}) == STR("UTC +0000 +00:00 +00:00"));
+    assert(format(STR("{:%Z %z %Oz %Ez}"), utc_seconds{}) == STR("UTC +0000 +00:00 +00:00"));
+    assert(format(STR("{:%Z %z %Oz %Ez}"), tai_seconds{}) == STR("TAI +0000 +00:00 +00:00"));
+    assert(format(STR("{:%Z %z %Oz %Ez}"), gps_seconds{}) == STR("GPS +0000 +00:00 +00:00"));
+    assert(format(STR("{:%Z %z %Oz %Ez}"), file_time<seconds>{}) == STR("UTC +0000 +00:00 +00:00"));
+    throw_helper(STR("{:%Z %z %Oz %Ez}"), local_seconds{});
+
+    assert(format(STR("{:%S}"), utc_clock::from_sys(get_tzdb().leap_seconds.front().date()) - 1s) == STR("60"));
 }
 
 template <typename CharT>
@@ -402,6 +423,24 @@ void test_weekday_last_formatter() {
 }
 
 template <typename CharT>
+void test_month_day_formatter() {
+    stream_helper(STR("Jan/16"), January / 16);
+    stream_helper(STR("13 is not a valid month/40 is not a valid day"), month{13} / day{40});
+
+    assert(format(STR("{:%B %d}"), June / 17) == STR("June 17"));
+    throw_helper(STR("{:%Y}"), June / 17);
+}
+
+template <typename CharT>
+void test_month_day_last_formatter() {
+    stream_helper(STR("Feb/last"), February / last);
+
+    assert(format(STR("{:%B}"), June / last) == STR("June"));
+    assert(format(STR("{:%d}"), June / last) == STR("30"));
+    throw_helper(STR("{:%d}"), February / last);
+}
+
+template <typename CharT>
 void test_month_weekday_formatter() {
     constexpr month_weekday mwd1 = August / Tuesday[3];
     constexpr month_weekday mwd2 = December / Sunday[4];
@@ -441,6 +480,14 @@ void test_month_weekday_last_formatter() {
 
     assert(format(STR("{:%b %B %h %m %a %A %u %w}"), mwdl1) == STR("Aug August Aug 08 Tue Tuesday 2 2"));
     assert(format(STR("{:%b %B %h %m %a %A %u %w}"), mwdl2) == STR("Dec December Dec 12 Sun Sunday 7 0"));
+}
+
+template <typename CharT>
+void test_year_month_formatter() {
+    stream_helper(STR("1444/Oct"), 1444y / October);
+
+    assert(format(STR("{:%Y %B}"), 2000y / July) == STR("2000 July"));
+    throw_helper(STR("{:%d}"), 2000y / July);
 }
 
 template <typename CharT>
@@ -535,53 +582,6 @@ void test_hh_mm_ss_formatter() {
     assert(format(STR("{:%M %S}"), hh_mm_ss{27h + 12min + 30s}) == STR("12 30"));
 }
 
-template <typename CharT>
-void test_month_day_formatter() {
-    stream_helper(STR("Jan/16"), January / 16);
-    stream_helper(STR("13 is not a valid month/40 is not a valid day"), month{13} / day{40});
-
-    assert(format(STR("{:%B %d}"), June / 17) == STR("June 17"));
-    throw_helper(STR("{:%Y}"), June / 17);
-}
-
-template <typename CharT>
-void test_month_day_last_formatter() {
-    stream_helper(STR("Feb/last"), February / last);
-
-    assert(format(STR("{:%B}"), June / last) == STR("June"));
-    assert(format(STR("{:%d}"), June / last) == STR("30"));
-    throw_helper(STR("{:%d}"), February / last);
-}
-
-template <typename CharT>
-void test_year_month_formatter() {
-    stream_helper(STR("1444/Oct"), 1444y / October);
-
-    assert(format(STR("{:%Y %B}"), 2000y / July) == STR("2000 July"));
-    throw_helper(STR("{:%d}"), 2000y / July);
-}
-
-template <typename CharT>
-void test_clock_formatter() {
-    stream_helper(STR("1970-01-01 00:00:00"), sys_seconds{});
-    stream_helper(STR("1970-01-01"), sys_days{});
-    stream_helper(STR("1970-01-01 00:00:00"), utc_seconds{});
-    stream_helper(STR("1958-01-01 00:00:00"), tai_seconds{});
-    stream_helper(STR("1980-01-06 00:00:00"), gps_seconds{});
-    stream_helper(STR("1601-01-01 00:00:00"), file_time<seconds>{});
-    stream_helper(STR("1970-01-01 00:00:00"), local_seconds{});
-
-    assert(format(STR("{:%Z %z %Oz %Ez}"), sys_seconds{}) == STR("UTC +0000 +00:00 +00:00"));
-    assert(format(STR("{:%Z %z %Oz %Ez}"), sys_days{}) == STR("UTC +0000 +00:00 +00:00"));
-    assert(format(STR("{:%Z %z %Oz %Ez}"), utc_seconds{}) == STR("UTC +0000 +00:00 +00:00"));
-    assert(format(STR("{:%Z %z %Oz %Ez}"), tai_seconds{}) == STR("TAI +0000 +00:00 +00:00"));
-    assert(format(STR("{:%Z %z %Oz %Ez}"), gps_seconds{}) == STR("GPS +0000 +00:00 +00:00"));
-    assert(format(STR("{:%Z %z %Oz %Ez}"), file_time<seconds>{}) == STR("UTC +0000 +00:00 +00:00"));
-    throw_helper(STR("{:%Z %z %Oz %Ez}"), local_seconds{});
-
-    assert(format(STR("{:%S}"), utc_clock::from_sys(get_tzdb().leap_seconds.front().date()) - 1s) == STR("60"));
-}
-
 void test_exception_classes() {
     { // N4885 [time.zone.exception.nonexist]/4
         string s;
@@ -622,6 +622,9 @@ int main() {
     test_parse_chrono_format_specs<char>();
     test_parse_chrono_format_specs<wchar_t>();
 
+    test_clock_formatter<char>();
+    test_clock_formatter<wchar_t>();
+
     test_day_formatter<char>();
     test_day_formatter<wchar_t>();
 
@@ -640,11 +643,20 @@ int main() {
     test_weekday_last_formatter<char>();
     test_weekday_last_formatter<wchar_t>();
 
+    test_month_day_formatter<char>();
+    test_month_day_formatter<wchar_t>();
+
+    test_month_day_last_formatter<char>();
+    test_month_day_last_formatter<wchar_t>();
+
     test_month_weekday_formatter<char>();
     test_month_weekday_formatter<wchar_t>();
 
     test_month_weekday_last_formatter<char>();
     test_month_weekday_last_formatter<wchar_t>();
+
+    test_year_month_formatter<char>();
+    test_year_month_formatter<wchar_t>();
 
     test_year_month_day_formatter<char>();
     test_year_month_day_formatter<wchar_t>();
@@ -660,18 +672,6 @@ int main() {
 
     test_hh_mm_ss_formatter<char>();
     test_hh_mm_ss_formatter<wchar_t>();
-
-    test_month_day_formatter<char>();
-    test_month_day_formatter<wchar_t>();
-
-    test_month_day_last_formatter<char>();
-    test_month_day_last_formatter<wchar_t>();
-
-    test_year_month_formatter<char>();
-    test_year_month_formatter<wchar_t>();
-
-    test_clock_formatter<char>();
-    test_clock_formatter<wchar_t>();
 
     test_exception_classes();
 }
