@@ -5488,7 +5488,7 @@ namespace chrono {
             _Year = static_cast<int>(_Val);
         } else if constexpr (is_same_v<_Ty, weekday>) {
             _Weekday = static_cast<int>(_Val.c_encoding());
-        } else if constexpr (is_same_v<_Ty, weekday_indexed>) {
+        } else if constexpr (_Is_any_of_v<_Ty, weekday_indexed, weekday_last>) {
             _Weekday = static_cast<int>(_Val.weekday().c_encoding());
         } else if constexpr (is_same_v<_Ty, month_day>) {
             _Day   = static_cast<unsigned int>(_Val.day());
@@ -5496,6 +5496,12 @@ namespace chrono {
         } else if constexpr (is_same_v<_Ty, month_day_last>) {
             _Month = static_cast<unsigned int>(_Val.month());
             _Day   = static_cast<unsigned int>(_Last_day_table[(_Month - 1) & 0xF]);
+        } else if constexpr (is_same_v<_Ty, month_weekday>) {
+            _Month   = static_cast<unsigned int>(_Val.month());
+            _Weekday = static_cast<int>(_Val.weekday_indexed().weekday().c_encoding());
+        } else if constexpr (is_same_v<_Ty, month_weekday_last>) {
+            _Month   = static_cast<unsigned int>(_Val.month());
+            _Weekday = static_cast<int>(_Val.weekday_last().weekday().c_encoding());
         } else if constexpr (is_same_v<_Ty, year_month>) {
             _Month = static_cast<unsigned int>(_Val.month());
             _Year  = static_cast<int>(_Val.year());
@@ -5509,12 +5515,7 @@ namespace chrono {
             _Month   = static_cast<unsigned int>(_Val.month());
             _Year    = static_cast<int>(_Val.year());
             _Weekday = year_month_day{_Val}._Calculate_weekday();
-        } else if constexpr (is_same_v<_Ty, year_month_weekday>) {
-            _Day     = static_cast<unsigned int>(year_month_day{_Val}.day());
-            _Month   = static_cast<unsigned int>(_Val.month());
-            _Year    = static_cast<int>(_Val.year());
-            _Weekday = static_cast<int>(_Val.weekday().c_encoding());
-        } else if constexpr (is_same_v<_Ty, year_month_weekday_last>) {
+        } else if constexpr (_Is_any_of_v<_Ty, year_month_weekday, year_month_weekday_last>) {
             _Day     = static_cast<unsigned int>(year_month_day{_Val}.day());
             _Month   = static_cast<unsigned int>(_Val.month());
             _Year    = static_cast<int>(_Val.year());
@@ -5785,10 +5786,12 @@ struct _Chrono_formatter {
             return _Type == 'b' || _Type == 'B' || _Type == 'h' || _Type == 'm';
         } else if constexpr (is_same_v<_Ty, _CHRONO year>) {
             return _Type == 'Y' || _Type == 'y' || _Type == 'C';
-        } else if constexpr (_Is_any_of_v<_Ty, _CHRONO weekday, _CHRONO weekday_indexed>) {
+        } else if constexpr (_Is_any_of_v<_Ty, _CHRONO weekday, _CHRONO weekday_indexed, _CHRONO weekday_last>) {
             return _Type == 'a' || _Type == 'A' || _Type == 'u' || _Type == 'w';
         } else if constexpr (_Is_any_of_v<_Ty, _CHRONO month_day, _CHRONO month_day_last>) {
             return _Is_valid_type<_CHRONO month>(_Type) || _Is_valid_type<_CHRONO day>(_Type);
+        } else if constexpr (_Is_any_of_v<_Ty, _CHRONO month_weekday, _CHRONO month_weekday_last>) {
+            return _Is_valid_type<_CHRONO month>(_Type) || _Is_valid_type<_CHRONO weekday>(_Type);
         } else if constexpr (is_same_v<_Ty, _CHRONO year_month>) {
             return _Is_valid_type<_CHRONO year>(_Type) || _Is_valid_type<_CHRONO month>(_Type);
         } else if constexpr (_Is_any_of_v<_Ty, _CHRONO year_month_day, _CHRONO year_month_day_last,
@@ -5808,8 +5811,7 @@ struct _Chrono_formatter {
             return _Type == 'c' || _Type == 'x' || _Type == 'X' || _Is_valid_type<_CHRONO year_month_day>(_Type)
                 || _Is_valid_type<_CHRONO hh_mm_ss<_CHRONO seconds>>(_Type);
         } else {
-            // TRANSITION, remove when all types are added
-            static_assert(_Always_false<_Ty>, "unsupported type");
+            static_assert(_Always_false<_Ty>, "should be unreachable");
         }
     }
 
@@ -6015,12 +6017,24 @@ struct formatter<_CHRONO weekday_indexed, _CharT> //
     : _Fill_tm_formatter<_CHRONO weekday_indexed, _CharT> {};
 
 template <class _CharT>
+struct formatter<_CHRONO weekday_last, _CharT> //
+    : _Fill_tm_formatter<_CHRONO weekday_last, _CharT> {};
+
+template <class _CharT>
 struct formatter<_CHRONO month_day, _CharT> //
     : _Fill_tm_formatter<_CHRONO month_day, _CharT> {};
 
 template <class _CharT>
 struct formatter<_CHRONO month_day_last, _CharT> //
     : _Fill_tm_formatter<_CHRONO month_day_last, _CharT> {};
+
+template <class _CharT>
+struct formatter<_CHRONO month_weekday, _CharT> //
+    : _Fill_tm_formatter<_CHRONO month_weekday, _CharT> {};
+
+template <class _CharT>
+struct formatter<_CHRONO month_weekday_last, _CharT> //
+    : _Fill_tm_formatter<_CHRONO month_weekday_last, _CharT> {};
 
 template <class _CharT>
 struct formatter<_CHRONO year_month, _CharT> //
