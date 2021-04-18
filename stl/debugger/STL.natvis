@@ -607,7 +607,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
           <Item Name="[bound_args]">_Mypair._Myval2</Item>
       </Expand>
   </Type>
-  
+
   <Type Name="std::_Front_binder&lt;*&gt;">
       <DisplayString>bind_front({_Mypair}, {_Mypair._Myval2,view(noparens)})</DisplayString>
       <Expand>
@@ -1690,7 +1690,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       <Item Optional="true" Name="[size]">size()</Item>
       <CustomListItems Optional="true">
         <Variable Name="val" InitialValue="_Value" />
-        
+
         <Size>size()</Size>
         <Loop>
           <Break Condition="val == _Bound" />
