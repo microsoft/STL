@@ -1827,4 +1827,26 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     </Expand>
   </Type>
 
+  <Type Name="std::strong_ordering">
+    <DisplayString Condition="_Value == -1">less</DisplayString>
+    <DisplayString Condition="_Value == 0">equal</DisplayString>
+    <DisplayString Condition="_Value == 1">greater</DisplayString>
+    <Expand/>
+  </Type>
+
+  <Type Name="std::weak_ordering">
+    <DisplayString Condition="_Value == -1">less</DisplayString>
+    <DisplayString Condition="_Value == 0">equivalent</DisplayString>
+    <DisplayString Condition="_Value == 1">greater</DisplayString>
+    <Expand/>
+  </Type>
+
+  <Type Name="std::partial_ordering">
+    <DisplayString Condition="_Value == -1">less</DisplayString>
+    <DisplayString Condition="_Value == 0">equivalent</DisplayString>
+    <DisplayString Condition="_Value == 1">greater</DisplayString>
+    <DisplayString Condition="_Value == -128">unordered</DisplayString>
+    <Expand/>
+  </Type>
+
 </AutoVisualizer>
