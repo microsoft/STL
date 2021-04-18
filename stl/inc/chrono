@@ -5254,7 +5254,7 @@ concept _Has_ok = requires(_Ty _At) {
 
 // A chrono spec is either a type (with an optional modifier), OR a literal character, never both.
 template <class _CharT>
-struct _Chrono_specs {
+struct _Chrono_spec {
     _CharT _Lit_char = _CharT{'\0'}; // any character other than '{', '}', or '%'
     char _Modifier   = '\0'; // either 'E' or 'O'
     char _Type       = '\0';
@@ -5270,8 +5270,8 @@ struct _Chrono_format_specs {
     uint8_t _Fill_length         = 1;
     // At most one codepoint (so one char32_t or four utf-8 char8_t)
     _CharT _Fill[4 / sizeof(_CharT)] = {_CharT{' '}};
-    // recursive definition in grammar, so could have any number of these with literal chars
-    vector<_Chrono_specs<_CharT>> _Chrono_specs_list;
+    // recursive definition in grammar, so could have any number of these
+    vector<_Chrono_spec<_CharT>> _Chrono_specs_list;
 };
 
 // Model of _Chrono_parse_spec_callbacks that fills a _Chrono_format_specs with the parsed data
@@ -5333,12 +5333,12 @@ public:
             _THROW(format_error("Invalid type specification."));
         }
 
-        _Chrono_specs<_CharT> _Conv_spec{._Modifier = _Modifier, ._Type = static_cast<char>(_Type)};
+        _Chrono_spec<_CharT> _Conv_spec{._Modifier = _Modifier, ._Type = static_cast<char>(_Type)};
         _Specs._Chrono_specs_list.push_back(_Conv_spec);
     }
 
     constexpr void _On_lit_char(_CharT _Lit_ch) {
-        _Chrono_specs<_CharT> _Lit_char_spec{._Lit_char = _Lit_ch};
+        _Chrono_spec<_CharT> _Lit_char_spec{._Lit_char = _Lit_ch};
         _Specs._Chrono_specs_list.push_back(_Lit_char_spec);
     }
 
@@ -5869,11 +5869,11 @@ namespace chrono {
         // "40 is not a valid day".
         template <class _Ty>
         bool _Custom_write(
-            basic_ostream<_CharT>& _Os, const _Chrono_specs<_CharT>& _Specs, const tm& _Time, const _Ty& _Val) {
+            basic_ostream<_CharT>& _Os, const _Chrono_spec<_CharT>& _Spec, const tm& _Time, const _Ty& _Val) {
             const auto _Year         = _Time.tm_year + 1900;
             const auto _Month        = _Time.tm_mon + 1;
-            const bool _Has_modifier = _Specs._Modifier != '\0';
-            switch (_Specs._Type) {
+            const bool _Has_modifier = _Spec._Modifier != '\0';
+            switch (_Spec._Type) {
             case 'd':
             case 'e':
                 // Most months have a proper last day, but February depends on the year.
@@ -5888,7 +5888,7 @@ namespace chrono {
                 }
 
                 if (_Time.tm_mday < 10) {
-                    _Os << (_Specs._Type == 'd' ? _CharT{'0'} : _CharT{' '});
+                    _Os << (_Spec._Type == 'd' ? _CharT{'0'} : _CharT{' '});
                 }
                 _Os << _Time.tm_mday;
                 return true;

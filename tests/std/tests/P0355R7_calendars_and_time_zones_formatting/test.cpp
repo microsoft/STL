@@ -47,7 +47,7 @@ struct testing_callbacks {
     int expected_precision               = -1;
     size_t expected_dynamic_precision    = static_cast<size_t>(-1);
     bool expected_auto_dynamic_precision = false;
-    vector<_Chrono_specs<CharT>>& expected_chrono_specs;
+    vector<_Chrono_spec<CharT>>& expected_chrono_specs;
     size_t curr_index = 0;
 
     void _On_align(_Fmt_align aln) {
@@ -108,7 +108,7 @@ template <typename CharT>
 bool test_parse_conversion_spec() {
     auto parse_conv_spec_fn = _Parse_conversion_specs<CharT, testing_callbacks<CharT>>;
     using view_typ          = basic_string_view<CharT>;
-    using chrono_spec       = _Chrono_specs<CharT>;
+    using chrono_spec       = _Chrono_spec<CharT>;
 
     view_typ s0(TYPED_LITERAL(CharT, "B"));
     view_typ s1(TYPED_LITERAL(CharT, "Ec"));
@@ -140,7 +140,7 @@ template <typename CharT>
 bool test_parse_chrono_format_specs() {
     auto parse_chrono_format_specs_fn = _Parse_chrono_format_specs<CharT, testing_callbacks<CharT>>;
     using view_typ                    = basic_string_view<CharT>;
-    using chrono_spec                 = _Chrono_specs<CharT>;
+    using chrono_spec                 = _Chrono_spec<CharT>;
 
     view_typ s0(TYPED_LITERAL(CharT, "%Oe"));
     view_typ s1(TYPED_LITERAL(CharT, "lit"));
