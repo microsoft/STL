@@ -191,8 +191,8 @@ bool test_parse_chrono_format_specs() {
     return true;
 }
 
-template <class charT, class... Args>
-void throw_helper(const basic_string_view<charT> fmt, const Args&... vals) {
+template <class CharT, class... Args>
+void throw_helper(const basic_string_view<CharT> fmt, const Args&... vals) {
     try {
         (void) format(fmt, vals...);
         assert(false);
@@ -200,17 +200,27 @@ void throw_helper(const basic_string_view<charT> fmt, const Args&... vals) {
     }
 }
 
-template <class charT, class... Args>
-void throw_helper(const charT* fmt, const Args&... vals) {
-    throw_helper(basic_string_view<charT>{fmt}, vals...);
+template <class CharT, class... Args>
+void throw_helper(const CharT* fmt, const Args&... vals) {
+    throw_helper(basic_string_view<CharT>{fmt}, vals...);
 }
 
-template <class charT, class... Args>
-void stream_helper(const charT* expect, const Args&... vals) {
-    basic_ostringstream<charT> stream;
+template <class CharT, class... Args>
+void stream_helper(const CharT* expect, const Args&... vals) {
+    basic_ostringstream<CharT> stream;
     (stream << ... << vals);
     assert(stream.str() == expect);
     assert(stream);
+}
+
+template <class Arg, class CharT>
+void empty_braces_helper(const Arg& val, const CharT* const expected) {
+    // N4885 [time.format]/6: "If the chrono-specs is omitted, the chrono object is formatted
+    // as if by streaming it to std::ostringstream os and copying os.str() through the output iterator
+    // of the context with additional padding and adjustments as specified by the format specifiers."
+    assert(format(STR("{}"), val) == expected);
+
+    stream_helper(expected, val);
 }
 
 // FIXME: TEMPORARY CODE FOR WRITING TESTS, REMOVE BEFORE MERGING
@@ -381,6 +391,59 @@ void test_weekday_indexed_formatter() {
 }
 
 template <typename CharT>
+void test_weekday_last_formatter() {
+    constexpr weekday_last invalid{weekday{10}};
+
+    empty_braces_helper(Wednesday[last], STR("Wed[last]"));
+    empty_braces_helper(invalid, STR("10 is not a valid weekday[last]"));
+
+    assert(format(STR("{:%a %A %u %w}"), Saturday[last]) == STR("Sat Saturday 6 6"));
+    assert(format(STR("{:%a %A %u %w}"), Sunday[last]) == STR("Sun Sunday 7 0"));
+}
+
+template <typename CharT>
+void test_month_weekday_formatter() {
+    constexpr month_weekday mwd1 = August / Tuesday[3];
+    constexpr month_weekday mwd2 = December / Sunday[4];
+
+    constexpr month_weekday invalid1 = March / Friday[9];
+    constexpr month_weekday invalid2 = March / weekday{8}[2];
+    constexpr month_weekday invalid3 = month{20} / Friday[2];
+    constexpr month_weekday invalid4 = month{20} / weekday{8}[9];
+
+    empty_braces_helper(mwd1, STR("Aug/Tue[3]"));
+    empty_braces_helper(mwd2, STR("Dec/Sun[4]"));
+
+    empty_braces_helper(invalid1, STR("Mar/Fri[9 is not a valid index]"));
+    empty_braces_helper(invalid2, STR("Mar/8 is not a valid weekday[2]"));
+    empty_braces_helper(invalid3, STR("20 is not a valid month/Fri[2]"));
+    empty_braces_helper(invalid4, STR("20 is not a valid month/8 is not a valid weekday[9 is not a valid index]"));
+
+    assert(format(STR("{:%b %B %h %m %a %A %u %w}"), mwd1) == STR("Aug August Aug 08 Tue Tuesday 2 2"));
+    assert(format(STR("{:%b %B %h %m %a %A %u %w}"), mwd2) == STR("Dec December Dec 12 Sun Sunday 7 0"));
+}
+
+template <typename CharT>
+void test_month_weekday_last_formatter() {
+    constexpr month_weekday_last mwdl1 = August / Tuesday[last];
+    constexpr month_weekday_last mwdl2 = December / Sunday[last];
+
+    constexpr month_weekday_last invalid1 = March / weekday{8}[last];
+    constexpr month_weekday_last invalid2 = month{20} / Friday[last];
+    constexpr month_weekday_last invalid3 = month{20} / weekday{8}[last];
+
+    empty_braces_helper(mwdl1, STR("Aug/Tue[last]"));
+    empty_braces_helper(mwdl2, STR("Dec/Sun[last]"));
+
+    empty_braces_helper(invalid1, STR("Mar/8 is not a valid weekday[last]"));
+    empty_braces_helper(invalid2, STR("20 is not a valid month/Fri[last]"));
+    empty_braces_helper(invalid3, STR("20 is not a valid month/8 is not a valid weekday[last]"));
+
+    assert(format(STR("{:%b %B %h %m %a %A %u %w}"), mwdl1) == STR("Aug August Aug 08 Tue Tuesday 2 2"));
+    assert(format(STR("{:%b %B %h %m %a %A %u %w}"), mwdl2) == STR("Dec December Dec 12 Sun Sunday 7 0"));
+}
+
+template <typename CharT>
 void test_year_month_day_formatter() {
     year_month_day invalid{year{1234}, month{0}, day{31}};
     assert(format(STR("{}"), year_month_day{year{1900}, month{2}, day{1}}) == STR("1900-02-01"));
@@ -395,18 +458,63 @@ void test_year_month_day_formatter() {
 
 template <typename CharT>
 void test_year_month_day_last_formatter() {
-    // FIXME, TEST format() AND operator<< WHEN formatter FOR month_day_last IS IMPLEMENTED
-    // assert(format(STR("{:%F}"), 2021y / April / last) == STR("2021-04-30"));
+    constexpr year_month_day_last ymdl1 = 2021y / April / last;
+    constexpr year_month_day_last ymdl2 = 2004y / February / last;
+
+    constexpr year_month_day_last invalid = 1999y / month{20} / last;
+
+    empty_braces_helper(ymdl1, STR("2021/Apr/last"));
+    empty_braces_helper(ymdl2, STR("2004/Feb/last"));
+
+    empty_braces_helper(invalid, STR("1999/20 is not a valid month/last"));
+
+    constexpr auto fmt = STR("{:%D %F, %Y %C %y, %b %B %h %m, %d %e, %a %A %u %w}");
+    assert(format(fmt, ymdl1) == STR("04/30/21 2021-04-30, 2021 20 21, Apr April Apr 04, 30 30, Fri Friday 5 5"));
+    assert(format(fmt, ymdl2) == STR("02/29/04 2004-02-29, 2004 20 04, Feb February Feb 02, 29 29, Sun Sunday 7 0"));
 }
 
 template <typename CharT>
 void test_year_month_weekday_formatter() {
-    // FIXME, TEST format() AND operator<< WHEN formatter FOR weekday_indexed IS IMPLEMENTED
+    constexpr year_month_weekday ymwd1 = 2021y / April / Friday[5];
+    constexpr year_month_weekday ymwd2 = 2004y / February / Sunday[5];
+
+    constexpr year_month_weekday invalid1 = 2015y / March / Friday[9];
+    constexpr year_month_weekday invalid2 = 2015y / March / weekday{8}[2];
+    constexpr year_month_weekday invalid3 = 2015y / month{20} / Friday[2];
+    constexpr year_month_weekday invalid4 = 2015y / month{20} / weekday{8}[9];
+
+    empty_braces_helper(ymwd1, STR("2021/Apr/Fri[5]"));
+    empty_braces_helper(ymwd2, STR("2004/Feb/Sun[5]"));
+
+    empty_braces_helper(invalid1, STR("2015/Mar/Fri[9 is not a valid index]"));
+    empty_braces_helper(invalid2, STR("2015/Mar/8 is not a valid weekday[2]"));
+    empty_braces_helper(invalid3, STR("2015/20 is not a valid month/Fri[2]"));
+    empty_braces_helper(invalid4, STR("2015/20 is not a valid month/8 is not a valid weekday[9 is not a valid index]"));
+
+    constexpr auto fmt = STR("{:%D %F, %Y %C %y, %b %B %h %m, %d %e, %a %A %u %w}");
+    assert(format(fmt, ymwd1) == STR("04/30/21 2021-04-30, 2021 20 21, Apr April Apr 04, 30 30, Fri Friday 5 5"));
+    assert(format(fmt, ymwd2) == STR("02/29/04 2004-02-29, 2004 20 04, Feb February Feb 02, 29 29, Sun Sunday 7 0"));
 }
 
 template <typename CharT>
 void test_year_month_weekday_last_formatter() {
-    // FIXME, TEST format() AND operator<< WHEN formatter FOR weekday_last IS IMPLEMENTED
+    constexpr year_month_weekday_last ymwdl1 = 2021y / April / Friday[last];
+    constexpr year_month_weekday_last ymwdl2 = 2004y / February / Sunday[last];
+
+    constexpr year_month_weekday_last invalid1 = 2015y / March / weekday{8}[last];
+    constexpr year_month_weekday_last invalid2 = 2015y / month{20} / Friday[last];
+    constexpr year_month_weekday_last invalid3 = 2015y / month{20} / weekday{8}[last];
+
+    empty_braces_helper(ymwdl1, STR("2021/Apr/Fri[last]"));
+    empty_braces_helper(ymwdl2, STR("2004/Feb/Sun[last]"));
+
+    empty_braces_helper(invalid1, STR("2015/Mar/8 is not a valid weekday[last]"));
+    empty_braces_helper(invalid2, STR("2015/20 is not a valid month/Fri[last]"));
+    empty_braces_helper(invalid3, STR("2015/20 is not a valid month/8 is not a valid weekday[last]"));
+
+    constexpr auto fmt = STR("{:%D %F, %Y %C %y, %b %B %h %m, %d %e, %a %A %u %w}");
+    assert(format(fmt, ymwdl1) == STR("04/30/21 2021-04-30, 2021 20 21, Apr April Apr 04, 30 30, Fri Friday 5 5"));
+    assert(format(fmt, ymwdl2) == STR("02/29/04 2004-02-29, 2004 20 04, Feb February Feb 02, 29 29, Sun Sunday 7 0"));
 }
 
 template <typename CharT>
@@ -528,6 +636,15 @@ int main() {
 
     test_weekday_indexed_formatter<char>();
     test_weekday_indexed_formatter<wchar_t>();
+
+    test_weekday_last_formatter<char>();
+    test_weekday_last_formatter<wchar_t>();
+
+    test_month_weekday_formatter<char>();
+    test_month_weekday_formatter<wchar_t>();
+
+    test_month_weekday_last_formatter<char>();
+    test_month_weekday_last_formatter<wchar_t>();
 
     test_year_month_day_formatter<char>();
     test_year_month_day_formatter<wchar_t>();
