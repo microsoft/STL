@@ -16,26 +16,16 @@
 using namespace std;
 using namespace chrono;
 
-// copied from the string_view tests
 template <typename CharT>
-struct choose_literal; // not defined
-
-template <>
-struct choose_literal<char> {
-    static constexpr const char* choose(const char* s, const wchar_t*) {
-        return s;
+[[nodiscard]] constexpr const CharT* choose_literal(const char* const str, const wchar_t* const wstr) noexcept {
+    if constexpr (is_same_v<CharT, char>) {
+        return str;
+    } else {
+        return wstr;
     }
-};
+}
 
-template <>
-struct choose_literal<wchar_t> {
-    static constexpr const wchar_t* choose(const char*, const wchar_t* s) {
-        return s;
-    }
-};
-
-#define TYPED_LITERAL(CharT, Literal) (choose_literal<CharT>::choose(Literal, L##Literal))
-#define STR(Literal)                  TYPED_LITERAL(CharT, Literal)
+#define STR(Literal) (choose_literal<CharT>(Literal, L##Literal))
 
 template <typename CharT>
 struct testing_callbacks {
@@ -110,13 +100,13 @@ bool test_parse_conversion_spec() {
     using view_typ          = basic_string_view<CharT>;
     using chrono_spec       = _Chrono_spec<CharT>;
 
-    view_typ s0(TYPED_LITERAL(CharT, "B"));
-    view_typ s1(TYPED_LITERAL(CharT, "Ec"));
-    view_typ s2(TYPED_LITERAL(CharT, "Od"));
-    view_typ s3(TYPED_LITERAL(CharT, "E"));
-    view_typ s4(TYPED_LITERAL(CharT, ""));
-    view_typ s5(TYPED_LITERAL(CharT, "}"));
-    view_typ s6(TYPED_LITERAL(CharT, "E}"));
+    view_typ s0(STR("B"));
+    view_typ s1(STR("Ec"));
+    view_typ s2(STR("Od"));
+    view_typ s3(STR("E"));
+    view_typ s4(STR(""));
+    view_typ s5(STR("}"));
+    view_typ s6(STR("E}"));
 
     vector<chrono_spec> v0{{._Type = 'B'}};
     test_parse_helper(parse_conv_spec_fn, s0, false, view_typ::npos, {.expected_chrono_specs = v0});
@@ -142,15 +132,15 @@ bool test_parse_chrono_format_specs() {
     using view_typ                    = basic_string_view<CharT>;
     using chrono_spec                 = _Chrono_spec<CharT>;
 
-    view_typ s0(TYPED_LITERAL(CharT, "%Oe"));
-    view_typ s1(TYPED_LITERAL(CharT, "lit"));
-    view_typ s2(TYPED_LITERAL(CharT, "%H:%M}"));
-    view_typ s3(TYPED_LITERAL(CharT, "6%H}"));
-    view_typ s4(TYPED_LITERAL(CharT, "*<6hi"));
-    view_typ s5(TYPED_LITERAL(CharT, "*^4.4%ymm"));
-    view_typ s6(TYPED_LITERAL(CharT, "%H%"));
-    view_typ s7(TYPED_LITERAL(CharT, "%H%}"));
-    view_typ s8(TYPED_LITERAL(CharT, "%nB%tC%%D"));
+    view_typ s0(STR("%Oe"));
+    view_typ s1(STR("lit"));
+    view_typ s2(STR("%H:%M}"));
+    view_typ s3(STR("6%H}"));
+    view_typ s4(STR("*<6hi"));
+    view_typ s5(STR("*^4.4%ymm"));
+    view_typ s6(STR("%H%"));
+    view_typ s7(STR("%H%}"));
+    view_typ s8(STR("%nB%tC%%D"));
 
     vector<chrono_spec> v0{{._Modifier = 'O', ._Type = 'e'}};
     test_parse_helper(parse_chrono_format_specs_fn, s0, false, s0.size(), {.expected_chrono_specs = v0});
@@ -172,14 +162,14 @@ bool test_parse_chrono_format_specs() {
     vector<chrono_spec> v4{{._Lit_char = 'h'}, {._Lit_char = 'i'}};
     test_parse_helper(parse_chrono_format_specs_fn, s4, true, s4.size(),
         {.expected_alignment       = _Fmt_align::_Left,
-            .expected_fill         = view_typ(TYPED_LITERAL(CharT, "*")),
+            .expected_fill         = view_typ(STR("*")),
             .expected_width        = 6,
             .expected_chrono_specs = v4});
 
     vector<chrono_spec> v5{{._Type = 'y'}, {._Lit_char = 'm'}, {._Lit_char = 'm'}};
     test_parse_helper(parse_chrono_format_specs_fn, s5, false, s5.size(),
         {.expected_alignment       = _Fmt_align::_Center,
-            .expected_fill         = view_typ(TYPED_LITERAL(CharT, "*")),
+            .expected_fill         = view_typ(STR("*")),
             .expected_width        = 4,
             .expected_precision    = 4,
             .expected_chrono_specs = v5});
@@ -254,25 +244,25 @@ void test_day_formatter() {
     using view_typ = basic_string_view<CharT>;
     using str_typ  = basic_string<CharT>;
 
-    view_typ s0(TYPED_LITERAL(CharT, "{:%d}"));
-    view_typ s1(TYPED_LITERAL(CharT, "{:%e}"));
-    view_typ s2(TYPED_LITERAL(CharT, "{:%Od}"));
-    view_typ s3(TYPED_LITERAL(CharT, "{:%Oe}"));
-    view_typ s4(TYPED_LITERAL(CharT, "{}"));
-    view_typ s5(TYPED_LITERAL(CharT, "{:=>8}"));
-    view_typ s6(TYPED_LITERAL(CharT, "{:lit}"));
-    view_typ s7(TYPED_LITERAL(CharT, "{:%d days}"));
-    view_typ s8(TYPED_LITERAL(CharT, "{:*^6%dmm}"));
+    view_typ s0(STR("{:%d}"));
+    view_typ s1(STR("{:%e}"));
+    view_typ s2(STR("{:%Od}"));
+    view_typ s3(STR("{:%Oe}"));
+    view_typ s4(STR("{}"));
+    view_typ s5(STR("{:=>8}"));
+    view_typ s6(STR("{:lit}"));
+    view_typ s7(STR("{:%d days}"));
+    view_typ s8(STR("{:*^6%dmm}"));
 
-    str_typ a0(TYPED_LITERAL(CharT, "27"));
-    str_typ a1(TYPED_LITERAL(CharT, "05"));
-    str_typ a2(TYPED_LITERAL(CharT, " 5"));
-    str_typ a3(TYPED_LITERAL(CharT, "50 is not a valid day"));
-    str_typ a4(TYPED_LITERAL(CharT, "======27"));
-    str_typ a5(TYPED_LITERAL(CharT, "======05"));
-    str_typ a6(TYPED_LITERAL(CharT, "lit27"));
-    str_typ a7(TYPED_LITERAL(CharT, "27 days"));
-    str_typ a8(TYPED_LITERAL(CharT, "*27mm*"));
+    str_typ a0(STR("27"));
+    str_typ a1(STR("05"));
+    str_typ a2(STR(" 5"));
+    str_typ a3(STR("50 is not a valid day"));
+    str_typ a4(STR("======27"));
+    str_typ a5(STR("======05"));
+    str_typ a6(STR("lit27"));
+    str_typ a7(STR("27 days"));
+    str_typ a8(STR("*27mm*"));
 
     // 2 digits
     day d0{27};
