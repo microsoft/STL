@@ -1473,6 +1473,9 @@ public:
     template <class _Ty>
     using formatter_type = formatter<_Ty, _CharT>;
 
+    constexpr basic_format_context(_Out _OutputIt_, basic_format_args<basic_format_context> _Ctx_args)
+        : _OutputIt(_STD move(_OutputIt_)), _Args(_Ctx_args) {}
+
     constexpr basic_format_context(
         _Out _OutputIt_, basic_format_args<basic_format_context> _Ctx_args, const locale& _Loc_)
         : _OutputIt(_STD move(_OutputIt_)), _Args(_Ctx_args), _Loc(_Loc_) {}
@@ -2426,6 +2429,9 @@ struct _Format_handler {
     basic_format_parse_context<_CharT> _Parse_context;
     _Context _Ctx;
 
+    explicit _Format_handler(_OutputIt _Out, basic_string_view<_CharT> _Str, basic_format_args<_Context> _Format_args)
+        : _Parse_context(_Str), _Ctx(_STD move(_Out), _Format_args) {}
+
     explicit _Format_handler(
         _OutputIt _Out, basic_string_view<_CharT> _Str, basic_format_args<_Context> _Format_args, const locale& _Loc)
         : _Parse_context(_Str), _Ctx(_STD move(_Out), _Format_args, _Loc) {}
@@ -2578,8 +2584,7 @@ using format_args_t = basic_format_args<basic_format_context<_Out, _CharT>>;
 template <output_iterator<const char&> _OutputIt>
 _OutputIt vformat_to(
     _OutputIt _Out, const string_view _Fmt, const format_args_t<type_identity_t<_OutputIt>, char> _Args) {
-    _Format_handler<_OutputIt, char, basic_format_context<_OutputIt, char>> _Handler(
-        _STD move(_Out), _Fmt, _Args, locale::classic());
+    _Format_handler<_OutputIt, char, basic_format_context<_OutputIt, char>> _Handler(_STD move(_Out), _Fmt, _Args);
     _Parse_format_string(_Fmt, _Handler);
     return _Handler._Ctx.out();
 }
@@ -2588,7 +2593,7 @@ template <output_iterator<const wchar_t&> _OutputIt>
 _OutputIt vformat_to(
     _OutputIt _Out, const wstring_view _Fmt, const format_args_t<type_identity_t<_OutputIt>, wchar_t> _Args) {
     _Format_handler<_OutputIt, wchar_t, basic_format_context<_OutputIt, wchar_t>> _Handler(
-        _STD move(_Out), _Fmt, _Args, locale::classic());
+        _STD move(_Out), _Fmt, _Args);
     _Parse_format_string(_Fmt, _Handler);
     return _Handler._Ctx.out();
 }

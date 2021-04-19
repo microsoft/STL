@@ -1296,6 +1296,16 @@ void libfmt_formatter_test_runtime_precision() {
     assert(format(STR("{0:.{1}}"), STR("str"), 2) == STR("st"));
 }
 
+template <class charT>
+void test_locale_speicifc_formatting_without_locale() {
+#if !defined(_DLL) || _ITERATOR_DEBUG_LEVEL == DEFAULT_IDL_SETTING
+    std::locale loc("en_US.UTF-8");
+    std::locale::global(loc);
+    assert(format(STR("{:L}"), 12345) == STR("12,345"));
+    std::locale::global(std::locale::classic());
+#endif // !defined(_DLL) || _ITERATOR_DEBUG_LEVEL == DEFAULT_IDL_SETTING
+}
+
 void test() {
     test_simple_formatting<char>();
     test_simple_formatting<wchar_t>();
@@ -1361,6 +1371,9 @@ void test() {
 
     libfmt_formatter_test_runtime_precision<char>();
     libfmt_formatter_test_runtime_precision<wchar_t>();
+
+    test_locale_speicifc_formatting_without_locale<char>();
+    test_locale_speicifc_formatting_without_locale<wchar_t>();
 }
 
 int main() {
