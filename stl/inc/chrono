@@ -774,6 +774,19 @@ namespace chrono {
         return _Rnext;
     }
 
+    template <class _Period, class _CharT, class _Traits>
+    void _Write_unit_suffix(basic_ostream<_CharT, _Traits>& _Os) {
+        constexpr auto _Suffix = _Get_literal_unit_suffix<_CharT, _Period>();
+        if constexpr (_Suffix == nullptr) {
+            _CharT _Buffer[2 * (numeric_limits<intmax_t>::digits10 + 1) + 5] = {}; // 2 numbers + "[/]s\0"
+            const _CharT* const _Begin =
+                _Get_general_unit_suffix<_CharT>(_STD end(_Buffer), _Period::num, _Period::den);
+            _Os << _Begin;
+        } else {
+            _Os << _Suffix;
+        }
+    }
+
     template <class _CharT, class _Traits, class _Rep, class _Period>
     basic_ostream<_CharT, _Traits>& operator<<(
         basic_ostream<_CharT, _Traits>& _Os, const duration<_Rep, _Period>& _Dur) {
@@ -782,16 +795,7 @@ namespace chrono {
         _Sstr.imbue(_Os.getloc());
         _Sstr.precision(_Os.precision());
         _Sstr << _Dur.count();
-
-        constexpr auto _Suffix = _Get_literal_unit_suffix<_CharT, _Period>();
-        if constexpr (_Suffix == nullptr) {
-            _CharT _Buffer[2 * (numeric_limits<intmax_t>::digits10 + 1) + 5] = {}; // 2 numbers + "[/]s\0"
-            const _CharT* const _Begin =
-                _Get_general_unit_suffix<_CharT>(_STD end(_Buffer), _Period::num, _Period::den);
-            _Sstr << _Begin;
-        } else {
-            _Sstr << _Suffix;
-        }
+        _Write_unit_suffix<_Period>(_Sstr);
 
         return _Os << _Sstr.str();
     }
@@ -5470,6 +5474,12 @@ namespace chrono {
         _Write_seconds(_Os, hh_mm_ss{_Val - _Dp});
     }
 
+    template <class _CharT, class _Traits, class _Rep, class _Period>
+    void _Write_seconds(basic_ostream<_CharT, _Traits>& _Os, const duration<_Rep, _Period>& _Val) {
+        const auto _Dp = _CHRONO duration_cast<days>(_Val);
+        _Write_seconds(_Os, hh_mm_ss{_Val - _Dp});
+    }
+
     template <class _Ty>
     _NODISCARD tm _Fill_tm(const _Ty& _Val) {
         unsigned int _Day   = 0;
@@ -5480,7 +5490,10 @@ namespace chrono {
         int _Minutes        = 0;
         int _Seconds        = 0;
 
-        if constexpr (is_same_v<_Ty, day>) {
+        if constexpr (_Is_specialization_v<_Ty, duration>) {
+            const auto _Dp = _CHRONO duration_cast<days>(_Val);
+            return _Fill_tm(hh_mm_ss{_Val - _Dp});
+        } else if constexpr (is_same_v<_Ty, day>) {
             _Day = static_cast<unsigned int>(_Val);
         } else if constexpr (is_same_v<_Ty, month>) {
             _Month = static_cast<unsigned int>(_Val);
@@ -5779,7 +5792,9 @@ namespace chrono {
 
         template <class _Ty>
         _NODISCARD constexpr bool _Is_valid_type(const char _Type) noexcept {
-            if constexpr (is_same_v<_Ty, day>) {
+            if constexpr (_Is_specialization_v<_Ty, duration>) {
+                return _Type == 'j' || _Type == 'q' || _Type == 'Q' || _Is_valid_type<hh_mm_ss<seconds>>(_Type);
+            } else if constexpr (is_same_v<_Ty, day>) {
                 return _Type == 'd' || _Type == 'e';
             } else if constexpr (is_same_v<_Ty, month>) {
                 return _Type == 'b' || _Type == 'B' || _Type == 'h' || _Type == 'm';
@@ -5823,6 +5838,10 @@ namespace chrono {
                 _Stream.imbue(_FormatCtx.locale());
                 if constexpr (_Is_specialization_v<_Ty, hh_mm_ss>) {
                     if (_Val.is_negative()) {
+                        _Stream << _CharT{'-'};
+                    }
+                } else if constexpr (_Is_specialization_v<_Ty, duration>) {
+                    if (_Val < _Ty::zero()) {
                         _Stream << _CharT{'-'};
                     }
                 }
@@ -5891,6 +5910,21 @@ namespace chrono {
                     _Os << (_Spec._Type == 'd' ? _CharT{'0'} : _CharT{' '});
                 }
                 _Os << _Time.tm_mday;
+                return true;
+            case 'j':
+                if constexpr (_Is_specialization_v<_Ty, duration>) {
+                    _Os << _STD abs(_CHRONO duration_cast<days>(_Val).count());
+                }
+                return true;
+            case 'q':
+                if constexpr (_Is_specialization_v<_Ty, duration>) {
+                    _Write_unit_suffix<typename _Ty::period>(_Os);
+                }
+                return true;
+            case 'Q':
+                if constexpr (_Is_specialization_v<_Ty, duration>) {
+                    _Os << _STD abs(_Val.count());
+                }
                 return true;
             case 'm':
                 if (_Has_modifier) {
@@ -5996,6 +6030,10 @@ struct _Fill_tm_formatter {
 private:
     _CHRONO _Chrono_formatter<_CharT> _Impl;
 };
+
+template <class _Rep, class _Period, class _CharT>
+struct formatter<_CHRONO duration<_Rep, _Period>, _CharT>
+    : _Fill_tm_formatter<_CHRONO duration<_Rep, _Period>, _CharT> {};
 
 template <class _CharT>
 struct formatter<_CHRONO day, _CharT> //
