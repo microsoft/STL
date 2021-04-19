@@ -595,5 +595,6 @@ const daily_table = [
     { date: '2021-04-15', merged: 58.22, pr: 33, cxx20: 1, cxx23: 6, lwg: 5, issue: 346, bug: 106, avg_age: 120.56, avg_wait: 103.50, sum_age: 132.62, sum_wait: 113.85, },
     { date: '2021-04-16', merged: 60.32, pr: 34, cxx20: 1, cxx23: 6, lwg: 5, issue: 346, bug: 106, avg_age: 118.01, avg_wait: 101.43, sum_age: 133.74, sum_wait: 114.95, },
     { date: '2021-04-17', merged: 59.44, pr: 35, cxx20: 1, cxx23: 6, lwg: 5, issue: 348, bug: 106, avg_age: 115.62, avg_wait: 99.51, sum_age: 134.89, sum_wait: 116.10, },
+    { date: '2021-04-18', merged: 60.63, pr: 38, cxx20: 1, cxx23: 6, lwg: 5, issue: 349, bug: 106, avg_age: 107.48, avg_wait: 92.61, sum_age: 136.15, sum_wait: 117.30, },
 ];
 // Generated file - DO NOT EDIT manually!
