@@ -219,6 +219,21 @@ constexpr void print(Str str) {
 }
 
 template <typename CharT>
+void test_duration_formatter() {
+    empty_braces_helper(seconds{5}, STR("5s"));
+    empty_braces_helper(minutes{7}, STR("7min"));
+    empty_braces_helper(hours{9}, STR("9h"));
+    empty_braces_helper(days{2}, STR("2d"));
+    empty_braces_helper(-seconds{5}, STR("-5s"));
+
+    assert(format(STR("{:%T}"), 4083007ms) == STR("01:08:03.007"));
+    assert(format(STR("{:%T}"), -4083007ms) == STR("-01:08:03.007"));
+
+    assert(format(STR("{:%T %j %q %Q}"), days{4} + 30min) == STR("00:30:00 4 min 5790"));
+    assert(format(STR("{:%T %j %q %Q}"), -days{4} - 30min) == STR("-00:30:00 4 min 5790"));
+}
+
+template <typename CharT>
 void test_clock_formatter() {
     empty_braces_helper(sys_seconds{}, STR("1970-01-01 00:00:00"));
     empty_braces_helper(sys_days{}, STR("1970-01-01"));
@@ -596,6 +611,9 @@ int main() {
 
     test_parse_chrono_format_specs<char>();
     test_parse_chrono_format_specs<wchar_t>();
+
+    test_duration_formatter<char>();
+    test_duration_formatter<wchar_t>();
 
     test_clock_formatter<char>();
     test_clock_formatter<wchar_t>();
