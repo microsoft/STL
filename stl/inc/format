@@ -1496,6 +1496,214 @@ public:
     }
 };
 
+template <class _Ty>
+class _Fmt_buffer {
+private:
+    _Ty* _Ptr        = nullptr;
+    size_t _Size     = 0;
+    size_t _Capacity = 0;
+
+protected:
+    explicit _Fmt_buffer(const size_t _Sz) noexcept : _Size(_Sz), _Capacity(_Sz) {}
+
+    _Fmt_buffer(_Ty* _Data, const size_t _Sz, const size_t _Cap) noexcept : _Ptr(_Data), _Size(_Sz), _Capacity(_Cap) {}
+
+    void _Set(_Ty* _Buf_data, const size_t _Buf_capacity) noexcept {
+        _Ptr      = _Buf_data;
+        _Capacity = _Buf_capacity;
+    }
+
+    virtual void _Grow(size_t _Capacity) = 0;
+
+public:
+    using value_type      = _Ty;
+    using const_reference = const _Ty&;
+
+    _Fmt_buffer(const _Fmt_buffer&) = delete;
+    void operator=(const _Fmt_buffer&) = delete;
+
+    _NODISCARD _Ty* begin() noexcept {
+        return _Ptr;
+    }
+
+    _NODISCARD _Ty* end() noexcept {
+        return _Ptr + _Size;
+    }
+
+    _NODISCARD size_t size() const noexcept {
+        return _Size;
+    }
+
+    _NODISCARD size_t capacity() const noexcept {
+        return _Capacity;
+    }
+
+    void clear() noexcept {
+        _Size = 0;
+    }
+
+    void try_resize(const size_t _Count) {
+        try_reserve(_Count);
+        _Size = _Count <= _Capacity ? _Count : _Capacity;
+    }
+
+    void try_reserve(const size_t _New_capacity) {
+        if (_New_capacity > _Capacity) {
+            _Grow(_New_capacity);
+        }
+    }
+
+    void push_back(const _Ty _Value) {
+        try_reserve(_Size + 1);
+        _Ptr[_Size++] = _Value;
+    }
+};
+
+struct _Fmt_buffer_traits {
+    explicit _Fmt_buffer_traits(ptrdiff_t) {}
+
+    _NODISCARD size_t count() const noexcept {
+        return 0;
+    }
+
+    _NODISCARD size_t limit(const size_t _Size) noexcept {
+        return _Size;
+    }
+};
+
+class _Fmt_fixed_buffer_traits {
+private:
+    ptrdiff_t _Count = 0;
+    ptrdiff_t _Limit;
+
+public:
+    explicit _Fmt_fixed_buffer_traits(const ptrdiff_t _Lim) noexcept : _Limit(_Lim) {}
+
+    _NODISCARD size_t count() const noexcept {
+        return static_cast<size_t>(_Count);
+    }
+
+    _NODISCARD size_t limit(const size_t _Size) noexcept {
+        size_t _Avail = static_cast<size_t>(_Limit > _Count ? _Limit - _Count : 0);
+        _Count += _Size;
+        return _Size < _Avail ? _Size : _Avail;
+    }
+};
+
+inline constexpr size_t _Fmt_buffer_size = 256;
+
+template <class _OutputIt, class _Ty, class _Traits = _Fmt_buffer_traits>
+class _Fmt_iterator_buffer final : public _Traits, public _Fmt_buffer<_Ty> {
+private:
+    _OutputIt _Out;
+    _Ty _Data[_Fmt_buffer_size];
+
+protected:
+    void _Grow(size_t) final {
+        if (this->size() == _Fmt_buffer_size) {
+            _Flush();
+        }
+    }
+
+    void _Flush() {
+        auto _Size = this->size();
+        this->clear();
+        _Out = _STD _Copy_unchecked(_Data, _Data + this->limit(_Size), _STD move(_Out));
+    }
+
+public:
+    explicit _Fmt_iterator_buffer(_OutputIt _Output, ptrdiff_t _Size = _Fmt_buffer_size)
+        : _Traits(_Size), _Fmt_buffer<_Ty>(_Data, 0, _Fmt_buffer_size), _Out(_STD move(_Output)) {}
+
+    ~_Fmt_iterator_buffer() {
+        if (this->size() != 0) {
+            _Flush();
+        }
+    }
+
+    _NODISCARD _OutputIt out() {
+        _Flush();
+        return _STD move(_Out);
+    }
+
+    _NODISCARD ptrdiff_t count() const noexcept {
+        return static_cast<ptrdiff_t>(_Traits::count() + this->size());
+    }
+};
+
+template <class _Ty>
+class _Fmt_iterator_buffer<_Ty*, _Ty> final : public _Fmt_buffer<_Ty> {
+protected:
+    void _Grow(size_t) final {}
+
+public:
+    explicit _Fmt_iterator_buffer(_Ty* _Out, ptrdiff_t = 0) : _Fmt_buffer<_Ty>(_Out, 0, ~size_t()) {}
+
+    _NODISCARD _Ty* out() noexcept {
+        return this->end();
+    }
+};
+
+template <class _Container>
+class _Fmt_iterator_buffer<_STD back_insert_iterator<_Container>,
+    enable_if_t<_STD contiguous_iterator<typename _Container::iterator>, typename _Container::value_type>>
+    final : public _Fmt_buffer<typename _Container::value_type> {
+private:
+    _Container& _Cont;
+
+    struct _Accessor : _STD back_insert_iterator<_Container> {
+        _Accessor(_STD back_insert_iterator<_Container> _Iter) : back_insert_iterator<_Container>(_Iter) {}
+
+        using _STD back_insert_iterator<_Container>::container;
+    };
+
+protected:
+    void _Grow(size_t _Capacity) final {
+        _Cont.resize(_Capacity);
+        this->_Set(&_Cont[0], _Capacity);
+    }
+
+public:
+    explicit _Fmt_iterator_buffer(_Container& _C)
+        : _Fmt_buffer<typename _Container::value_type>(_C.size()), _Cont(_C) {}
+
+    explicit _Fmt_iterator_buffer(_STD back_insert_iterator<_Container> _Out, ptrdiff_t = 0)
+        : _Fmt_iterator_buffer(*_Accessor(_STD move(_Out)).container) {}
+
+    _NODISCARD auto out() noexcept {
+        return _STD back_inserter(_Cont);
+    }
+};
+
+template <class _Ty>
+class _Fmt_counting_buffer final : public _Fmt_buffer<_Ty> {
+private:
+    _Ty _Data[_Fmt_buffer_size];
+    size_t _Count = 0;
+
+protected:
+    void _Grow(size_t) final {
+        if (this->size() != _Fmt_buffer_size) {
+            return;
+        }
+        _Count += this->size();
+        this->clear();
+    }
+
+public:
+    _Fmt_counting_buffer() : _Fmt_buffer<_Ty>(_Data, 0, _Fmt_buffer_size) {}
+
+    _NODISCARD size_t count() const noexcept {
+        return _Count + this->size();
+    }
+};
+
+using _Fmt_it  = back_insert_iterator<_Fmt_buffer<char>>;
+using _Fmt_wit = back_insert_iterator<_Fmt_buffer<wchar_t>>;
+
+using format_context  = basic_format_context<_Fmt_it, char>;
+using wformat_context = basic_format_context<_Fmt_wit, wchar_t>;
+
 template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, monostate) {
     _STL_INTERNAL_CHECK(false);
@@ -2557,215 +2765,8 @@ template <_Format_supported_charT _CharT, class _Traits>
 struct formatter<basic_string_view<_CharT, _Traits>, _CharT>
     : _Formatter_base<basic_string_view<_CharT, _Traits>, _CharT, _Basic_format_arg_type::_String_type> {};
 
-template <class _Ty>
-class _Fmt_buffer {
-private:
-    _Ty* _Ptr        = nullptr;
-    size_t _Size     = 0;
-    size_t _Capacity = 0;
-
-protected:
-    explicit _Fmt_buffer(const size_t _Sz) noexcept : _Size(_Sz), _Capacity(_Sz) {}
-
-    _Fmt_buffer(_Ty* _Data, const size_t _Sz, const size_t _Cap) noexcept : _Ptr(_Data), _Size(_Sz), _Capacity(_Cap) {}
-
-    void _Set(_Ty* _Buf_data, const size_t _Buf_capacity) noexcept {
-        _Ptr      = _Buf_data;
-        _Capacity = _Buf_capacity;
-    }
-
-    virtual void _Grow(size_t _Capacity) = 0;
-
-public:
-    using value_type      = _Ty;
-    using const_reference = const _Ty&;
-
-    _Fmt_buffer(const _Fmt_buffer&) = delete;
-    void operator=(const _Fmt_buffer&) = delete;
-
-    _NODISCARD _Ty* begin() noexcept {
-        return _Ptr;
-    }
-
-    _NODISCARD _Ty* end() noexcept {
-        return _Ptr + _Size;
-    }
-
-    _NODISCARD size_t size() const noexcept {
-        return _Size;
-    }
-
-    _NODISCARD size_t capacity() const noexcept {
-        return _Capacity;
-    }
-
-    void clear() noexcept {
-        _Size = 0;
-    }
-
-    void try_resize(const size_t _Count) {
-        try_reserve(_Count);
-        _Size = _Count <= _Capacity ? _Count : _Capacity;
-    }
-
-    void try_reserve(const size_t _New_capacity) {
-        if (_New_capacity > _Capacity) {
-            _Grow(_New_capacity);
-        }
-    }
-
-    void push_back(const _Ty _Value) {
-        try_reserve(_Size + 1);
-        _Ptr[_Size++] = _Value;
-    }
-};
-
-struct _Fmt_buffer_traits {
-    explicit _Fmt_buffer_traits(ptrdiff_t) {}
-
-    _NODISCARD size_t count() const noexcept {
-        return 0;
-    }
-
-    _NODISCARD size_t limit(const size_t _Size) noexcept {
-        return _Size;
-    }
-};
-
-class _Fmt_fixed_buffer_traits {
-private:
-    ptrdiff_t _Count = 0;
-    ptrdiff_t _Limit;
-
-public:
-    explicit _Fmt_fixed_buffer_traits(const ptrdiff_t _Lim) noexcept : _Limit(_Lim) {}
-
-    _NODISCARD size_t count() const noexcept {
-        return static_cast<size_t>(_Count);
-    }
-
-    _NODISCARD size_t limit(const size_t _Size) noexcept {
-        size_t _Avail = static_cast<size_t>(_Limit > _Count ? _Limit - _Count : 0);
-        _Count += _Size;
-        return _Size < _Avail ? _Size : _Avail;
-    }
-};
-
-inline constexpr size_t _Fmt_buffer_size = 256;
-
-template <class _OutputIt, class _Ty, class _Traits = _Fmt_buffer_traits>
-class _Fmt_iterator_buffer final : public _Traits, public _Fmt_buffer<_Ty> {
-private:
-    _OutputIt _Out;
-    _Ty _Data[_Fmt_buffer_size];
-
-protected:
-    void _Grow(size_t) final {
-        if (this->size() == _Fmt_buffer_size) {
-            _Flush();
-        }
-    }
-
-    void _Flush() {
-        auto _Size = this->size();
-        this->clear();
-        _Out = _STD _Copy_unchecked(_Data, _Data + this->limit(_Size), _STD move(_Out));
-    }
-
-public:
-    explicit _Fmt_iterator_buffer(_OutputIt _Output, ptrdiff_t _Size = _Fmt_buffer_size)
-        : _Traits(_Size), _Fmt_buffer<_Ty>(_Data, 0, _Fmt_buffer_size), _Out(_STD move(_Output)) {}
-
-    ~_Fmt_iterator_buffer() {
-        if (this->size() != 0) {
-            _Flush();
-        }
-    }
-
-    _NODISCARD _OutputIt out() {
-        _Flush();
-        return _STD move(_Out);
-    }
-
-    _NODISCARD ptrdiff_t count() const noexcept {
-        return static_cast<ptrdiff_t>(_Traits::count() + this->size());
-    }
-};
-
-template <class _Ty>
-class _Fmt_iterator_buffer<_Ty*, _Ty> final : public _Fmt_buffer<_Ty> {
-protected:
-    void _Grow(size_t) final {}
-
-public:
-    explicit _Fmt_iterator_buffer(_Ty* _Out, ptrdiff_t = 0) : _Fmt_buffer<_Ty>(_Out, 0, ~size_t()) {}
-
-    _NODISCARD _Ty* out() noexcept {
-        return this->end();
-    }
-};
-
-template <class _Container>
-class _Fmt_iterator_buffer<_STD back_insert_iterator<_Container>,
-    enable_if_t<_STD contiguous_iterator<typename _Container::iterator>, typename _Container::value_type>>
-    final : public _Fmt_buffer<typename _Container::value_type> {
-private:
-    _Container& _Cont;
-
-    struct _Accessor : _STD back_insert_iterator<_Container> {
-        _Accessor(_STD back_insert_iterator<_Container> _Iter) : back_insert_iterator<_Container>(_Iter) {}
-
-        using _STD back_insert_iterator<_Container>::container;
-    };
-
-protected:
-    void _Grow(size_t _Capacity) final {
-        _Cont.resize(_Capacity);
-        this->_Set(&_Cont[0], _Capacity);
-    }
-
-public:
-    explicit _Fmt_iterator_buffer(_Container& _C)
-        : _Fmt_buffer<typename _Container::value_type>(_C.size()), _Cont(_C) {}
-
-    explicit _Fmt_iterator_buffer(_STD back_insert_iterator<_Container> _Out, ptrdiff_t = 0)
-        : _Fmt_iterator_buffer(*_Accessor(_STD move(_Out)).container) {}
-
-    _NODISCARD auto out() noexcept {
-        return _STD back_inserter(_Cont);
-    }
-};
-
-template <class _Ty>
-class _Fmt_counting_buffer final : public _Fmt_buffer<_Ty> {
-private:
-    _Ty _Data[_Fmt_buffer_size];
-    size_t _Count = 0;
-
-protected:
-    void _Grow(size_t) final {
-        if (this->size() != _Fmt_buffer_size) {
-            return;
-        }
-        _Count += this->size();
-        this->clear();
-    }
-
-public:
-    _Fmt_counting_buffer() : _Fmt_buffer<_Ty>(_Data, 0, _Fmt_buffer_size) {}
-
-    _NODISCARD size_t count() const noexcept {
-        return _Count + this->size();
-    }
-};
-
-using _Fmt_it  = back_insert_iterator<_Fmt_buffer<char>>;
-using _Fmt_wit = back_insert_iterator<_Fmt_buffer<wchar_t>>;
-
-using format_context  = basic_format_context<_Fmt_it, char>;
-using wformat_context = basic_format_context<_Fmt_wit, wchar_t>;
-using format_args     = basic_format_args<format_context>;
-using wformat_args    = basic_format_args<wformat_context>;
+using format_args  = basic_format_args<format_context>;
+using wformat_args = basic_format_args<wformat_context>;
 
 template <class _Context = format_context, class... _Args>
 _NODISCARD auto make_format_args(const _Args&... _Vals) {
@@ -2826,14 +2827,14 @@ _OutputIt format_to(_OutputIt _Out, const string_view _Fmt, const _Types&... _Ar
 template <output_iterator<const wchar_t&> _OutputIt, class... _Types>
 _OutputIt format_to(_OutputIt _Out, const wstring_view _Fmt, const _Types&... _Args) {
     _Fmt_iterator_buffer<_OutputIt, wchar_t> _Buf(_STD move(_Out));
-    _STD vformat_to(_Fmt_wit(_Buf), _Fmt, make_wformat_args(_Args...));
+    _STD vformat_to(_Fmt_wit(_Buf), _Fmt, _STD make_wformat_args(_Args...));
     return _Buf.out();
 }
 
 template <output_iterator<const char&> _OutputIt, class... _Types>
 _OutputIt format_to(_OutputIt _Out, const locale& _Loc, const string_view _Fmt, const _Types&... _Args) {
     _Fmt_iterator_buffer<_OutputIt, char> _Buf(_STD move(_Out));
-    _STD vformat_to(_Fmt_it(_Buf), _Loc, _Fmt, make_format_args(_Args...));
+    _STD vformat_to(_Fmt_it(_Buf), _Loc, _Fmt, _STD make_format_args(_Args...));
     return _Buf.out();
 }
 
