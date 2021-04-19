@@ -225,12 +225,18 @@ void test_duration_formatter() {
     empty_braces_helper(hours{9}, STR("9h"));
     empty_braces_helper(days{2}, STR("2d"));
     empty_braces_helper(-seconds{5}, STR("-5s"));
+    empty_braces_helper(duration<int, ratio<3, 1>>{40}, STR("40[3]s"));
+    empty_braces_helper(duration<int, ratio<3, 7>>{40}, STR("40[3/7]s"));
 
     assert(format(STR("{:%T}"), 4083007ms) == STR("01:08:03.007"));
     assert(format(STR("{:%T}"), -4083007ms) == STR("-01:08:03.007"));
 
     assert(format(STR("{:%T %j %q %Q}"), days{4} + 30min) == STR("00:30:00 4 min 5790"));
     assert(format(STR("{:%T %j %q %Q}"), -days{4} - 30min) == STR("-00:30:00 4 min 5790"));
+    assert(format(STR("{:%T %j}"), days{4} + 23h + 30min) == STR("23:30:00 4"));
+    assert(format(STR("{:%T %j}"), -days{4} - 23h - 30min) == STR("-23:30:00 4"));
+    assert(format(STR("{:%T %j}"), duration<float, days::period>{1.55f}) == STR("13:11:59 1"));
+    assert(format(STR("{:%T %j}"), duration<float, days::period>{-1.55f}) == STR("-13:11:59 1"));
 }
 
 template <typename CharT>

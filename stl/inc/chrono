@@ -5476,7 +5476,7 @@ namespace chrono {
 
     template <class _CharT, class _Traits, class _Rep, class _Period>
     void _Write_seconds(basic_ostream<_CharT, _Traits>& _Os, const duration<_Rep, _Period>& _Val) {
-        const auto _Dp = _CHRONO round<days>(_Val);
+        const auto _Dp = _CHRONO duration_cast<days>(_Val);
         _Write_seconds(_Os, hh_mm_ss{_Val - _Dp});
     }
 
@@ -5491,7 +5491,7 @@ namespace chrono {
         int _Seconds        = 0;
 
         if constexpr (_Is_specialization_v<_Ty, duration>) {
-            const auto _Dp = _CHRONO round<days>(_Val);
+            const auto _Dp = _CHRONO duration_cast<days>(_Val);
             return _Fill_tm(hh_mm_ss{_Val - _Dp});
         } else if constexpr (is_same_v<_Ty, day>) {
             _Day = static_cast<unsigned int>(_Val);
@@ -5841,7 +5841,7 @@ namespace chrono {
                         _Stream << _CharT{'-'};
                     }
                 } else if constexpr (_Is_specialization_v<_Ty, duration>) {
-                    if (_Val < _Ty{}) {
+                    if (_Val < _Ty::zero()) {
                         _Stream << _CharT{'-'};
                     }
                 }
@@ -5913,7 +5913,7 @@ namespace chrono {
                 return true;
             case 'j':
                 if constexpr (_Is_specialization_v<_Ty, duration>) {
-                    _Os << _STD abs(_CHRONO round<days>(_Val).count());
+                    _Os << _STD abs(_CHRONO duration_cast<days>(_Val).count());
                 }
                 return true;
             case 'q':
