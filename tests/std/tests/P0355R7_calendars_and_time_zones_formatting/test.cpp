@@ -205,14 +205,6 @@ void throw_helper(const CharT* fmt, const Args&... vals) {
     throw_helper(basic_string_view<CharT>{fmt}, vals...);
 }
 
-template <class CharT, class... Args>
-void stream_helper(const CharT* expect, const Args&... vals) {
-    basic_ostringstream<CharT> stream;
-    (stream << ... << vals);
-    assert(stream.str() == expect);
-    assert(stream);
-}
-
 template <class Arg, class CharT>
 void empty_braces_helper(const Arg& val, const CharT* const expected) {
     // N4885 [time.format]/6: "If the chrono-specs is omitted, the chrono object is formatted
@@ -220,7 +212,10 @@ void empty_braces_helper(const Arg& val, const CharT* const expected) {
     // of the context with additional padding and adjustments as specified by the format specifiers."
     assert(format(STR("{}"), val) == expected);
 
-    stream_helper(expected, val);
+    basic_ostringstream<CharT> stream;
+    stream << val;
+    assert(stream.str() == expected);
+    assert(stream);
 }
 
 // FIXME: TEMPORARY CODE FOR WRITING TESTS, REMOVE BEFORE MERGING
@@ -235,13 +230,13 @@ constexpr void print(Str str) {
 
 template <typename CharT>
 void test_clock_formatter() {
-    stream_helper(STR("1970-01-01 00:00:00"), sys_seconds{});
-    stream_helper(STR("1970-01-01"), sys_days{});
-    stream_helper(STR("1970-01-01 00:00:00"), utc_seconds{});
-    stream_helper(STR("1958-01-01 00:00:00"), tai_seconds{});
-    stream_helper(STR("1980-01-06 00:00:00"), gps_seconds{});
-    stream_helper(STR("1601-01-01 00:00:00"), file_time<seconds>{});
-    stream_helper(STR("1970-01-01 00:00:00"), local_seconds{});
+    empty_braces_helper(sys_seconds{}, STR("1970-01-01 00:00:00"));
+    empty_braces_helper(sys_days{}, STR("1970-01-01"));
+    empty_braces_helper(utc_seconds{}, STR("1970-01-01 00:00:00"));
+    empty_braces_helper(tai_seconds{}, STR("1958-01-01 00:00:00"));
+    empty_braces_helper(gps_seconds{}, STR("1980-01-06 00:00:00"));
+    empty_braces_helper(file_time<seconds>{}, STR("1601-01-01 00:00:00"));
+    empty_braces_helper(local_seconds{}, STR("1970-01-01 00:00:00"));
 
     assert(format(STR("{:%Z %z %Oz %Ez}"), sys_seconds{}) == STR("UTC +0000 +00:00 +00:00"));
     assert(format(STR("{:%Z %z %Oz %Ez}"), sys_days{}) == STR("UTC +0000 +00:00 +00:00"));
@@ -335,9 +330,9 @@ void test_day_formatter() {
     assert(format(STR("{}"), day{0}) == STR("00 is not a valid day"));
 
     // Op <<
-    stream_helper(STR("00 is not a valid day"), day{0});
-    stream_helper(STR("27"), day{27});
-    stream_helper(STR("200 is not a valid day"), day{200});
+    empty_braces_helper(day{0}, STR("00 is not a valid day"));
+    empty_braces_helper(day{27}, STR("27"));
+    empty_braces_helper(day{200}, STR("200 is not a valid day"));
 }
 
 template <typename CharT>
@@ -362,10 +357,10 @@ void test_month_formatter() {
     throw_helper(STR("{:%.4}"), month{1});
 
     // Op <<
-    stream_helper(STR("Jan"), month{1});
-    stream_helper(STR("Dec"), month{12});
-    stream_helper(STR("0 is not a valid month"), month{0});
-    stream_helper(STR("20 is not a valid month"), month{20});
+    empty_braces_helper(month{1}, STR("Jan"));
+    empty_braces_helper(month{12}, STR("Dec"));
+    empty_braces_helper(month{0}, STR("0 is not a valid month"));
+    empty_braces_helper(month{20}, STR("20 is not a valid month"));
 }
 
 template <typename CharT>
@@ -378,17 +373,17 @@ void test_year_formatter() {
     assert(format(STR("{:%Y %y%C}"), year{-1912}) == STR("-1912 88-20"));
     // TRANSITION, add tests for EY Oy Ey EC
 
-    stream_helper(STR("1900"), year{1900});
-    stream_helper(STR("2000"), year{2000});
-    stream_helper(STR("-32768 is not a valid year"), year{-32768});
+    empty_braces_helper(year{1900}, STR("1900"));
+    empty_braces_helper(year{2000}, STR("2000"));
+    empty_braces_helper(year{-32768}, STR("-32768 is not a valid year"));
 }
 
 template <typename CharT>
 void test_weekday_formatter() {
     weekday invalid{10};
     assert(format(STR("{}"), weekday{3}) == STR("Wed"));
-    stream_helper(STR("Wed"), weekday{3});
-    stream_helper(STR("10 is not a valid weekday"), invalid);
+    empty_braces_helper(weekday{3}, STR("Wed"));
+    empty_braces_helper(invalid, STR("10 is not a valid weekday"));
 
     assert(format(STR("{:%a %A}"), weekday{6}) == STR("Sat Saturday"));
     assert(format(STR("{:%u %w}"), weekday{6}) == STR("6 6"));
@@ -401,10 +396,10 @@ void test_weekday_indexed_formatter() {
     weekday_indexed invalid2{weekday{10}, 3};
     weekday_indexed invalid3{weekday{14}, 9};
     assert(format(STR("{}"), weekday_indexed{Monday, 1}) == STR("Mon[1]"));
-    stream_helper(STR("Mon[1]"), weekday_indexed{Monday, 1});
-    stream_helper(STR("Tue[10 is not a valid index]"), invalid1);
-    stream_helper(STR("10 is not a valid weekday[3]"), invalid2);
-    stream_helper(STR("14 is not a valid weekday[9 is not a valid index]"), invalid3);
+    empty_braces_helper(weekday_indexed{Monday, 1}, STR("Mon[1]"));
+    empty_braces_helper(invalid1, STR("Tue[10 is not a valid index]"));
+    empty_braces_helper(invalid2, STR("10 is not a valid weekday[3]"));
+    empty_braces_helper(invalid3, STR("14 is not a valid weekday[9 is not a valid index]"));
 
     assert(format(STR("{:%a %A}"), weekday_indexed{Monday, 2}) == STR("Mon Monday"));
     assert(format(STR("{:%u %w}"), weekday_indexed{Tuesday, 3}) == STR("2 2"));
@@ -424,8 +419,8 @@ void test_weekday_last_formatter() {
 
 template <typename CharT>
 void test_month_day_formatter() {
-    stream_helper(STR("Jan/16"), January / 16);
-    stream_helper(STR("13 is not a valid month/40 is not a valid day"), month{13} / day{40});
+    empty_braces_helper(January / 16, STR("Jan/16"));
+    empty_braces_helper(month{13} / day{40}, STR("13 is not a valid month/40 is not a valid day"));
 
     assert(format(STR("{:%B %d}"), June / 17) == STR("June 17"));
     throw_helper(STR("{:%Y}"), June / 17);
@@ -433,7 +428,7 @@ void test_month_day_formatter() {
 
 template <typename CharT>
 void test_month_day_last_formatter() {
-    stream_helper(STR("Feb/last"), February / last);
+    empty_braces_helper(February / last, STR("Feb/last"));
 
     assert(format(STR("{:%B}"), June / last) == STR("June"));
     assert(format(STR("{:%d}"), June / last) == STR("30"));
@@ -484,7 +479,7 @@ void test_month_weekday_last_formatter() {
 
 template <typename CharT>
 void test_year_month_formatter() {
-    stream_helper(STR("1444/Oct"), 1444y / October);
+    empty_braces_helper(1444y / October, STR("1444/Oct"));
 
     assert(format(STR("{:%Y %B}"), 2000y / July) == STR("2000 July"));
     throw_helper(STR("{:%d}"), 2000y / July);
@@ -494,8 +489,8 @@ template <typename CharT>
 void test_year_month_day_formatter() {
     year_month_day invalid{year{1234}, month{0}, day{31}};
     assert(format(STR("{}"), year_month_day{year{1900}, month{2}, day{1}}) == STR("1900-02-01"));
-    stream_helper(STR("1900-02-01"), year_month_day{year{1900}, month{2}, day{1}});
-    stream_helper(STR("1234-00-31 is not a valid date"), invalid);
+    empty_braces_helper(year_month_day{year{1900}, month{2}, day{1}}, STR("1900-02-01"));
+    empty_braces_helper(invalid, STR("1234-00-31 is not a valid date"));
 
     assert(format(STR("{:%Y %b %d}"), year_month_day{year{1234}, month{5}, day{6}}) == STR("1234 May 06"));
     assert(format(STR("{:%F %D}"), invalid) == STR("1234-00-31 00/31/34"));
@@ -566,10 +561,10 @@ void test_year_month_weekday_last_formatter() {
 
 template <typename CharT>
 void test_hh_mm_ss_formatter() {
-    stream_helper(STR("-01:08:03.007"), hh_mm_ss{-4083007ms});
-    stream_helper(STR("01:08:03.007"), hh_mm_ss{4083007ms});
-    stream_helper(STR("18:15:45.123"), hh_mm_ss{65745123ms});
-    stream_helper(STR("18:15:45"), hh_mm_ss{65745s});
+    empty_braces_helper(hh_mm_ss{-4083007ms}, STR("-01:08:03.007"));
+    empty_braces_helper(hh_mm_ss{4083007ms}, STR("01:08:03.007"));
+    empty_braces_helper(hh_mm_ss{65745123ms}, STR("18:15:45.123"));
+    empty_braces_helper(hh_mm_ss{65745s}, STR("18:15:45"));
 
     assert(format(STR("{:%H %I %M %S %r %R %T %p}"), hh_mm_ss{13h + 14min + 15351ms})
            == STR("13 01 14 15.351 13:14:15 13:14 13:14:15.351 PM"));
