@@ -674,6 +674,19 @@ void test_information_classes() {
     throw_helper(STR("{:%Z}"), ambiguous2);
     throw_helper(STR("{:%Z}"), nonexistent1);
     throw_helper(STR("{:%Z}"), nonexistent2);
+
+    // Additionally test zero and half-hour offsets.
+    const time_zone* const utc_tz = database.locate_zone("Etc/UTC"sv);
+    assert(utc_tz != nullptr);
+
+    const time_zone* const kolkata_tz = database.locate_zone("Asia/Kolkata"sv);
+    assert(kolkata_tz != nullptr);
+
+    const sys_info sys5 = utc_tz->get_info(sys_days{2021y / January / 1});
+    const sys_info sys6 = kolkata_tz->get_info(sys_days{2021y / January / 1});
+
+    assert(format(STR("{:%z %Ez %Oz}"), sys5) == STR("+0000 +00:00 +00:00"));
+    assert(format(STR("{:%z %Ez %Oz}"), sys6) == STR("+0530 +05:30 +05:30"));
 }
 
 int main() {

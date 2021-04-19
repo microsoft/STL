@@ -5647,7 +5647,7 @@ namespace chrono {
 #pragma warning(push)
 #pragma warning(disable : 4365) // 'argument': conversion from 'char' to 'const wchar_t', signed/unsigned mismatch
     template <class _CharT>
-    _NODISCARD decltype(auto) _Widen_string(const string& _Str) { // FIXME, is this ok?
+    _NODISCARD decltype(auto) _Widen_string(const string& _Str) {
         if constexpr (is_same_v<_CharT, char>) {
             return _Str;
         } else {
