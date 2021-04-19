@@ -5664,7 +5664,7 @@ namespace chrono {
         if constexpr (is_same_v<_CharT, char>) {
             return _Str;
         } else {
-            return wstring{_Str.begin(), _Str.end()};
+            return wstring{_Str.begin(), _Str.end()}; // TRANSITION, should probably use ctype::widen
         }
     }
 #pragma warning(pop)
