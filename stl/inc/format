@@ -1646,10 +1646,15 @@ public:
     }
 };
 
+// clang-format off
 template <class _Container>
-class _Fmt_iterator_buffer<back_insert_iterator<_Container>,
-    enable_if_t<contiguous_iterator<typename _Container::iterator>, typename _Container::value_type>>
-    final : public _Fmt_buffer<typename _Container::value_type> {
+    requires _RANGES contiguous_range<_Container> && _RANGES sized_range<_Container>
+        && requires(_Container& _Cont, const _RANGES range_value_t<_Container>& _Val) {
+            _Cont.push_back(_Val);
+        }
+// clang-format on
+class _Fmt_iterator_buffer<back_insert_iterator<_Container>, _RANGES range_value_t<_Container>> final
+    : public _Fmt_buffer<_RANGES range_value_t<_Container>> {
 private:
     _Container& _Cont;
 
@@ -1666,7 +1671,7 @@ private:
 
 public:
     explicit _Fmt_iterator_buffer(_Container& _Cont_)
-        : _Fmt_buffer<typename _Container::value_type>(_Cont_.size()), _Cont(_Cont_) {}
+        : _Fmt_buffer<_RANGES range_value_t<_Container>>(_RANGES size(_Cont_)), _Cont(_Cont_) {}
 
     explicit _Fmt_iterator_buffer(back_insert_iterator<_Container> _Out, ptrdiff_t = 0)
         : _Fmt_iterator_buffer(*_Accessor{_Out}.container) {}
