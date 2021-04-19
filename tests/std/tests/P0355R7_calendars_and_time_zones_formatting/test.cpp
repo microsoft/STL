@@ -327,7 +327,7 @@ void test_day_formatter() {
     throw_helper(STR("{:%Ed}"), day{10});
     throw_helper(STR("{:%Od}"), day{40});
     throw_helper(STR("{:%Ed}"), day{40});
-    assert(format(STR("{}"), day{0}) == STR("00 is not a valid day"));
+    empty_braces_helper(day{0}, STR("00 is not a valid day"));
 
     // Op <<
     empty_braces_helper(day{0}, STR("00 is not a valid day"));
@@ -337,10 +337,10 @@ void test_day_formatter() {
 
 template <typename CharT>
 void test_month_formatter() {
-    assert(format(STR("{}"), month{1}) == STR("Jan"));
-    assert(format(STR("{}"), month{12}) == STR("Dec"));
-    assert(format(STR("{}"), month{0}) == STR("0 is not a valid month"));
-    assert(format(STR("{}"), month{20}) == STR("20 is not a valid month"));
+    empty_braces_helper(month{1}, STR("Jan"));
+    empty_braces_helper(month{12}, STR("Dec"));
+    empty_braces_helper(month{0}, STR("0 is not a valid month"));
+    empty_braces_helper(month{20}, STR("20 is not a valid month"));
 
     // Specs
     assert(format(STR("{:%b %h %B}"), month{1}) == STR("Jan Jan January"));
@@ -365,9 +365,9 @@ void test_month_formatter() {
 
 template <typename CharT>
 void test_year_formatter() {
-    assert(format(STR("{}"), year{0}) == STR("0000"));
-    assert(format(STR("{}"), year{-200}) == STR("-0200"));
-    assert(format(STR("{}"), year{121}) == STR("0121"));
+    empty_braces_helper(year{0}, STR("0000"));
+    empty_braces_helper(year{-200}, STR("-0200"));
+    empty_braces_helper(year{121}, STR("0121"));
 
     assert(format(STR("{:%Y %y%C}"), year{1912}) == STR("1912 1219"));
     assert(format(STR("{:%Y %y%C}"), year{-1912}) == STR("-1912 88-20"));
@@ -381,7 +381,7 @@ void test_year_formatter() {
 template <typename CharT>
 void test_weekday_formatter() {
     weekday invalid{10};
-    assert(format(STR("{}"), weekday{3}) == STR("Wed"));
+    empty_braces_helper(weekday{3}, STR("Wed"));
     empty_braces_helper(weekday{3}, STR("Wed"));
     empty_braces_helper(invalid, STR("10 is not a valid weekday"));
 
@@ -395,7 +395,7 @@ void test_weekday_indexed_formatter() {
     weekday_indexed invalid1{Tuesday, 10};
     weekday_indexed invalid2{weekday{10}, 3};
     weekday_indexed invalid3{weekday{14}, 9};
-    assert(format(STR("{}"), weekday_indexed{Monday, 1}) == STR("Mon[1]"));
+    empty_braces_helper(weekday_indexed{Monday, 1}, STR("Mon[1]"));
     empty_braces_helper(weekday_indexed{Monday, 1}, STR("Mon[1]"));
     empty_braces_helper(invalid1, STR("Tue[10 is not a valid index]"));
     empty_braces_helper(invalid2, STR("10 is not a valid weekday[3]"));
@@ -488,7 +488,7 @@ void test_year_month_formatter() {
 template <typename CharT>
 void test_year_month_day_formatter() {
     year_month_day invalid{year{1234}, month{0}, day{31}};
-    assert(format(STR("{}"), year_month_day{year{1900}, month{2}, day{1}}) == STR("1900-02-01"));
+    empty_braces_helper(year_month_day{year{1900}, month{2}, day{1}}, STR("1900-02-01"));
     empty_braces_helper(year_month_day{year{1900}, month{2}, day{1}}, STR("1900-02-01"));
     empty_braces_helper(invalid, STR("1234-00-31 is not a valid date"));
 
