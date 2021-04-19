@@ -1456,6 +1456,26 @@ private:
     const unsigned char* _Storage = nullptr;
 };
 
+// _Lazy_locale is used instead of a std::locale so that the locale is only
+// constructed when needed, and is never constructed if the format string does not
+// contain locale sensitive format specifiers. Note that this means that a new locale
+// will be constructed for _every_ locale sensitive format specifier in the format string,
+// making that case slower than if we had stored a "real" locale in the basic_format_context.
+class _Lazy_locale {
+    const locale* _Loc = nullptr;
+
+public:
+    _Lazy_locale() = default;
+    explicit _Lazy_locale(const locale& _Loc_) : _Loc(_STD addressof(_Loc_)) {}
+    locale _Get() const {
+        if (!_Loc) {
+            return locale{};
+        } else {
+            return *_Loc;
+        }
+    }
+};
+
 // clang-format off
 template <class _Out, class _CharT>
     requires output_iterator<_Out, const _CharT&>
@@ -1464,7 +1484,7 @@ class basic_format_context {
 private:
     _Out _OutputIt;
     basic_format_args<basic_format_context> _Args;
-    locale _Loc;
+    _Lazy_locale _Loc;
 
 public:
     using iterator  = _Out;
@@ -1477,16 +1497,15 @@ public:
         : _OutputIt(_STD move(_OutputIt_)), _Args(_Ctx_args) {}
 
     constexpr basic_format_context(
-        _Out _OutputIt_, basic_format_args<basic_format_context> _Ctx_args, const locale& _Loc_)
+        _Out _OutputIt_, basic_format_args<basic_format_context> _Ctx_args, const _Lazy_locale& _Loc_)
         : _OutputIt(_STD move(_OutputIt_)), _Args(_Ctx_args), _Loc(_Loc_) {}
 
     _NODISCARD basic_format_arg<basic_format_context> arg(size_t _Id) const {
         return _Args.get(_Id);
     }
     _NODISCARD locale locale() {
-        return _Loc;
+        return _Loc._Get();
     }
-
     _NODISCARD iterator out() {
         return _STD move(_OutputIt);
     }
@@ -1496,6 +1515,9 @@ public:
 
     _NODISCARD const basic_format_args<basic_format_context>& _Get_args() const noexcept {
         return _Args;
+    }
+    _NODISCARD _Lazy_locale _Get_lazy_locale() const {
+        return _Loc;
     }
 };
 
@@ -1757,48 +1779,50 @@ _NODISCARD _OutputIt _Write_separated_integer(const char* _Start, const char* co
 }
 
 template <class _CharT, class _OutputIt>
-_NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, monostate, const _Basic_format_specs<_CharT>&, locale) {
+_NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, monostate, const _Basic_format_specs<_CharT>&, _Lazy_locale) {
     _STL_INTERNAL_CHECK(false);
     return _Out;
 }
 
 template <class _CharT, class _OutputIt, integral _Integral>
 _NODISCARD _OutputIt _Write_integral(
-    _OutputIt _Out, _Integral _Value, _Basic_format_specs<_CharT> _Specs, locale _Locale);
+    _OutputIt _Out, _Integral _Value, _Basic_format_specs<_CharT> _Specs, _Lazy_locale _Locale);
 
 // clang-format off
 template <class _CharT, class _OutputIt, integral _Integral>
     requires (!_CharT_or_bool<_Integral, _CharT>)
 _NODISCARD _OutputIt _Fmt_write(
-    _OutputIt _Out, _Integral _Value, const _Basic_format_specs<_CharT>& _Specs, locale _Locale);
+    _OutputIt _Out, _Integral _Value, const _Basic_format_specs<_CharT>& _Specs, _Lazy_locale _Locale);
 // clang-format on
 
 template <class _CharT, class _OutputIt>
-_NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, bool _Value, _Basic_format_specs<_CharT> _Specs, locale _Locale);
+_NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, bool _Value, _Basic_format_specs<_CharT> _Specs, _Lazy_locale _Locale);
 
 template <class _CharT, class _OutputIt>
-_NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, _CharT _Value, _Basic_format_specs<_CharT> _Specs, locale _Locale);
+_NODISCARD _OutputIt _Fmt_write(
+    _OutputIt _Out, _CharT _Value, _Basic_format_specs<_CharT> _Specs, _Lazy_locale _Locale);
 
 template <class _CharT, class _OutputIt, floating_point _Float>
 _NODISCARD _OutputIt _Fmt_write(
-    _OutputIt _Out, _Float _Value, const _Basic_format_specs<_CharT>& _Specs, locale _Locale);
-
-template <class _CharT, class _OutputIt>
-_NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const void* _Value, const _Basic_format_specs<_CharT>& _Specs, locale);
+    _OutputIt _Out, _Float _Value, const _Basic_format_specs<_CharT>& _Specs, _Lazy_locale _Locale);
 
 template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Fmt_write(
-    _OutputIt _Out, const _CharT* _Value, const _Basic_format_specs<_CharT>& _Specs, locale _Locale);
+    _OutputIt _Out, const void* _Value, const _Basic_format_specs<_CharT>& _Specs, _Lazy_locale);
 
 template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Fmt_write(
-    _OutputIt _Out, basic_string_view<_CharT> _Value, const _Basic_format_specs<_CharT>& _Specs, locale);
+    _OutputIt _Out, const _CharT* _Value, const _Basic_format_specs<_CharT>& _Specs, _Lazy_locale _Locale);
+
+template <class _CharT, class _OutputIt>
+_NODISCARD _OutputIt _Fmt_write(
+    _OutputIt _Out, basic_string_view<_CharT> _Value, const _Basic_format_specs<_CharT>& _Specs, _Lazy_locale);
 
 #pragma warning(push)
 #pragma warning(disable : 4365) // 'argument': conversion from 'char' to 'const wchar_t', signed/unsigned mismatch
 template <class _CharT, class _OutputIt, integral _Integral>
 _NODISCARD _OutputIt _Write_integral(
-    _OutputIt _Out, const _Integral _Value, _Basic_format_specs<_CharT> _Specs, locale _Locale) {
+    _OutputIt _Out, const _Integral _Value, _Basic_format_specs<_CharT> _Specs, _Lazy_locale _Locale) {
     if (_Specs._Type == 'c') {
         if (!_In_bounds<_CharT>(_Value)) {
             _THROW(format_error("integral cannot be stored in charT"));
@@ -1871,7 +1895,7 @@ _NODISCARD _OutputIt _Write_integral(
     auto _Separators = 0;
     string _Groups;
     if (_Specs._Localized) {
-        _Groups     = _STD use_facet<numpunct<_CharT>>(_Locale).grouping();
+        _Groups     = _STD use_facet<numpunct<_CharT>>(_Locale._Get()).grouping();
         _Separators = _Count_separators(_End - _Buffer_start, _Groups);
         // TRANSITION, separators may be wider for wide chars
         _Width += _Separators;
@@ -1890,7 +1914,7 @@ _NODISCARD _OutputIt _Write_integral(
 
         if (_Separators > 0) {
             return _Write_separated_integer(_Buffer_start, _End, _Groups,
-                _STD use_facet<numpunct<_CharT>>(_Locale).thousands_sep(), _Separators, _STD move(_Out));
+                _STD use_facet<numpunct<_CharT>>(_Locale._Get()).thousands_sep(), _Separators, _STD move(_Out));
         }
         return _RANGES _Copy_unchecked(_Buffer_start, _End, _STD move(_Out)).out;
     };
@@ -1907,13 +1931,14 @@ _NODISCARD _OutputIt _Write_integral(
 template <class _CharT, class _OutputIt, integral _Integral>
     requires (!_CharT_or_bool<_Integral, _CharT>)
 _NODISCARD _OutputIt _Fmt_write(
-    _OutputIt _Out, const _Integral _Value, const _Basic_format_specs<_CharT>& _Specs, locale _Locale) {
+    _OutputIt _Out, const _Integral _Value, const _Basic_format_specs<_CharT>& _Specs, _Lazy_locale _Locale) {
     // clang-format on
     return _Write_integral(_STD move(_Out), _Value, _Specs, _Locale);
 }
 
 template <class _CharT, class _OutputIt>
-_NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const bool _Value, _Basic_format_specs<_CharT> _Specs, locale _Locale) {
+_NODISCARD _OutputIt _Fmt_write(
+    _OutputIt _Out, const bool _Value, _Basic_format_specs<_CharT> _Specs, _Lazy_locale _Locale) {
     if (_Specs._Type != '\0' && _Specs._Type != 's') {
         return _Write_integral(_STD move(_Out), static_cast<unsigned char>(_Value), _Specs, _Locale);
     }
@@ -1925,8 +1950,9 @@ _NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const bool _Value, _Basic_format
     if (_Specs._Localized) {
         _Specs._Localized = false;
         return _Fmt_write(_STD move(_Out),
-            _Value ? static_cast<basic_string_view<_CharT>>(_STD use_facet<numpunct<_CharT>>(_Locale).truename())
-                   : static_cast<basic_string_view<_CharT>>(_STD use_facet<numpunct<_CharT>>(_Locale).falsename()),
+            _Value
+                ? static_cast<basic_string_view<_CharT>>(_STD use_facet<numpunct<_CharT>>(_Locale._Get()).truename())
+                : static_cast<basic_string_view<_CharT>>(_STD use_facet<numpunct<_CharT>>(_Locale._Get()).falsename()),
             _Specs, _Locale);
     }
 
@@ -1939,7 +1965,7 @@ _NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const bool _Value, _Basic_format
 
 template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Fmt_write(
-    _OutputIt _Out, const _CharT _Value, _Basic_format_specs<_CharT> _Specs, locale _Locale) {
+    _OutputIt _Out, const _CharT _Value, _Basic_format_specs<_CharT> _Specs, _Lazy_locale _Locale) {
     if (_Specs._Type != '\0' && _Specs._Type != 'c') {
         return _Write_integral(_STD move(_Out), _Value, _Specs, _Locale);
     }
@@ -1957,7 +1983,7 @@ _NODISCARD _OutputIt _Fmt_write(
 #pragma warning(disable : 4365) // 'argument': conversion from 'char' to 'const wchar_t', signed/unsigned mismatch
 template <class _CharT, class _OutputIt, floating_point _Float>
 _NODISCARD _OutputIt _Fmt_write(
-    _OutputIt _Out, const _Float _Value, const _Basic_format_specs<_CharT>& _Specs, locale _Locale) {
+    _OutputIt _Out, const _Float _Value, const _Basic_format_specs<_CharT>& _Specs, _Lazy_locale _Locale) {
     auto _Sgn = _Specs._Sgn;
     if (_Sgn == _Fmt_sign::_None) {
         _Sgn = _Fmt_sign::_Minus;
@@ -2114,7 +2140,7 @@ _NODISCARD _OutputIt _Fmt_write(
         }
 
         if (_Specs._Localized) {
-            _Groups     = _STD use_facet<numpunct<_CharT>>(_Locale).grouping();
+            _Groups     = _STD use_facet<numpunct<_CharT>>(_Locale._Get()).grouping();
             _Separators = _Count_separators(_Integral_end - _Buffer_start, _Groups);
         }
     }
@@ -2136,9 +2162,9 @@ _NODISCARD _OutputIt _Fmt_write(
 
         if (_Specs._Localized) {
             _Out = _Write_separated_integer(_Buffer_start, _Integral_end, _Groups,
-                _STD use_facet<numpunct<_CharT>>(_Locale).thousands_sep(), _Separators, _STD move(_Out));
+                _STD use_facet<numpunct<_CharT>>(_Locale._Get()).thousands_sep(), _Separators, _STD move(_Out));
             if (_Radix_point != _Result.ptr || _Append_decimal) {
-                *_Out++         = _STD use_facet<numpunct<_CharT>>(_Locale).decimal_point();
+                *_Out++         = _STD use_facet<numpunct<_CharT>>(_Locale._Get()).decimal_point();
                 _Append_decimal = false;
             }
             _Buffer_start = _Integral_end;
@@ -2171,7 +2197,7 @@ _NODISCARD _OutputIt _Fmt_write(
 
 template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Fmt_write(
-    _OutputIt _Out, const void* const _Value, const _Basic_format_specs<_CharT>& _Specs, locale) {
+    _OutputIt _Out, const void* const _Value, const _Basic_format_specs<_CharT>& _Specs, _Lazy_locale) {
     if (_Specs._Type != '\0' && _Specs._Type != 'p') {
         _THROW(format_error("invalid const void* type"));
     }
@@ -2213,7 +2239,7 @@ _NODISCARD _OutputIt _Fmt_write(
 
 template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Fmt_write(
-    _OutputIt _Out, const _CharT* _Value, const _Basic_format_specs<_CharT>& _Specs, locale _Locale) {
+    _OutputIt _Out, const _CharT* _Value, const _Basic_format_specs<_CharT>& _Specs, _Lazy_locale _Locale) {
     return _Fmt_write(_STD move(_Out), basic_string_view<_CharT>{_Value}, _Specs, _Locale);
 }
 
@@ -2343,7 +2369,7 @@ _NODISCARD const _CharT* _Measure_string_prefix(const basic_string_view<_CharT> 
 
 template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Fmt_write(
-    _OutputIt _Out, const basic_string_view<_CharT> _Value, const _Basic_format_specs<_CharT>& _Specs, locale) {
+    _OutputIt _Out, const basic_string_view<_CharT> _Value, const _Basic_format_specs<_CharT>& _Specs, _Lazy_locale) {
     if (_Specs._Type != '\0' && _Specs._Type != 's') {
         _THROW(format_error("invalid string type"));
     }
@@ -2386,7 +2412,7 @@ struct _Default_arg_formatter {
 
     _OutputIt _Out;
     basic_format_args<_Context> _Args;
-    locale _Loc;
+    _Lazy_locale _Loc;
 
     template <class _Ty>
     _OutputIt operator()(_Ty _Val) && {
@@ -2419,7 +2445,7 @@ struct _Arg_formatter {
     _OutputIt operator()(_Ty _Val) {
         _STL_INTERNAL_CHECK(_Specs);
         _STL_INTERNAL_CHECK(_Ctx);
-        return _Fmt_write(_Ctx->out(), _Val, *_Specs, _Ctx->locale());
+        return _Fmt_write(_Ctx->out(), _Val, *_Specs, _Ctx->_Get_lazy_locale());
     }
 };
 
@@ -2432,8 +2458,8 @@ struct _Format_handler {
     explicit _Format_handler(_OutputIt _Out, basic_string_view<_CharT> _Str, basic_format_args<_Context> _Format_args)
         : _Parse_context(_Str), _Ctx(_STD move(_Out), _Format_args) {}
 
-    explicit _Format_handler(
-        _OutputIt _Out, basic_string_view<_CharT> _Str, basic_format_args<_Context> _Format_args, const locale& _Loc)
+    explicit _Format_handler(_OutputIt _Out, basic_string_view<_CharT> _Str, basic_format_args<_Context> _Format_args,
+        const _Lazy_locale& _Loc)
         : _Parse_context(_Str), _Ctx(_STD move(_Out), _Format_args, _Loc) {}
 
     void _On_text(const _CharT* _Begin, const _CharT* _End) {
@@ -2443,7 +2469,7 @@ struct _Format_handler {
     void _On_replacement_field(const size_t _Id, const _CharT*) {
         auto _Arg = _Get_arg(_Ctx, _Id);
         _Ctx.advance_to(_STD visit_format_arg(
-            _Default_arg_formatter<_OutputIt, _CharT>{_Ctx.out(), _Ctx._Get_args(), _Ctx.locale()}, _Arg));
+            _Default_arg_formatter<_OutputIt, _CharT>{_Ctx.out(), _Ctx._Get_args(), _Ctx._Get_lazy_locale()}, _Arg));
     }
 
     const _CharT* _On_format_specs(const size_t _Id, const _CharT* _Begin, const _CharT* _End) {
@@ -2602,7 +2628,7 @@ template <output_iterator<const char&> _OutputIt>
 _OutputIt vformat_to(_OutputIt _Out, const locale& _Loc, const string_view _Fmt,
     const format_args_t<type_identity_t<_OutputIt>, char> _Args) {
     _Format_handler<_OutputIt, char, basic_format_context<_OutputIt, char>> _Handler(
-        _STD move(_Out), _Fmt, _Args, _Loc);
+        _STD move(_Out), _Fmt, _Args, _Lazy_locale{_Loc});
     _Parse_format_string(_Fmt, _Handler);
     return _Handler._Ctx.out();
 }
@@ -2611,7 +2637,7 @@ template <output_iterator<const wchar_t&> _OutputIt>
 _OutputIt vformat_to(_OutputIt _Out, const locale& _Loc, const wstring_view _Fmt,
     const format_args_t<type_identity_t<_OutputIt>, wchar_t> _Args) {
     _Format_handler<_OutputIt, wchar_t, basic_format_context<_OutputIt, wchar_t>> _Handler(
-        _STD move(_Out), _Fmt, _Args, _Loc);
+        _STD move(_Out), _Fmt, _Args, _Lazy_locale{_Loc});
     _Parse_format_string(_Fmt, _Handler);
     return _Handler._Ctx.out();
 }
