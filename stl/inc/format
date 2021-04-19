@@ -1647,16 +1647,16 @@ public:
 };
 
 template <class _Container>
-class _Fmt_iterator_buffer<_STD back_insert_iterator<_Container>,
-    enable_if_t<_STD contiguous_iterator<typename _Container::iterator>, typename _Container::value_type>>
+class _Fmt_iterator_buffer<back_insert_iterator<_Container>,
+    enable_if_t<contiguous_iterator<typename _Container::iterator>, typename _Container::value_type>>
     final : public _Fmt_buffer<typename _Container::value_type> {
 private:
     _Container& _Cont;
 
-    struct _Accessor : _STD back_insert_iterator<_Container> {
-        _Accessor(_STD back_insert_iterator<_Container> _Iter) : back_insert_iterator<_Container>(_Iter) {}
+    struct _Accessor : back_insert_iterator<_Container> {
+        explicit _Accessor(back_insert_iterator<_Container> _Iter) : back_insert_iterator<_Container>(_Iter) {}
 
-        using _STD back_insert_iterator<_Container>::container;
+        using back_insert_iterator<_Container>::container;
     };
 
     void _Grow(size_t _Capacity) final {
@@ -1668,7 +1668,7 @@ public:
     explicit _Fmt_iterator_buffer(_Container& _Cont_)
         : _Fmt_buffer<typename _Container::value_type>(_Cont_.size()), _Cont(_Cont_) {}
 
-    explicit _Fmt_iterator_buffer(_STD back_insert_iterator<_Container> _Out, ptrdiff_t = 0)
+    explicit _Fmt_iterator_buffer(back_insert_iterator<_Container> _Out, ptrdiff_t = 0)
         : _Fmt_iterator_buffer(*_Accessor{_Out}.container) {}
 
     _NODISCARD auto _Out() noexcept {
