@@ -5918,7 +5918,7 @@ namespace chrono {
                 return true;
             case 'q':
                 if constexpr (_Is_specialization_v<_Ty, duration>) {
-                    _Write_unit_suffix<_Ty::period>(_Os);
+                    _Write_unit_suffix<typename _Ty::period>(_Os);
                 }
                 return true;
             case 'Q':
