@@ -48,11 +48,7 @@ struct choose_literal<wchar_t> {
 template <class charT, class... Args>
 auto make_testing_format_args(Args&&... vals) {
     using context = basic_format_context<back_insert_iterator<basic_string<charT>>, charT>;
-    if constexpr (is_same_v<charT, wchar_t>) {
-        return make_wformat_args<context>(forward<Args>(vals)...);
-    } else {
-        return make_format_args<context>(forward<Args>(vals)...);
-    }
+    return make_format_args<context>(forward<Args>(vals)...);
 }
 
 template <class charT, class... Args>
