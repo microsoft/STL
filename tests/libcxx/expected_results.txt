@@ -640,6 +640,9 @@ std/language.support/support.limits/support.limits.general/algorithm.version.pas
 std/language.support/support.limits/support.limits.general/functional.version.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/iterator.version.pass.cpp FAIL
 
+# Test expects __cpp_lib_chrono to have the old value 201611L for P0505R0; we define the C++20 value 201907L for P1466R3.
+std/language.support/support.limits/support.limits.general/chrono.version.pass.cpp FAIL
+
 # We unconditionally define __cpp_lib_addressof_constexpr; test error says it
 # "should not be defined when TEST_HAS_BUILTIN(__builtin_addressof) || TEST_GCC_VER >= 700 is not defined!"
 std/language.support/support.limits/support.limits.general/memory.version.pass.cpp FAIL

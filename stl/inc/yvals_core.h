@@ -140,7 +140,6 @@
 // P0325R4 to_array()
 // P0339R6 polymorphic_allocator<>
 // P0355R7 <chrono> Calendars And Time Zones
-//     (partially implemented)
 // P0356R5 bind_front()
 // P0357R3 Supporting Incomplete Types In reference_wrapper
 // P0408R7 Efficient Access To basic_stringbuf's Buffer
@@ -1172,12 +1171,6 @@
 #define __cpp_lib_variant               201606L
 #endif // _HAS_CXX17
 
-#if _HAS_CXX17
-#define __cpp_lib_chrono 201611L // P0505R0 constexpr For <chrono> (Again)
-#else // _HAS_CXX17
-#define __cpp_lib_chrono 201510L // P0092R1 <chrono> floor(), ceil(), round(), abs()
-#endif // _HAS_CXX17
-
 // C++20
 #define __cpp_lib_atomic_value_initialization 201911L
 
@@ -1301,6 +1294,14 @@
 #define __cpp_lib_array_constexpr 201811L // P1032R1 Miscellaneous constexpr
 #elif _HAS_CXX17 // ^^^ _HAS_CXX20 / _HAS_CXX17 vvv
 #define __cpp_lib_array_constexpr 201803L
+#endif // _HAS_CXX17
+
+#if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#define __cpp_lib_chrono 201907L // P1466R3 Miscellaneous Minor Fixes For <chrono>
+#elif _HAS_CXX17
+#define __cpp_lib_chrono 201611L // P0505R0 constexpr For <chrono> (Again)
+#else // _HAS_CXX17
+#define __cpp_lib_chrono 201510L // P0092R1 <chrono> floor(), ceil(), round(), abs()
 #endif // _HAS_CXX17
 
 #if _HAS_CXX20

@@ -5537,6 +5537,8 @@ namespace chrono {
             _Hours   = _Val.hours().count();
             _Minutes = _Val.minutes().count();
             _Seconds = static_cast<int>(_Val.seconds().count());
+        } else if constexpr (_Is_any_of_v<_Ty, sys_info, local_info>) {
+            return {}; // none of the valid conversion specifiers need tm fields
         } else if constexpr (_Is_specialization_v<_Ty, time_point>) {
             const auto _Dp = _CHRONO floor<days>(_Val);
             const year_month_day _Ymd{_Dp};
@@ -5653,6 +5655,47 @@ namespace chrono {
     template <class _CharT, class _Traits, class _Duration>
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const hh_mm_ss<_Duration>& _Val) {
         return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:%T}"), _Val);
+    }
+
+#pragma warning(push)
+#pragma warning(disable : 4365) // 'argument': conversion from 'char' to 'const wchar_t', signed/unsigned mismatch
+    template <class _CharT>
+    _NODISCARD decltype(auto) _Widen_string(const string& _Str) {
+        if constexpr (is_same_v<_CharT, char>) {
+            return _Str;
+        } else {
+            return wstring{_Str.begin(), _Str.end()}; // TRANSITION, should probably use ctype::widen
+        }
+    }
+#pragma warning(pop)
+
+    template <class _CharT, class _Traits>
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const sys_info& _Val) {
+        return _Os << _STD format(_Os.getloc(),
+                   _STATICALLY_WIDEN(_CharT, "begin: {}, end: {}, offset: {}, save: {}, abbrev: {}"), //
+                   _Val.begin, _Val.end, _Val.offset, _Val.save, _Widen_string<_CharT>(_Val.abbrev));
+    }
+
+    template <class _CharT, class _Traits>
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const local_info& _Val) {
+        switch (_Val.result) {
+        case local_info::unique:
+            return _Os << _STD format(_Os.getloc(), //
+                       _STATICALLY_WIDEN(_CharT, "result: unique, first: ({})"), //
+                       _Val.first);
+        case local_info::nonexistent:
+            return _Os << _STD format(_Os.getloc(),
+                       _STATICALLY_WIDEN(_CharT, "result: nonexistent, first: ({}), second: ({})"), //
+                       _Val.first, _Val.second);
+        case local_info::ambiguous:
+            return _Os << _STD format(_Os.getloc(),
+                       _STATICALLY_WIDEN(_CharT, "result: ambiguous, first: ({}), second: ({})"), //
+                       _Val.first, _Val.second);
+        default:
+            return _Os << _STD format(_Os.getloc(), //
+                       _STATICALLY_WIDEN(_CharT, "result: {}, first: ({}), second: ({})"), //
+                       _Val.result, _Val.first, _Val.second);
+        }
     }
 
     template <class _CharT, class _Traits, class _Duration>
@@ -5815,6 +5858,8 @@ namespace chrono {
             } else if constexpr (_Is_specialization_v<_Ty, hh_mm_ss>) {
                 return _Type == 'H' || _Type == 'I' || _Type == 'M' || _Type == 'S' || _Type == 'r' || _Type == 'R'
                     || _Type == 'T' || _Type == 'p';
+            } else if constexpr (_Is_any_of_v<_Ty, sys_info, local_info>) {
+                return _Type == 'z' || _Type == 'Z';
             } else if constexpr (_Is_specialization_v<_Ty, time_point>) {
                 if constexpr (!is_same_v<typename _Ty::clock, local_t>) {
                     if (_Type == 'z' || _Type == 'Z') {
@@ -5889,6 +5934,12 @@ namespace chrono {
         template <class _Ty>
         bool _Custom_write(
             basic_ostream<_CharT>& _Os, const _Chrono_spec<_CharT>& _Spec, const tm& _Time, const _Ty& _Val) {
+            if constexpr (is_same_v<_Ty, local_info>) {
+                if (_Val.result != local_info::unique) {
+                    _THROW(format_error("Cannot print non-unique local_info"));
+                }
+            }
+
             const auto _Year         = _Time.tm_year + 1900;
             const auto _Month        = _Time.tm_mon + 1;
             const bool _Has_modifier = _Spec._Modifier != '\0';
@@ -5996,15 +6047,34 @@ namespace chrono {
                 _Write_seconds(_Os, _Val);
                 return true;
             case 'Z':
-                _Os << _Time_zone_abbreviation;
+                if constexpr (is_same_v<_Ty, sys_info>) {
+                    _Os << _Widen_string<_CharT>(_Val.abbrev);
+                } else if constexpr (is_same_v<_Ty, local_info>) {
+                    _Os << _Widen_string<_CharT>(_Val.first.abbrev);
+                } else {
+                    _Os << _Time_zone_abbreviation;
+                }
                 return true;
             case 'z':
-                _Os << _STATICALLY_WIDEN(_CharT, "+00");
-                if (_Has_modifier) {
-                    _Os << _CharT{':'};
+                {
+                    hh_mm_ss<seconds> _Offset;
+
+                    if constexpr (is_same_v<_Ty, sys_info>) {
+                        _Offset = hh_mm_ss<seconds>{_Val.offset};
+                    } else if constexpr (is_same_v<_Ty, local_info>) {
+                        _Offset = hh_mm_ss<seconds>{_Val.first.offset};
+                    } else {
+                        _Offset = hh_mm_ss<seconds>{};
+                    }
+
+                    const auto _Sign = _Offset.is_negative() ? _CharT{'-'} : _CharT{'+'};
+                    const auto _Separator =
+                        _Has_modifier ? _STATICALLY_WIDEN(_CharT, ":") : _STATICALLY_WIDEN(_CharT, "");
+
+                    _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{}{:02}{}{:02}"), _Sign, _Offset.hours().count(),
+                        _Separator, _Offset.minutes().count());
+                    return true;
                 }
-                _Os << _STATICALLY_WIDEN(_CharT, "00");
-                return true;
             default:
                 return false;
             }
@@ -6098,6 +6168,14 @@ struct formatter<_CHRONO year_month_weekday_last, _CharT>
 template <class _Rep, class _Period, class _CharT>
 struct formatter<_CHRONO hh_mm_ss<_CHRONO duration<_Rep, _Period>>, _CharT>
     : _Fill_tm_formatter<_CHRONO hh_mm_ss<_CHRONO duration<_Rep, _Period>>, _CharT> {};
+
+template <class _CharT>
+struct formatter<_CHRONO sys_info, _CharT> //
+    : _Fill_tm_formatter<_CHRONO sys_info, _CharT> {};
+
+template <class _CharT>
+struct formatter<_CHRONO local_info, _CharT> //
+    : _Fill_tm_formatter<_CHRONO local_info, _CharT> {};
 
 template <class _Duration, class _CharT>
 struct formatter<_CHRONO sys_time<_Duration>, _CharT> {
