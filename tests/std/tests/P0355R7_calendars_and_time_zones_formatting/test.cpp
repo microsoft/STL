@@ -595,10 +595,10 @@ void test_hh_mm_ss_formatter() {
     empty_braces_helper(hh_mm_ss{65745s}, STR("18:15:45"));
 
     assert(format(STR("{:%H %I %M %S %r %R %T %p}"), hh_mm_ss{13h + 14min + 15351ms})
-           == STR("13 01 14 15.351 13:14:15 13:14 13:14:15.351 PM"));
+           == STR("13 01 14 15.351 01:14:15 PM 13:14 13:14:15.351 PM"));
 
     assert(format(STR("{:%H %I %M %S %r %R %T %p}"), hh_mm_ss{-13h - 14min - 15351ms})
-           == STR("-13 01 14 15.351 13:14:15 13:14 13:14:15.351 PM"));
+           == STR("-13 01 14 15.351 01:14:15 PM 13:14 13:14:15.351 PM"));
 
     throw_helper(STR("{}"), hh_mm_ss{24h});
     throw_helper(STR("{}"), hh_mm_ss{-24h});
