@@ -5485,8 +5485,11 @@ namespace chrono {
         if constexpr (is_same_v<_Clock, utc_clock>) {
             if (_CHRONO get_leap_second_info(_Val).is_leap_second) {
                 _Os << _STATICALLY_WIDEN(_CharT, "60");
-                return;
+            } else {
+                const auto _Dp = _CHRONO floor<days>(_Val) + get_leap_second_info(_Val).elapsed;
+                _Write_seconds(_Os, hh_mm_ss{_Val - _Dp});
             }
+            return;
         }
         const auto _Dp = _CHRONO floor<days>(_Val);
         _Write_seconds(_Os, hh_mm_ss{_Val - _Dp});

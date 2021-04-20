@@ -250,6 +250,10 @@ void test_clock_formatter() {
     throw_helper(STR("{:%Z %z %Oz %Ez}"), local_seconds{});
 
     assert(format(STR("{:%S}"), utc_clock::from_sys(get_tzdb().leap_seconds.front().date()) - 1s) == STR("60"));
+    assert(format(STR("{:%F %T}"), utc_clock::from_sys(get_tzdb().leap_seconds.front().date()))
+           == STR("1972-07-01 00:00:00"));
+    assert(format(STR("{:%F %T}"), utc_clock::from_sys(sys_days{January / 9 / 2014} + 12h + 35min + 34s))
+           == STR("2014-01-09 12:35:34"));
 }
 
 template <typename CharT>
