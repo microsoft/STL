@@ -1458,20 +1458,25 @@ private:
 
 // _Lazy_locale is used instead of a std::locale so that the locale is only
 // constructed when needed, and is never constructed if the format string does not
-// contain locale sensitive format specifiers. Note that this means that a new locale
-// will be constructed for _every_ locale sensitive format specifier in the format string,
+// contain locale-sensitive format specifiers. Note that this means that a new locale
+// will be constructed for _every_ locale-sensitive format specifier in the format string,
 // making that case slower than if we had stored a "real" locale in the basic_format_context.
 class _Lazy_locale {
+private:
     const locale* _Loc = nullptr;
 
 public:
     _Lazy_locale() = default;
-    explicit _Lazy_locale(const locale& _Loc_) : _Loc(_STD addressof(_Loc_)) {}
-    locale _Get() const {
-        if (!_Loc) {
-            return locale{};
-        } else {
+
+    explicit _Lazy_locale(const locale& _Loc_) : _Loc(&_Loc_) {}
+
+    explicit _Lazy_locale(const locale&&) = delete;
+
+    _NODISCARD locale _Get() const {
+        if (_Loc) {
             return *_Loc;
+        } else {
+            return locale{};
         }
     }
 };
@@ -1948,11 +1953,11 @@ _NODISCARD _OutputIt _Fmt_write(
     }
 
     if (_Specs._Localized) {
-        _Specs._Localized = false;
+        _Specs._Localized  = false;
+        const auto& _Facet = _STD use_facet<numpunct<_CharT>>(_Locale._Get());
         return _Fmt_write(_STD move(_Out),
-            _Value
-                ? static_cast<basic_string_view<_CharT>>(_STD use_facet<numpunct<_CharT>>(_Locale._Get()).truename())
-                : static_cast<basic_string_view<_CharT>>(_STD use_facet<numpunct<_CharT>>(_Locale._Get()).falsename()),
+            _Value ? static_cast<basic_string_view<_CharT>>(_Facet.truename())
+                   : static_cast<basic_string_view<_CharT>>(_Facet.falsename()),
             _Specs, _Locale);
     }
 
@@ -2161,10 +2166,11 @@ _NODISCARD _OutputIt _Fmt_write(
         }
 
         if (_Specs._Localized) {
-            _Out = _Write_separated_integer(_Buffer_start, _Integral_end, _Groups,
-                _STD use_facet<numpunct<_CharT>>(_Locale._Get()).thousands_sep(), _Separators, _STD move(_Out));
+            const auto& _Facet = _STD use_facet<numpunct<_CharT>>(_Locale._Get());
+            _Out               = _Write_separated_integer(
+                _Buffer_start, _Integral_end, _Groups, _Facet.thousands_sep(), _Separators, _STD move(_Out));
             if (_Radix_point != _Result.ptr || _Append_decimal) {
-                *_Out++         = _STD use_facet<numpunct<_CharT>>(_Locale._Get()).decimal_point();
+                *_Out++         = _Facet.decimal_point();
                 _Append_decimal = false;
             }
             _Buffer_start = _Integral_end;
