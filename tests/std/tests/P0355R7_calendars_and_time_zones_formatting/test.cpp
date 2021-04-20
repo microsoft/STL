@@ -428,6 +428,12 @@ void test_month_day_formatter() {
 
     assert(format(STR("{:%B %d}"), June / 17) == STR("June 17"));
     throw_helper(STR("{:%Y}"), June / 17);
+
+    assert(format(STR("{:%j}"), January / 5) == STR("005"));
+    assert(format(STR("{:%j}"), February / 5) == STR("036"));
+    assert(format(STR("{:%j}"), February / 28) == STR("059"));
+    assert(format(STR("{:%j}"), February / 29) == STR("060"));
+    throw_helper(STR("{:%j}"), March / 1);
 }
 
 template <typename CharT>
