@@ -5999,6 +5999,20 @@ namespace chrono {
                 }
                 _Os << _Time.tm_mday;
                 return true;
+            case 'r':
+                if constexpr (_Is_specialization_v<_Ty, hh_mm_ss>) {
+                    // put_time uses _Strftime in order to bypass reference-counting that locale uses. This function
+                    // takes the locale information by pointer, but the pointer (from _Gettnames) returns a copy.
+                    // _Strftime delegates to other functions but eventually (for the C locale) has the %r specifier
+                    // rewritten. It checks for the locale by comparing pointers, which do not compare equal as we have
+                    // a copy of the pointer instead of the original. Therefore, we replace %r for the C locale
+                    // ourselves.
+                    if (_Os.getloc() == locale::classic()) {
+                        _Os << _STD put_time(&_Time, _STATICALLY_WIDEN(_CharT, "%I:%M:%S %p"));
+                        return true;
+                    }
+                }
+                return false;
             case 'j':
                 if constexpr (_Is_specialization_v<_Ty, duration>) {
                     _Os << _STD abs(_CHRONO duration_cast<days>(_Val).count());
