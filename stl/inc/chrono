@@ -5918,16 +5918,7 @@ namespace chrono {
                         }
                     }
 
-                    _CharT _Fmt_str[4];
-                    size_t _Next_idx      = 0;
-                    _Fmt_str[_Next_idx++] = _CharT{'%'};
-                    if (_Spec._Modifier != '\0') {
-                        _Fmt_str[_Next_idx++] = static_cast<_CharT>(_Spec._Modifier);
-                    }
-                    _Fmt_str[_Next_idx++] = static_cast<_CharT>(_Spec._Type);
-                    _Fmt_str[_Next_idx]   = _CharT{'\0'};
-
-                    _Stream << _STD put_time<_CharT>(&_Time, _Fmt_str);
+                    _Stream << _STD put_time<_CharT>(&_Time, _Fmt_string(_Spec).data());
                 }
             }
 
@@ -5960,11 +5951,7 @@ namespace chrono {
                     if (!_Val.weekday().ok()) {
                         _THROW(format_error("Cannot print invalid weekday"));
                     }
-                    _CharT _Fmt[3];
-                    _Fmt[0] = '%';
-                    _Fmt[1] = static_cast<_CharT>(_Spec._Type);
-                    _Fmt[2] = '\0';
-                    _Os << _STD put_time(&_Time, _Fmt);
+                    _Os << _STD put_time(&_Time, _Fmt_string(_Spec).data());
                     return true;
                 } else if constexpr (_Has_ok<_Ty>) {
                     if (!_Val.ok()) {
@@ -6120,6 +6107,18 @@ namespace chrono {
             default:
                 return false;
             }
+        }
+
+        _NODISCARD array<_CharT, 4> _Fmt_string(const _Chrono_spec<_CharT>& _Spec) {
+            array<_CharT, 4> _Fmt_str;
+            size_t _Next_idx      = 0;
+            _Fmt_str[_Next_idx++] = _CharT{'%'};
+            if (_Spec._Modifier != '\0') {
+                _Fmt_str[_Next_idx++] = static_cast<_CharT>(_Spec._Modifier);
+            }
+            _Fmt_str[_Next_idx++] = static_cast<_CharT>(_Spec._Type);
+            _Fmt_str[_Next_idx]   = _CharT{'\0'};
+            return _Fmt_str;
         }
 
         _Chrono_format_specs<_CharT> _Specs{};
