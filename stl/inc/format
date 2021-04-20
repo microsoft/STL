@@ -1458,9 +1458,9 @@ public:
             if constexpr (is_same_v<_ArgTy, basic_string_view<_CharT>>) {
                 _Result += _Arg.size();
             } else if constexpr (is_same_v<_ArgTy, const _CharT*>) {
-                _Result += 32;
+                _Result += 32; // estimate for length of null-terminated strings
             } else {
-                _Result += 8;
+                _Result += 8; // estimate for length of all other arguments
             }
         };
         for (size_t _Idx = 0; _Idx < _Num_args; ++_Idx) {
