@@ -5446,6 +5446,19 @@ _NODISCARD constexpr const _CharT* _Parse_chrono_format_specs(
 }
 
 namespace chrono {
+    template <class _Duration>
+    struct _Local_time_format_t {
+        local_time<_Duration> _Time;
+        const string* _Abbrev      = nullptr;
+        const seconds* _Offset_sec = nullptr;
+    };
+
+    template <class _Duration>
+    _NODISCARD _Local_time_format_t<_Duration> local_time_format(const local_time<_Duration> _Time,
+        const string* const _Abbrev = nullptr, const seconds* const _Offset_sec = nullptr) {
+        return {_Time, _Abbrev, _Offset_sec};
+    }
+
     // Replacement for %S, as put_time does not honor writing fractional seconds.
     template <class _CharT, class _Traits, class _Ty>
     void _Write_seconds(basic_ostream<_CharT, _Traits>&, const _Ty&) {
@@ -5474,6 +5487,11 @@ namespace chrono {
         _Write_seconds(_Os, hh_mm_ss{_Val - _Dp});
     }
 
+    template <class _CharT, class _Traits, class _Duration>
+    void _Write_seconds(basic_ostream<_CharT, _Traits>& _Os, const _Local_time_format_t<_Duration>& _Val) {
+        _Write_seconds(_Os, _Val._Time);
+    }
+
     template <class _CharT, class _Traits, class _Rep, class _Period>
     void _Write_seconds(basic_ostream<_CharT, _Traits>& _Os, const duration<_Rep, _Period>& _Val) {
         const auto _Dp = _CHRONO duration_cast<days>(_Val);
@@ -5493,6 +5511,8 @@ namespace chrono {
         if constexpr (_Is_specialization_v<_Ty, duration>) {
             const auto _Dp = _CHRONO duration_cast<days>(_Val);
             return _Fill_tm(hh_mm_ss{_Val - _Dp});
+        } else if constexpr (_Is_specialization_v<_Ty, _Local_time_format_t>) {
+            return _Fill_tm(_Val._Time);
         } else if constexpr (is_same_v<_Ty, day>) {
             _Day = static_cast<unsigned int>(_Val);
         } else if constexpr (is_same_v<_Ty, month>) {
@@ -5738,6 +5758,21 @@ namespace chrono {
         return _Os << sys_time<_Duration>{_Val.time_since_epoch()};
     }
 
+    template <class _CharT, class _Traits, class _Duration>
+    basic_ostream<_CharT, _Traits>& operator<<(
+        basic_ostream<_CharT, _Traits>& _Os, const _Local_time_format_t<_Duration>& _Val) {
+        // Doesn't appear in the Standard, but allowed by N4885 [global.functions]/2.
+        // Implements N4885 [time.zone.zonedtime.nonmembers]/2 for zoned_time.
+        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:%F %T %Z}"), _Val);
+    }
+
+    template <class _CharT, class _Traits, class _Duration, class _TimeZonePtr>
+    basic_ostream<_CharT, _Traits>& operator<<(
+        basic_ostream<_CharT, _Traits>& _Os, const zoned_time<_Duration, _TimeZonePtr>& _Val) {
+        const auto _Info = _Val.get_info();
+        return _Os << _Local_time_format_t<_Duration>{_Val.get_local_time(), &_Info.abbrev};
+    }
+
     template <class _CharT>
     struct _Chrono_formatter {
         _Chrono_formatter() = default;
@@ -5868,6 +5903,8 @@ namespace chrono {
                 }
                 return _Type == 'c' || _Type == 'x' || _Type == 'X' || _Is_valid_type<year_month_day>(_Type)
                     || _Is_valid_type<hh_mm_ss<seconds>>(_Type);
+            } else if constexpr (_Is_specialization_v<_Ty, _Local_time_format_t>) {
+                return _Type == 'z' || _Type == 'Z' || _Is_valid_type<decltype(_Ty::_Time)>(_Type);
             } else {
                 static_assert(_Always_false<_Ty>, "should be unreachable");
             }
@@ -6051,6 +6088,11 @@ namespace chrono {
                     _Os << _Widen_string<_CharT>(_Val.abbrev);
                 } else if constexpr (is_same_v<_Ty, local_info>) {
                     _Os << _Widen_string<_CharT>(_Val.first.abbrev);
+                } else if constexpr (_Is_specialization_v<_Ty, _Local_time_format_t>) {
+                    if (_Val._Abbrev == nullptr) {
+                        _THROW(format_error("Cannot print local-time-format-t with null abbrev."));
+                    }
+                    _Os << _Widen_string<_CharT>(*_Val._Abbrev);
                 } else {
                     _Os << _Time_zone_abbreviation;
                 }
@@ -6063,6 +6105,11 @@ namespace chrono {
                         _Offset = hh_mm_ss<seconds>{_Val.offset};
                     } else if constexpr (is_same_v<_Ty, local_info>) {
                         _Offset = hh_mm_ss<seconds>{_Val.first.offset};
+                    } else if constexpr (_Is_specialization_v<_Ty, _Local_time_format_t>) {
+                        if (_Val._Offset_sec == nullptr) {
+                            _THROW(format_error("Cannot print local-time-format-t with null offset_sec."));
+                        }
+                        _Offset = hh_mm_ss<seconds>{*_Val._Offset_sec};
                     } else {
                         _Offset = hh_mm_ss<seconds>{};
                     }
@@ -6265,6 +6312,22 @@ private:
 template <class _Duration, class _CharT>
 struct formatter<_CHRONO local_time<_Duration>, _CharT> //
     : _Fill_tm_formatter<_CHRONO local_time<_Duration>, _CharT> {};
+
+template <class _Duration, class _CharT>
+struct formatter<_CHRONO _Local_time_format_t<_Duration>, _CharT>
+    : _Fill_tm_formatter<_CHRONO _Local_time_format_t<_Duration>, _CharT> {};
+
+template <class _Duration, class _TimeZonePtr, class _CharT>
+struct formatter<_CHRONO zoned_time<_Duration, _TimeZonePtr>, _CharT>
+    : formatter<_CHRONO _Local_time_format_t<_Duration>, _CharT> {
+
+    template <class _FormatContext>
+    auto format(const _CHRONO zoned_time<_Duration, _TimeZonePtr>& _Val, _FormatContext& _FormatCtx) {
+        using _Mybase    = formatter<_CHRONO _Local_time_format_t<_Duration>, _CharT>;
+        const auto _Info = _Val.get_info();
+        return _Mybase::format({_Val.get_local_time(), &_Info.abbrev, &_Info.offset}, _FormatCtx);
+    }
+};
 
 namespace chrono {
     template <class _Duration>
