@@ -210,16 +210,6 @@ void empty_braces_helper(const Arg& val, const CharT* const expected) {
     assert(stream);
 }
 
-// FIXME: TEMPORARY CODE FOR WRITING TESTS, REMOVE BEFORE MERGING
-template <class Str>
-constexpr void print(Str str) {
-    if constexpr (is_same_v<Str, string>) {
-        cout << str << "\n";
-    } else {
-        wcout << str << "\n";
-    }
-}
-
 template <typename CharT>
 void test_duration_formatter() {
     empty_braces_helper(seconds{5}, STR("5s"));
@@ -639,6 +629,9 @@ void test_information_classes() {
     const local_info nonexistent1 = sydney_tz->get_info(Sydney::Std_1.local_end());
     const local_info nonexistent2 = la_tz->get_info(LA::Std_1.local_end());
 
+    // N4885 [time.zone.info.sys]/7: "Effects: Streams out the sys_info object r in an unspecified format."
+    // N4885 [time.zone.info.local]/3: "Effects: Streams out the local_info object r in an unspecified format."
+
     empty_braces_helper(sys1, STR("begin: 2020-04-04 16:00:00, end: 2020-10-03 16:00:00, "
                                   "offset: 36000s, save: 0min, abbrev: GMT+10"));
     empty_braces_helper(sys2, STR("begin: 2020-10-03 16:00:00, end: 2021-04-03 16:00:00, "
@@ -714,6 +707,43 @@ void test_information_classes() {
     assert(format(STR("{:%z %Ez %Oz}"), sys6) == STR("+0530 +05:30 +05:30"));
 }
 
+template <typename CharT>
+void test_local_time_format_formatter() {
+    constexpr local_seconds t{local_days{2021y / April / 19} + 1h + 2min + 3s};
+    const string abbrev{"Meow"};
+    constexpr seconds offset{17h + 29min};
+
+    const auto ltf = local_time_format(t, &abbrev, &offset);
+
+    throw_helper(STR("{:%Z}"), local_time_format(t, nullptr, &offset));
+    throw_helper(STR("{:%z}"), local_time_format(t, &abbrev, nullptr));
+
+    assert(format(STR("{:%Z %z %Oz %Ez}"), ltf) == STR("Meow +1729 +17:29 +17:29"));
+
+    // Doesn't appear in the Standard, but allowed by N4885 [global.functions]/2.
+    // Implements N4885 [time.zone.zonedtime.nonmembers]/2 for zoned_time.
+    empty_braces_helper(ltf, STR("2021-04-19 01:02:03 Meow"));
+
+    assert(format(STR("{:%c, %x, %X}"), ltf) == STR("04/19/21 01:02:03, 04/19/21, 01:02:03"));
+    assert(format(STR("{:%D %F, %Y %C %y, %b %B %h %m, %d %e, %a %A %u %w}"), ltf)
+           == STR("04/19/21 2021-04-19, 2021 20 21, Apr April Apr 04, 19 19, Mon Monday 1 1"));
+    assert(format(STR("{:%H %I %M %S %r %R %T %p}"), ltf) == STR("01 01 02 03 01:02:03 01:02 01:02:03 AM"));
+}
+
+template <typename CharT>
+void test_zoned_time_formatter() {
+    constexpr sys_seconds t{sys_days{2021y / April / 19} + 15h + 16min + 17s};
+
+    const zoned_time zt{LA::Tz_name, t};
+
+    empty_braces_helper(zt, STR("2021-04-19 08:16:17 PDT"));
+
+    assert(format(STR("{:%c, %x, %X}"), zt) == STR("04/19/21 08:16:17, 04/19/21, 08:16:17"));
+    assert(format(STR("{:%D %F, %Y %C %y, %b %B %h %m, %d %e, %a %A %u %w}"), zt)
+           == STR("04/19/21 2021-04-19, 2021 20 21, Apr April Apr 04, 19 19, Mon Monday 1 1"));
+    assert(format(STR("{:%H %I %M %S %r %R %T %p}"), zt) == STR("08 08 16 17 08:16:17 08:16 08:16:17 AM"));
+}
+
 int main() {
     test_parse_conversion_spec<char>();
     test_parse_conversion_spec<wchar_t>();
@@ -779,4 +809,10 @@ int main() {
 
     test_information_classes<char>();
     test_information_classes<wchar_t>();
+
+    test_local_time_format_formatter<char>();
+    test_local_time_format_formatter<wchar_t>();
+
+    test_zoned_time_formatter<char>();
+    test_zoned_time_formatter<wchar_t>();
 }
