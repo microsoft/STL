@@ -1152,12 +1152,10 @@ public:
     }
 };
 
-// clang-format off
-template <class _Context, class _Ty>
+template <class _Ty, class _Context>
 concept _Has_formatter = requires(const _Ty& _Val, _Context& _Ctx) {
     _STD declval<typename _Context::template formatter_type<_Ty>>().format(_Val, _Ctx);
 };
-// clang-format on
 
 template <class _CharT>
 _NODISCARD constexpr size_t _Get_format_arg_type_storage_size(_Basic_format_arg_type _Type) noexcept {
@@ -1196,11 +1194,9 @@ _NODISCARD constexpr size_t _Get_format_arg_type_storage_size(_Basic_format_arg_
 }
 
 // See N4878 [format.arg]/5
-// clang-format off
-template <class _Context, class _Ty>
-    requires _Has_formatter<_Context, _Ty>
-/* consteval */ constexpr auto _Get_format_arg_storage_type(const _Ty&) noexcept {
-    // clang-format on
+template <class _Context, _Has_formatter<_Context> _Ty>
+auto _Get_format_arg_storage_type(const _Ty&) {
+    // This function implements a mapping between types; it is never called outside of unevaluated operands.
     using _Char_type = typename _Context::char_type;
     if constexpr (is_same_v<_Ty, monostate>) {
         return monostate{};
@@ -1230,34 +1226,25 @@ template <class _Context, class _Ty>
 }
 
 template <class _Context>
-/* consteval */ constexpr auto _Get_format_arg_storage_type(const typename _Context::char_type*) noexcept {
-    return static_cast<const typename _Context::char_type*>(nullptr);
-}
+auto _Get_format_arg_storage_type(const typename _Context::char_type*) // not defined
+    -> const typename _Context::char_type*;
 
 template <class _Context, class _Traits>
-/* consteval */ constexpr auto _Get_format_arg_storage_type(
-    basic_string_view<typename _Context::char_type, _Traits>) noexcept {
-    return basic_string_view<typename _Context::char_type>{};
-}
+auto _Get_format_arg_storage_type(basic_string_view<typename _Context::char_type, _Traits>)
+    -> basic_string_view<typename _Context::char_type>; // not defined
 
 template <class _Context, class _Traits, class _Alloc>
-/* consteval */ constexpr auto _Get_format_arg_storage_type(
-    const basic_string<typename _Context::char_type, _Traits, _Alloc>&) noexcept {
-    return basic_string_view<typename _Context::char_type>{};
-}
+auto _Get_format_arg_storage_type(const basic_string<typename _Context::char_type, _Traits, _Alloc>&)
+    -> basic_string_view<typename _Context::char_type>; // not defined
 
 template <class _Context>
-/* consteval */ constexpr auto _Get_format_arg_storage_type(nullptr_t) noexcept {
-    return static_cast<const void*>(nullptr);
-}
+const void* _Get_format_arg_storage_type(nullptr_t); // not defined
 
 // clang-format off
 template <class _Context, class _Ty>
     requires is_void_v<_Ty>
-/* consteval */ constexpr auto _Get_format_arg_storage_type(const _Ty*) noexcept {
-    // clang-format on
-    return static_cast<const void*>(nullptr);
-}
+const void* _Get_format_arg_storage_type(_Ty*); // not defined
+// clang-format on
 
 template <class _Context, class _Ty>
 inline constexpr size_t _Get_format_arg_storage_size = sizeof(
@@ -1318,8 +1305,7 @@ private:
 
     // See N4885 [format.arg]/5
     // clang-format off
-    template <class _Ty>
-        requires _Has_formatter<_Context, _Ty>
+    template <_Has_formatter<_Context> _Ty>
     void _Store(const size_t _Arg_index, const _Ty& _Val) noexcept {
         // clang-format on
         if constexpr (is_same_v<_Ty, bool>) {
@@ -1372,7 +1358,7 @@ private:
     // clang-format off
     template <class _Ty>
         requires is_void_v<_Ty>
-    void _Store(const size_t _Arg_index, const _Ty* _Ptr) noexcept {
+    void _Store(const size_t _Arg_index, _Ty* _Ptr) noexcept {
         // clang-format on
         _Store_impl<const void*>(_Arg_index, _Basic_format_arg_type::_Pointer_type, static_cast<const void*>(_Ptr));
     }
