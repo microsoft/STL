@@ -437,6 +437,10 @@ void test_month_day_last_formatter() {
     assert(format(STR("{:%B}"), June / last) == STR("June"));
     assert(format(STR("{:%d}"), June / last) == STR("30"));
     throw_helper(STR("{:%d}"), February / last);
+
+    assert(format(STR("{:%j}"), January / last) == STR("031"));
+    throw_helper(STR("{:%j}"), February / last);
+    throw_helper(STR("{:%j}"), April / last);
 }
 
 template <typename CharT>
@@ -499,6 +503,12 @@ void test_year_month_day_formatter() {
     assert(format(STR("{:%F %D}"), invalid) == STR("1234-00-31 00/31/34"));
     assert(format(STR("{:%a %A}"), year_month_day{year{1900}, month{1}, day{4}}) == STR("Thu Thursday"));
     assert(format(STR("{:%u %w}"), year_month_day{year{1900}, month{1}, day{4}}) == STR("4 4"));
+    throw_helper(STR("{:%u}"), invalid);
+
+    assert(format(STR("{:%j}"), 1900y / January / 4) == STR("004"));
+    assert(format(STR("{:%j}"), 1900y / May / 7) == STR("127"));
+    assert(format(STR("{:%j}"), 2000y / May / 7) == STR("128"));
+    throw_helper(STR("{:%j}"), invalid);
 }
 
 template <typename CharT>
@@ -516,6 +526,13 @@ void test_year_month_day_last_formatter() {
     constexpr auto fmt = STR("{:%D %F, %Y %C %y, %b %B %h %m, %d %e, %a %A %u %w}");
     assert(format(fmt, ymdl1) == STR("04/30/21 2021-04-30, 2021 20 21, Apr April Apr 04, 30 30, Fri Friday 5 5"));
     assert(format(fmt, ymdl2) == STR("02/29/04 2004-02-29, 2004 20 04, Feb February Feb 02, 29 29, Sun Sunday 7 0"));
+
+    throw_helper(STR("{:%u}"), invalid);
+
+    assert(format(STR("{:%j}"), 1900y / January / last) == STR("031"));
+    assert(format(STR("{:%j}"), 1900y / February / last) == STR("059"));
+    assert(format(STR("{:%j}"), 2000y / February / last) == STR("060"));
+    throw_helper(STR("{:%j}"), year{1900} / month{13} / last);
 }
 
 template <typename CharT>
@@ -539,6 +556,12 @@ void test_year_month_weekday_formatter() {
     constexpr auto fmt = STR("{:%D %F, %Y %C %y, %b %B %h %m, %d %e, %a %A %u %w}");
     assert(format(fmt, ymwd1) == STR("04/30/21 2021-04-30, 2021 20 21, Apr April Apr 04, 30 30, Fri Friday 5 5"));
     assert(format(fmt, ymwd2) == STR("02/29/04 2004-02-29, 2004 20 04, Feb February Feb 02, 29 29, Sun Sunday 7 0"));
+
+    assert(format(STR("{:%u}"), invalid1) == STR("5"));
+    throw_helper(STR("{:%u}"), invalid2);
+
+    assert(format(STR("{:%j}"), 1900y / January / Tuesday[2]) == STR("009"));
+    throw_helper(STR("{:%j}"), invalid1);
 }
 
 template <typename CharT>
@@ -560,6 +583,12 @@ void test_year_month_weekday_last_formatter() {
     constexpr auto fmt = STR("{:%D %F, %Y %C %y, %b %B %h %m, %d %e, %a %A %u %w}");
     assert(format(fmt, ymwdl1) == STR("04/30/21 2021-04-30, 2021 20 21, Apr April Apr 04, 30 30, Fri Friday 5 5"));
     assert(format(fmt, ymwdl2) == STR("02/29/04 2004-02-29, 2004 20 04, Feb February Feb 02, 29 29, Sun Sunday 7 0"));
+
+    assert(format(STR("{:%u}"), invalid2) == STR("5"));
+    throw_helper(STR("{:%u}"), invalid1);
+
+    assert(format(STR("{:%j}"), 1900y / January / Tuesday[last]) == STR("030"));
+    throw_helper(STR("{:%j}"), invalid1);
 }
 
 template <typename CharT>

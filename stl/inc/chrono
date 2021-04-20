@@ -5485,6 +5485,7 @@ namespace chrono {
         unsigned int _Day   = 0;
         unsigned int _Month = 0;
         int _Year           = 0;
+        int _Yearday        = 0;
         int _Weekday        = 0;
         int _Hours          = 0;
         int _Minutes        = 0;
@@ -5509,6 +5510,9 @@ namespace chrono {
         } else if constexpr (is_same_v<_Ty, month_day_last>) {
             _Month = static_cast<unsigned int>(_Val.month());
             _Day   = static_cast<unsigned int>(_Last_day_table[(_Month - 1) & 0xF]);
+            if (_Val.month() == January) {
+                _Yearday = 30;
+            }
         } else if constexpr (is_same_v<_Ty, month_weekday>) {
             _Month   = static_cast<unsigned int>(_Val.month());
             _Weekday = static_cast<int>(_Val.weekday_indexed().weekday().c_encoding());
@@ -5518,21 +5522,19 @@ namespace chrono {
         } else if constexpr (is_same_v<_Ty, year_month>) {
             _Month = static_cast<unsigned int>(_Val.month());
             _Year  = static_cast<int>(_Val.year());
-        } else if constexpr (is_same_v<_Ty, year_month_day>) {
-            _Day     = static_cast<unsigned int>(_Val.day());
-            _Month   = static_cast<unsigned int>(_Val.month());
-            _Year    = static_cast<int>(_Val.year());
-            _Weekday = _Val._Calculate_weekday();
-        } else if constexpr (is_same_v<_Ty, year_month_day_last>) {
-            _Day     = static_cast<unsigned int>(_Val.day());
-            _Month   = static_cast<unsigned int>(_Val.month());
-            _Year    = static_cast<int>(_Val.year());
-            _Weekday = year_month_day{_Val}._Calculate_weekday();
+        } else if constexpr (_Is_any_of_v<_Ty, year_month_day, year_month_day_last>) {
+            _Day   = static_cast<unsigned int>(_Val.day());
+            _Month = static_cast<unsigned int>(_Val.month());
+            _Year  = static_cast<int>(_Val.year());
+            if (_Val.ok()) {
+                const year_month_day& _Ymd = _Val;
+                _Weekday                   = _Ymd._Calculate_weekday();
+                _Yearday = (static_cast<sys_days>(_Val) - static_cast<sys_days>(_Val.year() / January / 1)).count();
+            }
         } else if constexpr (_Is_any_of_v<_Ty, year_month_weekday, year_month_weekday_last>) {
-            _Day     = static_cast<unsigned int>(year_month_day{_Val}.day());
-            _Month   = static_cast<unsigned int>(_Val.month());
-            _Year    = static_cast<int>(_Val.year());
-            _Weekday = static_cast<int>(_Val.weekday().c_encoding());
+            auto _Tm    = _Fill_tm(year_month_day{_Val});
+            _Tm.tm_wday = static_cast<int>(_Val.weekday().c_encoding());
+            return _Tm;
         } else if constexpr (_Is_specialization_v<_Ty, hh_mm_ss>) {
             _Hours   = _Val.hours().count();
             _Minutes = _Val.minutes().count();
@@ -5558,6 +5560,7 @@ namespace chrono {
         _Time.tm_mday = static_cast<int>(_Day);
         _Time.tm_mon  = static_cast<int>(_Month) - 1;
         _Time.tm_year = _Year - 1900;
+        _Time.tm_yday = _Yearday;
         _Time.tm_wday = _Weekday;
         return _Time;
     }
@@ -5845,16 +5848,18 @@ namespace chrono {
                 return _Type == 'Y' || _Type == 'y' || _Type == 'C';
             } else if constexpr (_Is_any_of_v<_Ty, weekday, weekday_indexed, weekday_last>) {
                 return _Type == 'a' || _Type == 'A' || _Type == 'u' || _Type == 'w';
-            } else if constexpr (_Is_any_of_v<_Ty, month_day, month_day_last>) {
+            } else if constexpr (is_same_v<_Ty, month_day>) {
                 return _Is_valid_type<month>(_Type) || _Is_valid_type<day>(_Type);
+            } else if constexpr (is_same_v<_Ty, month_day_last>) {
+                return _Type == 'j' || _Is_valid_type<month_day>(_Type);
             } else if constexpr (_Is_any_of_v<_Ty, month_weekday, month_weekday_last>) {
                 return _Is_valid_type<month>(_Type) || _Is_valid_type<weekday>(_Type);
             } else if constexpr (is_same_v<_Ty, year_month>) {
                 return _Is_valid_type<year>(_Type) || _Is_valid_type<month>(_Type);
             } else if constexpr (_Is_any_of_v<_Ty, year_month_day, year_month_day_last, year_month_weekday,
                                      year_month_weekday_last>) {
-                return _Type == 'D' || _Type == 'F' || _Is_valid_type<year>(_Type) || _Is_valid_type<month>(_Type)
-                    || _Is_valid_type<day>(_Type) || _Is_valid_type<weekday>(_Type);
+                return _Type == 'D' || _Type == 'F' || _Type == 'j' || _Is_valid_type<year>(_Type)
+                    || _Is_valid_type<month>(_Type) || _Is_valid_type<day>(_Type) || _Is_valid_type<weekday>(_Type);
             } else if constexpr (_Is_specialization_v<_Ty, hh_mm_ss>) {
                 return _Type == 'H' || _Type == 'I' || _Type == 'M' || _Type == 'S' || _Type == 'r' || _Type == 'R'
                     || _Type == 'T' || _Type == 'p';
@@ -5944,6 +5949,26 @@ namespace chrono {
             const auto _Month        = _Time.tm_mon + 1;
             const bool _Has_modifier = _Spec._Modifier != '\0';
             switch (_Spec._Type) {
+            case 'a':
+            case 'A':
+            case 'u':
+            case 'w':
+                if constexpr (_Is_any_of_v<_Ty, year_month_weekday, year_month_weekday_last>) {
+                    if (!_Val.weekday().ok()) {
+                        _THROW(format_error("Cannot print invalid weekday"));
+                    }
+                    _CharT _Fmt[3];
+                    _Fmt[0] = '%';
+                    _Fmt[1] = static_cast<_CharT>(_Spec._Type);
+                    _Fmt[2] = '\0';
+                    _Os << _STD put_time(&_Time, _Fmt);
+                    return true;
+                } else if constexpr (_Has_ok<_Ty>) {
+                    if (!_Val.ok()) {
+                        _THROW(format_error("Cannot print invalid weekday"));
+                    }
+                }
+                return false;
             case 'd':
             case 'e':
                 // Most months have a proper last day, but February depends on the year.
@@ -5965,8 +5990,20 @@ namespace chrono {
             case 'j':
                 if constexpr (_Is_specialization_v<_Ty, duration>) {
                     _Os << _STD abs(_CHRONO duration_cast<days>(_Val).count());
+                    return true;
                 }
-                return true;
+                if constexpr (is_same_v<_Ty, month_day_last>) {
+                    if (_Val.month() >= February) {
+                        _THROW(
+                            format_error("Cannot print the year day of the last day of any month other than January."));
+                    }
+                }
+                if constexpr (_Has_ok<_Ty>) {
+                    if (!_Val.ok()) {
+                        _THROW(format_error("Cannot print invalid year day"));
+                    }
+                }
+                return false;
             case 'q':
                 if constexpr (_Is_specialization_v<_Ty, duration>) {
                     _Write_unit_suffix<typename _Ty::period>(_Os);
