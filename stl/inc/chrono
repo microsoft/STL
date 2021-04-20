@@ -5471,8 +5471,8 @@ namespace chrono {
         if constexpr (hh_mm_ss<_Duration>::fractional_width > 0) {
             _Os << _STD use_facet<numpunct<_CharT>>(_Os.getloc()).decimal_point();
             if constexpr (treat_as_floating_point_v<typename hh_mm_ss<_Duration>::precision::rep>) {
-                _Os << _STD format(
-                    _STATICALLY_WIDEN(_CharT, "{:0{}.0f}"), _Val.subseconds().count(), _Val.fractional_width);
+                _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{:0{}.0f}"), _STD floor(_Val.subseconds().count()),
+                    _Val.fractional_width);
             } else {
                 _Os << _STD format(
                     _STATICALLY_WIDEN(_CharT, "{:0{}}"), _Val.subseconds().count(), _Val.fractional_width);

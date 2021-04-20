@@ -560,8 +560,12 @@ void test_hh_mm_ss_formatter() {
     empty_braces_helper(hh_mm_ss{65745s}, STR("18:15:45"));
     empty_braces_helper(hh_mm_ss{0.1ns}, STR("00:00:00.000000000"));
     empty_braces_helper(hh_mm_ss{1.45ns}, STR("00:00:00.000000001"));
-    empty_braces_helper(hh_mm_ss{1.56ns}, STR("00:00:00.000000002"));
+    empty_braces_helper(hh_mm_ss{1.56ns}, STR("00:00:00.000000001"));
     empty_braces_helper(hh_mm_ss{1e+8ns}, STR("00:00:00.100000000"));
+    empty_braces_helper(hh_mm_ss{999'999.9us}, STR("00:00:00.999999"));
+    empty_braces_helper(hh_mm_ss{59'999'999.9us}, STR("00:00:59.999999"));
+    empty_braces_helper(hh_mm_ss{3'599'999'999.9us}, STR("00:59:59.999999"));
+    empty_braces_helper(hh_mm_ss{86'399'999'999.9us}, STR("23:59:59.999999"));
 
     assert(format(STR("{:%H %I %M %S %r %R %T %p}"), hh_mm_ss{13h + 14min + 15351ms})
            == STR("13 01 14 15.351 13:14:15 13:14 13:14:15.351 PM"));
