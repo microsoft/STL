@@ -6113,7 +6113,8 @@ namespace chrono {
                 if (_Has_modifier) {
                     return false;
                 }
-                _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{:02}"), _Year < 0 ? 100 + (_Year % 100) : _Year % 100);
+                _Os << _STD format(
+                    _STATICALLY_WIDEN(_CharT, "{:02}"), _Time_parse_fields::_Decompose_year(_Year).second);
                 return true;
             case 'C':
                 if (_Has_modifier) {

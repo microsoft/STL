@@ -413,6 +413,8 @@ void test_year_formatter() {
 
     assert(format(STR("{:%Y %y%C}"), year{1912}) == STR("1912 1219"));
     assert(format(STR("{:%Y %y%C}"), year{-1912}) == STR("-1912 88-20"));
+    assert(format(STR("{:%Y %y%C}"), year{-200}) == STR("-0200 00-02"));
+    assert(format(STR("{:%Y %y%C}"), year{200}) == STR("0200 0002"));
     // TRANSITION, add tests for EY Oy Ey EC
 
     empty_braces_helper(year{1900}, STR("1900"));
