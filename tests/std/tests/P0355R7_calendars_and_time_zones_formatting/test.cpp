@@ -250,6 +250,34 @@ void test_clock_formatter() {
     throw_helper(STR("{:%Z %z %Oz %Ez}"), local_seconds{});
 
     assert(format(STR("{:%S}"), utc_clock::from_sys(get_tzdb().leap_seconds.front().date()) - 1s) == STR("60"));
+    assert(format(STR("{:%F %T}"), utc_clock::from_sys(get_tzdb().leap_seconds.front().date()))
+           == STR("1972-07-01 00:00:00"));
+    assert(format(STR("{:%F %T}"), utc_clock::from_sys(sys_days{January / 9 / 2014} + 12h + 35min + 34s))
+           == STR("2014-01-09 12:35:34"));
+    assert(format(STR("{:%F %T}"), utc_clock::from_sys(get_tzdb().leap_seconds.front().date()) - 500ms)
+           == STR("1972-06-30 23:59:60.500"));
+
+    // Test an ordinary day.
+    const auto utc_2021_05_04 = utc_clock::from_sys(sys_days{2021y / May / 4});
+
+    // This is both the last day of a leap year (366th day) and the day of a leap second insertion.
+    const auto utc_2016_12_31 = utc_clock::from_sys(sys_days{2016y / December / 31});
+
+    for (const auto& h : {0h, 1h, 7h, 22h, 23h}) { // Accelerate testing; 24 * 60 * 61 iterations would be a lot.
+        for (const auto& m : {0min, 1min, 7min, 58min, 59min}) {
+            for (const auto& s : {0s, 1s, 7s, 58s, 59s, 60s}) {
+                if (s != 60s) {
+                    assert(format(STR("{:%F %T}"), utc_2021_05_04 + h + m + s)
+                           == format(STR("2021-05-04 {:02}:{:02}:{:02}"), h.count(), m.count(), s.count()));
+                }
+
+                if ((h == 23h && m == 59min) || s != 60s) {
+                    assert(format(STR("{:%F %T}"), utc_2016_12_31 + h + m + s)
+                           == format(STR("2016-12-31 {:02}:{:02}:{:02}"), h.count(), m.count(), s.count()));
+                }
+            }
+        }
+    }
 }
 
 template <typename CharT>

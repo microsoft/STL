@@ -5465,28 +5465,40 @@ namespace chrono {
         _STL_INTERNAL_CHECK(false);
     }
 
-    template <class _CharT, class _Traits, class _Duration>
-    void _Write_seconds(basic_ostream<_CharT, _Traits>& _Os, const hh_mm_ss<_Duration>& _Val) {
-        _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{:02}"), _Val.seconds().count());
-        if constexpr (hh_mm_ss<_Duration>::fractional_width > 0) {
+    template <unsigned int _Fractional_width, class _CharT, class _Traits, class _Precision>
+    void _Write_fractional_seconds(
+        basic_ostream<_CharT, _Traits>& _Os, const seconds& _Seconds, const _Precision& _Subseconds) {
+        _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{:02}"), _Seconds.count());
+        if constexpr (_Fractional_width > 0) {
             _Os << _STD use_facet<numpunct<_CharT>>(_Os.getloc()).decimal_point();
-            if constexpr (treat_as_floating_point_v<typename hh_mm_ss<_Duration>::precision::rep>) {
-                _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{:0{}.0f}"), _STD floor(_Val.subseconds().count()),
-                    _Val.fractional_width);
-            } else {
+            if constexpr (treat_as_floating_point_v<typename _Precision::rep>) {
                 _Os << _STD format(
-                    _STATICALLY_WIDEN(_CharT, "{:0{}}"), _Val.subseconds().count(), _Val.fractional_width);
+                    _STATICALLY_WIDEN(_CharT, "{:0{}.0f}"), _STD floor(_Subseconds.count()), _Fractional_width);
+            } else {
+                _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{:0{}}"), _Subseconds.count(), _Fractional_width);
             }
         }
+    }
+
+    template <class _CharT, class _Traits, class _Duration>
+    void _Write_seconds(basic_ostream<_CharT, _Traits>& _Os, const hh_mm_ss<_Duration>& _Val) {
+        _Write_fractional_seconds<hh_mm_ss<_Duration>::fractional_width>(_Os, _Val.seconds(), _Val.subseconds());
     }
 
     template <class _CharT, class _Traits, class _Clock, class _Duration>
     void _Write_seconds(basic_ostream<_CharT, _Traits>& _Os, const time_point<_Clock, _Duration>& _Val) {
         if constexpr (is_same_v<_Clock, utc_clock>) {
-            if (_CHRONO get_leap_second_info(_Val).is_leap_second) {
-                _Os << _STATICALLY_WIDEN(_CharT, "60");
-                return;
+            const auto _Lsi = _CHRONO get_leap_second_info(_Val);
+            const auto _Dp =
+                _CHRONO floor<days>(_Val - _Lsi.elapsed) + _Lsi.elapsed - seconds{_Lsi.is_leap_second ? 1 : 0};
+            const hh_mm_ss _Hms{_Val - _Dp};
+            constexpr auto _Fractional_width = decltype(_Hms)::fractional_width;
+            if (_Lsi.is_leap_second) {
+                _Write_fractional_seconds<_Fractional_width>(_Os, _Hms.seconds() + seconds{60}, _Hms.subseconds());
+            } else {
+                _Write_fractional_seconds<_Fractional_width>(_Os, _Hms.seconds(), _Hms.subseconds());
             }
+            return;
         }
         const auto _Dp = _CHRONO floor<days>(_Val);
         _Write_seconds(_Os, hh_mm_ss{_Val - _Dp});
