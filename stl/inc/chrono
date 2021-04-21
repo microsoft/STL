@@ -6167,8 +6167,7 @@ namespace chrono {
         template <class _Ty>
         static void _Validate_specifiers(const _Chrono_spec<_CharT>& _Spec, const _Ty& _Val) {
             // clang-format off
-            if constexpr (
-                _Is_specialization_v<_Ty, duration> || is_same_v<_Ty, sys_info>
+            if constexpr (_Is_specialization_v<_Ty, duration> || is_same_v<_Ty, sys_info>
                 || _Is_specialization_v<_Ty, time_point> || _Is_specialization_v<_Ty, _Local_time_format_t>) {
                 return;
             }
