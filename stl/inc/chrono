@@ -5482,21 +5482,21 @@ namespace chrono {
 
     template <class _CharT, class _Traits, class _Duration>
     void _Write_seconds(basic_ostream<_CharT, _Traits>& _Os, const hh_mm_ss<_Duration>& _Val) {
-        _Write_fractional_seconds<_Val.fractional_width>(_Os, _Val.seconds(), _Val.subseconds());
+        _Write_fractional_seconds<hh_mm_ss<_Duration>::fractional_width>(_Os, _Val.seconds(), _Val.subseconds());
     }
 
     template <class _CharT, class _Traits, class _Clock, class _Duration>
     void _Write_seconds(basic_ostream<_CharT, _Traits>& _Os, const time_point<_Clock, _Duration>& _Val) {
         if constexpr (is_same_v<_Clock, utc_clock>) {
             const auto _Lsi = _CHRONO get_leap_second_info(_Val);
-            // If leap second is being inserter, subtract it from the start of the day.
-            const auto _Dp = _CHRONO floor<days>(_Val) + _Lsi.elapsed - 1s;
+            const auto _Dp =
+                _CHRONO floor<days>(_Val - _Lsi.elapsed) + _Lsi.elapsed - seconds{_Lsi.is_leap_second ? 1 : 0};
             const hh_mm_ss _Hms{_Val - _Dp};
+            constexpr auto _Fractional_width = decltype(_Hms)::fractional_width;
             if (_Lsi.is_leap_second) {
-                _Write_fractional_seconds<_Hms.fractional_width>(_Os, _Hms.seconds() + 60s, _Hms.subseconds());
+                _Write_fractional_seconds<_Fractional_width>(_Os, _Hms.seconds() + seconds{60}, _Hms.subseconds());
             } else {
-                // A leap second was not inserted, so reduce the distance from the start of day until now by one.
-                _Write_fractional_seconds<_Hms.fractional_width>(_Os, _Hms.seconds() - 1s, _Hms.subseconds());
+                _Write_fractional_seconds<_Fractional_width>(_Os, _Hms.seconds(), _Hms.subseconds());
             }
             return;
         }
