@@ -5965,13 +5965,8 @@ namespace chrono {
                     if (_Custom_write(_Stream, _Spec, _Time, _Val)) {
                         continue;
                     }
-                    // Otherwise, we should throw on out-of-bounds to avoid triggering asserts within put_time
-                    // machinery.
-                    if constexpr (_Has_ok<_Ty>) {
-                        if (!_Val.ok()) {
-                            _THROW(format_error("Cannot localize out-of-bounds time point."));
-                        }
-                    }
+
+                    _Validate_specifiers(_Spec, _Val);
 
                     _Stream << _STD put_time<_CharT>(&_Time, _Fmt_string(_Spec).data());
                 }
@@ -5998,28 +5993,16 @@ namespace chrono {
             const auto _Month        = _Time.tm_mon + 1;
             const bool _Has_modifier = _Spec._Modifier != '\0';
             switch (_Spec._Type) {
-            case 'a':
-            case 'A':
-            case 'u':
-            case 'w':
-                if constexpr (_Is_any_of_v<_Ty, year_month_weekday, year_month_weekday_last>) {
-                    if (!_Val.weekday().ok()) {
-                        _THROW(format_error("Cannot print invalid weekday"));
-                    }
-                    _Os << _STD put_time(&_Time, _Fmt_string(_Spec).data());
-                    return true;
-                } else if constexpr (_Has_ok<_Ty>) {
-                    if (!_Val.ok()) {
-                        _THROW(format_error("Cannot print invalid weekday"));
-                    }
-                }
-                return false;
-            case 'd':
+            case 'd': // Print days as a decimal, even if invalid.
             case 'e':
                 // Most months have a proper last day, but February depends on the year.
                 if constexpr (is_same_v<_Ty, month_day_last>) {
                     if (_Val.month() == February) {
                         _THROW(format_error("Cannot print the last day of February without a year"));
+                    }
+
+                    if (!_Val.ok()) {
+                        return false;
                     }
                 }
 
@@ -6063,20 +6046,6 @@ namespace chrono {
                 if constexpr (_Is_specialization_v<_Ty, duration>) {
                     _Os << _STD abs(_CHRONO duration_cast<days>(_Val).count());
                     return true;
-                } else if constexpr (is_same_v<_Ty, month_day>) {
-                    if (_Val.month() > February) {
-                        _THROW(format_error("The day of year for a month_day past February is ambiguous."));
-                    }
-                } else if constexpr (is_same_v<_Ty, month_day_last>) {
-                    if (_Val.month() >= February) {
-                        _THROW(format_error("The day of year for a month_day_last other than January is ambiguous"));
-                    }
-                }
-
-                if constexpr (_Has_ok<_Ty>) {
-                    if (!_Val.ok()) {
-                        _THROW(format_error("Cannot print invalid day of year"));
-                    }
                 }
                 return false;
             case 'q':
@@ -6089,7 +6058,7 @@ namespace chrono {
                     _Os << _STD abs(_Val.count());
                 }
                 return true;
-            case 'm':
+            case 'm': // Print months as a decimal, even if invalid.
                 if (_Has_modifier) {
                     return false;
                 }
@@ -6099,7 +6068,7 @@ namespace chrono {
                 }
                 _Os << _Month;
                 return true;
-            case 'Y':
+            case 'Y': // Print years as a decimal, even if invalid.
                 if (_Has_modifier) {
                     return false;
                 }
@@ -6109,13 +6078,13 @@ namespace chrono {
                 }
                 _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{:04}"), _STD abs(_Year));
                 return true;
-            case 'y':
+            case 'y': // Print the two-digit year as a decimal, even if invalid.
                 if (_Has_modifier) {
                     return false;
                 }
                 _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{:02}"), _Year < 0 ? 100 + (_Year % 100) : _Year % 100);
                 return true;
-            case 'C':
+            case 'C': // Print the century as a decimal, even if invalid.
                 if (_Has_modifier) {
                     return false;
                 }
@@ -6126,30 +6095,23 @@ namespace chrono {
                 _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{:02}"),
                     _STD abs(_Time_parse_fields::_Decompose_year(_Year).first) / 100);
                 return true;
-            case 'F':
+            case 'F': // Print YMD even if invalid.
                 _Custom_write(_Os, {._Type = 'Y'}, _Time, _Val);
                 _Os << _CharT{'-'};
                 _Custom_write(_Os, {._Type = 'm'}, _Time, _Val);
                 _Os << _CharT{'-'};
                 _Custom_write(_Os, {._Type = 'd'}, _Time, _Val);
                 return true;
-            case 'D':
+            case 'D': // Print YMD even if invalid.
                 _Custom_write(_Os, {._Type = 'm'}, _Time, _Val);
                 _Os << _CharT{'/'};
                 _Custom_write(_Os, {._Type = 'd'}, _Time, _Val);
                 _Os << _CharT{'/'};
                 _Custom_write(_Os, {._Type = 'y'}, _Time, _Val);
                 return true;
-            case 'H':
-                if constexpr (_Is_specialization_v<_Ty, hh_mm_ss>) {
-                    if (_Val.hours() >= hours{24}) {
-                        _THROW(format_error("Cannot localize hh_mm_ss with an absolute value of 24 hours or more."));
-                    }
-                }
-                return false;
             case 'T':
                 // Alias for %H:%M:%S but we need to rewrite %S to display fractions of a second.
-                _Custom_write(_Os, {._Type = 'H'}, _Time, _Val);
+                _Validate_specifiers({._Type = 'H'}, _Val);
                 _Os << _STD put_time(&_Time, _STATICALLY_WIDEN(_CharT, "%H:%M:"));
                 [[fallthrough]];
             case 'S':
@@ -6199,6 +6161,127 @@ namespace chrono {
                 }
             default:
                 return false;
+            }
+        }
+
+        template <class _Ty>
+        static void _Validate_specifiers(const _Chrono_spec<_CharT>& _Spec, const _Ty& _Val) {
+            // clang-format off
+            if constexpr (_Is_specialization_v<_Ty, duration> || is_same_v<_Ty, sys_info>
+                || _Is_specialization_v<_Ty, time_point> || _Is_specialization_v<_Ty, _Local_time_format_t>) {
+                return;
+            }
+            // clang-format on
+
+            if constexpr (_Is_specialization_v<_Ty, hh_mm_ss>) {
+                if (_Spec._Type == 'H' && _Val.hours() >= hours{24}) {
+                    _THROW(format_error("Cannot localize hh_mm_ss with an absolute value of 24 hours or more."));
+                }
+                return;
+            }
+
+            constexpr bool _Is_ymd =
+                _Is_any_of_v<_Ty, year_month_day, year_month_day_last, year_month_weekday, year_month_weekday_last>;
+
+            const auto _Validate = [&] {
+                switch (_Spec._Type) {
+                case 'a':
+                case 'A':
+                case 'u':
+                case 'w':
+                    if constexpr (_Is_any_of_v<_Ty, weekday, weekday_last>) {
+                        return _Val.ok();
+                    } else if constexpr (_Is_any_of_v<_Ty, weekday_indexed, year_month_weekday,
+                                             year_month_weekday_last>) {
+                        return _Val.weekday().ok();
+                    } else if constexpr (is_same_v<_Ty, month_weekday>) {
+                        return _Val.weekday_indexed().weekday().ok();
+                    } else if constexpr (is_same_v<_Ty, month_weekday_last>) {
+                        return _Val.weekday_last().ok();
+                    } else if constexpr (_Is_any_of_v<_Ty, year_month_day, year_month_day_last>) {
+                        return _Val.ok();
+                    }
+                    break;
+
+                case 'b':
+                case 'B':
+                case 'h':
+                case 'm':
+                    if constexpr (is_same_v<_Ty, month>) {
+                        return _Val.ok();
+                    } else if constexpr (_Is_any_of_v<_Ty, month_day, month_day_last, month_weekday, month_weekday_last,
+                                             year_month> || _Is_ymd) {
+                        return _Val.month().ok();
+                    }
+                    break;
+
+                case 'C':
+                case 'y':
+                case 'Y':
+                    if constexpr (is_same_v<_Ty, year>) {
+                        return _Val.ok();
+                    } else if constexpr (_Is_any_of_v<_Ty, year_month> || _Is_ymd) {
+                        return _Val.year().ok();
+                    }
+                    break;
+
+                case 'd':
+                case 'e':
+                    if constexpr (_Is_any_of_v<_Ty, day, month_day_last>) {
+                        return _Val.ok();
+                    } else if constexpr (is_same_v<_Ty, month_day>) {
+                        return _Val.day().ok();
+                    } else if constexpr (_Is_ymd) {
+                        const year_month_day& _Ymd{_Val};
+                        return _Ymd.day().ok();
+                    }
+                    break;
+
+                case 'D':
+                case 'F':
+                    if constexpr (_Has_ok<_Ty>) {
+                        return _Val.ok();
+                    }
+                    break;
+
+                case 'j':
+                    if constexpr (is_same_v<_Ty, month_day>) {
+                        if (_Val.month() > February) {
+                            _THROW(format_error("The day of year for a month_day past February is ambiguous."));
+                        }
+                        return true;
+                    } else if constexpr (is_same_v<_Ty, month_day_last>) {
+                        if (_Val.month() >= February) {
+                            _THROW(
+                                format_error("The day of year for a month_day_last other than January is ambiguous"));
+                        }
+                        return true;
+                    } else if constexpr (_Is_ymd) {
+                        return _Val.ok();
+                    }
+                    break;
+
+                case 'g':
+                case 'G':
+                case 'U':
+                case 'V':
+                case 'W':
+                    if constexpr (_Is_ymd) {
+                        return _Val.ok();
+                    }
+                    break;
+
+                default:
+                    if constexpr (_Has_ok<_Ty>) {
+                        return _Val.ok();
+                    }
+                    return true;
+                }
+                _STL_INTERNAL_CHECK(false);
+                return false;
+            };
+            if (!_Validate()) {
+                _THROW(format_error("Cannot localize out-of-bounds time point."));
             }
         }
 
