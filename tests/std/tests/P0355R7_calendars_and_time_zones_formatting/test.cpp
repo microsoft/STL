@@ -249,6 +249,24 @@ void test_clock_formatter() {
     assert(format(STR("{:%Z %z %Oz %Ez}"), file_time<seconds>{}) == STR("UTC +0000 +00:00 +00:00"));
     throw_helper(STR("{:%Z %z %Oz %Ez}"), local_seconds{});
 
+    assert(format(STR("{:%g %G %U %V %W}"), sys_days{2010y / January / 1}) == STR("09 2009 00 53 00"));
+    assert(format(STR("{:%g %G %U %V %W}"), sys_days{2010y / January / 2}) == STR("09 2009 00 53 00"));
+    assert(format(STR("{:%g %G %U %V %W}"), sys_days{2010y / January / 3}) == STR("09 2009 01 53 00"));
+    assert(format(STR("{:%g %G %U %V %W}"), sys_days{2010y / January / 4}) == STR("10 2010 01 01 01"));
+    assert(format(STR("{:%g %G %U %V %W}"), sys_days{2010y / January / 5}) == STR("10 2010 01 01 01"));
+    assert(format(STR("{:%g %G %U %V %W}"), sys_days{2010y / January / 6}) == STR("10 2010 01 01 01"));
+    assert(format(STR("{:%g %G %U %V %W}"), sys_days{2010y / January / 7}) == STR("10 2010 01 01 01"));
+    assert(format(STR("{:%g %G %U %V %W}"), sys_days{2010y / May / 1}) == STR("10 2010 17 17 17"));
+    assert(format(STR("{:%g %G %U %V %W}"), sys_days{2010y / May / 2}) == STR("10 2010 18 17 17"));
+    assert(format(STR("{:%g %G %U %V %W}"), sys_days{2010y / May / 3}) == STR("10 2010 18 18 18"));
+    assert(format(STR("{:%g %G %U %V %W}"), sys_days{2010y / December / 25}) == STR("10 2010 51 51 51"));
+    assert(format(STR("{:%g %G %U %V %W}"), sys_days{2010y / December / 26}) == STR("10 2010 52 51 51"));
+    assert(format(STR("{:%g %G %U %V %W}"), sys_days{2010y / December / 27}) == STR("10 2010 52 52 52"));
+    assert(format(STR("{:%g %G %U %V %W}"), sys_days{2010y / December / 28}) == STR("10 2010 52 52 52"));
+    assert(format(STR("{:%g %G %U %V %W}"), sys_days{2010y / December / 29}) == STR("10 2010 52 52 52"));
+    assert(format(STR("{:%g %G %U %V %W}"), sys_days{2010y / December / 30}) == STR("10 2010 52 52 52"));
+    assert(format(STR("{:%g %G %U %V %W}"), sys_days{2010y / December / 31}) == STR("10 2010 52 52 52"));
+
     assert(format(STR("{:%S}"), utc_clock::from_sys(get_tzdb().leap_seconds.front().date()) - 1s) == STR("60"));
     assert(format(STR("{:%F %T}"), utc_clock::from_sys(get_tzdb().leap_seconds.front().date()))
            == STR("1972-07-01 00:00:00"));
@@ -515,6 +533,13 @@ void test_year_month_formatter() {
 
     assert(format(STR("{:%Y %B}"), 2000y / July) == STR("2000 July"));
     throw_helper(STR("{:%d}"), 2000y / July);
+
+    throw_helper(STR("{:%g}"), 2005y / January);
+    throw_helper(STR("{:%G}"), 2005y / January);
+    assert(format(STR("{:%g %G}"), 2005y / February) == STR("05 2005"));
+    assert(format(STR("{:%g %G}"), 2005y / November) == STR("05 2005"));
+    throw_helper(STR("{:%g}"), 2005y / December);
+    throw_helper(STR("{:%G}"), 2005y / December);
 }
 
 template <typename CharT>
@@ -533,6 +558,24 @@ void test_year_month_day_formatter() {
     assert(format(STR("{:%j}"), 1900y / May / 7) == STR("127"));
     assert(format(STR("{:%j}"), 2000y / May / 7) == STR("128"));
     throw_helper(STR("{:%j}"), invalid);
+
+    assert(format(STR("{:%g %G %U %V %W}"), 2010y / January / 1) == STR("09 2009 00 53 00"));
+    assert(format(STR("{:%g %G %U %V %W}"), 2010y / January / 2) == STR("09 2009 00 53 00"));
+    assert(format(STR("{:%g %G %U %V %W}"), 2010y / January / 3) == STR("09 2009 01 53 00"));
+    assert(format(STR("{:%g %G %U %V %W}"), 2010y / January / 4) == STR("10 2010 01 01 01"));
+    assert(format(STR("{:%g %G %U %V %W}"), 2010y / January / 5) == STR("10 2010 01 01 01"));
+    assert(format(STR("{:%g %G %U %V %W}"), 2010y / January / 6) == STR("10 2010 01 01 01"));
+    assert(format(STR("{:%g %G %U %V %W}"), 2010y / January / 7) == STR("10 2010 01 01 01"));
+    assert(format(STR("{:%g %G %U %V %W}"), 2010y / May / 1) == STR("10 2010 17 17 17"));
+    assert(format(STR("{:%g %G %U %V %W}"), 2010y / May / 2) == STR("10 2010 18 17 17"));
+    assert(format(STR("{:%g %G %U %V %W}"), 2010y / May / 3) == STR("10 2010 18 18 18"));
+    assert(format(STR("{:%g %G %U %V %W}"), 2010y / December / 25) == STR("10 2010 51 51 51"));
+    assert(format(STR("{:%g %G %U %V %W}"), 2010y / December / 26) == STR("10 2010 52 51 51"));
+    assert(format(STR("{:%g %G %U %V %W}"), 2010y / December / 27) == STR("10 2010 52 52 52"));
+    assert(format(STR("{:%g %G %U %V %W}"), 2010y / December / 28) == STR("10 2010 52 52 52"));
+    assert(format(STR("{:%g %G %U %V %W}"), 2010y / December / 29) == STR("10 2010 52 52 52"));
+    assert(format(STR("{:%g %G %U %V %W}"), 2010y / December / 30) == STR("10 2010 52 52 52"));
+    assert(format(STR("{:%g %G %U %V %W}"), 2010y / December / 31) == STR("10 2010 52 52 52"));
 }
 
 template <typename CharT>
@@ -557,6 +600,8 @@ void test_year_month_day_last_formatter() {
     assert(format(STR("{:%j}"), 1900y / February / last) == STR("059"));
     assert(format(STR("{:%j}"), 2000y / February / last) == STR("060"));
     throw_helper(STR("{:%j}"), year{1900} / month{13} / last);
+
+    assert(format(STR("{:%g %G %U %V %W}"), 2010y / May / last) == STR("10 2010 22 22 22"));
 }
 
 template <typename CharT>
@@ -586,6 +631,8 @@ void test_year_month_weekday_formatter() {
 
     assert(format(STR("{:%j}"), 1900y / January / Tuesday[2]) == STR("009"));
     throw_helper(STR("{:%j}"), invalid1);
+
+    assert(format(STR("{:%g %G %U %V %W}"), 2010y / May / Monday[5]) == STR("10 2010 22 22 22"));
 }
 
 template <typename CharT>
@@ -613,6 +660,8 @@ void test_year_month_weekday_last_formatter() {
 
     assert(format(STR("{:%j}"), 1900y / January / Tuesday[last]) == STR("030"));
     throw_helper(STR("{:%j}"), invalid1);
+
+    assert(format(STR("{:%g %G %U %V %W}"), 2010y / May / Monday[last]) == STR("10 2010 22 22 22"));
 }
 
 template <typename CharT>
@@ -798,7 +847,8 @@ void test_local_time_format_formatter() {
     assert(format(STR("{:%c, %x, %X}"), ltf) == STR("04/19/21 01:02:03, 04/19/21, 01:02:03"));
     assert(format(STR("{:%D %F, %Y %C %y, %b %B %h %m, %d %e, %a %A %u %w}"), ltf)
            == STR("04/19/21 2021-04-19, 2021 20 21, Apr April Apr 04, 19 19, Mon Monday 1 1"));
-    assert(format(STR("{:%H %I %M %S %r %R %T %p}"), ltf) == STR("01 01 02 03 01:02:03 01:02 01:02:03 AM"));
+    assert(format(STR("{:%H %I %M %S, %r, %R %T %p}"), ltf) == STR("01 01 02 03, 01:02:03 AM, 01:02 01:02:03 AM"));
+    assert(format(STR("{:%g %G %U %V %W}"), ltf) == STR("21 2021 16 16 16"));
 }
 
 template <typename CharT>
@@ -812,7 +862,8 @@ void test_zoned_time_formatter() {
     assert(format(STR("{:%c, %x, %X}"), zt) == STR("04/19/21 08:16:17, 04/19/21, 08:16:17"));
     assert(format(STR("{:%D %F, %Y %C %y, %b %B %h %m, %d %e, %a %A %u %w}"), zt)
            == STR("04/19/21 2021-04-19, 2021 20 21, Apr April Apr 04, 19 19, Mon Monday 1 1"));
-    assert(format(STR("{:%H %I %M %S %r %R %T %p}"), zt) == STR("08 08 16 17 08:16:17 08:16 08:16:17 AM"));
+    assert(format(STR("{:%H %I %M %S, %r, %R %T %p}"), zt) == STR("08 08 16 17, 08:16:17 AM, 08:16 08:16:17 AM"));
+    assert(format(STR("{:%g %G %U %V %W}"), zt) == STR("21 2021 16 16 16"));
 }
 
 int main() {
