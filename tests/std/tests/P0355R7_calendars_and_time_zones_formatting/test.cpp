@@ -444,6 +444,7 @@ void test_weekday_indexed_formatter() {
     assert(format(STR("{:%a %A}"), weekday_indexed{Monday, 2}) == STR("Mon Monday"));
     assert(format(STR("{:%u %w}"), weekday_indexed{Tuesday, 3}) == STR("2 2"));
     assert(format(STR("{:%u %w}"), weekday_indexed{Sunday, 4}) == STR("7 0"));
+    assert(format(STR("{:%u %w}"), weekday_indexed{Sunday, 10}) == STR("7 0"));
 }
 
 template <typename CharT>
@@ -464,6 +465,8 @@ void test_month_day_formatter() {
 
     assert(format(STR("{:%B %d}"), June / 17) == STR("June 17"));
     throw_helper(STR("{:%Y}"), June / 17);
+    assert(format(STR("{:%B}"), June / day{40}) == STR("June"));
+    throw_helper(STR("{:%B}"), month{13});
 
     assert(format(STR("{:%j}"), January / 5) == STR("005"));
     assert(format(STR("{:%j}"), February / 5) == STR("036"));
@@ -479,6 +482,7 @@ void test_month_day_last_formatter() {
     assert(format(STR("{:%B}"), June / last) == STR("June"));
     assert(format(STR("{:%d}"), June / last) == STR("30"));
     throw_helper(STR("{:%d}"), February / last);
+    throw_helper(STR("{:%B}"), month{13} / last);
 
     assert(format(STR("{:%j}"), January / last) == STR("031"));
     throw_helper(STR("{:%j}"), February / last);
@@ -505,6 +509,9 @@ void test_month_weekday_formatter() {
 
     assert(format(STR("{:%b %B %h %m %a %A %u %w}"), mwd1) == STR("Aug August Aug 08 Tue Tuesday 2 2"));
     assert(format(STR("{:%b %B %h %m %a %A %u %w}"), mwd2) == STR("Dec December Dec 12 Sun Sunday 7 0"));
+
+    assert(format(STR("{:%u}"), invalid1) == STR("5"));
+    throw_helper(STR("{:%u}"), invalid2);
 }
 
 template <typename CharT>
@@ -525,6 +532,9 @@ void test_month_weekday_last_formatter() {
 
     assert(format(STR("{:%b %B %h %m %a %A %u %w}"), mwdl1) == STR("Aug August Aug 08 Tue Tuesday 2 2"));
     assert(format(STR("{:%b %B %h %m %a %A %u %w}"), mwdl2) == STR("Dec December Dec 12 Sun Sunday 7 0"));
+
+    assert(format(STR("{:%u}"), invalid2) == STR("5"));
+    throw_helper(STR("{:%u}"), invalid1);
 }
 
 template <typename CharT>
