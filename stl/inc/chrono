@@ -6167,9 +6167,8 @@ namespace chrono {
         void _Validate_specifiers(const _Chrono_spec<_CharT>& _Spec, const _Ty& _Val) {
             // clang-format off
             if constexpr (
-                _Is_specialization_v<_Ty, duration>
-                || is_same_v<_Ty, sys_info> || _Is_specialization_v<_Ty, time_point>
-                || _Is_specialization_v<_Ty, _Local_time_format_t>) {
+                _Is_specialization_v<_Ty, duration> || is_same_v<_Ty, sys_info>
+                || _Is_specialization_v<_Ty, time_point> || _Is_specialization_v<_Ty, _Local_time_format_t>) {
                 return;
             }
             // clang-format on
@@ -6270,6 +6269,7 @@ namespace chrono {
                     if constexpr (_Is_ymd) {
                         return _Val.ok();
                     }
+                    break;
 
                 default:
                     if constexpr (_Has_ok<_Ty>) {
