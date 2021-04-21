@@ -831,6 +831,8 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
   <Type Name="std::_String_iterator&lt;std::_String_val&lt;std::_Simple_types&lt;char&gt; &gt; &gt;">
       <AlternativeType Name="std::_String_const_iterator&lt;std::_String_val&lt;std::_Simple_types&lt;char&gt; &gt; &gt;" />
+      <AlternativeType Name="std::_String_iterator&lt;std::_String_val&lt;std::_Simple_types&lt;char8_t&gt; &gt; &gt;" />
+      <AlternativeType Name="std::_String_const_iterator&lt;std::_String_val&lt;std::_Simple_types&lt;char8_t&gt; &gt; &gt;" />
       <SmartPointer Usage="Indexable">_Ptr,na</SmartPointer>
       <Expand>
           <Item Name="[ptr]">_Ptr</Item>
