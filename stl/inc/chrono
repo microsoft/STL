@@ -5910,11 +5910,12 @@ namespace chrono {
             } else if constexpr (_Is_any_of_v<_Ty, month_weekday, month_weekday_last>) {
                 return _Is_valid_type<month>(_Type) || _Is_valid_type<weekday>(_Type);
             } else if constexpr (is_same_v<_Ty, year_month>) {
-                return _Is_valid_type<year>(_Type) || _Is_valid_type<month>(_Type);
+                return _Type == 'g' || _Type == 'G' || _Is_valid_type<year>(_Type) || _Is_valid_type<month>(_Type);
             } else if constexpr (_Is_any_of_v<_Ty, year_month_day, year_month_day_last, year_month_weekday,
                                      year_month_weekday_last>) {
-                return _Type == 'D' || _Type == 'F' || _Type == 'j' || _Is_valid_type<year>(_Type)
-                    || _Is_valid_type<month>(_Type) || _Is_valid_type<day>(_Type) || _Is_valid_type<weekday>(_Type);
+                return _Type == 'D' || _Type == 'F' || _Type == 'g' || _Type == 'G' || _Type == 'j' || _Type == 'U'
+                    || _Type == 'V' || _Type == 'W' || _Is_valid_type<year>(_Type) || _Is_valid_type<month>(_Type)
+                    || _Is_valid_type<day>(_Type) || _Is_valid_type<weekday>(_Type);
             } else if constexpr (_Is_specialization_v<_Ty, hh_mm_ss>) {
                 return _Type == 'H' || _Type == 'I' || _Type == 'M' || _Type == 'S' || _Type == 'r' || _Type == 'R'
                     || _Type == 'T' || _Type == 'p';
@@ -6031,6 +6032,20 @@ namespace chrono {
                 }
                 _Os << _Time.tm_mday;
                 return true;
+            case 'g':
+            case 'G':
+                if constexpr (is_same_v<_Ty, year_month>) {
+                    if (_Val.month() == January || _Val.month() == December) {
+                        _THROW(format_error(
+                            "The ISO week-based year for a year_month of January or December is ambiguous."));
+                    }
+
+                    const char _Gregorian_type = _Spec._Type == 'g' ? 'y' : 'Y';
+                    _Os << _STD put_time(&_Time, _Fmt_string({._Type = _Gregorian_type}).data());
+                    return true;
+                }
+
+                return false;
             case 'r':
                 // put_time uses _Strftime in order to bypass reference-counting that locale uses. This function
                 // takes the locale information by pointer, but the pointer (from _Gettnames) returns a copy.
