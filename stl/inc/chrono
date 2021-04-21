@@ -6000,6 +6000,7 @@ namespace chrono {
                     if (_Val.month() == February) {
                         _THROW(format_error("Cannot print the last day of February without a year"));
                     }
+
                     if (!_Val.ok()) {
                         return false;
                     }
@@ -6077,13 +6078,13 @@ namespace chrono {
                 }
                 _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{:04}"), _STD abs(_Year));
                 return true;
-            case 'y': // Print the years as a decimal, even if invalid.
+            case 'y': // Print the two-digit year as a decimal, even if invalid.
                 if (_Has_modifier) {
                     return false;
                 }
                 _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{:02}"), _Year < 0 ? 100 + (_Year % 100) : _Year % 100);
                 return true;
-            case 'C': // Print the years as a decimal, even if invalid.
+            case 'C': // Print the century as a decimal, even if invalid.
                 if (_Has_modifier) {
                     return false;
                 }
@@ -6164,7 +6165,7 @@ namespace chrono {
         }
 
         template <class _Ty>
-        void _Validate_specifiers(const _Chrono_spec<_CharT>& _Spec, const _Ty& _Val) {
+        static void _Validate_specifiers(const _Chrono_spec<_CharT>& _Spec, const _Ty& _Val) {
             // clang-format off
             if constexpr (
                 _Is_specialization_v<_Ty, duration> || is_same_v<_Ty, sys_info>

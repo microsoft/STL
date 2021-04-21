@@ -466,7 +466,7 @@ void test_month_day_formatter() {
     assert(format(STR("{:%B %d}"), June / 17) == STR("June 17"));
     throw_helper(STR("{:%Y}"), June / 17);
     assert(format(STR("{:%B}"), June / day{40}) == STR("June"));
-    throw_helper(STR("{:%B}"), month{13});
+    throw_helper(STR("{:%B}"), month{13} / 17);
 
     assert(format(STR("{:%j}"), January / 5) == STR("005"));
     assert(format(STR("{:%j}"), February / 5) == STR("036"));
