@@ -254,6 +254,8 @@ void test_clock_formatter() {
            == STR("1972-07-01 00:00:00"));
     assert(format(STR("{:%F %T}"), utc_clock::from_sys(sys_days{January / 9 / 2014} + 12h + 35min + 34s))
            == STR("2014-01-09 12:35:34"));
+    assert(format(STR("{:%F %T}"), utc_clock::from_sys(get_tzdb().leap_seconds.front().date()) - 500ms)
+           == STR("1972-06-30 23:59:60.500"));
 }
 
 template <typename CharT>
