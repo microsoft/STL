@@ -5498,10 +5498,10 @@ namespace chrono {
             } else {
                 _Write_fractional_seconds<_Fractional_width>(_Os, _Hms.seconds(), _Hms.subseconds());
             }
-            return;
+        } else {
+            const auto _Dp = _CHRONO floor<days>(_Val);
+            _Write_seconds(_Os, hh_mm_ss{_Val - _Dp});
         }
-        const auto _Dp = _CHRONO floor<days>(_Val);
-        _Write_seconds(_Os, hh_mm_ss{_Val - _Dp});
     }
 
     template <class _CharT, class _Traits, class _Duration>
@@ -5848,7 +5848,7 @@ namespace chrono {
             return _Res_iter;
         }
 
-        void _Check_modifier(const char _Type, const char _Modifier) {
+        static void _Check_modifier(const char _Type, const char _Modifier) {
             if (_Modifier == '\0') {
                 return;
             }
@@ -5894,7 +5894,7 @@ namespace chrono {
         }
 
         template <class _Ty>
-        _NODISCARD constexpr bool _Is_valid_type(const char _Type) noexcept {
+        _NODISCARD static constexpr bool _Is_valid_type(const char _Type) noexcept {
             if constexpr (_Is_specialization_v<_Ty, duration>) {
                 return _Type == 'j' || _Type == 'q' || _Type == 'Q' || _Is_valid_type<hh_mm_ss<seconds>>(_Type);
             } else if constexpr (is_same_v<_Ty, day>) {
@@ -6058,6 +6058,7 @@ namespace chrono {
                         _THROW(format_error("The day of year for a month_day_last other than January is ambiguous"));
                     }
                 }
+
                 if constexpr (_Has_ok<_Ty>) {
                     if (!_Val.ok()) {
                         _THROW(format_error("Cannot print invalid day of year"));
@@ -6187,7 +6188,7 @@ namespace chrono {
             }
         }
 
-        _NODISCARD array<_CharT, 4> _Fmt_string(const _Chrono_spec<_CharT>& _Spec) {
+        _NODISCARD static array<_CharT, 4> _Fmt_string(const _Chrono_spec<_CharT>& _Spec) {
             array<_CharT, 4> _Fmt_str;
             size_t _Next_idx      = 0;
             _Fmt_str[_Next_idx++] = _CharT{'%'};
