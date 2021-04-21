@@ -878,7 +878,7 @@ void test_zoned_time_formatter() {
     assert(format(STR("{:%g %G %U %V %W}"), zt) == STR("21 2021 16 16 16"));
 }
 
-int main() {
+void test() {
     test_parse_conversion_spec<char>();
     test_parse_conversion_spec<wchar_t>();
 
@@ -949,4 +949,8 @@ int main() {
 
     test_zoned_time_formatter<char>();
     test_zoned_time_formatter<wchar_t>();
+}
+
+int main() {
+    run_tz_test([] { test(); });
 }
