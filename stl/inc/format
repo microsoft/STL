@@ -1645,6 +1645,218 @@ public:
     }
 };
 
+template <class _Ty>
+class _Fmt_buffer {
+private:
+    _Ty* _Ptr_        = nullptr;
+    size_t _Size_     = 0;
+    size_t _Capacity_ = 0;
+
+protected:
+    explicit _Fmt_buffer(const size_t _Size) noexcept : _Size_(_Size), _Capacity_(_Size) {}
+
+    ~_Fmt_buffer() = default;
+
+    _Fmt_buffer(_Ty* _Data, const size_t _Size, const size_t _Capacity) noexcept
+        : _Ptr_(_Data), _Size_(_Size), _Capacity_(_Capacity) {}
+
+    void _Set(_Ty* _Buf_data, const size_t _Buf_capacity) noexcept {
+        _Ptr_      = _Buf_data;
+        _Capacity_ = _Buf_capacity;
+    }
+
+    virtual void _Grow(size_t _Capacity) = 0;
+
+public:
+    using value_type = _Ty;
+
+    _Fmt_buffer(const _Fmt_buffer&) = delete;
+    void operator=(const _Fmt_buffer&) = delete;
+
+    _NODISCARD _Ty* begin() noexcept {
+        return _Ptr_;
+    }
+
+    _NODISCARD _Ty* end() noexcept {
+        return _Ptr_ + _Size_;
+    }
+
+    _NODISCARD size_t _Size() const noexcept {
+        return _Size_;
+    }
+
+    _NODISCARD size_t _Capacity() const noexcept {
+        return _Capacity_;
+    }
+
+    void _Clear() noexcept {
+        _Size_ = 0;
+    }
+
+    void _Try_resize(const size_t _Count) {
+        _Try_reserve(_Count);
+        _Size_ = _Count <= _Capacity_ ? _Count : _Capacity_;
+    }
+
+    void _Try_reserve(const size_t _New_capacity) {
+        if (_New_capacity > _Capacity_) {
+            _Grow(_New_capacity);
+        }
+    }
+
+    void push_back(const _Ty _Value) {
+        _Try_reserve(_Size_ + 1);
+        _Ptr_[_Size_++] = _Value;
+    }
+};
+
+struct _Fmt_buffer_traits {
+    explicit _Fmt_buffer_traits(ptrdiff_t) {}
+
+    _NODISCARD size_t _Count() const noexcept {
+        return 0;
+    }
+
+    _NODISCARD size_t _Limit(const size_t _Size) noexcept {
+        return _Size;
+    }
+};
+
+class _Fmt_fixed_buffer_traits {
+private:
+    ptrdiff_t _Count_ = 0;
+    ptrdiff_t _Limit_;
+
+public:
+    explicit _Fmt_fixed_buffer_traits(const ptrdiff_t _Limit) noexcept : _Limit_(_Limit) {}
+
+    _NODISCARD size_t _Count() const noexcept {
+        return static_cast<size_t>(_Count_);
+    }
+
+    _NODISCARD size_t _Limit(const size_t _Size) noexcept {
+        size_t _Avail = static_cast<size_t>(_Limit_ > _Count_ ? _Limit_ - _Count_ : 0);
+        _Count_ += _Size;
+        return _Size < _Avail ? _Size : _Avail;
+    }
+};
+
+inline constexpr size_t _Fmt_buffer_size = 256;
+
+template <class _OutputIt, class _Ty, class _Traits = _Fmt_buffer_traits>
+class _Fmt_iterator_buffer final : public _Traits, public _Fmt_buffer<_Ty> {
+private:
+    _OutputIt _Output;
+    _Ty _Data[_Fmt_buffer_size];
+
+    void _Grow(size_t) final {
+        if (this->_Size() == _Fmt_buffer_size) {
+            _Flush();
+        }
+    }
+
+    void _Flush() {
+        auto _Size = this->_Size();
+        this->_Clear();
+        _Output = _STD _Copy_unchecked(_Data, _Data + this->_Limit(_Size), _STD move(_Output));
+    }
+
+public:
+    explicit _Fmt_iterator_buffer(_OutputIt _Out, ptrdiff_t _Size = _Fmt_buffer_size)
+        : _Traits(_Size), _Fmt_buffer<_Ty>(_Data, 0, _Fmt_buffer_size), _Output(_STD move(_Out)) {}
+
+    ~_Fmt_iterator_buffer() {
+        if (this->_Size() != 0) {
+            _Flush();
+        }
+    }
+
+    _NODISCARD _OutputIt _Out() {
+        _Flush();
+        return _STD move(_Output);
+    }
+
+    _NODISCARD ptrdiff_t _Count() const noexcept {
+        return static_cast<ptrdiff_t>(_Traits::_Count() + this->_Size());
+    }
+};
+
+template <class _Ty>
+class _Fmt_iterator_buffer<_Ty*, _Ty> final : public _Fmt_buffer<_Ty> {
+private:
+    void _Grow(size_t) final {}
+
+public:
+    explicit _Fmt_iterator_buffer(_Ty* _Out, ptrdiff_t = 0) : _Fmt_buffer<_Ty>(_Out, 0, ~size_t{}) {}
+
+    _NODISCARD _Ty* _Out() noexcept {
+        return this->end();
+    }
+};
+
+// clang-format off
+template <class _Container>
+    requires _RANGES contiguous_range<_Container> && _RANGES sized_range<_Container>
+        && requires(_Container& _Cont, const _RANGES range_value_t<_Container>& _Val) {
+            _Cont.push_back(_Val);
+        }
+// clang-format on
+class _Fmt_iterator_buffer<back_insert_iterator<_Container>, _RANGES range_value_t<_Container>> final
+    : public _Fmt_buffer<_RANGES range_value_t<_Container>> {
+private:
+    _Container& _Cont;
+
+    struct _Accessor : back_insert_iterator<_Container> {
+        explicit _Accessor(back_insert_iterator<_Container> _Iter) : back_insert_iterator<_Container>(_Iter) {}
+
+        using back_insert_iterator<_Container>::container;
+    };
+
+    void _Grow(size_t _Capacity) final {
+        _Cont.resize(_Capacity);
+        this->_Set(_RANGES data(_Cont), _Capacity);
+    }
+
+public:
+    explicit _Fmt_iterator_buffer(_Container& _Cont_)
+        : _Fmt_buffer<_RANGES range_value_t<_Container>>(_RANGES size(_Cont_)), _Cont(_Cont_) {}
+
+    explicit _Fmt_iterator_buffer(back_insert_iterator<_Container> _Out, ptrdiff_t = 0)
+        : _Fmt_iterator_buffer(*_Accessor{_Out}.container) {}
+
+    _NODISCARD auto _Out() noexcept {
+        return back_insert_iterator{_Cont};
+    }
+};
+
+template <class _Ty>
+class _Fmt_counting_buffer final : public _Fmt_buffer<_Ty> {
+private:
+    _Ty _Data[_Fmt_buffer_size];
+    size_t _Count_ = 0;
+
+    void _Grow(size_t) final {
+        if (this->_Size() != _Fmt_buffer_size) {
+            return;
+        }
+        _Count_ += this->_Size();
+        this->_Clear();
+    }
+
+public:
+    _Fmt_counting_buffer() : _Fmt_buffer<_Ty>(_Data, 0, _Fmt_buffer_size) {}
+
+    _NODISCARD size_t _Count() const noexcept {
+        return _Count_ + this->_Size();
+    }
+};
+
+using _Fmt_it  = back_insert_iterator<_Fmt_buffer<char>>;
+using _Fmt_wit = back_insert_iterator<_Fmt_buffer<wchar_t>>;
+
+using format_context  = basic_format_context<_Fmt_it, char>;
+using wformat_context = basic_format_context<_Fmt_wit, wchar_t>;
+
 template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, monostate) {
     _STL_INTERNAL_CHECK(false);
@@ -2634,10 +2846,8 @@ template <_Format_supported_charT _CharT, class _Traits>
 struct formatter<basic_string_view<_CharT, _Traits>, _CharT>
     : _Formatter_base<basic_string_view<_CharT, _Traits>, _CharT, _Basic_format_arg_type::_String_type> {};
 
-using format_context  = basic_format_context<back_insert_iterator<string>, string::value_type>;
-using wformat_context = basic_format_context<back_insert_iterator<wstring>, wstring::value_type>;
-using format_args     = basic_format_args<format_context>;
-using wformat_args    = basic_format_args<wformat_context>;
+using format_args  = basic_format_args<format_context>;
+using wformat_args = basic_format_args<wformat_context>;
 
 template <class _Context = format_context, class... _Args>
 _NODISCARD auto make_format_args(const _Args&... _Vals) {
@@ -2689,53 +2899,61 @@ _OutputIt vformat_to(_OutputIt _Out, const locale& _Loc, const wstring_view _Fmt
 
 template <output_iterator<const char&> _OutputIt, class... _Types>
 _OutputIt format_to(_OutputIt _Out, const string_view _Fmt, const _Types&... _Args) {
-    using _Context = basic_format_context<_OutputIt, char>;
-    return _STD vformat_to(_STD move(_Out), _Fmt, _STD make_format_args<_Context>(_Args...));
+    _Fmt_iterator_buffer<_OutputIt, char> _Buf(_STD move(_Out));
+    _STD vformat_to(_Fmt_it{_Buf}, _Fmt, _STD make_format_args(_Args...));
+    return _Buf._Out();
 }
 
 template <output_iterator<const wchar_t&> _OutputIt, class... _Types>
 _OutputIt format_to(_OutputIt _Out, const wstring_view _Fmt, const _Types&... _Args) {
-    using _Context = basic_format_context<_OutputIt, wchar_t>;
-    return _STD vformat_to(_STD move(_Out), _Fmt, _STD make_format_args<_Context>(_Args...));
+    _Fmt_iterator_buffer<_OutputIt, wchar_t> _Buf(_STD move(_Out));
+    _STD vformat_to(_Fmt_wit{_Buf}, _Fmt, _STD make_wformat_args(_Args...));
+    return _Buf._Out();
 }
 
 template <output_iterator<const char&> _OutputIt, class... _Types>
 _OutputIt format_to(_OutputIt _Out, const locale& _Loc, const string_view _Fmt, const _Types&... _Args) {
-    using _Context = basic_format_context<_OutputIt, char>;
-    return _STD vformat_to(_STD move(_Out), _Loc, _Fmt, _STD make_format_args<_Context>(_Args...));
+    _Fmt_iterator_buffer<_OutputIt, char> _Buf(_STD move(_Out));
+    _STD vformat_to(_Fmt_it{_Buf}, _Loc, _Fmt, _STD make_format_args(_Args...));
+    return _Buf._Out();
 }
 
 template <output_iterator<const wchar_t&> _OutputIt, class... _Types>
 _OutputIt format_to(_OutputIt _Out, const locale& _Loc, const wstring_view _Fmt, const _Types&... _Args) {
-    using _Context = basic_format_context<_OutputIt, wchar_t>;
-    return _STD vformat_to(_STD move(_Out), _Loc, _Fmt, _STD make_format_args<_Context>(_Args...));
+    _Fmt_iterator_buffer<_OutputIt, wchar_t> _Buf(_STD move(_Out));
+    _STD vformat_to(_Fmt_wit{_Buf}, _Loc, _Fmt, _STD make_wformat_args(_Args...));
+    return _Buf._Out();
 }
 
 _NODISCARD inline string vformat(const string_view _Fmt, const format_args _Args) {
     string _Str;
     _Str.reserve(_Fmt.size() + _Args._Estimate_required_capacity());
-    _STD vformat_to(_STD back_inserter(_Str), _Fmt, _Args);
+    _Fmt_iterator_buffer<back_insert_iterator<string>, char> _Buf(back_insert_iterator{_Str});
+    _STD vformat_to(_Fmt_it{_Buf}, _Fmt, _Args);
     return _Str;
 }
 
 _NODISCARD inline wstring vformat(const wstring_view _Fmt, const wformat_args _Args) {
     wstring _Str;
     _Str.reserve(_Fmt.size() + _Args._Estimate_required_capacity());
-    _STD vformat_to(_STD back_inserter(_Str), _Fmt, _Args);
+    _Fmt_iterator_buffer<back_insert_iterator<wstring>, wchar_t> _Buf(back_insert_iterator{_Str});
+    _STD vformat_to(_Fmt_wit{_Buf}, _Fmt, _Args);
     return _Str;
 }
 
 _NODISCARD inline string vformat(const locale& _Loc, const string_view _Fmt, const format_args _Args) {
     string _Str;
     _Str.reserve(_Fmt.size() + _Args._Estimate_required_capacity());
-    _STD vformat_to(_STD back_inserter(_Str), _Loc, _Fmt, _Args);
+    _Fmt_iterator_buffer<back_insert_iterator<string>, char> _Buf(back_insert_iterator{_Str});
+    _STD vformat_to(_Fmt_it{_Buf}, _Loc, _Fmt, _Args);
     return _Str;
 }
 
 _NODISCARD inline wstring vformat(const locale& _Loc, const wstring_view _Fmt, const wformat_args _Args) {
     wstring _Str;
     _Str.reserve(_Fmt.size() + _Args._Estimate_required_capacity());
-    _STD vformat_to(_STD back_inserter(_Str), _Loc, _Fmt, _Args);
+    _Fmt_iterator_buffer<back_insert_iterator<wstring>, wchar_t> _Buf(back_insert_iterator{_Str});
+    _STD vformat_to(_Fmt_wit{_Buf}, _Loc, _Fmt, _Args);
     return _Str;
 }
 
@@ -2759,35 +2977,6 @@ _NODISCARD wstring format(const locale& _Loc, const wstring_view _Fmt, const _Ty
     return _STD vformat(_Loc, _Fmt, _STD make_wformat_args(_Args...));
 }
 
-template <class _OutputIt, class _CharT>
-struct _Format_to_n_iterator {
-    _OutputIt _Out;
-    iter_difference_t<_OutputIt> _Max;
-    iter_difference_t<_OutputIt> _Count = 0;
-
-    using difference_type = iter_difference_t<_OutputIt>;
-
-    _Format_to_n_iterator& operator=(_CharT _Ch) {
-        if (_Count < _Max) {
-            *_Out++ = _Ch;
-        }
-        ++_Count;
-        return *this;
-    }
-
-    _NODISCARD _Format_to_n_iterator& operator*() {
-        return *this;
-    }
-
-    _Format_to_n_iterator& operator++() {
-        return *this;
-    }
-
-    _Format_to_n_iterator& operator++(int) {
-        return *this;
-    }
-};
-
 template <class _OutputIt>
 struct format_to_n_result {
     _OutputIt out;
@@ -2797,97 +2986,61 @@ struct format_to_n_result {
 template <output_iterator<const char&> _OutputIt, class... _Types>
 format_to_n_result<_OutputIt> format_to_n(
     _OutputIt _Out, const iter_difference_t<_OutputIt> _Max, const string_view _Fmt, const _Types&... _Args) {
-    _Format_to_n_iterator<_OutputIt, char> _It{._Out = _STD move(_Out), ._Max = _Max};
-
-    using _Context  = basic_format_context<decltype(_It), char>;
-    auto _Arg_store = _STD make_format_args<_Context>(_Args...);
-    _It             = _STD vformat_to(_STD move(_It), _Fmt, _STD move(_Arg_store));
-    return {.out = _STD move(_It._Out), .size = _It._Count};
+    _Fmt_iterator_buffer<_OutputIt, char, _Fmt_fixed_buffer_traits> _Buf(_STD move(_Out), _Max);
+    _STD vformat_to(_Fmt_it{_Buf}, _Fmt, _STD make_format_args(_Args...));
+    return {.out = _Buf._Out(), .size = _Buf._Count()};
 }
 
 template <output_iterator<const wchar_t&> _OutputIt, class... _Types>
 format_to_n_result<_OutputIt> format_to_n(
     _OutputIt _Out, const iter_difference_t<_OutputIt> _Max, const wstring_view _Fmt, const _Types&... _Args) {
-    _Format_to_n_iterator<_OutputIt, wchar_t> _It{._Out = _STD move(_Out), ._Max = _Max};
-
-    using _Context  = basic_format_context<decltype(_It), wchar_t>;
-    auto _Arg_store = _STD make_format_args<_Context>(_Args...);
-    _It             = _STD vformat_to(_STD move(_It), _Fmt, _STD move(_Arg_store));
-    return {.out = _STD move(_It._Out), .size = _It._Count};
+    _Fmt_iterator_buffer<_OutputIt, wchar_t, _Fmt_fixed_buffer_traits> _Buf(_STD move(_Out), _Max);
+    _STD vformat_to(_Fmt_wit{_Buf}, _Fmt, _STD make_wformat_args(_Args...));
+    return {.out = _Buf._Out(), .size = _Buf._Count()};
 }
 
 template <output_iterator<const char&> _OutputIt, class... _Types>
 format_to_n_result<_OutputIt> format_to_n(_OutputIt _Out, const iter_difference_t<_OutputIt> _Max, const locale& _Loc,
     const string_view _Fmt, const _Types&... _Args) {
-    _Format_to_n_iterator<_OutputIt, char> _It{._Out = _STD move(_Out), ._Max = _Max};
-
-    using _Context  = basic_format_context<decltype(_It), char>;
-    auto _Arg_store = _STD make_format_args<_Context>(_Args...);
-    _It             = _STD vformat_to(_STD move(_It), _Loc, _Fmt, _STD move(_Arg_store));
-    return {.out = _STD move(_It._Out), .size = _It._Count};
+    _Fmt_iterator_buffer<_OutputIt, char, _Fmt_fixed_buffer_traits> _Buf(_STD move(_Out), _Max);
+    _STD vformat_to(_Fmt_it{_Buf}, _Loc, _Fmt, _STD make_format_args(_Args...));
+    return {.out = _Buf._Out(), .size = _Buf._Count()};
 }
 
 template <output_iterator<const wchar_t&> _OutputIt, class... _Types>
 format_to_n_result<_OutputIt> format_to_n(_OutputIt _Out, const iter_difference_t<_OutputIt> _Max, const locale& _Loc,
     const wstring_view _Fmt, const _Types&... _Args) {
-    _Format_to_n_iterator<_OutputIt, wchar_t> _It{._Out = _STD move(_Out), ._Max = _Max};
-
-    using _Context  = basic_format_context<decltype(_It), wchar_t>;
-    auto _Arg_store = _STD make_format_args<_Context>(_Args...);
-    _It             = _STD vformat_to(_STD move(_It), _Loc, _Fmt, _STD move(_Arg_store));
-    return {.out = _STD move(_It._Out), .size = _It._Count};
+    _Fmt_iterator_buffer<_OutputIt, wchar_t, _Fmt_fixed_buffer_traits> _Buf(_STD move(_Out), _Max);
+    _STD vformat_to(_Fmt_wit{_Buf}, _Loc, _Fmt, _STD make_wformat_args(_Args...));
+    return {.out = _Buf._Out(), .size = _Buf._Count()};
 }
-
-struct _Counting_iterator {
-    size_t _Count = 0;
-
-    using difference_type = ptrdiff_t;
-
-    template <class _CharT>
-    _Counting_iterator& operator=(_CharT) {
-        ++_Count;
-        return *this;
-    }
-
-    _NODISCARD _Counting_iterator& operator*() {
-        return *this;
-    }
-
-    _Counting_iterator& operator++() {
-        return *this;
-    }
-
-    _Counting_iterator& operator++(int) {
-        return *this;
-    }
-};
 
 template <class... _Types>
 _NODISCARD size_t formatted_size(const string_view _Fmt, const _Types&... _Args) {
-    using _Context  = basic_format_context<_Counting_iterator, char>;
-    auto _Arg_store = _STD make_format_args<_Context>(_Args...);
-    return _STD vformat_to(_Counting_iterator{}, _Fmt, _STD move(_Arg_store))._Count;
+    _Fmt_counting_buffer<char> _Buf;
+    _STD vformat_to(_Fmt_it{_Buf}, _Fmt, _STD make_format_args(_Args...));
+    return _Buf._Count();
 }
 
 template <class... _Types>
 _NODISCARD size_t formatted_size(const wstring_view _Fmt, const _Types&... _Args) {
-    using _Context  = basic_format_context<_Counting_iterator, wchar_t>;
-    auto _Arg_store = _STD make_format_args<_Context>(_Args...);
-    return _STD vformat_to(_Counting_iterator{}, _Fmt, _STD move(_Arg_store))._Count;
+    _Fmt_counting_buffer<wchar_t> _Buf;
+    _STD vformat_to(_Fmt_wit{_Buf}, _Fmt, _STD make_wformat_args(_Args...));
+    return _Buf._Count();
 }
 
 template <class... _Types>
 _NODISCARD size_t formatted_size(const locale& _Loc, const string_view _Fmt, const _Types&... _Args) {
-    using _Context  = basic_format_context<_Counting_iterator, char>;
-    auto _Arg_store = _STD make_format_args<_Context>(_Args...);
-    return _STD vformat_to(_Counting_iterator{}, _Loc, _Fmt, _STD move(_Arg_store))._Count;
+    _Fmt_counting_buffer<char> _Buf;
+    _STD vformat_to(_Fmt_it{_Buf}, _Loc, _Fmt, _STD make_format_args(_Args...));
+    return _Buf._Count();
 }
 
 template <class... _Types>
 _NODISCARD size_t formatted_size(const locale& _Loc, const wstring_view _Fmt, const _Types&... _Args) {
-    using _Context  = basic_format_context<_Counting_iterator, wchar_t>;
-    auto _Arg_store = _STD make_format_args<_Context>(_Args...);
-    return _STD vformat_to(_Counting_iterator{}, _Loc, _Fmt, _STD move(_Arg_store))._Count;
+    _Fmt_counting_buffer<wchar_t> _Buf;
+    _STD vformat_to(_Fmt_wit{_Buf}, _Loc, _Fmt, _STD make_wformat_args(_Args...));
+    return _Buf._Count();
 }
 
 _STD_END
