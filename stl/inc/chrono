@@ -6023,6 +6023,10 @@ namespace chrono {
                             "The ISO week-based year for a year_month of January or December is ambiguous."));
                     }
 
+                    if (!_Val.ok()) {
+                        _THROW(format_error("The ISO week-based year for an out-of-bounds year_month is ambiguous."));
+                    }
+
                     const char _Gregorian_type = _Spec._Type == 'g' ? 'y' : 'Y';
                     _Os << _STD put_time(&_Time, _Fmt_string({._Type = _Gregorian_type}).data());
                     return true;

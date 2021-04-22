@@ -546,12 +546,18 @@ void test_year_month_formatter() {
     assert(format(STR("{:%Y %B}"), 2000y / July) == STR("2000 July"));
     throw_helper(STR("{:%d}"), 2000y / July);
 
+    throw_helper(STR("{:%g}"), 2005y / month{0});
+    throw_helper(STR("{:%G}"), 2005y / month{0});
     throw_helper(STR("{:%g}"), 2005y / January);
     throw_helper(STR("{:%G}"), 2005y / January);
     assert(format(STR("{:%g %G}"), 2005y / February) == STR("05 2005"));
     assert(format(STR("{:%g %G}"), 2005y / November) == STR("05 2005"));
     throw_helper(STR("{:%g}"), 2005y / December);
     throw_helper(STR("{:%G}"), 2005y / December);
+    throw_helper(STR("{:%g}"), 2005y / month{13});
+    throw_helper(STR("{:%G}"), 2005y / month{13});
+    throw_helper(STR("{:%g}"), year{-32768} / November);
+    throw_helper(STR("{:%G}"), year{-32768} / November);
 }
 
 template <typename CharT>
