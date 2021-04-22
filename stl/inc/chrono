@@ -5830,15 +5830,7 @@ namespace chrono {
                 }
             }
 
-            const auto& _List = _Specs._Chrono_specs_list;
-
-            // [time.format]/6
-            if (_List.empty()) {
-                _No_chrono_specs = true;
-                return _Res_iter;
-            }
-
-            for (const auto& _Spec : _List) {
+            for (const auto& _Spec : _Specs._Chrono_specs_list) {
                 if (_Spec._Type != '\0' && !_Is_valid_type<_Ty>(_Spec._Type)) {
                     _THROW(format_error("Invalid type."));
                 }
@@ -5940,8 +5932,8 @@ namespace chrono {
         _NODISCARD auto _Write(_FormatContext& _FormatCtx, const _Ty& _Val, const tm& _Time) {
             basic_ostringstream<_CharT> _Stream;
 
-            if (_No_chrono_specs) {
-                _Stream << _Val;
+            if (_Specs._Chrono_specs_list.empty()) {
+                _Stream << _Val; // N4885 [time.format]/6
             } else {
                 _Stream.imbue(_FormatCtx.locale());
                 if constexpr (_Is_specialization_v<_Ty, hh_mm_ss>) {
@@ -6303,7 +6295,6 @@ namespace chrono {
         }
 
         _Chrono_format_specs<_CharT> _Specs{};
-        bool _No_chrono_specs = false;
         basic_string_view<_CharT> _Time_zone_abbreviation{};
     };
 } // namespace chrono
