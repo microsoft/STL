@@ -36,7 +36,7 @@ bool test_parse_align() {
         // \x343E (which is from CJK unified ideographs extension A) and similar characters to parse as
         // an alignment specifier.
         auto s4 = L"*\x343E"sv;
-        test_parse_helper(parse_align_fn, s4, false, view_typ::npos, {.expected_fill = L"*"sv});
+        test_parse_helper(parse_align_fn, s4, false, 0, {.expected_fill = L"*"sv});
 
         // test multi-code-unit fill characters
         {
@@ -47,22 +47,6 @@ bool test_parse_align() {
             test_parse_helper(parse_align_fn, L"\U0001F3C8^X"sv, false, 3,
                 {.expected_alignment = _Fmt_align::_Center, .expected_fill = L"\U0001F3C8"sv});
         }
-    } else {
-        // test multibyte fill characters
-#ifndef MSVC_INTERNAL_TESTING // TRANSITION, the Windows version on Contest VMs doesn't always understand ".UTF-8"
-        {
-            assert(setlocale(LC_ALL, ".UTF-8") != nullptr);
-            // "\xf0\x9f\x8f\x88" is U+1F3C8 AMERICAN FOOTBALL
-            test_parse_helper(parse_align_fn, "\xf0\x9f\x8f\x88<X"sv, false, 5,
-                {.expected_alignment = _Fmt_align::_Left, .expected_fill = "\xf0\x9f\x8f\x88"sv});
-            test_parse_helper(parse_align_fn, "\xf0\x9f\x8f\x88>X"sv, false, 5,
-                {.expected_alignment = _Fmt_align::_Right, .expected_fill = "\xf0\x9f\x8f\x88"sv});
-            test_parse_helper(parse_align_fn, "\xf0\x9f\x8f\x88^X"sv, false, 5,
-                {.expected_alignment = _Fmt_align::_Center, .expected_fill = "\xf0\x9f\x8f\x88"sv});
-        }
-#endif // MSVC_INTERNAL_TESTING
-
-        assert(setlocale(LC_ALL, "C") != nullptr);
     }
 
     return true;

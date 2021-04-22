@@ -117,9 +117,10 @@ void test_parse_helper(const CharT* (*func)(const CharT*, const CharT*, callback
     callback_type&& callbacks                                               = {}) {
     try {
         auto end = func(view.data(), view.data() + view.size(), std::move(callbacks));
-        if (expected_end_position != std::basic_string_view<CharT>::npos) {
-            assert(end == view.data() + expected_end_position);
+        if (expected_end_position == std::basic_string_view<CharT>::npos) {
+            expected_end_position = view.size();
         }
+        assert(end == view.data() + expected_end_position);
         assert(!err_expected);
     } catch (const std::format_error&) {
         assert(err_expected);
