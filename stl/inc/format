@@ -1566,6 +1566,24 @@ public:
         }
     }
 
+    _NODISCARD size_t _Estimate_required_capacity() const noexcept {
+        using _CharT        = typename _Context::char_type;
+        size_t _Result      = 0;
+        const auto _Visitor = [&_Result]<class _ArgTy>(const _ArgTy _Arg) noexcept {
+            if constexpr (is_same_v<_ArgTy, basic_string_view<_CharT>>) {
+                _Result += _Arg.size();
+            } else if constexpr (is_same_v<_ArgTy, const _CharT*>) {
+                _Result += 32; // estimate for length of null-terminated strings
+            } else {
+                _Result += 8; // estimate for length of all other arguments
+            }
+        };
+        for (size_t _Idx = 0; _Idx < _Num_args; ++_Idx) {
+            _STD visit_format_arg(_Visitor, get(_Idx));
+        }
+        return _Result;
+    }
+
 private:
     size_t _Num_args              = 0;
     const unsigned char* _Storage = nullptr;
@@ -2672,24 +2690,28 @@ _OutputIt format_to(_OutputIt _Out, const locale& _Loc, const wstring_view _Fmt,
 
 _NODISCARD inline string vformat(const string_view _Fmt, const format_args _Args) {
     string _Str;
+    _Str.reserve(_Fmt.size() + _Args._Estimate_required_capacity());
     _STD vformat_to(_STD back_inserter(_Str), _Fmt, _Args);
     return _Str;
 }
 
 _NODISCARD inline wstring vformat(const wstring_view _Fmt, const wformat_args _Args) {
     wstring _Str;
+    _Str.reserve(_Fmt.size() + _Args._Estimate_required_capacity());
     _STD vformat_to(_STD back_inserter(_Str), _Fmt, _Args);
     return _Str;
 }
 
 _NODISCARD inline string vformat(const locale& _Loc, const string_view _Fmt, const format_args _Args) {
     string _Str;
+    _Str.reserve(_Fmt.size() + _Args._Estimate_required_capacity());
     _STD vformat_to(_STD back_inserter(_Str), _Loc, _Fmt, _Args);
     return _Str;
 }
 
 _NODISCARD inline wstring vformat(const locale& _Loc, const wstring_view _Fmt, const wformat_args _Args) {
     wstring _Str;
+    _Str.reserve(_Fmt.size() + _Args._Estimate_required_capacity());
     _STD vformat_to(_STD back_inserter(_Str), _Loc, _Fmt, _Args);
     return _Str;
 }
