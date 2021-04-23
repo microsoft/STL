@@ -560,7 +560,7 @@ int main() {
     STATIC_ASSERT((instantiation_test(), true));
     instantiation_test();
 
-    { 
+    {
         // Validate a non-view borrowed range
         constexpr span s{some_ints};
         STATIC_ASSERT(test_one(s, only_four_ints));
