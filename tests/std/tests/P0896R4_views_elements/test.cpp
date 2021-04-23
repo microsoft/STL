@@ -414,4 +414,13 @@ int main() {
         STATIC_ASSERT(test_one(s));
         test_one(s);
     }
+
+    { // Validate a view borrowed range
+
+        constexpr auto v = views::iota(0ull, ranges::size(expected_keys)) | std::views::transform([](auto i) {
+            return std::make_pair(expected_keys[i], expected_values[i]);
+        });
+        STATIC_ASSERT(test_one(v));
+        test_one(v);
+    }
 }
