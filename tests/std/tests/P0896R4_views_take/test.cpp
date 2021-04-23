@@ -559,4 +559,17 @@ int main() {
 
     STATIC_ASSERT((instantiation_test(), true));
     instantiation_test();
+
+    { 
+        // Validate a non-view borrowed range
+        constexpr span s{some_ints};
+        STATIC_ASSERT(test_one(s, only_four_ints));
+        test_one(s, only_four_ints);
+
+        // Validate a view borrowed range
+        constexpr auto v =
+            views::iota(0ull, ranges::size(some_ints)) | views::transform([](auto i) { return some_ints[i]; });
+        STATIC_ASSERT(test_one(v, only_four_ints));
+        test_one(v, only_four_ints);
+    }
 }
