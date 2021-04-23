@@ -325,6 +325,12 @@ STATIC_ASSERT(__cpp_lib_char8_t == 201907L);
 
 #ifndef __cpp_lib_chrono
 #error __cpp_lib_chrono is not defined
+#elif _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if __cpp_lib_chrono != 201907L
+#error __cpp_lib_chrono is not 201907L
+#else
+STATIC_ASSERT(__cpp_lib_chrono == 201907L);
+#endif
 #elif _HAS_CXX17
 #if __cpp_lib_chrono != 201611L
 #error __cpp_lib_chrono is not 201611L

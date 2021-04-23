@@ -11,7 +11,6 @@
 #include <ctime>
 #include <limits>
 #include <ratio>
-#include <sstream>
 #include <utility>
 #include <xtimec.h>
 
@@ -25,6 +24,8 @@
 #include <istream>
 #include <memory>
 #include <optional>
+#include <sstream>
+#include <string>
 #include <vector>
 #include <xloctime>
 #include <xthreads.h>
@@ -32,6 +33,7 @@
 #ifdef __cpp_lib_concepts
 #include <concepts>
 #include <format>
+#include <iomanip>
 #endif // defined(__cpp_lib_concepts)
 #endif // _HAS_CXX20
 
@@ -772,6 +774,19 @@ namespace chrono {
         return _Rnext;
     }
 
+    template <class _Period, class _CharT, class _Traits>
+    void _Write_unit_suffix(basic_ostream<_CharT, _Traits>& _Os) {
+        constexpr auto _Suffix = _Get_literal_unit_suffix<_CharT, _Period>();
+        if constexpr (_Suffix == nullptr) {
+            _CharT _Buffer[2 * (numeric_limits<intmax_t>::digits10 + 1) + 5] = {}; // 2 numbers + "[/]s\0"
+            const _CharT* const _Begin =
+                _Get_general_unit_suffix<_CharT>(_STD end(_Buffer), _Period::num, _Period::den);
+            _Os << _Begin;
+        } else {
+            _Os << _Suffix;
+        }
+    }
+
     template <class _CharT, class _Traits, class _Rep, class _Period>
     basic_ostream<_CharT, _Traits>& operator<<(
         basic_ostream<_CharT, _Traits>& _Os, const duration<_Rep, _Period>& _Dur) {
@@ -780,16 +795,7 @@ namespace chrono {
         _Sstr.imbue(_Os.getloc());
         _Sstr.precision(_Os.precision());
         _Sstr << _Dur.count();
-
-        constexpr auto _Suffix = _Get_literal_unit_suffix<_CharT, _Period>();
-        if constexpr (_Suffix == nullptr) {
-            _CharT _Buffer[2 * (numeric_limits<intmax_t>::digits10 + 1) + 5] = {}; // 2 numbers + "[/]s\0"
-            const _CharT* const _Begin =
-                _Get_general_unit_suffix<_CharT>(_STD end(_Buffer), _Period::num, _Period::den);
-            _Sstr << _Begin;
-        } else {
-            _Sstr << _Suffix;
-        }
+        _Write_unit_suffix<_Period>(_Sstr);
 
         return _Os << _Sstr.str();
     }
@@ -1427,6 +1433,18 @@ namespace chrono {
             }
 
             return _Day >= _CHRONO day{1} && _Day <= _Last_day(_Year, _Month);
+        }
+
+        _NODISCARD constexpr int _Calculate_weekday() const noexcept {
+            const int _Day_int   = static_cast<int>(static_cast<unsigned int>(_Day));
+            const int _Month_int = static_cast<int>(static_cast<unsigned int>(_Month));
+
+            const int _Era_year = static_cast<int>(_Year) - (_Month_int <= 2);
+            const int _Era      = (_Era_year >= 0 ? _Era_year : _Era_year - 399) / 400;
+            const int _Yoe      = _Era_year - _Era * 400;
+            const int _Yday_era = ((979 * (_Month_int + (_Month_int > 2 ? -3 : 9)) + 19) >> 5) + _Day_int - 1;
+            const int _Doe      = ((1461 * _Yoe) >> 2) - _Yoe / 100 + _Yday_era;
+            return (_Doe + 3) % 7; // the era began on a Wednesday
         }
 
     private:
@@ -2252,16 +2270,38 @@ namespace chrono {
     class nonexistent_local_time : public runtime_error {
     public:
         template <class _Duration>
-        nonexistent_local_time(const local_time<_Duration>&, const local_info&)
-            : runtime_error("TRANSITION: work in progress") {}
+        nonexistent_local_time(const local_time<_Duration>& _Tp, const local_info& _Info)
+            : runtime_error(_Make_string(_Tp, _Info)) {}
+
+    private:
+#ifdef __cpp_lib_concepts
+        template <class _Duration>
+        _NODISCARD static string _Make_string(const local_time<_Duration>& _Tp, const local_info& _Info);
+#else // ^^^ no workaround / workaround vvv
+        template <class _Duration>
+        _NODISCARD static string _Make_string(const local_time<_Duration>&, const local_info&) {
+            return "nonexistent_local_time";
+        }
+#endif // ^^^ workaround ^^^
     };
 
     // CLASS ambiguous_local_time
     class ambiguous_local_time : public runtime_error {
     public:
         template <class _Duration>
-        ambiguous_local_time(const local_time<_Duration>&, const local_info&)
-            : runtime_error("TRANSITION: work in progress") {}
+        ambiguous_local_time(const local_time<_Duration>& _Tp, const local_info& _Info)
+            : runtime_error(_Make_string(_Tp, _Info)) {}
+
+    private:
+#ifdef __cpp_lib_concepts
+        template <class _Duration>
+        _NODISCARD static string _Make_string(const local_time<_Duration>& _Tp, const local_info& _Info);
+#else // ^^^ no workaround / workaround vvv
+        template <class _Duration>
+        _NODISCARD static string _Make_string(const local_time<_Duration>&, const local_info&) {
+            return "ambiguous_local_time";
+        }
+#endif // ^^^ workaround ^^^
     };
 
     // [time.zone.timezone]
@@ -3166,7 +3206,7 @@ namespace chrono {
 #ifdef __cpp_lib_concepts
             const auto _Leap_cmp = _Utc_leap_second <=> _Time_floor;
 #else // ^^^ __cpp_lib_concepts / TRANSITION, GH-395 workaround vvv
-            const auto _Leap_cmp = _Utc_leap_second > _Time_floor  ? strong_ordering::greater
+            const auto _Leap_cmp = _Utc_leap_second > _Time_floor ? strong_ordering::greater
                                  : _Utc_leap_second == _Time_floor ? strong_ordering::equal
                                                                    : strong_ordering::less;
 #endif // ^^^ workaround
@@ -5177,184 +5217,1309 @@ namespace chrono {
         return _CHRONO from_stream(_Is, _Tpi._Fmt.c_str(), _Tpi._Tp, _Tpi._Abbrev, _Tpi._Offset);
     }
 
-#ifdef __cpp_lib_concepts
-    // [time.format]
-
-    // clang-format off
-    template <class _Ty, class _CharT>
-    concept _Chrono_parse_spec_callbacks = _Parse_align_callbacks<_Ty, _CharT>
-                                           && _Parse_width_callbacks<_Ty, _CharT>
-                                           && _Parse_precision_callbacks<_Ty, _CharT>
-                                           && _Width_adapter_callbacks<_Ty, _CharT>
-                                           && _Precision_adapter_callbacks<_Ty, _CharT>
-                                           && requires(_Ty _At, basic_string_view<_CharT> _Sv, _Fmt_align _Aln) {
-        { _At._On_conversion_spec(_CharT{}, _CharT{}) } -> same_as<void>;
-        { _At._On_lit_char(_CharT{}) } -> same_as<void>;
-    };
-    // clang-format on
-
-    template <class _CharT>
-    struct _Chrono_specs {
-        _CharT _Lit_char = _CharT{0}; // any character other than '{', '}', or '%'
-        char _Modifier   = '\0'; // either 'E' or 'O'
-        char _Type       = '\0';
-    };
-
-    template <class _CharT>
-    struct _Chrono_format_specs {
-        int _Width                   = 0;
-        int _Precision               = -1;
-        int _Dynamic_width_index     = -1;
-        int _Dynamic_precision_index = -1;
-        _Fmt_align _Alignment        = _Fmt_align::_None;
-        uint8_t _Fill_length         = 1;
-        // At most one codepoint (so one char32_t or four utf-8 char8_t)
-        _CharT _Fill[4 / sizeof(_CharT)] = {_CharT{' '}};
-        // recursive definition in grammar, so could have any number of these with literal chars
-        vector<_Chrono_specs<_CharT>> _Chrono_specs_list;
-    };
-
-    // Model of _Chrono_parse_spec_callbacks that fills a _Chrono_format_specs with the parsed data
-    template <class _CharT>
-    class _Chrono_specs_setter {
-    public:
-        constexpr explicit _Chrono_specs_setter(_Chrono_format_specs<_CharT>& _Specs_) : _Specs(_Specs_) {}
-
-        // same as _Specs_setter
-        constexpr void _On_align(_Fmt_align _Aln) {
-            _Specs._Alignment = _Aln;
-        }
-
-        // same as _Specs_setter
-        constexpr void _On_fill(basic_string_view<_CharT> _Sv) {
-            if (_Sv.size() > _STD size(_Specs._Fill)) {
-                _THROW(format_error("Invalid fill (too long)."));
-            }
-
-            const auto _Pos = _STD _Copy_unchecked(_Sv._Unchecked_begin(), _Sv._Unchecked_end(), _Specs._Fill);
-            _STD fill(_Pos, _STD end(_Specs._Fill), _CharT{});
-            _Specs._Fill_length = static_cast<uint8_t>(_Sv.size());
-        }
-
-        constexpr void _On_width(int _Width) {
-            _Specs._Width = _Width;
-        }
-
-        constexpr void _On_precision(int _Prec) {
-            _Specs._Precision = _Prec;
-        }
-
-        constexpr void _On_conversion_spec(_CharT _Modifier, _CharT _Type) {
-            // NOTE: same performance note from _Basic_format_specs also applies here
-            const char _Char_mod  = static_cast<char>(_Modifier);
-            const char _Char_type = static_cast<char>(_Type);
-            if (_Char_mod != '\0' && _Char_mod != 'E' && _Char_mod != 'O') {
-                _THROW(format_error("Invalid modifier specification."));
-            }
-
-            if (_Type < 0 || _Type > (numeric_limits<signed char>::max)()) {
-                _THROW(format_error("Invalid type specification."));
-            }
-
-            _Chrono_specs<_CharT> _Conv_spec{._Modifier = _Char_mod, ._Type = _Char_type};
-            _Specs._Chrono_specs_list.push_back(_Conv_spec);
-        }
-
-        constexpr void _On_lit_char(_CharT _Lit_ch) {
-            _Chrono_specs<_CharT> _Lit_char_spec{._Lit_char = _Lit_ch};
-            _Specs._Chrono_specs_list.push_back(_Lit_char_spec);
-        }
-
-    protected:
-        _Chrono_format_specs<_CharT>& _Specs;
-    };
-
-    template <class _CharT, _Chrono_parse_spec_callbacks<_CharT> _Callbacks_type>
-    _NODISCARD constexpr const _CharT* _Parse_conversion_specs(
-        const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
-        _STL_INTERNAL_CHECK(*_Begin == '%');
-        ++_Begin;
-        if (_Begin == _End || *_Begin == '}') {
-            _THROW(format_error("Invalid format string."));
-        }
-
-        _CharT _Mod = '\0';
-        _CharT _Ch  = *_Begin;
-
-        if (_Ch == 'E' || _Ch == 'O') { // includes modifier
-            _Mod = _Ch;
-            ++_Begin;
-            if (_Begin == _End || *_Begin == '}') {
-                _THROW(format_error("Invalid format string - missing type after modifier."));
-            }
-        }
-
-        _CharT _Type = *_Begin;
-        _Callbacks._On_conversion_spec(_Mod, _Type);
-
-        return ++_Begin;
-    }
-
-    template <class _CharT, _Chrono_parse_spec_callbacks<_CharT> _Callbacks_type>
-    _NODISCARD constexpr const _CharT* _Parse_chrono_format_specs(
-        const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
-        if (_Begin == _End || *_Begin == '}') {
-            return _Begin;
-        }
-
-        _Begin = _Parse_align(_Begin, _End, _Callbacks);
-        if (_Begin == _End) {
-            return _Begin;
-        }
-
-        _Begin = _Parse_width(_Begin, _End, _Callbacks);
-        if (_Begin == _End) {
-            return _Begin;
-        }
-
-        if (*_Begin == '.') {
-            _Begin = _Parse_precision(_Begin, _End, _Callbacks);
-            if (_Begin == _End) {
-                return _Begin;
-            }
-        }
-
-        // chrono-spec
-        while (_Begin != _End && *_Begin != '}') {
-            if (*_Begin == '%') { // conversion-spec
-                if (_Begin + 1 == _End) {
-                    _THROW(format_error("Invalid format string - missing type after %"));
-                }
-
-                const _CharT _Next_ch = *(_Begin + 1);
-                switch (_Next_ch) {
-                case 'n':
-                    _Callbacks._On_lit_char('\n');
-                    _Begin += 2;
-                    break;
-                case 't':
-                    _Callbacks._On_lit_char('\t');
-                    _Begin += 2;
-                    break;
-                case '%':
-                    _Callbacks._On_lit_char('%');
-                    _Begin += 2;
-                    break;
-                default: // some other type
-                    _Begin = _Parse_conversion_specs(_Begin, _End, _Callbacks);
-                    break;
-                }
-            } else { // literal-char
-                _Callbacks._On_lit_char(*_Begin);
-                ++_Begin;
-            }
-        }
-
-        return _Begin;
-    }
-#endif // __cpp_lib_concepts
 #endif // _HAS_CXX20
 } // namespace chrono
+
+#if _HAS_CXX20
+#ifdef __cpp_lib_concepts
+  // [time.format]
+
+template <class _CharT>
+_NODISCARD constexpr const _CharT* _Choose_literal(const char* const _Str, const wchar_t* const _WStr) noexcept {
+    if constexpr (is_same_v<_CharT, char>) {
+        return _Str;
+    } else {
+        return _WStr;
+    }
+}
+
+#define _STATICALLY_WIDEN(_CharT, _Literal) (_Choose_literal<_CharT>(_Literal, L##_Literal))
+
+
+// clang-format off
+template <class _Ty, class _CharT>
+concept _Chrono_parse_spec_callbacks = _Parse_align_callbacks<_Ty, _CharT>
+                                        && _Parse_width_callbacks<_Ty, _CharT>
+                                        && _Parse_precision_callbacks<_Ty, _CharT>
+                                        && _Width_adapter_callbacks<_Ty, _CharT>
+                                        && _Precision_adapter_callbacks<_Ty, _CharT>
+                                        && requires(_Ty _At, basic_string_view<_CharT> _Sv, _Fmt_align _Aln) {
+    { _At._On_conversion_spec(char{}, _CharT{}) } -> same_as<void>;
+    { _At._On_lit_char(_CharT{}) } -> same_as<void>;
+};
+// clang-format on
+
+// clang-format off
+template <class _Ty>
+concept _Has_ok = requires(_Ty _At) {
+    { _At.ok() } -> same_as<bool>;
+};
+// clang-format on
+
+// A chrono spec is either a type (with an optional modifier), OR a literal character, never both.
+template <class _CharT>
+struct _Chrono_spec {
+    _CharT _Lit_char = _CharT{'\0'}; // any character other than '{', '}', or '%'
+    char _Modifier   = '\0'; // either 'E' or 'O'
+    char _Type       = '\0';
+};
+
+template <class _CharT>
+struct _Chrono_format_specs {
+    int _Width                   = 0;
+    int _Precision               = -1;
+    int _Dynamic_width_index     = -1;
+    int _Dynamic_precision_index = -1;
+    _Fmt_align _Alignment        = _Fmt_align::_None;
+    uint8_t _Fill_length         = 1;
+    // At most one codepoint (so one char32_t or four utf-8 char8_t)
+    _CharT _Fill[4 / sizeof(_CharT)] = {_CharT{' '}};
+    // recursive definition in grammar, so could have any number of these
+    vector<_Chrono_spec<_CharT>> _Chrono_specs_list;
+};
+
+// Model of _Chrono_parse_spec_callbacks that fills a _Chrono_format_specs with the parsed data
+template <class _CharT, class _ParseContext>
+class _Chrono_specs_setter {
+public:
+    constexpr explicit _Chrono_specs_setter(_Chrono_format_specs<_CharT>& _Specs_, _ParseContext& _Parse_ctx_)
+        : _Specs(_Specs_), _Parse_ctx(_Parse_ctx_) {}
+
+    // same as _Specs_setter
+    constexpr void _On_align(_Fmt_align _Aln) {
+        _Specs._Alignment = _Aln;
+    }
+
+    // same as _Specs_setter
+    constexpr void _On_fill(basic_string_view<_CharT> _Sv) {
+        if (_Sv.size() > _STD size(_Specs._Fill)) {
+            _THROW(format_error("Invalid fill (too long)."));
+        }
+
+        const auto _Pos = _STD _Copy_unchecked(_Sv._Unchecked_begin(), _Sv._Unchecked_end(), _Specs._Fill);
+        _STD fill(_Pos, _STD end(_Specs._Fill), _CharT{});
+        _Specs._Fill_length = static_cast<uint8_t>(_Sv.size());
+    }
+
+    constexpr void _On_width(int _Width) {
+        _Specs._Width = _Width;
+    }
+
+    constexpr void _On_precision(int _Prec) {
+        _Specs._Precision = _Prec;
+    }
+
+    constexpr void _On_dynamic_width(const size_t _Arg_id) {
+        _Parse_ctx.check_arg_id(_Arg_id);
+        _Specs._Dynamic_width_index = _Verify_dynamic_arg_index_in_range(_Arg_id);
+    }
+
+    constexpr void _On_dynamic_width(_Auto_id_tag) {
+        _Specs._Dynamic_width_index = _Verify_dynamic_arg_index_in_range(_Parse_ctx.next_arg_id());
+    }
+
+    constexpr void _On_dynamic_precision(const size_t _Arg_id) {
+        _Parse_ctx.check_arg_id(_Arg_id);
+        _Specs._Dynamic_precision_index = _Verify_dynamic_arg_index_in_range(_Arg_id);
+    }
+
+    constexpr void _On_dynamic_precision(_Auto_id_tag) {
+        _Specs._Dynamic_precision_index = _Verify_dynamic_arg_index_in_range(_Parse_ctx.next_arg_id());
+    }
+
+    constexpr void _On_conversion_spec(char _Modifier, _CharT _Type) {
+        // NOTE: same performance note from _Basic_format_specs also applies here
+        if (_Modifier != '\0' && _Modifier != 'E' && _Modifier != 'O') {
+            _THROW(format_error("Invalid modifier specification."));
+        }
+
+        if (_Type < 0 || _Type > (numeric_limits<signed char>::max)()) {
+            _THROW(format_error("Invalid type specification."));
+        }
+
+        _Chrono_spec<_CharT> _Conv_spec{._Modifier = _Modifier, ._Type = static_cast<char>(_Type)};
+        _Specs._Chrono_specs_list.push_back(_Conv_spec);
+    }
+
+    constexpr void _On_lit_char(_CharT _Lit_ch) {
+        _Chrono_spec<_CharT> _Lit_char_spec{._Lit_char = _Lit_ch};
+        _Specs._Chrono_specs_list.push_back(_Lit_char_spec);
+    }
+
+private:
+    _Chrono_format_specs<_CharT>& _Specs;
+    _ParseContext& _Parse_ctx;
+
+    _NODISCARD static constexpr int _Verify_dynamic_arg_index_in_range(const size_t _Idx) {
+        if (_Idx > static_cast<size_t>((numeric_limits<int>::max)())) {
+            _THROW(format_error("Dynamic width or precision index too large."));
+        }
+
+        return static_cast<int>(_Idx);
+    }
+};
+
+// assumes that the required '%' at the beginning of a conversion-spec has already been consumed
+template <class _CharT, _Chrono_parse_spec_callbacks<_CharT> _Callbacks_type>
+_NODISCARD constexpr const _CharT* _Parse_conversion_specs(
+    const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
+    if (_Begin == _End || *_Begin == '}') {
+        _THROW(format_error("Invalid format string."));
+    }
+
+    char _Mod  = '\0';
+    _CharT _Ch = *_Begin;
+
+    if (_Ch == 'E' || _Ch == 'O') { // includes modifier
+        _Mod = static_cast<char>(_Ch);
+        ++_Begin;
+        if (_Begin == _End || *_Begin == '}') {
+            _THROW(format_error("Invalid format string - missing type after modifier."));
+        }
+    }
+
+    _CharT _Type = *_Begin;
+    _Callbacks._On_conversion_spec(_Mod, _Type);
+
+    return ++_Begin;
+}
+
+template <class _CharT, _Chrono_parse_spec_callbacks<_CharT> _Callbacks_type>
+_NODISCARD constexpr const _CharT* _Parse_chrono_format_specs(
+    const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
+    if (_Begin == _End || *_Begin == '}') {
+        return _Begin;
+    }
+
+    _Begin = _Parse_align(_Begin, _End, _Callbacks);
+    if (_Begin == _End) {
+        return _Begin;
+    }
+
+    _Begin = _Parse_width(_Begin, _End, _Callbacks);
+    if (_Begin == _End) {
+        return _Begin;
+    }
+
+    if (*_Begin == '.') {
+        _Begin = _Parse_precision(_Begin, _End, _Callbacks);
+        if (_Begin == _End) {
+            return _Begin;
+        }
+    }
+
+    if (*_Begin != '}' && *_Begin != '%') {
+        _THROW(format_error("Invalid format string - chrono-specs must begin with conversion-spec"));
+    }
+
+    // chrono-spec
+    while (_Begin != _End && *_Begin != '}') {
+        if (*_Begin == '%') { // conversion-spec
+            if (++_Begin == _End) {
+                _THROW(format_error("Invalid format string - missing type after %"));
+            }
+
+            switch (*_Begin) {
+            case 'n':
+                _Callbacks._On_lit_char('\n');
+                ++_Begin;
+                break;
+            case 't':
+                _Callbacks._On_lit_char('\t');
+                ++_Begin;
+                break;
+            case '%':
+                _Callbacks._On_lit_char('%');
+                ++_Begin;
+                break;
+            default: // some other type
+                _Begin = _Parse_conversion_specs(_Begin, _End, _Callbacks);
+                break;
+            }
+        } else { // literal-char
+            _Callbacks._On_lit_char(*_Begin);
+            ++_Begin;
+        }
+    }
+
+    return _Begin;
+}
+
+namespace chrono {
+    template <class _Duration>
+    struct _Local_time_format_t {
+        local_time<_Duration> _Time;
+        const string* _Abbrev      = nullptr;
+        const seconds* _Offset_sec = nullptr;
+    };
+
+    template <class _Duration>
+    _NODISCARD _Local_time_format_t<_Duration> local_time_format(const local_time<_Duration> _Time,
+        const string* const _Abbrev = nullptr, const seconds* const _Offset_sec = nullptr) {
+        return {_Time, _Abbrev, _Offset_sec};
+    }
+
+    // Replacement for %S, as put_time does not honor writing fractional seconds.
+    template <class _CharT, class _Traits, class _Ty>
+    void _Write_seconds(basic_ostream<_CharT, _Traits>&, const _Ty&) {
+        _STL_INTERNAL_CHECK(false);
+    }
+
+    template <unsigned int _Fractional_width, class _CharT, class _Traits, class _Precision>
+    void _Write_fractional_seconds(
+        basic_ostream<_CharT, _Traits>& _Os, const seconds& _Seconds, const _Precision& _Subseconds) {
+        _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{:02}"), _Seconds.count());
+        if constexpr (_Fractional_width > 0) {
+            _Os << _STD use_facet<numpunct<_CharT>>(_Os.getloc()).decimal_point();
+            if constexpr (treat_as_floating_point_v<typename _Precision::rep>) {
+                _Os << _STD format(
+                    _STATICALLY_WIDEN(_CharT, "{:0{}.0f}"), _STD floor(_Subseconds.count()), _Fractional_width);
+            } else {
+                _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{:0{}}"), _Subseconds.count(), _Fractional_width);
+            }
+        }
+    }
+
+    template <class _CharT, class _Traits, class _Duration>
+    void _Write_seconds(basic_ostream<_CharT, _Traits>& _Os, const hh_mm_ss<_Duration>& _Val) {
+        _Write_fractional_seconds<hh_mm_ss<_Duration>::fractional_width>(_Os, _Val.seconds(), _Val.subseconds());
+    }
+
+    template <class _CharT, class _Traits, class _Clock, class _Duration>
+    void _Write_seconds(basic_ostream<_CharT, _Traits>& _Os, const time_point<_Clock, _Duration>& _Val) {
+        if constexpr (is_same_v<_Clock, utc_clock>) {
+            const auto _Lsi = _CHRONO get_leap_second_info(_Val);
+            const auto _Dp =
+                _CHRONO floor<days>(_Val - _Lsi.elapsed) + _Lsi.elapsed - seconds{_Lsi.is_leap_second ? 1 : 0};
+            const hh_mm_ss _Hms{_Val - _Dp};
+            constexpr auto _Fractional_width = decltype(_Hms)::fractional_width;
+            if (_Lsi.is_leap_second) {
+                _Write_fractional_seconds<_Fractional_width>(_Os, _Hms.seconds() + seconds{60}, _Hms.subseconds());
+            } else {
+                _Write_fractional_seconds<_Fractional_width>(_Os, _Hms.seconds(), _Hms.subseconds());
+            }
+        } else {
+            const auto _Dp = _CHRONO floor<days>(_Val);
+            _Write_seconds(_Os, hh_mm_ss{_Val - _Dp});
+        }
+    }
+
+    template <class _CharT, class _Traits, class _Duration>
+    void _Write_seconds(basic_ostream<_CharT, _Traits>& _Os, const _Local_time_format_t<_Duration>& _Val) {
+        _Write_seconds(_Os, _Val._Time);
+    }
+
+    template <class _CharT, class _Traits, class _Rep, class _Period>
+    void _Write_seconds(basic_ostream<_CharT, _Traits>& _Os, const duration<_Rep, _Period>& _Val) {
+        const auto _Dp = _CHRONO duration_cast<days>(_Val);
+        _Write_seconds(_Os, hh_mm_ss{_Val - _Dp});
+    }
+
+    template <class _Ty>
+    _NODISCARD tm _Fill_tm(const _Ty& _Val) {
+        unsigned int _Day   = 0;
+        unsigned int _Month = 0;
+        int _Year           = 0;
+        int _Yearday        = 0;
+        int _Weekday        = 0;
+        int _Hours          = 0;
+        int _Minutes        = 0;
+        int _Seconds        = 0;
+
+        if constexpr (_Is_specialization_v<_Ty, duration>) {
+            const auto _Dp = _CHRONO duration_cast<days>(_Val);
+            return _Fill_tm(hh_mm_ss{_Val - _Dp});
+        } else if constexpr (_Is_specialization_v<_Ty, _Local_time_format_t>) {
+            return _Fill_tm(_Val._Time);
+        } else if constexpr (is_same_v<_Ty, day>) {
+            _Day = static_cast<unsigned int>(_Val);
+        } else if constexpr (is_same_v<_Ty, month>) {
+            _Month = static_cast<unsigned int>(_Val);
+        } else if constexpr (is_same_v<_Ty, year>) {
+            _Year = static_cast<int>(_Val);
+        } else if constexpr (is_same_v<_Ty, weekday>) {
+            _Weekday = static_cast<int>(_Val.c_encoding());
+        } else if constexpr (_Is_any_of_v<_Ty, weekday_indexed, weekday_last>) {
+            _Weekday = static_cast<int>(_Val.weekday().c_encoding());
+        } else if constexpr (is_same_v<_Ty, month_day>) {
+            _Day   = static_cast<unsigned int>(_Val.day());
+            _Month = static_cast<unsigned int>(_Val.month());
+            if (_Val.month() == January) {
+                _Yearday = static_cast<int>(_Day) - 1;
+            } else if (_Val.month() == February) {
+                _Yearday = 31 + static_cast<int>(_Day) - 1;
+            }
+        } else if constexpr (is_same_v<_Ty, month_day_last>) {
+            _Month = static_cast<unsigned int>(_Val.month());
+            _Day   = static_cast<unsigned int>(_Last_day_table[(_Month - 1) & 0xF]);
+            if (_Val.month() == January) {
+                _Yearday = 30;
+            }
+        } else if constexpr (is_same_v<_Ty, month_weekday>) {
+            _Month   = static_cast<unsigned int>(_Val.month());
+            _Weekday = static_cast<int>(_Val.weekday_indexed().weekday().c_encoding());
+        } else if constexpr (is_same_v<_Ty, month_weekday_last>) {
+            _Month   = static_cast<unsigned int>(_Val.month());
+            _Weekday = static_cast<int>(_Val.weekday_last().weekday().c_encoding());
+        } else if constexpr (is_same_v<_Ty, year_month>) {
+            _Month = static_cast<unsigned int>(_Val.month());
+            _Year  = static_cast<int>(_Val.year());
+        } else if constexpr (_Is_any_of_v<_Ty, year_month_day, year_month_day_last>) {
+            _Day   = static_cast<unsigned int>(_Val.day());
+            _Month = static_cast<unsigned int>(_Val.month());
+            _Year  = static_cast<int>(_Val.year());
+            if (_Val.ok()) {
+                const year_month_day& _Ymd = _Val;
+                _Weekday                   = _Ymd._Calculate_weekday();
+                _Yearday = (static_cast<sys_days>(_Val) - static_cast<sys_days>(_Val.year() / January / 1)).count();
+            }
+        } else if constexpr (_Is_any_of_v<_Ty, year_month_weekday, year_month_weekday_last>) {
+            auto _Tm    = _Fill_tm(year_month_day{_Val});
+            _Tm.tm_wday = static_cast<int>(_Val.weekday().c_encoding());
+            return _Tm;
+        } else if constexpr (_Is_specialization_v<_Ty, hh_mm_ss>) {
+            _Hours   = _Val.hours().count();
+            _Minutes = _Val.minutes().count();
+            _Seconds = static_cast<int>(_Val.seconds().count());
+        } else if constexpr (_Is_any_of_v<_Ty, sys_info, local_info>) {
+            return {}; // none of the valid conversion specifiers need tm fields
+        } else if constexpr (_Is_specialization_v<_Ty, time_point>) {
+            const auto _Dp = _CHRONO floor<days>(_Val);
+            const year_month_day _Ymd{_Dp};
+            const hh_mm_ss _Time{_Val - _Dp};
+            const auto _Hms = _Fill_tm(_Time);
+            auto _Tm        = _Fill_tm(_Ymd);
+            _Tm.tm_sec      = _Hms.tm_sec;
+            _Tm.tm_min      = _Hms.tm_min;
+            _Tm.tm_hour     = _Hms.tm_hour;
+            return _Tm;
+        }
+
+        tm _Time;
+        _Time.tm_sec  = _Seconds;
+        _Time.tm_min  = _Minutes;
+        _Time.tm_hour = _Hours;
+        _Time.tm_mday = static_cast<int>(_Day);
+        _Time.tm_mon  = static_cast<int>(_Month) - 1;
+        _Time.tm_year = _Year - 1900;
+        _Time.tm_yday = _Yearday;
+        _Time.tm_wday = _Weekday;
+        return _Time;
+    }
+
+    template <class _CharT, class _Traits>
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const day& _Val) {
+        return _Os << (_Val.ok() ? _STD format(_STATICALLY_WIDEN(_CharT, "{:%d}"), _Val)
+                                 : _STD format(_STATICALLY_WIDEN(_CharT, "{:%d} is not a valid day"), _Val));
+    }
+
+    template <class _CharT, class _Traits>
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const month& _Val) {
+        return _Os << (_Val.ok() ? _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:%b}"), _Val)
+                                 : _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{} is not a valid month"),
+                                     static_cast<unsigned int>(_Val)));
+    }
+
+    template <class _CharT, class _Traits>
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const year& _Val) {
+        return _Os << (_Val.ok() ? _STD format(_STATICALLY_WIDEN(_CharT, "{:%Y}"), _Val)
+                                 : _STD format(_STATICALLY_WIDEN(_CharT, "{:%Y} is not a valid year"), _Val));
+    }
+
+    template <class _CharT, class _Traits>
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const weekday& _Val) {
+        return _Os << (_Val.ok() ? _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:%a}"), _Val)
+                                 : _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{} is not a valid weekday"),
+                                     _Val.c_encoding()));
+    }
+
+    template <class _CharT, class _Traits>
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const weekday_indexed& _Val) {
+        const auto _Idx = _Val.index();
+        return _Os << (_Idx >= 1 && _Idx <= 5
+                           ? _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{}[{}]"), _Val.weekday(), _Idx)
+                           : _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{}[{} is not a valid index]"),
+                               _Val.weekday(), _Idx));
+    }
+
+    template <class _CharT, class _Traits>
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const weekday_last& _Val) {
+        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{}[last]"), _Val.weekday());
+    }
+
+    template <class _CharT, class _Traits>
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const month_day& _Val) {
+        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{}/{}"), _Val.month(), _Val.day());
+    }
+
+    template <class _CharT, class _Traits>
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const month_day_last& _Val) {
+        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{}/last"), _Val.month());
+    }
+
+    template <class _CharT, class _Traits>
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const month_weekday& _Val) {
+        return _Os << _STD format(
+                   _Os.getloc(), _STATICALLY_WIDEN(_CharT, "{}/{}"), _Val.month(), _Val.weekday_indexed());
+    }
+
+    template <class _CharT, class _Traits>
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const month_weekday_last& _Val) {
+        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{}/{}"), _Val.month(), _Val.weekday_last());
+    }
+
+    template <class _CharT, class _Traits>
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const year_month& _Val) {
+        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{}/{}"), _Val.year(), _Val.month());
+    }
+
+    template <class _CharT, class _Traits>
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const year_month_day& _Val) {
+        return _Os << (_Val.ok() ? _STD format(_STATICALLY_WIDEN(_CharT, "{:%F}"), _Val)
+                                 : _STD format(_STATICALLY_WIDEN(_CharT, "{:%F} is not a valid date"), _Val));
+    }
+
+    template <class _CharT, class _Traits>
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const year_month_day_last& _Val) {
+        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{}/{}"), _Val.year(), _Val.month_day_last());
+    }
+
+    template <class _CharT, class _Traits>
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const year_month_weekday& _Val) {
+        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{}/{}/{}"), _Val.year(), _Val.month(),
+                   _Val.weekday_indexed());
+    }
+
+    template <class _CharT, class _Traits>
+    basic_ostream<_CharT, _Traits>& operator<<(
+        basic_ostream<_CharT, _Traits>& _Os, const year_month_weekday_last& _Val) {
+        return _Os << _STD format(
+                   _Os.getloc(), _STATICALLY_WIDEN(_CharT, "{}/{}/{}"), _Val.year(), _Val.month(), _Val.weekday_last());
+    }
+
+    template <class _CharT, class _Traits, class _Duration>
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const hh_mm_ss<_Duration>& _Val) {
+        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:%T}"), _Val);
+    }
+
+#pragma warning(push)
+#pragma warning(disable : 4365) // 'argument': conversion from 'char' to 'const wchar_t', signed/unsigned mismatch
+    template <class _CharT>
+    _NODISCARD decltype(auto) _Widen_string(const string& _Str) {
+        if constexpr (is_same_v<_CharT, char>) {
+            return _Str;
+        } else {
+            return wstring{_Str.begin(), _Str.end()}; // TRANSITION, should probably use ctype::widen
+        }
+    }
+#pragma warning(pop)
+
+    template <class _CharT, class _Traits>
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const sys_info& _Val) {
+        return _Os << _STD format(_Os.getloc(),
+                   _STATICALLY_WIDEN(_CharT, "begin: {}, end: {}, offset: {}, save: {}, abbrev: {}"), //
+                   _Val.begin, _Val.end, _Val.offset, _Val.save, _Widen_string<_CharT>(_Val.abbrev));
+    }
+
+    template <class _CharT, class _Traits>
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const local_info& _Val) {
+        switch (_Val.result) {
+        case local_info::unique:
+            return _Os << _STD format(_Os.getloc(), //
+                       _STATICALLY_WIDEN(_CharT, "result: unique, first: ({})"), //
+                       _Val.first);
+        case local_info::nonexistent:
+            return _Os << _STD format(_Os.getloc(),
+                       _STATICALLY_WIDEN(_CharT, "result: nonexistent, first: ({}), second: ({})"), //
+                       _Val.first, _Val.second);
+        case local_info::ambiguous:
+            return _Os << _STD format(_Os.getloc(),
+                       _STATICALLY_WIDEN(_CharT, "result: ambiguous, first: ({}), second: ({})"), //
+                       _Val.first, _Val.second);
+        default:
+            return _Os << _STD format(_Os.getloc(), //
+                       _STATICALLY_WIDEN(_CharT, "result: {}, first: ({}), second: ({})"), //
+                       _Val.result, _Val.first, _Val.second);
+        }
+    }
+
+    template <class _CharT, class _Traits, class _Duration>
+    // clang-format off
+        requires (!treat_as_floating_point_v<typename _Duration::rep> && _Duration{1} < days{1})
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const sys_time<_Duration>& _Val) {
+        // clang-format on
+        const auto _Dp = _CHRONO floor<days>(_Val);
+        return _Os << _STD format(
+                   _Os.getloc(), _STATICALLY_WIDEN(_CharT, "{} {}"), year_month_day{_Dp}, hh_mm_ss{_Val - _Dp});
+    }
+
+    template <class _CharT, class _Traits>
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const sys_days& _Val) {
+        return _Os << year_month_day{_Val};
+    }
+
+    template <class _CharT, class _Traits, class _Duration>
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const utc_time<_Duration>& _Val) {
+        return _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{:%F %T}"), _Val);
+    }
+
+    template <class _CharT, class _Traits, class _Duration>
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const tai_time<_Duration>& _Val) {
+        return _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{:%F %T}"), _Val);
+    }
+
+    template <class _CharT, class _Traits, class _Duration>
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const gps_time<_Duration>& _Val) {
+        return _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{:%F %T}"), _Val);
+    }
+
+    template <class _CharT, class _Traits, class _Duration>
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const file_time<_Duration>& _Val) {
+        return _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{:%F %T}"), _Val);
+    }
+
+    template <class _CharT, class _Traits, class _Duration>
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const local_time<_Duration>& _Val) {
+        return _Os << sys_time<_Duration>{_Val.time_since_epoch()};
+    }
+
+    template <class _CharT, class _Traits, class _Duration>
+    basic_ostream<_CharT, _Traits>& operator<<(
+        basic_ostream<_CharT, _Traits>& _Os, const _Local_time_format_t<_Duration>& _Val) {
+        // Doesn't appear in the Standard, but allowed by N4885 [global.functions]/2.
+        // Implements N4885 [time.zone.zonedtime.nonmembers]/2 for zoned_time.
+        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:%F %T %Z}"), _Val);
+    }
+
+    template <class _CharT, class _Traits, class _Duration, class _TimeZonePtr>
+    basic_ostream<_CharT, _Traits>& operator<<(
+        basic_ostream<_CharT, _Traits>& _Os, const zoned_time<_Duration, _TimeZonePtr>& _Val) {
+        const auto _Info = _Val.get_info();
+        return _Os << _Local_time_format_t<_Duration>{_Val.get_local_time(), &_Info.abbrev};
+    }
+
+    template <class _CharT>
+    struct _Chrono_formatter {
+        _Chrono_formatter() = default;
+
+        explicit _Chrono_formatter(const basic_string_view<_CharT> _Time_zone_abbreviation_)
+            : _Time_zone_abbreviation{_Time_zone_abbreviation_} {}
+
+        template <class _Ty>
+        _NODISCARD auto _Parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
+            _Chrono_specs_setter<_CharT, basic_format_parse_context<_CharT>> _Callback{_Specs, _Parse_ctx};
+            const auto _It =
+                _Parse_chrono_format_specs(_Parse_ctx._Unchecked_begin(), _Parse_ctx._Unchecked_end(), _Callback);
+            const auto _Res_iter = _Parse_ctx.begin() + (_It - _Parse_ctx._Unchecked_begin());
+
+            if (_It != _Parse_ctx._Unchecked_end() && *_It != '}') {
+                _THROW(format_error("Missing '}' in format string."));
+            }
+
+            if constexpr (_Is_specialization_v<_Ty, duration>) {
+                if constexpr (!treat_as_floating_point_v<typename _Ty::rep>) {
+                    if (_Specs._Precision != -1) {
+                        _THROW(format_error("Precision specification invalid for chrono::duration type with "
+                                            "integral representation type, see N4885 [time.format]/1."));
+                    }
+                }
+            } else {
+                if (_Specs._Precision != -1) {
+                    _THROW(format_error("Precision specification invalid for non-chrono::duration type, "
+                                        "see N4885 [time.format]/1."));
+                }
+            }
+
+            for (const auto& _Spec : _Specs._Chrono_specs_list) {
+                if (_Spec._Type != '\0' && !_Is_valid_type<_Ty>(_Spec._Type)) {
+                    _THROW(format_error("Invalid type."));
+                }
+                _Check_modifier(_Spec._Type, _Spec._Modifier);
+            }
+
+            return _Res_iter;
+        }
+
+        static void _Check_modifier(const char _Type, const char _Modifier) {
+            if (_Modifier == '\0') {
+                return;
+            }
+
+            enum _Allowed_bit : uint8_t { _E_mod = 1, _O_mod = 2, _EO_mod = _E_mod | _O_mod };
+
+            struct _Table_entry {
+                char _Type;
+                _Allowed_bit _Allowed;
+            };
+
+            static constexpr _Table_entry _Table[] = {
+                {'c', _E_mod},
+                {'C', _E_mod},
+                {'d', _O_mod},
+                {'e', _O_mod},
+                {'H', _O_mod},
+                {'I', _O_mod},
+                {'m', _O_mod},
+                {'M', _O_mod},
+                {'S', _O_mod},
+                {'u', _O_mod},
+                {'U', _O_mod},
+                {'V', _O_mod},
+                {'w', _O_mod},
+                {'W', _O_mod},
+                {'x', _E_mod},
+                {'X', _E_mod},
+                {'y', _EO_mod},
+                {'Y', _E_mod},
+                {'z', _EO_mod},
+            };
+
+            const _Allowed_bit _Mod = _Modifier == 'E' ? _E_mod : _O_mod;
+
+            if (auto _It = _RANGES find(_Table, _Type, &_Table_entry::_Type); _It != _STD end(_Table)) {
+                if (_It->_Allowed & _Mod) {
+                    return;
+                }
+            }
+
+            _THROW(format_error("Incompatible modifier for type"));
+        }
+
+        template <class _Ty>
+        _NODISCARD static constexpr bool _Is_valid_type(const char _Type) noexcept {
+            if constexpr (_Is_specialization_v<_Ty, duration>) {
+                return _Type == 'j' || _Type == 'q' || _Type == 'Q' || _Is_valid_type<hh_mm_ss<seconds>>(_Type);
+            } else if constexpr (is_same_v<_Ty, day>) {
+                return _Type == 'd' || _Type == 'e';
+            } else if constexpr (is_same_v<_Ty, month>) {
+                return _Type == 'b' || _Type == 'B' || _Type == 'h' || _Type == 'm';
+            } else if constexpr (is_same_v<_Ty, year>) {
+                return _Type == 'Y' || _Type == 'y' || _Type == 'C';
+            } else if constexpr (_Is_any_of_v<_Ty, weekday, weekday_indexed, weekday_last>) {
+                return _Type == 'a' || _Type == 'A' || _Type == 'u' || _Type == 'w';
+            } else if constexpr (_Is_any_of_v<_Ty, month_day, month_day_last>) {
+                return _Type == 'j' || _Is_valid_type<month>(_Type) || _Is_valid_type<day>(_Type);
+            } else if constexpr (_Is_any_of_v<_Ty, month_weekday, month_weekday_last>) {
+                return _Is_valid_type<month>(_Type) || _Is_valid_type<weekday>(_Type);
+            } else if constexpr (is_same_v<_Ty, year_month>) {
+                return _Type == 'g' || _Type == 'G' || _Is_valid_type<year>(_Type) || _Is_valid_type<month>(_Type);
+            } else if constexpr (_Is_any_of_v<_Ty, year_month_day, year_month_day_last, year_month_weekday,
+                                     year_month_weekday_last>) {
+                return _Type == 'D' || _Type == 'F' || _Type == 'g' || _Type == 'G' || _Type == 'j' || _Type == 'U'
+                    || _Type == 'V' || _Type == 'W' || _Is_valid_type<year>(_Type) || _Is_valid_type<month>(_Type)
+                    || _Is_valid_type<day>(_Type) || _Is_valid_type<weekday>(_Type);
+            } else if constexpr (_Is_specialization_v<_Ty, hh_mm_ss>) {
+                return _Type == 'H' || _Type == 'I' || _Type == 'M' || _Type == 'S' || _Type == 'r' || _Type == 'R'
+                    || _Type == 'T' || _Type == 'p';
+            } else if constexpr (_Is_any_of_v<_Ty, sys_info, local_info>) {
+                return _Type == 'z' || _Type == 'Z';
+            } else if constexpr (_Is_specialization_v<_Ty, time_point>) {
+                if constexpr (!is_same_v<typename _Ty::clock, local_t>) {
+                    if (_Type == 'z' || _Type == 'Z') {
+                        return true;
+                    }
+                }
+                return _Type == 'c' || _Type == 'x' || _Type == 'X' || _Is_valid_type<year_month_day>(_Type)
+                    || _Is_valid_type<hh_mm_ss<seconds>>(_Type);
+            } else if constexpr (_Is_specialization_v<_Ty, _Local_time_format_t>) {
+                return _Type == 'z' || _Type == 'Z' || _Is_valid_type<decltype(_Ty::_Time)>(_Type);
+            } else {
+                static_assert(_Always_false<_Ty>, "should be unreachable");
+            }
+        }
+
+        template <class _FormatContext, class _Ty>
+        _NODISCARD auto _Write(_FormatContext& _FormatCtx, const _Ty& _Val, const tm& _Time) {
+            basic_ostringstream<_CharT> _Stream;
+
+            if (_Specs._Chrono_specs_list.empty()) {
+                _Stream << _Val; // N4885 [time.format]/6
+            } else {
+                _Stream.imbue(_FormatCtx.locale());
+                if constexpr (_Is_specialization_v<_Ty, hh_mm_ss>) {
+                    if (_Val.is_negative()) {
+                        _Stream << _CharT{'-'};
+                    }
+                } else if constexpr (_Is_specialization_v<_Ty, duration>) {
+                    if (_Val < _Ty::zero()) {
+                        _Stream << _CharT{'-'};
+                    }
+                }
+
+                for (const auto& _Spec : _Specs._Chrono_specs_list) {
+                    if (_Spec._Lit_char != _CharT{'\0'}) {
+                        _Stream << _Spec._Lit_char;
+                        continue;
+                    }
+
+                    // We need to manually do certain writes, either because the specification is different from
+                    // put_time or custom logic is needed.
+                    if (_Custom_write(_Stream, _Spec, _Time, _Val)) {
+                        continue;
+                    }
+
+                    _Validate_specifiers(_Spec, _Val);
+
+                    _Stream << _STD put_time<_CharT>(&_Time, _Fmt_string(_Spec).data());
+                }
+            }
+
+            return _Write_aligned(_STD move(_FormatCtx.out()), static_cast<int>(_Stream.view().size()), _Specs,
+                _Fmt_align::_Left, [&](auto _Out) { return _Fmt_write(_STD move(_Out), _Stream.view()); });
+        }
+
+        // This echoes the functionality of put_time, but is able to handle invalid dates (when !ok()) since the
+        // Standard mandates that invalid dates still be formatted properly.  For example, put_time isn't able to handle
+        // a tm_mday of 40, but format("{:%d}", day{40}) should return "40" and operator<< for day prints
+        // "40 is not a valid day".
+        template <class _Ty>
+        bool _Custom_write(
+            basic_ostream<_CharT>& _Os, const _Chrono_spec<_CharT>& _Spec, const tm& _Time, const _Ty& _Val) {
+            if constexpr (is_same_v<_Ty, local_info>) {
+                if (_Val.result != local_info::unique) {
+                    _THROW(format_error("Cannot print non-unique local_info"));
+                }
+            }
+
+            const auto _Year         = _Time.tm_year + 1900;
+            const auto _Month        = _Time.tm_mon + 1;
+            const bool _Has_modifier = _Spec._Modifier != '\0';
+            switch (_Spec._Type) {
+            case 'd': // Print days as a decimal, even if invalid.
+            case 'e':
+                // Most months have a proper last day, but February depends on the year.
+                if constexpr (is_same_v<_Ty, month_day_last>) {
+                    if (_Val.month() == February) {
+                        _THROW(format_error("Cannot print the last day of February without a year"));
+                    }
+
+                    if (!_Val.ok()) {
+                        return false;
+                    }
+                }
+
+                if (_Has_modifier) {
+                    return false;
+                }
+
+                if (_Time.tm_mday < 10) {
+                    _Os << (_Spec._Type == 'd' ? _CharT{'0'} : _CharT{' '});
+                }
+                _Os << _Time.tm_mday;
+                return true;
+            case 'g':
+            case 'G':
+                if constexpr (is_same_v<_Ty, year_month>) {
+                    if (_Val.month() == January || _Val.month() == December) {
+                        _THROW(format_error(
+                            "The ISO week-based year for a year_month of January or December is ambiguous."));
+                    }
+
+                    if (!_Val.ok()) {
+                        _THROW(format_error("The ISO week-based year for an out-of-bounds year_month is ambiguous."));
+                    }
+
+                    const char _Gregorian_type = _Spec._Type == 'g' ? 'y' : 'Y';
+                    _Os << _STD put_time(&_Time, _Fmt_string({._Type = _Gregorian_type}).data());
+                    return true;
+                }
+
+                return false;
+            case 'r':
+                // put_time uses _Strftime in order to bypass reference-counting that locale uses. This function
+                // takes the locale information by pointer, but the pointer (from _Gettnames) returns a copy.
+                // _Strftime delegates to other functions but eventually (for the C locale) has the %r specifier
+                // rewritten. It checks for the locale by comparing pointers, which do not compare equal as we have
+                // a copy of the pointer instead of the original. Therefore, we replace %r for the C locale
+                // ourselves.
+                if (_Os.getloc() == locale::classic()) {
+                    _Os << _STD put_time(&_Time, _STATICALLY_WIDEN(_CharT, "%I:%M:%S %p"));
+                    return true;
+                }
+
+                return false;
+            case 'j':
+                if constexpr (_Is_specialization_v<_Ty, duration>) {
+                    _Os << _STD abs(_CHRONO duration_cast<days>(_Val).count());
+                    return true;
+                }
+                return false;
+            case 'q':
+                if constexpr (_Is_specialization_v<_Ty, duration>) {
+                    _Write_unit_suffix<typename _Ty::period>(_Os);
+                }
+                return true;
+            case 'Q':
+                if constexpr (_Is_specialization_v<_Ty, duration>) {
+                    _Os << _STD abs(_Val.count());
+                }
+                return true;
+            case 'm': // Print months as a decimal, even if invalid.
+                if (_Has_modifier) {
+                    return false;
+                }
+
+                if (_Month < 10) {
+                    _Os << _CharT{'0'};
+                }
+                _Os << _Month;
+                return true;
+            case 'Y': // Print years as a decimal, even if invalid.
+                if (_Has_modifier) {
+                    return false;
+                }
+
+                if (_Year < 0) {
+                    _Os << _CharT{'-'};
+                }
+                _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{:04}"), _STD abs(_Year));
+                return true;
+            case 'y': // Print the two-digit year as a decimal, even if invalid.
+                if (_Has_modifier) {
+                    return false;
+                }
+                _Os << _STD format(
+                    _STATICALLY_WIDEN(_CharT, "{:02}"), _Time_parse_fields::_Decompose_year(_Year).second);
+                return true;
+            case 'C': // Print the century as a decimal, even if invalid.
+                if (_Has_modifier) {
+                    return false;
+                }
+
+                if (_Year < 0) {
+                    _Os << _CharT{'-'};
+                }
+                _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{:02}"),
+                    _STD abs(_Time_parse_fields::_Decompose_year(_Year).first) / 100);
+                return true;
+            case 'F': // Print YMD even if invalid.
+                _Custom_write(_Os, {._Type = 'Y'}, _Time, _Val);
+                _Os << _CharT{'-'};
+                _Custom_write(_Os, {._Type = 'm'}, _Time, _Val);
+                _Os << _CharT{'-'};
+                _Custom_write(_Os, {._Type = 'd'}, _Time, _Val);
+                return true;
+            case 'D': // Print YMD even if invalid.
+                _Custom_write(_Os, {._Type = 'm'}, _Time, _Val);
+                _Os << _CharT{'/'};
+                _Custom_write(_Os, {._Type = 'd'}, _Time, _Val);
+                _Os << _CharT{'/'};
+                _Custom_write(_Os, {._Type = 'y'}, _Time, _Val);
+                return true;
+            case 'T':
+                // Alias for %H:%M:%S but we need to rewrite %S to display fractions of a second.
+                _Validate_specifiers({._Type = 'H'}, _Val);
+                _Os << _STD put_time(&_Time, _STATICALLY_WIDEN(_CharT, "%H:%M:"));
+                [[fallthrough]];
+            case 'S':
+                if (_Has_modifier) {
+                    return false;
+                }
+                _Write_seconds(_Os, _Val);
+                return true;
+            case 'Z':
+                if constexpr (is_same_v<_Ty, sys_info>) {
+                    _Os << _Widen_string<_CharT>(_Val.abbrev);
+                } else if constexpr (is_same_v<_Ty, local_info>) {
+                    _Os << _Widen_string<_CharT>(_Val.first.abbrev);
+                } else if constexpr (_Is_specialization_v<_Ty, _Local_time_format_t>) {
+                    if (_Val._Abbrev == nullptr) {
+                        _THROW(format_error("Cannot print local-time-format-t with null abbrev."));
+                    }
+                    _Os << _Widen_string<_CharT>(*_Val._Abbrev);
+                } else {
+                    _Os << _Time_zone_abbreviation;
+                }
+                return true;
+            case 'z':
+                {
+                    hh_mm_ss<seconds> _Offset;
+
+                    if constexpr (is_same_v<_Ty, sys_info>) {
+                        _Offset = hh_mm_ss<seconds>{_Val.offset};
+                    } else if constexpr (is_same_v<_Ty, local_info>) {
+                        _Offset = hh_mm_ss<seconds>{_Val.first.offset};
+                    } else if constexpr (_Is_specialization_v<_Ty, _Local_time_format_t>) {
+                        if (_Val._Offset_sec == nullptr) {
+                            _THROW(format_error("Cannot print local-time-format-t with null offset_sec."));
+                        }
+                        _Offset = hh_mm_ss<seconds>{*_Val._Offset_sec};
+                    } else {
+                        _Offset = hh_mm_ss<seconds>{};
+                    }
+
+                    const auto _Sign = _Offset.is_negative() ? _CharT{'-'} : _CharT{'+'};
+                    const auto _Separator =
+                        _Has_modifier ? _STATICALLY_WIDEN(_CharT, ":") : _STATICALLY_WIDEN(_CharT, "");
+
+                    _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{}{:02}{}{:02}"), _Sign, _Offset.hours().count(),
+                        _Separator, _Offset.minutes().count());
+                    return true;
+                }
+            default:
+                return false;
+            }
+        }
+
+        template <class _Ty>
+        static void _Validate_specifiers(const _Chrono_spec<_CharT>& _Spec, const _Ty& _Val) {
+            // clang-format off
+            if constexpr (_Is_specialization_v<_Ty, duration> || is_same_v<_Ty, sys_info>
+                || _Is_specialization_v<_Ty, time_point> || _Is_specialization_v<_Ty, _Local_time_format_t>) {
+                return;
+            }
+            // clang-format on
+
+            if constexpr (_Is_specialization_v<_Ty, hh_mm_ss>) {
+                if (_Spec._Type == 'H' && _Val.hours() >= hours{24}) {
+                    _THROW(format_error("Cannot localize hh_mm_ss with an absolute value of 24 hours or more."));
+                }
+                return;
+            }
+
+            constexpr bool _Is_ymd =
+                _Is_any_of_v<_Ty, year_month_day, year_month_day_last, year_month_weekday, year_month_weekday_last>;
+
+            const auto _Validate = [&] {
+                switch (_Spec._Type) {
+                case 'a':
+                case 'A':
+                case 'u':
+                case 'w':
+                    if constexpr (_Is_any_of_v<_Ty, weekday, weekday_last>) {
+                        return _Val.ok();
+                    } else if constexpr (_Is_any_of_v<_Ty, weekday_indexed, year_month_weekday,
+                                             year_month_weekday_last>) {
+                        return _Val.weekday().ok();
+                    } else if constexpr (is_same_v<_Ty, month_weekday>) {
+                        return _Val.weekday_indexed().weekday().ok();
+                    } else if constexpr (is_same_v<_Ty, month_weekday_last>) {
+                        return _Val.weekday_last().ok();
+                    } else if constexpr (_Is_any_of_v<_Ty, year_month_day, year_month_day_last>) {
+                        return _Val.ok();
+                    }
+                    break;
+
+                case 'b':
+                case 'B':
+                case 'h':
+                case 'm':
+                    if constexpr (is_same_v<_Ty, month>) {
+                        return _Val.ok();
+                    } else if constexpr (_Is_any_of_v<_Ty, month_day, month_day_last, month_weekday, month_weekday_last,
+                                             year_month> || _Is_ymd) {
+                        return _Val.month().ok();
+                    }
+                    break;
+
+                case 'C':
+                case 'y':
+                case 'Y':
+                    if constexpr (is_same_v<_Ty, year>) {
+                        return _Val.ok();
+                    } else if constexpr (_Is_any_of_v<_Ty, year_month> || _Is_ymd) {
+                        return _Val.year().ok();
+                    }
+                    break;
+
+                case 'd':
+                case 'e':
+                    if constexpr (_Is_any_of_v<_Ty, day, month_day_last>) {
+                        return _Val.ok();
+                    } else if constexpr (is_same_v<_Ty, month_day>) {
+                        return _Val.day().ok();
+                    } else if constexpr (_Is_ymd) {
+                        const year_month_day& _Ymd{_Val};
+                        return _Ymd.day().ok();
+                    }
+                    break;
+
+                case 'D':
+                case 'F':
+                    if constexpr (_Has_ok<_Ty>) {
+                        return _Val.ok();
+                    }
+                    break;
+
+                case 'j':
+                    if constexpr (is_same_v<_Ty, month_day>) {
+                        if (_Val.month() > February) {
+                            _THROW(format_error("The day of year for a month_day past February is ambiguous."));
+                        }
+                        return true;
+                    } else if constexpr (is_same_v<_Ty, month_day_last>) {
+                        if (_Val.month() >= February) {
+                            _THROW(
+                                format_error("The day of year for a month_day_last other than January is ambiguous"));
+                        }
+                        return true;
+                    } else if constexpr (_Is_ymd) {
+                        return _Val.ok();
+                    }
+                    break;
+
+                case 'g':
+                case 'G':
+                case 'U':
+                case 'V':
+                case 'W':
+                    if constexpr (_Is_ymd) {
+                        return _Val.ok();
+                    }
+                    break;
+
+                default:
+                    if constexpr (_Has_ok<_Ty>) {
+                        return _Val.ok();
+                    }
+                    return true;
+                }
+                _STL_INTERNAL_CHECK(false);
+                return false;
+            };
+            if (!_Validate()) {
+                _THROW(format_error("Cannot localize out-of-bounds time point."));
+            }
+        }
+
+        _NODISCARD static array<_CharT, 4> _Fmt_string(const _Chrono_spec<_CharT>& _Spec) {
+            array<_CharT, 4> _Fmt_str;
+            size_t _Next_idx      = 0;
+            _Fmt_str[_Next_idx++] = _CharT{'%'};
+            if (_Spec._Modifier != '\0') {
+                _Fmt_str[_Next_idx++] = static_cast<_CharT>(_Spec._Modifier);
+            }
+            _Fmt_str[_Next_idx++] = static_cast<_CharT>(_Spec._Type);
+            _Fmt_str[_Next_idx]   = _CharT{'\0'};
+            return _Fmt_str;
+        }
+
+        _Chrono_format_specs<_CharT> _Specs{};
+        basic_string_view<_CharT> _Time_zone_abbreviation{};
+    };
+} // namespace chrono
+
+template <class _Ty, class _CharT>
+struct _Fill_tm_formatter {
+    auto parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
+        return _Impl.template _Parse<_Ty>(_Parse_ctx);
+    }
+
+    template <class _FormatContext>
+    auto format(const _Ty& _Val, _FormatContext& _FormatCtx) {
+        return _Impl._Write(_FormatCtx, _Val, _Fill_tm(_Val));
+    }
+
+private:
+    _CHRONO _Chrono_formatter<_CharT> _Impl;
+};
+
+template <class _Rep, class _Period, class _CharT>
+struct formatter<_CHRONO duration<_Rep, _Period>, _CharT>
+    : _Fill_tm_formatter<_CHRONO duration<_Rep, _Period>, _CharT> {};
+
+template <class _CharT>
+struct formatter<_CHRONO day, _CharT> //
+    : _Fill_tm_formatter<_CHRONO day, _CharT> {};
+
+template <class _CharT>
+struct formatter<_CHRONO month, _CharT> //
+    : _Fill_tm_formatter<_CHRONO month, _CharT> {};
+
+template <class _CharT>
+struct formatter<_CHRONO year, _CharT> //
+    : _Fill_tm_formatter<_CHRONO year, _CharT> {};
+
+template <class _CharT>
+struct formatter<_CHRONO weekday, _CharT> //
+    : _Fill_tm_formatter<_CHRONO weekday, _CharT> {};
+
+template <class _CharT>
+struct formatter<_CHRONO weekday_indexed, _CharT> //
+    : _Fill_tm_formatter<_CHRONO weekday_indexed, _CharT> {};
+
+template <class _CharT>
+struct formatter<_CHRONO weekday_last, _CharT> //
+    : _Fill_tm_formatter<_CHRONO weekday_last, _CharT> {};
+
+template <class _CharT>
+struct formatter<_CHRONO month_day, _CharT> //
+    : _Fill_tm_formatter<_CHRONO month_day, _CharT> {};
+
+template <class _CharT>
+struct formatter<_CHRONO month_day_last, _CharT> //
+    : _Fill_tm_formatter<_CHRONO month_day_last, _CharT> {};
+
+template <class _CharT>
+struct formatter<_CHRONO month_weekday, _CharT> //
+    : _Fill_tm_formatter<_CHRONO month_weekday, _CharT> {};
+
+template <class _CharT>
+struct formatter<_CHRONO month_weekday_last, _CharT> //
+    : _Fill_tm_formatter<_CHRONO month_weekday_last, _CharT> {};
+
+template <class _CharT>
+struct formatter<_CHRONO year_month, _CharT> //
+    : _Fill_tm_formatter<_CHRONO year_month, _CharT> {};
+
+template <class _CharT>
+struct formatter<_CHRONO year_month_day, _CharT> //
+    : _Fill_tm_formatter<_CHRONO year_month_day, _CharT> {};
+
+template <class _CharT>
+struct formatter<_CHRONO year_month_day_last, _CharT> //
+    : _Fill_tm_formatter<_CHRONO year_month_day_last, _CharT> {};
+
+template <class _CharT>
+struct formatter<_CHRONO year_month_weekday, _CharT> //
+    : _Fill_tm_formatter<_CHRONO year_month_weekday, _CharT> {};
+
+template <class _CharT>
+struct formatter<_CHRONO year_month_weekday_last, _CharT>
+    : _Fill_tm_formatter<_CHRONO year_month_weekday_last, _CharT> {};
+
+template <class _Rep, class _Period, class _CharT>
+struct formatter<_CHRONO hh_mm_ss<_CHRONO duration<_Rep, _Period>>, _CharT>
+    : _Fill_tm_formatter<_CHRONO hh_mm_ss<_CHRONO duration<_Rep, _Period>>, _CharT> {};
+
+template <class _CharT>
+struct formatter<_CHRONO sys_info, _CharT> //
+    : _Fill_tm_formatter<_CHRONO sys_info, _CharT> {};
+
+template <class _CharT>
+struct formatter<_CHRONO local_info, _CharT> //
+    : _Fill_tm_formatter<_CHRONO local_info, _CharT> {};
+
+template <class _Duration, class _CharT>
+struct formatter<_CHRONO sys_time<_Duration>, _CharT> {
+    auto parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
+        return _Impl.template _Parse<_CHRONO sys_time<_Duration>>(_Parse_ctx);
+    }
+
+    template <class _FormatContext>
+    auto format(const _CHRONO sys_time<_Duration>& _Val, _FormatContext& _FormatCtx) {
+        return _Impl._Write(_FormatCtx, _Val, _Fill_tm(_Val));
+    }
+
+private:
+    _CHRONO _Chrono_formatter<_CharT> _Impl{_STATICALLY_WIDEN(_CharT, "UTC")};
+};
+
+template <class _Duration, class _CharT>
+struct formatter<_CHRONO utc_time<_Duration>, _CharT> {
+    auto parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
+        return _Impl.template _Parse<_CHRONO utc_time<_Duration>>(_Parse_ctx);
+    }
+
+    template <class _FormatContext>
+    auto format(const _CHRONO utc_time<_Duration>& _Val, _FormatContext& _FormatCtx) {
+        const auto _Sys = _CHRONO utc_clock::to_sys(_Val);
+        return _Impl._Write(_FormatCtx, _Val, _Fill_tm(_Sys));
+    }
+
+private:
+    _CHRONO _Chrono_formatter<_CharT> _Impl{_STATICALLY_WIDEN(_CharT, "UTC")};
+};
+
+template <class _Duration, class _CharT>
+struct formatter<_CHRONO tai_time<_Duration>, _CharT> {
+    auto parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
+        return _Impl.template _Parse<_CHRONO tai_time<_Duration>>(_Parse_ctx);
+    }
+
+    template <class _FormatContext>
+    auto format(const _CHRONO tai_time<_Duration>& _Val, _FormatContext& _FormatCtx) {
+        using namespace chrono;
+        using _Common = common_type_t<_Duration, days>; // slightly optimize by performing conversion at compile time
+        constexpr _Common _Offset{sys_days{year{1970} / January / 1} - sys_days{year{1958} / January / 1}};
+        const auto _Sys = sys_time<_Duration>{_Val.time_since_epoch()} - _Offset;
+        return _Impl._Write(_FormatCtx, _Val, _Fill_tm(_Sys));
+    }
+
+private:
+    _CHRONO _Chrono_formatter<_CharT> _Impl{_STATICALLY_WIDEN(_CharT, "TAI")};
+};
+
+template <class _Duration, class _CharT>
+struct formatter<_CHRONO gps_time<_Duration>, _CharT> {
+    auto parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
+        return _Impl.template _Parse<_CHRONO gps_time<_Duration>>(_Parse_ctx);
+    }
+
+    template <class _FormatContext>
+    auto format(const _CHRONO gps_time<_Duration>& _Val, _FormatContext& _FormatCtx) {
+        using namespace chrono;
+        using _Common = common_type_t<_Duration, days>; // slightly optimize by performing conversion at compile time
+        constexpr _Common _Offset{sys_days{year{1980} / January / Sunday[1]} - sys_days{year{1970} / January / 1}};
+        const auto _Sys = sys_time<_Duration>{_Val.time_since_epoch()} + _Offset;
+        return _Impl._Write(_FormatCtx, _Val, _Fill_tm(_Sys));
+    }
+
+private:
+    _CHRONO _Chrono_formatter<_CharT> _Impl{_STATICALLY_WIDEN(_CharT, "GPS")};
+};
+
+template <class _Duration, class _CharT>
+struct formatter<_CHRONO file_time<_Duration>, _CharT> {
+    auto parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
+        return _Impl.template _Parse<_CHRONO file_time<_Duration>>(_Parse_ctx);
+    }
+
+    template <class _FormatContext>
+    auto format(const _CHRONO file_time<_Duration>& _Val, _FormatContext& _FormatCtx) {
+        const auto _Sys = _CHRONO clock_cast<_CHRONO system_clock>(_Val);
+        return _Impl._Write(_FormatCtx, _Val, _Fill_tm(_Sys));
+    }
+
+private:
+    _CHRONO _Chrono_formatter<_CharT> _Impl{_STATICALLY_WIDEN(_CharT, "UTC")};
+};
+
+template <class _Duration, class _CharT>
+struct formatter<_CHRONO local_time<_Duration>, _CharT> //
+    : _Fill_tm_formatter<_CHRONO local_time<_Duration>, _CharT> {};
+
+template <class _Duration, class _CharT>
+struct formatter<_CHRONO _Local_time_format_t<_Duration>, _CharT>
+    : _Fill_tm_formatter<_CHRONO _Local_time_format_t<_Duration>, _CharT> {};
+
+template <class _Duration, class _TimeZonePtr, class _CharT>
+struct formatter<_CHRONO zoned_time<_Duration, _TimeZonePtr>, _CharT>
+    : formatter<_CHRONO _Local_time_format_t<_Duration>, _CharT> {
+
+    template <class _FormatContext>
+    auto format(const _CHRONO zoned_time<_Duration, _TimeZonePtr>& _Val, _FormatContext& _FormatCtx) {
+        using _Mybase    = formatter<_CHRONO _Local_time_format_t<_Duration>, _CharT>;
+        const auto _Info = _Val.get_info();
+        return _Mybase::format({_Val.get_local_time(), &_Info.abbrev, &_Info.offset}, _FormatCtx);
+    }
+};
+
+namespace chrono {
+    template <class _Duration>
+    _NODISCARD string nonexistent_local_time::_Make_string(const local_time<_Duration>& _Tp, const local_info& _Info) {
+        ostringstream _Os;
+        _Os << _Tp << " is in a gap between\n"
+            << local_seconds{_Info.first.end.time_since_epoch()} + _Info.first.offset << ' ' << _Info.first.abbrev
+            << " and\n"
+            << local_seconds{_Info.second.begin.time_since_epoch()} + _Info.second.offset << ' ' << _Info.second.abbrev
+            << " which are both equivalent to\n"
+            << _Info.first.end << " UTC";
+        return _STD move(_Os).str();
+    }
+
+    template <class _Duration>
+    _NODISCARD string ambiguous_local_time::_Make_string(const local_time<_Duration>& _Tp, const local_info& _Info) {
+        ostringstream _Os;
+        _Os << _Tp << " is ambiguous. It could be\n"
+            << _Tp << ' ' << _Info.first.abbrev << " == " << _Tp - _Info.first.offset << " UTC or\n"
+            << _Tp << ' ' << _Info.second.abbrev << " == " << _Tp - _Info.second.offset << " UTC";
+        return _STD move(_Os).str();
+    }
+} // namespace chrono
+
+#endif // __cpp_lib_concepts
+#endif // _HAS_CXX20
 
 // HELPERS
 template <class _Rep, class _Period>
@@ -5450,6 +6615,8 @@ inline namespace literals {
 namespace chrono {
     using namespace literals::chrono_literals;
 } // namespace chrono
+
+#undef _STATICALLY_WIDEN
 
 _STD_END
 #pragma pop_macro("new")
