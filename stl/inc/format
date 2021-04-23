@@ -2049,17 +2049,12 @@ inline void _Buffer_to_uppercase(char* _Begin, const char* _End) {
     }
 }
 
+template <class _Ty>
+using _Make_standard_integer = conditional_t<is_signed_v<_Ty>, make_signed_t<_Ty>, make_unsigned_t<_Ty>>;
+
 template <class _CharT, integral _Ty>
 _NODISCARD constexpr bool _In_bounds(const _Ty _Value) {
-    if constexpr (is_unsigned_v<_CharT> && is_unsigned_v<_Ty>) {
-        return _Value <= (numeric_limits<_CharT>::max)();
-    } else if constexpr (is_unsigned_v<_CharT>) {
-        return _Value >= 0 && static_cast<make_unsigned_t<_Ty>>(_Value) <= (numeric_limits<_CharT>::max)();
-    } else if constexpr (is_unsigned_v<_Ty>) {
-        return _Value <= static_cast<make_unsigned_t<_CharT>>((numeric_limits<_CharT>::max)());
-    } else {
-        return (numeric_limits<_CharT>::min)() <= _Value && _Value <= (numeric_limits<_CharT>::max)();
-    }
+    return _STD in_range<_Make_standard_integer<_CharT>>(static_cast<_Make_standard_integer<_Ty>>(_Value));
 }
 
 _NODISCARD inline int _Count_separators(size_t _Digits, const string_view _Groups) {
