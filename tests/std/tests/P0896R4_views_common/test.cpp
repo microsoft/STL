@@ -74,7 +74,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     using ranges::common_view, ranges::bidirectional_range, ranges::common_range, ranges::contiguous_range,
         ranges::enable_borrowed_range, ranges::forward_range, ranges::input_range, ranges::iterator_t, ranges::prev,
         ranges::random_access_range, ranges::range, ranges::range_reference_t, ranges::size, ranges::sized_range,
-        ranges::range_size_t;
+        ranges::range_size_t, ranges::borrowed_range;
 
     constexpr bool is_view   = ranges::view<remove_cvref_t<Rng>>;
     using V                  = views::all_t<Rng>;
@@ -316,8 +316,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         }
 
         // Validate view_interface::data
-        static_assert(!CanData<R>);
-        static_assert(!CanData<const R>);
+        static_assert(CanData<R> == contiguous_range<R>);
+        static_assert(CanData<const R> == contiguous_range<const R>);
         if (!is_constant_evaluated() && !is_empty) {
             // Validate view_interface::operator[]
             if constexpr (CanIndex<R>) {
@@ -362,6 +362,9 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         if (!is_empty) {
             assert(*b2.begin() == *begin(expected));
         }
+
+        // Validate borrowed_range
+        static_assert(borrowed_range<R> == borrowed_range<V>);
     }
 
     return true;

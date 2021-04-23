@@ -240,6 +240,7 @@
 // P1976R2 Explicit Constructors For Fixed-Extent span From Dynamic-Extent Ranges
 // P1983R0 Fixing Minor Ranges Issues
 // P1994R1 elements_view Needs Its Own sentinel
+// P2017R1 Conditionally Borrowed Ranges
 // P2091R0 Fixing Issues With Range Access CPOs
 // P2102R0 Making "Implicit Expression Variations" More Explicit
 // P2106R0 Range Algorithm Result Types
