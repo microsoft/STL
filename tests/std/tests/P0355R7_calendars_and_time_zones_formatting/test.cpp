@@ -296,6 +296,11 @@ void test_clock_formatter() {
             }
         }
     }
+
+    empty_braces_helper(file_clock::from_utc(utc_2016_12_31), STR("2016-12-31 00:00:00"));
+    empty_braces_helper(file_clock::from_utc(utc_2016_12_31) + 24h, STR("2017-01-01 00:00:00"));
+    empty_braces_helper(file_clock::from_utc(utc_2021_05_04), STR("2021-05-04 00:00:00"));
+    // TRANSITION: Test a leap second insertion after 2018-06 when there is one
 }
 
 template <typename CharT>
