@@ -6,7 +6,6 @@ use Run;
 sub CustomBuildHook()
 {
     my $cwd = Run::GetCWDName();
-    my $stl_include_dir = $ENV{STL_INCLUDE_DIR};
 
     my @stl_headers = (
         "algorithm",
@@ -94,8 +93,8 @@ sub CustomBuildHook()
     foreach (@stl_headers) {
         $export_header_options .= " $_";
 
-        $header_unit_options .= " /headerUnit";
-        $header_unit_options .= " $stl_include_dir/$_=$_.ifc";
+        $header_unit_options .= " /headerUnit:angle";
+        $header_unit_options .= " $_=$_.ifc";
         $header_unit_options .= " $_.obj";
     }
 
