@@ -101,12 +101,12 @@ class CustomTestFormat(STLTestFormat):
             compileTestCppWithEdg = True
             test.compileFlags.remove('/BE')
 
-        exportHeaderOptions = ['/exportHeader', '/Fo', '/MP']
+        exportHeaderOptions = ['/exportHeader', '/headerName:angle', '/Fo', '/MP']
         headerUnitOptions = []
         for header in stlHeaders:
             headerAbsolutePath = os.path.join(litConfig.cxx_headers, header)
 
-            exportHeaderOptions.append(headerAbsolutePath)
+            exportHeaderOptions.append(header)
 
             headerUnitOptions.append('/headerUnit')
             headerUnitOptions.append('{0}={1}.ifc'.format(headerAbsolutePath, header))
