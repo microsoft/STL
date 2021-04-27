@@ -2858,18 +2858,19 @@ _NODISCARD auto make_wformat_args(const _Args&... _Vals) {
 }
 
 template <class _CharT, class... _Args>
-struct _Fmt_basic_string {
+struct _Basic_format_string {
     basic_string_view<_CharT> _Str;
 
+    // This constructor should be consteval once there is a compiler support.
     template <class _Ty, enable_if_t<convertible_to<const _Ty&, basic_string_view<_CharT>>, int> = 0>
-    constexpr _Fmt_basic_string(const _Ty& _Str_) : _Str{_Str_} {}
+    constexpr _Basic_format_string(const _Ty& _Str_) : _Str{_Str_} {}
 };
 
 template <class... _Args>
-using _Fmt_string = _Fmt_basic_string<char, type_identity_t<_Args>...>;
+using _Fmt_string = _Basic_format_string<char, type_identity_t<_Args>...>;
 
 template <class... _Args>
-using _Fmt_wstring = _Fmt_basic_string<wchar_t, type_identity_t<_Args>...>;
+using _Fmt_wstring = _Basic_format_string<wchar_t, type_identity_t<_Args>...>;
 
 template <output_iterator<const char&> _OutputIt>
 _OutputIt vformat_to(_OutputIt _Out, const string_view _Fmt, const format_args _Args) {
