@@ -2864,7 +2864,7 @@ _NODISCARD auto make_wformat_args(const _Args&... _Vals) {
 
 template <output_iterator<const char&> _OutputIt>
 _OutputIt vformat_to(_OutputIt _Out, const string_view _Fmt, const format_args _Args) {
-    if constexpr (std::is_same_v<_OutputIt, _Fmt_it>) {
+    if constexpr (is_same_v<_OutputIt, _Fmt_it>) {
         _Format_handler<char> _Handler(_Out, _Fmt, _Args, _Lazy_locale{});
         _Parse_format_string(_Fmt, _Handler);
         return _Out;
@@ -2878,7 +2878,7 @@ _OutputIt vformat_to(_OutputIt _Out, const string_view _Fmt, const format_args _
 
 template <output_iterator<const wchar_t&> _OutputIt>
 _OutputIt vformat_to(_OutputIt _Out, const wstring_view _Fmt, const wformat_args _Args) {
-    if constexpr (std::is_same_v<_OutputIt, _Fmt_wit>) {
+    if constexpr (is_same_v<_OutputIt, _Fmt_wit>) {
         _Format_handler<wchar_t> _Handler(_Out, _Fmt, _Args, _Lazy_locale{});
         _Parse_format_string(_Fmt, _Handler);
         return _Out;
@@ -2892,7 +2892,7 @@ _OutputIt vformat_to(_OutputIt _Out, const wstring_view _Fmt, const wformat_args
 
 template <output_iterator<const char&> _OutputIt>
 _OutputIt vformat_to(_OutputIt _Out, const locale& _Loc, const string_view _Fmt, const format_args _Args) {
-    if constexpr (std::is_same_v<_OutputIt, _Fmt_it>) {
+    if constexpr (is_same_v<_OutputIt, _Fmt_it>) {
         _Format_handler<char> _Handler(_Out, _Fmt, _Args, _Lazy_locale{_Loc});
         _Parse_format_string(_Fmt, _Handler);
         return _Out;
@@ -2906,7 +2906,7 @@ _OutputIt vformat_to(_OutputIt _Out, const locale& _Loc, const string_view _Fmt,
 
 template <output_iterator<const wchar_t&> _OutputIt>
 _OutputIt vformat_to(_OutputIt _Out, const locale& _Loc, const wstring_view _Fmt, const wformat_args _Args) {
-    if constexpr (std::is_same_v<_OutputIt, _Fmt_wit>) {
+    if constexpr (is_same_v<_OutputIt, _Fmt_wit>) {
         _Format_handler<wchar_t> _Handler(_Out, _Fmt, _Args, _Lazy_locale{_Loc});
         _Parse_format_string(_Fmt, _Handler);
         return _Out;
@@ -2941,28 +2941,28 @@ _OutputIt format_to(_OutputIt _Out, const locale& _Loc, const wstring_view _Fmt,
 _NODISCARD inline string vformat(const string_view _Fmt, const format_args _Args) {
     string _Str;
     _Str.reserve(_Fmt.size() + _Args._Estimate_required_capacity());
-    _STD vformat_to(_STD back_inserter(_Str), _Fmt, _Args);
+    _STD vformat_to(back_insert_iterator{_Str}, _Fmt, _Args);
     return _Str;
 }
 
 _NODISCARD inline wstring vformat(const wstring_view _Fmt, const wformat_args _Args) {
     wstring _Str;
     _Str.reserve(_Fmt.size() + _Args._Estimate_required_capacity());
-    _STD vformat_to(_STD back_inserter(_Str), _Fmt, _Args);
+    _STD vformat_to(back_insert_iterator{_Str}, _Fmt, _Args);
     return _Str;
 }
 
 _NODISCARD inline string vformat(const locale& _Loc, const string_view _Fmt, const format_args _Args) {
     string _Str;
     _Str.reserve(_Fmt.size() + _Args._Estimate_required_capacity());
-    _STD vformat_to(_STD back_inserter(_Str), _Loc, _Fmt, _Args);
+    _STD vformat_to(back_insert_iterator{_Str}, _Loc, _Fmt, _Args);
     return _Str;
 }
 
 _NODISCARD inline wstring vformat(const locale& _Loc, const wstring_view _Fmt, const wformat_args _Args) {
     wstring _Str;
     _Str.reserve(_Fmt.size() + _Args._Estimate_required_capacity());
-    _STD vformat_to(_STD back_inserter(_Str), _Loc, _Fmt, _Args);
+    _STD vformat_to(back_insert_iterator{_Str}, _Loc, _Fmt, _Args);
     return _Str;
 }
 
