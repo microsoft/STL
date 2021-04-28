@@ -511,7 +511,7 @@ constexpr void output_range_test() {
     }
 }
 
-void test_VSO1397309() {
+void test_DevCom_1397309() {
     constexpr int expected[] = {4, 8};
     const map<int, string_view> values{{4, "Hello"sv}, {8, "Beautiful"sv}, {10, "World"sv}};
 
@@ -567,5 +567,5 @@ int main() {
     STATIC_ASSERT((instantiation_test(), true));
     instantiation_test();
 
-    test_VSO1397309();
+    test_DevCom_1397309();
 }
