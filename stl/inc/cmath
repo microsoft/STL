@@ -12,7 +12,7 @@
 #include <cstdlib>
 #include <xtr1common>
 
-#if !defined(_M_CEE) && !defined(__clang__) && !defined(__CUDACC__)
+#if !defined(_M_CEE) && !defined(__clang__) && !defined(__CUDACC__) && !defined(__INTEL_COMPILER)
 #define _HAS_CMATH_INTRINSICS 1
 #else // ^^^ intrinsics available ^^^ / vvv intrinsics unavailable vvv
 #define _HAS_CMATH_INTRINSICS 0
