@@ -2862,8 +2862,9 @@ struct _Basic_format_string {
     basic_string_view<_CharT> _Str;
 
     // TRANSITION, consteval compiler support
-    template <class _Ty, enable_if_t<convertible_to<const _Ty&, basic_string_view<_CharT>>, int> = 0>
-    constexpr _Basic_format_string(const _Ty& _Str_) : _Str{_Str_} {}
+    template <class _Ty>
+    requires convertible_to<const _Ty&, basic_string_view<_CharT>> constexpr _Basic_format_string(const _Ty& _Str_)
+        : _Str{_Str_} {}
 };
 
 template <class... _Args>
