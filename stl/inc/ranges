@@ -3735,8 +3735,7 @@ namespace ranges {
             template <bool>
             friend class _Sentinel;
 
-            using _Base   = _Maybe_const<_Const, _Vw>;
-            using _ElemTy = tuple_element_t<_Index, range_value_t<_Base>>;
+            using _Base = _Maybe_const<_Const, _Vw>;
 
             iterator_t<_Base> _Current{};
 
@@ -3744,7 +3743,7 @@ namespace ranges {
             using iterator_concept = conditional_t<random_access_range<_Vw>, random_access_iterator_tag,
                 conditional_t<bidirectional_range<_Vw>, bidirectional_iterator_tag,
                     conditional_t<forward_range<_Vw>, forward_iterator_tag, input_iterator_tag>>>;
-            using value_type       = remove_cvref_t<_ElemTy>;
+            using value_type       = remove_cvref_t<tuple_element_t<_Index, range_value_t<_Base>>>;
             using difference_type  = range_difference_t<_Base>;
 
             _Iterator() = default;
@@ -3777,9 +3776,11 @@ namespace ranges {
                 return _STD get<_Index>(*_Current);
             }
 
-            _NODISCARD constexpr decltype(auto) operator*() const noexcept(is_nothrow_move_constructible_v<_ElemTy> //
-                    && noexcept(_STD get<_Index>(*_Current))) /* strengthened */ {
-                return static_cast<remove_cv_t<_ElemTy>>(_STD get<_Index>(*_Current));
+            _NODISCARD constexpr decltype(auto) operator*() const
+                noexcept(is_nothrow_move_constructible_v<tuple_element_t<_Index, range_reference_t<_Base>>> //
+                        && noexcept(_STD get<_Index>(*_Current))) /* strengthened */ {
+                using _ElemTy = remove_cv_t<tuple_element_t<_Index, range_reference_t<_Base>>>;
+                return static_cast<_ElemTy>(_STD get<_Index>(*_Current));
             }
 
             constexpr _Iterator& operator++() noexcept(noexcept(++_Current)) /* strengthened */ {
@@ -3850,13 +3851,14 @@ namespace ranges {
             }
 
             _NODISCARD constexpr decltype(auto) operator[](const difference_type _Idx) const
-                noexcept(is_nothrow_move_constructible_v<_ElemTy> //
+                noexcept(is_nothrow_move_constructible_v<tuple_element_t<_Index, range_reference_t<_Base>>> //
                         && noexcept(_STD get<_Index>(*(_Current + _Idx)))) /* strengthened */
                 requires random_access_range<_Base> {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _Verify_offset(_Idx);
 #endif // _ITERATOR_DEBUG_LEVEL != 0
-                return static_cast<remove_cv_t<_ElemTy>>(_STD get<_Index>(*(_Current + _Idx)));
+                using _ElemTy = remove_cv_t<tuple_element_t<_Index, range_reference_t<_Base>>>;
+                return static_cast<_ElemTy>(_STD get<_Index>(*(_Current + _Idx)));
             }
 
             _NODISCARD friend constexpr bool operator==(const _Iterator& _Left, const _Iterator& _Right) noexcept(
