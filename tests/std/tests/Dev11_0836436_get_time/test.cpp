@@ -773,7 +773,7 @@ void test_invalid_parameter_handler(const wchar_t* const expression, const wchar
     (void) reserved;
 
     static int num_called = 0;
-    if (num_called++ > 10) {
+    if (++num_called > 10) {
         wprintf(
             L"Test Failed: Invalid parameter handler was called over 10 times by %s in %s:%u\n", function, file, line);
         exit(1);
@@ -807,14 +807,14 @@ void test_buffer_resizing() {
 
     {
         wstringstream wss;
-        wss.imbue(locale("ja_JP"));
+        wss.imbue(locale("ja-JP"));
         wss << put_time(&currentTime, L"%c");
         assert(wss.rdstate() == ios_base::goodbit);
     }
 
     {
         stringstream ss;
-        ss.imbue(locale("ja_JP"));
+        ss.imbue(locale("ja-JP"));
         ss << put_time(&currentTime, "%c");
         assert(ss.rdstate() == ios_base::goodbit);
     }

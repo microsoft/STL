@@ -729,12 +729,14 @@ protected:
             _Fmt[3] = _Specifier;
         }
 
+        const int& _Errno_ref = errno; // Nonzero cost, pay it once
+
         for (_Num = 16;; _Num *= 2) { // convert into ever larger string buffer until success
             _Str.append(_Num, '\0');
             _Count = _Strftime(&_Str[0], _Str.size(), _Fmt, _Pt, _Tnames._Getptr());
             if (0 < _Count) {
                 break;
-            } else if (errno == EINVAL) {
+            } else if (_Errno_ref == EINVAL) {
                 _Iosbase.setstate(ios_base::badbit);
                 return _Dest;
             }
@@ -858,12 +860,14 @@ protected:
             _Fmt[3] = static_cast<_Elem>(_Specifier);
         }
 
+        const int& _Errno_ref = errno; // Nonzero cost, pay it once
+
         for (_Num = 16;; _Num *= 2) { // convert into ever larger string buffer until success
             _Str.append(_Num, '\0');
             _Count = _Wcsftime(&_Str[0], _Str.size(), _Fmt, _Pt, _Tnames._Getptr());
             if (0 < _Count) {
                 break;
-            } else if (errno == EINVAL) {
+            } else if (_Errno_ref == EINVAL) {
                 _Iosbase.setstate(ios_base::badbit);
                 return _Dest;
             }
@@ -987,12 +991,14 @@ protected:
             _Fmt[3] = static_cast<_Elem>(_Specifier);
         }
 
+        const int& _Errno_ref = errno; // Nonzero cost, pay it once
+
         for (_Num = 16;; _Num *= 2) { // convert into ever larger string buffer until success
             _Str.append(_Num, '\0');
             _Count = _Wcsftime(&_Str[0], _Str.size(), _Fmt, _Pt, _Tnames._Getptr());
             if (0 < _Count) {
                 break;
-            } else if (errno == EINVAL) {
+            } else if (_Errno_ref == EINVAL) {
                 _Iosbase.setstate(ios_base::badbit);
                 return _Dest;
             }
