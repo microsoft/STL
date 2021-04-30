@@ -316,8 +316,17 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         }
 
         // Validate view_interface::data
-        static_assert(CanData<R> == contiguous_range<R>);
-        static_assert(CanData<const R> == contiguous_range<const R>);
+        static_assert(CanMemberData<R> == (contiguous_range<V> && sized_range<V>) );
+        static_assert(contiguous_range<R> == CanMemberData<R>);
+        if constexpr (CanMemberData<R>) {
+            assert(r.data() == &*r.begin());
+        }
+        static_assert(CanMemberData<const R> == (contiguous_range<const V> && sized_range<const V>) );
+        static_assert(contiguous_range<const R> == CanMemberData<const R>);
+        if constexpr (CanMemberData<const R>) {
+            assert(as_const(r).data() == &*as_const(r).begin());
+        }
+
         if (!is_constant_evaluated() && !is_empty) {
             // Validate view_interface::operator[]
             if constexpr (CanIndex<R>) {
