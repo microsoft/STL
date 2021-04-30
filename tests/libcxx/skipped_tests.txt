@@ -667,15 +667,14 @@ utilities\allocator.adaptor\allocator.adaptor.members\construct_pair_values.pass
 utilities\allocator.adaptor\allocator.adaptor.members\construct_type.pass.cpp
 
 # Tests ignore the return value of sto{meow}, triggering nodiscard warnings
-strings\string.conversions\stoll.pass.cpp
-strings\string.conversions\stoi.pass.cpp
 strings\string.conversions\stod.pass.cpp
 strings\string.conversions\stof.pass.cpp
-strings\string.conversions\stod.pass.cpp
+strings\string.conversions\stoi.pass.cpp
 strings\string.conversions\stol.pass.cpp
-strings\string.conversions\stoull.pass.cpp
 strings\string.conversions\stold.pass.cpp
+strings\string.conversions\stoll.pass.cpp
 strings\string.conversions\stoul.pass.cpp
+strings\string.conversions\stoull.pass.cpp
 
 # *** LIKELY STL BUGS ***
 # Not yet analyzed, likely STL bugs. Assertions and other runtime failures.
