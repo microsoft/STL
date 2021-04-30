@@ -781,6 +781,7 @@ void test_invalid_parameter_handler(const wchar_t* const expression, const wchar
 }
 
 void test_invalid_argument() {
+#ifndef _M_CEE_PURE
     _set_invalid_parameter_handler(test_invalid_parameter_handler);
 
     time_t t = time(nullptr);
@@ -798,6 +799,7 @@ void test_invalid_argument() {
         ss << put_time(&currentTime, "%Y-%m-%d-%H-%M-%s");
         assert(ss.rdstate() == ios_base::badbit);
     }
+#endif // _M_CEE_PURE
 }
 
 void test_buffer_resizing() {
