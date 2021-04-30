@@ -1927,7 +1927,7 @@ namespace ranges {
                 if constexpr (random_access_range<_Vw>) {
                     return _RANGES begin(_Range);
                 } else {
-                    const auto _Size = size();
+                    const auto _Size = static_cast<range_difference_t<_Vw>>(size());
                     return counted_iterator{_RANGES begin(_Range), _Size};
                 }
             } else {
@@ -1940,7 +1940,7 @@ namespace ranges {
                 if constexpr (random_access_range<const _Vw>) {
                     return _RANGES begin(_Range);
                 } else {
-                    const auto _Size = size();
+                    const auto _Size = static_cast<range_difference_t<_Vw>>(size());
                     return counted_iterator{_RANGES begin(_Range), _Size};
                 }
             } else {
