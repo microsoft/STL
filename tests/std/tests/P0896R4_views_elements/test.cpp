@@ -47,7 +47,7 @@ constexpr bool test_one(Rng&& rng) {
     STATIC_ASSERT(bidirectional_range<R> == bidirectional_range<Rng>);
     STATIC_ASSERT(random_access_range<R> == random_access_range<Rng>);
     STATIC_ASSERT(!contiguous_range<R>);
-    STATIC_ASSERT(borrowed_range<R> == borrowed_range<Rng>);
+    STATIC_ASSERT(borrowed_range<R> == borrowed_range<V>);
 
     // ... with lvalue argument
     STATIC_ASSERT(CanViewElements<Rng&>);

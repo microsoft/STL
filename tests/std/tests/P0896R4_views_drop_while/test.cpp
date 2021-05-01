@@ -48,7 +48,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     STATIC_ASSERT(bidirectional_range<R> == bidirectional_range<Rng>);
     STATIC_ASSERT(random_access_range<R> == random_access_range<Rng>);
     STATIC_ASSERT(contiguous_range<R> == contiguous_range<Rng>);
-    STATIC_ASSERT(borrowed_range<R> == borrowed_range<Rng>);
+    STATIC_ASSERT(borrowed_range<R> == borrowed_range<V>);
 
     // Validate range adaptor object and range adaptor closure
     constexpr auto closure = views::drop_while(is_less_than<3>);

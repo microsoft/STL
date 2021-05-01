@@ -35,7 +35,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     static_assert(ranges::bidirectional_range<R>);
     static_assert(random_access_range<R> == random_access_range<Rng>);
     static_assert(!ranges::contiguous_range<R>);
-    static_assert(borrowed_range<R> == borrowed_range<Rng>);
+    static_assert(borrowed_range<R> == borrowed_range<V>);
 
     // Validate range adapter object
     // ...with lvalue argument
