@@ -22,5 +22,6 @@ const monthly_table = [
     { date: '2021-01-16', merge_bar: 22, },
     { date: '2021-02-16', merge_bar: 58, },
     { date: '2021-03-16', merge_bar: 52, },
+    { date: '2021-04-16', merge_bar: 65, },
 ];
 // Generated file - DO NOT EDIT manually!
