@@ -5272,6 +5272,7 @@ struct _Chrono_format_specs {
     int _Dynamic_precision_index = -1;
     _Fmt_align _Alignment        = _Fmt_align::_None;
     uint8_t _Fill_length         = 1;
+    bool _Localized              = false;
     // At most one codepoint (so one char32_t or four utf-8 char8_t)
     _CharT _Fill[4 / sizeof(_CharT)] = {_CharT{' '}};
     // recursive definition in grammar, so could have any number of these
@@ -5935,7 +5936,7 @@ namespace chrono {
             if (_Specs._Chrono_specs_list.empty()) {
                 _Stream << _Val; // N4885 [time.format]/6
             } else {
-                _Stream.imbue(_FormatCtx.locale());
+                _Stream.imbue(_Specs._Localized ? _FormatCtx.locale() : std::locale::classic());
                 if constexpr (_Is_specialization_v<_Ty, hh_mm_ss>) {
                     if (_Val.is_negative()) {
                         _Stream << _CharT{'-'};
