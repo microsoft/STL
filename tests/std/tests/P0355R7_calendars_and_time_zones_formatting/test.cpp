@@ -48,6 +48,7 @@ struct testing_callbacks {
     int expected_precision               = -1;
     size_t expected_dynamic_precision    = static_cast<size_t>(-1);
     bool expected_auto_dynamic_precision = false;
+    bool expected_localized              = false;
     vector<_Chrono_spec<CharT>>& expected_chrono_specs;
     size_t curr_index = 0;
 
@@ -74,6 +75,9 @@ struct testing_callbacks {
     }
     void _On_dynamic_precision(_Auto_id_tag) {
         assert(expected_auto_dynamic_precision);
+    }
+    void _On_localized() {
+        assert(expected_localized);
     }
     void _On_conversion_spec(char mod, CharT type) {
         assert(mod == expected_chrono_specs[curr_index]._Modifier);
@@ -900,8 +904,34 @@ void test_zoned_time_formatter() {
 
 template <typename CharT>
 void test_locale() {
-    assert(format(locale{"zh-CN"}, STR("{:^22%Y %B %d %A}"), 2021y / June / 16d)
+    assert(format(locale{"zh-CN"}, STR("{:^22L%Y %B %d %A}"), 2021y / June / 16d)
            == STR(" 2021 \u516D\u6708 16 \u661F\u671F\u4E09  "));
+
+
+    locale loc("de-DE");
+
+    assert(format(loc, STR("{:%S}"), 42ms) == STR("00.042"));
+    assert(format(loc, STR("{:L%S}"), 42ms) == STR("00,042"));
+
+    auto stream = [=](auto value) {
+        std::basic_ostringstream<CharT> os;
+        os.imbue(loc);
+        os << value;
+        return os.str();
+    };
+    assert(stream(month{May}) == STR("Mai"));
+    assert(stream(weekday{Tuesday}) == STR("Di"));
+    assert(stream(weekday_indexed{Tuesday[3]}) == STR("Di[3]"));
+    assert(stream(weekday_indexed{Tuesday[42]}) == STR("Di[42 is not a valid index]"));
+    assert(stream(weekday_last{Tuesday}) == STR("Di[last]"));
+    assert(stream(month_day{May, day{4}}) == STR("Mai/04"));
+    assert(stream(month_day_last{May}) == STR("Mai/last"));
+    assert(stream(month_weekday{May / Tuesday[4]}) == STR("Mai/Di[4]"));
+    assert(stream(month_weekday_last{May / Tuesday[last]}) == STR("Mai/Di[last]"));
+    assert(stream(year_month{2021y / May}) == STR("2021/Mai"));
+    assert(stream(year_month_day_last{2021y / May / last}) == STR("2021/Mai/last"));
+    assert(stream(year_month_weekday{2021y / May / Tuesday[4]}) == STR("2021/Mai/Di[4]"));
+    assert(stream(year_month_weekday_last{2021y / May / Tuesday[last]}) == STR("2021/Mai/Di[last]"));
 }
 
 void test() {
