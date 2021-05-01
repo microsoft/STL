@@ -232,6 +232,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/xstddef
     ${CMAKE_CURRENT_LIST_DIR}/inc/xstring
     ${CMAKE_CURRENT_LIST_DIR}/inc/xthreads.h
+    ${CMAKE_CURRENT_LIST_DIR}/inc/xtime0.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xtimec.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xtr1common
     ${CMAKE_CURRENT_LIST_DIR}/inc/xtree
@@ -256,6 +257,7 @@ set(IMPLIB_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/syserror_import_lib.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/vector_algorithms.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xonce2.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/xtime0.cpp
 )
 
 # The following files are linked in msvcp140[d][_clr].dll.
