@@ -28,7 +28,7 @@ sub CustomBuildHook()
         "exception",
         "execution",
         "filesystem",
-        # "format",
+        "format",
         "forward_list",
         "fstream",
         "functional",

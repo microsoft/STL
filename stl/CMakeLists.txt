@@ -141,6 +141,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/unordered_set
     ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/vector
     ${CMAKE_CURRENT_LIST_DIR}/inc/filesystem
+    ${CMAKE_CURRENT_LIST_DIR}/inc/format
     ${CMAKE_CURRENT_LIST_DIR}/inc/forward_list
     ${CMAKE_CURRENT_LIST_DIR}/inc/fstream
     ${CMAKE_CURRENT_LIST_DIR}/inc/functional
@@ -248,6 +249,7 @@ endforeach()
 # Objs that exist in both libcpmt[d][01].lib and msvcprt[d].lib.
 set(IMPLIB_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/filesystem.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/format.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/locale0_implib.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/nothrow.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/sharedmutex.cpp
