@@ -5328,6 +5328,10 @@ public:
         _Specs._Dynamic_precision_index = _Verify_dynamic_arg_index_in_range(_Parse_ctx.next_arg_id());
     }
 
+    constexpr void _On_localized() {
+        _Specs._Localized = true;
+    }
+
     constexpr void _On_conversion_spec(char _Modifier, _CharT _Type) {
         // NOTE: same performance note from _Basic_format_specs also applies here
         if (_Modifier != '\0' && _Modifier != 'E' && _Modifier != 'O') {
@@ -5404,6 +5408,14 @@ _NODISCARD constexpr const _CharT* _Parse_chrono_format_specs(
 
     if (*_Begin == '.') {
         _Begin = _Parse_precision(_Begin, _End, _Callbacks);
+        if (_Begin == _End) {
+            return _Begin;
+        }
+    }
+
+    if (*_Begin == 'L') {
+        _Callbacks._On_localized();
+        ++_Begin;
         if (_Begin == _End) {
             return _Begin;
         }

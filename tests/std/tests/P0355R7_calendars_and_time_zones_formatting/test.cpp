@@ -39,6 +39,7 @@ struct testing_callbacks {
     int expected_precision               = -1;
     size_t expected_dynamic_precision    = static_cast<size_t>(-1);
     bool expected_auto_dynamic_precision = false;
+    bool expected_localized              = false;
     vector<_Chrono_spec<CharT>>& expected_chrono_specs;
     size_t curr_index = 0;
 
@@ -65,6 +66,9 @@ struct testing_callbacks {
     }
     void _On_dynamic_precision(_Auto_id_tag) {
         assert(expected_auto_dynamic_precision);
+    }
+    void _On_localized() {
+        assert(expected_localized);
     }
     void _On_conversion_spec(char mod, CharT type) {
         assert(mod == expected_chrono_specs[curr_index]._Modifier);
