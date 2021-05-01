@@ -57,11 +57,19 @@ constexpr void smoke_test() {
     }
     {
         // calls with sized ranges of differing size perform no comparisons nor projections
-        constexpr auto proj  = [](auto &&) -> int { abort(); };
-        constexpr auto comp  = [](auto&&, auto &&) -> bool { abort(); };
+        constexpr auto proj  = [](auto&&) -> int { abort(); };
+        constexpr auto comp  = [](auto&&, auto&&) -> bool { abort(); };
         int const one_int[]  = {0};
         int const two_ints[] = {0, 1};
         assert(!equal(one_int, two_ints, comp, proj, proj));
+    }
+    {
+        // Validate memcmp case
+        int arr1[3]{0, 2, 5};
+        int arr2[3]{0, 2, 5};
+        assert(equal(arr1, arr2));
+        arr2[1] = 7;
+        assert(!equal(arr1, arr2));
     }
 }
 

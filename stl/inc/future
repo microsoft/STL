@@ -770,6 +770,9 @@ public:
 
     template <class _Clock, class _Dur>
     future_status wait_until(const chrono::time_point<_Clock, _Dur>& _Abs_time) const { // wait until time point
+#if _HAS_CXX20
+        static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
+#endif // _HAS_CXX20
         if (!valid()) {
             _Throw_future_error(make_error_code(future_errc::no_state));
         }
@@ -874,6 +877,9 @@ class future : public _State_manager<_Ty> {
     using _Mybase = _State_manager<_Ty>;
 
 public:
+    static_assert(!is_array_v<_Ty> && is_object_v<_Ty> && is_destructible_v<_Ty>,
+        "T in future<T> must meet the Cpp17Destructible requirements (N4878 [futures.unique.future]/4).");
+
     future() noexcept {}
 
     future(future&& _Other) noexcept : _Mybase(_STD move(_Other), true) {}
@@ -972,6 +978,9 @@ class shared_future : public _State_manager<_Ty> {
     using _Mybase = _State_manager<_Ty>;
 
 public:
+    static_assert(!is_array_v<_Ty> && is_object_v<_Ty> && is_destructible_v<_Ty>,
+        "T in shared_future<T> must meet the Cpp17Destructible requirements (N4878 [futures.shared.future]/4).");
+
     shared_future() noexcept {}
 
     shared_future(const shared_future& _Other) noexcept : _Mybase(_Other) {}
@@ -1139,6 +1148,9 @@ private:
 template <class _Ty>
 class promise { // class that defines an asynchronous provider that holds a value
 public:
+    static_assert(!is_array_v<_Ty> && is_object_v<_Ty> && is_destructible_v<_Ty>,
+        "T in promise<T> must meet the Cpp17Destructible requirements (N4878 [futures.promise]/1).");
+
     promise() : _MyPromise(new _Associated_state<_Ty>) {}
 
     template <class _Alloc>
@@ -1415,6 +1427,18 @@ public:
 private:
     _MyPromiseType _MyPromise;
 };
+
+#if _HAS_CXX17
+#define _PACKAGED_TASK_DEDUCTION_GUIDE(CALL_OPT, X1, X2, X3) \
+    template <class _Ret, class... _Types>                   \
+    packaged_task(_Ret(CALL_OPT*)(_Types...)) -> packaged_task<_Ret(_Types...)>; // intentionally discards CALL_OPT
+
+_NON_MEMBER_CALL(_PACKAGED_TASK_DEDUCTION_GUIDE, X1, X2, X3)
+#undef _PACKAGED_TASK_DEDUCTION_GUIDE
+
+template <class _Fx>
+packaged_task(_Fx) -> packaged_task<typename _Deduce_signature<_Fx>::type>;
+#endif // _HAS_CXX17
 
 #if _HAS_FUNCTION_ALLOCATOR_SUPPORT
 template <class _Ty, class _Alloc>

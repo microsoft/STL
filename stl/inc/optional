@@ -11,6 +11,9 @@
 #if !_HAS_CXX17
 #pragma message("The contents of <optional> are available only with C++17 or later.")
 #else // ^^^ !_HAS_CXX17 / _HAS_CXX17 vvv
+#if _HAS_CXX20
+#include <compare>
+#endif // _HAS_CXX20
 #include <exception>
 #include <initializer_list>
 #include <type_traits>
@@ -338,22 +341,40 @@ public:
 
     // observers [optional.object.observe]
     _NODISCARD constexpr const _Ty* operator->() const {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(this->_Has_value, "Cannot access value of empty optional");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
         return _STD addressof(this->_Value);
     }
     _NODISCARD constexpr _Ty* operator->() {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(this->_Has_value, "Cannot access value of empty optional");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
         return _STD addressof(this->_Value);
     }
 
     _NODISCARD constexpr const _Ty& operator*() const& {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(this->_Has_value, "Cannot access value of empty optional");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
         return this->_Value;
     }
     _NODISCARD constexpr _Ty& operator*() & {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(this->_Has_value, "Cannot access value of empty optional");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
         return this->_Value;
     }
     _NODISCARD constexpr _Ty&& operator*() && {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(this->_Has_value, "Cannot access value of empty optional");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
         return _STD move(this->_Value);
     }
     _NODISCARD constexpr const _Ty&& operator*() const&& {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(this->_Has_value, "Cannot access value of empty optional");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
         return _STD move(this->_Value);
     }
 
@@ -397,7 +418,7 @@ public:
     _NODISCARD constexpr remove_cv_t<_Ty> value_or(_Ty2&& _Right) const& {
         static_assert(is_convertible_v<const _Ty&, remove_cv_t<_Ty>>,
             "The const overload of optional<T>::value_or requires const T& to be convertible to remove_cv_t<T> "
-            "([optional.observe]/18 as modified by LWG-XXXX).");
+            "(N4885 [optional.observe]/17 as modified by LWG-3424).");
         static_assert(is_convertible_v<_Ty2, _Ty>,
             "optional<T>::value_or(U) requires U to be convertible to T (N4828 [optional.observe]/18).");
 
@@ -411,7 +432,7 @@ public:
     _NODISCARD constexpr remove_cv_t<_Ty> value_or(_Ty2&& _Right) && {
         static_assert(is_convertible_v<_Ty, remove_cv_t<_Ty>>,
             "The rvalue overload of optional<T>::value_or requires T to be convertible to remove_cv_t<T> "
-            "([optional.observe]/20 as modified by LWG-XXXX).");
+            "(N4885 [optional.observe]/19 as modified by LWG-3424).");
         static_assert(is_convertible_v<_Ty2, _Ty>,
             "optional<T>::value_or(U) requires U to be convertible to T (N4828 [optional.observe]/20).");
 
@@ -462,11 +483,30 @@ _NODISCARD constexpr bool operator>=(const optional<_Ty1>& _Left, const optional
     return !_Right.has_value() || (_Left.has_value() && *_Left >= *_Right);
 }
 
+#ifdef __cpp_lib_concepts
+template <class _Ty1, three_way_comparable_with<_Ty1> _Ty2>
+_NODISCARD constexpr compare_three_way_result_t<_Ty1, _Ty2> operator<=>(
+    const optional<_Ty1>& _Left, const optional<_Ty2>& _Right) {
+    if (_Left && _Right) {
+        return *_Left <=> *_Right;
+    }
+
+    return _Left.has_value() <=> _Right.has_value();
+}
+#endif // __cpp_lib_concepts
+
 // COMPARISONS WITH nullopt [optional.nullops]
 template <class _Ty>
 _NODISCARD constexpr bool operator==(const optional<_Ty>& _Left, nullopt_t) noexcept {
     return !_Left.has_value();
 }
+
+#if _HAS_CXX20
+template <class _Ty>
+_NODISCARD constexpr strong_ordering operator<=>(const optional<_Ty>& _Left, nullopt_t) noexcept {
+    return _Left.has_value() <=> false;
+}
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _Ty>
 _NODISCARD constexpr bool operator==(nullopt_t, const optional<_Ty>& _Right) noexcept {
     return !_Right.has_value();
@@ -516,6 +556,7 @@ template <class _Ty>
 _NODISCARD constexpr bool operator>=(nullopt_t, const optional<_Ty>& _Right) noexcept {
     return !_Right.has_value();
 }
+#endif // !_HAS_CXX20
 
 // COMPARISONS WITH T [optional.comp_with_t]
 template <class _Ty>
@@ -549,6 +590,7 @@ template <class _Ty1, class _Ty2, _Enable_if_comparable_with_equal<_Ty1, _Ty2> =
 _NODISCARD constexpr bool operator==(const optional<_Ty1>& _Left, const _Ty2& _Right) {
     return _Left ? *_Left == _Right : false;
 }
+
 template <class _Ty1, class _Ty2, _Enable_if_comparable_with_equal<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator==(const _Ty1& _Left, const optional<_Ty2>& _Right) {
     return _Right ? _Left == *_Right : false;
@@ -598,6 +640,22 @@ template <class _Ty1, class _Ty2, _Enable_if_comparable_with_greater_equal<_Ty1,
 _NODISCARD constexpr bool operator>=(const _Ty1& _Left, const optional<_Ty2>& _Right) {
     return _Right ? _Left >= *_Right : true;
 }
+
+#ifdef __cpp_lib_concepts
+// clang-format off
+template <class _Ty1, class _Ty2>
+    requires (!_Is_specialization_v<_Ty2, optional>) // TRANSITION, GH-1674
+        && three_way_comparable_with<_Ty1, _Ty2>
+_NODISCARD constexpr compare_three_way_result_t<_Ty1, _Ty2>
+    operator<=>(const optional<_Ty1>& _Left, const _Ty2& _Right) {
+    // clang-format on
+    if (_Left) {
+        return *_Left <=> _Right;
+    }
+
+    return strong_ordering::less;
+}
+#endif // __cpp_lib_concepts
 
 // FUNCTION TEMPLATE swap [optional.specalg]
 template <class _Ty, enable_if_t<is_move_constructible_v<_Ty> && is_swappable_v<_Ty>, int> = 0>

@@ -14,6 +14,7 @@
 #include <tuple>
 #include <xthreads.h>
 #if _HAS_CXX20
+#include <compare>
 #include <stop_token>
 #endif // _HAS_CXX20
 
@@ -85,7 +86,7 @@ private:
 
 public:
     template <class _Fn, class... _Args, enable_if_t<!is_same_v<_Remove_cvref_t<_Fn>, thread>, int> = 0>
-    explicit thread(_Fn&& _Fx, _Args&&... _Ax) {
+    _NODISCARD_CTOR explicit thread(_Fn&& _Fx, _Args&&... _Ax) {
         _Start(_STD forward<_Fn>(_Fx), _STD forward<_Args>(_Ax)...);
     }
 
@@ -156,6 +157,22 @@ private:
     _Thrd_t _Thr;
 };
 
+template <class _Rep, class _Period>
+_NODISCARD auto _To_absolute_time(const chrono::duration<_Rep, _Period>& _Rel_time) noexcept {
+    constexpr auto _Zero                 = chrono::duration<_Rep, _Period>::zero();
+    const auto _Now                      = chrono::steady_clock::now();
+    decltype(_Now + _Rel_time) _Abs_time = _Now; // return common type
+    if (_Rel_time > _Zero) {
+        constexpr auto _Forever = (chrono::steady_clock::time_point::max)();
+        if (_Abs_time < _Forever - _Rel_time) {
+            _Abs_time += _Rel_time;
+        } else {
+            _Abs_time = _Forever;
+        }
+    }
+    return _Abs_time;
+}
+
 namespace this_thread {
     _NODISCARD thread::id get_id() noexcept;
 
@@ -169,6 +186,9 @@ namespace this_thread {
 
     template <class _Clock, class _Duration>
     void sleep_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
+#if _HAS_CXX20
+        static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
+#endif // _HAS_CXX20
         for (;;) {
             const auto _Now = _Clock::now();
             if (_Abs_time <= _Now) {
@@ -183,7 +203,7 @@ namespace this_thread {
 
     template <class _Rep, class _Period>
     void sleep_for(const chrono::duration<_Rep, _Period>& _Rel_time) {
-        sleep_until(chrono::steady_clock::now() + _Rel_time);
+        sleep_until(_To_absolute_time(_Rel_time));
     }
 } // namespace this_thread
 
@@ -199,7 +219,11 @@ private:
     friend thread::id thread::get_id() const noexcept;
     friend thread::id this_thread::get_id() noexcept;
     friend bool operator==(thread::id _Left, thread::id _Right) noexcept;
+#if _HAS_CXX20
+    friend strong_ordering operator<=>(thread::id _Left, thread::id _Right) noexcept;
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     friend bool operator<(thread::id _Left, thread::id _Right) noexcept;
+#endif // !_HAS_CXX20
     template <class _Ch, class _Tr>
     friend basic_ostream<_Ch, _Tr>& operator<<(basic_ostream<_Ch, _Tr>& _Str, thread::id _Id);
     friend hash<thread::id>;
@@ -221,6 +245,11 @@ _NODISCARD inline bool operator==(thread::id _Left, thread::id _Right) noexcept 
     return _Left._Id == _Right._Id;
 }
 
+#if _HAS_CXX20
+_NODISCARD inline strong_ordering operator<=>(thread::id _Left, thread::id _Right) noexcept {
+    return _Left._Id <=> _Right._Id;
+}
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 _NODISCARD inline bool operator!=(thread::id _Left, thread::id _Right) noexcept {
     return !(_Left == _Right);
 }
@@ -240,6 +269,7 @@ _NODISCARD inline bool operator>(thread::id _Left, thread::id _Right) noexcept {
 _NODISCARD inline bool operator>=(thread::id _Left, thread::id _Right) noexcept {
     return !(_Left < _Right);
 }
+#endif // !_HAS_CXX20
 
 template <class _Ch, class _Tr>
 basic_ostream<_Ch, _Tr>& operator<<(basic_ostream<_Ch, _Tr>& _Str, thread::id _Id) {
@@ -266,7 +296,7 @@ public:
     jthread() noexcept : _Impl{}, _Ssource{nostopstate} {}
 
     template <class _Fn, class... _Args, enable_if_t<!is_same_v<remove_cvref_t<_Fn>, jthread>, int> = 0>
-    explicit jthread(_Fn&& _Fx, _Args&&... _Ax) {
+    _NODISCARD_CTOR explicit jthread(_Fn&& _Fx, _Args&&... _Ax) {
         if constexpr (is_invocable_v<decay_t<_Fn>, stop_token, decay_t<_Args>...>) {
             _Impl._Start(_STD forward<_Fn>(_Fx), _Ssource.get_token(), _STD forward<_Args>(_Ax)...);
         } else {

@@ -17,15 +17,20 @@ or are running from Azure Cloud Shell.
 
 $ErrorActionPreference = 'Stop'
 
+# https://aka.ms/azps-changewarnings
+$Env:SuppressAzurePowerShellBreakingChangeWarnings = 'true'
+
 $Location = 'westus2'
 $Prefix = 'StlBuild-' + (Get-Date -Format 'yyyy-MM-dd')
-$VMSize = 'Standard_D16as_v4'
+$VMSize = 'Standard_D32ds_v4'
 $ProtoVMName = 'PROTOTYPE'
 $LiveVMPrefix = 'BUILD'
-$WindowsServerSku = '2019-Datacenter'
+$ImagePublisher = 'MicrosoftWindowsDesktop'
+$ImageOffer = 'Windows-10'
+$ImageSku = '20h2-ent-g2'
 
 $ProgressActivity = 'Creating Scale Set'
-$TotalProgress = 11
+$TotalProgress = 13
 $CurrentProgress = 1
 
 <#
@@ -162,6 +167,14 @@ function Wait-Shutdown {
 ####################################################################################################
 Write-Progress `
   -Activity $ProgressActivity `
+  -Status 'Setting the subscription context' `
+  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+
+Set-AzContext -SubscriptionName CPP_STL_GitHub
+
+####################################################################################################
+Write-Progress `
+  -Activity $ProgressActivity `
   -Status 'Creating resource group' `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
@@ -257,9 +270,9 @@ $VM = Set-AzVMOperatingSystem `
 $VM = Add-AzVMNetworkInterface -VM $VM -Id $Nic.Id
 $VM = Set-AzVMSourceImage `
   -VM $VM `
-  -PublisherName 'MicrosoftWindowsServer' `
-  -Offer 'WindowsServer' `
-  -Skus $WindowsServerSku `
+  -PublisherName $ImagePublisher `
+  -Offer $ImageOffer `
+  -Skus $ImageSku `
   -Version latest
 
 $VM = Set-AzVMBootDiagnostic -VM $VM -Disable
@@ -329,7 +342,7 @@ Set-AzVM `
 
 $VM = Get-AzVM -ResourceGroupName $ResourceGroupName -Name $ProtoVMName
 $PrototypeOSDiskName = $VM.StorageProfile.OsDisk.Name
-$ImageConfig = New-AzImageConfig -Location $Location -SourceVirtualMachineId $VM.ID
+$ImageConfig = New-AzImageConfig -Location $Location -SourceVirtualMachineId $VM.ID -HyperVGeneration 'V2'
 $Image = New-AzImage -Image $ImageConfig -ImageName $ProtoVMName -ResourceGroupName $ResourceGroupName
 
 ####################################################################################################
@@ -388,9 +401,20 @@ New-AzVmss `
   -VirtualMachineScaleSet $Vmss
 
 ####################################################################################################
+Write-Progress `
+  -Activity $ProgressActivity `
+  -Status 'Enabling VMSS diagnostic logs' `
+  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+
+az vmss diagnostics set `
+  --resource-group $ResourceGroupName `
+  --vmss-name $VmssName `
+  --settings "$PSScriptRoot\vmss-config.json" `
+  --protected-settings "$PSScriptRoot\vmss-protected.json" `
+  --output none
+
+####################################################################################################
 Write-Progress -Activity $ProgressActivity -Completed
 Write-Host "Location: $Location"
 Write-Host "Resource group name: $ResourceGroupName"
-Write-Host "User name: AdminUser"
-Write-Host "Using generated password: $AdminPW"
 Write-Host 'Finished!'

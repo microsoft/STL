@@ -12,9 +12,8 @@
 #if !_HAS_CXX17
 #pragma message("The contents of <charconv> are available only with C++17 or later.")
 #else // ^^^ !_HAS_CXX17 / _HAS_CXX17 vvv
-#include <float.h>
+#include <cstring>
 #include <intrin0.h>
-#include <string.h>
 #include <xbit_ops.h>
 #include <xcharconv.h>
 #include <xcharconv_ryu.h>
@@ -63,34 +62,35 @@ _NODISCARD to_chars_result _Integer_to_chars(
     char* _RNext          = _Buff_end;
 
     switch (_Base) {
-    case 10: { // Derived from _UIntegral_to_buff()
-        // Performance note: Ryu's digit table should be faster here.
-        constexpr bool _Use_chunks = sizeof(_Unsigned) > sizeof(size_t);
+    case 10:
+        { // Derived from _UIntegral_to_buff()
+            // Performance note: Ryu's digit table should be faster here.
+            constexpr bool _Use_chunks = sizeof(_Unsigned) > sizeof(size_t);
 
-        if constexpr (_Use_chunks) { // For 64-bit numbers on 32-bit platforms, work in chunks to avoid 64-bit
-                                     // divisions.
-            while (_Value > 0xFFFF'FFFFU) {
-                // Performance note: Ryu's division workaround would be faster here.
-                unsigned long _Chunk = static_cast<unsigned long>(_Value % 1'000'000'000);
-                _Value               = static_cast<_Unsigned>(_Value / 1'000'000'000);
+            if constexpr (_Use_chunks) { // For 64-bit numbers on 32-bit platforms, work in chunks to avoid 64-bit
+                                         // divisions.
+                while (_Value > 0xFFFF'FFFFU) {
+                    // Performance note: Ryu's division workaround would be faster here.
+                    unsigned long _Chunk = static_cast<unsigned long>(_Value % 1'000'000'000);
+                    _Value               = static_cast<_Unsigned>(_Value / 1'000'000'000);
 
-                for (int _Idx = 0; _Idx != 9; ++_Idx) {
-                    *--_RNext = static_cast<char>('0' + _Chunk % 10);
-                    _Chunk /= 10;
+                    for (int _Idx = 0; _Idx != 9; ++_Idx) {
+                        *--_RNext = static_cast<char>('0' + _Chunk % 10);
+                        _Chunk /= 10;
+                    }
                 }
             }
+
+            using _Truncated = conditional_t<_Use_chunks, unsigned long, _Unsigned>;
+
+            _Truncated _Trunc = static_cast<_Truncated>(_Value);
+
+            do {
+                *--_RNext = static_cast<char>('0' + _Trunc % 10);
+                _Trunc /= 10;
+            } while (_Trunc != 0);
+            break;
         }
-
-        using _Truncated = conditional_t<_Use_chunks, unsigned long, _Unsigned>;
-
-        _Truncated _Trunc = static_cast<_Truncated>(_Value);
-
-        do {
-            *--_RNext = static_cast<char>('0' + _Trunc % 10);
-            _Trunc /= 10;
-        } while (_Trunc != 0);
-        break;
-    }
 
     case 2:
         do {
@@ -124,6 +124,17 @@ _NODISCARD to_chars_result _Integer_to_chars(
         do {
             *--_RNext = _Charconv_digits[_Value & 0b11111];
             _Value >>= 5;
+        } while (_Value != 0);
+        break;
+
+    case 3:
+    case 5:
+    case 6:
+    case 7:
+    case 9:
+        do {
+            *--_RNext = static_cast<char>('0' + _Value % _Base);
+            _Value    = static_cast<_Unsigned>(_Value / _Base);
         } while (_Value != 0);
         break;
 
@@ -198,6 +209,9 @@ to_chars_result to_chars(char* _First, char* _Last, bool _Value, int _Base = 10)
 struct from_chars_result {
     const char* ptr;
     errc ec;
+#if _HAS_CXX20
+    _NODISCARD friend bool operator==(const from_chars_result&, const from_chars_result&) = default;
+#endif // _HAS_CXX20
 };
 
 // FUNCTION from_chars (STRING TO INTEGER)
@@ -407,8 +421,8 @@ struct _Big_integer_flt {
     }
 
     static constexpr uint32_t _Maximum_bits = 1074 // 1074 bits required to represent 2^1074
-                                              + 2552 // ceil(log2(10^768))
-                                              + 54; // shift space
+                                            + 2552 // ceil(log2(10^768))
+                                            + 54; // shift space
 
     static constexpr uint32_t _Element_bits = 32;
 
@@ -1023,7 +1037,7 @@ _NODISCARD inline uint64_t _Divide(_Big_integer_flt& _Numerator, const _Big_inte
                 uint32_t _U_carry = 0;
                 for (uint32_t _Iu2 = 0; _Iu2 < _Cu_den; ++_Iu2) {
                     const uint64_t _Sum = static_cast<uint64_t>(_Numerator._Mydata[_Iu + _Iu2])
-                                          + static_cast<uint64_t>(_Denominator._Mydata[_Iu2]) + _U_carry;
+                                        + static_cast<uint64_t>(_Denominator._Mydata[_Iu2]) + _U_carry;
 
                     _Numerator._Mydata[_Iu + _Iu2] = static_cast<uint32_t>(_Sum);
                     _U_carry                       = static_cast<uint32_t>(_Sum >> 32);
@@ -1055,60 +1069,6 @@ _NODISCARD inline uint64_t _Divide(_Big_integer_flt& _Numerator, const _Big_inte
 }
 
 // ^^^^^^^^^^ DERIVED FROM corecrt_internal_big_integer.h ^^^^^^^^^^
-
-
-// vvvvvvvvvv DERIVED FROM corecrt_internal_fltintrn.h vvvvvvvvvv
-
-template <class _FloatingType>
-struct _Floating_type_traits;
-
-template <>
-struct _Floating_type_traits<float> {
-    static constexpr int32_t _Mantissa_bits = FLT_MANT_DIG;
-    static constexpr int32_t _Exponent_bits = sizeof(float) * CHAR_BIT - FLT_MANT_DIG;
-
-    static constexpr int32_t _Maximum_binary_exponent = FLT_MAX_EXP - 1;
-    static constexpr int32_t _Minimum_binary_exponent = FLT_MIN_EXP - 1;
-
-    static constexpr int32_t _Exponent_bias = 127;
-
-    static constexpr int32_t _Sign_shift     = _Exponent_bits + _Mantissa_bits - 1;
-    static constexpr int32_t _Exponent_shift = _Mantissa_bits - 1;
-
-    using _Uint_type = uint32_t;
-
-    static constexpr uint32_t _Exponent_mask             = (1u << _Exponent_bits) - 1;
-    static constexpr uint32_t _Normal_mantissa_mask      = (1u << _Mantissa_bits) - 1;
-    static constexpr uint32_t _Denormal_mantissa_mask    = (1u << (_Mantissa_bits - 1)) - 1;
-    static constexpr uint32_t _Special_nan_mantissa_mask = 1u << (_Mantissa_bits - 2);
-    static constexpr uint32_t _Shifted_sign_mask         = 1u << _Sign_shift;
-    static constexpr uint32_t _Shifted_exponent_mask     = _Exponent_mask << _Exponent_shift;
-};
-
-template <>
-struct _Floating_type_traits<double> {
-    static constexpr int32_t _Mantissa_bits = DBL_MANT_DIG;
-    static constexpr int32_t _Exponent_bits = sizeof(double) * CHAR_BIT - DBL_MANT_DIG;
-
-    static constexpr int32_t _Maximum_binary_exponent = DBL_MAX_EXP - 1;
-    static constexpr int32_t _Minimum_binary_exponent = DBL_MIN_EXP - 1;
-
-    static constexpr int32_t _Exponent_bias = 1023;
-
-    static constexpr int32_t _Sign_shift     = _Exponent_bits + _Mantissa_bits - 1;
-    static constexpr int32_t _Exponent_shift = _Mantissa_bits - 1;
-
-    using _Uint_type = uint64_t;
-
-    static constexpr uint64_t _Exponent_mask             = (1ULL << _Exponent_bits) - 1;
-    static constexpr uint64_t _Normal_mantissa_mask      = (1ULL << _Mantissa_bits) - 1;
-    static constexpr uint64_t _Denormal_mantissa_mask    = (1ULL << (_Mantissa_bits - 1)) - 1;
-    static constexpr uint64_t _Special_nan_mantissa_mask = 1ULL << (_Mantissa_bits - 2);
-    static constexpr uint64_t _Shifted_sign_mask         = 1ULL << _Sign_shift;
-    static constexpr uint64_t _Shifted_exponent_mask     = _Exponent_mask << _Exponent_shift;
-};
-
-// ^^^^^^^^^^ DERIVED FROM corecrt_internal_fltintrn.h ^^^^^^^^^^
 
 
 // vvvvvvvvvv DERIVED FROM corecrt_internal_strtox.h vvvvvvvvvv
@@ -1431,7 +1391,7 @@ _NODISCARD errc _Assemble_floating_point_value_from_big_integer_flt(const _Big_i
         const int32_t _Exponent = static_cast<int32_t>(_Base_exponent + _Bottom_element_index * 32);
 
         const uint64_t _Mantissa = _Integer_value._Mydata[_Bottom_element_index]
-                                   + (static_cast<uint64_t>(_Integer_value._Mydata[_Middle_element_index]) << 32);
+                                 + (static_cast<uint64_t>(_Integer_value._Mydata[_Middle_element_index]) << 32);
 
         bool _Has_zero_tail = !_Has_nonzero_fractional_part;
         for (uint32_t _Ix = 0; _Has_zero_tail && _Ix != _Bottom_element_index; ++_Ix) {
@@ -1582,8 +1542,8 @@ _NODISCARD errc _Convert_decimal_string_to_floating_type(
     const uint32_t _Fractional_denominator_bits = _Bit_scan_reverse(_Fractional_denominator);
 
     const uint32_t _Fractional_shift = _Fractional_denominator_bits > _Fractional_numerator_bits
-                                           ? _Fractional_denominator_bits - _Fractional_numerator_bits
-                                           : 0;
+                                         ? _Fractional_denominator_bits - _Fractional_numerator_bits
+                                         : 0;
 
     if (_Fractional_shift > 0) {
         [[maybe_unused]] const bool _Shift_success1 =
@@ -1650,8 +1610,8 @@ _NODISCARD errc _Convert_decimal_string_to_floating_type(
     // Then, in both cases, we subtract an additional one from the exponent,
     // to account for the fact that we've generated an extra bit of precision, for use in rounding.
     const int32_t _Final_exponent = _Integer_bits_of_precision > 0
-                                        ? static_cast<int32_t>(_Integer_bits_of_precision - 2)
-                                        : -static_cast<int32_t>(_Fractional_exponent) - 1;
+                                      ? static_cast<int32_t>(_Integer_bits_of_precision - 2)
+                                      : -static_cast<int32_t>(_Fractional_exponent) - 1;
 
     return _Assemble_floating_point_value(
         _Complete_mantissa, _Final_exponent, _Data._Myis_negative, _Has_zero_tail, _Result);
@@ -2198,10 +2158,10 @@ _NODISCARD to_chars_result _Floating_to_chars_hex_precision(
         _Buffer_size -= _Precision;
 
         const int32_t _Length_excluding_precision = 1 // leading hexit
-                                                    + static_cast<int32_t>(_Precision > 0) // possible decimal point
-                                                    // excluding `+ _Precision`, hexits after decimal point
-                                                    + 2 // "p+" or "p-"
-                                                    + _Exponent_length; // exponent
+                                                  + static_cast<int32_t>(_Precision > 0) // possible decimal point
+                                                  // excluding `+ _Precision`, hexits after decimal point
+                                                  + 2 // "p+" or "p-"
+                                                  + _Exponent_length; // exponent
 
         if (_Buffer_size < _Length_excluding_precision) {
             return {_Last, errc::value_too_large};

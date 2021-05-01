@@ -63,17 +63,21 @@ public:
         return _Ptr == _Right._Ptr;
     }
 
+#if !_HAS_CXX20
     _NODISCARD bool operator!=(const _Flist_unchecked_const_iterator& _Right) const noexcept {
         return !(*this == _Right);
     }
+#endif // !_HAS_CXX20
 
     _NODISCARD bool operator==(_Default_sentinel) const noexcept {
         return _Ptr == nullptr;
     }
 
+#if !_HAS_CXX20
     _NODISCARD bool operator!=(_Default_sentinel) const noexcept {
         return _Ptr != nullptr;
     }
+#endif // !_HAS_CXX20
 
     _Nodeptr _Ptr; // pointer to node
 };
@@ -161,9 +165,11 @@ public:
         return this->_Ptr == _Right._Ptr;
     }
 
+#if !_HAS_CXX20
     _NODISCARD bool operator!=(const _Flist_const_iterator& _Right) const noexcept {
         return !(*this == _Right);
     }
+#endif // !_HAS_CXX20
 
 #if _ITERATOR_DEBUG_LEVEL == 2
     friend void _Verify_range(const _Flist_const_iterator& _First, const _Flist_const_iterator& _Last) noexcept {
@@ -615,7 +621,7 @@ public:
     forward_list(forward_list&& _Right, const _Alloc& _Al) noexcept(
         _Alnode_traits::is_always_equal::value) // strengthened
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        if _CONSTEXPR_IF (!_Alty_traits::is_always_equal::value) {
+        if constexpr (!_Alty_traits::is_always_equal::value) {
             if (_Getal() != _Right._Getal()) {
                 _Flist_insert_after_op2<_Alnode> _Insert_op(_Getal());
                 _Insert_op._Append_range_unchecked(
@@ -812,6 +818,10 @@ public:
 
     _Default_sentinel _Unchecked_end() const noexcept {
         return {};
+    }
+
+    _Unchecked_const_iterator _Unchecked_end_iter() const noexcept {
+        return _Unchecked_const_iterator(nullptr, nullptr);
     }
 
     iterator _Make_iter(_Nodeptr _Where) const noexcept {
@@ -1248,7 +1258,7 @@ private:
         auto& _Right_data = _Right._Mypair._Myval2;
 #if _ITERATOR_DEBUG_LEVEL != 0
         _DEBUG_ORDER_UNWRAPPED(_Right._Unchecked_begin(), _Default_sentinel{}, _Pred);
-        if _CONSTEXPR_IF (!_Alnode_traits::is_always_equal::value) {
+        if constexpr (!_Alnode_traits::is_always_equal::value) {
             _STL_VERIFY(_Getal() == _Right._Getal(), "list allocators incompatible for merge");
         }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -1269,7 +1279,7 @@ private:
 #if _ITERATOR_DEBUG_LEVEL == 2
         constexpr bool _Noexcept =
             noexcept(_DEBUG_LT_PRED(_Pred, _My_data._Myhead->_Myval, _Right_data._Myhead->_Myval));
-        if _CONSTEXPR_IF (_Noexcept) {
+        if constexpr (_Noexcept) {
             // if the comparison is noexcept, we can take all the iterators in one go and avoid quadratic updates of
             // the iterator chain
             _Lockit _Lock(_LOCK_DEBUG);
@@ -1321,7 +1331,7 @@ private:
             }
 
 #if _ITERATOR_DEBUG_LEVEL == 2
-            if _CONSTEXPR_IF (!_Noexcept) {
+            if constexpr (!_Noexcept) {
                 _Lockit _Lock(_LOCK_DEBUG);
                 for (auto _Next = _First2; _Next != _Run_end; _Next = _Next->_Next) {
                     _Transfer_ownership(_Right, _Next);
@@ -1419,7 +1429,7 @@ private:
 #if _ITERATOR_DEBUG_LEVEL == 0
         (void) _Right;
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 // _ITERATOR_DEBUG_LEVEL != 0 vvv
-        if _CONSTEXPR_IF (!_Alnode_traits::is_always_equal::value) {
+        if constexpr (!_Alnode_traits::is_always_equal::value) {
             _STL_VERIFY(_Getal() == _Right._Getal(), "forward_list containers incompatible for splice_after");
         }
 #endif // _ITERATOR_DEBUG_LEVEL == 0
@@ -1448,7 +1458,7 @@ private:
 #if _ITERATOR_DEBUG_LEVEL == 0
         (void) _Right;
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 // _ITERATOR_DEBUG_LEVEL != 0 vvv
-        if _CONSTEXPR_IF (!_Alnode_traits::is_always_equal::value) {
+        if constexpr (!_Alnode_traits::is_always_equal::value) {
             _STL_VERIFY(_Getal() == _Right._Getal(), "forward_list containers incompatible for splice_after");
         }
 #endif // _ITERATOR_DEBUG_LEVEL == 0
@@ -1518,17 +1528,29 @@ void swap(forward_list<_Ty, _Alloc>& _Left, forward_list<_Ty, _Alloc>& _Right) n
 
 template <class _Ty, class _Alloc>
 _NODISCARD bool operator==(const forward_list<_Ty, _Alloc>& _Left, const forward_list<_Ty, _Alloc>& _Right) {
-    return _STD equal(_Left.begin(), _Left.end(), _Right.begin(), _Right.end());
+    return _STD equal(
+        _Left._Unchecked_begin(), _Left._Unchecked_end_iter(), _Right._Unchecked_begin(), _Right._Unchecked_end_iter());
 }
 
+#if !_HAS_CXX20
 template <class _Ty, class _Alloc>
 _NODISCARD bool operator!=(const forward_list<_Ty, _Alloc>& _Left, const forward_list<_Ty, _Alloc>& _Right) {
     return !(_Left == _Right);
 }
+#endif // !_HAS_CXX20
 
+#ifdef __cpp_lib_concepts
+template <class _Ty, class _Alloc>
+_NODISCARD _Synth_three_way_result<_Ty> operator<=>(
+    const forward_list<_Ty, _Alloc>& _Left, const forward_list<_Ty, _Alloc>& _Right) {
+    return _STD lexicographical_compare_three_way(_Left._Unchecked_begin(), _Left._Unchecked_end_iter(),
+        _Right._Unchecked_begin(), _Right._Unchecked_end_iter(), _Synth_three_way{});
+}
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
 template <class _Ty, class _Alloc>
 _NODISCARD bool operator<(const forward_list<_Ty, _Alloc>& _Left, const forward_list<_Ty, _Alloc>& _Right) {
-    return _STD lexicographical_compare(_Left.begin(), _Left.end(), _Right.begin(), _Right.end());
+    return _STD lexicographical_compare(
+        _Left._Unchecked_begin(), _Left._Unchecked_end_iter(), _Right._Unchecked_begin(), _Right._Unchecked_end_iter());
 }
 
 template <class _Ty, class _Alloc>
@@ -1545,6 +1567,7 @@ template <class _Ty, class _Alloc>
 _NODISCARD bool operator>=(const forward_list<_Ty, _Alloc>& _Left, const forward_list<_Ty, _Alloc>& _Right) {
     return !(_Left < _Right);
 }
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
 #if _HAS_CXX20
 template <class _Ty, class _Alloc, class _Uty>

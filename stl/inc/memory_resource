@@ -44,7 +44,7 @@ namespace pmr {
 #endif // __cpp_aligned_new
     }
 
-    extern "C" _CRT_SATELLITE_1 _NODISCARD memory_resource* __cdecl null_memory_resource() noexcept;
+    extern "C" _NODISCARD _CRT_SATELLITE_1 memory_resource* __cdecl null_memory_resource() noexcept;
 
     // FUNCTION new_delete_resource
     class _Identity_equal_resource : public memory_resource {
@@ -344,7 +344,7 @@ namespace pmr {
             // _Bytes + sizeof(_Oversized_header), which guarantees that the end of the allocated space
             // is properly aligned for an _Oversized_header.
             _Bytes = (_Bytes + sizeof(_Oversized_header) + alignof(_Oversized_header) - 1)
-                     & ~(alignof(_Oversized_header) - 1);
+                   & ~(alignof(_Oversized_header) - 1);
 
             return true;
         }
@@ -552,7 +552,7 @@ namespace pmr {
                 _Options.largest_required_pool_block = _Largest_required_pool_block_limit;
             } else {
                 _Options.largest_required_pool_block = static_cast<size_t>(1)
-                                                       << _Ceiling_of_log_2(_Options.largest_required_pool_block);
+                                                    << _Ceiling_of_log_2(_Options.largest_required_pool_block);
             }
         }
 

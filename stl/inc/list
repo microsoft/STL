@@ -74,9 +74,11 @@ public:
         return _Ptr == _Right._Ptr;
     }
 
+#if !_HAS_CXX20
     _NODISCARD bool operator!=(const _List_unchecked_const_iterator& _Right) const noexcept {
         return !(*this == _Right);
     }
+#endif // !_HAS_CXX20
 
     _Nodeptr _Ptr; // pointer to node
 };
@@ -199,9 +201,11 @@ public:
         return this->_Ptr == _Right._Ptr;
     }
 
+#if !_HAS_CXX20
     _NODISCARD bool operator!=(const _List_const_iterator& _Right) const noexcept {
         return !(*this == _Right);
     }
+#endif // !_HAS_CXX20
 
 #if _ITERATOR_DEBUG_LEVEL == 2
     friend void _Verify_range(const _List_const_iterator& _First, const _List_const_iterator& _Last) noexcept {
@@ -555,7 +559,7 @@ public:
 
     template <class _Pr2>
     static _Nodeptr _Sort(_Nodeptr& _First, const size_type _Size, _Pr2 _Pred) {
-        // order [_First, _Last), return _First + _Size
+        // order [_First, _First + _Size), return _First + _Size
         switch (_Size) {
         case 0:
             return _First;
@@ -762,10 +766,6 @@ private:
     friend class _Hash;
     template <class _Traits>
     friend bool _Hash_equal(const _Hash<_Traits>&, const _Hash<_Traits>&);
-#if !_HAS_IF_CONSTEXPR
-    template <class _Traits>
-    friend bool _Hash_equal_elements(const _Hash<_Traits>& _Left, const _Hash<_Traits>& _Right, false_type);
-#endif // _HAS_IF_CONSTEXPR
 
     using _Alty          = _Rebind_alloc_t<_Alloc, _Ty>;
     using _Alty_traits   = allocator_traits<_Alty>;
@@ -895,7 +895,7 @@ public:
     }
 
     list(list&& _Right, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        if _CONSTEXPR_IF (!_Alnode_traits::is_always_equal::value) {
+        if constexpr (!_Alnode_traits::is_always_equal::value) {
             if (_Getal() != _Right._Getal()) {
                 _Construct_range_unchecked(_STD make_move_iterator(_Right._Unchecked_begin()),
                     _STD make_move_iterator(_Right._Unchecked_end()));
@@ -1682,7 +1682,7 @@ private:
 
 #if _ITERATOR_DEBUG_LEVEL != 0
         _DEBUG_ORDER_UNWRAPPED(_Right._Unchecked_begin(), _Right._Unchecked_end(), _Pred);
-        if _CONSTEXPR_IF (!_Alnode_traits::is_always_equal::value) {
+        if constexpr (!_Alnode_traits::is_always_equal::value) {
             _STL_VERIFY(_Getal() == _Right._Getal(), "list allocators incompatible for merge");
         }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -1739,7 +1739,7 @@ private:
         // splice _Right [_First, _Last) before _Where; returns _Last
         if (this != _STD addressof(_Right)) { // splicing from another list, adjust counts
 #if _ITERATOR_DEBUG_LEVEL != 0
-            if _CONSTEXPR_IF (!_Alnode_traits::is_always_equal::value) {
+            if constexpr (!_Alnode_traits::is_always_equal::value) {
                 _STL_VERIFY(_Getal() == _Right._Getal(), "list allocators incompatible for splice");
             }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -1807,17 +1807,28 @@ void swap(list<_Ty, _Alloc>& _Left, list<_Ty, _Alloc>& _Right) noexcept /* stren
 
 template <class _Ty, class _Alloc>
 _NODISCARD bool operator==(const list<_Ty, _Alloc>& _Left, const list<_Ty, _Alloc>& _Right) {
-    return _Left.size() == _Right.size() && _STD equal(_Left.begin(), _Left.end(), _Right.begin());
+    return _Left.size() == _Right.size()
+        && _STD equal(_Left._Unchecked_begin(), _Left._Unchecked_end(), _Right._Unchecked_begin());
 }
 
+#if !_HAS_CXX20
 template <class _Ty, class _Alloc>
 _NODISCARD bool operator!=(const list<_Ty, _Alloc>& _Left, const list<_Ty, _Alloc>& _Right) {
     return !(_Left == _Right);
 }
+#endif // !_HAS_CXX20
 
+#ifdef __cpp_lib_concepts
+template <class _Ty, class _Alloc>
+_NODISCARD _Synth_three_way_result<_Ty> operator<=>(const list<_Ty, _Alloc>& _Left, const list<_Ty, _Alloc>& _Right) {
+    return _STD lexicographical_compare_three_way(_Left._Unchecked_begin(), _Left._Unchecked_end(),
+        _Right._Unchecked_begin(), _Right._Unchecked_end(), _Synth_three_way{});
+}
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
 template <class _Ty, class _Alloc>
 _NODISCARD bool operator<(const list<_Ty, _Alloc>& _Left, const list<_Ty, _Alloc>& _Right) {
-    return _STD lexicographical_compare(_Left.begin(), _Left.end(), _Right.begin(), _Right.end());
+    return _STD lexicographical_compare(
+        _Left._Unchecked_begin(), _Left._Unchecked_end(), _Right._Unchecked_begin(), _Right._Unchecked_end());
 }
 
 template <class _Ty, class _Alloc>
@@ -1834,6 +1845,7 @@ template <class _Ty, class _Alloc>
 _NODISCARD bool operator>=(const list<_Ty, _Alloc>& _Left, const list<_Ty, _Alloc>& _Right) {
     return !(_Left < _Right);
 }
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
 #if _HAS_CXX20
 template <class _Ty, class _Alloc, class _Uty>

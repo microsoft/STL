@@ -29,6 +29,10 @@ public:
     using _Mystr         = basic_string<_Elem, _Traits, _Alloc>;
     using _Mysize_type   = typename _Mystr::size_type;
 
+#if _HAS_CXX20
+    using _Mystr_view = basic_string_view<_Elem, _Traits>;
+#endif // _HAS_CXX20
+
     basic_stringbuf() : _Seekhigh(nullptr), _Mystate(_Getstate(ios_base::in | ios_base::out)), _Al() {}
 
     explicit basic_stringbuf(ios_base::openmode _Mode) : _Seekhigh(nullptr), _Mystate(_Getstate(_Mode)), _Al() {}
@@ -37,6 +41,37 @@ public:
         : _Al(_Str.get_allocator()) {
         _Init(_Str.c_str(), _Str.size(), _Getstate(_Mode));
     }
+
+#if _HAS_CXX20
+    explicit basic_stringbuf(const _Alloc& _Al_) : basic_stringbuf(ios_base::in | ios_base::out, _Al_) {}
+
+    basic_stringbuf(ios_base::openmode _Mode, const _Alloc& _Al_)
+        : _Seekhigh(nullptr), _Mystate(_Getstate(_Mode)), _Al(_Al_) {}
+
+    explicit basic_stringbuf(_Mystr&& _Str, ios_base::openmode _Mode = ios_base::in | ios_base::out)
+        : _Al(_STD move(_Str._Getal())) {
+        _Init_string_inplace(_STD move(_Str), _Getstate(_Mode));
+    }
+
+    template <class _Alloc2>
+    basic_stringbuf(const basic_string<_Elem, _Traits, _Alloc2>& _Str, ios_base::openmode _Mode, const _Alloc& _Al_)
+        : _Al(_Al_) {
+        _Init(_Str.c_str(), _Str.size(), _Getstate(_Mode));
+    }
+
+    template <class _Alloc2>
+    basic_stringbuf(const basic_string<_Elem, _Traits, _Alloc2>& _Str, const _Alloc& _Al_)
+        : basic_stringbuf(_Str, ios_base::in | ios_base::out, _Al_) {}
+
+    template <class _Alloc2, enable_if_t<!is_same_v<_Alloc2, _Alloc>, int> = 0>
+    explicit basic_stringbuf(
+        const basic_string<_Elem, _Traits, _Alloc2>& _Str, ios_base::openmode _Mode = ios_base::in | ios_base::out)
+        : basic_stringbuf(_Str, _Mode, _Alloc{}) {}
+
+    basic_stringbuf(basic_stringbuf&& _Right, const _Alloc& _Al_) : _Al(_Al_) {
+        _Assign_rv(_STD move(_Right));
+    }
+#endif // _HAS_CXX20
 
     basic_stringbuf(basic_stringbuf&& _Right) {
         _Assign_rv(_STD move(_Right));
@@ -54,12 +89,18 @@ public:
         }
     }
 
-    void swap(basic_stringbuf& _Right) {
+    void swap(basic_stringbuf& _Right) noexcept /* strengthened */ {
         if (this != _STD addressof(_Right)) {
+            if constexpr (!allocator_traits<_Alloc>::propagate_on_container_swap::value) {
+                _STL_ASSERT(
+                    _Al == _Right._Al, "The allocators of basic_stringbuf should propagate or be equal on swap.");
+            }
+
             _Mysb::swap(_Right);
             _STD swap(_Seekhigh, _Right._Seekhigh);
             _STD swap(_Mystate, _Right._Mystate);
-            _Swap_adl(_Al, _Right._Al);
+            // The same as basic_string::swap
+            _Pocs(_Al, _Right._Al);
         }
     }
 
@@ -71,27 +112,53 @@ public:
     }
 
     enum { // constants for bits in stream state
-        _Allocated = 1, // set if character array storage has been allocated, eback() points to allocated storage
-        _Constant  = 2, // set if character array nonmutable
-        _Noread    = 4, // set if character array cannot be read
-        _Append    = 8, // set if all writes are appends
-        _Atend     = 16 // set if initial writes are appends
+        _Allocated   = 1, // set if character array storage has been allocated, eback() points to allocated storage
+        _Constant    = 2, // set if character array nonmutable
+        _Noread      = 4, // set if character array cannot be read
+        _Append      = 8, // set if all writes are appends
+        _Atend       = 16, // set if initial writes are appends
+        _From_rvalue = 32 // set if character array is released from an rvalue of basic_string
     };
 
     using int_type = typename _Traits::int_type;
     using pos_type = typename _Traits::pos_type;
     using off_type = typename _Traits::off_type;
 
-    _NODISCARD _Mystr str() const {
-        _Mystr _Result(_Al);
-        if (!(_Mystate & _Constant) && _Mysb::pptr()) { // writable, make string from write buffer
-            const auto _Base = _Mysb::pbase();
-            _Result.assign(_Base, static_cast<_Mysize_type>((_STD max)(_Mysb::pptr(), _Seekhigh) - _Base));
-        } else if (!(_Mystate & _Noread) && _Mysb::gptr()) { // readable, make string from read buffer
-            const auto _Base = _Mysb::eback();
-            _Result.assign(_Base, static_cast<_Mysize_type>(_Mysb::egptr() - _Base));
-        }
+    struct _Buffer_view {
+        _Elem* _Ptr;
+        _Mysize_type _Size;
+        _Mysize_type _Res;
+    };
 
+    _NODISCARD _Buffer_view _Get_buffer_view() const noexcept {
+        _Buffer_view _Result{};
+        if ((!(_Mystate & _Constant) || (_Mystate & _From_rvalue)) && _Mysb::pptr()) {
+            // writable, make string view from write buffer
+            const auto _Base = _Mysb::pbase();
+            _Result._Ptr     = _Base;
+            _Result._Size    = static_cast<_Mysize_type>((_STD max)(_Mysb::pptr(), _Seekhigh) - _Base);
+            _Result._Res     = static_cast<_Mysize_type>(_Mysb::epptr() - _Base);
+        } else if (!(_Mystate & _Noread) && _Mysb::gptr()) {
+            // readable, make string view from read buffer
+            const auto _Base = _Mysb::eback();
+            _Result._Ptr     = _Base;
+            _Result._Size    = static_cast<_Mysize_type>(_Mysb::egptr() - _Base);
+            _Result._Res     = _Result._Size;
+        }
+        return _Result;
+    }
+
+#if _HAS_CXX20
+    _NODISCARD _Mystr str() const&
+#else
+    _NODISCARD _Mystr str() const
+#endif // _HAS_CXX20
+    {
+        _Mystr _Result(_Al);
+        const auto _View = _Get_buffer_view();
+        if (_View._Ptr) {
+            _Result.assign(_View._Ptr, _View._Size);
+        }
         return _Result;
     }
 
@@ -99,6 +166,72 @@ public:
         _Tidy();
         _Init(_Newstr.c_str(), _Newstr.size(), _Mystate);
     }
+
+#if _HAS_CXX20
+    template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
+    _NODISCARD basic_string<_Elem, _Traits, _Alloc2> str(const _Alloc2& _Al) const {
+        return basic_string<_Elem, _Traits, _Alloc2>{view(), _Al};
+    }
+
+    // The buffer cannot be moved to a string directly, because
+    // the buffer may already be full, and the terminating char is not '\0'.
+    // In that case, copy the string as usual.
+    _NODISCARD _Mystr str() && {
+        _Mystr _Result{_String_constructor_rvalue_allocator_tag{}, _STD move(_Al)};
+        const auto _View = _Get_buffer_view();
+        // _Size cannot be larger than _Res, but it could be equal,
+        // because basic_stringbuf doesn't allocate for the terminating '\0'.
+        if (_View._Size == _View._Res) {
+            // the buffer is full
+            _Result.assign(_View._Ptr, _View._Size);
+        } else {
+            _Traits::assign(_View._Ptr[_View._Size], _Elem());
+            if (_Result._Move_assign_from_buffer(_View._Ptr, _View._Size, _View._Res)) {
+                _Mystate &= ~_Allocated;
+            }
+        }
+        _Tidy();
+        return _Result;
+    }
+
+    _NODISCARD _Mystr_view view() const noexcept {
+        const auto _View = _Get_buffer_view();
+        return _Mystr_view{_View._Ptr, _View._Size};
+    }
+
+    template <class _Alloc2, enable_if_t<!is_same_v<_Alloc2, _Alloc>, int> = 0>
+    void str(const basic_string<_Elem, _Traits, _Alloc2>& _Newstr) {
+        _Tidy();
+        _Init(_Newstr.c_str(), _Newstr.size(), _Mystate);
+    }
+
+    void _Str(_Mystr&& _Newstr, _Equal_allocators) {
+        _Tidy();
+        _Pocma(_Al, _Newstr._Getal());
+        _Init_string_inplace(_STD move(_Newstr), _Mystate);
+    }
+
+    void _Str(_Mystr&& _Newstr, _Propagate_allocators) {
+        _Str(_STD move(_Newstr), _Equal_allocators{});
+    }
+
+    void _Str(_Mystr&& _Newstr, _No_propagate_allocators) {
+        if (_Al == _Newstr._Getal()) {
+            _Str(_STD move(_Newstr), _Equal_allocators{});
+        } else {
+            _Tidy();
+            _Init(_Newstr.c_str(), _Newstr.size(), _Mystate);
+        }
+    }
+
+    void str(_Mystr&& _Newstr) {
+        _Str(_STD move(_Newstr), _Choose_pocma<_Alloc>{});
+    }
+
+    _NODISCARD allocator_type get_allocator() const noexcept {
+        return _Al;
+    }
+#endif // _HAS_CXX20
 
 protected:
     virtual int_type overflow(int_type _Meta = _Traits::eof()) { // put an element to stream
@@ -205,7 +338,7 @@ protected:
         off_type _Off, ios_base::seekdir _Way, ios_base::openmode _Mode = ios_base::in | ios_base::out) {
         // change position by _Off, according to _Way, _Mode
         const auto _Gptr_old = _Mysb::gptr();
-        const auto _Pptr_old = _Mysb::pptr();
+        const auto _Pptr_old = (_Mystate & _Constant) ? nullptr : _Mysb::pptr();
         if (_Pptr_old && _Seekhigh < _Pptr_old) { // update high-water pointer
             _Seekhigh = _Pptr_old;
         }
@@ -220,20 +353,22 @@ protected:
         case ios_base::end:
             _Newoff = _Seekdist;
             break;
-        case ios_base::cur: {
-            constexpr auto _Both = ios_base::in | ios_base::out;
-            if ((_Mode & _Both) != _Both) { // prohibited by N4727 [stringbuf.virtuals] Table 107 "seekoff positioning"
-                if (_Mode & ios_base::in) {
-                    if (_Gptr_old || !_Seeklow) {
-                        _Newoff = _Gptr_old - _Seeklow;
+        case ios_base::cur:
+            {
+                constexpr auto _Both = ios_base::in | ios_base::out;
+                if ((_Mode & _Both)
+                    != _Both) { // prohibited by N4727 [stringbuf.virtuals] Table 107 "seekoff positioning"
+                    if (_Mode & ios_base::in) {
+                        if (_Gptr_old || !_Seeklow) {
+                            _Newoff = _Gptr_old - _Seeklow;
+                            break;
+                        }
+                    } else if ((_Mode & ios_base::out) && (_Pptr_old || !_Seeklow)) {
+                        _Newoff = _Pptr_old - _Seeklow;
                         break;
                     }
-                } else if ((_Mode & ios_base::out) && (_Pptr_old || !_Seeklow)) {
-                    _Newoff = _Pptr_old - _Seeklow;
-                    break;
                 }
             }
-        }
 
             // fallthrough
         default:
@@ -265,7 +400,7 @@ protected:
         // change position to _Pos, according to _Mode
         const auto _Off      = static_cast<streamoff>(_Pos);
         const auto _Gptr_old = _Mysb::gptr();
-        const auto _Pptr_old = _Mysb::pptr();
+        const auto _Pptr_old = (_Mystate & _Constant) ? nullptr : _Mysb::pptr();
         if (_Pptr_old && _Seekhigh < _Pptr_old) { // update high-water pointer
             _Seekhigh = _Pptr_old;
         }
@@ -295,6 +430,8 @@ protected:
 protected:
     void _Init(const _Elem* _Ptr, _Mysize_type _Count, int _State) {
         // initialize buffer to [_Ptr, _Ptr + _Count), set state
+        _State &= ~_From_rvalue;
+
         if (_Count > INT_MAX) { // TRANSITION, VSO-485517
             _Xbad_alloc();
         }
@@ -325,6 +462,34 @@ protected:
 
         _Mystate = _State;
     }
+
+#if _HAS_CXX20
+    void _Init_string_inplace(_Mystr&& _Str, int _State) {
+        _State |= _From_rvalue;
+
+        auto [_Ptr, _Size, _Res] = _Str._Release_to_buffer(_Al);
+        _Elem* const _Pnew       = _Unfancy(_Ptr);
+        if (_Res != 0 && (_State & (_Noread | _Constant)) != (_Noread | _Constant)) {
+            // finite buffer that can be read or written, set it up
+            _Seekhigh        = _Pnew + _Size;
+            auto _End_buffer = _Pnew + _Res;
+
+            _Mysb::setp(_Pnew, (_State & (_Atend | _Append)) ? _Seekhigh : _Pnew, _End_buffer);
+
+            if (_State & _Noread) { // maintain "_Allocated == eback() points to buffer base" invariant
+                _Mysb::setg(_Pnew, nullptr, _Pnew);
+            } else {
+                _Mysb::setg(_Pnew, _Pnew, _Seekhigh);
+            }
+
+            _State |= _Allocated;
+        } else {
+            _Seekhigh = nullptr;
+        }
+
+        _Mystate = _State;
+    }
+#endif // _HAS_CXX20
 
     void _Tidy() noexcept { // discard any allocated buffer and clear pointers
         if (_Mystate & _Allocated) {
@@ -367,13 +532,15 @@ private:
         return _State;
     }
 
+    // TRANSITION, ABI, see GH-938
     _Elem* _Seekhigh; // the high-water pointer in character array
     int _Mystate; // the stream state
     allocator_type _Al; // the allocator object
 };
 
 template <class _Elem, class _Traits, class _Alloc>
-void swap(basic_stringbuf<_Elem, _Traits, _Alloc>& _Left, basic_stringbuf<_Elem, _Traits, _Alloc>& _Right) {
+void swap(basic_stringbuf<_Elem, _Traits, _Alloc>& _Left, basic_stringbuf<_Elem, _Traits, _Alloc>& _Right) noexcept
+/* strengthened */ {
     _Left.swap(_Right);
 }
 
@@ -386,6 +553,10 @@ public:
     using _Mysb          = basic_stringbuf<_Elem, _Traits, _Alloc>;
     using _Mystr         = basic_string<_Elem, _Traits, _Alloc>;
 
+#if _HAS_CXX20
+    using _Mystr_view = basic_string_view<_Elem, _Traits>;
+#endif // _HAS_CXX20
+
     basic_istringstream() : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(ios_base::in) {}
 
     explicit basic_istringstream(ios_base::openmode _Mode)
@@ -393,6 +564,27 @@ public:
 
     explicit basic_istringstream(const _Mystr& _Str, ios_base::openmode _Mode = ios_base::in)
         : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Str, _Mode | ios_base::in) {}
+
+#if _HAS_CXX20
+    basic_istringstream(ios_base::openmode _Mode, const _Alloc& _Al)
+        : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Mode | ios_base::in, _Al) {}
+
+    explicit basic_istringstream(_Mystr&& _Str, ios_base::openmode _Mode = ios_base::in)
+        : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_STD move(_Str), _Mode | ios_base::in) {}
+
+    template <class _Alloc2>
+    basic_istringstream(const basic_string<_Elem, _Traits, _Alloc2>& _Str, const _Alloc& _Al)
+        : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Str, ios_base::in, _Al) {}
+
+    template <class _Alloc2>
+    basic_istringstream(const basic_string<_Elem, _Traits, _Alloc2>& _Str, ios_base::openmode _Mode, const _Alloc& _Al)
+        : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Str, _Mode | ios_base::in, _Al) {}
+
+    template <class _Alloc2, enable_if_t<!is_same_v<_Alloc2, _Alloc>, int> = 0>
+    explicit basic_istringstream(
+        const basic_string<_Elem, _Traits, _Alloc2>& _Str, ios_base::openmode _Mode = ios_base::in)
+        : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Str, _Mode | ios_base::in) {}
+#endif // _HAS_CXX20
 
     basic_istringstream(basic_istringstream&& _Right) : _Mybase(_STD addressof(_Stringbuffer)) {
         _Assign_rv(_STD move(_Right));
@@ -426,13 +618,42 @@ public:
         return const_cast<_Mysb*>(_STD addressof(_Stringbuffer));
     }
 
-    _NODISCARD _Mystr str() const {
+#if _HAS_CXX20
+    _NODISCARD _Mystr str() const&
+#else
+    _NODISCARD _Mystr str() const
+#endif // _HAS_CXX20
+    {
         return _Stringbuffer.str();
     }
 
     void str(const _Mystr& _Newstr) { // replace character array from string
         _Stringbuffer.str(_Newstr);
     }
+
+#if _HAS_CXX20
+    template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
+    _NODISCARD basic_string<_Elem, _Traits, _Alloc2> str(const _Alloc2& _Al) const {
+        return _Stringbuffer.str(_Al);
+    }
+
+    _NODISCARD _Mystr str() && {
+        return _STD move(_Stringbuffer).str();
+    }
+
+    _NODISCARD _Mystr_view view() const noexcept {
+        return _Stringbuffer.view();
+    }
+
+    template <class _Alloc2, enable_if_t<!is_same_v<_Alloc2, _Alloc>, int> = 0>
+    void str(const basic_string<_Elem, _Traits, _Alloc2>& _Newstr) {
+        _Stringbuffer.str(_Newstr);
+    }
+
+    void str(_Mystr&& _Newstr) {
+        _Stringbuffer.str(_STD move(_Newstr));
+    }
+#endif // _HAS_CXX20
 
 private:
     _Mysb _Stringbuffer;
@@ -452,6 +673,10 @@ public:
     using _Mysb          = basic_stringbuf<_Elem, _Traits, _Alloc>;
     using _Mystr         = basic_string<_Elem, _Traits, _Alloc>;
 
+#if _HAS_CXX20
+    using _Mystr_view = basic_string_view<_Elem, _Traits>;
+#endif // _HAS_CXX20
+
     basic_ostringstream() : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(ios_base::out) {}
 
     explicit basic_ostringstream(ios_base::openmode _Mode)
@@ -459,6 +684,27 @@ public:
 
     explicit basic_ostringstream(const _Mystr& _Str, ios_base::openmode _Mode = ios_base::out)
         : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Str, _Mode | ios_base::out) {}
+
+#if _HAS_CXX20
+    basic_ostringstream(ios_base::openmode _Mode, const _Alloc& _Al)
+        : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Mode | ios_base::out, _Al) {}
+
+    explicit basic_ostringstream(_Mystr&& _Str, ios_base::openmode _Mode = ios_base::out)
+        : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_STD move(_Str), _Mode | ios_base::out) {}
+
+    template <class _Alloc2>
+    basic_ostringstream(const basic_string<_Elem, _Traits, _Alloc2>& _Str, const _Alloc& _Al)
+        : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Str, ios_base::out, _Al) {}
+
+    template <class _Alloc2>
+    basic_ostringstream(const basic_string<_Elem, _Traits, _Alloc2>& _Str, ios_base::openmode _Mode, const _Alloc& _Al)
+        : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Str, _Mode | ios_base::out, _Al) {}
+
+    template <class _Alloc2, enable_if_t<!is_same_v<_Alloc2, _Alloc>, int> = 0>
+    explicit basic_ostringstream(
+        const basic_string<_Elem, _Traits, _Alloc2>& _Str, ios_base::openmode _Mode = ios_base::out)
+        : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Str, _Mode | ios_base::out) {}
+#endif // _HAS_CXX20
 
     basic_ostringstream(basic_ostringstream&& _Right) : _Mybase(_STD addressof(_Stringbuffer)) {
         _Assign_rv(_STD move(_Right));
@@ -492,13 +738,42 @@ public:
         return const_cast<_Mysb*>(_STD addressof(_Stringbuffer));
     }
 
-    _NODISCARD _Mystr str() const {
+#if _HAS_CXX20
+    _NODISCARD _Mystr str() const&
+#else
+    _NODISCARD _Mystr str() const
+#endif // _HAS_CXX20
+    {
         return _Stringbuffer.str();
     }
 
     void str(const _Mystr& _Newstr) { // replace character array from string
         _Stringbuffer.str(_Newstr);
     }
+
+#if _HAS_CXX20
+    template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
+    _NODISCARD basic_string<_Elem, _Traits, _Alloc2> str(const _Alloc2& _Al) const {
+        return _Stringbuffer.str(_Al);
+    }
+
+    _NODISCARD _Mystr str() && {
+        return _STD move(_Stringbuffer).str();
+    }
+
+    _NODISCARD _Mystr_view view() const noexcept {
+        return _Stringbuffer.view();
+    }
+
+    template <class _Alloc2, enable_if_t<!is_same_v<_Alloc2, _Alloc>, int> = 0>
+    void str(const basic_string<_Elem, _Traits, _Alloc2>& _Newstr) {
+        _Stringbuffer.str(_Newstr);
+    }
+
+    void str(_Mystr&& _Newstr) {
+        _Stringbuffer.str(_STD move(_Newstr));
+    }
+#endif // _HAS_CXX20
 
 private:
     _Mysb _Stringbuffer;
@@ -524,6 +799,10 @@ public:
     using _Mysb          = basic_stringbuf<_Elem, _Traits, _Alloc>;
     using _Mystr         = basic_string<_Elem, _Traits, _Alloc>;
 
+#if _HAS_CXX20
+    using _Mystr_view = basic_string_view<_Elem, _Traits>;
+#endif // _HAS_CXX20
+
     basic_stringstream() : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(ios_base::in | ios_base::out) {}
 
     explicit basic_stringstream(ios_base::openmode _Mode)
@@ -531,6 +810,27 @@ public:
 
     explicit basic_stringstream(const _Mystr& _Str, ios_base::openmode _Mode = ios_base::in | ios_base::out)
         : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Str, _Mode) {}
+
+#if _HAS_CXX20
+    basic_stringstream(ios_base::openmode _Mode, const _Alloc& _Al)
+        : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Mode, _Al) {}
+
+    explicit basic_stringstream(_Mystr&& _Str, ios_base::openmode _Mode = ios_base::in | ios_base::out)
+        : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_STD move(_Str), _Mode) {}
+
+    template <class _Alloc2>
+    basic_stringstream(const basic_string<_Elem, _Traits, _Alloc2>& _Str, const _Alloc& _Al)
+        : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Str, ios_base::in | ios_base::out, _Al) {}
+
+    template <class _Alloc2>
+    basic_stringstream(const basic_string<_Elem, _Traits, _Alloc2>& _Str, ios_base::openmode _Mode, const _Alloc& _Al)
+        : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Str, _Mode, _Al) {}
+
+    template <class _Alloc2, enable_if_t<!is_same_v<_Alloc2, _Alloc>, int> = 0>
+    explicit basic_stringstream(
+        const basic_string<_Elem, _Traits, _Alloc2>& _Str, ios_base::openmode _Mode = ios_base::in | ios_base::out)
+        : _Mybase(_STD addressof(_Stringbuffer)), _Stringbuffer(_Str, _Mode) {}
+#endif // _HAS_CXX20
 
     basic_stringstream(basic_stringstream&& _Right) : _Mybase(_STD addressof(_Stringbuffer)) {
         _Assign_rv(_STD move(_Right));
@@ -564,13 +864,42 @@ public:
         return const_cast<_Mysb*>(_STD addressof(_Stringbuffer));
     }
 
-    _NODISCARD _Mystr str() const {
+#if _HAS_CXX20
+    _NODISCARD _Mystr str() const&
+#else
+    _NODISCARD _Mystr str() const
+#endif // _HAS_CXX20
+    {
         return _Stringbuffer.str();
     }
 
     void str(const _Mystr& _Newstr) { // replace character array from string
         _Stringbuffer.str(_Newstr);
     }
+
+#if _HAS_CXX20
+    template <class _Alloc2, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
+    _NODISCARD basic_string<_Elem, _Traits, _Alloc2> str(const _Alloc2& _Al) const {
+        return _Stringbuffer.str(_Al);
+    }
+
+    _NODISCARD _Mystr str() && {
+        return _STD move(_Stringbuffer).str();
+    }
+
+    _NODISCARD _Mystr_view view() const noexcept {
+        return _Stringbuffer.view();
+    }
+
+    template <class _Alloc2, enable_if_t<!is_same_v<_Alloc2, _Alloc>, int> = 0>
+    void str(const basic_string<_Elem, _Traits, _Alloc2>& _Newstr) {
+        _Stringbuffer.str(_Newstr);
+    }
+
+    void str(_Mystr&& _Newstr) {
+        _Stringbuffer.str(_STD move(_Newstr));
+    }
+#endif // _HAS_CXX20
 
 private:
     _Mysb _Stringbuffer;

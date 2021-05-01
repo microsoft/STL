@@ -12,6 +12,7 @@
 #include <fstream>
 #include <functional>
 #include <limits>
+#include <locale>
 #include <optional>
 #include <random>
 #include <set>
@@ -44,6 +45,7 @@
 #include "float_hex_precision_to_chars_test_cases.hpp"
 #include "float_scientific_precision_to_chars_test_cases.hpp"
 #include "float_to_chars_test_cases.hpp"
+#include "wchar_test_cases.hpp"
 #include <floating_point_test_cases.hpp>
 
 using namespace std;
@@ -101,7 +103,8 @@ void initialize_randomness(mt19937_64& mt64, const int argc, char** const argv) 
 
     puts("Successfully seeded mt64. First three values:");
     for (int i = 0; i < 3; ++i) {
-        printf("0x%016llX\n", mt64());
+        // libc++ uses long for 64-bit values.
+        printf("0x%016llX\n", static_cast<unsigned long long>(mt64()));
     }
 }
 
@@ -125,10 +128,10 @@ void test_common_to_chars(
 
     constexpr size_t BufferPrefix = 20; // detect buffer underruns (specific value isn't important)
 
-    constexpr size_t Space =
-        is_integral_v<T> ? 1 + 64 // worst case: -2^63 in binary
-                         : is_same_v<T, float> ? 1 + 151 // worst case: negative min subnormal float, fixed notation
-                                               : 1 + 1076; // worst case: negative min subnormal double, fixed notation
+    constexpr size_t Space = is_integral_v<T> ? 1 + 64 // worst case: -2^63 in binary
+                           : is_same_v<T, float>
+                               ? 1 + 151 // worst case: negative min subnormal float, fixed notation
+                               : 1 + 1076; // worst case: negative min subnormal double, fixed notation
 
     constexpr size_t BufferSuffix = 30; // detect buffer overruns (specific value isn't important)
 
@@ -575,7 +578,8 @@ void assert_message_bits(const bool b, const char* const msg, const uint32_t bit
 
 void assert_message_bits(const bool b, const char* const msg, const uint64_t bits) {
     if (!b) {
-        fprintf(stderr, "%s failed for 0x%016llX\n", msg, bits);
+        // libc++ uses long for 64-bit values.
+        fprintf(stderr, "%s failed for 0x%016llX\n", msg, static_cast<unsigned long long>(bits));
         fprintf(stderr, "This is a randomized test.\n");
         fprintf(stderr, "DO NOT IGNORE/RERUN THIS FAILURE.\n");
         fprintf(stderr, "You must report it to the STL maintainers.\n");
@@ -595,8 +599,8 @@ constexpr uint32_t PrefixesToTest = 100; // Tunable for test coverage vs. perfor
 static_assert(PrefixesToTest >= 1, "Must test at least 1 prefix.");
 
 constexpr uint32_t PrefixLimit = 2 // sign bit
-                                 * 255 // non-INF/NAN exponents for float
-                                 * (1U << (23 - FractionBits)); // fraction bits in prefix
+                               * 255 // non-INF/NAN exponents for float
+                               * (1U << (23 - FractionBits)); // fraction bits in prefix
 static_assert(PrefixesToTest <= PrefixLimit, "Too many prefixes.");
 
 template <bool IsDouble>
@@ -701,9 +705,9 @@ void test_floating_precision_prefix(const conditional_t<IsDouble, uint64_t, uint
 
     // Size for fixed notation. (More than enough for scientific notation.)
     constexpr size_t charconv_buffer_size = 1 // negative sign
-                                            + max_integer_length // integer digits
-                                            + 1 // decimal point
-                                            + precision; // fractional digits
+                                          + max_integer_length // integer digits
+                                          + 1 // decimal point
+                                          + precision; // fractional digits
     char charconv_buffer[charconv_buffer_size];
 
     constexpr size_t stdio_buffer_size = charconv_buffer_size + 1; // null terminator
@@ -1077,6 +1081,44 @@ void test_right_shift_64_bits_with_rounding() {
     assert(_Right_shift_with_rounding(0xffff'ffff'ffff'ffffULL, 64, false) == 1);
 }
 
+void wchar_tests() {
+    static_assert(size(__DIGIT_TABLE<char>) == size(__DIGIT_TABLE<wchar_t>));
+    auto& fac = use_facet<ctype<wchar_t>>(locale{});
+    for (size_t i = 0; i < size(__DIGIT_TABLE<char>); ++i) {
+        assert(fac.widen(__DIGIT_TABLE<char>[i]) == __DIGIT_TABLE<wchar_t>[i]);
+    }
+
+    wchar_t buffer[32];
+    for (const auto& t : double_to_wide_test_cases) {
+        const auto result = __d2s_buffered_n(begin(buffer), end(buffer), t.value, t.fmt);
+        assert(result.second == errc{});
+        const wstring_view sv(t.correct);
+        assert(equal(buffer, result.first, sv.begin(), sv.end()));
+    }
+
+    for (const auto& t : float_to_wide_test_cases) {
+        const auto result = __f2s_buffered_n(begin(buffer), end(buffer), t.value, t.fmt);
+        assert(result.second == errc{});
+        const wstring_view sv(t.correct);
+        assert(equal(buffer, result.first, sv.begin(), sv.end()));
+    }
+
+    for (const auto& t : wide_digit_pairs_test_cases) {
+        const auto result =
+            __d2fixed_buffered_n(begin(buffer), end(buffer), t.value, static_cast<uint32_t>(t.precision));
+        assert(result.second == errc{});
+        const wstring_view sv(t.correct);
+        assert(equal(buffer, result.first, sv.begin(), sv.end()));
+    }
+}
+
+// GH-1569 - Test instantiation of wchar_t helpers.
+template pair<wchar_t*, errc> std::__to_chars(
+    wchar_t* const, wchar_t* const, const __floating_decimal_32, chars_format, const uint32_t, const uint32_t);
+template pair<wchar_t*, errc> std::__to_chars(
+    wchar_t* const, wchar_t* const, const __floating_decimal_64, chars_format, const double);
+template pair<wchar_t*, errc> std::__d2fixed_buffered_n(wchar_t*, wchar_t* const, const double, const uint32_t);
+
 int main(int argc, char** argv) {
     const auto start = chrono::steady_clock::now();
 
@@ -1090,6 +1132,8 @@ int main(int argc, char** argv) {
 
     test_right_shift_64_bits_with_rounding();
 
+    wchar_tests();
+
     const auto finish  = chrono::steady_clock::now();
     const long long ms = chrono::duration_cast<chrono::milliseconds>(finish - start).count();
 
@@ -1098,8 +1142,8 @@ int main(int argc, char** argv) {
     printf("Total time: %lld ms\n", ms);
 
     if (ms < 3'000) {
-        puts("That was fast. Consider retuning PrefixesToTest and FractionBits.");
+        puts("That was fast. Consider tuning PrefixesToTest and FractionBits to test more cases.");
     } else if (ms > 30'000) {
-        puts("That was slow. Consider retuning PrefixesToTest and FractionBits.");
+        puts("That was slow. Consider tuning PrefixesToTest and FractionBits to test fewer cases.");
     }
 }

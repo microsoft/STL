@@ -253,8 +253,7 @@ void __stdcall __std_fs_directory_iterator_close(_In_ const __std_fs_dir_handle 
 
     if (_Code_page == __std_code_page{CP_UTF8} || _Code_page == __std_code_page{54936}) {
         // For UTF-8 or GB18030, attempt to use WC_ERR_INVALID_CHARS. (These codepages can't use WC_NO_BEST_FIT_CHARS
-        // below, and other codepages can't use WC_ERR_INVALID_CHARS.) WC_ERR_INVALID_CHARS is Windows Vista+.
-        // Windows XP will activate the ERROR_INVALID_FLAGS fallback below.
+        // below, and other codepages can't use WC_ERR_INVALID_CHARS.)
         _Result._Len = WideCharToMultiByte(static_cast<unsigned int>(_Code_page), WC_ERR_INVALID_CHARS, _Input_str,
             _Input_len, _Output_str, _Output_len, nullptr, nullptr);
     } else { // For other codepages, attempt to use WC_NO_BEST_FIT_CHARS.
@@ -804,8 +803,8 @@ struct alignas(long long) _Aligned_file_attrs {
     // Let's try to open the file (either reparse point or destination).
     __std_win_error _Last_error;
     const auto _File_flags = _Follow_symlinks
-                                 ? __std_fs_file_flags::_Backup_semantics
-                                 : __std_fs_file_flags::_Backup_semantics | __std_fs_file_flags::_Open_reparse_point;
+                               ? __std_fs_file_flags::_Backup_semantics
+                               : __std_fs_file_flags::_Backup_semantics | __std_fs_file_flags::_Open_reparse_point;
     const _STD _Fs_file _Handle(_Path, __std_access_rights::_File_read_attributes, _File_flags, &_Last_error);
     if (_Last_error != __std_win_error::_Success) {
         return _Last_error;

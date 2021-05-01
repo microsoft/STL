@@ -110,12 +110,15 @@ public:
 
     template <class _Rep, class _Period>
     _NODISCARD bool try_lock_for(const chrono::duration<_Rep, _Period>& _Rel_time) { // try to lock for duration
-        return try_lock_until(chrono::steady_clock::now() + _Rel_time);
+        return try_lock_until(_To_absolute_time(_Rel_time));
     }
 
     template <class _Clock, class _Duration>
-    _NODISCARD bool try_lock_until(
-        const chrono::time_point<_Clock, _Duration>& _Abs_time) { // try to lock until time point
+    _NODISCARD bool try_lock_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
+        // try to lock until time point
+#if _HAS_CXX20
+        static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
+#endif // _HAS_CXX20
         auto _Not_writing  = [this] { return !_Writing; };
         auto _Zero_readers = [this] { return _Readers == 0; };
         unique_lock<mutex> _Lock(_Mymtx);
@@ -166,9 +169,9 @@ public:
     }
 
     template <class _Rep, class _Period>
-    _NODISCARD bool try_lock_shared_for(
-        const chrono::duration<_Rep, _Period>& _Rel_time) { // try to lock non-exclusive for relative time
-        return try_lock_shared_until(_Rel_time + chrono::steady_clock::now());
+    _NODISCARD bool try_lock_shared_for(const chrono::duration<_Rep, _Period>& _Rel_time) {
+        // try to lock non-exclusive for relative time
+        return try_lock_shared_until(_To_absolute_time(_Rel_time));
     }
 
     template <class _Time>
@@ -186,8 +189,11 @@ public:
     }
 
     template <class _Clock, class _Duration>
-    _NODISCARD bool try_lock_shared_until(
-        const chrono::time_point<_Clock, _Duration>& _Abs_time) { // try to lock non-exclusive until absolute time
+    _NODISCARD bool try_lock_shared_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
+        // try to lock non-exclusive until absolute time
+#if _HAS_CXX20
+        static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
+#endif // _HAS_CXX20
         return _Try_lock_shared_until(_Abs_time);
     }
 
@@ -233,7 +239,7 @@ public:
 
     shared_lock() noexcept : _Pmtx(nullptr), _Owns(false) {}
 
-    explicit shared_lock(mutex_type& _Mtx)
+    _NODISCARD_CTOR explicit shared_lock(mutex_type& _Mtx)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(true) { // construct with mutex and lock shared
         _Mtx.lock_shared();
     }
@@ -241,22 +247,25 @@ public:
     shared_lock(mutex_type& _Mtx, defer_lock_t) noexcept
         : _Pmtx(_STD addressof(_Mtx)), _Owns(false) {} // construct with unlocked mutex
 
-    shared_lock(mutex_type& _Mtx, try_to_lock_t)
+    _NODISCARD_CTOR shared_lock(mutex_type& _Mtx, try_to_lock_t)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(_Mtx.try_lock_shared()) {} // construct with mutex and try to lock shared
 
-    shared_lock(mutex_type& _Mtx, adopt_lock_t)
+    _NODISCARD_CTOR shared_lock(mutex_type& _Mtx, adopt_lock_t)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(true) {} // construct with mutex and adopt ownership
 
     template <class _Rep, class _Period>
-    shared_lock(mutex_type& _Mtx, const chrono::duration<_Rep, _Period>& _Rel_time)
+    _NODISCARD_CTOR shared_lock(mutex_type& _Mtx, const chrono::duration<_Rep, _Period>& _Rel_time)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(_Mtx.try_lock_shared_for(_Rel_time)) {
         // construct with mutex and try to lock for relative time
     }
 
     template <class _Clock, class _Duration>
-    shared_lock(mutex_type& _Mtx, const chrono::time_point<_Clock, _Duration>& _Abs_time)
+    _NODISCARD_CTOR shared_lock(mutex_type& _Mtx, const chrono::time_point<_Clock, _Duration>& _Abs_time)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(_Mtx.try_lock_shared_until(_Abs_time)) {
         // construct with mutex and try to lock until absolute time
+#if _HAS_CXX20
+        static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
+#endif // _HAS_CXX20
     }
 
     ~shared_lock() noexcept {
@@ -265,7 +274,7 @@ public:
         }
     }
 
-    shared_lock(shared_lock&& _Other) noexcept : _Pmtx(_Other._Pmtx), _Owns(_Other._Owns) {
+    _NODISCARD_CTOR shared_lock(shared_lock&& _Other) noexcept : _Pmtx(_Other._Pmtx), _Owns(_Other._Owns) {
         _Other._Pmtx = nullptr;
         _Other._Owns = false;
     }
@@ -298,16 +307,19 @@ public:
     }
 
     template <class _Rep, class _Period>
-    _NODISCARD bool try_lock_for(
-        const chrono::duration<_Rep, _Period>& _Rel_time) { // try to lock the mutex for _Rel_time
+    _NODISCARD bool try_lock_for(const chrono::duration<_Rep, _Period>& _Rel_time) {
+        // try to lock the mutex for _Rel_time
         _Validate();
         _Owns = _Pmtx->try_lock_shared_for(_Rel_time);
         return _Owns;
     }
 
     template <class _Clock, class _Duration>
-    _NODISCARD bool try_lock_until(
-        const chrono::time_point<_Clock, _Duration>& _Abs_time) { // try to lock the mutex until _Abs_time
+    _NODISCARD bool try_lock_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
+        // try to lock the mutex until _Abs_time
+#if _HAS_CXX20
+        static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
+#endif // _HAS_CXX20
         _Validate();
         _Owns = _Pmtx->try_lock_shared_until(_Abs_time);
         return _Owns;

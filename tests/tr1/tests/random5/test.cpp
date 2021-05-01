@@ -426,7 +426,7 @@ static void tdiscrete() {
 
     STD vector<double> vec(4, 1.0);
 
-    dist_t dist1(STD initializer_list<double>(vec.data(), vec.data() + vec.size()));
+    dist_t dist1{1.0, 1.0, 1.0, 1.0};
 
     CHECK_INT(dist1.probabilities().size(), 4);
     STD stringstream str;
@@ -443,7 +443,7 @@ static void tdiscrete() {
     CHECK(dist0.probabilities() == par0.probabilities());
     vec = par0.probabilities();
 
-    CHECK(par0 == dist_t::param_type(STD initializer_list<double>(vec.data(), vec.data() + vec.size())));
+    CHECK(par0 == dist_t::param_type(vec.begin(), vec.end()));
 
     typedef STD ranlux24 rng_t;
     rng_t rng;
@@ -499,8 +499,8 @@ static void tpiecewise_constant() {
     dist_t dist2(10, 1.0, 2.0, myfn);
     CHECK_INT(dist2.densities().size(), 10);
 
-    double arr[] = {1.0, 1.5, 2.0, 3.0, 4.0};
-    dist_t dist3(STD initializer_list<double>(&arr[0], &arr[5]), myfn);
+    STD initializer_list<double> ilist{1.0, 1.5, 2.0, 3.0, 4.0};
+    dist_t dist3(ilist, myfn);
     CHECK_INT(dist3.densities().size(), 4);
     CHECK_DOUBLE(dist3.densities()[0], 0.2777777777777778);
 
@@ -516,7 +516,7 @@ static void tpiecewise_constant() {
 
     CHECK(dist2.param() == dist_t::param_type(10, 1.0, 2.0, myfn));
 
-    CHECK(dist3.param() == dist_t::param_type(STD initializer_list<double>(&arr[0], &arr[5]), myfn));
+    CHECK(dist3.param() == dist_t::param_type(ilist, myfn));
 
     typedef STD ranlux24 rng_t;
     rng_t rng;
@@ -573,8 +573,8 @@ static void tpiecewise_linear() {
     dist_t dist2(10, 1.0, 2.0, myfn);
     CHECK_INT(dist2.densities().size(), 11);
 
-    double arr[] = {1.0, 1.5, 2.0, 3.0, 4.0};
-    dist_t dist3(STD initializer_list<double>(&arr[0], &arr[5]), myfn);
+    STD initializer_list<double> ilist{1.0, 1.5, 2.0, 3.0, 4.0};
+    dist_t dist3(ilist, myfn);
     CHECK_INT(dist3.densities().size(), 5);
     CHECK_DOUBLE(dist3.densities()[0], 0.13333333333333333);
 
@@ -590,7 +590,7 @@ static void tpiecewise_linear() {
 
     CHECK(dist2.param() == dist_t::param_type(10, 1.0, 2.0, myfn));
 
-    CHECK(dist3.param() == dist_t::param_type(STD initializer_list<double>(&arr[0], &arr[5]), myfn));
+    CHECK(dist3.param() == dist_t::param_type(ilist, myfn));
 
     typedef STD ranlux24 rng_t;
     rng_t rng;

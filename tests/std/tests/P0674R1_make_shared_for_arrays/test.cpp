@@ -221,6 +221,11 @@ void test_make_shared_array_known_bounds() {
     test_make_init_destruct_order<ReportAddress[2][2][2]>(); // success multidimensional
 
     test_make_init_destruct_order<ReportAddress[3][3][3]>(); // failure multidimensional
+
+    shared_ptr<int[7]> p7 = make_shared<int[7]>(0);
+    for (int i = 0; i < 7; ++i) {
+        assert(p7[i] == 0);
+    }
 }
 
 void test_make_shared_array_unknown_bounds() {
@@ -286,6 +291,11 @@ void test_make_shared_array_unknown_bounds() {
     test_make_init_destruct_order<ReportAddress[][2][2]>(2u); // success multidimensional
 
     test_make_init_destruct_order<ReportAddress[][3][3]>(3u); // failure multidimensional
+
+    shared_ptr<int[]> p8 = make_shared<int[]>(7u, 0);
+    for (int i = 0; i < 7; ++i) {
+        assert(p8[i] == 0);
+    }
 }
 
 int constructCount = 0;
@@ -506,6 +516,12 @@ void test_allocate_shared_array_known_bounds() {
     test_allocate_init_destruct_order<ReportAddress[2][2][2]>(); // success multidimensional
 
     test_allocate_init_destruct_order<ReportAddress[3][3][3]>(); // failure multidimensional
+
+    allocator<int> a7;
+    shared_ptr<int[7]> p7 = allocate_shared<int[7]>(a7, 0);
+    for (int i = 0; i < 7; ++i) {
+        assert(p7[i] == 0);
+    }
 }
 
 void test_allocate_shared_array_unknown_bounds() {
@@ -599,6 +615,73 @@ void test_allocate_shared_array_unknown_bounds() {
     test_allocate_init_destruct_order<ReportAddress[][2][2]>(2u); // success multidimensional
 
     test_allocate_init_destruct_order<ReportAddress[][3][3]>(3u); // failure multidimensional
+
+    allocator<int> a8;
+    shared_ptr<int[]> p8 = allocate_shared<int[]>(a8, 7u, 0);
+    for (int i = 0; i < 7; ++i) {
+        assert(p8[i] == 0);
+    }
+}
+
+// Test GH-1733 "<memory>: error C2694 when calling make_shared on class with throwing destructor"
+struct NontrivialThrowingDtor {
+    ~NontrivialThrowingDtor() noexcept(false) {}
+};
+static_assert(!is_nothrow_destructible_v<NontrivialThrowingDtor>);
+static_assert(!is_trivially_destructible_v<NontrivialThrowingDtor>);
+
+struct TrivialThrowingDtor {
+    ~TrivialThrowingDtor() noexcept(false) = default;
+};
+
+#ifndef __EDG__ // TRANSITION, VSO-1292292
+static_assert(!is_nothrow_destructible_v<TrivialThrowingDtor>);
+#endif // ^^^ no workaround ^^^
+static_assert(is_trivially_destructible_v<TrivialThrowingDtor>);
+
+template <class T>
+struct WeirdDeleter {
+    void operator()(T* const ptr) const {
+        delete ptr;
+    }
+
+    ~WeirdDeleter() noexcept(false) {}
+};
+static_assert(!is_nothrow_destructible_v<WeirdDeleter<int>>);
+
+void test_GH_1733() {
+    WeirdDeleter<NontrivialThrowingDtor> del;
+    allocator<int> al;
+
+    // _Ref_count
+    (void) shared_ptr<NontrivialThrowingDtor>{new NontrivialThrowingDtor};
+
+    // _Ref_count_resource
+    (void) shared_ptr<NontrivialThrowingDtor>{new NontrivialThrowingDtor, del};
+
+    // _Ref_count_resource_alloc
+    (void) shared_ptr<NontrivialThrowingDtor>{new NontrivialThrowingDtor, del, al};
+
+    // _Ref_count_obj2
+    (void) make_shared<NontrivialThrowingDtor>();
+
+    // _Ref_count_obj_alloc3
+    (void) allocate_shared<NontrivialThrowingDtor>(al);
+
+    // _Ref_count_unbounded_array<_Ty, true>
+    (void) make_shared<TrivialThrowingDtor[]>(10);
+
+    // _Ref_count_unbounded_array<_Ty, false>
+    (void) make_shared<NontrivialThrowingDtor[]>(10);
+
+    // _Ref_count_bounded_array
+    (void) make_shared<NontrivialThrowingDtor[10]>();
+
+    // _Ref_count_unbounded_array_alloc
+    (void) allocate_shared<NontrivialThrowingDtor[]>(al, 10);
+
+    // _Ref_count_bounded_array_alloc
+    (void) allocate_shared<NontrivialThrowingDtor[10]>(al);
 }
 
 int main() {
@@ -609,4 +692,6 @@ int main() {
     test_allocate_shared_not_array();
     test_allocate_shared_array_known_bounds();
     test_allocate_shared_array_unknown_bounds();
+
+    test_GH_1733();
 }

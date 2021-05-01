@@ -967,10 +967,25 @@ using _Variant_destroy_layer = conditional_t<conjunction_v<is_trivially_destruct
 #pragma warning(disable : 4365) // '%s': conversion from '%s' to '%s', signed/unsigned mismatch
 #pragma warning(disable : 5215) // '%s' a function parameter with volatile qualified type is deprecated in C++20
 #endif // __clang__
-template <size_t _Idx, class _Ty>
+
+#if _HAS_CXX20
+// build Ti x[] = {std::forward<T>(t)};
+template <size_t _Idx, class _TargetType>
+auto _Construct_array(_TargetType(&&)[1]) -> _Meta_list<integral_constant<size_t, _Idx>, _TargetType>;
+
+template <size_t _Idx, class _TargetType, class _InitializerType>
+using _Variant_type_resolver = decltype(_Construct_array<_Idx, _TargetType>({_STD declval<_InitializerType>()}));
+#endif // _HAS_CXX20
+
+template <size_t _Idx, class _TargetType>
 struct _Variant_init_single_overload {
-    using _FTy = _Meta_list<integral_constant<size_t, _Idx>, _Ty> (*)(_Ty);
-    operator _FTy();
+#if _HAS_CXX20
+    template <class _InitializerType>
+    auto operator()(_TargetType, _InitializerType&&) -> _Variant_type_resolver<_Idx, _TargetType, _InitializerType>;
+#else // _HAS_CXX20
+    template <class _InitializerType>
+    auto operator()(_TargetType, _InitializerType&&) -> _Meta_list<integral_constant<size_t, _Idx>, _TargetType>;
+#endif // _HAS_CXX20
 };
 
 template <class _Indices, class... _Types>
@@ -978,7 +993,9 @@ struct _Variant_init_overload_set_;
 
 template <size_t... _Indices, class... _Types>
 struct _Variant_init_overload_set_<index_sequence<_Indices...>, _Types...>
-    : _Variant_init_single_overload<_Indices, _Types>... {};
+    : _Variant_init_single_overload<_Indices, _Types>... {
+    using _Variant_init_single_overload<_Indices, _Types>::operator()...;
+};
 
 template <class... _Types>
 using _Variant_init_overload_set = _Variant_init_overload_set_<index_sequence_for<_Types...>, _Types...>;
@@ -987,11 +1004,12 @@ template <class Enable, class _Ty, class... _Types>
 struct _Variant_init_helper {}; // failure case (has no member "type")
 
 template <class _Ty, class... _Types>
-struct _Variant_init_helper<void_t<decltype(_Variant_init_overload_set<_Types...>{}(_STD declval<_Ty>()))>, _Ty,
+struct _Variant_init_helper<
+    void_t<decltype(_Variant_init_overload_set<_Types...>{}(_STD declval<_Ty>(), _STD declval<_Ty>()))>, _Ty,
     _Types...> {
     // perform overload resolution to determine the unique alternative that should be initialized in
     // variant<_Types...> from an argument expression with type and value category _Ty
-    using type = decltype(_Variant_init_overload_set<_Types...>{}(_STD declval<_Ty>()));
+    using type = decltype(_Variant_init_overload_set<_Types...>{}(_STD declval<_Ty>(), _STD declval<_Ty>()));
 };
 
 template <class _Ty, class... _Types> // extract the type from _Variant_init_helper
@@ -1169,7 +1187,7 @@ public:
                         {
                             constexpr size_t _That_idx = decltype(_That_ref)::_Idx;
 #ifdef __EDG__ // TRANSITION, VSO-657455
-                            constexpr size_t _My_idx   = decltype(_My_ref)::_Idx + 0 * _That_idx;
+                            constexpr size_t _My_idx = decltype(_My_ref)::_Idx + 0 * _That_idx;
 #else // ^^^ workaround ^^^ / vvv no workaround vvv
                             constexpr size_t _My_idx = decltype(_My_ref)::_Idx;
 #endif // TRANSITION, VSO-657455
@@ -1365,13 +1383,14 @@ _NODISCARD constexpr add_pointer_t<const _Ty> get_if(
 }
 
 // RELATIONAL OPERATORS [variant.relops]
-template <class _Op, class... _Types>
-struct _Variant_relop_visitor { // evaluate _Op with the contained value of two variants that hold the same alternative
+template <class _Op, class _Result, class... _Types>
+struct _Variant_relop_visitor2 { // evaluate _Op with the contained value of two variants that hold the same alternative
     const _Variant_storage<_Types...>& _Left;
 
     template <class _Ty, size_t _Idx>
-    _NODISCARD constexpr bool operator()(_Tagged<const _Ty&, _Idx> _Right) const noexcept(
-        disjunction_v<bool_constant<_Idx == variant_npos>, is_nothrow_invocable_r<bool, _Op, const _Ty&, const _Ty&>>) {
+    _NODISCARD constexpr _Result operator()(_Tagged<const _Ty&, _Idx> _Right) const
+        noexcept(disjunction_v<bool_constant<_Idx == variant_npos>,
+            is_nothrow_invocable_r<_Result, _Op, const _Ty&, const _Ty&>>) {
         // determine the relationship between the stored values of _Left and _Right
         // pre: _Left.index() == _Idx && _Right.index() == _Idx
         if constexpr (_Idx != variant_npos) {
@@ -1387,20 +1406,20 @@ template <class... _Types>
 _NODISCARD constexpr bool operator==(const variant<_Types...>& _Left, const variant<_Types...>& _Right) noexcept(
     conjunction_v<is_nothrow_invocable_r<bool, equal_to<>, const _Types&, const _Types&>...>) /* strengthened */ {
     // determine if the arguments are both valueless or contain equal values
-    using _Visitor            = _Variant_relop_visitor<equal_to<>, _Types...>;
+    using _Visitor            = _Variant_relop_visitor2<equal_to<>, bool, _Types...>;
     const size_t _Right_index = _Right.index();
     return _Left.index() == _Right_index
-           && _Variant_raw_visit(_Right_index, _Right._Storage(), _Visitor{_Left._Storage()});
+        && _Variant_raw_visit(_Right_index, _Right._Storage(), _Visitor{_Left._Storage()});
 }
 
 template <class... _Types>
 _NODISCARD constexpr bool operator!=(const variant<_Types...>& _Left, const variant<_Types...>& _Right) noexcept(
     conjunction_v<is_nothrow_invocable_r<bool, not_equal_to<>, const _Types&, const _Types&>...>) /* strengthened */ {
     // determine if the arguments have different active alternatives or contain unequal values
-    using _Visitor            = _Variant_relop_visitor<not_equal_to<>, _Types...>;
+    using _Visitor            = _Variant_relop_visitor2<not_equal_to<>, bool, _Types...>;
     const size_t _Right_index = _Right.index();
     return _Left.index() != _Right_index
-           || _Variant_raw_visit(_Right_index, _Right._Storage(), _Visitor{_Left._Storage()});
+        || _Variant_raw_visit(_Right_index, _Right._Storage(), _Visitor{_Left._Storage()});
 }
 
 template <class... _Types>
@@ -1408,12 +1427,12 @@ _NODISCARD constexpr bool operator<(const variant<_Types...>& _Left, const varia
     conjunction_v<is_nothrow_invocable_r<bool, less<>, const _Types&, const _Types&>...>) /* strengthened */ {
     // determine if _Left has a lesser index(), or equal index() and lesser
     // contained value than _Right
-    using _Visitor             = _Variant_relop_visitor<less<>, _Types...>;
+    using _Visitor             = _Variant_relop_visitor2<less<>, bool, _Types...>;
     const size_t _Left_offset  = _Left.index() + 1;
     const size_t _Right_offset = _Right.index() + 1;
     return _Left_offset < _Right_offset
-           || (_Left_offset == _Right_offset
-               && _Variant_raw_visit(_Right_offset - 1, _Right._Storage(), _Visitor{_Left._Storage()}));
+        || (_Left_offset == _Right_offset
+            && _Variant_raw_visit(_Right_offset - 1, _Right._Storage(), _Visitor{_Left._Storage()}));
 }
 
 template <class... _Types>
@@ -1421,12 +1440,12 @@ _NODISCARD constexpr bool operator>(const variant<_Types...>& _Left, const varia
     conjunction_v<is_nothrow_invocable_r<bool, greater<>, const _Types&, const _Types&>...>) /* strengthened */ {
     // determine if _Left has a greater index(), or equal index() and
     // greater contained value than _Right
-    using _Visitor             = _Variant_relop_visitor<greater<>, _Types...>;
+    using _Visitor             = _Variant_relop_visitor2<greater<>, bool, _Types...>;
     const size_t _Left_offset  = _Left.index() + 1;
     const size_t _Right_offset = _Right.index() + 1;
     return _Left_offset > _Right_offset
-           || (_Left_offset == _Right_offset
-               && _Variant_raw_visit(_Right_offset - 1, _Right._Storage(), _Visitor{_Left._Storage()}));
+        || (_Left_offset == _Right_offset
+            && _Variant_raw_visit(_Right_offset - 1, _Right._Storage(), _Visitor{_Left._Storage()}));
 }
 
 template <class... _Types>
@@ -1434,12 +1453,12 @@ _NODISCARD constexpr bool operator<=(const variant<_Types...>& _Left, const vari
     conjunction_v<is_nothrow_invocable_r<bool, less_equal<>, const _Types&, const _Types&>...>) /* strengthened */ {
     // determine if _Left's index() is less than _Right's, or equal and
     // _Left contains a value less than or equal to _Right
-    using _Visitor             = _Variant_relop_visitor<less_equal<>, _Types...>;
+    using _Visitor             = _Variant_relop_visitor2<less_equal<>, bool, _Types...>;
     const size_t _Left_offset  = _Left.index() + 1;
     const size_t _Right_offset = _Right.index() + 1;
     return _Left_offset < _Right_offset
-           || (_Left_offset == _Right_offset
-               && _Variant_raw_visit(_Right_offset - 1, _Right._Storage(), _Visitor{_Left._Storage()}));
+        || (_Left_offset == _Right_offset
+            && _Variant_raw_visit(_Right_offset - 1, _Right._Storage(), _Visitor{_Left._Storage()}));
 }
 
 template <class... _Types>
@@ -1447,13 +1466,34 @@ _NODISCARD constexpr bool operator>=(const variant<_Types...>& _Left, const vari
     conjunction_v<is_nothrow_invocable_r<bool, greater_equal<>, const _Types&, const _Types&>...>) /* strengthened */ {
     // determine if _Left's index() is greater than _Right's, or equal and
     // _Left contains a value greater than or equal to _Right
-    using _Visitor             = _Variant_relop_visitor<greater_equal<>, _Types...>;
+    using _Visitor             = _Variant_relop_visitor2<greater_equal<>, bool, _Types...>;
     const size_t _Left_offset  = _Left.index() + 1;
     const size_t _Right_offset = _Right.index() + 1;
     return _Left_offset > _Right_offset
-           || (_Left_offset == _Right_offset
-               && _Variant_raw_visit(_Right_offset - 1, _Right._Storage(), _Visitor{_Left._Storage()}));
+        || (_Left_offset == _Right_offset
+            && _Variant_raw_visit(_Right_offset - 1, _Right._Storage(), _Visitor{_Left._Storage()}));
 }
+
+#ifdef __cpp_lib_concepts
+// clang-format off
+template <class... _Types>
+    requires (three_way_comparable<_Types> && ...)
+_NODISCARD constexpr common_comparison_category_t<compare_three_way_result_t<_Types>...>
+    operator<=>(const variant<_Types...>& _Left, const variant<_Types...>& _Right) noexcept(
+        conjunction_v<is_nothrow_invocable_r<common_comparison_category_t<compare_three_way_result_t<_Types>...>,
+            compare_three_way, const _Types&, const _Types&>...>) /* strengthened */ {
+    // clang-format on
+    // determine the three-way comparison of _Left's and _Right's index, if equal
+    // return the three-way comparison of the contained values of _Left and _Right
+    using _Visitor             = _Variant_relop_visitor2<compare_three_way,
+        common_comparison_category_t<compare_three_way_result_t<_Types>...>, _Types...>;
+    const size_t _Left_offset  = _Left.index() + 1;
+    const size_t _Right_offset = _Right.index() + 1;
+    const auto _Offset_order   = _Left_offset <=> _Right_offset;
+    return _Offset_order != 0 ? _Offset_order
+                              : _Variant_raw_visit(_Right_offset - 1, _Right._Storage(), _Visitor{_Left._Storage()});
+}
+#endif // __cpp_lib_concepts
 
 // VISITATION [variant.visit]
 template <class... _Variants>
@@ -1643,8 +1683,12 @@ using _As_variant = // Deduce variant specialization from a derived type
 
 template <size_t _Size, class _Ret, class _ListOfIndexVectors, class _Callable, class... _Variants>
 constexpr _Ret _Visit_impl(_Callable&& _Obj, _Variants&&... _Args) {
-    constexpr int _Strategy =
-        _Size == 1 ? 0 : _Size <= 4 ? 1 : _Size <= 16 ? 2 : _Size <= 64 ? 3 : _Size <= 256 ? 4 : -1;
+    constexpr int _Strategy = _Size == 1   ? 0
+                            : _Size <= 4   ? 1
+                            : _Size <= 16  ? 2
+                            : _Size <= 64  ? 3
+                            : _Size <= 256 ? 4
+                                           : -1;
     return _Visit_strategy<_Strategy>::template _Visit2<_Ret, _ListOfIndexVectors>(
         _Variant_visit_index1(0, static_cast<_As_variant<_Variants>&>(_Args)...), static_cast<_Callable&&>(_Obj),
         static_cast<_As_variant<_Variants>&&>(_Args)...);
@@ -1687,13 +1731,16 @@ constexpr _Ret visit(_Callable&& _Obj, _Variants&&... _Args) {
 }
 #endif // _HAS_CXX20
 
-// CLASS monostate [variant.monostate]
-struct monostate {};
-
 // monostate RELATIONAL OPERATORS [variant.monostate.relops]
 _NODISCARD constexpr bool operator==(monostate, monostate) noexcept {
     return true;
 }
+
+#if _HAS_CXX20
+_NODISCARD constexpr strong_ordering operator<=>(monostate, monostate) noexcept {
+    return strong_ordering::equal;
+}
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 _NODISCARD constexpr bool operator!=(monostate, monostate) noexcept {
     return false;
 }
@@ -1709,6 +1756,7 @@ _NODISCARD constexpr bool operator<=(monostate, monostate) noexcept {
 _NODISCARD constexpr bool operator>=(monostate, monostate) noexcept {
     return true;
 }
+#endif // !_HAS_CXX20
 
 // SPECIALIZED ALGORITHMS [variant.specalg]
 template <class... _Types,

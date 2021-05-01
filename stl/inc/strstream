@@ -193,7 +193,7 @@ protected:
         if (_Old_gptr && eback() < _Old_gptr) { // if the input sequence has a putback position available
             if (_Meta == EOF) {
                 _Meta = 0; // a value other than EOF
-            } else if (!(_Strmode & _Constant)) { // non constant, overwrite no matter what
+            } else if (!(_Strmode & _Constant)) { // non-constant, overwrite no matter what
                 _Old_gptr[-1] = static_cast<char>(_Meta);
             } else if (_Old_gptr[-1] != static_cast<char>(_Meta)) { // constant, unequal, can't put it back
                 return EOF;
@@ -251,7 +251,7 @@ protected:
         const auto _Seeklow  = eback();
         const auto _Seekdist = _Seekhigh - _Seeklow;
 
-        // [depr.strstreambuf.virtuals]/15 effectively says check that the result will be in range
+        // N4727 [depr.strstreambuf.virtuals]/15 effectively says check that the result will be in range
         // [_Seeklow, _Seekhigh]; but we want to calculate this without potential integer overflow
         switch (_Way) {
         case ios_base::beg:
@@ -270,34 +270,35 @@ protected:
 
             _Off += _Seekdist;
             break;
-        case ios_base::cur: {
-            constexpr auto _Both = ios_base::in | ios_base::out;
-            if ((_Which & _Both)
-                == _Both) { // prohibited by N4727 [depr.strstreambuf.virtuals] Table 137 "seekoff positioning"
-                return pos_type(off_type(-1));
+        case ios_base::cur:
+            {
+                constexpr auto _Both = ios_base::in | ios_base::out;
+                if ((_Which & _Both)
+                    == _Both) { // prohibited by N4727 [depr.strstreambuf.virtuals] Table 137 "seekoff positioning"
+                    return pos_type(off_type(-1));
+                }
+
+                off_type _Oldoff;
+                off_type _Oldleft;
+                if (_Which & ios_base::in) {
+                    _Oldoff  = gptr() - eback();
+                    _Oldleft = _Seekhigh - gptr();
+                } else if (_Which & ios_base::out) {
+                    _Oldoff  = pptr() - pbase();
+                    _Oldleft = _Seekhigh - pptr();
+                } else {
+                    return pos_type(off_type(-1));
+                }
+
+                if (_Off < -_Oldoff // runs off beginning
+                    || _Off > _Oldleft) { // runs off end
+                    return pos_type(off_type(-1));
+                }
+
+                _Off += _Oldoff;
             }
 
-            off_type _Oldoff;
-            off_type _Oldleft;
-            if (_Which & ios_base::in) {
-                _Oldoff  = gptr() - eback();
-                _Oldleft = _Seekhigh - gptr();
-            } else if (_Which & ios_base::out) {
-                _Oldoff  = pptr() - pbase();
-                _Oldleft = _Seekhigh - pptr();
-            } else {
-                return pos_type(off_type(-1));
-            }
-
-            if (_Off < -_Oldoff // runs off beginning
-                || _Off > _Oldleft) { // runs off end
-                return pos_type(off_type(-1));
-            }
-
-            _Off += _Oldoff;
-        }
-
-        break;
+            break;
         default:
             return pos_type(off_type(-1));
         }

@@ -33,10 +33,18 @@ struct instantiator {
         }
         { // Validate int is properly converted to bool
             bool output[] = {false, true, false};
-            fill(ranges::begin(output), ranges::end(output), 5);
+            fill(output, 5);
             for (const bool& elem : output) {
                 assert(elem == true);
             }
+        }
+        { // Validate zero-ing
+            int output[] = {13, 42, 1367};
+            auto result  = fill(output, 0);
+            for (const auto& elem : output) {
+                assert(elem == 0);
+            }
+            assert(result == ranges::end(output));
         }
     }
 };
