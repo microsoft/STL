@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cassert>
 #include <forward_list>
+#include <map>
 #include <ranges>
 #include <span>
 #include <string_view>
@@ -510,6 +511,13 @@ constexpr void output_range_test() {
     }
 }
 
+void test_DevCom_1397309() {
+    constexpr int expected[] = {4, 8};
+    const map<int, string_view> values{{4, "Hello"sv}, {8, "Beautiful"sv}, {10, "World"sv}};
+
+    assert(ranges::equal(values | ranges::views::take(2) | ranges::views::keys, expected));
+}
+
 int main() {
     // Validate views
     { // ... copyable
@@ -558,4 +566,6 @@ int main() {
 
     STATIC_ASSERT((instantiation_test(), true));
     instantiation_test();
+
+    test_DevCom_1397309();
 }
