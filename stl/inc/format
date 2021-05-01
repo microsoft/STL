@@ -2702,8 +2702,11 @@ struct _Arg_formatter {
 };
 
 // The top level set of parsing "actions".
-template <class _OutputIt, class _CharT, class _Context>
+template <class _CharT>
 struct _Format_handler {
+    using _OutputIt = back_insert_iterator<_Fmt_buffer<_CharT>>;
+    using _Context  = basic_format_context<_OutputIt, _CharT>;
+
     basic_format_parse_context<_CharT> _Parse_context;
     _Context _Ctx;
 
@@ -2854,101 +2857,107 @@ _NODISCARD auto make_wformat_args(const _Args&... _Vals) {
     return _Format_arg_store<wformat_context, _Args...>{_Vals...};
 }
 
-template <class _Out, class _CharT>
-using format_args_t = basic_format_args<basic_format_context<_Out, _CharT>>;
-
 template <output_iterator<const char&> _OutputIt>
-_OutputIt vformat_to(
-    _OutputIt _Out, const string_view _Fmt, const format_args_t<type_identity_t<_OutputIt>, char> _Args) {
-    _Format_handler<_OutputIt, char, basic_format_context<_OutputIt, char>> _Handler(_STD move(_Out), _Fmt, _Args);
-    _Parse_format_string(_Fmt, _Handler);
-    return _Handler._Ctx.out();
+_OutputIt vformat_to(_OutputIt _Out, const string_view _Fmt, const format_args _Args) {
+    if constexpr (is_same_v<_OutputIt, _Fmt_it>) {
+        _Format_handler<char> _Handler(_Out, _Fmt, _Args);
+        _Parse_format_string(_Fmt, _Handler);
+        return _Out;
+    } else {
+        _Fmt_iterator_buffer<_OutputIt, char> _Buf(_STD move(_Out));
+        _Format_handler<char> _Handler(_Fmt_it{_Buf}, _Fmt, _Args);
+        _Parse_format_string(_Fmt, _Handler);
+        return _Buf._Out();
+    }
 }
 
 template <output_iterator<const wchar_t&> _OutputIt>
-_OutputIt vformat_to(
-    _OutputIt _Out, const wstring_view _Fmt, const format_args_t<type_identity_t<_OutputIt>, wchar_t> _Args) {
-    _Format_handler<_OutputIt, wchar_t, basic_format_context<_OutputIt, wchar_t>> _Handler(
-        _STD move(_Out), _Fmt, _Args);
-    _Parse_format_string(_Fmt, _Handler);
-    return _Handler._Ctx.out();
+_OutputIt vformat_to(_OutputIt _Out, const wstring_view _Fmt, const wformat_args _Args) {
+    if constexpr (is_same_v<_OutputIt, _Fmt_wit>) {
+        _Format_handler<wchar_t> _Handler(_Out, _Fmt, _Args);
+        _Parse_format_string(_Fmt, _Handler);
+        return _Out;
+    } else {
+        _Fmt_iterator_buffer<_OutputIt, wchar_t> _Buf(_STD move(_Out));
+        _Format_handler<wchar_t> _Handler(_Fmt_wit{_Buf}, _Fmt, _Args);
+        _Parse_format_string(_Fmt, _Handler);
+        return _Buf._Out();
+    }
 }
 
 template <output_iterator<const char&> _OutputIt>
-_OutputIt vformat_to(_OutputIt _Out, const locale& _Loc, const string_view _Fmt,
-    const format_args_t<type_identity_t<_OutputIt>, char> _Args) {
-    _Format_handler<_OutputIt, char, basic_format_context<_OutputIt, char>> _Handler(
-        _STD move(_Out), _Fmt, _Args, _Lazy_locale{_Loc});
-    _Parse_format_string(_Fmt, _Handler);
-    return _Handler._Ctx.out();
+_OutputIt vformat_to(_OutputIt _Out, const locale& _Loc, const string_view _Fmt, const format_args _Args) {
+    if constexpr (is_same_v<_OutputIt, _Fmt_it>) {
+        _Format_handler<char> _Handler(_Out, _Fmt, _Args, _Lazy_locale{_Loc});
+        _Parse_format_string(_Fmt, _Handler);
+        return _Out;
+    } else {
+        _Fmt_iterator_buffer<_OutputIt, char> _Buf(_STD move(_Out));
+        _Format_handler<char> _Handler(_Fmt_it{_Buf}, _Fmt, _Args, _Lazy_locale{_Loc});
+        _Parse_format_string(_Fmt, _Handler);
+        return _Buf._Out();
+    }
 }
 
 template <output_iterator<const wchar_t&> _OutputIt>
-_OutputIt vformat_to(_OutputIt _Out, const locale& _Loc, const wstring_view _Fmt,
-    const format_args_t<type_identity_t<_OutputIt>, wchar_t> _Args) {
-    _Format_handler<_OutputIt, wchar_t, basic_format_context<_OutputIt, wchar_t>> _Handler(
-        _STD move(_Out), _Fmt, _Args, _Lazy_locale{_Loc});
-    _Parse_format_string(_Fmt, _Handler);
-    return _Handler._Ctx.out();
+_OutputIt vformat_to(_OutputIt _Out, const locale& _Loc, const wstring_view _Fmt, const wformat_args _Args) {
+    if constexpr (is_same_v<_OutputIt, _Fmt_wit>) {
+        _Format_handler<wchar_t> _Handler(_Out, _Fmt, _Args, _Lazy_locale{_Loc});
+        _Parse_format_string(_Fmt, _Handler);
+        return _Out;
+    } else {
+        _Fmt_iterator_buffer<_OutputIt, wchar_t> _Buf(_STD move(_Out));
+        _Format_handler<wchar_t> _Handler(_Fmt_wit{_Buf}, _Fmt, _Args, _Lazy_locale{_Loc});
+        _Parse_format_string(_Fmt, _Handler);
+        return _Buf._Out();
+    }
 }
 
 template <output_iterator<const char&> _OutputIt, class... _Types>
 _OutputIt format_to(_OutputIt _Out, const string_view _Fmt, const _Types&... _Args) {
-    _Fmt_iterator_buffer<_OutputIt, char> _Buf(_STD move(_Out));
-    _STD vformat_to(_Fmt_it{_Buf}, _Fmt, _STD make_format_args(_Args...));
-    return _Buf._Out();
+    return _STD vformat_to(_STD move(_Out), _Fmt, _STD make_format_args(_Args...));
 }
 
 template <output_iterator<const wchar_t&> _OutputIt, class... _Types>
 _OutputIt format_to(_OutputIt _Out, const wstring_view _Fmt, const _Types&... _Args) {
-    _Fmt_iterator_buffer<_OutputIt, wchar_t> _Buf(_STD move(_Out));
-    _STD vformat_to(_Fmt_wit{_Buf}, _Fmt, _STD make_wformat_args(_Args...));
-    return _Buf._Out();
+    return _STD vformat_to(_STD move(_Out), _Fmt, _STD make_wformat_args(_Args...));
 }
 
 template <output_iterator<const char&> _OutputIt, class... _Types>
 _OutputIt format_to(_OutputIt _Out, const locale& _Loc, const string_view _Fmt, const _Types&... _Args) {
-    _Fmt_iterator_buffer<_OutputIt, char> _Buf(_STD move(_Out));
-    _STD vformat_to(_Fmt_it{_Buf}, _Loc, _Fmt, _STD make_format_args(_Args...));
-    return _Buf._Out();
+    return _STD vformat_to(_STD move(_Out), _Loc, _Fmt, _STD make_format_args(_Args...));
 }
 
 template <output_iterator<const wchar_t&> _OutputIt, class... _Types>
 _OutputIt format_to(_OutputIt _Out, const locale& _Loc, const wstring_view _Fmt, const _Types&... _Args) {
-    _Fmt_iterator_buffer<_OutputIt, wchar_t> _Buf(_STD move(_Out));
-    _STD vformat_to(_Fmt_wit{_Buf}, _Loc, _Fmt, _STD make_wformat_args(_Args...));
-    return _Buf._Out();
+    return _STD vformat_to(_STD move(_Out), _Loc, _Fmt, _STD make_wformat_args(_Args...));
 }
 
 _NODISCARD inline string vformat(const string_view _Fmt, const format_args _Args) {
     string _Str;
     _Str.reserve(_Fmt.size() + _Args._Estimate_required_capacity());
-    _Fmt_iterator_buffer<back_insert_iterator<string>, char> _Buf(back_insert_iterator{_Str});
-    _STD vformat_to(_Fmt_it{_Buf}, _Fmt, _Args);
+    _STD vformat_to(back_insert_iterator{_Str}, _Fmt, _Args);
     return _Str;
 }
 
 _NODISCARD inline wstring vformat(const wstring_view _Fmt, const wformat_args _Args) {
     wstring _Str;
     _Str.reserve(_Fmt.size() + _Args._Estimate_required_capacity());
-    _Fmt_iterator_buffer<back_insert_iterator<wstring>, wchar_t> _Buf(back_insert_iterator{_Str});
-    _STD vformat_to(_Fmt_wit{_Buf}, _Fmt, _Args);
+    _STD vformat_to(back_insert_iterator{_Str}, _Fmt, _Args);
     return _Str;
 }
 
 _NODISCARD inline string vformat(const locale& _Loc, const string_view _Fmt, const format_args _Args) {
     string _Str;
     _Str.reserve(_Fmt.size() + _Args._Estimate_required_capacity());
-    _Fmt_iterator_buffer<back_insert_iterator<string>, char> _Buf(back_insert_iterator{_Str});
-    _STD vformat_to(_Fmt_it{_Buf}, _Loc, _Fmt, _Args);
+    _STD vformat_to(back_insert_iterator{_Str}, _Loc, _Fmt, _Args);
     return _Str;
 }
 
 _NODISCARD inline wstring vformat(const locale& _Loc, const wstring_view _Fmt, const wformat_args _Args) {
     wstring _Str;
     _Str.reserve(_Fmt.size() + _Args._Estimate_required_capacity());
-    _Fmt_iterator_buffer<back_insert_iterator<wstring>, wchar_t> _Buf(back_insert_iterator{_Str});
-    _STD vformat_to(_Fmt_wit{_Buf}, _Loc, _Fmt, _Args);
+    _STD vformat_to(back_insert_iterator{_Str}, _Loc, _Fmt, _Args);
     return _Str;
 }
 

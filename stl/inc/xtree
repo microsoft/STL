@@ -1216,7 +1216,7 @@ public:
     }
 
     _NODISCARD bool empty() const noexcept {
-        return size() == 0;
+        return _Get_scary()->_Mysize == 0;
     }
 
     _NODISCARD allocator_type get_allocator() const noexcept {
