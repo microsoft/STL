@@ -436,6 +436,10 @@ provided by the bot. You will only need to do this once across all repos using o
 This project has adopted the [Microsoft Open Source Code of Conduct][]. For more information see the
 [Code of Conduct FAQ][] or contact [opencode@microsoft.com][] with any additional questions or comments.
 
+# Encouraging Contributors to Code Review
+
+It can sometimes take time for maintainers to review a PR, and if a PR goes through several iterations of maintainer review, the lifetime of the PR is extended even further. If contributors are willing to review PRs, it can oftentimes accelerate the review process as it allows the PR to be in a more finished state before maintainers review, and fewer maintainer review iterations are needed. It has always been appreciated when contributors are willing to review each others' PRs, but this has not been explicitly said anywhere.
+
 # License
 
 Copyright (c) Microsoft Corporation.
