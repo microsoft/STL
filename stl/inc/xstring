@@ -5048,6 +5048,13 @@ namespace pmr {
     using wstring   = basic_string<wchar_t>;
 } // namespace pmr
 #endif // _HAS_CXX17
+
+template <class _T>
+struct _Is_basic_string : false_type {};
+
+template <class _Elem, class _Traits, class _Alloc>
+struct _Is_basic_string<basic_string<_Elem, _Traits, _Alloc>> : true_type {};
+
 _STD_END
 
 #pragma pop_macro("new")
