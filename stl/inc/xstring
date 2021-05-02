@@ -5048,13 +5048,6 @@ namespace pmr {
     using wstring   = basic_string<wchar_t>;
 } // namespace pmr
 #endif // _HAS_CXX17
-
-template <class _T>
-inline constexpr bool _Is_basic_string_v = false;
-
-template <class _Elem, class _Traits, class _Alloc>
-inline constexpr bool _Is_basic_string_v<basic_string<_Elem, _Traits, _Alloc>> = true;
-
 _STD_END
 
 #pragma pop_macro("new")
