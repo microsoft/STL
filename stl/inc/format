@@ -1743,6 +1743,57 @@ public:
 
 inline constexpr size_t _Fmt_buffer_size = 256;
 
+template <class _OutputIt, class _Ty>
+struct _Iterator_appender {
+    _OutputIt& _Out;
+
+    void _Append(_Ty* _First, _Ty* _Last) {
+        _Out = _STD _Copy_unchecked(_First, _Last, _STD move(_Out));
+    }
+};
+
+template <class _Container, class _Ty>
+concept _Appendable_container = requires(_Container& _Cont, _Ty* _First, _Ty* _Last) {
+    _Cont.append(_First, _Last);
+};
+
+// clang-format off
+template <class _Container, class _Ty>
+    requires _Appendable_container<_Container, _Ty>
+    // clang-format on
+    struct _Iterator_appender<back_insert_iterator<_Container>, _Ty> {
+private:
+    _Container& _Cont;
+
+public:
+    explicit _Iterator_appender(back_insert_iterator<_Container> _Out) noexcept
+        : _Cont(*_Back_insert_iterator_container_access{_Out}.container) {}
+
+    void _Append(_Ty* _First, _Ty* _Last) {
+        _Cont.append(_First, _Last);
+    }
+};
+
+// clang-format off
+template <class _Container, class _Ty>
+    requires (!_Appendable_container<_Container, _Ty>)
+        && requires(_Container& _Cont, _Ty* _First, _Ty* _Last) {
+            _Cont.insert(_RANGES end(_Cont), _First, _Last);
+        }
+// clang-format on
+struct _Iterator_appender<back_insert_iterator<_Container>, _Ty> {
+private:
+    _Container& _Cont;
+
+public:
+    explicit _Iterator_appender(back_insert_iterator<_Container> _Out) noexcept
+        : _Cont(*_Back_insert_iterator_container_access{_Out}.container) {}
+
+    void _Append(_Ty* _First, _Ty* _Last) {
+        _Cont.insert(_RANGES end(_Cont), _First, _Last);
+    }
+};
+
 template <class _OutputIt, class _Ty, class _Traits = _Fmt_buffer_traits>
 class _Fmt_iterator_buffer final : public _Traits, public _Fmt_buffer<_Ty> {
 private:
@@ -1758,7 +1809,7 @@ private:
     void _Flush() {
         auto _Size = this->_Size();
         this->_Clear();
-        _Output = _STD _Copy_unchecked(_Data, _Data + this->_Limit(_Size), _STD move(_Output));
+        _Iterator_appender<_OutputIt, _Ty>{_Output}._Append(_Data, _Data + this->_Limit(_Size));
     }
 
 public:
@@ -1791,74 +1842,6 @@ public:
 
     _NODISCARD _Ty* _Out() noexcept {
         return this->end();
-    }
-};
-
-// clang-format off
-template <class _Container>
-    requires _RANGES contiguous_range<_Container> && _RANGES sized_range<_Container>
-        && (!_Is_basic_string_v<_Container>)
-        && requires(_Container& _Cont, const _RANGES range_value_t<_Container>& _Val) {
-            _Cont.push_back(_Val);
-        }
-// clang-format on
-class _Fmt_iterator_buffer<back_insert_iterator<_Container>, _RANGES range_value_t<_Container>> final
-    : public _Fmt_buffer<_RANGES range_value_t<_Container>> {
-private:
-    _Container& _Cont;
-
-    void _Grow(size_t _Capacity) final {
-        _Cont.resize(_Capacity);
-        this->_Set(_RANGES data(_Cont), _Capacity);
-    }
-
-public:
-    explicit _Fmt_iterator_buffer(_Container& _Cont_)
-        : _Fmt_buffer<_RANGES range_value_t<_Container>>(_RANGES size(_Cont_)), _Cont(_Cont_) {}
-
-    explicit _Fmt_iterator_buffer(back_insert_iterator<_Container> _Out, ptrdiff_t = 0)
-        : _Fmt_iterator_buffer(*_Back_insert_iterator_container_access{_Out}.container) {}
-
-    _NODISCARD auto _Out() noexcept {
-        return back_insert_iterator{_Cont};
-    }
-};
-
-template <class _CharT, class _Traits, class _Allocator>
-class _Fmt_iterator_buffer<back_insert_iterator<basic_string<_CharT, _Traits, _Allocator>>, _CharT> final
-    : public _Fmt_buffer<_CharT> {
-private:
-    using _String_type = basic_string<_CharT, _Traits, _Allocator>;
-
-    _String_type& _Str;
-    _CharT _Data[_Fmt_buffer_size];
-
-    void _Grow(size_t) final {
-        if (this->_Size() == _Fmt_buffer_size) {
-            _Flush();
-        }
-    }
-
-    void _Flush() {
-        auto _Size = this->_Size();
-        this->_Clear();
-        _Str.append(_Data, _Size);
-    }
-
-public:
-    explicit _Fmt_iterator_buffer(back_insert_iterator<_String_type> _Out, ptrdiff_t = 0) noexcept /* strengthened */
-        : _Fmt_buffer<_CharT>(_Data, 0, _Fmt_buffer_size),
-          _Str(*_Back_insert_iterator_container_access{_Out}.container) {}
-
-    ~_Fmt_iterator_buffer() {
-        if (this->_Size() != 0) {
-            _Flush();
-        }
-    }
-
-    _NODISCARD back_insert_iterator<_String_type> _Out() {
-        _Flush();
-        return back_insert_iterator{_Str};
     }
 };
 
