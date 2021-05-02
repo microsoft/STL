@@ -888,6 +888,13 @@ void test_zoned_time_formatter() {
     assert(format(STR("{:%g %G %U %V %W}"), zt) == STR("21 2021 16 16 16"));
 }
 
+template <typename CharT>
+void test_localized() {
+    auto loc = locale("ru_RU");
+    assert(format(loc, STR("{:%S}"), std::chrono::milliseconds(42)) == STR("00.042"));
+    assert(format(loc, STR("{:L%S}"), std::chrono::milliseconds(42)) == STR("00,042"));
+}
+
 void test() {
     test_parse_conversion_spec<char>();
     test_parse_conversion_spec<wchar_t>();
@@ -959,6 +966,9 @@ void test() {
 
     test_zoned_time_formatter<char>();
     test_zoned_time_formatter<wchar_t>();
+
+    test_localized<char>();
+    test_localized<wchar_t>();
 }
 
 int main() {
