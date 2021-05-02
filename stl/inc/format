@@ -1846,8 +1846,7 @@ private:
     }
 
 public:
-    explicit _Fmt_iterator_buffer(
-        back_insert_iterator<_String_type> _Out, ptrdiff_t = 0) noexcept /* strengthened */
+    explicit _Fmt_iterator_buffer(back_insert_iterator<_String_type> _Out, ptrdiff_t = 0) noexcept /* strengthened */
         : _Fmt_buffer<_CharT>(_Data, 0, _Fmt_buffer_size),
           _Str(*_Back_insert_iterator_container_access{_Out}.container) {}
 
