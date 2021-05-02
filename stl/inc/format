@@ -1768,8 +1768,8 @@ struct _Back_insert_iterator_container_access : back_insert_iterator<_Container>
 // clang-format off
 template <class _Container, class _Ty>
     requires _Appendable_container<_Container, _Ty>
-// clang-format on
 struct _Iterator_appender<back_insert_iterator<_Container>, _Ty> {
+    // clang-format on
 private:
     _Container& _Cont;
 
