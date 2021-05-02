@@ -1757,17 +1757,25 @@ concept _Appendable_container = requires(_Container& _Cont, _Ty* _First, _Ty* _L
     _Cont.append(_First, _Last);
 };
 
+template <class _Container>
+struct _Back_insert_iterator_container_access : back_insert_iterator<_Container> {
+    explicit _Back_insert_iterator_container_access(back_insert_iterator<_Container> _Iter)
+        : back_insert_iterator<_Container>(_Iter) {}
+
+    using back_insert_iterator<_Container>::container;
+};
+
 // clang-format off
 template <class _Container, class _Ty>
     requires _Appendable_container<_Container, _Ty>
-    // clang-format on
-    struct _Iterator_appender<back_insert_iterator<_Container>, _Ty> {
+// clang-format on
+struct _Iterator_appender<back_insert_iterator<_Container>, _Ty> {
 private:
     _Container& _Cont;
 
 public:
     explicit _Iterator_appender(back_insert_iterator<_Container> _Out) noexcept
-        : _Cont(*_Back_insert_iterator_container_access{_Out}.container) {}
+        : _Cont(*_Back_insert_iterator_container_access<_Container>{_Out}.container) {} // TRANSITION, LLVM-41450
 
     void _Append(_Ty* _First, _Ty* _Last) {
         _Cont.append(_First, _Last);
@@ -1787,7 +1795,7 @@ private:
 
 public:
     explicit _Iterator_appender(back_insert_iterator<_Container> _Out) noexcept
-        : _Cont(*_Back_insert_iterator_container_access{_Out}.container) {}
+        : _Cont(*_Back_insert_iterator_container_access<_Container>{_Out}.container) {} // TRANSITION, LLVM-41450
 
     void _Append(_Ty* _First, _Ty* _Last) {
         _Cont.insert(_RANGES end(_Cont), _First, _Last);

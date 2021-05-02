@@ -67,14 +67,6 @@ protected:
     _Container* container = nullptr;
 };
 
-template <class _Container>
-struct _Back_insert_iterator_container_access : back_insert_iterator<_Container> {
-    explicit _Back_insert_iterator_container_access(back_insert_iterator<_Container> _Iter)
-        : back_insert_iterator<_Container>(_Iter) {}
-
-    using back_insert_iterator<_Container>::container;
-};
-
 // FUNCTION TEMPLATE back_inserter
 template <class _Container>
 _NODISCARD _CONSTEXPR20 back_insert_iterator<_Container> back_inserter(_Container& _Cont) noexcept /* strengthened */ {
