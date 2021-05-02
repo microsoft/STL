@@ -1797,7 +1797,7 @@ public:
 // clang-format off
 template <class _Container>
     requires _RANGES contiguous_range<_Container> && _RANGES sized_range<_Container>
-        && (!_Is_basic_string<_Container>::value_type)
+        && (!_Is_basic_string_v<_Container>)
         && requires(_Container& _Cont, const _RANGES range_value_t<_Container>& _Val) {
             _Cont.push_back(_Val);
         }
@@ -1847,7 +1847,7 @@ private:
 
 public:
     explicit _Fmt_iterator_buffer(
-        back_insert_iterator<_String_type> _Out, ptrdiff_t _Size = _Fmt_buffer_size) noexcept /* strengthened */
+        back_insert_iterator<_String_type> _Out, ptrdiff_t = 0) noexcept /* strengthened */
         : _Fmt_buffer<_CharT>(_Data, 0, _Fmt_buffer_size),
           _Str(*_Back_insert_iterator_container_access{_Out}.container) {}
 

@@ -5050,10 +5050,10 @@ namespace pmr {
 #endif // _HAS_CXX17
 
 template <class _T>
-struct _Is_basic_string : false_type {};
+inline constexpr bool _Is_basic_string_v = false;
 
 template <class _Elem, class _Traits, class _Alloc>
-struct _Is_basic_string<basic_string<_Elem, _Traits, _Alloc>> : true_type {};
+inline constexpr bool _Is_basic_string_v<basic_string<_Elem, _Traits, _Alloc>> = true;
 
 _STD_END
 
