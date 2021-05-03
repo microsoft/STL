@@ -347,8 +347,9 @@ void test_for_issue1893() {
             ++projection_count;
             return x.get();
         });
-    assert(projection_count == 3);
-    assert(val == "meow");
+    (void)clamped;
+    ASSERT(projection_count <= 5); // 3 + 2 (STL_ASSERT)
+    ASSERT(val == "meow");
 }
 
 int main() {
