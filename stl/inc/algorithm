@@ -10204,11 +10204,13 @@ namespace ranges {
                 "The lower bound cannot be greater than the upper bound in a call to std::ranges::clamp "
                 "(N4861 [alg.clamp]/2).");
 
-            if (_STD invoke(_Pred, _STD invoke(_Proj, _Val), _STD invoke(_Proj, _Lo))) {
+            auto&& temp = _STD invoke(_Proj, _Val);
+
+            if (_STD invoke(_Pred, temp, _STD invoke(_Proj, _Lo))) {
                 return _Lo;
             }
 
-            if (_STD invoke(_Pred, _STD invoke(_Proj, _Hi), _STD invoke(_Proj, _Val))) {
+            if (_STD invoke(_Pred, _STD invoke(_Proj, _Hi), _STD move(temp))) {
                 return _Hi;
             }
 
