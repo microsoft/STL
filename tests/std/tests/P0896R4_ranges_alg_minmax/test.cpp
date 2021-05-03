@@ -8,7 +8,9 @@
 #include <array>
 #include <cassert>
 #include <concepts>
+#include <functional>
 #include <ranges>
+#include <string>
 #include <utility>
 
 #include <range_algorithm_support.hpp>
@@ -334,6 +336,16 @@ constexpr void mm_constexpr_tests() {
         ProxyRef::no>>();
 }
 
+void test_for_issue1893() {
+    string val         = "meow";
+    string low         = "m";
+    string high        = "n";
+    const auto clamped = ranges::clamp(
+        ref(val), ref(low), ref(high), [](auto x, auto y) { return x < y; },
+        [](const auto& x) -> decltype(auto) { return x.get(); });
+    assert(val == "meow");
+}
+
 int main() {
     STATIC_ASSERT((nonrange_tests(), true));
     nonrange_tests();
@@ -349,4 +361,6 @@ int main() {
 
     STATIC_ASSERT((mm_constexpr_tests(), true));
     test_in<mm, const P>();
+
+    test_for_issue1893();
 }
