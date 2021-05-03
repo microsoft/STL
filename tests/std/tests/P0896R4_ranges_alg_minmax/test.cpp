@@ -337,12 +337,17 @@ constexpr void mm_constexpr_tests() {
 }
 
 void test_for_issue1893() {
-    string val         = "meow";
-    string low         = "m";
-    string high        = "n";
-    const auto clamped = ranges::clamp(
+    string val           = "meow";
+    string low           = "m";
+    string high          = "n";
+    int projection_count = 0;
+    const auto clamped   = ranges::clamp(
         ref(val), ref(low), ref(high), [](auto x, auto y) { return x < y; },
-        [](const auto& x) -> decltype(auto) { return x.get(); });
+        [&projection_count](const auto& x) -> decltype(auto) {
+            ++projection_count;
+            return x.get();
+        });
+    assert(projection_count == 3);
     assert(val == "meow");
 }
 
