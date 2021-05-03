@@ -498,7 +498,10 @@ public:
         _Adl_verify_range(_First, _Last);
         auto _UFirst = _Get_unwrapped(_First);
         auto _ULast  = _Get_unwrapped(_Last);
-        if constexpr (is_same_v<_Iter_cat_t<_Iter>, input_iterator_tag>) {
+        if constexpr (_Is_fwd_iter_v<_Iter>) {
+            const auto _Count = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_UFirst, _ULast)));
+            _Construct_n(_Count, _STD move(_UFirst), _STD move(_ULast));
+        } else {
             auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
             _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
             _Tidy_guard<vector> _Guard{this};
@@ -509,9 +512,6 @@ public:
 
             _Guard._Target = nullptr;
             _Proxy._Release();
-        } else {
-            const auto _Count = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_UFirst, _ULast)));
-            _Construct_n(_Count, _STD move(_UFirst), _STD move(_ULast));
         }
     }
 
@@ -669,17 +669,17 @@ public:
 
         if (_Whereptr == _Mylast) { // at back, provide strong guarantee
             if constexpr (is_nothrow_move_constructible_v<_Ty> || !is_copy_constructible_v<_Ty>) {
-                _Uninitialized_move(_Myfirst, _Mylast, _Newvec, _Getal());
+                _Uninitialized_move(_Myfirst, _Mylast, _Newvec, _Al);
             } else {
-                _Uninitialized_copy(_Myfirst, _Mylast, _Newvec, _Getal());
+                _Uninitialized_copy(_Myfirst, _Mylast, _Newvec, _Al);
             }
         } else { // provide basic guarantee
-            _Uninitialized_move(_Myfirst, _Whereptr, _Newvec, _Getal());
+            _Uninitialized_move(_Myfirst, _Whereptr, _Newvec, _Al);
             _Constructed_first = _Newvec;
-            _Uninitialized_move(_Whereptr, _Mylast, _Newvec + _Whereoff + 1, _Getal());
+            _Uninitialized_move(_Whereptr, _Mylast, _Newvec + _Whereoff + 1, _Al);
         }
         _CATCH_ALL
-        _Destroy_range(_Constructed_first, _Constructed_last, _Getal());
+        _Destroy_range(_Constructed_first, _Constructed_last, _Al);
         _Al.deallocate(_Newvec, _Newcapacity);
         _RERAISE;
         _CATCH_END
@@ -1646,6 +1646,10 @@ private:
 
     template <class... _Valty>
     _CONSTEXPR20_CONTAINER void _Construct_n(_CRT_GUARDOVERFLOW const size_type _Count, _Valty&&... _Val) {
+        // Dispatches between the three sized constructions.
+        // 1-arg -> value-construction, e.g vector(5)
+        // 2-arg -> fill, e.g. vector(5, "meow")
+        // 3-arg -> sized range construction e.g. vector{"Hello", "Fluffy", "World"}
         auto& _Al       = _Getal();
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Al);
         auto& _My_data  = _Mypair._Myval2;
