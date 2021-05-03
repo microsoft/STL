@@ -10204,24 +10204,14 @@ namespace ranges {
                 "The lower bound cannot be greater than the upper bound in a call to std::ranges::clamp "
                 "(N4861 [alg.clamp]/2).");
 
-            if constexpr (!is_copy_constructible_v<decltype(_STD invoke(_Proj, _Val))>) {
-                // move-only types
-                if (_STD invoke(_Pred, _STD invoke(_Proj, _Val), _STD invoke(_Proj, _Lo))) {
-                    return _Lo;
-                }
-
-                if (_STD invoke(_Pred, _STD invoke(_Proj, _Hi), _STD invoke(_Proj, _Val))) {
-                    return _Hi;
-                }
-            } else {
-                auto&& _Temp = _STD invoke(_Proj, _Val);
-                if (_STD invoke(_Pred, _Temp, _STD invoke(_Proj, _Lo))) {
-                    return _Lo;
-                }
-                // _Temp could be "std::ref" like type, so can't use move
-                if (_STD invoke(_Pred, _STD invoke(_Proj, _Hi), _Temp)) {
-                    return _Hi;
-                }
+            auto&& _Temp = _STD invoke(_Proj, _Val);
+            if (_STD invoke(_Pred, _STD forward<decltype(_Temp)>(_Temp), _STD invoke(_Proj, _Lo))) {
+                return _Lo;
+            }
+            // The double forward is safe because regular_invocable requires that the invocation of the predicate not
+            // modify _Temp in a manner observable to equality-preserving expressions.
+            if (_STD invoke(_Pred, _STD invoke(_Proj, _Hi), _STD forward<decltype(_Temp)>(_Temp))) {
+                return _Hi;
             }
 
             return _Val;
