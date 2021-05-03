@@ -10204,13 +10204,31 @@ namespace ranges {
                 "The lower bound cannot be greater than the upper bound in a call to std::ranges::clamp "
                 "(N4861 [alg.clamp]/2).");
 
-            auto&& _Temp = _STD invoke(_Proj, _Val);
-            if (_STD invoke(_Pred, _Temp, _STD invoke(_Proj, _Lo))) {
-                return _Lo;
-            }
+            if constexpr (!_STD is_copy_constructible<decltype(_STD invoke(_Proj, _Val))>::value) {
+                // move-only types
+                if (_STD invoke(_Pred, _STD invoke(_Proj, _Val), _STD invoke(_Proj, _Lo))) {
+                    return _Lo;
+                }
 
-            if (_STD invoke(_Pred, _STD invoke(_Proj, _Hi), _STD move(_Temp))) {
-                return _Hi;
+                if (_STD invoke(_Pred, _STD invoke(_Proj, _Hi), _STD invoke(_Proj, _Val))) {
+                    return _Hi;
+                }
+            } else {
+                auto&& _Temp = _STD invoke(_Proj, _Val);
+                if (_STD invoke(_Pred, _Temp, _STD invoke(_Proj, _Lo))) {
+                    return _Lo;
+                }
+                if constexpr (_STD is_lvalue_reference<decltype(_Temp)>::value) {
+                    // _Temp is lvalue reference can't use move
+                    // for const lvalue reference move is also not needed
+                    if (_STD invoke(_Pred, _STD invoke(_Proj, _Hi), _Temp)) {
+                        return _Hi;
+                    }
+                } else {
+                    if (_STD invoke(_Pred, _STD invoke(_Proj, _Hi), _STD move(_Temp))) {
+                        return _Hi;
+                    }
+                }
             }
 
             return _Val;
