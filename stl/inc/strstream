@@ -251,7 +251,7 @@ protected:
         const auto _Seeklow  = eback();
         const auto _Seekdist = _Seekhigh - _Seeklow;
 
-        // [depr.strstreambuf.virtuals]/15 effectively says check that the result will be in range
+        // N4727 [depr.strstreambuf.virtuals]/15 effectively says check that the result will be in range
         // [_Seeklow, _Seekhigh]; but we want to calculate this without potential integer overflow
         switch (_Way) {
         case ios_base::beg:

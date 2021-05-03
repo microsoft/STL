@@ -13,6 +13,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
             $(CrtRoot)\github\stl\src\parallel_algorithms.cpp;
             $(CrtRoot)\github\stl\src\special_math.cpp;
             $(CrtRoot)\github\stl\src\syncstream.cpp;
+            $(CrtRoot)\github\stl\src\tzdb.cpp;
             $(CrtRoot)\github\stl\src\ulocale.cpp;
             ">
             <BuildAs>nativecpp</BuildAs>
@@ -160,6 +161,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
              (controlled by IncludeInLink and IncludeInImportLib). -->
         <BuildFiles Include="
             $(CrtRoot)\github\stl\src\filesystem.cpp;
+            $(CrtRoot)\github\stl\src\format.cpp;
             $(CrtRoot)\github\stl\src\locale0_implib.cpp;
             $(CrtRoot)\github\stl\src\nothrow.cpp;
             $(CrtRoot)\github\stl\src\sharedmutex.cpp;

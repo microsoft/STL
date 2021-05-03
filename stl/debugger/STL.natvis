@@ -673,35 +673,211 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 
   <Type Name="std::chrono::duration&lt;*,std::ratio&lt;1,1000000000&gt; &gt;">
+      <DisplayString Condition="_MyRep == 1">{_MyRep} nanosecond</DisplayString>
       <DisplayString>{_MyRep} nanoseconds</DisplayString>
       <Expand/>
   </Type>
 
   <Type Name="std::chrono::duration&lt;*,std::ratio&lt;1,1000000&gt; &gt;">
+      <DisplayString Condition="_MyRep == 1">{_MyRep} microsecond</DisplayString>
       <DisplayString>{_MyRep} microseconds</DisplayString>
       <Expand/>
   </Type>
 
   <Type Name="std::chrono::duration&lt;*,std::ratio&lt;1,1000&gt; &gt;">
+      <DisplayString Condition="_MyRep == 1">{_MyRep} millisecond</DisplayString>
       <DisplayString>{_MyRep} milliseconds</DisplayString>
       <Expand/>
   </Type>
 
   <Type Name="std::chrono::duration&lt;*,std::ratio&lt;1,1&gt; &gt;">
+      <DisplayString Condition="_MyRep == 1">{_MyRep} second</DisplayString>
       <DisplayString>{_MyRep} seconds</DisplayString>
       <Expand/>
   </Type>
 
   <Type Name="std::chrono::duration&lt;*,std::ratio&lt;60,1&gt; &gt;">
+      <DisplayString Condition="_MyRep == 1">{_MyRep} minute</DisplayString>
       <DisplayString>{_MyRep} minutes</DisplayString>
       <Expand/>
   </Type>
 
   <Type Name="std::chrono::duration&lt;*,std::ratio&lt;3600,1&gt; &gt;">
+      <DisplayString Condition="_MyRep == 1">{_MyRep} hour</DisplayString>
       <DisplayString>{_MyRep} hours</DisplayString>
       <Expand/>
   </Type>
 
+  <Type Name="std::chrono::duration&lt;*,std::ratio&lt;86400,1&gt; &gt;">
+      <DisplayString Condition="_MyRep == 1">{_MyRep} day</DisplayString>
+      <DisplayString>{_MyRep} days</DisplayString>
+      <Expand/>
+  </Type>
+
+  <Type Name="std::chrono::duration&lt;*,std::ratio&lt;604800,1&gt; &gt;">
+      <DisplayString Condition="_MyRep == 1">{_MyRep} week</DisplayString>
+      <DisplayString>{_MyRep} weeks</DisplayString>
+      <Expand/>
+  </Type>
+
+  <Type Name="std::chrono::duration&lt;*,std::ratio&lt;2629746,1&gt; &gt;">
+      <DisplayString Condition="_MyRep == 1">{_MyRep} month</DisplayString>
+      <DisplayString>{_MyRep} months</DisplayString>
+      <Expand/>
+  </Type>
+
+  <Type Name="std::chrono::duration&lt;*,std::ratio&lt;31556952,1&gt; &gt;">
+      <DisplayString Condition="_MyRep == 1">{_MyRep} year</DisplayString>
+      <DisplayString>{_MyRep} years</DisplayString>
+      <Expand/>
+  </Type>
+
+  <Type Name="std::chrono::day">
+      <DisplayString Condition="_Day % 10 == 1 &amp;&amp; _Day % 100 != 11">{(int)_Day}st</DisplayString>
+      <DisplayString Condition="_Day % 10 == 2 &amp;&amp; _Day % 100 != 12">{(int)_Day}nd</DisplayString>
+      <DisplayString Condition="_Day % 10 == 3 &amp;&amp; _Day % 100 != 13">{(int)_Day}rd</DisplayString>
+      <DisplayString>{(int)_Day}th</DisplayString>
+      <Expand/>
+  </Type>
+
+  <Type Name="std::chrono::month">
+      <DisplayString Condition="_Month == 1">January</DisplayString>
+      <DisplayString Condition="_Month == 2">February</DisplayString>
+      <DisplayString Condition="_Month == 3">March</DisplayString>
+      <DisplayString Condition="_Month == 4">April</DisplayString>
+      <DisplayString Condition="_Month == 5">May</DisplayString>
+      <DisplayString Condition="_Month == 6">June</DisplayString>
+      <DisplayString Condition="_Month == 7">July</DisplayString>
+      <DisplayString Condition="_Month == 8">August</DisplayString>
+      <DisplayString Condition="_Month == 9">September</DisplayString>
+      <DisplayString Condition="_Month == 10">October</DisplayString>
+      <DisplayString Condition="_Month == 11">November</DisplayString>
+      <DisplayString Condition="_Month == 12">December</DisplayString>
+      <DisplayString>{_Month}</DisplayString>
+      <Expand/>
+  </Type>
+
+  <Type Name="std::chrono::year">
+      <DisplayString>{_Year}</DisplayString>
+      <Expand/>
+  </Type>
+
+  <Type Name="std::chrono::weekday">
+      <DisplayString Condition="_Weekday == 0">Sunday</DisplayString>
+      <DisplayString Condition="_Weekday == 1">Monday</DisplayString>
+      <DisplayString Condition="_Weekday == 2">Tuesday</DisplayString>
+      <DisplayString Condition="_Weekday == 3">Wednesday</DisplayString>
+      <DisplayString Condition="_Weekday == 4">Thursday</DisplayString>
+      <DisplayString Condition="_Weekday == 5">Friday</DisplayString>
+      <DisplayString Condition="_Weekday == 6">Saturday</DisplayString>
+      <DisplayString>{_Weekday}</DisplayString>
+      <Expand/>
+  </Type>
+
+  <Type Name="std::chrono::weekday_indexed">
+      <DisplayString Condition="_Index == 1">{(int)_Index}st {_Weekday}</DisplayString>
+      <DisplayString Condition="_Index == 2">{(int)_Index}nd {_Weekday}</DisplayString>
+      <DisplayString Condition="_Index == 3">{(int)_Index}rd {_Weekday}</DisplayString>
+      <DisplayString Condition="_Index == 4 || _Index == 5">{(int)_Index}th {_Weekday}</DisplayString>
+      <DisplayString>{(int)_Index}, {_Weekday}</DisplayString>
+      <Expand>
+        <Item Name="[weekday]">_Weekday</Item>
+        <Item Name="[index]">(int)_Index</Item>
+      </Expand>
+  </Type>
+
+  <Type Name="std::chrono::weekday_last">
+      <DisplayString>Last {_Weekday}</DisplayString>
+      <Expand>
+        <Item Name="[weekday]">_Weekday</Item>
+      </Expand>
+  </Type>
+
+  <Type Name="std::chrono::month_day">
+      <DisplayString>{_Month} {_Day}</DisplayString>
+        <Expand>
+          <Item Name="[month]">_Month</Item>
+          <Item Name="[day]">_Day</Item>
+      </Expand>
+  </Type>
+
+  <Type Name="std::chrono::month_day_last">
+      <DisplayString>Last day of {_Month}</DisplayString>
+      <Expand>
+        <Item Name="[month]">_Month</Item>
+      </Expand>
+  </Type>
+
+  <Type Name="std::chrono::month_weekday">
+      <DisplayString>{_Weekday_index} of {_Month}</DisplayString>
+        <Expand>
+          <Item Name="[month]">_Month</Item>
+          <Item Name="[weekday_indexed]">_Weekday_index</Item>
+      </Expand>
+  </Type>
+
+  <Type Name="std::chrono::month_weekday_last">
+      <DisplayString>Last {_Weekday_last._Weekday} of {_Month}</DisplayString>
+      <Expand>
+        <Item Name="[month]">_Month</Item>
+        <Item Name="[weekday]">_Weekday_last._Weekday</Item>
+      </Expand>
+  </Type>
+
+  <Type Name="std::chrono::year_month">
+      <DisplayString>{_Year} {_Month}</DisplayString>
+        <Expand>
+          <Item Name="[year]">_Year</Item>
+          <Item Name="[month]">_Month</Item>
+      </Expand>
+  </Type>
+
+  <Type Name="std::chrono::year_month_day">
+      <DisplayString>{_Year} {_Month} {_Day}</DisplayString>
+        <Expand>
+          <Item Name="[year]">_Year</Item>
+          <Item Name="[month]">_Month</Item>
+          <Item Name="[day]">_Day</Item>
+      </Expand>
+  </Type>
+
+  <Type Name="std::chrono::year_month_day_last">
+      <DisplayString>{_Month_day_last}, {_Year}</DisplayString>
+      <Expand>
+        <Item Name="[year]">_Year</Item>
+        <Item Name="[month]">_Month_day_last._Month</Item>
+      </Expand>
+  </Type>
+
+  <Type Name="std::chrono::year_month_weekday">
+      <DisplayString>{_Weekday_index} of {_Month}, {_Year}</DisplayString>
+        <Expand>
+          <Item Name="[year]">_Year</Item>
+          <Item Name="[month]">_Month</Item>
+          <Item Name="[weekday_indexed]">_Weekday_index</Item>
+      </Expand>
+  </Type>
+
+  <Type Name="std::chrono::year_month_weekday_last">
+      <DisplayString>{_Weekday_last} of {_Month}, {_Year}</DisplayString>
+      <Expand>
+        <Item Name="[year]">_Year</Item>
+        <Item Name="[month]">_Month</Item>
+        <Item Name="[weekday]">_Weekday_last._Weekday</Item>
+      </Expand>
+  </Type>
+
+  <Type Name="std::chrono::hh_mm_ss&lt;*&gt;">
+      <DisplayString Condition="_Is_neg">-{_Hours._MyRep}h {_Mins._MyRep}m {_Secs._MyRep}s {_Sub_secs._MyRep}ss</DisplayString>
+      <DisplayString>{_Hours._MyRep}h {_Mins._MyRep}m {_Secs._MyRep}s {_Sub_secs._MyRep}ss</DisplayString>
+      <Expand>
+        <Item Name="[is_negative]">_Is_neg</Item>
+        <Item Name="[hours]">_Hours</Item>
+        <Item Name="[minutes]">_Mins</Item>
+        <Item Name="[seconds]">_Secs</Item>
+        <Item Name="[subseconds]">_Sub_secs</Item>
+      </Expand>
+  </Type>
 
   <!-- VC 2013 -->
   <Type Name="std::basic_string&lt;char,*&gt;" Priority="MediumLow">
@@ -1599,7 +1775,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     </Expand>
   </Type>
 
-  <!-- Visualizer for standard coroutines (/std:c++20) -->
+  <!-- Visualizer for standard coroutines (/std:c++20, /await:strict) -->
   <Type Name="std::coroutine_handle&lt;*&gt;" IncludeView="ViewPromise">
     <Expand>
       <Item Name="Promise">*reinterpret_cast&lt;$T1 *&gt;(reinterpret_cast&lt;char*&gt;(_Ptr) + 2*sizeof(void*))</Item>
@@ -1607,8 +1783,20 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
   <Type Name="std::coroutine_handle&lt;*&gt;">
-    <DisplayString Condition="*reinterpret_cast&lt;void(__cdecl**)(void*)&gt;(_Ptr) != nullptr">{*reinterpret_cast&lt;void(__cdecl**)(void*)&gt;(_Ptr),na}</DisplayString>
-    <DisplayString Condition="*reinterpret_cast&lt;void(__cdecl**)(void*)&gt;(_Ptr) == nullptr">{*(reinterpret_cast&lt;void(__cdecl**)(void*)&gt;(_Ptr) + 1),na}</DisplayString>
+    <Intrinsic Name="suspend_point" SourceId="FA88A41F-A641-47C8-8373-4889B7564FCF" LanguageId="3A12D0B7-C26C-11D0-B442-00A0244A1DD2" Id="1" ReturnType="int">
+        <Parameter Type="void*" />
+    </Intrinsic>
+    <Intrinsic Name="suspend_point_line" SourceId="FA88A41F-A641-47C8-8373-4889B7564FCF" LanguageId="3A12D0B7-C26C-11D0-B442-00A0244A1DD2" Id="2" ReturnType="unsigned int">
+        <Parameter Type="void*" />
+    </Intrinsic>
+    <Intrinsic Name="primary_function" SourceId="FA88A41F-A641-47C8-8373-4889B7564FCF" LanguageId="3A12D0B7-C26C-11D0-B442-00A0244A1DD2" Id="3" ReturnType="void*">
+        <Parameter Type="void*" />
+    </Intrinsic>
+    <DisplayString Condition="_Ptr == nullptr">empty</DisplayString>
+    <DisplayString Condition="_Ptr != nullptr &amp;&amp; suspend_point(_Ptr) &lt; 1">{primary_function(_Ptr),na} #final suspend</DisplayString>
+    <DisplayString Condition="_Ptr != nullptr &amp;&amp; suspend_point(_Ptr) == 1">{primary_function(_Ptr),na} #initial suspend</DisplayString>
+    <DisplayString Condition="_Ptr != nullptr &amp;&amp; suspend_point(_Ptr) &gt; 1 &amp;&amp; suspend_point_line(_Ptr) == 0">{primary_function(_Ptr),na} #suspend point {suspend_point(_Ptr)}</DisplayString>
+    <DisplayString Condition="_Ptr != nullptr &amp;&amp; suspend_point(_Ptr) &gt; 1 &amp;&amp; suspend_point_line(_Ptr) != 0">{primary_function(_Ptr),na} #suspend point {suspend_point(_Ptr)}, line {suspend_point_line(_Ptr)}</DisplayString>
     <Expand>
       <ExpandedItem>this,view(ViewPromise)</ExpandedItem>
     </Expand>
@@ -1617,6 +1805,26 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   <!-- Do not display the promise when promise type is void -->
   <Type Name="std::coroutine_handle&lt;void&gt;" IncludeView="ViewPromise">
     <Expand/>
+  </Type>
+
+  <Type Name="std::span&lt;*&gt;">
+    <Intrinsic Name="data" Expression="_Mydata" />
+    <Intrinsic Name="size" Expression="_Mysize" />
+    <Intrinsic Name="size_bytes" Expression="_Mysize * sizeof(element_type)" />
+    <DisplayString>{{ size={size()} }}</DisplayString>
+    <Expand>
+      <ArrayItems>
+        <Size>size()</Size>
+        <ValuePointer>data()</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+
+  <Type Name="std::_Span_iterator&lt;*&gt;">
+    <SmartPointer Usage="Indexable">_Myptr,na</SmartPointer>
+    <Expand>
+      <Item Name="[ptr]">_Myptr</Item>
+    </Expand>
   </Type>
 
 </AutoVisualizer>
