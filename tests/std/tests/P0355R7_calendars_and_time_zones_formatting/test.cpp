@@ -890,9 +890,9 @@ void test_zoned_time_formatter() {
 
 template <typename CharT>
 void test_localized() {
-    auto loc = locale("ru-RU");
-    assert(format(loc, STR("{:%S}"), std::chrono::milliseconds(42)) == STR("00.042"));
-    assert(format(loc, STR("{:L%S}"), std::chrono::milliseconds(42)) == STR("00,042"));
+    locale loc("ru-RU");
+    assert(format(loc, STR("{:%S}"), 42ms) == STR("00.042"));
+    assert(format(loc, STR("{:L%S}"), 42ms) == STR("00,042"));
 }
 
 void test() {
