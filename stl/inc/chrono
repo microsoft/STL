@@ -663,6 +663,27 @@ namespace chrono {
     }
 
     // CLOCKS
+
+    // _Civil_from_days and _Days_from_civil perform conversions between the dates in the (proleptic) Gregorian
+    // calendar and the continuous count of days since 1970-01-01.
+
+    // See comments above year_month_day::_Civil_from_days for an explanation of the algorithm.
+
+    // courtesy of Howard Hinnant
+    // https://howardhinnant.github.io/date_algorithms.html#days_from_civil
+    _NODISCARD constexpr int _Days_from_civil(
+        const int _Year, const unsigned int _Month, const unsigned int _Day) noexcept {
+        static_assert(numeric_limits<unsigned int>::digits >= 18);
+        static_assert(numeric_limits<int>::digits >= 26);
+        const int _Yp          = static_cast<int>(_Year) - (_Month <= 2);
+        const int _Century     = (_Yp >= 0 ? _Yp : _Yp - 99) / 100;
+        const unsigned int _Mp = _Month + (_Month > 2 ? static_cast<unsigned int>(-3) : 9); // [0, 11]
+        // Formula 1
+        const int _Day_of_year = static_cast<int>(((979 * _Mp + 19) >> 5) + _Day) - 1;
+        // Formula 2
+        return ((1461 * _Yp) >> 2) - _Century + (_Century >> 2) + _Day_of_year - 719468;
+    }
+
     struct system_clock { // wraps GetSystemTimePreciseAsFileTime/GetSystemTimeAsFileTime
         using rep                       = long long;
         using period                    = ratio<1, 10'000'000>; // 100 nanoseconds
@@ -1589,19 +1610,10 @@ namespace chrono {
             const unsigned int _Month = _Mp + (_Mp < 10 ? 3 : static_cast<unsigned int>(-9)); // [1, 12]
             return year_month_day{_CHRONO year{_Yp + (_Month <= 2)}, _CHRONO month{_Month}, _CHRONO day{_Day}};
         }
-        // courtesy of Howard Hinnant
-        // https://howardhinnant.github.io/date_algorithms.html#days_from_civil
+
         _NODISCARD constexpr days _Days_from_civil() const noexcept {
-            static_assert(numeric_limits<unsigned int>::digits >= 18);
-            static_assert(numeric_limits<int>::digits >= 26);
-            const unsigned int _Mo = static_cast<unsigned int>(_Month); // [1, 12]
-            const int _Yp          = static_cast<int>(_Year) - (_Mo <= 2);
-            const int _Century     = (_Yp >= 0 ? _Yp : _Yp - 99) / 100;
-            const unsigned int _Mp = _Mo + (_Mo > 2 ? static_cast<unsigned int>(-3) : 9); // [0, 11]
-            // Formula 1
-            const int _Day_of_year = static_cast<int>(((979 * _Mp + 19) >> 5) + static_cast<unsigned int>(_Day)) - 1;
-            // Formula 2
-            return days{((1461 * _Yp) >> 2) - _Century + (_Century >> 2) + _Day_of_year - 719468};
+            return days{_CHRONO _Days_from_civil(
+                static_cast<int>(_Year), static_cast<unsigned int>(_Month), static_cast<unsigned int>(_Day))};
         }
     };
 
