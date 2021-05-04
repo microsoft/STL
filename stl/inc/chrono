@@ -6560,15 +6560,15 @@ namespace chrono {
 
 // HELPERS
 template <class _Rep, class _Period>
-_NODISCARD bool _To_xtime_10_day_clamped(_CSTD xtime& _Xt, const _CHRONO duration<_Rep, _Period>& _Rel_time) noexcept(
-    is_arithmetic_v<_Rep>) {
+_NODISCARD bool _To_xtime_10_day_clamped_v2(
+    _CSTD xtime& _Xt, const _CHRONO duration<_Rep, _Period>& _Rel_time) noexcept(is_arithmetic_v<_Rep>) {
     // Convert duration to xtime, maximum 10 days from now, returns whether clamping occurred.
     // If clamped, timeouts will be transformed into spurious non-timeout wakes, due to ABI restrictions where
     // the other side of the DLL boundary overflows int32_t milliseconds.
     // Every function calling this one is TRANSITION, ABI
     constexpr _CHRONO nanoseconds _Ten_days{_CHRONO hours{24} * 10};
     constexpr _CHRONO duration<double> _Ten_days_d{_Ten_days};
-    _CHRONO nanoseconds _Tx0 = _CHRONO system_clock::now().time_since_epoch();
+    _CHRONO nanoseconds _Tx0 = _CHRONO system_clock::duration{_Xtime_get_ticks()};
     const bool _Clamped      = _Ten_days_d < _Rel_time;
     if (_Clamped) {
         _Tx0 += _Ten_days;
@@ -6581,6 +6581,12 @@ _NODISCARD bool _To_xtime_10_day_clamped(_CSTD xtime& _Xt, const _CHRONO duratio
     _Tx0 -= _Whole_seconds;
     _Xt.nsec = static_cast<long>(_Tx0.count());
     return _Clamped;
+}
+
+template <class _Rep, class _Period>
+_NODISCARD bool _To_xtime_10_day_clamped(_CSTD xtime& _Xt, const _CHRONO duration<_Rep, _Period>& _Rel_time) noexcept(
+    is_arithmetic_v<_Rep>) {
+    return _To_xtime_10_day_clamped_v2(_Xt, _Rel_time);
 }
 
 // duration LITERALS

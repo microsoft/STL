@@ -124,7 +124,7 @@ public:
         // TRANSITION, ABI: The standard says that we should use a steady clock,
         // but unfortunately our ABI speaks struct xtime, which is relative to the system clock.
         _CSTD xtime _Tgt;
-        const bool _Clamped     = _To_xtime_10_day_clamped(_Tgt, _Rel_time);
+        const bool _Clamped     = _To_xtime_10_day_clamped_v2(_Tgt, _Rel_time);
         const cv_status _Result = _Wait_until(_Lck, &_Tgt);
         if (_Clamped) {
             return cv_status::no_timeout;
@@ -221,7 +221,7 @@ public:
             // TRANSITION, ABI: The standard says that we should use a steady clock,
             // but unfortunately our ABI speaks struct xtime, which is relative to the system clock.
             _CSTD xtime _Tgt;
-            (void) _To_xtime_10_day_clamped(_Tgt, _Rel_time);
+            (void) _To_xtime_10_day_clamped_v2(_Tgt, _Rel_time);
             const int _Res = _Cnd_timedwait(_Mycnd(), _Myptr->_Mymtx(), &_Tgt);
             _Guard.unlock();
 

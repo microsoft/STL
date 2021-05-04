@@ -196,7 +196,7 @@ namespace this_thread {
             }
 
             _CSTD xtime _Tgt;
-            (void) _To_xtime_10_day_clamped(_Tgt, _Abs_time - _Now);
+            (void) _To_xtime_10_day_clamped_v2(_Tgt, _Abs_time - _Now);
             _Thrd_sleep(&_Tgt);
         }
     }
