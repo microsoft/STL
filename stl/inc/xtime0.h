@@ -70,8 +70,6 @@ enum class __std_utc_to_file_time_errc {
     _Unknown_smear = 0b100,
 };
 
-_BITMASK_OPS(__std_utc_to_file_time_errc)
-
 enum class __std_file_time_to_utc_errc {
     _Success = 0,
 
@@ -90,6 +88,8 @@ _NODISCARD __std_file_time_to_utc_errc __stdcall __std_file_seconds_to_utc_compo
     long long _File_seconds, __std_utc_components_1s* _Out_utc_time) noexcept;
 
 _END_EXTERN_C
+
+_BITMASK_OPS(__std_utc_to_file_time_errc)
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
