@@ -117,7 +117,7 @@ _NODISCARD static _Utc_to_file_time_result _Utc_components_to_file_time(
 
     // second 60
     //
-    // https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/ns-processthreadsapi-process_leap_second_info
+    // https://docs.microsoft.com/windows/win32/api/processthreadsapi/ns-processthreadsapi-process_leap_second_info
     // The bahavior of SystemTimeToFileTime and FileTimeToSystemTime during the 2-second period of
     // [23:59:59 UTC, 00:00:00 UTC) around a leap second insertion changes depending on whether
     // PROCESS_LEAP_SECOND_INFO_FLAG_ENABLE_SIXTY_SECOND is set for the process.
