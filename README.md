@@ -239,7 +239,8 @@ C:\Users\username\Desktop>dumpbin /IMPORTS .\example.exe | findstr msvcp
     * We recommend selecting "C++ Clang tools for Windows" in the VS Installer. This will automatically add LLVM to the
     `PATH` of the x86 and x64 Native Tools Command Prompts, and will ensure that you're using a supported version.
     * Otherwise, use [LLVM's installer][] and choose to add LLVM to your `PATH` during installation.
-4. Follow the instructions below.
+4. Ensure that active codepage is 1252 (chcp 1252).
+5. Follow the instructions below.
 
 ## Running All The Tests
 
