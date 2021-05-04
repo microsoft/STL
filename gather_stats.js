@@ -327,7 +327,13 @@ function write_generated_file(filename, table_str) {
     fs.writeFileSync(filename, str);
 }
 
+function should_emit_data_point(rows, i, key) {
+    return rows[i - 1]?.[key] > 0 || rows[i][key] > 0 || rows[i + 1]?.[key] > 0;
+}
+
 function write_daily_table(script_start, all_prs, all_issues) {
+    const rows = [];
+
     const progress_bar = new cliProgress.SingleBar(
         {
             format: '{bar} {percentage}% | ETA: {eta}s | {value}/{total} days analyzed',
@@ -339,10 +345,7 @@ function write_daily_table(script_start, all_prs, all_issues) {
     );
 
     try {
-        let str = 'const daily_table = [\n';
-
         const begin = DateTime.fromISO('2019-09-05' + 'T23:00:00');
-        const begin_cxx23 = DateTime.fromISO('2020-11-10');
 
         progress_bar.start(Math.ceil(script_start.diff(begin).as('days')), 0);
 
@@ -390,45 +393,51 @@ function write_daily_table(script_start, all_prs, all_issues) {
                 }
             }
 
-            const avg_age = num_pr === 0 ? 0 : combined_pr_age.as('days') / num_pr;
-            const avg_wait = num_pr === 0 ? 0 : combined_pr_wait.as('days') / num_pr;
-            const sum_age = combined_pr_age.as('months');
-            const sum_wait = combined_pr_wait.as('months');
-
-            const cells = [
-                `date: '${when.toISODate()}'`,
-                `merged: ${Number.parseFloat(num_merged).toFixed(2)}`,
-                `pr: ${num_pr}`,
-                `cxx20: ${num_cxx20}`,
-            ];
-
-            if (when >= begin_cxx23) {
-                cells.push(`cxx23: ${num_cxx23}`);
-            }
-
-            cells.push(
-                `lwg: ${num_lwg}`,
-                `issue: ${num_issue}`,
-                `bug: ${num_bug}`,
-                `avg_age: ${Number.parseFloat(avg_age).toFixed(2)}`,
-                `avg_wait: ${Number.parseFloat(avg_wait).toFixed(2)}`,
-                `sum_age: ${Number.parseFloat(sum_age).toFixed(2)}`,
-                `sum_wait: ${Number.parseFloat(sum_wait).toFixed(2)}`,
-                '},\n'
-            );
-
-            str += '    { ';
-            str += cells.join(', ');
+            rows.push({
+                date: when,
+                merged: num_merged,
+                pr: num_pr,
+                cxx20: num_cxx20,
+                cxx23: num_cxx23,
+                lwg: num_lwg,
+                issue: num_issue,
+                bug: num_bug,
+                avg_age: num_pr === 0 ? 0 : combined_pr_age.as('days') / num_pr,
+                avg_wait: num_pr === 0 ? 0 : combined_pr_wait.as('days') / num_pr,
+                sum_age: combined_pr_age.as('months'),
+                sum_wait: combined_pr_wait.as('months'),
+            });
 
             progress_bar.increment();
         }
-
-        str += '];\n';
-
-        write_generated_file('./daily_table.js', str);
     } finally {
         progress_bar.stop();
     }
+
+    let str = 'const daily_table = [\n';
+
+    for (let i = 0; i < rows.length; ++i) {
+        const row = rows[i];
+        str += '    { ';
+        str += `date: '${row.date.toISODate()}', `;
+        str += `merged: ${Number.parseFloat(row.merged).toFixed(2)}, `;
+
+        for (const key of ['pr', 'cxx20', 'cxx23', 'lwg', 'issue', 'bug']) {
+            if (should_emit_data_point(rows, i, key)) {
+                str += `${key}: ${row[key]}, `;
+            }
+        }
+
+        str += `avg_age: ${Number.parseFloat(row.avg_age).toFixed(2)}, `;
+        str += `avg_wait: ${Number.parseFloat(row.avg_wait).toFixed(2)}, `;
+        str += `sum_age: ${Number.parseFloat(row.sum_age).toFixed(2)}, `;
+        str += `sum_wait: ${Number.parseFloat(row.sum_wait).toFixed(2)}, `;
+        str += '},\n';
+    }
+
+    str += '];\n';
+
+    write_generated_file('./daily_table.js', str);
 }
 
 function write_monthly_table(script_start, all_prs) {
