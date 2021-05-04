@@ -38,12 +38,12 @@ struct __std_win_system_time {    // typedef struct _SYSTEMTIME {
 
 struct __std_utc_components_1s {
     short _Year;
-    signed char _Month;
-    signed char _Day;
-    signed char _Weekday;
-    signed char _Hour;
-    signed char _Minute;
-    signed char _Second;
+    unsigned char _Month;
+    unsigned char _Day;
+    unsigned char _Weekday;
+    unsigned char _Hour;
+    unsigned char _Minute;
+    unsigned char _Second;
 };
 
 // SystemTimeToFileTime

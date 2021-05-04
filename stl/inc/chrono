@@ -12,6 +12,7 @@
 #include <limits>
 #include <ratio>
 #include <utility>
+#include <xtime0.h>
 #include <xtimec.h>
 
 #if _HAS_CXX20
@@ -673,8 +674,10 @@ namespace chrono {
     // https://howardhinnant.github.io/date_algorithms.html#days_from_civil
     _NODISCARD constexpr int _Days_from_civil(
         const int _Year, const unsigned int _Month, const unsigned int _Day) noexcept {
-        static_assert(numeric_limits<unsigned int>::digits >= 18);
-        static_assert(numeric_limits<int>::digits >= 26);
+        static_assert(numeric_limits<unsigned int>::digits >= 18,
+            "This algorithm has not been ported to a 16 bit unsigned integer");
+        static_assert(
+            numeric_limits<int>::digits >= 26, "This algorithm has not been ported to a 16 bit signed integer");
         const int _Yp          = static_cast<int>(_Year) - (_Month <= 2);
         const int _Century     = (_Yp >= 0 ? _Yp : _Yp - 99) / 100;
         const unsigned int _Mp = _Month + (_Month > 2 ? static_cast<unsigned int>(-3) : 9); // [0, 11]
@@ -692,7 +695,29 @@ namespace chrono {
         static constexpr bool is_steady = false;
 
         _NODISCARD static time_point now() noexcept { // get current time
-            return time_point(duration(_Xtime_get_ticks()));
+            constexpr long long __std_fs_file_time_epoch_adjustment = 0x19DB1DED53E8000LL; // TRANSITION, ABI
+
+            const duration _File_time{_Xtime_get_ticks() + __std_fs_file_time_epoch_adjustment};
+            const auto _File_seconds = _CHRONO duration_cast<seconds>(_File_time);
+
+            __std_utc_components_1s _Utc;
+            const __std_file_time_to_utc_errc _Ec = __std_file_seconds_to_utc_components(_File_seconds.count(), &_Utc);
+            _STL_INTERNAL_CHECK(_Ec == __std_file_time_to_utc_errc::_Success);
+            if (_Ec == __std_file_time_to_utc_errc::_Invalid_parameter) {
+                return time_point{_File_time - duration{__std_fs_file_time_epoch_adjustment}};
+            }
+
+            using _Days         = _CHRONO duration<int, ratio<86'400>>;
+            using _Int_seconds  = _CHRONO duration<int>;
+            const duration _Ymd = _Days{_Days_from_civil(_Utc._Year, _Utc._Month, _Utc._Day)};
+            const duration _Hms = hours{_Utc._Hour} + minutes{_Utc._Minute} + _Int_seconds{_Utc._Second};
+
+            if (_Utc._Second < 60) {
+                return time_point{_Ymd + _Hms + (_File_time - _File_seconds)};
+            } else {
+                // positive leap second
+                return time_point{_Ymd + _Hms - duration{1}};
+            }
         }
 
         _NODISCARD static __time64_t to_time_t(const time_point& _Time) noexcept { // convert to __time64_t

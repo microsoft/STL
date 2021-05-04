@@ -229,12 +229,12 @@ _NODISCARD __std_file_time_to_utc_errc __stdcall __std_file_seconds_to_utc_compo
     }
 
     _Out_utc_time->_Year    = static_cast<short>(st.wYear);
-    _Out_utc_time->_Month   = static_cast<signed char>(st.wMonth);
-    _Out_utc_time->_Day     = static_cast<signed char>(st.wDay);
-    _Out_utc_time->_Weekday = static_cast<signed char>(st.wDayOfWeek);
-    _Out_utc_time->_Hour    = static_cast<signed char>(st.wHour);
-    _Out_utc_time->_Minute  = static_cast<signed char>(st.wMinute);
-    _Out_utc_time->_Second  = static_cast<signed char>(st.wSecond);
+    _Out_utc_time->_Month   = static_cast<unsigned char>(st.wMonth);
+    _Out_utc_time->_Day     = static_cast<unsigned char>(st.wDay);
+    _Out_utc_time->_Weekday = static_cast<unsigned char>(st.wDayOfWeek);
+    _Out_utc_time->_Hour    = static_cast<unsigned char>(st.wHour);
+    _Out_utc_time->_Minute  = static_cast<unsigned char>(st.wMinute);
+    _Out_utc_time->_Second  = static_cast<unsigned char>(st.wSecond);
 
     if (st.wMilliseconds == 0) {
         // regular time point, or
