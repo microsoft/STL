@@ -17,11 +17,11 @@ static_assert(alignof(__std_win_system_time) == alignof(SYSTEMTIME));
 
 _EXTERN_C
 
-static constexpr long long file_time_to_ticks(const FILETIME& ft) noexcept {
+_NODISCARD static constexpr long long file_time_to_ticks(const FILETIME& ft) noexcept {
     return ((static_cast<long long>(ft.dwHighDateTime)) << 32) + static_cast<long long>(ft.dwLowDateTime);
 }
 
-static constexpr FILETIME file_time_from_ticks(const long long ticks) noexcept {
+_NODISCARD static constexpr FILETIME file_time_from_ticks(const long long ticks) noexcept {
     return {
         .dwLowDateTime  = static_cast<DWORD>(ticks),
         .dwHighDateTime = static_cast<DWORD>(ticks >> 32),
@@ -70,15 +70,15 @@ static constexpr void increase_minute(SYSTEMTIME& st) noexcept {
 
 static constexpr int ticks_per_sec = 10'000'000;
 
-struct utc_components_to_file_time_result {
+struct utc_to_file_time_result {
     long long ticks;
-    __std_utc_components_to_file_seconds_errc ec;
+    __std_utc_to_file_time_errc ec;
 };
 
-// converts UTC (whole seconds) into file_time<seconds>
-_NODISCARD static utc_components_to_file_time_result utc_components_to_file_time(
+// converts UTC (whole seconds) into file_clock
+_NODISCARD static utc_to_file_time_result utc_components_to_file_time(
     const __std_utc_components_1s& utc_time) noexcept {
-    using enum __std_utc_components_to_file_seconds_errc;
+    using enum __std_utc_to_file_time_errc;
 
     SYSTEMTIME st{
         .wYear         = static_cast<WORD>(utc_time._Year),
@@ -146,10 +146,11 @@ _NODISCARD static utc_components_to_file_time_result utc_components_to_file_time
     // To handle both cases properly, we call SystemTimeToFileTime with the previous second 59 and the next second 00,
     // and then determine whether the second 60 represents a valid positive leap second.
 
+    // the previous second 59
     --st.wSecond;
     FILETIME prev_sec_ft;
     if (SystemTimeToFileTime(&st, &prev_sec_ft) == FALSE) {
-        // second 59 is invalid
+        // second 59 is invalid, try second 58
         --st.wSecond;
         if (SystemTimeToFileTime(&st, &prev_sec_ft) != FALSE) {
             // negative leap second
@@ -162,6 +163,7 @@ _NODISCARD static utc_components_to_file_time_result utc_components_to_file_time
 
     const long long prev_sec_ticks = file_time_to_ticks(prev_sec_ft);
 
+    // the next second 00
     st.wSecond = 0;
     increase_minute(st);
     FILETIME next_sec_ft;
@@ -171,7 +173,6 @@ _NODISCARD static utc_components_to_file_time_result utc_components_to_file_time
 
     const long long next_sec_ticks = file_time_to_ticks(next_sec_ft);
     const long long difference     = next_sec_ticks - prev_sec_ticks;
-    _STL_INTERNAL_CHECK(difference == 2 * ticks_per_sec || difference == ticks_per_sec);
 
     if (difference == 2 * ticks_per_sec) {
         // positive leap second
@@ -187,46 +188,46 @@ _NODISCARD static utc_components_to_file_time_result utc_components_to_file_time
     return {.ticks = next_sec_ticks, .ec = _Unknown_smear};
 }
 
-_NODISCARD int __stdcall __std_utc_components_to_file_seconds(
+// converts UTC (whole seconds) into file_time<seconds>
+_NODISCARD __std_utc_to_file_time_errc __stdcall __std_utc_components_to_file_seconds(
     const __std_utc_components_1s* _Utc_time, long long* _Out_file_seconds) noexcept {
-    using enum __std_utc_components_to_file_seconds_errc;
+    using enum __std_utc_to_file_time_errc;
 
     const auto [ticks, ec] = utc_components_to_file_time(*_Utc_time);
-    _STL_INTERNAL_CHECK(ec == _Invalid_parameter || ticks % ticks_per_sec == 0);
 
     if (ec == _Invalid_parameter) {
         *_Out_file_seconds = -1;
-        return static_cast<int>(ec);
+        return ec;
     }
 
     *_Out_file_seconds = ticks / ticks_per_sec;
 
     if (ticks % ticks_per_sec == 0) {
-        return static_cast<int>(ec);
+        return ec;
     }
 
     // unknown leap second smearing behavior
+    // assuming positive leap second, smeared clock runs behind UTC before the leap second
     if (_Utc_time->_Day >= 15) {
         ++*_Out_file_seconds;
     }
 
-    return static_cast<int>(ec | _Unknown_smear);
+    return ec | _Unknown_smear;
 }
 
 // converts file_time<seconds> into UTC
-_NODISCARD int __stdcall __std_file_seconds_to_utc_components(
+_NODISCARD __std_file_time_to_utc_errc __stdcall __std_file_seconds_to_utc_components(
     const long long _File_seconds, __std_utc_components_1s* _Out_utc_time) noexcept {
-    using enum __std_file_seconds_to_utc_components_errc;
+    using enum __std_file_time_to_utc_errc;
 
     const long long ticks = _File_seconds * ticks_per_sec;
     const FILETIME ft     = file_time_from_ticks(ticks);
     SYSTEMTIME st;
     if (FileTimeToSystemTime(&ft, &st) == FALSE) {
         *_Out_utc_time = {};
-        return static_cast<int>(_Invalid_parameter);
+        return _Invalid_parameter;
     }
 
-    _STL_INTERNAL_CHECK(st.wMilliseconds == 0 || st.wMilliseconds == 500 && st.wSecond == 59 && st.wMinute = 59);
     _Out_utc_time->_Year    = static_cast<short>(st.wYear);
     _Out_utc_time->_Month   = static_cast<signed char>(st.wMonth);
     _Out_utc_time->_Day     = static_cast<signed char>(st.wDay);
@@ -238,29 +239,34 @@ _NODISCARD int __stdcall __std_file_seconds_to_utc_components(
     if (st.wMilliseconds == 0) {
         // regular time point, or
         // during leap second insertion and process is leap second aware
-        return static_cast<int>(_Success);
+        return _Success;
     }
 
     if (st.wMilliseconds == 500 && st.wSecond == 59 && st.wMinute == 59) {
         // during leap second insertion
         // process is leap second unaware, 23:59:60.000 UTC is reported as 23:59:59.500 in SYSTEMTIME
         ++_Out_utc_time->_Second;
-        return static_cast<int>(_Success);
+        return _Success;
     }
 
     // unknown leap second smearing behavior
+    // assuming positive leap second, smeared clock runs behind UTC before the leap second
     if (st.wSecond < 60 && st.wDay >= 15) {
         if (st.wSecond < 59) {
             ++_Out_utc_time->_Second;
         } else if (st.wMinute < 59) {
             _Out_utc_time->_Second = 0;
             ++_Out_utc_time->_Minute;
+        } else if (st.wHour < 23) {
+            _Out_utc_time->_Second = 0;
+            _Out_utc_time->_Minute = 0;
+            ++_Out_utc_time->_Hour;
         } else {
             ++_Out_utc_time->_Second;
         }
     }
 
-    return static_cast<int>(_Unknown_smear);
+    return _Unknown_smear;
 }
 
 _END_EXTERN_C
