@@ -348,7 +348,11 @@ void test_for_issue1893() {
             return x.get();
         });
     (void) clamped;
-    ASSERT(projection_count <= 5); // 3 + 2 (STL_ASSERT)
+#ifdef _DEBUG
+    ASSERT(projection_count == 5);
+#else
+    ASSERT(projection_count == 3);
+#endif
     ASSERT(val == "meow");
 }
 
