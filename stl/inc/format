@@ -1769,14 +1769,14 @@ private:
         this->_Clear();
         const auto _End = _Data + this->_Limit(_Size);
 
-        // clang-format off
-        if constexpr (_Is_specialization_v<_OutputIt, back_insert_iterator> &&
-            (_Is_specialization_v<typename _OutputIt::container_type, basic_string> ||
-                _Is_specialization_v<typename _OutputIt::container_type, vector>)) {
-            // clang-format on
-            auto& _Cont =
-                *_Back_insert_iterator_container_access<typename _OutputIt::container_type>{_Output}.container;
-            _Cont.insert(_Cont.end(), _Data, _End);
+        if constexpr (_Is_specialization_v<_OutputIt, back_insert_iterator>) {
+            using _Container = typename _OutputIt::container_type;
+            if constexpr (_Is_specialization_v<_Container, basic_string> || _Is_specialization_v<_Container, vector>) {
+                auto& _Cont = *_Back_insert_iterator_container_access<_Container>{_Output}.container;
+                _Cont.insert(_Cont.end(), _Data, _End);
+            } else {
+                _Output = _STD _Copy_unchecked(_Data, _End, _STD move(_Output));
+            }
         } else {
             _Output = _STD _Copy_unchecked(_Data, _End, _STD move(_Output));
         }
