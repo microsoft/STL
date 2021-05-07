@@ -608,10 +608,11 @@ const daily_table = [
     { date: '2021-04-28', merged: 59.76, pr: 40, cxx23: 6, lwg: 5, issue: 345, bug: 107, avg_age: 110.83, avg_wait: 88.61, sum_age: 147.77, sum_wait: 118.15, },
     { date: '2021-04-29', merged: 57.70, pr: 41, cxx23: 6, lwg: 5, issue: 348, bug: 109, avg_age: 109.12, avg_wait: 85.80, sum_age: 149.13, sum_wait: 117.26, },
     { date: '2021-04-30', merged: 63.41, pr: 33, cxx23: 6, lwg: 4, issue: 342, bug: 107, avg_age: 131.33, avg_wait: 106.17, sum_age: 144.47, sum_wait: 116.78, },
-    { date: '2021-05-01', merged: 61.25, pr: 36, cxx23: 7, lwg: 4, issue: 343, bug: 108, avg_age: 121.34, avg_wait: 98.27, sum_age: 145.61, sum_wait: 117.92, },
-    { date: '2021-05-02', merged: 59.57, pr: 38, cxx23: 7, lwg: 4, issue: 344, bug: 108, avg_age: 115.91, avg_wait: 94.06, sum_age: 146.82, sum_wait: 119.14, },
-    { date: '2021-05-03', merged: 58.00, pr: 39, cxx23: 7, lwg: 4, issue: 351, bug: 112, avg_age: 113.93, avg_wait: 92.64, sum_age: 148.11, sum_wait: 120.43, },
-    { date: '2021-05-04', merged: 57.48, pr: 40, cxx23: 7, lwg: 4, issue: 355, bug: 113, avg_age: 112.03, avg_wait: 91.24, sum_age: 149.38, sum_wait: 121.65, },
-    { date: '2021-05-05', merged: 55.81, pr: 40, cxx23: 7, lwg: 4, issue: 357, bug: 114, avg_age: 113.03, avg_wait: 92.24, sum_age: 150.71, sum_wait: 122.98, },
+    { date: '2021-05-01', merged: 61.25, pr: 36, cxx23: 6, lwg: 4, issue: 344, bug: 108, avg_age: 121.34, avg_wait: 98.27, sum_age: 145.61, sum_wait: 117.92, },
+    { date: '2021-05-02', merged: 59.57, pr: 38, cxx23: 6, lwg: 4, issue: 345, bug: 108, avg_age: 115.91, avg_wait: 94.06, sum_age: 146.82, sum_wait: 119.14, },
+    { date: '2021-05-03', merged: 58.00, pr: 39, cxx23: 6, lwg: 4, issue: 352, bug: 112, avg_age: 113.93, avg_wait: 92.64, sum_age: 148.11, sum_wait: 120.43, },
+    { date: '2021-05-04', merged: 57.48, pr: 40, cxx23: 6, lwg: 4, issue: 356, bug: 113, avg_age: 112.03, avg_wait: 91.24, sum_age: 149.38, sum_wait: 121.65, },
+    { date: '2021-05-05', merged: 55.81, pr: 40, cxx23: 6, lwg: 4, issue: 358, bug: 114, avg_age: 113.03, avg_wait: 92.24, sum_age: 150.71, sum_wait: 122.98, },
+    { date: '2021-05-06', merged: 54.02, pr: 40, cxx23: 6, lwg: 4, issue: 358, bug: 114, avg_age: 114.03, avg_wait: 93.24, sum_age: 152.05, sum_wait: 124.32, },
 ];
 // Generated file - DO NOT EDIT manually!
