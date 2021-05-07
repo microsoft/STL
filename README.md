@@ -143,10 +143,10 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 The STL uses boost-math headers to provide P0226R1 Mathematical Special Functions. We recommend using [vcpkg][] to
 acquire this dependency.
 
-1. Install Visual Studio 2019 16.10 Preview 1 or later.
+1. Install Visual Studio 2019 16.10 Preview 2 or later.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
-    * Otherwise, install [CMake][] 3.19 or later, and [Ninja][] 1.10.2 or later.
+    * Otherwise, install [CMake][] 3.20 or later, and [Ninja][] 1.10.2 or later.
 2. Open Visual Studio, and choose the "Clone or check out code" option. Enter the URL of this repository,
    `https://github.com/microsoft/STL`.
 3. Open a terminal in the IDE with `` Ctrl + ` `` (by default) or press on "View" in the top bar, and then "Terminal".
@@ -158,10 +158,10 @@ acquire this dependency.
 
 # How To Build With A Native Tools Command Prompt
 
-1. Install Visual Studio 2019 16.10 Preview 1 or later.
+1. Install Visual Studio 2019 16.10 Preview 2 or later.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
-    * Otherwise, install [CMake][] 3.19 or later, and [Ninja][] 1.10.2 or later.
+    * Otherwise, install [CMake][] 3.20 or later, and [Ninja][] 1.10.2 or later.
 2. Open a command prompt.
 3. Change directories to a location where you'd like a clone of this STL repository.
 4. `git clone https://github.com/microsoft/STL`
@@ -234,7 +234,7 @@ C:\Users\username\Desktop>dumpbin /IMPORTS .\example.exe | findstr msvcp
 # How To Run The Tests With A Native Tools Command Prompt
 
 1. Follow either [How To Build With A Native Tools Command Prompt][] or [How To Build With The Visual Studio IDE][].
-2. Acquire [Python][] 3.9.2 or newer and have it on the `PATH` (or run it directly using its absolute or relative path).
+2. Acquire [Python][] 3.9.4 or newer and have it on the `PATH` (or run it directly using its absolute or relative path).
 3. Have LLVM's `bin` directory on the `PATH` (so `clang-cl.exe` is available).
     * We recommend selecting "C++ Clang tools for Windows" in the VS Installer. This will automatically add LLVM to the
     `PATH` of the x86 and x64 Native Tools Command Prompts, and will ensure that you're using a supported version.

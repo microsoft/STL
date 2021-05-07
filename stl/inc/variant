@@ -1731,9 +1731,6 @@ constexpr _Ret visit(_Callable&& _Obj, _Variants&&... _Args) {
 }
 #endif // _HAS_CXX20
 
-// CLASS monostate [variant.monostate]
-struct monostate {};
-
 // monostate RELATIONAL OPERATORS [variant.monostate.relops]
 _NODISCARD constexpr bool operator==(monostate, monostate) noexcept {
     return true;

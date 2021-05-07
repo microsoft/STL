@@ -1927,7 +1927,7 @@ namespace ranges {
                 if constexpr (random_access_range<_Vw>) {
                     return _RANGES begin(_Range);
                 } else {
-                    const auto _Size = size();
+                    const auto _Size = static_cast<range_difference_t<_Vw>>(size());
                     return counted_iterator{_RANGES begin(_Range), _Size};
                 }
             } else {
@@ -1940,7 +1940,7 @@ namespace ranges {
                 if constexpr (random_access_range<const _Vw>) {
                     return _RANGES begin(_Range);
                 } else {
-                    const auto _Size = size();
+                    const auto _Size = static_cast<range_difference_t<_Vw>>(size());
                     return counted_iterator{_RANGES begin(_Range), _Size};
                 }
             } else {
@@ -3701,10 +3701,14 @@ namespace ranges {
         // clang-format on
     };
 
+    template <class _Tuple, size_t _Index>
+    concept _Returnable_element = is_reference_v<_Tuple> || move_constructible<tuple_element_t<_Index, _Tuple>>;
+
     // clang-format off
     template <input_range _Vw, size_t _Index>
         requires view<_Vw> && _Has_tuple_element<range_value_t<_Vw>, _Index>
             && _Has_tuple_element<remove_reference_t<range_reference_t<_Vw>>, _Index>
+            && _Returnable_element<range_reference_t<_Vw>, _Index>
     class elements_view : public view_interface<elements_view<_Vw, _Index>> {
         // clang-format on
     private:
@@ -3767,8 +3771,16 @@ namespace ranges {
             }
 
             _NODISCARD constexpr decltype(auto) operator*() const
-                noexcept(noexcept(_STD get<_Index>(*_Current))) /* strengthened */ {
+                noexcept(noexcept(_STD get<_Index>(*_Current))) /* strengthened */
+                requires is_reference_v<range_reference_t<_Base>> {
                 return _STD get<_Index>(*_Current);
+            }
+
+            _NODISCARD constexpr decltype(auto) operator*() const
+                noexcept(is_nothrow_move_constructible_v<tuple_element_t<_Index, range_reference_t<_Base>>> //
+                        && noexcept(_STD get<_Index>(*_Current))) /* strengthened */ {
+                using _ElemTy = remove_cv_t<tuple_element_t<_Index, range_reference_t<_Base>>>;
+                return static_cast<_ElemTy>(_STD get<_Index>(*_Current));
             }
 
             constexpr _Iterator& operator++() noexcept(noexcept(++_Current)) /* strengthened */ {
@@ -3831,11 +3843,22 @@ namespace ranges {
 
             _NODISCARD constexpr decltype(auto) operator[](const difference_type _Idx) const
                 noexcept(noexcept(_STD get<_Index>(*(_Current + _Idx)))) /* strengthened */
-                requires random_access_range<_Base> {
+                requires random_access_range<_Base>&& is_reference_v<range_reference_t<_Base>> {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _Verify_offset(_Idx);
 #endif // _ITERATOR_DEBUG_LEVEL != 0
                 return _STD get<_Index>(*(_Current + _Idx));
+            }
+
+            _NODISCARD constexpr decltype(auto) operator[](const difference_type _Idx) const
+                noexcept(is_nothrow_move_constructible_v<tuple_element_t<_Index, range_reference_t<_Base>>> //
+                        && noexcept(_STD get<_Index>(*(_Current + _Idx)))) /* strengthened */
+                requires random_access_range<_Base> {
+#if _ITERATOR_DEBUG_LEVEL != 0
+                _Verify_offset(_Idx);
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+                using _ElemTy = remove_cv_t<tuple_element_t<_Index, range_reference_t<_Base>>>;
+                return static_cast<_ElemTy>(_STD get<_Index>(*(_Current + _Idx)));
             }
 
             _NODISCARD friend constexpr bool operator==(const _Iterator& _Left, const _Iterator& _Right) noexcept(

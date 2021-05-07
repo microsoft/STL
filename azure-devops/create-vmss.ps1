@@ -30,7 +30,7 @@ $ImageOffer = 'Windows-10'
 $ImageSku = '20h2-ent-g2'
 
 $ProgressActivity = 'Creating Scale Set'
-$TotalProgress = 12
+$TotalProgress = 13
 $CurrentProgress = 1
 
 <#
@@ -399,6 +399,19 @@ New-AzVmss `
   -ResourceGroupName $ResourceGroupName `
   -Name $VmssName `
   -VirtualMachineScaleSet $Vmss
+
+####################################################################################################
+Write-Progress `
+  -Activity $ProgressActivity `
+  -Status 'Enabling VMSS diagnostic logs' `
+  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+
+az vmss diagnostics set `
+  --resource-group $ResourceGroupName `
+  --vmss-name $VmssName `
+  --settings "$PSScriptRoot\vmss-config.json" `
+  --protected-settings "$PSScriptRoot\vmss-protected.json" `
+  --output none
 
 ####################################################################################################
 Write-Progress -Activity $ProgressActivity -Completed
