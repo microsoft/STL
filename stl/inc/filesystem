@@ -1685,11 +1685,21 @@ namespace filesystem {
         return _Val;
     }
 
+    _NODISCARD inline bool _Starts_with_root_name(const wchar_t* const _First, const wchar_t* const _Last) {
+        return _Find_root_name_end(_First, _Last) != _First;
+    }
+
     _NODISCARD inline bool _Relative_path_contains_root_name(const path& _Path) {
-        for (const auto& _File_name : _Path.relative_path()) {
-            if (!_Parse_root_name(_File_name.native()).empty()) {
+        auto& _Native    = _Path.native();
+        auto _First      = _Native.data();
+        const auto _Last = _First + _Native.size();
+        _First           = _Find_relative_path(_First, _Last);
+        while (_First != _Last) {
+            const auto _Next = _STD find_if(_First, _Last, _Is_slash);
+            if (_Starts_with_root_name(_First, _Next)) {
                 return true;
             }
+            _First = _STD find_if_not(_Next, _Last, _Is_slash);
         }
         return false;
     }
