@@ -1835,7 +1835,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       <Item Name="[file]">_File,s</Item>
       <Item Name="[function]">_Function,s</Item>
     </Expand>
-    
+
   <Type Name="std::strong_ordering">
     <DisplayString Condition="_Value == -1">less</DisplayString>
     <DisplayString Condition="_Value == 0">equal</DisplayString>
