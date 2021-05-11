@@ -1029,7 +1029,7 @@ bool test_lerp() {
     return true;
 }
 
-void test_lerp_for_issue1917() {
+void test_GH_1917() {
     using bit_type = unsigned long long;
     assert(bit_cast<bit_type>(lerp(1e+308, 5e+307, 4.0)) == bit_cast<bit_type>(-1e+308));
     STATIC_ASSERT(bit_cast<bit_type>(lerp(1e+308, 5e+307, 4.0)) == bit_cast<bit_type>(-1e+308));
@@ -1106,5 +1106,5 @@ int main() {
     test_lerp<double>();
     test_lerp<long double>();
 
-    test_lerp_for_issue1917();
+    test_GH_1917();
 }

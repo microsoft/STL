@@ -1330,11 +1330,11 @@ _NODISCARD constexpr _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, const _T
             }
         }
 
-        auto _Isinf = +[](_Ty val) constexpr {
+        auto _Isinf = [](_Ty val) constexpr {
             // std::isinf is not constexpr so cannot use :(
-            return val == INFINITY || val == -INFINITY;
+            return val == _STD numeric_limits<_Ty>::infinity() || val == -_STD numeric_limits<_Ty>::infinity();
         };
-        auto _Signbit = +[](_Ty val) constexpr {
+        auto _Signbit = [](_Ty val) constexpr {
             // std::signbit is not constexpr so cannot use :(
             return val < 0;
         };
