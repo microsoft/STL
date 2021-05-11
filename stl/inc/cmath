@@ -1330,6 +1330,20 @@ _NODISCARD constexpr _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, const _T
             }
         }
 
+        auto _Isinf = +[](_Ty val) constexpr {
+            // std::isinf is not constexpr so cannot use :(
+            return val == INFINITY || val == -INFINITY;
+        };
+        auto _Signbit = +[](_Ty val) constexpr {
+            // std::signbit is not constexpr so cannot use :(
+            return val < 0;
+        };
+        if (_Isinf(_Candidate) && (_Signbit(_Candidate) != _Signbit(_ArgA))) {
+            // we got inf but _ArgA has different sign, so try calculate again
+            // _ArgT is not zero because we got inf and _ArgA is finite.
+            return _ArgT * (_ArgB - _ArgA + _ArgA / _ArgT);
+        }
+
         return _Candidate;
     }
 
