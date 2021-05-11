@@ -1331,10 +1331,10 @@ _NODISCARD constexpr _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, const _T
             }
         }
 
-        if constexpr (_STD numeric_limits<_Ty>::has_infinity) {
+        if constexpr (numeric_limits<_Ty>::has_infinity) {
             auto _Isinf = [](_Ty val) constexpr {
                 // std::isinf is not constexpr so cannot use :(
-                return val == _STD numeric_limits<_Ty>::infinity() || val == -_STD numeric_limits<_Ty>::infinity();
+                return val == numeric_limits<_Ty>::infinity() || val == -numeric_limits<_Ty>::infinity();
             };
             auto _Signbit = [](_Ty val) constexpr {
                 // std::signbit is not constexpr so cannot use :(
