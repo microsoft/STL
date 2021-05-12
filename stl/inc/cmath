@@ -24,7 +24,7 @@
 
 #if _HAS_CXX20
 #ifdef _M_FP_STRICT
-#include <fenv.h>
+#include <cfenv>
 #endif
 #include <xutility>
 #endif // _HAS_CXX20
