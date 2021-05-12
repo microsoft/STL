@@ -91,10 +91,8 @@ static_assert(can_construct_at<const volatile int, int&>);
 
 struct X {};
 
-#ifndef __EDG__ // TRANSITION, VSO-1075296
 static_assert(!can_construct_at<int, X>);
 static_assert(!can_construct_at<X, int>);
-#endif // __EDG__
 
 // note that indestructible isn't constructible but is construct_at-ible:
 struct indestructible {
@@ -124,12 +122,10 @@ static_assert(!can_construct_at<string, X>);
 
 // The following static_asserts test our strengthening of noexcept
 
-#ifndef __EDG__ // TRANSITION, VSO-1075296
 static_assert(construct_at_noexcept<int, int>());
 static_assert(construct_at_noexcept<const int, int>());
 static_assert(construct_at_noexcept<volatile int, int>());
 static_assert(construct_at_noexcept<const volatile int, int>());
-#endif // __EDG__
 
 static_assert(!construct_at_noexcept<string, const char (&)[6]>());
 static_assert(!construct_at_noexcept<const string, const char (&)[6]>());
