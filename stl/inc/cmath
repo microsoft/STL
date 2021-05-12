@@ -25,13 +25,16 @@
 #if _HAS_CXX20
 #ifdef _M_FP_STRICT
 #include <cfenv>
-#endif
+#endif // _M_FP_STRICT
 #include <xutility>
 #endif // _HAS_CXX20
 
+#if _HAS_CXX20
 #ifdef _M_FP_STRICT
+// TRANSITION, VSO-923474 -- should be #pragma STDC FENV_ACCESS ON
 #pragma fenv_access(on)
-#endif
+#endif // _M_FP_STRICT
+#endif // _HAS_CXX20
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -1343,9 +1346,9 @@ _NODISCARD constexpr _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, const _T
                 return _Is_inf(val);
             }
             return fetestexcept(FE_OVERFLOW) != 0;
-#else
+#else // ^^^ defined(_M_FP_STRICT) / !defined(_M_FP_STRICT) vvv
             return _Is_inf(val);
-#endif
+#endif // _M_FP_STRICT
         };
 
         auto _Clear_FE_OVERFLOW_flag = []() constexpr {
@@ -1353,7 +1356,7 @@ _NODISCARD constexpr _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, const _T
             if (!_STD is_constant_evaluated()) {
                 feclearexcept(FE_OVERFLOW);
             }
-#endif
+#endif // _M_FP_STRICT
         };
 
         auto _Signbit = [](_Ty val) constexpr {
