@@ -223,7 +223,6 @@ void test_array(const T& val) {
 }
 
 #ifdef __cpp_lib_constexpr_dynamic_alloc
-#ifndef __EDG__ // TRANSITION, VSO-1269976
 template <class T>
 struct storage_for {
     union {
@@ -269,7 +268,6 @@ constexpr void test_compiletime() {
     }
 }
 static_assert((test_compiletime(), true));
-#endif // __EDG__
 
 template <class T>
 struct A {
@@ -389,7 +387,6 @@ constexpr void test_compiletime_destroy_variants() {
 }
 static_assert((test_compiletime_destroy_variants(), true));
 
-#ifndef __EDG__ // TRANSITION, VSO-1269976
 template <class T, bool Construct = false, bool Destroy = false>
 struct Alloc {
     using value_type = T;
@@ -503,7 +500,6 @@ constexpr void test_compiletime_allocator_traits() {
     }
 }
 static_assert((test_compiletime_allocator_traits(), true));
-#endif // __EDG__
 
 constexpr void test_compiletime_allocator() {
     {
