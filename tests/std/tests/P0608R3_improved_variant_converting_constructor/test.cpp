@@ -85,9 +85,7 @@ void assert_more_examples() {
     static_assert(is_constructible_v<variant<float, bool, convertible_bool>, convertible_bool>);
     static_assert(is_constructible_v<variant<float, bool, convertible_bool>, bool>);
     static_assert(is_constructible_v<variant<char, int>, bool>);
-#ifdef __clang__ // TRANSITION, DevCom-1338628
     static_assert(is_constructible_v<variant<double_double>, int>);
-#endif // __clang__
     static_assert(!is_constructible_v<variant<float>, unsigned int>);
     static_assert(!is_constructible_v<variant<char, default_struct>, int>);
     static_assert(!is_constructible_v<variant<float, long, long long>, int>);
@@ -102,9 +100,7 @@ void assert_more_examples() {
     static_assert(is_assignable_v<variant<float, bool, convertible_bool>, convertible_bool>);
     static_assert(is_assignable_v<variant<float, bool, convertible_bool>, bool>);
     static_assert(is_assignable_v<variant<char, int>, bool>);
-#ifdef __clang__ // TRANSITION, DevCom-1338628
     static_assert(is_assignable_v<variant<double_double>, int>);
-#endif // __clang__
     static_assert(!is_assignable_v<variant<float>, unsigned int>);
     static_assert(!is_assignable_v<variant<char, default_struct>, int>);
     static_assert(!is_assignable_v<variant<float, long, long long>, int>);
@@ -218,7 +214,6 @@ void test_assignment_operator() {
     assert(b.index() == 2);
     assert(get<2>(b).x_ == 12.5);
 
-#ifdef __clang__ // TRANSITION, DevCom-1338628
     variant<void*, bool, double_double> c;
     assert(c.index() == 0);
     c = false; // bool
@@ -231,7 +226,6 @@ void test_assignment_operator() {
     c = static_cast<void*>(&c_data); // void*
     assert(c.index() == 0);
     assert(static_cast<double_double*>(get<0>(c))->x_ == 1.2);
-#endif // __clang__
 }
 
 int main() {
