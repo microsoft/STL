@@ -23,8 +23,15 @@
 #endif // _HAS_CMATH_INTRINSICS
 
 #if _HAS_CXX20
+#ifdef _M_FP_STRICT
+#include <fenv.h>
+#endif
 #include <xutility>
 #endif // _HAS_CXX20
+
+#ifdef _M_FP_STRICT
+#pragma fenv_access(on)
+#endif
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -1330,12 +1337,21 @@ _NODISCARD constexpr _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, const _T
             }
         }
 
+        auto _Clear_FE_OVERFLOW_flag = []() constexpr {
+#ifdef _M_FP_STRICT
+            if (!_STD is_constant_evaluated()) {
+                feclearexcept(FE_OVERFLOW);
+            }
+#endif
+        };
+
         auto _Signbit = [](_Ty val) constexpr {
             // std::signbit is not constexpr so cannot use :(
             return val < 0;
         };
         if (_Is_inf(_Candidate) && (_Signbit(_Candidate) != _Signbit(_ArgA))) {
             // we got inf but _ArgA has different sign, so try calculate again
+            _Clear_FE_OVERFLOW_flag();
             // _ArgT is not zero because we got inf and _ArgA is finite.
             return _ArgT * (_ArgB - _ArgA + _ArgA / _ArgT);
         }

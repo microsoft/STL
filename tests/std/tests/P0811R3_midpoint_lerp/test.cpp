@@ -1087,6 +1087,7 @@ int main() {
         test_midpoint_floating_constexpr<float>();
         test_midpoint_floating_constexpr<double>();
         test_midpoint_floating_constexpr<long double>();
+        test_GH_1917();
         assert(check_feexcept(0));
     }
 
