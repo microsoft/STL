@@ -1337,6 +1337,17 @@ _NODISCARD constexpr _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, const _T
             }
         }
 
+        auto _Is_Overflow = [](_Ty val) constexpr {
+#ifdef _M_FP_STRICT
+            if (_STD is_constant_evaluated()) {
+                return _Is_inf(val);
+            }
+            return fetestexcept(FE_OVERFLOW) != 0;
+#else
+            return _Is_inf(val);
+#endif
+        };
+
         auto _Clear_FE_OVERFLOW_flag = []() constexpr {
 #ifdef _M_FP_STRICT
             if (!_STD is_constant_evaluated()) {
@@ -1349,7 +1360,7 @@ _NODISCARD constexpr _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, const _T
             // std::signbit is not constexpr so cannot use :(
             return val < 0;
         };
-        if (_Is_inf(_Candidate) && (_Signbit(_Candidate) != _Signbit(_ArgA))) {
+        if (_Is_Overflow(_Candidate) && (_Signbit(_Candidate) != _Signbit(_ArgA))) {
             // we got inf but _ArgA has different sign, so try calculate again
             _Clear_FE_OVERFLOW_flag();
             // _ArgT is not zero because we got inf and _ArgA is finite.

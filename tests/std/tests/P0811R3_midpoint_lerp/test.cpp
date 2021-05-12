@@ -1031,8 +1031,36 @@ bool test_lerp() {
 
 void test_GH_1917() {
     using bit_type = unsigned long long;
-    assert(bit_cast<bit_type>(lerp(1e+308, 5e+307, 4.0)) == bit_cast<bit_type>(-1e+308));
     STATIC_ASSERT(bit_cast<bit_type>(lerp(1e+308, 5e+307, 4.0)) == bit_cast<bit_type>(-1e+308));
+    {
+        ExceptGuard except;
+
+        assert(bit_cast<bit_type>(lerp(1e+308, 5e+307, 4.0)) == bit_cast<bit_type>(-1e+308));
+        assert(check_feexcept(0));
+    }
+#ifdef _M_FP_STRICT
+    {
+        ExceptGuard except;
+        RoundGuard round{FE_UPWARD};
+
+        assert(bit_cast<bit_type>(lerp(1e+308, 5e+307, 4.0)) == bit_cast<bit_type>(-1e+308));
+        assert(check_feexcept(0));
+    }
+    {
+        ExceptGuard except;
+        RoundGuard round{FE_DOWNWARD};
+
+        assert(bit_cast<bit_type>(lerp(1e+308, 5e+307, 4.0)) == bit_cast<bit_type>(-1e+308));
+        assert(check_feexcept(0));
+    }
+    {
+        ExceptGuard except;
+        RoundGuard round{FE_TOWARDZERO};
+
+        assert(bit_cast<bit_type>(lerp(1e+308, 5e+307, 4.0)) == bit_cast<bit_type>(-1e+308));
+        assert(check_feexcept(0));
+    }
+#endif
 }
 
 int main() {
@@ -1087,7 +1115,6 @@ int main() {
         test_midpoint_floating_constexpr<float>();
         test_midpoint_floating_constexpr<double>();
         test_midpoint_floating_constexpr<long double>();
-        test_GH_1917();
         assert(check_feexcept(0));
     }
 
