@@ -432,9 +432,6 @@ std/numerics/c.math/cmath.pass.cpp FAIL
 # GH-1596: <algorithm>: unqualified calls to _Adl_verify_range incorrectly cause instantiation
 std/algorithms/robust_against_adl.pass.cpp FAIL
 
-# GH-1595: <bit>: bit_ceil(T(-1)) should not be a constant expression
-std/numerics/bit/bit.pow.two/bit_ceil.fail.cpp:0 FAIL
-
 
 # *** CRT BUGS ***
 # We're permanently missing aligned_alloc().
