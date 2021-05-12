@@ -286,7 +286,7 @@ struct nontrivial_A {
 };
 
 constexpr void test_compiletime_destroy_variants() {
-#ifndef __EDG__ // TRANSITION, VSO-1270011
+#ifndef __EDG__ // TRANSITION, VSO-1327238
     {
         allocator<A<int>> alloc{};
         A<int>* a = alloc.allocate(10);
