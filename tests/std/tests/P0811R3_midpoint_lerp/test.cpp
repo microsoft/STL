@@ -1060,6 +1060,14 @@ void test_GH_1917() {
         assert(bit_cast<bit_type>(lerp(1e+308, 5e+307, 4.0)) == bit_cast<bit_type>(-1e+308));
         assert(check_feexcept(0));
     }
+    {
+        ExceptGuard except;
+        int r = feraiseexcept(FE_OVERFLOW);
+
+        assert(r == 0);
+        assert(bit_cast<bit_type>(lerp(1e+308, 5e+307, 4.0)) == bit_cast<bit_type>(-1e+308));
+        assert(check_feexcept(FE_OVERFLOW));
+    }
 #endif // _M_FP_STRICT
 }
 

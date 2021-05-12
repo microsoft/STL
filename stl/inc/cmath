@@ -1314,6 +1314,40 @@ template <class _Ty>
 _NODISCARD constexpr _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, const _Ty _ArgT) noexcept {
     // on a line intersecting {(0.0, _ArgA), (1.0, _ArgB)}, return the Y value for X == _ArgT
 
+#ifdef _M_FP_STRICT
+    class _ExceptGuard {
+    public:
+        constexpr _ExceptGuard() {
+            if (!_STD is_constant_evaluated()) {
+                [[maybe_unused]] const int holdExcept = feholdexcept(&env);
+            }
+        }
+
+        _ExceptGuard(const _ExceptGuard&) = delete;
+        _ExceptGuard& operator=(const _ExceptGuard&) = delete;
+
+        constexpr ~_ExceptGuard() {
+            if (!_STD is_constant_evaluated()) {
+                [[maybe_unused]] const int updateEnv = feupdateenv(&env);
+            }
+        }
+
+    private:
+        fenv_t env;
+    };
+#else // ^^^ defined(_M_FP_STRICT) / !defined(_M_FP_STRICT) vvv
+    class _ExceptGuard {
+    public:
+        constexpr _ExceptGuard() {}
+
+        _ExceptGuard(const _ExceptGuard&) = delete;
+        _ExceptGuard& operator=(const _ExceptGuard&) = delete;
+
+        constexpr ~_ExceptGuard() {}
+    };
+#endif
+    _ExceptGuard _Guard;
+
     const bool _T_is_finite = _Is_finite(_ArgT);
     if (_T_is_finite && _Is_finite(_ArgA) && _Is_finite(_ArgB)) {
         // 99% case, put it first; this block comes from P0811R3
