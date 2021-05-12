@@ -460,11 +460,7 @@ constexpr void output_range_test() {
         test::CanCompare::no, test::ProxyRef::yes, test::CanView::yes, test::Copyability::move_only>;
     int some_writable_ints[] = {0, 1, 2, 3};
     STATIC_ASSERT(same_as<decltype(views::drop(R{some_writable_ints}, 2)), ranges::drop_view<R>>);
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-1217687
-    ranges::fill(views::drop(R{some_writable_ints}, 2), 42);
-#else // ^^^ workaround / no workaround vvv
     ranges::fill(R{some_writable_ints} | views::drop(2), 42);
-#endif // TRANSITION, VSO-1217687
     assert(ranges::equal(some_writable_ints, initializer_list<int>{0, 1, 42, 42}));
 }
 

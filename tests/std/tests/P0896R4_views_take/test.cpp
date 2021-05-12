@@ -495,18 +495,10 @@ constexpr void output_range_test() {
         STATIC_ASSERT(same_as<decltype(views::take(R{some_writable_ints}, 99999)), ranges::take_view<R>>);
 
         // How do I implement "Fill up to n elements in {output range} with {value}"?
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-1217687
-        ranges::fill(views::take(R{some_writable_ints}, 99999), 42);
-#else // ^^^ workaround / no workaround vvv
         ranges::fill(R{some_writable_ints} | views::take(99999), 42);
-#endif // TRANSITION, VSO-1217687
         assert(ranges::equal(some_writable_ints, initializer_list<int>{42, 42, 42, 42}));
 
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-1217687
-        ranges::fill(views::take(R{some_writable_ints}, 3), 13);
-#else // ^^^ workaround / no workaround vvv
         ranges::fill(R{some_writable_ints} | views::take(3), 13);
-#endif // TRANSITION, VSO-1217687
         assert(ranges::equal(some_writable_ints, initializer_list<int>{13, 13, 13, 42}));
     }
 }
