@@ -26,6 +26,7 @@
 #ifdef _M_FP_STRICT
 #include <cfenv>
 #endif // _M_FP_STRICT
+#include <type_traits>
 #include <xutility>
 #endif // _HAS_CXX20
 
@@ -1394,9 +1395,12 @@ _NODISCARD constexpr _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, const _T
         };
 
         auto _Signbit = [](_Ty val) constexpr {
-            // std::signbit is not constexpr so cannot use :(
-            return val < 0;
+            using _Float_bits_t                  = typename _STD _Floating_type_traits<_Ty>::_Uint_type;
+            constexpr _Float_bits_t _Sign_mask_v = _STD _Floating_type_traits<_Ty>::_Shifted_sign_mask;
+            const auto _Bits                     = _Bit_cast<_Float_bits_t>(val);
+            return (_Bits & _Sign_mask_v) != 0;
         };
+
         if (_Is_Overflow(_Candidate) && (_Signbit(_Candidate) != _Signbit(_ArgA))) {
             // we got inf but _ArgA has different sign, so try calculate again
             _Clear_FE_OVERFLOW_flag();
