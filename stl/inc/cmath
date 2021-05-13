@@ -1320,7 +1320,7 @@ _NODISCARD constexpr _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, const _T
     public:
         constexpr _ExceptGuard() {
             if (!_STD is_constant_evaluated()) {
-                [[maybe_unused]] const int holdExcept = feholdexcept(&env);
+                [[maybe_unused]] const int _HoldExcept = feholdexcept(&_Env);
             }
         }
 
@@ -1329,12 +1329,12 @@ _NODISCARD constexpr _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, const _T
 
         constexpr ~_ExceptGuard() {
             if (!_STD is_constant_evaluated()) {
-                [[maybe_unused]] const int updateEnv = feupdateenv(&env);
+                [[maybe_unused]] const int _UpdateEnv = feupdateenv(&_Env);
             }
         }
 
     private:
-        fenv_t env;
+        fenv_t _Env;
     };
 #else // ^^^ defined(_M_FP_STRICT) / !defined(_M_FP_STRICT) vvv
     class _ExceptGuard {
