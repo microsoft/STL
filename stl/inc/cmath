@@ -23,18 +23,8 @@
 #endif // _HAS_CMATH_INTRINSICS
 
 #if _HAS_CXX20
-#ifdef _M_FP_STRICT
-#include <cfenv>
-#endif // _M_FP_STRICT
 #include <type_traits>
 #include <xutility>
-#endif // _HAS_CXX20
-
-#if _HAS_CXX20
-#ifdef _M_FP_STRICT
-// TRANSITION, VSO-923474 -- should be #pragma STDC FENV_ACCESS ON
-#pragma fenv_access(on)
-#endif // _M_FP_STRICT
 #endif // _HAS_CXX20
 
 #pragma pack(push, _CRT_PACKING)
@@ -1315,40 +1305,6 @@ template <class _Ty>
 _NODISCARD constexpr _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, const _Ty _ArgT) noexcept {
     // on a line intersecting {(0.0, _ArgA), (1.0, _ArgB)}, return the Y value for X == _ArgT
 
-#ifdef _M_FP_STRICT
-    class _ExceptGuard {
-    public:
-        constexpr _ExceptGuard() {
-            if (!_STD is_constant_evaluated()) {
-                [[maybe_unused]] const int _HoldExcept = feholdexcept(&_Env);
-            }
-        }
-
-        _ExceptGuard(const _ExceptGuard&) = delete;
-        _ExceptGuard& operator=(const _ExceptGuard&) = delete;
-
-        constexpr ~_ExceptGuard() {
-            if (!_STD is_constant_evaluated()) {
-                [[maybe_unused]] const int _UpdateEnv = feupdateenv(&_Env);
-            }
-        }
-
-    private:
-        fenv_t _Env;
-    };
-#else // ^^^ defined(_M_FP_STRICT) / !defined(_M_FP_STRICT) vvv
-    class _ExceptGuard {
-    public:
-        constexpr _ExceptGuard() = default;
-
-        _ExceptGuard(const _ExceptGuard&) = delete;
-        _ExceptGuard& operator=(const _ExceptGuard&) = delete;
-
-        constexpr ~_ExceptGuard() = default;
-    };
-#endif
-    [[maybe_unused]] _ExceptGuard _Guard;
-
     const bool _T_is_finite = _Is_finite(_ArgT);
     if (_T_is_finite && _Is_finite(_ArgA) && _Is_finite(_ArgB)) {
         // 99% case, put it first; this block comes from P0811R3
@@ -1363,7 +1319,14 @@ _NODISCARD constexpr _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, const _T
         }
 
         // exact at _ArgT == 0, monotonic except near _ArgT == 1, bounded, determinate, and consistent:
-        const auto _Candidate = _ArgA + _ArgT * (_ArgB - _ArgA);
+        const auto _Candidate = [=]() constexpr {
+            if (_STD is_constant_evaluated()) {
+                return _ArgA + _ArgT * (_ArgB - _ArgA);
+            }
+            return _STD fma(_ArgT, _ArgB - _ArgA, _ArgA);
+        }
+        ();
+
         // monotonic near _ArgT == 1:
         if ((_ArgT > 1) == (_ArgB > _ArgA)) {
             if (_ArgB > _Candidate) {
@@ -1375,25 +1338,6 @@ _NODISCARD constexpr _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, const _T
             }
         }
 
-        auto _Is_Overflow = [](_Ty val) constexpr {
-#ifdef _M_FP_STRICT
-            if (_STD is_constant_evaluated()) {
-                return _Is_inf(val);
-            }
-            return fetestexcept(FE_OVERFLOW) != 0;
-#else // ^^^ defined(_M_FP_STRICT) / !defined(_M_FP_STRICT) vvv
-            return _Is_inf(val);
-#endif // _M_FP_STRICT
-        };
-
-        auto _Clear_FE_OVERFLOW_flag = []() constexpr {
-#ifdef _M_FP_STRICT
-            if (!_STD is_constant_evaluated()) {
-                feclearexcept(FE_OVERFLOW);
-            }
-#endif // _M_FP_STRICT
-        };
-
         auto _Signbit = [](_Ty val) constexpr {
             using _Float_bits_t                  = typename _STD _Floating_type_traits<_Ty>::_Uint_type;
             constexpr _Float_bits_t _Sign_mask_v = _STD _Floating_type_traits<_Ty>::_Shifted_sign_mask;
@@ -1401,11 +1345,12 @@ _NODISCARD constexpr _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, const _T
             return (_Bits & _Sign_mask_v) != 0;
         };
 
-        if (_Is_Overflow(_Candidate) && (_Signbit(_Candidate) != _Signbit(_ArgA))) {
-            // we got inf but _ArgA has different sign, so try calculate again
-            _Clear_FE_OVERFLOW_flag();
-            // _ArgT is not zero because we got inf and _ArgA is finite.
-            return _ArgT * (_ArgB - _ArgA + _ArgA / _ArgT);
+        if (_STD is_constant_evaluated()) {
+            if (_Is_inf(_Candidate) && (_Signbit(_Candidate) != _Signbit(_ArgA))) {
+                // we got inf but _ArgA has different sign, so try calculate again
+                // _ArgT is not zero because we got inf and _ArgA is finite.
+                return _ArgT * (_ArgB - _ArgA + _ArgA / _ArgT);
+            }
         }
 
         return _Candidate;
