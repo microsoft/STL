@@ -82,9 +82,9 @@ concept CanViewTake = requires(Rng&& r) {
 template <ranges::input_range Rng, ranges::random_access_range Expected>
 constexpr bool test_one(Rng&& rng, Expected&& expected) {
     using ranges::input_range, ranges::forward_range, ranges::bidirectional_range, ranges::random_access_range,
-        ranges::contiguous_range, ranges::borrowed_range;
+        ranges::contiguous_range;
     using ranges::take_view, ranges::common_range, ranges::enable_borrowed_range, ranges::iterator_t, ranges::prev,
-        ranges::range, ranges::sentinel_t, ranges::sized_range;
+        ranges::range, ranges::sentinel_t, ranges::sized_range, ranges::borrowed_range;
 
     constexpr bool is_view = ranges::view<remove_cvref_t<Rng>>;
 
