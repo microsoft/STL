@@ -93,37 +93,38 @@ public:
         _State = ios_base::goodbit;
 
         for (; _Fmtfirst != _Fmtlast; ++_Fmtfirst) {
-            if (_Ctype_fac.narrow(*_Fmtfirst) != '%') { // match literal element
+            if (_State != ios_base::goodbit) {
+                // N4878 [locale.time.get.members]/8.2
+                // _State is fail, eof, or bad. Do not proceed to the next fields. Return with current _State.
+                break;
+            } else if (_First == _Last) {
+                // N4878 [locale.time.get.members]/8.3
+                _State = ios_base::eofbit | ios_base::failbit;
+                break;
+            } else if (_Ctype_fac.narrow(*_Fmtfirst) != '%') { // match literal element
                 if (_Ctype_fac.is(_Ctype::space, *_Fmtfirst)) {
                     while (_First != _Last && _Ctype_fac.is(_Ctype::space, *_First)) {
                         ++_First;
                     }
-                } else if (*_First != *_Fmtfirst) { // bad literal match
+                } else if (_Ctype_fac.tolower(*_First) != _Ctype_fac.tolower(*_Fmtfirst)) { // bad literal match
                     _State |= ios_base::failbit;
                     break;
                 } else {
                     ++_First;
                 }
-            } else if (++_Fmtfirst == _Fmtlast) { // treat trailing % as literal match
-                if (*_First != _Fmtfirst[-1]) {
-                    _State |= ios_base::failbit;
-                } else {
-                    ++_First;
-                }
+            } else if (++_Fmtfirst == _Fmtlast) {
+                // N4878 [locale.time.get.members]/8.4: "If the number of elements in the range [fmt, fmtend) is not
+                // sufficient to unambiguously determine whether the conversion specification is complete and valid,
+                // the function evaluates err = ios_base::failbit."
+                _State = ios_base::failbit;
                 break;
             } else { // get specifier after %
                 char _Specifier = _Ctype_fac.narrow(*_Fmtfirst);
                 char _Modifier  = '\0';
-                _Elem _Percent  = _Fmtfirst[-1];
 
                 if (_Specifier == 'E' || _Specifier == 'O' || _Specifier == 'Q' || _Specifier == '#') {
-                    if (++_Fmtfirst == _Fmtlast) { // no specifier, treat %[E0Q#] as literal match
-                        if (*_First != _Percent || ++_First == _Last || _Ctype_fac.narrow(*_First) != _Specifier) {
-                            _State |= ios_base::failbit;
-                        } else {
-                            ++_First;
-                        }
-
+                    if (++_Fmtfirst == _Fmtlast) { // no specifier
+                        _State = ios_base::failbit;
                         break;
                     } else { // save both qualifier and specifier
                         _Modifier  = _Specifier;
@@ -132,16 +133,7 @@ public:
                 }
 
                 _First = do_get(_First, _Last, _Iosbase, _State, _Pt, _Specifier, _Modifier); // convert a single field
-
-                if (_State != ios_base::goodbit) {
-                    // _State is fail, eof, or bad. Do not proceed to the next fields. Return with current _State.
-                    break;
-                }
             }
-        }
-
-        if (_First == _Last) {
-            _State |= ios_base::eofbit;
         }
 
         return _First;
@@ -223,7 +215,7 @@ protected:
         if (_State != ios_base::goodbit || _Ctype_fac.narrow(*_First) != ':') {
             _State |= ios_base::failbit; // min field is bad
         } else {
-            _State |= _Getint(++_First, _Last, 0, 59, _Pt->tm_sec, _Ctype_fac);
+            _State |= _Getint(++_First, _Last, 0, 60, _Pt->tm_sec, _Ctype_fac);
         }
 
         return _First;
@@ -546,7 +538,14 @@ private:
         char* _Ptr = _Ac;
         char _Ch;
 
-        if (_First != _Last) {
+        int _Digits_seen = 0;
+
+        while (_First != _Last && _Digits_seen < _Hi_digits && _Ctype_fac.is(ctype_base::space, *_First)) {
+            ++_First;
+            ++_Digits_seen;
+        }
+
+        if (_First != _Last && _Digits_seen < _Hi_digits) {
             if ((_Ch = _Ctype_fac.narrow(*_First)) == '+') { // copy plus sign
                 *_Ptr++ = '+';
                 ++_First;
@@ -556,9 +555,8 @@ private:
             }
         }
 
-        int _Digits_seen = 0;
-
-        for (; _First != _Last && _Ctype_fac.narrow(*_First) == '0'; ++_First) { // strip leading zeros
+        for (; _First != _Last && _Digits_seen < _Hi_digits && _Ctype_fac.narrow(*_First) == '0';
+             ++_First) { // strip leading zeros
             ++_Digits_seen;
         }
 
@@ -717,7 +715,7 @@ protected:
         _Tnames = _Lobj._Gettnames();
     }
 
-    virtual _OutIt __CLR_OR_THIS_CALL do_put(_OutIt _Dest, ios_base&, _Elem, const tm* _Pt, char _Specifier,
+    virtual _OutIt __CLR_OR_THIS_CALL do_put(_OutIt _Dest, ios_base& _Iosbase, _Elem, const tm* _Pt, char _Specifier,
         char _Modifier = '\0') const { // put formatted time from _Pt to _Dest for [_Fmtfirst, _Fmtlast)
         char _Fmt[5] = "!%x\0"; // '!' for nonzero count, null for modifier
         size_t _Count;
@@ -731,10 +729,16 @@ protected:
             _Fmt[3] = _Specifier;
         }
 
+        const int& _Errno_ref = errno; // Nonzero cost, pay it once
+
         for (_Num = 16;; _Num *= 2) { // convert into ever larger string buffer until success
             _Str.append(_Num, '\0');
-            if (0 < (_Count = _Strftime(&_Str[0], _Str.size(), _Fmt, _Pt, _Tnames._Getptr()))) {
+            _Count = _Strftime(&_Str[0], _Str.size(), _Fmt, _Pt, _Tnames._Getptr());
+            if (0 < _Count) {
                 break;
+            } else if (_Errno_ref == EINVAL) {
+                _Iosbase.setstate(ios_base::badbit);
+                return _Dest;
             }
         }
 
@@ -842,7 +846,7 @@ protected:
         _Tnames = _Lobj._W_Gettnames();
     }
 
-    virtual _OutIt __CLR_OR_THIS_CALL do_put(_OutIt _Dest, ios_base&, _Elem, const tm* _Pt, char _Specifier,
+    virtual _OutIt __CLR_OR_THIS_CALL do_put(_OutIt _Dest, ios_base& _Iosbase, _Elem, const tm* _Pt, char _Specifier,
         char _Modifier = '\0') const { // put formatted time from _Pt to _Dest for [_Fmtfirst, _Fmtlast)
         wchar_t _Fmt[5] = L"!%x\0"; // ! for nonzero count, null for modifier
         size_t _Count;
@@ -856,10 +860,16 @@ protected:
             _Fmt[3] = static_cast<_Elem>(_Specifier);
         }
 
+        const int& _Errno_ref = errno; // Nonzero cost, pay it once
+
         for (_Num = 16;; _Num *= 2) { // convert into ever larger string buffer until success
             _Str.append(_Num, '\0');
-            if (0 < (_Count = _Wcsftime(&_Str[0], _Str.size(), _Fmt, _Pt, _Tnames._Getptr()))) {
+            _Count = _Wcsftime(&_Str[0], _Str.size(), _Fmt, _Pt, _Tnames._Getptr());
+            if (0 < _Count) {
                 break;
+            } else if (_Errno_ref == EINVAL) {
+                _Iosbase.setstate(ios_base::badbit);
+                return _Dest;
             }
         }
         return _STD copy(&_Str[1], &_Str[_Count], _Dest);
@@ -967,7 +977,7 @@ protected:
         _Tnames = _Lobj._W_Gettnames();
     }
 
-    virtual _OutIt __CLR_OR_THIS_CALL do_put(_OutIt _Dest, ios_base&, _Elem, const tm* _Pt, char _Specifier,
+    virtual _OutIt __CLR_OR_THIS_CALL do_put(_OutIt _Dest, ios_base& _Iosbase, _Elem, const tm* _Pt, char _Specifier,
         char _Modifier = '\0') const { // put formatted time from _Pt to _Dest for [_Fmtfirst, _Fmtlast)
         wchar_t _Fmt[5] = L"!%x\0"; // ! for nonzero count, null for modifier
         size_t _Count;
@@ -981,10 +991,16 @@ protected:
             _Fmt[3] = static_cast<_Elem>(_Specifier);
         }
 
+        const int& _Errno_ref = errno; // Nonzero cost, pay it once
+
         for (_Num = 16;; _Num *= 2) { // convert into ever larger string buffer until success
             _Str.append(_Num, '\0');
-            if (0 < (_Count = _Wcsftime(&_Str[0], _Str.size(), _Fmt, _Pt, _Tnames._Getptr()))) {
+            _Count = _Wcsftime(&_Str[0], _Str.size(), _Fmt, _Pt, _Tnames._Getptr());
+            if (0 < _Count) {
                 break;
+            } else if (_Errno_ref == EINVAL) {
+                _Iosbase.setstate(ios_base::badbit);
+                return _Dest;
             }
         }
 

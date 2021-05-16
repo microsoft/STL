@@ -20,39 +20,6 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 // CLASS TEMPLATE stack
 template <class _Ty, class _Container = deque<_Ty>>
-class stack;
-
-template <class _Ty, class _Container>
-_NODISCARD bool operator==(const stack<_Ty, _Container>& _Left, const stack<_Ty, _Container>& _Right) {
-    return _Left.c == _Right.c;
-}
-
-template <class _Ty, class _Container>
-_NODISCARD bool operator!=(const stack<_Ty, _Container>& _Left, const stack<_Ty, _Container>& _Right) {
-    return _Left.c != _Right.c;
-}
-
-template <class _Ty, class _Container>
-_NODISCARD bool operator<(const stack<_Ty, _Container>& _Left, const stack<_Ty, _Container>& _Right) {
-    return _Left.c < _Right.c;
-}
-
-template <class _Ty, class _Container>
-_NODISCARD bool operator>(const stack<_Ty, _Container>& _Left, const stack<_Ty, _Container>& _Right) {
-    return _Left.c > _Right.c;
-}
-
-template <class _Ty, class _Container>
-_NODISCARD bool operator<=(const stack<_Ty, _Container>& _Left, const stack<_Ty, _Container>& _Right) {
-    return _Left.c <= _Right.c;
-}
-
-template <class _Ty, class _Container>
-_NODISCARD bool operator>=(const stack<_Ty, _Container>& _Left, const stack<_Ty, _Container>& _Right) {
-    return _Left.c >= _Right.c;
-}
-
-template <class _Ty, class _Container>
 class stack {
 public:
     using value_type      = typename _Container::value_type;
@@ -131,14 +98,9 @@ public:
         _Swap_adl(c, _Right.c);
     }
 
-    // clang-format off
-    friend bool operator== <>(const stack&, const stack&);
-    friend bool operator!= <>(const stack&, const stack&);
-    friend bool operator<  <>(const stack&, const stack&);
-    friend bool operator>  <>(const stack&, const stack&);
-    friend bool operator<= <>(const stack&, const stack&);
-    friend bool operator>= <>(const stack&, const stack&);
-    // clang-format on
+    _NODISCARD const _Container& _Get_container() const noexcept { // TRANSITION, VSO-1307828
+        return c;
+    }
 
 protected:
     _Container c{};
@@ -154,6 +116,44 @@ template <class _Container, class _Alloc,
         int> = 0>
 stack(_Container, _Alloc) -> stack<typename _Container::value_type, _Container>;
 #endif // _HAS_CXX17
+
+template <class _Ty, class _Container>
+_NODISCARD bool operator==(const stack<_Ty, _Container>& _Left, const stack<_Ty, _Container>& _Right) {
+    return _Left._Get_container() == _Right._Get_container();
+}
+
+template <class _Ty, class _Container>
+_NODISCARD bool operator!=(const stack<_Ty, _Container>& _Left, const stack<_Ty, _Container>& _Right) {
+    return _Left._Get_container() != _Right._Get_container();
+}
+
+template <class _Ty, class _Container>
+_NODISCARD bool operator<(const stack<_Ty, _Container>& _Left, const stack<_Ty, _Container>& _Right) {
+    return _Left._Get_container() < _Right._Get_container();
+}
+
+template <class _Ty, class _Container>
+_NODISCARD bool operator>(const stack<_Ty, _Container>& _Left, const stack<_Ty, _Container>& _Right) {
+    return _Left._Get_container() > _Right._Get_container();
+}
+
+template <class _Ty, class _Container>
+_NODISCARD bool operator<=(const stack<_Ty, _Container>& _Left, const stack<_Ty, _Container>& _Right) {
+    return _Left._Get_container() <= _Right._Get_container();
+}
+
+template <class _Ty, class _Container>
+_NODISCARD bool operator>=(const stack<_Ty, _Container>& _Left, const stack<_Ty, _Container>& _Right) {
+    return _Left._Get_container() >= _Right._Get_container();
+}
+
+#ifdef __cpp_lib_concepts
+template <class _Ty, three_way_comparable _Container>
+_NODISCARD compare_three_way_result_t<_Container> operator<=>(
+    const stack<_Ty, _Container>& _Left, const stack<_Ty, _Container>& _Right) {
+    return _Left._Get_container() <=> _Right._Get_container();
+}
+#endif // __cpp_lib_concepts
 
 template <class _Ty, class _Container, enable_if_t<_Is_swappable<_Container>::value, int> = 0>
 void swap(stack<_Ty, _Container>& _Left, stack<_Ty, _Container>& _Right) noexcept(noexcept(_Left.swap(_Right))) {

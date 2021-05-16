@@ -230,7 +230,16 @@ public:
 
     template <class _Ty, class... _Types>
     void construct(_Ty* _Ptr, _Types&&... _Args) { // construct with varying allocator styles
+#if _HAS_CXX20
+        _STD apply(
+            [_Ptr, this](auto&&... _New_args) {
+                _Scoped_outermost_traits<scoped_allocator_adaptor>::construct(
+                    _Scoped_outermost(*this), _Ptr, _STD forward<decltype(_New_args)>(_New_args)...);
+            },
+            _STD uses_allocator_construction_args<_Ty>(inner_allocator(), _STD forward<_Types>(_Args)...));
+#else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
         _Uses_allocator_construct(_Ptr, _Scoped_outermost(*this), inner_allocator(), _STD forward<_Types>(_Args)...);
+#endif // ^^^ !_HAS_CXX20 ^^^
     }
 
     template <class _Ty>
@@ -248,23 +257,23 @@ scoped_allocator_adaptor(_Outer, _Inner...) -> scoped_allocator_adaptor<_Outer, 
 
 template <class _Outer1, class _Outer2, class _Inner1, class... _Inner>
 _NODISCARD bool operator==(const scoped_allocator_adaptor<_Outer1, _Inner1, _Inner...>& _Left,
-    const scoped_allocator_adaptor<_Outer2, _Inner1, _Inner...>&
-        _Right) noexcept { // compare scoped_allocator_adaptors for equality
+    const scoped_allocator_adaptor<_Outer2, _Inner1, _Inner...>& _Right) noexcept {
     return _Left.outer_allocator() == _Right.outer_allocator() && _Left.inner_allocator() == _Right.inner_allocator();
 }
 
 template <class _Outer1, class _Outer2>
-_NODISCARD bool operator==(const scoped_allocator_adaptor<_Outer1>& _Left,
-    const scoped_allocator_adaptor<_Outer2>& _Right) noexcept { // compare scoped_allocator_adaptors for equality
+_NODISCARD bool operator==(
+    const scoped_allocator_adaptor<_Outer1>& _Left, const scoped_allocator_adaptor<_Outer2>& _Right) noexcept {
     return _Left.outer_allocator() == _Right.outer_allocator();
 }
 
+#if !_HAS_CXX20
 template <class _Outer1, class _Outer2, class... _Inner>
 _NODISCARD bool operator!=(const scoped_allocator_adaptor<_Outer1, _Inner...>& _Left,
-    const scoped_allocator_adaptor<_Outer2, _Inner...>&
-        _Right) noexcept { // compare scoped_allocator_adaptors for equality
+    const scoped_allocator_adaptor<_Outer2, _Inner...>& _Right) noexcept {
     return !(_Left == _Right);
 }
+#endif // !_HAS_CXX20
 
 _STD_END
 #pragma pop_macro("new")

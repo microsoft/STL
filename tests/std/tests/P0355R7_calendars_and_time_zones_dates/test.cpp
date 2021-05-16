@@ -967,6 +967,7 @@ constexpr void year_month_day_last_test() {
     if (is_constant_evaluated()) {
         static_assert((2020y / 1 / last).ok());
         static_assert(!(2020y / 13 / last).ok());
+        static_assert(!(2020y / 0 / last).day().ok()); // implementation-specific assumption, see GH-1647
     } else {
         for (int iy = y_min; iy <= y_max; ++iy) {
             for (auto m = 0u; m <= 255u; ++m) {
@@ -976,6 +977,7 @@ constexpr void year_month_day_last_test() {
                     assert((y / mdl).ok());
                 } else {
                     assert(!(y / mdl).ok());
+                    assert((y / mdl).day().ok() || (y / mdl).day() == day{255}); // implementation-specific assumption
                 }
             }
         }
