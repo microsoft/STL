@@ -513,14 +513,14 @@ void test_layout_paranoia() {
         }                                           \
     }
 
-#else
+#else // _KERNEL_MODE
 void assert_bitwise_identical(const char* const msg, const double lhs, const double rhs) {
     if (memcmp(&lhs, &rhs, sizeof(lhs)) != 0) {
         printf("counterexample found in %s: %a and %a\n", msg, lhs, rhs);
         abort();
     }
 }
-#endif
+#endif // _KERNEL_MODE
 
 void test_double_identical_results() {
 #if _HAS_CXX20

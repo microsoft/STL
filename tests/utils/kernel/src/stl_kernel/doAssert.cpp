@@ -7,7 +7,7 @@
 
 KGUARDED_MUTEX g_assert_mutex;
 extern "C" {
-long* g_test_failures;
+int* g_test_failures;
 char* g_output_buffer;
 size_t g_space_available;
 }

@@ -11,8 +11,9 @@
 
 #define IOCTL_SIOCTL_METHOD_RUN_TEST CTL_CODE(40000, 0x800, METHOD_BUFFERED, FILE_ANY_ACCESS)
 
-typedef struct TestResults {
+struct TestResults {
     int main_return;
-    long tests_failed;
+    int tests_failed;
+    // arbitrary buffer size, chosen to make the structure a "round" 4K
     char output[4088];
-} TestResults;
+};

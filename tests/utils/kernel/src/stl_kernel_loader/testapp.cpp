@@ -13,7 +13,7 @@
 struct DeviceOpener {
     HANDLE h = INVALID_HANDLE_VALUE;
     explicit DeviceOpener(const char* driverName) {
-        std::string dosName = "\\\\.\\";
+        std::string dosName = R"(\\.\)";
         dosName += driverName;
         h = CreateFile(
             dosName.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
@@ -43,8 +43,8 @@ bool do_test(const char* path) {
     char InputBuffer[1];
     TestResults OutputBuffer;
 
-    auto success = DeviceIoControl(dev.h, (DWORD) IOCTL_SIOCTL_METHOD_RUN_TEST, &InputBuffer, sizeof(InputBuffer),
-        &OutputBuffer, sizeof(OutputBuffer), &bytesReturned, nullptr);
+    auto success = DeviceIoControl(dev.h, static_cast<DWORD>(IOCTL_SIOCTL_METHOD_RUN_TEST), &InputBuffer,
+        sizeof(InputBuffer), &OutputBuffer, sizeof(OutputBuffer), &bytesReturned, nullptr);
 
     if (!success) {
         throw_get_last_error(__FUNCTION__);
@@ -60,7 +60,7 @@ bool do_test(const char* path) {
 
 int __cdecl main(int argc, char* argv[]) {
     if (argc < 2) {
-        printf("Usage: %s <some\\path\\foo.sys>\n", argv[0]);
+        printf("Usage: %s <some\\path\\test_binary.sys>\n", argv[0]);
         return 2;
     }
     try {
