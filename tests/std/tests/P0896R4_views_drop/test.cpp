@@ -81,7 +81,7 @@ concept CanViewDrop = requires(Rng&& r) {
 template <ranges::input_range Rng, ranges::random_access_range Expected>
 constexpr bool test_one(Rng&& rng, Expected&& expected) {
     using ranges::drop_view, ranges::common_range, ranges::enable_borrowed_range, ranges::iterator_t, ranges::prev,
-        ranges::range, ranges::sentinel_t, ranges::sized_range;
+        ranges::range, ranges::sentinel_t, ranges::sized_range, ranges::borrowed_range;
     using ranges::input_range, ranges::forward_range, ranges::bidirectional_range, ranges::random_access_range,
         ranges::contiguous_range;
 
@@ -209,6 +209,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     STATIC_ASSERT(bidirectional_range<R> == bidirectional_range<Rng>);
     STATIC_ASSERT(random_access_range<R> == random_access_range<Rng>);
     STATIC_ASSERT(contiguous_range<R> == contiguous_range<Rng>);
+    STATIC_ASSERT(borrowed_range<R> == borrowed_range<V>);
 
     // Validate drop_view::size
     STATIC_ASSERT(CanMemberSize<R> == CanSize<Rng>);
@@ -512,4 +513,17 @@ int main() {
 
     STATIC_ASSERT((instantiation_test(), true));
     instantiation_test();
+
+    {
+        // Validate a non-view borrowed range
+        constexpr span s{some_ints};
+        STATIC_ASSERT(test_one(s, only_four_ints));
+        test_one(s, only_four_ints);
+
+        // Validate a view borrowed range
+        constexpr auto v =
+            views::iota(0ull, ranges::size(some_ints)) | views::transform([](auto i) { return some_ints[i]; });
+        STATIC_ASSERT(test_one(v, only_four_ints));
+        test_one(v, only_four_ints);
+    }
 }
