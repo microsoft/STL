@@ -622,6 +622,16 @@ std/utilities/allocator.adaptor/allocator.adaptor.members/construct_pair_rvalue.
 std/utilities/allocator.adaptor/allocator.adaptor.members/construct_pair_values.pass.cpp FAIL
 std/utilities/allocator.adaptor/allocator.adaptor.members/construct_type.pass.cpp FAIL
 
+# Tests ignore the return value of sto{meow}, triggering nodiscard warnings
+std/strings/string.conversions/stod.pass.cpp FAIL
+std/strings/string.conversions/stof.pass.cpp FAIL
+std/strings/string.conversions/stoi.pass.cpp FAIL
+std/strings/string.conversions/stol.pass.cpp FAIL
+std/strings/string.conversions/stold.pass.cpp FAIL
+std/strings/string.conversions/stoll.pass.cpp FAIL
+std/strings/string.conversions/stoul.pass.cpp FAIL
+std/strings/string.conversions/stoull.pass.cpp FAIL
+
 # Bogus test uses std::cout without including <iostream>.
 std/utilities/time/time.cal/time.cal.wdidx/time.cal.wdidx.nonmembers/streaming.pass.cpp FAIL
 
