@@ -5232,7 +5232,7 @@ namespace ranges {
                         return _RANGES next(_STD move(_First), _Last);
                     } else {
                         _STL_ASSERT(false, "Tried to find a value in a range with unreachable sentinel"
-                            " that is not within limits of range's value type");
+                            " that cannot be represented by the range's value type");
                     }
                 }
 

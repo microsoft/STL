@@ -1655,7 +1655,8 @@ namespace ranges {
             } else if constexpr (_Is_sized2) {
                 return _Copy_memcpy_distance(_IFirst, _OFirst, _OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
             } else {
-                _STL_ASSERT(false, "Tried to uninitialized move two ranges with unreachable sentinels");
+                _STL_ASSERT(false, "Tried to uninitialized_move two ranges with unreachable sentinels");
+
             }
         } else {
             _Uninitialized_backout _Backout{_STD move(_OFirst)};
