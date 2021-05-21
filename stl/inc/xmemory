@@ -1579,26 +1579,27 @@ namespace ranges {
     template <class _InIt, class _OutIt, typename _DistIt>
     in_out_result<_InIt, _OutIt> _Copy_memcpy_distance(
         _InIt _IFirst, _OutIt _OFirst, _DistIt _DFirst, _DistIt _DLast) noexcept {
-        const auto _IFirstPtr = _To_address(_IFirst);
-        const auto _OFirstPtr = _To_address(_OFirst);
-        const auto _DFirstPtr = _To_address(_DFirst);
-        const auto _DLastPtr  = _To_address(_DLast);
-        const auto _IFirst_ch = const_cast<char*>(reinterpret_cast<const volatile char*>(_IFirstPtr));
-        const auto _OFirst_ch = const_cast<char*>(reinterpret_cast<const volatile char*>(_OFirstPtr));
-        const auto _DFirst_ch = const_cast<char*>(reinterpret_cast<const volatile char*>(_DFirstPtr));
-        const auto _DLast_ch  = const_cast<char*>(reinterpret_cast<const volatile char*>(_DLastPtr));
-        const auto _Count     = static_cast<size_t>(_DLast_ch - _DFirst_ch);
-        _CSTD memcpy(_OFirst_ch, _IFirst_ch, _Count);
+        // equivalent to _Copy_memcpy_count(_IFirst, _OFirst, _DLast - _DFirst) but computes distance more efficiently
+        const auto _IFirstPtr   = _To_address(_IFirst);
+        const auto _OFirstPtr   = _To_address(_OFirst);
+        const auto _DFirstPtr   = _To_address(_DFirst);
+        const auto _DLastPtr    = _To_address(_DLast);
+        const auto _IFirst_ch   = const_cast<char*>(reinterpret_cast<const volatile char*>(_IFirstPtr));
+        const auto _OFirst_ch   = const_cast<char*>(reinterpret_cast<const volatile char*>(_OFirstPtr));
+        const auto _DFirst_ch   = const_cast<char*>(reinterpret_cast<const volatile char*>(_DFirstPtr));
+        const auto _DLast_ch    = const_cast<char*>(reinterpret_cast<const volatile char*>(_DLastPtr));
+        const auto _Count_bytes = static_cast<size_t>(_DLast_ch - _DFirst_ch);
+        _CSTD memcpy(_OFirst_ch, _IFirst_ch, _Count_bytes);
         if constexpr (is_pointer_v<_InIt>) {
-            _IFirst = reinterpret_cast<_InIt>(_IFirst_ch + _Count);
+            _IFirst = reinterpret_cast<_InIt>(_IFirst_ch + _Count_bytes);
         } else {
-            _IFirst += _Count / sizeof(iter_value_t<_InIt>);
+            _IFirst += _Count_bytes / sizeof(iter_value_t<_InIt>);
         }
 
         if constexpr (is_pointer_v<_OutIt>) {
-            _OFirst = reinterpret_cast<_OutIt>(_OFirst_ch + _Count);
+            _OFirst = reinterpret_cast<_OutIt>(_OFirst_ch + _Count_bytes);
         } else {
-            _OFirst += _Count / sizeof(iter_value_t<_OutIt>);
+            _OFirst += _Count_bytes / sizeof(iter_value_t<_OutIt>);
         }
         return {_STD move(_IFirst), _STD move(_OFirst)};
     }
@@ -1606,26 +1607,26 @@ namespace ranges {
     template <class _InIt, class _OutIt>
     in_out_result<_InIt, _OutIt> _Copy_memcpy_common(
         _InIt _IFirst, _InIt _ILast, _OutIt _OFirst, _OutIt _OLast) noexcept {
-        const auto _IFirstPtr = _To_address(_IFirst);
-        const auto _ILastPtr  = _To_address(_ILast);
-        const auto _OFirstPtr = _To_address(_OFirst);
-        const auto _OLastPtr  = _To_address(_OLast);
-        const auto _IFirst_ch = const_cast<char*>(reinterpret_cast<const volatile char*>(_IFirstPtr));
-        const auto _ILast_ch  = const_cast<const char*>(reinterpret_cast<const volatile char*>(_ILastPtr));
-        const auto _OFirst_ch = const_cast<char*>(reinterpret_cast<const volatile char*>(_OFirstPtr));
-        const auto _OLast_ch  = const_cast<const char*>(reinterpret_cast<const volatile char*>(_OLastPtr));
-        const auto _Count     = static_cast<size_t>((_STD min)(_ILast_ch - _IFirst_ch, _OLast_ch - _OFirst_ch));
-        _CSTD memcpy(_OFirst_ch, _IFirst_ch, _Count);
+        const auto _IFirstPtr   = _To_address(_IFirst);
+        const auto _ILastPtr    = _To_address(_ILast);
+        const auto _OFirstPtr   = _To_address(_OFirst);
+        const auto _OLastPtr    = _To_address(_OLast);
+        const auto _IFirst_ch   = const_cast<char*>(reinterpret_cast<const volatile char*>(_IFirstPtr));
+        const auto _ILast_ch    = const_cast<const char*>(reinterpret_cast<const volatile char*>(_ILastPtr));
+        const auto _OFirst_ch   = const_cast<char*>(reinterpret_cast<const volatile char*>(_OFirstPtr));
+        const auto _OLast_ch    = const_cast<const char*>(reinterpret_cast<const volatile char*>(_OLastPtr));
+        const auto _Count_bytes = static_cast<size_t>((_STD min)(_ILast_ch - _IFirst_ch, _OLast_ch - _OFirst_ch));
+        _CSTD memcpy(_OFirst_ch, _IFirst_ch, _Count_bytes);
         if constexpr (is_pointer_v<_InIt>) {
-            _IFirst = reinterpret_cast<_InIt>(_IFirst_ch + _Count);
+            _IFirst = reinterpret_cast<_InIt>(_IFirst_ch + _Count_bytes);
         } else {
-            _IFirst += _Count / sizeof(iter_value_t<_InIt>);
+            _IFirst += _Count_bytes / sizeof(iter_value_t<_InIt>);
         }
 
         if constexpr (is_pointer_v<_OutIt>) {
-            _OFirst = reinterpret_cast<_OutIt>(_OFirst_ch + _Count);
+            _OFirst = reinterpret_cast<_OutIt>(_OFirst_ch + _Count_bytes);
         } else {
-            _OFirst += _Count / sizeof(iter_value_t<_OutIt>);
+            _OFirst += _Count_bytes / sizeof(iter_value_t<_OutIt>);
         }
         return {_STD move(_IFirst), _STD move(_OFirst)};
     }
@@ -1656,7 +1657,6 @@ namespace ranges {
                 return _Copy_memcpy_distance(_IFirst, _OFirst, _OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
             } else {
                 _STL_ASSERT(false, "Tried to uninitialized_move two ranges with unreachable sentinels");
-
             }
         } else {
             _Uninitialized_backout _Backout{_STD move(_OFirst)};

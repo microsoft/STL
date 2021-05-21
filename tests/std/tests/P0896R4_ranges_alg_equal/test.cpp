@@ -72,7 +72,7 @@ constexpr void smoke_test() {
         assert(!equal(arr1, arr2));
     }
     {
-        // Validate memcmp + unreachable_sentinel cases
+        // Validate unreachable_sentinel cases
         int arr1[3]{0, 2, 5};
         int arr2[3]{0, 2, 5};
         assert(!equal(begin(arr1), unreachable_sentinel, begin(arr2), end(arr2)));

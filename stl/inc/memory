@@ -92,7 +92,6 @@ namespace ranges {
                     return _Copy_memcpy_distance(_IFirst, _OFirst, _OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
                 } else {
                     _STL_ASSERT(false, "Tried to uninitialized_copy two ranges with unreachable sentinels");
-
                 }
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
@@ -307,7 +306,8 @@ namespace ranges {
             const auto _OLast = _Get_unwrapped(_STD move(_Last2));
             if constexpr (_Ptr_move_cat<_It, _Out>::_Really_trivial && _Sized_or_unreachable_sentinel_for<_OSe, _Out>) {
                 if constexpr (sized_sentinel_for<_OSe, _Out>) {
-                    auto _UResult = _Copy_memcpy_common(_IFirst, _IFirst + _Count, _OFirst, _OLast);
+                    auto _UResult = _Copy_memcpy_common(
+                        _IFirst, _IFirst + _Count, _OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
                     _IFirst       = _UResult.in;
                     _OFirst       = _UResult.out;
                 } else {
