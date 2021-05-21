@@ -1557,7 +1557,7 @@ namespace ranges {
 
     template <class _InIt, class _OutIt, typename _DistIt>
     in_out_result<_InIt, _OutIt> _Copy_memcpy_distance(
-        _InIt _IFirst, _OutIt _OFirst, _DistIt _DFirst, _DistIt _DLast) noexcept {
+        _InIt _IFirst, _OutIt _OFirst, const _DistIt _DFirst, const _DistIt _DLast) noexcept {
         // equivalent to _Copy_memcpy_count(_IFirst, _OFirst, _DLast - _DFirst) but computes distance more efficiently
         const auto _IFirstPtr   = _To_address(_IFirst);
         const auto _OFirstPtr   = _To_address(_OFirst);
