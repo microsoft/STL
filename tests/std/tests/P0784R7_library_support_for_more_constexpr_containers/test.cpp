@@ -91,10 +91,8 @@ static_assert(can_construct_at<const volatile int, int&>);
 
 struct X {};
 
-#ifndef __EDG__ // TRANSITION, VSO-1075296
 static_assert(!can_construct_at<int, X>);
 static_assert(!can_construct_at<X, int>);
-#endif // __EDG__
 
 // note that indestructible isn't constructible but is construct_at-ible:
 struct indestructible {
@@ -124,12 +122,10 @@ static_assert(!can_construct_at<string, X>);
 
 // The following static_asserts test our strengthening of noexcept
 
-#ifndef __EDG__ // TRANSITION, VSO-1075296
 static_assert(construct_at_noexcept<int, int>());
 static_assert(construct_at_noexcept<const int, int>());
 static_assert(construct_at_noexcept<volatile int, int>());
 static_assert(construct_at_noexcept<const volatile int, int>());
-#endif // __EDG__
 
 static_assert(!construct_at_noexcept<string, const char (&)[6]>());
 static_assert(!construct_at_noexcept<const string, const char (&)[6]>());
@@ -227,7 +223,6 @@ void test_array(const T& val) {
 }
 
 #ifdef __cpp_lib_constexpr_dynamic_alloc
-#ifndef __EDG__ // TRANSITION, VSO-1269976
 template <class T>
 struct storage_for {
     union {
@@ -273,7 +268,6 @@ constexpr void test_compiletime() {
     }
 }
 static_assert((test_compiletime(), true));
-#endif // __EDG__
 
 template <class T>
 struct A {
@@ -292,7 +286,7 @@ struct nontrivial_A {
 };
 
 constexpr void test_compiletime_destroy_variants() {
-#ifndef __EDG__ // TRANSITION, VSO-1270011
+#ifndef __EDG__ // TRANSITION, VSO-1327238
     {
         allocator<A<int>> alloc{};
         A<int>* a = alloc.allocate(10);
@@ -393,7 +387,6 @@ constexpr void test_compiletime_destroy_variants() {
 }
 static_assert((test_compiletime_destroy_variants(), true));
 
-#ifndef __EDG__ // TRANSITION, VSO-1269976
 template <class T, bool Construct = false, bool Destroy = false>
 struct Alloc {
     using value_type = T;
@@ -507,7 +500,6 @@ constexpr void test_compiletime_allocator_traits() {
     }
 }
 static_assert((test_compiletime_allocator_traits(), true));
-#endif // __EDG__
 
 constexpr void test_compiletime_allocator() {
     {
