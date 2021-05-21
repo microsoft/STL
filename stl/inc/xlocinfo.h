@@ -9,6 +9,7 @@
 #include <yvals.h>
 #if _STL_COMPILER_PREPROCESSOR
 
+#include <__msvc_xlocinfo_types.hpp>
 #include <cctype>
 #include <clocale>
 #include <cstdio> // TRANSITION, VSO-661721
@@ -42,25 +43,6 @@ _EXTERN_C_UNLESS_PURE
 #define _M_TIME     _CATMASK(_X_TIME)
 #define _M_MESSAGES _CATMASK(_X_MESSAGES)
 #define _M_ALL      (_CATMASK(_NCAT) - 1)
-
-struct _Collvec { // stuff needed by _Strcoll, etc.
-    unsigned int _Page; // UINT
-    wchar_t* _LocaleName;
-};
-
-struct _Ctypevec { // stuff needed by _Tolower, etc.
-    unsigned int _Page; // UINT
-    const short* _Table;
-    int _Delfl;
-    wchar_t* _LocaleName;
-};
-
-struct _Cvtvec { // stuff needed by _Mbrtowc, etc.
-    unsigned int _Page; // UINT
-    unsigned int _Mbcurmax;
-    int _Isclocale; // LCID == _CLOCALEHANDLE
-    unsigned char _Isleadbyte[32]; // 256 bits
-};
 
 // FUNCTION DECLARATIONS
 _CRTIMP2_PURE _Collvec __CLRCALL_PURE_OR_CDECL _Getcoll();
