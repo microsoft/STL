@@ -34,7 +34,7 @@ static file_type _Map_mode(int _Mode) { // map Windows file attributes to file_s
 }
 
 _FS_DLL void __CLRCALL_PURE_OR_CDECL _Close_dir(void* _Handle) { // close a directory
-    FindClose((HANDLE) _Handle);
+    FindClose(_Handle);
 }
 
 // DIRECTORY FUNCTIONS
@@ -62,7 +62,7 @@ _FS_DLL wchar_t* __CLRCALL_PURE_OR_CDECL _Read_dir(
     WIN32_FIND_DATAW _Dentry;
 
     for (;;) {
-        if (FindNextFileW((HANDLE) _Handle, &_Dentry) == 0) { // fail
+        if (FindNextFileW(_Handle, &_Dentry) == 0) { // fail
             _Ftype = file_type::unknown;
             return _Strcpy(_Dest, L"");
         }

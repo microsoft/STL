@@ -275,47 +275,6 @@ utilities\memory\default.allocator\allocator.members\allocate.verify.cpp
 
 
 # *** MISSING STL FEATURES ***
-# C++20 P0355R7 "<chrono> Calendars And Time Zones"
-utilities\time\time.cal\time.cal.day\time.cal.day.nonmembers\streaming.pass.cpp
-utilities\time\time.cal\time.cal.md\time.cal.md.nonmembers\streaming.pass.cpp
-utilities\time\time.cal\time.cal.mdlast\streaming.pass.cpp
-utilities\time\time.cal\time.cal.month\time.cal.month.nonmembers\streaming.pass.cpp
-utilities\time\time.cal\time.cal.mwd\time.cal.mwd.nonmembers\streaming.pass.cpp
-utilities\time\time.cal\time.cal.mwdlast\time.cal.mwdlast.nonmembers\streaming.pass.cpp
-utilities\time\time.cal\time.cal.wdidx\time.cal.wdidx.nonmembers\streaming.pass.cpp
-utilities\time\time.cal\time.cal.wdlast\time.cal.wdlast.nonmembers\streaming.pass.cpp
-utilities\time\time.cal\time.cal.weekday\time.cal.weekday.nonmembers\streaming.pass.cpp
-utilities\time\time.cal\time.cal.year\time.cal.year.nonmembers\streaming.pass.cpp
-utilities\time\time.cal\time.cal.ym\time.cal.ym.nonmembers\streaming.pass.cpp
-utilities\time\time.cal\time.cal.ymd\time.cal.ymd.nonmembers\streaming.pass.cpp
-utilities\time\time.cal\time.cal.ymdlast\time.cal.ymdlast.nonmembers\streaming.pass.cpp
-utilities\time\time.cal\time.cal.ymwd\time.cal.ymwd.nonmembers\streaming.pass.cpp
-utilities\time\time.cal\time.cal.ymwdlast\time.cal.ymwdlast.nonmembers\streaming.pass.cpp
-
-# C++20 P0466R5 "Layout-Compatibility And Pointer-Interconvertibility Traits"
-language.support\support.limits\support.limits.general\type_traits.version.pass.cpp
-
-# C++20 P0608R3 "Improving variant's Converting Constructor/Assignment"
-utilities\variant\variant.variant\variant.assign\conv.pass.cpp
-utilities\variant\variant.variant\variant.assign\T.pass.cpp
-utilities\variant\variant.variant\variant.ctor\conv.pass.cpp
-utilities\variant\variant.variant\variant.ctor\T.pass.cpp
-
-# C++20 P0645R10 "<format> Text Formatting"
-language.support\support.limits\support.limits.general\format.version.pass.cpp
-utilities\format\format.error\format.error.pass.cpp
-
-# C++20 P0784R7 "More constexpr containers"
-utilities\memory\allocator.traits\allocator.traits.members\construct.pass.cpp
-utilities\memory\allocator.traits\allocator.traits.members\destroy.pass.cpp
-utilities\memory\specialized.algorithms\specialized.construct\construct_at.pass.cpp
-
-# C++20 P0896R4 "<ranges>"
-language.support\support.limits\support.limits.general\algorithm.version.pass.cpp
-language.support\support.limits\support.limits.general\functional.version.pass.cpp
-language.support\support.limits\support.limits.general\iterator.version.pass.cpp
-language.support\support.limits\support.limits.general\memory.version.pass.cpp
-
 # C++23 P1048R1 "is_scoped_enum"
 utilities\meta\meta.unary\meta.unary.prop\is_scoped_enum.pass.cpp
 
@@ -472,9 +431,6 @@ numerics\c.math\cmath.pass.cpp
 
 # GH-1596: <algorithm>: unqualified calls to _Adl_verify_range incorrectly cause instantiation
 algorithms\robust_against_adl.pass.cpp
-
-# GH-1595: <bit>: bit_ceil(T(-1)) should not be a constant expression
-numerics\bit\bit.pow.two\bit_ceil.fail.cpp
 
 
 # *** CRT BUGS ***
@@ -665,6 +621,38 @@ utilities\allocator.adaptor\allocator.adaptor.members\construct_pair_piecewise.p
 utilities\allocator.adaptor\allocator.adaptor.members\construct_pair_rvalue.pass.cpp
 utilities\allocator.adaptor\allocator.adaptor.members\construct_pair_values.pass.cpp
 utilities\allocator.adaptor\allocator.adaptor.members\construct_type.pass.cpp
+
+# Tests ignore the return value of sto{meow}, triggering nodiscard warnings
+strings\string.conversions\stod.pass.cpp
+strings\string.conversions\stof.pass.cpp
+strings\string.conversions\stoi.pass.cpp
+strings\string.conversions\stol.pass.cpp
+strings\string.conversions\stold.pass.cpp
+strings\string.conversions\stoll.pass.cpp
+strings\string.conversions\stoul.pass.cpp
+strings\string.conversions\stoull.pass.cpp
+
+# Bogus test uses std::cout without including <iostream>.
+utilities\time\time.cal\time.cal.wdidx\time.cal.wdidx.nonmembers\streaming.pass.cpp
+
+# Bogus test constructs year_month_weekday from weekday, but the constructor actually takes weekday_indexed.
+utilities\time\time.cal\time.cal.ymwd\time.cal.ymwd.nonmembers\streaming.pass.cpp
+
+# We define __cpp_lib_has_unique_object_representations in C++17 mode; test error says it
+# "should not be defined when TEST_HAS_BUILTIN_IDENTIFIER(__has_unique_object_representations) || TEST_GCC_VER >= 700 is not defined!"
+language.support\support.limits\support.limits.general\type_traits.version.pass.cpp
+
+# Tests expect __cpp_lib_ranges to have the old value 201811L for P0896R4; we define the C++20 value 201911L for P1716R3.
+language.support\support.limits\support.limits.general\algorithm.version.pass.cpp
+language.support\support.limits\support.limits.general\functional.version.pass.cpp
+language.support\support.limits\support.limits.general\iterator.version.pass.cpp
+
+# Test expects __cpp_lib_chrono to have the old value 201611L for P0505R0; we define the C++20 value 201907L for P1466R3.
+language.support\support.limits\support.limits.general\chrono.version.pass.cpp
+
+# We unconditionally define __cpp_lib_addressof_constexpr; test error says it
+# "should not be defined when TEST_HAS_BUILTIN(__builtin_addressof) || TEST_GCC_VER >= 700 is not defined!"
+language.support\support.limits\support.limits.general\memory.version.pass.cpp
 
 
 # *** LIKELY STL BUGS ***
@@ -871,6 +859,19 @@ re\re.alg\re.alg.search\awk.locale.pass.cpp
 re\re.alg\re.alg.search\basic.locale.pass.cpp
 re\re.alg\re.alg.search\ecma.locale.pass.cpp
 re\re.alg\re.alg.search\extended.locale.pass.cpp
+
+# Not yet analyzed. Various static_asserts.
+utilities\variant\variant.variant\variant.assign\conv.pass.cpp
+utilities\variant\variant.variant\variant.assign\T.pass.cpp
+utilities\variant\variant.variant\variant.ctor\conv.pass.cpp
+utilities\variant\variant.variant\variant.ctor\T.pass.cpp
+
+# Not yet analyzed. Involves incomplete types.
+utilities\memory\allocator.traits\allocator.traits.members\construct.pass.cpp
+utilities\memory\allocator.traits\allocator.traits.members\destroy.pass.cpp
+
+# Not yet analyzed. Error mentions allocator<const T>.
+utilities\memory\specialized.algorithms\specialized.construct\construct_at.pass.cpp
 
 
 # *** SKIPPED FOR MSVC-INTERNAL CONTEST ONLY ***

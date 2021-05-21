@@ -213,10 +213,10 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
 
         str ptr_size_constructed(get_literal_input<CharType>(), 2);
         assert(equalRanges(ptr_size_constructed, "He"sv));
-#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) // TRANSITION, VSO-1270433
+
         str iterator_constructed(literal_constructed.begin(), literal_constructed.end());
         assert(equalRanges(iterator_constructed, literal_constructed));
-#endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__)
+
         const string_view_convertible<CharType> convertible;
         str conversion_constructed(convertible);
         assert(equalRanges(conversion_constructed, literal_constructed));
@@ -261,10 +261,10 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
 
         str ptr_size_constructed(get_literal_input<CharType>(), 2, alloc);
         assert(equalRanges(ptr_size_constructed, "He"sv));
-#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) // TRANSITION, VSO-1270433
+
         str iterator_constructed(literal_constructed.begin(), literal_constructed.end(), alloc);
         assert(equalRanges(iterator_constructed, literal_constructed));
-#endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__)
+
         const string_view_convertible<CharType> convertible;
         str conversion_constructed(convertible, alloc);
         assert(equalRanges(conversion_constructed, literal_constructed));

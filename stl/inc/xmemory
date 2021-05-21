@@ -1481,27 +1481,6 @@ struct _NODISCARD _Uninitialized_backout {
     }
 };
 
-#ifdef __cpp_lib_concepts
-namespace ranges {
-    // STRUCT TEMPLATE in_out_result
-    template <class _In, class _Out>
-    struct in_out_result {
-        /* [[no_unique_address]] */ _In in;
-        /* [[no_unique_address]] */ _Out out;
-
-        template <_Convertible_from<const _In&> _IIn, _Convertible_from<const _Out&> _OOut>
-        constexpr operator in_out_result<_IIn, _OOut>() const& {
-            return {in, out};
-        }
-
-        template <_Convertible_from<_In> _IIn, _Convertible_from<_Out> _OOut>
-        constexpr operator in_out_result<_IIn, _OOut>() && {
-            return {_STD move(in), _STD move(out)};
-        }
-    };
-} // namespace ranges
-#endif // __cpp_lib_concepts
-
 // FUNCTION TEMPLATE _Uninitialized_move_unchecked
 template <class _InIt, class _NoThrowFwdIt>
 _CONSTEXPR20_DYNALLOC _NoThrowFwdIt _Uninitialized_move_unchecked(

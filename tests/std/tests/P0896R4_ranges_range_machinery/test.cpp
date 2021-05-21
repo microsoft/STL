@@ -1889,10 +1889,8 @@ namespace unwrapped_begin_end {
 
 int main() {
     // Validate conditional constexpr
-#ifdef __clang__ // TRANSITION, VSO-977008
     STATIC_ASSERT(test_array_ish<std::initializer_list<int>>());
     STATIC_ASSERT(test_array_ish<std::initializer_list<int const>>());
-#endif // TRANSITION, VSO-977008
     STATIC_ASSERT(test_array_ish<int[3]>());
     STATIC_ASSERT(test_array_ish<int const[3]>());
 
