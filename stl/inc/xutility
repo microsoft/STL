@@ -5361,15 +5361,15 @@ namespace ranges {
     _NODISCARD constexpr _It _Find_unchecked(_It _First, const _Se _Last, const _Ty& _Val, _Pj _Proj = {}) {
         // clang-format on
         constexpr bool _Is_sized = sized_sentinel_for<_Se, _It>;
-        if constexpr (_Memchr_in_find_is_safe<_It, _Ty> && _Sized_or_unreachable_sentinel_for<_Se, _It>
-                      && same_as<_Pj, identity>) {
+        if constexpr (_Memchr_in_find_is_safe<_It,
+                          _Ty> && _Sized_or_unreachable_sentinel_for<_Se, _It> && same_as<_Pj, identity>) {
             if (!_STD is_constant_evaluated()) {
                 if (!_Within_limits(_First, _Val)) {
                     if constexpr (_Is_sized) {
                         return _RANGES next(_STD move(_First), _Last);
                     } else {
                         _STL_ASSERT(false, "Tried to find a value in a range with unreachable sentinel"
-                            " that cannot be represented by the range's value type");
+                                           " that cannot be represented by the range's value type");
                     }
                 }
 
