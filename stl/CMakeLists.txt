@@ -221,7 +221,6 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/xlocale
     ${CMAKE_CURRENT_LIST_DIR}/inc/xlocbuf
     ${CMAKE_CURRENT_LIST_DIR}/inc/xlocinfo
-    ${CMAKE_CURRENT_LIST_DIR}/inc/xlocinfo.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xlocmes
     ${CMAKE_CURRENT_LIST_DIR}/inc/xlocmon
     ${CMAKE_CURRENT_LIST_DIR}/inc/xlocnum

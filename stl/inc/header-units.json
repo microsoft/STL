@@ -131,7 +131,6 @@
         "xlocale",
         "xlocbuf",
         "xlocinfo",
-        "xlocinfo.h",
         "xlocmes",
         "xlocmon",
         "xlocnum",
