@@ -140,7 +140,6 @@
 // P0325R4 to_array()
 // P0339R6 polymorphic_allocator<>
 // P0355R7 <chrono> Calendars And Time Zones
-//     (partially implemented)
 // P0356R5 bind_front()
 // P0357R3 Supporting Incomplete Types In reference_wrapper
 // P0408R7 Efficient Access To basic_stringbuf's Buffer
@@ -165,6 +164,7 @@
 // P0608R3 Improving variant's Converting Constructor/Assignment
 // P0616R0 Using move() In <numeric>
 // P0631R8 <numbers> Math Constants
+// P0645R10 <format> Text Formatting
 // P0646R1 list/forward_list remove()/remove_if()/unique() Return size_type
 // P0653R2 to_address()
 // P0655R1 visit<R>()
@@ -240,6 +240,7 @@
 // P1976R2 Explicit Constructors For Fixed-Extent span From Dynamic-Extent Ranges
 // P1983R0 Fixing Minor Ranges Issues
 // P1994R1 elements_view Needs Its Own sentinel
+// P2017R1 Conditionally Borrowed Ranges
 // P2091R0 Fixing Issues With Range Access CPOs
 // P2102R0 Making "Implicit Expression Variations" More Explicit
 // P2106R0 Range Algorithm Result Types
@@ -503,25 +504,31 @@
 #define _STL_DISABLE_DEPRECATED_WARNING \
     _Pragma("clang diagnostic push")    \
     _Pragma("clang diagnostic ignored \"-Wdeprecated-declarations\"")
-#else // __clang__
+#elif defined(__EDG__) || defined(__CUDACC__) || defined(__INTEL_COMPILER) // TRANSITION, VSO-1329304
 #define _STL_DISABLE_DEPRECATED_WARNING \
     __pragma(warning(push))             \
     __pragma(warning(disable : 4996)) // was declared deprecated
-#endif // __clang__
+#else // vvv MSVC vvv
+#define _STL_DISABLE_DEPRECATED_WARNING \
+    _Pragma("warning(push)")            \
+    _Pragma("warning(disable : 4996)") // was declared deprecated
+#endif // ^^^ MSVC ^^^
 #endif // _STL_DISABLE_DEPRECATED_WARNING
 // clang-format on
 
 #ifndef _STL_RESTORE_DEPRECATED_WARNING
 #ifdef __clang__
 #define _STL_RESTORE_DEPRECATED_WARNING _Pragma("clang diagnostic pop")
-#else // __clang__
+#elif defined(__EDG__) || defined(__CUDACC__) || defined(__INTEL_COMPILER) // TRANSITION, VSO-1329304
 #define _STL_RESTORE_DEPRECATED_WARNING __pragma(warning(pop))
-#endif // __clang__
+#else // vvv MSVC vvv
+#define _STL_RESTORE_DEPRECATED_WARNING _Pragma("warning(pop)")
+#endif // ^^^ MSVC ^^^
 #endif // _STL_RESTORE_DEPRECATED_WARNING
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 142
-#define _MSVC_STL_UPDATE  202104L
+#define _MSVC_STL_UPDATE  202105L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #ifdef __CUDACC__
@@ -1171,12 +1178,6 @@
 #define __cpp_lib_variant               201606L
 #endif // _HAS_CXX17
 
-#if _HAS_CXX17
-#define __cpp_lib_chrono 201611L // P0505R0 constexpr For <chrono> (Again)
-#else // _HAS_CXX17
-#define __cpp_lib_chrono 201510L // P0092R1 <chrono> floor(), ceil(), round(), abs()
-#endif // _HAS_CXX17
-
 // C++20
 #define __cpp_lib_atomic_value_initialization 201911L
 
@@ -1226,9 +1227,14 @@
 #define __cpp_lib_constexpr_vector 201907L
 #endif // defined(__cpp_constexpr_dynamic_alloc) && !defined(__clang__)
 
-#define __cpp_lib_destroying_delete            201806L
-#define __cpp_lib_endian                       201907L
-#define __cpp_lib_erase_if                     202002L
+#define __cpp_lib_destroying_delete 201806L
+#define __cpp_lib_endian            201907L
+#define __cpp_lib_erase_if          202002L
+
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#define __cpp_lib_format 201907L
+#endif // __cpp_lib_concepts
+
 #define __cpp_lib_generic_unordered_lookup     201811L
 #define __cpp_lib_int_pow2                     202002L
 #define __cpp_lib_integer_comparison_functions 202002L
@@ -1295,6 +1301,14 @@
 #define __cpp_lib_array_constexpr 201811L // P1032R1 Miscellaneous constexpr
 #elif _HAS_CXX17 // ^^^ _HAS_CXX20 / _HAS_CXX17 vvv
 #define __cpp_lib_array_constexpr 201803L
+#endif // _HAS_CXX17
+
+#if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#define __cpp_lib_chrono 201907L // P1466R3 Miscellaneous Minor Fixes For <chrono>
+#elif _HAS_CXX17
+#define __cpp_lib_chrono 201611L // P0505R0 constexpr For <chrono> (Again)
+#else // _HAS_CXX17
+#define __cpp_lib_chrono 201510L // P0092R1 <chrono> floor(), ceil(), round(), abs()
 #endif // _HAS_CXX17
 
 #if _HAS_CXX20

@@ -179,7 +179,8 @@ template <>
 inline constexpr bool has_synth_ordered<SynthOrdered> = true;
 
 template <class Container>
-void ordered_containers_test(const Container& smaller, const Container& smaller_equal, const Container& larger) {
+constexpr void ordered_containers_test(
+    const Container& smaller, const Container& smaller_equal, const Container& larger) {
     using Elem = typename Container::value_type;
 
     if constexpr (has_synth_ordered<Elem>) {
@@ -197,7 +198,7 @@ void unordered_containers_test(
 }
 
 template <class Iter, class ConstIter>
-void ordered_iterator_test(const Iter& smaller, const Iter& smaller_equal, const Iter& larger,
+constexpr void ordered_iterator_test(const Iter& smaller, const Iter& smaller_equal, const Iter& larger,
     const ConstIter& const_smaller, const ConstIter& const_smaller_equal, const ConstIter& const_larger) {
     spaceship_test<std::strong_ordering>(smaller, smaller_equal, larger);
     spaceship_test<std::strong_ordering>(const_smaller, const_smaller_equal, const_larger);
@@ -356,6 +357,31 @@ bool operator==(const basic_compare_allocator<T, Ignored>&, const basic_compare_
 template <bool Equal>
 using compare_allocator = basic_compare_allocator<int, Equal>;
 
+_CONSTEXPR20_CONTAINER bool test_vector() {
+    { // vector
+        std::vector<int> a1(3, 100);
+        std::vector<int> a2(3, 100);
+        std::vector<int> b1(2, 200);
+        ordered_containers_test(a1, a2, b1);
+        ordered_iterator_test(a1.begin(), a1.begin(), a1.end(), a1.cbegin(), a1.cbegin(), a1.cend());
+    }
+    { // vector SynthOrdered
+        std::vector<SynthOrdered> a = {10, 20, 30};
+        std::vector<SynthOrdered> b = {10, 20, 40};
+        ordered_containers_test(a, a, b);
+        ordered_iterator_test(a.begin(), a.begin(), a.end(), a.cbegin(), a.cbegin(), a.cend());
+    }
+    { // vector<bool>
+        std::vector<bool> c1 = {false, true, false};
+        std::vector<bool> c2 = {false, true, false};
+        std::vector<bool> d1 = {true, false};
+        ordered_containers_test(c1, c2, d1);
+        ordered_iterator_test(c1.begin(), c1.begin(), c1.end(), c1.cbegin(), c1.cbegin(), c1.cend());
+    }
+
+    return true;
+}
+
 void ordering_test_cases() {
     { // constexpr array
         constexpr std::array<int, 5> a0{{2, 8, 9, 1, 9}};
@@ -414,25 +440,11 @@ void ordering_test_cases() {
         ordered_containers_test(a, a, b);
         unordered_iterator_test(a.begin(), a.begin(), a.end(), a.cbegin(), a.cbegin(), a.cend());
     }
-    { // vector
-        std::vector<int> a1(3, 100);
-        std::vector<int> a2(3, 100);
-        std::vector<int> b1(2, 200);
-        ordered_containers_test(a1, a2, b1);
-        ordered_iterator_test(a1.begin(), a1.begin(), a1.end(), a1.cbegin(), a1.cbegin(), a1.cend());
-    }
-    { // vector SynthOrdered
-        std::vector<SynthOrdered> a = {10, 20, 30};
-        std::vector<SynthOrdered> b = {10, 20, 40};
-        ordered_containers_test(a, a, b);
-        ordered_iterator_test(a.begin(), a.begin(), a.end(), a.cbegin(), a.cbegin(), a.cend());
-    }
-    { // vector<bool>
-        std::vector<bool> c1 = {false, true, false};
-        std::vector<bool> c2 = {false, true, false};
-        std::vector<bool> d1 = {true, false};
-        ordered_containers_test(c1, c2, d1);
-        ordered_iterator_test(c1.begin(), c1.begin(), c1.end(), c1.cbegin(), c1.cbegin(), c1.cend());
+    { // vector, vector SynthOrdered, vector<bool>
+        test_vector();
+#ifdef __cpp_lib_constexpr_vector
+        static_assert(test_vector());
+#endif // __cpp_lib_constexpr_vector
     }
     { // forward_list
         std::forward_list<int> a1(3, 100);

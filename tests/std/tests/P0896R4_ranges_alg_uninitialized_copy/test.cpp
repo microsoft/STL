@@ -1,11 +1,22 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <memory>
+
+// Regression test for GH-1830, in which ranges::uninitialized_copy used
+// _Rewrap_iterator which was defined in <algorithm> (now in <xutility>).
+
+void unused_function() {
+    const int src[] = {11, 22, 33, 44, 55};
+    int dst[5];
+
+    std::ranges::uninitialized_copy(src, dst);
+}
+
 #include <algorithm>
 #include <cassert>
 #include <concepts>
 #include <cstdlib>
-#include <memory>
 #include <ranges>
 #include <span>
 #include <utility>
