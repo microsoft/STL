@@ -1624,7 +1624,7 @@ namespace ranges {
         // clang-format on
         constexpr bool _Is_sized1 = sized_sentinel_for<_Se, _It>;
         constexpr bool _Is_sized2 = sized_sentinel_for<_OSe, _Out>;
-        if constexpr (_Ptr_move_cat<_It, _Out>::_Really_trivial && _Sized_or_unreachable_sentinel_for<_Se, _It>
+        if constexpr (_Ptr_move_cat<_It, _Out>::_Really_trivial && _Sized_or_unreachable_sentinel_for<_Se, _It> //
                       && _Sized_or_unreachable_sentinel_for<_OSe, _Out>) {
             if constexpr (_Is_sized1 && _Is_sized2) {
                 return _Copy_memcpy_common(_IFirst, _RANGES next(_IFirst, _STD move(_ILast)), _OFirst,
