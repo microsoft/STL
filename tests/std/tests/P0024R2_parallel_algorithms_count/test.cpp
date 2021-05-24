@@ -30,8 +30,13 @@ void test_case_count_parallel(const size_t testSize, mt19937& gen) {
     iota(iterators.begin(), iterators.end(), c.begin());
     shuffle(iterators.begin(), iterators.end(), gen);
 
+    auto remainingAttempts = quadradic_complexity_case_limit;
     ptrdiff_t consumed{};
     for (const auto& iter : iterators) {
+        if (--remainingAttempts == 0) {
+            return;
+        }
+
         *iter = '\x00';
         ++consumed;
         assert(count(par, c.begin(), c.end(), '\x00') == consumed);

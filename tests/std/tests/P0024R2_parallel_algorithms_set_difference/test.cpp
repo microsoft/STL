@@ -95,9 +95,14 @@ void test_case_set_difference_parallel(const size_t testSize) {
     assert(rb == compare_result);
 
     // === Overlapping but not equal lists, no direct containment ===
+    auto remainingAttempts    = quadradic_complexity_case_limit;
     auto overlappingListBegin = lb;
     auto overlappingListEnd   = overlappingListBegin + shortListSize;
     for (auto overlappingPoint = sb; overlappingPoint < se; ++overlappingPoint) {
+        if (--remainingAttempts == 0) {
+            break;
+        }
+
         compare_result = set_difference(par, sb, se, overlappingListBegin, overlappingListEnd, rb);
         assert(equal(rb, compare_result, sb, overlappingPoint));
         ++overlappingListBegin;
@@ -140,9 +145,14 @@ void test_case_set_difference_parallel(const size_t testSize) {
     assert(rb == compare_result);
 
     // === Overlapping but not equal lists, no direct containment ===
+    remainingAttempts    = quadradic_complexity_case_limit;
     overlappingListBegin = lb + oddLength;
     overlappingListEnd   = overlappingListBegin + shortListSize;
     for (int overlappingPoint = 0; overlappingPoint < shortListSize; ++overlappingPoint) {
+        if (--remainingAttempts == 0) {
+            break;
+        }
+
         compare_result = set_difference(par, sb, se, overlappingListBegin, overlappingListEnd, rb, greater());
         assert(equal(rb, compare_result, sb + overlappingPoint, se));
         ++overlappingListBegin;
