@@ -11,7 +11,7 @@ query prs_and_issues($want_prs: Boolean!, $pr_cursor: String, $want_issues: Bool
                 createdAt
                 closedAt
                 mergedAt
-                labels(first: 5) {
+                labels(first: 6) {
                     totalCount
                     nodes {
                         name
