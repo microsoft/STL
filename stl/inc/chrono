@@ -5223,7 +5223,6 @@ namespace chrono {
 #endif // _HAS_CXX20
 } // namespace chrono
 
-#if _HAS_CXX20
 #ifdef __cpp_lib_format
   // [time.format]
 
@@ -6522,7 +6521,6 @@ namespace chrono {
 } // namespace chrono
 
 #endif // __cpp_lib_format
-#endif // _HAS_CXX20
 
 // HELPERS
 template <class _Rep, class _Period>
