@@ -123,7 +123,7 @@ void test_case_is_partitioned_parallel(const size_t testSize) {
     auto second       = next(first, 2);
     for (; second != c.end(); ++first, ++second) {
         if (--remainingAttempts == 0) {
-            return;
+            break;
         }
 
         *first  = true;
