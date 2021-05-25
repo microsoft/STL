@@ -31,14 +31,13 @@ void test_case_is_partitioned_parallel(const size_t testSize) {
     auto remainingAttempts = quadratic_complexity_case_limit;
     auto first             = c.begin();
     for (size_t i = 0; i < testSize - 1; ++i, ++first) {
+        *first = false;
+        assert(!is_partitioned(par, c.begin(), c.end(), read_char_as_bool));
+        *first = true;
         if (--remainingAttempts == 0) {
             std::advance(first, static_cast<ptrdiff_t>(testSize - 1 - i));
             break;
         }
-
-        *first = false;
-        assert(!is_partitioned(par, c.begin(), c.end(), read_char_as_bool));
-        *first = true;
     }
 
     *first = false;
@@ -49,13 +48,12 @@ void test_case_is_partitioned_parallel(const size_t testSize) {
     remainingAttempts = quadratic_complexity_case_limit;
     first             = c.begin();
     for (size_t i = 0; i < testSize - 1; ++i, ++first) {
+        *first = false;
+        assert(!is_partitioned(par, c.begin(), c.end(), read_char_as_bool));
         if (--remainingAttempts == 0) {
             first = std::fill_n(first, static_cast<ptrdiff_t>(testSize - 1 - i), '\0');
             break;
         }
-
-        *first = false;
-        assert(!is_partitioned(par, c.begin(), c.end(), read_char_as_bool));
     }
     *first = false;
 
@@ -76,13 +74,12 @@ void test_case_is_partitioned_parallel(const size_t testSize) {
 
     remainingAttempts = quadratic_complexity_case_limit;
     for (size_t i = 1; i < testSize; ++i, ++first) {
-        if (--remainingAttempts == 0) {
-            break;
-        }
-
         *first = true;
         assert(!is_partitioned(par, c.begin(), c.end(), read_char_as_bool));
         *first = false;
+        if (--remainingAttempts == 0) {
+            break;
+        }
     }
 
     // front to back change F to T, end up with all T
@@ -90,13 +87,12 @@ void test_case_is_partitioned_parallel(const size_t testSize) {
     first             = c.begin();
     *first            = true;
     while (++first != c.end()) {
+        *first = true;
+        assert(is_partitioned(par, c.begin(), c.end(), read_char_as_bool));
         if (--remainingAttempts == 0) {
             std::fill(first, c.end(), '\x01');
             break;
         }
-
-        *first = true;
-        assert(is_partitioned(par, c.begin(), c.end(), read_char_as_bool));
     }
 
     // testing with 2 partition points (T F T ... T F T ... T), where the F at index 1 is fixed and the second F is
@@ -105,13 +101,12 @@ void test_case_is_partitioned_parallel(const size_t testSize) {
     first             = next(c.begin());
     *first            = false;
     while (++first != c.end()) {
-        if (--remainingAttempts == 0) {
-            break;
-        }
-
         *first = false;
         assert(!is_partitioned(par, c.begin(), c.end(), read_char_as_bool));
         *first = true;
+        if (--remainingAttempts == 0) {
+            break;
+        }
     }
 
     fill(c.begin(), c.end(), false);
@@ -122,14 +117,13 @@ void test_case_is_partitioned_parallel(const size_t testSize) {
     first             = c.begin();
     auto second       = next(first, 2);
     for (; second != c.end(); ++first, ++second) {
-        if (--remainingAttempts == 0) {
-            break;
-        }
-
         *first  = true;
         *second = true;
         assert(!is_partitioned(par, c.begin(), c.end(), read_char_as_bool));
         *second = false;
+        if (--remainingAttempts == 0) {
+            break;
+        }
     }
 }
 

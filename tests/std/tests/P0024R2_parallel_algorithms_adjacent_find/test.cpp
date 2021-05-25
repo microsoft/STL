@@ -36,14 +36,13 @@ void test_case_adjacent_find_parallel(const size_t testSize) {
     auto remaining_attempts = quadratic_complexity_case_limit;
     auto target             = tmp.begin();
     for (auto next = target; ++next != tmp.end(); target = next) {
-        if (--remaining_attempts == 0) {
-            return;
-        }
-
         auto old = *target;
         *target  = *next;
         assert(adjacent_find(par, tmp.begin(), tmp.end()) == target);
         *target = old;
+        if (--remaining_attempts == 0) {
+            return;
+        }
     }
 }
 

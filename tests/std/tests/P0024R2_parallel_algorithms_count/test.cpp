@@ -33,16 +33,15 @@ void test_case_count_parallel(const size_t testSize, mt19937& gen) {
     auto remainingAttempts = quadratic_complexity_case_limit;
     ptrdiff_t consumed{};
     for (const auto& iter : iterators) {
-        if (--remainingAttempts == 0) {
-            return;
-        }
-
         *iter = '\x00';
         ++consumed;
         assert(count(par, c.begin(), c.end(), '\x00') == consumed);
         assert(count(par, c.begin(), c.end(), '\x01') == static_cast<ptrdiff_t>(testSize) - consumed);
         assert(count_if(par, c.begin(), c.end(), is_zero) == consumed);
         assert(count_if(par, c.begin(), c.end(), is_one) == static_cast<ptrdiff_t>(testSize) - consumed);
+        if (--remainingAttempts == 0) {
+            return;
+        }
     }
 }
 

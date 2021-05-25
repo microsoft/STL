@@ -46,19 +46,19 @@ void test_case_is_sorted_parallel(const size_t testSize) {
     // (first index, last index)
     auto remainingAttempts = quadratic_complexity_case_limit;
     ++next;
-    for (size_t i = 0; i < testSize - 2; ++i) {
-        if (--remainingAttempts == 0) {
-            std::advance(next, static_cast<ptrdiff_t>(testSize - 2 - i));
-            break;
+    {
+        size_t i = 0;
+        for (; i < testSize - 2 && remainingAttempts != 0; ++i, --remainingAttempts) {
+            *next = 1;
+            assert(!is_sorted(par, c.begin(), c.end()));
+            assert(!is_sorted(par, c.begin(), c.end(), greater()));
+            assert(is_sorted_until(par, c.begin(), c.end()) == std::next(next));
+            assert(is_sorted_until(par, c.begin(), c.end(), greater()) == next);
+            *next = 0;
+            ++next;
         }
 
-        *next = 1;
-        assert(!is_sorted(par, c.begin(), c.end()));
-        assert(!is_sorted(par, c.begin(), c.end(), greater()));
-        assert(is_sorted_until(par, c.begin(), c.end()) == std::next(next));
-        assert(is_sorted_until(par, c.begin(), c.end(), greater()) == next);
-        *next = 0;
-        ++next;
+        std::advance(next, static_cast<ptrdiff_t>(testSize - 2 - i));
     }
 
     // last index:
@@ -90,10 +90,6 @@ void test_case_is_sorted_parallel(const size_t testSize) {
     const auto secondElement = std::next(c.begin());
     const auto thirdElement  = std::next(secondElement);
     for (auto first = secondElement; first != last; ++first) {
-        if (--remainingAttempts == 0) {
-            break;
-        }
-
         const auto old = *first;
         *first         = 0;
         assert(!is_sorted(par, c.begin(), c.end()));
@@ -106,6 +102,9 @@ void test_case_is_sorted_parallel(const size_t testSize) {
         }
         *first = old;
         ++i;
+        if (--remainingAttempts == 0) {
+            break;
+        }
     }
 
     // increasing list except for first element
