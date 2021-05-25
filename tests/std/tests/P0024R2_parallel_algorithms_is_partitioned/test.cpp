@@ -28,7 +28,7 @@ void test_case_is_partitioned_parallel(const size_t testSize) {
     }
 
     // T ... T F T ... T with F positioned at each index
-    auto remainingAttempts = quadradic_complexity_case_limit;
+    auto remainingAttempts = quadratic_complexity_case_limit;
     auto first             = c.begin();
     for (size_t i = 0; i < testSize - 1; ++i, ++first) {
         if (--remainingAttempts == 0) {
@@ -46,7 +46,7 @@ void test_case_is_partitioned_parallel(const size_t testSize) {
     *first = true;
 
     // front to back change T to F, end up with all F
-    remainingAttempts = quadradic_complexity_case_limit;
+    remainingAttempts = quadratic_complexity_case_limit;
     first             = c.begin();
     for (size_t i = 0; i < testSize - 1; ++i, ++first) {
         if (--remainingAttempts == 0) {
@@ -74,7 +74,7 @@ void test_case_is_partitioned_parallel(const size_t testSize) {
     *first = false;
     ++first;
 
-    remainingAttempts = quadradic_complexity_case_limit;
+    remainingAttempts = quadratic_complexity_case_limit;
     for (size_t i = 1; i < testSize; ++i, ++first) {
         if (--remainingAttempts == 0) {
             break;
@@ -86,7 +86,7 @@ void test_case_is_partitioned_parallel(const size_t testSize) {
     }
 
     // front to back change F to T, end up with all T
-    remainingAttempts = quadradic_complexity_case_limit;
+    remainingAttempts = quadratic_complexity_case_limit;
     first             = c.begin();
     *first            = true;
     while (++first != c.end()) {
@@ -101,7 +101,7 @@ void test_case_is_partitioned_parallel(const size_t testSize) {
 
     // testing with 2 partition points (T F T ... T F T ... T), where the F at index 1 is fixed and the second F is
     // tried at each index
-    remainingAttempts = quadradic_complexity_case_limit;
+    remainingAttempts = quadratic_complexity_case_limit;
     first             = next(c.begin());
     *first            = false;
     while (++first != c.end()) {
@@ -118,7 +118,7 @@ void test_case_is_partitioned_parallel(const size_t testSize) {
 
     // testing with 2 partition adjacent points (T...T F T F...F) where the adjacent partition points are tried at each
     // index
-    remainingAttempts = quadradic_complexity_case_limit;
+    remainingAttempts = quadratic_complexity_case_limit;
     first             = c.begin();
     auto second       = next(first, 2);
     for (; second != c.end(); ++first, ++second) {

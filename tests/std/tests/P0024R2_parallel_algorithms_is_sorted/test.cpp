@@ -44,7 +44,7 @@ void test_case_is_sorted_parallel(const size_t testSize) {
     *next = 0;
 
     // (first index, last index)
-    auto remainingAttempts = quadradic_complexity_case_limit;
+    auto remainingAttempts = quadratic_complexity_case_limit;
     ++next;
     for (size_t i = 0; i < testSize - 2; ++i) {
         if (--remainingAttempts == 0) {
@@ -85,7 +85,7 @@ void test_case_is_sorted_parallel(const size_t testSize) {
 
     // breaking the increasing list at each index [1, 2, ..., 0, ..., testSize-1, testSize]
     // Note that we skip the first case since [0, 2, ..., testSize-1, testSize] is still sorted
-    remainingAttempts        = quadradic_complexity_case_limit;
+    remainingAttempts        = quadratic_complexity_case_limit;
     int i                    = 1;
     const auto secondElement = std::next(c.begin());
     const auto thirdElement  = std::next(secondElement);

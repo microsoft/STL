@@ -79,7 +79,7 @@ void test_case_set_intersection_parallel(const size_t testSize) {
     assert(equal(rb, compare_result, sb, se));
 
     // === Overlapping but not equal lists, no direct containments ===
-    auto remainingAttempts    = quadradic_complexity_case_limit;
+    auto remainingAttempts    = quadratic_complexity_case_limit;
     auto overlappingListBegin = lb;
     auto overlappingListEnd   = overlappingListBegin + shortListSize;
     for (auto overlappingPoint = sb; overlappingPoint < se; ++overlappingPoint) {
@@ -122,7 +122,7 @@ void test_case_set_intersection_parallel(const size_t testSize) {
     compare_result = set_intersection(par, sb, se, sb, se, rb, greater());
     assert(equal(rb, compare_result, sb, se));
 
-    remainingAttempts    = quadradic_complexity_case_limit;
+    remainingAttempts    = quadratic_complexity_case_limit;
     overlappingListBegin = lb + oddLength;
     overlappingListEnd   = overlappingListBegin + shortListSize;
     for (int overlappingPoint = 0; overlappingPoint < shortListSize; ++overlappingPoint) {

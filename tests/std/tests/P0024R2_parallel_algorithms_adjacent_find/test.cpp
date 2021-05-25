@@ -33,7 +33,7 @@ void test_case_adjacent_find_parallel(const size_t testSize) {
     assert(less_result == tmp.begin());
     assert(ne_result == tmp.begin());
 
-    auto remaining_attempts = quadradic_complexity_case_limit;
+    auto remaining_attempts = quadratic_complexity_case_limit;
     auto target             = tmp.begin();
     for (auto next = target; ++next != tmp.end(); target = next) {
         if (--remaining_attempts == 0) {

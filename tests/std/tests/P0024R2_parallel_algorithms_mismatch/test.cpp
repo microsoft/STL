@@ -48,7 +48,7 @@ void test_case_mismatch_signatures(const size_t testSize) {
     // Also test each counterexample position:
     auto defaultAnswer = defaults.begin();
     auto onesAnswer    = ones.begin();
-    for (auto remainingAttempts = quadradic_complexity_case_limit; --remainingAttempts != 0;) {
+    for (auto remainingAttempts = quadratic_complexity_case_limit; --remainingAttempts != 0;) {
         assert((mismatch(defaults.begin(), defaults.end(), ones.begin()) == ExpectedType{defaultAnswer, onesAnswer}));
         assert((mismatch(defaults.begin(), defaults.end(), ones.begin(), ones.end())
                 == ExpectedType{defaultAnswer, onesAnswer}));
