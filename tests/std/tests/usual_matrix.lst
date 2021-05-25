@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #
-# When updating this list, also remember to update VSO_0157762_feature_test_macros\env.lst
+# When updating this list, update VSO_0157762_feature_test_macros\env.lst consistently.
 #
 
 RUNALL_INCLUDE .\prefix.lst
@@ -32,7 +32,7 @@ PM_CL="/clr:pure /MD /std:c++14"
 PM_CL="/clr:pure /MDd /std:c++14"
 PM_CL="/BE /c /EHsc /MD /std:c++14 /w14640 /Zc:threadSafeInit-"
 PM_CL="/BE /c /EHsc /MDd /std:c++17 /permissive- /w14640 /Zc:threadSafeInit-"
-PM_CL="/BE /c /EHsc /MDd /std:c++20 /permissive- /w14640 /Zc:threadSafeInit-"
+PM_CL="/BE /c /EHsc /MT /std:c++20 /permissive- /w14640 /Zc:threadSafeInit-"
 PM_CL="/BE /c /EHsc /MTd /std:c++latest /permissive- /w14640 /Zc:threadSafeInit-"
 PM_COMPILER="clang-cl" PM_CL="-fno-ms-compatibility -fno-delayed-template-parsing /EHsc /MD /std:c++14 /w14640 /Zc:threadSafeInit-"
 PM_COMPILER="clang-cl" PM_CL="-fno-ms-compatibility -fno-delayed-template-parsing /EHsc /MDd /std:c++17 /w14640 /Zc:threadSafeInit-"
