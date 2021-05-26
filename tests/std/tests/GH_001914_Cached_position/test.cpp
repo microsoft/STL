@@ -26,7 +26,7 @@ private:
 template <ranges::forward_range R>
 constexpr bool test_one() {
     constexpr int some_ints[] = {0, 1, 2, 3, 4, 5, 6, 7};
-    { // Do not invalidate cache of random access range after copy
+    { // Propagate cache of random access range after copy
         test_cache cache{R{some_ints}};
         cache.set_cache();
 
@@ -35,7 +35,7 @@ constexpr bool test_one() {
         assert(new_cache.has_cache() == ranges::random_access_range<R>);
     }
 
-    { // Do not invalidate cache of random access range after move
+    { // Propagate cache of random access range after move
         test_cache cache{R{some_ints}};
         cache.set_cache();
 
