@@ -4072,9 +4072,12 @@ namespace ranges {
 
     // VARIABLE ranges::unique_copy
     // clang-format off
+    template <class _It, class _Ty>
+    concept _Is_input_with_value_type = input_iterator<_It> && same_as<iter_value_t<_It>, _Ty>;
+
     template <class _It, class _Out>
     concept _Can_reread_or_store = forward_iterator<_It>
-                                || (input_iterator<_Out> && same_as<iter_value_t<_It>, iter_value_t<_Out>>)
+                                || _Is_input_with_value_type<_Out, iter_value_t<_It>>
                                 || indirectly_copyable_storable<_It, _Out>;
     // clang-format on
     class _Unique_copy_fn : private _Not_quite_object {
@@ -4127,7 +4130,7 @@ namespace ranges {
                 return {_STD move(_First), _STD move(_Result)};
             }
 
-            if constexpr (input_iterator<_Out> && same_as<iter_value_t<_It>, iter_value_t<_Out>>) {
+            if constexpr (_Is_input_with_value_type<_Out, iter_value_t<_It>>) {
                 // Can reread _Result
                 *_Result = *_First;
 
