@@ -32,9 +32,12 @@
 
 #ifdef __cpp_lib_concepts
 #include <concepts>
+#endif // defined(__cpp_lib_concepts)
+
+#ifdef __cpp_lib_format
 #include <format>
 #include <iomanip>
-#endif // defined(__cpp_lib_concepts)
+#endif // defined(__cpp_lib_format)
 #endif // _HAS_CXX20
 
 #pragma pack(push, _CRT_PACKING)
@@ -2274,7 +2277,7 @@ namespace chrono {
             : runtime_error(_Make_string(_Tp, _Info)) {}
 
     private:
-#ifdef __cpp_lib_concepts
+#ifdef __cpp_lib_format
         template <class _Duration>
         _NODISCARD static string _Make_string(const local_time<_Duration>& _Tp, const local_info& _Info);
 #else // ^^^ no workaround / workaround vvv
@@ -2293,7 +2296,7 @@ namespace chrono {
             : runtime_error(_Make_string(_Tp, _Info)) {}
 
     private:
-#ifdef __cpp_lib_concepts
+#ifdef __cpp_lib_format
         template <class _Duration>
         _NODISCARD static string _Make_string(const local_time<_Duration>& _Tp, const local_info& _Info);
 #else // ^^^ no workaround / workaround vvv
@@ -5220,8 +5223,7 @@ namespace chrono {
 #endif // _HAS_CXX20
 } // namespace chrono
 
-#if _HAS_CXX20
-#ifdef __cpp_lib_concepts
+#ifdef __cpp_lib_format
   // [time.format]
 
 template <class _CharT>
@@ -6518,8 +6520,7 @@ namespace chrono {
     }
 } // namespace chrono
 
-#endif // __cpp_lib_concepts
-#endif // _HAS_CXX20
+#endif // __cpp_lib_format
 
 // HELPERS
 template <class _Rep, class _Period>

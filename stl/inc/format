@@ -39,9 +39,10 @@
 #define _FORMAT_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
-#ifndef __cpp_lib_concepts
-#pragma message("The contents of <format> are available only with C++20 concepts support.")
-#else // ^^^ !defined(__cpp_lib_concepts) / defined(__cpp_lib_concepts) vvv
+#ifndef __cpp_lib_format
+#pragma message("The contents of <format> are available only in c++latest mode with concepts support;")
+#pragma message("see https://github.com/microsoft/STL/issues/1814 for details.")
+#else // ^^^ !defined(__cpp_lib_format) / defined(__cpp_lib_format) vvv
 
 #include <array>
 #include <charconv>
@@ -3054,6 +3055,6 @@ _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
 
-#endif // __cpp_lib_concepts
+#endif // __cpp_lib_format
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _FORMAT_

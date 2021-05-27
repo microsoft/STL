@@ -351,6 +351,20 @@
 // * unique_copy
 
 #include <vcruntime.h>
+
+// TRANSITION, <vcruntime.h> should define _HAS_CXX23
+#ifndef _HAS_CXX23
+#if _HAS_CXX20 && (defined(_MSVC_LANG) && _MSVC_LANG > 202002L || defined(__cplusplus) && __cplusplus > 202002L)
+#define _HAS_CXX23 1
+#else
+#define _HAS_CXX23 0
+#endif
+#endif // _HAS_CXX23
+
+#if _HAS_CXX23 && !_HAS_CXX20
+#error _HAS_CXX23 must imply _HAS_CXX20.
+#endif
+
 #include <xkeycheck.h> // The _HAS_CXX tags must be defined before including this.
 
 #ifndef _STL_WARNING_LEVEL
@@ -1231,9 +1245,9 @@
 #define __cpp_lib_endian            201907L
 #define __cpp_lib_erase_if          202002L
 
-#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395 and GH-1814
 #define __cpp_lib_format 201907L
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 #define __cpp_lib_generic_unordered_lookup     201811L
 #define __cpp_lib_int_pow2                     202002L
@@ -1261,9 +1275,9 @@
 #define __cpp_lib_math_constants          201907L
 #define __cpp_lib_polymorphic_allocator   201902L
 
-#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395 and GH-1814
 #define __cpp_lib_ranges 201911L
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 #define __cpp_lib_remove_cvref            201711L
 #define __cpp_lib_semaphore               201907L
