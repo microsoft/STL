@@ -325,6 +325,12 @@ STATIC_ASSERT(__cpp_lib_char8_t == 201907L);
 
 #ifndef __cpp_lib_chrono
 #error __cpp_lib_chrono is not defined
+#elif _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if __cpp_lib_chrono != 201907L
+#error __cpp_lib_chrono is not 201907L
+#else
+STATIC_ASSERT(__cpp_lib_chrono == 201907L);
+#endif
 #elif _HAS_CXX17
 #if __cpp_lib_chrono != 201611L
 #error __cpp_lib_chrono is not 201611L
@@ -672,6 +678,20 @@ STATIC_ASSERT(__cpp_lib_filesystem == 201703L);
 #else
 #ifdef __cpp_lib_filesystem
 #error __cpp_lib_filesystem is defined
+#endif
+#endif
+
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support and GH-1814
+#ifndef __cpp_lib_format
+#error __cpp_lib_format is not defined
+#elif __cpp_lib_format != 201907L
+#error __cpp_lib_format is not 201907L
+#else
+STATIC_ASSERT(__cpp_lib_format == 201907L);
+#endif
+#else
+#ifdef __cpp_lib_format
+#error __cpp_lib_format is defined
 #endif
 #endif
 
@@ -1187,7 +1207,7 @@ STATIC_ASSERT(__cpp_lib_polymorphic_allocator == 201902L);
 STATIC_ASSERT(__cpp_lib_quoted_string_io == 201304L);
 #endif
 
-#if _HAS_CXX20 && !defined(__EDG__) // TRANSITION, EDG concepts support
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support and GH-1814
 #ifndef __cpp_lib_ranges
 #error __cpp_lib_ranges is not defined
 #elif __cpp_lib_ranges != 201911L

@@ -360,46 +360,40 @@ void validate_precision(const time_zone* tz, const pair<Transition, Transition>&
 
 void timezone_precision_test() {
     const auto& my_tzdb = get_tzdb();
-    using MilliDur      = duration<double, milli>;
-    using MicroDur      = duration<double, micro>;
 
     {
         using namespace Sydney;
         auto tz = my_tzdb.locate_zone(Tz_name);
         validate_precision(tz, Std_to_Day, sys_seconds::duration{1});
-        validate_precision(tz, Std_to_Day, MilliDur{1});
-        validate_precision(tz, Std_to_Day, MilliDur{0.5});
-        validate_precision(tz, Std_to_Day, MilliDur{0.05});
-        validate_precision(tz, Std_to_Day, MilliDur{0.005});
-        validate_precision(tz, Std_to_Day, MilliDur{0.0005});
-        // precision limit...
 
-        validate_precision(tz, Std_to_Day, MicroDur{1});
-        validate_precision(tz, Std_to_Day, MicroDur{0.5});
-        // precision limit...
+        validate_precision(tz, Std_to_Day, milliseconds{100});
+        validate_precision(tz, Std_to_Day, milliseconds{10});
+        validate_precision(tz, Std_to_Day, milliseconds{1});
+
+        validate_precision(tz, Std_to_Day, microseconds{100});
+        validate_precision(tz, Std_to_Day, microseconds{10});
+        validate_precision(tz, Std_to_Day, microseconds{1});
 
         // validate opposite transition
-        validate_precision(tz, Day_to_Std, MicroDur{0.5});
-        validate_precision(tz, Day_to_Std, MilliDur{0.0005});
+        validate_precision(tz, Day_to_Std, milliseconds{1});
+        validate_precision(tz, Day_to_Std, microseconds{1});
     }
     {
         using namespace LA;
         auto tz = my_tzdb.locate_zone(Tz_name);
         validate_precision(tz, Std_to_Day, sys_seconds::duration{1});
-        validate_precision(tz, Std_to_Day, MilliDur{1});
-        validate_precision(tz, Std_to_Day, MilliDur{0.5});
-        validate_precision(tz, Std_to_Day, MilliDur{0.05});
-        validate_precision(tz, Std_to_Day, MilliDur{0.005});
-        validate_precision(tz, Std_to_Day, MilliDur{0.0005});
-        // precision limit...
 
-        validate_precision(tz, Std_to_Day, MicroDur{1});
-        validate_precision(tz, Std_to_Day, MicroDur{0.5});
-        // precision limit...
+        validate_precision(tz, Std_to_Day, milliseconds{100});
+        validate_precision(tz, Std_to_Day, milliseconds{10});
+        validate_precision(tz, Std_to_Day, milliseconds{1});
+
+        validate_precision(tz, Std_to_Day, microseconds{100});
+        validate_precision(tz, Std_to_Day, microseconds{10});
+        validate_precision(tz, Std_to_Day, microseconds{1});
 
         // validate opposite transition
-        validate_precision(tz, Day_to_Std, MicroDur{0.5});
-        validate_precision(tz, Day_to_Std, MilliDur{0.0005});
+        validate_precision(tz, Day_to_Std, milliseconds{1});
+        validate_precision(tz, Day_to_Std, microseconds{1});
     }
 }
 

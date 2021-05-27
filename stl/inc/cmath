@@ -12,9 +12,15 @@
 #include <cstdlib>
 #include <xtr1common>
 
-#if !defined(_M_CEE) && !defined(__clang__)
+#if !defined(_M_CEE) && !defined(__clang__) && !defined(__CUDACC__) && !defined(__INTEL_COMPILER)
+#define _HAS_CMATH_INTRINSICS 1
+#else // ^^^ intrinsics available ^^^ / vvv intrinsics unavailable vvv
+#define _HAS_CMATH_INTRINSICS 0
+#endif // ^^^ intrinsics unavailable ^^^
+
+#if _HAS_CMATH_INTRINSICS
 #include <intrin0.h>
-#endif // !defined(_M_CEE) && !defined(__clang__)
+#endif // _HAS_CMATH_INTRINSICS
 
 #if _HAS_CXX20
 #include <xutility>
@@ -60,23 +66,23 @@ _NODISCARD _Check_return_ inline float cbrt(_In_ float _Xx) noexcept /* strength
 }
 
 _NODISCARD _Check_return_ inline float ceil(_In_ float _Xx) noexcept /* strengthened */ {
-#ifdef _M_CEE
-    return _CSTD ceilf(_Xx);
+#if _HAS_CMATH_INTRINSICS
+    return __ceilf(_Xx);
 #elif defined(__clang__)
     return __builtin_ceilf(_Xx);
-#else // ^^^ __clang__ / !__clang__ vvv
-    return __ceilf(_Xx);
-#endif // __clang__
+#else // ^^^ defined(__clang__) ^^^ / vvv intrinsics unavailable vvv
+    return _CSTD ceilf(_Xx);
+#endif // ^^^ intrinsics unavailable ^^^
 }
 
 _NODISCARD _Check_return_ inline float copysign(_In_ float _Number, _In_ float _Sign) noexcept /* strengthened */ {
-#ifdef _M_CEE
-    return _CSTD copysignf(_Number, _Sign);
+#if _HAS_CMATH_INTRINSICS
+    return __copysignf(_Number, _Sign);
 #elif defined(__clang__)
     return __builtin_copysignf(_Number, _Sign);
-#else // ^^^ __clang__ / !__clang__ vvv
-    return __copysignf(_Number, _Sign);
-#endif // __clang__
+#else // ^^^ defined(__clang__) ^^^ / vvv intrinsics unavailable vvv
+    return _CSTD copysignf(_Number, _Sign);
+#endif // ^^^ intrinsics unavailable ^^^
 }
 
 _NODISCARD _Check_return_ inline float cos(_In_ float _Xx) noexcept /* strengthened */ {
@@ -116,13 +122,13 @@ _NODISCARD _Check_return_ inline float fdim(_In_ float _Xx, _In_ float _Yx) noex
 }
 
 _NODISCARD _Check_return_ inline float floor(_In_ float _Xx) noexcept /* strengthened */ {
-#ifdef _M_CEE
-    return _CSTD floorf(_Xx);
+#if _HAS_CMATH_INTRINSICS
+    return __floorf(_Xx);
 #elif defined(__clang__)
     return __builtin_floorf(_Xx);
-#else // ^^^ __clang__ / !__clang__ vvv
-    return __floorf(_Xx);
-#endif // __clang__
+#else // ^^^ defined(__clang__) ^^^ / vvv intrinsics unavailable vvv
+    return _CSTD floorf(_Xx);
+#endif // ^^^ intrinsics unavailable ^^^
 }
 
 _NODISCARD _Check_return_ inline float fma(_In_ float _Xx, _In_ float _Yx, _In_ float _Zx) noexcept /* strengthened */ {
@@ -230,13 +236,13 @@ _NODISCARD _Check_return_ inline float rint(_In_ float _Xx) noexcept /* strength
 }
 
 _NODISCARD _Check_return_ inline float round(_In_ float _Xx) noexcept /* strengthened */ {
-#ifdef _M_CEE
-    return _CSTD roundf(_Xx);
+#if _HAS_CMATH_INTRINSICS
+    return __roundf(_Xx);
 #elif defined(__clang__)
     return __builtin_roundf(_Xx);
-#else // ^^^ __clang__ / !__clang__ vvv
-    return __roundf(_Xx);
-#endif // __clang__
+#else // ^^^ defined(__clang__) ^^^ / vvv intrinsics unavailable vvv
+    return _CSTD roundf(_Xx);
+#endif // ^^^ intrinsics unavailable ^^^
 }
 
 _NODISCARD _Check_return_ inline float scalbln(_In_ float _Xx, _In_ long _Yx) noexcept /* strengthened */ {
@@ -272,13 +278,13 @@ _NODISCARD _Check_return_ inline float tgamma(_In_ float _Xx) noexcept /* streng
 }
 
 _NODISCARD _Check_return_ inline float trunc(_In_ float _Xx) noexcept /* strengthened */ {
-#ifdef _M_CEE
-    return _CSTD truncf(_Xx);
+#if _HAS_CMATH_INTRINSICS
+    return __truncf(_Xx);
 #elif defined(__clang__)
     return __builtin_truncf(_Xx);
-#else // ^^^ __clang__ / !__clang__ vvv
-    return __truncf(_Xx);
-#endif // __clang__
+#else // ^^^ defined(__clang__) ^^^ / vvv intrinsics unavailable vvv
+    return _CSTD truncf(_Xx);
+#endif // ^^^ intrinsics unavailable ^^^
 }
 
 _NODISCARD _Check_return_ inline long double acos(_In_ long double _Xx) noexcept /* strengthened */ {
@@ -315,24 +321,24 @@ _NODISCARD _Check_return_ inline long double cbrt(_In_ long double _Xx) noexcept
 }
 
 _NODISCARD _Check_return_ inline long double ceil(_In_ long double _Xx) noexcept /* strengthened */ {
-#ifdef _M_CEE
-    return _CSTD ceill(_Xx);
+#if _HAS_CMATH_INTRINSICS
+    return __ceil(static_cast<double>(_Xx));
 #elif defined(__clang__)
     return __builtin_ceill(_Xx);
-#else // ^^^ __clang__ / !__clang__ vvv
-    return __ceil(static_cast<double>(_Xx));
-#endif // __clang__
+#else // ^^^ defined(__clang__) ^^^ / vvv intrinsics unavailable vvv
+    return _CSTD ceill(_Xx);
+#endif // ^^^ intrinsics unavailable ^^^
 }
 
 _NODISCARD _Check_return_ inline long double copysign(_In_ long double _Number, _In_ long double _Sign) noexcept
 /* strengthened */ {
-#ifdef _M_CEE
-    return _CSTD copysignl(_Number, _Sign);
+#if _HAS_CMATH_INTRINSICS
+    return __copysign(static_cast<double>(_Number), static_cast<double>(_Sign));
 #elif defined(__clang__)
     return __builtin_copysignl(_Number, _Sign);
-#else // ^^^ __clang__ / !__clang__ vvv
-    return __copysign(static_cast<double>(_Number), static_cast<double>(_Sign));
-#endif // __clang__
+#else // ^^^ defined(__clang__) ^^^ / vvv intrinsics unavailable vvv
+    return _CSTD copysignl(_Number, _Sign);
+#endif // ^^^ intrinsics unavailable ^^^
 }
 
 _NODISCARD _Check_return_ inline long double cos(_In_ long double _Xx) noexcept /* strengthened */ {
@@ -373,13 +379,13 @@ _NODISCARD _Check_return_ inline long double fdim(_In_ long double _Xx, _In_ lon
 }
 
 _NODISCARD _Check_return_ inline long double floor(_In_ long double _Xx) noexcept /* strengthened */ {
-#ifdef _M_CEE
-    return _CSTD floorl(_Xx);
+#if _HAS_CMATH_INTRINSICS
+    return __floor(static_cast<double>(_Xx));
 #elif defined(__clang__)
     return __builtin_floorl(_Xx);
-#else // ^^^ __clang__ / !__clang__ vvv
-    return __floor(static_cast<double>(_Xx));
-#endif // __clang__
+#else // ^^^ defined(__clang__) ^^^ / vvv intrinsics unavailable vvv
+    return _CSTD floorl(_Xx);
+#endif // ^^^ intrinsics unavailable ^^^
 }
 
 _NODISCARD _Check_return_ inline long double fma(
@@ -496,13 +502,13 @@ _NODISCARD _Check_return_ inline long double rint(_In_ long double _Xx) noexcept
 }
 
 _NODISCARD _Check_return_ inline long double round(_In_ long double _Xx) noexcept /* strengthened */ {
-#ifdef _M_CEE
-    return _CSTD roundl(_Xx);
+#if _HAS_CMATH_INTRINSICS
+    return __round(static_cast<double>(_Xx));
 #elif defined(__clang__)
     return __builtin_roundl(_Xx);
-#else // ^^^ __clang__ / !__clang__ vvv
-    return __round(static_cast<double>(_Xx));
-#endif // __clang__
+#else // ^^^ defined(__clang__) ^^^ / vvv intrinsics unavailable vvv
+    return _CSTD roundl(_Xx);
+#endif // ^^^ intrinsics unavailable ^^^
 }
 
 _NODISCARD _Check_return_ inline long double scalbln(_In_ long double _Xx, _In_ long _Yx) noexcept /* strengthened */ {
@@ -538,13 +544,13 @@ _NODISCARD _Check_return_ inline long double tgamma(_In_ long double _Xx) noexce
 }
 
 _NODISCARD _Check_return_ inline long double trunc(_In_ long double _Xx) noexcept /* strengthened */ {
-#ifdef _M_CEE
-    return _CSTD truncl(_Xx);
+#if _HAS_CMATH_INTRINSICS
+    return __trunc(static_cast<double>(_Xx));
 #elif defined(__clang__)
     return __builtin_truncl(_Xx);
-#else // ^^^ __clang__ / !__clang__ vvv
-    return __trunc(static_cast<double>(_Xx));
-#endif // __clang__
+#else // ^^^ defined(__clang__) ^^^ / vvv intrinsics unavailable vvv
+    return _CSTD truncl(_Xx);
+#endif // ^^^ intrinsics unavailable ^^^
 }
 
 
@@ -598,13 +604,13 @@ _STD _Common_float_type_t<_Ty1, _Ty2> remquo(_Ty1 _Left, _Ty2 _Right, int* _Pquo
 #define _GENERIC_MATH1R(FUN, RET) _GENERIC_MATH1_BASE(FUN, RET, _CSTD FUN)
 #define _GENERIC_MATH1(FUN)       _GENERIC_MATH1R(FUN, double)
 
-#ifdef _M_CEE
-#define _GENERIC_MATH1I(FUN, CLANG_INTRIN, MSVC_INTRIN) _GENERIC_MATH1_BASE(FUN, double, _CSTD FUN)
+#if _HAS_CMATH_INTRINSICS
+#define _GENERIC_MATH1I(FUN, CLANG_INTRIN, MSVC_INTRIN) _GENERIC_MATH1_BASE(FUN, double, MSVC_INTRIN)
 #elif defined(__clang__)
 #define _GENERIC_MATH1I(FUN, CLANG_INTRIN, MSVC_INTRIN) _GENERIC_MATH1_BASE(FUN, double, CLANG_INTRIN)
-#else // ^^^ __clang__ / !__clang__ vvv
-#define _GENERIC_MATH1I(FUN, CLANG_INTRIN, MSVC_INTRIN) _GENERIC_MATH1_BASE(FUN, double, MSVC_INTRIN)
-#endif // __clang__
+#else // ^^^ defined(__clang__) ^^^ / vvv intrinsics unavailable vvv
+#define _GENERIC_MATH1I(FUN, CLANG_INTRIN, MSVC_INTRIN) _GENERIC_MATH1_BASE(FUN, double, _CSTD FUN)
+#endif // ^^^ intrinsics unavailable ^^^
 
 #define _GENERIC_MATH1X(FUN, ARG2)                                             \
     template <class _Ty, _STD enable_if_t<_STD is_integral_v<_Ty>, int> = 0>   \
@@ -622,13 +628,13 @@ _STD _Common_float_type_t<_Ty1, _Ty2> remquo(_Ty1 _Left, _Ty2 _Right, int* _Pquo
 
 #define _GENERIC_MATH2(FUN) _GENERIC_MATH2_BASE(FUN, _CSTD FUN)
 
-#ifdef _M_CEE
-#define _GENERIC_MATH2I(FUN, CLANG_INTRIN, MSVC_INTRIN) _GENERIC_MATH2_BASE(FUN, _CSTD FUN)
+#if _HAS_CMATH_INTRINSICS
+#define _GENERIC_MATH2I(FUN, CLANG_INTRIN, MSVC_INTRIN) _GENERIC_MATH2_BASE(FUN, MSVC_INTRIN)
 #elif defined(__clang__)
 #define _GENERIC_MATH2I(FUN, CLANG_INTRIN, MSVC_INTRIN) _GENERIC_MATH2_BASE(FUN, CLANG_INTRIN)
-#else // ^^^ __clang__ / !__clang__ vvv
-#define _GENERIC_MATH2I(FUN, CLANG_INTRIN, MSVC_INTRIN) _GENERIC_MATH2_BASE(FUN, MSVC_INTRIN)
-#endif // __clang__
+#else // ^^^ defined(__clang__) ^^^ / vvv intrinsics unavailable vvv
+#define _GENERIC_MATH2I(FUN, CLANG_INTRIN, MSVC_INTRIN) _GENERIC_MATH2_BASE(FUN, _CSTD FUN)
+#endif // ^^^ intrinsics unavailable ^^^
 
 // The following order matches N4820 26.8.1 [cmath.syn].
 _GENERIC_MATH1(acos)
@@ -702,6 +708,7 @@ _GENERIC_MATH2(fmin)
 #undef _GENERIC_MATH2_BASE
 #undef _GENERIC_MATH2
 #undef _GENERIC_MATH2I
+#undef _HAS_CMATH_INTRINSICS
 
 
 _STD_BEGIN
