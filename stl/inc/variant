@@ -1173,18 +1173,11 @@ public:
         } else if constexpr (sizeof...(_Types) < 32) {
             // Limit the size of variants that use this quadratic code size implementation of swap.
             _Variant_raw_visit(index(), _Storage(),
-                [this, &_That](auto _My_ref)
-#ifndef __EDG__ // TRANSITION, VSO-897887
-                    noexcept(conjunction_v<is_nothrow_move_constructible<_Types>..., is_nothrow_swappable<_Types>...>)
-#endif // TRANSITION, VSO-897887
-                {
+                [this, &_That](auto _My_ref) noexcept(
+                    conjunction_v<is_nothrow_move_constructible<_Types>..., is_nothrow_swappable<_Types>...>) {
                     _Variant_raw_visit(_That.index(), _That._Storage(),
-                        [this, &_That, _My_ref](auto _That_ref)
-#ifndef __EDG__ // TRANSITION, VSO-897887
-                            noexcept(conjunction_v<is_nothrow_move_constructible<_Types>...,
-                                is_nothrow_swappable<_Types>...>)
-#endif // TRANSITION, VSO-897887
-                        {
+                        [this, &_That, _My_ref](auto _That_ref) noexcept(
+                            conjunction_v<is_nothrow_move_constructible<_Types>..., is_nothrow_swappable<_Types>...>) {
                             constexpr size_t _That_idx = decltype(_That_ref)::_Idx;
 #ifdef __EDG__ // TRANSITION, VSO-657455
                             constexpr size_t _My_idx = decltype(_My_ref)::_Idx + 0 * _That_idx;
@@ -1218,11 +1211,7 @@ public:
         } else {
             if (this->_Which == _That._Which) {
                 _Variant_raw_visit(static_cast<size_t>(this->_Which), _That._Storage(),
-                    [this](auto _Ref)
-#ifndef __EDG__ // TRANSITION, VSO-897887
-                        noexcept(conjunction_v<is_nothrow_swappable<_Types>...>)
-#endif // TRANSITION, VSO-897887
-                    {
+                    [this](auto _Ref) noexcept(conjunction_v<is_nothrow_swappable<_Types>...>) {
                         constexpr size_t _Idx = decltype(_Ref)::_Idx;
                         if constexpr (_Idx != variant_npos) {
                             _Swap_adl(_Variant_raw_get<_Idx>(this->_Storage()), _Ref._Val);
@@ -1255,11 +1244,7 @@ private:
         // steal the contained value from _That
         this->_Reset();
         _Variant_raw_visit(_That.index(), _That._Storage(),
-            [this](auto _Ref)
-#ifndef __EDG__ // TRANSITION, VSO-897887
-                noexcept(conjunction_v<is_nothrow_move_constructible<_Types>...>)
-#endif // TRANSITION, VSO-897887
-            {
+            [this](auto _Ref) noexcept(conjunction_v<is_nothrow_move_constructible<_Types>...>) {
                 constexpr size_t _Idx = decltype(_Ref)::_Idx;
                 if constexpr (_Idx != variant_npos) {
                     this->_Emplace_valueless<_Idx>(_STD move(_Ref._Val));

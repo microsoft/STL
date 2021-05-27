@@ -432,9 +432,6 @@ numerics\c.math\cmath.pass.cpp
 # GH-1596: <algorithm>: unqualified calls to _Adl_verify_range incorrectly cause instantiation
 algorithms\robust_against_adl.pass.cpp
 
-# GH-1595: <bit>: bit_ceil(T(-1)) should not be a constant expression
-numerics\bit\bit.pow.two\bit_ceil.fail.cpp
-
 
 # *** CRT BUGS ***
 # We're permanently missing aligned_alloc().
@@ -624,6 +621,16 @@ utilities\allocator.adaptor\allocator.adaptor.members\construct_pair_piecewise.p
 utilities\allocator.adaptor\allocator.adaptor.members\construct_pair_rvalue.pass.cpp
 utilities\allocator.adaptor\allocator.adaptor.members\construct_pair_values.pass.cpp
 utilities\allocator.adaptor\allocator.adaptor.members\construct_type.pass.cpp
+
+# Tests ignore the return value of sto{meow}, triggering nodiscard warnings
+strings\string.conversions\stod.pass.cpp
+strings\string.conversions\stof.pass.cpp
+strings\string.conversions\stoi.pass.cpp
+strings\string.conversions\stol.pass.cpp
+strings\string.conversions\stold.pass.cpp
+strings\string.conversions\stoll.pass.cpp
+strings\string.conversions\stoul.pass.cpp
+strings\string.conversions\stoull.pass.cpp
 
 # Bogus test uses std::cout without including <iostream>.
 utilities\time\time.cal\time.cal.wdidx\time.cal.wdidx.nonmembers\streaming.pass.cpp

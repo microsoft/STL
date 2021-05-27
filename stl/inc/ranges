@@ -8,9 +8,10 @@
 #define _RANGES_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
-#ifndef __cpp_lib_concepts
-#pragma message("The contents of <ranges> are available only with C++20 concepts support.")
-#else // ^^^ !defined(__cpp_lib_concepts) / defined(__cpp_lib_concepts) vvv
+#ifndef __cpp_lib_ranges
+#pragma message("The contents of <ranges> are available only in c++latest mode with concepts support;")
+#pragma message("see https://github.com/microsoft/STL/issues/1814 for details.")
+#else // ^^^ !defined(__cpp_lib_ranges) / defined(__cpp_lib_ranges) vvv
 #include <iosfwd>
 #include <iterator>
 #include <limits>
@@ -2010,6 +2011,9 @@ namespace ranges {
     template <class _Rng>
     take_view(_Rng&&, range_difference_t<_Rng>) -> take_view<views::all_t<_Rng>>;
 
+    template <class _Rng>
+    inline constexpr bool enable_borrowed_range<take_view<_Rng>> = enable_borrowed_range<_Rng>;
+
     namespace views {
         // VARIABLE views::take
         template <class>
@@ -2416,6 +2420,9 @@ namespace ranges {
     template <class _Rng>
     drop_view(_Rng&&, range_difference_t<_Rng>) -> drop_view<views::all_t<_Rng>>;
 
+    template <class _Rng>
+    inline constexpr bool enable_borrowed_range<drop_view<_Rng>> = enable_borrowed_range<_Rng>;
+
     namespace views {
         // VARIABLE views::drop
         class _Drop_fn {
@@ -2571,6 +2578,9 @@ namespace ranges {
 
     template <class _Rng, class _Pr>
     drop_while_view(_Rng&&, _Pr) -> drop_while_view<views::all_t<_Rng>, _Pr>;
+
+    template <class _Rng, class _Pr>
+    inline constexpr bool enable_borrowed_range<drop_while_view<_Rng, _Pr>> = enable_borrowed_range<_Rng>;
 
     namespace views {
         // VARIABLE views::drop_while
@@ -3524,6 +3534,9 @@ namespace ranges {
     template <class _Rng>
     common_view(_Rng&&) -> common_view<views::all_t<_Rng>>;
 
+    template <class _Rng>
+    inline constexpr bool enable_borrowed_range<common_view<_Rng>> = enable_borrowed_range<_Rng>;
+
     namespace views {
         // VARIABLE views::common
         class _Common_fn : public _Pipe::_Base<_Common_fn> {
@@ -3635,6 +3648,9 @@ namespace ranges {
 
     template <class _Rng>
     reverse_view(_Rng&&) -> reverse_view<views::all_t<_Rng>>;
+
+    template <class _Rng>
+    inline constexpr bool enable_borrowed_range<reverse_view<_Rng>> = enable_borrowed_range<_Rng>;
 
     namespace views {
         // VARIABLE views::reverse
@@ -4087,6 +4103,9 @@ namespace ranges {
         }
     };
 
+    template <class _Rng, size_t _Index>
+    inline constexpr bool enable_borrowed_range<elements_view<_Rng, _Index>> = enable_borrowed_range<_Rng>;
+
     template <class _Rng>
     using keys_view = elements_view<views::all_t<_Rng>, 0>;
     template <class _Rng>
@@ -4120,6 +4139,6 @@ _STD_END
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
-#endif // __cpp_lib_concepts
+#endif // __cpp_lib_ranges
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _RANGES_
