@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cassert>
 #include <forward_list>
+#include <map>
 #include <ranges>
 #include <span>
 #include <string_view>
@@ -83,7 +84,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     using ranges::input_range, ranges::forward_range, ranges::bidirectional_range, ranges::random_access_range,
         ranges::contiguous_range;
     using ranges::take_view, ranges::common_range, ranges::enable_borrowed_range, ranges::iterator_t, ranges::prev,
-        ranges::range, ranges::sentinel_t, ranges::sized_range;
+        ranges::range, ranges::sentinel_t, ranges::sized_range, ranges::borrowed_range;
 
     constexpr bool is_view = ranges::view<remove_cvref_t<Rng>>;
 
@@ -208,6 +209,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     STATIC_ASSERT(bidirectional_range<R> == bidirectional_range<Rng>);
     STATIC_ASSERT(random_access_range<R> == random_access_range<Rng>);
     STATIC_ASSERT(contiguous_range<R> == contiguous_range<Rng>);
+    STATIC_ASSERT(borrowed_range<R> == borrowed_range<V>);
 
     // Validate take_view::size
     STATIC_ASSERT(CanMemberSize<R> == CanSize<Rng>);
@@ -494,20 +496,19 @@ constexpr void output_range_test() {
         STATIC_ASSERT(same_as<decltype(views::take(R{some_writable_ints}, 99999)), ranges::take_view<R>>);
 
         // How do I implement "Fill up to n elements in {output range} with {value}"?
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-1217687
-        ranges::fill(views::take(R{some_writable_ints}, 99999), 42);
-#else // ^^^ workaround / no workaround vvv
         ranges::fill(R{some_writable_ints} | views::take(99999), 42);
-#endif // TRANSITION, VSO-1217687
         assert(ranges::equal(some_writable_ints, initializer_list<int>{42, 42, 42, 42}));
 
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-1217687
-        ranges::fill(views::take(R{some_writable_ints}, 3), 13);
-#else // ^^^ workaround / no workaround vvv
         ranges::fill(R{some_writable_ints} | views::take(3), 13);
-#endif // TRANSITION, VSO-1217687
         assert(ranges::equal(some_writable_ints, initializer_list<int>{13, 13, 13, 42}));
     }
+}
+
+void test_DevCom_1397309() {
+    constexpr int expected[] = {4, 8};
+    const map<int, string_view> values{{4, "Hello"sv}, {8, "Beautiful"sv}, {10, "World"sv}};
+
+    assert(ranges::equal(values | ranges::views::take(2) | ranges::views::keys, expected));
 }
 
 int main() {
@@ -558,4 +559,19 @@ int main() {
 
     STATIC_ASSERT((instantiation_test(), true));
     instantiation_test();
+
+    {
+        // Validate a non-view borrowed range
+        constexpr span s{some_ints};
+        STATIC_ASSERT(test_one(s, only_four_ints));
+        test_one(s, only_four_ints);
+
+        // Validate a view borrowed range
+        constexpr auto v =
+            views::iota(0ull, ranges::size(some_ints)) | views::transform([](auto i) { return some_ints[i]; });
+        STATIC_ASSERT(test_one(v, only_four_ints));
+        test_one(v, only_four_ints);
+    }
+
+    test_DevCom_1397309();
 }

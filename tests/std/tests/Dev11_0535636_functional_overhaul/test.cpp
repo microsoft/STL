@@ -980,11 +980,9 @@ void test_reference_wrapper_invocation() {
 
     assert(i == 10);
 
-#ifndef __EDG__ // TRANSITION, DevCom-939485
     const auto noexcept_lambda     = []() noexcept {};
     const auto noexcept_lambda_ref = ref(noexcept_lambda);
     STATIC_ASSERT(noexcept(noexcept_lambda_ref())); // strengthened
-#endif // __EDG__
 
     reference_wrapper<int(int)> rw_fxn(quadruple);
     assert(rw_fxn(9) == 36);
@@ -1055,12 +1053,18 @@ constexpr bool test_invoke_constexpr() {
     auto p = &thing;
 
     assert(&invoke(&Thing::m_x, *p) == &p->m_x);
-    // assert(&invoke(&Thing::m_x, ref(*sp)) == &sp->m_x); TRANSITION, P1065R2
+#if _HAS_CXX20
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1419425 "constexpr PMD emits bogus error C2131"
+    assert(&invoke(&Thing::m_x, ref(*p)) == &p->m_x);
+#endif // ^^^ no workaround ^^^
+#endif // _HAS_CXX20
     assert(&invoke(&Thing::m_x, p) == &p->m_x);
 
 #ifndef _M_CEE // TRANSITION, DevCom-939490
     assert(invoke(&Thing::sum, *p, 3) == 1023);
-    // assert(invoke(&Thing::sum, ref(*sp), 4) == 1024); TRANSITION, P1065R2
+#if _HAS_CXX20
+    assert(invoke(&Thing::sum, ref(*p), 4) == 1024);
+#endif // _HAS_CXX20
     assert(invoke(&Thing::sum, p, 5) == 1025);
 #endif // _M_CEE
 

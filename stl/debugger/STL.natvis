@@ -1827,4 +1827,36 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     </Expand>
   </Type>
 
+  <Type Name="std::source_location">
+    <DisplayString>{_Function,sb}: ({_Line}, {_Column})</DisplayString>
+    <Expand>
+      <Item Name="[line]">_Line</Item>
+      <Item Name="[column]">_Column</Item>
+      <Item Name="[file]">_File,s</Item>
+      <Item Name="[function]">_Function,s</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="std::strong_ordering">
+    <DisplayString Condition="_Value == -1">less</DisplayString>
+    <DisplayString Condition="_Value == 0">equal</DisplayString>
+    <DisplayString Condition="_Value == 1">greater</DisplayString>
+    <Expand/>
+  </Type>
+
+  <Type Name="std::weak_ordering">
+    <DisplayString Condition="_Value == -1">less</DisplayString>
+    <DisplayString Condition="_Value == 0">equivalent</DisplayString>
+    <DisplayString Condition="_Value == 1">greater</DisplayString>
+    <Expand/>
+  </Type>
+
+  <Type Name="std::partial_ordering">
+    <DisplayString Condition="_Value == -1">less</DisplayString>
+    <DisplayString Condition="_Value == 0">equivalent</DisplayString>
+    <DisplayString Condition="_Value == 1">greater</DisplayString>
+    <DisplayString Condition="_Value == -128">unordered</DisplayString>
+    <Expand/>
+  </Type>
+
 </AutoVisualizer>

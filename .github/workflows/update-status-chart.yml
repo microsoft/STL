@@ -8,6 +8,7 @@ on:
   workflow_dispatch:
 jobs:
   build:
+    if: ${{ github.repository == 'microsoft/STL' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout gh-pages
@@ -17,7 +18,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: ">=15.12.0"
+          node-version: ">=16.0.0"
       - name: Run gather_stats.js
         run: |
           npm ci

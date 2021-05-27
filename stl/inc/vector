@@ -2798,7 +2798,7 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20_CONTAINER bool empty() const noexcept {
-        return size() == 0;
+        return this->_Mysize == 0;
     }
 
     _NODISCARD _CONSTEXPR20_CONTAINER allocator_type get_allocator() const noexcept {

@@ -432,9 +432,6 @@ std/numerics/c.math/cmath.pass.cpp FAIL
 # GH-1596: <algorithm>: unqualified calls to _Adl_verify_range incorrectly cause instantiation
 std/algorithms/robust_against_adl.pass.cpp FAIL
 
-# GH-1595: <bit>: bit_ceil(T(-1)) should not be a constant expression
-std/numerics/bit/bit.pow.two/bit_ceil.fail.cpp:0 FAIL
-
 
 # *** CRT BUGS ***
 # We're permanently missing aligned_alloc().
@@ -624,6 +621,16 @@ std/utilities/allocator.adaptor/allocator.adaptor.members/construct_pair_piecewi
 std/utilities/allocator.adaptor/allocator.adaptor.members/construct_pair_rvalue.pass.cpp FAIL
 std/utilities/allocator.adaptor/allocator.adaptor.members/construct_pair_values.pass.cpp FAIL
 std/utilities/allocator.adaptor/allocator.adaptor.members/construct_type.pass.cpp FAIL
+
+# Tests ignore the return value of sto{meow}, triggering nodiscard warnings
+std/strings/string.conversions/stod.pass.cpp FAIL
+std/strings/string.conversions/stof.pass.cpp FAIL
+std/strings/string.conversions/stoi.pass.cpp FAIL
+std/strings/string.conversions/stol.pass.cpp FAIL
+std/strings/string.conversions/stold.pass.cpp FAIL
+std/strings/string.conversions/stoll.pass.cpp FAIL
+std/strings/string.conversions/stoul.pass.cpp FAIL
+std/strings/string.conversions/stoull.pass.cpp FAIL
 
 # Bogus test uses std::cout without including <iostream>.
 std/utilities/time/time.cal/time.cal.wdidx/time.cal.wdidx.nonmembers/streaming.pass.cpp FAIL
