@@ -1303,10 +1303,6 @@
 #define __cpp_lib_to_address 201711L
 #define __cpp_lib_to_array   201907L
 
-#if _HAS_CXX23
-#define __cpp_lib_to_underlying 202102L
-#endif // _HAS_CXX23
-
 #define __cpp_lib_type_identity 201806L
 #define __cpp_lib_unwrap_ref    201811L
 #endif // _HAS_CXX20
@@ -1342,6 +1338,11 @@
 #if defined(__cpp_impl_coroutine) || defined(_DOWNLEVEL_COROUTINES_SUPPORTED) // TRANSITION, Clang coroutine support
 #define __cpp_lib_coroutine 201902L
 #endif // __cpp_impl_coroutine
+
+// C++23
+#if _HAS_CXX23
+#define __cpp_lib_to_underlying 202102L
+#endif // _HAS_CXX23
 
 // EXPERIMENTAL
 #define __cpp_lib_experimental_erase_if   201411L
