@@ -5386,6 +5386,9 @@ namespace ranges {
                     return _RANGES next(_STD move(_First), _Last);
                 }
             }
+        } else if constexpr (_Is_vb_iterator<_It> && same_as<_It, _Se> && same_as<_Ty, bool> //
+                             && same_as<_Pj, identity>) {
+            return _Find_vbool(_First, _Last, _Val);
         }
 
         for (; _First != _Last; ++_First) {

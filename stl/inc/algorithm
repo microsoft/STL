@@ -532,15 +532,18 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
             _STL_INTERNAL_STATIC_ASSERT(indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>);
-
-            iter_difference_t<_It> _Count = 0;
-            for (; _First != _Last; ++_First) {
-                if (_STD invoke(_Proj, *_First) == _Val) {
-                    ++_Count;
+            if constexpr (_Is_vb_iterator<_It> && same_as<_It, _Se> && same_as<_Ty, bool> && same_as<_Pj, identity>) {
+                return _Count_vbool(_First, _Last, _Val);
+            } else {
+                iter_difference_t<_It> _Count = 0;
+                for (; _First != _Last; ++_First) {
+                    if (_STD invoke(_Proj, *_First) == _Val) {
+                        ++_Count;
+                    }
                 }
-            }
 
-            return _Count;
+                return _Count;
+            }
         }
     };
 
