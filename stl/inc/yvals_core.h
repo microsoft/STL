@@ -1300,9 +1300,8 @@
 #define __cpp_lib_three_way_comparison 201907L
 #endif // __cpp_lib_concepts
 
-#define __cpp_lib_to_address 201711L
-#define __cpp_lib_to_array   201907L
-
+#define __cpp_lib_to_address    201711L
+#define __cpp_lib_to_array      201907L
 #define __cpp_lib_type_identity 201806L
 #define __cpp_lib_unwrap_ref    201811L
 #endif // _HAS_CXX20
