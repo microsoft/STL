@@ -718,6 +718,8 @@ void parse_calendar_types_basic() {
     test_parse("366 2004-12-31", "%j %F", ymd);
     assert(ymd == 2004y / December / last);
 
+    test_parse("82 1882", "%j %Y", ymd);
+    assert(ymd == 23d / March / 1882y);
     fail_parse("366 2001", "%j %Y", ymd);
     fail_parse("367 2004", "%j %Y", ymd);
 
@@ -1086,6 +1088,10 @@ void parse_timepoints() {
     assert(st == sys_days{23d / June / 1912y});
     test_parse("1912-06-23 23:59:59", "%F %T", st);
     assert(st == sys_days{23d / June / 1912y} + 23h + 59min + 59s);
+
+    // GH-1938: parsing timepoint with year and day-of-year
+    test_parse("1882.82", "%Y.%j", st);
+    assert(st == sys_days{23d / March / 1882y});
 }
 
 void parse_wchar() {
