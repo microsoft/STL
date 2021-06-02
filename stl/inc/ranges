@@ -205,6 +205,7 @@ namespace ranges {
             _Cached        = false;
             _Other._Pos    = _It{};
             _Other._Cached = false;
+            return *this;
         }
 
         _NODISCARD constexpr bool _Has_cache() const noexcept { // Is there a cached position?
@@ -237,13 +238,14 @@ namespace ranges {
         constexpr _Cached_position(const _Cached_position&) = default;
         constexpr _Cached_position& operator=(const _Cached_position&) = default;
 
-        // Offsets are potentially invalidated by move, so cached vales are invalidated after move
+        // Offsets are potentially invalidated by move, so cached values are invalidated after move
         constexpr _Cached_position(_Cached_position&& _Other) noexcept(
             is_nothrow_move_assignable_v<range_difference_t<_Rng>>)
             : _Off(_STD exchange(_Other._Off, range_difference_t<_Rng>{-1})) {}
         constexpr _Cached_position& operator=(_Cached_position&& _Other) noexcept(
             is_nothrow_move_assignable_v<range_difference_t<_Rng>>) {
             _Off = _STD exchange(_Other._Off, range_difference_t<_Rng>{-1});
+            return *this;
         }
 
         _NODISCARD constexpr bool _Has_cache() const noexcept { // Is there a cached position?
