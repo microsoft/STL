@@ -76,6 +76,9 @@ STATIC_ASSERT(!is_unsigned_v<void>);
 STATIC_ASSERT(!is_bounded_array_v<void>);
 STATIC_ASSERT(!is_unbounded_array_v<void>);
 #endif // _HAS_CXX20
+#if _HAS_CXX23
+STATIC_ASSERT(!is_scoped_enum_v<void>);
+#endif // _HAS_CXX23
 
 STATIC_ASSERT(!is_constructible_v<void>);
 STATIC_ASSERT(!is_default_constructible_v<void>);
@@ -629,6 +632,10 @@ void test_function_type() {
     STATIC_ASSERT(!is_bounded_array_v<T>);
     STATIC_ASSERT(!is_unbounded_array_v<T>);
 #endif // _HAS_CXX20
+
+#if _HAS_CXX23
+    STATIC_ASSERT(!is_scoped_enum_v<T>);
+#endif
 }
 
 template <typename T>

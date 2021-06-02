@@ -1335,6 +1335,11 @@
 #define __cpp_lib_coroutine 201902L
 #endif // __cpp_impl_coroutine
 
+// C++23
+#if _HAS_CXX23
+#define __cpp_lib_is_scoped_enum 202011L
+#endif //_HAS_CXX23
+
 // EXPERIMENTAL
 #define __cpp_lib_experimental_erase_if   201411L
 #define __cpp_lib_experimental_filesystem 201406L
