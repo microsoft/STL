@@ -858,6 +858,13 @@ enum LLEnum : long long { xLongExample, yLongExample };
 enum class ExampleEnumClass { xExample, yExample };
 enum class LLEnumClass : long long { xLongExample, yLongExample };
 
+#if _HAS_CXX23
+STATIC_ASSERT(!is_scoped_enum<ExampleEnum>::value);
+STATIC_ASSERT(!is_scoped_enum_v<ExampleEnum>);
+STATIC_ASSERT(is_scoped_enum_v<ExampleEnumClass>);
+STATIC_ASSERT(is_scoped_enum_v<LLEnumClass>);
+#endif //_HAS_CXX23
+
 // P0258R2 has_unique_object_representations
 #if _HAS_CXX17
 STATIC_ASSERT(!has_unique_object_representations_v<void>);
