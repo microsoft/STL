@@ -111,11 +111,11 @@ concept _Parse_arg_id_callbacks = requires(_Ty _At) {
 };
 
 template <class _Ty, class _CharT>
-concept _Parse_replacement_field_callbacks = requires(_Ty _At, const _CharT* _Begin, const _CharT* _End) {
+concept _Parse_replacement_field_callbacks = requires(_Ty _At, const _CharT* _First, const _CharT* _Last) {
     { _At._Parse_context };
-    { _At._On_text(_Begin, _End) } -> same_as<void>;
+    { _At._On_text(_First, _Last) } -> same_as<void>;
     { _At._On_replacement_field(size_t{}, static_cast<const _CharT*>(nullptr)) } -> same_as<void>;
-    { _At._On_format_specs(size_t{}, _Begin, _End) } -> same_as<const _CharT*>;
+    { _At._On_format_specs(size_t{}, _First, _Last) } -> same_as<const _CharT*>;
 };
 
 template <class _Ty, class _CharT>
@@ -363,10 +363,10 @@ decltype(auto) visit_format_arg(_Visitor&& _Vis, basic_format_arg<_Context> _Arg
 // we need to implement this ourselves because from_chars does not work with wide characters and isn't constexpr
 template <class _CharT>
 _NODISCARD constexpr const _CharT* _Parse_nonnegative_integer(
-    const _CharT* _Begin, const _CharT* _End, unsigned int& _Value) {
-    _STL_INTERNAL_CHECK(_Begin != _End && '0' <= *_Begin && *_Begin <= '9');
+    const _CharT* _First, const _CharT* _Last, unsigned int& _Value) {
+    _STL_INTERNAL_CHECK(_First != _Last && '0' <= *_First && *_First <= '9');
 
-    constexpr auto _Max_int = static_cast<unsigned int>((numeric_limits<int>::max)());
+    constexpr auto _Max_int = static_cast<unsigned int>((numeric_limits<int>::max) ());
     constexpr auto _Big_int = _Max_int / 10u;
 
     _Value = 0;
@@ -376,36 +376,36 @@ _NODISCARD constexpr const _CharT* _Parse_nonnegative_integer(
             _Value = _Max_int + 1;
             break;
         }
-        _Value = _Value * 10 + static_cast<unsigned int>(*_Begin - '0');
-        ++_Begin;
-    } while (_Begin != _End && '0' <= *_Begin && *_Begin <= '9');
+        _Value = _Value * 10 + static_cast<unsigned int>(*_First - '0');
+        ++_First;
+    } while (_First != _Last && '0' <= *_First && *_First <= '9');
 
     if (_Value > _Max_int) {
         _THROW(format_error("Number is too big"));
     }
 
-    return _Begin;
+    return _First;
 }
 
 template <class _CharT>
-_NODISCARD constexpr const _CharT* _Parse_nonnegative_integer(const _CharT* _Begin, const _CharT* _End, int& _Value) {
+_NODISCARD constexpr const _CharT* _Parse_nonnegative_integer(const _CharT* _First, const _CharT* _Last, int& _Value) {
     unsigned int _Val_unsigned = 0;
 
-    _Begin = _Parse_nonnegative_integer(_Begin, _End, _Val_unsigned);
+    _First = _Parse_nonnegative_integer(_First, _Last, _Val_unsigned);
     // Never invalid because _Parse_nonnegative_integer throws an error for values that don't fit in signed integers
     _Value = static_cast<int>(_Val_unsigned);
-    return _Begin;
+    return _First;
 }
 
 template <class _CharT, _Parse_arg_id_callbacks<_CharT> _Callbacks_type>
 _NODISCARD constexpr const _CharT* _Parse_arg_id(
-    const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
-    _STL_INTERNAL_CHECK(_Begin != _End);
-    _CharT _Ch = *_Begin;
+    const _CharT* _First, const _CharT* _Last, _Callbacks_type&& _Callbacks) {
+    _STL_INTERNAL_CHECK(_First != _Last);
+    _CharT _Ch = *_First;
     // No id provided, format string is using automatic indexing.
     if (_Ch == '}' || _Ch == ':') {
         _Callbacks._On_auto_id();
-        return _Begin;
+        return _First;
     }
 
     if (_Ch >= '0' && _Ch <= '9') {
@@ -415,20 +415,20 @@ _NODISCARD constexpr const _CharT* _Parse_arg_id(
         // _Index set to zero and let the validity checks below ensure that the arg_id
         // wasn't something like "00", or "023".
         if (_Ch == '0') {
-            ++_Begin;
+            ++_First;
         } else {
-            _Begin = _Parse_nonnegative_integer(_Begin, _End, _Index);
+            _First = _Parse_nonnegative_integer(_First, _Last, _Index);
         }
 
         // The format string shouldn't end right after the index number.
         // The only things permitted after the index are the end of the replacement field ('}')
         // or the beginning of the format spec (':').
-        if (_Begin == _End || (*_Begin != '}' && *_Begin != ':')) {
+        if (_First == _Last || (*_First != '}' && *_First != ':')) {
             _THROW(format_error("Invalid format string."));
         }
 
         _Callbacks._On_manual_id(_Index);
-        return _Begin;
+        return _First;
     }
     // This is where we would parse named arg ids if std::format were to support them.
     _THROW(format_error("Invalid format string."));
@@ -676,19 +676,19 @@ public:
 };
 
 template <class _CharT, _Parse_align_callbacks<_CharT> _Callbacks_type>
-_NODISCARD const _CharT* _Parse_align(const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
+_NODISCARD const _CharT* _Parse_align(const _CharT* _First, const _CharT* _Last, _Callbacks_type&& _Callbacks) {
     // align and fill
-    _STL_INTERNAL_CHECK(_Begin != _End && *_Begin != '}');
+    _STL_INTERNAL_CHECK(_First != _Last && *_First != '}');
     auto _Parsed_align = _Fmt_align::_None;
 
-    const int _Units = _Fmt_codec<_CharT>{}._Units_in_next_character(_Begin, _End);
+    const int _Units = _Fmt_codec<_CharT>{}._Units_in_next_character(_First, _Last);
     if (_Units < 0) { // invalid fill character encoding
         _THROW(format_error("Invalid format string."));
     }
-    auto _Align_pt = _Begin + _Units;
+    auto _Align_pt = _First + _Units;
 
-    if (_Align_pt == _End) {
-        _Align_pt = _Begin;
+    if (_Align_pt == _Last) {
+        _Align_pt = _First;
     }
 
     for (;;) {
@@ -705,24 +705,24 @@ _NODISCARD const _CharT* _Parse_align(const _CharT* _Begin, const _CharT* _End, 
         }
 
         if (_Parsed_align != _Fmt_align::_None) {
-            if (_Align_pt != _Begin) {
-                if (*_Begin == '{') {
+            if (_Align_pt != _First) {
+                if (*_First == '{') {
                     _THROW(format_error("invalid fill character '{'"));
                 }
-                _Callbacks._On_fill({_Begin, static_cast<size_t>(_Align_pt - _Begin)});
-                _Begin = _Align_pt + 1;
+                _Callbacks._On_fill({_First, static_cast<size_t>(_Align_pt - _First)});
+                _First = _Align_pt + 1;
             } else {
-                ++_Begin;
+                ++_First;
             }
             _Callbacks._On_align(_Parsed_align);
             break;
-        } else if (_Align_pt == _Begin) {
+        } else if (_Align_pt == _First) {
             break;
         }
-        _Align_pt = _Begin;
+        _Align_pt = _First;
     }
 
-    return _Begin;
+    return _First;
 }
 
 // Adapts a type modeling _Width_adapter_callbacks to model _Parse_arg_id_callbacks.
@@ -779,158 +779,158 @@ struct _Id_adapter {
 
 template <class _CharT, _Parse_width_callbacks<_CharT> _Callbacks_type>
 _NODISCARD constexpr const _CharT* _Parse_width(
-    const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
-    _STL_INTERNAL_CHECK(_Begin != _End);
-    if ('1' <= *_Begin && *_Begin <= '9') {
+    const _CharT* _First, const _CharT* _Last, _Callbacks_type&& _Callbacks) {
+    _STL_INTERNAL_CHECK(_First != _Last);
+    if ('1' <= *_First && *_First <= '9') {
         int _Value = 0;
-        _Begin     = _Parse_nonnegative_integer(_Begin, _End, _Value);
+        _First     = _Parse_nonnegative_integer(_First, _Last, _Value);
         _Callbacks._On_width(_Value);
-    } else if (*_Begin == '{') {
-        ++_Begin;
-        if (_Begin != _End) {
-            _Begin = _Parse_arg_id(_Begin, _End, _Width_adapter<_CharT, _Callbacks_type>{_Callbacks});
+    } else if (*_First == '{') {
+        ++_First;
+        if (_First != _Last) {
+            _First = _Parse_arg_id(_First, _Last, _Width_adapter<_CharT, _Callbacks_type>{_Callbacks});
         }
 
-        if (_Begin == _End || *_Begin != '}') {
+        if (_First == _Last || *_First != '}') {
             _THROW(format_error("Invalid format string."));
         }
-        ++_Begin;
+        ++_First;
     }
-    return _Begin;
+    return _First;
 }
 
 template <class _CharT, _Parse_precision_callbacks<_CharT> _Callbacks_type>
 _NODISCARD constexpr const _CharT* _Parse_precision(
-    const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
-    ++_Begin;
+    const _CharT* _First, const _CharT* _Last, _Callbacks_type&& _Callbacks) {
+    ++_First;
     _CharT _Ch = '\0';
-    if (_Begin != _End) {
-        _Ch = *_Begin;
+    if (_First != _Last) {
+        _Ch = *_First;
     }
 
     if ('0' <= _Ch && _Ch <= '9') {
         int _Precision = 0;
-        _Begin         = _Parse_nonnegative_integer(_Begin, _End, _Precision);
+        _First         = _Parse_nonnegative_integer(_First, _Last, _Precision);
         _Callbacks._On_precision(_Precision);
     } else if (_Ch == '{') {
-        ++_Begin;
-        if (_Begin != _End) {
-            _Begin = _Parse_arg_id(_Begin, _End, _Precision_adapter<_CharT, _Callbacks_type>{_Callbacks});
+        ++_First;
+        if (_First != _Last) {
+            _First = _Parse_arg_id(_First, _Last, _Precision_adapter<_CharT, _Callbacks_type>{_Callbacks});
         }
 
-        if (_Begin == _End || *_Begin != '}') {
+        if (_First == _Last || *_First != '}') {
             _THROW(format_error("Invalid format string."));
         }
-        ++_Begin;
+        ++_First;
     } else {
         _THROW(format_error("Missing precision specifier."));
     }
 
-    return _Begin;
+    return _First;
 }
 
 template <class _CharT, _Parse_spec_callbacks<_CharT> _Callbacks_type>
 _NODISCARD constexpr const _CharT* _Parse_format_specs(
-    const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
-    if (_Begin == _End || *_Begin == '}') {
-        return _Begin;
+    const _CharT* _First, const _CharT* _Last, _Callbacks_type&& _Callbacks) {
+    if (_First == _Last || *_First == '}') {
+        return _First;
     }
 
-    _Begin = _Parse_align(_Begin, _End, _Callbacks);
-    if (_Begin == _End) {
-        return _Begin;
+    _First = _Parse_align(_First, _Last, _Callbacks);
+    if (_First == _Last) {
+        return _First;
     }
 
-    switch (*_Begin) {
+    switch (*_First) {
     case '+':
         _Callbacks._On_sign(_Fmt_sign::_Plus);
-        ++_Begin;
+        ++_First;
         break;
     case '-':
         _Callbacks._On_sign(_Fmt_sign::_Minus);
-        ++_Begin;
+        ++_First;
         break;
     case ' ':
         _Callbacks._On_sign(_Fmt_sign::_Space);
-        ++_Begin;
+        ++_First;
         break;
     default:
         break;
     }
 
-    if (_Begin == _End) {
-        return _Begin;
+    if (_First == _Last) {
+        return _First;
     }
 
-    if (*_Begin == '#') {
+    if (*_First == '#') {
         _Callbacks._On_hash();
-        if (++_Begin == _End) {
-            return _Begin;
+        if (++_First == _Last) {
+            return _First;
         }
     }
 
-    if (*_Begin == '0') {
+    if (*_First == '0') {
         _Callbacks._On_zero();
-        if (++_Begin == _End) {
-            return _Begin;
+        if (++_First == _Last) {
+            return _First;
         }
     }
 
-    _Begin = _Parse_width(_Begin, _End, _Callbacks);
-    if (_Begin == _End) {
-        return _Begin;
+    _First = _Parse_width(_First, _Last, _Callbacks);
+    if (_First == _Last) {
+        return _First;
     }
 
-    if (*_Begin == '.') {
-        _Begin = _Parse_precision(_Begin, _End, _Callbacks);
-        if (_Begin == _End) {
-            return _Begin;
+    if (*_First == '.') {
+        _First = _Parse_precision(_First, _Last, _Callbacks);
+        if (_First == _Last) {
+            return _First;
         }
     }
 
-    if (*_Begin == 'L') {
+    if (*_First == 'L') {
         _Callbacks._On_localized();
-        if (++_Begin == _End) {
-            return _Begin;
+        if (++_First == _Last) {
+            return _First;
         }
     }
 
     // If there's anything remaining we assume it's a type.
-    if (*_Begin != '}') {
-        _Callbacks._On_type(*_Begin);
-        ++_Begin;
+    if (*_First != '}') {
+        _Callbacks._On_type(*_First);
+        ++_First;
     }
 
-    return _Begin;
+    return _First;
 }
 
 template <class _CharT, _Parse_replacement_field_callbacks<_CharT> _HandlerT>
 _NODISCARD constexpr const _CharT* _Parse_replacement_field(
-    const _CharT* _Begin, const _CharT* _End, _HandlerT&& _Handler) {
-    ++_Begin;
-    if (_Begin == _End) {
+    const _CharT* _First, const _CharT* _Last, _HandlerT&& _Handler) {
+    ++_First;
+    if (_First == _Last) {
         _THROW(format_error("Invalid format string."));
     }
 
-    if (*_Begin == '}') {
+    if (*_First == '}') {
         // string was "{}", and we have a replacement field
-        _Handler._On_replacement_field(_Handler._Parse_context.next_arg_id(), _Begin);
-    } else if (*_Begin == '{') {
+        _Handler._On_replacement_field(_Handler._Parse_context.next_arg_id(), _First);
+    } else if (*_First == '{') {
         // string was "{{", so we have a literal "{" to print
-        _Handler._On_text(_Begin, _Begin + 1);
+        _Handler._On_text(_First, _First + 1);
     } else {
         _Id_adapter<_CharT> _Adapter{_Handler._Parse_context};
-        _Begin     = _Parse_arg_id(_Begin, _End, _Adapter);
+        _First     = _Parse_arg_id(_First, _Last, _Adapter);
         _CharT _Ch = _CharT{};
-        if (_Begin != _End) {
-            _Ch = *_Begin;
+        if (_First != _Last) {
+            _Ch = *_First;
         }
 
         if (_Ch == '}') {
-            _Handler._On_replacement_field(_Adapter._Arg_id, _Begin);
+            _Handler._On_replacement_field(_Adapter._Arg_id, _First);
         } else if (_Ch == ':') {
-            _Begin = _Handler._On_format_specs(_Adapter._Arg_id, _Begin + 1, _End);
-            if (_Begin == _End || *_Begin != '}') {
+            _First = _Handler._On_format_specs(_Adapter._Arg_id, _First + 1, _Last);
+            if (_First == _Last || *_First != '}') {
                 _THROW(format_error("Unknown format specifier."));
             }
         } else {
@@ -938,7 +938,7 @@ _NODISCARD constexpr const _CharT* _Parse_replacement_field(
         }
     }
 
-    return _Begin + 1;
+    return _First + 1;
 }
 
 template <class _CharT, _Parse_replacement_field_callbacks<_CharT> _HandlerT>
@@ -1053,7 +1053,7 @@ public:
     }
 
     constexpr void _On_type(const _CharT _Type) {
-        if (_Type < 0 || _Type > (numeric_limits<signed char>::max)()) {
+        if (_Type < 0 || _Type > (numeric_limits<signed char>::max) ()) {
             _THROW(format_error("Invalid type specification."));
         }
         _Specs._Type = static_cast<char>(_Type);
@@ -1121,7 +1121,7 @@ template <class _Handler, class _FormatArg>
 _NODISCARD constexpr int _Get_dynamic_specs(const _FormatArg _Arg) {
     _STL_INTERNAL_STATIC_ASSERT(_Is_any_of_v<_Handler, _Width_checker, _Precision_checker>);
     const unsigned long long _Val = _STD visit_format_arg(_Handler{}, _Arg);
-    if (_Val > static_cast<unsigned long long>((numeric_limits<int>::max)())) {
+    if (_Val > static_cast<unsigned long long>((numeric_limits<int>::max) ())) {
         _THROW(format_error("Number is too big."));
     }
 
@@ -1195,7 +1195,7 @@ private:
     _ParseContext& _Parse_ctx;
 
     _NODISCARD static constexpr int _Verify_dynamic_arg_index_in_range(const size_t _Idx) {
-        if (_Idx > static_cast<size_t>((numeric_limits<int>::max)())) {
+        if (_Idx > static_cast<size_t>((numeric_limits<int>::max) ())) {
             _THROW(format_error("Dynamic width or precision index too large."));
         }
 
@@ -2044,9 +2044,9 @@ _NODISCARD _OutputIt _Write_sign(_OutputIt _Out, const _Fmt_sign _Sgn, const boo
     return _Out;
 }
 
-inline void _Buffer_to_uppercase(char* _Begin, const char* _End) {
-    for (; _Begin != _End; ++_Begin) {
-        *_Begin = static_cast<char>(_CSTD toupper(*_Begin));
+inline void _Buffer_to_uppercase(char* _First, const char* _Last) {
+    for (; _First != _Last; ++_First) {
+        *_First = static_cast<char>(_CSTD toupper(*_First));
     }
 }
 
@@ -2078,7 +2078,7 @@ _NODISCARD inline int _Count_separators(size_t _Digits, const string_view _Group
 }
 
 template <class _CharT, class _OutputIt>
-_NODISCARD _OutputIt _Write_separated_integer(const char* _Start, const char* const _End, const string_view _Groups,
+_NODISCARD _OutputIt _Write_separated_integer(const char* _First, const char* const _Last, const string_view _Groups,
     const _CharT _Separator, int _Separators, _OutputIt _Out) {
     auto _Group_it = _Groups.begin();
     auto _Repeats  = 0;
@@ -2092,8 +2092,8 @@ _NODISCARD _OutputIt _Write_separated_integer(const char* _Start, const char* co
             ++_Repeats;
         }
     }
-    _Out   = _RANGES _Copy_unchecked(_Start, _End - _Grouped, _STD move(_Out)).out;
-    _Start = _End - _Grouped;
+    _Out   = _RANGES _Copy_unchecked(_First, _Last - _Grouped, _STD move(_Out)).out;
+    _First = _Last - _Grouped;
 
     for (; _Separators > 0; --_Separators) {
         if (_Repeats > 0) {
@@ -2103,10 +2103,10 @@ _NODISCARD _OutputIt _Write_separated_integer(const char* _Start, const char* co
         }
 
         *_Out++ = _Separator;
-        _Out    = _RANGES _Copy_unchecked(_Start, _Start + *_Group_it, _STD move(_Out)).out;
-        _Start += *_Group_it;
+        _Out    = _RANGES _Copy_unchecked(_First, _First + *_Group_it, _STD move(_Out)).out;
+        _First += *_Group_it;
     }
-    _STL_INTERNAL_CHECK(_Start == _End);
+    _STL_INTERNAL_CHECK(_First == _Last);
     return _Out;
 }
 
@@ -2406,7 +2406,7 @@ _NODISCARD _OutputIt _Fmt_write(
     auto _Buffer_start = _Buffer.data();
     auto _Width        = static_cast<int>(_Result.ptr - _Buffer_start);
 
-    const auto _Is_negative = (_STD signbit)(_Value);
+    const auto _Is_negative = (_STD signbit) (_Value);
 
     if (_Is_negative) {
         // Remove the '-', it will be dealt with directly
@@ -2422,7 +2422,7 @@ _NODISCARD _OutputIt _Fmt_write(
         _Exponent = static_cast<char>(_CSTD toupper(_Exponent));
     }
 
-    const auto _Is_finite = (_STD isfinite)(_Value);
+    const auto _Is_finite = (_STD isfinite) (_Value);
 
     auto _Append_decimal   = false;
     auto _Exponent_start   = _Result.ptr;
@@ -2440,7 +2440,7 @@ _NODISCARD _OutputIt _Fmt_write(
                 _Exponent_start = _It;
             }
         }
-        _Integral_end = (_STD min)(_Radix_point, _Exponent_start);
+        _Integral_end = (_STD min) (_Radix_point, _Exponent_start);
 
         if (_Specs._Alt) {
             if (_Radix_point == _Result.ptr) {
@@ -2585,7 +2585,7 @@ _NODISCARD const _CharT* _Measure_string_prefix(const basic_string_view<_CharT> 
     const auto _Last     = _Pos + _Value.size();
     int _Estimated_width = 0; // the estimated width of [_Value.data(), _Pos)
     const _Fmt_codec<_CharT> _Codec;
-    constexpr auto _Max_int = (numeric_limits<int>::max)();
+    constexpr auto _Max_int = (numeric_limits<int>::max) ();
 
     while (_Pos != _Last) {
         if (_Estimated_width == _Max_width && _Max_width >= 0) {
@@ -2718,8 +2718,8 @@ struct _Format_handler {
         const _Lazy_locale& _Loc)
         : _Parse_context(_Str), _Ctx(_STD move(_Out), _Format_args, _Loc) {}
 
-    void _On_text(const _CharT* _Begin, const _CharT* _End) {
-        _Ctx.advance_to(_RANGES _Copy_unchecked(_Begin, _End, _Ctx.out()).out);
+    void _On_text(const _CharT* _First, const _CharT* _Last) {
+        _Ctx.advance_to(_RANGES _Copy_unchecked(_First, _Last, _Ctx.out()).out);
     }
 
     void _On_replacement_field(const size_t _Id, const _CharT*) {
@@ -2728,8 +2728,8 @@ struct _Format_handler {
             _Default_arg_formatter<_OutputIt, _CharT>{_Ctx.out(), _Ctx._Get_args(), _Ctx._Get_lazy_locale()}, _Arg));
     }
 
-    const _CharT* _On_format_specs(const size_t _Id, const _CharT* _Begin, const _CharT* _End) {
-        _Parse_context.advance_to(_Parse_context.begin() + (_Begin - &*_Parse_context.begin()));
+    const _CharT* _On_format_specs(const size_t _Id, const _CharT* _First, const _CharT* _Last) {
+        _Parse_context.advance_to(_Parse_context.begin() + (_First - &*_Parse_context.begin()));
         auto _Arg = _Get_arg(_Ctx, _Id);
         if (_Arg._Active_state == _Basic_format_arg_type::_Custom_type) {
             _Arg._Custom_state.format(_Parse_context, _Ctx);
@@ -2740,14 +2740,14 @@ struct _Format_handler {
         _Specs_checker<_Specs_handler<basic_format_parse_context<_CharT>, _Context>> _Handler(
             _Specs_handler<basic_format_parse_context<_CharT>, _Context>{_Specs, _Parse_context, _Ctx},
             _Arg._Active_state);
-        _Begin = _Parse_format_specs(_Begin, _End, _Handler);
-        if (_Begin == _End || *_Begin != '}') {
+        _First = _Parse_format_specs(_First, _Last, _Handler);
+        if (_First == _Last || *_First != '}') {
             _THROW(format_error("Missing '}' in format string."));
         }
 
         _Ctx.advance_to(_STD visit_format_arg(
             _Arg_formatter<_OutputIt, _CharT>{._Ctx = _STD addressof(_Ctx), ._Specs = _STD addressof(_Specs)}, _Arg));
-        return _Begin;
+        return _First;
     }
 };
 
