@@ -147,10 +147,9 @@ void test_gh1932() {
     // Defend against regression of GH-1932, in which ranges::unique_copy instantiated
     // iter_value_t<I> for a non-input iterator I.
 
-    std::istringstream str("42 42 42");
-    std::ostringstream result;
-    std::ranges::unique_copy(
-        std::istream_iterator<int>(str), std::istream_iterator<int>(), std::ostream_iterator<int>(result, " "));
+    istringstream str("42 42 42");
+    ostringstream result;
+    ranges::unique_copy(istream_iterator<int>{str}, istream_iterator<int>{}, ostream_iterator<int>{result, " "});
     assert(result.str() == "42 ");
 }
 
