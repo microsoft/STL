@@ -31,6 +31,12 @@ struct FloatToCharsTestCase {
     const char* correct;
 };
 
+struct FloatToWideTestCase {
+    float value;
+    chars_format fmt;
+    const wchar_t* correct;
+};
+
 struct FloatPrecisionToCharsTestCase {
     float value;
     chars_format fmt;
@@ -52,9 +58,22 @@ struct DoubleToCharsTestCase {
     const char* correct;
 };
 
+struct DoubleToWideTestCase {
+    double value;
+    chars_format fmt;
+    const wchar_t* correct;
+};
+
 struct DoublePrecisionToCharsTestCase {
     double value;
     chars_format fmt;
     int precision;
     const char* correct;
+};
+
+struct DoublePrecisionToWideTestCase {
+    double value;
+    chars_format fmt;
+    int precision;
+    const wchar_t* correct;
 };

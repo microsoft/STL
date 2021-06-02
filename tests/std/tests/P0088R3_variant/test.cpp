@@ -1768,7 +1768,7 @@ int run_test()
 {
   static_assert(!std::is_assignable<std::variant<int, int>, int>::value, "");
   static_assert(!std::is_assignable<std::variant<long, long long>, int>::value, "");
-#if 0 // TRANSITION, P0608
+#if _HAS_CXX20
   static_assert(std::is_assignable<std::variant<char>, int>::value == VariantAllowsNarrowingConversions, "");
 
   static_assert(std::is_assignable<std::variant<std::string, float>, int>::value
@@ -1781,10 +1781,12 @@ int run_test()
   static_assert(!std::is_assignable<std::variant<int, const bool>, decltype("meow")>::value, "");
   static_assert(!std::is_assignable<std::variant<int, const volatile bool>, decltype("meow")>::value, "");
 
-  static_assert(!std::is_assignable<std::variant<bool>, std::true_type>::value, "");
+  static_assert(std::is_assignable<std::variant<bool>, std::true_type>::value, "");
   static_assert(!std::is_assignable<std::variant<bool>, std::unique_ptr<char> >::value, "");
+#ifndef TEST_PERMISSIVE
   static_assert(!std::is_assignable<std::variant<bool>, decltype(nullptr)>::value, "");
-#endif // TRANSITION, P0608
+#endif // !TEST_PERMISSIVE
+#endif // _HAS_CXX20
 
   return 0;
 }
@@ -3048,7 +3050,7 @@ void test_T_assignment_sfinae() {
     using V = std::variant<std::string, void *>;
     static_assert(!std::is_assignable<V, int>::value, "no matching operator=");
   }
-#if 0 // TRANSITION, P0608
+#if _HAS_CXX20
   {
     using V = std::variant<std::string, float>;
     static_assert(std::is_assignable<V, int>::value == VariantAllowsNarrowingConversions,
@@ -3061,12 +3063,14 @@ void test_T_assignment_sfinae() {
     struct X {
       operator void*();
     };
+#ifndef __EDG__ // TRANSITION, VSO-1327220
     static_assert(!std::is_assignable<V, X>::value,
                   "no boolean conversion in operator=");
-    static_assert(!std::is_assignable<V, std::false_type>::value,
+#endif // !__EDG__
+    static_assert(std::is_assignable<V, std::false_type>::value,
                   "no converted to bool in operator=");
   }
-#endif // TRANSITION, P0608
+#endif // _HAS_CXX20
   {
     struct X {};
     struct Y {
@@ -3104,7 +3108,7 @@ void test_T_assignment_basic() {
     assert(v.index() == 1);
     assert(std::get<1>(v) == 43);
   }
-#if 0 // TRANSITION, P0608
+#if _HAS_CXX20
 #ifndef TEST_VARIANT_ALLOWS_NARROWING_CONVERSIONS
   {
     std::variant<unsigned, long> v;
@@ -3122,13 +3126,15 @@ void test_T_assignment_basic() {
     assert(v.index() == 0);
     assert(std::get<0>(v) == "bar");
   }
+#ifndef TEST_PERMISSIVE
   {
     std::variant<bool, std::unique_ptr<int>> v;
     v = nullptr;
     assert(v.index() == 1);
     assert(std::get<1>(v) == nullptr);
   }
-#endif // TRANSITION, P0608
+#endif // !TEST_PERMISSIVE
+#endif // _HAS_CXX20
   {
     std::variant<bool volatile, int> v = 42;
     v = false;
@@ -3266,7 +3272,7 @@ int run_test()
 {
   static_assert(!std::is_constructible<std::variant<int, int>, int>::value, "");
   static_assert(!std::is_constructible<std::variant<long, long long>, int>::value, "");
-#if 0 // TRANSITION, P0608
+#if _HAS_CXX20
   static_assert(std::is_constructible<std::variant<char>, int>::value == VariantAllowsNarrowingConversions, "");
 
   static_assert(std::is_constructible<std::variant<std::string, float>, int>::value
@@ -3278,11 +3284,12 @@ int run_test()
   static_assert(!std::is_constructible<std::variant<int, bool>, decltype("meow")>::value, "");
   static_assert(!std::is_constructible<std::variant<int, const bool>, decltype("meow")>::value, "");
   static_assert(!std::is_constructible<std::variant<int, const volatile bool>, decltype("meow")>::value, "");
-
-  static_assert(!std::is_constructible<std::variant<bool>, std::true_type>::value, "");
+  static_assert(std::is_constructible<std::variant<bool>, std::true_type>::value, "");
   static_assert(!std::is_constructible<std::variant<bool>, std::unique_ptr<char> >::value, "");
+#ifndef TEST_PERMISSIVE
   static_assert(!std::is_constructible<std::variant<bool>, decltype(nullptr)>::value, "");
-#endif // TRANSITION, P0608
+#endif // !TEST_PERMISSIVE
+#endif // _HAS_CXX20
 
   return 0;
 }
@@ -4567,7 +4574,7 @@ void test_T_ctor_sfinae() {
     static_assert(!std::is_constructible<V, int>::value,
                   "no matching constructor");
   }
-#if 0 // TRANSITION, P0608
+#if _HAS_CXX20
   {
     using V = std::variant<std::string, float>;
     static_assert(std::is_constructible<V, int>::value == VariantAllowsNarrowingConversions,
@@ -4580,12 +4587,14 @@ void test_T_ctor_sfinae() {
     struct X {
       operator void*();
     };
+#ifndef __EDG__ // TRANSITION, VSO-1327220
     static_assert(!std::is_constructible<V, X>::value,
                   "no boolean conversion in constructor");
-    static_assert(!std::is_constructible<V, std::false_type>::value,
+#endif // !__EDG__
+    static_assert(std::is_constructible<V, std::false_type>::value,
                   "no converted to bool in constructor");
   }
-#endif // TRANSITION, P0608
+#endif // _HAS_CXX20
   {
     struct X {};
     struct Y {
@@ -4629,7 +4638,7 @@ void test_T_ctor_basic() {
     static_assert(v.index() == 1, "");
     static_assert(std::get<1>(v) == 42, "");
   }
-#if 0 // TRANSITION, P0608
+#if _HAS_CXX20
 #ifndef TEST_VARIANT_ALLOWS_NARROWING_CONVERSIONS
   {
     constexpr std::variant<unsigned, long> v(42);
@@ -4642,12 +4651,14 @@ void test_T_ctor_basic() {
     assert(v.index() == 0);
     assert(std::get<0>(v) == "meow");
   }
+#ifndef TEST_PERMISSIVE
   {
     std::variant<bool volatile, std::unique_ptr<int>> v = nullptr;
     assert(v.index() == 1);
     assert(std::get<1>(v) == nullptr);
   }
-#endif // TRANSITION, P0608
+#endif // !TEST_PERMISSIVE
+#endif // _HAS_CXX20
   {
     std::variant<bool volatile const, int> v = true;
     assert(v.index() == 0);
@@ -4681,6 +4692,7 @@ void test_T_ctor_basic() {
 #endif
 }
 
+#if !_HAS_CXX20 // Narrowing check occurs with P0608R3
 struct BoomOnAnything {
   template <class T>
   constexpr BoomOnAnything(T) { static_assert(!std::is_same<T, T>::value, ""); }
@@ -4692,6 +4704,7 @@ void test_no_narrowing_check_for_class_types() {
   assert(v.index() == 0);
   assert(std::get<0>(v) == 42);
 }
+#endif // Narrowing check occurs with P0608R3
 
 struct Bar {};
 struct Baz {};
@@ -4708,7 +4721,9 @@ int run_test() {
   test_T_ctor_basic();
   test_T_ctor_noexcept();
   test_T_ctor_sfinae();
+#if !_HAS_CXX20 // Narrowing check occurs with P0608R3
   test_no_narrowing_check_for_class_types();
+#endif // Narrowing check occurs with P0608R3
   test_construction_with_repeated_types();
   return 0;
 }

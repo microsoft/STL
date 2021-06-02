@@ -193,6 +193,15 @@ struct instantiator {
                 empty1.begin(), empty1.end(), empty2.begin(), empty2.end(), less{}, get_first, get_second);
             assert(!result);
         }
+        { // Validate memcmp case
+            unsigned char arr1[3]{0, 1, 2};
+            unsigned char arr2[3]{0, 1, 3};
+            assert(lexicographical_compare(arr1, arr2));
+            arr2[2] = 2;
+            assert(!lexicographical_compare(arr1, arr2));
+            arr2[2] = 1;
+            assert(!lexicographical_compare(arr1, arr2));
+        }
     }
 };
 

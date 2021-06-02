@@ -275,57 +275,6 @@ std/utilities/memory/default.allocator/allocator.members/allocate.verify.cpp SKI
 
 
 # *** MISSING STL FEATURES ***
-# C++20 P0355R7 "<chrono> Calendars And Time Zones"
-std/utilities/time/time.cal/time.cal.day/time.cal.day.nonmembers/streaming.pass.cpp FAIL
-std/utilities/time/time.cal/time.cal.md/time.cal.md.nonmembers/streaming.pass.cpp FAIL
-std/utilities/time/time.cal/time.cal.mdlast/streaming.pass.cpp FAIL
-std/utilities/time/time.cal/time.cal.month/time.cal.month.nonmembers/streaming.pass.cpp FAIL
-std/utilities/time/time.cal/time.cal.mwd/time.cal.mwd.nonmembers/streaming.pass.cpp FAIL
-std/utilities/time/time.cal/time.cal.mwdlast/time.cal.mwdlast.nonmembers/streaming.pass.cpp FAIL
-std/utilities/time/time.cal/time.cal.wdidx/time.cal.wdidx.nonmembers/streaming.pass.cpp FAIL
-std/utilities/time/time.cal/time.cal.wdlast/time.cal.wdlast.nonmembers/streaming.pass.cpp FAIL
-std/utilities/time/time.cal/time.cal.weekday/time.cal.weekday.nonmembers/streaming.pass.cpp FAIL
-std/utilities/time/time.cal/time.cal.year/time.cal.year.nonmembers/streaming.pass.cpp FAIL
-std/utilities/time/time.cal/time.cal.ym/time.cal.ym.nonmembers/streaming.pass.cpp FAIL
-std/utilities/time/time.cal/time.cal.ymd/time.cal.ymd.nonmembers/streaming.pass.cpp FAIL
-std/utilities/time/time.cal/time.cal.ymdlast/time.cal.ymdlast.nonmembers/streaming.pass.cpp FAIL
-std/utilities/time/time.cal/time.cal.ymwd/time.cal.ymwd.nonmembers/streaming.pass.cpp FAIL
-std/utilities/time/time.cal/time.cal.ymwdlast/time.cal.ymwdlast.nonmembers/streaming.pass.cpp FAIL
-std/utilities/time/time.clock/time.clock.file/consistency.pass.cpp FAIL
-std/utilities/time/time.clock/time.clock.file/file_time.pass.cpp FAIL
-std/utilities/time/time.clock/time.clock.file/now.pass.cpp FAIL
-std/utilities/time/time.clock/time.clock.file/rep_signed.pass.cpp FAIL
-
-# C++20 P0466R5 "Layout-Compatibility And Pointer-Interconvertibility Traits"
-std/language.support/support.limits/support.limits.general/type_traits.version.pass.cpp:1 FAIL
-
-# C++20 P0608R3 "Improving variant's Converting Constructor/Assignment"
-std/utilities/variant/variant.variant/variant.assign/conv.pass.cpp FAIL
-std/utilities/variant/variant.variant/variant.assign/T.pass.cpp FAIL
-std/utilities/variant/variant.variant/variant.ctor/conv.pass.cpp FAIL
-std/utilities/variant/variant.variant/variant.ctor/T.pass.cpp FAIL
-
-# C++20 P0645R10 "<format> Text Formatting"
-std/language.support/support.limits/support.limits.general/format.version.pass.cpp FAIL
-std/utilities/format/format.error/format.error.pass.cpp FAIL
-
-# C++20 P0784R7 "More constexpr containers"
-std/utilities/memory/allocator.traits/allocator.traits.members/construct.pass.cpp FAIL
-std/utilities/memory/allocator.traits/allocator.traits.members/destroy.pass.cpp FAIL
-std/utilities/memory/specialized.algorithms/specialized.construct/construct_at.pass.cpp FAIL
-
-# C++20 P0896R4 "<ranges>"
-std/language.support/support.limits/support.limits.general/algorithm.version.pass.cpp FAIL
-std/language.support/support.limits/support.limits.general/functional.version.pass.cpp FAIL
-std/language.support/support.limits/support.limits.general/iterator.version.pass.cpp FAIL
-std/language.support/support.limits/support.limits.general/memory.version.pass.cpp FAIL
-
-# C++20 P1004R2 "constexpr std::vector"
-std/language.support/support.limits/support.limits.general/vector.version.pass.cpp FAIL
-
-# C++20 P1614R2 "Adding Spaceship <=> To The Library"
-std/language.support/support.limits/support.limits.general/compare.version.pass.cpp FAIL
-
 # C++23 P1048R1 "is_scoped_enum"
 std/utilities/meta/meta.unary/meta.unary.prop/is_scoped_enum.pass.cpp FAIL
 
@@ -380,6 +329,9 @@ std/thread/macro.pass.cpp:1 FAIL
 
 # LLVM-46207 Clang's tgmath.h interferes with the UCRT's tgmath.h
 std/depr/depr.c.headers/tgmath_h.pass.cpp:1 FAIL
+
+# LLVM-48606 "Clang rejects creation of struct with mutable member during constant evaluation"
+std/language.support/support.limits/support.limits.general/vector.version.pass.cpp:1 FAIL
 
 
 # *** CLANG ISSUES, NOT YET ANALYZED ***
@@ -479,12 +431,6 @@ std/numerics/c.math/cmath.pass.cpp FAIL
 
 # GH-1596: <algorithm>: unqualified calls to _Adl_verify_range incorrectly cause instantiation
 std/algorithms/robust_against_adl.pass.cpp FAIL
-
-# GH-1595: <bit>: bit_ceil(T(-1)) should not be a constant expression
-std/numerics/bit/bit.pow.two/bit_ceil.fail.cpp:0 FAIL
-
-# GH-1530: <random>: Poisson approximation for binomial_distribution is not accurate
-std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.bin/eval.PR44847.pass.cpp FAIL
 
 
 # *** CRT BUGS ***
@@ -664,43 +610,70 @@ std/utilities/memory/util.smartptr/util.smartptr.shared/libcxx.control_block_lay
 # Non-Standard assumption that std::filesystem::file_time_type::duration::period is std::nano
 std/input.output/filesystems/fs.filesystem.synopsis/file_time_type_resolution.compile.pass.cpp FAIL
 
+# P1614R2 "Adding Spaceship <=> To The Library" makes `std::operator!=(i1, i3)` an error
+std/iterators/stream.iterators/istream.iterator/istream.iterator.ops/equal.pass.cpp FAIL
+
+# Uses-allocator class constructor wants non-const allocator ref and mismatched piecewise_construct's value category
+std/utilities/allocator.adaptor/allocator.adaptor.members/construct.pass.cpp FAIL
+std/utilities/allocator.adaptor/allocator.adaptor.members/construct_pair.pass.cpp FAIL
+std/utilities/allocator.adaptor/allocator.adaptor.members/construct_pair_const_lvalue_pair.pass.cpp FAIL
+std/utilities/allocator.adaptor/allocator.adaptor.members/construct_pair_piecewise.pass.cpp FAIL
+std/utilities/allocator.adaptor/allocator.adaptor.members/construct_pair_rvalue.pass.cpp FAIL
+std/utilities/allocator.adaptor/allocator.adaptor.members/construct_pair_values.pass.cpp FAIL
+std/utilities/allocator.adaptor/allocator.adaptor.members/construct_type.pass.cpp FAIL
+
+# Tests ignore the return value of sto{meow}, triggering nodiscard warnings
+std/strings/string.conversions/stod.pass.cpp FAIL
+std/strings/string.conversions/stof.pass.cpp FAIL
+std/strings/string.conversions/stoi.pass.cpp FAIL
+std/strings/string.conversions/stol.pass.cpp FAIL
+std/strings/string.conversions/stold.pass.cpp FAIL
+std/strings/string.conversions/stoll.pass.cpp FAIL
+std/strings/string.conversions/stoul.pass.cpp FAIL
+std/strings/string.conversions/stoull.pass.cpp FAIL
+
+# Bogus test uses std::cout without including <iostream>.
+std/utilities/time/time.cal/time.cal.wdidx/time.cal.wdidx.nonmembers/streaming.pass.cpp FAIL
+
+# Bogus test constructs year_month_weekday from weekday, but the constructor actually takes weekday_indexed.
+std/utilities/time/time.cal/time.cal.ymwd/time.cal.ymwd.nonmembers/streaming.pass.cpp FAIL
+
+# We define __cpp_lib_has_unique_object_representations in C++17 mode; test error says it
+# "should not be defined when TEST_HAS_BUILTIN_IDENTIFIER(__has_unique_object_representations) || TEST_GCC_VER >= 700 is not defined!"
+std/language.support/support.limits/support.limits.general/type_traits.version.pass.cpp:1 FAIL
+
+# Tests expect __cpp_lib_ranges to have the old value 201811L for P0896R4; we define the C++20 value 201911L for P1716R3.
+std/language.support/support.limits/support.limits.general/algorithm.version.pass.cpp FAIL
+std/language.support/support.limits/support.limits.general/functional.version.pass.cpp FAIL
+std/language.support/support.limits/support.limits.general/iterator.version.pass.cpp FAIL
+
+# Test expects __cpp_lib_chrono to have the old value 201611L for P0505R0; we define the C++20 value 201907L for P1466R3.
+std/language.support/support.limits/support.limits.general/chrono.version.pass.cpp FAIL
+
+# We unconditionally define __cpp_lib_addressof_constexpr; test error says it
+# "should not be defined when TEST_HAS_BUILTIN(__builtin_addressof) || TEST_GCC_VER >= 700 is not defined!"
+std/language.support/support.limits/support.limits.general/memory.version.pass.cpp FAIL
+
 
 # *** LIKELY STL BUGS ***
 # Not yet analyzed, likely STL bugs. Assertions and other runtime failures.
 std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.bin/eval_param.pass.cpp FAIL
 std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.bin/eval.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.bin/eval.PR44847.pass.cpp FAIL
 std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.geo/eval_param.pass.cpp FAIL
 std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.geo/eval.pass.cpp FAIL
 std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.negbin/eval_param.pass.cpp FAIL
 std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.negbin/eval.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.cauchy/max.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.cauchy/min.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.chisq/max.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.chisq/min.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.f/max.pass.cpp FAIL
 std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.lognormal/eval_param.pass.cpp FAIL
 std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.lognormal/eval.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.lognormal/max.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.lognormal/min.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.normal/max.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.normal/min.pass.cpp FAIL
 std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.t/eval_param.pass.cpp FAIL
 std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.t/eval.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.t/max.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.t/min.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.exp/max.pass.cpp FAIL
 std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.extreme/eval_param.pass.cpp FAIL
 std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.extreme/eval.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.extreme/max.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.extreme/min.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.gamma/eq.pass.cpp FAIL
 std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.gamma/eval_param.pass.cpp FAIL
 std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.gamma/eval.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.gamma/max.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.gamma/min.pass.cpp FAIL
 std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.poisson/eval_param.pass.cpp FAIL
 std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.poisson/eval.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.weibull/max.pass.cpp FAIL
 std/numerics/rand/rand.dis/rand.dist.uni/rand.dist.uni.real/param_ctor.pass.cpp FAIL
 
 # Not yet analyzed, likely STL bugs. Various assertions.
@@ -887,9 +860,22 @@ std/re/re.alg/re.alg.search/basic.locale.pass.cpp FAIL
 std/re/re.alg/re.alg.search/ecma.locale.pass.cpp FAIL
 std/re/re.alg/re.alg.search/extended.locale.pass.cpp FAIL
 
+# Not yet analyzed. Various static_asserts.
+std/utilities/variant/variant.variant/variant.assign/conv.pass.cpp FAIL
+std/utilities/variant/variant.variant/variant.assign/T.pass.cpp FAIL
+std/utilities/variant/variant.variant/variant.ctor/conv.pass.cpp FAIL
+std/utilities/variant/variant.variant/variant.ctor/T.pass.cpp FAIL
+
+# Not yet analyzed. Involves incomplete types.
+std/utilities/memory/allocator.traits/allocator.traits.members/construct.pass.cpp FAIL
+std/utilities/memory/allocator.traits/allocator.traits.members/destroy.pass.cpp FAIL
+
+# Not yet analyzed. Error mentions allocator<const T>.
+std/utilities/memory/specialized.algorithms/specialized.construct/construct_at.pass.cpp FAIL
+
 
 # *** XFAILs WHICH PASS ***
-# Not yet implemented in libcxx and marked as XFAIL
+# Not yet implemented in libcxx and marked as "XFAIL: libc++"
 std/strings/c.strings/cuchar.pass.cpp PASS
 std/utilities/function.objects/func.search/func.search.bm/default.pass.cpp PASS
 std/utilities/function.objects/func.search/func.search.bm/hash.pass.cpp PASS
@@ -899,3 +885,18 @@ std/utilities/function.objects/func.search/func.search.bmh/default.pass.cpp PASS
 std/utilities/function.objects/func.search/func.search.bmh/hash.pass.cpp PASS
 std/utilities/function.objects/func.search/func.search.bmh/hash.pred.pass.cpp PASS
 std/utilities/function.objects/func.search/func.search.bmh/pred.pass.cpp PASS
+
+# Not yet implemented in libcxx and marked as "XFAIL: *"
+std/utilities/time/time.cal/time.cal.day/time.cal.day.nonmembers/streaming.pass.cpp SKIPPED
+std/utilities/time/time.cal/time.cal.md/time.cal.md.nonmembers/streaming.pass.cpp SKIPPED
+std/utilities/time/time.cal/time.cal.mdlast/streaming.pass.cpp SKIPPED
+std/utilities/time/time.cal/time.cal.month/time.cal.month.nonmembers/streaming.pass.cpp SKIPPED
+std/utilities/time/time.cal/time.cal.mwd/time.cal.mwd.nonmembers/streaming.pass.cpp SKIPPED
+std/utilities/time/time.cal/time.cal.mwdlast/time.cal.mwdlast.nonmembers/streaming.pass.cpp SKIPPED
+std/utilities/time/time.cal/time.cal.wdlast/time.cal.wdlast.nonmembers/streaming.pass.cpp SKIPPED
+std/utilities/time/time.cal/time.cal.weekday/time.cal.weekday.nonmembers/streaming.pass.cpp SKIPPED
+std/utilities/time/time.cal/time.cal.year/time.cal.year.nonmembers/streaming.pass.cpp SKIPPED
+std/utilities/time/time.cal/time.cal.ym/time.cal.ym.nonmembers/streaming.pass.cpp SKIPPED
+std/utilities/time/time.cal/time.cal.ymd/time.cal.ymd.nonmembers/streaming.pass.cpp SKIPPED
+std/utilities/time/time.cal/time.cal.ymdlast/time.cal.ymdlast.nonmembers/streaming.pass.cpp SKIPPED
+std/utilities/time/time.cal/time.cal.ymwdlast/time.cal.ymwdlast.nonmembers/streaming.pass.cpp SKIPPED

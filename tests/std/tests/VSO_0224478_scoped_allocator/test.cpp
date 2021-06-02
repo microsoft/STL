@@ -107,7 +107,7 @@ void test_case_VSO_224478_piecewise_construct_calls_allocator_construct() {
 struct lwg_2586 {
     using allocator_type = allocator<lwg_2586>;
     lwg_2586(allocator_arg_t, allocator_type&&) {}
-    lwg_2586(allocator_type&) {}
+    lwg_2586(const allocator_type&) {}
 };
 
 void test_case_LWG_2586() {

@@ -22,13 +22,15 @@ $Env:SuppressAzurePowerShellBreakingChangeWarnings = 'true'
 
 $Location = 'westus2'
 $Prefix = 'StlBuild-' + (Get-Date -Format 'yyyy-MM-dd')
-$VMSize = 'Standard_D32as_v4'
+$VMSize = 'Standard_D32ds_v4'
 $ProtoVMName = 'PROTOTYPE'
 $LiveVMPrefix = 'BUILD'
-$WindowsServerSku = '2019-Datacenter'
+$ImagePublisher = 'MicrosoftWindowsDesktop'
+$ImageOffer = 'Windows-10'
+$ImageSku = '20h2-ent-g2'
 
 $ProgressActivity = 'Creating Scale Set'
-$TotalProgress = 12
+$TotalProgress = 14
 $CurrentProgress = 1
 
 <#
@@ -268,9 +270,9 @@ $VM = Set-AzVMOperatingSystem `
 $VM = Add-AzVMNetworkInterface -VM $VM -Id $Nic.Id
 $VM = Set-AzVMSourceImage `
   -VM $VM `
-  -PublisherName 'MicrosoftWindowsServer' `
-  -Offer 'WindowsServer' `
-  -Skus $WindowsServerSku `
+  -PublisherName $ImagePublisher `
+  -Offer $ImageOffer `
+  -Skus $ImageSku `
   -Version latest
 
 $VM = Set-AzVMBootDiagnostic -VM $VM -Disable
@@ -301,6 +303,14 @@ Write-Progress `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
 Restart-AzVM -ResourceGroupName $ResourceGroupName -Name $ProtoVMName
+
+####################################################################################################
+Write-Progress `
+  -Activity $ProgressActivity `
+  -Status 'Sleeping after restart' `
+  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+
+Start-Sleep -Seconds 60
 
 ####################################################################################################
 Write-Progress `
@@ -340,7 +350,7 @@ Set-AzVM `
 
 $VM = Get-AzVM -ResourceGroupName $ResourceGroupName -Name $ProtoVMName
 $PrototypeOSDiskName = $VM.StorageProfile.OsDisk.Name
-$ImageConfig = New-AzImageConfig -Location $Location -SourceVirtualMachineId $VM.ID
+$ImageConfig = New-AzImageConfig -Location $Location -SourceVirtualMachineId $VM.ID -HyperVGeneration 'V2'
 $Image = New-AzImage -Image $ImageConfig -ImageName $ProtoVMName -ResourceGroupName $ResourceGroupName
 
 ####################################################################################################
@@ -397,6 +407,19 @@ New-AzVmss `
   -ResourceGroupName $ResourceGroupName `
   -Name $VmssName `
   -VirtualMachineScaleSet $Vmss
+
+####################################################################################################
+Write-Progress `
+  -Activity $ProgressActivity `
+  -Status 'Enabling VMSS diagnostic logs' `
+  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+
+az vmss diagnostics set `
+  --resource-group $ResourceGroupName `
+  --vmss-name $VmssName `
+  --settings "$PSScriptRoot\vmss-config.json" `
+  --protected-settings "$PSScriptRoot\vmss-protected.json" `
+  --output none
 
 ####################################################################################################
 Write-Progress -Activity $ProgressActivity -Completed
