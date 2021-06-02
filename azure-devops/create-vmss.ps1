@@ -310,6 +310,8 @@ Write-Progress `
   -Status 'Sleeping after restart' `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
+# The VM appears to be busy immediately after restarting.
+# This workaround waits for a minute before attempting to run sysprep.ps1.
 Start-Sleep -Seconds 60
 
 ####################################################################################################
