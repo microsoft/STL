@@ -27,7 +27,7 @@ $ProtoVMName = 'PROTOTYPE'
 $LiveVMPrefix = 'BUILD'
 $ImagePublisher = 'MicrosoftWindowsDesktop'
 $ImageOffer = 'Windows-10'
-$ImageSku = '20h2-ent-g2'
+$ImageSku = '21h1-ent-g2'
 
 $ProgressActivity = 'Creating Scale Set'
 $TotalProgress = 14
