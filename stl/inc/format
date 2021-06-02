@@ -366,7 +366,7 @@ _NODISCARD constexpr const _CharT* _Parse_nonnegative_integer(
     const _CharT* _First, const _CharT* _Last, unsigned int& _Value) {
     _STL_INTERNAL_CHECK(_First != _Last && '0' <= *_First && *_First <= '9');
 
-    constexpr auto _Max_int = static_cast<unsigned int>((numeric_limits<int>::max)());
+    constexpr auto _Max_int = static_cast<unsigned int>((numeric_limits<int>::max) ());
     constexpr auto _Big_int = _Max_int / 10u;
 
     _Value = 0;
@@ -1121,7 +1121,7 @@ template <class _Handler, class _FormatArg>
 _NODISCARD constexpr int _Get_dynamic_specs(const _FormatArg _Arg) {
     _STL_INTERNAL_STATIC_ASSERT(_Is_any_of_v<_Handler, _Width_checker, _Precision_checker>);
     const unsigned long long _Val = _STD visit_format_arg(_Handler{}, _Arg);
-    if (_Val > static_cast<unsigned long long>((numeric_limits<int>::max)())) {
+    if (_Val > static_cast<unsigned long long>((numeric_limits<int>::max) ())) {
         _THROW(format_error("Number is too big."));
     }
 
@@ -1195,7 +1195,7 @@ private:
     _ParseContext& _Parse_ctx;
 
     _NODISCARD static constexpr int _Verify_dynamic_arg_index_in_range(const size_t _Idx) {
-        if (_Idx > static_cast<size_t>((numeric_limits<int>::max)())) {
+        if (_Idx > static_cast<size_t>((numeric_limits<int>::max) ())) {
             _THROW(format_error("Dynamic width or precision index too large."));
         }
 
@@ -2134,6 +2134,7 @@ template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Fmt_write(
     _OutputIt _Out, _CharT _Value, _Basic_format_specs<_CharT> _Specs, _Lazy_locale _Locale);
 
+
 template <class _CharT, class _OutputIt, floating_point _Float>
 _NODISCARD _OutputIt _Fmt_write(
     _OutputIt _Out, _Float _Value, const _Basic_format_specs<_CharT>& _Specs, _Lazy_locale _Locale);
@@ -2585,7 +2586,7 @@ _NODISCARD const _CharT* _Measure_string_prefix(const basic_string_view<_CharT> 
     const auto _Last     = _Pos + _Value.size();
     int _Estimated_width = 0; // the estimated width of [_Value.data(), _Pos)
     const _Fmt_codec<_CharT> _Codec;
-    constexpr auto _Max_int = (numeric_limits<int>::max)();
+    constexpr auto _Max_int = (numeric_limits<int>::max) ();
 
     while (_Pos != _Last) {
         if (_Estimated_width == _Max_width && _Max_width >= 0) {
