@@ -863,7 +863,7 @@ STATIC_ASSERT(!is_scoped_enum<ExampleEnum>::value);
 STATIC_ASSERT(!is_scoped_enum_v<ExampleEnum>);
 STATIC_ASSERT(is_scoped_enum_v<ExampleEnumClass>);
 STATIC_ASSERT(is_scoped_enum_v<LLEnumClass>);
-#endif //_HAS_CXX23
+#endif // _HAS_CXX23
 
 // P0258R2 has_unique_object_representations
 #if _HAS_CXX17
