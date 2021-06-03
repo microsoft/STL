@@ -943,22 +943,22 @@ _NODISCARD constexpr const _CharT* _Parse_replacement_field(
 
 template <class _CharT, _Parse_replacement_field_callbacks<_CharT> _HandlerT>
 void _Parse_format_string(basic_string_view<_CharT> _Format_str, _HandlerT&& _Handler) {
-    auto _Begin = _Format_str.data();
-    auto _End   = _Begin + _Format_str.size();
+    auto _First = _Format_str.data();
+    auto _Last  = _First + _Format_str.size();
     const _Fmt_codec<_CharT> _Codec;
 
-    while (_Begin != _End) {
-        const _CharT* _OpeningCurl = _Begin;
-        if (*_Begin != '{') {
-            _OpeningCurl = _Codec._Find_encoded(_Begin, _End, _CharT{'{'});
+    while (_First != _Last) {
+        const _CharT* _OpeningCurl = _First;
+        if (*_First != '{') {
+            _OpeningCurl = _Codec._Find_encoded(_First, _Last, _CharT{'{'});
 
             for (;;) {
-                const _CharT* _ClosingCurl = _Codec._Find_encoded(_Begin, _OpeningCurl, _CharT{'}'});
+                const _CharT* _ClosingCurl = _Codec._Find_encoded(_First, _OpeningCurl, _CharT{'}'});
 
-                // In this case there are neither closing nor opening curls in [_Begin, _OpeningCurl)
+                // In this case there are neither closing nor opening curls in [_First, _OpeningCurl)
                 // Write the whole thing out.
                 if (_ClosingCurl == _OpeningCurl) {
-                    _Handler._On_text(_Begin, _OpeningCurl);
+                    _Handler._On_text(_First, _OpeningCurl);
                     break;
                 }
                 // We know _ClosingCurl isn't past the end because
@@ -968,19 +968,19 @@ void _Parse_format_string(basic_string_view<_CharT> _Format_str, _HandlerT&& _Ha
                     _THROW(format_error("Unmatched '}' in format string."));
                 }
                 // We found two closing curls, so output only one of them
-                _Handler._On_text(_Begin, _ClosingCurl);
+                _Handler._On_text(_First, _ClosingCurl);
 
                 // skip over the second closing curl
-                _Begin = _ClosingCurl + 1;
+                _First = _ClosingCurl + 1;
             }
 
             // We are done, there were no replacement fields.
-            if (_OpeningCurl == _End) {
+            if (_OpeningCurl == _Last) {
                 return;
             }
         }
-        // Parse the replacement field starting at _OpeningCurl and ending sometime before _End.
-        _Begin = _Parse_replacement_field(_OpeningCurl, _End, _Handler);
+        // Parse the replacement field starting at _OpeningCurl and ending sometime before _Last.
+        _First = _Parse_replacement_field(_OpeningCurl, _Last, _Handler);
     }
 }
 
