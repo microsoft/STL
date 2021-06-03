@@ -861,6 +861,7 @@ enum class LLEnumClass : long long { xLongExample, yLongExample };
 #if _HAS_CXX23
 STATIC_ASSERT(!is_scoped_enum<ExampleEnum>::value);
 STATIC_ASSERT(!is_scoped_enum_v<ExampleEnum>);
+STATIC_ASSERT(!is_scoped_enum_v<test_abc1>);
 STATIC_ASSERT(is_scoped_enum_v<ExampleEnumClass>);
 STATIC_ASSERT(is_scoped_enum_v<LLEnumClass>);
 #endif // _HAS_CXX23
