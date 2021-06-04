@@ -172,7 +172,7 @@ void test_count_helper(const ptrdiff_t length) {
     const int counts_true[8] = { 0, 1, 1, 2, 2, 3, 4, 5 };
     const int counts_false[8] = { 0, 0, 1, 1, 2, 2, 2, 2 };
     // clang-format on
-    const auto expected = div(int(length), 8);
+    const auto expected = div(static_cast<int>(length), 8);
     // No offset
     {
         const auto result_true = static_cast<int>(count(source.cbegin(), next(source.cbegin(), length), true));
