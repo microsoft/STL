@@ -1152,13 +1152,14 @@ _NODISCARD constexpr int _Countr_zero(const _Ty _Val) noexcept {
 }
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> _Enabled = 0>
-_NODISCARD constexpr int _Popcount(const _Ty _Val) noexcept {
+_NODISCARD _CONSTEXPR20 int _Popcount(const _Ty _Val) noexcept {
 #if defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
 #ifdef __cpp_lib_is_constant_evaluated
-    if (!_STD is_constant_evaluated()) {
+    if (!_STD is_constant_evaluated())
+#endif // __cpp_lib_is_constant_evaluated
+    {
         return _Checked_x86_x64_popcount(_Val);
     }
-#endif // __cpp_lib_is_constant_evaluated
 #endif // defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
     return _Popcount_fallback(_Val);
 }
