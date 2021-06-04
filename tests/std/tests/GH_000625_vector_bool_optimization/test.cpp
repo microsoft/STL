@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <assert.h>
+#include <cstdlib>
 #include <vector>
 
 using namespace std;
