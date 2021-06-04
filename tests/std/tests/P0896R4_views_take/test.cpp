@@ -17,6 +17,12 @@ using namespace std;
 
 #pragma warning(disable : 6011) // Dereferencing NULL pointer '%s'
 
+struct convertible {
+    constexpr operator int() const noexcept {
+        return 4;
+    }
+};
+
 // Test a silly precomposed range adaptor pipeline
 constexpr auto pipeline = views::take(7) | views::take(6) | views::take(5) | views::take(4);
 
@@ -571,6 +577,15 @@ int main() {
             views::iota(0ull, ranges::size(some_ints)) | views::transform([](auto i) { return some_ints[i]; });
         STATIC_ASSERT(test_one(v, only_four_ints));
         test_one(v, only_four_ints);
+    }
+
+    { // Validate that we can use something that is convertible to integral (#1957)
+        constexpr span s{some_ints};
+        auto r1 = s | views::take(integral_constant<int, 4>{});
+        assert(ranges::equal(r1, only_four_ints));
+
+        auto r2 = s | views::take(convertible{});
+        assert(ranges::equal(r2, only_four_ints));
     }
 
     test_DevCom_1397309();

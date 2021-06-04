@@ -2040,7 +2040,7 @@ namespace ranges {
             template <class _Rng>
             static constexpr _Choice_t<_St> _Choice = _Choose<_Rng>();
 
-            template <_Integer_like _Ty>
+            template <class _Ty>
             struct _Partial : _Pipe::_Base<_Partial<_Ty>> {
                 _Ty _Length;
 
@@ -2089,7 +2089,7 @@ namespace ranges {
                 }
             }
 
-            template <_Integer_like _Ty>
+            template <class _Ty>
             _NODISCARD constexpr auto operator()(_Ty _Length) const noexcept {
                 return _Partial<_Ty>{._Length = _Length};
             }
@@ -2439,7 +2439,7 @@ namespace ranges {
             template <class _Rng>
             static constexpr _Choice_t<_St> _Choice = _Choose<_Rng>();
 
-            template <_Integer_like _Ty>
+            template <class _Ty>
             struct _Partial : _Pipe::_Base<_Partial<_Ty>> {
                 _Ty _Length;
 
@@ -2489,7 +2489,7 @@ namespace ranges {
                 }
             }
 
-            template <_Integer_like _Ty>
+            template <class _Ty>
             _NODISCARD constexpr auto operator()(_Ty _Length) const noexcept {
                 return _Partial<_Ty>{._Length = _Length};
             }
