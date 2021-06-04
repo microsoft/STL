@@ -3224,10 +3224,8 @@ _NODISCARD _CONSTEXPR20 _VbIt _Find_vbool(_VbIt _First, const _VbIt _Last, const
 
 template <class _VbIt, class _Ty>
 _NODISCARD _CONSTEXPR20 _Iter_diff_t<_VbIt> _Count_vbool(_VbIt _First, const _VbIt _Last, const _Ty& _Val) {
-    _Iter_diff_t<_VbIt> _Count = 0;
-
     if (_First == _Last) {
-        return _Count;
+        return 0;
     }
 
     const _Vbase* _VbFirst      = _First._Myptr;
@@ -3243,8 +3241,8 @@ _NODISCARD _CONSTEXPR20 _Iter_diff_t<_VbIt> _Count_vbool(_VbIt _First, const _Vb
         return _Popcount(_SelectVal);
     }
 
-    const auto _FirstVal = (_Val ? *_VbFirst : ~*_VbFirst) & _FirstSourceMask;
-    _Count += _Popcount(_FirstVal);
+    const auto _FirstVal       = (_Val ? *_VbFirst : ~*_VbFirst) & _FirstSourceMask;
+    _Iter_diff_t<_VbIt> _Count = _Popcount(_FirstVal);
     ++_VbFirst;
 
     for (; _VbFirst != _VbLast; ++_VbFirst) {
