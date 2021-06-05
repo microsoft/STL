@@ -16,7 +16,18 @@ using namespace std;
 
 #pragma warning(disable : 6011) // Dereferencing NULL pointer '%s'
 
-struct convertible {
+struct evil_convertible_to_difference {
+    evil_convertible_to_difference(const evil_convertible_to_difference&) {
+        throw(42);
+    }
+    evil_convertible_to_difference(evil_convertible_to_difference&&) {}
+    evil_convertible_to_difference& operator=(const evil_convertible_to_difference&) {
+        throw(42);
+        return *this;
+    }
+    evil_convertible_to_difference& operator=(evil_convertible_to_difference&&) {
+        return *this;
+    }
     constexpr operator int() const noexcept {
         return 4;
     }
@@ -538,7 +549,7 @@ int main() {
         auto r1 = s | views::drop(integral_constant<int, 4>{});
         assert(ranges::equal(r1, only_four_ints));
 
-        auto r2 = s | views::drop(convertible{});
+        auto r2 = s | views::drop(evil_convertible_to_difference{});
         assert(ranges::equal(r2, only_four_ints));
     }
 }
