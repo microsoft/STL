@@ -17,17 +17,17 @@ using namespace std;
 #pragma warning(disable : 6011) // Dereferencing NULL pointer '%s'
 
 struct evil_convertible_to_difference {
+    evil_convertible_to_difference() = default;
     evil_convertible_to_difference(const evil_convertible_to_difference&) {
         throw(42);
     }
-    evil_convertible_to_difference(evil_convertible_to_difference&&) {}
+    evil_convertible_to_difference(evil_convertible_to_difference&&) = default;
     evil_convertible_to_difference& operator=(const evil_convertible_to_difference&) {
         throw(42);
         return *this;
     }
-    evil_convertible_to_difference& operator=(evil_convertible_to_difference&&) {
-        return *this;
-    }
+    evil_convertible_to_difference& operator=(evil_convertible_to_difference&&) = default;
+
     constexpr operator int() const noexcept {
         return 4;
     }
