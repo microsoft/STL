@@ -2089,7 +2089,7 @@ namespace ranges {
                 }
             }
 
-            template <move_constructible _Ty> // TRANSITION, LWG issue unnumbered as of 2021-06-04
+            template <move_constructible _Ty> // LWG-3509
             _NODISCARD constexpr auto operator()(_Ty _Length) const noexcept {
                 return _Partial<_Ty>{._Length = _STD move(_Length)};
             }
@@ -2489,7 +2489,7 @@ namespace ranges {
                 }
             }
 
-            template <move_constructible _Ty> // TRANSITION, LWG issue unnumbered as of 2021-06-04
+            template <move_constructible _Ty> // LWG-3509
             _NODISCARD constexpr auto operator()(_Ty _Length) const noexcept {
                 return _Partial<_Ty>{._Length = _STD move(_Length)};
             }
