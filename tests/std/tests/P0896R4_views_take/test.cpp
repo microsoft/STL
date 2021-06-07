@@ -23,7 +23,7 @@ struct evil_convertible_to_difference {
         throw(42);
     }
     evil_convertible_to_difference(evil_convertible_to_difference&&) = default;
-    evil_convertible_to_difference& operator=(const evil_convertible_to_difference&) {
+    evil_convertible_to_difference& operator                         =(const evil_convertible_to_difference&) {
         throw(42);
         return *this;
     }
