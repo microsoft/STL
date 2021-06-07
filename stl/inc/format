@@ -1744,6 +1744,16 @@ public:
 
 inline constexpr size_t _Fmt_buffer_size = 256;
 
+template <class _Iterator>
+struct _Back_insert_iterator_container_type {
+    using type = void;
+};
+
+template <class _Container>
+struct _Back_insert_iterator_container_type<back_insert_iterator<_Container>> {
+    using type = _Container;
+};
+
 template <class _Container>
 struct _Back_insert_iterator_container_access : back_insert_iterator<_Container> {
     explicit _Back_insert_iterator_container_access(back_insert_iterator<_Container> _Iter)
@@ -1769,14 +1779,11 @@ private:
         this->_Clear();
         const auto _End = _Data + this->_Limit(_Size);
 
-        if constexpr (_Is_specialization_v<_OutputIt, back_insert_iterator>) {
-            using _Container = typename _OutputIt::container_type;
-            if constexpr (_Is_specialization_v<_Container, basic_string> || _Is_specialization_v<_Container, vector>) {
-                auto& _Cont = *_Back_insert_iterator_container_access<_Container>{_Output}.container;
-                _Cont.insert(_Cont.end(), _Data, _End);
-            } else {
-                _Output = _STD _Copy_unchecked(_Data, _End, _STD move(_Output));
-            }
+        // extracts back_insert_iterator's underlying container type, or void if not.
+        using _Container = typename _Back_insert_iterator_container_type<_OutputIt>::type;
+        if constexpr (_Is_specialization_v<_Container, basic_string> || _Is_specialization_v<_Container, vector>) {
+            auto& _Cont = *_Back_insert_iterator_container_access<_Container>{_Output}.container;
+            _Cont.insert(_Cont.end(), _Data, _End);
         } else {
             _Output = _STD _Copy_unchecked(_Data, _End, _STD move(_Output));
         }
