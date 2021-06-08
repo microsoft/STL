@@ -364,6 +364,10 @@ public:
         return thread::hardware_concurrency();
     }
 
+    _NODISCARD native_handle_type native_handle() {
+        return _Impl.native_handle();
+    }
+
 private:
     void _Try_cancel_and_join() noexcept {
         if (_Impl.joinable()) {
