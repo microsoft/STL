@@ -209,7 +209,7 @@ void test_format_arg_store() {
     test_single_format_arg<Context, basic_string_view<char_type>, Arg_type::string_type>(get_input_sv<char_type>());
 }
 
-static_assert(sizeof(_Format_arg_index) == sizeof(_Format_arg_index::_Index_type));
+static_assert(sizeof(_Format_arg_index) == sizeof(std::size_t));
 static_assert(is_same_v<_Format_arg_traits<format_context>::_Storage_type<void*>, const void*>);
 
 template <class Context>
