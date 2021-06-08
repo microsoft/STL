@@ -145,12 +145,12 @@ public:
 
     _NODISCARD id get_id() const noexcept;
 
-    _NODISCARD static unsigned int hardware_concurrency() noexcept {
-        return _Thrd_hardware_concurrency();
+    _NODISCARD native_handle_type native_handle() noexcept /* strengthened */ { // return Win32 HANDLE as void *
+        return _Thr._Hnd;
     }
 
-    _NODISCARD native_handle_type native_handle() { // return Win32 HANDLE as void *
-        return _Thr._Hnd;
+    _NODISCARD static unsigned int hardware_concurrency() noexcept {
+        return _Thrd_hardware_concurrency();
     }
 
 private:
@@ -344,6 +344,10 @@ public:
         return _Impl.get_id();
     }
 
+    _NODISCARD native_handle_type native_handle() noexcept /* strengthened */ {
+        return _Impl.native_handle();
+    }
+
     _NODISCARD stop_source get_stop_source() noexcept {
         return _Ssource;
     }
@@ -362,10 +366,6 @@ public:
 
     _NODISCARD static unsigned int hardware_concurrency() noexcept {
         return thread::hardware_concurrency();
-    }
-
-    _NODISCARD native_handle_type native_handle() {
-        return _Impl.native_handle();
     }
 
 private:
