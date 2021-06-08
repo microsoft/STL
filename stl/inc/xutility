@@ -810,7 +810,7 @@ _NODISCARD constexpr auto _To_signed_like(const _Ty _Value) noexcept {
 // CONCEPT weakly_incrementable
 // clang-format off
 template <class _Ty>
-concept weakly_incrementable = default_initializable<_Ty> && movable<_Ty> && requires(_Ty __i) {
+concept weakly_incrementable = movable<_Ty> && requires(_Ty __i) {
     typename iter_difference_t<_Ty>;
     requires _Signed_integer_like<iter_difference_t<_Ty>>;
     { ++__i } -> same_as<_Ty&>;
@@ -2860,7 +2860,7 @@ namespace ranges {
     // clang-format off
     // CONCEPT ranges::view
     template <class _Ty>
-    concept view = range<_Ty> && movable<_Ty> && default_initializable<_Ty> && enable_view<_Ty>;
+    concept view = range<_Ty> && movable<_Ty> && enable_view<_Ty>;
 #endif // TRANSITION, GH-1814
 
     // CONCEPT ranges::output_range
@@ -3507,7 +3507,7 @@ namespace ranges {
         }
 
     public:
-        subrange() = default;
+        subrange() requires default_initializable<_It> = default;
 
         template <_Convertible_to_non_slicing<_It> _It2>
         constexpr subrange(_It2 _First_, _Se _Last_) requires (!_Store_size)

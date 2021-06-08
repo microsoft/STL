@@ -53,7 +53,10 @@ struct instantiator {
         int input[5] = {1, 2, 3, 4, 5};
         // [counted.iter.const]
         {
-            [[maybe_unused]] counted_iterator<Iter> defaultConstructed{};
+            STATIC_ASSERT(default_initializable<counted_iterator<Iter>> == default_initializable<Iter>);
+            if constexpr (default_initializable<Iter>) {
+                [[maybe_unused]] counted_iterator<Iter> defaultConstructed{};
+            }
 
             counted_iterator<Iter> constructed(Iter{input}, iter_difference_t<Iter>{2});
             counted_iterator<Iter> constructedEmpty{Iter{input}, iter_difference_t<Iter>{0}};
@@ -198,7 +201,7 @@ struct instantiator {
                 const same_as<iter_difference_t<Iter>> auto diff2 = iter2 - iter1;
                 assert(diff2 == -1);
             }
-            { // difference value-initialized
+            if constexpr (default_initializable<Iter>) { // difference value-initialized
                 const same_as<iter_difference_t<Iter>> auto diff1 = counted_iterator<Iter>{} - counted_iterator<Iter>{};
                 assert(diff1 == 0);
             }
@@ -269,7 +272,7 @@ struct instantiator {
                 assert(iter1 <=> iter1 == strong_ordering::equal);
                 assert(iter1 <=> iter1 == strong_ordering::equivalent);
             }
-            { // spaceship value-initialized
+            if constexpr (default_initializable<Iter>) { // spaceship value-initialized
                 assert(counted_iterator<Iter>{} <=> counted_iterator<Iter>{} == strong_ordering::equal);
                 assert(counted_iterator<Iter>{} <=> counted_iterator<Iter>{} == strong_ordering::equivalent);
             }

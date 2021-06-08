@@ -38,19 +38,16 @@ struct empty_test {
 
         {
             Range range{};
-            auto result = partition_copy(range, Out1{}, Out2{}, is_even, get_first);
-            STATIC_ASSERT(same_as<decltype(partition_copy(range, Out1{}, Out2{}, is_even, get_first)),
-                partition_copy_result<iterator_t<Range>, Out1, Out2>>);
+            same_as<partition_copy_result<iterator_t<Range>, Out1, Out2>> auto result =
+                partition_copy(range, Out1{nullptr}, Out2{nullptr}, is_even, get_first);
             ASSERT(result.in == range.end());
             ASSERT(result.out1.peek() == nullptr);
             ASSERT(result.out2.peek() == nullptr);
         }
         {
             Range range{};
-            auto result = partition_copy(range.begin(), range.end(), Out1{}, Out2{}, is_even, get_first);
-            STATIC_ASSERT(
-                same_as<decltype(partition_copy(range.begin(), range.end(), Out1{}, Out2{}, is_even, get_first)),
-                    partition_copy_result<iterator_t<Range>, Out1, Out2>>);
+            same_as<partition_copy_result<iterator_t<Range>, Out1, Out2>> auto result =
+                partition_copy(range.begin(), range.end(), Out1{nullptr}, Out2{nullptr}, is_even, get_first);
             ASSERT(result.in == range.end());
             ASSERT(result.out1.peek() == nullptr);
             ASSERT(result.out2.peek() == nullptr);

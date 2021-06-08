@@ -370,7 +370,7 @@ namespace test {
         using Consterator = iterator<Category, const Element, Diff, Eq, Proxy, Wrapped>;
 
         // output iterator operations
-        iterator() = default;
+        iterator() requires at_least<fwd> || (Eq == CanCompare::yes) = default;
 
         constexpr explicit iterator(Element* ptr) noexcept : ptr_{ptr} {}
 

@@ -357,13 +357,6 @@ int main() {
             views::reverse(ranges::subrange{counted_iterator{lst.begin(), 2}, default_sentinel}), reversed_prefix));
     }
 
-    // Validate a non-view borrowed range
-    {
-        constexpr span s{some_ints};
-        static_assert(test_one(s, reversed_ints));
-        test_one(s, reversed_ints);
-    }
-
     // Get full instantiation coverage
     static_assert((test_bidi<instantiator, const int>(), true));
     test_bidi<instantiator, const int>();
