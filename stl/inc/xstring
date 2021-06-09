@@ -1280,7 +1280,7 @@ public:
 
 #if _HAS_CXX23
     constexpr basic_string_view(nullptr_t) noexcept = delete;
-#endif
+#endif // _HAS_CXX23
 
 #ifdef __cpp_lib_concepts
     // clang-format off
@@ -2540,7 +2540,7 @@ public:
 
 #if _HAS_CXX23
     _CONSTEXPR20_CONTAINER basic_string(nullptr_t) = delete;
-#endif
+#endif // _HAS_CXX23
 
     _CONSTEXPR20_CONTAINER basic_string(_CRT_GUARDOVERFLOW const size_type _Count, const _Elem _Ch)
         : _Mypair(_Zero_then_variadic_args_t{}) {
@@ -3110,7 +3110,7 @@ public:
 
 #if _HAS_CXX23
     _CONSTEXPR20_CONTAINER basic_string& operator=(nullptr_t) = delete;
-#endif
+#endif // _HAS_CXX23
 
     _CONSTEXPR20_CONTAINER basic_string& operator+=(const basic_string& _Right) {
         return append(_Right);
