@@ -1088,6 +1088,13 @@ static_assert(u8"abc"sv[1] == u8'b');
 static_assert(noexcept(u8"abc"sv));
 #endif // __cpp_char8_t
 
+// P2166R1 Prohibit std::basic_string and std::basic_string_view construction from nullptr
+#if _HAS_CXX23
+static_assert(!is_constructible_v<string_view, nullptr_t>, "constructing string_view from nullptr_t is prohibited");
+static_assert(!is_constructible_v<string, nullptr_t>, "constructing string from nullptr_t is prohibited");
+static_assert(!is_assignable_v<string, nullptr_t>, "assigning string to nullptr_t is prohibited");
+#endif
+
 int main() {
     test_case_default_constructor();
     test_case_ntcts_constructor();

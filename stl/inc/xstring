@@ -1278,6 +1278,10 @@ public:
 #endif // _CONTAINER_DEBUG_LEVEL > 0
     }
 
+#if _HAS_CXX23
+    constexpr basic_string_view(nullptr_t) noexcept = delete;
+#endif
+
 #ifdef __cpp_lib_concepts
     // clang-format off
     template <contiguous_iterator _It, sized_sentinel_for<_It> _Se>
@@ -2534,6 +2538,10 @@ public:
         _Proxy._Release();
     }
 
+#if _HAS_CXX23
+    _CONSTEXPR20_CONTAINER basic_string(nullptr_t) = delete;
+#endif
+
     _CONSTEXPR20_CONTAINER basic_string(_CRT_GUARDOVERFLOW const size_type _Count, const _Elem _Ch)
         : _Mypair(_Zero_then_variadic_args_t{}) {
         // construct from _Count * _Ch
@@ -3099,6 +3107,10 @@ public:
         _Traits::assign(_Ptr[1], _Elem());
         return *this;
     }
+
+#if _HAS_CXX23
+    _CONSTEXPR20_CONTAINER basic_string& operator=(nullptr_t) = delete;
+#endif
 
     _CONSTEXPR20_CONTAINER basic_string& operator+=(const basic_string& _Right) {
         return append(_Right);
