@@ -249,6 +249,7 @@
 
 // _HAS_CXX20 indirectly controls:
 // P0619R4 Removing C++17-Deprecated Features
+// LWG-3555 view::iterator::iterator_concept should consider const-qualification of the underlying range
 
 // _HAS_CXX20 and _SILENCE_ALL_CXX20_DEPRECATION_WARNINGS control:
 // P0767R1 Deprecating is_pod
