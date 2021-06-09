@@ -3074,15 +3074,9 @@ namespace ranges {
                     is_nothrow_move_constructible_v<_Outer_iter>) // strengthened
                     : _First{_STD move(_First_)} {}
 
-                _NODISCARD constexpr auto begin() const requires copyable<_Outer_iter> {
+                _NODISCARD constexpr auto begin() const {
                     return _Inner_iter<_Const>{_First};
                 }
-
-                // clang-format off
-                _NODISCARD constexpr auto begin() requires (!copyable<_Outer_iter>) {
-                    return _Inner_iter<_Const>{_STD move(_First)};
-                }
-                // clang-format on
 
                 _NODISCARD constexpr default_sentinel_t end() const noexcept {
                     return default_sentinel;
