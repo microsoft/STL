@@ -841,7 +841,7 @@ private:
     public:
         explicit _Proxy(iter_reference_t<_Iter>&& _Right) noexcept(
             is_nothrow_move_constructible_v<iter_value_t<_Iter>>) // strengthened
-            : _Keep(_STD move(_Right)) {}
+            : _Keep(_STD forward<iter_reference_t<_Iter>>(_Right)) {}
 
         _NODISCARD const iter_value_t<_Iter>* operator->() const noexcept /* strengthened */ {
             return _STD addressof(_Keep);
@@ -932,8 +932,14 @@ public:
             common_iterator _Tmp = *this;
             ++_Val._Iterator;
             return _Tmp;
-        } else {
+        } else if constexpr (_Can_reference<_Iter> //
+                             || !(constructible_from<iter_value_t<_Iter>, iter_reference_t<_Iter>> //
+                                  && move_constructible<iter_value_t<_Iter>>) ) {
             return _Val._Iterator++;
+        } else {
+            auto _Tmp = _Proxy{*_Val._Iterator};
+            ++_Val._Iterator;
+            return _Tmp;
         }
     }
 
