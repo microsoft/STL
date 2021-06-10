@@ -2047,11 +2047,41 @@ namespace ranges {
                 // clang-format off
                 template <viewable_range _Rng>
                     requires convertible_to<_Ty&, range_difference_t<_Rng>>
-                _NODISCARD constexpr auto operator()(_Rng&& _Range) const
+                _NODISCARD constexpr auto operator()(_Rng&& _Range) &
                     noexcept(noexcept(_Take_fn{}(_STD forward<_Rng>(_Range), _Length))) {
                     // clang-format on
                     _STL_INTERNAL_STATIC_ASSERT(is_aggregate_v<_Partial>);
                     return _Take_fn{}(_STD forward<_Rng>(_Range), _Length);
+                }
+
+                // clang-format off
+                template <viewable_range _Rng>
+                    requires convertible_to<const _Ty&, range_difference_t<_Rng>>
+                _NODISCARD constexpr auto operator()(_Rng&& _Range) const&
+                    noexcept(noexcept(_Take_fn{}(_STD forward<_Rng>(_Range), _Length))) {
+                    // clang-format on
+                    _STL_INTERNAL_STATIC_ASSERT(is_aggregate_v<_Partial>);
+                    return _Take_fn{}(_STD forward<_Rng>(_Range), _Length);
+                }
+
+                // clang-format off
+                template <viewable_range _Rng>
+                    requires convertible_to<_Ty, range_difference_t<_Rng>>
+                _NODISCARD constexpr auto operator()(_Rng&& _Range) &&
+                    noexcept(noexcept(_Take_fn{}(_STD forward<_Rng>(_Range), _STD move(_Length)))) {
+                    // clang-format on
+                    _STL_INTERNAL_STATIC_ASSERT(is_aggregate_v<_Partial>);
+                    return _Take_fn{}(_STD forward<_Rng>(_Range), _STD move(_Length));
+                }
+
+                // clang-format off
+                template <viewable_range _Rng>
+                    requires convertible_to<const _Ty, range_difference_t<_Rng>>
+                _NODISCARD constexpr auto operator()(_Rng&& _Range) const&&
+                    noexcept(noexcept(_Take_fn{}(_STD forward<_Rng>(_Range), _STD move(_Length)))) {
+                    // clang-format on
+                    _STL_INTERNAL_STATIC_ASSERT(is_aggregate_v<_Partial>);
+                    return _Take_fn{}(_STD forward<_Rng>(_Range), _STD move(_Length));
                 }
             };
 
@@ -2446,11 +2476,41 @@ namespace ranges {
                 // clang-format off
                 template <viewable_range _Rng>
                     requires convertible_to<_Ty&, range_difference_t<_Rng>>
-                _NODISCARD constexpr auto operator()(_Rng&& _Range) const
+                _NODISCARD constexpr auto operator()(_Rng&& _Range) &
                     noexcept(noexcept(_Drop_fn{}(_STD forward<_Rng>(_Range), _Length))) {
                     // clang-format on
                     _STL_INTERNAL_STATIC_ASSERT(is_aggregate_v<_Partial>);
                     return _Drop_fn{}(_STD forward<_Rng>(_Range), _Length);
+                }
+
+                // clang-format off
+                template <viewable_range _Rng>
+                    requires convertible_to<const _Ty&, range_difference_t<_Rng>>
+                _NODISCARD constexpr auto operator()(_Rng&& _Range) const&
+                    noexcept(noexcept(_Drop_fn{}(_STD forward<_Rng>(_Range), _Length))) {
+                    // clang-format on
+                    _STL_INTERNAL_STATIC_ASSERT(is_aggregate_v<_Partial>);
+                    return _Drop_fn{}(_STD forward<_Rng>(_Range), _Length);
+                }
+
+                // clang-format off
+                template <viewable_range _Rng>
+                    requires convertible_to<_Ty, range_difference_t<_Rng>>
+                _NODISCARD constexpr auto operator()(_Rng&& _Range) &&
+                    noexcept(noexcept(_Drop_fn{}(_STD forward<_Rng>(_Range), _STD move(_Length)))) {
+                    // clang-format on
+                    _STL_INTERNAL_STATIC_ASSERT(is_aggregate_v<_Partial>);
+                    return _Drop_fn{}(_STD forward<_Rng>(_Range), _STD move(_Length));
+                }
+
+                // clang-format off
+                template <viewable_range _Rng>
+                    requires convertible_to<const _Ty, range_difference_t<_Rng>>
+                _NODISCARD constexpr auto operator()(_Rng&& _Range) const&&
+                    noexcept(noexcept(_Drop_fn{}(_STD forward<_Rng>(_Range), _STD move(_Length)))) {
+                    // clang-format on
+                    _STL_INTERNAL_STATIC_ASSERT(is_aggregate_v<_Partial>);
+                    return _Drop_fn{}(_STD forward<_Rng>(_Range), _STD move(_Length));
                 }
             };
 
