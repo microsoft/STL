@@ -4933,44 +4933,43 @@ namespace ranges {
     using mismatch_result = in_in_result<_In1, _In2>;
 
     // VARIABLE ranges::mismatch
+    template <class _It1, class _It2, class _Pr, class _Pj1, class _Pj2>
+    _NODISCARD constexpr mismatch_result<_It1, _It2> _Mismatch_n(
+        _It1 _First1, _It2 _First2, iter_difference_t<_It1> _Count, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+        auto _UFirst1 = _Get_unwrapped(_STD move(_First1));
+        auto _UFirst2 = _Get_unwrapped(_STD move(_First2));
+
+        for (; _Count != 0; ++_UFirst1, (void) ++_UFirst2, --_Count) {
+            if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_UFirst1), _STD invoke(_Proj2, *_UFirst2))) {
+                break;
+            }
+        }
+
+        _Seek_wrapped(_First1, _STD move(_UFirst1));
+        _Seek_wrapped(_First2, _STD move(_UFirst2));
+        return {_STD move(_First1), _STD move(_First2)};
+    }
+
+    template <class _It1, class _Se1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
+    _NODISCARD constexpr mismatch_result<_It1, _It2> _Mismatch_4(
+        _It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+        auto _UFirst1      = _Get_unwrapped(_STD move(_First1));
+        const auto _ULast1 = _Get_unwrapped(_STD move(_Last1));
+        auto _UFirst2      = _Get_unwrapped(_STD move(_First2));
+        const auto _ULast2 = _Get_unwrapped(_STD move(_Last2));
+
+        for (; _UFirst1 != _ULast1 && _UFirst2 != _ULast2; ++_UFirst1, (void) ++_UFirst2) {
+            if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_UFirst1), _STD invoke(_Proj2, *_UFirst2))) {
+                break;
+            }
+        }
+
+        _Seek_wrapped(_First1, _STD move(_UFirst1));
+        _Seek_wrapped(_First2, _STD move(_UFirst2));
+        return {_STD move(_First1), _STD move(_First2)};
+    }
+
     class _Mismatch_fn : private _Not_quite_object {
-    private:
-        template <class _It1, class _It2, class _Pr, class _Pj1, class _Pj2>
-        _NODISCARD static constexpr mismatch_result<_It1, _It2> _Mismatch_n(
-            _It1 _First1, _It2 _First2, iter_difference_t<_It1> _Count, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
-            auto _UFirst1 = _Get_unwrapped(_STD move(_First1));
-            auto _UFirst2 = _Get_unwrapped(_STD move(_First2));
-
-            for (; _Count != 0; ++_UFirst1, (void) ++_UFirst2, --_Count) {
-                if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_UFirst1), _STD invoke(_Proj2, *_UFirst2))) {
-                    break;
-                }
-            }
-
-            _Seek_wrapped(_First1, _STD move(_UFirst1));
-            _Seek_wrapped(_First2, _STD move(_UFirst2));
-            return {_STD move(_First1), _STD move(_First2)};
-        }
-
-        template <class _It1, class _Se1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
-        _NODISCARD static constexpr mismatch_result<_It1, _It2> _Mismatch_4(
-            _It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
-            auto _UFirst1      = _Get_unwrapped(_STD move(_First1));
-            const auto _ULast1 = _Get_unwrapped(_STD move(_Last1));
-            auto _UFirst2      = _Get_unwrapped(_STD move(_First2));
-            const auto _ULast2 = _Get_unwrapped(_STD move(_Last2));
-
-            for (; _UFirst1 != _ULast1 && _UFirst2 != _ULast2; ++_UFirst1, (void) ++_UFirst2) {
-                if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_UFirst1), _STD invoke(_Proj2, *_UFirst2))) {
-                    break;
-                }
-            }
-
-            _Seek_wrapped(_First1, _STD move(_UFirst1));
-            _Seek_wrapped(_First2, _STD move(_UFirst2));
-            return {_STD move(_First1), _STD move(_First2)};
-        }
-
     public:
         using _Not_quite_object::_Not_quite_object;
 

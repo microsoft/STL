@@ -2422,6 +2422,133 @@ namespace ranges {
     };
 
     inline constexpr _Search_n_fn search_n{_Not_quite_object::_Construct_tag{}};
+
+#if _HAS_CXX23
+    // VARIABLE ranges::starts_with
+    class _Starts_with_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <input_iterator _It1, sentinel_for<_It1> _Se1, input_iterator _It2, sentinel_for<_It2> _Se2,
+            class _Pr = ranges::equal_to, class _Pj1 = identity, class _Pj2 = identity>
+            requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
+        _NODISCARD constexpr bool operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2, _Pr _Pred = {},
+            _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            // clang-format on
+            _Adl_verify_range(_First1, _Last1);
+            _Adl_verify_range(_First2, _Last2);
+
+            if constexpr (sized_sentinel_for<_Se1, _It1> && sized_sentinel_for<_Se2, _It2>) {
+                const iter_difference_t<_It1> _Count1 = _Last1 - _First1;
+                const iter_difference_t<_It2> _Count2 = _Last2 - _First2;
+                if (_Count2 > _Count1) {
+                    return false;
+                }
+
+                const auto _Result = _Mismatch_n(_STD move(_First1), _STD move(_First2),
+                    static_cast<iter_difference_t<_It1>>(_Count2), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+                return _Result.in2 == _Last2;
+            } else {
+                const auto _Result = _Mismatch_4(_STD move(_First1), _STD move(_Last1), _STD move(_First2),
+                    _STD move(_Last2), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+                return _Result.in2 == _Last2;
+            }
+        }
+
+        // clang-format off
+        template <input_range _Rng1, input_range _Rng2, class _Pr = ranges::equal_to, class _Pj1 = identity,
+            class _Pj2 = identity>
+            requires indirectly_comparable<iterator_t<_Rng1>, iterator_t<_Rng2>, _Pr, _Pj1, _Pj2>
+        _NODISCARD constexpr bool operator()(
+                _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            // clang-format on
+            if constexpr (sized_range<_Rng1> && sized_range<_Rng2>) {
+                const range_difference_t<_Rng1> _Count1 = _RANGES distance(_Range1);
+                const range_difference_t<_Rng2> _Count2 = _RANGES distance(_Range2);
+                if (_Count2 > _Count1) {
+                    return false;
+                }
+
+                const auto _Result = _Mismatch_n(_RANGES begin(_Range1), _RANGES begin(_Range2),
+                    static_cast<range_difference_t<_Rng1>>(_Count2), _Pass_fn(_Pred), _Pass_fn(_Proj1),
+                    _Pass_fn(_Proj2));
+                return _Result.in2 == _RANGES end(_Range2);
+            } else {
+                const auto _Result = _Mismatch_4(_RANGES begin(_Range1), _RANGES end(_Range1), _RANGES begin(_Range2),
+                    _RANGES end(_Range2), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+                return _Result.in2 == _RANGES end(_Range2);
+            }
+        }
+    };
+
+    inline constexpr _Starts_with_fn starts_with{_Not_quite_object::_Construct_tag{}};
+
+    // VARIABLE ranges::ends_with
+    class _Ends_with_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <input_iterator _It1, sentinel_for<_It1> _Se1, input_iterator _It2, sentinel_for<_It2> _Se2,
+            class _Pr = ranges::equal_to, class _Pj1 = identity, class _Pj2 = identity>
+            requires (forward_iterator<_It1> || sized_sentinel_for<_Se1, _It1>)
+                  && (forward_iterator<_It2> || sized_sentinel_for<_Se2, _It2>)
+                  && indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
+        _NODISCARD constexpr bool operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2, _Pr _Pred = {},
+            _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            // clang-format on
+            _Adl_verify_range(_First1, _Last1);
+            _Adl_verify_range(_First2, _Last2);
+
+            iter_difference_t<_It1> _Count1;
+            if constexpr (sized_sentinel_for<_Se1, _It1>) {
+                _Count1 = _Last1 - _First1;
+            } else {
+                _Count1 = _RANGES distance(_First1, _Last1);
+            }
+
+            iter_difference_t<_It2> _Count2;
+            if constexpr (sized_sentinel_for<_Se2, _It2>) {
+                _Count2 = _Last2 - _First2;
+            } else {
+                _Count2 = _RANGES distance(_First2, _Last2);
+            }
+
+            if (_Count2 > _Count1) {
+                return false;
+            }
+
+            _RANGES advance(_First1, (_Count1 - _Count2));
+            const auto _Result = _Mismatch_n(_STD move(_First1), _STD move(_First2),
+                static_cast<iter_difference_t<_It1>>(_Count2), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            return _Result.in2 == _Last2;
+        }
+
+        // clang-format off
+        template <input_range _Rng1, input_range _Rng2, class _Pr = ranges::equal_to, class _Pj1 = identity,
+            class _Pj2 = identity>
+            requires (forward_range<_Rng1> || sized_range<_Rng1>) && (forward_range<_Rng2> || sized_range<_Rng2>)
+                  && indirectly_comparable<iterator_t<_Rng1>, iterator_t<_Rng2>, _Pr, _Pj1, _Pj2>
+        _NODISCARD constexpr bool operator()(
+                _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            // clang-format on
+            const range_difference_t<_Rng1> _Count1 = _RANGES distance(_Range1);
+            const range_difference_t<_Rng2> _Count2 = _RANGES distance(_Range2);
+            if (_Count2 > _Count1) {
+                return false;
+            }
+
+            auto _First1 = _RANGES begin(_Range1);
+            _RANGES advance(_First1, (_Count1 - _Count2));
+            const auto _Result = _Mismatch_n(_STD move(_First1), _RANGES begin(_Range2),
+                static_cast<range_difference_t<_Rng1>>(_Count2), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            return _Result.in2 == _RANGES end(_Range2);
+        }
+    };
+
+    inline constexpr _Ends_with_fn ends_with{_Not_quite_object::_Construct_tag{}};
+#endif // _HAS_CXX23
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
