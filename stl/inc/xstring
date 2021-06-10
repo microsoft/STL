@@ -1279,7 +1279,7 @@ public:
     }
 
 #if _HAS_CXX23
-    constexpr basic_string_view(nullptr_t) noexcept = delete;
+    constexpr basic_string_view(nullptr_t) = delete;
 #endif // _HAS_CXX23
 
 #ifdef __cpp_lib_concepts
