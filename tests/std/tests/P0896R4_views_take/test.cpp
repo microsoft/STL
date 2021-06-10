@@ -20,11 +20,12 @@ using namespace std;
 struct evil_convertible_to_difference {
     evil_convertible_to_difference() = default;
     evil_convertible_to_difference(const evil_convertible_to_difference&) {
-        throw(42);
+        throw 42;
     }
     evil_convertible_to_difference(evil_convertible_to_difference&&) = default;
-    evil_convertible_to_difference& operator                         =(const evil_convertible_to_difference&) {
-        throw(42);
+
+    evil_convertible_to_difference& operator=(const evil_convertible_to_difference&) {
+        throw 42;
         return *this;
     }
     evil_convertible_to_difference& operator=(evil_convertible_to_difference&&) = default;
@@ -591,7 +592,7 @@ int main() {
         test_one(v, only_four_ints);
     }
 
-    { // Validate that we can use something that is convertible to integral (#1957)
+    { // Validate that we can use something that is convertible to integral (GH-1957)
         constexpr span s{some_ints};
         auto r1 = s | views::take(integral_constant<int, 4>{});
         assert(ranges::equal(r1, only_four_ints));
