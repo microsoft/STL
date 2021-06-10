@@ -4094,6 +4094,167 @@ public:
 };
 #endif // _HAS_CXX20
 
+#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+template <class _Ty>
+struct _Pointer_of_helper {};
+
+// clang-format off
+template <class _Ty>
+    requires requires { typename _Ty::pointer; }
+struct _Pointer_of_helper<_Ty> {
+    using type = typename _Ty::pointer;
+};
+
+template <class _Ty>
+    requires (!requires { typename _Ty::pointer; } && requires { typename _Ty::element_type; })
+struct _Pointer_of_helper<_Ty> {
+    using type = typename _Ty::element_type*;
+};
+
+template <class _Ty>
+    requires (!requires { typename _Ty::element_type; } && !requires { typename _Ty::pointer; }
+        && requires { typename pointer_traits<_Ty>::element_type; })
+struct _Pointer_of_helper<_Ty> {
+    using type = typename pointer_traits<_Ty>::element_type*;
+};
+// clang-format on
+
+template <class _Ty>
+using _Pointer_of = typename _Pointer_of_helper<_Ty>::type;
+
+template <class _Ty, class _Uty>
+struct _Pointer_of_or_helper {
+    using type = _Uty;
+};
+
+// clang-format off
+template <class _Ty, class _Uty>
+    requires requires { typename _Pointer_of<_Ty>; }
+struct _Pointer_of_or_helper<_Ty, _Uty> {
+    using type = _Pointer_of<_Ty>;
+};
+// clang-format on
+
+template <class _Ty, class _Uty>
+using _Pointer_of_or = typename _Pointer_of_or_helper<_Ty, _Uty>::type;
+
+template <class _SmartPtr, class _Sp, class _Pointer, class... _ArgsT>
+concept _Resettable_pointer = requires(_SmartPtr& _Smart_ptr, _Pointer _Ptr, _ArgsT&&... _Args) {
+    _Smart_ptr.reset(static_cast<_Sp>(_Ptr), _STD forward<_ArgsT>(_Args)...);
+};
+
+template <class _SmartPtr, class _Pointer, class... _ArgsT>
+class out_ptr_t {
+    static_assert(!_Is_specialization_v<_SmartPtr, shared_ptr> || sizeof...(_ArgsT) != 0,
+        "out_ptr_t with shared_ptr requires a deleter");
+
+public:
+    explicit out_ptr_t(_SmartPtr& _Smart_ptr_, _ArgsT... _Args_)
+        : _Smart_ptr(_Smart_ptr_), _Args(_STD forward<_ArgsT>(_Args_)...) {}
+
+    out_ptr_t(const out_ptr_t&) = delete;
+
+    ~out_ptr_t() {
+        if (_Ptr) {
+            _STD apply(
+                [&](auto&&... _Args_) {
+                    using _Sp = _Pointer_of_or<_SmartPtr, _Pointer>;
+                    if constexpr (_Resettable_pointer<_SmartPtr, _Sp, _Pointer, _ArgsT...>) {
+                        _Smart_ptr.reset(static_cast<_Sp>(_Ptr), _STD forward<_ArgsT>(_Args_)...);
+                    } else {
+                        _Smart_ptr = _SmartPtr(static_cast<_Sp>(_Ptr), _STD forward<_ArgsT>(_Args_)...);
+                    }
+                },
+                _STD move(_Args));
+        }
+    }
+
+    operator _Pointer*() const noexcept {
+        return _STD addressof(const_cast<_Pointer&>(_Ptr));
+    }
+
+    operator void**() const noexcept requires(!is_same_v<_Pointer, void*>) {
+        static_assert(is_pointer_v<_Pointer>, "out_ptr_t's operator void** requires Pointer to be a pointer");
+        return reinterpret_cast<void**>(_STD addressof(const_cast<_Pointer&>(_Ptr)));
+    }
+
+private:
+    _SmartPtr& _Smart_ptr;
+    tuple<_ArgsT...> _Args;
+    _Pointer _Ptr{};
+};
+
+template <class _Pointer = void, class _SmartPtr, class... _ArgsT>
+_NODISCARD auto out_ptr(_SmartPtr& _Smart_ptr, _ArgsT&&... _Args) {
+    if constexpr (is_void_v<_Pointer>) {
+        return out_ptr_t<_SmartPtr, _Pointer_of<_SmartPtr>, _ArgsT&&...>(_Smart_ptr, _STD forward<_ArgsT>(_Args)...);
+    } else {
+        return out_ptr_t<_SmartPtr, _Pointer, _ArgsT&&...>(_Smart_ptr, _STD forward<_ArgsT>(_Args)...);
+    }
+}
+
+template <class _SmartPtr, class _Pointer, class... _ArgsT>
+class inout_ptr_t {
+    static_assert(!_Is_specialization_v<_SmartPtr, shared_ptr>, "inout_ptr_t doesn't work with shared_ptr");
+
+    static auto _Get_ptr(_SmartPtr& _Smart_ptr) {
+        if constexpr (is_pointer_v<_SmartPtr>) {
+            return _Smart_ptr;
+        } else {
+            return _Smart_ptr.get();
+        }
+    }
+
+public:
+    explicit inout_ptr_t(_SmartPtr& _Smart_ptr_, _ArgsT... _Args_)
+        : _Smart_ptr(_Smart_ptr_), _Args(_STD forward<_ArgsT>(_Args_)...), _Ptr(_Get_ptr(_Smart_ptr_)) {}
+
+    inout_ptr_t(const inout_ptr_t&) = delete;
+
+    ~inout_ptr_t() {
+        if (_Ptr) {
+            _STD apply(
+                [&](auto&&... _Args_) {
+                    using _Sp = _Pointer_of_or<_SmartPtr, _Pointer>;
+                    if constexpr (is_pointer_v<_SmartPtr>) {
+                        _Smart_ptr = _SmartPtr(static_cast<_Sp>(_Ptr), _STD forward<_ArgsT>(_Args_)...);
+                    } else if constexpr (_Resettable_pointer<_SmartPtr, _Sp, _Pointer, _ArgsT...>) {
+                        _Smart_ptr.release();
+                        _Smart_ptr.reset(static_cast<_Sp>(_Ptr), _STD forward<_ArgsT>(_Args_)...);
+                    } else {
+                        _Smart_ptr.release();
+                        _Smart_ptr = _SmartPtr(static_cast<_Sp>(_Ptr), _STD forward<_ArgsT>(_Args_)...);
+                    }
+                },
+                _STD move(_Args));
+        }
+    }
+
+    operator _Pointer*() const noexcept {
+        return _STD addressof(const_cast<_Pointer&>(_Ptr));
+    }
+
+    operator void**() const noexcept requires(!is_same_v<_Pointer, void*>) {
+        static_assert(is_pointer_v<_Pointer>, "inout_ptr_t's operator void** requires Pointer to be a pointer");
+        return reinterpret_cast<void**>(_STD addressof(const_cast<_Pointer&>(_Ptr)));
+    }
+
+private:
+    _SmartPtr& _Smart_ptr;
+    tuple<_ArgsT...> _Args;
+    _Pointer _Ptr;
+};
+
+template <class _Pointer = void, class _SmartPtr, class... _ArgsT>
+_NODISCARD auto inout_ptr(_SmartPtr& _Smart_ptr, _ArgsT&&... _Args) {
+    if constexpr (is_void_v<_Pointer>) {
+        return inout_ptr_t<_SmartPtr, _Pointer_of<_SmartPtr>, _ArgsT&&...>(_Smart_ptr, _STD forward<_ArgsT>(_Args)...);
+    } else {
+        return inout_ptr_t<_SmartPtr, _Pointer, _ArgsT&&...>(_Smart_ptr, _STD forward<_ArgsT>(_Args)...);
+    }
+}
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+
 #if _HAS_TR1_NAMESPACE
 namespace _DEPRECATE_TR1_NAMESPACE tr1 {
     using _STD allocate_shared;
