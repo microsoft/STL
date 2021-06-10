@@ -1270,6 +1270,10 @@ public:
     /* implicit */ constexpr basic_string_view(_In_z_ const const_pointer _Ntcts) noexcept // strengthened
         : _Mydata(_Ntcts), _Mysize(_Traits::length(_Ntcts)) {}
 
+#if _HAS_CXX23
+    constexpr basic_string_view(nullptr_t) = delete;
+#endif // _HAS_CXX23
+
     constexpr basic_string_view(
         _In_reads_(_Count) const const_pointer _Cts, const size_type _Count) noexcept // strengthened
         : _Mydata(_Cts), _Mysize(_Count) {
@@ -1277,10 +1281,6 @@ public:
         _STL_VERIFY(_Count == 0 || _Cts, "non-zero size null string_view");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
     }
-
-#if _HAS_CXX23
-    constexpr basic_string_view(nullptr_t) = delete;
-#endif // _HAS_CXX23
 
 #ifdef __cpp_lib_concepts
     // clang-format off
@@ -2526,6 +2526,10 @@ public:
         _Proxy._Release();
     }
 
+#if _HAS_CXX23
+    _CONSTEXPR20_CONTAINER basic_string(nullptr_t) = delete;
+#endif // _HAS_CXX23
+
 #if _HAS_CXX17
     template <class _Alloc2 = _Alloc, enable_if_t<_Is_allocator<_Alloc2>::value, int> = 0>
 #endif // _HAS_CXX17
@@ -2537,10 +2541,6 @@ public:
         assign(_Ptr);
         _Proxy._Release();
     }
-
-#if _HAS_CXX23
-    _CONSTEXPR20_CONTAINER basic_string(nullptr_t) = delete;
-#endif // _HAS_CXX23
 
     _CONSTEXPR20_CONTAINER basic_string(_CRT_GUARDOVERFLOW const size_type _Count, const _Elem _Ch)
         : _Mypair(_Zero_then_variadic_args_t{}) {
@@ -3100,6 +3100,10 @@ public:
         return assign(_Ptr);
     }
 
+#if _HAS_CXX23
+    _CONSTEXPR20_CONTAINER basic_string& operator=(nullptr_t) = delete;
+#endif // _HAS_CXX23
+
     _CONSTEXPR20_CONTAINER basic_string& operator=(const _Elem _Ch) { // assign {_Ch, _Elem()}
         _Mypair._Myval2._Mysize = 1;
         _Elem* const _Ptr       = _Mypair._Myval2._Myptr();
@@ -3107,10 +3111,6 @@ public:
         _Traits::assign(_Ptr[1], _Elem());
         return *this;
     }
-
-#if _HAS_CXX23
-    _CONSTEXPR20_CONTAINER basic_string& operator=(nullptr_t) = delete;
-#endif // _HAS_CXX23
 
     _CONSTEXPR20_CONTAINER basic_string& operator+=(const basic_string& _Right) {
         return append(_Right);
