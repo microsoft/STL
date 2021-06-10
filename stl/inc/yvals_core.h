@@ -249,7 +249,6 @@
 
 // _HAS_CXX20 indirectly controls:
 // P0619R4 Removing C++17-Deprecated Features
-// LWG-3541 indirectly_readable_traits should be SFINAE-friendly for all types
 
 // _HAS_CXX20 and _SILENCE_ALL_CXX20_DEPRECATION_WARNINGS control:
 // P0767R1 Deprecating is_pod
