@@ -164,12 +164,12 @@ namespace ranges {
                 if constexpr (sized_sentinel_for<_OSe, _Out>) {
                     auto _UResult = _Copy_memcpy_common(
                         _IFirst, _IFirst + _Count, _OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
-                    _IFirst = _UResult.in;
-                    _OFirst = _UResult.out;
+                    _IFirst = _STD move(_UResult.in);
+                    _OFirst = _STD move(_UResult.out);
                 } else {
                     auto _UResult = _Copy_memcpy_count(_IFirst, _OFirst, static_cast<size_t>(_Count));
-                    _IFirst       = _UResult.in;
-                    _OFirst       = _UResult.out;
+                    _IFirst       = _STD move(_UResult.in);
+                    _OFirst       = _STD move(_UResult.out);
                 }
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
@@ -307,12 +307,12 @@ namespace ranges {
                 if constexpr (sized_sentinel_for<_OSe, _Out>) {
                     auto _UResult = _Copy_memcpy_common(
                         _IFirst, _IFirst + _Count, _OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
-                    _IFirst = _UResult.in;
-                    _OFirst = _UResult.out;
+                    _IFirst = _STD move(_UResult.in);
+                    _OFirst = _STD move(_UResult.out);
                 } else {
                     auto _UResult = _Copy_memcpy_count(_IFirst, _OFirst, static_cast<size_t>(_Count));
-                    _IFirst       = _UResult.in;
-                    _OFirst       = _UResult.out;
+                    _IFirst       = _STD move(_UResult.in);
+                    _OFirst       = _STD move(_UResult.out);
                 }
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
