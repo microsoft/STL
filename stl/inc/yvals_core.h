@@ -255,6 +255,9 @@
 // P1831R1 Deprecating volatile In The Standard Library
 // Other C++20 deprecation warnings
 
+// _HAS_CXX23 directly controls:
+// P1989R2 Range Constructor For string_view
+
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
 // This implementation parallelizes several common algorithm calls, but not all.
