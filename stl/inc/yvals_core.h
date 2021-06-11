@@ -245,6 +245,7 @@
 // P2102R0 Making "Implicit Expression Variations" More Explicit
 // P2106R0 Range Algorithm Result Types
 // P2116R0 Removing tuple-Like Protocol Support From Fixed-Extent span
+// P2231R1 Completing constexpr In optional And variant
 // P????R? directory_entry::clear_cache()
 
 // _HAS_CXX20 indirectly controls:
@@ -1182,7 +1183,13 @@
 #define __cpp_lib_memory_resource                   201603L
 #define __cpp_lib_node_extract                      201606L
 #define __cpp_lib_not_fn                            201603L
-#define __cpp_lib_optional                          201606L
+
+#if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc)
+#define __cpp_lib_optional 202106L
+#else
+#define __cpp_lib_optional 201606L
+#endif // __cpp_constexpr_dynamic_alloc
+
 #ifndef _M_CEE
 #define __cpp_lib_parallel_algorithm 201603L
 #endif // _M_CEE
