@@ -1310,6 +1310,7 @@ public:
                 _Rng.operator basic_string_view<_Elem, _Traits>();
             })
             && ((!requires {
+                // per editorial or LWG issue not yet filed as of 2021-06-10
                 typename remove_reference_t<_Range>::traits_type;
             }) || same_as<typename remove_reference_t<_Range>::traits_type, _Traits>)
     constexpr basic_string_view(_Range&& _Rng) noexcept(
