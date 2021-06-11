@@ -1292,8 +1292,8 @@ public:
         requires _RANGES sized_range<_Range>
             && same_as<_RANGES range_value_t<_Range>, _Elem>
             && (!is_convertible_v<_Range, const _Elem*>)
-            && (!requires(remove_reference_t<_Range>& _Rng) {
-                _Rng.operator basic_string_view<_Elem, _Traits>();
+            && (!requires(remove_cvref_t<_Range>& _Rng) {
+                _Rng.operator _STD basic_string_view<_Elem, _Traits>();
             })
             && (!requires {
                 // per editorial or LWG issue not yet filed as of 2021-06-10
