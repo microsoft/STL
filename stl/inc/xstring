@@ -17,10 +17,6 @@
 #include <xpolymorphic_allocator.h>
 #endif // _HAS_CXX17
 
-#if _HAS_CXX23
-#include <xutility>
-#endif // _HAS_CXX23
-
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
@@ -1305,7 +1301,7 @@ public:
             } || same_as<typename remove_reference_t<_Range>::traits_type, _Traits>)
     constexpr basic_string_view(_Range&& _Rng) noexcept(
         noexcept(_RANGES data(_Rng)) && noexcept(_RANGES size(_Rng))) // strengthened
-        : _Mydata(_RANGES data(_Rng)), _Mysize(_RANGES size(_Rng)) {}
+        : _Mydata(_RANGES data(_Rng)), _Mysize(static_cast<std::size_t>(_RANGES size(_Rng))) {}
     // clang-format on
 #endif // _HAS_CXX23
 #endif // __cpp_lib_concepts
