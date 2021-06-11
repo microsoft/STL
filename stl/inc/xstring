@@ -1301,7 +1301,7 @@ public:
             } || same_as<typename remove_reference_t<_Range>::traits_type, _Traits>)
     constexpr basic_string_view(_Range&& _Rng) noexcept(
         noexcept(_RANGES data(_Rng)) && noexcept(_RANGES size(_Rng))) // strengthened
-        : _Mydata(_RANGES data(_Rng)), _Mysize(static_cast<std::size_t>(_RANGES size(_Rng))) {}
+        : _Mydata(_RANGES data(_Rng)), _Mysize(static_cast<size_t>(_RANGES size(_Rng))) {}
     // clang-format on
 #endif // _HAS_CXX23
 #endif // __cpp_lib_concepts
