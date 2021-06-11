@@ -1088,11 +1088,30 @@ static_assert(u8"abc"sv[1] == u8'b');
 static_assert(noexcept(u8"abc"sv));
 #endif // __cpp_char8_t
 
+constexpr bool test_case_range_constructor() {
+#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+    const array expectedData{'n', 'o', ' ', 'n', 'u', 'l', 'l'};
+    // Also tests the corresponding deduction guide:
+    same_as<string_view> auto sv = basic_string_view(expectedData);
+    assert(sv.data() == expectedData.data());
+    assert(sv.size() == 7);
+    assert(sv.length() == 7);
+    assert(!sv.empty());
+    assert(sv[1] == 'o');
+    assert(sv.at(1) == 'o');
+    assert(sv.front() == 'n');
+    assert(sv.back() == 'l');
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+
+    return true;
+}
+
 int main() {
     test_case_default_constructor();
     test_case_ntcts_constructor();
     test_case_buffer_constructor();
     test_case_contiguous_constructor();
+    test_case_range_constructor();
     test_case_iterators<char, char_traits<char>>();
     test_case_iterators<wchar_t, char_traits<wchar_t>>();
     test_case_prefix<char, char_traits<char>>();
