@@ -864,7 +864,7 @@ STATIC_ASSERT(!is_scoped_enum_v<ExampleEnum>);
 STATIC_ASSERT(!is_scoped_enum_v<test_abc1>);
 STATIC_ASSERT(is_scoped_enum_v<ExampleEnumClass>);
 STATIC_ASSERT(is_scoped_enum_v<LLEnumClass>);
-enum E { e = std::is_scoped_enum_v<E> };
+enum E { e = is_scoped_enum_v<E> };
 static_assert(!e, "is_scoped_enum of an incomplete unscoped enum type is true");
 #endif // _HAS_CXX23
 
