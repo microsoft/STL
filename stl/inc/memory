@@ -4154,18 +4154,19 @@ public:
     out_ptr_t(const out_ptr_t&) = delete;
 
     ~out_ptr_t() {
-        if (_Ptr) {
-            _STD apply(
-                [&](auto&&... _Args_) {
-                    using _Sp = _Pointer_of_or<_SmartPtr, _Pointer>;
-                    if constexpr (_Resettable_pointer<_SmartPtr, _Sp, _Pointer, _ArgsT...>) {
-                        _Smart_ptr.reset(static_cast<_Sp>(_Ptr), _STD forward<_ArgsT>(_Args_)...);
-                    } else {
-                        _Smart_ptr = _SmartPtr(static_cast<_Sp>(_Ptr), _STD forward<_ArgsT>(_Args_)...);
-                    }
-                },
-                _STD move(_Args));
-        }
+        if (!_Ptr)
+            return;
+
+        _STD apply(
+            [this](auto&&... _Args_) {
+                using _Sp = _Pointer_of_or<_SmartPtr, _Pointer>;
+                if constexpr (_Resettable_pointer<_SmartPtr, _Sp, _Pointer, _ArgsT...>) {
+                    _Smart_ptr.reset(static_cast<_Sp>(_Ptr), _STD forward<_ArgsT>(_Args_)...);
+                } else {
+                    _Smart_ptr = _SmartPtr(static_cast<_Sp>(_Ptr), _STD forward<_ArgsT>(_Args_)...);
+                }
+            },
+            _STD move(_Args));
     }
 
     operator _Pointer*() const noexcept {
@@ -4196,7 +4197,7 @@ template <class _SmartPtr, class _Pointer, class... _ArgsT>
 class inout_ptr_t {
     static_assert(!_Is_specialization_v<_SmartPtr, shared_ptr>, "inout_ptr_t doesn't work with shared_ptr");
 
-    static auto _Get_ptr(_SmartPtr& _Smart_ptr) {
+    _NODISCARD static auto _Get_ptr(_SmartPtr& _Smart_ptr) {
         if constexpr (is_pointer_v<_SmartPtr>) {
             return _Smart_ptr;
         } else {
@@ -4211,22 +4212,23 @@ public:
     inout_ptr_t(const inout_ptr_t&) = delete;
 
     ~inout_ptr_t() {
-        if (_Ptr) {
-            _STD apply(
-                [&](auto&&... _Args_) {
-                    using _Sp = _Pointer_of_or<_SmartPtr, _Pointer>;
-                    if constexpr (is_pointer_v<_SmartPtr>) {
-                        _Smart_ptr = _SmartPtr(static_cast<_Sp>(_Ptr), _STD forward<_ArgsT>(_Args_)...);
-                    } else if constexpr (_Resettable_pointer<_SmartPtr, _Sp, _Pointer, _ArgsT...>) {
-                        _Smart_ptr.release();
-                        _Smart_ptr.reset(static_cast<_Sp>(_Ptr), _STD forward<_ArgsT>(_Args_)...);
-                    } else {
-                        _Smart_ptr.release();
-                        _Smart_ptr = _SmartPtr(static_cast<_Sp>(_Ptr), _STD forward<_ArgsT>(_Args_)...);
-                    }
-                },
-                _STD move(_Args));
-        }
+        if (!_Ptr)
+            return;
+
+        _STD apply(
+            [this](auto&&... _Args_) {
+                using _Sp = _Pointer_of_or<_SmartPtr, _Pointer>;
+                if constexpr (is_pointer_v<_SmartPtr>) {
+                    _Smart_ptr = _SmartPtr(static_cast<_Sp>(_Ptr), _STD forward<_ArgsT>(_Args_)...);
+                } else if constexpr (_Resettable_pointer<_SmartPtr, _Sp, _Pointer, _ArgsT...>) {
+                    _Smart_ptr.release();
+                    _Smart_ptr.reset(static_cast<_Sp>(_Ptr), _STD forward<_ArgsT>(_Args_)...);
+                } else {
+                    _Smart_ptr.release();
+                    _Smart_ptr = _SmartPtr(static_cast<_Sp>(_Ptr), _STD forward<_ArgsT>(_Args_)...);
+                }
+            },
+            _STD move(_Args));
     }
 
     operator _Pointer*() const noexcept {
