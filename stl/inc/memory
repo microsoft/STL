@@ -4099,21 +4099,20 @@ template <class _Ty>
 struct _Pointer_of_helper {};
 
 // clang-format off
-template <class _Ty>
-    requires requires { typename _Ty::pointer; }
+template <_Has_member_pointer _Ty>
 struct _Pointer_of_helper<_Ty> {
     using type = typename _Ty::pointer;
 };
 
-template <class _Ty>
-    requires (!requires { typename _Ty::pointer; } && requires { typename _Ty::element_type; })
+template <_Has_member_element_type _Ty>
+    requires (!_Has_member_pointer<_Ty>)
 struct _Pointer_of_helper<_Ty> {
     using type = typename _Ty::element_type*;
 };
 
 template <class _Ty>
-    requires (!requires { typename _Ty::element_type; } && !requires { typename _Ty::pointer; }
-        && requires { typename pointer_traits<_Ty>::element_type; })
+    requires (!_Has_member_element_type<_Ty> && !_Has_member_pointer<_Ty>
+        && _Has_member_element_type<pointer_traits<_Ty>>)
 struct _Pointer_of_helper<_Ty> {
     using type = typename pointer_traits<_Ty>::element_type*;
 };
