@@ -1095,16 +1095,12 @@ constexpr bool test_case_range_constructor() {
     same_as<string_view> auto sv = basic_string_view(expectedData);
     assert(sv.data() == expectedData.data());
     assert(sv.size() == 7);
-    assert(sv.length() == 7);
-    assert(!sv.empty());
-    assert(sv[1] == 'o');
-    assert(sv.at(1) == 'o');
-    assert(sv.front() == 'n');
-    assert(sv.back() == 'l');
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
     return true;
 }
+
+static_assert(test_case_range_constructor());
 
 int main() {
     test_case_default_constructor();
