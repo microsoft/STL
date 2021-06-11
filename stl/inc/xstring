@@ -1238,15 +1238,6 @@ struct pointer_traits<_String_view_iterator<_Traits>> {
 };
 #endif // _HAS_CXX20
 
-#if _HAS_CXX23
-// clang-format off
-template <typename _Range, typename _Traits>
-concept _Has_compatible_traits = !requires {
-    typename _Range::traits_type;
-} || same_as<typename remove_reference_t<_Range>::traits_type, _Traits>;
-// clang-format on
-#endif // _HAS_CXX23
-
 
 // CLASS TEMPLATE basic_string_view
 template <class _Elem, class _Traits>
