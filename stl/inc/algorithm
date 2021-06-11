@@ -714,27 +714,29 @@ _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
 #ifdef __cpp_lib_concepts
 namespace ranges {
     // VARIABLE ranges::equal
-    class _Equal_fn : private _Not_quite_object {
-    private:
-        template <class _It1, class _It2, class _Size, class _Pr, class _Pj1, class _Pj2>
-        _NODISCARD static constexpr bool _Equal_count(
-            _It1 _First1, _It2 _First2, _Size _Count, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
-            if constexpr (_Equal_memcmp_is_safe<_It1, _It2,
-                              _Pr> && same_as<_Pj1, identity> && same_as<_Pj2, identity>) {
-                if (!_STD is_constant_evaluated()) {
-                    return _Memcmp_count(_First1, _First2, static_cast<size_t>(_Count)) == 0;
-                }
+    // clang-format off
+    template <input_iterator _It1, input_iterator _It2, class _Pr, class _Pj1, class _Pj2>
+        requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
+    _NODISCARD static constexpr bool _Equal_count(
+        _It1 _First1, _It2 _First2, iter_difference_t<_It1> _Count, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+        // clang-format on
+        if constexpr (_Equal_memcmp_is_safe<_It1, _It2, _Pr> && same_as<_Pj1, identity> && same_as<_Pj2, identity>) {
+            if (!_STD is_constant_evaluated()) {
+                return _Memcmp_count(_First1, _First2, static_cast<size_t>(_Count)) == 0;
             }
-
-            for (; _Count != 0; ++_First1, (void) ++_First2, --_Count) {
-                if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_First2))) {
-                    return false;
-                }
-            }
-
-            return true;
         }
 
+        for (; _Count != 0; ++_First1, (void) ++_First2, --_Count) {
+            if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_First2))) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    class _Equal_fn : private _Not_quite_object {
+    private:
         template <class _It1, class _Se1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
         _NODISCARD static constexpr bool _Equal_4(
             _It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
@@ -2446,11 +2448,10 @@ namespace ranges {
                     return false;
                 }
 
-                const auto _Result = _Mismatch_n(_STD move(_First1), _STD move(_First2),
+                return _RANGES _Equal_count(_STD move(_First1), _STD move(_First2),
                     static_cast<iter_difference_t<_It1>>(_Count2), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
-                return _Result.in2 == _Last2;
             } else {
-                const auto _Result = _Mismatch_4(_STD move(_First1), _STD move(_Last1), _STD move(_First2),
+                const auto _Result = _RANGES _Mismatch_4(_STD move(_First1), _STD move(_Last1), _STD move(_First2),
                     _STD move(_Last2), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
                 return _Result.in2 == _Last2;
             }
@@ -2470,13 +2471,12 @@ namespace ranges {
                     return false;
                 }
 
-                const auto _Result = _Mismatch_n(_RANGES begin(_Range1), _RANGES begin(_Range2),
+                return _RANGES _Equal_count(_RANGES begin(_Range1), _RANGES begin(_Range2),
                     static_cast<range_difference_t<_Rng1>>(_Count2), _Pass_fn(_Pred), _Pass_fn(_Proj1),
                     _Pass_fn(_Proj2));
-                return _Result.in2 == _RANGES end(_Range2);
             } else {
-                const auto _Result = _Mismatch_4(_RANGES begin(_Range1), _RANGES end(_Range1), _RANGES begin(_Range2),
-                    _RANGES end(_Range2), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+                const auto _Result = _RANGES _Mismatch_4(_RANGES begin(_Range1), _RANGES end(_Range1),
+                    _RANGES begin(_Range2), _RANGES end(_Range2), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
                 return _Result.in2 == _RANGES end(_Range2);
             }
         }
@@ -2520,9 +2520,8 @@ namespace ranges {
             }
 
             _RANGES advance(_First1, (_Count1 - _Count2));
-            const auto _Result = _Mismatch_n(_STD move(_First1), _STD move(_First2),
+            return _RANGES _Equal_count(_STD move(_First1), _STD move(_First2),
                 static_cast<iter_difference_t<_It1>>(_Count2), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
-            return _Result.in2 == _Last2;
         }
 
         // clang-format off
@@ -2541,9 +2540,8 @@ namespace ranges {
 
             auto _First1 = _RANGES begin(_Range1);
             _RANGES advance(_First1, (_Count1 - _Count2));
-            const auto _Result = _Mismatch_n(_STD move(_First1), _RANGES begin(_Range2),
+            return _RANGES _Equal_count(_STD move(_First1), _RANGES begin(_Range2),
                 static_cast<range_difference_t<_Rng1>>(_Count2), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
-            return _Result.in2 == _RANGES end(_Range2);
         }
     };
 
