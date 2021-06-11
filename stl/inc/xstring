@@ -1289,9 +1289,8 @@ public:
     constexpr basic_string_view(_It _First, _Se _Last) noexcept(noexcept(_Last - _First)) // strengthened
         : _Mydata(_STD to_address(_First)), _Mysize(static_cast<size_type>(_Last - _First)) {}
     // clang-format on
-#endif // __cpp_lib_concepts
 
-#if _HAS_CXX23 && defined(___cpp_lib_concepts)
+#if _HAS_CXX23
     // clang-format off
     template <_RANGES contiguous_range _Range>
         requires _RANGES sized_range<_Range>
@@ -1308,7 +1307,8 @@ public:
         noexcept(_RANGES data(_Rng)) && noexcept(_RANGES size(_Rng))) // strengthened
         : _Mydata(_RANGES data(_Rng)), _Mysize(_RANGES size(_Rng)) {}
     // clang-format on
-#endif // _HAS_CXX23 && defined(___cpp_lib_concepts)
+#endif // _HAS_CXX23
+#endif // __cpp_lib_concepts
 
     _NODISCARD constexpr const_iterator begin() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL >= 1
