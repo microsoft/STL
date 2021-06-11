@@ -1701,6 +1701,11 @@ private:
 template <contiguous_iterator _It, sized_sentinel_for<_It> _Se>
 basic_string_view(_It, _Se) -> basic_string_view<iter_value_t<_It>>;
 
+#if _HAS_CXX23
+template <_RANGES contiguous_range _Range>
+basic_string_view(_Range&&) -> basic_string_view<_RANGES range_value_t<_Range>>;
+#endif // _HAS_CXX23
+
 namespace ranges {
     template <class _Elem, class _Traits>
     inline constexpr bool enable_view<basic_string_view<_Elem, _Traits>> = true;
