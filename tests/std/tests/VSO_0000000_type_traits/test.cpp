@@ -76,6 +76,9 @@ STATIC_ASSERT(!is_unsigned_v<void>);
 STATIC_ASSERT(!is_bounded_array_v<void>);
 STATIC_ASSERT(!is_unbounded_array_v<void>);
 #endif // _HAS_CXX20
+#if _HAS_CXX23
+STATIC_ASSERT(!is_scoped_enum_v<void>);
+#endif // _HAS_CXX23
 
 STATIC_ASSERT(!is_constructible_v<void>);
 STATIC_ASSERT(!is_default_constructible_v<void>);
@@ -629,6 +632,10 @@ void test_function_type() {
     STATIC_ASSERT(!is_bounded_array_v<T>);
     STATIC_ASSERT(!is_unbounded_array_v<T>);
 #endif // _HAS_CXX20
+
+#if _HAS_CXX23
+    STATIC_ASSERT(!is_scoped_enum_v<T>);
+#endif
 }
 
 template <typename T>
@@ -850,6 +857,16 @@ enum ExampleEnum { xExample, yExample };
 enum LLEnum : long long { xLongExample, yLongExample };
 enum class ExampleEnumClass { xExample, yExample };
 enum class LLEnumClass : long long { xLongExample, yLongExample };
+
+#if _HAS_CXX23
+STATIC_ASSERT(!is_scoped_enum<ExampleEnum>::value);
+STATIC_ASSERT(!is_scoped_enum_v<ExampleEnum>);
+STATIC_ASSERT(!is_scoped_enum_v<test_abc1>);
+STATIC_ASSERT(is_scoped_enum_v<ExampleEnumClass>);
+STATIC_ASSERT(is_scoped_enum_v<LLEnumClass>);
+enum E { e = is_scoped_enum_v<E> };
+static_assert(!e, "is_scoped_enum of an incomplete unscoped enum type is true");
+#endif // _HAS_CXX23
 
 // P0258R2 has_unique_object_representations
 #if _HAS_CXX17
