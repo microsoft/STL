@@ -234,7 +234,7 @@ class STLTest(Test):
                 if flag[5:] == 'c++latest':
                     self._addCustomFeature('c++2a')
                 elif flag[5:] == 'c++20':
-                    self._addCustomFeature('c++2a')
+                    self.requires.append('unsupported_potato') # TRANSITION, VS2019 Preview 16.11
                 elif flag[5:] == 'c++17':
                     self._addCustomFeature('c++17')
                 elif flag[5:] == 'c++14':

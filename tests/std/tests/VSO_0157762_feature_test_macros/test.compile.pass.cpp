@@ -955,20 +955,6 @@ STATIC_ASSERT(__cpp_lib_is_pointer_interconvertible == 201907L);
 #endif
 #endif
 
-#if _HAS_CXX23
-#ifndef __cpp_lib_is_scoped_enum
-#error __cpp_lib_is_scoped_enum is not defined
-#elif __cpp_lib_is_scoped_enum != 202011L
-#error __cpp_lib_is_scoped_enum is not 202011L
-#else
-STATIC_ASSERT(__cpp_lib_is_scoped_enum == 202011L);
-#endif
-#else
-#ifdef __cpp_lib_is_scoped_enum
-#error __cpp_lib_is_scoped_enum is defined
-#endif
-#endif
-
 #if _HAS_CXX17
 #ifndef __cpp_lib_is_swappable
 #error __cpp_lib_is_swappable is not defined

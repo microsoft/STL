@@ -445,10 +445,6 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
 
         emplaced.erase(emplaced.begin(), emplaced.begin() + 2);
         assert(emplaced.size() == 23);
-
-        emplaced.emplace(emplaced.cbegin(), 42);
-        assert(emplaced.size() == 24);
-        assert(emplaced.front() == 42);
 #endif // __EDG__
     }
 

@@ -20,7 +20,7 @@ struct instantiator {
 
     template <ranges::input_range Read>
     static constexpr void call() {
-        using ranges::find, ranges::iterator_t, ranges::begin, ranges::end;
+        using ranges::find, ranges::iterator_t;
 
         for (const auto& [value, _] : haystack) {
             { // Validate range overload [found case]
@@ -48,20 +48,15 @@ struct instantiator {
             STATIC_ASSERT(same_as<decltype(result), iterator_t<Read>>);
             assert(result == wrapped_input.end());
         }
-        { // Validate memchr case
+        { // Validate memchr case [found case]
             char arr[5]{4, 8, 1, -15, 125};
-
-            // found case
             auto result = find(arr, 1);
             assert(*result == 1);
-
-            // not found case
-            result = find(arr, 10);
+        }
+        { // Validate memchr case [not found case]
+            char arr[5]{4, 8, 1, -15, 125};
+            auto result = find(arr, 10);
             assert(result == end(arr));
-
-            // unreachable_sentinel case
-            result = find(begin(arr), unreachable_sentinel, 1);
-            assert(*result == 1);
         }
     }
 };

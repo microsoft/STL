@@ -256,7 +256,6 @@
 // Other C++20 deprecation warnings
 
 // _HAS_CXX23 directly controls:
-// P1048R1 is_scoped_enum
 // P2166R1 Prohibiting basic_string And basic_string_view Construction From nullptr
 
 // Parallel Algorithms Notes
@@ -546,7 +545,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 142
-#define _MSVC_STL_UPDATE  202106L
+#define _MSVC_STL_UPDATE  202105L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #ifdef __CUDACC__
@@ -1338,11 +1337,6 @@
 #if defined(__cpp_impl_coroutine) || defined(_DOWNLEVEL_COROUTINES_SUPPORTED) // TRANSITION, Clang coroutine support
 #define __cpp_lib_coroutine 201902L
 #endif // __cpp_impl_coroutine
-
-// C++23
-#if _HAS_CXX23
-#define __cpp_lib_is_scoped_enum 202011L
-#endif // _HAS_CXX23
 
 // EXPERIMENTAL
 #define __cpp_lib_experimental_erase_if   201411L

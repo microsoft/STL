@@ -16,24 +16,6 @@ using namespace std;
 
 #pragma warning(disable : 6011) // Dereferencing NULL pointer '%s'
 
-struct evil_convertible_to_difference {
-    evil_convertible_to_difference() = default;
-    evil_convertible_to_difference(const evil_convertible_to_difference&) {
-        throw 42;
-    }
-    evil_convertible_to_difference(evil_convertible_to_difference&&) = default;
-
-    evil_convertible_to_difference& operator=(const evil_convertible_to_difference&) {
-        throw 42;
-        return *this;
-    }
-    evil_convertible_to_difference& operator=(evil_convertible_to_difference&&) = default;
-
-    constexpr operator int() const noexcept {
-        return 4;
-    }
-};
-
 // Test a silly precomposed range adaptor pipeline
 constexpr auto pipeline = views::drop(1) | views::drop(1) | views::drop(1) | views::drop(1);
 
@@ -543,14 +525,5 @@ int main() {
             views::iota(0ull, ranges::size(some_ints)) | views::transform([](auto i) { return some_ints[i]; });
         STATIC_ASSERT(test_one(v, only_four_ints));
         test_one(v, only_four_ints);
-    }
-
-    { // Validate that we can use something that is convertible to integral (GH-1957)
-        constexpr span s{some_ints};
-        auto r1 = s | views::drop(integral_constant<int, 4>{});
-        assert(ranges::equal(r1, only_four_ints));
-
-        auto r2 = s | views::drop(evil_convertible_to_difference{});
-        assert(ranges::equal(r2, only_four_ints));
     }
 }
