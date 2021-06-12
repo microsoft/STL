@@ -1171,7 +1171,15 @@ STATIC_ASSERT(__cpp_lib_not_fn == 201603L);
 STATIC_ASSERT(__cpp_lib_null_iterators == 201304L);
 #endif
 
-#if _HAS_CXX17
+#if _HAS_CXX20
+#ifndef __cpp_lib_optional
+#error __cpp_lib_optional is not defined
+#elif __cpp_lib_optional != 202106L
+#error __cpp_lib_optional is not 202106L
+#else
+STATIC_ASSERT(__cpp_lib_optional == 202106L);
+#endif
+#elif _HAS_CXX17
 #ifndef __cpp_lib_optional
 #error __cpp_lib_optional is not defined
 #elif __cpp_lib_optional != 201606L
@@ -1633,7 +1641,15 @@ STATIC_ASSERT(__cpp_lib_unwrap_ref == 201811L);
 #endif
 #endif
 
-#if _HAS_CXX17
+#if _HAS_CXX20
+#ifndef __cpp_lib_variant
+#error __cpp_lib_variant is not defined
+#elif __cpp_lib_variant != 202106L
+#error __cpp_lib_variant is not 202106L
+#else
+STATIC_ASSERT(__cpp_lib_variant == 202106L);
+#endif
+#elif _HAS_CXX17
 #ifndef __cpp_lib_variant
 #error __cpp_lib_variant is not defined
 #elif __cpp_lib_variant != 201606L
