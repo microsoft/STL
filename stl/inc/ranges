@@ -31,7 +31,7 @@ namespace ranges {
 
     // clang-format off
     // CONCEPT ranges::viewable_range
-    template <class _Rng> // Per proposed resolution of LWG-3481
+    template <class _Rng>
     concept viewable_range = range<_Rng>
         && ((view<remove_cvref_t<_Rng>> && constructible_from<remove_cvref_t<_Rng>, _Rng>)
             || (!view<remove_cvref_t<_Rng>> && borrowed_range<_Rng>));
@@ -796,7 +796,7 @@ namespace ranges {
             }
         }
 
-        constexpr iota_view(_It _First, _Se _Last) noexcept( // Per LWG-3523
+        constexpr iota_view(_It _First, _Se _Last) noexcept(
             is_nothrow_move_constructible_v<_Wi>&& is_nothrow_move_constructible_v<_Bo>) // strengthened
             : _Value(_STD move(_First._Current)), _Bound(_STD move(_Bound_from(_Last))) {}
 
@@ -2903,7 +2903,7 @@ namespace ranges {
             // clang-format off
             friend constexpr void iter_swap(const _Iterator& _Left, const _Iterator& _Right) noexcept(
                 noexcept(_RANGES iter_swap(_Left._Inner, _Right._Inner)))
-                requires indirectly_swappable<_InnerIter> { // per LWG-3517
+                requires indirectly_swappable<_InnerIter> {
                 // clang-format on
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _Left._Check_dereference();
@@ -3318,7 +3318,7 @@ namespace ranges {
             }
 
             constexpr decltype(auto) operator++(int) {
-                if constexpr (forward_range<_BaseTy>) { // per LWG-3532
+                if constexpr (forward_range<_BaseTy>) {
                     auto _Tmp = *this;
                     ++*this;
                     return _Tmp;
