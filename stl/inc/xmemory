@@ -1968,7 +1968,7 @@ struct _Alloc_temporary {
     };
 
     template <class... _Args>
-    explicit _Alloc_temporary(_Alloc& _Al_, _Args&&... _Vals) noexcept(
+    _CONSTEXPR20_CONTAINER explicit _Alloc_temporary(_Alloc& _Al_, _Args&&... _Vals) noexcept(
         noexcept(_Traits::construct(_Al_, _STD addressof(_Storage._Value), _STD forward<_Args>(_Vals)...)))
         : _Al(_Al_) {
         _Traits::construct(_Al, _STD addressof(_Storage._Value), _STD forward<_Args>(_Vals)...);
@@ -1977,7 +1977,7 @@ struct _Alloc_temporary {
     _Alloc_temporary(const _Alloc_temporary&) = delete;
     _Alloc_temporary& operator=(const _Alloc_temporary&) = delete;
 
-    ~_Alloc_temporary() {
+    _CONSTEXPR20_CONTAINER ~_Alloc_temporary() {
         _Traits::destroy(_Al, _STD addressof(_Storage._Value));
     }
 };
