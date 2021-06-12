@@ -366,6 +366,15 @@ struct is_enum : bool_constant<__is_enum(_Ty)> {}; // determine whether _Ty is a
 template <class _Ty>
 _INLINE_VAR constexpr bool is_enum_v = __is_enum(_Ty);
 
+#if _HAS_CXX23
+// STRUCT TEMPLATE is_scoped_enum
+template <class _Ty>
+inline constexpr bool is_scoped_enum_v = conjunction_v<is_enum<_Ty>, negation<is_convertible<_Ty, int>>>;
+
+template <class _Ty>
+struct is_scoped_enum : bool_constant<is_scoped_enum_v<_Ty>> {};
+#endif // _HAS_CXX23
+
 // STRUCT TEMPLATE is_compound
 template <class _Ty>
 struct is_compound : bool_constant<!is_fundamental_v<_Ty>> {}; // determine whether _Ty is a compound type
@@ -1364,11 +1373,7 @@ template <class _Ty1, class _Ty2, class = void>
 struct _Common_reference2A : _Common_reference2B<_Ty1, _Ty2> {};
 
 template <class _Ty1, class _Ty2, class _Result = _Cond_res<_Copy_cv<_Ty1, _Ty2>&, _Copy_cv<_Ty2, _Ty1>&>,
-#ifdef __EDG__ // TRANSITION, VSO-948614
-    enable_if_t<is_lvalue_reference<_Result>::value, int> = 0>
-#else // ^^^ workaround / no workaround vvv
     enable_if_t<is_lvalue_reference_v<_Result>, int> = 0>
-#endif // TRANSITION, VSO-948614
 using _LL_common_ref = _Result;
 
 template <class _Ty1, class _Ty2>

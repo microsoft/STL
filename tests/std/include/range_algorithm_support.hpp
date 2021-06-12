@@ -4,9 +4,9 @@
 #pragma once
 
 #include <cassert>
-#include <concepts>
 #include <cstddef>
 #include <functional>
+#include <iterator>
 #include <ranges>
 #include <span>
 #include <type_traits>

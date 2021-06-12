@@ -12,9 +12,7 @@
 
 using namespace std;
 
-#if defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 || defined(MSVC_INTERNAL_TESTING) // TRANSITION, VSO-1270433
 static constexpr int input[] = {0, 1, 2, 3, 4, 5};
-#endif // defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 || defined(MSVC_INTERNAL_TESTING)
 
 template <typename T>
 struct soccc_allocator {
@@ -63,7 +61,6 @@ struct soccc_allocator {
 using vec = vector<int, soccc_allocator<int>>;
 
 _CONSTEXPR20_CONTAINER bool test_interface() {
-#if defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 || defined(MSVC_INTERNAL_TESTING) // TRANSITION, VSO-1270433
     { // constructors
 
         // Non allocator constructors
@@ -448,6 +445,10 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
 
         emplaced.erase(emplaced.begin(), emplaced.begin() + 2);
         assert(emplaced.size() == 23);
+
+        emplaced.emplace(emplaced.cbegin(), 42);
+        assert(emplaced.size() == 24);
+        assert(emplaced.front() == 42);
 #endif // __EDG__
     }
 
@@ -506,12 +507,11 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         static_assert(is_same_v<remove_const_t<decltype(ge)>, bool>);
         assert(!ge);
     }
-#endif // defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 || defined(MSVC_INTERNAL_TESTING)
+
     return true;
 }
 
 _CONSTEXPR20_CONTAINER bool test_iterators() {
-#if defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 || defined(MSVC_INTERNAL_TESTING) // TRANSITION, VSO-1270433
     vec range_constructed(begin(input), end(input));
 
 #if !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1273381
@@ -606,12 +606,11 @@ _CONSTEXPR20_CONTAINER bool test_iterators() {
     }
 
 #endif // !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2
-#endif // defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 || defined(MSVC_INTERNAL_TESTING)
+
     return true;
 }
 
 _CONSTEXPR20_CONTAINER bool test_growth() {
-#if defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 || defined(MSVC_INTERNAL_TESTING) // TRANSITION, VSO-1270433
     {
         vector<int> v(1000, 1729);
 
@@ -707,7 +706,7 @@ _CONSTEXPR20_CONTAINER bool test_growth() {
         assert(v.capacity() == 8000);
 #endif // __EDG__
     }
-#endif // defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 || defined(MSVC_INTERNAL_TESTING)
+
     return true;
 }
 

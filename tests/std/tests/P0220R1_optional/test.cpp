@@ -5495,17 +5495,13 @@ constexpr int test()
     {
         optional<X> opt(in_place, 2);
         Y y(3);
-#ifndef __EDG__ // TRANSITION, VSO-1268140
         assert(std::move(opt).value_or(y) == 2);
         assert(*opt == 0);
-#endif // ^^^ no workaround ^^^
     }
     {
         optional<X> opt(in_place, 2);
-#ifndef __EDG__ // TRANSITION, VSO-1268140
         assert(std::move(opt).value_or(Y(3)) == 2);
         assert(*opt == 0);
-#endif // ^^^ no workaround ^^^
     }
     {
         optional<X> opt;

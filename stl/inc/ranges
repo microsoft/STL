@@ -8,9 +8,10 @@
 #define _RANGES_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
-#ifndef __cpp_lib_concepts
-#pragma message("The contents of <ranges> are available only with C++20 concepts support.")
-#else // ^^^ !defined(__cpp_lib_concepts) / defined(__cpp_lib_concepts) vvv
+#ifndef __cpp_lib_ranges
+#pragma message("The contents of <ranges> are available only in c++latest mode with concepts support;")
+#pragma message("see https://github.com/microsoft/STL/issues/1814 for details.")
+#else // ^^^ !defined(__cpp_lib_ranges) / defined(__cpp_lib_ranges) vvv
 #include <iosfwd>
 #include <iterator>
 #include <limits>
@@ -30,7 +31,7 @@ namespace ranges {
 
     // clang-format off
     // CONCEPT ranges::viewable_range
-    template <class _Rng> // Per proposed resolution of LWG-3481
+    template <class _Rng>
     concept viewable_range = range<_Rng>
         && ((view<remove_cvref_t<_Rng>> && constructible_from<remove_cvref_t<_Rng>, _Rng>)
             || (!view<remove_cvref_t<_Rng>> && borrowed_range<_Rng>));
@@ -795,7 +796,7 @@ namespace ranges {
             }
         }
 
-        constexpr iota_view(_It _First, _Se _Last) noexcept( // Per LWG-3523
+        constexpr iota_view(_It _First, _Se _Last) noexcept(
             is_nothrow_move_constructible_v<_Wi>&& is_nothrow_move_constructible_v<_Bo>) // strengthened
             : _Value(_STD move(_First._Current)), _Bound(_STD move(_Bound_from(_Last))) {}
 
@@ -1988,6 +1989,9 @@ namespace ranges {
     template <class _Rng>
     take_view(_Rng&&, range_difference_t<_Rng>) -> take_view<views::all_t<_Rng>>;
 
+    template <class _Rng>
+    inline constexpr bool enable_borrowed_range<take_view<_Rng>> = enable_borrowed_range<_Rng>;
+
     namespace views {
         // VARIABLE views::take
         template <class>
@@ -2036,18 +2040,48 @@ namespace ranges {
             template <class _Rng>
             static constexpr _Choice_t<_St> _Choice = _Choose<_Rng>();
 
-            template <_Integer_like _Ty>
+            template <class _Ty>
             struct _Partial : _Pipe::_Base<_Partial<_Ty>> {
                 _Ty _Length;
 
                 // clang-format off
                 template <viewable_range _Rng>
                     requires convertible_to<_Ty&, range_difference_t<_Rng>>
-                _NODISCARD constexpr auto operator()(_Rng&& _Range) const
+                _NODISCARD constexpr auto operator()(_Rng&& _Range) &
                     noexcept(noexcept(_Take_fn{}(_STD forward<_Rng>(_Range), _Length))) {
                     // clang-format on
                     _STL_INTERNAL_STATIC_ASSERT(is_aggregate_v<_Partial>);
                     return _Take_fn{}(_STD forward<_Rng>(_Range), _Length);
+                }
+
+                // clang-format off
+                template <viewable_range _Rng>
+                    requires convertible_to<const _Ty&, range_difference_t<_Rng>>
+                _NODISCARD constexpr auto operator()(_Rng&& _Range) const&
+                    noexcept(noexcept(_Take_fn{}(_STD forward<_Rng>(_Range), _Length))) {
+                    // clang-format on
+                    _STL_INTERNAL_STATIC_ASSERT(is_aggregate_v<_Partial>);
+                    return _Take_fn{}(_STD forward<_Rng>(_Range), _Length);
+                }
+
+                // clang-format off
+                template <viewable_range _Rng>
+                    requires convertible_to<_Ty, range_difference_t<_Rng>>
+                _NODISCARD constexpr auto operator()(_Rng&& _Range) &&
+                    noexcept(noexcept(_Take_fn{}(_STD forward<_Rng>(_Range), _STD move(_Length)))) {
+                    // clang-format on
+                    _STL_INTERNAL_STATIC_ASSERT(is_aggregate_v<_Partial>);
+                    return _Take_fn{}(_STD forward<_Rng>(_Range), _STD move(_Length));
+                }
+
+                // clang-format off
+                template <viewable_range _Rng>
+                    requires convertible_to<const _Ty, range_difference_t<_Rng>>
+                _NODISCARD constexpr auto operator()(_Rng&& _Range) const&&
+                    noexcept(noexcept(_Take_fn{}(_STD forward<_Rng>(_Range), _STD move(_Length)))) {
+                    // clang-format on
+                    _STL_INTERNAL_STATIC_ASSERT(is_aggregate_v<_Partial>);
+                    return _Take_fn{}(_STD forward<_Rng>(_Range), _STD move(_Length));
                 }
             };
 
@@ -2085,9 +2119,9 @@ namespace ranges {
                 }
             }
 
-            template <_Integer_like _Ty>
+            template <move_constructible _Ty>
             _NODISCARD constexpr auto operator()(_Ty _Length) const noexcept {
-                return _Partial<_Ty>{._Length = _Length};
+                return _Partial<_Ty>{._Length = _STD move(_Length)};
             }
         };
 
@@ -2394,6 +2428,9 @@ namespace ranges {
     template <class _Rng>
     drop_view(_Rng&&, range_difference_t<_Rng>) -> drop_view<views::all_t<_Rng>>;
 
+    template <class _Rng>
+    inline constexpr bool enable_borrowed_range<drop_view<_Rng>> = enable_borrowed_range<_Rng>;
+
     namespace views {
         // VARIABLE views::drop
         class _Drop_fn {
@@ -2432,18 +2469,48 @@ namespace ranges {
             template <class _Rng>
             static constexpr _Choice_t<_St> _Choice = _Choose<_Rng>();
 
-            template <_Integer_like _Ty>
+            template <class _Ty>
             struct _Partial : _Pipe::_Base<_Partial<_Ty>> {
                 _Ty _Length;
 
                 // clang-format off
                 template <viewable_range _Rng>
                     requires convertible_to<_Ty&, range_difference_t<_Rng>>
-                _NODISCARD constexpr auto operator()(_Rng&& _Range) const
+                _NODISCARD constexpr auto operator()(_Rng&& _Range) &
                     noexcept(noexcept(_Drop_fn{}(_STD forward<_Rng>(_Range), _Length))) {
                     // clang-format on
                     _STL_INTERNAL_STATIC_ASSERT(is_aggregate_v<_Partial>);
                     return _Drop_fn{}(_STD forward<_Rng>(_Range), _Length);
+                }
+
+                // clang-format off
+                template <viewable_range _Rng>
+                    requires convertible_to<const _Ty&, range_difference_t<_Rng>>
+                _NODISCARD constexpr auto operator()(_Rng&& _Range) const&
+                    noexcept(noexcept(_Drop_fn{}(_STD forward<_Rng>(_Range), _Length))) {
+                    // clang-format on
+                    _STL_INTERNAL_STATIC_ASSERT(is_aggregate_v<_Partial>);
+                    return _Drop_fn{}(_STD forward<_Rng>(_Range), _Length);
+                }
+
+                // clang-format off
+                template <viewable_range _Rng>
+                    requires convertible_to<_Ty, range_difference_t<_Rng>>
+                _NODISCARD constexpr auto operator()(_Rng&& _Range) &&
+                    noexcept(noexcept(_Drop_fn{}(_STD forward<_Rng>(_Range), _STD move(_Length)))) {
+                    // clang-format on
+                    _STL_INTERNAL_STATIC_ASSERT(is_aggregate_v<_Partial>);
+                    return _Drop_fn{}(_STD forward<_Rng>(_Range), _STD move(_Length));
+                }
+
+                // clang-format off
+                template <viewable_range _Rng>
+                    requires convertible_to<const _Ty, range_difference_t<_Rng>>
+                _NODISCARD constexpr auto operator()(_Rng&& _Range) const&&
+                    noexcept(noexcept(_Drop_fn{}(_STD forward<_Rng>(_Range), _STD move(_Length)))) {
+                    // clang-format on
+                    _STL_INTERNAL_STATIC_ASSERT(is_aggregate_v<_Partial>);
+                    return _Drop_fn{}(_STD forward<_Rng>(_Range), _STD move(_Length));
                 }
             };
 
@@ -2482,9 +2549,9 @@ namespace ranges {
                 }
             }
 
-            template <_Integer_like _Ty>
+            template <move_constructible _Ty>
             _NODISCARD constexpr auto operator()(_Ty _Length) const noexcept {
-                return _Partial<_Ty>{._Length = _Length};
+                return _Partial<_Ty>{._Length = _STD move(_Length)};
             }
         };
 
@@ -2549,6 +2616,9 @@ namespace ranges {
 
     template <class _Rng, class _Pr>
     drop_while_view(_Rng&&, _Pr) -> drop_while_view<views::all_t<_Rng>, _Pr>;
+
+    template <class _Rng, class _Pr>
+    inline constexpr bool enable_borrowed_range<drop_while_view<_Rng, _Pr>> = enable_borrowed_range<_Rng>;
 
     namespace views {
         // VARIABLE views::drop_while
@@ -2833,7 +2903,7 @@ namespace ranges {
             // clang-format off
             friend constexpr void iter_swap(const _Iterator& _Left, const _Iterator& _Right) noexcept(
                 noexcept(_RANGES iter_swap(_Left._Inner, _Right._Inner)))
-                requires indirectly_swappable<_InnerIter> { // per LWG-3517
+                requires indirectly_swappable<_InnerIter> {
                 // clang-format on
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _Left._Check_dereference();
@@ -3248,7 +3318,7 @@ namespace ranges {
             }
 
             constexpr decltype(auto) operator++(int) {
-                if constexpr (forward_range<_BaseTy>) { // per LWG-3532
+                if constexpr (forward_range<_BaseTy>) {
                     auto _Tmp = *this;
                     ++*this;
                     return _Tmp;
@@ -3502,6 +3572,9 @@ namespace ranges {
     template <class _Rng>
     common_view(_Rng&&) -> common_view<views::all_t<_Rng>>;
 
+    template <class _Rng>
+    inline constexpr bool enable_borrowed_range<common_view<_Rng>> = enable_borrowed_range<_Rng>;
+
     namespace views {
         // VARIABLE views::common
         class _Common_fn : public _Pipe::_Base<_Common_fn> {
@@ -3613,6 +3686,9 @@ namespace ranges {
 
     template <class _Rng>
     reverse_view(_Rng&&) -> reverse_view<views::all_t<_Rng>>;
+
+    template <class _Rng>
+    inline constexpr bool enable_borrowed_range<reverse_view<_Rng>> = enable_borrowed_range<_Rng>;
 
     namespace views {
         // VARIABLE views::reverse
@@ -4065,6 +4141,9 @@ namespace ranges {
         }
     };
 
+    template <class _Rng, size_t _Index>
+    inline constexpr bool enable_borrowed_range<elements_view<_Rng, _Index>> = enable_borrowed_range<_Rng>;
+
     template <class _Rng>
     using keys_view = elements_view<views::all_t<_Rng>, 0>;
     template <class _Rng>
@@ -4098,6 +4177,6 @@ _STD_END
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
-#endif // __cpp_lib_concepts
+#endif // __cpp_lib_ranges
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _RANGES_
