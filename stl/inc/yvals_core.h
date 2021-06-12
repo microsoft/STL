@@ -255,6 +255,9 @@
 // P1831R1 Deprecating volatile In The Standard Library
 // Other C++20 deprecation warnings
 
+// _HAS_CXX23 directly controls:
+// P1048R1 is_scoped_enum
+
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
 // This implementation parallelizes several common algorithm calls, but not all.
@@ -1334,6 +1337,11 @@
 #if defined(__cpp_impl_coroutine) || defined(_DOWNLEVEL_COROUTINES_SUPPORTED) // TRANSITION, Clang coroutine support
 #define __cpp_lib_coroutine 201902L
 #endif // __cpp_impl_coroutine
+
+// C++23
+#if _HAS_CXX23
+#define __cpp_lib_is_scoped_enum 202011L
+#endif // _HAS_CXX23
 
 // EXPERIMENTAL
 #define __cpp_lib_experimental_erase_if   201411L
