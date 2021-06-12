@@ -1199,7 +1199,12 @@
 #define __cpp_lib_shared_ptr_weak_type  201606L
 #define __cpp_lib_string_view           201803L
 #define __cpp_lib_to_chars              201611L
-#define __cpp_lib_variant               201606L
+
+#if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc)
+#define __cpp_lib_variant 202106L
+#else
+#define __cpp_lib_variant 201606L
+#endif // __cpp_constexpr_dynamic_alloc
 #endif // _HAS_CXX17
 
 // C++20
