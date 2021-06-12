@@ -26,7 +26,7 @@ struct instantiator {
 
     template <class In1, class In2>
     static constexpr void call() {
-        using ranges::lexicographical_compare, ranges::less;
+        using ranges::lexicographical_compare, ranges::less, ranges::begin, ranges::end;
 
         // Validate range overload
         {
@@ -201,6 +201,24 @@ struct instantiator {
             assert(!lexicographical_compare(arr1, arr2));
             arr2[2] = 1;
             assert(!lexicographical_compare(arr1, arr2));
+        }
+        { // Validate memcmp + unreachable_sentinel cases
+            unsigned char arr1[3]{0, 1, 2};
+            unsigned char arr2[3]{0, 1, 3};
+
+            assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr1), unreachable_sentinel));
+            assert(!lexicographical_compare(begin(arr1), unreachable_sentinel, begin(arr1), end(arr1)));
+
+            assert(lexicographical_compare(begin(arr1), unreachable_sentinel, begin(arr2), unreachable_sentinel));
+            assert(lexicographical_compare(begin(arr1), unreachable_sentinel, begin(arr2), end(arr2)));
+            assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr2), unreachable_sentinel));
+            arr2[2] = 2;
+            assert(!lexicographical_compare(begin(arr1), unreachable_sentinel, begin(arr2), end(arr2)));
+            assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr2), unreachable_sentinel));
+            arr2[2] = 1;
+            assert(!lexicographical_compare(begin(arr1), unreachable_sentinel, begin(arr2), unreachable_sentinel));
+            assert(!lexicographical_compare(begin(arr1), unreachable_sentinel, begin(arr2), end(arr2)));
+            assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr2), unreachable_sentinel));
         }
     }
 };
