@@ -256,6 +256,7 @@
 // Other C++20 deprecation warnings
 
 // _HAS_CXX23 directly controls:
+// P1048R1 is_scoped_enum
 // P1682R2 to_underlying() For Enumerations
 
 // Parallel Algorithms Notes
@@ -545,7 +546,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 142
-#define _MSVC_STL_UPDATE  202105L
+#define _MSVC_STL_UPDATE  202106L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #ifdef __CUDACC__
@@ -1340,7 +1341,8 @@
 
 // C++23
 #if _HAS_CXX23
-#define __cpp_lib_to_underlying 202102L
+#define __cpp_lib_to_underlying  202102L
+#define __cpp_lib_is_scoped_enum 202011L
 #endif // _HAS_CXX23
 
 // EXPERIMENTAL
