@@ -1364,8 +1364,8 @@ private:
     static constexpr size_t _Num_args       = sizeof...(_Args);
     static constexpr size_t _Storage_length = (_Traits::template _Storage_size<_Args> + ...);
 
-    // The actual storage representation: _Num_args offsets into _Storege, followed immediately by the untyped _Storage
-    // which olds copies of the object representations of arguments (with no regard for alignment). These must be
+    // The actual storage representation: _Num_args offsets into _Storage, followed immediately by the untyped _Storage
+    // which holds copies of the object representations of arguments (with no regard for alignment). These must be
     // allocated consecutively, since basic_format_args thinks it can store a pointer to _Index_array and use arithmetic
     // to access the bytes of _Storage.
     _Format_arg_index _Index_array[_Num_args];
