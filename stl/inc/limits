@@ -1040,6 +1040,23 @@ _NODISCARD constexpr int _Countr_zero_fallback(const _Ty _Val) noexcept {
     return _Digits - _Countl_zero_fallback(static_cast<_Ty>(static_cast<_Ty>(~_Val) & static_cast<_Ty>(_Val - 1)));
 }
 
+// Implementation of popcount without using specialized CPU instructions.
+// Used at compile time and when said instructions are not supported.
+template <class _Ty>
+_NODISCARD constexpr int _Popcount_fallback(_Ty _Val) noexcept {
+    constexpr int _Digits = numeric_limits<_Ty>::digits;
+    // we static_cast these bit patterns in order to truncate them to the correct size
+    _Val = static_cast<_Ty>(_Val - ((_Val >> 1) & static_cast<_Ty>(0x5555'5555'5555'5555ull)));
+    _Val = static_cast<_Ty>((_Val & static_cast<_Ty>(0x3333'3333'3333'3333ull))
+                            + ((_Val >> 2) & static_cast<_Ty>(0x3333'3333'3333'3333ull)));
+    _Val = static_cast<_Ty>((_Val + (_Val >> 4)) & static_cast<_Ty>(0x0F0F'0F0F'0F0F'0F0Full));
+    for (int _Shift_digits = 8; _Shift_digits < _Digits; _Shift_digits <<= 1) {
+        _Val = static_cast<_Ty>(_Val + static_cast<_Ty>(_Val >> _Shift_digits));
+    }
+    // we want the bottom "slot" that's big enough to store _Digits
+    return static_cast<int>(_Val & static_cast<_Ty>(_Digits + _Digits - 1));
+}
+
 #if defined(_M_IX86) || defined(_M_X64)
 extern "C" {
 extern int __isa_available;
@@ -1092,6 +1109,38 @@ _NODISCARD int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
 #undef _TZCNT_U64
 #endif // defined(_M_IX86) || defined(_M_X64)
 
+#if (defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))) && !defined(_M_CEE_PURE) && !defined(__CUDACC__) \
+    && !defined(__INTEL_COMPILER)
+#define _HAS_POPCNT_INTRINSICS 1
+#else // ^^^ intrinsics available ^^^ / vvv intrinsics unavailable vvv
+#define _HAS_POPCNT_INTRINSICS 0
+#endif // ^^^ intrinsics unavailable ^^^
+
+#if _HAS_POPCNT_INTRINSICS
+template <class _Ty>
+_NODISCARD int _Checked_x86_x64_popcount(const _Ty _Val) noexcept {
+    constexpr int _Digits = numeric_limits<_Ty>::digits;
+#ifndef __AVX__
+    const bool _Definitely_have_popcnt = __isa_available >= __ISA_AVAILABLE_SSE42;
+    if (!_Definitely_have_popcnt) {
+        return _Popcount_fallback(_Val);
+    }
+#endif // !defined(__AVX__)
+
+    if constexpr (_Digits <= 16) {
+        return static_cast<int>(__popcnt16(_Val));
+    } else if constexpr (_Digits == 32) {
+        return static_cast<int>(__popcnt(_Val));
+    } else {
+#ifdef _M_IX86
+        return static_cast<int>(__popcnt(_Val >> 32) + __popcnt(static_cast<unsigned int>(_Val)));
+#else // ^^^ _M_IX86 / !_M_IX86 vvv
+        return static_cast<int>(__popcnt64(_Val));
+#endif // _M_IX86
+    }
+}
+#endif // _HAS_POPCNT_INTRINSICS
+
 template <class _Ty>
 constexpr bool _Is_standard_unsigned_integer =
     _Is_any_of_v<remove_cv_t<_Ty>, unsigned char, unsigned short, unsigned int, unsigned long, unsigned long long>;
@@ -1103,11 +1152,26 @@ _NODISCARD constexpr int _Countr_zero(const _Ty _Val) noexcept {
     if (!_STD is_constant_evaluated()) {
         return _Checked_x86_x64_countr_zero(_Val);
     }
-#endif // defined(__cpp_lib_is_constant_evaluated)
+#endif // __cpp_lib_is_constant_evaluated
 #endif // defined(_M_IX86) || defined(_M_X64)
     // C++17 constexpr gcd() calls this function, so it should be constexpr unless we detect runtime evaluation.
     return _Countr_zero_fallback(_Val);
 }
+
+template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> _Enabled = 0>
+_NODISCARD _CONSTEXPR20 int _Popcount(const _Ty _Val) noexcept {
+#if _HAS_POPCNT_INTRINSICS
+#ifdef __cpp_lib_is_constant_evaluated
+    if (!_STD is_constant_evaluated())
+#endif // __cpp_lib_is_constant_evaluated
+    {
+        return _Checked_x86_x64_popcount(_Val);
+    }
+#endif // _HAS_POPCNT_INTRINSICS
+    return _Popcount_fallback(_Val);
+}
+
+#undef _HAS_POPCNT_INTRINSICS
 
 _STD_END
 #pragma pop_macro("new")
