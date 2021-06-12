@@ -209,6 +209,31 @@ struct memcpy_test {
             assert(equal(input, expected_input));
             assert(equal(output, expected_input_short));
         }
+
+        { // Validate unreachable_sentinel
+            vector<int> input  = {13, 55, 12345, 42};
+            vector<int> output = {-1, -1, -1, -1};
+
+            const same_as<uninitialized_copy_n_result<iterator_t<vector<int>>, iterator_t<vector<int>>>> auto result =
+                uninitialized_copy_n(input.begin(), 3, output.begin(), unreachable_sentinel);
+            assert(next(result.in) == input.end());
+            assert(next(result.out) == output.end());
+            assert(equal(input, expected_input));
+            assert(equal(output, expected_output));
+        }
+
+        { // Validate non-common range
+            vector<int> input  = {13, 55, 12345, 42};
+            vector<int> output = {-1, -1, -1, -1};
+
+            auto wrapped_output = output | views::take_while([](const auto&) { return true; });
+            const same_as<uninitialized_copy_n_result<iterator_t<vector<int>>, iterator_t<vector<int>>>> auto result =
+                uninitialized_copy_n(input.begin(), 3, wrapped_output.begin(), wrapped_output.end());
+            assert(next(result.in) == input.end());
+            assert(next(result.out) == output.end());
+            assert(equal(input, expected_input));
+            assert(equal(output, expected_output));
+        }
     }
 };
 
