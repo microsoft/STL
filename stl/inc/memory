@@ -78,10 +78,20 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(_No_throw_sentinel_for<_OSe, _Out>);
             _STL_INTERNAL_STATIC_ASSERT(constructible_from<iter_value_t<_Out>, iter_reference_t<_It>>);
 
-            if constexpr (_Ptr_copy_cat<_It, _Out>::_Really_trivial
-                          && sized_sentinel_for<_Se, _It> && sized_sentinel_for<_OSe, _Out>) {
-                return _Copy_memcpy_common(_IFirst, _RANGES next(_IFirst, _STD move(_ILast)), _OFirst,
-                    _RANGES next(_OFirst, _STD move(_OLast)));
+            constexpr bool _Is_sized1 = sized_sentinel_for<_Se, _It>;
+            constexpr bool _Is_sized2 = sized_sentinel_for<_OSe, _Out>;
+            if constexpr (_Ptr_copy_cat<_It, _Out>::_Really_trivial && _Sized_or_unreachable_sentinel_for<_Se, _It> //
+                          && _Sized_or_unreachable_sentinel_for<_OSe, _Out>) {
+                if constexpr (_Is_sized1 && _Is_sized2) {
+                    return _Copy_memcpy_common(_IFirst, _RANGES next(_IFirst, _STD move(_ILast)), _OFirst,
+                        _RANGES next(_OFirst, _STD move(_OLast)));
+                } else if constexpr (_Is_sized1) {
+                    return _Copy_memcpy_distance(_IFirst, _OFirst, _IFirst, _RANGES next(_IFirst, _STD move(_ILast)));
+                } else if constexpr (_Is_sized2) {
+                    return _Copy_memcpy_distance(_IFirst, _OFirst, _OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
+                } else {
+                    _STL_ASSERT(false, "Tried to uninitialized_copy two ranges with unreachable sentinels");
+                }
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
@@ -147,13 +157,20 @@ namespace ranges {
             }
 
             _Adl_verify_range(_First2, _Last2);
-            auto _IFirst      = _Get_unwrapped_n(_STD move(_First1), _Count);
-            auto _OFirst      = _Get_unwrapped(_STD move(_First2));
-            const auto _OLast = _Get_unwrapped(_STD move(_Last2));
-            if constexpr (_Ptr_copy_cat<_It, _Out>::_Really_trivial) {
-                auto _UResult = _Copy_memcpy_common(_IFirst, _IFirst + _Count, _OFirst, _OLast);
-                _IFirst       = _UResult.in;
-                _OFirst       = _UResult.out;
+            auto _IFirst = _Get_unwrapped_n(_STD move(_First1), _Count);
+            auto _OFirst = _Get_unwrapped(_STD move(_First2));
+            auto _OLast  = _Get_unwrapped(_STD move(_Last2));
+            if constexpr (_Ptr_copy_cat<_It, _Out>::_Really_trivial && _Sized_or_unreachable_sentinel_for<_OSe, _Out>) {
+                if constexpr (sized_sentinel_for<_OSe, _Out>) {
+                    auto _UResult = _Copy_memcpy_common(
+                        _IFirst, _IFirst + _Count, _OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
+                    _IFirst = _STD move(_UResult.in);
+                    _OFirst = _STD move(_UResult.out);
+                } else {
+                    auto _UResult = _Copy_memcpy_count(_IFirst, _OFirst, static_cast<size_t>(_Count));
+                    _IFirst       = _STD move(_UResult.in);
+                    _OFirst       = _STD move(_UResult.out);
+                }
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
@@ -286,10 +303,17 @@ namespace ranges {
             auto _IFirst      = _Get_unwrapped_n(_STD move(_First1), _Count);
             auto _OFirst      = _Get_unwrapped(_STD move(_First2));
             const auto _OLast = _Get_unwrapped(_STD move(_Last2));
-            if constexpr (_Ptr_move_cat<_It, _Out>::_Really_trivial) {
-                auto _UResult = _Copy_memcpy_common(_IFirst, _IFirst + _Count, _OFirst, _OLast);
-                _IFirst       = _UResult.in;
-                _OFirst       = _UResult.out;
+            if constexpr (_Ptr_move_cat<_It, _Out>::_Really_trivial && _Sized_or_unreachable_sentinel_for<_OSe, _Out>) {
+                if constexpr (sized_sentinel_for<_OSe, _Out>) {
+                    auto _UResult = _Copy_memcpy_common(
+                        _IFirst, _IFirst + _Count, _OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
+                    _IFirst = _STD move(_UResult.in);
+                    _OFirst = _STD move(_UResult.out);
+                } else {
+                    auto _UResult = _Copy_memcpy_count(_IFirst, _OFirst, static_cast<size_t>(_Count));
+                    _IFirst       = _STD move(_UResult.in);
+                    _OFirst       = _STD move(_UResult.out);
+                }
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
