@@ -257,6 +257,7 @@
 
 // _HAS_CXX23 directly controls:
 // P1048R1 is_scoped_enum
+// P2162R2 Inheriting From variant
 
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
@@ -1192,7 +1193,11 @@
 #define __cpp_lib_shared_ptr_weak_type  201606L
 #define __cpp_lib_string_view           201803L
 #define __cpp_lib_to_chars              201611L
-#define __cpp_lib_variant               201606L
+#if _HAS_CXX23
+#define __cpp_lib_variant 202102L
+#else
+#define __cpp_lib_variant 201606L
+#endif // _HAS_CXX23
 #endif // _HAS_CXX17
 
 // C++20
