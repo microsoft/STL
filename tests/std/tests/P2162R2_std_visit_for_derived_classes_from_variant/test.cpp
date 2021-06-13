@@ -1,7 +1,7 @@
-﻿#include <variant>
 #include <cassert>
 #include <memory>
 #include <utility>
+#include <variant>
 
 using namespace std;
 
