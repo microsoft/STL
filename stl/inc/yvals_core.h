@@ -257,7 +257,7 @@
 
 // _HAS_CXX23 directly controls:
 // P1048R1 is_scoped_enum
-// P1682R2 to_underlying() For Enumerations
+// P1682R3 to_underlying() For Enumerations
 
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
