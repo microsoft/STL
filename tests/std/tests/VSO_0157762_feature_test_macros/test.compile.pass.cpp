@@ -1457,6 +1457,20 @@ STATIC_ASSERT(__cpp_lib_starts_ends_with == 201711L);
 #endif
 #endif
 
+#if _HAS_CXX23
+#ifndef __cpp_lib_stdatomic_h
+#error __cpp_lib_stdatomic_h is not defined
+#elif __cpp_lib_stdatomic_h != 202011L
+#error __cpp_lib_stdatomic_h is not 202011L
+#else
+STATIC_ASSERT(__cpp_lib_stdatomic_h == 202011L);
+#endif
+#else
+#ifdef __cpp_lib_stdatomic_h
+#error __cpp_lib_stdatomic_h is defined
+#endif
+#endif
+
 #ifndef __cpp_lib_string_udls
 #error __cpp_lib_string_udls is not defined
 #elif __cpp_lib_string_udls != 201304L

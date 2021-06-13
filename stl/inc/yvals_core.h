@@ -1341,6 +1341,7 @@
 // C++23
 #if _HAS_CXX23
 #define __cpp_lib_is_scoped_enum 202011L
+#define __cpp_lib_stdatomic_h    202011L
 #endif // _HAS_CXX23
 
 // EXPERIMENTAL
