@@ -210,8 +210,8 @@ constexpr const char* output_max_digit[] = {"skip0", "skip1", "11", "12", "13", 
     "1t", "1u", "1v", "1w", "1x", "1y", "1z"};
 
 // https://www.wolframalpha.com : Table[BaseForm[k, n], {k, {MEOW, MEOW, MEOW}}, {n, 2, 36}]
-constexpr uint64_t stress_chunks_positive                          = 12000000345000678900ULL;
-constexpr pair<uint64_t, array<const char*, 37>> output_positive[] = {
+constexpr uint64_t stress_chunks_positive = 12000000345000678900ULL;
+_Pragma("warning(disable:4365)") constexpr pair<uint64_t, array<const char*, 37>> output_positive[] = {
     {123, {{"skip0", "skip1", "1111011", "11120", "1323", "443", "323", "234", "173", "146", "123", "102", "a3", "96",
               "8b", "83", "7b", "74", "6f", "69", "63", "5i", "5d", "58", "53", "4n", "4j", "4f", "4b", "47", "43",
               "3u", "3r", "3o", "3l", "3i", "3f"}}},
@@ -311,9 +311,10 @@ constexpr pair<uint64_t, array<const char*, 37>> output_positive[] = {
             "4eo8hfam6fllmo", "2nc6j26l66rhof", "1n3rsh11f098rn", "14l9lkmo30o40f", "nd075ib45k86f", "fvvvvvvvvvvvv",
             "b1w8p7j5q9r6f", "7orp63sh4dphh", "5g24a25twkwff", "3w5e11264sgsf"}}},
 };
+_Pragma("warning(default:4365)")
 
-// https://www.wolframalpha.com : Table[BaseForm[k, n], {k, {MEOW, MEOW, MEOW}}, {n, 2, 36}]
-constexpr int64_t stress_chunks_negative                          = -9000876000000054321LL;
+    // https://www.wolframalpha.com : Table[BaseForm[k, n], {k, {MEOW, MEOW, MEOW}}, {n, 2, 36}]
+    constexpr int64_t stress_chunks_negative                      = -9000876000000054321LL;
 constexpr pair<int64_t, array<const char*, 37>> output_negative[] = {
     {-85, {{"skip0", "skip1", "-1010101", "-10011", "-1111", "-320", "-221", "-151", "-125", "-104", "-85", "-78",
               "-71", "-67", "-61", "-5a", "-55", "-50", "-4d", "-49", "-45", "-41", "-3j", "-3g", "-3d", "-3a", "-37",
