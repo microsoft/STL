@@ -256,6 +256,7 @@
 // Other C++20 deprecation warnings
 
 // _HAS_CXX23 directly controls:
+// P0943R6 Supporting C Atomics In C++
 // P1048R1 is_scoped_enum
 
 // Parallel Algorithms Notes
