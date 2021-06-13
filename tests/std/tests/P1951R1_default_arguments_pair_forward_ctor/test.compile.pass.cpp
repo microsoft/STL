@@ -6,6 +6,9 @@
 
 using namespace std;
 
-int main() {
+void test() {
     pair<int, unique_ptr<int>> p{42, {}};
+    (void) p;
 }
+
+int main() {} // COMPILE-ONLY
