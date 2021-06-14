@@ -3,8 +3,8 @@
 
 // _Towlower -- convert wchar_t to lower case
 
+#include <__msvc_xlocinfo_types.hpp>
 #include <cwchar>
-#include <xlocinfo.h>
 
 #include "awint.hpp"
 
