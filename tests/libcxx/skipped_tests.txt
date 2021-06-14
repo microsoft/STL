@@ -657,7 +657,7 @@ language.support\support.limits\support.limits.general\memory.version.pass.cpp
 # Test should be enabled after LLVM update
 # updated test https://github.com/llvm/llvm-project/commit/0324b46cd873abc4fabe19f4bd468d10398ffd0d#diff-a9be5c3f8e18be99f40fb35f58960f400413a76252d86b53f80d76cb09cb53ef
 # should work
-language.support/support.limits/support.limits.general/variant.version.pass.cpp
+language.support\support.limits\support.limits.general\variant.version.pass.cpp
 
 # *** LIKELY STL BUGS ***
 # Not yet analyzed, likely STL bugs. Assertions and other runtime failures.
