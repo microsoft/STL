@@ -257,6 +257,7 @@
 
 // _HAS_CXX23 directly controls:
 // P1048R1 is_scoped_enum
+// P2186R2 Removing Garbage Collection Support
 
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.

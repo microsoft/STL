@@ -3610,6 +3610,7 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Out, c
 }
 
 // GARBAGE COLLECTION
+#if !_HAS_CXX23
 enum class pointer_safety { relaxed, preferred, strict };
 
 inline void declare_reachable(void*) {}
@@ -3626,6 +3627,7 @@ inline void undeclare_no_pointers(char*, size_t) {}
 inline pointer_safety get_pointer_safety() noexcept {
     return pointer_safety::relaxed;
 }
+#endif // !_HAS_CXX23
 
 // STRUCT TEMPLATE owner_less
 template <class _Ty = void>
