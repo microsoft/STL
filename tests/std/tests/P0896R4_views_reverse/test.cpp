@@ -307,7 +307,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 struct instantiator {
     template <ranges::bidirectional_range R>
     static constexpr void call() {
-        R r{};
+        R r{span<const int, 0>{}};
         test_one(r, span<const int, 0>{});
     }
 };

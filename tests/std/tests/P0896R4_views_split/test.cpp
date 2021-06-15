@@ -282,21 +282,21 @@ struct instantiator {
             Read read{span{text}};
             test_one(move_if_needed(read), ' ', expected_single);
 
-            Read empty{};
+            Read empty{span<const char, 0>{}};
             test_one(move_if_needed(empty), ' ', views::empty<string_view>);
         }
         { // Empty delimiter
             Read read{span{text}};
             test_one(move_if_needed(read), views::empty<char>, expected_empty);
 
-            Read empty{};
+            Read empty{span<const char, 0>{}};
             test_one(move_if_needed(empty), views::empty<char>, views::empty<string_view>);
         }
         if constexpr (ranges::forward_range<Read>) { // Range delimiter
             Read read{span{text}};
             test_one(move_if_needed(read), "is"sv, expected_range);
 
-            Read empty{};
+            Read empty{span<const char, 0>{}};
             test_one(move_if_needed(empty), "is"sv, views::empty<string_view>);
         }
     }

@@ -429,7 +429,7 @@ struct instantiator {
         R r{some_ints};
         test_one(r, only_four_ints);
 
-        R empty_range{};
+        R empty_range{span<const int, 0>{}};
         test_one(empty_range, span<const int, 0>{});
     }
 };

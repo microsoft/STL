@@ -121,7 +121,7 @@ struct instantiator {
 
                 STATIC_ASSERT(noexcept(as_const(test_view).empty()) == noexcept(ranges::empty(wrapped_input)));
 
-                R empty_range{};
+                R empty_range{span<int, 0>{}};
                 ref_view<R> empty_view{empty_range};
                 assert(empty_view.empty());
             }

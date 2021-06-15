@@ -1107,7 +1107,7 @@ namespace ranges {
         };
 
         basic_istream<_Elem, _Traits>* _Stream;
-        _Ty _Val = _Ty{};
+        _Ty _Val = _Ty{}; // Per LWG issue submitted but unnumbered as of 2021-06-15
 
     public:
         constexpr explicit basic_istream_view(basic_istream<_Elem, _Traits>& _Stream_) noexcept(
@@ -2858,7 +2858,7 @@ namespace ranges {
     template <class _Vw>
     class _Join_view_base : public view_interface<join_view<_Vw>> {
     protected:
-        /* [[no_unique_address]] */ views::all_t<range_reference_t<_Vw>> _Inner{};
+        /* [[no_unique_address]] */ _Defaultabox<views::all_t<range_reference_t<_Vw>>> _Inner{};
     };
 
     // clang-format off
@@ -2930,7 +2930,7 @@ namespace ranges {
                     return _Range;
                 } else {
                     _Parent->_Inner = views::all(_STD move(_Range));
-                    return _Parent->_Inner;
+                    return *_Parent->_Inner;
                 }
             }
 
@@ -2956,7 +2956,7 @@ namespace ranges {
                 if constexpr (_Deref_is_glvalue) {
                     _Last = _RANGES end(*_Outer);
                 } else {
-                    _Last = _RANGES end(_Parent->_Inner);
+                    _Last = _RANGES end(*_Parent->_Inner);
                 }
                 _STL_VERIFY(_Inner && *_Inner != _Last, "cannot dereference join_view end iterator");
             }
@@ -3024,7 +3024,7 @@ namespace ranges {
                         _Satisfy();
                     }
                 } else {
-                    if (++*_Inner == _RANGES end(_Parent->_Inner)) {
+                    if (++*_Inner == _RANGES end(*_Parent->_Inner)) {
                         ++_Outer;
                         _Satisfy();
                     }
