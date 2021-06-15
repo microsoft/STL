@@ -303,16 +303,18 @@ namespace ranges {
         }
 
         _Copyable_box& operator=(const _Copyable_box& _That) noexcept(is_nothrow_copy_constructible_v<_Ty>) {
-            if (_STD addressof(_That) != this) {
-                if (_Engaged) {
-                    _Val.~_Ty();
-                    _Engaged = false;
-                }
+            if (_STD addressof(_That) == this) {
+                return *this;
+            }
 
-                if (_That._Engaged) {
-                    _Construct_in_place(_Val, _That._Val);
-                    _Engaged = true;
-                }
+            if (_Engaged) {
+                _Val.~_Ty();
+                _Engaged = false;
+            }
+
+            if (_That._Engaged) {
+                _Construct_in_place(_Val, _That._Val);
+                _Engaged = true;
             }
 
             return *this;
@@ -345,16 +347,18 @@ namespace ranges {
         }
 
         _Copyable_box& operator=(_Copyable_box&& _That) noexcept(is_nothrow_move_constructible_v<_Ty>) {
-            if (_STD addressof(_That) != this) {
-                if (_Engaged) {
-                    _Val.~_Ty();
-                    _Engaged = false;
-                }
+            if (_STD addressof(_That) == this) {
+                return *this;
+            }
 
-                if (_That._Engaged) {
-                    _Construct_in_place(_Val, _STD move(_That._Val));
-                    _Engaged = true;
-                }
+            if (_Engaged) {
+                _Val.~_Ty();
+                _Engaged = false;
+            }
+
+            if (_That._Engaged) {
+                _Construct_in_place(_Val, _STD move(_That._Val));
+                _Engaged = true;
             }
 
             return *this;
@@ -2506,6 +2510,31 @@ namespace ranges {
         /* [[no_unique_address]] */ _Vw _Range{};
         range_difference_t<_Vw> _Count = 0;
 
+        _NODISCARD constexpr auto _Find_first() {
+            if constexpr (!sized_range<_Vw>) {
+                return _RANGES next(_RANGES begin(_Range), _Count, _RANGES end(_Range));
+            }
+
+            auto _Offset = _RANGES distance(_Range);
+            if constexpr (bidirectional_range<_Vw> && common_range<_Vw>) {
+                if (_Count >= _Offset / 2) {
+                    auto _Result = _RANGES end(_Range);
+                    while (_Offset > _Count) {
+                        --_Offset;
+                        --_Result;
+                    }
+
+                    return _Result;
+                }
+            }
+
+            if (_Offset > _Count) {
+                _Offset = _Count;
+            }
+
+            return _RANGES next(_RANGES begin(_Range), _Offset);
+        }
+
     public:
         drop_view() requires default_initializable<_Vw> = default;
 
@@ -2539,31 +2568,7 @@ namespace ranges {
                     }
                 }
 
-                same_as<iterator_t<_Vw>> auto _Result = [this] {
-                    if constexpr (!sized_range<_Vw>) {
-                        return _RANGES next(_RANGES begin(_Range), _Count, _RANGES end(_Range));
-                    }
-
-                    auto _Offset = _RANGES distance(_Range);
-                    if constexpr (bidirectional_range<_Vw> && common_range<_Vw>) {
-                        if (_Count >= _Offset / 2) {
-                            auto _Result = _RANGES end(_Range);
-                            while (_Offset > _Count) {
-                                --_Offset;
-                                --_Result;
-                            }
-
-                            return _Result;
-                        }
-                    }
-
-                    if (_Offset > _Count) {
-                        _Offset = _Count;
-                    }
-
-                    return _RANGES next(_RANGES begin(_Range), _Offset);
-                }();
-
+                same_as<iterator_t<_Vw>> auto _Result = _Find_first();
                 if constexpr (forward_range<_Vw>) {
                     this->_Set_cache(_Range, _Result);
                 }
