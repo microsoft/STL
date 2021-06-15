@@ -2511,28 +2511,29 @@ namespace ranges {
         range_difference_t<_Vw> _Count = 0;
 
         _NODISCARD constexpr auto _Find_first() {
-            if constexpr (!sized_range<_Vw>) {
+            if constexpr (sized_range<_Vw>) {
+                _STL_INTERNAL_STATIC_ASSERT(!random_access<_Vw>);
+                auto _Offset = _RANGES distance(_Range);
+                if constexpr (bidirectional_range<_Vw> && common_range<_Vw>) {
+                    if (_Count >= _Offset / 2) {
+                        auto _Result = _RANGES end(_Range);
+                        while (_Offset > _Count) {
+                            --_Offset;
+                            --_Result;
+                        }
+
+                        return _Result;
+                    }
+                }
+
+                if (_Offset > _Count) {
+                    _Offset = _Count;
+                }
+
+                return _RANGES next(_RANGES begin(_Range), _Offset);
+            } else {
                 return _RANGES next(_RANGES begin(_Range), _Count, _RANGES end(_Range));
             }
-
-            auto _Offset = _RANGES distance(_Range);
-            if constexpr (bidirectional_range<_Vw> && common_range<_Vw>) {
-                if (_Count >= _Offset / 2) {
-                    auto _Result = _RANGES end(_Range);
-                    while (_Offset > _Count) {
-                        --_Offset;
-                        --_Result;
-                    }
-
-                    return _Result;
-                }
-            }
-
-            if (_Offset > _Count) {
-                _Offset = _Count;
-            }
-
-            return _RANGES next(_RANGES begin(_Range), _Offset);
         }
 
     public:
