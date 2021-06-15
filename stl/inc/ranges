@@ -2512,7 +2512,7 @@ namespace ranges {
 
         _NODISCARD constexpr auto _Find_first() {
             if constexpr (sized_range<_Vw>) {
-                _STL_INTERNAL_STATIC_ASSERT(!random_access<_Vw>);
+                _STL_INTERNAL_STATIC_ASSERT(!random_access_range<_Vw>);
                 auto _Offset = _RANGES distance(_Range);
                 if constexpr (bidirectional_range<_Vw> && common_range<_Vw>) {
                     if (_Count >= _Offset / 2) {
