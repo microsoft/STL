@@ -327,6 +327,14 @@ template <class T, class Cat, class Elem, template <class> class TQuals, templat
 struct std::basic_common_reference<T, ::test::proxy_reference<Cat, Elem>, TQuals, UQuals> {
     using type = common_reference_t<TQuals<T>, Elem&>;
 };
+
+template <class Cat1, class Elem1, class Cat2, class Elem2, template <class> class TQuals,
+    template <class> class UQuals>
+    requires std::common_reference_with<Elem1&, Elem2&>
+struct std::basic_common_reference<::test::proxy_reference<Cat1, Elem1>, ::test::proxy_reference<Cat2, Elem2>, TQuals,
+    UQuals> {
+    using type = common_reference_t<Elem1&, Elem2&>;
+};
 // clang-format on
 
 namespace test {
