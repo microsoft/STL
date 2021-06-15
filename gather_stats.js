@@ -425,6 +425,8 @@ function write_daily_table(script_start, all_prs, all_issues) {
         for (const key of ['pr', 'cxx20', 'cxx23', 'lwg', 'issue', 'bug']) {
             if (should_emit_data_point(rows, i, key)) {
                 str += `${key}: ${row[key]}, `;
+            } else {
+                str += `${key}: null, `;
             }
         }
 
