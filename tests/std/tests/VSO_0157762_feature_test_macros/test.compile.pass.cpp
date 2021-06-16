@@ -681,7 +681,7 @@ STATIC_ASSERT(__cpp_lib_filesystem == 201703L);
 #endif
 #endif
 
-#if _HAS_CXX20 && !defined(__EDG__)
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support and GH-1814
 #ifndef __cpp_lib_format
 #error __cpp_lib_format is not defined
 #elif __cpp_lib_format != 201907L
@@ -955,6 +955,20 @@ STATIC_ASSERT(__cpp_lib_is_pointer_interconvertible == 201907L);
 #endif
 #endif
 
+#if _HAS_CXX23
+#ifndef __cpp_lib_is_scoped_enum
+#error __cpp_lib_is_scoped_enum is not defined
+#elif __cpp_lib_is_scoped_enum != 202011L
+#error __cpp_lib_is_scoped_enum is not 202011L
+#else
+STATIC_ASSERT(__cpp_lib_is_scoped_enum == 202011L);
+#endif
+#else
+#ifdef __cpp_lib_is_scoped_enum
+#error __cpp_lib_is_scoped_enum is defined
+#endif
+#endif
+
 #if _HAS_CXX17
 #ifndef __cpp_lib_is_swappable
 #error __cpp_lib_is_swappable is not defined
@@ -1207,7 +1221,7 @@ STATIC_ASSERT(__cpp_lib_polymorphic_allocator == 201902L);
 STATIC_ASSERT(__cpp_lib_quoted_string_io == 201304L);
 #endif
 
-#if _HAS_CXX20 && !defined(__EDG__) // TRANSITION, EDG concepts support
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support and GH-1814
 #ifndef __cpp_lib_ranges
 #error __cpp_lib_ranges is not defined
 #elif __cpp_lib_ranges != 201911L

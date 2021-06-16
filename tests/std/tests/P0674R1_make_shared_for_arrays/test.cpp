@@ -634,9 +634,7 @@ struct TrivialThrowingDtor {
     ~TrivialThrowingDtor() noexcept(false) = default;
 };
 
-#ifndef __EDG__ // TRANSITION, VSO-1292292
 static_assert(!is_nothrow_destructible_v<TrivialThrowingDtor>);
-#endif // ^^^ no workaround ^^^
 static_assert(is_trivially_destructible_v<TrivialThrowingDtor>);
 
 template <class T>

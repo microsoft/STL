@@ -5,6 +5,7 @@
 #include <cassert>
 #include <concepts>
 #include <ranges>
+#include <sstream>
 #include <utility>
 
 #include <range_algorithm_support.hpp>
@@ -142,8 +143,20 @@ constexpr bool run_tests() {
     return true;
 }
 
+void test_gh1932() {
+    // Defend against regression of GH-1932, in which ranges::unique_copy instantiated
+    // iter_value_t<I> for a non-input iterator I.
+
+    istringstream str("42 42 42");
+    ostringstream result;
+    ranges::unique_copy(istream_iterator<int>{str}, istream_iterator<int>{}, ostream_iterator<int>{result, " "});
+    assert(result.str() == "42 ");
+}
+
 int main() {
     STATIC_ASSERT(run_tests());
     run_tests();
+
+    test_gh1932();
 }
 #endif // TEST_EVERYTHING

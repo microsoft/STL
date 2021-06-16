@@ -32,9 +32,12 @@
 
 #ifdef __cpp_lib_concepts
 #include <concepts>
+#endif // defined(__cpp_lib_concepts)
+
+#ifdef __cpp_lib_format
 #include <format>
 #include <iomanip>
-#endif // defined(__cpp_lib_concepts)
+#endif // defined(__cpp_lib_format)
 #endif // _HAS_CXX20
 
 #pragma pack(push, _CRT_PACKING)
@@ -2274,7 +2277,7 @@ namespace chrono {
             : runtime_error(_Make_string(_Tp, _Info)) {}
 
     private:
-#ifdef __cpp_lib_concepts
+#ifdef __cpp_lib_format
         template <class _Duration>
         _NODISCARD static string _Make_string(const local_time<_Duration>& _Tp, const local_info& _Info);
 #else // ^^^ no workaround / workaround vvv
@@ -2293,7 +2296,7 @@ namespace chrono {
             : runtime_error(_Make_string(_Tp, _Info)) {}
 
     private:
-#ifdef __cpp_lib_concepts
+#ifdef __cpp_lib_format
         template <class _Duration>
         _NODISCARD static string _Make_string(const local_time<_Duration>& _Tp, const local_info& _Info);
 #else // ^^^ no workaround / workaround vvv
@@ -2977,8 +2980,8 @@ namespace chrono {
         explicit zoned_time(_TimeZonePtr _Tz) noexcept /* strengthened */ : _Zone{_STD move(_Tz)} {}
 
         // clang-format off
-        template <class _Traits2 = _Traits, enable_if_t<is_constructible< // TRANSITION, VSO-1303556
-            zoned_time, decltype(_Traits2::locate_zone(string_view{}))>::value,
+        template <class _Traits2 = _Traits, enable_if_t<is_constructible_v<
+            zoned_time, decltype(_Traits2::locate_zone(string_view{}))>,
             int> = 0>
         // clang-format on
         explicit zoned_time(string_view _Name) : _Zone{_Traits::locate_zone(_Name)} {}
@@ -2990,8 +2993,8 @@ namespace chrono {
         zoned_time(_TimeZonePtr _Tz, const sys_time<_Duration>& _Sys) : _Zone{_STD move(_Tz)}, _Tp{_Sys} {}
 
         // clang-format off
-        template <class _Traits2 = _Traits, enable_if_t<is_constructible< // TRANSITION, VSO-1303556
-            zoned_time, decltype(_Traits2::locate_zone(string_view{})), const sys_time<_Duration>&>::value,
+        template <class _Traits2 = _Traits, enable_if_t<is_constructible_v<
+            zoned_time, decltype(_Traits2::locate_zone(string_view{})), const sys_time<_Duration>&>,
             int> = 0>
         // clang-format on
         zoned_time(string_view _Name, type_identity_t<const sys_time<_Duration>&> _Sys)
@@ -3005,8 +3008,8 @@ namespace chrono {
             : _Zone{_STD move(_Tz)}, _Tp{_Zone->to_sys(_Local)} {}
 
         // clang-format off
-        template <class _Traits2 = _Traits, enable_if_t<is_constructible< // TRANSITION, VSO-1303556
-            zoned_time, decltype(_Traits2::locate_zone(string_view{})), const local_time<_Duration>&>::value,
+        template <class _Traits2 = _Traits, enable_if_t<is_constructible_v<
+            zoned_time, decltype(_Traits2::locate_zone(string_view{})), const local_time<_Duration>&>,
             int> = 0>
         // clang-format on
         zoned_time(string_view _Name, type_identity_t<const local_time<_Duration>>& _Local)
@@ -3021,8 +3024,8 @@ namespace chrono {
             : _Zone{_STD move(_Tz)}, _Tp{_Zone->to_sys(_Local, _Choose)} {}
 
         // clang-format off
-        template <class _Traits2 = _Traits, enable_if_t<is_constructible< // TRANSITION, VSO-1303556
-            zoned_time, decltype(_Traits2::locate_zone(string_view{})), const local_time<_Duration>&, choose>::value,
+        template <class _Traits2 = _Traits, enable_if_t<is_constructible_v<
+            zoned_time, decltype(_Traits2::locate_zone(string_view{})), const local_time<_Duration>&, choose>,
             int> = 0>
         // clang-format on
         zoned_time(string_view _Name, type_identity_t<const local_time<_Duration>&> _Local, choose _Choose)
@@ -3041,9 +3044,9 @@ namespace chrono {
 
         // clang-format off
         template <class _Duration2, class _TimeZonePtr2,
-            class _Traits2 = _Traits, enable_if_t<is_constructible< // TRANSITION, VSO-1303556
+            class _Traits2 = _Traits, enable_if_t<is_constructible_v<
             zoned_time, decltype(_Traits2::locate_zone(string_view{})),
-            const zoned_time<_Duration2, _TimeZonePtr2>&>::value,
+            const zoned_time<_Duration2, _TimeZonePtr2>&>,
             int> = 0>
         // clang-format on
         zoned_time(string_view _Name, const zoned_time<_Duration2, _TimeZonePtr2>& _Zt)
@@ -3051,9 +3054,9 @@ namespace chrono {
 
         // clang-format off
         template <class _Duration2, class _TimeZonePtr2,
-            class _Traits2 = _Traits, enable_if_t<is_constructible< // TRANSITION, VSO-1303556
+            class _Traits2 = _Traits, enable_if_t<is_constructible_v<
             zoned_time, decltype(_Traits2::locate_zone(string_view{})),
-            const zoned_time<_Duration2, _TimeZonePtr2>&, choose>::value,
+            const zoned_time<_Duration2, _TimeZonePtr2>&, choose>,
             int> = 0>
         // clang-format on
         zoned_time(string_view _Name, const zoned_time<_Duration2, _TimeZonePtr2>& _Zt, choose _Choose)
@@ -5220,8 +5223,7 @@ namespace chrono {
 #endif // _HAS_CXX20
 } // namespace chrono
 
-#if _HAS_CXX20
-#ifdef __cpp_lib_concepts
+#ifdef __cpp_lib_format
   // [time.format]
 
 template <class _CharT>
@@ -6518,8 +6520,7 @@ namespace chrono {
     }
 } // namespace chrono
 
-#endif // __cpp_lib_concepts
-#endif // _HAS_CXX20
+#endif // __cpp_lib_format
 
 // HELPERS
 template <class _Rep, class _Period>

@@ -2856,10 +2856,12 @@ namespace ranges {
     template <class _Ty>
     inline constexpr bool enable_view = derived_from<_Ty, view_base>;
 
+#ifdef __cpp_lib_ranges // TRANSITION, GH-1814
     // clang-format off
     // CONCEPT ranges::view
     template <class _Ty>
     concept view = range<_Ty> && movable<_Ty> && default_initializable<_Ty> && enable_view<_Ty>;
+#endif // TRANSITION, GH-1814
 
     // CONCEPT ranges::output_range
     template <class _Rng, class _Ty>
@@ -3211,16 +3213,20 @@ namespace ranges {
         _NODISCARD constexpr _Derived& _Cast() noexcept {
             static_assert(derived_from<_Derived, view_interface>,
                 "view_interface's template argument D must derive from view_interface<D> (N4849 [view.interface]/2).");
+#ifdef __cpp_lib_ranges // TRANSITION, GH-1814
             static_assert(view<_Derived>,
                 "view_interface's template argument must model the view concept (N4849 [view.interface]/2).");
+#endif // TRANSITION, GH-1814
             return static_cast<_Derived&>(*this);
         }
 
         _NODISCARD constexpr const _Derived& _Cast() const noexcept {
             static_assert(derived_from<_Derived, view_interface>,
                 "view_interface's template argument D must derive from view_interface<D> (N4849 [view.interface]/2).");
+#ifdef __cpp_lib_ranges // TRANSITION, GH-1814
             static_assert(view<_Derived>,
                 "view_interface's template argument must model the view concept (N4849 [view.interface]/2).");
+#endif // TRANSITION, GH-1814
             return static_cast<const _Derived&>(*this);
         }
 
@@ -5339,8 +5345,12 @@ _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked(const _InIt _First, const _InIt _L
 template <class _InIt, class _Ty>
 _NODISCARD _CONSTEXPR20 _InIt find(_InIt _First, const _InIt _Last, const _Ty& _Val) { // find first matching _Val
     _Adl_verify_range(_First, _Last);
-    _Seek_wrapped(_First, _Find_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Val));
-    return _First;
+    if constexpr (_Is_vb_iterator<_InIt> && is_same_v<_Ty, bool>) {
+        return _Find_vbool(_First, _Last, _Val);
+    } else {
+        _Seek_wrapped(_First, _Find_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Val));
+        return _First;
+    }
 }
 
 #if _HAS_CXX17
@@ -5352,20 +5362,36 @@ _NODISCARD _FwdIt find(_ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, const _
 namespace ranges {
     // VARIABLE ranges::find
     // clang-format off
+    template <class _Se, class _It>
+    concept _Sized_or_unreachable_sentinel_for = sized_sentinel_for<_Se, _It> || same_as<_Se, unreachable_sentinel_t>;
+
     // concept-constrained for strict enforcement as it is used by several algorithms
     template <input_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pj = identity>
         requires indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>
     _NODISCARD constexpr _It _Find_unchecked(_It _First, const _Se _Last, const _Ty& _Val, _Pj _Proj = {}) {
         // clang-format on
-        if constexpr (_Memchr_in_find_is_safe<_It, _Ty> && sized_sentinel_for<_Se, _It> && same_as<_Pj, identity>) {
+        constexpr bool _Is_sized = sized_sentinel_for<_Se, _It>;
+        if constexpr (_Memchr_in_find_is_safe<_It,
+                          _Ty> && _Sized_or_unreachable_sentinel_for<_Se, _It> && same_as<_Pj, identity>) {
             if (!_STD is_constant_evaluated()) {
                 if (!_Within_limits(_First, _Val)) {
-                    return _RANGES next(_STD move(_First), _Last);
+                    if constexpr (_Is_sized) {
+                        return _RANGES next(_STD move(_First), _Last);
+                    } else {
+                        _STL_ASSERT(false, "Tried to find a value in a range with unreachable sentinel"
+                                           " that cannot be represented by the range's value type");
+                    }
                 }
 
+                size_t _Count;
+                if constexpr (_Is_sized) {
+                    _Count = static_cast<size_t>(_Last - _First);
+                } else {
+                    _Count = SIZE_MAX;
+                }
                 const auto _First_ptr = _STD to_address(_First);
                 const auto _Result    = static_cast<remove_reference_t<_Iter_ref_t<_It>>*>(
-                    _CSTD memchr(_First_ptr, static_cast<unsigned char>(_Val), static_cast<size_t>(_Last - _First)));
+                    _CSTD memchr(_First_ptr, static_cast<unsigned char>(_Val), _Count));
                 if (_Result) {
                     if constexpr (is_pointer_v<_It>) {
                         return _Result;
@@ -5426,17 +5452,21 @@ template <class _InIt, class _Ty>
 _NODISCARD _CONSTEXPR20 _Iter_diff_t<_InIt> count(const _InIt _First, const _InIt _Last, const _Ty& _Val) {
     // count elements that match _Val
     _Adl_verify_range(_First, _Last);
-    auto _UFirst               = _Get_unwrapped(_First);
-    const auto _ULast          = _Get_unwrapped(_Last);
-    _Iter_diff_t<_InIt> _Count = 0;
+    if constexpr (_Is_vb_iterator<_InIt> && is_same_v<_Ty, bool>) {
+        return _Count_vbool(_First, _Last, _Val);
+    } else {
+        auto _UFirst               = _Get_unwrapped(_First);
+        const auto _ULast          = _Get_unwrapped(_Last);
+        _Iter_diff_t<_InIt> _Count = 0;
 
-    for (; _UFirst != _ULast; ++_UFirst) {
-        if (*_UFirst == _Val) {
-            ++_Count;
+        for (; _UFirst != _ULast; ++_UFirst) {
+            if (*_UFirst == _Val) {
+                ++_Count;
+            }
         }
-    }
 
-    return _Count;
+        return _Count;
+    }
 }
 
 #if _HAS_CXX17

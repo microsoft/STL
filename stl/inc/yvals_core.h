@@ -240,6 +240,7 @@
 // P1976R2 Explicit Constructors For Fixed-Extent span From Dynamic-Extent Ranges
 // P1983R0 Fixing Minor Ranges Issues
 // P1994R1 elements_view Needs Its Own sentinel
+// P2017R1 Conditionally Borrowed Ranges
 // P2091R0 Fixing Issues With Range Access CPOs
 // P2102R0 Making "Implicit Expression Variations" More Explicit
 // P2106R0 Range Algorithm Result Types
@@ -253,6 +254,9 @@
 // P0767R1 Deprecating is_pod
 // P1831R1 Deprecating volatile In The Standard Library
 // Other C++20 deprecation warnings
+
+// _HAS_CXX23 directly controls:
+// P1048R1 is_scoped_enum
 
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
@@ -350,6 +354,20 @@
 // * unique_copy
 
 #include <vcruntime.h>
+
+// TRANSITION, <vcruntime.h> should define _HAS_CXX23
+#ifndef _HAS_CXX23
+#if _HAS_CXX20 && (defined(_MSVC_LANG) && _MSVC_LANG > 202002L || defined(__cplusplus) && __cplusplus > 202002L)
+#define _HAS_CXX23 1
+#else
+#define _HAS_CXX23 0
+#endif
+#endif // _HAS_CXX23
+
+#if _HAS_CXX23 && !_HAS_CXX20
+#error _HAS_CXX23 must imply _HAS_CXX20.
+#endif
+
 #include <xkeycheck.h> // The _HAS_CXX tags must be defined before including this.
 
 #ifndef _STL_WARNING_LEVEL
@@ -503,25 +521,31 @@
 #define _STL_DISABLE_DEPRECATED_WARNING \
     _Pragma("clang diagnostic push")    \
     _Pragma("clang diagnostic ignored \"-Wdeprecated-declarations\"")
-#else // __clang__
+#elif defined(__EDG__) || defined(__CUDACC__) || defined(__INTEL_COMPILER) // TRANSITION, VSO-1329304
 #define _STL_DISABLE_DEPRECATED_WARNING \
     __pragma(warning(push))             \
     __pragma(warning(disable : 4996)) // was declared deprecated
-#endif // __clang__
+#else // vvv MSVC vvv
+#define _STL_DISABLE_DEPRECATED_WARNING \
+    _Pragma("warning(push)")            \
+    _Pragma("warning(disable : 4996)") // was declared deprecated
+#endif // ^^^ MSVC ^^^
 #endif // _STL_DISABLE_DEPRECATED_WARNING
 // clang-format on
 
 #ifndef _STL_RESTORE_DEPRECATED_WARNING
 #ifdef __clang__
 #define _STL_RESTORE_DEPRECATED_WARNING _Pragma("clang diagnostic pop")
-#else // __clang__
+#elif defined(__EDG__) || defined(__CUDACC__) || defined(__INTEL_COMPILER) // TRANSITION, VSO-1329304
 #define _STL_RESTORE_DEPRECATED_WARNING __pragma(warning(pop))
-#endif // __clang__
+#else // vvv MSVC vvv
+#define _STL_RESTORE_DEPRECATED_WARNING _Pragma("warning(pop)")
+#endif // ^^^ MSVC ^^^
 #endif // _STL_RESTORE_DEPRECATED_WARNING
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 142
-#define _MSVC_STL_UPDATE  202104L
+#define _MSVC_STL_UPDATE  202106L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #ifdef __CUDACC__
@@ -1224,9 +1248,9 @@
 #define __cpp_lib_endian            201907L
 #define __cpp_lib_erase_if          202002L
 
-#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395 and GH-1814
 #define __cpp_lib_format 201907L
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 #define __cpp_lib_generic_unordered_lookup     201811L
 #define __cpp_lib_int_pow2                     202002L
@@ -1254,9 +1278,9 @@
 #define __cpp_lib_math_constants          201907L
 #define __cpp_lib_polymorphic_allocator   201902L
 
-#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395 and GH-1814
 #define __cpp_lib_ranges 201911L
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 #define __cpp_lib_remove_cvref            201711L
 #define __cpp_lib_semaphore               201907L
@@ -1313,6 +1337,11 @@
 #if defined(__cpp_impl_coroutine) || defined(_DOWNLEVEL_COROUTINES_SUPPORTED) // TRANSITION, Clang coroutine support
 #define __cpp_lib_coroutine 201902L
 #endif // __cpp_impl_coroutine
+
+// C++23
+#if _HAS_CXX23
+#define __cpp_lib_is_scoped_enum 202011L
+#endif // _HAS_CXX23
 
 // EXPERIMENTAL
 #define __cpp_lib_experimental_erase_if   201411L
