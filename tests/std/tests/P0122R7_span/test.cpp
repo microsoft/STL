@@ -79,8 +79,7 @@ static_assert(ranges::enable_borrowed_range<span<int>>);
 static_assert(ranges::enable_borrowed_range<span<int, 3>>);
 #endif // __cpp_lib_concepts
 
-// For performance, our implementation provides an additional guarantee beyond the Standard
-// that span and its iterator types are trivially copyable.
+// For performance, our implementation also guarantees that span's iterator types are trivially copyable.
 static_assert(is_trivially_copyable_v<span<int>>);
 static_assert(is_trivially_copyable_v<span<int>::iterator>);
 static_assert(is_trivially_copyable_v<span<int, 3>>);

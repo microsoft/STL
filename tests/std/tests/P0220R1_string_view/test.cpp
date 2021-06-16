@@ -66,6 +66,9 @@ const evil_conversion_to_string_view_lvalue_only convert_lvalue_only{};
 #pragma clang diagnostic pop
 #endif // __clang__
 
+static_assert(is_trivially_copyable_v<string_view>);
+static_assert(is_trivially_copyable_v<wstring_view>);
+
 // noexcept assertions:
 // (functions that explicitly throw have their throws tested and therefore have no static_asserts)
 static_assert(noexcept(string_view{}), "default constructor not noexcept");
