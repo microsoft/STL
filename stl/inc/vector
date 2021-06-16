@@ -517,7 +517,7 @@ public:
 
     _CONSTEXPR20_CONTAINER vector(initializer_list<_Ty> _Ilist, const _Alloc& _Al = _Alloc())
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        _Construct_n(static_cast<size_type>(_Ilist.size()), _Ilist.begin(), _Ilist.end());
+        _Construct_n(_Convert_size<size_type>(_Ilist.size()), _Ilist.begin(), _Ilist.end());
     }
 
     _CONSTEXPR20_CONTAINER vector(const vector& _Right)
@@ -545,18 +545,18 @@ public:
     _CONSTEXPR20_CONTAINER vector(vector&& _Right, const _Alloc& _Al_) noexcept(
         _Alty_traits::is_always_equal::value) // strengthened
         : _Mypair(_One_then_variadic_args_t{}, _Al_) {
-        _Alty& _Al      = _Getal();
-        auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Al);
-        _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
+        _Alty& _Al        = _Getal();
+        auto&& _Alproxy   = _GET_PROXY_ALLOCATOR(_Alty, _Al);
+        auto& _My_data    = _Mypair._Myval2;
+        auto& _Right_data = _Right._Mypair._Myval2;
+        _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data);
 
         if constexpr (!_Alty_traits::is_always_equal::value) {
             if (_Al != _Right._Getal()) {
-                const auto& _Right_data = _Right._Mypair._Myval2;
-                const auto _Count       = static_cast<size_type>(_Right_data._Mylast - _Right_data._Myfirst);
+                const auto _Count = static_cast<size_type>(_Right_data._Mylast - _Right_data._Myfirst);
                 if (_Count != 0) {
                     _Buy_raw(_Count);
                     _Tidy_guard<vector> _Guard{this};
-                    auto& _My_data = _Mypair._Myval2;
                     _My_data._Mylast =
                         _Uninitialized_move(_Right_data._Myfirst, _Right_data._Mylast, _My_data._Myfirst, _Al);
                     _Guard._Target = nullptr;
@@ -566,7 +566,7 @@ public:
             }
         }
 
-        _Mypair._Myval2._Take_contents(_Right._Mypair._Myval2);
+        _My_data._Take_contents(_Right_data);
         _Proxy._Release();
     }
 
@@ -1141,8 +1141,10 @@ private:
         if constexpr (is_same_v<_Ty2, _Ty>) {
             _Appended_last = _Uninitialized_fill_n(_Appended_first, _Newsize - _Oldsize, _Val, _Al);
         } else {
+            _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Ty2, _Value_init_tag>);
             _Appended_last = _Uninitialized_value_construct_n(_Appended_first, _Newsize - _Oldsize, _Al);
         }
+
         if constexpr (is_nothrow_move_constructible_v<_Ty> || !is_copy_constructible_v<_Ty>) {
             _Uninitialized_move(_Myfirst, _Mylast, _Newvec, _Al);
         } else {
@@ -1184,6 +1186,7 @@ private:
             if constexpr (is_same_v<_Ty2, _Ty>) {
                 _Mylast = _Uninitialized_fill_n(_Oldlast, _Newsize - _Oldsize, _Val, _Al);
             } else {
+                _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Ty2, _Value_init_tag>);
                 _Mylast = _Uninitialized_value_construct_n(_Oldlast, _Newsize - _Oldsize, _Al);
             }
             _Orphan_range(_Oldlast, _Oldlast);
@@ -1647,9 +1650,9 @@ private:
     template <class... _Valty>
     _CONSTEXPR20_CONTAINER void _Construct_n(_CRT_GUARDOVERFLOW const size_type _Count, _Valty&&... _Val) {
         // Dispatches between the three sized constructions.
-        // 1-arg -> value-construction, e.g vector(5)
+        // 1-arg -> value-construction, e.g. vector(5)
         // 2-arg -> fill, e.g. vector(5, "meow")
-        // 3-arg -> sized range construction e.g. vector{"Hello", "Fluffy", "World"}
+        // 3-arg -> sized range construction, e.g. vector{"Hello", "Fluffy", "World"}
         auto& _Al       = _Getal();
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Al);
         auto& _My_data  = _Mypair._Myval2;
@@ -1660,7 +1663,7 @@ private:
             if constexpr (sizeof...(_Val) == 0) {
                 _My_data._Mylast = _Uninitialized_value_construct_n(_My_data._Myfirst, _Count, _Al);
             } else if constexpr (sizeof...(_Val) == 1) {
-                static_assert(is_same_v<_Valty..., const _Ty&>, "Wrong type passed to _Construct_n");
+                _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Valty..., const _Ty&>);
                 _My_data._Mylast = _Uninitialized_fill_n(_My_data._Myfirst, _Count, _Val..., _Al);
             } else if constexpr (sizeof...(_Val) == 2) {
                 _My_data._Mylast = _Uninitialized_copy(_STD forward<_Valty>(_Val)..., _My_data._Myfirst, _Al);
@@ -1675,23 +1678,22 @@ private:
 
     _CONSTEXPR20_CONTAINER void _Move_assign_unequal_alloc(vector& _Right) noexcept(
         !is_same_v<_Choose_pocma<_Alty>, _No_propagate_allocators>) {
-        auto& _Al = _Getal();
+        auto& _Al         = _Getal();
+        auto& _My_data    = _Mypair._Myval2;
+        auto& _Right_data = _Right._Mypair._Myval2;
         if constexpr (is_same_v<_Choose_pocma<_Alty>, _Propagate_allocators>) {
             _Tidy();
 #if _ITERATOR_DEBUG_LEVEL != 0
             // intentionally slams into noexcept on OOM, TRANSITION, VSO-466800
-            _Mypair._Myval2._Reload_proxy(
-                _GET_PROXY_ALLOCATOR(_Alty, _Al), _GET_PROXY_ALLOCATOR(_Alty, _Right._Getal()));
-#endif
+            _My_data._Reload_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Al), _GET_PROXY_ALLOCATOR(_Alty, _Right._Getal()));
+#endif // _ITERATOR_DEBUG_LEVEL != 0
             _Pocma(_Al, _Right._Getal());
-            _Mypair._Myval2._Take_contents(_Right._Mypair._Myval2);
+            _My_data._Take_contents(_Right_data);
         } else {
-            auto& _Right_data    = _Right._Mypair._Myval2;
             const pointer _First = _Right_data._Myfirst;
             const pointer _Last  = _Right_data._Mylast;
             const auto _Newsize  = static_cast<size_type>(_Last - _First);
 
-            auto& _My_data    = _Mypair._Myval2;
             pointer& _Myfirst = _My_data._Myfirst;
             pointer& _Mylast  = _My_data._Mylast;
 
