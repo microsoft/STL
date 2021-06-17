@@ -30,6 +30,13 @@ template <typename CharT>
 
 #define STR(Literal) (choose_literal<CharT>(Literal, L##Literal))
 
+// Test against IDL mismatch between the DLL which stores the locale and the code which uses it.
+#ifdef _DEBUG
+#define DEFAULT_IDL_SETTING 2
+#else
+#define DEFAULT_IDL_SETTING 0
+#endif
+
 template <typename CharT>
 struct testing_callbacks {
     _Fmt_align expected_alignment = _Fmt_align::_None;
@@ -962,7 +969,9 @@ void test() {
     test_zoned_time_formatter<char>();
     test_zoned_time_formatter<wchar_t>();
 
+#if !defined(_DLL) || _ITERATOR_DEBUG_LEVEL == DEFAULT_IDL_SETTING
     test_locale();
+#endif // !defined(_DLL) || _ITERATOR_DEBUG_LEVEL == DEFAULT_IDL_SETTING
 }
 
 int main() {
