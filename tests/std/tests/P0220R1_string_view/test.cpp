@@ -3,11 +3,14 @@
 
 #include <array>
 #include <assert.h>
+#include <deque>
 #include <sstream>
 #include <stdexcept>
 #include <stdlib.h>
 #include <string>
 #include <string_view>
+#include <type_traits>
+#include <vector>
 
 #include <constexpr_char_traits.hpp>
 
@@ -329,6 +332,19 @@ constexpr bool test_case_range_constructor() {
     same_as<string_view> auto sv = basic_string_view(expectedData);
     assert(sv.data() == expectedData.data());
     assert(sv.size() == 7);
+
+    // Also tests some of the constraints:
+    static_assert(is_constructible_v<string_view, vector<char>>);
+    static_assert(is_convertible_v<vector<char>, string_view>);
+
+    static_assert(!is_constructible_v<string_view, deque<char>>); // not contiguous
+    static_assert(!is_convertible_v<deque<char>, string_view>);
+
+    static_assert(!is_constructible_v<string_view, vector<unsigned char>>); // different elements
+    static_assert(!is_convertible_v<vector<unsigned char>, string_view>);
+
+    static_assert(!is_constructible_v<string_view, basic_string<char, constexpr_char_traits>>); // different traits
+    static_assert(!is_convertible_v<basic_string<char, constexpr_char_traits>, string_view>);
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
     return true;
