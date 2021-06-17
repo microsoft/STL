@@ -892,9 +892,10 @@ void test_zoned_time_formatter() {
     assert(format(STR("{:%g %G %U %V %W}"), zt) == STR("21 2021 16 16 16"));
 }
 
+template <typename CharT>
 void test_locale() {
-    assert(format(locale{"zh-CN"}, L"{:^22%Y %B %d %A}", 2021y / June / 16d)
-           == L" 2021 \u516D\u6708 16 \u661F\u671F\u4E09  ");
+    assert(format(locale{"zh-CN"}, STR("{:^22%Y %B %d %A}"), 2021y / June / 16d)
+           == STR(" 2021 \u516D\u6708 16 \u661F\u671F\u4E09  "));
 }
 
 void test() {
@@ -970,7 +971,11 @@ void test() {
     test_zoned_time_formatter<wchar_t>();
 
 #if !defined(_DLL) || _ITERATOR_DEBUG_LEVEL == DEFAULT_IDL_SETTING
-    test_locale();
+    test_locale<wchar_t>();
+#ifndef MSVC_INTERNAL_TESTING // TRANSITION, the Windows version on Contest VMs doesn't always understand ".UTF-8"
+    setlocale(LC_ALL, ".UTF-8");
+    test_locale<char>();
+#endif // MSVC_INTERNAL_TESTING
 #endif // !defined(_DLL) || _ITERATOR_DEBUG_LEVEL == DEFAULT_IDL_SETTING
 }
 
