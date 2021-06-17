@@ -322,6 +322,18 @@ constexpr bool test_case_contiguous_constructor() {
     return true;
 }
 
+constexpr bool test_case_range_constructor() {
+#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+    const array expectedData{'n', 'o', ' ', 'n', 'u', 'l', 'l'};
+    // Also tests the corresponding deduction guide:
+    same_as<string_view> auto sv = basic_string_view(expectedData);
+    assert(sv.data() == expectedData.data());
+    assert(sv.size() == 7);
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+
+    return true;
+}
+
 template <class CharT, class Traits>
 constexpr bool test_case_iterators() {
     using iterator = typename basic_string_view<CharT, Traits>::iterator;
@@ -1048,6 +1060,7 @@ static_assert(test_case_default_constructor());
 static_assert(test_case_ntcts_constructor<constexpr_char_traits>());
 static_assert(test_case_buffer_constructor());
 static_assert(test_case_contiguous_constructor());
+static_assert(test_case_range_constructor());
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-284079 "C1XX's C++14 constexpr emits bogus warnings C4146,
                                            // C4308, C4307 for basic_string_view::iterator"
 static_assert(test_case_iterators<char, constexpr_char_traits>());
@@ -1087,20 +1100,6 @@ static_assert(noexcept(U"abc"sv));
 static_assert(u8"abc"sv[1] == u8'b');
 static_assert(noexcept(u8"abc"sv));
 #endif // __cpp_char8_t
-
-constexpr bool test_case_range_constructor() {
-#if _HAS_CXX23 && defined(__cpp_lib_concepts)
-    const array expectedData{'n', 'o', ' ', 'n', 'u', 'l', 'l'};
-    // Also tests the corresponding deduction guide:
-    same_as<string_view> auto sv = basic_string_view(expectedData);
-    assert(sv.data() == expectedData.data());
-    assert(sv.size() == 7);
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
-
-    return true;
-}
-
-static_assert(test_case_range_constructor());
 
 int main() {
     test_case_default_constructor();
