@@ -6,6 +6,7 @@
 #include <concepts>
 #include <format>
 #include <iostream>
+#include <locale>
 #include <sstream>
 #include <stdio.h>
 #include <string>
@@ -884,6 +885,11 @@ void test_zoned_time_formatter() {
     assert(format(STR("{:%g %G %U %V %W}"), zt) == STR("21 2021 16 16 16"));
 }
 
+void test_locale() {
+    assert(format(locale{"zh-CN"}, L"{:^22%Y %B %d %A}", 2021y / June / 16d)
+           == L" 2021 \u516D\u6708 16 \u661F\u671F\u4E09  ");
+}
+
 void test() {
     test_parse_conversion_spec<char>();
     test_parse_conversion_spec<wchar_t>();
@@ -955,6 +961,8 @@ void test() {
 
     test_zoned_time_formatter<char>();
     test_zoned_time_formatter<wchar_t>();
+
+    test_locale();
 }
 
 int main() {
