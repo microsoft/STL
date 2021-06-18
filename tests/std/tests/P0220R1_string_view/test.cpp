@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string>
 #include <string_view>
+#include <type_traits>
 
 #include <constexpr_char_traits.hpp>
 
@@ -1092,8 +1093,8 @@ static_assert(noexcept(u8"abc"sv));
 #if _HAS_CXX23
 static_assert(!is_constructible_v<string_view, nullptr_t>, "constructing string_view from nullptr_t is prohibited");
 static_assert(!is_constructible_v<string, nullptr_t>, "constructing string from nullptr_t is prohibited");
-static_assert(!is_assignable_v<string&, nullptr_t>, "assigning string to nullptr_t is prohibited");
-#endif
+static_assert(!is_assignable_v<string&, nullptr_t>, "assigning nullptr_t to string is prohibited");
+#endif // _HAS_CXX23
 
 int main() {
     test_case_default_constructor();
