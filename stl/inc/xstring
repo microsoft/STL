@@ -1271,7 +1271,7 @@ public:
         : _Mydata(_Ntcts), _Mysize(_Traits::length(_Ntcts)) {}
 
 #if _HAS_CXX23
-    constexpr basic_string_view(nullptr_t) = delete;
+    basic_string_view(nullptr_t) = delete;
 #endif // _HAS_CXX23
 
     constexpr basic_string_view(
@@ -2527,7 +2527,7 @@ public:
     }
 
 #if _HAS_CXX23
-    _CONSTEXPR20_CONTAINER basic_string(nullptr_t) = delete;
+    basic_string(nullptr_t) = delete;
 #endif // _HAS_CXX23
 
 #if _HAS_CXX17
@@ -3101,7 +3101,7 @@ public:
     }
 
 #if _HAS_CXX23
-    _CONSTEXPR20_CONTAINER basic_string& operator=(nullptr_t) = delete;
+    basic_string& operator=(nullptr_t) = delete;
 #endif // _HAS_CXX23
 
     _CONSTEXPR20_CONTAINER basic_string& operator=(const _Elem _Ch) { // assign {_Ch, _Elem()}
