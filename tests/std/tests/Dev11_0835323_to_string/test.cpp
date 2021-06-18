@@ -147,23 +147,23 @@ int main() {
 
     // Also test DevDiv-875295 "<string>: std::stof returns 1.#INF instead of throwing out_of_range [libcxx]".
 
-    assert_out_of_range([] { stof("1.2e60"); });
+    assert_out_of_range([] { (void) stof("1.2e60"); });
 
     {
         const float f = stof("3.14");
         assert(3.13f < f && f < 3.15f);
     }
 
-    assert_out_of_range([] { stof("-1.3e61"); });
+    assert_out_of_range([] { (void) stof("-1.3e61"); });
 
-    assert_out_of_range([] { stof(L"1.4e62"); });
+    assert_out_of_range([] { (void) stof(L"1.4e62"); });
 
     {
         const float f = stof(L"17.29");
         assert(17.28f < f && f < 17.30f);
     }
 
-    assert_out_of_range([] { stof(L"-1.5e63"); });
+    assert_out_of_range([] { (void) stof(L"-1.5e63"); });
 
 
     // Also test DevDiv-1113936 "std::stod incorrectly throws exception on some inputs, violating STL specification".

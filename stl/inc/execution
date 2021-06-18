@@ -446,7 +446,7 @@ struct _Parallel_choose_min_chunk {
             }
         }
 
-        lock_guard<mutex> _Lck(_Mtx); // TRANSITION, VSO-671180
+        lock_guard _Lck(_Mtx);
         if (_Selected_chunk.load(memory_order_relaxed) == _Chunk) {
             _Result = _Local_result;
         }
@@ -481,7 +481,7 @@ struct _Parallel_choose_max_chunk {
             }
         }
 
-        lock_guard<mutex> _Lck(_Mtx); // TRANSITION, VSO-671180
+        lock_guard _Lck(_Mtx);
         if (_Selected_chunk.load(memory_order_relaxed) == _Chunk) {
             _Result = _Local_result;
         }
@@ -589,7 +589,7 @@ public:
             auto _New_segment = _Segment->_Grow(_Local_b, _Local_t);
             _Circular_buffer<_Ty>* _Detached_segment;
             {
-                lock_guard<mutex> _Lck(_Segment_lock); // TRANSITION, VSO-671180
+                lock_guard _Lck(_Segment_lock);
                 _Detached_segment = _STD exchange(_Segment, _New_segment);
             } // unlock
 
@@ -614,7 +614,7 @@ public:
 
             _Circular_buffer<_Ty>* _Stealing_segment;
             {
-                lock_guard<mutex> _Lck(_Segment_lock); // TRANSITION, VSO-671180
+                lock_guard _Lck(_Segment_lock);
                 _Stealing_segment = _Segment;
                 _MT_INCR(_Stealing_segment->_Ref_count);
             }
@@ -750,7 +750,7 @@ struct _Work_stealing_team { // inter-thread communication for threads working o
     _Work_stealing_membership<_Ty> _Join_team() noexcept {
         size_t _Id;
         {
-            lock_guard<mutex> _Lck(_Available_mutex); // TRANSITION, VSO-671180
+            lock_guard _Lck(_Available_mutex);
             _Id = _Available_queues.top();
             _Available_queues.pop();
         } // unlock
@@ -764,7 +764,7 @@ struct _Work_stealing_team { // inter-thread communication for threads working o
     }
 
     void _Leave_team(size_t _Id) noexcept {
-        lock_guard<mutex> _Lck(_Available_mutex); // TRANSITION, VSO-671180
+        lock_guard _Lck(_Available_mutex);
         _Available_queues.push(_Id);
     }
 
@@ -927,7 +927,7 @@ struct _Static_partition_range<_FwdIt, _Diff, false> {
         auto _Result                = _Division_points.begin();
         *_Result                    = _Get_unwrapped(_First);
         for (_Diff _Idx{}; _Idx < _Unchunked_items; ++_Idx) { // record bounds of chunks with an extra item
-            for (_Diff _This_chunk_size = _Chunk_size; 0 < _This_chunk_size--;) {
+            for (_Diff _This_chunk_size = _Chunk_size + 1; 0 < _This_chunk_size--;) {
                 if (_First == _Last) {
                     return false;
                 }
