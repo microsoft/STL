@@ -66,7 +66,7 @@ const evil_conversion_to_string_view_lvalue_only convert_lvalue_only{};
 #pragma clang diagnostic pop
 #endif // __clang__
 
-// We provide a non-standard guarantees that basic_string_view is trivially copyable;
+// We provide a non-standard guarantee that basic_string_view is trivially copyable;
 // P2251 may eventually standardize that guarantee.
 static_assert(is_trivially_copyable_v<string_view>);
 static_assert(is_trivially_copyable_v<wstring_view>);
