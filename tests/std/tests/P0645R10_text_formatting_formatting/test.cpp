@@ -1286,7 +1286,7 @@ void test_locale_specific_formatting_without_locale() {
 
 template <class charT>
 void test_slow_append_path() {
-    const charT* hello_world = STR("Hello world");
+    const charT* const hello_world = STR("Hello world");
 
     // test format_to with a back_insert_iterator to a list, which will pick the slow path.
     list<charT> list_output;
@@ -1295,7 +1295,7 @@ void test_slow_append_path() {
 
     // test format_to with a normal iterator to a string, which will also pick the _Copy_unchecked path.
     basic_string<charT> str;
-    str.resize(std::char_traits<charT>::length(hello_world));
+    str.resize(char_traits<charT>::length(hello_world));
     format_to(str.begin(), STR("{}"), hello_world);
     assert(str == hello_world);
 }
