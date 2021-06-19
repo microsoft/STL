@@ -154,7 +154,7 @@ namespace {
             return __std_win_error::_Success;
         }
 
-        const __std_win_error _Last_error = __std_win_error{GetLastError()};
+        const __std_win_error _Last_error{GetLastError()};
         switch (_Last_error) {
         case __std_win_error::_Invalid_parameter: // Older Windows versions
         case __std_win_error::_Invalid_function: // Windows 10 1607
