@@ -6,4 +6,4 @@ RUNALL_CROSSLIST
 PM_CL="/EHsc /MTd /std:c++latest /permissive- /FImsvc_stdlib_force_include.h /wd4643"
 RUNALL_CROSSLIST
 PM_CL="/analyze:autolog- /Zc:preprocessor"
-PM_COMPILER="clang-cl" PM_CL="-fno-ms-compatibility -fno-delayed-template-parsing"
+PM_COMPILER="clang-cl" PM_CL="-fno-ms-compatibility -fno-delayed-template-parsing /D_HAS_CXX23"

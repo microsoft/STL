@@ -57,20 +57,11 @@ language.support\support.limits\support.limits.general\locale.version.pass.cpp
 language.support\support.limits\support.limits.general\ostream.version.pass.cpp
 language.support\support.limits\support.limits.general\string_view.version.pass.cpp
 
-# libc++ doesn't yet implement P1956R1, so it expects the old names `ispow2`, `ceil2`, `floor2`, and `log2p1`
-numerics\bit\bit.pow.two\ceil2.pass.cpp
-numerics\bit\bit.pow.two\floor2.pass.cpp
-numerics\bit\bit.pow.two\ispow2.pass.cpp
-numerics\bit\bit.pow.two\log2p1.pass.cpp
-
 # test emits warning C4310: cast truncates constant value
 numerics\bit\bitops.rot\rotl.pass.cpp
 
 # libc++ doesn't yet implement P1754R1 or P1964R2, so it expects an old value for `__cpp_lib_concepts`
 language.support\support.limits\support.limits.general\concepts.version.pass.cpp
-
-# libc++ doesn't yet implement P1001R2, so it expects an old value for `__cpp_lib_execution`
-language.support\support.limits\support.limits.general\execution.version.pass.cpp
 
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
@@ -197,6 +188,8 @@ language.support\support.limits\support.limits.general\type_traits.version.pass.
 language.support\support.limits\support.limits.general\version.version.pass.cpp
 
 # Contest does not understand .sh tests, which must be run specially
+input.output\iostream.objects\narrow.stream.objects\cin.sh.cpp
+input.output\iostream.objects\wide.stream.objects\wcin.sh.cpp
 namespace\addressable_functions.sh.cpp
 thread\thread.condition\thread.condition.condvarany\wait_terminates.sh.cpp
 
@@ -280,238 +273,18 @@ utilities\memory\default.allocator\allocator_void.deprecated_in_cxx17.verify.cpp
 utilities\memory\default.allocator\allocator.members\allocate.constexpr.size.verify.cpp
 utilities\memory\default.allocator\allocator.members\allocate.verify.cpp
 
-# GH-1382: Our machinery doesn't understand compile-only `.compile.pass.cpp` tests
-strings\string.view\string.view.io\stream_insert_decl_present.compile.pass.cpp
-
 
 # *** MISSING STL FEATURES ***
-# C++20 P0355R7 "<chrono> Calendars And Time Zones"
-utilities\time\days.pass.cpp
-utilities\time\months.pass.cpp
-utilities\time\weeks.pass.cpp
-utilities\time\years.pass.cpp
-utilities\time\time.cal\time.cal.day\types.pass.cpp
-utilities\time\time.cal\time.cal.day\time.cal.day.members\ctor.pass.cpp
-utilities\time\time.cal\time.cal.day\time.cal.day.members\decrement.pass.cpp
-utilities\time\time.cal\time.cal.day\time.cal.day.members\increment.pass.cpp
-utilities\time\time.cal\time.cal.day\time.cal.day.members\ok.pass.cpp
-utilities\time\time.cal\time.cal.day\time.cal.day.members\plus_minus_equal.pass.cpp
-utilities\time\time.cal\time.cal.day\time.cal.day.nonmembers\comparisons.pass.cpp
-utilities\time\time.cal\time.cal.day\time.cal.day.nonmembers\literals.pass.cpp
-utilities\time\time.cal\time.cal.day\time.cal.day.nonmembers\minus.pass.cpp
-utilities\time\time.cal\time.cal.day\time.cal.day.nonmembers\plus.pass.cpp
-utilities\time\time.cal\time.cal.day\time.cal.day.nonmembers\streaming.pass.cpp
-utilities\time\time.cal\time.cal.last\types.pass.cpp
-utilities\time\time.cal\time.cal.md\types.pass.cpp
-utilities\time\time.cal\time.cal.md\time.cal.md.members\ctor.pass.cpp
-utilities\time\time.cal\time.cal.md\time.cal.md.members\day.pass.cpp
-utilities\time\time.cal\time.cal.md\time.cal.md.members\month.pass.cpp
-utilities\time\time.cal\time.cal.md\time.cal.md.members\ok.pass.cpp
-utilities\time\time.cal\time.cal.md\time.cal.md.nonmembers\comparisons.pass.cpp
-utilities\time\time.cal\time.cal.md\time.cal.md.nonmembers\streaming.pass.cpp
-utilities\time\time.cal\time.cal.mdlast\comparisons.pass.cpp
-utilities\time\time.cal\time.cal.mdlast\ctor.pass.cpp
-utilities\time\time.cal\time.cal.mdlast\month.pass.cpp
-utilities\time\time.cal\time.cal.mdlast\ok.pass.cpp
-utilities\time\time.cal\time.cal.mdlast\streaming.pass.cpp
-utilities\time\time.cal\time.cal.mdlast\types.pass.cpp
-utilities\time\time.cal\time.cal.month\types.pass.cpp
-utilities\time\time.cal\time.cal.month\time.cal.month.members\ctor.pass.cpp
-utilities\time\time.cal\time.cal.month\time.cal.month.members\decrement.pass.cpp
-utilities\time\time.cal\time.cal.month\time.cal.month.members\increment.pass.cpp
-utilities\time\time.cal\time.cal.month\time.cal.month.members\ok.pass.cpp
-utilities\time\time.cal\time.cal.month\time.cal.month.members\plus_minus_equal.pass.cpp
-utilities\time\time.cal\time.cal.month\time.cal.month.nonmembers\comparisons.pass.cpp
-utilities\time\time.cal\time.cal.month\time.cal.month.nonmembers\literals.pass.cpp
-utilities\time\time.cal\time.cal.month\time.cal.month.nonmembers\minus.pass.cpp
-utilities\time\time.cal\time.cal.month\time.cal.month.nonmembers\plus.pass.cpp
-utilities\time\time.cal\time.cal.month\time.cal.month.nonmembers\streaming.pass.cpp
-utilities\time\time.cal\time.cal.mwd\types.pass.cpp
-utilities\time\time.cal\time.cal.mwd\time.cal.mwd.members\ctor.pass.cpp
-utilities\time\time.cal\time.cal.mwd\time.cal.mwd.members\month.pass.cpp
-utilities\time\time.cal\time.cal.mwd\time.cal.mwd.members\ok.pass.cpp
-utilities\time\time.cal\time.cal.mwd\time.cal.mwd.members\weekday_indexed.pass.cpp
-utilities\time\time.cal\time.cal.mwd\time.cal.mwd.nonmembers\comparisons.pass.cpp
-utilities\time\time.cal\time.cal.mwd\time.cal.mwd.nonmembers\streaming.pass.cpp
-utilities\time\time.cal\time.cal.mwdlast\types.pass.cpp
-utilities\time\time.cal\time.cal.mwdlast\time.cal.mwdlast.members\ctor.pass.cpp
-utilities\time\time.cal\time.cal.mwdlast\time.cal.mwdlast.members\month.pass.cpp
-utilities\time\time.cal\time.cal.mwdlast\time.cal.mwdlast.members\ok.pass.cpp
-utilities\time\time.cal\time.cal.mwdlast\time.cal.mwdlast.members\weekday_last.pass.cpp
-utilities\time\time.cal\time.cal.mwdlast\time.cal.mwdlast.nonmembers\comparisons.pass.cpp
-utilities\time\time.cal\time.cal.mwdlast\time.cal.mwdlast.nonmembers\streaming.pass.cpp
-utilities\time\time.cal\time.cal.operators\month_day.pass.cpp
-utilities\time\time.cal\time.cal.operators\month_day_last.pass.cpp
-utilities\time\time.cal\time.cal.operators\month_weekday.pass.cpp
-utilities\time\time.cal\time.cal.operators\month_weekday_last.pass.cpp
-utilities\time\time.cal\time.cal.operators\year_month.pass.cpp
-utilities\time\time.cal\time.cal.operators\year_month_day.pass.cpp
-utilities\time\time.cal\time.cal.operators\year_month_day_last.pass.cpp
-utilities\time\time.cal\time.cal.operators\year_month_weekday.pass.cpp
-utilities\time\time.cal\time.cal.operators\year_month_weekday_last.pass.cpp
-utilities\time\time.cal\time.cal.wdidx\types.pass.cpp
-utilities\time\time.cal\time.cal.wdidx\time.cal.wdidx.members\ctor.pass.cpp
-utilities\time\time.cal\time.cal.wdidx\time.cal.wdidx.members\index.pass.cpp
-utilities\time\time.cal\time.cal.wdidx\time.cal.wdidx.members\ok.pass.cpp
-utilities\time\time.cal\time.cal.wdidx\time.cal.wdidx.members\weekday.pass.cpp
-utilities\time\time.cal\time.cal.wdidx\time.cal.wdidx.nonmembers\comparisons.pass.cpp
-utilities\time\time.cal\time.cal.wdidx\time.cal.wdidx.nonmembers\streaming.pass.cpp
-utilities\time\time.cal\time.cal.wdlast\types.pass.cpp
-utilities\time\time.cal\time.cal.wdlast\time.cal.wdlast.members\ctor.pass.cpp
-utilities\time\time.cal\time.cal.wdlast\time.cal.wdlast.members\ok.pass.cpp
-utilities\time\time.cal\time.cal.wdlast\time.cal.wdlast.members\weekday.pass.cpp
-utilities\time\time.cal\time.cal.wdlast\time.cal.wdlast.nonmembers\comparisons.pass.cpp
-utilities\time\time.cal\time.cal.wdlast\time.cal.wdlast.nonmembers\streaming.pass.cpp
-utilities\time\time.cal\time.cal.weekday\types.pass.cpp
-utilities\time\time.cal\time.cal.weekday\time.cal.weekday.members\c_encoding.pass.cpp
-utilities\time\time.cal\time.cal.weekday\time.cal.weekday.members\ctor.local_days.pass.cpp
-utilities\time\time.cal\time.cal.weekday\time.cal.weekday.members\ctor.pass.cpp
-utilities\time\time.cal\time.cal.weekday\time.cal.weekday.members\ctor.sys_days.pass.cpp
-utilities\time\time.cal\time.cal.weekday\time.cal.weekday.members\decrement.pass.cpp
-utilities\time\time.cal\time.cal.weekday\time.cal.weekday.members\increment.pass.cpp
-utilities\time\time.cal\time.cal.weekday\time.cal.weekday.members\iso_encoding.pass.cpp
-utilities\time\time.cal\time.cal.weekday\time.cal.weekday.members\ok.pass.cpp
-utilities\time\time.cal\time.cal.weekday\time.cal.weekday.members\operator[].pass.cpp
-utilities\time\time.cal\time.cal.weekday\time.cal.weekday.members\plus_minus_equal.pass.cpp
-utilities\time\time.cal\time.cal.weekday\time.cal.weekday.nonmembers\comparisons.pass.cpp
-utilities\time\time.cal\time.cal.weekday\time.cal.weekday.nonmembers\literals.pass.cpp
-utilities\time\time.cal\time.cal.weekday\time.cal.weekday.nonmembers\minus.pass.cpp
-utilities\time\time.cal\time.cal.weekday\time.cal.weekday.nonmembers\plus.pass.cpp
-utilities\time\time.cal\time.cal.weekday\time.cal.weekday.nonmembers\streaming.pass.cpp
-utilities\time\time.cal\time.cal.year\types.pass.cpp
-utilities\time\time.cal\time.cal.year\time.cal.year.members\ctor.pass.cpp
-utilities\time\time.cal\time.cal.year\time.cal.year.members\decrement.pass.cpp
-utilities\time\time.cal\time.cal.year\time.cal.year.members\increment.pass.cpp
-utilities\time\time.cal\time.cal.year\time.cal.year.members\is_leap.pass.cpp
-utilities\time\time.cal\time.cal.year\time.cal.year.members\ok.pass.cpp
-utilities\time\time.cal\time.cal.year\time.cal.year.members\plus_minus.pass.cpp
-utilities\time\time.cal\time.cal.year\time.cal.year.members\plus_minus_equal.pass.cpp
-utilities\time\time.cal\time.cal.year\time.cal.year.nonmembers\comparisons.pass.cpp
-utilities\time\time.cal\time.cal.year\time.cal.year.nonmembers\literals.pass.cpp
-utilities\time\time.cal\time.cal.year\time.cal.year.nonmembers\minus.pass.cpp
-utilities\time\time.cal\time.cal.year\time.cal.year.nonmembers\plus.pass.cpp
-utilities\time\time.cal\time.cal.year\time.cal.year.nonmembers\streaming.pass.cpp
-utilities\time\time.cal\time.cal.ym\types.pass.cpp
-utilities\time\time.cal\time.cal.ym\time.cal.ym.members\ctor.pass.cpp
-utilities\time\time.cal\time.cal.ym\time.cal.ym.members\month.pass.cpp
-utilities\time\time.cal\time.cal.ym\time.cal.ym.members\ok.pass.cpp
-utilities\time\time.cal\time.cal.ym\time.cal.ym.members\plus_minus_equal_month.pass.cpp
-utilities\time\time.cal\time.cal.ym\time.cal.ym.members\plus_minus_equal_year.pass.cpp
-utilities\time\time.cal\time.cal.ym\time.cal.ym.members\year.pass.cpp
-utilities\time\time.cal\time.cal.ym\time.cal.ym.nonmembers\comparisons.pass.cpp
-utilities\time\time.cal\time.cal.ym\time.cal.ym.nonmembers\minus.pass.cpp
-utilities\time\time.cal\time.cal.ym\time.cal.ym.nonmembers\plus.pass.cpp
-utilities\time\time.cal\time.cal.ym\time.cal.ym.nonmembers\streaming.pass.cpp
-utilities\time\time.cal\time.cal.ymd\types.pass.cpp
-utilities\time\time.cal\time.cal.ymd\time.cal.ymd.members\ctor.local_days.pass.cpp
-utilities\time\time.cal\time.cal.ymd\time.cal.ymd.members\ctor.pass.cpp
-utilities\time\time.cal\time.cal.ymd\time.cal.ymd.members\ctor.sys_days.pass.cpp
-utilities\time\time.cal\time.cal.ymd\time.cal.ymd.members\ctor.year_month_day_last.pass.cpp
-utilities\time\time.cal\time.cal.ymd\time.cal.ymd.members\day.pass.cpp
-utilities\time\time.cal\time.cal.ymd\time.cal.ymd.members\month.pass.cpp
-utilities\time\time.cal\time.cal.ymd\time.cal.ymd.members\ok.pass.cpp
-utilities\time\time.cal\time.cal.ymd\time.cal.ymd.members\op.local_days.pass.cpp
-utilities\time\time.cal\time.cal.ymd\time.cal.ymd.members\op.sys_days.pass.cpp
-utilities\time\time.cal\time.cal.ymd\time.cal.ymd.members\plus_minus_equal_month.pass.cpp
-utilities\time\time.cal\time.cal.ymd\time.cal.ymd.members\plus_minus_equal_year.pass.cpp
-utilities\time\time.cal\time.cal.ymd\time.cal.ymd.members\year.pass.cpp
-utilities\time\time.cal\time.cal.ymd\time.cal.ymd.nonmembers\comparisons.pass.cpp
-utilities\time\time.cal\time.cal.ymd\time.cal.ymd.nonmembers\minus.pass.cpp
-utilities\time\time.cal\time.cal.ymd\time.cal.ymd.nonmembers\plus.pass.cpp
-utilities\time\time.cal\time.cal.ymd\time.cal.ymd.nonmembers\streaming.pass.cpp
-utilities\time\time.cal\time.cal.ymdlast\time.cal.ymdlast.members\ctor.pass.cpp
-utilities\time\time.cal\time.cal.ymdlast\time.cal.ymdlast.members\day.pass.cpp
-utilities\time\time.cal\time.cal.ymdlast\time.cal.ymdlast.members\month.pass.cpp
-utilities\time\time.cal\time.cal.ymdlast\time.cal.ymdlast.members\month_day_last.pass.cpp
-utilities\time\time.cal\time.cal.ymdlast\time.cal.ymdlast.members\ok.pass.cpp
-utilities\time\time.cal\time.cal.ymdlast\time.cal.ymdlast.members\op_local_days.pass.cpp
-utilities\time\time.cal\time.cal.ymdlast\time.cal.ymdlast.members\op_sys_days.pass.cpp
-utilities\time\time.cal\time.cal.ymdlast\time.cal.ymdlast.members\plus_minus_equal_month.pass.cpp
-utilities\time\time.cal\time.cal.ymdlast\time.cal.ymdlast.members\plus_minus_equal_year.pass.cpp
-utilities\time\time.cal\time.cal.ymdlast\time.cal.ymdlast.members\year.pass.cpp
-utilities\time\time.cal\time.cal.ymdlast\time.cal.ymdlast.nonmembers\comparisons.pass.cpp
-utilities\time\time.cal\time.cal.ymdlast\time.cal.ymdlast.nonmembers\minus.pass.cpp
-utilities\time\time.cal\time.cal.ymdlast\time.cal.ymdlast.nonmembers\plus.pass.cpp
-utilities\time\time.cal\time.cal.ymdlast\time.cal.ymdlast.nonmembers\streaming.pass.cpp
-utilities\time\time.cal\time.cal.ymwd\types.pass.cpp
-utilities\time\time.cal\time.cal.ymwd\time.cal.ymwd.members\ctor.local_days.pass.cpp
-utilities\time\time.cal\time.cal.ymwd\time.cal.ymwd.members\ctor.pass.cpp
-utilities\time\time.cal\time.cal.ymwd\time.cal.ymwd.members\ctor.sys_days.pass.cpp
-utilities\time\time.cal\time.cal.ymwd\time.cal.ymwd.members\index.pass.cpp
-utilities\time\time.cal\time.cal.ymwd\time.cal.ymwd.members\month.pass.cpp
-utilities\time\time.cal\time.cal.ymwd\time.cal.ymwd.members\ok.pass.cpp
-utilities\time\time.cal\time.cal.ymwd\time.cal.ymwd.members\op.local_days.pass.cpp
-utilities\time\time.cal\time.cal.ymwd\time.cal.ymwd.members\op.sys_days.pass.cpp
-utilities\time\time.cal\time.cal.ymwd\time.cal.ymwd.members\plus_minus_equal_month.pass.cpp
-utilities\time\time.cal\time.cal.ymwd\time.cal.ymwd.members\plus_minus_equal_year.pass.cpp
-utilities\time\time.cal\time.cal.ymwd\time.cal.ymwd.members\weekday.pass.cpp
-utilities\time\time.cal\time.cal.ymwd\time.cal.ymwd.members\weekday_indexed.pass.cpp
-utilities\time\time.cal\time.cal.ymwd\time.cal.ymwd.members\year.pass.cpp
-utilities\time\time.cal\time.cal.ymwd\time.cal.ymwd.nonmembers\comparisons.pass.cpp
-utilities\time\time.cal\time.cal.ymwd\time.cal.ymwd.nonmembers\minus.pass.cpp
-utilities\time\time.cal\time.cal.ymwd\time.cal.ymwd.nonmembers\plus.pass.cpp
-utilities\time\time.cal\time.cal.ymwd\time.cal.ymwd.nonmembers\streaming.pass.cpp
-utilities\time\time.cal\time.cal.ymwdlast\types.pass.cpp
-utilities\time\time.cal\time.cal.ymwdlast\time.cal.ymwdlast.members\ctor.pass.cpp
-utilities\time\time.cal\time.cal.ymwdlast\time.cal.ymwdlast.members\month.pass.cpp
-utilities\time\time.cal\time.cal.ymwdlast\time.cal.ymwdlast.members\ok.pass.cpp
-utilities\time\time.cal\time.cal.ymwdlast\time.cal.ymwdlast.members\op_local_days.pass.cpp
-utilities\time\time.cal\time.cal.ymwdlast\time.cal.ymwdlast.members\op_sys_days.pass.cpp
-utilities\time\time.cal\time.cal.ymwdlast\time.cal.ymwdlast.members\plus_minus_equal_month.pass.cpp
-utilities\time\time.cal\time.cal.ymwdlast\time.cal.ymwdlast.members\plus_minus_equal_year.pass.cpp
-utilities\time\time.cal\time.cal.ymwdlast\time.cal.ymwdlast.members\weekday.pass.cpp
-utilities\time\time.cal\time.cal.ymwdlast\time.cal.ymwdlast.members\year.pass.cpp
-utilities\time\time.cal\time.cal.ymwdlast\time.cal.ymwdlast.nonmembers\comparisons.pass.cpp
-utilities\time\time.cal\time.cal.ymwdlast\time.cal.ymwdlast.nonmembers\minus.pass.cpp
-utilities\time\time.cal\time.cal.ymwdlast\time.cal.ymwdlast.nonmembers\plus.pass.cpp
-utilities\time\time.cal\time.cal.ymwdlast\time.cal.ymwdlast.nonmembers\streaming.pass.cpp
-utilities\time\time.clock\time.clock.file\consistency.pass.cpp
-utilities\time\time.clock\time.clock.file\file_time.pass.cpp
-utilities\time\time.clock\time.clock.file\now.pass.cpp
-utilities\time\time.clock\time.clock.file\rep_signed.pass.cpp
-utilities\time\time.clock\time.clock.system\local_time.types.pass.cpp
-utilities\time\time.clock\time.clock.system\sys.time.types.pass.cpp
-utilities\time\time.duration\time.duration.literals\literals1.pass.cpp
-utilities\time\time.hms\time.12\is_am.pass.cpp
-utilities\time\time.hms\time.12\is_pm.pass.cpp
-utilities\time\time.hms\time.12\make12.pass.cpp
-utilities\time\time.hms\time.12\make24.pass.cpp
-utilities\time\time.hms\time.hms.members\hours.pass.cpp
-utilities\time\time.hms\time.hms.members\is_negative.pass.cpp
-utilities\time\time.hms\time.hms.members\minutes.pass.cpp
-utilities\time\time.hms\time.hms.members\precision.pass.cpp
-utilities\time\time.hms\time.hms.members\precision_type.pass.cpp
-utilities\time\time.hms\time.hms.members\seconds.pass.cpp
-utilities\time\time.hms\time.hms.members\subseconds.pass.cpp
-utilities\time\time.hms\time.hms.members\to_duration.pass.cpp
-utilities\time\time.hms\time.hms.members\width.pass.cpp
+# C++23 P1048R1 "is_scoped_enum"
+utilities\meta\meta.unary\meta.unary.prop\is_scoped_enum.pass.cpp
 
-# C++20 P0608R3 "Improving variant's Converting Constructor/Assignment"
-utilities\variant\variant.variant\variant.assign\conv.pass.cpp
-utilities\variant\variant.variant\variant.assign\T.pass.cpp
-utilities\variant\variant.variant\variant.ctor\conv.pass.cpp
-utilities\variant\variant.variant\variant.ctor\T.pass.cpp
-
-# C++20 P0784R7 "More constexpr containers"
-utilities\memory\allocator.traits\allocator.traits.members\allocate.pass.cpp
-utilities\memory\allocator.traits\allocator.traits.members\allocate_hint.pass.cpp
-utilities\memory\allocator.traits\allocator.traits.members\construct.pass.cpp
-utilities\memory\allocator.traits\allocator.traits.members\deallocate.pass.cpp
-utilities\memory\allocator.traits\allocator.traits.members\destroy.pass.cpp
-utilities\memory\allocator.traits\allocator.traits.members\max_size.pass.cpp
-utilities\memory\allocator.traits\allocator.traits.members\select_on_container_copy_construction.pass.cpp
-utilities\memory\default.allocator\allocator.globals\eq.pass.cpp
-utilities\memory\default.allocator\allocator.members\allocate.pass.cpp
-utilities\memory\specialized.algorithms\specialized.construct\construct_at.pass.cpp
-utilities\memory\specialized.algorithms\specialized.destroy\destroy.pass.cpp
-utilities\memory\specialized.algorithms\specialized.destroy\destroy_at.pass.cpp
-utilities\memory\specialized.algorithms\specialized.destroy\destroy_n.pass.cpp
-
-# C++20 P0896R4 "<ranges>"
-language.support\support.limits\support.limits.general\algorithm.version.pass.cpp
-language.support\support.limits\support.limits.general\functional.version.pass.cpp
-language.support\support.limits\support.limits.general\iterator.version.pass.cpp
-language.support\support.limits\support.limits.general\memory.version.pass.cpp
+# C++23 P1679R3 "contains() For basic_string/basic_string_view"
+strings\basic.string\string.contains\contains.char.pass.cpp
+strings\basic.string\string.contains\contains.ptr.pass.cpp
+strings\basic.string\string.contains\contains.string_view.pass.cpp
+strings\string.view\string.view.template\contains.char.pass.cpp
+strings\string.view\string.view.template\contains.ptr.pass.cpp
+strings\string.view\string.view.template\contains.string_view.pass.cpp
 
 
 # *** MISSING COMPILER FEATURES ***
@@ -519,6 +292,9 @@ language.support\support.limits\support.limits.general\memory.version.pass.cpp
 
 
 # *** MISSING LWG ISSUE RESOLUTIONS ***
+# LWG-2503 "multiline option should be added to syntax_option_type"
+re\re.const\re.matchflag\match_multiline.pass.cpp
+
 # LWG-2532 "Satisfying a promise at thread exit" (Open)
 # WCFB02 implements the proposed resolution for this issue
 thread\futures\futures.promise\set_exception_at_thread_exit.pass.cpp
@@ -542,6 +318,10 @@ utilities\utility\pairs\pairs.pair\assign_pair.pass.cpp
 utilities\utility\pairs\pairs.pair\assign_rv_pair.pass.cpp
 utilities\utility\pairs\pairs.pair\assign_rv_pair_U_V.pass.cpp
 
+# VSO-1271673 "static analyzer doesn't know about short-circuiting"
+algorithms\alg.sorting\alg.sort\partial.sort\partial_sort.pass.cpp
+algorithms\alg.sorting\alg.sort\partial.sort\partial_sort_comp.pass.cpp
+
 
 # *** CLANG COMPILER BUGS ***
 # LLVM-33230 "Clang on Windows should define __STDCPP_THREADS__ to be 1"
@@ -549,6 +329,9 @@ thread\macro.pass.cpp
 
 # LLVM-46207 Clang's tgmath.h interferes with the UCRT's tgmath.h
 depr\depr.c.headers\tgmath_h.pass.cpp
+
+# LLVM-48606 "Clang rejects creation of struct with mutable member during constant evaluation"
+language.support\support.limits\support.limits.general\vector.version.pass.cpp
 
 
 # *** CLANG ISSUES, NOT YET ANALYZED ***
@@ -582,7 +365,6 @@ containers\sequences\array\array.data\data.pass.cpp
 containers\sequences\array\iterators.pass.cpp
 
 # GH-1006 <algorithm>: debug checks for predicates are observable
-algorithms\alg.sorting\alg.heap.operations\make.heap\make_heap_comp.pass.cpp
 algorithms\alg.sorting\alg.merge\inplace_merge_comp.pass.cpp
 algorithms\alg.sorting\alg.min.max\minmax_init_list_comp.pass.cpp
 
@@ -647,6 +429,9 @@ utilities\meta\meta.trans\meta.trans.other\aligned_storage.pass.cpp
 depr\depr.c.headers\math_h.pass.cpp
 numerics\c.math\cmath.pass.cpp
 
+# GH-1596: <algorithm>: unqualified calls to _Adl_verify_range incorrectly cause instantiation
+algorithms\robust_against_adl.pass.cpp
+
 
 # *** CRT BUGS ***
 # We're permanently missing aligned_alloc().
@@ -663,15 +448,6 @@ language.support\support.limits\c.limits\cfloat.pass.cpp
 
 
 # *** LIKELY BOGUS TESTS ***
-# "error: _LIBCPP_VERSION not defined"
-thread\thread.barrier\version.pass.cpp
-thread\thread.latch\version.pass.cpp
-thread\thread.semaphore\version.pass.cpp
-
-# "error C3861: 'assert': identifier not found"
-thread\thread.semaphore\timed.pass.cpp
-thread\thread.semaphore\try_acquire.pass.cpp
-
 # pass lambda without noexcept to barrier
 thread\thread.barrier\completion.pass.cpp
 thread\thread.barrier\max.pass.cpp
@@ -684,15 +460,6 @@ utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.asgn\move.pass.cpp
 
 # Test bug after LWG-3257 "Missing feature testing macro update from P0858" was accepted.
 language.support\support.limits\support.limits.general\string.version.pass.cpp
-
-# libc++ expects an old value for `__cpp_lib_array_constexpr` (`201603L`). We've implemented P0858R0, P1023R0, and P1032R1, increasing the value to `201811L`.
-language.support\support.limits\support.limits.general\array.version.pass.cpp
-
-# libc++ expects the old macro `__cpp_lib_constexpr_misc`. After P1902R1, it should expect `__cpp_lib_constexpr_tuple` to have the value `201811L`.
-language.support\support.limits\support.limits.general\tuple.version.pass.cpp
-
-# libc++ expects the old macro `__cpp_lib_constexpr_misc`. After P1902R1, it should expect `__cpp_lib_constexpr_utility` to have the value `201811L`.
-language.support\support.limits\support.limits.general\utility.version.pass.cpp
 
 # Not yet analyzed, likely bogus tests. Appears to be timing assumptions.
 thread\futures\futures.async\async.pass.cpp
@@ -810,43 +577,103 @@ numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\eval.pass.cpp
 # They shouldn't behave differently. Both of them should probably return NaN.
 numerics\c.math\c.math.lerp\c.math.lerp.pass.cpp
 
+# --month{14} should be 1, not 13 as the test expects
+utilities\time\time.cal\time.cal.month\time.cal.month.members\decrement.pass.cpp
+
+# test is broken due to month_weekday not being default constructible
+utilities\time\time.cal\time.cal.mwd\time.cal.mwd.members\month.pass.cpp
+
+# conversion from '__int64' to 'long', possible loss of data
+utilities\time\time.hms\time.hms.members\seconds.pass.cpp
+utilities\time\time.hms\time.hms.members\subseconds.pass.cpp
+
+# Code: `for (int i = 1000; i < 20; ++i)`
+# warning C6294: Ill-defined for-loop:  initial condition does not satisfy test.  Loop body not executed.
+utilities\time\time.cal\time.cal.month\time.cal.month.nonmembers\comparisons.pass.cpp
+utilities\time\time.cal\time.cal.ym\time.cal.ym.nonmembers\comparisons.pass.cpp
+utilities\time\time.cal\time.cal.ymd\time.cal.ymd.nonmembers\comparisons.pass.cpp
+utilities\time\time.cal\time.cal.ymdlast\time.cal.ymdlast.nonmembers\comparisons.pass.cpp
+utilities\time\time.cal\time.cal.ymwd\time.cal.ymwd.nonmembers\comparisons.pass.cpp
+utilities\time\time.cal\time.cal.ymwdlast\time.cal.ymwdlast.nonmembers\comparisons.pass.cpp
+
+# Tests are manually declaring printf, which appears to be unused.
+# warning C28301: No annotations for first declaration of 'printf'.
+utilities\time\time.cal\time.cal.weekday\time.cal.weekday.nonmembers\minus.pass.cpp
+utilities\time\time.cal\time.cal.year\time.cal.year.nonmembers\minus.pass.cpp
+
+# Bogus test passes a class type as the second argument to std::advance
+iterators\iterator.primitives\iterator.operations\robust_against_adl.pass.cpp
+
+# Non-Standard test should be moved from libcxx/test/std to libcxx/test/libcxx
+utilities\memory\util.smartptr\util.smartptr.shared\libcxx.control_block_layout.pass.cpp
+
+# Non-Standard assumption that std::filesystem::file_time_type::duration::period is std::nano
+input.output\filesystems\fs.filesystem.synopsis\file_time_type_resolution.compile.pass.cpp
+
+# P1614R2 "Adding Spaceship <=> To The Library" makes `std::operator!=(i1, i3)` an error
+iterators\stream.iterators\istream.iterator\istream.iterator.ops\equal.pass.cpp
+
+# Uses-allocator class constructor wants non-const allocator ref and mismatched piecewise_construct's value category
+utilities\allocator.adaptor\allocator.adaptor.members\construct.pass.cpp
+utilities\allocator.adaptor\allocator.adaptor.members\construct_pair.pass.cpp
+utilities\allocator.adaptor\allocator.adaptor.members\construct_pair_const_lvalue_pair.pass.cpp
+utilities\allocator.adaptor\allocator.adaptor.members\construct_pair_piecewise.pass.cpp
+utilities\allocator.adaptor\allocator.adaptor.members\construct_pair_rvalue.pass.cpp
+utilities\allocator.adaptor\allocator.adaptor.members\construct_pair_values.pass.cpp
+utilities\allocator.adaptor\allocator.adaptor.members\construct_type.pass.cpp
+
+# Tests ignore the return value of sto{meow}, triggering nodiscard warnings
+strings\string.conversions\stod.pass.cpp
+strings\string.conversions\stof.pass.cpp
+strings\string.conversions\stoi.pass.cpp
+strings\string.conversions\stol.pass.cpp
+strings\string.conversions\stold.pass.cpp
+strings\string.conversions\stoll.pass.cpp
+strings\string.conversions\stoul.pass.cpp
+strings\string.conversions\stoull.pass.cpp
+
+# Bogus test uses std::cout without including <iostream>.
+utilities\time\time.cal\time.cal.wdidx\time.cal.wdidx.nonmembers\streaming.pass.cpp
+
+# Bogus test constructs year_month_weekday from weekday, but the constructor actually takes weekday_indexed.
+utilities\time\time.cal\time.cal.ymwd\time.cal.ymwd.nonmembers\streaming.pass.cpp
+
+# We define __cpp_lib_has_unique_object_representations in C++17 mode; test error says it
+# "should not be defined when TEST_HAS_BUILTIN_IDENTIFIER(__has_unique_object_representations) || TEST_GCC_VER >= 700 is not defined!"
+language.support\support.limits\support.limits.general\type_traits.version.pass.cpp
+
+# Tests expect __cpp_lib_ranges to have the old value 201811L for P0896R4; we define the C++20 value 201911L for P1716R3.
+language.support\support.limits\support.limits.general\algorithm.version.pass.cpp
+language.support\support.limits\support.limits.general\functional.version.pass.cpp
+language.support\support.limits\support.limits.general\iterator.version.pass.cpp
+
+# Test expects __cpp_lib_chrono to have the old value 201611L for P0505R0; we define the C++20 value 201907L for P1466R3.
+language.support\support.limits\support.limits.general\chrono.version.pass.cpp
+
+# We unconditionally define __cpp_lib_addressof_constexpr; test error says it
+# "should not be defined when TEST_HAS_BUILTIN(__builtin_addressof) || TEST_GCC_VER >= 700 is not defined!"
+language.support\support.limits\support.limits.general\memory.version.pass.cpp
+
 
 # *** LIKELY STL BUGS ***
 # Not yet analyzed, likely STL bugs. Assertions and other runtime failures.
 numerics\rand\rand.dis\rand.dist.bern\rand.dist.bern.bin\eval_param.pass.cpp
 numerics\rand\rand.dis\rand.dist.bern\rand.dist.bern.bin\eval.pass.cpp
+numerics\rand\rand.dis\rand.dist.bern\rand.dist.bern.bin\eval.PR44847.pass.cpp
 numerics\rand\rand.dis\rand.dist.bern\rand.dist.bern.geo\eval_param.pass.cpp
 numerics\rand\rand.dis\rand.dist.bern\rand.dist.bern.geo\eval.pass.cpp
 numerics\rand\rand.dis\rand.dist.bern\rand.dist.bern.negbin\eval_param.pass.cpp
 numerics\rand\rand.dis\rand.dist.bern\rand.dist.bern.negbin\eval.pass.cpp
-numerics\rand\rand.dis\rand.dist.norm\rand.dist.norm.cauchy\max.pass.cpp
-numerics\rand\rand.dis\rand.dist.norm\rand.dist.norm.cauchy\min.pass.cpp
-numerics\rand\rand.dis\rand.dist.norm\rand.dist.norm.chisq\max.pass.cpp
-numerics\rand\rand.dis\rand.dist.norm\rand.dist.norm.chisq\min.pass.cpp
-numerics\rand\rand.dis\rand.dist.norm\rand.dist.norm.f\max.pass.cpp
 numerics\rand\rand.dis\rand.dist.norm\rand.dist.norm.lognormal\eval_param.pass.cpp
 numerics\rand\rand.dis\rand.dist.norm\rand.dist.norm.lognormal\eval.pass.cpp
-numerics\rand\rand.dis\rand.dist.norm\rand.dist.norm.lognormal\max.pass.cpp
-numerics\rand\rand.dis\rand.dist.norm\rand.dist.norm.lognormal\min.pass.cpp
-numerics\rand\rand.dis\rand.dist.norm\rand.dist.norm.normal\max.pass.cpp
-numerics\rand\rand.dis\rand.dist.norm\rand.dist.norm.normal\min.pass.cpp
 numerics\rand\rand.dis\rand.dist.norm\rand.dist.norm.t\eval_param.pass.cpp
 numerics\rand\rand.dis\rand.dist.norm\rand.dist.norm.t\eval.pass.cpp
-numerics\rand\rand.dis\rand.dist.norm\rand.dist.norm.t\max.pass.cpp
-numerics\rand\rand.dis\rand.dist.norm\rand.dist.norm.t\min.pass.cpp
-numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.exp\max.pass.cpp
 numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.extreme\eval_param.pass.cpp
 numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.extreme\eval.pass.cpp
-numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.extreme\max.pass.cpp
-numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.extreme\min.pass.cpp
-numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.gamma\eq.pass.cpp
 numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.gamma\eval_param.pass.cpp
 numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.gamma\eval.pass.cpp
-numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.gamma\max.pass.cpp
-numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.gamma\min.pass.cpp
 numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.poisson\eval_param.pass.cpp
 numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.poisson\eval.pass.cpp
-numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.weibull\max.pass.cpp
 numerics\rand\rand.dis\rand.dist.uni\rand.dist.uni.real\param_ctor.pass.cpp
 
 # Not yet analyzed, likely STL bugs. Various assertions.
@@ -1007,3 +834,48 @@ containers\sequences\deque\deque.modifiers\insert_iter_iter.pass.cpp
 
 # Not yet analyzed. Failing after https://reviews.llvm.org/D75622.
 re\re.const\re.matchflag\match_prev_avail.pass.cpp
+
+# Not yet analyzed. Many diagnostics.
+input.output\filesystems\class.path\path.member\path.charconv.pass.cpp
+
+# Not yet analyzed. Probably ADL shenanigans.
+thread\thread.threads\thread.thread.class\thread.thread.constr\robust_against_adl.pass.cpp
+utilities\function.objects\func.wrap\func.wrap.func\robust_against_adl.pass.cpp
+utilities\function.objects\refwrap\refwrap.invoke\robust_against_adl.pass.cpp
+utilities\variant\variant.visit\robust_against_adl.pass.cpp
+
+# Not yet analyzed. Probably MSVC bug.
+utilities\function.objects\func.invoke\invoke_constexpr.pass.cpp
+
+# Not yet analyzed. Probably name mangling bug.
+utilities\function.objects\func.wrap\func.wrap.func\noncopyable_return_type.pass.cpp
+
+# Not yet analyzed. Failing for "[a[.ch.]z]".
+re\re.alg\re.alg.match\awk.locale.pass.cpp
+re\re.alg\re.alg.match\basic.locale.pass.cpp
+re\re.alg\re.alg.match\ecma.locale.pass.cpp
+re\re.alg\re.alg.match\extended.locale.pass.cpp
+re\re.alg\re.alg.search\awk.locale.pass.cpp
+re\re.alg\re.alg.search\basic.locale.pass.cpp
+re\re.alg\re.alg.search\ecma.locale.pass.cpp
+re\re.alg\re.alg.search\extended.locale.pass.cpp
+
+# Not yet analyzed. Various static_asserts.
+utilities\variant\variant.variant\variant.assign\conv.pass.cpp
+utilities\variant\variant.variant\variant.assign\T.pass.cpp
+utilities\variant\variant.variant\variant.ctor\conv.pass.cpp
+utilities\variant\variant.variant\variant.ctor\T.pass.cpp
+
+# Not yet analyzed. Involves incomplete types.
+utilities\memory\allocator.traits\allocator.traits.members\construct.pass.cpp
+utilities\memory\allocator.traits\allocator.traits.members\destroy.pass.cpp
+
+# Not yet analyzed. Error mentions allocator<const T>.
+utilities\memory\specialized.algorithms\specialized.construct\construct_at.pass.cpp
+
+
+# *** SKIPPED FOR MSVC-INTERNAL CONTEST ONLY ***
+# Our machinery doesn't understand compile-only `.compile.pass.cpp` tests.
+# (Implemented for GitHub, see GH-1382.)
+concepts\concept.constructible\constructible_from.compile.pass.cpp
+strings\string.view\string.view.io\stream_insert_decl_present.compile.pass.cpp

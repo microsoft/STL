@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-import itertools
 import os
 
 from stl.test.format import STLTestFormat, TestStep
@@ -30,7 +29,7 @@ class CustomTestFormat(STLTestFormat):
             'exception',
             'execution',
             'filesystem',
-            # 'format',
+            'format',
             'forward_list',
             'fstream',
             'functional',
@@ -64,7 +63,7 @@ class CustomTestFormat(STLTestFormat):
             'semaphore',
             'set',
             'shared_mutex',
-            # 'source_location',
+            'source_location',
             'span',
             'sstream',
             'stack',
@@ -74,7 +73,7 @@ class CustomTestFormat(STLTestFormat):
             'string_view',
             'string',
             'strstream',
-            # 'syncstream',
+            'syncstream',
             'system_error',
             'thread',
             'tuple',
@@ -93,20 +92,22 @@ class CustomTestFormat(STLTestFormat):
         outputDir, outputBase = test.getTempPaths()
         sourcePath = test.getSourcePath()
 
-        compileTestCppWithEdg = '/BE' in itertools.chain(test.flags, test.compileFlags)
-        if compileTestCppWithEdg:
+        compileTestCppWithEdg = False
+        if '/BE' in test.flags:
+            compileTestCppWithEdg = True
             test.flags.remove('/BE')
+
+        if '/BE' in test.compileFlags:
+            compileTestCppWithEdg = True
             test.compileFlags.remove('/BE')
 
-        exportHeaderOptions = ['/exportHeader', '/Fo', '/MP']
+        exportHeaderOptions = ['/exportHeader', '/headerName:angle', '/Fo', '/MP']
         headerUnitOptions = []
         for header in stlHeaders:
-            headerAbsolutePath = os.path.join(litConfig.cxx_headers, header)
+            exportHeaderOptions.append(header)
 
-            exportHeaderOptions.append(headerAbsolutePath)
-
-            headerUnitOptions.append('/headerUnit')
-            headerUnitOptions.append('{0}={1}.ifc'.format(headerAbsolutePath, header))
+            headerUnitOptions.append('/headerUnit:angle')
+            headerUnitOptions.append('{0}={0}.ifc'.format(header))
 
             if not compileTestCppWithEdg:
                 headerUnitOptions.append(os.path.join(outputDir, header + '.obj'))

@@ -50,36 +50,75 @@ Function Get-TempFilePath {
   return Join-Path $tempPath $tempName
 }
 
+<#
+.SYNOPSIS
+Downloads and extracts a ZIP file to a newly created temporary subdirectory.
+
+.DESCRIPTION
+DownloadAndExtractZip returns a path containing the extracted contents.
+
+.PARAMETER Url
+The URL of the ZIP file to download.
+#>
+Function DownloadAndExtractZip {
+  Param(
+    [String]$Url
+  )
+
+  if ([String]::IsNullOrWhiteSpace($Url)) {
+    throw 'Missing Url'
+  }
+
+  $ZipPath = Get-TempFilePath -Extension 'zip'
+  & curl.exe -L -o $ZipPath -s -S $Url
+  $TempSubdirPath = Get-TempFilePath -Extension 'dir'
+  Expand-Archive -Path $ZipPath -DestinationPath $TempSubdirPath -Force
+
+  return $TempSubdirPath
+}
+
 $TranscriptPath = 'C:\provision-image-transcript.txt'
 
 if ([string]::IsNullOrEmpty($AdminUserPassword)) {
-  Start-Transcript -Path $TranscriptPath
+  Start-Transcript -Path $TranscriptPath -UseMinimalHeader
 } else {
   Write-Host 'AdminUser password supplied; switching to AdminUser.'
-  $PsExecPath = Get-TempFilePath -Extension 'exe'
-  Write-Host "Downloading psexec to: $PsExecPath"
-  & curl.exe -L -o $PsExecPath -s -S https://live.sysinternals.com/PsExec64.exe
+
+  # https://docs.microsoft.com/en-us/sysinternals/downloads/psexec
+  $PsToolsZipUrl = 'https://download.sysinternals.com/files/PSTools.zip'
+  Write-Host "Downloading: $PsToolsZipUrl"
+  $ExtractedPsToolsPath = DownloadAndExtractZip -Url $PsToolsZipUrl
+  $PsExecPath = Join-Path $ExtractedPsToolsPath 'PsExec64.exe'
+
+  # https://github.com/PowerShell/PowerShell/releases/latest
+  $PowerShellZipUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.1.3/PowerShell-7.1.3-win-x64.zip'
+  Write-Host "Downloading: $PowerShellZipUrl"
+  $ExtractedPowerShellPath = DownloadAndExtractZip -Url $PowerShellZipUrl
+  $PwshPath = Join-Path $ExtractedPowerShellPath 'pwsh.exe'
+
   $PsExecArgs = @(
     '-u',
     'AdminUser',
     '-p',
-    $AdminUserPassword,
+    'AdminUserPassword_REDACTED',
     '-accepteula',
+    '-i',
     '-h',
-    'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe',
+    $PwshPath,
     '-ExecutionPolicy',
     'Unrestricted',
     '-File',
     $PSCommandPath
   )
-
   Write-Host "Executing: $PsExecPath $PsExecArgs"
+  $PsExecArgs[3] = $AdminUserPassword
 
   $proc = Start-Process -FilePath $PsExecPath -ArgumentList $PsExecArgs -Wait -PassThru
   Write-Host 'Reading transcript...'
   Get-Content -Path $TranscriptPath
   Write-Host 'Cleaning up...'
-  Remove-Item $PsExecPath
+  Remove-Item -Recurse -Path $ExtractedPsToolsPath
+  Remove-Item -Recurse -Path $ExtractedPowerShellPath
   exit $proc.ExitCode
 }
 
@@ -100,7 +139,7 @@ $Workloads = @(
 $ReleaseInPath = 'Preview'
 $Sku = 'Enterprise'
 $VisualStudioBootstrapperUrl = 'https://aka.ms/vs/16/pre/vs_enterprise.exe'
-$PythonUrl = 'https://www.python.org/ftp/python/3.9.0/python-3.9.0-amd64.exe'
+$PythonUrl = 'https://www.python.org/ftp/python/3.9.5/python-3.9.5-amd64.exe'
 
 # https://docs.microsoft.com/en-us/windows-hardware/drivers/download-the-wdk
 $WindowsDriverKitUrl = 'https://go.microsoft.com/fwlink/?linkid=2128854'
@@ -315,7 +354,7 @@ Function PipInstall {
 
   try {
     Write-Host "Installing or upgrading $Package..."
-    python.exe -m pip install --upgrade $Package
+    python.exe -m pip install --progress-bar off --upgrade $Package
     Write-Host "Done installing or upgrading $Package."
   }
   catch {
@@ -358,3 +397,9 @@ Write-Host 'Finished updating PATH!'
 
 PipInstall pip
 PipInstall psutil
+
+# https://docs.microsoft.com/en-us/windows-hardware/drivers/devtest/bcdedit--set#verification-settings
+Write-Host 'Enabling test-signed kernel-mode drivers...'
+bcdedit /set testsigning on
+
+Write-Host 'Done!'

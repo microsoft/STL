@@ -481,7 +481,7 @@ void test_main() { // test basic workings of string definitions
         bool ok        = false;
         STD wstring str(L"x");
         try {
-            STD stoi(str, &idx);
+            (void) STD stoi(str, &idx);
         } catch (STD invalid_argument) {
             ok = true;
         } catch (...) {
@@ -491,7 +491,7 @@ void test_main() { // test basic workings of string definitions
         CHECK_SIZE_T(idx, 0);
 
         try {
-            STD stoi(L"0xfffffffff", &idx, 0);
+            (void) STD stoi(L"0xfffffffff", &idx, 0);
         } catch (STD out_of_range) {
             ok = true;
         } catch (...) {

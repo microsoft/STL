@@ -253,7 +253,7 @@ protected:
 };
 
 // STATIC numpunct::id OBJECT
-#if !(defined _CRTBLD && defined _BUILDING_SATELLITE_2) // TRANSITION, VSO-578955
+#if !defined(_CRTBLD) || defined(CRTDLL2) || !defined(_DLL) || defined(_M_CEE_PURE) // TRANSITION, VSO-578955
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"
@@ -265,7 +265,7 @@ __PURE_APPDOMAIN_GLOBAL locale::id numpunct<_Elem>::id;
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif // __clang__
-#endif // !(defined _CRTBLD && defined _BUILDING_SATELLITE_2)
+#endif // !defined(_CRTBLD) || defined(CRTDLL2) || !defined(_DLL) || defined(_M_CEE_PURE)
 
 // CLASS TEMPLATE num_get
 template <class _Elem, class _InIt = istreambuf_iterator<_Elem, char_traits<_Elem>>>
@@ -369,7 +369,7 @@ protected:
             _Str += _Punct_fac.falsename();
             _Str.push_back(_Elem{});
             _Str += _Punct_fac.truename(); // construct "\0false\0true"
-            switch (_Getloctxt(_First, _Last, 2, _Str.c_str())) {
+            switch (_Getloctxt(_First, _Last, 2, _Str.c_str(), _Case_sensitive::_Yes)) {
             case 0:
                 _Val = false;
                 break;

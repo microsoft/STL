@@ -29,7 +29,7 @@ import <deque>;
 import <exception>;
 import <execution>;
 import <filesystem>;
-// import <format>;
+import <format>;
 import <forward_list>;
 import <fstream>;
 import <functional>;
@@ -63,7 +63,7 @@ import <scoped_allocator>;
 import <semaphore>;
 import <set>;
 import <shared_mutex>;
-// import <source_location>;
+import <source_location>;
 import <span>;
 import <sstream>;
 import <stack>;
@@ -73,7 +73,7 @@ import <streambuf>;
 import <string>;
 import <string_view>;
 import <strstream>;
-// import <syncstream>;
+import <syncstream>;
 import <system_error>;
 import <thread>;
 import <tuple>;
@@ -93,6 +93,17 @@ import <version>;
 #include <stdio.h>
 #include <force_include.hpp>
 using namespace std;
+
+constexpr bool test_source_location() {
+#ifdef __cpp_lib_source_location
+    const auto sl = source_location::current();
+    assert(sl.line() == __LINE__ - 1);
+    assert(sl.column() == 1);
+    assert(sl.function_name() == "test_source_location"sv);
+    assert(string_view{sl.file_name()}.ends_with("test.cpp"sv));
+#endif // __cpp_lib_source_location
+    return true;
+}
 
 int main() {
     {
@@ -115,11 +126,7 @@ int main() {
 
     {
         puts("Testing <array>.");
-#if 0 // TRANSITION, VSO-1088552 (deduction guides)
         constexpr array arr{10, 20, 30, 40, 50};
-#else // ^^^ no workaround / workaround vvv
-        constexpr array<int, 5> arr{10, 20, 30, 40, 50};
-#endif // ^^^ workaround ^^^
         assert(arr[2] == 30);
         static_assert(arr[2] == 30);
     }
@@ -195,7 +202,7 @@ int main() {
         assert(conv.from_bytes(utf8_koshka_cat) == utf16_koshka_cat);
         assert(conv.to_bytes(utf16_koshka_cat) == utf8_koshka_cat);
 
-        static_assert(static_cast<int>(codecvt_mode::consume_header) == 4); // TRANSITION, DevCom-1160041 (deprecated)
+        static_assert(static_cast<int>(codecvt_mode::consume_header) == 4);
     }
 
     {
@@ -294,7 +301,7 @@ int main() {
 
     {
         puts("Testing <format>.");
-        puts("(TRANSITION, not yet implemented.)");
+        assert(format("{} {}", "testing", "format") == "testing format");
     }
 
     {
@@ -570,17 +577,8 @@ int main() {
     {
         puts("Testing <ranges>.");
         constexpr int arr[]{11, 0, 22, 0, 33, 0, 44, 0, 55};
-#if 0 // TRANSITION, VSO-1088552 (deduction guides)
         assert(ranges::distance(views::filter(arr, [](int x) { return x == 0; })) == 4);
         static_assert(ranges::distance(views::filter(arr, [](int x) { return x != 0; })) == 5);
-#else // ^^^ no workaround / workaround vvv
-        auto is_zero = [](int x) { return x == 0; };
-        using FV1    = ranges::filter_view<ranges::ref_view<decltype(arr)>, decltype(is_zero)>;
-        assert(ranges::distance(FV1{arr, is_zero}) == 4);
-        constexpr auto not_zero = [](int x) { return x != 0; };
-        using FV2 = ranges::filter_view<ranges::ref_view<decltype(arr)>, remove_const_t<decltype(not_zero)>>;
-        static_assert(ranges::distance(FV2{arr, not_zero}) == 5);
-#endif // ^^^ workaround ^^^
     }
 
     {
@@ -685,7 +683,8 @@ int main() {
 
     {
         puts("Testing <source_location>.");
-        puts("(TRANSITION, not yet implemented.)");
+        assert(test_source_location());
+        static_assert(test_source_location());
     }
 
     {
@@ -804,7 +803,13 @@ int main() {
 
     {
         puts("Testing <syncstream>.");
-        puts("(TRANSITION, not yet implemented.)");
+        syncbuf sync_buf{nullptr};
+        assert(sync_buf.get_wrapped() == nullptr);
+        assert(sync_buf.get_allocator() == allocator<char>{});
+        assert(sync_buf.emit() == false);
+        osyncstream sync_str{cout};
+        sync_str << "Testing P1502R1_standard_library_header_units.\n";
+        assert(sync_str.rdbuf()->get_wrapped() == cout.rdbuf());
     }
 
     {

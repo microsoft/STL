@@ -42,7 +42,7 @@ struct test_ptr_cat_helper {
     STATIC_ASSERT(!MoveReallyTrivial || MoveTriviallyCopyable);
 };
 
-template <int Expected, class Source, class Dest, int Volatile = Expected>
+template <int Expected, class Source, class Dest>
 void test_ptr_cat() {
     (void) test_ptr_cat_helper<Expected, Source*, Dest*>{};
     // Also make sure that the source being const doesn't change the answer
@@ -59,16 +59,6 @@ void test_ptr_cat() {
     (void) test_ptr_cat_helper<0, const volatile Source*, const Dest*>{};
     (void) test_ptr_cat_helper<0, const Source*, const volatile Dest*>{};
     (void) test_ptr_cat_helper<0, const volatile Source*, const volatile Dest*>{};
-    // volatile anywhere should go to the trivial implementation for builtin types, but
-    // the general implementation for PODs, since the compiler-generated copy assign has signature:
-    // Meow& operator=(const Meow&);
-    // which hates volatile on both the source and the target
-    (void) test_ptr_cat_helper<Volatile, volatile Source*, Dest*>{};
-    (void) test_ptr_cat_helper<Volatile, Source*, volatile Dest*>{};
-    (void) test_ptr_cat_helper<Volatile, volatile Source*, volatile Dest*>{};
-    (void) test_ptr_cat_helper<Volatile, const volatile Source*, Dest*>{};
-    (void) test_ptr_cat_helper<Volatile, const Source*, volatile Dest*>{};
-    (void) test_ptr_cat_helper<Volatile, const volatile Source*, volatile Dest*>{};
 
     // Also make sure _Ptr_cat listens to the iterator type
     (void) test_ptr_cat_helper<0, typename list<Source>::iterator, typename list<Dest>::iterator>{};
@@ -131,8 +121,8 @@ void ptr_cat_test_cases() {
     // Identity cases:
     test_ptr_cat<2, int, int>();
     test_ptr_cat<2, bool, bool>();
-    test_ptr_cat<2, pod_struct, pod_struct, 0>();
-    test_ptr_cat<1, trivially_copyable_struct, trivially_copyable_struct, 0>();
+    test_ptr_cat<2, pod_struct, pod_struct>();
+    test_ptr_cat<1, trivially_copyable_struct, trivially_copyable_struct>();
     test_ptr_cat<0, custom_copy_struct, custom_copy_struct>();
     test_ptr_cat<2, int_enum, int_enum>();
     test_ptr_cat<2, short_enum, short_enum>();
@@ -502,3 +492,70 @@ void test_Lex_compare_optimize() {
     test_case_Lex_compare_optimize_pr<less>();
     test_case_Lex_compare_optimize_pr<greater>();
 }
+
+#ifdef __cpp_lib_concepts
+// Also test GH-1523, in which std::equal didn't properly convert non-pointer contiguous iterators to pointers.
+struct gh1523_iter {
+    // a contiguous_iterator that doesn't unwrap into a pointer
+    using iterator_concept  = contiguous_iterator_tag;
+    using iterator_category = random_access_iterator_tag;
+    using value_type        = int;
+
+    int* ptr = nullptr;
+
+    // This test is compile-only; the following function definitions allow it to link.
+    int& operator*() const {
+        return *ptr;
+    }
+    gh1523_iter& operator++() {
+        return *this;
+    }
+    gh1523_iter operator++(int) {
+        return {};
+    }
+    gh1523_iter& operator--() {
+        return *this;
+    }
+    gh1523_iter operator--(int) {
+        return {};
+    }
+    ptrdiff_t operator-(const gh1523_iter&) const {
+        return 0;
+    }
+    auto operator<=>(const gh1523_iter&) const = default;
+    gh1523_iter& operator-=(ptrdiff_t) {
+        return *this;
+    }
+    gh1523_iter operator-(ptrdiff_t) const {
+        return {};
+    }
+    gh1523_iter& operator+=(ptrdiff_t) {
+        return *this;
+    }
+    gh1523_iter operator+(ptrdiff_t) const {
+        return {};
+    }
+    friend gh1523_iter operator+(ptrdiff_t, const gh1523_iter&) {
+        return {};
+    }
+    int& operator[](ptrdiff_t) const {
+        return *ptr;
+    }
+};
+
+template <>
+struct std::pointer_traits<gh1523_iter> {
+    using pointer         = gh1523_iter;
+    using element_type    = int;
+    using difference_type = ptrdiff_t;
+
+    static int* to_address(const pointer&) noexcept {
+        return nullptr;
+    }
+};
+static_assert(contiguous_iterator<gh1523_iter>);
+
+void test_gh1523() {
+    (void) equal(gh1523_iter{}, gh1523_iter{}, gh1523_iter{}, gh1523_iter{});
+}
+#endif // __cpp_lib_concepts

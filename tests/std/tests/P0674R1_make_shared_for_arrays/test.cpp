@@ -623,6 +623,65 @@ void test_allocate_shared_array_unknown_bounds() {
     }
 }
 
+// Test GH-1733 "<memory>: error C2694 when calling make_shared on class with throwing destructor"
+struct NontrivialThrowingDtor {
+    ~NontrivialThrowingDtor() noexcept(false) {}
+};
+static_assert(!is_nothrow_destructible_v<NontrivialThrowingDtor>);
+static_assert(!is_trivially_destructible_v<NontrivialThrowingDtor>);
+
+struct TrivialThrowingDtor {
+    ~TrivialThrowingDtor() noexcept(false) = default;
+};
+
+static_assert(!is_nothrow_destructible_v<TrivialThrowingDtor>);
+static_assert(is_trivially_destructible_v<TrivialThrowingDtor>);
+
+template <class T>
+struct WeirdDeleter {
+    void operator()(T* const ptr) const {
+        delete ptr;
+    }
+
+    ~WeirdDeleter() noexcept(false) {}
+};
+static_assert(!is_nothrow_destructible_v<WeirdDeleter<int>>);
+
+void test_GH_1733() {
+    WeirdDeleter<NontrivialThrowingDtor> del;
+    allocator<int> al;
+
+    // _Ref_count
+    (void) shared_ptr<NontrivialThrowingDtor>{new NontrivialThrowingDtor};
+
+    // _Ref_count_resource
+    (void) shared_ptr<NontrivialThrowingDtor>{new NontrivialThrowingDtor, del};
+
+    // _Ref_count_resource_alloc
+    (void) shared_ptr<NontrivialThrowingDtor>{new NontrivialThrowingDtor, del, al};
+
+    // _Ref_count_obj2
+    (void) make_shared<NontrivialThrowingDtor>();
+
+    // _Ref_count_obj_alloc3
+    (void) allocate_shared<NontrivialThrowingDtor>(al);
+
+    // _Ref_count_unbounded_array<_Ty, true>
+    (void) make_shared<TrivialThrowingDtor[]>(10);
+
+    // _Ref_count_unbounded_array<_Ty, false>
+    (void) make_shared<NontrivialThrowingDtor[]>(10);
+
+    // _Ref_count_bounded_array
+    (void) make_shared<NontrivialThrowingDtor[10]>();
+
+    // _Ref_count_unbounded_array_alloc
+    (void) allocate_shared<NontrivialThrowingDtor[]>(al, 10);
+
+    // _Ref_count_bounded_array_alloc
+    (void) allocate_shared<NontrivialThrowingDtor[10]>(al);
+}
+
 int main() {
     test_make_shared_not_array();
     test_make_shared_array_known_bounds();
@@ -631,4 +690,6 @@ int main() {
     test_allocate_shared_not_array();
     test_allocate_shared_array_known_bounds();
     test_allocate_shared_array_unknown_bounds();
+
+    test_GH_1733();
 }

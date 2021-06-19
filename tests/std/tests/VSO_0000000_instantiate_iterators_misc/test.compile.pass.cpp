@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #define _HAS_DEPRECATED_ADAPTOR_TYPEDEFS     1
+#define _HAS_DEPRECATED_ALLOCATOR_MEMBERS    1
 #define _HAS_DEPRECATED_NEGATORS             1
 #define _HAS_DEPRECATED_RAW_STORAGE_ITERATOR 1
 #define _HAS_DEPRECATED_TEMPORARY_BUFFER     1
@@ -812,20 +813,20 @@ void locale_test() {
     auto cbnc = has_facet<collate_byname<char>>(loc);
     auto cbnw = has_facet<collate_byname<wchar_t>>(loc);
     auto ctc  = has_facet<ctype<char>>(loc);
-    isalnum(c, loc);
-    isalpha(c, loc);
-    isblank(c, loc);
-    iscntrl(c, loc);
-    isdigit(c, loc);
-    isgraph(c, loc);
-    islower(c, loc);
-    isprint(c, loc);
-    ispunct(c, loc);
-    isspace(c, loc);
-    isupper(c, loc);
-    isxdigit(c, loc);
-    tolower(c, loc);
-    toupper(c, loc);
+    (void) isalnum(c, loc);
+    (void) isalpha(c, loc);
+    (void) isblank(c, loc);
+    (void) iscntrl(c, loc);
+    (void) isdigit(c, loc);
+    (void) isgraph(c, loc);
+    (void) islower(c, loc);
+    (void) isprint(c, loc);
+    (void) ispunct(c, loc);
+    (void) isspace(c, loc);
+    (void) isupper(c, loc);
+    (void) isxdigit(c, loc);
+    (void) tolower(c, loc);
+    (void) toupper(c, loc);
 
     (void) cc;
     (void) cw;

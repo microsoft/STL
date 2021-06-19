@@ -6,7 +6,6 @@ use Run;
 sub CustomBuildHook()
 {
     my $cwd = Run::GetCWDName();
-    my $stl_include_dir = $ENV{STL_INCLUDE_DIR};
 
     my @stl_headers = (
         "algorithm",
@@ -28,7 +27,7 @@ sub CustomBuildHook()
         "exception",
         "execution",
         "filesystem",
-        # "format",
+        "format",
         "forward_list",
         "fstream",
         "functional",
@@ -62,7 +61,7 @@ sub CustomBuildHook()
         "semaphore",
         "set",
         "shared_mutex",
-        # "source_location",
+        "source_location",
         "span",
         "sstream",
         "stack",
@@ -72,7 +71,7 @@ sub CustomBuildHook()
         "string_view",
         "string",
         "strstream",
-        # "syncstream",
+        "syncstream",
         "system_error",
         "thread",
         "tuple",
@@ -88,19 +87,18 @@ sub CustomBuildHook()
         "version",
     );
 
-    my $export_header_options = "/exportHeader /Fo /MP";
+    my $export_header_options = "/exportHeader /headerName:angle /Fo /MP";
     my $header_unit_options = "";
 
     foreach (@stl_headers) {
-        $export_header_options .= " $stl_include_dir/$_";
+        $export_header_options .= " $_";
 
-        $header_unit_options .= " /headerUnit";
-        $header_unit_options .= " $stl_include_dir/$_=$_.ifc";
+        $header_unit_options .= " /headerUnit:angle";
+        $header_unit_options .= " $_=$_.ifc";
         $header_unit_options .= " $_.obj";
     }
 
-    # TRANSITION, remove /DMSVC_INTERNAL_TESTING after all compiler bugs are fixed
-    Run::ExecuteCL("/DMSVC_INTERNAL_TESTING $export_header_options");
-    Run::ExecuteCL("/DMSVC_INTERNAL_TESTING test.cpp /Fe$cwd.exe $header_unit_options");
+    Run::ExecuteCL("$export_header_options");
+    Run::ExecuteCL("test.cpp /Fe$cwd.exe $header_unit_options");
 }
 1
