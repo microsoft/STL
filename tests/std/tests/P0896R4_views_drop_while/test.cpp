@@ -36,7 +36,7 @@ template <ranges::input_range Rng, ranges::random_access_range Expected>
 constexpr bool test_one(Rng&& rng, Expected&& expected) {
     using ranges::drop_while_view, ranges::bidirectional_range, ranges::common_range, ranges::contiguous_range,
         ranges::enable_borrowed_range, ranges::forward_range, ranges::iterator_t, ranges::prev,
-        ranges::random_access_range;
+        ranges::random_access_range, ranges::borrowed_range;
 
     constexpr bool is_view = ranges::view<remove_cvref_t<Rng>>;
 
@@ -48,6 +48,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     STATIC_ASSERT(bidirectional_range<R> == bidirectional_range<Rng>);
     STATIC_ASSERT(random_access_range<R> == random_access_range<Rng>);
     STATIC_ASSERT(contiguous_range<R> == contiguous_range<Rng>);
+    STATIC_ASSERT(borrowed_range<R> == borrowed_range<V>);
 
     // Validate range adaptor object and range adaptor closure
     constexpr auto closure = views::drop_while(is_less_than<3>);

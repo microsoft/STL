@@ -178,7 +178,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
 
     static_assert(is_same_v<_Elem, _Elem2>, "wrong character type for put_time");
 
-    ios_base::iostate _State = ios_base::goodbit;
     const typename _Myos::sentry _Ok(_Ostr);
 
     if (_Ok) { // state okay, insert monetary amount
@@ -186,12 +185,11 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
         _TRY_IO_BEGIN
         if (_Tput_fac.put(_Iter(_Ostr.rdbuf()), _Ostr, _Ostr.fill(), _Manip._Tptr, _Manip._Fmtfirst, _Manip._Fmtlast)
                 .failed()) {
-            _State |= ios_base::badbit;
+            _Ostr.setstate(ios_base::badbit);
         }
         _CATCH_IO_(ios_base, _Ostr)
     }
 
-    _Ostr.setstate(_State);
     return _Ostr;
 }
 

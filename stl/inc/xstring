@@ -4016,7 +4016,7 @@ public:
 #endif // _HAS_CXX20
 
     _NODISCARD _CONSTEXPR20_CONTAINER bool empty() const noexcept {
-        return size() == 0;
+        return _Mypair._Myval2._Mysize == 0;
     }
 
     _CONSTEXPR20_CONTAINER size_type copy(

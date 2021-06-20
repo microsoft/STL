@@ -3,16 +3,37 @@
 
 // Convert wide character to multibyte character, with locale.
 
+#include <yvals.h>
+
+#include <__msvc_xlocinfo_types.hpp>
 #include <cerrno>
 #include <climits> // for MB_LEN_MAX
 #include <clocale>
 #include <cstdlib>
 #include <mbctype.h>
-#include <xlocinfo.h> // for _Cvtvec, _Wcrtomb
 
 #include <Windows.h>
 
 _EXTERN_C_UNLESS_PURE
+
+_CRTIMP2_PURE _Cvtvec __CLRCALL_PURE_OR_CDECL _Getcvt() { // get conversion info for current locale
+    _Cvtvec _Cvt = {0};
+
+    _Cvt._Page      = ___lc_codepage_func();
+    _Cvt._Mbcurmax  = ___mb_cur_max_func();
+    _Cvt._Isclocale = ___lc_locale_name_func()[LC_CTYPE] == nullptr;
+
+    if (!_Cvt._Isclocale) {
+        const unsigned short* const _Ctype_table = __pctype_func();
+        for (int _Idx = 0; _Idx < 256; ++_Idx) {
+            if (_Ctype_table[_Idx] & _LEADBYTE) {
+                _Cvt._Isleadbyte[_Idx >> 3] |= 1 << (_Idx & 7);
+            }
+        }
+    }
+
+    return _Cvt;
+}
 
 // int _Wcrtomb() - Convert wide character to multibyte character.
 //
@@ -33,11 +54,6 @@ _EXTERN_C_UNLESS_PURE
 //
 // Exceptions:
 //     None.
-
-// TRANSITION, ABI: __Wcrtomb_lk() is preserved for binary compatibility
-_CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL __Wcrtomb_lk(char* s, wchar_t wchar, mbstate_t* pst, const _Cvtvec* ploc) {
-    return _Wcrtomb(s, wchar, pst, ploc);
-}
 
 _CRTIMP2_PURE _Success_(return != -1) int __CLRCALL_PURE_OR_CDECL
     _Wcrtomb(_Out_ char* s, wchar_t wchar, mbstate_t* pst, const _Cvtvec* ploc) {
@@ -75,23 +91,9 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Wcrtomb(char* s, unsigned short wchar
 }
 #endif // MRTDLL
 
-_CRTIMP2_PURE _Cvtvec __CLRCALL_PURE_OR_CDECL _Getcvt() { // get conversion info for current locale
-    _Cvtvec _Cvt = {0};
-
-    _Cvt._Page      = ___lc_codepage_func();
-    _Cvt._Mbcurmax  = ___mb_cur_max_func();
-    _Cvt._Isclocale = ___lc_locale_name_func()[LC_CTYPE] == nullptr;
-
-    if (!_Cvt._Isclocale) {
-        const unsigned short* const _Ctype_table = __pctype_func();
-        for (int _Idx = 0; _Idx < 256; ++_Idx) {
-            if (_Ctype_table[_Idx] & _LEADBYTE) {
-                _Cvt._Isleadbyte[_Idx >> 3] |= 1 << (_Idx & 7);
-            }
-        }
-    }
-
-    return _Cvt;
+// TRANSITION, ABI: __Wcrtomb_lk() is preserved for binary compatibility
+_CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL __Wcrtomb_lk(char* s, wchar_t wchar, mbstate_t* pst, const _Cvtvec* ploc) {
+    return _Wcrtomb(s, wchar, pst, ploc);
 }
 
 _END_EXTERN_C_UNLESS_PURE

@@ -73,11 +73,9 @@ constexpr bool test() {
         ASSERT(is_layout_compatible_v<int[], int[]>);
         ASSERT(is_layout_compatible_v<int[3], int[3]>);
 
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1269781
         ASSERT(is_layout_compatible_v<const int[], int[]>);
         ASSERT(is_layout_compatible_v<const int[3], int[3]>);
         ASSERT(is_layout_compatible_v<int[], volatile int[]>);
-#endif // TRANSITION, VSO-1269781
 
         ASSERT(!is_layout_compatible_v<int, char>);
         ASSERT(!is_layout_compatible_v<int, void>);
