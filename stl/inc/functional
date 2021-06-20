@@ -30,9 +30,10 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 #if _HAS_CXX23
+// clang-format off
 template <class _Result_type, class _Callable>
-requires is_invocable_r_v<_Result_type, _Callable> constexpr _Result_type invoke_r(_Callable&& _Obj) noexcept(
-    is_nothrow_invocable_r_v<_Result_type, _Callable>) {
+requires is_invocable_r_v<_Result_type, _Callable> 
+constexpr _Result_type invoke_r(_Callable&& _Obj) noexcept(is_nothrow_invocable_r_v<_Result_type, _Callable>) {
     if constexpr (is_void_v<_Result_type>) {
         (void) _STD invoke(_STD forward<_Callable>(_Obj));
     } else {
@@ -40,9 +41,8 @@ requires is_invocable_r_v<_Result_type, _Callable> constexpr _Result_type invoke
     }
 }
 
-// clang-format off
 template <class _Result_type, class _Callable, class... _Types>
-    requires is_invocable_r_v<_Result_type, _Callable, _Types...>
+requires is_invocable_r_v<_Result_type, _Callable, _Types...>
 constexpr _Result_type invoke_r(_Callable&& _Obj, _Types&&... _Args) noexcept(
     is_nothrow_invocable_r_v<_Result_type, _Callable, _Types...>) {
     if constexpr (is_void_v<_Result_type>) {
