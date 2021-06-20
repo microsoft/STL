@@ -302,6 +302,40 @@ struct instantiator {
     }
 };
 
+// Also test P2259R1 Repairing input range adaptors and counted_iterator
+struct simple_input_iter {
+    using value_type        = double;
+    using difference_type   = long;
+    using iterator_category = input_iterator_tag;
+    using iterator_concept  = forward_iterator_tag;
+
+    value_type operator*() const;
+    simple_input_iter& operator++();
+    simple_input_iter operator++(int);
+
+    bool operator==(simple_input_iter const&) const;
+};
+
+using CI = counted_iterator<simple_input_iter>;
+
+static_assert(same_as<iterator_traits<simple_input_iter>::iterator_category, input_iterator_tag>);
+static_assert(forward_iterator<simple_input_iter>);
+static_assert(forward_iterator<CI>);
+static_assert(!contiguous_iterator<CI>);
+static_assert(same_as<CI::value_type, double>);
+static_assert(same_as<CI::iterator_category, input_iterator_tag>);
+static_assert(same_as<CI::iterator_concept, forward_iterator_tag>);
+
+void test_P2259() {
+    struct A { int m; };
+    A a[2] = { 1, 2 };
+    counted_iterator ci{a, 2};
+    reverse_iterator ri{ci + 1};
+    static_assert(contiguous_iterator<decltype(ci)>);
+    assert(ci->m == 1);
+    assert(ri->m == 1);
+}
+
 int main() {
     STATIC_ASSERT((with_writable_iterators<instantiator, int>::call(), true));
     with_writable_iterators<instantiator, int>::call();
@@ -314,4 +348,6 @@ int main() {
         _Seek_wrapped(ci, uci);
         assert((ci == counted_iterator{ranges::next(lst.begin()), 1}));
     }
+
+    test_P2259();
 }
