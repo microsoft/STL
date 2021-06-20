@@ -38,9 +38,10 @@ constexpr bool test_invoke_r() {
     assert((is_same_v<decltype(v2), double>) );
 
     static_assert(is_void_v<decltype(invoke_r<void>(square, 1))>);
+    invoke_r<void>([] { return 1; }); // no nodiscard warning
 
 #ifdef __cpp_noexcept_function_type
-    static_assert(!noexcept(invoke_r<int>(square, 3)));
+    static_assert(!noexcept(invoke_r<int>(square, 3))); // fails /permissive
     static_assert(noexcept(invoke_r<int>(square_noexcept, 3)));
 #endif
 
