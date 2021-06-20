@@ -29,9 +29,15 @@ constexpr bool is_rvalue(int&&) {
 }
 
 constexpr bool test_invoke_r() {
-    auto v = invoke_r<long int>(square, 3);
-    assert(v == 9L);
-    assert((is_same_v<decltype(v), long int>) );
+    auto v1 = invoke_r<long int>(square, 3);
+    assert(v1 == 9L);
+    assert((is_same_v<decltype(v1), long int>) );
+
+    auto v2 = invoke_r<double>([]() -> int { return 5; });
+    assert(v2 == 5);
+    assert((is_same_v<decltype(v2), double>) );
+
+    static_assert(is_void_v<decltype(invoke_r<void>(square, 1))>);
 
 #ifdef __cpp_noexcept_function_type
     static_assert(!noexcept(invoke_r<int>(square, 3)));
