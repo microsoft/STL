@@ -29,6 +29,17 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
+#if _HAS_CXX23
+// clang-format off
+template <class _Result_type, class _Callable, class _Ty1, class... _Types2> 
+requires is_invocable_r_v<_Result_type, _Callable, _Ty1, _Types2...> 
+constexpr _Result_type invoke_r(_Callable&& _Obj, _Ty1&& _Arg1, _Types2&&... _Args2) 
+noexcept(is_nothrow_invocable_r_v<_Result_type, _Callable, _Ty1, _Types2...>) {
+    return _STD invoke(_STD forward<_Callable>(_Obj), _STD forward<_Ty1>(_Arg1), _STD forward<_Types2>(_Args2)...);
+}
+// clang-format on
+#endif // _HAS_CXX23
+
 // STRUCT TEMPLATE plus
 // defined in <xstddef>
 

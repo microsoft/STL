@@ -245,6 +245,7 @@
 // P2102R0 Making "Implicit Expression Variations" More Explicit
 // P2106R0 Range Algorithm Result Types
 // P2116R0 Removing tuple-Like Protocol Support From Fixed-Extent span
+// P2136R3 invoke_r
 // P????R? directory_entry::clear_cache()
 
 // _HAS_CXX20 indirectly controls:
@@ -1340,6 +1341,7 @@
 
 // C++23
 #if _HAS_CXX23
+#define __cpp_lib_invoke_r       202106L
 #define __cpp_lib_is_scoped_enum 202011L
 #endif // _HAS_CXX23
 
