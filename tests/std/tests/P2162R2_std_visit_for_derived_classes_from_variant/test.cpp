@@ -31,26 +31,26 @@ void example1_from_p2162r2() {
     visit([](auto x) { assert(x.val == 45); }, v1);
     visit([](auto x) { assert(x.val == 'd'); }, v2);
     visit([](auto x) { assert(x.val == 5.5); }, State{Connected{5.5}});
-    visit([](auto x) { assert(x.val == 45); }, std::move(v1));
-    visit([](auto x) { assert(x.val == 'd'); }, std::move(v2));
+    visit([](auto x) { assert(x.val == 45); }, move(v1));
+    visit([](auto x) { assert(x.val == 'd'); }, move(v2));
 }
 
 
 struct Expr;
 
 struct Neg {
-    std::shared_ptr<Expr> expr;
+    shared_ptr<Expr> expr;
 };
 
 struct Add {
-    std::shared_ptr<Expr> lhs, rhs;
+    shared_ptr<Expr> lhs, rhs;
 };
 
 struct Mul {
-    std::shared_ptr<Expr> lhs, rhs;
+    shared_ptr<Expr> lhs, rhs;
 };
 
-struct Expr : std::variant<int, Neg, Add, Mul> {
+struct Expr : variant<int, Neg, Add, Mul> {
     using variant::variant;
 };
 
@@ -58,7 +58,7 @@ namespace std {
     template <>
     struct variant_size<Expr> : variant_size<Expr::variant> {};
 
-    template <std::size_t I>
+    template <size_t I>
     struct variant_alternative<I, Expr> : variant_alternative<I, Expr::variant> {};
 } // namespace std
 
@@ -75,10 +75,10 @@ int eval(const Expr& expr) {
         }
         int operator()(const Mul& m) const {
             // Optimize multiplication by 0.
-            if (int* i = std::get_if<int>(m.lhs.get()); i && *i == 0) {
+            if (int* i = get_if<int>(m.lhs.get()); i && *i == 0) {
                 return 0;
             }
-            if (int* i = std::get_if<int>(m.rhs.get()); i && *i == 0) {
+            if (int* i = get_if<int>(m.rhs.get()); i && *i == 0) {
                 return 0;
             }
             return eval(*m.lhs) * eval(*m.rhs);
