@@ -245,7 +245,6 @@
 // P2102R0 Making "Implicit Expression Variations" More Explicit
 // P2106R0 Range Algorithm Result Types
 // P2116R0 Removing tuple-Like Protocol Support From Fixed-Extent span
-// P2136R3 invoke_r
 // P????R? directory_entry::clear_cache()
 
 // _HAS_CXX20 indirectly controls:
@@ -258,6 +257,7 @@
 
 // _HAS_CXX23 directly controls:
 // P1048R1 is_scoped_enum
+// P2136R3 invoke_r()
 
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
