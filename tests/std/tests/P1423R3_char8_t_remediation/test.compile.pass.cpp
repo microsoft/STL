@@ -67,6 +67,8 @@ STATIC_ASSERT(test_stream_insertion<std::wostream, char32_t>() == !_HAS_CXX20);
 #ifdef __cpp_char8_t
 void test_u8path() {
     (void) std::filesystem::u8path(u8"a");
-    (void) std::filesystem::u8path(std::basic_string_view{u8"a"});
+    const std::basic_string_view sv{u8"a"};
+    (void) std::filesystem::u8path(sv);
+    (void) std::filesystem::u8path(sv.begin(), sv.end());
 }
 #endif // __cpp_char8_t
