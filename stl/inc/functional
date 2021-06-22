@@ -42,14 +42,14 @@ _NODISCARD constexpr _Result_type invoke_r(_Callable&& _Obj) noexcept(
     }
 }
 
-template <class _Result_type, class _Callable, class... _Types>
-requires is_invocable_r_v<_Result_type, _Callable, _Types...>
-_NODISCARD constexpr _Result_type invoke_r(_Callable&& _Obj, _Types&&... _Args) noexcept(
-    is_nothrow_invocable_r_v<_Result_type, _Callable, _Types...>) {
+template <class _Result_type, class _Callable, class _Ty1, class... _Types2>
+requires is_invocable_r_v<_Result_type, _Callable, _Ty1, _Types2...>
+_NODISCARD constexpr _Result_type invoke_r(_Callable&& _Obj, _Ty1&& _Arg1, _Types2&&... _Args2) noexcept(
+    is_nothrow_invocable_r_v<_Result_type, _Callable, _Ty1, _Types2...>) {
     if constexpr (is_void_v<_Result_type>) {
-        (void) _STD invoke(_STD forward<_Callable>(_Obj), _STD forward<_Types>(_Args)...);
+        (void) _STD invoke(_STD forward<_Callable>(_Obj), _STD forward<_Ty1>(_Arg1), _STD forward<_Types2>(_Args2)...);
     } else {
-        return _STD invoke(_STD forward<_Callable>(_Obj), _STD forward<_Types>(_Args)...);
+        return _STD invoke(_STD forward<_Callable>(_Obj), _STD forward<_Ty1>(_Arg1), _STD forward<_Types2>(_Args2)...);
     }
 }
 // clang-format on
