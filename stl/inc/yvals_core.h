@@ -245,6 +245,8 @@
 // P2102R0 Making "Implicit Expression Variations" More Explicit
 // P2106R0 Range Algorithm Result Types
 // P2116R0 Removing tuple-Like Protocol Support From Fixed-Extent span
+// P2259R1 Repairing Input Range Adaptors And counted_iterator
+//     (partially implemented)
 // P????R? directory_entry::clear_cache()
 
 // _HAS_CXX20 indirectly controls:
