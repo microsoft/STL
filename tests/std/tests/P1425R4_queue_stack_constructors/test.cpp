@@ -34,10 +34,17 @@ struct custom_allocator {
         allocator<T>{}.deallocate(p, n);
     }
 
-    template <class... Args>
-    void construct(T* const p, Args&&... args) {
-        construct_at(p, forward<Args>(args)...);
+    template <class U>
+    bool operator==(const custom_allocator<U>&) noexcept {
+        return is_same_v<U, T>;
     }
+
+#if !_HAS_CXX20
+    template <class U>
+    bool operator!=(const custom_allocator<U>&) noexcept {
+        return !is_same_v<U, T>;
+    }
+#endif // !_HAS_CXX20
 };
 
 template <class Range>
@@ -83,8 +90,12 @@ void test_container() {
     }
 #endif // _HAS_CXX23
 
+#if _HAS_CXX17
     priority_queue pq1(range.begin(), range.end());
-    static_assert(is_same_v<decltype(pq1), priority_queue<int, vector<int, allocator<int>>, less<int>>>);
+    static_assert(is_same_v<decltype(pq1), priority_queue<int, vector<int>, less<int>>>);
+#else // ^^^_HAS_CXX17 ^^^ / vvv !_HAS_CXX17 vvv
+    priority_queue<int, vector<int>, less<int>> pq1(range.begin(), range.end());
+#endif // !_HAS_CXX17
     assert(pq1.size() == size(some_data));
     result = 5;
     while (!pq1.empty()) {
@@ -92,8 +103,13 @@ void test_container() {
         pq1.pop();
     }
 
+#if _HAS_CXX17
     priority_queue pq2(range.begin(), range.end(), custom_allocator<int>{});
     static_assert(is_same_v<decltype(pq2), priority_queue<int, vector<int, custom_allocator<int>>, less<int>>>);
+#else // ^^^_HAS_CXX17 ^^^ / vvv !_HAS_CXX17 vvv
+    priority_queue<int, vector<int, custom_allocator<int>>, less<int>> pq2(
+        range.begin(), range.end(), custom_allocator<int>{});
+#endif // !_HAS_CXX17
     assert(pq2.size() == size(some_data));
     result = 5;
     while (!pq2.empty()) {
@@ -101,8 +117,13 @@ void test_container() {
         pq2.pop();
     }
 
+#if _HAS_CXX17
     priority_queue pq3(range.begin(), range.end(), greater<int>{}, custom_allocator<int>{});
     static_assert(is_same_v<decltype(pq3), priority_queue<int, vector<int, custom_allocator<int>>, greater<int>>>);
+#else // ^^^_HAS_CXX17 ^^^ / vvv !_HAS_CXX17 vvv
+    priority_queue<int, vector<int, custom_allocator<int>>, greater<int>> pq3(
+        range.begin(), range.end(), greater<int>{}, custom_allocator<int>{});
+#endif // !_HAS_CXX17
     assert(pq3.size() == size(some_data));
     result = 0;
     while (!pq3.empty()) {
@@ -110,9 +131,13 @@ void test_container() {
         pq3.pop();
     }
 
-    vector cont(begin(additional_data), end(additional_data));
+    vector<int> cont(begin(additional_data), end(additional_data));
+#if _HAS_CXX17
     priority_queue pq4(range.begin(), range.end(), greater<int>{}, cont);
-    static_assert(is_same_v<decltype(pq4), priority_queue<int, vector<int, allocator<int>>, greater<int>>>);
+    static_assert(is_same_v<decltype(pq4), priority_queue<int, vector<int>, greater<int>>>);
+#else // ^^^_HAS_CXX17 ^^^ / vvv !_HAS_CXX17 vvv
+    priority_queue<int, vector<int>, greater<int>> pq4(range.begin(), range.end(), greater<int>{}, cont);
+#endif // !_HAS_CXX17
     assert(pq4.size() == size(some_data) + size(additional_data));
     result = 0;
     while (!pq4.empty()) {
@@ -120,9 +145,14 @@ void test_container() {
         pq4.pop();
     }
 
-    priority_queue pq5(range.begin(), range.end(), greater<int>{},
-        vector<int, allocator<int>>{begin(additional_data), end(additional_data)});
-    static_assert(is_same_v<decltype(pq5), priority_queue<int, vector<int, allocator<int>>, greater<int>>>);
+#if _HAS_CXX17
+    priority_queue pq5(
+        range.begin(), range.end(), greater<int>{}, vector<int>{begin(additional_data), end(additional_data)});
+    static_assert(is_same_v<decltype(pq5), priority_queue<int, vector<int>, greater<int>>>);
+#else // ^^^_HAS_CXX17 ^^^ / vvv !_HAS_CXX17 vvv
+    priority_queue<int, vector<int>, greater<int>> pq5(
+        range.begin(), range.end(), greater<int>{}, vector<int>{begin(additional_data), end(additional_data)});
+#endif // !_HAS_CXX17
     assert(pq5.size() == size(some_data) + size(additional_data));
     result = 0;
     while (!pq5.empty()) {
@@ -130,9 +160,14 @@ void test_container() {
         pq5.pop();
     }
 
-    vector cont2(begin(additional_data), end(additional_data), custom_allocator<int>{});
+    vector<int, custom_allocator<int>> cont2(begin(additional_data), end(additional_data), custom_allocator<int>{});
+#if _HAS_CXX17
     priority_queue pq6(range.begin(), range.end(), greater<int>{}, cont2, custom_allocator<int>{});
     static_assert(is_same_v<decltype(pq6), priority_queue<int, vector<int, custom_allocator<int>>, greater<int>>>);
+#else // ^^^_HAS_CXX17 ^^^ / vvv !_HAS_CXX17 vvv
+    priority_queue<int, vector<int, custom_allocator<int>>, greater<int>> pq6(
+        range.begin(), range.end(), greater<int>{}, cont2, custom_allocator<int>{});
+#endif // !_HAS_CXX17
     assert(pq6.size() == size(some_data) + size(additional_data));
     result = 0;
     while (!pq6.empty()) {
@@ -140,9 +175,15 @@ void test_container() {
         pq6.pop();
     }
 
+#if _HAS_CXX17
     priority_queue pq7(range.begin(), range.end(), greater<int>{},
         vector<int, custom_allocator<int>>{begin(additional_data), end(additional_data)}, custom_allocator<int>{});
     static_assert(is_same_v<decltype(pq7), priority_queue<int, vector<int, custom_allocator<int>>, greater<int>>>);
+#else // ^^^_HAS_CXX17 ^^^ / vvv !_HAS_CXX17 vvv
+    priority_queue<int, vector<int, custom_allocator<int>>, greater<int>> pq7(range.begin(), range.end(),
+        greater<int>{}, vector<int, custom_allocator<int>>{begin(additional_data), end(additional_data)},
+        custom_allocator<int>{});
+#endif // !_HAS_CXX17
     assert(pq7.size() == size(some_data) + size(additional_data));
     result = 0;
     while (!pq7.empty()) {
