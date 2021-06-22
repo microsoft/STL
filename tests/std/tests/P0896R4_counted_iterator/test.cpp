@@ -330,7 +330,7 @@ void test_P2259() {
     struct A {
         int m;
     };
-    A a[2] = {1, 2};
+    A a[2] = {{1}, {2}};
     counted_iterator ci{a, 2};
     reverse_iterator ri{ci + 1};
     static_assert(contiguous_iterator<decltype(ci)>);
