@@ -589,7 +589,7 @@ namespace ranges {
     class _Defaultabox<_Ty> { // provide the same API more efficiently for default-constructible types
         // clang-format on
     public:
-        _NODISCARD constexpr _Defaultabox& operator=(const _Ty& _Right) noexcept(
+        constexpr _Defaultabox& operator=(const _Ty& _Right) noexcept(
             is_nothrow_copy_assignable_v<_Ty>) requires copyable<_Ty> {
             _Value = _Right;
             return *this;
