@@ -327,8 +327,10 @@ static_assert(same_as<CI::iterator_category, input_iterator_tag>);
 static_assert(same_as<CI::iterator_concept, forward_iterator_tag>);
 
 void test_P2259() {
-    struct A { int m; };
-    A a[2] = { 1, 2 };
+    struct A {
+        int m;
+    };
+    A a[2] = {1, 2};
     counted_iterator ci{a, 2};
     reverse_iterator ri{ci + 1};
     static_assert(contiguous_iterator<decltype(ci)>);
