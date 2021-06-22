@@ -29,6 +29,13 @@ constexpr void smoke_test() {
         const same_as<bool> auto no_match2 = ends_with(short_haystack, needle, equal_to{}, get_first, get_second);
         assert(!no_match2);
     }
+    { // Validate infinite ranges
+        const same_as<bool> auto infinite_haystack = ends_with(views::iota(0), views::iota(0, 5));
+        assert(!infinite_haystack);
+
+        const same_as<bool> auto infinite_needle = ends_with(views::iota(0, 5), views::iota(0));
+        assert(!infinite_needle);
+    }
     { // Validate sized iterator + sentinel pairs
         const same_as<bool> auto match = ends_with(
             haystack.begin(), haystack.end(), needle.begin(), needle.end(), equal_to{}, get_first, get_second);
@@ -41,6 +48,15 @@ constexpr void smoke_test() {
         const same_as<bool> auto no_match2 = ends_with(short_haystack.begin(), short_haystack.end(), needle.begin(),
             needle.end(), equal_to{}, get_first, get_second);
         assert(!no_match2);
+    }
+    { // Validate unreachable sentinel
+        const same_as<bool> auto unreachable_haystack = ends_with(
+            haystack.begin(), unreachable_sentinel, needle.begin(), needle.end(), equal_to{}, get_first, get_second);
+        assert(!unreachable_haystack);
+
+        const same_as<bool> auto unreachable_needle = ends_with(
+            haystack.begin(), haystack.end(), needle.begin(), unreachable_sentinel, equal_to{}, get_first, get_second);
+        assert(!unreachable_needle);
     }
 }
 

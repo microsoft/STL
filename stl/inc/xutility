@@ -5368,10 +5368,14 @@ _NODISCARD _FwdIt find(_ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, const _
 #ifdef __cpp_lib_concepts
 namespace ranges {
     // VARIABLE ranges::find
-    // clang-format off
     template <class _Se, class _It>
     concept _Sized_or_unreachable_sentinel_for = sized_sentinel_for<_Se, _It> || same_as<_Se, unreachable_sentinel_t>;
 
+    template <class _Rng>
+    concept _Sized_or_infinite_range = range<_Rng> //
+                                    && (sized_range<_Rng> || same_as<sentinel_t<_Rng>, unreachable_sentinel_t>);
+
+    // clang-format off
     // concept-constrained for strict enforcement as it is used by several algorithms
     template <input_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pj = identity>
         requires indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>
