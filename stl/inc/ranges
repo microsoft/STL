@@ -256,21 +256,21 @@ namespace ranges {
 
         ~_Copyable_box() requires is_trivially_destructible_v<_Ty> = default;
 
-        ~_Copyable_box() {
+        _CONSTEXPR20_DYNALLOC ~_Copyable_box() {
             if (_Engaged) {
                 _Val.~_Ty();
             }
         }
 
         _Copyable_box(const _Copyable_box&) requires is_trivially_copy_constructible_v<_Ty> = default;
-        _Copyable_box(const _Copyable_box& _That) : _Engaged{_That._Engaged} {
+        _CONSTEXPR20_DYNALLOC _Copyable_box(const _Copyable_box& _That) : _Engaged{_That._Engaged} {
             if (_That._Engaged) {
                 _Construct_in_place(_Val, _That._Val);
             }
         }
 
         _Copyable_box(_Copyable_box&&) requires is_trivially_move_constructible_v<_Ty> = default;
-        _Copyable_box(_Copyable_box&& _That) : _Engaged{_That._Engaged} {
+        _CONSTEXPR20_DYNALLOC _Copyable_box(_Copyable_box&& _That) : _Engaged{_That._Engaged} {
             if (_That._Engaged) {
                 _Construct_in_place(_Val, _STD move(_That._Val));
             }
@@ -281,7 +281,8 @@ namespace ranges {
             requires copyable<_Ty> && is_trivially_copy_assignable_v<_Ty> = default;
         // clang-format on
 
-        _Copyable_box& operator=(const _Copyable_box& _That) noexcept(is_nothrow_copy_constructible_v<_Ty>&&
+        _CONSTEXPR20_DYNALLOC _Copyable_box& operator=(const _Copyable_box& _That) noexcept(
+            is_nothrow_copy_constructible_v<_Ty>&&
                 is_nothrow_copy_assignable_v<_Ty>) /* strengthened */ requires copyable<_Ty> {
             if (_Engaged) {
                 if (_That._Engaged) {
@@ -302,7 +303,8 @@ namespace ranges {
             return *this;
         }
 
-        _Copyable_box& operator=(const _Copyable_box& _That) noexcept(is_nothrow_copy_constructible_v<_Ty>) {
+        _CONSTEXPR20_DYNALLOC _Copyable_box& operator=(const _Copyable_box& _That) noexcept(
+            is_nothrow_copy_constructible_v<_Ty>) {
             if (_STD addressof(_That) == this) {
                 return *this;
             }
@@ -325,7 +327,8 @@ namespace ranges {
             requires movable<_Ty> && is_trivially_move_assignable_v<_Ty> = default;
         // clang-format on
 
-        _Copyable_box& operator=(_Copyable_box&& _That) noexcept(is_nothrow_move_constructible_v<_Ty>&&
+        _CONSTEXPR20_DYNALLOC _Copyable_box& operator=(_Copyable_box&& _That) noexcept(
+            is_nothrow_move_constructible_v<_Ty>&&
                 is_nothrow_move_assignable_v<_Ty>) /* strengthened */ requires movable<_Ty> {
             if (_Engaged) {
                 if (_That._Engaged) {
@@ -346,7 +349,8 @@ namespace ranges {
             return *this;
         }
 
-        _Copyable_box& operator=(_Copyable_box&& _That) noexcept(is_nothrow_move_constructible_v<_Ty>) {
+        _CONSTEXPR20_DYNALLOC _Copyable_box& operator=(_Copyable_box&& _That) noexcept(
+            is_nothrow_move_constructible_v<_Ty>) {
             if (_STD addressof(_That) == this) {
                 return *this;
             }
@@ -405,7 +409,7 @@ namespace ranges {
         _Copyable_box& operator=(const _Copyable_box&) requires copyable<_Ty> = default;
         _Copyable_box& operator=(_Copyable_box&&) requires movable<_Ty> = default;
 
-        _Copyable_box& operator=(const _Copyable_box& _That) noexcept {
+        _CONSTEXPR20_DYNALLOC _Copyable_box& operator=(const _Copyable_box& _That) noexcept {
             if (_STD addressof(_That) != this) {
                 _Val.~_Ty();
                 _Construct_in_place(_Val, _That._Val);
@@ -414,7 +418,7 @@ namespace ranges {
             return *this;
         }
 
-        _Copyable_box& operator=(_Copyable_box&& _That) noexcept {
+        _CONSTEXPR20_DYNALLOC _Copyable_box& operator=(_Copyable_box&& _That) noexcept {
             if (_STD addressof(_That) != this) {
                 _Val.~_Ty();
                 _Construct_in_place(_Val, _STD move(_That._Val));
@@ -452,8 +456,10 @@ namespace ranges {
             }
         }
 
-        _Defaultabox(
-            const _Defaultabox&) requires copy_constructible<_Ty>&& is_trivially_copy_constructible_v<_Ty> = default;
+        // clang-format off
+        _Defaultabox(const _Defaultabox&)
+            requires copy_constructible<_Ty> && is_trivially_copy_constructible_v<_Ty> = default;
+        // clang-format on
 
         _CONSTEXPR20_DYNALLOC _Defaultabox(const _Defaultabox& _That) requires copy_constructible<_Ty>
             : _Engaged{_That._Engaged} {
@@ -497,10 +503,7 @@ namespace ranges {
             return *this;
         }
 
-        // clang-format off
-        _Defaultabox& operator=(_Defaultabox&&) noexcept
-            requires is_trivially_move_assignable_v<_Ty> = default;
-        // clang-format on
+        _Defaultabox& operator=(_Defaultabox&&) noexcept requires is_trivially_move_assignable_v<_Ty> = default;
 
         _CONSTEXPR20_DYNALLOC _Defaultabox& operator=(_Defaultabox&& _That) noexcept(
             is_nothrow_move_constructible_v<_Ty>&& is_nothrow_move_assignable_v<_Ty>) /* strengthened */ {
@@ -523,7 +526,7 @@ namespace ranges {
             return *this;
         }
 
-        constexpr _Defaultabox& operator=(_Ty&& _That) noexcept(
+        _CONSTEXPR20_DYNALLOC _Defaultabox& operator=(_Ty&& _That) noexcept(
             is_nothrow_move_constructible_v<_Ty>&& is_nothrow_move_assignable_v<_Ty>) {
             if (_Engaged) {
                 _Val = _STD move(_That);
@@ -535,7 +538,7 @@ namespace ranges {
             return *this;
         }
 
-        constexpr _Defaultabox& operator=(const _Ty& _That) noexcept(
+        _CONSTEXPR20_DYNALLOC _Defaultabox& operator=(const _Ty& _That) noexcept(
             is_nothrow_copy_constructible_v<_Ty>&& is_nothrow_copy_assignable_v<_Ty>) requires copyable<_Ty> {
             if (_Engaged) {
                 _Val = _That;
@@ -560,28 +563,16 @@ namespace ranges {
             return _Val;
         }
 
-        constexpr void reset() noexcept {
+        constexpr void _Reset() noexcept {
             if (_Engaged) {
                 _Val.~_Ty();
                 _Engaged = false;
             }
         }
 
-        constexpr bool operator==(const _Defaultabox& _That) const
-            noexcept(noexcept(_Val == _That._Val)) /* requires equality_comparable<_Ty> */ {
-            if (_Engaged) {
-                if (_That._Engaged) {
-                    return _Val == _That._Val;
-                } else {
-                    return false;
-                }
-            } else {
-                if (_That._Engaged) {
-                    return false;
-                } else {
-                    return true;
-                }
-            }
+        _NODISCARD constexpr bool operator==(const _Defaultabox& _That) const noexcept(noexcept(_Val == _That._Val)) {
+            _STL_INTERNAL_STATIC_ASSERT(equality_comparable<_Ty>);
+            return _Engaged == _That._Engaged && (!_Engaged || _Val == _That._Val);
         }
 
     private:
@@ -598,7 +589,7 @@ namespace ranges {
     class _Defaultabox<_Ty> { // provide the same API more efficiently for default-constructible types
         // clang-format on
     public:
-        constexpr _Defaultabox& operator=(const _Ty& _Right) noexcept(
+        _NODISCARD constexpr _Defaultabox& operator=(const _Ty& _Right) noexcept(
             is_nothrow_copy_assignable_v<_Ty>) requires copyable<_Ty> {
             _Value = _Right;
             return *this;
@@ -612,21 +603,21 @@ namespace ranges {
             return true;
         }
 
-        constexpr _Ty& operator*() noexcept {
+        _NODISCARD constexpr _Ty& operator*() noexcept {
             return _Value;
         }
-        constexpr const _Ty& operator*() const noexcept {
+        _NODISCARD constexpr const _Ty& operator*() const noexcept {
             return _Value;
         }
 
-        constexpr void reset() noexcept(noexcept(_Value = _Ty())) {
-            _Value = _Ty();
+        constexpr void _Reset() noexcept(noexcept(_Value = _Ty{})) {
+            _Value = _Ty{};
         }
 
-        bool operator==(const _Defaultabox&) const = default;
+        _NODISCARD bool operator==(const _Defaultabox&) const = default;
 
     private:
-        /* [[no_unique_address]] */ _Ty _Value = _Ty();
+        /* [[no_unique_address]] */ _Ty _Value{};
     };
 
     // CLASS TEMPLATE ranges::empty_view
@@ -2950,7 +2941,7 @@ namespace ranges {
                     }
                 }
                 if constexpr (_Deref_is_glvalue) {
-                    _Inner.reset();
+                    _Inner._Reset();
                 }
             }
 

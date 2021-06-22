@@ -31,7 +31,7 @@ struct empty_ranges {
     template <ranges::forward_range Fwd>
     static constexpr void call() {
         // Validate empty ranges
-        const Fwd range{std::span<P, 0>{}};
+        const Fwd range{span<P, 0>{}};
 
         ASSERT(ranges::lower_bound(range, 42, ranges::less{}, get_first) == ranges::end(range));
         ASSERT(ranges::lower_bound(ranges::begin(range), ranges::end(range), 42, ranges::less{}, get_first)

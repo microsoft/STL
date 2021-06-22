@@ -386,11 +386,12 @@ template <std::size_t I>
 struct iterator_archetype : weakly_incrementable_archetype<I> {
     COPYABLE_OPS(iterator);
 
-    iterator_archetype& operator++() requires(I > 9);
-    void operator++(int) requires(I != 10);
+    // clang-format off
+    iterator_archetype& operator++() requires (I > 9);
+    void operator++(int) requires (I != 10);
 
-    void operator*() requires(I == 11);
-    int operator*() requires(I != 11);
+    void operator*() requires (I == 11);
+    int operator*() requires (I != 11);
     // clang-format on
 };
 

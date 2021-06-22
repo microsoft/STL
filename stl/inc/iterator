@@ -134,18 +134,16 @@ public:
     using reference         = void;
 
     using container_type = _Container;
-
 #ifdef __cpp_lib_concepts
     using difference_type = ptrdiff_t;
-
-    _CONSTEXPR20 insert_iterator(_Container& _Cont, ranges::iterator_t<_Container> _Where)
-        : container(_STD addressof(_Cont)), iter(_STD move(_Where)) {}
+    using _Wrapped_iter   = ranges::iterator_t<_Container>;
 #else // ^^^ implementing Ranges // no Ranges vvv
     using difference_type = void;
-
-    _CONSTEXPR20 insert_iterator(_Container& _Cont, typename _Container::iterator _Where)
-        : container(_STD addressof(_Cont)), iter(_Where) {}
+    using _Wrapped_iter   = typename _Container::iterator;
 #endif // __cpp_lib_concepts
+
+    _CONSTEXPR20 insert_iterator(_Container& _Cont, _Wrapped_iter _Where)
+        : container(_STD addressof(_Cont)), iter(_STD move(_Where)) {}
 
     _CONSTEXPR20 insert_iterator& operator=(const typename _Container::value_type& _Val) {
         // insert into container and increment stored iterator
@@ -174,11 +172,7 @@ public:
 
 protected:
     _Container* container;
-#ifdef __cpp_lib_concepts
-    ranges::iterator_t<_Container> iter;
-#else
-    typename _Container::iterator iter;
-#endif // __cpp_lib_concepts
+    _Wrapped_iter iter;
 };
 
 // FUNCTION TEMPLATE inserter
