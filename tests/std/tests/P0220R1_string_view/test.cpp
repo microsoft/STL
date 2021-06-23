@@ -810,7 +810,7 @@ constexpr bool test_case_starts_with_ends_with() {
 
     return true;
 }
-#endif //_HAS_CXX20
+#endif // _HAS_CXX20
 
 // P1679R3 contains() For basic_string/basic_string_view
 #if _HAS_CXX23
@@ -918,7 +918,7 @@ constexpr bool test_case_contains() {
 
     return true;
 }
-#endif //_HAS_CXX23
+#endif // _HAS_CXX23
 
 template <typename CharT, typename Traits>
 constexpr bool test_case_find() {

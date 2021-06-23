@@ -4493,15 +4493,15 @@ public:
 #endif // _HAS_CXX20
 
 #if _HAS_CXX23
-    _NODISCARD bool contains(const basic_string_view<_Elem, _Traits> _Right) const noexcept {
+    _NODISCARD _CONSTEXPR20_CONTAINER bool contains(const basic_string_view<_Elem, _Traits> _Right) const noexcept {
         return basic_string_view<_Elem, _Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize).contains(_Right);
     }
 
-    _NODISCARD bool contains(const _Elem _Right) const noexcept {
+    _NODISCARD _CONSTEXPR20_CONTAINER bool contains(const _Elem _Right) const noexcept {
         return basic_string_view<_Elem, _Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize).contains(_Right);
     }
 
-    _NODISCARD bool contains(const _Elem* const _Right) const noexcept /* strengthened */ {
+    _NODISCARD _CONSTEXPR20_CONTAINER bool contains(const _Elem* const _Right) const noexcept /* strengthened */ {
         return basic_string_view<_Elem, _Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize).contains(_Right);
     }
 #endif // _HAS_CXX23
