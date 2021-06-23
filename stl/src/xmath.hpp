@@ -5,7 +5,6 @@
 #define _XMATH
 #include <cerrno>
 #include <cmath>
-#include <concepts>
 #include <limits>
 #include <ymath.h>
 
@@ -168,20 +167,26 @@ long double* _LXp_sqrtx(long double*, int, long double*);
 _END_EXTERN_C_UNLESS_PURE
 
 // raise IEEE 754 exceptions
+#ifndef _M_CEE_PURE
 #pragma float_control(except, on, push)
+#endif
 
-template <_STD floating_point T>
+template <typename T>
 T _Xfe_overflow(const T sign) noexcept {
+    static_assert(_STD is_floating_point_v<T>);
     constexpr T huge = _STD numeric_limits<T>::max();
     return _STD copysign(huge, sign) * huge;
 }
 
-template <_STD floating_point T>
+template <typename T>
 T _Xfe_underflow(const T sign) noexcept {
+    static_assert(_STD is_floating_point_v<T>);
     constexpr T tiny = _STD numeric_limits<T>::min();
     return _STD copysign(tiny, sign) * tiny;
 }
 
+#ifndef _M_CEE_PURE
 #pragma float_control(pop)
+#endif
 
 #endif // _XMATH

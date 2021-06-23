@@ -1844,7 +1844,7 @@ _NODISCARD complex<_Ty> cosh(const complex<_Ty>& _Left) {
 
 // FUNCTION TEMPLATE exp
 template <class _Ty>
-_NODISCARD complex<_Ty> _Polar_positive_nan_inf_zero_rho(const _Ty& _Rho, const _Ty& _Theta) { // _Rho is +Nan/+Inf/+0
+_NODISCARD complex<_Ty> _Polar_positive_nan_inf_zero_rho(const _Ty& _Rho, const _Ty& _Theta) { // _Rho is +NaN/+Inf/+0
     if (_Ctraits<_Ty>::_Isnan(_Theta) || _Ctraits<_Ty>::_Isinf(_Theta)) { // _Theta is NaN/Inf
         if (_Ctraits<_Ty>::_Isinf(_Rho)) {
             return complex<_Ty>(_Rho, _Ctraits<_Ty>::sin(_Theta)); // (Inf, NaN/Inf)
@@ -1865,7 +1865,8 @@ _NODISCARD complex<_Ty> exp(const complex<_Ty>& _Left) {
     const _Ty _Theta   = _STD imag(_Left);
 
     if (!_Ctraits<_Ty>::_Isnan(_Log_rho) && !_Ctraits<_Ty>::_Isinf(_Log_rho)) { // real component is finite
-        _Ty _Real(_Log_rho), _Imag(_Log_rho);
+        _Ty _Real = _Log_rho;
+        _Ty _Imag = _Log_rho;
         _Ctraits<_Ty>::_Exp(&_Real, _Ctraits<_Ty>::cos(_Theta), 0);
         _Ctraits<_Ty>::_Exp(&_Imag, _Ctraits<_Ty>::sin(_Theta), 0);
         return complex<_Ty>(_Real, _Imag);

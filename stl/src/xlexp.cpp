@@ -22,10 +22,10 @@ _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _LExp(
         *px = y;
         return 0;
     } else if (*px < -hugexp) { // certain underflow
-        *px = 0.0L * y;
+        *px = _Xfe_underflow(y);
         return 0;
     } else if (hugexp < *px) { // certain overflow
-        *px = _LInf._Long_double * y;
+        *px = _Xfe_overflow(y);
         return _INFCODE;
     } else { // xexp won't overflow
         long double g = *px * invln2;
