@@ -41,11 +41,13 @@ struct Neg {
 };
 
 struct Add {
-    shared_ptr<Expr> lhs, rhs;
+    shared_ptr<Expr> lhs;
+    shared_ptr<Expr> rhs;
 };
 
 struct Mul {
-    shared_ptr<Expr> lhs, rhs;
+    shared_ptr<Expr> lhs;
+    shared_ptr<Expr> rhs;
 };
 
 struct Expr : variant<int, Neg, Add, Mul> {
@@ -71,9 +73,9 @@ int eval(const Expr& expr) {
 }
 
 void example2_from_p2162r2() {
-    // (1) + (3*2)
+    // (1) + (2*3)
     const Expr e = Add{make_shared<Expr>(1), make_shared<Expr>(Mul{make_shared<Expr>(2), make_shared<Expr>(3)})};
-    assert(eval(e) == (1 + 3 * 2));
+    assert(eval(e) == (1 + 2 * 3));
 }
 
 int main() {
