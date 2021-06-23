@@ -50,6 +50,12 @@ constexpr bool is_rvalue(int&&) {
     return true;
 }
 
+template <class>
+constexpr void noexcept_test() {
+    static_assert(!noexcept(invoke_r<int>(square, 3)), "invoke_r<int>(square, 3) is noexcept");
+    static_assert(!noexcept(invoke(square, 3)), "invoke(square, 3) is noexcept");
+}
+
 constexpr bool test_invoke_r() {
     auto v1 = invoke_r<long int>(square, 3);
     assert(v1 == 9L);
@@ -64,8 +70,9 @@ constexpr bool test_invoke_r() {
     invoke_r<void>(&Thing::n, thing); // no nodiscard warning
 
     // TRANSITION, DevCom-1457457
-    static_assert(!noexcept(invoke_r<int>(square, 3)) == !is_permissive, "invoke_r<int>(square, 3) is noexcept");
-    static_assert(!noexcept(invoke(square, 3)) == !is_permissive, "invoke(square, 3) is noexcept");
+    if constexpr (!is_permissive) {
+        noexcept_test<void>();
+    }
 #ifdef __cpp_noexcept_function_type
     static_assert(noexcept(invoke_r<int>(square_noexcept, 3)), "invoke_r<int>(square_noexcept, 3) isn't noexcept");
 #endif
