@@ -893,9 +893,9 @@ void insert_leap_second(const sys_days& date, const seconds& value) {
 }
 
 void test_gh_1952() {
-    auto time_str{"2021-06-02T17:51:05.696028Z"};
-    auto fmt{"%FT%TZ"};
-    auto utc_ref = clock_cast<utc_clock>(sys_days{2021y / June / 2d} + 17h + 51min + 05s + 696028us);
+    const auto time_str{"2021-06-02T17:51:05.696028Z"};
+    const auto fmt{"%FT%TZ"};
+    const auto utc_ref = clock_cast<utc_clock>(sys_days{2021y / June / 2d} + 17h + 51min + 5s + 696028us);
 
     utc_time<microseconds> utc_parsed;
     test_parse(time_str, fmt, utc_parsed);
