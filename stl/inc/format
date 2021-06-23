@@ -1510,7 +1510,7 @@ public:
 
 private:
     template <class _Ty>
-    _NODISCARD static auto _Get_value_from_memory(const unsigned char* _Val) noexcept {
+    _NODISCARD static auto _Get_value_from_memory(const unsigned char* const _Val) noexcept {
         auto& _Temp = *reinterpret_cast<const unsigned char(*)[sizeof(_Ty)]>(_Val);
         return _Bit_cast<_Ty>(_Temp);
     }
