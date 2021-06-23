@@ -3370,35 +3370,6 @@ namespace vso1121031 {
     STATIC_ASSERT(!has_member_value_type<indirectly_readable_traits<iterish<float const volatile>>>);
 } // namespace vso1121031
 
-namespace lwg3541 {
-    // Make indirectly_readable_traits SFINAE friendly
-    using std::indirectly_readable_traits, std::same_as;
-
-    template <class Element>
-    struct iterish {
-        using value_type   = int;
-        using element_type = Element;
-    };
-
-    template <class Element, class Enable = void>
-    struct SFINAE {};
-
-    // Specialization only available for T which respect the traits.
-    template <class Element>
-    struct SFINAE<Element, std::enable_if_t<has_member_value_type<indirectly_readable_traits<iterish<Element>>>>> {
-        using value_type = typename indirectly_readable_traits<iterish<Element>>::value_type;
-    };
-    STATIC_ASSERT(same_as<SFINAE<int>::value_type, int>);
-    STATIC_ASSERT(same_as<SFINAE<int const>::value_type, int>);
-    STATIC_ASSERT(same_as<SFINAE<int volatile>::value_type, int>);
-    STATIC_ASSERT(same_as<SFINAE<int const volatile>::value_type, int>);
-
-    STATIC_ASSERT(!has_member_value_type<SFINAE<float>>);
-    STATIC_ASSERT(!has_member_value_type<SFINAE<float const>>);
-    STATIC_ASSERT(!has_member_value_type<SFINAE<float volatile>>);
-    STATIC_ASSERT(!has_member_value_type<SFINAE<float const volatile>>);
-} // namespace lwg3541
-
 int main() {
     iterator_cust_swap_test::test();
     iter_ops::test();
