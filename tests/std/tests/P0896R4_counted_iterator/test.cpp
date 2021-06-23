@@ -313,7 +313,7 @@ struct simple_forward_iter {
     simple_forward_iter& operator++();
     simple_forward_iter operator++(int);
 
-    bool operator==(simple_forward_iter const&) const;
+    bool operator==(const simple_forward_iter&) const;
 };
 
 using CI = counted_iterator<simple_forward_iter>;
@@ -323,6 +323,7 @@ static_assert(forward_iterator<simple_forward_iter>);
 static_assert(forward_iterator<CI>);
 static_assert(!contiguous_iterator<CI>);
 static_assert(same_as<CI::value_type, double>);
+static_assert(same_as<CI::difference_type, long>);
 static_assert(same_as<CI::iterator_category, input_iterator_tag>);
 static_assert(same_as<CI::iterator_concept, forward_iterator_tag>);
 
