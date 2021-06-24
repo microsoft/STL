@@ -1184,11 +1184,11 @@
 #define __cpp_lib_node_extract                      201606L
 #define __cpp_lib_not_fn                            201603L
 
-#if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc)
+#if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc) // == __cpp_lib_constexpr_dynamic_alloc
 #define __cpp_lib_optional 202106L
-#else
+#else // ^^^ __cpp_lib_constexpr_dynamic_alloc ^^^ / vvv !__cpp_lib_constexpr_dynamic_alloc vvv
 #define __cpp_lib_optional 201606L
-#endif // __cpp_constexpr_dynamic_alloc
+#endif // !__cpp_lib_constexpr_dynamic_alloc
 
 #ifndef _M_CEE
 #define __cpp_lib_parallel_algorithm 201603L
@@ -1200,11 +1200,11 @@
 #define __cpp_lib_string_view           201803L
 #define __cpp_lib_to_chars              201611L
 
-#if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc)
+#if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc) // == __cpp_lib_constexpr_dynamic_alloc
 #define __cpp_lib_variant 202106L
-#else
+#else // ^^^ __cpp_lib_constexpr_dynamic_alloc ^^^ / vvv !__cpp_lib_constexpr_dynamic_alloc vvv
 #define __cpp_lib_variant 201606L
-#endif // __cpp_constexpr_dynamic_alloc
+#endif // !__cpp_lib_constexpr_dynamic_alloc
 #endif // _HAS_CXX17
 
 // C++20
