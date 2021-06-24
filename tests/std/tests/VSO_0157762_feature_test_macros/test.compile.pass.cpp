@@ -1641,7 +1641,7 @@ STATIC_ASSERT(__cpp_lib_unwrap_ref == 201811L);
 #endif
 #endif
 
-#ifdef __cpp_constexpr_dynamic_alloc
+#ifdef __cpp_lib_constexpr_dynamic_alloc
 #ifndef __cpp_lib_variant
 #error __cpp_lib_variant is not defined
 #elif __cpp_lib_variant != 202106L
