@@ -174,7 +174,7 @@ constexpr bool test_P0591R4() {
     return true;
 }
 
-void test_GH_2021() { // compile-only
+void test_GH_2021() { // COMPILE-ONLY
     pmr::map<int, pair<int, int>> tags;
     tags[0];
 }
