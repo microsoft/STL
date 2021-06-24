@@ -57,6 +57,12 @@ language.support\support.limits\support.limits.general\locale.version.pass.cpp
 language.support\support.limits\support.limits.general\ostream.version.pass.cpp
 language.support\support.limits\support.limits.general\string_view.version.pass.cpp
 
+# libc++ doesn't yet implement P2231R1, so it expects an old value for `__cpp_lib_optional` and `__cpp_lib_variant`
+# and fails the destructor tests for both
+language.support\support.limits\support.limits.general\optional.version.pass.cpp
+language.support\support.limits\support.limits.general\variant.version.pass.cpp
+utilities\optional\optional.object\optional.object.dtor\dtor.pass.cpp
+
 # test emits warning C4310: cast truncates constant value
 numerics\bit\bitops.rot\rotl.pass.cpp
 
