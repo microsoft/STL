@@ -32,6 +32,14 @@ struct With_nontrivial_destrutor {
 
 template <class T>
 _CONSTEXPR20_DYNALLOC bool test_optional() {
+    { // empty construction
+        optional<T> defaut_constructed;
+        assert(!defaut_constructed.has_value());
+
+        optional<T> nullopt_constructed{nullopt};
+        assert(!nullopt_constructed.has_value());
+    }
+
     { // construction from underlying type
         const T input{42};
         optional<T> copy_constructed{input};
