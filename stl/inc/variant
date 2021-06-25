@@ -837,9 +837,8 @@ struct _Variant_assign_visitor { // visitor that implements assignment for varia
     }
 };
 
-template <class... _Types>
-class _Variant_base
-    : private _Variant_storage<_Types...> { // Associate an integral discriminator with a _Variant_storage
+template <class... _Types> // Associate an integral discriminator with a _Variant_storage
+class _Variant_base : private _Variant_storage<_Types...> {
 public:
     using _Index_t                       = _Variant_index_t<sizeof...(_Types)>;
     static constexpr auto _Invalid_index = static_cast<_Index_t>(-1);
@@ -859,8 +858,8 @@ public:
         return _STD move(*this);
     }
 
-    _CONSTEXPR20_DYNALLOC _Variant_base() noexcept
-        : _Storage_t{}, _Which{_Invalid_index} {} // initialize to the value-less state
+    // initialize to the value-less state
+    _CONSTEXPR20_DYNALLOC _Variant_base() noexcept : _Storage_t{}, _Which{_Invalid_index} {}
 
     template <size_t _Idx, class... _UTypes,
         enable_if_t<is_constructible_v<_Meta_at_c<variant<_Types...>, _Idx>, _UTypes...>, int> = 0>
