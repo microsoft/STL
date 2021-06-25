@@ -95,10 +95,10 @@ struct _Optional_destruct_base<_Ty, false> { // either contains a value of _Ty o
     constexpr explicit _Optional_destruct_base(in_place_t, _Types&&... _Args)
         : _Value(_STD forward<_Types>(_Args)...), _Has_value{true} {} // initialize contained value with _Args...
 
-    _Optional_destruct_base(const _Optional_destruct_base&) = default;
-    _Optional_destruct_base(_Optional_destruct_base&&)      = default;
-    _Optional_destruct_base& operator=(const _Optional_destruct_base&) = default;
-    _Optional_destruct_base& operator=(_Optional_destruct_base&&) = default;
+    constexpr _Optional_destruct_base(const _Optional_destruct_base&) = default;
+    constexpr _Optional_destruct_base(_Optional_destruct_base&&)      = default;
+    constexpr _Optional_destruct_base& operator=(const _Optional_destruct_base&) = default;
+    constexpr _Optional_destruct_base& operator=(_Optional_destruct_base&&) = default;
 
     _CONSTEXPR20_DYNALLOC void reset() noexcept {
         if (_Has_value) {
@@ -255,6 +255,9 @@ public:
         }
     }
 #endif // ^^^ !_HAS_CONDITIONAL_EXPLICIT ^^^
+
+    // TRANSITION, DevCom-1331017
+    _CONSTEXPR20_DYNALLOC optional& operator=(const optional&) noexcept = default;
 
     // assignment [optional.object.assign]
     _CONSTEXPR20_DYNALLOC optional& operator=(nullopt_t) noexcept {

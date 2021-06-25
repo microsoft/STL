@@ -1092,6 +1092,9 @@ public:
         // initialize alternative _Idx from _Ilist and _Args...
     }
 
+    // TRANSITION, DevCom-1331017
+    _CONSTEXPR20_DYNALLOC variant& operator=(const variant&) noexcept = default;
+
     // assignment [variant.assign]
     template <class _Ty, enable_if_t<!is_same_v<_Remove_cvref_t<_Ty>, variant> //
                                          && is_constructible_v<_Variant_init_type<_Ty, _Types...>, _Ty> //
