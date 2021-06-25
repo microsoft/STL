@@ -812,7 +812,8 @@ struct _Variant_assign_visitor { // visitor that implements assignment for varia
             _Self._Reset();
         } else {
             if (_Self._Which == _Idx) { // same alternative: assign directly
-                _Variant_raw_get<_Idx>(_Self._Storage()) = static_cast<_Ty&&>(_Source._Val);
+                auto& _Target = _Variant_raw_get<_Idx>(_Self._Storage());
+                _Target       = static_cast<_Ty&&>(_Source._Val);
             } else { // different alternative
                 if constexpr (is_lvalue_reference_v<_Ty>) { // RHS is an lvalue: copy
                     if constexpr (_Variant_should_directly_construct_v<_Remove_cvref_t<_Ty>, _Ty>) {
