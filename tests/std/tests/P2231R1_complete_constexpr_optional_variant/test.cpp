@@ -30,6 +30,8 @@ struct With_nontrivial_destrutor {
     }
 };
 
+struct Dummy {};
+
 template <class T>
 _CONSTEXPR20_DYNALLOC bool test_optional() {
     { // empty construction
@@ -175,11 +177,116 @@ _CONSTEXPR20_DYNALLOC bool test_optional() {
     return true;
 }
 
+template <class T>
+_CONSTEXPR20_DYNALLOC bool test_variant() {
+    { // construction from underlying type
+        const T input{42};
+        variant<Dummy, T> copy_constructed{input};
+        assert(copy_constructed.index() == 1);
+        assert(get<T>(copy_constructed) == 42);
+
+        variant<Dummy, T> move_constructed{T{42}};
+        assert(move_constructed.index() == 1);
+        assert(get<T>(move_constructed) == 42);
+
+        variant<Dummy, T> copy_assigned;
+        assert(copy_assigned.index() == 0);
+        copy_assigned = input;
+        assert(copy_assigned.index() == 1);
+        assert(get<T>(copy_assigned) == 42);
+
+        variant<Dummy, T> move_assigned;
+        assert(move_assigned.index() == 0);
+        move_assigned = T{42};
+        assert(move_assigned.index() == 1);
+        assert(get<T>(move_assigned) == 42);
+    }
+
+    { // construction from variant with same type
+        variant<Dummy, T> constructed{T{42}};
+        assert(constructed.index() == 1);
+        assert(get<T>(constructed) == 42);
+
+        variant<Dummy, T> copy_constructed{constructed};
+        assert(copy_constructed.index() == 1);
+        assert(get<T>(copy_constructed) == 42);
+
+        variant<Dummy, T> move_constructed{move(constructed)};
+        assert(move_constructed.index() == 1);
+        assert(get<T>(move_constructed) == 42);
+
+        variant<Dummy, T> copy_assigned;
+        assert(copy_assigned.index() == 0);
+        copy_assigned = constructed;
+        assert(copy_assigned.index() == 1);
+        assert(get<T>(copy_assigned) == 42);
+
+        variant<Dummy, T> move_assigned;
+        assert(move_assigned.index() == 0);
+        move_assigned = move(constructed);
+        assert(move_assigned.index() == 1);
+        assert(get<T>(move_assigned) == 42);
+    }
+
+    { // emplace
+        T input{42};
+        variant<Dummy, T> emplace_copy;
+        assert(emplace_copy.index() == 0);
+        emplace_copy.emplace<1>(input);
+        assert(emplace_copy.index() == 1);
+        assert(get<T>(emplace_copy) == 42);
+
+        variant<Dummy, T> emplace_move;
+        assert(emplace_move.index() == 0);
+        emplace_move.emplace<1>(T{42});
+        assert(emplace_move.index() == 1);
+        assert(get<T>(emplace_move) == 42);
+
+        variant<Dummy, T> emplace_conversion;
+        assert(emplace_conversion.index() == 0);
+        emplace_conversion.emplace<1>(42);
+        assert(emplace_conversion.index() == 1);
+        assert(get<T>(emplace_conversion) == 42);
+
+        variant<Dummy, T> emplace_initializer_list;
+        assert(emplace_initializer_list.index() == 0);
+        emplace_initializer_list.emplace<1>({42, 43});
+        assert(emplace_initializer_list.index() == 1);
+        assert(get<T>(emplace_initializer_list) == 42);
+    }
+
+    { // swap
+        variant<Dummy, T> left{T{42}};
+        variant<Dummy, T> right;
+        assert(left.index() == 1);
+        assert(get<T>(left) == 42);
+        assert(right.index() == 0);
+
+        left.swap(right);
+        assert(right.index() == 1);
+        assert(get<T>(right) == 42);
+        assert(left.index() == 0);
+
+        swap(left, right);
+        assert(left.index() == 1);
+        assert(get<T>(left) == 42);
+        assert(right.index() == 0);
+    }
+    return true;
+}
+
 int main() {
     test_optional<With_trivial_destrutor>();
     test_optional<With_nontrivial_destrutor>();
 #ifdef __cpp_lib_constexpr_dynamic_alloc
     static_assert(test_optional<With_trivial_destrutor>());
     static_assert(test_optional<With_nontrivial_destrutor>());
+#endif // __cpp_lib_constexpr_dynamic_alloc
+
+    test_variant<With_trivial_destrutor>();
+    test_variant<With_nontrivial_destrutor>();
+#ifdef __cpp_lib_constexpr_dynamic_alloc
+    static_assert(test_variant<With_trivial_destrutor>());
+    static_assert(test_variant<With_nontrivial_destrutor>());
 #endif // __cpp_lib_constexpr_dynamic_alloc
 }
