@@ -30,7 +30,9 @@ struct With_nontrivial_destrutor {
     }
 };
 
-struct Dummy {};
+struct Dummy {
+    int _val = 0;
+};
 
 template <class T>
 _CONSTEXPR20_DYNALLOC bool test_optional() {
