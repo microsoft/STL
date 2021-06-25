@@ -787,8 +787,7 @@ struct _Variant_construct_visitor { // visitor that constructs the same alternat
         _STL_INTERNAL_CHECK(_Self.valueless_by_exception());
         (void) _Source; // TRANSITION, DevCom-1004719
         if constexpr (_Idx != variant_npos) {
-            auto& _Target = _Variant_raw_get<_Idx>(_Self._Storage());
-            _Construct_in_place(_Target, static_cast<_Ty&&>(_Source._Val));
+            _Construct_in_place(_Self._Storage(), integral_constant<size_t, _Idx>{}, static_cast<_Ty&&>(_Source._Val));
             _Self._Set_index(_Idx);
         }
     }
@@ -812,23 +811,23 @@ struct _Variant_assign_visitor { // visitor that implements assignment for varia
             (void) _Source; // TRANSITION, DevCom-1004719
             _Self._Reset();
         } else {
-            auto& _Target = _Variant_raw_get<_Idx>(_Self._Storage());
             if (_Self._Which == _Idx) { // same alternative: assign directly
-                _Target = static_cast<_Ty&&>(_Source._Val);
+                _Variant_raw_get<_Idx>(_Self._Storage()) = static_cast<_Ty&&>(_Source._Val);
             } else { // different alternative
                 if constexpr (is_lvalue_reference_v<_Ty>) { // RHS is an lvalue: copy
-                    if constexpr (_Variant_should_directly_construct_v<_Remove_cvref_t<_Ty>,
-                                      _Ty>) { // copy is nothrow or move throws; construct in place
+                    if constexpr (_Variant_should_directly_construct_v<_Remove_cvref_t<_Ty>, _Ty>) {
+                        // copy is nothrow or move throws; construct in place
                         _Self._Reset();
-                        _Construct_in_place(_Target, _Source._Val);
+                        _Construct_in_place(_Self._Storage(), integral_constant<size_t, _Idx>{}, _Source._Val);
                     } else { // copy throws and move does not; move from a temporary copy
                         auto _Temp = _Source._Val;
                         _Self._Reset();
-                        _Construct_in_place(_Target, _STD move(_Temp));
+                        _Construct_in_place(_Self._Storage(), integral_constant<size_t, _Idx>{}, _STD move(_Temp));
                     }
                 } else { // RHS is an rvalue: move
                     _Self._Reset();
-                    _Construct_in_place(_Target, static_cast<_Ty&&>(_Source._Val));
+                    _Construct_in_place(
+                        _Self._Storage(), integral_constant<size_t, _Idx>{}, static_cast<_Ty&&>(_Source._Val));
                 }
 
                 _Self._Set_index(_Idx);
@@ -1242,11 +1241,10 @@ private:
     _CONSTEXPR20_DYNALLOC _Meta_at_c<variant, _Idx>& _Emplace_valueless(_ArgTypes&&... _Args) noexcept(
         is_nothrow_constructible_v<_Meta_at_c<variant, _Idx>, _ArgTypes...>) {
         // initialize alternative _Idx from _Args...
-        // pre: valueless_by_exception()
-        auto& _Obj = _Variant_raw_get<_Idx>(_Storage());
-        _Construct_in_place(_Obj, static_cast<_ArgTypes&&>(_Args)...);
+        _STL_INTERNAL_CHECK(valueless_by_exception());
+        _Construct_in_place(_Storage(), integral_constant<size_t, _Idx>{}, static_cast<_ArgTypes&&>(_Args)...);
         this->_Set_index(_Idx);
-        return _Obj;
+        return _Variant_raw_get<_Idx>(_Storage());
     }
 
     _CONSTEXPR20_DYNALLOC void _Emplace_from(variant&& _That) noexcept(

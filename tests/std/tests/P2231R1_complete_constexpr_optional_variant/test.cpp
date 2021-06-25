@@ -228,7 +228,35 @@ _CONSTEXPR20_DYNALLOC bool test_variant() {
         assert(get<T>(move_assigned) == 42);
     }
 
-    { // emplace
+    { // emplace type
+        T input{42};
+        variant<Dummy, T> emplace_copy;
+        assert(emplace_copy.index() == 0);
+        emplace_copy.template emplace<T>(input);
+        assert(emplace_copy.index() == 1);
+        assert(get<T>(emplace_copy) == 42);
+
+        variant<Dummy, T> emplace_move;
+        assert(emplace_move.index() == 0);
+        emplace_move.template emplace<T>(T{42});
+        assert(emplace_move.index() == 1);
+        assert(get<T>(emplace_move) == 42);
+
+        variant<Dummy, T> emplace_conversion;
+        assert(emplace_conversion.index() == 0);
+        emplace_conversion.template emplace<T>(42);
+        assert(emplace_conversion.index() == 1);
+        assert(get<T>(emplace_conversion) == 42);
+
+        variant<Dummy, T> emplace_initializer_list;
+        assert(emplace_initializer_list.index() == 0);
+        emplace_initializer_list.template emplace<T>({42, 43});
+        assert(emplace_initializer_list.index() == 1);
+        assert(get<T>(emplace_initializer_list) == 42);
+    }
+
+#ifndef __clang__
+    { // emplace index
         T input{42};
         variant<Dummy, T> emplace_copy;
         assert(emplace_copy.index() == 0);
@@ -254,6 +282,7 @@ _CONSTEXPR20_DYNALLOC bool test_variant() {
         assert(emplace_initializer_list.index() == 1);
         assert(get<T>(emplace_initializer_list) == 42);
     }
+#endif // __clang__
 
     { // swap
         variant<Dummy, T> left{T{42}};
