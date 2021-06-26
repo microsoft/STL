@@ -132,7 +132,7 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
 
         // Validate deduction guide
         same_as<R> auto r = join_view{forward<Outer>(rng)};
-#ifdef __cpp_lib_constexpr_dynamic_alloc
+#ifndef __cpp_lib_constexpr_dynamic_alloc
         if (!is_constant_evaluated())
 #endif // __cpp_lib_constexpr_dynamic_alloc
         {
