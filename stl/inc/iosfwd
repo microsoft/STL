@@ -192,6 +192,16 @@ template <class _Elem, class _Traits = char_traits<_Elem>, class _Alloc = alloca
 class basic_ostringstream;
 template <class _Elem, class _Traits = char_traits<_Elem>, class _Alloc = allocator<_Elem>>
 class basic_stringstream;
+#if _HAS_CXX23
+template <class _Elem, class _Traits = char_traits<_Elem>>
+class basic_spanbuf;
+template <class _Elem, class _Traits = char_traits<_Elem>>
+class basic_ispanstream;
+template <class _Elem, class _Traits = char_traits<_Elem>>
+class basic_ospanstream;
+template <class _Elem, class _Traits = char_traits<_Elem>>
+class basic_spanstream;
+#endif // _HAS_CXX23
 template <class _Elem, class _Traits = char_traits<_Elem>>
 class basic_filebuf;
 template <class _Elem, class _Traits = char_traits<_Elem>>

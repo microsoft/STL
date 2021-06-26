@@ -65,6 +65,7 @@ import <set>;
 import <shared_mutex>;
 import <source_location>;
 import <span>;
+import <spanstream>;
 import <sstream>;
 import <stack>;
 import <stdexcept>;
