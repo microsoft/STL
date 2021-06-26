@@ -26,7 +26,7 @@
     "tabWidth": 4
   },
   "dependencies": {
-    "@octokit/graphql": "^4.6.3",
+    "@octokit/graphql": "^4.6.4",
     "cli-progress": "^3.9.0",
     "dotenv": "^10.0.0",
     "luxon": "^1.27.0",
