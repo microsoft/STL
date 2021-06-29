@@ -265,6 +265,7 @@
 // P1682R3 to_underlying() For Enumerations
 // P1989R2 Range Constructor For string_view
 // P2166R1 Prohibiting basic_string And basic_string_view Construction From nullptr
+// P2186R2 Removing Garbage Collection Support
 
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
@@ -1123,6 +1124,16 @@
 #ifndef _HAS_STREAM_INSERTION_OPERATORS_DELETED_IN_CXX20
 #define _HAS_STREAM_INSERTION_OPERATORS_DELETED_IN_CXX20 (_HAS_FEATURES_REMOVED_IN_CXX20)
 #endif // _HAS_STREAM_INSERTION_OPERATORS_DELETED_IN_CXX20
+
+
+#ifndef _HAS_FEATURES_REMOVED_IN_CXX23
+#define _HAS_FEATURES_REMOVED_IN_CXX23 (!_HAS_CXX23)
+#endif // _HAS_FEATURES_REMOVED_IN_CXX23
+
+// P2186R2 Removing Garbage Collection Support
+#ifndef _HAS_GARBAGE_COLLECTION_SUPPORT_DELETED_IN_CXX23
+#define _HAS_GARBAGE_COLLECTION_SUPPORT_DELETED_IN_CXX23 (_HAS_FEATURES_REMOVED_IN_CXX23)
+#endif // _HAS_GARBAGE_COLLECTION_SUPPORT_DELETED_IN_CXX23
 
 // LIBRARY FEATURE-TEST MACROS
 

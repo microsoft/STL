@@ -659,6 +659,11 @@ std/language.support/support.limits/support.limits.general/memory.version.pass.c
 # should work
 std/language.support/support.limits/support.limits.general/variant.version.pass.cpp FAIL
 
+# libc++ doesn't implement P2186R2 Removing Garbage Collection Support
+std/utilities/memory/util.dynamic.safety/get_pointer_safety.pass.cpp FAIL
+std/utilities/memory/util.dynamic.safety/declare_no_pointers.pass.cpp FAIL
+std/utilities/memory/util.dynamic.safety/declare_reachable.pass.cpp FAIL
+
 # *** LIKELY STL BUGS ***
 # Not yet analyzed, likely STL bugs. Assertions and other runtime failures.
 std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.bin/eval_param.pass.cpp FAIL
