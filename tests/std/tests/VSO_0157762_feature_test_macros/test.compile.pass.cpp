@@ -1664,10 +1664,10 @@ STATIC_ASSERT(__cpp_lib_unwrap_ref == 201811L);
 #if _HAS_CXX17
 #ifndef __cpp_lib_variant
 #error __cpp_lib_variant is not defined
-#elif __cpp_lib_variant != 201606L
-#error __cpp_lib_variant is not 201606L
+#elif __cpp_lib_variant != 202102L
+#error __cpp_lib_variant is not 202102L
 #else
-STATIC_ASSERT(__cpp_lib_variant == 201606L);
+STATIC_ASSERT(__cpp_lib_variant == 202102L);
 #endif
 #else
 #ifdef __cpp_lib_variant
