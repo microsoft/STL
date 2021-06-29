@@ -258,6 +258,7 @@
 
 // _HAS_CXX23 directly controls:
 // P1048R1 is_scoped_enum
+// P1679R3 contains() For basic_string/basic_string_view
 
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
@@ -1341,7 +1342,8 @@
 
 // C++23
 #if _HAS_CXX23
-#define __cpp_lib_is_scoped_enum 202011L
+#define __cpp_lib_is_scoped_enum  202011L
+#define __cpp_lib_string_contains 202011L
 #endif // _HAS_CXX23
 
 // EXPERIMENTAL
