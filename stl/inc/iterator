@@ -1038,10 +1038,35 @@ struct iterator_traits<common_iterator<_Iter, _Se>> {
 };
 
 // CLASS TEMPLATE counted_iterator
+template <class _Iter>
+struct _Counted_iterator_value_type_base {};
+
+template <indirectly_readable _Iter>
+struct _Counted_iterator_value_type_base<_Iter> {
+    using value_type = iter_value_t<_Iter>;
+};
+
+template <class _Iter>
+struct _Counted_iterator_category_base : _Counted_iterator_value_type_base<_Iter> {};
+
+template <_Has_member_iterator_category _Iter>
+struct _Counted_iterator_category_base<_Iter> : _Counted_iterator_value_type_base<_Iter> {
+    using iterator_category = typename _Iter::iterator_category;
+};
+
+template <class _Iter>
+struct _Counted_iterator_concept_base : _Counted_iterator_category_base<_Iter> {};
+
+template <_Has_member_iterator_concept _Iter>
+struct _Counted_iterator_concept_base<_Iter> : _Counted_iterator_category_base<_Iter> {
+    using iterator_concept = typename _Iter::iterator_concept;
+};
+
 template <input_or_output_iterator _Iter>
-class counted_iterator {
+class counted_iterator : public _Counted_iterator_concept_base<_Iter> {
 public:
-    using iterator_type = _Iter;
+    using iterator_type   = _Iter;
+    using difference_type = iter_difference_t<_Iter>;
 
     // [counted.iter.const]
     constexpr counted_iterator() requires default_initializable<_Iter> = default;
@@ -1097,6 +1122,10 @@ public:
         _STL_VERIFY(_Length > 0, "counted_iterator dereference beyond end of range");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         return *_Current;
+    }
+
+    _NODISCARD constexpr auto operator->() const noexcept requires contiguous_iterator<_Iter> {
+        return _STD to_address(_Current);
     }
 
     _NODISCARD constexpr decltype(auto) operator[](const iter_difference_t<_Iter> _Diff) const
@@ -1323,25 +1352,12 @@ private:
     iter_difference_t<_Iter> _Length = 0;
 };
 
-template <class _Iter>
-struct incrementable_traits<counted_iterator<_Iter>> {
-    using difference_type = iter_difference_t<_Iter>;
-};
-
+// clang-format off
 template <input_iterator _Iter>
+    requires (!_Is_from_primary<iterator_traits<_Iter>>)
 struct iterator_traits<counted_iterator<_Iter>> : iterator_traits<_Iter> {
-    using pointer = void;
-};
-
-template <contiguous_iterator _Iter>
-struct pointer_traits<counted_iterator<_Iter>> { // TRANSITION, address LWG-3408 and include this
-    using pointer         = counted_iterator<_Iter>;
-    using element_type    = remove_reference_t<iter_reference_t<_Iter>>;
-    using difference_type = iter_difference_t<_Iter>;
-
-    _NODISCARD static constexpr element_type* to_address(const pointer _It) noexcept {
-        return _STD to_address(_It.base());
-    }
+    // clang-format on
+    using pointer = conditional_t<contiguous_iterator<_Iter>, add_pointer_t<iter_reference_t<_Iter>>, void>;
 };
 #endif // __cpp_lib_concepts
 
