@@ -263,6 +263,7 @@
 // P1048R1 is_scoped_enum
 // P1679R3 contains() For basic_string/basic_string_view
 // P1682R3 to_underlying() For Enumerations
+// P1989R2 Range Constructor For string_view
 // P2166R1 Prohibiting basic_string And basic_string_view Construction From nullptr
 
 // Parallel Algorithms Notes
