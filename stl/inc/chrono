@@ -6469,8 +6469,9 @@ struct formatter<_CHRONO file_time<_Duration>, _CharT> {
 
     template <class _FormatContext>
     auto format(const _CHRONO file_time<_Duration>& _Val, _FormatContext& _FormatCtx) {
-        const auto _Sys = _CHRONO clock_cast<_CHRONO system_clock>(_Val);
-        return _Impl._Write(_FormatCtx, _Val, _Fill_tm(_Sys));
+        const auto _Utc = _CHRONO file_clock::to_utc(_Val);
+        const auto _Sys = _CHRONO utc_clock::to_sys(_Utc);
+        return _Impl._Write(_FormatCtx, _Utc, _Fill_tm(_Sys));
     }
 
 private:
