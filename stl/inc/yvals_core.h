@@ -247,6 +247,7 @@
 // P2116R0 Removing tuple-Like Protocol Support From Fixed-Extent span
 // P2259R1 Repairing Input Range Adaptors And counted_iterator
 //     (partially implemented)
+// P2325R3 Views Should Not Be Required To Be Default Constructible
 // P????R? directory_entry::clear_cache()
 
 // _HAS_CXX20 indirectly controls:
@@ -256,6 +257,11 @@
 // P0767R1 Deprecating is_pod
 // P1831R1 Deprecating volatile In The Standard Library
 // Other C++20 deprecation warnings
+
+// _HAS_CXX23 directly controls:
+// P1048R1 is_scoped_enum
+// P1679R3 contains() For basic_string/basic_string_view
+// P1682R3 to_underlying() For Enumerations
 
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
@@ -544,7 +550,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 142
-#define _MSVC_STL_UPDATE  202105L
+#define _MSVC_STL_UPDATE  202106L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #ifdef __CUDACC__
@@ -1278,7 +1284,7 @@
 #define __cpp_lib_polymorphic_allocator   201902L
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395 and GH-1814
-#define __cpp_lib_ranges 201911L
+#define __cpp_lib_ranges 202106L
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 #define __cpp_lib_remove_cvref            201711L
@@ -1336,6 +1342,13 @@
 #if defined(__cpp_impl_coroutine) || defined(_DOWNLEVEL_COROUTINES_SUPPORTED) // TRANSITION, Clang coroutine support
 #define __cpp_lib_coroutine 201902L
 #endif // __cpp_impl_coroutine
+
+// C++23
+#if _HAS_CXX23
+#define __cpp_lib_is_scoped_enum  202011L
+#define __cpp_lib_string_contains 202011L
+#define __cpp_lib_to_underlying   202102L
+#endif // _HAS_CXX23
 
 // EXPERIMENTAL
 #define __cpp_lib_experimental_erase_if   201411L

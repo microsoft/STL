@@ -5,6 +5,7 @@
 #include <cassert>
 #include <concepts>
 #include <ranges>
+#include <span>
 #include <utility>
 
 #include <range_algorithm_support.hpp>
@@ -63,7 +64,7 @@ struct instantiator {
 
         {
             // Validate empty range
-            const R range{};
+            const R range{span<P, 0>{}};
             const same_as<iterator_t<R>> auto result = nth_element(range, range.begin(), less{}, get_first);
             assert(result == range.end());
         }

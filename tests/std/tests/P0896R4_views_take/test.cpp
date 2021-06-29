@@ -17,6 +17,25 @@ using namespace std;
 
 #pragma warning(disable : 6011) // Dereferencing NULL pointer '%s'
 
+struct evil_convertible_to_difference {
+    evil_convertible_to_difference() = default;
+    evil_convertible_to_difference(const evil_convertible_to_difference&) {
+        throw 42;
+    }
+    evil_convertible_to_difference(evil_convertible_to_difference&&) = default;
+
+    evil_convertible_to_difference& operator=(const evil_convertible_to_difference&) {
+        throw 42;
+        return *this;
+    }
+    evil_convertible_to_difference& operator=(evil_convertible_to_difference&&) = default;
+
+    constexpr operator int() const noexcept {
+        return 4;
+    }
+};
+
+
 // Test a silly precomposed range adaptor pipeline
 constexpr auto pipeline = views::take(7) | views::take(6) | views::take(5) | views::take(4);
 
@@ -410,7 +429,7 @@ struct instantiator {
         R r{some_ints};
         test_one(r, only_four_ints);
 
-        R empty_range{};
+        R empty_range{span<const int, 0>{}};
         test_one(empty_range, span<const int, 0>{});
     }
 };
@@ -561,16 +580,20 @@ int main() {
     instantiation_test();
 
     {
-        // Validate a non-view borrowed range
-        constexpr span s{some_ints};
-        STATIC_ASSERT(test_one(s, only_four_ints));
-        test_one(s, only_four_ints);
-
         // Validate a view borrowed range
         constexpr auto v =
             views::iota(0ull, ranges::size(some_ints)) | views::transform([](auto i) { return some_ints[i]; });
         STATIC_ASSERT(test_one(v, only_four_ints));
         test_one(v, only_four_ints);
+    }
+
+    { // Validate that we can use something that is convertible to integral (GH-1957)
+        constexpr span s{some_ints};
+        auto r1 = s | views::take(integral_constant<int, 4>{});
+        assert(ranges::equal(r1, only_four_ints));
+
+        auto r2 = s | views::take(evil_convertible_to_difference{});
+        assert(ranges::equal(r2, only_four_ints));
     }
 
     test_DevCom_1397309();
