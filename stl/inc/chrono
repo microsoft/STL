@@ -4122,12 +4122,9 @@ namespace chrono {
 
             if constexpr (_Can_rep_day) {
                 if (_For_time_point) {
-                    year_month_day _Ymd;
-                    if (_Make_year_month_day(_Ymd, true)) {
-                        _Result += _CHRONO duration_cast<_DurationType>(static_cast<sys_days>(_Ymd).time_since_epoch());
-                    } else {
-                        return false;
-                    }
+                    const year_month_day _Ymd{year{*_Century + *_Two_dig_year},
+                        month{static_cast<unsigned int>(*_Month)}, day{static_cast<unsigned int>(*_Day)}};
+                    _Result += _CHRONO duration_cast<_DurationType>(static_cast<sys_days>(_Ymd).time_since_epoch());
                 } else if (_Used & _F_doy) {
                     _Result += _CHRONO duration_cast<_DurationType>(days{*_Day_of_year});
                 }
@@ -4157,7 +4154,7 @@ namespace chrono {
         template <class _DurationType>
         _NODISCARD bool _Make_time_point(_DurationType& _Dur, _LeapSecondRep _Leap) {
 
-            const bool _Consistent{_Calculate_hour24() && _Calculate_year_fields()};
+            const bool _Consistent{_Calculate_hour24() && _Calculate_year_fields() && _Calculate_ymd()};
             if (!_Consistent || !_Apply_duration_fields<_Parse_tp_or_duration::_Time_point>(_Dur)) {
                 return false;
             }
@@ -5086,7 +5083,8 @@ namespace chrono {
     basic_istream<_CharT, _Traits>& from_stream(basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt,
         utc_time<_Duration>& _Tp, basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr,
         minutes* _Offset = nullptr) {
-        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset};
+        constexpr auto _Subsecond_precision{hh_mm_ss<_Duration>::fractional_width};
+        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset, _Subsecond_precision};
         _Duration _Dur;
         if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_LeapSecondRep::_All)) {
             _Tp = utc_time<_Duration>{_Dur};
@@ -5100,7 +5098,8 @@ namespace chrono {
     basic_istream<_CharT, _Traits>& from_stream(basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt,
         sys_time<_Duration>& _Tp, basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr,
         minutes* _Offset = nullptr) {
-        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset};
+        constexpr auto _Subsecond_precision{hh_mm_ss<_Duration>::fractional_width};
+        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset, _Subsecond_precision};
         _Duration _Dur;
         if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_LeapSecondRep::_Negative)) {
             _Tp = sys_time<_Duration>{_Dur};
@@ -5114,7 +5113,8 @@ namespace chrono {
     basic_istream<_CharT, _Traits>& from_stream(basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt,
         tai_time<_Duration>& _Tp, basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr,
         minutes* _Offset = nullptr) {
-        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset};
+        constexpr auto _Subsecond_precision{hh_mm_ss<_Duration>::fractional_width};
+        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset, _Subsecond_precision};
         _Duration _Dur;
         if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_LeapSecondRep::_None)) {
             _Tp = tai_time<_Duration>{_Dur + _CHRONO duration_cast<_Duration>(days{4383})};
@@ -5128,7 +5128,8 @@ namespace chrono {
     basic_istream<_CharT, _Traits>& from_stream(basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt,
         gps_time<_Duration>& _Tp, basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr,
         chrono::minutes* _Offset = nullptr) {
-        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset};
+        constexpr auto _Subsecond_precision{hh_mm_ss<_Duration>::fractional_width};
+        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset, _Subsecond_precision};
         _Duration _Dur;
         if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_LeapSecondRep::_None)) {
             _Tp = gps_time<_Duration>{_Dur - _CHRONO duration_cast<_Duration>(days{3657})};
@@ -5142,7 +5143,8 @@ namespace chrono {
     basic_istream<_CharT, _Traits>& from_stream(basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt,
         file_time<_Duration>& _Tp, basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr,
         chrono::minutes* _Offset = nullptr) {
-        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset};
+        constexpr auto _Subsecond_precision{hh_mm_ss<_Duration>::fractional_width};
+        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset, _Subsecond_precision};
         _Duration _Dur;
         if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_LeapSecondRep::_File_time)) {
             constexpr auto _File_clock_adj{_CHRONO duration_cast<_Duration>(
@@ -5158,7 +5160,10 @@ namespace chrono {
     basic_istream<_CharT, _Traits>& from_stream(basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt,
         local_time<_Duration>& _Tp, basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr,
         minutes* _Offset = nullptr) {
-        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset};
+        constexpr auto _Subsecond_precision{hh_mm_ss<_Duration>::fractional_width};
+        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset, _Subsecond_precision};
+        // *_Offset is not subtracted from local_time, see N4885 [time.clock.local]/4.
+        _Time._Utc_offset.reset();
         _Duration _Dur;
         if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_LeapSecondRep::_None)) {
             _Tp = local_time<_Duration>{_Dur};
@@ -6469,8 +6474,9 @@ struct formatter<_CHRONO file_time<_Duration>, _CharT> {
 
     template <class _FormatContext>
     auto format(const _CHRONO file_time<_Duration>& _Val, _FormatContext& _FormatCtx) {
-        const auto _Sys = _CHRONO clock_cast<_CHRONO system_clock>(_Val);
-        return _Impl._Write(_FormatCtx, _Val, _Fill_tm(_Sys));
+        const auto _Utc = _CHRONO file_clock::to_utc(_Val);
+        const auto _Sys = _CHRONO utc_clock::to_sys(_Utc);
+        return _Impl._Write(_FormatCtx, _Utc, _Fill_tm(_Sys));
     }
 
 private:

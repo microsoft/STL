@@ -7,6 +7,7 @@
 #include <concepts>
 #include <cstdlib>
 #include <ranges>
+#include <span>
 
 #include <range_algorithm_support.hpp>
 
@@ -87,8 +88,11 @@ int main() {
 
 struct instantiator {
     template <class In1, class In2>
-    static void call(In1&& in1 = {}, In2&& in2 = {}) {
+    static void call() {
         using ranges::begin, ranges::end, ranges::equal, ranges::iterator_t;
+
+        In1 in1{std::span<const int, 0>{}};
+        In2 in2{std::span<const int, 0>{}};
 
         if constexpr (!is_permissive) {
             (void) equal(in1, in2);

@@ -111,6 +111,7 @@
 // P0858R0 Constexpr Iterator Requirements
 // P1065R2 constexpr INVOKE
 //     (the std::invoke function only; other components like bind and reference_wrapper are C++20 only)
+// P2162R2 Inheriting From variant
 
 // _HAS_CXX17 indirectly controls:
 // N4190 Removing auto_ptr, random_shuffle(), And Old <functional> Stuff
@@ -245,6 +246,9 @@
 // P2102R0 Making "Implicit Expression Variations" More Explicit
 // P2106R0 Range Algorithm Result Types
 // P2116R0 Removing tuple-Like Protocol Support From Fixed-Extent span
+// P2259R1 Repairing Input Range Adaptors And counted_iterator
+//     (partially implemented)
+// P2325R3 Views Should Not Be Required To Be Default Constructible
 // P????R? directory_entry::clear_cache()
 
 // _HAS_CXX20 indirectly controls:
@@ -257,7 +261,10 @@
 
 // _HAS_CXX23 directly controls:
 // P1048R1 is_scoped_enum
+// P1679R3 contains() For basic_string/basic_string_view
+// P1682R3 to_underlying() For Enumerations
 // P1989R2 Range Constructor For string_view
+// P2166R1 Prohibiting basic_string And basic_string_view Construction From nullptr
 
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
@@ -1193,7 +1200,7 @@
 #define __cpp_lib_shared_ptr_weak_type  201606L
 #define __cpp_lib_string_view           201803L
 #define __cpp_lib_to_chars              201611L
-#define __cpp_lib_variant               201606L
+#define __cpp_lib_variant               202102L
 #endif // _HAS_CXX17
 
 // C++20
@@ -1280,7 +1287,7 @@
 #define __cpp_lib_polymorphic_allocator   201902L
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395 and GH-1814
-#define __cpp_lib_ranges 201911L
+#define __cpp_lib_ranges 202106L
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 #define __cpp_lib_remove_cvref            201711L
@@ -1341,7 +1348,9 @@
 
 // C++23
 #if _HAS_CXX23
-#define __cpp_lib_is_scoped_enum 202011L
+#define __cpp_lib_is_scoped_enum  202011L
+#define __cpp_lib_string_contains 202011L
+#define __cpp_lib_to_underlying   202102L
 #endif // _HAS_CXX23
 
 // EXPERIMENTAL
