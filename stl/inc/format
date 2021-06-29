@@ -68,6 +68,9 @@ extern "C" _NODISCARD __std_win_error __stdcall __std_get_cvt(__std_code_page _C
 
 _STD_BEGIN
 
+template <class, class>
+class vector;
+
 class format_error : public runtime_error {
     using runtime_error::runtime_error;
 };
@@ -1744,6 +1747,24 @@ public:
 
 inline constexpr size_t _Fmt_buffer_size = 256;
 
+template <class _Iterator>
+struct _Back_insert_iterator_container_type {
+    using type = void;
+};
+
+template <class _Container>
+struct _Back_insert_iterator_container_type<back_insert_iterator<_Container>> {
+    using type = _Container;
+};
+
+template <class _Container>
+struct _Back_insert_iterator_container_access : back_insert_iterator<_Container> {
+    explicit _Back_insert_iterator_container_access(back_insert_iterator<_Container> _Iter)
+        : back_insert_iterator<_Container>(_Iter) {}
+
+    using back_insert_iterator<_Container>::container;
+};
+
 template <class _OutputIt, class _Ty, class _Traits = _Fmt_buffer_traits>
 class _Fmt_iterator_buffer final : public _Traits, public _Fmt_buffer<_Ty> {
 private:
@@ -1759,7 +1780,16 @@ private:
     void _Flush() {
         auto _Size = this->_Size();
         this->_Clear();
-        _Output = _STD _Copy_unchecked(_Data, _Data + this->_Limit(_Size), _STD move(_Output));
+        const auto _End = _Data + this->_Limit(_Size);
+
+        // extracts back_insert_iterator's underlying container type, or void if not.
+        using _Container = typename _Back_insert_iterator_container_type<_OutputIt>::type;
+        if constexpr (_Is_specialization_v<_Container, basic_string> || _Is_specialization_v<_Container, vector>) {
+            auto& _Cont = *_Back_insert_iterator_container_access<_Container>{_Output}.container;
+            _Cont.insert(_Cont.end(), _Data, _End);
+        } else {
+            _Output = _STD _Copy_unchecked(_Data, _End, _STD move(_Output));
+        }
     }
 
 public:
@@ -1792,41 +1822,6 @@ public:
 
     _NODISCARD _Ty* _Out() noexcept {
         return this->end();
-    }
-};
-
-// clang-format off
-template <class _Container>
-    requires _RANGES contiguous_range<_Container> && _RANGES sized_range<_Container>
-        && requires(_Container& _Cont, const _RANGES range_value_t<_Container>& _Val) {
-            _Cont.push_back(_Val);
-        }
-// clang-format on
-class _Fmt_iterator_buffer<back_insert_iterator<_Container>, _RANGES range_value_t<_Container>> final
-    : public _Fmt_buffer<_RANGES range_value_t<_Container>> {
-private:
-    _Container& _Cont;
-
-    struct _Accessor : back_insert_iterator<_Container> {
-        explicit _Accessor(back_insert_iterator<_Container> _Iter) : back_insert_iterator<_Container>(_Iter) {}
-
-        using back_insert_iterator<_Container>::container;
-    };
-
-    void _Grow(size_t _Capacity) final {
-        _Cont.resize(_Capacity);
-        this->_Set(_RANGES data(_Cont), _Capacity);
-    }
-
-public:
-    explicit _Fmt_iterator_buffer(_Container& _Cont_)
-        : _Fmt_buffer<_RANGES range_value_t<_Container>>(_RANGES size(_Cont_)), _Cont(_Cont_) {}
-
-    explicit _Fmt_iterator_buffer(back_insert_iterator<_Container> _Out, ptrdiff_t = 0)
-        : _Fmt_iterator_buffer(*_Accessor{_Out}.container) {}
-
-    _NODISCARD auto _Out() noexcept {
-        return back_insert_iterator{_Cont};
     }
 };
 
