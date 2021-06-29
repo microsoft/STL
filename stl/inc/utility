@@ -763,6 +763,13 @@ _NODISCARD constexpr bool in_range(const _Ty _Value) noexcept {
 }
 #endif // _HAS_CXX20
 
+#if _HAS_CXX23
+template <class _Ty>
+_NODISCARD constexpr underlying_type_t<_Ty> to_underlying(_Ty _Value) noexcept {
+    return static_cast<underlying_type_t<_Ty>>(_Value);
+}
+#endif // _HAS_CXX23
+
 #if _HAS_TR1_NAMESPACE
 namespace _DEPRECATE_TR1_NAMESPACE tr1 {
     using _STD get;
