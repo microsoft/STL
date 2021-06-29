@@ -1499,6 +1499,20 @@ public:
     }
 #endif // _HAS_CXX20
 
+#if _HAS_CXX23
+    _NODISCARD constexpr bool contains(const basic_string_view _Right) const noexcept {
+        return find(_Right) != npos;
+    }
+
+    _NODISCARD constexpr bool contains(const _Elem _Right) const noexcept {
+        return find(_Right) != npos;
+    }
+
+    _NODISCARD constexpr bool contains(const _Elem* const _Right) const noexcept /* strengthened */ {
+        return find(_Right) != npos;
+    }
+#endif // _HAS_CXX23
+
     _NODISCARD constexpr size_type find(const basic_string_view _Right, const size_type _Off = 0) const noexcept {
         // look for _Right beginning at or after _Off
         return _Traits_find<_Traits>(_Mydata, _Mysize, _Off, _Right._Mydata, _Right._Mysize);
@@ -3854,7 +3868,7 @@ public:
 #if _HAS_CXX17
     /* implicit */ _CONSTEXPR20_CONTAINER operator basic_string_view<_Elem, _Traits>() const noexcept {
         // return a string_view around *this's character-type sequence
-        return basic_string_view<_Elem, _Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize);
+        return basic_string_view<_Elem, _Traits>{_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize};
     }
 #endif // _HAS_CXX17
 
@@ -4454,29 +4468,43 @@ public:
 
 #if _HAS_CXX20
     _NODISCARD _CONSTEXPR20_CONTAINER bool starts_with(const basic_string_view<_Elem, _Traits> _Right) const noexcept {
-        return basic_string_view<_Elem, _Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize).starts_with(_Right);
+        return basic_string_view<_Elem, _Traits>{_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize}.starts_with(_Right);
     }
 
     _NODISCARD _CONSTEXPR20_CONTAINER bool starts_with(const _Elem _Right) const noexcept {
-        return basic_string_view<_Elem, _Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize).starts_with(_Right);
+        return basic_string_view<_Elem, _Traits>{_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize}.starts_with(_Right);
     }
 
     _NODISCARD _CONSTEXPR20_CONTAINER bool starts_with(const _Elem* const _Right) const noexcept /* strengthened */ {
-        return basic_string_view<_Elem, _Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize).starts_with(_Right);
+        return basic_string_view<_Elem, _Traits>{_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize}.starts_with(_Right);
     }
 
     _NODISCARD _CONSTEXPR20_CONTAINER bool ends_with(const basic_string_view<_Elem, _Traits> _Right) const noexcept {
-        return basic_string_view<_Elem, _Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize).ends_with(_Right);
+        return basic_string_view<_Elem, _Traits>{_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize}.ends_with(_Right);
     }
 
     _NODISCARD _CONSTEXPR20_CONTAINER bool ends_with(const _Elem _Right) const noexcept {
-        return basic_string_view<_Elem, _Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize).ends_with(_Right);
+        return basic_string_view<_Elem, _Traits>{_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize}.ends_with(_Right);
     }
 
     _NODISCARD _CONSTEXPR20_CONTAINER bool ends_with(const _Elem* const _Right) const noexcept /* strengthened */ {
-        return basic_string_view<_Elem, _Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize).ends_with(_Right);
+        return basic_string_view<_Elem, _Traits>{_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize}.ends_with(_Right);
     }
 #endif // _HAS_CXX20
+
+#if _HAS_CXX23
+    _NODISCARD _CONSTEXPR20_CONTAINER bool contains(const basic_string_view<_Elem, _Traits> _Right) const noexcept {
+        return basic_string_view<_Elem, _Traits>{_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize}.contains(_Right);
+    }
+
+    _NODISCARD _CONSTEXPR20_CONTAINER bool contains(const _Elem _Right) const noexcept {
+        return basic_string_view<_Elem, _Traits>{_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize}.contains(_Right);
+    }
+
+    _NODISCARD _CONSTEXPR20_CONTAINER bool contains(const _Elem* const _Right) const noexcept /* strengthened */ {
+        return basic_string_view<_Elem, _Traits>{_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize}.contains(_Right);
+    }
+#endif // _HAS_CXX23
 
     _NODISCARD _CONSTEXPR20_CONTAINER allocator_type get_allocator() const noexcept {
         return static_cast<allocator_type>(_Getal());

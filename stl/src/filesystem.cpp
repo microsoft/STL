@@ -129,6 +129,49 @@ namespace {
 
         return __std_win_error{GetLastError()};
     }
+
+    struct _File_disposition_info_ex {
+        DWORD _Flags;
+    };
+
+    [[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error
+        __stdcall _Set_delete_flag(_In_ __std_fs_file_handle _Handle) {
+        // From newer Windows SDK than currently used to build vctools:
+        // #define FILE_DISPOSITION_FLAG_DELETE                     0x00000001
+        // #define FILE_DISPOSITION_FLAG_POSIX_SEMANTICS            0x00000002
+
+        // typedef struct _FILE_DISPOSITION_INFO_EX {
+        //     DWORD Flags;
+        // } FILE_DISPOSITION_INFO_EX, *PFILE_DISPOSITION_INFO_EX;
+
+        _File_disposition_info_ex _Info_ex{0x3};
+
+        // FileDispositionInfoEx isn't documented in MSDN at the time of this writing, but is present
+        // in minwinbase.h as of at least 10.0.16299.0
+        constexpr auto _FileDispositionInfoExClass = static_cast<FILE_INFO_BY_HANDLE_CLASS>(21);
+        if (SetFileInformationByHandle(
+                reinterpret_cast<HANDLE>(_Handle), _FileDispositionInfoExClass, &_Info_ex, sizeof(_Info_ex))) {
+            return __std_win_error::_Success;
+        }
+
+        const __std_win_error _Last_error{GetLastError()};
+        switch (_Last_error) {
+        case __std_win_error::_Invalid_parameter: // Older Windows versions
+        case __std_win_error::_Invalid_function: // Windows 10 1607
+        case __std_win_error::_Not_supported: // POSIX delete not supported by the file system
+            break; // try non-POSIX delete below
+        case __std_win_error::_Access_denied: // This might be due to the read-only bit, try to clear it and try again
+        default:
+            return _Last_error;
+        }
+
+        FILE_DISPOSITION_INFO _Info{/* .Delete= */ TRUE};
+        if (SetFileInformationByHandle(reinterpret_cast<HANDLE>(_Handle), FileDispositionInfo, &_Info, sizeof(_Info))) {
+            return __std_win_error::_Success;
+        }
+
+        return __std_win_error{GetLastError()};
+    }
 } // unnamed namespace
 
 _EXTERN_C
@@ -488,28 +531,33 @@ _Success_(return == __std_win_error::_Success) __std_win_error
 [[nodiscard]] __std_fs_remove_result __stdcall __std_fs_remove(_In_z_ const wchar_t* const _Target) noexcept {
     // remove _Target without caring whether _Target is a file or directory
     __std_win_error _Last_error;
+    bool _Able_to_change_attributes = false;
 
     constexpr auto _Flags = __std_fs_file_flags::_Backup_semantics | __std_fs_file_flags::_Open_reparse_point;
-    const _STD _Fs_file _Handle(_Target, __std_access_rights::_Delete, _Flags, &_Last_error);
-    if (_Last_error != __std_win_error::_Success) {
+    _STD _Fs_file _Handle(_Target,
+        __std_access_rights::_Delete | __std_access_rights::_File_read_attributes
+            | __std_access_rights::_File_write_attributes,
+        _Flags, &_Last_error);
+    if (_Last_error == __std_win_error::_Success) {
+        _Able_to_change_attributes = true;
+    } else if (_Last_error == __std_win_error::_Access_denied) {
+        // change the underlying HANDLE of _Handle
+        _Last_error = __std_fs_open_handle(&_Handle._Raw, _Target, __std_access_rights::_Delete, _Flags);
+        if (_Last_error != __std_win_error::_Success) {
+            return {false, _Last_error};
+        }
+    } else {
         return {false, _Translate_not_found_to_success(_Last_error)};
     }
 
-    // From newer Windows SDK than currently used to build vctools:
-    // #define FILE_DISPOSITION_FLAG_DELETE                     0x00000001
-    // #define FILE_DISPOSITION_FLAG_POSIX_SEMANTICS            0x00000002
+    // For Windows 10 1809 or later we have this flag -> FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE 0x10
+    // This flag also deletes read-only files.
+    // NOTE: This is currently undocumented in MSDN. Refer to WinBase.h for declarations.
 
-    // typedef struct _FILE_DISPOSITION_INFO_EX {
-    //     DWORD Flags;
-    // } FILE_DISPOSITION_INFO_EX, *PFILE_DISPOSITION_INFO_EX;
-
-    struct _File_disposition_info_ex {
-        DWORD _Flags;
-    };
-    _File_disposition_info_ex _Info_ex{0x3};
-
-    // FileDispositionInfoEx isn't documented in MSDN at the time of this writing, but is present
-    // in minwinbase.h as of at least 10.0.16299.0
+    // The following bits are set here
+    // FILE_DISPOSITION_FLAG_DELETE, FILE_DISPOSITION_FLAG_POSIX_SEMANTICS,
+    // FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE
+    _File_disposition_info_ex _Info_ex{0x3 | 0x10};
     constexpr auto _FileDispositionInfoExClass = static_cast<FILE_INFO_BY_HANDLE_CLASS>(21);
     if (SetFileInformationByHandle(_Handle._Get(), _FileDispositionInfoExClass, &_Info_ex, sizeof(_Info_ex))) {
         return {true, __std_win_error::_Success};
@@ -517,22 +565,56 @@ _Success_(return == __std_win_error::_Success) __std_win_error
 
     _Last_error = __std_win_error{GetLastError()};
     switch (_Last_error) {
-    case __std_win_error::_Invalid_parameter: // Older Windows versions
-    case __std_win_error::_Invalid_function: // Windows 10 1607
-    case __std_win_error::_Not_supported: // POSIX delete not supported by the file system
-        break; // try non-POSIX delete below
+    // Windows versions older than 1809
+    case __std_win_error::_Invalid_parameter:
+    case __std_win_error::_Invalid_function:
+    case __std_win_error::_Not_supported:
+        break;
     default:
+        // If we fail for reasons other than those mentioned above just return to the caller
         return {false, _Last_error};
     }
 
-    FILE_DISPOSITION_INFO _Info{/* .Delete= */ TRUE};
-    if (SetFileInformationByHandle(_Handle._Get(), FileDispositionInfo, &_Info, sizeof(_Info))) {
+    // code path for versions older than 1809
+    _Last_error = _Set_delete_flag(_Handle._Raw);
+    if (_Last_error == __std_win_error::_Success) {
         return {true, __std_win_error::_Success};
     }
 
-    return {false, __std_win_error{GetLastError()}};
+    if (_Last_error == __std_win_error::_Access_denied && _Able_to_change_attributes) {
 
-#undef _SetFileInformationByHandle
+        FILE_BASIC_INFO _Basic_info;
+        if (!GetFileInformationByHandleEx(_Handle._Get(), FileBasicInfo, &_Basic_info, sizeof(_Basic_info))) {
+            return {false, __std_win_error{GetLastError()}};
+        }
+        // check if FILE_ATTRIBUTE_READONLY is set
+        if (_Basic_info.FileAttributes & FILE_ATTRIBUTE_READONLY) {
+            // try to remove FILE_ATTRIBUTE_READONLY
+            _Basic_info.FileAttributes ^= FILE_ATTRIBUTE_READONLY;
+            if (!SetFileInformationByHandle(_Handle._Get(), FileBasicInfo, &_Basic_info, sizeof(_Basic_info))) {
+                return {false, __std_win_error{GetLastError()}};
+            }
+            // removed FILE_ATTRIBUTE_READONLY, now try to set the delete flag again
+            _Last_error = _Set_delete_flag(_Handle._Raw);
+            if (_Last_error == __std_win_error::_Success) {
+                return {true, __std_win_error::_Success};
+            } else if (_Last_error == __std_win_error::_Access_denied) {
+                // looks like we failed to set the delete flag, after clearing the FILE_ATTRIBUTE_READONLY flag
+                // perform rollback
+                _Basic_info.FileAttributes |= FILE_ATTRIBUTE_READONLY;
+                if (!SetFileInformationByHandle(_Handle._Get(), FileBasicInfo, &_Basic_info, sizeof(_Basic_info))) {
+                    return {false, __std_win_error{GetLastError()}};
+                }
+                return {false, _Last_error};
+            }
+        } else {
+            return {false, _Last_error};
+        }
+    } else {
+        return {false, _Last_error};
+    }
+
+    return {false, __std_win_error{GetLastError()}};
 }
 
 [[nodiscard]] __std_win_error __stdcall __std_fs_change_permissions(

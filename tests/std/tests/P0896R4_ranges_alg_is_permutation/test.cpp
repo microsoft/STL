@@ -49,7 +49,7 @@ struct instantiator {
 
         {
             // negative case [different lengths]
-            const Fwd2 suffix2{std::span{not_pairs}.subspan<2>()};
+            const Fwd2 suffix2{span{not_pairs}.subspan<2>()};
             assert(!ranges::is_permutation(range1, suffix2, ranges::equal_to{}, get_first, identity{}));
             assert(!ranges::is_permutation(suffix2, range1, ranges::equal_to{}, identity{}, get_first));
             assert(!ranges::is_permutation(ranges::begin(range1), ranges::end(range1), ranges::begin(suffix2),
@@ -74,16 +74,16 @@ struct instantiator {
 
         {
             // negative case [only final elements differ]
-            const Fwd1 r1{std::span{pairs}.subspan<0, 3>()};
-            const Fwd2 r2{std::span{not_pairs}.subspan<0, 3>()};
+            const Fwd1 r1{span{pairs}.subspan<0, 3>()};
+            const Fwd2 r2{span{not_pairs}.subspan<0, 3>()};
             assert(!ranges::is_permutation(r1, r2, ranges::equal_to{}, get_first, identity{}));
             assert(!ranges::is_permutation(ranges::begin(r1), ranges::end(r1), ranges::begin(r2), ranges::end(r2),
                 ranges::equal_to{}, get_first, identity{}));
         }
         {
             // negative case [only initial elements differ]
-            const Fwd1 r1{std::span{pairs}.subspan<1, 3>()};
-            const Fwd2 r2{std::span{not_pairs}.subspan<4, 3>()};
+            const Fwd1 r1{span{pairs}.subspan<1, 3>()};
+            const Fwd2 r2{span{not_pairs}.subspan<4, 3>()};
             assert(!ranges::is_permutation(r1, r2, ranges::equal_to{}, get_first, identity{}));
             assert(!ranges::is_permutation(ranges::begin(r1), ranges::end(r1), ranges::begin(r2), ranges::end(r2),
                 ranges::equal_to{}, get_first, identity{}));
