@@ -5083,7 +5083,8 @@ namespace chrono {
     basic_istream<_CharT, _Traits>& from_stream(basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt,
         utc_time<_Duration>& _Tp, basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr,
         minutes* _Offset = nullptr) {
-        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset};
+        constexpr auto _Subsecond_precision{hh_mm_ss<_Duration>::fractional_width};
+        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset, _Subsecond_precision};
         _Duration _Dur;
         if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_LeapSecondRep::_All)) {
             _Tp = utc_time<_Duration>{_Dur};
@@ -5097,7 +5098,8 @@ namespace chrono {
     basic_istream<_CharT, _Traits>& from_stream(basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt,
         sys_time<_Duration>& _Tp, basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr,
         minutes* _Offset = nullptr) {
-        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset};
+        constexpr auto _Subsecond_precision{hh_mm_ss<_Duration>::fractional_width};
+        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset, _Subsecond_precision};
         _Duration _Dur;
         if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_LeapSecondRep::_Negative)) {
             _Tp = sys_time<_Duration>{_Dur};
@@ -5111,7 +5113,8 @@ namespace chrono {
     basic_istream<_CharT, _Traits>& from_stream(basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt,
         tai_time<_Duration>& _Tp, basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr,
         minutes* _Offset = nullptr) {
-        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset};
+        constexpr auto _Subsecond_precision{hh_mm_ss<_Duration>::fractional_width};
+        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset, _Subsecond_precision};
         _Duration _Dur;
         if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_LeapSecondRep::_None)) {
             _Tp = tai_time<_Duration>{_Dur + _CHRONO duration_cast<_Duration>(days{4383})};
@@ -5125,7 +5128,8 @@ namespace chrono {
     basic_istream<_CharT, _Traits>& from_stream(basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt,
         gps_time<_Duration>& _Tp, basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr,
         chrono::minutes* _Offset = nullptr) {
-        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset};
+        constexpr auto _Subsecond_precision{hh_mm_ss<_Duration>::fractional_width};
+        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset, _Subsecond_precision};
         _Duration _Dur;
         if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_LeapSecondRep::_None)) {
             _Tp = gps_time<_Duration>{_Dur - _CHRONO duration_cast<_Duration>(days{3657})};
@@ -5139,7 +5143,8 @@ namespace chrono {
     basic_istream<_CharT, _Traits>& from_stream(basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt,
         file_time<_Duration>& _Tp, basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr,
         chrono::minutes* _Offset = nullptr) {
-        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset};
+        constexpr auto _Subsecond_precision{hh_mm_ss<_Duration>::fractional_width};
+        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset, _Subsecond_precision};
         _Duration _Dur;
         if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_LeapSecondRep::_File_time)) {
             constexpr auto _File_clock_adj{_CHRONO duration_cast<_Duration>(
@@ -5155,7 +5160,10 @@ namespace chrono {
     basic_istream<_CharT, _Traits>& from_stream(basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt,
         local_time<_Duration>& _Tp, basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr,
         minutes* _Offset = nullptr) {
-        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset};
+        constexpr auto _Subsecond_precision{hh_mm_ss<_Duration>::fractional_width};
+        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset, _Subsecond_precision};
+        // *_Offset is not subtracted from local_time, see N4885 [time.clock.local]/4.
+        _Time._Utc_offset.reset();
         _Duration _Dur;
         if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_LeapSecondRep::_None)) {
             _Tp = local_time<_Duration>{_Dur};
