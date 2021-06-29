@@ -211,6 +211,14 @@ namespace unique_ptr_ {
             assert(*ptr.ptr_ == 42);
             *ptr.ptr_ = 13;
         }
+
+        // Also test LWG-3548 "shared_ptr construction from unique_ptr should move (not copy) the deleter".
+        fancy_deleter()                = default;
+        fancy_deleter(fancy_deleter&&) = default;
+
+        fancy_deleter(const fancy_deleter&) = delete;
+        fancy_deleter& operator=(fancy_deleter&&) = delete;
+        fancy_deleter& operator=(const fancy_deleter&) = delete;
     };
 
     template <class>
