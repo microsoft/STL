@@ -21,7 +21,7 @@ constexpr bool iter_test() {
 
     using I = iterator<Category, Element, Diff, Eq, Proxy, Wrapped>;
 
-    STATIC_ASSERT(default_initializable<I>);
+    STATIC_ASSERT(default_initializable<I> == (Eq == CanCompare::yes));
     STATIC_ASSERT(movable<I>);
 
     STATIC_ASSERT(!movable<Element> || indirectly_writable<I, Element>);

@@ -4122,12 +4122,9 @@ namespace chrono {
 
             if constexpr (_Can_rep_day) {
                 if (_For_time_point) {
-                    year_month_day _Ymd;
-                    if (_Make_year_month_day(_Ymd, true)) {
-                        _Result += _CHRONO duration_cast<_DurationType>(static_cast<sys_days>(_Ymd).time_since_epoch());
-                    } else {
-                        return false;
-                    }
+                    const year_month_day _Ymd{year{*_Century + *_Two_dig_year},
+                        month{static_cast<unsigned int>(*_Month)}, day{static_cast<unsigned int>(*_Day)}};
+                    _Result += _CHRONO duration_cast<_DurationType>(static_cast<sys_days>(_Ymd).time_since_epoch());
                 } else if (_Used & _F_doy) {
                     _Result += _CHRONO duration_cast<_DurationType>(days{*_Day_of_year});
                 }
@@ -4157,7 +4154,7 @@ namespace chrono {
         template <class _DurationType>
         _NODISCARD bool _Make_time_point(_DurationType& _Dur, _LeapSecondRep _Leap) {
 
-            const bool _Consistent{_Calculate_hour24() && _Calculate_year_fields()};
+            const bool _Consistent{_Calculate_hour24() && _Calculate_year_fields() && _Calculate_ymd()};
             if (!_Consistent || !_Apply_duration_fields<_Parse_tp_or_duration::_Time_point>(_Dur)) {
                 return false;
             }
@@ -6469,8 +6466,9 @@ struct formatter<_CHRONO file_time<_Duration>, _CharT> {
 
     template <class _FormatContext>
     auto format(const _CHRONO file_time<_Duration>& _Val, _FormatContext& _FormatCtx) {
-        const auto _Sys = _CHRONO clock_cast<_CHRONO system_clock>(_Val);
-        return _Impl._Write(_FormatCtx, _Val, _Fill_tm(_Sys));
+        const auto _Utc = _CHRONO file_clock::to_utc(_Val);
+        const auto _Sys = _CHRONO utc_clock::to_sys(_Utc);
+        return _Impl._Write(_FormatCtx, _Utc, _Fill_tm(_Sys));
     }
 
 private:

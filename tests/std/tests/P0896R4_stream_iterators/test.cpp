@@ -63,10 +63,7 @@ void test_ostream_iterator(basic_ostream<CharT, Traits>& os) {
 
 #ifdef __cpp_lib_concepts
     STATIC_ASSERT(output_iterator<I, const T&>);
-
     STATIC_ASSERT(is_same_v<typename I::difference_type, ptrdiff_t>);
-    { [[maybe_unused]] constexpr I constexprConstructed{}; }
-    STATIC_ASSERT(is_nothrow_default_constructible_v<I>);
 #endif // __cpp_lib_concepts
 }
 
@@ -100,10 +97,7 @@ void test_ostreambuf_iterator(basic_ostream<CharT, Traits>& os) {
 
 #ifdef __cpp_lib_concepts
     STATIC_ASSERT(output_iterator<I, const CharT&>);
-
     STATIC_ASSERT(is_same_v<typename I::difference_type, ptrdiff_t>);
-    { [[maybe_unused]] constexpr I constexprConstructed{}; }
-    STATIC_ASSERT(is_nothrow_default_constructible_v<I>);
 #endif // __cpp_lib_concepts
 }
 

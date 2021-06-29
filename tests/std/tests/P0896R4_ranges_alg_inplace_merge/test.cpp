@@ -5,6 +5,7 @@
 #include <cassert>
 #include <concepts>
 #include <ranges>
+#include <span>
 #include <utility>
 
 #include <range_algorithm_support.hpp>
@@ -31,7 +32,7 @@ struct instantiator {
             assert(equal(input, expected));
 
             // Validate empty range
-            const Range empty_range{};
+            const Range empty_range{span<P, 0>{}};
             const same_as<iterator_t<Range>> auto empty_result =
                 inplace_merge(empty_range, empty_range.begin(), ranges::less{}, get_first);
             assert(empty_result == empty_range.begin());
@@ -47,7 +48,7 @@ struct instantiator {
             assert(equal(input, expected));
 
             // Validate empty range
-            const Range empty_range{};
+            const Range empty_range{span<P, 0>{}};
             const same_as<iterator_t<Range>> auto empty_result =
                 inplace_merge(empty_range.begin(), empty_range.begin(), empty_range.end(), ranges::less{}, get_first);
             assert(empty_result == empty_range.end());
