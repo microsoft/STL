@@ -5971,8 +5971,10 @@ namespace chrono {
                 }
             }
 
-            return _Write_aligned(_STD move(_FormatCtx.out()), static_cast<int>(_Stream.view().size()), _Specs,
-                _Fmt_align::_Left, [&](auto _Out) { return _Fmt_write(_STD move(_Out), _Stream.view()); });
+            int _Estimated_width = -1;
+            (void) _Measure_string_prefix(_Stream.view(), _Estimated_width);
+            return _Write_aligned(_STD move(_FormatCtx.out()), _Estimated_width, _Specs, _Fmt_align::_Left,
+                [&](auto _Out) { return _Fmt_write(_STD move(_Out), _Stream.view()); });
         }
 
         // This echoes the functionality of put_time, but is able to handle invalid dates (when !ok()) since the
