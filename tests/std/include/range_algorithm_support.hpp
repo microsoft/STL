@@ -370,7 +370,7 @@ namespace test {
         using Consterator = iterator<Category, const Element, Diff, Eq, Proxy, Wrapped>;
 
         // output iterator operations
-        iterator() = default;
+        iterator() requires at_least<fwd> || (Eq == CanCompare::yes) = default;
 
         constexpr explicit iterator(Element* ptr) noexcept : ptr_{ptr} {}
 
@@ -624,7 +624,7 @@ namespace test {
         public:
             static_assert(Copy == Copyability::immobile);
 
-            range_base() = default;
+            range_base() = delete;
             constexpr explicit range_base(span<Element> elements) noexcept : elements_{elements} {}
 
             range_base(const range_base&) = delete;
@@ -640,7 +640,7 @@ namespace test {
         template <class Element>
         class range_base<Element, Copyability::move_only> {
         public:
-            range_base() = default;
+            range_base() = delete;
             constexpr explicit range_base(span<Element> elements) noexcept : elements_{elements} {}
 
             constexpr range_base(range_base&& that) noexcept

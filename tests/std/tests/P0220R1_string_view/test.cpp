@@ -810,7 +810,115 @@ constexpr bool test_case_starts_with_ends_with() {
 
     return true;
 }
-#endif //_HAS_CXX20
+#endif // _HAS_CXX20
+
+// P1679R3 contains() For basic_string/basic_string_view
+#if _HAS_CXX23
+template <class CharT, class Traits, bool TestBasicString>
+constexpr bool test_case_contains() {
+    const basic_string_view<CharT, Traits> empty_sv(TYPED_LITERAL(CharT, ""));
+    const CharT null_c = '\0';
+    const CharT* const empty_cp(TYPED_LITERAL(CharT, ""));
+
+    const basic_string_view<CharT, Traits> a(TYPED_LITERAL(CharT, "a"));
+    const CharT b = 'b';
+    const CharT* const c(TYPED_LITERAL(CharT, "c"));
+
+    if constexpr (TestBasicString) {
+        basic_string<CharT, Traits> text(TYPED_LITERAL(CharT, "text"));
+        basic_string<CharT, Traits> empty_text(TYPED_LITERAL(CharT, ""));
+
+        const basic_string_view<CharT, Traits> te(TYPED_LITERAL(CharT, "te"));
+        const CharT x = 'x';
+        const CharT* const ext(TYPED_LITERAL(CharT, "ext"));
+        const basic_string_view<CharT, Traits> text_sv(TYPED_LITERAL(CharT, "text"));
+        const CharT* const text_cp(TYPED_LITERAL(CharT, "text"));
+        const basic_string_view<CharT, Traits> next_sv(TYPED_LITERAL(CharT, "next"));
+        const CharT* const next_cp(TYPED_LITERAL(CharT, "next"));
+        const basic_string_view<CharT, Traits> texture_sv(TYPED_LITERAL(CharT, "texture"));
+        const CharT* const texture_cp(TYPED_LITERAL(CharT, "texture"));
+
+        assert(text.contains(te));
+        assert(text.contains(x));
+        assert(text.contains(ext));
+        assert(text.contains(text));
+        assert(text.contains(text_sv));
+        assert(text.contains(text_cp));
+        assert(!text.contains(next_sv));
+        assert(!text.contains(next_cp));
+        assert(!text.contains(texture_sv));
+        assert(!text.contains(texture_cp));
+        assert(text.contains(empty_sv));
+        assert(!text.contains(null_c));
+        assert(text.contains(empty_cp));
+        assert(!text.contains(a));
+        assert(!text.contains(b));
+        assert(!text.contains(c));
+
+        assert(!empty_text.contains(te));
+        assert(!empty_text.contains(x));
+        assert(!empty_text.contains(ext));
+        assert(empty_text.contains(empty_text));
+        assert(empty_text.contains(empty_sv));
+        assert(!empty_text.contains(null_c));
+        assert(empty_text.contains(empty_cp));
+
+        basic_string<CharT, Traits> rocking(TYPED_LITERAL(CharT, "rocking"));
+
+        const basic_string_view<CharT, Traits> rocket_sv(TYPED_LITERAL(CharT, "rocket"));
+        const CharT* const rocket_cp(TYPED_LITERAL(CharT, "rocket"));
+
+        assert(!rocking.contains(rocket_sv));
+        assert(!rocking.contains(rocket_cp));
+    }
+
+    const basic_string_view<CharT, Traits> hello(TYPED_LITERAL(CharT, "hello"));
+
+    const basic_string_view<CharT, Traits> he(TYPED_LITERAL(CharT, "he"));
+    const CharT e = 'e';
+    const CharT* const llo(TYPED_LITERAL(CharT, "llo"));
+    const basic_string_view<CharT, Traits> hello_sv(TYPED_LITERAL(CharT, "hello"));
+    const CharT* const hello_cp(TYPED_LITERAL(CharT, "hello"));
+    const basic_string_view<CharT, Traits> cello_sv(TYPED_LITERAL(CharT, "cello"));
+    const CharT* const cello_cp(TYPED_LITERAL(CharT, "cello"));
+    const basic_string_view<CharT, Traits> helloworld_sv(TYPED_LITERAL(CharT, "helloworld"));
+    const CharT* const helloworld_cp(TYPED_LITERAL(CharT, "helloworld"));
+
+    assert(hello.contains(he));
+    assert(hello.contains(e));
+    assert(hello.contains(llo));
+    assert(hello.contains(hello));
+    assert(hello.contains(hello_sv));
+    assert(hello.contains(hello_cp));
+    assert(!hello.contains(cello_sv));
+    assert(!hello.contains(cello_cp));
+    assert(!hello.contains(helloworld_sv));
+    assert(!hello.contains(helloworld_cp));
+    assert(hello.contains(empty_sv));
+    assert(!hello.contains(null_c));
+    assert(hello.contains(empty_cp));
+    assert(!hello.contains(a));
+    assert(!hello.contains(b));
+    assert(!hello.contains(c));
+
+    assert(!empty_sv.contains(he));
+    assert(!empty_sv.contains(e));
+    assert(!empty_sv.contains(llo));
+    assert(empty_sv.contains(empty_sv));
+    assert(!empty_sv.contains(null_c));
+    assert(empty_sv.contains(empty_cp));
+
+    const basic_string_view<CharT, Traits> playing(TYPED_LITERAL(CharT, "playing"));
+
+    const basic_string_view<CharT, Traits> player_sv(TYPED_LITERAL(CharT, "player"));
+    const CharT* const player_cp(TYPED_LITERAL(CharT, "player"));
+
+    assert(!playing.contains(player_sv));
+    assert(!playing.contains(player_cp));
+
+    return true;
+}
+#endif // _HAS_CXX23
 
 template <typename CharT, typename Traits>
 constexpr bool test_case_find() {
@@ -1062,6 +1170,9 @@ static_assert(test_case_copy<constexpr_char_traits>());
 static_assert(test_case_Copy_s<constexpr_char_traits>());
 static_assert(test_case_starts_with_ends_with<char, constexpr_char_traits, false>());
 #endif // _HAS_CXX20
+#if _HAS_CXX23
+static_assert(test_case_contains<char, constexpr_char_traits, false>());
+#endif // _HAS_CXX23
 static_assert(test_case_operators<char, constexpr_char_traits>());
 static_assert(test_case_find<char, constexpr_char_traits>());
 
@@ -1115,6 +1226,10 @@ int main() {
     test_case_starts_with_ends_with<char, char_traits<char>, true>();
     test_case_starts_with_ends_with<wchar_t, char_traits<wchar_t>, true>();
 #endif // _HAS_CXX20
+#if _HAS_CXX23
+    test_case_contains<char, char_traits<char>, true>();
+    test_case_contains<wchar_t, char_traits<wchar_t>, true>();
+#endif // _HAS_CXX23
     test_case_find<char, char_traits<char>>();
     test_case_find<wchar_t, char_traits<wchar_t>>();
     test_case_operators<char, char_traits<char>>();
