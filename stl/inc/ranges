@@ -713,7 +713,7 @@ namespace ranges {
             // clang-format off
             template <class _Ty>
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(
-                noexcept(single_view{_STD forward<_Ty>(_Val)})) requires requires {
+                noexcept(single_view<decay_t<_Ty>(_STD forward<_Ty>(_Val)))) requires requires {
                 single_view<decay_t<_Ty>>(static_cast<_Ty&&>(_Val));
             } {
                 return single_view<decay_t<_Ty>>(_STD forward<_Ty>(_Val));
