@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <cassert>
 #include <ranges>
-#include <span>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -207,12 +206,5 @@ int main() {
         string str{"Hello, World!"};
         test_one(str);
         assert(ranges::equal(views::all(str), str));
-    }
-
-    // Validate a non-view borrowed range
-    {
-        constexpr span s{some_ints};
-        static_assert(test_one(s));
-        test_one(s);
     }
 }
