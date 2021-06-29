@@ -1642,7 +1642,8 @@ public:
 
         if (_Fancy) {
             const _Raw_t _Raw = _Fancy;
-            const auto _Rx    = new _Ref_count_resource<_Fancy_t, _Deleter_t>(_Fancy, _Other.get_deleter());
+            const auto _Rx =
+                new _Ref_count_resource<_Fancy_t, _Deleter_t>(_Fancy, _STD forward<_Dx>(_Other.get_deleter()));
             _Set_ptr_rep_and_enable_shared(_Raw, _Rx);
             _Other.release();
         }

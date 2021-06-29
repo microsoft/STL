@@ -9,6 +9,7 @@
 #include <concepts>
 #include <numeric>
 #include <ranges>
+#include <span>
 #include <utility>
 
 #include <range_algorithm_support.hpp>
@@ -31,16 +32,16 @@ struct empty_test {
         // Validate empty ranges
         using ranges::is_partitioned, ranges::partition, ranges::partition_point;
         {
-            Range range{};
+            Range range{span<P, 0>{}};
             ASSERT(is_partitioned(range, is_even, get_first));
         }
         {
-            Range range{};
+            Range range{span<P, 0>{}};
             ASSERT(is_partitioned(range.begin(), range.end(), is_even, get_first));
         }
 
         if constexpr (ranges::forward_range<Range>) {
-            const Range range{};
+            const Range range{span<P, 0>{}};
             {
                 const auto result = partition(range, is_even, get_first);
                 ASSERT(result.begin() == range.end());
