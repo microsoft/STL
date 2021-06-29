@@ -887,6 +887,22 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         assert(!input_string_false.ends_with(get_literal_input<CharType>()));
     }
 
+#if _HAS_CXX23
+    { // contains
+        const str hello_fluffy_kittens = get_literal_input<CharType>(); // "Hello fluffy kittens"
+        constexpr auto kitten_ptr      = get_cat<CharType>(); // "kitten"
+        constexpr auto dog_ptr         = get_dog<CharType>(); // "dog"
+
+        assert(hello_fluffy_kittens.contains(kitten_ptr));
+        assert(hello_fluffy_kittens.contains(basic_string_view{kitten_ptr}));
+        assert(hello_fluffy_kittens.contains(CharType{'e'}));
+
+        assert(!hello_fluffy_kittens.contains(dog_ptr));
+        assert(!hello_fluffy_kittens.contains(basic_string_view{dog_ptr}));
+        assert(!hello_fluffy_kittens.contains(CharType{'z'}));
+    }
+#endif // _HAS_CXX23
+
     { // replace
         const str input = get_dog<CharType>();
 
