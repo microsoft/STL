@@ -189,9 +189,6 @@ void swap(basic_spanbuf<_Elem, _Traits>& _Left, basic_spanbuf<_Elem, _Traits>& _
     _Left.swap(_Right);
 }
 
-using spanbuf  = basic_spanbuf<char>;
-using wspanbuf = basic_spanbuf<wchar_t>;
-
 template <class _Elem, class _Traits>
 class basic_ispanstream : public basic_istream<_Elem, _Traits> {
 public:
@@ -268,9 +265,6 @@ void swap(basic_ispanstream<_Elem, _Traits>& _Left, basic_ispanstream<_Elem, _Tr
     _Left.swap(_Right);
 }
 
-using ispanstream  = basic_ispanstream<char>;
-using wispanstream = basic_ispanstream<wchar_t>;
-
 template <class _Elem, class _Traits>
 class basic_ospanstream : public basic_ostream<_Elem, _Traits> {
 public:
@@ -324,9 +318,6 @@ void swap(basic_ospanstream<_Elem, _Traits>& _Left, basic_ospanstream<_Elem, _Tr
     _Left.swap(_Right);
 }
 
-using ospanstream  = basic_ospanstream<char>;
-using wospanstream = basic_ospanstream<wchar_t>;
-
 template <class _Elem, class _Traits>
 class basic_spanstream : public basic_iostream<_Elem, _Traits> {
 public:
@@ -379,9 +370,6 @@ template <class _Elem, class _Traits>
 void swap(basic_spanstream<_Elem, _Traits>& _Left, basic_spanstream<_Elem, _Traits>& _Right) {
     _Left.swap(_Right);
 }
-
-using spanstream  = basic_spanstream<char>;
-using wspanstream = basic_spanstream<wchar_t>;
 
 _STD_END
 

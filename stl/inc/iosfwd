@@ -246,6 +246,12 @@ using fstream       = basic_fstream<char, char_traits<char>>;
 using syncbuf     = basic_syncbuf<char>;
 using osyncstream = basic_osyncstream<char>;
 #endif // _HAS_CXX20
+#if _HAS_CXX23
+using spanbuf     = basic_spanbuf<char>;
+using ispanstream = basic_ispanstream<char>;
+using ospanstream = basic_ospanstream<char>;
+using spanstream  = basic_spanstream<char>;
+#endif // _HAS_CXX23
 
 // wchar_t TYPEDEFS
 using wios           = basic_ios<wchar_t, char_traits<wchar_t>>;
@@ -265,6 +271,12 @@ using wfstream       = basic_fstream<wchar_t, char_traits<wchar_t>>;
 using wsyncbuf     = basic_syncbuf<wchar_t>;
 using wosyncstream = basic_osyncstream<wchar_t>;
 #endif // _HAS_CXX20
+#if _HAS_CXX23
+using wspanbuf     = basic_spanbuf<wchar_t>;
+using wispanstream = basic_ispanstream<wchar_t>;
+using wospanstream = basic_ospanstream<wchar_t>;
+using wspanstream  = basic_spanstream<wchar_t>;
+#endif // _HAS_CXX23
 
 #if defined(_CRTBLD)
 // unsigned short TYPEDEFS
