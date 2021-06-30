@@ -683,10 +683,10 @@ public:
     }
 
 #ifdef __cpp_lib_concepts
-    template <class _First, class... _Other,
-        class _Ret = common_comparison_category_t<_Synth_three_way_result<_This, _First>, // TRANSITION, DevCom-1344701
-            _Synth_three_way_result<_Rest, _Other>...>> // (should be a normal or trailing return type)
-    _NODISCARD constexpr _Ret _Three_way_compare(const tuple<_First, _Other...>& _Right) const {
+    template <class _First, class... _Other>
+    _NODISCARD constexpr common_comparison_category_t<_Synth_three_way_result<_This, _First>,
+        _Synth_three_way_result<_Rest, _Other>...>
+        _Three_way_compare(const tuple<_First, _Other...>& _Right) const {
         if (auto _Result = _Synth_three_way{}(_Myfirst._Val, _Right._Myfirst._Val); _Result != 0) {
             return _Result;
         }

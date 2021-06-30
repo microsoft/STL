@@ -681,7 +681,7 @@ STATIC_ASSERT(__cpp_lib_filesystem == 201703L);
 #endif
 #endif
 
-#if _HAS_CXX20 && !defined(__EDG__)
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support and GH-1814
 #ifndef __cpp_lib_format
 #error __cpp_lib_format is not defined
 #elif __cpp_lib_format != 201907L
@@ -955,6 +955,20 @@ STATIC_ASSERT(__cpp_lib_is_pointer_interconvertible == 201907L);
 #endif
 #endif
 
+#if _HAS_CXX23
+#ifndef __cpp_lib_is_scoped_enum
+#error __cpp_lib_is_scoped_enum is not defined
+#elif __cpp_lib_is_scoped_enum != 202011L
+#error __cpp_lib_is_scoped_enum is not 202011L
+#else
+STATIC_ASSERT(__cpp_lib_is_scoped_enum == 202011L);
+#endif
+#else
+#ifdef __cpp_lib_is_scoped_enum
+#error __cpp_lib_is_scoped_enum is defined
+#endif
+#endif
+
 #if _HAS_CXX17
 #ifndef __cpp_lib_is_swappable
 #error __cpp_lib_is_swappable is not defined
@@ -1207,13 +1221,13 @@ STATIC_ASSERT(__cpp_lib_polymorphic_allocator == 201902L);
 STATIC_ASSERT(__cpp_lib_quoted_string_io == 201304L);
 #endif
 
-#if _HAS_CXX20 && !defined(__EDG__) // TRANSITION, EDG concepts support
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support and GH-1814
 #ifndef __cpp_lib_ranges
 #error __cpp_lib_ranges is not defined
-#elif __cpp_lib_ranges != 201911L
-#error __cpp_lib_ranges is not 201911L
+#elif __cpp_lib_ranges != 202106L
+#error __cpp_lib_ranges is not 202106L
 #else
-STATIC_ASSERT(__cpp_lib_ranges == 201911L);
+STATIC_ASSERT(__cpp_lib_ranges == 202106L);
 #endif
 #else
 #ifdef __cpp_lib_ranges
@@ -1443,6 +1457,20 @@ STATIC_ASSERT(__cpp_lib_starts_ends_with == 201711L);
 #endif
 #endif
 
+#if _HAS_CXX23
+#ifndef __cpp_lib_string_contains
+#error __cpp_lib_string_contains is not defined
+#elif __cpp_lib_string_contains != 202011L
+#error __cpp_lib_string_contains is not 202011L
+#else
+STATIC_ASSERT(__cpp_lib_string_contains == 202011L);
+#endif
+#else
+#ifdef __cpp_lib_string_contains
+#error __cpp_lib_string_contains is defined
+#endif
+#endif
+
 #ifndef __cpp_lib_string_udls
 #error __cpp_lib_string_udls is not defined
 #elif __cpp_lib_string_udls != 201304L
@@ -1535,6 +1563,20 @@ STATIC_ASSERT(__cpp_lib_to_chars == 201611L);
 #endif
 #endif
 
+#if _HAS_CXX23
+#ifndef __cpp_lib_to_underlying
+#error __cpp_lib_to_underlying is not defined
+#elif __cpp_lib_to_underlying != 202102L
+#error __cpp_lib_to_underlying is not 202102L
+#else
+STATIC_ASSERT(__cpp_lib_to_underlying == 202102L);
+#endif
+#else
+#ifdef __cpp_lib_to_underlying
+#error __cpp_lib_to_underlying is defined
+#endif
+#endif
+
 #ifndef __cpp_lib_transformation_trait_aliases
 #error __cpp_lib_transformation_trait_aliases is not defined
 #elif __cpp_lib_transformation_trait_aliases != 201304L
@@ -1622,10 +1664,10 @@ STATIC_ASSERT(__cpp_lib_unwrap_ref == 201811L);
 #if _HAS_CXX17
 #ifndef __cpp_lib_variant
 #error __cpp_lib_variant is not defined
-#elif __cpp_lib_variant != 201606L
-#error __cpp_lib_variant is not 201606L
+#elif __cpp_lib_variant != 202102L
+#error __cpp_lib_variant is not 202102L
 #else
-STATIC_ASSERT(__cpp_lib_variant == 201606L);
+STATIC_ASSERT(__cpp_lib_variant == 202102L);
 #endif
 #else
 #ifdef __cpp_lib_variant

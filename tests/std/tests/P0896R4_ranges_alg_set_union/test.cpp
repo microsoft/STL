@@ -66,7 +66,7 @@ struct instantiator {
 
         { // Validate range overload, empty range1
             P output[osize]{};
-            R1 range1{};
+            R1 range1{span<const P, 0>{}};
             R2 range2{elements2};
             const same_as<set_union_result<iterator_t<R1>, iterator_t<R2>, O>> auto result =
                 set_union(range1, range2, O{output}, ranges::less{}, get_first, get_second);
@@ -78,7 +78,7 @@ struct instantiator {
         { // Validate iterator overload, empty range2
             P output[osize]{};
             R1 range1{elements1};
-            R2 range2{};
+            R2 range2{span<const P, 0>{}};
             const same_as<set_union_result<iterator_t<R1>, iterator_t<R2>, O>> auto result = set_union(range1.begin(),
                 range1.end(), range2.begin(), range2.end(), O{output}, ranges::less{}, get_first, get_second);
             assert(result.in1 == range1.end());

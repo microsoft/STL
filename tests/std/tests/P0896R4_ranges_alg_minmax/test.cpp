@@ -10,6 +10,7 @@
 #include <concepts>
 #include <functional>
 #include <ranges>
+#include <span>
 #include <string>
 #include <utility>
 
@@ -40,7 +41,7 @@ struct mm_element_empty {
     template <ranges::forward_range Fwd>
     static constexpr void call() {
         // Validate empty ranges
-        const Fwd range{};
+        const Fwd range{span<const P, 0>{}};
 
         ASSERT(ranges::min_element(range, ranges::less{}, get_first) == ranges::end(range));
         ASSERT(ranges::min_element(ranges::begin(range), ranges::end(range), ranges::less{}, get_first)

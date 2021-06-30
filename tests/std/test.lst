@@ -419,6 +419,8 @@ tests\P1423R3_char8_t_remediation
 tests\P1502R1_standard_library_header_units
 tests\P1614R2_spaceship
 tests\P1645R1_constexpr_numeric
+tests\P1682R3_to_underlying
+tests\P2162R2_std_visit_for_derived_classes_from_variant
 tests\VSO_0000000_allocator_propagation
 tests\VSO_0000000_any_calling_conventions
 tests\VSO_0000000_c_math_functions
