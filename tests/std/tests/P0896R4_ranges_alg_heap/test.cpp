@@ -9,6 +9,7 @@
 #include <cassert>
 #include <concepts>
 #include <ranges>
+#include <span>
 #include <utility>
 
 #include <range_algorithm_support.hpp>
@@ -35,7 +36,7 @@ struct empty_ranges {
     template <ranges::random_access_range Range>
     static constexpr void call() {
         // Validate empty ranges (only make_heap and sort_heap accept empty ranges)
-        const Range range{};
+        const Range range{span<P, 0>{}};
 
         ASSERT(ranges::make_heap(range, ranges::less{}, get_first) == ranges::end(range));
         ASSERT(ranges::make_heap(ranges::begin(range), ranges::end(range), ranges::less{}, get_first)
