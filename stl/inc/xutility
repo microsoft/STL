@@ -3727,16 +3727,30 @@ struct _Default_sentinel {}; // empty struct to serve as the end of a range
 #ifdef __cpp_lib_concepts
 template <semiregular>
 class move_sentinel;
+
+template <class>
+struct _Move_iterator_category {};
+
+// clang-format off
+template <class _Iter>
+    requires requires { typename _Iter_cat_t<_Iter>; }
+struct _Move_iterator_category<_Iter> {
+    using iterator_category = conditional_t<derived_from<_Iter_cat_t<_Iter>, random_access_iterator_tag>,
+        random_access_iterator_tag, _Iter_cat_t<_Iter>>;
+};
+// clang-format on
 #endif // __cpp_lib_concepts
 
 template <class _Iter>
-class move_iterator {
+class move_iterator
+#ifdef __cpp_lib_concepts
+    : public _Move_iterator_category<_Iter>
+#endif // __cpp_lib_concepts
+{
 public:
     using iterator_type = _Iter;
 #ifdef __cpp_lib_concepts
-    using iterator_concept  = input_iterator_tag;
-    using iterator_category = conditional_t<derived_from<_Iter_cat_t<_Iter>, random_access_iterator_tag>,
-        random_access_iterator_tag, _Iter_cat_t<_Iter>>;
+    using iterator_concept = input_iterator_tag;
 #else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
     using iterator_category = _Iter_cat_t<_Iter>;
 #endif // __cpp_lib_concepts
