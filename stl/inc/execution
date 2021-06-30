@@ -927,7 +927,7 @@ struct _Static_partition_range<_FwdIt, _Diff, false> {
         auto _Result                = _Division_points.begin();
         *_Result                    = _Get_unwrapped(_First);
         for (_Diff _Idx{}; _Idx < _Unchunked_items; ++_Idx) { // record bounds of chunks with an extra item
-            for (_Diff _This_chunk_size = _Chunk_size; 0 < _This_chunk_size--;) {
+            for (_Diff _This_chunk_size = _Chunk_size + 1; 0 < _This_chunk_size--;) {
                 if (_First == _Last) {
                     return false;
                 }

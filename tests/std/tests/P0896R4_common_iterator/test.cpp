@@ -189,7 +189,7 @@ bool test_operator_arrow() {
     assert(*countedIter == P(0, 1));
     assert(countedIter->first == 0);
     assert(countedIter->second == 1);
-    static_assert(is_same_v<decltype(countedIter.operator->()), P*>);
+    static_assert(is_same_v<decltype(countedIter.operator->()), counted_iterator<P*> const&>);
 
     return true;
 }

@@ -411,12 +411,6 @@ int main() {
         instantiation_test();
     }
 
-    { // Validate a non-view borrowed range
-        constexpr span s{some_pairs};
-        STATIC_ASSERT(test_one(s));
-        test_one(s);
-    }
-
     { // Validate a view borrowed range
         constexpr auto v = views::iota(0ull, ranges::size(expected_keys))
                          | views::transform([](auto i) { return make_pair(expected_keys[i], expected_values[i]); });

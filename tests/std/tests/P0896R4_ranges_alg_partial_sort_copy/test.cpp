@@ -52,7 +52,7 @@ struct instantiator1 {
             }
 
             // also with empty input
-            In range1{};
+            In range1{span<const P, 0>{}};
             Out range2{output};
             const same_as<partial_sort_copy_result<iterator_t<In>, iterator_t<Out>>> auto result =
                 partial_sort_copy(range1, range2, less{}, get_first, get_first);
@@ -85,7 +85,7 @@ struct instantiator2 {
             }
 
             // also with empty input
-            In range1{};
+            In range1{span<const P, 0>{}};
             Out range2{output};
             const same_as<partial_sort_copy_result<iterator_t<In>, iterator_t<Out>>> auto result = partial_sort_copy(
                 range1.begin(), range1.end(), range2.begin(), range2.end(), less{}, get_first, get_first);
