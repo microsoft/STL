@@ -347,13 +347,6 @@ int main() {
         test_one(lst, only_even_ints);
     }
 
-    // Validate a non-view borrowed range
-    {
-        constexpr span s{some_ints};
-        STATIC_ASSERT(test_one(s, only_even_ints));
-        test_one(s, only_even_ints);
-    }
-
     // filter/reverse interaction test
     {
         auto fr_pipe = views::filter(is_even) | views::reverse;
