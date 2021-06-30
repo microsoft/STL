@@ -46,30 +46,20 @@ void test_one_type() {
     // validate constructors
     istringstream nonempty_stream{"0"};
     istringstream empty_intstream{};
-    R default_constructed{};
     R empty_constructed{empty_intstream};
     R non_empty_constructed{nonempty_stream};
 
-    static_assert(is_nothrow_constructible_v<R> == is_nothrow_default_constructible_v<T>);
     static_assert(is_nothrow_constructible_v<R, istream&> == is_nothrow_default_constructible_v<T>);
 
     // validate member begin
     // NOTE: begin() consumes the first token
-    (void) default_constructed.begin(); // default-constructed basic_istream_view doesn't model range.
     assert(empty_constructed.begin() == default_sentinel);
     assert(non_empty_constructed.begin() != default_sentinel);
 
-    // validate default constructed istream::iterator
-    {
-        const ranges::iterator_t<R> default_constructed_it;
-        assert(default_constructed_it == default_sentinel);
-        static_assert(noexcept(default_constructed_it == default_sentinel));
-    }
-
     // validate member end
-    static_assert(same_as<decltype(default_constructed.end()), default_sentinel_t>);
-    static_assert(noexcept(default_constructed.end()));
-    static_assert(noexcept(ranges::end(default_constructed)));
+    static_assert(same_as<decltype(empty_constructed.end()), default_sentinel_t>);
+    static_assert(noexcept(empty_constructed.end()));
+    static_assert(noexcept(ranges::end(empty_constructed)));
 
     // Nonexistent member functions
     static_assert(!CanMemberSize<R>);
@@ -97,14 +87,10 @@ void test_one_type() {
 
 istringstream some_stream{"42"};
 constexpr bool test_constexpr() {
-    // Default constructor is constexpr
-    ranges::basic_istream_view<int, char> empty{};
-
-    // begin is constexpr??!?
-    (void) empty.begin();
-
     // stream constructor is constexpr
     ranges::basic_istream_view<int, char> meow{some_stream};
+
+    // begin is constexpr, but realistically unusable in a constant expression
 
     // end is constexpr
     (void) meow.end();
