@@ -1,4 +1,7 @@
-param([string]$out="MsvcStlTestingCert.pfx",[string]$pass="foo")
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+param([string]$out="MsvcStlTestingCert.pfx",[string]$pass="placeholderPassword")
 
 $ErrorActionPreference = 'Stop'
 # Clean up old certificates
@@ -14,7 +17,7 @@ Get-ChildItem cert:\localmachine\trustedpublisher |
 Where-Object { $_.Subject -eq 'CN=MsvcStlTestingCert' } |
 Remove-Item
 
-#Make the new cert
+# Make the new cert
 $cert = New-SelfSignedCertificate -Type CodeSigningCert -DnsName "MsvcStlTestingCert" `
         -certstorelocation cert:\localmachine\my -NotAfter (Get-Date).AddDays(2)
 $path = 'cert:\localMachine\my\' + $cert.thumbprint

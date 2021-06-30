@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-extern volatile long* g_test_failures;
+extern int* g_test_failures;
 extern char* g_output_buffer;
 extern size_t g_space_available;
 void doAssert(const char* file, int line, const char* expr);
