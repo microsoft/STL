@@ -9,6 +9,7 @@
 #include <format>
 #include <iterator>
 #include <limits>
+#include <list>
 #include <locale>
 #include <string>
 #include <string_view>
@@ -1283,6 +1284,22 @@ void test_locale_specific_formatting_without_locale() {
 #endif // MSVC_INTERNAL_TESTING
 }
 
+template <class charT>
+void test_slow_append_path() {
+    const charT* const hello_world = STR("Hello world");
+
+    // test format_to with a back_insert_iterator to a list, which will pick the slow path.
+    list<charT> list_output;
+    format_to(back_inserter(list_output), STR("{}"), hello_world);
+    assert((basic_string<charT>{list_output.begin(), list_output.end()} == hello_world));
+
+    // test format_to with a normal iterator to a string, which will also pick the _Copy_unchecked path.
+    basic_string<charT> str;
+    str.resize(char_traits<charT>::length(hello_world));
+    format_to(str.begin(), STR("{}"), hello_world);
+    assert(str == hello_world);
+}
+
 void test() {
     test_simple_formatting<char>();
     test_simple_formatting<wchar_t>();
@@ -1349,6 +1366,9 @@ void test() {
 
     test_locale_specific_formatting_without_locale<char>();
     test_locale_specific_formatting_without_locale<wchar_t>();
+
+    test_slow_append_path<char>();
+    test_slow_append_path<wchar_t>();
 }
 
 int main() {

@@ -961,8 +961,10 @@ void memory_test() {
     default_delete<int[]> dd1{default_delete<int[]>{}};
     dd1(new int[5]);
 
+#if _HAS_GARBAGE_COLLECTION_SUPPORT_DELETED_IN_CXX23
     int* int_ptr{};
     undeclare_reachable(int_ptr);
+#endif // _HAS_GARBAGE_COLLECTION_SUPPORT_DELETED_IN_CXX23
 
     auto sptr = make_shared<int>(5);
     auto wptr = weak_ptr<int>(sptr);
