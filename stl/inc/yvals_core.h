@@ -248,7 +248,7 @@
 // P2259R1 Repairing Input Range Adaptors And counted_iterator
 //     (partially implemented)
 // P2325R3 Views Should Not Be Required To Be Default Constructible
-// P2367R0 Remove Misuses Of list-initialization From Clause 24 Ranges
+// P2367R0 Remove Misuses Of List-Initialization From Clause 24 Ranges
 // P????R? directory_entry::clear_cache()
 
 // _HAS_CXX20 indirectly controls:

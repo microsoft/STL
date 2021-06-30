@@ -714,6 +714,7 @@ namespace ranges {
             template <class _Ty>
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(
                 noexcept(single_view<decay_t<_Ty>>(_STD forward<_Ty>(_Val)))) requires requires {
+                typename single_view<decay_t<_Ty>>;
                 single_view<decay_t<_Ty>>(static_cast<_Ty&&>(_Val));
             } {
                 return single_view<decay_t<_Ty>>(_STD forward<_Ty>(_Val));
@@ -3549,7 +3550,7 @@ namespace ranges {
                 && constructible_from<_Pat, single_view<range_value_t<_Rng>>>
         constexpr split_view(_Rng&& _Range_, range_value_t<_Rng> _Elem)
             noexcept(noexcept(_Vw(views::all(_STD forward<_Rng>(_Range_))))
-                && noexcept(_Pat(single_view{_STD move(_Elem)}))) // strengthened
+                && noexcept(_Pat(views::single(_STD move(_Elem))))) // strengthened
             : _Range(views::all(_STD forward<_Rng>(_Range_))), _Pattern(views::single(_STD move(_Elem))) {}
         // clang-format on
 
