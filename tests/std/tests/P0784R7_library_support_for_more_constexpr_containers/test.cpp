@@ -412,11 +412,11 @@ struct Alloc {
         allocator<T>{}.deallocate(ptr, n);
     }
 
-    constexpr void construct(value_type* ptr, value_type n) requires(Construct) {
+    constexpr void construct(value_type* ptr, value_type n) requires Construct {
         construct_at(ptr, n);
     }
 
-    constexpr void destroy(value_type* ptr) requires(Destroy) {
+    constexpr void destroy(value_type* ptr) requires Destroy {
         destroy_at(ptr);
     }
 

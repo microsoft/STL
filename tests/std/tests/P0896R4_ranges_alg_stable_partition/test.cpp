@@ -5,6 +5,7 @@
 #include <cassert>
 #include <concepts>
 #include <ranges>
+#include <span>
 #include <utility>
 
 #include <range_algorithm_support.hpp>
@@ -34,7 +35,7 @@ struct instantiator {
             assert(is_sorted(range));
 
             // Validate empty range
-            const Range empty_range{};
+            const Range empty_range{span<P, 0>{}};
             const same_as<subrange<iterator_t<Range>>> auto empty_result =
                 stable_partition(empty_range, is_even, get_first);
             assert(empty_result.begin() == empty_range.end());
@@ -53,7 +54,7 @@ struct instantiator {
             assert(is_sorted(range));
 
             // Validate empty range
-            const Range empty_range{};
+            const Range empty_range{span<P, 0>{}};
             const same_as<subrange<iterator_t<Range>>> auto empty_result =
                 stable_partition(empty_range.begin(), empty_range.end(), is_even, get_first);
             assert(empty_result.begin() == empty_range.end());
