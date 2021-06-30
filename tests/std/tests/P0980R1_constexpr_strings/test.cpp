@@ -213,10 +213,10 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
 
         str ptr_size_constructed(get_literal_input<CharType>(), 2);
         assert(equalRanges(ptr_size_constructed, "He"sv));
-#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) // TRANSITION, VSO-1270433
+
         str iterator_constructed(literal_constructed.begin(), literal_constructed.end());
         assert(equalRanges(iterator_constructed, literal_constructed));
-#endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__)
+
         const string_view_convertible<CharType> convertible;
         str conversion_constructed(convertible);
         assert(equalRanges(conversion_constructed, literal_constructed));
@@ -261,10 +261,10 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
 
         str ptr_size_constructed(get_literal_input<CharType>(), 2, alloc);
         assert(equalRanges(ptr_size_constructed, "He"sv));
-#if defined(MSVC_INTERNAL_TESTING) || defined(__EDG__) // TRANSITION, VSO-1270433
+
         str iterator_constructed(literal_constructed.begin(), literal_constructed.end(), alloc);
         assert(equalRanges(iterator_constructed, literal_constructed));
-#endif // defined(MSVC_INTERNAL_TESTING) || defined(__EDG__)
+
         const string_view_convertible<CharType> convertible;
         str conversion_constructed(convertible, alloc);
         assert(equalRanges(conversion_constructed, literal_constructed));
@@ -886,6 +886,22 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         assert(ends.ends_with(get_literal_input<CharType>()));
         assert(!input_string_false.ends_with(get_literal_input<CharType>()));
     }
+
+#if _HAS_CXX23
+    { // contains
+        const str hello_fluffy_kittens = get_literal_input<CharType>(); // "Hello fluffy kittens"
+        constexpr auto kitten_ptr      = get_cat<CharType>(); // "kitten"
+        constexpr auto dog_ptr         = get_dog<CharType>(); // "dog"
+
+        assert(hello_fluffy_kittens.contains(kitten_ptr));
+        assert(hello_fluffy_kittens.contains(basic_string_view{kitten_ptr}));
+        assert(hello_fluffy_kittens.contains(CharType{'e'}));
+
+        assert(!hello_fluffy_kittens.contains(dog_ptr));
+        assert(!hello_fluffy_kittens.contains(basic_string_view{dog_ptr}));
+        assert(!hello_fluffy_kittens.contains(CharType{'z'}));
+    }
+#endif // _HAS_CXX23
 
     { // replace
         const str input = get_dog<CharType>();

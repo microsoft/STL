@@ -815,7 +815,7 @@ namespace test_subrange {
         using size_type = std::make_unsigned_t<std::iter_difference_t<I>>;
 
         // Validate SMFs
-        STATIC_ASSERT(default_initializable<Subrange>);
+        STATIC_ASSERT(default_initializable<Subrange> == default_initializable<I>);
         STATIC_ASSERT(movable<Subrange>);
         STATIC_ASSERT(!copyable<I> || copyable<Subrange>);
 

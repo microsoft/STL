@@ -4,9 +4,9 @@
 #pragma once
 
 #include <cassert>
-#include <concepts>
 #include <cstddef>
 #include <functional>
+#include <iterator>
 #include <ranges>
 #include <span>
 #include <type_traits>
@@ -327,6 +327,14 @@ template <class T, class Cat, class Elem, template <class> class TQuals, templat
 struct std::basic_common_reference<T, ::test::proxy_reference<Cat, Elem>, TQuals, UQuals> {
     using type = common_reference_t<TQuals<T>, Elem&>;
 };
+
+template <class Cat1, class Elem1, class Cat2, class Elem2, template <class> class TQuals,
+    template <class> class UQuals>
+    requires std::common_reference_with<Elem1&, Elem2&>
+struct std::basic_common_reference<::test::proxy_reference<Cat1, Elem1>, ::test::proxy_reference<Cat2, Elem2>, TQuals,
+    UQuals> {
+    using type = common_reference_t<Elem1&, Elem2&>;
+};
 // clang-format on
 
 namespace test {
@@ -370,7 +378,7 @@ namespace test {
         using Consterator = iterator<Category, const Element, Diff, Eq, Proxy, Wrapped>;
 
         // output iterator operations
-        iterator() = default;
+        iterator() requires at_least<fwd> || (Eq == CanCompare::yes) = default;
 
         constexpr explicit iterator(Element* ptr) noexcept : ptr_{ptr} {}
 
@@ -624,7 +632,7 @@ namespace test {
         public:
             static_assert(Copy == Copyability::immobile);
 
-            range_base() = default;
+            range_base() = delete;
             constexpr explicit range_base(span<Element> elements) noexcept : elements_{elements} {}
 
             range_base(const range_base&) = delete;
@@ -640,7 +648,7 @@ namespace test {
         template <class Element>
         class range_base<Element, Copyability::move_only> {
         public:
-            range_base() = default;
+            range_base() = delete;
             constexpr explicit range_base(span<Element> elements) noexcept : elements_{elements} {}
 
             constexpr range_base(range_base&& that) noexcept

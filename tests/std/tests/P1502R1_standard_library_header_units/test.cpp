@@ -29,7 +29,7 @@ import <deque>;
 import <exception>;
 import <execution>;
 import <filesystem>;
-// import <format>;
+import <format>;
 import <forward_list>;
 import <fstream>;
 import <functional>;
@@ -126,11 +126,7 @@ int main() {
 
     {
         puts("Testing <array>.");
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, VSO-1088552 (deduction guides)
         constexpr array arr{10, 20, 30, 40, 50};
-#else // ^^^ no workaround / workaround vvv
-        constexpr array<int, 5> arr{10, 20, 30, 40, 50};
-#endif // ^^^ workaround ^^^
         assert(arr[2] == 30);
         static_assert(arr[2] == 30);
     }
@@ -305,7 +301,7 @@ int main() {
 
     {
         puts("Testing <format>.");
-        puts("(TRANSITION, not yet implemented.)");
+        assert(format("{} {}", "testing", "format") == "testing format");
     }
 
     {
@@ -581,17 +577,8 @@ int main() {
     {
         puts("Testing <ranges>.");
         constexpr int arr[]{11, 0, 22, 0, 33, 0, 44, 0, 55};
-#ifdef MSVC_INTERNAL_TESTING // TRANSITION, VSO-1088552 (deduction guides)
         assert(ranges::distance(views::filter(arr, [](int x) { return x == 0; })) == 4);
         static_assert(ranges::distance(views::filter(arr, [](int x) { return x != 0; })) == 5);
-#else // ^^^ no workaround / workaround vvv
-        auto is_zero = [](int x) { return x == 0; };
-        using FV1    = ranges::filter_view<ranges::ref_view<decltype(arr)>, decltype(is_zero)>;
-        assert(ranges::distance(FV1{arr, is_zero}) == 4);
-        constexpr auto not_zero = [](int x) { return x != 0; };
-        using FV2 = ranges::filter_view<ranges::ref_view<decltype(arr)>, remove_const_t<decltype(not_zero)>>;
-        static_assert(ranges::distance(FV2{arr, not_zero}) == 5);
-#endif // ^^^ workaround ^^^
     }
 
     {

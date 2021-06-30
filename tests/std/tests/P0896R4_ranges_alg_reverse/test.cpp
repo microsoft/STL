@@ -7,6 +7,7 @@
 #include <concepts>
 #include <numeric>
 #include <ranges>
+#include <span>
 #include <utility>
 
 #include <range_algorithm_support.hpp>
@@ -71,13 +72,13 @@ struct instantiator {
             assert(equal(input, expected_even));
         }
         { // Validate iterator + sentinel overload, empty range
-            R wrapped_input{};
+            R wrapped_input{span<nontrivial_int, 0>{}};
             auto result = reverse(wrapped_input.begin(), wrapped_input.end());
             STATIC_ASSERT(same_as<decltype(result), iterator_t<R>>);
             assert(result == wrapped_input.end());
         }
         { // Validate range overload, empty range
-            R wrapped_input{};
+            R wrapped_input{span<nontrivial_int, 0>{}};
             auto result = reverse(wrapped_input);
             STATIC_ASSERT(same_as<decltype(result), iterator_t<R>>);
             assert(result == wrapped_input.end());
@@ -136,13 +137,13 @@ struct test_vector {
         }
 
         { // Validate iterator + sentinel overload, vectorizable empty
-            R wrapped_input{};
+            R wrapped_input{span<ranges::range_value_t<R>, 0>{}};
             auto result = reverse(wrapped_input.begin(), wrapped_input.end());
             STATIC_ASSERT(same_as<decltype(result), iterator_t<R>>);
             assert(result == wrapped_input.end());
         }
         { // Validate range overload, vectorizable empty
-            R wrapped_input{};
+            R wrapped_input{span<ranges::range_value_t<R>, 0>{}};
             auto result = reverse(wrapped_input);
             STATIC_ASSERT(same_as<decltype(result), iterator_t<R>>);
             assert(result == wrapped_input.end());
