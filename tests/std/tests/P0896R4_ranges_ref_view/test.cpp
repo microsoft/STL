@@ -35,9 +35,6 @@ struct instantiator {
         { // constructors and assignment operators
             STATIC_ASSERT(!constructible_from<ref_view<R>, R>);
 
-            ref_view<R> default_constructed{};
-            STATIC_ASSERT(is_nothrow_default_constructible_v<ref_view<R>>);
-
             R wrapped_input{input};
             ref_view<R> same_range{wrapped_input};
             STATIC_ASSERT(is_nothrow_constructible_v<ref_view<R>, R&>);
@@ -48,13 +45,16 @@ struct instantiator {
             }
             assert(copy_constructed.end().peek() == end(input));
 
-            default_constructed = copy_constructed;
+            int other_data[3] = {4, 5, 6};
+            R wrapped_other{other_data};
+            ref_view<R> copy_assigned{wrapped_other};
+            copy_assigned = copy_constructed;
             if constexpr (forward_range<R>) {
-                assert(default_constructed.begin().peek() == begin(input));
+                assert(copy_assigned.begin().peek() == begin(input));
             }
-            assert(default_constructed.end().peek() == end(input));
+            assert(copy_assigned.end().peek() == end(input));
 
-            [[maybe_unused]] auto move_constructed = std::move(default_constructed);
+            [[maybe_unused]] auto move_constructed = std::move(copy_assigned);
             if constexpr (forward_range<R>) {
                 assert(move_constructed.begin().peek() == begin(input));
             }
@@ -121,7 +121,7 @@ struct instantiator {
 
                 STATIC_ASSERT(noexcept(as_const(test_view).empty()) == noexcept(ranges::empty(wrapped_input)));
 
-                R empty_range{};
+                R empty_range{span<int, 0>{}};
                 ref_view<R> empty_view{empty_range};
                 assert(empty_view.empty());
             }
