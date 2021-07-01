@@ -655,7 +655,7 @@ public:
 #if _HAS_CXX17
     deque(const deque& _Right, const _Identity_t<_Alloc>& _Al)
 #else
-    deque(const deque& _Right, _Alloc& _Al)
+    deque(const deque& _Right, const _Alloc& _Al)
 #endif // _HAS_CXX17
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
         _Alproxy_ty _Alproxy(_Getal());
