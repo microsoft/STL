@@ -11,6 +11,7 @@
 #include <xmemory>
 
 #if _HAS_CXX17
+#include <type_traits>
 #include <xpolymorphic_allocator.h>
 #endif // _HAS_CXX17
 
@@ -586,8 +587,13 @@ public:
         _Alloc_proxy();
         _Insert_op._Attach_after(_Mypair._Myval2._Before_head());
     }
+#if _HAS_CXX17
+    forward_list(const forward_list& _Right, const _Identity_t<_Alloc>& _Al)
+#else
+    forward_list(const forward_list& _Right, const _Alloc& _Al)
+#endif // _HAS_CXX17
 
-    forward_list(const forward_list& _Right, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
+        : _Mypair(_One_then_variadic_args_t{}, _Al) {
         _Flist_insert_after_op2<_Alnode> _Insert_op(_Getal());
         _Insert_op._Append_range_unchecked(_Right._Unchecked_begin(), _Right._Unchecked_end());
         _Alloc_proxy();
@@ -618,8 +624,12 @@ public:
         _Take_head(_Right);
     }
 
-    forward_list(forward_list&& _Right, const _Alloc& _Al) noexcept(
-        _Alnode_traits::is_always_equal::value) // strengthened
+#if _HAS_CXX17
+    forward_list(forward_list&& _Right, const _Identity_t<_Alloc>& _Al)
+#else
+    forward_list(forward_list&& _Right, const _Alloc& _Al)
+#endif // _HAS_CXX17
+        noexcept(_Alnode_traits::is_always_equal::value) // strengthened
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
         if constexpr (!_Alty_traits::is_always_equal::value) {
             if (_Getal() != _Right._Getal()) {

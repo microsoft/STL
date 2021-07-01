@@ -11,6 +11,7 @@
 #include <xmemory>
 
 #if _HAS_CXX17
+#include <type_traits>
 #include <xpolymorphic_allocator.h>
 #endif // _HAS_CXX17
 
@@ -873,7 +874,13 @@ public:
         _Construct_range_unchecked(_Right._Unchecked_begin(), _Right._Unchecked_end());
     }
 
-    list(const list& _Right, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
+
+#if _HAS_CXX17
+    list(const list& _Right, const _Identity_t<_Alloc>& _Al)
+#else
+    list(const list& _Right, const _Alloc& _Al)
+#endif // _HAS_CXX17
+        : _Mypair(_One_then_variadic_args_t{}, _Al) {
         _Construct_range_unchecked(_Right._Unchecked_begin(), _Right._Unchecked_end());
     }
 
@@ -894,7 +901,12 @@ public:
         _Swap_val(_Right);
     }
 
-    list(list&& _Right, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
+#if _HAS_CXX17
+    list(list&& _Right, const _Identity_t<_Alloc>& _Al)
+#else
+    list(list&& _Right, const _Alloc& _Al)
+#endif // _HAS_CXX17
+        : _Mypair(_One_then_variadic_args_t{}, _Al) {
         if constexpr (!_Alnode_traits::is_always_equal::value) {
             if (_Getal() != _Right._Getal()) {
                 _Construct_range_unchecked(_STD make_move_iterator(_Right._Unchecked_begin()),
