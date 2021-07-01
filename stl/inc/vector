@@ -548,7 +548,6 @@ public:
         _Mypair._Myval2._Swap_proxy_and_iterators(_Right._Mypair._Myval2);
     }
 
-
 #if _HAS_CXX17
     _CONSTEXPR20_CONTAINER vector(vector&& _Right, const _Identity_t<_Alloc>& _Al_)
 #else
