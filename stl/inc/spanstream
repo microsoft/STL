@@ -42,7 +42,9 @@ public:
 
     // [spanbuf.ctor], constructors
     basic_spanbuf() = default;
+
     explicit basic_spanbuf(ios_base::openmode _Which) : _Mysb(), _Mode(_Which) {}
+
     explicit basic_spanbuf(_STD span<_Elem> _Span, ios_base::openmode _Which = ios_base::in | ios_base::out)
         : _Mysb(), _Mode(_Which), _Buf(_Span) {
         if (_Mode & ios_base::out) {
@@ -112,12 +114,14 @@ protected:
         const bool _Sequence_out = _Which & ios_base::out;
         switch (_Way) {
         case ios_base::beg:
-            // [spanbuf.virtuals]/4.1 baseoff = 0
-            if (static_cast<size_t>(_Off) > _Buf.size()) { // negative wraparound to positive to save a compare
-                return pos_type(off_type(-1)); // [spanbuf.virtuals]/5 report failure
-            }
+            {
+                // [spanbuf.virtuals]/4.1 baseoff = 0
+                if (static_cast<size_t>(_Off) > _Buf.size()) { // negative wraparound to positive to save a compare
+                    return pos_type(off_type(-1)); // [spanbuf.virtuals]/5 report failure
+                }
 
-            break;
+                break;
+            }
         case ios_base::end:
             {
                 // [spanbuf.virtuals]/4.3 baseoff =
@@ -206,7 +210,9 @@ public:
     // [ispanstream.ctor], constructors
     explicit basic_ispanstream(_STD span<_Elem> _Span, ios_base::openmode _Which = ios_base::in)
         : _Mybase(_STD addressof(_Buf)), _Buf(_Span, _Which | ios_base::in) {}
+
     basic_ispanstream(const basic_ispanstream&) = delete;
+
     basic_ispanstream(basic_ispanstream&& _Right) : _Mybase(_STD move(_Right)), _Buf(_STD move(_Right._Buf)) {
         _Mybase::set_rdbuf(_STD addressof(_Buf));
     }
@@ -285,7 +291,9 @@ public:
     // [ospanstream.ctor], constructors
     explicit basic_ospanstream(_STD span<_Elem> _Span, ios_base::openmode _Which = ios_base::out)
         : _Mybase(_STD addressof(_Buf)), _Buf(_Span, _Which | ios_base::out) {}
+
     basic_ospanstream(const basic_ospanstream&) = delete;
+
     basic_ospanstream(basic_ospanstream&& _Right) : _Mybase(_STD move(_Right)), _Buf(_STD move(_Right._Buf)) {
         _Mybase::set_rdbuf(_STD addressof(_Buf));
     }
@@ -341,7 +349,9 @@ public:
     // [spanstream.ctor], constructors
     explicit basic_spanstream(_STD span<_Elem> _Span, ios_base::openmode _Which = ios_base::out | ios_base::in)
         : _Mybase(_STD addressof(_Buf)), _Buf(_Span, _Which) {}
+
     basic_spanstream(const basic_spanstream&) = delete;
+
     basic_spanstream(basic_spanstream&& _Right) : _Mybase(_STD move(_Right)), _Buf(_STD move(_Right._Buf)) {
         _Mybase::set_rdbuf(_STD addressof(_Buf));
     }

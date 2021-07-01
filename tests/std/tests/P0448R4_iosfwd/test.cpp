@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <iosfwd>
+
 using namespace std;
 
 // Needs to be separately declared as a simple alias of streampos

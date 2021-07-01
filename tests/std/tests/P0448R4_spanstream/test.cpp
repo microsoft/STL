@@ -9,6 +9,7 @@
 #include <spanstream>
 #include <string_view>
 #include <type_traits>
+
 using namespace std;
 
 template <class CharT>
