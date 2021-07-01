@@ -62,7 +62,7 @@ void test_spanbuf() {
         assert(default_constructed.pptr() == nullptr);
         assert(default_constructed.epptr() == nullptr);
 
-        const test_buf mode_constructed{};
+        const test_buf mode_constructed{ios_base::in};
         assert(mode_constructed.span().data() == nullptr);
         assert(mode_constructed.eback() == nullptr);
         assert(mode_constructed.gptr() == nullptr);

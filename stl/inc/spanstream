@@ -29,6 +29,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 
+// CLASS TEMPLATE basic_spanbuf
 template <class _Elem, class _Traits>
 class basic_spanbuf : public basic_streambuf<_Elem, _Traits> {
 public:
@@ -66,7 +67,8 @@ public:
 
     // [spanbuf.assign], assignment and swap
     basic_spanbuf& operator=(const basic_spanbuf&) = delete;
-    basic_spanbuf& operator                        =(basic_spanbuf&& _Right) {
+
+    basic_spanbuf& operator=(basic_spanbuf&& _Right) {
         basic_spanbuf tmp{move(_Right)};
         this->swap(tmp);
         return *this;
@@ -185,10 +187,11 @@ private:
 };
 
 template <class _Elem, class _Traits>
-void swap(basic_spanbuf<_Elem, _Traits>& _Left, basic_spanbuf<_Elem, _Traits>& _Right) noexcept {
+void swap(basic_spanbuf<_Elem, _Traits>& _Left, basic_spanbuf<_Elem, _Traits>& _Right) {
     _Left.swap(_Right);
 }
 
+// CLASS TEMPLATE basic_ispanstream
 template <class _Elem, class _Traits>
 class basic_ispanstream : public basic_istream<_Elem, _Traits> {
 public:
@@ -221,7 +224,8 @@ public:
 
     // [ispanstream.assign], assignment and swap
     basic_ispanstream& operator=(const basic_ispanstream&) = delete;
-    basic_ispanstream& operator                            =(basic_ispanstream&& _Right) {
+
+    basic_ispanstream& operator=(basic_ispanstream&& _Right) {
         _Mybase::swap(_Right);
         _STD swap(_Buf, _Right._Buf);
     }
@@ -265,6 +269,8 @@ void swap(basic_ispanstream<_Elem, _Traits>& _Left, basic_ispanstream<_Elem, _Tr
     _Left.swap(_Right);
 }
 
+
+// CLASS TEMPLATE basic_ospanstream
 template <class _Elem, class _Traits>
 class basic_ospanstream : public basic_ostream<_Elem, _Traits> {
 public:
@@ -286,7 +292,8 @@ public:
 
     // [ospanstream.assign], assignment and swap
     basic_ospanstream& operator=(const basic_ospanstream&) = delete;
-    basic_ospanstream& operator                            =(basic_ospanstream&& _Right) {
+
+    basic_ospanstream& operator=(basic_ospanstream&& _Right) {
         _Mybase::swap(_Right);
         _STD swap(_Buf, _Right._Buf);
     }
@@ -318,6 +325,8 @@ void swap(basic_ospanstream<_Elem, _Traits>& _Left, basic_ospanstream<_Elem, _Tr
     _Left.swap(_Right);
 }
 
+
+// CLASS TEMPLATE basic_spanstream
 template <class _Elem, class _Traits>
 class basic_spanstream : public basic_iostream<_Elem, _Traits> {
 public:
@@ -339,7 +348,8 @@ public:
 
     // [spanstream.assign], assignment and swap
     basic_spanstream& operator=(const basic_spanstream&) = delete;
-    basic_spanstream& operator                           =(basic_spanstream&& _Right) {
+
+    basic_spanstream& operator=(basic_spanstream&& _Right) {
         _Mybase::swap(_Right);
         _STD swap(_Buf, _Right._Buf);
     }
