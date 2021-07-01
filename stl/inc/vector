@@ -528,7 +528,6 @@ public:
         _Construct_n(_Count, _Right_data._Myfirst, _Right_data._Mylast);
     }
 
-
 #if _HAS_CXX17
     _CONSTEXPR20_CONTAINER vector(const vector& _Right, const _Identity_t<_Alloc>& _Al)
 #else
