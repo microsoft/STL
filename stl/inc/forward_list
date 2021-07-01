@@ -592,7 +592,6 @@ public:
 #else
     forward_list(const forward_list& _Right, const _Alloc& _Al)
 #endif // _HAS_CXX17
-
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
         _Flist_insert_after_op2<_Alnode> _Insert_op(_Getal());
         _Insert_op._Append_range_unchecked(_Right._Unchecked_begin(), _Right._Unchecked_end());

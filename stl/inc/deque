@@ -710,7 +710,6 @@ public:
 #else
     deque(deque&& _Right, const _Alloc& _Al)
 #endif // _HAS_CXX17
-
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
         _Alproxy_ty _Alproxy(_Getal());
         if constexpr (!_Alty_traits::is_always_equal::value) {
