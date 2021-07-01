@@ -652,6 +652,7 @@ public:
         _Construct(_Right._Unchecked_begin(), _Right._Unchecked_end());
         _Proxy._Release();
     }
+
 #if _HAS_CXX17
     deque(const deque& _Right, const _Identity_t<_Alloc>& _Al)
 #else
@@ -705,6 +706,7 @@ public:
         _Get_data()._Alloc_proxy(static_cast<_Alproxy_ty>(_Getal()));
         _Take_contents(_Right);
     }
+
 #if _HAS_CXX17
     deque(deque&& _Right, const _Identity_t<_Alloc>& _Al)
 #else

@@ -874,7 +874,6 @@ public:
         _Construct_range_unchecked(_Right._Unchecked_begin(), _Right._Unchecked_end());
     }
 
-
 #if _HAS_CXX17
     list(const list& _Right, const _Identity_t<_Alloc>& _Al)
 #else

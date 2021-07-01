@@ -587,6 +587,7 @@ public:
         _Alloc_proxy();
         _Insert_op._Attach_after(_Mypair._Myval2._Before_head());
     }
+
 #if _HAS_CXX17
     forward_list(const forward_list& _Right, const _Identity_t<_Alloc>& _Al)
 #else
