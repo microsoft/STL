@@ -689,10 +689,7 @@ void test_ispanstream() {
         assert(static_cast<test_buf*>(second.rdbuf())->epptr() == end(buffer2));
     }
 
-    {
-        // rdbuf
-        // ^^^ look above ^^^
-    }
+    // rdbuf already tested above
 
     { // read from stream
         basic_ispanstream<CharT> is{span<const CharT>{get_input_array<CharT>(), 9}};
@@ -802,10 +799,7 @@ void test_ospanstream() {
         assert(static_cast<test_buf*>(second.rdbuf())->epptr() == end(buffer2));
     }
 
-    {
-        // rdbuf
-        // ^^^ look above ^^^
-    }
+    // rdbuf already tested above
 
     { // write to stream with sufficient space
         CharT output_buffer[30];
@@ -937,10 +931,7 @@ void test_spanstream() {
         assert(static_cast<test_buf*>(second.rdbuf())->epptr() == nullptr);
     }
 
-    {
-        // rdbuf
-        // ^^^ look above ^^^
-    }
+    // rdbuf already tested above
 
     { // read from stream
         basic_ispanstream<CharT> is{span<const CharT>{get_input_array<CharT>(), 9}};

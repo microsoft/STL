@@ -29,7 +29,6 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 
-// CLASS TEMPLATE basic_spanbuf
 template <class _Elem, class _Traits>
 class basic_spanbuf : public basic_streambuf<_Elem, _Traits> {
 public:
@@ -195,7 +194,6 @@ void swap(basic_spanbuf<_Elem, _Traits>& _Left, basic_spanbuf<_Elem, _Traits>& _
     _Left.swap(_Right);
 }
 
-// CLASS TEMPLATE basic_ispanstream
 template <class _Elem, class _Traits>
 class basic_ispanstream : public basic_istream<_Elem, _Traits> {
 public:
@@ -275,8 +273,6 @@ void swap(basic_ispanstream<_Elem, _Traits>& _Left, basic_ispanstream<_Elem, _Tr
     _Left.swap(_Right);
 }
 
-
-// CLASS TEMPLATE basic_ospanstream
 template <class _Elem, class _Traits>
 class basic_ospanstream : public basic_ostream<_Elem, _Traits> {
 public:
@@ -333,8 +329,6 @@ void swap(basic_ospanstream<_Elem, _Traits>& _Left, basic_ospanstream<_Elem, _Tr
     _Left.swap(_Right);
 }
 
-
-// CLASS TEMPLATE basic_spanstream
 template <class _Elem, class _Traits>
 class basic_spanstream : public basic_iostream<_Elem, _Traits> {
 public:
