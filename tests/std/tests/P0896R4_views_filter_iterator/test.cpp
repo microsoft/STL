@@ -9,12 +9,6 @@
 #include <range_algorithm_support.hpp>
 using namespace std;
 
-#if _ITERATOR_DEBUG_LEVEL == 0
-#define NOEXCEPT_IDL0(...) noexcept(__VA_ARGS__)
-#else
-#define NOEXCEPT_IDL0(...) true
-#endif // _ITERATOR_DEBUG_LEVEL == 0
-
 constexpr auto is_even = [](const auto& x) { return x % 2 == 0; };
 using Pred             = remove_const_t<decltype(is_even)>;
 
@@ -42,9 +36,12 @@ struct iterator_instantiator {
                 conditional_t<derived_from<C, forward_iterator_tag>, forward_iterator_tag, input_iterator_tag>>>);
 
         { // Validate iterator special member functions and base
-            I defaultConstructed{};
-            assert(std::move(defaultConstructed).base().peek() == nullptr);
-            static_assert(is_nothrow_default_constructible_v<I>);
+            static_assert(default_initializable<I> == default_initializable<Iter>);
+            if constexpr (default_initializable<Iter>) {
+                I defaultConstructed{};
+                assert(move(defaultConstructed).base().peek() == nullptr);
+                static_assert(is_nothrow_default_constructible_v<I>);
+            }
 
             auto r0 = make_view();
             I valueConstructed{r0, Iter{mutable_ints}};
@@ -55,12 +52,15 @@ struct iterator_instantiator {
                 assert(copyConstructed == valueConstructed);
                 static_assert(is_nothrow_copy_constructible_v<I>);
 
-                defaultConstructed = copyConstructed;
-                assert(defaultConstructed == valueConstructed);
+                auto r1 = make_view();
+                I copyAssigned{r1, Iter{mutable_ints + 8}};
+                copyAssigned = copyConstructed;
+                assert(copyAssigned == valueConstructed);
                 static_assert(is_nothrow_copy_assignable_v<I>);
                 static_assert(same_as<const Iter&, decltype(as_const(copyConstructed).base())>);
             }
-            assert(std::move(valueConstructed).base().peek() == mutable_ints);
+            assert(as_const(valueConstructed).base().peek() == mutable_ints);
+            assert(move(valueConstructed).base().peek() == mutable_ints);
             static_assert(same_as<Iter, decltype(move(valueConstructed).base())>);
         }
 
@@ -86,10 +86,10 @@ struct iterator_instantiator {
             auto r0 = make_view();
             auto i0 = r0.begin();
             assert(*i0 == 0);
-            static_assert(NOEXCEPT_IDL0(*i0));
+            static_assert(noexcept(*i0));
 
             assert(ranges::iter_move(i0) == 0); // NB: moving from int leaves it unchanged
-            // static_assert(NOEXCEPT_IDL0(ranges::iter_move(i0)));
+            // static_assert(noexcept(ranges::iter_move(i0)));
 
             if constexpr (forward_iterator<Iter>) {
                 auto i1 = ranges::next(i0);
@@ -99,7 +99,7 @@ struct iterator_instantiator {
                 ranges::iter_swap(i1, i0);
                 assert(mutable_ints[0] == 0);
                 assert(mutable_ints[2] == 2);
-                static_assert(NOEXCEPT_IDL0(ranges::iter_swap(i0, i1)));
+                static_assert(noexcept(ranges::iter_swap(i0, i1)));
             }
         }
 
@@ -107,7 +107,7 @@ struct iterator_instantiator {
             auto r0 = make_view();
             auto i0 = r0.begin();
             assert(&++i0 == &i0);
-            assert(std::move(i0).base().peek() == mutable_ints + 2);
+            assert(move(i0).base().peek() == mutable_ints + 2);
 
             auto r1 = make_view();
             auto i1 = r1.begin();
@@ -116,7 +116,7 @@ struct iterator_instantiator {
             } else {
                 i1++;
             }
-            assert(std::move(i1).base().peek() == mutable_ints + 2);
+            assert(move(i1).base().peek() == mutable_ints + 2);
         }
 
         if constexpr (bidirectional_iterator<Iter>) { // Validate decrements
