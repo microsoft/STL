@@ -2451,12 +2451,14 @@ namespace ranges {
                     }
                 }
 
-                return _RANGES _Equal_count(_STD move(_First1), _STD move(_First2),
+                return _RANGES _Equal_count(_Get_unwrapped(_STD move(_First1)), _Get_unwrapped(_STD move(_First2)),
                     static_cast<iter_difference_t<_It1>>(_Count2), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
             } else {
-                const auto _Result = _RANGES _Mismatch_4(_STD move(_First1), _STD move(_Last1), _STD move(_First2),
-                    _STD move(_Last2), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
-                return _Result.in2 == _Last2;
+                const auto _ULast2 = _Get_unwrapped(_STD move(_Last2));
+                const auto _Result = _RANGES _Mismatch_4(_Get_unwrapped(_STD move(_First1)),
+                    _Get_unwrapped(_STD move(_Last1)), _Get_unwrapped(_STD move(_First2)), _ULast2, _Pass_fn(_Pred),
+                    _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+                return _Result.in2 == _ULast2;
             }
         }
 
@@ -2477,13 +2479,14 @@ namespace ranges {
                     }
                 }
 
-                return _RANGES _Equal_count(_RANGES begin(_Range1), _RANGES begin(_Range2),
+                return _RANGES _Equal_count(_Ubegin(_Range1), _Ubegin(_Range2),
                     static_cast<range_difference_t<_Rng1>>(_Count2), _Pass_fn(_Pred), _Pass_fn(_Proj1),
                     _Pass_fn(_Proj2));
             } else {
-                const auto _Result = _RANGES _Mismatch_4(_RANGES begin(_Range1), _RANGES end(_Range1),
-                    _RANGES begin(_Range2), _RANGES end(_Range2), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
-                return _Result.in2 == _RANGES end(_Range2);
+                const auto _ULast2 = _Uend(_Range2);
+                const auto _Result = _RANGES _Mismatch_4(_Ubegin(_Range1), _Uend(_Range1), _Ubegin(_Range2), _ULast2,
+                    _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+                return _Result.in2 == _ULast2;
             }
         }
     };
@@ -2528,8 +2531,9 @@ namespace ranges {
                     return false;
                 }
 
-                _RANGES advance(_First1, (_Count1 - _Count2));
-                return _RANGES _Equal_count(_STD move(_First1), _STD move(_First2),
+                auto _UFirst1 = _Get_unwrapped(_STD move(_First1));
+                _RANGES advance(_UFirst1, (_Count1 - _Count2));
+                return _RANGES _Equal_count(_STD move(_UFirst1), _Get_unwrapped(_STD move(_First2)),
                     static_cast<iter_difference_t<_It1>>(_Count2), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
             }
         }
@@ -2552,9 +2556,9 @@ namespace ranges {
                     return false;
                 }
 
-                auto _First1 = _RANGES begin(_Range1);
-                _RANGES advance(_First1, (_Count1 - _Count2));
-                return _RANGES _Equal_count(_STD move(_First1), _RANGES begin(_Range2),
+                auto _UFirst1 = _Ubegin(_Range1);
+                _RANGES advance(_UFirst1, (_Count1 - _Count2));
+                return _RANGES _Equal_count(_STD move(_UFirst1), _Ubegin(_Range2),
                     static_cast<range_difference_t<_Rng1>>(_Count2), _Pass_fn(_Pred), _Pass_fn(_Proj1),
                     _Pass_fn(_Proj2));
             }
