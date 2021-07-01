@@ -6,6 +6,7 @@
 #include <cassert>
 #include <concepts>
 #include <ranges>
+#include <span>
 #include <utility>
 using namespace std;
 
@@ -105,8 +106,11 @@ int main() {
 #ifndef _PREFAST_ // TRANSITION, GH-1030
 struct instantiator {
     template <class In1, class In2>
-    static void call(In1&& in1 = {}, In2&& in2 = {}) {
+    static void call() {
         using ranges::begin, ranges::end, ranges::starts_with, ranges::iterator_t;
+
+        In1 in1{span<const int, 0>{}};
+        In2 in2{span<const int, 0>{}};
 
         if constexpr (!is_permissive) {
             (void) starts_with(in1, in2);
