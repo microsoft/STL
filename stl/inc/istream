@@ -619,14 +619,12 @@ public:
             return -1;
         }
 
-        bool _Sync_failed = true; // sync fails if an exception is thrown
         _TRY_IO_BEGIN
-        _Sync_failed = _Rdbuf->pubsync() == -1;
-        _CATCH_IO_END
-        if (_Sync_failed) {
+        if (_Rdbuf->pubsync() == -1) {
             _Myios::setstate(ios_base::badbit);
             return -1;
         }
+        _CATCH_IO_END
 
         return 0;
     }
@@ -637,8 +635,12 @@ public:
         _Myios::clear(_Oldstate & ~ios_base::eofbit);
         const sentry _Ok(*this, true);
 
-        if (!this->fail() && static_cast<off_type>(_Myios::rdbuf()->pubseekpos(_Pos, ios_base::in)) == -1) {
-            _Myios::setstate(_State | ios_base::failbit);
+        if (!this->fail()) {
+            _TRY_IO_BEGIN
+            if (static_cast<off_type>(_Myios::rdbuf()->pubseekpos(_Pos, ios_base::in)) == -1) {
+                _Myios::setstate(_State | ios_base::failbit);
+            }
+            _CATCH_IO_END
         }
 
         return *this;
@@ -651,8 +653,12 @@ public:
         _Myios::clear(_Oldstate & ~ios_base::eofbit);
         const sentry _Ok(*this, true);
 
-        if (!this->fail() && static_cast<off_type>(_Myios::rdbuf()->pubseekoff(_Off, _Way, ios_base::in)) == -1) {
-            _Myios::setstate(_State | ios_base::failbit);
+        if (!this->fail()) {
+            _TRY_IO_BEGIN
+            if (static_cast<off_type>(_Myios::rdbuf()->pubseekoff(_Off, _Way, ios_base::in)) == -1) {
+                _Myios::setstate(_State | ios_base::failbit);
+            }
+            _CATCH_IO_END
         }
 
         return *this;
@@ -662,10 +668,12 @@ public:
         const sentry _Ok(*this, true);
 
         if (!this->fail()) {
+            _TRY_IO_BEGIN
             return _Myios::rdbuf()->pubseekoff(0, ios_base::cur, ios_base::in);
-        } else {
-            return pos_type(-1);
+            _CATCH_IO_END
         }
+
+        return pos_type(-1);
     }
 
 private:
