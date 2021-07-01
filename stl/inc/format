@@ -1844,9 +1844,9 @@ _NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const _Arithmetic _Value) {
     // clang-format on
     // TRANSITION, Reusable buffer
     char _Buffer[_Format_min_buffer_length];
-    const auto [_End, _Ec] = _STD to_chars(_Buffer, _Buffer + _Format_min_buffer_length, _Value);
+    const auto [_End, _Ec] = _STD to_chars(_STD begin(_Buffer), _STD end(_Buffer), _Value);
     _STL_ASSERT(_Ec == errc{}, "to_chars failed");
-    return _RANGES _Copy_unchecked(_Buffer, _End, _STD move(_Out)).out;
+    return _RANGES _Copy_unchecked(_STD begin(_Buffer), _End, _STD move(_Out)).out;
 }
 #pragma warning(pop)
 
@@ -1872,11 +1872,11 @@ _NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const void* const _Value) {
     // TRANSITION, Reusable buffer
     char _Buffer[_Format_min_buffer_length];
     const auto [_End, _Ec] =
-        _STD to_chars(_Buffer, _Buffer + _Format_min_buffer_length, reinterpret_cast<uintptr_t>(_Value), 16);
+        _STD to_chars(_STD begin(_Buffer), _STD end(_Buffer), reinterpret_cast<uintptr_t>(_Value), 16);
     _STL_ASSERT(_Ec == errc{}, "to_chars failed");
     *_Out++ = '0';
     *_Out++ = 'x';
-    return _RANGES _Copy_unchecked(_Buffer, _End, _STD move(_Out)).out;
+    return _RANGES _Copy_unchecked(_STD begin(_Buffer), _End, _STD move(_Out)).out;
 }
 #pragma warning(pop)
 
@@ -2137,12 +2137,11 @@ _NODISCARD _OutputIt _Write_integral(
     }
 
     // long long -1 representation in binary is 64 bits + sign
-    constexpr auto _Buffer_size = 65;
-    char _Buffer[_Buffer_size];
-    const auto [_End, _Ec] = _STD to_chars(_Buffer, _Buffer + _Buffer_size, _Value, _Base);
+    char _Buffer[65];
+    const auto [_End, _Ec] = _STD to_chars(_STD begin(_Buffer), _STD end(_Buffer), _Value, _Base);
     _STL_ASSERT(_Ec == errc{}, "to_chars failed");
 
-    auto _Buffer_start = _Buffer;
+    auto _Buffer_start = _STD begin(_Buffer);
     auto _Width        = static_cast<int>(_End - _Buffer_start);
 
     if (_Value >= _Integral{0}) {
@@ -2336,14 +2335,14 @@ _NODISCARD _OutputIt _Fmt_write(
     }
 
     if (_Precision == -1) {
-        _Result = _STD to_chars(_Buffer, _Buffer + _Buffer_size, _Value, _Format);
+        _Result = _STD to_chars(_STD begin(_Buffer), _STD end(_Buffer), _Value, _Format);
     } else {
-        _Result = _STD to_chars(_Buffer, _Buffer + _Buffer_size, _Value, _Format, _Precision);
+        _Result = _STD to_chars(_STD begin(_Buffer), _STD end(_Buffer), _Value, _Format, _Precision);
     }
 
     _STL_ASSERT(_Result.ec == errc{}, "to_chars failed");
 
-    auto _Buffer_start = _Buffer;
+    auto _Buffer_start = _STD begin(_Buffer);
     auto _Width        = static_cast<int>(_Result.ptr - _Buffer_start);
 
     const auto _Is_negative = (_STD signbit)(_Value);

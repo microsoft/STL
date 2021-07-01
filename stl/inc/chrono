@@ -35,6 +35,7 @@
 #endif // defined(__cpp_lib_concepts)
 
 #ifdef __cpp_lib_format
+#include <array>
 #include <format>
 #include <iomanip>
 #endif // defined(__cpp_lib_format)
