@@ -481,139 +481,58 @@ public:
         _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
     }
 
-private:
-    template <class _Ty2>
-    _CONSTEXPR20_CONTAINER void _Construct_n_copies_of_ty(_CRT_GUARDOVERFLOW const size_type _Count, const _Ty2& _Val) {
-        auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
-        auto& _My_data  = _Mypair._Myval2;
-        _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data);
-        if (_Count != 0) {
-            _Buy_nonzero(_Count);
-            _Tidy_guard<vector> _Guard{this};
-            _My_data._Mylast = _Ufill(_My_data._Myfirst, _Count, _Val);
-            _Guard._Target   = nullptr;
-        }
-
-        _Proxy._Release();
-    }
-
-public:
     _CONSTEXPR20_CONTAINER explicit vector(_CRT_GUARDOVERFLOW const size_type _Count, const _Alloc& _Al = _Alloc())
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        _Construct_n_copies_of_ty(_Count, _Value_init_tag{});
+        _Construct_n(_Count);
     }
 
     _CONSTEXPR20_CONTAINER vector(
         _CRT_GUARDOVERFLOW const size_type _Count, const _Ty& _Val, const _Alloc& _Al = _Alloc())
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        _Construct_n_copies_of_ty(_Count, _Val);
+        _Construct_n(_Count, _Val);
     }
 
-private:
-    template <class _Iter>
-    _CONSTEXPR20_CONTAINER void _Range_construct_or_tidy(_Iter _First, _Iter _Last, input_iterator_tag) {
-        _Tidy_guard<vector> _Guard{this};
-        for (; _First != _Last; ++_First) {
-            emplace_back(*_First); // performance note: emplace_back()'s strong guarantee is unnecessary here
-        }
-
-        _Guard._Target = nullptr;
-    }
-
-    template <class _Iter>
-    _CONSTEXPR20_CONTAINER void _Range_construct_or_tidy(_Iter _First, _Iter _Last, forward_iterator_tag) {
-        const auto _Count = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_First, _Last)));
-        if (_Count != 0) {
-            _Buy_nonzero(_Count);
-            _Tidy_guard<vector> _Guard{this};
-            auto& _My_data   = _Mypair._Myval2;
-            _My_data._Mylast = _Ucopy(_First, _Last, _My_data._Myfirst);
-            _Guard._Target   = nullptr;
-        }
-    }
-
-public:
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     _CONSTEXPR20_CONTAINER vector(_Iter _First, _Iter _Last, const _Alloc& _Al = _Alloc())
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
-        _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
         _Adl_verify_range(_First, _Last);
-        _Range_construct_or_tidy(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Iter_cat_t<_Iter>{});
-        _Proxy._Release();
+        auto _UFirst = _Get_unwrapped(_First);
+        auto _ULast  = _Get_unwrapped(_Last);
+        if constexpr (_Is_fwd_iter_v<_Iter>) {
+            const auto _Count = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_UFirst, _ULast)));
+            _Construct_n(_Count, _STD move(_UFirst), _STD move(_ULast));
+        } else {
+            auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
+            _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
+            _Tidy_guard<vector> _Guard{this};
+
+            for (; _UFirst != _ULast; ++_UFirst) {
+                emplace_back(*_UFirst); // performance note: emplace_back()'s strong guarantee is unnecessary here
+            }
+
+            _Guard._Target = nullptr;
+            _Proxy._Release();
+        }
     }
 
     _CONSTEXPR20_CONTAINER vector(initializer_list<_Ty> _Ilist, const _Alloc& _Al = _Alloc())
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
-        _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
-        _Range_construct_or_tidy(_Ilist.begin(), _Ilist.end(), random_access_iterator_tag{});
-        _Proxy._Release();
+        _Construct_n(_Convert_size<size_type>(_Ilist.size()), _Ilist.begin(), _Ilist.end());
     }
 
     _CONSTEXPR20_CONTAINER vector(const vector& _Right)
         : _Mypair(_One_then_variadic_args_t{}, _Alty_traits::select_on_container_copy_construction(_Right._Getal())) {
-        auto&& _Alproxy           = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
-        auto& _My_data            = _Mypair._Myval2;
-        const auto& _Right_data   = _Right._Mypair._Myval2;
-        const pointer _Rightfirst = _Right_data._Myfirst;
-        const pointer _Rightlast  = _Right_data._Mylast;
-        _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data);
-        if (_Rightfirst != _Rightlast) {
-            _Buy_raw(static_cast<size_type>(_Rightlast - _Rightfirst));
-            _Tidy_guard<vector> _Guard{this};
-            _My_data._Mylast = _Ucopy(_Rightfirst, _Rightlast, _My_data._Myfirst);
-            _Guard._Target   = nullptr;
-        }
-
-        _Proxy._Release();
+        const auto& _Right_data = _Right._Mypair._Myval2;
+        const auto _Count       = static_cast<size_type>(_Right_data._Mylast - _Right_data._Myfirst);
+        _Construct_n(_Count, _Right_data._Myfirst, _Right_data._Mylast);
     }
 
     _CONSTEXPR20_CONTAINER vector(const vector& _Right, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        auto&& _Alproxy           = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
-        auto& _My_data            = _Mypair._Myval2;
-        const auto& _Right_data   = _Right._Mypair._Myval2;
-        const pointer _Rightfirst = _Right_data._Myfirst;
-        const pointer _Rightlast  = _Right_data._Mylast;
-        _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data);
-        if (_Rightfirst != _Rightlast) {
-            _Buy_raw(static_cast<size_type>(_Rightlast - _Rightfirst));
-            _Tidy_guard<vector> _Guard{this};
-            _My_data._Mylast = _Ucopy(_Rightfirst, _Rightlast, _My_data._Myfirst);
-            _Guard._Target   = nullptr;
-        }
-
-        _Proxy._Release();
+        const auto& _Right_data = _Right._Mypair._Myval2;
+        const auto _Count       = static_cast<size_type>(_Right_data._Mylast - _Right_data._Myfirst);
+        _Construct_n(_Count, _Right_data._Myfirst, _Right_data._Mylast);
     }
 
-private:
-    _CONSTEXPR20_CONTAINER void _Move_construct(vector& _Right, true_type) noexcept {
-        // move from _Right, stealing its contents
-        _Mypair._Myval2._Take_contents(_Right._Mypair._Myval2);
-    }
-
-    _CONSTEXPR20_CONTAINER void _Move_construct(vector& _Right, false_type) {
-        // move from _Right, possibly moving its contents
-        if constexpr (!_Alty_traits::is_always_equal::value) {
-            if (_Getal() != _Right._Getal()) {
-                const auto& _Right_data   = _Right._Mypair._Myval2;
-                const pointer _Rightfirst = _Right_data._Myfirst;
-                const pointer _Rightlast  = _Right_data._Mylast;
-                if (_Rightfirst != _Rightlast) {
-                    _Buy_raw(static_cast<size_type>(_Rightlast - _Rightfirst));
-                    _Tidy_guard<vector> _Guard{this};
-                    auto& _My_data   = _Mypair._Myval2;
-                    _My_data._Mylast = _Umove(_Rightfirst, _Rightlast, _My_data._Myfirst);
-                    _Guard._Target   = nullptr;
-                }
-                return;
-            }
-        }
-
-        _Move_construct(_Right, true_type{});
-    }
-
-public:
     _CONSTEXPR20_CONTAINER vector(vector&& _Right) noexcept
         : _Mypair(_One_then_variadic_args_t{}, _STD move(_Right._Getal()),
             _STD exchange(_Right._Mypair._Myval2._Myfirst, nullptr),
@@ -623,88 +542,47 @@ public:
         _Mypair._Myval2._Swap_proxy_and_iterators(_Right._Mypair._Myval2);
     }
 
-    _CONSTEXPR20_CONTAINER vector(vector&& _Right, const _Alloc& _Al) noexcept(
+    _CONSTEXPR20_CONTAINER vector(vector&& _Right, const _Alloc& _Al_) noexcept(
         _Alty_traits::is_always_equal::value) // strengthened
-        : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
-        _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
-        _Move_construct(_Right, typename _Alty_traits::is_always_equal::type{});
+        : _Mypair(_One_then_variadic_args_t{}, _Al_) {
+        _Alty& _Al        = _Getal();
+        auto&& _Alproxy   = _GET_PROXY_ALLOCATOR(_Alty, _Al);
+        auto& _My_data    = _Mypair._Myval2;
+        auto& _Right_data = _Right._Mypair._Myval2;
+        _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data);
+
+        if constexpr (!_Alty_traits::is_always_equal::value) {
+            if (_Al != _Right._Getal()) {
+                const auto _Count = static_cast<size_type>(_Right_data._Mylast - _Right_data._Myfirst);
+                if (_Count != 0) {
+                    _Buy_raw(_Count);
+                    _Tidy_guard<vector> _Guard{this};
+                    _My_data._Mylast =
+                        _Uninitialized_move(_Right_data._Myfirst, _Right_data._Mylast, _My_data._Myfirst, _Al);
+                    _Guard._Target = nullptr;
+                }
+                _Proxy._Release();
+                return;
+            }
+        }
+
+        _My_data._Take_contents(_Right_data);
         _Proxy._Release();
     }
 
-private:
-    _CONSTEXPR20_CONTAINER void _Move_assign(vector& _Right, _Equal_allocators) noexcept {
-        _Tidy();
-        _Pocma(_Getal(), _Right._Getal());
-        _Mypair._Myval2._Take_contents(_Right._Mypair._Myval2);
-    }
-
-    _CONSTEXPR20_CONTAINER void _Move_assign(vector& _Right, _Propagate_allocators) noexcept /* terminates */ {
-        _Tidy();
-#if _ITERATOR_DEBUG_LEVEL != 0
-        if (_Getal() != _Right._Getal()) {
-            // intentionally slams into noexcept on OOM, TRANSITION, VSO-466800
-            _Mypair._Myval2._Reload_proxy(
-                _GET_PROXY_ALLOCATOR(_Alty, _Getal()), _GET_PROXY_ALLOCATOR(_Alty, _Right._Getal()));
-        }
-#endif
-
-        _Pocma(_Getal(), _Right._Getal());
-        _Mypair._Myval2._Take_contents(_Right._Mypair._Myval2);
-    }
-
-    _CONSTEXPR20_CONTAINER void _Move_assign(vector& _Right, _No_propagate_allocators) {
-        if (_Getal() == _Right._Getal()) {
-            _Move_assign(_Right, _Equal_allocators{});
-        } else {
-            auto& _Right_data    = _Right._Mypair._Myval2;
-            const pointer _First = _Right_data._Myfirst;
-            const pointer _Last  = _Right_data._Mylast;
-            const auto _Newsize  = static_cast<size_type>(_Last - _First);
-
-            auto& _My_data    = _Mypair._Myval2;
-            pointer& _Myfirst = _My_data._Myfirst;
-            pointer& _Mylast  = _My_data._Mylast;
-
-            _My_data._Orphan_all();
-
-            const auto _Oldcapacity = static_cast<size_type>(_My_data._Myend - _Myfirst);
-            if constexpr (conjunction_v<bool_constant<_Ptr_copy_cat<_Ty*, _Ty*>::_Trivially_copyable>,
-                              _Uses_default_construct<_Alty, _Ty*, _Ty>, _Uses_default_destroy<_Alty, _Ty*>>) {
-                if (_Newsize > _Oldcapacity) {
-                    _Clear_and_reserve_geometric(_Newsize);
-                }
-
-                _Mylast = _Refancy<pointer>(_Copy_memmove(_Unfancy(_First), _Unfancy(_Last), _Unfancy(_Myfirst)));
-            } else {
-                auto _Oldsize = static_cast<size_type>(_Mylast - _Myfirst);
-
-                if (_Newsize > _Oldsize) {
-                    if (_Newsize > _Oldcapacity) { // reallocate
-                        _Clear_and_reserve_geometric(_Newsize);
-                        _Oldsize = 0;
-                    }
-
-                    const pointer _Mid = _First + _Oldsize;
-                    _Move_unchecked(_First, _Mid, _Myfirst);
-                    _Mylast = _Umove(_Mid, _Last, _Mylast);
-                } else {
-                    const pointer _Newlast = _Myfirst + _Newsize;
-                    _Move_unchecked(_First, _Last, _Myfirst);
-                    _Destroy(_Newlast, _Mylast);
-                    _Mylast = _Newlast;
-                }
-            }
-        }
-    }
-
-public:
     _CONSTEXPR20_CONTAINER vector& operator=(vector&& _Right) noexcept(
-        noexcept(_Move_assign(_Right, _Choose_pocma<_Alty>{}))) {
-        if (this != _STD addressof(_Right)) {
-            _Move_assign(_Right, _Choose_pocma<_Alty>{});
+        !is_same_v<_Choose_pocma<_Alty>, _No_propagate_allocators>) {
+        if (this == _STD addressof(_Right)) {
+            return *this;
         }
 
+        if (_Getal() == _Right._Getal()) {
+            _Tidy();
+            _Pocma(_Getal(), _Right._Getal());
+            _Mypair._Myval2._Take_contents(_Right._Mypair._Myval2);
+        } else if constexpr (!is_same_v<_Choose_pocma<_Alty>, _Equal_allocators>) {
+            _Move_assign_unequal_alloc(_Right);
+        }
         return *this;
     }
 
@@ -790,14 +668,18 @@ public:
         _Constructed_first = _Newvec + _Whereoff;
 
         if (_Whereptr == _Mylast) { // at back, provide strong guarantee
-            _Umove_if_noexcept(_Myfirst, _Mylast, _Newvec);
+            if constexpr (is_nothrow_move_constructible_v<_Ty> || !is_copy_constructible_v<_Ty>) {
+                _Uninitialized_move(_Myfirst, _Mylast, _Newvec, _Al);
+            } else {
+                _Uninitialized_copy(_Myfirst, _Mylast, _Newvec, _Al);
+            }
         } else { // provide basic guarantee
-            _Umove(_Myfirst, _Whereptr, _Newvec);
+            _Uninitialized_move(_Myfirst, _Whereptr, _Newvec, _Al);
             _Constructed_first = _Newvec;
-            _Umove(_Whereptr, _Mylast, _Newvec + _Whereoff + 1);
+            _Uninitialized_move(_Whereptr, _Mylast, _Newvec + _Whereoff + 1, _Al);
         }
         _CATCH_ALL
-        _Destroy(_Constructed_first, _Constructed_last);
+        _Destroy_range(_Constructed_first, _Constructed_last, _Al);
         _Al.deallocate(_Newvec, _Newcapacity);
         _RERAISE;
         _CATCH_END
@@ -851,6 +733,7 @@ public:
         // insert _Count * _Val at _Where
         const pointer _Whereptr = _Where._Ptr;
 
+        auto& _Al        = _Getal();
         auto& _My_data   = _Mypair._Myval2;
         pointer& _Mylast = _My_data._Mylast;
 
@@ -875,24 +758,28 @@ public:
             const size_type _Newsize     = _Oldsize + _Count;
             const size_type _Newcapacity = _Calculate_growth(_Newsize);
 
-            const pointer _Newvec           = _Getal().allocate(_Newcapacity);
+            const pointer _Newvec           = _Al.allocate(_Newcapacity);
             const pointer _Constructed_last = _Newvec + _Whereoff + _Count;
             pointer _Constructed_first      = _Constructed_last;
 
             _TRY_BEGIN
-            _Ufill(_Newvec + _Whereoff, _Count, _Val);
+            _Uninitialized_fill_n(_Newvec + _Whereoff, _Count, _Val, _Al);
             _Constructed_first = _Newvec + _Whereoff;
 
             if (_One_at_back) { // provide strong guarantee
-                _Umove_if_noexcept(_Oldfirst, _Oldlast, _Newvec);
+                if constexpr (is_nothrow_move_constructible_v<_Ty> || !is_copy_constructible_v<_Ty>) {
+                    _Uninitialized_move(_Oldfirst, _Oldlast, _Newvec, _Al);
+                } else {
+                    _Uninitialized_copy(_Oldfirst, _Oldlast, _Newvec, _Al);
+                }
             } else { // provide basic guarantee
-                _Umove(_Oldfirst, _Whereptr, _Newvec);
+                _Uninitialized_move(_Oldfirst, _Whereptr, _Newvec, _Al);
                 _Constructed_first = _Newvec;
-                _Umove(_Whereptr, _Oldlast, _Newvec + _Whereoff + _Count);
+                _Uninitialized_move(_Whereptr, _Oldlast, _Newvec + _Whereoff + _Count, _Al);
             }
             _CATCH_ALL
-            _Destroy(_Constructed_first, _Constructed_last);
-            _Getal().deallocate(_Newvec, _Newcapacity);
+            _Destroy_range(_Constructed_first, _Constructed_last, _Al);
+            _Al.deallocate(_Newvec, _Newcapacity);
             _RERAISE;
             _CATCH_END
 
@@ -900,17 +787,17 @@ public:
         } else if (_One_at_back) { // provide strong guarantee
             _Emplace_back_with_unused_capacity(_Val);
         } else { // provide basic guarantee
-            const _Alloc_temporary<_Alty> _Tmp_storage(_Getal(), _Val); // handle aliasing
+            const _Alloc_temporary<_Alty> _Tmp_storage(_Al, _Val); // handle aliasing
             const auto& _Tmp              = _Tmp_storage._Storage._Value;
             const auto _Affected_elements = static_cast<size_type>(_Oldlast - _Whereptr);
             _Orphan_range(_Whereptr, _Oldlast);
 
             if (_Count > _Affected_elements) { // new stuff spills off end
-                _Mylast = _Ufill(_Oldlast, _Count - _Affected_elements, _Tmp);
-                _Mylast = _Umove(_Whereptr, _Oldlast, _Mylast);
+                _Mylast = _Uninitialized_fill_n(_Oldlast, _Count - _Affected_elements, _Tmp, _Al);
+                _Mylast = _Uninitialized_move(_Whereptr, _Oldlast, _Mylast, _Al);
                 _STD fill(_Whereptr, _Oldlast, _Tmp);
             } else { // new stuff can all be assigned
-                _Mylast = _Umove(_Oldlast - _Count, _Oldlast, _Oldlast);
+                _Mylast = _Uninitialized_move(_Oldlast - _Count, _Oldlast, _Oldlast, _Al);
                 _Move_backward_unchecked(_Whereptr, _Oldlast - _Count, _Oldlast);
                 _STD fill(_Whereptr, _Whereptr + _Count, _Tmp);
             }
@@ -952,6 +839,7 @@ private:
         const pointer _Whereptr = _Where._Ptr;
         const auto _Count       = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_First, _Last)));
 
+        auto& _Al        = _Getal();
         auto& _My_data   = _Mypair._Myval2;
         pointer& _Mylast = _My_data._Mylast;
 
@@ -970,25 +858,29 @@ private:
             const size_type _Newsize     = _Oldsize + _Count;
             const size_type _Newcapacity = _Calculate_growth(_Newsize);
 
-            const pointer _Newvec           = _Getal().allocate(_Newcapacity);
+            const pointer _Newvec           = _Al.allocate(_Newcapacity);
             const auto _Whereoff            = static_cast<size_type>(_Whereptr - _Oldfirst);
             const pointer _Constructed_last = _Newvec + _Whereoff + _Count;
             pointer _Constructed_first      = _Constructed_last;
 
             _TRY_BEGIN
-            _Ucopy(_First, _Last, _Newvec + _Whereoff);
+            _Uninitialized_copy(_First, _Last, _Newvec + _Whereoff, _Al);
             _Constructed_first = _Newvec + _Whereoff;
 
             if (_Count == 1 && _Whereptr == _Oldlast) { // one at back, provide strong guarantee
-                _Umove_if_noexcept(_Oldfirst, _Oldlast, _Newvec);
+                if constexpr (is_nothrow_move_constructible_v<_Ty> || !is_copy_constructible_v<_Ty>) {
+                    _Uninitialized_move(_Oldfirst, _Oldlast, _Newvec, _Al);
+                } else {
+                    _Uninitialized_copy(_Oldfirst, _Oldlast, _Newvec, _Al);
+                }
             } else { // provide basic guarantee
-                _Umove(_Oldfirst, _Whereptr, _Newvec);
+                _Uninitialized_move(_Oldfirst, _Whereptr, _Newvec, _Al);
                 _Constructed_first = _Newvec;
-                _Umove(_Whereptr, _Oldlast, _Newvec + _Whereoff + _Count);
+                _Uninitialized_move(_Whereptr, _Oldlast, _Newvec + _Whereoff + _Count, _Al);
             }
             _CATCH_ALL
-            _Destroy(_Constructed_first, _Constructed_last);
-            _Getal().deallocate(_Newvec, _Newcapacity);
+            _Destroy_range(_Constructed_first, _Constructed_last, _Al);
+            _Al.deallocate(_Newvec, _Newcapacity);
             _RERAISE;
             _CATCH_END
 
@@ -1000,51 +892,51 @@ private:
             const auto _Affected_elements = static_cast<size_type>(_Oldlast - _Whereptr);
 
             if (_Count < _Affected_elements) { // some affected elements must be assigned
-                _Mylast = _Umove(_Oldlast - _Count, _Oldlast, _Oldlast);
+                _Mylast = _Uninitialized_move(_Oldlast - _Count, _Oldlast, _Oldlast, _Al);
                 _Move_backward_unchecked(_Whereptr, _Oldlast - _Count, _Oldlast);
-                _Destroy(_Whereptr, _Whereptr + _Count);
+                _Destroy_range(_Whereptr, _Whereptr + _Count, _Al);
 
                 _TRY_BEGIN
-                _Ucopy(_First, _Last, _Whereptr);
+                _Uninitialized_copy(_First, _Last, _Whereptr, _Al);
                 _CATCH_ALL
                 // glue the broken pieces back together
 
                 _TRY_BEGIN
-                _Umove(_Whereptr + _Count, _Whereptr + 2 * _Count, _Whereptr);
+                _Uninitialized_move(_Whereptr + _Count, _Whereptr + 2 * _Count, _Whereptr, _Al);
                 _CATCH_ALL
                 // vaporize the detached piece
                 _Orphan_range(_Whereptr, _Oldlast);
-                _Destroy(_Whereptr + _Count, _Mylast);
+                _Destroy_range(_Whereptr + _Count, _Mylast, _Al);
                 _Mylast = _Whereptr;
                 _RERAISE;
                 _CATCH_END
 
                 _Move_unchecked(_Whereptr + 2 * _Count, _Mylast, _Whereptr + _Count);
-                _Destroy(_Oldlast, _Mylast);
+                _Destroy_range(_Oldlast, _Mylast, _Al);
                 _Mylast = _Oldlast;
                 _RERAISE;
                 _CATCH_END
             } else { // affected elements don't overlap before/after
                 const pointer _Relocated = _Whereptr + _Count;
-                _Mylast                  = _Umove(_Whereptr, _Oldlast, _Relocated);
-                _Destroy(_Whereptr, _Oldlast);
+                _Mylast                  = _Uninitialized_move(_Whereptr, _Oldlast, _Relocated, _Al);
+                _Destroy_range(_Whereptr, _Oldlast, _Al);
 
                 _TRY_BEGIN
-                _Ucopy(_First, _Last, _Whereptr);
+                _Uninitialized_copy(_First, _Last, _Whereptr, _Al);
                 _CATCH_ALL
                 // glue the broken pieces back together
 
                 _TRY_BEGIN
-                _Umove(_Relocated, _Mylast, _Whereptr);
+                _Uninitialized_move(_Relocated, _Mylast, _Whereptr, _Al);
                 _CATCH_ALL
                 // vaporize the detached piece
                 _Orphan_range(_Whereptr, _Oldlast);
-                _Destroy(_Relocated, _Mylast);
+                _Destroy_range(_Relocated, _Mylast, _Al);
                 _Mylast = _Whereptr;
                 _RERAISE;
                 _CATCH_END
 
-                _Destroy(_Relocated, _Mylast);
+                _Destroy_range(_Relocated, _Mylast, _Al);
                 _Mylast = _Oldlast;
                 _RERAISE;
                 _CATCH_END
@@ -1078,6 +970,7 @@ public:
 
     _CONSTEXPR20_CONTAINER void assign(_CRT_GUARDOVERFLOW const size_type _Newsize, const _Ty& _Val) {
         // assign _Newsize * _Val
+        auto& _Al         = _Getal();
         auto& _My_data    = _Mypair._Myval2;
         pointer& _Myfirst = _My_data._Myfirst;
         pointer& _Mylast  = _My_data._Mylast;
@@ -1094,11 +987,11 @@ public:
                 _STD fill(_Myfirst, _Mylast, _Val);
             }
 
-            _Mylast = _Ufill(_Mylast, _Newsize - _Oldsize, _Val);
+            _Mylast = _Uninitialized_fill_n(_Mylast, _Newsize - _Oldsize, _Val, _Al);
         } else {
             const pointer _Newlast = _Myfirst + _Newsize;
             _STD fill(_Myfirst, _Newlast, _Val);
-            _Destroy(_Newlast, _Mylast);
+            _Destroy_range(_Newlast, _Mylast, _Al);
             _Mylast = _Newlast;
         }
     }
@@ -1125,7 +1018,7 @@ private:
         // If we've exhausted both: Trim does nothing, then Append does nothing.
 
         // Trim.
-        _Destroy(_Next, _Mylast);
+        _Destroy_range(_Next, _Mylast, _Getal());
         _Mylast = _Next;
 
         // Append.
@@ -1138,6 +1031,7 @@ private:
     _CONSTEXPR20_CONTAINER void _Assign_range(_Iter _First, _Iter _Last, forward_iterator_tag) {
         // assign forward range [_First, _Last)
         const auto _Newsize = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_First, _Last)));
+        auto& _Al           = _Getal();
         auto& _My_data      = _Mypair._Myval2;
         pointer& _Myfirst   = _My_data._Myfirst;
         pointer& _Mylast    = _My_data._Mylast;
@@ -1173,11 +1067,11 @@ private:
             // performance note: traversing [_First, _Mid) twice
             const _Iter _Mid = _STD next(_First, static_cast<difference_type>(_Oldsize));
             _Copy_unchecked(_First, _Mid, _Myfirst);
-            _Mylast = _Ucopy(_Mid, _Last, _Mylast);
+            _Mylast = _Uninitialized_copy(_Mid, _Last, _Mylast, _Al);
         } else {
             const pointer _Newlast = _Myfirst + _Newsize;
             _Copy_unchecked(_First, _Last, _Myfirst);
-            _Destroy(_Newlast, _Mylast);
+            _Destroy_range(_Newlast, _Mylast, _Al);
             _Mylast = _Newlast;
         }
     }
@@ -1231,6 +1125,7 @@ private:
             _Xlength();
         }
 
+        auto& _Al         = _Getal();
         auto& _My_data    = _Mypair._Myval2;
         pointer& _Myfirst = _My_data._Myfirst;
         pointer& _Mylast  = _My_data._Mylast;
@@ -1238,16 +1133,26 @@ private:
         const auto _Oldsize          = static_cast<size_type>(_Mylast - _Myfirst);
         const size_type _Newcapacity = _Calculate_growth(_Newsize);
 
-        const pointer _Newvec         = _Getal().allocate(_Newcapacity);
+        const pointer _Newvec         = _Al.allocate(_Newcapacity);
         const pointer _Appended_first = _Newvec + _Oldsize;
         pointer _Appended_last        = _Appended_first;
 
         _TRY_BEGIN
-        _Appended_last = _Ufill(_Appended_first, _Newsize - _Oldsize, _Val);
-        _Umove_if_noexcept(_Myfirst, _Mylast, _Newvec);
+        if constexpr (is_same_v<_Ty2, _Ty>) {
+            _Appended_last = _Uninitialized_fill_n(_Appended_first, _Newsize - _Oldsize, _Val, _Al);
+        } else {
+            _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Ty2, _Value_init_tag>);
+            _Appended_last = _Uninitialized_value_construct_n(_Appended_first, _Newsize - _Oldsize, _Al);
+        }
+
+        if constexpr (is_nothrow_move_constructible_v<_Ty> || !is_copy_constructible_v<_Ty>) {
+            _Uninitialized_move(_Myfirst, _Mylast, _Newvec, _Al);
+        } else {
+            _Uninitialized_copy(_Myfirst, _Mylast, _Newvec, _Al);
+        }
         _CATCH_ALL
-        _Destroy(_Appended_first, _Appended_last);
-        _Getal().deallocate(_Newvec, _Newcapacity);
+        _Destroy_range(_Appended_first, _Appended_last, _Al);
+        _Al.deallocate(_Newvec, _Newcapacity);
         _RERAISE;
         _CATCH_END
 
@@ -1257,6 +1162,7 @@ private:
     template <class _Ty2>
     _CONSTEXPR20_CONTAINER void _Resize(const size_type _Newsize, const _Ty2& _Val) {
         // trim or append elements, provide strong guarantee
+        auto& _Al           = _Getal();
         auto& _My_data      = _Mypair._Myval2;
         pointer& _Myfirst   = _My_data._Myfirst;
         pointer& _Mylast    = _My_data._Mylast;
@@ -1264,7 +1170,7 @@ private:
         if (_Newsize < _Oldsize) { // trim
             const pointer _Newlast = _Myfirst + _Newsize;
             _Orphan_range(_Newlast, _Mylast);
-            _Destroy(_Newlast, _Mylast);
+            _Destroy_range(_Newlast, _Mylast, _Al);
             _Mylast = _Newlast;
             return;
         }
@@ -1277,7 +1183,12 @@ private:
             }
 
             const pointer _Oldlast = _Mylast;
-            _Mylast                = _Ufill(_Oldlast, _Newsize - _Oldsize, _Val);
+            if constexpr (is_same_v<_Ty2, _Ty>) {
+                _Mylast = _Uninitialized_fill_n(_Oldlast, _Newsize - _Oldsize, _Val, _Al);
+            } else {
+                _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Ty2, _Value_init_tag>);
+                _Mylast = _Uninitialized_value_construct_n(_Oldlast, _Newsize - _Oldsize, _Al);
+            }
             _Orphan_range(_Oldlast, _Oldlast);
         }
 
@@ -1298,18 +1209,23 @@ public:
 private:
     _CONSTEXPR20_CONTAINER void _Reallocate_exactly(const size_type _Newcapacity) {
         // set capacity to _Newcapacity (without geometric growth), provide strong guarantee
+        auto& _Al         = _Getal();
         auto& _My_data    = _Mypair._Myval2;
         pointer& _Myfirst = _My_data._Myfirst;
         pointer& _Mylast  = _My_data._Mylast;
 
         const auto _Size = static_cast<size_type>(_Mylast - _Myfirst);
 
-        const pointer _Newvec = _Getal().allocate(_Newcapacity);
+        const pointer _Newvec = _Al.allocate(_Newcapacity);
 
         _TRY_BEGIN
-        _Umove_if_noexcept(_Myfirst, _Mylast, _Newvec);
+        if constexpr (is_nothrow_move_constructible_v<_Ty> || !is_copy_constructible_v<_Ty>) {
+            _Uninitialized_move(_Myfirst, _Mylast, _Newvec, _Al);
+        } else {
+            _Uninitialized_copy(_Myfirst, _Mylast, _Newvec, _Al);
+        }
         _CATCH_ALL
-        _Getal().deallocate(_Newvec, _Newcapacity);
+        _Al.deallocate(_Newvec, _Newcapacity);
         _RERAISE;
         _CATCH_END
 
@@ -1337,6 +1253,7 @@ private:
 #endif // _ITERATOR_DEBUG_LEVEL != 0 && defined(_ENABLE_STL_INTERNAL_CHECK)
 
     _CONSTEXPR20_CONTAINER void _Clear_and_reserve_geometric(const size_type _Newsize) {
+        auto& _Al         = _Getal();
         auto& _My_data    = _Mypair._Myval2;
         pointer& _Myfirst = _My_data._Myfirst;
         pointer& _Mylast  = _My_data._Mylast;
@@ -1354,8 +1271,8 @@ private:
         const size_type _Newcapacity = _Calculate_growth(_Newsize);
 
         if (_Myfirst) { // destroy and deallocate old array
-            _Destroy(_Myfirst, _Mylast);
-            _Getal().deallocate(_Myfirst, static_cast<size_type>(_Myend - _Myfirst));
+            _Destroy_range(_Myfirst, _Mylast, _Al);
+            _Al.deallocate(_Myfirst, static_cast<size_type>(_Myend - _Myfirst));
 
             _Myfirst = nullptr;
             _Mylast  = nullptr;
@@ -1439,7 +1356,7 @@ public:
             _Orphan_range(_Firstptr, _Mylast);
 
             const pointer _Newlast = _Move_unchecked(_Lastptr, _Mylast, _Firstptr);
-            _Destroy(_Newlast, _Mylast);
+            _Destroy_range(_Newlast, _Mylast, _Getal());
             _Mylast = _Newlast;
         }
 
@@ -1452,7 +1369,7 @@ public:
         pointer& _Mylast  = _My_data._Mylast;
 
         _My_data._Orphan_all();
-        _Destroy(_Myfirst, _Mylast);
+        _Destroy_range(_Myfirst, _Mylast, _Getal());
         _Mylast = _Myfirst;
     }
 
@@ -1638,48 +1555,6 @@ public:
     }
 
 private:
-    _CONSTEXPR20_CONTAINER pointer _Ufill(pointer _Dest, const size_type _Count, const _Ty& _Val) {
-        // fill raw _Dest with _Count copies of _Val, using allocator
-        return _Uninitialized_fill_n(_Dest, _Count, _Val, _Getal());
-    }
-
-    _CONSTEXPR20_CONTAINER pointer _Ufill(pointer _Dest, const size_type _Count, _Value_init_tag) {
-        // fill raw _Dest with _Count value-initialized objects, using allocator
-        return _Uninitialized_value_construct_n(_Dest, _Count, _Getal());
-    }
-
-    template <class _Iter>
-    _CONSTEXPR20_CONTAINER pointer _Ucopy(_Iter _First, _Iter _Last, pointer _Dest) {
-        // copy [_First, _Last) to raw _Dest, using allocator
-        return _Uninitialized_copy(_First, _Last, _Dest, _Getal());
-    }
-
-    _CONSTEXPR20_CONTAINER pointer _Umove(pointer _First, pointer _Last, pointer _Dest) {
-        // move [_First, _Last) to raw _Dest, using allocator
-        return _Uninitialized_move(_First, _Last, _Dest, _Getal());
-    }
-
-    _CONSTEXPR20_CONTAINER void _Umove_if_noexcept1(pointer _First, pointer _Last, pointer _Dest, true_type) {
-        // move [_First, _Last) to raw _Dest, using allocator
-        _Uninitialized_move(_First, _Last, _Dest, _Getal());
-    }
-
-    _CONSTEXPR20_CONTAINER void _Umove_if_noexcept1(pointer _First, pointer _Last, pointer _Dest, false_type) {
-        // copy [_First, _Last) to raw _Dest, using allocator
-        _Uninitialized_copy(_First, _Last, _Dest, _Getal());
-    }
-
-    _CONSTEXPR20_CONTAINER void _Umove_if_noexcept(pointer _First, pointer _Last, pointer _Dest) {
-        // move_if_noexcept [_First, _Last) to raw _Dest, using allocator
-        _Umove_if_noexcept1(_First, _Last, _Dest,
-            bool_constant<disjunction_v<is_nothrow_move_constructible<_Ty>, negation<is_copy_constructible<_Ty>>>>{});
-    }
-
-    _CONSTEXPR20_CONTAINER void _Destroy(pointer _First, pointer _Last) {
-        // destroy [_First, _Last) using allocator
-        _Destroy_range(_First, _Last, _Getal());
-    }
-
     _CONSTEXPR20_CONTAINER size_type _Calculate_growth(const size_type _Newsize) const {
         // given _Oldcapacity and _Newsize, calculate geometric growth
         const size_type _Oldcapacity = capacity();
@@ -1735,6 +1610,7 @@ private:
     _CONSTEXPR20_CONTAINER void _Change_array(
         const pointer _Newvec, const size_type _Newsize, const size_type _Newcapacity) {
         // orphan all iterators, discard old array, acquire new array
+        auto& _Al         = _Getal();
         auto& _My_data    = _Mypair._Myval2;
         pointer& _Myfirst = _My_data._Myfirst;
         pointer& _Mylast  = _My_data._Mylast;
@@ -1743,8 +1619,8 @@ private:
         _My_data._Orphan_all();
 
         if (_Myfirst) { // destroy and deallocate old array
-            _Destroy(_Myfirst, _Mylast);
-            _Getal().deallocate(_Myfirst, static_cast<size_type>(_Myend - _Myfirst));
+            _Destroy_range(_Myfirst, _Mylast, _Al);
+            _Al.deallocate(_Myfirst, static_cast<size_type>(_Myend - _Myfirst));
         }
 
         _Myfirst = _Newvec;
@@ -1753,6 +1629,7 @@ private:
     }
 
     _CONSTEXPR20_CONTAINER void _Tidy() noexcept { // free all storage
+        auto& _Al         = _Getal();
         auto& _My_data    = _Mypair._Myval2;
         pointer& _Myfirst = _My_data._Myfirst;
         pointer& _Mylast  = _My_data._Mylast;
@@ -1761,12 +1638,94 @@ private:
         _My_data._Orphan_all();
 
         if (_Myfirst) { // destroy and deallocate old array
-            _Destroy(_Myfirst, _Mylast);
-            _Getal().deallocate(_Myfirst, static_cast<size_type>(_Myend - _Myfirst));
+            _Destroy_range(_Myfirst, _Mylast, _Al);
+            _Al.deallocate(_Myfirst, static_cast<size_type>(_Myend - _Myfirst));
 
             _Myfirst = nullptr;
             _Mylast  = nullptr;
             _Myend   = nullptr;
+        }
+    }
+
+    template <class... _Valty>
+    _CONSTEXPR20_CONTAINER void _Construct_n(_CRT_GUARDOVERFLOW const size_type _Count, _Valty&&... _Val) {
+        // Dispatches between the three sized constructions.
+        // 1-arg -> value-construction, e.g. vector(5)
+        // 2-arg -> fill, e.g. vector(5, "meow")
+        // 3-arg -> sized range construction, e.g. vector{"Hello", "Fluffy", "World"}
+        auto& _Al       = _Getal();
+        auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Al);
+        auto& _My_data  = _Mypair._Myval2;
+        _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data);
+        if (_Count != 0) {
+            _Buy_nonzero(_Count);
+            _Tidy_guard<vector> _Guard{this};
+            if constexpr (sizeof...(_Val) == 0) {
+                _My_data._Mylast = _Uninitialized_value_construct_n(_My_data._Myfirst, _Count, _Al);
+            } else if constexpr (sizeof...(_Val) == 1) {
+                _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Valty..., const _Ty&>);
+                _My_data._Mylast = _Uninitialized_fill_n(_My_data._Myfirst, _Count, _Val..., _Al);
+            } else if constexpr (sizeof...(_Val) == 2) {
+                _My_data._Mylast = _Uninitialized_copy(_STD forward<_Valty>(_Val)..., _My_data._Myfirst, _Al);
+            } else {
+                static_assert(_Always_false<_Ty>, "Should be unreachable");
+            }
+            _Guard._Target = nullptr;
+        }
+
+        _Proxy._Release();
+    }
+
+    _CONSTEXPR20_CONTAINER void _Move_assign_unequal_alloc(vector& _Right) noexcept(
+        !is_same_v<_Choose_pocma<_Alty>, _No_propagate_allocators>) {
+        auto& _Al         = _Getal();
+        auto& _My_data    = _Mypair._Myval2;
+        auto& _Right_data = _Right._Mypair._Myval2;
+        if constexpr (is_same_v<_Choose_pocma<_Alty>, _Propagate_allocators>) {
+            _Tidy();
+#if _ITERATOR_DEBUG_LEVEL != 0
+            // intentionally slams into noexcept on OOM, TRANSITION, VSO-466800
+            _My_data._Reload_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Al), _GET_PROXY_ALLOCATOR(_Alty, _Right._Getal()));
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+            _Pocma(_Al, _Right._Getal());
+            _My_data._Take_contents(_Right_data);
+        } else {
+            const pointer _First = _Right_data._Myfirst;
+            const pointer _Last  = _Right_data._Mylast;
+            const auto _Newsize  = static_cast<size_type>(_Last - _First);
+
+            pointer& _Myfirst = _My_data._Myfirst;
+            pointer& _Mylast  = _My_data._Mylast;
+
+            _My_data._Orphan_all();
+
+            const auto _Oldcapacity = static_cast<size_type>(_My_data._Myend - _Myfirst);
+            if constexpr (conjunction_v<bool_constant<_Ptr_copy_cat<_Ty*, _Ty*>::_Trivially_copyable>,
+                              _Uses_default_construct<_Alty, _Ty*, _Ty>, _Uses_default_destroy<_Alty, _Ty*>>) {
+                if (_Newsize > _Oldcapacity) {
+                    _Clear_and_reserve_geometric(_Newsize);
+                }
+
+                _Mylast = _Refancy<pointer>(_Copy_memmove(_Unfancy(_First), _Unfancy(_Last), _Unfancy(_Myfirst)));
+            } else {
+                auto _Oldsize = static_cast<size_type>(_Mylast - _Myfirst);
+
+                if (_Newsize > _Oldsize) {
+                    if (_Newsize > _Oldcapacity) { // reallocate
+                        _Clear_and_reserve_geometric(_Newsize);
+                        _Oldsize = 0;
+                    }
+
+                    const pointer _Mid = _First + _Oldsize;
+                    _Move_unchecked(_First, _Mid, _Myfirst);
+                    _Mylast = _Uninitialized_move(_Mid, _Last, _Mylast, _Al);
+                } else {
+                    const pointer _Newlast = _Myfirst + _Newsize;
+                    _Move_unchecked(_First, _Last, _Myfirst);
+                    _Destroy_range(_Newlast, _Mylast, _Al);
+                    _Mylast = _Newlast;
+                }
+            }
         }
     }
 
@@ -3123,8 +3082,8 @@ _INLINE_VAR constexpr bool _Is_vb_iterator<_Vb_iterator<_Alloc>, _RequiresMutabl
 template <class _Alloc>
 _INLINE_VAR constexpr bool _Is_vb_iterator<_Vb_const_iterator<_Alloc>, false> = true;
 
-template <class _FwdIt, class _Ty>
-_CONSTEXPR20 void _Fill_vbool(_FwdIt _First, _FwdIt _Last, const _Ty& _Val) {
+template <class _VbIt, class _Ty>
+_CONSTEXPR20 void _Fill_vbool(_VbIt _First, _VbIt _Last, const _Ty& _Val) {
     // Set [_First, _Last) to _Val
     if (_First == _Last) {
         return;
@@ -3171,6 +3130,92 @@ _CONSTEXPR20 void _Fill_vbool(_FwdIt _First, _FwdIt _Last, const _Ty& _Val) {
         const auto _LastDestMask   = ~_LastSourceMask;
         *_VbFirst                  = (*_VbFirst & _LastDestMask) | (_FillVal & _LastSourceMask);
     }
+}
+
+template <class _VbIt, class _Ty>
+_NODISCARD _CONSTEXPR20 _VbIt _Find_vbool(_VbIt _First, const _VbIt _Last, const _Ty& _Val) {
+    // Find _Val in [_First, _Last)
+    if (_First == _Last) {
+        return _First;
+    }
+
+    const _Vbase* _VbFirst      = _First._Myptr;
+    const _Vbase* const _VbLast = _Last._Myptr;
+
+    const auto _FirstSourceMask = static_cast<_Vbase>(-1) << _First._Myoff;
+
+    if (_VbFirst == _VbLast) {
+        // We already excluded _First == _Last, so here _Last._Myoff > 0 and the shift is safe
+        const auto _LastSourceMask = static_cast<_Vbase>(-1) >> (_VBITS - _Last._Myoff);
+        const auto _SourceMask     = _FirstSourceMask & _LastSourceMask;
+        const auto _SelectVal      = (_Val ? *_VbFirst : ~*_VbFirst) & _SourceMask;
+        const auto _Count          = _Countr_zero(_SelectVal);
+        return _Count == _VBITS ? _Last : _First + static_cast<ptrdiff_t>(_Count - _First._Myoff);
+    }
+
+    const auto _FirstVal   = (_Val ? *_VbFirst : ~*_VbFirst) & _FirstSourceMask;
+    const auto _FirstCount = _Countr_zero(_FirstVal);
+    if (_FirstCount != _VBITS) {
+        return _First + static_cast<ptrdiff_t>(_FirstCount - _First._Myoff);
+    }
+    ++_VbFirst;
+
+    _Iter_diff_t<_VbIt> _TotalCount = static_cast<ptrdiff_t>(_VBITS - _First._Myoff);
+    for (; _VbFirst != _VbLast; ++_VbFirst, _TotalCount += _VBITS) {
+        const auto _SelectVal = _Val ? *_VbFirst : ~*_VbFirst;
+        const auto _Count     = _Countr_zero(_SelectVal);
+        if (_Count != _VBITS) {
+            return _First + (_TotalCount + _Count);
+        }
+    }
+
+    if (_Last._Myoff != 0) {
+        const auto _LastSourceMask = static_cast<_Vbase>(-1) >> (_VBITS - _Last._Myoff);
+        const auto _LastVal        = (_Val ? *_VbFirst : ~*_VbFirst) & _LastSourceMask;
+        const auto _Count          = _Countr_zero(_LastVal);
+        if (_Count != _VBITS) {
+            return _First + (_TotalCount + _Count);
+        }
+    }
+
+    return _Last;
+}
+
+template <class _VbIt, class _Ty>
+_NODISCARD _CONSTEXPR20 _Iter_diff_t<_VbIt> _Count_vbool(_VbIt _First, const _VbIt _Last, const _Ty& _Val) {
+    if (_First == _Last) {
+        return 0;
+    }
+
+    const _Vbase* _VbFirst      = _First._Myptr;
+    const _Vbase* const _VbLast = _Last._Myptr;
+
+    const auto _FirstSourceMask = static_cast<_Vbase>(-1) << _First._Myoff;
+
+    if (_VbFirst == _VbLast) {
+        // We already excluded _First == _Last, so here _Last._Myoff > 0 and the shift is safe
+        const auto _LastSourceMask = static_cast<_Vbase>(-1) >> (_VBITS - _Last._Myoff);
+        const auto _SourceMask     = _FirstSourceMask & _LastSourceMask;
+        const auto _SelectVal      = (_Val ? *_VbFirst : ~*_VbFirst) & _SourceMask;
+        return _Popcount(_SelectVal);
+    }
+
+    const auto _FirstVal       = (_Val ? *_VbFirst : ~*_VbFirst) & _FirstSourceMask;
+    _Iter_diff_t<_VbIt> _Count = _Popcount(_FirstVal);
+    ++_VbFirst;
+
+    for (; _VbFirst != _VbLast; ++_VbFirst) {
+        const auto _SelectVal = _Val ? *_VbFirst : ~*_VbFirst;
+        _Count += _Popcount(_SelectVal);
+    }
+
+    if (_Last._Myoff != 0) {
+        const auto _LastSourceMask = static_cast<_Vbase>(-1) >> (_VBITS - _Last._Myoff);
+        const auto _LastVal        = (_Val ? *_VbFirst : ~*_VbFirst) & _LastSourceMask;
+        _Count += _Popcount(_LastVal);
+    }
+
+    return _Count;
 }
 _STD_END
 
