@@ -781,6 +781,33 @@ struct _Simple_types { // wraps types from allocators with simple addressing for
     using const_pointer   = const value_type*;
 };
 
+#if _HAS_CXX23
+// STRUCT TEMPLATE allocation_result
+template <class _Ptr>
+struct allocation_result {
+    _Ptr ptr;
+    size_t count;
+};
+
+#ifdef __cpp_lib_concepts
+// FUNCTION TEMPLATE allocate_at_least
+template <class _Alloc>
+concept _Has_member_allocate_at_least = requires(_Alloc _Al, size_t _Count) {
+    _Al.allocate_at_least(_Count);
+};
+
+template <class _Alloc>
+_NODISCARD constexpr allocation_result<typename allocator_traits<_Alloc>::pointer> allocate_at_least(
+    _Alloc& _Al, const size_t _Count) {
+    if constexpr (_Has_member_allocate_at_least<_Alloc>) {
+        return _Al.allocate_at_least(_Count);
+    } else {
+        return {_Al.allocate(_Count), _Count};
+    }
+}
+#endif // __cpp_lib_concepts
+#endif // _HAS_CXX23
+
 // CLASS TEMPLATE allocator
 template <class _Ty>
 class allocator {
@@ -838,6 +865,13 @@ public:
     _NODISCARD _CONSTEXPR20_DYNALLOC __declspec(allocator) _Ty* allocate(_CRT_GUARDOVERFLOW const size_t _Count) {
         return static_cast<_Ty*>(_Allocate<_New_alignof<_Ty>>(_Get_size_of_n<sizeof(_Ty)>(_Count)));
     }
+
+#if _HAS_CXX23
+    _NODISCARD _CONSTEXPR20_DYNALLOC __declspec(allocator) allocation_result<_Ty*> allocate_at_least(
+        _CRT_GUARDOVERFLOW const size_t _Count) {
+        return {allocate(_Count), _Count};
+    }
+#endif // _HAS_CXX23
 
 #if _HAS_DEPRECATED_ALLOCATOR_MEMBERS
     _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS _NODISCARD __declspec(allocator) _Ty* allocate(
