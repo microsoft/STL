@@ -478,6 +478,10 @@ int main() {
         static_assert(test_one(sp, expected));
         test_one(sp, expected);
     }
+    { // ...prvalue
+        static_assert(test_one(array<string, 5>{{{}, "Hello ", {}, "World!", {}}}, expected));
+        test_one(array<string, 5>{{{}, "Hello ", {}, "World!", {}}}, expected);
+    }
     // ... move-only
     test_move_only_views();
 

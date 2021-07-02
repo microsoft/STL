@@ -620,6 +620,96 @@ namespace ranges {
         /* [[no_unique_address]] */ _Ty _Value{};
     };
 
+    // CLASS TEMPLATE ranges::_Non_propagating_cache
+    // clang-format off
+    template <class _Ty>
+        requires is_object_v<_Ty>
+    class _Non_propagating_cache { // a simplified optional that augments copy_constructible types with full copyability
+        // clang-format on
+    public:
+        constexpr _Non_propagating_cache() noexcept : _Dummy{} {}
+
+        template <class... _Types>
+        constexpr _Non_propagating_cache(in_place_t, _Types&&... _Args) noexcept(
+            is_nothrow_constructible_v<_Ty, _Types...>) // strengthened
+            : _Val(_STD forward<_Types>(_Args)...), _Engaged{true} {}
+
+        _CONSTEXPR20_DYNALLOC ~_Non_propagating_cache() {
+            if (_Engaged) {
+                _Val.~_Ty();
+            }
+        }
+
+        constexpr _Non_propagating_cache(const _Non_propagating_cache&) noexcept {}
+
+        _CONSTEXPR20_DYNALLOC _Non_propagating_cache(_Non_propagating_cache&& _Other) noexcept {
+            if (_Other._Engaged) {
+                _Other._Val.~_Ty();
+                _Other._Engaged = false;
+            }
+        }
+
+        _CONSTEXPR20_DYNALLOC _Non_propagating_cache& operator=(const _Non_propagating_cache& _Other) noexcept {
+            if (_STD addressof(_Other) == this) {
+                return *this;
+            }
+
+            if (_Engaged) {
+                _Val.~_Ty();
+                _Engaged = false;
+            }
+
+            return *this;
+        }
+
+        _CONSTEXPR20_DYNALLOC _Non_propagating_cache& operator=(_Non_propagating_cache&& _Other) noexcept {
+            if (_Engaged) {
+                _Val.~_Ty();
+                _Engaged = false;
+            }
+
+            if (_Other._Engaged) {
+                _Other._Val.~_Ty();
+                _Other._Engaged = false;
+            }
+
+            return *this;
+        }
+
+        constexpr explicit operator bool() const noexcept {
+            return _Engaged;
+        }
+
+        _NODISCARD constexpr _Ty& operator*() noexcept {
+            _STL_INTERNAL_CHECK(_Engaged);
+            return _Val;
+        }
+        _NODISCARD constexpr const _Ty& operator*() const noexcept {
+            _STL_INTERNAL_CHECK(_Engaged);
+            return _Val;
+        }
+
+        template <class _It>
+        constexpr _Ty& _Emplace_deref(_It& _Iter) noexcept(noexcept(_Ty(*_Iter))) /* strengthened */ {
+            if (_Engaged) {
+                _Val.~_Ty();
+                _Engaged = false;
+            }
+
+            _Construct_in_place(_Val, *_Iter);
+            _Engaged = true;
+
+            return _Val;
+        }
+
+    private:
+        union {
+            _Nontrivial_dummy_type _Dummy;
+            _Ty _Val;
+        };
+        bool _Engaged = false;
+    };
+
     // CLASS TEMPLATE ranges::empty_view
     // clang-format off
     template <class _Ty>
@@ -2848,14 +2938,13 @@ namespace ranges {
     // clang-format off
     template <input_range _Vw>
         requires view<_Vw> && input_range<range_reference_t<_Vw>>
-            && (is_reference_v<range_reference_t<_Vw>> || view<range_value_t<_Vw>>)
     class join_view;
     // clang-format on
 
     template <class _Vw>
     class _Join_view_base : public view_interface<join_view<_Vw>> {
     protected:
-        /* [[no_unique_address]] */ _Defaultabox<views::all_t<range_reference_t<_Vw>>> _Inner{};
+        /* [[no_unique_address]] */ _Non_propagating_cache<remove_reference_t<range_reference_t<_Vw>>> _Inner{};
     };
 
     // clang-format off
@@ -2865,7 +2954,6 @@ namespace ranges {
 
     template <input_range _Vw>
         requires view<_Vw> && input_range<range_reference_t<_Vw>>
-            && (is_reference_v<range_reference_t<_Vw>> || view<range_value_t<_Vw>>)
     class join_view : public _Join_view_base<_Vw> {
         // clang-format on
     private:
@@ -2922,19 +3010,18 @@ namespace ranges {
             /* [[no_unique_address]] */ _Defaultabox<_InnerIter> _Inner{}; // per LWG issue unfiled as of 2021-06-14
             _Parent_t* _Parent{};
 
-            constexpr auto& _Update_inner(_InnerRng<_Const> _Range) {
+            constexpr auto& _Update_inner() {
                 if constexpr (_Deref_is_glvalue) {
-                    return _Range;
+                    return *_Outer;
                 } else {
-                    _Parent->_Inner = views::all(_STD move(_Range));
-                    return *_Parent->_Inner;
+                    return _Parent->_Inner._Emplace_deref(_Outer);
                 }
             }
 
             constexpr void _Satisfy() {
                 const auto _Last = _RANGES end(_Parent->_Range);
                 for (; _Outer != _Last; ++_Outer) {
-                    auto& _Tmp = _Update_inner(*_Outer);
+                    auto& _Tmp = _Update_inner();
                     _Inner     = _RANGES begin(_Tmp);
                     if (*_Inner != _RANGES end(_Tmp)) {
                         return;
