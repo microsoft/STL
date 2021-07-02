@@ -440,6 +440,11 @@ template class std::basic_osyncstream<char, std::char_traits<char>, fancy_alloca
 #if _HAS_CXX23
 STATIC_ASSERT(std::is_standard_layout_v<std::allocation_result<fancy_pointer<int>>>);
 STATIC_ASSERT(!std::is_trivially_copyable_v<std::allocation_result<fancy_pointer<int>>>);
+
+#ifdef __cpp_lib_concepts
+STATIC_ASSERT(std::is_same_v<decltype(std::allocate_at_least(std::declval<fancy_allocator<int>&>(), std::size_t{})),
+    std::allocation_result<fancy_pointer<int>>>);
+#endif
 #endif
 
 void instantiate() {
