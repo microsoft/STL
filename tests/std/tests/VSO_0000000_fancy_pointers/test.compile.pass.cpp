@@ -437,6 +437,11 @@ template class std::basic_syncbuf<char, std::char_traits<char>, fancy_allocator<
 template class std::basic_osyncstream<char, std::char_traits<char>, fancy_allocator<char>>;
 #endif
 
+#if _HAS_CXX23
+STATIC_ASSERT(std::is_standard_layout_v<std::allocation_result<fancy_pointer<int>>>);
+STATIC_ASSERT(!std::is_trivially_copyable_v<std::allocation_result<fancy_pointer<int>>>);
+#endif
+
 void instantiate() {
     random_iterators_test<std::deque<T1, fancy_allocator<T1>>>();
     fwd_iterators_test<std::forward_list<T1, fancy_allocator<T1>>>();
