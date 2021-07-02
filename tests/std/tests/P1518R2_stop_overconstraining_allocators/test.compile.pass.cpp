@@ -48,6 +48,10 @@ auto test_vector(pmr::vector<int>& px) {
     auto x = SfinaeTester<vector>::test(px, &mr);
 }
 
+auto test_vector_bool(pmr::vector<bool>& px) {
+    auto x = SfinaeTester<vector>::test(px, &mr);
+}
+
 auto test_map(pmr::map<int, int>& px) {
     auto x = SfinaeTester<map>::test(px, &mr);
 }
