@@ -24,7 +24,7 @@ struct SfinaeTester {
         return Ctr(static_cast<Args&&>(args)...);
     }
     template <class... Args>
-    static void f(long, Args&&... /*args*/) {}
+    static void f(long, Args&&...) {}
 
     template <class... Args>
     static auto test(Args&&... args) {
