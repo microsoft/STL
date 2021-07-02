@@ -619,12 +619,15 @@ public:
             return -1;
         }
 
-        _TRY_IO_BEGIN
+        _TRY_BEGIN
         if (_Rdbuf->pubsync() == -1) {
             _Myios::setstate(ios_base::badbit);
             return -1;
         }
-        _CATCH_IO_END
+        _CATCH_ALL
+        _Myios::setstate(ios_base::badbit, true);
+        return -1;
+        _CATCH_END
 
         return 0;
     }

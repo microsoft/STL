@@ -34,7 +34,7 @@ void test_istream_exceptions() {
     { // sync
         basic_istream<CharT> is(buffer.to_buf());
         assert(!is.bad());
-        is.sync();
+        assert(is.sync() == -1);
         assert(is.bad());
     }
 
@@ -55,7 +55,7 @@ void test_istream_exceptions() {
     { // tellg
         basic_istream<CharT> is(buffer.to_buf());
         assert(!is.bad());
-        is.tellg();
+        assert(is.tellg() == -1);
         assert(is.bad());
     }
 }
@@ -89,7 +89,7 @@ void test_ostream_exceptions() {
     { // tellp
         basic_ostream<CharT> os(buffer.to_buf());
         assert(!os.bad());
-        os.tellp();
+        assert(os.tellp() == -1);
         assert(os.bad());
     }
 }
