@@ -514,8 +514,12 @@ int main() {
     }
 
     { // P2328 range of prvalue ranges
-        auto joined = views::iota(0, 5) | views::transform([](int i) { return std::to_string(i); }) | views::join;
-        assert(ranges::equal(joined, "01234"sv));
+        static constexpr int result[] = {1, 2, 3, 4, 5};
+        auto ToVector                 = [](const int i) { return vector{i + 1}; };
+        assert(ranges::equal(views::iota(0, 5) | views::transform(ToVector) | views::join, result));
+#if defined(__cpp_lib_constexpr_dynamic_alloc) && !defined(__clang__) // TRANSITION, LLVM-48606
+        static_assert(ranges::equal(views::iota(0, 5) | views::transform(ToVector) | views::join, result));
+#endif
     }
 
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-934264
