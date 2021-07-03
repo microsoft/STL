@@ -262,6 +262,12 @@ void parse_seconds() {
 
     fail_parse("1.2 1.3", "%S %S", time_ms);
     fail_parse("1.2 2.2", "%S %S", time_ms);
+
+    // LWG-3536, failed parse leaves duration unmodified.
+    minutes mm{20};
+    istringstream iss{"2:2:20"};
+    iss >> parse(string{"%H:%M:%S"}, mm);
+    assert(iss.fail() && mm == 20min);
 }
 
 void parse_minutes() {
