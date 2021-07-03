@@ -1871,8 +1871,7 @@ template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const void* const _Value) {
     // TRANSITION, Reusable buffer
     char _Buffer[_Format_min_buffer_length];
-    const auto [_End, _Ec] =
-        _STD to_chars(_Buffer, _STD end(_Buffer), reinterpret_cast<uintptr_t>(_Value), 16);
+    const auto [_End, _Ec] = _STD to_chars(_Buffer, _STD end(_Buffer), reinterpret_cast<uintptr_t>(_Value), 16);
     _STL_ASSERT(_Ec == errc{}, "to_chars failed");
     *_Out++ = '0';
     *_Out++ = 'x';
