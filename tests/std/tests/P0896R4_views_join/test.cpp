@@ -33,8 +33,7 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
 
     // clang-format off
     constexpr bool can_test = ranges::viewable_range<Outer>
-        && input_range<range_reference_t<Outer>>
-        && (deref_is_glvalue || ranges::view<Inner>);
+        && input_range<range_reference_t<Outer>>;
     // clang-format on
 
     if constexpr (can_test) {
