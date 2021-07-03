@@ -621,10 +621,12 @@ namespace ranges {
     };
 
     // CLASS TEMPLATE ranges::_Non_propagating_cache
-    // clang-format off
     template <class _Ty>
-        requires is_object_v<_Ty>
-    class _Non_propagating_cache { // a simplified optional that augments copy_constructible types with full copyability
+    concept _Objectable = is_object_v<_Ty>;
+
+    // clang-format off
+    template <_Objectable _Ty>
+    class _Non_propagating_cache { // a simplified optional that resets on copy / move
         // clang-format on
     public:
         constexpr _Non_propagating_cache() noexcept : _Dummy{} {}
@@ -696,6 +698,72 @@ namespace ranges {
                 _Engaged = false;
             }
 
+            _Construct_in_place(_Val, *_Iter);
+            _Engaged = true;
+
+            return _Val;
+        }
+
+    private:
+        union {
+            _Nontrivial_dummy_type _Dummy;
+            _Ty _Val;
+        };
+        bool _Engaged = false;
+    };
+
+    // clang-format off
+    template <_Objectable _Ty>
+        requires is_trivially_destructible_v<_Ty>
+    class _Non_propagating_cache<_Ty> { // provide the same API more efficiently for
+        // clang-format on
+    public:
+        constexpr _Non_propagating_cache() noexcept : _Dummy{} {}
+
+        template <class... _Types>
+        constexpr _Non_propagating_cache(in_place_t, _Types&&... _Args) noexcept(
+            is_nothrow_constructible_v<_Ty, _Types...>) // strengthened
+            : _Val(_STD forward<_Types>(_Args)...), _Engaged{true} {}
+
+        constexpr _Non_propagating_cache(const _Non_propagating_cache&) noexcept {}
+
+        constexpr _Non_propagating_cache(_Non_propagating_cache&& _Other) noexcept {
+            _Other._Engaged = false;
+        }
+
+        constexpr _Non_propagating_cache& operator=(const _Non_propagating_cache& _Other) noexcept {
+            if (_STD addressof(_Other) == this) {
+                return *this;
+            }
+
+            _Engaged = false;
+
+            return *this;
+        }
+
+        _CONSTEXPR20_DYNALLOC _Non_propagating_cache& operator=(_Non_propagating_cache&& _Other) noexcept {
+            _Engaged        = false;
+            _Other._Engaged = false;
+
+            return *this;
+        }
+
+        constexpr explicit operator bool() const noexcept {
+            return _Engaged;
+        }
+
+        _NODISCARD constexpr _Ty& operator*() noexcept {
+            _STL_INTERNAL_CHECK(_Engaged);
+            return _Val;
+        }
+        _NODISCARD constexpr const _Ty& operator*() const noexcept {
+            _STL_INTERNAL_CHECK(_Engaged);
+            return _Val;
+        }
+
+        template <class _It>
+        constexpr _Ty& _Emplace_deref(_It& _Iter) noexcept(noexcept(_Ty(*_Iter))) /* strengthened */ {
+            _Engaged = false;
             _Construct_in_place(_Val, *_Iter);
             _Engaged = true;
 

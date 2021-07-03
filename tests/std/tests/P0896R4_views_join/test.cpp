@@ -478,9 +478,9 @@ int main() {
         static_assert(test_one(sp, expected));
         test_one(sp, expected);
     }
-    { // ...prvalue
-        static_assert(test_one(array<string, 5>{{{}, "Hello ", {}, "World!", {}}}, expected));
-        test_one(array<string, 5>{{{}, "Hello ", {}, "World!", {}}}, expected);
+    { // ...copyable rvalue
+        static_assert(test_one(array<string_view, 5>{{{}, "Hello "sv, {}, "World!"sv, {}}}, expected));
+        test_one(array<string_view, 5>{{{}, "Hello "sv, {}, "World!"sv, {}}}, expected);
     }
     // ... move-only
     test_move_only_views();
@@ -511,6 +511,11 @@ int main() {
         auto joined                                = nested_vectors | views::join | views::join;
         static constexpr int result[]              = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13};
         assert(ranges::equal(joined, result));
+    }
+
+    { // P2328 range of prvalue ranges
+        auto joined = views::iota(0, 5) | views::transform([](int i) { return std::to_string(i); }) | views::join;
+        assert(ranges::equal(joined, "01234"sv));
     }
 
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-934264
