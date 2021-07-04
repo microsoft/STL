@@ -35,7 +35,6 @@
 #endif // defined(__cpp_lib_concepts)
 
 #ifdef __cpp_lib_format
-#include <array>
 #include <format>
 #include <iomanip>
 #endif // defined(__cpp_lib_format)
@@ -6292,15 +6291,14 @@ namespace chrono {
             }
         }
 
-        _NODISCARD static array<_CharT, 4> _Fmt_string(const _Chrono_spec<_CharT>& _Spec) {
-            array<_CharT, 4> _Fmt_str;
+        _NODISCARD static basic_string<_CharT> _Fmt_string(const _Chrono_spec<_CharT>& _Spec) {
+            basic_string<_CharT> _Fmt_str(4, '\0');
             size_t _Next_idx      = 0;
             _Fmt_str[_Next_idx++] = _CharT{'%'};
             if (_Spec._Modifier != '\0') {
                 _Fmt_str[_Next_idx++] = static_cast<_CharT>(_Spec._Modifier);
             }
-            _Fmt_str[_Next_idx++] = static_cast<_CharT>(_Spec._Type);
-            _Fmt_str[_Next_idx]   = _CharT{'\0'};
+            _Fmt_str[_Next_idx] = static_cast<_CharT>(_Spec._Type);
             return _Fmt_str;
         }
 
