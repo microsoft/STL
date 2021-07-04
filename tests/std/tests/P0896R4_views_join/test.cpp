@@ -512,12 +512,30 @@ int main() {
         assert(ranges::equal(joined, result));
     }
 
-    { // P2328 range of prvalue ranges
+    { // P2328 range of prvalue array
+        static constexpr int result[] = {1, 2, 3, 4, 5};
+        auto ToArry                   = [](const int i) { return array<int, 1>{i + 1}; };
+        assert(ranges::equal(views::iota(0, 5) | views::transform(ToArry) | views::join, result));
+        static_assert(ranges::equal(views::iota(0, 5) | views::transform(ToArry) | views::join, result));
+    }
+
+    { // P2328 range of prvalue vector
         static constexpr int result[] = {1, 2, 3, 4, 5};
         auto ToVector                 = [](const int i) { return vector{i + 1}; };
         assert(ranges::equal(views::iota(0, 5) | views::transform(ToVector) | views::join, result));
-#if defined(__cpp_lib_constexpr_dynamic_alloc) && !defined(__clang__) // TRANSITION, LLVM-48606
+#if defined(__cpp_lib_constexpr_dynamic_alloc) && defined(MSVC_INTERNAL_TESTING) \
+    && !defined(__clang__) // TRANSITION, LLVM-48606
         static_assert(ranges::equal(views::iota(0, 5) | views::transform(ToVector) | views::join, result));
+#endif
+    }
+
+    { // P2328 range of prvalue string
+        static constexpr array<string_view, 5> input = {{{}, "Hello "sv, {}, "World!"sv, {}}};
+        auto ToString                                = [](const size_t i) { return string{input[i]}; };
+        assert(ranges::equal(views::iota(0u, 5u) | views::transform(ToString) | views::join, expected));
+#if defined(__cpp_lib_constexpr_dynamic_alloc) && defined(MSVC_INTERNAL_TESTING) \
+    && !defined(__clang__) // TRANSITION, LLVM-48606
+        static_assert(ranges::equal(views::iota(0u, 5u) | views::transform(ToString) | views::join, expected));
 #endif
     }
 
