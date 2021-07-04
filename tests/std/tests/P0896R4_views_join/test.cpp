@@ -50,7 +50,7 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
         static_assert(!ranges::random_access_range<R>);
         static_assert(!ranges::contiguous_range<R>);
 
-        constexpr bool is_view = ranges::view<Outer>;
+        constexpr bool is_view = ranges::view<remove_cvref_t<Outer>>;
 
         // Validate range adapter object
         // ...with lvalue argument
@@ -132,7 +132,12 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
 
         // Validate deduction guide
         same_as<R> auto r = join_view{forward<Outer>(rng)};
-        assert(ranges::equal(r, expected));
+#ifndef __cpp_lib_constexpr_dynamic_alloc
+        if (!is_constant_evaluated())
+#endif // __cpp_lib_constexpr_dynamic_alloc
+        {
+            assert(ranges::equal(r, expected));
+        }
         const bool is_empty = ranges::empty(expected);
 
         // Validate lack of size

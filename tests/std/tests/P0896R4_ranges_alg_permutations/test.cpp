@@ -7,6 +7,7 @@
 #include <cstdio>
 #include <random>
 #include <ranges>
+#include <span>
 #include <utility>
 
 #include <range_algorithm_support.hpp>
@@ -202,7 +203,7 @@ struct empty_range_test {
             ranges::prev_permutation_result, ranges::iterator_t;
 
         { // Validate range overload, next_permutation
-            R range{};
+            R range{span<int_wrapper, 0>{}};
             const same_as<next_permutation_result<iterator_t<R>>> auto result =
                 next_permutation(range, ranges::less{}, get_val);
             assert(result.in == range.end());
@@ -210,7 +211,7 @@ struct empty_range_test {
         }
 
         { // Validate iterator overload, next_permutation
-            R range{};
+            R range{span<int_wrapper, 0>{}};
             const same_as<next_permutation_result<iterator_t<R>>> auto result =
                 next_permutation(range.begin(), range.end(), ranges::less{}, get_val);
             assert(result.in == range.end());
@@ -218,7 +219,7 @@ struct empty_range_test {
         }
 
         { // Validate range overload, prev_permutation
-            R range{};
+            R range{span<int_wrapper, 0>{}};
             const same_as<prev_permutation_result<iterator_t<R>>> auto result =
                 prev_permutation(range, ranges::less{}, get_val);
             assert(result.in == range.end());
@@ -226,7 +227,7 @@ struct empty_range_test {
         }
 
         { // Validate iterator overload, prev_permutation
-            R range{};
+            R range{span<int_wrapper, 0>{}};
             const same_as<prev_permutation_result<iterator_t<R>>> auto result =
                 prev_permutation(range.begin(), range.end(), ranges::less{}, get_val);
             assert(result.in == range.end());
