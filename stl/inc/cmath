@@ -23,6 +23,7 @@
 #endif // _HAS_CMATH_INTRINSICS
 
 #if _HAS_CXX20
+#include <limits>
 #include <type_traits>
 #include <xutility>
 #endif // _HAS_CXX20
