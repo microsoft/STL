@@ -1203,7 +1203,8 @@
 #define __cpp_lib_node_extract                      201606L
 #define __cpp_lib_not_fn                            201603L
 
-#if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc) // == __cpp_lib_constexpr_dynamic_alloc
+#if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc) \
+    && (defined(__clang__) || defined(__EDG) || defined(MSVC_INTERNAL_TESTING))
 #define __cpp_lib_optional 202106L
 #else // ^^^ __cpp_lib_constexpr_dynamic_alloc ^^^ / vvv !__cpp_lib_constexpr_dynamic_alloc vvv
 #define __cpp_lib_optional 201606L
@@ -1219,7 +1220,8 @@
 #define __cpp_lib_string_view           201803L
 #define __cpp_lib_to_chars              201611L
 
-#if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc) // == __cpp_lib_constexpr_dynamic_alloc
+#if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc) \
+    && (defined(__clang__) || defined(__EDG) || defined(MSVC_INTERNAL_TESTING))
 #define __cpp_lib_variant 202106L
 #else // ^^^ __cpp_lib_constexpr_dynamic_alloc ^^^ / vvv !__cpp_lib_constexpr_dynamic_alloc vvv
 #define __cpp_lib_variant 202102L
@@ -1385,6 +1387,16 @@
 #define _CONSTEXPR20_DYNALLOC constexpr
 #else
 #define _CONSTEXPR20_DYNALLOC inline
+#endif
+
+// optional / variant methods that became constexpr in C++20 via P2231
+#if defined(__cpp_lib_constexpr_dynamic_alloc) \
+    && (defined(__clang__) || defined(__EDG__) || defined(MSVC_INTERNAL_TESTING))
+#define _CONSTEXPR20_OPTIONAL constexpr
+#define _CONSTEXPR20_VARIANT  constexpr
+#else
+#define _CONSTEXPR20_OPTIONAL inline
+#define _CONSTEXPR20_VARIANT  inline
 #endif
 
 // Functions that became constexpr in C++20 via P0980R1 or P1004R2

@@ -35,7 +35,7 @@ struct Dummy {
 };
 
 template <class T>
-_CONSTEXPR20_DYNALLOC bool test_optional() {
+_CONSTEXPR20_OPTIONAL bool test_optional() {
     { // empty construction
         optional<T> defaut_constructed;
         assert(!defaut_constructed.has_value());
@@ -180,7 +180,7 @@ _CONSTEXPR20_DYNALLOC bool test_optional() {
 }
 
 template <class T>
-_CONSTEXPR20_DYNALLOC bool test_variant() {
+_CONSTEXPR20_VARIANT bool test_variant() {
     { // construction from underlying type
         const T input{42};
         variant<Dummy, T> copy_constructed{input};
@@ -307,15 +307,17 @@ _CONSTEXPR20_DYNALLOC bool test_variant() {
 int main() {
     test_optional<With_trivial_destrutor>();
     test_optional<With_nontrivial_destrutor>();
-#ifdef __cpp_lib_constexpr_dynamic_alloc
+#if defined(__cpp_lib_constexpr_dynamic_alloc) \
+    && (defined(__clang__) || defined(__EDG__) || defined(MSVC_INTERNAL_TESTING))
     static_assert(test_optional<With_trivial_destrutor>());
     static_assert(test_optional<With_nontrivial_destrutor>());
-#endif // __cpp_lib_constexpr_dynamic_alloc
+#endif // __cpp_lib_constexpr_dynamic_alloc && (__clang__ || __EDG__ || MSVC_INTERNAL_TESTING)
 
     test_variant<With_trivial_destrutor>();
     test_variant<With_nontrivial_destrutor>();
-#ifdef __cpp_lib_constexpr_dynamic_alloc
+#if defined(__cpp_lib_constexpr_dynamic_alloc) \
+    && (defined(__clang__) || defined(__EDG__) || defined(MSVC_INTERNAL_TESTING))
     static_assert(test_variant<With_trivial_destrutor>());
     static_assert(test_variant<With_nontrivial_destrutor>());
-#endif // __cpp_lib_constexpr_dynamic_alloc
+#endif // __cpp_lib_constexpr_dynamic_alloc && (__clang__ || __EDG__ || MSVC_INTERNAL_TESTING)
 }

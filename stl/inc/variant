@@ -457,7 +457,7 @@ public:
         _Variant_storage<_Rest...> _Tail;
     };
 
-    _CONSTEXPR20_DYNALLOC _Variant_storage_() noexcept {} // no initialization (no active member)
+    _CONSTEXPR20_VARIANT _Variant_storage_() noexcept {} // no initialization (no active member)
 
     template <class... _Types>
     constexpr explicit _Variant_storage_(integral_constant<size_t, 0>, _Types&&... _Args) noexcept(
@@ -492,12 +492,12 @@ public:
         _Variant_storage<_Rest...> _Tail;
     };
 
-    _CONSTEXPR20_DYNALLOC ~_Variant_storage_() noexcept {
+    _CONSTEXPR20_VARIANT ~_Variant_storage_() noexcept {
         // explicitly non-trivial destructor (which would otherwise be defined as deleted
         // since the class has a variant member with a non-trivial destructor)
     }
 
-    _CONSTEXPR20_DYNALLOC _Variant_storage_() noexcept {} // no initialization (no active member)
+    _CONSTEXPR20_VARIANT _Variant_storage_() noexcept {} // no initialization (no active member)
 
     template <class... _Types>
     constexpr explicit _Variant_storage_(integral_constant<size_t, 0>, _Types&&... _Args) noexcept(
@@ -549,12 +549,12 @@ public:
         _Variant_storage<_Rest...> _Tail;
     };
 
-    _CONSTEXPR20_DYNALLOC ~_Variant_storage_() noexcept {
+    _CONSTEXPR20_VARIANT ~_Variant_storage_() noexcept {
         // explicitly non-trivial destructor (which would otherwise be defined as deleted
         // since the class has a variant member with a non-trivial destructor)
     }
 
-    _CONSTEXPR20_DYNALLOC _Variant_storage_() noexcept {} // no initialization (no active member)
+    _CONSTEXPR20_VARIANT _Variant_storage_() noexcept {} // no initialization (no active member)
 
     template <class... _Types>
     constexpr explicit _Variant_storage_(integral_constant<size_t, 0>, _Types&&... _Args) noexcept(
@@ -781,7 +781,7 @@ struct _Variant_construct_visitor { // visitor that constructs the same alternat
     _Variant_base<_Types...>& _Self;
 
     template <class _Ty, size_t _Idx>
-    _CONSTEXPR20_DYNALLOC void operator()(_Tagged<_Ty, _Idx> _Source) const noexcept(
+    _CONSTEXPR20_VARIANT void operator()(_Tagged<_Ty, _Idx> _Source) const noexcept(
         disjunction_v<bool_constant<_Idx == variant_npos>, is_nothrow_constructible<remove_reference_t<_Ty>, _Ty>>) {
         // initialize _Idx-th item in _Self from _Source
         _STL_INTERNAL_CHECK(_Self.valueless_by_exception());
@@ -802,7 +802,7 @@ struct _Variant_assign_visitor { // visitor that implements assignment for varia
     _Variant_base<_Types...>& _Self;
 
     template <class _Ty, size_t _Idx>
-    _CONSTEXPR20_DYNALLOC void operator()(_Tagged<_Ty, _Idx> _Source) const
+    _CONSTEXPR20_VARIANT void operator()(_Tagged<_Ty, _Idx> _Source) const
         noexcept(disjunction_v<bool_constant<_Idx == variant_npos>,
             conjunction<is_nothrow_assignable<_Remove_cvref_t<_Ty>&, _Ty>,
                 is_nothrow_constructible<_Remove_cvref_t<_Ty>, _Ty>>>) {
@@ -859,7 +859,7 @@ public:
     }
 
     // initialize to the value-less state
-    _CONSTEXPR20_DYNALLOC _Variant_base() noexcept : _Storage_t{}, _Which{_Invalid_index} {}
+    _CONSTEXPR20_VARIANT _Variant_base() noexcept : _Storage_t{}, _Which{_Invalid_index} {}
 
     template <size_t _Idx, class... _UTypes,
         enable_if_t<is_constructible_v<_Meta_at_c<variant<_Types...>, _Idx>, _UTypes...>, int> = 0>
@@ -876,14 +876,14 @@ public:
         // index of the contained alternative or variant_npos if valueless_by_exception
         return static_cast<size_t>(_Which);
     }
-    _CONSTEXPR20_DYNALLOC void _Set_index(const size_t _Idx) noexcept {
+    _CONSTEXPR20_VARIANT void _Set_index(const size_t _Idx) noexcept {
         // record _Idx as the active alternative
         // pre: the active alternative of *this is _Idx
         _Which = static_cast<_Index_t>(_Idx);
     }
 
     template <size_t _Idx>
-    _CONSTEXPR20_DYNALLOC void _Destroy() noexcept {
+    _CONSTEXPR20_VARIANT void _Destroy() noexcept {
         // destroy the contained value
         // pre: _Idx == index()
         if constexpr (_Idx != variant_npos && !is_trivially_destructible_v<_Meta_at_c<variant<_Types...>, _Idx>>) {
@@ -891,7 +891,7 @@ public:
         }
     }
 
-    _CONSTEXPR20_DYNALLOC void _Destroy() noexcept { // destroy the contained value, if any
+    _CONSTEXPR20_VARIANT void _Destroy() noexcept { // destroy the contained value, if any
         if constexpr (!conjunction_v<is_trivially_destructible<_Types>...>) {
             _Variant_raw_visit(index(), _Storage(), [](auto _Ref) noexcept {
                 if constexpr (decltype(_Ref)::_Idx != variant_npos) {
@@ -901,13 +901,13 @@ public:
         }
     }
 
-    _CONSTEXPR20_DYNALLOC void _Reset() noexcept { // transition to the valueless_by_exception state
+    _CONSTEXPR20_VARIANT void _Reset() noexcept { // transition to the valueless_by_exception state
         _Destroy();
         _Set_index(variant_npos);
     }
 
     template <size_t _Idx>
-    _CONSTEXPR20_DYNALLOC void _Reset() noexcept {
+    _CONSTEXPR20_VARIANT void _Reset() noexcept {
         // transition to the valueless_by_exception state
         // pre: _Idx == index()
         if constexpr (_Idx != variant_npos) {
@@ -916,27 +916,27 @@ public:
         }
     }
 
-    _CONSTEXPR20_DYNALLOC void _Construct_from(const _Variant_base& _That) noexcept(
+    _CONSTEXPR20_VARIANT void _Construct_from(const _Variant_base& _That) noexcept(
         conjunction_v<is_nothrow_copy_constructible<_Types>...>) {
         // copy _That's contained value into *this
         // pre: valueless_by_exception()
         _Variant_raw_visit(_That.index(), _That._Storage(), _Variant_construct_visitor<_Types...>{*this});
     }
 
-    _CONSTEXPR20_DYNALLOC void _Construct_from(_Variant_base&& _That) noexcept(
+    _CONSTEXPR20_VARIANT void _Construct_from(_Variant_base&& _That) noexcept(
         conjunction_v<is_nothrow_move_constructible<_Types>...>) {
         // move _That's contained value into *this
         // pre: valueless_by_exception()
         _Variant_raw_visit(_That.index(), _STD move(_That)._Storage(), _Variant_construct_visitor<_Types...>{*this});
     }
 
-    _CONSTEXPR20_DYNALLOC void _Assign_from(const _Variant_base& _That) noexcept(
+    _CONSTEXPR20_VARIANT void _Assign_from(const _Variant_base& _That) noexcept(
         conjunction_v<is_nothrow_copy_constructible<_Types>..., is_nothrow_copy_assignable<_Types>...>) {
         // copy assign _That's contained value (if any) into *this
         _Variant_raw_visit(_That.index(), _That._Storage(), _Variant_assign_visitor<_Types...>{*this});
     }
 
-    _CONSTEXPR20_DYNALLOC void _Assign_from(_Variant_base&& _That) noexcept(
+    _CONSTEXPR20_VARIANT void _Assign_from(_Variant_base&& _That) noexcept(
         conjunction_v<is_nothrow_move_constructible<_Types>..., is_nothrow_move_assignable<_Types>...>) {
         // move assign _That's contained value (if any) into *this
         _Variant_raw_visit(_That.index(), _STD move(_That)._Storage(), _Variant_assign_visitor<_Types...>{*this});
@@ -947,7 +947,7 @@ template <class... _Types>
 struct _Variant_destroy_layer_ : _Variant_base<_Types...> { // destruction behavior facade (non-trivial case)
     using _Variant_base<_Types...>::_Variant_base;
 
-    _CONSTEXPR20_DYNALLOC ~_Variant_destroy_layer_() noexcept { // Destroy contained value, if any
+    _CONSTEXPR20_VARIANT ~_Variant_destroy_layer_() noexcept { // Destroy contained value, if any
         this->_Destroy();
     }
 
@@ -1093,14 +1093,14 @@ public:
     }
 
     // TRANSITION, DevCom-1331017
-    _CONSTEXPR20_DYNALLOC variant& operator=(const variant&) noexcept = default;
+    _CONSTEXPR20_VARIANT variant& operator=(const variant&) noexcept = default;
 
     // assignment [variant.assign]
     template <class _Ty, enable_if_t<!is_same_v<_Remove_cvref_t<_Ty>, variant> //
                                          && is_constructible_v<_Variant_init_type<_Ty, _Types...>, _Ty> //
                                          && is_assignable_v<_Variant_init_type<_Ty, _Types...>&, _Ty>, //
                              int> = 0>
-    _CONSTEXPR20_DYNALLOC variant& operator=(_Ty&& _Obj) noexcept(
+    _CONSTEXPR20_VARIANT variant& operator=(_Ty&& _Obj) noexcept(
         is_nothrow_assignable_v<_Variant_init_type<_Ty, _Types...>&, _Ty>&&
             is_nothrow_constructible_v<_Variant_init_type<_Ty, _Types...>, _Ty>) {
         // assign/emplace the alternative chosen by overload resolution of _Obj with f(_Types)...
@@ -1128,7 +1128,7 @@ public:
 
     template <class _Ty, class... _ArgTypes, size_t _Idx = _Meta_find_unique_index<variant, _Ty>::value,
         enable_if_t<_Idx != _Meta_npos && is_constructible_v<_Ty, _ArgTypes...>, int> = 0>
-    _CONSTEXPR20_DYNALLOC _Ty& emplace(_ArgTypes&&... _Args) noexcept(
+    _CONSTEXPR20_VARIANT _Ty& emplace(_ArgTypes&&... _Args) noexcept(
         is_nothrow_constructible_v<_Ty, _ArgTypes...>) /* strengthened */ {
         // emplace alternative _Ty from _Args...
         this->_Reset();
@@ -1136,7 +1136,7 @@ public:
     }
     template <class _Ty, class _Elem, class... _ArgTypes, size_t _Idx = _Meta_find_unique_index<variant, _Ty>::value,
         enable_if_t<_Idx != _Meta_npos && is_constructible_v<_Ty, initializer_list<_Elem>&, _ArgTypes...>, int> = 0>
-    _CONSTEXPR20_DYNALLOC _Ty& emplace(initializer_list<_Elem> _Ilist, _ArgTypes&&... _Args) noexcept(
+    _CONSTEXPR20_VARIANT _Ty& emplace(initializer_list<_Elem> _Ilist, _ArgTypes&&... _Args) noexcept(
         is_nothrow_constructible_v<_Ty, initializer_list<_Elem>&, _ArgTypes...>) /* strengthened */ {
         // emplace alternative _Ty from _Ilist and _Args...
         this->_Reset();
@@ -1145,7 +1145,7 @@ public:
 
     template <size_t _Idx, class... _ArgTypes,
         enable_if_t<is_constructible_v<_Meta_at_c<variant, _Idx>, _ArgTypes...>, int> = 0>
-    _CONSTEXPR20_DYNALLOC _Meta_at_c<variant, _Idx>& emplace(_ArgTypes&&... _Args) noexcept(
+    _CONSTEXPR20_VARIANT _Meta_at_c<variant, _Idx>& emplace(_ArgTypes&&... _Args) noexcept(
         is_nothrow_constructible_v<_Meta_at_c<variant, _Idx>, _ArgTypes...>) /* strengthened */ {
         // emplace alternative _Idx from _Args...
         this->_Reset();
@@ -1153,7 +1153,7 @@ public:
     }
     template <size_t _Idx, class _Elem, class... _ArgTypes,
         enable_if_t<is_constructible_v<_Meta_at_c<variant, _Idx>, initializer_list<_Elem>&, _ArgTypes...>, int> = 0>
-    _CONSTEXPR20_DYNALLOC _Meta_at_c<variant, _Idx>& emplace(initializer_list<_Elem> _Ilist,
+    _CONSTEXPR20_VARIANT _Meta_at_c<variant, _Idx>& emplace(initializer_list<_Elem> _Ilist,
         _ArgTypes&&... _Args) noexcept(is_nothrow_constructible_v<_Meta_at_c<variant, _Idx>, initializer_list<_Elem>&,
         _ArgTypes...>) /* strengthened */ {
         // emplace alternative _Idx from _Ilist and _Args...
@@ -1170,7 +1170,7 @@ public:
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-lambda-capture"
 #endif // TRANSITION, LLVM-45398
-    _CONSTEXPR20_DYNALLOC void swap(variant& _That) noexcept(
+    _CONSTEXPR20_VARIANT void swap(variant& _That) noexcept(
         conjunction_v<is_nothrow_move_constructible<_Types>..., is_nothrow_swappable<_Types>...>) {
         // exchange the contained values if *this and _That hold the same alternative, otherwise exchange the values of
         // the variants themselves
@@ -1241,7 +1241,7 @@ public:
 
 private:
     template <size_t _Idx, class... _ArgTypes>
-    _CONSTEXPR20_DYNALLOC _Meta_at_c<variant, _Idx>& _Emplace_valueless(_ArgTypes&&... _Args) noexcept(
+    _CONSTEXPR20_VARIANT _Meta_at_c<variant, _Idx>& _Emplace_valueless(_ArgTypes&&... _Args) noexcept(
         is_nothrow_constructible_v<_Meta_at_c<variant, _Idx>, _ArgTypes...>) {
         // initialize alternative _Idx from _Args...
         _STL_INTERNAL_CHECK(valueless_by_exception());
@@ -1250,7 +1250,7 @@ private:
         return _Variant_raw_get<_Idx>(_Storage());
     }
 
-    _CONSTEXPR20_DYNALLOC void _Emplace_from(variant&& _That) noexcept(
+    _CONSTEXPR20_VARIANT void _Emplace_from(variant&& _That) noexcept(
         conjunction_v<is_nothrow_move_constructible<_Types>...>) {
         // steal the contained value from _That
         this->_Reset();
@@ -1757,7 +1757,7 @@ _NODISCARD constexpr bool operator>=(monostate, monostate) noexcept {
 // SPECIALIZED ALGORITHMS [variant.specalg]
 template <class... _Types,
     enable_if_t<conjunction_v<is_move_constructible<_Types>..., is_swappable<_Types>...>, int> = 0>
-_CONSTEXPR20_DYNALLOC void swap(variant<_Types...>& _Left, variant<_Types...>& _Right) noexcept(
+_CONSTEXPR20_VARIANT void swap(variant<_Types...>& _Left, variant<_Types...>& _Right) noexcept(
     noexcept(_Left.swap(_Right))) {
     _Left.swap(_Right);
 }
