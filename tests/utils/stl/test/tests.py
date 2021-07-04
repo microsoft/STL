@@ -233,6 +233,8 @@ class STLTest(Test):
                 foundStd = True
                 if flag[5:] == 'c++latest':
                     self._addCustomFeature('c++2a')
+                elif flag[5:] == 'c++20':
+                    self._addCustomFeature('c++2a')
                 elif flag[5:] == 'c++17':
                     self._addCustomFeature('c++17')
                 elif flag[5:] == 'c++14':

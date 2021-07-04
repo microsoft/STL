@@ -432,9 +432,6 @@ numerics\c.math\cmath.pass.cpp
 # GH-1596: <algorithm>: unqualified calls to _Adl_verify_range incorrectly cause instantiation
 algorithms\robust_against_adl.pass.cpp
 
-# GH-1595: <bit>: bit_ceil(T(-1)) should not be a constant expression
-numerics\bit\bit.pow.two\bit_ceil.fail.cpp
-
 
 # *** CRT BUGS ***
 # We're permanently missing aligned_alloc().
@@ -625,6 +622,16 @@ utilities\allocator.adaptor\allocator.adaptor.members\construct_pair_rvalue.pass
 utilities\allocator.adaptor\allocator.adaptor.members\construct_pair_values.pass.cpp
 utilities\allocator.adaptor\allocator.adaptor.members\construct_type.pass.cpp
 
+# Tests ignore the return value of sto{meow}, triggering nodiscard warnings
+strings\string.conversions\stod.pass.cpp
+strings\string.conversions\stof.pass.cpp
+strings\string.conversions\stoi.pass.cpp
+strings\string.conversions\stol.pass.cpp
+strings\string.conversions\stold.pass.cpp
+strings\string.conversions\stoll.pass.cpp
+strings\string.conversions\stoul.pass.cpp
+strings\string.conversions\stoull.pass.cpp
+
 # Bogus test uses std::cout without including <iostream>.
 utilities\time\time.cal\time.cal.wdidx\time.cal.wdidx.nonmembers\streaming.pass.cpp
 
@@ -647,6 +654,15 @@ language.support\support.limits\support.limits.general\chrono.version.pass.cpp
 # "should not be defined when TEST_HAS_BUILTIN(__builtin_addressof) || TEST_GCC_VER >= 700 is not defined!"
 language.support\support.limits\support.limits.general\memory.version.pass.cpp
 
+# Test should be enabled after LLVM update
+# updated test https://github.com/llvm/llvm-project/commit/0324b46cd873abc4fabe19f4bd468d10398ffd0d#diff-a9be5c3f8e18be99f40fb35f58960f400413a76252d86b53f80d76cb09cb53ef
+# should work
+language.support\support.limits\support.limits.general\variant.version.pass.cpp
+
+# libc++ doesn't implement P2186R2 Removing Garbage Collection Support
+utilities\memory\util.dynamic.safety\get_pointer_safety.pass.cpp
+utilities\memory\util.dynamic.safety\declare_no_pointers.pass.cpp
+utilities\memory\util.dynamic.safety\declare_reachable.pass.cpp
 
 # *** LIKELY STL BUGS ***
 # Not yet analyzed, likely STL bugs. Assertions and other runtime failures.
@@ -767,8 +783,6 @@ numerics\rand\rand.adapt\rand.adapt.disc\ctor_result_type.pass.cpp
 numerics\rand\rand.adapt\rand.adapt.disc\ctor_sseq.pass.cpp
 numerics\rand\rand.adapt\rand.adapt.ibits\ctor_result_type.pass.cpp
 numerics\rand\rand.adapt\rand.adapt.ibits\ctor_sseq.pass.cpp
-numerics\rand\rand.eng\rand.eng.mers\ctor_result_type.pass.cpp
-numerics\rand\rand.eng\rand.eng.mers\ctor_sseq.pass.cpp
 numerics\rand\rand.eng\rand.eng.sub\ctor_result_type.pass.cpp
 numerics\rand\rand.eng\rand.eng.sub\ctor_sseq.pass.cpp
 
@@ -783,12 +797,6 @@ thread\futures\futures.promise\set_rvalue.pass.cpp
 # Possible STL bugs in pair and tuple.
 utilities\tuple\tuple.tuple\tuple.cnstr\PR23256_constrain_UTypes_ctor.pass.cpp
 utilities\tuple\tuple.tuple\tuple.cnstr\PR31384.pass.cpp
-
-# Likely STL bugs in mersenne_twister; also fails at runtime
-# random(1186,26):  error: constexpr variable '_WMSK' must be initialized by a constant expression
-#    static constexpr _Ty _WMSK = ~((~_Ty(0) << (_Wx - 1)) << 1);
-#                         ^       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-numerics\rand\rand.eng\rand.eng.mers\ctor_sseq_all_zero.pass.cpp
 
 # Bugs/questionable choices in codecvt<char(16|32)_t, char, mbstate_t>, which we probably will not fix since
 # (1) they are deprecated, and (2) we don't want to break existing users.

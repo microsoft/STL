@@ -49,7 +49,7 @@ enum class Arg_type : uint8_t {
 };
 
 template <class Context>
-auto visitor = [](auto&& arg) {
+constexpr auto visitor = [](auto&& arg) {
     using T         = decay_t<decltype(arg)>;
     using char_type = typename Context::char_type;
     if constexpr (is_same_v<T, monostate>) {
@@ -209,12 +209,19 @@ void test_format_arg_store() {
     test_single_format_arg<Context, basic_string_view<char_type>, Arg_type::string_type>(get_input_sv<char_type>());
 }
 
-static_assert(sizeof(_Format_arg_store_packed_index) == sizeof(_Format_arg_store_packed_index::_Index_type));
-static_assert(_Get_format_arg_storage_size<format_context, void*> == sizeof(const void*));
+static_assert(sizeof(_Format_arg_index) == sizeof(size_t));
+static_assert(is_same_v<_Format_arg_traits<format_context>::_Storage_type<void*>, const void*>);
+
+template <class Context>
+void test_visit_monostate() {
+    assert(visit_format_arg(visitor<Context>, basic_format_arg<Context>()) == Arg_type::none);
+}
 
 int main() {
     test_basic_format_arg<format_context>();
     test_basic_format_arg<wformat_context>();
     test_format_arg_store<format_context>();
     test_format_arg_store<wformat_context>();
+    test_visit_monostate<format_context>();
+    test_visit_monostate<wformat_context>();
 }

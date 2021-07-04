@@ -1,7 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#define _SILENCE_CXX20_U8PATH_DEPRECATION_WARNING 1
+#include <filesystem>
 #include <ostream>
+#include <string_view>
 #include <type_traits>
 #include <utility>
 
@@ -21,7 +24,7 @@ STATIC_ASSERT(stream_insertable<std::ostream, int&>);
 STATIC_ASSERT(stream_insertable<std::ostream, const int&>);
 
 template <class Stream, class charT>
-constexpr bool test() {
+constexpr bool test_stream_insertion() {
     // validate that expressions of type (possibly-const) charT and (possibly-const) charT* (possibly-const) are
     // equivalently insertable into Stream
     constexpr bool result = stream_insertable<Stream, charT>;
@@ -45,18 +48,27 @@ constexpr bool test() {
 }
 
 // Control cases
-STATIC_ASSERT(test<std::ostream, char>());
-STATIC_ASSERT(test<std::wostream, wchar_t>());
+STATIC_ASSERT(test_stream_insertion<std::ostream, char>());
+STATIC_ASSERT(test_stream_insertion<std::wostream, wchar_t>());
 
 #ifdef __cpp_char8_t
-STATIC_ASSERT(!test<std::ostream, char8_t>());
-STATIC_ASSERT(!test<std::wostream, char8_t>());
+STATIC_ASSERT(!test_stream_insertion<std::ostream, char8_t>());
+STATIC_ASSERT(!test_stream_insertion<std::wostream, char8_t>());
 #endif // __cpp_char8_t
 
 #ifdef _NATIVE_WCHAR_T_DEFINED
-STATIC_ASSERT(test<std::ostream, wchar_t>() == !_HAS_CXX20);
+STATIC_ASSERT(test_stream_insertion<std::ostream, wchar_t>() == !_HAS_CXX20);
 #endif // _NATIVE_WCHAR_T_DEFINED
-STATIC_ASSERT(test<std::ostream, char16_t>() == !_HAS_CXX20);
-STATIC_ASSERT(test<std::ostream, char32_t>() == !_HAS_CXX20);
-STATIC_ASSERT(test<std::wostream, char16_t>() == !_HAS_CXX20);
-STATIC_ASSERT(test<std::wostream, char32_t>() == !_HAS_CXX20);
+STATIC_ASSERT(test_stream_insertion<std::ostream, char16_t>() == !_HAS_CXX20);
+STATIC_ASSERT(test_stream_insertion<std::ostream, char32_t>() == !_HAS_CXX20);
+STATIC_ASSERT(test_stream_insertion<std::wostream, char16_t>() == !_HAS_CXX20);
+STATIC_ASSERT(test_stream_insertion<std::wostream, char32_t>() == !_HAS_CXX20);
+
+#ifdef __cpp_char8_t
+void test_u8path() {
+    (void) std::filesystem::u8path(u8"a");
+    const std::basic_string_view sv{u8"a"};
+    (void) std::filesystem::u8path(sv);
+    (void) std::filesystem::u8path(sv.begin(), sv.end());
+}
+#endif // __cpp_char8_t

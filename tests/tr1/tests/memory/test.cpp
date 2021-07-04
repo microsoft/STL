@@ -199,6 +199,7 @@ void test_autoptr() { // test auto_ptr
     CHECK_INT(cnt, 0);
 }
 
+#if _HAS_GARBAGE_COLLECTION_SUPPORT_DELETED_IN_CXX23
 void test_gc() { // test garbage collection control
     char x;
     STD declare_reachable(&x);
@@ -209,11 +210,14 @@ void test_gc() { // test garbage collection control
           || (int) STD get_pointer_safety() == (int) STD pointer_safety::preferred
           || (int) STD get_pointer_safety() == (int) STD pointer_safety::strict);
 }
+#endif // _HAS_GARBAGE_COLLECTION_SUPPORT_DELETED_IN_CXX23
 
 void test_main() { // test basic properties of memory definitions
     test_alloc();
     test_uninit();
     test_tempbuf();
     test_autoptr();
+#if _HAS_GARBAGE_COLLECTION_SUPPORT_DELETED_IN_CXX23
     test_gc();
+#endif // _HAS_GARBAGE_COLLECTION_SUPPORT_DELETED_IN_CXX23
 }

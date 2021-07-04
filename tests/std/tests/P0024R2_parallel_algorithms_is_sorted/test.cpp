@@ -10,6 +10,7 @@
 #include <iterator>
 #include <list>
 #include <numeric>
+#include <stddef.h>
 #include <vector>
 
 #include <parallel_algorithms_utilities.hpp>
@@ -43,15 +44,21 @@ void test_case_is_sorted_parallel(const size_t testSize) {
     *next = 0;
 
     // (first index, last index)
+    auto remainingAttempts = quadratic_complexity_case_limit;
     ++next;
-    for (size_t i = 0; i < testSize - 2; ++i) {
-        *next = 1;
-        assert(!is_sorted(par, c.begin(), c.end()));
-        assert(!is_sorted(par, c.begin(), c.end(), greater()));
-        assert(is_sorted_until(par, c.begin(), c.end()) == std::next(next));
-        assert(is_sorted_until(par, c.begin(), c.end(), greater()) == next);
-        *next = 0;
-        ++next;
+    {
+        size_t i = 0;
+        for (; i < testSize - 2 && remainingAttempts != 0; ++i, --remainingAttempts) {
+            *next = 1;
+            assert(!is_sorted(par, c.begin(), c.end()));
+            assert(!is_sorted(par, c.begin(), c.end(), greater()));
+            assert(is_sorted_until(par, c.begin(), c.end()) == std::next(next));
+            assert(is_sorted_until(par, c.begin(), c.end(), greater()) == next);
+            *next = 0;
+            ++next;
+        }
+
+        std::advance(next, static_cast<ptrdiff_t>(testSize - 2 - i));
     }
 
     // last index:
@@ -78,6 +85,7 @@ void test_case_is_sorted_parallel(const size_t testSize) {
 
     // breaking the increasing list at each index [1, 2, ..., 0, ..., testSize-1, testSize]
     // Note that we skip the first case since [0, 2, ..., testSize-1, testSize] is still sorted
+    remainingAttempts        = quadratic_complexity_case_limit;
     int i                    = 1;
     const auto secondElement = std::next(c.begin());
     const auto thirdElement  = std::next(secondElement);
@@ -94,14 +102,19 @@ void test_case_is_sorted_parallel(const size_t testSize) {
         }
         *first = old;
         ++i;
+        if (--remainingAttempts == 0) {
+            break;
+        }
     }
 
     // increasing list except for first element
-    *c.begin() = testSize;
-    assert(!is_sorted(par, c.begin(), c.end()));
-    assert(!is_sorted(par, c.begin(), c.end(), greater()));
-    assert(is_sorted_until(par, c.begin(), c.end()) == std::next(c.begin()));
-    assert(is_sorted_until(par, c.begin(), c.end(), greater()) == std::next(c.begin(), 2));
+    if (remainingAttempts != 0) {
+        *c.begin() = testSize;
+        assert(!is_sorted(par, c.begin(), c.end()));
+        assert(!is_sorted(par, c.begin(), c.end(), greater()));
+        assert(is_sorted_until(par, c.begin(), c.end()) == std::next(c.begin()));
+        assert(is_sorted_until(par, c.begin(), c.end(), greater()) == std::next(c.begin(), 2));
+    }
 
     // decreasing list
     size_t val = testSize;
