@@ -1304,7 +1304,20 @@ _NODISCARD auto hypot(const _Ty1 _Dx, const _Ty2 _Dy, const _Ty3 _Dz) {
 template <class _Ty>
 _NODISCARD constexpr _Ty _Linear_for_lerp(const _Ty _ArgA, const _Ty _ArgB, const _Ty _ArgT) {
     if (_STD is_constant_evaluated()) {
-        return _ArgA + _ArgT * (_ArgB - _ArgA);
+        auto _Smaller     = _ArgT;
+        auto _Larger      = _ArgB - _ArgA;
+        auto _Abs_smaller = _Float_abs(_Smaller);
+        auto _Abs_larger  = _Float_abs(_Larger);
+        if (_Abs_larger < _Abs_smaller) {
+            _STD swap(_Smaller, _Larger);
+            _STD swap(_Abs_smaller, _Abs_larger);
+        }
+
+        if (_Abs_smaller > 1 && _Abs_larger > numeric_limits<_Ty>::max() / _Abs_larger) {
+            return 2 * (_Ty{0.5} * _ArgA + _Smaller * (_Ty{0.5} * _Larger));
+        } else {
+            return _ArgA + _Smaller * _Larger;
+        }
     }
     return _STD fma(_ArgT, _ArgB - _ArgA, _ArgA);
 }
@@ -1345,14 +1358,6 @@ _NODISCARD constexpr _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, const _T
         } else {
             if (_Candidate > _ArgB) {
                 return _ArgB;
-            }
-        }
-
-        if (_STD is_constant_evaluated()) {
-            if (_Is_inf(_Candidate) && (_Signbit(_Candidate) != _Signbit(_ArgA))) {
-                // we got inf but _ArgA has different sign, so try calculate again
-                // _ArgT is not zero because we got inf and _ArgA is finite.
-                return _ArgT * (_ArgB - _ArgA + _ArgA / _ArgT);
             }
         }
 
