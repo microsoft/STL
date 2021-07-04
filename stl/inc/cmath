@@ -1302,6 +1302,22 @@ _NODISCARD auto hypot(const _Ty1 _Dx, const _Ty2 _Dy, const _Ty3 _Dz) {
 #if _HAS_CXX20
 // FUNCTION lerp
 template <class _Ty>
+_NODISCARD constexpr _Ty _Linear_for_lerp(const _Ty _ArgA, const _Ty _ArgB, const _Ty _ArgT) {
+    if (_STD is_constant_evaluated()) {
+        return _ArgA + _ArgT * (_ArgB - _ArgA);
+    }
+    return _STD fma(_ArgT, _ArgB - _ArgA, _ArgA);
+}
+
+template <class _Ty>
+_NODISCARD constexpr bool _Signbit(const _Ty val) {
+    using _Float_bits_t                  = typename _STD _Floating_type_traits<_Ty>::_Uint_type;
+    constexpr _Float_bits_t _Sign_mask_v = _STD _Floating_type_traits<_Ty>::_Shifted_sign_mask;
+    const auto _Bits                     = _Bit_cast<_Float_bits_t>(val);
+    return (_Bits & _Sign_mask_v) != 0;
+}
+
+template <class _Ty>
 _NODISCARD constexpr _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, const _Ty _ArgT) noexcept {
     // on a line intersecting {(0.0, _ArgA), (1.0, _ArgB)}, return the Y value for X == _ArgT
 
@@ -1319,13 +1335,7 @@ _NODISCARD constexpr _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, const _T
         }
 
         // exact at _ArgT == 0, monotonic except near _ArgT == 1, bounded, determinate, and consistent:
-        const auto _Candidate = [=]() constexpr {
-            if (_STD is_constant_evaluated()) {
-                return _ArgA + _ArgT * (_ArgB - _ArgA);
-            }
-            return _STD fma(_ArgT, _ArgB - _ArgA, _ArgA);
-        }
-        ();
+        const auto _Candidate = _Linear_for_lerp(_ArgA, _ArgB, _ArgT);
 
         // monotonic near _ArgT == 1:
         if ((_ArgT > 1) == (_ArgB > _ArgA)) {
@@ -1337,13 +1347,6 @@ _NODISCARD constexpr _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, const _T
                 return _ArgB;
             }
         }
-
-        auto _Signbit = [](_Ty val) constexpr {
-            using _Float_bits_t                  = typename _STD _Floating_type_traits<_Ty>::_Uint_type;
-            constexpr _Float_bits_t _Sign_mask_v = _STD _Floating_type_traits<_Ty>::_Shifted_sign_mask;
-            const auto _Bits                     = _Bit_cast<_Float_bits_t>(val);
-            return (_Bits & _Sign_mask_v) != 0;
-        };
 
         if (_STD is_constant_evaluated()) {
             if (_Is_inf(_Candidate) && (_Signbit(_Candidate) != _Signbit(_ArgA))) {
