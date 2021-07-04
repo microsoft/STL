@@ -61,6 +61,6 @@ def configure(parameters, features, config, lit_config):
     if rc != 0:
         report = stl.util.makeReport(cmd, out, err, rc)
         raise RuntimeError(report)
-        
+
   # Add a parallelism group that multi-threaded tests can be marked as a part of.
   lit_config.parallelism_groups['multi-threaded'] = 1
