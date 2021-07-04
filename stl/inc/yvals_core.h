@@ -1204,7 +1204,7 @@
 #define __cpp_lib_not_fn                            201603L
 
 #if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc) \
-    && (defined(__clang__) || defined(__EDG) || defined(MSVC_INTERNAL_TESTING))
+    && (defined(__clang__) || defined(__EDG__) || defined(MSVC_INTERNAL_TESTING))
 #define __cpp_lib_optional 202106L
 #else // ^^^ __cpp_lib_constexpr_dynamic_alloc ^^^ / vvv !__cpp_lib_constexpr_dynamic_alloc vvv
 #define __cpp_lib_optional 201606L
@@ -1221,7 +1221,7 @@
 #define __cpp_lib_to_chars              201611L
 
 #if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc) \
-    && (defined(__clang__) || defined(__EDG) || defined(MSVC_INTERNAL_TESTING))
+    && (defined(__clang__) || defined(__EDG__) || defined(MSVC_INTERNAL_TESTING))
 #define __cpp_lib_variant 202106L
 #else // ^^^ __cpp_lib_constexpr_dynamic_alloc ^^^ / vvv !__cpp_lib_constexpr_dynamic_alloc vvv
 #define __cpp_lib_variant 202102L
