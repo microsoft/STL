@@ -44,11 +44,17 @@ _NODISCARD constexpr bool has_single_bit(const _Ty _Val) noexcept {
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
 _NODISCARD constexpr _Ty bit_ceil(const _Ty _Val) noexcept /* strengthened */ {
-    if (_Val == 0) {
-        return 1;
+    if (_Val <= 1u) {
+        return _Ty{1};
     }
 
-    return static_cast<_Ty>(_Ty{1} << (numeric_limits<_Ty>::digits - _STD countl_zero(static_cast<_Ty>(_Val - 1))));
+    const int _Num = numeric_limits<_Ty>::digits - _STD countl_zero(static_cast<_Ty>(_Val - 1));
+    if constexpr (sizeof(_Ty) >= sizeof(unsigned int)) {
+        return _Ty{1} << _Num;
+    } else { // for types subject to integral promotion
+        constexpr int _Offset_for_ub = numeric_limits<unsigned int>::digits - numeric_limits<_Ty>::digits;
+        return _Ty(1u << (_Num + _Offset_for_ub) >> _Offset_for_ub);
+    }
 }
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
