@@ -23,7 +23,8 @@
 #endif // _HAS_CMATH_INTRINSICS
 
 #if _HAS_CXX20
-#include <climits>
+#include <cfloat>
+#include <type_traits>
 #include <xutility>
 #endif // _HAS_CXX20
 
@@ -1331,7 +1332,7 @@ _NODISCARD constexpr _Ty _Linear_for_lerp(const _Ty _ArgA, const _Ty _ArgB, cons
             _STD swap(_Abs_smaller, _Abs_larger);
         }
 
-        if (_Abs_smaller > 1 && _Abs_larger > _Floating_max<_Ty>() / _Abs_larger) {
+        if (_Abs_smaller > 1 && _Abs_larger > _Floating_max<remove_cv_t<_Ty>>() / _Abs_larger) {
             return 2 * (_Ty{0.5} * _ArgA + _Smaller * (_Ty{0.5} * _Larger));
         } else {
             return _ArgA + _Smaller * _Larger;
