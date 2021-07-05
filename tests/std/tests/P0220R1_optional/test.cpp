@@ -4596,11 +4596,7 @@ int run_test()
         typedef X T;
         static_assert(!std::is_trivially_destructible<T>::value, "");
         static_assert(!std::is_trivially_destructible<optional<T>>::value, "");
-        #ifdef __cpp_lib_constexpr_dynamic_alloc
-        static_assert(std::is_literal_type<optional<T>>::value, "");
-        #else // ^^^ __cpp_lib_constexpr_dynamic_alloc ^^^ / vvv !__cpp_lib_constexpr_dynamic_alloc vvv
         static_assert(!std::is_literal_type<optional<T>>::value, "");
-        #endif // !__cpp_lib_constexpr_dynamic_alloc
         {
             X x;
             optional<X> opt{x};
