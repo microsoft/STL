@@ -13,12 +13,14 @@
 using namespace std;
 
 template <class Rng, class Delimiter>
-concept CanViewSplit = requires(Rng&& r, Delimiter&& d) {
-    views::split(static_cast<Rng&&>(r), static_cast<Delimiter&&>(d));
+concept CanViewLazySplit = requires(Rng&& r, Delimiter&& d) {
+    views::lazy_split(static_cast<Rng&&>(r), static_cast<Delimiter&&>(d));
 };
 
-constexpr auto equal_ranges = [](auto&& left, auto&& right) { return ranges::equal(left, right); };
-constexpr auto text         = "This is a test, this is only a test."sv;
+constexpr auto equal_ranges    = [](auto&& left, auto&& right) { return ranges::equal(left, right); };
+constexpr auto text            = "This is a test, this is only a test."sv;
+constexpr auto trailing_empty  = "test "sv;
+constexpr auto lwg3505_pattern = "xxyxxyx"sv;
 
 template <bool IsElement>
 struct delimiter_view_impl {
@@ -37,8 +39,8 @@ using delimiter_view_t =
 
 template <ranges::input_range Base, class Delimiter, ranges::input_range Expected>
 constexpr void test_one(Base&& base, Delimiter&& delimiter, Expected&& expected) {
-    STATIC_ASSERT(CanViewSplit<Base, Delimiter>);
-    using R = decltype(views::split(forward<Base>(base), forward<Delimiter>(delimiter)));
+    STATIC_ASSERT(CanViewLazySplit<Base, Delimiter>);
+    using R = decltype(views::lazy_split(forward<Base>(base), forward<Delimiter>(delimiter)));
 
     // Validate type properties
     STATIC_ASSERT(ranges::view<R>);
@@ -48,18 +50,18 @@ constexpr void test_one(Base&& base, Delimiter&& delimiter, Expected&& expected)
 
     // Validate range adaptor object and range adaptor closure
     using DV           = delimiter_view_t<Base, Delimiter>;
-    const auto closure = views::split(delimiter);
+    const auto closure = views::lazy_split(delimiter);
 
     constexpr bool is_view = ranges::view<remove_cvref_t<Base>>;
 
     // ... with lvalue argument
-    STATIC_ASSERT(CanViewSplit<Base&, Delimiter&> == (!is_view || copyable<remove_cvref_t<Base>>) );
-    if constexpr (CanViewSplit<Base&, Delimiter&>) { // Validate lvalue
+    STATIC_ASSERT(CanViewLazySplit<Base&, Delimiter&> == (!is_view || copyable<remove_cvref_t<Base>>) );
+    if constexpr (CanViewLazySplit<Base&, Delimiter&>) { // Validate lvalue
         constexpr bool is_noexcept =
             (!is_view || is_nothrow_copy_constructible_v<views::all_t<Base&>>) &&is_nothrow_copy_constructible_v<DV>;
 
-        STATIC_ASSERT(same_as<decltype(views::split(base, delimiter)), R>);
-        STATIC_ASSERT(noexcept(views::split(base, delimiter)) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(views::lazy_split(base, delimiter)), R>);
+        STATIC_ASSERT(noexcept(views::lazy_split(base, delimiter)) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(base | closure), R>);
         STATIC_ASSERT(noexcept(base | closure) == is_noexcept);
@@ -67,46 +69,46 @@ constexpr void test_one(Base&& base, Delimiter&& delimiter, Expected&& expected)
 
     // ... with const lvalue argument
     STATIC_ASSERT(
-        CanViewSplit<const remove_reference_t<Base>&, Delimiter&> == (!is_view || copyable<remove_cvref_t<Base>>) );
+        CanViewLazySplit<const remove_reference_t<Base>&, Delimiter&> == (!is_view || copyable<remove_cvref_t<Base>>) );
     if constexpr (is_view && copyable<remove_cvref_t<Base>>) {
         constexpr bool is_noexcept =
             is_nothrow_copy_constructible_v<remove_cvref_t<Base>> && is_nothrow_copy_constructible_v<DV>;
 
-        STATIC_ASSERT(same_as<decltype(views::split(as_const(base), delimiter)), R>);
-        STATIC_ASSERT(noexcept(views::split(as_const(base), delimiter)) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(views::lazy_split(as_const(base), delimiter)), R>);
+        STATIC_ASSERT(noexcept(views::lazy_split(as_const(base), delimiter)) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(as_const(base) | closure), R>);
         STATIC_ASSERT(noexcept(as_const(base) | closure) == is_noexcept);
     } else if constexpr (!is_view) {
-        using RC                   = ranges::split_view<views::all_t<const remove_reference_t<Base>&>, DV>;
+        using RC                   = ranges::lazy_split_view<views::all_t<const remove_reference_t<Base>&>, DV>;
         constexpr bool is_noexcept = is_nothrow_constructible_v<RC, const remove_reference_t<Base>&, Delimiter&>;
 
-        STATIC_ASSERT(same_as<decltype(views::split(as_const(base), delimiter)), RC>);
-        STATIC_ASSERT(noexcept(views::split(as_const(base), delimiter)) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(views::lazy_split(as_const(base), delimiter)), RC>);
+        STATIC_ASSERT(noexcept(views::lazy_split(as_const(base), delimiter)) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(as_const(base) | closure), RC>);
         STATIC_ASSERT(noexcept(as_const(base) | closure) == is_noexcept);
     }
 
     // ... with rvalue argument
-    STATIC_ASSERT(
-        CanViewSplit<remove_reference_t<Base>, Delimiter&> == is_view || ranges::borrowed_range<remove_cvref_t<Base>>);
+    STATIC_ASSERT(CanViewLazySplit<remove_reference_t<Base>, Delimiter&> == is_view
+                  || ranges::borrowed_range<remove_cvref_t<Base>>);
     if constexpr (is_view) {
         constexpr bool is_noexcept =
             is_nothrow_move_constructible_v<remove_reference_t<Base>> && is_nothrow_copy_constructible_v<DV>;
-        STATIC_ASSERT(same_as<decltype(views::split(move(base), delimiter)), R>);
-        STATIC_ASSERT(noexcept(views::split(move(base), delimiter)) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(views::lazy_split(move(base), delimiter)), R>);
+        STATIC_ASSERT(noexcept(views::lazy_split(move(base), delimiter)) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(base) | closure), R>);
         STATIC_ASSERT(noexcept(move(base) | closure) == is_noexcept);
     } else if constexpr (ranges::borrowed_range<remove_cvref_t<Base>>) {
         using S  = decltype(ranges::subrange{declval<remove_reference_t<Base>>()});
-        using RS = ranges::split_view<S, DV>;
+        using RS = ranges::lazy_split_view<S, DV>;
         constexpr bool is_noexcept =
             noexcept(S{declval<remove_reference_t<Base>>()}) && is_nothrow_copy_constructible_v<DV>;
 
-        STATIC_ASSERT(same_as<decltype(views::split(move(base), delimiter)), RS>);
-        STATIC_ASSERT(noexcept(views::split(move(base), delimiter)) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(views::lazy_split(move(base), delimiter)), RS>);
+        STATIC_ASSERT(noexcept(views::lazy_split(move(base), delimiter)) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(base) | closure), RS>);
         STATIC_ASSERT(noexcept(move(base) | closure) == is_noexcept);
@@ -114,32 +116,32 @@ constexpr void test_one(Base&& base, Delimiter&& delimiter, Expected&& expected)
 
     // ... with const rvalue argument
     STATIC_ASSERT(
-        CanViewSplit<const remove_reference_t<Base>, Delimiter&> == (is_view && copyable<remove_cvref_t<Base>>)
+        CanViewLazySplit<const remove_reference_t<Base>, Delimiter&> == (is_view && copyable<remove_cvref_t<Base>>)
         || (!is_view && ranges::borrowed_range<remove_cvref_t<Base>>) );
     if constexpr (is_view && copyable<remove_cvref_t<Base>>) {
         constexpr bool is_noexcept =
             is_nothrow_copy_constructible_v<remove_cvref_t<Base>> && is_nothrow_copy_constructible_v<DV>;
 
-        STATIC_ASSERT(same_as<decltype(views::split(move(as_const(base)), delimiter)), R>);
-        STATIC_ASSERT(noexcept(views::split(move(as_const(base)), delimiter)) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(views::lazy_split(move(as_const(base)), delimiter)), R>);
+        STATIC_ASSERT(noexcept(views::lazy_split(move(as_const(base)), delimiter)) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(as_const(base)) | closure), R>);
         STATIC_ASSERT(noexcept(move(as_const(base)) | closure) == is_noexcept);
     } else if constexpr (!is_view && ranges::borrowed_range<remove_cvref_t<Base>>) {
         using S  = decltype(ranges::subrange{declval<const remove_reference_t<Base>>()});
-        using RS = ranges::split_view<S, DV>;
+        using RS = ranges::lazy_split_view<S, DV>;
         constexpr bool is_noexcept =
             noexcept(S{declval<const remove_reference_t<Base>>()}) && is_nothrow_copy_constructible_v<DV>;
 
-        STATIC_ASSERT(same_as<decltype(views::split(move(as_const(base)), delimiter)), RS>);
-        STATIC_ASSERT(noexcept(views::split(move(as_const(base)), delimiter)) == is_noexcept);
+        STATIC_ASSERT(same_as<decltype(views::lazy_split(move(as_const(base)), delimiter)), RS>);
+        STATIC_ASSERT(noexcept(views::lazy_split(move(as_const(base)), delimiter)) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(as_const(base)) | closure), RS>);
         STATIC_ASSERT(noexcept(move(as_const(base)) | closure) == is_noexcept);
     }
 
     // Validate deduction guide
-    same_as<R> auto r = ranges::split_view{forward<Base>(base), forward<Delimiter>(delimiter)};
+    same_as<R> auto r = ranges::lazy_split_view{forward<Base>(base), forward<Delimiter>(delimiter)};
     assert(ranges::equal(r, expected, equal_ranges));
 
     // Validate view_interface::empty and operator bool
@@ -151,7 +153,7 @@ constexpr void test_one(Base&& base, Delimiter&& delimiter, Expected&& expected)
         assert(static_cast<bool>(r) == !is_empty);
     }
 
-    // Validate split_view::begin
+    // Validate lazy_split_view::begin
     STATIC_ASSERT(CanMemberBegin<R>);
     if (ranges::forward_range<Base>) { // intentionally not if constexpr
         const auto i = r.begin();
@@ -185,7 +187,7 @@ constexpr void test_one(Base&& base, Delimiter&& delimiter, Expected&& expected)
         }
     }
 
-    // Validate split_view::end
+    // Validate lazy_split_view::end
     STATIC_ASSERT(CanMemberEnd<R>);
     [[maybe_unused]] same_as<ranges::sentinel_t<R>> auto s = r.end();
     if (ranges::forward_range<Base>) {
@@ -239,7 +241,7 @@ constexpr void test_one(Base&& base, Delimiter&& delimiter, Expected&& expected)
         STATIC_ASSERT(!CanMemberBack<const R>);
     }
 
-    // Validate split_view::base() const&
+    // Validate lazy_split_view::base() const&
     STATIC_ASSERT(CanMemberBase<const R&> == copy_constructible<views::all_t<Base>>);
     if constexpr (CanMemberBase<const R&> && ranges::forward_range<Base>) {
         same_as<views::all_t<Base>> auto b1 = as_const(r).base();
@@ -249,7 +251,7 @@ constexpr void test_one(Base&& base, Delimiter&& delimiter, Expected&& expected)
         }
     }
 
-    // Validate split_view::base() && (NB: do this last since it leaves r moved-from)
+    // Validate lazy_split_view::base() && (NB: do this last since it leaves r moved-from)
     if (ranges::forward_range<views::all_t<Base>>) { // intentionally not if constexpr
         same_as<views::all_t<Base>> auto b2 = move(r).base();
         STATIC_ASSERT(noexcept(move(r).base()) == is_nothrow_move_constructible_v<views::all_t<Base>>);
@@ -262,10 +264,12 @@ constexpr void test_one(Base&& base, Delimiter&& delimiter, Expected&& expected)
 struct instantiator {
     static constexpr string_view expected_single[] = {
         "This"sv, "is"sv, "a"sv, "test,"sv, "this"sv, "is"sv, "only"sv, "a"sv, "test."sv};
-    static constexpr string_view expected_range[] = {"Th"sv, " "sv, " a test, th"sv, " "sv, " only a test."sv};
-    static constexpr string_view expected_empty[] = {"T"sv, "h"sv, "i"sv, "s"sv, " "sv, "i"sv, "s"sv, " "sv, "a"sv,
+    static constexpr string_view expected_range[]    = {"Th"sv, " "sv, " a test, th"sv, " "sv, " only a test."sv};
+    static constexpr string_view expected_empty[]    = {"T"sv, "h"sv, "i"sv, "s"sv, " "sv, "i"sv, "s"sv, " "sv, "a"sv,
         " "sv, "t"sv, "e"sv, "s"sv, "t"sv, ","sv, " "sv, "t"sv, "h"sv, "i"sv, "s"sv, " "sv, "i"sv, "s"sv, " "sv, "o"sv,
         "n"sv, "l"sv, "y"sv, " "sv, "a"sv, " "sv, "t"sv, "e"sv, "s"sv, "t"sv, "."sv};
+    static constexpr string_view expected_trailing[] = {"test"sv, ""sv};
+    static constexpr string_view expected_lwg3505[]  = {"x"sv, "x"sv, "x"sv};
 
     template <class T>
     static constexpr decltype(auto) move_if_needed(T& t) noexcept {
@@ -299,6 +303,16 @@ struct instantiator {
             Read empty{span<const char, 0>{}};
             test_one(move_if_needed(empty), "is"sv, views::empty<string_view>);
         }
+
+        { // LWG-3478, trailing empty range
+            Read read{span{trailing_empty}};
+            test_one(move_if_needed(read), ' ', expected_trailing);
+        }
+
+        if constexpr (ranges::forward_range<Read>) { // LWG-3505, mutlichar pattern
+            Read read{span{lwg3505_pattern}};
+            test_one(move_if_needed(read), "xy"sv, expected_lwg3505);
+        }
     }
 };
 
@@ -312,7 +326,7 @@ constexpr bool instantiation_test() {
     using test::CanView, test::Common, test::Copyability;
 
     // The view is sensitive to:
-    // 1. Category of the range to be split (input, forward)
+    // 1. Category of the range to be lazy_split (input, forward)
     // 2. Copyability
     // 4. Commonality
     // 3. Length of delimiter pattern (0/static 1/dynamic) [covered in instantiator::call]

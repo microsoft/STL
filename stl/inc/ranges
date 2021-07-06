@@ -3218,7 +3218,7 @@ namespace ranges {
         inline constexpr _Join_fn join;
     } // namespace views
 
-    // CLASS TEMPLATE ranges::split_view
+    // CLASS TEMPLATE ranges::lazy_split_view
     // clang-format off
     template <class _Ty>
     concept _Tiny_range = sized_range<_Ty>
@@ -3229,24 +3229,24 @@ namespace ranges {
         requires view<_Vw> && view<_Pat>
             && indirectly_comparable<iterator_t<_Vw>, iterator_t<_Pat>, _RANGES equal_to>
             && (forward_range<_Vw> || _Tiny_range<_Pat>)
-    class split_view;
+    class lazy_split_view;
     // clang-format on
 
     template <class _Vw, class _Pat>
-    class _Split_view_base : public view_interface<split_view<_Vw, _Pat>> {
+    class _Lazy_split_view_base : public view_interface<lazy_split_view<_Vw, _Pat>> {
     protected:
         /* [[no_unique_address]] */ _Defaultabox<iterator_t<_Vw>> _Current{};
     };
 
     template <forward_range _Vw, class _Pat>
-    class _Split_view_base<_Vw, _Pat> : public view_interface<split_view<_Vw, _Pat>> {};
+    class _Lazy_split_view_base<_Vw, _Pat> : public view_interface<lazy_split_view<_Vw, _Pat>> {};
 
     // clang-format off
     template <input_range _Vw, forward_range _Pat>
         requires view<_Vw> && view<_Pat>
             && indirectly_comparable<iterator_t<_Vw>, iterator_t<_Pat>, _RANGES equal_to>
             && (forward_range<_Vw> || _Tiny_range<_Pat>)
-    class split_view : public _Split_view_base<_Vw, _Pat> {
+    class lazy_split_view : public _Lazy_split_view_base<_Vw, _Pat> {
         // clang-format on
     private:
         /* [[no_unique_address]] */ _Vw _Range{};
@@ -3281,10 +3281,11 @@ namespace ranges {
             friend _Outer_iter<true>;
 
             using _Mybase   = _Outer_iter_base<iterator_t<_Maybe_const<_Const, _Vw>>>;
-            using _ParentTy = _Maybe_const<_Const, split_view>;
+            using _ParentTy = _Maybe_const<_Const, lazy_split_view>;
             using _BaseTy   = _Maybe_const<_Const, _Vw>;
 
-            _ParentTy* _Parent = nullptr;
+            _ParentTy* _Parent   = nullptr;
+            bool _Trailing_empty = false;
 
             _NODISCARD constexpr iterator_t<_BaseTy>& _Get_current() noexcept {
                 if constexpr (forward_range<_BaseTy>) {
@@ -3356,6 +3357,7 @@ namespace ranges {
                 const auto _End = _RANGES end(_Parent->_Range);
                 auto& _Cur      = _Get_current();
                 if (_Cur == _End) {
+                    _Trailing_empty = false;
                     return *this;
                 }
 
@@ -3367,12 +3369,18 @@ namespace ranges {
                     _Cur = _RANGES _Find_unchecked(_STD move(_Cur), _End, *_Pat_first);
                     if (_Cur != _End) {
                         ++_Cur;
+                        if (_Cur == _End) {
+                            _Trailing_empty = true;
+                        }
                     }
                 } else {
                     do {
                         auto _Result = _RANGES mismatch(_Cur, _End, _Pat_first, _Pat_last);
                         if (_Result.in2 == _Pat_last) { // pattern matches
-                            _Cur = _STD move(_Result.in1);
+                            _Cur = _Result.in1;
+                            if (_Cur == _End) {
+                                _Trailing_empty = true;
+                            }
                             break;
                         }
                     } while (++_Cur != _End);
@@ -3392,11 +3400,11 @@ namespace ranges {
 
             _NODISCARD friend constexpr bool operator==(const _Outer_iter& _Left, const _Outer_iter& _Right) noexcept(
                 noexcept(_Left._Current == _Right._Current)) /* strengthened */ requires forward_range<_BaseTy> {
-                return _Left._Current == _Right._Current;
+                return _Left._Current == _Right._Current && _Left._Trailing_empty == _Right._Trailing_empty;
             }
             _NODISCARD friend constexpr bool operator==(const _Outer_iter& _Left, default_sentinel_t) noexcept(
                 noexcept(_Left._At_end())) /* strengthened */ {
-                return _Left._At_end();
+                return _Left._At_end() && !_Left._Trailing_empty;
             }
         };
 
@@ -3483,6 +3491,15 @@ namespace ranges {
                 is_nothrow_move_constructible_v<_Outer_iter<_Const>>) // strengthened
                 : _It{_STD move(_It_)} {}
 
+            constexpr const iterator_t<_BaseTy>& base() const& {
+                return _It._Get_current();
+            }
+
+            constexpr iterator_t<_BaseTy> base() && noexcept(
+                is_nothrow_move_constructible_v<iterator_t<_BaseTy>>) /* strengthened */ {
+                return _STD move(_It._Get_current());
+            }
+
             _NODISCARD constexpr decltype(auto) operator*() const {
                 return *_It._Get_current();
             }
@@ -3533,10 +3550,10 @@ namespace ranges {
 
     public:
         // clang-format off
-        split_view() requires default_initializable<_Vw> && default_initializable<_Pat> = default;
+        lazy_split_view() requires default_initializable<_Vw> && default_initializable<_Pat> = default;
         // clang-format on
 
-        constexpr split_view(_Vw _Range_, _Pat _Pattern_) noexcept(
+        constexpr lazy_split_view(_Vw _Range_, _Pat _Pattern_) noexcept(
             is_nothrow_move_constructible_v<_Vw>&& is_nothrow_move_constructible_v<_Pat>) // strengthened
             : _Range(_STD move(_Range_)), _Pattern(_STD move(_Pattern_)) {}
 
@@ -3544,7 +3561,7 @@ namespace ranges {
         template <input_range _Rng>
             requires constructible_from<_Vw, views::all_t<_Rng>>
                 && constructible_from<_Pat, single_view<range_value_t<_Rng>>>
-        constexpr split_view(_Rng&& _Range_, range_value_t<_Rng> _Elem)
+        constexpr lazy_split_view(_Rng&& _Range_, range_value_t<_Rng> _Elem)
             noexcept(noexcept(_Vw(views::all(_STD forward<_Rng>(_Range_))))
                 && noexcept(_Pat(single_view{_STD move(_Elem)}))) // strengthened
             : _Range(views::all(_STD forward<_Rng>(_Range_))), _Pattern(single_view{_STD move(_Elem)}) {}
@@ -3589,14 +3606,15 @@ namespace ranges {
     };
 
     template <class _Rng, class _Pat>
-    split_view(_Rng&&, _Pat&&) -> split_view<views::all_t<_Rng>, views::all_t<_Pat>>;
+    lazy_split_view(_Rng&&, _Pat&&) -> lazy_split_view<views::all_t<_Rng>, views::all_t<_Pat>>;
 
     template <input_range _Rng>
-    split_view(_Rng&&, range_value_t<_Rng>) -> split_view<views::all_t<_Rng>, single_view<range_value_t<_Rng>>>;
+    lazy_split_view(_Rng&&, range_value_t<_Rng>)
+        -> lazy_split_view<views::all_t<_Rng>, single_view<range_value_t<_Rng>>>;
 
     namespace views {
         // VARIABLE views::split
-        class _Split_fn {
+        class _Lazy_split_fn {
         private:
             template <class _Delim>
             struct _Partial : _Pipe::_Base<_Partial<_Delim>> {
@@ -3604,28 +3622,28 @@ namespace ranges {
 
                 template <viewable_range _Rng>
                 _NODISCARD constexpr auto operator()(_Rng&& _Range) const& noexcept(
-                    noexcept(split_view{_STD forward<_Rng>(_Range), _Delimiter})) requires requires {
-                    split_view{static_cast<_Rng&&>(_Range), _Delimiter};
+                    noexcept(lazy_split_view{_STD forward<_Rng>(_Range), _Delimiter})) requires requires {
+                    lazy_split_view{static_cast<_Rng&&>(_Range), _Delimiter};
                 }
-                { return split_view{_STD forward<_Rng>(_Range), _Delimiter}; }
+                { return lazy_split_view{_STD forward<_Rng>(_Range), _Delimiter}; }
 
                 template <viewable_range _Rng>
                 _NODISCARD constexpr auto operator()(_Rng&& _Range) && noexcept(noexcept(
-                    split_view{_STD forward<_Rng>(_Range), _STD forward<_Delim>(_Delimiter)})) requires requires {
-                    split_view{static_cast<_Rng&&>(_Range), static_cast<_Delim&&>(_Delimiter)};
+                    lazy_split_view{_STD forward<_Rng>(_Range), _STD forward<_Delim>(_Delimiter)})) requires requires {
+                    lazy_split_view{static_cast<_Rng&&>(_Range), static_cast<_Delim&&>(_Delimiter)};
                 }
-                { return split_view{_STD forward<_Rng>(_Range), _STD forward<_Delim>(_Delimiter)}; }
+                { return lazy_split_view{_STD forward<_Rng>(_Range), _STD forward<_Delim>(_Delimiter)}; }
             };
 
         public:
             // clang-format off
             template <viewable_range _Rng, class _Pat>
             _NODISCARD constexpr auto operator()(_Rng&& _Range, _Pat&& _Pattern) const noexcept(noexcept(
-                split_view{_STD forward<_Rng>(_Range), _STD forward<_Pat>(_Pattern)})) requires requires {
-                split_view{static_cast<_Rng&&>(_Range), static_cast<_Pat&&>(_Pattern)};
+                lazy_split_view{_STD forward<_Rng>(_Range), _STD forward<_Pat>(_Pattern)})) requires requires {
+                lazy_split_view{static_cast<_Rng&&>(_Range), static_cast<_Pat&&>(_Pattern)};
             } {
                 // clang-format on
-                return split_view{_STD forward<_Rng>(_Range), _STD forward<_Pat>(_Pattern)};
+                return lazy_split_view{_STD forward<_Rng>(_Range), _STD forward<_Pat>(_Pattern)};
             }
 
             // clang-format off
@@ -3638,7 +3656,7 @@ namespace ranges {
             }
         };
 
-        inline constexpr _Split_fn split;
+        inline constexpr _Lazy_split_fn lazy_split;
 
         // VARIABLE views::counted
         class _Counted_fn {
