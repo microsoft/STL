@@ -54,11 +54,11 @@ _NODISCARD constexpr _Ty bit_ceil(const _Ty _Val) noexcept /* strengthened */ {
             return _Ty{1} << _Num;
         } else { // for types subject to integral promotion
             constexpr int _Offset_for_ub = numeric_limits<unsigned int>::digits - numeric_limits<_Ty>::digits;
-            return _Ty(1u << (_Num + _Offset_for_ub) >> _Offset_for_ub);
+            return static_cast<_Ty>(1u << (_Num + _Offset_for_ub) >> _Offset_for_ub);
         }
     }
 
-    return _Ty(_Ty{1} << _Num);
+    return static_cast<_Ty>(_Ty{1} << _Num);
 }
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
