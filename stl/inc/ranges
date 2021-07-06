@@ -631,14 +631,10 @@ namespace ranges {
     public:
         constexpr _Non_propagating_cache() noexcept : _Dummy{} {}
 
-        template <class... _Types>
-        constexpr _Non_propagating_cache(in_place_t, _Types&&... _Args) noexcept(
-            is_nothrow_constructible_v<_Ty, _Types...>) // strengthened
-            : _Val(_STD forward<_Types>(_Args)...), _Engaged{true} {}
-
         _CONSTEXPR20_DYNALLOC ~_Non_propagating_cache() {
             if (_Engaged) {
                 _Val.~_Ty();
+                _Dummy = {};
             }
         }
 
@@ -647,6 +643,7 @@ namespace ranges {
         _CONSTEXPR20_DYNALLOC _Non_propagating_cache(_Non_propagating_cache&& _Other) noexcept {
             if (_Other._Engaged) {
                 _Other._Val.~_Ty();
+                _Other._Dummy   = {};
                 _Other._Engaged = false;
             }
         }
@@ -658,6 +655,7 @@ namespace ranges {
 
             if (_Engaged) {
                 _Val.~_Ty();
+                _Dummy   = {};
                 _Engaged = false;
             }
 
@@ -667,19 +665,17 @@ namespace ranges {
         _CONSTEXPR20_DYNALLOC _Non_propagating_cache& operator=(_Non_propagating_cache&& _Other) noexcept {
             if (_Engaged) {
                 _Val.~_Ty();
+                _Dummy   = {};
                 _Engaged = false;
             }
 
             if (_Other._Engaged) {
                 _Other._Val.~_Ty();
+                _Other._Dummy   = {};
                 _Other._Engaged = false;
             }
 
             return *this;
-        }
-
-        constexpr explicit operator bool() const noexcept {
-            return _Engaged;
         }
 
         _NODISCARD constexpr _Ty& operator*() noexcept {
@@ -693,9 +689,12 @@ namespace ranges {
 
         template <class _It>
         _CONSTEXPR20_DYNALLOC _Ty& _Emplace_deref(_It& _Iter) noexcept(noexcept(_Ty(*_Iter))) /* strengthened */ {
-            if (_Engaged) {
-                _Val.~_Ty();
-                _Engaged = false;
+            if constexpr (!is_nothrow_constructible_v<_Ty, decltype(*_Iter)>) {
+                if (_Engaged) {
+                    _Val.~_Ty();
+                    _Dummy   = {};
+                    _Engaged = false;
+                }
             }
 
             _Construct_in_place(_Val, *_Iter);
@@ -720,11 +719,6 @@ namespace ranges {
     public:
         constexpr _Non_propagating_cache() noexcept : _Dummy{} {}
 
-        template <class... _Types>
-        constexpr _Non_propagating_cache(in_place_t, _Types&&... _Args) noexcept(
-            is_nothrow_constructible_v<_Ty, _Types...>) // strengthened
-            : _Val(_STD forward<_Types>(_Args)...), _Engaged{true} {}
-
         constexpr _Non_propagating_cache(const _Non_propagating_cache&) noexcept {}
 
         constexpr _Non_propagating_cache(_Non_propagating_cache&& _Other) noexcept {
@@ -748,10 +742,6 @@ namespace ranges {
             return *this;
         }
 
-        constexpr explicit operator bool() const noexcept {
-            return _Engaged;
-        }
-
         _NODISCARD constexpr _Ty& operator*() noexcept {
             _STL_INTERNAL_CHECK(_Engaged);
             return _Val;
@@ -763,7 +753,9 @@ namespace ranges {
 
         template <class _It>
         _CONSTEXPR20_DYNALLOC _Ty& _Emplace_deref(_It& _Iter) noexcept(noexcept(_Ty(*_Iter))) /* strengthened */ {
-            _Engaged = false;
+            if constexpr (!is_nothrow_constructible_v<_Ty, decltype(*_Iter)>) {
+                _Engaged = false;
+            }
             _Construct_in_place(_Val, *_Iter);
             _Engaged = true;
 
@@ -3078,7 +3070,7 @@ namespace ranges {
             /* [[no_unique_address]] */ _Defaultabox<_InnerIter> _Inner{}; // per LWG issue unfiled as of 2021-06-14
             _Parent_t* _Parent{};
 
-            constexpr auto& _Update_inner() {
+            constexpr auto&& _Update_inner() {
                 if constexpr (_Deref_is_glvalue) {
                     return *_Outer;
                 } else {
