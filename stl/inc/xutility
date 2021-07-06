@@ -5504,9 +5504,80 @@ _NODISCARD constexpr _Iter_diff_t<_InIt> _Count_pr(_InIt _First, const _InIt _La
     return _Count;
 }
 
+enum class _TrimResult : unsigned char {
+    _Continue,
+    _Break,
+    _ReturnFalse,
+    _ReturnTrue
+};
+
+template <class _BidIt1, class _BidIt2, class _Pr>
+_NODISCARD _CONSTEXPR20 _TrimResult _Trim_equal(
+    _BidIt1 &_First1, _BidIt1 &_Last1, _BidIt2 &_First2, _BidIt2 &_Last2, _Pr _Pred) {
+    _STL_INTERNAL_CHECK(_First1 != _Last1);
+    _STL_INTERNAL_CHECK(_STD distance(_First1, _Last1) == _STD distance(_First2, _Last2));
+    if (_Pred(*_First1, *_First2)) {
+        do {
+            ++_First1;
+            ++_First2;
+            if (_First1 == _Last1) {
+                // only one element is left
+                return _Pred(*_First1, *_First2) ? _TrimResult::_ReturnTrue : _TrimResult::_ReturnFalse;
+            }
+        } while (_Pred(*_First1, *_First2));
+    } else {
+        if (!_Pred(*_Last1, *_Last2)) {
+            // nothing to trim, break
+            return _TrimResult::_Break;
+        }
+        --_Last1;
+        --_Last2;
+    }
+
+    while (_Pred(*_Last1, *_Last2)) {
+        --_Last1;
+        --_Last2;
+    }
+
+    // if only one element is left return false, otherwise continue trimming
+    return _First1 == _Last1 ? _TrimResult::_ReturnFalse : _TrimResult::_Continue;
+}
+
+template <class _BidIt1, class _BidIt2, class _Pr>
+_NODISCARD _CONSTEXPR20 _TrimResult _Trim_reversed(
+    _BidIt1& _First1, _BidIt1& _Last1, _BidIt2& _First2, _BidIt2& _Last2, _Pr _Pred) {
+    _STL_INTERNAL_CHECK(_First1 != _Last1);
+    _STL_INTERNAL_CHECK(_STD distance(_First1, _Last1) == _STD distance(_First2, _Last2));
+    if (_Pred(*_First1, *_Last2)) {
+        do {
+            ++_First1;
+            --_Last2;
+            if (_First1 == _Last1) {
+                // only one element is left
+                return _Pred(*_First1, *_First2) ? _TrimResult::_ReturnTrue : _TrimResult::_ReturnFalse;
+            }
+        } while (_Pred(*_First1, *_Last2));
+    } else {
+        if (!_Pred(*_Last1, *_First2)) {
+            // nothing to trim, break
+            return _TrimResult::_Break;
+        }
+        --_Last1;
+        ++_First2;
+    }
+
+    while (_Pred(*_Last1, *_First2)) {
+        --_Last1;
+        ++_First2;
+    }
+
+    // if only one element is left return false, otherwise continue trimming
+    return _First1 == _Last1 ? _TrimResult::_ReturnFalse : _TrimResult::_Continue;
+}
+
 template <class _FwdIt1, class _FwdIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 bool _Check_match_counts(
-    const _FwdIt1 _First1, _FwdIt1 _Last1, const _FwdIt2 _First2, _FwdIt2 _Last2, _Pr _Pred) {
+    _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _Pr _Pred) {
     // test if [_First1, _Last1) == permuted [_First2, _Last2), after matching prefix removal
     _STL_INTERNAL_CHECK(!_Pred(*_First1, *_First2));
     _STL_INTERNAL_CHECK(_STD distance(_First1, _Last1) == _STD distance(_First2, _Last2));
@@ -5515,6 +5586,29 @@ _NODISCARD _CONSTEXPR20 bool _Check_match_counts(
             --_Last1;
             --_Last2;
         } while (_Pred(*_Last1, *_Last2));
+
+        if (_First1 == _Last1) {
+            return false;
+        }
+
+        for (;;) {
+            _TrimResult _Res = _Trim_reversed(_First1, _Last1, _First2, _Last2, _Pred);
+            if (_Res != _TrimResult::_Continue) {
+                if (_Res == _TrimResult::_Break) {
+                    break;
+                }
+                return _Res == _TrimResult::_ReturnTrue;
+            }
+
+            _Res = _Trim_equal(_First1, _Last1, _First2, _Last2, _Pred);
+            if (_Res != _TrimResult::_Continue) {
+                if (_Res == _TrimResult::_Break) {
+                    break;
+                }
+                return _Res == _TrimResult::_ReturnTrue;
+            }
+        }
+
         ++_Last1;
         ++_Last2;
     }

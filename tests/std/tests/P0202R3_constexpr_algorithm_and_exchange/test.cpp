@@ -492,7 +492,7 @@ constexpr bool test_pop_heap_and_push_heap() {
 }
 
 constexpr bool test_permutations() {
-    int buff[] = {1, 2, 3, 4};
+    int buff[] = {10, 20, 30, 40};
     // using std::array here is TRANSITION, DevCom-892153
     constexpr array<const int, 4> expected[] = {
         array<const int, 4>{10, 20, 30, 40},
@@ -521,6 +521,10 @@ constexpr bool test_permutations() {
         array<const int, 4>{40, 30, 20, 10},
     };
 
+    for (const auto& arr : expected) {
+        assert(is_permutation(begin(buff), end(buff), begin(arr), end(arr)));
+    }
+
     auto cursor = begin(expected);
     do {
         assert(equal(begin(buff), end(buff), cursor->begin(), cursor->end()));
@@ -531,11 +535,39 @@ constexpr bool test_permutations() {
     assert(!prev_permutation(begin(buff), end(buff)));
 
     do {
-        assert(equal(begin(buff), end(buff), cursor->begin(), cursor->end()));
         --cursor;
+        assert(equal(begin(buff), end(buff), cursor->begin(), cursor->end()));
     } while (prev_permutation(begin(buff), end(buff)));
 
-    assert(is_sorted(begin(buff), end(buff)));
+    assert(cursor == begin(expected));
+    assert(is_sorted(begin(buff), end(buff), greater<>()));
+
+    {
+        int arr1[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+        int arr2[] = {9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
+        assert(is_permutation(begin(arr1), end(arr1), begin(arr2), end(arr2)));
+    }
+    {
+        int arr1[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+        int arr2[] = {9, 8, 7, 3, 4, 5, 6, 2, 1, 0};
+        assert(is_permutation(begin(arr1), end(arr1), begin(arr2), end(arr2)));
+    }
+    {
+        int arr1[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+        int arr2[] = {9, 1, 7, 3, 5, 4, 6, 2, 8, 0};
+        assert(is_permutation(begin(arr1), end(arr1), begin(arr2), end(arr2)));
+    }
+    {
+        int arr1[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+        int arr2[] = {9, 1, 7, 5, 6, 3, 4, 2, 8, 0};
+        assert(is_permutation(begin(arr1), end(arr1), begin(arr2), end(arr2)));
+    }
+    {
+        int arr1[] = {0, 1, 2, 3, 4, 10, 5, 6, 7, 8, 9};
+        int arr2[] = {9, 1, 7, 3, 5, 11, 4, 6, 2, 8, 0};
+        assert(!is_permutation(begin(arr1), end(arr1), begin(arr2), end(arr2)));
+    }
+
     return true;
 }
 
@@ -593,6 +625,7 @@ constexpr bool test() {
         && test_is_heap()
         && test_make_heap_and_sort_heap()
         && test_pop_heap_and_push_heap()
+        && test_permutations()
         ;
     // clang-format on
 }
