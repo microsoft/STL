@@ -393,6 +393,8 @@ void equal_safe_test_cases() {
     test_case_Equal_memcmp_is_safe<false, base_class, base_class>();
 
 #ifdef __cpp_lib_byte
+    // GH-2039
+    static_assert(_Is_trivially_swappable_v<byte>);
     // memcmp is safe for std::byte, but it can't be compared to integral types
     test_case_Equal_memcmp_is_safe<true, byte, byte>();
     test_case_Equal_memcmp_is_safe<false, byte, char>();
