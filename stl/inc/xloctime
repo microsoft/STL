@@ -729,7 +729,8 @@ protected:
             _Fmt[3] = _Specifier;
         }
 
-        const int& _Errno_ref = errno; // Nonzero cost, pay it once
+        int& _Errno_ref      = errno; // Nonzero cost, pay it once
+        const int _Old_errno = _Errno_ref;
 
         for (_Num = 16;; _Num *= 2) { // convert into ever larger string buffer until success
             _Str.append(_Num, '\0');
@@ -742,6 +743,7 @@ protected:
             }
         }
 
+        _Errno_ref = _Old_errno;
         return _STD copy(&_Str[1], &_Str[_Count], _Dest);
     }
 
@@ -860,7 +862,8 @@ protected:
             _Fmt[3] = static_cast<_Elem>(_Specifier);
         }
 
-        const int& _Errno_ref = errno; // Nonzero cost, pay it once
+        int& _Errno_ref      = errno; // Nonzero cost, pay it once
+        const int _Old_errno = _Errno_ref;
 
         for (_Num = 16;; _Num *= 2) { // convert into ever larger string buffer until success
             _Str.append(_Num, '\0');
@@ -872,6 +875,8 @@ protected:
                 return _Dest;
             }
         }
+
+        _Errno_ref = _Old_errno;
         return _STD copy(&_Str[1], &_Str[_Count], _Dest);
     }
 
@@ -991,7 +996,8 @@ protected:
             _Fmt[3] = static_cast<_Elem>(_Specifier);
         }
 
-        const int& _Errno_ref = errno; // Nonzero cost, pay it once
+        int& _Errno_ref      = errno; // Nonzero cost, pay it once
+        const int _Old_errno = _Errno_ref;
 
         for (_Num = 16;; _Num *= 2) { // convert into ever larger string buffer until success
             _Str.append(_Num, '\0');
@@ -1004,6 +1010,7 @@ protected:
             }
         }
 
+        _Errno_ref = _Old_errno;
         return _STD copy(&_Str[1], &_Str[_Count], _Dest);
     }
 
