@@ -4193,6 +4193,7 @@ public:
                 if constexpr (_Resettable_pointer<_SmartPtr, _Sp, _Pointer, _ArgsT...>) {
                     _Smart_ptr.reset(static_cast<_Sp>(_Ptr), _STD forward<_ArgsT>(_Args_)...);
                 } else {
+                    static_assert(is_constructible_v<_SmartPtr, _Sp, _ArgsT...>);
                     _Smart_ptr = _SmartPtr(static_cast<_Sp>(_Ptr), _STD forward<_ArgsT>(_Args_)...);
                 }
             },
@@ -4257,6 +4258,7 @@ public:
                     _Smart_ptr.release();
                     _Smart_ptr.reset(static_cast<_Sp>(_Ptr), _STD forward<_ArgsT>(_Args_)...);
                 } else {
+                    static_assert(is_constructible_v<_SmartPtr, _Sp, _ArgsT...>);
                     _Smart_ptr.release();
                     _Smart_ptr = _SmartPtr(static_cast<_Sp>(_Ptr), _STD forward<_ArgsT>(_Args_)...);
                 }
