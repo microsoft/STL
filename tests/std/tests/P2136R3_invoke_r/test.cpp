@@ -38,7 +38,7 @@ constexpr int square_noexcept(int n) noexcept {
 
 struct Thing {
     int n = 0;
-    constexpr int& foo() {
+    constexpr int& moo() {
         return n;
     }
 };
@@ -51,9 +51,9 @@ constexpr bool is_rvalue(int&&) {
 }
 
 constexpr bool test_invoke_r() {
-    auto v1 = invoke_r<long int>(square, 3);
+    auto v1 = invoke_r<long>(square, 3);
     assert(v1 == 9L);
-    static_assert(is_same_v<decltype(v1), long int>);
+    static_assert(is_same_v<decltype(v1), long>);
 
     auto v2 = invoke_r<double>([]() -> int { return 5; });
     assert(v2 == 5);
@@ -70,8 +70,8 @@ constexpr bool test_invoke_r() {
 
     Thing thing;
     invoke_r<void>(&Thing::n, thing); // no nodiscard warning
-    assert(!is_rvalue(invoke(&Thing::foo, thing)));
-    assert(is_rvalue(invoke_r<int>(&Thing::foo, thing)));
+    assert(!is_rvalue(invoke(&Thing::moo, thing)));
+    assert(is_rvalue(invoke_r<int>(&Thing::moo, thing)));
 
     return true;
 }
