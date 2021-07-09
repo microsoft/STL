@@ -45,11 +45,17 @@ struct Thing {
 };
 
 struct RefQualified {
-    constexpr int operator()(int) && {
+    constexpr int operator()(int&&) && {
         return 1;
     }
-    constexpr int operator()(int) & {
+    constexpr int operator()(const int&) && {
         return 2;
+    }
+    constexpr int operator()(int&&) & {
+        return 3;
+    }
+    constexpr int operator()(const int&) & {
+        return 4;
     }
 };
 
@@ -83,8 +89,10 @@ constexpr bool test_invoke_r() {
     assert(count == 1);
 
     assert(invoke_r<int>(RefQualified{}, 0) == 1);
+    assert(invoke_r<int>(RefQualified{}, count) == 2);
     RefQualified r;
-    assert(invoke_r<int>(r, 0) == 2);
+    assert(invoke_r<int>(r, 0) == 3);
+    assert(invoke_r<int>(r, count) == 4);
 
     return true;
 }
