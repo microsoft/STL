@@ -35,6 +35,7 @@ constexpr int square(int n) {
 constexpr int square_noexcept(int n) noexcept {
     return n * n;
 }
+constexpr const char* cstring() noexcept;
 
 struct Thing {
     int n = 0;
@@ -43,7 +44,14 @@ struct Thing {
     }
 };
 
-constexpr const char* cstring() noexcept;
+struct RefQualified {
+    constexpr int operator()(int) && {
+        return 1;
+    }
+    constexpr int operator()(int) & {
+        return 2;
+    }
+};
 
 constexpr bool test_invoke_r() {
     auto v1 = invoke_r<long>(square, 3);
@@ -69,6 +77,14 @@ constexpr bool test_invoke_r() {
     invoke_r<void>(&Thing::n, thing); // no nodiscard warning
     static_assert(is_same_v<decltype(invoke(&Thing::moo, thing)), int&>);
     static_assert(is_same_v<decltype(invoke_r<int>(&Thing::moo, thing)), int>);
+
+    int count = 0;
+    assert(invoke_r<int>([&count] { return ++count; }) == 1);
+    assert(count == 1);
+
+    assert(invoke_r<int>(RefQualified{}, 0) == 1);
+    RefQualified r;
+    assert(invoke_r<int>(r, 0) == 2);
 
     return true;
 }
