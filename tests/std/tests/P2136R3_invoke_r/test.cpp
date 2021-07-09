@@ -43,12 +43,7 @@ struct Thing {
     }
 };
 
-constexpr bool is_rvalue(const int&) {
-    return false;
-}
-constexpr bool is_rvalue(int&&) {
-    return true;
-}
+constexpr const char* cstring() noexcept;
 
 constexpr bool test_invoke_r() {
     auto v1 = invoke_r<long>(square, 3);
@@ -64,14 +59,16 @@ constexpr bool test_invoke_r() {
     static_assert(noexcept(invoke_r<int>(square, 3)) == is_permissive, "invoke_r<int>(square, 3) is noexcept");
     static_assert(noexcept(invoke(square, 3)) == is_permissive, "invoke(square, 3) is noexcept");
 #ifdef __cpp_noexcept_function_type
-    static_assert(noexcept(invoke_r<int>(square_noexcept, 3)), "invoke_r<int>(square_noexcept, 3) isn't noexcept");
     static_assert(noexcept(invoke(square_noexcept, 3)), "invoke(square_noexcept, 3) isn't noexcept");
+    static_assert(noexcept(invoke_r<int>(square_noexcept, 3)), "invoke_r<int>(square_noexcept, 3) isn't noexcept");
+    static_assert(noexcept(invoke(cstring)), "invoke(cstring) isn't noexcept");
+    static_assert(!noexcept(invoke_r<string>(cstring)), "invoke_r<string>(cstring) is noexcept");
 #endif
 
     Thing thing;
     invoke_r<void>(&Thing::n, thing); // no nodiscard warning
-    assert(!is_rvalue(invoke(&Thing::moo, thing)));
-    assert(is_rvalue(invoke_r<int>(&Thing::moo, thing)));
+    static_assert(is_same_v<decltype(invoke(&Thing::moo, thing)), int&>);
+    static_assert(is_same_v<decltype(invoke_r<int>(&Thing::moo, thing)), int>);
 
     return true;
 }
