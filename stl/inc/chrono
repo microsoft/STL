@@ -6293,7 +6293,7 @@ namespace chrono {
             }
         }
 
-        _NODISCARD static _CharT* _Fmt_string(const _Chrono_spec<_CharT>& _Spec, _CharT* _Fmt_str) {
+        _NODISCARD static const _CharT* _Fmt_string(const _Chrono_spec<_CharT>& _Spec, _CharT (&_Fmt_str)[4]) {
             size_t _Next_idx      = 0;
             _Fmt_str[_Next_idx++] = _CharT{'%'};
             if (_Spec._Modifier != '\0') {
