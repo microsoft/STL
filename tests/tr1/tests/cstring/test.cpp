@@ -65,8 +65,7 @@ void test_cpp() { // test C++ header
     n = STDx strxfrm((char*) nullptr, &abcde[0], 0);
     if (n < sizeof(s) - 1) { // buffer big enough, check results
         CHECK_INT(STDx strxfrm(s, &abcde[0], n + 1), n);
-        CHECK_INT(STDx strlen(s), n);
-        
+        CHECK_INT(STDx strlen(s), n);  
         CHECK_INT(STDx strnlen(s, n + 1), n);
         CHECK_INT(STDx strnlen(s, n - 1), n - 1);
         CHECK_INT(STDx strnlen(s, n), n);
