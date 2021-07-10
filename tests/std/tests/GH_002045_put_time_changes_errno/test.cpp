@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <cassert>
+#include <cerrno>
 #include <chrono>
 #include <ctime>
-#include <errno.h>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
