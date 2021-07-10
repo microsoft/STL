@@ -420,7 +420,7 @@ std/thread/futures/futures.promise/set_value_const.pass.cpp FAIL
 
 # GH-757 <xstring>: Too many enabled hash specializations
 std/strings/basic.string.hash/char_type_hash.fail.cpp FAIL
-std/strings/string.view/string.view.hash/char_type.hash.pass.cpp PASS
+std/strings/string.view/string.view.hash/char_type.hash.fail.cpp FAIL
 
 # GH-784 <type_traits>: aligned_storage has incorrect alignment defaults
 std/utilities/meta/meta.trans/meta.trans.other/aligned_storage.pass.cpp FAIL
