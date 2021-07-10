@@ -29,7 +29,6 @@ using _CSTD memcmp;
 using _CSTD memcpy;
 using _CSTD memmove;
 using _CSTD memset;
-using _CSTD memrchr;
 using _CSTD strcat;
 using _CSTD strchr;
 using _CSTD strcmp;
