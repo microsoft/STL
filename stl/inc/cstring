@@ -23,7 +23,6 @@ _STD_BEGIN
 #pragma warning(disable : 4995) // name was marked as #pragma deprecated
 
 using _CSTD size_t;
-using _CSTD memccpy;
 using _CSTD memchr;
 using _CSTD memcmp;
 using _CSTD memcpy;
@@ -35,7 +34,6 @@ using _CSTD strcmp;
 using _CSTD strcoll;
 using _CSTD strcpy;
 using _CSTD strcspn;
-using _CSTD strdup;
 using _CSTD strerror;
 using _CSTD strlen;
 using _CSTD strncat;
