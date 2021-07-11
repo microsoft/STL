@@ -4173,17 +4173,18 @@ concept _Resettable_pointer = requires(_SmartPtr& _Smart_ptr, _Pointer _Ptr, _Ar
 template <class _SmartPtr, class _Pointer, class... _ArgsT>
 class out_ptr_t {
     static_assert(!_Is_specialization_v<_SmartPtr, shared_ptr> || sizeof...(_ArgsT) != 0,
-        "out_ptr_t with shared_ptr requires a deleter");
+        "out_ptr_t with shared_ptr requires a deleter (N4892 [out.ptr.t]/3)");
 
 public:
     explicit out_ptr_t(_SmartPtr& _Smart_ptr_, _ArgsT... _Args_) noexcept(
-        is_nothrow_constructible_v<tuple<_ArgsT...>, _ArgsT...>)
-        : _Smart_ptr(_Smart_ptr_), _Args(_STD forward<_ArgsT>(_Args_)...) {}
+        is_nothrow_constructible_v<tuple<_ArgsT...>, _ArgsT...>) /* strengthened */
+        : _Smart_ptr(_Smart_ptr_),
+          _Mypair(_One_then_variadic_args_t{}, tuple<_ArgsT...>{_STD forward<_ArgsT>(_Args_)...}) {}
 
     out_ptr_t(const out_ptr_t&) = delete;
 
     ~out_ptr_t() {
-        if (!_Ptr) {
+        if (!_Get_ptr()) {
             return;
         }
 
@@ -4191,29 +4192,36 @@ public:
             [this](auto&&... _Args_) {
                 using _Sp = _Pointer_of_or<_SmartPtr, _Pointer>;
                 if constexpr (_Resettable_pointer<_SmartPtr, _Sp, _Pointer, _ArgsT...>) {
-                    _Smart_ptr.reset(static_cast<_Sp>(_Ptr), _STD forward<_ArgsT>(_Args_)...);
+                    _Smart_ptr.reset(static_cast<_Sp>(_Get_ptr()), _STD forward<_ArgsT>(_Args_)...);
                 } else {
-                    static_assert(is_constructible_v<_SmartPtr, _Sp, _ArgsT...>);
-                    _Smart_ptr = _SmartPtr(static_cast<_Sp>(_Ptr), _STD forward<_ArgsT>(_Args_)...);
+                    static_assert(is_constructible_v<_SmartPtr, _Sp, _ArgsT...>, "(N4892 [out.ptr.t]/9.3)");
+                    _Smart_ptr = _SmartPtr(static_cast<_Sp>(_Get_ptr()), _STD forward<_ArgsT>(_Args_)...);
                 }
             },
-            _STD move(_Args));
+            _STD move(_Get_args()));
     }
 
     operator _Pointer*() const noexcept {
-        return _STD addressof(const_cast<_Pointer&>(_Ptr));
+        return _STD addressof(_Get_ptr());
     }
 
     operator void**() const noexcept requires(!is_same_v<_Pointer, void*>) {
-        static_assert(is_pointer_v<_Pointer>,
-            "conversion of out_ptr_t<Smart, Pointer, Args...> to void** requires Pointer to be a raw pointer");
-        return reinterpret_cast<void**>(_STD addressof(const_cast<_Pointer&>(_Ptr)));
+        static_assert(is_pointer_v<_Pointer>, "conversion of out_ptr_t<Smart, Pointer, Args...> to void** requires "
+                                              "Pointer to be a raw pointer (N4892 [out.ptr.t]/13)");
+        return reinterpret_cast<void**>(_STD addressof(_Get_ptr()));
     }
 
 private:
+    _NODISCARD _Pointer& _Get_ptr() const noexcept {
+        return const_cast<_Pointer&>(_Mypair._Myval2);
+    }
+
+    _NODISCARD tuple<_ArgsT...>& _Get_args() noexcept {
+        return _Mypair._Get_first();
+    }
+
     _SmartPtr& _Smart_ptr;
-    tuple<_ArgsT...> _Args;
-    _Pointer _Ptr{};
+    _Compressed_pair<tuple<_ArgsT...>, _Pointer> _Mypair;
 };
 
 template <class _Pointer = void, class _SmartPtr, class... _ArgsT>
@@ -4227,25 +4235,30 @@ _NODISCARD auto out_ptr(_SmartPtr& _Smart_ptr, _ArgsT&&... _Args) {
 
 template <class _SmartPtr, class _Pointer, class... _ArgsT>
 class inout_ptr_t {
-    static_assert(!_Is_specialization_v<_SmartPtr, shared_ptr>, "inout_ptr_t doesn't work with shared_ptr");
+    static_assert(!_Is_specialization_v<_SmartPtr, shared_ptr>,
+        "inout_ptr_t doesn't work with shared_ptr (N4892 [inout.ptr.t]/3)");
 
-    _NODISCARD static auto _Get_ptr(_SmartPtr& _Smart_ptr) noexcept requires is_pointer_v<_SmartPtr> {
+private:
+    _NODISCARD static auto _Get_ptr_from_smart(_SmartPtr& _Smart_ptr) noexcept requires is_pointer_v<_SmartPtr> {
         return _Smart_ptr;
     }
 
-    _NODISCARD static auto _Get_ptr(_SmartPtr& _Smart_ptr) noexcept(noexcept(_Smart_ptr.get())) {
+    _NODISCARD static auto _Get_ptr_from_smart(_SmartPtr& _Smart_ptr) noexcept(noexcept(_Smart_ptr.get())) {
         return _Smart_ptr.get();
     }
 
 public:
     explicit inout_ptr_t(_SmartPtr& _Smart_ptr_, _ArgsT... _Args_) noexcept(
-        is_nothrow_constructible_v<tuple<_ArgsT...>, _ArgsT...>&& noexcept(_Get_ptr(_Smart_ptr_)))
-        : _Smart_ptr(_Smart_ptr_), _Args(_STD forward<_ArgsT>(_Args_)...), _Ptr(_Get_ptr(_Smart_ptr_)) {}
+        is_nothrow_constructible_v<tuple<_ArgsT...>, _ArgsT...>&& noexcept(
+            _Get_ptr_from_smart(_Smart_ptr_))) /* strengthened */
+        : _Smart_ptr(_Smart_ptr_),
+          _Mypair(_One_then_variadic_args_t{}, tuple<_ArgsT...>{_STD forward<_ArgsT>(_Args_)...},
+              _Get_ptr_from_smart(_Smart_ptr_)) {}
 
     inout_ptr_t(const inout_ptr_t&) = delete;
 
     ~inout_ptr_t() {
-        if (!_Ptr) {
+        if (!_Get_ptr()) {
             return;
         }
 
@@ -4253,33 +4266,40 @@ public:
             [this](auto&&... _Args_) {
                 using _Sp = _Pointer_of_or<_SmartPtr, _Pointer>;
                 if constexpr (is_pointer_v<_SmartPtr>) {
-                    _Smart_ptr = _SmartPtr(static_cast<_Sp>(_Ptr), _STD forward<_ArgsT>(_Args_)...);
+                    _Smart_ptr = _SmartPtr(static_cast<_Sp>(_Get_ptr()), _STD forward<_ArgsT>(_Args_)...);
                 } else if constexpr (_Resettable_pointer<_SmartPtr, _Sp, _Pointer, _ArgsT...>) {
                     _Smart_ptr.release();
-                    _Smart_ptr.reset(static_cast<_Sp>(_Ptr), _STD forward<_ArgsT>(_Args_)...);
+                    _Smart_ptr.reset(static_cast<_Sp>(_Get_ptr()), _STD forward<_ArgsT>(_Args_)...);
                 } else {
-                    static_assert(is_constructible_v<_SmartPtr, _Sp, _ArgsT...>);
+                    static_assert(is_constructible_v<_SmartPtr, _Sp, _ArgsT...>, "(N4892 [inout.ptr.t]/11.4)");
                     _Smart_ptr.release();
-                    _Smart_ptr = _SmartPtr(static_cast<_Sp>(_Ptr), _STD forward<_ArgsT>(_Args_)...);
+                    _Smart_ptr = _SmartPtr(static_cast<_Sp>(_Get_ptr()), _STD forward<_ArgsT>(_Args_)...);
                 }
             },
-            _STD move(_Args));
+            _STD move(_Get_args()));
     }
 
     operator _Pointer*() const noexcept {
-        return _STD addressof(const_cast<_Pointer&>(_Ptr));
+        return _STD addressof(_Get_ptr());
     }
 
     operator void**() const noexcept requires(!is_same_v<_Pointer, void*>) {
-        static_assert(is_pointer_v<_Pointer>,
-            "conversion of inout_ptr_t<Smart, Pointer, Args...> to void** requires Pointer to be a raw pointer");
-        return reinterpret_cast<void**>(_STD addressof(const_cast<_Pointer&>(_Ptr)));
+        static_assert(is_pointer_v<_Pointer>, "conversion of inout_ptr_t<Smart, Pointer, Args...> to void** requires "
+                                              "Pointer to be a raw pointer (N4892 [inout.ptr.t]/15)");
+        return reinterpret_cast<void**>(_STD addressof(_Get_ptr()));
     }
 
 private:
+    _NODISCARD _Pointer& _Get_ptr() const noexcept {
+        return const_cast<_Pointer&>(_Mypair._Myval2);
+    }
+
+    _NODISCARD tuple<_ArgsT...>& _Get_args() noexcept {
+        return _Mypair._Get_first();
+    }
+
     _SmartPtr& _Smart_ptr;
-    tuple<_ArgsT...> _Args;
-    _Pointer _Ptr;
+    _Compressed_pair<tuple<_ArgsT...>, _Pointer> _Mypair;
 };
 
 template <class _Pointer = void, class _SmartPtr, class... _ArgsT>

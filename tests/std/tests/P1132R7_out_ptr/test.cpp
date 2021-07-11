@@ -3,6 +3,7 @@
 
 #include <cassert>
 #include <memory>
+#include <utility>
 
 using namespace std;
 
@@ -23,7 +24,7 @@ void test_raw_ptr() {
     }
     {
         const auto f = [](void** ptr) {
-            assert(*reinterpret_cast<int*>(*ptr) == 7);
+            assert(*static_cast<int*>(*ptr) == 7);
             static int i = 15;
             *ptr         = &i;
         };
@@ -102,7 +103,7 @@ void test_smart_ptr(Args&&... args) {
     }
     {
         const auto f = [](void** ptr) {
-            assert(*reinterpret_cast<int*>(*ptr) == 12);
+            assert(*static_cast<int*>(*ptr) == 12);
             *ptr = new int(15);
         };
 
@@ -166,7 +167,7 @@ struct constructible_ptr {
     }
 };
 
-struct resettable_ptr2 : public resettable_ptr {
+struct resettable_ptr2 : resettable_ptr {
     using resettable_ptr::resettable_ptr;
 
 private:
@@ -178,7 +179,7 @@ struct pointer_traits<resettable_ptr2> {
     using element_type = int; // test having only pointer_traits::element_type
 };
 
-struct constructible_ptr2 : public constructible_ptr {
+struct constructible_ptr2 : constructible_ptr {
     using constructible_ptr::constructible_ptr;
 
 private:
