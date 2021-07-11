@@ -652,8 +652,8 @@ template class _CRTIMP2_PURE_IMPORT basic_ostream<unsigned short, char_traits<un
 template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, const char* _Val) { // insert NTBS
     ios_base::iostate _State = ios_base::goodbit;
-    streamsize _Count;
-    streamsize _Pad = _Ostr.width() <= 0 || _Ostr.width() == (_Count = static_cast<streamsize>(_CSTD strnlen(_Val, static_cast<size_t>(_Ostr.width()))) ? 0 : _Ostr.width() - _Count;
+    streamsize _Count        = static_cast<streamsize>(_CSTD strlen(_Val));
+    streamsize _Pad          = _Ostr.width() <= 0 || _Ostr.width() <= _Count ? 0 : _Ostr.width() - _Count;
     const typename basic_ostream<_Elem, _Traits>::sentry _Ok(_Ostr);
 
     if (!_Ok) {
