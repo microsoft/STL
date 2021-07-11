@@ -7,4 +7,5 @@ using namespace std;
 
 int main() {
     assert(clog.tie() == nullptr);
+    assert(wclog.tie() == nullptr);
 }
