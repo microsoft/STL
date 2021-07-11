@@ -142,9 +142,8 @@ struct _Char_traits { // properties of a string or stream element
 
     _NODISCARD static _CONSTEXPR17 size_t length(_In_z_ const _Elem* _First) noexcept /* strengthened */ {
         // find length of null-terminated sequence
-        size_t _Count = 0;
-        while (*_First != _Elem()) {
-            ++_Count;
+        size_t _Count;
+        for (_Count = 0; *_First != _Elem(); ++_Count) {
             ++_First;
         }
 
