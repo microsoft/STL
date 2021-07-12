@@ -19,11 +19,14 @@ STATIC_ASSERT(_Is_trivially_swappable_v<unsigned int>);
 STATIC_ASSERT(_Is_trivially_swappable_v<unsigned long>);
 STATIC_ASSERT(_Is_trivially_swappable_v<unsigned long long>);
 
-STATIC_ASSERT(_Is_trivially_swappable_v<char>);
+STATIC_ASSERT(_Is_trivially_swappable_v<signed char>);
 STATIC_ASSERT(_Is_trivially_swappable_v<short>);
 STATIC_ASSERT(_Is_trivially_swappable_v<int>);
 STATIC_ASSERT(_Is_trivially_swappable_v<long>);
 STATIC_ASSERT(_Is_trivially_swappable_v<long long>);
+
+STATIC_ASSERT(_Is_trivially_swappable_v<char>);
+STATIC_ASSERT(_Is_trivially_swappable_v<wchar_t>);
 
 STATIC_ASSERT(_Is_trivially_swappable_v<float>);
 STATIC_ASSERT(_Is_trivially_swappable_v<double>);
