@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <chrono>
 #include <cstddef>
 #include <type_traits>
 
@@ -68,3 +69,6 @@ struct not_trivial_move_assign {
     }
 };
 STATIC_ASSERT(!_Is_trivially_swappable_v<not_trivial_move_assign>);
+
+STATIC_ASSERT(_Is_trivially_swappable_v<chrono::duration<int>>);
+STATIC_ASSERT(_Is_trivially_swappable_v<chrono::time_point<chrono::system_clock>>);
