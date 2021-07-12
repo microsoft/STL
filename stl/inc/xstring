@@ -99,7 +99,7 @@ struct _Char_traits { // properties of a string or stream element
             bool _Loop_forward = true;
 
             for (const _Elem* _Src = _First2; _Src != _First2 + _Count; ++_Src) {
-                if (_Src == _First1) {
+                if (_First1 == _Src) {
                     _Loop_forward = false;
                     break;
                 }
@@ -133,7 +133,7 @@ struct _Char_traits { // properties of a string or stream element
         // compare [_First1, _First1 + _Count) with [_First2, ...)
         for (; 0 < _Count; --_Count, ++_First1, ++_First2) {
             if (*_First1 != *_First2) {
-                return *_First1 < *_First2 ? -1: +1;
+                return *_First1 < *_First2 ? -1 : +1;
             }
         }
 
