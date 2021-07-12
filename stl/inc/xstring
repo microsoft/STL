@@ -133,7 +133,7 @@ struct _Char_traits { // properties of a string or stream element
         // compare [_First1, _First1 + _Count) with [_First2, ...)
         for (; 0 < _Count; --_Count, ++_First1, ++_First2) {
             if (*_First1 != *_First2) {
-                return *_First1 < *_First2 ? -1 : +1;
+                return *_First1 > *_First2 ? +1: -1;
             }
         }
 
@@ -592,12 +592,12 @@ constexpr int _Traits_compare(_In_reads_(_Left_size) const _Traits_ptr_t<_Traits
         return _Ans;
     }
 
-    if (_Left_size < _Right_size) {
-        return -1;
-    }
-
     if (_Left_size > _Right_size) {
         return 1;
+    }
+
+    if (_Left_size < _Right_size) {
+        return -1;
     }
 
     return 0;
