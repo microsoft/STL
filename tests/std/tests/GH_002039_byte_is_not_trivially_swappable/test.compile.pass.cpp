@@ -37,36 +37,29 @@ enum class byte2 : unsigned char {};
 STATIC_ASSERT(_Is_trivially_swappable_v<byte2>);
 
 enum class byte3 : unsigned char {};
-
-void swap(byte3& a, byte3& b) {
-    byte3 temp{a};
-    a = b;
-    b = temp;
-}
+void swap(byte3& a, byte3& b);
 STATIC_ASSERT(!_Is_trivially_swappable_v<byte3>);
 
 struct good {
-    int val{};
+    int val;
 };
 STATIC_ASSERT(_Is_trivially_swappable_v<good>);
 
 struct not_trivial_destructor {
-    int val{};
-    ~not_trivial_destructor() {}
+    int val;
+    ~not_trivial_destructor();
 };
 STATIC_ASSERT(!_Is_trivially_swappable_v<not_trivial_destructor>);
 
 struct not_trivial_move_constructor {
-    int val{};
-    not_trivial_move_constructor(not_trivial_move_constructor&&) {}
+    int val;
+    not_trivial_move_constructor(not_trivial_move_constructor&&);
 };
 STATIC_ASSERT(!_Is_trivially_swappable_v<not_trivial_move_constructor>);
 
 struct not_trivial_move_assign {
-    int val{};
-    not_trivial_move_assign& operator=(not_trivial_move_assign&&) {
-        return *this;
-    }
+    int val;
+    not_trivial_move_assign& operator=(not_trivial_move_assign&&);
 };
 STATIC_ASSERT(!_Is_trivially_swappable_v<not_trivial_move_assign>);
 
