@@ -744,18 +744,28 @@ namespace ranges {
             { __j - __j } -> convertible_to<_Iota_diff_t<_Ty>>;
         };
 
+    template <class _Wi>
+    struct _Ioterator_category_base {};
+
+    template <incrementable _Wi>
+    struct _Ioterator_category_base<_Wi> {
+        using iterator_category = input_iterator_tag;
+    };
+
     template <weakly_incrementable _Wi>
         requires copyable<_Wi>
-    struct _Ioterator {
+    struct _Ioterator : _Ioterator_category_base<_Wi> {
         // clang-format on
         /* [[no_unique_address]] */ _Wi _Current;
 
-        using iterator_concept  = conditional_t<_Advanceable<_Wi>, random_access_iterator_tag,
+        using iterator_concept = conditional_t<_Advanceable<_Wi>, random_access_iterator_tag,
             conditional_t<_Decrementable<_Wi>, bidirectional_iterator_tag,
                 conditional_t<incrementable<_Wi>, forward_iterator_tag, input_iterator_tag>>>;
-        using iterator_category = input_iterator_tag;
-        using value_type        = _Wi;
-        using difference_type   = _Iota_diff_t<_Wi>;
+        using value_type       = _Wi;
+        using difference_type  = _Iota_diff_t<_Wi>;
+
+        _Ioterator() requires default_initializable<_Wi> = default;
+        constexpr _Ioterator(const _Wi& _Value) noexcept(is_nothrow_copy_constructible_v<_Wi>) : _Current(_Value) {}
 
         _NODISCARD constexpr _Wi operator*() const noexcept(is_nothrow_copy_constructible_v<_Wi>) {
             return _Current;
@@ -860,8 +870,10 @@ namespace ranges {
             }
         }
 
-        _NODISCARD friend constexpr bool operator==(
-            const _Ioterator&, const _Ioterator&) requires equality_comparable<_Wi> = default;
+        _NODISCARD friend constexpr bool operator==(const _Ioterator& _Left, const _Ioterator& _Right) noexcept(
+            noexcept(_Left._Current == _Right._Current)) /* strengthened */ requires equality_comparable<_Wi> {
+            return _Left._Current == _Right._Current;
+        }
         _NODISCARD friend constexpr bool operator<(const _Ioterator& _Left, const _Ioterator& _Right) noexcept(
             noexcept(_Left._Current < _Right._Current)) /* strengthened */ requires totally_ordered<_Wi> {
             return _Left._Current < _Right._Current;
@@ -1257,20 +1269,18 @@ namespace ranges {
         /* [[no_unique_address]] */ _Vw _Range{};
         /* [[no_unique_address]] */ _Copyable_box<_Pr> _Pred{};
 
-        template <class _Traits> // TRANSITION, LWG-3289
+        template <class _View>
         struct _Category_base {};
         // clang-format off
-        template <_Has_member_iterator_category _Traits>
-        struct _Category_base<_Traits> {
+        template <forward_range _View>
+        struct _Category_base<_View> {
             // clang-format on
             using iterator_category =
-                conditional_t<derived_from<typename _Traits::iterator_category, bidirectional_iterator_tag>,
-                    bidirectional_iterator_tag,
-                    conditional_t<derived_from<typename _Traits::iterator_category, forward_iterator_tag>,
-                        forward_iterator_tag, input_iterator_tag>>;
+                conditional_t<derived_from<_Iter_cat_t<iterator_t<_View>>, bidirectional_iterator_tag>,
+                    bidirectional_iterator_tag, input_iterator_tag>;
         };
 
-        class _Iterator : public _Category_base<iterator_traits<iterator_t<_Vw>>> {
+        class _Iterator : public _Category_base<_Vw> {
         private:
             /* [[no_unique_address]] */ iterator_t<_Vw> _Current{};
             filter_view* _Parent{};
@@ -1543,21 +1553,21 @@ namespace ranges {
         template <bool _Const>
         class _Sentinel;
 
-        template <class _Traits, class _Base> // TRANSITION, LWG-3289
+        template <class _Base>
         struct _Category_base {};
         // clang-format off
-        template <_Has_member_iterator_category _Traits, class _Base>
-        struct _Category_base<_Traits, _Base> {
+        template <forward_range _Base>
+        struct _Category_base<_Base> {
             // clang-format on
             using iterator_category =
                 conditional_t<is_lvalue_reference_v<invoke_result_t<_Fn&, range_reference_t<_Base>>>,
-                    conditional_t<derived_from<typename _Traits::iterator_category, contiguous_iterator_tag>,
-                        random_access_iterator_tag, typename _Traits::iterator_category>,
+                    conditional_t<derived_from<_Iter_cat_t<iterator_t<_Base>>, contiguous_iterator_tag>,
+                        random_access_iterator_tag, _Iter_cat_t<iterator_t<_Base>>>,
                     input_iterator_tag>;
         };
 
         template <bool _Const>
-        class _Iterator : public _Category_base<iterator_traits<iterator_t<_Vw>>, _Maybe_const<_Const, _Vw>> {
+        class _Iterator : public _Category_base<_Maybe_const<_Const, _Vw>> {
         private:
             template <bool>
             friend class _Iterator;
@@ -2876,34 +2886,24 @@ namespace ranges {
         template <bool _Const>
         class _Sentinel;
 
-        template <class _OuterTraits, class _InnerTraits, bool _Deref_is_glvalue,
-            bool _Inner_common> // TRANSITION, LWG-3289
+        template <class _Outer, class _Inner, bool _Deref_is_glvalue>
         struct _Category_base {};
 
-        // clang-format off
-        template <class _OuterTraits, class _InnerTraits, bool _Deref_is_glvalue, bool _Inner_common>
-            requires _Has_member_iterator_category<_OuterTraits> && _Has_member_iterator_category<_InnerTraits>
-        struct _Category_base<_OuterTraits, _InnerTraits, _Deref_is_glvalue, _Inner_common> {
+        template <forward_range _Outer, forward_range _Inner>
+        struct _Category_base<_Outer, _Inner, true> {
             using iterator_category =
-                conditional_t<_Deref_is_glvalue && _Inner_common // per LWG issue unnumbered as of 2021-03-16
-                           && derived_from<typename _OuterTraits::iterator_category, bidirectional_iterator_tag>
-                           && derived_from<typename _InnerTraits::iterator_category, bidirectional_iterator_tag>,
+                conditional_t<common_range<_Inner> // per LWG issue unnumbered as of 2021-03-16
+                                  && derived_from<_Iter_cat_t<iterator_t<_Outer>>, bidirectional_iterator_tag> //
+                                  && derived_from<_Iter_cat_t<iterator_t<_Inner>>, bidirectional_iterator_tag>,
                     bidirectional_iterator_tag,
-                    conditional_t<_Deref_is_glvalue
-                               && derived_from<typename _OuterTraits::iterator_category, forward_iterator_tag>
-                               && derived_from<typename _InnerTraits::iterator_category, forward_iterator_tag>,
-                        forward_iterator_tag,
-                        conditional_t<derived_from<typename _OuterTraits::iterator_category, input_iterator_tag>
-                                   && derived_from<typename _InnerTraits::iterator_category, input_iterator_tag>,
-                            input_iterator_tag,
-                            output_iterator_tag>>>;
+                    conditional_t<derived_from<_Iter_cat_t<iterator_t<_Outer>>, forward_iterator_tag> //
+                                      && derived_from<_Iter_cat_t<iterator_t<_Inner>>, forward_iterator_tag>,
+                        forward_iterator_tag, input_iterator_tag>>;
         };
-        // clang-format on
 
         template <bool _Const>
-        class _Iterator : public _Category_base<iterator_traits<iterator_t<_Maybe_const<_Const, _Vw>>>,
-                              iterator_traits<iterator_t<_InnerRng<_Const>>>, is_reference_v<_InnerRng<_Const>>,
-                              common_range<_InnerRng<_Const>>> {
+        class _Iterator
+            : public _Category_base<_Maybe_const<_Const, _Vw>, _InnerRng<_Const>, is_reference_v<_InnerRng<_Const>>> {
         private:
             template <bool>
             friend class _Iterator;
@@ -3258,10 +3258,8 @@ namespace ranges {
         template <class>
         class _Outer_iter_base {};
 
-        // clang-format off
         template <forward_iterator _Iter>
         class _Outer_iter_base<_Iter> {
-            // clang-format on
         protected:
             _Iter _Current{};
 
@@ -3979,18 +3977,20 @@ namespace ranges {
         template <bool _Const>
         class _Sentinel;
 
-        template <class _Traits> // TRANSITION, LWG-3289
+        template <class _Base>
         struct _Category_base {};
 
-        // clang-format off
-        template <_Has_member_iterator_category _Traits>
-        struct _Category_base<_Traits> {
-            // clang-format on
-            using iterator_category = typename _Traits::iterator_category;
+        template <forward_range _Base>
+        struct _Category_base<_Base> {
+            using iterator_category =
+                conditional_t<is_rvalue_reference_v<decltype(_STD get<_Index>(*_STD declval<iterator_t<_Base>>()))>,
+                    input_iterator_tag,
+                    conditional_t<derived_from<_Iter_cat_t<iterator_t<_Base>>, random_access_iterator_tag>,
+                        random_access_iterator_tag, _Iter_cat_t<iterator_t<_Base>>>>;
         };
 
         template <bool _Const>
-        class _Iterator : public _Category_base<iterator_traits<iterator_t<_Vw>>> {
+        class _Iterator : public _Category_base<_Maybe_const<_Const, _Vw>> {
         private:
             template <bool>
             friend class _Iterator;

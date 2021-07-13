@@ -430,10 +430,14 @@ struct iterator_instantiator {
                     conditional_t<forward_iterator<Iter>, forward_iterator_tag, input_iterator_tag>>>>);
 
         using C = typename iterator_traits<Iter>::iterator_category;
-        STATIC_ASSERT(is_same_v<typename I::iterator_category,
-            conditional_t<is_lvalue_reference_v<invoke_result_t<decltype((add8)), iter_reference_t<Iter>>>,
-                conditional_t<derived_from<C, contiguous_iterator_tag>, random_access_iterator_tag, C>,
-                input_iterator_tag>>);
+        if constexpr (forward_iterator<Iter>) {
+            STATIC_ASSERT(is_same_v<typename I::iterator_category,
+                conditional_t<is_lvalue_reference_v<invoke_result_t<decltype((add8)), iter_reference_t<Iter>>>,
+                    conditional_t<derived_from<C, contiguous_iterator_tag>, random_access_iterator_tag, C>,
+                    input_iterator_tag>>);
+        } else {
+            STATIC_ASSERT(!_Has_member_iterator_category<I>);
+        }
 
         { // Validate iterator special member functions and base
             STATIC_ASSERT(default_initializable<I> == default_initializable<Iter>);

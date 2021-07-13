@@ -1805,7 +1805,7 @@ namespace unreachable_sentinel_test {
 
 namespace unwrap_move_only {
     // Validate the iterator unwrapping machinery works with move-only iterators, and that move-only iterators are not
-    // C++17 iterators (per the proposed resolution of LWG-3283)
+    // C++17 iterators
 
     template <class T, bool IsWrapped>
     struct iter {

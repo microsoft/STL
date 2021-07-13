@@ -516,7 +516,6 @@ concept _Cpp17_input_iterator = _Cpp17_iterator<_It>
 
 template <class _It>
     requires (!_Has_iter_types<_It> && _Cpp17_iterator<_It> && !_Cpp17_input_iterator<_It>
-        // Implements the proposed resolution of LWG-3283:
         && (!requires { typename _It::iterator_category; }
             || derived_from<typename _It::iterator_category, output_iterator_tag>))
 struct _Iterator_traits_base<_It> {
@@ -3730,15 +3729,24 @@ class move_sentinel;
 #endif // __cpp_lib_concepts
 
 template <class _Iter>
-class move_iterator {
+struct _Move_iterator_category_base {
+    using iterator_category = _Iter_cat_t<_Iter>;
+};
+
+#ifdef __cpp_lib_concepts
+template <_Has_member_iterator_category _Iter>
+struct _Move_iterator_category_base<_Iter> {
+    using iterator_category = conditional_t<derived_from<_Iter_cat_t<_Iter>, random_access_iterator_tag>,
+        random_access_iterator_tag, _Iter_cat_t<_Iter>>;
+};
+#endif // __cpp_lib_concepts
+
+template <class _Iter>
+class move_iterator : public _Move_iterator_category_base<_Iter> {
 public:
     using iterator_type = _Iter;
 #ifdef __cpp_lib_concepts
-    using iterator_concept  = input_iterator_tag;
-    using iterator_category = conditional_t<derived_from<_Iter_cat_t<_Iter>, random_access_iterator_tag>,
-        random_access_iterator_tag, _Iter_cat_t<_Iter>>;
-#else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
-    using iterator_category = _Iter_cat_t<_Iter>;
+    using iterator_concept = input_iterator_tag;
 #endif // __cpp_lib_concepts
     using value_type      = _Iter_value_t<_Iter>;
     using difference_type = _Iter_diff_t<_Iter>;

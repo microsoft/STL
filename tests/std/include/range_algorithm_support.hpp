@@ -600,7 +600,7 @@ struct std::iterator_traits<::test::iterator<Category, Element, Diff, Eq, Proxy,
     using iterator_concept  = Category;
     using iterator_category = conditional_t<derived_from<Category, forward_iterator_tag>, //
         conditional_t<Proxy == ::test::ProxyRef::no, Category, input_iterator_tag>, //
-        conditional_t<static_cast<bool>(Eq), Category, void>>; // TRANSITION, LWG-3289
+        conditional_t<static_cast<bool>(Eq), Category, void>>;
     using value_type        = remove_cv_t<Element>;
     using difference_type   = ptrdiff_t;
     using pointer           = conditional_t<derived_from<Category, contiguous_iterator_tag>, Element*, void>;
