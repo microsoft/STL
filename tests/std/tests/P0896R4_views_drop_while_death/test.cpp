@@ -11,16 +11,37 @@
 #include <test_death.hpp>
 using namespace std;
 
-[[maybe_unused]] constexpr auto lambda = [x = 42](int) { return x == 42; };
-using DWV                              = decltype(ranges::drop_while_view{span<int, 0>{}, lambda});
+struct test_predicate {
+    struct tag {};
+
+    test_predicate() = default;
+    test_predicate(const test_predicate&) {
+        throw tag{};
+    }
+    test_predicate& operator=(const test_predicate&) = delete;
+
+    constexpr bool operator()(int i) const {
+        return i == 42;
+    }
+};
+
+auto with_no_predicate() {
+    using DWV = decltype(ranges::drop_while_view{span<int, 0>{}, test_predicate{}});
+    DWV r;
+    try {
+        r = DWV{};
+    } catch (const test_predicate::tag&) {
+    }
+    return r;
+}
 
 void test_view_predicate() {
-    DWV r;
-    (void) r.pred(); // value-initialized drop_while_view has no predicate
+    auto r = with_no_predicate();
+    (void) r.pred(); // drop_while_view has no predicate
 }
 
 void test_view_begin() {
-    DWV r;
+    auto r = with_no_predicate();
     (void) r.begin(); // N4885 [range.drop.while.view] forbids calling begin on a drop_while_view with no predicate
 }
 

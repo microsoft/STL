@@ -174,6 +174,9 @@ void type_traits_test_impl() {
     TRAIT_V(is_bounded_array, T);
     TRAIT_V(is_unbounded_array, T);
 #endif // _HAS_CXX20
+#if _HAS_CXX23
+    TRAIT_V(is_scoped_enum, T);
+#endif // _HAS_CXX23
     TRAIT_V(rank, T);
     TRAIT_V(extent, T);
     TRAIT_V(is_same, T, U); // from xtr1common

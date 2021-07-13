@@ -27,7 +27,7 @@ $ProtoVMName = 'PROTOTYPE'
 $LiveVMPrefix = 'BUILD'
 $ImagePublisher = 'MicrosoftWindowsDesktop'
 $ImageOffer = 'Windows-10'
-$ImageSku = '20h2-ent-g2'
+$ImageSku = '21h1-ent-g2'
 
 $ProgressActivity = 'Creating Scale Set'
 $TotalProgress = 14
@@ -310,6 +310,8 @@ Write-Progress `
   -Status 'Sleeping after restart' `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
+# The VM appears to be busy immediately after restarting.
+# This workaround waits for a minute before attempting to run sysprep.ps1.
 Start-Sleep -Seconds 60
 
 ####################################################################################################
