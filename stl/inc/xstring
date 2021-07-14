@@ -54,7 +54,7 @@ struct _Char_traits { // properties of a string or stream element
 #ifdef __cpp_lib_is_constant_evaluated
         if (_STD is_constant_evaluated()) {
             // pre: [_First1, _First1 + _Count) and [_First2, _First2 + _Count) do not overlap; see LWG-3085
-            for (size_t _Idx = 0; _Idx < _Count; ++_Idx) {
+            for (size_t _Idx = 0; _Idx != _Count; ++_Idx) {
                 _First1[_Idx] = _First2[_Idx];
             }
 
@@ -106,11 +106,11 @@ struct _Char_traits { // properties of a string or stream element
             }
 
             if (_Loop_forward) {
-                for (size_t _Idx = 0; _Idx < _Count; ++_Idx) {
+                for (size_t _Idx = 0; _Idx != _Count; ++_Idx) {
                     _First1[_Idx] = _First2[_Idx];
                 }
             } else {
-                for (size_t _Idx = _Count; _Idx > 0; --_Idx) {
+                for (size_t _Idx = _Count; _Idx != 0; --_Idx) {
                     _First1[_Idx - 1] = _First2[_Idx - 1];
                 }
             }
