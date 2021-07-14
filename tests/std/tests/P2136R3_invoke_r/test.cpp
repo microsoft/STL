@@ -72,12 +72,19 @@ constexpr bool test_invoke_r() {
     // TRANSITION, DevCom-1457457
     static_assert(noexcept(invoke_r<int>(square, 3)) == is_permissive, "invoke_r<int>(square, 3) is noexcept");
     static_assert(noexcept(invoke(square, 3)) == is_permissive, "invoke(square, 3) is noexcept");
+
+    constexpr bool has_noexcept_in_type =
 #ifdef __cpp_noexcept_function_type
-    static_assert(noexcept(invoke(square_noexcept, 3)), "invoke(square_noexcept, 3) isn't noexcept");
-    static_assert(noexcept(invoke_r<int>(square_noexcept, 3)), "invoke_r<int>(square_noexcept, 3) isn't noexcept");
-    static_assert(noexcept(invoke(cstring)), "invoke(cstring) isn't noexcept");
-    static_assert(!noexcept(invoke_r<string>(cstring)), "invoke_r<string>(cstring) is noexcept");
+        true;
+#else
+        false;
 #endif
+    static_assert(
+        noexcept(invoke(square_noexcept, 3)) == has_noexcept_in_type, "invoke(square_noexcept, 3) isn't noexcept");
+    static_assert(noexcept(invoke_r<int>(square_noexcept, 3)) == has_noexcept_in_type,
+        "invoke_r<int>(square_noexcept, 3) isn't noexcept");
+    static_assert(noexcept(invoke(cstring)) == has_noexcept_in_type, "invoke(cstring) isn't noexcept");
+    static_assert(!noexcept(invoke_r<string>(cstring)), "invoke_r<string>(cstring) is noexcept");
 
     Thing thing;
     invoke_r<void>(&Thing::n, thing); // no nodiscard warning
