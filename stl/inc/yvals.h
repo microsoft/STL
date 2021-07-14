@@ -165,12 +165,12 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // _ITERATOR_DEBUG_LEVEL != 0 && _CONTAINER_DEBUG_LEVEL == 0
 
 #ifndef _STL_CRT_SECURE_INVALID_PARAMETER
-#ifdef _DEBUG
+#ifdef _DEBUG // avoid emitting unused long strings for function names; see GH-1956
 #define _STL_CRT_SECURE_INVALID_PARAMETER(expr) ::_invalid_parameter(_CRT_WIDE(#expr), L"", __FILEW__, __LINE__, 0)
-#else
+#else // _DEBUG
 #define _STL_CRT_SECURE_INVALID_PARAMETER(expr) _CRT_SECURE_INVALID_PARAMETER(expr)
-#endif
-#endif
+#endif // _DEBUG
+#endif // _STL_CRT_SECURE_INVALID_PARAMETER
 
 #define _STL_REPORT_ERROR(mesg)                  \
     do {                                         \
