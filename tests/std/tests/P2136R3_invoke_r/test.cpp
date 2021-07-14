@@ -5,6 +5,8 @@
 #include <functional>
 #include <type_traits>
 
+#define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
+
 using namespace std;
 
 // TRANSITION, DevCom-1457457
@@ -79,12 +81,10 @@ constexpr bool test_invoke_r() {
 #else
         false;
 #endif
-    static_assert(
-        noexcept(invoke(square_noexcept, 3)) == has_noexcept_in_type, "invoke(square_noexcept, 3) isn't noexcept");
-    static_assert(noexcept(invoke_r<int>(square_noexcept, 3)) == has_noexcept_in_type,
-        "invoke_r<int>(square_noexcept, 3) isn't noexcept");
-    static_assert(noexcept(invoke(cstring)) == has_noexcept_in_type, "invoke(cstring) isn't noexcept");
-    static_assert(!noexcept(invoke_r<string>(cstring)), "invoke_r<string>(cstring) is noexcept");
+    STATIC_ASSERT(noexcept(invoke(square_noexcept, 3)) == has_noexcept_in_type);
+    STATIC_ASSERT(noexcept(invoke_r<int>(square_noexcept, 3)) == has_noexcept_in_type);
+    STATIC_ASSERT(noexcept(invoke(cstring)) == has_noexcept_in_type);
+    STATIC_ASSERT(!noexcept(invoke_r<string>(cstring)));
 
     Thing thing;
     invoke_r<void>(&Thing::n, thing); // no nodiscard warning
