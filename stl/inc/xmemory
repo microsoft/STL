@@ -1218,23 +1218,23 @@ private:
 
 // MEMBER FUNCTIONS FOR _Container_base12
 _CONSTEXPR20_CONTAINER void _Container_base12::_Orphan_all_unlocked() noexcept {
-    for (auto& _Pnext = _Myproxy->_Myfirstiter; _Pnext; _Pnext = _Pnext->_Mynextiter) { // TRANSITION, VSO-1269037
-        _Pnext->_Myproxy = nullptr;
+    if (_Myproxy) { // proxy allocated, drain it
+        for (auto& _Pnext = _Myproxy->_Myfirstiter; _Pnext; _Pnext = _Pnext->_Mynextiter) { // TRANSITION, VSO-1269037
+            _Pnext->_Myproxy = nullptr;
+        }
+        _Myproxy->_Myfirstiter = nullptr;
     }
-    _Myproxy->_Myfirstiter = nullptr;
 }
 
 _CONSTEXPR20_CONTAINER void _Container_base12::_Orphan_all() noexcept {
 #if _ITERATOR_DEBUG_LEVEL == 2
-    if (_Myproxy) { // proxy allocated, drain it
 #ifdef __cpp_lib_constexpr_dynamic_alloc
-        if (_STD is_constant_evaluated()) {
-            _Orphan_all_unlocked();
-        } else
+    if (_STD is_constant_evaluated()) {
+        _Orphan_all_unlocked();
+    } else
 #endif // __cpp_lib_constexpr_dynamic_alloc
-        {
-            _Orphan_all_locked();
-        }
+    {
+        _Orphan_all_locked();
     }
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 }
