@@ -29,10 +29,12 @@ void test_concurrent_creation() {
 
     vector<typename container::iterator> iters;
     iters.reserve(1000);
+
+    const auto iter = c.begin();
     {
-        auto createIters = async(launch::async, [&]() {
+        auto copyIters = async(launch::async, [&]() {
             for (int i = 0; i < 1000; ++i) {
-                iters.push_back(c.begin());
+                iters.push_back(iter);
             };
         });
 

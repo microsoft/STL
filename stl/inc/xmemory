@@ -1112,23 +1112,37 @@ public:
     }
 
     _CONSTEXPR20_CONTAINER _Iterator_base12& operator=(const _Iterator_base12& _Right) noexcept {
-        if (_Myproxy != _Right._Myproxy) {
-            if (_Right._Myproxy) {
-                _Adopt(_Right._Myproxy->_Mycont);
-            } else { // becoming invalid, disown current parent
 #if _ITERATOR_DEBUG_LEVEL == 2
-                _Orphan_me_v2();
-#else // _ITERATOR_DEBUG_LEVEL == 2
+#ifdef __cpp_lib_constexpr_dynamic_alloc
+        if (_STD is_constant_evaluated()) {
+            _Assign_unlocked(_Right);
+        } else
+#endif // __cpp_lib_constexpr_dynamic_alloc
+        {
+            _Assign_locked(_Right);
+        }
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 ^^^ / vvv _ITERATOR_DEBUG_LEVEL != 2 vvv
+        if (_Myproxy != _Right._Myproxy) {
+            if (_Right._Myproxy && _Right._Myproxy->_Mycont) {
+                _Myproxy = _Right._Myproxy->_Mycont->_Myproxy;
+            } else {
                 _Myproxy = nullptr;
-#endif // _ITERATOR_DEBUG_LEVEL == 2
             }
         }
+#endif // _ITERATOR_DEBUG_LEVEL != 2
         return *this;
     }
 
 #if _ITERATOR_DEBUG_LEVEL == 2
     _CONSTEXPR20_CONTAINER ~_Iterator_base12() noexcept {
-        _Orphan_me_v2();
+#ifdef __cpp_lib_constexpr_dynamic_alloc
+        if (_STD is_constant_evaluated()) {
+            _Orphan_me_unlocked();
+        } else
+#endif // __cpp_lib_constexpr_dynamic_alloc
+        {
+            _Orphan_me_locked();
+        }
     }
 
     _CONSTEXPR20_CONTAINER void _Adopt(const _Container_base12* _Parent) noexcept {
@@ -1174,19 +1188,37 @@ public:
 
 #if _ITERATOR_DEBUG_LEVEL == 2
 private:
-    _CONSTEXPR20_CONTAINER void _Adopt_unlocked(const _Container_base12* _Parent) noexcept {
-        if (_Parent) {
-            _Container_proxy* _Parent_proxy = _Parent->_Myproxy;
-            if (_Myproxy != _Parent_proxy) { // change parentage
-                if (_Myproxy) { // adopted, remove self from list
-                    _Orphan_me_unlocked();
-                }
-                _Mynextiter                 = _Parent_proxy->_Myfirstiter;
-                _Parent_proxy->_Myfirstiter = this;
-                _Myproxy                    = _Parent_proxy;
-            }
-        } else {
+    _CONSTEXPR20_CONTAINER void _Assign_unlocked(const _Iterator_base12& _Right) noexcept {
+        if (_Myproxy == _Right._Myproxy) {
+            return;
+        }
+
+        if (_Right._Myproxy && _Right._Myproxy->_Mycont) {
+            _Adopt_unlocked(_Right._Myproxy->_Mycont);
+        } else { // becoming invalid, disown current parent
             _Orphan_me_unlocked();
+        }
+    }
+
+    void _Assign_locked(const _Iterator_base12& _Right) noexcept {
+        _Lockit _Lock(_LOCK_DEBUG);
+        _Assign_unlocked(_Right);
+    }
+
+    _CONSTEXPR20_CONTAINER void _Adopt_unlocked(const _Container_base12* _Parent) noexcept {
+        if (!_Parent) {
+            _Orphan_me_unlocked();
+            return;
+        }
+
+        _Container_proxy* _Parent_proxy = _Parent->_Myproxy;
+        if (_Myproxy != _Parent_proxy) { // change parentage
+            if (_Myproxy) { // adopted, remove self from list
+                _Orphan_me_unlocked();
+            }
+            _Mynextiter                 = _Parent_proxy->_Myfirstiter;
+            _Parent_proxy->_Myfirstiter = this;
+            _Myproxy                    = _Parent_proxy;
         }
     }
 
@@ -1196,17 +1228,20 @@ private:
     }
 
     _CONSTEXPR20_CONTAINER void _Orphan_me_unlocked() noexcept {
-        if (_Myproxy) { // adopted, remove self from list
-            _Iterator_base12** _Pnext = &_Myproxy->_Myfirstiter;
-            while (*_Pnext && *_Pnext != this) {
-                const auto _Temp = *_Pnext; // TRANSITION, VSO-1269037
-                _Pnext           = &_Temp->_Mynextiter;
-            }
-
-            _STL_VERIFY(*_Pnext, "ITERATOR LIST CORRUPTED!");
-            *_Pnext  = _Mynextiter;
-            _Myproxy = nullptr;
+        if (!_Myproxy) { // Already orphaned
+            return;
         }
+
+        // adopted, remove self from list
+        _Iterator_base12** _Pnext = &_Myproxy->_Myfirstiter;
+        while (*_Pnext && *_Pnext != this) {
+            const auto _Temp = *_Pnext; // TRANSITION, VSO-1269037
+            _Pnext           = &_Temp->_Mynextiter;
+        }
+
+        _STL_VERIFY(*_Pnext, "ITERATOR LIST CORRUPTED!");
+        *_Pnext  = _Mynextiter;
+        _Myproxy = nullptr;
     }
 
     void _Orphan_me_locked() noexcept {
@@ -1218,12 +1253,15 @@ private:
 
 // MEMBER FUNCTIONS FOR _Container_base12
 _CONSTEXPR20_CONTAINER void _Container_base12::_Orphan_all_unlocked() noexcept {
-    if (_Myproxy) { // proxy allocated, drain it
-        for (auto& _Pnext = _Myproxy->_Myfirstiter; _Pnext; _Pnext = _Pnext->_Mynextiter) { // TRANSITION, VSO-1269037
-            _Pnext->_Myproxy = nullptr;
-        }
-        _Myproxy->_Myfirstiter = nullptr;
+    if (!_Myproxy) { // no proxy, already done
+        return;
     }
+
+    // proxy allocated, drain it
+    for (auto& _Pnext = _Myproxy->_Myfirstiter; _Pnext; _Pnext = _Pnext->_Mynextiter) { // TRANSITION, VSO-1269037
+        _Pnext->_Myproxy = nullptr;
+    }
+    _Myproxy->_Myfirstiter = nullptr;
 }
 
 _CONSTEXPR20_CONTAINER void _Container_base12::_Orphan_all() noexcept {
