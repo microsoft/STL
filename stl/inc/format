@@ -40,8 +40,10 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 #ifndef __cpp_lib_format
-#pragma message(_WARNING_MESSAGE( \
-    "STL4033", "The contents of <format> are available only in c++latest mode with concepts support;"))
+// clang-format off
+#pragma message( \
+    _WARNING_MESSAGE("STL4033","The contents of <format> are available only in c++latest mode with concepts support;"))
+// clang-format on
 #pragma message(_WARNING_MESSAGE("STL4033", "see https://github.com/microsoft/STL/issues/1814 for details."))
 #else // ^^^ !defined(__cpp_lib_format) / defined(__cpp_lib_format) vvv
 
