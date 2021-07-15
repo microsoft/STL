@@ -168,6 +168,18 @@ namespace {
 
         return __std_win_error{GetLastError()};
     }
+
+    [[nodiscard]] bool __stdcall _Same_file(_In_ HANDLE _Handle_a, _In_ HANDLE _Handle_b) {
+        constexpr auto _Flags = __std_fs_file_flags::_Backup_semantics | __std_fs_file_flags::_Open_reparse_point;
+        FILE_ID_INFO Id_a, Id_b;
+        if (GetFileInformationByHandleEx(_Handle_a, FileIdInfo, &Id_a, sizeof(FILE_ID_INFO))
+            && GetFileInformationByHandleEx(_Handle_b, FileIdInfo, &Id_b, sizeof(FILE_ID_INFO))) {
+
+            if (memcmp(Id_a.FileId.Identifier, Id_b.FileId.Identifier, sizeof(FILE_ID_128)) == 0)
+                return true;
+        }
+        return false;
+    }
 } // unnamed namespace
 
 _EXTERN_C
@@ -661,6 +673,51 @@ _Success_(return == __std_win_error::_Success) __std_win_error
 
 [[nodiscard]] __std_win_error __stdcall __std_fs_rename(
     _In_z_ const wchar_t* const _Source, _In_z_ const wchar_t* const _Target) noexcept {
+    __std_win_error _Last_error;
+    constexpr auto _Flags = __std_fs_file_flags::_Backup_semantics | __std_fs_file_flags::_Open_reparse_point;
+    // `MoveFileExW` requires that the user has 'DELETE' access to the files
+    constexpr auto _Common_access_rights = __std_access_rights::_Delete | __std_access_rights::_File_read_attributes;
+
+    { // dummy scope so that the destructors of _Fs_file can be called
+        _STD _Fs_file _Target_handle(_Target, _Common_access_rights, _Flags, &_Last_error);
+
+        if (_Last_error == __std_win_error::_Success) {
+
+            _STD _Fs_file _Source_handle(_Source, _Common_access_rights, _Flags, &_Last_error);
+            if (_Last_error == __std_win_error::_Success) {
+                if (_Same_file(_Source_handle._Get(), _Target_handle._Get())) {
+                    // Renaming files which are hardlinks of each other is a no-op.
+                    return __std_win_error::_Success;
+                }
+            } else if (_Last_error == __std_win_error::_File_not_found) {
+                return _Last_error;
+            }
+
+            // Choosing FILE_STANDARD_INFO over FILE_BASIC_INFO to check whether the handles refer to directories.
+            // Because sizeof(FILE_STANDARD_INFO) = 24 < sizeof(FILE_BASIC_INFO) = 40.
+            // How expensive is this operation? (comment for reviewers)
+            FILE_STANDARD_INFO _Source_info, _Target_info;
+            if (GetFileInformationByHandleEx(
+                    _Source_handle._Get(), FileStandardInfo, &_Source_info, sizeof(FILE_STANDARD_INFO))
+                && GetFileInformationByHandleEx(
+                    _Target_handle._Get(), FileStandardInfo, &_Target_info, sizeof(FILE_STANDARD_INFO))) {
+                // We are trying to rename directories where the target directory exists. POSIX says if the target
+                // directory is empty the source directory should be renamed as the target directory. Try to delete the
+                // target directory. This operation will fail if the directory is not empty. We don't have to worry
+                // about the read-only bit for the directory as it only applies to files inside it.
+                // NOTE: The above check will allow junctions as well. Not to worry as the target(junction) will get
+                // deleted by 'MoveFileExW' anyway.
+                if (_Source_info.Directory && _Target_info.Directory) {
+                    _Last_error = _Set_delete_flag(_Target_handle._Raw);
+                    if (_Last_error != __std_win_error::_Success) {
+                        // `MoveFileExW` will fail anyway below, so return to the caller here itself.
+                        return _Last_error;
+                    }
+                }
+            }
+        }
+    }
+
     if (MoveFileExW(_Source, _Target, MOVEFILE_COPY_ALLOWED | MOVEFILE_REPLACE_EXISTING)) {
         return __std_win_error::_Success;
     }

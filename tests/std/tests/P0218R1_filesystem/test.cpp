@@ -3315,16 +3315,24 @@ void test_rename() {
     const test_temp_directory tempDir("rename"sv);
     error_code ec;
     const path dir(tempDir.directoryPath / L"dir"sv);
-    const path otherDir(tempDir.directoryPath / L"dirAfter"sv);
+    const path dirFile(dir / L"file"sv);
+    const path emptyDir(tempDir.directoryPath / L"emptydir"sv);
+    const path otherDir(tempDir.directoryPath / L"otherdir"sv);
+    const path otherDirFile(otherDir / L"file"sv);
     const path fileA(tempDir.directoryPath / L"filea.txt"sv);
     const path fileB(tempDir.directoryPath / L"fileb.txt"sv);
+    const path fileAlink(tempDir.directoryPath / L"filealink.txt"sv);
 
     create_directories(dir.native(), ec);
+    EXPECT(good(ec));
+    create_directory(emptyDir.native(), ec);
     EXPECT(good(ec));
     create_directory(otherDir.native(), ec);
     EXPECT(good(ec));
     create_file_containing(fileA, L"hello");
     create_file_containing(fileB, L"world");
+    create_file_containing(dirFile, L"hi");
+    create_file_containing(otherDirFile, L"there");
 
     // If old_p and new_p resolve to the same existing file, no action is taken
     rename(dir, dir, ec);
@@ -3332,6 +3340,13 @@ void test_rename() {
     rename(fileA, fileA, ec);
     EXPECT(good(ec));
     EXPECT(read_file_contents(fileA) == L"hello");
+
+    // If old_p and new_p are hardlinks of each other, no action is taken
+    create_hard_link(fileA, fileAlink);
+    rename(fileA, fileAlink, ec);
+    EXPECT(good(ec));
+    EXPECT(read_file_contents(fileA) == L"hello");
+    EXPECT(read_file_contents(fileAlink) == L"hello");
 
     // If new_p resolves to an existing non-directory file, new_p is removed
     rename(fileA, fileB, ec);
@@ -3343,9 +3358,16 @@ void test_rename() {
     rename(fileB, fileA);
     EXPECT(read_file_contents(fileA) == L"hello");
 
+    // If old_p and new_p are directories and new_p is empty new_p is removed and old_p is renamed to new_p
+    rename(dir, emptyDir, ec);
+    EXPECT(good(ec));
+    EXPECT(!exists(dir.native()));
+    EXPECT(read_file_contents(emptyDir / L"file"sv) == L"hi");
+
     // Bad cases
-    EXPECT(throws_filesystem_error([&] { rename(dir, otherDir); }, "rename", dir, otherDir));
-    rename(dir, otherDir, ec);
+    // If old_p and new_p are directories and new_p is not empty
+    EXPECT(throws_filesystem_error([&] { rename(emptyDir, otherDir); }, "rename", emptyDir, otherDir));
+    rename(emptyDir, otherDir, ec);
     EXPECT(bad(ec));
 }
 
