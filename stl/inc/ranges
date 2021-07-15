@@ -689,12 +689,10 @@ namespace ranges {
 
         template <class _It>
         _CONSTEXPR20_DYNALLOC _Ty& _Emplace_deref(_It& _Iter) noexcept(noexcept(_Ty(*_Iter))) /* strengthened */ {
-            if constexpr (!is_nothrow_constructible_v<_Ty, decltype(*_Iter)>) {
-                if (_Engaged) {
-                    _Val.~_Ty();
-                    _Dummy   = {};
-                    _Engaged = false;
-                }
+            if (_Engaged) {
+                _Val.~_Ty();
+                _Dummy   = {};
+                _Engaged = false;
             }
 
             _Construct_in_place(_Val, *_Iter);
