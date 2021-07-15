@@ -225,8 +225,6 @@ _STL_DISABLE_CLANG_WARNINGS
 
 #include <use_ansi.h>
 
-#define _WARNING_MESSAGE(NUMBER, MESSAGE) __FILE__ "(" _CRT_STRINGIZE(__LINE__) "): warning " NUMBER ": " MESSAGE
-
 #ifdef _STATIC_CPPLIB
 #ifndef _DISABLE_DEPRECATE_STATIC_CPPLIB
 #ifdef _DLL

@@ -9,8 +9,9 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 #ifndef __cpp_lib_ranges
-#pragma message("The contents of <ranges> are available only in c++latest mode with concepts support;")
-#pragma message("see https://github.com/microsoft/STL/issues/1814 for details.")
+#pragma message(_WARNING_MESSAGE( \
+    "STL4048", "The contents of <ranges> are available only in c++latest mode with concepts support;"))
+#pragma message(_WARNING_MESSAGE("STL4048", "see https://github.com/microsoft/STL/issues/1814 for details."))
 #else // ^^^ !defined(__cpp_lib_ranges) / defined(__cpp_lib_ranges) vvv
 #include <iosfwd>
 #include <iterator>

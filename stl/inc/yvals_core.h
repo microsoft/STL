@@ -364,6 +364,8 @@
 
 #include <vcruntime.h>
 
+#define _WARNING_MESSAGE(NUMBER, MESSAGE) __FILE__ "(" _CRT_STRINGIZE(__LINE__) "): warning " NUMBER ": " MESSAGE
+
 // TRANSITION, <vcruntime.h> should define _HAS_CXX23
 #ifndef _HAS_CXX23
 #if _HAS_CXX20 && (defined(_MSVC_LANG) && _MSVC_LANG > 202002L || defined(__cplusplus) && __cplusplus > 202002L)
@@ -1066,7 +1068,7 @@
 #define _CXX17_DEPRECATE_POLYMORPHIC_ALLOCATOR_DESTROY
 #endif // ^^^ warning disabled ^^^
 
-// next warning number: STL4033
+// next warning number: STL4056
 
 // P0619R4 Removing C++17-Deprecated Features
 #ifndef _HAS_FEATURES_REMOVED_IN_CXX20
