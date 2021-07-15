@@ -324,9 +324,6 @@ algorithms\alg.sorting\alg.sort\partial.sort\partial_sort_comp.pass.cpp
 
 
 # *** CLANG COMPILER BUGS ***
-# LLVM-33230 "Clang on Windows should define __STDCPP_THREADS__ to be 1"
-thread\macro.pass.cpp
-
 # LLVM-46207 Clang's tgmath.h interferes with the UCRT's tgmath.h
 depr\depr.c.headers\tgmath_h.pass.cpp
 
@@ -663,6 +660,13 @@ language.support\support.limits\support.limits.general\variant.version.pass.cpp
 utilities\memory\util.dynamic.safety\get_pointer_safety.pass.cpp
 utilities\memory\util.dynamic.safety\declare_no_pointers.pass.cpp
 utilities\memory\util.dynamic.safety\declare_reachable.pass.cpp
+
+# Clang 12 emits a warning-as-error; this has likely been fixed upstream already:
+# error: temporary whose address is used as value of local variable 'it2' will be destroyed at the end of the full-expression [-Werror,-Wdangling]
+iterators\predef.iterators\reverse.iterators\reverse.iter.ops\reverse.iter.op-=\difference_type.pass.cpp
+iterators\predef.iterators\reverse.iterators\reverse.iter.ops\reverse.iter.op+=\difference_type.pass.cpp
+iterators\predef.iterators\reverse.iterators\reverse.iter.ops\reverse.iter.op=\reverse_iterator.pass.cpp
+
 
 # *** LIKELY STL BUGS ***
 # Not yet analyzed, likely STL bugs. Assertions and other runtime failures.
