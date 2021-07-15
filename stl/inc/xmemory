@@ -1228,7 +1228,7 @@ private:
     }
 
     _CONSTEXPR20_CONTAINER void _Orphan_me_unlocked() noexcept {
-        if (!_Myproxy) { // Already orphaned
+        if (!_Myproxy) { // already orphaned
             return;
         }
 
