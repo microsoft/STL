@@ -38,7 +38,7 @@ void test_concurrent_creation() {
             };
         });
 
-        auto invalidateIters = async(launch::async, [&]() { c = container{}; });
+        auto invalidateIters = async(launch::async, [&]() { c.clear(); });
     }
 }
 
