@@ -11,7 +11,7 @@
 
 #ifndef __cpp_lib_concepts
 #pragma message( \
-    _WARNING_MESSAGE("STL4037", "The contents of <concepts> are available only with C++20 concepts support."))
+    _WARNING_MESSAGE("STL4033", "The contents of <concepts> are available only with C++20 concepts support."))
 #else // ^^^ !defined(__cpp_lib_concepts) / defined(__cpp_lib_concepts) vvv
 #include <type_traits>
 #include <vcruntime_new.h>
