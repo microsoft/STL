@@ -715,57 +715,35 @@ namespace ranges {
     class _Non_propagating_cache<_Ty> { // provide the same API more efficiently for trivially destructible types
         // clang-format on
     public:
-        constexpr _Non_propagating_cache() noexcept : _Dummy{} {}
+        constexpr _Non_propagating_cache() noexcept {}
 
         constexpr _Non_propagating_cache(const _Non_propagating_cache&) noexcept {}
 
-        constexpr _Non_propagating_cache(_Non_propagating_cache&& _Other) noexcept {
-            _Other._Engaged = false;
-        }
+        constexpr _Non_propagating_cache(_Non_propagating_cache&& _Other) noexcept {}
 
         constexpr _Non_propagating_cache& operator=(const _Non_propagating_cache& _Other) noexcept {
-            if (_STD addressof(_Other) == this) {
-                return *this;
-            }
-
-            _Engaged = false;
-
             return *this;
         }
 
         constexpr _Non_propagating_cache& operator=(_Non_propagating_cache&& _Other) noexcept {
-            _Engaged        = false;
-            _Other._Engaged = false;
-
             return *this;
         }
 
         _NODISCARD constexpr _Ty& operator*() noexcept {
-            _STL_INTERNAL_CHECK(_Engaged);
             return _Val;
         }
         _NODISCARD constexpr const _Ty& operator*() const noexcept {
-            _STL_INTERNAL_CHECK(_Engaged);
             return _Val;
         }
 
         template <class _It>
         _CONSTEXPR20_DYNALLOC _Ty& _Emplace_deref(_It& _Iter) noexcept(noexcept(_Ty(*_Iter))) /* strengthened */ {
-            if constexpr (!is_nothrow_constructible_v<_Ty, decltype(*_Iter)>) {
-                _Engaged = false;
-            }
             _Construct_in_place(_Val, *_Iter);
-            _Engaged = true;
-
             return _Val;
         }
 
     private:
-        union {
-            _Nontrivial_dummy_type _Dummy;
-            _Ty _Val;
-        };
-        bool _Engaged = false;
+        _Ty _Val;
     };
 
     // CLASS TEMPLATE ranges::empty_view
