@@ -836,7 +836,9 @@ private:
     };
 
 public:
+    // clang-format off
     constexpr common_iterator() requires default_initializable<_Iter> = default;
+    // clang-format on
 
     constexpr common_iterator(_Iter _Right) noexcept(is_nothrow_move_constructible_v<_Iter>) // strengthened
         : _Val{in_place_type<_Iter>, _STD move(_Right)} {}
@@ -1069,7 +1071,10 @@ public:
     using difference_type = iter_difference_t<_Iter>;
 
     // [counted.iter.const]
+    // clang-format off
     constexpr counted_iterator() requires default_initializable<_Iter> = default;
+    // clang-format on
+
     constexpr counted_iterator(_Iter _Right, const iter_difference_t<_Iter> _Diff) noexcept(
         is_nothrow_move_constructible_v<_Iter>) // strengthened
         : _Current(_STD move(_Right)), _Length(_Diff) {

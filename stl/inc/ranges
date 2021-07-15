@@ -254,7 +254,9 @@ namespace ranges {
             is_nothrow_constructible_v<_Ty, _Types...>) // strengthened
             : _Val(_STD forward<_Types>(_Args)...), _Engaged{true} {}
 
+        // clang-format off
         ~_Copyable_box() requires is_trivially_destructible_v<_Ty> = default;
+        // clang-format on
 
         _CONSTEXPR20_DYNALLOC ~_Copyable_box() {
             if (_Engaged) {
@@ -262,14 +264,20 @@ namespace ranges {
             }
         }
 
+        // clang-format off
         _Copyable_box(const _Copyable_box&) requires is_trivially_copy_constructible_v<_Ty> = default;
+        // clang-format on
+
         _CONSTEXPR20_DYNALLOC _Copyable_box(const _Copyable_box& _That) : _Engaged{_That._Engaged} {
             if (_That._Engaged) {
                 _Construct_in_place(_Val, _That._Val);
             }
         }
 
+        // clang-format off
         _Copyable_box(_Copyable_box&&) requires is_trivially_move_constructible_v<_Ty> = default;
+        // clang-format on
+
         _CONSTEXPR20_DYNALLOC _Copyable_box(_Copyable_box&& _That) : _Engaged{_That._Engaged} {
             if (_That._Engaged) {
                 _Construct_in_place(_Val, _STD move(_That._Val));
@@ -282,8 +290,8 @@ namespace ranges {
         // clang-format on
 
         _CONSTEXPR20_DYNALLOC _Copyable_box& operator=(const _Copyable_box& _That) noexcept(
-            is_nothrow_copy_constructible_v<_Ty>&&
-                is_nothrow_copy_assignable_v<_Ty>) /* strengthened */ requires copyable<_Ty> {
+            is_nothrow_copy_constructible_v<_Ty>&& is_nothrow_copy_assignable_v<_Ty>) // strengthened
+            requires copyable<_Ty> {
             if (_Engaged) {
                 if (_That._Engaged) {
                     _Val = _That._Val;
@@ -328,8 +336,8 @@ namespace ranges {
         // clang-format on
 
         _CONSTEXPR20_DYNALLOC _Copyable_box& operator=(_Copyable_box&& _That) noexcept(
-            is_nothrow_move_constructible_v<_Ty>&&
-                is_nothrow_move_assignable_v<_Ty>) /* strengthened */ requires movable<_Ty> {
+            is_nothrow_move_constructible_v<_Ty>&& is_nothrow_move_assignable_v<_Ty>) // strengthened
+            requires movable<_Ty> {
             if (_Engaged) {
                 if (_That._Engaged) {
                     _Val = _STD move(_That._Val);
@@ -391,13 +399,15 @@ namespace ranges {
 
     // clang-format off
     template <_Copy_constructible_object _Ty>
-        requires copyable<_Ty>
+        requires (copyable<_Ty>
             || (is_nothrow_copy_constructible_v<_Ty>
-                && (movable<_Ty> || is_nothrow_move_constructible_v<_Ty>))
+                && (movable<_Ty> || is_nothrow_move_constructible_v<_Ty>)))
     class _Copyable_box<_Ty> { // provide the same API more efficiently when we can avoid the disengaged state
         // clang-format on
     public:
+        // clang-format off
         _Copyable_box() requires default_initializable<_Ty> = default;
+        // clang-format on
 
         template <class... _Types>
         constexpr _Copyable_box(in_place_t, _Types&&... _Args) noexcept(
@@ -406,8 +416,11 @@ namespace ranges {
 
         _Copyable_box(const _Copyable_box&) = default;
         _Copyable_box(_Copyable_box&&)      = default;
+
+        // clang-format off
         _Copyable_box& operator=(const _Copyable_box&) requires copyable<_Ty> = default;
         _Copyable_box& operator=(_Copyable_box&&) requires movable<_Ty> = default;
+        // clang-format on
 
         _CONSTEXPR20_DYNALLOC _Copyable_box& operator=(const _Copyable_box& _That) noexcept {
             if (_STD addressof(_That) != this) {
@@ -448,7 +461,9 @@ namespace ranges {
     public:
         constexpr _Defaultabox() noexcept : _Dummy{} {}
 
+        // clang-format off
         ~_Defaultabox() requires is_trivially_destructible_v<_Ty> = default;
+        // clang-format on
 
         _CONSTEXPR20_DYNALLOC ~_Defaultabox() {
             if (_Engaged) {
@@ -468,7 +483,9 @@ namespace ranges {
             }
         }
 
+        // clang-format off
         _Defaultabox(_Defaultabox&&) requires is_trivially_move_constructible_v<_Ty> = default;
+        // clang-format on
 
         _CONSTEXPR20_DYNALLOC _Defaultabox(_Defaultabox&& _That) : _Engaged{_That._Engaged} {
             if (_That._Engaged) {
@@ -482,8 +499,8 @@ namespace ranges {
         // clang-format on
 
         _CONSTEXPR20_DYNALLOC _Defaultabox& operator=(const _Defaultabox& _That) noexcept(
-            is_nothrow_copy_constructible_v<_Ty>&&
-                is_nothrow_copy_assignable_v<_Ty>) /* strengthened */ requires copyable<_Ty> {
+            is_nothrow_copy_constructible_v<_Ty>&& is_nothrow_copy_assignable_v<_Ty>) // strengthened
+            requires copyable<_Ty> {
             if (_Engaged) {
                 if (_That._Engaged) {
                     _Val = _That._Val;
@@ -503,7 +520,9 @@ namespace ranges {
             return *this;
         }
 
+        // clang-format off
         _Defaultabox& operator=(_Defaultabox&&) noexcept requires is_trivially_move_assignable_v<_Ty> = default;
+        // clang-format on
 
         _CONSTEXPR20_DYNALLOC _Defaultabox& operator=(_Defaultabox&& _That) noexcept(
             is_nothrow_move_constructible_v<_Ty>&& is_nothrow_move_assignable_v<_Ty>) /* strengthened */ {
@@ -661,7 +680,10 @@ namespace ranges {
     class single_view : public view_interface<single_view<_Ty>> {
         // clang-format on
     public:
+        // clang-format off
         single_view() requires default_initializable<_Ty> = default;
+        // clang-format on
+
         constexpr explicit single_view(const _Ty& _Val_) noexcept(is_nothrow_copy_constructible_v<_Ty>) // strengthened
             : _Val{in_place, _Val_} {}
         constexpr explicit single_view(_Ty&& _Val_) noexcept(is_nothrow_move_constructible_v<_Ty>) // strengthened
@@ -792,6 +814,7 @@ namespace ranges {
 
 #if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1347136
     private:
+
         template <class _Left, class _Right>
         static constexpr bool _Nothrow_plus_equal = noexcept(_STD declval<_Left&>() += _STD declval<const _Right&>());
         template <_Integer_like _Left, class _Right>
@@ -860,8 +883,11 @@ namespace ranges {
             }
         }
 
+        // clang-format off
         _NODISCARD friend constexpr bool operator==(
             const _Ioterator&, const _Ioterator&) requires equality_comparable<_Wi> = default;
+        // clang-format on
+
         _NODISCARD friend constexpr bool operator<(const _Ioterator& _Left, const _Ioterator& _Right) noexcept(
             noexcept(_Left._Current < _Right._Current)) /* strengthened */ requires totally_ordered<_Wi> {
             return _Left._Current < _Right._Current;
@@ -966,7 +992,9 @@ namespace ranges {
         }
 
     public:
+        // clang-format off
         iota_view() requires default_initializable<_Wi> = default;
+        // clang-format on
 
         constexpr explicit iota_view(_Wi _Value_) noexcept(
             is_nothrow_move_constructible_v<_Wi>&& is_nothrow_default_constructible_v<_Bo>) // strengthened
@@ -1288,7 +1316,9 @@ namespace ranges {
             using value_type       = range_value_t<_Vw>;
             using difference_type  = range_difference_t<_Vw>;
 
+            // clang-format off
             _Iterator() requires default_initializable<iterator_t<_Vw>> = default;
+            // clang-format on
 
             constexpr _Iterator(filter_view& _Parent_, iterator_t<_Vw> _Current_) noexcept(
                 is_nothrow_move_constructible_v<iterator_t<_Vw>>) // strengthened
@@ -1301,8 +1331,9 @@ namespace ranges {
 #endif // _ITERATOR_DEBUG_LEVEL != 0
             }
 
-            _NODISCARD constexpr iterator_t<_Vw> base() const& noexcept(is_nothrow_copy_constructible_v<
-                iterator_t<_Vw>>) /* strengthened */ requires copyable<iterator_t<_Vw>> {
+            _NODISCARD constexpr iterator_t<_Vw> base() const& noexcept(
+                is_nothrow_copy_constructible_v<iterator_t<_Vw>>) // strengthened
+                requires copyable<iterator_t<_Vw>> {
                 return _Current;
             }
             _NODISCARD constexpr iterator_t<_Vw> base() && noexcept(
@@ -1590,7 +1621,9 @@ namespace ranges {
             using value_type       = remove_cvref_t<invoke_result_t<_Fn&, range_reference_t<_Base>>>;
             using difference_type  = range_difference_t<_Base>;
 
+            // clang-format off
             _Iterator() requires default_initializable<iterator_t<_Base>> = default;
+            // clang-format on
 
             constexpr _Iterator(_Parent_t& _Parent_, iterator_t<_Base> _Current_) noexcept(
                 is_nothrow_move_constructible_v<iterator_t<_Base>>) // strengthened
@@ -1610,8 +1643,9 @@ namespace ranges {
                 : _Current{_STD move(_It._Current)}, _Parent{_It._Parent} {}
             // clang-format on
 
-            _NODISCARD constexpr iterator_t<_Base> base() const& noexcept(is_nothrow_copy_constructible_v<
-                iterator_t<_Base>>) /* strengthened */ requires copyable<iterator_t<_Base>> {
+            _NODISCARD constexpr iterator_t<_Base> base() const& noexcept(
+                is_nothrow_copy_constructible_v<iterator_t<_Base>>) // strengthened
+                requires copyable<iterator_t<_Base>> {
                 return _Current;
             }
             _NODISCARD constexpr iterator_t<_Base> base() && noexcept(
@@ -2085,7 +2119,9 @@ namespace ranges {
         };
 
     public:
+        // clang-format off
         take_view() requires default_initializable<_Vw> = default;
+        // clang-format on
 
         constexpr take_view(_Vw _Range_, const range_difference_t<_Vw> _Count_) noexcept(
             is_nothrow_move_constructible_v<_Vw>) // strengthened
@@ -2528,7 +2564,9 @@ namespace ranges {
         }
 
     public:
+        // clang-format off
         drop_view() requires default_initializable<_Vw> = default;
+        // clang-format on
 
         constexpr drop_view(_Vw _Range_, const range_difference_t<_Vw> _Count_) noexcept(
             is_nothrow_move_constructible_v<_Vw>) // strengthened
@@ -2847,8 +2885,8 @@ namespace ranges {
     // CLASS TEMPLATE ranges::join_view
     // clang-format off
     template <input_range _Vw>
-        requires view<_Vw> && input_range<range_reference_t<_Vw>>
-            && (is_reference_v<range_reference_t<_Vw>> || view<range_value_t<_Vw>>)
+        requires (view<_Vw> && input_range<range_reference_t<_Vw>>
+            && (is_reference_v<range_reference_t<_Vw>> || view<range_value_t<_Vw>>))
     class join_view;
     // clang-format on
 
@@ -2864,8 +2902,8 @@ namespace ranges {
     class _Join_view_base<_Vw> : public view_interface<join_view<_Vw>> {};
 
     template <input_range _Vw>
-        requires view<_Vw> && input_range<range_reference_t<_Vw>>
-            && (is_reference_v<range_reference_t<_Vw>> || view<range_value_t<_Vw>>)
+        requires (view<_Vw> && input_range<range_reference_t<_Vw>>
+            && (is_reference_v<range_reference_t<_Vw>> || view<range_value_t<_Vw>>))
     class join_view : public _Join_view_base<_Vw> {
         // clang-format on
     private:
@@ -3147,7 +3185,9 @@ namespace ranges {
         };
 
     public:
+        // clang-format off
         join_view() requires default_initializable<_Vw> = default;
+        // clang-format on
 
         constexpr explicit join_view(_Vw _Range_) noexcept(is_nothrow_move_constructible_v<_Vw>) // strengthened
             : _Range(_STD move(_Range_)) {}
@@ -3226,9 +3266,9 @@ namespace ranges {
         && (remove_reference_t<_Ty>::size() <= 1);
 
     template <input_range _Vw, forward_range _Pat>
-        requires view<_Vw> && view<_Pat>
+        requires (view<_Vw> && view<_Pat>
             && indirectly_comparable<iterator_t<_Vw>, iterator_t<_Pat>, _RANGES equal_to>
-            && (forward_range<_Vw> || _Tiny_range<_Pat>)
+            && (forward_range<_Vw> || _Tiny_range<_Pat>))
     class split_view;
     // clang-format on
 
@@ -3243,9 +3283,9 @@ namespace ranges {
 
     // clang-format off
     template <input_range _Vw, forward_range _Pat>
-        requires view<_Vw> && view<_Pat>
+        requires (view<_Vw> && view<_Pat>
             && indirectly_comparable<iterator_t<_Vw>, iterator_t<_Pat>, _RANGES equal_to>
-            && (forward_range<_Vw> || _Tiny_range<_Pat>)
+            && (forward_range<_Vw> || _Tiny_range<_Pat>))
     class split_view : public _Split_view_base<_Vw, _Pat> {
         // clang-format on
     private:
@@ -3696,7 +3736,9 @@ namespace ranges {
         /* [[no_unique_address]] */ _Vw _Base{};
 
     public:
+        // clang-format off
         common_view() requires default_initializable<_Vw> = default;
+        // clang-format on
 
         constexpr explicit common_view(_Vw _Base_) noexcept(is_nothrow_move_constructible_v<_Vw>) // strengthened
             : _Base(_STD move(_Base_)) {}
@@ -3814,7 +3856,9 @@ namespace ranges {
         using _Rev_iter = reverse_iterator<iterator_t<_Rng>>;
 
     public:
+        // clang-format off
         reverse_view() requires default_initializable<_Vw> = default;
+        // clang-format on
 
         constexpr explicit reverse_view(_Vw _Range_) noexcept(is_nothrow_move_constructible_v<_Vw>) // strengthened
             : _Range(_STD move(_Range_)) {}
@@ -4008,7 +4052,9 @@ namespace ranges {
             using value_type       = remove_cvref_t<tuple_element_t<_Index, range_value_t<_Base>>>;
             using difference_type  = range_difference_t<_Base>;
 
+            // clang-format off
             _Iterator() requires default_initializable<iterator_t<_Base>> = default;
+            // clang-format on
 
             constexpr explicit _Iterator(iterator_t<_Base> _Current_) noexcept(
                 is_nothrow_move_constructible_v<iterator_t<_Base>>) // strengthened
@@ -4264,7 +4310,9 @@ namespace ranges {
         };
 
     public:
+        // clang-format off
         elements_view() requires default_initializable<_Vw> = default;
+        // clang-format on
 
         constexpr explicit elements_view(_Vw _Range_) noexcept(is_nothrow_move_constructible_v<_Vw>) // strengthened
             : _Range(_STD move(_Range_)) {}

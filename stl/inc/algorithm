@@ -9760,11 +9760,13 @@ namespace ranges {
             return {static_cast<_Ty>(*_Found.min), static_cast<_Ty>(*_Found.max)};
         }
 
+        // clang-format off
         template <input_range _Rng, class _Pj = identity,
             indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
-        requires indirectly_copyable_storable<iterator_t<_Rng>, range_value_t<_Rng>*>
-            _NODISCARD constexpr minmax_result<range_value_t<_Rng>> operator()(
-                _Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            requires indirectly_copyable_storable<iterator_t<_Rng>, range_value_t<_Rng>*>
+        _NODISCARD constexpr minmax_result<range_value_t<_Rng>> operator()(
+            _Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            // clang-format on
             auto _UFirst = _Ubegin(_Range);
             auto _ULast  = _Uend(_Range);
             _STL_ASSERT(
