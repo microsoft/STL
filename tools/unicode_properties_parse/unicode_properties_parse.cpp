@@ -117,9 +117,8 @@ void printToken(const token& t) {
 }
 
 
-constexpr const char* Grapheme_Cluster_Break_Names[] = {"Any", "CR", "LF", "Control", "Extend", "ZWJ",
-    "Regional_Indicator", "Prepend", "SpacingMark", "L", "V", "T", "LV", "LVT", "E_Base", "E_Modifier",
-    "Glue_After_Zwj", "E_Base_GAZ", nullptr};
+constexpr const char* Grapheme_Cluster_Break_Names[] = {"CR", "LF", "Control", "Extend", "ZWJ", "Regional_Indicator",
+    "Prepend", "SpacingMark", "L", "V", "T", "LV", "LVT", nullptr};
 
 constexpr const char* Extended_Pictographic_Names[] = {"Extended_Pictographic", nullptr};
 struct property_range {
@@ -279,19 +278,23 @@ void output_literals(ostream& os, const vector<T>& values) {
     auto [end, ec] = to_chars(hex_value_buffer + 2, std::end(hex_value_buffer) - 1, values.back(), 16);
     assert(ec == errc{});
     os.write(hex_value_buffer, end - hex_value_buffer);
-    os << "};\n";
+    os << "} ";
 }
 
 void output_property_enum(ostream& os, string_view enum_name, const char* const* prop_value_names) {
-    os << "enum class " << enum_name << " {";
+    os << "enum class " << enum_name << ": uint8_t "
+       << " {";
     if (*prop_value_names != nullptr) {
         // output the first name without a leading comma
-        os << *prop_value_names;
+        os << "_" << *prop_value_names << "_value";
     }
     ++prop_value_names;
     for (; *prop_value_names != nullptr; ++prop_value_names) {
-        os << ", " << *prop_value_names;
+        // note: we're uglifying the property names here.
+        os << ", "
+           << "_" << *prop_value_names << "_value";
     }
+    os << ", _No_value = " << static_cast<uint32_t>(numeric_limits<uint8_t>::max());
     os << "};\n";
 }
 
@@ -311,10 +314,13 @@ int main(int char** argv)
     ostringstream str;
     output_property_enum(str, "_Grapheme_Break_Property_Values", Grapheme_Cluster_Break_Names);
     output_property_enum(str, "_Extended_Pictographic_Property_Values", Extended_Pictographic_Names);
-    str << "static constexpr uint32_t _Grapheme_Break_Property_Codepoint_Lower_Bounds[] = ";
+    str << "static constexpr _Unicode_Property_Data<_Grapheme_Break_Property_Values, ";
+    str << gbrtable.code_point_lower_bounds.size();
+    str << "> _Grapheme_Break_Property_Data{ ";
     output_literals(str, gbrtable.code_point_lower_bounds);
-    str << "static constexpr uint16_t _Grapheme_Break_Property_Props_And_Range[] = ";
+    str << ", ";
     output_literals(str, gbrtable.props_and_range);
+    str << "};\n";
 
     path emoji_path(argv[0]);
     emoji_path.replace_filename("emoji-data.txt");
@@ -325,9 +331,12 @@ int main(int char** argv)
     ranges::sort(extended_pictographic_property, {}, &property_range::first);
     auto extended_pictographic_table = convert_to_properties_table(extended_pictographic_property);
 
-    str << "static constexpr uint32_t _Extended_Pictographic_Codepoint_Lower_Bounds[] = ";
+    str << "static constexpr _Unicode_Property_Data<_Extended_Pictographic_Property_Values, ";
+    str << extended_pictographic_table.code_point_lower_bounds.size();
+    str << "> _Extended_Pictographic_Property_Data{ ";
     output_literals(str, extended_pictographic_table.code_point_lower_bounds);
-    str << "static constexpr uint16_t _Extended_Pictographic_Props_And_Range[] = ";
+    str << ", ";
     output_literals(str, extended_pictographic_table.props_and_range);
+    str << "};\n";
     fputs(str.str().c_str(), stdout);
 }
