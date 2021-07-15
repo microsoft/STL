@@ -3927,7 +3927,7 @@ namespace filesystem {
         if (_Error == __std_win_error::_Success) {
             _Result = file_time_type{file_time_type::duration{_Stats._Last_write_time}};
         } else {
-            _Result = (file_time_type::min)();
+            _Result = (file_time_type::min) ();
         }
 
         return _Error;

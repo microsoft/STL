@@ -71,7 +71,7 @@ _NODISCARD constexpr size_t _Get_size_of_n(const size_t _Count) {
 
 // VARIABLE TEMPLATE _New_alignof
 template <class _Ty>
-_INLINE_VAR constexpr size_t _New_alignof = (_STD max)(alignof(_Ty),
+_INLINE_VAR constexpr size_t _New_alignof = (_STD max) (alignof(_Ty),
     static_cast<size_t>(__STDCPP_DEFAULT_NEW_ALIGNMENT__) // TRANSITION, VSO-522105
 );
 
@@ -120,7 +120,7 @@ static_assert(_Is_pow_2(_Big_allocation_alignment), "Big allocation alignment mu
 #ifdef _DEBUG
 constexpr size_t _Non_user_size = 2 * sizeof(void*) + _Big_allocation_alignment - 1;
 #else // _DEBUG
-constexpr size_t _Non_user_size = sizeof(void*) + _Big_allocation_alignment - 1;
+constexpr size_t _Non_user_size           = sizeof(void*) + _Big_allocation_alignment - 1;
 #endif // _DEBUG
 
 #ifdef _WIN64
@@ -194,7 +194,7 @@ __declspec(allocator) _CONSTEXPR20_DYNALLOC void* _Allocate(const size_t _Bytes)
 #if defined(_M_IX86) || defined(_M_X64)
         if (_Bytes >= _Big_allocation_threshold) {
             // boost the alignment of big allocations to help autovectorization
-            _Passed_align = (_STD max)(_Align, _Big_allocation_alignment);
+            _Passed_align = (_STD max) (_Align, _Big_allocation_alignment);
         }
 #endif // defined(_M_IX86) || defined(_M_X64)
         return _Traits::_Allocate_aligned(_Bytes, _Passed_align);
@@ -213,7 +213,7 @@ _CONSTEXPR20_DYNALLOC void _Deallocate(void* _Ptr, const size_t _Bytes) noexcept
         size_t _Passed_align = _Align;
 #if defined(_M_IX86) || defined(_M_X64)
         if (_Bytes >= _Big_allocation_threshold) { // boost the alignment of big allocations to help autovectorization
-            _Passed_align = (_STD max)(_Align, _Big_allocation_alignment);
+            _Passed_align = (_STD max) (_Align, _Big_allocation_alignment);
         }
 #endif // defined(_M_IX86) || defined(_M_X64)
         ::operator delete (_Ptr, _Bytes, align_val_t{_Passed_align});
@@ -624,7 +624,7 @@ struct _Normal_allocator_traits { // defines traits for allocators
         if constexpr (_Has_max_size<_Alloc>::value) {
             return _Al.max_size();
         } else {
-            return (numeric_limits<size_type>::max)() / sizeof(value_type);
+            return (numeric_limits<size_type>::max) () / sizeof(value_type);
         }
     }
 
@@ -967,7 +967,7 @@ _CONSTEXPR20_DYNALLOC void _Destroy_range(_NoThrowFwdIt _First, const _NoThrowSe
 template <class _Size_type>
 _NODISCARD constexpr _Size_type _Convert_size(const size_t _Len) noexcept {
     // convert size_t to _Size_type, avoiding truncation
-    if (_Len > (numeric_limits<_Size_type>::max)()) {
+    if (_Len > (numeric_limits<_Size_type>::max) ()) {
         _Xlength_error("size_t too long for _Size_type");
     }
 
@@ -1594,7 +1594,7 @@ namespace ranges {
         const auto _ILast_ch    = const_cast<const char*>(reinterpret_cast<const volatile char*>(_ILastPtr));
         const auto _OFirst_ch   = const_cast<char*>(reinterpret_cast<const volatile char*>(_OFirstPtr));
         const auto _OLast_ch    = const_cast<const char*>(reinterpret_cast<const volatile char*>(_OLastPtr));
-        const auto _Count_bytes = static_cast<size_t>((_STD min)(_ILast_ch - _IFirst_ch, _OLast_ch - _OFirst_ch));
+        const auto _Count_bytes = static_cast<size_t>((_STD min) (_ILast_ch - _IFirst_ch, _OLast_ch - _OFirst_ch));
         _CSTD memcpy(_OFirst_ch, _IFirst_ch, _Count_bytes);
         if constexpr (is_pointer_v<_InIt>) {
             _IFirst = reinterpret_cast<_InIt>(_IFirst_ch + _Count_bytes);
@@ -1621,31 +1621,31 @@ namespace ranges {
         requires constructible_from<iter_value_t<_Out>, iter_rvalue_reference_t<_It>>
     uninitialized_move_result<_It, _Out> _Uninitialized_move_unchecked(
             _It _IFirst, _Se _ILast, _Out _OFirst, _OSe _OLast) {
-        // clang-format on
-        constexpr bool _Is_sized1 = sized_sentinel_for<_Se, _It>;
-        constexpr bool _Is_sized2 = sized_sentinel_for<_OSe, _Out>;
-        if constexpr (_Ptr_move_cat<_It, _Out>::_Really_trivial && _Sized_or_unreachable_sentinel_for<_Se, _It> //
-                      && _Sized_or_unreachable_sentinel_for<_OSe, _Out>) {
-            if constexpr (_Is_sized1 && _Is_sized2) {
-                return _Copy_memcpy_common(_IFirst, _RANGES next(_IFirst, _STD move(_ILast)), _OFirst,
-                    _RANGES next(_OFirst, _STD move(_OLast)));
-            } else if constexpr (_Is_sized1) {
-                return _Copy_memcpy_distance(_IFirst, _OFirst, _IFirst, _RANGES next(_IFirst, _STD move(_ILast)));
-            } else if constexpr (_Is_sized2) {
-                return _Copy_memcpy_distance(_IFirst, _OFirst, _OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
+            // clang-format on
+            constexpr bool _Is_sized1 = sized_sentinel_for<_Se, _It>;
+            constexpr bool _Is_sized2 = sized_sentinel_for<_OSe, _Out>;
+            if constexpr (_Ptr_move_cat<_It, _Out>::_Really_trivial && _Sized_or_unreachable_sentinel_for<_Se, _It> //
+                          && _Sized_or_unreachable_sentinel_for<_OSe, _Out>) {
+                if constexpr (_Is_sized1 && _Is_sized2) {
+                    return _Copy_memcpy_common(_IFirst, _RANGES next(_IFirst, _STD move(_ILast)), _OFirst,
+                        _RANGES next(_OFirst, _STD move(_OLast)));
+                } else if constexpr (_Is_sized1) {
+                    return _Copy_memcpy_distance(_IFirst, _OFirst, _IFirst, _RANGES next(_IFirst, _STD move(_ILast)));
+                } else if constexpr (_Is_sized2) {
+                    return _Copy_memcpy_distance(_IFirst, _OFirst, _OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
+                } else {
+                    _STL_ASSERT(false, "Tried to uninitialized_move two ranges with unreachable sentinels");
+                }
             } else {
-                _STL_ASSERT(false, "Tried to uninitialized_move two ranges with unreachable sentinels");
-            }
-        } else {
-            _Uninitialized_backout _Backout{_STD move(_OFirst)};
+                _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
-            for (; _IFirst != _ILast && _Backout._Last != _OLast; ++_IFirst) {
-                _Backout._Emplace_back(_RANGES iter_move(_IFirst));
-            }
+                for (; _IFirst != _ILast && _Backout._Last != _OLast; ++_IFirst) {
+                    _Backout._Emplace_back(_RANGES iter_move(_IFirst));
+                }
 
-            return {_STD move(_IFirst), _Backout._Release()};
+                return {_STD move(_IFirst), _Backout._Release()};
+            }
         }
-    }
 } // namespace ranges
 #endif // __cpp_lib_concepts
 

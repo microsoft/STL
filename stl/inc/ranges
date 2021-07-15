@@ -813,7 +813,7 @@ namespace ranges {
         }
 
 #if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1347136
-    private:
+    private :
 
         template <class _Left, class _Right>
         static constexpr bool _Nothrow_plus_equal = noexcept(_STD declval<_Left&>() += _STD declval<const _Right&>());
@@ -2191,12 +2191,12 @@ namespace ranges {
 
         _NODISCARD constexpr auto size() requires sized_range<_Vw> {
             const auto _Length = _RANGES size(_Range);
-            return (_STD min)(_Length, static_cast<decltype(_Length)>(_Count));
+            return (_STD min) (_Length, static_cast<decltype(_Length)>(_Count));
         }
 
         _NODISCARD constexpr auto size() const requires sized_range<const _Vw> {
             const auto _Length = _RANGES size(_Range);
-            return (_STD min)(_Length, static_cast<decltype(_Length)>(_Count));
+            return (_STD min) (_Length, static_cast<decltype(_Length)>(_Count));
         }
     };
 
@@ -2314,7 +2314,7 @@ namespace ranges {
                     return take_view{_STD forward<_Rng>(_Range), _Count};
                 } else {
                     // it's a "reconstructible range"; return the same kind of range with a restricted extent
-                    _Count            = (_STD min)(_RANGES distance(_Range), _Count);
+                    _Count            = (_STD min) (_RANGES distance(_Range), _Count);
                     const auto _First = _RANGES begin(_Range);
 
                     // The following are all per the proposed resolution of LWG-3407
@@ -2589,7 +2589,7 @@ namespace ranges {
             requires (!(_Simple_view<_Vw> && random_access_range<const _Vw> && sized_range<const _Vw>)) {
             // clang-format on
             if constexpr (sized_range<_Vw> && random_access_range<_Vw>) {
-                const auto _Offset = (_STD min)(_RANGES distance(_Range), _Count);
+                const auto _Offset = (_STD min) (_RANGES distance(_Range), _Count);
                 return _RANGES begin(_Range) + _Offset;
             } else {
                 if constexpr (forward_range<_Vw>) {
@@ -2610,7 +2610,7 @@ namespace ranges {
         _NODISCARD constexpr auto begin() const
             requires random_access_range<const _Vw> && sized_range<const _Vw> {
             // clang-format on
-            const auto _Offset = (_STD min)(_RANGES distance(_Range), _Count);
+            const auto _Offset = (_STD min) (_RANGES distance(_Range), _Count);
             return _RANGES begin(_Range) + _Offset;
         }
 
@@ -2749,7 +2749,7 @@ namespace ranges {
                     return drop_view{_STD forward<_Rng>(_Range), _Count};
                 } else {
                     // it's a "reconstructible range"; return the same kind of range with a restricted extent
-                    _Count = (_STD min)(_RANGES distance(_Range), _Count);
+                    _Count = (_STD min) (_RANGES distance(_Range), _Count);
 
                     // The following are all per the proposed resolution of LWG-3407
                     if constexpr (_Strat == _St::_Reconstruct_span) {
@@ -4151,7 +4151,7 @@ namespace ranges {
 
             _NODISCARD constexpr decltype(auto) operator[](const difference_type _Idx) const
                 noexcept(noexcept(_STD get<_Index>(*(_Current + _Idx)))) /* strengthened */
-                requires random_access_range<_Base>&& is_reference_v<range_reference_t<_Base>> {
+                requires random_access_range<_Base> && is_reference_v<range_reference_t<_Base>> {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _Verify_offset(_Idx);
 #endif // _ITERATOR_DEBUG_LEVEL != 0

@@ -1047,7 +1047,7 @@ concept indirectly_movable_storable = indirectly_movable<_In, _Out>
     && indirectly_writable<_Out, iter_value_t<_In>>
     && movable<iter_value_t<_In>>
     && constructible_from<iter_value_t<_In>, iter_rvalue_reference_t<_In>>
-    && assignable_from<iter_value_t<_In>&, iter_rvalue_reference_t<_In>>;
+    && assignable_from<iter_value_t<_In>&, iter_rvalue_reference_t<_In> >;
 
 // CONCEPT indirectly_copyable
 template <class _In, class _Out>
@@ -5131,7 +5131,7 @@ _NODISCARD _CONSTEXPR20 bool _Lex_compare_unchecked(
     (void) _Pred;
     const auto _Num1 = static_cast<size_t>(_Last1 - _First1);
     const auto _Num2 = static_cast<size_t>(_Last2 - _First2);
-    const int _Ans   = _Memcmp_count(_First1, _First2, (_STD min)(_Num1, _Num2));
+    const int _Ans   = _Memcmp_count(_First1, _First2, (_STD min) (_Num1, _Num2));
     return _Memcmp_pr{}(_Ans, 0) || (_Ans == 0 && _Num1 < _Num2);
 }
 
@@ -5203,7 +5203,7 @@ _NODISCARD constexpr auto lexicographical_compare_three_way(
         if (!_STD is_constant_evaluated()) {
             const auto _Num1 = static_cast<size_t>(_ULast1 - _UFirst1);
             const auto _Num2 = static_cast<size_t>(_ULast2 - _UFirst2);
-            const int _Ans   = _Memcmp_count(_UFirst1, _UFirst2, (_STD min)(_Num1, _Num2));
+            const int _Ans   = _Memcmp_count(_UFirst1, _UFirst2, (_STD min) (_Num1, _Num2));
             if (_Ans == 0) {
                 return _Num1 <=> _Num2;
             } else {
@@ -5845,7 +5845,7 @@ public:
     using _Udiff = conditional_t<sizeof(_Ty1) < sizeof(_Ty0), _Ty0, _Ty1>;
 
     explicit _Rng_from_urng(_Urng& _Func) : _Ref(_Func), _Bits(CHAR_BIT * sizeof(_Udiff)), _Bmask(_Udiff(-1)) {
-        for (; (_Urng::max)() - (_Urng::min)() < _Bmask; _Bmask >>= 1) {
+        for (; (_Urng::max) () - (_Urng::min) () < _Bmask; _Bmask >>= 1) {
             --_Bits;
         }
     }
@@ -5889,7 +5889,7 @@ public:
 private:
     _Udiff _Get_bits() { // return a random value within [0, _Bmask]
         for (;;) { // repeat until random value is in range
-            _Udiff _Val = _Ref() - (_Urng::min)();
+            _Udiff _Val = _Ref() - (_Urng::min) ();
 
             if (_Val <= _Bmask) {
                 return _Val;
