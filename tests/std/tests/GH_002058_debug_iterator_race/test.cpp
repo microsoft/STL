@@ -1,8 +1,6 @@
-#include <chrono>
 #include <future>
 #include <list>
 #include <set>
-#include <thread>
 #include <vector>
 
 using namespace std;
@@ -21,7 +19,7 @@ void test_concurrent_destruction() {
     }
 }
 
-// Concurrently create iterators and invalidate container
+// Concurrently create iterators and invalidate iterators
 template <class container>
 void test_concurrent_creation() {
     container c;
