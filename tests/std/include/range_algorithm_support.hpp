@@ -592,19 +592,36 @@ namespace test {
         }
     };
     // clang-format on
+
+    template <class Category, bool IsForward, bool IsProxy, bool EqAndCopy>
+    struct iterator_traits_base {};
+
+    template <class Category>
+    struct iterator_traits_base<Category, true, false, true> {
+        using iterator_category = Category;
+    };
+
+    template <class Category>
+    struct iterator_traits_base<Category, true, true, true> {
+        using iterator_category = input;
+    };
+
+    template <class Category, bool IsProxy>
+    struct iterator_traits_base<Category, false, IsProxy, true> {
+        using iterator_category = input;
+    };
 } // namespace test
 
 template <class Category, class Element, ::test::CanDifference Diff, ::test::CanCompare Eq, ::test::ProxyRef Proxy,
     ::test::IsWrapped Wrapped>
-struct std::iterator_traits<::test::iterator<Category, Element, Diff, Eq, Proxy, Wrapped>> {
-    using iterator_concept  = Category;
-    using iterator_category = conditional_t<derived_from<Category, forward_iterator_tag>, //
-        conditional_t<Proxy == ::test::ProxyRef::no, Category, input_iterator_tag>, //
-        conditional_t<static_cast<bool>(Eq), Category, void>>;
-    using value_type        = remove_cv_t<Element>;
-    using difference_type   = ptrdiff_t;
-    using pointer           = conditional_t<derived_from<Category, contiguous_iterator_tag>, Element*, void>;
-    using reference         = iter_reference_t<::test::iterator<Category, Element, Diff, Eq, Proxy, Wrapped>>;
+struct std::iterator_traits<::test::iterator<Category, Element, Diff, Eq, Proxy, Wrapped>>
+    : ::test::iterator_traits_base<Category, derived_from<forward_iterator_tag, Category>,
+          Proxy == ::test::ProxyRef::yes, Eq == ::test::CanCompare::yes> {
+    using iterator_concept = Category;
+    using value_type       = remove_cv_t<Element>;
+    using difference_type  = ptrdiff_t;
+    using pointer          = conditional_t<derived_from<Category, contiguous_iterator_tag>, Element*, void>;
+    using reference        = iter_reference_t<::test::iterator<Category, Element, Diff, Eq, Proxy, Wrapped>>;
 };
 
 template <class Element, ::test::CanDifference Diff, ::test::IsWrapped Wrapped>

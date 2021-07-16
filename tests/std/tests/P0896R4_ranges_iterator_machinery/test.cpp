@@ -3082,11 +3082,10 @@ namespace move_iterator_test {
 
     template <bool CanCopy>
     struct input_iter {
-        using iterator_concept  = input_iterator_tag;
-        using iterator_category = void;
-        using value_type        = int;
-        using difference_type   = int;
-        using pointer           = void;
+        using iterator_concept = input_iterator_tag;
+        using value_type       = int;
+        using difference_type  = int;
+        using pointer          = void;
 
         struct reference {
             operator int() const;
@@ -3164,6 +3163,8 @@ namespace move_iterator_test {
     STATIC_ASSERT(same_as<move_iterator<simple_forward_iter<>>::iterator_category, forward_iterator_tag>);
     STATIC_ASSERT(same_as<move_iterator<simple_input_iter>::iterator_concept, input_iterator_tag>);
     STATIC_ASSERT(same_as<move_iterator<simple_input_iter>::iterator_category, input_iterator_tag>);
+    STATIC_ASSERT(!has_member_iter_category<move_iterator<input_iter<true>>>);
+    STATIC_ASSERT(!has_member_iter_category<move_iterator<input_iter<false>>>);
 
     // Validate that move_iterator<some_proxy_iterator>::reference is iter_rvalue_reference_t<some_proxy_iterator>
     STATIC_ASSERT(same_as<move_iterator<input_iter<false>>::reference, input_iter<false>::rvalue_reference>);

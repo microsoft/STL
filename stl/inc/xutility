@@ -1046,7 +1046,7 @@ concept indirectly_movable_storable = indirectly_movable<_In, _Out>
     && indirectly_writable<_Out, iter_value_t<_In>>
     && movable<iter_value_t<_In>>
     && constructible_from<iter_value_t<_In>, iter_rvalue_reference_t<_In>>
-    && assignable_from<iter_value_t<_In>&, iter_rvalue_reference_t<_In>>;
+    && assignable_from<iter_value_t<_In>&, iter_rvalue_reference_t<_In> >;
 
 // CONCEPT indirectly_copyable
 template <class _In, class _Out>
@@ -3726,33 +3726,36 @@ struct _Default_sentinel {}; // empty struct to serve as the end of a range
 #ifdef __cpp_lib_concepts
 template <semiregular>
 class move_sentinel;
-#endif // __cpp_lib_concepts
 
+template <class>
+struct _Move_iterator_category {};
+
+// clang-format off
 template <class _Iter>
-struct _Move_iterator_category_base {
-    using iterator_category = _Iter_cat_t<_Iter>;
-};
-
-#ifdef __cpp_lib_concepts
-template <_Has_member_iterator_category _Iter>
-struct _Move_iterator_category_base<_Iter> {
+    requires requires { typename _Iter_cat_t<_Iter>; }
+struct _Move_iterator_category<_Iter> {
     using iterator_category = conditional_t<derived_from<_Iter_cat_t<_Iter>, random_access_iterator_tag>,
         random_access_iterator_tag, _Iter_cat_t<_Iter>>;
 };
+// clang-format on
+#else // ^^^ Ranges / no Ranges vvv
+template <class _Iter>
+struct _Move_iterator_category {
+    using iterator_category = _Iter_cat_t<_Iter>;
+};
 #endif // __cpp_lib_concepts
 
 template <class _Iter>
-class move_iterator : public _Move_iterator_category_base<_Iter> {
+class move_iterator : public _Move_iterator_category<_Iter> {
 public:
-    using iterator_type = _Iter;
-#ifdef __cpp_lib_concepts
-    using iterator_concept = input_iterator_tag;
-#endif // __cpp_lib_concepts
+    using iterator_type   = _Iter;
     using value_type      = _Iter_value_t<_Iter>;
     using difference_type = _Iter_diff_t<_Iter>;
     using pointer         = _Iter;
+
 #ifdef __cpp_lib_concepts
-    using reference = iter_rvalue_reference_t<_Iter>;
+    using iterator_concept = input_iterator_tag;
+    using reference        = iter_rvalue_reference_t<_Iter>;
 #else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
     using reference =
         conditional_t<is_reference_v<_Iter_ref_t<_Iter>>, remove_reference_t<_Iter_ref_t<_Iter>>&&, _Iter_ref_t<_Iter>>;
