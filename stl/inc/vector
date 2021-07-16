@@ -126,7 +126,7 @@ public:
 
     _NODISCARD _CONSTEXPR20 _Vector_const_iterator operator+(const difference_type _Off) const noexcept {
         _Vector_const_iterator _Tmp = *this;
-        _Tmp += _Off; // TRANSITION, LLVM-49342
+        _Tmp += _Off;
         return _Tmp;
     }
 
@@ -136,7 +136,7 @@ public:
 
     _NODISCARD _CONSTEXPR20 _Vector_const_iterator operator-(const difference_type _Off) const noexcept {
         _Vector_const_iterator _Tmp = *this;
-        _Tmp -= _Off; // TRANSITION, LLVM-49342
+        _Tmp -= _Off;
         return _Tmp;
     }
 
@@ -309,7 +309,7 @@ public:
 
     _NODISCARD _CONSTEXPR20 _Vector_iterator operator+(const difference_type _Off) const noexcept {
         _Vector_iterator _Tmp = *this;
-        _Tmp += _Off; // TRANSITION, LLVM-49342
+        _Tmp += _Off;
         return _Tmp;
     }
 
@@ -322,7 +322,7 @@ public:
 
     _NODISCARD _CONSTEXPR20 _Vector_iterator operator-(const difference_type _Off) const noexcept {
         _Vector_iterator _Tmp = *this;
-        _Tmp -= _Off; // TRANSITION, LLVM-49342
+        _Tmp -= _Off;
         return _Tmp;
     }
 
@@ -2144,7 +2144,7 @@ public:
 
     _NODISCARD _CONSTEXPR20 _Vb_const_iterator operator+(const difference_type _Off) const noexcept {
         _Vb_const_iterator _Tmp = *this;
-        _Tmp += _Off; // TRANSITION, LLVM-49342
+        _Tmp += _Off;
         return _Tmp;
     }
 
@@ -2154,7 +2154,7 @@ public:
 
     _NODISCARD _CONSTEXPR20 _Vb_const_iterator operator-(const difference_type _Off) const noexcept {
         _Vb_const_iterator _Tmp = *this;
-        _Tmp -= _Off; // TRANSITION, LLVM-49342
+        _Tmp -= _Off;
         return _Tmp;
     }
 
@@ -2323,7 +2323,7 @@ public:
 
     _NODISCARD _CONSTEXPR20 _Vb_iterator operator+(const difference_type _Off) const noexcept {
         _Vb_iterator _Tmp = *this;
-        _Tmp += _Off; // TRANSITION, LLVM-49342
+        _Tmp += _Off;
         return _Tmp;
     }
 
@@ -2336,7 +2336,7 @@ public:
 
     _NODISCARD _CONSTEXPR20 _Vb_iterator operator-(const difference_type _Off) const noexcept {
         _Vb_iterator _Tmp = *this;
-        _Tmp -= _Off; // TRANSITION, LLVM-49342
+        _Tmp -= _Off;
         return _Tmp;
     }
 
