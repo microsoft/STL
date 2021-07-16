@@ -58,13 +58,8 @@ struct ExplicitDefault {
 template <typename T>
 constexpr bool OrdinaryDC = is_default_constructible_v<T>&& IsImplicitlyDefaultConstructible<T>::value;
 
-#ifdef __EDG__ // TRANSITION, VSO-1327248
-template <typename T>
-constexpr bool ExplicitDC = is_default_constructible_v<T>;
-#else // ^^^ workaround ^^^ / vvv no workaround vvv
 template <typename T>
 constexpr bool ExplicitDC = is_default_constructible_v<T> && !IsImplicitlyDefaultConstructible<T>::value;
-#endif // ^^^ no workaround ^^^
 
 template <typename T>
 constexpr bool VerbotenDC = !is_default_constructible_v<T> && !IsImplicitlyDefaultConstructible<T>::value;
