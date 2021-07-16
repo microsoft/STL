@@ -258,7 +258,9 @@ public:
     }
 
     _NODISCARD bitset operator~() const noexcept { // flip all bits
-        return bitset(*this).flip();
+        bitset _Tmp = *this;
+        _Tmp.flip();
+        return _Tmp;
     }
 
     bitset& flip() noexcept { // flip all bits
@@ -415,11 +417,15 @@ public:
     }
 
     _NODISCARD bitset operator<<(size_t _Pos) const noexcept {
-        return bitset(*this) <<= _Pos;
+        bitset _Tmp = *this;
+        _Tmp <<= _Pos;
+        return _Tmp;
     }
 
     _NODISCARD bitset operator>>(size_t _Pos) const noexcept {
-        return bitset(*this) >>= _Pos;
+        bitset _Tmp = *this;
+        _Tmp >>= _Pos;
+        return _Tmp;
     }
 
     _NODISCARD _Ty _Getword(size_t _Wpos) const noexcept { // nonstandard extension; get underlying word
