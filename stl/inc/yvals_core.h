@@ -1239,33 +1239,21 @@
 #define __cpp_lib_concepts 201907L
 #endif // !defined(__EDG__) || defined(__INTELLISENSE__)
 
-#define __cpp_lib_constexpr_algorithms 201806L
-#define __cpp_lib_constexpr_complex    201711L
-
-#ifdef __cpp_constexpr_dynamic_alloc
+#define __cpp_lib_constexpr_algorithms    201806L
+#define __cpp_lib_constexpr_complex       201711L
 #define __cpp_lib_constexpr_dynamic_alloc 201907L
-#endif // __cpp_constexpr_dynamic_alloc
-
-#define __cpp_lib_constexpr_functional 201907L
-#define __cpp_lib_constexpr_iterator   201811L
-#define __cpp_lib_constexpr_memory     201811L
-#define __cpp_lib_constexpr_numeric    201911L
-
-#if defined(__cpp_constexpr_dynamic_alloc)
-#define __cpp_lib_constexpr_string 201907L
-#endif // defined(__cpp_constexpr_dynamic_alloc)
-
-#define __cpp_lib_constexpr_string_view 201811L
-#define __cpp_lib_constexpr_tuple       201811L
-#define __cpp_lib_constexpr_utility     201811L
-
-#if defined(__cpp_constexpr_dynamic_alloc)
-#define __cpp_lib_constexpr_vector 201907L
-#endif // defined(__cpp_constexpr_dynamic_alloc)
-
-#define __cpp_lib_destroying_delete 201806L
-#define __cpp_lib_endian            201907L
-#define __cpp_lib_erase_if          202002L
+#define __cpp_lib_constexpr_functional    201907L
+#define __cpp_lib_constexpr_iterator      201811L
+#define __cpp_lib_constexpr_memory        201811L
+#define __cpp_lib_constexpr_numeric       201911L
+#define __cpp_lib_constexpr_string        201907L
+#define __cpp_lib_constexpr_string_view   201811L
+#define __cpp_lib_constexpr_tuple         201811L
+#define __cpp_lib_constexpr_utility       201811L
+#define __cpp_lib_constexpr_vector        201907L
+#define __cpp_lib_destroying_delete       201806L
+#define __cpp_lib_endian                  201907L
+#define __cpp_lib_erase_if                202002L
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395 and GH-1814
 #define __cpp_lib_format 201907L

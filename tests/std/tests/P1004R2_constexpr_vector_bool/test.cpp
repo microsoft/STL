@@ -623,8 +623,6 @@ _CONSTEXPR20_CONTAINER bool test_iterators() {
 int main() {
     test_interface();
     test_iterators();
-#ifdef __cpp_lib_constexpr_vector
     static_assert(test_interface());
     static_assert(test_iterators());
-#endif // __cpp_lib_constexpr_vector
 }

@@ -1785,7 +1785,6 @@ int main() {
     test_growth<char32_t>();
     test_growth<wchar_t>();
 
-#ifdef __cpp_lib_constexpr_string
     static_assert(test_interface<char>());
 #ifdef __cpp_char8_t
     static_assert(test_interface<char8_t>());
@@ -1811,5 +1810,4 @@ int main() {
     static_assert(test_growth<char16_t>());
     static_assert(test_growth<char32_t>());
     static_assert(test_growth<wchar_t>());
-#endif // __cpp_lib_constexpr_string
 }

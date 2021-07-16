@@ -222,7 +222,6 @@ void test_array(const T& val) {
 #endif // __cpp_lib_concepts
 }
 
-#ifdef __cpp_lib_constexpr_dynamic_alloc
 template <class T>
 struct storage_for {
     union {
@@ -523,7 +522,6 @@ constexpr void test_compiletime_operators() {
     }
 }
 static_assert((test_compiletime_operators(), true));
-#endif // __cpp_lib_constexpr_dynamic_alloc
 
 int main() {
     test_runtime(1234);

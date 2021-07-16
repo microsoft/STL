@@ -442,9 +442,7 @@ void ordering_test_cases() {
     }
     { // vector, vector SynthOrdered, vector<bool>
         test_vector();
-#ifdef __cpp_lib_constexpr_vector
         static_assert(test_vector());
-#endif // __cpp_lib_constexpr_vector
     }
     { // forward_list
         std::forward_list<int> a1(3, 100);

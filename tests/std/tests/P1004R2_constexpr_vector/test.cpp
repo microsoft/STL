@@ -720,9 +720,7 @@ int main() {
     test_interface();
     test_iterators();
     test_growth();
-#ifdef __cpp_lib_constexpr_vector
     static_assert(test_interface());
     static_assert(test_iterators());
     static_assert(test_growth());
-#endif // __cpp_lib_constexpr_vector
 }
