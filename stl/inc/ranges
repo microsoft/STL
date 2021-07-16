@@ -258,7 +258,7 @@ namespace ranges {
         ~_Copyable_box() requires is_trivially_destructible_v<_Ty> = default;
         // clang-format on
 
-        _CONSTEXPR20_DYNALLOC ~_Copyable_box() {
+        constexpr ~_Copyable_box() {
             if (_Engaged) {
                 _Val.~_Ty();
             }
@@ -268,7 +268,7 @@ namespace ranges {
         _Copyable_box(const _Copyable_box&) requires is_trivially_copy_constructible_v<_Ty> = default;
         // clang-format on
 
-        _CONSTEXPR20_DYNALLOC _Copyable_box(const _Copyable_box& _That) : _Engaged{_That._Engaged} {
+        constexpr _Copyable_box(const _Copyable_box& _That) : _Engaged{_That._Engaged} {
             if (_That._Engaged) {
                 _Construct_in_place(_Val, _That._Val);
             }
@@ -278,7 +278,7 @@ namespace ranges {
         _Copyable_box(_Copyable_box&&) requires is_trivially_move_constructible_v<_Ty> = default;
         // clang-format on
 
-        _CONSTEXPR20_DYNALLOC _Copyable_box(_Copyable_box&& _That) : _Engaged{_That._Engaged} {
+        constexpr _Copyable_box(_Copyable_box&& _That) : _Engaged{_That._Engaged} {
             if (_That._Engaged) {
                 _Construct_in_place(_Val, _STD move(_That._Val));
             }
@@ -289,7 +289,7 @@ namespace ranges {
             requires copyable<_Ty> && is_trivially_copy_assignable_v<_Ty> = default;
         // clang-format on
 
-        _CONSTEXPR20_DYNALLOC _Copyable_box& operator=(const _Copyable_box& _That) noexcept(
+        constexpr _Copyable_box& operator=(const _Copyable_box& _That) noexcept(
             is_nothrow_copy_constructible_v<_Ty>&& is_nothrow_copy_assignable_v<_Ty>) // strengthened
             requires copyable<_Ty> {
             if (_Engaged) {
@@ -311,8 +311,7 @@ namespace ranges {
             return *this;
         }
 
-        _CONSTEXPR20_DYNALLOC _Copyable_box& operator=(const _Copyable_box& _That) noexcept(
-            is_nothrow_copy_constructible_v<_Ty>) {
+        constexpr _Copyable_box& operator=(const _Copyable_box& _That) noexcept(is_nothrow_copy_constructible_v<_Ty>) {
             if (_STD addressof(_That) == this) {
                 return *this;
             }
@@ -335,7 +334,7 @@ namespace ranges {
             requires movable<_Ty> && is_trivially_move_assignable_v<_Ty> = default;
         // clang-format on
 
-        _CONSTEXPR20_DYNALLOC _Copyable_box& operator=(_Copyable_box&& _That) noexcept(
+        constexpr _Copyable_box& operator=(_Copyable_box&& _That) noexcept(
             is_nothrow_move_constructible_v<_Ty>&& is_nothrow_move_assignable_v<_Ty>) // strengthened
             requires movable<_Ty> {
             if (_Engaged) {
@@ -357,8 +356,7 @@ namespace ranges {
             return *this;
         }
 
-        _CONSTEXPR20_DYNALLOC _Copyable_box& operator=(_Copyable_box&& _That) noexcept(
-            is_nothrow_move_constructible_v<_Ty>) {
+        constexpr _Copyable_box& operator=(_Copyable_box&& _That) noexcept(is_nothrow_move_constructible_v<_Ty>) {
             if (_STD addressof(_That) == this) {
                 return *this;
             }
@@ -422,7 +420,7 @@ namespace ranges {
         _Copyable_box& operator=(_Copyable_box&&) requires movable<_Ty> = default;
         // clang-format on
 
-        _CONSTEXPR20_DYNALLOC _Copyable_box& operator=(const _Copyable_box& _That) noexcept {
+        constexpr _Copyable_box& operator=(const _Copyable_box& _That) noexcept {
             if (_STD addressof(_That) != this) {
                 _Val.~_Ty();
                 _Construct_in_place(_Val, _That._Val);
@@ -431,7 +429,7 @@ namespace ranges {
             return *this;
         }
 
-        _CONSTEXPR20_DYNALLOC _Copyable_box& operator=(_Copyable_box&& _That) noexcept {
+        constexpr _Copyable_box& operator=(_Copyable_box&& _That) noexcept {
             if (_STD addressof(_That) != this) {
                 _Val.~_Ty();
                 _Construct_in_place(_Val, _STD move(_That._Val));
@@ -465,7 +463,7 @@ namespace ranges {
         ~_Defaultabox() requires is_trivially_destructible_v<_Ty> = default;
         // clang-format on
 
-        _CONSTEXPR20_DYNALLOC ~_Defaultabox() {
+        constexpr ~_Defaultabox() {
             if (_Engaged) {
                 _Val.~_Ty();
             }
@@ -476,8 +474,7 @@ namespace ranges {
             requires copy_constructible<_Ty> && is_trivially_copy_constructible_v<_Ty> = default;
         // clang-format on
 
-        _CONSTEXPR20_DYNALLOC _Defaultabox(const _Defaultabox& _That) requires copy_constructible<_Ty>
-            : _Engaged{_That._Engaged} {
+        constexpr _Defaultabox(const _Defaultabox& _That) requires copy_constructible<_Ty> : _Engaged{_That._Engaged} {
             if (_That._Engaged) {
                 _Construct_in_place(_Val, _That._Val);
             }
@@ -487,7 +484,7 @@ namespace ranges {
         _Defaultabox(_Defaultabox&&) requires is_trivially_move_constructible_v<_Ty> = default;
         // clang-format on
 
-        _CONSTEXPR20_DYNALLOC _Defaultabox(_Defaultabox&& _That) : _Engaged{_That._Engaged} {
+        constexpr _Defaultabox(_Defaultabox&& _That) : _Engaged{_That._Engaged} {
             if (_That._Engaged) {
                 _Construct_in_place(_Val, _STD move(_That._Val));
             }
@@ -498,7 +495,7 @@ namespace ranges {
             requires copyable<_Ty> && is_trivially_copy_assignable_v<_Ty> = default;
         // clang-format on
 
-        _CONSTEXPR20_DYNALLOC _Defaultabox& operator=(const _Defaultabox& _That) noexcept(
+        constexpr _Defaultabox& operator=(const _Defaultabox& _That) noexcept(
             is_nothrow_copy_constructible_v<_Ty>&& is_nothrow_copy_assignable_v<_Ty>) // strengthened
             requires copyable<_Ty> {
             if (_Engaged) {
@@ -524,7 +521,7 @@ namespace ranges {
         _Defaultabox& operator=(_Defaultabox&&) noexcept requires is_trivially_move_assignable_v<_Ty> = default;
         // clang-format on
 
-        _CONSTEXPR20_DYNALLOC _Defaultabox& operator=(_Defaultabox&& _That) noexcept(
+        constexpr _Defaultabox& operator=(_Defaultabox&& _That) noexcept(
             is_nothrow_move_constructible_v<_Ty>&& is_nothrow_move_assignable_v<_Ty>) /* strengthened */ {
             if (_Engaged) {
                 if (_That._Engaged) {
@@ -545,7 +542,7 @@ namespace ranges {
             return *this;
         }
 
-        _CONSTEXPR20_DYNALLOC _Defaultabox& operator=(_Ty&& _That) noexcept(
+        constexpr _Defaultabox& operator=(_Ty&& _That) noexcept(
             is_nothrow_move_constructible_v<_Ty>&& is_nothrow_move_assignable_v<_Ty>) {
             if (_Engaged) {
                 _Val = _STD move(_That);
@@ -557,7 +554,7 @@ namespace ranges {
             return *this;
         }
 
-        _CONSTEXPR20_DYNALLOC _Defaultabox& operator=(const _Ty& _That) noexcept(
+        constexpr _Defaultabox& operator=(const _Ty& _That) noexcept(
             is_nothrow_copy_constructible_v<_Ty>&& is_nothrow_copy_assignable_v<_Ty>) requires copyable<_Ty> {
             if (_Engaged) {
                 _Val = _That;

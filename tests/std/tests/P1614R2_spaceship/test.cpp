@@ -357,7 +357,7 @@ bool operator==(const basic_compare_allocator<T, Ignored>&, const basic_compare_
 template <bool Equal>
 using compare_allocator = basic_compare_allocator<int, Equal>;
 
-_CONSTEXPR20_CONTAINER bool test_vector() {
+constexpr bool test_vector() {
     { // vector
         std::vector<int> a1(3, 100);
         std::vector<int> a2(3, 100);

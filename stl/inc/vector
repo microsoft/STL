@@ -155,7 +155,7 @@ public:
     }
 
 #if _HAS_CXX20
-    _NODISCARD _CONSTEXPR20_CONTAINER strong_ordering operator<=>(const _Vector_const_iterator& _Right) const noexcept {
+    _NODISCARD constexpr strong_ordering operator<=>(const _Vector_const_iterator& _Right) const noexcept {
         _Compat(_Right);
         return _Unfancy(_Ptr) <=> _Unfancy(_Right._Ptr);
     }
@@ -1871,7 +1871,7 @@ struct _Vbase_compare_three_way {
 
 #ifdef __cpp_lib_concepts
 template <class _Ty, class _Alloc>
-_NODISCARD _CONSTEXPR20_CONTAINER _Synth_three_way_result<_Ty> operator<=>(
+_NODISCARD constexpr _Synth_three_way_result<_Ty> operator<=>(
     const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
     if constexpr (is_same_v<_Ty, bool>) {
         // This optimization works because vector<bool> "trims" its underlying storage by zeroing out unused bits.
@@ -1945,12 +1945,12 @@ _CONSTEXPR20_CONTAINER void swap(vector<_Ty, _Alloc>& _Left, vector<_Ty, _Alloc>
 
 #if _HAS_CXX20
 template <class _Ty, class _Alloc, class _Uty>
-_CONSTEXPR20_CONTAINER typename vector<_Ty, _Alloc>::size_type erase(vector<_Ty, _Alloc>& _Cont, const _Uty& _Val) {
+constexpr typename vector<_Ty, _Alloc>::size_type erase(vector<_Ty, _Alloc>& _Cont, const _Uty& _Val) {
     return _Erase_remove(_Cont, _Val);
 }
 
 template <class _Ty, class _Alloc, class _Pr>
-_CONSTEXPR20_CONTAINER typename vector<_Ty, _Alloc>::size_type erase_if(vector<_Ty, _Alloc>& _Cont, _Pr _Pred) {
+constexpr typename vector<_Ty, _Alloc>::size_type erase_if(vector<_Ty, _Alloc>& _Cont, _Pr _Pred) {
     return _Erase_remove_if(_Cont, _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX20
@@ -2178,7 +2178,7 @@ public:
     }
 
 #if _HAS_CXX20
-    _NODISCARD _CONSTEXPR20_CONTAINER strong_ordering operator<=>(const _Vb_const_iterator& _Right) const noexcept {
+    _NODISCARD constexpr strong_ordering operator<=>(const _Vb_const_iterator& _Right) const noexcept {
         _Compat(_Right);
         if (const auto _CmpResult = this->_Myptr <=> _Right._Myptr; _CmpResult != 0) {
             return _CmpResult;

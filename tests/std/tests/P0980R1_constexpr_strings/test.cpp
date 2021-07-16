@@ -138,7 +138,7 @@ constexpr auto get_cute_and_scratchy() {
 
 template <class CharType>
 struct string_view_convertible {
-    _CONSTEXPR20_CONTAINER operator basic_string_view<CharType>() const {
+    constexpr operator basic_string_view<CharType>() const {
         if constexpr (is_same_v<CharType, char>) {
             return view_input;
 #ifdef __cpp_char8_t
@@ -166,7 +166,7 @@ constexpr bool equalRanges(const Range1& range1, const Range2& range2) noexcept 
 }
 
 template <class CharType>
-_CONSTEXPR20_CONTAINER bool test_interface() {
+constexpr bool test_interface() {
 #ifndef __EDG__ // TRANSITION, VSO-1273296
     using str = basic_string<CharType>;
 
@@ -1510,7 +1510,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
     return true;
 }
 
-_CONSTEXPR20_CONTAINER bool test_udls() {
+constexpr bool test_udls() {
 #ifndef __EDG__ // TRANSITION, VSO-1273296
     assert(equalRanges("purr purr"s, "purr purr"sv));
 #ifdef __cpp_char8_t
@@ -1531,7 +1531,7 @@ struct CharLikeType {
 };
 
 template <class CharType>
-_CONSTEXPR20_CONTAINER bool test_iterators() {
+constexpr bool test_iterators() {
 #ifndef __EDG__ // TRANSITION, VSO-1273296
     using str               = basic_string<CharType>;
     str literal_constructed = get_literal_input<CharType>();
@@ -1652,7 +1652,7 @@ _CONSTEXPR20_CONTAINER bool test_iterators() {
 }
 
 template <class CharType>
-_CONSTEXPR20_CONTAINER bool test_growth() {
+constexpr bool test_growth() {
     using str = basic_string<CharType>;
 #ifndef __EDG__ // TRANSITION, VSO-1273296
     {

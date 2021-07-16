@@ -2083,7 +2083,7 @@ public:
     }
 
 #if _HAS_CXX20
-    _NODISCARD _CONSTEXPR20_CONTAINER strong_ordering operator<=>(const _String_const_iterator& _Right) const noexcept {
+    _NODISCARD constexpr strong_ordering operator<=>(const _String_const_iterator& _Right) const noexcept {
         _Compat(_Right);
         return _Unfancy(_Ptr) <=> _Unfancy(_Right._Ptr);
     }
@@ -4014,7 +4014,7 @@ public:
     }
 
 #if _HAS_CXX20
-    _CONSTEXPR20_CONTAINER void reserve(_CRT_GUARDOVERFLOW const size_type _Newcap) {
+    constexpr void reserve(_CRT_GUARDOVERFLOW const size_type _Newcap) {
         // determine new minimum length of allocated storage
         if (_Mypair._Myval2._Myres >= _Newcap) { // requested capacity is not larger than current capacity, ignore
             return; // nothing to do
@@ -4503,41 +4503,41 @@ public:
     }
 
 #if _HAS_CXX20
-    _NODISCARD _CONSTEXPR20_CONTAINER bool starts_with(const basic_string_view<_Elem, _Traits> _Right) const noexcept {
+    _NODISCARD constexpr bool starts_with(const basic_string_view<_Elem, _Traits> _Right) const noexcept {
         return basic_string_view<_Elem, _Traits>{_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize}.starts_with(_Right);
     }
 
-    _NODISCARD _CONSTEXPR20_CONTAINER bool starts_with(const _Elem _Right) const noexcept {
+    _NODISCARD constexpr bool starts_with(const _Elem _Right) const noexcept {
         return basic_string_view<_Elem, _Traits>{_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize}.starts_with(_Right);
     }
 
-    _NODISCARD _CONSTEXPR20_CONTAINER bool starts_with(const _Elem* const _Right) const noexcept /* strengthened */ {
+    _NODISCARD constexpr bool starts_with(const _Elem* const _Right) const noexcept /* strengthened */ {
         return basic_string_view<_Elem, _Traits>{_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize}.starts_with(_Right);
     }
 
-    _NODISCARD _CONSTEXPR20_CONTAINER bool ends_with(const basic_string_view<_Elem, _Traits> _Right) const noexcept {
+    _NODISCARD constexpr bool ends_with(const basic_string_view<_Elem, _Traits> _Right) const noexcept {
         return basic_string_view<_Elem, _Traits>{_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize}.ends_with(_Right);
     }
 
-    _NODISCARD _CONSTEXPR20_CONTAINER bool ends_with(const _Elem _Right) const noexcept {
+    _NODISCARD constexpr bool ends_with(const _Elem _Right) const noexcept {
         return basic_string_view<_Elem, _Traits>{_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize}.ends_with(_Right);
     }
 
-    _NODISCARD _CONSTEXPR20_CONTAINER bool ends_with(const _Elem* const _Right) const noexcept /* strengthened */ {
+    _NODISCARD constexpr bool ends_with(const _Elem* const _Right) const noexcept /* strengthened */ {
         return basic_string_view<_Elem, _Traits>{_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize}.ends_with(_Right);
     }
 #endif // _HAS_CXX20
 
 #if _HAS_CXX23
-    _NODISCARD _CONSTEXPR20_CONTAINER bool contains(const basic_string_view<_Elem, _Traits> _Right) const noexcept {
+    _NODISCARD constexpr bool contains(const basic_string_view<_Elem, _Traits> _Right) const noexcept {
         return basic_string_view<_Elem, _Traits>{_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize}.contains(_Right);
     }
 
-    _NODISCARD _CONSTEXPR20_CONTAINER bool contains(const _Elem _Right) const noexcept {
+    _NODISCARD constexpr bool contains(const _Elem _Right) const noexcept {
         return basic_string_view<_Elem, _Traits>{_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize}.contains(_Right);
     }
 
-    _NODISCARD _CONSTEXPR20_CONTAINER bool contains(const _Elem* const _Right) const noexcept /* strengthened */ {
+    _NODISCARD constexpr bool contains(const _Elem* const _Right) const noexcept /* strengthened */ {
         return basic_string_view<_Elem, _Traits>{_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize}.contains(_Right);
     }
 #endif // _HAS_CXX23
@@ -4869,13 +4869,13 @@ _NODISCARD _CONSTEXPR20_CONTAINER bool operator==(
 
 #if _HAS_CXX20
 template <class _Elem, class _Traits, class _Alloc>
-_NODISCARD _CONSTEXPR20_CONTAINER _Get_comparison_category_t<_Traits> operator<=>(
+_NODISCARD constexpr _Get_comparison_category_t<_Traits> operator<=>(
     const basic_string<_Elem, _Traits, _Alloc>& _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) noexcept {
     return static_cast<_Get_comparison_category_t<_Traits>>(_Left.compare(_Right) <=> 0);
 }
 
 template <class _Elem, class _Traits, class _Alloc>
-_NODISCARD _CONSTEXPR20_CONTAINER _Get_comparison_category_t<_Traits> operator<=>(
+_NODISCARD constexpr _Get_comparison_category_t<_Traits> operator<=>(
     const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) {
     return static_cast<_Get_comparison_category_t<_Traits>>(_Left.compare(_Right) <=> 0);
 }
@@ -5086,13 +5086,13 @@ inline namespace literals {
 
 #if _HAS_CXX20
 template <class _Elem, class _Traits, class _Alloc, class _Uty>
-_CONSTEXPR20_CONTAINER typename basic_string<_Elem, _Traits, _Alloc>::size_type erase(
+constexpr typename basic_string<_Elem, _Traits, _Alloc>::size_type erase(
     basic_string<_Elem, _Traits, _Alloc>& _Cont, const _Uty& _Val) {
     return _Erase_remove(_Cont, _Val);
 }
 
 template <class _Elem, class _Traits, class _Alloc, class _Pr>
-_CONSTEXPR20_CONTAINER typename basic_string<_Elem, _Traits, _Alloc>::size_type erase_if(
+constexpr typename basic_string<_Elem, _Traits, _Alloc>::size_type erase_if(
     basic_string<_Elem, _Traits, _Alloc>& _Cont, _Pr _Pred) {
     return _Erase_remove_if(_Cont, _Pass_fn(_Pred));
 }

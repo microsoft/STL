@@ -20,39 +20,39 @@ template <typename T>
 struct soccc_allocator {
     using value_type = T;
 
-    _CONSTEXPR20_DYNALLOC soccc_allocator() noexcept = default;
-    _CONSTEXPR20_DYNALLOC explicit soccc_allocator(const int id_) noexcept : id(id_), soccc_generation(0) {}
-    _CONSTEXPR20_DYNALLOC explicit soccc_allocator(const int id_, const int soccc_generation_) noexcept
+    constexpr soccc_allocator() noexcept = default;
+    constexpr explicit soccc_allocator(const int id_) noexcept : id(id_), soccc_generation(0) {}
+    constexpr explicit soccc_allocator(const int id_, const int soccc_generation_) noexcept
         : id(id_), soccc_generation(soccc_generation_) {}
     template <typename U>
-    _CONSTEXPR20_DYNALLOC soccc_allocator(const soccc_allocator<U>& other) noexcept
+    constexpr soccc_allocator(const soccc_allocator<U>& other) noexcept
         : id(other.id), soccc_generation(other.soccc_generation) {}
-    _CONSTEXPR20_DYNALLOC soccc_allocator(const soccc_allocator& other) noexcept
+    constexpr soccc_allocator(const soccc_allocator& other) noexcept
         : id(other.id + 1), soccc_generation(other.soccc_generation) {}
 
-    _CONSTEXPR20_DYNALLOC soccc_allocator& operator=(const soccc_allocator&) noexcept {
+    constexpr soccc_allocator& operator=(const soccc_allocator&) noexcept {
         return *this;
     }
 
-    _CONSTEXPR20_DYNALLOC soccc_allocator select_on_container_copy_construction() const noexcept {
+    constexpr soccc_allocator select_on_container_copy_construction() const noexcept {
         return soccc_allocator(id, soccc_generation + 1);
     }
 
     template <typename U>
-    _CONSTEXPR20_DYNALLOC bool operator==(const soccc_allocator<U>&) const noexcept {
+    constexpr bool operator==(const soccc_allocator<U>&) const noexcept {
         return true;
     }
 
-    _CONSTEXPR20_DYNALLOC T* allocate(const size_t n) {
+    constexpr T* allocate(const size_t n) {
         return allocator<T>{}.allocate(n);
     }
 
-    _CONSTEXPR20_DYNALLOC void deallocate(T* const p, const size_t n) noexcept {
+    constexpr void deallocate(T* const p, const size_t n) noexcept {
         allocator<T>{}.deallocate(p, n);
     }
 
     template <class... Args>
-    _CONSTEXPR20_DYNALLOC void construct(T* const p, Args&&... args) {
+    constexpr void construct(T* const p, Args&&... args) {
         construct_at(p, forward<Args>(args)...);
     }
 
@@ -62,7 +62,7 @@ struct soccc_allocator {
 
 using vec = vector<bool, soccc_allocator<bool>>;
 
-_CONSTEXPR20_CONTAINER bool test_interface() {
+constexpr bool test_interface() {
     { // constructors
 
 // Non allocator constructors
@@ -527,7 +527,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
     return true;
 }
 
-_CONSTEXPR20_CONTAINER bool test_iterators() {
+constexpr bool test_iterators() {
 #ifndef __EDG__ // TRANSITION, VSO-1274387
     vec range_constructed(begin(input), end(input));
 

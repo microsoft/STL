@@ -53,7 +53,7 @@ static constexpr int_wrapper_copy expected_copy[]       = {1, 2, 3, 4};
 static constexpr int_wrapper_move expected_move[]       = {1, 2, 3, 4};
 static constexpr int_wrapper_move expected_after_move[] = {-1, -1, -1, -1};
 
-_CONSTEXPR20_DYNALLOC bool test() {
+constexpr bool test() {
     { // _Copy_unchecked
         int_wrapper_copy input[]   = {1, 2, 3, 4};
         int_wrapper_copy output[4] = {5, 6, 7, 8};
