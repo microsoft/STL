@@ -15,10 +15,9 @@
 #pragma message(_WARNING_MESSAGE("STL4033", "Use <experimental/coroutine> for legacy /await support."))
 #else // ^^^ /await ^^^ / vvv no /await vvv
 #ifndef __cpp_lib_coroutine
-// clang-format off
-#pragma message( \
-    _WARNING_MESSAGE("STL4033","The contents of <coroutine> are available only with C++20 or later or /await:strict."))
-// clang-format on
+#define _MESSAGE "The contents of <coroutine> are available only with C++20 or later or /await:strict."
+#pragma message(_WARNING_MESSAGE("STL4033", _MESSAGE))
+#undef _MESSAGE // TRANSITION, https://developer.nvidia.com/nvidia_bug/3342317
 #else // ^^^ <coroutine> is not available / <coroutine> is available vvv
 #ifndef _ALLOW_COROUTINE_ABI_MISMATCH
 #pragma detect_mismatch("_COROUTINE_ABI", "2")

@@ -40,10 +40,9 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 #ifndef __cpp_lib_format
-// clang-format off
-#pragma message( \
-    _WARNING_MESSAGE("STL4033","The contents of <format> are available only in c++latest mode with concepts support;"))
-// clang-format on
+#define _MESSAGE "The contents of <format> are available only in c++latest mode with concepts support;"
+#pragma message(_WARNING_MESSAGE("STL4033", _MESSAGE))
+#undef _MESSAGE // TRANSITION, https://developer.nvidia.com/nvidia_bug/3342317
 #pragma message(_WARNING_MESSAGE("STL4033", "see https://github.com/microsoft/STL/issues/1814 for details."))
 #else // ^^^ !defined(__cpp_lib_format) / defined(__cpp_lib_format) vvv
 
