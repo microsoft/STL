@@ -215,7 +215,8 @@ public:
 template <class _Myvec>
 _NODISCARD _CONSTEXPR20 _Vector_const_iterator<_Myvec> operator+(
     typename _Vector_const_iterator<_Myvec>::difference_type _Off, _Vector_const_iterator<_Myvec> _Next) noexcept {
-    return _Next += _Off;
+    _Next += _Off;
+    return _Next;
 }
 
 #if _HAS_CXX20
@@ -340,7 +341,8 @@ public:
 template <class _Myvec>
 _NODISCARD _CONSTEXPR20 _Vector_iterator<_Myvec> operator+(
     typename _Vector_iterator<_Myvec>::difference_type _Off, _Vector_iterator<_Myvec> _Next) noexcept {
-    return _Next += _Off;
+    _Next += _Off;
+    return _Next;
 }
 
 #if _HAS_CXX20
@@ -2258,7 +2260,8 @@ template <class _Alvbase_wrapped>
 _NODISCARD _CONSTEXPR20 _Vb_const_iterator<_Alvbase_wrapped> operator+(
     typename _Vb_const_iterator<_Alvbase_wrapped>::difference_type _Off,
     _Vb_const_iterator<_Alvbase_wrapped> _Right) noexcept {
-    return _Right += _Off;
+    _Right += _Off;
+    return _Right;
 }
 
 // CLASS _Vb_iterator
@@ -2350,7 +2353,8 @@ public:
 template <class _Alvbase_wrapped>
 _NODISCARD _CONSTEXPR20 _Vb_iterator<_Alvbase_wrapped> operator+(
     typename _Vb_iterator<_Alvbase_wrapped>::difference_type _Off, _Vb_iterator<_Alvbase_wrapped> _Right) noexcept {
-    return _Right += _Off;
+    _Right += _Off;
+    return _Right;
 }
 
 // CLASS TEMPLATE _Vb_val

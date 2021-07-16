@@ -1281,7 +1281,8 @@ _NODISCARD inline bool operator>=(const path& _Left, const path& _Right) noexcep
 
 _NODISCARD inline path operator/(const path& _Left, const path& _Right) { // concatenate paths
     path _Ans = _Left;
-    return _Ans /= _Right;
+    _Ans /= _Right;
+    return _Ans;
 }
 
 template <class _Elem, class _Traits>

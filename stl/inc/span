@@ -116,7 +116,8 @@ struct _Span_iterator {
     }
 
     _NODISCARD friend constexpr _Span_iterator operator+(const difference_type _Off, _Span_iterator _Next) noexcept {
-        return _Next += _Off;
+        _Next += _Off;
+        return _Next;
     }
 
     constexpr _Span_iterator& operator-=(const difference_type _Off) noexcept {

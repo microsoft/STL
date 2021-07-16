@@ -2143,7 +2143,8 @@ public:
 template <class _Mystr>
 _NODISCARD _CONSTEXPR20 _String_const_iterator<_Mystr> operator+(
     typename _String_const_iterator<_Mystr>::difference_type _Off, _String_const_iterator<_Mystr> _Next) noexcept {
-    return _Next += _Off;
+    _Next += _Off;
+    return _Next;
 }
 
 #if _HAS_CXX20
@@ -2265,7 +2266,8 @@ public:
 template <class _Mystr>
 _NODISCARD _CONSTEXPR20 _String_iterator<_Mystr> operator+(
     typename _String_iterator<_Mystr>::difference_type _Off, _String_iterator<_Mystr> _Next) noexcept {
-    return _Next += _Off;
+    _Next += _Off;
+    return _Next;
 }
 
 #if _HAS_CXX20

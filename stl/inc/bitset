@@ -474,19 +474,22 @@ private:
 template <size_t _Bits>
 _NODISCARD bitset<_Bits> operator&(const bitset<_Bits>& _Left, const bitset<_Bits>& _Right) noexcept {
     bitset<_Bits> _Ans = _Left;
-    return _Ans &= _Right;
+    _Ans &= _Right;
+    return _Ans;
 }
 
 template <size_t _Bits>
 _NODISCARD bitset<_Bits> operator|(const bitset<_Bits>& _Left, const bitset<_Bits>& _Right) noexcept {
     bitset<_Bits> _Ans = _Left;
-    return _Ans |= _Right;
+    _Ans |= _Right;
+    return _Ans;
 }
 
 template <size_t _Bits>
 _NODISCARD bitset<_Bits> operator^(const bitset<_Bits>& _Left, const bitset<_Bits>& _Right) noexcept {
     bitset<_Bits> _Ans = _Left;
-    return _Ans ^= _Right;
+    _Ans ^= _Right;
+    return _Ans;
 }
 
 template <class _Elem, class _Tr, size_t _Bits>
