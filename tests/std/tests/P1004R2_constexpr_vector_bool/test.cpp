@@ -13,15 +13,8 @@
 
 using namespace std;
 
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-const-variable" // TRANSITION, LLVM-48606
-#endif // __clang__
 static constexpr bool input[]         = {true, false, true, true, false, true};
 static constexpr bool input_flipped[] = {false, true, false, false, true, false};
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif // __clang__
 
 template <typename T>
 struct soccc_allocator {

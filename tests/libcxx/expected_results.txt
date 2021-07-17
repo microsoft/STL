@@ -327,9 +327,6 @@ std/algorithms/alg.sorting/alg.sort/partial.sort/partial_sort_comp.pass.cpp:0 FA
 # LLVM-46207 Clang's tgmath.h interferes with the UCRT's tgmath.h
 std/depr/depr.c.headers/tgmath_h.pass.cpp:1 FAIL
 
-# LLVM-48606 "Clang rejects creation of struct with mutable member during constant evaluation"
-std/language.support/support.limits/support.limits.general/vector.version.pass.cpp:1 FAIL
-
 
 # *** CLANG ISSUES, NOT YET ANALYZED ***
 # Clang doesn't enable sized deallocation by default. Should we add -fsized-deallocation or do something else?

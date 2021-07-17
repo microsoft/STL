@@ -1386,7 +1386,7 @@ private:
                 _STD move(_Mid + static_cast<difference_type>(_Count), _Mid + static_cast<difference_type>(_Off),
                     _Mid); // copy rest of prefix
                 _STD fill(begin() + static_cast<difference_type>(_Off), _Mid + static_cast<difference_type>(_Off),
-                    _Tmp._Storage._Value); // fill in values
+                    _Tmp._Get_value()); // fill in values
             }
             _CATCH_ALL
             while (_Oldsize < _Mysize()) {
@@ -1419,7 +1419,7 @@ private:
                 _STD move_backward(_Mid, _Mid + static_cast<difference_type>(_Rem - _Count),
                     _Mid + static_cast<difference_type>(_Rem)); // copy rest of prefix
                 _STD fill(_Mid, _Mid + static_cast<difference_type>(_Count),
-                    _Tmp._Storage._Value); // fill in values
+                    _Tmp._Get_value()); // fill in values
             }
             _CATCH_ALL
             _Erase_last_n(_Mysize() - _Oldsize);

@@ -1251,17 +1251,17 @@
 #define __cpp_lib_constexpr_memory     201811L
 #define __cpp_lib_constexpr_numeric    201911L
 
-#if defined(__cpp_constexpr_dynamic_alloc) && !defined(__clang__) // TRANSITION, LLVM-48606
+#if defined(__cpp_constexpr_dynamic_alloc)
 #define __cpp_lib_constexpr_string 201907L
-#endif // defined(__cpp_constexpr_dynamic_alloc) && !defined(__clang__)
+#endif // defined(__cpp_constexpr_dynamic_alloc)
 
 #define __cpp_lib_constexpr_string_view 201811L
 #define __cpp_lib_constexpr_tuple       201811L
 #define __cpp_lib_constexpr_utility     201811L
 
-#if defined(__cpp_constexpr_dynamic_alloc) && !defined(__clang__) // TRANSITION, LLVM-48606
+#if defined(__cpp_constexpr_dynamic_alloc)
 #define __cpp_lib_constexpr_vector 201907L
-#endif // defined(__cpp_constexpr_dynamic_alloc) && !defined(__clang__)
+#endif // defined(__cpp_constexpr_dynamic_alloc)
 
 #define __cpp_lib_destroying_delete 201806L
 #define __cpp_lib_endian            201907L
@@ -1376,7 +1376,7 @@
 #endif
 
 // Functions that became constexpr in C++20 via P0980R1 or P1004R2
-#if defined(__cpp_lib_constexpr_dynamic_alloc) && !defined(__clang__) // TRANSITION, LLVM-48606
+#if defined(__cpp_lib_constexpr_dynamic_alloc)
 #define _CONSTEXPR20_CONTAINER constexpr
 #else
 #define _CONSTEXPR20_CONTAINER inline

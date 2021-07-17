@@ -1963,22 +1963,45 @@ struct _Alloc_temporary {
     using _Traits    = allocator_traits<_Alloc>;
 
     _Alloc& _Al;
+
+#ifdef __cplusplus_winrt
     union {
         _Wrap<value_type> _Storage;
     };
 
+    _NODISCARD _CONSTEXPR20 value_type& _Get_value() noexcept {
+        return _Storage._Value;
+    }
+
+    _NODISCARD _CONSTEXPR20 const value_type& _Get_value() const noexcept {
+        return _Storage._Value;
+    }
+#else // ^^^ workaround for "T^ is not allowed in a union" ^^^ / vvv no workaround vvv
+    union {
+        value_type _Value;
+    };
+
+    _NODISCARD _CONSTEXPR20 value_type& _Get_value() noexcept {
+        return _Value;
+    }
+
+    _NODISCARD _CONSTEXPR20 const value_type& _Get_value() const noexcept {
+        return _Value;
+    }
+#endif // ^^^ no workaround ^^^
+
     template <class... _Args>
     _CONSTEXPR20_CONTAINER explicit _Alloc_temporary(_Alloc& _Al_, _Args&&... _Vals) noexcept(
-        noexcept(_Traits::construct(_Al_, _STD addressof(_Storage._Value), _STD forward<_Args>(_Vals)...)))
+        noexcept(_Traits::construct(_Al_, _STD addressof(_Get_value()), _STD forward<_Args>(_Vals)...)))
         : _Al(_Al_) {
-        _Traits::construct(_Al, _STD addressof(_Storage._Value), _STD forward<_Args>(_Vals)...);
+        _Traits::construct(_Al, _STD addressof(_Get_value()), _STD forward<_Args>(_Vals)...);
     }
 
     _Alloc_temporary(const _Alloc_temporary&) = delete;
     _Alloc_temporary& operator=(const _Alloc_temporary&) = delete;
 
     _CONSTEXPR20_CONTAINER ~_Alloc_temporary() {
-        _Traits::destroy(_Al, _STD addressof(_Storage._Value));
+        _Traits::destroy(_Al, _STD addressof(_Get_value()));
     }
 };
 

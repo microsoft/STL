@@ -711,7 +711,7 @@ public:
                 _Alty_traits::construct(_Al, _Unfancy(_Oldlast), _STD move(_Oldlast[-1]));
                 ++_My_data._Mylast;
                 _Move_backward_unchecked(_Whereptr, _Oldlast - 1, _Oldlast);
-                *_Whereptr = _STD move(_Obj._Storage._Value);
+                *_Whereptr = _STD move(_Obj._Get_value());
             }
 
             return _Make_iterator(_Whereptr);
@@ -788,7 +788,7 @@ public:
             _Emplace_back_with_unused_capacity(_Val);
         } else { // provide basic guarantee
             const _Alloc_temporary<_Alty> _Tmp_storage(_Al, _Val); // handle aliasing
-            const auto& _Tmp              = _Tmp_storage._Storage._Value;
+            const auto& _Tmp              = _Tmp_storage._Get_value();
             const auto _Affected_elements = static_cast<size_type>(_Oldlast - _Whereptr);
             _Orphan_range(_Whereptr, _Oldlast);
 
