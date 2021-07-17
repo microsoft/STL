@@ -169,14 +169,11 @@ namespace {
         return __std_win_error{GetLastError()};
     }
 
-    [[nodiscard]] bool __stdcall _Same_file(_In_ HANDLE _Handle_a, _In_ HANDLE _Handle_b) {
-        constexpr auto _Flags = __std_fs_file_flags::_Backup_semantics | __std_fs_file_flags::_Open_reparse_point;
+    [[nodiscard]] bool __stdcall _Is_same_file(_In_ HANDLE _Handle_a, _In_ HANDLE _Handle_b) {
         FILE_ID_INFO Id_a, Id_b;
         if (GetFileInformationByHandleEx(_Handle_a, FileIdInfo, &Id_a, sizeof(FILE_ID_INFO))
             && GetFileInformationByHandleEx(_Handle_b, FileIdInfo, &Id_b, sizeof(FILE_ID_INFO))) {
-
-            if (memcmp(Id_a.FileId.Identifier, Id_b.FileId.Identifier, sizeof(FILE_ID_128)) == 0)
-                return true;
+            return memcmp(Id_a.FileId.Identifier, Id_b.FileId.Identifier, sizeof(FILE_ID_128)) == 0;
         }
         return false;
     }
@@ -685,7 +682,7 @@ _Success_(return == __std_win_error::_Success) __std_win_error
 
             _STD _Fs_file _Source_handle(_Source, _Common_access_rights, _Flags, &_Last_error);
             if (_Last_error == __std_win_error::_Success) {
-                if (_Same_file(_Source_handle._Get(), _Target_handle._Get())) {
+                if (_Is_same_file(_Source_handle._Get(), _Target_handle._Get())) {
                     // Renaming files which are hardlinks of each other is a no-op.
                     return __std_win_error::_Success;
                 }
