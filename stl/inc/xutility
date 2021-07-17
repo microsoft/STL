@@ -4190,9 +4190,9 @@ _CONSTEXPR20 _OutIt _Copy_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest) {
     // copy [_First, _Last) to [_Dest, ...)
     // note: _Copy_unchecked has callers other than the copy family
     if constexpr (_Ptr_copy_cat<_InIt, _OutIt>::_Trivially_copyable) {
-#ifdef __cpp_lib_is_constant_evaluated
+#if _HAS_CXX20
         if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
+#endif // _HAS_CXX20
         {
             return _Copy_memmove(_First, _Last, _Dest);
         }
@@ -4314,9 +4314,9 @@ _CONSTEXPR20 _OutIt copy_n(_InIt _First, _Diff _Count_raw, _OutIt _Dest) {
         auto _UFirst = _Get_unwrapped_n(_First, _Count);
         auto _UDest  = _Get_unwrapped_n(_Dest, _Count);
         if constexpr (_Ptr_copy_cat<decltype(_UFirst), decltype(_UDest)>::_Trivially_copyable) {
-#ifdef __cpp_lib_is_constant_evaluated
+#if _HAS_CXX20
             if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
+#endif // _HAS_CXX20
             {
                 _UDest = _Copy_memmove(_UFirst, _UFirst + _Count, _UDest);
                 _Seek_wrapped(_Dest, _UDest);
@@ -4381,9 +4381,9 @@ template <class _BidIt1, class _BidIt2>
 _NODISCARD _CONSTEXPR20 _BidIt2 _Copy_backward_unchecked(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) {
     // copy [_First, _Last) backwards to [..., _Dest)
     if constexpr (_Ptr_copy_cat<_BidIt1, _BidIt2>::_Trivially_copyable) {
-#ifdef __cpp_lib_is_constant_evaluated
+#if _HAS_CXX20
         if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
+#endif // _HAS_CXX20
         {
             return _Copy_backward_memmove(_First, _Last, _Dest);
         }
@@ -4422,9 +4422,9 @@ _CONSTEXPR20 _OutIt _Move_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest) {
     // move [_First, _Last) to [_Dest, ...)
     // note: _Move_unchecked has callers other than the move family
     if constexpr (_Ptr_move_cat<_InIt, _OutIt>::_Trivially_copyable) {
-#ifdef __cpp_lib_is_constant_evaluated
+#if _HAS_CXX20
         if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
+#endif // _HAS_CXX20
         {
             return _Copy_memmove(_First, _Last, _Dest);
         }
@@ -4465,9 +4465,9 @@ _CONSTEXPR20 _BidIt2 _Move_backward_unchecked(_BidIt1 _First, _BidIt1 _Last, _Bi
     // move [_First, _Last) backwards to [..., _Dest)
     // note: _Move_backward_unchecked has callers other than the move_backward family
     if constexpr (_Ptr_move_cat<_BidIt1, _BidIt2>::_Trivially_copyable) {
-#ifdef __cpp_lib_is_constant_evaluated
+#if _HAS_CXX20
         if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
+#endif // _HAS_CXX20
         {
             return _Copy_backward_memmove(_First, _Last, _Dest);
         }
@@ -4580,9 +4580,9 @@ _CONSTEXPR20 void fill(const _FwdIt _First, const _FwdIt _Last, const _Ty& _Val)
     } else {
         auto _UFirst      = _Get_unwrapped(_First);
         const auto _ULast = _Get_unwrapped(_Last);
-#ifdef __cpp_lib_is_constant_evaluated
+#if _HAS_CXX20
         if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
+#endif // _HAS_CXX20
         {
             if constexpr (_Fill_memset_is_safe<decltype(_UFirst), _Ty>) {
                 _Fill_memset(_UFirst, _Val, static_cast<size_t>(_ULast - _UFirst));
@@ -4623,9 +4623,9 @@ _CONSTEXPR20 _OutIt fill_n(_OutIt _Dest, const _Diff _Count_raw, const _Ty& _Val
             return _Last;
         } else {
             auto _UDest = _Get_unwrapped_n(_Dest, _Count);
-#ifdef __cpp_lib_is_constant_evaluated
+#if _HAS_CXX20
             if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
+#endif // _HAS_CXX20
             {
                 if constexpr (_Fill_memset_is_safe<decltype(_UDest), _Ty>) {
                     _Fill_memset(_UDest, _Val, static_cast<size_t>(_Count));
@@ -4803,9 +4803,9 @@ _NODISCARD _CONSTEXPR20 bool equal(const _InIt1 _First1, const _InIt1 _Last1, co
     const auto _ULast1 = _Get_unwrapped(_Last1);
     auto _UFirst2      = _Get_unwrapped_n(_First2, _Idl_distance<_InIt1>(_UFirst1, _ULast1));
     if constexpr (_Equal_memcmp_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
-#ifdef __cpp_lib_is_constant_evaluated
+#if _HAS_CXX20
         if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
+#endif // _HAS_CXX20
         {
             return _Memcmp_ranges(_UFirst1, _ULast1, _UFirst2) == 0;
         }
@@ -5123,11 +5123,11 @@ template <class _CtgIt1, class _CtgIt2, class _Pr, class _Memcmp_pr>
 _NODISCARD _CONSTEXPR20 bool _Lex_compare_unchecked(
     _CtgIt1 _First1, _CtgIt1 _Last1, _CtgIt2 _First2, _CtgIt2 _Last2, _Pr _Pred, _Lex_compare_optimize<_Memcmp_pr>) {
     // order [_First1, _Last1) vs. [_First2, _Last2) memcmp optimization
-#ifdef __cpp_lib_is_constant_evaluated
+#if _HAS_CXX20
     if (_STD is_constant_evaluated()) {
         return _Lex_compare_unchecked(_First1, _Last1, _First2, _Last2, _Pred, _Lex_compare_optimize<void>{});
     }
-#endif // __cpp_lib_is_constant_evaluated
+#endif // _HAS_CXX20
     (void) _Pred;
     const auto _Num1 = static_cast<size_t>(_Last1 - _First1);
     const auto _Num2 = static_cast<size_t>(_Last2 - _First2);
@@ -5323,12 +5323,12 @@ _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked1(_InIt _First, const _InIt _Last, 
         return _Last;
     }
 
-#ifdef __cpp_lib_is_constant_evaluated
+#if _HAS_CXX20
     if (_STD is_constant_evaluated()) {
         using _Elem = _Iter_value_t<_InIt>;
         return _Find_unchecked1(_First, _Last, static_cast<_Elem>(_Val), false_type{});
     }
-#endif // __cpp_lib_is_constant_evaluated
+#endif // _HAS_CXX20
     const auto _First_ptr = _To_address(_First);
     const auto _Result    = static_cast<remove_reference_t<_Iter_ref_t<_InIt>>*>(
         _CSTD memchr(_First_ptr, static_cast<unsigned char>(_Val), static_cast<size_t>(_Last - _First)));
@@ -5551,9 +5551,9 @@ _CONSTEXPR20 void reverse(const _BidIt _First, const _BidIt _Last) { // reverse 
 
 #pragma warning(suppress : 6326) // Potential comparison of a constant with another constant
     if constexpr (_Allow_vectorization && _Nx <= 8 && (_Nx & (_Nx - 1)) == 0) {
-#ifdef __cpp_lib_is_constant_evaluated
+#if _HAS_CXX20
         if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
+#endif // _HAS_CXX20
         {
             if constexpr (_Nx == 1) {
                 __std_reverse_trivially_swappable_1(_To_address(_UFirst), _To_address(_ULast));
@@ -5820,7 +5820,7 @@ _CONSTEXPR20 _FwdIt2 _Swap_ranges_unchecked(_FwdIt1 _First1, const _FwdIt1 _Last
 template <class _Ty, enable_if_t<_Is_trivially_swappable_v<_Ty>, int> = 0>
 _CONSTEXPR20 _Ty* _Swap_ranges_unchecked(_Ty* _First1, _Ty* const _Last1, _Ty* _First2) {
     // swap [_First1, _Last1) with [_First2, ...), trivially swappable optimization
-#ifdef __cpp_lib_is_constant_evaluated
+#if _HAS_CXX20
     if (_STD is_constant_evaluated()) {
         for (; _First1 != _Last1; ++_First1, (void) ++_First2) {
             _STD iter_swap(_First1, _First2);
@@ -5828,7 +5828,7 @@ _CONSTEXPR20 _Ty* _Swap_ranges_unchecked(_Ty* _First1, _Ty* const _Last1, _Ty* _
 
         return _First2;
     }
-#endif // __cpp_lib_is_constant_evaluated
+#endif // _HAS_CXX20
 
     __std_swap_ranges_trivially_swappable_noalias(_First1, _Last1, _First2);
     return _First2 + (_Last1 - _First1);

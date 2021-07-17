@@ -51,7 +51,7 @@ struct _Char_traits { // properties of a string or stream element
 #if _HAS_MEMCPY_MEMMOVE_INTRINSICS
         __builtin_memcpy(_First1, _First2, _Count * sizeof(_Elem));
 #else // ^^^ _HAS_MEMCPY_MEMMOVE_INTRINSICS ^^^ / vvv !_HAS_MEMCPY_MEMMOVE_INTRINSICS vvv
-#ifdef __cpp_lib_is_constant_evaluated
+#if _HAS_CXX20
         if (_STD is_constant_evaluated()) {
             // pre: [_First1, _First1 + _Count) and [_First2, _First2 + _Count) do not overlap; see LWG-3085
             for (size_t _Idx = 0; _Idx < _Count; ++_Idx) {
@@ -60,7 +60,7 @@ struct _Char_traits { // properties of a string or stream element
 
             return _First1;
         }
-#endif // __cpp_lib_is_constant_evaluated
+#endif // _HAS_CXX20
 
         _CSTD memcpy(_First1, _First2, _Count * sizeof(_Elem));
 #endif // ^^^ !_HAS_MEMCPY_MEMMOVE_INTRINSICS ^^^
@@ -82,7 +82,7 @@ struct _Char_traits { // properties of a string or stream element
 #if _HAS_MEMCPY_MEMMOVE_INTRINSICS
         __builtin_memmove(_First1, _First2, _Count * sizeof(_Elem));
 #else // ^^^ _HAS_MEMCPY_MEMMOVE_INTRINSICS ^^^ / vvv !_HAS_MEMCPY_MEMMOVE_INTRINSICS vvv
-#ifdef __cpp_lib_is_constant_evaluated
+#if _HAS_CXX20
         if (_STD is_constant_evaluated()) {
             // dest: [_First1, _First1 + _Count)
             // src: [_First2, _First2 + _Count)
@@ -117,7 +117,7 @@ struct _Char_traits { // properties of a string or stream element
 
             return _First1;
         }
-#endif // __cpp_lib_is_constant_evaluated
+#endif // _HAS_CXX20
 
         _CSTD memmove(_First1, _First2, _Count * sizeof(_Elem));
 #endif // ^^^ !_HAS_MEMCPY_MEMMOVE_INTRINSICS ^^^
@@ -288,11 +288,11 @@ public:
     static _CONSTEXPR20 _Elem* assign(
         _Out_writes_all_(_Count) _Elem* const _First, size_t _Count, const _Elem _Ch) noexcept /* strengthened */ {
         // assign _Count * _Ch to [_First, ...)
-#ifdef __cpp_lib_is_constant_evaluated
+#if _HAS_CXX20
         if (_STD is_constant_evaluated()) {
             return _Primary_char_traits::assign(_First, _Count, _Ch);
         }
-#endif // __cpp_lib_is_constant_evaluated
+#endif // _HAS_CXX20
 
         return reinterpret_cast<_Elem*>(_CSTD wmemset(reinterpret_cast<wchar_t*>(_First), _Ch, _Count));
     }
@@ -437,11 +437,11 @@ public:
     static _CONSTEXPR20 _Elem* assign(
         _Out_writes_all_(_Count) _Elem* const _First, size_t _Count, const _Elem _Ch) noexcept /* strengthened */ {
         // assign _Count * _Ch to [_First, ...)
-#ifdef __cpp_lib_is_constant_evaluated
+#if _HAS_CXX20
         if (_STD is_constant_evaluated()) {
             return _Primary_char_traits::assign(_First, _Count, _Ch);
         }
-#endif // __cpp_lib_is_constant_evaluated
+#endif // _HAS_CXX20
 
         return static_cast<_Elem*>(_CSTD memset(_First, _Ch, _Count));
     }

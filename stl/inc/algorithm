@@ -1926,9 +1926,9 @@ template <class _InIt1, class _InIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 bool _Equal_rev_pred_unchecked(_InIt1 _First1, _InIt2 _First2, const _InIt2 _Last2, _Pr _Pred) {
     // compare [_First1, ...) to [_First2, _Last2)
     if constexpr (_Equal_memcmp_is_safe<_InIt1, _InIt2, _Pr>) {
-#ifdef __cpp_lib_is_constant_evaluated
+#if _HAS_CXX20
         if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
+#endif // _HAS_CXX20
         {
             return _Memcmp_ranges(_First2, _Last2, _First1) == 0;
         }
@@ -4262,9 +4262,9 @@ _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
 
 #pragma warning(suppress : 6326) // Potential comparison of a constant with another constant
     if constexpr (_Allow_vectorization && _Nx <= 8 && (_Nx & (_Nx - 1)) == 0) {
-#ifdef __cpp_lib_is_constant_evaluated
+#if _HAS_CXX20
         if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
+#endif // _HAS_CXX20
         {
             if constexpr (_Nx == 1) {
                 __std_reverse_copy_trivially_copyable_1(_To_address(_UFirst), _To_address(_ULast), _To_address(_UDest));

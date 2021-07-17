@@ -1148,11 +1148,11 @@ constexpr bool _Is_standard_unsigned_integer =
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
 _NODISCARD constexpr int _Countr_zero(const _Ty _Val) noexcept {
 #if defined(_M_IX86) || defined(_M_X64)
-#ifdef __cpp_lib_is_constant_evaluated
+#if _HAS_CXX20
     if (!_STD is_constant_evaluated()) {
         return _Checked_x86_x64_countr_zero(_Val);
     }
-#endif // __cpp_lib_is_constant_evaluated
+#endif // _HAS_CXX20
 #endif // defined(_M_IX86) || defined(_M_X64)
     // C++17 constexpr gcd() calls this function, so it should be constexpr unless we detect runtime evaluation.
     return _Countr_zero_fallback(_Val);
@@ -1161,9 +1161,9 @@ _NODISCARD constexpr int _Countr_zero(const _Ty _Val) noexcept {
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> _Enabled = 0>
 _NODISCARD _CONSTEXPR20 int _Popcount(const _Ty _Val) noexcept {
 #if _HAS_POPCNT_INTRINSICS
-#ifdef __cpp_lib_is_constant_evaluated
+#if _HAS_CXX20
     if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
+#endif // _HAS_CXX20
     {
         return _Checked_x86_x64_popcount(_Val);
     }
