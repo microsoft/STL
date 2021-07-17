@@ -6009,10 +6009,10 @@ struct _Nontrivial_dummy_type {
 };
 _STL_INTERNAL_STATIC_ASSERT(!is_trivially_default_constructible_v<_Nontrivial_dummy_type>);
 
-#ifdef __cpp_lib_variant
+#if _HAS_CXX17
 // CLASS monostate [variant.monostate]
 struct monostate {};
-#endif // __cpp_lib_variant
+#endif // _HAS_CXX17
 
 _STD_END
 #pragma pop_macro("new")
