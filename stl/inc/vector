@@ -705,7 +705,7 @@ public:
                 _Emplace_back_with_unused_capacity(_STD forward<_Valty>(_Val)...);
             } else {
                 auto& _Al = _Getal();
-                _Alloc_temporary<_Alty> _Obj(_Al, _STD forward<_Valty>(_Val)...); // handle aliasing
+                _Alloc_temporary2<_Alty> _Obj(_Al, _STD forward<_Valty>(_Val)...); // handle aliasing
                 // after constructing _Obj, provide basic guarantee
                 _Orphan_range(_Whereptr, _Oldlast);
                 _Alty_traits::construct(_Al, _Unfancy(_Oldlast), _STD move(_Oldlast[-1]));
@@ -786,7 +786,7 @@ public:
         } else if (_One_at_back) { // provide strong guarantee
             _Emplace_back_with_unused_capacity(_Val);
         } else { // provide basic guarantee
-            const _Alloc_temporary<_Alty> _Tmp_storage(_Al, _Val); // handle aliasing
+            const _Alloc_temporary2<_Alty> _Tmp_storage(_Al, _Val); // handle aliasing
             const auto& _Tmp              = _Tmp_storage._Get_value();
             const auto _Affected_elements = static_cast<size_type>(_Oldlast - _Whereptr);
             _Orphan_range(_Whereptr, _Oldlast);

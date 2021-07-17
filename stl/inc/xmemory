@@ -1952,9 +1952,9 @@ struct _Wrap {
 };
 #pragma warning(pop)
 
-// STRUCT TEMPLATE _Alloc_temporary
+// STRUCT TEMPLATE _Alloc_temporary2
 template <class _Alloc>
-struct _Alloc_temporary {
+struct _Alloc_temporary2 {
     using value_type = typename _Alloc::value_type;
     using _Traits    = allocator_traits<_Alloc>;
 
@@ -1987,16 +1987,16 @@ struct _Alloc_temporary {
 #endif // ^^^ no workaround ^^^
 
     template <class... _Args>
-    _CONSTEXPR20 explicit _Alloc_temporary(_Alloc& _Al_, _Args&&... _Vals) noexcept(
+    _CONSTEXPR20 explicit _Alloc_temporary2(_Alloc& _Al_, _Args&&... _Vals) noexcept(
         noexcept(_Traits::construct(_Al_, _STD addressof(_Get_value()), _STD forward<_Args>(_Vals)...)))
         : _Al(_Al_) {
         _Traits::construct(_Al, _STD addressof(_Get_value()), _STD forward<_Args>(_Vals)...);
     }
 
-    _Alloc_temporary(const _Alloc_temporary&) = delete;
-    _Alloc_temporary& operator=(const _Alloc_temporary&) = delete;
+    _Alloc_temporary2(const _Alloc_temporary2&) = delete;
+    _Alloc_temporary2& operator=(const _Alloc_temporary2&) = delete;
 
-    _CONSTEXPR20 ~_Alloc_temporary() {
+    _CONSTEXPR20 ~_Alloc_temporary2() {
         _Traits::destroy(_Al, _STD addressof(_Get_value()));
     }
 };

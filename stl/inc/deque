@@ -1394,7 +1394,7 @@ private:
                 }
 
                 _Mid = begin() + static_cast<difference_type>(_Count);
-                _Alloc_temporary<_Alty> _Tmp(_Getal(), _Val); // in case _Val is in sequence
+                _Alloc_temporary2<_Alty> _Tmp(_Getal(), _Val); // in case _Val is in sequence
                 _STD move(_Mid + static_cast<difference_type>(_Count), _Mid + static_cast<difference_type>(_Off),
                     _Mid); // copy rest of prefix
                 _STD fill(begin() + static_cast<difference_type>(_Off), _Mid + static_cast<difference_type>(_Off),
@@ -1427,7 +1427,7 @@ private:
                 }
 
                 _Mid = begin() + static_cast<difference_type>(_Off);
-                _Alloc_temporary<_Alty> _Tmp(_Getal(), _Val); // in case _Val is in sequence
+                _Alloc_temporary2<_Alty> _Tmp(_Getal(), _Val); // in case _Val is in sequence
                 _STD move_backward(_Mid, _Mid + static_cast<difference_type>(_Rem - _Count),
                     _Mid + static_cast<difference_type>(_Rem)); // copy rest of prefix
                 _STD fill(_Mid, _Mid + static_cast<difference_type>(_Count),
