@@ -6,6 +6,7 @@
 
 using namespace std;
 
+
 constexpr bool test_unicode_properties() {
     assert(_Grapheme_Break_Property_Data._Get_property_for_codepoint(0xB)
            == _Grapheme_Break_Property_Values::_Control_value);
@@ -38,9 +39,28 @@ constexpr bool test_unicode_properties() {
     return true;
 }
 
+constexpr bool test_utf8_decode() {
+    const uint8_t table_3_8_overlong[] = {0xC0, 0xAF, 0xE0, 0x80, 0xBF, 0xF0, 0x81, 0x82, 0xF4};
+    const uint8_t* it                  = table_3_8_overlong;
+    while (it != end(table_3_8_overlong) - 1) {
+        uint32_t val       = 0;
+        const uint8_t* nxt = _Decode_utf8(it, end(table_3_8_overlong), val);
+        assert(val == 0xFFFD && nxt == it + 1);
+        it = nxt;
+    }
+    uint32_t val       = 0;
+    const uint8_t* nxt = _Decode_utf8(it, end(table_3_8_overlong), val);
+    assert(val == 0x41);
+    assert(nxt == end(table_3_8_overlong));
+    return true;
+}
+
 int main() {
     test_unicode_properties();
     static_assert(test_unicode_properties());
-    static_assert(_STD input_or_output_iterator<_Grapheme_break_property_iterator<wchar_t>>);
+
+    test_utf8_decode();
+    // static_assert(test_utf8_decode());
+    // static_assert(_STD input_or_output_iterator<_Grapheme_break_property_iterator<wchar_t>>);
     return 0;
 }

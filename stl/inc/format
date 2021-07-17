@@ -496,7 +496,7 @@ static constexpr _Unicode_Property_Data<_Extended_Pictographic_Property_Values, 
             0x6, 0x1, 0x2, 0x8, 0x1, 0x1, 0x3, 0x17, 0x19, 0x70, 0x4, 0x1, 0x3, 0x3, 0x5, 0x3, 0x4, 0x9, 0x6, 0x13, 0x7,
             0x7, 0x9, 0x3, 0xd, 0x7, 0x29, 0x3fe}};
 
-const char* _Decode_utf8(const char* _First, const char* _Last, uint32_t& _Val) {
+constexpr const uint8_t* _Decode_utf8(const uint8_t* _First, const uint8_t* _Last, uint32_t& _Val) {
     // decode a UTF-8 value starting at _First and not exceding _Last, returning
     // one past the end of the character decoded. Any invalid codepoints will result in
     // _Val == U+FFFD and _Decode_utf8 will return one past the
@@ -505,44 +505,80 @@ const char* _Decode_utf8(const char* _First, const char* _Last, uint32_t& _Val) 
     // result in one U+FFFD for more than one input byte.
     _Val = static_cast<uint32_t>(*_First);
 
-    auto _Num_bytes = _STD countl_one(_Val);
-    if (_Num_bytes == 1 || _Num_bytes > 4) {
+    // all UTF text is at least one byte
+    // the zero extended values of the "prefix" bytes for
+    // a multi-byte sequence are the lowest numeric value (in two's complement)
+    // that a any leading byte could have for a code unit of that size, so
+    // we just sum the comparisions to get the number of trailing bytes
+    auto _Num_bytes = (_Val >= 0xc0) + (_Val >= 0xe0) + (_Val >= 0xf0) + 1;
+    if (_Val > 0xf4) {
+        // 0xf4 is the highest lead byte of any valid utf-8 encoded sequence
+        // (Unicode 13: 3.9 Table 3-7)
         _Val = 0xFFFD;
-        // note, if we get a bogus start byte that implies > 4 trailing bytes
-        // we emit _one_ replacement and consume only one byte.
         return _First + 1;
     }
+    if (_First + _Num_bytes > _Last) {
+        // we got a sequence that ran off the end
+        _Val = 0xFFFD;
+        return _Last;
+    }
+
+    switch (_Val) {
+    case 0xe0:
+        // we know _First[1] is in range because we just checked above,
+        // and a leader of 0xe0 implies _Num_bytes == 3
+        if (_First[1] < 0xa0) {
+            // note, we just increment forward one byte,
+            // even though _Num_bytes would imply the next
+            // code-point starts at _First + 2, this is because
+            // we don't consume trailing bytes of ill-formed subsequences
+            _Val = 0xFFFD;
+            return _First + 1;
+        }
+    case 0xf0:
+        if (_First[1] < 0x90) {
+            _Val = 0xFFFD;
+            return _First + 1;
+        }
+    case 0xf4:
+        if (_First[1] > 0x8f) {
+            _Val = 0xFFFD;
+            return _First + 1;
+        }
+    }
+
     // mask out the "value bits" in the leading byte,
     // for one byte codepoints there is no leader,
     // two byte codepoints have the same nubmer of value
     // bits as trailing bytes (including the leading zero)
+
+    // we also check for overlong encodings here
     switch (_Num_bytes) {
-    case 1:
-        _STL_INTERNAL_CHECK(false);
+    case 2: // check for overlong encodings
+        if (_Val <= 0xC2 || _Val >= 0xDF) {
+            _Val = 0xFFFD;
+            return _First + 1;
+        }
+
     case 3:
         _Val &= 0b1111u;
         break;
     case 4:
         _Val &= 0b111u;
         break;
-    case 0:
-        _Num_bytes = 1;
     }
-    if (_First + _Num_bytes - 1 >= _Last) {
-        // we got a sequence that ran off the end
-        _Val = 0xFFFD;
-        return _Last;
-    }
+
     for (int _Idx = 1; _Idx < _Num_bytes; ++_Idx) {
+        if (_First[_Idx] < 0x80 || _First[_Idx] > 0xBF) {
+            _Val = 0xFFFD;
+            return _First + 1;
+        }
         // we know we're always in range due to the above check.
         _Val = (_Val << 6) | (_First[_Idx] & 0b11'1111u);
     }
-    // check for overlong encodings
-    uint8_t _Max_bit_for_num_bytes[] = {32, 24, 16, 8};
-    auto _Highest_set_bit            = _STD countl_zero(_Val);
-    if (_Highest_set_bit < (32 - (_Num_bytes - 1)))
+    return _First + _Num_bytes;
 }
-
+/*
 template <typename _CharType>
 class _Grapheme_break_property_iterator {
     using iterator_concept = forward_iterator_tag;
@@ -581,7 +617,7 @@ public:
         return *_WrappedIter;
     }
 };
-
+*/
 template <class _Ty, class _CharT>
 concept _CharT_or_bool = same_as<_Ty, _CharT> || same_as<_Ty, bool>;
 
