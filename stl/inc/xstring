@@ -166,13 +166,13 @@ struct _Char_traits { // properties of a string or stream element
     static _CONSTEXPR20 _Elem* assign(
         _Out_writes_all_(_Count) _Elem* const _First, size_t _Count, const _Elem _Ch) noexcept /* strengthened */ {
         // assign _Count * _Ch to [_First, ...)
-#ifdef __cpp_lib_constexpr_string
+#if _HAS_CXX20
         if (_STD is_constant_evaluated()) {
             for (_Elem* _Next = _First; _Count > 0; --_Count, ++_Next) {
                 _STD construct_at(_Next, _Ch);
             }
         } else
-#endif // __cpp_lib_constexpr_string
+#endif // _HAS_CXX20
         {
             for (_Elem* _Next = _First; _Count > 0; --_Count, ++_Next) {
                 *_Next = _Ch;
@@ -183,11 +183,11 @@ struct _Char_traits { // properties of a string or stream element
     }
 
     static _CONSTEXPR17 void assign(_Elem& _Left, const _Elem& _Right) noexcept {
-#ifdef __cpp_lib_constexpr_string
+#if _HAS_CXX20
         if (_STD is_constant_evaluated()) {
             _STD construct_at(_STD addressof(_Left), _Right);
         } else
-#endif // __cpp_lib_constexpr_string
+#endif // _HAS_CXX20
         {
             _Left = _Right;
         }
@@ -2354,11 +2354,11 @@ public:
     }
 
     _CONSTEXPR20 bool _Large_string_engaged() const noexcept {
-#ifdef __cpp_lib_constexpr_string
+#if _HAS_CXX20
         if (_STD is_constant_evaluated()) {
             return true;
         }
-#endif // __cpp_lib_constexpr_string
+#endif // _HAS_CXX20
         return _BUF_SIZE <= _Myres;
     }
 
@@ -2683,11 +2683,11 @@ public:
         auto&& _Alproxy         = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data); // throws
 
-#ifdef __cpp_lib_constexpr_string
+#if _HAS_CXX20
         const bool _Activate_large_mode = _New_capacity < _New_size || _STD is_constant_evaluated();
-#else // ^^^ __cpp_lib_constexpr_string / !__cpp_lib_constexpr_string vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
         const bool _Activate_large_mode = _New_capacity < _New_size;
-#endif // __cpp_lib_constexpr_string
+#endif // _HAS_CXX20
 
         if (_Activate_large_mode) {
             // we should never allocate less than _BUF_SIZE space (_New_size could be small if constant evaluated)
@@ -2698,11 +2698,11 @@ public:
             _Construct_in_place(_My_data._Bx._Ptr, _Fancyptr);
         }
 
-#ifdef __cpp_lib_constexpr_string
+#if _HAS_CXX20
         if (_STD is_constant_evaluated()) { // Begin the lifetimes of the objects before copying to avoid UB
             _Traits::assign(_Ptr, _New_capacity + 1, _Elem());
         }
-#endif // __cpp_lib_constexpr_string
+#endif // _HAS_CXX20
 
         _My_data._Mysize = _New_size;
         _My_data._Myres  = _New_capacity;
@@ -2769,11 +2769,11 @@ public:
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data); // throws
         const pointer _Fancyptr = _Getal().allocate(_New_capacity + 1); // throws
         // nothrow hereafter
-#ifdef __cpp_lib_constexpr_string
+#if _HAS_CXX20
         if (_STD is_constant_evaluated()) { // Begin the lifetimes of the objects before copying to avoid UB
             _Traits::assign(_Unfancy(_Fancyptr), _New_capacity + 1, _Elem());
         }
-#endif // __cpp_lib_constexpr_string
+#endif // _HAS_CXX20
         _Construct_in_place(_My_data._Bx._Ptr, _Fancyptr);
         _My_data._Mysize = _New_size;
         _My_data._Myres  = _New_capacity;
@@ -2923,9 +2923,9 @@ private:
         auto& _Right_data = _Right._Mypair._Myval2;
 
         if constexpr (_Can_memcpy_val) {
-#ifdef __cpp_lib_constexpr_string
+#if _HAS_CXX20
             if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_constexpr_string
+#endif // _HAS_CXX20
             {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 if (_Right_data._Large_string_engaged()) {
@@ -2966,11 +2966,11 @@ private:
         const _Elem* const _Right_ptr = _Right_data._Myptr();
         auto& _My_data                = _Mypair._Myval2;
 
-#ifdef __cpp_lib_constexpr_string
+#if _HAS_CXX20
         const bool _Stay_small = _Right_size < _BUF_SIZE && !_STD is_constant_evaluated();
-#else // ^^^ __cpp_lib_constexpr_string / !__cpp_lib_constexpr_string vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
         const bool _Stay_small = _Right_size < _BUF_SIZE;
-#endif // __cpp_lib_constexpr_string
+#endif // _HAS_CXX20
 
         // NOTE: even if _Right is in large mode, we only go into large mode ourselves if the actual size of _Right
         // requires it
@@ -2986,11 +2986,11 @@ private:
         const pointer _New_array      = _Al.allocate(_New_capacity + 1); // throws
         _Construct_in_place(_My_data._Bx._Ptr, _New_array);
 
-#ifdef __cpp_lib_constexpr_string
+#if _HAS_CXX20
         if (_STD is_constant_evaluated()) { // Begin the lifetimes of the objects before copying to avoid UB
             _Traits::assign(_Unfancy(_New_array), _New_capacity + 1, _Elem());
         }
-#endif // __cpp_lib_constexpr_string
+#endif // _HAS_CXX20
         _Traits::copy(_Unfancy(_New_array), _Right_ptr, _Right_size + 1);
         _My_data._Mysize = _Right_size;
         _My_data._Myres  = _New_capacity;
@@ -3058,9 +3058,9 @@ public:
 private:
     void _Copy_assign_val_from_small(const basic_string& _Right) {
         // TRANSITION, VSO-761321; inline into only caller when that's fixed
-#ifdef __cpp_lib_constexpr_string
+#if _HAS_CXX20
         _STL_ASSERT(!_STD is_constant_evaluated(), "SSO should be disabled in a constexpr context");
-#endif // __cpp_lib_constexpr_string
+#endif // _HAS_CXX20
         _Tidy_deallocate();
         if constexpr (_Can_memcpy_val) {
             _Memcpy_val_from(_Right);
@@ -3097,11 +3097,11 @@ private:
             auto _Right_al_non_const = _Right_al;
             const auto _New_ptr      = _Right_al_non_const.allocate(_New_capacity); // throws
 
-#ifdef __cpp_lib_constexpr_string
+#if _HAS_CXX20
             if (_STD is_constant_evaluated()) { // Begin the lifetimes of the objects before copying to avoid UB
                 _Traits::assign(_Unfancy(_New_ptr), _New_size + 1, _Elem());
             }
-#endif // __cpp_lib_constexpr_string
+#endif // _HAS_CXX20
 
             _Traits::copy(_Unfancy(_New_ptr), _Unfancy(_Right._Mypair._Myval2._Bx._Ptr), _New_size + 1);
             _Tidy_deallocate();
@@ -3386,11 +3386,11 @@ public:
 
         // checking for overlapping ranges is technically UB (considering string literals), so just always reallocate
         // and copy to the new buffer if constant evaluated
-#ifdef __cpp_lib_constexpr_string
+#if _HAS_CXX20
         const bool _Check_overlap = _Count <= _Mypair._Myval2._Myres - _Old_size && !_STD is_constant_evaluated();
-#else // ^^^ __cpp_lib_constexpr_string / !__cpp_lib_constexpr_string vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
         const bool _Check_overlap = _Count <= _Mypair._Myval2._Myres - _Old_size;
-#endif // __cpp_lib_constexpr_string
+#endif // _HAS_CXX20
 
         if (_Check_overlap) {
             _Mypair._Myval2._Mysize = _Old_size + _Count;
@@ -3600,9 +3600,9 @@ public:
 
         // checking for overlapping ranges is technically UB (considering string literals), so just always reallocate
         // and copy to the new buffer if constant evaluated
-#ifdef __cpp_lib_constexpr_string
+#if _HAS_CXX20
         if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_constexpr_string
+#endif // _HAS_CXX20
         {
             if (_Growth <= _Mypair._Myval2._Myres - _Old_size) { // growth fits
                 _Mypair._Myval2._Mysize = _Old_size + _Growth;
@@ -3830,9 +3830,9 @@ public:
     _CONSTEXPR20 void shrink_to_fit() { // reduce capacity
         auto& _My_data = _Mypair._Myval2;
 
-#ifdef __cpp_lib_constexpr_string
+#if _HAS_CXX20
         if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_constexpr_string
+#endif // _HAS_CXX20
         {
             if (!_My_data._Large_string_engaged()) { // can't shrink from small mode
                 return;
@@ -3845,20 +3845,20 @@ public:
         }
 
         size_type _Target_capacity = (_STD min) (_My_data._Mysize | _ALLOC_MASK, max_size());
-#ifdef __cpp_lib_constexpr_string
+#if _HAS_CXX20
         // must allocate at least _BUF_SIZE space
         _Target_capacity = (_STD max) (_Target_capacity, _BUF_SIZE);
-#endif // __cpp_lib_constexpr_string
+#endif // _HAS_CXX20
 
         if (_Target_capacity < _My_data._Myres) { // worth shrinking, do it
             auto& _Al              = _Getal();
             const pointer _New_ptr = _Al.allocate(_Target_capacity + 1); // throws
 
-#ifdef __cpp_lib_constexpr_string
+#if _HAS_CXX20
             if (_STD is_constant_evaluated()) { // Begin the lifetimes of the objects before copying to avoid UB
                 _Traits::assign(_Unfancy(_New_ptr), _Target_capacity + 1, _Elem());
             }
-#endif // __cpp_lib_constexpr_string
+#endif // _HAS_CXX20
 
             _My_data._Orphan_all();
             _Traits::copy(_Unfancy(_New_ptr), _Unfancy(_My_data._Bx._Ptr), _My_data._Mysize + 1);
@@ -4095,9 +4095,9 @@ public:
         auto& _Right_data = _Right._Mypair._Myval2;
 
         if constexpr (_Can_memcpy_val) {
-#ifdef __cpp_lib_constexpr_string
+#if _HAS_CXX20
             if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_constexpr_string
+#endif // _HAS_CXX20
             {
                 const auto _My_data_mem =
                     reinterpret_cast<unsigned char*>(_STD addressof(_My_data)) + _Memcpy_val_offset;
@@ -4562,11 +4562,11 @@ private:
         auto& _Al                     = _Getal();
         const pointer _New_ptr        = _Al.allocate(_New_capacity + 1); // throws
 
-#ifdef __cpp_lib_constexpr_string
+#if _HAS_CXX20
         if (_STD is_constant_evaluated()) { // Begin the lifetimes of the objects before copying to avoid UB
             _Traits::assign(_Unfancy(_New_ptr), _New_capacity + 1, _Elem());
         }
-#endif // __cpp_lib_constexpr_string
+#endif // _HAS_CXX20
         _Mypair._Myval2._Orphan_all();
         _Mypair._Myval2._Mysize = _New_size;
         _Mypair._Myval2._Myres  = _New_capacity;
@@ -4597,11 +4597,11 @@ private:
         auto& _Al                     = _Getal();
         const pointer _New_ptr        = _Al.allocate(_New_capacity + 1); // throws
 
-#ifdef __cpp_lib_constexpr_string
+#if _HAS_CXX20
         if (_STD is_constant_evaluated()) { // Begin the lifetimes of the objects before copying to avoid UB
             _Traits::assign(_Unfancy(_New_ptr), _New_capacity + 1, _Elem());
         }
-#endif // __cpp_lib_constexpr_string
+#endif // _HAS_CXX20
         _My_data._Orphan_all();
         _My_data._Mysize      = _New_size;
         _My_data._Myres       = _New_capacity;
@@ -4642,7 +4642,7 @@ private:
         auto& _My_data   = _Mypair._Myval2;
         _My_data._Mysize = 0;
 
-#ifdef __cpp_lib_constexpr_string
+#if _HAS_CXX20
         if (_STD is_constant_evaluated()) {
             _My_data._Myres        = _BUF_SIZE; // SSO disabled in constexpr context
             auto& _Al              = _Getal();
@@ -4652,7 +4652,7 @@ private:
             _Elem* const _Raw_new = _Unfancy(_New_ptr);
             _Traits::assign(_Raw_new, _BUF_SIZE + 1, _Elem());
         } else
-#endif // __cpp_lib_constexpr_string
+#endif // _HAS_CXX20
         {
             _My_data._Myres = _BUF_SIZE - 1;
             // the _Traits::assign is last so the codegen doesn't think the char write can alias this
@@ -4669,13 +4669,13 @@ private:
             _Al.deallocate(_Ptr, _Mypair._Myval2._Myres + 1);
         }
 
-#ifdef __cpp_lib_constexpr_string
+#if _HAS_CXX20
         if (_STD is_constant_evaluated()) {
             _Mypair._Myval2._Bx._Ptr = nullptr;
             _Mypair._Myval2._Mysize  = 0;
             _Mypair._Myval2._Myres   = 0;
         } else
-#endif // __cpp_lib_constexpr_string
+#endif // _HAS_CXX20
         {
             _Mypair._Myval2._Mysize = 0;
             _Mypair._Myval2._Myres  = _BUF_SIZE - 1;
