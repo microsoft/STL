@@ -506,6 +506,7 @@ static void test_match_results() { // test template match_results
     MyMr::string_type* p_str      = (STD basic_string<CHR>*) nullptr;
 
     p_val = p_val; // to quiet diagnostics
+    (void) citer;
     if (cref.length() == ref.length())
         p_iter = p_iter;
     p_diff  = p_diff;
