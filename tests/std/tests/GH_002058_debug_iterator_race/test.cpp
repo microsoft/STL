@@ -5,7 +5,7 @@
 
 using namespace std;
 
-// Concurrently destroy iterators and invalidate iterators
+// Concurrently destroy and invalidate iterators
 template <class container>
 void test_concurrent_destruction() {
     container c;
@@ -19,7 +19,7 @@ void test_concurrent_destruction() {
     }
 }
 
-// Concurrently create iterators and invalidate iterators
+// Concurrently create and invalidate iterators
 template <class container>
 void test_concurrent_creation() {
     container c;
