@@ -3488,10 +3488,11 @@ namespace ranges {
     template <input_or_output_iterator _It, sentinel_for<_It> _Se, subrange_kind _Ki>
         requires (_Ki == subrange_kind::sized || !sized_sentinel_for<_Se, _It>)
     class subrange : public _Subrange_base<_It, _Se, _Ki> {
+        // clang-format on
     private:
         using _Mybase = _Subrange_base<_It, _Se, _Ki>;
-        using typename _Mybase::_Size_type;
         using _Mybase::_Store_size;
+        using typename _Mybase::_Size_type;
 
         // TRANSITION, [[no_unique_address]]:
         /* [[no_unique_address]] */ _It _First{};
@@ -3513,12 +3514,15 @@ namespace ranges {
     public:
         subrange() requires default_initializable<_It> = default;
 
+        // TRANSITION, DevCom-1331017
+        constexpr subrange& operator=(const subrange&) = default;
+
         template <_Convertible_to_non_slicing<_It> _It2>
-        constexpr subrange(_It2 _First_, _Se _Last_) requires (!_Store_size)
+        constexpr subrange(_It2 _First_, _Se _Last_) requires(!_Store_size)
             : _First(_STD move(_First_)), _Last(_STD move(_Last_)) {}
 
         template <_Convertible_to_non_slicing<_It> _It2>
-        constexpr subrange(_It2 _First_, _Se _Last_, const _Size_type _Size_) requires (_Ki == subrange_kind::sized)
+        constexpr subrange(_It2 _First_, _Se _Last_, const _Size_type _Size_) requires(_Ki == subrange_kind::sized)
             : _Mybase(_Size_), _First(_STD move(_First_)), _Last(_STD move(_Last_)) {
             if constexpr (sized_sentinel_for<_Se, _It>) {
                 _STL_ASSERT(_Size_ == static_cast<_Size_type>(_Last - _First),
@@ -3527,6 +3531,7 @@ namespace ranges {
             }
         }
 
+        // clang-format off
         template <_Not_same_as<subrange> _Rng>
             requires borrowed_range<_Rng>
                 && _Convertible_to_non_slicing<iterator_t<_Rng>, _It>
@@ -3544,11 +3549,14 @@ namespace ranges {
         constexpr operator _Pair_like() const {
             return _Pair_like(_First, _Last);
         }
+        // clang-format on
 
         _NODISCARD constexpr _It begin() const requires copyable<_It> {
             return _First;
         }
+        // clang-format off
         _NODISCARD constexpr _It begin() requires (!copyable<_It>) {
+            // clang-format on
             return _STD move(_First);
         }
 
@@ -3560,7 +3568,9 @@ namespace ranges {
             return _First == _Last;
         }
 
+        // clang-format off
         _NODISCARD constexpr _Size_type size() const requires (_Ki == subrange_kind::sized) {
+            // clang-format on
             if constexpr (_Store_size) {
                 return this->_Size;
             } else {
@@ -3568,7 +3578,7 @@ namespace ranges {
             }
         }
 
-        _NODISCARD constexpr subrange next() const & requires forward_iterator<_It> {
+        _NODISCARD constexpr subrange next() const& requires forward_iterator<_It> {
             auto _Tmp = *this;
             if (_Tmp._First != _Tmp._Last) {
                 ++_Tmp._First;
@@ -3578,7 +3588,7 @@ namespace ranges {
             }
             return _Tmp;
         }
-        _NODISCARD constexpr subrange next(const iter_difference_t<_It> _Count) const & requires forward_iterator<_It> {
+        _NODISCARD constexpr subrange next(const iter_difference_t<_It> _Count) const& requires forward_iterator<_It> {
             auto _Tmp = *this;
             _Tmp.advance(_Count);
             return _Tmp;
@@ -3631,7 +3641,6 @@ namespace ranges {
             return *this;
         }
     };
-    // clang-format on
 
     template <input_or_output_iterator _It, sentinel_for<_It> _Se>
     subrange(_It, _Se) -> subrange<_It, _Se>;
