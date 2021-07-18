@@ -526,7 +526,7 @@ int main() {
 #if defined(__cpp_lib_constexpr_dynamic_alloc) && defined(MSVC_INTERNAL_TESTING) \
     && !defined(__clang__) // TRANSITION, LLVM-48606
         static_assert(ranges::equal(views::iota(0, 5) | views::transform(ToVector) | views::join, result));
-#endif
+#endif // TRANSITION, LLVM-48606
     }
 
     { // P2328 range of prvalue string
@@ -536,7 +536,7 @@ int main() {
 #if defined(__cpp_lib_constexpr_dynamic_alloc) && defined(MSVC_INTERNAL_TESTING) \
     && !defined(__clang__) // TRANSITION, LLVM-48606
         static_assert(ranges::equal(views::iota(0u, 5u) | views::transform(ToString) | views::join, expected));
-#endif
+#endif // TRANSITION, LLVM-48606
     }
 
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-934264

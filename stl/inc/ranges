@@ -42,7 +42,7 @@ namespace ranges {
         && same_as<sentinel_t<_Rng>, sentinel_t<const _Rng>>;
 
     template <class _Ty>
-    concept _Copy_constructible_object = copy_constructible<_Ty> && is_object_v<_Ty>;
+    concept _Copy_constructible_object = copy_constructible<_Ty> && _Destructible_object<_Ty>;
 
     template <class _It>
     concept _Has_arrow = input_iterator<_It>
@@ -621,11 +621,8 @@ namespace ranges {
     };
 
     // CLASS TEMPLATE ranges::_Non_propagating_cache
-    template <class _Ty>
-    concept _Objectable = is_object_v<_Ty>;
-
     // clang-format off
-    template <_Objectable _Ty>
+    template <_Destructible_object _Ty>
     class _Non_propagating_cache { // a simplified optional that resets on copy / move
         // clang-format on
     public:
@@ -634,16 +631,16 @@ namespace ranges {
         _CONSTEXPR20_DYNALLOC ~_Non_propagating_cache() {
             if (_Engaged) {
                 _Val.~_Ty();
-                _Dummy = {};
+                _Construct_in_place(_Dummy);
             }
         }
 
-        constexpr _Non_propagating_cache(const _Non_propagating_cache&) noexcept {}
+        constexpr _Non_propagating_cache(const _Non_propagating_cache&) noexcept : _Dummy{} {}
 
-        _CONSTEXPR20_DYNALLOC _Non_propagating_cache(_Non_propagating_cache&& _Other) noexcept {
+        _CONSTEXPR20_DYNALLOC _Non_propagating_cache(_Non_propagating_cache&& _Other) noexcept : _Dummy{} {
             if (_Other._Engaged) {
                 _Other._Val.~_Ty();
-                _Other._Dummy   = {};
+                _Construct_in_place(_Other._Dummy);
                 _Other._Engaged = false;
             }
         }
@@ -655,7 +652,7 @@ namespace ranges {
 
             if (_Engaged) {
                 _Val.~_Ty();
-                _Dummy   = {};
+                _Construct_in_place(_Dummy);
                 _Engaged = false;
             }
 
@@ -665,13 +662,13 @@ namespace ranges {
         _CONSTEXPR20_DYNALLOC _Non_propagating_cache& operator=(_Non_propagating_cache&& _Other) noexcept {
             if (_Engaged) {
                 _Val.~_Ty();
-                _Dummy   = {};
+                _Construct_in_place(_Dummy);
                 _Engaged = false;
             }
 
             if (_Other._Engaged) {
                 _Other._Val.~_Ty();
-                _Other._Dummy   = {};
+                _Construct_in_place(_Other._Dummy);
                 _Other._Engaged = false;
             }
 
@@ -691,7 +688,7 @@ namespace ranges {
         _CONSTEXPR20_DYNALLOC _Ty& _Emplace_deref(_It& _Iter) noexcept(noexcept(_Ty(*_Iter))) /* strengthened */ {
             if (_Engaged) {
                 _Val.~_Ty();
-                _Dummy   = {};
+                _Construct_in_place(_Dummy);
                 _Engaged = false;
             }
 
@@ -710,22 +707,23 @@ namespace ranges {
     };
 
     // clang-format off
-    template <_Objectable _Ty>
+    template <_Destructible_object _Ty>
         requires is_trivially_destructible_v<_Ty>
     class _Non_propagating_cache<_Ty> { // provide the same API more efficiently for trivially destructible types
         // clang-format on
     public:
-        constexpr _Non_propagating_cache() noexcept {}
+        constexpr _Non_propagating_cache() noexcept(is_nothrow_default_constructible_v<_Ty>) {}
 
-        constexpr _Non_propagating_cache(const _Non_propagating_cache&) noexcept {}
+        constexpr _Non_propagating_cache(const _Non_propagating_cache&) noexcept(
+            is_nothrow_default_constructible_v<_Ty>) {}
 
-        constexpr _Non_propagating_cache(_Non_propagating_cache&& _Other) noexcept {}
+        constexpr _Non_propagating_cache(_Non_propagating_cache&&) noexcept(is_nothrow_default_constructible_v<_Ty>) {}
 
-        constexpr _Non_propagating_cache& operator=(const _Non_propagating_cache& _Other) noexcept {
+        constexpr _Non_propagating_cache& operator=(const _Non_propagating_cache&) noexcept {
             return *this;
         }
 
-        constexpr _Non_propagating_cache& operator=(_Non_propagating_cache&& _Other) noexcept {
+        constexpr _Non_propagating_cache& operator=(_Non_propagating_cache&&) noexcept {
             return *this;
         }
 
@@ -747,11 +745,8 @@ namespace ranges {
     };
 
     // CLASS TEMPLATE ranges::empty_view
-    // clang-format off
-    template <class _Ty>
-        requires is_object_v<_Ty>
+    template <_Destructible_object _Ty>
     class empty_view : public view_interface<empty_view<_Ty>> {
-        // clang-format on
     public:
         _NODISCARD static constexpr _Ty* begin() noexcept {
             return nullptr;
@@ -781,11 +776,8 @@ namespace ranges {
     } // namespace views
 
     // CLASS TEMPLATE ranges::single_view
-    // clang-format off
-    template <copy_constructible _Ty>
-        requires is_object_v<_Ty>
+    template <_Copy_constructible_object _Ty>
     class single_view : public view_interface<single_view<_Ty>> {
-        // clang-format on
     public:
         single_view() requires default_initializable<_Ty> = default;
         constexpr explicit single_view(const _Ty& _Val_) noexcept(is_nothrow_copy_constructible_v<_Ty>) // strengthened
@@ -2980,7 +2972,7 @@ namespace ranges {
     template <class _Vw>
     class _Join_view_base : public view_interface<join_view<_Vw>> {
     protected:
-        /* [[no_unique_address]] */ _Non_propagating_cache<remove_reference_t<range_reference_t<_Vw>>> _Inner{};
+        /* [[no_unique_address]] */ _Non_propagating_cache<remove_cv_t<range_reference_t<_Vw>>> _Inner{};
     };
 
     // clang-format off
@@ -3057,8 +3049,8 @@ namespace ranges {
             constexpr void _Satisfy() {
                 const auto _Last = _RANGES end(_Parent->_Range);
                 for (; _Outer != _Last; ++_Outer) {
-                    auto& _Tmp = _Update_inner();
-                    _Inner     = _RANGES begin(_Tmp);
+                    auto&& _Tmp = _Update_inner();
+                    _Inner      = _RANGES begin(_Tmp);
                     if (*_Inner != _RANGES end(_Tmp)) {
                         return;
                     }
