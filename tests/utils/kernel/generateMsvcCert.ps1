@@ -5,7 +5,8 @@ param([string]$out="MsvcStlTestingCert.pfx",[string]$pass="placeholderPassword")
 
 $ErrorActionPreference = 'Stop'
 
-$isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
+$currentIdentity = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent())
+$isAdmin = $currentIdentity.IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
 if (!$isAdmin) {
         Throw "The current prompt is not an elevated administrator prompt!"
 }
