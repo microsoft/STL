@@ -3515,7 +3515,10 @@ namespace ranges {
         subrange() requires default_initializable<_It> = default;
 
         // TRANSITION, DevCom-1331017
-        constexpr subrange& operator=(const subrange&) = default;
+        subrange(const subrange&) = default;
+        subrange(subrange&&)      = default;
+        subrange& operator=(const subrange&) = default;
+        subrange& operator=(subrange&&) = default;
 
         template <_Convertible_to_non_slicing<_It> _It2>
         constexpr subrange(_It2 _First_, _Se _Last_) requires(!_Store_size)
