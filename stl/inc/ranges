@@ -628,12 +628,14 @@ namespace ranges {
     public:
         constexpr _Non_propagating_cache() noexcept : _Dummy{} {}
 
-        _CONSTEXPR20_DYNALLOC ~_Non_propagating_cache() {
+        _CONSTEXPR20_DYNALLOC ~_Non_propagating_cache() noexcept {
             if (_Engaged) {
                 _Val.~_Ty();
                 _Construct_in_place(_Dummy);
             }
         }
+
+        ~_Non_propagating_cache() requires is_trivially_destructible_v<_Ty> = default;
 
         constexpr _Non_propagating_cache(const _Non_propagating_cache&) noexcept : _Dummy{} {}
 
@@ -708,11 +710,12 @@ namespace ranges {
 
     // clang-format off
     template <_Destructible_object _Ty>
-        requires is_trivially_destructible_v<_Ty>
-    class _Non_propagating_cache<_Ty> { // provide the same API more efficiently for trivially destructible types
+        requires is_trivially_destructible_v<_Ty> && is_default_constructible_v<_Ty>
+    class _Non_propagating_cache<_Ty> {
+        // provide the same API more efficiently for trivially destructible and default constructible types
         // clang-format on
     public:
-        constexpr _Non_propagating_cache() noexcept(is_nothrow_default_constructible_v<_Ty>) {}
+        _Non_propagating_cache() = default;
 
         constexpr _Non_propagating_cache(const _Non_propagating_cache&) noexcept(
             is_nothrow_default_constructible_v<_Ty>) {}
@@ -741,7 +744,7 @@ namespace ranges {
         }
 
     private:
-        _Ty _Val;
+        _Ty _Val{};
     };
 
     // CLASS TEMPLATE ranges::empty_view
