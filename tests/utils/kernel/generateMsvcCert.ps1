@@ -4,16 +4,14 @@
 param([string]$out="MsvcStlTestingCert.pfx",[string]$pass="placeholderPassword")
 
 $ErrorActionPreference = 'Stop'
+
+$isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
+if (!$isAdmin) {
+        Throw "The current prompt is not an elevated administrator prompt!"
+}
+
 # Clean up old certificates
-Get-ChildItem cert:\localmachine\My |
-Where-Object { $_.Subject -eq 'CN=MsvcStlTestingCert' } |
-Remove-Item
-
-Get-ChildItem cert:\localmachine\root |
-Where-Object { $_.Subject -eq 'CN=MsvcStlTestingCert' } |
-Remove-Item
-
-Get-ChildItem cert:\localmachine\trustedpublisher |
+Get-ChildItem cert:\localmachine\My, cert:\localmachine\root, cert:\localmachine\trustedpublisher |
 Where-Object { $_.Subject -eq 'CN=MsvcStlTestingCert' } |
 Remove-Item
 
