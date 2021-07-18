@@ -2892,7 +2892,7 @@ namespace ranges {
         template <forward_range _Outer, forward_range _Inner>
         struct _Category_base<_Outer, _Inner, true> {
             using iterator_category =
-                conditional_t<common_range<_Inner> // per LWG issue unnumbered as of 2021-03-16
+                conditional_t<common_range<_Inner> // per LWG-3535
                                   && derived_from<_Iter_cat_t<iterator_t<_Outer>>, bidirectional_iterator_tag> //
                                   && derived_from<_Iter_cat_t<iterator_t<_Inner>>, bidirectional_iterator_tag>,
                     bidirectional_iterator_tag,
