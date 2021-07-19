@@ -8,7 +8,8 @@ $ErrorActionPreference = 'Stop'
 $currentIdentity = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent())
 $isAdmin = $currentIdentity.IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
 if (!$isAdmin) {
-        Throw "The current prompt is not an elevated administrator prompt!"
+        $name = [Security.Principal.WindowsIdentity]::GetCurrent().Name
+        Throw "The current prompt is not an elevated administrator prompt!  Running as $name"
 }
 
 # Clean up old certificates
