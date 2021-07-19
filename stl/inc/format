@@ -496,7 +496,34 @@ static constexpr _Unicode_Property_Data<_Extended_Pictographic_Property_Values, 
             0x6, 0x1, 0x2, 0x8, 0x1, 0x1, 0x3, 0x17, 0x19, 0x70, 0x4, 0x1, 0x3, 0x3, 0x5, 0x3, 0x4, 0x9, 0x6, 0x13, 0x7,
             0x7, 0x9, 0x3, 0xd, 0x7, 0x29, 0x3fe}};
 
+constexpr const uint16_t* _Decode_utf16(const uint16_t* _First, const uint16_t* _Last, uint32_t& _Val) {
+    _STL_INTERNAL_CHECK(_First < _Last);
+    _Val = static_cast<uint32_t>(*_First);
+    if (_Val >= 0xD800 && _Val <= 0xDBFF) {
+        //  0xD800 <= _Val <= 0xDBFF: High surrogate
+        if (_First + 1 >= _Last) {
+            _Val = 0xFFFD;
+            return _Last;
+        }
+        if (_First[1] < 0xDC00 || _First[1] > 0xDFFF) {
+            // unpaired high surrogate
+            _Val = 0xFFFD;
+            return _First + 1;
+        }
+        _Val = (_Val - 0xD800) << 10;
+        _Val += _First[1] - 0xDC00;
+        _Val += 0x10000;
+        return _First + 2;
+    } else if (_Val <= 0xDFFF) {
+        // unpaired low surrogate
+        _Val = 0xFFFD;
+        return _First + 1;
+    }
+    return _First + 1;
+}
+
 constexpr const uint8_t* _Decode_utf8(const uint8_t* _First, const uint8_t* _Last, uint32_t& _Val) {
+    _STL_INTERNAL_CHECK(_First < _Last);
     // decode a UTF-8 value starting at _First and not exceding _Last, returning
     // one past the end of the character decoded. Any invalid codepoints will result in
     // _Val == U+FFFD and _Decode_utf8 will return one past the
@@ -510,21 +537,31 @@ constexpr const uint8_t* _Decode_utf8(const uint8_t* _First, const uint8_t* _Las
     // a multi-byte sequence are the lowest numeric value (in two's complement)
     // that a any leading byte could have for a code unit of that size, so
     // we just sum the comparisions to get the number of trailing bytes
-    auto _Num_bytes = (_Val >= 0xc0) + (_Val >= 0xe0) + (_Val >= 0xf0) + 1;
-    if (_Val > 0xf4) {
-        // 0xf4 is the highest lead byte of any valid utf-8 encoded sequence
-        // (Unicode 13: 3.9 Table 3-7)
+    int _Num_bytes;
+    if (_Val <= 0x7F) {
+        _Num_bytes = 1;
+    } else if (_Val >= 0xC2 && _Val <= 0xDF) {
+        _Num_bytes = 2;
+    } else if (_Val >= 0xE0 && _Val <= 0xEF) {
+        _Num_bytes = 3;
+    } else if (_Val >= 0xF0 && _Val <= 0xF4) {
+        _Num_bytes = 4;
+    } else {
+        // definitely not valid
         _Val = 0xFFFD;
         return _First + 1;
     }
-    if (_First + _Num_bytes > _Last) {
-        // we got a sequence that ran off the end
+    if (_Num_bytes > 0 && _First + 1 > _Last) {
+        // we got a multibyte sequence and the next byte is off the end, we need
+        // to check just the next byte here since we need to look for overlong sequences
+        // We want to return one past the end of a truncated sequence if everything is
+        // otherwise valid, so we can't check if _First + _Num_bytes is off the end
         _Val = 0xFFFD;
         return _Last;
     }
 
     switch (_Val) {
-    case 0xe0:
+    case 0xE0:
         // we know _First[1] is in range because we just checked above,
         // and a leader of 0xe0 implies _Num_bytes == 3
         if (_First[1] < 0xa0) {
@@ -535,31 +572,32 @@ constexpr const uint8_t* _Decode_utf8(const uint8_t* _First, const uint8_t* _Las
             _Val = 0xFFFD;
             return _First + 1;
         }
-    case 0xf0:
+        break;
+    case 0xED:
+        if (_First[1] > 0x9F) {
+            _Val = 0xFFFD;
+            return _First + 1;
+        }
+        break;
+    case 0xF0:
         if (_First[1] < 0x90) {
             _Val = 0xFFFD;
             return _First + 1;
         }
-    case 0xf4:
+        break;
+    case 0xF4:
         if (_First[1] > 0x8f) {
             _Val = 0xFFFD;
             return _First + 1;
         }
+        break;
     }
 
     // mask out the "value bits" in the leading byte,
     // for one byte codepoints there is no leader,
     // two byte codepoints have the same nubmer of value
     // bits as trailing bytes (including the leading zero)
-
-    // we also check for overlong encodings here
     switch (_Num_bytes) {
-    case 2: // check for overlong encodings
-        if (_Val <= 0xC2 || _Val >= 0xDF) {
-            _Val = 0xFFFD;
-            return _First + 1;
-        }
-
     case 3:
         _Val &= 0b1111u;
         break;
@@ -569,9 +607,10 @@ constexpr const uint8_t* _Decode_utf8(const uint8_t* _First, const uint8_t* _Las
     }
 
     for (int _Idx = 1; _Idx < _Num_bytes; ++_Idx) {
-        if (_First[_Idx] < 0x80 || _First[_Idx] > 0xBF) {
+        if (_First + _Idx >= _Last || _First[_Idx] < 0x80 || _First[_Idx] > 0xBF) {
+            // truncated sequence
             _Val = 0xFFFD;
-            return _First + 1;
+            return _First + _Idx;
         }
         // we know we're always in range due to the above check.
         _Val = (_Val << 6) | (_First[_Idx] & 0b11'1111u);

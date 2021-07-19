@@ -39,19 +39,26 @@ constexpr bool test_unicode_properties() {
     return true;
 }
 
-constexpr bool test_utf8_decode() {
-    const uint8_t table_3_8_overlong[] = {0xC0, 0xAF, 0xE0, 0x80, 0xBF, 0xF0, 0x81, 0x82, 0xF4};
-    const uint8_t* it                  = table_3_8_overlong;
-    while (it != end(table_3_8_overlong) - 1) {
-        uint32_t val       = 0;
-        const uint8_t* nxt = _Decode_utf8(it, end(table_3_8_overlong), val);
-        assert(val == 0xFFFD && nxt == it + 1);
-        it = nxt;
+template <size_t N_enc, size_t N_dec>
+constexpr void test_utf8_decode_helper(const uint8_t (&encoded)[N_enc], const uint32_t (&decoded)[N_dec]) {
+    const uint8_t* it = begin(encoded);
+    for (size_t i = 0; i < N_dec; ++i) {
+        uint32_t val = 0;
+        it           = _Decode_utf8(it, end(encoded), val);
+        assert(val == decoded[i]);
     }
-    uint32_t val       = 0;
-    const uint8_t* nxt = _Decode_utf8(it, end(table_3_8_overlong), val);
-    assert(val == 0x41);
-    assert(nxt == end(table_3_8_overlong));
+    assert(it == end(encoded));
+}
+
+constexpr bool test_utf8_decode() {
+    test_utf8_decode_helper({0xC0, 0xAF, 0xE0, 0x80, 0xBF, 0xF0, 0x81, 0x82, 0x41},
+        {0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0x41});
+    test_utf8_decode_helper({0xED, 0xA0, 0x80, 0xED, 0xBF, 0xBF, 0xED, 0xAF, 0x41},
+        {0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0x41});
+    test_utf8_decode_helper({0xF4, 0x91, 0x92, 0x93, 0xFF, 0x41, 0x80, 0xBF, 0x42},
+        {0xFFFd, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0x41, 0xFFFD, 0xFFFD, 0x42});
+    test_utf8_decode_helper(
+        {0xE1, 0x80, 0xE2, 0xF0, 0x91, 0x92, 0xF1, 0xBF, 0x41}, {0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0x41});
     return true;
 }
 
