@@ -14,7 +14,7 @@
 using namespace std;
 
 template <class Rng, class Delimiter>
-concept CanViewLazySplit = requires(Rng&& r, Delimiter&& d) {
+concept CanViewSplit = requires(Rng&& r, Delimiter&& d) {
     views::split(static_cast<Rng&&>(r), static_cast<Delimiter&&>(d));
 };
 
@@ -40,7 +40,7 @@ using delimiter_view_t =
 
 template <ranges::forward_range Base, class Delimiter, ranges::forward_range Expected>
 constexpr void test_one(Base&& base, Delimiter&& delimiter, Expected&& expected) {
-    STATIC_ASSERT(CanViewLazySplit<Base, Delimiter>);
+    STATIC_ASSERT(CanViewSplit<Base, Delimiter>);
     using R = decltype(views::split(forward<Base>(base), forward<Delimiter>(delimiter)));
 
     // Validate type properties
@@ -56,8 +56,8 @@ constexpr void test_one(Base&& base, Delimiter&& delimiter, Expected&& expected)
     constexpr bool is_view = ranges::view<remove_cvref_t<Base>>;
 
     // ... with lvalue argument
-    STATIC_ASSERT(CanViewLazySplit<Base&, Delimiter&> == (!is_view || copyable<remove_cvref_t<Base>>) );
-    if constexpr (CanViewLazySplit<Base&, Delimiter&>) { // Validate lvalue
+    STATIC_ASSERT(CanViewSplit<Base&, Delimiter&> == (!is_view || copyable<remove_cvref_t<Base>>) );
+    if constexpr (CanViewSplit<Base&, Delimiter&>) { // Validate lvalue
         constexpr bool is_noexcept =
             (!is_view || is_nothrow_copy_constructible_v<views::all_t<Base&>>) &&is_nothrow_copy_constructible_v<DV>;
 
@@ -70,7 +70,7 @@ constexpr void test_one(Base&& base, Delimiter&& delimiter, Expected&& expected)
 
     // ... with const lvalue argument
     STATIC_ASSERT(
-        CanViewLazySplit<const remove_reference_t<Base>&, Delimiter&> == (!is_view || copyable<remove_cvref_t<Base>>) );
+        CanViewSplit<const remove_reference_t<Base>&, Delimiter&> == (!is_view || copyable<remove_cvref_t<Base>>) );
     if constexpr (is_view && copyable<remove_cvref_t<Base>>) {
         constexpr bool is_noexcept =
             is_nothrow_copy_constructible_v<remove_cvref_t<Base>> && is_nothrow_copy_constructible_v<DV>;
@@ -92,8 +92,8 @@ constexpr void test_one(Base&& base, Delimiter&& delimiter, Expected&& expected)
     }
 
     // ... with rvalue argument
-    STATIC_ASSERT(CanViewLazySplit<remove_reference_t<Base>, Delimiter&> == is_view
-                  || ranges::borrowed_range<remove_cvref_t<Base>>);
+    STATIC_ASSERT(
+        CanViewSplit<remove_reference_t<Base>, Delimiter&> == is_view || ranges::borrowed_range<remove_cvref_t<Base>>);
     if constexpr (is_view) {
         constexpr bool is_noexcept =
             is_nothrow_move_constructible_v<remove_reference_t<Base>> && is_nothrow_copy_constructible_v<DV>;
@@ -117,7 +117,7 @@ constexpr void test_one(Base&& base, Delimiter&& delimiter, Expected&& expected)
 
     // ... with const rvalue argument
     STATIC_ASSERT(
-        CanViewLazySplit<const remove_reference_t<Base>, Delimiter&> == (is_view && copyable<remove_cvref_t<Base>>)
+        CanViewSplit<const remove_reference_t<Base>, Delimiter&> == (is_view && copyable<remove_cvref_t<Base>>)
         || (!is_view && ranges::borrowed_range<remove_cvref_t<Base>>) );
     if constexpr (is_view && copyable<remove_cvref_t<Base>>) {
         constexpr bool is_noexcept =
