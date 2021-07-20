@@ -5815,7 +5815,7 @@ _CONSTEXPR20 _FwdIt2 _Swap_ranges_unchecked(_FwdIt1 _First1, const _FwdIt1 _Last
     using _Elem2 = remove_reference_t<_Iter_ref_t<_FwdIt2>>;
     if constexpr (is_same_v<_Elem1, _Elem2> && _Is_trivially_swappable_v<_Elem1> && //
                   _Iterators_are_contiguous<_FwdIt1, _FwdIt2>) {
-#ifdef _HAS_CXX20
+#if _HAS_CXX20
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
         {
