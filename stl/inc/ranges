@@ -3268,7 +3268,7 @@ namespace ranges {
         requires (view<_Vw> && view<_Pat>
             && indirectly_comparable<iterator_t<_Vw>, iterator_t<_Pat>, _RANGES equal_to>
             && (forward_range<_Vw> || _Tiny_range<_Pat>))
-    class split_view;
+    class lazy_split_view;
     // clang-format on
 
     template <class _Vw, class _Pat>
@@ -3285,7 +3285,7 @@ namespace ranges {
         requires (view<_Vw> && view<_Pat>
             && indirectly_comparable<iterator_t<_Vw>, iterator_t<_Pat>, _RANGES equal_to>
             && (forward_range<_Vw> || _Tiny_range<_Pat>))
-    class split_view : public _Split_view_base<_Vw, _Pat> {
+    class lazy_split_view : public _Lazy_split_view_base<_Vw, _Pat> {
         // clang-format on
     private:
         /* [[no_unique_address]] */ _Vw _Range{};
