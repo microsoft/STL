@@ -2115,6 +2115,18 @@ _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _T
     }
 }
 
+template <class _Ty, class _Alloc, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
+_NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al) noexcept;
+
+template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
+_NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Uty1&& _Val1, _Uty2&& _Val2) noexcept;
+
+template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
+_NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, const pair<_Uty1, _Uty2>& _Pair) noexcept;
+
+template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
+_NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, pair<_Uty1, _Uty2>&& _Pair) noexcept;
+
 template <class _Ty, class _Alloc, class _Tuple1, class _Tuple2, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
 _NODISCARD constexpr auto uses_allocator_construction_args(
     const _Alloc& _Al, piecewise_construct_t, _Tuple1&& _Tup1, _Tuple2&& _Tup2) noexcept {
@@ -2133,7 +2145,7 @@ _NODISCARD constexpr auto uses_allocator_construction_args(
             _STD forward<_Tuple2>(_Tup2)));
 }
 
-template <class _Ty, class _Alloc, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
+template <class _Ty, class _Alloc, enable_if_t<_Is_specialization_v<_Ty, pair>, int>>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al) noexcept {
     // equivalent to
     // return _STD uses_allocator_construction_args<_Ty>(_Al, piecewise_construct, tuple<>{}, tuple<>{});
@@ -2141,7 +2153,7 @@ _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al) no
         _STD uses_allocator_construction_args<typename _Ty::second_type>(_Al));
 }
 
-template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
+template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int>>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Uty1&& _Val1, _Uty2&& _Val2) noexcept {
     // equivalent to
     // return _STD uses_allocator_construction_args<_Ty>(_Al, piecewise_construct,
@@ -2151,7 +2163,7 @@ _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _U
         _STD uses_allocator_construction_args<typename _Ty::second_type>(_Al, _STD forward<_Uty2>(_Val2)));
 }
 
-template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
+template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int>>
 _NODISCARD constexpr auto uses_allocator_construction_args(
     const _Alloc& _Al, const pair<_Uty1, _Uty2>& _Pair) noexcept {
     // equivalent to
@@ -2162,7 +2174,7 @@ _NODISCARD constexpr auto uses_allocator_construction_args(
         _STD uses_allocator_construction_args<typename _Ty::second_type>(_Al, _Pair.second));
 }
 
-template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
+template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int>>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, pair<_Uty1, _Uty2>&& _Pair) noexcept {
     // equivalent to
     // return _STD uses_allocator_construction_args<_Ty>(_Al, piecewise_construct,
