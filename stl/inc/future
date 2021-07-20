@@ -1452,8 +1452,8 @@ void swap(packaged_task<_Ty>& _Left, packaged_task<_Ty>& _Right) noexcept {
 
 // FUNCTION TEMPLATE _Invoke_stored_explicit
 template <class... _Types, size_t... _Indices>
-auto _Invoke_stored_explicit(tuple<_Types...>&& _Tuple, index_sequence<_Indices...>) -> decltype(
-    _STD invoke(_STD get<_Indices>(_STD move(_Tuple))...)) { // invoke() a tuple with explicit parameter ordering
+auto _Invoke_stored_explicit(tuple<_Types...>&& _Tuple, index_sequence<_Indices...>) -> decltype(_STD invoke(
+    _STD get<_Indices>(_STD move(_Tuple))...)) { // invoke() a tuple with explicit parameter ordering
     return _STD invoke(_STD get<_Indices>(_STD move(_Tuple))...);
 }
 
