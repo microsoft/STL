@@ -74,7 +74,7 @@ void test_math() { // test valarray math functions
 }
 
 Mytype inc_val(Mytype val) { // increment operand
-    return (Mytype)(val + 1);
+    return (Mytype) (val + 1);
 }
 
 void test_main() { // test basic workings of valarray definitions

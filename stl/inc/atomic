@@ -75,84 +75,6 @@ extern "C" _NODISCARD char __stdcall __std_atomic_has_cmpxchg16b() noexcept;
 #define _ATOMIC_HAS_DCAS 0
 #endif // _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 || !defined(_M_X64) || defined(_M_ARM64EC)
 
-#if defined(_M_ARM64) && defined(__clang__) && __clang_major__ == 11 // TRANSITION, LLVM 12
-inline unsigned char _InterlockedCompareExchange128(
-    __int64 volatile* _Destination, __int64 _Val_high, __int64 _Val_low, __int64* _Comparand) {
-    auto _Dest = reinterpret_cast<__int128 volatile*>(_Destination);
-    auto _Cmp  = reinterpret_cast<__int128*>(_Comparand);
-    __int128 _Val;
-    reinterpret_cast<__int64*>(&_Val)[0] = _Val_low;
-    reinterpret_cast<__int64*>(&_Val)[1] = _Val_high;
-
-    __int128 _Stored;
-    do {
-        if (_Stored = __builtin_arm_ldaex(_Dest); _Stored != *_Cmp) {
-            *_Cmp = _Stored;
-            return 0;
-        }
-    } while (__builtin_arm_stlex(_Val, _Dest));
-
-    return 1;
-}
-
-inline unsigned char _InterlockedCompareExchange128_acq(
-    __int64 volatile* _Destination, __int64 _Val_high, __int64 _Val_low, __int64* _Comparand) {
-    auto _Dest = reinterpret_cast<__int128 volatile*>(_Destination);
-    auto _Cmp  = reinterpret_cast<__int128*>(_Comparand);
-    __int128 _Val;
-    reinterpret_cast<__int64*>(&_Val)[0] = _Val_low;
-    reinterpret_cast<__int64*>(&_Val)[1] = _Val_high;
-
-    __int128 _Stored;
-    do {
-        if (_Stored = __builtin_arm_ldaex(_Dest); _Stored != *_Cmp) {
-            *_Cmp = _Stored;
-            return 0;
-        }
-    } while (__builtin_arm_strex(_Val, _Dest));
-
-    return 1;
-}
-
-inline unsigned char _InterlockedCompareExchange128_nf(
-    __int64 volatile* _Destination, __int64 _Val_high, __int64 _Val_low, __int64* _Comparand) {
-    auto _Dest = reinterpret_cast<__int128 volatile*>(_Destination);
-    auto _Cmp  = reinterpret_cast<__int128*>(_Comparand);
-    __int128 _Val;
-    reinterpret_cast<__int64*>(&_Val)[0] = _Val_low;
-    reinterpret_cast<__int64*>(&_Val)[1] = _Val_high;
-
-    __int128 _Stored;
-    do {
-        if (_Stored = __builtin_arm_ldrex(_Dest); _Stored != *_Cmp) {
-            *_Cmp = _Stored;
-            return 0;
-        }
-    } while (__builtin_arm_strex(_Val, _Dest));
-
-    return 1;
-}
-
-inline unsigned char _InterlockedCompareExchange128_rel(
-    __int64 volatile* _Destination, __int64 _Val_high, __int64 _Val_low, __int64* _Comparand) {
-    auto _Dest = reinterpret_cast<__int128 volatile*>(_Destination);
-    auto _Cmp  = reinterpret_cast<__int128*>(_Comparand);
-    __int128 _Val;
-    reinterpret_cast<__int64*>(&_Val)[0] = _Val_low;
-    reinterpret_cast<__int64*>(&_Val)[1] = _Val_high;
-
-    __int128 _Stored;
-    do {
-        if (_Stored = __builtin_arm_ldaex(_Dest); _Stored != *_Cmp) {
-            *_Cmp = _Stored;
-            return 0;
-        }
-    } while (__builtin_arm_stlex(_Val, _Dest));
-
-    return 1;
-}
-#endif // ^^^ ARM64 && LLVM 11 workaround ^^^
-
 // MACRO _ATOMIC_CHOOSE_INTRINSIC
 #if defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
 #define _ATOMIC_CHOOSE_INTRINSIC(_Order, _Result, _Intrinsic, ...) \
@@ -405,10 +327,10 @@ struct _Atomic_padded {
 // STRUCT TEMPLATE _Atomic_storage_traits
 template <class _Ty>
 struct _Atomic_storage_traits { // properties for how _Ty is stored in an atomic
-    static constexpr size_t _Storage_size = sizeof(_Ty) == 1 ? 1
-                                          : sizeof(_Ty) == 2 ? 2
-                                          : sizeof(_Ty) <= 4 ? 4
-                                          : sizeof(_Ty) <= 8 ? 8
+    static constexpr size_t _Storage_size = sizeof(_Ty) == 1  ? 1
+                                          : sizeof(_Ty) == 2  ? 2
+                                          : sizeof(_Ty) <= 4  ? 4
+                                          : sizeof(_Ty) <= 8  ? 8
 #if defined(_M_X64) || defined(_M_ARM64) || defined(_M_ARM64EC)
                                           : sizeof(_Ty) <= 16 ? 16
 #endif // 64 bits
