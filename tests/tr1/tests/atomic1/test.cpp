@@ -197,7 +197,7 @@ public:
 private:
     static void do_it() { // repeatedly exchange values
         for (unsigned long i = 0; i < iterations; ++i)
-            val0.exchange((Ty)(i + 1));
+            val0.exchange((Ty) (i + 1));
     }
     static STD atomic<Ty> val0;
 };
