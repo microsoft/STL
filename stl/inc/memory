@@ -481,7 +481,7 @@ namespace ranges {
             requires requires(void* _Void_ptr, _Types&&... _Args) {
                 ::new (_Void_ptr) _Ty(static_cast<_Types&&>(_Args)...);
             }
-        _CONSTEXPR20_DYNALLOC _Ty* operator()(_Ty* _Location, _Types&&... _Args) const
+        constexpr _Ty* operator()(_Ty* _Location, _Types&&... _Args) const
             noexcept(noexcept(::new (const_cast<void*>(static_cast<const volatile void*>(_Location)))
                     _Ty(_STD forward<_Types>(_Args)...))) /* strengthened */ {
             // clang-format on
@@ -496,7 +496,7 @@ namespace ranges {
     // clang-format off
     template <_No_throw_input_iterator _It, _No_throw_sentinel_for<_It> _Se>
         requires destructible<iter_value_t<_It>>
-    _NODISCARD _CONSTEXPR20_DYNALLOC _It _Destroy_unchecked(_It _First, _Se _Last) noexcept;
+    _NODISCARD constexpr _It _Destroy_unchecked(_It _First, _Se _Last) noexcept;
     // clang-format on
 
     class _Destroy_at_fn : private _Not_quite_object {
@@ -504,7 +504,7 @@ namespace ranges {
         using _Not_quite_object::_Not_quite_object;
 
         template <destructible _Ty>
-        _CONSTEXPR20_DYNALLOC void operator()(_Ty* const _Location) const noexcept {
+        constexpr void operator()(_Ty* const _Location) const noexcept {
             if constexpr (is_array_v<_Ty>) {
                 (void) _RANGES _Destroy_unchecked(_RANGES begin(*_Location), _RANGES end(*_Location));
             } else {
@@ -520,7 +520,7 @@ namespace ranges {
 #if _HAS_CXX17
 // FUNCTION TEMPLATE destroy
 template <class _NoThrowFwdIt>
-_CONSTEXPR20_DYNALLOC void destroy(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last) {
+_CONSTEXPR20 void destroy(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last) {
     // destroy all elements in [_First, _Last)
     _Adl_verify_range(_First, _Last);
     _Destroy_range(_Get_unwrapped(_First), _Get_unwrapped(_Last));
@@ -532,7 +532,7 @@ namespace ranges {
     // clang-format off
     template <_No_throw_input_iterator _It, _No_throw_sentinel_for<_It> _Se>
         requires destructible<iter_value_t<_It>>
-    _NODISCARD _CONSTEXPR20_DYNALLOC _It _Destroy_unchecked(_It _First, _Se _Last) noexcept {
+    _NODISCARD constexpr _It _Destroy_unchecked(_It _First, _Se _Last) noexcept {
         // clang-format on
         if constexpr (is_trivially_destructible_v<iter_value_t<_It>>) {
             _RANGES advance(_First, _STD move(_Last));
@@ -552,7 +552,7 @@ namespace ranges {
         // clang-format off
         template <_No_throw_input_iterator _It, _No_throw_sentinel_for<_It> _Se>
             requires destructible<iter_value_t<_It>>
-        _CONSTEXPR20_DYNALLOC _It operator()(_It _First, _Se _Last) const noexcept {
+        constexpr _It operator()(_It _First, _Se _Last) const noexcept {
             // clang-format on
             _Adl_verify_range(_First, _Last);
             _Seek_wrapped(_First,
@@ -563,7 +563,7 @@ namespace ranges {
         // clang-format off
         template <_No_throw_input_range _Rng>
             requires destructible<range_value_t<_Rng>>
-        _CONSTEXPR20_DYNALLOC borrowed_iterator_t<_Rng> operator()(_Rng&& _Range) const noexcept {
+        constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range) const noexcept {
             // clang-format on
             auto _First = _RANGES begin(_Range);
             _Seek_wrapped(_First, _RANGES _Destroy_unchecked(_Get_unwrapped(_STD move(_First)), _Uend(_Range)));
@@ -577,7 +577,7 @@ namespace ranges {
 
 // FUNCTION TEMPLATE destroy_n
 template <class _NoThrowFwdIt, class _Diff>
-_CONSTEXPR20_DYNALLOC _NoThrowFwdIt destroy_n(_NoThrowFwdIt _First, const _Diff _Count_raw) {
+_CONSTEXPR20 _NoThrowFwdIt destroy_n(_NoThrowFwdIt _First, const _Diff _Count_raw) {
     // destroy all elements in [_First, _First + _Count)
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
     if (_Count <= 0) {
@@ -607,7 +607,7 @@ namespace ranges {
         // clang-format off
         template <_No_throw_input_iterator _It>
             requires destructible<iter_value_t<_It>>
-        _CONSTEXPR20_DYNALLOC _It operator()(_It _First, const iter_difference_t<_It> _Count_raw) const noexcept {
+        constexpr _It operator()(_It _First, const iter_difference_t<_It> _Count_raw) const noexcept {
             // clang-format on
             _Algorithm_int_t<iter_difference_t<_It>> _Count = _Count_raw;
             if (_Count <= 0) {
