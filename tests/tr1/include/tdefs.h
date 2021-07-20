@@ -81,13 +81,13 @@ int total_fail = 0;
 #ifdef AFMT
 int afmt = 1;
 #else // AFMT
-int afmt = 0;
+int afmt    = 0;
 #endif // AFMT
 
 #ifdef TERSE
 int terse = 1;
 #else // TERSE
-int terse = 0;
+int terse   = 0;
 #endif // TERSE
 
 #ifdef VERBOSE
