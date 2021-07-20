@@ -5967,7 +5967,8 @@ namespace chrono {
 
                     _Validate_specifiers(_Spec, _Val);
 
-                    _Stream << _STD put_time<_CharT>(&_Time, _Fmt_string(_Spec).data());
+                    _CharT _Fmt_str[4];
+                    _Stream << _STD put_time<_CharT>(&_Time, _Fmt_string(_Spec, _Fmt_str));
                 }
             }
 
@@ -6029,7 +6030,8 @@ namespace chrono {
                     }
 
                     const char _Gregorian_type = _Spec._Type == 'g' ? 'y' : 'Y';
-                    _Os << _STD put_time(&_Time, _Fmt_string({._Type = _Gregorian_type}).data());
+                    _CharT _Fmt_str[4];
+                    _Os << _STD put_time(&_Time, _Fmt_string({._Type = _Gregorian_type}, _Fmt_str));
                     return true;
                 }
 
@@ -6291,8 +6293,7 @@ namespace chrono {
             }
         }
 
-        _NODISCARD static array<_CharT, 4> _Fmt_string(const _Chrono_spec<_CharT>& _Spec) {
-            array<_CharT, 4> _Fmt_str;
+        _NODISCARD static const _CharT* _Fmt_string(const _Chrono_spec<_CharT>& _Spec, _CharT (&_Fmt_str)[4]) {
             size_t _Next_idx      = 0;
             _Fmt_str[_Next_idx++] = _CharT{'%'};
             if (_Spec._Modifier != '\0') {

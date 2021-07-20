@@ -44,7 +44,6 @@
 #pragma message("see https://github.com/microsoft/STL/issues/1814 for details.")
 #else // ^^^ !defined(__cpp_lib_format) / defined(__cpp_lib_format) vvv
 
-#include <array>
 #include <charconv>
 #include <concepts>
 #include <cstdint>
@@ -1844,10 +1843,10 @@ template <class _CharT, class _OutputIt, class _Arithmetic>
 _NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const _Arithmetic _Value) {
     // clang-format on
     // TRANSITION, Reusable buffer
-    array<char, _Format_min_buffer_length> _Buffer;
-    const auto [_End, _Ec] = _STD to_chars(_Buffer.data(), _Buffer.data() + _Buffer.size(), _Value);
+    char _Buffer[_Format_min_buffer_length];
+    const auto [_End, _Ec] = _STD to_chars(_Buffer, _STD end(_Buffer), _Value);
     _STL_ASSERT(_Ec == errc{}, "to_chars failed");
-    return _RANGES _Copy_unchecked(_Buffer.data(), _End, _STD move(_Out)).out;
+    return _RANGES _Copy_unchecked(_Buffer, _End, _STD move(_Out)).out;
 }
 #pragma warning(pop)
 
@@ -1871,13 +1870,12 @@ _NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const _CharT _Value) {
 template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const void* const _Value) {
     // TRANSITION, Reusable buffer
-    array<char, _Format_min_buffer_length> _Buffer;
-    const auto [_End, _Ec] =
-        _STD to_chars(_Buffer.data(), _Buffer.data() + _Buffer.size(), reinterpret_cast<uintptr_t>(_Value), 16);
+    char _Buffer[_Format_min_buffer_length];
+    const auto [_End, _Ec] = _STD to_chars(_Buffer, _STD end(_Buffer), reinterpret_cast<uintptr_t>(_Value), 16);
     _STL_ASSERT(_Ec == errc{}, "to_chars failed");
     *_Out++ = '0';
     *_Out++ = 'x';
-    return _RANGES _Copy_unchecked(_Buffer.data(), _End, _STD move(_Out)).out;
+    return _RANGES _Copy_unchecked(_Buffer, _End, _STD move(_Out)).out;
 }
 #pragma warning(pop)
 
@@ -2138,11 +2136,11 @@ _NODISCARD _OutputIt _Write_integral(
     }
 
     // long long -1 representation in binary is 64 bits + sign
-    array<char, 65> _Buffer;
-    const auto [_End, _Ec] = _STD to_chars(_Buffer.data(), _Buffer.data() + _Buffer.size(), _Value, _Base);
+    char _Buffer[65];
+    const auto [_End, _Ec] = _STD to_chars(_Buffer, _STD end(_Buffer), _Value, _Base);
     _STL_ASSERT(_Ec == errc{}, "to_chars failed");
 
-    auto _Buffer_start = _Buffer.data();
+    auto _Buffer_start = _Buffer;
     auto _Width        = static_cast<int>(_End - _Buffer_start);
 
     if (_Value >= _Integral{0}) {
@@ -2326,7 +2324,7 @@ _NODISCARD _OutputIt _Fmt_write(
     // We need to add an additional number to the max exponent to accommodate the ones place.
     constexpr auto _Max_precision = 1074;
     constexpr auto _Buffer_size   = _Max_precision + DBL_MAX_10_EXP + 3;
-    array<char, _Buffer_size> _Buffer;
+    char _Buffer[_Buffer_size];
     to_chars_result _Result;
 
     auto _Extra_precision = 0;
@@ -2336,14 +2334,14 @@ _NODISCARD _OutputIt _Fmt_write(
     }
 
     if (_Precision == -1) {
-        _Result = _STD to_chars(_Buffer.data(), _Buffer.data() + _Buffer.size(), _Value, _Format);
+        _Result = _STD to_chars(_Buffer, _STD end(_Buffer), _Value, _Format);
     } else {
-        _Result = _STD to_chars(_Buffer.data(), _Buffer.data() + _Buffer.size(), _Value, _Format, _Precision);
+        _Result = _STD to_chars(_Buffer, _STD end(_Buffer), _Value, _Format, _Precision);
     }
 
     _STL_ASSERT(_Result.ec == errc{}, "to_chars failed");
 
-    auto _Buffer_start = _Buffer.data();
+    auto _Buffer_start = _Buffer;
     auto _Width        = static_cast<int>(_Result.ptr - _Buffer_start);
 
     const auto _Is_negative = (_STD signbit) (_Value);
