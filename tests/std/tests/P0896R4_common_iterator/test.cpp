@@ -194,8 +194,43 @@ bool test_operator_arrow() {
     return true;
 }
 
+struct poor_sentinel {
+    template <weakly_incrementable _Winc>
+    [[nodiscard]] constexpr bool operator==(const _Winc&) const noexcept {
+        return true;
+    }
+
+    template <weakly_incrementable _Winc>
+    [[nodiscard]] constexpr iter_difference_t<_Winc> operator-(const _Winc&) const noexcept {
+        return 0;
+    }
+
+    template <weakly_incrementable _Winc>
+    [[nodiscard]] friend constexpr iter_difference_t<_Winc> operator-(const _Winc&, const poor_sentinel&) noexcept {
+        return 0;
+    }
+};
+
+void test_2065() { // Guard against regression of GH-2065, for which we previously stumbled over CWG-1699.
+    if constexpr (false) {
+        int x = 42;
+        common_iterator<int*, unreachable_sentinel_t> it1{&x};
+        common_iterator<const int*, unreachable_sentinel_t> it2{&x};
+        assert(it1 == it2);
+    }
+
+    {
+        int i = 1729;
+        common_iterator<int*, poor_sentinel> it1{&i};
+        common_iterator<const int*, poor_sentinel> it2{&i};
+        assert(it1 - it2 == 0);
+    }
+}
+
 int main() {
     with_writable_iterators<instantiator, P>::call();
 
     test_operator_arrow();
+
+    test_2065();
 }
