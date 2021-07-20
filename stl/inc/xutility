@@ -3512,6 +3512,7 @@ namespace ranges {
         }
 
     public:
+        // clang-format off
         subrange() requires default_initializable<_It> = default;
 
         // TRANSITION, DevCom-1331017
@@ -3519,6 +3520,7 @@ namespace ranges {
         constexpr subrange(subrange&&)      = default;
         constexpr subrange& operator=(const subrange&) = default;
         constexpr subrange& operator=(subrange&&) = default;
+        // clang-format on
 
         template <_Convertible_to_non_slicing<_It> _It2>
         constexpr subrange(_It2 _First_, _Se _Last_) requires(!_Store_size)
@@ -3619,8 +3621,8 @@ namespace ranges {
             }
             return _Tmp;
         }
-        _NODISCARD constexpr subrange prev(const iter_difference_t<_It> _Count) const
-            requires bidirectional_iterator<_It> {
+        _NODISCARD constexpr subrange prev(
+            const iter_difference_t<_It> _Count) const requires bidirectional_iterator<_It> {
             auto _Tmp = *this;
             _Tmp.advance(-_Count);
             return _Tmp;
@@ -5781,12 +5783,12 @@ namespace ranges {
 
     inline constexpr _Find_if_not_fn find_if_not{_Not_quite_object::_Construct_tag{}};
 
+    // clang-format off
     // FUNCTION TEMPLATE _Equal_rev_pred
     template <class _It1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
-    concept _Equal_rev_pred_can_memcmp = is_same_v<_Pj1, identity>&& is_same_v<_Pj2, identity>&&
-        sized_sentinel_for<_Se2, _It2>&& _Equal_memcmp_is_safe<_It1, _It2, _Pr>;
+    concept _Equal_rev_pred_can_memcmp = is_same_v<_Pj1, identity> && is_same_v<_Pj2, identity>
+        && sized_sentinel_for<_Se2, _It2> && _Equal_memcmp_is_safe<_It1, _It2, _Pr>;
 
-    // clang-format off
     template <input_iterator _It1, input_iterator _It2, sentinel_for<_It2> _Se2, class _Pr, class _Pj1, class _Pj2>
         requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
     _NODISCARD constexpr pair<bool, _It1> _Equal_rev_pred(
