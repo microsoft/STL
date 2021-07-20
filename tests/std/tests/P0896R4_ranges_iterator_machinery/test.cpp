@@ -1131,7 +1131,7 @@ namespace iterator_cust_swap_test {
         void iter_swap(T, U) = delete;
 
         template <class T, class U = T>
-        concept bullet1 = requires(T&& t, U&& u) {
+        concept bullet1 = requires(T && t, U && u) {
             iter_swap(std::forward<T>(t), std::forward<U>(u));
         };
     } // namespace adl_barrier

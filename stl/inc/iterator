@@ -836,7 +836,9 @@ private:
     };
 
 public:
+    // clang-format off
     constexpr common_iterator() requires default_initializable<_Iter> = default;
+    // clang-format on
 
     constexpr common_iterator(_Iter _Right) noexcept(is_nothrow_move_constructible_v<_Iter>) // strengthened
         : _Val{in_place_type<_Iter>, _STD move(_Right)} {}
@@ -1074,7 +1076,10 @@ public:
     using difference_type = iter_difference_t<_Iter>;
 
     // [counted.iter.const]
+    // clang-format off
     constexpr counted_iterator() requires default_initializable<_Iter> = default;
+    // clang-format on
+
     constexpr counted_iterator(_Iter _Right, const iter_difference_t<_Iter> _Diff) noexcept(
         is_nothrow_move_constructible_v<_Iter>) // strengthened
         : _Current(_STD move(_Right)), _Length(_Diff) {
@@ -1133,8 +1138,8 @@ public:
         return _STD to_address(_Current);
     }
 
-    _NODISCARD constexpr decltype(auto) operator[](const iter_difference_t<_Iter> _Diff) const
-        requires random_access_iterator<_Iter> {
+    _NODISCARD constexpr decltype(auto) operator[](
+        const iter_difference_t<_Iter> _Diff) const requires random_access_iterator<_Iter> {
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Diff < _Length, "counted_iterator index out of range");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -1189,8 +1194,8 @@ public:
         return _Tmp;
     }
 
-    _NODISCARD constexpr counted_iterator operator+(const iter_difference_t<_Iter> _Diff) const
-        requires random_access_iterator<_Iter> {
+    _NODISCARD constexpr counted_iterator operator+(
+        const iter_difference_t<_Iter> _Diff) const requires random_access_iterator<_Iter> {
         return counted_iterator{_Current + _Diff, static_cast<iter_difference_t<_Iter>>(_Length - _Diff)};
     }
 
@@ -1209,8 +1214,8 @@ public:
         return *this;
     }
 
-    _NODISCARD constexpr counted_iterator operator-(const iter_difference_t<_Iter> _Diff) const
-        requires random_access_iterator<_Iter> {
+    _NODISCARD constexpr counted_iterator operator-(
+        const iter_difference_t<_Iter> _Diff) const requires random_access_iterator<_Iter> {
         return counted_iterator{_Current - _Diff, static_cast<iter_difference_t<_Iter>>(_Length + _Diff)};
     }
 
