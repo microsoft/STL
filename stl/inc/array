@@ -86,7 +86,8 @@ public:
 
     _NODISCARD _CONSTEXPR17 _Array_const_iterator operator+(const ptrdiff_t _Off) const noexcept {
         _Array_const_iterator _Tmp = *this;
-        return _Tmp += _Off;
+        _Tmp += _Off;
+        return _Tmp;
     }
 
     _CONSTEXPR17 _Array_const_iterator& operator-=(const ptrdiff_t _Off) noexcept {
@@ -96,7 +97,8 @@ public:
 
     _NODISCARD _CONSTEXPR17 _Array_const_iterator operator-(const ptrdiff_t _Off) const noexcept {
         _Array_const_iterator _Tmp = *this;
-        return _Tmp -= _Off;
+        _Tmp -= _Off;
+        return _Tmp;
     }
 
     _NODISCARD _CONSTEXPR17 ptrdiff_t operator-(const _Array_const_iterator& _Right) const noexcept {
@@ -215,7 +217,8 @@ private:
 
     _NODISCARD _CONSTEXPR17 _Array_const_iterator operator+(const ptrdiff_t _Off) const noexcept {
         _Array_const_iterator _Tmp = *this;
-        return _Tmp += _Off;
+        _Tmp += _Off;
+        return _Tmp;
     }
 
     _CONSTEXPR17 _Array_const_iterator& operator-=(const ptrdiff_t _Off) noexcept {
@@ -224,7 +227,8 @@ private:
 
     _NODISCARD _CONSTEXPR17 _Array_const_iterator operator-(const ptrdiff_t _Off) const noexcept {
         _Array_const_iterator _Tmp = *this;
-        return _Tmp -= _Off;
+        _Tmp -= _Off;
+        return _Tmp;
     }
 
     _NODISCARD _CONSTEXPR17 ptrdiff_t operator-(const _Array_const_iterator& _Right) const noexcept {
@@ -306,7 +310,8 @@ constexpr void _Verify_range(
 template <class _Ty, size_t _Size>
 _NODISCARD _CONSTEXPR17 _Array_const_iterator<_Ty, _Size> operator+(
     const ptrdiff_t _Off, _Array_const_iterator<_Ty, _Size> _Next) noexcept {
-    return _Next += _Off;
+    _Next += _Off;
+    return _Next;
 }
 
 #if _HAS_CXX20
@@ -380,7 +385,8 @@ public:
 
     _NODISCARD _CONSTEXPR17 _Array_iterator operator+(const ptrdiff_t _Off) const noexcept {
         _Array_iterator _Tmp = *this;
-        return _Tmp += _Off;
+        _Tmp += _Off;
+        return _Tmp;
     }
 
     _CONSTEXPR17 _Array_iterator& operator-=(const ptrdiff_t _Off) noexcept {
@@ -392,7 +398,8 @@ public:
 
     _NODISCARD _CONSTEXPR17 _Array_iterator operator-(const ptrdiff_t _Off) const noexcept {
         _Array_iterator _Tmp = *this;
-        return _Tmp -= _Off;
+        _Tmp -= _Off;
+        return _Tmp;
     }
 
     _NODISCARD _CONSTEXPR17 reference operator[](const ptrdiff_t _Off) const noexcept {
@@ -409,7 +416,8 @@ public:
 template <class _Ty, size_t _Size>
 _NODISCARD _CONSTEXPR17 _Array_iterator<_Ty, _Size> operator+(
     const ptrdiff_t _Off, _Array_iterator<_Ty, _Size> _Next) noexcept {
-    return _Next += _Off;
+    _Next += _Off;
+    return _Next;
 }
 
 #if _HAS_CXX20
