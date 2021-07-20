@@ -17,15 +17,15 @@ struct generous_allocator {
 
     allocator<int> inner;
 
-    [[nodiscard]] _CONSTEXPR20_DYNALLOC int* allocate(const size_t count) {
+    [[nodiscard]] constexpr int* allocate(const size_t count) {
         return inner.allocate(max(count, static_cast<size_t>(16)));
     }
 
-    [[nodiscard]] _CONSTEXPR20_DYNALLOC allocation_result<int*> allocate_at_least(const size_t count) {
+    [[nodiscard]] constexpr allocation_result<int*> allocate_at_least(const size_t count) {
         return {inner.allocate(max(count, static_cast<size_t>(16))), max(count, static_cast<size_t>(16))};
     }
 
-    _CONSTEXPR20_DYNALLOC void deallocate(int* ptr, const size_t count) {
+    constexpr void deallocate(int* ptr, const size_t count) {
         inner.deallocate(ptr, max(count, static_cast<size_t>(16)));
     }
 };
@@ -35,16 +35,16 @@ struct strict_allocator {
 
     allocator<int> inner;
 
-    [[nodiscard]] _CONSTEXPR20_DYNALLOC int* allocate(const size_t count) {
+    [[nodiscard]] constexpr int* allocate(const size_t count) {
         return inner.allocate(count);
     }
 
-    _CONSTEXPR20_DYNALLOC void deallocate(int* ptr, const size_t count) {
+    constexpr void deallocate(int* ptr, const size_t count) {
         inner.deallocate(ptr, count);
     }
 };
 
-_CONSTEXPR20_DYNALLOC bool test() {
+constexpr bool test() {
     {
         allocator<int> al;
 
@@ -87,7 +87,5 @@ _CONSTEXPR20_DYNALLOC bool test() {
 
 int main() {
     test();
-#ifdef __cpp_lib_constexpr_dynamic_alloc
     static_assert(test());
-#endif
 }

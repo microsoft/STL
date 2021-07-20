@@ -867,7 +867,7 @@ public:
     }
 
 #if _HAS_CXX23
-    _NODISCARD _CONSTEXPR20_DYNALLOC __declspec(allocator) allocation_result<_Ty*> allocate_at_least(
+    _NODISCARD constexpr __declspec(allocator) allocation_result<_Ty*> allocate_at_least(
         _CRT_GUARDOVERFLOW const size_t _Count) {
         return {allocate(_Count), _Count};
     }
