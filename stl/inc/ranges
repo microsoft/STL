@@ -644,7 +644,7 @@ namespace ranges {
     public:
         constexpr _Non_propagating_cache() noexcept : _Dummy{} {}
 
-        _CONSTEXPR20_DYNALLOC ~_Non_propagating_cache() noexcept {
+        _CONSTEXPR20 ~_Non_propagating_cache() noexcept {
             if (_Engaged) {
                 _Val.~_Ty();
                 _Construct_in_place(_Dummy);
@@ -657,7 +657,7 @@ namespace ranges {
 
         constexpr _Non_propagating_cache(const _Non_propagating_cache&) noexcept : _Dummy{} {}
 
-        _CONSTEXPR20_DYNALLOC _Non_propagating_cache(_Non_propagating_cache&& _Other) noexcept : _Dummy{} {
+        _CONSTEXPR20 _Non_propagating_cache(_Non_propagating_cache&& _Other) noexcept : _Dummy{} {
             if (_Other._Engaged) {
                 _Other._Val.~_Ty();
                 _Construct_in_place(_Other._Dummy);
@@ -665,7 +665,7 @@ namespace ranges {
             }
         }
 
-        _CONSTEXPR20_DYNALLOC _Non_propagating_cache& operator=(const _Non_propagating_cache& _Other) noexcept {
+        _CONSTEXPR20 _Non_propagating_cache& operator=(const _Non_propagating_cache& _Other) noexcept {
             if (_STD addressof(_Other) == this) {
                 return *this;
             }
@@ -679,7 +679,7 @@ namespace ranges {
             return *this;
         }
 
-        _CONSTEXPR20_DYNALLOC _Non_propagating_cache& operator=(_Non_propagating_cache&& _Other) noexcept {
+        _CONSTEXPR20 _Non_propagating_cache& operator=(_Non_propagating_cache&& _Other) noexcept {
             if (_Engaged) {
                 _Val.~_Ty();
                 _Construct_in_place(_Dummy);
@@ -705,7 +705,7 @@ namespace ranges {
         }
 
         template <class _It>
-        _CONSTEXPR20_DYNALLOC _Ty& _Emplace_deref(_It& _Iter) noexcept(noexcept(_Ty(*_Iter))) /* strengthened */ {
+        _CONSTEXPR20 _Ty& _Emplace_deref(_It& _Iter) noexcept(noexcept(_Ty(*_Iter))) /* strengthened */ {
             if (_Engaged) {
                 _Val.~_Ty();
                 _Construct_in_place(_Dummy);
@@ -756,7 +756,7 @@ namespace ranges {
         }
 
         template <class _It>
-        _CONSTEXPR20_DYNALLOC _Ty& _Emplace_deref(_It& _Iter) noexcept(noexcept(_Ty(*_Iter))) /* strengthened */ {
+        _CONSTEXPR20 _Ty& _Emplace_deref(_It& _Iter) noexcept(noexcept(_Ty(*_Iter))) /* strengthened */ {
             _Construct_in_place(_Val, *_Iter);
             return _Val;
         }
