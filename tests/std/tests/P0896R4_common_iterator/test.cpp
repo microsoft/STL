@@ -212,7 +212,7 @@ struct poor_sentinel {
 };
 
 void test_2065() { // Guard against regression of GH-2065, for which we previously stumbled over CWG-1699.
-    if constexpr (false) {
+    {
         int x = 42;
         common_iterator<int*, unreachable_sentinel_t> it1{&x};
         common_iterator<const int*, unreachable_sentinel_t> it2{&x};
