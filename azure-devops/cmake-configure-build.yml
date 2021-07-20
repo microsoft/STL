@@ -30,7 +30,7 @@ steps:
     if exist "$(${{ parameters.buildOutputLocationVar }})" (
       rmdir /S /Q "$(${{ parameters.buildOutputLocationVar }})"
     )
-    call "%PROGRAMFILES(X86)%\Microsoft Visual Studio\2019\Preview\Common7\Tools\VsDevCmd.bat" ^
+    call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
     -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
     cmake ${{ parameters.cmakeAdditionalFlags}} -G Ninja ^
     -DCMAKE_TOOLCHAIN_FILE=$(${{ parameters.vcpkgLocationVar }})\scripts\buildsystems\vcpkg.cmake ^
@@ -44,7 +44,7 @@ steps:
   timeoutInMinutes: 2
   env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
 - script: |
-    call "%PROGRAMFILES(X86)%\Microsoft Visual Studio\2019\Preview\Common7\Tools\VsDevCmd.bat" ^
+    call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
     -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
     cmake --build $(${{ parameters.buildOutputLocationVar }})
   displayName: 'Build the STL'
