@@ -2860,7 +2860,7 @@ namespace ranges {
                     const auto _First2_addr   = _STD to_address(_First2);
                     if constexpr (_Is_sized1 && _Is_sized2) {
                         const size_t _Count =
-                            (_STD min)(static_cast<size_t>(_Last1 - _First1), static_cast<size_t>(_Last2 - _First2));
+                            (_STD min) (static_cast<size_t>(_Last1 - _First1), static_cast<size_t>(_Last2 - _First2));
                         const auto _Last1_addr = _First1_addr + _Count;
                         __std_swap_ranges_trivially_swappable_noalias(_First1_addr, _Last1_addr, _First2_addr);
                         return {_First1 + _Count, _First2 + _Count};
