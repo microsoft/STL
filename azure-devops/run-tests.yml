@@ -25,7 +25,7 @@ steps:
   inputs:
     workingDirectory: $(${{ parameters.buildOutputLocationVar }})
     script: |
-      call "%PROGRAMFILES(X86)%\Microsoft Visual Studio\2019\Preview\Common7\Tools\VsDevCmd.bat" ^
+      call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
       -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
       ctest -V
   env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
