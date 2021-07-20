@@ -4211,10 +4211,12 @@ public:
         return reinterpret_cast<void**>(_STD addressof(_Get_ptr()));
     }
 
+    // clang-format off
 private:
     _NODISCARD _Pointer& _Get_ptr() const noexcept {
         return const_cast<_Pointer&>(_Mypair._Myval2);
     }
+    // clang-format on
 
     _NODISCARD tuple<_ArgsT...>& _Get_args() noexcept {
         return _Mypair._Get_first();
@@ -4289,10 +4291,12 @@ public:
         return reinterpret_cast<void**>(_STD addressof(_Get_ptr()));
     }
 
+    // clang-format off
 private:
     _NODISCARD _Pointer& _Get_ptr() const noexcept {
         return const_cast<_Pointer&>(_Mypair._Myval2);
     }
+    // clang-format on
 
     _NODISCARD tuple<_ArgsT...>& _Get_args() noexcept {
         return _Mypair._Get_first();
