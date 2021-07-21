@@ -364,6 +364,12 @@
 
 #include <vcruntime.h>
 
+#ifdef _FORBID_ALL_STL_HEADERS
+static_assert(false,
+    "error STL2000: You tried to include a C++ standard header file, although the mode is set in which all C++ "
+    "standard header files are forbidden. Perhaps you meant _ENFORCE_ONLY_CORE_HEADERS?");
+#endif // _FORBID_ALL_STL_HEADERS
+
 // TRANSITION, <vcruntime.h> should define _HAS_CXX23
 #ifndef _HAS_CXX23
 #if _HAS_CXX20 && (defined(_MSVC_LANG) && _MSVC_LANG > 202002L || defined(__cplusplus) && __cplusplus > 202002L)
@@ -1066,6 +1072,8 @@
 #define _CXX17_DEPRECATE_POLYMORPHIC_ALLOCATOR_DESTROY
 #endif // ^^^ warning disabled ^^^
 
+// next critical error number: STL1003
+// next error number: STL2002
 // next warning number: STL4033
 
 // P0619R4 Removing C++17-Deprecated Features

@@ -7,6 +7,12 @@
 #ifndef _YVALS
 #define _YVALS
 #include <yvals_core.h>
+
+#ifdef _ENFORCE_ONLY_CORE_HEADERS
+static_assert(false, "error STL2001: You tried to include a non-core C++ standard header file, although the mode is "
+                     "set in which only core C++ standard header files are allowed");
+#endif // _ENFORCE_ONLY_CORE_HEADERS
+
 #if _STL_COMPILER_PREPROCESSOR
 
 #include <crtdbg.h>
