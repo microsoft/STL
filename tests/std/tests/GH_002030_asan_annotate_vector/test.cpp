@@ -11,12 +11,12 @@
 
 using namespace std;
 
-extern "C" int __sanitizer_verify_contiguous_container(const void *beg, const void *mid, const void *end);
+extern "C" int __sanitizer_verify_contiguous_container(const void* beg, const void* mid, const void* end);
 
 template <class T, class Alloc>
-bool verify_vector(vector<T, Alloc> &vec) {
-    size_t buffer_size = vec.capacity() * sizeof(T);
-    void* buffer = static_cast<void*>(vec.data());
+bool verify_vector(vector<T, Alloc>& vec) {
+    size_t buffer_size  = vec.capacity() * sizeof(T);
+    void* buffer        = static_cast<void*>(vec.data());
     void* aligned_start = align(8, 1, buffer, buffer_size);
 
     if (!aligned_start) {
@@ -24,40 +24,37 @@ bool verify_vector(vector<T, Alloc> &vec) {
     }
 
     void* mid = static_cast<void*>(vec.data() + vec.size());
-    mid = mid > aligned_start ? mid : aligned_start;
+    mid       = mid > aligned_start ? mid : aligned_start;
 
     return __sanitizer_verify_contiguous_container(aligned_start, mid, vec.data() + vec.capacity()) != 0;
 }
 
 template <class T, class Pocma, class Stateless>
-struct custom_test_allocator
-{
-    using value_type = T;
+struct custom_test_allocator {
+    using value_type                             = T;
     using propagate_on_container_move_assignment = Pocma;
-    using is_always_equal = Stateless;
+    using is_always_equal                        = Stateless;
 };
 
-template<class T, class Pocma, class Stateless>
+template <class T, class Pocma, class Stateless>
 constexpr bool operator==(const custom_test_allocator<T, Pocma, Stateless>& lhs,
-                          const custom_test_allocator<T, Pocma, Stateless>& rhs) noexcept
-{
+    const custom_test_allocator<T, Pocma, Stateless>& rhs) noexcept {
     return Stateless::value || (&lhs == &rhs);
 }
 
-template<class T, class Pocma, class Stateless>
+template <class T, class Pocma, class Stateless>
 constexpr bool operator!=(const custom_test_allocator<T, Pocma, Stateless>& lhs,
-                          const custom_test_allocator<T, Pocma, Stateless>& rhs) noexcept
-{
+    const custom_test_allocator<T, Pocma, Stateless>& rhs) noexcept {
     return !(lhs == rhs);
 }
 
 template <class T, class Pocma = true_type, class Stateless = true_type>
-struct aligned_allocator : public custom_test_allocator<T, Pocma, Stateless>
-{
+struct aligned_allocator : public custom_test_allocator<T, Pocma, Stateless> {
     static constexpr size_t _Minimum_allocation_alignment = 8;
 
     aligned_allocator() = default;
-    template <class U> constexpr aligned_allocator (const aligned_allocator <U, Pocma, Stateless>&) noexcept {}
+    template <class U>
+    constexpr aligned_allocator(const aligned_allocator<U, Pocma, Stateless>&) noexcept {}
 
     T* allocate(size_t n) {
         return new T[n];
@@ -69,12 +66,12 @@ struct aligned_allocator : public custom_test_allocator<T, Pocma, Stateless>
 };
 
 template <class T, class Pocma = true_type, class Stateless = true_type>
-struct explicit_allocator : public custom_test_allocator<T, Pocma, Stateless>
-{
+struct explicit_allocator : public custom_test_allocator<T, Pocma, Stateless> {
     static constexpr size_t _Minimum_allocation_alignment = alignof(T);
 
     explicit_allocator() = default;
-    template <class U> constexpr explicit_allocator (const explicit_allocator <U, Pocma, Stateless>&) noexcept {}
+    template <class U>
+    constexpr explicit_allocator(const explicit_allocator<U, Pocma, Stateless>&) noexcept {}
 
     T* allocate(size_t n) {
         T* mem = new T[n + 1];
@@ -82,15 +79,15 @@ struct explicit_allocator : public custom_test_allocator<T, Pocma, Stateless>
     }
 
     void deallocate(T* p, size_t) noexcept {
-        delete[] (p - 1);
+        delete[](p - 1);
     }
 };
 
 template <class T, class Pocma = true_type, class Stateless = true_type>
-struct implicit_allocator : public custom_test_allocator<T, Pocma, Stateless>
-{
+struct implicit_allocator : public custom_test_allocator<T, Pocma, Stateless> {
     implicit_allocator() = default;
-    template <class U> constexpr implicit_allocator (const implicit_allocator <U, Pocma, Stateless>&) noexcept {}
+    template <class U>
+    constexpr implicit_allocator(const implicit_allocator<U, Pocma, Stateless>&) noexcept {}
 
     T* allocate(size_t n) {
         T* mem = new T[n + 1];
@@ -98,11 +95,11 @@ struct implicit_allocator : public custom_test_allocator<T, Pocma, Stateless>
     }
 
     void deallocate(T* p, size_t) noexcept {
-        delete[] (p - 1);
+        delete[](p - 1);
     }
 };
 
-template<class Alloc>
+template <class Alloc>
 void test_case_push_pop() {
     using T = typename Alloc::value_type;
 
@@ -116,7 +113,7 @@ void test_case_push_pop() {
     assert(verify_vector(v));
 }
 
-template<class Alloc, int Size = 1024, int Stride = 128>
+template <class Alloc, int Size = 1024, int Stride = 128>
 void test_case_reserve_shrink() {
     using T = typename Alloc::value_type;
 
@@ -151,7 +148,7 @@ void test_case_reserve_shrink() {
     assert(verify_vector(v));
 }
 
-template<class Alloc>
+template <class Alloc>
 void test_case_emplace_pop() {
     using T = typename Alloc::value_type;
 
@@ -171,7 +168,7 @@ void test_case_emplace_pop() {
     assert(verify_vector(v));
 }
 
-template<class Alloc>
+template <class Alloc>
 void test_case_move_assign() {
     using T = typename Alloc::value_type;
 
@@ -188,7 +185,7 @@ void test_case_move_assign() {
     assert(verify_vector(v2));
 }
 
-template<class Alloc>
+template <class Alloc>
 void test_case_copy_assign() {
     using T = typename Alloc::value_type;
 
@@ -205,9 +202,9 @@ void test_case_copy_assign() {
     assert(verify_vector(v2));
 }
 
-template<class Alloc, int N = 128>
+template <class Alloc, int N = 128>
 void test_case_constructors() {
-    using T = typename Alloc::value_type;
+    using T  = typename Alloc::value_type;
     Alloc al = Alloc();
 
     vector<T, Alloc> v1;
@@ -235,7 +232,7 @@ void test_case_constructors() {
     assert(verify_vector(v10));
 }
 
-template<class Alloc, int N = 128>
+template <class Alloc, int N = 128>
 void test_case_insert_n() {
     using T = typename Alloc::value_type;
 
@@ -249,7 +246,7 @@ void test_case_insert_n() {
     assert(verify_vector(v));
 }
 
-template<class Alloc, int N = 128>
+template <class Alloc, int N = 128>
 void test_case_insert_range() {
     using T = typename Alloc::value_type;
 
@@ -272,7 +269,7 @@ void test_case_insert_range() {
     assert(verify_vector(v1));
 }
 
-template<class Alloc, int N = 128>
+template <class Alloc, int N = 128>
 void test_case_assign() {
     using T = typename Alloc::value_type;
 
@@ -310,7 +307,7 @@ void test_case_assign() {
     assert(verify_vector(v4));
 }
 
-template<class Alloc, int N = 128>
+template <class Alloc, int N = 128>
 void test_case_resize() {
     using T = typename Alloc::value_type;
 
@@ -321,7 +318,7 @@ void test_case_resize() {
     assert(verify_vector(v));
 }
 
-template<class Alloc>
+template <class Alloc>
 void run_tests() {
     test_case_push_pop<Alloc>();
     test_case_reserve_shrink<Alloc>();
@@ -335,7 +332,7 @@ void run_tests() {
     test_case_resize<Alloc>();
 }
 
-template<class T, template <class, class, class> class AllocT>
+template <class T, template <class, class, class> class AllocT>
 void run_custom_allocator_matrix() {
     run_tests<AllocT<T, true_type, true_type>>();
     run_tests<AllocT<T, true_type, false_type>>();
@@ -343,7 +340,7 @@ void run_custom_allocator_matrix() {
     run_tests<AllocT<T, false_type, false_type>>();
 }
 
-template<class T>
+template <class T>
 void run_allocator_matrix() {
     run_tests<allocator<T>>();
     run_custom_allocator_matrix<T, aligned_allocator>();
