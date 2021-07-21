@@ -1922,7 +1922,7 @@ struct _In_place_key_extract_map<_Key, pair<_First, _Second>> {
 #pragma warning(disable : 4624) // '%s': destructor was implicitly defined as deleted
 template <class _Ty>
 struct _Wrap {
-    _Ty _Value; // workaround for "T^ is not allowed in a union"
+    _Ty _Value; // workaround for VSO-586813 "T^ is not allowed in a union"
 };
 #pragma warning(pop)
 
@@ -1945,7 +1945,7 @@ struct _Alloc_temporary2 {
     _NODISCARD _CONSTEXPR20 const value_type& _Get_value() const noexcept {
         return _Storage._Value;
     }
-#else // ^^^ workaround for "T^ is not allowed in a union" ^^^ / vvv no workaround vvv
+#else // ^^^ workaround for VSO-586813 "T^ is not allowed in a union" ^^^ / vvv no workaround vvv
     union {
         value_type _Value;
     };
