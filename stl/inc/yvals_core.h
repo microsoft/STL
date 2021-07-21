@@ -365,10 +365,9 @@
 #include <vcruntime.h>
 
 #ifdef _FORBID_ALL_STL_HEADERS
-static_assert(false,
-    "error STL2000: You tried to include a C++ standard header file. "
-    "However, with _FORBID_ALL_STL_HEADERS all C++ standard header files are forbidden. "
-    "Did you mean _ENFORCE_ONLY_CORE_HEADERS?");
+static_assert(false, "error STL2000: You tried to include a C++ standard header file. "
+                     "However, with _FORBID_ALL_STL_HEADERS all C++ standard header files are forbidden. "
+                     "Did you mean _ENFORCE_ONLY_CORE_HEADERS?");
 #endif // _FORBID_ALL_STL_HEADERS
 
 // TRANSITION, <vcruntime.h> should define _HAS_CXX23
