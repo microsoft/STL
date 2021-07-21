@@ -1848,11 +1848,11 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
   <Type Name="std::ranges::empty_view&lt;*&gt;">
-    <DisplayString>{{ size=0 }}</DisplayString>
+    <DisplayString>{{}}</DisplayString>
   </Type>
 
   <Type Name="std::ranges::single_view&lt;*&gt;">
-    <DisplayString>{{ size=1 }}</DisplayString>
+    <DisplayString>{{ _Val._Val }}</DisplayString>
     <Expand>
       <ArrayItems>
         <Size>1</Size>
