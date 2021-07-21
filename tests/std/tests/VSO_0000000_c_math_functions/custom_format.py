@@ -19,7 +19,7 @@ class CustomTestFormat(STLTestFormat):
             cmd = [test.cxx, '/c', exeSource, cmathSource, cstdlibSource, *test.flags, *test.compileFlags]
         elif TestType.RUN in test.testType:
             shared.execFile = outputBase + '.exe'
-            cmd = [test.cxx, exeSource, cmathSource, cstdlibSource, *test.flags, *test.compileFlags, '/Fe' + shared.execFile,
-                   '/link', *test.linkFlags]
+            cmd = [test.cxx, exeSource, cmathSource, cstdlibSource, *test.flags, *test.compileFlags,
+                    '/Fe' + shared.execFile, '/link', *test.linkFlags]
 
         yield TestStep(cmd, shared.execDir, shared.env, False)
