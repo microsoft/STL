@@ -2850,9 +2850,9 @@ namespace ranges {
 #if _USE_STD_VECTOR_ALGORITHMS
             using _Elem1 = remove_reference_t<iter_reference_t<_It1>>;
             using _Elem2 = remove_reference_t<iter_reference_t<_It2>>;
-            if constexpr (same_as<_Elem1, _Elem2> && _Is_trivially_swappable_v<_Elem1> && //
-                          contiguous_iterator<_It1> && _Sized_or_unreachable_sentinel_for<_Se1, _It1> && //
-                          contiguous_iterator<_It2> && _Sized_or_unreachable_sentinel_for<_Se2, _It2>) {
+            if constexpr (same_as<_Elem1, _Elem2> && _Is_trivially_swappable_v<_Elem1> //
+                          && contiguous_iterator<_It1> && _Sized_or_unreachable_sentinel_for<_Se1, _It1> //
+                          && contiguous_iterator<_It2> && _Sized_or_unreachable_sentinel_for<_Se2, _It2>) {
                 if (!_STD is_constant_evaluated()) {
                     constexpr bool _Is_sized1 = sized_sentinel_for<_Se1, _It1>;
                     constexpr bool _Is_sized2 = sized_sentinel_for<_Se2, _It2>;
