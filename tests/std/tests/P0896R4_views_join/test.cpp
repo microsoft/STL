@@ -462,6 +462,17 @@ void test_move_only_views() {
     test_one(move_only_view<bidirectional_iterator_tag, test::Common::yes>{input}, expected_ints);
 }
 
+
+constexpr array<string_view, 5> prvalue_input = {{{}, "Hello "sv, {}, "World!"sv, {}}};
+
+constexpr auto ToVector(const int val) {
+    return vector{val + 1};
+}
+
+constexpr auto ToString(const size_t val) {
+    return string{prvalue_input[val]};
+}
+
 int main() {
     // Validate views
     constexpr string_view expected = "Hello World!"sv;
@@ -514,28 +525,38 @@ int main() {
         static_assert(ranges::equal(views::iota(0, 5) | views::transform(ToArry) | views::join, result));
     }
 
-    { // P2328 range of prvalue vector
+    { // P2328 range of prvalue vector using global function
         static constexpr int result[] = {1, 2, 3, 4, 5};
-        auto ToVector                 = [](const int i) { return vector{i + 1}; };
         assert(ranges::equal(views::iota(0, 5) | views::transform(ToVector) | views::join, result));
-#if defined(__cpp_lib_constexpr_dynamic_alloc) && defined(MSVC_INTERNAL_TESTING) \
-    && !defined(__clang__) // TRANSITION, LLVM-48606
+#if defined(__clang__) || defined(__EDG__) || defined(MSVC_INTERNAL_TESTING)
         static_assert(ranges::equal(views::iota(0, 5) | views::transform(ToVector) | views::join, result));
-#endif // TRANSITION, LLVM-48606
+#endif // not MSVC
     }
 
-    { // P2328 range of prvalue string
-        static constexpr array<string_view, 5> input = {{{}, "Hello "sv, {}, "World!"sv, {}}};
-        auto ToString                                = [](const size_t i) { return string{input[i]}; };
+    { // P2328 range of prvalue vector using lambda
+        static constexpr int result[] = {1, 2, 3, 4, 5};
+        auto ToVectorLambda           = [](const int i) { return vector{i + 1}; };
+        assert(ranges::equal(views::iota(0, 5) | views::transform(ToVectorLambda) | views::join, result));
+#if defined(__clang__) || defined(__EDG__) || defined(MSVC_INTERNAL_TESTING)
+        static_assert(ranges::equal(views::iota(0, 5) | views::transform(ToVectorLambda) | views::join, result));
+#endif // not MSVC
+    }
+
+    { // P2328 range of prvalue string using global function
         assert(ranges::equal(views::iota(0u, 5u) | views::transform(ToString) | views::join, expected));
-#if defined(__cpp_lib_constexpr_dynamic_alloc) && defined(MSVC_INTERNAL_TESTING) \
-    && !defined(__clang__) // TRANSITION, LLVM-48606
+#if defined(__clang__) || defined(__EDG__) || defined(MSVC_INTERNAL_TESTING)
         static_assert(ranges::equal(views::iota(0u, 5u) | views::transform(ToString) | views::join, expected));
-#endif // TRANSITION, LLVM-48606
+#endif // not MSVC
     }
 
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-934264
+    { // P2328 range of prvalue string using lambda
+        auto ToStringLambda = [](const size_t i) { return string{prvalue_input[i]}; };
+        assert(ranges::equal(views::iota(0u, 5u) | views::transform(ToStringLambda) | views::join, expected));
+#if defined(__clang__) || defined(__EDG__) || defined(MSVC_INTERNAL_TESTING)
+        static_assert(ranges::equal(views::iota(0u, 5u) | views::transform(ToStringLambda) | views::join, expected));
+#endif // not MSVC
+    }
+
     STATIC_ASSERT(instantiation_test());
-#endif // TRANSITION, VSO-934264
     instantiation_test();
 }
