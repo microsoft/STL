@@ -4008,10 +4008,10 @@ namespace ranges {
     template <class _In, class _Out>
     using unique_copy_result = in_out_result<_In, _Out>;
 
-    // clang-format off
     template <class _It, class _Ty>
     concept _Is_input_with_value_type = input_iterator<_It> && same_as<iter_value_t<_It>, _Ty>;
 
+    // clang-format off
     template <class _It, class _Out>
     concept _Can_reread_or_store = forward_iterator<_It>
                                 || _Is_input_with_value_type<_Out, iter_value_t<_It>>

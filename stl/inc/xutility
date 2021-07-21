@@ -281,12 +281,12 @@ using _With_reference = _Ty&;
 // clang-format off
 template <class _Ty>
 concept _Can_reference = requires { typename _With_reference<_Ty>; };
+// clang-format on
 
 template <class _Ty>
 concept _Dereferenceable = requires(_Ty& __t) {
     { *__t } -> _Can_reference;
 };
-// clang-format on
 
 template <class _Ty>
 concept _Has_member_iterator_concept = requires {
@@ -345,12 +345,12 @@ struct incrementable_traits<_Ty> {
     using difference_type = typename _Ty::difference_type;
 };
 
-// clang-format off
 template <class _Ty>
 concept _Can_difference = requires(const _Ty& __a, const _Ty& __b) {
     { __a - __b } -> integral;
 };
 
+// clang-format off
 template <class _Ty>
     requires (!_Has_member_difference_type<_Ty> && _Can_difference<_Ty>)
 struct incrementable_traits<_Ty> {
@@ -967,20 +967,22 @@ struct incrementable_traits<projected<_It, _Proj>> {
     using difference_type = iter_difference_t<_It>;
 };
 
-// clang-format off
 template <class _In, class _Out>
 concept indirectly_movable = indirectly_readable<_In> && indirectly_writable<_Out, iter_rvalue_reference_t<_In>>;
 
+// clang-format off
 template <class _In, class _Out>
 concept indirectly_movable_storable = indirectly_movable<_In, _Out>
     && indirectly_writable<_Out, iter_value_t<_In>>
     && movable<iter_value_t<_In>>
     && constructible_from<iter_value_t<_In>, iter_rvalue_reference_t<_In>>
     && assignable_from<iter_value_t<_In>&, iter_rvalue_reference_t<_In> >;
+// clang-format on
 
 template <class _In, class _Out>
 concept indirectly_copyable = indirectly_readable<_In> && indirectly_writable<_Out, iter_reference_t<_In>>;
 
+// clang-format off
 template <class _In, class _Out>
 concept indirectly_copyable_storable = indirectly_copyable<_In, _Out>
     && indirectly_writable<_Out, iter_value_t<_In>&>
@@ -1100,10 +1102,10 @@ concept mergeable = input_iterator<_It1> && input_iterator<_It2>
     && indirectly_copyable<_It1, _Out>
     && indirectly_copyable<_It2, _Out>
     && indirect_strict_weak_order<_Pr, projected<_It1, _Pj1>, projected<_It2, _Pj2>>;
+// clang-format on
 
 template <class _It, class _Pr = ranges::less, class _Proj = identity>
 concept sortable = permutable<_It> && indirect_strict_weak_order<_Pr, projected<_It, _Proj>>;
-// clang-format on
 
 template <class _Iter>
 using _Iter_ref_t = iter_reference_t<_Iter>;
@@ -5146,10 +5148,10 @@ _NODISCARD _FwdIt find(_ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, const _
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // clang-format off
     template <class _Se, class _It>
     concept _Sized_or_unreachable_sentinel_for = sized_sentinel_for<_Se, _It> || same_as<_Se, unreachable_sentinel_t>;
 
+    // clang-format off
     // concept-constrained for strict enforcement as it is used by several algorithms
     template <input_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pj = identity>
         requires indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>

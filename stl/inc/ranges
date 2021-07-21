@@ -857,6 +857,7 @@ namespace ranges {
             _Ty(__j - __n);
             { __j - __j } -> convertible_to<_Iota_diff_t<_Ty>>;
         };
+    // clang-format on
 
     template <class _Wi>
     struct _Ioterator_category_base {
@@ -870,6 +871,7 @@ namespace ranges {
         _NODISCARD auto operator<=>(const _Ioterator_category_base&) const = default;
     };
 
+    // clang-format off
     template <weakly_incrementable _Wi>
         requires copyable<_Wi>
     struct _Ioterator : _Ioterator_category_base<_Wi> {
