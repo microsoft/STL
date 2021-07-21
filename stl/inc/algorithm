@@ -9410,13 +9410,11 @@ _NODISCARD constexpr _Ty(max)(initializer_list<_Ty> _Ilist) {
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // clang-format off
     template <class _It>
     concept _Prefer_iterator_copies = // When we have a choice, should we copy iterators or copy elements?
-        // pre: input_iterator<_It>
+                                      // pre: input_iterator<_It>
         sizeof(_It) <= 2 * sizeof(iter_value_t<_It>)
         && (is_trivially_copyable_v<_It> || !is_trivially_copyable_v<iter_value_t<_It>>);
-    // clang-format on
 
     class _Max_fn : private _Not_quite_object {
     public:
