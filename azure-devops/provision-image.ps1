@@ -133,13 +133,14 @@ $Workloads = @(
   'Microsoft.VisualStudio.Component.VC.Tools.ARM',
   'Microsoft.VisualStudio.Component.VC.Tools.ARM64',
   'Microsoft.VisualStudio.Component.VC.Tools.x86.x64',
+  # TRANSITION, LLVM-51128 (Clang 12 targeting ARM64 is incompatible with WinSDK 10.0.20348.0)
   'Microsoft.VisualStudio.Component.Windows10SDK.19041'
 )
 
 $ReleaseInPath = 'Preview'
 $Sku = 'Enterprise'
-$VisualStudioBootstrapperUrl = 'https://aka.ms/vs/16/pre/vs_enterprise.exe'
-$PythonUrl = 'https://www.python.org/ftp/python/3.9.5/python-3.9.5-amd64.exe'
+$VisualStudioBootstrapperUrl = 'https://aka.ms/vs/17/pre/vs_enterprise.exe'
+$PythonUrl = 'https://www.python.org/ftp/python/3.9.6/python-3.9.6-amd64.exe'
 
 # https://docs.microsoft.com/en-us/windows-hardware/drivers/download-the-wdk
 $WindowsDriverKitUrl = 'https://go.microsoft.com/fwlink/?linkid=2128854'

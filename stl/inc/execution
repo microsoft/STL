@@ -215,7 +215,7 @@ public:
     }
 
     void _Submit_for_chunks(const size_t _Hw_threads, const size_t _Chunks) const noexcept {
-        _Submit((_STD min)(_Hw_threads * _Oversubmission_multiplier, _Chunks));
+        _Submit((_STD min) (_Hw_threads * _Oversubmission_multiplier, _Chunks));
     }
 
 private:
@@ -255,7 +255,7 @@ constexpr size_t _Get_chunked_work_chunk_count(const size_t _Hw_threads, const _
     // get the number of chunks to break work into to parallelize
     const auto _Size_count = static_cast<size_t>(_Count); // no overflow due to forward iterators
     // we assume _Hw_threads * _Oversubscription_multiplier does not overflow
-    return (_STD min)(_Hw_threads * _Oversubscription_multiplier, _Size_count);
+    return (_STD min) (_Hw_threads * _Oversubscription_multiplier, _Size_count);
 }
 
 // FUNCTION TEMPLATE _Get_least2_chunked_work_chunk_count
@@ -823,7 +823,7 @@ struct _Static_partition_team { // common data for all static partitioned ops
 
     _Diff _Get_chunk_offset(const size_t _This_chunk) const {
         const auto _This_chunk_diff = static_cast<_Diff>(_This_chunk);
-        return _This_chunk_diff * _Chunk_size + (_STD min)(_This_chunk_diff, _Unchunked_items);
+        return _This_chunk_diff * _Chunk_size + (_STD min) (_This_chunk_diff, _Unchunked_items);
     }
 
     _Static_partition_key<_Diff> _Get_next_key() {
@@ -1046,7 +1046,7 @@ _Common_diff_t<_InIt1, _InIt2> _Distance_min(_InIt1 _First1, const _InIt1 _Last1
     if constexpr (_Is_random_iter_v<_InIt1> && _Is_random_iter_v<_InIt2>) {
         const _CT _Count1 = _Last1 - _First1;
         const _CT _Count2 = _Last2 - _First2;
-        _Result           = (_STD min)(_Count1, _Count2);
+        _Result           = (_STD min) (_Count1, _Count2);
     } else if constexpr (_Is_random_iter_v<_InIt1>) {
         for (auto _Count1 = _Last1 - _First1; 0 < _Count1 && _First2 != _Last2; --_Count1) {
             ++_First2;
@@ -2275,7 +2275,7 @@ _NODISCARD _FwdIt search_n(_ExPo&&, const _FwdIt _First, _FwdIt _Last, const _Di
         return _Last;
     }
 
-    if (static_cast<uintmax_t>(_Count) > static_cast<uintmax_t>((numeric_limits<_Iter_diff_t<_FwdIt>>::max)())) {
+    if (static_cast<uintmax_t>(_Count) > static_cast<uintmax_t>((numeric_limits<_Iter_diff_t<_FwdIt>>::max) ())) {
         // if the number of _Vals searched for is larger than the longest possible sequence, we can't find it
         return _Last;
     }
@@ -2812,7 +2812,7 @@ struct _Static_partitioned_temporary_buffer2 {
     ptrdiff_t _Get_offset(const size_t _Chunk_number) {
         // get the offset of the first element of the temporary buffer allocated to chunk _Chunk_number
         auto _Diff_chunk = static_cast<ptrdiff_t>(_Chunk_number);
-        return _Diff_chunk * _Chunk_size + (_STD min)(_Diff_chunk, _Unchunked_items);
+        return _Diff_chunk * _Chunk_size + (_STD min) (_Diff_chunk, _Unchunked_items);
     }
 
     void _Destroy_all() { // destroy each element of the temporary buffer
@@ -2836,20 +2836,20 @@ inline size_t _Get_stable_sort_tree_height(const size_t _Count, const size_t _Hw
     // go to the next smaller power of 2
     const auto _Count_max_tree_height = _Log_count_max_chunks & ~static_cast<size_t>(1);
 
-    const auto _Ideal_chunks       = _Hw_threads * _Oversubscription_multiplier;
-    const size_t _Log_ideal_chunks = _Floor_of_log_2(_Ideal_chunks);
+    const auto _Ideal_chunks           = _Hw_threads * _Oversubscription_multiplier;
+    const size_t _Log_ideal_chunks     = _Floor_of_log_2(_Ideal_chunks);
 #ifdef _WIN64
-    const size_t _Max_tree_height = 62; // to avoid ptrdiff_t overflow
+    const size_t _Max_tree_height      = 62; // to avoid ptrdiff_t overflow
 #else // ^^^ _WIN64 ^^^ // vvv !_WIN64 vvv
     const size_t _Max_tree_height = 30;
 #endif // _WIN64
-    const size_t _Clamped_ideal_chunks = (_STD min)(_Max_tree_height, _Log_ideal_chunks);
+    const size_t _Clamped_ideal_chunks = (_STD min) (_Max_tree_height, _Log_ideal_chunks);
 
     // similarly, if _Clamped_ideal_chunks is odd, that would break our 2 to even power invariant,
     // so go to the next higher power of 2
     const auto _Ideal_tree_height = _Clamped_ideal_chunks + (_Clamped_ideal_chunks & 0x1U);
 
-    return (_STD min)(_Count_max_tree_height, _Ideal_tree_height);
+    return (_STD min) (_Count_max_tree_height, _Ideal_tree_height);
 }
 
 struct _Bottom_up_merge_tree {
@@ -3301,7 +3301,7 @@ struct _Static_partitioned_is_heap_until {
         const auto _Chunk_offset     = _Key._Start_at;
         const auto _Last             = _Chunk_offset + _Chunk_range_size;
 
-        const auto _Initial = (_STD max)(_Chunk_offset, _Diff{1});
+        const auto _Initial = (_STD max) (_Chunk_offset, _Diff{1});
         for (_Diff _Off = _Initial; _Off < _Last; ++_Off) {
             if (_DEBUG_LT_PRED(_Pred, *(_Range_first + ((_Off - 1) >> 1)), *(_Range_first + _Off))) {
                 _Results._Imbue(_Key._Chunk_number, _Range_first + _Off);

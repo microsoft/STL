@@ -1714,8 +1714,8 @@ struct _Invoke_traits_nonzero {
 };
 
 template <class _Callable, class _Ty1, class... _Types2>
-using _Decltype_invoke_nonzero = decltype(
-    _Invoker1<_Callable, _Ty1>::_Call(_STD declval<_Callable>(), _STD declval<_Ty1>(), _STD declval<_Types2>()...));
+using _Decltype_invoke_nonzero = decltype(_Invoker1<_Callable, _Ty1>::_Call(
+    _STD declval<_Callable>(), _STD declval<_Ty1>(), _STD declval<_Types2>()...));
 
 template <class _Callable, class _Ty1, class... _Types2>
 struct _Invoke_traits_nonzero<void_t<_Decltype_invoke_nonzero<_Callable, _Ty1, _Types2...>>, _Callable, _Ty1,
