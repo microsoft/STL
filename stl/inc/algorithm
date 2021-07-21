@@ -3911,16 +3911,14 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// clang-format off
 #ifdef __cpp_lib_concepts
 template <class _InIt, class _OutIt>
 concept _Can_reread_dest = forward_iterator<_OutIt> && same_as<iter_value_t<_InIt>, iter_value_t<_OutIt>>;
 #else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
 template <class _InIt, class _OutIt>
-_INLINE_VAR constexpr bool _Can_reread_dest =
-    _Is_fwd_iter_v<_OutIt> && is_same_v<_Iter_value_t<_InIt>, _Iter_value_t<_OutIt>>;
+_INLINE_VAR constexpr bool _Can_reread_dest = _Is_fwd_iter_v<_OutIt> //
+    && is_same_v<_Iter_value_t<_InIt>, _Iter_value_t<_OutIt>>;
 #endif // __cpp_lib_concepts
-// clang-format on
 
 template <class _InIt, class _OutIt, class _Pr>
 _CONSTEXPR20 _OutIt unique_copy(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pred) {
