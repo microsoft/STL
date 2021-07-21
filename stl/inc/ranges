@@ -923,12 +923,13 @@ namespace ranges {
         }
 
 #if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1347136
-    private :
-
+        // clang-format off
+    private:
         template <class _Left, class _Right>
         static constexpr bool _Nothrow_plus_equal = noexcept(_STD declval<_Left&>() += _STD declval<const _Right&>());
         template <_Integer_like _Left, class _Right>
         static constexpr bool _Nothrow_plus_equal<_Left, _Right> = true;
+        // clang-format on
 
         template <class _Left, class _Right>
         static constexpr bool _Nothrow_minus_equal = noexcept(_STD declval<_Left&>() -= _STD declval<const _Right&>());

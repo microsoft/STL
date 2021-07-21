@@ -1602,34 +1602,34 @@ namespace ranges {
     // clang-format off
     template <input_iterator _It, sentinel_for<_It> _Se, _No_throw_forward_iterator _Out,
         _No_throw_sentinel_for<_Out> _OSe>
-        requires constructible_from<iter_value_t<_Out>, iter_rvalue_reference_t<_It>>
+        requires (constructible_from<iter_value_t<_Out>, iter_rvalue_reference_t<_It>>)
     uninitialized_move_result<_It, _Out> _Uninitialized_move_unchecked(
-            _It _IFirst, _Se _ILast, _Out _OFirst, _OSe _OLast) {
-            // clang-format on
-            constexpr bool _Is_sized1 = sized_sentinel_for<_Se, _It>;
-            constexpr bool _Is_sized2 = sized_sentinel_for<_OSe, _Out>;
-            if constexpr (_Ptr_move_cat<_It, _Out>::_Really_trivial && _Sized_or_unreachable_sentinel_for<_Se, _It> //
-                          && _Sized_or_unreachable_sentinel_for<_OSe, _Out>) {
-                if constexpr (_Is_sized1 && _Is_sized2) {
-                    return _Copy_memcpy_common(_IFirst, _RANGES next(_IFirst, _STD move(_ILast)), _OFirst,
-                        _RANGES next(_OFirst, _STD move(_OLast)));
-                } else if constexpr (_Is_sized1) {
-                    return _Copy_memcpy_distance(_IFirst, _OFirst, _IFirst, _RANGES next(_IFirst, _STD move(_ILast)));
-                } else if constexpr (_Is_sized2) {
-                    return _Copy_memcpy_distance(_IFirst, _OFirst, _OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
-                } else {
-                    _STL_ASSERT(false, "Tried to uninitialized_move two ranges with unreachable sentinels");
-                }
+        _It _IFirst, _Se _ILast, _Out _OFirst, _OSe _OLast) {
+        // clang-format on
+        constexpr bool _Is_sized1 = sized_sentinel_for<_Se, _It>;
+        constexpr bool _Is_sized2 = sized_sentinel_for<_OSe, _Out>;
+        if constexpr (_Ptr_move_cat<_It, _Out>::_Really_trivial && _Sized_or_unreachable_sentinel_for<_Se, _It> //
+                      && _Sized_or_unreachable_sentinel_for<_OSe, _Out>) {
+            if constexpr (_Is_sized1 && _Is_sized2) {
+                return _Copy_memcpy_common(_IFirst, _RANGES next(_IFirst, _STD move(_ILast)), _OFirst,
+                    _RANGES next(_OFirst, _STD move(_OLast)));
+            } else if constexpr (_Is_sized1) {
+                return _Copy_memcpy_distance(_IFirst, _OFirst, _IFirst, _RANGES next(_IFirst, _STD move(_ILast)));
+            } else if constexpr (_Is_sized2) {
+                return _Copy_memcpy_distance(_IFirst, _OFirst, _OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
             } else {
-                _Uninitialized_backout _Backout{_STD move(_OFirst)};
-
-                for (; _IFirst != _ILast && _Backout._Last != _OLast; ++_IFirst) {
-                    _Backout._Emplace_back(_RANGES iter_move(_IFirst));
-                }
-
-                return {_STD move(_IFirst), _Backout._Release()};
+                _STL_ASSERT(false, "Tried to uninitialized_move two ranges with unreachable sentinels");
             }
+        } else {
+            _Uninitialized_backout _Backout{_STD move(_OFirst)};
+
+            for (; _IFirst != _ILast && _Backout._Last != _OLast; ++_IFirst) {
+                _Backout._Emplace_back(_RANGES iter_move(_IFirst));
+            }
+
+            return {_STD move(_IFirst), _Backout._Release()};
         }
+    }
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
