@@ -3291,11 +3291,9 @@ namespace ranges {
             return _Iterator<true>{*this, _RANGES begin(_Range)};
         }
 
-        // clang-format off
         _NODISCARD constexpr auto end() {
-            if constexpr (forward_range<_Vw> && is_reference_v<_InnerRng<false>>
-                    && forward_range<_InnerRng<false>> && common_range<_Vw> && common_range<_InnerRng<false>>) {
-                // clang-format on
+            if constexpr (forward_range<_Vw> && is_reference_v<_InnerRng<false>> //
+                          && forward_range<_InnerRng<false>> && common_range<_Vw> && common_range<_InnerRng<false>>) {
                 return _Iterator<_Simple_view<_Vw>>{*this, _RANGES end(_Range)};
             } else {
                 return _Sentinel<_Simple_view<_Vw>>{*this};

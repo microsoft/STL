@@ -2171,13 +2171,11 @@ namespace chrono {
             duration<common_type_t<typename _Duration::rep, seconds::rep>, ratio<1, _Pow10(fractional_width)>>;
 
         constexpr hh_mm_ss() noexcept : hh_mm_ss{_Duration::zero()} {}
-        // clang-format off
         constexpr explicit hh_mm_ss(_Duration _Dur)
-            : _Is_neg{_Dur < _Duration::zero()},
+            : _Is_neg{_Dur < _Duration::zero()}, //
               _Hours{_CHRONO duration_cast<_CHRONO hours>(_CHRONO abs(_Dur))},
               _Mins{_CHRONO duration_cast<_CHRONO minutes>(_CHRONO abs(_Dur) - hours())},
               _Secs{_CHRONO duration_cast<_CHRONO seconds>(_CHRONO abs(_Dur) - hours() - minutes())} {
-            // clang-format on
             if constexpr (treat_as_floating_point_v<typename precision::rep>) {
                 _Sub_secs = _CHRONO abs(_Dur) - hours() - minutes() - seconds();
             } else {
@@ -4012,10 +4010,8 @@ namespace chrono {
                 // std::days can't represent std::seconds, and duration<int, atto>::max() is ~9.2 seconds.
                 constexpr auto _Max_tick = static_cast<intmax_t>((numeric_limits<make_signed_t<_Rep1>>::max) ());
 
-                // clang-format off
-                return ratio_less_equal_v<_Period1, _Period2>
+                return ratio_less_equal_v<_Period1, _Period2> //
                     && ratio_greater_equal_v<ratio<_Max_tick, _Period2::num>, ratio_divide<ratio<1>, _Period1>>;
-                // clang-format on
             } else if (is_floating_point_v<_Rep1>) {
                 // With the smallest possible _Period1, ratio<1,INTMAX_MAX>, one day has a tick count of
                 // 86,400*INTMAX_MAX ~= 7.97e23. This is representable by float and double, so they can always represent
@@ -6138,12 +6134,10 @@ namespace chrono {
 
         template <class _Ty>
         static void _Validate_specifiers(const _Chrono_spec<_CharT>& _Spec, const _Ty& _Val) {
-            // clang-format off
-            if constexpr (_Is_specialization_v<_Ty, duration> || is_same_v<_Ty, sys_info>
-                || _Is_specialization_v<_Ty, time_point> || _Is_specialization_v<_Ty, _Local_time_format_t>) {
+            if constexpr (_Is_specialization_v<_Ty, duration> || is_same_v<_Ty, sys_info> //
+                          || _Is_specialization_v<_Ty, time_point> || _Is_specialization_v<_Ty, _Local_time_format_t>) {
                 return;
             }
-            // clang-format on
 
             if constexpr (_Is_specialization_v<_Ty, hh_mm_ss>) {
                 if (_Spec._Type == 'H' && _Val.hours() >= hours{24}) {

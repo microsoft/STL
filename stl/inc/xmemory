@@ -1495,29 +1495,27 @@ _CONSTEXPR20 _NoThrowFwdIt _Uninitialized_move_unchecked(_InIt _First, const _In
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // clang-format off
     template <class _It>
-    concept _No_throw_input_iterator = input_iterator<_It>
-        && is_lvalue_reference_v<iter_reference_t<_It>>
+    concept _No_throw_input_iterator = input_iterator<_It> //
+        && is_lvalue_reference_v<iter_reference_t<_It>> //
         && same_as<remove_cvref_t<iter_reference_t<_It>>, iter_value_t<_It>>;
 
     template <class _Se, class _It>
     concept _No_throw_sentinel_for = sentinel_for<_Se, _It>;
 
     template <class _It>
-    concept _No_throw_forward_iterator = _No_throw_input_iterator<_It>
-        && forward_iterator<_It>
+    concept _No_throw_forward_iterator = _No_throw_input_iterator<_It> //
+        && forward_iterator<_It> //
         && _No_throw_sentinel_for<_It, _It>;
 
     template <class _Rng>
-    concept _No_throw_input_range = range<_Rng>
-        && _No_throw_input_iterator<iterator_t<_Rng>>
+    concept _No_throw_input_range = range<_Rng> //
+        && _No_throw_input_iterator<iterator_t<_Rng>> //
         && _No_throw_sentinel_for<sentinel_t<_Rng>, iterator_t<_Rng>>;
 
     template <class _Rng>
-    concept _No_throw_forward_range = _No_throw_input_range<_Rng>
+    concept _No_throw_forward_range = _No_throw_input_range<_Rng> //
         && _No_throw_forward_iterator<iterator_t<_Rng>>;
-    // clang-format on
 
     template <class _InIt, class _OutIt>
     in_out_result<_InIt, _OutIt> _Copy_memcpy_count(_InIt _IFirst, _OutIt _OFirst, const size_t _Count) noexcept {

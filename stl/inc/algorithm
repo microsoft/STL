@@ -4011,12 +4011,11 @@ namespace ranges {
     template <class _It, class _Ty>
     concept _Is_input_with_value_type = input_iterator<_It> && same_as<iter_value_t<_It>, _Ty>;
 
-    // clang-format off
     template <class _It, class _Out>
-    concept _Can_reread_or_store = forward_iterator<_It>
-                                || _Is_input_with_value_type<_Out, iter_value_t<_It>>
-                                || indirectly_copyable_storable<_It, _Out>;
-    // clang-format on
+    concept _Can_reread_or_store = forward_iterator<_It> //
+        || _Is_input_with_value_type<_Out, iter_value_t<_It>> //
+        || indirectly_copyable_storable<_It, _Out>;
+
     class _Unique_copy_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
