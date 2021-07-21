@@ -438,89 +438,189 @@ constexpr _Ty* _Unfancy_maybe_null(_Ty* _Ptr) noexcept { // do nothing for plain
     return _Ptr;
 }
 
-template <class _Ty>
+#ifdef __SANITIZE_ADDRESS__
+extern "C" void __sanitizer_annotate_contiguous_container(const void*, const void*, const void*, const void*);
+
+template <class _Vec, class = void>
+struct _Has_minimum_allocation_alignment : bool_constant<disjunction_v<bool_constant<alignof(typename _Vec::value_type) >= 8>, is_same<typename _Vec::allocator_type, allocator<typename _Vec::value_type>>>> {};
+
+template <class _Vec>
+struct _Has_minimum_allocation_alignment<_Vec, void_t<decltype(_Vec::allocator_type::_Minimum_allocation_alignment)>> : bool_constant<_Vec::allocator_type::_Minimum_allocation_alignment >= 8> {};
+
+template <class _Ty, bool = _Has_minimum_allocation_alignment<_Ty>::value>
 class _NODISCARD _Asan_annotater {
+private:
+    using _Alloc      = typename _Ty::allocator_type;
+    using _Pointer    = typename _Ty::pointer;
+    using _Size_type  = typename _Ty::size_type;
+    using _Value_type = typename _Ty::value_type;
+
 public:
-    using size_type = typename _Ty::size_type;
-
     constexpr _Asan_annotater(const _Ty& _Target)
-#ifdef __SANITIZER_ADDRESS__
-        : _Target_vec(_Target), _Old_last(nullptr) {
-    }
-#else // ^^^ __SANITIZER_ADDRESS__ ^^^ // vvv !__SANITIZER_ADDRESS__ vvv
-    {
-        (void) _Target;
-    }
-#endif // !__SANITIZER_ADDRESS__
+        : _Target_vec(_Target), _Old_last(nullptr) {}
 
-    constexpr _Asan_annotater(const _Ty& _Target, size_type _New_size)
-#ifdef __SANITIZER_ADDRESS__
+    _CONSTEXPR20_CONTAINER _Asan_annotater(const _Ty& _Target, _Size_type _New_size)
         : _Target_vec(_Target) {
-        if (_STD is_constant_evaluated()) {
+#ifdef __cpp_lib_constexpr_dynamic_alloc
+        if (_STD is_constant_evaluated())  {
             return;
         }
+#endif // __cpp_lib_constexpr_dynamic_alloc
 
-        const auto& _My_data    = _Target_vec._Mypair._Myval2;
-        const pointer& _Myfirst = _My_data._Myfirst;
-        const pointer& _Mylast  = _My_data._Mylast;
-        const pointer& _Myend   = _My_data._Myend;
+        const auto& _My_data     = _Target_vec._Mypair._Myval2;
+        const _Pointer& _Myfirst = _My_data._Myfirst;
+        const _Pointer& _Mylast  = _My_data._Mylast;
+        const _Pointer& _Myend   = _My_data._Myend;
 
-        size_type _Old_capacity = static_cast<size_type>(_Myend - _Myfirst);
+        _Size_type _Old_capacity = static_cast<_Size_type>(_Myend - _Myfirst);
 
         if (_New_size > _Old_capacity) {
-            _Old_first = nullptr;
             _Old_last  = nullptr;
-            _Old_end   = nullptr;
             return;
         }
 
-        _Old_first          = _Myfirst;
-        _Old_last           = _Mylast;
-        _Old_end            = _Myend;
-        size_type _Old_size = static_cast<size_type>(_Mylast - _Myfirst);
+        _Old_last            = _Mylast;
+        _Size_type _Old_size = static_cast<_Size_type>(_Mylast - _Myfirst);
 
         if (_New_size > _Old_size) {
             __sanitizer_annotate_contiguous_container(_Myfirst, _Myend, _Old_last, _Myfirst + _New_size);
         }
     }
-#else // ^^^ __SANITIZER_ADDRESS__ ^^^ // vvv !__SANITIZER_ADDRESS__ vvv
-    {
-        (void) _Target;
-        (void) _New_size;
-    }
-#endif // !__SANITIZER_ADDRESS__
 
     _CONSTEXPR20_CONTAINER ~_Asan_annotater() {
-#ifndef __SANITIZER_ADDRESS__
-    }
-#else // ^^^ !__SANITIZER_ADDRESS__ ^^^ // vvv __SANITIZER_ADDRESS__ vvv
+#ifdef __cpp_lib_constexpr_dynamic_alloc
         if (_STD is_constant_evaluated()) {
             return;
         }
+#endif // __cpp_lib_constexpr_dynamic_alloc
 
-        const auto& _My_data = _Target_vec._Mypair._Myval2;
-        const pointer& _Myfirst = _My_data._Myfirst;
-        const pointer& _Mylast = _My_data._Mylast;
-        const pointer& _Myend = _My_data._Myend;
+        const auto& _My_data     = _Target_vec._Mypair._Myval2;
+        const _Pointer& _Myfirst = _My_data._Myfirst;
+        const _Pointer& _Mylast  = _My_data._Mylast;
+        const _Pointer& _Myend   = _My_data._Myend;
 
-        // If any of the pointers are not set we assume that entire illegal range of the vector
-        // needs to be annotated. We also need to check if the vector's buffer was reallocated
-        // from underneath us. In that case we also need to annotate the entire illegal range.
-        if (!_Old_first || !_Old_last || !_Old_end || _Old_first != _Myfirst || _Old_end != _Myend) {
+        if (!_Old_last) {
             __sanitizer_annotate_contiguous_container(_Myfirst, _Myend, _Myend, _Mylast);
         } else if (_Mylast < _Old_last) {
             __sanitizer_annotate_contiguous_container(_Myfirst, _Myend, _Old_last, _Mylast);
         }
     }
-}
 
-private : const _Ty& _Target_vec;
+private:
+    const _Ty& _Target_vec;
 
-pointer _Old_first;
-pointer _Old_last;
-pointer _Old_end;
-#endif // __SANITIZER_ADDRESS__
+    _Pointer _Old_last;
 };
+
+template <class _Ty>
+class _NODISCARD _Asan_annotater<_Ty, false> {
+private:
+    using _Alloc      = typename _Ty::allocator_type;
+    using _Pointer    = typename _Ty::pointer;
+    using _Size_type  = typename _Ty::size_type;
+    using _Value_type = typename _Ty::value_type;
+
+    const void* _Get_aligned_start() {
+        const auto& _My_data       = _Target_vec._Mypair._Myval2;
+        const _Pointer& _Myfirst   = _My_data._Myfirst;
+        const _Pointer& _Myend     = _My_data._Myend;
+        const _Size_type _Capacity = static_cast<_Size_type>(_Myend - _Myfirst);
+
+        if (_Capacity * sizeof(_Value_type) < 8) {
+            uintptr_t _Alignment_offset = reinterpret_cast<uintptr_t>(_Myfirst) & 0x7;
+            if (_Alignment_offset) {
+                _Alignment_offset = 8 - _Alignment_offset;
+            }
+
+            if (_Capacity * sizeof(_Value_type) > _Alignment_offset) {
+                return reinterpret_cast<const char*>(_Myfirst) + _Alignment_offset;
+            } else {
+                return nullptr;
+            }
+        } else {
+            return reinterpret_cast<void*>((reinterpret_cast<uintptr_t>(_Myfirst) + 7) & ~7);
+        }
+    }
+
+public:
+    constexpr _Asan_annotater(const _Ty& _Target)
+        : _Target_vec(_Target), _Old_last(nullptr), _Aligned_first(nullptr) {}
+
+    _CONSTEXPR20_CONTAINER _Asan_annotater(const _Ty& _Target, _Size_type _New_size)
+        : _Target_vec(_Target) {
+#ifdef __cpp_lib_constexpr_dynamic_alloc
+        if (_STD is_constant_evaluated())  {
+            return;
+        }
+#endif // __cpp_lib_constexpr_dynamic_alloc
+
+        const auto& _My_data     = _Target_vec._Mypair._Myval2;
+        const _Pointer& _Myfirst = _My_data._Myfirst;
+        const _Pointer& _Mylast  = _My_data._Mylast;
+        const _Pointer& _Myend   = _My_data._Myend;
+
+        const _Size_type _Old_capacity = static_cast<_Size_type>(_Myend - _Myfirst);
+
+        if (_New_size > _Old_capacity) {
+            _Old_last = nullptr;
+            return;
+        }
+
+        _Aligned_first = _Get_aligned_start();
+        if (!_Aligned_first) {
+            _Old_last = _Myend;
+        } else {
+            const void* _New_last = static_cast<const void*>(_Myfirst + _New_size);
+            _New_last = _New_last > _Aligned_first ? _New_last : _Aligned_first;
+            _Old_last = _Mylast > _Aligned_first ? _Mylast : _Aligned_first;
+
+            if (_New_last > _Old_last) {
+                __sanitizer_annotate_contiguous_container(_Aligned_first, _Myend, _Old_last, _New_last);
+            }
+        }
+    }
+
+    _CONSTEXPR20_CONTAINER ~_Asan_annotater() {
+#ifdef __cpp_lib_constexpr_dynamic_alloc
+        if (_STD is_constant_evaluated()) {
+            return;
+        }
+#endif // __cpp_lib_constexpr_dynamic_alloc
+
+        const auto& _My_data     = _Target_vec._Mypair._Myval2;
+        const _Pointer& _Mylast  = _My_data._Mylast;
+        const _Pointer& _Myend   = _My_data._Myend;
+
+        if (!_Old_last) {
+            _Aligned_first = _Get_aligned_start();
+            if (_Aligned_first) {
+                const void* _New_last = static_cast<const void*>(_Mylast);
+                _New_last = _New_last > _Aligned_first ? _New_last : _Aligned_first;
+
+                __sanitizer_annotate_contiguous_container(_Aligned_first, _Myend, _Myend, _New_last);
+            }
+            return;
+        } else if (_Aligned_first)  {
+            const void* _New_last = static_cast<const void*>(_Mylast);
+            _New_last = _New_last > _Aligned_first ? _New_last : _Aligned_first;
+
+            if (_Old_last > _New_last) {
+                __sanitizer_annotate_contiguous_container(_Aligned_first, _Myend, _Old_last, _New_last);
+            }
+        }
+    }
+
+private:
+    const _Ty& _Target_vec;
+
+    const void *_Old_last;
+    const void *_Aligned_first;
+};
+
+#define _ASAN_ANNOTATE(...) _Asan_annotater<remove_cv_t<remove_reference_t<decltype(*this)>>> _Annotater(__VA_ARGS__)
+#else // ^^^ __SANITIZE_ADDRESS__ ^^^ / vvv !__SANITIZE_ADDRESS__ vvv
+#define _ASAN_ANNOTATE(...)
+#endif // !__SANITIZE_ADDRESS__
 
 // CLASS TEMPLATE vector
 template <class _Ty, class _Alloc = allocator<_Ty>>
@@ -529,11 +629,9 @@ private:
     template <class>
     friend class _Vb_val;
     friend _Tidy_guard<vector>;
-    friend _Asan_annotater<vector>;
 
     using _Alty           = _Rebind_alloc_t<_Alloc, _Ty>;
     using _Alty_traits    = allocator_traits<_Alty>;
-    using _Asan_annotater = _Asan_annotater<vector<_Ty, _Alloc>>;
 
 public:
     static_assert(!_ENFORCE_MATCHING_ALLOCATORS || is_same_v<_Ty, typename _Alloc::value_type>,
@@ -549,8 +647,24 @@ public:
     using difference_type = typename _Alty_traits::difference_type;
 
 private:
+#ifdef __SANITIZE_ADDRESS__
+    friend _Asan_annotater<vector<_Ty, _Alloc>>;
+#endif // __SANITIZE_ADDRESS__
+
     using _Scary_val = _Vector_val<conditional_t<_Is_simple_alloc_v<_Alty>, _Simple_types<_Ty>,
         _Vec_iter_types<_Ty, size_type, difference_type, pointer, const_pointer, _Ty&, const _Ty&>>>;
+
+    template <class... _Valty>
+    _CONSTEXPR20_CONTAINER _Ty& _Emplace_one_at_back(_Valty&&... _Val) {
+        auto& _My_data   = _Mypair._Myval2;
+        pointer& _Mylast = _My_data._Mylast;
+
+        if (_Mylast != _My_data._Myend) {
+            return _Emplace_back_with_unused_capacity(_STD forward<_Valty>(_Val)...);
+        }
+
+        return *_Emplace_reallocate(_Mylast, _STD forward<_Valty>(_Val)...);
+    }
 
 public:
     using iterator               = _Vector_iterator<_Scary_val>;
@@ -569,34 +683,21 @@ public:
 
     _CONSTEXPR20_CONTAINER explicit vector(_CRT_GUARDOVERFLOW const size_type _Count, const _Alloc& _Al = _Alloc())
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        _Asan_annotater _Asan_annotate(*this);
+        _ASAN_ANNOTATE(*this);
         _Construct_n(_Count);
     }
 
     _CONSTEXPR20_CONTAINER vector(
         _CRT_GUARDOVERFLOW const size_type _Count, const _Ty& _Val, const _Alloc& _Al = _Alloc())
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        _Asan_annotater _Asan_annotate(*this);
+        _ASAN_ANNOTATE(*this);
         _Construct_n(_Count, _Val);
-    }
-
-private:
-    template <class... _Valty>
-    _CONSTEXPR20_CONTAINER _Ty& _Emplace_one_at_back(_Valty&&... _Val) {
-        auto& _My_data   = _Mypair._Myval2;
-        pointer& _Mylast = _My_data._Mylast;
-
-        if (_Mylast != _My_data._Myend) {
-            return _Emplace_back_with_unused_capacity(_STD forward<_Valty>(_Val)...);
-        }
-
-        return *_Emplace_reallocate(_Mylast, _STD forward<_Valty>(_Val)...);
     }
 
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     _CONSTEXPR20_CONTAINER vector(_Iter _First, _Iter _Last, const _Alloc& _Al = _Alloc())
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        _Asan_annotater _Asan_annotate(*this);
+        _ASAN_ANNOTATE(*this);
         _Adl_verify_range(_First, _Last);
         auto _UFirst = _Get_unwrapped(_First);
         auto _ULast  = _Get_unwrapped(_Last);
@@ -609,7 +710,7 @@ private:
             _Tidy_guard<vector> _Guard{this};
 
             for (; _UFirst != _ULast; ++_UFirst) {
-                emplace_back(*_UFirst); // performance note: emplace_back()'s strong guarantee is unnecessary here
+                _Emplace_one_at_back(*_UFirst);
             }
 
             _Guard._Target = nullptr;
@@ -619,13 +720,13 @@ private:
 
     _CONSTEXPR20_CONTAINER vector(initializer_list<_Ty> _Ilist, const _Alloc& _Al = _Alloc())
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        _Asan_annotater _Asan_annotate(*this);
+        _ASAN_ANNOTATE(*this);
         _Construct_n(_Convert_size<size_type>(_Ilist.size()), _Ilist.begin(), _Ilist.end());
     }
 
     _CONSTEXPR20_CONTAINER vector(const vector& _Right)
         : _Mypair(_One_then_variadic_args_t{}, _Alty_traits::select_on_container_copy_construction(_Right._Getal())) {
-        _Asan_annotater _Asan_annotate(*this);
+        _ASAN_ANNOTATE(*this);
 
         const auto& _Right_data = _Right._Mypair._Myval2;
         const auto _Count       = static_cast<size_type>(_Right_data._Mylast - _Right_data._Myfirst);
@@ -633,7 +734,7 @@ private:
     }
 
     _CONSTEXPR20_CONTAINER vector(const vector& _Right, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        _Asan_annotater _Asan_annotate(*this);
+        _ASAN_ANNOTATE(*this);
 
         const auto& _Right_data = _Right._Mypair._Myval2;
         const auto _Count       = static_cast<size_type>(_Right_data._Mylast - _Right_data._Myfirst);
@@ -662,7 +763,7 @@ private:
             if (_Al != _Right._Getal()) {
                 const auto _Count = static_cast<size_type>(_Right_data._Mylast - _Right_data._Myfirst);
                 if (_Count != 0) {
-                    _Asan_annotater _Asan_annotate(*this);
+                    _ASAN_ANNOTATE(*this);
                     _Buy_raw(_Count);
                     _Tidy_guard<vector> _Guard{this};
                     _My_data._Mylast =
@@ -709,7 +810,6 @@ private:
         auto& _My_data   = _Mypair._Myval2;
         pointer& _Mylast = _My_data._Mylast;
         _STL_INTERNAL_CHECK(_Mylast != _My_data._Myend); // check that we have unused capacity
-
         _Alty_traits::construct(_Getal(), _Unfancy(_Mylast), _STD forward<_Valty>(_Val)...);
         _Orphan_range(_Mylast, _Mylast);
         _Ty& _Result = *_Mylast;
@@ -722,11 +822,7 @@ public:
     template <class... _Valty>
     _CONSTEXPR20_CONTAINER decltype(auto) emplace_back(_Valty&&... _Val) {
         // insert by perfectly forwarding into element at end, provide strong guarantee
-        auto& _My_data    = _Mypair._Myval2;
-        pointer& _Myfirst = _My_data._Myfirst;
-        pointer& _Mylast  = _My_data._Mylast;
-
-        _Asan_annotater _Asan_annotate(*this, static_cast<size_type>(_Mylast - _Myfirst) + 1);
+        _ASAN_ANNOTATE(*this, static_cast<size_type>(_Mypair._Myval2._Mylast - _Mypair._Myval2._Myfirst) + 1);
 
         _Ty& _Result = _Emplace_one_at_back(_STD forward<_Valty>(_Val)...);
 #if _HAS_CXX17
@@ -806,7 +902,7 @@ public:
             "vector emplace iterator outside range");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
-        _Asan_annotater _Asan_annotate(*this, static_cast<size_type>(_Oldlast - _My_data._Myfirst) + 1);
+        _ASAN_ANNOTATE(*this, static_cast<size_type>(_Oldlast - _My_data._Myfirst) + 1);
 
         if (_Oldlast != _My_data._Myend) {
             if (_Whereptr == _Oldlast) { // at back, provide strong guarantee
@@ -852,7 +948,7 @@ public:
             "vector insert iterator outside range");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
-        _Asan_annotater _Asan_annotate(*this, static_cast<size_type>(_Oldlast - _Oldfirst) + _Count);
+        _ASAN_ANNOTATE(*this, static_cast<size_type>(_Oldlast - _Oldfirst) + _Count);
 
         const auto _Whereoff        = static_cast<size_type>(_Whereptr - _Oldfirst);
         const auto _Unused_capacity = static_cast<size_type>(_My_data._Myend - _Oldlast);
@@ -957,7 +1053,7 @@ private:
         const pointer _Oldlast      = _Mylast;
         const auto _Unused_capacity = static_cast<size_type>(_My_data._Myend - _Oldlast);
 
-        _Asan_annotater _Asan_annotate(*this, static_cast<size_type>(_Oldlast - _Oldfirst) + _Count);
+        _ASAN_ANNOTATE(*this, static_cast<size_type>(_Oldlast - _Oldfirst) + _Count);
 
         if (_Count == 0) { // nothing to do, avoid invalidating iterators
         } else if (_Count > _Unused_capacity) { // reallocate
@@ -1000,6 +1096,7 @@ private:
         } else { // Attempt to provide the strong guarantee for EmplaceConstructible failure.
                  // If we encounter copy/move construction/assignment failure, provide the basic guarantee.
                  // (For one-at-back, this provides the strong guarantee.)
+
             const auto _Affected_elements = static_cast<size_type>(_Oldlast - _Whereptr);
 
             if (_Count < _Affected_elements) { // some affected elements must be assigned
@@ -1070,7 +1167,6 @@ public:
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
         _Adl_verify_range(_First, _Last);
-
         const auto _Whereoff = static_cast<size_type>(_Whereptr - _Oldfirst);
         _Insert_range(_Where, _Get_unwrapped(_First), _Get_unwrapped(_Last), _Iter_cat_t<_Iter>{});
         return _Make_iterator_offset(_Whereoff);
@@ -1089,7 +1185,7 @@ public:
 
         _My_data._Orphan_all();
 
-        _Asan_annotater _Asan_annotate(*this, _Newsize);
+        _ASAN_ANNOTATE(*this, _Newsize);
 
         auto _Oldsize = static_cast<size_type>(_Mylast - _Myfirst);
         if (_Newsize > _Oldsize) {
@@ -1153,7 +1249,7 @@ private:
 
         _My_data._Orphan_all();
 
-        _Asan_annotater _Asan_annotate(*this, _Newsize);
+        _ASAN_ANNOTATE(*this, _Newsize);
 
         if constexpr (conjunction_v<bool_constant<_Ptr_copy_cat<_Iter, _Ty*>::_Trivially_copyable>,
                           _Uses_default_construct<_Alty, _Ty*, decltype(*_First)>,
@@ -1278,6 +1374,8 @@ private:
     template <class _Ty2>
     _CONSTEXPR20_CONTAINER void _Resize(const size_type _Newsize, const _Ty2& _Val) {
         // trim or append elements, provide strong guarantee
+        _ASAN_ANNOTATE(*this, _Newsize);
+
         auto& _Al           = _Getal();
         auto& _My_data      = _Mypair._Myval2;
         pointer& _Myfirst   = _My_data._Myfirst;
@@ -1314,13 +1412,11 @@ private:
 public:
     _CONSTEXPR20_CONTAINER void resize(_CRT_GUARDOVERFLOW const size_type _Newsize) {
         // trim or append value-initialized elements, provide strong guarantee
-        _Asan_annotater _Asan_annotate(*this, _Newsize);
         _Resize(_Newsize, _Value_init_tag{});
     }
 
     _CONSTEXPR20_CONTAINER void resize(_CRT_GUARDOVERFLOW const size_type _Newsize, const _Ty& _Val) {
         // trim or append copies of _Val, provide strong guarantee
-        _Asan_annotater _Asan_annotate(*this, _Newsize);
         _Resize(_Newsize, _Val);
     }
 
@@ -1408,7 +1504,7 @@ public:
                 _Xlength();
             }
 
-            _Asan_annotater _Asan_annotate(*this);
+            _ASAN_ANNOTATE(*this);
             _Reallocate_exactly(_Newcapacity);
         }
     }
@@ -1421,7 +1517,7 @@ public:
             if (_Oldfirst == _Oldlast) {
                 _Tidy();
             } else {
-                _Asan_annotater _Asan_annotate(*this);
+                _ASAN_ANNOTATE(*this);
                 _Reallocate_exactly(static_cast<size_type>(_Oldlast - _Oldfirst));
             }
         }
@@ -1429,10 +1525,9 @@ public:
 
     _CONSTEXPR20_CONTAINER void pop_back() noexcept /* strengthened */ {
         auto& _My_data    = _Mypair._Myval2;
-        pointer& _Myfirst = _My_data._Myfirst;
         pointer& _Mylast  = _My_data._Mylast;
 
-        _Asan_annotater _Asan_annotate(*this, static_cast<size_type>(_Mylast - _Myfirst) - 1);
+        _ASAN_ANNOTATE(*this, static_cast<size_type>(_Mylast - _My_data._Myfirst) - 1);
 
 #if _ITERATOR_DEBUG_LEVEL == 2
         _STL_VERIFY(_My_data._Myfirst != _Mylast, "vector empty before pop");
@@ -1456,7 +1551,7 @@ public:
             "vector erase iterator outside range");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
-        _Asan_annotater _Asan_annotate(*this, static_cast<size_type>(_Mylast - _Myfirst) - 1);
+        _ASAN_ANNOTATE(*this, static_cast<size_type>(_Mylast - _Myfirst) - 1);
 
         _Orphan_range(_Whereptr, _Mylast);
         _Move_unchecked(_Whereptr + 1, _Mylast, _Whereptr);
@@ -1470,7 +1565,6 @@ public:
         const pointer _Firstptr = _First._Ptr;
         const pointer _Lastptr  = _Last._Ptr;
         auto& _My_data          = _Mypair._Myval2;
-        pointer& _Myfirst       = _My_data._Myfirst;
         pointer& _Mylast        = _My_data._Mylast;
 
 #if _ITERATOR_DEBUG_LEVEL == 2
@@ -1483,7 +1577,7 @@ public:
             _Orphan_range(_Firstptr, _Mylast);
 
             const pointer _Newlast = _Move_unchecked(_Lastptr, _Mylast, _Firstptr);
-            _Asan_annotater _Asan_annotate(*this, static_cast<size_type>(_Newlast - _Myfirst));
+            _ASAN_ANNOTATE(*this, static_cast<size_type>(_Newlast - _My_data._Myfirst));
             _Destroy_range(_Newlast, _Mylast, _Getal());
             _Mylast = _Newlast;
         }
@@ -1496,7 +1590,7 @@ public:
         pointer& _Myfirst = _My_data._Myfirst;
         pointer& _Mylast  = _My_data._Mylast;
 
-        _Asan_annotater _Asan_annotate(*this);
+        _ASAN_ANNOTATE(*this);
 
         _My_data._Orphan_all();
         _Destroy_range(_Myfirst, _Mylast, _Getal());
