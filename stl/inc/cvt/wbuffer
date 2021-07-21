@@ -71,7 +71,7 @@ namespace stdext {
                 _Loc   = _STD locale(_Loc, _Pcvt);
             }
 
-            virtual ~wbuffer_convert() noexcept {
+            ~wbuffer_convert() noexcept override {
                 while (_Status == _Wrote) { // put any trailing homing shift
                     if (_Str.size() < _STRING_INC) {
                         _Str.assign(_STRING_INC, '\0');

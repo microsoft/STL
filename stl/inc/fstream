@@ -179,7 +179,7 @@ public:
         _Init(_File, _Newfl);
     }
 
-    virtual __CLR_OR_THIS_CALL ~basic_filebuf() noexcept {
+    __CLR_OR_THIS_CALL ~basic_filebuf() noexcept override {
         if (_Myfile) {
             _Reset_back(); // revert from _Mychar buffer
         }
@@ -944,7 +944,7 @@ public:
 #endif // _HAS_OLD_IOSTREAMS_MEMBERS
 #endif // _NATIVE_WCHAR_T_DEFINED
 
-    virtual __CLR_OR_THIS_CALL ~basic_ifstream() noexcept {}
+    __CLR_OR_THIS_CALL ~basic_ifstream() noexcept override {}
 
     _NODISCARD _Myfb* rdbuf() const {
         return const_cast<_Myfb*>(_STD addressof(_Filebuffer));
@@ -1128,7 +1128,7 @@ public:
 #endif // _HAS_OLD_IOSTREAMS_MEMBERS
 #endif // _NATIVE_WCHAR_T_DEFINED
 
-    virtual __CLR_OR_THIS_CALL ~basic_ofstream() noexcept {}
+    __CLR_OR_THIS_CALL ~basic_ofstream() noexcept override {}
 
     _NODISCARD _Myfb* rdbuf() const {
         return const_cast<_Myfb*>(_STD addressof(_Filebuffer));
@@ -1318,7 +1318,7 @@ public:
 #endif // _HAS_OLD_IOSTREAMS_MEMBERS
 #endif // _NATIVE_WCHAR_T_DEFINED
 
-    virtual __CLR_OR_THIS_CALL ~basic_fstream() noexcept {}
+    __CLR_OR_THIS_CALL ~basic_fstream() noexcept override {}
 
     _NODISCARD _Myfb* rdbuf() const {
         return const_cast<_Myfb*>(_STD addressof(_Filebuffer));

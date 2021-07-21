@@ -1336,7 +1336,7 @@ public:
     filesystem_error(const string& _Message, const path& _Path1, const path& _Path2, error_code _Errcode)
         : system_error(_Errcode, _Message), _Mypval1(_Path1), _Mypval2(_Path2) {}
 
-    virtual __CLR_OR_THIS_CALL ~filesystem_error() noexcept {}
+    __CLR_OR_THIS_CALL ~filesystem_error() noexcept override {}
 
     filesystem_error(filesystem_error&& _Right) noexcept
         : system_error(_Right.code(), _Right.what()), _Mypval1(_STD move(_Right._Mypval1)),

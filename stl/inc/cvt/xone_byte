@@ -37,7 +37,7 @@ namespace stdext {
 
             explicit _Cvt_one_byte(size_t _Refs = 0) : _Mybase(_Refs) {}
 
-            virtual ~_Cvt_one_byte() noexcept {}
+            ~_Cvt_one_byte() noexcept override {}
 
         protected:
             result do_in(_Statype&, const _Byte* _First1, const _Byte* _Last1, const _Byte*& _Mid1, _Elem* _First2,

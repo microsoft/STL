@@ -689,7 +689,7 @@ public:
         this->_Running = true;
     }
 
-    virtual ~_Task_async_state() noexcept {
+    ~_Task_async_state() noexcept override {
         _Wait();
     }
 

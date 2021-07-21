@@ -107,7 +107,7 @@ public:
     basic_stringbuf(const basic_stringbuf&) = delete;
     basic_stringbuf& operator=(const basic_stringbuf&) = delete;
 
-    virtual ~basic_stringbuf() noexcept {
+    ~basic_stringbuf() noexcept override {
         _Tidy();
     }
 
@@ -612,7 +612,7 @@ public:
     basic_istringstream(const basic_istringstream&) = delete;
     basic_istringstream& operator=(const basic_istringstream&) = delete;
 
-    virtual ~basic_istringstream() noexcept {}
+    ~basic_istringstream() noexcept override {}
 
     _NODISCARD _Mysb* rdbuf() const {
         return const_cast<_Mysb*>(_STD addressof(_Stringbuffer));
@@ -732,7 +732,7 @@ public:
     basic_ostringstream(const basic_ostringstream&) = delete;
     basic_ostringstream& operator=(const basic_ostringstream&) = delete;
 
-    virtual ~basic_ostringstream() noexcept {}
+    ~basic_ostringstream() noexcept override {}
 
     _NODISCARD _Mysb* rdbuf() const {
         return const_cast<_Mysb*>(_STD addressof(_Stringbuffer));
@@ -858,7 +858,7 @@ public:
     basic_stringstream(const basic_stringstream&) = delete;
     basic_stringstream& operator=(const basic_stringstream&) = delete;
 
-    virtual ~basic_stringstream() noexcept {}
+    ~basic_stringstream() noexcept override {}
 
     _NODISCARD _Mysb* rdbuf() const {
         return const_cast<_Mysb*>(_STD addressof(_Stringbuffer));

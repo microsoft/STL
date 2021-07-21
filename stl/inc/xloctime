@@ -32,7 +32,7 @@ struct _CRTIMP2_PURE_IMPORT time_base : locale::facet { // base class for time_g
 
     __CLR_OR_THIS_CALL time_base(size_t _Refs = 0) : locale::facet(_Refs) {}
 
-    __CLR_OR_THIS_CALL ~time_base() noexcept {}
+    __CLR_OR_THIS_CALL ~time_base() noexcept override {}
 };
 
 // CLASS TEMPLATE time_get
@@ -159,7 +159,7 @@ public:
     }
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~time_get() noexcept {
+    __CLR_OR_THIS_CALL ~time_get() noexcept override {
         _Tidy();
     }
 
@@ -634,7 +634,7 @@ public:
         : time_get<_Elem, _InIt>(_Locinfo(_Str.c_str()), _Refs) {} // construct for named locale
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~time_get_byname() noexcept {}
+    __CLR_OR_THIS_CALL ~time_get_byname() noexcept override {}
 };
 
 // CLASS TEMPLATE time_put
@@ -709,7 +709,7 @@ public:
     }
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~time_put() noexcept {}
+    __CLR_OR_THIS_CALL ~time_put() noexcept override {}
 
     void __CLR_OR_THIS_CALL _Init(const _Locinfo& _Lobj) { // initialize from _Lobj
         _Tnames = _Lobj._Gettnames();
@@ -834,7 +834,7 @@ public:
     }
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~time_put() noexcept {}
+    __CLR_OR_THIS_CALL ~time_put() noexcept override {}
 
     __CLR_OR_THIS_CALL time_put(const char* _Locname, size_t _Refs = 0) : locale::facet(_Refs) {
         _BEGIN_LOCINFO(_Lobj(_Locname))
@@ -965,7 +965,7 @@ public:
     }
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~time_put() noexcept {}
+    __CLR_OR_THIS_CALL ~time_put() noexcept override {}
 
     __CLR_OR_THIS_CALL time_put(const char* _Locname, size_t _Refs = 0) : locale::facet(_Refs) {
         _BEGIN_LOCINFO(_Lobj(_Locname))
@@ -1038,7 +1038,7 @@ public:
         : time_put<_Elem, _OutIt>(_Str.c_str(), _Refs) {} // construct for named locale
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~time_put_byname() noexcept {}
+    __CLR_OR_THIS_CALL ~time_put_byname() noexcept override {}
 };
 
 #if defined(_DLL_CPPLIB)

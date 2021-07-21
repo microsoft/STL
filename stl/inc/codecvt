@@ -43,7 +43,7 @@ public:
 
     explicit codecvt_utf8(size_t _Refs = 0) : _Mybase(_Refs) {}
 
-    virtual __CLR_OR_THIS_CALL ~codecvt_utf8() noexcept {}
+    __CLR_OR_THIS_CALL ~codecvt_utf8() noexcept override {}
 
 protected:
     result __CLR_OR_THIS_CALL do_in(_Statype& _State, const _Byte* _First1, const _Byte* _Last1, const _Byte*& _Mid1,
@@ -230,7 +230,7 @@ public:
 
     explicit codecvt_utf16(size_t _Refs = 0) : _Mybase(_Refs) {}
 
-    virtual __CLR_OR_THIS_CALL ~codecvt_utf16() noexcept {}
+    __CLR_OR_THIS_CALL ~codecvt_utf16() noexcept override {}
 
 protected:
     result __CLR_OR_THIS_CALL do_in(_Statype& _State, const _Byte* _First1, const _Byte* _Last1, const _Byte*& _Mid1,
@@ -438,7 +438,7 @@ public:
 
     explicit codecvt_utf8_utf16(size_t _Refs = 0) : _Mybase(_Refs) {}
 
-    virtual __CLR_OR_THIS_CALL ~codecvt_utf8_utf16() noexcept {}
+    __CLR_OR_THIS_CALL ~codecvt_utf8_utf16() noexcept override {}
 
 protected:
     result __CLR_OR_THIS_CALL do_in(_Statype& _State, const _Byte* _First1, const _Byte* _Last1, const _Byte*& _Mid1,

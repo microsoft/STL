@@ -34,7 +34,7 @@ class _CRTIMP2_IMPORT bad_cast : public exception { // base of all bad cast exce
 public:
     bad_cast(const char* _Message = "bad cast") noexcept : exception(_Message) {}
 
-    virtual ~bad_cast() noexcept {}
+    ~bad_cast() noexcept override {}
 
 protected:
     void _Doraise() const override { // perform class-specific exception handling
@@ -47,7 +47,7 @@ class _CRTIMP2_IMPORT bad_typeid : public exception { // base of all bad typeid 
 public:
     bad_typeid(const char* _Message = "bad typeid") noexcept : exception(_Message) {}
 
-    virtual ~bad_typeid() noexcept {}
+    ~bad_typeid() noexcept override {}
 
 protected:
     void _Doraise() const override { // perform class-specific exception handling

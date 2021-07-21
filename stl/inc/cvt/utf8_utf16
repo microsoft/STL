@@ -43,7 +43,7 @@ namespace stdext {
 
             explicit codecvt_utf8_utf16(size_t _Refs = 0) : _Mybase(_Refs) {}
 
-            virtual ~codecvt_utf8_utf16() noexcept {}
+            ~codecvt_utf8_utf16() noexcept override {}
 
         protected:
             result do_in(_Statype& _State, const _Byte* _First1, const _Byte* _Last1, const _Byte*& _Mid1,

@@ -101,7 +101,7 @@ namespace stdext {
 
             explicit codecvt_jis(size_t _Refs = 0) : _Mybase(_Refs) {}
 
-            virtual ~codecvt_jis() noexcept {}
+            ~codecvt_jis() noexcept override {}
 
         protected:
             result do_in(_Statype& _State, const _Byte* _First1, const _Byte* _Last1, const _Byte*& _Mid1,

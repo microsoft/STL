@@ -103,7 +103,7 @@ protected:
         _END_LOCINFO()
     }
 
-    virtual __CLR_OR_THIS_CALL ~_Mpunct() noexcept {
+    __CLR_OR_THIS_CALL ~_Mpunct() noexcept override {
         _Tidy();
     }
 
@@ -271,7 +271,7 @@ public:
 protected:
     moneypunct(const char* _Locname, size_t _Refs = 0) : _Mpunct<_Elem>(_Locname, _Refs, _Intl) {}
 
-    virtual __CLR_OR_THIS_CALL ~moneypunct() noexcept {}
+    __CLR_OR_THIS_CALL ~moneypunct() noexcept override {}
 };
 
 #ifdef __clang__
@@ -304,7 +304,7 @@ public:
         : moneypunct<_Elem, _Intl>(_Str.c_str(), _Refs) {} // construct for named locale
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~moneypunct_byname() noexcept {}
+    __CLR_OR_THIS_CALL ~moneypunct_byname() noexcept override {}
 };
 
 // CLASS TEMPLATE money_get
@@ -353,7 +353,7 @@ public:
     }
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~money_get() noexcept {}
+    __CLR_OR_THIS_CALL ~money_get() noexcept override {}
 
     void _Init(const _Locinfo&) {} // initialize from _Locinfo object
 
@@ -659,7 +659,7 @@ public:
     }
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~money_put() noexcept {}
+    __CLR_OR_THIS_CALL ~money_put() noexcept override {}
 
     void _Init(const _Locinfo&) {} // initialize from _Locinfo object
 

@@ -100,7 +100,7 @@ public:
         }
     }
 
-    virtual __CLR_OR_THIS_CALL ~strstreambuf() noexcept {
+    __CLR_OR_THIS_CALL ~strstreambuf() noexcept override {
         _Tidy();
     }
 
@@ -471,7 +471,7 @@ public:
         }
     }
 
-    virtual __CLR_OR_THIS_CALL ~istrstream() noexcept {}
+    __CLR_OR_THIS_CALL ~istrstream() noexcept override {}
 
     _NODISCARD _Mysb* __CLR_OR_THIS_CALL rdbuf() const {
         return const_cast<_Mysb*>(&_Strbuffer);
@@ -527,7 +527,7 @@ public:
         }
     }
 
-    virtual __CLR_OR_THIS_CALL ~ostrstream() noexcept {}
+    __CLR_OR_THIS_CALL ~ostrstream() noexcept override {}
 
     _NODISCARD _Mysb* __CLR_OR_THIS_CALL rdbuf() const {
         return const_cast<_Mysb*>(&_Strbuffer);
@@ -596,7 +596,7 @@ public:
         }
     }
 
-    virtual __CLR_OR_THIS_CALL ~strstream() noexcept {}
+    __CLR_OR_THIS_CALL ~strstream() noexcept override {}
 
     _NODISCARD _Mysb* __CLR_OR_THIS_CALL rdbuf() const {
         return const_cast<_Mysb*>(&_Strbuffer);

@@ -40,7 +40,7 @@ namespace stdext {
 
             explicit codecvt_ebcdic(size_t _Refs = 0) : _Mybase(_Refs) {}
 
-            virtual ~codecvt_ebcdic() noexcept {}
+            ~codecvt_ebcdic() noexcept override {}
 
         protected:
             result do_in(_Statype&, const _Byte* _First1, const _Byte* _Last1, const _Byte*& _Mid1, _Elem* _First2,

@@ -721,7 +721,7 @@ public:
     }
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~codecvt() noexcept {}
+    __CLR_OR_THIS_CALL ~codecvt() noexcept override {}
 
     void __CLR_OR_THIS_CALL _Init(const _Locinfo&) {} // initialize from _Locinfo object
 
@@ -908,7 +908,7 @@ public:
     }
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~codecvt() noexcept {}
+    __CLR_OR_THIS_CALL ~codecvt() noexcept override {}
 
     void __CLR_OR_THIS_CALL _Init(const _Locinfo&) {} // initialize
 
@@ -1207,7 +1207,7 @@ public:
     }
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~codecvt() noexcept {}
+    __CLR_OR_THIS_CALL ~codecvt() noexcept override {}
 
     void __CLR_OR_THIS_CALL _Init(const _Locinfo&) {} // initialize
 
@@ -1977,7 +1977,7 @@ public:
     }
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~codecvt() noexcept {}
+    __CLR_OR_THIS_CALL ~codecvt() noexcept override {}
 
     void __CLR_OR_THIS_CALL _Init(const _Locinfo& _Lobj) { // initialize from _Lobj
         _Cvt = _Lobj._Getcvt();
@@ -2177,7 +2177,7 @@ public:
     }
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~codecvt() noexcept {}
+    __CLR_OR_THIS_CALL ~codecvt() noexcept override {}
 
     void __CLR_OR_THIS_CALL _Init(const _Locinfo& _Lobj) { // initialize from _Lobj
         _Cvt = _Lobj._Getcvt();
@@ -2344,7 +2344,7 @@ public:
         : codecvt<_Elem, _Byte, _Statype>(_Locinfo(_Str.c_str()), _Refs) {} // construct for named locale
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~codecvt_byname() noexcept {}
+    __CLR_OR_THIS_CALL ~codecvt_byname() noexcept override {}
 };
 
 // CTYPE CODE BITS
@@ -2378,7 +2378,7 @@ struct _CRTIMP2_PURE_IMPORT ctype_base : locale::facet { // base for ctype
 
     __CLR_OR_THIS_CALL ctype_base(size_t _Refs = 0) : locale::facet(_Refs) {}
 
-    __CLR_OR_THIS_CALL ~ctype_base() noexcept {}
+    __CLR_OR_THIS_CALL ~ctype_base() noexcept override {}
 };
 
 #undef _XA
@@ -2476,7 +2476,7 @@ public:
     }
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~ctype() noexcept {
+    __CLR_OR_THIS_CALL ~ctype() noexcept override {
         if (_Ctype._Delfl) {
             _CSTD free(const_cast<short*>(_Ctype._Table));
         }
@@ -2745,7 +2745,7 @@ public:
     _PGLOBAL static const size_t table_size = 1 << CHAR_BIT; // size of ctype mapping table, typically 256
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~ctype() noexcept {
+    __CLR_OR_THIS_CALL ~ctype() noexcept override {
         _Tidy();
     }
 
@@ -2901,7 +2901,7 @@ public:
     }
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~ctype() noexcept {
+    __CLR_OR_THIS_CALL ~ctype() noexcept override {
         if (_Ctype._Delfl) {
             _CSTD free(const_cast<short*>(_Ctype._Table));
         }
@@ -3103,7 +3103,7 @@ public:
     }
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~ctype() noexcept {
+    __CLR_OR_THIS_CALL ~ctype() noexcept override {
         if (_Ctype._Delfl) {
             _CSTD free(const_cast<short*>(_Ctype._Table));
         }
@@ -3240,7 +3240,7 @@ public:
         : ctype<_Elem>(_Locinfo(_Str.c_str()), _Refs) {} // construct for named locale
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~ctype_byname() noexcept {}
+    __CLR_OR_THIS_CALL ~ctype_byname() noexcept override {}
 };
 
 // FUNCTION TEMPLATE _Getloctxt

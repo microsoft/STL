@@ -76,7 +76,7 @@ protected:
         _END_LOCINFO()
     }
 
-    virtual __CLR_OR_THIS_CALL ~messages() noexcept {}
+    __CLR_OR_THIS_CALL ~messages() noexcept override {}
 
     void _Init(const _Locinfo&) {} // initialize from _Locinfo object (do nothing)
 
@@ -118,7 +118,7 @@ public:
         : messages<_Elem>(_Str.c_str(), _Refs) {} // construct for named locale
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~messages_byname() noexcept {}
+    __CLR_OR_THIS_CALL ~messages_byname() noexcept override {}
 };
 
 #if defined(_DLL_CPPLIB)
