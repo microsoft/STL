@@ -278,10 +278,10 @@ struct contiguous_iterator_tag : random_access_iterator_tag {};
 template <class _Ty>
 using _With_reference = _Ty&;
 
-// clang-format off
 template <class _Ty>
-concept _Can_reference = requires { typename _With_reference<_Ty>; };
-// clang-format on
+concept _Can_reference = requires {
+    typename _With_reference<_Ty>;
+};
 
 template <class _Ty>
 concept _Dereferenceable = requires(_Ty& __t) {
@@ -3005,14 +3005,15 @@ namespace ranges {
         using is_transparent = int;
     };
 
-    // clang-format off
     template <class _Rng>
-    concept common_range = range<_Rng>
-        && same_as<iterator_t<_Rng>, sentinel_t<_Rng>>;
+    concept common_range = range<_Rng> && same_as<iterator_t<_Rng>, sentinel_t<_Rng>>;
 
     template <class _Ty>
-    concept _Can_empty = requires(_Ty __t) { _RANGES empty(__t); };
+    concept _Can_empty = requires(_Ty __t) {
+        _RANGES empty(__t);
+    };
 
+    // clang-format off
     template <class _Derived>
         requires is_class_v<_Derived> && same_as<_Derived, remove_cv_t<_Derived>>
     class view_interface : public view_base {
