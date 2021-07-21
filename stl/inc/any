@@ -34,7 +34,7 @@ _STD_BEGIN
 // CLASS bad_any_cast
 class bad_any_cast : public bad_cast { // thrown by failed any_cast
 public:
-    _NODISCARD virtual const char* __CLR_OR_THIS_CALL what() const noexcept override {
+    _NODISCARD const char* __CLR_OR_THIS_CALL what() const noexcept override {
         return "Bad any_cast";
     }
 };

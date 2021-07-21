@@ -40,13 +40,13 @@ inline constexpr nullopt_t nullopt{nullopt_t::_Tag{}};
 // CLASS bad_optional_access [optional.bad_optional_access]
 class bad_optional_access : public exception {
 public:
-    _NODISCARD virtual const char* __CLR_OR_THIS_CALL what() const noexcept override {
+    _NODISCARD const char* __CLR_OR_THIS_CALL what() const noexcept override {
         return "Bad optional access";
     }
 
 #if !_HAS_EXCEPTIONS
 protected:
-    virtual void _Doraise() const override { // perform class-specific exception handling
+    void _Doraise() const override { // perform class-specific exception handling
         _RAISE(*this);
     }
 #endif // !_HAS_EXCEPTIONS

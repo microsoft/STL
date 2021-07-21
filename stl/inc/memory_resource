@@ -49,14 +49,14 @@ namespace pmr {
     // FUNCTION new_delete_resource
     class _Identity_equal_resource : public memory_resource {
     protected:
-        virtual bool do_is_equal(const memory_resource& _That) const noexcept override {
+        bool do_is_equal(const memory_resource& _That) const noexcept override {
             return this == &_That;
         }
     };
 
     class _Unaligned_new_delete_resource_impl final
         : public _Identity_equal_resource { // implementation for new_delete_resource with /Zc:alignedNew-
-        virtual void* do_allocate(const size_t _Bytes, const size_t _Align) override {
+        void* do_allocate(const size_t _Bytes, const size_t _Align) override {
             if (_Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
                 _Xbad_alloc();
             }
@@ -64,7 +64,7 @@ namespace pmr {
             return ::operator new(_Bytes);
         }
 
-        virtual void do_deallocate(void* const _Ptr, const size_t _Bytes, size_t) noexcept override /* strengthened */ {
+        void do_deallocate(void* const _Ptr, const size_t _Bytes, size_t) noexcept override /* strengthened */ {
             ::operator delete(_Ptr, _Bytes);
         }
     };
@@ -74,7 +74,7 @@ namespace pmr {
 #ifdef __cpp_aligned_new
     class _Aligned_new_delete_resource_impl final
         : public _Identity_equal_resource { // implementation for new_delete_resource with aligned new support
-        virtual void* do_allocate(const size_t _Bytes, const size_t _Align) override {
+        void* do_allocate(const size_t _Bytes, const size_t _Align) override {
             if (_Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
                 return ::operator new (_Bytes, align_val_t{_Align});
             }
@@ -82,7 +82,7 @@ namespace pmr {
             return ::operator new(_Bytes);
         }
 
-        virtual void do_deallocate(void* const _Ptr, const size_t _Bytes, const size_t _Align) noexcept override
+        void do_deallocate(void* const _Ptr, const size_t _Bytes, const size_t _Align) noexcept override
         /* strengthened */ {
             if (_Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
                 return ::operator delete (_Ptr, _Bytes, align_val_t{_Align});
@@ -257,7 +257,7 @@ namespace pmr {
         unsynchronized_pool_resource(const unsynchronized_pool_resource&) = delete;
         unsynchronized_pool_resource& operator=(const unsynchronized_pool_resource&) = delete;
 
-        virtual ~unsynchronized_pool_resource() noexcept override {
+        ~unsynchronized_pool_resource() noexcept override {
             // destroy this pool resource, releasing all allocations back upstream
             release();
         }
@@ -291,7 +291,7 @@ namespace pmr {
         }
 
     protected:
-        virtual void* do_allocate(size_t _Bytes, const size_t _Align) override {
+        void* do_allocate(size_t _Bytes, const size_t _Align) override {
             // allocate a block from the appropriate pool, or directly from upstream if too large
             if (_Bytes <= _Options.largest_required_pool_block) {
                 auto _Result = _Find_pool(_Bytes, _Align);
@@ -305,7 +305,7 @@ namespace pmr {
             return _Allocate_oversized(_Bytes, _Align);
         }
 
-        virtual void do_deallocate(void* const _Ptr, const size_t _Bytes, const size_t _Align) override {
+        void do_deallocate(void* const _Ptr, const size_t _Bytes, const size_t _Align) override {
             // deallocate a block from the appropriate pool, or directly from upstream if too large
             if (_Bytes <= _Options.largest_required_pool_block) {
                 const auto _Result = _Find_pool(_Bytes, _Align);
@@ -582,12 +582,12 @@ namespace pmr {
         }
 
     protected:
-        virtual void* do_allocate(const size_t _Bytes, const size_t _Align) override {
+        void* do_allocate(const size_t _Bytes, const size_t _Align) override {
             lock_guard<mutex> _Guard{_Mtx};
             return this->unsynchronized_pool_resource::do_allocate(_Bytes, _Align);
         }
 
-        virtual void do_deallocate(void* const _Ptr, const size_t _Bytes, const size_t _Align) override {
+        void do_deallocate(void* const _Ptr, const size_t _Bytes, const size_t _Align) override {
             lock_guard<mutex> _Guard{_Mtx};
             this->unsynchronized_pool_resource::do_deallocate(_Ptr, _Bytes, _Align);
         }
@@ -626,7 +626,7 @@ namespace pmr {
             // initialize this resource with initial buffer
         }
 
-        virtual ~monotonic_buffer_resource() noexcept override {
+        ~monotonic_buffer_resource() noexcept override {
             release();
         }
 
@@ -661,7 +661,7 @@ namespace pmr {
         }
 
     protected:
-        virtual void* do_allocate(const size_t _Bytes, const size_t _Align) override {
+        void* do_allocate(const size_t _Bytes, const size_t _Align) override {
             // allocate from the current buffer or a new larger buffer from upstream
             if (!_STD align(_Align, _Bytes, _Current_buffer, _Space_available)) {
                 _Increase_capacity(_Bytes, _Align);
@@ -673,7 +673,7 @@ namespace pmr {
             return _Result;
         }
 
-        virtual void do_deallocate(void*, size_t, size_t) override {} // nothing to do
+        void do_deallocate(void*, size_t, size_t) override {} // nothing to do
 
     private:
         struct _Header : _Single_link<> { // track the size and alignment of an allocation from upstream

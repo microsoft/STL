@@ -1366,7 +1366,7 @@ private:
 
 #if !_HAS_EXCEPTIONS
 protected:
-    virtual __CLR_OR_THIS_CALL void _Doraise() const override { // perform class-specific exception handling
+    __CLR_OR_THIS_CALL void _Doraise() const override { // perform class-specific exception handling
         _RAISE(*this);
     }
 #endif // !_HAS_EXCEPTIONS

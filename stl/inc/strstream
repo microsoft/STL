@@ -142,7 +142,7 @@ public:
     }
 
 protected:
-    virtual int __CLR_OR_THIS_CALL overflow(int _Meta = EOF) override { // try to extend write area
+    int __CLR_OR_THIS_CALL overflow(int _Meta = EOF) override { // try to extend write area
         if (_Meta == EOF) {
             return 0; // nothing to write
         }
@@ -188,7 +188,7 @@ protected:
         return static_cast<unsigned char>(*_Pninc() = static_cast<char>(_Meta));
     }
 
-    virtual int __CLR_OR_THIS_CALL pbackfail(int _Meta = EOF) override { // try to putback a character
+    int __CLR_OR_THIS_CALL pbackfail(int _Meta = EOF) override { // try to putback a character
         const auto _Old_gptr = gptr();
         if (_Old_gptr && eback() < _Old_gptr) { // if the input sequence has a putback position available
             if (_Meta == EOF) {
@@ -206,7 +206,7 @@ protected:
         return EOF;
     }
 
-    virtual int __CLR_OR_THIS_CALL underflow() override { // read if read position available
+    int __CLR_OR_THIS_CALL underflow() override { // read if read position available
         const auto _Old_gptr = gptr();
         if (!_Old_gptr) {
             return EOF; // no read buffer
@@ -234,7 +234,7 @@ protected:
         return EOF;
     }
 
-    virtual streampos __CLR_OR_THIS_CALL seekoff(
+    streampos __CLR_OR_THIS_CALL seekoff(
         streamoff _Off, ios_base::seekdir _Way, ios_base::openmode _Which = ios_base::in | ios_base::out) override {
         // seek by specified offset
         if (pptr() && _Seekhigh < pptr()) { // TRANSITION, ABI: appears unused, maintained for ABI compat
@@ -314,7 +314,7 @@ protected:
         return pos_type(_Off);
     }
 
-    virtual pos_type __CLR_OR_THIS_CALL seekpos(
+    pos_type __CLR_OR_THIS_CALL seekpos(
         pos_type _Sp, ios_base::openmode _Which = ios_base::in | ios_base::out) override {
         // seek to memorized position
         if (pptr() && _Seekhigh < pptr()) { // TRANSITION, ABI: appears unused, maintained for ABI compat

@@ -425,13 +425,13 @@ class bad_variant_access
 public:
     bad_variant_access() noexcept = default;
 
-    _NODISCARD virtual const char* __CLR_OR_THIS_CALL what() const noexcept override {
+    _NODISCARD const char* __CLR_OR_THIS_CALL what() const noexcept override {
         return "bad variant access";
     }
 
 #if !_HAS_EXCEPTIONS
 protected:
-    virtual void _Doraise() const override { // perform class-specific exception handling
+    void _Doraise() const override { // perform class-specific exception handling
         _RAISE(*this);
     }
 #endif // !_HAS_EXCEPTIONS

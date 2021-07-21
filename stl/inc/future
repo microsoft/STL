@@ -134,13 +134,13 @@ public:
         return _Mycode;
     }
 
-    _NODISCARD virtual const char* __CLR_OR_THIS_CALL what() const noexcept override { // get message string
+    _NODISCARD const char* __CLR_OR_THIS_CALL what() const noexcept override { // get message string
         return _Future_error_map(_Mycode.value());
     }
 
 #if !_HAS_EXCEPTIONS
 protected:
-    virtual void _Doraise() const override { // perform class-specific exception handling
+    void _Doraise() const override { // perform class-specific exception handling
         _RAISE(*this);
     }
 #endif // !_HAS_EXCEPTIONS
@@ -153,11 +153,11 @@ class _Future_error_category2 : public error_category { // categorize a future e
 public:
     constexpr _Future_error_category2() noexcept : error_category(_Future_addr) {}
 
-    virtual const char* name() const noexcept override {
+    const char* name() const noexcept override {
         return "future";
     }
 
-    virtual string message(int _Errcode) const override {
+    string message(int _Errcode) const override {
         const char* _Name = _Future_error_map(_Errcode);
         if (_Name) {
             return _Name;
@@ -188,7 +188,7 @@ struct _State_deleter : _Deleter_base<_Ty> { // manage allocator and deletion st
     _State_deleter(const _State_deleter&) = delete;
     _State_deleter& operator=(const _State_deleter&) = delete;
 
-    virtual void _Delete(_Associated_state<_Ty>* _State) override;
+    void _Delete(_Associated_state<_Ty>* _State) override;
 
     _Alloc _My_alloc;
 };
@@ -660,12 +660,12 @@ public:
     _Deferred_async_state(_Fty2&& _Fnarg) : _Packaged_state<_Rx()>(_STD forward<_Fty2>(_Fnarg)) {}
 
 private:
-    virtual bool _Has_deferred_function() const noexcept override {
+    bool _Has_deferred_function() const noexcept override {
         // this function is considered to be deferred until it's invoked
         return !this->_Running;
     }
 
-    virtual void _Run_deferred_function(unique_lock<mutex>& _Lock) override { // run the deferred function
+    void _Run_deferred_function(unique_lock<mutex>& _Lock) override { // run the deferred function
         _Lock.unlock();
         _Packaged_state<_Rx()>::_Call_immediate();
         _Lock.lock();
@@ -693,11 +693,11 @@ public:
         _Wait();
     }
 
-    virtual void _Wait() override { // wait for completion
+    void _Wait() override { // wait for completion
         _Task.wait();
     }
 
-    virtual _State_type& _Get_value(bool _Get_only_once) override {
+    _State_type& _Get_value(bool _Get_only_once) override {
         // return the stored result or throw stored exception
         _Task.wait();
         return _Mybase::_Get_value(_Get_only_once);

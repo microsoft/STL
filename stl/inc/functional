@@ -722,7 +722,7 @@ class bad_function_call : public exception { // exception thrown when an empty s
 public:
     bad_function_call() noexcept {}
 
-    _NODISCARD virtual const char* __CLR_OR_THIS_CALL what() const noexcept override {
+    _NODISCARD const char* __CLR_OR_THIS_CALL what() const noexcept override {
         // return pointer to message string
         return "bad function call";
     }
@@ -831,7 +831,7 @@ public:
     // dtor non-virtual due to _Delete_this()
 
 private:
-    virtual _Mybase* _Copy(void* _Where) const override {
+    _Mybase* _Copy(void* _Where) const override {
         auto& _Myax = _Mypair._Get_first();
         if constexpr (_Is_large<_Func_impl>) {
             _Myalty _Rebound(_Myax);
@@ -846,7 +846,7 @@ private:
         }
     }
 
-    virtual _Mybase* _Move(void* _Where) noexcept override {
+    _Mybase* _Move(void* _Where) noexcept override {
         if constexpr (_Is_large<_Func_impl>) {
             return nullptr;
         } else {
@@ -856,11 +856,11 @@ private:
         }
     }
 
-    virtual _Rx _Do_call(_Types&&... _Args) override { // call wrapped function
+    _Rx _Do_call(_Types&&... _Args) override { // call wrapped function
         return _Invoker_ret<_Rx>::_Call(_Mypair._Myval2, _STD forward<_Types>(_Args)...);
     }
 
-    virtual const type_info& _Target_type() const noexcept override {
+    const type_info& _Target_type() const noexcept override {
 #if _HAS_STATIC_RTTI
         return typeid(_Callable);
 #else // _HAS_STATIC_RTTI
@@ -868,11 +868,11 @@ private:
 #endif // _HAS_STATIC_RTTI
     }
 
-    virtual const void* _Get() const noexcept override {
+    const void* _Get() const noexcept override {
         return _STD addressof(_Mypair._Myval2);
     }
 
-    virtual void _Delete_this(bool _Deallocate) noexcept override { // destroy self
+    void _Delete_this(bool _Deallocate) noexcept override { // destroy self
         _Myalty _Al(_Mypair._Get_first());
         _Destroy_in_place(*this);
         if (_Deallocate) {
@@ -898,7 +898,7 @@ public:
     // dtor non-virtual due to _Delete_this()
 
 private:
-    virtual _Mybase* _Copy(void* _Where) const override {
+    _Mybase* _Copy(void* _Where) const override {
         if constexpr (_Is_large<_Func_impl_no_alloc>) {
             (void) _Where; // TRANSITION, DevCom-1004719
             return _Global_new<_Func_impl_no_alloc>(_Callee);
@@ -907,7 +907,7 @@ private:
         }
     }
 
-    virtual _Mybase* _Move(void* _Where) noexcept override {
+    _Mybase* _Move(void* _Where) noexcept override {
         if constexpr (_Is_large<_Func_impl_no_alloc>) {
             (void) _Where; // TRANSITION, DevCom-1004719
             return nullptr;
@@ -916,11 +916,11 @@ private:
         }
     }
 
-    virtual _Rx _Do_call(_Types&&... _Args) override { // call wrapped function
+    _Rx _Do_call(_Types&&... _Args) override { // call wrapped function
         return _Invoker_ret<_Rx>::_Call(_Callee, _STD forward<_Types>(_Args)...);
     }
 
-    virtual const type_info& _Target_type() const noexcept override {
+    const type_info& _Target_type() const noexcept override {
 #if _HAS_STATIC_RTTI
         return typeid(_Callable);
 #else // _HAS_STATIC_RTTI
@@ -928,11 +928,11 @@ private:
 #endif // _HAS_STATIC_RTTI
     }
 
-    virtual const void* _Get() const noexcept override {
+    const void* _Get() const noexcept override {
         return _STD addressof(_Callee);
     }
 
-    virtual void _Delete_this(bool _Dealloc) noexcept override { // destroy self
+    void _Delete_this(bool _Dealloc) noexcept override { // destroy self
         this->~_Func_impl_no_alloc();
         if (_Dealloc) {
             _Deallocate<alignof(_Func_impl_no_alloc)>(this, sizeof(_Func_impl_no_alloc));
