@@ -1392,10 +1392,9 @@ namespace ranges {
 
         template <class _View>
         struct _Category_base {};
-        // clang-format off
+
         template <forward_range _View>
         struct _Category_base<_View> {
-            // clang-format on
             using iterator_category =
                 conditional_t<derived_from<_Iter_cat_t<iterator_t<_View>>, bidirectional_iterator_tag>,
                     bidirectional_iterator_tag,
@@ -1677,10 +1676,9 @@ namespace ranges {
 
         template <class _Base>
         struct _Category_base {};
-        // clang-format off
+
         template <forward_range _Base>
         struct _Category_base<_Base> {
-            // clang-format on
             using iterator_category =
                 conditional_t<is_lvalue_reference_v<invoke_result_t<_Fn&, range_reference_t<_Base>>>,
                     conditional_t<derived_from<_Iter_cat_t<iterator_t<_Base>>, contiguous_iterator_tag>,
@@ -2309,10 +2307,8 @@ namespace ranges {
         template <class _It, class _Se, subrange_kind _Ki>
         inline constexpr bool _Is_subrange<subrange<_It, _Se, _Ki>> = true;
 
-        // clang-format off
         template <class _Rng>
         concept _Random_sized_range = random_access_range<_Rng> && sized_range<_Rng>;
-        // clang-format on
 
         class _Take_fn {
         private:

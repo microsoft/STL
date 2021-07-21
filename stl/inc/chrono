@@ -5222,12 +5222,10 @@ concept _Chrono_parse_spec_callbacks = _Parse_align_callbacks<_Ty, _CharT>
 };
 // clang-format on
 
-// clang-format off
 template <class _Ty>
 concept _Has_ok = requires(_Ty _At) {
     { _At.ok() } -> same_as<bool>;
 };
-// clang-format on
 
 // A chrono spec is either a type (with an optional modifier), OR a literal character, never both.
 template <class _CharT>
