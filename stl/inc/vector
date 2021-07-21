@@ -548,7 +548,7 @@ public:
     constexpr _Asan_annotater(const _Ty& _Target)
         : _Target_vec(_Target), _Old_last(nullptr), _Aligned_first(nullptr) {}
 
-    _CONSTEXPR20_CONTAINER _Asan_annotater(const _Ty& _Target, _Size_type _New_size)
+    _CONSTEXPR20 _Asan_annotater(const _Ty& _Target, _Size_type _New_size)
         : _Target_vec(_Target) {
 #ifdef __cpp_lib_constexpr_dynamic_alloc
         if (_STD is_constant_evaluated())  {
@@ -582,7 +582,7 @@ public:
         }
     }
 
-    _CONSTEXPR20_CONTAINER ~_Asan_annotater() {
+    _CONSTEXPR20 ~_Asan_annotater() {
 #ifdef __cpp_lib_constexpr_dynamic_alloc
         if (_STD is_constant_evaluated()) {
             return;
@@ -657,7 +657,7 @@ private:
         _Vec_iter_types<_Ty, size_type, difference_type, pointer, const_pointer, _Ty&, const _Ty&>>>;
 
     template <class... _Valty>
-    _CONSTEXPR20_CONTAINER _Ty& _Emplace_one_at_back(_Valty&&... _Val) {
+    _CONSTEXPR20 _Ty& _Emplace_one_at_back(_Valty&&... _Val) {
         auto& _My_data   = _Mypair._Myval2;
         pointer& _Mylast = _My_data._Mylast;
 
