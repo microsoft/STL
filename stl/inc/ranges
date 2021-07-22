@@ -30,7 +30,6 @@ namespace ranges {
     // MUCH machinery defined in <xutility>
 
     // clang-format off
-    // CONCEPT ranges::viewable_range
     template <class _Rng>
     concept viewable_range = range<_Rng>
         && ((view<remove_cvref_t<_Rng>> && constructible_from<remove_cvref_t<_Rng>, _Rng>)
