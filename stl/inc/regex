@@ -750,7 +750,6 @@ _NODISCARD bool operator>=(const sub_match<_BidIt>& _Left, const sub_match<_BidI
 }
 #endif // !_HAS_CXX20
 
-// COMPARE sub_match AND NTBS
 template <class _BidIt>
 _NODISCARD bool operator==(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>* _Right) {
     return _Left._Match_equal(_Right);
@@ -818,7 +817,6 @@ _NODISCARD bool operator>=(const sub_match<_BidIt>& _Left, const _Iter_value_t<_
 }
 #endif // !_HAS_CXX20
 
-// COMPARE sub_match AND ELEMENT
 template <class _BidIt>
 _NODISCARD bool operator==(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>& _Right) {
     return _Left._Match_equal(_STD addressof(_Right), 1);
@@ -887,7 +885,6 @@ _NODISCARD bool operator>=(const sub_match<_BidIt>& _Left, const _Iter_value_t<_
 }
 #endif // !_HAS_CXX20
 
-// COMPARE sub_match AND string
 template <class _BidIt, class _Traits, class _Alloc>
 _NODISCARD bool operator==(
     const sub_match<_BidIt>& _Left, const basic_string<_Iter_value_t<_BidIt>, _Traits, _Alloc>& _Right) {

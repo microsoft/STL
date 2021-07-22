@@ -492,7 +492,6 @@ _NODISCARD constexpr compare_three_way_result_t<_Ty1, _Ty2> operator<=>(
 }
 #endif // __cpp_lib_concepts
 
-// COMPARISONS WITH nullopt [optional.nullops]
 template <class _Ty>
 _NODISCARD constexpr bool operator==(const optional<_Ty>& _Left, nullopt_t) noexcept {
     return !_Left.has_value();
@@ -555,7 +554,6 @@ _NODISCARD constexpr bool operator>=(nullopt_t, const optional<_Ty>& _Right) noe
 }
 #endif // !_HAS_CXX20
 
-// COMPARISONS WITH T [optional.comp_with_t]
 template <class _Ty>
 using _Enable_if_bool_convertible = enable_if_t<is_convertible_v<_Ty, bool>, int>;
 
