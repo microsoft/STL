@@ -5947,10 +5947,13 @@ struct _CXX17_DEPRECATE_ITERATOR_BASE_CLASS iterator { // base type for iterator
 // FUNCTION TEMPLATE _Float_abs_bits
 template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR_BIT_CAST auto _Float_abs_bits(const _Ty& _Xx) {
+#if defined(__LDBL_DIG__) && __LDBL_DIG__ == 18
     using _Traits    = _Floating_type_traits<_Ty>;
+#else // ^^^ 80-bit long double (not supported by MSVC in general, see GH-1316) / 64-bit long double vvv
     using _Uint_type = typename _Traits::_Uint_type;
     const auto _Bits = _Bit_cast<_Uint_type>(_Xx);
     return _Bits & ~_Traits::_Shifted_sign_mask;
+#endif // ^^^ 64-bit long double ^^^
 }
 
 // FUNCTION TEMPLATE _Float_abs
