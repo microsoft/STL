@@ -1192,8 +1192,8 @@ public:
     }
 
     _NODISCARD size_type max_size() const noexcept {
-        return (_STD min)(
-            static_cast<size_type>((numeric_limits<difference_type>::max)()), _Alnode_traits::max_size(_Getal()));
+        return (_STD min) (static_cast<size_type>((numeric_limits<difference_type>::max) ()),
+            _Alnode_traits::max_size(_Getal()));
     }
 
     _NODISCARD bool empty() const noexcept {
