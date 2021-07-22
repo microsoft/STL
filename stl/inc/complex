@@ -258,7 +258,7 @@ namespace _Math_algorithms {
         }
 
         if (_Xval <= _Ty{-0.5} || _Ty{2.0} <= _Xval) { // naive formula is moderately accurate
-            if (_Xval == (numeric_limits<_Ty>::max)()) { // avoid overflow
+            if (_Xval == (numeric_limits<_Ty>::max) ()) { // avoid overflow
                 return _STD log(_Xval);
             }
 
@@ -372,11 +372,11 @@ public:
     }
 
     static constexpr _Ty _Flt_max() {
-        return (numeric_limits<_Ty>::max)();
+        return (numeric_limits<_Ty>::max) ();
     }
 
     static constexpr _Ty _Flt_norm_min() {
-        return (numeric_limits<_Ty>::min)() > 0 ? (numeric_limits<_Ty>::min)() : 0;
+        return (numeric_limits<_Ty>::min) () > 0 ? (numeric_limits<_Ty>::min) () : 0;
     }
 
     static _Ty _Abs(_Ty _Left) {
@@ -419,7 +419,7 @@ public:
     }
 
     static bool _Signbit(_Ty _Left) {
-        return (_STD signbit)(static_cast<double>(_Left));
+        return (_STD signbit) (static_cast<double>(_Left));
     }
 
     static _Ty _Sinh(_Ty _Left, _Ty _Right) { // return sinh(_Left) * _Right
@@ -510,11 +510,11 @@ public:
     }
 
     static constexpr _Ty _Flt_max() {
-        return (numeric_limits<long double>::max)();
+        return (numeric_limits<long double>::max) ();
     }
 
     static constexpr _Ty _Flt_norm_min() {
-        return (numeric_limits<long double>::min)();
+        return (numeric_limits<long double>::min) ();
     }
 
     static _Ty _Abs(_Ty _Left) {
@@ -563,7 +563,7 @@ public:
 
     static bool _Signbit(_Ty _Left) {
         // testing _Left < 0 would be incorrect when _Left is -0.0
-        return (_STD signbit)(_Left);
+        return (_STD signbit) (_Left);
     }
 
     static _Ty _Sinh(_Ty _Left, _Ty _Right) { // return sinh(_Left) * _Right
@@ -654,11 +654,11 @@ public:
     }
 
     static constexpr _Ty _Flt_max() {
-        return (numeric_limits<double>::max)();
+        return (numeric_limits<double>::max) ();
     }
 
     static constexpr _Ty _Flt_norm_min() {
-        return (numeric_limits<double>::min)();
+        return (numeric_limits<double>::min) ();
     }
 
     static _Ty _Abs(_Ty _Left) {
@@ -699,7 +699,7 @@ public:
 
     static bool _Signbit(_Ty _Left) {
         // testing _Left < 0 would be incorrect when _Left is -0.0
-        return (_STD signbit)(_Left);
+        return (_STD signbit) (_Left);
     }
 
     static _Ty _Sinh(_Ty _Left, _Ty _Right) { // return sinh(_Left) * _Right
@@ -793,11 +793,11 @@ public:
     }
 
     static constexpr _Ty _Flt_max() {
-        return (numeric_limits<float>::max)();
+        return (numeric_limits<float>::max) ();
     }
 
     static constexpr _Ty _Flt_norm_min() {
-        return (numeric_limits<float>::min)();
+        return (numeric_limits<float>::min) ();
     }
 
     static _Ty _Abs(_Ty _Left) {
@@ -838,7 +838,7 @@ public:
 
     static bool _Signbit(_Ty _Left) {
         // testing _Left < 0 would be incorrect when _Left is -0.0
-        return (_STD signbit)(_Left);
+        return (_STD signbit) (_Left);
     }
 
     static _Ty _Sinh(_Ty _Left, _Ty _Right) { // return sinh(_Left) * _Right

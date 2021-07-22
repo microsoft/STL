@@ -1430,7 +1430,9 @@ namespace filesystem {
 #endif // !_HAS_CXX20
 
         _NODISCARD friend path operator/(const path& _Left, const path& _Right) { // append a pair of paths together
-            return path(_Left) /= _Right;
+            path _Tmp = _Left;
+            _Tmp /= _Right;
+            return _Tmp;
         }
 
     private:
@@ -3927,7 +3929,7 @@ namespace filesystem {
         if (_Error == __std_win_error::_Success) {
             _Result = file_time_type{file_time_type::duration{_Stats._Last_write_time}};
         } else {
-            _Result = (file_time_type::min)();
+            _Result = (file_time_type::min) ();
         }
 
         return _Error;
