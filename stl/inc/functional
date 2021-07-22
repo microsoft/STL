@@ -62,17 +62,7 @@ struct negate {
     }
 };
 
-// defined in <xstddef>
-
-// defined in <xstddef>
-
-// defined in <xstddef>
-
-// defined in <xstddef>
-
-// defined in <xstddef>
-
-// defined in <xstddef>
+// equal_to, not_equal_to, greater, less, greater_equal, and less_equal are defined in <xstddef>
 
 template <class _Ty = void>
 struct logical_and {
@@ -149,11 +139,7 @@ struct bit_not {
     }
 };
 
-// defined in <xstddef>
-
-// defined in <xstddef>
-
-// defined in <xstddef>
+// void specializations of plus, minus, and multiplies are defined in <xstddef>
 
 template <>
 struct divides<void> {
@@ -187,17 +173,7 @@ struct negate<void> {
     using is_transparent = int;
 };
 
-// defined in <xstddef>
-
-// defined in <xstddef>
-
-// defined in <xstddef>
-
-// defined in <xstddef>
-
-// defined in <xstddef>
-
-// defined in <xstddef>
+// void specializations of equal_to, not_equal_to, greater, less, greater_equal, and less_equal are defined in <xstddef>
 
 template <>
 struct logical_and<void> {
