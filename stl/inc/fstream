@@ -67,7 +67,6 @@ extern _CRTIMP2_PURE FILE* __CLRCALL_PURE_OR_CDECL _Fiopen(const wchar_t*, ios_b
 extern _CRTIMP2_PURE FILE* __CLRCALL_PURE_OR_CDECL _Fiopen(const unsigned short*, ios_base::openmode, int);
 #endif // _NATIVE_WCHAR_T_DEFINED
 
-// FUNCTION TEMPLATE _Fgetc
 template <class _Elem>
 bool _Fgetc(_Elem& _Ch, FILE* _File) { // get an element from a C stream
     return _CSTD fread(&_Ch, sizeof(_Elem), 1, _File) == 1;
@@ -108,7 +107,6 @@ inline bool _Fgetc(unsigned short& _Wchar, FILE* _File) { // get an unsigned sho
 }
 #endif // _NATIVE_WCHAR_T_DEFINED
 
-// FUNCTION TEMPLATE _Fputc
 template <class _Elem>
 bool _Fputc(_Elem _Ch, FILE* _File) { // put an element to a C stream
     return _CSTD fwrite(&_Ch, 1, sizeof(_Elem), _File) == sizeof(_Elem);
@@ -131,7 +129,6 @@ inline bool _Fputc(unsigned short _Wchar, FILE* _File) { // put an unsigned shor
 }
 #endif // _NATIVE_WCHAR_T_DEFINED
 
-// FUNCTION TEMPLATE _Ungetc
 template <class _Elem>
 bool _Ungetc(const _Elem&, FILE*) { // put back an arbitrary element to a C stream (always fail)
     return false;

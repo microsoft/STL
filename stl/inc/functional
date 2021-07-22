@@ -335,7 +335,6 @@ private:
     _Fn _Functor;
 };
 
-// FUNCTION TEMPLATE not1
 template <class _Fn>
 _CXX17_DEPRECATE_NEGATORS _NODISCARD constexpr unary_negate<_Fn> not1(const _Fn& _Func) {
     return unary_negate<_Fn>(_Func);
@@ -358,7 +357,6 @@ private:
     _Fn _Functor;
 };
 
-// FUNCTION TEMPLATE not2
 template <class _Fn>
 _CXX17_DEPRECATE_NEGATORS _NODISCARD constexpr binary_negate<_Fn> not2(const _Fn& _Func) {
     return binary_negate<_Fn>(_Func);
@@ -391,7 +389,6 @@ protected:
     typename _Fn::first_argument_type value; // the left operand
 };
 
-// FUNCTION TEMPLATE bind1st
 template <class _Fn, class _Ty>
 _NODISCARD binder1st<_Fn> bind1st(const _Fn& _Func, const _Ty& _Left) {
     typename _Fn::first_argument_type _Val(_Left);
@@ -421,7 +418,6 @@ protected:
     typename _Fn::second_argument_type value; // the right operand
 };
 
-// FUNCTION TEMPLATE bind2nd
 template <class _Fn, class _Ty>
 _NODISCARD binder2nd<_Fn> bind2nd(const _Fn& _Func, const _Ty& _Right) {
     typename _Fn::second_argument_type _Val(_Right);
@@ -456,7 +452,6 @@ protected:
     _Fn _Pfun; // the function pointer
 };
 
-// FUNCTION TEMPLATE ptr_fun
 #define _PTR_FUN(CALL_OPT, X1, X2, X3)                                                                      \
     template <class _Arg, class _Result>                                                                    \
     _NODISCARD pointer_to_unary_function<_Arg, _Result, _Result(CALL_OPT*)(_Arg)> ptr_fun(                  \
@@ -525,7 +520,6 @@ private:
     _Result (_Ty::*_Pmemfun)(_Arg) const; // the member function pointer
 };
 
-// FUNCTION TEMPLATE mem_fun
 template <class _Result, class _Ty>
 _NODISCARD mem_fun_t<_Result, _Ty> mem_fun(_Result (_Ty::*_Pm)()) {
     return mem_fun_t<_Result, _Ty>(_Pm);
@@ -600,7 +594,6 @@ private:
     _Result (_Ty::*_Pmemfun)(_Arg) const; // the member function pointer
 };
 
-// FUNCTION TEMPLATE mem_fun_ref
 template <class _Result, class _Ty>
 _NODISCARD mem_fun_ref_t<_Result, _Ty> mem_fun_ref(_Result (_Ty::*_Pm)()) {
     return mem_fun_ref_t<_Result, _Ty>(_Pm);
@@ -622,7 +615,6 @@ _NODISCARD const_mem_fun1_ref_t<_Result, _Ty, _Arg> mem_fun_ref(_Result (_Ty::*_
 }
 #endif // _HAS_AUTO_PTR_ETC
 
-// FUNCTION TEMPLATE mem_fn
 template <class _Memptr>
 class _Mem_fn : public _Weak_types<_Memptr> {
 private:
@@ -645,7 +637,6 @@ _NODISCARD _CONSTEXPR20 _Mem_fn<_Rx _Ty::*> mem_fn(_Rx _Ty::*_Pm) noexcept {
 }
 
 #if _HAS_CXX17
-// FUNCTION TEMPLATE not_fn
 struct _Not_fn_tag {
     explicit _Not_fn_tag() = default;
 };
@@ -749,7 +740,6 @@ struct _Invoker_ret<_Unforced, false> { // selected for _Rx being _Unforced
     }
 };
 
-// FUNCTION TEMPLATE _Test_callable
 template <class _Fty>
 class function;
 
@@ -1324,7 +1314,6 @@ struct is_bind_expression<const volatile _Tx> : is_bind_expression<_Tx>::type {}
 template <class _Ty>
 _INLINE_VAR constexpr bool is_bind_expression_v = is_bind_expression<_Ty>::value;
 
-// FUNCTION TEMPLATE _Fix_arg
 template <class _Cv_TiD, bool = _Is_specialization_v<remove_cv_t<_Cv_TiD>, reference_wrapper>,
     bool = is_bind_expression_v<_Cv_TiD>, int = is_placeholder_v<_Cv_TiD>>
 struct _Select_fixer;
@@ -1383,7 +1372,6 @@ constexpr auto _Fix_arg(_Cv_TiD& _Tid, _Untuple&& _Ut) noexcept(
     return _Select_fixer<_Cv_TiD>::_Fix(_Tid, _STD move(_Ut));
 }
 
-// FUNCTION TEMPLATE _Call_binder
 template <class _Ret, size_t... _Ix, class _Cv_FD, class _Cv_tuple_TiD, class _Untuple>
 _CONSTEXPR20 auto _Call_binder(_Invoker_ret<_Ret>, index_sequence<_Ix...>, _Cv_FD& _Obj, _Cv_tuple_TiD& _Tpl,
     _Untuple&& _Ut) noexcept(noexcept(_Invoker_ret<_Ret>::_Call(_Obj,
@@ -1439,13 +1427,11 @@ public:
 #undef _CALL_BINDER
 };
 
-// FUNCTION TEMPLATE bind (implicit return type)
 template <class _Fx, class... _Types>
 _NODISCARD _CONSTEXPR20 _Binder<_Unforced, _Fx, _Types...> bind(_Fx&& _Func, _Types&&... _Args) {
     return _Binder<_Unforced, _Fx, _Types...>(_STD forward<_Fx>(_Func), _STD forward<_Types>(_Args)...);
 }
 
-// FUNCTION TEMPLATE bind (explicit return type)
 template <class _Ret, class _Fx, class... _Types>
 _NODISCARD _CONSTEXPR20 _Binder<_Ret, _Fx, _Types...> bind(_Fx&& _Func, _Types&&... _Args) {
     return _Binder<_Ret, _Fx, _Types...>(_STD forward<_Fx>(_Func), _STD forward<_Types>(_Args)...);
@@ -1476,7 +1462,6 @@ namespace placeholders {
 } // namespace placeholders
 
 #if _HAS_CXX20
-// FUNCTION TEMPLATE _Call_front_binder
 template <size_t... _Ix, class _Cv_FD, class _Cv_tuple_TiD, class... _Unbound>
 constexpr auto _Call_front_binder(index_sequence<_Ix...>, _Cv_FD&& _Obj, _Cv_tuple_TiD&& _Tpl,
     _Unbound&&... _Unbargs) noexcept(noexcept(_STD invoke(_STD forward<_Cv_FD>(_Obj),
@@ -1538,7 +1523,6 @@ public:
     }
 };
 
-// FUNCTION TEMPLATE bind_front
 template <class _Fx, class... _Types>
 _NODISCARD constexpr auto bind_front(_Fx&& _Func, _Types&&... _Args) {
     static_assert(is_constructible_v<decay_t<_Fx>, _Fx>,
@@ -1758,7 +1742,6 @@ private:
 };
 
 
-// FUNCTION TEMPLATE _Build_boyer_moore_delta_2_table
 template <class _RanItPat, class _Pred_eq>
 void _Build_boyer_moore_delta_2_table(_Iter_diff_t<_RanItPat>* const _Shifts, const _RanItPat _Pat_first,
     const _Iter_diff_t<_RanItPat> _Pat_size, _Pred_eq& _Eq) {
@@ -1820,7 +1803,6 @@ void _Build_boyer_moore_delta_2_table(_Iter_diff_t<_RanItPat>* const _Shifts, co
 }
 
 
-// FUNCTION TEMPLATE _Boyer_moore_search
 template <class _Delta1_t, class _RanItHaystack>
 pair<_RanItHaystack, _RanItHaystack> _Boyer_moore_search(
     const _Delta1_t& _Delta1, typename _Delta1_t::_Diff* _Delta2, _RanItHaystack _First, _RanItHaystack _Last) {
@@ -1863,7 +1845,6 @@ pair<_RanItHaystack, _RanItHaystack> _Boyer_moore_search(
 }
 
 
-// FUNCTION TEMPLATE _Boyer_moore_horspool_search
 template <class _Delta1_t, class _RanItHaystack>
 pair<_RanItHaystack, _RanItHaystack> _Boyer_moore_horspool_search(
     const _Delta1_t& _Delta1, _RanItHaystack _First, _RanItHaystack _Last) {

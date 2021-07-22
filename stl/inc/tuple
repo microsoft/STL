@@ -809,7 +809,6 @@ struct _Tuple_element<_Ty, tuple<_This, _Rest...>> { // recursive _Tuple_element
     using _Ttype = typename _Tuple_element<_Ty, tuple<_Rest...>>::_Ttype;
 };
 
-// FUNCTION TEMPLATE get (by index)
 template <size_t _Index, class... _Types>
 _NODISCARD constexpr tuple_element_t<_Index, tuple<_Types...>>& get(tuple<_Types...>& _Tuple) noexcept {
     using _Ttype = typename tuple_element<_Index, tuple<_Types...>>::_Ttype;
@@ -844,7 +843,6 @@ _NODISCARD constexpr auto&& _Tuple_get(tuple<_Types...>&& _Tuple) noexcept {
     return static_cast<_Ty&&>(static_cast<_Ttype&>(_Tuple)._Myfirst._Val);
 }
 
-// FUNCTION TEMPLATE get (by type)
 template <class _Ty, class... _Types>
 _NODISCARD constexpr _Ty& get(tuple<_Types...>& _Tuple) noexcept {
     using _Ttype = typename _Tuple_element<_Ty, tuple<_Types...>>::_Ttype;
@@ -881,21 +879,18 @@ template <class _Tag, class _Alloc, class _Tpl, size_t... _Indices,
 constexpr tuple<_This, _Rest...>::tuple(_Tag, const _Alloc& _Al, _Tpl&& _Right, index_sequence<_Indices...>)
     : tuple(_Alloc_exact_args_t{}, _Al, _STD get<_Indices>(_STD forward<_Tpl>(_Right))...) {}
 
-// FUNCTION TEMPLATE make_tuple
 template <class... _Types>
 _NODISCARD constexpr tuple<_Unrefwrap_t<_Types>...> make_tuple(_Types&&... _Args) { // make tuple from elements
     using _Ttype = tuple<_Unrefwrap_t<_Types>...>;
     return _Ttype(_STD forward<_Types>(_Args)...);
 }
 
-// FUNCTION TEMPLATE tie
 template <class... _Types>
 _NODISCARD constexpr tuple<_Types&...> tie(_Types&... _Args) noexcept { // make tuple from elements
     using _Ttype = tuple<_Types&...>;
     return _Ttype(_Args...);
 }
 
-// FUNCTION TEMPLATE forward_as_tuple
 template <class... _Types>
 _NODISCARD constexpr tuple<_Types&&...> forward_as_tuple(_Types&&... _Args) noexcept { // forward arguments in a tuple
     return tuple<_Types&&...>(_STD forward<_Types>(_Args)...);
@@ -957,7 +952,6 @@ struct _View_as_tuple<array<_Ty, _Size>, _Types...>
 template <size_t _Nx, class _Ty>
 struct _Repeat_for : integral_constant<size_t, _Nx> {}; // repeats _Nx for each _Ty in a parameter pack
 
-// FUNCTION TEMPLATE tuple_cat
 template <class _Ret, class _Kx_arg, class _Ix_arg, size_t _Ix_next, class... _Tuples>
 struct _Tuple_cat2 { // determine tuple_cat's return type and _Kx/_Ix indices
     static_assert(sizeof...(_Tuples) == 0, "Unsupported tuple_cat arguments.");
@@ -992,7 +986,6 @@ _NODISCARD constexpr typename _Tuple_cat1<_Tuples...>::type tuple_cat(_Tuples&&.
 }
 
 #if _HAS_CXX17
-// FUNCTION TEMPLATE apply
 template <class _Callable, class _Tuple, size_t... _Indices>
 constexpr decltype(auto) _Apply_impl(
     _Callable&& _Obj, _Tuple&& _Tpl, index_sequence<_Indices...>) { // invoke _Obj with the elements of _Tpl
@@ -1005,7 +998,6 @@ constexpr decltype(auto) apply(_Callable&& _Obj, _Tuple&& _Tpl) { // invoke _Obj
         make_index_sequence<tuple_size_v<remove_reference_t<_Tuple>>>{});
 }
 
-// FUNCTION TEMPLATE make_from_tuple
 template <class _Ty, class _Tuple, size_t... _Indices>
 constexpr _Ty _Make_from_tuple_impl(
     _Tuple&& _Tpl, index_sequence<_Indices...>) { // construct _Ty from the elements of _Tpl

@@ -847,7 +847,6 @@ _NODISCARD _CONSTEXPR20 bool operator>=(const array<_Ty, _Size>& _Left, const ar
 #endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
 #if _HAS_CXX20
-// FUNCTION TEMPLATE to_array
 template <class _Ty, size_t _Size, size_t... _Idx>
 _NODISCARD constexpr array<remove_cv_t<_Ty>, _Size> _To_array_lvalue_impl(
     _Ty (&_Array)[_Size], index_sequence<_Idx...>) {

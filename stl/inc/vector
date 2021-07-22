@@ -425,7 +425,6 @@ public:
     pointer _Myend; // pointer to end of array
 };
 
-// FUNCTION TEMPLATE _Unfancy_maybe_null
 template <class _Ptrty>
 constexpr auto _Unfancy_maybe_null(_Ptrty _Ptr) noexcept {
     // converts from a (potentially null) fancy pointer to a plain pointer

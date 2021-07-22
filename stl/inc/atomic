@@ -201,13 +201,11 @@ extern "C" inline void atomic_signal_fence(const memory_order _Order) noexcept {
     }
 }
 
-// FUNCTION TEMPLATE kill_dependency
 template <class _Ty>
 _Ty kill_dependency(_Ty _Arg) noexcept { // "magic" template that kills dependency ordering when called
     return _Arg;
 }
 
-// FUNCTION _Check_memory_order
 inline void _Check_memory_order(const memory_order _Order) noexcept {
     // check that _Order is a valid memory_order
     if (static_cast<unsigned int>(_Order) > static_cast<unsigned int>(memory_order_seq_cst)) {
@@ -215,7 +213,6 @@ inline void _Check_memory_order(const memory_order _Order) noexcept {
     }
 }
 
-// FUNCTION _Check_store_memory_order
 inline void _Check_store_memory_order(const memory_order _Order) noexcept {
     switch (_Order) {
     case memory_order_relaxed:
@@ -232,7 +229,6 @@ inline void _Check_store_memory_order(const memory_order _Order) noexcept {
     }
 }
 
-// FUNCTION _Check_load_memory_order
 inline void _Check_load_memory_order(const memory_order _Order) noexcept {
     switch (_Order) {
     case memory_order_relaxed:
@@ -249,7 +245,6 @@ inline void _Check_load_memory_order(const memory_order _Order) noexcept {
     }
 }
 
-// FUNCTION _Combine_cas_memory_orders
 _NODISCARD inline memory_order _Combine_cas_memory_orders(
     const memory_order _Success, const memory_order _Failure) noexcept {
     // Finds upper bound of a compare/exchange memory order
@@ -282,7 +277,6 @@ _NODISCARD inline memory_order _Combine_cas_memory_orders(
     return _Combined_memory_orders[static_cast<int>(_Success)][static_cast<int>(_Failure)];
 }
 
-// FUNCTION TEMPLATE _Atomic_reinterpret_as
 template <class _Integral, class _Ty>
 _NODISCARD _Integral _Atomic_reinterpret_as(const _Ty& _Source) noexcept {
     // interprets _Source as the supplied integral type
@@ -298,7 +292,6 @@ _NODISCARD _Integral _Atomic_reinterpret_as(const _Ty& _Source) noexcept {
     }
 }
 
-// FUNCTION _Load_barrier
 inline void _Load_barrier(const memory_order _Order) noexcept { // implement memory barrier for atomic load functions
     switch (_Order) {
     case memory_order_relaxed:

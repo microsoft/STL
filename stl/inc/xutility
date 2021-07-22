@@ -59,7 +59,6 @@ _END_EXTERN_C
 
 _STD_BEGIN
 
-// FUNCTION TEMPLATE _Bit_cast
 template <class _To, class _From,
     enable_if_t<conjunction_v<bool_constant<sizeof(_To) == sizeof(_From)>, is_trivially_copyable<_To>,
                     is_trivially_copyable<_From>>,
@@ -125,7 +124,6 @@ struct _Get_rebind_alias<_Ty, _Other, void_t<typename _Ty::template rebind<_Othe
     using type = typename _Ty::template rebind<_Other>;
 };
 
-// FUNCTION TEMPLATE _Voidify_iter
 template <class _Iter>
 _NODISCARD constexpr void* _Voidify_iter(_Iter _It) noexcept {
     if constexpr (is_pointer_v<_Iter>) {
@@ -135,7 +133,6 @@ _NODISCARD constexpr void* _Voidify_iter(_Iter _It) noexcept {
     }
 }
 
-// FUNCTION TEMPLATE construct_at
 #if _HAS_CXX20
 template <class _Ty, class... _Types,
     class = void_t<decltype(::new (_STD declval<void*>()) _Ty(_STD declval<_Types>()...))>>
@@ -145,7 +142,6 @@ constexpr _Ty* construct_at(_Ty* const _Location, _Types&&... _Args) noexcept(
 }
 #endif // _HAS_CXX20
 
-// FUNCTION TEMPLATE _Construct_in_place
 template <class _Ty, class... _Types>
 _CONSTEXPR20 void _Construct_in_place(_Ty& _Obj, _Types&&... _Args) noexcept(
     is_nothrow_constructible_v<_Ty, _Types...>) {
@@ -159,7 +155,6 @@ _CONSTEXPR20 void _Construct_in_place(_Ty& _Obj, _Types&&... _Args) noexcept(
     }
 }
 
-// FUNCTION TEMPLATE _Default_construct_in_place
 template <class _Ty>
 void _Default_construct_in_place(_Ty& _Obj) noexcept(is_nothrow_default_constructible_v<_Ty>) {
     ::new (_Voidify_iter(_STD addressof(_Obj))) _Ty;
@@ -199,7 +194,6 @@ struct pointer_traits<_Ty*> {
 };
 
 #if _HAS_CXX20
-// FUNCTION TEMPLATE to_address
 template <class _Ty, class = void>
 inline constexpr bool _Has_to_address_v = false; // determines whether _Ptr has pointer_traits<_Ptr>::to_address(p)
 
@@ -234,7 +228,6 @@ struct identity {
 };
 #endif // _HAS_CXX20
 
-// FUNCTION TEMPLATE _Pass_fn
 // TRANSITION, VSO-386225
 template <class _Fx>
 struct _Ref_fn { // pass function object by value as a reference
@@ -1283,7 +1276,6 @@ _INLINE_VAR constexpr bool _Is_random_iter_v = is_convertible_v<_Iter_cat_t<_Ite
 template <class, class = void>
 struct _Is_checked_helper {}; // default definition, no longer used, retained due to pseudo-documentation
 
-// FUNCTION TEMPLATE _Adl_verify_range
 #if _ITERATOR_DEBUG_LEVEL != 0
 template <class _Ty>
 constexpr void _Verify_range(const _Ty* const _First, const _Ty* const _Last) noexcept {
@@ -1315,7 +1307,6 @@ constexpr void _Adl_verify_range(const _Iter& _First, const _Sentinel& _Last) {
     }
 }
 
-// FUNCTION TEMPLATE _Get_unwrapped
 template <class _Iter, class = void>
 _INLINE_VAR constexpr bool _Unwrappable_v = false;
 
@@ -1339,7 +1330,6 @@ _NODISCARD constexpr decltype(auto) _Get_unwrapped(_Iter&& _It) {
 template <class _Iter>
 using _Unwrapped_t = _Remove_cvref_t<decltype(_Get_unwrapped(_STD declval<_Iter>()))>;
 
-// FUNCTION TEMPLATE _Get_unwrapped_unverified
 template <class _Iter, class = bool>
 _INLINE_VAR constexpr bool _Do_unwrap_when_unverified_v = false;
 
@@ -1367,7 +1357,6 @@ _NODISCARD constexpr decltype(auto) _Get_unwrapped_unverified(_Iter&& _It) {
 template <class _Iter>
 using _Unwrapped_unverified_t = _Remove_cvref_t<decltype(_Get_unwrapped_unverified(_STD declval<_Iter>()))>;
 
-// FUNCTION TEMPLATE _Get_unwrapped_n
 struct _Distance_unknown {
     constexpr _Distance_unknown operator-() const noexcept {
         return {};
@@ -1418,7 +1407,6 @@ _NODISCARD constexpr decltype(auto) _Get_unwrapped_n(_Iter&& _It, const _Diff _O
     }
 }
 
-// FUNCTION TEMPLATE _Seek_wrapped
 template <class _Iter, class _UIter, class = void>
 _INLINE_VAR constexpr bool _Wrapped_seekable_v = false;
 
@@ -1475,7 +1463,6 @@ using _Enable_if_execution_policy_t = typename remove_reference_t<_ExPo>::_Stand
 
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE _Idl_distance
 template <class _Checked, class _Iter>
 _NODISCARD constexpr auto _Idl_distance(const _Iter& _First, const _Iter& _Last) {
     // tries to get the distance between _First and _Last if they are random-access iterators
@@ -1513,7 +1500,6 @@ using _Unwrap_enum_t = typename _Unwrap_enum<_Elem>::type;
 #define _DEBUG_ORDER_SET_UNWRAPPED(otherIter, first, last, pred) \
     _Debug_order_set_unchecked<otherIter>(first, last, pred)
 
-// FUNCTION TEMPLATE _Debug_lt_pred
 template <class _Pr, class _Ty1, class _Ty2,
     enable_if_t<is_same_v<_Remove_cvref_t<_Ty1>, _Remove_cvref_t<_Ty2>>, int> = 0>
 constexpr bool _Debug_lt_pred(_Pr&& _Pred, _Ty1&& _Left, _Ty2&& _Right) noexcept(
@@ -1534,7 +1520,6 @@ constexpr bool _Debug_lt_pred(_Pr&& _Pred, _Ty1&& _Left, _Ty2&& _Right) noexcept
     return static_cast<bool>(_Pred(_Left, _Right));
 }
 
-// FUNCTION TEMPLATE _Debug_order_unchecked
 template <class _InIt, class _Sentinel, class _Pr>
 constexpr void _Debug_order_unchecked(_InIt _First, _Sentinel _Last, _Pr&& _Pred) {
     // test if range is ordered by predicate
@@ -1547,7 +1532,6 @@ constexpr void _Debug_order_unchecked(_InIt _First, _Sentinel _Last, _Pr&& _Pred
     }
 }
 
-// FUNCTION TEMPLATE _Debug_order_set_unchecked
 template <class _OtherIt, class _InIt, class _Pr>
 constexpr void _Debug_order_set_unchecked(_InIt _First, _InIt _Last, _Pr&& _Pred) {
     // test if range is ordered by predicate
@@ -1558,7 +1542,6 @@ constexpr void _Debug_order_set_unchecked(_InIt _First, _InIt _Last, _Pr&& _Pred
 #endif // _ITERATOR_DEBUG_LEVEL < 2
 
 // MORE ITERATOR STUFF (from <iterator>)
-// FUNCTION TEMPLATE advance
 template <class _InIt, class _Diff>
 _CONSTEXPR17 void advance(_InIt& _Where, _Diff _Off) { // increment iterator by offset
     if constexpr (_Is_random_iter_v<_InIt>) {
@@ -1587,7 +1570,6 @@ _CONSTEXPR17 void advance(_InIt& _Where, _Diff _Off) { // increment iterator by 
     }
 }
 
-// FUNCTION TEMPLATE distance
 template <class _InIt>
 _NODISCARD _CONSTEXPR17 _Iter_diff_t<_InIt> distance(_InIt _First, _InIt _Last) {
     if constexpr (_Is_random_iter_v<_InIt>) {
@@ -1605,13 +1587,11 @@ _NODISCARD _CONSTEXPR17 _Iter_diff_t<_InIt> distance(_InIt _First, _InIt _Last) 
     }
 }
 
-// FUNCTION TEMPLATE _Next_iter
 template <class _InIt>
 constexpr _InIt _Next_iter(_InIt _First) { // increment iterator
     return ++_First;
 }
 
-// FUNCTION TEMPLATE next
 template <class _InIt>
 _NODISCARD _CONSTEXPR17 _InIt next(_InIt _First, _Iter_diff_t<_InIt> _Off = 1) { // increment iterator
     static_assert(_Is_input_iter_v<_InIt>, "next requires input iterator");
@@ -1620,13 +1600,11 @@ _NODISCARD _CONSTEXPR17 _InIt next(_InIt _First, _Iter_diff_t<_InIt> _Off = 1) {
     return _First;
 }
 
-// FUNCTION TEMPLATE _Prev_iter
 template <class _BidIt>
 constexpr _BidIt _Prev_iter(_BidIt _First) { // decrement iterator
     return --_First;
 }
 
-// FUNCTION TEMPLATE prev
 template <class _BidIt>
 _NODISCARD _CONSTEXPR17 _BidIt prev(_BidIt _First, _Iter_diff_t<_BidIt> _Off = 1) { // decrement iterator
     static_assert(_Is_bidi_iter_v<_BidIt>, "prev requires bidirectional iterator");
@@ -1899,7 +1877,6 @@ _NODISCARD _CONSTEXPR17 reverse_iterator<_BidIt> operator+(
     return _Right + _Off;
 }
 
-// FUNCTION TEMPLATE make_reverse_iterator
 template <class _BidIt>
 _NODISCARD _CONSTEXPR17 reverse_iterator<_BidIt> make_reverse_iterator(_BidIt _Iter) noexcept(
     is_nothrow_move_constructible_v<_BidIt>) /* strengthened */ {
@@ -1914,7 +1891,6 @@ inline constexpr bool disable_sized_sentinel_for<reverse_iterator<_BidIt1>, reve
 // clang-format on
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATES begin AND end
 template <class _Container>
 _NODISCARD _CONSTEXPR17 auto begin(_Container& _Cont) -> decltype(_Cont.begin()) {
     return _Cont.begin();
@@ -1945,7 +1921,6 @@ _NODISCARD constexpr _Ty* end(_Ty (&_Array)[_Size]) noexcept {
     return _Array + _Size;
 }
 
-// FUNCTION TEMPLATES cbegin AND cend
 template <class _Container>
 _NODISCARD constexpr auto cbegin(const _Container& _Cont) noexcept(noexcept(_STD begin(_Cont)))
     -> decltype(_STD begin(_Cont)) {
@@ -1958,7 +1933,6 @@ _NODISCARD constexpr auto cend(const _Container& _Cont) noexcept(noexcept(_STD e
     return _STD end(_Cont);
 }
 
-// FUNCTION TEMPLATES rbegin AND rend
 template <class _Container>
 _NODISCARD _CONSTEXPR17 auto rbegin(_Container& _Cont) -> decltype(_Cont.rbegin()) {
     return _Cont.rbegin();
@@ -1999,7 +1973,6 @@ _NODISCARD _CONSTEXPR17 reverse_iterator<const _Elem*> rend(initializer_list<_El
     return reverse_iterator<const _Elem*>(_Ilist.begin());
 }
 
-// FUNCTION TEMPLATES crbegin AND crend
 template <class _Container>
 _NODISCARD _CONSTEXPR17 auto crbegin(const _Container& _Cont) -> decltype(_STD rbegin(_Cont)) {
     return _STD rbegin(_Cont);
@@ -2021,7 +1994,6 @@ _NODISCARD constexpr size_t size(const _Ty (&)[_Size]) noexcept {
 }
 
 #if _HAS_CXX20
-// FUNCTION TEMPLATE ssize
 template <class _Container>
 _NODISCARD constexpr auto ssize(const _Container& _Cont)
     -> common_type_t<ptrdiff_t, make_signed_t<decltype(_Cont.size())>> {
@@ -2071,7 +2043,6 @@ _NODISCARD constexpr const _Elem* data(initializer_list<_Elem> _Ilist) noexcept 
 }
 
 #ifdef __cpp_lib_concepts
-// FUNCTION TEMPLATE _Fake_decay_copy
 template <class _Ty>
 _NODISCARD _Ty _Fake_decay_copy(_Ty) noexcept;
 // _Fake_decay_copy<T>(E):
@@ -3143,8 +3114,7 @@ namespace ranges {
 
     inline constexpr _Prev_fn prev{_Not_quite_object::_Construct_tag{}};
 
-    // FUNCTION TEMPLATE _Find_last_iterator
-    template <forward_iterator _It, sentinel_for<_It> _Se>
+        template <forward_iterator _It, sentinel_for<_It> _Se>
     _NODISCARD constexpr _It _Find_last_iterator(
         const _It& _First, const _Se& _Last, const iter_difference_t<_It> _Count) {
         // Find the iterator in [_First, _Last) (of length _Count) which equals _Last
@@ -4028,7 +3998,6 @@ _NODISCARD _CONSTEXPR17 move_iterator<_Iter> operator+(
 #endif // __cpp_lib_concepts
 { return move_iterator<_Iter>{_Right.base() + _Off}; }
 
-// FUNCTION TEMPLATE make_move_iterator
 template <class _Iter>
 _NODISCARD _CONSTEXPR17 move_iterator<_Iter> make_move_iterator(_Iter _It) { // make move_iterator from iterator
     return move_iterator<_Iter>(_STD move(_It));
@@ -4088,7 +4057,6 @@ template <class _Iter1, class _Iter2>
 _INLINE_VAR constexpr bool _Iterators_are_contiguous =
     _Iterator_is_contiguous<_Iter1>&& _Iterator_is_contiguous<_Iter2>;
 
-// FUNCTION TEMPLATE copy
 template <class _Source, class _Dest>
 struct _Ptr_cat_helper {
     using _USource                        = _Unwrap_enum_t<_Source>;
@@ -4300,7 +4268,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE copy_n
 template <class _InIt, class _Diff, class _OutIt>
 _CONSTEXPR20 _OutIt copy_n(_InIt _First, _Diff _Count_raw, _OutIt _Dest) {
     // copy [_First, _First + _Count) to [_Dest, ...)
@@ -4348,7 +4315,6 @@ _FwdIt2 copy_n(_ExPo&&, _FwdIt1 _First, _Diff _Count_raw, _FwdIt2 _Dest) noexcep
 }
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE copy_backward
 template <class _CtgIt1, class _CtgIt2>
 _CtgIt2 _Copy_backward_memmove(_CtgIt1 _First, _CtgIt1 _Last, _CtgIt2 _Dest) {
     // implement copy_backward-like function as memmove
@@ -4411,7 +4377,6 @@ _BidIt2 copy_backward(_ExPo&&, _BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) noe
 }
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE move
 template <class _InIt, class _OutIt>
 _CONSTEXPR20 _OutIt _Move_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest) {
     // move [_First, _Last) to [_Dest, ...)
@@ -4454,7 +4419,6 @@ _FwdIt2 move(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest) noexcept /* 
 }
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE move_backward
 template <class _BidIt1, class _BidIt2>
 _CONSTEXPR20 _BidIt2 _Move_backward_unchecked(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) {
     // move [_First, _Last) backwards to [..., _Dest)
@@ -4495,7 +4459,6 @@ _BidIt2 move_backward(_ExPo&&, _BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) noe
 }
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE fill
 
 template <class _Ty>
 struct _Is_character : false_type {}; // by default, not a character type
@@ -4606,7 +4569,6 @@ void fill(_ExPo&&, _FwdIt _First, _FwdIt _Last, const _Ty& _Val) noexcept /* ter
 }
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE fill_n
 template <class _OutIt, class _Diff, class _Ty>
 _CONSTEXPR20 _OutIt fill_n(_OutIt _Dest, const _Diff _Count_raw, const _Ty& _Val) {
     // copy _Val _Count times through [_Dest, ...)
@@ -4695,7 +4657,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE equal
 
 // _Can_memcmp_elements<_Elem1, _Elem2> reports whether `_Elem1 == _Elem2` can be optimized to memcmp.
 // Here, _Elem1 and _Elem2 aren't top-level const, because we remove_const_t before using _Can_memcmp_elements.
@@ -4896,8 +4857,7 @@ _NODISCARD bool equal(_ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // FUNCTION TEMPLATE _Rewrap_iterator
-    template <forward_range _Rng, class _It>
+        template <forward_range _Rng, class _It>
     _NODISCARD constexpr iterator_t<_Rng> _Rewrap_iterator(_Rng&& _Range, _It&& _Val) {
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<remove_cvref_t<_It>, _Unwrapped_t<iterator_t<_Rng>>>);
 
@@ -5024,7 +4984,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE lexicographical_compare
 template <class _Elem1, class _Elem2, class _FTy>
 struct _Lex_compare_check_element_types_helper
     : bool_constant<
@@ -5173,7 +5132,6 @@ _NODISCARD bool lexicographical_compare(
 #endif // _HAS_CXX17
 
 #ifdef __cpp_lib_concepts
-// FUNCTION TEMPLATE lexicographical_compare_three_way
 template <class _InIt1, class _InIt2, class _Cmp>
 _NODISCARD constexpr auto lexicographical_compare_three_way(
     _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _Cmp _Comp) -> decltype(_Comp(*_First1, *_First2)) {
@@ -5232,7 +5190,6 @@ _NODISCARD constexpr auto lexicographical_compare_three_way(
 }
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE find
 template <class _Ty>
 _NODISCARD constexpr bool _Within_limits(const _Ty& _Val, true_type, true_type, _Any_tag, false_type) {
     // signed _Elem, signed _Ty
@@ -5446,7 +5403,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE count
 template <class _InIt, class _Ty>
 _NODISCARD _CONSTEXPR20 _Iter_diff_t<_InIt> count(const _InIt _First, const _InIt _Last, const _Ty& _Val) {
     // count elements that match _Val
@@ -5474,7 +5430,6 @@ _NODISCARD _Iter_diff_t<_FwdIt> count(
     _ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last, const _Ty& _Val) noexcept; // terminates
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE _Check_match_counts
 template <class _InIt, class _Ty, class _Pr>
 _NODISCARD constexpr _InIt _Find_pr(_InIt _First, const _InIt _Last, const _Ty& _Val, _Pr _Pred) {
     for (; _First != _Last; ++_First) {
@@ -5532,7 +5487,6 @@ _NODISCARD _CONSTEXPR20 bool _Check_match_counts(
     return true;
 }
 
-// FUNCTION TEMPLATE reverse
 template <class _BidIt>
 _CONSTEXPR20 void reverse(const _BidIt _First, const _BidIt _Last) { // reverse elements in [_First, _Last)
     _Adl_verify_range(_First, _Last);
@@ -5579,7 +5533,6 @@ void reverse(_ExPo&&, _BidIt _First, _BidIt _Last) noexcept /* terminates */ {
 }
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE rotate
 template <class _BidIt>
 constexpr pair<_BidIt, _BidIt> _Reverse_until_sentinel_unchecked(_BidIt _First, _BidIt _Sentinel, _BidIt _Last) {
     // reverse until either _First or _Last hits _Sentinel
@@ -5656,7 +5609,6 @@ _FwdIt rotate(_ExPo&&, _FwdIt _First, _FwdIt _Mid, _FwdIt _Last) noexcept /* ter
 }
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE find_if
 template <class _InIt, class _Pr>
 _NODISCARD _CONSTEXPR20 _InIt find_if(_InIt _First, const _InIt _Last, _Pr _Pred) { // find first satisfying _Pred
     _Adl_verify_range(_First, _Last);
@@ -5771,7 +5723,6 @@ struct _Require_constant; // _Require_constant<E> is a valid template-id iff E i
                           // type
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE lower_bound
 template <class _FwdIt, class _Ty, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt lower_bound(_FwdIt _First, const _FwdIt _Last, const _Ty& _Val, _Pr _Pred) {
     // find first element not before _Val
@@ -5800,7 +5751,6 @@ _NODISCARD _CONSTEXPR20 _FwdIt lower_bound(_FwdIt _First, _FwdIt _Last, const _T
     return _STD lower_bound(_First, _Last, _Val, less<>{});
 }
 
-// FUNCTION TEMPLATE _Swap_ranges_unchecked
 template <class _FwdIt1, class _FwdIt2>
 _CONSTEXPR20 _FwdIt2 _Swap_ranges_unchecked(_FwdIt1 _First1, const _FwdIt1 _Last1, _FwdIt2 _First2) {
     // swap [_First1, _Last1) with [_First2, ...), no special optimization
@@ -5938,7 +5888,6 @@ struct _CXX17_DEPRECATE_ITERATOR_BASE_CLASS iterator { // base type for iterator
     using reference         = _Reference;
 };
 
-// FUNCTION TEMPLATE _Float_abs_bits
 template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR_BIT_CAST auto _Float_abs_bits(const _Ty& _Xx) {
     using _Traits    = _Floating_type_traits<_Ty>;
@@ -5947,13 +5896,11 @@ _NODISCARD _CONSTEXPR_BIT_CAST auto _Float_abs_bits(const _Ty& _Xx) {
     return _Bits & ~_Traits::_Shifted_sign_mask;
 }
 
-// FUNCTION TEMPLATE _Float_abs
 template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR_BIT_CAST _Ty _Float_abs(const _Ty _Xx) { // constexpr floating-point abs()
     return _Bit_cast<_Ty>(_Float_abs_bits(_Xx));
 }
 
-// FUNCTION TEMPLATE _Float_copysign
 template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR_BIT_CAST _Ty _Float_copysign(const _Ty _Magnitude, const _Ty _Sign) { // constexpr copysign()
     using _Traits       = _Floating_type_traits<_Ty>;
@@ -5962,14 +5909,12 @@ _NODISCARD _CONSTEXPR_BIT_CAST _Ty _Float_copysign(const _Ty _Magnitude, const _
     return _Bit_cast<_Ty>(_Float_abs_bits(_Magnitude) | _Signbit);
 }
 
-// FUNCTION TEMPLATE _Is_nan
 template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR_BIT_CAST bool _Is_nan(const _Ty _Xx) { // constexpr isnan()
     using _Traits = _Floating_type_traits<_Ty>;
     return _Float_abs_bits(_Xx) > _Traits::_Shifted_exponent_mask;
 }
 
-// FUNCTION TEMPLATE _Is_signaling_nan
 // TRANSITION, workaround x86 ABI
 // On x86 ABI, floating-point by-value arguments and return values are passed in 80-bit x87 registers.
 // When the value is a 32-bit or 64-bit signaling NaN, the conversion to/from 80-bit raises FE_INVALID
@@ -5981,14 +5926,12 @@ _NODISCARD _CONSTEXPR_BIT_CAST bool _Is_signaling_nan(const _Ty& _Xx) { // retur
     return _Abs_bits > _Traits::_Shifted_exponent_mask && ((_Abs_bits & _Traits::_Special_nan_mantissa_mask) == 0);
 }
 
-// FUNCTION TEMPLATE _Is_inf
 template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR_BIT_CAST bool _Is_inf(const _Ty _Xx) { // constexpr isinf()
     using _Traits = _Floating_type_traits<_Ty>;
     return _Float_abs_bits(_Xx) == _Traits::_Shifted_exponent_mask;
 }
 
-// FUNCTION TEMPLATE _Is_finite
 template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR_BIT_CAST bool _Is_finite(const _Ty _Xx) { // constexpr isfinite()
     using _Traits = _Floating_type_traits<_Ty>;

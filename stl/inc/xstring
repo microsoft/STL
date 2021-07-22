@@ -1726,7 +1726,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATES operator== FOR basic_string_view
 template <class _Elem, class _Traits>
 _NODISCARD constexpr bool operator==(
     const basic_string_view<_Elem, _Traits> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
@@ -1748,7 +1747,6 @@ _NODISCARD constexpr bool operator==(
 }
 
 #if !_HAS_CXX20
-// FUNCTION TEMPLATES operator!= FOR basic_string_view
 template <class _Elem, class _Traits>
 _NODISCARD constexpr bool operator!=(
     const basic_string_view<_Elem, _Traits> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
@@ -1768,7 +1766,6 @@ _NODISCARD constexpr bool operator!=(
 }
 
 
-// FUNCTION TEMPLATES operator< FOR basic_string_view
 template <class _Elem, class _Traits>
 _NODISCARD constexpr bool operator<(
     const basic_string_view<_Elem, _Traits> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
@@ -1788,7 +1785,6 @@ _NODISCARD constexpr bool operator<(
 }
 
 
-// FUNCTION TEMPLATES operator> FOR basic_string_view
 template <class _Elem, class _Traits>
 _NODISCARD constexpr bool operator>(
     const basic_string_view<_Elem, _Traits> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
@@ -1808,7 +1804,6 @@ _NODISCARD constexpr bool operator>(
 }
 
 
-// FUNCTION TEMPLATES operator<= FOR basic_string_view
 template <class _Elem, class _Traits>
 _NODISCARD constexpr bool operator<=(
     const basic_string_view<_Elem, _Traits> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
@@ -1828,7 +1823,6 @@ _NODISCARD constexpr bool operator<=(
 }
 
 
-// FUNCTION TEMPLATES operator>= FOR basic_string_view
 template <class _Elem, class _Traits>
 _NODISCARD constexpr bool operator>=(
     const basic_string_view<_Elem, _Traits> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {

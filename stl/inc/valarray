@@ -34,7 +34,6 @@ class slice_array;
 template <class _Ty>
 class valarray;
 
-// FUNCTION TEMPLATE _Allocate_for_op_delete
 template <class _Ty>
 _Ty* _Allocate_for_op_delete(size_t _Count) {
     // allocates space for _Count objects of type _Ty

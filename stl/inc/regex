@@ -503,7 +503,6 @@ private:
     regex_constants::error_type _Err;
 };
 
-// FUNCTION TEMPLATE _Iter_compare
 template <class _Traits, class _FwdIt1, class _FwdIt2>
 int _Iter_compare3(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, true_type) {
     // _Iter_compare for memory buffer ranges
@@ -558,7 +557,6 @@ int _Iter_compare(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Las
         _Get_unwrapped(_First1), _Get_unwrapped(_Last1), _Get_unwrapped(_First2), _Get_unwrapped(_Last2));
 }
 
-// FUNCTION TEMPLATE _Is_word
 inline bool _Is_word(unsigned char _UCh) {
     // special casing char to avoid branches for std::regex in this path
     static constexpr bool _Is_word_table[(numeric_limits<unsigned char>::max) () + 1] = {
@@ -1336,7 +1334,6 @@ public:
     virtual ~_Node_base() noexcept {}
 };
 
-// FUNCTION _Destroy_node
 inline void _Destroy_node(_Node_base* _Nx, _Node_base* _Ne = nullptr) noexcept { // destroy sublist of nodes
     while (_Nx != _Ne && _Nx) { // destroy node
         _Node_base* _Tmp = _Nx;
@@ -2069,7 +2066,6 @@ using wcmatch = match_results<const wchar_t*>;
 using smatch  = match_results<string::const_iterator>;
 using wsmatch = match_results<wstring::const_iterator>;
 
-// FUNCTION TEMPLATE _Format_default
 template <class _BidIt, class _Alloc, class _InIt, class _OutIt>
 _OutIt _Format_default(const match_results<_BidIt, _Alloc>& _Match, _OutIt _Out, _InIt _First, _InIt _Last,
     regex_constants::match_flag_type) { // format with ECMAScript rules
@@ -2116,7 +2112,6 @@ _OutIt _Format_default(const match_results<_BidIt, _Alloc>& _Match, _OutIt _Out,
     return _Out;
 }
 
-// FUNCTION TEMPLATE _Format_sed
 template <class _BidIt, class _Alloc, class _InIt, class _OutIt>
 _OutIt _Format_sed(const match_results<_BidIt, _Alloc>& _Match, _OutIt _Out, _InIt _First, _InIt _Last,
     regex_constants::match_flag_type) { // format with sed rules
@@ -2143,7 +2138,6 @@ _OutIt _Format_sed(const match_results<_BidIt, _Alloc>& _Match, _OutIt _Out, _In
     return _Out;
 }
 
-// FUNCTION TEMPLATE _Regex_match1
 template <class _BidIt, class _Alloc, class _Elem, class _RxTraits, class _It>
 bool _Regex_match1(_It _First, _It _Last, match_results<_BidIt, _Alloc>* _Matches,
     const basic_regex<_Elem, _RxTraits>& _Re, regex_constants::match_flag_type _Flgs,
@@ -2157,7 +2151,6 @@ bool _Regex_match1(_It _First, _It _Last, match_results<_BidIt, _Alloc>* _Matche
     return _Mx._Match(_Matches, _Full);
 }
 
-// FUNCTION TEMPLATE regex_match
 template <class _BidIt, class _Alloc, class _Elem, class _RxTraits>
 bool regex_match(_BidIt _First, _BidIt _Last, match_results<_BidIt, _Alloc>& _Matches,
     const basic_regex<_Elem, _RxTraits>& _Re, regex_constants::match_flag_type _Flgs = regex_constants::match_default) {
@@ -2214,7 +2207,6 @@ _NODISCARD bool regex_match(const basic_string<_Elem, _StTraits, _StAlloc>& _Str
         _Re, _Flgs | regex_constants::match_any, true);
 }
 
-// FUNCTION TEMPLATE _Regex_search2
 template <class _BidIt, class _Alloc, class _Elem, class _RxTraits, class _It>
 bool _Regex_search2(_It _First, _It _Last, match_results<_BidIt, _Alloc>* _Matches,
     const basic_regex<_Elem, _RxTraits>& _Re, regex_constants::match_flag_type _Flgs, _It _Org) {
@@ -2257,7 +2249,6 @@ bool _Regex_search2(_It _First, _It _Last, match_results<_BidIt, _Alloc>* _Match
     return _Found;
 }
 
-// FUNCTION TEMPLATE regex_search
 template <class _BidIt, class _Alloc, class _Elem, class _RxTraits>
 bool regex_search(_BidIt _First, _BidIt _Last, match_results<_BidIt, _Alloc>& _Matches,
     const basic_regex<_Elem, _RxTraits>& _Re, regex_constants::match_flag_type _Flgs = regex_constants::match_default) {
@@ -2318,7 +2309,6 @@ _NODISCARD bool regex_search(const basic_string<_Elem, _StTraits, _StAlloc>& _St
         _First, _Last, static_cast<match_results<_Iter>*>(nullptr), _Re, _Flgs | regex_constants::match_any, _First);
 }
 
-// FUNCTION TEMPLATE regex_replace
 template <class _OutIt, class _BidIt, class _RxTraits, class _Elem, class _Traits, class _Alloc>
 _OutIt _Regex_replace1(_OutIt _Result, _BidIt _First, _BidIt _Last, const basic_regex<_Elem, _RxTraits>& _Re,
     const basic_string<_Elem, _Traits, _Alloc>& _Fmt, regex_constants::match_flag_type _Flgs) {

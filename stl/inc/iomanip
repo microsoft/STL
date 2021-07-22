@@ -29,7 +29,6 @@ struct _Fillobj { // store fill character
     _Elem _Fill; // the fill character
 };
 
-// FUNCTION TEMPLATE setfill
 template <class _Elem>
 _NODISCARD _Fillobj<_Elem> setfill(_Elem _Ch) {
     return _Fillobj<_Elem>(_Ch);
@@ -64,7 +63,6 @@ struct _Monobj { // store reference to monetary amount
     _Monobj& operator=(const _Monobj&) = delete;
 };
 
-// FUNCTION TEMPLATE get_money
 template <class _Money>
 _NODISCARD _Monobj<_Money> get_money(_Money& _Val_arg, bool _Intl_arg = false) {
     return _Monobj<_Money>(_Val_arg, _Intl_arg);
@@ -91,7 +89,6 @@ basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
     return _Istr;
 }
 
-// FUNCTION TEMPLATE put_money
 template <class _Money>
 _NODISCARD _Monobj<const _Money> put_money(const _Money& _Val_arg, bool _Intl_arg = false) {
     return _Monobj<const _Money>(_Val_arg, _Intl_arg);
@@ -133,7 +130,6 @@ struct _Timeobj { // store reference to tm object and format
     const _Elem* _Fmtlast; // format string end
 };
 
-// FUNCTION TEMPLATE get_time
 template <class _Elem>
 _NODISCARD _Timeobj<_Elem, tm*> get_time(tm* _Tptr_arg, const _Elem* _Fmt_arg) {
     return _Timeobj<_Elem, tm*>(_Tptr_arg, _Fmt_arg);
@@ -163,7 +159,6 @@ basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
     return _Istr;
 }
 
-// FUNCTION TEMPLATE put_time
 template <class _Elem>
 _NODISCARD _Timeobj<_Elem, const tm*> put_time(const tm* _Tptr_arg, const _Elem* _Fmt_arg) {
     return _Timeobj<_Elem, const tm*>(_Tptr_arg, _Fmt_arg);
@@ -222,7 +217,6 @@ struct _Quote_out { // store pointer/length for string
     _Quote_out& operator=(const _Quote_out&) = delete;
 };
 
-// FUNCTION TEMPLATE quoted
 template <class _Elem>
 _NODISCARD _Quote_out<_Elem, void, size_t> quoted(
     const _Elem* _Ptr, _Elem _Delim = _Elem('"'), _Elem _Escape = _Elem('\\')) {

@@ -655,13 +655,11 @@ _NODISCARD constexpr compare_three_way_result_t<_Ty1, _Ty2>
 }
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE swap [optional.specalg]
 template <class _Ty, enable_if_t<is_move_constructible_v<_Ty> && is_swappable_v<_Ty>, int> = 0>
 void swap(optional<_Ty>& _Left, optional<_Ty>& _Right) noexcept(noexcept(_Left.swap(_Right))) {
     _Left.swap(_Right);
 }
 
-// FUNCTION TEMPLATE make_optional [optional.specalg]
 template <class _Ty>
 _NODISCARD constexpr optional<decay_t<_Ty>> make_optional(_Ty&& _Value) {
     return optional<decay_t<_Ty>>{_STD forward<_Ty>(_Value)};

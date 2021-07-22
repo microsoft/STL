@@ -33,7 +33,6 @@ inline constexpr char _Charconv_digits[] = {'0', '1', '2', '3', '4', '5', '6', '
     'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
 static_assert(_STD size(_Charconv_digits) == 36);
 
-// FUNCTION to_chars (INTEGER TO STRING)
 template <class _RawTy>
 _NODISCARD to_chars_result _Integer_to_chars(
     char* _First, char* const _Last, const _RawTy _Raw_value, const int _Base) noexcept {
@@ -214,7 +213,6 @@ struct from_chars_result {
 #endif // _HAS_CXX20
 };
 
-// FUNCTION from_chars (STRING TO INTEGER)
 _NODISCARD inline unsigned char _Digit_from_char(const char _Ch) noexcept {
     // convert ['0', '9'] ['A', 'Z'] ['a', 'z'] to [0, 35], everything else to 255
     static constexpr unsigned char _Digit_from_byte[] = {255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
@@ -1644,7 +1642,6 @@ _NODISCARD errc _Convert_hexadecimal_string_to_floating_type(
 // ^^^^^^^^^^ DERIVED FROM corecrt_internal_strtox.h ^^^^^^^^^^
 
 
-// FUNCTION from_chars (STRING TO FLOATING-POINT)
 
 // C11 6.4.2.1 "General"
 // digit: one of
@@ -2060,7 +2057,6 @@ inline from_chars_result from_chars(const char* const _First, const char* const 
     return _Result;
 }
 
-// FUNCTION to_chars (FLOATING-POINT TO STRING)
 template <class _Floating>
 _NODISCARD to_chars_result _Floating_to_chars_hex_precision(
     char* _First, char* const _Last, const _Floating _Value, int _Precision) noexcept {

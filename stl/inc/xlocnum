@@ -45,7 +45,6 @@ _END_EXTERN_C_UNLESS_PURE
 
 _STD_BEGIN
 
-// FUNCTION _Stodx_v2
 inline double _Stodx_v2(const char* _Str, char** _Endptr, int _Pten, int* _Perr) { // convert string to double
     int& _Errno_ref = errno; // Nonzero cost, pay it once
     const int _Orig = _Errno_ref;
@@ -62,7 +61,6 @@ inline double _Stodx_v2(const char* _Str, char** _Endptr, int _Pten, int* _Perr)
     return _Val;
 }
 
-// FUNCTION _Stofx_v2
 inline float _Stofx_v2(const char* _Str, char** _Endptr, int _Pten, int* _Perr) { // convert string to float
     int& _Errno_ref = errno; // Nonzero cost, pay it once
     const int _Orig = _Errno_ref;
@@ -79,7 +77,6 @@ inline float _Stofx_v2(const char* _Str, char** _Endptr, int _Pten, int* _Perr) 
     return _Val;
 }
 
-// FUNCTION TEMPLATE _Find_elem
 template <class _Elem, size_t _Base_size>
 size_t _Find_elem(const _Elem (&_Base)[_Base_size],
     const _Elem _Ch) { // lookup _Ch in array storing NUL-terminated string _Base
@@ -1159,7 +1156,6 @@ struct _Hex_float_precision<long double> {
     static constexpr int value = ((LDBL_MANT_DIG - 1) + 3) / 4;
 };
 
-// FUNCTION TEMPLATE _Float_put_desired_precision
 template <class _Ty>
 int _Float_put_desired_precision(const streamsize _Precision, const ios_base::fmtflags _Float_flags) {
     const bool _Is_hex = _Float_flags == (ios_base::fixed | ios_base::scientific);

@@ -231,32 +231,26 @@ inline constexpr strong_ordering strong_ordering::equal{static_cast<_Compare_t>(
 inline constexpr strong_ordering strong_ordering::equivalent{static_cast<_Compare_t>(_Compare_eq::equivalent)};
 inline constexpr strong_ordering strong_ordering::greater{static_cast<_Compare_t>(_Compare_ord::greater)};
 
-// FUNCTION is_eq
 _NODISCARD constexpr bool is_eq(const partial_ordering _Comp) noexcept {
     return _Comp == 0;
 }
 
-// FUNCTION is_neq
 _NODISCARD constexpr bool is_neq(const partial_ordering _Comp) noexcept {
     return _Comp != 0;
 }
 
-// FUNCTION is_lt
 _NODISCARD constexpr bool is_lt(const partial_ordering _Comp) noexcept {
     return _Comp < 0;
 }
 
-// FUNCTION is_lteq
 _NODISCARD constexpr bool is_lteq(const partial_ordering _Comp) noexcept {
     return _Comp <= 0;
 }
 
-// FUNCTION is_gt
 _NODISCARD constexpr bool is_gt(const partial_ordering _Comp) noexcept {
     return _Comp > 0;
 }
 
-// FUNCTION is_gteq
 _NODISCARD constexpr bool is_gteq(const partial_ordering _Comp) noexcept {
     return _Comp >= 0;
 }

@@ -64,7 +64,6 @@ protected:
     _Container* container;
 };
 
-// FUNCTION TEMPLATE back_inserter
 template <class _Container>
 _NODISCARD _CONSTEXPR20 back_insert_iterator<_Container> back_inserter(_Container& _Cont) noexcept /* strengthened */ {
     // return a back_insert_iterator
@@ -116,7 +115,6 @@ protected:
     _Container* container;
 };
 
-// FUNCTION TEMPLATE front_inserter
 template <class _Container>
 _NODISCARD _CONSTEXPR20 front_insert_iterator<_Container> front_inserter(_Container& _Cont) {
     return front_insert_iterator<_Container>(_Cont);
@@ -172,7 +170,6 @@ protected:
     _Wrapped_iter iter;
 };
 
-// FUNCTION TEMPLATE inserter
 template <class _Container>
 _NODISCARD _CONSTEXPR20 insert_iterator<_Container> inserter(_Container& _Cont, typename _Container::iterator _Where) {
     return insert_iterator<_Container>(_Cont, _Where);

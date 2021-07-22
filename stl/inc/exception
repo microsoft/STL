@@ -313,7 +313,6 @@ _NODISCARD exception_ptr make_exception_ptr(_Ex _Except) noexcept {
     return exception_ptr::_Copy_exception(_STD addressof(_Except), __GetExceptionInfo(_Except));
 }
 
-// FUNCTION _Throw_bad_array_new_length
 [[noreturn]] inline void _Throw_bad_array_new_length() {
     _THROW(bad_array_new_length{});
 }
@@ -342,7 +341,6 @@ private:
     exception_ptr _Exc;
 };
 
-// FUNCTION TEMPLATE throw_with_nested
 template <class _Ty, class _Uty>
 struct _With_nested : _Uty, nested_exception { // glue user exception to nested_exception
     explicit _With_nested(_Ty&& _Arg)
@@ -364,7 +362,6 @@ template <class _Ty>
 }
 
 #ifdef _CPPRTTI
-// FUNCTION TEMPLATE rethrow_if_nested
 template <class _Ty>
 void _Rethrow_if_nested(const _Ty* _Ptr, true_type) { // use dynamic_cast
     const auto _Nested = dynamic_cast<const nested_exception*>(_Ptr);

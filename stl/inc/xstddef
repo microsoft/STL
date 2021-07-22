@@ -26,7 +26,6 @@ template <class>
 // false value attached to a dependent name (for static_assert)
 _INLINE_VAR constexpr bool _Always_false = false;
 
-// FUNCTIONAL STUFF (from <functional>)
 #if _HAS_AUTO_PTR_ETC
 // STRUCT TEMPLATE unary_function
 template <class _Arg, class _Result>
@@ -269,7 +268,6 @@ struct less_equal<void> {
     using is_transparent = int;
 };
 
-// FUNCTION TEMPLATE addressof
 template <class _Ty>
 _NODISCARD constexpr _Ty* addressof(_Ty& _Val) noexcept {
     return __builtin_addressof(_Val);
@@ -278,7 +276,6 @@ _NODISCARD constexpr _Ty* addressof(_Ty& _Val) noexcept {
 template <class _Ty>
 const _Ty* addressof(const _Ty&&) = delete;
 
-// FUNCTION TEMPLATE _Unfancy
 template <class _Ptrty>
 _NODISCARD constexpr auto _Unfancy(_Ptrty _Ptr) noexcept { // converts from a fancy pointer to a plain pointer
     return _STD addressof(*_Ptr);

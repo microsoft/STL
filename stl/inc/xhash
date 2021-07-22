@@ -33,7 +33,6 @@ namespace stdext {
     using _STD less;
     using _STD size_t;
 
-    // FUNCTION TEMPLATE hash_value
     template <class _Kty>
     _NODISCARD size_t hash_value(const _Kty& _Keyval) noexcept {
         if constexpr (_STD is_pointer_v<_Kty> || _STD is_null_pointer_v<_Kty>) {

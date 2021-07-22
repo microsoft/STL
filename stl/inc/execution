@@ -221,14 +221,12 @@ private:
     __std_PTP_WORK _Ptp_work;
 };
 
-// FUNCTION TEMPLATE _Run_available_chunked_work
 template <class _Work>
 void _Run_available_chunked_work(_Work& _Operation) {
     while (_Operation._Process_chunk() == _Cancellation_status::_Running) { // process while there are chunks remaining
     }
 }
 
-// FUNCTION TEMPLATE _Run_chunked_parallel_work
 template <class _Work>
 void _Run_chunked_parallel_work(const size_t _Hw_threads, _Work& _Operation) {
     // process chunks of _Operation on the thread pool
@@ -248,7 +246,6 @@ void _Run_chunked_parallel_work(const size_t _Hw_threads, _Work& _Operation) {
 // This assumption should be localized to the chunk calculation functions; the rest of
 // the library assumes that chunk numbers can be static_cast into the difference_type domain.
 
-// FUNCTION TEMPLATE _Get_chunked_work_chunk_count
 template <class _Diff>
 constexpr size_t _Get_chunked_work_chunk_count(const size_t _Hw_threads, const _Diff _Count) {
     // get the number of chunks to break work into to parallelize
@@ -257,7 +254,6 @@ constexpr size_t _Get_chunked_work_chunk_count(const size_t _Hw_threads, const _
     return (_STD min) (_Hw_threads * _Oversubscription_multiplier, _Size_count);
 }
 
-// FUNCTION TEMPLATE _Get_least2_chunked_work_chunk_count
 template <class _Diff>
 constexpr size_t _Get_least2_chunked_work_chunk_count(const size_t _Hw_threads, const _Diff _Count) {
     // get the number of chunks to break work into to parallelize, assuming chunks must be of size 2
@@ -1022,7 +1018,6 @@ struct _Static_partition_range_backward<_BidIt, _Diff, false> {
     }
 };
 
-// FUNCTION TEMPLATE _Distance_any
 template <class _InIt1, class _InIt2>
 _Common_diff_t<_InIt1, _InIt2> _Distance_any(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2) {
     // get the distance from 2 ranges which should have identical lengths
@@ -1035,7 +1030,6 @@ _Common_diff_t<_InIt1, _InIt2> _Distance_any(_InIt1 _First1, _InIt1 _Last1, _InI
     }
 }
 
-// FUNCTION TEMPLATE _Distance_min
 template <class _InIt1, class _InIt2>
 _Common_diff_t<_InIt1, _InIt2> _Distance_min(_InIt1 _First1, const _InIt1 _Last1, _InIt2 _First2, const _InIt2 _Last2) {
     // get min(distance(_First1, _Last1), distance(_First2, _Last2))

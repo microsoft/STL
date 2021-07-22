@@ -143,7 +143,6 @@ struct add_rvalue_reference {
 template <class _Ty>
 using add_rvalue_reference_t = typename _Add_reference<_Ty>::_Rvalue;
 
-// FUNCTION TEMPLATE declval
 template <class _Ty>
 add_rvalue_reference_t<_Ty> declval() noexcept;
 
@@ -1036,7 +1035,6 @@ struct make_unsigned { // unsigned partner to _Ty
 template <class _Ty>
 using make_unsigned_t = typename make_unsigned<_Ty>::type;
 
-// FUNCTION TEMPLATE _Unsigned_value
 template <class _Rep>
 constexpr make_unsigned_t<_Rep> _Unsigned_value(_Rep _Val) { // makes _Val unsigned
     return static_cast<make_unsigned_t<_Rep>>(_Val);
@@ -1273,7 +1271,6 @@ struct common_type<_Ty1, _Ty2, _Rest...> : _Common_type3<void, _Ty1, _Ty2, _Rest
 template <class, class, template <class> class, template <class> class>
 struct basic_common_reference {};
 
-// FUNCTION TEMPLATE _Returns_exactly
 template <class _Ty>
 _Ty _Returns_exactly() noexcept; // not defined
 
@@ -1442,7 +1439,6 @@ _INLINE_VAR constexpr bool _Is_specialization_v<_Template<_Types...>, _Template>
 template <class _Type, template <class...> class _Template>
 struct _Is_specialization : bool_constant<_Is_specialization_v<_Type, _Template>> {};
 
-// FUNCTION TEMPLATE forward
 template <class _Ty>
 _NODISCARD constexpr _Ty&& forward(
     remove_reference_t<_Ty>& _Arg) noexcept { // forward an lvalue as either an lvalue or an rvalue
@@ -1455,13 +1451,11 @@ _NODISCARD constexpr _Ty&& forward(remove_reference_t<_Ty>&& _Arg) noexcept { //
     return static_cast<_Ty&&>(_Arg);
 }
 
-// FUNCTION TEMPLATE move
 template <class _Ty>
 _NODISCARD constexpr remove_reference_t<_Ty>&& move(_Ty&& _Arg) noexcept { // forward _Arg as movable
     return static_cast<remove_reference_t<_Ty>&&>(_Arg);
 }
 
-// FUNCTION TEMPLATE move_if_noexcept
 template <class _Ty>
 _NODISCARD constexpr conditional_t<!is_nothrow_move_constructible_v<_Ty> && is_copy_constructible_v<_Ty>, const _Ty&,
     _Ty&&>
@@ -1476,7 +1470,6 @@ class reference_wrapper;
 // (WG21-N4842 [constexpr.functions]/1), yet both std::apply and std::visit are required to be constexpr and have
 // invoke-like behavior. As a result, we've chosen to apply the part of P1065R2 resolving LWG-2894 as a defect report.
 
-// FUNCTION TEMPLATE invoke
 #pragma warning(push) // TRANSITION, DevCom-936696
 #pragma warning(disable : 28278) // Function '%s' appears with no prototype in scope
 enum class _Invoker_strategy {
@@ -1826,13 +1819,11 @@ struct is_pointer_interconvertible_base_of : bool_constant<__is_pointer_intercon
 template <class _Base, class _Derived>
 inline constexpr bool is_pointer_interconvertible_base_of_v = __is_pointer_interconvertible_base_of(_Base, _Derived);
 
-// FUNCTION TEMPLATE is_pointer_interconvertible_with_class
 template <class _ClassTy, class _MemberTy>
 _NODISCARD constexpr bool is_pointer_interconvertible_with_class(_MemberTy _ClassTy::*_Pm) noexcept {
     return __is_pointer_interconvertible_with_class(_ClassTy, _Pm);
 }
 
-// FUNCTION TEMPLATE is_corresponding_member
 template <class _ClassTy1, class _ClassTy2, class _MemberTy1, class _MemberTy2>
 _NODISCARD constexpr bool is_corresponding_member(_MemberTy1 _ClassTy1::*_Pm1, _MemberTy2 _ClassTy2::*_Pm2) noexcept {
     return __is_corresponding_member(_ClassTy1, _ClassTy2, _Pm1, _Pm2);
@@ -1957,7 +1948,6 @@ template <class _Ty>
 reference_wrapper(_Ty&) -> reference_wrapper<_Ty>;
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATES ref AND cref
 template <class _Ty>
 _NODISCARD _CONSTEXPR20 reference_wrapper<_Ty> ref(_Ty& _Val) noexcept {
     return reference_wrapper<_Ty>(_Val);
@@ -2014,7 +2004,6 @@ struct _Is_swappable;
 template <class _Ty>
 struct _Is_nothrow_swappable;
 
-// FUNCTION TEMPLATE swap
 #if _HAS_CXX17
 template <class _Ty, enable_if_t<is_move_constructible_v<_Ty> && is_move_assignable_v<_Ty>, int> = 0>
 #else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
@@ -2209,13 +2198,11 @@ _NODISCARD size_t _Fnv1a_append_value(
     return _Fnv1a_append_bytes(_Val, &reinterpret_cast<const unsigned char&>(_Keyval), sizeof(_Kty));
 }
 
-// FUNCTION TEMPLATE _Hash_representation
 template <class _Kty>
 _NODISCARD size_t _Hash_representation(const _Kty& _Keyval) noexcept { // bitwise hashes the representation of a key
     return _Fnv1a_append_value(_FNV_offset_basis, _Keyval);
 }
 
-// FUNCTION TEMPLATE _Hash_array_representation
 template <class _Kty>
 _NODISCARD size_t _Hash_array_representation(
     const _Kty* const _First, const size_t _Count) noexcept { // bitwise hashes the representation of an array

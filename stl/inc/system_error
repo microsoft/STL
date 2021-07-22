@@ -394,7 +394,6 @@ _NODISCARD inline error_condition error_code::default_error_condition() const no
     return category().default_error_condition(value());
 }
 
-// FUNCTION make_error_code
 _NODISCARD inline error_code make_error_code(errc _Errno) noexcept {
     return error_code(static_cast<int>(_Errno), _STD generic_category());
 }
@@ -403,7 +402,6 @@ _NODISCARD inline error_code make_error_code(io_errc _Errno) noexcept {
     return error_code(static_cast<int>(_Errno), _STD iostream_category());
 }
 
-// FUNCTION make_error_condition
 _NODISCARD inline error_condition make_error_condition(errc _Errno) noexcept {
     return error_condition(static_cast<int>(_Errno), _STD generic_category());
 }

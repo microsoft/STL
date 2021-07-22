@@ -18,7 +18,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// FUNCTION TEMPLATE _Scoped_outermost
 template <class _Alloc, class = void>
 struct _Scoped_outermost_helper { // gets the outermost allocator
     static decltype(auto) _Fn(_Alloc& _Al) { // gets the outermost allocator

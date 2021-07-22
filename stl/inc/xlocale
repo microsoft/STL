@@ -458,7 +458,6 @@ const _Facet& __CRTDECL use_facet(const locale& _Loc) { // get facet reference f
     _END_LOCK()
 } // end of use_facet body
 
-// FUNCTION TEMPLATE _Maklocbyte
 template <class _Elem>
 char __CRTDECL _Maklocbyte(_Elem _Char, const _Locinfo::_Cvtvec&) {
     // convert _Elem to char using _Cvtvec
@@ -485,7 +484,6 @@ inline char __CRTDECL _Maklocbyte(unsigned short _Char, const _Locinfo::_Cvtvec&
 }
 #endif // _NATIVE_WCHAR_T_DEFINED
 
-// FUNCTION TEMPLATE _Maklocchr
 template <class _Elem>
 _Elem __CRTDECL _Maklocchr(char _Byte, _Elem*, const _Locinfo::_Cvtvec&) {
     // convert char to _Elem using _Cvtvec
@@ -512,7 +510,6 @@ inline unsigned short __CRTDECL _Maklocchr(char _Byte, unsigned short*, const _L
 }
 #endif // _NATIVE_WCHAR_T_DEFINED
 
-// FUNCTION TEMPLATE _Maklocstr
 template <class _Elem>
 _Elem* __CRTDECL _Maklocstr(const char* _Ptr, _Elem*, const _Locinfo::_Cvtvec&) {
     // convert C string to _Elem sequence using _Cvtvec
@@ -791,7 +788,6 @@ __PURE_APPDOMAIN_GLOBAL locale::id codecvt<_Elem, _Byte, _Statype>::id;
 #pragma clang diagnostic pop
 #endif // __clang__
 
-// FUNCTION TEMPLATE _Codecvt_do_length
 template <class _CvtTy, class _Byte, class _Statype>
 _NODISCARD int _Codecvt_do_length(
     const _CvtTy& _Cvt, _Statype& _State, const _Byte* _First1, const _Byte* _Last1, size_t _Count) {
@@ -3225,7 +3221,6 @@ protected:
     virtual __CLR_OR_THIS_CALL ~ctype_byname() noexcept {}
 };
 
-// FUNCTION TEMPLATE _Getloctxt
 enum class _Case_sensitive : bool { _Nope, _Yes };
 
 template <class _InIt, class _Elem>

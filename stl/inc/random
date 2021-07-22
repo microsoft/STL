@@ -243,7 +243,6 @@ private:
     vector<result_type> _Myvec;
 };
 
-// FUNCTION TEMPLATE generate_canonical
 template <class _Real, size_t _Bits, class _Gen>
 _NODISCARD _Real generate_canonical(_Gen& _Gx) { // build a floating-point value from random sequence
     _RNG_REQUIRE_REALTYPE(generate_canonical, _Real);
@@ -2021,7 +2020,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
-// FUNCTION TEMPLATE _Float_upper_bound
 
 // Returns smallest _Flt such that static_cast<_Ty>(_Result) > _Val.
 // First truncate to largest _Flt <= _Val, then add ceil(ulp).

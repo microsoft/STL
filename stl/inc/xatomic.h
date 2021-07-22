@@ -90,7 +90,6 @@ enum memory_order {
 
 using _Atomic_counter_t = unsigned long;
 
-// FUNCTION TEMPLATE _Atomic_address_as
 template <class _Integral, class _Ty>
 _NODISCARD volatile _Integral* _Atomic_address_as(_Ty& _Source) noexcept {
     // gets a pointer to the argument as an integral type (to pass to intrinsics)

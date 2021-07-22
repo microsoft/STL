@@ -186,7 +186,6 @@ namespace ranges {
         }
     };
 
-    // FUNCTION TEMPLATE _Rewrap_subrange
     template <class _Result, class _Wrapped, class _Unwrapped>
     _NODISCARD constexpr _Result _Rewrap_subrange(_Wrapped& _Val, subrange<_Unwrapped>&& _UResult) {
         // conditionally computes a wrapped subrange from a wrapped iterator or range and unwrapped subrange
@@ -215,7 +214,6 @@ namespace ranges {
         }
     }
 
-    // FUNCTION TEMPLATE _Get_final_iterator_unwrapped
     template <forward_iterator _Wrapped, sentinel_for<_Wrapped> _Se>
     _NODISCARD constexpr auto _Get_final_iterator_unwrapped(const _Unwrapped_t<_Wrapped>& _UFirst, _Se&& _Last) {
         // find the iterator in [_UFirst, _Get_unwrapped(_Last)) which equals _Get_unwrapped(_Last) [possibly O(N)]
@@ -261,7 +259,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE for_each
 template <class _InIt, class _Fn>
 _CONSTEXPR20 _Fn for_each(_InIt _First, _InIt _Last, _Fn _Func) { // perform function for each element [_First, _Last)
     _Adl_verify_range(_First, _Last);
@@ -278,7 +275,6 @@ _CONSTEXPR20 _Fn for_each(_InIt _First, _InIt _Last, _Fn _Func) { // perform fun
 template <class _ExPo, class _FwdIt, class _Fn, _Enable_if_execution_policy_t<_ExPo> = 0>
 void for_each(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last, _Fn _Func) noexcept; // terminates
 
-// FUNCTION TEMPLATE for_each_n
 template <class _InIt, class _Diff, class _Fn>
 _CONSTEXPR20 _InIt for_each_n(_InIt _First, const _Diff _Count_raw, _Fn _Func) {
     // perform function for each element [_First, _First + _Count)
@@ -392,7 +388,6 @@ template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_E
 _NODISCARD _FwdIt find_if(_ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE find_if_not
 template <class _InIt, class _Pr>
 _NODISCARD _CONSTEXPR20 _InIt find_if_not(_InIt _First, const _InIt _Last, _Pr _Pred) {
     // find first element that satisfies !_Pred
@@ -414,7 +409,6 @@ template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_E
 _NODISCARD _FwdIt find_if_not(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE adjacent_find
 template <class _FwdIt, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt adjacent_find(const _FwdIt _First, _FwdIt _Last, _Pr _Pred) {
     // find first satisfying _Pred with successor
@@ -548,7 +542,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE count_if
 template <class _InIt, class _Pr>
 _NODISCARD _CONSTEXPR20 _Iter_diff_t<_InIt> count_if(_InIt _First, _InIt _Last, _Pr _Pred) {
     // count elements satisfying _Pred
@@ -615,7 +608,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE mismatch
 template <class _InIt1, class _InIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(_InIt1 _First1, const _InIt1 _Last1, _InIt2 _First2, _Pr _Pred) {
     // return [_First1, _Last1)/[_First2, ...) mismatch
@@ -810,7 +802,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE is_permutation
 template <class _FwdIt1, class _FwdIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 bool is_permutation(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Pr _Pred) {
     // test if [_First1, _Last1) == permuted [_First2, ...)
@@ -1144,7 +1135,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE all_of
 template <class _InIt, class _Pr>
 _NODISCARD _CONSTEXPR20 bool all_of(_InIt _First, _InIt _Last, _Pr _Pred) { // test if all elements satisfy _Pred
     _Adl_verify_range(_First, _Last);
@@ -1207,7 +1197,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE any_of
 template <class _InIt, class _Pr>
 _NODISCARD _CONSTEXPR20 bool any_of(const _InIt _First, const _InIt _Last, _Pr _Pred) {
     // test if any element satisfies _Pred
@@ -1271,7 +1260,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE none_of
 template <class _InIt, class _Pr>
 _NODISCARD _CONSTEXPR20 bool none_of(const _InIt _First, const _InIt _Last, _Pr _Pred) {
     // test if no elements satisfy _Pred
@@ -1403,7 +1391,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE copy_if
 template <class _InIt, class _OutIt, class _Pr>
 _CONSTEXPR20 _OutIt copy_if(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pred) { // copy each satisfying _Pred
     _Adl_verify_range(_First, _Last);
@@ -1603,7 +1590,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE partition_copy
 template <class _InIt, class _OutIt1, class _OutIt2, class _Pr>
 _CONSTEXPR20 pair<_OutIt1, _OutIt2> partition_copy(
     _InIt _First, _InIt _Last, _OutIt1 _Dest_true, _OutIt2 _Dest_false, _Pr _Pred) {
@@ -1712,7 +1698,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE is_partitioned
 template <class _InIt, class _Pr>
 _NODISCARD _CONSTEXPR20 bool is_partitioned(const _InIt _First, const _InIt _Last, _Pr _Pred) {
     // test if [_First, _Last) partitioned by _Pred
@@ -1797,7 +1782,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE partition_point
 template <class _FwdIt, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt partition_point(_FwdIt _First, _FwdIt _Last, _Pr _Pred) {
     // find beginning of false partition in [_First, _Last)
@@ -1921,7 +1905,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE _Equal_rev_pred_unchecked
 template <class _InIt1, class _InIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 bool _Equal_rev_pred_unchecked(_InIt1 _First1, _InIt2 _First2, const _InIt2 _Last2, _Pr _Pred) {
     // compare [_First1, ...) to [_First2, _Last2)
@@ -1943,7 +1926,6 @@ _NODISCARD _CONSTEXPR20 bool _Equal_rev_pred_unchecked(_InIt1 _First1, _InIt2 _F
     return true;
 }
 
-// FUNCTION TEMPLATE search
 template <class _FwdItHaystack, class _FwdItPat, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdItHaystack search(_FwdItHaystack _First1, _FwdItHaystack _Last1, const _FwdItPat _First2,
     const _FwdItPat _Last2, _Pr _Pred) { // find first [_First2, _Last2) satisfying _Pred
@@ -2018,7 +2000,6 @@ _NODISCARD _CONSTEXPR20 _FwdItHaystack search(
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // FUNCTION TEMPLATE _Equal_rev_pred
     // clang-format off
     template <class _It1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
     concept _Equal_rev_pred_can_memcmp = is_same_v<_Pj1, identity> && is_same_v<_Pj2, identity>
@@ -2168,7 +2149,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE search_n
 template <class _FwdIt, class _Diff, class _Ty, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt search_n(
     const _FwdIt _First, _FwdIt _Last, const _Diff _Count_raw, const _Ty& _Val, _Pr _Pred) {
@@ -2425,7 +2405,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE find_end
 template <class _FwdIt1, class _FwdIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt1 find_end(
     _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2, const _FwdIt2 _Last2, _Pr _Pred) {
@@ -2692,7 +2671,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE find_first_of
 template <class _FwdIt1, class _FwdIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt1 find_first_of(
     _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2, const _FwdIt2 _Last2, _Pr _Pred) {
@@ -2859,7 +2837,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE swap_ranges
 template <class _FwdIt1, class _FwdIt2>
 _CONSTEXPR20 _FwdIt2 swap_ranges(const _FwdIt1 _First1, const _FwdIt1 _Last1, _FwdIt2 _First2) {
     // swap [_First1, _Last1) with [_First2, ...)
@@ -2880,7 +2857,6 @@ _FwdIt2 swap_ranges(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _Dest) noe
 }
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE transform
 template <class _InIt, class _OutIt, class _Fn>
 _CONSTEXPR20 _OutIt transform(const _InIt _First, const _InIt _Last, _OutIt _Dest, _Fn _Func) {
     // transform [_First, _Last) with _Func
@@ -3040,7 +3016,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE replace
 template <class _FwdIt, class _Ty>
 _CONSTEXPR20 void replace(const _FwdIt _First, const _FwdIt _Last, const _Ty& _Oldval, const _Ty& _Newval) {
     // replace each matching _Oldval with _Newval
@@ -3118,7 +3093,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE replace_if
 template <class _FwdIt, class _Pr, class _Ty>
 _CONSTEXPR20 void replace_if(const _FwdIt _First, const _FwdIt _Last, _Pr _Pred, const _Ty& _Val) {
     // replace each satisfying _Pred with _Val
@@ -3194,7 +3168,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE replace_copy
 template <class _InIt, class _OutIt, class _Ty>
 _CONSTEXPR20 _OutIt replace_copy(_InIt _First, _InIt _Last, _OutIt _Dest, const _Ty& _Oldval, const _Ty& _Newval) {
     // copy replacing each matching _Oldval with _Newval
@@ -3292,7 +3265,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE replace_copy_if
 template <class _InIt, class _OutIt, class _Pr, class _Ty>
 _CONSTEXPR20 _OutIt replace_copy_if(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pred, const _Ty& _Val) {
     // copy replacing each satisfying _Pred with _Val
@@ -3503,7 +3475,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE generate
 template <class _FwdIt, class _Fn>
 _CONSTEXPR20 void generate(_FwdIt _First, _FwdIt _Last, _Fn _Func) { // replace [_First, _Last) with _Func()
     _Adl_verify_range(_First, _Last);
@@ -3523,7 +3494,6 @@ void generate(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Fn _Func) noexcept /* termi
 }
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE generate_n
 template <class _OutIt, class _Diff, class _Fn>
 _CONSTEXPR20 _OutIt generate_n(_OutIt _Dest, const _Diff _Count_raw, _Fn _Func) {
     // replace [_Dest, _Dest + _Count) with _Func()
@@ -3552,7 +3522,6 @@ _FwdIt generate_n(_ExPo&&, const _FwdIt _Dest, const _Diff _Count_raw, _Fn _Func
 }
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE remove_copy
 template <class _InIt, class _OutIt, class _Ty>
 _CONSTEXPR20 _OutIt remove_copy(_InIt _First, _InIt _Last, _OutIt _Dest, const _Ty& _Val) {
     // copy omitting each matching _Val
@@ -3582,7 +3551,6 @@ _FwdIt2 remove_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, const
 }
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE remove_copy_if
 template <class _InIt, class _OutIt, class _Pr>
 _CONSTEXPR20 _OutIt remove_copy_if(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pred) {
     // copy omitting each element satisfying _Pred
@@ -3857,7 +3825,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE unique
 template <class _FwdIt, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt unique(_FwdIt _First, _FwdIt _Last, _Pr _Pred) {
     // remove each satisfying _Pred with previous
@@ -3971,7 +3938,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE unique_copy
 // clang-format off
 #ifdef __cpp_lib_concepts
 template <class _InIt, class _OutIt>
@@ -4243,7 +4209,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE reverse_copy
 template <class _BidIt, class _OutIt>
 _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
     // copy reversing elements in [_First, _Last)
@@ -4501,7 +4466,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE rotate_copy
 template <class _FwdIt, class _OutIt>
 _CONSTEXPR20 _OutIt rotate_copy(_FwdIt _First, _FwdIt _Mid, _FwdIt _Last, _OutIt _Dest) {
     // copy rotating [_First, _Last)
@@ -4584,7 +4548,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE sample
 template <class _PopIt, class _SampleIt, class _Diff, class _RngFn>
 _SampleIt _Sample_reservoir_unchecked(
     _PopIt _First, const _PopIt _Last, const _SampleIt _Dest, const _Diff _Count, _RngFn& _RngFunc) {
@@ -4790,7 +4753,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE shuffle WITH URNG
 template <class _RanIt, class _RngFn>
 void _Random_shuffle1(_RanIt _First, _RanIt _Last, _RngFn& _RngFunc) {
     // shuffle [_First, _Last) using random function _RngFunc
@@ -4881,7 +4843,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 
 #if _HAS_AUTO_PTR_ETC
-// FUNCTION TEMPLATE random_shuffle WITH RANDOM FN
 template <class _RanIt, class _RngFn>
 void random_shuffle(_RanIt _First, _RanIt _Last, _RngFn&& _RngFunc) {
     // shuffle [_First, _Last) using random function _RngFunc
@@ -4905,7 +4866,6 @@ struct _Rand_urng_from_func { // wrap rand() as a URNG
     }
 };
 
-// FUNCTION TEMPLATE random_shuffle
 template <class _RanIt>
 void random_shuffle(_RanIt _First, _RanIt _Last) { // shuffle [_First, _Last) using rand()
     _Rand_urng_from_func _Func;
@@ -4914,7 +4874,6 @@ void random_shuffle(_RanIt _First, _RanIt _Last) { // shuffle [_First, _Last) us
 #endif // _HAS_AUTO_PTR_ETC
 
 #if _HAS_CXX20
-// FUNCTION TEMPLATE shift_left
 template <class _FwdIt>
 constexpr _FwdIt shift_left(_FwdIt _First, const _FwdIt _Last, _Iter_diff_t<_FwdIt> _Pos_to_shift) {
     // shift [_First, _Last) left by _Pos_to_shift
@@ -4954,7 +4913,6 @@ _FwdIt shift_left(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Iter_diff_t<_FwdIt> _Po
     return _STD shift_left(_First, _Last, _Pos_to_shift);
 }
 
-// FUNCTION TEMPLATE shift_right
 template <class _FwdIt>
 constexpr _FwdIt shift_right(_FwdIt _First, const _FwdIt _Last, _Iter_diff_t<_FwdIt> _Pos_to_shift) {
     // shift [_First, _Last) right by _Pos_to_shift
@@ -5035,7 +4993,6 @@ _FwdIt shift_right(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Iter_diff_t<_FwdIt> _P
 }
 #endif // _HAS_CXX20
 
-// FUNCTION TEMPLATE partition
 template <class _FwdIt, class _Pr>
 _CONSTEXPR20 _FwdIt partition(_FwdIt _First, const _FwdIt _Last, _Pr _Pred) {
     // move elements satisfying _Pred to beginning of sequence
@@ -5183,7 +5140,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE stable_partition
 template <class _BidIt>
 _BidIt _Buffered_rotate_unchecked(const _BidIt _First, const _BidIt _Mid, const _BidIt _Last,
     const _Iter_diff_t<_BidIt> _Count1, const _Iter_diff_t<_BidIt> _Count2, _Iter_value_t<_BidIt>* const _Temp_ptr,
@@ -5556,7 +5512,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE push_heap
 template <class _RanIt, class _Ty, class _Pr>
 _CONSTEXPR20 void _Push_heap_by_index(
     _RanIt _First, _Iter_diff_t<_RanIt> _Hole, _Iter_diff_t<_RanIt> _Top, _Ty&& _Val, _Pr _Pred) {
@@ -5669,7 +5624,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE pop_heap
 template <class _RanIt, class _Ty, class _Pr>
 _CONSTEXPR20 void _Pop_heap_hole_by_index(
     _RanIt _First, _Iter_diff_t<_RanIt> _Hole, _Iter_diff_t<_RanIt> _Bottom, _Ty&& _Val, _Pr _Pred) {
@@ -5841,7 +5795,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE make_heap
 template <class _RanIt, class _Pr>
 _CONSTEXPR20 void _Make_heap_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     // make [_First, _Last) into a heap
@@ -5923,7 +5876,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATES is_heap AND is_heap_until
 template <class _RanIt, class _Pr>
 _CONSTEXPR20 _RanIt _Is_heap_until_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     // find extent of range that is a heap
@@ -6074,7 +6026,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE sort_heap
 template <class _RanIt, class _Pr>
 _CONSTEXPR20 void _Sort_heap_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     // order heap by repeatedly popping
@@ -6209,7 +6160,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE upper_bound
 template <class _FwdIt, class _Ty, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt upper_bound(_FwdIt _First, _FwdIt _Last, const _Ty& _Val, _Pr _Pred) {
     // find first element that _Val is before
@@ -6296,7 +6246,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE equal_range
 template <class _FwdIt, class _Ty, class _Pr>
 _NODISCARD _CONSTEXPR20 pair<_FwdIt, _FwdIt> equal_range(_FwdIt _First, _FwdIt _Last, const _Ty& _Val, _Pr _Pred) {
     // find range equivalent to _Val
@@ -6404,7 +6353,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE binary_search
 template <class _FwdIt, class _Ty, class _Pr>
 _NODISCARD _CONSTEXPR20 bool binary_search(_FwdIt _First, _FwdIt _Last, const _Ty& _Val, _Pr _Pred) {
     // test if _Val equivalent to some element
@@ -6455,7 +6403,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE merge
 _NODISCARD constexpr _Distance_unknown _Idl_dist_add(_Distance_unknown, _Distance_unknown) {
     return {};
 }
@@ -6630,7 +6577,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE inplace_merge
 // The "usual invariants" for the inplace_merge helpers below are:
 // [_First, _Mid) and [_Mid, _Last) are sorted
 // _Pred(*_Mid, *_First)             note: this means *_Mid is the "lowest" element
@@ -6896,7 +6842,6 @@ void inplace_merge(_ExPo&&, _BidIt _First, _BidIt _Mid, _BidIt _Last) noexcept /
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // FUNCTION TEMPLATE _Is_sorted_until_unchecked
     // clang-format off
     template <forward_iterator _It, sentinel_for<_It> _Se, class _Pr, class _Pj>
         requires indirect_strict_weak_order<_Pr, projected<_It, _Pj>>
@@ -7236,7 +7181,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE sort
 template <class _BidIt, class _Pr>
 _CONSTEXPR20 _BidIt _Insertion_sort_unchecked(const _BidIt _First, const _BidIt _Last, _Pr _Pred) {
     // insertion sort [_First, _Last)
@@ -7642,7 +7586,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE stable_sort
 template <class _FwdIt, class _Ty, class _Pr>
 _Ty* _Uninitialized_merge_move(_FwdIt _First, const _FwdIt _Mid, const _FwdIt _Last, _Ty* const _Dest, _Pr _Pred) {
     // move merging ranges to uninitialized storage
@@ -8095,7 +8038,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE partial_sort
 template <class _RanIt, class _Pr>
 _CONSTEXPR20 void partial_sort(_RanIt _First, _RanIt _Mid, _RanIt _Last, _Pr _Pred) {
     // order [_First, _Last) up to _Mid
@@ -8221,7 +8163,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE partial_sort_copy
 template <class _InIt, class _RanIt, class _Pr>
 _CONSTEXPR20 _RanIt partial_sort_copy(_InIt _First1, _InIt _Last1, _RanIt _First2, _RanIt _Last2, _Pr _Pred) {
     // copy [_First1, _Last1) into [_First2, _Last2)
@@ -8376,7 +8317,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE nth_element
 template <class _RanIt, class _Pr>
 _CONSTEXPR20 void nth_element(_RanIt _First, _RanIt _Nth, _RanIt _Last, _Pr _Pred) {
     // order Nth element
@@ -8501,7 +8441,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE includes
 template <class _InIt1, class _InIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 bool includes(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _Pr _Pred) {
     // test if every element in sorted [_First2, _Last2) is in sorted [_First1, _Last1)
@@ -8533,7 +8472,6 @@ _NODISCARD _CONSTEXPR20 bool includes(_InIt1 _First1, _InIt1 _Last1, _InIt2 _Fir
 }
 
 #if _HAS_CXX17
-// FUNCTION TEMPLATE includes
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD bool includes(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _Pr _Pred) noexcept
 /* terminates */ {
@@ -8628,7 +8566,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE set_union
 template <class _InIt1, class _InIt2, class _OutIt, class _Pr>
 _CONSTEXPR20 _OutIt set_union(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest, _Pr _Pred) {
     // OR sets [_First1, _Last1) and [_First2, _Last2)
@@ -8768,7 +8705,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE set_intersection
 template <class _InIt1, class _InIt2, class _OutIt, class _Pr>
 _CONSTEXPR20 _OutIt set_intersection(
     _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest, _Pr _Pred) {
@@ -8903,7 +8839,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE set_difference
 template <class _InIt1, class _InIt2, class _OutIt, class _Pr>
 _CONSTEXPR20 _OutIt set_difference(
     _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest, _Pr _Pred) {
@@ -9035,7 +8970,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE set_symmetric_difference
 template <class _InIt1, class _InIt2, class _OutIt, class _Pr>
 _CONSTEXPR20 _OutIt set_symmetric_difference(
     _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest, _Pr _Pred) {
@@ -9189,7 +9123,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE max_element
 template <class _FwdIt, class _Pr>
 constexpr _FwdIt _Max_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) { // find largest element
     _FwdIt _Found = _First;
@@ -9282,7 +9215,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE min_element
 template <class _FwdIt, class _Pr>
 constexpr _FwdIt _Min_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) { // find smallest element
     _FwdIt _Found = _First;
@@ -9375,7 +9307,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE minmax_element
 template <class _FwdIt, class _Pr>
 constexpr pair<_FwdIt, _FwdIt> _Minmax_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) {
     // find smallest and largest elements
@@ -9537,7 +9468,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE max (for initializer_list)
 template <class _Ty, class _Pr>
 _NODISCARD constexpr _Ty(max)(initializer_list<_Ty> _Ilist, _Pr _Pred) {
     // return leftmost/largest
@@ -9617,7 +9547,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE min (for initializer_list)
 template <class _Ty, class _Pr>
 _NODISCARD constexpr _Ty(min)(initializer_list<_Ty> _Ilist, _Pr _Pred) {
     // return leftmost/smallest
@@ -9689,7 +9618,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE minmax
 template <class _Ty, class _Pr>
 _NODISCARD constexpr pair<const _Ty&, const _Ty&> minmax(const _Ty& _Left, const _Ty& _Right, _Pr _Pred) noexcept(
     noexcept(_DEBUG_LT_PRED(_Pred, _Right, _Left))) /* strengthened */ {
@@ -9824,7 +9752,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE next_permutation
 template <class _BidIt, class _Pr>
 _CONSTEXPR20 bool next_permutation(_BidIt _First, _BidIt _Last, _Pr _Pred) {
     // permute and test for pure ascending
@@ -9935,7 +9862,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE prev_permutation
 template <class _BidIt, class _Pr>
 _CONSTEXPR20 bool prev_permutation(_BidIt _First, _BidIt _Last, _Pr _Pred) {
     // reverse permute and test for pure descending
@@ -10046,7 +9972,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATES is_sorted AND is_sorted_until
 template <class _FwdIt, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt is_sorted_until(const _FwdIt _First, _FwdIt _Last, _Pr _Pred) {
     // find extent of range that is ordered by predicate
@@ -10166,7 +10091,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE clamp
 template <class _Ty, class _Pr>
 _NODISCARD constexpr const _Ty& clamp(const _Ty& _Val, const _Ty& _Min_val, const _Ty& _Max_val, _Pr _Pred) {
     // returns _Val constrained to [_Min_val, _Max_val]

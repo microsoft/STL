@@ -54,7 +54,6 @@ template <class _Keycmp, class _Lhs, class _Rhs>
 _INLINE_VAR constexpr bool _Nothrow_compare = noexcept(
     static_cast<bool>(_STD declval<const _Keycmp&>()(_STD declval<const _Lhs&>(), _STD declval<const _Rhs&>())));
 
-// FUNCTION TEMPLATE _Get_size_of_n
 template <size_t _Ty_size>
 _NODISCARD constexpr size_t _Get_size_of_n(const size_t _Count) {
     constexpr bool _Overflow_is_possible = _Ty_size > 1;
@@ -129,7 +128,6 @@ constexpr size_t _Big_allocation_sentinel = 0xFAFAFAFAFAFAFAFAULL;
 constexpr size_t _Big_allocation_sentinel = 0xFAFAFAFAUL;
 #endif // _WIN64
 
-// FUNCTION _Allocate_manually_vector_aligned
 template <class _Traits>
 __declspec(allocator) void* _Allocate_manually_vector_aligned(const size_t _Bytes) {
     // allocate _Bytes manually aligned to at least _Big_allocation_alignment
@@ -149,7 +147,6 @@ __declspec(allocator) void* _Allocate_manually_vector_aligned(const size_t _Byte
     return _Ptr;
 }
 
-// FUNCTION TEMPLATE _Adjust_manually_vector_aligned
 inline void _Adjust_manually_vector_aligned(void*& _Ptr, size_t& _Bytes) {
     // adjust parameters from _Allocate_manually_vector_aligned to pass to operator delete
     _Bytes += _Non_user_size;
@@ -174,7 +171,6 @@ inline void _Adjust_manually_vector_aligned(void*& _Ptr, size_t& _Bytes) {
 }
 #endif // defined(_M_IX86) || defined(_M_X64)
 
-// FUNCTION TEMPLATES _Allocate and _Deallocate
 #ifdef __cpp_aligned_new
 template <size_t _Align, class _Traits = _Default_allocate_traits,
     enable_if_t<(_Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__), int> = 0>
@@ -267,7 +263,6 @@ _CONSTEXPR20 void _Deallocate(void* _Ptr, size_t _Bytes) noexcept {
 
 #undef _HAS_ALIGNED_NEW
 
-// FUNCTION TEMPLATE _Global_new
 template <class _Ty, class... _Types>
 _Ty* _Global_new(_Types&&... _Args) { // acts as "new" while disallowing user overload selection
     struct _NODISCARD _Guard_type {
@@ -288,7 +283,6 @@ _Ty* _Global_new(_Types&&... _Args) { // acts as "new" while disallowing user ov
 template <class _Ptr, class _Ty>
 using _Rebind_pointer_t = typename pointer_traits<_Ptr>::template rebind<_Ty>;
 
-// FUNCTION TEMPLATE _Refancy
 template <class _Pointer, enable_if_t<!is_pointer_v<_Pointer>, int> = 0>
 _CONSTEXPR20 _Pointer _Refancy(typename pointer_traits<_Pointer>::element_type* _Ptr) noexcept {
     return pointer_traits<_Pointer>::pointer_to(*_Ptr);
@@ -299,7 +293,6 @@ _CONSTEXPR20 _Pointer _Refancy(_Pointer _Ptr) noexcept {
     return _Ptr;
 }
 
-// FUNCTION TEMPLATE _Destroy_in_place
 template <class _NoThrowFwdIt, class _NoThrowSentinel>
 _CONSTEXPR20 void _Destroy_range(_NoThrowFwdIt _First, _NoThrowSentinel _Last) noexcept;
 
@@ -313,7 +306,6 @@ _CONSTEXPR20 void _Destroy_in_place(_Ty& _Obj) noexcept {
 }
 
 #if _HAS_CXX17
-// FUNCTION TEMPLATE destroy_at
 template <class _Ty>
 _CONSTEXPR20 void destroy_at(_Ty* const _Location) noexcept /* strengthened */ {
 #if _HAS_CXX20
@@ -327,7 +319,6 @@ _CONSTEXPR20 void destroy_at(_Ty* const _Location) noexcept /* strengthened */ {
 }
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE _Const_cast
 template <class _Ptrty>
 auto _Const_cast(_Ptrty _Ptr) noexcept { // remove constness from a fancy pointer
     using _Elem       = typename pointer_traits<_Ptrty>::element_type;
@@ -911,7 +902,6 @@ using _Alloc_ptr_t = typename allocator_traits<_Alloc>::pointer;
 template <class _Alloc>
 using _Alloc_size_t = typename allocator_traits<_Alloc>::size_type;
 
-// FUNCTION TEMPLATE _Pocca
 template <class _Alloc>
 _CONSTEXPR20 void _Pocca(_Alloc& _Left, const _Alloc& _Right) noexcept {
     if constexpr (allocator_traits<_Alloc>::propagate_on_container_copy_assignment::value) {
@@ -919,7 +909,6 @@ _CONSTEXPR20 void _Pocca(_Alloc& _Left, const _Alloc& _Right) noexcept {
     }
 }
 
-// FUNCTION TEMPLATE _Pocma
 template <class _Alloc>
 _CONSTEXPR20 void _Pocma(_Alloc& _Left, _Alloc& _Right) noexcept { // (maybe) propagate on container move assignment
     if constexpr (allocator_traits<_Alloc>::propagate_on_container_move_assignment::value) {
@@ -927,7 +916,6 @@ _CONSTEXPR20 void _Pocma(_Alloc& _Left, _Alloc& _Right) noexcept { // (maybe) pr
     }
 }
 
-// FUNCTION TEMPLATE _Pocs
 template <class _Alloc>
 _CONSTEXPR20 void _Pocs(_Alloc& _Left, _Alloc& _Right) noexcept {
     if constexpr (allocator_traits<_Alloc>::propagate_on_container_swap::value) {
@@ -937,7 +925,6 @@ _CONSTEXPR20 void _Pocs(_Alloc& _Left, _Alloc& _Right) noexcept {
     }
 }
 
-// FUNCTION TEMPLATE _Destroy_range WITH ALLOC
 template <class _Alloc>
 _CONSTEXPR20 void _Destroy_range(_Alloc_ptr_t<_Alloc> _First, const _Alloc_ptr_t<_Alloc> _Last, _Alloc& _Al) noexcept {
     // note that this is an optimization for debug mode codegen; in release mode the BE removes all of this
@@ -949,7 +936,6 @@ _CONSTEXPR20 void _Destroy_range(_Alloc_ptr_t<_Alloc> _First, const _Alloc_ptr_t
     }
 }
 
-// FUNCTION TEMPLATE _Destroy_range
 template <class _NoThrowFwdIt, class _NoThrowSentinel>
 _CONSTEXPR20 void _Destroy_range(_NoThrowFwdIt _First, const _NoThrowSentinel _Last) noexcept {
     // note that this is an optimization for debug mode codegen; in release mode the BE removes all of this
@@ -960,7 +946,6 @@ _CONSTEXPR20 void _Destroy_range(_NoThrowFwdIt _First, const _NoThrowSentinel _L
     }
 }
 
-// FUNCTION TEMPLATE _Convert_size
 template <class _Size_type>
 _NODISCARD constexpr _Size_type _Convert_size(const size_t _Len) noexcept {
     // convert size_t to _Size_type, avoiding truncation
@@ -977,7 +962,6 @@ _NODISCARD constexpr size_t _Convert_size<size_t>(const size_t _Len) noexcept {
     return _Len;
 }
 
-// FUNCTION TEMPLATE _Deallocate_plain
 template <class _Alloc>
 _CONSTEXPR20 void _Deallocate_plain(_Alloc& _Al, typename _Alloc::value_type* const _Ptr) noexcept {
     // deallocate a plain pointer using an allocator
@@ -990,7 +974,6 @@ _CONSTEXPR20 void _Deallocate_plain(_Alloc& _Al, typename _Alloc::value_type* co
     }
 }
 
-// FUNCTION TEMPLATE _Delete_plain_internal
 template <class _Alloc>
 _CONSTEXPR20 void _Delete_plain_internal(_Alloc& _Al, typename _Alloc::value_type* const _Ptr) noexcept {
     // destroy *_Ptr in place, then deallocate _Ptr using _Al; used for internal container types the user didn't name
@@ -1406,7 +1389,6 @@ struct _Move_allocator_tag {
     explicit _Move_allocator_tag() = default;
 };
 
-// FUNCTION TEMPLATE _Get_temporary_buffer
 template <class _Ty>
 pair<_Ty*, ptrdiff_t> _Get_temporary_buffer(ptrdiff_t _Count) noexcept {
     if (static_cast<size_t>(_Count) <= static_cast<size_t>(-1) / sizeof(_Ty)) {
@@ -1431,7 +1413,6 @@ pair<_Ty*, ptrdiff_t> _Get_temporary_buffer(ptrdiff_t _Count) noexcept {
     return {nullptr, 0};
 }
 
-// FUNCTION TEMPLATE _Return_temporary_buffer
 template <class _Ty>
 void _Return_temporary_buffer(_Ty* const _Pbuf) noexcept {
 #ifdef __cpp_aligned_new
@@ -1475,7 +1456,6 @@ struct _NODISCARD _Uninitialized_backout {
     }
 };
 
-// FUNCTION TEMPLATE _Uninitialized_move_unchecked
 template <class _InIt, class _NoThrowFwdIt>
 _CONSTEXPR20 _NoThrowFwdIt _Uninitialized_move_unchecked(_InIt _First, const _InIt _Last, _NoThrowFwdIt _Dest) {
     // move [_First, _Last) to raw [_Dest, ...)
@@ -1607,8 +1587,7 @@ namespace ranges {
     template <class _In, class _Out>
     using uninitialized_move_result = in_out_result<_In, _Out>;
 
-    // FUNCTION TEMPLATE _Uninitialized_move_unchecked
-    // clang-format off
+        // clang-format off
     template <input_iterator _It, sentinel_for<_It> _Se, _No_throw_forward_iterator _Out,
         _No_throw_sentinel_for<_Out> _OSe>
         requires constructible_from<iter_value_t<_Out>, iter_rvalue_reference_t<_It>>
@@ -1675,7 +1654,6 @@ private:
     _Alloc& _Al;
 };
 
-// FUNCTION TEMPLATE _Uninitialized_copy WITH ALLOCATOR
 template <class _InIt, class _Alloc>
 _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_copy(
     const _InIt _First, const _InIt _Last, _Alloc_ptr_t<_Alloc> _Dest, _Alloc& _Al) {
@@ -1706,7 +1684,6 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_copy(
     return _Backout._Release();
 }
 
-// FUNCTION TEMPLATE uninitialized_copy
 template <class _InIt, class _NoThrowFwdIt>
 _CONSTEXPR20 _NoThrowFwdIt _Uninitialized_copy_unchecked(_InIt _First, const _InIt _Last, _NoThrowFwdIt _Dest) {
     // copy [_First, _Last) to raw [_Dest, ...)
@@ -1738,7 +1715,6 @@ _NoThrowFwdIt uninitialized_copy(const _InIt _First, const _InIt _Last, _NoThrow
     return _Dest;
 }
 
-// FUNCTION TEMPLATE _Uninitialized_move WITH ALLOCATOR
 template <class _InIt, class _Alloc>
 _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_move(
     const _InIt _First, const _InIt _Last, _Alloc_ptr_t<_Alloc> _Dest, _Alloc& _Al) {
@@ -1766,7 +1742,6 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_move(
     return _Backout._Release();
 }
 
-// FUNCTION TEMPLATE _Uninitialized_fill_n WITH ALLOCATOR
 template <class _Alloc>
 _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_fill_n(
     _Alloc_ptr_t<_Alloc> _First, _Alloc_size_t<_Alloc> _Count, const typename _Alloc::value_type& _Val, _Alloc& _Al) {
@@ -1800,7 +1775,6 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_fill_n(
     return _Backout._Release();
 }
 
-// FUNCTION TEMPLATE uninitialized_fill
 template <class _NoThrowFwdIt, class _Tval>
 void uninitialized_fill(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last, const _Tval& _Val) {
     // copy _Val throughout raw [_First, _Last)
@@ -1826,7 +1800,6 @@ void uninitialized_fill(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last, c
     }
 }
 
-// FUNCTION TEMPLATE _Uninitialized_value_construct_n WITH ALLOCATOR
 template <class _NoThrowFwdIt>
 _INLINE_VAR constexpr bool _Use_memset_value_construct_v =
     conjunction_v<bool_constant<_Iterator_is_contiguous<_NoThrowFwdIt>>, is_scalar<_Iter_value_t<_NoThrowFwdIt>>,
@@ -1882,13 +1855,11 @@ _NoThrowFwdIt _Uninitialized_value_construct_n_unchecked1(_NoThrowFwdIt _UFirst,
 }
 
 #if _HAS_DEPRECATED_TEMPORARY_BUFFER
-// FUNCTION TEMPLATE get_temporary_buffer
 template <class _Ty>
 _CXX17_DEPRECATE_TEMPORARY_BUFFER _NODISCARD pair<_Ty*, ptrdiff_t> get_temporary_buffer(ptrdiff_t _Count) noexcept {
     return _Get_temporary_buffer<_Ty>(_Count);
 }
 
-// FUNCTION TEMPLATE return_temporary_buffer
 template <class _Ty>
 _CXX17_DEPRECATE_TEMPORARY_BUFFER void return_temporary_buffer(_Ty* _Pbuf) {
     _Return_temporary_buffer(_Pbuf);
@@ -2005,7 +1976,6 @@ _NODISCARD constexpr bool _Allocators_equal(const _Alloc& _Lhs, const _Alloc& _R
     }
 }
 
-// FUNCTION TEMPLATE remove
 template <class _FwdIt, class _Ty>
 _NODISCARD _CONSTEXPR20 _FwdIt remove(_FwdIt _First, const _FwdIt _Last, const _Ty& _Val) {
     // remove each matching _Val
@@ -2027,7 +1997,6 @@ _NODISCARD _CONSTEXPR20 _FwdIt remove(_FwdIt _First, const _FwdIt _Last, const _
     return _First;
 }
 
-// FUNCTION TEMPLATE remove_if
 template <class _FwdIt, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt remove_if(_FwdIt _First, const _FwdIt _Last, _Pr _Pred) {
     // remove each satisfying _Pred
@@ -2049,7 +2018,6 @@ _NODISCARD _CONSTEXPR20 _FwdIt remove_if(_FwdIt _First, const _FwdIt _Last, _Pr 
     return _First;
 }
 
-// FUNCTION TEMPLATE _Erase_remove
 template <class _Container, class _Uty>
 _CONSTEXPR20 typename _Container::size_type _Erase_remove(_Container& _Cont, const _Uty& _Val) {
     // erase each element matching _Val
@@ -2061,7 +2029,6 @@ _CONSTEXPR20 typename _Container::size_type _Erase_remove(_Container& _Cont, con
     return _Old_size - _Cont.size();
 }
 
-// FUNCTION TEMPLATE _Erase_remove_if
 template <class _Container, class _Pr>
 _CONSTEXPR20 typename _Container::size_type _Erase_remove_if(_Container& _Cont, _Pr _Pred) {
     // erase each element satisfying _Pred
@@ -2073,7 +2040,6 @@ _CONSTEXPR20 typename _Container::size_type _Erase_remove_if(_Container& _Cont, 
     return _Old_size - _Cont.size();
 }
 
-// FUNCTION TEMPLATE _Erase_nodes_if
 template <class _Container, class _Pr>
 typename _Container::size_type _Erase_nodes_if(_Container& _Cont, _Pr _Pred) {
     // erase each element satisfying _Pred

@@ -108,7 +108,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE uninitialized_copy_n
 template <class _InIt, class _Diff, class _NoThrowFwdIt>
 _NoThrowFwdIt uninitialized_copy_n(const _InIt _First, const _Diff _Count_raw, _NoThrowFwdIt _Dest) {
     // copy [_First, _First + _Count) to [_Dest, ...)
@@ -192,7 +191,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 
 #if _HAS_CXX17
-// FUNCTION TEMPLATE uninitialized_move
 template <class _InIt, class _NoThrowFwdIt>
 _NoThrowFwdIt uninitialized_move(const _InIt _First, const _InIt _Last, _NoThrowFwdIt _Dest) {
     // move [_First, _Last) to raw [_Dest, ...)
@@ -247,7 +245,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE uninitialized_move_n
 template <class _InIt, class _Diff, class _NoThrowFwdIt>
 pair<_InIt, _NoThrowFwdIt> uninitialized_move_n(_InIt _First, const _Diff _Count_raw, _NoThrowFwdIt _Dest) {
     // move [_First, _First + _Count) to [_Dest, ...)
@@ -393,7 +390,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE uninitialized_fill_n
 template <class _NoThrowFwdIt, class _Diff, class _Tval>
 _NoThrowFwdIt uninitialized_fill_n(_NoThrowFwdIt _First, const _Diff _Count_raw, const _Tval& _Val) {
     // copy _Count copies of _Val to raw _First
@@ -518,7 +514,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 
 #if _HAS_CXX17
-// FUNCTION TEMPLATE destroy
 template <class _NoThrowFwdIt>
 _CONSTEXPR20 void destroy(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last) {
     // destroy all elements in [_First, _Last)
@@ -575,7 +570,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE destroy_n
 template <class _NoThrowFwdIt, class _Diff>
 _CONSTEXPR20 _NoThrowFwdIt destroy_n(_NoThrowFwdIt _First, const _Diff _Count_raw) {
     // destroy all elements in [_First, _First + _Count)
@@ -634,7 +628,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE uninitialized_default_construct
 template <class _NoThrowFwdIt>
 void uninitialized_default_construct(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last) {
     // default-initialize all elements in [_First, _Last)
@@ -709,7 +702,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE uninitialized_default_construct_n
 template <class _NoThrowFwdIt, class _Diff>
 _NoThrowFwdIt uninitialized_default_construct_n(_NoThrowFwdIt _First, const _Diff _Count_raw) {
     // default-initialize all elements in [_First, _First + _Count_raw)
@@ -770,7 +762,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE uninitialized_value_construct
 template <class _NoThrowFwdIt>
 void uninitialized_value_construct(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last) {
     // value-initialize all elements in [_First, _Last)
@@ -846,7 +837,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE uninitialized_value_construct_n
 template <class _NoThrowFwdIt, class _Diff>
 _NoThrowFwdIt uninitialized_value_construct_n(_NoThrowFwdIt _First, const _Diff _Count_raw) {
     // value-initialize all elements in [_First, _First + _Count_raw)
@@ -2745,7 +2735,6 @@ private:
 };
 #endif // _HAS_CXX20
 
-// FUNCTION TEMPLATE make_shared
 template <class _Ty, class... _Types>
 _NODISCARD
 #if _HAS_CXX20
@@ -2818,7 +2807,6 @@ _NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(con
     return _Ret;
 }
 
-// FUNCTION TEMPLATE make_shared_for_overwrite
 template <class _Ty>
 _NODISCARD enable_if_t<!is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared_for_overwrite() {
     shared_ptr<_Ty> _Ret;
@@ -2840,7 +2828,6 @@ _NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared_f
 }
 #endif // _HAS_CXX20
 
-// FUNCTION TEMPLATE allocate_shared
 template <class _Ty, class _Alloc, class... _Types>
 _NODISCARD
 #if _HAS_CXX20
@@ -2945,7 +2932,6 @@ _NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared
     return _Ret;
 }
 
-// FUNCTION TEMPLATE allocate_shared_for_overwrite
 template <class _Ty, class _Alloc>
 _NODISCARD enable_if_t<!is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared_for_overwrite(const _Alloc& _Al) {
     shared_ptr<_Ty> _Ret;
@@ -3414,7 +3400,6 @@ private:
 };
 
 
-// FUNCTION TEMPLATE make_unique
 template <class _Ty, class... _Types, enable_if_t<!is_array_v<_Ty>, int> = 0>
 _NODISCARD unique_ptr<_Ty> make_unique(_Types&&... _Args) { // make a unique_ptr
     return unique_ptr<_Ty>(new _Ty(_STD forward<_Types>(_Args)...));
@@ -3430,7 +3415,6 @@ template <class _Ty, class... _Types, enable_if_t<extent_v<_Ty> != 0, int> = 0>
 void make_unique(_Types&&...) = delete;
 
 #if _HAS_CXX20
-// FUNCTION TEMPLATE make_unique_for_overwrite
 template <class _Ty, enable_if_t<!is_array_v<_Ty>, int> = 0>
 _NODISCARD unique_ptr<_Ty> make_unique_for_overwrite() { // make a unique_ptr with default initialization
     return unique_ptr<_Ty>(new _Ty);
@@ -3696,7 +3680,6 @@ struct hash<shared_ptr<_Ty>> {
     }
 };
 
-// FUNCTION align
 inline void* align(size_t _Bound, size_t _Size, void*& _Ptr, size_t& _Space) noexcept /* strengthened */ {
     // try to carve out _Size bytes on boundary _Bound
     size_t _Off = static_cast<size_t>(reinterpret_cast<uintptr_t>(_Ptr) & (_Bound - 1));

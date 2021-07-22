@@ -46,7 +46,6 @@ _EXTERN_C_UNLESS_PURE
 #define _M_MESSAGES _CATMASK(_X_MESSAGES)
 #define _M_ALL      (_CATMASK(_NCAT) - 1)
 
-// FUNCTION DECLARATIONS
 _CRTIMP2_PURE _Collvec __CLRCALL_PURE_OR_CDECL _Getcoll();
 _CRTIMP2_PURE _Ctypevec __CLRCALL_PURE_OR_CDECL _Getctype();
 _CRTIMP2_PURE _Cvtvec __CLRCALL_PURE_OR_CDECL _Getcvt();
@@ -402,7 +401,6 @@ private:
     _Yarn<char> _Newlocname; // new locale name for this object
 };
 
-// FUNCTION TEMPLATE _LStrcoll
 template <class _Elem>
 int __CRTDECL _LStrcoll(const _Elem* _First1, const _Elem* _Last1, const _Elem* _First2, const _Elem* _Last2,
     const _Locinfo::_Collvec*) { // perform locale-specific comparison of _Elem sequences
@@ -430,7 +428,6 @@ inline int __CRTDECL _LStrcoll(const wchar_t* _First1, const wchar_t* _Last1, co
     return _Wcscoll(_First1, _Last1, _First2, _Last2, _Vector);
 }
 
-// FUNCTION TEMPLATE _LStrxfrm
 template <class _Elem>
 size_t __CRTDECL _LStrxfrm(_Elem* _First1, _Elem* _Last1, const _Elem* _First2, const _Elem* _Last2,
     const _Locinfo::_Collvec*) { // perform locale-specific transform of _Elems [_First1, _Last1)
