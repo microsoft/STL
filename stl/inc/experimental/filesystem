@@ -62,7 +62,6 @@ using _Pchar = wchar_t; // UTF16
 
 struct _Char8_t; // flag for UTF8
 
-// ENUM file_type
 enum class file_type { // names for file types
     not_found = -1,
     none,
@@ -76,7 +75,6 @@ enum class file_type { // names for file types
     unknown
 };
 
-// ENUM copy_options
 enum class copy_options { // names for copy options
     none                                  = 0,
     skip_existing                         = 1,
@@ -93,13 +91,11 @@ enum class copy_options { // names for copy options
 
 _BITMASK_OPS(copy_options)
 
-// ENUM directory_options
 enum class directory_options { // names for directory options
     none = 0,
     follow_directory_symlink
 };
 
-// ENUM perms
 enum class perms { // names for permissions
     none             = 0,
     owner_read       = 0400, // S_IRUSR

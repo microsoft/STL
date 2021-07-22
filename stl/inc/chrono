@@ -2297,7 +2297,6 @@ namespace chrono {
 
     // [time.zone.timezone]
 
-    // ENUM CLASS choose
     enum class choose { earliest, latest };
 
     class time_zone {

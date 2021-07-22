@@ -30,7 +30,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// ENUM CLASS io_errc
 enum class io_errc { // error codes for ios_base::failure
     stream = 1
 };

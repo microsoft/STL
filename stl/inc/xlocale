@@ -830,7 +830,6 @@ _NODISCARD int _Codecvt_do_length(
     return static_cast<int>((_STD min) (_First1 - _Old_first1, ptrdiff_t{INT_MAX}));
 }
 
-// ENUM _Codecvt_mode
 enum _Codecvt_mode { _Consume_header = 4, _Generate_header = 2 };
 
 template <>

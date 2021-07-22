@@ -157,7 +157,6 @@ protected:
     _THROW(_Parallelism_resources_exhausted{});
 }
 
-// ENUM CLASS _Cancellation_status
 enum class _Cancellation_status : bool { _Running, _Canceled };
 
 // STRUCT _Cancellation_token

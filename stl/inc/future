@@ -61,7 +61,6 @@ _NODISCARD _Unique_ptr_alloc<_Alloc> _Make_unique_alloc(_Alloc& _Al, _Args&&... 
 // STRUCT _Nil
 struct _Nil {}; // empty struct, for unused argument types
 
-// ENUM future_errc
 enum class future_errc { // names for futures errors
     broken_promise = 1,
     future_already_retrieved,
@@ -69,7 +68,6 @@ enum class future_errc { // names for futures errors
     no_state
 };
 
-// ENUM launch
 enum class launch { // names for launch options passed to async
     async    = 0x1,
     deferred = 0x2
@@ -77,7 +75,6 @@ enum class launch { // names for launch options passed to async
 
 _BITMASK_OPS(launch)
 
-// ENUM future_status
 enum class future_status { // names for timed wait function returns
     ready,
     timeout,

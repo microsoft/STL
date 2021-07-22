@@ -1868,7 +1868,6 @@ namespace filesystem {
         _THROW(filesystem_error(_Op, _Path1, _Path2, _Error));
     }
 
-    // ENUM CLASS file_type
     enum class file_type {
         none,
         not_found,
@@ -1888,7 +1887,6 @@ namespace filesystem {
         junction // implementation-defined value indicating an NT junction
     };
 
-    // ENUM CLASS perms
     enum class perms {
         none = 0,
 
@@ -1920,7 +1918,6 @@ namespace filesystem {
 
     _BITMASK_OPS(perms)
 
-    // ENUM CLASS copy_options
     enum class copy_options {
         none = static_cast<int>(__std_fs_copy_options::_None),
 
@@ -2526,7 +2523,6 @@ namespace filesystem {
         filesystem::path _Path;
     };
 
-    // ENUM CLASS directory_options
     enum class directory_options { none = 0, follow_directory_symlink = 1, skip_permission_denied = 2 };
     _BITMASK_OPS(directory_options)
 
