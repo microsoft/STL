@@ -813,20 +813,20 @@ void locale_test() {
     auto cbnc = has_facet<collate_byname<char>>(loc);
     auto cbnw = has_facet<collate_byname<wchar_t>>(loc);
     auto ctc  = has_facet<ctype<char>>(loc);
-    isalnum(c, loc);
-    isalpha(c, loc);
-    isblank(c, loc);
-    iscntrl(c, loc);
-    isdigit(c, loc);
-    isgraph(c, loc);
-    islower(c, loc);
-    isprint(c, loc);
-    ispunct(c, loc);
-    isspace(c, loc);
-    isupper(c, loc);
-    isxdigit(c, loc);
-    tolower(c, loc);
-    toupper(c, loc);
+    (void) isalnum(c, loc);
+    (void) isalpha(c, loc);
+    (void) isblank(c, loc);
+    (void) iscntrl(c, loc);
+    (void) isdigit(c, loc);
+    (void) isgraph(c, loc);
+    (void) islower(c, loc);
+    (void) isprint(c, loc);
+    (void) ispunct(c, loc);
+    (void) isspace(c, loc);
+    (void) isupper(c, loc);
+    (void) isxdigit(c, loc);
+    (void) tolower(c, loc);
+    (void) toupper(c, loc);
 
     (void) cc;
     (void) cw;
@@ -961,8 +961,10 @@ void memory_test() {
     default_delete<int[]> dd1{default_delete<int[]>{}};
     dd1(new int[5]);
 
+#if _HAS_GARBAGE_COLLECTION_SUPPORT_DELETED_IN_CXX23
     int* int_ptr{};
     undeclare_reachable(int_ptr);
+#endif // _HAS_GARBAGE_COLLECTION_SUPPORT_DELETED_IN_CXX23
 
     auto sptr = make_shared<int>(5);
     auto wptr = weak_ptr<int>(sptr);

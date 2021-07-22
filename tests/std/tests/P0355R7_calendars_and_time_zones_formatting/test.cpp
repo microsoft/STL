@@ -3,9 +3,11 @@
 
 #include <assert.h>
 #include <chrono>
+#include <clocale>
 #include <concepts>
 #include <format>
 #include <iostream>
+#include <locale>
 #include <sstream>
 #include <stdio.h>
 #include <string>
@@ -28,6 +30,13 @@ template <typename CharT>
 }
 
 #define STR(Literal) (choose_literal<CharT>(Literal, L##Literal))
+
+// Test against IDL mismatch between the DLL which stores the locale and the code which uses it.
+#ifdef _DEBUG
+#define DEFAULT_IDL_SETTING 2
+#else
+#define DEFAULT_IDL_SETTING 0
+#endif
 
 template <typename CharT>
 struct testing_callbacks {
@@ -296,6 +305,11 @@ void test_clock_formatter() {
             }
         }
     }
+
+    empty_braces_helper(file_clock::from_utc(utc_2016_12_31), STR("2016-12-31 00:00:00"));
+    empty_braces_helper(file_clock::from_utc(utc_2016_12_31) + 24h, STR("2017-01-01 00:00:00"));
+    empty_braces_helper(file_clock::from_utc(utc_2021_05_04), STR("2021-05-04 00:00:00"));
+    // TRANSITION: Test a leap second insertion after 2018-06 when there is one
 }
 
 template <typename CharT>
@@ -884,6 +898,12 @@ void test_zoned_time_formatter() {
     assert(format(STR("{:%g %G %U %V %W}"), zt) == STR("21 2021 16 16 16"));
 }
 
+template <typename CharT>
+void test_locale() {
+    assert(format(locale{"zh-CN"}, STR("{:^22%Y %B %d %A}"), 2021y / June / 16d)
+           == STR(" 2021 \u516D\u6708 16 \u661F\u671F\u4E09  "));
+}
+
 void test() {
     test_parse_conversion_spec<char>();
     test_parse_conversion_spec<wchar_t>();
@@ -955,6 +975,14 @@ void test() {
 
     test_zoned_time_formatter<char>();
     test_zoned_time_formatter<wchar_t>();
+
+#if !defined(_DLL) || _ITERATOR_DEBUG_LEVEL == DEFAULT_IDL_SETTING
+    test_locale<wchar_t>();
+#ifndef MSVC_INTERNAL_TESTING // TRANSITION, the Windows version on Contest VMs doesn't always understand ".UTF-8"
+    assert(setlocale(LC_ALL, ".UTF-8") != nullptr);
+    test_locale<char>();
+#endif // MSVC_INTERNAL_TESTING
+#endif // !defined(_DLL) || _ITERATOR_DEBUG_LEVEL == DEFAULT_IDL_SETTING
 }
 
 int main() {

@@ -32,9 +32,12 @@
 
 #ifdef __cpp_lib_concepts
 #include <concepts>
+#endif // defined(__cpp_lib_concepts)
+
+#ifdef __cpp_lib_format
 #include <format>
 #include <iomanip>
-#endif // defined(__cpp_lib_concepts)
+#endif // defined(__cpp_lib_format)
 #endif // _HAS_CXX20
 
 #pragma pack(push, _CRT_PACKING)
@@ -68,7 +71,7 @@ namespace chrono {
 
         _NODISCARD static constexpr _Rep(max)() noexcept {
             // get largest value
-            return (numeric_limits<_Rep>::max)();
+            return (numeric_limits<_Rep>::max) ();
         }
     };
 
@@ -198,12 +201,12 @@ namespace chrono {
 
         _NODISCARD static constexpr duration(min)() noexcept {
             // get minimum value
-            return duration((duration_values<_Rep>::min)());
+            return duration((duration_values<_Rep>::min) ());
         }
 
         _NODISCARD static constexpr duration(max)() noexcept {
             // get maximum value
-            return duration((duration_values<_Rep>::max)());
+            return duration((duration_values<_Rep>::max) ());
         }
 
     private:
@@ -263,11 +266,11 @@ namespace chrono {
         }
 
         _NODISCARD static constexpr time_point(min)() noexcept {
-            return time_point((_Duration::min)());
+            return time_point((_Duration::min) ());
         }
 
         _NODISCARD static constexpr time_point(max)() noexcept {
-            return time_point((_Duration::max)());
+            return time_point((_Duration::max) ());
         }
 
     private:
@@ -2274,7 +2277,7 @@ namespace chrono {
             : runtime_error(_Make_string(_Tp, _Info)) {}
 
     private:
-#ifdef __cpp_lib_concepts
+#ifdef __cpp_lib_format
         template <class _Duration>
         _NODISCARD static string _Make_string(const local_time<_Duration>& _Tp, const local_info& _Info);
 #else // ^^^ no workaround / workaround vvv
@@ -2293,7 +2296,7 @@ namespace chrono {
             : runtime_error(_Make_string(_Tp, _Info)) {}
 
     private:
-#ifdef __cpp_lib_concepts
+#ifdef __cpp_lib_format
         template <class _Duration>
         _NODISCARD static string _Make_string(const local_time<_Duration>& _Tp, const local_info& _Info);
 #else // ^^^ no workaround / workaround vvv
@@ -2421,8 +2424,8 @@ namespace chrono {
             return local_time<common_type_t<_Duration, seconds>>{_Sys.time_since_epoch() + _Info.offset};
         }
 
-        static constexpr sys_seconds _Min_seconds{sys_days{(year::min)() / January / 1}};
-        static constexpr sys_seconds _Max_seconds{sys_seconds{sys_days{(year::max)() / December / 32}} - seconds{1}};
+        static constexpr sys_seconds _Min_seconds{sys_days{(year::min) () / January / 1}};
+        static constexpr sys_seconds _Max_seconds{sys_seconds{sys_days{(year::max) () / December / 32}} - seconds{1}};
 
     private:
         template <class _Duration>
@@ -2714,7 +2717,7 @@ namespace chrono {
         // caller knows (_Current_size, 0 on first call) and the _Known_leap_seconds entries.
         constexpr size_t _Pre_2018_count = 27;
         const size_t _Known_post_2018_ls_size =
-            (_STD max)(_Current_size, _STD size(_Known_leap_seconds)) - _Pre_2018_count;
+            (_STD max) (_Current_size, _STD size(_Known_leap_seconds)) - _Pre_2018_count;
 
         size_t _Reg_post_2018_ls_size; // number of post-2018 LSs found in the registry
         unique_ptr<__std_tzdb_leap_info[], _Tzdb_deleter<__std_tzdb_leap_info[]>> _Reg_ls_data{
@@ -2977,8 +2980,8 @@ namespace chrono {
         explicit zoned_time(_TimeZonePtr _Tz) noexcept /* strengthened */ : _Zone{_STD move(_Tz)} {}
 
         // clang-format off
-        template <class _Traits2 = _Traits, enable_if_t<is_constructible< // TRANSITION, VSO-1303556
-            zoned_time, decltype(_Traits2::locate_zone(string_view{}))>::value,
+        template <class _Traits2 = _Traits, enable_if_t<is_constructible_v<
+            zoned_time, decltype(_Traits2::locate_zone(string_view{}))>,
             int> = 0>
         // clang-format on
         explicit zoned_time(string_view _Name) : _Zone{_Traits::locate_zone(_Name)} {}
@@ -2990,8 +2993,8 @@ namespace chrono {
         zoned_time(_TimeZonePtr _Tz, const sys_time<_Duration>& _Sys) : _Zone{_STD move(_Tz)}, _Tp{_Sys} {}
 
         // clang-format off
-        template <class _Traits2 = _Traits, enable_if_t<is_constructible< // TRANSITION, VSO-1303556
-            zoned_time, decltype(_Traits2::locate_zone(string_view{})), const sys_time<_Duration>&>::value,
+        template <class _Traits2 = _Traits, enable_if_t<is_constructible_v<
+            zoned_time, decltype(_Traits2::locate_zone(string_view{})), const sys_time<_Duration>&>,
             int> = 0>
         // clang-format on
         zoned_time(string_view _Name, type_identity_t<const sys_time<_Duration>&> _Sys)
@@ -3005,8 +3008,8 @@ namespace chrono {
             : _Zone{_STD move(_Tz)}, _Tp{_Zone->to_sys(_Local)} {}
 
         // clang-format off
-        template <class _Traits2 = _Traits, enable_if_t<is_constructible< // TRANSITION, VSO-1303556
-            zoned_time, decltype(_Traits2::locate_zone(string_view{})), const local_time<_Duration>&>::value,
+        template <class _Traits2 = _Traits, enable_if_t<is_constructible_v<
+            zoned_time, decltype(_Traits2::locate_zone(string_view{})), const local_time<_Duration>&>,
             int> = 0>
         // clang-format on
         zoned_time(string_view _Name, type_identity_t<const local_time<_Duration>>& _Local)
@@ -3021,8 +3024,8 @@ namespace chrono {
             : _Zone{_STD move(_Tz)}, _Tp{_Zone->to_sys(_Local, _Choose)} {}
 
         // clang-format off
-        template <class _Traits2 = _Traits, enable_if_t<is_constructible< // TRANSITION, VSO-1303556
-            zoned_time, decltype(_Traits2::locate_zone(string_view{})), const local_time<_Duration>&, choose>::value,
+        template <class _Traits2 = _Traits, enable_if_t<is_constructible_v<
+            zoned_time, decltype(_Traits2::locate_zone(string_view{})), const local_time<_Duration>&, choose>,
             int> = 0>
         // clang-format on
         zoned_time(string_view _Name, type_identity_t<const local_time<_Duration>&> _Local, choose _Choose)
@@ -3041,9 +3044,9 @@ namespace chrono {
 
         // clang-format off
         template <class _Duration2, class _TimeZonePtr2,
-            class _Traits2 = _Traits, enable_if_t<is_constructible< // TRANSITION, VSO-1303556
+            class _Traits2 = _Traits, enable_if_t<is_constructible_v<
             zoned_time, decltype(_Traits2::locate_zone(string_view{})),
-            const zoned_time<_Duration2, _TimeZonePtr2>&>::value,
+            const zoned_time<_Duration2, _TimeZonePtr2>&>,
             int> = 0>
         // clang-format on
         zoned_time(string_view _Name, const zoned_time<_Duration2, _TimeZonePtr2>& _Zt)
@@ -3051,9 +3054,9 @@ namespace chrono {
 
         // clang-format off
         template <class _Duration2, class _TimeZonePtr2,
-            class _Traits2 = _Traits, enable_if_t<is_constructible< // TRANSITION, VSO-1303556
+            class _Traits2 = _Traits, enable_if_t<is_constructible_v<
             zoned_time, decltype(_Traits2::locate_zone(string_view{})),
-            const zoned_time<_Duration2, _TimeZonePtr2>&, choose>::value,
+            const zoned_time<_Duration2, _TimeZonePtr2>&, choose>,
             int> = 0>
         // clang-format on
         zoned_time(string_view _Name, const zoned_time<_Duration2, _TimeZonePtr2>& _Zt, choose _Choose)
@@ -4038,7 +4041,7 @@ namespace chrono {
             if constexpr (is_integral_v<_Rep1>) {
                 // Must have _Period1 <= _Period2 and numeric_limits<_Rep1>::max() >= _Period2 / _Period1. For example,
                 // std::days can't represent std::seconds, and duration<int, atto>::max() is ~9.2 seconds.
-                constexpr auto _Max_tick = static_cast<intmax_t>((numeric_limits<make_signed_t<_Rep1>>::max)());
+                constexpr auto _Max_tick = static_cast<intmax_t>((numeric_limits<make_signed_t<_Rep1>>::max) ());
 
                 // clang-format off
                 return ratio_less_equal_v<_Period1, _Period2>
@@ -4119,12 +4122,9 @@ namespace chrono {
 
             if constexpr (_Can_rep_day) {
                 if (_For_time_point) {
-                    year_month_day _Ymd;
-                    if (_Make_year_month_day(_Ymd, true)) {
-                        _Result += _CHRONO duration_cast<_DurationType>(static_cast<sys_days>(_Ymd).time_since_epoch());
-                    } else {
-                        return false;
-                    }
+                    const year_month_day _Ymd{year{*_Century + *_Two_dig_year},
+                        month{static_cast<unsigned int>(*_Month)}, day{static_cast<unsigned int>(*_Day)}};
+                    _Result += _CHRONO duration_cast<_DurationType>(static_cast<sys_days>(_Ymd).time_since_epoch());
                 } else if (_Used & _F_doy) {
                     _Result += _CHRONO duration_cast<_DurationType>(days{*_Day_of_year});
                 }
@@ -4154,7 +4154,7 @@ namespace chrono {
         template <class _DurationType>
         _NODISCARD bool _Make_time_point(_DurationType& _Dur, _LeapSecondRep _Leap) {
 
-            const bool _Consistent{_Calculate_hour24() && _Calculate_year_fields()};
+            const bool _Consistent{_Calculate_hour24() && _Calculate_year_fields() && _Calculate_ymd()};
             if (!_Consistent || !_Apply_duration_fields<_Parse_tp_or_duration::_Time_point>(_Dur)) {
                 return false;
             }
@@ -4688,7 +4688,7 @@ namespace chrono {
                         _Multiplier /= 10;
                         _Subsecond_ += _Digit * _Multiplier;
                     } else {
-                        if (_Second_ > ((numeric_limits<int>::max)() - _Digit) / 10) {
+                        if (_Second_ > ((numeric_limits<int>::max) () - _Digit) / 10) {
                             return ios_base::failbit;
                         }
 
@@ -4929,7 +4929,7 @@ namespace chrono {
                             _Width = static_cast<unsigned int>(_Flag - '0');
                             while (++_FmtFirst != _FmtLast && _Ctype_fac.is(ctype_base::digit, *_FmtFirst)) {
                                 const auto _Digit = static_cast<unsigned int>(_Ctype_fac.narrow(*_FmtFirst) - '0');
-                                if (_Width > ((numeric_limits<unsigned int>::max)() - _Digit) / 10) {
+                                if (_Width > ((numeric_limits<unsigned int>::max) () - _Digit) / 10) {
                                     _State |= ios_base::failbit;
                                     break;
                                 }
@@ -5083,7 +5083,8 @@ namespace chrono {
     basic_istream<_CharT, _Traits>& from_stream(basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt,
         utc_time<_Duration>& _Tp, basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr,
         minutes* _Offset = nullptr) {
-        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset};
+        constexpr auto _Subsecond_precision{hh_mm_ss<_Duration>::fractional_width};
+        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset, _Subsecond_precision};
         _Duration _Dur;
         if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_LeapSecondRep::_All)) {
             _Tp = utc_time<_Duration>{_Dur};
@@ -5097,7 +5098,8 @@ namespace chrono {
     basic_istream<_CharT, _Traits>& from_stream(basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt,
         sys_time<_Duration>& _Tp, basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr,
         minutes* _Offset = nullptr) {
-        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset};
+        constexpr auto _Subsecond_precision{hh_mm_ss<_Duration>::fractional_width};
+        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset, _Subsecond_precision};
         _Duration _Dur;
         if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_LeapSecondRep::_Negative)) {
             _Tp = sys_time<_Duration>{_Dur};
@@ -5111,7 +5113,8 @@ namespace chrono {
     basic_istream<_CharT, _Traits>& from_stream(basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt,
         tai_time<_Duration>& _Tp, basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr,
         minutes* _Offset = nullptr) {
-        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset};
+        constexpr auto _Subsecond_precision{hh_mm_ss<_Duration>::fractional_width};
+        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset, _Subsecond_precision};
         _Duration _Dur;
         if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_LeapSecondRep::_None)) {
             _Tp = tai_time<_Duration>{_Dur + _CHRONO duration_cast<_Duration>(days{4383})};
@@ -5125,7 +5128,8 @@ namespace chrono {
     basic_istream<_CharT, _Traits>& from_stream(basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt,
         gps_time<_Duration>& _Tp, basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr,
         chrono::minutes* _Offset = nullptr) {
-        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset};
+        constexpr auto _Subsecond_precision{hh_mm_ss<_Duration>::fractional_width};
+        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset, _Subsecond_precision};
         _Duration _Dur;
         if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_LeapSecondRep::_None)) {
             _Tp = gps_time<_Duration>{_Dur - _CHRONO duration_cast<_Duration>(days{3657})};
@@ -5139,7 +5143,8 @@ namespace chrono {
     basic_istream<_CharT, _Traits>& from_stream(basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt,
         file_time<_Duration>& _Tp, basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr,
         chrono::minutes* _Offset = nullptr) {
-        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset};
+        constexpr auto _Subsecond_precision{hh_mm_ss<_Duration>::fractional_width};
+        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset, _Subsecond_precision};
         _Duration _Dur;
         if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_LeapSecondRep::_File_time)) {
             constexpr auto _File_clock_adj{_CHRONO duration_cast<_Duration>(
@@ -5155,7 +5160,10 @@ namespace chrono {
     basic_istream<_CharT, _Traits>& from_stream(basic_istream<_CharT, _Traits>& _Istr, const _CharT* _Fmt,
         local_time<_Duration>& _Tp, basic_string<_CharT, _Traits, _Alloc>* _Abbrev = nullptr,
         minutes* _Offset = nullptr) {
-        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset};
+        constexpr auto _Subsecond_precision{hh_mm_ss<_Duration>::fractional_width};
+        _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset, _Subsecond_precision};
+        // *_Offset is not subtracted from local_time, see N4885 [time.clock.local]/4.
+        _Time._Utc_offset.reset();
         _Duration _Dur;
         if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_LeapSecondRep::_None)) {
             _Tp = local_time<_Duration>{_Dur};
@@ -5186,9 +5194,9 @@ namespace chrono {
     }
 
     template <class _CharT, class _Traits, class _Alloc, class _Parsable,
-        class = void_t<decltype(
-            _CHRONO from_stream(_STD declval<basic_istream<_CharT, _Traits>&>(), _STD declval<const _CharT*>(),
-                _STD declval<_Parsable&>(), _STD declval<basic_string<_CharT, _Traits, _Alloc>*>()))>>
+        class = void_t<decltype(_CHRONO from_stream(_STD declval<basic_istream<_CharT, _Traits>&>(),
+            _STD declval<const _CharT*>(), _STD declval<_Parsable&>(),
+            _STD declval<basic_string<_CharT, _Traits, _Alloc>*>()))>>
     _NODISCARD auto parse(const basic_string<_CharT, _Traits, _Alloc>& _Fmt, _Parsable& _Tp,
         basic_string<_CharT, _Traits, _Alloc>& _Abbrev) {
         return _Time_parse_iomanip{_Fmt, _Tp, _STD addressof(_Abbrev)};
@@ -5220,8 +5228,7 @@ namespace chrono {
 #endif // _HAS_CXX20
 } // namespace chrono
 
-#if _HAS_CXX20
-#ifdef __cpp_lib_concepts
+#ifdef __cpp_lib_format
   // [time.format]
 
 template <class _CharT>
@@ -5333,7 +5340,7 @@ public:
             _THROW(format_error("Invalid modifier specification."));
         }
 
-        if (_Type < 0 || _Type > (numeric_limits<signed char>::max)()) {
+        if (_Type < 0 || _Type > (numeric_limits<signed char>::max) ()) {
             _THROW(format_error("Invalid type specification."));
         }
 
@@ -5351,7 +5358,7 @@ private:
     _ParseContext& _Parse_ctx;
 
     _NODISCARD static constexpr int _Verify_dynamic_arg_index_in_range(const size_t _Idx) {
-        if (_Idx > static_cast<size_t>((numeric_limits<int>::max)())) {
+        if (_Idx > static_cast<size_t>((numeric_limits<int>::max) ())) {
             _THROW(format_error("Dynamic width or precision index too large."));
         }
 
@@ -5744,7 +5751,7 @@ namespace chrono {
     }
 
     template <class _CharT, class _Traits, class _Duration>
-    // clang-format off
+        // clang-format off
         requires (!treat_as_floating_point_v<typename _Duration::rep> && _Duration{1} < days{1})
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const sys_time<_Duration>& _Val) {
         // clang-format on
@@ -5960,12 +5967,15 @@ namespace chrono {
 
                     _Validate_specifiers(_Spec, _Val);
 
-                    _Stream << _STD put_time<_CharT>(&_Time, _Fmt_string(_Spec).data());
+                    _CharT _Fmt_str[4];
+                    _Stream << _STD put_time<_CharT>(&_Time, _Fmt_string(_Spec, _Fmt_str));
                 }
             }
 
-            return _Write_aligned(_STD move(_FormatCtx.out()), static_cast<int>(_Stream.view().size()), _Specs,
-                _Fmt_align::_Left, [&](auto _Out) { return _Fmt_write(_STD move(_Out), _Stream.view()); });
+            int _Estimated_width = -1;
+            (void) _Measure_string_prefix(_Stream.view(), _Estimated_width);
+            return _Write_aligned(_STD move(_FormatCtx.out()), _Estimated_width, _Specs, _Fmt_align::_Left,
+                [&](auto _Out) { return _Fmt_write(_STD move(_Out), _Stream.view()); });
         }
 
         // This echoes the functionality of put_time, but is able to handle invalid dates (when !ok()) since the
@@ -6020,7 +6030,8 @@ namespace chrono {
                     }
 
                     const char _Gregorian_type = _Spec._Type == 'g' ? 'y' : 'Y';
-                    _Os << _STD put_time(&_Time, _Fmt_string({._Type = _Gregorian_type}).data());
+                    _CharT _Fmt_str[4];
+                    _Os << _STD put_time(&_Time, _Fmt_string({._Type = _Gregorian_type}, _Fmt_str));
                     return true;
                 }
 
@@ -6282,8 +6293,7 @@ namespace chrono {
             }
         }
 
-        _NODISCARD static array<_CharT, 4> _Fmt_string(const _Chrono_spec<_CharT>& _Spec) {
-            array<_CharT, 4> _Fmt_str;
+        _NODISCARD static const _CharT* _Fmt_string(const _Chrono_spec<_CharT>& _Spec, _CharT (&_Fmt_str)[4]) {
             size_t _Next_idx      = 0;
             _Fmt_str[_Next_idx++] = _CharT{'%'};
             if (_Spec._Modifier != '\0') {
@@ -6467,8 +6477,9 @@ struct formatter<_CHRONO file_time<_Duration>, _CharT> {
 
     template <class _FormatContext>
     auto format(const _CHRONO file_time<_Duration>& _Val, _FormatContext& _FormatCtx) {
-        const auto _Sys = _CHRONO clock_cast<_CHRONO system_clock>(_Val);
-        return _Impl._Write(_FormatCtx, _Val, _Fill_tm(_Sys));
+        const auto _Utc = _CHRONO file_clock::to_utc(_Val);
+        const auto _Sys = _CHRONO utc_clock::to_sys(_Utc);
+        return _Impl._Write(_FormatCtx, _Utc, _Fill_tm(_Sys));
     }
 
 private:
@@ -6518,8 +6529,7 @@ namespace chrono {
     }
 } // namespace chrono
 
-#endif // __cpp_lib_concepts
-#endif // _HAS_CXX20
+#endif // __cpp_lib_format
 
 // HELPERS
 template <class _Rep, class _Period>

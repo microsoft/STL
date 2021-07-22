@@ -7,12 +7,13 @@
 #include <concepts>
 #include <cstdlib>
 #include <ranges>
+#include <span>
 
 #include <range_algorithm_support.hpp>
 
 constexpr void smoke_test() {
-    using ranges::equal, ranges::equal_to;
-    using std::abort, std::array, std::pair, std::same_as;
+    using ranges::equal, ranges::equal_to, ranges::begin, ranges::end;
+    using std::abort, std::array, std::pair, std::same_as, std::unreachable_sentinel;
 
     array<pair<int, int>, 3> const x   = {{{0, 42}, {2, 42}, {4, 42}}};
     array<pair<long, long>, 3> const y = {{{13, -1}, {13, 1}, {13, 3}}};
@@ -71,6 +72,13 @@ constexpr void smoke_test() {
         arr2[1] = 7;
         assert(!equal(arr1, arr2));
     }
+    {
+        // Validate unreachable_sentinel cases
+        int arr1[3]{0, 2, 5};
+        int arr2[3]{0, 2, 5};
+        assert(!equal(begin(arr1), unreachable_sentinel, begin(arr2), end(arr2)));
+        assert(!equal(begin(arr1), end(arr1), begin(arr2), unreachable_sentinel));
+    }
 }
 
 int main() {
@@ -80,8 +88,11 @@ int main() {
 
 struct instantiator {
     template <class In1, class In2>
-    static void call(In1&& in1 = {}, In2&& in2 = {}) {
+    static void call() {
         using ranges::begin, ranges::end, ranges::equal, ranges::iterator_t;
+
+        In1 in1{std::span<const int, 0>{}};
+        In2 in2{std::span<const int, 0>{}};
 
         if constexpr (!is_permissive) {
             (void) equal(in1, in2);

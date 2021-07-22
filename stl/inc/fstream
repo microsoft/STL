@@ -48,6 +48,18 @@ namespace experimental {
 } // namespace experimental
 #endif // _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM
 
+// clang-format off
+template <class _Ty>
+_INLINE_VAR constexpr bool _Is_any_path = _Is_any_of_v<_Ty
+#if _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM
+    , experimental::filesystem::path
+#endif // _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM
+#if _HAS_CXX17
+    , filesystem::path
+#endif // _HAS_CXX17
+    >;
+// clang-format on
+
 extern _CRTIMP2_PURE FILE* __CLRCALL_PURE_OR_CDECL _Fiopen(const char*, ios_base::openmode, int);
 extern _CRTIMP2_PURE FILE* __CLRCALL_PURE_OR_CDECL _Fiopen(const wchar_t*, ios_base::openmode, int);
 
@@ -562,7 +574,7 @@ protected:
             const auto _Start_count = _Count;
             const auto _Available   = static_cast<size_t>(_Mysb::_Gnavail());
             if (0 < _Available) { // copy from get area
-                const auto _Read_size = (_STD min)(_Count_s, _Available);
+                const auto _Read_size = (_STD min) (_Count_s, _Available);
                 _Traits::copy(_Ptr, _Mysb::gptr(), _Read_size);
                 _Ptr += _Read_size;
                 _Count_s -= _Read_size;
@@ -830,19 +842,10 @@ public:
         const wstring& _Str, ios_base::openmode _Mode = ios_base::in, int _Prot = ios_base::_Default_open_prot)
         : basic_ifstream(_Str.c_str(), _Mode, _Prot) {} // extension
 
-#if _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM
-    template <class _Path_ish = experimental::filesystem::path>
-    explicit basic_ifstream(const _Identity_t<_Path_ish>& _Path, ios_base::openmode _Mode = ios_base::in,
-        int _Prot = ios_base::_Default_open_prot)
+    template <class _Ty, enable_if_t<_Is_any_path<_Ty>, int> = 0>
+    explicit basic_ifstream(
+        const _Ty& _Path, ios_base::openmode _Mode = ios_base::in, int _Prot = ios_base::_Default_open_prot)
         : basic_ifstream(_Path.c_str(), _Mode, _Prot) {} // _Prot is an extension
-#endif // _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM
-
-#if _HAS_CXX17
-    template <int = 0, class _Path_ish = filesystem::path>
-    explicit basic_ifstream(const _Identity_t<_Path_ish>& _Path, ios_base::openmode _Mode = ios_base::in,
-        int _Prot = ios_base::_Default_open_prot)
-        : basic_ifstream(_Path.c_str(), _Mode, _Prot) {} // _Prot is an extension
-#endif // _HAS_CXX17
 
 #ifdef _NATIVE_WCHAR_T_DEFINED
     explicit basic_ifstream(const unsigned short* _Filename, ios_base::openmode _Mode = ios_base::in,
@@ -1023,19 +1026,10 @@ public:
         const wstring& _Str, ios_base::openmode _Mode = ios_base::out, int _Prot = ios_base::_Default_open_prot)
         : basic_ofstream(_Str.c_str(), _Mode, _Prot) {} // extension
 
-#if _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM
-    template <class _Path_ish = experimental::filesystem::path>
-    explicit basic_ofstream(const _Identity_t<_Path_ish>& _Path, ios_base::openmode _Mode = ios_base::out,
-        int _Prot = ios_base::_Default_open_prot)
+    template <class _Ty, enable_if_t<_Is_any_path<_Ty>, int> = 0>
+    explicit basic_ofstream(
+        const _Ty& _Path, ios_base::openmode _Mode = ios_base::out, int _Prot = ios_base::_Default_open_prot)
         : basic_ofstream(_Path.c_str(), _Mode, _Prot) {} // _Prot is an extension
-#endif // _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM
-
-#if _HAS_CXX17
-    template <int = 0, class _Path_ish = filesystem::path>
-    explicit basic_ofstream(const _Identity_t<_Path_ish>& _Path, ios_base::openmode _Mode = ios_base::out,
-        int _Prot = ios_base::_Default_open_prot)
-        : basic_ofstream(_Path.c_str(), _Mode, _Prot) {} // _Prot is an extension
-#endif // _HAS_CXX17
 
 #ifdef _NATIVE_WCHAR_T_DEFINED
     explicit basic_ofstream(const unsigned short* _Filename, ios_base::openmode _Mode = ios_base::out,
@@ -1221,19 +1215,10 @@ public:
         int _Prot = ios_base::_Default_open_prot)
         : basic_fstream(_Str.c_str(), _Mode, _Prot) {} // extension
 
-#if _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM
-    template <class _Path_ish = experimental::filesystem::path>
-    explicit basic_fstream(const _Identity_t<_Path_ish>& _Path, ios_base::openmode _Mode = ios_base::in | ios_base::out,
+    template <class _Ty, enable_if_t<_Is_any_path<_Ty>, int> = 0>
+    explicit basic_fstream(const _Ty& _Path, ios_base::openmode _Mode = ios_base::in | ios_base::out,
         int _Prot = ios_base::_Default_open_prot)
         : basic_fstream(_Path.c_str(), _Mode, _Prot) {} // _Prot is an extension
-#endif // _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM
-
-#if _HAS_CXX17
-    template <int = 0, class _Path_ish = filesystem::path>
-    explicit basic_fstream(const _Identity_t<_Path_ish>& _Path, ios_base::openmode _Mode = ios_base::in | ios_base::out,
-        int _Prot = ios_base::_Default_open_prot)
-        : basic_fstream(_Path.c_str(), _Mode, _Prot) {} // _Prot is an extension
-#endif // _HAS_CXX17
 
 #ifdef _NATIVE_WCHAR_T_DEFINED
     explicit basic_fstream(const unsigned short* _Filename, ios_base::openmode _Mode = ios_base::in | ios_base::out,

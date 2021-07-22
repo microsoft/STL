@@ -32,9 +32,7 @@ public:
 
 #ifdef __cpp_lib_concepts
     using difference_type = ptrdiff_t;
-
-    constexpr back_insert_iterator() noexcept = default;
-#else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
+#else
     using difference_type = void;
 #endif // __cpp_lib_concepts
 
@@ -64,7 +62,7 @@ public:
     }
 
 protected:
-    _Container* container = nullptr;
+    _Container* container;
 };
 
 // FUNCTION TEMPLATE back_inserter
@@ -87,9 +85,7 @@ public:
 
 #ifdef __cpp_lib_concepts
     using difference_type = ptrdiff_t;
-
-    constexpr front_insert_iterator() noexcept = default;
-#else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
+#else
     using difference_type = void;
 #endif // __cpp_lib_concepts
 
@@ -119,7 +115,7 @@ public:
     }
 
 protected:
-    _Container* container = nullptr;
+    _Container* container;
 };
 
 // FUNCTION TEMPLATE front_inserter
@@ -138,17 +134,16 @@ public:
     using reference         = void;
 
     using container_type = _Container;
-
 #ifdef __cpp_lib_concepts
     using difference_type = ptrdiff_t;
-
-    insert_iterator() = default;
-#else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
+    using _Wrapped_iter   = ranges::iterator_t<_Container>;
+#else // ^^^ implementing Ranges // no Ranges vvv
     using difference_type = void;
+    using _Wrapped_iter   = typename _Container::iterator;
 #endif // __cpp_lib_concepts
 
-    _CONSTEXPR20 insert_iterator(_Container& _Cont, typename _Container::iterator _Where)
-        : container(_STD addressof(_Cont)), iter(_Where) {}
+    _CONSTEXPR20 insert_iterator(_Container& _Cont, _Wrapped_iter _Where)
+        : container(_STD addressof(_Cont)), iter(_STD move(_Where)) {}
 
     _CONSTEXPR20 insert_iterator& operator=(const typename _Container::value_type& _Val) {
         // insert into container and increment stored iterator
@@ -176,8 +171,8 @@ public:
     }
 
 protected:
-    _Container* container = nullptr;
-    typename _Container::iterator iter{};
+    _Container* container;
+    _Wrapped_iter iter;
 };
 
 // FUNCTION TEMPLATE inserter
@@ -327,10 +322,6 @@ public:
     using traits_type  = _Traits;
     using ostream_type = basic_ostream<_Elem, _Traits>;
 
-#ifdef __cpp_lib_concepts
-    constexpr ostream_iterator() noexcept = default;
-#endif // __cpp_lib_concepts
-
     ostream_iterator(ostream_type& _Ostr, const _Elem* const _Delim = nullptr) noexcept /* strengthened */
         : _Mydelim(_Delim), _Myostr(_STD addressof(_Ostr)) {}
 
@@ -356,8 +347,8 @@ public:
     }
 
 private:
-    const _Elem* _Mydelim = nullptr; // pointer to delimiter string (NB: not freed)
-    ostream_type* _Myostr = nullptr; // pointer to output stream
+    const _Elem* _Mydelim; // pointer to delimiter string (NB: not freed)
+    ostream_type* _Myostr; // pointer to output stream
 };
 
 // CLASS TEMPLATE istreambuf_iterator
@@ -516,10 +507,6 @@ public:
     using streambuf_type = basic_streambuf<_Elem, _Traits>;
     using ostream_type   = basic_ostream<_Elem, _Traits>;
 
-#ifdef __cpp_lib_concepts
-    constexpr ostreambuf_iterator() noexcept = default;
-#endif // __cpp_lib_concepts
-
     ostreambuf_iterator(streambuf_type* _Sb) noexcept : _Strbuf(_Sb) {}
 
     ostreambuf_iterator(ostream_type& _Ostr) noexcept : _Strbuf(_Ostr.rdbuf()) {}
@@ -549,8 +536,8 @@ public:
     }
 
 private:
-    bool _Failed            = false; // true if any stores have failed
-    streambuf_type* _Strbuf = nullptr;
+    bool _Failed = false; // true if any stores have failed
+    streambuf_type* _Strbuf;
 };
 
 #ifdef __cpp_lib_concepts
@@ -566,7 +553,7 @@ class _Variantish {
 public:
     constexpr explicit _Variantish(_Common_iterator_construct_tag) noexcept : _Contains{_Variantish_state::_Nothing} {}
 
-    constexpr _Variantish() noexcept(is_nothrow_default_constructible_v<_It>)
+    constexpr _Variantish() noexcept(is_nothrow_default_constructible_v<_It>) requires default_initializable<_It>
         : _Iterator{}, _Contains{_Variantish_state::_Holds_iter} {}
 
     template <class... _Types>
@@ -849,7 +836,9 @@ private:
     };
 
 public:
-    constexpr common_iterator() = default;
+    // clang-format off
+    constexpr common_iterator() requires default_initializable<_Iter> = default;
+    // clang-format on
 
     constexpr common_iterator(_Iter _Right) noexcept(is_nothrow_move_constructible_v<_Iter>) // strengthened
         : _Val{in_place_type<_Iter>, _STD move(_Right)} {}
@@ -1051,13 +1040,41 @@ struct iterator_traits<common_iterator<_Iter, _Se>> {
 };
 
 // CLASS TEMPLATE counted_iterator
+template <class _Iter>
+struct _Counted_iterator_value_type_base {};
+
+template <indirectly_readable _Iter>
+struct _Counted_iterator_value_type_base<_Iter> {
+    using value_type = iter_value_t<_Iter>;
+};
+
+template <class _Iter>
+struct _Counted_iterator_category_base : _Counted_iterator_value_type_base<_Iter> {};
+
+template <_Has_member_iterator_category _Iter>
+struct _Counted_iterator_category_base<_Iter> : _Counted_iterator_value_type_base<_Iter> {
+    using iterator_category = typename _Iter::iterator_category;
+};
+
+template <class _Iter>
+struct _Counted_iterator_concept_base : _Counted_iterator_category_base<_Iter> {};
+
+template <_Has_member_iterator_concept _Iter>
+struct _Counted_iterator_concept_base<_Iter> : _Counted_iterator_category_base<_Iter> {
+    using iterator_concept = typename _Iter::iterator_concept;
+};
+
 template <input_or_output_iterator _Iter>
-class counted_iterator {
+class counted_iterator : public _Counted_iterator_concept_base<_Iter> {
 public:
-    using iterator_type = _Iter;
+    using iterator_type   = _Iter;
+    using difference_type = iter_difference_t<_Iter>;
 
     // [counted.iter.const]
-    constexpr counted_iterator() = default;
+    // clang-format off
+    constexpr counted_iterator() requires default_initializable<_Iter> = default;
+    // clang-format on
+
     constexpr counted_iterator(_Iter _Right, const iter_difference_t<_Iter> _Diff) noexcept(
         is_nothrow_move_constructible_v<_Iter>) // strengthened
         : _Current(_STD move(_Right)), _Length(_Diff) {
@@ -1112,8 +1129,12 @@ public:
         return *_Current;
     }
 
-    _NODISCARD constexpr decltype(auto) operator[](const iter_difference_t<_Iter> _Diff) const
-        requires random_access_iterator<_Iter> {
+    _NODISCARD constexpr auto operator->() const noexcept requires contiguous_iterator<_Iter> {
+        return _STD to_address(_Current);
+    }
+
+    _NODISCARD constexpr decltype(auto) operator[](
+        const iter_difference_t<_Iter> _Diff) const requires random_access_iterator<_Iter> {
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Diff < _Length, "counted_iterator index out of range");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -1168,8 +1189,8 @@ public:
         return _Tmp;
     }
 
-    _NODISCARD constexpr counted_iterator operator+(const iter_difference_t<_Iter> _Diff) const
-        requires random_access_iterator<_Iter> {
+    _NODISCARD constexpr counted_iterator operator+(
+        const iter_difference_t<_Iter> _Diff) const requires random_access_iterator<_Iter> {
         return counted_iterator{_Current + _Diff, static_cast<iter_difference_t<_Iter>>(_Length - _Diff)};
     }
 
@@ -1188,8 +1209,8 @@ public:
         return *this;
     }
 
-    _NODISCARD constexpr counted_iterator operator-(const iter_difference_t<_Iter> _Diff) const
-        requires random_access_iterator<_Iter> {
+    _NODISCARD constexpr counted_iterator operator-(
+        const iter_difference_t<_Iter> _Diff) const requires random_access_iterator<_Iter> {
         return counted_iterator{_Current - _Diff, static_cast<iter_difference_t<_Iter>>(_Length + _Diff)};
     }
 
@@ -1336,25 +1357,12 @@ private:
     iter_difference_t<_Iter> _Length = 0;
 };
 
-template <class _Iter>
-struct incrementable_traits<counted_iterator<_Iter>> {
-    using difference_type = iter_difference_t<_Iter>;
-};
-
+// clang-format off
 template <input_iterator _Iter>
+    requires (!_Is_from_primary<iterator_traits<_Iter>>)
 struct iterator_traits<counted_iterator<_Iter>> : iterator_traits<_Iter> {
-    using pointer = void;
-};
-
-template <contiguous_iterator _Iter>
-struct pointer_traits<counted_iterator<_Iter>> { // TRANSITION, address LWG-3408 and include this
-    using pointer         = counted_iterator<_Iter>;
-    using element_type    = remove_reference_t<iter_reference_t<_Iter>>;
-    using difference_type = iter_difference_t<_Iter>;
-
-    _NODISCARD static constexpr element_type* to_address(const pointer _It) noexcept {
-        return _STD to_address(_It.base());
-    }
+    // clang-format on
+    using pointer = conditional_t<contiguous_iterator<_Iter>, add_pointer_t<iter_reference_t<_Iter>>, void>;
 };
 #endif // __cpp_lib_concepts
 
