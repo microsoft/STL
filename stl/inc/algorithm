@@ -7072,7 +7072,7 @@ namespace ranges {
                 "ranges::inplace_merge requires the range [first, middle) to be sorted");
             _STL_VERIFY(_RANGES _Is_sorted_until_unchecked(_Mid, _Last, _Pred, _Proj) == _Last,
                 "ranges::inplace_merge requires the range [middle, last) to be sorted");
-#endif //_ITERATOR_DEBUG_LEVEL == 2
+#endif // _ITERATOR_DEBUG_LEVEL == 2
 
             // Find first element in [_First, _Mid) that is greater than *_Mid
             while (!_STD invoke(_Pred, _STD invoke(_Proj, *_Mid), _STD invoke(_Proj, *_First))) {

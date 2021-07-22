@@ -2137,7 +2137,7 @@ using _Choose_atomic_base_t = typename _Select<is_floating_point_v<_TVal>>::temp
 #else // ^^^ _HAS_CXX20 // !_HAS_CXX20 vvv
 template <class _TVal, class _Ty = _TVal>
 using _Choose_atomic_base_t = _Choose_atomic_base2_t<_TVal, _Ty>;
-#endif //_HAS_CXX20
+#endif // _HAS_CXX20
 
 template <class _Ty>
 struct atomic : _Choose_atomic_base_t<_Ty> { // atomic value
