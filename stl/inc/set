@@ -49,110 +49,112 @@ public:
 };
 
 template <class _Kty, class _Pr = less<_Kty>, class _Alloc = allocator<_Kty>>
-// ordered red-black tree of key values, unique keys
-public : static_assert(!_ENFORCE_MATCHING_ALLOCATORS || is_same_v<_Kty, typename _Alloc::value_type>,
-             _MISMATCHED_ALLOCATOR_MESSAGE("set<T, Compare, Allocator>", "T"));
+class set : public _Tree<_Tset_traits<_Kty, _Pr, _Alloc, false>> {
+    // ordered red-black tree of key values, unique keys
+public:
+    static_assert(!_ENFORCE_MATCHING_ALLOCATORS || is_same_v<_Kty, typename _Alloc::value_type>,
+        _MISMATCHED_ALLOCATOR_MESSAGE("set<T, Compare, Allocator>", "T"));
 
-using _Mybase                = _Tree<_Tset_traits<_Kty, _Pr, _Alloc, false>>;
-using key_type               = _Kty;
-using key_compare            = _Pr;
-using value_compare          = typename _Mybase::value_compare;
-using value_type             = typename _Mybase::value_type;
-using allocator_type         = typename _Mybase::allocator_type;
-using size_type              = typename _Mybase::size_type;
-using difference_type        = typename _Mybase::difference_type;
-using pointer                = typename _Mybase::pointer;
-using const_pointer          = typename _Mybase::const_pointer;
-using reference              = value_type&;
-using const_reference        = const value_type&;
-using iterator               = typename _Mybase::iterator;
-using const_iterator         = typename _Mybase::const_iterator;
-using reverse_iterator       = typename _Mybase::reverse_iterator;
-using const_reverse_iterator = typename _Mybase::const_reverse_iterator;
+    using _Mybase                = _Tree<_Tset_traits<_Kty, _Pr, _Alloc, false>>;
+    using key_type               = _Kty;
+    using key_compare            = _Pr;
+    using value_compare          = typename _Mybase::value_compare;
+    using value_type             = typename _Mybase::value_type;
+    using allocator_type         = typename _Mybase::allocator_type;
+    using size_type              = typename _Mybase::size_type;
+    using difference_type        = typename _Mybase::difference_type;
+    using pointer                = typename _Mybase::pointer;
+    using const_pointer          = typename _Mybase::const_pointer;
+    using reference              = value_type&;
+    using const_reference        = const value_type&;
+    using iterator               = typename _Mybase::iterator;
+    using const_iterator         = typename _Mybase::const_iterator;
+    using reverse_iterator       = typename _Mybase::reverse_iterator;
+    using const_reverse_iterator = typename _Mybase::const_reverse_iterator;
 
-using _Alnode        = typename _Mybase::_Alnode;
-using _Alnode_traits = typename _Mybase::_Alnode_traits;
+    using _Alnode        = typename _Mybase::_Alnode;
+    using _Alnode_traits = typename _Mybase::_Alnode_traits;
 
 #if _HAS_CXX17
-using insert_return_type = _Insert_return_type<iterator, typename _Mybase::node_type>;
+    using insert_return_type = _Insert_return_type<iterator, typename _Mybase::node_type>;
 #endif // _HAS_CXX17
 
-set() : _Mybase(key_compare()) {}
+    set() : _Mybase(key_compare()) {}
 
-explicit set(const allocator_type& _Al) : _Mybase(key_compare(), _Al) {}
+    explicit set(const allocator_type& _Al) : _Mybase(key_compare(), _Al) {}
 
-set(const set& _Right) : _Mybase(_Right, _Alnode_traits::select_on_container_copy_construction(_Right._Getal())) {}
+    set(const set& _Right) : _Mybase(_Right, _Alnode_traits::select_on_container_copy_construction(_Right._Getal())) {}
 
-set(const set& _Right, const allocator_type& _Al) : _Mybase(_Right, _Al) {}
+    set(const set& _Right, const allocator_type& _Al) : _Mybase(_Right, _Al) {}
 
-explicit set(const key_compare& _Pred) : _Mybase(_Pred) {}
+    explicit set(const key_compare& _Pred) : _Mybase(_Pred) {}
 
-set(const key_compare& _Pred, const allocator_type& _Al) : _Mybase(_Pred, _Al) {}
+    set(const key_compare& _Pred, const allocator_type& _Al) : _Mybase(_Pred, _Al) {}
 
-template <class _Iter>
-set(_Iter _First, _Iter _Last) : _Mybase(key_compare()) {
-    this->insert(_First, _Last);
-}
+    template <class _Iter>
+    set(_Iter _First, _Iter _Last) : _Mybase(key_compare()) {
+        this->insert(_First, _Last);
+    }
 
-template <class _Iter>
-set(_Iter _First, _Iter _Last, const key_compare& _Pred) : _Mybase(_Pred) {
-    this->insert(_First, _Last);
-}
+    template <class _Iter>
+    set(_Iter _First, _Iter _Last, const key_compare& _Pred) : _Mybase(_Pred) {
+        this->insert(_First, _Last);
+    }
 
-template <class _Iter>
-set(_Iter _First, _Iter _Last, const allocator_type& _Al) : _Mybase(key_compare(), _Al) {
-    this->insert(_First, _Last);
-}
+    template <class _Iter>
+    set(_Iter _First, _Iter _Last, const allocator_type& _Al) : _Mybase(key_compare(), _Al) {
+        this->insert(_First, _Last);
+    }
 
-template <class _Iter>
-set(_Iter _First, _Iter _Last, const key_compare& _Pred, const allocator_type& _Al) : _Mybase(_Pred, _Al) {
-    this->insert(_First, _Last);
-}
+    template <class _Iter>
+    set(_Iter _First, _Iter _Last, const key_compare& _Pred, const allocator_type& _Al) : _Mybase(_Pred, _Al) {
+        this->insert(_First, _Last);
+    }
 
-set& operator=(const set& _Right) {
-    _Mybase::operator=(_Right);
-    return *this;
-}
+    set& operator=(const set& _Right) {
+        _Mybase::operator=(_Right);
+        return *this;
+    }
 
-set(set&& _Right) : _Mybase(_STD move(_Right)) {}
+    set(set&& _Right) : _Mybase(_STD move(_Right)) {}
 
-set(set&& _Right, const allocator_type& _Al) : _Mybase(_STD move(_Right), _Al) {}
+    set(set&& _Right, const allocator_type& _Al) : _Mybase(_STD move(_Right), _Al) {}
 
-set& operator=(set&& _Right) noexcept(_Alnode_traits::is_always_equal::value&& is_nothrow_move_assignable_v<_Pr>) {
-    _Mybase::operator=(_STD move(_Right));
-    return *this;
-}
+    set& operator=(set&& _Right) noexcept(_Alnode_traits::is_always_equal::value&& is_nothrow_move_assignable_v<_Pr>) {
+        _Mybase::operator=(_STD move(_Right));
+        return *this;
+    }
 
-void swap(set& _Right) noexcept(noexcept(_Mybase::swap(_Right))) {
-    _Mybase::swap(_Right);
-}
+    void swap(set& _Right) noexcept(noexcept(_Mybase::swap(_Right))) {
+        _Mybase::swap(_Right);
+    }
 
-set(initializer_list<value_type> _Ilist) : _Mybase(key_compare()) {
-    this->insert(_Ilist);
-}
+    set(initializer_list<value_type> _Ilist) : _Mybase(key_compare()) {
+        this->insert(_Ilist);
+    }
 
-set(initializer_list<value_type> _Ilist, const key_compare& _Pred) : _Mybase(_Pred) {
-    this->insert(_Ilist);
-}
+    set(initializer_list<value_type> _Ilist, const key_compare& _Pred) : _Mybase(_Pred) {
+        this->insert(_Ilist);
+    }
 
-set(initializer_list<value_type> _Ilist, const allocator_type& _Al) : _Mybase(key_compare(), _Al) {
-    this->insert(_Ilist);
-}
+    set(initializer_list<value_type> _Ilist, const allocator_type& _Al) : _Mybase(key_compare(), _Al) {
+        this->insert(_Ilist);
+    }
 
-set(initializer_list<value_type> _Ilist, const key_compare& _Pred, const allocator_type& _Al) : _Mybase(_Pred, _Al) {
-    this->insert(_Ilist);
-}
+    set(initializer_list<value_type> _Ilist, const key_compare& _Pred, const allocator_type& _Al)
+        : _Mybase(_Pred, _Al) {
+        this->insert(_Ilist);
+    }
 
-set& operator=(initializer_list<value_type> _Ilist) {
-    this->clear();
-    this->insert(_Ilist);
-    return *this;
-}
+    set& operator=(initializer_list<value_type> _Ilist) {
+        this->clear();
+        this->insert(_Ilist);
+        return *this;
+    }
 
-using _Mybase::_Unchecked_begin;
-using _Mybase::_Unchecked_end;
-}
-;
+    using _Mybase::_Unchecked_begin;
+    using _Mybase::_Unchecked_end;
+};
 
 #if _HAS_CXX17
 template <class _Iter, class _Pr = less<_Iter_value_t<_Iter>>, class _Alloc = allocator<_Iter_value_t<_Iter>>,
@@ -227,6 +229,7 @@ typename set<_Kty, _Keylt, _Alloc>::size_type erase_if(set<_Kty, _Keylt, _Alloc>
 
 template <class _Kty, class _Pr = less<_Kty>, class _Alloc = allocator<_Kty>>
 class multiset : public _Tree<_Tset_traits<_Kty, _Pr, _Alloc, true>> {
+    // ordered red-black tree of key values, non-unique keys
 public:
     static_assert(!_ENFORCE_MATCHING_ALLOCATORS || is_same_v<_Kty, typename _Alloc::value_type>,
         _MISMATCHED_ALLOCATOR_MESSAGE("multiset<T, Compare, Allocator>", "T"));
