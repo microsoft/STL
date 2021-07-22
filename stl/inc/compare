@@ -363,7 +363,6 @@ using _Synth_three_way_result = decltype(_Synth_three_way{}(_STD declval<_Ty1&>(
 
 // Note: The following CPOs are passing arguments as lvalues; see GH-1374.
 
-// CUSTOMIZATION POINT OBJECT strong_order
 namespace _Strong_order {
     void strong_order(); // Block unqualified name lookup; see GH-1374.
 
@@ -459,7 +458,6 @@ inline namespace _Cpos {
     inline constexpr _Strong_order::_Cpo strong_order;
 }
 
-// CUSTOMIZATION POINT OBJECT weak_order
 namespace _Weak_order {
     void weak_order(); // Block unqualified name lookup; see GH-1374.
 
@@ -580,7 +578,6 @@ inline namespace _Cpos {
     inline constexpr _Weak_order::_Cpo weak_order;
 }
 
-// CUSTOMIZATION POINT OBJECT partial_order
 namespace _Partial_order {
     void partial_order(); // Block unqualified name lookup; see GH-1374.
 
@@ -666,7 +663,6 @@ concept _Can_fallback_eq_lt = requires(_Ty1& _Left, _Ty2& _Right) {
 };
 // clang-format on
 
-// CUSTOMIZATION POINT OBJECT compare_strong_order_fallback
 namespace _Compare_strong_order_fallback {
     template <class _Ty1, class _Ty2>
     concept _Can_strong_order = requires(_Ty1 & _Left, _Ty2 & _Right) {
@@ -721,7 +717,6 @@ inline namespace _Cpos {
     inline constexpr _Compare_strong_order_fallback::_Cpo compare_strong_order_fallback;
 }
 
-// CUSTOMIZATION POINT OBJECT compare_weak_order_fallback
 namespace _Compare_weak_order_fallback {
     template <class _Ty1, class _Ty2>
     concept _Can_weak_order = requires(_Ty1& _Left, _Ty2& _Right) {
@@ -776,7 +771,6 @@ inline namespace _Cpos {
     inline constexpr _Compare_weak_order_fallback::_Cpo compare_weak_order_fallback;
 }
 
-// CUSTOMIZATION POINT OBJECT compare_partial_order_fallback
 namespace _Compare_partial_order_fallback {
     template <class _Ty1, class _Ty2>
     concept _Can_partial_order = requires(_Ty1& _Left, _Ty2& _Right) {

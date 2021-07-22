@@ -113,7 +113,6 @@ template <class _Ty>
 concept _Has_class_or_enum_type = __is_class(remove_reference_t<_Ty>) || __is_enum(remove_reference_t<_Ty>)
     || __is_union(remove_reference_t<_Ty>);
 
-// CUSTOMIZATION POINT OBJECT ranges::swap
 namespace ranges {
     namespace _Swap {
         template <class _Ty>
