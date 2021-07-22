@@ -204,7 +204,6 @@ inline to_chars_result to_chars(char* const _First, char* const _Last, const uns
 to_chars_result to_chars(char* _First, char* _Last, bool _Value, int _Base = 10) = delete;
 
 
-// STRUCT from_chars_result
 struct from_chars_result {
     const char* ptr;
     errc ec;
@@ -1640,8 +1639,6 @@ _NODISCARD errc _Convert_hexadecimal_string_to_floating_type(
 }
 
 // ^^^^^^^^^^ DERIVED FROM corecrt_internal_strtox.h ^^^^^^^^^^
-
-
 
 // C11 6.4.2.1 "General"
 // digit: one of

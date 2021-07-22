@@ -21,10 +21,11 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 _STD_BEGIN
-class _Pr, // comparator predicate type
+template <class _Kty, // key/value type
+    class _Pr, // comparator predicate type
     class _Alloc, // actual allocator type (should be value allocator)
-    bool _Mfl > // true if multiple equivalent keys are permitted
-        class _Tset_traits { // traits required to make _Tree behave like a set
+    bool _Mfl> // true if multiple equivalent keys are permitted
+class _Tset_traits { // traits required to make _Tree behave like a set
 public:
     using key_type       = _Kty;
     using value_type     = _Kty;

@@ -22,7 +22,7 @@ namespace stdext {
     namespace cvt {
         using _Statype = _CSTD mbstate_t;
 
-                template <class _Elem, unsigned long _Maxcode = 0x7e7e>
+        template <class _Elem, unsigned long _Maxcode = 0x7e7e>
         class codecvt_euc_0208
             : public _STD codecvt<_Elem, char, _Statype> { // facet for converting between JIS-X0208 _Elem and EUC bytes
         public:

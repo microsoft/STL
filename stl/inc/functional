@@ -29,12 +29,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// defined in <xstddef>
-
-// defined in <xstddef>
-
-// defined in <xstddef>
-
+// plus, minus, and multiplies are defined in <xstddef>
 template <class _Ty = void>
 struct divides {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;

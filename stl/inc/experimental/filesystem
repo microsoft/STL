@@ -564,6 +564,7 @@ path system_complete(const path&, error_code&);
 path temp_directory_path();
 path temp_directory_path(error_code&);
 
+template <class _Path_type>
 class _Path_iterator {
 public:
     using path_type   = _Path_type;
@@ -733,7 +734,6 @@ public:
 
     path(const path& _Right) : _Mystr(_Right._Mystr) {}
 
-
     template <class _InIt, enable_if_t<_Is_iterator_v<_InIt>, int> = 0>
     path(_InIt _First, _InIt _Last) {
         using _Valty = _Iter_value_t<_InIt>;
@@ -759,7 +759,6 @@ public:
         string_type _Str_out;
         *this /= _Path_cvt<_Elem, value_type>::_Cvt(_Str_out, _Str.c_str(), _Str.size());
     }
-
 
     template <class _InIt, enable_if_t<_Is_iterator_v<_InIt>, int> = 0>
     path(_InIt _First, _InIt _Last, const locale& _Loc) {

@@ -32,7 +32,7 @@ _STD_BEGIN
 
 namespace pmr {
 
-        extern "C" _CRT_SATELLITE_1 memory_resource* __cdecl _Aligned_set_default_resource(memory_resource*) noexcept;
+    extern "C" _CRT_SATELLITE_1 memory_resource* __cdecl _Aligned_set_default_resource(memory_resource*) noexcept;
     extern "C" _CRT_SATELLITE_1 memory_resource* __cdecl _Unaligned_set_default_resource(memory_resource*) noexcept;
 
     inline memory_resource* set_default_resource(memory_resource* const _Resource) noexcept {
@@ -45,7 +45,7 @@ namespace pmr {
 
     extern "C" _NODISCARD _CRT_SATELLITE_1 memory_resource* __cdecl null_memory_resource() noexcept;
 
-        class _Identity_equal_resource : public memory_resource {
+    class _Identity_equal_resource : public memory_resource {
     protected:
         virtual bool do_is_equal(const memory_resource& _That) const noexcept override {
             return this == &_That;
