@@ -496,10 +496,14 @@ static constexpr _Unicode_Property_Data<_Extended_Pictographic_Property_Values, 
             0x6, 0x1, 0x2, 0x8, 0x1, 0x1, 0x3, 0x17, 0x19, 0x70, 0x4, 0x1, 0x3, 0x3, 0x5, 0x3, 0x4, 0x9, 0x6, 0x13, 0x7,
             0x7, 0x9, 0x3, 0xd, 0x7, 0x29, 0x3fe}};
 
-constexpr const uint16_t* _Decode_utf16(const uint16_t* _First, const uint16_t* _Last, uint32_t& _Val) {
+
+// _Decode_utf decodes utf8 or utf16 encoded unsigned char or wchar_t strings respectively
+constexpr const wchar_t* _Decode_utf(const wchar_t* _First, const wchar_t* _Last, char32_t& _Val) noexcept {
     _STL_INTERNAL_CHECK(_First < _Last);
-    _Val = static_cast<uint32_t>(*_First);
-    if (_Val >= 0xD800 && _Val <= 0xDBFF) {
+    _Val = static_cast<char32_t>(*_First);
+    if (_Val < 0xD800) {
+        return _First + 1;
+    } else if (_Val <= 0xDBFF) {
         //  0xD800 <= _Val <= 0xDBFF: High surrogate
         if (_First + 1 >= _Last) {
             _Val = 0xFFFD;
@@ -522,7 +526,8 @@ constexpr const uint16_t* _Decode_utf16(const uint16_t* _First, const uint16_t* 
     return _First + 1;
 }
 
-constexpr const uint8_t* _Decode_utf8(const uint8_t* _First, const uint8_t* _Last, uint32_t& _Val) {
+constexpr const unsigned char* _Decode_utf(
+    const unsigned char* _First, const unsigned char* _Last, char32_t& _Val) noexcept {
     _STL_INTERNAL_CHECK(_First < _Last);
     // decode a UTF-8 value starting at _First and not exceding _Last, returning
     // one past the end of the character decoded. Any invalid codepoints will result in
@@ -530,7 +535,7 @@ constexpr const uint8_t* _Decode_utf8(const uint8_t* _First, const uint8_t* _Las
     // maximal subpart of the ill-formed subsequence. So, most invalid utf-8 will result in
     // on U+FFFD for each byte of invalid data. Truncated but otherwise valid UTF-8 may
     // result in one U+FFFD for more than one input byte.
-    _Val = static_cast<uint32_t>(*_First);
+    _Val = static_cast<char32_t>(*_First);
 
     // all UTF text is at least one byte
     // the zero extended values of the "prefix" bytes for
@@ -617,6 +622,81 @@ constexpr const uint8_t* _Decode_utf8(const uint8_t* _First, const uint8_t* _Las
     }
     return _First + _Num_bytes;
 }
+
+class _Unicode_codepoint_end_iterator {};
+
+template <typename _CharT, typename _Derived>
+class _Unicode_codepoint_iterator_base {
+protected:
+    const _CharT* _First = nullptr;
+    const _CharT* _Last  = nullptr;
+    char32_t _Val        = 0;
+
+    _Unicode_codepoint_iterator_base(const _CharT* _First_val, const _CharT* _Last_val)
+        : _First(_First_val), _Last(_Last_val) {
+        ++*this;
+    }
+
+
+public:
+    using iterator_concept = forward_iterator_tag;
+    using value_type       = char32_t;
+    using difference_type  = ptrdiff_t;
+
+    _Unicode_codepoint_iterator_base() = default;
+
+    _Derived& operator++() noexcept {
+        _First = _Decode_utf(_First, _Last, _Val);
+        return *static_cast<_Derived*>(this);
+    }
+    _Derived operator++(int) noexcept {
+        auto _Old = *this;
+        ++*this;
+        return _Old;
+    }
+    value_type operator*() const noexcept {
+        return _Val;
+    }
+    bool operator==(_Unicode_codepoint_end_iterator) const noexcept {
+        _STL_INTERNAL_CHECK(_First <= _Last);
+        if (_First == _Last) {
+            return true;
+        }
+        return false;
+    }
+    bool operator==(const _Unicode_codepoint_iterator_base& _Other) const {
+        return (_First == _Other._First) && (_Last == _Other._Last);
+    }
+};
+
+template <typename _CharT>
+class _Unicode_codepoint_iterator
+    : public _Unicode_codepoint_iterator_base<_CharT, _Unicode_codepoint_iterator<_CharT>> {
+    using _Mybase = _Unicode_codepoint_iterator_base<_CharT, _Unicode_codepoint_iterator<_CharT>>;
+
+public:
+    _Unicode_codepoint_iterator(const basic_string_view<_CharT>& _Str)
+        : _Mybase(_Str.data(), _Str.data() + _Str.size()) {}
+
+    using _Mybase::_Mybase;
+};
+
+template <>
+class _Unicode_codepoint_iterator<char>
+    : public _Unicode_codepoint_iterator_base<unsigned char, _Unicode_codepoint_iterator<char>> {
+    using _Mybase = _Unicode_codepoint_iterator_base<unsigned char, _Unicode_codepoint_iterator<char>>;
+
+public:
+    _Unicode_codepoint_iterator(const string_view& _Str)
+        : _Mybase(reinterpret_cast<const unsigned char*>(_Str.data()),
+            reinterpret_cast<const unsigned char*>(_Str.data() + _Str.size())) {}
+
+    using _Mybase::_Mybase;
+};
+
+template <typename _CharT>
+_Unicode_codepoint_iterator(const basic_string_view<_CharT>&) -> _Unicode_codepoint_iterator<_CharT>;
+
 /*
 template <typename _CharType>
 class _Grapheme_break_property_iterator {
