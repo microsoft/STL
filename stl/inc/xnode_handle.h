@@ -30,7 +30,6 @@ struct _Insert_return_type {
     _NodeType node;
 };
 
-// CLASS TEMPLATE _Node_handle
 template <class _Derived_type, class _KeyTy, class _ValueTy>
 struct _Node_handle_map_base { // map-specific node handle behavior
     using key_type    = _KeyTy;

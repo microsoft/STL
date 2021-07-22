@@ -23,7 +23,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// CLASS TEMPLATE _Locbase
 template <class _Dummy>
 class _Locbase { // define templatized category constants, instantiate on demand
 public:
@@ -54,7 +53,6 @@ const int _Locbase<_Dummy>::all;
 template <class _Dummy>
 const int _Locbase<_Dummy>::none;
 
-// CLASS locale
 template <class _Elem>
 class collate;
 
@@ -93,7 +91,6 @@ class locale : public _Locbase<int>, public _Crt_new_delete { // nonmutable coll
 public:
     using category = int;
 
-    // CLASS id
     class _CRTIMP2_PURE_IMPORT id { // identifier stamp, unique for each distinct kind of facet
     public:
         __CLR_OR_THIS_CALL id(size_t _Val = 0) : _Id(_Val) {}
@@ -120,7 +117,6 @@ public:
 
     class _Locimp;
 
-    // CLASS facet
     class _CRTIMP2_PURE_IMPORT facet : public _Facet_base, public _Crt_new_delete {
         // base class for all locale facets, performs reference counting
     private:
@@ -168,7 +164,6 @@ public:
         }
     };
 
-    // CLASS _Locimp
     class _CRTIMP2_PURE_IMPORT _Locimp : public facet { // reference-counted actual implementation of a locale
     protected:
         __CLR_OR_THIS_CALL ~_Locimp() noexcept {
@@ -661,7 +656,6 @@ protected:
     }
 };
 
-// CLASS TEMPLATE codecvt
 template <class _Elem, class _Byte, class _Statype>
 class codecvt : public codecvt_base { // facet for converting between _Elem and _Byte sequences
 public:
@@ -843,7 +837,6 @@ _NODISCARD int _Codecvt_do_length(
 // ENUM _Codecvt_mode
 enum _Codecvt_mode { _Consume_header = 4, _Generate_header = 2 };
 
-// CLASS codecvt<char16_t, char, mbstate_t>
 template <>
 class _CRTIMP2_PURE_IMPORT_UNLESS_CODECVT_ID_SATELLITE _CXX20_DEPRECATE_CODECVT_FACETS
     codecvt<char16_t, char, mbstate_t> : public codecvt_base {
@@ -1142,7 +1135,6 @@ private:
     _Codecvt_mode _Mode; // default: _Consume_header
 };
 
-// CLASS codecvt<char32_t, char, mbstate_t>
 template <>
 class _CRTIMP2_PURE_IMPORT_UNLESS_CODECVT_ID_SATELLITE _CXX20_DEPRECATE_CODECVT_FACETS
     codecvt<char32_t, char, mbstate_t> : public codecvt_base {
@@ -1397,7 +1389,6 @@ struct _NODISCARD _Codecvt_guard {
     }
 };
 
-// CLASS codecvt<char16_t, char8_t, mbstate_t>
 template <>
 class codecvt<char16_t, char8_t, mbstate_t> : public codecvt_base {
     // facet for converting between UTF-16 and UTF-8 sequences
@@ -1679,7 +1670,6 @@ protected:
     }
 };
 
-// CLASS codecvt<char32_t, char8_t, mbstate_t>
 template <>
 class codecvt<char32_t, char8_t, mbstate_t> : public codecvt_base {
     // facet for converting between UTF-32 and UTF-8 sequences
@@ -1923,7 +1913,6 @@ protected:
 };
 #endif // defined(__cpp_char8_t) && !defined(_M_CEE_PURE)
 
-// CLASS codecvt<wchar_t, char, mbstate_t>
 template <>
 class _CRTIMP2_PURE_IMPORT codecvt<wchar_t, char, mbstate_t> : public codecvt_base {
     // facet for converting between wchar_t and char (_Byte) sequences
@@ -2123,7 +2112,6 @@ private:
 };
 
 #ifdef _NATIVE_WCHAR_T_DEFINED
-// CLASS codecvt<unsigned short, char, mbstate_t>
 template <>
 class _CRTIMP2_PURE_IMPORT codecvt<unsigned short, char, mbstate_t> : public codecvt_base {
     // facet for converting between unsigned short and char sequences
@@ -2325,7 +2313,6 @@ private:
 };
 #endif // _NATIVE_WCHAR_T_DEFINED
 
-// CLASS TEMPLATE codecvt_byname
 template <class _Elem, class _Byte, class _Statype>
 class codecvt_byname : public codecvt<_Elem, _Byte, _Statype> { // codecvt for named locale
 public:
@@ -2391,7 +2378,6 @@ struct _CRTIMP2_PURE_IMPORT ctype_base : locale::facet { // base for ctype
 #undef _UP
 #undef _XD
 
-// CLASS TEMPLATE ctype
 template <class _Elem>
 class ctype : public ctype_base { // facet for classifying elements, converting cases
 public:
@@ -2626,7 +2612,6 @@ locale::id ctype<_Elem>::id;
 #pragma clang diagnostic pop
 #endif // __clang__
 
-// CLASS ctype<char>
 template <>
 class _CRTIMP2_PURE_IMPORT ctype<char> : public ctype_base { // facet for classifying char elements, converting cases
 public:
@@ -2817,7 +2802,6 @@ private:
     _Locinfo::_Ctypevec _Ctype; // information
 };
 
-// CLASS ctype<wchar_t>
 template <>
 class _CRTIMP2_PURE_IMPORT ctype<wchar_t>
     : public ctype_base { // facet for classifying wchar_t elements, converting cases
@@ -3019,7 +3003,6 @@ private:
 };
 
 #ifdef _NATIVE_WCHAR_T_DEFINED
-// CLASS ctype<unsigned short>
 template <>
 class _CRTIMP2_PURE_IMPORT ctype<unsigned short>
     : public ctype_base { // facet for classifying unsigned short elements, converting cases
@@ -3227,7 +3210,6 @@ private:
 };
 #endif // _NATIVE_WCHAR_T_DEFINED
 
-// CLASS TEMPLATE ctype_byname
 template <class _Elem>
 class ctype_byname : public ctype<_Elem> { // ctype for named locale
 public:

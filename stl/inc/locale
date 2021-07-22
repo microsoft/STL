@@ -23,7 +23,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// CLASS TEMPLATE collate
 template <class _Elem>
 class collate : public locale::facet { // facet for ordering sequences of elements
 public:
@@ -143,7 +142,6 @@ template __PURE_APPDOMAIN_GLOBAL locale::id collate<unsigned short>::id;
 #pragma clang diagnostic pop
 #endif // __clang__
 
-// CLASS TEMPLATE collate_byname
 template <class _Elem>
 class collate_byname : public collate<_Elem> { // collate for named locale
 public:

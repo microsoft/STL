@@ -22,7 +22,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// CLASS TEMPLATE _Deque_unchecked_const_iterator
 template <class _Mydeque>
 class _Deque_unchecked_const_iterator {
 private:
@@ -151,7 +150,6 @@ _NODISCARD _Deque_unchecked_const_iterator<_Mydeque> operator+(
     return _Next;
 }
 
-// CLASS TEMPLATE _Deque_unchecked_iterator
 template <class _Mydeque>
 class _Deque_unchecked_iterator : public _Deque_unchecked_const_iterator<_Mydeque> {
 private:
@@ -237,7 +235,6 @@ _NODISCARD _Deque_unchecked_iterator<_Mydeque> operator+(
     return _Next;
 }
 
-// CLASS TEMPLATE _Deque_const_iterator
 template <class _Mydeque>
 class _Deque_const_iterator : public _Iterator_base12 {
 private:
@@ -440,7 +437,6 @@ _NODISCARD _Deque_const_iterator<_Mydeque> operator+(
     return _Next;
 }
 
-// CLASS TEMPLATE _Deque_iterator
 template <class _Mydeque>
 class _Deque_iterator : public _Deque_const_iterator<_Mydeque> {
 private:
@@ -547,7 +543,6 @@ struct _Deque_simple_types : _Simple_types<_Ty> {
     using _Mapptr = _Ty**;
 };
 
-// CLASS TEMPLATE _Deque_val
 template <class _Val_types>
 class _Deque_val : public _Container_base12 {
 public:
@@ -583,7 +578,6 @@ public:
     size_type _Mysize; // current length of sequence
 };
 
-// CLASS TEMPLATE deque
 template <class _Ty, class _Alloc = allocator<_Ty>>
 class deque {
 private:

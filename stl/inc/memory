@@ -899,7 +899,6 @@ namespace ranges {
 
 
 #if _HAS_DEPRECATED_RAW_STORAGE_ITERATOR
-// CLASS TEMPLATE raw_storage_iterator
 template <class _OutIt, class _Ty>
 class _CXX17_DEPRECATE_RAW_STORAGE_ITERATOR raw_storage_iterator { // wrap stores to raw buffer as output iterator
 public:
@@ -947,7 +946,6 @@ private:
 
 
 #if _HAS_AUTO_PTR_ETC
-// CLASS TEMPLATE auto_ptr
 template <class _Ty>
 class auto_ptr;
 
@@ -1057,7 +1055,6 @@ public:
 #endif // _HAS_AUTO_PTR_ETC
 
 
-// CLASS bad_weak_ptr
 class bad_weak_ptr : public exception { // exception type for invalid use of expired weak_ptr object
 public:
     bad_weak_ptr() noexcept {}
@@ -1072,7 +1069,6 @@ public:
     _THROW(bad_weak_ptr{});
 }
 
-// CLASS _Ref_count_base
 class __declspec(novtable) _Ref_count_base { // common code for reference counting
 private:
 #ifdef _M_CEE_PURE
@@ -1150,7 +1146,6 @@ public:
     }
 };
 
-// CLASS TEMPLATE _Ref_count
 template <class _Ty>
 class _Ref_count : public _Ref_count_base { // handle reference counting for pointer without deleter
 public:
@@ -1168,7 +1163,6 @@ private:
     _Ty* _Ptr;
 };
 
-// CLASS TEMPLATE _Ref_count_resource
 template <class _Resource, class _Dx>
 class _Ref_count_resource : public _Ref_count_base { // handle reference counting for object with deleter
 public:
@@ -1205,7 +1199,6 @@ private:
     _Compressed_pair<_Dx, _Resource> _Mypair;
 };
 
-// CLASS TEMPLATE _Ref_count_resource_alloc
 template <class _Resource, class _Dx, class _Alloc>
 class _Ref_count_resource_alloc : public _Ref_count_base {
     // handle reference counting for object with deleter and allocator
@@ -1270,7 +1263,6 @@ struct _Can_enable_shared<_Yty, void_t<typename _Yty::_Esft_type>>
     // is_convertible is necessary to verify unambiguous inheritance
 };
 
-// CLASS TEMPLATE _Ptr_base
 struct _Exception_ptr_access;
 
 template <class _Ty>
@@ -1495,7 +1487,6 @@ struct _SP_pointer_compatible<_Uty[_Ext], const volatile _Uty[]> : true_type {
     // N4659 [util.smartptr.shared]/5 "... or Y is U[N] and T is cv U[]."
 };
 
-// CLASS TEMPLATE shared_ptr
 template <class _Ux>
 struct _Temporary_owner {
     _Ux* _Ptr;
@@ -2038,7 +2029,6 @@ struct _For_overwrite_tag {
 };
 #endif // _HAS_CXX20
 
-// CLASS TEMPLATE _Ref_count_obj2
 template <class _Ty>
 class _Ref_count_obj2 : public _Ref_count_base { // handle reference counting for object in control block, no allocator
 public:
@@ -2288,7 +2278,6 @@ void _Uninitialized_fill_multidimensional_n(_Ty* const _Out, const size_t _Size,
     }
 }
 
-// CLASS TEMPLATE _Ref_count_unbounded_array
 template <class _Ty, bool = is_trivially_destructible_v<remove_extent_t<_Ty>>>
 class _Ref_count_unbounded_array : public _Ref_count_base {
     // handle reference counting for unbounded array with trivial destruction in control block, no allocator
@@ -2383,7 +2372,6 @@ private:
     }
 };
 
-// CLASS TEMPLATE _Ref_count_bounded_array
 template <class _Ty>
 class _Ref_count_bounded_array : public _Ref_count_base {
     // handle reference counting for bounded array in control block, no allocator
@@ -2422,7 +2410,6 @@ private:
 };
 #endif // _HAS_CXX20
 
-// CLASS TEMPLATE _Ebco_base
 template <class _Ty,
     bool = is_empty_v<_Ty> && !is_final_v<_Ty>>
 class _Ebco_base : private _Ty { // Empty Base Class Optimization, active
@@ -2462,7 +2449,6 @@ protected:
     }
 };
 
-// CLASS TEMPLATE _Ref_count_obj_alloc3
 template <class _Ty, class _Alloc>
 class _Ref_count_obj_alloc3 : public _Ebco_base<_Rebind_alloc_t<_Alloc, _Ty>>, public _Ref_count_base {
     // handle reference counting for object in control block, allocator
@@ -2639,7 +2625,6 @@ void _Uninitialized_fill_multidimensional_n_al(_Ty* const _Out, const size_t _Si
     }
 }
 
-// CLASS TEMPLATE _Ref_count_unbounded_array_alloc
 template <class _Ty, class _Alloc>
 class _Ref_count_unbounded_array_alloc : public _Ebco_base<_Rebind_alloc_t<_Alloc, remove_all_extents_t<_Ty>>>,
                                          public _Ref_count_base {
@@ -2707,7 +2692,6 @@ private:
     }
 };
 
-// CLASS TEMPLATE _Ref_count_bounded_array_alloc
 template <class _Ty, class _Alloc>
 class _Ref_count_bounded_array_alloc : public _Ebco_base<_Rebind_alloc_t<_Alloc, remove_all_extents_t<_Ty>>>,
                                        public _Ref_count_base {
@@ -2997,7 +2981,6 @@ _NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shar
 }
 #endif // _HAS_CXX20
 
-// CLASS TEMPLATE weak_ptr
 template <class _Ty>
 class weak_ptr : public _Ptr_base<_Ty> { // class for pointer to reference counted resource
 public:
@@ -3087,7 +3070,6 @@ void swap(weak_ptr<_Ty>& _Left, weak_ptr<_Ty>& _Right) noexcept {
     _Left.swap(_Right);
 }
 
-// CLASS TEMPLATE enable_shared_from_this
 template <class _Ty>
 class enable_shared_from_this { // provide member functions that create shared_ptr to this
 public:
@@ -3130,7 +3112,6 @@ private:
 };
 
 
-// CLASS TEMPLATE unique_ptr AND HELPERS
 
 // STRUCT TEMPLATE default_delete
 template <class _Ty>
@@ -3175,7 +3156,6 @@ template <class _Dx2>
 using _Unique_ptr_enable_default_t =
     enable_if_t<conjunction_v<negation<is_pointer<_Dx2>>, is_default_constructible<_Dx2>>, int>;
 
-// CLASS TEMPLATE unique_ptr SCALAR
 template <class _Ty, class _Dx /* = default_delete<_Ty> */>
 class unique_ptr { // non-copyable pointer to an object
 public:
@@ -3301,7 +3281,6 @@ private:
     _Compressed_pair<_Dx, pointer> _Mypair;
 };
 
-// CLASS TEMPLATE unique_ptr ARRAY
 template <class _Ty, class _Dx>
 class unique_ptr<_Ty[], _Dx> { // non-copyable pointer to an array object
 public:

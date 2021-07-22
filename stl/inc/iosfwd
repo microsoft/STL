@@ -48,7 +48,6 @@ _STD_BEGIN
 using streamoff  = long long;
 using streamsize = long long;
 
-// CLASS TEMPLATE fpos (from <streambuf>)
 template <class _Statetype>
 class fpos { // store arbitrary file position
 public:

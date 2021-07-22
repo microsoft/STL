@@ -164,7 +164,6 @@ inline bool _Ungetc(const unsigned short& _Wchar, FILE* _File) { // put back an 
 }
 #endif // _NATIVE_WCHAR_T_DEFINED
 
-// CLASS TEMPLATE basic_filebuf
 template <class _Elem, class _Traits>
 class basic_filebuf : public basic_streambuf<_Elem, _Traits> { // stream buffer associated with a C stream
 public:
@@ -806,7 +805,6 @@ void swap(basic_filebuf<_Elem, _Traits>& _Left, basic_filebuf<_Elem, _Traits>& _
     _Left.swap(_Right);
 }
 
-// CLASS TEMPLATE basic_ifstream
 template <class _Elem, class _Traits>
 class basic_ifstream : public basic_istream<_Elem, _Traits> { // input stream associated with a C stream
 public:
@@ -991,7 +989,6 @@ void swap(basic_ifstream<_Elem, _Traits>& _Left, basic_ifstream<_Elem, _Traits>&
     _Left.swap(_Right);
 }
 
-// CLASS TEMPLATE basic_ofstream
 template <class _Elem, class _Traits>
 class basic_ofstream : public basic_ostream<_Elem, _Traits> { // output stream associated with a C stream
 public:
@@ -1175,7 +1172,6 @@ void swap(basic_ofstream<_Elem, _Traits>& _Left, basic_ofstream<_Elem, _Traits>&
     _Left.swap(_Right);
 }
 
-// CLASS TEMPLATE basic_fstream
 template <class _Elem, class _Traits>
 class basic_fstream : public basic_iostream<_Elem, _Traits> { // input/output stream associated with a C stream
 public:

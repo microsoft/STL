@@ -105,7 +105,6 @@ namespace pmr {
     }
 #endif // __cpp_aligned_new
 
-    // CLASS unsynchronized_pool_resource
     template <class _Tag = void>
     struct _Double_link { // base class for intrusive doubly-linked structures
         _Double_link* _Next;
@@ -597,7 +596,6 @@ namespace pmr {
     };
 #endif // _M_CEE
 
-    // CLASS TEMPLATE monotonic_buffer_resource
     class monotonic_buffer_resource : public _Identity_equal_resource {
     public:
         explicit monotonic_buffer_resource(memory_resource* const _Upstream) noexcept // strengthened

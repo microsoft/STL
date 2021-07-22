@@ -781,7 +781,6 @@ struct _Simple_types { // wraps types from allocators with simple addressing for
     using const_pointer   = const value_type*;
 };
 
-// CLASS TEMPLATE allocator
 template <class _Ty>
 class allocator {
 public:
@@ -861,7 +860,6 @@ public:
 #endif // _HAS_DEPRECATED_ALLOCATOR_MEMBERS
 };
 
-// CLASS allocator<void>
 template <>
 class allocator<void> {
 public:
@@ -1029,7 +1027,6 @@ struct _Alloc_construct_ptr { // pointer used to help construct 1 _Alloc::value_
     _Alloc_construct_ptr& operator=(const _Alloc_construct_ptr&) = delete;
 };
 
-// CLASSES _Container_base*, _Iterator_base*
 struct _Fake_allocator {};
 
 struct _Container_base0 {
@@ -1048,7 +1045,6 @@ struct _Iterator_base0 {
     static constexpr bool _Unwrap_when_unverified = true;
 };
 
-// CLASS _Container_proxy
 struct _Container_base12;
 struct _Container_proxy { // store head of iterator chain and back pointer
     _CONSTEXPR20 _Container_proxy() noexcept = default;
@@ -1347,7 +1343,6 @@ template <class _Alloc>
 using _Container_proxy_ptr = _Container_proxy_ptr12<_Rebind_alloc_t<_Alloc, _Container_proxy>>;
 #endif // _ITERATOR_DEBUG_LEVEL == 0
 
-// CLASS TEMPLATE _Compressed_pair
 struct _Zero_then_variadic_args_t {
     explicit _Zero_then_variadic_args_t() = default;
 }; // tag type for value-initializing first, constructing second from remaining args

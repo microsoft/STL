@@ -242,7 +242,6 @@ namespace ranges {
     template <bool _Enable, class _Rng, class _Derived>
     using _Cached_position_t = conditional_t<_Enable, _Cached_position<_Rng, _Derived>, view_interface<_Derived>>;
 
-    // CLASS TEMPLATE ranges::_Copyable_box
     template <_Copy_constructible_object _Ty>
     class _Copyable_box { // a simplified optional that augments copy_constructible types with full copyability
     public:
@@ -453,7 +452,6 @@ namespace ranges {
         /* [[no_unique_address]] */ _Ty _Val = _Ty();
     };
 
-    // CLASS TEMPLATE ranges::_Defaultabox
     template <movable _Ty>
     class _Defaultabox { // a simplified optional that augments movable types with default-constructibility
     public:
@@ -636,7 +634,6 @@ namespace ranges {
         /* [[no_unique_address]] */ _Ty _Value{};
     };
 
-    // CLASS TEMPLATE ranges::empty_view
     // clang-format off
     template <class _Ty>
         requires is_object_v<_Ty>
@@ -670,7 +667,6 @@ namespace ranges {
         inline constexpr empty_view<_Ty> empty;
     } // namespace views
 
-    // CLASS TEMPLATE ranges::single_view
     // clang-format off
     template <copy_constructible _Ty>
         requires is_object_v<_Ty>
@@ -740,7 +736,6 @@ namespace ranges {
         inline constexpr _Single_fn single;
     } // namespace views
 
-    // CLASS TEMPLATE ranges::iota_view
     template <class _Ty>
     using _Iota_diff_t = conditional_t<is_integral_v<_Ty>, conditional_t<(sizeof(_Ty) < sizeof(int)), int, long long>,
         iter_difference_t<_Ty>>;
@@ -1071,7 +1066,6 @@ namespace ranges {
         inline constexpr _Iota_fn iota;
     } // namespace views
 
-    // CLASS TEMPLATE ranges::istream_view
     template <class _Ty, class _Elem, class _Traits>
     concept _Stream_extractable = requires(basic_istream<_Elem, _Traits>& __is, _Ty& __t) {
         __is >> __t;
@@ -1154,7 +1148,6 @@ namespace ranges {
         return basic_istream_view<_Ty, _Elem, _Traits>{_Stream};
     }
 
-    // CLASS TEMPLATE ranges::ref_view
     // clang-format off
     template <range _Rng>
         requires is_object_v<_Rng>
@@ -1272,7 +1265,6 @@ namespace ranges {
         using all_t = decltype(all(_STD declval<_Rng>()));
     } // namespace views
 
-    // CLASS TEMPLATE ranges::filter_view
     // clang-format off
     template <input_range _Vw, indirect_unary_predicate<iterator_t<_Vw>> _Pr>
         requires view<_Vw> && is_object_v<_Pr>
@@ -1547,7 +1539,6 @@ namespace ranges {
         inline constexpr _Filter_fn filter;
     } // namespace views
 
-    // CLASS TEMPLATE ranges::transform_view
     // clang-format off
     template <class _Rng, class _Fn> // TRANSITION, LLVM-47414
     concept _Can_const_transform = range<const _Rng> && regular_invocable<const _Fn&, range_reference_t<const _Rng>>;
@@ -2037,7 +2028,6 @@ namespace ranges {
         inline constexpr _Transform_fn transform;
     } // namespace views
 
-    // CLASS TEMPLATE ranges::take_view
     template <view _Vw>
     class take_view : public view_interface<take_view<_Vw>> {
     private:
@@ -2339,7 +2329,6 @@ namespace ranges {
         inline constexpr _Take_fn take;
     } // namespace views
 
-    // CLASS TEMPLATE ranges::take_while_view
     // clang-format off
     template <view _Vw, class _Pr>
         requires input_range<_Vw> && is_object_v<_Pr> && indirect_unary_predicate<const _Pr, iterator_t<_Vw>>
@@ -2526,7 +2515,6 @@ namespace ranges {
         inline constexpr _Take_while_fn take_while;
     } // namespace views
 
-    // CLASS TEMPLATE ranges::drop_view
     template <view _Vw>
     class drop_view : public _Cached_position_t<forward_range<_Vw> && !(random_access_range<_Vw> && sized_range<_Vw>),
                           _Vw, drop_view<_Vw>> {
@@ -2775,7 +2763,6 @@ namespace ranges {
         inline constexpr _Drop_fn drop;
     } // namespace views
 
-    // CLASS TEMPLATE ranges::drop_while_view
     // clang-format off
     template <view _Vw, class _Pr>
         requires input_range<_Vw> && is_object_v<_Pr> && indirect_unary_predicate<const _Pr, iterator_t<_Vw>>
@@ -2879,7 +2866,6 @@ namespace ranges {
         inline constexpr _Drop_while_fn drop_while;
     } // namespace views
 
-    // CLASS TEMPLATE ranges::join_view
     // clang-format off
     template <input_range _Vw>
         requires (view<_Vw> && input_range<range_reference_t<_Vw>>
@@ -3255,7 +3241,6 @@ namespace ranges {
         inline constexpr _Join_fn join;
     } // namespace views
 
-    // CLASS TEMPLATE ranges::split_view
     // clang-format off
     template <class _Ty>
     concept _Tiny_range = sized_range<_Ty>
@@ -3723,7 +3708,6 @@ namespace ranges {
         inline constexpr _Counted_fn counted;
     } // namespace views
 
-    // CLASS TEMPLATE ranges::common_view
     // clang-format off
     template <view _Vw>
         requires (!common_range<_Vw> && copyable<iterator_t<_Vw>>)
@@ -3840,7 +3824,6 @@ namespace ranges {
         inline constexpr _Common_fn common;
     } // namespace views
 
-    // CLASS TEMPLATE ranges::reverse_view
     // clang-format off
     template <view _Vw>
         requires bidirectional_range<_Vw>
@@ -3993,7 +3976,6 @@ namespace ranges {
         inline constexpr _Reverse_fn reverse;
     } // namespace views
 
-    // CLASS TEMPLATE ranges::elements_view
     template <class _Tuple, size_t _Index>
     concept _Has_tuple_element = requires(_Tuple __t) {
         typename tuple_size<_Tuple>::type;

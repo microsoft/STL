@@ -343,7 +343,6 @@ enum _Uninitialized { // tag for suppressing initialization
     _Noinit
 };
 
-// CLASS _Lockit
 class _CRTIMP2_PURE_IMPORT _Lockit { // lock while object in existence -- MUST NEST
 public:
 #ifdef _M_CEE_PURE

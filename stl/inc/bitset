@@ -19,7 +19,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// CLASS TEMPLATE bitset
 template <size_t _Bits>
 class bitset { // store fixed-length sequence of Boolean elements
 public:
@@ -28,7 +27,6 @@ public:
     using _Ty = conditional_t<_Bits <= sizeof(unsigned long) * CHAR_BIT, unsigned long, unsigned long long>;
 #pragma warning(pop)
 
-    // CLASS reference
     class reference { // proxy for an element
         friend bitset<_Bits>;
 

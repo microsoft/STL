@@ -317,7 +317,6 @@ inline constexpr bool _Is_span_compatible_range = conjunction_v<
 #endif // !__cpp_lib_concepts
 
 // [views.span]
-// CLASS TEMPLATE span
 template <class _Ty, size_t _Extent = dynamic_extent>
 class span : private _Span_extent_type<_Ty, _Extent> {
 private:

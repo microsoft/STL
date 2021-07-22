@@ -20,7 +20,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// CLASS TEMPLATE _Iosb
 template <class _Dummy>
 class _Iosb { // define templatized bitmask/enumerated types, instantiate on demand
 public:
@@ -168,7 +167,6 @@ const typename _Iosb<_Dummy>::_Seekdir _Iosb<_Dummy>::cur;
 template <class _Dummy>
 const typename _Iosb<_Dummy>::_Seekdir _Iosb<_Dummy>::end;
 
-// CLASS ios_base
 class _CRTIMP2_PURE_IMPORT ios_base : public _Iosb<int> { // base class for ios
 public:
     using fmtflags = int;
@@ -195,7 +193,6 @@ public:
     using seek_dir  = unsigned int;
 #endif // _HAS_OLD_IOSTREAMS_MEMBERS
 
-    // CLASS failure
     class failure : public system_error { // base of all iostreams exceptions
     public:
         explicit failure(const string& _Message, const error_code& _Errcode = make_error_code(io_errc::stream))
@@ -212,7 +209,6 @@ public:
 #endif // !_HAS_EXCEPTIONS
     };
 
-    // CLASS Init
     class _CRTIMP2_PURE_IMPORT Init { // controller for standard-stream initialization
     public:
         __CLR_OR_THIS_CALL Init() { // initialize standard streams on first construction

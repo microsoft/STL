@@ -66,7 +66,6 @@ struct _Num_base { // base for all types, with common defaults
     static constexpr int radix                     = 0;
 };
 
-// CLASS TEMPLATE numeric_limits
 template <class _Ty>
 class numeric_limits : public _Num_base { // numeric limits for arbitrary type _Ty (say little or nothing)
 public:
@@ -139,7 +138,6 @@ struct _Num_float_base : _Num_base { // base for floating-point types
     static constexpr int radix                     = FLT_RADIX;
 };
 
-// CLASS numeric_limits<bool>
 template <>
 class numeric_limits<bool> : public _Num_int_base {
 public:
@@ -182,7 +180,6 @@ public:
     static constexpr int digits = 1;
 };
 
-// CLASS numeric_limits<char>
 template <>
 class numeric_limits<char> : public _Num_int_base {
 public:
@@ -228,7 +225,6 @@ public:
     static constexpr int digits10   = 2;
 };
 
-// CLASS numeric_limits<signed char>
 template <>
 class numeric_limits<signed char> : public _Num_int_base {
 public:
@@ -273,7 +269,6 @@ public:
     static constexpr int digits10   = 2;
 };
 
-// CLASS numeric_limits<unsigned char>
 template <>
 class numeric_limits<unsigned char> : public _Num_int_base {
 public:
@@ -319,7 +314,6 @@ public:
 };
 
 #ifdef __cpp_char8_t
-// CLASS numeric_limits<char8_t>
 template <>
 class numeric_limits<char8_t> : public _Num_int_base {
 public:
@@ -365,7 +359,6 @@ public:
 };
 #endif // __cpp_char8_t
 
-// CLASS numeric_limits<char16_t>
 template <>
 class numeric_limits<char16_t> : public _Num_int_base {
 public:
@@ -410,7 +403,6 @@ public:
     static constexpr int digits10   = 4;
 };
 
-// CLASS numeric_limits<char32_t>
 template <>
 class numeric_limits<char32_t> : public _Num_int_base {
 public:
@@ -455,7 +447,6 @@ public:
     static constexpr int digits10   = 9;
 };
 
-// CLASS numeric_limits<wchar_t>
 template <>
 class numeric_limits<wchar_t> : public _Num_int_base {
 public:
@@ -500,7 +491,6 @@ public:
     static constexpr int digits10   = 4;
 };
 
-// CLASS numeric_limits<short>
 template <>
 class numeric_limits<short> : public _Num_int_base {
 public:
@@ -545,7 +535,6 @@ public:
     static constexpr int digits10   = 4;
 };
 
-// CLASS numeric_limits<int>
 template <>
 class numeric_limits<int> : public _Num_int_base {
 public:
@@ -590,7 +579,6 @@ public:
     static constexpr int digits10   = 9;
 };
 
-// CLASS numeric_limits<long>
 template <>
 class numeric_limits<long> : public _Num_int_base {
 public:
@@ -636,7 +624,6 @@ public:
     static constexpr int digits10   = 9;
 };
 
-// CLASS numeric_limits<long long>
 template <>
 class numeric_limits<long long> : public _Num_int_base {
 public:
@@ -682,7 +669,6 @@ public:
 };
 
 #ifdef _NATIVE_WCHAR_T_DEFINED
-// CLASS numeric_limits<unsigned short>
 template <>
 class numeric_limits<unsigned short> : public _Num_int_base {
 public:
@@ -728,7 +714,6 @@ public:
 };
 #endif // _NATIVE_WCHAR_T_DEFINED
 
-// CLASS numeric_limits<unsigned int>
 template <>
 class numeric_limits<unsigned int> : public _Num_int_base {
 public:
@@ -773,7 +758,6 @@ public:
     static constexpr int digits10   = 9;
 };
 
-// CLASS numeric_limits<unsigned long>
 template <>
 class numeric_limits<unsigned long> : public _Num_int_base {
 public:
@@ -819,7 +803,6 @@ public:
     static constexpr int digits10   = 9;
 };
 
-// CLASS numeric_limits<unsigned long long>
 template <>
 class numeric_limits<unsigned long long> : public _Num_int_base {
 public:
@@ -864,7 +847,6 @@ public:
     static constexpr int digits10   = 19;
 };
 
-// CLASS numeric_limits<float>
 template <>
 class numeric_limits<float> : public _Num_float_base {
 public:
@@ -913,7 +895,6 @@ public:
     static constexpr int min_exponent10 = FLT_MIN_10_EXP;
 };
 
-// CLASS numeric_limits<double>
 template <>
 class numeric_limits<double> : public _Num_float_base {
 public:
@@ -962,7 +943,6 @@ public:
     static constexpr int min_exponent10 = DBL_MIN_10_EXP;
 };
 
-// CLASS numeric_limits<long double>
 template <>
 class numeric_limits<long double> : public _Num_float_base {
 public:

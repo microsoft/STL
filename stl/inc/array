@@ -18,7 +18,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// CLASS TEMPLATE _Array_const_iterator
 #if _ITERATOR_DEBUG_LEVEL != 0
 struct _Iterator_base12_compatible { // TRANSITION, for binary compatibility
     _Container_proxy* _Myproxy{};
@@ -327,7 +326,6 @@ struct pointer_traits<_Array_const_iterator<_Ty, _Size>> {
 };
 #endif // _HAS_CXX20
 
-// CLASS TEMPLATE _Array_iterator
 template <class _Ty, size_t _Size>
 class _Array_iterator : public _Array_const_iterator<_Ty, _Size> {
 public:
@@ -433,7 +431,6 @@ struct pointer_traits<_Array_iterator<_Ty, _Size>> {
 };
 #endif // _HAS_CXX20
 
-// CLASS TEMPLATE array
 template <class _Ty, size_t _Size>
 class array { // fixed size array of values
 public:

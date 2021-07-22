@@ -32,7 +32,6 @@ _END_EXTERN_C
 
 _STD_BEGIN
 
-// CLASS TEMPLATE _Basic_syncbuf_impl
 template <class _Elem, class _Traits>
 class _Basic_syncbuf_impl : public basic_streambuf<_Elem, _Traits> {
 public:
@@ -67,7 +66,6 @@ protected:
     bool _Sync_recorded{false};
 };
 
-// CLASS TEMPLATE basic_syncbuf
 template <class _Elem, class _Traits, class _Alloc>
 class basic_syncbuf : public _Basic_syncbuf_impl<_Elem, _Traits> {
 public:
@@ -319,7 +317,6 @@ void swap(basic_syncbuf<_Elem, _Traits, _Alloc>& _Left,
     _Left.swap(_Right);
 }
 
-// CLASS TEMPLATE basic_osyncstream
 template <class _Elem, class _Traits, class _Alloc>
 class basic_osyncstream : public basic_ostream<_Elem, _Traits> {
 public:

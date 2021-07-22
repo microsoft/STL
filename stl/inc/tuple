@@ -189,7 +189,6 @@ struct _Tuple_val { // stores each value in a tuple
     _Ty _Val;
 };
 
-// CLASS TEMPLATE tuple
 struct _Exact_args_t {
     explicit _Exact_args_t() = default;
 }; // tag type to disambiguate construction (from one arg per element)
@@ -796,7 +795,6 @@ _CONSTEXPR20 void swap(tuple<_Types...>& _Left, tuple<_Types...>& _Right) noexce
     return _Left.swap(_Right);
 }
 
-// CLASS _Tuple_element (find element by type)
 template <class _Ty, class _Tuple>
 struct _Tuple_element {}; // backstop _Tuple_element definition
 

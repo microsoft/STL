@@ -674,7 +674,6 @@ namespace filesystem {
         }
     };
 
-    // CLASS path
     template <class _Base_iter>
     class _Path_iterator;
 
@@ -1451,7 +1450,6 @@ namespace filesystem {
         return path(_Convert_range_to_wide(_First, _Last, _Utf8_conversion{}));
     }
 
-    // CLASS TEMPLATE _Path_iterator
     template <class _Base_iter>
     class _Path_iterator { // almost bidirectional iterator for path
     public:
@@ -1790,7 +1788,6 @@ namespace filesystem {
         return iterator(_Text.cend(), this);
     }
 
-    // CLASS filesystem_error
     class filesystem_error : public system_error { // base of all filesystem-error exceptions
     public:
         filesystem_error(const string& _Message, const error_code _Errcode)
@@ -1949,7 +1946,6 @@ namespace filesystem {
 
     _BITMASK_OPS(copy_options)
 
-    // CLASS file_status
     class file_status {
     public:
         // [fs.file_status.cons], constructors and destructor
@@ -2130,7 +2126,6 @@ namespace filesystem {
     using file_time_type = _CHRONO time_point<filesystem::_File_time_clock>;
 #endif // ^^^ !_HAS_CXX20
 
-    // CLASS directory_entry
     class directory_entry {
     public:
         // [fs.dir.entry.cons], constructors and destructor
@@ -2656,7 +2651,6 @@ namespace filesystem {
         directory_entry _Entry;
     };
 
-    // CLASS directory_iterator
     class directory_iterator {
     public:
         using iterator_category = input_iterator_tag;
@@ -2875,7 +2869,6 @@ namespace filesystem {
             : _Dir_enum_impl(_STD move(_Create_data)), _Options(_Options_arg) {}
     };
 
-    // CLASS recursive_directory_iterator
     class recursive_directory_iterator {
     public:
         using iterator_category = input_iterator_tag;

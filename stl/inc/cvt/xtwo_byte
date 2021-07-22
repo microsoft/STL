@@ -23,7 +23,6 @@ namespace stdext {
 
         using _Statype = _CSTD mbstate_t;
 
-        // CLASS TEMPLATE _Cvt_two_byte
         template <class _Elem, class _Table, unsigned long _Maxcode = 0xffff>
         class _Cvt_two_byte
             : public _STD

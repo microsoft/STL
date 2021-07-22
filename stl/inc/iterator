@@ -19,7 +19,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// CLASS TEMPLATE back_insert_iterator
 template <class _Container>
 class back_insert_iterator { // wrap pushes to back of container as output iterator
 public:
@@ -72,7 +71,6 @@ _NODISCARD _CONSTEXPR20 back_insert_iterator<_Container> back_inserter(_Containe
     return back_insert_iterator<_Container>(_Cont);
 }
 
-// CLASS TEMPLATE front_insert_iterator
 template <class _Container>
 class front_insert_iterator { // wrap pushes to front of container as output iterator
 public:
@@ -124,7 +122,6 @@ _NODISCARD _CONSTEXPR20 front_insert_iterator<_Container> front_inserter(_Contai
     return front_insert_iterator<_Container>(_Cont);
 }
 
-// CLASS TEMPLATE insert_iterator
 template <class _Container>
 class insert_iterator { // wrap inserts into container as output iterator
 public:
@@ -182,7 +179,6 @@ _NODISCARD _CONSTEXPR20 insert_iterator<_Container> inserter(_Container& _Cont, 
 }
 
 #ifdef __cpp_lib_concepts
-// CLASS TEMPLATE move_sentinel
 template <semiregular _Se>
 class move_sentinel {
 public:
@@ -220,7 +216,6 @@ private:
 };
 #endif // __cpp_lib_concepts
 
-// CLASS TEMPLATE istream_iterator
 template <class _Ty, class _Elem = char, class _Traits = char_traits<_Elem>, class _Diff = ptrdiff_t>
 class istream_iterator {
 public:
@@ -305,7 +300,6 @@ _NODISCARD bool operator!=(const istream_iterator<_Ty, _Elem, _Traits, _Diff>& _
 }
 #endif // !_HAS_CXX20
 
-// CLASS TEMPLATE ostream_iterator
 template <class _Ty, class _Elem = char, class _Traits = char_traits<_Elem>>
 class ostream_iterator {
 public:
@@ -351,7 +345,6 @@ private:
     ostream_type* _Myostr; // pointer to output stream
 };
 
-// CLASS TEMPLATE istreambuf_iterator
 template <class _Elem, class _Traits>
 class istreambuf_iterator {
 public:
@@ -489,7 +482,6 @@ _NODISCARD bool operator!=(
 }
 #endif // !_HAS_CXX20
 
-// CLASS TEMPLATE ostreambuf_iterator
 template <class _Elem, class _Traits>
 class ostreambuf_iterator {
 public:
@@ -541,7 +533,6 @@ private:
 };
 
 #ifdef __cpp_lib_concepts
-// CLASS TEMPLATE common_iterator
 enum class _Variantish_state : unsigned char { _Nothing, _Holds_iter, _Holds_sentinel };
 
 struct _Common_iterator_construct_tag {
@@ -1039,7 +1030,6 @@ struct iterator_traits<common_iterator<_Iter, _Se>> {
     using reference       = iter_reference_t<_Iter>;
 };
 
-// CLASS TEMPLATE counted_iterator
 template <class _Iter>
 struct _Counted_iterator_value_type_base {};
 
@@ -1372,7 +1362,6 @@ _STDEXT_BEGIN
 using _STD iterator_traits;
 using _STD size_t;
 
-// CLASS TEMPLATE checked_array_iterator
 template <class _Ptr>
 class checked_array_iterator { // wrap a pointer with checking
     static_assert(_STD is_pointer_v<_Ptr>, "checked_array_iterator requires pointers");
@@ -1575,7 +1564,6 @@ _NODISCARD constexpr checked_array_iterator<_Ptr> make_checked_array_iterator(
     return checked_array_iterator<_Ptr>(_Array, _Size, _Index);
 }
 
-// CLASS TEMPLATE unchecked_array_iterator
 template <class _Ptr>
 class unchecked_array_iterator { // wrap a pointer without checking, to silence warnings
     static_assert(_STD is_pointer_v<_Ptr>, "unchecked_array_iterator requires pointers");

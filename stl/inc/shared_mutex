@@ -27,7 +27,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// CLASS shared_mutex
 class shared_mutex { // class for mutual exclusion shared across threads
 public:
     using native_handle_type = _Smtx_t*;
@@ -74,7 +73,6 @@ private:
 
 // shared_timed_mutex is not supported under /clr
 #ifndef _M_CEE
-// CLASS shared_timed_mutex
 class shared_timed_mutex { // class for mutual exclusion shared across threads
     using _Read_cnt_t = unsigned int;
 
@@ -231,7 +229,6 @@ private:
 };
 #endif // _M_CEE
 
-// CLASS TEMPLATE shared_lock
 template <class _Mutex>
 class shared_lock { // shareable lock
 public:

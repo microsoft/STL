@@ -22,7 +22,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// CLASS TEMPLATE _List_unchecked_const_iterator
 template <class _Mylist, class _Base = _Iterator_base0>
 class _List_unchecked_const_iterator : public _Base {
 public:
@@ -83,7 +82,6 @@ public:
     _Nodeptr _Ptr; // pointer to node
 };
 
-// CLASS TEMPLATE _List_unchecked_iterator
 template <class _Mylist>
 class _List_unchecked_iterator : public _List_unchecked_const_iterator<_Mylist> {
 public:
@@ -129,7 +127,6 @@ public:
     }
 };
 
-// CLASS TEMPLATE _List_const_iterator
 template <class _Mylist>
 class _List_const_iterator : public _List_unchecked_const_iterator<_Mylist, _Iterator_base> {
 public:
@@ -224,7 +221,6 @@ public:
     }
 };
 
-// CLASS TEMPLATE _List_iterator
 template <class _Mylist>
 class _List_iterator : public _List_const_iterator<_Mylist> {
 public:
@@ -341,7 +337,6 @@ struct _List_simple_types : _Simple_types<_Ty> {
     using _Nodeptr = _Node*;
 };
 
-// CLASS TEMPLATE _List_val
 template <class _Val_types>
 class _List_val : public _Container_base {
 public:
@@ -758,7 +753,6 @@ private:
 template <class _Traits>
 class _Hash;
 
-// CLASS TEMPLATE list
 template <class _Ty, class _Alloc = allocator<_Ty>>
 class list { // bidirectional linked list
 private:

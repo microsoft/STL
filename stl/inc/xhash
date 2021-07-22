@@ -56,7 +56,6 @@ namespace stdext {
         return _STD _Hash_array_representation(_Str, _CSTD wcslen(_Str));
     }
 
-    // CLASS TEMPLATE hash_compare
     template <class _Kty, class _Pr = less<_Kty>>
     class hash_compare { // traits class for hash containers
     public:
@@ -113,7 +112,6 @@ template <class _Hasher, class _Kty>
 _INLINE_VAR constexpr bool _Nothrow_hash = noexcept(
     static_cast<size_t>(_STD declval<const _Hasher&>()(_STD declval<const _Kty&>())));
 
-// CLASS TEMPLATE _Uhash_compare
 template <class _Kty, class _Hasher, class _Keyeq>
 class _Uhash_compare
     : public _Uhash_choose_transparency<_Kty, _Hasher, _Keyeq> { // traits class for unordered containers
@@ -167,7 +165,6 @@ public:
     _Compressed_pair<_Hasher, _Compressed_pair<_Keyeq, float>> _Mypair;
 };
 
-// CLASS TEMPLATE _Reinterpret_move_iter
 template <class _Iter, class _Val>
 struct _Reinterpret_move_iter {
     _Iter _Base;
@@ -320,7 +317,6 @@ struct _Hash_vec {
     _Compressed_pair<_Aliter, _Aliter_scary_val> _Mypair;
 };
 
-// CLASS TEMPLATE _Hash
 template <class _Traits>
 class _Hash { // hash table -- list with vector of iterators for quick access
 protected:

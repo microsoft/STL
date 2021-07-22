@@ -103,7 +103,6 @@ _NODISCARD inline error_condition make_error_condition(future_errc _Errno) noexc
     return error_condition(static_cast<int>(_Errno), _STD future_category());
 }
 
-// CLASS future_error
 inline const char* _Future_error_map(int _Errcode) noexcept { // convert to name of future error
     switch (static_cast<future_errc>(_Errcode)) { // switch on error code value
     case future_errc::broken_promise:
@@ -193,7 +192,6 @@ struct _State_deleter : _Deleter_base<_Ty> { // manage allocator and deletion st
     _Alloc _My_alloc;
 };
 
-// CLASS TEMPLATE _Associated_state
 template <class _Ty>
 class _Associated_state { // class for managing associated synchronous state
 public:
@@ -451,7 +449,6 @@ void _State_deleter<_Ty, _Derived, _Alloc>::_Delete(
     _Delete_plain_internal(_Del_alloc, this);
 }
 
-// CLASS TEMPLATE _Packaged_state
 template <class>
 class _Packaged_state;
 
@@ -648,7 +645,6 @@ _Pack_state* _Make_packaged_state(_Fty2&& _Fnarg, const _Alloc& _Al) {
 }
 #endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
 
-// CLASS TEMPLATE _Deferred_async_state
 template <class _Rx>
 class _Deferred_async_state : public _Packaged_state<_Rx()> {
     // class for managing associated synchronous state for deferred execution from async
@@ -672,7 +668,6 @@ private:
     }
 };
 
-// CLASS TEMPLATE _Task_async_state
 template <class _Rx>
 class _Task_async_state : public _Packaged_state<_Rx()> {
     // class for managing associated synchronous state for asynchronous execution from async
@@ -707,7 +702,6 @@ private:
     ::Concurrency::task<void> _Task;
 };
 
-// CLASS TEMPLATE _State_manager
 template <class _Ty>
 class _State_manager {
     // class for managing possibly non-existent associated asynchronous state object
@@ -867,7 +861,6 @@ private:
     bool _Get_only_once;
 };
 
-// CLASS TEMPLATE future
 template <class _Ty>
 class shared_future;
 
@@ -971,7 +964,6 @@ public:
     future& operator=(const future&) = delete;
 };
 
-// CLASS TEMPLATE shared_future
 template <class _Ty>
 class shared_future : public _State_manager<_Ty> {
     // class that defines a copyable asynchronous return object that holds a value
@@ -1075,7 +1067,6 @@ _NODISCARD inline shared_future<void> future<void>::share() noexcept {
     return shared_future<void>(_STD move(*this));
 }
 
-// CLASS TEMPLATE _Promise
 template <class _Ty>
 class _Promise {
 public:
@@ -1144,7 +1135,6 @@ private:
     bool _Future_retrieved;
 };
 
-// CLASS TEMPLATE promise
 template <class _Ty>
 class promise { // class that defines an asynchronous provider that holds a value
 public:
@@ -1326,7 +1316,6 @@ void swap(promise<_Ty>& _Left, promise<_Ty>& _Right) noexcept {
     _Left.swap(_Right);
 }
 
-// CLASS TEMPLATE packaged_task
 template <class _Fret>
 struct _P_arg_type { // type for functions returning T
     using type = _Fret;

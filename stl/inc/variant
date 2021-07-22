@@ -419,7 +419,6 @@ struct variant_alternative<_Idx, variant<_Types...>> {
 
 inline constexpr size_t variant_npos = _Meta_npos;
 
-// CLASS bad_variant_access [variant.bad.access]
 class bad_variant_access
     : public exception { // exception for visit of a valueless variant or get<I> on a variant with index() != I
 public:
@@ -956,7 +955,6 @@ template <class... _Types>
 using _Variant_destroy_layer = conditional_t<conjunction_v<is_trivially_destructible<_Types>...>,
     _Variant_base<_Types...>, _Variant_destroy_layer_<_Types...>>;
 
-// CLASS TEMPLATE variant
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-volatile"

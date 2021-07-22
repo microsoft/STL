@@ -25,7 +25,6 @@ struct messages_base : locale::facet { // base class for messages
     explicit messages_base(size_t _Refs = 0) : locale::facet(_Refs) {}
 };
 
-// CLASS TEMPLATE messages
 template <class _Elem>
 class messages : public messages_base { // facet for obtaining messages from a catalog
 public:
@@ -105,7 +104,6 @@ __PURE_APPDOMAIN_GLOBAL locale::id messages<_Elem>::id;
 #pragma clang diagnostic pop
 #endif // __clang__
 
-// CLASS TEMPLATE messages_byname
 template <class _Elem>
 class messages_byname : public messages<_Elem> { // messages for named locale
 public:

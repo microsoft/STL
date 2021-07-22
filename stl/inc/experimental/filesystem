@@ -127,7 +127,6 @@ enum class perms { // names for permissions
 
 _BITMASK_OPS(perms)
 
-// CLASS file_status
 class file_status { // stores file status
 public:
     explicit file_status(file_type _Ftype = file_type::none, perms _Prms = perms::unknown) noexcept
@@ -571,8 +570,6 @@ path system_complete(const path&, error_code&);
 path temp_directory_path();
 path temp_directory_path(error_code&);
 
-// CLASS TEMPLATE _Path_iterator
-template <class _Path_type>
 class _Path_iterator {
 public:
     using path_type   = _Path_type;
@@ -731,7 +728,6 @@ private:
     size_t _Myoff; // current offset in full path
 };
 
-// CLASS path AND FRIENDS
 class path { // stores a pathname
 public:
     using value_type  = _Pchar;
@@ -1323,7 +1319,6 @@ _NODISCARD path u8path(const basic_string<char, _Traits, _Alloc>& _Str) { // mak
     return path(_Path_cvt<_Char8_t, _Pchar>::_Cvt(_Str_out, _Str.c_str(), _Str.size()));
 }
 
-// CLASS filesystem_error AND FRIENDS
 class filesystem_error : public system_error { // base of all filesystem-error exceptions
 public:
     explicit filesystem_error(
@@ -1376,7 +1371,6 @@ protected:
     _THROW(filesystem_error{_Message}); // centralize construction of temporary string
 }
 
-// CLASS directory_entry AND FRIENDS
 class directory_entry { // represents a directory entry
 public:
     using string_type = _FSPFX path::string_type;
@@ -1625,7 +1619,6 @@ _NODISCARD inline directory_iterator end(const directory_iterator&) noexcept {
     return {};
 }
 
-// CLASS recursive_directory_iterator
 class recursive_directory_iterator {
 public:
     using _Myiter     = _Directory_iterator<false_type>;

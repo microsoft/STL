@@ -18,7 +18,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// CLASS TEMPLATE initializer_list
 template <class _Elem>
 class initializer_list {
 public:

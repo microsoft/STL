@@ -37,7 +37,6 @@ struct nullopt_t { // no-value state indicator
 };
 inline constexpr nullopt_t nullopt{nullopt_t::_Tag{}};
 
-// CLASS bad_optional_access [optional.bad_optional_access]
 class bad_optional_access : public exception {
 public:
     _NODISCARD virtual const char* __CLR_OR_THIS_CALL what() const noexcept override {
@@ -152,7 +151,6 @@ struct _Optional_construct_base : _Optional_destruct_base<_Ty> {
     }
 };
 
-// CLASS TEMPLATE optional [optional.object]
 template <class _Ty>
 class optional : private _SMF_control<_Optional_construct_base<_Ty>, _Ty> {
 private:

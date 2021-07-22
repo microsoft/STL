@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// class locale basic member functions
 
 #include <crtdbg.h>
 #include <internal_shared.h>

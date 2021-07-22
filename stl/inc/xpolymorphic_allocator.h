@@ -138,7 +138,6 @@ void _Uses_allocator_construct(
 
 #if _HAS_CXX17
 namespace pmr {
-    // CLASS memory_resource
     class __declspec(novtable) memory_resource {
     public:
         virtual ~memory_resource() noexcept = default;
@@ -188,7 +187,6 @@ namespace pmr {
 #endif // __cpp_aligned_new
     }
 
-    // CLASS TEMPLATE polymorphic_allocator
 #if _HAS_CXX20 && defined(__cpp_lib_byte)
     template <class _Ty = byte>
 #else

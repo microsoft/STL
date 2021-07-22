@@ -62,7 +62,6 @@ _NODISCARD error_code make_error_code(io_errc) noexcept;
 _NODISCARD error_condition make_error_condition(errc) noexcept;
 _NODISCARD error_condition make_error_condition(io_errc) noexcept;
 
-// CLASS error_category
 class error_category;
 
 _NODISCARD const error_category& generic_category() noexcept;
@@ -131,7 +130,6 @@ protected:
 _NODISCARD inline bool _System_error_equal(const error_code&, const error_condition&) noexcept;
 #endif // _STL_OPTIMIZE_SYSTEM_ERROR_OPERATORS
 
-// CLASS error_code
 class error_code { // store an implementation-specific error code and category
 public:
     error_code() noexcept : _Myval(0), _Mycat(&_STD system_category()) {} // construct non-error
@@ -224,7 +222,6 @@ private:
     const error_category* _Mycat; // pointer to error category
 };
 
-// CLASS error_condition
 class error_condition { // store an abstract error code and category
 public:
     error_condition() noexcept : _Myval(0), _Mycat(&_STD generic_category()) {} // construct non-error
@@ -436,7 +433,6 @@ struct hash<error_condition> {
     }
 };
 
-// CLASS system_error
 class _System_error : public runtime_error { // base of all system-error exceptions
 private:
     static string _Makestr(error_code _Errcode, string _Message) { // compose error message

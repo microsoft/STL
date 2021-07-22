@@ -22,7 +22,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// CLASS TEMPLATE _Flist_unchecked_const_iterator
 template <class _Mylist, class _Base = _Iterator_base0>
 class _Flist_unchecked_const_iterator : public _Base {
 public:
@@ -82,7 +81,6 @@ public:
     _Nodeptr _Ptr; // pointer to node
 };
 
-// CLASS TEMPLATE _Flist_unchecked_iterator
 template <class _Mylist>
 class _Flist_unchecked_iterator : public _Flist_unchecked_const_iterator<_Mylist> {
 public:
@@ -117,7 +115,6 @@ public:
     }
 };
 
-// CLASS TEMPLATE _Flist_const_iterator
 template <class _Mylist>
 class _Flist_const_iterator : public _Flist_unchecked_const_iterator<_Mylist, _Iterator_base> {
 public:
@@ -189,7 +186,6 @@ public:
     }
 };
 
-// CLASS TEMPLATE _Flist_iterator
 template <class _Mylist>
 class _Flist_iterator : public _Flist_const_iterator<_Mylist> {
 public:
@@ -266,7 +262,6 @@ struct _Flist_simple_types : _Simple_types<_Ty> {
     using _Nodeptr = _Node*;
 };
 
-// CLASS TEMPLATE _Flist_val
 template <class _Val_types>
 class _Flist_val : public _Container_base {
 public:
@@ -512,7 +507,6 @@ private:
     pointer _Head; // Points at the first constructed node.
 };
 
-// CLASS TEMPLATE forward_list
 template <class _Ty, class _Alloc = allocator<_Ty>>
 class forward_list { // singly linked list
 private:

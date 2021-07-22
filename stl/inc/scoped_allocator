@@ -49,7 +49,6 @@ using _Scoped_outermost_t = remove_reference_t<decltype(_Scoped_outermost(_STD d
 template <class _Alloc>
 using _Scoped_outermost_traits = allocator_traits<_Scoped_outermost_t<_Alloc>>;
 
-// CLASS TEMPLATE _Scoped_base
 template <class _Outer, class... _Inner>
 class scoped_allocator_adaptor;
 
@@ -125,7 +124,6 @@ struct _Scoped_base<_Outer> : _Outer { // nest of allocators, one deep
     }
 };
 
-// CLASS TEMPLATE scoped_allocator_adaptor
 template <class _Outer, class... _Inner>
 class scoped_allocator_adaptor : public _Scoped_base<_Outer, _Inner...> { // nest of allocators
     using _Mybase       = _Scoped_base<_Outer, _Inner...>;

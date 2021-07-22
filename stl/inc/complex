@@ -363,7 +363,6 @@ class complex<double>;
 template <>
 class complex<long double>;
 
-// CLASS TEMPLATE _Ctraits
 template <class _Ty>
 class _Ctraits {
 public:
@@ -499,7 +498,6 @@ public:
     }
 };
 
-// CLASS _Ctraits<long double>
 template <>
 class _Ctraits<long double> {
 public:
@@ -643,7 +641,6 @@ public:
     }
 };
 
-// CLASS _Ctraits<double>
 template <>
 class _Ctraits<double> {
 public:
@@ -782,7 +779,6 @@ public:
     }
 };
 
-// CLASS _Ctraits<float>
 template <>
 class _Ctraits<float> {
 public:
@@ -925,7 +921,6 @@ struct _Complex_value {
     _Ty _Val[2];
 };
 
-// CLASS TEMPLATE _Complex_base
 template <class _Ty, class _Valbase>
 class _Complex_base : public _Valbase {
 public:
@@ -1015,7 +1010,6 @@ protected:
     }
 };
 
-// CLASS complex<float>
 template <>
 class complex<float> : public _Complex_base<float, _Fcomplex_value> {
 public:
@@ -1107,7 +1101,6 @@ public:
     }
 };
 
-// CLASS complex<double>
 template <>
 class complex<double> : public _Complex_base<double, _Dcomplex_value> {
 public:
@@ -1199,7 +1192,6 @@ public:
     }
 };
 
-// CLASS complex<long double>
 template <>
 class complex<long double> : public _Complex_base<long double, _Lcomplex_value> {
 public:
@@ -1310,7 +1302,6 @@ constexpr complex<long double>::complex(const complex<float>& _Right)
 constexpr complex<long double>::complex(const complex<double>& _Right)
     : _Complex_base<long double, _Lcomplex_value>(_Right.real(), _Right.imag()) {}
 
-// CLASS TEMPLATE complex
 template <class _Ty>
 class complex : public _Complex_base<_Ty, _Complex_value<_Ty>> {
 public:

@@ -117,7 +117,6 @@ _MRTIMP2 _locale_t __cdecl _GetLocaleForCP(unsigned int);
 #endif // _M_CEE_PURE
 
 _STD_BEGIN
-// CLASS _Timevec
 class _CRTIMP2_PURE_IMPORT _Timevec { // smart pointer to information used by _Strftime
 public:
     explicit __CLR_OR_THIS_CALL _Timevec(void* _Ptr = nullptr) : _Timeptr(_Ptr) {}
@@ -148,7 +147,6 @@ private:
     void* _Timeptr; // pointer to time information
 };
 
-// CLASS TEMPLATE _Yarn
 template <class _Elem>
 class _CRTIMP2_PURE_IMPORT _Yarn { // wrap a NTCTS
 public:
@@ -230,7 +228,6 @@ private:
     _Elem _Nul; // nul terminator for unallocated string
 };
 
-// CLASS _Locinfo
 class _CRTIMP2_PURE_IMPORT _Locinfo { // summary of all stuff specific to a locale used by standard facets
 public:
     using _Collvec  = ::_Collvec;

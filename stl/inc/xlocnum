@@ -100,7 +100,6 @@ inline wchar_t* _Maklocwcs(const wchar_t* _Ptr) { // copy NTWCS to allocated sto
     return _Ptrdest;
 }
 
-// CLASS TEMPLATE numpunct
 template <class _Elem>
 class numpunct : public locale::facet { // facet for defining numeric punctuation text
 private:
@@ -236,7 +235,6 @@ private:
     const _Elem* _Truename; // name for true, "true" for "C" locale
 };
 
-// CLASS TEMPLATE numpunct_byname
 template <class _Elem>
 class numpunct_byname : public numpunct<_Elem> { // numpunct for named locale
 public:
@@ -267,7 +265,6 @@ __PURE_APPDOMAIN_GLOBAL locale::id numpunct<_Elem>::id;
 #endif // __clang__
 #endif // !defined(_CRTBLD) || defined(CRTDLL2) || !defined(_DLL) || defined(_M_CEE_PURE)
 
-// CLASS TEMPLATE num_get
 template <class _Elem, class _InIt = istreambuf_iterator<_Elem, char_traits<_Elem>>>
 class num_get : public locale::facet { // facet for converting text to encoded numbers
 public:
@@ -1185,7 +1182,6 @@ int _Float_put_desired_precision(const streamsize _Precision, const ios_base::fm
     }
 }
 
-// CLASS TEMPLATE num_put
 template <class _Elem, class _OutIt = ostreambuf_iterator<_Elem, char_traits<_Elem>>>
 class num_put : public locale::facet { // facet for converting encoded numbers to text
 public:

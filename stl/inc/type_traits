@@ -1901,7 +1901,6 @@ template <class _Ty>
 using _Weak_types = conditional_t<is_function_v<remove_pointer_t<_Ty>>, _Function_args<remove_pointer_t<_Ty>>,
     conditional_t<is_member_function_pointer_v<_Ty>, _Is_memfunptr<remove_cv_t<_Ty>>, _Weak_binary_args<_Ty>>>;
 
-// CLASS TEMPLATE reference_wrapper
 template <class _Ty>
 void _Refwrap_ctor_fun(_Identity_t<_Ty&>) noexcept;
 template <class _Ty>

@@ -148,7 +148,6 @@ private:
     basic_istream<_Elem, _Traits>& _Str;
 };
 
-// CLASS seed_seq
 class seed_seq { // standard sequence of seed values
 public:
     using result_type = unsigned int;
@@ -272,7 +271,6 @@ _NODISCARD _Real generate_canonical(_Gen& _Gx) { // build a floating-point value
 
 #define _NRAND(eng, resty) (_STD generate_canonical<resty, static_cast<size_t>(-1)>(eng))
 
-// CLASS TEMPLATE linear_congruential_engine
 _INLINE_VAR constexpr int _MP_len = 5;
 using _MP_arr                     = uint64_t[_MP_len];
 
@@ -462,7 +460,6 @@ private:
     result_type _Prev;
 };
 
-// CLASS TEMPLATE linear_congruential
 template <class _Uint, _Uint _Ax, _Uint _Cx, _Uint _Mx>
 class linear_congruential { // linear congruential random engine
 public:
@@ -555,7 +552,6 @@ private:
     _Uint _Prev;
 };
 
-// CLASS TEMPLATE _Circ_buf FOR subtract_with_carry, subtract_with_carry_01, AND mersenne_twister
 template <class _Ty, size_t _Nw>
 struct _Circ_buf { // holds historical values for generators
     _Ty _At(size_t _Ix) const {
@@ -612,7 +608,6 @@ struct _Circ_buf { // holds historical values for generators
     _Ty _Ax[2 * _Nw];
 };
 
-// CLASS TEMPLATE _Swc_base (subtract_with_carry, subtract_with_carry_01)
 template <class _Ty, size_t _Sx, size_t _Rx, class _Swc_Traits>
 class _Swc_base : public _Circ_buf<_Ty, _Rx> { // common bits of subtract_with_carry/_01
 public:
@@ -838,7 +833,6 @@ struct _Swc_traits { // traits for subtract_with_carry generator
     }
 };
 
-// CLASS TEMPLATE subtract_with_carry
 template <class _Ty, _Ty _Mx, size_t _Sx, size_t _Rx>
 class subtract_with_carry
     : public _Swc_base<_Ty, _Sx, _Rx, _Swc_traits<_Ty, _Mx, _Rx>> { // subtract_with_carry generator
@@ -857,7 +851,6 @@ public:
     subtract_with_carry(_Gen& _Gx) : _Mybase(_Gx) {}
 };
 
-// CLASS TEMPLATE subtract_with_carry_engine
 template <class _Ty, size_t _Wx, size_t _Sx, size_t _Rx>
 class subtract_with_carry_engine : public subtract_with_carry<_Ty, (_Ty{1} << (_Wx - 1)) << 1, _Sx, _Rx> {
     // subtract_with_carry generator
@@ -997,7 +990,6 @@ const _Ty _Swc_01_traits<_Ty, _Wx, _Rx>::_Max = 1;
 template <class _Ty, size_t _Wx, size_t _Rx>
 const _Ty _Swc_01_traits<_Ty, _Wx, _Rx>::_Scale1 = static_cast<_Ty>(_CSTD ldexp(1.0, _Wx % 32));
 
-// CLASS TEMPLATE subtract_with_carry_01
 template <class _Ty, size_t _Wx, size_t _Sx, size_t _Rx>
 class _DEPRECATE_TR1_NAMESPACE subtract_with_carry_01
     : public _Swc_base<_Ty, _Sx, _Rx, _Swc_01_traits<_Ty, _Wx, _Rx>> { // subtract_with_carry_01 generator
@@ -1021,7 +1013,6 @@ _STL_RESTORE_DEPRECATED_WARNING
 
 #endif // _HAS_TR1_NAMESPACE
 
-// CLASS TEMPLATE mersenne_twister
 template <class _Ty, int _Wx, int _Nx, int _Mx, int _Rx, _Ty _Px, int _Ux, int _Sx, _Ty _Bx, int _Tx, _Ty _Cx, int _Lx>
 class mersenne_twister : public _Circ_buf<_Ty, _Nx> { // mersenne twister generator
 public:
@@ -1201,7 +1192,6 @@ basic_ostream<_Elem, _S_Traits>& operator<<(basic_ostream<_Elem, _S_Traits>& _Os
     return _Eng._Write(_Ostr);
 }
 
-// CLASS TEMPLATE mersenne_twister_engine
 template <class _Ty, size_t _Wx, size_t _Nx, size_t _Mx, size_t _Rx, _Ty _Px, size_t _Ux, _Ty _Dx, size_t _Sx, _Ty _Bx,
     size_t _Tx, _Ty _Cx, size_t _Lx, _Ty _Fx>
 class mersenne_twister_engine : public mersenne_twister<_Ty, _Wx, _Nx, _Mx, _Rx, _Px, _Ux, _Sx, _Bx, _Tx, _Cx, _Lx> {
@@ -1286,7 +1276,6 @@ public:
     }
 };
 
-// CLASS TEMPLATE discard_block
 template <class _Engine, int _Px, int _Rx>
 class discard_block { // discard_block compound engine
 public:
@@ -1400,7 +1389,6 @@ basic_ostream<_Elem, _Traits>& operator<<(
     return _Eng._Write(_Ostr);
 }
 
-// CLASS TEMPLATE discard_block_engine
 template <class _Engine, size_t _Px, size_t _Rx>
 class discard_block_engine : public discard_block<_Engine, _Px, _Rx> { // discard_block_engine compound engine
 public:
@@ -1429,7 +1417,6 @@ public:
     }
 };
 
-// CLASS TEMPLATE independent_bits_engine
 template <class _Engine, size_t _Wx, class _UIntType>
 class independent_bits_engine { // independent_bits_engine compound engine
 public:
@@ -1593,7 +1580,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Eng._Write(_Ostr);
 }
 
-// CLASS TEMPLATE shuffle_order_engine
 template <class _Engine, size_t _Kx>
 class shuffle_order_engine { // shuffle_order_engine compound engine
 public:
@@ -1728,7 +1714,6 @@ basic_ostream<_Elem, _Traits>& operator<<(
     return _Eng._Write(_Ostr);
 }
 
-// CLASS TEMPLATE uniform_int
 template <class _Ty = int>
 class uniform_int { // uniform integer distribution
 public:
@@ -1882,7 +1867,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
-// CLASS TEMPLATE uniform_int_distribution
 template <class _Ty = int>
 class uniform_int_distribution : public uniform_int<_Ty> { // uniform integer distribution
 public:
@@ -1920,7 +1904,6 @@ _NODISCARD bool operator!=(const uniform_int_distribution<_Ty>& _Left, const uni
     return !(_Left == _Right);
 }
 
-// CLASS bernoulli_distribution
 class bernoulli_distribution { // class for bernoulli distribution
 public:
     using result_type = bool;
@@ -2077,7 +2060,6 @@ _NODISCARD _Flt _Float_upper_bound(_Ty _Val) {
     }
 }
 
-// CLASS TEMPLATE geometric_distribution
 template <class _Ty = int>
 class geometric_distribution { // geometric distribution
 public:
@@ -2211,7 +2193,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
-// CLASS TEMPLATE poisson_distribution AND HELPER
 template <class _Ty = int>
 class _Small_poisson_distribution { // poisson distribution with small mean
 public:
@@ -2394,7 +2375,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
-// CLASS TEMPLATE binomial_distribution
 template <class _Ty = int>
 class binomial_distribution { // binomial distribution
 public:
@@ -2601,7 +2581,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
-// CLASS TEMPLATE uniform_real
 template <class _Ty = double>
 class uniform_real { // uniform real distribution
 public:
@@ -2725,7 +2704,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
-// CLASS TEMPLATE uniform_real_distribution
 template <class _Ty = double>
 class uniform_real_distribution : public uniform_real<_Ty> { // uniform real distribution
 public:
@@ -2762,7 +2740,6 @@ _NODISCARD bool operator!=(const uniform_real_distribution<_Ty>& _Left, const un
     return !(_Left == _Right);
 }
 
-// CLASS TEMPLATE exponential_distribution
 template <class _Ty = double>
 class exponential_distribution { // exponential distribution
 public:
@@ -2884,7 +2861,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
-// CLASS TEMPLATE normal_distribution
 template <class _Ty = double>
 class normal_distribution { // normal distribution
 public:
@@ -3081,7 +3057,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
-// CLASS TEMPLATE gamma_distribution
 template <class _Ty = double>
 class gamma_distribution { // gamma distribution
 public:
@@ -3277,7 +3252,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
-// CLASS TEMPLATE weibull_distribution
 template <class _Ty = double>
 class weibull_distribution { // weibull distribution
 public:
@@ -3414,7 +3388,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
-// CLASS TEMPLATE extreme_value_distribution
 template <class _Ty = double>
 class extreme_value_distribution { // extreme value distribution
 public:
@@ -3552,7 +3525,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
-// CLASS TEMPLATE lognormal_distribution
 template <class _Ty = double>
 class lognormal_distribution { // lognormal_distribution
 public:
@@ -3688,7 +3660,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
-// CLASS TEMPLATE chi_squared_distribution
 template <class _Ty = double>
 class chi_squared_distribution { // chi squared distribution
 public:
@@ -3810,7 +3781,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
-// CLASS TEMPLATE cauchy_distribution
 template <class _Ty = double>
 class cauchy_distribution { // Cauchy distribution
 public:
@@ -3946,7 +3916,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
-// CLASS TEMPLATE _Beta_distribution
 template <class _Ty = double>
 class _Beta_distribution { // beta distribution
 public:
@@ -4006,7 +3975,6 @@ private:
     _Ty _Bx;
 };
 
-// CLASS TEMPLATE fisher_f_distribution
 template <class _Ty = double>
 class fisher_f_distribution { // fisher_f distribution
 public:
@@ -4154,7 +4122,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
-// CLASS TEMPLATE student_t_distribution
 template <class _Ty = double>
 class student_t_distribution { // student_t distribution
 public:
@@ -4291,7 +4258,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
-// CLASS TEMPLATE negative_binomial_distribution
 template <class _Ty = int>
 class negative_binomial_distribution { // negative binomial distribution
 public:
@@ -4437,7 +4403,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
-// CLASS TEMPLATE discrete_distribution
 template <class _Ty = int>
 class discrete_distribution { // discrete integer distribution
 public:
@@ -4634,7 +4599,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr, _Dist._Par);
 }
 
-// CLASS TEMPLATE piecewise_constant_distribution
 template <class _Ty = double>
 class piecewise_constant_distribution
     : public discrete_distribution<size_t> { // piecewise constant floating-point distribution
@@ -4827,7 +4791,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
-// CLASS TEMPLATE piecewise_linear_distribution
 template <class _Ty = double>
 class piecewise_linear_distribution
     : public discrete_distribution<size_t> { // piecewise linear floating-point distribution
@@ -5107,7 +5070,6 @@ using knuth_b       = shuffle_order_engine<minstd_rand0, 256>;
 
 using default_random_engine = mt19937;
 
-// CLASS random_device
 
 _CRTIMP2_PURE unsigned int __CLRCALL_PURE_OR_CDECL _Random_device();
 

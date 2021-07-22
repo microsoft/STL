@@ -1635,7 +1635,6 @@ _NODISCARD _CONSTEXPR17 _BidIt prev(_BidIt _First, _Iter_diff_t<_BidIt> _Off = 1
     return _First;
 }
 
-// CLASS TEMPLATE reverse_iterator
 template <class _BidIt>
 class reverse_iterator {
 public:
@@ -2894,7 +2893,6 @@ namespace ranges {
     };
     // clang-format on
 
-    // CLASS ranges::_Not_quite_object
     class _Not_quite_object {
     public:
         // Some overload sets in the library have the property that their constituent function templates are not visible
@@ -3206,8 +3204,7 @@ namespace ranges {
     concept common_range = range<_Rng>
         && same_as<iterator_t<_Rng>, sentinel_t<_Rng>>;
 
-    // CLASS TEMPLATE ranges::view_interface
-    template <class _Ty>
+        template <class _Ty>
     concept _Can_empty = requires(_Ty __t) { _RANGES empty(__t); };
 
     template <class _Derived>
@@ -3430,8 +3427,7 @@ _NODISCARD constexpr const tuple_element_t<_Index, tuple<_Types...>>&& get(const
 
 namespace ranges {
     // clang-format off
-    // CLASS TEMPLATE ranges::subrange
-    template <class _From, class _To>
+        template <class _From, class _To>
     concept _Convertible_to_non_slicing = convertible_to<_From, _To>
         && !(is_pointer_v<decay_t<_From>>
             && is_pointer_v<decay_t<_To>>
@@ -3723,7 +3719,6 @@ struct _Iterator_base12;
 // STRUCT _Default_sentinel
 struct _Default_sentinel {}; // empty struct to serve as the end of a range
 
-// CLASS TEMPLATE move_iterator
 #ifdef __cpp_lib_concepts
 template <semiregular>
 class move_sentinel;
@@ -5835,7 +5830,6 @@ _CONSTEXPR20 _Ty* _Swap_ranges_unchecked(_Ty* _First1, _Ty* const _Last1, _Ty* _
 }
 #endif // _USE_STD_VECTOR_ALGORITHMS
 
-// CLASS TEMPLATE _Rng_from_urng
 template <class _Diff, class _Urng>
 class _Rng_from_urng { // wrap a URNG as an RNG
 public:
@@ -6010,7 +6004,6 @@ struct _Nontrivial_dummy_type {
 _STL_INTERNAL_STATIC_ASSERT(!is_trivially_default_constructible_v<_Nontrivial_dummy_type>);
 
 #if _HAS_CXX17
-// CLASS monostate [variant.monostate]
 struct monostate {};
 #endif // _HAS_CXX17
 

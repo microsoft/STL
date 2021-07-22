@@ -29,7 +29,6 @@ namespace stdext {
 
 #define _ESC_CODE 0x1b
 
-        // CLASS TEMPLATE codecvt_jis
         template <class _Elem, unsigned long _Maxcode = 0xffff>
         class codecvt_jis
             : public _STD

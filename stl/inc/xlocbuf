@@ -19,7 +19,6 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 _STL_DISABLE_DEPRECATED_WARNING
-// CLASS TEMPLATE wbuffer_convert
 template <class _Codecvt, class _Elem = wchar_t, class _Traits = char_traits<_Elem>>
 class _CXX17_DEPRECATE_CODECVT_HEADER wbuffer_convert
     : public basic_streambuf<_Elem, _Traits> { // stream buffer associated with a codecvt facet
@@ -297,7 +296,6 @@ private:
     locale _Loc; // manages reference to codecvt facet
 };
 
-// CLASS TEMPLATE wstring_convert
 template <class _Codecvt, class _Elem = wchar_t, class _Walloc = allocator<_Elem>, class _Balloc = allocator<char>>
 class _CXX17_DEPRECATE_CODECVT_HEADER wstring_convert { // converts between _Elem (wide) and char (byte) strings
     enum { _BUF_INC = 8, _BUF_MAX = 16 };

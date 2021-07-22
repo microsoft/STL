@@ -55,7 +55,6 @@ __PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT wostream* _Ptr_wcout;
 __PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT wostream* _Ptr_wcerr;
 __PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT wostream* _Ptr_wclog;
 
-// CLASS _Winit
 class _CRTIMP2_PURE_IMPORT _Winit {
 public:
     __thiscall _Winit();

@@ -19,7 +19,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 _STD_BEGIN
 
-// CLASS TEMPLATE basic_stringbuf
 template <class _Elem, class _Traits, class _Alloc>
 class basic_stringbuf
     : public basic_streambuf<_Elem, _Traits> { // stream buffer maintaining an allocated character array
@@ -544,7 +543,6 @@ void swap(basic_stringbuf<_Elem, _Traits, _Alloc>& _Left, basic_stringbuf<_Elem,
     _Left.swap(_Right);
 }
 
-// CLASS TEMPLATE basic_istringstream
 template <class _Elem, class _Traits, class _Alloc>
 class basic_istringstream : public basic_istream<_Elem, _Traits> { // input stream associated with a character array
 public:
@@ -664,7 +662,6 @@ void swap(basic_istringstream<_Elem, _Traits, _Alloc>& _Left, basic_istringstrea
     _Left.swap(_Right);
 }
 
-// CLASS TEMPLATE basic_ostringstream
 template <class _Elem, class _Traits, class _Alloc>
 class basic_ostringstream : public basic_ostream<_Elem, _Traits> { // output stream associated with a character array
 public:
@@ -784,7 +781,6 @@ void swap(basic_ostringstream<_Elem, _Traits, _Alloc>& _Left, basic_ostringstrea
     _Left.swap(_Right);
 }
 
-// CLASS TEMPLATE basic_stringstream
 template <class _Elem, class _Traits, class _Alloc>
 class basic_stringstream
     : public basic_iostream<_Elem, _Traits> { // input/output stream associated with a character array

@@ -181,7 +181,6 @@ struct _Cancellation_token {
     }
 };
 
-// CLASS _Work_ptr
 class _Work_ptr {
 public:
     template <class _Work, enable_if_t<!is_same_v<remove_cv_t<_Work>, _Work_ptr>, int> = 0>
@@ -488,7 +487,6 @@ struct _Parallel_choose_max_chunk {
     }
 };
 
-// CLASS TEMPLATE _Work_stealing_deque
 template <class _Ty>
 struct alignas(_Ty) alignas(size_t) alignas(_Atomic_counter_t) _Circular_buffer { // work stealing deque extent type
     static_assert(is_trivial_v<_Ty>, "Work stealing deques work only with trivial operations");

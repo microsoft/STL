@@ -62,7 +62,6 @@ _STD_END
 
 #else // _HAS_EXCEPTIONS
 
-// CLASS exception
 _STDEXT_BEGIN
 class exception;
 _STDEXT_END
@@ -119,7 +118,6 @@ protected:
     const char* _Ptr; // the message pointer
 };
 
-// CLASS bad_exception
 class bad_exception : public exception { // base of all bad exceptions
 public:
     __CLR_OR_THIS_CALL bad_exception(const char* _Message = "bad exception") noexcept : exception(_Message) {}
@@ -132,7 +130,6 @@ protected:
     }
 };
 
-// CLASS bad_alloc
 class bad_alloc : public exception { // base of all bad allocation exceptions
 public:
     __CLR_OR_THIS_CALL bad_alloc() noexcept
@@ -321,7 +318,6 @@ _NODISCARD exception_ptr make_exception_ptr(_Ex _Except) noexcept {
     _THROW(bad_array_new_length{});
 }
 
-// CLASS nested_exception
 class nested_exception { // wrap an exception_ptr
 public:
     nested_exception() noexcept : _Exc(_STD current_exception()) {}
