@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <cassert>
+#include <map>
 #include <memory>
 #include <scoped_allocator>
 #include <tuple>
@@ -171,6 +172,11 @@ constexpr bool test_P0591R4() {
     }
 
     return true;
+}
+
+void test_GH_2021() { // COMPILE-ONLY
+    pmr::map<int, pair<int, int>> tags;
+    tags[0];
 }
 
 int main() {
