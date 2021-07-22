@@ -3540,7 +3540,7 @@ _NODISCARD _FwdIt remove_if(_ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, _P
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-        class _Remove_fn : private _Not_quite_object {
+    class _Remove_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
 

@@ -3041,7 +3041,7 @@ namespace ranges {
     concept common_range = range<_Rng>
         && same_as<iterator_t<_Rng>, sentinel_t<_Rng>>;
 
-        template <class _Ty>
+    template <class _Ty>
     concept _Can_empty = requires(_Ty __t) { _RANGES empty(__t); };
 
     template <class _Derived>
@@ -3246,7 +3246,7 @@ namespace ranges {
         }
     };
 
-        enum class subrange_kind : bool { unsized, sized };
+    enum class subrange_kind : bool { unsized, sized };
     // clang-format on
 } // namespace ranges
 
