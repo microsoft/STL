@@ -128,7 +128,6 @@ class unique_lock { // whizzy class with destructor that unlocks mutex
 public:
     using mutex_type = _Mutex;
 
-    // CONSTRUCT, ASSIGN, AND DESTROY
     unique_lock() noexcept : _Pmtx(nullptr), _Owns(false) {}
 
     _NODISCARD_CTOR explicit unique_lock(_Mutex& _Mtx)

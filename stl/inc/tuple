@@ -860,7 +860,6 @@ _NODISCARD constexpr const _Ty&& get(const tuple<_Types...>&& _Tuple) noexcept {
     return static_cast<const _Ty&&>(static_cast<const _Ttype&>(_Tuple)._Myfirst._Val);
 }
 
-// CONSTRUCTOR TEMPLATES FOR tuple
 template <class _This, class... _Rest>
 template <class _Tag, class _Tpl, size_t... _Indices, enable_if_t<is_same_v<_Tag, _STD _Unpack_tuple_t>, int>>
 constexpr tuple<_This, _Rest...>::tuple(_Tag, _Tpl&& _Right, index_sequence<_Indices...>)

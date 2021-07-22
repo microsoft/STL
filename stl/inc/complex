@@ -1282,7 +1282,6 @@ public:
     }
 };
 
-// CONSTRUCTORS FOR complex SPECIALIZATIONS
 constexpr complex<float>::complex(const complex<double>& _Right)
     : _Complex_base<float, _Fcomplex_value>(static_cast<_Ty>(_Right.real()), static_cast<_Ty>(_Right.imag())) {}
 

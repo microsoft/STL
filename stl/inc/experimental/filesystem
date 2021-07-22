@@ -733,7 +733,6 @@ public:
 
     path(const path& _Right) : _Mystr(_Right._Mystr) {}
 
-    // ARBITRARY SOURCE CONSTRUCT
 
     template <class _InIt, enable_if_t<_Is_iterator_v<_InIt>, int> = 0>
     path(_InIt _First, _InIt _Last) {
@@ -761,7 +760,6 @@ public:
         *this /= _Path_cvt<_Elem, value_type>::_Cvt(_Str_out, _Str.c_str(), _Str.size());
     }
 
-    // ARBITRARY SOURCE CONSTRUCT, WITH LOCALE
 
     template <class _InIt, enable_if_t<_Is_iterator_v<_InIt>, int> = 0>
     path(_InIt _First, _InIt _Last, const locale& _Loc) {
