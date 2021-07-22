@@ -245,7 +245,6 @@ _NODISCARD _Quote_in<_Elem, _Traits, _Alloc> quoted(
     return _Quote_in<_Elem, _Traits, _Alloc>(_Str, _Delim, _Escape);
 }
 
-// quoted INSERTER
 template <class _Elem, class _Traits, class _QuTraits, class _Sizet>
 basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     const _Quote_out<_Elem, _QuTraits, _Sizet>& _Manip) { // put quoted string to output stream

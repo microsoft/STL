@@ -887,7 +887,6 @@ _Istr&& operator>>(_Istr&& _Is, _Ty&& _Val) { // extract from rvalue stream
     return _STD move(_Is);
 }
 
-// MANIPULATORS
 template <class _Elem, class _Traits>
 basic_istream<_Elem, _Traits>& __CLRCALL_OR_CDECL ws(basic_istream<_Elem, _Traits>& _Istr) { // consume whitespace
     const typename basic_istream<_Elem, _Traits>::sentry _Ok(_Istr, true);

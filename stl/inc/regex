@@ -965,7 +965,6 @@ _NODISCARD bool operator>=(
 }
 #endif // !_HAS_CXX20
 
-// INSERT sub_match IN STREAM
 template <class _Elem, class _Traits, class _BidIt>
 basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, const sub_match<_BidIt>& _Match) {
     return _Ostr << _Match.str();
