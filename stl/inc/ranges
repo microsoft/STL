@@ -662,7 +662,6 @@ namespace ranges {
     };
 
     namespace views {
-        // VARIABLE TEMPLATE views::empty
         template <class _Ty>
         inline constexpr empty_view<_Ty> empty;
     } // namespace views
@@ -720,7 +719,6 @@ namespace ranges {
     };
 
     namespace views {
-        // VARIABLE views::single
         struct _Single_fn {
             // clang-format off
             template <class _Ty>
@@ -1046,7 +1044,6 @@ namespace ranges {
     inline constexpr bool enable_borrowed_range<iota_view<_Wi, _Bo>> = true;
 
     namespace views {
-        // VARIABLE views::iota
         struct _Iota_fn {
             template <class _Ty>
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const
@@ -1205,7 +1202,6 @@ namespace ranges {
     inline constexpr bool enable_borrowed_range<ref_view<_Rng>> = true;
 
     namespace views {
-        // VARIABLE views::all
         template <class _Rng>
         concept _Can_ref_view = requires(_Rng&& __r) {
             ref_view{static_cast<_Rng&&>(__r)};
@@ -1497,7 +1493,6 @@ namespace ranges {
     filter_view(_Rng&&, _Pr) -> filter_view<views::all_t<_Rng>, _Pr>;
 
     namespace views {
-        // VARIABLE views::filter
         class _Filter_fn {
         private:
             template <class _Pr>
@@ -1986,7 +1981,6 @@ namespace ranges {
     transform_view(_Rng&&, _Fn) -> transform_view<views::all_t<_Rng>, _Fn>;
 
     namespace views {
-        // VARIABLE views::transform
         class _Transform_fn {
         private:
             template <class _Fn>
@@ -2194,7 +2188,6 @@ namespace ranges {
     inline constexpr bool enable_borrowed_range<take_view<_Rng>> = enable_borrowed_range<_Rng>;
 
     namespace views {
-        // VARIABLE views::take
         template <class>
         inline constexpr bool _Is_subrange = false;
         template <class _It, class _Se, subrange_kind _Ki>
@@ -2476,7 +2469,6 @@ namespace ranges {
     take_while_view(_Rng&&, _Pr) -> take_while_view<views::all_t<_Rng>, _Pr>;
 
     namespace views {
-        // VARIABLE views::take_while
         class _Take_while_fn {
         private:
             template <class _Pr>
@@ -2637,7 +2629,6 @@ namespace ranges {
     inline constexpr bool enable_borrowed_range<drop_view<_Rng>> = enable_borrowed_range<_Rng>;
 
     namespace views {
-        // VARIABLE views::drop
         class _Drop_fn {
         private:
             enum class _St { _Empty, _Reconstruct_span, _Reconstruct_subrange, _Reconstruct_other, _Drop_view };
@@ -2827,7 +2818,6 @@ namespace ranges {
     inline constexpr bool enable_borrowed_range<drop_while_view<_Rng, _Pr>> = enable_borrowed_range<_Rng>;
 
     namespace views {
-        // VARIABLE views::drop_while
         class _Drop_while_fn {
         private:
             template <class _Pr>
@@ -3224,7 +3214,6 @@ namespace ranges {
     explicit join_view(_Rng&&) -> join_view<views::all_t<_Rng>>;
 
     namespace views {
-        // VARIABLE views::join
         class _Join_fn : public _Pipe::_Base<_Join_fn> {
         public:
             // clang-format off
@@ -3617,7 +3606,6 @@ namespace ranges {
     split_view(_Rng&&, range_value_t<_Rng>) -> split_view<views::all_t<_Rng>, single_view<range_value_t<_Rng>>>;
 
     namespace views {
-        // VARIABLE views::split
         class _Split_fn {
         private:
             template <class _Delim>
@@ -3662,7 +3650,6 @@ namespace ranges {
 
         inline constexpr _Split_fn split;
 
-        // VARIABLE views::counted
         class _Counted_fn {
         private:
             enum class _St { _Span, _Subrange, _Subrange_counted };
@@ -3784,7 +3771,6 @@ namespace ranges {
     inline constexpr bool enable_borrowed_range<common_view<_Rng>> = enable_borrowed_range<_Rng>;
 
     namespace views {
-        // VARIABLE views::common
         class _Common_fn : public _Pipe::_Base<_Common_fn> {
         private:
             enum class _St { _None, _All, _Common };
@@ -3901,7 +3887,6 @@ namespace ranges {
     inline constexpr bool enable_borrowed_range<reverse_view<_Rng>> = enable_borrowed_range<_Rng>;
 
     namespace views {
-        // VARIABLE views::reverse
         template <class _Rng>
         concept _Can_extract_base = requires(_Rng&& __r) {
             static_cast<_Rng&&>(__r).base();
@@ -4363,7 +4348,6 @@ namespace ranges {
     using values_view = elements_view<views::all_t<_Rng>, 1>;
 
     namespace views {
-        // VARIABLE views::elements
         template <size_t _Index>
         class _Elements_fn : public _Pipe::_Base<_Elements_fn<_Index>> {
         public:

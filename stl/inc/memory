@@ -32,7 +32,6 @@ namespace ranges {
     template <class _In, class _Out>
     using uninitialized_copy_result = in_out_result<_In, _Out>;
 
-    // VARIABLE ranges::uninitialized_copy
     class _Uninitialized_copy_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -140,7 +139,6 @@ namespace ranges {
     template <class _In, class _Out>
     using uninitialized_copy_n_result = in_out_result<_In, _Out>;
 
-    // VARIABLE ranges::uninitialized_copy_n
     class _Uninitialized_copy_n_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -204,7 +202,6 @@ _NoThrowFwdIt uninitialized_move(const _InIt _First, const _InIt _Last, _NoThrow
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::uninitialized_move
     class _Uninitialized_move_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -281,7 +278,6 @@ namespace ranges {
     template <class _In, class _Out>
     using uninitialized_move_n_result = in_out_result<_In, _Out>;
 
-    // VARIABLE ranges::uninitialized_move_n
     class _Uninitialized_move_n_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -329,7 +325,6 @@ namespace ranges {
 
     inline constexpr _Uninitialized_move_n_fn uninitialized_move_n{_Not_quite_object::_Construct_tag{}};
 
-    // VARIABLE ranges::uninitialized_fill
     class _Uninitialized_fill_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -426,7 +421,6 @@ _NoThrowFwdIt uninitialized_fill_n(_NoThrowFwdIt _First, const _Diff _Count_raw,
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::uninitialized_fill_n
     class _Uninitialized_fill_n_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -467,7 +461,6 @@ namespace ranges {
 
     inline constexpr _Uninitialized_fill_n_fn uninitialized_fill_n{_Not_quite_object::_Construct_tag{}};
 
-    // VARIABLE ranges::construct_at
     class _Construct_at_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -488,7 +481,6 @@ namespace ranges {
 
     inline constexpr _Construct_at_fn construct_at{_Not_quite_object::_Construct_tag{}};
 
-    // VARIABLE ranges::destroy_at
     // clang-format off
     template <_No_throw_input_iterator _It, _No_throw_sentinel_for<_It> _Se>
         requires destructible<iter_value_t<_It>>
@@ -523,7 +515,6 @@ _CONSTEXPR20 void destroy(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last)
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::destroy
     // clang-format off
     template <_No_throw_input_iterator _It, _No_throw_sentinel_for<_It> _Se>
         requires destructible<iter_value_t<_It>>
@@ -593,7 +584,6 @@ _CONSTEXPR20 _NoThrowFwdIt destroy_n(_NoThrowFwdIt _First, const _Diff _Count_ra
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::destroy_n
     class _Destroy_n_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -646,7 +636,6 @@ void uninitialized_default_construct(const _NoThrowFwdIt _First, const _NoThrowF
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::uninitialized_default_construct
     class _Uninitialized_default_construct_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -727,7 +716,6 @@ _NoThrowFwdIt uninitialized_default_construct_n(_NoThrowFwdIt _First, const _Dif
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::uninitialized_default_construct_n
     class _Uninitialized_default_construct_n_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -783,7 +771,6 @@ void uninitialized_value_construct(const _NoThrowFwdIt _First, const _NoThrowFwd
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::uninitialized_value_construct
     class _Uninitialized_value_construct_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -851,7 +838,6 @@ _NoThrowFwdIt uninitialized_value_construct_n(_NoThrowFwdIt _First, const _Diff 
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::uninitialized_value_construct_n
     class _Uninitialized_value_construct_n_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;

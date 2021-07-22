@@ -297,7 +297,6 @@ namespace ranges {
     template <class _In, class _Fun>
     using for_each_result = in_fun_result<_In, _Fun>;
 
-    // VARIABLE ranges::for_each
     class _For_each_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -349,7 +348,6 @@ namespace ranges {
     template <class _In, class _Fun>
     using for_each_n_result = in_fun_result<_In, _Fun>;
 
-    // VARIABLE ranges::for_each_n
     class _For_each_n_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -439,7 +437,6 @@ _NODISCARD _FwdIt adjacent_find(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::adjacent_find
     class _Adjacent_find_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -491,7 +488,6 @@ namespace ranges {
 
     inline constexpr _Adjacent_find_fn adjacent_find{_Not_quite_object::_Construct_tag{}};
 
-    // VARIABLE ranges::count
     class _Count_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -559,7 +555,6 @@ _NODISCARD _Iter_diff_t<_FwdIt> count_if(
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::count_if
     class _Count_if_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -698,7 +693,6 @@ _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::equal
     class _Equal_fn : private _Not_quite_object {
     private:
         template <class _It1, class _It2, class _Size, class _Pr, class _Pj1, class _Pj2>
@@ -903,7 +897,6 @@ namespace ranges {
     concept _Bidi_common_range = common_range<_Rng> && bidirectional_iterator<iterator_t<_Rng>>;
     // clang-format on
 
-    // VARIABLE ranges::is_permutation
     class _Is_permutation_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -1149,7 +1142,6 @@ _NODISCARD bool all_of(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::all_of
     class _All_of_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -1212,7 +1204,6 @@ _NODISCARD bool any_of(_ExPo&&, const _FwdIt _First, const _FwdIt _Last, _Pr _Pr
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::any_of
     class _Any_of_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -1275,7 +1266,6 @@ _NODISCARD bool none_of(_ExPo&&, const _FwdIt _First, const _FwdIt _Last, _Pr _P
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::none_of
     class _None_of_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -1318,7 +1308,6 @@ namespace ranges {
     template <class _In, class _Out>
     using copy_n_result = in_out_result<_In, _Out>;
 
-    // VARIABLE ranges::copy_n
     class _Copy_n_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -1353,7 +1342,6 @@ namespace ranges {
     template <class _In, class _Out>
     using copy_backward_result = in_out_result<_In, _Out>;
 
-    // VARIABLE ranges::copy_backward
     class _Copy_backward_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -1418,7 +1406,6 @@ namespace ranges {
     template <class _In, class _Out>
     using copy_if_result = in_out_result<_In, _Out>;
 
-    // VARIABLE ranges::copy_if
     class _Copy_if_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -1475,7 +1462,6 @@ namespace ranges {
     template <class _In, class _Out>
     using move_result = in_out_result<_In, _Out>;
 
-    // VARIABLE ranges::move
     // clang-format off
     template <input_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out>
         requires indirectly_movable<_It, _Out>
@@ -1533,7 +1519,6 @@ namespace ranges {
     template <class _In, class _Out>
     using move_backward_result = in_out_result<_In, _Out>;
 
-    // VARIABLE ranges::move_backward
     // clang-format off
     // concept-constrained for strict enforcement as it is used by several algorithms
     template <bidirectional_iterator _It1, bidirectional_iterator _It2>
@@ -1625,7 +1610,6 @@ namespace ranges {
     template <class _In, class _Out1, class _Out2>
     using partition_copy_result = in_out_out_result<_In, _Out1, _Out2>;
 
-    // VARIABLE ranges::partition_copy
     class _Partition_copy_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -1724,7 +1708,6 @@ _NODISCARD bool is_partitioned(_ExPo&&, const _FwdIt _First, const _FwdIt _Last,
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::is_partitioned
     class _Is_partitioned_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -1801,7 +1784,6 @@ _NODISCARD _CONSTEXPR20 _FwdIt partition_point(_FwdIt _First, _FwdIt _Last, _Pr 
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::partition_point
     class _Partition_point_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -2033,7 +2015,6 @@ namespace ranges {
     }
     // clang-format on
 
-    // VARIABLE ranges::search
     class _Search_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -2236,7 +2217,6 @@ _NODISCARD _FwdIt search_n(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Las
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::search_n
     class _Search_n_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -2500,7 +2480,6 @@ _NODISCARD _FwdIt1 find_end(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _Fwd
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::find_end
     class _Find_end_fn : private _Not_quite_object {
     private:
         template <class _It1, class _It2, class _Pr, class _Pj1, class _Pj2>
@@ -2707,7 +2686,6 @@ _NODISCARD _FwdIt1 find_first_of(_ExPo&& _Exec, const _FwdIt1 _First1, const _Fw
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::find_first_of
     class _Find_first_of_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -2771,7 +2749,6 @@ namespace ranges {
     template <class _In1, class _In2>
     using swap_ranges_result = in_in_result<_In1, _In2>;
 
-    // VARIABLE ranges::swap_ranges
     class _Swap_ranges_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -2905,7 +2882,6 @@ namespace ranges {
     template <class _In1, class _In2, class _Out>
     using binary_transform_result = in_in_out_result<_In1, _In2, _Out>;
 
-    // VARIABLE ranges::transform
     class _Transform_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -3030,7 +3006,6 @@ void replace(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last, const _Ty& 
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::replace
     class _Replace_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -3106,7 +3081,6 @@ void replace_if(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last, _Pr _Pred, const _Ty
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::replace_if
     class _Replace_if_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -3198,7 +3172,6 @@ namespace ranges {
     template <class _In, class _Out>
     using replace_copy_result = in_out_result<_In, _Out>;
 
-    // VARIABLE ranges::replace_copy
     class _Replace_copy_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -3295,7 +3268,6 @@ namespace ranges {
     template <class _In, class _Out>
     using replace_copy_if_result = in_out_result<_In, _Out>;
 
-    // VARIABLE ranges::replace_copy_if
     class _Replace_copy_if_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -3352,7 +3324,6 @@ namespace ranges {
 
     inline constexpr _Replace_copy_if_fn replace_copy_if{_Not_quite_object::_Construct_tag{}};
 
-    // VARIABLE ranges::fill
     class _Fill_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -3398,7 +3369,6 @@ namespace ranges {
 
     inline constexpr _Fill_fn fill{_Not_quite_object::_Construct_tag{}};
 
-    // VARIABLE ranges::generate
     class _Generate_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -3441,7 +3411,6 @@ namespace ranges {
 
     inline constexpr _Generate_fn generate{_Not_quite_object::_Construct_tag{}};
 
-    // VARIABLE ranges::generate_n
     class _Generate_n_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -3584,8 +3553,7 @@ _NODISCARD _FwdIt remove_if(_ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, _P
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::remove
-    class _Remove_fn : private _Not_quite_object {
+        class _Remove_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
 
@@ -3638,7 +3606,6 @@ namespace ranges {
 
     inline constexpr _Remove_fn remove{_Not_quite_object::_Construct_tag{}};
 
-    // VARIABLE ranges::remove_if
     class _Remove_if_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -3695,7 +3662,6 @@ namespace ranges {
     template <class _In, class _Out>
     using remove_copy_result = in_out_result<_In, _Out>;
 
-    // VARIABLE ranges::remove_copy
     class _Remove_copy_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -3757,7 +3723,6 @@ namespace ranges {
     template <class _In, class _Out>
     using remove_copy_if_result = in_out_result<_In, _Out>;
 
-    // VARIABLE ranges::remove_copy_if
     class _Remove_copy_if_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -3866,7 +3831,6 @@ _NODISCARD _FwdIt unique(_ExPo&&, _FwdIt _First, _FwdIt _Last) noexcept /* termi
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::unique
     class _Unique_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -4029,7 +3993,6 @@ namespace ranges {
     template <class _In, class _Out>
     using unique_copy_result = in_out_result<_In, _Out>;
 
-    // VARIABLE ranges::unique_copy
     // clang-format off
     template <class _It, class _Ty>
     concept _Is_input_with_value_type = input_iterator<_It> && same_as<iter_value_t<_It>, _Ty>;
@@ -4132,7 +4095,6 @@ namespace ranges {
 
     inline constexpr _Unique_copy_fn unique_copy{_Not_quite_object::_Construct_tag{}};
 
-    // VARIABLE ranges::reverse
     // clang-format off
     // concept-constrained for strict enforcement as it is used by several algorithms
     template <bidirectional_iterator _It>
@@ -4264,7 +4226,6 @@ namespace ranges {
     template <class _In, class _Out>
     using reverse_copy_result = in_out_result<_In, _Out>;
 
-    // VARIABLE ranges::reverse_copy
     class _Reverse_copy_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -4350,7 +4311,6 @@ namespace ranges {
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::rotate
     template <permutable _It>
     _NODISCARD constexpr subrange<_It> _Reverse_until_mid_unchecked(_It _First, const _It _Mid, _It _Last) {
         // reverse until either _First or _Last hits _Mid
@@ -4488,7 +4448,6 @@ namespace ranges {
     template <class _In, class _Out>
     using rotate_copy_result = in_out_result<_In, _Out>;
 
-    // VARIABLE ranges::rotate_copy
     class _Rotate_copy_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -4641,7 +4600,6 @@ concept uniform_random_bit_generator = invocable<_Ty&>
 // clang-format on
 
 namespace ranges {
-    // VARIABLE ranges::sample
     class _Sample_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -4777,7 +4735,6 @@ void shuffle(_RanIt _First, _RanIt _Last, _Urng&& _Func) { // shuffle [_First, _
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::shuffle
     class _Shuffle_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -5049,7 +5006,6 @@ _FwdIt partition(_ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, _Pr _Pred) no
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::partition
     class _Partition_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -5303,7 +5259,6 @@ _BidIt stable_partition(_ExPo&&, _BidIt _First, _BidIt _Last, _Pr _Pred) noexcep
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::stable_partition
     template <bidirectional_iterator _It>
     _It _Buffered_rotate_common(const _It _First, const _It _Mid, const _It _Last, const iter_difference_t<_It> _Count1,
         const iter_difference_t<_It> _Count2, iter_value_t<_It>* const _Temp_ptr, const ptrdiff_t _Capacity) {
@@ -5542,7 +5497,6 @@ _CONSTEXPR20 void push_heap(_RanIt _First, _RanIt _Last) {
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::push_heap
     // clang-format off
     template <random_access_iterator _It, class _Ty, class _Pr, class _Pj1, class _Pj2>
         requires sortable<_It, _Pr, _Pj1> && indirectly_writable<_It, _Ty>
@@ -5682,7 +5636,6 @@ _CONSTEXPR20 void pop_heap(_RanIt _First, _RanIt _Last) {
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::pop_heap
     // clang-format off
     template <random_access_iterator _It, class _Ty, class _Pr, class _Pj1, class _Pj2>
         requires sortable<_It, _Pr, _Pj1> && indirectly_writable<_It, _Ty>
@@ -5813,7 +5766,6 @@ _CONSTEXPR20 void make_heap(_RanIt _First, _RanIt _Last) { // make [_First, _Las
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::make_heap
     // clang-format off
     template <random_access_iterator _It, class _Pr, class _Pj>
         requires sortable<_It, _Pr, _Pj>
@@ -5934,7 +5886,6 @@ _NODISCARD bool is_heap(_ExPo&& _Exec, _RanIt _First, _RanIt _Last) noexcept /* 
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::is_heap
     template <class _It, class _Pr, class _Pj>
     _NODISCARD constexpr _It _Is_heap_until_unchecked(
         _It _First, const iter_difference_t<_It> _Size, _Pr _Pred, _Pj _Proj) {
@@ -5987,7 +5938,6 @@ namespace ranges {
 
     inline constexpr _Is_heap_fn is_heap{_Not_quite_object::_Construct_tag{}};
 
-    // VARIABLE ranges::is_heap_until
     class _Is_heap_until_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -6047,7 +5997,6 @@ _CONSTEXPR20 void sort_heap(_RanIt _First, _RanIt _Last) { // order heap by repe
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::sort_heap
     // clang-format off
     template <random_access_iterator _It, class _Pr, class _Pj>
         requires sortable<_It, _Pr, _Pj>
@@ -6094,7 +6043,6 @@ namespace ranges {
 
     inline constexpr _Sort_heap_fn sort_heap{_Not_quite_object::_Construct_tag{}};
 
-    // VARIABLE ranges::lower_bound
     template <class _It, class _Ty, class _Pr, class _Pj>
     _NODISCARD constexpr _It _Lower_bound_unchecked(
         _It _First, iter_difference_t<_It> _Count, const _Ty& _Val, _Pr _Pred, _Pj _Proj) {
@@ -6182,7 +6130,6 @@ _NODISCARD _CONSTEXPR20 _FwdIt upper_bound(_FwdIt _First, _FwdIt _Last, const _T
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::upper_bound
     template <class _It, class _Ty, class _Pr, class _Pj>
     _NODISCARD constexpr _It _Upper_bound_unchecked(
         _It _First, iter_difference_t<_It> _Count, const _Ty& _Val, _Pr _Pred, _Pj _Proj) {
@@ -6283,7 +6230,6 @@ _NODISCARD _CONSTEXPR20 pair<_FwdIt, _FwdIt> equal_range(_FwdIt _First, _FwdIt _
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::equal_range
     class _Equal_range_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -6363,7 +6309,6 @@ _NODISCARD _CONSTEXPR20 bool binary_search(_FwdIt _First, _FwdIt _Last, const _T
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::binary_search
     class _Binary_search_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -6490,7 +6435,6 @@ namespace ranges {
     template <class _In1, class _In2, class _Out>
     using merge_result = in_in_out_result<_In1, _In2, _Out>;
 
-    // VARIABLE ranges::merge
     class _Merge_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -6852,7 +6796,6 @@ namespace ranges {
         return _First;
     }
 
-    // VARIABLE ranges::inplace_merge
     template <bidirectional_iterator _It>
     void _Rotate_one_right(_It _First, _It _Mid, _It _Last) {
         // exchanges the range [_First, _Mid) with [_Mid, _Last)
@@ -7508,7 +7451,6 @@ namespace ranges {
         }
     }
 
-    // VARIABLE ranges::sort
     class _Sort_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -7774,7 +7716,6 @@ void stable_sort(_ExPo&& _Exec, _BidIt _First, _BidIt _Last) noexcept /* termina
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::stable_sort
     class _Stable_sort_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -8077,7 +8018,6 @@ void partial_sort(_ExPo&&, _RanIt _First, _RanIt _Mid, _RanIt _Last) noexcept /*
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::partial_sort
     class _Partial_sort_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -8218,7 +8158,6 @@ namespace ranges {
     template <class _In, class _Out>
     using partial_sort_copy_result = in_out_result<_In, _Out>;
 
-    // VARIABLE ranges::partial_sort_copy
     class _Partial_sort_copy_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -8358,7 +8297,6 @@ void nth_element(_ExPo&&, _RanIt _First, _RanIt _Nth, _RanIt _Last) noexcept /* 
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::nth_element
     class _Nth_element_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -8486,7 +8424,6 @@ _NODISCARD bool includes(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _Firs
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::includes
     class _Includes_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -8624,7 +8561,6 @@ namespace ranges {
     template <class _In1, class _In2, class _Out>
     using set_union_result = in_in_out_result<_In1, _In2, _Out>;
 
-    // VARIABLE ranges::set_union
     class _Set_union_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -8751,7 +8687,6 @@ namespace ranges {
     template <class _In1, class _In2, class _Out>
     using set_intersection_result = in_in_out_result<_In1, _In2, _Out>;
 
-    // VARIABLE ranges::set_intersection
     class _Set_intersection_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -8886,7 +8821,6 @@ namespace ranges {
     template <class _In, class _Out>
     using set_difference_result = in_out_result<_In, _Out>;
 
-    // VARIABLE ranges::set_difference
     class _Set_difference_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -9031,7 +8965,6 @@ namespace ranges {
     template <class _In1, class _In2, class _Out>
     using set_symmetric_difference_result = in_in_out_result<_In1, _In2, _Out>;
 
-    // VARIABLE ranges::set_symmetric_difference
     class _Set_symmetric_difference_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -9158,7 +9091,6 @@ _NODISCARD _FwdIt max_element(_ExPo&&, _FwdIt _First, _FwdIt _Last) noexcept /* 
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::max_element
     template <class _It, class _Se, class _Pr, class _Pj>
     _NODISCARD constexpr _It _Max_element_unchecked(_It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
         _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It>);
@@ -9250,7 +9182,6 @@ _NODISCARD _FwdIt min_element(_ExPo&&, _FwdIt _First, _FwdIt _Last) noexcept /* 
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::min_element
     template <class _It, class _Se, class _Pr, class _Pj>
     _NODISCARD constexpr _It _Min_element_unchecked(_It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
         _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It>);
@@ -9375,7 +9306,6 @@ namespace ranges {
     template <class _Ty>
     using minmax_element_result = min_max_result<_Ty>;
 
-    // VARIABLE ranges::minmax_element
     template <class _It, class _Se, class _Pr, class _Pj>
     constexpr min_max_result<_It> _Minmax_element_unchecked(_It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
         _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It>);
@@ -9475,7 +9405,6 @@ _NODISCARD constexpr _Ty(max)(initializer_list<_Ty> _Ilist) {
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::max
     // clang-format off
     template <class _It>
     concept _Prefer_iterator_copies = // When we have a choice, should we copy iterators or copy elements?
@@ -9554,7 +9483,6 @@ _NODISCARD constexpr _Ty(min)(initializer_list<_Ty> _Ilist) {
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::min
     class _Min_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -9652,7 +9580,6 @@ namespace ranges {
     template <class _Ty>
     using minmax_result = min_max_result<_Ty>;
 
-    // VARIABLE ranges::minmax
     class _Minmax_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -9787,7 +9714,6 @@ namespace ranges {
     template <class _In>
     using next_permutation_result = in_found_result<_In>;
 
-    // VARIABLE ranges::next_permutation
     class _Next_permutation_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -9897,7 +9823,6 @@ namespace ranges {
     template <class _In>
     using prev_permutation_result = in_found_result<_In>;
 
-    // VARIABLE ranges::prev_permutation
     class _Prev_permutation_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -10027,7 +9952,6 @@ _NODISCARD bool is_sorted(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last) noexcept /
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::is_sorted
     class _Is_sorted_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -10053,7 +9977,6 @@ namespace ranges {
 
     inline constexpr _Is_sorted_fn is_sorted{_Not_quite_object::_Construct_tag{}};
 
-    // VARIABLE ranges::is_sorted_until
     class _Is_sorted_until_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -10112,7 +10035,6 @@ _NODISCARD constexpr const _Ty& clamp(const _Ty& _Val, const _Ty& _Min_val, cons
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::clamp
     class _Clamp_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -10139,7 +10061,6 @@ namespace ranges {
 
     inline constexpr _Clamp_fn clamp{_Not_quite_object::_Construct_tag{}};
 
-    // VARIABLE ranges::lexicographical_compare
     class _Lexicographical_compare_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;

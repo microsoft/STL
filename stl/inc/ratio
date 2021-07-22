@@ -76,7 +76,6 @@ struct ratio { // holds the ratio of _Nx to _Dx
     using type = ratio<num, den>;
 };
 
-// VARIABLE TEMPLATE _Is_ratio_v
 template <class _Ty>
 _INLINE_VAR constexpr bool _Is_ratio_v = false; // test for ratio type
 

@@ -822,7 +822,6 @@ concept sentinel_for = semiregular<_Se>
     && _Weakly_equality_comparable_with<_Se, _It>;
 // clang-format on
 
-// VARIABLE TEMPLATE disable_sized_sentinel_for
 template <class _Se, class _It>
 inline constexpr bool disable_sized_sentinel_for = false;
 
@@ -1231,7 +1230,6 @@ using _Common_diff_t = common_type_t<_Iter_diff_t<_Iters>...>;
 template <class _Iter>
 using _Iter_cat_t = typename iterator_traits<_Iter>::iterator_category;
 
-// VARIABLE TEMPLATE _Is_iterator_v
 template <class _Ty, class = void>
 _INLINE_VAR constexpr bool _Is_iterator_v = false;
 
@@ -1242,19 +1240,15 @@ _INLINE_VAR constexpr bool _Is_iterator_v<_Ty, void_t<_Iter_cat_t<_Ty>>> = true;
 template <class _Ty>
 struct _Is_iterator : bool_constant<_Is_iterator_v<_Ty>> {};
 
-// VARIABLE TEMPLATE _Is_input_iter_v
 template <class _Iter>
 _INLINE_VAR constexpr bool _Is_input_iter_v = is_convertible_v<_Iter_cat_t<_Iter>, input_iterator_tag>;
 
-// VARIABLE TEMPLATE _Is_fwd_iter_v
 template <class _Iter>
 _INLINE_VAR constexpr bool _Is_fwd_iter_v = is_convertible_v<_Iter_cat_t<_Iter>, forward_iterator_tag>;
 
-// VARIABLE TEMPLATE _Is_bidi_iter_v
 template <class _Iter>
 _INLINE_VAR constexpr bool _Is_bidi_iter_v = is_convertible_v<_Iter_cat_t<_Iter>, bidirectional_iterator_tag>;
 
-// VARIABLE TEMPLATE _Is_random_iter_v
 template <class _Iter>
 _INLINE_VAR constexpr bool _Is_random_iter_v = is_convertible_v<_Iter_cat_t<_Iter>, random_access_iterator_tag>;
 
@@ -2037,7 +2031,6 @@ template <class _Ty1, class _Ty2>
 concept _Not_same_as = !same_as<remove_cvref_t<_Ty1>, remove_cvref_t<_Ty2>>;
 
 namespace ranges {
-    // VARIABLE TEMPLATE _Has_complete_elements
     template <class>
     inline constexpr bool _Has_complete_elements = false;
 
@@ -2047,7 +2040,6 @@ namespace ranges {
     inline constexpr bool _Has_complete_elements<_Ty> = true;
     // clang-format on
 
-    // VARIABLE TEMPLATE ranges::enable_borrowed_range
     template <class>
     inline constexpr bool enable_borrowed_range = false;
 
@@ -2560,7 +2552,6 @@ namespace ranges {
         inline constexpr _Crend_fn crend;
     }
 
-    // VARIABLE TEMPLATE ranges::disable_sized_range
     template <class>
     inline constexpr bool disable_sized_range = false;
 
@@ -2807,7 +2798,6 @@ namespace ranges {
 
     struct view_base {};
 
-    // VARIABLE TEMPLATE ranges::enable_view
     template <class _Ty>
     inline constexpr bool enable_view = derived_from<_Ty, view_base>;
 
@@ -2870,7 +2860,6 @@ namespace ranges {
         ~_Not_quite_object() = default;
     };
 
-    // VARIABLE ranges::advance
     class _Advance_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -2962,7 +2951,6 @@ namespace ranges {
 
     inline constexpr _Advance_fn advance{_Not_quite_object::_Construct_tag{}};
 
-    // VARIABLE ranges::distance
     class _Distance_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -3018,7 +3006,6 @@ namespace ranges {
 
     inline constexpr _Distance_fn distance{_Not_quite_object::_Construct_tag{}};
 
-    // VARIABLE ranges::ssize
     class _Ssize_fn {
     public:
         // clang-format off
@@ -3035,7 +3022,6 @@ namespace ranges {
         inline constexpr _Ssize_fn ssize;
     }
 
-    // VARIABLE ranges::next
     class _Next_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -3067,7 +3053,6 @@ namespace ranges {
 
     inline constexpr _Next_fn next{_Not_quite_object::_Construct_tag{}};
 
-    // VARIABLE ranges::prev
     class _Prev_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -3981,7 +3966,6 @@ _NODISCARD _CONSTEXPR17 move_iterator<_Iter> make_move_iterator(_Iter _It) { // 
 #ifdef __cpp_lib_concepts
 struct default_sentinel_t {};
 
-// VARIABLE default_sentinel
 inline constexpr default_sentinel_t default_sentinel{};
 
 struct unreachable_sentinel_t;
@@ -3995,7 +3979,6 @@ namespace _Unreachable_sentinel_detail {
 } // namespace _Unreachable_sentinel_detail
 struct unreachable_sentinel_t : _Unreachable_sentinel_detail::_Base {}; // TRANSITION, /permissive-
 
-// VARIABLE unreachable_sentinel
 inline constexpr unreachable_sentinel_t unreachable_sentinel{};
 #endif // __cpp_lib_concepts
 
@@ -4117,7 +4100,6 @@ _OutIt _Copy_memmove(move_iterator<_InIt> _First, move_iterator<_InIt> _Last, _O
     return _Copy_memmove(_First.base(), _Last.base(), _Dest);
 }
 
-// VARIABLE TEMPLATE _Is_vb_iterator
 template <class _It, bool _RequiresMutable = false>
 _INLINE_VAR constexpr bool _Is_vb_iterator = false;
 
@@ -4188,7 +4170,6 @@ namespace ranges {
     template <class _In, class _Out>
     using copy_result = in_out_result<_In, _Out>;
 
-    // VARIABLE ranges::copy
     // clang-format off
     template <input_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out>
         requires indirectly_copyable<_It, _Out>
@@ -4591,7 +4572,6 @@ _FwdIt fill_n(_ExPo&&, _FwdIt _Dest, _Diff _Count_raw, const _Ty& _Val) noexcept
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::fill_n
     class _Fill_n_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -4862,7 +4842,6 @@ namespace ranges {
     template <class _In1, class _In2>
     using mismatch_result = in_in_result<_In1, _In2>;
 
-    // VARIABLE ranges::mismatch
     class _Mismatch_fn : private _Not_quite_object {
     private:
         template <class _It1, class _It2, class _Pr, class _Pj1, class _Pj2>
@@ -5287,7 +5266,6 @@ _NODISCARD _FwdIt find(_ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, const _
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::find
     // clang-format off
     template <class _Se, class _It>
     concept _Sized_or_unreachable_sentinel_for = sized_sentinel_for<_Se, _It> || same_as<_Se, unreachable_sentinel_t>;
@@ -5597,7 +5575,6 @@ _NODISCARD _CONSTEXPR20 _InIt find_if(_InIt _First, const _InIt _Last, _Pr _Pred
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::find_if
     // concept-constrained for strict enforcement as it is used by several algorithms
     template <input_iterator _It, sentinel_for<_It> _Se, class _Pj, indirect_unary_predicate<projected<_It, _Pj>> _Pr>
     _NODISCARD constexpr _It _Find_if_unchecked(_It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
@@ -5639,7 +5616,6 @@ namespace ranges {
 
     inline constexpr _Find_if_fn find_if{_Not_quite_object::_Construct_tag{}};
 
-    // VARIABLE ranges::find_if_not
     class _Find_if_not_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;

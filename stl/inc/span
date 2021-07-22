@@ -236,14 +236,12 @@ namespace ranges {
     inline constexpr bool enable_borrowed_range<span<_Ty, _Extent>> = true;
 } // namespace ranges
 
-// VARIABLE TEMPLATE _Is_span_v
 template <class>
 inline constexpr bool _Is_span_v = false;
 
 template <class _Ty, size_t _Extent>
 inline constexpr bool _Is_span_v<span<_Ty, _Extent>> = true;
 
-// VARIABLE TEMPLATE _Is_std_array_v
 template <class>
 inline constexpr bool _Is_std_array_v = false;
 
@@ -297,7 +295,6 @@ template <class _Rng>
 struct _Has_container_interface<_Rng,
     void_t<decltype(_STD data(_STD declval<_Rng&>())), decltype(_STD size(_STD declval<_Rng&>()))>> : true_type {};
 
-// VARIABLE TEMPLATE _Is_span_compatible_range
 // clang-format off
 template <class _Rng, class _Ty>
 inline constexpr bool _Is_span_compatible_range = conjunction_v<

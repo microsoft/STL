@@ -23,7 +23,6 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 #if _HAS_CONDITIONAL_EXPLICIT
-// VARIABLE TEMPLATE _Tuple_conditional_explicit_v
 template <bool _Same, class _Dest, class... _Srcs>
 _INLINE_VAR constexpr bool _Tuple_conditional_explicit_v0 = false;
 
@@ -60,7 +59,6 @@ struct _Tuple_explicit_val
     : bool_constant<_Tuple_explicit_v0<tuple_size_v<_Dest> == sizeof...(_Srcs), _Dest, _Srcs...>> {};
 #endif // ^^^ !_HAS_CONDITIONAL_EXPLICIT ^^^
 
-// VARIABLE TEMPLATE _Tuple_constructible_v
 template <bool _Same, class _Dest, class... _Srcs>
 _INLINE_VAR constexpr bool _Tuple_constructible_v0 = false;
 
@@ -75,7 +73,6 @@ _INLINE_VAR constexpr bool _Tuple_constructible_v =
 template <class _Dest, class... _Srcs>
 struct _Tuple_constructible_val : bool_constant<_Tuple_constructible_v<_Dest, _Srcs...>> {};
 
-// VARIABLE TEMPLATE _Tuple_nothrow_constructible_v
 template <bool _Same, class _Dest, class... _Srcs>
 _INLINE_VAR constexpr bool _Tuple_nothrow_constructible_v0 = false;
 
@@ -87,7 +84,6 @@ template <class _Dest, class... _Srcs>
 _INLINE_VAR constexpr bool _Tuple_nothrow_constructible_v =
     _Tuple_nothrow_constructible_v0<tuple_size_v<_Dest> == sizeof...(_Srcs), _Dest, _Srcs...>;
 
-// VARIABLE TEMPLATE _Tuple_assignable_v
 template <bool _Same, class _Dest, class... _Srcs>
 _INLINE_VAR constexpr bool _Tuple_assignable_v0 = false;
 
@@ -102,7 +98,6 @@ _INLINE_VAR constexpr bool _Tuple_assignable_v =
 template <class _Dest, class... _Srcs>
 struct _Tuple_assignable_val : bool_constant<_Tuple_assignable_v<_Dest, _Srcs...>> {};
 
-// VARIABLE TEMPLATE _Tuple_nothrow_assignable_v
 template <bool _Same, class _Dest, class... _Srcs>
 _INLINE_VAR constexpr bool _Tuple_nothrow_assignable_v0 = false;
 

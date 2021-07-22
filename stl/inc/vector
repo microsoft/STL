@@ -3058,7 +3058,6 @@ namespace pmr {
 } // namespace pmr
 #endif // _HAS_CXX17
 
-// VARIABLE TEMPLATE _Is_vb_iterator
 template <class _Alloc, bool _RequiresMutable>
 _INLINE_VAR constexpr bool _Is_vb_iterator<_Vb_iterator<_Alloc>, _RequiresMutable> = true;
 

@@ -47,7 +47,6 @@ struct _NODISCARD _Tidy_deallocate_guard { // class with destructor that calls _
     }
 };
 
-// VARIABLE TEMPLATE _Nothrow_compare
 template <class _Keycmp, class _Lhs, class _Rhs>
 _INLINE_VAR constexpr bool _Nothrow_compare = noexcept(
     static_cast<bool>(_STD declval<const _Keycmp&>()(_STD declval<const _Lhs&>(), _STD declval<const _Rhs&>())));
@@ -66,7 +65,6 @@ _NODISCARD constexpr size_t _Get_size_of_n(const size_t _Count) {
     return _Count * _Ty_size;
 }
 
-// VARIABLE TEMPLATE _New_alignof
 template <class _Ty>
 _INLINE_VAR constexpr size_t _New_alignof = (_STD max) (alignof(_Ty),
     static_cast<size_t>(__STDCPP_DEFAULT_NEW_ALIGNMENT__) // TRANSITION, VSO-522105
@@ -735,7 +733,6 @@ using _Maybe_rebind_alloc_t =
     typename _Select<is_same_v<typename _Alloc::value_type, _Value_type>>::template _Apply<_Alloc&,
         _Rebind_alloc_t<_Alloc, _Value_type>>;
 
-// VARIABLE TEMPLATE _Is_simple_alloc_v
 template <class _Alloc> // tests if allocator has simple addressing
 _INLINE_VAR constexpr bool _Is_simple_alloc_v = is_same_v<typename allocator_traits<_Alloc>::size_type, size_t>&&
     is_same_v<typename allocator_traits<_Alloc>::difference_type, ptrdiff_t>&&

@@ -850,7 +850,6 @@ struct is_unsigned : bool_constant<_Sign_base<_Ty>::_Unsigned> {}; // determine 
 template <class _Ty>
 _INLINE_VAR constexpr bool is_unsigned_v = _Sign_base<_Ty>::_Unsigned;
 
-// VARIABLE TEMPLATE _Is_nonbool_integral
 template <class _Ty>
 _INLINE_VAR constexpr bool _Is_nonbool_integral = is_integral_v<_Ty> && !is_same_v<remove_cv_t<_Ty>, bool>;
 

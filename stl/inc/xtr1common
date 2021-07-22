@@ -162,7 +162,6 @@ struct disjunction<_First, _Rest...> : _Disjunction<_First::value, _First, _Rest
 template <class... _Traits>
 _INLINE_VAR constexpr bool disjunction_v = disjunction<_Traits...>::value;
 
-// VARIABLE TEMPLATE _Is_any_of_v
 template <class _Ty, class... _Types>
 _INLINE_VAR constexpr bool _Is_any_of_v = // true if and only if _Ty is in _Types
     disjunction_v<is_same<_Ty, _Types>...>;
