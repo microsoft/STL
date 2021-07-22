@@ -62,7 +62,7 @@ public:
                 ++n;
             } else if (rand_value < zero)
                 ++under_bin;
-            else if ((Ty)(BINSIZE - 1) < rand_value)
+            else if ((Ty) (BINSIZE - 1) < rand_value)
                 ++over_bin;
             else
                 ++junk_bin;

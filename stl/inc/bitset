@@ -258,7 +258,9 @@ public:
     }
 
     _NODISCARD bitset operator~() const noexcept { // flip all bits
-        return bitset(*this).flip();
+        bitset _Tmp = *this;
+        _Tmp.flip();
+        return _Tmp;
     }
 
     bitset& flip() noexcept { // flip all bits
@@ -415,11 +417,15 @@ public:
     }
 
     _NODISCARD bitset operator<<(size_t _Pos) const noexcept {
-        return bitset(*this) <<= _Pos;
+        bitset _Tmp = *this;
+        _Tmp <<= _Pos;
+        return _Tmp;
     }
 
     _NODISCARD bitset operator>>(size_t _Pos) const noexcept {
-        return bitset(*this) >>= _Pos;
+        bitset _Tmp = *this;
+        _Tmp >>= _Pos;
+        return _Tmp;
     }
 
     _NODISCARD _Ty _Getword(size_t _Wpos) const noexcept { // nonstandard extension; get underlying word
@@ -474,19 +480,22 @@ private:
 template <size_t _Bits>
 _NODISCARD bitset<_Bits> operator&(const bitset<_Bits>& _Left, const bitset<_Bits>& _Right) noexcept {
     bitset<_Bits> _Ans = _Left;
-    return _Ans &= _Right;
+    _Ans &= _Right;
+    return _Ans;
 }
 
 template <size_t _Bits>
 _NODISCARD bitset<_Bits> operator|(const bitset<_Bits>& _Left, const bitset<_Bits>& _Right) noexcept {
     bitset<_Bits> _Ans = _Left;
-    return _Ans |= _Right;
+    _Ans |= _Right;
+    return _Ans;
 }
 
 template <size_t _Bits>
 _NODISCARD bitset<_Bits> operator^(const bitset<_Bits>& _Left, const bitset<_Bits>& _Right) noexcept {
     bitset<_Bits> _Ans = _Left;
-    return _Ans ^= _Right;
+    _Ans ^= _Right;
+    return _Ans;
 }
 
 template <class _Elem, class _Tr, size_t _Bits>

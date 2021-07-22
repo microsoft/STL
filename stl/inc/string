@@ -63,7 +63,7 @@ basic_istream<_Elem, _Traits>& getline(basic_istream<_Elem, _Traits>&& _Istr,
     }
 
     _Istr.setstate(_State);
-    return _Istr;
+    return static_cast<basic_istream<_Elem, _Traits>&>(_Istr);
 }
 
 template <class _Elem, class _Traits, class _Alloc>
