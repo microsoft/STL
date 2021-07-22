@@ -82,7 +82,8 @@ public:
 
     _NODISCARD _Deque_unchecked_const_iterator operator+(const difference_type _Off) const noexcept {
         _Deque_unchecked_const_iterator _Tmp = *this;
-        return _Tmp += _Off;
+        _Tmp += _Off;
+        return _Tmp;
     }
 
     _Deque_unchecked_const_iterator& operator-=(const difference_type _Off) noexcept {
@@ -92,7 +93,8 @@ public:
 
     _NODISCARD _Deque_unchecked_const_iterator operator-(const difference_type _Off) const noexcept {
         _Deque_unchecked_const_iterator _Tmp = *this;
-        return _Tmp -= _Off;
+        _Tmp -= _Off;
+        return _Tmp;
     }
 
     _NODISCARD difference_type operator-(const _Deque_unchecked_const_iterator& _Right) const noexcept {
@@ -145,7 +147,8 @@ template <class _Mydeque>
 _NODISCARD _Deque_unchecked_const_iterator<_Mydeque> operator+(
     typename _Deque_unchecked_const_iterator<_Mydeque>::difference_type _Off,
     _Deque_unchecked_const_iterator<_Mydeque> _Next) noexcept {
-    return _Next += _Off;
+    _Next += _Off;
+    return _Next;
 }
 
 // CLASS TEMPLATE _Deque_unchecked_iterator
@@ -202,7 +205,8 @@ public:
 
     _NODISCARD _Deque_unchecked_iterator operator+(const difference_type _Off) const noexcept {
         _Deque_unchecked_iterator _Tmp = *this;
-        return _Tmp += _Off;
+        _Tmp += _Off;
+        return _Tmp;
     }
 
     _Deque_unchecked_iterator& operator-=(const difference_type _Off) noexcept {
@@ -212,7 +216,8 @@ public:
 
     _NODISCARD _Deque_unchecked_iterator operator-(const difference_type _Off) const noexcept {
         _Deque_unchecked_iterator _Tmp = *this;
-        return _Tmp -= _Off;
+        _Tmp -= _Off;
+        return _Tmp;
     }
 
     _NODISCARD difference_type operator-(const _Mybase& _Right) const noexcept {
@@ -228,7 +233,8 @@ template <class _Mydeque>
 _NODISCARD _Deque_unchecked_iterator<_Mydeque> operator+(
     typename _Deque_unchecked_iterator<_Mydeque>::difference_type _Off,
     _Deque_unchecked_iterator<_Mydeque> _Next) noexcept {
-    return _Next += _Off;
+    _Next += _Off;
+    return _Next;
 }
 
 // CLASS TEMPLATE _Deque_const_iterator
@@ -325,7 +331,8 @@ public:
 
     _NODISCARD _Deque_const_iterator operator+(const difference_type _Off) const noexcept {
         _Deque_const_iterator _Tmp = *this;
-        return _Tmp += _Off;
+        _Tmp += _Off;
+        return _Tmp;
     }
 
     _Deque_const_iterator& operator-=(const difference_type _Off) noexcept {
@@ -334,7 +341,8 @@ public:
 
     _NODISCARD _Deque_const_iterator operator-(const difference_type _Off) const noexcept {
         _Deque_const_iterator _Tmp = *this;
-        return _Tmp -= _Off;
+        _Tmp -= _Off;
+        return _Tmp;
     }
 
     _NODISCARD difference_type operator-(const _Deque_const_iterator& _Right) const noexcept {
@@ -428,7 +436,8 @@ public:
 template <class _Mydeque>
 _NODISCARD _Deque_const_iterator<_Mydeque> operator+(
     typename _Deque_const_iterator<_Mydeque>::difference_type _Off, _Deque_const_iterator<_Mydeque> _Next) noexcept {
-    return _Next += _Off;
+    _Next += _Off;
+    return _Next;
 }
 
 // CLASS TEMPLATE _Deque_iterator
@@ -486,7 +495,8 @@ public:
 
     _NODISCARD _Deque_iterator operator+(const difference_type _Off) const noexcept {
         _Deque_iterator _Tmp = *this;
-        return _Tmp += _Off;
+        _Tmp += _Off;
+        return _Tmp;
     }
 
     _Deque_iterator& operator-=(const difference_type _Off) noexcept {
@@ -498,7 +508,8 @@ public:
 
     _NODISCARD _Deque_iterator operator-(const difference_type _Off) const noexcept {
         _Deque_iterator _Tmp = *this;
-        return _Tmp -= _Off;
+        _Tmp -= _Off;
+        return _Tmp;
     }
 
     _NODISCARD reference operator[](const difference_type _Off) const noexcept {
@@ -515,7 +526,8 @@ public:
 template <class _Mydeque>
 _NODISCARD _Deque_iterator<_Mydeque> operator+(
     typename _Deque_iterator<_Mydeque>::difference_type _Off, _Deque_iterator<_Mydeque> _Next) noexcept {
-    return _Next += _Off;
+    _Next += _Off;
+    return _Next;
 }
 
 // deque TYPE WRAPPERS
@@ -1001,8 +1013,8 @@ public:
     }
 
     _NODISCARD size_type max_size() const noexcept {
-        return (_STD min)(
-            static_cast<size_type>((numeric_limits<difference_type>::max)()), _Alty_traits::max_size(_Getal()));
+        return (_STD min) (static_cast<size_type>((numeric_limits<difference_type>::max) ()),
+            _Alty_traits::max_size(_Getal()));
     }
 
     _NODISCARD bool empty() const noexcept {
@@ -1184,7 +1196,7 @@ public:
         _Orphan_all();
         auto _Myfirst       = _Unchecked_begin();
         const auto _Oldsize = _Mysize();
-        auto _Assign_count  = (_STD min)(_Count, _Oldsize);
+        auto _Assign_count  = (_STD min) (_Count, _Oldsize);
         for (; 0 < _Assign_count; --_Assign_count) {
             *_Myfirst = _Val;
             ++_Myfirst;
@@ -1382,11 +1394,11 @@ private:
                 }
 
                 _Mid = begin() + static_cast<difference_type>(_Count);
-                _Alloc_temporary<_Alty> _Tmp(_Getal(), _Val); // in case _Val is in sequence
+                _Alloc_temporary2<_Alty> _Tmp(_Getal(), _Val); // in case _Val is in sequence
                 _STD move(_Mid + static_cast<difference_type>(_Count), _Mid + static_cast<difference_type>(_Off),
                     _Mid); // copy rest of prefix
                 _STD fill(begin() + static_cast<difference_type>(_Off), _Mid + static_cast<difference_type>(_Off),
-                    _Tmp._Storage._Value); // fill in values
+                    _Tmp._Get_value()); // fill in values
             }
             _CATCH_ALL
             while (_Oldsize < _Mysize()) {
@@ -1415,11 +1427,11 @@ private:
                 }
 
                 _Mid = begin() + static_cast<difference_type>(_Off);
-                _Alloc_temporary<_Alty> _Tmp(_Getal(), _Val); // in case _Val is in sequence
+                _Alloc_temporary2<_Alty> _Tmp(_Getal(), _Val); // in case _Val is in sequence
                 _STD move_backward(_Mid, _Mid + static_cast<difference_type>(_Rem - _Count),
                     _Mid + static_cast<difference_type>(_Rem)); // copy rest of prefix
                 _STD fill(_Mid, _Mid + static_cast<difference_type>(_Count),
-                    _Tmp._Storage._Value); // fill in values
+                    _Tmp._Get_value()); // fill in values
             }
             _CATCH_ALL
             _Erase_last_n(_Mysize() - _Oldsize);

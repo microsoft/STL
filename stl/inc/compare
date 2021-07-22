@@ -679,7 +679,7 @@ concept _Can_fallback_eq_lt = requires(_Ty1& _Left, _Ty2& _Right) {
 // CUSTOMIZATION POINT OBJECT compare_strong_order_fallback
 namespace _Compare_strong_order_fallback {
     template <class _Ty1, class _Ty2>
-    concept _Can_strong_order = requires(_Ty1& _Left, _Ty2& _Right) {
+    concept _Can_strong_order = requires(_Ty1 & _Left, _Ty2 & _Right) {
         _STD strong_order(_Left, _Right);
     };
 
