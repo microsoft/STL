@@ -138,7 +138,6 @@ private:
 using streampos  = fpos<_Mbstatet>;
 using wstreampos = streampos;
 
-// FORWARD REFERENCES
 class locale;
 template <class _Facet>
 const _Facet& __CRTDECL use_facet(const locale&);

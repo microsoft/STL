@@ -428,7 +428,6 @@ struct _Path_cvt<char32_t, wchar_t, _Outtraits,
 };
 _STL_RESTORE_DEPRECATED_WARNING
 
-// FORWARD REFERENCES
 class path;
 path operator/(const path&, const path&);
 

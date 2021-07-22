@@ -892,7 +892,6 @@ struct _Cat_sequences<index_sequence<_Indexes1...>,
     using type = index_sequence<_Indexes1..., _Indexes2...>;
 };
 
-// FORWARD DECLARATIONS
 template <class _Ty, size_t _Size>
 class array;
 

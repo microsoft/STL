@@ -19,7 +19,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// FORWARD REFERENCES
 class gslice;
 class slice;
 
