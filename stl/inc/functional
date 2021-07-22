@@ -1198,7 +1198,6 @@ _NODISCARD bool operator!=(nullptr_t, const function<_Fty>& _Other) noexcept {
 }
 #endif // !_HAS_CXX20
 
-// PLACEHOLDERS
 template <int _Nx>
 struct _Ph { // placeholder
     static_assert(_Nx > 0, "invalid placeholder index");
@@ -1366,7 +1365,6 @@ _NODISCARD _CONSTEXPR20 _Binder<_Ret, _Fx, _Types...> bind(_Fx&& _Func, _Types&&
     return _Binder<_Ret, _Fx, _Types...>(_STD forward<_Fx>(_Func), _STD forward<_Types>(_Args)...);
 }
 
-// PLACEHOLDER ARGUMENTS
 namespace placeholders {
     _INLINE_VAR constexpr _Ph<1> _1{};
     _INLINE_VAR constexpr _Ph<2> _2{};
