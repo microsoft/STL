@@ -3098,8 +3098,6 @@ private:
 };
 
 
-
-// STRUCT TEMPLATE default_delete
 template <class _Ty>
 struct default_delete { // default deleter for unique_ptr
     constexpr default_delete() noexcept = default;
@@ -3127,7 +3125,6 @@ struct default_delete<_Ty[]> { // default deleter for unique_ptr to array of unk
     }
 };
 
-// STRUCT TEMPLATE _Get_deleter_pointer_type
 template <class _Ty, class _Dx_noref, class = void>
 struct _Get_deleter_pointer_type { // provide fallback
     using type = _Ty*;
@@ -3593,7 +3590,6 @@ inline pointer_safety get_pointer_safety() noexcept {
 }
 #endif // _HAS_GARBAGE_COLLECTION_SUPPORT_DELETED_IN_CXX23
 
-// STRUCT TEMPLATE owner_less
 template <class _Ty = void>
 struct owner_less; // not defined
 
@@ -3660,7 +3656,6 @@ struct owner_less<void> {
     using is_transparent = int;
 };
 
-// STRUCT TEMPLATE SPECIALIZATION hash
 template <class _Ty, class _Dx>
 struct hash<unique_ptr<_Ty, _Dx>> : _Conditionally_enabled_hash<unique_ptr<_Ty, _Dx>,
                                         is_default_constructible_v<hash<typename unique_ptr<_Ty, _Dx>::pointer>>> {

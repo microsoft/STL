@@ -20,7 +20,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// STRUCT time_base
 struct _CRTIMP2_PURE_IMPORT time_base : locale::facet { // base class for time_get
     enum dateorder { // constants for different orders of date components
         no_order,

@@ -31,10 +31,8 @@ _STD_BEGIN
 namespace experimental {
 
 #ifndef __EDG__
-    // STRUCT noop_coroutine_promise
     struct noop_coroutine_promise {};
 
-    // STRUCT coroutine_handle<noop_coroutine_promise>
     template <>
     struct coroutine_handle<noop_coroutine_promise> : coroutine_handle<> {
         friend coroutine_handle noop_coroutine() noexcept;

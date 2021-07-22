@@ -34,7 +34,6 @@ enum class chars_format {
 
 _BITMASK_OPS(chars_format)
 
-// STRUCT to_chars_result
 struct to_chars_result {
     char* ptr;
     errc ec;

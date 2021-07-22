@@ -608,7 +608,6 @@ inline unsigned short* __CRTDECL _Maklocstr(const char* _Ptr, unsigned short*, c
 }
 #endif // _NATIVE_WCHAR_T_DEFINED
 
-// STRUCT codecvt_base
 class _CRTIMP2_PURE_IMPORT codecvt_base : public locale::facet { // base class for codecvt
 public:
     enum { // constants for different parse states
@@ -2340,7 +2339,6 @@ protected:
 #define _UP _UPPER // 'A'-'Z'
 #define _XD _HEX // '0'-'9', 'A'-'F', 'a'-'f'
 
-// STRUCT ctype_base
 struct _CRTIMP2_PURE_IMPORT ctype_base : locale::facet { // base for ctype
     enum { // constants for character classifications
         alnum  = _DI | _LO | _UP | _XA,

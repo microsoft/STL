@@ -29,16 +29,12 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// STRUCT TEMPLATE plus
 // defined in <xstddef>
 
-// STRUCT TEMPLATE minus
 // defined in <xstddef>
 
-// STRUCT TEMPLATE multiplies
 // defined in <xstddef>
 
-// STRUCT TEMPLATE divides
 template <class _Ty = void>
 struct divides {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
@@ -50,7 +46,6 @@ struct divides {
     }
 };
 
-// STRUCT TEMPLATE modulus
 template <class _Ty = void>
 struct modulus {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
@@ -62,7 +57,6 @@ struct modulus {
     }
 };
 
-// STRUCT TEMPLATE negate
 template <class _Ty = void>
 struct negate {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _ARGUMENT_TYPE_NAME;
@@ -73,25 +67,18 @@ struct negate {
     }
 };
 
-// STRUCT TEMPLATE equal_to
 // defined in <xstddef>
 
-// STRUCT TEMPLATE not_equal_to
 // defined in <xstddef>
 
-// STRUCT TEMPLATE greater
 // defined in <xstddef>
 
-// STRUCT TEMPLATE less
 // defined in <xstddef>
 
-// STRUCT TEMPLATE greater_equal
 // defined in <xstddef>
 
-// STRUCT TEMPLATE less_equal
 // defined in <xstddef>
 
-// STRUCT TEMPLATE logical_and
 template <class _Ty = void>
 struct logical_and {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
@@ -103,7 +90,6 @@ struct logical_and {
     }
 };
 
-// STRUCT TEMPLATE logical_or
 template <class _Ty = void>
 struct logical_or {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
@@ -115,7 +101,6 @@ struct logical_or {
     }
 };
 
-// STRUCT TEMPLATE logical_not
 template <class _Ty = void>
 struct logical_not {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _ARGUMENT_TYPE_NAME;
@@ -126,7 +111,6 @@ struct logical_not {
     }
 };
 
-// STRUCT TEMPLATE bit_and
 template <class _Ty = void>
 struct bit_and {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
@@ -138,7 +122,6 @@ struct bit_and {
     }
 };
 
-// STRUCT TEMPLATE bit_or
 template <class _Ty = void>
 struct bit_or {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
@@ -150,7 +133,6 @@ struct bit_or {
     }
 };
 
-// STRUCT TEMPLATE bit_xor
 template <class _Ty = void>
 struct bit_xor {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
@@ -162,7 +144,6 @@ struct bit_xor {
     }
 };
 
-// STRUCT TEMPLATE bit_not
 template <class _Ty = void>
 struct bit_not {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _ARGUMENT_TYPE_NAME;
@@ -173,16 +154,12 @@ struct bit_not {
     }
 };
 
-// STRUCT TEMPLATE SPECIALIZATION plus
 // defined in <xstddef>
 
-// STRUCT TEMPLATE SPECIALIZATION minus
 // defined in <xstddef>
 
-// STRUCT TEMPLATE SPECIALIZATION multiplies
 // defined in <xstddef>
 
-// STRUCT TEMPLATE SPECIALIZATION divides
 template <>
 struct divides<void> {
     template <class _Ty1, class _Ty2>
@@ -194,7 +171,6 @@ struct divides<void> {
     using is_transparent = int;
 };
 
-// STRUCT TEMPLATE SPECIALIZATION modulus
 template <>
 struct modulus<void> {
     template <class _Ty1, class _Ty2>
@@ -206,7 +182,6 @@ struct modulus<void> {
     using is_transparent = int;
 };
 
-// STRUCT TEMPLATE SPECIALIZATION negate
 template <>
 struct negate<void> {
     template <class _Ty>
@@ -217,25 +192,18 @@ struct negate<void> {
     using is_transparent = int;
 };
 
-// STRUCT TEMPLATE SPECIALIZATION equal_to
 // defined in <xstddef>
 
-// STRUCT TEMPLATE SPECIALIZATION not_equal_to
 // defined in <xstddef>
 
-// STRUCT TEMPLATE SPECIALIZATION greater
 // defined in <xstddef>
 
-// STRUCT TEMPLATE SPECIALIZATION less
 // defined in <xstddef>
 
-// STRUCT TEMPLATE SPECIALIZATION greater_equal
 // defined in <xstddef>
 
-// STRUCT TEMPLATE SPECIALIZATION less_equal
 // defined in <xstddef>
 
-// STRUCT TEMPLATE SPECIALIZATION logical_and
 template <>
 struct logical_and<void> {
     template <class _Ty1, class _Ty2>
@@ -247,7 +215,6 @@ struct logical_and<void> {
     using is_transparent = int;
 };
 
-// STRUCT TEMPLATE SPECIALIZATION logical_or
 template <>
 struct logical_or<void> {
     template <class _Ty1, class _Ty2>
@@ -259,7 +226,6 @@ struct logical_or<void> {
     using is_transparent = int;
 };
 
-// STRUCT TEMPLATE SPECIALIZATION logical_not
 template <>
 struct logical_not<void> {
     template <class _Ty>
@@ -270,7 +236,6 @@ struct logical_not<void> {
     using is_transparent = int;
 };
 
-// STRUCT TEMPLATE SPECIALIZATION bit_and
 template <>
 struct bit_and<void> {
     template <class _Ty1, class _Ty2>
@@ -282,7 +247,6 @@ struct bit_and<void> {
     using is_transparent = int;
 };
 
-// STRUCT TEMPLATE SPECIALIZATION bit_or
 template <>
 struct bit_or<void> {
     template <class _Ty1, class _Ty2>
@@ -294,7 +258,6 @@ struct bit_or<void> {
     using is_transparent = int;
 };
 
-// STRUCT TEMPLATE SPECIALIZATION bit_xor
 template <>
 struct bit_xor<void> {
     template <class _Ty1, class _Ty2>
@@ -306,7 +269,6 @@ struct bit_xor<void> {
     using is_transparent = int;
 };
 
-// STRUCT TEMPLATE SPECIALIZATION bit_not
 template <>
 struct bit_not<void> {
     template <class _Ty>
@@ -710,7 +672,6 @@ struct _Unforced { // tag to distinguish bind() from bind<R>()
     explicit _Unforced() = default;
 };
 
-// STRUCT TEMPLATE _Invoker_ret
 // helper to give INVOKE an explicit return type; avoids undesirable Expression SFINAE
 template <class _Rx, bool = is_void_v<_Rx>>
 struct _Invoker_ret { // selected for _Rx being cv void
@@ -1064,7 +1025,6 @@ private:
     }
 };
 
-// STRUCT TEMPLATE _Get_function_impl
 template <class _Tx>
 struct _Get_function_impl {
     static_assert(_Always_false<_Tx>, "std::function does not accept non-function types as template arguments.");
@@ -1229,7 +1189,6 @@ public:
 _NON_MEMBER_CALL(_FUNCTION_POINTER_DEDUCTION_GUIDE, X1, X2, X3)
 #undef _FUNCTION_POINTER_DEDUCTION_GUIDE
 
-// STRUCT TEMPLATE _Deduce_signature
 template <class _Fx, class = void>
 struct _Deduce_signature {}; // can't deduce signature when &_Fx::operator() is missing, inaccessible, or ambiguous
 
@@ -1295,7 +1254,6 @@ _INLINE_VAR constexpr int is_placeholder_v = is_placeholder<_Ty>::value;
 template <class _Ret, class _Fx, class... _Types>
 class _Binder;
 
-// STRUCT TEMPLATE is_bind_expression
 template <class _Tx>
 struct is_bind_expression : false_type {}; // _Tx is not a bind expression
 
@@ -1539,7 +1497,6 @@ _NODISCARD constexpr auto bind_front(_Fx&& _Func, _Types&&... _Args) {
 #endif // _HAS_CXX20
 
 #if _HAS_FUNCTION_ALLOCATOR_SUPPORT
-// STRUCT TEMPLATE uses_allocator
 template <class _Fty, class _Alloc>
 struct uses_allocator<function<_Fty>, _Alloc> : true_type {}; // true_type if container allocator enabled
 #endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
@@ -1587,7 +1544,6 @@ _Ty* _Decode_aligned_block(void*& _Base, const size_t _Count) {
     return static_cast<_Ty*>(_Decode_aligned_block(_Base, sizeof(_Ty) * _Count, alignof(_Ty)));
 }
 
-// STRUCT _Global_delete
 struct _Global_delete {
     void operator()(void* const _Ptr) const {
         ::operator delete(_Ptr);
@@ -1669,7 +1625,6 @@ private:
 };
 
 
-// STRUCT TEMPLATE _Boyer_moore_hash_delta_1_table
 template <class _RanItPat, class _Hash_ty, class _Pred_eq>
 struct _Boyer_moore_hash_delta_1_table { // stores the Boyer-Moore delta_1 table using a hash table
     using _Value_t = _Iter_value_t<_RanItPat>;
@@ -1706,7 +1661,6 @@ private:
 };
 
 
-// STRUCT TEMPLATE _Boyer_moore_flat_delta_1_table
 template <class _RanItPat, _Iter_diff_t<_RanItPat> _Limit>
 struct _Boyer_moore_flat_delta_1_table { // stores the Boyer-Moore delta_1 table using a plain array lookup
     using _Value_t = _Iter_value_t<_RanItPat>;
@@ -1883,7 +1837,6 @@ pair<_RanItHaystack, _RanItHaystack> _Boyer_moore_horspool_search(
 }
 
 
-// STRUCT AND ALIAS TEMPLATES _Boyer_moore_traits
 template <class _RanItPat, class _Hash_ty, class _Pred_eq, class _Delta1_t>
 struct _Single_delta1_type_boyer_moore_traits {
     using _Diff = _Iter_diff_t<_RanItPat>;
@@ -2170,7 +2123,6 @@ private:
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // STRUCT ranges::not_equal_to
     struct not_equal_to {
         // clang-format off
         template <class _Ty1, class _Ty2>
@@ -2184,7 +2136,6 @@ namespace ranges {
         using is_transparent = int;
     };
 
-    // STRUCT ranges::greater_equal
     struct greater_equal {
         // clang-format off
         template <class _Ty1, class _Ty2>
@@ -2198,7 +2149,6 @@ namespace ranges {
         using is_transparent = int;
     };
 
-    // STRUCT ranges::less_equal
     struct less_equal {
         // clang-format off
         template <class _Ty1, class _Ty2>

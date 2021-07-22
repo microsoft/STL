@@ -755,7 +755,6 @@ const size_t _Swc_base<_Ty, _Sx, _Rx, _Swc_Traits>::short_lag;
 template <class _Ty, size_t _Sx, size_t _Rx, class _Swc_Traits>
 const size_t _Swc_base<_Ty, _Sx, _Rx, _Swc_Traits>::long_lag;
 
-// STRUCT TEMPLATE _Swc_traits
 template <class _Ty, _Ty _Mx, size_t _Nw>
 struct _Swc_traits { // traits for subtract_with_carry generator
     using _Cy_t   = int;
@@ -917,7 +916,6 @@ public:
 };
 
 #if _HAS_TR1_NAMESPACE
-// STRUCT TEMPLATE _Swc_01_traits
 template <class _Ty, size_t _Wx, size_t _Rx>
 struct _Swc_01_traits { // traits for subtract_with_carry_01 generator
     using _Cy_t   = _Ty;

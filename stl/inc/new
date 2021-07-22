@@ -20,7 +20,6 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 #if _HAS_CXX20
-// STRUCT destroying_delete_t
 struct destroying_delete_t {
     explicit destroying_delete_t() = default;
 };

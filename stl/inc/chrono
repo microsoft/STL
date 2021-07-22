@@ -49,15 +49,13 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 namespace chrono {
-    // STRUCT TEMPLATE treat_as_floating_point
-    template <class _Rep>
+        template <class _Rep>
     struct treat_as_floating_point : is_floating_point<_Rep> {}; // tests for floating-point type
 
     template <class _Rep>
     _INLINE_VAR constexpr bool treat_as_floating_point_v = treat_as_floating_point<_Rep>::value;
 
-    // STRUCT TEMPLATE duration_values
-    template <class _Rep>
+        template <class _Rep>
     struct duration_values { // gets arithmetic properties of a type
         _NODISCARD static constexpr _Rep zero() noexcept {
             // get zero value
@@ -277,11 +275,9 @@ namespace chrono {
     };
 } // namespace chrono
 
-// STRUCT TEMPLATE _Lcm (LEAST COMMON MULTIPLE)
 template <intmax_t _Ax, intmax_t _Bx>
 struct _Lcm : integral_constant<intmax_t, (_Ax / _Gcd<_Ax, _Bx>::value) * _Bx> {}; // compute LCM of _Ax and _Bx
 
-// STRUCT TEMPLATE common_type SPECIALIZATIONS
 template <class _Rep1, class _Period1, class _Rep2, class _Period2>
 struct common_type<_CHRONO duration<_Rep1, _Period1>,
     _CHRONO duration<_Rep2, _Period2>> { // common type of two durations
@@ -2239,8 +2235,7 @@ namespace chrono {
 
     // [time.zone.info]
 
-    // STRUCT sys_info
-    struct sys_info {
+        struct sys_info {
         sys_seconds begin;
         sys_seconds end;
         seconds offset;
@@ -2248,8 +2243,7 @@ namespace chrono {
         string abbrev;
     };
 
-    // STRUCT local_info
-    struct local_info {
+        struct local_info {
         static constexpr int unique      = 0;
         static constexpr int nonexistent = 1;
         static constexpr int ambiguous   = 2;
@@ -2607,8 +2601,7 @@ namespace chrono {
         return _Result == _Vec.end() ? nullptr : &*_Result;
     }
 
-    // STRUCT tzdb
-    struct tzdb {
+        struct tzdb {
         string version;
         vector<time_zone> zones;
         vector<time_zone_link> links;
@@ -2916,12 +2909,10 @@ namespace chrono {
 
     // [time.zone.zonedtraits]
 
-    // STRUCT TEMPLATE zoned_traits
-    template <class _Ty>
+        template <class _Ty>
     struct zoned_traits {};
 
-    // STRUCT zoned_traits<const time_zone*>
-    template <>
+        template <>
     struct zoned_traits<const time_zone*> {
         _NODISCARD static const time_zone* default_zone() {
             return _CHRONO get_tzdb().locate_zone("UTC");
@@ -3116,8 +3107,7 @@ namespace chrono {
     using utc_time    = time_point<utc_clock, _Duration>;
     using utc_seconds = utc_time<seconds>;
 
-    // STRUCT leap_second_info
-    struct leap_second_info {
+        struct leap_second_info {
         bool is_leap_second;
         seconds elapsed;
     };
@@ -3386,8 +3376,7 @@ namespace chrono {
 #if _HAS_CXX20
     // [time.clock.conv]
 
-    // STRUCT TEMPLATE clock_time_conversion
-    template <class _DestClock, class _SourceClock>
+        template <class _DestClock, class _SourceClock>
     struct clock_time_conversion {};
 
     // [time.clock.cast.id]

@@ -18,7 +18,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// STRUCT messages_base
 struct messages_base : locale::facet { // base class for messages
     using catalog = int;
 

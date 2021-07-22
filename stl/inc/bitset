@@ -554,7 +554,6 @@ basic_istream<_Elem, _Tr>& operator>>(basic_istream<_Elem, _Tr>& _Istr, bitset<_
     return _Istr;
 }
 
-// STRUCT TEMPLATE SPECIALIZATION hash
 template <size_t _Bits>
 struct hash<bitset<_Bits>> {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef bitset<_Bits> _ARGUMENT_TYPE_NAME;

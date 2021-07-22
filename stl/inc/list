@@ -574,7 +574,6 @@ public:
     size_type _Mysize; // number of elements
 };
 
-// STRUCT TEMPLATE _List_node_emplace_op2
 template <class _Alnode>
 struct _List_node_emplace_op2 : _Alloc_construct_ptr<_Alnode> {
     using _Alnode_traits = allocator_traits<_Alnode>;
@@ -607,7 +606,6 @@ struct _List_node_emplace_op2 : _Alloc_construct_ptr<_Alnode> {
     }
 };
 
-// STRUCT TEMPLATE _List_node_insert_op2
 template <class _Alnode>
 struct _List_node_insert_op2 {
     // list insert operation which maintains exception safety

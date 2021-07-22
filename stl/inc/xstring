@@ -31,7 +31,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // ^^^ use workaround ^^^
 
 _STD_BEGIN
-// STRUCT TEMPLATE _Char_traits (FROM <string>)
 template <class _Elem, class _Int_type>
 struct _Char_traits { // properties of a string or stream element
     using char_type  = _Elem;
@@ -222,7 +221,6 @@ struct _Char_traits { // properties of a string or stream element
     }
 };
 
-// STRUCT TEMPLATE _WChar_traits
 template <class _Elem>
 struct _WChar_traits : private _Char_traits<_Elem, unsigned short> {
     // char_traits for the char16_t-likes: char16_t, wchar_t, unsigned short
@@ -330,28 +328,23 @@ public:
     }
 };
 
-// STRUCT TEMPLATE char_traits
 template <class _Elem>
 struct char_traits : _Char_traits<_Elem, long> {}; // properties of a string or stream unknown element
 
-// STRUCT char_traits<char16_t>
 template <>
 struct char_traits<char16_t> : _WChar_traits<char16_t> {};
 
 using u16streampos = streampos;
 
-// STRUCT char_traits<char32_t>
 template <>
 struct char_traits<char32_t> : _Char_traits<char32_t, unsigned int> {};
 
 using u32streampos = streampos;
 
-// STRUCT char_traits<wchar_t>
 template <>
 struct char_traits<wchar_t> : _WChar_traits<wchar_t> {};
 
 #ifdef _NATIVE_WCHAR_T_DEFINED
-// STRUCT char_traits<unsigned short>
 template <>
 struct char_traits<unsigned short> : _WChar_traits<unsigned short> {};
 #endif // _NATIVE_WCHAR_T_DEFINED
@@ -362,7 +355,6 @@ struct char_traits<unsigned short> : _WChar_traits<unsigned short> {};
 #define _HAS_U8_INTRINSICS 0
 #endif // Detect u8 intrinsics
 
-// STRUCT TEMPLATE _Narrow_char_traits
 template <class _Elem, class _Int_type>
 struct _Narrow_char_traits : private _Char_traits<_Elem, _Int_type> {
     // Implement char_traits for narrow character types char and char8_t
@@ -482,12 +474,10 @@ public:
 #undef _HAS_U8_INTRINSICS
 #undef _HAS_MEMCPY_MEMMOVE_INTRINSICS
 
-// STRUCT char_traits<char> (FROM <string>)
 template <>
 struct char_traits<char> : _Narrow_char_traits<char, int> {}; // properties of a string or stream char element
 
 #ifdef __cpp_char8_t
-// STRUCT char_traits<char8_t>
 template <>
 struct char_traits<char8_t> : _Narrow_char_traits<char8_t, unsigned int> {};
 
@@ -545,7 +535,6 @@ basic_ostream<_Elem, _Traits>& _Insert_string(
     return _Ostr;
 }
 
-// STRUCT TEMPLATE _Char_traits_eq
 template <class _Traits>
 struct _Char_traits_eq {
     using _Elem = typename _Traits::char_type;
@@ -555,7 +544,6 @@ struct _Char_traits_eq {
     }
 };
 
-// STRUCT TEMPLATE _Char_traits_lt
 template <class _Traits>
 struct _Char_traits_lt {
     using _Elem = typename _Traits::char_type;
@@ -1882,7 +1870,6 @@ using u32string_view = basic_string_view<char32_t>;
 using wstring_view   = basic_string_view<wchar_t>;
 
 
-// STRUCT TEMPLATE SPECIALIZATION hash FOR basic_string_view
 template <class _Elem, class _Traits>
 struct hash<basic_string_view<_Elem, _Traits>> {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef basic_string_view<_Elem, _Traits> _ARGUMENT_TYPE_NAME;
@@ -4945,7 +4932,6 @@ using u8string = basic_string<char8_t, char_traits<char8_t>, allocator<char8_t>>
 using u16string = basic_string<char16_t, char_traits<char16_t>, allocator<char16_t>>;
 using u32string = basic_string<char32_t, char_traits<char32_t>, allocator<char32_t>>;
 
-// STRUCT TEMPLATE SPECIALIZATION hash
 template <class _Elem, class _Traits, class _Alloc>
 struct hash<basic_string<_Elem, _Traits, _Alloc>> {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef basic_string<_Elem, _Traits, _Alloc> _ARGUMENT_TYPE_NAME;

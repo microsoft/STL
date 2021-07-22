@@ -202,7 +202,6 @@ struct _Reinterpret_move_iter {
 #endif // !_HAS_CXX20
 };
 
-// STRUCT TEMPLATE _List_head_construct_ptr
 template <class _Alnode>
 struct _List_head_construct_ptr {
     using value_type = typename _Alnode::value_type;

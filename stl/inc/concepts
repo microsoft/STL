@@ -309,7 +309,6 @@ concept strict_weak_order = relation<_FTy, _Ty1, _Ty2>;
 
 // clang-format on
 
-// STRUCT TEMPLATE _Choice_t
 template <class _Ty>
 struct _Choice_t {
     _Ty _Strategy  = _Ty{};

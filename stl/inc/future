@@ -58,7 +58,6 @@ _NODISCARD _Unique_ptr_alloc<_Alloc> _Make_unique_alloc(_Alloc& _Al, _Args&&... 
     return _Unique_ptr_alloc<_Alloc>(_Constructor._Release(), _Allocator_deleter<_Alloc>{_Al});
 }
 
-// STRUCT _Nil
 struct _Nil {}; // empty struct, for unused argument types
 
 enum class future_errc { // names for futures errors
@@ -85,7 +84,6 @@ enum class future_status { // names for timed wait function returns
 [[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Throw_future_error(const error_code& _Code);
 [[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Rethrow_future_exception(exception_ptr _Ptr);
 
-// STRUCT TEMPLATE SPECIALIZATION is_error_code_enum
 template <>
 struct is_error_code_enum<future_errc> : true_type {};
 
@@ -166,7 +164,6 @@ _NODISCARD inline const error_category& future_category() noexcept {
     return _Immortalize_memcpy_image<_Future_error_category2>();
 }
 
-// STRUCT TEMPLATE _State_deleter
 template <class _Ty>
 class _Associated_state;
 

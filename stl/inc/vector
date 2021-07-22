@@ -381,7 +381,6 @@ struct _Vec_iter_types {
     using const_pointer   = _Const_pointer;
 };
 
-// STRUCT _Value_init_tag
 struct _Value_init_tag { // tag to request value-initialization
     explicit _Value_init_tag() = default;
 };
@@ -3042,7 +3041,6 @@ public:
     }
 };
 
-// STRUCT TEMPLATE SPECIALIZATION hash
 template <class _Alloc>
 struct hash<vector<bool, _Alloc>> {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef vector<bool, _Alloc> _ARGUMENT_TYPE_NAME;

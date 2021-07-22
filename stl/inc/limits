@@ -37,7 +37,6 @@ enum float_round_style { // constants for different IEEE rounding styles
     round_toward_neg_infinity = 3
 };
 
-// STRUCT _Num_base
 struct _Num_base { // base for all types, with common defaults
     static constexpr float_denorm_style has_denorm = denorm_absent;
     static constexpr bool has_denorm_loss          = false;
@@ -113,7 +112,6 @@ class numeric_limits<volatile _Ty> : public numeric_limits<_Ty> {}; // numeric l
 template <class _Ty>
 class numeric_limits<const volatile _Ty> : public numeric_limits<_Ty> {}; // numeric limits for const volatile types
 
-// STRUCT _Num_int_base
 struct _Num_int_base : _Num_base { // base for integer types
     static constexpr bool is_bounded     = true;
     static constexpr bool is_exact       = true;
@@ -122,7 +120,6 @@ struct _Num_int_base : _Num_base { // base for integer types
     static constexpr int radix           = 2;
 };
 
-// STRUCT _Num_float_base
 struct _Num_float_base : _Num_base { // base for floating-point types
     static constexpr float_denorm_style has_denorm = denorm_present;
     static constexpr bool has_infinity             = true;

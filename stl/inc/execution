@@ -138,7 +138,6 @@ template <>
 struct is_execution_policy<execution::unsequenced_policy> : true_type {};
 #endif // _HAS_CXX20
 
-// STRUCT _Parallelism_resources_exhausted
 struct _Parallelism_resources_exhausted : exception {
     _NODISCARD virtual const char* __CLR_OR_THIS_CALL what() const noexcept override {
         // return pointer to message string
@@ -159,7 +158,6 @@ protected:
 
 enum class _Cancellation_status : bool { _Running, _Canceled };
 
-// STRUCT _Cancellation_token
 struct _Cancellation_token {
     atomic<_Cancellation_status> _Is_canceled_impl{_Cancellation_status::_Running};
 
@@ -261,7 +259,6 @@ constexpr size_t _Get_least2_chunked_work_chunk_count(const size_t _Hw_threads, 
     return _Get_chunked_work_chunk_count(_Hw_threads, _Size_count / 2);
 }
 
-// STRUCT TEMPLATE _Parallelism_allocator
 struct _Parallelism_allocate_traits {
     __declspec(allocator) static void* _Allocate(const size_t _Bytes) {
         void* _Result = ::operator new(_Bytes, nothrow);
@@ -362,7 +359,6 @@ template <class _FwdIt>
 inline constexpr bool _Use_atomic_iterator = conjunction_v<bool_constant<_Is_random_iter_v<_FwdIt>>,
     is_trivially_copyable<_FwdIt>, _Atomic_is_usually_lock_free<_FwdIt>>;
 
-// STRUCT TEMPLATE _Parallel_choose_min_result
 template <class _Ty>
 struct _Parallel_choose_min_result { // parallel results collector which uses atomic<_Ty> to choose the minimum value
     _Ty _Last;
@@ -385,7 +381,6 @@ struct _Parallel_choose_min_result { // parallel results collector which uses at
     }
 };
 
-// STRUCT TEMPLATE _Parallel_choose_max_result
 template <class _Ty>
 struct _Parallel_choose_max_result { // parallel results collector which uses atomic<_Ty> to choose the maximum value
     _Ty _Last;
@@ -412,7 +407,6 @@ struct _Parallel_choose_max_result { // parallel results collector which uses at
     }
 };
 
-// STRUCT TEMPLATE _Parallel_choose_min_chunk
 template <class _Ty>
 struct _Parallel_choose_min_chunk {
     // parallel results collector which uses atomic<chunk number> to choose the lowest chunk's result
@@ -447,7 +441,6 @@ struct _Parallel_choose_min_chunk {
     }
 };
 
-// STRUCT TEMPLATE _Parallel_choose_max_chunk
 template <class _Ty>
 struct _Parallel_choose_max_chunk {
     // parallel results collector which uses atomic<chunk number> to choose the highest chunk's result
@@ -667,7 +660,6 @@ private:
 };
 #pragma warning(pop)
 
-// STRUCT TEMPLATE _Work_stealing_membership
 enum class _Steal_result { _Success, _Abort, _Done };
 
 template <class _Ty>
@@ -725,7 +717,6 @@ struct _Work_stealing_membership { // thread-local "ticket" that team members us
     }
 };
 
-// STRUCT TEMPLATE _Work_stealing_team
 template <class _Ty>
 struct _Work_stealing_team { // inter-thread communication for threads working on a single task
     using _Diff = typename _Ty::difference_type;
@@ -769,7 +760,6 @@ struct _Work_stealing_team { // inter-thread communication for threads working o
     priority_queue<size_t, _Parallel_vector<size_t>, greater<>> _Available_queues;
 };
 
-// STRUCT TEMPLATE _Static_partition_key
 template <class _Diff>
 struct _Static_partition_key { // "pointer" identifying a static partition
     size_t _Chunk_number; // In range [0, numeric_limits<_Diff>::max()]
@@ -781,7 +771,6 @@ struct _Static_partition_key { // "pointer" identifying a static partition
     }
 };
 
-// STRUCT TEMPLATE _Static_partition_team
 template <class _Diff>
 struct _Static_partition_team { // common data for all static partitioned ops
     atomic<size_t> _Consumed_chunks;
@@ -831,14 +820,12 @@ struct _Static_partition_team { // common data for all static partitioned ops
     }
 };
 
-// STRUCT TEMPLATE _Iterator_range
 template <class _FwdIt>
 struct _Iterator_range { // record of a partition of work
     _FwdIt _First;
     _FwdIt _Last;
 };
 
-// STRUCT TEMPLATE _Static_partition_range
 template <class _FwdIt, class _Diff = _Iter_diff_t<_FwdIt>, bool = _Is_random_iter_v<_FwdIt>>
 struct _Static_partition_range;
 
@@ -959,7 +946,6 @@ struct _Static_partition_range<_FwdIt, _Diff, false> {
     }
 };
 
-// STRUCT TEMPLATE _Static_partition_range_backward
 template <class _BidIt, class _Diff = _Iter_diff_t<_BidIt>, bool = _Is_random_iter_v<_BidIt>>
 struct _Static_partition_range_backward;
 

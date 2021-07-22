@@ -914,7 +914,6 @@ public:
     }
 };
 
-// STRUCT TEMPLATE _Complex_value
 template <class _Ty>
 struct _Complex_value {
     enum { _Re = 0, _Im = 1 };

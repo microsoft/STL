@@ -44,7 +44,6 @@ _INLINE_VAR constexpr int _ISORT_MAX = 32; // maximum size for insertion sort
 template <class _It>
 _INLINE_VAR constexpr auto _Isort_max = _Iter_diff_t<_It>{_ISORT_MAX};
 
-// STRUCT TEMPLATE _Optimistic_temporary_buffer
 template <class _Diff>
 constexpr ptrdiff_t _Temporary_buffer_size(const _Diff _Value) noexcept {
     // convert an iterator difference_type to a ptrdiff_t for use in temporary buffers
@@ -97,7 +96,6 @@ struct _Optimistic_temporary_buffer { // temporary storage with _alloca-like att
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // STRUCT TEMPLATE in_fun_result
     template <class _In, class _Fun>
     struct in_fun_result {
         /* [[no_unique_address]] */ _In in;
@@ -114,7 +112,6 @@ namespace ranges {
         }
     };
 
-    // STRUCT TEMPLATE in_in_out_result
     template <class _In1, class _In2, class _Out>
     struct in_in_out_result {
         /* [[no_unique_address]] */ _In1 in1;
@@ -133,7 +130,6 @@ namespace ranges {
         }
     };
 
-    // STRUCT TEMPLATE in_out_out_result
     template <class _In, class _Out1, class _Out2>
     struct in_out_out_result {
         /* [[no_unique_address]] */ _In in;
@@ -152,7 +148,6 @@ namespace ranges {
         }
     };
 
-    // STRUCT TEMPLATE min_max_result
     template <class _Ty>
     struct min_max_result {
         /* [[no_unique_address]] */ _Ty min;
@@ -169,7 +164,6 @@ namespace ranges {
         }
     };
 
-    // STRUCT TEMPLATE in_found_result
     template <class _In>
     struct in_found_result {
         /* [[no_unique_address]] */ _In in;
@@ -4848,7 +4842,6 @@ void random_shuffle(_RanIt _First, _RanIt _Last, _RngFn&& _RngFunc) {
     _Random_shuffle1(_First, _Last, _RngFunc);
 }
 
-// STRUCT _Rand_urng_from_func
 struct _Rand_urng_from_func { // wrap rand() as a URNG
     using result_type = unsigned int;
 

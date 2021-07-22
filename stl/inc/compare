@@ -333,7 +333,6 @@ struct compare_three_way {
 };
 // clang-format on
 
-// STRUCT _Synth_three_way
 struct _Synth_three_way {
     // clang-format off
     template <class _Ty1, class _Ty2>

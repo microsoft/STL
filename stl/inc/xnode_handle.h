@@ -22,7 +22,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 _STD_BEGIN
 
-// STRUCT TEMPLATE _Insert_return_type
 template <class _Iterator, class _NodeType>
 struct _Insert_return_type {
     _Iterator position;

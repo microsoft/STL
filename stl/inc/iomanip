@@ -21,7 +21,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// STRUCT TEMPLATE _Fillobj
 template <class _Elem>
 struct _Fillobj { // store fill character
     _Fillobj(_Elem _Ch) : _Fill(_Ch) {}
@@ -52,7 +51,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Ostr;
 }
 
-// STRUCT TEMPLATE _Monobj
 template <class _Money>
 struct _Monobj { // store reference to monetary amount
     _Monobj(_Money& _Val_arg, bool _Intl_arg) : _Val(_Val_arg), _Intl(_Intl_arg) {}
@@ -117,7 +115,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Ostr;
 }
 
-// STRUCT TEMPLATE _Timeobj
 template <class _Elem, class _Ptr>
 struct _Timeobj { // store reference to tm object and format
     _Timeobj(_Ptr _Tptr_arg, const _Elem* _Fmt_arg) : _Tptr(_Tptr_arg), _Fmtfirst(_Fmt_arg) {
@@ -188,7 +185,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Ostr;
 }
 
-// STRUCT TEMPLATE _Quote_in
 template <class _Elem, class _Traits, class _Alloc>
 struct _Quote_in { // store reference to string
     using _Mystr = basic_string<_Elem, _Traits, _Alloc>;
@@ -203,7 +199,6 @@ struct _Quote_in { // store reference to string
     _Quote_in& operator=(const _Quote_in&) = delete;
 };
 
-// STRUCT TEMPLATE _Quote_out
 template <class _Elem, class _Traits, class _Sizet>
 struct _Quote_out { // store pointer/length for string
     _Quote_out(const _Elem* _Ptr_obj, _Sizet _Size_obj, _Elem _Delim_obj, _Elem _Escape_obj)
@@ -394,7 +389,6 @@ basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
     return _Istr;
 }
 
-// STRUCT TEMPLATE _Smanip
 template <class _Arg>
 struct _Smanip { // store function pointer and argument value
     _Smanip(void(__cdecl* _Left)(ios_base&, _Arg), _Arg _Val) : _Pfun(_Left), _Manarg(_Val) {}

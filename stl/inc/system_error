@@ -34,7 +34,6 @@ enum class io_errc { // error codes for ios_base::failure
     stream = 1
 };
 
-// STRUCT TEMPLATE is_error_code_enum
 template <class _Enum>
 struct is_error_code_enum : false_type {};
 
@@ -44,7 +43,6 @@ struct is_error_code_enum<io_errc> : true_type {};
 template <class _Ty>
 _INLINE_VAR constexpr bool is_error_code_enum_v = is_error_code_enum<_Ty>::value;
 
-// STRUCT TEMPLATE is_error_condition_enum
 template <class _Enum>
 struct is_error_condition_enum : false_type {};
 
@@ -409,7 +407,6 @@ _NODISCARD inline error_condition make_error_condition(io_errc _Errno) noexcept 
     return error_condition(static_cast<int>(_Errno), _STD iostream_category());
 }
 
-// STRUCT TEMPLATE SPECIALIZATION hash
 template <>
 struct hash<error_code> {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef error_code _ARGUMENT_TYPE_NAME;

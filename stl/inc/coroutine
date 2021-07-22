@@ -35,7 +35,6 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 
-// STRUCT TEMPLATE coroutine_traits
 template <class _Ret, class = void>
 struct _Coroutine_traits {};
 
@@ -47,7 +46,6 @@ struct _Coroutine_traits<_Ret, void_t<typename _Ret::promise_type>> {
 template <class _Ret, class...>
 struct coroutine_traits : _Coroutine_traits<_Ret> {};
 
-// STRUCT TEMPLATE coroutine_handle
 template <class = void>
 struct coroutine_handle;
 
@@ -197,10 +195,8 @@ struct hash<coroutine_handle<_Promise>> {
     }
 };
 
-// STRUCT noop_coroutine_promise
 struct noop_coroutine_promise {};
 
-// STRUCT coroutine_handle<noop_coroutine_promise>
 template <>
 struct coroutine_handle<noop_coroutine_promise> {
     friend coroutine_handle noop_coroutine() noexcept;
@@ -243,7 +239,6 @@ _NODISCARD inline noop_coroutine_handle noop_coroutine() noexcept {
     return noop_coroutine_handle{};
 }
 
-// STRUCT suspend_never
 struct suspend_never {
     _NODISCARD constexpr bool await_ready() const noexcept {
         return true;
@@ -253,7 +248,6 @@ struct suspend_never {
     constexpr void await_resume() const noexcept {}
 };
 
-// STRUCT suspend_always
 struct suspend_always {
     _NODISCARD constexpr bool await_ready() const noexcept {
         return false;

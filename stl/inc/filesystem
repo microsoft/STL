@@ -2096,7 +2096,6 @@ namespace filesystem {
         return _Status.type() == file_type::symlink;
     }
 
-    // STRUCT _File_status_and_error
     struct _File_status_and_error {
         file_status _Status;
         __std_win_error _Error;
@@ -2631,7 +2630,6 @@ namespace filesystem {
     class directory_iterator;
     class recursive_directory_iterator;
 
-    // STRUCT _Directory_entry_proxy
     struct _Directory_entry_proxy {
         _NODISCARD directory_entry operator*() && noexcept {
             return _STD move(_Entry);

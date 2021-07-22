@@ -1140,7 +1140,6 @@ __PURE_APPDOMAIN_GLOBAL locale::id num_get<_Elem, _InIt>::id;
 #pragma clang diagnostic pop
 #endif // __clang__
 
-// STRUCT TEMPLATE _Hex_float_precision
 template <class _Ty>
 struct _Hex_float_precision;
 

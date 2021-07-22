@@ -1227,7 +1227,6 @@ enum _Node_type { // type flag for nfa nodes
     _N_end
 };
 
-// STRUCT TEMPLATE _Buf
 template <class _Elem>
 struct _Buf { // character buffer
     _Buf() : _Sz(0), _Nchrs(0), _Chrs(nullptr) {}
@@ -1287,7 +1286,6 @@ private:
     _Elem* _Chrs;
 };
 
-// STRUCT _Bitmap
 struct _Bitmap { // accelerator table for small character values
     _Bitmap() {
         _CSTD memset(_Chrs, '\0', _Bmp_size);
@@ -1311,7 +1309,6 @@ private:
     unsigned char _Chrs[_Bmp_size];
 };
 
-// STRUCT TEMPLATE _Sequence
 template <class _Elem>
 struct _Sequence { // holds sequences of _Sz elements
     explicit _Sequence(unsigned int _Len) : _Sz(_Len) {}

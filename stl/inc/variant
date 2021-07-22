@@ -90,7 +90,6 @@ struct _Meta_push_front_<_List<_Types...>, _Ty> {
     using type = _List<_Ty, _Types...>;
 };
 
-// STRUCT TEMPLATE _Meta_quote
 template <class _Void, template <class...> class _Fn, class... _Args>
 struct _Meta_quote_helper_;
 template <template <class...> class _Fn, class... _Args>
@@ -108,7 +107,6 @@ template <class _Fn, class... _Args>
 using _Meta_invoke = // invoke meta-callable _Fn with _Args
     typename _Fn::template _Invoke<_Args...>;
 
-// STRUCT TEMPLATE _Meta_bind_back
 template <class _Fn, class... _Args>
 struct _Meta_bind_back { // construct a meta-callable that passes its arguments and _Args to _Fn
     template <class... _Types>
@@ -763,7 +761,6 @@ _NODISCARD constexpr _Variant_raw_visit_t<_Fn, _Storage> _Variant_raw_visit(
     return _Variant_raw_visit1<_Strategy>::_Visit(_Idx, static_cast<_Fn&&>(_Func), static_cast<_Storage&&>(_Obj));
 }
 
-// STRUCT TEMPLATE _Variant_base
 template <class...>
 class _Variant_base;
 

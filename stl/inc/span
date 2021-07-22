@@ -29,7 +29,6 @@ _STD_BEGIN
 
 inline constexpr size_t dynamic_extent = static_cast<size_t>(-1);
 
-// STRUCT TEMPLATE _Span_iterator
 template <class _Ty>
 struct _Span_iterator {
 #ifdef __cpp_lib_concepts
@@ -198,7 +197,6 @@ struct pointer_traits<_Span_iterator<_Ty>> {
     }
 };
 
-// STRUCT TEMPLATE _Span_extent_type
 template <class _Ty, size_t _Extent>
 struct _Span_extent_type {
     using pointer = _Ty*;
@@ -276,26 +274,22 @@ concept _Span_compatible_range =
 // clang-format on
 #else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
 
-// STRUCT TEMPLATE _Is_span
 template <class>
 struct _Is_span : false_type {};
 
 template <class _Ty, size_t _Extent>
 struct _Is_span<span<_Ty, _Extent>> : true_type {};
 
-// STRUCT TEMPLATE _Is_std_array
 template <class>
 struct _Is_std_array : false_type {};
 
 template <class _Ty, size_t _Size>
 struct _Is_std_array<array<_Ty, _Size>> : true_type {};
 
-// STRUCT TEMPLATE _Is_span_convertible_range
 template <class _Rng, class _Ty>
 struct _Is_span_convertible_range
     : bool_constant<is_convertible_v<remove_pointer_t<decltype(_STD data(_STD declval<_Rng&>()))> (*)[], _Ty (*)[]>> {};
 
-// STRUCT TEMPLATE _Has_container_interface
 template <class, class = void>
 struct _Has_container_interface : false_type {};
 

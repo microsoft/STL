@@ -758,7 +758,6 @@ public:
     size_type _Mysize; // number of elements
 };
 
-// STRUCT TEMPLATE _Tree_head_scoped_ptr
 template <class _Alnode, class _Scary_val>
 struct _Tree_head_scoped_ptr { // temporary storage for allocated node pointers to ensure exception safety
     _Alnode& _Al;

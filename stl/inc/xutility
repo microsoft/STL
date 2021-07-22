@@ -73,7 +73,6 @@ _NODISCARD _CONSTEXPR_BIT_CAST _To _Bit_cast(const _From& _Val) noexcept {
 #endif // ^^^ no workaround ^^^
 }
 
-// STRUCT TEMPLATE _Get_first_parameter
 template <class _Ty>
 struct _Get_first_parameter;
 
@@ -82,7 +81,6 @@ struct _Get_first_parameter<_Ty<_First, _Rest...>> { // given _Ty<_First, _Rest.
     using type = _First;
 };
 
-// STRUCT TEMPLATE _Replace_first_parameter
 template <class _Newfirst, class _Ty>
 struct _Replace_first_parameter;
 
@@ -91,7 +89,6 @@ struct _Replace_first_parameter<_Newfirst, _Ty<_First, _Rest...>> { // given _Ty
     using type = _Ty<_Newfirst, _Rest...>;
 };
 
-// STRUCT TEMPLATE _Get_element_type
 template <class _Ty, class = void>
 struct _Get_element_type {
     using type = typename _Get_first_parameter<_Ty>::type;
@@ -102,7 +99,6 @@ struct _Get_element_type<_Ty, void_t<typename _Ty::element_type>> {
     using type = typename _Ty::element_type;
 };
 
-// STRUCT TEMPLATE _Get_ptr_difference_type
 template <class _Ty, class = void>
 struct _Get_ptr_difference_type {
     using type = ptrdiff_t;
@@ -113,7 +109,6 @@ struct _Get_ptr_difference_type<_Ty, void_t<typename _Ty::difference_type>> {
     using type = typename _Ty::difference_type;
 };
 
-// STRUCT TEMPLATE _Get_rebind_alias
 template <class _Ty, class _Other, class = void>
 struct _Get_rebind_alias {
     using type = typename _Replace_first_parameter<_Other, _Ty>::type;
@@ -160,7 +155,6 @@ void _Default_construct_in_place(_Ty& _Obj) noexcept(is_nothrow_default_construc
     ::new (_Voidify_iter(_STD addressof(_Obj))) _Ty;
 }
 
-// STRUCT TEMPLATE pointer_traits
 template <class _Ty>
 struct pointer_traits {
     using pointer         = _Ty;
@@ -217,7 +211,6 @@ _NODISCARD constexpr auto to_address(const _Ptr& _Val) noexcept {
     }
 }
 
-// STRUCT identity
 struct identity {
     template <class _Ty>
     _NODISCARD constexpr _Ty&& operator()(_Ty&& _Left) const noexcept {
@@ -257,7 +250,6 @@ constexpr _Ref_fn<_Fn> _Pass_fn(_Fn& _Val) { // pass functor by "reference"
     return {_Val};
 }
 
-// STRUCT _Unused_parameter
 struct _Unused_parameter { // generic unused parameter struct
     constexpr _Unused_parameter() noexcept = default;
     template <class _Ty>
@@ -344,7 +336,6 @@ concept _Has_member_reference = requires {
     typename _Ty::reference;
 };
 
-// STRUCT TEMPLATE incrementable_traits
 template <class>
 struct incrementable_traits {};
 
@@ -388,7 +379,6 @@ template <class _Ty>
 using iter_difference_t = typename conditional_t<_Is_from_primary<iterator_traits<remove_cvref_t<_Ty>>>,
     incrementable_traits<remove_cvref_t<_Ty>>, iterator_traits<remove_cvref_t<_Ty>>>::difference_type;
 
-// STRUCT TEMPLATE indirectly_readable_traits
 template <class>
 struct _Cond_value_type {};
 
@@ -443,7 +433,6 @@ using iter_value_t = typename conditional_t<_Is_from_primary<iterator_traits<rem
 template <_Dereferenceable _Ty>
 using iter_reference_t = decltype(*_STD declval<_Ty&>());
 
-// STRUCT TEMPLATE _Iterator_traits_base
 template <class>
 struct _Iterator_traits_base {};
 
@@ -656,7 +645,6 @@ struct _Iterator_traits_base<_It> {
 };
 // clang-format on
 
-// STRUCT TEMPLATE iterator_traits
 template <class _Ty>
 struct iterator_traits : _Iterator_traits_base<_Ty> {
     using _From_primary = iterator_traits;
@@ -999,7 +987,6 @@ template <class _Fn, class... _Its>
 using indirect_result_t = invoke_result_t<_Fn, iter_reference_t<_Its>...>;
 // clang-format on
 
-// STRUCT TEMPLATE projected
 #pragma warning(push)
 #pragma warning(disable : 5046) // '%s': Symbol involving type with internal linkage not defined
 #ifdef __clang__
@@ -1190,7 +1177,6 @@ template <class _Iter>
 using _Iter_diff_t = iter_difference_t<_Iter>;
 
 #else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
-// STRUCT TEMPLATE iterator_traits
 template <class, class = void>
 struct _Iterator_traits_base {}; // empty for non-iterators
 
@@ -1272,7 +1258,6 @@ _INLINE_VAR constexpr bool _Is_bidi_iter_v = is_convertible_v<_Iter_cat_t<_Iter>
 template <class _Iter>
 _INLINE_VAR constexpr bool _Is_random_iter_v = is_convertible_v<_Iter_cat_t<_Iter>, random_access_iterator_tag>;
 
-// STRUCT TEMPLATE _Is_checked_helper
 template <class, class = void>
 struct _Is_checked_helper {}; // default definition, no longer used, retained due to pseudo-documentation
 
@@ -1425,7 +1410,6 @@ constexpr void _Seek_wrapped(_Iter& _It, _UIter&& _UIt) {
 }
 
 #if _HAS_CXX17
-// STRUCT TEMPLATE _Is_allocator
 template <class _Ty, class = void>
 struct _Is_allocator : false_type {}; // selected when _Ty can't possibly be an allocator
 
@@ -1445,7 +1429,6 @@ template <class _Iter>
 using _Guide_pair_t = pair<add_const_t<typename iterator_traits<_Iter>::value_type::first_type>,
     typename iterator_traits<_Iter>::value_type::second_type>;
 
-// STRUCT TEMPLATE is_execution_policy
 template <class _Ty>
 struct is_execution_policy : false_type {};
 
@@ -1473,7 +1456,6 @@ _NODISCARD constexpr auto _Idl_distance(const _Iter& _First, const _Iter& _Last)
     }
 }
 
-// STRUCT TEMPLATE _Unwrap_enum AND ALIAS
 template <class _Elem, bool _Is_enum = is_enum_v<_Elem>>
 struct _Unwrap_enum { // if _Elem is an enum, gets its underlying type; otherwise leaves _Elem unchanged
     using type = underlying_type_t<_Elem>;
@@ -2823,7 +2805,6 @@ namespace ranges {
     template <sized_range _Rng>
     using range_size_t = decltype(_RANGES size(_STD declval<_Rng&>()));
 
-    // STRUCT ranges::view_base
     struct view_base {};
 
     // VARIABLE TEMPLATE ranges::enable_view
@@ -3126,7 +3107,6 @@ namespace ranges {
         }
     }
 
-    // STRUCT ranges::equal_to
     struct equal_to {
         // clang-format off
         template <class _Ty1, class _Ty2>
@@ -3140,7 +3120,6 @@ namespace ranges {
         using is_transparent = int;
     };
 
-    // STRUCT ranges::less
     struct less {
         // clang-format off
         template <class _Ty1, class _Ty2>
@@ -3154,7 +3133,6 @@ namespace ranges {
         using is_transparent = int;
     };
 
-    // STRUCT ranges::greater
     struct greater {
         // clang-format off
         template <class _Ty1, class _Ty2>
@@ -3665,7 +3643,6 @@ struct tuple_element<1, const ranges::subrange<_It, _Se, _Ki>> {
 };
 
 namespace ranges {
-    // STRUCT ranges::dangling
     struct dangling {
         constexpr dangling() noexcept = default;
         template <class... _Args>
@@ -3685,7 +3662,6 @@ namespace ranges {
 struct _Container_proxy;
 struct _Iterator_base12;
 
-// STRUCT _Default_sentinel
 struct _Default_sentinel {}; // empty struct to serve as the end of a range
 
 #ifdef __cpp_lib_concepts
@@ -4003,13 +3979,11 @@ _NODISCARD _CONSTEXPR17 move_iterator<_Iter> make_move_iterator(_Iter _It) { // 
 }
 
 #ifdef __cpp_lib_concepts
-// STRUCT default_sentinel_t
 struct default_sentinel_t {};
 
 // VARIABLE default_sentinel
 inline constexpr default_sentinel_t default_sentinel{};
 
-// STRUCT unreachable_sentinel_t
 struct unreachable_sentinel_t;
 namespace _Unreachable_sentinel_detail {
     struct _Base {
@@ -4194,7 +4168,6 @@ namespace ranges {
     template <class _To, class _From>
     concept _Convertible_from = convertible_to<_From, _To>;
 
-    // STRUCT TEMPLATE in_out_result
     template <class _In, class _Out>
     struct in_out_result {
         /* [[no_unique_address]] */ _In in;
@@ -4869,7 +4842,6 @@ namespace ranges {
         }
     }
 
-    // STRUCT TEMPLATE in_in_result
     template <class _In1, class _In2>
     struct in_in_result {
         /* [[no_unique_address]] */ _In1 in1;
@@ -5716,7 +5688,6 @@ namespace ranges {
     inline constexpr _Find_if_not_fn find_if_not{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
 
-// STRUCT TEMPLATE _Require_constant
 template <auto>
 struct _Require_constant; // _Require_constant<E> is a valid template-id iff E is a constant expression of structural
                           // type
@@ -5845,7 +5816,6 @@ private:
     _Udiff _Bmask; // 2^_Bits - 1
 };
 
-// STRUCT TEMPLATE _Has_allocator_type
 template <class _Ty, class _Alloc, class = void>
 struct _Has_allocator_type : false_type {}; // tests for suitable _Ty::allocator_type
 
@@ -5853,7 +5823,6 @@ template <class _Ty, class _Alloc>
 struct _Has_allocator_type<_Ty, _Alloc, void_t<typename _Ty::allocator_type>>
     : is_convertible<_Alloc, typename _Ty::allocator_type>::type {}; // tests for suitable _Ty::allocator_type
 
-// STRUCT allocator_arg_t
 struct allocator_arg_t { // tag type for added allocator argument
     explicit allocator_arg_t() = default;
 };
@@ -5868,7 +5837,6 @@ _INLINE_VAR constexpr allocator_arg_t allocator_arg{};
 [[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Xruntime_error(_In_z_ const char*);
 [[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _XGetLastError();
 
-// STRUCT TEMPLATE uses_allocator
 template <class _Ty, class _Alloc>
 struct uses_allocator : _Has_allocator_type<_Ty, _Alloc>::type {
     // determine whether _Ty has an allocator_type member type
@@ -5877,7 +5845,6 @@ struct uses_allocator : _Has_allocator_type<_Ty, _Alloc>::type {
 template <class _Ty, class _Alloc>
 _INLINE_VAR constexpr bool uses_allocator_v = uses_allocator<_Ty, _Alloc>::value;
 
-// STRUCT TEMPLATE iterator
 template <class _Category, class _Ty, class _Diff = ptrdiff_t, class _Pointer = _Ty*, class _Reference = _Ty&>
 struct _CXX17_DEPRECATE_ITERATOR_BASE_CLASS iterator { // base type for iterator classes
     using iterator_category = _Category;
@@ -5937,7 +5904,6 @@ _NODISCARD _CONSTEXPR_BIT_CAST bool _Is_finite(const _Ty _Xx) { // constexpr isf
     return _Float_abs_bits(_Xx) < _Traits::_Shifted_exponent_mask;
 }
 
-// STRUCT _Nontrivial_dummy_type
 struct _Nontrivial_dummy_type {
     constexpr _Nontrivial_dummy_type() noexcept {
         // This default constructor is user-provided to avoid zero-initialization when objects are value-initialized.

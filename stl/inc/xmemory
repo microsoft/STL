@@ -27,7 +27,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// STRUCT TEMPLATE _Tidy_guard
 template <class _Ty>
 struct _NODISCARD _Tidy_guard { // class with destructor that calls _Tidy
     _Ty* _Target;
@@ -38,7 +37,6 @@ struct _NODISCARD _Tidy_guard { // class with destructor that calls _Tidy
     }
 };
 
-// STRUCT TEMPLATE _Tidy_deallocate_guard
 template <class _Ty>
 struct _NODISCARD _Tidy_deallocate_guard { // class with destructor that calls _Tidy_deallocate
     _Ty* _Target;
@@ -74,7 +72,6 @@ _INLINE_VAR constexpr size_t _New_alignof = (_STD max) (alignof(_Ty),
     static_cast<size_t>(__STDCPP_DEFAULT_NEW_ALIGNMENT__) // TRANSITION, VSO-522105
 );
 
-// STRUCT _Default_allocate_traits
 struct _Default_allocate_traits {
     __declspec(allocator) static
 #ifdef __clang__ // Clang and MSVC implement P0784R7 differently; see GH-1532
@@ -333,7 +330,6 @@ auto _Const_cast(_Ty* _Ptr) noexcept {
     return const_cast<remove_const_t<_Ty>*>(_Ptr);
 }
 
-// STRUCT TEMPLATE _Get_pointer_type
 template <class _Ty, class = void>
 struct _Get_pointer_type {
     using type = typename _Ty::value_type*;
@@ -346,7 +342,6 @@ struct _Get_pointer_type<_Ty, void_t<typename _Ty::pointer>> {
 };
 _STL_RESTORE_DEPRECATED_WARNING
 
-// STRUCT TEMPLATE _Get_const_pointer_type
 template <class _Ty, class = void>
 struct _Get_const_pointer_type {
     using _Ptrty = typename _Get_pointer_type<_Ty>::type;
@@ -361,7 +356,6 @@ struct _Get_const_pointer_type<_Ty, void_t<typename _Ty::const_pointer>> {
 };
 _STL_RESTORE_DEPRECATED_WARNING
 
-// STRUCT TEMPLATE _Get_void_pointer_type
 template <class _Ty, class = void>
 struct _Get_void_pointer_type {
     using _Ptrty = typename _Get_pointer_type<_Ty>::type;
@@ -373,7 +367,6 @@ struct _Get_void_pointer_type<_Ty, void_t<typename _Ty::void_pointer>> {
     using type = typename _Ty::void_pointer;
 };
 
-// STRUCT TEMPLATE _Get_const_void_pointer_type
 template <class _Ty, class = void>
 struct _Get_const_void_pointer_type {
     using _Ptrty = typename _Get_pointer_type<_Ty>::type;
@@ -385,7 +378,6 @@ struct _Get_const_void_pointer_type<_Ty, void_t<typename _Ty::const_void_pointer
     using type = typename _Ty::const_void_pointer;
 };
 
-// STRUCT TEMPLATE _Get_difference_type
 template <class _Ty, class = void>
 struct _Get_difference_type {
     using _Ptrty = typename _Get_pointer_type<_Ty>::type;
@@ -397,7 +389,6 @@ struct _Get_difference_type<_Ty, void_t<typename _Ty::difference_type>> {
     using type = typename _Ty::difference_type;
 };
 
-// STRUCT TEMPLATE _Get_size_type
 template <class _Ty, class = void>
 struct _Get_size_type {
     using type = make_unsigned_t<typename _Get_difference_type<_Ty>::type>;
@@ -408,7 +399,6 @@ struct _Get_size_type<_Ty, void_t<typename _Ty::size_type>> {
     using type = typename _Ty::size_type;
 };
 
-// STRUCT TEMPLATE _Get_propagate_on_container_copy
 template <class _Ty, class = void>
 struct _Get_propagate_on_container_copy {
     using type = false_type;
@@ -419,7 +409,6 @@ struct _Get_propagate_on_container_copy<_Ty, void_t<typename _Ty::propagate_on_c
     using type = typename _Ty::propagate_on_container_copy_assignment;
 };
 
-// STRUCT TEMPLATE _Get_propagate_on_container_move
 template <class _Ty, class = void>
 struct _Get_propagate_on_container_move {
     using type = false_type;
@@ -430,7 +419,6 @@ struct _Get_propagate_on_container_move<_Ty, void_t<typename _Ty::propagate_on_c
     using type = typename _Ty::propagate_on_container_move_assignment;
 };
 
-// STRUCT TEMPLATE _Get_propagate_on_container_swap
 template <class _Ty, class = void>
 struct _Get_propagate_on_container_swap {
     using type = false_type;
@@ -441,7 +429,6 @@ struct _Get_propagate_on_container_swap<_Ty, void_t<typename _Ty::propagate_on_c
     using type = typename _Ty::propagate_on_container_swap;
 };
 
-// STRUCT TEMPLATE _Get_is_always_equal
 template <class _Ty, class = void>
 struct _Get_is_always_equal {
     using type = bool_constant<is_empty_v<_Ty>>;
@@ -454,7 +441,6 @@ struct _Get_is_always_equal<_Ty, void_t<typename _Ty::is_always_equal>> {
 };
 _STL_RESTORE_DEPRECATED_WARNING
 
-// STRUCT TEMPLATE _Get_rebind_type
 template <class _Ty, class _Other, class = void>
 struct _Get_rebind_type {
     using type = typename _Replace_first_parameter<_Other, _Ty>::type;
@@ -467,7 +453,6 @@ struct _Get_rebind_type<_Ty, _Other, void_t<typename _Ty::template rebind<_Other
 };
 _STL_RESTORE_DEPRECATED_WARNING
 
-// STRUCT TEMPLATE _Is_default_allocator
 template <class _Ty>
 class allocator;
 
@@ -509,7 +494,6 @@ using _Uses_default_destroy = disjunction<_Is_default_allocator<_Alloc>, _Has_no
 template <class _Alloc, class _Ptr>
 using _Uses_default_destroy_t = typename _Uses_default_destroy<_Alloc, _Ptr>::type;
 
-// STRUCT TEMPLATE _Has_allocate_hint
 template <class _Alloc, class _Size_type, class _Const_void_pointer, class = void>
 struct _Has_allocate_hint : false_type {};
 
@@ -520,7 +504,6 @@ struct _Has_allocate_hint<_Alloc, _Size_type, _Const_void_pointer,
         _STD declval<const _Size_type&>(), _STD declval<const _Const_void_pointer&>()))>> : true_type {};
 _STL_RESTORE_DEPRECATED_WARNING
 
-// STRUCT TEMPLATE _Has_max_size
 template <class _Alloc, class = void>
 struct _Has_max_size : false_type {};
 
@@ -529,7 +512,6 @@ template <class _Alloc>
 struct _Has_max_size<_Alloc, void_t<decltype(_STD declval<const _Alloc&>().max_size())>> : true_type {};
 _STL_RESTORE_DEPRECATED_WARNING
 
-// STRUCT TEMPLATE _Has_select_on_container_copy_construction
 template <class _Alloc, class = void>
 struct _Has_select_on_container_copy_construction : false_type {};
 
@@ -537,7 +519,6 @@ template <class _Alloc>
 struct _Has_select_on_container_copy_construction<_Alloc,
     void_t<decltype(_STD declval<const _Alloc&>().select_on_container_copy_construction())>> : true_type {};
 
-// STRUCT TEMPLATE allocator_traits
 template <class _Alloc>
 struct allocator_traits;
 
@@ -761,7 +742,6 @@ _INLINE_VAR constexpr bool _Is_simple_alloc_v = is_same_v<typename allocator_tra
         is_same_v<typename allocator_traits<_Alloc>::pointer, typename _Alloc::value_type*>&&
             is_same_v<typename allocator_traits<_Alloc>::const_pointer, const typename _Alloc::value_type*>;
 
-// STRUCT TEMPLATE _Simple_types
 template <class _Value_type>
 struct _Simple_types { // wraps types from allocators with simple addressing for use in iterators
                        // and other SCARY machinery
@@ -982,7 +962,6 @@ _CONSTEXPR20 void _Delete_plain_internal(_Alloc& _Al, typename _Alloc::value_typ
     _Deallocate_plain(_Al, _Ptr);
 }
 
-// STRUCT TEMPLATE _Alloc_construct_ptr
 template <class _Alloc>
 struct _Alloc_construct_ptr { // pointer used to help construct 1 _Alloc::value_type without EH
     using pointer = _Alloc_ptr_t<_Alloc>;
@@ -1425,7 +1404,6 @@ void _Return_temporary_buffer(_Ty* const _Pbuf) noexcept {
     }
 }
 
-// STRUCT TEMPLATE _Uninitialized_backout
 template <class _NoThrowFwdIt>
 struct _NODISCARD _Uninitialized_backout {
     // struct to undo partially constructed ranges in _Uninitialized_xxx algorithms
@@ -1587,7 +1565,7 @@ namespace ranges {
     template <class _In, class _Out>
     using uninitialized_move_result = in_out_result<_In, _Out>;
 
-        // clang-format off
+    // clang-format off
     template <input_iterator _It, sentinel_for<_It> _Se, _No_throw_forward_iterator _Out,
         _No_throw_sentinel_for<_Out> _OSe>
         requires constructible_from<iter_value_t<_Out>, iter_rvalue_reference_t<_It>>
@@ -1621,7 +1599,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// STRUCT TEMPLATE _Uninitialized_backout_al
 template <class _Alloc>
 class _NODISCARD _Uninitialized_backout_al {
     // struct to undo partially constructed ranges in _Uninitialized_xxx_al algorithms
@@ -1866,7 +1843,6 @@ _CXX17_DEPRECATE_TEMPORARY_BUFFER void return_temporary_buffer(_Ty* _Pbuf) {
 }
 #endif // _HAS_DEPRECATED_TEMPORARY_BUFFER
 
-// STRUCT TEMPLATE _In_place_key_extract_set
 // assumes _Args have already been _Remove_cvref_t'd
 template <class _Key, class... _Args>
 struct _In_place_key_extract_set {
@@ -1883,7 +1859,6 @@ struct _In_place_key_extract_set<_Key, _Key> {
     }
 };
 
-// STRUCT TEMPLATE _In_place_key_extract_map
 // assumes _Args have already been _Remove_cvref_t'd
 template <class _Key, class... _Args>
 struct _In_place_key_extract_map {
@@ -1909,7 +1884,6 @@ struct _In_place_key_extract_map<_Key, pair<_First, _Second>> {
     }
 };
 
-// STRUCT TEMPLATE _Wrap
 #pragma warning(push)
 #pragma warning(disable : 4624) // '%s': destructor was implicitly defined as deleted
 template <class _Ty>
@@ -1918,7 +1892,6 @@ struct _Wrap {
 };
 #pragma warning(pop)
 
-// STRUCT TEMPLATE _Alloc_temporary2
 template <class _Alloc>
 struct _Alloc_temporary2 {
     using value_type = typename _Alloc::value_type;

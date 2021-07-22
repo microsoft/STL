@@ -155,7 +155,6 @@ private:
     perms _Myperms;
 };
 
-// STRUCT space_info
 struct space_info { // space information for a file
     uintmax_t capacity;
     uintmax_t free;
@@ -192,7 +191,6 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Unlink(const wchar_t*);
 _FS_DLL int __CLRCALL_PURE_OR_CDECL _Copy_file(const wchar_t*, const wchar_t*);
 _FS_DLL int __CLRCALL_PURE_OR_CDECL _Chmod(const wchar_t*, perms);
 
-// STRUCT TEMPLATE _Path_cvt
 template <class _Inchar, class _Outchar, class _Outtraits = char_traits<_Outchar>,
     class _Outalloc = allocator<_Outchar>>
 struct _Path_cvt { // converts among {char, wchar_t, UTF8, char16_t, char32_t} paths
