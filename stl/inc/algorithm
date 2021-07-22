@@ -383,7 +383,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 
 #if _HAS_CXX17
-// PARALLEL FUNCTION TEMPLATE find_if
 template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _FwdIt find_if(_ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
