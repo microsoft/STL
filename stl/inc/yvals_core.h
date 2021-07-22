@@ -364,12 +364,6 @@
 
 #include <vcruntime.h>
 
-#ifdef _FORBID_ALL_STL_HEADERS
-static_assert(false, "error STL2000: You tried to include a C++ standard header file. "
-                     "However, with _FORBID_ALL_STL_HEADERS all C++ standard header files are forbidden. "
-                     "Did you mean _ENFORCE_ONLY_CORE_HEADERS?");
-#endif // _FORBID_ALL_STL_HEADERS
-
 // TRANSITION, <vcruntime.h> should define _HAS_CXX23
 #ifndef _HAS_CXX23
 #if _HAS_CXX20 && (defined(_MSVC_LANG) && _MSVC_LANG > 202002L || defined(__cplusplus) && __cplusplus > 202002L)
@@ -1073,7 +1067,7 @@ static_assert(false, "error STL2000: You tried to include a C++ standard header 
 #endif // ^^^ warning disabled ^^^
 
 // next critical error number: STL1003
-// next error number: STL2002
+// next error number: STL2001
 // next warning number: STL4033
 
 // P0619R4 Removing C++17-Deprecated Features
