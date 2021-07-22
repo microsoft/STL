@@ -82,7 +82,6 @@ _INLINE_VAR constexpr bool _Is_ratio_v = false; // test for ratio type
 template <intmax_t _Rx1, intmax_t _Rx2>
 _INLINE_VAR constexpr bool _Is_ratio_v<ratio<_Rx1, _Rx2>> = true;
 
-// ALIAS TEMPLATE ratio_add
 template <class _Rx1, class _Rx2>
 struct _Ratio_add { // add two ratios
     static_assert(_Is_ratio_v<_Rx1> && _Is_ratio_v<_Rx2>, "ratio_add<R1, R2> requires R1 and R2 to be ratio<>s.");
@@ -103,7 +102,6 @@ struct _Ratio_add { // add two ratios
 template <class _Rx1, class _Rx2>
 using ratio_add = typename _Ratio_add<_Rx1, _Rx2>::type;
 
-// ALIAS TEMPLATE ratio_subtract
 template <class _Rx1, class _Rx2>
 struct _Ratio_subtract { // subtract two ratios
     static_assert(_Is_ratio_v<_Rx1> && _Is_ratio_v<_Rx2>, "ratio_subtract<R1, R2> requires R1 and R2 to be ratio<>s.");
@@ -117,7 +115,6 @@ struct _Ratio_subtract { // subtract two ratios
 template <class _Rx1, class _Rx2>
 using ratio_subtract = typename _Ratio_subtract<_Rx1, _Rx2>::type;
 
-// ALIAS TEMPLATE ratio_multiply
 template <class _Rx1, class _Rx2>
 struct _Ratio_multiply { // multiply two ratios
     static_assert(_Is_ratio_v<_Rx1> && _Is_ratio_v<_Rx2>, "ratio_multiply<R1, R2> requires R1 and R2 to be ratio<>s.");
@@ -149,7 +146,6 @@ struct _Ratio_multiply_sfinae<_Rx1, _Rx2, _Sfinae,
 template <class _Rx1, class _Rx2>
 using ratio_multiply = typename _Ratio_multiply_sfinae<_Rx1, _Rx2, false>::type;
 
-// ALIAS TEMPLATE ratio_divide
 template <class _Rx1, class _Rx2>
 struct _Ratio_divide { // divide two ratios
     static_assert(_Is_ratio_v<_Rx1> && _Is_ratio_v<_Rx2>, "ratio_divide<R1, R2> requires R1 and R2 to be ratio<>s.");

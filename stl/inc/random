@@ -50,7 +50,6 @@ _STD_BEGIN
         "unsigned short, unsigned int, unsigned long, or unsigned long long");                                 \
     _RNG_PROHIBIT_CHAR(_CheckedType)
 
-// ALIAS TEMPLATE _Enable_if_seed_seq_t
 template <class _Seed_seq, class _Self, class _Engine = _Self>
 using _Enable_if_seed_seq_t = enable_if_t<
     !is_convertible_v<remove_cv_t<_Seed_seq>,

@@ -33,7 +33,6 @@ struct integral_constant {
     }
 };
 
-// ALIAS TEMPLATE bool_constant
 template <bool _Val>
 using bool_constant = integral_constant<bool, _Val>;
 
@@ -217,7 +216,6 @@ struct remove_reference<_Ty&&> {
 template <class _Ty>
 using remove_reference_t = typename remove_reference<_Ty>::type;
 
-// ALIAS TEMPLATE _Const_thru_ref
 template <class _Ty>
 using _Const_thru_ref = typename remove_reference<_Ty>::_Const_thru_ref_type;
 

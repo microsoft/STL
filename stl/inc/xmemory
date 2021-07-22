@@ -274,7 +274,6 @@ _Ty* _Global_new(_Types&&... _Args) { // acts as "new" while disallowing user ov
     return static_cast<_Ty*>(_STD exchange(_Guard._Result, nullptr));
 }
 
-// ALIAS TEMPLATE _Rebind_pointer_t
 template <class _Ptr, class _Ty>
 using _Rebind_pointer_t = typename pointer_traits<_Ptr>::template rebind<_Ty>;
 
@@ -461,7 +460,6 @@ template <class _Ty>
 struct _Is_default_allocator<allocator<_Ty>, void_t<typename allocator<_Ty>::_From_primary>>
     : is_same<typename allocator<_Ty>::_From_primary, allocator<_Ty>>::type {};
 
-// ALIAS TEMPLATES _Uses_default_construct
 template <class _Void, class... _Types>
 struct _Has_no_allocator_construct : true_type {};
 
@@ -476,7 +474,6 @@ template <class _Alloc, class _Ptr, class... _Args>
 using _Uses_default_construct =
     disjunction<_Is_default_allocator<_Alloc>, _Has_no_allocator_construct<void, _Alloc, _Ptr, _Args...>>;
 
-// ALIAS TEMPLATE _Uses_default_destroy AND _Uses_default_destroy_t
 template <class _Alloc, class _Ptr, class = void>
 struct _Has_no_alloc_destroy : true_type {};
 
@@ -721,11 +718,9 @@ template <class _Alloc>
 using _Choose_pocma = conditional_t<allocator_traits<_Alloc>::is_always_equal::value, _Equal_allocators,
     typename allocator_traits<_Alloc>::propagate_on_container_move_assignment::type>;
 
-// ALIAS TEMPLATE _Rebind_alloc_t
 template <class _Alloc, class _Value_type>
 using _Rebind_alloc_t = typename allocator_traits<_Alloc>::template rebind_alloc<_Value_type>;
 
-// ALIAS TEMPLATE _Maybe_rebind_alloc_t
 // If _Alloc is already rebound appropriately, binds an lvalue reference to it, avoiding a copy. Otherwise, creates a
 // rebound copy.
 template <class _Alloc, class _Value_type>
@@ -865,17 +860,14 @@ _NODISCARD bool operator!=(const allocator<_Ty>&, const allocator<_Other>&) noex
 #endif // !_HAS_CXX20
 
 #if _HAS_CXX17
-// ALIAS TEMPLATE _Guide_size_type_t FOR DEDUCTION GUIDES, N4687 26.5.4.1 [unord.map.overview]/4
 template <class _Alloc>
 using _Guide_size_type_t =
     typename allocator_traits<conditional_t<_Is_allocator<_Alloc>::value, _Alloc, allocator<int>>>::size_type;
 #endif // _HAS_CXX17
 
-// ALIAS TEMPLATE _Alloc_ptr_t
 template <class _Alloc>
 using _Alloc_ptr_t = typename allocator_traits<_Alloc>::pointer;
 
-// ALIAS_TEMPLATE _Alloc_size_t
 template <class _Alloc>
 using _Alloc_size_t = typename allocator_traits<_Alloc>::size_type;
 
@@ -1230,7 +1222,6 @@ using _Container_base = _Container_base12;
 using _Iterator_base = _Iterator_base12;
 #endif // _ITERATOR_DEBUG_LEVEL == 0
 
-// ALIAS TEMPLATE _Container_proxy_ptr AND SUPPORTING MACHINERY
 struct _Leave_proxy_unbound {
     explicit _Leave_proxy_unbound() = default;
 }; // tag to indicate that a proxy is being allocated before it is safe to bind to a _Container_base12
@@ -1553,7 +1544,6 @@ namespace ranges {
         return {_STD move(_IFirst), _STD move(_OFirst)};
     }
 
-    // ALIAS TEMPLATE uninitialized_move_result
     template <class _In, class _Out>
     using uninitialized_move_result = in_out_result<_In, _Out>;
 

@@ -293,7 +293,6 @@ _FwdIt for_each_n(_ExPo&& _Exec, _FwdIt _First, _Diff _Count_raw, _Fn _Func) noe
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE for_each_result
     template <class _In, class _Fun>
     using for_each_result = in_fun_result<_In, _Fun>;
 
@@ -344,7 +343,6 @@ namespace ranges {
 
     inline constexpr _For_each_fn for_each{_Not_quite_object::_Construct_tag{}};
 
-    // ALIAS TEMPLATE for_each_n_result
     template <class _In, class _Fun>
     using for_each_n_result = in_fun_result<_In, _Fun>;
 
@@ -1304,7 +1302,6 @@ namespace ranges {
 
     inline constexpr _None_of_fn none_of{_Not_quite_object::_Construct_tag{}};
 
-    // ALIAS TEMPLATE copy_n_result
     template <class _In, class _Out>
     using copy_n_result = in_out_result<_In, _Out>;
 
@@ -1338,7 +1335,6 @@ namespace ranges {
 
     inline constexpr _Copy_n_fn copy_n{_Not_quite_object::_Construct_tag{}};
 
-    // ALIAS TEMPLATE copy_backward_result
     template <class _In, class _Out>
     using copy_backward_result = in_out_result<_In, _Out>;
 
@@ -1402,7 +1398,6 @@ _FwdIt2 copy_if(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _Pr _Pred
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE copy_if_result
     template <class _In, class _Out>
     using copy_if_result = in_out_result<_In, _Out>;
 
@@ -1458,7 +1453,6 @@ namespace ranges {
 
     inline constexpr _Copy_if_fn copy_if{_Not_quite_object::_Construct_tag{}};
 
-    // ALIAS TEMPLATE move_result
     template <class _In, class _Out>
     using move_result = in_out_result<_In, _Out>;
 
@@ -1515,7 +1509,6 @@ namespace ranges {
 
     inline constexpr _Move_fn move{_Not_quite_object::_Construct_tag{}};
 
-    // ALIAS TEMPLATE move_backward_result
     template <class _In, class _Out>
     using move_backward_result = in_out_result<_In, _Out>;
 
@@ -1606,7 +1599,6 @@ pair<_FwdIt2, _FwdIt3> partition_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _F
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE partition_copy_result
     template <class _In, class _Out1, class _Out2>
     using partition_copy_result = in_out_out_result<_In, _Out1, _Out2>;
 
@@ -2745,7 +2737,6 @@ namespace ranges {
 
     inline constexpr _Find_first_of_fn find_first_of{_Not_quite_object::_Construct_tag{}};
 
-    // ALIAS TEMPLATE swap_ranges_result
     template <class _In1, class _In2>
     using swap_ranges_result = in_in_result<_In1, _In2>;
 
@@ -2874,11 +2865,9 @@ _FwdIt3 transform(_ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1, co
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE unary_transform_result
     template <class _In, class _Out>
     using unary_transform_result = in_out_result<_In, _Out>;
 
-    // ALIAS TEMPLATE binary_transform_result
     template <class _In1, class _In2, class _Out>
     using binary_transform_result = in_in_out_result<_In1, _In2, _Out>;
 
@@ -3168,7 +3157,6 @@ _FwdIt2 replace_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, cons
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE replace_copy_result
     template <class _In, class _Out>
     using replace_copy_result = in_out_result<_In, _Out>;
 
@@ -3264,7 +3252,6 @@ _FwdIt2 replace_copy_if(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE replace_copy_if_result
     template <class _In, class _Out>
     using replace_copy_if_result = in_out_result<_In, _Out>;
 
@@ -3658,7 +3645,6 @@ namespace ranges {
 
     inline constexpr _Remove_if_fn remove_if{_Not_quite_object::_Construct_tag{}};
 
-    // ALIAS TEMPLATE remove_copy_result
     template <class _In, class _Out>
     using remove_copy_result = in_out_result<_In, _Out>;
 
@@ -3719,7 +3705,6 @@ namespace ranges {
 
     inline constexpr _Remove_copy_fn remove_copy{_Not_quite_object::_Construct_tag{}};
 
-    // ALIAS TEMPLATE remove_copy_if_result
     template <class _In, class _Out>
     using remove_copy_if_result = in_out_result<_In, _Out>;
 
@@ -3989,7 +3974,6 @@ _FwdIt2 unique_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest) noexc
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE unique_copy_result
     template <class _In, class _Out>
     using unique_copy_result = in_out_result<_In, _Out>;
 
@@ -4222,7 +4206,6 @@ _FwdIt reverse_copy(_ExPo&&, _BidIt _First, _BidIt _Last, _FwdIt _Dest) noexcept
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE reverse_copy_result
     template <class _In, class _Out>
     using reverse_copy_result = in_out_result<_In, _Out>;
 
@@ -4444,7 +4427,6 @@ _FwdIt2 rotate_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Mid, _FwdIt1 _Last, _FwdIt
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE rotate_copy_result
     template <class _In, class _Out>
     using rotate_copy_result = in_out_result<_In, _Out>;
 
@@ -6430,7 +6412,6 @@ _FwdIt3 merge(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE merge_result
     template <class _In1, class _In2, class _Out>
     using merge_result = in_in_out_result<_In1, _In2, _Out>;
 
@@ -8153,7 +8134,6 @@ _RanIt partial_sort_copy(_ExPo&&, _FwdIt _First1, _FwdIt _Last1, _RanIt _First2,
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE partial_sort_copy_result
     template <class _In, class _Out>
     using partial_sort_copy_result = in_out_result<_In, _Out>;
 
@@ -8556,7 +8536,6 @@ _FwdIt3 set_union(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Fw
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE set_union_result
     template <class _In1, class _In2, class _Out>
     using set_union_result = in_in_out_result<_In1, _In2, _Out>;
 
@@ -8682,7 +8661,6 @@ _FwdIt3 set_intersection(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE set_intersection_result
     template <class _In1, class _In2, class _Out>
     using set_intersection_result = in_in_out_result<_In1, _In2, _Out>;
 
@@ -8816,7 +8794,6 @@ _FwdIt3 set_difference(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE set_difference_result
     template <class _In, class _Out>
     using set_difference_result = in_out_result<_In, _Out>;
 
@@ -8960,7 +8937,6 @@ _FwdIt3 set_symmetric_difference(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdI
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE set_symmetric_difference_result
     template <class _In1, class _In2, class _Out>
     using set_symmetric_difference_result = in_in_out_result<_In1, _In2, _Out>;
 
@@ -9301,7 +9277,6 @@ _NODISCARD pair<_FwdIt, _FwdIt> minmax_element(_ExPo&&, _FwdIt _First, _FwdIt _L
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE minmax_element_result
     template <class _Ty>
     using minmax_element_result = min_max_result<_Ty>;
 
@@ -9575,7 +9550,6 @@ _NODISCARD constexpr pair<_Ty, _Ty> minmax(initializer_list<_Ty> _Ilist) {
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE minmax_result
     template <class _Ty>
     using minmax_result = min_max_result<_Ty>;
 
@@ -9709,7 +9683,6 @@ _CONSTEXPR20 bool next_permutation(_BidIt _First, _BidIt _Last) {
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE next_permutation_result
     template <class _In>
     using next_permutation_result = in_found_result<_In>;
 
@@ -9818,7 +9791,6 @@ _CONSTEXPR20 bool prev_permutation(_BidIt _First, _BidIt _Last) {
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE prev_permutation_result
     template <class _In>
     using prev_permutation_result = in_found_result<_In>;
 

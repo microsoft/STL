@@ -1255,7 +1255,6 @@ namespace ranges {
 
         inline constexpr _All_fn all;
 
-        // ALIAS TEMPLATE views::all_t
         template <viewable_range _Rng>
         using all_t = decltype(all(_STD declval<_Rng>()));
     } // namespace views

@@ -30,7 +30,6 @@ struct integer_sequence { // sequence of integer parameters
     }
 };
 
-// ALIAS TEMPLATE make_integer_sequence
 template <class _Ty, _Ty _Size>
 using make_integer_sequence = __make_integer_seq<integer_sequence, _Ty, _Size>;
 
@@ -76,7 +75,6 @@ _INLINE_VAR constexpr bool is_void_v = is_same_v<remove_cv_t<_Ty>, void>;
 template <class _Ty>
 struct is_void : bool_constant<is_void_v<_Ty>> {};
 
-// ALIAS TEMPLATE void_t
 template <class... _Types>
 using void_t = void;
 
@@ -1118,7 +1116,6 @@ struct decay { // determines decayed version of _Ty
 template <class _Ty>
 using decay_t = typename decay<_Ty>::type;
 
-// ALIAS TEMPLATE _Conditional_type
 template <class _Ty1, class _Ty2>
 using _Conditional_type = decltype(false ? _STD declval<_Ty1>() : _STD declval<_Ty2>());
 
@@ -1183,12 +1180,10 @@ struct basic_common_reference {};
 template <class _Ty>
 _Ty _Returns_exactly() noexcept; // not defined
 
-// ALIAS TEMPLATE _Cond_res
 template <class _Ty1, class _Ty2>
 using _Cond_res = // N4810 [meta.trans.other]/2.4
     decltype(false ? _Returns_exactly<_Ty1>() : _Returns_exactly<_Ty2>());
 
-// ALIAS TEMPLATE _Copy_cv
 template <class _From>
 struct _Copy_cv_impl {
     template <class _To>
@@ -1232,7 +1227,6 @@ struct _Add_qualifiers<_Ty1&&> {
 template <class...>
 struct common_reference;
 
-// ALIAS TEMPLATE common_reference_t
 template <class... _Types>
 using common_reference_t = typename common_reference<_Types...>::type;
 
@@ -1728,7 +1722,6 @@ _NODISCARD constexpr bool is_corresponding_member(_MemberTy1 _ClassTy1::*_Pm1, _
 #endif // __EDG__
 #endif // _HAS_CXX20
 
-// ALIAS TEMPLATE _Weak_types
 template <class _Ty>
 struct _Function_args {}; // determine whether _Ty is a function
 

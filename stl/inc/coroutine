@@ -231,7 +231,6 @@ private:
     void* _Ptr = __builtin_coro_noop();
 };
 
-// ALIAS noop_coroutine_handle
 using noop_coroutine_handle = coroutine_handle<noop_coroutine_promise>;
 
 _NODISCARD inline noop_coroutine_handle noop_coroutine() noexcept {

@@ -255,7 +255,6 @@ _NODISCARD constexpr bool is_gteq(const partial_ordering _Comp) noexcept {
     return _Comp >= 0;
 }
 
-// ALIAS TEMPLATE common_comparison_category_t
 enum _Comparison_category : unsigned char {
     _Comparison_category_none    = 1,
     _Comparison_category_partial = 2,
@@ -357,7 +356,6 @@ struct _Synth_three_way {
     }
 };
 
-// ALIAS TEMPLATE _Synth_three_way_result
 template <class _Ty1, class _Ty2 = _Ty1>
 using _Synth_three_way_result = decltype(_Synth_three_way{}(_STD declval<_Ty1&>(), _STD declval<_Ty2&>()));
 

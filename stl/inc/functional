@@ -712,7 +712,6 @@ private:
     virtual const void* _Get() const noexcept = 0;
 };
 
-// ALIAS TEMPLATE _Is_large
 constexpr size_t _Space_size = (_Small_object_num_ptrs - 1) * sizeof(void*);
 
 template <class _Impl> // determine whether _Impl must be dynamically allocated

@@ -28,7 +28,6 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE uninitialized_copy_result
     template <class _In, class _Out>
     using uninitialized_copy_result = in_out_result<_In, _Out>;
 
@@ -135,7 +134,6 @@ _NoThrowFwdIt uninitialized_copy_n(const _InIt _First, const _Diff _Count_raw, _
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE uninitialized_copy_n_result
     template <class _In, class _Out>
     using uninitialized_copy_n_result = in_out_result<_In, _Out>;
 
@@ -274,7 +272,6 @@ pair<_InIt, _NoThrowFwdIt> uninitialized_move_n(_InIt _First, const _Diff _Count
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE uninitialized_move_n_result
     template <class _In, class _Out>
     using uninitialized_move_n_result = in_out_result<_In, _Out>;
 

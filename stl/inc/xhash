@@ -1932,7 +1932,6 @@ protected:
 };
 
 #if _HAS_CXX17
-// ALIAS TEMPLATE _Is_hasher FOR CONSTRAINING DEDUCTION GUIDES, N4687 26.2.7 [unord.req]/17.3
 template <class _Hasher>
 using _Is_hasher = negation<disjunction<is_integral<_Hasher>, _Is_allocator<_Hasher>>>;
 #endif // _HAS_CXX17

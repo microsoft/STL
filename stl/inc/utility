@@ -378,7 +378,6 @@ _NODISCARD constexpr bool operator>=(const pair<_Ty1, _Ty2>& _Left, const pair<_
 }
 #endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
-// ALIAS TEMPLATE _Unrefwrap_t
 template <class _Ty>
 struct _Unrefwrap_helper { // leave unchanged if not a reference_wrapper
     using type = _Ty;

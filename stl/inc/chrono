@@ -672,7 +672,6 @@ namespace chrono {
     };
 
 #if _HAS_CXX20
-    // sys_time ALIASES
     template <class _Duration>
     using sys_time    = time_point<system_clock, _Duration>;
     using sys_seconds = sys_time<seconds>;
@@ -3306,7 +3305,6 @@ namespace filesystem {
 } // namespace filesystem
 
 namespace chrono {
-    // ALIAS file_clock
     using file_clock = filesystem::_File_time_clock;
 
     template <class _Duration>

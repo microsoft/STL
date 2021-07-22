@@ -256,10 +256,8 @@ struct _Unused_parameter { // generic unused parameter struct
     constexpr _Unused_parameter(_Ty&&) noexcept {}
 };
 
-// ALIAS _Any_tag
 using _Any_tag = _Unused_parameter; // generic fallback/default/"other" target for tag dispatch
 
-// ALIAS TEMPLATE _Algorithm_int_t
 template <class _Ty>
 using _Algorithm_int_t = conditional_t<is_integral_v<_Ty>, _Ty, ptrdiff_t>;
 
@@ -278,7 +276,6 @@ struct random_access_iterator_tag : bidirectional_iterator_tag {};
 #ifdef __cpp_lib_concepts
 struct contiguous_iterator_tag : random_access_iterator_tag {};
 
-// ALIAS TEMPLATE _With_reference
 template <class _Ty>
 using _With_reference = _Ty&;
 
@@ -359,7 +356,6 @@ struct incrementable_traits<_Ty> {
 };
 // clang-format on
 
-// ALIAS TEMPLATE iter_difference_t
 template <class _Ty>
 concept _Is_from_primary = _Same_impl<typename _Ty::_From_primary, _Ty>;
 
@@ -415,12 +411,10 @@ template <_Has_member_value_type _Ty>
 struct indirectly_readable_traits<_Ty> : _Cond_value_type<typename _Ty::value_type> {};
 // clang-format on
 
-// ALIAS TEMPLATE iter_value_t
 template <class _Ty>
 using iter_value_t = typename conditional_t<_Is_from_primary<iterator_traits<remove_cvref_t<_Ty>>>,
     indirectly_readable_traits<remove_cvref_t<_Ty>>, iterator_traits<remove_cvref_t<_Ty>>>::value_type;
 
-// ALIAS TEMPLATE iter_reference_t
 template <_Dereferenceable _Ty>
 using iter_reference_t = decltype(*_STD declval<_Ty&>());
 
@@ -717,7 +711,6 @@ namespace ranges {
 
 // iter_swap defined below since it depends on indirectly_movable_storable
 
-// ALIAS TEMPLATE iter_rvalue_reference_t
 // clang-format off
 template <class _Ty>
     requires _Dereferenceable<_Ty> && requires(_Ty& __t) {
@@ -740,7 +733,6 @@ template <class _It>
 concept indirectly_readable = _Indirectly_readable_impl<remove_cvref_t<_It>>;
 // clang-format on
 
-// ALIAS TEMPLATE iter_common_reference_t
 template <indirectly_readable _Ty>
 using iter_common_reference_t = common_reference_t<iter_reference_t<_Ty>, iter_value_t<_Ty>&>;
 
@@ -760,7 +752,6 @@ template <class _Ty>
 concept _Signed_integer_like = _Integer_like<_Ty> && static_cast<_Ty>(-1) < static_cast<_Ty>(0);
 // clang-format on
 
-// ALIAS TEMPLATE _Make_unsigned_like_t
 template <class _Ty>
 using _Make_unsigned_like_t = make_unsigned_t<_Ty>;
 
@@ -769,7 +760,6 @@ _NODISCARD constexpr auto _To_unsigned_like(const _Ty _Value) noexcept {
     return static_cast<_Make_unsigned_like_t<_Ty>>(_Value);
 }
 
-// ALIAS TEMPLATE _Make_signed_like_t
 template <class _Ty>
 using _Make_signed_like_t = make_signed_t<_Ty>;
 
@@ -817,7 +807,6 @@ concept sized_sentinel_for = sentinel_for<_Se, _It>
     };
 // clang-format on
 
-// ALIAS TEMPLATE _Iter_concept
 template <bool _Iterator_category_present>
 struct _Iter_concept_impl2 {
     template <class _It, class _Traits>
@@ -948,7 +937,6 @@ concept indirect_strict_weak_order = indirectly_readable<_It1>
     && strict_weak_order<_Fn&, iter_reference_t<_It1>, iter_reference_t<_It2>>
     && strict_weak_order<_Fn&, iter_common_reference_t<_It1>, iter_common_reference_t<_It2>>;
 
-// ALIAS TEMPLATE indirect_result_t
 template <class _Fn, class... _Its>
     requires (indirectly_readable<_Its> && ...)
         && invocable<_Fn, iter_reference_t<_Its>...>
@@ -1122,15 +1110,12 @@ template <class _It, class _Pr = ranges::less, class _Proj = identity>
 concept sortable = permutable<_It> && indirect_strict_weak_order<_Pr, projected<_It, _Proj>>;
 // clang-format on
 
-// ALIAS TEMPLATE _Iter_ref_t
 template <class _Iter>
 using _Iter_ref_t = iter_reference_t<_Iter>;
 
-// ALIAS TEMPLATE _Iter_value_t
 template <class _Iter>
 using _Iter_value_t = iter_value_t<_Iter>;
 
-// ALIAS TEMPLATE _Iter_diff_t
 template <class _Iter>
 using _Iter_diff_t = iter_difference_t<_Iter>;
 
@@ -1168,24 +1153,19 @@ struct iterator_traits : _Iterator_traits_base<_Iter> {}; // get traits from ite
 template <class _Ty>
 struct iterator_traits<_Ty*> : _Iterator_traits_pointer_base<_Ty> {}; // get traits from pointer, if possible
 
-// ALIAS TEMPLATE _Iter_ref_t
 template <class _Iter>
 using _Iter_ref_t = typename iterator_traits<_Iter>::reference;
 
-// ALIAS TEMPLATE _Iter_value_t
 template <class _Iter>
 using _Iter_value_t = typename iterator_traits<_Iter>::value_type;
 
-// ALIAS TEMPLATE _Iter_diff_t
 template <class _Iter>
 using _Iter_diff_t = typename iterator_traits<_Iter>::difference_type;
 #endif // __cpp_lib_concepts
 
-// ALIAS TEMPLATE _Common_diff_t
 template <class... _Iters>
 using _Common_diff_t = common_type_t<_Iter_diff_t<_Iters>...>;
 
-// ALIAS TEMPLATE _Iter_cat_t
 template <class _Iter>
 using _Iter_cat_t = typename iterator_traits<_Iter>::iterator_category;
 
@@ -1371,7 +1351,6 @@ struct _Is_allocator<_Ty, void_t<typename _Ty::value_type, decltype(_STD declval
                                                                _STD declval<_Ty&>().allocate(size_t{1}), size_t{1}))>>
     : true_type {}; // selected when _Ty resembles an allocator, N4687 26.2.1 [container.requirements.general]/17
 
-// ALIAS TEMPLATES FOR DEDUCTION GUIDES, N4687 26.4.1 [associative.general]/2
 template <class _Iter>
 using _Guide_key_t = remove_const_t<typename iterator_traits<_Iter>::value_type::first_type>;
 
@@ -1388,7 +1367,6 @@ struct is_execution_policy : false_type {};
 template <class _Ty>
 inline constexpr bool is_execution_policy_v = is_execution_policy<_Ty>::value;
 
-// ALIAS TEMPLATE _Enable_if_execution_policy_t
 // Note: The noexcept specifiers on all parallel algorithm overloads enforce termination as per
 // N4713 23.19.4 [execpol.seq]/2, 23.19.5 [execpol.par]/2, and 23.19.6 [execpol.parunseq]/2
 template <class _ExPo>
@@ -2072,7 +2050,6 @@ namespace ranges {
         inline constexpr _Begin::_Cpo begin;
     }
 
-    // ALIAS TEMPLATE ranges::iterator_t
     template <class _Ty>
     using iterator_t = decltype(_RANGES begin(_STD declval<_Ty&>()));
 
@@ -2277,23 +2254,18 @@ namespace ranges {
     concept borrowed_range = range<_Rng> && _Should_range_access<_Rng>;
     // clang-format on
 
-    // ALIAS TEMPLATE ranges::sentinel_t
     template <range _Rng>
     using sentinel_t = decltype(_RANGES end(_STD declval<_Rng&>()));
 
-    // ALIAS TEMPLATE ranges::range_difference_t
     template <range _Rng>
     using range_difference_t = iter_difference_t<iterator_t<_Rng>>;
 
-    // ALIAS TEMPLATE ranges::range_value_t
     template <range _Rng>
     using range_value_t = iter_value_t<iterator_t<_Rng>>;
 
-    // ALIAS TEMPLATE ranges::range_reference_t
     template <range _Rng>
     using range_reference_t = iter_reference_t<iterator_t<_Rng>>;
 
-    // ALIAS TEMPLATE ranges::range_rvalue_reference_t
     template <range _Rng>
     using range_rvalue_reference_t = iter_rvalue_reference_t<iterator_t<_Rng>>;
 
@@ -2733,7 +2705,6 @@ namespace ranges {
     };
     // clang-format on
 
-    // ALIAS TEMPLATE ranges::range_size_t
     template <sized_range _Rng>
     using range_size_t = decltype(_RANGES size(_STD declval<_Rng&>()));
 
@@ -3567,11 +3538,9 @@ namespace ranges {
         constexpr dangling(_Args&&...) noexcept {}
     };
 
-    // ALIAS TEMPLATE ranges::borrowed_iterator_t
     template <range _Rng>
     using borrowed_iterator_t = conditional_t<borrowed_range<_Rng>, iterator_t<_Rng>, dangling>;
 
-    // ALIAS TEMPLATE ranges::borrowed_subrange_t
     template <range _Rng>
     using borrowed_subrange_t = conditional_t<borrowed_range<_Rng>, subrange<iterator_t<_Rng>>, dangling>;
 } // namespace ranges
@@ -4098,7 +4067,6 @@ namespace ranges {
         }
     };
 
-    // ALIAS TEMPLATE copy_result
     template <class _In, class _Out>
     using copy_result = in_out_result<_In, _Out>;
 
@@ -4770,7 +4738,6 @@ namespace ranges {
         }
     };
 
-    // ALIAS TEMPLATE mismatch_result
     template <class _In1, class _In2>
     using mismatch_result = in_in_result<_In1, _In2>;
 
