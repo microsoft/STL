@@ -1932,6 +1932,7 @@ protected:
 };
 
 #if _HAS_CXX17
+// For constraining deduction guides (N4892 [unord.req]/18.3)
 template <class _Hasher>
 using _Is_hasher = negation<disjunction<is_integral<_Hasher>, _Is_allocator<_Hasher>>>;
 #endif // _HAS_CXX17

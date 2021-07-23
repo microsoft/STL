@@ -26,6 +26,7 @@ template <class>
 // false value attached to a dependent name (for static_assert)
 _INLINE_VAR constexpr bool _Always_false = false;
 
+// stuff from <functional>
 #if _HAS_AUTO_PTR_ETC
 template <class _Arg, class _Result>
 struct unary_function { // base class for unary functions

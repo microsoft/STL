@@ -1351,6 +1351,7 @@ struct _Is_allocator<_Ty, void_t<typename _Ty::value_type, decltype(_STD declval
                                                                _STD declval<_Ty&>().allocate(size_t{1}), size_t{1}))>>
     : true_type {}; // selected when _Ty resembles an allocator, N4687 26.2.1 [container.requirements.general]/17
 
+// deduction guide utilities (N4892 [associative.general]/2)
 template <class _Iter>
 using _Guide_key_t = remove_const_t<typename iterator_traits<_Iter>::value_type::first_type>;
 

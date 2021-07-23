@@ -860,6 +860,7 @@ _NODISCARD bool operator!=(const allocator<_Ty>&, const allocator<_Other>&) noex
 #endif // !_HAS_CXX20
 
 #if _HAS_CXX17
+// See N4892 [unord.map.overview]/4
 template <class _Alloc>
 using _Guide_size_type_t =
     typename allocator_traits<conditional_t<_Is_allocator<_Alloc>::value, _Alloc, allocator<int>>>::size_type;

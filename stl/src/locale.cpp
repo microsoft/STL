@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+// class locale member functions
 
 #if !defined(STDCPP_IMPLIB)
 #define STDCPP_IMPLIB 0
