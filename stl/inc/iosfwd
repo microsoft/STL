@@ -44,7 +44,7 @@ _STD_BEGIN
 #define _CATCH_IO_(xtype, x) } // catch block for basic_ios x
 #endif // _HAS_EXCEPTIONS
 
-// STREAM POSITIONING TYPES (from <streambuf>)
+// from <streambuf>
 using streamoff  = long long;
 using streamsize = long long;
 
@@ -216,7 +216,6 @@ template <class _Elem>
 class collate;
 #endif // defined(_DLL_CPPLIB)
 
-// char TYPEDEFS
 using ios           = basic_ios<char, char_traits<char>>;
 using streambuf     = basic_streambuf<char, char_traits<char>>;
 using istream       = basic_istream<char, char_traits<char>>;
@@ -235,7 +234,6 @@ using syncbuf     = basic_syncbuf<char>;
 using osyncstream = basic_osyncstream<char>;
 #endif // _HAS_CXX20
 
-// wchar_t TYPEDEFS
 using wios           = basic_ios<wchar_t, char_traits<wchar_t>>;
 using wstreambuf     = basic_streambuf<wchar_t, char_traits<wchar_t>>;
 using wistream       = basic_istream<wchar_t, char_traits<wchar_t>>;
@@ -255,7 +253,6 @@ using wosyncstream = basic_osyncstream<wchar_t>;
 #endif // _HAS_CXX20
 
 #if defined(_CRTBLD)
-// unsigned short TYPEDEFS
 using ushistream = basic_istream<unsigned short, char_traits<unsigned short>>;
 using ushostream = basic_ostream<unsigned short, char_traits<unsigned short>>;
 using ushfilebuf = basic_filebuf<unsigned short, char_traits<unsigned short>>;

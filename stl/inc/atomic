@@ -2449,7 +2449,6 @@ private:
 };
 #endif // _HAS_CXX20
 
-// NONMEMBER OPERATIONS ON ATOMIC TYPES
 template <class _Ty>
 _NODISCARD bool atomic_is_lock_free(const volatile atomic<_Ty>* _Mem) noexcept {
     return _Mem->is_lock_free();
@@ -2760,7 +2759,6 @@ void atomic_notify_all(atomic<_Ty>* const _Mem) noexcept /* strengthened */ {
 }
 #endif // _HAS_CXX20
 
-// ATOMIC TYPEDEFS
 using atomic_bool = atomic<bool>;
 
 using atomic_char   = atomic<char>;

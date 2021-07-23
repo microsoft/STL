@@ -38,7 +38,6 @@ _END_EXTERN_C
 #endif // _USE_STD_VECTOR_ALGORITHMS
 
 _STD_BEGIN
-// COMMON SORT PARAMETERS
 _INLINE_VAR constexpr int _ISORT_MAX = 32; // maximum size for insertion sort
 
 template <class _It>

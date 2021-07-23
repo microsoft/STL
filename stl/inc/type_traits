@@ -216,7 +216,6 @@ struct add_pointer {
 template <class _Ty>
 using add_pointer_t = typename _Add_pointer<_Ty>::type;
 
-// TYPE PREDICATES
 template <class>
 _INLINE_VAR constexpr bool is_array_v = false; // determine whether type argument is an array
 
@@ -681,7 +680,6 @@ struct is_destructible : bool_constant<__is_destructible(_Ty)> {
 template <class _Ty>
 _INLINE_VAR constexpr bool is_destructible_v = __is_destructible(_Ty);
 
-// TRIVIAL TRAITS
 template <class _Ty, class... _Args>
 struct is_trivially_constructible : bool_constant<__is_trivially_constructible(_Ty, _Args...)> {
     // determine whether direct-initialization of _Ty with _Args... is trivial
@@ -750,7 +748,6 @@ struct is_trivially_destructible : bool_constant<__is_trivially_destructible(_Ty
 template <class _Ty>
 _INLINE_VAR constexpr bool is_trivially_destructible_v = __is_trivially_destructible(_Ty);
 
-// NOTHROW TRAITS
 template <class _Ty, class... _Args>
 struct is_nothrow_constructible : bool_constant<__is_nothrow_constructible(_Ty, _Args...)> {
     // determine whether direct-initialization of _Ty from _Args... is both valid and not potentially-throwing
@@ -1506,7 +1503,6 @@ _CONSTEXPR17 auto invoke(_Callable&& _Obj, _Ty1&& _Arg1, _Types2&&... _Args2) no
 }
 #pragma warning(pop) // TRANSITION, DevCom-936696
 
-// TYPE TRAITS FOR invoke()
 #pragma warning(push)
 #pragma warning(disable : 4242) // '%s': conversion from '%s' to '%s', possible loss of data (/Wall)
 #pragma warning(disable : 4244) // '%s': conversion from '%s' to '%s', possible loss of data (Yes, duplicated message.)
@@ -1972,7 +1968,6 @@ template <class _Ty>
 inline constexpr bool is_nothrow_swappable_v = _Is_nothrow_swappable<_Ty>::value;
 #endif // _HAS_CXX17
 
-// TYPE TRAIT _Is_trivially_swappable
 namespace _Has_ADL_swap_detail {
     void swap(); // undefined (deliberate shadowing)
 

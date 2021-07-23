@@ -11,7 +11,6 @@
 static std::_Init_locks initlocks;
 
 _STD_BEGIN
-// OBJECT DECLARATIONS
 
 __PURE_APPDOMAIN_GLOBAL static wfilebuf wfout(_cpp_stdout);
 #if defined(_M_CEE_PURE)
@@ -20,7 +19,6 @@ __PURE_APPDOMAIN_GLOBAL extern wostream wcout(&wfout);
 __PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT wostream wcout(&wfout);
 #endif
 
-// INITIALIZATION CODE
 struct _Init_wcout { // ensures that wcout is initialized
     __CLR_OR_THIS_CALL _Init_wcout() { // initialize wcout
         _Ptr_wcout = &wcout;

@@ -157,7 +157,6 @@ public:
 _STDEXT_END
 
 _STD_BEGIN
-// DUMMY FUNCTION DECLARATIONS
 using terminate_handler = void(__cdecl*)();
 
 inline terminate_handler __CRTDECL set_terminate(terminate_handler) noexcept { // register a terminate handler

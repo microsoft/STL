@@ -261,7 +261,6 @@ struct ratio_greater_equal : bool_constant<!ratio_less_v<_Rx1, _Rx2>> { // tests
 template <class _Rx1, class _Rx2>
 _INLINE_VAR constexpr bool ratio_greater_equal_v = ratio_greater_equal<_Rx1, _Rx2>::value;
 
-// SI TYPEDEFS
 using atto  = ratio<1, 1000000000000000000LL>;
 using femto = ratio<1, 1000000000000000LL>;
 using pico  = ratio<1, 1000000000000LL>;

@@ -27,7 +27,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma warning(disable : 4127) // conditional expression is constant
 
 _STD_BEGIN
-// TYPE ASSERT MACROS
 #define _RNG_PROHIBIT_CHAR(_CheckedType)               \
     static_assert(!_Is_character<_CheckedType>::value, \
         "note: char, signed char, unsigned char, char8_t, int8_t, and uint8_t are not allowed")
@@ -57,18 +56,15 @@ using _Enable_if_seed_seq_t = enable_if_t<
             result_type> && !is_same_v<remove_cv_t<_Seed_seq>, _Self> && !is_same_v<remove_cv_t<_Seed_seq>, _Engine>,
     int>;
 
-// CONSTANTS
 _INLINE_VAR constexpr long double _Pi    = 3.14159265358979323846264338327950288L;
 _INLINE_VAR constexpr long double _Exp1  = 2.71828182845904523536028747135266250L;
 _INLINE_VAR constexpr long double _Two32 = 4294967296.0L;
 _INLINE_VAR constexpr long double _Two31 = 2147483648.0L;
 
-// HELPER FUNCTIONS
 _CRTIMP2_PURE float __CLRCALL_PURE_OR_CDECL _XLgamma(float);
 _CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _XLgamma(double);
 _CRTIMP2_PURE long double __CLRCALL_PURE_OR_CDECL _XLgamma(long double);
 
-// I/O HELPERS FOR FLOATING-POINT VALUES
 _INLINE_VAR constexpr int _Nwords = 4;
 
 template <class _Elem, class _Traits>

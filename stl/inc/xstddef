@@ -21,7 +21,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// TYPE DEFINITIONS
 template <class>
 // false value attached to a dependent name (for static_assert)
 _INLINE_VAR constexpr bool _Always_false = false;

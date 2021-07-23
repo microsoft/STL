@@ -1860,7 +1860,6 @@ _NODISCARD constexpr _Get_comparison_category_t<_Traits> operator<=>(
 }
 #endif // _HAS_CXX20
 
-// TYPEDEFS FOR basic_string_view
 using string_view = basic_string_view<char>;
 #ifdef __cpp_lib_char8_t
 using u8string_view = basic_string_view<char8_t>;
@@ -1887,7 +1886,6 @@ basic_ostream<_Elem, _Traits>& operator<<(
 }
 
 
-// basic_string_view LITERALS
 inline namespace literals {
     inline namespace string_view_literals {
         _NODISCARD constexpr string_view operator"" sv(const char* _Str, size_t _Len) noexcept {
@@ -2278,7 +2276,6 @@ struct pointer_traits<_String_iterator<_Mystr>> {
 };
 #endif // _HAS_CXX20
 
-// basic_string TYPE WRAPPERS
 template <class _Value_type, class _Size_type, class _Difference_type, class _Pointer, class _Const_pointer,
     class _Reference, class _Const_reference>
 struct _String_iter_types {
@@ -5003,7 +5000,6 @@ basic_ostream<_Elem, _Traits>& operator<<(
     return _Insert_string(_Ostr, _Str.data(), _Str.size());
 }
 
-// basic_string LITERALS
 inline namespace literals {
     inline namespace string_literals {
 

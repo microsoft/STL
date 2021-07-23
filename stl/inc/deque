@@ -526,7 +526,6 @@ _NODISCARD _Deque_iterator<_Mydeque> operator+(
     return _Next;
 }
 
-// deque TYPE WRAPPERS
 template <class _Value_type, class _Size_type, class _Difference_type, class _Pointer, class _Const_pointer,
     class _Reference, class _Const_reference, class _Mapptr_type>
 struct _Deque_iter_types {

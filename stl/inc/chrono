@@ -291,7 +291,6 @@ struct common_type<_CHRONO time_point<_Clock, _Duration1>,
 };
 
 namespace chrono {
-    // duration ARITHMETIC
     template <class _Rep1, class _Period1, class _Rep2, class _Period2>
     _NODISCARD constexpr common_type_t<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>
         operator+(const duration<_Rep1, _Period1>& _Left, const duration<_Rep2, _Period2>& _Right) noexcept(
@@ -376,7 +375,6 @@ namespace chrono {
         return _CD(_CD(_Left).count() % _CD(_Right).count());
     }
 
-    // duration COMPARISONS
     template <class _Rep1, class _Period1, class _Rep2, class _Period2>
     _NODISCARD constexpr bool
         operator==(const duration<_Rep1, _Period1>& _Left, const duration<_Rep2, _Period2>& _Right) noexcept(
@@ -522,7 +520,6 @@ namespace chrono {
         return _Dur < duration<_Rep, _Period>::zero() ? duration<_Rep, _Period>::zero() - _Dur : _Dur;
     }
 
-    // duration TYPES
     using nanoseconds  = duration<long long, nano>;
     using microseconds = duration<long long, micro>;
     using milliseconds = duration<long long, milli>;
@@ -536,7 +533,6 @@ namespace chrono {
     using months = duration<int, ratio_divide<years::period, ratio<12>>>;
 #endif // _HAS_CXX20
 
-    // time_point ARITHMETIC
     template <class _Clock, class _Duration, class _Rep, class _Period>
     _NODISCARD constexpr time_point<_Clock, common_type_t<_Duration, duration<_Rep, _Period>>>
         operator+(const time_point<_Clock, _Duration>& _Left, const duration<_Rep, _Period>& _Right) noexcept(
@@ -567,7 +563,6 @@ namespace chrono {
         return _Left.time_since_epoch() - _Right.time_since_epoch();
     }
 
-    // time_point COMPARISONS
     template <class _Clock, class _Duration1, class _Duration2>
     _NODISCARD constexpr bool
         operator==(const time_point<_Clock, _Duration1>& _Left, const time_point<_Clock, _Duration2>& _Right) noexcept(
@@ -6486,7 +6481,6 @@ namespace chrono {
 
 #endif // __cpp_lib_format
 
-// HELPERS
 template <class _Rep, class _Period>
 _NODISCARD bool _To_xtime_10_day_clamped(_CSTD xtime& _Xt, const _CHRONO duration<_Rep, _Period>& _Rel_time) noexcept(
     is_arithmetic_v<_Rep>) {
@@ -6511,7 +6505,6 @@ _NODISCARD bool _To_xtime_10_day_clamped(_CSTD xtime& _Xt, const _CHRONO duratio
     return _Clamped;
 }
 
-// duration LITERALS
 inline namespace literals {
     inline namespace chrono_literals {
         _NODISCARD constexpr _CHRONO hours operator"" h(unsigned long long _Val) noexcept /* strengthened */ {

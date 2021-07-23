@@ -1175,7 +1175,6 @@ _INLINE_VAR constexpr bool _Is_iterator_v = false;
 template <class _Ty>
 _INLINE_VAR constexpr bool _Is_iterator_v<_Ty, void_t<_Iter_cat_t<_Ty>>> = true;
 
-// TRAIT _Is_iterator
 template <class _Ty>
 struct _Is_iterator : bool_constant<_Is_iterator_v<_Ty>> {};
 
@@ -1455,7 +1454,7 @@ constexpr void _Debug_order_set_unchecked(_InIt _First, _InIt _Last, _Pr&& _Pred
 }
 #endif // _ITERATOR_DEBUG_LEVEL < 2
 
-// MORE ITERATOR STUFF (from <iterator>)
+// from <iterator>
 template <class _InIt, class _Diff>
 _CONSTEXPR17 void advance(_InIt& _Where, _Diff _Off) { // increment iterator by offset
     if constexpr (_Is_random_iter_v<_InIt>) {

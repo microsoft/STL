@@ -616,7 +616,6 @@ template <class _Ty>
 void as_const(const _Ty&&) = delete;
 
 #if _HAS_CXX17
-// in_place TAG TYPE TEMPLATES
 struct in_place_t { // tag used to select a constructor which initializes a contained object in place
     explicit in_place_t() = default;
 };

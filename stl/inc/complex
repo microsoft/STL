@@ -2195,7 +2195,6 @@ basic_ostream<_Elem, _Tr>& operator<<(basic_ostream<_Elem, _Tr>& _Ostr, const co
     return _Ostr << _Sstr.str();
 }
 
-// complex LITERALS
 inline namespace literals {
     inline namespace complex_literals {
         _NODISCARD constexpr complex<long double> operator""il(long double _Val) {

@@ -370,7 +370,6 @@ struct pointer_traits<_Vector_iterator<_Myvec>> {
 };
 #endif // _HAS_CXX20
 
-// vector TYPE WRAPPERS
 template <class _Value_type, class _Size_type, class _Difference_type, class _Pointer, class _Const_pointer,
     class _Reference, class _Const_reference>
 struct _Vec_iter_types {

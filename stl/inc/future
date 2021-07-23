@@ -80,7 +80,6 @@ enum class future_status { // names for timed wait function returns
     deferred
 };
 
-// HELPER FUNCTIONS
 [[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Throw_future_error(const error_code& _Code);
 [[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Rethrow_future_exception(exception_ptr _Ptr);
 
@@ -1055,7 +1054,6 @@ public:
     }
 };
 
-// DEFINITION OF future<void>::share()
 _NODISCARD inline shared_future<void> future<void>::share() noexcept {
     return shared_future<void>(_STD move(*this));
 }

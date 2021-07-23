@@ -272,7 +272,6 @@ public:
     }
 };
 
-// list TYPE WRAPPERS
 template <class _Value_type, class _Size_type, class _Difference_type, class _Pointer, class _Const_pointer,
     class _Reference, class _Const_reference, class _Nodeptr_type>
 struct _List_iter_types {

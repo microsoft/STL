@@ -506,7 +506,6 @@ basic_ostream<_Elem, _Tr>& operator<<(basic_ostream<_Elem, _Tr>& _Ostr, const bi
     return _Ostr << _Right.template to_string<_Elem, _Tr, allocator<_Elem>>(_Elem0, _Elem1);
 }
 
-// TEMPLATE operator>>
 template <class _Elem, class _Tr, size_t _Bits>
 basic_istream<_Elem, _Tr>& operator>>(basic_istream<_Elem, _Tr>& _Istr, bitset<_Bits>& _Right) {
     using _Istr_t                    = basic_istream<_Elem, _Tr>;

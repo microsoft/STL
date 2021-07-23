@@ -1214,7 +1214,6 @@ private:
     _Compressed_pair<_Dx, _Compressed_pair<_Myalty, _Resource>> _Mypair;
 };
 
-// DECLARATIONS
 template <class _Ty>
 struct default_delete;
 
@@ -1411,25 +1410,21 @@ private:
 #endif // _HAS_STATIC_RTTI
 };
 
-// TYPE TRAIT _Can_scalar_delete
 template <class _Yty, class = void>
 struct _Can_scalar_delete : false_type {};
 template <class _Yty>
 struct _Can_scalar_delete<_Yty, void_t<decltype(delete _STD declval<_Yty*>())>> : true_type {};
 
-// TYPE TRAIT _Can_array_delete
 template <class _Yty, class = void>
 struct _Can_array_delete : false_type {};
 template <class _Yty>
 struct _Can_array_delete<_Yty, void_t<decltype(delete[] _STD declval<_Yty*>())>> : true_type {};
 
-// TYPE TRAIT _Can_call_function_object
 template <class _Fx, class _Arg, class = void>
 struct _Can_call_function_object : false_type {};
 template <class _Fx, class _Arg>
 struct _Can_call_function_object<_Fx, _Arg, void_t<decltype(_STD declval<_Fx>()(_STD declval<_Arg>()))>> : true_type {};
 
-// TYPE TRAIT _SP_convertible
 template <class _Yty, class _Ty>
 struct _SP_convertible : is_convertible<_Yty*, _Ty*>::type {};
 template <class _Yty, class _Uty>
@@ -1437,7 +1432,6 @@ struct _SP_convertible<_Yty, _Uty[]> : is_convertible<_Yty (*)[], _Uty (*)[]>::t
 template <class _Yty, class _Uty, size_t _Ext>
 struct _SP_convertible<_Yty, _Uty[_Ext]> : is_convertible<_Yty (*)[_Ext], _Uty (*)[_Ext]>::type {};
 
-// TYPE TRAIT _SP_pointer_compatible
 template <class _Yty, class _Ty>
 struct _SP_pointer_compatible : is_convertible<_Yty*, _Ty*>::type {
     // N4659 [util.smartptr.shared]/5 "a pointer type Y* is said to be compatible
@@ -3553,7 +3547,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Out, c
     return _Out;
 }
 
-// GARBAGE COLLECTION
 #if _HAS_GARBAGE_COLLECTION_SUPPORT_DELETED_IN_CXX23
 enum class pointer_safety { relaxed, preferred, strict };
 
@@ -3693,7 +3686,6 @@ _CRTIMP2_PURE void __cdecl _Lock_shared_ptr_spin_lock();
 _CRTIMP2_PURE void __cdecl _Unlock_shared_ptr_spin_lock();
 _END_EXTERN_C
 
-// WRAP SPIN-LOCK
 struct _Shared_ptr_spin_lock { // class to manage a spin lock for shared_ptr atomic operations
     _Shared_ptr_spin_lock() { // lock the spin lock
         _Lock_shared_ptr_spin_lock();

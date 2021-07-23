@@ -1072,7 +1072,6 @@ public:
                 }
 #endif // 0
 
-    // PATH COMPARISON
     _NODISCARD int compare(const path& _Path) const noexcept { // compare native() to _Path.native()
         return _Mystr.compare(_Path._Mystr);
     }

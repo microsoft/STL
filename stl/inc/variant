@@ -35,7 +35,6 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 
-// TYPE TRAITS
 template <class...>
 struct _All_same : true_type {};
 template <class _First, class... _Rest>
@@ -354,11 +353,9 @@ struct _Meta_cartesian_product_<_List1<_List2<_Items...>, _Lists...>> {
 
 #define _STL_STAMP(n, x) x(_STL_STAMP##n, n)
 
-// VARIANT OF VALUE TYPES [variant.variant]
 template <class... _Types>
 class variant;
 
-// VARIANT HELPER CLASSES [variant.helper]
 template <class _Ty>
 struct variant_size; // undefined
 template <class _Ty>

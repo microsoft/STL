@@ -43,7 +43,6 @@ inline constexpr size_t hardware_destructive_interference_size  = 64;
 
 #endif // _HAS_CXX17
 
-// SUPPORT TYPES
 #if !defined(_INC_NEW) || !defined(_MSC_EXTENSIONS)
 // handler for operator new failures
 using new_handler = void(__CLRCALL_PURE_OR_CDECL*)();
