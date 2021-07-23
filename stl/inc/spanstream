@@ -107,7 +107,7 @@ public:
 
 protected:
     // [spanbuf.virtuals], overridden virtual functions
-    virtual pos_type __CLR_OR_THIS_CALL seekoff(
+    pos_type __CLR_OR_THIS_CALL seekoff(
         off_type _Off, ios_base::seekdir _Way, ios_base::openmode _Which = ios_base::in | ios_base::out) override {
         const bool _Sequence_in  = _Which & ios_base::in;
         const bool _Sequence_out = _Which & ios_base::out;
@@ -174,12 +174,12 @@ protected:
         return pos_type(_Off);
     }
 
-    virtual pos_type __CLR_OR_THIS_CALL seekpos(
+    pos_type __CLR_OR_THIS_CALL seekpos(
         pos_type _Pos, ios_base::openmode _Which = ios_base::in | ios_base::out) override {
         return seekoff(off_type{_Pos}, ios_base::beg, _Which);
     }
 
-    virtual _Mysb* __CLR_OR_THIS_CALL setbuf(_Elem* _Buffer, streamsize _Count) override {
+    _Mysb* __CLR_OR_THIS_CALL setbuf(_Elem* _Buffer, streamsize _Count) override {
         this->span(_STD span<_Elem>{_Buffer, static_cast<size_t>(_Count)});
         return this;
     }

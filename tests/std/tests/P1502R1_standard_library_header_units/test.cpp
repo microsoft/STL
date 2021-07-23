@@ -699,6 +699,29 @@ int main() {
     }
 
     {
+        puts("Testing <spanstream>.");
+        char ibuffer[] = "1 2 3 4 5";
+        ispanstream is{span<char>{ibuffer}};
+        int read = 0;
+        for (int expected = 1; expected <= 5; ++expected) {
+            assert(is.good());
+            is >> read;
+            assert(read == expected);
+        }
+
+        const auto expected = "102030"sv;
+        char obuffer[10];
+        ospanstream os{span<char>{obuffer}};
+        os << 10 << 20 << 30;
+        assert(equal(begin(os.span()), end(os.span()), begin(expected), end(expected)));
+
+        char buffer[10];
+        spanstream s{span<char>{buffer}};
+        s << 10 << 20 << 30;
+        assert(equal(begin(s.span()), end(s.span()), begin(expected), end(expected)));
+    }
+
+    {
         puts("Testing <sstream>.");
         ostringstream oss;
         oss << "I have " << 9 * 9 * 9 + 10 * 10 * 10 << " cute fluffy kittens.";

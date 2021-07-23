@@ -1,7 +1,5 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-// Copyright (c) Microsoft Corporation.
-// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <iosfwd>
 
@@ -9,6 +7,9 @@ using namespace std;
 
 // Needs to be separately declared as a simple alias of streampos
 void test_forward_declaration(wstreampos*);
+void test_forward_declaration(u8streampos*);
+void test_forward_declaration(u16streampos*);
+void test_forward_declaration(u32streampos*);
 
 struct test_aliases {
     static void test_forward_declaration(streampos*);
@@ -65,12 +66,6 @@ struct test_aliases {
     static void test_forward_declaration(wsyncbuf*);
     static void test_forward_declaration(wosyncstream*);
 #endif // _HAS_CXX20
-
-#if defined(_CRTBLD)
-    static void test_forward_declaration(ushistream*);
-    static void test_forward_declaration(ushostream*);
-    static void test_forward_declaration(ushfilebuf*);
-#endif // defined(_CRTBLD)
 };
 
 template <class CharT>
@@ -111,13 +106,8 @@ struct test_forward_declarations {
 #endif // _HAS_CXX20
 };
 
-int main() {
-    test_aliases aliases;
-    (void) aliases;
+test_aliases aliases;
+test_forward_declarations<char> forward_declarations_char;
+test_forward_declarations<wchar_t> forward_declarations_wchar_t;
 
-    test_forward_declarations<char> forward_declarations_char;
-    (void) forward_declarations_char;
-
-    test_forward_declarations<wchar_t> forward_declarations_wchar_t;
-    (void) forward_declarations_wchar_t;
-}
+int main() {} // COMPILE-ONLY

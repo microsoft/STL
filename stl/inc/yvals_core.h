@@ -260,7 +260,7 @@
 // Other C++20 deprecation warnings
 
 // _HAS_CXX23 directly controls:
-// P0448R4 spanstream
+// P0448R4 <spanstream>
 // P1048R1 is_scoped_enum
 // P1679R3 contains() For basic_string/basic_string_view
 // P1682R3 to_underlying() For Enumerations
