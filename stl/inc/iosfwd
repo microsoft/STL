@@ -22,7 +22,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// I/O EXCEPTION MACROS
 
 #if _HAS_EXCEPTIONS
 #define _TRY_IO_BEGIN _TRY_BEGIN // begin try block

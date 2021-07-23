@@ -161,7 +161,6 @@ struct space_info { // space information for a file
     uintmax_t available;
 };
 
-// SYSTEM SUPPORT FUNCTIONS
 // wide filenames
 _FS_DLL void* __CLRCALL_PURE_OR_CDECL _Open_dir(wchar_t (&)[_MAX_FILESYS_NAME], const wchar_t*, int&, file_type&);
 _FS_DLL wchar_t* __CLRCALL_PURE_OR_CDECL _Read_dir(wchar_t (&)[_MAX_FILESYS_NAME], void*, file_type&);
@@ -794,7 +793,6 @@ public:
 
     ~path() noexcept {}
 
-    // ARBITRARY SOURCE ASSIGN
     path& operator=(const path& _Right) {
         _Mystr = _Right._Mystr;
         return *this;
@@ -825,7 +823,6 @@ public:
         return *this = path(_Str);
     }
 
-    // ARBITRARY SOURCE APPEND
     path& operator/=(const path& _Path) { // append copy
         return append(_Path._Mystr);
     }
@@ -872,7 +869,6 @@ public:
         return *this;
     }
 
-    // ARBITRARY SOURCE CONCATENATE
     path& operator+=(const path& _Path) { // concatenate copy
         return concat(_Path._Mystr);
     }
@@ -921,7 +917,6 @@ public:
         return *this;
     }
 
-    // PATH MODIFIERS
     void clear() noexcept { // clear the stored string
         _Mystr.clear();
     }
@@ -973,7 +968,6 @@ public:
         _Mystr.swap(_Right._Mystr);
     }
 
-    // NATIVE FORMAT OBSERVERS
     _NODISCARD const string_type& native() const noexcept {
         return _Mystr;
     }
@@ -1021,8 +1015,6 @@ public:
                     return _Path_cvt<value_type, char32_t>::_Cvt(_Str, _Mystr.c_str(), _Mystr.size());
                 }
 #endif // 0
-
-    // GENERIC FORMAT OBSERVERS
 
     string_type _Make_generic() const { // copy and convert any '\' to '/'
         string_type _Str = _Mystr;
@@ -1084,7 +1076,6 @@ public:
         return _Mystr.compare(_Ptr);
     }
 
-    // PATH DECOMPOSITION
     _NODISCARD path root_name() const {
         return path(_Mystr.substr(0, _Prefix_end()));
     }
@@ -1187,7 +1178,6 @@ public:
         return !is_absolute();
     }
 
-    // PATH ITERATOR SUPPORT
     using iterator       = _Path_iterator<path>;
     using const_iterator = iterator;
 
@@ -1756,7 +1746,6 @@ _NODISCARD inline recursive_directory_iterator end(const recursive_directory_ite
     return {};
 }
 
-// OPERATIONAL FUNCTIONS
 inline path _Absolute(const path& _Path, const path& _Base,
     error_code& _Code) { // make absolute path from _Path and directory _Base; errors in _Code
     _Code.clear();

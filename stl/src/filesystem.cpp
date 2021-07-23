@@ -28,7 +28,6 @@ static_assert(__std_code_page::_Utf8 == __std_code_page{CP_UTF8});
 
 namespace {
 
-    // MACRO __vcrt_CreateSymbolicLinkW
 #ifdef _CRT_APP
     BOOLEAN __stdcall _Not_supported_CreateSymbolicLinkW(const wchar_t*, const wchar_t*, DWORD) {
         SetLastError(ERROR_NOT_SUPPORTED);

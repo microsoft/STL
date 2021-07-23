@@ -331,7 +331,6 @@ public:
         _Owns = false;
     }
 
-    // MUTATE
     void swap(shared_lock& _Right) noexcept {
         _STD swap(_Pmtx, _Right._Pmtx);
         _STD swap(_Owns, _Right._Owns);
@@ -344,7 +343,6 @@ public:
         return _Res;
     }
 
-    // OBSERVE
     _NODISCARD bool owns_lock() const noexcept {
         return _Owns;
     }

@@ -1400,8 +1400,6 @@ struct _Unwrap_enum<_Elem, false> { // passthrough non-enum type
 template <class _Elem>
 using _Unwrap_enum_t = typename _Unwrap_enum<_Elem>::type;
 
-// DEBUG TESTING MACROS
-
 #if _ITERATOR_DEBUG_LEVEL < 2
 #define _DEBUG_LT_PRED(pred, x, y) static_cast<bool>(pred(x, y))
 #define _DEBUG_ORDER_UNWRAPPED(first, last, pred)

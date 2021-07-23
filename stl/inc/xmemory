@@ -1163,7 +1163,6 @@ private:
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 };
 
-// MEMBER FUNCTIONS FOR _Container_base12
 _CONSTEXPR20 void _Container_base12::_Orphan_all_unlocked() noexcept {
     for (auto& _Pnext = _Myproxy->_Myfirstiter; _Pnext; _Pnext = _Pnext->_Mynextiter) { // TRANSITION, VSO-1269037
         _Pnext->_Myproxy = nullptr;
