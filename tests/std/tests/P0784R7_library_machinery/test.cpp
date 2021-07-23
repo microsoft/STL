@@ -53,7 +53,7 @@ static constexpr int_wrapper_copy expected_copy[]       = {1, 2, 3, 4};
 static constexpr int_wrapper_move expected_move[]       = {1, 2, 3, 4};
 static constexpr int_wrapper_move expected_after_move[] = {-1, -1, -1, -1};
 
-_CONSTEXPR20_DYNALLOC bool test() {
+constexpr bool test() {
     { // _Copy_unchecked
         int_wrapper_copy input[]   = {1, 2, 3, 4};
         int_wrapper_copy output[4] = {5, 6, 7, 8};
@@ -74,7 +74,6 @@ _CONSTEXPR20_DYNALLOC bool test() {
         assert(equal(begin(expected_copy), end(expected_copy), begin(output), end(output)));
     }
 
-#if defined(__cpp_constexpr_dynamic_alloc)
     { // _Uninitialized_copy_unchecked
         int_wrapper_copy input[] = {1, 2, 3, 4};
         int_wrapper_copy output[4];
@@ -84,7 +83,6 @@ _CONSTEXPR20_DYNALLOC bool test() {
         assert(result == end(output));
         assert(equal(begin(expected_copy), end(expected_copy), begin(output), end(output)));
     }
-#endif // defined(__cpp_constexpr_dynamic_alloc)
 
     { // _Move_unchecked
         int_wrapper_move input[]   = {1, 2, 3, 4};
@@ -127,7 +125,6 @@ _CONSTEXPR20_DYNALLOC bool test() {
     }
 #endif // __cpp_lib_concepts
 
-#if defined(__cpp_constexpr_dynamic_alloc)
     { // _Uninitialized_move_unchecked
         int_wrapper_move input[] = {1, 2, 3, 4};
         int_wrapper_move output[4];
@@ -140,7 +137,7 @@ _CONSTEXPR20_DYNALLOC bool test() {
             assert(equal(begin(input), end(input), begin(expected_after_move), end(expected_after_move)));
         }
     }
-#endif // defined(__cpp_constexpr_dynamic_alloc)
+
     return true;
 }
 

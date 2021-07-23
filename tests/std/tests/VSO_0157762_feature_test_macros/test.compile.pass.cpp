@@ -417,7 +417,7 @@ STATIC_ASSERT(__cpp_lib_constexpr_complex == 201711L);
 #endif
 #endif
 
-#if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc)
+#if _HAS_CXX20
 #ifndef __cpp_lib_constexpr_dynamic_alloc
 #error __cpp_lib_constexpr_dynamic_alloc is not defined
 #elif __cpp_lib_constexpr_dynamic_alloc != 201907L
@@ -487,7 +487,7 @@ STATIC_ASSERT(__cpp_lib_constexpr_numeric == 201911L);
 #endif
 #endif
 
-#if _HAS_CXX20 && !defined(__clang__) // TRANSITION, LLVM-48606
+#if _HAS_CXX20
 #ifndef __cpp_lib_constexpr_string
 #error __cpp_lib_constexpr_string is not defined
 #elif __cpp_lib_constexpr_string != 201907L
@@ -543,7 +543,7 @@ STATIC_ASSERT(__cpp_lib_constexpr_utility == 201811L);
 #endif
 #endif
 
-#if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc) && !defined(__clang__) // TRANSITION, LLVM-48606
+#if _HAS_CXX20
 #ifndef __cpp_lib_constexpr_vector
 #error __cpp_lib_constexpr_vector is not defined
 #elif __cpp_lib_constexpr_vector != 201907L
