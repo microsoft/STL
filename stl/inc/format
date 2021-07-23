@@ -683,30 +683,12 @@ class _Grapheme_break_property_iterator {
     using value_type         = _Wrapped_iter_type::value_type;
     using difference_type    = ptrdiff_t;
     _Wrapped_iter_type _WrappedIter;
-    /*
-    enum _State {
-        _GB1_state,
-        _GB2_state,
-        _GB3_state,
-        _GB4_state,
-        // _GB5_state,
-        _GB6_state,
-        _GB7_state,
-        _GB8_state,
-        // _GB9_state,
-        // _GB9a_state,
-        _GB9b_state,
-        _GB11_state,
-        _GB12_state,
-        _GB13_state,
-        _GB999_state
-    };*/
     enum _State {
         _Sot_state,
         _Done_state,
         _Any_state,
         _Cr_state,
-        _Control_Cr_Lf_state,
+        _Control_Lf_state,
         _L_state,
         _LV_V_state,
         _LVT_T_state,
@@ -723,18 +705,31 @@ public:
     constexpr _Grapheme_break_property_iterator& operator++() noexcept {
         _State _Next_state;
         for (;;) {
+            ++_WrappedIter;
             // evaluate the next state
-            switch (_Current_state) {
-            case _Sot_state:
+            // GB1
+            if (_Current_state == _Sot_state) {
                 _Next_state = _Any_state;
-                break
+                return *this;
             }
+            // GB2
             if (_WrappedIter == _Unicode_codepoint_end_iterator{}) {
-                _Current_state = _GB2_state;
-                continue;
+                _Current_state = _Done_state;
+                return *this;
             }
             auto _Next_grapheme_break_prop =
-                _Grapheme_Break_Property_Data._Get_property_for_codepoint(static_cast<uint32_t>(*++_WrappedIter));
+                _Grapheme_Break_Property_Data._Get_property_for_codepoint(static_cast<uint32_t>(*_WrappedIter));
+            // GB3
+            if (_Current_state == _Cr_state
+                && _Next_grapheme_break_prop == _Grapheme_break_property_values::_LF_value) {
+                _Next_state = _Control_Lf_state;
+                continue;
+            }
+            // GB4
+            if (_Current_state == _Cr_state || _Current_state == _Control_Lf_state) {
+                _Next_state =
+            }
+            _Current_state = _Next_state;
         }
     }
     constexpr _Grapheme_break_property_iterator operator++(int) noexcept {
